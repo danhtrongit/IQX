@@ -1,0 +1,17 @@
+# Ignore everything at the repository root by default.
+/*
+
+# Keep the root gitignore itself.
+!/.gitignore
+
+# Only track the application directories.
+!/frontend/
+!/frontend/**
+!/backend/
+!/backend/**
+
+# Safety guard if the frontend was previously a standalone repo.
+/frontend/.git
+
+# OS noise.
+.DS_Store
