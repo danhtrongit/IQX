@@ -22,6 +22,7 @@ from app.core.database import Base  # noqa: E402
 # Import all models so Alembic can detect them
 from app.models.user import User  # noqa: F401, E402
 from app.models.refresh_token import RefreshToken  # noqa: F401, E402
+from app.models.premium import PremiumPlan, PremiumSubscription, PremiumPaymentOrder  # noqa: F401, E402
 
 # Alembic Config object
 config = context.config

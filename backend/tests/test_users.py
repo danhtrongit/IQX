@@ -15,7 +15,7 @@ async def _admin_token(client: AsyncClient) -> str:
         "/api/v1/auth/login",
         json={"email": "admin@example.com", "password": "Admin@1234"},
     )
-    return resp.json()["access_token"]
+    return str(resp.json()["access_token"])
 
 
 async def _user_token(client: AsyncClient) -> str:
@@ -23,7 +23,7 @@ async def _user_token(client: AsyncClient) -> str:
         "/api/v1/auth/login",
         json={"email": "test@example.com", "password": "Test@1234"},
     )
-    return resp.json()["access_token"]
+    return str(resp.json()["access_token"])
 
 
 # ── Self-profile tests ──────────────────────────────

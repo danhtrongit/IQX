@@ -13,6 +13,10 @@ os.environ.update(
         "APP_ENV": "testing",
         "DEBUG": "false",
         "CORS_ORIGINS": "http://localhost:3000",
+        "SEPAY_MERCHANT_ID": "TEST_MERCHANT",
+        "SEPAY_SECRET_KEY": "test-sepay-secret-key",
+        "SEPAY_CHECKOUT_URL": "https://pay-sandbox.sepay.vn/v1/checkout/init",
+        "APP_PUBLIC_URL": "http://localhost:3000",
     }
 )
 

@@ -1,0 +1,173 @@
+"""Premium endpoints — unified router for plans, checkout, IPN, and admin operations.
+
+All endpoints are under /api/v1/premium.
+"""
+
+from __future__ import annotations
+
+import hmac
+import logging
+from typing import Annotated
+
+from fastapi import APIRouter, Header, Request
+from fastapi.responses import JSONResponse
+
+from app.api.deps import AdminUser, CurrentUser, DBSession
+from app.core.config import get_settings
+from app.core.exceptions import NotFoundError
+from app.schemas.premium import (
+    AdminGrantRequest,
+    CheckoutRequest,
+    CheckoutResponse,
+    IPNPayload,
+    PaymentOrderResponse,
+    PlanCreate,
+    PlanResponse,
+    PlanUpdate,
+    SubscriptionResponse,
+)
+from app.services.premium import PremiumService
+from app.services.user import UserService
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/premium", tags=["premium"])
+
+
+# ── User endpoints ───────────────────────────────────
+
+
+@router.get("/plans", response_model=list[PlanResponse])
+async def list_plans(db: DBSession):
+    """List all active premium plans."""
+    service = PremiumService(db)
+    plans = await service.list_active_plans()
+    return [PlanResponse.model_validate(p) for p in plans]
+
+
+@router.get("/me", response_model=SubscriptionResponse)
+async def get_my_subscription(current_user: CurrentUser, db: DBSession):
+    """Get current user's premium subscription status."""
+    service = PremiumService(db)
+    return await service.get_user_subscription(current_user.id)
+
+
+@router.post("/checkout", response_model=CheckoutResponse)
+async def create_checkout(
+    body: CheckoutRequest,
+    current_user: CurrentUser,
+    db: DBSession,
+):
+    """Create a SePay checkout form for purchasing a premium plan."""
+    service = PremiumService(db)
+    return await service.create_checkout(user_id=current_user.id, plan_id=body.plan_id)
+
+
+# ── SePay IPN (public, no auth — uses X-Secret-Key) ─
+
+
+@router.post("/sepay/ipn")
+async def sepay_ipn(
+    request: Request,
+    db: DBSession,
+    x_secret_key: Annotated[str | None, Header()] = None,
+):
+    """Receive SePay IPN notifications.
+
+    This endpoint is called by SePay's servers when a payment status changes.
+    Authentication is via the X-Secret-Key header (constant-time comparison).
+    """
+    settings = get_settings()
+
+    # Validate secret key (constant-time comparison)
+    if not x_secret_key or not hmac.compare_digest(x_secret_key, settings.SEPAY_SECRET_KEY):
+        logger.warning("IPN: invalid or missing X-Secret-Key")
+        return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+
+    # Parse payload
+    try:
+        raw_body = await request.json()
+        payload = IPNPayload.model_validate(raw_body)
+    except Exception:
+        logger.warning("IPN: failed to parse request body")
+        return JSONResponse(status_code=200, content={"success": "true", "message": "parse_error"})
+
+    service = PremiumService(db)
+    result = await service.process_ipn(payload)
+
+    return JSONResponse(status_code=200, content=result)
+
+
+# ── Admin endpoints ──────────────────────────────────
+
+
+@router.get("/admin/plans", response_model=list[PlanResponse])
+async def admin_list_plans(admin: AdminUser, db: DBSession):
+    """Admin: list all plans (including inactive)."""
+    service = PremiumService(db)
+    plans = await service.list_all_plans()
+    return [PlanResponse.model_validate(p) for p in plans]
+
+
+@router.post("/admin/plans", response_model=PlanResponse, status_code=201)
+async def admin_create_plan(
+    body: PlanCreate,
+    admin: AdminUser,
+    db: DBSession,
+):
+    """Admin: create a new premium plan."""
+    service = PremiumService(db)
+    plan = await service.create_plan(body.model_dump())
+    return PlanResponse.model_validate(plan)
+
+
+@router.patch("/admin/plans/{plan_id}", response_model=PlanResponse)
+async def admin_update_plan(
+    plan_id: str,
+    body: PlanUpdate,
+    admin: AdminUser,
+    db: DBSession,
+):
+    """Admin: update a premium plan."""
+    import uuid as _uuid
+
+    try:
+        pid = _uuid.UUID(plan_id)
+    except ValueError:
+        raise NotFoundError("Premium plan") from None
+
+    service = PremiumService(db)
+    plan = await service.update_plan(pid, body.model_dump(exclude_unset=True))
+    return PlanResponse.model_validate(plan)
+
+
+@router.post("/admin/users/{user_id}/grant", response_model=PaymentOrderResponse, status_code=201)
+async def admin_grant_premium(
+    user_id: str,
+    body: AdminGrantRequest,
+    admin: AdminUser,
+    db: DBSession,
+):
+    """Admin: manually grant premium to a user."""
+    import uuid as _uuid
+
+    try:
+        uid = _uuid.UUID(user_id)
+    except ValueError:
+        raise NotFoundError("User") from None
+
+    # Verify user exists
+    user_service = UserService(db)
+    try:
+        await user_service.get_by_id(uid)
+    except NotFoundError:
+        raise NotFoundError("User") from None
+
+    service = PremiumService(db)
+    order = await service.admin_grant_premium(
+        user_id=uid,
+        plan_id=body.plan_id,
+        admin_id=admin.id,
+        note=body.note,
+    )
+    return PaymentOrderResponse.model_validate(order)

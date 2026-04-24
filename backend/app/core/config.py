@@ -40,6 +40,12 @@ class Settings(BaseSettings):
     # ── CORS ─────────────────────────────────────────
     CORS_ORIGINS: str = "http://localhost:3000"
 
+    # ── SePay Payment Gateway ────────────────────────
+    SEPAY_MERCHANT_ID: str = ""
+    SEPAY_SECRET_KEY: str = ""
+    SEPAY_CHECKOUT_URL: str = "https://pay-sandbox.sepay.vn/v1/checkout/init"
+    APP_PUBLIC_URL: str = "http://localhost:3000"
+
     # ── Logging ──────────────────────────────────────
     LOG_LEVEL: str = "INFO"
 
