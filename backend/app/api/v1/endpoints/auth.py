@@ -117,16 +117,35 @@ async def login_endpoint(
     response_model=UserMeResponse,
     summary="Get current user profile",
     responses={
-        200: {"description": "Current user profile."},
+        200: {"description": "Current user profile with premium status."},
         401: {"description": "Missing or invalid token.", "model": ErrorResponse},
         403: {"description": "Account deactivated.", "model": ErrorResponse},
     },
 )
 async def get_me(
     current_user: User = Depends(get_current_user),
-) -> User:
-    """Return the authenticated user's profile."""
-    return current_user
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    """Return the authenticated user's profile with premium status."""
+    from app.services.premium import get_premium_status
+
+    premium = await get_premium_status(session, current_user.id)
+
+    # Build response dict from user attributes + premium fields
+    user_data = UserMeResponse.model_validate(current_user, from_attributes=True).model_dump()
+    # Serialize current_plan from ORM model to dict if present
+    plan = premium.get("current_plan")
+    plan_dict = None
+    if plan is not None:
+        from app.schemas.premium import PlanResponse
+        plan_dict = PlanResponse.model_validate(plan, from_attributes=True).model_dump()
+
+    user_data["is_premium"] = premium["is_premium"]
+    user_data["current_plan"] = plan_dict
+    user_data["subscription_status"] = premium["subscription_status"]
+    user_data["subscription_expires_at"] = premium["subscription_expires_at"]
+    user_data["entitlements"] = premium["entitlements"]
+    return user_data
 
 
 # ---------------------------------------------------------------------------

@@ -8,10 +8,12 @@ To add a new endpoint:
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, hello, users
+from app.api.v1.endpoints import auth, hello, premium, users
 
 router = APIRouter()
 
 router.include_router(hello.router)
 router.include_router(auth.router)
 router.include_router(users.router)
+router.include_router(premium.router)
+

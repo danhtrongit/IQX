@@ -47,6 +47,13 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 7
 
+    # ── SePay Payment Gateway ────────────────────────────────────
+    sepay_merchant_id: str = ""
+    sepay_secret_key: str = ""
+    sepay_ipn_secret_key: str = ""
+    sepay_checkout_url: str = "https://pay-sandbox.sepay.vn/v1/checkout/init"
+    payment_return_base_url: str = "http://localhost:3000"
+
 
 @lru_cache
 def get_settings() -> Settings:

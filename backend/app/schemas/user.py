@@ -45,6 +45,14 @@ class UserMeResponse(UserResponse):
 
     is_superuser: bool = Field(False, description="Whether the user is a superuser.")
 
+    # Premium status (populated by the endpoint, not from_attributes)
+    is_premium: bool = Field(False, description="Whether the user has an active premium subscription.")
+    current_plan: dict | None = Field(None, description="Current premium plan details.")
+    subscription_status: str | None = Field(None, description="Subscription status: active/expired/cancelled.")
+    subscription_expires_at: datetime | None = Field(None, description="When the current subscription period ends.")
+    entitlements: dict | None = Field(None, description="Feature entitlements from the plan.")
+
+
 
 class UserListResponse(BaseModel):
     """Paginated list of users (admin endpoint)."""

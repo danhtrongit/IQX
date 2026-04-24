@@ -22,9 +22,13 @@ def _setup_db():
 
 @pytest.fixture(autouse=True)
 def _clean_tables():
-    """Delete all user data between tests."""
+    """Delete all data between tests (order matters for FK constraints)."""
     yield
     with _sync_engine.connect() as conn:
+        conn.execute(text("DELETE FROM subscription_events"))
+        conn.execute(text("DELETE FROM subscriptions"))
+        conn.execute(text("DELETE FROM payment_orders"))
+        conn.execute(text("DELETE FROM plans"))
         conn.execute(text("DELETE FROM users"))
         conn.commit()
     # Clear the async engine cache so each test gets a fresh engine
