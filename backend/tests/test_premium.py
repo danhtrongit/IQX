@@ -47,6 +47,13 @@ def _user_token(user: User) -> str:
     return create_access_token(subject=user.id, extra_claims={"role": user.role.value})
 
 
+def _make_aware(dt: datetime) -> datetime:
+    """Ensure datetime is timezone-aware (for SQLite compat)."""
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=UTC)
+    return dt
+
+
 # ══════════════════════════════════════════════════════
 # Plan management (admin)
 # ══════════════════════════════════════════════════════
@@ -190,7 +197,7 @@ async def test_checkout_signature_deterministic(client: AsyncClient, test_user: 
 
 
 # ══════════════════════════════════════════════════════
-# IPN
+# IPN — security
 # ══════════════════════════════════════════════════════
 
 
@@ -208,6 +215,11 @@ async def test_ipn_wrong_secret_key_rejected(client: AsyncClient):
         headers={"X-Secret-Key": "wrong-key"},
     )
     assert resp.status_code == 401
+
+
+# ══════════════════════════════════════════════════════
+# IPN — valid payment
+# ══════════════════════════════════════════════════════
 
 
 @pytest.mark.asyncio
@@ -235,12 +247,14 @@ async def test_ipn_valid_payment_activates_premium(
         "order": {
             "order_status": "CAPTURED",
             "order_currency": "VND",
-            "order_amount": "99000.00",
+            "order_amount": "99000",
             "order_invoice_number": "IQX_TEST001",
         },
         "transaction": {
             "transaction_id": "txn_123456",
             "transaction_status": "APPROVED",
+            "transaction_currency": "VND",
+            "transaction_amount": "99000",
         },
     }
 
@@ -257,6 +271,11 @@ async def test_ipn_valid_payment_activates_premium(
     sub_resp = await client.get("/api/v1/premium/me", headers=get_auth_headers(token))
     assert sub_resp.status_code == 200
     assert sub_resp.json()["is_premium"] is True
+
+
+# ══════════════════════════════════════════════════════
+# IPN — idempotency (duplicate)
+# ══════════════════════════════════════════════════════
 
 
 @pytest.mark.asyncio
@@ -282,12 +301,14 @@ async def test_ipn_duplicate_does_not_stack(
         "order": {
             "order_status": "CAPTURED",
             "order_currency": "VND",
-            "order_amount": "99000.00",
+            "order_amount": "99000",
             "order_invoice_number": "IQX_DUP001",
         },
         "transaction": {
             "transaction_id": "txn_dup_001",
             "transaction_status": "APPROVED",
+            "transaction_currency": "VND",
+            "transaction_amount": "99000",
         },
     }
     headers = {"X-Secret-Key": "test-sepay-secret-key"}
@@ -309,6 +330,11 @@ async def test_ipn_duplicate_does_not_stack(
     sub2 = await client.get("/api/v1/premium/me", headers=get_auth_headers(token))
     end2 = sub2.json()["current_period_end"]
     assert end1 == end2
+
+
+# ══════════════════════════════════════════════════════
+# IPN — amount validation
+# ══════════════════════════════════════════════════════
 
 
 @pytest.mark.asyncio
@@ -333,12 +359,14 @@ async def test_ipn_amount_mismatch_rejects(
         "order": {
             "order_status": "CAPTURED",
             "order_currency": "VND",
-            "order_amount": "50000.00",  # Wrong amount
+            "order_amount": "50000",  # Wrong amount
             "order_invoice_number": "IQX_MISMATCH",
         },
         "transaction": {
             "transaction_id": "txn_mismatch",
             "transaction_status": "APPROVED",
+            "transaction_currency": "VND",
+            "transaction_amount": "50000",
         },
     }
 
@@ -352,7 +380,53 @@ async def test_ipn_amount_mismatch_rejects(
 
 
 @pytest.mark.asyncio
-async def test_ipn_wrong_currency_rejects(
+async def test_ipn_fractional_vnd_rejects(
+    client: AsyncClient, test_user: User, db_session: AsyncSession
+):
+    """Fractional VND amounts (e.g. 99000.50) must be rejected."""
+    plan = await _create_plan(db_session)
+
+    order = PremiumPaymentOrder(
+        invoice_number="IQX_FRAC",
+        user_id=test_user.id,
+        plan_id=plan.id,
+        amount_vnd=99000,
+        currency="VND",
+        status=PaymentOrderStatus.PENDING,
+    )
+    db_session.add(order)
+    await db_session.commit()
+
+    ipn_body = {
+        "notification_type": "ORDER_PAID",
+        "order": {
+            "order_status": "CAPTURED",
+            "order_currency": "VND",
+            "order_amount": "99000.50",  # Fractional VND — invalid
+            "order_invoice_number": "IQX_FRAC",
+        },
+        "transaction": {
+            "transaction_id": "txn_frac",
+            "transaction_status": "APPROVED",
+        },
+    }
+
+    resp = await client.post(
+        "/api/v1/premium/sepay/ipn",
+        json=ipn_body,
+        headers={"X-Secret-Key": "test-sepay-secret-key"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["message"] == "amount_invalid"
+
+
+# ══════════════════════════════════════════════════════
+# IPN — currency validation
+# ══════════════════════════════════════════════════════
+
+
+@pytest.mark.asyncio
+async def test_ipn_wrong_order_currency_rejects(
     client: AsyncClient, test_user: User, db_session: AsyncSession
 ):
     plan = await _create_plan(db_session)
@@ -372,13 +446,15 @@ async def test_ipn_wrong_currency_rejects(
         "notification_type": "ORDER_PAID",
         "order": {
             "order_status": "CAPTURED",
-            "order_currency": "USD",  # Wrong currency
-            "order_amount": "99000.00",
+            "order_currency": "USD",  # Wrong order currency
+            "order_amount": "99000",
             "order_invoice_number": "IQX_CURRENCY",
         },
         "transaction": {
             "transaction_id": "txn_cur",
             "transaction_status": "APPROVED",
+            "transaction_currency": "VND",
+            "transaction_amount": "99000",
         },
     }
 
@@ -389,6 +465,92 @@ async def test_ipn_wrong_currency_rejects(
     )
     assert resp.status_code == 200
     assert resp.json()["message"] == "ignored"
+
+
+@pytest.mark.asyncio
+async def test_ipn_wrong_transaction_currency_rejects(
+    client: AsyncClient, test_user: User, db_session: AsyncSession
+):
+    """Even if order currency is VND, mismatched transaction currency must reject."""
+    plan = await _create_plan(db_session)
+
+    order = PremiumPaymentOrder(
+        invoice_number="IQX_TXNCUR",
+        user_id=test_user.id,
+        plan_id=plan.id,
+        amount_vnd=99000,
+        currency="VND",
+        status=PaymentOrderStatus.PENDING,
+    )
+    db_session.add(order)
+    await db_session.commit()
+
+    ipn_body = {
+        "notification_type": "ORDER_PAID",
+        "order": {
+            "order_status": "CAPTURED",
+            "order_currency": "VND",
+            "order_amount": "99000",
+            "order_invoice_number": "IQX_TXNCUR",
+        },
+        "transaction": {
+            "transaction_id": "txn_txncur",
+            "transaction_status": "APPROVED",
+            "transaction_currency": "USD",  # Wrong transaction currency
+            "transaction_amount": "1",
+        },
+    }
+
+    resp = await client.post(
+        "/api/v1/premium/sepay/ipn",
+        json=ipn_body,
+        headers={"X-Secret-Key": "test-sepay-secret-key"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["message"] == "currency_mismatch"
+
+
+@pytest.mark.asyncio
+async def test_ipn_wrong_transaction_amount_rejects(
+    client: AsyncClient, test_user: User, db_session: AsyncSession
+):
+    """Order amount correct but transaction amount differs — must reject."""
+    plan = await _create_plan(db_session)
+
+    order = PremiumPaymentOrder(
+        invoice_number="IQX_TXNAMT",
+        user_id=test_user.id,
+        plan_id=plan.id,
+        amount_vnd=99000,
+        currency="VND",
+        status=PaymentOrderStatus.PENDING,
+    )
+    db_session.add(order)
+    await db_session.commit()
+
+    ipn_body = {
+        "notification_type": "ORDER_PAID",
+        "order": {
+            "order_status": "CAPTURED",
+            "order_currency": "VND",
+            "order_amount": "99000",  # Correct
+            "order_invoice_number": "IQX_TXNAMT",
+        },
+        "transaction": {
+            "transaction_id": "txn_txnamt",
+            "transaction_status": "APPROVED",
+            "transaction_currency": "VND",
+            "transaction_amount": "1",  # Wrong transaction amount
+        },
+    }
+
+    resp = await client.post(
+        "/api/v1/premium/sepay/ipn",
+        json=ipn_body,
+        headers={"X-Secret-Key": "test-sepay-secret-key"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["message"] == "amount_mismatch"
 
 
 # ══════════════════════════════════════════════════════
@@ -415,9 +577,7 @@ async def test_active_premium_stacks_time(
     db_session.add(sub)
     await db_session.commit()
 
-    original_end = sub.current_period_end
-    if original_end.tzinfo is None:
-        original_end = original_end.replace(tzinfo=UTC)
+    original_end = _make_aware(sub.current_period_end)
 
     # Create another order and process IPN
     order = PremiumPaymentOrder(
@@ -436,12 +596,14 @@ async def test_active_premium_stacks_time(
         "order": {
             "order_status": "CAPTURED",
             "order_currency": "VND",
-            "order_amount": "99000.00",
+            "order_amount": "99000",
             "order_invoice_number": "IQX_STACK001",
         },
         "transaction": {
             "transaction_id": "txn_stack001",
             "transaction_status": "APPROVED",
+            "transaction_currency": "VND",
+            "transaction_amount": "99000",
         },
     }
 
@@ -456,15 +618,10 @@ async def test_active_premium_stacks_time(
     # Verify stacking: new end should be ~60 days from now (original 30 + new 30)
     token = _user_token(test_user)
     sub_resp = await client.get("/api/v1/premium/me", headers=get_auth_headers(token))
-    new_end_str = sub_resp.json()["current_period_end"]
-    new_end = datetime.fromisoformat(new_end_str)
-    if new_end.tzinfo is None:
-        new_end = new_end.replace(tzinfo=UTC)
+    new_end = _make_aware(datetime.fromisoformat(sub_resp.json()["current_period_end"]))
 
     # Should be approximately original_end + 30 days
-    expected_end = original_end + timedelta(days=30)
-    if expected_end.tzinfo is None:
-        expected_end = expected_end.replace(tzinfo=UTC)
+    expected_end = _make_aware(original_end + timedelta(days=30))
     assert abs((new_end - expected_end).total_seconds()) < 5
 
 
@@ -513,9 +670,7 @@ async def test_admin_grant_stacks_time(
     db_session.add(sub)
     await db_session.commit()
 
-    original_end = sub.current_period_end
-    if original_end.tzinfo is None:
-        original_end = original_end.replace(tzinfo=UTC)
+    original_end = _make_aware(sub.current_period_end)
 
     # Admin grants another 30 days
     token = _user_token(admin_user)
@@ -529,13 +684,14 @@ async def test_admin_grant_stacks_time(
     # Verify stacking
     user_token = _user_token(test_user)
     sub_resp = await client.get("/api/v1/premium/me", headers=get_auth_headers(user_token))
-    new_end = datetime.fromisoformat(sub_resp.json()["current_period_end"])
-    if new_end.tzinfo is None:
-        new_end = new_end.replace(tzinfo=UTC)
-    expected_end = original_end + timedelta(days=30)
-    if expected_end.tzinfo is None:
-        expected_end = expected_end.replace(tzinfo=UTC)
+    new_end = _make_aware(datetime.fromisoformat(sub_resp.json()["current_period_end"]))
+    expected_end = _make_aware(original_end + timedelta(days=30))
     assert abs((new_end - expected_end).total_seconds()) < 5
+
+
+# ══════════════════════════════════════════════════════
+# User without premium
+# ══════════════════════════════════════════════════════
 
 
 @pytest.mark.asyncio

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +13,7 @@ from app.models.premium import (
     PremiumPaymentOrder,
     PremiumPlan,
     PremiumSubscription,
+    SubscriptionStatus,
 )
 
 
@@ -69,13 +71,6 @@ class PremiumSubscriptionRepository:
         )
         return result.scalar_one_or_none()
 
-    async def upsert(self, sub: PremiumSubscription) -> PremiumSubscription:
-        """Insert or update subscription (merge by user_id unique constraint)."""
-        merged = await self._session.merge(sub)
-        await self._session.flush()
-        await self._session.refresh(merged)
-        return merged
-
     async def create(self, sub: PremiumSubscription) -> PremiumSubscription:
         self._session.add(sub)
         await self._session.flush()
@@ -86,14 +81,14 @@ class PremiumSubscriptionRepository:
         self,
         sub: PremiumSubscription,
         plan_id: uuid.UUID,
-        period_start: object,
-        period_end: object,
-        status: object,
+        period_start: datetime,
+        period_end: datetime,
+        status: SubscriptionStatus,
     ) -> PremiumSubscription:
         sub.current_plan_id = plan_id
-        sub.current_period_start = period_start  # type: ignore[assignment]
-        sub.current_period_end = period_end  # type: ignore[assignment]
-        sub.status = status  # type: ignore[assignment]
+        sub.current_period_start = period_start
+        sub.current_period_end = period_end
+        sub.status = status
         await self._session.flush()
         await self._session.refresh(sub)
         return sub
@@ -129,31 +124,45 @@ class PremiumPaymentOrderRepository:
         await self._session.refresh(order)
         return order
 
-    async def mark_paid(
+    async def claim_pending_order(
         self,
-        order: PremiumPaymentOrder,
+        invoice_number: str,
         sepay_transaction_id: str,
         raw_ipn: str,
-        paid_at: object,
-    ) -> PremiumPaymentOrder:
-        order.status = PaymentOrderStatus.PAID
-        order.sepay_transaction_id = sepay_transaction_id
-        order.raw_ipn = raw_ipn
-        order.paid_at = paid_at  # type: ignore[assignment]
-        order.grant_type = "payment"
-        await self._session.flush()
-        await self._session.refresh(order)
-        return order
+        paid_at: datetime,
+    ) -> int:
+        """Atomically claim a PENDING order by setting it to PAID.
+
+        Uses a conditional UPDATE to prevent race conditions: only one
+        concurrent request can successfully transition PENDING -> PAID.
+
+        Returns the number of rows updated (0 or 1).
+        """
+        result = await self._session.execute(
+            update(PremiumPaymentOrder)
+            .where(
+                PremiumPaymentOrder.invoice_number == invoice_number,
+                PremiumPaymentOrder.status == PaymentOrderStatus.PENDING,
+            )
+            .values(
+                status=PaymentOrderStatus.PAID,
+                sepay_transaction_id=sepay_transaction_id,
+                raw_ipn=raw_ipn,
+                paid_at=paid_at,
+                grant_type="payment",
+            )
+        )
+        return int(result.rowcount)  # type: ignore[attr-defined]
 
     async def mark_admin_grant(
         self,
         order: PremiumPaymentOrder,
         admin_id: uuid.UUID,
         note: str | None,
-        paid_at: object,
+        paid_at: datetime,
     ) -> PremiumPaymentOrder:
         order.status = PaymentOrderStatus.PAID
-        order.paid_at = paid_at  # type: ignore[assignment]
+        order.paid_at = paid_at
         order.grant_type = "admin_grant"
         order.granted_by_user_id = admin_id
         order.grant_note = note

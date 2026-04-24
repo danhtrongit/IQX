@@ -1,14 +1,17 @@
 """add_refresh_tokens_table
 
 Revision ID: 488c85bb0b6a
-Revises: 
+Revises: 000000000001
 Create Date: 2026-04-24 20:58:46.565045
 
 This migration handles the transition from the legacy Prisma schema to the new
 SQLAlchemy models. It must deal with:
 - Legacy FKs from other tables pointing to users.id (TEXT -> UUID)
-- Old enum types (Role -> user_role)  
+- Old enum types (Role -> user_role)
 - Backfilling new required columns from existing data
+
+On a FRESH database (no legacy data), this migration is a no-op because the
+initial_schema migration already created the correct schema.
 """
 from typing import Sequence, Union
 
@@ -18,7 +21,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = '488c85bb0b6a'
-down_revision: Union[str, None] = None
+down_revision: Union[str, None] = '000000000001'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -42,16 +45,20 @@ def _drop_fk_if_exists(table: str, constraint: str) -> None:
     op.execute(f"ALTER TABLE {table} DROP CONSTRAINT IF EXISTS {constraint}")
 
 
-def _recreate_legacy_fk(table: str, constraint: str, column: str = "user_id") -> None:
-    """Recreate a legacy FK. The referencing column is still TEXT, users.id is now UUID."""
-    # We don't change legacy table column types — just point them back
-    op.execute(
-        f"ALTER TABLE {table} ADD CONSTRAINT {constraint} "
-        f"FOREIGN KEY ({column}) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE"
-    )
+def _is_fresh_database() -> bool:
+    """Detect whether this is a fresh DB (initial_schema already created correct schema)."""
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    columns = {c["name"] for c in inspector.get_columns("users")}
+    # Fresh DB has 'hashed_password'; legacy Prisma DB has 'password'
+    return "hashed_password" in columns
 
 
 def upgrade() -> None:
+    # ── Skip on fresh databases (schema already correct) ─────────
+    if _is_fresh_database():
+        return
+
     # ══════════════════════════════════════════════════════════════════════
     # Step 1: REFRESH_TOKENS — clear legacy data and rebuild schema
     # ══════════════════════════════════════════════════════════════════════

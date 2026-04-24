@@ -31,7 +31,8 @@ backend/
 │   │       └── endpoints/
 │   │           ├── health.py       # GET /api/v1/health
 │   │           ├── auth.py         # Register, Login, Refresh, Me
-│   │           └── users.py        # User CRUD (admin + self)
+│   │           ├── users.py        # User CRUD (admin + self)
+│   │           └── premium.py      # Premium plans, checkout, IPN
 │   ├── core/
 │   │   ├── config.py               # Pydantic-settings config
 │   │   ├── database.py             # Async engine & session
@@ -39,16 +40,21 @@ backend/
 │   │   ├── logging.py              # Logging setup
 │   │   └── security.py             # JWT & password hashing
 │   ├── models/
-│   │   └── user.py                 # User SQLAlchemy model
+│   │   ├── user.py                 # User SQLAlchemy model
+│   │   ├── refresh_token.py        # Refresh token model
+│   │   └── premium.py              # PremiumPlan, Subscription, PaymentOrder
 │   ├── schemas/
 │   │   ├── common.py               # Shared schemas
 │   │   ├── auth.py                 # Auth request/response
-│   │   └── user.py                 # User request/response
+│   │   ├── user.py                 # User request/response
+│   │   └── premium.py              # Premium schemas
 │   ├── services/
 │   │   ├── auth.py                 # Auth business logic
-│   │   └── user.py                 # User business logic
+│   │   ├── user.py                 # User business logic
+│   │   └── premium.py              # Premium & SePay logic
 │   ├── repositories/
-│   │   └── user.py                 # User data access layer
+│   │   ├── user.py                 # User data access layer
+│   │   └── premium.py              # Premium data access layer
 │   └── main.py                     # FastAPI app entry point
 ├── alembic/
 │   ├── env.py                      # Async Alembic config
@@ -58,7 +64,8 @@ backend/
 │   ├── conftest.py                 # Test fixtures
 │   ├── test_health.py
 │   ├── test_auth.py
-│   └── test_users.py
+│   ├── test_users.py
+│   └── test_premium.py
 ├── alembic.ini
 ├── pyproject.toml
 ├── .env.example
@@ -96,6 +103,15 @@ cp .env.example .env
 python -c "import secrets; print(secrets.token_urlsafe(64))"
 ```
 
+**Required environment variables for SePay integration:**
+
+| Variable | Description |
+|---|---|
+| `SEPAY_MERCHANT_ID` | Your SePay merchant ID (from SePay dashboard) |
+| `SEPAY_SECRET_KEY` | Your SePay secret key (for signature + IPN verification) |
+| `SEPAY_CHECKOUT_URL` | `https://pay-sandbox.sepay.vn/v1/checkout/init` (sandbox) or production URL |
+| `APP_PUBLIC_URL` | Your frontend URL (for success/error/cancel redirects) |
+
 ### 3. Database Setup
 
 Make sure PostgreSQL is running, then create the database:
@@ -108,10 +124,12 @@ CREATE DATABASE "IQX" OWNER "IQX";
 ### 4. Run Migrations
 
 ```bash
-# Generate initial migration
-uv run alembic revision --autogenerate -m "initial_user_model"
+# For a FRESH database (no existing data):
+uv run alembic upgrade head
 
-# Apply migrations
+# For a LEGACY database (existing Prisma tables):
+# First stamp the initial schema (it already exists), then run remaining migrations:
+uv run alembic stamp 000000000001
 uv run alembic upgrade head
 ```
 
@@ -153,6 +171,18 @@ The API will be available at:
 | PATCH | `/api/v1/users/{id}` | Update user | Admin |
 | DELETE | `/api/v1/users/{id}` | Soft-delete user | Admin |
 
+### Premium & Payments
+| Method | Path | Description | Auth |
+|---|---|---|---|
+| GET | `/api/v1/premium/plans` | List active premium plans | — |
+| GET | `/api/v1/premium/me` | Get my subscription status | Bearer |
+| POST | `/api/v1/premium/checkout` | Create SePay checkout form | Bearer |
+| POST | `/api/v1/premium/sepay/ipn` | SePay IPN webhook | X-Secret-Key |
+| GET | `/api/v1/premium/admin/plans` | List all plans (incl. inactive) | Admin |
+| POST | `/api/v1/premium/admin/plans` | Create premium plan | Admin |
+| PATCH | `/api/v1/premium/admin/plans/{id}` | Update premium plan | Admin |
+| POST | `/api/v1/premium/admin/users/{id}/grant` | Manually grant premium | Admin |
+
 ### Query Parameters (List Users)
 
 | Param | Type | Default | Description |
@@ -164,6 +194,37 @@ The API will be available at:
 | `status` | enum | — | Filter by status |
 | `sort_by` | string | created_at | Sort field |
 | `sort_order` | asc/desc | desc | Sort direction |
+
+## SePay Integration
+
+### How it Works
+
+1. **Checkout**: Frontend calls `POST /api/v1/premium/checkout` with a `plan_id`. The backend returns form fields (including HMAC-SHA256 signature) that the frontend submits directly to SePay via an HTML form POST.
+
+2. **Payment**: User completes payment on SePay's hosted checkout page.
+
+3. **IPN**: SePay sends a POST to `POST /api/v1/premium/sepay/ipn` with payment status. The backend:
+   - Validates `X-Secret-Key` header (constant-time comparison)
+   - Verifies `notification_type=ORDER_PAID`, `order_status=CAPTURED`, `transaction_status=APPROVED`
+   - Validates both order AND transaction currency (VND) and amounts
+   - Uses Decimal parsing for amounts (rejects fractional VND)
+   - Atomically claims the order (prevents race conditions on concurrent retries)
+   - Extends user's premium subscription
+
+4. **Success redirect**: The SePay success URL redirects the user back to the frontend. **Important**: The redirect does NOT activate premium — only the IPN webhook does. The frontend should poll `GET /api/v1/premium/me` to check activation status.
+
+### Subscription Stacking
+
+When a user purchases premium while already having active premium, the new duration is **added to the existing `current_period_end`** (not from `now`). This applies to both IPN-triggered and admin-granted premium.
+
+### SePay IPN Setup
+
+Configure your SePay dashboard to send IPN notifications to:
+```
+POST https://your-domain.com/api/v1/premium/sepay/ipn
+```
+
+Set the `X-Secret-Key` header in SePay's webhook configuration to match your `SEPAY_SECRET_KEY` environment variable.
 
 ## Development Commands
 
@@ -185,6 +246,9 @@ uv run ruff check app/ tests/
 
 # Format
 uv run ruff format app/ tests/
+
+# Type check
+uv run mypy app/ tests/
 
 # Generate migration
 uv run alembic revision --autogenerate -m "description"
@@ -216,6 +280,20 @@ The project follows a **layered architecture**:
 - **JWT dual-token** — Short-lived access token + long-lived refresh token with rotation
 - **Lazy engine init** — Database engine created on first use, not at import time
 - **Password requirements** — Minimum 8 chars, uppercase, lowercase, digit, special char
+- **Atomic IPN** — Conditional UPDATE prevents double-granting on concurrent SePay retries
+- **Decimal amounts** — VND amounts parsed with `Decimal`, fractional amounts rejected
+
+## Migration Strategy
+
+The migration chain supports both fresh and legacy databases:
+
+```
+000000000001  →  488c85bb0b6a  →  fb7a64f07299
+(initial)        (legacy→new)     (premium tables)
+```
+
+- **Fresh DB**: `000000000001` creates `users` + `refresh_tokens`; `488c85bb0b6a` detects fresh schema and skips.
+- **Legacy DB**: `000000000001` detects existing `users` table and skips; `488c85bb0b6a` performs the full Prisma→SQLAlchemy transition.
 
 ## Notes
 

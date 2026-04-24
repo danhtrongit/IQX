@@ -15,6 +15,7 @@ import json
 import logging
 import uuid
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal, InvalidOperation
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -47,6 +48,28 @@ def _ensure_aware(dt: datetime) -> datetime:
     if dt.tzinfo is None:
         return dt.replace(tzinfo=UTC)
     return dt
+
+
+def _parse_vnd_amount(raw: str | None) -> int | None:
+    """Parse a VND amount string to int using Decimal.
+
+    Rejects fractional amounts (VND has no subunits).
+    Returns None if the amount is invalid or has a fractional part
+    beyond .00.
+    """
+    if not raw:
+        return None
+    try:
+        d = Decimal(raw)
+    except InvalidOperation:
+        return None
+    # Reject negative or zero
+    if d <= 0:
+        return None
+    # Allow .00 but reject any other fractional part
+    if d != d.to_integral_value():
+        return None
+    return int(d)
 
 
 class PremiumService:
@@ -204,9 +227,15 @@ class PremiumService:
         - notification_type == ORDER_PAID
         - order.order_status == CAPTURED
         - transaction.transaction_status == APPROVED
-        - currency == VND
-        - amount matches local order
+        - order.order_currency == VND
+        - transaction.transaction_currency == VND
+        - order.order_amount matches local order
+        - transaction.transaction_amount matches local order
         - invoice_number matches local order
+
+        Idempotency is guaranteed by an atomic conditional UPDATE
+        (status = 'pending' -> 'paid'). Only the first request to
+        successfully claim the order will extend the subscription.
         """
         # Basic validation
         if payload.notification_type != "ORDER_PAID":
@@ -228,9 +257,14 @@ class PremiumService:
             logger.info("IPN: transaction_status=%s, not APPROVED", txn_data.transaction_status)
             return {"success": "true", "message": "ignored"}
 
+        # ── Currency validation (both order and transaction) ─────
         if order_data.order_currency != "VND":
-            logger.warning("IPN: unexpected currency=%s", order_data.order_currency)
+            logger.warning("IPN: unexpected order_currency=%s", order_data.order_currency)
             return {"success": "true", "message": "ignored"}
+
+        if txn_data.transaction_currency and txn_data.transaction_currency != "VND":
+            logger.warning("IPN: unexpected transaction_currency=%s", txn_data.transaction_currency)
+            return {"success": "true", "message": "currency_mismatch"}
 
         invoice_number = order_data.order_invoice_number
         sepay_txn_id = txn_data.transaction_id
@@ -252,40 +286,59 @@ class PremiumService:
             logger.warning("IPN: invoice_number=%s not found in local DB", invoice_number)
             return {"success": "true", "message": "order_not_found"}
 
-        # Idempotency: already paid
+        # Idempotency: already paid (covers race after atomic claim)
         if local_order.status == PaymentOrderStatus.PAID:
             logger.info("IPN: order %s already paid", invoice_number)
             return {"success": "true", "message": "already_processed"}
 
-        # Amount verification
-        try:
-            # SePay sends amount as string like "50000.00" or "50000"
-            ipn_amount = int(float(order_data.order_amount or "0"))
-        except (ValueError, TypeError):
-            logger.warning("IPN: invalid amount=%s", order_data.order_amount)
+        # ── Amount verification (Decimal, no float) ──────────────
+        order_amount = _parse_vnd_amount(order_data.order_amount)
+        if order_amount is None:
+            logger.warning("IPN: invalid order_amount=%s", order_data.order_amount)
             return {"success": "true", "message": "amount_invalid"}
 
-        if ipn_amount != local_order.amount_vnd:
+        if order_amount != local_order.amount_vnd:
             logger.warning(
-                "IPN: amount mismatch invoice=%s, expected=%d, got=%d",
+                "IPN: order_amount mismatch invoice=%s, expected=%d, got=%d",
                 invoice_number,
                 local_order.amount_vnd,
-                ipn_amount,
+                order_amount,
             )
             return {"success": "true", "message": "amount_mismatch"}
 
-        # All checks passed — mark as paid
+        # ── Transaction amount verification ──────────────────────
+        if txn_data.transaction_amount:
+            txn_amount = _parse_vnd_amount(txn_data.transaction_amount)
+            if txn_amount is None:
+                logger.warning("IPN: invalid transaction_amount=%s", txn_data.transaction_amount)
+                return {"success": "true", "message": "amount_invalid"}
+            if txn_amount != local_order.amount_vnd:
+                logger.warning(
+                    "IPN: transaction_amount mismatch invoice=%s, expected=%d, got=%d",
+                    invoice_number,
+                    local_order.amount_vnd,
+                    txn_amount,
+                )
+                return {"success": "true", "message": "amount_mismatch"}
+
+        # ── Atomic claim: PENDING -> PAID ────────────────────────
+        # Only one concurrent request can successfully claim.
         raw_ipn_json = json.dumps(payload.model_dump(), default=str)
         now = datetime.now(UTC)
 
-        await self._order_repo.mark_paid(
-            order=local_order,
+        rows_updated = await self._order_repo.claim_pending_order(
+            invoice_number=invoice_number,
             sepay_transaction_id=sepay_txn_id or f"unknown_{invoice_number}",
             raw_ipn=raw_ipn_json,
             paid_at=now,
         )
 
-        # Extend subscription
+        if rows_updated == 0:
+            # Another request already claimed this order
+            logger.info("IPN: order %s already claimed by concurrent request", invoice_number)
+            return {"success": "true", "message": "already_processed"}
+
+        # Extend subscription (only the winner of the atomic claim reaches here)
         plan = await self._plan_repo.get_by_id(local_order.plan_id)
         if plan:
             await self._extend_subscription(
