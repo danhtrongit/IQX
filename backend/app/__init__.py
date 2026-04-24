@@ -1,1 +1,1 @@
-# app package
+"""IQX Backend Application Package."""

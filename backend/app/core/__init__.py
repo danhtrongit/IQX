@@ -1,1 +1,1 @@
-# core package
+"""Core package — application configuration and shared utilities."""

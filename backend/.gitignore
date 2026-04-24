@@ -1,3 +1,8 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -7,11 +12,6 @@ __pycache__/
 dist/
 build/
 *.egg
-
-# Virtual environments
-.venv/
-venv/
-env/
 
 # Environment variables
 .env
@@ -31,6 +31,3 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
-
-# uv
-uv.lock
