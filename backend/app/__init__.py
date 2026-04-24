@@ -1,1 +1,0 @@
-"""IQX Backend Application Package."""
