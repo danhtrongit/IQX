@@ -49,6 +49,13 @@ class Settings(BaseSettings):
     # ── Logging ──────────────────────────────────────
     LOG_LEVEL: str = "INFO"
 
+    # ── Market Data ──────────────────────────────────
+    MARKET_DATA_TIMEOUT_SECONDS: float = 15.0
+    MARKET_DATA_CACHE_ENABLED: bool = True
+    MARKET_DATA_CACHE_TTL_REFERENCE_SECONDS: int = 3600  # 1 hour
+    MARKET_DATA_CACHE_TTL_REALTIME_SECONDS: int = 10
+    MARKET_DATA_CACHE_TTL_HISTORY_SECONDS: int = 300  # 5 minutes
+
     @property
     def cors_origins_list(self) -> list[str]:
         """Parse CORS_ORIGINS as a comma-separated string into a list."""

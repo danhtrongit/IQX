@@ -301,3 +301,50 @@ The migration chain supports both fresh and legacy databases:
 - `.env` is git-ignored and must not be committed
 - Tests use an in-memory SQLite database for isolation
 - Production deployments should use environment variables (not `.env` files)
+
+## Market Data API
+
+Vendor-independent market data API. No runtime dependency on `vnstock`/`vnstock_data`/`vnstock_news` — all data is fetched directly from upstream sources (VCI, VND, MBK, Fmarket, SPL, RSS).
+
+### Endpoints
+
+| Group | Path | Source | Status |
+|---|---|---|---|
+| Reference | `GET /api/v1/market-data/reference/symbols` | VCI / VND | ✅ |
+| Reference | `GET /api/v1/market-data/reference/industries` | VCI | ✅ |
+| Reference | `GET /api/v1/market-data/reference/indices` | Static | ✅ |
+| Reference | `GET /api/v1/market-data/reference/groups/{group}/symbols` | VCI | ✅ |
+| Quotes | `GET /api/v1/market-data/quotes/{symbol}/ohlcv` | VND / VCI | ✅ |
+| Quotes | `GET /api/v1/market-data/quotes/{symbol}/intraday` | VCI | ✅ |
+| Quotes | `GET /api/v1/market-data/quotes/{symbol}/price-depth` | VCI | ✅ |
+| Trading | `POST /api/v1/market-data/trading/price-board` | VCI | ✅ |
+| Trading | `GET /api/v1/market-data/trading/{symbol}/foreign-trade` | VCI | ✅ |
+| Trading | `GET /api/v1/market-data/trading/{symbol}/insider-deals` | VCI | ✅ |
+| Company | `GET /api/v1/market-data/company/{symbol}/overview` | KBS | ✅ |
+| Company | `GET /api/v1/market-data/company/{symbol}/shareholders` | KBS | ✅ |
+| Company | `GET /api/v1/market-data/company/{symbol}/officers` | KBS | ✅ |
+| Company | `GET /api/v1/market-data/company/{symbol}/subsidiaries` | KBS | ✅ |
+| Company | `GET /api/v1/market-data/company/{symbol}/news` | KBS | ✅ |
+| Fundamentals | `GET /api/v1/market-data/fundamentals/{symbol}/{report}` | VCI | ✅ |
+| Insights | `GET /api/v1/market-data/insights/ranking/{kind}` | VND | ✅ |
+| Events | `GET /api/v1/market-data/events/calendar` | VCI | ✅ |
+| Macro | `GET /api/v1/market-data/macro/economy/{indicator}` | MBK | ✅ |
+| Commodities | `GET /api/v1/market-data/macro/commodities` | SPL | ✅ |
+| Funds | `GET /api/v1/market-data/funds` | Fmarket | ✅ |
+| News | `GET /api/v1/market-data/news/latest` | RSS | ✅ |
+
+> **Company data** is sourced from KBS (KB Securities). The `/company/{symbol}/events` endpoint has been removed because neither KBS nor VCI can reliably provide company events data.
+
+### Running Live Tests
+
+```bash
+# Unit tests (mocked, no network)
+uv run pytest tests/test_market_data.py -q
+
+# Live smoke tests (hits real upstream APIs)
+RUN_MARKET_DATA_LIVE_TESTS=1 uv run pytest tests/test_market_data_live.py -v
+```
+
+### Source Map
+
+See [`docs/market-data-source-map.md`](docs/market-data-source-map.md) for the full endpoint-to-upstream-URL mapping.
