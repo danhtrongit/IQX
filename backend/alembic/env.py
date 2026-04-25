@@ -23,6 +23,10 @@ from app.core.database import Base  # noqa: E402
 from app.models.user import User  # noqa: F401, E402
 from app.models.refresh_token import RefreshToken  # noqa: F401, E402
 from app.models.premium import PremiumPlan, PremiumSubscription, PremiumPaymentOrder  # noqa: F401, E402
+from app.models.virtual_trading import (  # noqa: F401, E402
+    VirtualTradingConfig, VirtualTradingAccount, VirtualPosition,
+    VirtualOrder, VirtualTrade, VirtualSettlement, VirtualCashLedger,
+)
 
 # Alembic Config object
 config = context.config

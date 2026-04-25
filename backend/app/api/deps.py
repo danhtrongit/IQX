@@ -47,7 +47,22 @@ async def get_current_admin(
     return current_user
 
 
+async def get_premium_active_user(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> User:
+    """Ensure the current user has an active premium subscription."""
+    from app.services.premium import PremiumService
+
+    service = PremiumService(db)
+    sub = await service.get_user_subscription(current_user.id)
+    if not sub.is_premium:
+        raise ForbiddenError("Active premium subscription required")
+    return current_user
+
+
 # Type aliases for cleaner endpoint signatures
 CurrentUser = Annotated[User, Depends(get_current_active_user)]
 AdminUser = Annotated[User, Depends(get_current_admin)]
+PremiumUser = Annotated[User, Depends(get_premium_active_user)]
 DBSession = Annotated[AsyncSession, Depends(get_db)]

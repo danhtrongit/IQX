@@ -1,0 +1,1 @@
+"""Virtual Trading service package."""

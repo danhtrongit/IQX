@@ -76,3 +76,22 @@ class BadRequestError(AppException):
             detail=detail,
             code="BAD_REQUEST",
         )
+
+
+class UnprocessableEntityError(AppException):
+    def __init__(self, detail: str = "Unprocessable entity") -> None:
+        super().__init__(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=detail,
+            code="UNPROCESSABLE_ENTITY",
+        )
+
+
+class ServiceUnavailableError(AppException):
+    def __init__(self, detail: str = "Service temporarily unavailable") -> None:
+        super().__init__(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=detail,
+            code="SERVICE_UNAVAILABLE",
+        )
+
