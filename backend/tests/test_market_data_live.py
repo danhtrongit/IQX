@@ -260,17 +260,21 @@ async def test_live_company_overview(client: AsyncClient):
     assert isinstance(data, dict) and len(data) > 0
     assert data.get("symbol") == "VCB"
     assert data.get("exchange") == "HOSE"
-    # charter_capital must be in VND (>1B for any listed company)
+    # charter_capital (KLCPNY) must be in VND (>1T for VCB)
     cc = data.get("charter_capital", 0)
-    assert cc > 1_000_000_000, f"charter_capital must be VND (got {cc})"
-    # listed_volume must be in shares (>1M for any large-cap)
-    lv = data.get("listed_volume", 0)
-    assert lv > 1_000_000, f"listed_volume must be shares (got {lv})"
-    # outstanding_shares should be close to listed_volume
+    assert cc > 1_000_000_000_000, f"charter_capital must be VND (got {cc})"
+    # outstanding_shares (KLCPLH) must be actual share count (>1B for VCB)
     os_shares = data.get("outstanding_shares", 0)
-    assert os_shares > 1_000_000, f"outstanding_shares must be >1M (got {os_shares})"
+    assert os_shares > 1_000_000_000, f"outstanding_shares must be >1B (got {os_shares})"
     # par_value is typically 10000 VND
-    assert data.get("par_value") in (10000, 100000, None)
+    pv = data.get("par_value")
+    assert pv in (10000, 100000, None)
+    # Invariant: charter_capital == outstanding_shares * par_value
+    if pv:
+        assert cc == os_shares * pv, f"invariant failed: {cc} != {os_shares} * {pv}"
+    # CC/VL/SFV rounded fields should NOT be in output
+    assert "listed_volume" not in data
+    assert "free_float_vnd" not in data
 
 
 @pytest.mark.asyncio

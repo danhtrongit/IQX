@@ -34,18 +34,26 @@ _KBS_HEADERS: dict[str, str] = {
 # ── Exchange code map (from const.py _EXCHANGE_CODE_MAP) ──────────
 _EXCHANGE_CODE_MAP = {"HOSE": "HOSE", "HSX": "HOSE", "HNX": "HNX", "UPCOM": "UPCOM", "XHNF": "HNX"}
 
-# ── Profile field map (from const.py _COMPANY_PROFILE_MAP) ───────
+# ── Profile field map ─────────────────────────────────
+# Verified semantics (VCB/FPT/VNM cross-checked):
+#   KLCPNY = charter capital in VND (exact, = KLCPLH * FV)
+#   KLCPLH = outstanding shares (exact count)
+#   FV     = par value per share (VND)
+#   LP     = listing price (VND)
+#   CC     = charter capital in BILLIONS (rounded, imprecise) — DROPPED
+#   VL     = listed volume in MILLIONS of shares (rounded) — DROPPED
+#   SFV    = duplicate of FV — DROPPED
 _PROFILE_MAP: dict[str, str] = {
     "SM": "business_model",
     "SB": "symbol",
     "FD": "founded_date",
-    "CC": "charter_capital_raw",  # in millions VND, converted later
     "HM": "number_of_employees",
     "LD": "listing_date",
-    "FV": "par_value_raw",  # in VND (actual)
+    "FV": "par_value",
     "EX": "exchange",
-    "LP": "listing_price_raw",  # in VND (actual)
-    "VL": "listed_volume_raw",  # in millions shares, converted later
+    "LP": "listing_price",
+    "KLCPNY": "charter_capital",
+    "KLCPLH": "outstanding_shares",
     "CTP": "ceo_name",
     "CTPP": "ceo_position",
     "IS": "inspector_name",
@@ -62,14 +70,8 @@ _PROFILE_MAP: dict[str, str] = {
     "URL": "website",
     "BRANCH": "branches",
     "HS": "history",
-    "KLCPNY": "free_float_vnd",  # actual VND (not millions)
-    "SFV": "free_float_shares",  # actual share count
-    "KLCPLH": "outstanding_shares",  # actual share count
     "AD": "as_of_date",
 }
-
-# Fields from KBS that are in millions and need to be converted
-_MILLION_FIELDS = {"charter_capital_raw", "listed_volume_raw"}
 
 # ── Sub-entity maps (from const.py) ─────────────────────────────
 _SHAREHOLDERS_MAP: dict[str, str] = {
@@ -133,11 +135,12 @@ async def fetch_company_profile(symbol: str) -> tuple[dict[str, Any], str]:
 def normalize_overview(raw: dict[str, Any]) -> dict[str, Any]:
     """Normalize raw KBS profile into snake_case overview dict.
 
-    KBS returns CC/VL in millions.  We convert them to actual units:
-    - charter_capital → VND (CC × 1_000_000)
-    - listed_volume → shares (VL × 1_000_000)
-    - par_value, listing_price → VND (already actual)
-    - outstanding_shares (KLCPLH) → already actual share count
+    Key fields and their units:
+    - charter_capital  (KLCPNY) → VND, exact
+    - outstanding_shares (KLCPLH) → share count, exact
+    - par_value (FV) → VND per share
+    - listing_price (LP) → VND
+    Invariant: charter_capital == outstanding_shares * par_value
     """
     if not raw:
         return {}
@@ -153,21 +156,6 @@ def normalize_overview(raw: dict[str, Any]) -> dict[str, Any]:
     # Normalize exchange code
     if "exchange" in result:
         result["exchange"] = _EXCHANGE_CODE_MAP.get(str(result["exchange"]), result["exchange"])
-
-    # Convert million-unit fields to actual values and rename to final keys
-    for raw_key, final_key, multiplier in [
-        ("charter_capital_raw", "charter_capital", 1_000_000),
-        ("listed_volume_raw", "listed_volume", 1_000_000),
-    ]:
-        if raw_key in result:
-            with contextlib.suppress(ValueError, TypeError):
-                result[final_key] = int(float(result[raw_key]) * multiplier)
-            del result[raw_key]
-
-    # par_value and listing_price: rename from _raw to final (already actual units)
-    for raw_key, final_key in [("par_value_raw", "par_value"), ("listing_price_raw", "listing_price")]:
-        if raw_key in result:
-            result[final_key] = result.pop(raw_key)
 
     # Employee count from LaborStructure
     labor = raw.get("LaborStructure")

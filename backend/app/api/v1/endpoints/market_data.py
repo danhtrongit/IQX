@@ -29,7 +29,7 @@ _VALID_INTERVALS = {"1m", "5m", "15m", "30m", "1H", "1D", "1W", "1M"}
 # ══════════════════════════════════════════════════════
 
 
-@router.get("/reference/symbols", response_model=MarketDataResponse)
+@router.get("/reference/symbols", tags=["Market Data: Reference"], response_model=MarketDataResponse)
 async def list_symbols(
     exchange: Annotated[str | None, Query(description="Filter by exchange: HOSE, HNX, UPCOM")] = None,
     asset_type: Annotated[str | None, Query(description="Filter by type: stock, etf, etc.")] = None,
@@ -60,7 +60,7 @@ async def list_symbols(
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@router.get("/reference/industries", response_model=MarketDataResponse)
+@router.get("/reference/industries", tags=["Market Data: Reference"], response_model=MarketDataResponse)
 async def list_industries(
     source: Annotated[str | None, Query(description="Force source: VCI")] = None,
 ) -> MarketDataResponse:
@@ -75,7 +75,7 @@ async def list_industries(
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@router.get("/reference/indices", response_model=MarketDataResponse)
+@router.get("/reference/indices", tags=["Market Data: Reference"], response_model=MarketDataResponse)
 async def list_indices(
     group: Annotated[str | None, Query(description="Filter group: e.g. HOSE, HNX")] = None,
 ) -> MarketDataResponse:
@@ -109,7 +109,7 @@ async def list_indices(
     )
 
 
-@router.get("/reference/groups/{group}/symbols", response_model=MarketDataResponse)
+@router.get("/reference/groups/{group}/symbols", tags=["Market Data: Reference"], response_model=MarketDataResponse)
 async def list_group_symbols(
     group: str,
     source: Annotated[str | None, Query(description="Force source: VCI")] = None,
@@ -135,7 +135,7 @@ async def list_group_symbols(
 # ══════════════════════════════════════════════════════
 
 
-@router.get("/quotes/{symbol}/ohlcv", response_model=MarketDataResponse)
+@router.get("/quotes/{symbol}/ohlcv", tags=["Market Data: Quotes"], response_model=MarketDataResponse)
 async def get_ohlcv(
     symbol: str,
     start: Annotated[str | None, Query(description="Start date YYYY-MM-DD")] = None,
@@ -200,7 +200,7 @@ async def get_ohlcv(
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@router.get("/quotes/{symbol}/intraday", response_model=MarketDataResponse)
+@router.get("/quotes/{symbol}/intraday", tags=["Market Data: Quotes"], response_model=MarketDataResponse)
 async def get_intraday(
     symbol: str,
     page_size: Annotated[int, Query(ge=1, le=30000)] = 100,
@@ -220,7 +220,7 @@ async def get_intraday(
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@router.get("/quotes/{symbol}/price-depth", response_model=MarketDataResponse)
+@router.get("/quotes/{symbol}/price-depth", tags=["Market Data: Quotes"], response_model=MarketDataResponse)
 async def get_price_depth(
     symbol: str,
     source: Annotated[str | None, Query()] = None,
@@ -239,7 +239,7 @@ async def get_price_depth(
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@router.post("/trading/price-board", response_model=MarketDataResponse)
+@router.post("/trading/price-board", tags=["Market Data: Trading"], response_model=MarketDataResponse)
 async def get_price_board(
     body: dict[str, Any],
 ) -> MarketDataResponse:
@@ -268,7 +268,7 @@ async def get_price_board(
 # ══════════════════════════════════════════════════════
 
 
-@router.get("/insights/ranking/{kind}", response_model=MarketDataResponse)
+@router.get("/insights/ranking/{kind}", tags=["Market Data: Insights"], response_model=MarketDataResponse)
 async def get_ranking(
     kind: str,
     index: Annotated[str, Query(description="Market index: VNINDEX, HNX, VN30")] = "VNINDEX",
@@ -305,7 +305,7 @@ async def get_ranking(
 # ══════════════════════════════════════════════════════
 
 
-@router.get("/company/{symbol}/overview", response_model=MarketDataResponse)
+@router.get("/company/{symbol}/overview", tags=["Market Data: Company"], response_model=MarketDataResponse)
 async def get_company_overview(symbol: str) -> MarketDataResponse:
     """Get company overview information from KBS."""
     symbol = symbol.upper()
@@ -322,7 +322,7 @@ async def get_company_overview(symbol: str) -> MarketDataResponse:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@router.get("/company/{symbol}/shareholders", response_model=MarketDataResponse)
+@router.get("/company/{symbol}/shareholders", tags=["Market Data: Company"], response_model=MarketDataResponse)
 async def get_shareholders(symbol: str) -> MarketDataResponse:
     """Get company shareholders from KBS."""
     symbol = symbol.upper()
@@ -339,7 +339,7 @@ async def get_shareholders(symbol: str) -> MarketDataResponse:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@router.get("/company/{symbol}/officers", response_model=MarketDataResponse)
+@router.get("/company/{symbol}/officers", tags=["Market Data: Company"], response_model=MarketDataResponse)
 async def get_officers(symbol: str) -> MarketDataResponse:
     """Get company officers/managers from KBS."""
     symbol = symbol.upper()
@@ -356,7 +356,7 @@ async def get_officers(symbol: str) -> MarketDataResponse:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@router.get("/company/{symbol}/subsidiaries", response_model=MarketDataResponse)
+@router.get("/company/{symbol}/subsidiaries", tags=["Market Data: Company"], response_model=MarketDataResponse)
 async def get_subsidiaries(symbol: str) -> MarketDataResponse:
     """Get company subsidiaries from KBS."""
     symbol = symbol.upper()
@@ -373,7 +373,7 @@ async def get_subsidiaries(symbol: str) -> MarketDataResponse:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@router.get("/company/{symbol}/news", response_model=MarketDataResponse)
+@router.get("/company/{symbol}/news", tags=["Market Data: Company"], response_model=MarketDataResponse)
 async def get_company_news(symbol: str) -> MarketDataResponse:
     """Get company-related news from KBS."""
     symbol = symbol.upper()
@@ -396,7 +396,9 @@ async def get_company_news(symbol: str) -> MarketDataResponse:
 _VALID_REPORT_TYPES = {"balance_sheet", "income_statement", "cash_flow", "ratio"}
 
 
-@router.get("/fundamentals/{symbol}/{report_type}", response_model=MarketDataResponse)
+@router.get(
+    "/fundamentals/{symbol}/{report_type}", tags=["Market Data: Fundamentals"], response_model=MarketDataResponse
+)
 async def get_financial_report(
     symbol: str,
     report_type: str,
@@ -425,7 +427,7 @@ async def get_financial_report(
 # ══════════════════════════════════════════════════════
 
 
-@router.get("/trading/{symbol}/foreign-trade", response_model=MarketDataResponse)
+@router.get("/trading/{symbol}/foreign-trade", tags=["Market Data: Trading"], response_model=MarketDataResponse)
 async def get_foreign_trade(
     symbol: str,
     start: Annotated[str | None, Query(description="Start date YYYY-MM-DD")] = None,
@@ -448,7 +450,7 @@ async def get_foreign_trade(
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@router.get("/trading/{symbol}/insider-deals", response_model=MarketDataResponse)
+@router.get("/trading/{symbol}/insider-deals", tags=["Market Data: Trading"], response_model=MarketDataResponse)
 async def get_insider_deals(
     symbol: str,
     limit: Annotated[int, Query(ge=1, le=1000)] = 100,
@@ -472,7 +474,7 @@ async def get_insider_deals(
 # ══════════════════════════════════════════════════════
 
 
-@router.get("/events/calendar", response_model=MarketDataResponse)
+@router.get("/events/calendar", tags=["Market Data: Events"], response_model=MarketDataResponse)
 async def get_events_calendar(
     start: Annotated[str, Query(description="Start date YYYY-MM-DD")],
     end: Annotated[str | None, Query(description="End date YYYY-MM-DD")] = None,
@@ -499,7 +501,7 @@ async def get_events_calendar(
 # ══════════════════════════════════════════════════════
 
 
-@router.get("/macro/economy/{indicator}", response_model=MarketDataResponse)
+@router.get("/macro/economy/{indicator}", tags=["Market Data: Macro"], response_model=MarketDataResponse)
 async def get_macro_data(
     indicator: str,
     start_year: Annotated[int, Query(ge=2000, le=2030)] = 2015,
@@ -529,7 +531,7 @@ async def get_macro_data(
 # ══════════════════════════════════════════════════════
 
 
-@router.get("/funds", response_model=MarketDataResponse)
+@router.get("/funds", tags=["Market Data: Funds"], response_model=MarketDataResponse)
 async def list_funds(
     fund_type: Annotated[
         str, Query(description="Fund type: '', BALANCED, BOND, STOCK")
@@ -546,7 +548,7 @@ async def list_funds(
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@router.get("/funds/{fund_id}", response_model=MarketDataResponse)
+@router.get("/funds/{fund_id}", tags=["Market Data: Funds"], response_model=MarketDataResponse)
 async def get_fund_details(
     fund_id: int,
 ) -> MarketDataResponse:
@@ -564,7 +566,7 @@ async def get_fund_details(
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@router.get("/funds/{fund_id}/nav", response_model=MarketDataResponse)
+@router.get("/funds/{fund_id}/nav", tags=["Market Data: Funds"], response_model=MarketDataResponse)
 async def get_fund_nav(
     fund_id: int,
 ) -> MarketDataResponse:
@@ -587,7 +589,7 @@ async def get_fund_nav(
 # ══════════════════════════════════════════════════════
 
 
-@router.get("/macro/commodities", response_model=MarketDataResponse)
+@router.get("/macro/commodities", tags=["Market Data: Macro"], response_model=MarketDataResponse)
 async def list_commodities() -> MarketDataResponse:
     """List all available commodity codes."""
     from app.services.market_data.schemas import MarketDataMeta
@@ -604,7 +606,7 @@ async def list_commodities() -> MarketDataResponse:
     )
 
 
-@router.get("/macro/commodities/{code}", response_model=MarketDataResponse)
+@router.get("/macro/commodities/{code}", tags=["Market Data: Macro"], response_model=MarketDataResponse)
 async def get_commodity_price(
     code: str,
     start: Annotated[str | None, Query(description="Start date YYYY-MM-DD")] = None,
@@ -634,7 +636,7 @@ async def get_commodity_price(
 # ══════════════════════════════════════════════════════
 
 
-@router.get("/news/latest", response_model=MarketDataResponse)
+@router.get("/news/latest", tags=["Market Data: News"], response_model=MarketDataResponse)
 async def get_latest_news(
     sites: Annotated[
         str | None,
@@ -654,7 +656,7 @@ async def get_latest_news(
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@router.get("/news/sources", response_model=MarketDataResponse)
+@router.get("/news/sources", tags=["Market Data: News"], response_model=MarketDataResponse)
 async def list_news_sources() -> MarketDataResponse:
     """List available news sources and their RSS feed URLs."""
     from app.services.market_data.schemas import MarketDataMeta

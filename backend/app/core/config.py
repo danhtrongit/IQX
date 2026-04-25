@@ -39,6 +39,11 @@ class Settings(BaseSettings):
 
     # ── CORS ─────────────────────────────────────────
     CORS_ORIGINS: str = "http://localhost:3000"
+    CORS_METHODS: str = "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+    CORS_HEADERS: str = "Authorization,Content-Type,Accept"
+
+    # ── API Docs ─────────────────────────────────────
+    ENABLE_API_DOCS: bool | None = None  # None = auto (enabled in dev, disabled in prod)
 
     # ── SePay Payment Gateway ────────────────────────
     SEPAY_MERCHANT_ID: str = ""
@@ -55,6 +60,12 @@ class Settings(BaseSettings):
     MARKET_DATA_CACHE_TTL_REFERENCE_SECONDS: int = 3600  # 1 hour
     MARKET_DATA_CACHE_TTL_REALTIME_SECONDS: int = 10
     MARKET_DATA_CACHE_TTL_HISTORY_SECONDS: int = 300  # 5 minutes
+    MARKET_DATA_CACHE_MAX_SIZE: int = 1000
+
+    # ── Rate Limiting ────────────────────────────────
+    RATE_LIMIT_DEFAULT: str = "60/minute"
+    RATE_LIMIT_AUTH: str = "10/minute"
+    RATE_LIMIT_MARKET_DATA: str = "120/minute"
 
     @property
     def cors_origins_list(self) -> list[str]:
@@ -62,8 +73,23 @@ class Settings(BaseSettings):
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
 
     @property
+    def cors_methods_list(self) -> list[str]:
+        return [m.strip() for m in self.CORS_METHODS.split(",") if m.strip()]
+
+    @property
+    def cors_headers_list(self) -> list[str]:
+        return [h.strip() for h in self.CORS_HEADERS.split(",") if h.strip()]
+
+    @property
     def is_production(self) -> bool:
         return self.APP_ENV == "production"
+
+    @property
+    def api_docs_enabled(self) -> bool:
+        """Whether to expose /docs, /redoc, /openapi.json."""
+        if self.ENABLE_API_DOCS is not None:
+            return self.ENABLE_API_DOCS
+        return not self.is_production
 
 
 @lru_cache

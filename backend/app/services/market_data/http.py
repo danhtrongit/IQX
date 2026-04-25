@@ -5,6 +5,7 @@ Provides a reusable httpx.AsyncClient with:
 - Exponential backoff retry logic
 - Source-specific headers matching vnstock's DEFAULT_HEADERS + HEADERS_MAPPING_SOURCE
 - Support for form-encoded POST (data=) and JSON POST (json=)
+- Lifespan-managed shared client (no per-request client creation)
 """
 
 from __future__ import annotations
@@ -76,6 +77,55 @@ _DEFAULT_TIMEOUT = 15.0
 _MAX_RETRIES = 3
 _BACKOFF_BASE = 0.5
 
+# ── Shared client management ──────────────────────────
+_client: httpx.AsyncClient | None = None
+_client_loop_id: int | None = None
+
+
+def _get_client() -> httpx.AsyncClient:
+    """Get or create the shared AsyncClient (lazy init).
+
+    Creates a new client if the existing one is closed, or if the event
+    loop has changed (which happens between pytest-asyncio test functions).
+    """
+    global _client, _client_loop_id  # noqa: PLW0603
+    import asyncio
+
+    try:
+        current_loop_id = id(asyncio.get_running_loop())
+    except RuntimeError:
+        current_loop_id = None
+
+    # Recreate if client belongs to a different (dead) event loop
+    if _client is not None and _client_loop_id != current_loop_id:
+        _client = None
+
+    if _client is not None and not _client.is_closed:
+        return _client
+
+    _client = httpx.AsyncClient(
+        timeout=_DEFAULT_TIMEOUT,
+        limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
+        follow_redirects=True,
+    )
+    _client_loop_id = current_loop_id
+    return _client
+
+
+async def startup() -> None:
+    """Initialize the shared HTTP client. Call from app lifespan."""
+    _get_client()
+    logger.info("Market data HTTP client initialized")
+
+
+async def shutdown() -> None:
+    """Close the shared HTTP client. Call from app lifespan."""
+    global _client  # noqa: PLW0603
+    if _client and not _client.is_closed:
+        await _client.aclose()
+        _client = None
+    logger.info("Market data HTTP client closed")
+
 
 def get_headers(source: str, random_agent: bool = True) -> dict[str, str]:
     """Build browser-like headers for a given data source.
@@ -104,6 +154,9 @@ async def fetch_json(
 ) -> Any:
     """Fetch JSON from an upstream API with retries and exponential backoff.
 
+    Uses the shared module-level AsyncClient instead of creating a new
+    client per request.
+
     Args:
         json_body: Send as JSON (Content-Type: application/json)
         form_data: Send as raw form-encoded body (Content-Type already in headers)
@@ -114,36 +167,39 @@ async def fetch_json(
     if headers is None:
         headers = get_headers(source)
 
+    client = _get_client()
     last_exc: Exception | None = None
 
     for attempt in range(1, max_retries + 1):
         try:
-            async with httpx.AsyncClient(timeout=timeout) as client:
-                if method.upper() == "POST":
-                    if form_data is not None:
-                        # Form-encoded body (e.g. MBK macro)
-                        resp = await client.post(
-                            url,
-                            headers=headers,
-                            params=params,
-                            content=form_data.encode("utf-8"),
-                        )
-                    else:
-                        resp = await client.post(
-                            url,
-                            headers=headers,
-                            params=params,
-                            json=json_body,
-                        )
-                else:
-                    resp = await client.get(
+            if method.upper() == "POST":
+                if form_data is not None:
+                    # Form-encoded body (e.g. MBK macro)
+                    resp = await client.post(
                         url,
                         headers=headers,
                         params=params,
+                        content=form_data.encode("utf-8"),
+                        timeout=timeout,
                     )
+                else:
+                    resp = await client.post(
+                        url,
+                        headers=headers,
+                        params=params,
+                        json=json_body,
+                        timeout=timeout,
+                    )
+            else:
+                resp = await client.get(
+                    url,
+                    headers=headers,
+                    params=params,
+                    timeout=timeout,
+                )
 
-                resp.raise_for_status()
-                return resp.json()
+            resp.raise_for_status()
+            return resp.json()
 
         except (httpx.TimeoutException, httpx.ConnectError) as exc:
             last_exc = exc

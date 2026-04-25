@@ -22,6 +22,7 @@ dependencies = [
     "phonenumbers>=8.13,<9.0",
     "greenlet>=3.0,<4.0",
     "httpx>=0.28.1",
+    "slowapi>=0.1.9",
 ]
 
 [project.optional-dependencies]
@@ -49,6 +50,7 @@ filterwarnings = [
 [tool.ruff]
 target-version = "py312"
 line-length = 120
+exclude = ["alembic/"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM"]
@@ -74,4 +76,13 @@ check_untyped_defs = true
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
+
+# Incremental strictness — stricter for new/stable modules
+[[tool.mypy.overrides]]
+module = [
+    "app.services.market_data.*",
+    "app.api.v1.endpoints.market_data",
+    "app.core.rate_limit",
+]
+disallow_untyped_defs = true
 

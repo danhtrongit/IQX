@@ -47,19 +47,22 @@ Data sourced from KB Securities (KBS) profile API. One profile request returns o
 | SM | business_model | HTML description (tags stripped) |
 | SB | symbol | Stock symbol |
 | FD | founded_date | Company founding date |
-| CC | charter_capital | **In millions VND → converted to VND** (×1,000,000) |
 | EX | exchange | Exchange (HOSE/HNX/UPCOM) |
-| VL | listed_volume | **In millions shares → converted to shares** (×1,000,000) |
-| FV | par_value | VND (actual value) |
-| LP | listing_price | VND (actual value) |
-| KLCPLH | outstanding_shares | Actual share count (no conversion) |
-| KLCPNY | free_float_vnd | Actual VND (no conversion) |
+| KLCPNY | charter_capital | **VND, exact** (= KLCPLH × FV) |
+| KLCPLH | outstanding_shares | **Share count, exact** |
+| FV | par_value | VND per share |
+| LP | listing_price | VND (listing price) |
+| CC | _(dropped)_ | Rounded charter cap in billions — imprecise |
+| VL | _(dropped)_ | Rounded listed vol in millions — imprecise |
+| SFV | _(dropped)_ | Duplicate of FV |
 | CTP/CTPP | ceo_name/ceo_position | CEO info |
 | ADD/PHONE/EMAIL/URL | address/phone/email/website | Contact info |
 | HS | history | Company history (HTML stripped) |
 | Shareholders[] | → name, date, shares_owned, ownership_percentage | |
 | Leaders[] | → from_date, position, name, position_en, owner_code | |
 | Subsidiaries[] | → date, name, charter_capital, ownership_percent, currency, type | type = subsidiary (>50%) or affiliate (≤50%) |
+
+> **Invariant:** `charter_capital == outstanding_shares × par_value` (verified across VCB, FPT, VNM)
 
 ## 4. Fundamentals (`/fundamentals`)
 

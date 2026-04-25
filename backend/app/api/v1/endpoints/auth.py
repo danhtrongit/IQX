@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 from app.api.deps import CurrentUser, DBSession
+from app.core.config import get_settings
+from app.core.rate_limit import limiter
 from app.schemas.auth import LoginRequest, RefreshTokenRequest, TokenResponse
 from app.schemas.common import MessageResponse
 from app.schemas.user import UserCreate, UserResponse
@@ -12,6 +14,8 @@ from app.services.auth import AuthService
 from app.services.user import UserService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+_AUTH_LIMIT = get_settings().RATE_LIMIT_AUTH
 
 
 @router.post(
@@ -21,7 +25,8 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     summary="Register a new user",
     description="Create a new user account. Email must be unique. Password must be strong.",
 )
-async def register(data: UserCreate, db: DBSession) -> UserResponse:
+@limiter.limit(_AUTH_LIMIT)
+async def register(request: Request, data: UserCreate, db: DBSession) -> UserResponse:
     service = UserService(db)
     user = await service.register(data)
     return UserResponse.model_validate(user)
@@ -33,7 +38,8 @@ async def register(data: UserCreate, db: DBSession) -> UserResponse:
     summary="Login",
     description="Authenticate with email and password. Returns access and refresh tokens.",
 )
-async def login(data: LoginRequest, db: DBSession) -> TokenResponse:
+@limiter.limit(_AUTH_LIMIT)
+async def login(request: Request, data: LoginRequest, db: DBSession) -> TokenResponse:
     service = AuthService(db)
     return await service.login(data.email, data.password)
 
@@ -44,7 +50,8 @@ async def login(data: LoginRequest, db: DBSession) -> TokenResponse:
     summary="Refresh tokens",
     description="Exchange a valid refresh token for a new token pair. The old refresh token is revoked (rotation).",
 )
-async def refresh_tokens(data: RefreshTokenRequest, db: DBSession) -> TokenResponse:
+@limiter.limit(_AUTH_LIMIT)
+async def refresh_tokens(request: Request, data: RefreshTokenRequest, db: DBSession) -> TokenResponse:
     service = AuthService(db)
     return await service.refresh_tokens(data.refresh_token)
 

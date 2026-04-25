@@ -433,13 +433,13 @@ _KBS_PROFILE_RESPONSE: dict[str, Any] = {
     "SM": "<p>Banking services and financial solutions</p>",
     "SB": "VCB",
     "FD": "1963-04-01",
-    "CC": 83557,  # millions VND — actual live value for VCB
+    "CC": 83557,  # rounded charter cap in billions — DROPPED by normalize
     "EX": "HOSE",
-    "FV": 10000,  # par value in VND (actual)
-    "VL": 8356,  # millions shares — actual live value
-    "LP": 60000,  # listing price in VND (actual)
-    "KLCPLH": 8355675094,  # outstanding shares (actual count)
-    "KLCPNY": 83556750940000,  # free float in VND (actual)
+    "FV": 10000,  # par value VND (actual)
+    "VL": 8356,  # rounded listed vol in millions — DROPPED by normalize
+    "LP": 60000,  # listing price VND (actual)
+    "KLCPLH": 8355675094,  # outstanding shares (exact count)
+    "KLCPNY": 83556750940000,  # charter capital VND (exact, = KLCPLH * FV)
     "CTP": "Nguyen Thanh Tung",
     "CTPP": "Chairman",
     "ADD": "198 Tran Quang Khai, Hoan Kiem, Ha Noi",
@@ -491,13 +491,18 @@ async def test_company_overview(client: AsyncClient):
         data = body["data"]
         assert data["symbol"] == "VCB"
         assert data["exchange"] == "HOSE"
-        # CC=83557 (millions) → charter_capital = 83557 * 1_000_000
-        assert data["charter_capital"] == 83557 * 1_000_000
-        # VL=8356 (millions) → listed_volume = 8356 * 1_000_000
-        assert data["listed_volume"] == 8356 * 1_000_000
-        assert data["par_value"] == 10000  # VND (actual)
-        assert data["listing_price"] == 60000  # VND (actual)
-        assert data["outstanding_shares"] == 8355675094  # actual count
+        # KLCPNY → charter_capital (VND, exact)
+        assert data["charter_capital"] == 83556750940000
+        # KLCPLH → outstanding_shares (exact count)
+        assert data["outstanding_shares"] == 8355675094
+        assert data["par_value"] == 10000
+        assert data["listing_price"] == 60000
+        # Invariant: charter_capital == outstanding_shares * par_value
+        assert data["charter_capital"] == data["outstanding_shares"] * data["par_value"]
+        # CC/VL/SFV are dropped (rounded/duplicate)
+        assert "listed_volume" not in data
+        assert "free_float_vnd" not in data
+        assert "free_float_shares" not in data
         assert "Banking" in data["business_model"]  # HTML stripped
         assert data["number_of_employees"] == 18500
 
