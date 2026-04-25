@@ -44,6 +44,12 @@ from app.services.virtual_trading.settlement import (
 
 logger = logging.getLogger(__name__)
 
+# Financial bounds
+_MAX_QUANTITY = 1_000_000  # 1M shares per order
+_MAX_LIMIT_PRICE_VND = 10_000_000  # 10M VND/share (no VN stock is near this)
+_MAX_GROSS_VND = 100_000_000_000  # 100B VND per order
+_LEADERBOARD_HARD_CAP = 200  # Max accounts to evaluate for leaderboard
+
 
 def _round_bps(amount: int, rate_bps: int) -> int:
     """Calculate fee/tax from amount and rate in basis points. Round half-up."""
@@ -125,6 +131,16 @@ class VirtualTradingService:
 
         symbol = symbol.upper()
 
+        # Financial bounds (Fix 7)
+        if quantity > _MAX_QUANTITY:
+            raise UnprocessableEntityError(
+                f"Quantity {quantity} exceeds max {_MAX_QUANTITY} per order",
+            )
+        if limit_price_vnd is not None and limit_price_vnd > _MAX_LIMIT_PRICE_VND:
+            raise UnprocessableEntityError(
+                f"Limit price {limit_price_vnd} exceeds max {_MAX_LIMIT_PRICE_VND} VND",
+            )
+
         # Validate symbol against HOSE/HNX/UPCOM universe (fail-closed)
         try:
             if not await validate_symbol(symbol):
@@ -188,6 +204,13 @@ class VirtualTradingService:
             )
             return await self._repo.create_order(order)
 
+        # Enforce max gross after price resolve
+        gross = price_result.price_vnd * quantity
+        if gross > _MAX_GROSS_VND:
+            raise UnprocessableEntityError(
+                f"Gross order value {gross:,} VND exceeds max {_MAX_GROSS_VND:,} VND",
+            )
+
         return await self._fill_order_at_price(
             account, config, symbol, side, OrderType.MARKET,
             quantity, price_result, trading_date, snapshot,
@@ -197,6 +220,12 @@ class VirtualTradingService:
         self, account, config, symbol, side, quantity, limit_price_vnd, trading_date, snapshot,
     ):
         """Create a pending limit order with reserves."""
+        # Enforce max gross
+        gross = limit_price_vnd * quantity
+        if gross > _MAX_GROSS_VND:
+            raise UnprocessableEntityError(
+                f"Gross order value {gross:,} VND exceeds max {_MAX_GROSS_VND:,} VND",
+            )
         if side == OrderSide.BUY:
             gross = limit_price_vnd * quantity
             fee = _round_bps(gross, config.buy_fee_rate_bps)
@@ -391,6 +420,11 @@ class VirtualTradingService:
         )
 
         await self._session.flush()
+
+        # Clear active reserves on terminal order (Fix 3)
+        order.reserved_cash_vnd = 0
+        order.reserved_quantity = 0
+
         return order
 
     # ── Cancel Order ─────────────────────────────────
@@ -421,6 +455,11 @@ class VirtualTradingService:
                 position.quantity_sellable += order.reserved_quantity
 
         await self._session.flush()
+
+        # Clear active reserves on terminal order (Fix 3)
+        order.reserved_cash_vnd = 0
+        order.reserved_quantity = 0
+
         return order
 
     # ── Refresh ──────────────────────────────────────
@@ -454,6 +493,9 @@ class VirtualTradingService:
                     if pos:
                         pos.quantity_reserved -= order.reserved_quantity
                         pos.quantity_sellable += order.reserved_quantity
+                # Clear reserves on terminal order (Fix 3)
+                order.reserved_cash_vnd = 0
+                order.reserved_quantity = 0
                 expired += 1
                 continue
 
@@ -510,9 +552,7 @@ class VirtualTradingService:
     # ── Portfolio ────────────────────────────────────
 
     async def get_portfolio(self, user_id: uuid.UUID):
-        # Trigger refresh first
-        refresh_result = await self.refresh(user_id)
-
+        """Read-only portfolio: no refresh/mutation (Fix 4)."""
         account = await self._repo.get_account_by_user_id(user_id)
         if account is None:
             raise NotFoundError("Virtual trading account")
@@ -564,7 +604,6 @@ class VirtualTradingService:
             "nav_vnd": nav,
             "total_unrealized_pnl_vnd": total_pnl,
             "return_pct": round(return_pct, 2),
-            "refresh_warnings": refresh_result.get("warnings", []),
         }
 
     # ── Orders / Trades ──────────────────────────────
@@ -583,33 +622,56 @@ class VirtualTradingService:
     # ── Leaderboard ──────────────────────────────────
 
     async def get_leaderboard(self, sort_by: str = "nav", page: int = 1, page_size: int = 20):
+        """Leaderboard with hard cap on accounts evaluated (Fix 5)."""
         from sqlalchemy import select as sa_select
 
         from app.models.user import User
 
         config = await self.get_or_create_config()
         holidays_set = parse_holidays(config.holidays)
-        accounts = await self._repo.list_active_accounts()
+        total_eligible = await self._repo.count_active_accounts()
+
+        # Only load capped number of accounts (avoid full table scan)
+        accounts = await self._repo.list_active_accounts(
+            limit=_LEADERBOARD_HARD_CAP,
+        )
         entries = []
+
+        # Collect unique symbols across all accounts first, resolve once
+        symbol_prices: dict[str, int] = {}
+        all_positions_map: dict[uuid.UUID, list] = {}
+        for acct in accounts:
+            positions = await self._repo.list_positions(acct.id)
+            all_positions_map[acct.id] = positions
+            for p in positions:
+                if p.quantity_total > 0 and p.symbol not in symbol_prices:
+                    symbol_prices[p.symbol] = 0  # placeholder
+
+        # Batch resolve: one call per unique symbol, not per position
+        for sym in list(symbol_prices.keys()):
+            try:
+                pr = await resolve_price(sym, holidays=holidays_set)
+                symbol_prices[sym] = pr.price_vnd
+            except PriceUnavailableError:
+                symbol_prices[sym] = 0  # will fallback to avg_cost
 
         for acct in accounts:
             total_cash = acct.cash_available_vnd + acct.cash_reserved_vnd + acct.cash_pending_vnd
-            positions = await self._repo.list_positions(acct.id)
+            positions = all_positions_map.get(acct.id, [])
             mv = 0
             for p in positions:
                 if p.quantity_total <= 0:
                     continue
-                try:
-                    pr = await resolve_price(p.symbol, holidays=holidays_set)
-                    mv += pr.price_vnd * p.quantity_total
-                except PriceUnavailableError:
-                    mv += p.avg_cost_vnd * p.quantity_total  # fallback to cost
+                price = symbol_prices.get(p.symbol, 0)
+                if price > 0:
+                    mv += price * p.quantity_total
+                else:
+                    mv += p.avg_cost_vnd * p.quantity_total
 
             nav = total_cash + mv
             profit = nav - acct.initial_cash_vnd
             ret_pct = (profit / acct.initial_cash_vnd * 100) if acct.initial_cash_vnd > 0 else 0.0
 
-            # Get user info
             user_result = await self._session.execute(sa_select(User).where(User.id == acct.user_id))
             user = user_result.scalar_one_or_none()
             name = user.full_name if user else "Unknown"
@@ -625,14 +687,14 @@ class VirtualTradingService:
         sort_key = key_map.get(sort_by, "nav_vnd")
         entries.sort(key=lambda e: float(e[sort_key]), reverse=True)  # type: ignore[arg-type]
 
-        total = len(entries)
+        total_evaluated = len(entries)
         start = (page - 1) * page_size
         page_entries = entries[start : start + page_size]
 
         for i, e in enumerate(page_entries, start=start + 1):
             e["rank"] = i
 
-        return page_entries, total
+        return page_entries, total_evaluated, total_eligible
 
     # ── Admin: Reset ─────────────────────────────────
 

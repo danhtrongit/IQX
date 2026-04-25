@@ -7,6 +7,10 @@ Trading session awareness (Asia/Ho_Chi_Minh):
 
 Symbol validation:
 - Strict HOSE/HNX/UPCOM universe check — fail-closed on source error.
+
+Price normalization:
+- VCI intraday/OHLCV: already in VND (e.g. 60600)
+- VND OHLCV: returns kVND (e.g. 60.6 = 60,600 VND) — multiply by 1000
 """
 
 from __future__ import annotations
@@ -26,6 +30,9 @@ _MORNING_OPEN = (9, 0)   # 09:00
 _MORNING_CLOSE = (11, 30)  # 11:30
 _AFTERNOON_OPEN = (13, 0)  # 13:00
 _AFTERNOON_CLOSE = (14, 45)  # 14:45
+
+# VND OHLCV returns prices in kVND (thousands); multiply to get integer VND
+_VND_OHLCV_MULTIPLIER = 1000
 
 
 class PriceUnavailableError(Exception):
@@ -53,6 +60,26 @@ class PriceResult:
     price_vnd: int  # Integer VND
     source: str  # "realtime" or "close"
     timestamp: datetime
+
+
+def _to_int_vnd(raw: object, *, multiplier: int = 1) -> int | None:
+    """Coerce a raw price to integer VND using explicit multiplier.
+
+    Contract:
+    - VNDIRECT OHLCV: multiplier=1000 (returns kVND, e.g. 60.6 → 60600)
+    - VCI intraday/OHLCV: multiplier=1 (returns VND, e.g. 60600 → 60600)
+    - VCI penny stocks: multiplier=1 (e.g. 700 → 700, NOT 700000)
+
+    Returns None for zero, negative, or non-numeric input.
+    """
+    try:
+        val = float(raw)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
+    if val <= 0:
+        return None
+    result = int(val * multiplier)
+    return result if result > 0 else None
 
 
 def is_trading_session(
@@ -115,17 +142,21 @@ async def resolve_price(
 
 
 async def _try_intraday(symbol: str) -> PriceResult | None:
-    """Try to get realtime price from VCI intraday."""
+    """Try to get realtime price from VCI intraday.
+
+    VCI intraday returns prices in VND (e.g. 60600 for 60,600 VND).
+    """
     try:
         from app.services.market_data.sources import vietcap
 
         data, _url = await vietcap.fetch_intraday(symbol, page_size=1)
         if data and len(data) > 0:
             last_trade = data[0]
-            price = last_trade.get("close_price") or last_trade.get("price")
-            if price and float(price) > 0:
+            raw = last_trade.get("close_price") or last_trade.get("price")
+            price_vnd = _to_int_vnd(raw, multiplier=1)
+            if price_vnd is not None:
                 return PriceResult(
-                    price_vnd=int(float(price)),
+                    price_vnd=price_vnd,
                     source="realtime",
                     timestamp=datetime.now(UTC),
                 )
@@ -135,8 +166,12 @@ async def _try_intraday(symbol: str) -> PriceResult | None:
 
 
 async def _try_ohlcv_close(symbol: str) -> PriceResult | None:
-    """Try OHLCV close from VND then VCI."""
-    # Try VND first
+    """Try OHLCV close from VND then VCI.
+
+    VND OHLCV returns prices in kVND (e.g. 60.6 = 60,600 VND).
+    VCI OHLCV returns prices in VND (e.g. 60600).
+    """
+    # Try VND first (kVND — multiply by 1000)
     try:
         from app.services.market_data.sources import vndirect
 
@@ -147,17 +182,18 @@ async def _try_ohlcv_close(symbol: str) -> PriceResult | None:
         )
         if data and len(data) > 0:
             last_candle = data[-1] if isinstance(data, list) else data
-            close = last_candle.get("close") or last_candle.get("adClose")
-            if close and float(close) > 0:
+            raw = last_candle.get("close") or last_candle.get("adClose")
+            price_vnd = _to_int_vnd(raw, multiplier=_VND_OHLCV_MULTIPLIER)
+            if price_vnd is not None:
                 return PriceResult(
-                    price_vnd=int(float(close)),
+                    price_vnd=price_vnd,
                     source="close",
                     timestamp=datetime.now(UTC),
                 )
     except Exception as exc:
         logger.debug("VND OHLCV close failed for %s: %s", symbol, exc)
 
-    # Fallback to VCI OHLCV
+    # Fallback to VCI OHLCV (already VND)
     try:
         from app.services.market_data.sources import vietcap
 
@@ -168,10 +204,11 @@ async def _try_ohlcv_close(symbol: str) -> PriceResult | None:
         )
         if data and len(data) > 0:
             last_candle = data[-1] if isinstance(data, list) else data
-            close = last_candle.get("close") or last_candle.get("closePrice")
-            if close and float(close) > 0:
+            raw = last_candle.get("close") or last_candle.get("closePrice")
+            price_vnd = _to_int_vnd(raw, multiplier=1)
+            if price_vnd is not None:
                 return PriceResult(
-                    price_vnd=int(float(close)),
+                    price_vnd=price_vnd,
                     source="close",
                     timestamp=datetime.now(UTC),
                 )

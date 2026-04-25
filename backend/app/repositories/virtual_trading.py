@@ -124,13 +124,26 @@ class VirtualTradingRepository:
         )
         return list(result.scalars().all())
 
-    async def list_active_accounts(self) -> list[VirtualTradingAccount]:
-        result = await self._session.execute(
+    async def list_active_accounts(
+        self, *, limit: int | None = None,
+    ) -> list[VirtualTradingAccount]:
+        stmt = (
             select(VirtualTradingAccount)
             .where(VirtualTradingAccount.status == AccountStatus.ACTIVE)
             .order_by(VirtualTradingAccount.activated_at.desc())
         )
+        if limit is not None:
+            stmt = stmt.limit(limit)
+        result = await self._session.execute(stmt)
         return list(result.scalars().all())
+
+    async def count_active_accounts(self) -> int:
+        result = await self._session.execute(
+            select(func.count(VirtualTradingAccount.id)).where(
+                VirtualTradingAccount.status == AccountStatus.ACTIVE,
+            )
+        )
+        return result.scalar_one()
 
     # ── Position ─────────────────────────────────────
 

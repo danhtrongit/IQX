@@ -1,0 +1,283 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - link [ref=e8] [cursor=pointer]:
+            - /url: /home
+            - generic [ref=e9]:
+              - img [ref=e11]
+              - img [ref=e13]
+          - generic [ref=e15]:
+            - button "Cơ sở" [ref=e17] [cursor=pointer]
+            - button "Phái sinh" [ref=e18] [cursor=pointer]
+          - generic [ref=e19]: 25/04/2026 10:42:52
+        - generic [ref=e881]:
+          - generic [ref=e882]:
+            - img [ref=e883]
+            - 'link "Tối ưu lợi nhuận cùng SAFE Bond: Lợi suất lên tới 10.0%/năm." [ref=e884] [cursor=pointer]':
+              - /url: https://trading.vietcap.com.vn/investment-products/safe-bond/investment
+          - generic [ref=e885]:
+            - img [ref=e886]
+            - link "Cơ hội sở hữu trái phiếu CII – Đăng ký mua ngay hôm nay!" [ref=e887] [cursor=pointer]:
+              - /url: https://trading.vietcap.com.vn/price-board/stock-trading/ipo-subscription
+          - generic [ref=e888]:
+            - img [ref=e889]
+            - link "Go Green Go Up - Chung tay xanh rừng, vững thêm chắn lũ cùng Vietcap" [ref=e890] [cursor=pointer]:
+              - /url: https://trading.vietcap.com.vn/utilities/go-green-go-up
+        - generic [ref=e22]:
+          - generic [ref=e23]:
+            - img [ref=e24] [cursor=pointer]
+            - textbox "Nhập từ khoá"
+          - img [ref=e26] [cursor=pointer]
+          - generic [ref=e27]:
+            - button "Mở tài khoản" [ref=e28] [cursor=pointer]
+            - button "Đăng nhập" [ref=e29] [cursor=pointer]
+          - img [ref=e32] [cursor=pointer]
+      - generic [ref=e35]:
+        - link "Trang chủ" [ref=e36] [cursor=pointer]:
+          - /url: /home
+        - button "Bảng giá" [ref=e38] [cursor=pointer]:
+          - generic [ref=e39]: Bảng giá
+          - img [ref=e40]
+        - button "Thông tin tài sản" [ref=e42] [cursor=pointer]:
+          - generic [ref=e43]: Thông tin tài sản
+          - img [ref=e44]
+        - button "Giao dịch tiền" [ref=e46] [cursor=pointer]:
+          - generic [ref=e47]: Giao dịch tiền
+          - img [ref=e48]
+        - button "Giao Dịch Chứng Khoán" [ref=e50] [cursor=pointer]:
+          - generic [ref=e51]: Giao Dịch Chứng Khoán
+          - img [ref=e52]
+        - button "Vietcap IQ" [ref=e54] [cursor=pointer]:
+          - generic [ref=e55]: Vietcap IQ
+          - img [ref=e56]
+        - button "AI News" [ref=e58] [cursor=pointer]:
+          - generic [ref=e59]: AI News
+          - img [ref=e60]
+    - generic [ref=e66]:
+      - generic [ref=e67]:
+        - generic [ref=e891]:
+          - progressbar
+        - generic [ref=e893]:
+          - button [ref=e894] [cursor=pointer]:
+            - img [ref=e897]
+          - generic [ref=e900]:
+            - generic [ref=e901]:
+              - generic [ref=e902]:
+                - paragraph [ref=e903] [cursor=pointer]: Tích cực
+                - link "• HDB" [ref=e904] [cursor=pointer]:
+                  - /url: /ai-news/company?ticker=HDB
+                  - text: •
+                  - paragraph [ref=e905]: HDB
+                - generic [ref=e907]:
+                  - paragraph [ref=e908]: "26.90"
+                  - generic [ref=e909]:
+                    - img [ref=e910]
+                    - paragraph [ref=e912]: 0.30(1.1%)
+              - button "Theo dõi" [ref=e913] [cursor=pointer]:
+                - generic [ref=e916]:
+                  - generic [ref=e917]:
+                    - img [ref=e918]
+                    - img [ref=e920]
+                  - paragraph [ref=e922]: Theo dõi
+            - generic [ref=e923]:
+              - generic [ref=e924]:
+                - button [ref=e925] [cursor=pointer]
+                - button [ref=e927] [cursor=pointer]
+              - generic [ref=e931]:
+                - 'heading "HDB: ĐHĐCĐ HDBank 2026: Lợi nhuận kế hoạch tăng 41%, quy mô tiệm cận 1,2 triệu tỷ đồng" [level=1] [ref=e932]'
+                - generic [ref=e934]:
+                  - paragraph [ref=e935]: 25/04/2026
+                  - text: •
+                  - generic [ref=e936]: "Nguồn:"
+                  - link "Tạp chí Diễn đàn Doanh nghiệp" [ref=e937] [cursor=pointer]:
+                    - /url: https://diendandoanhnghiep.vn/dhdcd-hdbank-2026-loi-nhuan-ke-hoach-tang-41-quy-mo-tiem-can-1-2-trieu-ty-dong-10177843.html
+                    - paragraph [ref=e938]: Tạp chí Diễn đàn Doanh nghiệp
+                    - img [ref=e939]
+                - generic [ref=e940]:
+                  - generic [ref=e941]: "Tóm tắt:"
+                  - generic [ref=e942]: ĐHĐCĐ HDBank 2026 đã thông qua kế hoạch lợi nhuận trước thuế tăng 41% lên trên 30.100 tỷ đồng và tổng tài sản tiệm cận 1,2 triệu tỷ đồng, đồng thời thảo luận về việc hình thành tập đoàn tài chính đa năng.
+                - generic [ref=e943]:
+                  - paragraph [ref=e944]:
+                    - strong [ref=e945]: "Ngân hàng TMCP Phát triển TP.HCM (HDBank – HOSE: HDB) đã tổ chức thành công Đại hội đồng cổ đông thường niên năm 2026."
+                  - paragraph [ref=e946]: Đại hội kết hợp chương trình gặp gỡ và đối thoại nhà đầu tư, thu hút đông đảo cổ đông, các quỹ đầu tư quốc tế và nhiều định chế tài chính lớn trong và ngoài nước.
+                  - paragraph [ref=e947]: HDBank hiện có hơn 38.000 cổ đông, trong đó có 156 tổ chức nước ngoài. Đại hội được tổ chức trực tuyến, mở rộng không gian trao đổi minh bạch, đa chiều giữa Ban lãnh đạo, chuyên gia và cộng đồng nhà đầu tư.
+                  - 'figure "Chủ tọa đoàn chủ trì đại hội: Anh hùng lao đông, GS, TS Nguyễn Thị Phương Thảo - Phó Chủ tịch thường trực HĐQT HDBank, nhà đầu tư chiến lược (giữa); ông Kim Byoungho - Chủ tịch HĐQT HDBank (phải); ông Nguyễn Hữu Đặng - Tổng Giám đốc HDBankng - Ngân hàng" [ref=e948]':
+                    - 'img "Chủ tọa đoàn chủ trì đại hội: Anh hùng lao đông, GS, TS Nguyễn Thị Phương Thảo - Phó Chủ tịch thường trực HĐQT HDBank, nhà đầu tư chiến lược (giữa); ông Kim Byoungho - Chủ tịch HĐQT HDBank (phải); ông Nguyễn Hữu Đặng - Tổng Giám đốc HDBankng - Ngân hàng" [ref=e949]'
+                    - generic [ref=e950]: "Chủ tọa đoàn chủ trì đại hội: Anh hùng lao đông, GS, TS Nguyễn Thị Phương Thảo - Phó Chủ tịch thường trực HĐQT HDBank, nhà đầu tư chiến lược (giữa); ông Kim Byoungho - Chủ tịch HĐQT HDBank (phải); ông Nguyễn Hữu Đặng - Tổng Giám đốc HDBankng - Ngân hàng"
+                  - paragraph [ref=e951]: Sự kiện diễn ra tại Galaxy Innovation Hub (GIH) – trung tâm đổi mới sáng tạo và công nghệ của HDBank. Tại đây, GIH đã trở thành công trình đầu tiên tại Việt Nam được trao chứng nhận tòa nhà thông minh UL SPIRE từ UL Solutions (Hoa Kỳ), khẳng định định hướng phát triển công nghệ và bền vững của ngân hàng.
+                  - paragraph [ref=e952]: Hiệu quả dẫn đầu – Nền tảng vững chắc cho chu kỳ tăng trưởng mới
+                  - paragraph [ref=e953]: Phát biểu khai mạc, ông Kim Byoungho – Chủ tịch HĐQT HDBank, nhà lãnh đạo ngân hàng quốc tế với hơn 40 năm kinh nghiệm – nhấn mạnh năng lực thích ứng, kỷ luật và nhất quán chiến lược của HDBank trong bối cảnh kinh tế nhiều biến động.
+                  - paragraph [ref=e954]: "Năm 2025, HDBank ghi nhận kết quả kinh doanh nổi bật:"
+                  - paragraph [ref=e955]: "-Lợi nhuận trước thuế đạt 21.346 tỷ đồng (+27,6%)"
+                  - paragraph [ref=e956]: "-ROE đạt 25,3%, ROA 2,1% – thuộc nhóm dẫn đầu thị trường"
+                  - paragraph [ref=e957]: "-Nợ xấu 1,66%"
+                  - paragraph [ref=e958]: "- CAR đạt 16,7% – thuộc nhóm cao nhất hệ thống"
+                  - paragraph [ref=e959]: "- CIR giảm còn 27,2%"
+                  - paragraph [ref=e960]: "- Cổ tức cao 30%"
+                  - paragraph [ref=e961]: "Chia sẻ tại Đại hội, Anh hùng Lao động, GS.TS Nguyễn Thị Phương Thảo – Phó Chủ tịch Thường trực HĐQT – nhấn mạnh:"
+                  - paragraph [ref=e962]: “Một ngân hàng lớn không chỉ đo bằng quy mô tài sản, mà bằng khả năng gánh vác. Và HDBank sẵn sàng gánh vác.”
+                  - paragraph [ref=e963]: "Bà cũng khẳng định triết lý phát triển xuyên suốt của HDBank:"
+                  - paragraph [ref=e964]: “Mỗi con số trong báo cáo tài chính – đằng sau đó là một con người.”
+                  - paragraph [ref=e965]: "Kế hoạch 2026: Tăng trưởng lợi nhuận 41%, lên mức trên 30.100 tỷ, quy mô vốn trên 110.000 tỷ đồng"
+                  - paragraph [ref=e966]: "Đại hội đã thông qua kế hoạch kinh doanh năm 2026 với các chỉ tiêu trọng tâm:"
+                  - figure "Ông Nguyễn Hữu Đặng, Tổng Giám đốc trao đổi với cổ đông, nhà đầu tư tại Đại hội" [ref=e967]:
+                    - img "Ông Nguyễn Hữu Đặng, Tổng Giám đốc trao đổi với cổ đông, nhà đầu tư tại Đại hội" [ref=e968]
+                    - generic [ref=e969]: Ông Nguyễn Hữu Đặng, Tổng Giám đốc trao đổi với cổ đông, nhà đầu tư tại Đại hội
+                  - paragraph [ref=e970]: "-Lợi nhuận trước thuế trên 30.100 tỷ đồng (+41%)"
+                  - paragraph [ref=e971]: "-Tổng tài sản đạt 1.194.481 tỷ đồng (+28%)"
+                  - paragraph [ref=e972]: "- Dư nợ tín dụng đạt 804.562 tỷ đồng (+37%)"
+                  - paragraph [ref=e973]: "-Vốn chủ sở hữu đạt 110.088 tỷ đồng"
+                  - paragraph [ref=e974]: "- Cổ tức dự kiến 30%"
+                  - paragraph [ref=e975]: Đây là bước khởi đầu cho chu kỳ tăng trưởng mới giai đoạn 2026–2030, hướng tới mục tiêu nâng tầm HDBank thành định chế tài chính quy mô lớn, hiệu quả cao và phát triển bền vững.
+                  - paragraph [ref=e976]: Hình thành tập đoàn tài chính đa năng – Hệ sinh thái tăng trưởng tích hợp
+                  - paragraph [ref=e977]: "Một nội dung trọng tâm được Đại hội thảo luận là chiến lược phát triển hệ sinh thái tài chính tích hợp, gồm các trụ cột:"
+                  - paragraph [ref=e978]: "-HDBank (ngân hàng thương mại)"
+                  - paragraph [ref=e979]: "-Vikki Bank (ngân hàng số thế hệ mới của bạn, của mọi nhà)"
+                  - paragraph [ref=e980]: "-HD SAISON (tài chính tiêu dùng)"
+                  - paragraph [ref=e981]: "-HDB Securities – HDS (chứng khoán)"
+                  - paragraph [ref=e982]: Theo lãnh đạo HDBank, hệ sinh thái này được xây dựng như một kiến trúc tăng trưởng có chủ đích, tạo ra giá trị cộng hưởng và khả năng thích ứng cao trước biến động thị trường.
+                  - paragraph [ref=e983]: "Năm 2025:"
+                  - paragraph [ref=e984]: "-HD SAISON lợi nhuận 1.100 tỷ đồng, ROE 22,5%"
+                  - paragraph [ref=e985]: "-HDS đạt lợi nhuận trên 1.000 tỷ đồng, tăng trưởng 93%"
+                  - paragraph [ref=e986]: Vikki Bank có lãi chỉ sau 7 tháng, thu hút hơn 2,5 triệu khách hàng
+                  - paragraph [ref=e987]: Đáng chú ý, việc tiếp nhận và tái cấu trúc Ngân hàng Đông Á, chuyển đổi thành Vikki Bank, được đánh giá không chỉ là cơ hội kinh doanh mà còn là đóng góp trách nhiệm vào sự ổn định hệ thống tài chính quốc gia.
+                  - paragraph [ref=e988]: Kết nối dòng vốn toàn cầu – Mở rộng thị trường quốc tế
+                  - figure "Phiên thảo luận tại sự kiện" [ref=e989]:
+                    - img "Phiên thảo luận tại sự kiện" [ref=e990]
+                    - generic [ref=e991]: Phiên thảo luận tại sự kiện
+                  - paragraph [ref=e992]: Phiên thảo luận ghi nhận sự tham gia của nhiều quỹ đầu tư quốc tế như DEG, LeapFrog cùng các chuyên gia tài chính hàng đầu thế giới.
+                  - paragraph [ref=e993]: "Tiến sĩ Philipp Rösler – nguyên Phó Thủ tướng Đức, Cố vấn cấp cao của HDBank – nhận định:"
+                  - paragraph [ref=e994]: Các định chế tài chính tiên phong sẽ đóng vai trò quan trọng trong việc kết nối dòng vốn toàn cầu với các nền kinh tế đang tăng trưởng mạnh như Việt Nam.
+                  - paragraph [ref=e995]: "Trong định hướng này, HDBank đang:"
+                  - paragraph [ref=e996]: "-Tăng cường hợp tác với Sở Giao dịch Chứng khoán London (LSE)"
+                  - paragraph [ref=e997]: "-Tham gia các sáng kiến trong khuôn khổ Trung tâm Tài chính Quốc tế (VIFC) tại TP.HCM"
+                  - paragraph [ref=e998]: "-Mở rộng khả năng tiếp cận thị trường vốn quốc tế"
+                  - paragraph [ref=e999]: Những cam kết chiến lược cho giai đoạn phát triển mới
+                  - paragraph [ref=e1000]: "Tại Đại hội, lãnh đạo HDBank nhấn mạnh ba cam kết xuyên suốt:"
+                  - paragraph [ref=e1001]: "-Tăng trưởng bền vững trên nền tảng hệ sinh thái và công nghệ"
+                  - paragraph [ref=e1002]: "-Quản trị theo chuẩn mực quốc tế cao nhất, minh bạch và kỷ luật"
+                  - paragraph [ref=e1003]: "- Tạo dựng giá trị dài hạn, không chỉ trong một năm mà qua nhiều thế hệ"
+                  - paragraph [ref=e1004]: "Chủ tịch Kim Byoungho khẳng định:"
+                  - paragraph [ref=e1005]: “HDBank không chỉ xây dựng một ngân hàng, mà đang kiến tạo một định chế tài chính của thời đại mới – nơi công nghệ đi cùng nhân văn, tăng trưởng đi cùng trách nhiệm.”
+                  - paragraph [ref=e1006]: "Ông nhấn mạnh:"
+                  - paragraph [ref=e1007]: “Chúng tôi không chạy theo những con số ngắn hạn. Chúng tôi xây dựng để trường tồn qua nhiều thế hệ.”
+                  - paragraph [ref=e1008]: Niềm tin – nền tảng của mọi tăng trưởng
+                  - paragraph [ref=e1009]: Khép lại Đại hội, nhà đầu tư chiến lược Nguyễn Thị Phương Thảo gửi lời tri ân tới Ngân hàng Nhà nước, Ủy ban Chứng khoán Nhà nước, các cơ quan quản lý, cùng toàn thể cổ đông và nhà đầu tư trong và ngoài nước.
+                  - figure "GS.TS Nguyễn Thị Phương Thảo - Phó Chủ tịch HĐQT Ngân hàng HDBank, nhà đầu tư chiến lược chia sẻ cùng các cổ đông tại Đại hội" [ref=e1010]:
+                    - img "GS.TS Nguyễn Thị Phương Thảo - Phó Chủ tịch HĐQT Ngân hàng HDBank, nhà đầu tư chiến lược chia sẻ cùng các cổ đông tại Đại hội" [ref=e1011]
+                    - generic [ref=e1012]: GS.TS Nguyễn Thị Phương Thảo - Phó Chủ tịch HĐQT Ngân hàng HDBank, nhà đầu tư chiến lược chia sẻ cùng các cổ đông tại Đại hội
+                  - paragraph [ref=e1013]: "Bà nhấn mạnh:"
+                  - paragraph [ref=e1014]: “HDBank đổi mới và tăng trưởng không chỉ để lớn hơn, mà để phục vụ tốt hơn, an toàn hơn và bền vững hơn.”
+                  - paragraph [ref=e1015]: HDBank đang hướng tới một trong những ngân hàng thương mại tư nhân dẫn đầu tại Việt Nam, tiên phong trong phát triển hệ sinh thái tài chính tích hợp và ứng dụng công nghệ hiện đại, phục vụ hàng chục triệu khách hàng cá nhân và doanh nghiệp
+                  - paragraph [ref=e1016]:
+                    - strong [ref=e1017]: M.Lê
+        - generic [ref=e1019]:
+          - generic [ref=e1020]:
+            - generic [ref=e1022]: Tin liên quan
+            - generic [ref=e1025]:
+              - generic [ref=e1027] [cursor=pointer]:
+                - 'link "HDB: Tỉ phú Nguyễn Thị Phương Thảo giải thích vì sao HDBank không chia cổ tức bằng tiền mặt" [ref=e1029]':
+                  - /url: /ai-news/post-detail/hdb-ti-phu-nguyen-thi-phuong-thao-giai-thich-vi-sao-hdbank-khong-chia-co-tuc-bang-tien-mat?language=vi
+                  - 'img "HDB: Tỉ phú Nguyễn Thị Phương Thảo giải thích vì sao HDBank không chia cổ tức bằng tiền mặt" [ref=e1030]'
+                - generic [ref=e1032]:
+                  - generic [ref=e1033]:
+                    - generic [ref=e1034]:
+                      - paragraph [ref=e1035]: Tích cực
+                      - img [ref=e1036]
+                      - link "HDB" [ref=e1038]:
+                        - /url: /ai-news/company?ticker=HDB
+                        - paragraph [ref=e1039]: HDB
+                    - 'link "HDB: Tỉ phú Nguyễn Thị Phương Thảo giải thích vì sao HDBank không chia cổ tức bằng tiền mặt" [ref=e1040]':
+                      - /url: /ai-news/post-detail/hdb-ti-phu-nguyen-thi-phuong-thao-giai-thich-vi-sao-hdbank-khong-chia-co-tuc-bang-tien-mat?language=vi
+                      - 'heading "HDB: Tỉ phú Nguyễn Thị Phương Thảo giải thích vì sao HDBank không chia cổ tức bằng tiền mặt" [level=1] [ref=e1041]'
+                  - generic [ref=e1042]:
+                    - generic [ref=e1043]:
+                      - paragraph [ref=e1044]: 4 giờ trước
+                      - text: •
+                      - paragraph [ref=e1045]: FireAnt
+                    - generic [ref=e1046]:
+                      - img [ref=e1047]
+                      - paragraph [ref=e1048]: 03:49
+                      - button [ref=e1049]:
+                        - img [ref=e1050]
+              - generic [ref=e1053] [cursor=pointer]:
+                - 'link "HDB: Tỷ phú Nguyễn Thị Phương Thảo: M&A là ''năng lực đặc biệt'' của HDBank" [ref=e1055]':
+                  - /url: /ai-news/post-detail/hdb-ty-phu-nguyen-thi-phuong-thao-m-and-a-la-nang-luc-dac-biet-cua-hdbank?language=vi
+                  - 'img "HDB: Tỷ phú Nguyễn Thị Phương Thảo: M&A là ''năng lực đặc biệt'' của HDBank" [ref=e1056]'
+                - generic [ref=e1058]:
+                  - generic [ref=e1059]:
+                    - generic [ref=e1060]:
+                      - paragraph [ref=e1061]: Tích cực
+                      - img [ref=e1062]
+                      - link "HDB" [ref=e1064]:
+                        - /url: /ai-news/company?ticker=HDB
+                        - paragraph [ref=e1065]: HDB
+                    - 'link "HDB: Tỷ phú Nguyễn Thị Phương Thảo: M&A là ''năng lực đặc biệt'' của HDBank" [ref=e1066]':
+                      - /url: /ai-news/post-detail/hdb-ty-phu-nguyen-thi-phuong-thao-m-and-a-la-nang-luc-dac-biet-cua-hdbank?language=vi
+                      - 'heading "HDB: Tỷ phú Nguyễn Thị Phương Thảo: M&A là ''năng lực đặc biệt'' của HDBank" [level=1] [ref=e1067]'
+                  - generic [ref=e1068]:
+                    - generic [ref=e1069]:
+                      - paragraph [ref=e1070]: 13 giờ trước
+                      - text: •
+                      - paragraph [ref=e1071]: VietnamFinance
+                    - generic [ref=e1072]:
+                      - img [ref=e1073]
+                      - paragraph [ref=e1074]: 06:33
+                      - button [ref=e1075]:
+                        - img [ref=e1076]
+              - generic [ref=e1079] [cursor=pointer]:
+                - 'link "HDB: Đại hội cổ đông HDBank 2026: Lợi nhuận kế hoạch tăng 41%, quy mô gần 1,2 triệu tỷ đồng" [ref=e1081]':
+                  - /url: /ai-news/post-detail/hdb-dai-hoi-co-dong-hdbank-2026-loi-nhuan-ke-hoach-tang-41-quy-mo-gan-1-2-trieu-ty-dong?language=vi
+                  - 'img "HDB: Đại hội cổ đông HDBank 2026: Lợi nhuận kế hoạch tăng 41%, quy mô gần 1,2 triệu tỷ đồng" [ref=e1082]'
+                - generic [ref=e1084]:
+                  - generic [ref=e1085]:
+                    - generic [ref=e1086]:
+                      - paragraph [ref=e1087]: Tích cực
+                      - img [ref=e1088]
+                      - link "HDB" [ref=e1090]:
+                        - /url: /ai-news/company?ticker=HDB
+                        - paragraph [ref=e1091]: HDB
+                    - 'link "HDB: Đại hội cổ đông HDBank 2026: Lợi nhuận kế hoạch tăng 41%, quy mô gần 1,2 triệu tỷ đồng" [ref=e1092]':
+                      - /url: /ai-news/post-detail/hdb-dai-hoi-co-dong-hdbank-2026-loi-nhuan-ke-hoach-tang-41-quy-mo-gan-1-2-trieu-ty-dong?language=vi
+                      - 'heading "HDB: Đại hội cổ đông HDBank 2026: Lợi nhuận kế hoạch tăng 41%, quy mô gần 1,2 triệu tỷ đồng" [level=1] [ref=e1093]'
+                  - generic [ref=e1094]:
+                    - generic [ref=e1095]:
+                      - paragraph [ref=e1096]: 14 giờ trước
+                      - text: •
+                      - paragraph [ref=e1097]: FireAnt
+                    - generic [ref=e1098]:
+                      - img [ref=e1099]
+                      - paragraph [ref=e1100]: 06:31
+                      - button [ref=e1101]:
+                        - img [ref=e1102]
+              - generic [ref=e1105] [cursor=pointer]:
+                - 'link "HDB: HDBank đặt mục tiêu lợi nhuận năm 2026 đạt 30.100 tỷ đồng, tăng 41%" [ref=e1107]':
+                  - /url: /ai-news/post-detail/hdb-hdbank-dat-muc-tieu-loi-nhuan-nam-2026-dat-30100-ty-dong-tang-41?language=vi
+                  - 'img "HDB: HDBank đặt mục tiêu lợi nhuận năm 2026 đạt 30.100 tỷ đồng, tăng 41%" [ref=e1108]'
+                - generic [ref=e1110]:
+                  - generic [ref=e1111]:
+                    - generic [ref=e1112]:
+                      - paragraph [ref=e1113]: Tích cực
+                      - img [ref=e1114]
+                      - link "HDB" [ref=e1116]:
+                        - /url: /ai-news/company?ticker=HDB
+                        - paragraph [ref=e1117]: HDB
+                    - 'link "HDB: HDBank đặt mục tiêu lợi nhuận năm 2026 đạt 30.100 tỷ đồng, tăng 41%" [ref=e1118]':
+                      - /url: /ai-news/post-detail/hdb-hdbank-dat-muc-tieu-loi-nhuan-nam-2026-dat-30100-ty-dong-tang-41?language=vi
+                      - 'heading "HDB: HDBank đặt mục tiêu lợi nhuận năm 2026 đạt 30.100 tỷ đồng, tăng 41%" [level=1] [ref=e1119]'
+                  - generic [ref=e1120]:
+                    - generic [ref=e1121]:
+                      - paragraph [ref=e1122]: 17 giờ trước
+                      - text: •
+                      - paragraph [ref=e1123]: VnEconomy
+                    - generic [ref=e1124]:
+                      - img [ref=e1125]
+                      - paragraph [ref=e1126]: 05:09
+                      - button [ref=e1127]:
+                        - img [ref=e1128]
+          - img [ref=e1131]
+      - button
+  - button [ref=e1133] [cursor=pointer]:
+    - img [ref=e1134]

@@ -1,0 +1,14 @@
+[     313ms] [LOG] register h5.event.paused :  @ https://trading.vietcap.com.vn/libs/jssdk-lib.js?v=1777022497394:1
+[     319ms] [LOG] Zalo Social Plugin is loaded successfully @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022497394:1
+[     319ms] [LOG] socialPluginsShare:  [] @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022497394:1
+[     849ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[     980ms] [WARNING] No routes matched location "/iq/market"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[    1512ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/vietcap-iq/main.js?v=1777022497399:1
+[    1668ms] [WARNING] No routes matched location "/iq/market"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[    1691ms] [ERROR] Error: <svg> attribute transform: Expected number, "rotate(undefined)". @ https://trading.vietcap.com.vn/js/react-dom.production.min.js?v=1777022497398:1
+[    1692ms] [ERROR] Error: <svg> attribute transform: Expected number, "rotate(undefined)". @ https://trading.vietcap.com.vn/js/react-dom.production.min.js?v=1777022497398:1
+[    2739ms] [LOG] 🔥 Firebase initialized successfully! @ https://trading.vietcap.com.vn/iq/market:173
+[  261893ms] [WARNING] No routes matched location "/home"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[  262255ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/home/main.js?v=1777022497399:1
+[  268631ms] [WARNING] No routes matched location "/iq/market"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[  268634ms] [WARNING] <Router basename="/home"> is not able to match the URL "/iq/market" because it does not start with the basename, so the <Router> won't render anything. @ https://trading.vietcap.com.vn/home/main.js?v=1777022497399:1

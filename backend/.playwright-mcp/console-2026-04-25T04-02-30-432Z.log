@@ -1,0 +1,10 @@
+[     230ms] [LOG] Zalo Social Plugin is loaded successfully @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022497394:1
+[     230ms] [LOG] socialPluginsShare:  [] @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022497394:1
+[     276ms] [LOG] register h5.event.paused :  @ https://trading.vietcap.com.vn/libs/jssdk-lib.js?v=1777022497394:1
+[     812ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[     913ms] [WARNING] No routes matched location "/iq/market"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[    1386ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/vietcap-iq/main.js?v=1777022497399:1
+[    1605ms] [WARNING] No routes matched location "/iq/market"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[    1610ms] [ERROR] Error: <svg> attribute transform: Expected number, "rotate(undefined)". @ https://trading.vietcap.com.vn/js/react-dom.production.min.js?v=1777022497398:1
+[    1622ms] [ERROR] Error: <svg> attribute transform: Expected number, "rotate(undefined)". @ https://trading.vietcap.com.vn/js/react-dom.production.min.js?v=1777022497398:1
+[    2322ms] [LOG] 🔥 Firebase initialized successfully! @ https://trading.vietcap.com.vn/iq/market:173

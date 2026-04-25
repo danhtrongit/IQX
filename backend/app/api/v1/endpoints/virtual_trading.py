@@ -65,7 +65,7 @@ async def get_account(user: CurrentUser, db: DBSession) -> AccountResponse:
 
 @router.get("/portfolio", response_model=PortfolioResponse, tags=["Virtual Trading"])
 async def get_portfolio(user: CurrentUser, db: DBSession) -> PortfolioResponse:
-    """Get full portfolio (triggers refresh of pending orders/settlements)."""
+    """Get full portfolio — read-only, no refresh/mutation."""
     svc = VirtualTradingService(db)
     data = await svc.get_portfolio(user.id)
     account = data["account"]
@@ -78,7 +78,7 @@ async def get_portfolio(user: CurrentUser, db: DBSession) -> PortfolioResponse:
         nav_vnd=data["nav_vnd"],
         total_unrealized_pnl_vnd=data["total_unrealized_pnl_vnd"],
         return_pct=data["return_pct"],
-        refresh_warnings=data["refresh_warnings"],
+        refresh_warnings=data.get("refresh_warnings", []),
     )
 
 
@@ -108,9 +108,23 @@ async def list_orders(
     page_size: Annotated[int, Query(ge=1, le=100)] = 20,
 ) -> OrderListResponse:
     """List virtual orders with optional filters."""
+    from app.core.exceptions import BadRequestError
+
+    try:
+        o_status = OrderStatus(status) if status else None
+    except ValueError:
+        raise BadRequestError(
+            f"Invalid status filter '{status}'. "
+            f"Valid: pending, filled, cancelled, expired, rejected",
+        ) from None
+    try:
+        o_side = OrderSide(side) if side else None
+    except ValueError:
+        raise BadRequestError(
+            f"Invalid side filter '{side}'. Valid: buy, sell",
+        ) from None
+
     svc = VirtualTradingService(db)
-    o_status = OrderStatus(status) if status else None
-    o_side = OrderSide(side) if side else None
     orders, total = await svc.list_orders(
         user.id, status=o_status, symbol=symbol, side=o_side, page=page, page_size=page_size,
     )
@@ -138,8 +152,8 @@ async def cancel_order(order_id: str, user: PremiumUser, db: DBSession) -> Order
 
 
 @router.post("/refresh", response_model=RefreshResponse, tags=["Virtual Trading"])
-async def refresh(user: CurrentUser, db: DBSession) -> RefreshResponse:
-    """Process pending limit orders, expire GFD, settle T2."""
+async def refresh(user: PremiumUser, db: DBSession) -> RefreshResponse:
+    """Process pending limit orders, expire GFD, settle T2. Requires active premium."""
     svc = VirtualTradingService(db)
     result = await svc.refresh(user.id)
     return RefreshResponse(**result)
@@ -170,10 +184,14 @@ async def get_leaderboard(
 ) -> LeaderboardResponse:
     """Public leaderboard — no auth required."""
     svc = VirtualTradingService(db)
-    entries, total = await svc.get_leaderboard(sort_by=sort_by, page=page, page_size=page_size)
+    entries, evaluated_count, total_eligible = await svc.get_leaderboard(
+        sort_by=sort_by, page=page, page_size=page_size,
+    )
     return LeaderboardResponse(
         entries=[LeaderboardEntry(**e) for e in entries],
-        total=total, page=page, page_size=page_size, sort_by=sort_by,
+        total=evaluated_count, total_eligible=total_eligible,
+        evaluated_count=evaluated_count,
+        page=page, page_size=page_size, sort_by=sort_by,
     )
 
 

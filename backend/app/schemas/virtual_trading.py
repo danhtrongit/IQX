@@ -110,8 +110,8 @@ class OrderCreateRequest(BaseModel):
     symbol: str = Field(..., min_length=1, max_length=10, pattern=r"^[A-Z0-9]{1,10}$")
     side: str = Field(..., pattern=r"^(buy|sell)$")
     order_type: str = Field(..., pattern=r"^(market|limit)$")
-    quantity: int = Field(..., gt=0)
-    limit_price_vnd: int | None = Field(None, gt=0)
+    quantity: int = Field(..., gt=0, le=1_000_000)
+    limit_price_vnd: int | None = Field(None, gt=0, le=10_000_000)
 
 
 class OrderResponse(BaseModel):
@@ -218,7 +218,9 @@ class LeaderboardResponse(BaseModel):
     """Paginated leaderboard."""
 
     entries: list[LeaderboardEntry]
-    total: int
+    total: int  # evaluated count (may be < total_eligible if capped)
+    total_eligible: int  # total active accounts
+    evaluated_count: int  # how many accounts were actually scored
     page: int
     page_size: int
     sort_by: str

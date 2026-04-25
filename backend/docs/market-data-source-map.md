@@ -117,6 +117,43 @@ Supported indicators: `gdp`, `cpi`, `fdi`, `exchange_rate`, `interest_rate`, `mo
 | `GET /news/sources` | STATIC | Static mapping | ✅ |
 | `GET /news/latest` | RSS | RSS feeds from configured news sites | ✅ |
 
+## 11. AI News (`/news/ai`)
+
+| Endpoint | Primary Source | URL | Status |
+|---|---|---|---|
+| `GET /news/ai` | AI.VCI | `GET https://ai.vietcap.com.vn/api/v3/news_info` | ✅ |
+| `GET /news/ai?kind=topic` | AI.VCI | `GET .../api/v3/topics_info` | ✅ |
+| `GET /news/ai?kind=exchange` | AI.VCI | `GET .../api/v3/xnews_info` | ✅ |
+| `GET /news/ai/detail/{slug}` | AI.VCI | `GET .../api/v3/news_from_slug?slug={slug}` | ✅ |
+| `GET /news/ai/audio/{news_id}` | AI.VCI | `GET .../api/audio_from_id?id={news_id}` | ✅ |
+| `GET /news/ai/catalogs` | AI.VCI | Multiple endpoints (topics, sources, industries, tickers) | ✅ partial |
+| `GET /news/ai/tickers/{symbol}` | AI.VCI | Combined: ticker_score + news_info + xnews_info | ✅ partial |
+
+> **Error semantics:** `AINewsNotFoundError` → 404, `AINewsUpstreamShapeError` → 502, `AINewsUpstreamError` → 503. Catalogs/ticker endpoints return `partial=true` + `warnings` on partial failures.
+
+## 12. Market Overview (`/overview`)
+
+Data sourced from Vietcap IQ Market Overview page. All endpoints are public, no auth required.
+
+| Endpoint | Primary Source | Upstream URL | Status |
+|---|---|---|---|
+| `GET /overview/liquidity` | VCI | `POST .../api/chart/v3/OHLCChart/gap-liquidity` | ✅ |
+| `GET /overview/index-impact` | VCI | `POST .../api/market-watch/v2/IndexImpactChart/getData` | ✅ |
+| `GET /overview/foreign` | VCI | `POST .../api/market-watch/v3/ForeignVolumeChart/getAll` | ✅ |
+| `GET /overview/foreign/top` | VCI | `POST .../api/market-watch/v3/ForeignNetValue/top` | ✅ |
+| `GET /overview/proprietary` | VCI | `GET .../api/fiin-api-service/v3/proprietary-trading-value` | ✅ |
+| `GET /overview/proprietary/top` | IQ.VCI | `GET .../api/iq-insight-service/v1/market-watch/top-proprietary` | ✅ |
+| `GET /overview/allocation` | VCI | `POST .../api/market-watch/AllocatedValue/getAllocatedValue` | ✅ |
+| `GET /overview/sectors/allocation` | VCI | `POST .../api/market-watch/AllocatedICB/getAllocated` | ✅ |
+| `GET /overview/valuation` | VCI | `GET .../api/iq-insight-service/v1/market-watch/index-valuation` | ✅ |
+| `GET /overview/breadth` | IQ.VCI | `GET .../api/iq-insight-service/v1/market-watch/breadth` | ✅ |
+| `GET /overview/heatmap` | VCI | `POST .../api/market-watch/HeatMapChart/getByIcb` | ✅ |
+| `GET /overview/heatmap/index` | VCI | `GET .../api/market-watch/HeatMapChart/getIndex` | ✅ |
+
+> **Units:** `*Value` fields = VND, `accumulatedValue` (liquidity) = million VND, `*Volume` = shares. Valuation `value` = ratio. Breadth `percent` = 0-1 ratio.
+
+> **Enum params:** All enum parameters (group, timeFrame, condition, sector, size, type, comGroupCode) are validated server-side → 422 on invalid values.
+
 ## Source Headers
 
 | Source | Referer | Origin |
@@ -125,6 +162,8 @@ Supported indicators: `gdp`, `cpi`, `fdi`, `exchange_rate`, `interest_rate`, `mo
 | VND | `https://mkw.vndirect.com.vn` | `https://mkw.vndirect.com.vn` |
 | KBS | `https://kbbuddywts.kbsec.com.vn/6d054136-b880-4c8b-887b-90311120d1c4` | `https://kbbuddywts.kbsec.com.vn` |
 | MBK | `https://data.maybanktrade.com.vn` | `https://data.maybanktrade.com.vn` |
+| AI.VCI | `https://ai.vietcap.com.vn` | — |
+| IQ.VCI | `https://iq.vietcap.com.vn` | — |
 | FMARKET | — | — |
 | SPL | — | — |
 

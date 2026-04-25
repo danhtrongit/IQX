@@ -1,0 +1,397 @@
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - link [ref=e8] [cursor=pointer]:
+            - /url: /home
+            - generic [ref=e9]:
+              - img [ref=e11]
+              - img [ref=e13]
+          - generic [ref=e15]:
+            - button "Cơ sở" [ref=e17] [cursor=pointer]
+            - button "Phái sinh" [ref=e18] [cursor=pointer]
+          - generic [ref=e19]: 25/04/2026 11:27:21
+        - generic [ref=e95]:
+          - generic [ref=e96]:
+            - img [ref=e97]
+            - 'link "Tối ưu lợi nhuận cùng SAFE Bond: Lợi suất lên tới 10.0%/năm." [ref=e98] [cursor=pointer]':
+              - /url: https://trading.vietcap.com.vn/investment-products/safe-bond/investment
+          - generic [ref=e99]:
+            - img [ref=e100]
+            - link "Cơ hội sở hữu trái phiếu CII – Đăng ký mua ngay hôm nay!" [ref=e101] [cursor=pointer]:
+              - /url: https://trading.vietcap.com.vn/price-board/stock-trading/ipo-subscription
+          - generic [ref=e102]:
+            - img [ref=e103]
+            - link "Go Green Go Up - Chung tay xanh rừng, vững thêm chắn lũ cùng Vietcap" [ref=e104] [cursor=pointer]:
+              - /url: https://trading.vietcap.com.vn/utilities/go-green-go-up
+        - generic [ref=e22]:
+          - generic [ref=e23]:
+            - img [ref=e24] [cursor=pointer]
+            - textbox "Nhập từ khoá"
+          - img [ref=e26] [cursor=pointer]
+          - generic [ref=e27]:
+            - button "Mở tài khoản" [ref=e28] [cursor=pointer]
+            - button "Đăng nhập" [ref=e29] [cursor=pointer]
+          - img [ref=e32] [cursor=pointer]
+      - generic [ref=e35]:
+        - link "Trang chủ" [ref=e36] [cursor=pointer]:
+          - /url: /home
+        - button "Bảng giá" [ref=e38] [cursor=pointer]:
+          - generic [ref=e39]: Bảng giá
+          - img [ref=e40]
+        - button "Thông tin tài sản" [ref=e42] [cursor=pointer]:
+          - generic [ref=e43]: Thông tin tài sản
+          - img [ref=e44]
+        - button "Giao dịch tiền" [ref=e46] [cursor=pointer]:
+          - generic [ref=e47]: Giao dịch tiền
+          - img [ref=e48]
+        - button "Giao Dịch Chứng Khoán" [ref=e50] [cursor=pointer]:
+          - generic [ref=e51]: Giao Dịch Chứng Khoán
+          - img [ref=e52]
+        - button "Vietcap IQ" [ref=e54] [cursor=pointer]:
+          - generic [ref=e55]: Vietcap IQ
+          - img [ref=e56]
+        - button "AI News" [ref=e58] [cursor=pointer]:
+          - generic [ref=e59]: AI News
+          - img [ref=e60]
+        - button "Sản phẩm Đầu tư" [ref=e62] [cursor=pointer]:
+          - generic [ref=e63]: Sản phẩm Đầu tư
+          - img [ref=e64]
+        - button "Tiện ích" [ref=e66] [cursor=pointer]:
+          - generic [ref=e67]: Tiện ích
+          - img [ref=e68]
+    - generic [ref=e108]:
+      - generic [ref=e632]:
+        - tablist [ref=e635]:
+          - tab "Tổng Quan" [selected] [ref=e636]:
+            - generic [ref=e638] [cursor=pointer]: Tổng Quan
+          - listitem
+          - tab "Nhiệt Đồ" [selected] [ref=e639]:
+            - generic [ref=e641] [cursor=pointer]: Nhiệt Đồ
+        - generic [ref=e645]:
+          - generic [ref=e646]: Hôm nay
+          - generic [ref=e647]: 1W
+          - generic [ref=e648]: 1M
+          - generic [ref=e649]: YTD
+          - generic [ref=e650]: 1Y
+      - generic [ref=e113]:
+        - generic [ref=e114]:
+          - link "Vietcap IQ" [ref=e115] [cursor=pointer]:
+            - /url: /iq
+          - generic [ref=e116]: /
+          - link "Thị Trường" [ref=e117]:
+            - /url: /iq/market
+        - generic [ref=e118]:
+          - generic [ref=e119]:
+            - tablist [ref=e122]:
+              - tab "Tổng Quan" [selected] [ref=e123]:
+                - generic [ref=e125] [cursor=pointer]: Tổng Quan
+              - listitem
+              - tab "Nhiệt Đồ" [selected] [ref=e126]:
+                - generic [ref=e128] [cursor=pointer]: Nhiệt Đồ
+            - generic [ref=e132]:
+              - generic [ref=e133]: Hôm nay
+              - generic [ref=e134]: 1W
+              - generic [ref=e135]: 1M
+              - generic [ref=e136]: YTD
+              - generic [ref=e137]: 1Y
+          - tabpanel "Tổng Quan" [ref=e139]:
+            - generic [ref=e141]:
+              - generic [ref=e142]:
+                - generic [ref=e144]:
+                  - generic [ref=e146]:
+                    - heading "Thanh Khoản (tỷ VNĐ)" [level=2] [ref=e149]
+                    - button [ref=e154] [cursor=pointer]
+                  - img [ref=e160]:
+                    - generic [ref=e162]:
+                      - generic [ref=e164]: "0"
+                      - generic [ref=e166]: 7 K
+                      - generic [ref=e168]: 14 K
+                      - generic [ref=e170]: 21 K
+                      - generic [ref=e172]: 28 K
+                      - generic [ref=e174]: 35 K
+                      - generic [ref=e176]: 09:30
+                      - generic [ref=e178]: 10:00
+                      - generic [ref=e180]: 10:30
+                      - generic [ref=e182]: 11:00
+                      - generic [ref=e184]: 13:00
+                      - generic [ref=e186]: 13:30
+                      - generic [ref=e188]: 14:00
+                      - generic [ref=e190]: 14:30
+                      - generic [ref=e192]: 15:00
+                      - generic [ref=e204]: GTGD hôm nay
+                      - generic [ref=e208]: GTGD phiên trước
+                      - generic [ref=e213]: 21,139.70
+                - generic [ref=e215]:
+                  - generic [ref=e217]:
+                    - heading "Nhóm Dẫn Dắt Thị Trường" [level=2] [ref=e220]
+                    - button [ref=e225] [cursor=pointer]
+                  - generic [ref=e229]:
+                    - generic [ref=e230]:
+                      - generic [ref=e231]: Đóng góp tăng
+                      - generic [ref=e232]: Đóng góp giảm
+                    - img [ref=e235]:
+                      - generic [ref=e237]:
+                        - generic [ref=e239]: CEO
+                        - generic [ref=e241]: HUT
+                        - generic [ref=e243]: SHS
+                        - generic [ref=e245]: PVI
+                        - generic [ref=e247]: IDC
+                        - generic [ref=e249]: PVS
+                        - generic [ref=e251]: KSF
+                        - generic [ref=e253]: VPB
+                        - generic [ref=e255]: VHM
+                        - generic [ref=e257]: VIC
+                        - generic [ref=e259]: FPT
+                        - generic [ref=e261]: KSV
+                        - generic [ref=e263]: DGC
+                        - generic [ref=e265]: ACV
+                        - generic [ref=e267]: HVN
+                        - generic [ref=e269]: SSB
+                        - generic [ref=e271]: HGM
+                        - generic [ref=e273]: VEF
+                        - generic [ref=e275]: KDC
+                        - generic [ref=e277]: SSH
+                        - generic [ref=e297]: "1.80"
+                        - generic [ref=e298]: "2.33"
+                        - generic [ref=e299]: "2.51"
+                        - generic [ref=e300]: "2.90"
+                        - generic [ref=e301]: "3.52"
+                        - generic [ref=e302]: "4.22"
+                        - generic [ref=e303]: "5.29"
+                        - generic [ref=e317]: "20.96"
+                        - generic [ref=e304]: "76.54"
+                        - generic [ref=e305]: "321.98"
+                        - generic [ref=e306]: "-8.90"
+                        - generic [ref=e307]: "-5.50"
+                        - generic [ref=e308]: "-3.18"
+                        - generic [ref=e309]: "-2.80"
+                        - generic [ref=e310]: "-1.29"
+                        - generic [ref=e311]: "-1.29"
+                        - generic [ref=e312]: "-0.92"
+                        - generic [ref=e313]: "-0.78"
+                        - generic [ref=e314]: "-0.75"
+                        - generic [ref=e315]: "-0.57"
+              - generic [ref=e319]:
+                - generic [ref=e320]:
+                  - tablist [ref=e323]:
+                    - tab "Nước Ngoài" [ref=e324]:
+                      - generic [ref=e326] [cursor=pointer]: Nước Ngoài
+                    - listitem
+                    - tab "Tự Doanh" [selected] [ref=e327] [cursor=pointer]:
+                      - generic [ref=e329]: Tự Doanh
+                  - button [ref=e332] [cursor=pointer]
+                - generic [ref=e651]:
+                  - text: Biểu đồ thể hiện các cổ phiếu (bao gồm các quỹ ETF) được tự doanh giao dịch nhiều nhất theo
+                  - strong [ref=e652]: Khối lượng
+                  - text: ","
+                  - strong [ref=e653]: Giá trị
+                  - text: và
+                  - strong [ref=e654]: Mua/Bán ròng
+                - generic [ref=e339]:
+                  - tabpanel "Nước Ngoài":
+                    - generic:
+                      - generic:
+                        - generic:
+                          - heading "KL (CP)" [level=6]
+                          - generic:
+                            - generic: 04/2026
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Ròng tích luỹ
+                            - generic: "-2,426.9 triệu"
+                          - generic:
+                            - generic:
+                              - generic: Ròng
+                            - generic: "-122.4 triệu"
+                        - generic:
+                          - heading "GT (VNĐ)" [level=6]
+                          - generic:
+                            - generic: 04/2026
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Ròng tích luỹ
+                            - generic: "-135,463.9 tỷ"
+                          - generic:
+                            - generic:
+                              - generic: Ròng
+                            - generic: "-9,640.8 tỷ"
+                  - tabpanel "Tự Doanh" [ref=e655]:
+                    - generic [ref=e658]:
+                      - generic [ref=e663]:
+                        - img [ref=e665]:
+                          - generic [ref=e667]:
+                            - generic [ref=e669]: "-300 M"
+                            - generic [ref=e671]: "-100 M"
+                            - generic [ref=e673]: 100 M
+                            - generic [ref=e675]: "-300 M"
+                            - generic [ref=e677]: "0"
+                            - generic [ref=e679]: 300 M
+                            - generic [ref=e681]: "-5 T"
+                            - generic [ref=e683]: "0"
+                            - generic [ref=e685]: 5 T
+                            - generic [ref=e687]: "-5 T"
+                            - generic [ref=e689]: "0"
+                            - generic [ref=e691]: 5 T
+                            - generic [ref=e693]: 06/2025
+                            - generic [ref=e695]: 08/2025
+                            - generic [ref=e697]: 10/2025
+                            - generic [ref=e699]: 12/2025
+                            - generic [ref=e701]: 02/2026
+                            - generic [ref=e703]: 04/2026
+                            - generic [ref=e705]: 06/2025
+                            - generic [ref=e707]: 08/2025
+                            - generic [ref=e709]: 10/2025
+                            - generic [ref=e711]: 12/2025
+                            - generic [ref=e713]: 02/2026
+                            - generic [ref=e715]: 04/2026
+                            - generic [ref=e717]: 06/2025
+                            - generic [ref=e719]: 08/2025
+                            - generic [ref=e721]: 10/2025
+                            - generic [ref=e723]: 12/2025
+                            - generic [ref=e725]: 02/2026
+                            - generic [ref=e727]: 04/2026
+                        - generic:
+                          - generic:
+                            - generic:
+                              - heading "KL (CP)" [level=6]
+                              - generic:
+                                - generic: 04/2026
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic: Ròng tích luỹ
+                                - generic: "-29.5 triệu"
+                              - generic:
+                                - generic:
+                                  - generic: Ròng
+                                - generic: 45.1 triệu
+                            - generic:
+                              - heading "GT (VNĐ)" [level=6]
+                              - generic:
+                                - generic: 04/2026
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic: Ròng tích luỹ
+                                - generic: 3,112.5 tỷ
+                              - generic:
+                                - generic:
+                                  - generic: Ròng
+                                - generic: "-127.6 tỷ"
+                      - generic [ref=e783]:
+                        - heading "Top cổ phiếu giao dịch (tỷ VNĐ)" [level=2] [ref=e788]
+                        - generic [ref=e791]:
+                          - generic [ref=e792]:
+                            - generic [ref=e793]: Mua ròng
+                            - generic [ref=e794]: Bán ròng
+                          - img [ref=e797]:
+                            - generic [ref=e799]:
+                              - generic [ref=e801]: KDH
+                              - generic [ref=e803]: MSN
+                              - generic [ref=e805]: KBC
+                              - generic [ref=e807]: CTG
+                              - generic [ref=e809]: FPT
+                              - generic [ref=e811]: MWG
+                              - generic [ref=e813]: GEX
+                              - generic [ref=e815]: MCH
+                              - generic [ref=e817]: E1VFVN30
+                              - generic [ref=e819]: GEE
+                              - generic [ref=e821]: VPB
+                              - generic [ref=e823]: SHS
+                              - generic [ref=e825]: BSR
+                              - generic [ref=e827]: PC1
+                              - generic [ref=e829]: VIC
+                              - generic [ref=e831]: VSC
+                              - generic [ref=e833]: HAG
+                              - generic [ref=e835]: VPX
+                              - generic [ref=e837]: EVF
+                              - generic [ref=e839]: STB
+                              - generic [ref=e860]: "419.1"
+                              - generic [ref=e861]: "515.3"
+                              - generic [ref=e862]: "674.5"
+                              - generic [ref=e863]: "706.1"
+                              - generic [ref=e864]: "906.0"
+                              - generic [ref=e865]: 1.1 K
+                              - generic [ref=e866]: 1.2 K
+                              - generic [ref=e867]: 1.3 K
+                              - generic [ref=e868]: 1.8 K
+                              - generic [ref=e869]: 3.2 K
+                              - generic [ref=e870]: "-3.6 K"
+                              - generic [ref=e871]: "-863.2"
+                              - generic [ref=e872]: "-836.2"
+                              - generic [ref=e873]: "-647.4"
+                              - generic [ref=e874]: "-637.4"
+                              - generic [ref=e875]: "-617.4"
+                              - generic [ref=e876]: "-559.7"
+                              - generic [ref=e877]: "-552.3"
+                              - generic [ref=e878]: "-404.9"
+                              - generic [ref=e879]: "-396.4"
+              - generic [ref=e491]:
+                - heading "Phân Bổ" [level=2] [ref=e494]
+                - button [ref=e499] [cursor=pointer]
+              - generic [ref=e504]:
+                - generic [ref=e506]:
+                  - generic [ref=e508]:
+                    - heading "P/E - TTM" [level=2] [ref=e511]
+                    - generic [ref=e515]:
+                      - log [ref=e517]
+                      - generic [ref=e518] [cursor=pointer]:
+                        - generic [ref=e519]:
+                          - generic [ref=e522]: VNINDEX
+                          - combobox [ref=e523]
+                        - img [ref=e526]
+                  - generic [ref=e534]:
+                    - generic [ref=e535]: 6M
+                    - generic [ref=e536]: YTD
+                    - generic [ref=e537]: 1Y
+                    - generic [ref=e538]: 2Y
+                    - generic [ref=e539]: 5Y
+                    - generic [ref=e540]: All
+                    - button [ref=e547] [cursor=pointer]
+                - generic [ref=e550]:
+                  - generic [ref=e552]:
+                    - heading "P/B - TTM" [level=2] [ref=e555]
+                    - generic [ref=e559]:
+                      - log [ref=e561]
+                      - generic [ref=e562] [cursor=pointer]:
+                        - generic [ref=e563]:
+                          - generic [ref=e566]: VNINDEX
+                          - combobox [ref=e567]
+                        - img [ref=e570]
+                  - generic [ref=e578]:
+                    - generic [ref=e579]: 6M
+                    - generic [ref=e580]: YTD
+                    - generic [ref=e581]: 1Y
+                    - generic [ref=e582]: 2Y
+                    - generic [ref=e583]: 5Y
+                    - generic [ref=e584]: All
+                    - button [ref=e591] [cursor=pointer]
+              - generic [ref=e594]:
+                - generic [ref=e596]:
+                  - heading "Độ Rộng" [level=2] [ref=e599]
+                  - button [ref=e604] [cursor=pointer]
+                - generic [ref=e612]:
+                  - generic [ref=e613]: 6M
+                  - generic [ref=e614]: YTD
+                  - generic [ref=e615]: 1Y
+                  - generic [ref=e616]: 2Y
+                  - generic [ref=e617]: 5Y
+                  - generic [ref=e618]: All
+                  - button [ref=e625] [cursor=pointer]
+  - generic [ref=e71]:
+    - generic [ref=e73]:
+      - text: "Cơ sở: Giá: x1,000 - Khối lượng: x1"
+      - text: "Phái sinh & Bond: Giá: x1 - Khối lượng: x1"
+    - generic [ref=e75]:
+      - generic [ref=e77] [cursor=pointer]: OTP
+      - generic [ref=e78] [cursor=pointer]:
+        - img [ref=e80]
+        - generic [ref=e83]: Tài sản
+      - generic [ref=e85] [cursor=pointer]:
+        - img [ref=e87]
+        - generic [ref=e89]: Sổ lệnh
+      - generic [ref=e91] [cursor=pointer]: Đặt lệnh

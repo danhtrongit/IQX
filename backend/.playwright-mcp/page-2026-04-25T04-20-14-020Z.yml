@@ -1,0 +1,34 @@
+- generic [ref=e5]:
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - link:
+        - /url: /home
+      - generic [ref=e10]:
+        - button "Cơ sở" [ref=e11] [cursor=pointer]
+        - button "Phái sinh" [ref=e12] [cursor=pointer]
+      - generic [ref=e13]: "---"
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - textbox "Nhập từ khoá"
+      - generic [ref=e19]:
+        - button "Mở tài khoản" [ref=e20] [cursor=pointer]
+        - button "Đăng nhập" [ref=e21] [cursor=pointer]
+  - generic [ref=e26]:
+    - link "Trang chủ" [ref=e27] [cursor=pointer]:
+      - /url: /home
+    - button "Bảng giá" [ref=e29] [cursor=pointer]:
+      - generic [ref=e30]: Bảng giá
+    - button "Thông tin tài sản" [ref=e32] [cursor=pointer]:
+      - generic [ref=e33]: Thông tin tài sản
+    - button "Giao dịch tiền" [ref=e35] [cursor=pointer]:
+      - generic [ref=e36]: Giao dịch tiền
+    - button "Giao Dịch Chứng Khoán" [ref=e38] [cursor=pointer]:
+      - generic [ref=e39]: Giao Dịch Chứng Khoán
+    - button "Vietcap IQ" [ref=e41] [cursor=pointer]:
+      - generic [ref=e42]: Vietcap IQ
+    - button "AI News" [ref=e44] [cursor=pointer]:
+      - generic [ref=e45]: AI News
+    - button "Sản phẩm Đầu tư" [ref=e47] [cursor=pointer]:
+      - generic [ref=e48]: Sản phẩm Đầu tư
+    - button "Tiện ích" [ref=e50] [cursor=pointer]:
+      - generic [ref=e51]: Tiện ích

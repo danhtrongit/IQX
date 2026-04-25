@@ -332,6 +332,22 @@ Vendor-independent market data API. No runtime dependency on `vnstock`/`vnstock_
 | Commodities | `GET /api/v1/market-data/macro/commodities` | SPL | ✅ |
 | Funds | `GET /api/v1/market-data/funds` | Fmarket | ✅ |
 | News | `GET /api/v1/market-data/news/latest` | RSS | ✅ |
+| AI News | `GET /api/v1/market-data/news/ai` | AI.VCI | ✅ |
+| AI News | `GET /api/v1/market-data/news/ai/detail/{slug}` | AI.VCI | ✅ |
+| AI News | `GET /api/v1/market-data/news/ai/catalogs` | AI.VCI | ✅ partial |
+| AI News | `GET /api/v1/market-data/news/ai/tickers/{symbol}` | AI.VCI | ✅ partial |
+| Overview | `GET /api/v1/market-data/overview/liquidity` | VCI | ✅ |
+| Overview | `GET /api/v1/market-data/overview/index-impact` | VCI | ✅ |
+| Overview | `GET /api/v1/market-data/overview/foreign` | VCI | ✅ |
+| Overview | `GET /api/v1/market-data/overview/foreign/top` | VCI | ✅ |
+| Overview | `GET /api/v1/market-data/overview/proprietary` | VCI | ✅ |
+| Overview | `GET /api/v1/market-data/overview/proprietary/top` | IQ.VCI | ✅ |
+| Overview | `GET /api/v1/market-data/overview/allocation` | VCI | ✅ |
+| Overview | `GET /api/v1/market-data/overview/sectors/allocation` | VCI | ✅ |
+| Overview | `GET /api/v1/market-data/overview/valuation` | VCI | ✅ |
+| Overview | `GET /api/v1/market-data/overview/breadth` | IQ.VCI | ✅ |
+| Overview | `GET /api/v1/market-data/overview/heatmap` | VCI | ✅ |
+| Overview | `GET /api/v1/market-data/overview/heatmap/index` | VCI | ✅ |
 
 > **Company data** is sourced from KBS (KB Securities). The `/company/{symbol}/events` endpoint has been removed because neither KBS nor VCI can reliably provide company events data.
 
@@ -339,10 +355,10 @@ Vendor-independent market data API. No runtime dependency on `vnstock`/`vnstock_
 
 ```bash
 # Unit tests (mocked, no network)
-uv run pytest tests/test_market_data.py -q
+uv run pytest tests/test_market_data.py tests/test_ai_news.py tests/test_market_overview.py -q
 
 # Live smoke tests (hits real upstream APIs)
-RUN_MARKET_DATA_LIVE_TESTS=1 uv run pytest tests/test_market_data_live.py -v
+RUN_MARKET_DATA_LIVE_TESTS=1 uv run pytest tests/test_market_data_live.py tests/test_ai_news.py tests/test_market_overview.py -v
 ```
 
 ### Source Map

@@ -677,6 +677,539 @@ async def list_news_sources() -> MarketDataResponse:
         ),
     )
 
+# ══════════════════════════════════════════════════════
+# 11b. Market Overview (Vietcap)
+# ══════════════════════════════════════════════════════
+
+
+def _validate_overview_enum(val: str, valid: set[str], name: str) -> None:
+    if val not in valid:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid {name}='{val}'. Valid: {', '.join(sorted(valid))}",
+        )
+
+
+@router.get("/overview/liquidity", tags=["Market Data: Overview"])
+async def get_liquidity(
+    symbols: Annotated[str, Query(description="ALL, VNINDEX, HNXIndex, HNXUpcomIndex")] = "ALL",
+    time_frame: Annotated[str, Query(description="ONE_MINUTE, ONE_DAY, etc")] = "ONE_MINUTE",
+    from_ts: Annotated[int | None, Query(description="Unix epoch seconds")] = None,
+    to_ts: Annotated[int | None, Query(description="Unix epoch seconds")] = None,
+) -> dict[str, Any]:
+    """Fetch liquidity data. Units: accumulatedValue = million VND."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        LIQUIDITY_SYMBOLS,
+        TIME_FRAMES_LIQUIDITY,
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_liquidity,
+    )
+    _validate_overview_enum(symbols, LIQUIDITY_SYMBOLS, "symbols")
+    _validate_overview_enum(time_frame, TIME_FRAMES_LIQUIDITY, "time_frame")
+    try:
+        data, url = await fetch_liquidity(
+            symbols=symbols, time_frame=time_frame,
+            from_ts=from_ts, to_ts=to_ts,
+        )
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/overview/index-impact", tags=["Market Data: Overview"])
+async def get_index_impact(
+    group: Annotated[str, Query()] = "ALL",
+    time_frame: Annotated[str, Query()] = "ONE_DAY",
+) -> dict[str, Any]:
+    """Top stocks impacting index. Units: impact = index points."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        GROUPS,
+        TIME_FRAMES_IMPACT,
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_index_impact,
+    )
+    _validate_overview_enum(group, GROUPS, "group")
+    _validate_overview_enum(time_frame, TIME_FRAMES_IMPACT, "time_frame")
+    try:
+        data, url = await fetch_index_impact(group=group, time_frame=time_frame)
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/overview/foreign", tags=["Market Data: Overview"])
+async def get_foreign(
+    group: Annotated[str, Query()] = "ALL",
+    time_frame: Annotated[str, Query()] = "ONE_MONTH",
+    from_ts: Annotated[int | None, Query()] = None,
+    to_ts: Annotated[int | None, Query()] = None,
+) -> dict[str, Any]:
+    """Foreign buy/sell volume/value. Units: *Value = VND, *Volume = shares."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        GROUPS,
+        TIME_FRAMES_IMPACT,
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_foreign,
+    )
+    _validate_overview_enum(group, GROUPS, "group")
+    _validate_overview_enum(time_frame, TIME_FRAMES_IMPACT, "time_frame")
+    try:
+        data, url = await fetch_foreign(
+            group=group, time_frame=time_frame, from_ts=from_ts, to_ts=to_ts,
+        )
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/overview/foreign/top", tags=["Market Data: Overview"])
+async def get_foreign_top(
+    group: Annotated[str, Query()] = "ALL",
+    time_frame: Annotated[str, Query()] = "ONE_YEAR",
+    from_ts: Annotated[int | None, Query()] = None,
+    to_ts: Annotated[int | None, Query()] = None,
+) -> dict[str, Any]:
+    """Top foreign net buy/sell stocks. Units: net/value = VND."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        GROUPS,
+        TIME_FRAMES_IMPACT,
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_foreign_top,
+    )
+    _validate_overview_enum(group, GROUPS, "group")
+    _validate_overview_enum(time_frame, TIME_FRAMES_IMPACT, "time_frame")
+    try:
+        data, url = await fetch_foreign_top(
+            group=group, time_frame=time_frame, from_ts=from_ts, to_ts=to_ts,
+        )
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/overview/proprietary", tags=["Market Data: Overview"])
+async def get_proprietary(
+    market: Annotated[str, Query()] = "ALL",
+    time_frame: Annotated[str, Query()] = "ONE_YEAR",
+) -> dict[str, Any]:
+    """Proprietary trading data. Units: *Value = VND, *Volume = shares."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        GROUPS,
+        TIME_FRAMES_IMPACT,
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_proprietary,
+    )
+    _validate_overview_enum(market, GROUPS, "market")
+    _validate_overview_enum(time_frame, TIME_FRAMES_IMPACT, "time_frame")
+    try:
+        data, url = await fetch_proprietary(market=market, time_frame=time_frame)
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/overview/proprietary/top", tags=["Market Data: Overview"])
+async def get_proprietary_top(
+    exchange: Annotated[str, Query()] = "ALL",
+    time_frame: Annotated[str, Query()] = "ONE_YEAR",
+) -> dict[str, Any]:
+    """Top proprietary net buy/sell. Units: totalValue = VND."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        GROUPS,
+        TIME_FRAMES_IMPACT,
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_proprietary_top,
+    )
+    _validate_overview_enum(exchange, GROUPS, "exchange")
+    _validate_overview_enum(time_frame, TIME_FRAMES_IMPACT, "time_frame")
+    try:
+        data, url = await fetch_proprietary_top(
+            exchange=exchange, time_frame=time_frame,
+        )
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/overview/allocation", tags=["Market Data: Overview"])
+async def get_allocation(
+    group: Annotated[str, Query()] = "ALL",
+    time_frame: Annotated[str, Query()] = "ONE_YEAR",
+) -> dict[str, Any]:
+    """Market allocation (up/down/flat). Units: values = VND."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        GROUPS,
+        TIME_FRAMES_IMPACT,
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_allocation,
+    )
+    _validate_overview_enum(group, GROUPS, "group")
+    _validate_overview_enum(time_frame, TIME_FRAMES_IMPACT, "time_frame")
+    try:
+        data, url = await fetch_allocation(group=group, time_frame=time_frame)
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/overview/sectors/allocation", tags=["Market Data: Overview"])
+async def get_sectors_allocation(
+    group: Annotated[str, Query()] = "ALL",
+    time_frame: Annotated[str, Query()] = "ONE_YEAR",
+) -> dict[str, Any]:
+    """ICB sector allocation. Units: totalValue = VND."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        GROUPS,
+        TIME_FRAMES_IMPACT,
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_sectors_allocation,
+    )
+    _validate_overview_enum(group, GROUPS, "group")
+    _validate_overview_enum(time_frame, TIME_FRAMES_IMPACT, "time_frame")
+    try:
+        data, url = await fetch_sectors_allocation(
+            group=group, time_frame=time_frame,
+        )
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/overview/valuation", tags=["Market Data: Overview"])
+async def get_valuation(
+    val_type: Annotated[str, Query(alias="type", description="pe, pb")] = "pe",
+    com_group_code: Annotated[str, Query(description="VNINDEX, VN30, etc")] = "VNINDEX",
+    time_frame: Annotated[str, Query()] = "ONE_YEAR",
+) -> dict[str, Any]:
+    """P/E or P/B valuation history. Units: value = ratio."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        COM_GROUP_CODES,
+        TIME_FRAMES_VALUATION,
+        VALUATION_TYPES,
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_valuation,
+    )
+    _validate_overview_enum(val_type, VALUATION_TYPES, "type")
+    _validate_overview_enum(com_group_code, COM_GROUP_CODES, "com_group_code")
+    _validate_overview_enum(time_frame, TIME_FRAMES_VALUATION, "time_frame")
+    try:
+        data, url = await fetch_valuation(
+            val_type=val_type, com_group_code=com_group_code,
+            time_frame=time_frame,
+        )
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/overview/breadth", tags=["Market Data: Overview"])
+async def get_breadth(
+    condition: Annotated[str, Query()] = "EMA50",
+    exchange: Annotated[str, Query(description="HSX,HNX,UPCOM")] = "HSX,HNX,UPCOM",
+    period: Annotated[str, Query(description="M6, YTD, Y1, Y2, Y5, ALL")] = "Y1",
+) -> dict[str, Any]:
+    """Market breadth. Units: percent = 0-1 ratio."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        BREADTH_CONDITIONS,
+        BREADTH_PERIODS,
+        EXCHANGES_BREADTH,
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_breadth,
+    )
+    _validate_overview_enum(condition, BREADTH_CONDITIONS, "condition")
+    _validate_overview_enum(period, BREADTH_PERIODS, "period")
+    # Validate each exchange in comma-separated list
+    for ex in exchange.split(","):
+        _validate_overview_enum(ex.strip(), EXCHANGES_BREADTH, "exchange")
+    try:
+        data, url = await fetch_breadth(
+            condition=condition, exchange=exchange, period=period,
+        )
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/overview/heatmap", tags=["Market Data: Overview"])
+async def get_heatmap(
+    group: Annotated[str, Query()] = "ALL",
+    sector: Annotated[str, Query(description="icb_code_1..4")] = "icb_code_2",
+    size: Annotated[str, Query(description="MKC, VOL, VAL")] = "MKC",
+) -> dict[str, Any]:
+    """Heatmap by ICB sector. Units: value = million VND, price = VND."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        GROUPS,
+        HEATMAP_SECTORS,
+        HEATMAP_SIZES,
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_heatmap,
+    )
+    _validate_overview_enum(group, GROUPS, "group")
+    _validate_overview_enum(sector, HEATMAP_SECTORS, "sector")
+    _validate_overview_enum(size, HEATMAP_SIZES, "size")
+    try:
+        data, url = await fetch_heatmap(group=group, sector=sector, size=size)
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/overview/heatmap/index", tags=["Market Data: Overview"])
+async def get_heatmap_index() -> dict[str, Any]:
+    """Heatmap index summary. Units: value = million VND."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_heatmap_index,
+    )
+    try:
+        data, url = await fetch_heatmap_index()
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+# ══════════════════════════════════════════════════════
+# 12. AI News (Vietcap)
+# ══════════════════════════════════════════════════════
+
+_VALID_NEWS_KINDS = {"business", "topic", "exchange"}
+_VALID_SENTIMENTS = {"Positive", "Neutral", "Negative", ""}
+
+
+def _validate_date_str(d: str | None) -> str:
+    """Validate as exactly YYYY-MM-DD and a real calendar date. Returns '' if None."""
+    if not d:
+        return ""
+    import re as _re
+    from datetime import date as _date
+    # Reject ISO week dates (2026-W17-6), compact (20260425), etc.
+    if not _re.fullmatch(r"\d{4}-\d{2}-\d{2}", d):
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid date format: '{d}'. Must be exactly YYYY-MM-DD.",
+        )
+    try:
+        _date.fromisoformat(d)
+    except ValueError:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid date: '{d}'. Not a valid calendar date.",
+        ) from None
+    return d
+
+
+@router.get("/news/ai", tags=["Market Data: AI News"])
+async def get_ai_news(
+    kind: Annotated[str, Query(description="business, topic, exchange")] = "business",
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
+    ticker: Annotated[str | None, Query()] = None,
+    topic: Annotated[str | None, Query()] = None,
+    industry: Annotated[str | None, Query()] = None,
+    source: Annotated[str | None, Query(description="Source key")] = None,
+    sentiment: Annotated[str | None, Query(description="Positive, Neutral, Negative")] = None,
+    update_from: Annotated[str | None, Query(description="YYYY-MM-DD")] = None,
+    update_to: Annotated[str | None, Query(description="YYYY-MM-DD")] = None,
+) -> dict[str, Any]:
+    """Fetch AI-curated news list (business/topic/exchange)."""
+    from app.services.market_data.sources.vietcap_ai_news import (
+        AINewsUpstreamError,
+        AINewsUpstreamShapeError,
+        fetch_news_list,
+    )
+
+    if kind not in _VALID_NEWS_KINDS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid kind='{kind}'. Valid: {', '.join(sorted(_VALID_NEWS_KINDS))}",
+        )
+    if sentiment and sentiment not in _VALID_SENTIMENTS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid sentiment='{sentiment}'. Valid: Positive, Neutral, Negative",
+        )
+    uf = _validate_date_str(update_from)
+    ut = _validate_date_str(update_to)
+
+    try:
+        items, total, url = await fetch_news_list(
+            kind,
+            page=page, page_size=page_size,
+            ticker=ticker or "", industry=industry or "",
+            topic=topic or "", source=source or "",
+            sentiment=sentiment or "",
+            update_from=uf, update_to=ut,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except AINewsUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except AINewsUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    return {
+        "data": items, "total_records": total, "kind": kind,
+        "page": page, "page_size": page_size, "source_url": url,
+    }
+
+
+@router.get("/news/ai/detail/{slug}", tags=["Market Data: AI News"])
+async def get_ai_news_detail(slug: str) -> dict[str, Any]:
+    """Fetch AI news detail by slug."""
+    from app.services.market_data.sources.vietcap_ai_news import (
+        AINewsNotFoundError,
+        AINewsUpstreamError,
+        AINewsUpstreamShapeError,
+        fetch_news_detail,
+    )
+
+    try:
+        detail, url = await fetch_news_detail(slug)
+    except AINewsNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except AINewsUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except AINewsUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    return {"data": detail, "source_url": url}
+
+
+@router.get("/news/ai/audio/{news_id}", tags=["Market Data: AI News"])
+async def get_ai_news_audio(news_id: str) -> dict[str, Any]:
+    """Fetch audio URLs by news id."""
+    from app.services.market_data.sources.vietcap_ai_news import (
+        AINewsNotFoundError,
+        AINewsUpstreamError,
+        AINewsUpstreamShapeError,
+        fetch_audio,
+    )
+
+    try:
+        audio, url = await fetch_audio(news_id)
+    except AINewsNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except AINewsUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except AINewsUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    return {"data": audio, "source_url": url}
+
+
+@router.get("/news/ai/catalogs", tags=["Market Data: AI News"])
+async def get_ai_news_catalogs() -> dict[str, Any]:
+    """Fetch catalogs. Returns partial=true with warnings if any sub-fetch fails."""
+    from app.services.market_data.sources.vietcap_ai_news import fetch_catalogs
+
+    catalogs, urls = await fetch_catalogs()
+    return {
+        "data": catalogs,
+        "partial": catalogs.get("partial", False),
+        "warnings": catalogs.get("warnings", []),
+        "source_urls": urls,
+    }
+
+
+@router.get("/news/ai/tickers/{symbol}", tags=["Market Data: AI News"])
+async def get_ai_ticker_view(
+    symbol: str,
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=50)] = 12,
+    sentiment: Annotated[str | None, Query()] = None,
+    source: Annotated[str | None, Query()] = None,
+    update_from: Annotated[str | None, Query(description="YYYY-MM-DD")] = None,
+    update_to: Annotated[str | None, Query(description="YYYY-MM-DD")] = None,
+) -> dict[str, Any]:
+    """Combined ticker view: sentiment + business news + exchange news.
+
+    Partial failures are surfaced via warnings, not silently swallowed.
+    """
+    from app.services.market_data.sources.vietcap_ai_news import (
+        AINewsUpstreamError,
+        AINewsUpstreamShapeError,
+        fetch_news_list,
+        fetch_ticker_sentiment,
+    )
+
+    if not _validate_symbol(symbol):
+        raise HTTPException(status_code=422, detail=f"Invalid symbol: {symbol}")
+    if sentiment and sentiment not in _VALID_SENTIMENTS:
+        raise HTTPException(status_code=422, detail=f"Invalid sentiment: {sentiment}")
+    uf = _validate_date_str(update_from)
+    ut = _validate_date_str(update_to)
+
+    warnings: list[str] = []
+
+    try:
+        sentiment_data, _ = await fetch_ticker_sentiment(symbol)
+    except (AINewsUpstreamError, AINewsUpstreamShapeError) as exc:
+        warnings.append(f"sentiment: {exc}")
+        sentiment_data = {"ticker": symbol.upper(), "score": 0, "sentiment": ""}
+
+    kw: dict[str, Any] = {
+        "page": page, "page_size": page_size,
+        "ticker": symbol.upper(), "source": source or "",
+        "sentiment": sentiment or "",
+        "update_from": uf, "update_to": ut,
+    }
+    try:
+        biz_items, biz_total, _ = await fetch_news_list("business", **kw)
+    except (AINewsUpstreamError, AINewsUpstreamShapeError) as exc:
+        warnings.append(f"business_news: {exc}")
+        biz_items, biz_total = [], 0
+    try:
+        ex_items, ex_total, _ = await fetch_news_list("exchange", **kw)
+    except (AINewsUpstreamError, AINewsUpstreamShapeError) as exc:
+        warnings.append(f"exchange_news: {exc}")
+        ex_items, ex_total = [], 0
+
+    return {
+        "ticker": symbol.upper(),
+        "sentiment": sentiment_data,
+        "business_news": {"data": biz_items, "total_records": biz_total},
+        "exchange_news": {"data": ex_items, "total_records": ex_total},
+        "partial": len(warnings) > 0,
+        "warnings": warnings,
+        "page": page, "page_size": page_size,
+    }
+
 
 # ══════════════════════════════════════════════════════
 # Helpers

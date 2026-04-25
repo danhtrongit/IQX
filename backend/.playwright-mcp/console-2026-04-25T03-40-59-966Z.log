@@ -1,0 +1,101 @@
+[     631ms] [LOG] Zalo Social Plugin is loaded successfully @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022497394:1
+[     631ms] [LOG] socialPluginsShare:  [] @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022497394:1
+[     697ms] [LOG] register h5.event.paused :  @ https://trading.vietcap.com.vn/libs/jssdk-lib.js?v=1777022497394:1
+[     866ms] [INFO] Logout with session reload @ https://trading.vietcap.com.vn/main.js?v=1777022497398:1
+[     869ms] [LOG] 🔥 Firebase initialized successfully! @ https://trading.vietcap.com.vn/ai-news?exchange=hose:173
+[    1541ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[    1668ms] [WARNING] No routes matched location "/ai-news?exchange=hose"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[    2330ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022497399:1
+[    2452ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://firebase.googleapis.com/v1alpha/projects/-/apps/1:931454310983:web:87e8683c724406d5a2af62/webConfig:0
+[    2486ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://firebaseinstallations.googleapis.com/v1/projects/ai-news-6a1e3/installations:0
+[    2494ms] [WARNING] [2026-04-25T03:41:02.459Z]  @firebase/analytics: Failed to fetch this Firebase app's measurement ID from the server. Falling back to the measurement ID G-R0HFZTH6RG provided in the "measurementId" field in the local Firebase config. [Analytics: Dynamic config fetch failed: [400] API key expired. Please renew the API key. (analytics/config-fetch-failed).] @ https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022497399:1
+[    2495ms] [WARNING] No routes matched location "/ai-news?exchange=hose"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[    2497ms] [ERROR] FirebaseError: Installations: Create Installation request failed with error "400 INVALID_ARGUMENT: API key expired. Please renew the API key." (installations/request-failed).
+    at xd (https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022497399:2:936160)
+    at async https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022497399:2:938819
+    at async https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022497399:2:938342 @ https://trading.vietcap.com.vn/main/main.js?v=1777022497398:1
+[   94024ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ https://ai.vietcap.com.vn/api/v3/news_detail?id=a6b16c51c6d0f143a8ac56851ad18315414e9f7eecc076314c34ffdd536d7903&language=vi:0
+[   94043ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ https://ai.vietcap.com.vn/api/v3/news_detail/a6b16c51c6d0f143a8ac56851ad18315414e9f7eecc076314c34ffdd536d7903?language=vi:0
+[   94061ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ https://ai.vietcap.com.vn/api/v3/news_info/a6b16c51c6d0f143a8ac56851ad18315414e9f7eecc076314c34ffdd536d7903?language=vi:0
+[   94077ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ https://ai.vietcap.com.vn/api/v3/news_info/detail?id=a6b16c51c6d0f143a8ac56851ad18315414e9f7eecc076314c34ffdd536d7903&language=vi:0
+[   94092ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ https://ai.vietcap.com.vn/api/v3/news_info/detail/a6b16c51c6d0f143a8ac56851ad18315414e9f7eecc076314c34ffdd536d7903?language=vi:0
+[   94111ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ https://ai.vietcap.com.vn/api/v3/get_news_detail?id=a6b16c51c6d0f143a8ac56851ad18315414e9f7eecc076314c34ffdd536d7903&language=vi:0
+[   94129ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ https://ai.vietcap.com.vn/api/v3/news_by_id?id=a6b16c51c6d0f143a8ac56851ad18315414e9f7eecc076314c34ffdd536d7903&language=vi:0
+[  111196ms] [WARNING] No routes matched location "/ai-news/post-detail/hdb-dhdcd-hdbank-2026-loi-nhuan-ke-hoach-tang-41-quy-mo-tiem-can-1-2-trieu-ty-dong?language=vi"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[  111612ms] [LOG] Zalo Social Plugin is loaded successfully @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022497394:1
+[  111613ms] [LOG] socialPluginsShare:  [] @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022497394:1
+[  148981ms] [ERROR] Loading media from  'https://vietcap-ai.s3.ap-southeast-1.amazonaws.com/prod/voice/female/3b0facab2069ec02dc8816129c13808c5ba448fcafa71462fac271b7db7ec427.m4a' violates the following Content Security Policy directive: "default-src 'self' https://*.vietcap.com.vn". Note that 'media-src' was not explicitly set, so 'default-src' is used as a fallback. The action has been blocked. @ https://trading.vietcap.com.vn/ai-news/post-detail/hdb-dhdcd-hdbank-2026-loi-nhuan-ke-hoach-tang-41-quy-mo-tiem-can-1-2-trieu-ty-dong?language=vi:0
+[  197214ms] [LOG] Zalo Social Plugin is loaded successfully @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022511330:1
+[  197214ms] [LOG] socialPluginsShare:  [] @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022511330:1
+[  197288ms] [LOG] register h5.event.paused :  @ https://trading.vietcap.com.vn/libs/jssdk-lib.js?v=1777022511330:1
+[  197293ms] [LOG] 🔥 Firebase initialized successfully! @ https://trading.vietcap.com.vn/ai-news/market:173
+[  198079ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/order/main.js?v=1777022511335:1
+[  198195ms] [WARNING] No routes matched location "/ai-news/market"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022511335:1
+[  198682ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022511334:1
+[  198780ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://firebase.googleapis.com/v1alpha/projects/-/apps/1:931454310983:web:87e8683c724406d5a2af62/webConfig:0
+[  198825ms] [WARNING] [2026-04-25T03:44:18.791Z]  @firebase/analytics: Failed to fetch this Firebase app's measurement ID from the server. Falling back to the measurement ID G-R0HFZTH6RG provided in the "measurementId" field in the local Firebase config. [Analytics: Dynamic config fetch failed: [400] API key expired. Please renew the API key. (analytics/config-fetch-failed).] @ https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022511334:1
+[  198888ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://firebaseinstallations.googleapis.com/v1/projects/ai-news-6a1e3/installations:0
+[  198947ms] [ERROR] FirebaseError: Installations: Create Installation request failed with error "400 INVALID_ARGUMENT: API key expired. Please renew the API key." (installations/request-failed).
+    at xd (https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022511334:2:936160)
+    at async https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022511334:2:938819
+    at async https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022511334:2:938342 @ https://trading.vietcap.com.vn/main/main.js?v=1777022511334:1
+[  201823ms] [LOG] Zalo Social Plugin is loaded successfully @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022504567:1
+[  201823ms] [LOG] socialPluginsShare:  [] @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022504567:1
+[  201872ms] [LOG] register h5.event.paused :  @ https://trading.vietcap.com.vn/libs/jssdk-lib.js?v=1777022504567:1
+[  201880ms] [LOG] 🔥 Firebase initialized successfully! @ https://trading.vietcap.com.vn/ai-news/topic:173
+[  202677ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/order/main.js?v=1777022504571:1
+[  202809ms] [WARNING] No routes matched location "/ai-news/topic"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022504571:1
+[  203225ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022504571:1
+[  203344ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://firebase.googleapis.com/v1alpha/projects/-/apps/1:931454310983:web:87e8683c724406d5a2af62/webConfig:0
+[  203428ms] [WARNING] [2026-04-25T03:44:23.393Z]  @firebase/analytics: Failed to fetch this Firebase app's measurement ID from the server. Falling back to the measurement ID G-R0HFZTH6RG provided in the "measurementId" field in the local Firebase config. [Analytics: Dynamic config fetch failed: [400] API key expired. Please renew the API key. (analytics/config-fetch-failed).] @ https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022504571:1
+[  203437ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://firebaseinstallations.googleapis.com/v1/projects/ai-news-6a1e3/installations:0
+[  203564ms] [ERROR] FirebaseError: Installations: Create Installation request failed with error "400 INVALID_ARGUMENT: API key expired. Please renew the API key." (installations/request-failed).
+    at xd (https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022504571:2:936160)
+    at async https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022504571:2:938819
+    at async https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022504571:2:938342 @ https://trading.vietcap.com.vn/main/main.js?v=1777022504571:1
+[  206075ms] [LOG] Zalo Social Plugin is loaded successfully @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022497394:1
+[  206075ms] [LOG] socialPluginsShare:  [] @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022497394:1
+[  206133ms] [LOG] register h5.event.paused :  @ https://trading.vietcap.com.vn/libs/jssdk-lib.js?v=1777022497394:1
+[  206730ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[  206811ms] [WARNING] No routes matched location "/ai-news/exchange-news"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[  207082ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022497399:1
+[  207167ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://firebase.googleapis.com/v1alpha/projects/-/apps/1:931454310983:web:87e8683c724406d5a2af62/webConfig:0
+[  207167ms] [WARNING] [2026-04-25T03:44:27.133Z]  @firebase/analytics: Failed to fetch this Firebase app's measurement ID from the server. Falling back to the measurement ID G-R0HFZTH6RG provided in the "measurementId" field in the local Firebase config. [Analytics: Dynamic config fetch failed: [400] API key expired. Please renew the API key. (analytics/config-fetch-failed).] @ https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022497399:1
+[  207188ms] [LOG] 🔥 Firebase initialized successfully! @ https://trading.vietcap.com.vn/ai-news/exchange-news:173
+[  207221ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://firebaseinstallations.googleapis.com/v1/projects/ai-news-6a1e3/installations:0
+[  207232ms] [ERROR] FirebaseError: Installations: Create Installation request failed with error "400 INVALID_ARGUMENT: API key expired. Please renew the API key." (installations/request-failed).
+    at xd (https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022497399:2:936160)
+    at async https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022497399:2:938819
+    at async https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022497399:2:938342 @ https://trading.vietcap.com.vn/main/main.js?v=1777022497398:1
+[  210077ms] [LOG] Zalo Social Plugin is loaded successfully @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022497394:1
+[  210078ms] [LOG] socialPluginsShare:  [] @ https://trading.vietcap.com.vn/libs/zalo/sdk.js?v=1777022497394:1
+[  210090ms] [LOG] register h5.event.paused :  @ https://trading.vietcap.com.vn/libs/jssdk-lib.js?v=1777022497394:1
+[  210149ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[  210221ms] [WARNING] No routes matched location "/ai-news/company?ticker=VIC"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[  210273ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022497399:1
+[  210377ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://firebase.googleapis.com/v1alpha/projects/-/apps/1:931454310983:web:87e8683c724406d5a2af62/webConfig:0
+[  210378ms] [WARNING] No routes matched location "/ai-news/company?ticker=VIC&newsType=business"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[  210383ms] [WARNING] [2026-04-25T03:44:30.348Z]  @firebase/analytics: Failed to fetch this Firebase app's measurement ID from the server. Falling back to the measurement ID G-R0HFZTH6RG provided in the "measurementId" field in the local Firebase config. [Analytics: Dynamic config fetch failed: [400] API key expired. Please renew the API key. (analytics/config-fetch-failed).] @ https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022497399:1
+[  210441ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://firebaseinstallations.googleapis.com/v1/projects/ai-news-6a1e3/installations:0
+[  210448ms] [ERROR] FirebaseError: Installations: Create Installation request failed with error "400 INVALID_ARGUMENT: API key expired. Please renew the API key." (installations/request-failed).
+    at xd (https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022497399:2:936160)
+    at async https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022497399:2:938819
+    at async https://trading.vietcap.com.vn/vietcap-ai-news/main.js?v=1777022497399:2:938342 @ https://trading.vietcap.com.vn/main/main.js?v=1777022497398:1
+[  210457ms] [LOG] 🔥 Firebase initialized successfully! @ https://trading.vietcap.com.vn/ai-news/company?ticker=VIC:173
+[  892526ms] [WARNING] No routes matched location "/iq/market"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[  892552ms] [ERROR] Error: <svg> attribute transform: Expected number, "rotate(undefined)". @ https://trading.vietcap.com.vn/js/react-dom.production.min.js?v=1777022497398:1
+[  892553ms] [ERROR] Error: <svg> attribute transform: Expected number, "rotate(undefined)". @ https://trading.vietcap.com.vn/js/react-dom.production.min.js?v=1777022497398:1
+[  893409ms] [WARNING] Datadog Browser SDK: SDK is loaded more than once. This is unsupported and might have unexpected behavior. @ https://trading.vietcap.com.vn/vietcap-iq/main.js?v=1777022497399:1
+[  909519ms] [WARNING] No routes matched location "/iq/funds"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[  912343ms] [WARNING] No routes matched location "/iq/screening"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[  912558ms] [WARNING] AG Grid: Grid API function removeEventListener() cannot be called as the grid has been destroyed.
+Either clear local references to the grid api, when it is destroyed, or check gridApi.isDestroyed() to avoid calling methods against a destroyed grid.
+To run logic when the grid is about to be destroyed use the gridPreDestroy event. See: https://www.ag-grid.com/react-data-grid/grid-lifecycle/#grid-pre-destroyed @ https://trading.vietcap.com.vn/vietcap-iq/main.js?v=1777022497399:1
+[  915567ms] [WARNING] No routes matched location "/iq/company"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[  915923ms] [WARNING] No routes matched location "/iq/company?tab=overview&ticker=FPT&isIndex=false"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[  916135ms] [WARNING] AG Grid: Grid API function updateGridOptions() cannot be called as the grid has been destroyed.
+Either clear local references to the grid api, when it is destroyed, or check gridApi.isDestroyed() to avoid calling methods against a destroyed grid.
+To run logic when the grid is about to be destroyed use the gridPreDestroy event. See: https://www.ag-grid.com/react-data-grid/grid-lifecycle/#grid-pre-destroyed @ https://trading.vietcap.com.vn/vietcap-iq/main.js?v=1777022497399:1
+[  916880ms] [WARNING] No routes matched location "/iq/coverage"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[  919361ms] [WARNING] No routes matched location "/iq/report"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1
+[  922512ms] [WARNING] No routes matched location "/iq/market"  @ https://trading.vietcap.com.vn/order/main.js?v=1777022497399:1

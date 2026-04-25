@@ -1,0 +1,716 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - link [ref=e8] [cursor=pointer]:
+          - /url: /home
+          - generic [ref=e9]:
+            - img [ref=e11]
+            - img [ref=e13]
+        - generic [ref=e15]:
+          - button "Cơ sở" [ref=e17] [cursor=pointer]
+          - button "Phái sinh" [ref=e18] [cursor=pointer]
+        - generic [ref=e19]: 25/04/2026 10:41:02
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - img [ref=e24] [cursor=pointer]
+          - textbox "Nhập từ khoá"
+        - img [ref=e26] [cursor=pointer]
+        - generic [ref=e27]:
+          - button "Mở tài khoản" [ref=e28] [cursor=pointer]
+          - button "Đăng nhập" [ref=e29] [cursor=pointer]
+        - img [ref=e32] [cursor=pointer]
+    - generic [ref=e35]:
+      - link "Trang chủ" [ref=e36] [cursor=pointer]:
+        - /url: /home
+      - button "Bảng giá" [ref=e38] [cursor=pointer]:
+        - generic [ref=e39]: Bảng giá
+        - img [ref=e40]
+      - button "Thông tin tài sản" [ref=e42] [cursor=pointer]:
+        - generic [ref=e43]: Thông tin tài sản
+        - img [ref=e44]
+      - button "Giao dịch tiền" [ref=e46] [cursor=pointer]:
+        - generic [ref=e47]: Giao dịch tiền
+        - img [ref=e48]
+      - button "Giao Dịch Chứng Khoán" [ref=e50] [cursor=pointer]:
+        - generic [ref=e51]: Giao Dịch Chứng Khoán
+        - img [ref=e52]
+      - button "Vietcap IQ" [ref=e54] [cursor=pointer]:
+        - generic [ref=e55]: Vietcap IQ
+        - img [ref=e56]
+      - button "AI News" [ref=e58] [cursor=pointer]:
+        - generic [ref=e59]: AI News
+        - img [ref=e60]
+  - generic [ref=e66]:
+    - generic [ref=e69]:
+      - generic [ref=e70]:
+        - generic [ref=e71]:
+          - radiogroup [ref=e72]:
+            - generic [ref=e74]:
+              - radio "Top mã nổi bật" [checked]
+              - generic [ref=e75] [cursor=pointer]: Top mã nổi bật
+            - generic [ref=e76]:
+              - radio "Danh mục quan tâm"
+              - generic [ref=e77] [cursor=pointer]: Danh mục quan tâm
+          - generic [ref=e78]:
+            - button "HOSE" [ref=e79] [cursor=pointer]
+            - button "VN30" [ref=e80] [cursor=pointer]
+            - button "VNMidCap" [ref=e81] [cursor=pointer]
+            - button "VNSmallCap" [ref=e82] [cursor=pointer]
+            - button "VN100" [ref=e83] [cursor=pointer]
+            - button "HNX" [ref=e84] [cursor=pointer]
+            - button "HNX30" [ref=e85] [cursor=pointer]
+            - button "UpCom" [ref=e86] [cursor=pointer]
+        - generic [ref=e89]:
+          - generic [ref=e91]:
+            - link "-1.1% VIC 9.2" [ref=e93] [cursor=pointer]:
+              - /url: /ai-news/company?ticker=VIC
+              - generic [ref=e94]:
+                - generic [ref=e95]:
+                  - img [ref=e97]
+                  - paragraph [ref=e101]: "-1.1%"
+                - paragraph [ref=e102]: VIC
+              - paragraph [ref=e103]: "9.2"
+            - link "-0.9% SSI 9.2" [ref=e105] [cursor=pointer]:
+              - /url: /ai-news/company?ticker=SSI
+              - generic [ref=e106]:
+                - generic [ref=e107]:
+                  - img [ref=e109]
+                  - paragraph [ref=e113]: "-0.9%"
+                - paragraph [ref=e114]: SSI
+              - paragraph [ref=e115]: "9.2"
+            - link "-5.2% VHM 9.1" [ref=e117] [cursor=pointer]:
+              - /url: /ai-news/company?ticker=VHM
+              - generic [ref=e118]:
+                - generic [ref=e119]:
+                  - img [ref=e121]
+                  - paragraph [ref=e125]: "-5.2%"
+                - paragraph [ref=e126]: VHM
+              - paragraph [ref=e127]: "9.1"
+            - link "0.4% HPG 9.0" [ref=e129] [cursor=pointer]:
+              - /url: /ai-news/company?ticker=HPG
+              - generic [ref=e130]:
+                - generic [ref=e131]:
+                  - img [ref=e133]
+                  - paragraph [ref=e137]: 0.4%
+                - paragraph [ref=e138]: HPG
+              - paragraph [ref=e139]: "9.0"
+            - link "-0.3% SHB 9.0" [ref=e141] [cursor=pointer]:
+              - /url: /ai-news/company?ticker=SHB
+              - generic [ref=e142]:
+                - generic [ref=e143]:
+                  - img [ref=e145]
+                  - paragraph [ref=e149]: "-0.3%"
+                - paragraph [ref=e150]: SHB
+              - paragraph [ref=e151]: "9.0"
+            - link "1.0% PLX 1.9" [ref=e153] [cursor=pointer]:
+              - /url: /ai-news/company?ticker=PLX
+              - generic [ref=e154]:
+                - generic [ref=e155]:
+                  - img [ref=e157]
+                  - paragraph [ref=e161]: 1.0%
+                - paragraph [ref=e162]: PLX
+              - paragraph [ref=e163]: "1.9"
+            - link "-1.5% VIX 1.8" [ref=e165] [cursor=pointer]:
+              - /url: /ai-news/company?ticker=VIX
+              - generic [ref=e166]:
+                - generic [ref=e167]:
+                  - img [ref=e169]
+                  - paragraph [ref=e173]: "-1.5%"
+                - paragraph [ref=e174]: VIX
+              - paragraph [ref=e175]: "1.8"
+            - link "-0.4% DGC 1.6" [ref=e177] [cursor=pointer]:
+              - /url: /ai-news/company?ticker=DGC
+              - generic [ref=e178]:
+                - generic [ref=e179]:
+                  - img [ref=e181]
+                  - paragraph [ref=e185]: "-0.4%"
+                - paragraph [ref=e186]: DGC
+              - paragraph [ref=e187]: "1.6"
+            - link "-6.8% PC1 1.5" [ref=e189] [cursor=pointer]:
+              - /url: /ai-news/company?ticker=PC1
+              - generic [ref=e190]:
+                - generic [ref=e191]:
+                  - img [ref=e193]
+                  - paragraph [ref=e197]: "-6.8%"
+                - paragraph [ref=e198]: PC1
+              - paragraph [ref=e199]: "1.5"
+            - link "-1.1% SZC 1.0" [ref=e201] [cursor=pointer]:
+              - /url: /ai-news/company?ticker=SZC
+              - generic [ref=e202]:
+                - generic [ref=e203]:
+                  - img [ref=e205]
+                  - paragraph [ref=e209]: "-1.1%"
+                - paragraph [ref=e210]: SZC
+              - paragraph [ref=e211]: "1.0"
+          - generic:
+            - button [ref=e212]:
+              - img [ref=e213]
+            - button [ref=e215]:
+              - img [ref=e216]
+      - generic [ref=e218]:
+        - generic [ref=e219]:
+          - generic [ref=e221]:
+            - generic [ref=e222]:
+              - paragraph [ref=e224]: Tin Doanh Nghiệp
+              - img [ref=e225]
+            - link "Xem thêm" [ref=e227] [cursor=pointer]:
+              - /url: /ai-news/market
+              - paragraph [ref=e228]: Xem thêm
+          - generic [ref=e231]:
+            - generic [ref=e233] [cursor=pointer]:
+              - 'link "HDB: ĐHĐCĐ HDBank 2026: Lợi nhuận kế hoạch tăng 41%, quy mô tiệm cận 1,2 triệu tỷ đồng" [ref=e235]':
+                - /url: /ai-news/post-detail/hdb-dhdcd-hdbank-2026-loi-nhuan-ke-hoach-tang-41-quy-mo-tiem-can-1-2-trieu-ty-dong?language=vi
+                - 'img "HDB: ĐHĐCĐ HDBank 2026: Lợi nhuận kế hoạch tăng 41%, quy mô tiệm cận 1,2 triệu tỷ đồng" [ref=e236]'
+              - generic [ref=e238]:
+                - generic [ref=e239]:
+                  - generic [ref=e240]:
+                    - paragraph [ref=e241]: Tích cực
+                    - img [ref=e242]
+                    - link "HDB" [ref=e244]:
+                      - /url: /ai-news/company?ticker=HDB
+                      - paragraph [ref=e245]: HDB
+                    - generic [ref=e247]:
+                      - paragraph [ref=e248]: "26.90"
+                      - generic [ref=e249]:
+                        - img [ref=e250]
+                        - paragraph [ref=e252]: 0.30(1.1%)
+                  - 'link "HDB: ĐHĐCĐ HDBank 2026: Lợi nhuận kế hoạch tăng 41%, quy mô tiệm cận 1,2 triệu tỷ đồng" [ref=e253]':
+                    - /url: /ai-news/post-detail/hdb-dhdcd-hdbank-2026-loi-nhuan-ke-hoach-tang-41-quy-mo-tiem-can-1-2-trieu-ty-dong?language=vi
+                    - 'heading "HDB: ĐHĐCĐ HDBank 2026: Lợi nhuận kế hoạch tăng 41%, quy mô tiệm cận 1,2 triệu tỷ đồng" [level=1] [ref=e254]'
+                - generic [ref=e255]:
+                  - generic [ref=e256]:
+                    - paragraph [ref=e257]: 36 phút trước
+                    - text: •
+                    - paragraph [ref=e258]: Tạp chí Diễn đàn Doanh nghiệp
+                  - generic [ref=e259]:
+                    - img [ref=e260]
+                    - paragraph [ref=e261]: 06:57
+                    - button [ref=e262]:
+                      - img [ref=e263]
+            - generic [ref=e266] [cursor=pointer]:
+              - 'link "YEG: Yeah1 sẽ phát hành 13,4 triệu cổ phiếu thưởng cho cổ đông" [ref=e268]':
+                - /url: /ai-news/post-detail/yeg-yeah1-se-phat-hanh-13-4-trieu-co-phieu-thuong-cho-co-dong?language=vi
+                - 'img "YEG: Yeah1 sẽ phát hành 13,4 triệu cổ phiếu thưởng cho cổ đông" [ref=e269]'
+              - generic [ref=e271]:
+                - generic [ref=e272]:
+                  - generic [ref=e273]:
+                    - paragraph [ref=e274]: Tích cực
+                    - img [ref=e275]
+                    - link "YEG" [ref=e277]:
+                      - /url: /ai-news/company?ticker=YEG
+                      - paragraph [ref=e278]: YEG
+                    - generic [ref=e280]:
+                      - paragraph [ref=e281]: "9.99"
+                      - generic [ref=e282]:
+                        - img [ref=e283]
+                        - paragraph [ref=e285]: 0.01(0.1%)
+                  - 'link "YEG: Yeah1 sẽ phát hành 13,4 triệu cổ phiếu thưởng cho cổ đông" [ref=e286]':
+                    - /url: /ai-news/post-detail/yeg-yeah1-se-phat-hanh-13-4-trieu-co-phieu-thuong-cho-co-dong?language=vi
+                    - 'heading "YEG: Yeah1 sẽ phát hành 13,4 triệu cổ phiếu thưởng cho cổ đông" [level=1] [ref=e287]'
+                - generic [ref=e288]:
+                  - generic [ref=e289]:
+                    - paragraph [ref=e290]: 42 phút trước
+                    - text: •
+                    - paragraph [ref=e291]: CafeF
+                  - generic [ref=e292]:
+                    - img [ref=e293]
+                    - paragraph [ref=e294]: 02:30
+                    - button [ref=e295]:
+                      - img [ref=e296]
+            - generic [ref=e299] [cursor=pointer]:
+              - 'link "DIG: Chủ tịch DIC Corp: Không có chuyện thu hồi dự án Bắc Vũng Tàu" [ref=e301]':
+                - /url: /ai-news/post-detail/dig-chu-tich-dic-corp-khong-co-chuyen-thu-hoi-du-an-bac-vung-tau?language=vi
+                - 'img "DIG: Chủ tịch DIC Corp: Không có chuyện thu hồi dự án Bắc Vũng Tàu" [ref=e302]'
+              - generic [ref=e304]:
+                - generic [ref=e305]:
+                  - generic [ref=e306]:
+                    - paragraph [ref=e307]: Trung lập
+                    - img [ref=e308]
+                    - link "DIG" [ref=e310]:
+                      - /url: /ai-news/company?ticker=DIG
+                      - paragraph [ref=e311]: DIG
+                    - generic [ref=e313]:
+                      - paragraph [ref=e314]: "14.30"
+                      - generic [ref=e315]:
+                        - img [ref=e316]
+                        - paragraph [ref=e318]: 0.25(1.8%)
+                  - 'link "DIG: Chủ tịch DIC Corp: Không có chuyện thu hồi dự án Bắc Vũng Tàu" [ref=e319]':
+                    - /url: /ai-news/post-detail/dig-chu-tich-dic-corp-khong-co-chuyen-thu-hoi-du-an-bac-vung-tau?language=vi
+                    - 'heading "DIG: Chủ tịch DIC Corp: Không có chuyện thu hồi dự án Bắc Vũng Tàu" [level=1] [ref=e320]'
+                - generic [ref=e321]:
+                  - generic [ref=e322]:
+                    - paragraph [ref=e323]: 48 phút trước
+                    - text: •
+                    - paragraph [ref=e324]: Tin nhanh chứng khoán
+                  - generic [ref=e325]:
+                    - img [ref=e326]
+                    - paragraph [ref=e327]: 07:24
+                    - button [ref=e328]:
+                      - img [ref=e329]
+            - generic [ref=e332] [cursor=pointer]:
+              - 'link "FPT: “Hiển thị” rõ hơn bức tranh tài chính từ phương pháp hạch toán kế toán" [ref=e334]':
+                - /url: /ai-news/post-detail/fpt-hien-thi-ro-hon-buc-tranh-tai-chinh-tu-phuong-phap-hach-toan-ke-toan?language=vi
+                - 'img "FPT: “Hiển thị” rõ hơn bức tranh tài chính từ phương pháp hạch toán kế toán" [ref=e335]'
+              - generic [ref=e337]:
+                - generic [ref=e338]:
+                  - generic [ref=e339]:
+                    - paragraph [ref=e340]: Trung lập
+                    - img [ref=e341]
+                    - link "FPT" [ref=e343]:
+                      - /url: /ai-news/company?ticker=FPT
+                      - paragraph [ref=e344]: FPT
+                    - generic [ref=e346]:
+                      - paragraph [ref=e347]: "73.40"
+                      - generic [ref=e348]:
+                        - img [ref=e349]
+                        - paragraph [ref=e351]: "-0.90(-1.2%)"
+                  - 'link "FPT: “Hiển thị” rõ hơn bức tranh tài chính từ phương pháp hạch toán kế toán" [ref=e352]':
+                    - /url: /ai-news/post-detail/fpt-hien-thi-ro-hon-buc-tranh-tai-chinh-tu-phuong-phap-hach-toan-ke-toan?language=vi
+                    - 'heading "FPT: “Hiển thị” rõ hơn bức tranh tài chính từ phương pháp hạch toán kế toán" [level=1] [ref=e353]'
+                - generic [ref=e354]:
+                  - generic [ref=e355]:
+                    - paragraph [ref=e356]: 1 giờ trước
+                    - text: •
+                    - paragraph [ref=e357]: FireAnt
+                  - generic [ref=e358]:
+                    - img [ref=e359]
+                    - paragraph [ref=e360]: 07:47
+                    - button [ref=e361]:
+                      - img [ref=e362]
+            - generic [ref=e365] [cursor=pointer]:
+              - 'link "CTG: ĐHĐCĐ VietinBank (CTG) 2026: Đặt mục tiêu tăng trưởng tổng tài sản từ 5 - 10%, mở rộng thị trường quốc tế" [ref=e367]':
+                - /url: /ai-news/post-detail/ctg-dhdcd-vietinbank-ctg-2026-dat-muc-tieu-tang-truong-tong-tai-san-tu-5-10-mo-rong-thi-truong-quoc-te?language=vi
+                - 'img "CTG: ĐHĐCĐ VietinBank (CTG) 2026: Đặt mục tiêu tăng trưởng tổng tài sản từ 5 - 10%, mở rộng thị trường quốc tế" [ref=e368]'
+              - generic [ref=e370]:
+                - generic [ref=e371]:
+                  - generic [ref=e372]:
+                    - paragraph [ref=e373]: Tích cực
+                    - img [ref=e374]
+                    - link "CTG" [ref=e376]:
+                      - /url: /ai-news/company?ticker=CTG
+                      - paragraph [ref=e377]: CTG
+                    - generic [ref=e379]:
+                      - paragraph [ref=e380]: "35.00"
+                      - generic [ref=e381]:
+                        - img [ref=e382]
+                        - paragraph [ref=e384]: "-0.50(-1.4%)"
+                  - 'link "CTG: ĐHĐCĐ VietinBank (CTG) 2026: Đặt mục tiêu tăng trưởng tổng tài sản từ 5 - 10%, mở rộng thị trường quốc tế" [ref=e385]':
+                    - /url: /ai-news/post-detail/ctg-dhdcd-vietinbank-ctg-2026-dat-muc-tieu-tang-truong-tong-tai-san-tu-5-10-mo-rong-thi-truong-quoc-te?language=vi
+                    - 'heading "CTG: ĐHĐCĐ VietinBank (CTG) 2026: Đặt mục tiêu tăng trưởng tổng tài sản từ 5 - 10%, mở rộng thị trường quốc tế" [level=1] [ref=e386]'
+                - generic [ref=e387]:
+                  - generic [ref=e388]:
+                    - paragraph [ref=e389]: 1 giờ trước
+                    - text: •
+                    - paragraph [ref=e390]: Tin nhanh chứng khoán
+                  - generic [ref=e391]:
+                    - img [ref=e392]
+                    - paragraph [ref=e393]: 05:47
+                    - button [ref=e394]:
+                      - img [ref=e395]
+            - generic [ref=e398] [cursor=pointer]:
+              - 'link "FPT: FPT kiếm tiền từ AI bằng cách làm mới những hệ thống cũ trị giá hàng tỷ USD" [ref=e400]':
+                - /url: /ai-news/post-detail/fpt-fpt-kiem-tien-tu-ai-bang-cach-lam-moi-nhung-he-thong-cu-tri-gia-hang-ty-usd?language=vi
+                - 'img "FPT: FPT kiếm tiền từ AI bằng cách làm mới những hệ thống cũ trị giá hàng tỷ USD" [ref=e401]'
+              - generic [ref=e403]:
+                - generic [ref=e404]:
+                  - generic [ref=e405]:
+                    - paragraph [ref=e406]: Tích cực
+                    - img [ref=e407]
+                    - link "FPT" [ref=e409]:
+                      - /url: /ai-news/company?ticker=FPT
+                      - paragraph [ref=e410]: FPT
+                    - generic [ref=e412]:
+                      - paragraph [ref=e413]: "73.40"
+                      - generic [ref=e414]:
+                        - img [ref=e415]
+                        - paragraph [ref=e417]: "-0.90(-1.2%)"
+                  - 'link "FPT: FPT kiếm tiền từ AI bằng cách làm mới những hệ thống cũ trị giá hàng tỷ USD" [ref=e418]':
+                    - /url: /ai-news/post-detail/fpt-fpt-kiem-tien-tu-ai-bang-cach-lam-moi-nhung-he-thong-cu-tri-gia-hang-ty-usd?language=vi
+                    - 'heading "FPT: FPT kiếm tiền từ AI bằng cách làm mới những hệ thống cũ trị giá hàng tỷ USD" [level=1] [ref=e419]'
+                - generic [ref=e420]:
+                  - generic [ref=e421]:
+                    - paragraph [ref=e422]: 1 giờ trước
+                    - text: •
+                    - paragraph [ref=e423]: Tin nhanh chứng khoán
+                  - generic [ref=e424]:
+                    - img [ref=e425]
+                    - paragraph [ref=e426]: 06:08
+                    - button [ref=e427]:
+                      - img [ref=e428]
+            - generic [ref=e431] [cursor=pointer]:
+              - 'link "DGC: Hoá chất Đức Giang (DGC) ấn định thời điểm thực hiện kiểm toán BCTC 2025, đề xuất miễn nhiệm ba lãnh đạo cấp cao" [ref=e433]':
+                - /url: /ai-news/post-detail/dgc-hoa-chat-duc-giang-dgc-an-dinh-thoi-diem-thuc-hien-kiem-toan-bctc-2025-de-xuat-mien-nhiem-ba-lanh-dao-cap-cao?language=vi
+                - 'img "DGC: Hoá chất Đức Giang (DGC) ấn định thời điểm thực hiện kiểm toán BCTC 2025, đề xuất miễn nhiệm ba lãnh đạo cấp cao" [ref=e434]'
+              - generic [ref=e436]:
+                - generic [ref=e437]:
+                  - generic [ref=e438]:
+                    - paragraph [ref=e439]: Tiêu cực
+                    - img [ref=e440]
+                    - link "DGC" [ref=e442]:
+                      - /url: /ai-news/company?ticker=DGC
+                      - paragraph [ref=e443]: DGC
+                    - generic [ref=e445]:
+                      - paragraph [ref=e446]: "53.30"
+                      - generic [ref=e447]:
+                        - img [ref=e448]
+                        - paragraph [ref=e450]: "-0.20(-0.4%)"
+                  - 'link "DGC: Hoá chất Đức Giang (DGC) ấn định thời điểm thực hiện kiểm toán BCTC 2025, đề xuất miễn nhiệm ba lãnh đạo cấp cao" [ref=e451]':
+                    - /url: /ai-news/post-detail/dgc-hoa-chat-duc-giang-dgc-an-dinh-thoi-diem-thuc-hien-kiem-toan-bctc-2025-de-xuat-mien-nhiem-ba-lanh-dao-cap-cao?language=vi
+                    - 'heading "DGC: Hoá chất Đức Giang (DGC) ấn định thời điểm thực hiện kiểm toán BCTC 2025, đề xuất miễn nhiệm ba lãnh đạo cấp cao" [level=1] [ref=e452]'
+                - generic [ref=e453]:
+                  - generic [ref=e454]:
+                    - paragraph [ref=e455]: 1 giờ trước
+                    - text: •
+                    - paragraph [ref=e456]: Tin nhanh chứng khoán
+                  - generic [ref=e457]:
+                    - img [ref=e458]
+                    - paragraph [ref=e459]: 02:17
+                    - button [ref=e460]:
+                      - img [ref=e461]
+            - generic [ref=e464] [cursor=pointer]:
+              - 'link "GEG: ĐHCĐ Điện Gia Lai (GEG): Mục tiêu lợi nhuận trước thuế 2026 khoảng 460 tỷ đồng" [ref=e466]':
+                - /url: /ai-news/post-detail/geg-dhcd-dien-gia-lai-geg-muc-tieu-loi-nhuan-truoc-thue-2026-khoang-460-ty-dong?language=vi
+                - 'img "GEG: ĐHCĐ Điện Gia Lai (GEG): Mục tiêu lợi nhuận trước thuế 2026 khoảng 460 tỷ đồng" [ref=e467]'
+              - generic [ref=e469]:
+                - generic [ref=e470]:
+                  - generic [ref=e471]:
+                    - paragraph [ref=e472]: Tích cực
+                    - img [ref=e473]
+                    - link "GEG" [ref=e475]:
+                      - /url: /ai-news/company?ticker=GEG
+                      - paragraph [ref=e476]: GEG
+                    - generic [ref=e478]:
+                      - paragraph [ref=e479]: "14.60"
+                      - generic [ref=e480]:
+                        - img [ref=e481]
+                        - paragraph [ref=e483]: 0.10(0.7%)
+                  - 'link "GEG: ĐHCĐ Điện Gia Lai (GEG): Mục tiêu lợi nhuận trước thuế 2026 khoảng 460 tỷ đồng" [ref=e484]':
+                    - /url: /ai-news/post-detail/geg-dhcd-dien-gia-lai-geg-muc-tieu-loi-nhuan-truoc-thue-2026-khoang-460-ty-dong?language=vi
+                    - 'heading "GEG: ĐHCĐ Điện Gia Lai (GEG): Mục tiêu lợi nhuận trước thuế 2026 khoảng 460 tỷ đồng" [level=1] [ref=e485]'
+                - generic [ref=e486]:
+                  - generic [ref=e487]:
+                    - paragraph [ref=e488]: 1 giờ trước
+                    - text: •
+                    - paragraph [ref=e489]: Tin nhanh chứng khoán
+                  - generic [ref=e490]:
+                    - img [ref=e491]
+                    - paragraph [ref=e492]: 02:01
+                    - button [ref=e493]:
+                      - img [ref=e494]
+        - img [ref=e497]
+      - generic [ref=e498]:
+        - generic [ref=e499]:
+          - generic [ref=e501]:
+            - paragraph [ref=e504]: Tin Chủ Đề
+            - link "Xem thêm" [ref=e505] [cursor=pointer]:
+              - /url: /ai-news/topic
+              - paragraph [ref=e506]: Xem thêm
+          - generic [ref=e509]:
+            - generic [ref=e511] [cursor=pointer]:
+              - link "Nhà máy lọc dầu châu Á giảm sản lượng, nguồn cung nhiên liệu bị siết vì chiến sự Iran" [ref=e513]:
+                - /url: /ai-news/post-detail/nha-may-loc-dau-chau-a-giam-san-luong-nguon-cung-nhien-lieu-bi-siet-vi-chien-su-iran?language=vi
+                - img "Nhà máy lọc dầu châu Á giảm sản lượng, nguồn cung nhiên liệu bị siết vì chiến sự Iran" [ref=e514]
+              - generic [ref=e516]:
+                - generic [ref=e517]:
+                  - link "Xăng dầu" [ref=e519]:
+                    - /url: /ai-news/topic/xang-dau
+                    - paragraph [ref=e520]: Xăng dầu
+                  - link "Nhà máy lọc dầu châu Á giảm sản lượng, nguồn cung nhiên liệu bị siết vì chiến sự Iran" [ref=e521]:
+                    - /url: /ai-news/post-detail/nha-may-loc-dau-chau-a-giam-san-luong-nguon-cung-nhien-lieu-bi-siet-vi-chien-su-iran?language=vi
+                    - heading "Nhà máy lọc dầu châu Á giảm sản lượng, nguồn cung nhiên liệu bị siết vì chiến sự Iran" [level=1] [ref=e522]
+                - generic [ref=e523]:
+                  - generic [ref=e524]:
+                    - paragraph [ref=e525]: 44 phút trước
+                    - text: •
+                    - paragraph [ref=e526]: Vietstock
+                  - generic [ref=e527]:
+                    - img [ref=e528]
+                    - paragraph [ref=e529]: 03:36
+                    - button [ref=e530]:
+                      - img [ref=e531]
+            - generic [ref=e534] [cursor=pointer]:
+              - 'link "Chuyên gia VNDIRECT: \"Buy and hold\" cổ phiếu ngân hàng lúc này là phù hợp" [ref=e536]':
+                - /url: /ai-news/post-detail/chuyen-gia-vndirect-buy-and-hold-co-phieu-ngan-hang-luc-nay-la-phu-hop?language=vi
+                - 'img "Chuyên gia VNDIRECT: \"Buy and hold\" cổ phiếu ngân hàng lúc này là phù hợp" [ref=e537]'
+              - generic [ref=e539]:
+                - generic [ref=e540]:
+                  - link "Diễn biến Thị trường" [ref=e542]:
+                    - /url: /ai-news/topic/dien-bien-thi-truong
+                    - paragraph [ref=e543]: Diễn biến Thị trường
+                  - 'link "Chuyên gia VNDIRECT: \"Buy and hold\" cổ phiếu ngân hàng lúc này là phù hợp" [ref=e544]':
+                    - /url: /ai-news/post-detail/chuyen-gia-vndirect-buy-and-hold-co-phieu-ngan-hang-luc-nay-la-phu-hop?language=vi
+                    - 'heading "Chuyên gia VNDIRECT: \"Buy and hold\" cổ phiếu ngân hàng lúc này là phù hợp" [level=1] [ref=e545]'
+                - generic [ref=e546]:
+                  - generic [ref=e547]:
+                    - paragraph [ref=e548]: 46 phút trước
+                    - text: •
+                    - paragraph [ref=e549]: Vietstock
+                  - generic [ref=e550]:
+                    - img [ref=e551]
+                    - paragraph [ref=e552]: 04:36
+                    - button [ref=e553]:
+                      - img [ref=e554]
+            - generic [ref=e557] [cursor=pointer]:
+              - link "Intel “tái sinh” nhờ cơn sóng AI, cổ phiếu vượt đỉnh thời dot-com" [ref=e559]:
+                - /url: /ai-news/post-detail/intel-tai-sinh-nho-con-song-ai-co-phieu-vuot-dinh-thoi-dot-com?language=vi
+                - img "Intel “tái sinh” nhờ cơn sóng AI, cổ phiếu vượt đỉnh thời dot-com" [ref=e560]
+              - generic [ref=e562]:
+                - generic [ref=e563]:
+                  - link "Chứng khoán Thế giới" [ref=e565]:
+                    - /url: /ai-news/topic/chung-khoan-the-gioi
+                    - paragraph [ref=e566]: Chứng khoán Thế giới
+                  - link "Intel “tái sinh” nhờ cơn sóng AI, cổ phiếu vượt đỉnh thời dot-com" [ref=e567]:
+                    - /url: /ai-news/post-detail/intel-tai-sinh-nho-con-song-ai-co-phieu-vuot-dinh-thoi-dot-com?language=vi
+                    - heading "Intel “tái sinh” nhờ cơn sóng AI, cổ phiếu vượt đỉnh thời dot-com" [level=1] [ref=e568]
+                - generic [ref=e569]:
+                  - generic [ref=e570]:
+                    - paragraph [ref=e571]: 52 phút trước
+                    - text: •
+                    - paragraph [ref=e572]: Vietstock
+                  - generic [ref=e573]:
+                    - img [ref=e574]
+                    - paragraph [ref=e575]: 04:28
+                    - button [ref=e576]:
+                      - img [ref=e577]
+            - generic [ref=e580] [cursor=pointer]:
+              - link "Xuất nhập khẩu trong trục tăng trưởng ‘2 con số’" [ref=e582]:
+                - /url: /ai-news/post-detail/xuat-nhap-khau-trong-truc-tang-truong-2-con-so?language=vi
+                - img "Xuất nhập khẩu trong trục tăng trưởng ‘2 con số’" [ref=e583]
+              - generic [ref=e585]:
+                - generic [ref=e586]:
+                  - link "Nông sản" [ref=e588]:
+                    - /url: /ai-news/topic/nong-san
+                    - paragraph [ref=e589]: Nông sản
+                  - link "Xuất nhập khẩu trong trục tăng trưởng ‘2 con số’" [ref=e590]:
+                    - /url: /ai-news/post-detail/xuat-nhap-khau-trong-truc-tang-truong-2-con-so?language=vi
+                    - heading "Xuất nhập khẩu trong trục tăng trưởng ‘2 con số’" [level=1] [ref=e591]
+                - generic [ref=e592]:
+                  - generic [ref=e593]:
+                    - paragraph [ref=e594]: 57 phút trước
+                    - text: •
+                    - paragraph [ref=e595]: Báo Công Thương
+                  - generic [ref=e596]:
+                    - img [ref=e597]
+                    - paragraph [ref=e598]: 05:32
+                    - button [ref=e599]:
+                      - img [ref=e600]
+            - generic [ref=e603] [cursor=pointer]:
+              - link "Thị trường bất động sản về giá trị thực" [ref=e605]:
+                - /url: /ai-news/post-detail/thi-truong-bat-dong-san-ve-gia-tri-thuc?language=vi
+                - img "Thị trường bất động sản về giá trị thực" [ref=e606]
+              - generic [ref=e608]:
+                - generic [ref=e609]:
+                  - link "Tin khác" [ref=e611]:
+                    - /url: /ai-news/topic/tin-khac
+                    - paragraph [ref=e612]: Tin khác
+                  - link "Thị trường bất động sản về giá trị thực" [ref=e613]:
+                    - /url: /ai-news/post-detail/thi-truong-bat-dong-san-ve-gia-tri-thuc?language=vi
+                    - heading "Thị trường bất động sản về giá trị thực" [level=1] [ref=e614]
+                - generic [ref=e615]:
+                  - generic [ref=e616]:
+                    - paragraph [ref=e617]: 58 phút trước
+                    - text: •
+                    - paragraph [ref=e618]: Tạp chí Diễn đàn Doanh nghiệp
+                  - generic [ref=e619]:
+                    - img [ref=e620]
+                    - paragraph [ref=e621]: 05:10
+                    - button [ref=e622]:
+                      - img [ref=e623]
+            - generic [ref=e626] [cursor=pointer]:
+              - 'link "Mythos AI: cú hích công nghệ hay chiến dịch PR?" [ref=e628]':
+                - /url: /ai-news/post-detail/mythos-ai-cu-hich-cong-nghe-hay-chien-dich-pr?language=vi
+                - 'img "Mythos AI: cú hích công nghệ hay chiến dịch PR?" [ref=e629]'
+              - generic [ref=e631]:
+                - generic [ref=e632]:
+                  - link "Chứng khoán Thế giới" [ref=e634]:
+                    - /url: /ai-news/topic/chung-khoan-the-gioi
+                    - paragraph [ref=e635]: Chứng khoán Thế giới
+                  - 'link "Mythos AI: cú hích công nghệ hay chiến dịch PR?" [ref=e636]':
+                    - /url: /ai-news/post-detail/mythos-ai-cu-hich-cong-nghe-hay-chien-dich-pr?language=vi
+                    - 'heading "Mythos AI: cú hích công nghệ hay chiến dịch PR?" [level=1] [ref=e637]'
+                - generic [ref=e638]:
+                  - generic [ref=e639]:
+                    - paragraph [ref=e640]: 1 giờ trước
+                    - text: •
+                    - paragraph [ref=e641]: Tạp chí Diễn đàn Doanh nghiệp
+                  - generic [ref=e642]:
+                    - img [ref=e643]
+                    - paragraph [ref=e644]: 03:30
+                    - button [ref=e645]:
+                      - img [ref=e646]
+            - generic [ref=e649] [cursor=pointer]:
+              - link "Hàn Quốc làm gì để tự cường năng lượng trước xung đột Trung Đông?" [ref=e651]:
+                - /url: /ai-news/post-detail/han-quoc-lam-gi-de-tu-cuong-nang-luong-truoc-xung-dot-trung-dong?language=vi
+                - img "Hàn Quốc làm gì để tự cường năng lượng trước xung đột Trung Đông?" [ref=e652]
+              - generic [ref=e654]:
+                - generic [ref=e655]:
+                  - link "Xăng dầu" [ref=e657]:
+                    - /url: /ai-news/topic/xang-dau
+                    - paragraph [ref=e658]: Xăng dầu
+                  - link "Hàn Quốc làm gì để tự cường năng lượng trước xung đột Trung Đông?" [ref=e659]:
+                    - /url: /ai-news/post-detail/han-quoc-lam-gi-de-tu-cuong-nang-luong-truoc-xung-dot-trung-dong?language=vi
+                    - heading "Hàn Quốc làm gì để tự cường năng lượng trước xung đột Trung Đông?" [level=1] [ref=e660]
+                - generic [ref=e661]:
+                  - generic [ref=e662]:
+                    - paragraph [ref=e663]: 1 giờ trước
+                    - text: •
+                    - paragraph [ref=e664]: Tạp chí Diễn đàn Doanh nghiệp
+                  - generic [ref=e665]:
+                    - img [ref=e666]
+                    - paragraph [ref=e667]: 04:47
+                    - button [ref=e668]:
+                      - img [ref=e669]
+            - generic [ref=e672] [cursor=pointer]:
+              - 'link "Quỹ đầu tư mạo hiểm công-tư: Đầu tư dẫn dắt theo cơ chế nào?" [ref=e674]':
+                - /url: /ai-news/post-detail/quy-dau-tu-mao-hiem-cong-tu-dau-tu-dan-dat-theo-co-che-nao?language=vi
+                - 'img "Quỹ đầu tư mạo hiểm công-tư: Đầu tư dẫn dắt theo cơ chế nào?" [ref=e675]'
+              - generic [ref=e677]:
+                - generic [ref=e678]:
+                  - link "Diễn biến Thị trường" [ref=e680]:
+                    - /url: /ai-news/topic/dien-bien-thi-truong
+                    - paragraph [ref=e681]: Diễn biến Thị trường
+                  - 'link "Quỹ đầu tư mạo hiểm công-tư: Đầu tư dẫn dắt theo cơ chế nào?" [ref=e682]':
+                    - /url: /ai-news/post-detail/quy-dau-tu-mao-hiem-cong-tu-dau-tu-dan-dat-theo-co-che-nao?language=vi
+                    - 'heading "Quỹ đầu tư mạo hiểm công-tư: Đầu tư dẫn dắt theo cơ chế nào?" [level=1] [ref=e683]'
+                - generic [ref=e684]:
+                  - generic [ref=e685]:
+                    - paragraph [ref=e686]: 1 giờ trước
+                    - text: •
+                    - paragraph [ref=e687]: Tạp chí Diễn đàn Doanh nghiệp
+                  - generic [ref=e688]:
+                    - img [ref=e689]
+                    - paragraph [ref=e690]: 05:20
+                    - button [ref=e691]:
+                      - img [ref=e692]
+        - img [ref=e695]
+      - generic [ref=e696]:
+        - generic [ref=e697]:
+          - generic [ref=e699]:
+            - paragraph [ref=e702]: Tin từ Sở
+            - link "Xem thêm" [ref=e703] [cursor=pointer]:
+              - /url: /ai-news/exchange-news
+              - paragraph [ref=e704]: Xem thêm
+          - generic [ref=e707]:
+            - generic [ref=e711] [cursor=pointer]:
+              - generic [ref=e712]: SGB
+              - generic [ref=e713]:
+                - generic [ref=e714]:
+                  - generic [ref=e715]:
+                    - paragraph [ref=e716]: HNX
+                    - paragraph [ref=e717]: •
+                    - paragraph [ref=e718]: SGB
+                    - generic [ref=e720]:
+                      - paragraph [ref=e721]: "12.30"
+                      - generic [ref=e722]:
+                        - img [ref=e723]
+                        - paragraph [ref=e725]: 0(0%)
+                  - paragraph [ref=e726]: 17 giờ trước
+                - heading "Báo cáo tài chính quý 1/2026" [level=1] [ref=e728]
+            - generic [ref=e732] [cursor=pointer]:
+              - generic [ref=e733]: BTH
+              - generic [ref=e734]:
+                - generic [ref=e735]:
+                  - generic [ref=e736]:
+                    - paragraph [ref=e737]: HNX
+                    - paragraph [ref=e738]: •
+                    - paragraph [ref=e739]: BTH
+                    - generic [ref=e741]:
+                      - paragraph [ref=e742]: "23.40"
+                      - generic [ref=e743]:
+                        - img [ref=e744]
+                        - paragraph [ref=e746]: 0.20(0.9%)
+                  - paragraph [ref=e747]: 17 giờ trước
+                - heading "Ngày đăng ký cuối cùng Tổ chức Đại hội đồng cổ đông thường niên 2026" [level=1] [ref=e749]
+            - generic [ref=e753] [cursor=pointer]:
+              - generic [ref=e754]: NSS
+              - generic [ref=e755]:
+                - generic [ref=e756]:
+                  - generic [ref=e757]:
+                    - paragraph [ref=e758]: HNX
+                    - paragraph [ref=e759]: •
+                    - paragraph [ref=e760]: NSS
+                    - generic [ref=e762]:
+                      - paragraph [ref=e763]: "3.70"
+                      - generic [ref=e764]:
+                        - img [ref=e765]
+                        - paragraph [ref=e767]: 0(0%)
+                  - paragraph [ref=e768]: 17 giờ trước
+                - heading "Ngày đăng ký cuối cùng Tham dự đại hội đồng cổ đông thường niên năm 2026" [level=1] [ref=e770]
+            - generic [ref=e774] [cursor=pointer]:
+              - generic [ref=e775]: HNM
+              - generic [ref=e776]:
+                - generic [ref=e777]:
+                  - generic [ref=e778]:
+                    - paragraph [ref=e779]: HNX
+                    - paragraph [ref=e780]: •
+                    - paragraph [ref=e781]: HNM
+                    - generic [ref=e783]:
+                      - paragraph [ref=e784]: "7.70"
+                      - generic [ref=e785]:
+                        - img [ref=e786]
+                        - paragraph [ref=e788]: 0(0%)
+                  - paragraph [ref=e789]: 17 giờ trước
+                - heading "Ngày đăng ký cuối cùng Đại hội đồng cổ đông thường niên năm 2026" [level=1] [ref=e791]
+            - generic [ref=e795] [cursor=pointer]:
+              - generic [ref=e796]: GLC
+              - generic [ref=e797]:
+                - generic [ref=e798]:
+                  - generic [ref=e799]:
+                    - paragraph [ref=e800]: HNX
+                    - paragraph [ref=e801]: •
+                    - paragraph [ref=e802]: GLC
+                    - generic [ref=e804]:
+                      - paragraph [ref=e805]: "6.00"
+                      - generic [ref=e806]:
+                        - img [ref=e807]
+                        - paragraph [ref=e809]: 0(0%)
+                  - paragraph [ref=e810]: 17 giờ trước
+                - heading "Ngày đăng ký cuối cùng Đại hội đồng cổ đông thường niên năm 2026" [level=1] [ref=e812]
+            - generic [ref=e816] [cursor=pointer]:
+              - generic [ref=e817]: PNP
+              - generic [ref=e818]:
+                - generic [ref=e819]:
+                  - generic [ref=e820]:
+                    - paragraph [ref=e821]: HNX
+                    - paragraph [ref=e822]: •
+                    - paragraph [ref=e823]: PNP
+                    - generic [ref=e825]:
+                      - paragraph [ref=e826]: "19.70"
+                      - generic [ref=e827]:
+                        - img [ref=e828]
+                        - paragraph [ref=e830]: 0(0%)
+                  - paragraph [ref=e831]: 17 giờ trước
+                - heading "Ngày đăng ký cuối cùng Đại hội đồng cổ đông thường niên năm 2026" [level=1] [ref=e833]
+            - generic [ref=e837] [cursor=pointer]:
+              - generic [ref=e838]: CMW
+              - generic [ref=e839]:
+                - generic [ref=e840]:
+                  - generic [ref=e841]:
+                    - paragraph [ref=e842]: HNX
+                    - paragraph [ref=e843]: •
+                    - paragraph [ref=e844]: CMW
+                    - generic [ref=e846]:
+                      - paragraph [ref=e847]: "16.00"
+                      - generic [ref=e848]:
+                        - img [ref=e849]
+                        - paragraph [ref=e851]: 0(0%)
+                  - paragraph [ref=e852]: 17 giờ trước
+                - heading "Ngày đăng ký cuối cùng Tổ chức Đại hội đồng cổ đông thường niên năm 2026" [level=1] [ref=e854]
+            - generic [ref=e858] [cursor=pointer]:
+              - generic [ref=e859]: PCC
+              - generic [ref=e860]:
+                - generic [ref=e861]:
+                  - generic [ref=e862]:
+                    - paragraph [ref=e863]: HNX
+                    - paragraph [ref=e864]: •
+                    - paragraph [ref=e865]: PCC
+                    - generic [ref=e867]:
+                      - paragraph [ref=e868]: "35.10"
+                      - generic [ref=e869]:
+                        - img [ref=e870]
+                        - paragraph [ref=e872]: 0(0%)
+                  - paragraph [ref=e873]: 17 giờ trước
+                - heading "Tài liệu họp Đại hội đồng cổ đông" [level=1] [ref=e875]
+        - img [ref=e877]
+    - button
