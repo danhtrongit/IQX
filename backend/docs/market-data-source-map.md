@@ -1,185 +1,179 @@
-# Market Data Source Map
+# Bản đồ nguồn dữ liệu thị trường
 
-> Generated from reverse-engineering `vnstock`, `vnstock_data`, and `vnstock_news` packages.
-> This document maps every exposed API endpoint to its upstream source URL.
+> Tổng quan ngắn gọn: ánh xạ mỗi nhóm endpoint sang nguồn upstream (URL/host).
+> Chi tiết về mapping field, enum, ví dụ payload nằm trong các tài liệu chuyên đề ở phần dưới.
 >
-> **Last updated:** 2026-04-25
-> **Legend:** ✅ Live & verified | ⚠️ Conditionally available
+> **Cập nhật lần cuối:** 2026-04-26
+> **Chú thích:** ✅ Live & đã xác minh | ⚠️ Có dữ liệu nhưng phụ thuộc bộ lọc/thời điểm
 
-## 1. Reference Data (`/reference`)
+## 1. Tham chiếu (`/reference`)
 
-| Endpoint | Primary Source | URL | Fallback | Status |
-|---|---|---|---|---|
-| `GET /reference/symbols` | VCI | `GET .../api/price/symbols/getAll` | VND | ✅ |
-| `GET /reference/industries` | VCI | `GET .../iq-insight-service/v1/sectors/icb-codes` | — | ✅ |
-| `GET /reference/indices` | STATIC | Static index mapping | — | ✅ |
-| `GET /reference/groups/{group}/symbols` | VCI | `GET .../api/price/symbols/getByGroup?group={group}` | — | ✅ |
-
-## 2. Quotes & Trading (`/quotes`, `/trading`)
-
-| Endpoint | Primary Source | URL | Fallback | Status |
-|---|---|---|---|---|
-| `GET /quotes/{symbol}/ohlcv` | VND | `GET https://dchart-api.vndirect.com.vn/dchart/history?resolution={res}&symbol={sym}&from={ts}&to={ts}` | VCI | ✅ |
-| `GET /quotes/{symbol}/intraday` | VCI | `POST .../api/market-watch/LEData/getAll` body: `{symbol, limit}` | — | ✅ ⚠️ empty outside trading hours |
-| `GET /quotes/{symbol}/price-depth` | VCI | `POST .../api/market-watch/AccumulatedPriceStepVol/getSymbolData` body: `{symbol}` | — | ✅ ⚠️ empty outside trading hours |
-| `POST /trading/price-board` | VCI | `POST .../api/price/symbols/getList` body: `{symbols: [...]}` | — | ✅ |
-| `GET /trading/{symbol}/foreign-trade` | VCI | `GET .../iq-insight-service/v1/company/{symbol}/price-history?timeFrame=ONE_DAY&...` | — | ✅ |
-| `GET /trading/{symbol}/insider-deals` | VCI | `GET .../iq-insight-service/v1/company/{symbol}/insider-transaction?page=0&size=100` | — | ✅ |
-| `GET /trading/{symbol}/proprietary` | VCI | `GET .../iq-insight-service/v1/company/{symbol}/proprietary-history?fromDate=&toDate=&page=&size=&timeFrame=` | — | ✅ |
-| `GET /trading/{symbol}/proprietary/summary` | VCI | `GET .../iq-insight-service/v1/company/{symbol}/proprietary-history-summary?fromDate=&toDate=&timeFrame=` | — | ✅ |
-
-## 3. Company (`/company`) — KBS (KB Securities)
-
-Data sourced from KB Securities (KBS) profile API. One profile request returns overview, shareholders, officers, and subsidiaries. News uses a separate endpoint.
-
-| Endpoint | Primary Source | URL | Status |
+| Endpoint | Nguồn chính | Fallback | Trạng thái |
 |---|---|---|---|
-| `GET /company/{symbol}/overview` | KBS | `GET https://kbbuddywts.kbsec.com.vn/iis-server/investment/stockinfo/profile/{symbol}?l=1` | ✅ |
-| `GET /company/{symbol}/shareholders` | KBS | Same profile endpoint | ✅ |
-| `GET /company/{symbol}/officers` | KBS | Same profile endpoint | ✅ |
-| `GET /company/{symbol}/subsidiaries` | KBS | Same profile endpoint | ✅ |
-| `GET /company/{symbol}/news` | KBS | `GET .../stockinfo/news/{symbol}?l=1&p=1&s={size}` | ✅ |
-| `GET /company/{symbol}/details` | VCI | `GET .../iq-insight-service/v1/company/details?ticker={symbol}` | ✅ |
-| `GET /company/{symbol}/price-chart` | VCI | `GET .../iq-insight-service/v1/company/{symbol}/price-chart?lengthReport={n}` | ✅ |
+| `GET /reference/symbols` | VCI | VND | ✅ |
+| `GET /reference/industries` | VCI | — | ✅ |
+| `GET /reference/indices` | STATIC | — | ✅ |
+| `GET /reference/groups/{group}/symbols` | VCI | — | ✅ |
+| `GET /reference/search` | IQ.VCI | — | ✅ |
+| `GET /reference/event-codes` | IQ.VCI | — | ✅ |
 
-> **Note:** The `/company/{symbol}/events` endpoint has been removed. The KBS events API (`stockinfo/event/{symbol}`) consistently returns empty data for most symbols, and the VCI GraphQL source (`data-mt/graphql`) is also down.
+## 2. Báo giá & Giao dịch (`/quotes`, `/trading`)
 
-### KBS Profile Field Mapping
+| Endpoint | Nguồn chính | Fallback | Trạng thái |
+|---|---|---|---|
+| `GET /quotes/{symbol}/ohlcv` | VND | VCI | ✅ |
+| `GET /quotes/{symbol}/intraday` | VCI | — | ✅ ⚠️ rỗng ngoài phiên |
+| `GET /quotes/{symbol}/price-depth` | VCI | — | ✅ ⚠️ rỗng ngoài phiên |
+| `POST /trading/price-board` | VCI | — | ✅ |
+| `GET /trading/{symbol}/foreign-trade` | VCI | — | ✅ |
+| `GET /trading/{symbol}/insider-deals` | VCI | — | ✅ |
+| `GET /trading/{symbol}/proprietary` | VCI | — | ✅ |
+| `GET /trading/{symbol}/proprietary/summary` | VCI | — | ✅ |
 
-| Raw Key | Normalized Key | Description |
+> Chi tiết field nước ngoài/tự doanh/nội bộ/cung cầu: xem [`company-statistics-api-map.md`](./company-statistics-api-map.md).
+
+## 3. Doanh nghiệp (`/company`)
+
+| Endpoint | Nguồn chính | Trạng thái |
 |---|---|---|
-| SM | business_model | HTML description (tags stripped) |
-| SB | symbol | Stock symbol |
-| FD | founded_date | Company founding date |
-| EX | exchange | Exchange (HOSE/HNX/UPCOM) |
-| KLCPNY | charter_capital | **VND, exact** (= KLCPLH × FV) |
-| KLCPLH | outstanding_shares | **Share count, exact** |
-| FV | par_value | VND per share |
-| LP | listing_price | VND (listing price) |
-| CC | _(dropped)_ | Rounded charter cap in billions — imprecise |
-| VL | _(dropped)_ | Rounded listed vol in millions — imprecise |
-| SFV | _(dropped)_ | Duplicate of FV |
-| CTP/CTPP | ceo_name/ceo_position | CEO info |
-| ADD/PHONE/EMAIL/URL | address/phone/email/website | Contact info |
-| HS | history | Company history (HTML stripped) |
-| Shareholders[] | → name, date, shares_owned, ownership_percentage | |
-| Leaders[] | → from_date, position, name, position_en, owner_code | |
-| Subsidiaries[] | → date, name, charter_capital, ownership_percent, currency, type | type = subsidiary (>50%) or affiliate (≤50%) |
+| `GET /company/{symbol}/overview` | KBS | ✅ |
+| `GET /company/{symbol}/shareholders` | KBS | ✅ |
+| `GET /company/{symbol}/officers` | KBS | ✅ |
+| `GET /company/{symbol}/subsidiaries` | KBS | ✅ |
+| `GET /company/{symbol}/news` | KBS | ✅ |
+| `GET /company/{symbol}/details` | VCI | ✅ |
+| `GET /company/{symbol}/price-chart` | VCI | ✅ |
 
-> **Invariant:** `charter_capital == outstanding_shares × par_value` (verified across VCB, FPT, VNM)
+> **Lưu ý:** Endpoint `/company/{symbol}/events` đã được gỡ bỏ vì nguồn KBS thường trả về rỗng và VCI GraphQL không khả dụng.
 
-## 4. Fundamentals (`/fundamentals`)
+## 4. Báo cáo tài chính (`/fundamentals`)
 
-| Endpoint | Primary Source | URL | Status |
-|---|---|---|---|
-| `GET /fundamentals/{symbol}/balance_sheet` | VCI | `GET .../iq-insight-service/v1/company/{symbol}/financial-statement?type=BALANCE_SHEET` | ✅ |
-| `GET /fundamentals/{symbol}/income_statement` | VCI | Same, `type=INCOME_STATEMENT` | ✅ |
-| `GET /fundamentals/{symbol}/cash_flow` | VCI | Same, `type=CASH_FLOW` | ✅ |
-| `GET /fundamentals/{symbol}/ratio` | VCI | `GET .../iq-insight-service/v1/company/{symbol}/statistics-financial-ratios` | ✅ |
+| Endpoint | Nguồn chính | Trạng thái |
+|---|---|---|
+| `GET /fundamentals/{symbol}/balance_sheet` | VCI | ✅ |
+| `GET /fundamentals/{symbol}/income_statement` | VCI | ✅ |
+| `GET /fundamentals/{symbol}/cash_flow` | VCI | ✅ |
+| `GET /fundamentals/{symbol}/ratio` | VCI | ✅ |
 
-## 5. Insights (`/insights`)
+## 5. Phân tích (`/insights`)
 
-| Endpoint | Primary Source | URL | Status |
-|---|---|---|---|
-| `GET /insights/ranking/{kind}` | VND | `GET https://api-finfo.vndirect.com.vn/v4/top_stocks?q=...&sort=...&size={limit}` | ✅ |
+| Endpoint | Nguồn chính | Trạng thái |
+|---|---|---|
+| `GET /insights/ranking/{kind}` | VND | ✅ |
 
-## 6. Events (`/events`)
+## 6. Sự kiện (`/events`)
 
-| Endpoint | Primary Source | URL | Status |
-|---|---|---|---|
-| `GET /events/calendar` | VCI | `GET .../iq-insight-service/v1/events?fromDate=...&toDate=...&eventType=...` | ✅ |
+| Endpoint | Nguồn chính | Trạng thái |
+|---|---|---|
+| `GET /events/calendar` | VCI | ✅ |
 
-## 7. Macro Economy (`/macro/economy`)
+## 7. Vĩ mô (`/macro/economy`)
 
-| Endpoint | Primary Source | URL | Status |
-|---|---|---|---|
-| `GET /macro/economy/{indicator}` | MBK | `POST https://data.maybanktrade.com.vn/data/reportdatatopbynormtype` (form-encoded) | ✅ |
+| Endpoint | Nguồn chính | Trạng thái |
+|---|---|---|
+| `GET /macro/economy/{indicator}` | MBK | ✅ |
 
-Supported indicators: `gdp`, `cpi`, `fdi`, `exchange_rate`, `interest_rate`, `money_supply`, `industrial_production`, `export_import`, `retail`, `population_labor`
+Các chỉ báo hỗ trợ: `gdp`, `cpi`, `fdi`, `exchange_rate`, `interest_rate`, `money_supply`, `industrial_production`, `export_import`, `retail`, `population_labor`.
 
-## 8. Commodities (`/macro/commodities`)
+## 8. Hàng hóa (`/macro/commodities`)
 
-| Endpoint | Primary Source | URL | Status |
-|---|---|---|---|
-| `GET /macro/commodities` | SPL | Static commodity mapping | ✅ |
-| `GET /macro/commodities/{code}` | SPL | `GET https://api.simplize.vn/api/historical/prices/ohlcv` | ✅ |
+| Endpoint | Nguồn chính | Trạng thái |
+|---|---|---|
+| `GET /macro/commodities` | SPL (static) | ✅ |
+| `GET /macro/commodities/{code}` | SPL | ✅ |
 
-## 9. Funds (`/funds`)
+## 9. Quỹ (`/funds`)
 
-| Endpoint | Primary Source | URL | Status |
-|---|---|---|---|
-| `GET /funds` | FMARKET | `POST https://api.fmarket.vn/res/products/filter` | ✅ |
-| `GET /funds/{fund_id}` | FMARKET | `GET https://api.fmarket.vn/res/products/{fund_id}` | ✅ |
-| `GET /funds/{fund_id}/nav` | FMARKET | `POST https://api.fmarket.vn/res/product/get-nav-history` | ✅ |
+| Endpoint | Nguồn chính | Trạng thái |
+|---|---|---|
+| `GET /funds` | FMARKET | ✅ |
+| `GET /funds/{fund_id}` | FMARKET | ✅ |
+| `GET /funds/{fund_id}/nav` | FMARKET | ✅ |
 
-> **Note:** `fund_id` must be obtained from `GET /funds` listing response (`data[].fund_id`). Invalid `fund_id` returns HTTP 404.
+> `fund_id` lấy từ kết quả `GET /funds` (`data[].fund_id`). `fund_id` không hợp lệ trả về 404.
 
-## 10. News (`/news`)
+## 10. Tin tức (`/news`)
 
-| Endpoint | Primary Source | URL | Status |
-|---|---|---|---|
-| `GET /news/sources` | STATIC | Static mapping | ✅ |
-| `GET /news/latest` | RSS | RSS feeds from configured news sites | ✅ |
+| Endpoint | Nguồn chính | Trạng thái |
+|---|---|---|
+| `GET /news/sources` | STATIC | ✅ |
+| `GET /news/latest` | RSS | ✅ |
 
-## 11. AI News (`/news/ai`)
+## 11. Tin AI (`/news/ai`)
 
-| Endpoint | Primary Source | URL | Status |
-|---|---|---|---|
-| `GET /news/ai` | AI.VCI | `GET https://ai.vietcap.com.vn/api/v3/news_info` | ✅ |
-| `GET /news/ai?kind=topic` | AI.VCI | `GET .../api/v3/topics_info` | ✅ |
-| `GET /news/ai?kind=exchange` | AI.VCI | `GET .../api/v3/xnews_info` | ✅ |
-| `GET /news/ai/detail/{slug}` | AI.VCI | `GET .../api/v3/news_from_slug?slug={slug}` | ✅ |
-| `GET /news/ai/audio/{news_id}` | AI.VCI | `GET .../api/audio_from_id?id={news_id}` | ✅ |
-| `GET /news/ai/catalogs` | AI.VCI | Multiple endpoints (topics, sources, industries, tickers) | ✅ partial |
-| `GET /news/ai/tickers/{symbol}` | AI.VCI | Combined: ticker_score + news_info + xnews_info | ✅ partial |
+| Endpoint | Nguồn chính | Trạng thái |
+|---|---|---|
+| `GET /news/ai` | AI.VCI | ✅ |
+| `GET /news/ai/detail/{slug}` | AI.VCI | ✅ |
+| `GET /news/ai/audio/{news_id}` | AI.VCI | ✅ |
+| `GET /news/ai/catalogs` | AI.VCI | ✅ partial |
+| `GET /news/ai/tickers/{symbol}` | AI.VCI | ✅ partial |
 
-> **Error semantics:** `AINewsNotFoundError` → 404, `AINewsUpstreamShapeError` → 502, `AINewsUpstreamError` → 503. Catalogs/ticker endpoints return `partial=true` + `warnings` on partial failures.
+> Lỗi: `AINewsNotFoundError` → 404, `AINewsUpstreamShapeError` → 502, `AINewsUpstreamError` → 503. `catalogs` và `tickers` trả về `partial=true` + `warnings` khi có nguồn con bị lỗi.
 
-## 12. Market Overview (`/overview`)
+## 12. Tổng quan thị trường (`/overview`)
 
-Data sourced from Vietcap IQ Market Overview page. All endpoints are public, no auth required.
+| Endpoint | Nguồn chính | Trạng thái |
+|---|---|---|
+| `GET /overview/liquidity` | VCI | ✅ |
+| `GET /overview/index-impact` | VCI | ✅ |
+| `GET /overview/foreign` | VCI | ✅ |
+| `GET /overview/foreign/top` | VCI | ✅ |
+| `GET /overview/proprietary` | VCI | ✅ |
+| `GET /overview/proprietary/top` | IQ.VCI | ✅ |
+| `GET /overview/allocation` | VCI | ✅ |
+| `GET /overview/sectors/allocation` | VCI | ✅ |
+| `GET /overview/sectors/detail` | VCI | ✅ |
+| `GET /overview/valuation` | VCI | ✅ |
+| `GET /overview/breadth` | IQ.VCI | ✅ |
+| `GET /overview/heatmap` | VCI | ✅ |
+| `GET /overview/heatmap/index` | VCI | ✅ |
+| `GET /overview/stock-strength` | IQ.VCI | ✅ |
+| `GET /overview/market-index` | VCI | ✅ |
+| `GET /overview/maintenance` | IQ.VCI | ✅ |
 
-| Endpoint | Primary Source | Upstream URL | Status |
-|---|---|---|---|
-| `GET /overview/liquidity` | VCI | `POST .../api/chart/v3/OHLCChart/gap-liquidity` | ✅ |
-| `GET /overview/index-impact` | VCI | `POST .../api/market-watch/v2/IndexImpactChart/getData` | ✅ |
-| `GET /overview/foreign` | VCI | `POST .../api/market-watch/v3/ForeignVolumeChart/getAll` | ✅ |
-| `GET /overview/foreign/top` | VCI | `POST .../api/market-watch/v3/ForeignNetValue/top` | ✅ |
-| `GET /overview/proprietary` | VCI | `GET .../api/fiin-api-service/v3/proprietary-trading-value` | ✅ |
-| `GET /overview/proprietary/top` | IQ.VCI | `GET .../api/iq-insight-service/v1/market-watch/top-proprietary` | ✅ |
-| `GET /overview/allocation` | VCI | `POST .../api/market-watch/AllocatedValue/getAllocatedValue` | ✅ |
-| `GET /overview/sectors/allocation` | VCI | `POST .../api/market-watch/AllocatedICB/getAllocated` | ✅ |
-| `GET /overview/valuation` | VCI | `GET .../api/iq-insight-service/v1/market-watch/index-valuation` | ✅ |
-| `GET /overview/breadth` | IQ.VCI | `GET .../api/iq-insight-service/v1/market-watch/breadth` | ✅ |
-| `GET /overview/heatmap` | VCI | `POST .../api/market-watch/HeatMapChart/getByIcb` | ✅ |
-| `GET /overview/heatmap/index` | VCI | `GET .../api/market-watch/HeatMapChart/getIndex` | ✅ |
-| `GET /overview/sectors/detail` | VCI | `POST .../api/market-watch/AllocatedICB/getAllocatedDetail` | ✅ |
-| `GET /overview/stock-strength` | IQ.VCI | `GET .../api/iq-insight-service/v1/ta/stock-strength?exchange=` | ✅ |
-| `GET /overview/market-index` | VCI | `POST .../api/price/marketIndex/getList` | ✅ |
-| `GET /overview/maintenance` | IQ.VCI | `GET .../api/iq-insight-service/v1/notification?type=maintenance` | ✅ |
+> Chi tiết payload, enum, đơn vị: xem [`vietcap-market-overview-api.md`](./vietcap-market-overview-api.md) và [`vietcap-market-overview-api-supplement.md`](./vietcap-market-overview-api-supplement.md).
 
-## 13. Reference Data Supplement
+## 13. Ngành (`/sectors`)
 
-| Endpoint | Primary Source | Upstream URL | Status |
-|---|---|---|---|
-| `GET /reference/search` | IQ.VCI | `GET .../api/iq-insight-service/v2/company/search-bar?language=` | ✅ |
-| `GET /reference/event-codes` | IQ.VCI | `GET .../api/iq-insight-service/v1/event-codes` | ✅ |
+| Endpoint | Nguồn chính | Trạng thái |
+|---|---|---|
+| `GET /sectors/trading-dates` | IQ.VCI | ✅ |
+| `GET /sectors/ranking` | IQ.VCI | ✅ |
+| `GET /sectors/information` | IQ.VCI | ✅ |
 
-> **Units:** `*Value` fields = VND, `accumulatedValue` (liquidity) = million VND, `*Volume` = shares. Valuation `value` = ratio. Breadth `percent` = 0-1 ratio.
+> Chi tiết payload, enum, đơn vị: xem [`vietcap-sector-api.md`](./vietcap-sector-api.md).
 
-> **Enum params:** All enum parameters (group, timeFrame, condition, sector, size, type, comGroupCode) are validated server-side → 422 on invalid values.
+## 14. Bộ lọc cổ phiếu (`/screening`)
 
-## Source Headers
+| Endpoint | Nguồn chính | Trạng thái |
+|---|---|---|
+| `GET /screening/criteria` | IQ.VCI | ✅ |
+| `POST /screening/search` | IQ.VCI | ✅ |
+| `GET /screening/presets` | IQ.VCI | ✅ |
 
-| Source | Referer | Origin |
+> Chi tiết tiêu chí, bộ lọc mặc định, payload: xem [`vietcap-screening-api.md`](./vietcap-screening-api.md).
+
+## Header chung khi gọi nguồn upstream
+
+| Nguồn | Referer | Origin |
 |---|---|---|
 | VCI | `https://trading.vietcap.com.vn/` | `https://trading.vietcap.com.vn` |
 | VND | `https://mkw.vndirect.com.vn` | `https://mkw.vndirect.com.vn` |
-| KBS | `https://kbbuddywts.kbsec.com.vn/6d054136-b880-4c8b-887b-90311120d1c4` | `https://kbbuddywts.kbsec.com.vn` |
+| KBS | `https://kbbuddywts.kbsec.com.vn/...` | `https://kbbuddywts.kbsec.com.vn` |
 | MBK | `https://data.maybanktrade.com.vn` | `https://data.maybanktrade.com.vn` |
 | AI.VCI | `https://ai.vietcap.com.vn` | — |
 | IQ.VCI | `https://iq.vietcap.com.vn` | — |
 | FMARKET | — | — |
 | SPL | — | — |
 
-All sources use browser-mimicking `DEFAULT_HEADERS` matching vnstock's `user_agent.py` defaults.
+## Tài liệu chuyên đề
+
+| File | Phạm vi |
+|---|---|
+| [`company-statistics-api-map.md`](./company-statistics-api-map.md) | Trang Thống kê công ty: nước ngoài, tự doanh, nội bộ, cung cầu (chi tiết field) |
+| [`vietcap-market-overview-api.md`](./vietcap-market-overview-api.md) | Trang Tổng quan thị trường: thanh khoản, index impact, foreign, proprietary, allocation, valuation, breadth, heatmap |
+| [`vietcap-market-overview-api-supplement.md`](./vietcap-market-overview-api-supplement.md) | Bổ sung Market Overview: chi tiết ngành, stock strength, market index, search bar, event codes, maintenance |
+| [`vietcap-sector-api.md`](./vietcap-sector-api.md) | Trang Ngành: xếp hạng, thông tin ngành |
+| [`vietcap-screening-api.md`](./vietcap-screening-api.md) | Trang Bộ lọc cổ phiếu: tiêu chí, paging, preset |
+| [`vietcap-ai-news-api-discovery.md`](./vietcap-ai-news-api-discovery.md) | API tin AI Vietcap: business/topic/exchange, detail, audio, ticker view |

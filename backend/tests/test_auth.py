@@ -203,7 +203,7 @@ async def test_logout(client: AsyncClient, test_user: User):
         headers=get_auth_headers(access_token),
     )
     assert logout_resp.status_code == 200
-    assert logout_resp.json()["message"] == "Successfully logged out"
+    assert logout_resp.json()["message"] == "Đăng xuất thành công"
 
     # Refresh token should now be revoked
     refresh_resp = await client.post(

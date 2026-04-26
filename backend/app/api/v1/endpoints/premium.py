@@ -32,7 +32,7 @@ from app.services.user import UserService
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/premium", tags=["premium"])
+router = APIRouter(prefix="/premium", tags=["Premium"])
 
 
 # ── User endpoints ───────────────────────────────────
@@ -40,7 +40,7 @@ router = APIRouter(prefix="/premium", tags=["premium"])
 
 @router.get("/plans", response_model=list[PlanResponse])
 async def list_plans(db: DBSession):
-    """List all active premium plans."""
+    """Danh sách tất cả gói Premium đang hoạt động."""
     service = PremiumService(db)
     plans = await service.list_active_plans()
     return [PlanResponse.model_validate(p) for p in plans]
@@ -48,7 +48,7 @@ async def list_plans(db: DBSession):
 
 @router.get("/me", response_model=SubscriptionResponse)
 async def get_my_subscription(current_user: CurrentUser, db: DBSession):
-    """Get current user's premium subscription status."""
+    """Lấy trạng thái gói Premium của người dùng hiện tại."""
     service = PremiumService(db)
     return await service.get_user_subscription(current_user.id)
 
@@ -59,7 +59,7 @@ async def create_checkout(
     current_user: CurrentUser,
     db: DBSession,
 ):
-    """Create a SePay checkout form for purchasing a premium plan."""
+    """Tạo form thanh toán SePay để mua gói Premium."""
     service = PremiumService(db)
     return await service.create_checkout(user_id=current_user.id, plan_id=body.plan_id)
 
@@ -73,17 +73,17 @@ async def sepay_ipn(
     db: DBSession,
     x_secret_key: Annotated[str | None, Header()] = None,
 ):
-    """Receive SePay IPN notifications.
+    """Nhận thông báo IPN từ SePay.
 
-    This endpoint is called by SePay's servers when a payment status changes.
-    Authentication is via the X-Secret-Key header (constant-time comparison).
+    Endpoint này được máy chủ SePay gọi mỗi khi trạng thái thanh toán thay đổi.
+    Xác thực qua header X-Secret-Key (so sánh constant-time).
     """
     settings = get_settings()
 
     # Validate secret key (constant-time comparison)
     if not x_secret_key or not hmac.compare_digest(x_secret_key, settings.SEPAY_SECRET_KEY):
         logger.warning("IPN: invalid or missing X-Secret-Key")
-        return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+        return JSONResponse(status_code=401, content={"error": "unauthorized"})
 
     # Parse payload — narrow exceptions only
     try:
@@ -109,7 +109,7 @@ async def sepay_ipn(
 
 @router.get("/admin/plans", response_model=list[PlanResponse])
 async def admin_list_plans(admin: AdminUser, db: DBSession):
-    """Admin: list all plans (including inactive)."""
+    """Quản trị: liệt kê tất cả gói Premium (bao gồm gói không hoạt động)."""
     service = PremiumService(db)
     plans = await service.list_all_plans()
     return [PlanResponse.model_validate(p) for p in plans]
@@ -121,7 +121,7 @@ async def admin_create_plan(
     admin: AdminUser,
     db: DBSession,
 ):
-    """Admin: create a new premium plan."""
+    """Quản trị: tạo gói Premium mới."""
     service = PremiumService(db)
     plan = await service.create_plan(body.model_dump())
     return PlanResponse.model_validate(plan)
@@ -134,13 +134,13 @@ async def admin_update_plan(
     admin: AdminUser,
     db: DBSession,
 ):
-    """Admin: update a premium plan."""
+    """Quản trị: cập nhật gói Premium."""
     import uuid as _uuid
 
     try:
         pid = _uuid.UUID(plan_id)
     except ValueError:
-        raise NotFoundError("Premium plan") from None
+        raise NotFoundError("gói Premium") from None
 
     service = PremiumService(db)
     plan = await service.update_plan(pid, body.model_dump(exclude_unset=True))
@@ -154,20 +154,20 @@ async def admin_grant_premium(
     admin: AdminUser,
     db: DBSession,
 ):
-    """Admin: manually grant premium to a user."""
+    """Quản trị: cấp Premium thủ công cho người dùng."""
     import uuid as _uuid
 
     try:
         uid = _uuid.UUID(user_id)
     except ValueError:
-        raise NotFoundError("User") from None
+        raise NotFoundError("người dùng") from None
 
     # Verify user exists
     user_service = UserService(db)
     try:
         await user_service.get_by_id(uid)
     except NotFoundError:
-        raise NotFoundError("User") from None
+        raise NotFoundError("người dùng") from None
 
     service = PremiumService(db)
     order = await service.admin_grant_premium(

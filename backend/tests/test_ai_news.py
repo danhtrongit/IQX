@@ -166,7 +166,7 @@ async def test_fetch_exchange_list():
 
 @pytest.mark.asyncio
 async def test_invalid_kind_raises():
-    with pytest.raises(ValueError, match="Invalid news kind"):
+    with pytest.raises(ValueError, match="Loại tin không hợp lệ"):
         await fetch_news_list("invalid_kind")
 
 
@@ -402,7 +402,7 @@ async def test_ticker_sentiment_shape_error():
 async def test_ai_news_invalid_kind(client):
     resp = await client.get("/api/v1/market-data/news/ai?kind=bad")
     assert resp.status_code == 422
-    assert "Invalid kind" in resp.json()["detail"]
+    assert "không hợp lệ" in resp.json()["detail"]
 
 
 @pytest.mark.asyncio
@@ -422,7 +422,7 @@ async def test_ai_news_impossible_date(client):
     """2026-02-30 is regex-valid but not a real date → 422."""
     resp = await client.get("/api/v1/market-data/news/ai?update_from=2026-02-30")
     assert resp.status_code == 422
-    assert "Invalid date" in resp.json()["detail"]
+    assert "không hợp lệ" in resp.json()["detail"]
 
 
 @pytest.mark.asyncio
@@ -437,7 +437,7 @@ async def test_ai_news_compact_date_rejected(client):
     """20260425 (no dashes) → 422."""
     resp = await client.get("/api/v1/market-data/news/ai?update_from=20260425")
     assert resp.status_code == 422
-    assert "date format" in resp.json()["detail"].lower()
+    assert "định dạng date format" in resp.json()["detail"].lower()
 
 
 @pytest.mark.asyncio

@@ -29,13 +29,13 @@ class UserCreate(BaseModel):
     @classmethod
     def validate_password_strength(cls, v: str) -> str:
         if not re.search(r"[A-Z]", v):
-            raise ValueError("Password must contain at least one uppercase letter")
+            raise ValueError("Mật khẩu phải chứa ít nhất một chữ in hoa")
         if not re.search(r"[a-z]", v):
-            raise ValueError("Password must contain at least one lowercase letter")
+            raise ValueError("Mật khẩu phải chứa ít nhất một chữ thường")
         if not re.search(r"\d", v):
-            raise ValueError("Password must contain at least one digit")
+            raise ValueError("Mật khẩu phải chứa ít nhất một chữ số")
         if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", v):
-            raise ValueError("Password must contain at least one special character")
+            raise ValueError("Mật khẩu phải chứa ít nhất một ký tự đặc biệt")
         return v
 
     @field_validator("phone_number")
@@ -46,9 +46,11 @@ class UserCreate(BaseModel):
         try:
             parsed = phonenumbers.parse(v, None)
             if not phonenumbers.is_valid_number(parsed):
-                raise ValueError("Invalid phone number")
+                raise ValueError("Số điện thoại không hợp lệ")
         except phonenumbers.NumberParseException:
-            raise ValueError("Invalid phone number format. Use E.164 format, e.g. +84901234567") from None
+            raise ValueError(
+                "Định dạng số điện thoại không hợp lệ. Dùng định dạng E.164, ví dụ: +84901234567"
+            ) from None
         return v
 
 
@@ -77,9 +79,11 @@ class UserUpdate(BaseModel):
         try:
             parsed = phonenumbers.parse(v, None)
             if not phonenumbers.is_valid_number(parsed):
-                raise ValueError("Invalid phone number")
+                raise ValueError("Số điện thoại không hợp lệ")
         except phonenumbers.NumberParseException:
-            raise ValueError("Invalid phone number format. Use E.164 format, e.g. +84901234567") from None
+            raise ValueError(
+                "Định dạng số điện thoại không hợp lệ. Dùng định dạng E.164, ví dụ: +84901234567"
+            ) from None
         return v
 
 

@@ -1,56 +1,56 @@
-# Vietcap Market Overview API Documentation
+# API Tổng quan thị trường Vietcap
 
-> Source: `https://trading.vietcap.com.vn/iq/market`
-> Ngay phan tich: 2026-04-25
-> Trang: Vietcap IQ > Thi Truong > Tong Quan + Nhiet Do
-
----
-
-## Muc Luc
-
-1. [Tong Quan Kien Truc](#1-tong-quan-kien-truc)
-2. [Thanh Khoan (Liquidity)](#2-thanh-khoan-liquidity)
-3. [Nhom Dan Dat Thi Truong (Index Impact)](#3-nhom-dan-dat-thi-truong-index-impact)
-4. [Nuoc Ngoai (Foreign Trading)](#4-nuoc-ngoai-foreign-trading)
-5. [Tu Doanh (Proprietary Trading)](#5-tu-doanh-proprietary-trading)
-6. [Phan Bo Thi Truong (Market Allocation)](#6-phan-bo-thi-truong-market-allocation)
-7. [Nganh ICB (Industry/Sector)](#7-nganh-icb-industrysector)
-8. [Dinh Gia (Valuation P/E, P/B)](#8-dinh-gia-valuation-pe-pb)
-9. [Do Rong Thi Truong (Market Breadth)](#9-do-rong-thi-truong-market-breadth)
-10. [Nhiet Do (Heatmap)](#10-nhiet-do-heatmap)
-11. [API Phu Tro (Supporting APIs)](#11-api-phu-tro-supporting-apis)
-12. [Enum / Gia Tri Tham So](#12-enum--gia-tri-tham-so)
+> Nguồn: `https://trading.vietcap.com.vn/iq/market`
+> Ngày phân tích: 2026-04-25
+> Trang: Vietcap IQ → Thị trường → Tổng quan + Nhiệt độ
 
 ---
 
-## 1. Tong Quan Kien Truc
+## Mục lục
 
-### Base URLs
+1. [Tổng quan kiến trúc](#1-tong-quan-kien-truc)
+2. [Thanh khoản (Liquidity)](#2-thanh-khoan-liquidity)
+3. [Nhóm dẫn dắt thị trường (Index Impact)](#3-nhom-dan-dat-thi-truong-index-impact)
+4. [Nước ngoài (Foreign Trading)](#4-nuoc-ngoai-foreign-trading)
+5. [Tự doanh (Proprietary Trading)](#5-tu-doanh-proprietary-trading)
+6. [Phân bổ thị trường (Market Allocation)](#6-phan-bo-thi-truong-market-allocation)
+7. [Ngành ICB (Industry/Sector)](#7-nganh-icb-industrysector)
+8. [Định giá (Valuation P/E, P/B)](#8-dinh-gia-valuation-pe-pb)
+9. [Độ rộng thị trường (Market Breadth)](#9-do-rong-thi-truong-market-breadth)
+10. [Nhiệt độ (Heatmap)](#10-nhiet-do-heatmap)
+11. [API hỗ trợ](#11-api-ho-tro-supporting-apis)
+12. [Enum / Giá trị tham số](#12-enum--gia-tri-tham-so)
 
-| Host | Mo ta |
+---
+
+## 1. Tổng quan kiến trúc
+
+### Base URL
+
+| Host | Mô tả |
 |------|-------|
-| `https://trading.vietcap.com.vn` | API chinh (market-watch, chart, price, fiin) |
+| `https://trading.vietcap.com.vn` | API chính (market-watch, chart, price, fiin) |
 | `https://iq.vietcap.com.vn` | API IQ Insight (valuation, breadth, proprietary top, sectors) |
-| `https://www.vietcap.com.vn` | API CMS (industry config) |
+| `https://www.vietcap.com.vn` | API CMS (cấu hình ngành) |
 
-### Common Headers
+### Header chung
 
 ```
 Accept: application/json
-Content-Type: application/json  (cho POST requests)
+Content-Type: application/json   (cho POST request)
 Referer: https://trading.vietcap.com.vn/iq/market
 User-Agent: Mozilla/5.0 ...
 ```
 
-> **Ghi chu**: Tat ca API deu **khong can authentication** (public). Mot so API su dung `device-id` header nhung khong bat buoc.
+> **Ghi chú:** Tất cả API đều **không cần authentication** (công khai). Một số API dùng header `device-id` nhưng không bắt buộc.
 
 ---
 
-## 2. Thanh Khoan (Liquidity)
+## 2. Thanh khoản (Liquidity)
 
-### 2.1. Thanh khoan trong ngay (Intraday Liquidity)
+### 2.1. Thanh khoản trong ngày (Intraday Liquidity)
 
-Bieu do thanh khoan tich luy theo phut trong phien giao dich.
+Biểu đồ thanh khoản tích lũy theo phút trong phiên giao dịch.
 
 ```
 POST https://trading.vietcap.com.vn/api/chart/v3/OHLCChart/gap-liquidity
@@ -59,32 +59,36 @@ POST https://trading.vietcap.com.vn/api/chart/v3/OHLCChart/gap-liquidity
 **Request Body:**
 ```json
 {
-  "from": 1776988800,       // Unix timestamp - dau ngay giao dich (00:00:00 UTC)
-  "to": 1777091198,         // Unix timestamp - cuoi ngay giao dich (23:59:58 UTC)
-  "symbols": ["ALL"],       // "ALL" = toan thi truong, hoac ["VNINDEX"], ["HNXIndex"]
-  "timeFrame": "ONE_MINUTE" // Granularity: ONE_MINUTE cho intraday
+  "from": 1776988800,
+  "to": 1777091198,
+  "symbols": ["ALL"],
+  "timeFrame": "ONE_MINUTE"
 }
 ```
 
-**Response Sample:**
+- `from`/`to`: Unix timestamp đầu/cuối ngày giao dịch
+- `symbols`: `"ALL"` = toàn thị trường, hoặc `["VNINDEX"]`, `["HNXIndex"]`
+- `timeFrame`: `ONE_MINUTE` cho chế độ intraday
+
+**Mẫu response:**
 ```json
 [
   {
     "symbol": ["VNINDEX", "HNXIndex", "HNXUpcomIndex"],
-    "t": ["1777082400", "1777082460", "..."],           // Timestamps (epoch seconds) moi phut
-    "accumulatedVolume": [1709305, 2138149, "..."],      // KL tich luy (co phieu)
-    "accumulatedValue": [12054.6404, 16968.3834, "..."], // GTGD tich luy (trieu VND)
+    "t": ["1777082400", "1777082460", "..."],
+    "accumulatedVolume": [1709305, 2138149, "..."],
+    "accumulatedValue": [12054.6404, 16968.3834, "..."],
     "minBatchTruncTime": 1777082400
   }
 ]
 ```
 
-**Ghi chu ve thoi gian:**
-- Phien sang: 09:15 - 11:30 (gap tu 11:30 - 13:00)
-- Phien chieu: 13:00 - 15:00
-- `accumulatedValue` don vi la **trieu VND** (chia 1000 de ra ty)
+**Ghi chú thời gian:**
+- Phiên sáng: 09:15 – 11:30 (nghỉ trưa 11:30 – 13:00)
+- Phiên chiều: 13:00 – 15:00
+- `accumulatedValue` đơn vị **triệu VND** (chia 1.000 ra tỷ)
 
-### 2.2. Thanh khoan lich su (Historical Liquidity)
+### 2.2. Thanh khoản lịch sử
 
 ```
 POST https://trading.vietcap.com.vn/api/chart/v3/OHLCChart/gap-liquidity
@@ -93,37 +97,37 @@ POST https://trading.vietcap.com.vn/api/chart/v3/OHLCChart/gap-liquidity
 **Request Body:**
 ```json
 {
-  "from": 1745452800,       // Unix timestamp - 1 nam truoc
-  "to": 1776988800,         // Unix timestamp - hom nay
+  "from": 1745452800,
+  "to": 1776988800,
   "symbols": ["ALL"],
-  "timeFrame": "ONE_YEAR"   // Granularity: ONE_YEAR = aggregate theo nam
+  "timeFrame": "ONE_YEAR"
 }
 ```
 
-### Cac gia tri `timeFrame` cho Liquidity:
+### Giá trị `timeFrame` cho Liquidity
 
-| timeFrame | Mo ta |
+| timeFrame | Mô tả |
 |-----------|-------|
-| `ONE_MINUTE` | Du lieu moi phut (intraday) |
-| `ONE_DAY` | Du lieu theo ngay |
-| `ONE_WEEK` | Du lieu theo tuan |
-| `ONE_MONTH` | Du lieu theo thang |
-| `ONE_YEAR` | Du lieu theo nam |
+| `ONE_MINUTE` | Dữ liệu mỗi phút (intraday) |
+| `ONE_DAY` | Theo ngày |
+| `ONE_WEEK` | Theo tuần |
+| `ONE_MONTH` | Theo tháng |
+| `ONE_YEAR` | Theo năm |
 
-### Cac gia tri `symbols`:
+### Giá trị `symbols`
 
-| symbols | Mo ta |
+| symbols | Mô tả |
 |---------|-------|
-| `["ALL"]` | Toan bo thi truong (HOSE + HNX + UPCOM) |
-| `["VNINDEX"]` | Chi HOSE |
-| `["HNXIndex"]` | Chi HNX |
-| `["HNXUpcomIndex"]` | Chi UPCOM |
+| `["ALL"]` | Toàn bộ thị trường (HOSE + HNX + UPCOM) |
+| `["VNINDEX"]` | Chỉ HOSE |
+| `["HNXIndex"]` | Chỉ HNX |
+| `["HNXUpcomIndex"]` | Chỉ UPCOM |
 
 ---
 
-## 3. Nhom Dan Dat Thi Truong (Index Impact)
+## 3. Nhóm dẫn dắt thị trường (Index Impact)
 
-Top 10 co phieu dong gop tang/giam nhieu nhat vao chi so.
+Top 10 cổ phiếu đóng góp tăng/giảm điểm chỉ số nhiều nhất.
 
 ```
 POST https://trading.vietcap.com.vn/api/market-watch/v2/IndexImpactChart/getData
@@ -132,10 +136,13 @@ POST https://trading.vietcap.com.vn/api/market-watch/v2/IndexImpactChart/getData
 **Request Body:**
 ```json
 {
-  "group": "ALL",            // "ALL" | "HOSE" | "HNX" | "UPCOM"
-  "timeFrame": "ONE_YEAR"    // "ONE_DAY" | "ONE_WEEK" | "ONE_MONTH" | "YTD" | "ONE_YEAR"
+  "group": "ALL",
+  "timeFrame": "ONE_YEAR"
 }
 ```
+
+- `group`: `"ALL" | "HOSE" | "HNX" | "UPCOM"`
+- `timeFrame`: `"ONE_DAY" | "ONE_WEEK" | "ONE_MONTH" | "YTD" | "ONE_YEAR"`
 
 **Response:**
 ```json
@@ -143,15 +150,15 @@ POST https://trading.vietcap.com.vn/api/market-watch/v2/IndexImpactChart/getData
   "topDown": [
     {
       "symbol": "FPT",
-      "impact": -8.903,            // Diem anh huong (am = keo giam chi so)
+      "impact": -8.903,
       "exchange": "HOSE",
       "enOrganName": "FPT Corporation",
       "enOrganShortName": "FPT Corp",
       "organName": "Cong ty Co phan FPT",
       "organShortName": "FPT Corp",
       "timeFrame": "ONE_YEAR",
-      "matchPrice": "73400.0",      // Gia hien tai
-      "refPrice": "95572.7",        // Gia tham chieu (dau ky)
+      "matchPrice": "73400.0",
+      "refPrice": "95572.7",
       "ceiling": null,
       "floor": null
     }
@@ -159,7 +166,7 @@ POST https://trading.vietcap.com.vn/api/market-watch/v2/IndexImpactChart/getData
   "topUp": [
     {
       "symbol": "VIC",
-      "impact": 321.98,             // Diem anh huong (duong = dong gop tang)
+      "impact": 321.98,
       "exchange": "HOSE",
       "organName": "Tap doan Vingroup - Cong ty CP",
       "matchPrice": "212100.0",
@@ -169,30 +176,32 @@ POST https://trading.vietcap.com.vn/api/market-watch/v2/IndexImpactChart/getData
 }
 ```
 
-**Cac gia tri `group`:**
+> Trường `impact` âm: kéo giảm chỉ số. `impact` dương: đóng góp tăng.
 
-| group | Mo ta | Ghi chu |
-|-------|-------|---------|
-| `ALL` | Toan thi truong | Mac dinh |
-| `HOSE` | San HOSE | |
-| `HNX` | San HNX | |
-| `UPCOM` | San UPCOM | |
+**Giá trị `group`:**
 
-**Cac gia tri `timeFrame`:**
+| group | Mô tả |
+|-------|-------|
+| `ALL` | Toàn thị trường (mặc định) |
+| `HOSE` | Sàn HOSE |
+| `HNX` | Sàn HNX |
+| `UPCOM` | Sàn UPCOM |
 
-| timeFrame | Mo ta | Tuong ung UI |
-|-----------|-------|-------------|
-| `ONE_DAY` | Hom nay | "Hom nay" |
-| `ONE_WEEK` | 1 tuan | "1W" |
-| `ONE_MONTH` | 1 thang | "1M" |
-| `YTD` | Tu dau nam | "YTD" |
-| `ONE_YEAR` | 1 nam | "1Y" |
+**Giá trị `timeFrame`:**
+
+| timeFrame | Mô tả | UI |
+|-----------|-------|----|
+| `ONE_DAY` | Hôm nay | "Hôm nay" |
+| `ONE_WEEK` | 1 tuần | "1W" |
+| `ONE_MONTH` | 1 tháng | "1M" |
+| `YTD` | Từ đầu năm | "YTD" |
+| `ONE_YEAR` | 1 năm | "1Y" |
 
 ---
 
-## 4. Nuoc Ngoai (Foreign Trading)
+## 4. Nước ngoài (Foreign Trading)
 
-### 4.1. Bieu do Khoi Luong/Gia Tri Nuoc Ngoai (theo thoi gian)
+### 4.1. Biểu đồ khối lượng/giá trị nước ngoài (theo thời gian)
 
 ```
 POST https://trading.vietcap.com.vn/api/market-watch/v3/ForeignVolumeChart/getAll
@@ -201,33 +210,33 @@ POST https://trading.vietcap.com.vn/api/market-watch/v3/ForeignVolumeChart/getAl
 **Request Body:**
 ```json
 {
-  "from": 1745452800,           // Unix timestamp - ngay bat dau
-  "to": 1776988800,             // Unix timestamp - ngay ket thuc
-  "group": "ALL",               // "ALL" | "HOSE" | "HNX" | "UPCOM"
-  "timeFrame": "ONE_MONTH"      // Granularity de group du lieu
+  "from": 1745452800,
+  "to": 1776988800,
+  "group": "ALL",
+  "timeFrame": "ONE_MONTH"
 }
 ```
 
-**Response (array):**
+**Response (mảng):**
 ```json
 [
   {
     "group": "ALL",
     "dataType": 0,
     "timeFrame": "ONE_MONTH",
-    "truncTime": 1745452800,               // Timestamp dau thang
-    "foreignBuyVolume": "289245061.0",      // KL mua NN
-    "foreignSellVolume": "286834860.0",     // KL ban NN
-    "foreignBuyValue": "8663969161680.0",   // GT mua NN (VND)
-    "foreignSellValue": "9193330589610.0"   // GT ban NN (VND)
+    "truncTime": 1745452800,
+    "foreignBuyVolume": "289245061.0",
+    "foreignSellVolume": "286834860.0",
+    "foreignBuyValue": "8663969161680.0",
+    "foreignSellValue": "9193330589610.0"
   }
 ]
 ```
 
-> **Tinh rong**: `netVolume = foreignBuyVolume - foreignSellVolume`
-> **Tinh rong GT**: `netValue = foreignBuyValue - foreignSellValue`
+> **Tính ròng:** `netVolume = foreignBuyVolume - foreignSellVolume`
+> **Tính ròng giá trị:** `netValue = foreignBuyValue - foreignSellValue`
 
-### 4.2. Top Co Phieu Nuoc Ngoai Mua/Ban Rong
+### 4.2. Top cổ phiếu nước ngoài mua/bán ròng
 
 ```
 POST https://trading.vietcap.com.vn/api/market-watch/v3/ForeignNetValue/top
@@ -254,7 +263,7 @@ POST https://trading.vietcap.com.vn/api/market-watch/v3/ForeignNetValue/top
       "truncTime": "1776902400",
       "foreignBuyValue": "6575539160202.0",
       "foreignSellValue": "4040064589652.0",
-      "net": "2535474570550.0",              // GT mua rong (VND)
+      "net": "2535474570550.0",
       "timeFrame": "ONE_YEAR",
       "matchPrice": "50300.0",
       "refPrice": "48450.71",
@@ -264,31 +273,28 @@ POST https://trading.vietcap.com.vn/api/market-watch/v3/ForeignNetValue/top
     }
   ],
   "netSell": [
-    {
-      "symbol": "...",
-      "net": "-xxx"                          // GT ban rong (am)
-    }
+    { "symbol": "...", "net": "-xxx" }
   ],
-  "totalNetBuy": "...",    // Tong GT mua rong toan thi truong
-  "totalNetSell": "..."    // Tong GT ban rong toan thi truong
+  "totalNetBuy": "...",
+  "totalNetSell": "..."
 }
 ```
 
-**Mapping `from/to` voi timeFrame cho UI:**
+**Ánh xạ `from/to` theo `timeFrame` cho UI:**
 
-| UI Filter | timeFrame | from | to |
+| Bộ lọc UI | timeFrame | from | to |
 |-----------|-----------|------|-----|
-| Hom nay | `ONE_DAY` | startOfToday (unix) | endOfToday (unix) |
-| 1W | `ONE_WEEK` | today - 7 days | today |
-| 1M | `ONE_MONTH` | today - 30 days | today |
-| YTD | `YTD` | Jan 1st of year | today |
-| 1Y | `ONE_YEAR` | today - 365 days | today |
+| Hôm nay | `ONE_DAY` | startOfToday (unix) | endOfToday (unix) |
+| 1W | `ONE_WEEK` | hôm nay − 7 ngày | hôm nay |
+| 1M | `ONE_MONTH` | hôm nay − 30 ngày | hôm nay |
+| YTD | `YTD` | 01/01 năm hiện tại | hôm nay |
+| 1Y | `ONE_YEAR` | hôm nay − 365 ngày | hôm nay |
 
 ---
 
-## 5. Tu Doanh (Proprietary Trading)
+## 5. Tự doanh (Proprietary Trading)
 
-### 5.1. Bieu do Tu Doanh Mua/Ban (theo thoi gian)
+### 5.1. Biểu đồ tự doanh mua/bán (theo thời gian)
 
 ```
 GET https://trading.vietcap.com.vn/api/fiin-api-service/v3/proprietary-trading-value
@@ -296,12 +302,10 @@ GET https://trading.vietcap.com.vn/api/fiin-api-service/v3/proprietary-trading-v
     &market=ALL
 ```
 
-**Query Params:**
-
-| Param | Mo ta | Gia tri |
+| Param | Mô tả | Giá trị |
 |-------|-------|---------|
-| `timeFrame` | Khung thoi gian | `ONE_DAY`, `ONE_WEEK`, `ONE_MONTH`, `YTD`, `ONE_YEAR` |
-| `market` | San giao dich | `ALL`, `HOSE`, `HNX`, `UPCOM` |
+| `timeFrame` | Khung thời gian | `ONE_DAY`, `ONE_WEEK`, `ONE_MONTH`, `YTD`, `ONE_YEAR` |
+| `market` | Sàn giao dịch | `ALL`, `HOSE`, `HNX`, `UPCOM` |
 
 **Response:**
 ```json
@@ -322,12 +326,12 @@ GET https://trading.vietcap.com.vn/api/fiin-api-service/v3/proprietary-trading-v
     "dataType": 2,
     "data": [
       {
-        "totalBuyValue": 8620030672700,         // GT mua tu doanh (VND)
-        "totalSellValue": 12248298998317,        // GT ban tu doanh (VND)
-        "totalBuyVolume": 274568417,             // KL mua tu doanh (CP)
-        "totalSellVolume": 406465933,            // KL ban tu doanh (CP)
+        "totalBuyValue": 8620030672700,
+        "totalSellValue": 12248298998317,
+        "totalBuyVolume": 274568417,
+        "totalSellVolume": 406465933,
         "tradingDate": "2025-05-01",
-        "totalDealBuyVolume": 39639118,          // KL mua thoa thuan
+        "totalDealBuyVolume": 39639118,
         "totalDealSellVolume": "..."
       }
     ]
@@ -335,7 +339,7 @@ GET https://trading.vietcap.com.vn/api/fiin-api-service/v3/proprietary-trading-v
 }
 ```
 
-### 5.2. Top Co Phieu Tu Doanh Mua/Ban Rong
+### 5.2. Top cổ phiếu tự doanh mua/bán ròng
 
 ```
 GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/market-watch/top-proprietary
@@ -343,12 +347,10 @@ GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/market-watch/top-proprie
     &exchange=ALL
 ```
 
-**Query Params:**
-
-| Param | Mo ta | Gia tri |
+| Param | Mô tả | Giá trị |
 |-------|-------|---------|
-| `timeFrame` | Khung thoi gian | `ONE_DAY`, `ONE_WEEK`, `ONE_MONTH`, `YTD`, `ONE_YEAR` |
-| `exchange` | San giao dich | `ALL`, `HOSE`, `HNX`, `UPCOM` |
+| `timeFrame` | Khung thời gian | `ONE_DAY`, `ONE_WEEK`, `ONE_MONTH`, `YTD`, `ONE_YEAR` |
+| `exchange` | Sàn giao dịch | `ALL`, `HOSE`, `HNX`, `UPCOM` |
 
 **Response:**
 ```json
@@ -361,8 +363,8 @@ GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/market-watch/top-proprie
       "SELL": [
         {
           "ticker": "VPB",
-          "totalValue": -3589172164000,           // GT ban rong (am = ban rong)
-          "totalVolume": 692394443,               // KL giao dich
+          "totalValue": -3589172164000,
+          "totalVolume": 692394443,
           "organName": "Ngan hang TMCP Viet Nam Thinh Vuong",
           "organShortName": "VPBank",
           "exchange": "HOSE",
@@ -373,7 +375,7 @@ GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/market-watch/top-proprie
       "BUY": [
         {
           "ticker": "GEE",
-          "totalValue": 3200000000,               // GT mua rong (duong = mua rong)
+          "totalValue": 3200000000,
           "totalVolume": 500000,
           "organName": "...",
           "exchange": "HOSE"
@@ -384,11 +386,13 @@ GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/market-watch/top-proprie
 }
 ```
 
+> `totalValue` âm: bán ròng. `totalValue` dương: mua ròng.
+
 ---
 
-## 6. Phan Bo Thi Truong (Market Allocation)
+## 6. Phân bổ thị trường (Market Allocation)
 
-Bieu do phan bo tang/giam/dung gia cua thi truong (theo so luong va gia tri).
+Biểu đồ phân bổ tăng/giảm/đứng giá của thị trường theo số lượng và giá trị.
 
 ```
 POST https://trading.vietcap.com.vn/api/market-watch/AllocatedValue/getAllocatedValue
@@ -397,62 +401,44 @@ POST https://trading.vietcap.com.vn/api/market-watch/AllocatedValue/getAllocated
 **Request Body:**
 ```json
 {
-  "group": "ALL",            // "ALL" | "HOSE" | "HNX" | "UPCOM"
+  "group": "ALL",
   "timeFrame": "ONE_YEAR"
 }
 ```
 
-**Response (array, moi phan tu la 1 san):**
+**Response (mảng, mỗi phần tử là 1 sàn):**
 ```json
 [
   {
     "totalIncrease": [
-      {
-        "group": "HOSE",
-        "totalAccumulatedValueChangeHigh_t_last_year": 6054816465075510  // Tong GT co phieu tang (VND)
-      }
+      { "group": "HOSE", "totalAccumulatedValueChangeHigh_t_last_year": 6054816465075510 }
     ],
     "totalNochange": [
-      {
-        "group": "HOSE",
-        "totalAccumulatedValueChangeZero_t_last_year": 553814248330      // Tong GT co phieu khong doi
-      }
+      { "group": "HOSE", "totalAccumulatedValueChangeZero_t_last_year": 553814248330 }
     ],
     "totalDecrease": [
-      {
-        "group": "HOSE",
-        "totalAccumulatedValueChangeLow_t_last_year": 624482184610010    // Tong GT co phieu giam
-      }
+      { "group": "HOSE", "totalAccumulatedValueChangeLow_t_last_year": 624482184610010 }
     ],
     "totalSymbolIncrease": [
-      {
-        "group": "HOSE",
-        "totalSymbolChangeHigh_t_last_year": 264   // So co phieu tang
-      }
+      { "group": "HOSE", "totalSymbolChangeHigh_t_last_year": 264 }
     ],
     "totalSymbolNochange": [
-      {
-        "group": "HOSE",
-        "totalSymbolChangeZero_t_last_year": 1     // So co phieu khong doi
-      }
+      { "group": "HOSE", "totalSymbolChangeZero_t_last_year": 1 }
     ],
     "totalSymbolDecrease": [
-      {
-        "group": "HOSE",
-        "totalSymbolChangeLow_t_last_year": 180    // So co phieu giam
-      }
+      { "group": "HOSE", "totalSymbolChangeLow_t_last_year": 180 }
     ]
   }
 ]
 ```
 
-> **Ghi chu**: Hau to `_t_last_year`, `_t_today`, `_t_one_week`... thay doi tuy theo `timeFrame`.
+> **Ghi chú:** Hậu tố `_t_last_year`, `_t_today`, `_t_one_week`... thay đổi theo `timeFrame`.
 
 ---
 
-## 7. Nganh ICB (Industry/Sector)
+## 7. Ngành ICB (Industry/Sector)
 
-### 7.1. Danh sach ma ICB
+### 7.1. Danh sách mã ICB
 
 ```
 GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/sectors/icb-codes
@@ -465,12 +451,12 @@ GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/sectors/icb-codes
   "successful": true,
   "data": [
     {
-      "name": "2733",                                    // Ma ICB
-      "enSector": "Electrical Components & Equipment",   // Ten tieng Anh
-      "viSector": "Hang dien & dien tu",                 // Ten tieng Viet
-      "icbLevel": 4,                                     // Cap do (1-4)
+      "name": "2733",
+      "enSector": "Electrical Components & Equipment",
+      "viSector": "Hang dien & dien tu",
+      "icbLevel": 4,
       "isLevel1Custom": false,
-      "marketCap": 4206114686300,                        // Von hoa (VND)
+      "marketCap": 4206114686300,
       "level1Custom": false
     },
     {
@@ -484,16 +470,16 @@ GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/sectors/icb-codes
 }
 ```
 
-**ICB Levels:**
+**ICB Level:**
 
-| Level | Mo ta | Vi du |
+| Level | Mô tả | Ví dụ |
 |-------|-------|-------|
-| 1 | Super sector | Tai chinh, Cong nghiep... |
-| 2 | Sector | Ngan hang, Bao hiem, Hoa chat... |
+| 1 | Super sector | Tài chính, Công nghiệp... |
+| 2 | Sector | Ngân hàng, Bảo hiểm, Hóa chất... |
 | 3 | Sub-sector | |
 | 4 | Detail sector | |
 
-### 7.2. Phan bo theo nganh ICB
+### 7.2. Phân bổ theo ngành ICB
 
 ```
 POST https://trading.vietcap.com.vn/api/market-watch/AllocatedICB/getAllocated
@@ -507,17 +493,17 @@ POST https://trading.vietcap.com.vn/api/market-watch/AllocatedICB/getAllocated
 }
 ```
 
-**Response (array):**
+**Response (mảng):**
 ```json
 [
   {
     "icb_code": 9000,
-    "icbChangePercent": -20.506,          // % thay doi cua nganh
-    "totalValue": 244260147127980,        // Tong GTGD nganh (VND)
-    "totalStockIncrease": 16,             // So CP tang trong nganh
-    "totalStockDecrease": 11,             // So CP giam
-    "totalStockNoChange": 0,              // So CP khong doi
-    "icbCodeParent": null                 // Ma nganh cha (null = root)
+    "icbChangePercent": -20.506,
+    "totalValue": 244260147127980,
+    "totalStockIncrease": 16,
+    "totalStockDecrease": 11,
+    "totalStockNoChange": 0,
+    "icbCodeParent": null
   },
   {
     "icb_code": 8700,
@@ -527,38 +513,29 @@ POST https://trading.vietcap.com.vn/api/market-watch/AllocatedICB/getAllocated
     "totalStockDecrease": 18,
     "totalStockNoChange": 1,
     "icbCodeParent": null
-  },
-  {
-    "icb_code": 8600,
-    "icbChangePercent": 177.11,
-    "totalValue": 1265192869766390,
-    "totalStockIncrease": 78,
-    "totalStockDecrease": 37
   }
 ]
 ```
 
-### 7.3. Config nganh (CMS)
+### 7.3. Cấu hình ngành (CMS)
 
 ```
 GET https://www.vietcap.com.vn/api/cms-service/v1/config/industry?language=1
 ```
 
-> Tra ve danh sach nganh voi ten hien thi, `language=1` la tieng Viet, `language=2` la tieng Anh.
+> Trả về danh sách ngành với tên hiển thị; `language=1` là tiếng Việt, `language=2` là tiếng Anh.
 
-### 7.4. File Sector JSON (static)
+### 7.4. File JSON ngành (tĩnh)
 
 ```
 GET https://trading.vietcap.com.vn/vietcap-iq/language/vi/sector.json?v={timestamp}
 ```
 
-> File JSON tinh chua thong tin nganh de hien thi tren UI.
+> File JSON tĩnh chứa thông tin ngành để hiển thị trên UI.
 
 ---
 
-## 8. Dinh Gia (Valuation P/E, P/B)
-
-### 8.1. P/E - TTM
+## 8. Định giá (Valuation P/E, P/B)
 
 ```
 GET https://trading.vietcap.com.vn/api/iq-insight-service/v1/market-watch/index-valuation
@@ -567,22 +544,11 @@ GET https://trading.vietcap.com.vn/api/iq-insight-service/v1/market-watch/index-
     &timeFrame=ONE_YEAR
 ```
 
-### 8.2. P/B - TTM
-
-```
-GET https://trading.vietcap.com.vn/api/iq-insight-service/v1/market-watch/index-valuation
-    ?type=pb
-    &comGroupCode=VNINDEX
-    &timeFrame=ONE_YEAR
-```
-
-**Query Params:**
-
-| Param | Mo ta | Gia tri |
+| Param | Mô tả | Giá trị |
 |-------|-------|---------|
-| `type` | Loai chi so | `pe`, `pb` |
-| `comGroupCode` | Ma chi so / nhom | `VNINDEX`, `HNX30`, `VN30`... |
-| `timeFrame` | Khung thoi gian | `SIX_MONTHS`, `YTD`, `ONE_YEAR`, `TWO_YEAR`, `FIVE_YEAR`, `ALL` |
+| `type` | Loại chỉ số | `pe`, `pb` |
+| `comGroupCode` | Mã chỉ số / nhóm | `VNINDEX`, `HNX30`, `VN30`... |
+| `timeFrame` | Khung thời gian | `SIX_MONTHS`, `YTD`, `ONE_YEAR`, `TWO_YEAR`, `FIVE_YEAR`, `ALL` |
 
 **Response:**
 ```json
@@ -591,20 +557,14 @@ GET https://trading.vietcap.com.vn/api/iq-insight-service/v1/market-watch/index-
   "successful": true,
   "data": {
     "values": [
-      {
-        "date": "2025-04-25",
-        "value": 11.9267       // Gia tri P/E hoac P/B
-      },
-      {
-        "date": "2025-04-28",
-        "value": 11.8198
-      }
+      { "date": "2025-04-25", "value": 11.9267 },
+      { "date": "2025-04-28", "value": 11.8198 }
     ]
   }
 }
 ```
 
-**Mapping timeFrame UI -> API:**
+**Ánh xạ UI → API timeFrame:**
 
 | UI | API timeFrame |
 |----|---------------|
@@ -617,9 +577,9 @@ GET https://trading.vietcap.com.vn/api/iq-insight-service/v1/market-watch/index-
 
 ---
 
-## 9. Do Rong Thi Truong (Market Breadth)
+## 9. Độ rộng thị trường (Market Breadth)
 
-Ty le co phieu tren/duoi duong EMA50 (hoac EMA20, SMA...).
+Tỷ lệ cổ phiếu trên/dưới đường EMA50 (hoặc EMA20, SMA...).
 
 ```
 GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/market-watch/breadth
@@ -628,13 +588,11 @@ GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/market-watch/breadth
     &enNumberOfDays=Y1
 ```
 
-**Query Params:**
-
-| Param | Mo ta | Gia tri |
+| Param | Mô tả | Giá trị |
 |-------|-------|---------|
-| `condition` | Dieu kien ky thuat | `EMA50`, `EMA20`, `SMA50`, `SMA200` |
-| `exchange` | San GD (phay cach) | `HSX`, `HNX`, `UPCOM` hoac ket hop `HSX,HNX,UPCOM` |
-| `enNumberOfDays` | Ky thoi gian | `M6` (6M), `YTD`, `Y1` (1Y), `Y2` (2Y), `Y5` (5Y), `ALL` |
+| `condition` | Điều kiện kỹ thuật | `EMA50`, `EMA20`, `SMA50`, `SMA200` |
+| `exchange` | Sàn (ngăn cách dấu phẩy) | `HSX`, `HNX`, `UPCOM` hoặc kết hợp |
+| `enNumberOfDays` | Kỳ thời gian | `M6` (6M), `YTD`, `Y1` (1Y), `Y2` (2Y), `Y5` (5Y), `ALL` |
 
 **Response:**
 ```json
@@ -642,25 +600,13 @@ GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/market-watch/breadth
   "status": 200,
   "successful": true,
   "data": [
-    {
-      "condition": "EMA50",
-      "count": 556,              // So CP tren EMA50
-      "total": 1584,             // Tong so CP
-      "percent": 0.351,          // Ty le (0-1)
-      "tradingDate": "2025-04-25"
-    },
-    {
-      "condition": "EMA50",
-      "count": 583,
-      "total": 1585,
-      "percent": 0.3678,
-      "tradingDate": "2025-04-28"
-    }
+    { "condition": "EMA50", "count": 556, "total": 1584, "percent": 0.351, "tradingDate": "2025-04-25" },
+    { "condition": "EMA50", "count": 583, "total": 1585, "percent": 0.3678, "tradingDate": "2025-04-28" }
   ]
 }
 ```
 
-**Mapping timeFrame UI -> API:**
+**Ánh xạ UI → enNumberOfDays:**
 
 | UI | enNumberOfDays |
 |----|----------------|
@@ -673,9 +619,9 @@ GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/market-watch/breadth
 
 ---
 
-## 10. Nhiet Do (Heatmap)
+## 10. Nhiệt độ (Heatmap)
 
-### 10.1. Heatmap theo Nganh ICB
+### 10.1. Heatmap theo ngành ICB
 
 ```
 POST https://trading.vietcap.com.vn/api/market-watch/HeatMapChart/getByIcb
@@ -684,37 +630,37 @@ POST https://trading.vietcap.com.vn/api/market-watch/HeatMapChart/getByIcb
 **Request Body:**
 ```json
 {
-  "group": "ALL",              // "ALL" | "HOSE" | "HNX" | "UPCOM"
-  "sector": "icb_code_2",     // Level ICB: "icb_code_1", "icb_code_2", "icb_code_3", "icb_code_4"
-  "size": "MKC"               // Kich thuoc o: "MKC" (von hoa), "VOL" (khoi luong), "VAL" (gia tri)
+  "group": "ALL",
+  "sector": "icb_code_2",
+  "size": "MKC"
 }
 ```
 
-**Response (array theo nganh):**
+**Response (mảng theo ngành):**
 ```json
 [
   {
     "icb_code": 9500,
     "icb_name": "Cong nghe Thong tin",
     "en_icb_name": "Technology",
-    "icbChangePercent": -1.1344,                        // % thay doi nganh
-    "totalCapMulChangePercent": -163441015203574.8,      // Tong von hoa * % thay doi
-    "totalMarketCap": 144073963290550,                   // Tong von hoa nganh
+    "icbChangePercent": -1.1344,
+    "totalCapMulChangePercent": -163441015203574.8,
+    "totalMarketCap": 144073963290550,
     "data": [
       {
         "symbol": "FPT",
-        "volume": 10459800,                   // KLGD
-        "value": 769854.19,                   // GTGD (trieu VND)
-        "price": 73400,                       // Gia hien tai
-        "refPrice": 74300,                    // Gia tham chieu
-        "marketCap": 126570579090300,          // Von hoa (VND)
-        "ceilingPrice": 79500,                // Gia tran
-        "floorPrice": 69100,                  // Gia san
+        "volume": 10459800,
+        "value": 769854.19,
+        "price": 73400,
+        "refPrice": 74300,
+        "marketCap": 126570579090300,
+        "ceilingPrice": 79500,
+        "floorPrice": 69100,
         "foreignBuyVolume": 202192,
         "foreignSellVolume": 5861142,
         "foreignBuyValue": 14882098600,
         "foreignSellValue": 431376287300,
-        "putThroughVolume": 793000,           // KL thoa thuan
+        "putThroughVolume": 793000,
         "putThroughValue": "..."
       }
     ]
@@ -722,24 +668,24 @@ POST https://trading.vietcap.com.vn/api/market-watch/HeatMapChart/getByIcb
 ]
 ```
 
-**Cac gia tri `sector` (ICB Level):**
+**Giá trị `sector` (ICB Level):**
 
-| sector | Mo ta |
+| sector | Mô tả |
 |--------|-------|
-| `icb_code_1` | Super sector (cap 1 - it nganh, gop chung) |
-| `icb_code_2` | Sector (cap 2 - phon bien nhat) |
-| `icb_code_3` | Sub-sector (cap 3) |
-| `icb_code_4` | Detail sector (cap 4 - chi tiet nhat) |
+| `icb_code_1` | Super sector (cấp 1) |
+| `icb_code_2` | Sector (cấp 2 — phổ biến nhất) |
+| `icb_code_3` | Sub-sector (cấp 3) |
+| `icb_code_4` | Detail sector (cấp 4) |
 
-**Cac gia tri `size`:**
+**Giá trị `size`:**
 
-| size | Mo ta | UI |
-|------|-------|-----|
-| `MKC` | Von hoa thi truong | Mac dinh |
-| `VOL` | Khoi luong giao dich | |
-| `VAL` | Gia tri giao dich | |
+| size | Mô tả |
+|------|-------|
+| `MKC` | Vốn hóa thị trường (mặc định) |
+| `VOL` | Khối lượng giao dịch |
+| `VAL` | Giá trị giao dịch |
 
-### 10.2. Thong tin Index cho Heatmap
+### 10.2. Thông tin index cho heatmap
 
 ```
 GET https://trading.vietcap.com.vn/api/market-watch/HeatMapChart/getIndex
@@ -748,40 +694,28 @@ GET https://trading.vietcap.com.vn/api/market-watch/HeatMapChart/getIndex
 **Response:**
 ```json
 {
-  "totalStock": 1538,                          // Tong so co phieu
-  "totalTradingVolume": 794400925,             // Tong KLGD
-  "totalTradingValue": 21139697.99194,         // Tong GTGD (trieu VND)
-  "totalFrBuyVolume": 41925820,                // KL mua NN
-  "totalFrSellVolume": 93163897,               // KL ban NN
-  "totalFrBuyValue": 1624704273500,            // GT mua NN (VND)
-  "totalFrSellValue": 3572863448780,           // GT ban NN (VND)
-  "totalPtVolume": 1180355096,                 // KL thoa thuan
-  "totalPtValue": 20561938811642,              // GT thoa thuan (VND)
+  "totalStock": 1538,
+  "totalTradingVolume": 794400925,
+  "totalTradingValue": 21139697.99194,
+  "totalFrBuyVolume": 41925820,
+  "totalFrSellVolume": 93163897,
+  "totalFrBuyValue": 1624704273500,
+  "totalFrSellValue": 3572863448780,
+  "totalPtVolume": 1180355096,
+  "totalPtValue": 20561938811642,
   "indexData": [
-    {
-      "symbol": "VNINDEX",
-      "price": 1853.29,
-      "refPrice": 1870.36
-    },
-    {
-      "symbol": "HNXIndex",
-      "price": 251.95,
-      "refPrice": 253.23
-    },
-    {
-      "symbol": "HNXUpcomIndex",
-      "price": 127.54,
-      "refPrice": 128.31
-    }
+    { "symbol": "VNINDEX", "price": 1853.29, "refPrice": 1870.36 },
+    { "symbol": "HNXIndex", "price": 251.95, "refPrice": 253.23 },
+    { "symbol": "HNXUpcomIndex", "price": 127.54, "refPrice": 128.31 }
   ]
 }
 ```
 
 ---
 
-## 11. API Phu Tro (Supporting APIs)
+## 11. API hỗ trợ (Supporting APIs)
 
-### 11.1. OHLC Chart (Bieu do gia Index)
+### 11.1. OHLC Chart (biểu đồ giá Index)
 
 ```
 POST https://trading.vietcap.com.vn/api/chart/OHLCChart/gap
@@ -790,22 +724,22 @@ POST https://trading.vietcap.com.vn/api/chart/OHLCChart/gap
 **Request Body:**
 ```json
 {
-  "from": 1745555081,              // Unix timestamp
+  "from": 1745555081,
   "to": 1777091082,
-  "symbols": ["VNINDEX"],          // "VNINDEX", "HNXIndex", "VN30"...
-  "timeFrame": "ONE_DAY"           // "ONE_MINUTE", "ONE_DAY", "ONE_WEEK", "ONE_MONTH"
+  "symbols": ["VNINDEX"],
+  "timeFrame": "ONE_DAY"
 }
 ```
 
-### 11.2. Trang thai thi truong
+### 11.2. Trạng thái thị trường
 
 ```
 GET https://trading.vietcap.com.vn/api/price/marketStatus/getAll
 ```
 
-> Tra ve trang thai cac san: Pre-open, Open, Intermission, Close...
+> Trả về trạng thái các sàn: Pre-open, Open, Intermission, Close...
 
-### 11.3. Ngay giao dich
+### 11.3. Ngày giao dịch
 
 ```
 POST https://trading.vietcap.com.vn/api/price/tradingDates/getAll
@@ -814,7 +748,7 @@ POST https://trading.vietcap.com.vn/api/price/tradingDates/getAll
 **Request Body:**
 ```json
 {
-  "limit": 21    // So ngay giao dich gan nhat
+  "limit": 21
 }
 ```
 
@@ -827,13 +761,13 @@ POST https://trading.vietcap.com.vn/api/market-data-service/v1/tickers/price/top
 **Request Body:**
 ```json
 {
-  "tickers": ["FPT", "VPB", "VIC", "VHM", "MBB", "..."]   // Danh sach ma CP
+  "tickers": ["FPT", "VPB", "VIC", "VHM", "MBB", "..."]
 }
 ```
 
-> Tra ve gia hien tai cua cac ma trong Vietcap Coverage Universe.
+> Trả về giá hiện tại của các mã trong Vietcap Coverage Universe.
 
-### 11.5. Ty gia USD/VND
+### 11.5. Tỷ giá USD/VND
 
 ```
 POST https://trading.vietcap.com.vn/api/price/globalPrice/getList
@@ -860,96 +794,96 @@ GET https://trading.vietcap.com.vn/api/market-data-service/v1/data-version
 
 ---
 
-## 12. Enum / Gia Tri Tham So
+## 12. Enum / Giá trị tham số
 
-### `timeFrame` (Tong hop tat ca API)
+### `timeFrame`
 
-| Gia tri | Mo ta | Dung cho API |
-|---------|-------|-------------|
-| `ONE_MINUTE` | 1 phut | Liquidity intraday |
-| `ONE_DAY` | 1 ngay / Hom nay | Index Impact, Foreign, OHLC |
-| `ONE_WEEK` | 1 tuan | Index Impact, Foreign, OHLC |
-| `ONE_MONTH` | 1 thang | Index Impact, Foreign, OHLC |
-| `YTD` | Tu dau nam | Index Impact, Foreign, Proprietary |
-| `ONE_YEAR` | 1 nam | Tat ca API |
-| `SIX_MONTHS` | 6 thang | Valuation P/E P/B |
-| `TWO_YEAR` | 2 nam | Valuation P/E P/B |
-| `FIVE_YEAR` | 5 nam | Valuation P/E P/B |
-| `ALL` | Tat ca | Valuation P/E P/B, Breadth |
+| Giá trị | Mô tả | Dùng cho |
+|---------|-------|----------|
+| `ONE_MINUTE` | 1 phút | Liquidity intraday |
+| `ONE_DAY` | 1 ngày / Hôm nay | Index Impact, Foreign, OHLC |
+| `ONE_WEEK` | 1 tuần | Index Impact, Foreign, OHLC |
+| `ONE_MONTH` | 1 tháng | Index Impact, Foreign, OHLC |
+| `YTD` | Từ đầu năm | Index Impact, Foreign, Proprietary |
+| `ONE_YEAR` | 1 năm | Tất cả |
+| `SIX_MONTHS` | 6 tháng | Valuation P/E P/B |
+| `TWO_YEAR` | 2 năm | Valuation P/E P/B |
+| `FIVE_YEAR` | 5 năm | Valuation P/E P/B |
+| `ALL` | Tất cả | Valuation P/E P/B, Breadth |
 
 ### `group` / `market` / `exchange`
 
-| Gia tri | Mo ta | API su dung |
-|---------|-------|-------------|
-| `ALL` | Toan thi truong | Tat ca POST API |
-| `HOSE` / `HSX` | San HOSE | group dung `HOSE`, exchange dung `HSX` |
-| `HNX` | San HNX | Tat ca |
-| `UPCOM` | San UPCOM | Tat ca |
+| Giá trị | Mô tả | API dùng |
+|---------|-------|----------|
+| `ALL` | Toàn thị trường | Tất cả POST API |
+| `HOSE` / `HSX` | Sàn HOSE | `group` dùng `HOSE`, `exchange` dùng `HSX` |
+| `HNX` | Sàn HNX | Tất cả |
+| `UPCOM` | Sàn UPCOM | Tất cả |
 
-### `enNumberOfDays` (Breadth API)
+### `enNumberOfDays` (Breadth)
 
-| Gia tri | Mo ta |
+| Giá trị | Mô tả |
 |---------|-------|
-| `M6` | 6 thang |
-| `YTD` | Tu dau nam |
-| `Y1` | 1 nam |
-| `Y2` | 2 nam |
-| `Y5` | 5 nam |
-| `ALL` | Tat ca |
+| `M6` | 6 tháng |
+| `YTD` | Từ đầu năm |
+| `Y1` | 1 năm |
+| `Y2` | 2 năm |
+| `Y5` | 5 năm |
+| `ALL` | Tất cả |
 
-### `condition` (Breadth API)
+### `condition` (Breadth)
 
-| Gia tri | Mo ta |
+| Giá trị | Mô tả |
 |---------|-------|
-| `EMA50` | Exponential Moving Average 50 ngay |
-| `EMA20` | Exponential Moving Average 20 ngay |
-| `SMA50` | Simple Moving Average 50 ngay |
-| `SMA200` | Simple Moving Average 200 ngay |
+| `EMA50` | EMA 50 ngày |
+| `EMA20` | EMA 20 ngày |
+| `SMA50` | SMA 50 ngày |
+| `SMA200` | SMA 200 ngày |
 
-### `type` (Valuation API)
+### `type` (Valuation)
 
-| Gia tri | Mo ta |
+| Giá trị | Mô tả |
 |---------|-------|
 | `pe` | Price to Earnings (TTM) |
 | `pb` | Price to Book (TTM) |
 
-### `comGroupCode` (Valuation API)
+### `comGroupCode` (Valuation)
 
-| Gia tri | Mo ta |
+| Giá trị | Mô tả |
 |---------|-------|
-| `VNINDEX` | Chi so VN-Index |
-| `HNX30` | Chi so HNX30 |
-| `VN30` | Chi so VN30 |
+| `VNINDEX` | Chỉ số VN-Index |
+| `HNX30` | Chỉ số HNX30 |
+| `VN30` | Chỉ số VN30 |
 | `VNMIDCAP` | VN MidCap |
 | `VNSMALLCAP` | VN SmallCap |
 | `VN100` | VN100 |
 
-### `sector` (Heatmap API)
+### `sector` (Heatmap)
 
-| Gia tri | Mo ta |
+| Giá trị | Mô tả |
 |---------|-------|
 | `icb_code_1` | ICB Level 1 (Super sector) |
-| `icb_code_2` | ICB Level 2 (Sector) - mac dinh |
+| `icb_code_2` | ICB Level 2 (Sector) — mặc định |
 | `icb_code_3` | ICB Level 3 (Sub-sector) |
 | `icb_code_4` | ICB Level 4 (Detail) |
 
-### `size` (Heatmap API)
+### `size` (Heatmap)
 
-| Gia tri | Mo ta |
+| Giá trị | Mô tả |
 |---------|-------|
-| `MKC` | Market Cap (Von hoa) |
-| `VOL` | Volume (Khoi luong) |
-| `VAL` | Value (Gia tri) |
+| `MKC` | Market Cap (vốn hóa) |
+| `VOL` | Volume (khối lượng) |
+| `VAL` | Value (giá trị) |
 
 ---
 
-## Ghi Chu Ky Thuat
+## Ghi chú kỹ thuật
 
-1. **Unix Timestamp**: Tat ca cac field `from`, `to`, `truncTime`, `t` deu su dung **epoch seconds** (khong phai milliseconds).
-2. **Don vi tien**: 
-   - Cac field `*Value` tra ve don vi **VND** (dong).
-   - `accumulatedValue` trong Liquidity API tra ve don vi **trieu VND**.
-   - De chuyen sang **ty VND**: chia cho 1,000,000,000.
-3. **Hau to timeFrame trong response**: Mot so API (AllocatedValue) co hau to dong nhu `_t_last_year`, `_t_today` trong ten field - thay doi theo `timeFrame` request.
-4. **Rate Limit**: Chua xac dinh chinh xac. Nen cache du lieu va goi moi 30s-60s.
-5. **CORS**: API chi cho phep tu domain `trading.vietcap.com.vn` va `iq.vietcap.com.vn`. Tu backend nen goi truc tiep khong bi CORS.
+1. **Unix Timestamp**: Tất cả `from`, `to`, `truncTime`, `t` đều dùng **epoch giây** (không phải milliseconds).
+2. **Đơn vị tiền**:
+   - Các trường `*Value` trả về đơn vị **VND**.
+   - `accumulatedValue` trong API Liquidity trả về đơn vị **triệu VND**.
+   - Để chuyển sang **tỷ VND**: chia cho 1.000.000.000.
+3. **Hậu tố theo timeFrame**: Một số API (AllocatedValue) có hậu tố động kiểu `_t_last_year`, `_t_today` trong tên field — thay đổi theo `timeFrame`.
+4. **Rate limit**: Chưa xác định chính xác. Khuyến nghị cache dữ liệu và gọi mỗi 30–60 giây.
+5. **CORS**: API chỉ cho phép gọi từ domain `trading.vietcap.com.vn` và `iq.vietcap.com.vn`. Từ backend nên gọi trực tiếp, không bị CORS.

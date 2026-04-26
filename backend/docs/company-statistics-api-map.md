@@ -1,229 +1,229 @@
-# Company Statistics API Map
+# Bản đồ API Thống kê công ty
 
-> Reverse-engineered from Vietcap IQ Company page (`/iq/company?tab=information&ticker={TICKER}`)
-> under the **Thống Kê** (Statistics) tab.
+> Tham chiếu trang Vietcap IQ Company (`/iq/company?tab=information&ticker={TICKER}`)
+> mục **Thống kê**.
 >
-> **Source page:** `https://trading.vietcap.com.vn/iq/company?tab=information&ticker={TICKER}&isIndex=false`
-> **Last updated:** 2026-04-25
-> **Legend:** ✅ Live & verified
+> **Nguồn upstream:** `https://trading.vietcap.com.vn/iq/company?tab=information&ticker={TICKER}&isIndex=false`
+> **Cập nhật lần cuối:** 2026-04-25
+> **Chú thích:** ✅ Đã xác minh trên môi trường thực tế
 
 ## Base URL
 
-All endpoints use `https://iq.vietcap.com.vn` as the base URL.
+Tất cả endpoint đều dùng `https://iq.vietcap.com.vn`.
 
-## Common Parameters
+## Tham số chung
 
-| Parameter | Type | Description |
+| Tham số | Kiểu | Mô tả |
 |---|---|---|
-| `fromDate` | `YYYYMMDD` | Start date (e.g. `20250425`) |
-| `toDate` | `YYYYMMDD` | End date (e.g. `20260425`) |
-| `page` | int | 0-indexed page number |
-| `size` | int | Items per page (default `50`) |
+| `fromDate` | `YYYYMMDD` | Ngày bắt đầu (ví dụ `20250425`) |
+| `toDate` | `YYYYMMDD` | Ngày kết thúc (ví dụ `20260425`) |
+| `page` | int | Số trang (đếm từ 0) |
+| `size` | int | Số bản ghi mỗi trang (mặc định `50`) |
 | `timeFrame` | enum | `ONE_DAY`, `ONE_WEEK`, `ONE_MONTH`, `ONE_QUARTER`, `ONE_YEAR` |
 
-> **UI mapping:** D → `ONE_DAY`, W → `ONE_WEEK`, M → `ONE_MONTH`, Q → `ONE_QUARTER`, Y → `ONE_YEAR`
+> **Ánh xạ UI:** D → `ONE_DAY`, W → `ONE_WEEK`, M → `ONE_MONTH`, Q → `ONE_QUARTER`, Y → `ONE_YEAR`
 
 ---
 
 ## 1. Nước ngoài (Foreign Trading)
 
-Uses the **price-history** endpoint. Foreign data fields are embedded in the same response as price history data.
+Sử dụng endpoint **price-history**. Dữ liệu nước ngoài được nhúng cùng response với dữ liệu lịch sử giá.
 
-| Endpoint | URL | Status |
+| Endpoint | URL | Trạng thái |
 |---|---|---|
-| Foreign history (paginated) | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history?fromDate={}&toDate={}&page={}&size={}&timeFrame={}` | ✅ |
-| Foreign summary | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history-summary?fromDate={}&toDate={}&timeFrame={}` | ✅ |
+| Lịch sử nước ngoài (phân trang) | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history?fromDate={}&toDate={}&page={}&size={}&timeFrame={}` | ✅ |
+| Tóm tắt nước ngoài | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history-summary?fromDate={}&toDate={}&timeFrame={}` | ✅ |
 
-### Response Fields — Foreign (in `price-history` items)
+### Field — Nước ngoài (trong items của `price-history`)
 
-| Field | Unit | Description |
+| Field | Đơn vị | Mô tả |
 |---|---|---|
-| `foreignBuyVolumeMatched` | shares | Foreign buy volume (matched orders) |
-| `foreignBuyValueMatched` | VND | Foreign buy value (matched orders) |
-| `foreignSellVolumeMatched` | shares | Foreign sell volume (matched orders) |
-| `foreignSellValueMatched` | VND | Foreign sell value (matched orders) |
-| `foreignBuyVolumeDeal` | shares | Foreign buy volume (deal/block trades) |
-| `foreignBuyValueDeal` | VND | Foreign buy value (deal/block trades) |
-| `foreignSellVolumeDeal` | shares | Foreign sell volume (deal/block trades) |
-| `foreignSellValueDeal` | VND | Foreign sell value (deal/block trades) |
-| `foreignBuyVolumeTotal` | shares | Foreign buy volume total (matched + deal) |
-| `foreignBuyValueTotal` | VND | Foreign buy value total |
-| `foreignSellVolumeTotal` | shares | Foreign sell volume total |
-| `foreignSellValueTotal` | VND | Foreign sell value total |
-| `foreignNetVolumeTotal` | shares | Net foreign volume (buy − sell, total) |
-| `foreignNetValueTotal` | VND | Net foreign value (buy − sell, total) |
-| `foreignNetVolumeMatched` | shares | Net foreign volume (matched only) |
-| `foreignNetValueMatched` | VND | Net foreign value (matched only) |
-| `foreignNetVolumeDeal` | shares | Net foreign volume (deal only) |
-| `foreignNetValueDeal` | VND | Net foreign value (deal only) |
-| `foreignTotalRoom` | shares | Maximum foreign ownership room |
-| `foreignCurrentRoom` | shares | Current available room |
-| `foreignRoomPercentage` | ratio | Max foreign ownership ratio (e.g. `0.49` = 49%) |
-| `foreignOwnedPercentage` | ratio | Current foreign ownership ratio |
-| `foreignAvailablePercentage` | ratio | Available room ratio |
-| `foreignOwned` | shares | Total shares owned by foreign investors |
+| `foreignBuyVolumeMatched` | cổ phiếu | Khối lượng mua khớp lệnh của khối ngoại |
+| `foreignBuyValueMatched` | VND | Giá trị mua khớp lệnh của khối ngoại |
+| `foreignSellVolumeMatched` | cổ phiếu | Khối lượng bán khớp lệnh của khối ngoại |
+| `foreignSellValueMatched` | VND | Giá trị bán khớp lệnh của khối ngoại |
+| `foreignBuyVolumeDeal` | cổ phiếu | Khối lượng mua thỏa thuận của khối ngoại |
+| `foreignBuyValueDeal` | VND | Giá trị mua thỏa thuận của khối ngoại |
+| `foreignSellVolumeDeal` | cổ phiếu | Khối lượng bán thỏa thuận của khối ngoại |
+| `foreignSellValueDeal` | VND | Giá trị bán thỏa thuận của khối ngoại |
+| `foreignBuyVolumeTotal` | cổ phiếu | Tổng khối lượng mua (khớp + thỏa thuận) |
+| `foreignBuyValueTotal` | VND | Tổng giá trị mua |
+| `foreignSellVolumeTotal` | cổ phiếu | Tổng khối lượng bán |
+| `foreignSellValueTotal` | VND | Tổng giá trị bán |
+| `foreignNetVolumeTotal` | cổ phiếu | Khối lượng ròng (mua − bán) |
+| `foreignNetValueTotal` | VND | Giá trị ròng (mua − bán) |
+| `foreignNetVolumeMatched` | cổ phiếu | Khối lượng ròng (chỉ phần khớp lệnh) |
+| `foreignNetValueMatched` | VND | Giá trị ròng (chỉ phần khớp lệnh) |
+| `foreignNetVolumeDeal` | cổ phiếu | Khối lượng ròng (chỉ phần thỏa thuận) |
+| `foreignNetValueDeal` | VND | Giá trị ròng (chỉ phần thỏa thuận) |
+| `foreignTotalRoom` | cổ phiếu | Trần room nước ngoài |
+| `foreignCurrentRoom` | cổ phiếu | Room hiện còn |
+| `foreignRoomPercentage` | tỷ số | Tỷ lệ room tối đa (ví dụ `0.49` = 49%) |
+| `foreignOwnedPercentage` | tỷ số | Tỷ lệ sở hữu hiện tại của khối ngoại |
+| `foreignAvailablePercentage` | tỷ số | Tỷ lệ room còn lại |
+| `foreignOwned` | cổ phiếu | Tổng cổ phiếu khối ngoại đang sở hữu |
 
-### Response Fields — Foreign Summary (in `price-history-summary`)
+### Field — Tóm tắt nước ngoài (trong `price-history-summary`)
 
-| Field | Unit | Description |
+| Field | Đơn vị | Mô tả |
 |---|---|---|
-| `foreignBuyVolumeTotal` / `foreignBuyValueTotal` | shares / VND | Total foreign buy in period |
-| `foreignSellVolumeTotal` / `foreignSellValueTotal` | shares / VND | Total foreign sell in period |
-| `foreignNetVolumeTotal` / `foreignNetValueTotal` | shares / VND | Net foreign in period |
-| `foreignBuyVolumeTotalAvg` / `foreignBuyValueTotalAvg` | shares / VND | Daily average foreign buy |
-| `foreignSellVolumeTotalAvg` / `foreignSellValueTotalAvg` | shares / VND | Daily average foreign sell |
-| `foreignNetVolumeTotalAvg` / `foreignNetValueTotalAvg` | shares / VND | Daily average net foreign |
-| `foreign*Matched*` / `foreign*Deal*` | — | Same breakdown for matched & deal |
+| `foreignBuyVolumeTotal` / `foreignBuyValueTotal` | cổ phiếu / VND | Tổng mua khối ngoại trong kỳ |
+| `foreignSellVolumeTotal` / `foreignSellValueTotal` | cổ phiếu / VND | Tổng bán khối ngoại trong kỳ |
+| `foreignNetVolumeTotal` / `foreignNetValueTotal` | cổ phiếu / VND | Ròng khối ngoại trong kỳ |
+| `foreignBuyVolumeTotalAvg` / `foreignBuyValueTotalAvg` | cổ phiếu / VND | Trung bình ngày mua khối ngoại |
+| `foreignSellVolumeTotalAvg` / `foreignSellValueTotalAvg` | cổ phiếu / VND | Trung bình ngày bán khối ngoại |
+| `foreignNetVolumeTotalAvg` / `foreignNetValueTotalAvg` | cổ phiếu / VND | Trung bình ngày ròng khối ngoại |
+| `foreign*Matched*` / `foreign*Deal*` | — | Cùng cấu trúc, tách phần khớp lệnh và thỏa thuận |
 
 ---
 
 ## 2. Tự doanh (Proprietary Trading)
 
-Dedicated endpoint for proprietary (self-trading) data from securities firms.
+Endpoint riêng cho dữ liệu tự doanh từ các công ty chứng khoán.
 
-| Endpoint | URL | Status |
+| Endpoint | URL | Trạng thái |
 |---|---|---|
-| Proprietary history (paginated) | `GET .../api/iq-insight-service/v1/company/{ticker}/proprietary-history?fromDate={}&toDate={}&page={}&size={}&timeFrame={}` | ✅ |
-| Proprietary summary | `GET .../api/iq-insight-service/v1/company/{ticker}/proprietary-history-summary?fromDate={}&toDate={}&timeFrame={}` | ✅ |
+| Lịch sử tự doanh (phân trang) | `GET .../api/iq-insight-service/v1/company/{ticker}/proprietary-history?fromDate={}&toDate={}&page={}&size={}&timeFrame={}` | ✅ |
+| Tóm tắt tự doanh | `GET .../api/iq-insight-service/v1/company/{ticker}/proprietary-history-summary?fromDate={}&toDate={}&timeFrame={}` | ✅ |
 
-### Response Fields — Proprietary History
+### Field — Lịch sử tự doanh
 
-| Field | Unit | Description |
+| Field | Đơn vị | Mô tả |
 |---|---|---|
-| `ticker` | string | Stock symbol |
-| `tradingDate` | ISO datetime | Trading date |
-| `totalBuyTradeVolume` | shares | Proprietary buy volume (total) |
-| `totalBuyTradeValue` | VND | Proprietary buy value (total) |
-| `percentBuyTradeVolume` | ratio | Buy volume as % of market volume |
-| `percentBuyTradeValue` | ratio | Buy value as % of market value |
-| `totalSellTradeVolume` | shares | Proprietary sell volume (total) |
-| `totalSellTradeValue` | VND | Proprietary sell value (total) |
-| `percentSellTradeVolume` | ratio | Sell volume as % of market volume |
-| `percentSellTradeValue` | ratio | Sell value as % of market value |
-| `totalTradeNetVolume` | shares | Net volume (buy − sell, total) |
-| `totalTradeNetValue` | VND | Net value (buy − sell, total) |
-| `totalMatchBuyTradeVolume` / `Value` | shares / VND | Matched buy breakdown |
-| `totalMatchSellTradeVolume` / `Value` | shares / VND | Matched sell breakdown |
-| `totalMatchTradeNetVolume` / `Value` | shares / VND | Matched net breakdown |
-| `totalDealBuyTradeVolume` / `Value` | shares / VND | Deal buy breakdown |
-| `totalDealSellTradeVolume` / `Value` | shares / VND | Deal sell breakdown |
-| `totalDealTradeNetVolume` / `Value` | shares / VND | Deal net breakdown |
-| `totalVolume` | shares | Total market volume (for % calculation) |
-| `totalValue` | VND | Total market value (for % calculation) |
-| `updateDate` | ISO datetime | Last data update time |
+| `ticker` | string | Mã chứng khoán |
+| `tradingDate` | ISO datetime | Ngày giao dịch |
+| `totalBuyTradeVolume` | cổ phiếu | Tổng khối lượng mua tự doanh |
+| `totalBuyTradeValue` | VND | Tổng giá trị mua tự doanh |
+| `percentBuyTradeVolume` | tỷ số | Khối lượng mua tự doanh trên tổng KL thị trường |
+| `percentBuyTradeValue` | tỷ số | Giá trị mua tự doanh trên tổng GT thị trường |
+| `totalSellTradeVolume` | cổ phiếu | Tổng khối lượng bán tự doanh |
+| `totalSellTradeValue` | VND | Tổng giá trị bán tự doanh |
+| `percentSellTradeVolume` | tỷ số | Khối lượng bán tự doanh trên tổng KL thị trường |
+| `percentSellTradeValue` | tỷ số | Giá trị bán tự doanh trên tổng GT thị trường |
+| `totalTradeNetVolume` | cổ phiếu | Khối lượng ròng (mua − bán) |
+| `totalTradeNetValue` | VND | Giá trị ròng (mua − bán) |
+| `totalMatchBuyTradeVolume` / `Value` | cổ phiếu / VND | Phần mua khớp lệnh |
+| `totalMatchSellTradeVolume` / `Value` | cổ phiếu / VND | Phần bán khớp lệnh |
+| `totalMatchTradeNetVolume` / `Value` | cổ phiếu / VND | Ròng khớp lệnh |
+| `totalDealBuyTradeVolume` / `Value` | cổ phiếu / VND | Phần mua thỏa thuận |
+| `totalDealSellTradeVolume` / `Value` | cổ phiếu / VND | Phần bán thỏa thuận |
+| `totalDealTradeNetVolume` / `Value` | cổ phiếu / VND | Ròng thỏa thuận |
+| `totalVolume` | cổ phiếu | Tổng khối lượng thị trường (để tính phần trăm) |
+| `totalValue` | VND | Tổng giá trị thị trường (để tính phần trăm) |
+| `updateDate` | ISO datetime | Thời điểm cập nhật dữ liệu lần cuối |
 
-### Response Fields — Proprietary Summary
+### Field — Tóm tắt tự doanh
 
-Same field structure as history, with aggregated totals for the selected date range.
+Cùng cấu trúc với lịch sử, được tổng hợp cho khoảng ngày đã chọn.
 
 ---
 
 ## 3. Nội bộ (Insider Trading)
 
-Insider/director dealing transactions. No `fromDate`/`toDate` or `timeFrame` params — returns all recent transactions.
+Giao dịch của người nội bộ/giám đốc. Không có `fromDate`/`toDate` hay `timeFrame` — trả về toàn bộ giao dịch gần đây.
 
-| Endpoint | URL | Status |
+| Endpoint | URL | Trạng thái |
 |---|---|---|
-| Insider transactions (paginated) | `GET .../api/iq-insight-service/v1/company/{ticker}/insider-transaction?page={}&size={}` | ✅ |
+| Giao dịch nội bộ (phân trang) | `GET .../api/iq-insight-service/v1/company/{ticker}/insider-transaction?page={}&size={}` | ✅ |
 
-### Response Fields — Insider Transaction
+### Field — Giao dịch nội bộ
 
-| Field | Type | Description |
+| Field | Kiểu | Mô tả |
 |---|---|---|
-| `id` | string | Unique transaction ID |
-| `organCode` | string | Company code |
-| `ticker` | string | Stock symbol |
-| `eventCode` | string | Event type code (e.g. `DDINS` = institutional deal, `DDDIR` = director deal) |
-| `eventNameVi` / `eventNameEn` | string | Event description (vi/en) |
-| `organNameVi` / `organNameEn` | string | Company name (vi/en) |
-| `traderOrganNameVi` / `traderOrganNameEn` | string | Trader/organization name (vi/en) |
-| `actionTypeCode` | string | `B` = Buy, `S` = Sell |
-| `actionTypeVi` / `actionTypeEn` | string | Action description (vi/en) |
-| `tradeStatusVi` / `tradeStatusEn` | string | Status: Đăng ký (Registration), Hoàn thành (Completed), etc. |
-| `publicDate` | ISO datetime | Public announcement date |
-| `displayDate1` | ISO datetime | Display date (execution/registration date) |
-| `displayDate2` | ISO datetime | Secondary display date |
-| `startDate` | ISO datetime | Trading period start |
-| `endDate` | ISO datetime | Trading period end |
-| `shareBeforeTrade` | int | Shares held before trade |
-| `shareAfterTrade` | int | Shares held after trade |
-| `shareRegister` | int | Shares registered to trade |
-| `shareAcquire` | int | Shares actually acquired |
-| `ownershipAfterTrade` | ratio | Ownership percentage after trade |
-| `sourceUrlVi` / `sourceUrlEn` | URL | Source article links |
-| `icbCodeLv1` | string | ICB industry code level 1 |
+| `id` | string | ID giao dịch |
+| `organCode` | string | Mã tổ chức |
+| `ticker` | string | Mã chứng khoán |
+| `eventCode` | string | Mã loại sự kiện (ví dụ `DDINS` = giao dịch tổ chức, `DDDIR` = giao dịch giám đốc) |
+| `eventNameVi` / `eventNameEn` | string | Tên sự kiện (vi/en) |
+| `organNameVi` / `organNameEn` | string | Tên doanh nghiệp (vi/en) |
+| `traderOrganNameVi` / `traderOrganNameEn` | string | Tên người/tổ chức giao dịch (vi/en) |
+| `actionTypeCode` | string | `B` = Mua, `S` = Bán |
+| `actionTypeVi` / `actionTypeEn` | string | Diễn giải hành động (vi/en) |
+| `tradeStatusVi` / `tradeStatusEn` | string | Trạng thái: Đăng ký, Hoàn thành... |
+| `publicDate` | ISO datetime | Ngày công bố thông tin |
+| `displayDate1` | ISO datetime | Ngày thực hiện/đăng ký |
+| `displayDate2` | ISO datetime | Ngày hiển thị phụ |
+| `startDate` | ISO datetime | Bắt đầu giao dịch |
+| `endDate` | ISO datetime | Kết thúc giao dịch |
+| `shareBeforeTrade` | int | Cổ phiếu nắm giữ trước giao dịch |
+| `shareAfterTrade` | int | Cổ phiếu nắm giữ sau giao dịch |
+| `shareRegister` | int | Cổ phiếu đăng ký |
+| `shareAcquire` | int | Cổ phiếu thực mua |
+| `ownershipAfterTrade` | tỷ số | Tỷ lệ sở hữu sau giao dịch |
+| `sourceUrlVi` / `sourceUrlEn` | URL | Đường dẫn nguồn bài viết |
+| `icbCodeLv1` | string | Mã ngành ICB level 1 |
 
 ---
 
 ## 4. Cung cầu (Supply & Demand)
 
-Uses the **price-history** endpoint. Supply/demand fields are embedded in the same response.
+Sử dụng endpoint **price-history**. Các field cung cầu được nhúng cùng response.
 
-| Endpoint | URL | Status |
+| Endpoint | URL | Trạng thái |
 |---|---|---|
-| Supply/demand data (paginated) | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history?fromDate={}&toDate={}&page={}&size={}&timeFrame={}` | ✅ |
-| Supply/demand summary | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history-summary?fromDate={}&toDate={}&timeFrame={}` | ✅ |
+| Cung cầu (phân trang) | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history?fromDate={}&toDate={}&page={}&size={}&timeFrame={}` | ✅ |
+| Tóm tắt cung cầu | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history-summary?fromDate={}&toDate={}&timeFrame={}` | ✅ |
 
-### Response Fields — Supply & Demand (in `price-history` items)
+### Field — Cung cầu (trong items của `price-history`)
 
-| Field | Unit | Description |
+| Field | Đơn vị | Mô tả |
 |---|---|---|
-| `totalBuyTrade` | count | Number of buy orders |
-| `totalBuyTradeVolume` | shares | Total buy-side volume |
-| `totalSellTrade` | count | Number of sell orders |
-| `totalSellTradeVolume` | shares | Total sell-side volume |
-| `totalNetTradeVolume` | shares | Net volume (buy − sell) |
-| `averageBuyTradeVolume` | shares | Average volume per buy order |
-| `averageSellTradeVolume` | shares | Average volume per sell order |
-| `totalBuyUnmatchedVolume` | shares | Unmatched (pending) buy volume |
-| `totalSellUnmatchedVolume` | shares | Unmatched (pending) sell volume |
+| `totalBuyTrade` | số lệnh | Số lệnh mua |
+| `totalBuyTradeVolume` | cổ phiếu | Tổng khối lượng phía mua |
+| `totalSellTrade` | số lệnh | Số lệnh bán |
+| `totalSellTradeVolume` | cổ phiếu | Tổng khối lượng phía bán |
+| `totalNetTradeVolume` | cổ phiếu | Khối lượng ròng (mua − bán) |
+| `averageBuyTradeVolume` | cổ phiếu | KL trung bình mỗi lệnh mua |
+| `averageSellTradeVolume` | cổ phiếu | KL trung bình mỗi lệnh bán |
+| `totalBuyUnmatchedVolume` | cổ phiếu | Khối lượng mua chưa khớp |
+| `totalSellUnmatchedVolume` | cổ phiếu | Khối lượng bán chưa khớp |
 
-### Response Fields — Supply & Demand Summary (in `price-history-summary`)
+### Field — Tóm tắt cung cầu (trong `price-history-summary`)
 
-| Field | Unit | Description |
+| Field | Đơn vị | Mô tả |
 |---|---|---|
-| `totalBuyTradeVolume` / `totalSellTradeVolume` | shares | Total buy/sell volume in period |
-| `totalBuyTradeVolumeAvg` / `totalSellTradeVolumeAvg` | shares | Daily average buy/sell volume |
-| `totalBuyUnmatchedVolume` / `totalSellUnmatchedVolume` | shares | Total unmatched buy/sell in period |
-| `totalBuyUnmatchedVolumeAvg` / `totalSellUnmatchedVolumeAvg` | shares | Daily average unmatched |
+| `totalBuyTradeVolume` / `totalSellTradeVolume` | cổ phiếu | Tổng KL mua/bán trong kỳ |
+| `totalBuyTradeVolumeAvg` / `totalSellTradeVolumeAvg` | cổ phiếu | Trung bình ngày KL mua/bán |
+| `totalBuyUnmatchedVolume` / `totalSellUnmatchedVolume` | cổ phiếu | Tổng KL chưa khớp mua/bán trong kỳ |
+| `totalBuyUnmatchedVolumeAvg` / `totalSellUnmatchedVolumeAvg` | cổ phiếu | Trung bình ngày KL chưa khớp |
 
 ---
 
-## Supporting Endpoints
+## Endpoint hỗ trợ
 
-These endpoints are also called on the Statistics tab page:
+Các endpoint này cũng được gọi trên trang Thống kê:
 
-| Endpoint | URL | Description | Status |
+| Endpoint | URL | Mô tả | Trạng thái |
 |---|---|---|---|
-| Company details | `GET .../api/iq-insight-service/v1/company/details?ticker={ticker}` | Company info, sector, exchange | ✅ |
-| Price chart (OHLC) | `GET .../api/iq-insight-service/v1/company/{ticker}/price-chart?lengthReport={n}` | Adjusted OHLC for charting (unix timestamp) | ✅ |
+| Chi tiết doanh nghiệp | `GET .../api/iq-insight-service/v1/company/details?ticker={ticker}` | Thông tin công ty, ngành, sàn | ✅ |
+| Biểu đồ giá (OHLC) | `GET .../api/iq-insight-service/v1/company/{ticker}/price-chart?lengthReport={n}` | OHLC điều chỉnh để vẽ chart (timestamp unix) | ✅ |
 
-### Price Chart Response Fields
+### Field — Price Chart
 
-| Field | Type | Description |
+| Field | Kiểu | Mô tả |
 |---|---|---|
-| `openPrice` | float | Adjusted open price |
-| `highPrice` | float | Adjusted high price |
-| `lowPrice` | float | Adjusted low price |
-| `closingPrice` | float | Adjusted close price |
-| `tradingTime` | unix epoch (s) | Trading date as unix timestamp |
+| `openPrice` | float | Giá mở cửa điều chỉnh |
+| `highPrice` | float | Giá cao điều chỉnh |
+| `lowPrice` | float | Giá thấp điều chỉnh |
+| `closingPrice` | float | Giá đóng cửa điều chỉnh |
+| `tradingTime` | unix epoch (giây) | Ngày giao dịch dạng unix timestamp |
 
 ---
 
-## Source Headers
+## Header gọi nguồn
 
-| Header | Value |
+| Header | Giá trị |
 |---|---|
 | Referer | `https://trading.vietcap.com.vn/` |
 | Origin | `https://trading.vietcap.com.vn` |
 | Accept | `application/json` |
-| User-Agent | Standard browser UA |
+| User-Agent | User-Agent trình duyệt tiêu chuẩn |
 
-> **Auth:** All endpoints are **public**, no authentication required.
+> **Xác thực:** Tất cả endpoint đều **công khai**, không cần authentication.
 
-## API Response Envelope
+## Bao bì response
 
-All responses follow a consistent envelope:
+Response có cấu trúc thống nhất:
 
 ```json
 {
@@ -237,7 +237,7 @@ All responses follow a consistent envelope:
 }
 ```
 
-- Paginated endpoints: `data.content[]` (array of items)
-- Summary endpoints: `data` (flat object)
+- Endpoint phân trang: `data.content[]` (mảng các bản ghi)
+- Endpoint tóm tắt: `data` (object phẳng)
 
-> **Value units:** All `*Value*` fields are in **VND (exact, not scaled)**. All `*Volume*` fields are in **shares**. Percentage/ratio fields are `0.0–1.0` range (e.g. `0.49` = 49%).
+> **Đơn vị:** Tất cả `*Value*` là **VND (chính xác, không scale)**. Tất cả `*Volume*` là **cổ phiếu**. Các trường tỷ lệ ở khoảng `0.0–1.0` (ví dụ `0.49` = 49%).

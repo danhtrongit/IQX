@@ -402,7 +402,7 @@ async def test_transport_error_wrapping():
 async def test_overview_invalid_group(client):
     resp = await client.get("/api/v1/market-data/overview/index-impact?group=BAD")
     assert resp.status_code == 422
-    assert "Invalid group" in resp.json()["detail"]
+    assert "không hợp lệ" in resp.json()["detail"]
 
 
 @pytest.mark.asyncio

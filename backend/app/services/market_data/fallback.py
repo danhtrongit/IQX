@@ -67,7 +67,7 @@ async def fetch_with_fallback(
                     priority,
                 )
                 last_exc = ValueError(
-                    f"Source {source_name} returned empty data"
+                    f"Nguồn {source_name} trả về dữ liệu rỗng"
                 )
                 continue
 
@@ -91,7 +91,7 @@ async def fetch_with_fallback(
             last_exc = exc
 
     # All failed
-    msg = f"All {len(sources)} market data sources failed"
+    msg = f"Tất cả {len(sources)} nguồn dữ liệu thị trường đều thất bại"
     if last_exc:
         raise RuntimeError(msg) from last_exc
     raise RuntimeError(msg)

@@ -1,37 +1,37 @@
-# Vietcap Screening (Bo Loc Co Phieu) API
+# API Trang Bộ lọc cổ phiếu (Screening) Vietcap
 
 > Trang: `https://trading.vietcap.com.vn/iq/screening`
-> Ngay phan tich: 2026-04-25
+> Ngày phân tích: 2026-04-25
 
 ---
 
-## Muc Luc
+## Mục lục
 
-1. [Tong Quan Trang](#1-tong-quan-trang)
-2. [Tieu Chi Loc (Screening Criteria)](#2-tieu-chi-loc-screening-criteria)
-3. [Ket Qua Loc (Screening Paging)](#3-ket-qua-loc-screening-paging)
-4. [Bo Loc Mac Dinh (Preset Screeners)](#4-bo-loc-mac-dinh-preset-screeners)
-5. [Chi Tiet Tieu Chi Theo Nhom](#5-chi-tiet-tieu-chi-theo-nhom)
-
----
-
-## 1. Tong Quan Trang
-
-Trang Bo Loc Co Phieu cho phep loc co phieu theo nhieu tieu chi:
-
-| Nhom | UI Sidebar | Category API | Tieu chi |
-|------|-----------|-------------|----------|
-| **Thong tin chung** | Thong tin chung | `general` | San, Nganh, Von hoa, Gia, % Thay doi, GTGD, KL... |
-| **Tin hieu ky thuat** | Tin hieu ky thuat | `technical` | Suc manh gia, RS, RSI, EMA, MACD, ADX, Ichimoku... |
-| **Chi so tai chinh** | Chi so tai chinh | `fundamental` | P/E, P/B, ROE, Tang truong LN, Doanh thu, Bien LN... |
-
-**Dropdown "Bo loc co phieu"** o goc trai tren: Chon bo loc mac dinh hoac tao moi.
+1. [Tổng quan trang](#1-tong-quan-trang)
+2. [Tiêu chí lọc (Screening Criteria)](#2-tieu-chi-loc-screening-criteria)
+3. [Kết quả lọc (Screening Paging)](#3-ket-qua-loc-screening-paging)
+4. [Bộ lọc mặc định (Preset Screeners)](#4-bo-loc-mac-dinh-preset-screeners)
+5. [Chi tiết tiêu chí theo nhóm](#5-chi-tiet-tieu-chi-theo-nhom)
 
 ---
 
-## 2. Tieu Chi Loc (Screening Criteria)
+## 1. Tổng quan trang
 
-Lay danh sach tat ca tieu chi loc va cac gia tri co the.
+Trang Bộ lọc cổ phiếu cho phép lọc cổ phiếu theo nhiều tiêu chí:
+
+| Nhóm | UI Sidebar | Category API | Tiêu chí |
+|------|-----------|--------------|----------|
+| **Thông tin chung** | Thông tin chung | `general` | Sàn, Ngành, Vốn hóa, Giá, % Thay đổi, GTGD, KL... |
+| **Tín hiệu kỹ thuật** | Tín hiệu kỹ thuật | `technical` | Sức mạnh giá, RS, RSI, EMA, MACD, ADX, Ichimoku... |
+| **Chỉ số tài chính** | Chỉ số tài chính | `fundamental` | P/E, P/B, ROE, Tăng trưởng LN, Doanh thu, Biên LN... |
+
+**Dropdown "Bộ lọc cổ phiếu"** ở góc trái trên: chọn bộ lọc mặc định hoặc tạo mới.
+
+---
+
+## 2. Tiêu chí lọc (Screening Criteria)
+
+Lấy danh sách tất cả tiêu chí lọc và các giá trị có thể có.
 
 ```
 GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/screening/criteria
@@ -44,112 +44,112 @@ GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/screening/criteria
   "data": [
     {
       "id": "697cae6a1ac33a766fea7e53",
-      "category": "general",                    // Nhom: general | technical | fundamental
-      "name": "sectorLv1",                      // Ten tieu chi (dung trong filter)
-      "order": 1,                                // Thu tu hien thi
-      "allowDuplicate": false,                   // Co cho phep them nhieu lan khong
-      "selectType": "multiple",                  // Kieu chon: "multiple" (multi-select)
-      "sliderStepper": null,                     // Buoc nhay slider (null = khong co slider)
-      "multiplier": null,                        // He so nhan (null = khong nhan)
-      "min": null,                               // Gia tri min slider
-      "max": null,                               // Gia tri max slider
-      "conditionOptions": [                      // Cac lua chon
+      "category": "general",
+      "name": "sectorLv1",
+      "order": 1,
+      "allowDuplicate": false,
+      "selectType": "multiple",
+      "sliderStepper": null,
+      "multiplier": null,
+      "min": null,
+      "max": null,
+      "conditionOptions": [
         {
-          "type": "value",                       // "value" = chon gia tri, "range" = khoang
+          "type": "value",
           "viName": "Bat dong san",
           "enName": "Real Estate",
           "value": "8600"
         }
       ],
-      "conditionExtra": null,                    // Tuy chon phu (period, EMA type...)
+      "conditionExtra": null,
       "active": true
     }
   ]
 }
 ```
 
-### Danh sach 34 tieu chi
+### Danh sách 34 tiêu chí
 
-#### General (Thong tin chung)
+#### General (Thông tin chung)
 
-| # | name | UI Label | Kieu | Min | Max | conditionExtra |
+| # | name | UI Label | Kiểu | Min | Max | conditionExtra |
 |---|------|----------|------|-----|-----|----------------|
-| 1 | `sectorLv1` | Nganh (Level 1) | multi-select | — | — | — |
-| 2 | `sector` | Nganh (Level 2) | multi-select | — | — | — |
-| 3 | `sectorLv3` | Nganh (Level 3) | multi-select | — | — | — |
-| 4 | `sectorLv4` | Nganh (Level 4) | multi-select | — | — | — |
-| 5 | `exchange` | San | multi-select | — | — | — |
-| 6 | `marketCap` | Von hoa (ty VND) | range/slider | 0 | 2,000,000 | — |
-| 7 | `marketPrice` | Gia (VND) | range/slider | 0 | 2,000,000 | — |
-| 8 | `dailyPriceChangePercent` | Thay doi gia (%) | range/slider | -15 | 15 | — |
-| 9 | `adtv` | GTGD trung binh (ty VND) | range/slider | 0 | 2,000 | `10Days`, `20Days`, **`30Days`** |
+| 1 | `sectorLv1` | Ngành (Level 1) | multi-select | — | — | — |
+| 2 | `sector` | Ngành (Level 2) | multi-select | — | — | — |
+| 3 | `sectorLv3` | Ngành (Level 3) | multi-select | — | — | — |
+| 4 | `sectorLv4` | Ngành (Level 4) | multi-select | — | — | — |
+| 5 | `exchange` | Sàn | multi-select | — | — | — |
+| 6 | `marketCap` | Vốn hóa (tỷ VND) | range/slider | 0 | 2,000,000 | — |
+| 7 | `marketPrice` | Giá (VND) | range/slider | 0 | 2,000,000 | — |
+| 8 | `dailyPriceChangePercent` | Thay đổi giá (%) | range/slider | -15 | 15 | — |
+| 9 | `adtv` | GTGD trung bình (tỷ VND) | range/slider | 0 | 2,000 | `10Days`, `20Days`, **`30Days`** |
 | 10 | `tradingValueAdtv` | GTGD/ADTV (%) | range/slider | — | — | `10Days`, `20Days`, **`30Days`** |
-| 11 | `avgVolume` | KL trung binh | range/slider | 0 | 200,000,000 | `10Days`, `20Days`, **`30Days`** |
-| 12 | `esVolumeVsAvgVolume` | KL uoc tinh/KL TB (%) | range/slider | — | — | `10Days`, `20Days`, **`30Days`** |
+| 11 | `avgVolume` | KL trung bình | range/slider | 0 | 200,000,000 | `10Days`, `20Days`, **`30Days`** |
+| 12 | `esVolumeVsAvgVolume` | KL ước tính / KL TB (%) | range/slider | — | — | `10Days`, `20Days`, **`30Days`** |
 
-#### Technical (Tin hieu ky thuat)
+#### Technical (Tín hiệu kỹ thuật)
 
-| # | name | UI Label | Kieu | Min | Max | conditionExtra |
+| # | name | UI Label | Kiểu | Min | Max | conditionExtra |
 |---|------|----------|------|-----|-----|----------------|
-| 13 | `stockStrength` | Suc manh gia | range/slider | 0 | 100 | — |
+| 13 | `stockStrength` | Sức mạnh giá | range/slider | 0 | 100 | — |
 | 14 | `rs` | RS (Relative Strength) | range/slider | 0 | 100 | `1Month`, **`3Month`**, `6Month`, `12Month` |
 | 15 | `rsi` | RSI | range/slider | 0 | 100 | — |
-| 16 | `priceEma` | Gia vs EMA (%) | range/slider | -50 | 50 | **`ema20`**, `ema50`, `ema100`, `ema200` |
+| 16 | `priceEma` | Giá vs EMA (%) | range/slider | -50 | 50 | **`ema20`**, `ema50`, `ema100`, `ema200` |
 | 17 | `ema20Ema50` | EMA20 vs EMA50 (%) | range/slider | — | — | — |
 | 18 | `ema50Ema200` | EMA50 vs EMA200 (%) | range/slider | — | — | — |
-| 19 | `priceReturn` | Hieu suat gia (%) | range/slider | -100 | 100 | `Ytd`, `1Month`, **`3Month`**, `6Month`, `12Month` |
-| 20 | `outperformsIndex` | Vuot chi so (%) | range/slider | — | — | `Ytd`, `1Month`, **`3Month`**, `6Month`, `12Month` |
-| 21 | `priceFluctuation` | Bien dong gia (%) | range/slider | — | — | `1Month`, **`3Month`**, `6Month`, `12Month` |
+| 19 | `priceReturn` | Hiệu suất giá (%) | range/slider | -100 | 100 | `Ytd`, `1Month`, **`3Month`**, `6Month`, `12Month` |
+| 20 | `outperformsIndex` | Vượt chỉ số (%) | range/slider | — | — | `Ytd`, `1Month`, **`3Month`**, `6Month`, `12Month` |
+| 21 | `priceFluctuation` | Biến động giá (%) | range/slider | — | — | `1Month`, **`3Month`**, `6Month`, `12Month` |
 | 22 | `macd` | MACD | range/slider | — | — | — |
 | 23 | `histogram` | MACD Histogram | value-select | — | — | — |
 | 24 | `adx` | ADX | range/slider | 0 | 100 | — |
-| 25 | `stockTrend` | Xu huong co phieu | value-select | — | — | — |
+| 25 | `stockTrend` | Xu hướng cổ phiếu | value-select | — | — | — |
 | 26 | `aoTrend` | AO Trend | value-select | — | — | — |
 | 27 | `ichimoku` | Ichimoku | value-select | — | — | — |
 
-#### Fundamental (Chi so tai chinh)
+#### Fundamental (Chỉ số tài chính)
 
-| # | name | UI Label | Kieu | Min | Max | conditionExtra |
+| # | name | UI Label | Kiểu | Min | Max | conditionExtra |
 |---|------|----------|------|-----|-----|----------------|
 | 28 | `ttmPe` | P/E (x) | range/slider | 0 | 100 | — |
 | 29 | `ttmPb` | P/B (x) | range/slider | 0 | 100 | — |
 | 30 | `ttmRoe` | ROE (%) | range/slider | -50 | 50 | — |
-| 31 | `npatmiGrowth` | Tang truong LN (%) | range/slider | -100 | 500 | Quarters + `YoY`/`QoQ` |
-| 32 | `revenueGrowth` | Tang truong DT (%) | range/slider | -100 | 500 | Quarters + `YoY`/`QoQ` |
-| 33 | `netMargin` | Bien LN rong (%) | range/slider | — | — | — |
-| 34 | `grossMargin` | Bien LN gop (%) | range/slider | — | — | — |
+| 31 | `npatmiGrowth` | Tăng trưởng LN (%) | range/slider | -100 | 500 | Quarters + `YoY`/`QoQ` |
+| 32 | `revenueGrowth` | Tăng trưởng DT (%) | range/slider | -100 | 500 | Quarters + `YoY`/`QoQ` |
+| 33 | `netMargin` | Biên LN ròng (%) | range/slider | — | — | — |
+| 34 | `grossMargin` | Biên LN gộp (%) | range/slider | — | — | — |
 
-> **Bold** = gia tri mac dinh cua `conditionExtra`
+> **Bold** = giá trị mặc định của `conditionExtra`.
 
-### Cac gia tri value-select dac biet
+### Các giá trị value-select đặc biệt
 
 **`histogram` (MACD Histogram):**
-- `aboveSignal` — Tren duong tin hieu
-- `belowSignal` — Duoi duong tin hieu
+- `aboveSignal` — Trên đường tín hiệu
+- `belowSignal` — Dưới đường tín hiệu
 
-**`stockTrend` (Xu huong):**
-- `STRONG_UPTREND` — Da tang manh
-- `UPTREND` — Da tang
-- `DOWNTREND` — Da giam
-- `STRONG_DOWNTREND` — Da giam manh
+**`stockTrend` (Xu hướng):**
+- `STRONG_UPTREND` — Đã tăng mạnh
+- `UPTREND` — Đã tăng
+- `DOWNTREND` — Đã giảm
+- `STRONG_DOWNTREND` — Đã giảm mạnh
 
 **`aoTrend` (AO Trend):**
-- `ABOVE_ZERO` — Tren 0
-- `BELOW_ZERO` — Duoi 0
-- `CROSS_ABOVE` — Cat len tren 0
-- `CROSS_BELOW` — Cat xuong duoi 0
+- `ABOVE_ZERO` — Trên 0
+- `BELOW_ZERO` — Dưới 0
+- `CROSS_ABOVE` — Cắt lên trên 0
+- `CROSS_BELOW` — Cắt xuống dưới 0
 
-**`ichimoku` (Ichimoku):**
-- `PRICE_ABOVE_CLOUD` — Gia tren may
-- `PRICE_IN_CLOUD` — Gia trong may
-- `PRICE_BELOW_CLOUD` — Gia duoi may
-- `CROSS_ABOVE` — Cat len tren may
+**`ichimoku`:**
+- `PRICE_ABOVE_CLOUD` — Giá trên mây
+- `PRICE_IN_CLOUD` — Giá trong mây
+- `PRICE_BELOW_CLOUD` — Giá dưới mây
+- `CROSS_ABOVE` — Cắt lên trên mây
 
 ---
 
-## 3. Ket Qua Loc (Screening Paging)
+## 3. Kết quả lọc (Screening Paging)
 
-API chinh de loc va lay danh sach co phieu thoa dieu kien.
+API chính để lọc và lấy danh sách cổ phiếu thỏa điều kiện.
 
 ```
 POST https://iq.vietcap.com.vn/api/iq-insight-service/v1/screening/paging
@@ -158,14 +158,14 @@ POST https://iq.vietcap.com.vn/api/iq-insight-service/v1/screening/paging
 **Request Body:**
 ```json
 {
-  "page": 0,                                    // Trang (0-indexed)
-  "pageSize": 50,                               // So ket qua / trang
-  "sortFields": ["stockStrength"],              // Cot sap xep (mang, co the nhieu cot)
-  "sortOrders": ["DESC"],                       // Thu tu: "ASC" | "DESC"
-  "filter": [                                   // Mang dieu kien loc
+  "page": 0,
+  "pageSize": 50,
+  "sortFields": ["stockStrength"],
+  "sortOrders": ["DESC"],
+  "filter": [
     {
-      "name": "exchange",                        // Ten tieu chi (tu criteria API)
-      "conditionOptions": [                      // Dieu kien
+      "name": "exchange",
+      "conditionOptions": [
         { "type": "value", "value": "hsx" },
         { "type": "value", "value": "hnx" }
       ]
@@ -180,7 +180,7 @@ POST https://iq.vietcap.com.vn/api/iq-insight-service/v1/screening/paging
     {
       "name": "marketCap",
       "conditionOptions": [
-        { "from": 500, "to": 100000 }           // Range: from-to
+        { "from": 500, "to": 100000 }
       ]
     },
     {
@@ -194,14 +194,14 @@ POST https://iq.vietcap.com.vn/api/iq-insight-service/v1/screening/paging
       "conditionOptions": [
         { "from": 50, "to": 100 }
       ],
-      "extraName": "3Month"                      // Tuy chon phu (period)
+      "extraName": "3Month"
     },
     {
       "name": "priceEma",
       "conditionOptions": [
         { "from": 0, "to": 50 }
       ],
-      "extraName": "ema20"                       // Tuy chon phu (loai EMA)
+      "extraName": "ema20"
     }
   ]
 }
@@ -212,20 +212,20 @@ POST https://iq.vietcap.com.vn/api/iq-insight-service/v1/screening/paging
 {
   "status": 200,
   "data": {
-    "content": [                                 // Danh sach co phieu
+    "content": [
       {
         "ticker": "FCC",
-        "exchange": "UPCOM",                     // San: "HSX" | "HNX" | "UPCOM"
-        "refPrice": 47200,                       // Gia tham chieu
-        "ceiling": 54200,                        // Gia tran
-        "marketPrice": 47200,                    // Gia hien tai
-        "floor": 40200,                          // Gia san
-        "accumulatedValue": 0,                   // Tong GTGD (VND)
-        "accumulatedVolume": 0,                  // Tong KLGD
-        "marketCap": 283060288000,               // Von hoa (VND)
-        "dailyPriceChangePercent": 0,            // % thay doi gia
-        "tradingValueAdtv10Days": -100,          // GTGD/ADTV 10 ngay (%)
-        "estVolume": 0,                          // KL uoc tinh
+        "exchange": "UPCOM",
+        "refPrice": 47200,
+        "ceiling": 54200,
+        "marketPrice": 47200,
+        "floor": 40200,
+        "accumulatedValue": 0,
+        "accumulatedVolume": 0,
+        "marketCap": 283060288000,
+        "dailyPriceChangePercent": 0,
+        "tradingValueAdtv10Days": -100,
+        "estVolume": 0,
         "matchPriceTime": "2026-04-24T03:08:04.962",
         "emaTime": "1776384000",
         "lastModifiedDate": "2026-04-24T08:23:35.857",
@@ -233,49 +233,49 @@ POST https://iq.vietcap.com.vn/api/iq-insight-service/v1/screening/paging
         "enOrganShortName": "Foodstuff Combinatorial",
         "viOrganName": "Cong ty Co phan Lien hop Thuc pham",
         "viOrganShortName": "Lien hop Thuc pham",
-        "icbCodeLv2": "8600",                    // Ma nganh ICB level 2
+        "icbCodeLv2": "8600",
         "enSector": "Real Estate",
         "viSector": "Bat dong san",
-        "icbCodeLv4": "8633",                    // Ma nganh ICB level 4
-        "stockStrength": 99                      // Diem suc manh gia (0-100)
+        "icbCodeLv4": "8633",
+        "stockStrength": 99
       }
     ],
-    "pageable": { ... },
-    "totalElements": 312,                        // Tong so ket qua
-    "totalPages": 157,                           // Tong so trang
+    "pageable": { "...": "..." },
+    "totalElements": 312,
+    "totalPages": 157,
     "last": false,
     "first": true,
-    "size": 2,                                   // Page size
-    "number": 0,                                 // Trang hien tai
+    "size": 2,
+    "number": 0,
     "numberOfElements": 2,
     "empty": false
   }
 }
 ```
 
-**UI Mapping:**
+**Ánh xạ UI:**
 
-| Cot UI | Field |
+| Cột UI | Field |
 |--------|-------|
-| Ma | `ticker` |
-| Gia | `marketPrice` |
-| Thay Doi Gia | `dailyPriceChangePercent` |
-| Suc Manh Gia | `stockStrength` |
-| San | `exchange` |
-| Nganh | `viSector` |
+| Mã | `ticker` |
+| Giá | `marketPrice` |
+| Thay đổi giá | `dailyPriceChangePercent` |
+| Sức mạnh giá | `stockStrength` |
+| Sàn | `exchange` |
+| Ngành | `viSector` |
 
-**Ghi chu:**
-- `sortFields` va `sortOrders` la mang — ho tro sort nhieu cot
-- Filter rong `[]` → tra ve tat ca co phieu (mac dinh 1336 ma)
-- Filter `exchange` + `sectorLv1` luon duoc gui (mac dinh = tat ca san + tat ca nganh)
-- `conditionOptions` dung `{ type: "value", value: "..." }` cho multi-select, `{ from: X, to: Y }` cho range
-- `extraName` chi can gui khi tieu chi co `conditionExtra` (vd: RS + "3Month", priceEma + "ema20")
+**Ghi chú:**
+- `sortFields` và `sortOrders` là mảng — hỗ trợ sort nhiều cột.
+- Filter rỗng `[]` → trả về tất cả cổ phiếu (mặc định 1336 mã).
+- Filter `exchange` + `sectorLv1` luôn được gửi (mặc định = tất cả sàn + tất cả ngành).
+- `conditionOptions` dùng `{ type: "value", value: "..." }` cho multi-select, `{ from: X, to: Y }` cho range.
+- `extraName` chỉ cần gửi khi tiêu chí có `conditionExtra` (ví dụ RS + "3Month", priceEma + "ema20").
 
 ---
 
-## 4. Bo Loc Mac Dinh (Preset Screeners)
+## 4. Bộ lọc mặc định (Preset Screeners)
 
-Lay danh sach bo loc mac dinh tu Vietcap va bo loc do nguoi dung tao.
+Lấy danh sách bộ lọc mặc định từ Vietcap và bộ lọc do người dùng tạo.
 
 ```
 GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/setting/screeners
@@ -286,14 +286,14 @@ GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/setting/screeners
 {
   "status": 200,
   "data": {
-    "SYSTEM": [                                  // Bo loc tu Vietcap
+    "SYSTEM": [
       {
         "id": "65fe3efc5712c6ec79202e58",
         "name": "Leading Stocks",
         "viName": "Top CP manh nhat",
         "mode": "slider",
         "order": 1,
-        "metrics": [                             // Danh sach filter tuong ung
+        "metrics": [
           {
             "name": "exchange",
             "category": "general",
@@ -344,30 +344,29 @@ GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/setting/screeners
 }
 ```
 
-**3 Bo Loc He Thong (SYSTEM):**
+**3 bộ lọc hệ thống (SYSTEM):**
 
-| # | name | viName | Tieu chi chinh |
-|---|------|--------|---------------|
-| 1 | Leading Stocks | Top CP manh nhat | ADTV > 10B, RSI 50-100, Gia > EMA20/50, RS > 90, EMA20 > EMA50 |
-| 2 | Good Profit Stocks | Co phieu loi nhuan tot | Gia > 10k, ADTV > 10B, Gia > EMA20, NPATMI growth > 0 (2 ky) |
-| 3 | Accumulation Stocks | Co phieu tich luy | ADTV > 10B, RSI 25-50, Gia < EMA20/50, Bien dong < 10% |
+| # | name | viName | Tiêu chí chính |
+|---|------|--------|----------------|
+| 1 | Leading Stocks | Top CP mạnh nhất | ADTV > 10B, RSI 50–100, Giá > EMA20/50, RS > 90, EMA20 > EMA50 |
+| 2 | Good Profit Stocks | Cổ phiếu lợi nhuận tốt | Giá > 10k, ADTV > 10B, Giá > EMA20, NPATMI growth > 0 (2 kỳ) |
+| 3 | Accumulation Stocks | Cổ phiếu tích lũy | ADTV > 10B, RSI 25–50, Giá < EMA20/50, Biến động < 10% |
 
-**Ghi chu:**
-- `metrics` co cung format voi `filter` trong API `paging` → co the gui truc tiep
-- Khi chua dang nhap, chi co `SYSTEM` screeners
-- Khi da dang nhap, co them `USER` category chua bo loc tu tao
-- UI: Dropdown "Bo loc co phieu" > "BO LOC TU VIETCAP" hien thi 3 bo loc nay
+**Ghi chú:**
+- `metrics` có cùng format với `filter` trong API `paging` → có thể gửi trực tiếp.
+- Khi chưa đăng nhập, chỉ có `SYSTEM` screeners.
+- Khi đã đăng nhập, có thêm `USER` category chứa bộ lọc tự tạo.
+- UI: dropdown "Bộ lọc cổ phiếu" → "BỘ LỌC TỪ VIETCAP" hiển thị 3 bộ lọc này.
 
 ---
 
-## 5. Chi Tiet Tieu Chi Theo Nhom
+## 5. Chi tiết tiêu chí theo nhóm
 
-### 5.1. Tieu chi dang multi-select (value)
+### 5.1. Tiêu chí dạng multi-select (value)
 
-Ap dung cho: `sectorLv1`, `sector`, `sectorLv3`, `sectorLv4`, `exchange`
+Áp dụng cho: `sectorLv1`, `sector`, `sectorLv3`, `sectorLv4`, `exchange`.
 
 ```json
-// Filter format
 {
   "name": "exchange",
   "conditionOptions": [
@@ -377,19 +376,18 @@ Ap dung cho: `sectorLv1`, `sector`, `sectorLv3`, `sectorLv4`, `exchange`
 }
 ```
 
-**Gia tri `exchange`:**
+**Giá trị `exchange`:**
 - `hsx` — HOSE
 - `hnx` — HNX
 - `upcom` — UPCOM
 
-**Gia tri `sectorLv1`:** 13 nganh ICB Level 1 (xem API criteria)
+**Giá trị `sectorLv1`:** 13 ngành ICB Level 1 (xem API criteria).
 
-### 5.2. Tieu chi dang range (slider)
+### 5.2. Tiêu chí dạng range (slider)
 
-Ap dung cho: `marketCap`, `marketPrice`, `dailyPriceChangePercent`, `adtv`, `stockStrength`, `rs`, `rsi`, `priceEma`, `ttmPe`, `ttmPb`, `ttmRoe`...
+Áp dụng cho: `marketCap`, `marketPrice`, `dailyPriceChangePercent`, `adtv`, `stockStrength`, `rs`, `rsi`, `priceEma`, `ttmPe`, `ttmPb`, `ttmRoe`...
 
 ```json
-// Filter format
 {
   "name": "stockStrength",
   "conditionOptions": [
@@ -398,7 +396,7 @@ Ap dung cho: `marketCap`, `marketPrice`, `dailyPriceChangePercent`, `adtv`, `sto
 }
 ```
 
-**Voi `conditionExtra` (dropdown phu):**
+**Có `conditionExtra` (dropdown phụ):**
 ```json
 {
   "name": "rs",
@@ -407,10 +405,10 @@ Ap dung cho: `marketCap`, `marketPrice`, `dailyPriceChangePercent`, `adtv`, `sto
 }
 ```
 
-**Gia tri `conditionExtra` theo tieu chi:**
+**Giá trị `conditionExtra` theo tiêu chí:**
 
-| Tieu chi | Cac gia tri | Mac dinh |
-|----------|------------|----------|
+| Tiêu chí | Giá trị | Mặc định |
+|----------|---------|----------|
 | `adtv` | `10Days`, `20Days`, `30Days` | `30Days` |
 | `avgVolume` | `10Days`, `20Days`, `30Days` | `30Days` |
 | `tradingValueAdtv` | `10Days`, `20Days`, `30Days` | `30Days` |
@@ -423,12 +421,11 @@ Ap dung cho: `marketCap`, `marketPrice`, `dailyPriceChangePercent`, `adtv`, `sto
 | `npatmiGrowth` | Quarters (`Q1,2026`) + `YoY`/`QoQ` | — |
 | `revenueGrowth` | Quarters (`Q1,2026`) + `YoY`/`QoQ` | — |
 
-### 5.3. Tieu chi dang value-select (chon 1 gia tri)
+### 5.3. Tiêu chí dạng value-select (chọn 1 giá trị)
 
-Ap dung cho: `histogram`, `stockTrend`, `aoTrend`, `ichimoku`
+Áp dụng cho: `histogram`, `stockTrend`, `aoTrend`, `ichimoku`.
 
 ```json
-// Filter format
 {
   "name": "stockTrend",
   "conditionOptions": [
@@ -439,10 +436,10 @@ Ap dung cho: `histogram`, `stockTrend`, `aoTrend`, `ichimoku`
 
 ---
 
-## Tong Hop API
+## Tổng hợp API
 
-| # | API | Method | Endpoint | Muc dich |
+| # | API | Method | Endpoint | Mục đích |
 |---|-----|--------|----------|----------|
-| 1 | **Tieu chi loc** | GET | `.../screening/criteria` | Lay 34 tieu chi loc + options |
-| 2 | **Ket qua loc** | POST | `.../screening/paging` | Loc co phieu voi pagination + sorting |
-| 3 | **Bo loc mac dinh** | GET | `.../setting/screeners` | 3 preset bo loc tu Vietcap |
+| 1 | **Tiêu chí lọc** | GET | `.../screening/criteria` | Lấy 34 tiêu chí lọc + options |
+| 2 | **Kết quả lọc** | POST | `.../screening/paging` | Lọc cổ phiếu kèm pagination + sorting |
+| 3 | **Bộ lọc mặc định** | GET | `.../setting/screeners` | 3 bộ lọc preset từ Vietcap |

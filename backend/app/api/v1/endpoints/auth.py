@@ -13,7 +13,7 @@ from app.schemas.user import UserCreate, UserResponse
 from app.services.auth import AuthService
 from app.services.user import UserService
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+router = APIRouter(prefix="/auth", tags=["Xác thực"])
 
 _AUTH_LIMIT = get_settings().RATE_LIMIT_AUTH
 
@@ -22,8 +22,8 @@ _AUTH_LIMIT = get_settings().RATE_LIMIT_AUTH
     "/register",
     response_model=UserResponse,
     status_code=201,
-    summary="Register a new user",
-    description="Create a new user account. Email must be unique. Password must be strong.",
+    summary="Đăng ký người dùng mới",
+    description="Tạo tài khoản người dùng mới. Email phải duy nhất. Mật khẩu phải đủ mạnh.",
 )
 @limiter.limit(_AUTH_LIMIT)
 async def register(request: Request, data: UserCreate, db: DBSession) -> UserResponse:
@@ -35,8 +35,8 @@ async def register(request: Request, data: UserCreate, db: DBSession) -> UserRes
 @router.post(
     "/login",
     response_model=TokenResponse,
-    summary="Login",
-    description="Authenticate with email and password. Returns access and refresh tokens.",
+    summary="Đăng nhập",
+    description="Xác thực bằng email và mật khẩu. Trả về access token và refresh token.",
 )
 @limiter.limit(_AUTH_LIMIT)
 async def login(request: Request, data: LoginRequest, db: DBSession) -> TokenResponse:
@@ -47,8 +47,8 @@ async def login(request: Request, data: LoginRequest, db: DBSession) -> TokenRes
 @router.post(
     "/refresh",
     response_model=TokenResponse,
-    summary="Refresh tokens",
-    description="Exchange a valid refresh token for a new token pair. The old refresh token is revoked (rotation).",
+    summary="Làm mới token",
+    description="Đổi refresh token hợp lệ để lấy cặp token mới. Refresh token cũ sẽ bị thu hồi (xoay vòng).",
 )
 @limiter.limit(_AUTH_LIMIT)
 async def refresh_tokens(request: Request, data: RefreshTokenRequest, db: DBSession) -> TokenResponse:
@@ -59,20 +59,20 @@ async def refresh_tokens(request: Request, data: RefreshTokenRequest, db: DBSess
 @router.post(
     "/logout",
     response_model=MessageResponse,
-    summary="Logout",
-    description="Revoke all refresh tokens for the current user.",
+    summary="Đăng xuất",
+    description="Thu hồi tất cả refresh token của người dùng hiện tại.",
 )
 async def logout(current_user: CurrentUser, db: DBSession) -> MessageResponse:
     service = AuthService(db)
     await service.logout(current_user.id)
-    return MessageResponse(message="Successfully logged out")
+    return MessageResponse(message="Đăng xuất thành công")
 
 
 @router.get(
     "/me",
     response_model=UserResponse,
-    summary="Get current user",
-    description="Returns the profile of the currently authenticated user.",
+    summary="Lấy thông tin người dùng hiện tại",
+    description="Trả về hồ sơ của người dùng đang đăng nhập.",
 )
 async def get_me(current_user: CurrentUser) -> UserResponse:
     return UserResponse.model_validate(current_user)

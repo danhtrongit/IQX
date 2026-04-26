@@ -1,22 +1,22 @@
-# Security Posture Documentation
+# Tài liệu bảo mật
 
-## Request Body Size Limits
+## Giới hạn kích thước request body
 
-Request body size limits are managed at the **reverse proxy layer** (nginx/Caddy/ALB).
+Giới hạn kích thước request body được quản lý ở **lớp reverse proxy** (nginx/Caddy/ALB).
 
-Recommended configuration:
+Khuyến nghị cấu hình:
 - **nginx**: `client_max_body_size 1m;`
 - **Caddy**: `request_body { max_size 1MB }`
-- **AWS ALB**: Default 1 MB, configurable up to 100 MB.
+- **AWS ALB**: Mặc định 1 MB, có thể cấu hình lên đến 100 MB.
 
-FastAPI does not enforce body size limits natively. Ensure your proxy is configured.
+FastAPI không tự áp dụng giới hạn body. Hãy đảm bảo reverse proxy được cấu hình đúng.
 
 ## Security Headers
 
-Security headers are applied by the **reverse proxy** in production:
+Các security header được áp dụng ở **reverse proxy** trong môi trường production:
 
 ```nginx
-# nginx example
+# Ví dụ nginx
 add_header X-Content-Type-Options "nosniff" always;
 add_header X-Frame-Options "DENY" always;
 add_header X-XSS-Protection "0" always;
@@ -25,27 +25,27 @@ add_header Content-Security-Policy "default-src 'none'; frame-ancestors 'none'" 
 add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
 ```
 
-If deploying without a reverse proxy (e.g., direct Uvicorn), consider adding
+Nếu triển khai không có reverse proxy (ví dụ chạy Uvicorn trực tiếp), hãy cân nhắc thêm
 [`starlette-security-headers`](https://github.com/AaronFilson/starlette-security-headers)
-or a custom middleware.
+hoặc một middleware tự viết.
 
-## CSRF Protection
+## Bảo vệ CSRF
 
-This API uses **Bearer token authentication** (JWT in `Authorization` header).
+API này dùng **xác thực Bearer token** (JWT trong header `Authorization`).
 
-Bearer tokens are **not automatically attached** by browsers (unlike cookies),
-making traditional CSRF attacks inapplicable. No additional CSRF middleware is needed.
+Bearer token **không được trình duyệt tự động đính kèm** (khác với cookie),
+nên tấn công CSRF truyền thống không áp dụng được. Không cần CSRF middleware bổ sung.
 
-If cookie-based sessions are ever added, CSRF middleware must be introduced.
+Nếu sau này có thêm phiên dựa trên cookie, cần đưa CSRF middleware vào ngay.
 
-## Rate Limiting
+## Giới hạn tần suất (Rate Limiting)
 
-- **Global default**: `60/minute` per IP (via SlowAPIMiddleware)
-- **Auth endpoints**: `10/minute` per IP (explicit `@limiter.limit()`)
-- **Market data**: `120/minute` per IP (global default applies)
-- Rate limiting is **disabled** in `APP_ENV=testing`.
+- **Mặc định toàn cục**: `60/minute` mỗi IP (qua SlowAPIMiddleware)
+- **Endpoint xác thực**: `10/minute` mỗi IP (đặt rõ qua `@limiter.limit()`)
+- **Dữ liệu thị trường**: `120/minute` mỗi IP (áp dụng giới hạn toàn cục)
+- Rate limiting **bị vô hiệu hóa** khi `APP_ENV=testing`.
 
 ## TLS
 
-TLS termination is handled at the reverse proxy / load balancer level.
-The application listens on plain HTTP behind the proxy.
+TLS được terminate ở reverse proxy / load balancer.
+Ứng dụng lắng nghe HTTP thuần phía sau proxy.

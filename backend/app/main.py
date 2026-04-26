@@ -59,7 +59,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=f"{settings.APP_NAME} API",
         version=settings.APP_VERSION,
-        description="IQX Backend API — production-ready FastAPI application",
+        description="IQX Backend API — Ứng dụng FastAPI sẵn sàng cho môi trường sản xuất",
         docs_url=docs_url,
         redoc_url=redoc_url,
         openapi_url=openapi_url,

@@ -534,7 +534,7 @@ async def test_live_funds_invalid_id(client: AsyncClient):
         "404_expected",
     )
     assert resp.status_code == 404
-    assert "not found" in body.get("detail", "").lower()
+    assert "không tìm thấy" in body.get("detail", "").lower()
 
 
 # ══════════════════════════════════════════════════════

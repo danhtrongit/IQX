@@ -93,7 +93,7 @@ async def fetch_fund_details(
         data = await fetch_json(url, headers=headers, source=_SOURCE)
     except httpx.HTTPStatusError as exc:
         if exc.response.status_code == 400:
-            raise ValueError(f"Fund {fund_id} not found") from exc
+            raise ValueError(f"Không tìm thấy quỹ {fund_id}") from exc
         raise
 
     result: dict[str, Any] = {}
@@ -161,7 +161,7 @@ async def fetch_fund_nav_history(
         )
     except httpx.HTTPStatusError as exc:
         if exc.response.status_code == 400:
-            raise ValueError(f"Fund {fund_id} not found") from exc
+            raise ValueError(f"Không tìm thấy quỹ {fund_id}") from exc
         raise
 
     records: list[dict[str, Any]] = []

@@ -84,11 +84,11 @@ class VirtualTradingService:
     async def activate_account(self, user_id: uuid.UUID):
         existing = await self._repo.get_account_by_user_id(user_id)
         if existing is not None:
-            raise ConflictError("Virtual trading account already exists")
+            raise ConflictError("Tài khoản giao dịch ảo đã tồn tại")
 
         config = await self.get_or_create_config()
         if not config.trading_enabled:
-            raise ForbiddenError("Virtual trading is currently disabled")
+            raise ForbiddenError("Giao dịch ảo hiện đang bị tạm dừng")
 
         account = await self._repo.create_account(user_id, config.initial_cash_vnd)
         await self._repo.add_ledger_entry(
@@ -96,14 +96,14 @@ class VirtualTradingService:
             amount_vnd=config.initial_cash_vnd,
             balance_after_vnd=config.initial_cash_vnd,
             kind="activate",
-            note=f"Initial cash from config: {config.initial_cash_vnd} VND",
+            note=f"Số dư ban đầu theo cấu hình: {config.initial_cash_vnd} VND",
         )
         return account
 
     async def get_account(self, user_id: uuid.UUID):
         account = await self._repo.get_account_by_user_id(user_id)
         if account is None:
-            raise NotFoundError("Virtual trading account")
+            raise NotFoundError("tài khoản giao dịch ảo")
         return account
 
     # ── Place Order ──────────────────────────────────
@@ -119,18 +119,18 @@ class VirtualTradingService:
     ):
         config = await self.get_or_create_config()
         if not config.trading_enabled:
-            raise ForbiddenError("Virtual trading is currently disabled")
+            raise ForbiddenError("Giao dịch ảo hiện đang bị tạm dừng")
 
         # Validate lot size
         if quantity % config.board_lot_size != 0:
             raise BadRequestError(
-                f"Quantity must be a multiple of {config.board_lot_size}",
+                f"Khối lượng phải là bội số của {config.board_lot_size}",
             )
 
         # Validate limit order
         if order_type == "limit" and (limit_price_vnd is None or limit_price_vnd <= 0):
             raise BadRequestError(
-                "Limit price is required for limit orders and must be > 0",
+                "Lệnh limit yêu cầu giá limit lớn hơn 0",
             )
 
         symbol = symbol.upper()
@@ -138,22 +138,22 @@ class VirtualTradingService:
         # Financial bounds (Fix 7)
         if quantity > _MAX_QUANTITY:
             raise UnprocessableEntityError(
-                f"Quantity {quantity} exceeds max {_MAX_QUANTITY} per order",
+                f"Khối lượng {quantity} vượt quá mức tối đa {_MAX_QUANTITY} mỗi lệnh",
             )
         if limit_price_vnd is not None and limit_price_vnd > _MAX_LIMIT_PRICE_VND:
             raise UnprocessableEntityError(
-                f"Limit price {limit_price_vnd} exceeds max {_MAX_LIMIT_PRICE_VND} VND",
+                f"Giá limit {limit_price_vnd} vượt quá mức tối đa {_MAX_LIMIT_PRICE_VND} VND",
             )
 
         # Validate symbol against HOSE/HNX/UPCOM universe (fail-closed)
         try:
             if not await validate_symbol(symbol):
                 raise UnprocessableEntityError(
-                    f"Symbol '{symbol}' is not listed on HOSE/HNX/UPCOM",
+                    f"Mã '{symbol}' không được niêm yết trên HOSE/HNX/UPCOM",
                 )
         except SymbolValidationError as exc:
             raise ServiceUnavailableError(
-                f"Cannot verify symbol: {exc.reason}",
+                f"Không thể xác minh mã chứng khoán: {exc.reason}",
             ) from exc
 
         holidays = parse_holidays(config.holidays)
@@ -163,9 +163,9 @@ class VirtualTradingService:
         # Lock account for atomic cash/position check
         account = await self._repo.get_account_by_user_id_for_update(user_id)
         if account is None:
-            raise NotFoundError("Virtual trading account")
+            raise NotFoundError("tài khoản giao dịch ảo")
         if account.status != AccountStatus.ACTIVE:
-            raise ForbiddenError("Account is suspended")
+            raise ForbiddenError("Tài khoản đã bị tạm khóa")
 
         # Config snapshot — authoritative for fee/tax at fill time
         snapshot = json.dumps({
@@ -212,7 +212,7 @@ class VirtualTradingService:
         gross = price_result.price_vnd * quantity
         if gross > _MAX_GROSS_VND:
             raise UnprocessableEntityError(
-                f"Gross order value {gross:,} VND exceeds max {_MAX_GROSS_VND:,} VND",
+                f"Gross giá trị lệnh {gross:,} VND vượt quá mức tối đa {_MAX_GROSS_VND:,} VND",
             )
 
         return await self._fill_order_at_price(
@@ -228,7 +228,7 @@ class VirtualTradingService:
         gross = limit_price_vnd * quantity
         if gross > _MAX_GROSS_VND:
             raise UnprocessableEntityError(
-                f"Gross order value {gross:,} VND exceeds max {_MAX_GROSS_VND:,} VND",
+                f"Gross giá trị lệnh {gross:,} VND vượt quá mức tối đa {_MAX_GROSS_VND:,} VND",
             )
         if side == OrderSide.BUY:
             gross = limit_price_vnd * quantity
@@ -236,7 +236,7 @@ class VirtualTradingService:
             reserve_cash = gross + fee
             if account.cash_available_vnd < reserve_cash:
                 raise BadRequestError(
-                    f"Insufficient cash: need {reserve_cash} VND, have {account.cash_available_vnd} VND"
+                    f"Không đủ tiền: cần {reserve_cash} VND, hiện có {account.cash_available_vnd} VND"
                 )
             account.cash_available_vnd -= reserve_cash
             account.cash_reserved_vnd += reserve_cash
@@ -251,7 +251,7 @@ class VirtualTradingService:
             position = await self._repo.get_position_for_update(account.id, symbol)
             if position is None or position.quantity_sellable < quantity:
                 available = position.quantity_sellable if position else 0
-                raise BadRequestError(f"Insufficient sellable shares: need {quantity}, have {available}")
+                raise BadRequestError(f"Không đủ cổ phiếu khả dụng để bán: cần {quantity}, hiện có {available}")
             position.quantity_sellable -= quantity
             position.quantity_reserved += quantity
             order = VirtualOrder(
@@ -307,7 +307,7 @@ class VirtualTradingService:
                 if diff > 0:
                     # Price went up: need to debit extra from available
                     if account.cash_available_vnd < diff:
-                        raise BadRequestError("Insufficient cash after price change")
+                        raise BadRequestError("Không đủ tiền sau khi giá thay đổi")
                     account.cash_available_vnd -= diff
                 elif diff < 0:
                     # Price went down: refund excess to available
@@ -315,8 +315,8 @@ class VirtualTradingService:
             else:
                 if account.cash_available_vnd < total_cost:
                     raise BadRequestError(
-                        f"Insufficient cash: need {total_cost}, "
-                        f"have {account.cash_available_vnd}",
+                        f"Không đủ tiền: cần {total_cost}, "
+                        f"hiện có {account.cash_available_vnd}",
                     )
                 account.cash_available_vnd -= total_cost
 
@@ -360,7 +360,7 @@ class VirtualTradingService:
                 if position is None or position.quantity_sellable < quantity:
                     available = position.quantity_sellable if position else 0
                     raise BadRequestError(
-                        f"Insufficient shares: need {quantity}, have {available}",
+                        f"Không đủ cổ phiếu: cần {quantity}, hiện có {available}",
                     )
                 position.quantity_sellable -= quantity
 
@@ -368,8 +368,8 @@ class VirtualTradingService:
                 new_total = position.quantity_total - quantity
                 if new_total < 0:
                     raise BadRequestError(
-                        f"Position integrity violation: selling {quantity} shares "
-                        f"would make total negative ({position.quantity_total} - {quantity})",
+                        f"Vi phạm toàn vẹn vị thế: bán {quantity} cổ phiếu "
+                        f"sẽ làm tổng âm ({position.quantity_total} - {quantity})",
                     )
                 position.quantity_total = new_total
 
@@ -445,18 +445,18 @@ class VirtualTradingService:
     async def cancel_order(self, user_id: uuid.UUID, order_id: uuid.UUID):
         order = await self._repo.get_order_for_update(order_id)
         if order is None:
-            raise NotFoundError("Order")
+            raise NotFoundError("lệnh")
         if order.user_id != user_id:
-            raise ForbiddenError("Not your order")
+            raise ForbiddenError("Lệnh này không thuộc về bạn")
         if order.status != OrderStatus.PENDING:
-            raise BadRequestError(f"Cannot cancel order with status '{order.status}'")
+            raise BadRequestError(f"Không thể hủy lệnh ở trạng thái '{order.status}'")
 
         account = await self._repo.get_account_for_update(order.account_id)
         if account is None:
-            raise NotFoundError("Account")
+            raise NotFoundError("tài khoản")
 
         order.status = OrderStatus.CANCELLED
-        order.cancel_reason = "User cancelled"
+        order.cancel_reason = "Người dùng hủy"
 
         if order.side == OrderSide.BUY and order.reserved_cash_vnd > 0:
             account.cash_reserved_vnd -= order.reserved_cash_vnd
@@ -480,7 +480,7 @@ class VirtualTradingService:
     async def refresh(self, user_id: uuid.UUID):
         account = await self._repo.get_account_by_user_id_for_update(user_id)
         if account is None:
-            raise NotFoundError("Virtual trading account")
+            raise NotFoundError("tài khoản giao dịch ảo")
 
         config = await self.get_or_create_config()
         holidays = parse_holidays(config.holidays)
@@ -519,8 +519,8 @@ class VirtualTradingService:
                 )
             except PriceUnavailableError:
                 warnings.append(
-                    f"Price unavailable for {order.symbol}, "
-                    f"order {order.id} kept pending",
+                    f"Không có giá cho {order.symbol}, "
+                    f"lệnh {order.id} vẫn ở trạng thái chờ",
                 )
                 continue
 
@@ -568,7 +568,7 @@ class VirtualTradingService:
         """Read-only portfolio: no refresh/mutation (Fix 4)."""
         account = await self._repo.get_account_by_user_id(user_id)
         if account is None:
-            raise NotFoundError("Virtual trading account")
+            raise NotFoundError("tài khoản giao dịch ảo")
 
         config = await self.get_or_create_config()
         holidays_set = parse_holidays(config.holidays)
@@ -694,7 +694,7 @@ class VirtualTradingService:
             profit = nav - acct.initial_cash_vnd
             ret_pct = (profit / acct.initial_cash_vnd * 100) if acct.initial_cash_vnd > 0 else 0.0
 
-            name = user_map.get(acct.user_id, "Unknown")
+            name = user_map.get(acct.user_id, "Không xác định")
 
             entries.append({
                 "user_id": acct.user_id, "display_name": name,
@@ -721,7 +721,7 @@ class VirtualTradingService:
     async def reset_account(self, user_id: uuid.UUID, admin_id: uuid.UUID):
         account = await self._repo.get_account_by_user_id_for_update(user_id)
         if account is None:
-            raise NotFoundError("Virtual trading account")
+            raise NotFoundError("tài khoản giao dịch ảo")
 
         config = await self.get_or_create_config()
 
@@ -742,7 +742,7 @@ class VirtualTradingService:
         await self._repo.add_ledger_entry(
             account_id=account.id, amount_vnd=config.initial_cash_vnd,
             balance_after_vnd=config.initial_cash_vnd, kind="reset",
-            note=f"Account reset by admin {admin_id}",
+            note=f"Tài khoản được đặt lại bởi quản trị {admin_id}",
         )
         await self._session.flush()
 

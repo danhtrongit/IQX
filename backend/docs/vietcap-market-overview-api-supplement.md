@@ -1,27 +1,26 @@
-# Vietcap Market Overview API — Bo Sung
+# API Tổng quan thị trường Vietcap — Bổ sung
 
-> Bo sung cac API con thieu trong `vietcap-market-overview-api.md`
-> Ngay phan tich: 2026-04-25
+> Bổ sung các API còn thiếu trong [`vietcap-market-overview-api.md`](./vietcap-market-overview-api.md).
+> Ngày phân tích: 2026-04-25
 > Trang: `https://trading.vietcap.com.vn/iq/market`
 
 ---
 
-## Muc Luc
+## Mục lục
 
-1. [Chi Tiet Nganh ICB (Sector Detail)](#1-chi-tiet-nganh-icb-sector-detail)
-2. [Suc Manh Co Phieu (Stock Strength - TA)](#2-suc-manh-co-phieu-stock-strength---ta)
-3. [Chi So Thi Truong (Market Index)](#3-chi-so-thi-truong-market-index)
-4. [Thanh Tim Kiem (Search Bar Data)](#4-thanh-tim-kiem-search-bar-data)
-5. [Ma Su Kien (Event Codes)](#5-ma-su-kien-event-codes)
-6. [Thong Bao Bao Tri (Maintenance Notification)](#6-thong-bao-bao-tri-maintenance-notification)
-7. [Bo Sung Chi Tiet Cho API Da Co](#7-bo-sung-chi-tiet-cho-api-da-co)
+1. [Chi tiết ngành ICB (Sector Detail)](#1-chi-tiet-nganh-icb-sector-detail)
+2. [Sức mạnh cổ phiếu (Stock Strength — TA)](#2-suc-manh-co-phieu-stock-strength--ta)
+3. [Chỉ số thị trường (Market Index)](#3-chi-so-thi-truong-market-index)
+4. [Thanh tìm kiếm (Search Bar Data)](#4-thanh-tim-kiem-search-bar-data)
+5. [Mã sự kiện (Event Codes)](#5-ma-su-kien-event-codes)
+6. [Thông báo bảo trì (Maintenance Notification)](#6-thong-bao-bao-tri-maintenance-notification)
+7. [Bổ sung chi tiết cho API đã có](#7-bo-sung-chi-tiet-cho-api-da-co)
 
 ---
 
-## 1. Chi Tiet Nganh ICB (Sector Detail)
+## 1. Chi tiết ngành ICB (Sector Detail)
 
-> **Vi tri tren UI**: Tab Tong Quan > Muc "Phan Bo" > Bam vao ten nganh (vd: Ngan hang, Cong nghiep...)
-> **Thieu trong file goc**: Hoan toan thieu — file goc chi co `getAllocated` (danh sach nganh), khong co `getAllocatedDetail` (chi tiet tung co phieu trong nganh).
+> **Vị trí trên UI**: Tab Tổng quan → mục "Phân bổ" → bấm vào tên ngành (ví dụ: Ngân hàng, Công nghiệp...)
 
 ```
 POST https://trading.vietcap.com.vn/api/market-watch/AllocatedICB/getAllocatedDetail
@@ -30,9 +29,9 @@ POST https://trading.vietcap.com.vn/api/market-watch/AllocatedICB/getAllocatedDe
 **Request Body:**
 ```json
 {
-  "group": "ALL",            // "ALL" | "HOSE" | "HNX" | "UPCOM"
-  "timeFrame": "ONE_DAY",   // "ONE_DAY" | "ONE_WEEK" | "ONE_MONTH" | "YTD" | "ONE_YEAR"
-  "icbCode": 8300            // Ma nganh ICB (lay tu getAllocated hoac icb-codes)
+  "group": "ALL",
+  "timeFrame": "ONE_DAY",
+  "icbCode": 8300
 }
 ```
 
@@ -40,65 +39,62 @@ POST https://trading.vietcap.com.vn/api/market-watch/AllocatedICB/getAllocatedDe
 ```json
 {
   "icb_code": 8300,
-  "icbChangePercent": -0.8919,              // % thay doi cua nganh trong ky
-  "totalValue": 4580663735000,              // Tong GTGD nganh (VND)
-  "totalStockIncrease": 6,                  // So CP tang
-  "totalStockDecrease": 15,                 // So CP giam
-  "totalStockNoChange": 6,                  // So CP khong doi
-  "icbCodeParent": 8301,                    // Ma nganh cha
-  "icbDataDetail": [                        // Danh sach co phieu trong nganh
+  "icbChangePercent": -0.8919,
+  "totalValue": 4580663735000,
+  "totalStockIncrease": 6,
+  "totalStockDecrease": 15,
+  "totalStockNoChange": 6,
+  "icbCodeParent": 8301,
+  "icbDataDetail": [
     {
       "symbol": "ACB",
-      "refPrice": 23500,                    // Gia tham chieu
-      "matchPrice": 23400,                  // Gia khop
-      "ceilingPrice": 25100,                // Gia tran
-      "floorPrice": 21900,                  // Gia san
-      "accumulatedVolume": 17478700,         // Tong KLGD (CP)
-      "accumulatedValue": 409800810000,      // Tong GTGD (VND)
+      "refPrice": 23500,
+      "matchPrice": 23400,
+      "ceilingPrice": 25100,
+      "floorPrice": 21900,
+      "accumulatedVolume": 17478700,
+      "accumulatedValue": 409800810000,
       "organName": "Ngan hang TMCP A Chau",
       "organShortName": "ACB",
       "enOrganName": "Asia Commercial Joint Stock Bank",
       "enOrganShortName": "Asia Commercial Bank",
-      "foreignNetVolume": -11877685,         // KL rong nuoc ngoai (am = ban rong)
-      "foreignNetValue": -278519645550,      // GT rong nuoc ngoai (VND)
-      "board": "HSX"                         // San: "HSX" | "HNX" | "UPCOM"
+      "foreignNetVolume": -11877685,
+      "foreignNetValue": -278519645550,
+      "board": "HSX"
     }
   ]
 }
 ```
 
-**UI Mapping:**
+**Ánh xạ UI:**
 
-| Cot UI | Field |
+| Cột UI | Field |
 |--------|-------|
-| Ma | `symbol` |
-| San | `board` |
-| Gia | `matchPrice` |
-| +/- | `matchPrice - refPrice` (tinh tren client) |
-| % | `(matchPrice - refPrice) / refPrice * 100` |
-| Tong KL (co phieu) | `accumulatedVolume` |
-| Tong GT (VND) | `accumulatedValue` |
-| KL Rong - NN (co phieu) | `foreignNetVolume` |
+| Mã | `symbol` |
+| Sàn | `board` |
+| Giá | `matchPrice` |
+| +/- | `matchPrice − refPrice` (tính phía client) |
+| % | `(matchPrice − refPrice) / refPrice × 100` |
+| Tổng KL (cổ phiếu) | `accumulatedVolume` |
+| Tổng GT (VND) | `accumulatedValue` |
+| KL ròng — NN | `foreignNetVolume` |
 
-**Phan bo dong tien** (bar chart tren modal): Tinh tu `totalStockIncrease`, `totalStockDecrease`, `totalStockNoChange`.
+**Phân bổ dòng tiền** (bar chart): tính từ `totalStockIncrease`, `totalStockDecrease`, `totalStockNoChange`.
 
 ---
 
-## 2. Suc Manh Co Phieu (Stock Strength - TA)
+## 2. Sức mạnh cổ phiếu (Stock Strength — TA)
 
-> **Vi tri tren UI**: Tab Nhiet Do (Heatmap) — diem suc manh ky thuat duoc su dung de to mau hoac xep hang.
-> **Thieu trong file goc**: Hoan toan thieu.
+> **Vị trí trên UI**: Tab Nhiệt độ (Heatmap) — điểm sức mạnh kỹ thuật được dùng để tô màu/xếp hạng.
 
 ```
 GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/ta/stock-strength
     ?exchange=ALL
 ```
 
-**Query Params:**
-
-| Param | Mo ta | Gia tri |
+| Param | Mô tả | Giá trị |
 |-------|-------|---------|
-| `exchange` | San giao dich | `ALL`, `HOSE`, `HNX`, `UPCOM`, `HSX` |
+| `exchange` | Sàn giao dịch | `ALL`, `HOSE`, `HNX`, `UPCOM`, `HSX` |
 
 **Response:**
 ```json
@@ -115,19 +111,18 @@ GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/ta/stock-strength
 }
 ```
 
-**Ghi chu:**
-- Response la flat map: `{ ticker: score }`
-- Score tu **3 den 99** (so nguyen), hoac `null` neu chua co du lieu
-- Tong so ticker: ~1538 (ALL), ~403 (HOSE), ~302 (HNX), ~833 (UPCOM)
-- Duoc goi moi khi chuyen tab Nhiet Do hoac doi san giao dich
-- `exchange=HSX` tra ve ket qua giong `ALL` (1538 ticker)
+**Ghi chú:**
+- Response là map phẳng `{ ticker: score }`.
+- Score từ **3 đến 99** (số nguyên), hoặc `null` nếu chưa có dữ liệu.
+- Tổng số ticker: ~1538 (ALL), ~403 (HOSE), ~302 (HNX), ~833 (UPCOM).
+- Được gọi mỗi khi chuyển tab Nhiệt độ hoặc đổi sàn giao dịch.
+- `exchange=HSX` trả về kết quả giống `ALL` (1538 ticker).
 
 ---
 
-## 3. Chi So Thi Truong (Market Index)
+## 3. Chỉ số thị trường (Market Index)
 
-> **Vi tri tren UI**: Tab Nhiet Do — hien thi chi so VN-Index, HNX-Index, UPCOM-Index o goc trai.
-> **Thieu trong file goc**: Hoan toan thieu.
+> **Vị trí trên UI**: Tab Nhiệt độ — hiển thị VN-Index, HNX-Index, UPCOM-Index ở góc trái.
 
 ```
 POST https://trading.vietcap.com.vn/api/price/marketIndex/getList
@@ -140,36 +135,36 @@ POST https://trading.vietcap.com.vn/api/price/marketIndex/getList
 }
 ```
 
-**Response (array):**
+**Response (mảng):**
 ```json
 [
   {
     "board": "HSX",
     "symbol": "VNINDEX",
-    "price": 1853.29,                        // Gia hien tai
-    "refPrice": 1870.36,                      // Gia tham chieu
-    "change": -17.07,                         // Thay doi diem
-    "changePercent": -0.9126,                 // Thay doi %
-    "totalShares": 673852010,                 // Tong KLGD
-    "totalValue": 19347915.26684,             // Tong GTGD (trieu VND)
-    "totalStockIncrease": 130,                // So CP tang
-    "totalStockDecline": 187,                 // So CP giam
-    "totalStockNoChange": 55,                 // So CP tham chieu
-    "totalStockCeiling": 5,                   // So CP tran
-    "totalStockFloor": 1,                     // So CP san
-    "estimatedChange": 0,                     // Thay doi du kien (phien ATC)
-    "estimatedFsp": 1870.36,                  // Gia du kien (phien ATC)
-    "code": "001",                            // Ma noi bo
+    "price": 1853.29,
+    "refPrice": 1870.36,
+    "change": -17.07,
+    "changePercent": -0.9126,
+    "totalShares": 673852010,
+    "totalValue": 19347915.26684,
+    "totalStockIncrease": 130,
+    "totalStockDecline": 187,
+    "totalStockNoChange": 55,
+    "totalStockCeiling": 5,
+    "totalStockFloor": 1,
+    "estimatedChange": 0,
+    "estimatedFsp": 1870.36,
+    "code": "001",
     "messageType": "M1",
-    "time": "2026-04-24T07:45:59.999Z",       // Thoi gian cap nhat
+    "time": "2026-04-24T07:45:59.999Z",
     "sendingTime": "2026-04-24T08:33:20.321Z"
   }
 ]
 ```
 
-**Cac gia tri `symbols`:**
+**Giá trị `symbols`:**
 
-| Symbol | Chi so |
+| Symbol | Chỉ số |
 |--------|--------|
 | `VNINDEX` | VN-Index (HOSE) |
 | `HNXIndex` | HNX-Index |
@@ -179,44 +174,41 @@ POST https://trading.vietcap.com.vn/api/price/marketIndex/getList
 
 ---
 
-## 4. Thanh Tim Kiem (Search Bar Data)
+## 4. Thanh tìm kiếm (Search Bar Data)
 
-> **Vi tri tren UI**: O tim kiem phia tren cung — autocomplete khi go ma co phieu.
-> **Thieu trong file goc**: Hoan toan thieu.
+> **Vị trí trên UI**: Ô tìm kiếm phía trên cùng — autocomplete khi gõ mã cổ phiếu.
 
 ```
 GET https://iq.vietcap.com.vn/api/iq-insight-service/v2/company/search-bar
     ?language=1
 ```
 
-**Query Params:**
-
-| Param | Mo ta | Gia tri |
+| Param | Mô tả | Giá trị |
 |-------|-------|---------|
-| `language` | Ngon ngu | `1` = Tieng Viet, `2` = Tieng Anh |
+| `language` | Ngôn ngữ | `1` = Tiếng Việt, `2` = Tiếng Anh |
 
-**Response (rut gon):**
+**Response (rút gọn):**
 ```json
 {
   "status": 200,
   "data": [
     {
       "id": "767",
-      "code": "STK",                         // Ma co phieu
-      "name": "Cong ty Co phan Soi The Ky",  // Ten day du
-      "shortName": "Soi The Ky",              // Ten viet tat
-      "floor": "HOSE",                        // San niem yet
-      "organCode": "CENTURY",                 // Ma to chuc
-      "comTypeCode": "CT",                    // Loai cong ty
+      "code": "STK",
+      "name": "Cong ty Co phan Soi The Ky",
+      "shortName": "Soi The Ky",
+      "floor": "HOSE",
+      "organCode": "CENTURY",
+      "comTypeCode": "CT",
       "isBank": false,
       "isIndex": false,
-      "inCu": true,                           // Trong Vietcap Coverage Universe
+      "inCu": true,
       "logoUrl": "https://vietcap-website.s3...STK.webp",
-      "currentPrice": 13800,                  // Gia hien tai
-      "targetPrice": 25500,                   // Gia muc tieu (Vietcap)
-      "upsideToTpPercentage": 0.8478,         // % upside den gia muc tieu
-      "projectedTsrPercentage": 0.8478,       // % tong loi suat du kien
-      "dividendPerShareTsr": 0,               // Co tuc/cp cho TSR
+      "currentPrice": 13800,
+      "targetPrice": 25500,
+      "upsideToTpPercentage": 0.8478,
+      "projectedTsrPercentage": 0.8478,
+      "dividendPerShareTsr": 0,
       "icbLv1": { "code": "3000", "name": "Hang Tieu dung", "level": 1 },
       "icbLv2": { "code": "3700", "name": "Hang ca nhan & Gia dung", "level": 2 },
       "icbLv3": { "code": "3760", "name": "Hang ca nhan", "level": 3 },
@@ -229,18 +221,17 @@ GET https://iq.vietcap.com.vn/api/iq-insight-service/v2/company/search-bar
 }
 ```
 
-**Ghi chu:**
-- Tra ve **~2077 cong ty** (tat ca niem yet + UPCOM)
-- Bao gom ca chi so (`isIndex: true`) nhu VNINDEX, VN30...
-- Co thong tin **gia muc tieu** va **upside** cua Vietcap Research
-- Du lieu nay duoc load 1 lan va cache tren client de autocomplete
+**Ghi chú:**
+- Trả về **~2077 doanh nghiệp** (tất cả niêm yết + UPCOM).
+- Bao gồm cả chỉ số (`isIndex: true`) như VNINDEX, VN30...
+- Có thông tin **giá mục tiêu** và **upside** từ Vietcap Research.
+- Dữ liệu được tải 1 lần và cache trên client để autocomplete.
 
 ---
 
-## 5. Ma Su Kien (Event Codes)
+## 5. Mã sự kiện (Event Codes)
 
-> **Vi tri tren UI**: Du lieu tham chieu dung noi bo de map event code -> ten su kien.
-> **Thieu trong file goc**: Hoan toan thieu.
+> **Vị trí trên UI**: Dữ liệu tham chiếu nội bộ để map event code → tên sự kiện.
 
 ```
 GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/event-codes
@@ -251,51 +242,36 @@ GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/event-codes
 {
   "status": 200,
   "data": [
-    {
-      "eventCode": "AGME",
-      "eventNameVi": "Dai hoi Dong Co dong",
-      "eventNameEn": "Annual General Meeting"
-    },
-    {
-      "eventCode": "AGMR",
-      "eventNameVi": "Nghi quyet dai hoi co dong thuong nien",
-      "eventNameEn": "AGM Resolution"
-    },
-    {
-      "eventCode": "AIS",
-      "eventNameVi": "Niem yet them",
-      "eventNameEn": "Additional Listing"
-    }
+    { "eventCode": "AGME", "eventNameVi": "Dai hoi Dong Co dong", "eventNameEn": "Annual General Meeting" },
+    { "eventCode": "AGMR", "eventNameVi": "Nghi quyet dai hoi co dong thuong nien", "eventNameEn": "AGM Resolution" },
+    { "eventCode": "AIS",  "eventNameVi": "Niem yet them", "eventNameEn": "Additional Listing" }
   ]
 }
 ```
 
 ---
 
-## 6. Thong Bao Bao Tri (Maintenance Notification)
+## 6. Thông báo bảo trì (Maintenance Notification)
 
-> **Vi tri tren UI**: Banner canh bao phia tren khi he thong bao tri.
-> **Thieu trong file goc**: Hoan toan thieu.
+> **Vị trí trên UI**: Banner cảnh báo phía trên khi hệ thống bảo trì.
 
 ```
 GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/notification?type=maintenance
 ```
 
-**Query Params:**
-
-| Param | Mo ta | Gia tri |
+| Param | Mô tả | Giá trị |
 |-------|-------|---------|
-| `type` | Loai thong bao | `maintenance` |
+| `type` | Loại thông báo | `maintenance` |
 
-**Response:** Tra ve danh sach thong bao bao tri (neu co). Response rong khi khong co bao tri.
+**Response:** Trả về danh sách thông báo bảo trì (nếu có). Rỗng khi không có bảo trì.
 
 ---
 
-## 7. Bo Sung Chi Tiet Cho API Da Co
+## 7. Bổ sung chi tiết cho API đã có
 
-### 7.1. ForeignVolumeChart — Che do Intraday (ONE_MINUTE)
+### 7.1. ForeignVolumeChart — chế độ Intraday (`ONE_MINUTE`)
 
-> File goc (muc 4.1) chi ghi vi du voi `ONE_MONTH`. Thuc te UI "Hom nay" goi voi `ONE_MINUTE`.
+> Tài liệu gốc (mục 4.1) chỉ cho ví dụ với `ONE_MONTH`. Thực tế UI "Hôm nay" gọi với `ONE_MINUTE`.
 
 ```
 POST https://trading.vietcap.com.vn/api/market-watch/v3/ForeignVolumeChart/getAll
@@ -304,21 +280,21 @@ POST https://trading.vietcap.com.vn/api/market-watch/v3/ForeignVolumeChart/getAl
 **Request Body (intraday):**
 ```json
 {
-  "from": 1776988800,             // Dau ngay hom nay (00:00 UTC)
-  "to": 1777107000,               // Cuoi ngay hom nay
+  "from": 1776988800,
+  "to": 1777107000,
   "group": "ALL",
-  "timeFrame": "ONE_MINUTE"       // Tra ve du lieu moi phut
+  "timeFrame": "ONE_MINUTE"
 }
 ```
 
-**Response intraday (272 diem du lieu / ngay):**
+**Response intraday (~272 điểm dữ liệu mỗi ngày):**
 ```json
 [
   {
     "group": "ALL",
     "dataType": 0,
     "timeFrame": "ONE_MINUTE",
-    "truncTime": "1776996000",             // Epoch seconds (tung phut)
+    "truncTime": "1776996000",
     "foreignBuyVolume": "166000.0",
     "foreignSellVolume": "22669.0",
     "foreignBuyValue": "1291870000.0",
@@ -327,64 +303,64 @@ POST https://trading.vietcap.com.vn/api/market-watch/v3/ForeignVolumeChart/getAl
 ]
 ```
 
-**Ghi chu:**
-- Tren UI, bieu do Nuoc Ngoai khi chon "Hom nay" se goi 2 lan:
-  1. `from=today, to=today` voi `ONE_MINUTE` → Du lieu hom nay (bieu do chinh)
-  2. `from=yesterday, to=today` voi `ONE_MINUTE` → Du lieu hom qua (duong so sanh)
+**Ghi chú:**
+- Trên UI, biểu đồ Nước ngoài khi chọn "Hôm nay" sẽ gọi 2 lần:
+  1. `from=today, to=today` với `ONE_MINUTE` → dữ liệu hôm nay (biểu đồ chính).
+  2. `from=yesterday, to=today` với `ONE_MINUTE` → dữ liệu hôm qua (đường so sánh).
 
-**Mapping `timeFrame` day du cho ForeignVolumeChart:**
+**Ánh xạ `timeFrame` đầy đủ cho ForeignVolumeChart:**
 
-| UI Filter | timeFrame | from | to | Mo ta |
+| Bộ lọc UI | timeFrame | from | to | Mô tả |
 |-----------|-----------|------|-----|-------|
-| Hom nay | `ONE_MINUTE` | startOfToday | endOfToday | Du lieu tung phut |
-| 1W | `ONE_WEEK` | today - 7d | today | Gop theo tuan |
-| 1M | `ONE_MONTH` | today - 30d | today | Gop theo thang |
-| YTD | `YTD` | Jan 1st | today | |
-| 1Y | `ONE_YEAR` | today - 365d | today | Gop theo nam |
+| Hôm nay | `ONE_MINUTE` | startOfToday | endOfToday | Mỗi phút |
+| 1W | `ONE_WEEK` | hôm nay − 7 ngày | hôm nay | Theo tuần |
+| 1M | `ONE_MONTH` | hôm nay − 30 ngày | hôm nay | Theo tháng |
+| YTD | `YTD` | 01/01 năm hiện tại | hôm nay | |
+| 1Y | `ONE_YEAR` | hôm nay − 365 ngày | hôm nay | Theo năm |
 
-### 7.2. Liquidity (gap-liquidity) — Pattern 2 phien
+### 7.2. Liquidity (gap-liquidity) — pattern hai phiên
 
-> File goc (muc 2) khong ghi ro rang rang UI goi **2 request song song** de so sanh phien hom nay va phien truoc.
+> Tài liệu gốc (mục 2) chưa nêu rõ UI gọi **2 request song song** để so sánh phiên hôm nay và hôm qua.
 
-Khi chon "Hom nay", UI goi:
+Khi chọn "Hôm nay", UI gọi:
 
-| Request | from | to | timeFrame | Muc dich |
-|---------|------|-----|-----------|---------|
-| 1 | startOfToday | now | `ONE_MINUTE` | GTGD tich luy hom nay |
-| 2 | startOfYesterday | startOfToday | `ONE_MINUTE` | GTGD phien truoc (duong so sanh) |
+| Request | from | to | timeFrame | Mục đích |
+|---------|------|-----|-----------|----------|
+| 1 | startOfToday | now | `ONE_MINUTE` | GTGD tích lũy hôm nay |
+| 2 | startOfYesterday | startOfToday | `ONE_MINUTE` | GTGD phiên trước (đường so sánh) |
 
-Khi chon "1Y", UI goi:
+Khi chọn "1Y", UI gọi:
 
-| Request | from | to | timeFrame | Muc dich |
-|---------|------|-----|-----------|---------|
-| 1 | today | now | `ONE_MINUTE` | Intraday hom nay (van hien thi) |
-| 2 | today - 1Y | today | `ONE_YEAR` | Lich su thanh khoan 1 nam |
+| Request | from | to | timeFrame | Mục đích |
+|---------|------|-----|-----------|----------|
+| 1 | today | now | `ONE_MINUTE` | Intraday hôm nay |
+| 2 | today − 1Y | today | `ONE_YEAR` | Lịch sử thanh khoản 1 năm |
 
-### 7.3. ForeignNetValue/top — Note ve timeFrame
+### 7.3. ForeignNetValue/top — ghi chú về `timeFrame`
 
-> File goc (muc 4.2) da dung. Bo sung: khi UI chon "Hom nay", `timeFrame` gui la `ONE_DAY` (khong phai `ONE_MINUTE`), vi day la top co phieu (khong can intraday).
+> Tài liệu gốc (mục 4.2) đã đề cập. Bổ sung: khi UI chọn "Hôm nay", `timeFrame` gửi là `ONE_DAY` (không phải `ONE_MINUTE`), vì đây là top cổ phiếu (không cần intraday).
 
 ```json
 {
   "from": 1776988800,
   "to": 1777107000,
   "group": "ALL",
-  "timeFrame": "ONE_DAY"       // Luon la ONE_DAY cho filter "Hom nay"
+  "timeFrame": "ONE_DAY"
 }
 ```
 
 ---
 
-## Tong Hop API Thieu
+## Tổng hợp API bổ sung
 
-| # | API | Endpoint | Trang thai |
-|---|-----|----------|-----------|
-| 1 | **Chi tiet nganh ICB** | `POST .../AllocatedICB/getAllocatedDetail` | ✅ Moi - Quan trong |
-| 2 | **Suc manh co phieu (TA)** | `GET .../ta/stock-strength` | ✅ Moi |
-| 3 | **Chi so thi truong** | `POST .../price/marketIndex/getList` | ✅ Moi |
-| 4 | **Search bar data** | `GET .../company/search-bar` | ✅ Moi |
-| 5 | **Event codes** | `GET .../event-codes` | ✅ Moi - Tham chieu |
-| 6 | **Maintenance notification** | `GET .../notification?type=maintenance` | ✅ Moi |
-| 7 | **Foreign intraday (ONE_MINUTE)** | `POST .../ForeignVolumeChart/getAll` | ⚠️ Bo sung timeFrame |
-| 8 | **Liquidity 2-phien pattern** | `POST .../gap-liquidity` | ⚠️ Bo sung chi tiet |
-| 9 | **ForeignNetValue/top note** | `POST .../ForeignNetValue/top` | ⚠️ Bo sung chi tiet |
+| # | API | Endpoint | Trạng thái |
+|---|-----|----------|------------|
+| 1 | **Chi tiết ngành ICB** | `POST .../AllocatedICB/getAllocatedDetail` | ✅ Mới — Quan trọng |
+| 2 | **Sức mạnh cổ phiếu (TA)** | `GET .../ta/stock-strength` | ✅ Mới |
+| 3 | **Chỉ số thị trường** | `POST .../price/marketIndex/getList` | ✅ Mới |
+| 4 | **Search bar** | `GET .../company/search-bar` | ✅ Mới |
+| 5 | **Mã sự kiện** | `GET .../event-codes` | ✅ Mới — Tham chiếu |
+| 6 | **Thông báo bảo trì** | `GET .../notification?type=maintenance` | ✅ Mới |
+| 7 | **Foreign intraday (ONE_MINUTE)** | `POST .../ForeignVolumeChart/getAll` | ⚠️ Bổ sung timeFrame |
+| 8 | **Liquidity 2 phiên pattern** | `POST .../gap-liquidity` | ⚠️ Bổ sung chi tiết |
+| 9 | **ForeignNetValue/top — ghi chú** | `POST .../ForeignNetValue/top` | ⚠️ Bổ sung chi tiết |

@@ -136,7 +136,7 @@ async def test_admin_delete_user(client: AsyncClient, admin_user: User, test_use
     )
     assert response.status_code == 200
     data = response.json()
-    assert data["message"] == "User deleted successfully"
+    assert data["message"] == "Xóa người dùng thành công"
 
 
 # ── Admin: List with filtering ───────────────────────

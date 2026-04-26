@@ -65,11 +65,11 @@ class UserService:
     async def register(self, data: UserCreate) -> User:
         """Register a new user account."""
         if await self._repo.email_exists(data.email):
-            raise ConflictError("A user with this email already exists")
+            raise ConflictError("Đã tồn tại người dùng với email này")
 
         phone_fields = self._parse_phone(data.phone_number)
         if phone_fields.get("phone_e164") and await self._repo.phone_exists(phone_fields["phone_e164"]):
-            raise ConflictError("A user with this phone number already exists")
+            raise ConflictError("Đã tồn tại người dùng với số điện thoại này")
 
         user = User(
             email=data.email.lower(),
@@ -84,15 +84,15 @@ class UserService:
         logger.info("User registered: %s", created.email)
         return created
 
-    # ── Admin create ─────────────────────────────────
+    # ── Admin create ──────────────────────────────────
     async def admin_create(self, data: AdminUserCreate) -> User:
         """Admin creates a user with custom role/status."""
         if await self._repo.email_exists(data.email):
-            raise ConflictError("A user with this email already exists")
+            raise ConflictError("Đã tồn tại người dùng với email này")
 
         phone_fields = self._parse_phone(data.phone_number)
         if phone_fields.get("phone_e164") and await self._repo.phone_exists(phone_fields["phone_e164"]):
-            raise ConflictError("A user with this phone number already exists")
+            raise ConflictError("Đã tồn tại người dùng với số điện thoại này")
 
         user = User(
             email=data.email.lower(),
@@ -111,7 +111,7 @@ class UserService:
     async def get_by_id(self, user_id: uuid.UUID) -> User:
         user = await self._repo.get_by_id(user_id)
         if not user or user.status == UserStatus.DELETED:
-            raise NotFoundError("User")
+            raise NotFoundError("người dùng")
         return user
 
     async def get_by_email(self, email: str) -> User | None:
@@ -140,12 +140,12 @@ class UserService:
             if phone_fields.get("phone_e164"):
                 existing = await self._repo.get_by_phone(phone_fields["phone_e164"])
                 if existing and existing.id != user_id:
-                    raise ConflictError("A user with this phone number already exists")
+                    raise ConflictError("Đã tồn tại người dùng với số điện thoại này")
             update_data.update(phone_fields)
 
         return await self._repo.update(user, update_data)
 
-    # ── Admin update ─────────────────────────────────
+    # ── Admin update ────────────────────────────────
     async def admin_update(self, user_id: uuid.UUID, data: AdminUserUpdate) -> User:
         user = await self.get_by_id(user_id)
         update_data = data.model_dump(exclude_unset=True)
@@ -155,7 +155,7 @@ class UserService:
             if phone_fields.get("phone_e164"):
                 existing = await self._repo.get_by_phone(phone_fields["phone_e164"])
                 if existing and existing.id != user_id:
-                    raise ConflictError("A user with this phone number already exists")
+                    raise ConflictError("Đã tồn tại người dùng với số điện thoại này")
             update_data.update(phone_fields)
 
         return await self._repo.update(user, update_data)

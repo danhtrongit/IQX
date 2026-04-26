@@ -1,80 +1,80 @@
-# Vietcap AI News API Discovery
+# Khám phá API Tin AI Vietcap
 
-> Reverse-engineered from Playwright network inspection of `https://trading.vietcap.com.vn/ai-news?exchange=hose`.
+> Tham chiếu từ thao tác Playwright trên trang `https://trading.vietcap.com.vn/ai-news?exchange=hose`.
 >
-> **Last updated:** 2026-04-25
+> **Cập nhật lần cuối:** 2026-04-25
 > **Base API:** `https://ai.vietcap.com.vn`
-> **Web referer observed:** `https://trading.vietcap.com.vn/`
-> **Legend:** ✅ live verified | ⚠️ observed but behavior may vary by filters/data availability
+> **Referer trên web:** `https://trading.vietcap.com.vn/`
+> **Chú thích:** ✅ live đã xác minh | ⚠️ đã quan sát nhưng kết quả tùy bộ lọc/dữ liệu
 
-## 1. Summary
+## 1. Tóm tắt
 
-Vietcap AI News exposes unauthenticated JSON endpoints for:
+Vietcap AI News cung cấp các endpoint JSON không cần xác thực cho:
 
-- **Tin Doanh Nghiệp**: company/business news with ticker, sentiment, score, source, summary, and audio durations.
-- **Tin Chủ Đề**: thematic news by topic key such as market movement, gold, FX, crypto, oil, commodities, agriculture, bonds.
-- **Tin từ Sở**: exchange/disclosure news from venues such as HNX, with attachments on detail.
-- **Tin theo mã**: ticker-specific business news, exchange news, and sentiment summary.
-- **Chi tiết tin**: full HTML content fetched by `slug`, not by `id`.
-- **Voice/audio**: male/female `.m4a` URLs fetched by news `id`.
+- **Tin doanh nghiệp**: tin theo công ty kèm ticker, sentiment, score, nguồn, tóm tắt và thời lượng audio.
+- **Tin chủ đề**: tin theo chủ đề (diễn biến thị trường, vàng, tỷ giá, tiền mã hóa, dầu, hàng hóa, nông sản, trái phiếu).
+- **Tin từ sở**: tin công bố từ HNX/HOSE, kèm file đính kèm trong phần chi tiết.
+- **Tin theo mã**: tin doanh nghiệp + tin từ sở của một ticker, kèm tổng hợp sentiment.
+- **Chi tiết tin**: nội dung HTML đầy đủ, lấy theo `slug` (không phải `id`).
+- **Audio**: URL file `.m4a` giọng nam/nữ, lấy theo `id` của bài tin.
 
-No auth token or cookie was required in the observed browser session. Requests used browser-like headers and `Accept: application/json`.
+Trong phiên duyệt được quan sát, không cần token hay cookie nào. Request chỉ dùng header trình duyệt cơ bản và `Accept: application/json`.
 
-## 2. Common Headers
+## 2. Header chung
 
-Observed list/detail/audio endpoints work with minimal browser-style headers:
+Các endpoint list/detail/audio hoạt động tốt với header trình duyệt tối thiểu:
 
 ```http
 Accept: application/json
 Referer: https://trading.vietcap.com.vn/
-User-Agent: <browser user agent>
+User-Agent: <user agent trình duyệt>
 ```
 
-For backend integration, use conservative caching and rate limiting because this is a third-party public web API.
+Khi tích hợp backend, hãy bật cache bảo thủ và rate limit vì đây là API công khai của bên thứ ba.
 
-## 3. Filter Model
+## 3. Mô hình bộ lọc
 
-| UI filter | Query parameter | Values / format | Notes |
+| Bộ lọc UI | Query parameter | Giá trị / định dạng | Ghi chú |
 |---|---|---|---|
-| Page | `page` | 1-based integer | `page=1` on all list endpoints. |
-| Page size | `page_size` | integer | Home used `12` for business/topic and `18` for exchange; detail related news used `5`. |
-| Date from | `update_from` | `YYYY-MM-DD` or empty | Home default was one month back: `2026-03-25`. Company page used one year back. |
-| Date to | `update_to` | `YYYY-MM-DD` or empty | Home default was current date: `2026-04-25`. |
-| Ticker | `ticker` | Uppercase symbol or empty | Example: `VIC`, `HDB`. |
-| Industry | `industry` | Industry slug or empty | Values come from `GET /api/get_industry_info`. |
-| Topic | `topic` | Topic key or empty | Values come from `GET /api/v3/topics_all`. |
-| Source | `newsfrom` | Source key or empty | Values come from `GET /api/v3/get_source_info?language=vi`. |
-| Nhận định | `sentiment` | `Positive`, `Neutral`, `Negative`, or empty | UI labels: Tích cực, Trung lập, Tiêu cực. |
-| Language | `language` | `vi` | Only Vietnamese flow was inspected. |
+| Trang | `page` | số nguyên (đếm từ 1) | `page=1` ở mọi list endpoint |
+| Page size | `page_size` | số nguyên | Trang chủ dùng `12` cho business/topic và `18` cho exchange; tin liên quan ở trang chi tiết dùng `5` |
+| Từ ngày | `update_from` | `YYYY-MM-DD` hoặc rỗng | Trang chủ mặc định lùi 1 tháng (`2026-03-25`); trang công ty dùng 1 năm |
+| Đến ngày | `update_to` | `YYYY-MM-DD` hoặc rỗng | Trang chủ mặc định ngày hiện tại (`2026-04-25`) |
+| Mã | `ticker` | viết hoa hoặc rỗng | Ví dụ: `VIC`, `HDB` |
+| Ngành | `industry` | slug ngành hoặc rỗng | Lấy từ `GET /api/get_industry_info` |
+| Chủ đề | `topic` | key chủ đề hoặc rỗng | Lấy từ `GET /api/v3/topics_all` |
+| Nguồn tin | `newsfrom` | key nguồn hoặc rỗng | Lấy từ `GET /api/v3/get_source_info?language=vi` |
+| Nhận định | `sentiment` | `Positive`, `Neutral`, `Negative` hoặc rỗng | UI hiển thị: Tích cực, Trung lập, Tiêu cực |
+| Ngôn ngữ | `language` | `vi` | Phiên kiểm tra chỉ dùng tiếng Việt |
 
-## 4. Tin Doanh Nghiệp
+## 4. Tin doanh nghiệp
 
-### List Endpoint
+### Endpoint danh sách
 
 ```http
 GET https://ai.vietcap.com.vn/api/v3/news_info
 ```
 
-Observed home request:
+Mẫu request quan sát được:
 
 ```http
 GET /api/v3/news_info?page=1&ticker=&industry=&update_from=2026-03-25&update_to=2026-04-25&sentiment=&newsfrom=&language=vi&page_size=12
 ```
 
-Ticker-specific request observed on detail/company pages:
+Mẫu request theo ticker (trang chi tiết/công ty):
 
 ```http
 GET /api/v3/news_info?page=1&ticker=HDB&industry=&update_from=&update_to=&sentiment=&newsfrom=&language=vi&page_size=5
 GET /api/v3/news_info?page=1&ticker=VIC&industry=&update_from=2025-04-25&update_to=2026-04-25&sentiment=&newsfrom=&language=vi&page_size=12
 ```
 
-Filtered example verified:
+Mẫu request có lọc đã xác minh:
 
 ```http
 GET /api/v3/news_info?page=1&ticker=VIC&industry=&update_from=2025-04-25&update_to=2026-04-25&sentiment=Positive&newsfrom=fireant&language=vi&page_size=2
 ```
 
-### Response Shape
+### Cấu trúc response
 
 ```json
 {
@@ -102,29 +102,29 @@ GET /api/v3/news_info?page=1&ticker=VIC&industry=&update_from=2025-04-25&update_
 }
 ```
 
-### Field Notes
+### Ghi chú field
 
-| Field | Meaning |
+| Field | Ý nghĩa |
 |---|---|
-| `id` | Stable news id; use for audio lookup. |
-| `slug` | Required for detail lookup. Detail-by-id candidates returned 404. |
-| `sentiment` | `Positive`, `Neutral`, `Negative`. |
-| `score` | Numeric sentiment score, e.g. `9.75`. |
-| `male_audio_duration`, `female_audio_duration` | Seconds; audio URLs are fetched separately. |
+| `id` | ID ổn định của bài tin; dùng để tra audio |
+| `slug` | Bắt buộc cho lookup chi tiết. Lookup theo `id` thử nghiệm đều trả về 404 |
+| `sentiment` | `Positive`, `Neutral`, `Negative` |
+| `score` | Điểm sentiment dạng số, ví dụ `9.75` |
+| `male_audio_duration`, `female_audio_duration` | Thời lượng audio (giây); URL audio lấy bằng endpoint khác |
 
-## 5. Tin Chủ Đề
+## 5. Tin chủ đề
 
-### Topic Catalog
+### Danh mục chủ đề
 
 ```http
 GET https://ai.vietcap.com.vn/api/v3/topics_all?language=vi
 ```
 
-Verified response contains `static_topic[]`, each with `name`, `key`, and top `news[]`.
+Response chứa `static_topic[]`, mỗi phần tử có `name`, `key`, và mảng `news[]` (top tin).
 
-Observed topic keys:
+Các key chủ đề đã quan sát:
 
-| Name | Key |
+| Tên | Key |
 |---|---|
 | Diễn biến Thị trường | `dien-bien-thi-truong` |
 | Chứng khoán Thế giới | `chung-khoan-the-gioi` |
@@ -136,32 +136,32 @@ Observed topic keys:
 | Nông sản | `nong-san` |
 | Trái phiếu | `trai-phieu` |
 
-### Topic List Endpoint
+### Endpoint danh sách theo chủ đề
 
 ```http
 GET https://ai.vietcap.com.vn/api/v3/topics_info
 ```
 
-Observed home request:
+Mẫu request trang chủ:
 
 ```http
 GET /api/v3/topics_info?page=1&topic=&industry=&update_from=2026-03-25&update_to=2026-04-25&sentiment=&newsfrom=&page_size=12&language=vi
 ```
 
-Filtered topic example verified:
+Mẫu request lọc theo chủ đề đã xác minh:
 
 ```http
 GET /api/v3/topics_info?page=1&topic=gia-vang&industry=&update_from=2026-03-25&update_to=2026-04-25&sentiment=&newsfrom=&page_size=2&language=vi
 ```
 
-### Response Differences vs Business News
+### Khác biệt response so với tin doanh nghiệp
 
-The response shape is the same as `news_info`, with two practical differences:
+Cấu trúc response giống `news_info`, có 2 khác biệt thực tế:
 
-- `ticker` is usually the topic key, e.g. `gia-vang`, `xang-dau`.
-- Items include `topic_name`, e.g. `Giá vàng`, `Xăng dầu`.
+- `ticker` thường là key chủ đề, ví dụ `gia-vang`, `xang-dau`.
+- Mỗi item có thêm `topic_name`, ví dụ `Giá vàng`, `Xăng dầu`.
 
-Example item:
+Ví dụ:
 
 ```json
 {
@@ -178,27 +178,27 @@ Example item:
 }
 ```
 
-## 6. Tin từ Sở / Exchange News
+## 6. Tin từ sở
 
-### List Endpoint
+### Endpoint danh sách
 
 ```http
 GET https://ai.vietcap.com.vn/api/v3/xnews_info
 ```
 
-Observed home/exchange request:
+Mẫu request trang chủ:
 
 ```http
 GET /api/v3/xnews_info?page=1&page_size=18&language=vi&newsfrom=&update_from=2026-03-25&update_to=2026-04-25
 ```
 
-Ticker-specific request observed on company page:
+Mẫu request theo ticker (trang công ty):
 
 ```http
 GET /api/v3/xnews_info?page=1&ticker=VIC&industry=&update_from=2025-04-25&update_to=2026-04-25&sentiment=&newsfrom=&language=vi&page_size=12
 ```
 
-### Response Shape
+### Cấu trúc response
 
 ```json
 {
@@ -218,15 +218,15 @@ GET /api/v3/xnews_info?page=1&ticker=VIC&industry=&update_from=2025-04-25&update
 }
 ```
 
-Exchange list rows are thinner than business/topic rows. Fetch detail by `slug` to get company name, attachments, full content, and `news_type`.
+Bản ghi exchange ngắn hơn business/topic. Lấy chi tiết theo `slug` để có tên công ty, file đính kèm, nội dung đầy đủ và `news_type`.
 
-### Exchange Detail Example
+### Ví dụ chi tiết exchange
 
 ```http
 GET /api/v3/news_from_slug?slug=sgb-bao-cao-tai-chinh-quy-1-2026-17770255200-2-1&language=vi
 ```
 
-Verified detail fields include:
+Một số field đã xác minh:
 
 ```json
 {
@@ -249,48 +249,48 @@ Verified detail fields include:
 }
 ```
 
-## 7. Tin theo mã / Company News
+## 7. Tin theo mã
 
-Company pages combine three API families:
+Trang công ty kết hợp 3 nhóm API:
 
-### 7.1 Ticker Sentiment Summary
+### 7.1. Tổng hợp sentiment theo mã
 
 ```http
 GET https://ai.vietcap.com.vn/api/v3/ticker_score?ticker=VIC&industry=&group=&summary=false&language=vi
 ```
 
-Verified fields under `ticker_info[]`:
+Field đã xác minh trong `ticker_info[]`:
 
-| Field | Meaning |
+| Field | Ý nghĩa |
 |---|---|
-| `ticker` | Symbol. |
-| `cnt_news` | News count in the summary window. |
-| `score` | Current sentiment score. |
-| `sentiment` | Current sentiment class. |
-| `logo` | Ticker logo URL. |
-| `news_from[]` | Source article ids, source names, source URLs, and slugs. |
-| `count_pos`, `count_neu`, `count_neg` | Sentiment distribution. |
-| `extractive_summaries[]` | Per-article extracted summaries. |
-| `extractive_sentiments[]` | Per-summary sentiment labels. |
-| `extractive_positions[]` | Highlighted positive/negative phrases. |
-| `organ_name` | Vietnamese company name. |
-| `hose`, `vn30`, `vn_midcap`, `vn_smallcap`, `vn100` | Index/group flags observed in response. |
+| `ticker` | Mã |
+| `cnt_news` | Số tin trong cửa sổ tổng hợp |
+| `score` | Điểm sentiment hiện tại |
+| `sentiment` | Phân loại sentiment hiện tại |
+| `logo` | URL logo của ticker |
+| `news_from[]` | Danh sách id, tên nguồn, URL nguồn, slug của các bài |
+| `count_pos`, `count_neu`, `count_neg` | Phân bổ sentiment |
+| `extractive_summaries[]` | Tóm tắt rút trích cho từng bài |
+| `extractive_sentiments[]` | Sentiment của từng tóm tắt |
+| `extractive_positions[]` | Đoạn tích cực/tiêu cực được highlight |
+| `organ_name` | Tên doanh nghiệp tiếng Việt |
+| `hose`, `vn30`, `vn_midcap`, `vn_smallcap`, `vn100` | Cờ chỉ số/nhóm |
 
-`summary=true` returned an empty `ticker_info` array for `VIC` during inspection; use `summary=false` unless re-verified.
+`summary=true` trả về `ticker_info` rỗng cho `VIC` trong lần kiểm tra; nên dùng `summary=false` trừ khi đã xác minh lại.
 
-### 7.2 Business News by Ticker
+### 7.2. Tin doanh nghiệp theo ticker
 
 ```http
 GET /api/v3/news_info?page=1&ticker=VIC&industry=&update_from=2025-04-25&update_to=2026-04-25&sentiment=&newsfrom=&language=vi&page_size=12
 ```
 
-### 7.3 Exchange News by Ticker
+### 7.3. Tin từ sở theo ticker
 
 ```http
 GET /api/v3/xnews_info?page=1&ticker=VIC&industry=&update_from=2025-04-25&update_to=2026-04-25&sentiment=&newsfrom=&language=vi&page_size=12
 ```
 
-## 8. Detail Content
+## 8. Chi tiết bài tin
 
 ### Endpoint
 
@@ -298,15 +298,15 @@ GET /api/v3/xnews_info?page=1&ticker=VIC&industry=&update_from=2025-04-25&update
 GET https://ai.vietcap.com.vn/api/v3/news_from_slug?slug={slug}&language=vi
 ```
 
-Use `slug` from any list endpoint. Detail lookups by `id` were tested with several guessed endpoint names and returned `404`; the frontend uses `news_from_slug`.
+Dùng `slug` từ bất kỳ list endpoint nào. Lookup theo `id` đã thử với nhiều endpoint khác đều trả 404; frontend dùng `news_from_slug`.
 
-### Business Detail Example
+### Ví dụ chi tiết tin doanh nghiệp
 
 ```http
 GET /api/v3/news_from_slug?slug=hdb-dhdcd-hdbank-2026-loi-nhuan-ke-hoach-tang-41-quy-mo-tiem-can-1-2-trieu-ty-dong&language=vi
 ```
 
-Verified response fields:
+Field đã xác minh:
 
 ```json
 {
@@ -334,9 +334,9 @@ Verified response fields:
 }
 ```
 
-`news_full_content` is HTML and can include paragraphs, figures, images, and captions. Exchange disclosures may have `file_attachment[]` PDF links and minimal HTML content.
+`news_full_content` là HTML, có thể chứa đoạn văn, ảnh, chú thích. Tin công bố sàn có thể có `file_attachment[]` PDF và HTML rất ngắn.
 
-## 9. Voice / Audio
+## 9. Audio
 
 ### Endpoint
 
@@ -344,9 +344,9 @@ Verified response fields:
 GET https://ai.vietcap.com.vn/api/audio_from_id?id={news_id}
 ```
 
-Use `id` from list or detail response.
+Dùng `id` từ list/detail.
 
-Verified example:
+Ví dụ đã xác minh:
 
 ```http
 GET /api/audio_from_id?id=a6b16c51c6d0f143a8ac56851ad18315414e9f7eecc076314c34ffdd536d7903
@@ -361,21 +361,21 @@ Response:
 }
 ```
 
-Notes:
+Ghi chú:
 
-- List/detail responses already provide `male_audio_duration` and `female_audio_duration` in seconds.
-- Exchange news can show duration `0`; the audio endpoint still returned URL-shaped values for tested ids, but file existence/playability should be checked before exposing audio links.
-- The S3 URL path is predictable from `{voice}/{id}.m4a`, but backend should call `audio_from_id` rather than constructing URLs directly.
+- List/detail đã có `male_audio_duration` và `female_audio_duration` (giây).
+- Tin từ sở có thể có duration `0`; endpoint audio vẫn trả URL nhưng nên kiểm tra file tồn tại trước khi cho phép phát.
+- Đường dẫn S3 có thể đoán được từ `{voice}/{id}.m4a`, nhưng backend nên gọi `audio_from_id` thay vì tự ghép URL.
 
-## 10. Reference Data Endpoints
+## 10. Endpoint dữ liệu tham chiếu
 
-### Sources
+### Nguồn tin
 
 ```http
 GET https://ai.vietcap.com.vn/api/v3/get_source_info?language=vi
 ```
 
-Observed source values:
+Các giá trị nguồn đã quan sát:
 
 | viName | value |
 |---|---|
@@ -397,13 +397,13 @@ Observed source values:
 | Vnbusiness | `vnbusiness` |
 | Nguồn khác | `others` |
 
-### Industries
+### Ngành
 
 ```http
 GET https://ai.vietcap.com.vn/api/get_industry_info
 ```
 
-Observed industry values:
+Các giá trị ngành đã quan sát:
 
 | viName | value |
 |---|---|
@@ -428,15 +428,15 @@ Observed industry values:
 | Công nghệ Thông tin | `technology` |
 | Viễn thông | `telecommunications` |
 
-### Top Tickers
+### Top tickers
 
 ```http
 GET https://ai.vietcap.com.vn/api/v2/get_top_tickers?industry=&group=hose&top_neg=5&top_pos=5
 ```
 
-Observed home page uses this endpoint to populate top positive/negative tickers.
+Trang chủ dùng endpoint này để hiển thị top ticker tích cực/tiêu cực.
 
-Response shape:
+Cấu trúc response:
 
 ```json
 {
@@ -453,38 +453,38 @@ Response shape:
 }
 ```
 
-Observed `group=hose`; UI also has buttons for `VN30`, `VNMidCap`, `VNSmallCap`, `VN100`, `HNX`, `HNX30`, and `UpCom`, but exact group query values beyond `hose` were not re-verified in this pass.
+Đã quan sát `group=hose`; UI còn có nút `VN30`, `VNMidCap`, `VNSmallCap`, `VN100`, `HNX`, `HNX30`, `UpCom` nhưng giá trị `group` cho từng nút chưa được xác minh lại.
 
-## 11. Supporting Non-News Endpoints Observed
+## 11. Endpoint hỗ trợ ngoài tin
 
-These are not required for AI News content but are used by the page UI:
+Không bắt buộc cho nội dung tin nhưng được trang sử dụng:
 
-| Purpose | Endpoint |
+| Mục đích | Endpoint |
 |---|---|
-| Company search bar | `GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/company/search-bar?language=1` |
-| Price cards for symbols | `POST https://trading.vietcap.com.vn/api/price/symbols/getList` body `{"symbols":[...]}` |
-| Market status | `GET https://trading.vietcap.com.vn/api/price/marketStatus/getAll` |
+| Search bar doanh nghiệp | `GET https://iq.vietcap.com.vn/api/iq-insight-service/v1/company/search-bar?language=1` |
+| Card giá theo mã | `POST https://trading.vietcap.com.vn/api/price/symbols/getList` body `{"symbols":[...]}` |
+| Trạng thái thị trường | `GET https://trading.vietcap.com.vn/api/price/marketStatus/getAll` |
 | App config | `GET https://trading.vietcap.com.vn/api/configuration-service/v1/non-authen/app-config?t={timestamp}` |
 
-## 12. Backend Data Mapping Candidates
+## 12. Ánh xạ dữ liệu sang backend
 
-| Backend concept | Upstream source | Key fields |
+| Khái niệm backend | Nguồn upstream | Field chính |
 |---|---|---|
-| News list item | `news_info`, `topics_info`, `xnews_info` | `id`, `slug`, `ticker`, `news_title`, `news_short_content`, `news_source_link`, `news_image_url`, `update_date`, `news_from`, `news_from_name`, `sentiment`, `score`, `topic_name` |
-| News detail | `news_from_slug` | list fields plus `company_name`, `summary`, `highlight_position`, `news_full_content`, `file_attachment`, `news_type` |
-| News audio | `audio_from_id` | `male`, `female`, plus durations from list/detail |
-| Topic catalog | `topics_all` | `static_topic[].name`, `static_topic[].key` |
-| Source filter | `get_source_info` | `viName`, `enName`, `value` |
-| Industry filter | `get_industry_info` | `viName`, `enName`, `value` |
-| Ticker sentiment | `ticker_score` | `score`, `sentiment`, `count_pos`, `count_neu`, `count_neg`, `extractive_summaries`, `extractive_sentiments`, `extractive_positions` |
+| Item danh sách tin | `news_info`, `topics_info`, `xnews_info` | `id`, `slug`, `ticker`, `news_title`, `news_short_content`, `news_source_link`, `news_image_url`, `update_date`, `news_from`, `news_from_name`, `sentiment`, `score`, `topic_name` |
+| Chi tiết tin | `news_from_slug` | Thêm `company_name`, `summary`, `highlight_position`, `news_full_content`, `file_attachment`, `news_type` |
+| Audio | `audio_from_id` | `male`, `female`, kèm thời lượng từ list/detail |
+| Danh mục chủ đề | `topics_all` | `static_topic[].name`, `static_topic[].key` |
+| Bộ lọc nguồn | `get_source_info` | `viName`, `enName`, `value` |
+| Bộ lọc ngành | `get_industry_info` | `viName`, `enName`, `value` |
+| Sentiment theo mã | `ticker_score` | `score`, `sentiment`, `count_pos`, `count_neu`, `count_neg`, `extractive_summaries`, `extractive_sentiments`, `extractive_positions` |
 
-## 13. Important Implementation Notes
+## 13. Lưu ý triển khai
 
-- Fetch detail by `slug`, not `id`.
-- Fetch audio by `id`, not `slug`.
-- Keep `news_full_content` as sanitized HTML or convert to plain text at the API boundary.
-- Normalize `update_date` from local string format `YYYY-MM-DD HH:mm:ss`.
-- Treat `sentiment=""` and `score=0` as unavailable/neutral only if the product decision says so; topic/exchange items often have blank sentiment.
-- Preserve `file_attachment[]` for exchange news because the PDF attachments can be the main payload.
-- Cache source/topic/industry catalogs; they are small and change slowly.
-- Cache news list/detail/audio metadata with short TTLs; the page is news-like and changes frequently.
+- Lookup chi tiết bằng `slug`, không phải `id`.
+- Lookup audio bằng `id`, không phải `slug`.
+- Giữ `news_full_content` ở dạng HTML đã sanitize hoặc convert sang plain text ở biên.
+- Chuẩn hóa `update_date` từ chuỗi `YYYY-MM-DD HH:mm:ss`.
+- Coi `sentiment=""` và `score=0` là không có/trung lập tùy quyết định sản phẩm; tin chủ đề/từ sở thường có sentiment rỗng.
+- Giữ `file_attachment[]` cho tin từ sở vì PDF có thể là nội dung chính.
+- Cache catalog nguồn/chủ đề/ngành; nhỏ và ít thay đổi.
+- Cache list/detail/audio metadata với TTL ngắn vì tin thay đổi liên tục.

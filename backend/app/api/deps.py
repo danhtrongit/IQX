@@ -23,7 +23,7 @@ async def get_current_user(
 ) -> User:
     """Resolve the currently authenticated user from the Bearer token."""
     if credentials is None:
-        raise UnauthorizedError("Authentication required")
+        raise UnauthorizedError("Yêu cầu xác thực")
 
     auth_service = AuthService(db)
     return await auth_service.get_current_user_from_token(credentials.credentials)
@@ -34,7 +34,7 @@ async def get_current_active_user(
 ) -> User:
     """Ensure the current user is active."""
     if not current_user.is_active:
-        raise ForbiddenError("Account is not active")
+        raise ForbiddenError("Tài khoản chưa được kích hoạt")
     return current_user
 
 
@@ -43,7 +43,7 @@ async def get_current_admin(
 ) -> User:
     """Ensure the current user is an admin."""
     if current_user.role != UserRole.ADMIN:
-        raise ForbiddenError("Admin access required")
+        raise ForbiddenError("Yêu cầu quyền quản trị viên")
     return current_user
 
 
@@ -57,7 +57,7 @@ async def get_premium_active_user(
     service = PremiumService(db)
     sub = await service.get_user_subscription(current_user.id)
     if not sub.is_premium:
-        raise ForbiddenError("Active premium subscription required")
+        raise ForbiddenError("Yêu cầu gói Premium đang hoạt động")
     return current_user
 
 

@@ -33,9 +33,9 @@ from app.schemas.virtual_trading import (
 )
 from app.services.virtual_trading.service import VirtualTradingService
 
-router = APIRouter(prefix="/virtual-trading", tags=["Virtual Trading"])
+router = APIRouter(prefix="/virtual-trading")
 
-_TAG_ADMIN = "Virtual Trading Admin"
+_TAG_ADMIN = "Giao dịch ảo (quản trị)"
 
 
 # ══════════════════════════════════════════════════════
@@ -43,9 +43,9 @@ _TAG_ADMIN = "Virtual Trading Admin"
 # ══════════════════════════════════════════════════════
 
 
-@router.post("/account/activate", response_model=AccountResponse, status_code=201, tags=["Virtual Trading"])
+@router.post("/account/activate", response_model=AccountResponse, status_code=201, tags=["Giao dịch ảo"])
 async def activate_account(user: PremiumUser, db: DBSession) -> AccountResponse:
-    """Activate a virtual trading account. Requires active premium."""
+    """Kích hoạt tài khoản giao dịch ảo. Yêu cầu Premium đang hoạt động."""
     svc = VirtualTradingService(db)
     account = await svc.activate_account(user.id)
     resp = AccountResponse.model_validate(account)
@@ -53,9 +53,9 @@ async def activate_account(user: PremiumUser, db: DBSession) -> AccountResponse:
     return resp
 
 
-@router.get("/account", response_model=AccountResponse, tags=["Virtual Trading"])
+@router.get("/account", response_model=AccountResponse, tags=["Giao dịch ảo"])
 async def get_account(user: CurrentUser, db: DBSession) -> AccountResponse:
-    """Get virtual trading account summary."""
+    """Lấy tóm tắt tài khoản giao dịch ảo."""
     svc = VirtualTradingService(db)
     account = await svc.get_account(user.id)
     resp = AccountResponse.model_validate(account)
@@ -63,9 +63,9 @@ async def get_account(user: CurrentUser, db: DBSession) -> AccountResponse:
     return resp
 
 
-@router.get("/portfolio", response_model=PortfolioResponse, tags=["Virtual Trading"])
+@router.get("/portfolio", response_model=PortfolioResponse, tags=["Giao dịch ảo"])
 async def get_portfolio(user: CurrentUser, db: DBSession) -> PortfolioResponse:
-    """Get full portfolio — read-only, no refresh/mutation."""
+    """Lấy toàn bộ danh mục — chỉ đọc, không làm mới/thay đổi trạng thái."""
     svc = VirtualTradingService(db)
     data = await svc.get_portfolio(user.id)
     account = data["account"]
@@ -82,9 +82,9 @@ async def get_portfolio(user: CurrentUser, db: DBSession) -> PortfolioResponse:
     )
 
 
-@router.post("/orders", response_model=OrderResponse, status_code=201, tags=["Virtual Trading"])
+@router.post("/orders", response_model=OrderResponse, status_code=201, tags=["Giao dịch ảo"])
 async def place_order(body: OrderCreateRequest, user: PremiumUser, db: DBSession) -> OrderResponse:
-    """Place a virtual trading order. Requires active premium."""
+    """Đặt lệnh giao dịch ảo. Yêu cầu Premium đang hoạt động."""
     svc = VirtualTradingService(db)
     order = await svc.place_order(
         user_id=user.id,
@@ -97,31 +97,37 @@ async def place_order(body: OrderCreateRequest, user: PremiumUser, db: DBSession
     return OrderResponse.model_validate(order)
 
 
-@router.get("/orders", response_model=OrderListResponse, tags=["Virtual Trading"])
+@router.get("/orders", response_model=OrderListResponse, tags=["Giao dịch ảo"])
 async def list_orders(
     user: CurrentUser,
     db: DBSession,
-    status: Annotated[str | None, Query(description="Filter: pending,filled,cancelled,expired,rejected")] = None,
+    status: Annotated[
+        str | None,
+        Query(description="Lọc trạng thái: pending, filled, cancelled, expired, rejected"),
+    ] = None,
     symbol: Annotated[str | None, Query()] = None,
-    side: Annotated[str | None, Query(description="Filter: buy,sell")] = None,
+    side: Annotated[
+        str | None,
+        Query(description="Lọc theo loại lệnh: buy, sell"),
+    ] = None,
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 20,
 ) -> OrderListResponse:
-    """List virtual orders with optional filters."""
+    """Danh sách lệnh ảo có bộ lọc tùy chọn."""
     from app.core.exceptions import BadRequestError
 
     try:
         o_status = OrderStatus(status) if status else None
     except ValueError:
         raise BadRequestError(
-            f"Invalid status filter '{status}'. "
-            f"Valid: pending, filled, cancelled, expired, rejected",
+            f"Giá trị status '{status}' không hợp lệ. "
+            f"Cho phép: pending, filled, cancelled, expired, rejected",
         ) from None
     try:
         o_side = OrderSide(side) if side else None
     except ValueError:
         raise BadRequestError(
-            f"Invalid side filter '{side}'. Valid: buy, sell",
+            f"Giá trị side '{side}' không hợp lệ. Cho phép: buy, sell",
         ) from None
 
     svc = VirtualTradingService(db)
@@ -134,9 +140,9 @@ async def list_orders(
     )
 
 
-@router.post("/orders/{order_id}/cancel", response_model=OrderResponse, tags=["Virtual Trading"])
+@router.post("/orders/{order_id}/cancel", response_model=OrderResponse, tags=["Giao dịch ảo"])
 async def cancel_order(order_id: str, user: PremiumUser, db: DBSession) -> OrderResponse:
-    """Cancel a pending order. Requires active premium."""
+    """Hủy lệnh đang chờ. Yêu cầu Premium đang hoạt động."""
     import uuid
 
     try:
@@ -144,29 +150,29 @@ async def cancel_order(order_id: str, user: PremiumUser, db: DBSession) -> Order
     except ValueError:
         from app.core.exceptions import NotFoundError
 
-        raise NotFoundError("Order") from None
+        raise NotFoundError("lệnh") from None
 
     svc = VirtualTradingService(db)
     order = await svc.cancel_order(user.id, oid)
     return OrderResponse.model_validate(order)
 
 
-@router.post("/refresh", response_model=RefreshResponse, tags=["Virtual Trading"])
+@router.post("/refresh", response_model=RefreshResponse, tags=["Giao dịch ảo"])
 async def refresh(user: PremiumUser, db: DBSession) -> RefreshResponse:
-    """Process pending limit orders, expire GFD, settle T2. Requires active premium."""
+    """Xử lý lệnh limit đang chờ, hết hạn GFD, thanh toán T2. Yêu cầu Premium đang hoạt động."""
     svc = VirtualTradingService(db)
     result = await svc.refresh(user.id)
     return RefreshResponse(**result)
 
 
-@router.get("/trades", response_model=TradeListResponse, tags=["Virtual Trading"])
+@router.get("/trades", response_model=TradeListResponse, tags=["Giao dịch ảo"])
 async def list_trades(
     user: CurrentUser,
     db: DBSession,
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 20,
 ) -> TradeListResponse:
-    """List executed trades."""
+    """Danh sách giao dịch đã khớp."""
     svc = VirtualTradingService(db)
     trades, total = await svc.list_trades(user.id, page=page, page_size=page_size)
     return TradeListResponse(
@@ -175,14 +181,14 @@ async def list_trades(
     )
 
 
-@router.get("/leaderboard", response_model=LeaderboardResponse, tags=["Virtual Trading"])
+@router.get("/leaderboard", response_model=LeaderboardResponse, tags=["Giao dịch ảo"])
 async def get_leaderboard(
     db: DBSession,
-    sort_by: Annotated[str, Query(description="Sort: nav, profit, return_pct")] = "nav",
+    sort_by: Annotated[str, Query(description="Sắp xếp theo: nav, profit, return_pct")] = "nav",
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 20,
 ) -> LeaderboardResponse:
-    """Public leaderboard — no auth required."""
+    """Bảng xếp hạng công khai — không cần xác thực."""
     svc = VirtualTradingService(db)
     entries, evaluated_count, total_eligible = await svc.get_leaderboard(
         sort_by=sort_by, page=page, page_size=page_size,
@@ -202,7 +208,7 @@ async def get_leaderboard(
 
 @router.get("/admin/config", response_model=ConfigResponse, tags=[_TAG_ADMIN])
 async def admin_get_config(admin: AdminUser, db: DBSession) -> ConfigResponse:
-    """Admin: get active virtual trading config."""
+    """Quản trị: lấy cấu hình giao dịch ảo đang hoạt động."""
     svc = VirtualTradingService(db)
     config = await svc.get_or_create_config(admin.id)
     holidays = json.loads(config.holidays) if config.holidays else []
@@ -223,7 +229,7 @@ async def admin_get_config(admin: AdminUser, db: DBSession) -> ConfigResponse:
 
 @router.patch("/admin/config", response_model=ConfigResponse, tags=[_TAG_ADMIN])
 async def admin_update_config(body: ConfigUpdate, admin: AdminUser, db: DBSession) -> ConfigResponse:
-    """Admin: update virtual trading config."""
+    """Quản trị: cập nhật cấu hình giao dịch ảo."""
     svc = VirtualTradingService(db)
     config = await svc.update_config(body.model_dump(exclude_unset=True), admin.id)
     holidays = json.loads(config.holidays) if config.holidays else []
@@ -244,7 +250,7 @@ async def admin_update_config(body: ConfigUpdate, admin: AdminUser, db: DBSessio
 
 @router.post("/admin/users/{user_id}/reset", response_model=ResetResponse, tags=[_TAG_ADMIN])
 async def admin_reset_user(user_id: str, admin: AdminUser, db: DBSession) -> ResetResponse:
-    """Admin: reset a user's virtual trading account."""
+    """Quản trị: đặt lại tài khoản giao dịch ảo của một người dùng."""
     import uuid
 
     try:
@@ -252,24 +258,24 @@ async def admin_reset_user(user_id: str, admin: AdminUser, db: DBSession) -> Res
     except ValueError:
         from app.core.exceptions import NotFoundError
 
-        raise NotFoundError("User") from None
+        raise NotFoundError("người dùng") from None
 
     svc = VirtualTradingService(db)
     await svc.reset_account(uid, admin.id)
-    return ResetResponse(accounts_reset=1, message="Account reset successfully")
+    return ResetResponse(accounts_reset=1, message="Đặt lại tài khoản thành công")
 
 
 @router.post("/admin/reset-all", response_model=ResetResponse, tags=[_TAG_ADMIN])
 async def admin_reset_all(admin: AdminUser, db: DBSession) -> ResetResponse:
-    """Admin: reset all virtual trading accounts."""
+    """Quản trị: đặt lại tất cả tài khoản giao dịch ảo."""
     svc = VirtualTradingService(db)
     count = await svc.reset_all_accounts(admin.id)
-    return ResetResponse(accounts_reset=count, message=f"{count} accounts reset")
+    return ResetResponse(accounts_reset=count, message=f"Đã đặt lại {count} tài khoản")
 
 
 @router.get("/admin/accounts", response_model=list[AdminAccountResponse], tags=[_TAG_ADMIN])
 async def admin_list_accounts(admin: AdminUser, db: DBSession) -> list[AdminAccountResponse]:
-    """Admin: list all virtual trading accounts."""
+    """Quản trị: liệt kê tất cả tài khoản giao dịch ảo."""
     svc = VirtualTradingService(db)
     items = await svc.list_accounts_with_users()
     return [

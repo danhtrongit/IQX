@@ -1,42 +1,42 @@
-# Virtual Trading — Business Rules & API Reference
+# Giao dịch ảo — Quy tắc nghiệp vụ & API
 
-## Overview
+## Tổng quan
 
-Virtual Trading lets premium users practice stock trading with simulated VND using real-time market data. Each user receives a configurable amount of virtual cash (default 1B VND) and can place market/limit orders against actual Vietnam stock prices.
+Giao dịch ảo cho phép người dùng Premium luyện giao dịch chứng khoán bằng tiền VND mô phỏng trên dữ liệu thị trường thật. Mỗi người dùng nhận một khoản tiền ảo có thể cấu hình (mặc định 1 tỷ VND) và có thể đặt lệnh thị trường/limit theo giá thực tế của TTCK Việt Nam.
 
-## Architecture
+## Kiến trúc
 
 ```
 /api/v1/virtual-trading/
-├── account/activate   POST   Premium → Create account
-├── account            GET    Auth    → Account summary
-├── portfolio          GET    Auth    → Positions + NAV
-├── orders             POST   Premium → Place order
-├── orders             GET    Auth    → List orders
-├── orders/{id}/cancel POST   Premium → Cancel pending
-├── refresh            POST   Auth    → Process pending/settle
-├── trades             GET    Auth    → Trade history
-├── leaderboard        GET    Public  → Rankings
-├── admin/config       GET    Admin   → Get config
-├── admin/config       PATCH  Admin   → Update config
-├── admin/users/{id}/reset POST Admin → Reset user
-├── admin/reset-all    POST   Admin   → Reset all
-└── admin/accounts     GET    Admin   → List all accounts
+├── account/activate   POST   Premium → Tạo tài khoản
+├── account            GET    Auth    → Tóm tắt tài khoản
+├── portfolio          GET    Auth    → Danh mục + NAV
+├── orders             POST   Premium → Đặt lệnh
+├── orders             GET    Auth    → Danh sách lệnh
+├── orders/{id}/cancel POST   Premium → Hủy lệnh chờ
+├── refresh            POST   Premium → Xử lý lệnh chờ/thanh toán
+├── trades             GET    Auth    → Lịch sử khớp lệnh
+├── leaderboard        GET    Public  → Bảng xếp hạng
+├── admin/config       GET    Admin   → Lấy cấu hình
+├── admin/config       PATCH  Admin   → Cập nhật cấu hình
+├── admin/users/{id}/reset POST Admin → Đặt lại tài khoản người dùng
+├── admin/reset-all    POST   Admin   → Đặt lại tất cả
+└── admin/accounts     GET    Admin   → Danh sách tài khoản
 ```
 
-## Fee & Tax Calculation
+## Tính phí và thuế
 
-All monetary values are **integer VND** (no floating point).
-Fee/tax rates are in **basis points** (1 bps = 0.01%).
+Tất cả số tiền là **số nguyên VND** (không dùng số thực).
+Tỷ lệ phí/thuế tính bằng **basis points** (1 bps = 0.01%).
 
-### Buy Order
+### Lệnh mua
 ```
 gross       = price_vnd × quantity
 fee         = round_half_up(gross × buy_fee_rate_bps / 10000)
 total_cost  = gross + fee
 ```
 
-### Sell Order
+### Lệnh bán
 ```
 gross    = price_vnd × quantity
 fee      = round_half_up(gross × sell_fee_rate_bps / 10000)
@@ -44,89 +44,89 @@ tax      = round_half_up(gross × sell_tax_rate_bps / 10000)
 proceeds = gross - fee - tax
 ```
 
-### Default Config
-| Parameter | Default | Description |
+### Cấu hình mặc định
+| Tham số | Mặc định | Mô tả |
 |---|---|---|
-| initial_cash_vnd | 1,000,000,000 | Starting cash per account |
-| buy_fee_rate_bps | 15 | 0.15% buy commission |
-| sell_fee_rate_bps | 15 | 0.15% sell commission |
-| sell_tax_rate_bps | 10 | 0.1% sell tax |
-| board_lot_size | 100 | Minimum order unit |
-| settlement_mode | T0 | T0 (instant) or T2 |
+| initial_cash_vnd | 1,000,000,000 | Số dư khởi điểm mỗi tài khoản |
+| buy_fee_rate_bps | 15 | Phí mua 0.15% |
+| sell_fee_rate_bps | 15 | Phí bán 0.15% |
+| sell_tax_rate_bps | 10 | Thuế bán 0.1% |
+| board_lot_size | 100 | Đơn vị giao dịch tối thiểu |
+| settlement_mode | T0 | T0 (tức thời) hoặc T2 |
 
-## Settlement Modes
+## Chế độ thanh toán
 
-### T0 (Default)
-- Buy: shares immediately sellable
-- Sell: cash immediately available
+### T0 (mặc định)
+- Mua: cổ phiếu khả dụng để bán ngay
+- Bán: tiền có sẵn ngay
 
 ### T2
-- Buy: shares go to `quantity_pending`, become `quantity_sellable` after T+2 trading days
-- Sell: proceeds go to `cash_pending_vnd`, become `cash_available_vnd` after T+2 trading days
-- Trading days = weekdays excluding configured holidays
+- Mua: cổ phiếu vào `quantity_pending`, chuyển sang `quantity_sellable` sau T+2 ngày giao dịch
+- Bán: tiền vào `cash_pending_vnd`, chuyển sang `cash_available_vnd` sau T+2 ngày giao dịch
+- Ngày giao dịch = các ngày trong tuần trừ ngày nghỉ đã cấu hình
 
-## Order Lifecycle
+## Vòng đời lệnh
 
-### Market Order
-1. Validate symbol against HOSE/HNX/UPCOM universe (fail-closed: 422 if invalid, 503 if source unreachable)
-2. Resolve current price from market data (session-aware)
-3. If price unavailable → order status = `rejected`
-4. Execute immediately → status = `filled`
+### Lệnh thị trường (market)
+1. Kiểm tra mã thuộc HOSE/HNX/UPCOM (fail-closed: 422 nếu không hợp lệ, 503 nếu nguồn không khả dụng)
+2. Lấy giá hiện tại từ market data (theo phiên)
+3. Nếu không có giá → trạng thái `rejected`
+4. Khớp ngay → trạng thái `filled`
 
-### Limit Order
-1. Reserve cash (buy) or shares (sell) → status = `pending`
-2. On `refresh`: if market price ≤ limit (buy) or ≥ limit (sell) → fill
-3. GFD expiry: unfilled orders expire when trading_date < current trading date
-4. Cancel: user can cancel pending orders, reserves are released
+### Lệnh limit
+1. Đặt cọc tiền (mua) hoặc cổ phiếu (bán) → trạng thái `pending`
+2. Khi gọi `refresh`: nếu giá thị trường ≤ limit (mua) hoặc ≥ limit (bán) → khớp
+3. GFD: lệnh chưa khớp sẽ hết hạn khi trading_date < ngày giao dịch hiện tại
+4. Hủy: người dùng có thể hủy lệnh chờ, phần đặt cọc được giải phóng
 
-## Cash Tracking
+## Theo dõi tiền
 
-| Field | Description |
+| Trường | Mô tả |
 |---|---|
-| cash_available_vnd | Spendable cash |
-| cash_reserved_vnd | Locked by pending buy orders |
-| cash_pending_vnd | T2 sell proceeds awaiting settlement |
+| cash_available_vnd | Tiền dùng được |
+| cash_reserved_vnd | Tiền bị khóa do lệnh mua đang chờ |
+| cash_pending_vnd | Tiền bán T2 đang chờ thanh toán |
 | total_cash | available + reserved + pending |
 
-## Position Tracking
+## Theo dõi vị thế
 
-| Field | Description |
+| Trường | Mô tả |
 |---|---|
-| quantity_total | Total shares held |
-| quantity_sellable | Available to sell |
-| quantity_pending | T2 buy shares awaiting settlement |
-| quantity_reserved | Locked by pending sell orders |
+| quantity_total | Tổng cổ phiếu sở hữu |
+| quantity_sellable | Có thể bán |
+| quantity_pending | Cổ phiếu mua T2 đang chờ thanh toán |
+| quantity_reserved | Cổ phiếu bị khóa do lệnh bán đang chờ |
 
-## Config Snapshot (Authoritative)
+## Snapshot cấu hình (giá trị chính thức)
 
-Each order captures the active config at creation time as `config_snapshot` JSON. When filling a pending limit order, fee/tax rates and settlement mode are read **from the snapshot**, not the current config. This ensures:
-- Admin config changes don't retroactively affect pending orders
-- Fee/tax at fill time matches what was shown at order time
-- Fallback: if snapshot is missing a field, current config is used
+Mỗi lệnh chụp lại cấu hình đang hoạt động dưới dạng JSON `config_snapshot`. Khi khớp lệnh limit đang chờ, các tỷ lệ phí/thuế và chế độ thanh toán được đọc **từ snapshot**, không phải cấu hình hiện tại. Điều này đảm bảo:
+- Quản trị thay đổi cấu hình không ảnh hưởng ngược tới lệnh đang chờ
+- Phí/thuế khi khớp khớp với những gì hiển thị lúc đặt lệnh
+- Phòng vệ: nếu snapshot thiếu trường nào, sẽ dùng cấu hình hiện tại
 
-## Price Sources
+## Nguồn giá
 
-The price resolver is **trading session aware** (Asia/Ho_Chi_Minh timezone):
+Bộ phân giải giá **nhận biết phiên giao dịch** (múi giờ Asia/Ho_Chi_Minh):
 
-### Trading Sessions
-- Morning: 09:00–11:30
-- Afternoon: 13:00–14:45
-- Weekdays only, excluding configured holidays
+### Phiên giao dịch
+- Buổi sáng: 09:00–11:30
+- Buổi chiều: 13:00–14:45
+- Chỉ trong các ngày trong tuần, trừ ngày nghỉ đã cấu hình
 
-### Source Priority
-- **During session**: VCI intraday (realtime last matched price) → OHLCV close fallback
-- **Outside session / weekend / holiday**: OHLCV close only (VND → VCI)
+### Thứ tự ưu tiên nguồn
+- **Trong phiên**: VCI intraday (giá khớp realtime) → fallback OHLCV close
+- **Ngoài phiên / cuối tuần / ngày nghỉ**: chỉ dùng OHLCV close (VND → VCI)
 
-## Symbol Validation
+## Kiểm tra mã chứng khoán
 
-All orders (market + limit) are validated against the HOSE/HNX/UPCOM symbol universe:
-- **Invalid symbol**: 422 Unprocessable Entity
-- **Source unreachable**: 503 Service Unavailable (fail-closed, no order created)
-- Symbol list is cached for 5 minutes
+Mọi lệnh (market + limit) đều được kiểm tra với danh sách HOSE/HNX/UPCOM:
+- **Mã không hợp lệ**: 422 Unprocessable Entity
+- **Nguồn không khả dụng**: 503 Service Unavailable (fail-closed, không tạo lệnh)
+- Danh sách mã được cache 5 phút
 
-## Leaderboard
+## Bảng xếp hạng
 
-Public endpoint, no auth required. Ranks active accounts by:
-- `nav` (default): Net Asset Value = total cash + market value of positions
-- `profit`: NAV - initial cash
-- `return_pct`: profit / initial cash × 100
+Endpoint công khai, không cần xác thực. Xếp hạng các tài khoản đang hoạt động theo:
+- `nav` (mặc định): Net Asset Value = tổng tiền + giá trị thị trường của vị thế
+- `profit`: NAV - tiền khởi điểm
+- `return_pct`: profit / tiền khởi điểm × 100

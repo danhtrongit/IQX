@@ -381,7 +381,7 @@ async def test_invalid_status_filter_returns_400(client, premium_user):
     await client.post("/api/v1/virtual-trading/account/activate", headers=premium_user)
     resp = await client.get("/api/v1/virtual-trading/orders?status=INVALID", headers=premium_user)
     assert resp.status_code == 400
-    assert "Invalid status" in resp.json()["detail"]
+    assert "không hợp lệ" in resp.json()["detail"]
 
 @pytest.mark.asyncio
 @patch(_VS, new=_vs_ok)
@@ -390,7 +390,7 @@ async def test_invalid_side_filter_returns_400(client, premium_user):
     await client.post("/api/v1/virtual-trading/account/activate", headers=premium_user)
     resp = await client.get("/api/v1/virtual-trading/orders?side=INVALID", headers=premium_user)
     assert resp.status_code == 400
-    assert "Invalid side" in resp.json()["detail"]
+    assert "không hợp lệ" in resp.json()["detail"]
 
 # ══════════════════════════════════════════════════════
 # Fix 7: Financial input bounds

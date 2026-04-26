@@ -45,10 +45,10 @@ class AuthService:
         user = await self._user_service.get_by_email(email)
 
         if not user or not verify_password(password, user.hashed_password):
-            raise UnauthorizedError("Invalid email or password")
+            raise UnauthorizedError("Email hoặc mật khẩu không đúng")
 
         if user.status != UserStatus.ACTIVE:
-            raise UnauthorizedError(f"Account is {user.status.value}")
+            raise UnauthorizedError(f"Trạng thái tài khoản: {user.status.value}")
 
         # Update last login
         await self._user_service.update_last_login(user)
@@ -96,23 +96,23 @@ class AuthService:
         try:
             payload = decode_refresh_token(refresh_token_str)
         except jwt.ExpiredSignatureError:
-            raise UnauthorizedError("Refresh token has expired") from None
+            raise UnauthorizedError("Refresh token đã hết hạn") from None
         except jwt.InvalidTokenError:
-            raise UnauthorizedError("Invalid refresh token") from None
+            raise UnauthorizedError("Refresh token không hợp lệ") from None
 
         if payload.get("type") != "refresh":
-            raise UnauthorizedError("Invalid token type")
+            raise UnauthorizedError("Sai loại token")
 
         jti = payload.get("jti")
         token_family = payload.get("family")
         if not jti or not token_family:
-            raise UnauthorizedError("Malformed refresh token")
+            raise UnauthorizedError("Refresh token bị thiếu thuộc tính")
 
         # Look up the token in the database
         stored_token = await self._token_repo.get_by_jti(jti)
 
         if stored_token is None:
-            raise UnauthorizedError("Refresh token not recognized")
+            raise UnauthorizedError("Refresh token không được công nhận")
 
         if stored_token.revoked:
             # Replay attack detected! Revoke the entire family.
@@ -122,16 +122,16 @@ class AuthService:
                 stored_token.user_id,
             )
             await self._token_repo.revoke_family(token_family)
-            raise UnauthorizedError("Refresh token has been revoked (possible replay attack)")
+            raise UnauthorizedError("Refresh token đã bị thu hồi (có thể bị tấn công replay)")
 
         # Resolve user — map NotFoundError to UnauthorizedError
         try:
             user = await self._user_service.get_by_id(stored_token.user_id)
         except NotFoundError:
-            raise UnauthorizedError("User account no longer available") from None
+            raise UnauthorizedError("Tài khoản người dùng không còn khả dụng") from None
 
         if user.status != UserStatus.ACTIVE:
-            raise UnauthorizedError(f"Account is {user.status.value}")
+            raise UnauthorizedError(f"Trạng thái tài khoản: {user.status.value}")
 
         # Revoke the old token
         await self._token_repo.revoke_by_jti(jti)
@@ -173,25 +173,25 @@ class AuthService:
         try:
             payload = decode_access_token(token)
         except jwt.ExpiredSignatureError:
-            raise UnauthorizedError("Access token has expired") from None
+            raise UnauthorizedError("Access token đã hết hạn") from None
         except jwt.InvalidTokenError:
-            raise UnauthorizedError("Invalid access token") from None
+            raise UnauthorizedError("Access token không hợp lệ") from None
 
         if payload.get("type") != "access":
-            raise UnauthorizedError("Invalid token type")
+            raise UnauthorizedError("Sai loại token")
 
         try:
             user_id = uuid.UUID(payload["sub"])
         except (KeyError, ValueError):
-            raise UnauthorizedError("Malformed access token") from None
+            raise UnauthorizedError("Access token bị thiếu thuộc tính") from None
 
         try:
             user = await self._user_service.get_by_id(user_id)
         except NotFoundError:
-            raise UnauthorizedError("User account no longer available") from None
+            raise UnauthorizedError("Tài khoản người dùng không còn khả dụng") from None
 
         if user.status != UserStatus.ACTIVE:
-            raise ForbiddenError(f"Account is {user.status.value}")
+            raise ForbiddenError(f"Trạng thái tài khoản: {user.status.value}")
 
         return user
 

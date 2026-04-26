@@ -20,15 +20,15 @@ from app.schemas.user import (
 )
 from app.services.user import UserService
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter(prefix="/users", tags=["Người dùng"])
 
 
 # ── Self-profile ────────────────────────────────────
 @router.get(
     "/me",
     response_model=UserResponse,
-    summary="Get own profile",
-    description="Returns the full profile of the currently authenticated user.",
+    summary="Lấy hồ sơ của chính mình",
+    description="Trả về đầy đủ hồ sơ của người dùng đang đăng nhập.",
 )
 async def get_own_profile(current_user: CurrentUser) -> UserResponse:
     return UserResponse.model_validate(current_user)
@@ -37,8 +37,8 @@ async def get_own_profile(current_user: CurrentUser) -> UserResponse:
 @router.patch(
     "/me",
     response_model=UserResponse,
-    summary="Update own profile",
-    description="Users can update their own personal information.",
+    summary="Cập nhật hồ sơ của chính mình",
+    description="Người dùng có thể cập nhật thông tin cá nhân của mình.",
 )
 async def update_own_profile(
     data: UserUpdate,
@@ -54,8 +54,8 @@ async def update_own_profile(
 @router.get(
     "/",
     response_model=PaginatedResponse[UserBriefResponse],
-    summary="List users (admin)",
-    description="Admin-only endpoint. Returns a paginated, filterable list of users.",
+    summary="Danh sách người dùng (quản trị)",
+    description="Endpoint dành riêng cho quản trị viên. Trả về danh sách người dùng có phân trang và bộ lọc.",
 )
 async def list_users(
     admin: AdminUser,
@@ -85,8 +85,8 @@ async def list_users(
 @router.get(
     "/{user_id}",
     response_model=UserResponse,
-    summary="Get user by ID (admin)",
-    description="Admin-only. Retrieve full details of a specific user.",
+    summary="Lấy thông tin người dùng theo ID (quản trị)",
+    description="Dành riêng cho quản trị viên. Lấy đầy đủ chi tiết của một người dùng cụ thể.",
 )
 async def get_user(
     user_id: uuid.UUID,
@@ -103,8 +103,8 @@ async def get_user(
     "/",
     response_model=UserResponse,
     status_code=201,
-    summary="Create user (admin)",
-    description="Admin-only. Create a new user with custom role and status.",
+    summary="Tạo người dùng (quản trị)",
+    description="Dành riêng cho quản trị viên. Tạo người dùng mới với vai trò và trạng thái tùy chỉnh.",
 )
 async def admin_create_user(
     data: AdminUserCreate,
@@ -120,8 +120,8 @@ async def admin_create_user(
 @router.patch(
     "/{user_id}",
     response_model=UserResponse,
-    summary="Update user (admin)",
-    description="Admin-only. Update any user's profile, role, or status.",
+    summary="Cập nhật người dùng (quản trị)",
+    description="Dành riêng cho quản trị viên. Cập nhật hồ sơ, vai trò hoặc trạng thái của bất kỳ người dùng nào.",
 )
 async def admin_update_user(
     user_id: uuid.UUID,
@@ -138,8 +138,8 @@ async def admin_update_user(
 @router.delete(
     "/{user_id}",
     response_model=MessageResponse,
-    summary="Delete user (admin)",
-    description="Admin-only. Soft-delete a user (sets status to 'deleted').",
+    summary="Xóa người dùng (quản trị)",
+    description="Dành riêng cho quản trị viên. Xóa mềm người dùng (đặt trạng thái về 'deleted').",
 )
 async def admin_delete_user(
     user_id: uuid.UUID,
@@ -148,4 +148,4 @@ async def admin_delete_user(
 ) -> MessageResponse:
     service = UserService(db)
     await service.soft_delete(user_id)
-    return MessageResponse(message="User deleted successfully")
+    return MessageResponse(message="Xóa người dùng thành công")

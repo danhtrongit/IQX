@@ -1011,7 +1011,7 @@ async def test_fund_details_not_found(client: AsyncClient):
 
         resp = await client.get("/api/v1/market-data/funds/99999999")
         assert resp.status_code == 404
-        assert "not found" in resp.json()["detail"].lower()
+        assert "không tìm thấy" in resp.json()["detail"].lower()
 
 
 @pytest.mark.asyncio
@@ -1028,7 +1028,7 @@ async def test_fund_nav_not_found(client: AsyncClient):
 
         resp = await client.get("/api/v1/market-data/funds/99999999/nav")
         assert resp.status_code == 404
-        assert "not found" in resp.json()["detail"].lower()
+        assert "không tìm thấy" in resp.json()["detail"].lower()
 # Commodities: GET /macro/commodities, /macro/commodities/{code}
 # ══════════════════════════════════════════════════════
 

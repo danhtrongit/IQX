@@ -12,14 +12,14 @@ from app.api.deps import DBSession
 from app.core.config import get_settings
 from app.schemas.common import HealthResponse
 
-router = APIRouter(tags=["Health"])
+router = APIRouter(tags=["Sức khỏe hệ thống"])
 
 
 @router.get(
     "/health",
     response_model=HealthResponse,
-    summary="Health check",
-    description="Returns application status, database connectivity, version, and timestamp.",
+    summary="Kiểm tra sức khỏe",
+    description="Trả về trạng thái ứng dụng, khả năng kết nối database, phiên bản và dấu thời gian.",
 )
 async def health_check(db: DBSession) -> JSONResponse:
     settings = get_settings()

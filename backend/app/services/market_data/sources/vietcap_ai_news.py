@@ -148,7 +148,7 @@ async def fetch_news_list(
     """
     path = _KIND_MAP.get(kind)
     if path is None:
-        raise ValueError(f"Invalid news kind: {kind}")
+        raise ValueError(f"Loại tin không hợp lệ: {kind}")
 
     params = _build_list_params(**kwargs)
     url = f"{_BASE}{path}"

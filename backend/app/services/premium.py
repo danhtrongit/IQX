@@ -90,7 +90,7 @@ class PremiumService:
         code = str(data["code"])
         existing = await self._plan_repo.get_by_code(code)
         if existing:
-            raise ConflictError(f"Plan with code '{code}' already exists")
+            raise ConflictError(f"Đã tồn tại gói với mã '{code}'")
         plan = PremiumPlan(**data)
         return await self._plan_repo.create(plan)
 
@@ -103,7 +103,7 @@ class PremiumService:
         """
         plan = await self._plan_repo.get_by_id(plan_id)
         if not plan:
-            raise NotFoundError("Premium plan")
+            raise NotFoundError("gói Premium")
         if not data:
             return plan
         return await self._plan_repo.update(plan, data)
@@ -117,7 +117,7 @@ class PremiumService:
     async def get_plan(self, plan_id: uuid.UUID) -> PremiumPlan:
         plan = await self._plan_repo.get_by_id(plan_id)
         if not plan:
-            raise NotFoundError("Premium plan")
+            raise NotFoundError("gói Premium")
         return plan
 
     # ══════════════════════════════════════════════════
@@ -162,9 +162,9 @@ class PremiumService:
         """Create a SePay checkout form for a plan purchase."""
         plan = await self._plan_repo.get_by_id(plan_id)
         if not plan:
-            raise NotFoundError("Premium plan")
+            raise NotFoundError("gói Premium")
         if not plan.is_active:
-            raise BadRequestError("This plan is no longer available")
+            raise BadRequestError("Gói này không còn khả dụng")
 
         settings = get_settings()
 
@@ -367,7 +367,7 @@ class PremiumService:
         """Admin manually grants premium to a user."""
         plan = await self._plan_repo.get_by_id(plan_id)
         if not plan:
-            raise NotFoundError("Premium plan")
+            raise NotFoundError("gói Premium")
 
         now = datetime.now(UTC)
         short_id = uuid.uuid4().hex[:12].upper()

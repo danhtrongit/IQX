@@ -1,244 +1,244 @@
 # IQX Backend
 
-Production-ready FastAPI backend for the IQX platform.
+Backend FastAPI sẵn sàng cho môi trường sản xuất của nền tảng IQX.
 
-## Tech Stack
+## Công nghệ sử dụng
 
-| Technology | Version | Purpose |
+| Công nghệ | Phiên bản | Mục đích |
 |---|---|---|
 | Python | 3.13.x | Runtime |
 | FastAPI | 0.136.x | Web framework |
 | SQLAlchemy | 2.0.x (async) | ORM |
-| asyncpg | 0.31.x | PostgreSQL async driver |
-| Alembic | 1.18.x | Database migrations |
-| Pydantic | 2.x | Data validation |
-| pydantic-settings | 2.x | Configuration |
-| PyJWT | 2.x | JWT authentication |
-| passlib + bcrypt | — | Password hashing |
-| uv | 0.9.x | Package & environment management |
-| pytest | 8.x | Testing |
-| ruff | 0.15.x | Linting & formatting |
+| asyncpg | 0.31.x | Driver PostgreSQL async |
+| Alembic | 1.18.x | Quản lý migration |
+| Pydantic | 2.x | Validate dữ liệu |
+| pydantic-settings | 2.x | Cấu hình |
+| PyJWT | 2.x | Xác thực JWT |
+| passlib + bcrypt | — | Hash mật khẩu |
+| uv | 0.9.x | Quản lý package & môi trường |
+| pytest | 8.x | Kiểm thử |
+| ruff | 0.15.x | Lint & format |
 
-## Project Structure
+## Cấu trúc thư mục
 
 ```
 backend/
 ├── app/
 │   ├── api/
-│   │   ├── deps.py                 # Auth & DB dependencies
+│   │   ├── deps.py                 # Dependency cho auth & DB
 │   │   └── v1/
-│   │       ├── router.py           # v1 router aggregator
+│   │       ├── router.py           # Tổng hợp router v1
 │   │       └── endpoints/
 │   │           ├── health.py       # GET /api/v1/health
-│   │           ├── auth.py         # Register, Login, Refresh, Me
-│   │           ├── users.py        # User CRUD (admin + self)
-│   │           └── premium.py      # Premium plans, checkout, IPN
+│   │           ├── auth.py         # Đăng ký, đăng nhập, refresh, me
+│   │           ├── users.py        # CRUD người dùng (admin + self)
+│   │           ├── premium.py      # Gói Premium, checkout, IPN
+│   │           ├── market_data.py  # Dữ liệu thị trường
+│   │           └── virtual_trading.py  # Giao dịch ảo
 │   ├── core/
-│   │   ├── config.py               # Pydantic-settings config
-│   │   ├── database.py             # Async engine & session
-│   │   ├── exceptions.py           # Standardized exceptions
-│   │   ├── logging.py              # Logging setup
-│   │   └── security.py             # JWT & password hashing
-│   ├── models/
-│   │   ├── user.py                 # User SQLAlchemy model
-│   │   ├── refresh_token.py        # Refresh token model
-│   │   └── premium.py              # PremiumPlan, Subscription, PaymentOrder
-│   ├── schemas/
-│   │   ├── common.py               # Shared schemas
-│   │   ├── auth.py                 # Auth request/response
-│   │   ├── user.py                 # User request/response
-│   │   └── premium.py              # Premium schemas
-│   ├── services/
-│   │   ├── auth.py                 # Auth business logic
-│   │   ├── user.py                 # User business logic
-│   │   └── premium.py              # Premium & SePay logic
-│   ├── repositories/
-│   │   ├── user.py                 # User data access layer
-│   │   └── premium.py              # Premium data access layer
-│   └── main.py                     # FastAPI app entry point
+│   │   ├── config.py               # Cấu hình pydantic-settings
+│   │   ├── database.py             # Engine & session async
+│   │   ├── exceptions.py           # Lớp ngoại lệ chuẩn hóa
+│   │   ├── logging.py              # Cấu hình logging
+│   │   └── security.py             # JWT & hash mật khẩu
+│   ├── models/                     # SQLAlchemy models
+│   ├── schemas/                    # Pydantic schemas
+│   ├── services/                   # Logic nghiệp vụ
+│   ├── repositories/               # Truy cập dữ liệu
+│   └── main.py                     # Điểm khởi chạy FastAPI
 ├── alembic/
-│   ├── env.py                      # Async Alembic config
-│   ├── script.py.mako              # Migration template
-│   └── versions/                   # Migration files
+│   ├── env.py
+│   ├── script.py.mako
+│   └── versions/
 ├── tests/
-│   ├── conftest.py                 # Test fixtures
-│   ├── test_health.py
-│   ├── test_auth.py
-│   ├── test_users.py
-│   └── test_premium.py
+├── docs/                            # Tài liệu chuyên đề
 ├── alembic.ini
 ├── pyproject.toml
 ├── .env.example
 └── .gitignore
 ```
 
-## Quick Start
+## Bắt đầu nhanh
 
-### Prerequisites
+### Yêu cầu
 
-- Python 3.12+ (3.13 recommended)
+- Python 3.12+ (khuyến nghị 3.13)
 - PostgreSQL 15+
-- [uv](https://docs.astral.sh/uv/) installed
+- Đã cài [uv](https://docs.astral.sh/uv/)
 
-### 1. Setup Environment
+### 1. Cài đặt môi trường
 
 ```bash
 cd backend
 
-# Create virtual environment
+# Tạo virtual env
 uv venv --python 3.13
 
-# Install all dependencies (including dev)
+# Cài tất cả dependency (kể cả dev)
 uv sync --all-extras
 ```
 
-### 2. Configure Environment Variables
+### 2. Cấu hình biến môi trường
 
 ```bash
-# Copy the example and edit with your values
+# Sao chép file mẫu và chỉnh sửa
 cp .env.example .env
 
-# Edit .env with your database credentials and JWT secrets
-# Generate JWT secrets with:
+# Chỉnh sửa .env với thông tin database và JWT secret
+# Sinh JWT secret bằng:
 python -c "import secrets; print(secrets.token_urlsafe(64))"
 ```
 
-**Required environment variables for SePay integration:**
+**Biến môi trường bắt buộc cho tích hợp SePay:**
 
-| Variable | Description |
+| Biến | Mô tả |
 |---|---|
-| `SEPAY_MERCHANT_ID` | Your SePay merchant ID (from SePay dashboard) |
-| `SEPAY_SECRET_KEY` | Your SePay secret key (for signature + IPN verification) |
-| `SEPAY_CHECKOUT_URL` | `https://pay-sandbox.sepay.vn/v1/checkout/init` (sandbox) or production URL |
-| `APP_PUBLIC_URL` | Your frontend URL (for success/error/cancel redirects) |
+| `SEPAY_MERCHANT_ID` | Merchant ID trên SePay |
+| `SEPAY_SECRET_KEY` | Secret key SePay (cho ký + verify IPN) |
+| `SEPAY_CHECKOUT_URL` | `https://pay-sandbox.sepay.vn/v1/checkout/init` (sandbox) hoặc URL production |
+| `APP_PUBLIC_URL` | URL frontend (cho redirect success/error/cancel) |
 
-### 3. Database Setup
+### 3. Khởi tạo database
 
-Make sure PostgreSQL is running, then create the database:
+Đảm bảo PostgreSQL đang chạy, sau đó tạo database:
 
 ```sql
-CREATE USER "IQX" WITH PASSWORD 'your_password';
+CREATE USER "IQX" WITH PASSWORD 'mat_khau_cua_ban';
 CREATE DATABASE "IQX" OWNER "IQX";
 ```
 
-### 4. Run Migrations
+### 4. Chạy migration
 
 ```bash
-# For a FRESH database (no existing data):
+# Database mới hoàn toàn:
 uv run alembic upgrade head
 
-# For a LEGACY database (existing Prisma tables):
-# First stamp the initial schema (it already exists), then run remaining migrations:
+# Database kế thừa (đã có bảng từ Prisma):
 uv run alembic stamp 000000000001
 uv run alembic upgrade head
 ```
 
-### 5. Run Development Server
+### 5. Chạy server dev
 
 ```bash
 uv run fastapi dev app/main.py
 ```
 
-The API will be available at:
+API sẽ có ở:
 - **API**: http://localhost:8000
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 - **OpenAPI JSON**: http://localhost:8000/openapi.json
 
-## API Endpoints
+## Endpoint API (cấp cao)
 
-### Health
-| Method | Path | Description |
+### Sức khỏe hệ thống
+| Method | Path | Mô tả |
 |---|---|---|
-| GET | `/api/v1/health` | App + DB health check |
+| GET | `/api/v1/health` | Kiểm tra ứng dụng + database |
 
-### Authentication
-| Method | Path | Description | Auth |
+### Xác thực
+| Method | Path | Mô tả | Auth |
 |---|---|---|---|
-| POST | `/api/v1/auth/register` | Register new user | — |
-| POST | `/api/v1/auth/login` | Login (returns tokens) | — |
-| POST | `/api/v1/auth/refresh` | Refresh token pair | — |
-| GET | `/api/v1/auth/me` | Get current user | Bearer |
+| POST | `/api/v1/auth/register` | Đăng ký người dùng mới | — |
+| POST | `/api/v1/auth/login` | Đăng nhập (trả về token) | — |
+| POST | `/api/v1/auth/refresh` | Làm mới cặp token | — |
+| POST | `/api/v1/auth/logout` | Thu hồi tất cả refresh token | Bearer |
+| GET | `/api/v1/auth/me` | Lấy người dùng hiện tại | Bearer |
 
-### Users
-| Method | Path | Description | Auth |
+### Người dùng
+| Method | Path | Mô tả | Auth |
 |---|---|---|---|
-| GET | `/api/v1/users/me` | Get own profile | Bearer |
-| PATCH | `/api/v1/users/me` | Update own profile | Bearer |
-| GET | `/api/v1/users/` | List users (paginated) | Admin |
-| POST | `/api/v1/users/` | Create user | Admin |
-| GET | `/api/v1/users/{id}` | Get user by ID | Admin |
-| PATCH | `/api/v1/users/{id}` | Update user | Admin |
-| DELETE | `/api/v1/users/{id}` | Soft-delete user | Admin |
+| GET | `/api/v1/users/me` | Lấy hồ sơ chính mình | Bearer |
+| PATCH | `/api/v1/users/me` | Cập nhật hồ sơ chính mình | Bearer |
+| GET | `/api/v1/users/` | Danh sách người dùng (phân trang) | Admin |
+| POST | `/api/v1/users/` | Tạo người dùng | Admin |
+| GET | `/api/v1/users/{id}` | Lấy người dùng theo ID | Admin |
+| PATCH | `/api/v1/users/{id}` | Cập nhật người dùng | Admin |
+| DELETE | `/api/v1/users/{id}` | Xóa mềm người dùng | Admin |
 
-### Premium & Payments
-| Method | Path | Description | Auth |
+### Premium & Thanh toán
+| Method | Path | Mô tả | Auth |
 |---|---|---|---|
-| GET | `/api/v1/premium/plans` | List active premium plans | — |
-| GET | `/api/v1/premium/me` | Get my subscription status | Bearer |
-| POST | `/api/v1/premium/checkout` | Create SePay checkout form | Bearer |
-| POST | `/api/v1/premium/sepay/ipn` | SePay IPN webhook | X-Secret-Key |
-| GET | `/api/v1/premium/admin/plans` | List all plans (incl. inactive) | Admin |
-| POST | `/api/v1/premium/admin/plans` | Create premium plan | Admin |
-| PATCH | `/api/v1/premium/admin/plans/{id}` | Update premium plan | Admin |
-| POST | `/api/v1/premium/admin/users/{id}/grant` | Manually grant premium | Admin |
+| GET | `/api/v1/premium/plans` | Danh sách gói Premium đang hoạt động | — |
+| GET | `/api/v1/premium/me` | Trạng thái gói của bản thân | Bearer |
+| POST | `/api/v1/premium/checkout` | Tạo form thanh toán SePay | Bearer |
+| POST | `/api/v1/premium/sepay/ipn` | Webhook IPN từ SePay | X-Secret-Key |
+| GET | `/api/v1/premium/admin/plans` | Liệt kê tất cả gói (cả không hoạt động) | Admin |
+| POST | `/api/v1/premium/admin/plans` | Tạo gói Premium | Admin |
+| PATCH | `/api/v1/premium/admin/plans/{id}` | Cập nhật gói | Admin |
+| POST | `/api/v1/premium/admin/users/{id}/grant` | Cấp Premium thủ công | Admin |
 
-### Query Parameters (List Users)
+### Giao dịch ảo
 
-| Param | Type | Default | Description |
+Chi tiết quy tắc nghiệp vụ và lifecycle: [`docs/virtual-trading.md`](docs/virtual-trading.md).
+
+### Dữ liệu thị trường
+
+Bảng endpoint cấp cao và bản đồ nguồn upstream: [`docs/market-data-source-map.md`](docs/market-data-source-map.md).
+
+Chi tiết theo chủ đề:
+
+- [`docs/company-statistics-api-map.md`](docs/company-statistics-api-map.md) — Thống kê công ty (nước ngoài, tự doanh, nội bộ, cung cầu)
+- [`docs/vietcap-market-overview-api.md`](docs/vietcap-market-overview-api.md) — Tổng quan thị trường (thanh khoản, index impact, foreign, allocation, valuation, breadth, heatmap)
+- [`docs/vietcap-market-overview-api-supplement.md`](docs/vietcap-market-overview-api-supplement.md) — Bổ sung Market Overview
+- [`docs/vietcap-sector-api.md`](docs/vietcap-sector-api.md) — Trang ngành
+- [`docs/vietcap-screening-api.md`](docs/vietcap-screening-api.md) — Bộ lọc cổ phiếu
+- [`docs/vietcap-ai-news-api-discovery.md`](docs/vietcap-ai-news-api-discovery.md) — API tin AI Vietcap
+
+### Tham số query (Danh sách người dùng)
+
+| Param | Kiểu | Mặc định | Mô tả |
 |---|---|---|---|
-| `page` | int | 1 | Page number |
-| `page_size` | int | 20 | Items per page (max 100) |
-| `search` | string | — | Search email, name, phone |
-| `role` | enum | — | Filter by role |
-| `status` | enum | — | Filter by status |
-| `sort_by` | string | created_at | Sort field |
-| `sort_order` | asc/desc | desc | Sort direction |
+| `page` | int | 1 | Số trang |
+| `page_size` | int | 20 | Số bản ghi mỗi trang (tối đa 100) |
+| `search` | string | — | Tìm theo email, họ tên, số điện thoại |
+| `role` | enum | — | Lọc theo vai trò |
+| `status` | enum | — | Lọc theo trạng thái |
+| `sort_by` | string | created_at | Trường sắp xếp |
+| `sort_order` | asc/desc | desc | Hướng sắp xếp |
 
-## SePay Integration
+## Tích hợp SePay
 
-### How it Works
+### Cách hoạt động
 
-1. **Checkout**: Frontend calls `POST /api/v1/premium/checkout` with a `plan_id`. The backend returns form fields (including HMAC-SHA256 signature) that the frontend submits directly to SePay via an HTML form POST.
+1. **Checkout**: Frontend gọi `POST /api/v1/premium/checkout` với `plan_id`. Backend trả về danh sách trường form (gồm chữ ký HMAC-SHA256) để frontend POST lên SePay qua HTML form.
+2. **Thanh toán**: Người dùng hoàn tất thanh toán trên trang checkout của SePay.
+3. **IPN**: SePay gửi POST đến `/api/v1/premium/sepay/ipn` khi trạng thái thanh toán đổi. Backend:
+   - Kiểm tra header `X-Secret-Key` (so sánh constant-time)
+   - Yêu cầu `notification_type=ORDER_PAID`, `order_status=CAPTURED`, `transaction_status=APPROVED`
+   - Kiểm tra cả tiền tệ order/transaction (VND) và số tiền
+   - Parse số tiền bằng `Decimal` (loại bỏ phần thập phân)
+   - Atomic claim đơn (chống race condition khi SePay retry)
+   - Mở rộng thời hạn Premium cho người dùng
+4. **Redirect thành công**: SePay redirect về frontend. **Lưu ý**: redirect không kích hoạt Premium, chỉ IPN mới làm điều đó. Frontend nên poll `GET /api/v1/premium/me` để kiểm tra.
 
-2. **Payment**: User completes payment on SePay's hosted checkout page.
+### Stack thời gian Premium
 
-3. **IPN**: SePay sends a POST to `POST /api/v1/premium/sepay/ipn` with payment status. The backend:
-   - Validates `X-Secret-Key` header (constant-time comparison)
-   - Verifies `notification_type=ORDER_PAID`, `order_status=CAPTURED`, `transaction_status=APPROVED`
-   - Validates both order AND transaction currency (VND) and amounts
-   - Uses Decimal parsing for amounts (rejects fractional VND)
-   - Atomically claims the order (prevents race conditions on concurrent retries)
-   - Extends user's premium subscription
+Khi người dùng mua Premium trong khi đang còn Premium hoạt động, thời gian mới được **cộng thêm vào `current_period_end`** (không phải tính từ `now`). Áp dụng cho cả IPN và admin grant.
 
-4. **Success redirect**: The SePay success URL redirects the user back to the frontend. **Important**: The redirect does NOT activate premium — only the IPN webhook does. The frontend should poll `GET /api/v1/premium/me` to check activation status.
+### Cấu hình IPN trên SePay
 
-### Subscription Stacking
-
-When a user purchases premium while already having active premium, the new duration is **added to the existing `current_period_end`** (not from `now`). This applies to both IPN-triggered and admin-granted premium.
-
-### SePay IPN Setup
-
-Configure your SePay dashboard to send IPN notifications to:
+Cấu hình SePay gửi IPN tới:
 ```
 POST https://your-domain.com/api/v1/premium/sepay/ipn
 ```
 
-Set the `X-Secret-Key` header in SePay's webhook configuration to match your `SEPAY_SECRET_KEY` environment variable.
+Đặt header `X-Secret-Key` trong dashboard SePay khớp với biến môi trường `SEPAY_SECRET_KEY`.
 
-## Development Commands
+## Lệnh phát triển
 
 ```bash
-# Install dependencies
+# Cài dependency
 uv sync --all-extras
 
-# Run dev server
+# Chạy server dev
 uv run fastapi dev app/main.py
 
-# Run tests
+# Chạy test
 uv run pytest -v
 
-# Run tests with coverage
+# Chạy test kèm coverage
 uv run pytest --cov=app --cov-report=term-missing
 
 # Lint
@@ -247,120 +247,57 @@ uv run ruff check app/ tests/
 # Format
 uv run ruff format app/ tests/
 
-# Type check
+# Kiểm tra kiểu
 uv run mypy app/ tests/
 
-# Generate migration
-uv run alembic revision --autogenerate -m "description"
+# Sinh migration
+uv run alembic revision --autogenerate -m "mô tả"
 
-# Apply migrations
+# Áp dụng migration
 uv run alembic upgrade head
 
-# Downgrade migration
+# Lùi migration
 uv run alembic downgrade -1
 ```
 
-## Architecture
+## Kiến trúc
 
-The project follows a **layered architecture**:
+Dự án theo **kiến trúc phân lớp**:
 
-1. **Endpoints** (`api/`) — HTTP request handling, validation, response serialization
-2. **Services** (`services/`) — Business logic, orchestration
-3. **Repositories** (`repositories/`) — Data access, queries
-4. **Models** (`models/`) — SQLAlchemy ORM models
-5. **Schemas** (`schemas/`) — Pydantic request/response models
-6. **Core** (`core/`) — Configuration, security, database, exceptions
+1. **Endpoints** (`api/`) — Xử lý HTTP request, validate, serialize
+2. **Services** (`services/`) — Logic nghiệp vụ, điều phối
+3. **Repositories** (`repositories/`) — Truy cập dữ liệu, query
+4. **Models** (`models/`) — SQLAlchemy ORM
+5. **Schemas** (`schemas/`) — Pydantic request/response
+6. **Core** (`core/`) — Config, security, database, exceptions
 
-### Key Design Decisions
+### Quyết định thiết kế chính
 
-- **UUID primary keys** — Safer for distributed systems, no sequential ID enumeration
-- **Soft delete** — Users are marked as `deleted` rather than physically removed
-- **Role-based access** — `admin` and `user` roles with dependency-based guards
-- **Phone validation** — Uses `phonenumbers` library for E.164 format
-- **JWT dual-token** — Short-lived access token + long-lived refresh token with rotation
-- **Lazy engine init** — Database engine created on first use, not at import time
-- **Password requirements** — Minimum 8 chars, uppercase, lowercase, digit, special char
-- **Atomic IPN** — Conditional UPDATE prevents double-granting on concurrent SePay retries
-- **Decimal amounts** — VND amounts parsed with `Decimal`, fractional amounts rejected
+- **Khóa chính UUID** — An toàn cho hệ phân tán, không lộ ID tuần tự
+- **Soft delete** — Người dùng được đánh dấu `deleted` thay vì xóa thật
+- **Phân quyền theo vai trò** — `admin` và `user`, kiểm soát qua dependency
+- **Validate số điện thoại** — Dùng `phonenumbers` cho định dạng E.164
+- **JWT cặp token** — Access ngắn hạn + refresh dài hạn có rotation
+- **Khởi tạo engine lazy** — Engine database chỉ tạo khi cần
+- **Yêu cầu mật khẩu** — Tối thiểu 8 ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt
+- **IPN nguyên tử** — Conditional UPDATE chống cấp Premium 2 lần khi SePay retry
+- **Số tiền Decimal** — VND parse bằng `Decimal`, loại bỏ phần thập phân
 
-## Migration Strategy
+## Chiến lược migration
 
-The migration chain supports both fresh and legacy databases:
+Chuỗi migration hỗ trợ cả database mới và kế thừa:
 
 ```
 000000000001  →  488c85bb0b6a  →  fb7a64f07299
 (initial)        (legacy→new)     (premium tables)
 ```
 
-- **Fresh DB**: `000000000001` creates `users` + `refresh_tokens`; `488c85bb0b6a` detects fresh schema and skips.
-- **Legacy DB**: `000000000001` detects existing `users` table and skips; `488c85bb0b6a` performs the full Prisma→SQLAlchemy transition.
+- **DB mới**: `000000000001` tạo `users` + `refresh_tokens`; `488c85bb0b6a` phát hiện schema mới và bỏ qua.
+- **DB cũ**: `000000000001` phát hiện bảng `users` đã có và bỏ qua; `488c85bb0b6a` thực hiện chuyển đổi Prisma → SQLAlchemy.
 
-## Notes
+## Ghi chú
 
-- Python version: **3.13.x** (available locally via Homebrew)
-- `.env` is git-ignored and must not be committed
-- Tests use an in-memory SQLite database for isolation
-- Production deployments should use environment variables (not `.env` files)
-
-## Market Data API
-
-Vendor-independent market data API. No runtime dependency on `vnstock`/`vnstock_data`/`vnstock_news` — all data is fetched directly from upstream sources (VCI, VND, MBK, Fmarket, SPL, RSS).
-
-### Endpoints
-
-| Group | Path | Source | Status |
-|---|---|---|---|
-| Reference | `GET /api/v1/market-data/reference/symbols` | VCI / VND | ✅ |
-| Reference | `GET /api/v1/market-data/reference/industries` | VCI | ✅ |
-| Reference | `GET /api/v1/market-data/reference/indices` | Static | ✅ |
-| Reference | `GET /api/v1/market-data/reference/groups/{group}/symbols` | VCI | ✅ |
-| Quotes | `GET /api/v1/market-data/quotes/{symbol}/ohlcv` | VND / VCI | ✅ |
-| Quotes | `GET /api/v1/market-data/quotes/{symbol}/intraday` | VCI | ✅ |
-| Quotes | `GET /api/v1/market-data/quotes/{symbol}/price-depth` | VCI | ✅ |
-| Trading | `POST /api/v1/market-data/trading/price-board` | VCI | ✅ |
-| Trading | `GET /api/v1/market-data/trading/{symbol}/foreign-trade` | VCI | ✅ |
-| Trading | `GET /api/v1/market-data/trading/{symbol}/insider-deals` | VCI | ✅ |
-| Company | `GET /api/v1/market-data/company/{symbol}/overview` | KBS | ✅ |
-| Company | `GET /api/v1/market-data/company/{symbol}/shareholders` | KBS | ✅ |
-| Company | `GET /api/v1/market-data/company/{symbol}/officers` | KBS | ✅ |
-| Company | `GET /api/v1/market-data/company/{symbol}/subsidiaries` | KBS | ✅ |
-| Company | `GET /api/v1/market-data/company/{symbol}/news` | KBS | ✅ |
-| Fundamentals | `GET /api/v1/market-data/fundamentals/{symbol}/{report}` | VCI | ✅ |
-| Insights | `GET /api/v1/market-data/insights/ranking/{kind}` | VND | ✅ |
-| Events | `GET /api/v1/market-data/events/calendar` | VCI | ✅ |
-| Macro | `GET /api/v1/market-data/macro/economy/{indicator}` | MBK | ✅ |
-| Commodities | `GET /api/v1/market-data/macro/commodities` | SPL | ✅ |
-| Funds | `GET /api/v1/market-data/funds` | Fmarket | ✅ |
-| News | `GET /api/v1/market-data/news/latest` | RSS | ✅ |
-| AI News | `GET /api/v1/market-data/news/ai` | AI.VCI | ✅ |
-| AI News | `GET /api/v1/market-data/news/ai/detail/{slug}` | AI.VCI | ✅ |
-| AI News | `GET /api/v1/market-data/news/ai/catalogs` | AI.VCI | ✅ partial |
-| AI News | `GET /api/v1/market-data/news/ai/tickers/{symbol}` | AI.VCI | ✅ partial |
-| Overview | `GET /api/v1/market-data/overview/liquidity` | VCI | ✅ |
-| Overview | `GET /api/v1/market-data/overview/index-impact` | VCI | ✅ |
-| Overview | `GET /api/v1/market-data/overview/foreign` | VCI | ✅ |
-| Overview | `GET /api/v1/market-data/overview/foreign/top` | VCI | ✅ |
-| Overview | `GET /api/v1/market-data/overview/proprietary` | VCI | ✅ |
-| Overview | `GET /api/v1/market-data/overview/proprietary/top` | IQ.VCI | ✅ |
-| Overview | `GET /api/v1/market-data/overview/allocation` | VCI | ✅ |
-| Overview | `GET /api/v1/market-data/overview/sectors/allocation` | VCI | ✅ |
-| Overview | `GET /api/v1/market-data/overview/valuation` | VCI | ✅ |
-| Overview | `GET /api/v1/market-data/overview/breadth` | IQ.VCI | ✅ |
-| Overview | `GET /api/v1/market-data/overview/heatmap` | VCI | ✅ |
-| Overview | `GET /api/v1/market-data/overview/heatmap/index` | VCI | ✅ |
-
-> **Company data** is sourced from KBS (KB Securities). The `/company/{symbol}/events` endpoint has been removed because neither KBS nor VCI can reliably provide company events data.
-
-### Running Live Tests
-
-```bash
-# Unit tests (mocked, no network)
-uv run pytest tests/test_market_data.py tests/test_ai_news.py tests/test_market_overview.py -q
-
-# Live smoke tests (hits real upstream APIs)
-RUN_MARKET_DATA_LIVE_TESTS=1 uv run pytest tests/test_market_data_live.py tests/test_ai_news.py tests/test_market_overview.py -v
-```
-
-### Source Map
-
-See [`docs/market-data-source-map.md`](docs/market-data-source-map.md) for the full endpoint-to-upstream-URL mapping.
+- Phiên bản Python: **3.13.x** (cài bằng Homebrew là tiện nhất)
+- `.env` đã được gitignore và không được commit
+- Test dùng SQLite in-memory cho isolation
+- Triển khai production nên dùng biến môi trường (không phải `.env`)
