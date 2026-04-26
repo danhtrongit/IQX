@@ -667,6 +667,113 @@ async def fetch_events_calendar(
 
 
 # ══════════════════════════════════════════════════════
+# Company statistics (per-ticker)
+# ══════════════════════════════════════════════════════
+
+
+async def fetch_proprietary_history(
+    symbol: str,
+    *,
+    resolution: str = "1D",
+    start: str | None = None,
+    end: str | None = None,
+    page: int = 0,
+    size: int = 50,
+) -> tuple[list[dict[str, Any]], str]:
+    """Fetch proprietary trading history for a company.
+
+    Returns paginated list of daily proprietary buy/sell data.
+    """
+    url = f"{_IQ_BASE}/v1/company/{symbol.upper()}/proprietary-history"
+    headers = get_headers(_SOURCE)
+    params: dict[str, Any] = {
+        "timeFrame": _REPORT_RESOLUTION.get(resolution, "ONE_DAY"),
+        "page": page,
+        "size": size,
+    }
+    if start and end:
+        params["fromDate"] = start.replace("-", "")
+        params["toDate"] = end.replace("-", "")
+
+    data = await fetch_json(url, headers=headers, params=params, source=_SOURCE)
+    items = _extract_data(data, path=["data", "content"])
+    records = [{_camel_to_snake(k): v for k, v in item.items()} for item in items]
+    return records, url
+
+
+async def fetch_proprietary_summary(
+    symbol: str,
+    *,
+    resolution: str = "1D",
+    start: str | None = None,
+    end: str | None = None,
+) -> tuple[dict[str, Any], str]:
+    """Fetch proprietary trading summary for a company."""
+    url = f"{_IQ_BASE}/v1/company/{symbol.upper()}/proprietary-history-summary"
+    headers = get_headers(_SOURCE)
+    params: dict[str, Any] = {
+        "timeFrame": _REPORT_RESOLUTION.get(resolution, "ONE_DAY"),
+    }
+    if start and end:
+        params["fromDate"] = start.replace("-", "")
+        params["toDate"] = end.replace("-", "")
+
+    data = await fetch_json(url, headers=headers, params=params, source=_SOURCE)
+    raw = data.get("data", {}) if isinstance(data, dict) else {}
+    record = {_camel_to_snake(k): v for k, v in raw.items()} if isinstance(raw, dict) else {}
+    return record, url
+
+
+async def fetch_company_details(
+    symbol: str,
+) -> tuple[dict[str, Any], str]:
+    """Fetch company details from VCI IQ Insight.
+
+    Returns company info including sector, exchange, name, etc.
+    """
+    url = f"{_IQ_BASE}/v1/company/details"
+    headers = get_headers(_SOURCE)
+    params: dict[str, Any] = {"ticker": symbol.upper()}
+
+    data = await fetch_json(url, headers=headers, params=params, source=_SOURCE)
+    raw = data.get("data", {}) if isinstance(data, dict) else {}
+    if not isinstance(raw, dict):
+        raw = {}
+    record = {_camel_to_snake(k): v for k, v in raw.items()}
+    return record, url
+
+
+async def fetch_price_chart(
+    symbol: str,
+    *,
+    length: int = 365,
+) -> tuple[list[dict[str, Any]], str]:
+    """Fetch adjusted OHLC price chart data from VCI IQ Insight.
+
+    Returns list of {open_price, high_price, low_price, closing_price, trading_time}.
+    """
+    url = f"{_IQ_BASE}/v1/company/{symbol.upper()}/price-chart"
+    headers = get_headers(_SOURCE)
+    params: dict[str, Any] = {"lengthReport": length}
+
+    data = await fetch_json(url, headers=headers, params=params, source=_SOURCE)
+    raw = data.get("data", data) if isinstance(data, dict) else data
+    items = raw if isinstance(raw, list) else []
+    records = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        records.append({
+            "open_price": _to_num(item.get("openPrice")),
+            "high_price": _to_num(item.get("highPrice")),
+            "low_price": _to_num(item.get("lowPrice")),
+            "closing_price": _to_num(item.get("closingPrice")),
+            "trading_time": item.get("tradingTime"),
+        })
+    return records, url
+
+
+# ══════════════════════════════════════════════════════
 # Internal helpers
 # ══════════════════════════════════════════════════════
 
@@ -685,3 +792,4 @@ def _extract_data(
         else:
             return []
     return current if isinstance(current, list) else []
+

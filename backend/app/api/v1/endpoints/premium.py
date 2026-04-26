@@ -11,6 +11,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Header, Request
 from fastapi.responses import JSONResponse
+from pydantic import ValidationError
 
 from app.api.deps import AdminUser, CurrentUser, DBSession
 from app.core.config import get_settings
@@ -84,13 +85,18 @@ async def sepay_ipn(
         logger.warning("IPN: invalid or missing X-Secret-Key")
         return JSONResponse(status_code=401, content={"error": "Unauthorized"})
 
-    # Parse payload
+    # Parse payload — narrow exceptions only
     try:
         raw_body = await request.json()
+    except (ValueError, UnicodeDecodeError):
+        logger.warning("IPN: malformed JSON body")
+        return JSONResponse(status_code=400, content={"error": "invalid_json"})
+
+    try:
         payload = IPNPayload.model_validate(raw_body)
-    except Exception:
-        logger.warning("IPN: failed to parse request body")
-        return JSONResponse(status_code=200, content={"success": "true", "message": "parse_error"})
+    except ValidationError as exc:
+        logger.warning("IPN: payload validation failed (%d errors)", len(exc.errors()))
+        return JSONResponse(status_code=400, content={"error": "invalid_payload"})
 
     service = PremiumService(db)
     result = await service.process_ipn(payload)

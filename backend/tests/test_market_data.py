@@ -687,6 +687,146 @@ async def test_trading_insider_deals(client: AsyncClient):
 
 
 # ══════════════════════════════════════════════════════
+# Company Statistics: proprietary, details, price-chart
+# ══════════════════════════════════════════════════════
+
+
+@pytest.mark.asyncio
+async def test_proprietary_history(client: AsyncClient):
+    with patch(
+        "app.services.market_data.sources.vietcap.fetch_json",
+        new_callable=AsyncMock,
+    ) as mock:
+        mock.return_value = {
+            "data": {
+                "content": [
+                    {
+                        "ticker": "VCB",
+                        "tradingDate": "2026-04-25",
+                        "totalBuyTradeVolume": 500000,
+                        "totalSellTradeVolume": 300000,
+                        "totalTradeNetVolume": 200000,
+                    },
+                ],
+            }
+        }
+
+        resp = await client.get("/api/v1/market-data/trading/VCB/proprietary")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert len(body["data"]) == 1
+        assert body["data"][0]["total_buy_trade_volume"] == 500000
+
+
+@pytest.mark.asyncio
+async def test_proprietary_history_invalid_resolution(client: AsyncClient):
+    resp = await client.get(
+        "/api/v1/market-data/trading/VCB/proprietary?resolution=BAD"
+    )
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_proprietary_history_invalid_date(client: AsyncClient):
+    resp = await client.get(
+        "/api/v1/market-data/trading/VCB/proprietary?fromDate=2026-04-25"
+    )
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_proprietary_summary(client: AsyncClient):
+    with patch(
+        "app.services.market_data.sources.vietcap.fetch_json",
+        new_callable=AsyncMock,
+    ) as mock:
+        mock.return_value = {
+            "data": {
+                "totalBuyTradeVolume": 1000000,
+                "totalSellTradeVolume": 800000,
+            }
+        }
+
+        resp = await client.get(
+            "/api/v1/market-data/trading/VCB/proprietary/summary"
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["data"]["total_buy_trade_volume"] == 1000000
+
+
+@pytest.mark.asyncio
+async def test_company_details(client: AsyncClient):
+    with patch(
+        "app.services.market_data.sources.vietcap.fetch_json",
+        new_callable=AsyncMock,
+    ) as mock:
+        mock.return_value = {
+            "data": {
+                "ticker": "VCB",
+                "organName": "Vietcombank",
+                "exchange": "HOSE",
+                "icbCode": "8300",
+            }
+        }
+
+        resp = await client.get("/api/v1/market-data/company/VCB/details")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["data"]["ticker"] == "VCB"
+        assert body["data"]["organ_name"] == "Vietcombank"
+
+
+@pytest.mark.asyncio
+async def test_company_details_invalid_symbol(client: AsyncClient):
+    resp = await client.get("/api/v1/market-data/company/bad!/details")
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_company_price_chart(client: AsyncClient):
+    with patch(
+        "app.services.market_data.sources.vietcap.fetch_json",
+        new_callable=AsyncMock,
+    ) as mock:
+        mock.return_value = {
+            "data": [
+                {
+                    "openPrice": 90.5,
+                    "highPrice": 92.0,
+                    "lowPrice": 89.0,
+                    "closingPrice": 91.5,
+                    "tradingTime": 1700000000,
+                },
+                {
+                    "openPrice": 91.5,
+                    "highPrice": 93.0,
+                    "lowPrice": 90.0,
+                    "closingPrice": 92.0,
+                    "tradingTime": 1700086400,
+                },
+            ]
+        }
+
+        resp = await client.get(
+            "/api/v1/market-data/company/VCB/price-chart?length=30"
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert len(body["data"]) == 2
+        assert body["data"][0]["open_price"] == 90.5
+        assert body["data"][0]["trading_time"] == 1700000000
+
+
+@pytest.mark.asyncio
+async def test_company_price_chart_invalid_length(client: AsyncClient):
+    resp = await client.get(
+        "/api/v1/market-data/company/VCB/price-chart?length=0"
+    )
+    assert resp.status_code == 422
+
+
+# ══════════════════════════════════════════════════════
 # Events calendar
 # ══════════════════════════════════════════════════════
 

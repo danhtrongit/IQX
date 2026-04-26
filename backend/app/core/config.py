@@ -5,10 +5,19 @@ All settings are loaded from environment variables (or a `.env` file).
 
 from __future__ import annotations
 
+import re
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Patterns that indicate a placeholder/default JWT secret
+_PLACEHOLDER_PATTERNS = re.compile(
+    r"change.in.production|changeme|replace.me|your.secret|CHANGE_ME|placeholder|"
+    r"^dev-|^test-|^default-|^secret$|^changethis$",
+    re.IGNORECASE,
+)
 
 
 class Settings(BaseSettings):
@@ -90,6 +99,25 @@ class Settings(BaseSettings):
         if self.ENABLE_API_DOCS is not None:
             return self.ENABLE_API_DOCS
         return not self.is_production
+
+    @model_validator(mode="after")
+    def _reject_placeholder_jwt_secrets(self) -> Settings:
+        """Reject placeholder/default JWT secrets in production."""
+        if self.APP_ENV != "production":
+            return self
+        for field_name in ("JWT_SECRET_KEY", "JWT_REFRESH_SECRET_KEY"):
+            value = getattr(self, field_name)
+            if _PLACEHOLDER_PATTERNS.search(value):
+                raise ValueError(
+                    f"{field_name} contains a placeholder value and must be "
+                    f"changed before running in production (APP_ENV=production)."
+                )
+            if len(value) < 32:
+                raise ValueError(
+                    f"{field_name} is too short ({len(value)} chars). "
+                    f"Use at least 32 characters in production."
+                )
+        return self
 
 
 @lru_cache

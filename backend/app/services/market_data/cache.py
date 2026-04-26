@@ -19,7 +19,11 @@ from typing import Any
 
 
 class TTLCache:
-    """In-memory TTL cache with max-size LRU eviction."""
+    """In-memory TTL cache with max-size LRU eviction.
+
+    NOT thread-safe. Designed for single-process async use within one
+    event loop. If used from multiple threads, add external locking.
+    """
 
     def __init__(self, max_size: int = 1000) -> None:
         self._store: OrderedDict[str, tuple[float, Any]] = OrderedDict()
@@ -65,8 +69,9 @@ class TTLCache:
 
     @property
     def size(self) -> int:
-        """Current number of entries (including expired)."""
-        return len(self._store)
+        """Current number of live (non-expired) entries."""
+        now = time.monotonic()
+        return sum(1 for exp, _ in self._store.values() if now <= exp)
 
     @property
     def max_size(self) -> int:

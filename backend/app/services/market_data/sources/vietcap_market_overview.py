@@ -595,3 +595,193 @@ async def fetch_heatmap_index() -> tuple[dict[str, Any], str]:
             for idx in idx_data if isinstance(idx, dict)
         ],
     }, url
+
+
+# ── 10. Sector Detail ───────────────────────────────
+
+
+EXCHANGES_SECTOR_DETAIL = {"ALL", "HOSE", "HNX", "UPCOM"}
+TIME_FRAMES_SECTOR_DETAIL = {"ONE_DAY", "ONE_WEEK", "ONE_MONTH", "YTD", "ONE_YEAR"}
+
+
+async def fetch_sector_detail(
+    *, group: str = "ALL", time_frame: str = "ONE_DAY", icb_code: int,
+) -> tuple[dict[str, Any], str]:
+    """Fetch detail for a specific ICB sector.
+
+    Returns stock-level breakdown: symbol, matchPrice, accumulatedVolume,
+    foreignNetVolume, etc.
+    """
+    body = {"group": group, "timeFrame": time_frame, "icbCode": icb_code}
+    data, url = await _post_trading(
+        "/api/market-watch/AllocatedICB/getAllocatedDetail", body,
+    )
+    d = _require_dict(data, "sector-detail")
+    detail_items = d.get("icbDataDetail", [])
+    _require_list(detail_items, "sector-detail.icbDataDetail")
+
+    stocks = []
+    for s in detail_items:
+        if not isinstance(s, dict):
+            continue
+        stocks.append({
+            "symbol": s.get("symbol", ""),
+            "ref_price": _to_int_amount(s.get("refPrice")),
+            "match_price": _to_int_amount(s.get("matchPrice")),
+            "ceiling_price": _to_int_amount(s.get("ceilingPrice")),
+            "floor_price": _to_int_amount(s.get("floorPrice")),
+            "accumulated_volume": _to_int_amount(s.get("accumulatedVolume")),
+            "accumulated_value_vnd": _to_int_amount(s.get("accumulatedValue")),
+            "company_name": s.get("organName", ""),
+            "en_company_name": s.get("enOrganName", ""),
+            "foreign_net_volume": _to_int_amount(s.get("foreignNetVolume")),
+            "foreign_net_value_vnd": _to_int_amount(s.get("foreignNetValue")),
+            "board": s.get("board", ""),
+        })
+
+    return {
+        "icb_code": _to_int_amount(d.get("icb_code")),
+        "icb_change_percent": _to_float_ratio(d.get("icbChangePercent")),
+        "total_value_vnd": _to_int_amount(d.get("totalValue")),
+        "total_stock_increase": _to_int_amount(d.get("totalStockIncrease")),
+        "total_stock_decrease": _to_int_amount(d.get("totalStockDecrease")),
+        "total_stock_no_change": _to_int_amount(d.get("totalStockNoChange")),
+        "icb_code_parent": d.get("icbCodeParent"),
+        "stocks": stocks,
+    }, url
+
+
+# ── 11. Stock Strength (TA) ─────────────────────────
+
+
+EXCHANGES_STRENGTH = {"ALL", "HOSE", "HNX", "UPCOM", "HSX"}
+
+
+async def fetch_stock_strength(
+    *, exchange: str = "ALL",
+) -> tuple[dict[str, int], str]:
+    """Fetch technical analysis stock-strength scores.
+
+    Returns flat map: {ticker: score} where score is 3-99.
+    """
+    params = {"exchange": exchange}
+    data, url = await _get_iq(
+        "/api/iq-insight-service/v1/ta/stock-strength", params,
+    )
+    inner = _unwrap_iq(data, url)
+    result = _require_dict(inner, "stock-strength")
+    # Filter out non-int values
+    return {
+        k: v for k, v in result.items()
+        if isinstance(v, int)
+    }, url
+
+
+# ── 12. Market Index ────────────────────────────────
+
+
+VALID_INDEX_SYMBOLS = {"VNINDEX", "HNXIndex", "HNXUpcomIndex", "VN30", "HNX30"}
+
+
+async def fetch_market_index(
+    *, symbols: list[str] | None = None,
+) -> tuple[list[dict[str, Any]], str]:
+    """Fetch market index data (VN-Index, HNX-Index, UPCOM-Index, etc.)."""
+    if symbols is None:
+        symbols = ["VNINDEX", "HNXIndex", "HNXUpcomIndex"]
+    body = {"symbols": symbols}
+    data, url = await _post_trading(
+        "/api/price/marketIndex/getList", body,
+    )
+    items = _require_list(data, "market-index")
+    return [
+        {
+            "symbol": i.get("symbol", ""),
+            "board": i.get("board", ""),
+            "price": _to_float_ratio(i.get("price")),
+            "ref_price": _to_float_ratio(i.get("refPrice")),
+            "change": _to_float_ratio(i.get("change")),
+            "change_percent": _to_float_ratio(i.get("changePercent")),
+            "total_shares": _to_int_amount(i.get("totalShares")),
+            "total_value_million_vnd": _to_float_ratio(i.get("totalValue")),
+            "total_stock_increase": _to_int_amount(i.get("totalStockIncrease")),
+            "total_stock_decline": _to_int_amount(i.get("totalStockDecline")),
+            "total_stock_no_change": _to_int_amount(i.get("totalStockNoChange")),
+            "total_stock_ceiling": _to_int_amount(i.get("totalStockCeiling")),
+            "total_stock_floor": _to_int_amount(i.get("totalStockFloor")),
+            "time": i.get("time", ""),
+        }
+        for i in items if isinstance(i, dict)
+    ], url
+
+
+# ── 13. Search Bar ──────────────────────────────────
+
+
+async def fetch_search_bar(
+    *, language: int = 1,
+) -> tuple[list[dict[str, Any]], str]:
+    """Fetch company search-bar data for autocomplete.
+
+    language: 1 = Vietnamese, 2 = English.
+    """
+    params = {"language": language}
+    data, url = await _get_iq(
+        "/api/iq-insight-service/v2/company/search-bar", params,
+    )
+    inner = _unwrap_iq(data, url)
+    items = _require_list(inner, "search-bar")
+    return [
+        {
+            "code": i.get("code", ""),
+            "name": i.get("name", ""),
+            "short_name": i.get("shortName", ""),
+            "floor": i.get("floor", ""),
+            "is_index": i.get("isIndex", False),
+            "current_price": _to_int_amount(i.get("currentPrice")),
+            "target_price": _to_int_amount(i.get("targetPrice")),
+            "upside_pct": _to_float_ratio(i.get("upsideToTpPercentage")),
+            "logo_url": i.get("logoUrl", ""),
+            "icb_lv1": i.get("icbLv1"),
+            "icb_lv2": i.get("icbLv2"),
+        }
+        for i in items if isinstance(i, dict)
+    ], url
+
+
+# ── 14. Event Codes ─────────────────────────────────
+
+
+async def fetch_event_codes() -> tuple[list[dict[str, Any]], str]:
+    """Fetch event code reference data."""
+    data, url = await _get_iq(
+        "/api/iq-insight-service/v1/event-codes",
+    )
+    inner = _unwrap_iq(data, url)
+    items = _require_list(inner, "event-codes")
+    return [
+        {
+            "event_code": i.get("eventCode", ""),
+            "event_name_vi": i.get("eventNameVi", ""),
+            "event_name_en": i.get("eventNameEn", ""),
+        }
+        for i in items if isinstance(i, dict)
+    ], url
+
+
+# ── 15. Maintenance Notification ────────────────────
+
+
+async def fetch_maintenance() -> tuple[list[dict[str, Any]], str]:
+    """Fetch maintenance notification data."""
+    params = {"type": "maintenance"}
+    data, url = await _get_iq(
+        "/api/iq-insight-service/v1/notification", params,
+    )
+    inner = _unwrap_iq(data, url)
+    if isinstance(inner, list):
+        return inner, url
+    if isinstance(inner, dict):
+        return [inner] if inner else [], url
+    return [], url
+

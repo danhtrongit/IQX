@@ -270,25 +270,20 @@ async def admin_reset_all(admin: AdminUser, db: DBSession) -> ResetResponse:
 @router.get("/admin/accounts", response_model=list[AdminAccountResponse], tags=[_TAG_ADMIN])
 async def admin_list_accounts(admin: AdminUser, db: DBSession) -> list[AdminAccountResponse]:
     """Admin: list all virtual trading accounts."""
-    from sqlalchemy import select
-
-    from app.models.user import User
-
     svc = VirtualTradingService(db)
-    accounts = await svc._repo.list_all_accounts()
-    result = []
-    for acct in accounts:
-        user_result = await db.execute(select(User).where(User.id == acct.user_id))
-        user = user_result.scalar_one_or_none()
-        result.append(AdminAccountResponse(
-            id=acct.id, user_id=acct.user_id,
-            user_email=user.email if user else None,
-            user_name=user.full_name if user else None,
-            status=acct.status.value, initial_cash_vnd=acct.initial_cash_vnd,
-            cash_available_vnd=acct.cash_available_vnd,
-            cash_reserved_vnd=acct.cash_reserved_vnd,
-            cash_pending_vnd=acct.cash_pending_vnd,
-            activated_at=acct.activated_at,
-            reset_at=acct.reset_at,
-        ))
-    return result
+    items = await svc.list_accounts_with_users()
+    return [
+        AdminAccountResponse(
+            id=item["account"].id, user_id=item["account"].user_id,
+            user_email=item["user_email"],
+            user_name=item["user_name"],
+            status=item["account"].status.value,
+            initial_cash_vnd=item["account"].initial_cash_vnd,
+            cash_available_vnd=item["account"].cash_available_vnd,
+            cash_reserved_vnd=item["account"].cash_reserved_vnd,
+            cash_pending_vnd=item["account"].cash_pending_vnd,
+            activated_at=item["account"].activated_at,
+            reset_at=item["account"].reset_at,
+        )
+        for item in items
+    ]

@@ -41,13 +41,20 @@ class UserRepository:
 
         # Filtering
         if params.search:
-            search_term = f"%{params.search}%"
+            # Escape SQL LIKE wildcards to prevent wildcard injection
+            escaped = (
+                params.search
+                .replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_")
+            )
+            search_term = f"%{escaped}%"
             query = query.where(
                 or_(
-                    User.email.ilike(search_term),
-                    User.first_name.ilike(search_term),
-                    User.last_name.ilike(search_term),
-                    User.phone_number.ilike(search_term),
+                    User.email.ilike(search_term, escape="\\"),
+                    User.first_name.ilike(search_term, escape="\\"),
+                    User.last_name.ilike(search_term, escape="\\"),
+                    User.phone_number.ilike(search_term, escape="\\"),
                 )
             )
         if params.role:

@@ -452,6 +452,190 @@ async def test_overview_invalid_liquidity_symbols(client):
     )
     assert resp.status_code == 422
 
+# ── Supplement connector unit tests (mocked) ─────────
+
+
+@pytest.mark.asyncio
+async def test_sector_detail():
+    from app.services.market_data.sources.vietcap_market_overview import fetch_sector_detail
+    mock_resp = {
+        "icb_code": 8300,
+        "icbChangePercent": -0.89,
+        "totalValue": 4580663735000,
+        "totalStockIncrease": 6,
+        "totalStockDecrease": 15,
+        "totalStockNoChange": 6,
+        "icbCodeParent": 8301,
+        "icbDataDetail": [
+            {
+                "symbol": "ACB",
+                "refPrice": 23500,
+                "matchPrice": 23400,
+                "ceilingPrice": 25100,
+                "floorPrice": 21900,
+                "accumulatedVolume": 17478700,
+                "accumulatedValue": 409800810000,
+                "organName": "Ngan hang TMCP A Chau",
+                "enOrganName": "Asia Commercial Bank",
+                "foreignNetVolume": -11877685,
+                "foreignNetValue": -278519645550,
+                "board": "HSX",
+            }
+        ],
+    }
+    with patch(_FETCH, new_callable=AsyncMock, return_value=mock_resp):
+        data, _ = await fetch_sector_detail(icb_code=8300)
+    assert data["icb_code"] == 8300
+    assert len(data["stocks"]) == 1
+    assert data["stocks"][0]["symbol"] == "ACB"
+    assert isinstance(data["stocks"][0]["accumulated_volume"], int)
+    assert isinstance(data["icb_change_percent"], float)
+
+
+@pytest.mark.asyncio
+async def test_sector_detail_bad_shape():
+    from app.services.market_data.sources.vietcap_market_overview import fetch_sector_detail
+    mock_resp = "not dict"
+    with (
+        patch(_FETCH, new_callable=AsyncMock, return_value=mock_resp),
+        pytest.raises(MarketOverviewUpstreamShapeError),
+    ):
+        await fetch_sector_detail(icb_code=8300)
+
+
+@pytest.mark.asyncio
+async def test_stock_strength():
+    from app.services.market_data.sources.vietcap_market_overview import fetch_stock_strength
+    mock_resp = {
+        "status": 200, "successful": True,
+        "data": {"FPT": 45, "VCB": 72, "ACB": 33},
+    }
+    with patch(_FETCH, new_callable=AsyncMock, return_value=mock_resp):
+        data, _ = await fetch_stock_strength()
+    assert data["FPT"] == 45
+    assert data["VCB"] == 72
+    assert len(data) == 3
+
+
+@pytest.mark.asyncio
+async def test_market_index():
+    from app.services.market_data.sources.vietcap_market_overview import fetch_market_index
+    mock_resp = [
+        {
+            "symbol": "VNINDEX", "board": "HSX",
+            "price": 1853.29, "refPrice": 1870.36,
+            "change": -17.07, "changePercent": -0.9126,
+            "totalShares": 673852010,
+            "totalValue": 19347915.26684,
+            "totalStockIncrease": 130, "totalStockDecline": 187,
+            "totalStockNoChange": 55,
+            "totalStockCeiling": 5, "totalStockFloor": 1,
+            "time": "2026-04-24T07:45:59.999Z",
+        }
+    ]
+    with patch(_FETCH, new_callable=AsyncMock, return_value=mock_resp):
+        data, _ = await fetch_market_index()
+    assert len(data) == 1
+    assert data[0]["symbol"] == "VNINDEX"
+    assert isinstance(data[0]["price"], float)
+    assert isinstance(data[0]["total_shares"], int)
+
+
+@pytest.mark.asyncio
+async def test_search_bar():
+    from app.services.market_data.sources.vietcap_market_overview import fetch_search_bar
+    mock_resp = {
+        "status": 200, "successful": True,
+        "data": [
+            {
+                "code": "FPT", "name": "CTCP FPT",
+                "shortName": "FPT", "floor": "HOSE",
+                "isIndex": False, "currentPrice": 73400,
+                "targetPrice": 90000,
+                "upsideToTpPercentage": 0.226,
+                "logoUrl": "https://example.com/fpt.webp",
+            }
+        ],
+    }
+    with patch(_FETCH, new_callable=AsyncMock, return_value=mock_resp):
+        data, _ = await fetch_search_bar()
+    assert len(data) == 1
+    assert data[0]["code"] == "FPT"
+    assert isinstance(data[0]["current_price"], int)
+    assert isinstance(data[0]["upside_pct"], float)
+
+
+@pytest.mark.asyncio
+async def test_event_codes():
+    from app.services.market_data.sources.vietcap_market_overview import fetch_event_codes
+    mock_resp = {
+        "status": 200, "successful": True,
+        "data": [
+            {"eventCode": "AGME", "eventNameVi": "DHCD", "eventNameEn": "AGM"},
+            {"eventCode": "DIV", "eventNameVi": "Co tuc", "eventNameEn": "Dividend"},
+        ],
+    }
+    with patch(_FETCH, new_callable=AsyncMock, return_value=mock_resp):
+        data, _ = await fetch_event_codes()
+    assert len(data) == 2
+    assert data[0]["event_code"] == "AGME"
+    assert data[1]["event_name_en"] == "Dividend"
+
+
+@pytest.mark.asyncio
+async def test_maintenance():
+    from app.services.market_data.sources.vietcap_market_overview import fetch_maintenance
+    mock_resp = {
+        "status": 200, "successful": True,
+        "data": [],
+    }
+    with patch(_FETCH, new_callable=AsyncMock, return_value=mock_resp):
+        data, _ = await fetch_maintenance()
+    assert data == []
+
+
+# ── Supplement API endpoint validation tests ─────────
+
+
+@pytest.mark.asyncio
+async def test_sector_detail_invalid_group(client):
+    resp = await client.get(
+        "/api/v1/market-data/overview/sectors/detail?icb_code=8300&group=BAD",
+    )
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_sector_detail_invalid_time_frame(client):
+    resp = await client.get(
+        "/api/v1/market-data/overview/sectors/detail?icb_code=8300&time_frame=BAD",
+    )
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_stock_strength_invalid_exchange(client):
+    resp = await client.get(
+        "/api/v1/market-data/overview/stock-strength?exchange=BAD",
+    )
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_market_index_invalid_symbol(client):
+    resp = await client.get(
+        "/api/v1/market-data/overview/market-index?symbols=BAD",
+    )
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_search_bar_invalid_language(client):
+    resp = await client.get(
+        "/api/v1/market-data/reference/search?language=5",
+    )
+    assert resp.status_code == 422
+
 
 # ── Live tests (behind env flag) ─────────────────────
 

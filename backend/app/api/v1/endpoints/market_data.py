@@ -7,11 +7,15 @@ quotes, trading, company info, fundamentals, analytics, macro, funds, and news.
 from __future__ import annotations
 
 import logging
+import re
 from datetime import UTC, datetime
 from typing import Annotated, Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Path, Query, Request
+from pydantic import BaseModel, Field, field_validator
 
+from app.core.config import get_settings
+from app.core.rate_limit import limiter
 from app.services.market_data.fallback import fetch_with_fallback
 from app.services.market_data.schemas import MarketDataResponse
 from app.services.market_data.sources import fmarket, kbs, mbk, news, spl, vietcap, vndirect
@@ -20,8 +24,48 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/market-data", tags=["Market Data"])
 
+_MARKET_DATA_LIMIT = get_settings().RATE_LIMIT_MARKET_DATA
+
 # Valid intervals for OHLCV
 _VALID_INTERVALS = {"1m", "5m", "15m", "30m", "1H", "1D", "1W", "1M"}
+
+# Symbol pattern for validation
+_SYMBOL_PATTERN = re.compile(r"^[A-Z0-9]{1,10}$")
+
+
+# ── Request schemas ──────────────────────────────────
+
+
+class PriceBoardRequest(BaseModel):
+    """Validated request body for POST /trading/price-board."""
+
+    symbols: list[str] = Field(
+        ..., min_length=1, max_length=50,
+        description="List of stock symbols (1-50)",
+    )
+    source: str = Field(
+        "auto",
+        pattern=r"^(auto|VCI|VND)$",
+        description="Data source: auto, VCI, or VND",
+    )
+
+    @field_validator("symbols", mode="before")
+    @classmethod
+    def _validate_symbols(cls, v: Any) -> list[str]:
+        if not isinstance(v, list):
+            raise ValueError("symbols must be a list")
+        result = []
+        for i, item in enumerate(v):
+            if not isinstance(item, str):
+                raise ValueError(f"symbols[{i}] must be a string, got {type(item).__name__}")
+            upper = item.strip().upper()
+            if not _SYMBOL_PATTERN.match(upper):
+                raise ValueError(
+                    f"symbols[{i}]='{item}' is invalid. "
+                    f"Each symbol must be 1-10 uppercase alphanumeric characters."
+                )
+            result.append(upper)
+        return result
 
 
 # ══════════════════════════════════════════════════════
@@ -240,19 +284,16 @@ async def get_price_depth(
 
 
 @router.post("/trading/price-board", tags=["Market Data: Trading"], response_model=MarketDataResponse)
+@limiter.limit(_MARKET_DATA_LIMIT)
 async def get_price_board(
-    body: dict[str, Any],
+    request: Request,
+    body: PriceBoardRequest,
 ) -> MarketDataResponse:
     """Get realtime price board for a list of symbols.
 
     Body: `{"symbols": ["VCB", "FPT"], "source": "auto"}`
     """
-    symbols = body.get("symbols", [])
-    if not symbols or not isinstance(symbols, list):
-        raise HTTPException(status_code=422, detail="symbols must be a non-empty list")
-
-    if len(symbols) > 50:
-        raise HTTPException(status_code=422, detail="Maximum 50 symbols per request")
+    symbols = body.symbols
 
     async def _vci() -> tuple[Any, str]:
         return await vietcap.fetch_price_board(symbols)
@@ -462,6 +503,116 @@ async def get_insider_deals(
 
     async def _vci() -> tuple[Any, str]:
         return await vietcap.fetch_insider_deals(symbol, limit=limit)
+
+    try:
+        return await fetch_with_fallback([("VCI", _vci)])
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+_VALID_TIMEFRAME_STATS = {"1D", "1W", "1M", "1Q", "1Y"}
+_VALID_YYYYMMDD = re.compile(r"^\d{8}$")
+
+
+def _validate_yyyymmdd(v: str | None, name: str) -> str | None:
+    """Validate YYYYMMDD date parameter."""
+    if v is None:
+        return None
+    if not _VALID_YYYYMMDD.match(v):
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid {name}: '{v}'. Must be YYYYMMDD (e.g. 20260425).",
+        )
+    return v
+
+
+@router.get("/trading/{symbol}/proprietary", tags=["Market Data: Trading"], response_model=MarketDataResponse)
+async def get_proprietary_history(
+    symbol: str,
+    resolution: Annotated[str, Query(description="1D, 1W, 1M, 1Q, 1Y")] = "1D",
+    from_date: Annotated[str | None, Query(alias="fromDate", description="YYYYMMDD")] = None,
+    to_date: Annotated[str | None, Query(alias="toDate", description="YYYYMMDD")] = None,
+    page: Annotated[int, Query(ge=0, le=1000)] = 0,
+    size: Annotated[int, Query(ge=1, le=200)] = 50,
+) -> MarketDataResponse:
+    """Get proprietary trading history for a company."""
+    symbol = symbol.upper()
+    if not _validate_symbol(symbol):
+        raise HTTPException(status_code=422, detail=f"Invalid symbol: {symbol}")
+    if resolution not in _VALID_TIMEFRAME_STATS:
+        raise HTTPException(status_code=422, detail=f"Invalid resolution: {resolution}")
+    _validate_yyyymmdd(from_date, "fromDate")
+    _validate_yyyymmdd(to_date, "toDate")
+
+    async def _vci() -> tuple[Any, str]:
+        return await vietcap.fetch_proprietary_history(
+            symbol, resolution=resolution, start=from_date, end=to_date,
+            page=page, size=size,
+        )
+
+    try:
+        return await fetch_with_fallback([("VCI", _vci)])
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.get("/trading/{symbol}/proprietary/summary", tags=["Market Data: Trading"], response_model=MarketDataResponse)
+async def get_proprietary_summary(
+    symbol: str,
+    resolution: Annotated[str, Query(description="1D, 1W, 1M, 1Q, 1Y")] = "1D",
+    from_date: Annotated[str | None, Query(alias="fromDate", description="YYYYMMDD")] = None,
+    to_date: Annotated[str | None, Query(alias="toDate", description="YYYYMMDD")] = None,
+) -> MarketDataResponse:
+    """Get proprietary trading summary for a company."""
+    symbol = symbol.upper()
+    if not _validate_symbol(symbol):
+        raise HTTPException(status_code=422, detail=f"Invalid symbol: {symbol}")
+    if resolution not in _VALID_TIMEFRAME_STATS:
+        raise HTTPException(status_code=422, detail=f"Invalid resolution: {resolution}")
+    _validate_yyyymmdd(from_date, "fromDate")
+    _validate_yyyymmdd(to_date, "toDate")
+
+    async def _vci() -> tuple[Any, str]:
+        return await vietcap.fetch_proprietary_summary(
+            symbol, resolution=resolution, start=from_date, end=to_date,
+        )
+
+    try:
+        return await fetch_with_fallback([("VCI", _vci)])
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.get("/company/{symbol}/details", tags=["Market Data: Company"], response_model=MarketDataResponse)
+async def get_company_details(
+    symbol: str,
+) -> MarketDataResponse:
+    """Get company details from VCI IQ Insight (sector, exchange, name)."""
+    symbol = symbol.upper()
+    if not _validate_symbol(symbol):
+        raise HTTPException(status_code=422, detail=f"Invalid symbol: {symbol}")
+
+    async def _vci() -> tuple[Any, str]:
+        return await vietcap.fetch_company_details(symbol)
+
+    try:
+        return await fetch_with_fallback([("VCI", _vci)])
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.get("/company/{symbol}/price-chart", tags=["Market Data: Company"], response_model=MarketDataResponse)
+async def get_company_price_chart(
+    symbol: str,
+    length: Annotated[int, Query(ge=1, le=3650, description="Number of data points")] = 365,
+) -> MarketDataResponse:
+    """Get adjusted OHLC price chart data from VCI IQ Insight."""
+    symbol = symbol.upper()
+    if not _validate_symbol(symbol):
+        raise HTTPException(status_code=422, detail=f"Invalid symbol: {symbol}")
+
+    async def _vci() -> tuple[Any, str]:
+        return await vietcap.fetch_price_chart(symbol, length=length)
 
     try:
         return await fetch_with_fallback([("VCI", _vci)])
@@ -1005,6 +1156,153 @@ async def get_heatmap_index() -> dict[str, Any]:
 
 
 # ══════════════════════════════════════════════════════
+# 11b. Overview Supplement
+# ══════════════════════════════════════════════════════
+
+
+@router.get("/overview/sectors/detail", tags=["Market Data: Overview"])
+async def get_sector_detail(
+    icb_code: Annotated[int, Query(description="ICB sector code (e.g. 8300)", ge=1)],
+    group: Annotated[str, Query(description="ALL, HOSE, HNX, UPCOM")] = "ALL",
+    time_frame: Annotated[str, Query(description="ONE_DAY, ONE_WEEK, ONE_MONTH, YTD, ONE_YEAR")] = "ONE_DAY",
+) -> dict[str, Any]:
+    """Get detailed stock breakdown for an ICB sector."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        EXCHANGES_SECTOR_DETAIL,
+        TIME_FRAMES_SECTOR_DETAIL,
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_sector_detail,
+    )
+    if group not in EXCHANGES_SECTOR_DETAIL:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid group: {group}. Must be one of {sorted(EXCHANGES_SECTOR_DETAIL)}",
+        )
+    if time_frame not in TIME_FRAMES_SECTOR_DETAIL:
+        raise HTTPException(status_code=422, detail=f"Invalid time_frame: {time_frame}")
+    try:
+        data, url = await fetch_sector_detail(
+            group=group, time_frame=time_frame, icb_code=icb_code,
+        )
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/overview/stock-strength", tags=["Market Data: Overview"])
+async def get_stock_strength(
+    exchange: Annotated[str, Query(description="ALL, HOSE, HNX, UPCOM, HSX")] = "ALL",
+) -> dict[str, Any]:
+    """Get technical analysis stock-strength scores (flat map ticker:score)."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        EXCHANGES_STRENGTH,
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_stock_strength,
+    )
+    if exchange not in EXCHANGES_STRENGTH:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid exchange: {exchange}. Must be one of {sorted(EXCHANGES_STRENGTH)}",
+        )
+    try:
+        data, url = await fetch_stock_strength(exchange=exchange)
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/overview/market-index", tags=["Market Data: Overview"])
+async def get_market_index(
+    symbols: Annotated[
+        str | None,
+        Query(description="Comma-separated: VNINDEX,HNXIndex,HNXUpcomIndex,VN30,HNX30"),
+    ] = None,
+) -> dict[str, Any]:
+    """Get market index data (VN-Index, HNX-Index, UPCOM-Index, etc.)."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        VALID_INDEX_SYMBOLS,
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_market_index,
+    )
+    symbol_list: list[str] | None = None
+    if symbols:
+        symbol_list = [s.strip() for s in symbols.split(",") if s.strip()]
+        invalid = [s for s in symbol_list if s not in VALID_INDEX_SYMBOLS]
+        if invalid:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Invalid symbols: {invalid}. Must be from {sorted(VALID_INDEX_SYMBOLS)}",
+            )
+    try:
+        data, url = await fetch_market_index(symbols=symbol_list)
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/reference/search", tags=["Market Data: Reference"])
+async def get_search_bar(
+    language: Annotated[int, Query(ge=1, le=2, description="1=Vietnamese, 2=English")] = 1,
+) -> dict[str, Any]:
+    """Get company search-bar data for autocomplete (~2000 companies)."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_search_bar,
+    )
+    try:
+        data, url = await fetch_search_bar(language=language)
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/reference/event-codes", tags=["Market Data: Reference"])
+async def get_event_codes() -> dict[str, Any]:
+    """Get event code reference data (maps event codes to names)."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_event_codes,
+    )
+    try:
+        data, url = await fetch_event_codes()
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+@router.get("/overview/maintenance", tags=["Market Data: Overview"])
+async def get_maintenance() -> dict[str, Any]:
+    """Get maintenance notification (if any)."""
+    from app.services.market_data.sources.vietcap_market_overview import (
+        MarketOverviewUpstreamError,
+        MarketOverviewUpstreamShapeError,
+        fetch_maintenance,
+    )
+    try:
+        data, url = await fetch_maintenance()
+    except MarketOverviewUpstreamShapeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except MarketOverviewUpstreamError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"data": data, "source_url": url}
+
+
+# ══════════════════════════════════════════════════════
 # 12. AI News (Vietcap)
 # ══════════════════════════════════════════════════════
 
@@ -1090,7 +1388,15 @@ async def get_ai_news(
 
 
 @router.get("/news/ai/detail/{slug}", tags=["Market Data: AI News"])
-async def get_ai_news_detail(slug: str) -> dict[str, Any]:
+async def get_ai_news_detail(
+    slug: str = Path(
+        ...,
+        min_length=1,
+        max_length=200,
+        pattern=r"^[a-zA-Z0-9._-]+$",
+        description="News article slug",
+    ),
+) -> dict[str, Any]:
     """Fetch AI news detail by slug."""
     from app.services.market_data.sources.vietcap_ai_news import (
         AINewsNotFoundError,
@@ -1112,7 +1418,15 @@ async def get_ai_news_detail(slug: str) -> dict[str, Any]:
 
 
 @router.get("/news/ai/audio/{news_id}", tags=["Market Data: AI News"])
-async def get_ai_news_audio(news_id: str) -> dict[str, Any]:
+async def get_ai_news_audio(
+    news_id: str = Path(
+        ...,
+        min_length=1,
+        max_length=100,
+        pattern=r"^[a-zA-Z0-9._-]+$",
+        description="News article ID",
+    ),
+) -> dict[str, Any]:
     """Fetch audio URLs by news id."""
     from app.services.market_data.sources.vietcap_ai_news import (
         AINewsNotFoundError,

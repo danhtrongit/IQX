@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from app.api.deps import DBSession
@@ -20,7 +21,7 @@ router = APIRouter(tags=["Health"])
     summary="Health check",
     description="Returns application status, database connectivity, version, and timestamp.",
 )
-async def health_check(db: DBSession) -> HealthResponse:
+async def health_check(db: DBSession) -> JSONResponse:
     settings = get_settings()
 
     # Test database connectivity
@@ -30,11 +31,16 @@ async def health_check(db: DBSession) -> HealthResponse:
     except Exception:
         db_status = "unhealthy"
 
-    return HealthResponse(
-        status="ok" if db_status == "healthy" else "degraded",
+    is_healthy = db_status == "healthy"
+    status_code = 200 if is_healthy else 503
+
+    body = HealthResponse(
+        status="ok" if is_healthy else "degraded",
         app_name=settings.APP_NAME,
         version=settings.APP_VERSION,
         environment=settings.APP_ENV,
         database=db_status,
         timestamp=datetime.now(UTC).isoformat(),
     )
+
+    return JSONResponse(status_code=status_code, content=body.model_dump())

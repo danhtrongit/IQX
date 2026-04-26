@@ -91,12 +91,22 @@ def get_session_factory():
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """FastAPI dependency that yields an async database session."""
+    """FastAPI dependency that yields an async database session.
+
+    Transaction pattern:
+    - The session does NOT auto-commit. Write operations must call
+      `session.commit()` explicitly (or rely on the service layer
+      flushing and then committing here only when mutations occurred).
+    - On exception the session is rolled back, ensuring atomicity.
+    - Read-only requests skip the commit entirely.
+    """
     factory = get_session_factory()
     async with factory() as session:
         try:
             yield session
-            await session.commit()
+            # Only commit if the session has pending changes
+            if session.dirty or session.new or session.deleted:
+                await session.commit()
         except Exception:
             await session.rollback()
             raise

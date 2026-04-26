@@ -206,8 +206,12 @@ class VirtualOrder(UUIDMixin, TimestampMixin, Base):
     config_snapshot: Mapped[str | None] = mapped_column(Text, nullable=True)  # JSON
 
 
-class VirtualTrade(UUIDMixin, Base):
-    """Executed trade record."""
+class VirtualTrade(UUIDMixin, TimestampMixin, Base):
+    """Executed trade record.
+
+    ``traded_at`` is the business event timestamp (when the trade happened).
+    ``created_at``/``updated_at`` from TimestampMixin are row-level timestamps.
+    """
 
     __tablename__ = "virtual_trades"
 

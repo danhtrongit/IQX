@@ -25,6 +25,8 @@
 | `POST /trading/price-board` | VCI | `POST .../api/price/symbols/getList` body: `{symbols: [...]}` | — | ✅ |
 | `GET /trading/{symbol}/foreign-trade` | VCI | `GET .../iq-insight-service/v1/company/{symbol}/price-history?timeFrame=ONE_DAY&...` | — | ✅ |
 | `GET /trading/{symbol}/insider-deals` | VCI | `GET .../iq-insight-service/v1/company/{symbol}/insider-transaction?page=0&size=100` | — | ✅ |
+| `GET /trading/{symbol}/proprietary` | VCI | `GET .../iq-insight-service/v1/company/{symbol}/proprietary-history?fromDate=&toDate=&page=&size=&timeFrame=` | — | ✅ |
+| `GET /trading/{symbol}/proprietary/summary` | VCI | `GET .../iq-insight-service/v1/company/{symbol}/proprietary-history-summary?fromDate=&toDate=&timeFrame=` | — | ✅ |
 
 ## 3. Company (`/company`) — KBS (KB Securities)
 
@@ -37,6 +39,8 @@ Data sourced from KB Securities (KBS) profile API. One profile request returns o
 | `GET /company/{symbol}/officers` | KBS | Same profile endpoint | ✅ |
 | `GET /company/{symbol}/subsidiaries` | KBS | Same profile endpoint | ✅ |
 | `GET /company/{symbol}/news` | KBS | `GET .../stockinfo/news/{symbol}?l=1&p=1&s={size}` | ✅ |
+| `GET /company/{symbol}/details` | VCI | `GET .../iq-insight-service/v1/company/details?ticker={symbol}` | ✅ |
+| `GET /company/{symbol}/price-chart` | VCI | `GET .../iq-insight-service/v1/company/{symbol}/price-chart?lengthReport={n}` | ✅ |
 
 > **Note:** The `/company/{symbol}/events` endpoint has been removed. The KBS events API (`stockinfo/event/{symbol}`) consistently returns empty data for most symbols, and the VCI GraphQL source (`data-mt/graphql`) is also down.
 
@@ -149,6 +153,17 @@ Data sourced from Vietcap IQ Market Overview page. All endpoints are public, no 
 | `GET /overview/breadth` | IQ.VCI | `GET .../api/iq-insight-service/v1/market-watch/breadth` | ✅ |
 | `GET /overview/heatmap` | VCI | `POST .../api/market-watch/HeatMapChart/getByIcb` | ✅ |
 | `GET /overview/heatmap/index` | VCI | `GET .../api/market-watch/HeatMapChart/getIndex` | ✅ |
+| `GET /overview/sectors/detail` | VCI | `POST .../api/market-watch/AllocatedICB/getAllocatedDetail` | ✅ |
+| `GET /overview/stock-strength` | IQ.VCI | `GET .../api/iq-insight-service/v1/ta/stock-strength?exchange=` | ✅ |
+| `GET /overview/market-index` | VCI | `POST .../api/price/marketIndex/getList` | ✅ |
+| `GET /overview/maintenance` | IQ.VCI | `GET .../api/iq-insight-service/v1/notification?type=maintenance` | ✅ |
+
+## 13. Reference Data Supplement
+
+| Endpoint | Primary Source | Upstream URL | Status |
+|---|---|---|---|
+| `GET /reference/search` | IQ.VCI | `GET .../api/iq-insight-service/v2/company/search-bar?language=` | ✅ |
+| `GET /reference/event-codes` | IQ.VCI | `GET .../api/iq-insight-service/v1/event-codes` | ✅ |
 
 > **Units:** `*Value` fields = VND, `accumulatedValue` (liquidity) = million VND, `*Volume` = shares. Valuation `value` = ratio. Breadth `percent` = 0-1 ratio.
 

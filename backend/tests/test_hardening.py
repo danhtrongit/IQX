@@ -26,7 +26,12 @@ async def test_docs_enabled_in_dev():
 @pytest.mark.asyncio
 async def test_docs_disabled_in_production():
     """API docs should be disabled in production by default."""
-    with patch.dict(os.environ, {"APP_ENV": "production"}, clear=False):
+    prod_env = {
+        "APP_ENV": "production",
+        "JWT_SECRET_KEY": "a-secure-production-secret-key-at-least-32-chars-long",
+        "JWT_REFRESH_SECRET_KEY": "a-secure-production-refresh-key-at-least-32-chars-long",
+    }
+    with patch.dict(os.environ, prod_env, clear=False):
         from app.core.config import get_settings
 
         get_settings.cache_clear()
@@ -38,7 +43,13 @@ async def test_docs_disabled_in_production():
 @pytest.mark.asyncio
 async def test_docs_force_enabled_in_production():
     """ENABLE_API_DOCS=true should override production auto-disable."""
-    with patch.dict(os.environ, {"APP_ENV": "production", "ENABLE_API_DOCS": "true"}, clear=False):
+    prod_env = {
+        "APP_ENV": "production",
+        "ENABLE_API_DOCS": "true",
+        "JWT_SECRET_KEY": "a-secure-production-secret-key-at-least-32-chars-long",
+        "JWT_REFRESH_SECRET_KEY": "a-secure-production-refresh-key-at-least-32-chars-long",
+    }
+    with patch.dict(os.environ, prod_env, clear=False):
         from app.core.config import get_settings
 
         get_settings.cache_clear()
@@ -103,3 +114,74 @@ async def test_cache_lru_eviction():
     assert cache.get("a") == 1
     assert cache.get("b") is None
     assert cache.get("d") == 4
+
+
+# ── JWT secret validation tests ──────────────────────
+
+
+@pytest.mark.asyncio
+async def test_jwt_placeholder_rejected_in_production():
+    """Placeholder JWT secrets should be rejected in production."""
+    prod_env = {
+        "APP_ENV": "production",
+        "JWT_SECRET_KEY": "dev-secret-key-change-in-production-abc123xyz789",
+        "JWT_REFRESH_SECRET_KEY": "a-secure-production-refresh-key-at-least-32-chars-long",
+    }
+    with patch.dict(os.environ, prod_env, clear=False):
+        from app.core.config import get_settings
+
+        get_settings.cache_clear()
+        with pytest.raises(Exception, match="placeholder"):
+            get_settings()
+        get_settings.cache_clear()
+
+
+@pytest.mark.asyncio
+async def test_jwt_short_secret_rejected_in_production():
+    """Short JWT secrets (< 32 chars) should be rejected in production."""
+    prod_env = {
+        "APP_ENV": "production",
+        "JWT_SECRET_KEY": "AbCdEfGhIjKlMnOpQrStUvWxYz12",
+        "JWT_REFRESH_SECRET_KEY": "a-secure-production-refresh-key-at-least-32-chars-long",
+    }
+    with patch.dict(os.environ, prod_env, clear=False):
+        from app.core.config import get_settings
+
+        get_settings.cache_clear()
+        with pytest.raises(Exception, match="too short"):
+            get_settings()
+        get_settings.cache_clear()
+
+
+@pytest.mark.asyncio
+async def test_jwt_valid_secrets_accepted_in_production():
+    """Valid secrets should work in production."""
+    prod_env = {
+        "APP_ENV": "production",
+        "JWT_SECRET_KEY": "a-secure-production-secret-key-at-least-32-chars-long",
+        "JWT_REFRESH_SECRET_KEY": "a-secure-production-refresh-key-at-least-32-chars-long",
+    }
+    with patch.dict(os.environ, prod_env, clear=False):
+        from app.core.config import get_settings
+
+        get_settings.cache_clear()
+        s = get_settings()
+        assert s.APP_ENV == "production"
+        get_settings.cache_clear()
+
+
+@pytest.mark.asyncio
+async def test_jwt_placeholder_allowed_in_dev():
+    """Placeholder JWT secrets should be allowed in development."""
+    dev_env = {
+        "APP_ENV": "development",
+        "JWT_SECRET_KEY": "dev-secret-key-change-in-production-abc123xyz789",
+        "JWT_REFRESH_SECRET_KEY": "dev-refresh-secret-key-change-in-production-xyz789abc123",
+    }
+    with patch.dict(os.environ, dev_env, clear=False):
+        from app.core.config import get_settings
+
+        get_settings.cache_clear()
+        s = get_settings()
+        assert s.APP_ENV == "development"
+        get_settings.cache_clear()

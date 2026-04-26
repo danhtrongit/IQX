@@ -95,14 +95,18 @@ class PremiumService:
         return await self._plan_repo.create(plan)
 
     async def update_plan(self, plan_id: uuid.UUID, data: dict[str, object]) -> PremiumPlan:
-        """Update an existing plan."""
+        """Update an existing plan.
+
+        Note: `data` should already have non-sent keys excluded (via
+        ``exclude_unset=True`` at the endpoint). Explicit ``None`` values
+        are preserved so nullable fields like ``description`` can be cleared.
+        """
         plan = await self._plan_repo.get_by_id(plan_id)
         if not plan:
             raise NotFoundError("Premium plan")
-        update_data = {k: v for k, v in data.items() if v is not None}
-        if not update_data:
+        if not data:
             return plan
-        return await self._plan_repo.update(plan, update_data)
+        return await self._plan_repo.update(plan, data)
 
     async def list_active_plans(self) -> list[PremiumPlan]:
         return await self._plan_repo.list_active()

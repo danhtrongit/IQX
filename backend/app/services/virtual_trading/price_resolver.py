@@ -15,6 +15,7 @@ Price normalization:
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 from dataclasses import dataclass
@@ -25,11 +26,25 @@ logger = logging.getLogger(__name__)
 # Vietnam timezone: UTC+7
 _VN_TZ = timezone(timedelta(hours=7))
 
-# Trading sessions (local time in Vietnam)
-_MORNING_OPEN = (9, 0)   # 09:00
+# ── Trading sessions (Vietnam / HOSE) ───────────────────────────────────
+# Source: https://staticfile.hsx.vn/Uploads/UploadDocuments/2372209/2.Trading%20hours.pdf
+#
+# Session              Time
+# ─────────────────────────────
+# Opening auction      09:00 – 09:15
+# Continuous matching  09:15 – 11:30
+# Lunch break          11:30 – 13:00
+# Continuous matching  13:00 – 14:30
+# Closing auction      14:30 – 14:45
+# Put-through (ATC)    14:45 – 15:00
+#
+# This app models the order-matching window (09:00–14:45) for virtual trading.
+# Put-through orders are NOT supported — only matching sessions are used.
+#
+_MORNING_OPEN = (9, 0)     # 09:00 — includes opening auction
 _MORNING_CLOSE = (11, 30)  # 11:30
 _AFTERNOON_OPEN = (13, 0)  # 13:00
-_AFTERNOON_CLOSE = (14, 45)  # 14:45
+_AFTERNOON_CLOSE = (14, 45)  # 14:45 — includes closing auction, excludes put-through
 
 # VND OHLCV returns prices in kVND (thousands); multiply to get integer VND
 _VND_OHLCV_MULTIPLIER = 1000
@@ -223,6 +238,7 @@ async def _try_ohlcv_close(symbol: str) -> PriceResult | None:
 _symbol_cache: set[str] | None = None
 _symbol_cache_ts: float = 0.0
 _SYMBOL_CACHE_TTL = 300.0  # 5 minutes
+_symbol_cache_lock = asyncio.Lock()
 
 
 async def validate_symbol(symbol: str) -> bool:
@@ -230,6 +246,9 @@ async def validate_symbol(symbol: str) -> bool:
 
     Fail-closed: if the upstream source is unreachable, raise SymbolValidationError
     instead of allowing unknown symbols through.
+
+    Concurrency: an asyncio.Lock prevents multiple coroutines from
+    refreshing the cache simultaneously.
     """
     global _symbol_cache, _symbol_cache_ts  # noqa: PLW0603
 
@@ -237,27 +256,33 @@ async def validate_symbol(symbol: str) -> bool:
     if _symbol_cache is not None and (now - _symbol_cache_ts) < _SYMBOL_CACHE_TTL:
         return symbol.upper() in _symbol_cache
 
-    try:
-        from app.services.market_data.sources import vietcap
+    async with _symbol_cache_lock:
+        # Double-check after acquiring lock (another coroutine may have refreshed)
+        now = time.monotonic()
+        if _symbol_cache is not None and (now - _symbol_cache_ts) < _SYMBOL_CACHE_TTL:
+            return symbol.upper() in _symbol_cache
 
-        data, _url = await vietcap.fetch_symbols_by_exchange()
-        symbol_set = {
-            r.get("symbol", "").upper()
-            for r in data
-            if r.get("exchange") in ("HOSE", "HNX", "UPCOM")
-            and r.get("asset_type") in ("stock", None, "")
-        }
-        if not symbol_set:
+        try:
+            from app.services.market_data.sources import vietcap
+
+            data, _url = await vietcap.fetch_symbols_by_exchange()
+            symbol_set = {
+                r.get("symbol", "").upper()
+                for r in data
+                if r.get("exchange") in ("HOSE", "HNX", "UPCOM")
+                and r.get("asset_type") in ("stock", None, "")
+            }
+            if not symbol_set:
+                raise SymbolValidationError(
+                    symbol, "Symbol reference returned empty — cannot verify symbol",
+                )
+            _symbol_cache = symbol_set
+            _symbol_cache_ts = now
+            return symbol.upper() in symbol_set
+        except SymbolValidationError:
+            raise
+        except Exception as exc:
+            logger.warning("Symbol validation upstream failed: %s", exc)
             raise SymbolValidationError(
-                symbol, "Symbol reference returned empty — cannot verify symbol",
-            )
-        _symbol_cache = symbol_set
-        _symbol_cache_ts = now
-        return symbol.upper() in symbol_set
-    except SymbolValidationError:
-        raise
-    except Exception as exc:
-        logger.warning("Symbol validation upstream failed: %s", exc)
-        raise SymbolValidationError(
-            symbol, f"Cannot verify symbol: upstream source error ({exc})",
-        ) from exc
+                symbol, f"Cannot verify symbol: upstream source error ({exc})",
+            ) from exc

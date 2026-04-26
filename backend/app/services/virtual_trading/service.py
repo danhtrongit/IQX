@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import uuid
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime, timedelta, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,6 +18,7 @@ from app.core.exceptions import (
     UnprocessableEntityError,
 )
 from app.models.virtual_trading import (
+    AccountStatus,
     OrderSide,
     OrderStatus,
     OrderType,
@@ -49,6 +50,9 @@ _MAX_QUANTITY = 1_000_000  # 1M shares per order
 _MAX_LIMIT_PRICE_VND = 10_000_000  # 10M VND/share (no VN stock is near this)
 _MAX_GROSS_VND = 100_000_000_000  # 100B VND per order
 _LEADERBOARD_HARD_CAP = 200  # Max accounts to evaluate for leaderboard
+
+# Vietnam timezone: UTC+7
+_VN_TZ = timezone(timedelta(hours=7))
 
 
 def _round_bps(amount: int, rate_bps: int) -> int:
@@ -153,14 +157,14 @@ class VirtualTradingService:
             ) from exc
 
         holidays = parse_holidays(config.holidays)
-        today = date.today()
+        today = datetime.now(_VN_TZ).date()
         trading_date = get_current_trading_date(today, holidays)
 
         # Lock account for atomic cash/position check
         account = await self._repo.get_account_by_user_id_for_update(user_id)
         if account is None:
             raise NotFoundError("Virtual trading account")
-        if account.status != "active":
+        if account.status != AccountStatus.ACTIVE:
             raise ForbiddenError("Account is suspended")
 
         # Config snapshot — authoritative for fee/tax at fill time
@@ -300,11 +304,14 @@ class VirtualTradingService:
             if existing_order:
                 account.cash_reserved_vnd -= existing_order.reserved_cash_vnd
                 diff = total_cost - existing_order.reserved_cash_vnd
-                if diff > 0 and account.cash_available_vnd < diff:
-                    raise BadRequestError("Insufficient cash after price change")
-                account.cash_available_vnd -= max(diff, 0)
-                if diff < 0:
-                    account.cash_available_vnd -= diff  # refund
+                if diff > 0:
+                    # Price went up: need to debit extra from available
+                    if account.cash_available_vnd < diff:
+                        raise BadRequestError("Insufficient cash after price change")
+                    account.cash_available_vnd -= diff
+                elif diff < 0:
+                    # Price went down: refund excess to available
+                    account.cash_available_vnd += abs(diff)
             else:
                 if account.cash_available_vnd < total_cost:
                     raise BadRequestError(
@@ -358,7 +365,13 @@ class VirtualTradingService:
                 position.quantity_sellable -= quantity
 
             if position:
-                position.quantity_total -= quantity
+                new_total = position.quantity_total - quantity
+                if new_total < 0:
+                    raise BadRequestError(
+                        f"Position integrity violation: selling {quantity} shares "
+                        f"would make total negative ({position.quantity_total} - {quantity})",
+                    )
+                position.quantity_total = new_total
 
             if eff_settlement == SettlementMode.T0:
                 account.cash_available_vnd += proceeds
@@ -471,7 +484,7 @@ class VirtualTradingService:
 
         config = await self.get_or_create_config()
         holidays = parse_holidays(config.holidays)
-        today = date.today()
+        today = datetime.now(_VN_TZ).date()
         trading_date = get_current_trading_date(today, holidays)
 
         filled = 0
@@ -625,8 +638,6 @@ class VirtualTradingService:
         """Leaderboard with hard cap on accounts evaluated (Fix 5)."""
         from sqlalchemy import select as sa_select
 
-        from app.models.user import User
-
         config = await self.get_or_create_config()
         holidays_set = parse_holidays(config.holidays)
         total_eligible = await self._repo.count_active_accounts()
@@ -655,6 +666,17 @@ class VirtualTradingService:
             except PriceUnavailableError:
                 symbol_prices[sym] = 0  # will fallback to avg_cost
 
+        # Batch-load users for all evaluated accounts
+        user_ids = [acct.user_id for acct in accounts]
+        user_map: dict[uuid.UUID, str] = {}
+        if user_ids:
+            from app.models.user import User
+            result = await self._session.execute(
+                sa_select(User).where(User.id.in_(user_ids))
+            )
+            for u in result.scalars().all():
+                user_map[u.id] = u.full_name
+
         for acct in accounts:
             total_cash = acct.cash_available_vnd + acct.cash_reserved_vnd + acct.cash_pending_vnd
             positions = all_positions_map.get(acct.id, [])
@@ -672,9 +694,7 @@ class VirtualTradingService:
             profit = nav - acct.initial_cash_vnd
             ret_pct = (profit / acct.initial_cash_vnd * 100) if acct.initial_cash_vnd > 0 else 0.0
 
-            user_result = await self._session.execute(sa_select(User).where(User.id == acct.user_id))
-            user = user_result.scalar_one_or_none()
-            name = user.full_name if user else "Unknown"
+            name = user_map.get(acct.user_id, "Unknown")
 
             entries.append({
                 "user_id": acct.user_id, "display_name": name,
@@ -731,3 +751,29 @@ class VirtualTradingService:
         for acct in accounts:
             await self.reset_account(acct.user_id, admin_id)
         return len(accounts)
+
+    async def list_accounts_with_users(self) -> list[dict]:
+        """List all accounts with user info. Batch-loads users to avoid N+1."""
+        from sqlalchemy import select as sa_select
+
+        from app.models.user import User
+
+        accounts = await self._repo.list_all_accounts()
+        if not accounts:
+            return []
+
+        user_ids = [acct.user_id for acct in accounts]
+        result = await self._session.execute(
+            sa_select(User).where(User.id.in_(user_ids))
+        )
+        user_map = {u.id: u for u in result.scalars().all()}
+
+        items = []
+        for acct in accounts:
+            user = user_map.get(acct.user_id)
+            items.append({
+                "account": acct,
+                "user_email": user.email if user else None,
+                "user_name": user.full_name if user else None,
+            })
+        return items

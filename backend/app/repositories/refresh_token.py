@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import uuid
+from datetime import UTC, datetime
 
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.refresh_token import RefreshToken
@@ -38,3 +39,29 @@ class RefreshTokenRepository:
     async def revoke_all_for_user(self, user_id: uuid.UUID) -> None:
         """Revoke all refresh tokens for a user (e.g. on logout)."""
         await self._session.execute(update(RefreshToken).where(RefreshToken.user_id == user_id).values(revoked=True))
+
+    async def purge_expired(
+        self,
+        *,
+        include_revoked_before: datetime | None = None,
+    ) -> int:
+        """Delete expired tokens and optionally old revoked tokens.
+
+        Args:
+            include_revoked_before: If set, also delete revoked tokens
+                created before this datetime.
+
+        Returns:
+            Number of deleted rows.
+        """
+        from sqlalchemy import or_
+
+        now = datetime.now(UTC)
+        conditions = [RefreshToken.expires_at < now]
+        if include_revoked_before is not None:
+            conditions.append(
+                (RefreshToken.revoked.is_(True)) & (RefreshToken.created_at < include_revoked_before)
+            )
+        stmt = delete(RefreshToken).where(or_(*conditions))
+        result = await self._session.execute(stmt)
+        return getattr(result, "rowcount", 0)
