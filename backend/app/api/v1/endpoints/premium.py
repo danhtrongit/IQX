@@ -83,9 +83,11 @@ async def sepay_ipn(
     # Log headers for debugging
     secret_key = x_secret_key
     if not secret_key:
-        # SePay may send as Authorization: Bearer <key> or other headers
+        # SePay may send as Authorization: Apikey <key> or Bearer <key>
         auth_header = request.headers.get("authorization", "")
-        if auth_header.startswith("Bearer "):
+        if auth_header.startswith("Apikey "):
+            secret_key = auth_header[7:]
+        elif auth_header.startswith("Bearer "):
             secret_key = auth_header[7:]
         elif auth_header:
             secret_key = auth_header
