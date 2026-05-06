@@ -80,9 +80,29 @@ async def sepay_ipn(
     """
     settings = get_settings()
 
+    # Log headers for debugging
+    secret_key = x_secret_key
+    if not secret_key:
+        # SePay may send as Authorization: Bearer <key> or other headers
+        auth_header = request.headers.get("authorization", "")
+        if auth_header.startswith("Bearer "):
+            secret_key = auth_header[7:]
+        elif auth_header:
+            secret_key = auth_header
+        # Also check x-api-key
+        if not secret_key:
+            secret_key = request.headers.get("x-api-key", "")
+
+    logger.info(
+        "IPN received: x_secret_key=%s, auth=%s, all_headers=%s",
+        "present" if x_secret_key else "missing",
+        request.headers.get("authorization", "none")[:20],
+        dict(request.headers),
+    )
+
     # Validate secret key (constant-time comparison)
-    if not x_secret_key or not hmac.compare_digest(x_secret_key, settings.SEPAY_SECRET_KEY):
-        logger.warning("IPN: invalid or missing X-Secret-Key")
+    if not secret_key or not hmac.compare_digest(secret_key, settings.SEPAY_SECRET_KEY):
+        logger.warning("IPN: invalid or missing secret key (tried X-Secret-Key, Authorization, X-Api-Key)")
         return JSONResponse(status_code=401, content={"error": "unauthorized"})
 
     # Parse payload — narrow exceptions only
