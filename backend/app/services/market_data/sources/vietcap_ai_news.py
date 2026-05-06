@@ -108,7 +108,7 @@ def _build_list_params(
 ) -> dict[str, str | int]:
     params: dict[str, str | int] = {
         "page": page,
-        "page_size": page_size,
+        "page_size": min(page_size, 99),  # VietCap API max is 99
         "language": language,
     }
     if ticker:
@@ -121,8 +121,12 @@ def _build_list_params(
         params["newsfrom"] = source
     if sentiment:
         params["sentiment"] = sentiment
+
+    # Clamp update_from to max 30 days back (VietCap rejects large ranges)
     if update_from:
-        params["update_from"] = update_from
+        from datetime import date, timedelta
+        min_date = (date.today() - timedelta(days=30)).isoformat()
+        params["update_from"] = max(update_from, min_date)
     if update_to:
         params["update_to"] = update_to
     return params
