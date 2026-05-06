@@ -83,7 +83,7 @@ export default function PremiumPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [checkingOut, setCheckingOut] = useState<string | null>(null)
 
-  const isPremium = user?.role === "PREMIUM" || user?.role === "ADMIN"
+  const isPremium = user?.role === "premium" || user?.role === "admin"
 
   useEffect(() => {
     loadPlans()

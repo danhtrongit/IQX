@@ -412,6 +412,8 @@ class PremiumService:
         If no subscription exists yet, creates one — handling the race
         condition where two concurrent requests both try to INSERT by
         catching IntegrityError and retrying as an atomic extend.
+
+        Also updates the user's role to PREMIUM.
         """
         from sqlalchemy.exc import IntegrityError
 
@@ -429,6 +431,7 @@ class PremiumService:
             # Refresh and return the updated subscription
             sub = await self._sub_repo.get_by_user_id(user_id)
             assert sub is not None  # noqa: S101
+            await self._set_user_role_premium(user_id)
             return sub
 
         # No existing subscription — create one
@@ -441,7 +444,9 @@ class PremiumService:
             status=SubscriptionStatus.ACTIVE,
         )
         try:
-            return await self._sub_repo.create(new_sub)
+            sub = await self._sub_repo.create(new_sub)
+            await self._set_user_role_premium(user_id)
+            return sub
         except IntegrityError:
             # Another request already created the subscription — retry as extend
             await self._session.rollback()
@@ -453,7 +458,19 @@ class PremiumService:
             )
             sub = await self._sub_repo.get_by_user_id(user_id)
             assert sub is not None  # noqa: S101
+            await self._set_user_role_premium(user_id)
             return sub
+
+    async def _set_user_role_premium(self, user_id: uuid.UUID) -> None:
+        """Update user role to PREMIUM in the users table."""
+        from sqlalchemy import text
+
+        await self._session.execute(
+            text("UPDATE users SET role = 'premium', updated_at = NOW() WHERE id = :uid"),
+            {"uid": str(user_id)},
+        )
+        await self._session.commit()
+        logger.info("User %s role updated to PREMIUM", user_id)
 
     # ══════════════════════════════════════════════════
     # SePay signature

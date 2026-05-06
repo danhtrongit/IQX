@@ -16,6 +16,7 @@ class UserRole(enum.StrEnum):
 
     ADMIN = "admin"
     USER = "user"
+    PREMIUM = "premium"
 
 
 class UserStatus(enum.StrEnum):

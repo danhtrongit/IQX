@@ -136,7 +136,7 @@ export default function SettingsPage() {
     toast.error("Tính năng đổi mật khẩu chưa sẵn sàng trên hệ thống mới")
   }
 
-  const isPremium = profile?.role === "PREMIUM" || profile?.role === "ADMIN"
+  const isPremium = profile?.role === "premium" || profile?.role === "admin"
   const premiumExpiry = profile?.premiumExpiresAt
   const isExpired = premiumExpiry ? new Date(premiumExpiry) < new Date() : false
 
