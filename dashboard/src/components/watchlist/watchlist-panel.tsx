@@ -418,19 +418,21 @@ function WatchlistTabContent() {
                         </button>
                         <StockLogo symbol={sym} size={36} />
                         {/* Info: Symbol + Company */}
-                        <div className="min-w-0 w-[60px] shrink-0">
+                        <div className="min-w-0 shrink-1">
                           <div className="flex items-center gap-1.5">
                             <span className="text-sm font-bold text-foreground group-hover:text-primary">{sym}</span>
                           </div>
                           {info && (
-                            <p className="text-[9px] text-muted-foreground truncate leading-tight mt-0.5">
+                            <p className="text-[9px] text-muted-foreground truncate leading-tight mt-0.5 max-w-[56px]">
                               {info.shortName || info.name}
                             </p>
                           )}
                         </div>
                         {/* Sparkline — 3-month daily */}
                         <Sparkline data={spark || []} color={sparkColor} width={56} height={22} />
-                        {/* Price */}
+                        {/* Spacer */}
+                        <div className="flex-1" />
+                        {/* Price — pinned right */}
                         <div className="flex flex-col items-end shrink-0 min-w-[62px]">
                           <span className={`text-sm font-black tabular-nums ${color}`}>{fp(price)}</span>
                           {price > 0 ? (
