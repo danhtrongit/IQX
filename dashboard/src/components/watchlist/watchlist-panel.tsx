@@ -98,20 +98,65 @@ async function fetchSymbolInfoBatch(symbols: string[]): Promise<Map<string, Symb
   return _symbolInfoCache
 }
 
-// ── Mini Sparkline SVG ──
-function Sparkline({ data, color, width = 60, height = 24 }: { data: number[]; color: string; width?: number; height?: number }) {
+// ── Mini Area Sparkline SVG (green/red gradient fill) ──
+function Sparkline({
+  data, color, width = 60, height = 24, refPrice,
+}: {
+  data: number[]; color: string; width?: number; height?: number; refPrice?: number;
+}) {
   if (!data || data.length < 2) return <div style={{ width, height }} />
   const min = Math.min(...data)
   const max = Math.max(...data)
   const range = max - min || 1
-  const points = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * width
-    const y = height - ((v - min) / range) * (height - 2) - 1
-    return `${x.toFixed(1)},${y.toFixed(1)}`
-  }).join(' ')
+  const pad = 1
+
+  // Build the SVG path points
+  const pts = data.map((v, i) => ({
+    x: (i / (data.length - 1)) * width,
+    y: height - ((v - min) / range) * (height - 2 * pad) - pad,
+  }))
+  const linePath = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")
+
+  // Reference line Y (for green above / red below fill)
+  const ref = refPrice ?? data[0]
+  const refY = height - ((ref - min) / range) * (height - 2 * pad) - pad
+  const clampedRefY = Math.max(0, Math.min(height, refY))
+
+  // Area fill path (line → bottom-right → bottom-left)
+  const areaPath = `${linePath} L${width},${height} L0,${height} Z`
+
+  // Unique ID for clip/gradient (avoid collisions between multiple sparklines)
+  const uid = `sp${Math.random().toString(36).slice(2, 8)}`
+
   return (
-    <svg width={width} height={height} className="shrink-0">
-      <polyline fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" points={points} />
+    <svg width={width} height={height} className="shrink-0" style={{ overflow: "visible" }}>
+      <defs>
+        {/* Green gradient above reference */}
+        <linearGradient id={`${uid}-green`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#10b981" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#10b981" stopOpacity="0.05" />
+        </linearGradient>
+        {/* Red gradient below reference */}
+        <linearGradient id={`${uid}-red`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ef4444" stopOpacity="0.05" />
+          <stop offset="100%" stopColor="#ef4444" stopOpacity="0.5" />
+        </linearGradient>
+        {/* Clip: above ref line */}
+        <clipPath id={`${uid}-clip-above`}>
+          <rect x="0" y="0" width={width} height={clampedRefY} />
+        </clipPath>
+        {/* Clip: below ref line */}
+        <clipPath id={`${uid}-clip-below`}>
+          <rect x="0" y={clampedRefY} width={width} height={height - clampedRefY} />
+        </clipPath>
+      </defs>
+
+      {/* Green fill above reference */}
+      <path d={areaPath} fill={`url(#${uid}-green)`} clipPath={`url(#${uid}-clip-above)`} />
+      {/* Red fill below reference */}
+      <path d={areaPath} fill={`url(#${uid}-red)`} clipPath={`url(#${uid}-clip-below)`} />
+      {/* Line */}
+      <path d={linePath} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   )
 }
@@ -379,7 +424,7 @@ function WatchlistTabContent() {
                           )}
                         </div>
                         {/* Sparkline */}
-                        <Sparkline data={spark || []} color={sparkColor} width={56} height={22} />
+                        <Sparkline data={spark || []} color={sparkColor} width={56} height={22} refPrice={ref || undefined} />
                         {/* Price */}
                         <div className="flex flex-col items-end shrink-0 min-w-[62px]">
                           <span className={`text-sm font-black tabular-nums ${color}`}>{fp(price)}</span>

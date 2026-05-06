@@ -268,14 +268,16 @@ function adaptVTAccount(raw: any): ArenaAccount {
 
 /** Adapt backend OrderResponse → UI shape */
 function adaptVTOrder(raw: any): ArenaOrderResult["data"] {
+  const priceVnd = raw.filled_price_vnd ?? raw.limit_price_vnd ?? raw.price ?? 0
+  const totalVnd = raw.gross_amount_vnd ?? raw.net_amount_vnd ?? raw.filled_value_vnd ?? raw.total ?? 0
   return {
     id: String(raw.id),
     symbol: raw.symbol,
     side: raw.side,
     type: raw.order_type ?? raw.type,
     quantity: raw.quantity,
-    price: raw.filled_price_vnd ?? raw.limit_price_vnd ?? raw.price ?? 0,
-    total: raw.filled_value_vnd ?? raw.total ?? 0,
+    price: priceVnd,
+    total: totalVnd,
     fee: raw.fee_vnd ?? raw.fee ?? 0,
     status: raw.status,
   }

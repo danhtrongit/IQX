@@ -201,23 +201,22 @@ export function RightPanel() {
           ? await arenaApi.buyMarket(symbol, numVolume)
           : await arenaApi.sellMarket(symbol, numVolume)
       } else {
-        // Limit order - send price in 'thousands' unit (backend format)
+        // Limit order - send price in VND (backend expects limit_price_vnd)
         if (numPrice <= 0) {
           toast.warning("Vui lòng nhập giá hợp lệ cho lệnh giới hạn")
           setIsSubmitting(false)
           return
         }
-        const priceInThousands = numPrice / 1000
         result = orderType === "buy"
-          ? await arenaApi.buyLimit(symbol, numVolume, priceInThousands)
-          : await arenaApi.sellLimit(symbol, numVolume, priceInThousands)
+          ? await arenaApi.buyLimit(symbol, numVolume, numPrice)
+          : await arenaApi.sellLimit(symbol, numVolume, numPrice)
       }
 
       const order = result.data
-      const totalStr = order.total?.toLocaleString("vi-VN") || ""
+      const totalStr = (order.total || (order.price * order.quantity)).toLocaleString("vi-VN")
 
       toast.success(`Đặt lệnh ${label} ${symbol} thành công`, {
-        description: `${order.quantity} CP × ${(order.price * 1000).toLocaleString("vi-VN")} = ${totalStr} VND${order.status === "PENDING" ? " (chờ khớp)" : ""}`,
+        description: `${order.quantity} CP × ${order.price.toLocaleString("vi-VN")} = ${totalStr} VND${order.status === "PENDING" ? " (chờ khớp)" : ""}`,
       })
       refreshAccount()
     } catch (err: any) {
