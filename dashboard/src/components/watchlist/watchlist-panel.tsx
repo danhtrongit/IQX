@@ -408,7 +408,7 @@ function WatchlistTabContent() {
                       onClick={() => navigate(`/co-phieu/${sym}`)}
                       className="w-full text-left px-2 py-2.5 hover:bg-muted/40 transition-colors active:scale-[0.995]"
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         {/* Star */}
                         <button
                           onClick={(e) => { e.stopPropagation(); handleRemoveSymbol(sym) }}
@@ -417,8 +417,8 @@ function WatchlistTabContent() {
                           <Star className="size-3.5 fill-current" />
                         </button>
                         <StockLogo symbol={sym} size={36} />
-                        {/* Info: Symbol + Company + Industry */}
-                        <div className="flex-1 min-w-0">
+                        {/* Info: Symbol + Company */}
+                        <div className="min-w-0 w-[60px] shrink-0">
                           <div className="flex items-center gap-1.5">
                             <span className="text-sm font-bold text-foreground group-hover:text-primary">{sym}</span>
                           </div>
@@ -571,7 +571,7 @@ function HoldingsTabContent() {
           <span className="w-[72px]">Mã CK</span>
           <span className="w-[32px] text-right">SL</span>
           <span className="flex-1 text-right">Giá vốn</span>
-          <span className="flex-1 text-right">Giá HT</span>
+          <span className="flex-1 text-right">Giá TT</span>
           <span className="w-[70px] text-right">Lãi/Lỗ</span>
         </div>
       )}
