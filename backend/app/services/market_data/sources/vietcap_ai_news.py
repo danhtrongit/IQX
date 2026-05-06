@@ -41,6 +41,8 @@ class AINewsUpstreamError(Exception):
 def _ai_headers() -> dict[str, str]:
     h = get_headers(_SOURCE)
     h["Accept"] = "application/json"
+    h["Referer"] = "https://ai.vietcap.com.vn/"
+    h["Origin"] = "https://ai.vietcap.com.vn"
     return h
 
 
