@@ -34,6 +34,9 @@ export default function App() {
           <Route path="/thanh-toan/thanh-cong" element={<PaymentResultPage type="success" />} />
           <Route path="/thanh-toan/that-bai" element={<PaymentResultPage type="error" />} />
           <Route path="/thanh-toan/huy" element={<PaymentResultPage type="cancel" />} />
+          <Route path="/payment/success" element={<PaymentResultPage type="success" />} />
+          <Route path="/payment/error" element={<PaymentResultPage type="error" />} />
+          <Route path="/payment/cancel" element={<PaymentResultPage type="cancel" />} />
           <Route path="/503" element={<MaintenancePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
