@@ -43,13 +43,39 @@ def _analysis_cache_key(analysis_type: str, identifier: str, language: str) -> s
     return f"iqx:ai:analysis:{analysis_type}:{identifier}:{language}"
 
 
-def _get_analysis_ttl() -> int:
-    """Get TTL for AI analysis cache from settings."""
-    try:
-        from app.core.config import get_settings
-        return get_settings().REDIS_TTL_AI_ANALYSIS_SECONDS
-    except Exception:
-        return 1800  # 30 min default
+def _get_analysis_ttl(analysis_type: str = "insight") -> int:
+    """Get TTL for AI analysis cache based on analysis type.
+
+    - dashboard / industry: cache until end of trading session (15:00 VN).
+      If after 15:00, cache until 15:00 next trading day.
+      Minimum 1 hour to avoid edge-case churn.
+    - insight: 3 hours fixed.
+    """
+    if analysis_type in ("dashboard", "industry"):
+        return _ttl_until_end_of_session()
+    # insight: 3 hours
+    return 3 * 3600
+
+
+def _ttl_until_end_of_session() -> int:
+    """Calculate seconds until 15:00 Vietnam time (end of trading session).
+
+    If already past 15:00, returns seconds until 15:00 next day.
+    Minimum TTL is 1 hour.
+    """
+    from datetime import datetime, timedelta
+    from zoneinfo import ZoneInfo
+
+    vn_tz = ZoneInfo("Asia/Ho_Chi_Minh")
+    now = datetime.now(vn_tz)
+    end_of_session = now.replace(hour=15, minute=0, second=0, microsecond=0)
+
+    if now >= end_of_session:
+        # After 15:00 → cache until 15:00 next day
+        end_of_session += timedelta(days=1)
+
+    ttl = int((end_of_session - now).total_seconds())
+    return max(ttl, 3600)  # minimum 1 hour
 
 
 async def _cache_get_analysis(key: str) -> dict[str, Any] | None:
@@ -61,11 +87,13 @@ async def _cache_get_analysis(key: str) -> dict[str, Any] | None:
         return None
 
 
-async def _cache_set_analysis(key: str, value: dict[str, Any]) -> None:
-    """Store AI analysis result in Redis cache."""
+async def _cache_set_analysis(key: str, value: dict[str, Any], analysis_type: str = "insight") -> None:
+    """Store AI analysis result in Redis cache with type-aware TTL."""
     try:
         from app.services.cache.redis_cache import cache_set_json
-        await cache_set_json(key, value, _get_analysis_ttl())
+        ttl = _get_analysis_ttl(analysis_type)
+        await cache_set_json(key, value, ttl)
+        logger.debug("Cached AI %s (TTL=%ds): %s", analysis_type, ttl, key)
     except Exception:
         logger.warning("Failed to cache AI analysis for key=%s", key, exc_info=True)
 
@@ -110,7 +138,7 @@ async def analyze_dashboard(
     }
 
     # Cache result (without payload to keep cache small)
-    await _cache_set_analysis(cache_key, result)
+    await _cache_set_analysis(cache_key, result, analysis_type="dashboard")
 
     if include_payload:
         result["payload"] = payload
@@ -164,7 +192,7 @@ async def analyze_industry(
     }
 
     # Cache result (without payload to keep cache small)
-    await _cache_set_analysis(cache_key, result)
+    await _cache_set_analysis(cache_key, result, analysis_type="industry")
 
     if include_payload:
         result["payload"] = payload
@@ -246,7 +274,7 @@ async def analyze_insight(
     }
 
     # Cache result (without large payload)
-    await _cache_set_analysis(cache_key, result)
+    await _cache_set_analysis(cache_key, result, analysis_type="insight")
 
     if include_payload:
         result["payload"] = payload

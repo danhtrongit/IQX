@@ -198,7 +198,7 @@ async def post_industry_analyze_batch(body: IndustryBatchAnalyzeRequest) -> dict
                     }
                     # Cache the result for future single/batch requests
                     cache_key = _analysis_cache_key("industry", str(icb_code), body.language)
-                    await _cache_set_analysis(cache_key, result)
+                    await _cache_set_analysis(cache_key, result, analysis_type="industry")
                     if body.include_payload:
                         result["payload"] = payload
                     return result
