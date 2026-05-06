@@ -223,11 +223,14 @@ export function RightPanel() {
     } catch (err: any) {
       let msg = `Đặt lệnh ${label} ${symbol} thất bại`
       let needActivation = false
+      let needPremium = false
       try {
         const body = await err?.response?.json()
-        if (body?.message) {
-          msg = body.message
-          needActivation = /kích hoạt|activate/i.test(body.message)
+        const detail = body?.detail || body?.message
+        if (detail) {
+          msg = typeof detail === "string" ? detail : Array.isArray(detail) ? detail.map((e: any) => e.msg || e).join(", ") : msg
+          needActivation = /kích hoạt|activate/i.test(msg)
+          needPremium = /premium|gói premium/i.test(msg)
         }
       } catch { /* ignore parse error */ }
 
@@ -242,16 +245,34 @@ export function RightPanel() {
                 toast.success("Kích hoạt đấu trường ảo thành công! Bạn nhận 1 tỷ VND ảo.", {
                   description: "Hãy đặt lệnh lại nhé.",
                 })
+                refreshAccount()
               } catch (activateErr: any) {
                 let activateMsg = "Kích hoạt thất bại"
+                let isPremiumErr = false
                 try {
                   const b = await activateErr?.response?.json()
-                  if (b?.message) activateMsg = b.message
+                  const d = b?.detail || b?.message
+                  if (d) {
+                    activateMsg = typeof d === "string" ? d : activateMsg
+                    isPremiumErr = /premium|gói premium/i.test(activateMsg)
+                  }
                 } catch { /* ignore */ }
-                toast.error(activateMsg)
+                if (isPremiumErr) {
+                  toast.error(activateMsg, {
+                    duration: 8000,
+                    action: { label: "Nâng cấp Premium", onClick: () => navigate("/premium") },
+                  })
+                } else {
+                  toast.error(activateMsg)
+                }
               }
             },
           },
+        })
+      } else if (needPremium) {
+        toast.error(msg, {
+          duration: 8000,
+          action: { label: "Nâng cấp Premium", onClick: () => navigate("/premium") },
         })
       } else {
         toast.error(msg)
@@ -446,8 +467,23 @@ export function RightPanel() {
                   refreshAccount()
                 } catch (err: any) {
                   let msg = "Kích hoạt thất bại"
-                  try { const b = await err?.response?.json(); if (b?.message) msg = b.message } catch {}
-                  toast.error(msg)
+                  let isPremiumErr = false
+                  try {
+                    const b = await err?.response?.json()
+                    const d = b?.detail || b?.message
+                    if (d) {
+                      msg = typeof d === "string" ? d : msg
+                      isPremiumErr = /premium|gói premium/i.test(msg)
+                    }
+                  } catch {}
+                  if (isPremiumErr) {
+                    toast.error(msg, {
+                      duration: 8000,
+                      action: { label: "Nâng cấp Premium", onClick: () => navigate("/premium") },
+                    })
+                  } else {
+                    toast.error(msg)
+                  }
                 }
               }}
             >
