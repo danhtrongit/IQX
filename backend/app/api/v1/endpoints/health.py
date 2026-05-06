@@ -31,6 +31,11 @@ async def health_check(db: DBSession) -> JSONResponse:
     except Exception:
         db_status = "unhealthy"
 
+    # Test Redis connectivity
+    from app.services.cache.redis_cache import health_check as redis_health
+
+    redis_status = await redis_health()
+
     is_healthy = db_status == "healthy"
     status_code = 200 if is_healthy else 503
 
@@ -40,6 +45,7 @@ async def health_check(db: DBSession) -> JSONResponse:
         version=settings.APP_VERSION,
         environment=settings.APP_ENV,
         database=db_status,
+        redis=redis_status,
         timestamp=datetime.now(UTC).isoformat(),
     )
 

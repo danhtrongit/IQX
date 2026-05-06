@@ -76,6 +76,32 @@ class Settings(BaseSettings):
     RATE_LIMIT_AUTH: str = "10/minute"
     RATE_LIMIT_MARKET_DATA: str = "120/minute"
 
+    # ── AI Proxy ─────────────────────────────────────
+    AI_PROXY_BASE_URL: str = ""
+    AI_PROXY_MODEL: str = "deepseek-v4-flash"
+    AI_PROXY_API_KEY: str = ""
+    AI_PROXY_TIMEOUT_SECONDS: float = 120.0
+
+    # ── Symbol Seed ─────────────────────────────────
+    SIMPLIZE_LOGO_BASE_URL: str = "https://cdn.simplize.vn/simplizevn/logo"
+
+    # ── Redis ────────────────────────────────────────
+    REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_ENABLED: bool = False
+    REDIS_DEFAULT_TTL_SECONDS: int = 300        # 5 phút
+    REDIS_TTL_REALTIME_SECONDS: int = 15        # intraday, price-board
+    REDIS_TTL_REFERENCE_SECONDS: int = 3600     # symbols, industries
+    REDIS_TTL_OVERVIEW_SECONDS: int = 30        # market overview
+    REDIS_TTL_MACRO_SECONDS: int = 900          # macro, funds, company
+    REDIS_TTL_NEWS_SECONDS: int = 300           # tin tức
+    REDIS_TTL_AI_DASHBOARD_SECONDS: int = 60    # AI dashboard payload
+    REDIS_TTL_AI_INDUSTRY_SECONDS: int = 600    # AI industry payload (per icb_code)
+    REDIS_TTL_AI_ANALYSIS_SECONDS: int = 1800   # AI analysis result cache (30 phút)
+    REDIS_TTL_SHEETS_SECONDS: int = 600         # Google Sheets data (10 phút)
+
+    # ── Google Sheets ────────────────────────────────
+    GOOGLE_SHEETS_API_KEY: str = ""
+
     @property
     def cors_origins_list(self) -> list[str]:
         """Parse CORS_ORIGINS as a comma-separated string into a list."""

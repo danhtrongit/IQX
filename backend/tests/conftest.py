@@ -17,6 +17,10 @@ os.environ.update(
         "SEPAY_SECRET_KEY": "test-sepay-secret-key",
         "SEPAY_CHECKOUT_URL": "https://pay-sandbox.sepay.vn/v1/checkout/init",
         "APP_PUBLIC_URL": "http://localhost:3000",
+        "AI_PROXY_BASE_URL": "http://test-ai-proxy:9999/v1",
+        "AI_PROXY_MODEL": "test-model",
+        "AI_PROXY_API_KEY": "test-api-key-not-real",
+        "REDIS_ENABLED": "false",
     }
 )
 
@@ -79,6 +83,47 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
         yield ac
 
     app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture
+async def production_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+    """HTTP test client using production-like commit/rollback lifecycle.
+
+    Unlike the default ``client`` which shares a single session (bypassing
+    commit), this fixture gives each request its own session from the
+    test session factory, with real commit/rollback — matching production
+    ``get_db`` behaviour.
+    """
+
+    async def production_get_db():
+        async with TestSessionLocal() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+
+    app.dependency_overrides[get_db] = production_get_db
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as ac:
+        yield ac
+
+    app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture
+async def fresh_session() -> AsyncGenerator[AsyncSession, None]:
+    """Provide a completely independent session for read-back verification.
+
+    Data committed by ``production_client`` can be verified here to prove
+    it survived the full commit cycle.
+    """
+    async with TestSessionLocal() as session:
+        yield session
 
 
 @pytest_asyncio.fixture

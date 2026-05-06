@@ -488,30 +488,58 @@ _REPORT_RESOLUTION = {
 }
 
 
-async def fetch_trading_summary(
+async def fetch_trading_history(
     symbol: str,
     *,
     resolution: str = "1D",
     start: str | None = None,
     end: str | None = None,
-    limit: int = 100,
+    page: int = 0,
+    size: int = 50,
 ) -> tuple[list[dict[str, Any]], str]:
-    """Fetch trading summary (price history + foreign) from VCI IQ Insight."""
-    url = f"{_IQ_BASE}/v1/company/{symbol.upper()}/price-history-summary"
+    """Fetch full price-history rows from VCI IQ Insight.
+
+    The upstream response contains both foreign trading and supply-demand
+    fields. Keep all fields so API routes can expose full or filtered views.
+    """
+    url = f"{_IQ_BASE}/v1/company/{symbol.upper()}/price-history"
     headers = get_headers(_SOURCE)
     params: dict[str, Any] = {
         "timeFrame": _REPORT_RESOLUTION.get(resolution, "ONE_DAY"),
-        "page": 0,
-        "size": limit,
+        "page": page,
+        "size": size,
     }
     if start and end:
         params["fromDate"] = start.replace("-", "")
         params["toDate"] = end.replace("-", "")
 
     data = await fetch_json(url, headers=headers, params=params, source=_SOURCE)
-    items = _extract_data(data)
+    items = _extract_data(data, path=["data", "content"])
     records = [{_camel_to_snake(k): v for k, v in item.items()} for item in items]
     return records, url
+
+
+async def fetch_trading_summary(
+    symbol: str,
+    *,
+    resolution: str = "1D",
+    start: str | None = None,
+    end: str | None = None,
+) -> tuple[dict[str, Any], str]:
+    """Fetch full price-history-summary from VCI IQ Insight."""
+    url = f"{_IQ_BASE}/v1/company/{symbol.upper()}/price-history-summary"
+    headers = get_headers(_SOURCE)
+    params: dict[str, Any] = {
+        "timeFrame": _REPORT_RESOLUTION.get(resolution, "ONE_DAY"),
+    }
+    if start and end:
+        params["fromDate"] = start.replace("-", "")
+        params["toDate"] = end.replace("-", "")
+
+    data = await fetch_json(url, headers=headers, params=params, source=_SOURCE)
+    raw = data.get("data", {}) if isinstance(data, dict) else {}
+    record = {_camel_to_snake(k): v for k, v in raw.items()} if isinstance(raw, dict) else {}
+    return record, url
 
 
 async def fetch_foreign_trade(
@@ -520,29 +548,22 @@ async def fetch_foreign_trade(
     resolution: str = "1D",
     start: str | None = None,
     end: str | None = None,
-    limit: int = 100,
+    page: int = 0,
+    size: int = 100,
 ) -> tuple[list[dict[str, Any]], str]:
     """Fetch foreign trade data from VCI."""
-    url = f"{_IQ_BASE}/v1/company/{symbol.upper()}/price-history"
-    headers = get_headers(_SOURCE)
-    params: dict[str, Any] = {
-        "timeFrame": _REPORT_RESOLUTION.get(resolution, "ONE_DAY"),
-        "page": 0,
-        "size": limit,
-    }
-    if start and end:
-        params["fromDate"] = start.replace("-", "")
-        params["toDate"] = end.replace("-", "")
-
-    data = await fetch_json(url, headers=headers, params=params, source=_SOURCE)
-
-    # Extract foreign-related fields
-    items = _extract_data(data, path=["data", "content"])
+    items, url = await fetch_trading_history(
+        symbol,
+        resolution=resolution,
+        start=start,
+        end=end,
+        page=page,
+        size=size,
+    )
     records: list[dict[str, Any]] = []
     for item in items:
-        snake = {_camel_to_snake(k): v for k, v in item.items()}
-        fr_fields = {k: v for k, v in snake.items() if k.startswith("foreign")}
-        fr_fields["trading_date"] = snake.get("trading_date")
+        fr_fields = {k: v for k, v in item.items() if k.startswith("foreign")}
+        fr_fields["trading_date"] = item.get("trading_date")
         records.append(fr_fields)
     return records, url
 
@@ -792,4 +813,3 @@ def _extract_data(
         else:
             return []
     return current if isinstance(current, list) else []
-

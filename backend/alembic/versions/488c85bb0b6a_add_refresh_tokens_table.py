@@ -175,6 +175,10 @@ def upgrade() -> None:
     op.drop_column('users', 'password')
     op.drop_column('users', 'full_name')
 
+    # Ensure timestamp defaults are present (legacy Prisma schema may lack them)
+    op.execute("ALTER TABLE users ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP")
+    op.execute("ALTER TABLE users ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP")
+
     # ══════════════════════════════════════════════════════════════════════
     # Step 4: Recreate FKs (users.id is now UUID, but legacy columns are TEXT)
     # ══════════════════════════════════════════════════════════════════════

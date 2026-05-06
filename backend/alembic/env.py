@@ -8,24 +8,31 @@ import sys
 from logging.config import fileConfig
 from pathlib import Path
 
-from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
+
+from alembic import context
 
 # Add the project root (backend/) to sys.path so `import app` works
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.core.config import get_settings  # noqa: E402
 from app.core.database import Base  # noqa: E402
+from app.models.premium import PremiumPaymentOrder, PremiumPlan, PremiumSubscription  # noqa: F401, E402
+from app.models.refresh_token import RefreshToken  # noqa: F401, E402
+from app.models.symbol import Symbol  # noqa: F401, E402
 
 # Import all models so Alembic can detect them
 from app.models.user import User  # noqa: F401, E402
-from app.models.refresh_token import RefreshToken  # noqa: F401, E402
-from app.models.premium import PremiumPlan, PremiumSubscription, PremiumPaymentOrder  # noqa: F401, E402
 from app.models.virtual_trading import (  # noqa: F401, E402
-    VirtualTradingConfig, VirtualTradingAccount, VirtualPosition,
-    VirtualOrder, VirtualTrade, VirtualSettlement, VirtualCashLedger,
+    VirtualCashLedger,
+    VirtualOrder,
+    VirtualPosition,
+    VirtualSettlement,
+    VirtualTrade,
+    VirtualTradingAccount,
+    VirtualTradingConfig,
 )
 
 # Alembic Config object

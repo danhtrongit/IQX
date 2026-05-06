@@ -407,40 +407,53 @@ class PremiumService:
     ) -> PremiumSubscription:
         """Extend or create a premium subscription.
 
-        If user has active premium (current_period_end > now), new time
-        is added from current_period_end (stacking).
-        Otherwise, new period starts from now.
+        Uses atomic SQL-level UPDATE (with CASE) to prevent concurrent
+        IPN/admin-grant requests from losing purchased time.
+        If no subscription exists yet, creates one — handling the race
+        condition where two concurrent requests both try to INSERT by
+        catching IntegrityError and retrying as an atomic extend.
         """
+        from sqlalchemy.exc import IntegrityError
+
         now = datetime.now(UTC)
+
+        # Try atomic extend first (handles existing subscription)
+        rows = await self._sub_repo.atomic_extend_period(
+            user_id=user_id,
+            plan_id=plan.id,
+            duration_days=plan.duration_days,
+            now=now,
+        )
+
+        if rows > 0:
+            # Refresh and return the updated subscription
+            sub = await self._sub_repo.get_by_user_id(user_id)
+            assert sub is not None  # noqa: S101
+            return sub
+
+        # No existing subscription — create one
         duration = timedelta(days=plan.duration_days)
-
-        sub = await self._sub_repo.get_by_user_id(user_id)
-
-        if sub:
-            # Stack time if still active
-            if _ensure_aware(sub.current_period_end) > now:
-                new_end = _ensure_aware(sub.current_period_end) + duration
-                new_start = _ensure_aware(sub.current_period_start)
-            else:
-                new_start = now
-                new_end = now + duration
-
-            return await self._sub_repo.update_period(
-                sub=sub,
-                plan_id=plan.id,
-                period_start=new_start,
-                period_end=new_end,
-                status=SubscriptionStatus.ACTIVE,
-            )
-        else:
-            new_sub = PremiumSubscription(
-                user_id=user_id,
-                current_plan_id=plan.id,
-                current_period_start=now,
-                current_period_end=now + duration,
-                status=SubscriptionStatus.ACTIVE,
-            )
+        new_sub = PremiumSubscription(
+            user_id=user_id,
+            current_plan_id=plan.id,
+            current_period_start=now,
+            current_period_end=now + duration,
+            status=SubscriptionStatus.ACTIVE,
+        )
+        try:
             return await self._sub_repo.create(new_sub)
+        except IntegrityError:
+            # Another request already created the subscription — retry as extend
+            await self._session.rollback()
+            await self._sub_repo.atomic_extend_period(
+                user_id=user_id,
+                plan_id=plan.id,
+                duration_days=plan.duration_days,
+                now=datetime.now(UTC),
+            )
+            sub = await self._sub_repo.get_by_user_id(user_id)
+            assert sub is not None  # noqa: S101
+            return sub
 
     # ══════════════════════════════════════════════════
     # SePay signature

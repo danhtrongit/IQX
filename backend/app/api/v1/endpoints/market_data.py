@@ -11,14 +11,17 @@ import re
 from datetime import UTC, datetime
 from typing import Annotated, Any
 
-from fastapi import APIRouter, HTTPException, Path, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from pydantic import BaseModel, Field, field_validator
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
+from app.core.database import get_db
 from app.core.rate_limit import limiter
+from app.services.cache.decorator import redis_cached
 from app.services.market_data.fallback import fetch_with_fallback
 from app.services.market_data.schemas import MarketDataResponse
-from app.services.market_data.sources import fmarket, kbs, mbk, news, spl, vietcap, vndirect
+from app.services.market_data.sources import fmarket, google_sheets, kbs, mbk, news, spl, vietcap, vndirect
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +77,9 @@ class PriceBoardRequest(BaseModel):
 
 
 @router.get("/reference/symbols", tags=["Dữ liệu thị trường: Tham chiếu"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_TTL_REFERENCE_SECONDS")
 async def list_symbols(
+    request: Request,
     exchange: Annotated[str | None, Query(description="Lọc theo sàn: HOSE, HNX, UPCOM")] = None,
     asset_type: Annotated[str | None, Query(description="Lọc theo loại tài sản: stock, etf...")] = None,
     source: Annotated[str | None, Query(description="Buộc dùng nguồn: VCI hoặc VND")] = None,
@@ -104,8 +109,66 @@ async def list_symbols(
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
+@router.get(
+    "/reference/symbols/search",
+    tags=["Dữ liệu thị trường: Tham chiếu"],
+    summary="Tìm kiếm mã chứng khoán (DB-backed)",
+)
+async def search_symbols_db(
+    request: Request,
+    q: Annotated[str | None, Query(description="Từ khóa tìm kiếm")] = None,
+    exchange: Annotated[str | None, Query(description="Lọc theo sàn")] = None,
+    asset_type: Annotated[str | None, Query(description="Lọc theo loại")] = None,
+    include_indices: Annotated[bool, Query(description="Bao gồm chỉ số")] = False,
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Tìm kiếm mã chứng khoán từ bảng nội bộ symbols (DB-backed).
+
+    Ưu tiên: exact symbol → prefix symbol → contains name/short_name.
+    """
+    from app.schemas.symbol import SymbolSearchParams
+    from app.services.symbols import search_symbols
+
+    params = SymbolSearchParams(
+        q=q, exchange=exchange, asset_type=asset_type,
+        include_indices=include_indices, page=page, page_size=page_size,
+    )
+    items, total = await search_symbols(db, params)
+    total_pages = (total + page_size - 1) // page_size if total > 0 else 0
+    return {
+        "items": [item.model_dump() for item in items],
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+    }
+
+
+@router.get(
+    "/reference/symbols/{symbol}",
+    tags=["Dữ liệu thị trường: Tham chiếu"],
+    summary="Lấy chi tiết một mã chứng khoán (DB-backed)",
+)
+async def get_symbol_detail(
+    symbol: Annotated[str, Path(description="Mã chứng khoán")],
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Lấy chi tiết một mã chứng khoán từ bảng nội bộ. Trả 404 nếu không tìm thấy."""
+    from app.schemas.symbol import SymbolRead
+    from app.services.symbols import get_symbol_detail as _get_detail
+
+    obj = await _get_detail(db, symbol)
+    if obj is None or not obj.is_active:
+        raise HTTPException(status_code=404, detail=f"Không tìm thấy mã chứng khoán: {symbol.upper()}")
+    return SymbolRead.model_validate(obj).model_dump()
+
+
 @router.get("/reference/industries", tags=["Dữ liệu thị trường: Tham chiếu"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_TTL_REFERENCE_SECONDS")
 async def list_industries(
+    request: Request,
     source: Annotated[str | None, Query(description="Buộc dùng nguồn: VCI")] = None,
 ) -> MarketDataResponse:
     """Liệt kê phân ngành ICB."""
@@ -120,7 +183,9 @@ async def list_industries(
 
 
 @router.get("/reference/indices", tags=["Dữ liệu thị trường: Tham chiếu"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_TTL_REFERENCE_SECONDS")
 async def list_indices(
+    request: Request,
     group: Annotated[str | None, Query(description="Lọc theo nhóm: HOSE, HNX...")] = None,
 ) -> MarketDataResponse:
     """Liệt kê các chỉ số thị trường (ánh xạ tĩnh từ VCI)."""
@@ -158,7 +223,9 @@ async def list_indices(
     tags=["Dữ liệu thị trường: Tham chiếu"],
     response_model=MarketDataResponse,
 )
+@redis_cached(ttl_setting="REDIS_TTL_REFERENCE_SECONDS")
 async def list_group_symbols(
+    request: Request,
     group: str,
     source: Annotated[str | None, Query(description="Buộc dùng nguồn: VCI")] = None,
 ) -> MarketDataResponse:
@@ -184,7 +251,9 @@ async def list_group_symbols(
 
 
 @router.get("/quotes/{symbol}/ohlcv", tags=["Dữ liệu thị trường: Báo giá"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_DEFAULT_TTL_SECONDS")
 async def get_ohlcv(
+    request: Request,
     symbol: str,
     start: Annotated[str | None, Query(description="Ngày bắt đầu YYYY-MM-DD")] = None,
     end: Annotated[str | None, Query(description="Ngày kết thúc YYYY-MM-DD")] = None,
@@ -249,7 +318,9 @@ async def get_ohlcv(
 
 
 @router.get("/quotes/{symbol}/intraday", tags=["Dữ liệu thị trường: Báo giá"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_TTL_REALTIME_SECONDS", cache_empty=True)
 async def get_intraday(
+    request: Request,
     symbol: str,
     page_size: Annotated[int, Query(ge=1, le=30000)] = 100,
     source: Annotated[str | None, Query()] = None,
@@ -269,7 +340,9 @@ async def get_intraday(
 
 
 @router.get("/quotes/{symbol}/price-depth", tags=["Dữ liệu thị trường: Báo giá"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_TTL_REALTIME_SECONDS", cache_empty=True)
 async def get_price_depth(
+    request: Request,
     symbol: str,
     source: Annotated[str | None, Query()] = None,
 ) -> MarketDataResponse:
@@ -314,7 +387,9 @@ async def get_price_board(
 
 
 @router.get("/insights/ranking/{kind}", tags=["Dữ liệu thị trường: Phân tích"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_TTL_REALTIME_SECONDS")
 async def get_ranking(
+    request: Request,
     kind: str,
     index: Annotated[str, Query(description="Chỉ số thị trường: VNINDEX, HNX, VN30")] = "VNINDEX",
     limit: Annotated[int, Query(ge=1, le=50)] = 10,
@@ -351,7 +426,8 @@ async def get_ranking(
 
 
 @router.get("/company/{symbol}/overview", tags=["Dữ liệu thị trường: Công ty"], response_model=MarketDataResponse)
-async def get_company_overview(symbol: str) -> MarketDataResponse:
+@redis_cached(ttl_setting="REDIS_TTL_MACRO_SECONDS")
+async def get_company_overview(request: Request, symbol: str) -> MarketDataResponse:
     """Lấy thông tin tổng quan doanh nghiệp từ KBS."""
     symbol = symbol.upper()
     if not _validate_symbol(symbol):
@@ -372,7 +448,8 @@ async def get_company_overview(symbol: str) -> MarketDataResponse:
     tags=["Dữ liệu thị trường: Công ty"],
     response_model=MarketDataResponse,
 )
-async def get_shareholders(symbol: str) -> MarketDataResponse:
+@redis_cached(ttl_setting="REDIS_TTL_MACRO_SECONDS")
+async def get_shareholders(request: Request, symbol: str) -> MarketDataResponse:
     """Lấy danh sách cổ đông của doanh nghiệp từ KBS."""
     symbol = symbol.upper()
     if not _validate_symbol(symbol):
@@ -389,7 +466,8 @@ async def get_shareholders(symbol: str) -> MarketDataResponse:
 
 
 @router.get("/company/{symbol}/officers", tags=["Dữ liệu thị trường: Công ty"], response_model=MarketDataResponse)
-async def get_officers(symbol: str) -> MarketDataResponse:
+@redis_cached(ttl_setting="REDIS_TTL_MACRO_SECONDS")
+async def get_officers(request: Request, symbol: str) -> MarketDataResponse:
     """Lấy danh sách ban lãnh đạo doanh nghiệp từ KBS."""
     symbol = symbol.upper()
     if not _validate_symbol(symbol):
@@ -410,7 +488,8 @@ async def get_officers(symbol: str) -> MarketDataResponse:
     tags=["Dữ liệu thị trường: Công ty"],
     response_model=MarketDataResponse,
 )
-async def get_subsidiaries(symbol: str) -> MarketDataResponse:
+@redis_cached(ttl_setting="REDIS_TTL_MACRO_SECONDS")
+async def get_subsidiaries(request: Request, symbol: str) -> MarketDataResponse:
     """Lấy danh sách công ty con/liên kết của doanh nghiệp từ KBS."""
     symbol = symbol.upper()
     if not _validate_symbol(symbol):
@@ -427,7 +506,8 @@ async def get_subsidiaries(symbol: str) -> MarketDataResponse:
 
 
 @router.get("/company/{symbol}/news", tags=["Dữ liệu thị trường: Công ty"], response_model=MarketDataResponse)
-async def get_company_news(symbol: str) -> MarketDataResponse:
+@redis_cached(ttl_setting="REDIS_TTL_NEWS_SECONDS", cache_empty=True)
+async def get_company_news(request: Request, symbol: str) -> MarketDataResponse:
     """Lấy tin tức liên quan đến doanh nghiệp từ KBS."""
     symbol = symbol.upper()
     if not _validate_symbol(symbol):
@@ -454,7 +534,9 @@ _VALID_REPORT_TYPES = {"balance_sheet", "income_statement", "cash_flow", "ratio"
     tags=["Dữ liệu thị trường: Cơ bản"],
     response_model=MarketDataResponse,
 )
+@redis_cached(ttl_setting="REDIS_TTL_MACRO_SECONDS")
 async def get_financial_report(
+    request: Request,
     symbol: str,
     report_type: str,
 ) -> MarketDataResponse:
@@ -487,7 +569,9 @@ async def get_financial_report(
     tags=["Dữ liệu thị trường: Giao dịch"],
     response_model=MarketDataResponse,
 )
+@redis_cached(ttl_setting="REDIS_DEFAULT_TTL_SECONDS")
 async def get_foreign_trade(
+    request: Request,
     symbol: str,
     start: Annotated[str | None, Query(description="Ngày bắt đầu YYYY-MM-DD")] = None,
     end: Annotated[str | None, Query(description="Ngày kết thúc YYYY-MM-DD")] = None,
@@ -500,7 +584,7 @@ async def get_foreign_trade(
 
     async def _vci() -> tuple[Any, str]:
         return await vietcap.fetch_foreign_trade(
-            symbol, start=start, end=end, limit=limit
+            symbol, start=start, end=end, size=limit
         )
 
     try:
@@ -514,7 +598,9 @@ async def get_foreign_trade(
     tags=["Dữ liệu thị trường: Giao dịch"],
     response_model=MarketDataResponse,
 )
+@redis_cached(ttl_setting="REDIS_DEFAULT_TTL_SECONDS")
 async def get_insider_deals(
+    request: Request,
     symbol: str,
     limit: Annotated[int, Query(ge=1, le=1000)] = 100,
 ) -> MarketDataResponse:
@@ -548,8 +634,205 @@ def _validate_yyyymmdd(v: str | None, name: str) -> str | None:
     return v
 
 
+_SUPPLY_DEMAND_PREFIXES = (
+    "total_buy_trade",
+    "total_sell_trade",
+    "total_net_trade",
+    "average_buy_trade",
+    "average_sell_trade",
+    "total_buy_unmatched",
+    "total_sell_unmatched",
+)
+
+
+def _supply_demand_fields(record: dict[str, Any]) -> dict[str, Any]:
+    """Keep only supply-demand fields from price-history records."""
+    filtered = {
+        key: value
+        for key, value in record.items()
+        if key.startswith(_SUPPLY_DEMAND_PREFIXES)
+    }
+    if "trading_date" in record:
+        return {"trading_date": record["trading_date"], **filtered}
+    return filtered
+
+
+def _foreign_fields(record: dict[str, Any]) -> dict[str, Any]:
+    """Keep only foreign-trading fields from price-history summary."""
+    return {
+        key: value
+        for key, value in record.items()
+        if key.startswith("foreign")
+    }
+
+
+def _validate_company_stats_query(symbol: str, resolution: str) -> str:
+    symbol = symbol.upper()
+    if not _validate_symbol(symbol):
+        raise HTTPException(status_code=422, detail=f"Mã chứng khoán không hợp lệ: {symbol}")
+    if resolution not in _VALID_TIMEFRAME_STATS:
+        raise HTTPException(status_code=422, detail=f"Giá trị resolution không hợp lệ: {resolution}")
+    return symbol
+
+
+@router.get("/trading/{symbol}/history", tags=["Dữ liệu thị trường: Giao dịch"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_DEFAULT_TTL_SECONDS")
+async def get_trading_history(
+    request: Request,
+    symbol: str,
+    resolution: Annotated[str, Query(description="1D, 1W, 1M, 1Q, 1Y")] = "1D",
+    from_date: Annotated[str | None, Query(alias="fromDate", description="YYYYMMDD")] = None,
+    to_date: Annotated[str | None, Query(alias="toDate", description="YYYYMMDD")] = None,
+    page: Annotated[int, Query(ge=0, le=1000)] = 0,
+    size: Annotated[int, Query(ge=1, le=200)] = 50,
+) -> MarketDataResponse:
+    """Lấy lịch sử thống kê giao dịch đầy đủ từ price-history."""
+    symbol = _validate_company_stats_query(symbol, resolution)
+    _validate_yyyymmdd(from_date, "fromDate")
+    _validate_yyyymmdd(to_date, "toDate")
+
+    async def _vci() -> tuple[Any, str]:
+        return await vietcap.fetch_trading_history(
+            symbol,
+            resolution=resolution,
+            start=from_date,
+            end=to_date,
+            page=page,
+            size=size,
+        )
+
+    try:
+        return await fetch_with_fallback([("VCI", _vci)])
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.get("/trading/{symbol}/summary", tags=["Dữ liệu thị trường: Giao dịch"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_DEFAULT_TTL_SECONDS")
+async def get_trading_summary(
+    request: Request,
+    symbol: str,
+    resolution: Annotated[str, Query(description="1D, 1W, 1M, 1Q, 1Y")] = "1D",
+    from_date: Annotated[str | None, Query(alias="fromDate", description="YYYYMMDD")] = None,
+    to_date: Annotated[str | None, Query(alias="toDate", description="YYYYMMDD")] = None,
+) -> MarketDataResponse:
+    """Lấy tóm tắt thống kê giao dịch đầy đủ từ price-history-summary."""
+    symbol = _validate_company_stats_query(symbol, resolution)
+    _validate_yyyymmdd(from_date, "fromDate")
+    _validate_yyyymmdd(to_date, "toDate")
+
+    async def _vci() -> tuple[Any, str]:
+        return await vietcap.fetch_trading_summary(
+            symbol, resolution=resolution, start=from_date, end=to_date,
+        )
+
+    try:
+        return await fetch_with_fallback([("VCI", _vci)])
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.get(
+    "/trading/{symbol}/foreign-trade/summary",
+    tags=["Dữ liệu thị trường: Giao dịch"],
+    response_model=MarketDataResponse,
+)
+@redis_cached(ttl_setting="REDIS_DEFAULT_TTL_SECONDS")
+async def get_foreign_trade_summary(
+    request: Request,
+    symbol: str,
+    resolution: Annotated[str, Query(description="1D, 1W, 1M, 1Q, 1Y")] = "1D",
+    from_date: Annotated[str | None, Query(alias="fromDate", description="YYYYMMDD")] = None,
+    to_date: Annotated[str | None, Query(alias="toDate", description="YYYYMMDD")] = None,
+) -> MarketDataResponse:
+    """Lấy tóm tắt giao dịch khối ngoại từ price-history-summary."""
+    symbol = _validate_company_stats_query(symbol, resolution)
+    _validate_yyyymmdd(from_date, "fromDate")
+    _validate_yyyymmdd(to_date, "toDate")
+
+    async def _vci() -> tuple[Any, str]:
+        data, url = await vietcap.fetch_trading_summary(
+            symbol, resolution=resolution, start=from_date, end=to_date,
+        )
+        return _foreign_fields(data), url
+
+    try:
+        return await fetch_with_fallback([("VCI", _vci)])
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.get(
+    "/trading/{symbol}/supply-demand",
+    tags=["Dữ liệu thị trường: Giao dịch"],
+    response_model=MarketDataResponse,
+)
+@redis_cached(ttl_setting="REDIS_DEFAULT_TTL_SECONDS")
+async def get_supply_demand_history(
+    request: Request,
+    symbol: str,
+    resolution: Annotated[str, Query(description="1D, 1W, 1M, 1Q, 1Y")] = "1D",
+    from_date: Annotated[str | None, Query(alias="fromDate", description="YYYYMMDD")] = None,
+    to_date: Annotated[str | None, Query(alias="toDate", description="YYYYMMDD")] = None,
+    page: Annotated[int, Query(ge=0, le=1000)] = 0,
+    size: Annotated[int, Query(ge=1, le=200)] = 50,
+) -> MarketDataResponse:
+    """Lấy lịch sử cung-cầu từ các field price-history."""
+    symbol = _validate_company_stats_query(symbol, resolution)
+    _validate_yyyymmdd(from_date, "fromDate")
+    _validate_yyyymmdd(to_date, "toDate")
+
+    async def _vci() -> tuple[Any, str]:
+        data, url = await vietcap.fetch_trading_history(
+            symbol,
+            resolution=resolution,
+            start=from_date,
+            end=to_date,
+            page=page,
+            size=size,
+        )
+        return [_supply_demand_fields(item) for item in data], url
+
+    try:
+        return await fetch_with_fallback([("VCI", _vci)])
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.get(
+    "/trading/{symbol}/supply-demand/summary",
+    tags=["Dữ liệu thị trường: Giao dịch"],
+    response_model=MarketDataResponse,
+)
+@redis_cached(ttl_setting="REDIS_DEFAULT_TTL_SECONDS")
+async def get_supply_demand_summary(
+    request: Request,
+    symbol: str,
+    resolution: Annotated[str, Query(description="1D, 1W, 1M, 1Q, 1Y")] = "1D",
+    from_date: Annotated[str | None, Query(alias="fromDate", description="YYYYMMDD")] = None,
+    to_date: Annotated[str | None, Query(alias="toDate", description="YYYYMMDD")] = None,
+) -> MarketDataResponse:
+    """Lấy tóm tắt cung-cầu từ các field price-history-summary."""
+    symbol = _validate_company_stats_query(symbol, resolution)
+    _validate_yyyymmdd(from_date, "fromDate")
+    _validate_yyyymmdd(to_date, "toDate")
+
+    async def _vci() -> tuple[Any, str]:
+        data, url = await vietcap.fetch_trading_summary(
+            symbol, resolution=resolution, start=from_date, end=to_date,
+        )
+        return _supply_demand_fields(data), url
+
+    try:
+        return await fetch_with_fallback([("VCI", _vci)])
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
 @router.get("/trading/{symbol}/proprietary", tags=["Dữ liệu thị trường: Giao dịch"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_DEFAULT_TTL_SECONDS")
 async def get_proprietary_history(
+    request: Request,
     symbol: str,
     resolution: Annotated[str, Query(description="1D, 1W, 1M, 1Q, 1Y")] = "1D",
     from_date: Annotated[str | None, Query(alias="fromDate", description="YYYYMMDD")] = None,
@@ -583,7 +866,9 @@ async def get_proprietary_history(
     tags=["Dữ liệu thị trường: Giao dịch"],
     response_model=MarketDataResponse,
 )
+@redis_cached(ttl_setting="REDIS_DEFAULT_TTL_SECONDS")
 async def get_proprietary_summary(
+    request: Request,
     symbol: str,
     resolution: Annotated[str, Query(description="1D, 1W, 1M, 1Q, 1Y")] = "1D",
     from_date: Annotated[str | None, Query(alias="fromDate", description="YYYYMMDD")] = None,
@@ -610,7 +895,9 @@ async def get_proprietary_summary(
 
 
 @router.get("/company/{symbol}/details", tags=["Dữ liệu thị trường: Công ty"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_TTL_MACRO_SECONDS")
 async def get_company_details(
+    request: Request,
     symbol: str,
 ) -> MarketDataResponse:
     """Lấy thông tin chi tiết doanh nghiệp từ VCI IQ Insight (ngành, sàn, tên)."""
@@ -632,7 +919,9 @@ async def get_company_details(
     tags=["Dữ liệu thị trường: Công ty"],
     response_model=MarketDataResponse,
 )
+@redis_cached(ttl_setting="REDIS_DEFAULT_TTL_SECONDS")
 async def get_company_price_chart(
+    request: Request,
     symbol: str,
     length: Annotated[int, Query(ge=1, le=3650, description="Số điểm dữ liệu")] = 365,
 ) -> MarketDataResponse:
@@ -656,7 +945,9 @@ async def get_company_price_chart(
 
 
 @router.get("/events/calendar", tags=["Dữ liệu thị trường: Sự kiện"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_TTL_MACRO_SECONDS")
 async def get_events_calendar(
+    request: Request,
     start: Annotated[str, Query(description="Ngày bắt đầu YYYY-MM-DD")],
     end: Annotated[str | None, Query(description="Ngày kết thúc YYYY-MM-DD")] = None,
     event_type: Annotated[
@@ -683,11 +974,13 @@ async def get_events_calendar(
 
 
 @router.get("/macro/economy/{indicator}", tags=["Dữ liệu thị trường: Vĩ mô"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_TTL_MACRO_SECONDS", cache_empty=True)
 async def get_macro_data(
+    request: Request,
     indicator: str,
     start_year: Annotated[int, Query(ge=2000, le=2030)] = 2015,
     end_year: Annotated[int | None, Query(ge=2000, le=2030)] = None,
-    period: Annotated[str, Query(description="day, month, quarter, year")] = "quarter",
+    period: Annotated[str | None, Query(description="day, month, quarter, year")] = None,
 ) -> MarketDataResponse:
     """Lấy dữ liệu kinh tế vĩ mô: gdp, cpi, fdi, exchange_rate, interest_rate..."""
     if indicator not in mbk.VALID_INDICATORS:
@@ -695,14 +988,21 @@ async def get_macro_data(
             status_code=422,
             detail=f"Giá trị indicator '{indicator}' không hợp lệ. Cho phép: {sorted(mbk.VALID_INDICATORS)}",
         )
+    if period is not None and period not in mbk.VALID_PERIODS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Giá trị period '{period}' không hợp lệ. Cho phép: {sorted(mbk.VALID_PERIODS)}",
+        )
+
+    effective_period = period or mbk.default_period_for_indicator(indicator)
 
     async def _mbk() -> tuple[Any, str]:
         return await mbk.fetch_macro_data(
-            indicator, start_year=start_year, end_year=end_year, period=period
+            indicator, start_year=start_year, end_year=end_year, period=effective_period
         )
 
     try:
-        return await fetch_with_fallback([("MBK", _mbk)])
+        return await fetch_with_fallback([("MBK", _mbk)], allow_empty=True)
     except RuntimeError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
@@ -713,7 +1013,9 @@ async def get_macro_data(
 
 
 @router.get("/funds", tags=["Dữ liệu thị trường: Quỹ"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_TTL_MACRO_SECONDS")
 async def list_funds(
+    request: Request,
     fund_type: Annotated[
         str, Query(description="Loại quỹ: '', BALANCED, BOND, STOCK")
     ] = "",
@@ -730,7 +1032,9 @@ async def list_funds(
 
 
 @router.get("/funds/{fund_id}", tags=["Dữ liệu thị trường: Quỹ"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_TTL_MACRO_SECONDS")
 async def get_fund_details(
+    request: Request,
     fund_id: int,
 ) -> MarketDataResponse:
     """Lấy chi tiết quỹ: top holdings, phân bổ ngành, phân bổ loại tài sản."""
@@ -748,7 +1052,9 @@ async def get_fund_details(
 
 
 @router.get("/funds/{fund_id}/nav", tags=["Dữ liệu thị trường: Quỹ"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_TTL_MACRO_SECONDS")
 async def get_fund_nav(
+    request: Request,
     fund_id: int,
 ) -> MarketDataResponse:
     """Lấy lịch sử NAV của một quỹ."""
@@ -771,7 +1077,8 @@ async def get_fund_nav(
 
 
 @router.get("/macro/commodities", tags=["Dữ liệu thị trường: Vĩ mô"], response_model=MarketDataResponse)
-async def list_commodities() -> MarketDataResponse:
+@redis_cached(ttl_setting="REDIS_TTL_REFERENCE_SECONDS")
+async def list_commodities(request: Request) -> MarketDataResponse:
     """Liệt kê tất cả mã hàng hóa."""
     from app.services.market_data.schemas import MarketDataMeta
 
@@ -788,7 +1095,9 @@ async def list_commodities() -> MarketDataResponse:
 
 
 @router.get("/macro/commodities/{code}", tags=["Dữ liệu thị trường: Vĩ mô"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_DEFAULT_TTL_SECONDS")
 async def get_commodity_price(
+    request: Request,
     code: str,
     start: Annotated[str | None, Query(description="Ngày bắt đầu YYYY-MM-DD")] = None,
     end: Annotated[str | None, Query(description="Ngày kết thúc YYYY-MM-DD")] = None,
@@ -818,7 +1127,9 @@ async def get_commodity_price(
 
 
 @router.get("/news/latest", tags=["Dữ liệu thị trường: Tin tức"], response_model=MarketDataResponse)
+@redis_cached(ttl_setting="REDIS_TTL_NEWS_SECONDS", cache_empty=True)
 async def get_latest_news(
+    request: Request,
     sites: Annotated[
         str | None,
         Query(description="Danh sách trang được ngăn cách bởi dấu phẩy: vnexpress, tuoitre, cafebiz..."),
@@ -838,7 +1149,8 @@ async def get_latest_news(
 
 
 @router.get("/news/sources", tags=["Dữ liệu thị trường: Tin tức"], response_model=MarketDataResponse)
-async def list_news_sources() -> MarketDataResponse:
+@redis_cached(ttl_setting="REDIS_TTL_REFERENCE_SECONDS")
+async def list_news_sources(request: Request) -> MarketDataResponse:
     """Liệt kê các nguồn tin và URL RSS tương ứng."""
     from app.services.market_data.schemas import MarketDataMeta
 
@@ -872,7 +1184,9 @@ def _validate_overview_enum(val: str, valid: set[str], name: str) -> None:
 
 
 @router.get("/overview/liquidity", tags=["Dữ liệu thị trường: Tổng quan"])
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
 async def get_liquidity(
+    request: Request,
     symbols: Annotated[str, Query(description="ALL, VNINDEX, HNXIndex, HNXUpcomIndex")] = "ALL",
     time_frame: Annotated[str, Query(description="ONE_MINUTE, ONE_DAY...")] = "ONE_MINUTE",
     from_ts: Annotated[int | None, Query(description="Unix epoch (giây)")] = None,
@@ -901,7 +1215,9 @@ async def get_liquidity(
 
 
 @router.get("/overview/index-impact", tags=["Dữ liệu thị trường: Tổng quan"])
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
 async def get_index_impact(
+    request: Request,
     group: Annotated[str, Query()] = "ALL",
     time_frame: Annotated[str, Query()] = "ONE_DAY",
 ) -> dict[str, Any]:
@@ -925,7 +1241,9 @@ async def get_index_impact(
 
 
 @router.get("/overview/foreign", tags=["Dữ liệu thị trường: Tổng quan"])
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
 async def get_foreign(
+    request: Request,
     group: Annotated[str, Query()] = "ALL",
     time_frame: Annotated[str, Query()] = "ONE_MONTH",
     from_ts: Annotated[int | None, Query()] = None,
@@ -953,7 +1271,9 @@ async def get_foreign(
 
 
 @router.get("/overview/foreign/top", tags=["Dữ liệu thị trường: Tổng quan"])
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
 async def get_foreign_top(
+    request: Request,
     group: Annotated[str, Query()] = "ALL",
     time_frame: Annotated[str, Query()] = "ONE_YEAR",
     from_ts: Annotated[int | None, Query()] = None,
@@ -981,7 +1301,9 @@ async def get_foreign_top(
 
 
 @router.get("/overview/proprietary", tags=["Dữ liệu thị trường: Tổng quan"])
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
 async def get_proprietary(
+    request: Request,
     market: Annotated[str, Query()] = "ALL",
     time_frame: Annotated[str, Query()] = "ONE_YEAR",
 ) -> dict[str, Any]:
@@ -1005,7 +1327,9 @@ async def get_proprietary(
 
 
 @router.get("/overview/proprietary/top", tags=["Dữ liệu thị trường: Tổng quan"])
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
 async def get_proprietary_top(
+    request: Request,
     exchange: Annotated[str, Query()] = "ALL",
     time_frame: Annotated[str, Query()] = "ONE_YEAR",
 ) -> dict[str, Any]:
@@ -1031,7 +1355,9 @@ async def get_proprietary_top(
 
 
 @router.get("/overview/allocation", tags=["Dữ liệu thị trường: Tổng quan"])
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
 async def get_allocation(
+    request: Request,
     group: Annotated[str, Query()] = "ALL",
     time_frame: Annotated[str, Query()] = "ONE_YEAR",
 ) -> dict[str, Any]:
@@ -1055,7 +1381,9 @@ async def get_allocation(
 
 
 @router.get("/overview/sectors/allocation", tags=["Dữ liệu thị trường: Tổng quan"])
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
 async def get_sectors_allocation(
+    request: Request,
     group: Annotated[str, Query()] = "ALL",
     time_frame: Annotated[str, Query()] = "ONE_YEAR",
 ) -> dict[str, Any]:
@@ -1081,7 +1409,9 @@ async def get_sectors_allocation(
 
 
 @router.get("/overview/valuation", tags=["Dữ liệu thị trường: Tổng quan"])
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
 async def get_valuation(
+    request: Request,
     val_type: Annotated[str, Query(alias="type", description="pe, pb")] = "pe",
     com_group_code: Annotated[str, Query(description="VNINDEX, VN30...")] = "VNINDEX",
     time_frame: Annotated[str, Query()] = "ONE_YEAR",
@@ -1111,7 +1441,9 @@ async def get_valuation(
 
 
 @router.get("/overview/breadth", tags=["Dữ liệu thị trường: Tổng quan"])
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
 async def get_breadth(
+    request: Request,
     condition: Annotated[str, Query()] = "EMA50",
     exchange: Annotated[str, Query(description="HSX, HNX, UPCOM")] = "HSX,HNX,UPCOM",
     period: Annotated[str, Query(description="M6, YTD, Y1, Y2, Y5, ALL")] = "Y1",
@@ -1142,7 +1474,9 @@ async def get_breadth(
 
 
 @router.get("/overview/heatmap", tags=["Dữ liệu thị trường: Tổng quan"])
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
 async def get_heatmap(
+    request: Request,
     group: Annotated[str, Query()] = "ALL",
     sector: Annotated[str, Query(description="icb_code_1..4")] = "icb_code_2",
     size: Annotated[str, Query(description="MKC, VOL, VAL")] = "MKC",
@@ -1169,7 +1503,8 @@ async def get_heatmap(
 
 
 @router.get("/overview/heatmap/index", tags=["Dữ liệu thị trường: Tổng quan"])
-async def get_heatmap_index() -> dict[str, Any]:
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
+async def get_heatmap_index(request: Request) -> dict[str, Any]:
     """Tóm tắt heatmap chỉ số. Đơn vị: value = triệu VND."""
     from app.services.market_data.sources.vietcap_market_overview import (
         MarketOverviewUpstreamError,
@@ -1191,7 +1526,9 @@ async def get_heatmap_index() -> dict[str, Any]:
 
 
 @router.get("/overview/sectors/detail", tags=["Dữ liệu thị trường: Tổng quan"])
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
 async def get_sector_detail(
+    request: Request,
     icb_code: Annotated[int, Query(description="Mã ngành ICB (ví dụ: 8300)", ge=1)],
     group: Annotated[str, Query(description="ALL, HOSE, HNX, UPCOM")] = "ALL",
     time_frame: Annotated[str, Query(description="ONE_DAY, ONE_WEEK, ONE_MONTH, YTD, ONE_YEAR")] = "ONE_DAY",
@@ -1223,7 +1560,9 @@ async def get_sector_detail(
 
 
 @router.get("/overview/stock-strength", tags=["Dữ liệu thị trường: Tổng quan"])
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
 async def get_stock_strength(
+    request: Request,
     exchange: Annotated[str, Query(description="ALL, HOSE, HNX, UPCOM, HSX")] = "ALL",
 ) -> dict[str, Any]:
     """Lấy điểm sức mạnh cổ phiếu từ phân tích kỹ thuật (map tiểu phẳng ticker:score)."""
@@ -1248,7 +1587,9 @@ async def get_stock_strength(
 
 
 @router.get("/overview/market-index", tags=["Dữ liệu thị trường: Tổng quan"])
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
 async def get_market_index(
+    request: Request,
     symbols: Annotated[
         str | None,
         Query(description="Danh sách ngăn cách dấu phẩy: VNINDEX, HNXIndex, HNXUpcomIndex, VN30, HNX30"),
@@ -1280,7 +1621,9 @@ async def get_market_index(
 
 
 @router.get("/reference/search", tags=["Dữ liệu thị trường: Tham chiếu"])
+@redis_cached(ttl_setting="REDIS_TTL_REFERENCE_SECONDS")
 async def get_search_bar(
+    request: Request,
     language: Annotated[int, Query(ge=1, le=2, description="1=Tiếng Việt, 2=Tiếng Anh")] = 1,
 ) -> dict[str, Any]:
     """Lấy dữ liệu tìm kiếm doanh nghiệp cho autocomplete (~2000 doanh nghiệp)."""
@@ -1299,7 +1642,8 @@ async def get_search_bar(
 
 
 @router.get("/reference/event-codes", tags=["Dữ liệu thị trường: Tham chiếu"])
-async def get_event_codes() -> dict[str, Any]:
+@redis_cached(ttl_setting="REDIS_TTL_REFERENCE_SECONDS")
+async def get_event_codes(request: Request) -> dict[str, Any]:
     """Lấy dữ liệu tham chiếu mã sự kiện (ánh xạ mã sự kiện sang tên)."""
     from app.services.market_data.sources.vietcap_market_overview import (
         MarketOverviewUpstreamError,
@@ -1316,7 +1660,8 @@ async def get_event_codes() -> dict[str, Any]:
 
 
 @router.get("/overview/maintenance", tags=["Dữ liệu thị trường: Tổng quan"])
-async def get_maintenance() -> dict[str, Any]:
+@redis_cached(ttl_setting="REDIS_TTL_OVERVIEW_SECONDS")
+async def get_maintenance(request: Request) -> dict[str, Any]:
     """Lấy thông báo bảo trì (nếu có)."""
     from app.services.market_data.sources.vietcap_market_overview import (
         MarketOverviewUpstreamError,
@@ -1363,7 +1708,9 @@ def _validate_date_str(d: str | None) -> str:
 
 
 @router.get("/news/ai", tags=["Dữ liệu thị trường: Tin AI"])
+@redis_cached(ttl_setting="REDIS_TTL_NEWS_SECONDS")
 async def get_ai_news(
+    request: Request,
     kind: Annotated[str, Query(description="business, topic, exchange")] = "business",
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 20,
@@ -1418,7 +1765,9 @@ async def get_ai_news(
 
 
 @router.get("/news/ai/detail/{slug}", tags=["Dữ liệu thị trường: Tin AI"])
+@redis_cached(ttl_setting="REDIS_TTL_NEWS_SECONDS")
 async def get_ai_news_detail(
+    request: Request,
     slug: str = Path(
         ...,
         min_length=1,
@@ -1448,7 +1797,9 @@ async def get_ai_news_detail(
 
 
 @router.get("/news/ai/audio/{news_id}", tags=["Dữ liệu thị trường: Tin AI"])
+@redis_cached(ttl_setting="REDIS_TTL_NEWS_SECONDS")
 async def get_ai_news_audio(
+    request: Request,
     news_id: str = Path(
         ...,
         min_length=1,
@@ -1478,7 +1829,8 @@ async def get_ai_news_audio(
 
 
 @router.get("/news/ai/catalogs", tags=["Dữ liệu thị trường: Tin AI"])
-async def get_ai_news_catalogs() -> dict[str, Any]:
+@redis_cached(ttl_setting="REDIS_TTL_NEWS_SECONDS")
+async def get_ai_news_catalogs(request: Request) -> dict[str, Any]:
     """Lấy các danh mục. Trả về partial=true kèm cảnh báo nếu có nguồn con bị lỗi."""
     from app.services.market_data.sources.vietcap_ai_news import fetch_catalogs
 
@@ -1492,7 +1844,9 @@ async def get_ai_news_catalogs() -> dict[str, Any]:
 
 
 @router.get("/news/ai/tickers/{symbol}", tags=["Dữ liệu thị trường: Tin AI"])
+@redis_cached(ttl_setting="REDIS_TTL_NEWS_SECONDS")
 async def get_ai_ticker_view(
+    request: Request,
     symbol: str,
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=50)] = 12,
@@ -1561,7 +1915,8 @@ async def get_ai_ticker_view(
 
 
 @router.get("/sectors/trading-dates", tags=["Dữ liệu thị trường: Ngành"])
-async def get_sector_trading_dates() -> dict[str, Any]:
+@redis_cached(ttl_setting="REDIS_DEFAULT_TTL_SECONDS")
+async def get_sector_trading_dates(request: Request) -> dict[str, Any]:
     """Lấy 20 ngày giao dịch gần nhất cho bảng xếp hạng ngành."""
     from app.services.market_data.sources.vietcap_sector import (
         SectorUpstreamError,
@@ -1578,7 +1933,9 @@ async def get_sector_trading_dates() -> dict[str, Any]:
 
 
 @router.get("/sectors/ranking", tags=["Dữ liệu thị trường: Ngành"])
+@redis_cached(ttl_setting="REDIS_DEFAULT_TTL_SECONDS")
 async def get_sector_ranking(
+    request: Request,
     icb_level: Annotated[int, Query(ge=1, le=4, description="Cấp phân ngành ICB: 1, 2, 3, 4")] = 2,
     adtv: Annotated[int, Query(description="GTGD trung bình (tháng): 1, 3, 6")] = 3,
     value: Annotated[int, Query(description="Ngưỡng GTGD tối thiểu (tỷ VND): 3, 5, 10")] = 3,
@@ -1613,7 +1970,9 @@ async def get_sector_ranking(
 
 
 @router.get("/sectors/information", tags=["Dữ liệu thị trường: Ngành"])
+@redis_cached(ttl_setting="REDIS_DEFAULT_TTL_SECONDS")
 async def get_sector_information(
+    request: Request,
     icb_level: Annotated[int, Query(ge=1, le=4, description="Cấp phân ngành ICB: 1, 2, 3, 4")] = 2,
 ) -> dict[str, Any]:
     """Lấy thông tin vốn hóa, tỷ trọng, hiệu suất giá các ngành."""
@@ -1697,7 +2056,8 @@ class ScreeningPagingRequest(BaseModel):
 
 
 @router.get("/screening/criteria", tags=["Dữ liệu thị trường: Bộ lọc cổ phiếu"])
-async def get_screening_criteria() -> dict[str, Any]:
+@redis_cached(ttl_setting="REDIS_TTL_REFERENCE_SECONDS")
+async def get_screening_criteria(request: Request) -> dict[str, Any]:
     """Lấy danh sách 34 tiêu chí lọc cổ phiếu cùng options."""
     from app.services.market_data.sources.vietcap_screening import (
         ScreeningUpstreamError,
@@ -1773,7 +2133,8 @@ async def post_screening_search(
 
 
 @router.get("/screening/presets", tags=["Dữ liệu thị trường: Bộ lọc cổ phiếu"])
-async def get_screening_presets() -> dict[str, Any]:
+@redis_cached(ttl_setting="REDIS_TTL_REFERENCE_SECONDS")
+async def get_screening_presets(request: Request) -> dict[str, Any]:
     """Lấy bộ lọc mặc định (3 bộ lọc hệ thống từ Vietcap)."""
     from app.services.market_data.sources.vietcap_screening import (
         ScreeningUpstreamError,
@@ -1791,6 +2152,103 @@ async def get_screening_presets() -> dict[str, Any]:
 
 # ══════════════════════════════════════════════════════
 # Helpers
+# ══════════════════════════════════════════════════════
+
+
+# ══════════════════════════════════════════════════════
+# Google Sheets Data (VND / TPCP / TYGIA)
+# ══════════════════════════════════════════════════════
+
+
+@router.get(
+    "/sheets/vnd",
+    tags=["Dữ liệu thị trường: Google Sheets"],
+    summary="Lãi suất VND liên ngân hàng (Google Sheets)",
+)
+@redis_cached(ttl_setting="REDIS_TTL_SHEETS_SECONDS")
+async def get_sheets_vnd(request: Request) -> MarketDataResponse:
+    """Lấy dữ liệu lãi suất VND liên ngân hàng từ Google Sheets."""
+    from app.services.market_data.schemas import MarketDataMeta
+
+    try:
+        raw_rows, url = await google_sheets.fetch_sheet_data(google_sheets.SHEET_VND)
+        data = google_sheets.normalize_vnd(raw_rows)
+    except Exception as exc:
+        logger.error("Failed to fetch VND sheet: %s", exc, exc_info=True)
+        raise HTTPException(status_code=502, detail=f"Google Sheets VND unavailable: {exc}") from exc
+
+    return MarketDataResponse(
+        data=data,
+        meta=MarketDataMeta(
+            source="GOOGLE_SHEETS",
+            source_priority=1,
+            fallback_used=False,
+            as_of=datetime.now(UTC),
+            raw_endpoint=url,
+        ),
+    )
+
+
+@router.get(
+    "/sheets/tpcp",
+    tags=["Dữ liệu thị trường: Google Sheets"],
+    summary="Lãi suất TPCP (Google Sheets)",
+)
+@redis_cached(ttl_setting="REDIS_TTL_SHEETS_SECONDS")
+async def get_sheets_tpcp(request: Request) -> MarketDataResponse:
+    """Lấy dữ liệu lãi suất trái phiếu chính phủ từ Google Sheets."""
+    from app.services.market_data.schemas import MarketDataMeta
+
+    try:
+        raw_rows, url = await google_sheets.fetch_sheet_data(google_sheets.SHEET_TPCP)
+        data = google_sheets.normalize_tpcp(raw_rows)
+    except Exception as exc:
+        logger.error("Failed to fetch TPCP sheet: %s", exc, exc_info=True)
+        raise HTTPException(status_code=502, detail=f"Google Sheets TPCP unavailable: {exc}") from exc
+
+    return MarketDataResponse(
+        data=data,
+        meta=MarketDataMeta(
+            source="GOOGLE_SHEETS",
+            source_priority=1,
+            fallback_used=False,
+            as_of=datetime.now(UTC),
+            raw_endpoint=url,
+        ),
+    )
+
+
+@router.get(
+    "/sheets/tygia",
+    tags=["Dữ liệu thị trường: Google Sheets"],
+    summary="Tỷ giá ngoại tệ (Google Sheets)",
+)
+@redis_cached(ttl_setting="REDIS_TTL_SHEETS_SECONDS")
+async def get_sheets_tygia(request: Request) -> MarketDataResponse:
+    """Lấy dữ liệu tỷ giá ngoại tệ từ Google Sheets."""
+    from app.services.market_data.schemas import MarketDataMeta
+
+    try:
+        raw_rows, url = await google_sheets.fetch_sheet_data(google_sheets.SHEET_TYGIA)
+        data = google_sheets.normalize_tygia(raw_rows)
+    except Exception as exc:
+        logger.error("Failed to fetch TYGIA sheet: %s", exc, exc_info=True)
+        raise HTTPException(status_code=502, detail=f"Google Sheets TYGIA unavailable: {exc}") from exc
+
+    return MarketDataResponse(
+        data=data,
+        meta=MarketDataMeta(
+            source="GOOGLE_SHEETS",
+            source_priority=1,
+            fallback_used=False,
+            as_of=datetime.now(UTC),
+            raw_endpoint=url,
+        ),
+    )
+
+
+# ══════════════════════════════════════════════════════
+# Helper functions
 # ══════════════════════════════════════════════════════
 
 

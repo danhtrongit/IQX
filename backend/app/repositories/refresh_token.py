@@ -30,6 +30,22 @@ class RefreshTokenRepository:
         """Mark a single token as revoked."""
         await self._session.execute(update(RefreshToken).where(RefreshToken.jti == jti).values(revoked=True))
 
+    async def claim_for_rotation(self, jti: str) -> int:
+        """Atomically claim a non-revoked token for rotation.
+
+        Uses conditional UPDATE ``WHERE jti = ? AND revoked = false``
+        so exactly one concurrent caller can succeed.
+
+        Returns:
+            Number of rows updated (0 or 1).
+        """
+        result = await self._session.execute(
+            update(RefreshToken)
+            .where(RefreshToken.jti == jti, RefreshToken.revoked.is_(False))
+            .values(revoked=True)
+        )
+        return int(result.rowcount)  # type: ignore[attr-defined]
+
     async def revoke_family(self, token_family: str) -> None:
         """Revoke all tokens in a family (replay attack detected)."""
         await self._session.execute(

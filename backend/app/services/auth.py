@@ -88,10 +88,11 @@ class AuthService:
     async def refresh_tokens(self, refresh_token_str: str) -> TokenResponse:
         """Issue a new token pair from a valid refresh token.
 
-        Implements token rotation:
-        - The old refresh token is revoked.
-        - A new refresh token is issued in the same family.
+        Implements token rotation with atomic claim:
+        - A conditional UPDATE (``WHERE jti = ? AND revoked = false``)
+          ensures exactly one concurrent request can claim the token.
         - If a revoked token is replayed, the entire family is invalidated.
+        - Token family in the JWT payload must match the database record.
         """
         try:
             payload = decode_refresh_token(refresh_token_str)
@@ -114,8 +115,23 @@ class AuthService:
         if stored_token is None:
             raise UnauthorizedError("Refresh token không được công nhận")
 
-        if stored_token.revoked:
-            # Replay attack detected! Revoke the entire family.
+        # Verify token family matches the database record
+        if stored_token.token_family != token_family:
+            logger.warning(
+                "Refresh token family mismatch: payload=%s, db=%s (user %s). Revoking family.",
+                token_family,
+                stored_token.token_family,
+                stored_token.user_id,
+            )
+            await self._token_repo.revoke_family(stored_token.token_family)
+            raise UnauthorizedError("Refresh token family không khớp")
+
+        # Atomic claim: only one concurrent request can succeed.
+        # Uses conditional UPDATE: WHERE jti = ? AND revoked = false
+        rows_claimed = await self._token_repo.claim_for_rotation(jti)
+
+        if rows_claimed == 0:
+            # Token was already revoked — replay attack detected.
             logger.warning(
                 "Refresh token replay detected for family %s (user %s). Revoking all tokens.",
                 token_family,
@@ -132,9 +148,6 @@ class AuthService:
 
         if user.status != UserStatus.ACTIVE:
             raise UnauthorizedError(f"Trạng thái tài khoản: {user.status.value}")
-
-        # Revoke the old token
-        await self._token_repo.revoke_by_jti(jti)
 
         # Issue new pair in the same family
         new_access = create_access_token(

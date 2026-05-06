@@ -18,6 +18,7 @@ Backend FastAPI sẵn sàng cho môi trường sản xuất của nền tảng I
 | uv | 0.9.x | Quản lý package & môi trường |
 | pytest | 8.x | Kiểm thử |
 | ruff | 0.15.x | Lint & format |
+| Redis | 7.x | Cache layer (tùy chọn) |
 
 ## Cấu trúc thư mục
 
@@ -64,6 +65,7 @@ backend/
 
 - Python 3.12+ (khuyến nghị 3.13)
 - PostgreSQL 15+
+- Redis 7+ *(tùy chọn — bật qua `REDIS_ENABLED=true`)*
 - Đã cài [uv](https://docs.astral.sh/uv/)
 
 ### 1. Cài đặt môi trường
@@ -135,7 +137,7 @@ API sẽ có ở:
 ### Sức khỏe hệ thống
 | Method | Path | Mô tả |
 |---|---|---|
-| GET | `/api/v1/health` | Kiểm tra ứng dụng + database |
+| GET | `/api/v1/health` | Kiểm tra ứng dụng + database + Redis |
 
 ### Xác thực
 | Method | Path | Mô tả | Auth |
@@ -256,6 +258,9 @@ uv run alembic revision --autogenerate -m "mô tả"
 # Áp dụng migration
 uv run alembic upgrade head
 
+# Seed danh sách mã chứng khoán
+uv run python -m app.scripts.seed_symbols --validate-logos --deactivate-missing
+
 # Lùi migration
 uv run alembic downgrade -1
 ```
@@ -282,6 +287,59 @@ Dự án theo **kiến trúc phân lớp**:
 - **Yêu cầu mật khẩu** — Tối thiểu 8 ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt
 - **IPN nguyên tử** — Conditional UPDATE chống cấp Premium 2 lần khi SePay retry
 - **Số tiền Decimal** — VND parse bằng `Decimal`, loại bỏ phần thập phân
+- **Redis cache tùy chọn** — Mặc định tắt, bật qua env; Redis lỗi = chạy uncached
+
+## Redis Cache
+
+### Khởi chạy Redis
+
+Cách đơn giản nhất là dùng Docker:
+
+```bash
+docker run -d --name iqx-redis -p 6379:6379 redis:7-alpine
+```
+
+Hoặc thêm vào `docker-compose.yml`:
+
+```yaml
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+```
+
+### Bật cache
+
+Cập nhật `.env`:
+
+```ini
+REDIS_ENABLED=true
+REDIS_URL=redis://localhost:6379/0
+```
+
+### TTL theo nhóm endpoint
+
+| Nhóm | TTL mặc định | Biến ENV |
+|---|---|---|
+| Reference (symbols, industries) | 3600s (1h) | `REDIS_TTL_REFERENCE_SECONDS` |
+| Overview (heatmap, breadth) | 30s | `REDIS_TTL_OVERVIEW_SECONDS` |
+| Macro, Funds, Company | 900s (15m) | `REDIS_TTL_MACRO_SECONDS` |
+| News, AI News | 300s (5m) | `REDIS_TTL_NEWS_SECONDS` |
+| Intraday, Price-depth | 15s | `REDIS_TTL_REALTIME_SECONDS` |
+| Khác (OHLCV, trading...) | 300s (5m) | `REDIS_DEFAULT_TTL_SECONDS` |
+
+### Endpoint không cache
+
+- `POST /trading/price-board` — POST endpoint
+- `POST /screening/search` — POST endpoint
+- Auth endpoints — user-sensitive
+- Users endpoints — user-sensitive
+- Premium endpoints — subscription-specific
+- Virtual trading — user-specific write
+- AI analysis — user-specific prompt
+- Health — monitoring
 
 ## Chiến lược migration
 

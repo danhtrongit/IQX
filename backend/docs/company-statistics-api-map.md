@@ -29,10 +29,12 @@ Tất cả endpoint đều dùng `https://iq.vietcap.com.vn`.
 
 Sử dụng endpoint **price-history**. Dữ liệu nước ngoài được nhúng cùng response với dữ liệu lịch sử giá.
 
-| Endpoint | URL | Trạng thái |
-|---|---|---|
-| Lịch sử nước ngoài (phân trang) | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history?fromDate={}&toDate={}&page={}&size={}&timeFrame={}` | ✅ |
-| Tóm tắt nước ngoài | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history-summary?fromDate={}&toDate={}&timeFrame={}` | ✅ |
+| Endpoint | URL upstream | Route backend | Trạng thái |
+|---|---|---|---|
+| Lịch sử nước ngoài (phân trang) | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history?fromDate={}&toDate={}&page={}&size={}&timeFrame={}` | `GET /api/v1/market-data/trading/{symbol}/foreign-trade` | ✅ |
+| Tóm tắt nước ngoài | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history-summary?fromDate={}&toDate={}&timeFrame={}` | `GET /api/v1/market-data/trading/{symbol}/foreign-trade/summary` | ✅ |
+| Lịch sử đầy đủ | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history?fromDate={}&toDate={}&page={}&size={}&timeFrame={}` | `GET /api/v1/market-data/trading/{symbol}/history` | ✅ |
+| Tóm tắt đầy đủ | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history-summary?fromDate={}&toDate={}&timeFrame={}` | `GET /api/v1/market-data/trading/{symbol}/summary` | ✅ |
 
 ### Field — Nước ngoài (trong items của `price-history`)
 
@@ -159,10 +161,10 @@ Giao dịch của người nội bộ/giám đốc. Không có `fromDate`/`toDat
 
 Sử dụng endpoint **price-history**. Các field cung cầu được nhúng cùng response.
 
-| Endpoint | URL | Trạng thái |
-|---|---|---|
-| Cung cầu (phân trang) | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history?fromDate={}&toDate={}&page={}&size={}&timeFrame={}` | ✅ |
-| Tóm tắt cung cầu | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history-summary?fromDate={}&toDate={}&timeFrame={}` | ✅ |
+| Endpoint | URL upstream | Route backend | Trạng thái |
+|---|---|---|---|
+| Cung cầu (phân trang) | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history?fromDate={}&toDate={}&page={}&size={}&timeFrame={}` | `GET /api/v1/market-data/trading/{symbol}/supply-demand` | ✅ |
+| Tóm tắt cung cầu | `GET .../api/iq-insight-service/v1/company/{ticker}/price-history-summary?fromDate={}&toDate={}&timeFrame={}` | `GET /api/v1/market-data/trading/{symbol}/supply-demand/summary` | ✅ |
 
 ### Field — Cung cầu (trong items của `price-history`)
 

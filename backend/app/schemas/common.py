@@ -34,4 +34,5 @@ class HealthResponse(BaseModel):
     version: str
     environment: str
     database: str
+    redis: str = "disabled"
     timestamp: str

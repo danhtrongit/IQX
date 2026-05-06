@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -71,6 +71,20 @@ class PremiumSubscriptionRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_by_user_id_for_update(self, user_id: uuid.UUID) -> PremiumSubscription | None:
+        """Get subscription with row lock (FOR UPDATE on PostgreSQL).
+
+        On SQLite this degrades to a plain SELECT because SQLite uses
+        database-level locking rather than row-level locks.
+        """
+        stmt = (
+            select(PremiumSubscription)
+            .where(PremiumSubscription.user_id == user_id)
+            .with_for_update()
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def create(self, sub: PremiumSubscription) -> PremiumSubscription:
         self._session.add(sub)
         await self._session.flush()
@@ -92,6 +106,54 @@ class PremiumSubscriptionRepository:
         await self._session.flush()
         await self._session.refresh(sub)
         return sub
+
+    async def atomic_extend_period(
+        self,
+        user_id: uuid.UUID,
+        plan_id: uuid.UUID,
+        duration_days: int,
+        now: datetime,
+    ) -> int:
+        """Extend subscription period under a row lock (FOR UPDATE).
+
+        Acquires a row-level lock on PostgreSQL (degrades to db-level
+        lock on SQLite) before reading the current period, preventing
+        concurrent IPN/admin-grant requests from losing purchased time.
+
+        If the subscription is still active (``current_period_end > now``),
+        the duration is stacked on top of the existing end. Otherwise a
+        fresh period starts from *now*.
+
+        Returns:
+            Number of rows updated (0 = no subscription found, 1 = success).
+        """
+        sub = await self.get_by_user_id_for_update(user_id)
+        if sub is None:
+            return 0
+
+        duration = timedelta(days=duration_days)
+        current_end = sub.current_period_end
+        if current_end.tzinfo is None:
+            current_end = current_end.replace(tzinfo=UTC)
+        current_start = sub.current_period_start
+        if current_start.tzinfo is None:
+            current_start = current_start.replace(tzinfo=UTC)
+
+        if current_end > now:
+            new_start = current_start
+            new_end = current_end + duration
+        else:
+            new_start = now
+            new_end = now + duration
+
+        await self.update_period(
+            sub=sub,
+            plan_id=plan_id,
+            period_start=new_start,
+            period_end=new_end,
+            status=SubscriptionStatus.ACTIVE,
+        )
+        return 1
 
 
 class PremiumPaymentOrderRepository:

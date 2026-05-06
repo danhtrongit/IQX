@@ -686,6 +686,146 @@ async def test_trading_insider_deals(client: AsyncClient):
         assert len(body["data"]) == 1
 
 
+@pytest.mark.asyncio
+async def test_trading_history_exposes_full_price_history(client: AsyncClient):
+    with patch(
+        "app.services.market_data.sources.vietcap.fetch_json",
+        new_callable=AsyncMock,
+    ) as mock:
+        mock.return_value = {
+            "data": {
+                "content": [
+                    {
+                        "tradingDate": "2026-04-24",
+                        "foreignBuyVolumeMatched": 100000,
+                        "totalBuyTradeVolume": 500000,
+                        "totalSellUnmatchedVolume": 120000,
+                    },
+                ],
+            }
+        }
+
+        resp = await client.get(
+            "/api/v1/market-data/trading/VCB/history"
+            "?fromDate=20260401&toDate=20260424&resolution=1D"
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["data"][0]["foreign_buy_volume_matched"] == 100000
+        assert body["data"][0]["total_buy_trade_volume"] == 500000
+        assert body["data"][0]["total_sell_unmatched_volume"] == 120000
+
+
+@pytest.mark.asyncio
+async def test_trading_summary_exposes_price_history_summary(client: AsyncClient):
+    with patch(
+        "app.services.market_data.sources.vietcap.fetch_json",
+        new_callable=AsyncMock,
+    ) as mock:
+        mock.return_value = {
+            "data": {
+                "foreignNetVolumeTotal": -250000,
+                "totalBuyTradeVolume": 5000000,
+                "totalBuyUnmatchedVolume": 800000,
+                "totalSellUnmatchedVolumeAvg": 150000,
+            }
+        }
+
+        resp = await client.get(
+            "/api/v1/market-data/trading/VCB/summary"
+            "?fromDate=20260401&toDate=20260424&resolution=1D"
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["data"]["foreign_net_volume_total"] == -250000
+        assert body["data"]["total_buy_trade_volume"] == 5000000
+        assert body["data"]["total_buy_unmatched_volume"] == 800000
+        assert body["data"]["total_sell_unmatched_volume_avg"] == 150000
+
+
+@pytest.mark.asyncio
+async def test_foreign_trade_summary_filters_foreign_fields(client: AsyncClient):
+    with patch(
+        "app.services.market_data.sources.vietcap.fetch_json",
+        new_callable=AsyncMock,
+    ) as mock:
+        mock.return_value = {
+            "data": {
+                "foreignBuyVolumeTotal": 900000,
+                "foreignNetValueTotal": -1200000000,
+                "totalBuyUnmatchedVolume": 100000,
+            }
+        }
+
+        resp = await client.get(
+            "/api/v1/market-data/trading/VCB/foreign-trade/summary"
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["data"]["foreign_buy_volume_total"] == 900000
+        assert body["data"]["foreign_net_value_total"] == -1200000000
+        assert "total_buy_unmatched_volume" not in body["data"]
+
+
+@pytest.mark.asyncio
+async def test_supply_demand_history_filters_supply_demand_fields(client: AsyncClient):
+    with patch(
+        "app.services.market_data.sources.vietcap.fetch_json",
+        new_callable=AsyncMock,
+    ) as mock:
+        mock.return_value = {
+            "data": {
+                "content": [
+                    {
+                        "tradingDate": "2026-04-24",
+                        "totalBuyTrade": 120,
+                        "totalBuyTradeVolume": 500000,
+                        "totalSellTradeVolume": 450000,
+                        "totalBuyUnmatchedVolume": 100000,
+                        "foreignBuyVolumeTotal": 900000,
+                    },
+                ],
+            }
+        }
+
+        resp = await client.get(
+            "/api/v1/market-data/trading/VCB/supply-demand"
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["data"][0]["trading_date"] == "2026-04-24"
+        assert body["data"][0]["total_buy_trade"] == 120
+        assert body["data"][0]["total_buy_trade_volume"] == 500000
+        assert body["data"][0]["total_buy_unmatched_volume"] == 100000
+        assert "foreign_buy_volume_total" not in body["data"][0]
+
+
+@pytest.mark.asyncio
+async def test_supply_demand_summary_filters_supply_demand_fields(client: AsyncClient):
+    with patch(
+        "app.services.market_data.sources.vietcap.fetch_json",
+        new_callable=AsyncMock,
+    ) as mock:
+        mock.return_value = {
+            "data": {
+                "totalBuyTradeVolume": 5000000,
+                "totalSellTradeVolumeAvg": 420000,
+                "totalBuyUnmatchedVolume": 800000,
+                "foreignNetVolumeTotal": -250000,
+            }
+        }
+
+        resp = await client.get(
+            "/api/v1/market-data/trading/VCB/supply-demand/summary"
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["data"]["total_buy_trade_volume"] == 5000000
+        assert body["data"]["total_sell_trade_volume_avg"] == 420000
+        assert body["data"]["total_buy_unmatched_volume"] == 800000
+        assert "foreign_net_volume_total" not in body["data"]
+
+
 # ══════════════════════════════════════════════════════
 # Company Statistics: proprietary, details, price-chart
 # ══════════════════════════════════════════════════════
@@ -888,9 +1028,64 @@ async def test_macro_gdp(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_macro_monthly_indicator_defaults_to_month(client: AsyncClient):
+    with patch(
+        "app.services.market_data.sources.mbk.fetch_json",
+        new_callable=AsyncMock,
+    ) as mock:
+        mock.return_value = [
+            {
+                "ReportDataID": 462249,
+                "TermYear": 2025,
+                "NormName": "Chỉ số giá tiêu dùng",
+                "NormTypeID": 52,
+                "NormValue": 0.05,
+                "ReportTime": "Tháng 8/2025",
+            },
+        ]
+
+        resp = await client.get("/api/v1/market-data/macro/economy/cpi?start_year=2024")
+
+        assert resp.status_code == 200
+        form_data = mock.await_args.kwargs["form_data"]
+        assert "type=2" in form_data
+        assert "normTypeID=52" in form_data
+
+
+@pytest.mark.asyncio
+async def test_macro_empty_series_returns_200(client: AsyncClient):
+    with patch(
+        "app.services.market_data.sources.mbk.fetch_json",
+        new_callable=AsyncMock,
+    ) as mock:
+        mock.return_value = []
+
+        resp = await client.get("/api/v1/market-data/macro/economy/cpi?period=quarter")
+
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["data"] == []
+        assert body["meta"]["source"] == "MBK"
+
+
+@pytest.mark.asyncio
 async def test_macro_invalid_indicator(client: AsyncClient):
     resp = await client.get("/api/v1/market-data/macro/economy/invalid_indicator")
     assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_macro_invalid_period(client: AsyncClient):
+    with patch(
+        "app.services.market_data.sources.mbk.fetch_json",
+        new_callable=AsyncMock,
+    ) as mock:
+        mock.return_value = []
+
+        resp = await client.get("/api/v1/market-data/macro/economy/cpi?period=week")
+
+        assert resp.status_code == 422
+        mock.assert_not_awaited()
 
 
 # ══════════════════════════════════════════════════════

@@ -13,6 +13,7 @@ _SOURCE = "MBK"
 _BASE_URL = "https://data.maybanktrade.com.vn/"
 
 _REPORT_PERIOD = {"day": "1", "month": "2", "quarter": "3", "year": "4"}
+VALID_PERIODS = set(_REPORT_PERIOD.keys())
 
 _TYPE_ID = {
     "gdp": "43",
@@ -28,6 +29,24 @@ _TYPE_ID = {
 }
 
 VALID_INDICATORS = set(_TYPE_ID.keys())
+
+_DEFAULT_PERIOD_BY_INDICATOR = {
+    "gdp": "quarter",
+    "cpi": "month",
+    "industrial_production": "month",
+    "export_import": "month",
+    "retail": "month",
+    "fdi": "month",
+    "money_supply": "month",
+    "exchange_rate": "day",
+    "population_labor": "year",
+    "interest_rate": "day",
+}
+
+
+def default_period_for_indicator(indicator: str) -> str:
+    """Return the MBK period that normally has data for a macro indicator."""
+    return _DEFAULT_PERIOD_BY_INDICATOR.get(indicator, "quarter")
 
 
 async def fetch_macro_data(
@@ -49,10 +68,14 @@ async def fetch_macro_data(
         msg = f"Unknown indicator '{indicator}'. Valid: {sorted(_TYPE_ID.keys())}"
         raise ValueError(msg)
 
+    if period not in _REPORT_PERIOD:
+        msg = f"Unknown period '{period}'. Valid: {sorted(_REPORT_PERIOD.keys())}"
+        raise ValueError(msg)
+
     if end_year is None:
         end_year = datetime.now().year
 
-    period_type = _REPORT_PERIOD.get(period, "3")
+    period_type = _REPORT_PERIOD[period]
     norm_type_id = _TYPE_ID[indicator]
 
     url = f"{_BASE_URL}data/reportdatatopbynormtype"

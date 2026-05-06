@@ -11,6 +11,8 @@
 | Endpoint | Nguồn chính | Fallback | Trạng thái |
 |---|---|---|---|
 | `GET /reference/symbols` | VCI | VND | ✅ |
+| `GET /reference/symbols/search` | DB (symbols) | — | ✅ |
+| `GET /reference/symbols/{symbol}` | DB (symbols) | — | ✅ |
 | `GET /reference/industries` | VCI | — | ✅ |
 | `GET /reference/indices` | STATIC | — | ✅ |
 | `GET /reference/groups/{group}/symbols` | VCI | — | ✅ |
@@ -25,7 +27,12 @@
 | `GET /quotes/{symbol}/intraday` | VCI | — | ✅ ⚠️ rỗng ngoài phiên |
 | `GET /quotes/{symbol}/price-depth` | VCI | — | ✅ ⚠️ rỗng ngoài phiên |
 | `POST /trading/price-board` | VCI | — | ✅ |
+| `GET /trading/{symbol}/history` | VCI | — | ✅ |
+| `GET /trading/{symbol}/summary` | VCI | — | ✅ |
 | `GET /trading/{symbol}/foreign-trade` | VCI | — | ✅ |
+| `GET /trading/{symbol}/foreign-trade/summary` | VCI | — | ✅ |
+| `GET /trading/{symbol}/supply-demand` | VCI | — | ✅ |
+| `GET /trading/{symbol}/supply-demand/summary` | VCI | — | ✅ |
 | `GET /trading/{symbol}/insider-deals` | VCI | — | ✅ |
 | `GET /trading/{symbol}/proprietary` | VCI | — | ✅ |
 | `GET /trading/{symbol}/proprietary/summary` | VCI | — | ✅ |
@@ -74,6 +81,15 @@
 | `GET /macro/economy/{indicator}` | MBK | ✅ |
 
 Các chỉ báo hỗ trợ: `gdp`, `cpi`, `fdi`, `exchange_rate`, `interest_rate`, `money_supply`, `industrial_production`, `export_import`, `retail`, `population_labor`.
+
+Chu kỳ mặc định theo chỉ báo, khớp dữ liệu thực tế của MBK/vnstock:
+
+| Chu kỳ | Chỉ báo |
+|---|---|
+| `day` | `exchange_rate`, `interest_rate` |
+| `month` | `cpi`, `fdi`, `industrial_production`, `export_import`, `retail`, `money_supply` |
+| `quarter` | `gdp` |
+| `year` | `population_labor` |
 
 ## 8. Hàng hóa (`/macro/commodities`)
 
@@ -177,3 +193,31 @@ Các chỉ báo hỗ trợ: `gdp`, `cpi`, `fdi`, `exchange_rate`, `interest_rate
 | [`vietcap-sector-api.md`](./vietcap-sector-api.md) | Trang Ngành: xếp hạng, thông tin ngành |
 | [`vietcap-screening-api.md`](./vietcap-screening-api.md) | Trang Bộ lọc cổ phiếu: tiêu chí, paging, preset |
 | [`vietcap-ai-news-api-discovery.md`](./vietcap-ai-news-api-discovery.md) | API tin AI Vietcap: business/topic/exchange, detail, audio, ticker view |
+
+## 15. Bảng symbols nội bộ (DB-backed)
+
+Bảng `symbols` lưu trữ danh sách mã chứng khoán/doanh nghiệp để phục vụ tìm kiếm nhanh
+từ cơ sở dữ liệu thay vì gọi upstream mỗi lần.
+
+| Endpoint | Mô tả |
+|---|---|
+| `GET /reference/symbols/search` | Tìm kiếm mã CK với ranking (exact > prefix > contains), filter sàn/loại, phân trang |
+| `GET /reference/symbols/{symbol}` | Lấy chi tiết một mã CK, 404 nếu không tìm thấy |
+
+### Seed command
+
+```bash
+# Seed đầy đủ (recommend lần đầu)
+cd backend && uv run python -m app.scripts.seed_symbols --validate-logos --deactivate-missing
+
+# Dry run (chỉ hiển thị summary, không ghi DB)
+cd backend && uv run python -m app.scripts.seed_symbols --dry-run
+
+# Giới hạn 50 symbols (dev/test)
+cd backend && uv run python -m app.scripts.seed_symbols --limit 50
+```
+
+Nguồn dữ liệu:
+- **Primary**: `fetch_search_bar(language=1)` từ Vietcap IQ
+- **Merge**: `fetch_symbols_by_exchange()` từ Vietcap Trading (fallback VNDirect)
+- **Logo**: Simplize CDN (`https://cdn.simplize.vn/simplizevn/logo/{SYMBOL}.jpeg`)
