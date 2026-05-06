@@ -64,6 +64,41 @@ async def create_checkout(
     return await service.create_checkout(user_id=current_user.id, plan_id=body.plan_id)
 
 
+@router.get("/my-orders")
+async def get_my_orders(current_user: CurrentUser, db: DBSession):
+    """Lịch sử thanh toán của người dùng hiện tại."""
+    from sqlalchemy import text
+
+    result = await db.execute(
+        text("""
+            SELECT o.id, o.invoice_number, o.amount_vnd, o.currency,
+                   o.status, o.paid_at, o.created_at,
+                   p.name as plan_name, p.code as plan_code
+            FROM premium_payment_orders o
+            LEFT JOIN premium_plans p ON p.id = o.plan_id
+            WHERE o.user_id = :uid
+            ORDER BY o.created_at DESC
+            LIMIT 20
+        """),
+        {"uid": str(current_user.id)},
+    )
+    rows = result.mappings().all()
+    return [
+        {
+            "id": str(r["id"]),
+            "invoiceNumber": r["invoice_number"],
+            "amount": r["amount_vnd"],
+            "currency": r["currency"],
+            "status": r["status"],
+            "planName": r["plan_name"],
+            "planCode": r["plan_code"],
+            "paidAt": r["paid_at"].isoformat() if r["paid_at"] else None,
+            "createdAt": r["created_at"].isoformat() if r["created_at"] else None,
+        }
+        for r in rows
+    ]
+
+
 # ── SePay IPN (public, no auth — uses X-Secret-Key) ─
 
 

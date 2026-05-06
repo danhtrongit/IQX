@@ -23,6 +23,7 @@ interface AuthContextValue {
   login: (payload: LoginPayload) => Promise<void>
   register: (payload: RegisterPayload) => Promise<void>
   logout: () => Promise<void>
+  refreshUser: () => Promise<void>
   showAuthModal: boolean
   setShowAuthModal: (open: boolean) => void
   authModalTab: "login" | "register"
@@ -108,6 +109,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const freshUser = await authApi.getMe()
+      localStorage.setItem("user", JSON.stringify(freshUser))
+      setUser(freshUser)
+    } catch {
+      // silently fail if not authenticated
+    }
+  }, [])
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -116,12 +127,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      refreshUser,
       showAuthModal,
       setShowAuthModal,
       authModalTab,
       setAuthModalTab,
     }),
-    [user, isLoading, login, register, logout, showAuthModal, authModalTab],
+    [user, isLoading, login, register, logout, refreshUser, showAuthModal, authModalTab],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

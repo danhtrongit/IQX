@@ -1,6 +1,8 @@
+import { useEffect } from "react"
 import { useNavigate } from "react-router"
 import { CheckCircle2, XCircle, Ban, ArrowLeft, Crown, Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/contexts/auth-context"
 
 type ResultType = "success" | "error" | "cancel"
 
@@ -14,7 +16,7 @@ const CONFIG: Record<ResultType, {
   success: {
     icon: <CheckCircle2 className="size-16" />,
     title: "Thanh toán thành công!",
-    description: "Tài khoản của bạn đã được nâng cấp lên Premium. Hãy đăng nhập lại để trải nghiệm đầy đủ tính năng.",
+    description: "Tài khoản của bạn đã được nâng cấp lên Premium. Tận hưởng đầy đủ tính năng ngay bây giờ!",
     color: "text-emerald-500",
     bgGlow: "bg-emerald-500/10",
   },
@@ -36,7 +38,15 @@ const CONFIG: Record<ResultType, {
 
 export default function PaymentResultPage({ type }: { type: ResultType }) {
   const navigate = useNavigate()
+  const { refreshUser } = useAuth()
   const config = CONFIG[type]
+
+  // Auto-refresh user data on payment success to update role in header
+  useEffect(() => {
+    if (type === "success") {
+      refreshUser()
+    }
+  }, [type, refreshUser])
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center relative">

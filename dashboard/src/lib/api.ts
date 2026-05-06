@@ -496,15 +496,32 @@ export const paymentsApi = {
    *  GET /premium/me returns subscription status only, not history.
    *  Returning empty data gracefully. */
   getHistory: async (_page = 1, _limit = 10) => {
-    return {
-      message: "OK",
-      data: {
-        items: [] as any[],
-        total: 0,
-        page: _page,
-        limit: _limit,
-        totalPages: 0,
-      },
+    try {
+      const raw = await api.get("premium/my-orders").json<any[]>()
+      const items = raw.map((o: any) => ({
+        id: o.id,
+        description: o.planName || "IQX Premium",
+        amount: o.amount,
+        status: o.status === "paid" ? "COMPLETED" : o.status === "pending" ? "PENDING" : "FAILED",
+        createdAt: o.createdAt,
+        paidAt: o.paidAt,
+        invoiceNumber: o.invoiceNumber,
+      }))
+      return {
+        message: "OK",
+        data: {
+          items,
+          total: items.length,
+          page: _page,
+          limit: _limit,
+          totalPages: 1,
+        },
+      }
+    } catch {
+      return {
+        message: "OK",
+        data: { items: [] as any[], total: 0, page: _page, limit: _limit, totalPages: 0 },
+      }
     }
   },
 }
