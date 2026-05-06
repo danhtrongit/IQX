@@ -51,7 +51,10 @@ class UserService:
         if not phone_number:
             return {}
         try:
-            parsed = phonenumbers.parse(phone_number, None)
+            # Default to VN region so both "0912345678" and "+84912345678" work
+            parsed = phonenumbers.parse(phone_number, "VN")
+            if not phonenumbers.is_valid_number(parsed):
+                return {"phone_number": phone_number}
             return {
                 "phone_number": phone_number,
                 "phone_country_code": f"+{parsed.country_code}",
