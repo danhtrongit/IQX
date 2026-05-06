@@ -269,18 +269,23 @@ function WatchlistTabContent() {
     }
   }, [allSymbols.join(',')])
 
-  // Fetch sparkline data (intraday prices)
+  // Fetch sparkline data (3-month daily close prices)
   const [sparklines, setSparklines] = useState<Record<string, number[]>>({})
   useEffect(() => {
     if (allSymbols.length === 0) return
     const API = import.meta.env.VITE_API_URL || '/api/v1'
+    // Calculate 3-month date range
+    const now = new Date()
+    const end = now.toISOString().slice(0, 10)
+    const from = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()).toISOString().slice(0, 10)
     Promise.allSettled(
       allSymbols.map(async (sym) => {
         try {
-          const resp = await fetch(`${API}/market-data/quotes/${sym}/intraday`)
+          const resp = await fetch(`${API}/market-data/quotes/${sym}/ohlcv?start=${from}&end=${end}&interval=1D`)
           if (!resp.ok) return
           const json = await resp.json()
-          const points = (json.data || json || []).map((p: any) => Number(p.close ?? p.close_price ?? p.price ?? 0)).filter((v: number) => v > 0)
+          const items = json.data || json || []
+          const points = items.map((p: any) => Number(p.close ?? p.close_price ?? 0)).filter((v: number) => v > 0)
           if (points.length > 2) setSparklines(prev => ({ ...prev, [sym.toUpperCase()]: points }))
         } catch { /* ignore */ }
       })
@@ -423,8 +428,8 @@ function WatchlistTabContent() {
                             </p>
                           )}
                         </div>
-                        {/* Sparkline */}
-                        <Sparkline data={spark || []} color={sparkColor} width={56} height={22} refPrice={ref || undefined} />
+                        {/* Sparkline — 3-month daily */}
+                        <Sparkline data={spark || []} color={sparkColor} width={56} height={22} />
                         {/* Price */}
                         <div className="flex flex-col items-end shrink-0 min-w-[62px]">
                           <span className={`text-sm font-black tabular-nums ${color}`}>{fp(price)}</span>
