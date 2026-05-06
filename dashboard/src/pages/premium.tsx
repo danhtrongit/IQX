@@ -14,23 +14,45 @@ import {
   BarChart3,
   Headphones,
   Sparkles,
+  BadgePercent,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/auth-context"
 import { paymentsApi, type PlanInfo } from "@/lib/api"
 import { toast } from "sonner"
 
-const PLAN_ICONS: Record<string, React.ReactNode> = {
-  MONTHLY: <Zap className="size-5" />,
-  QUARTERLY: <Zap className="size-5" />,
-  SEMI_ANNUAL: <Crown className="size-5" />,
-  ANNUAL: <Rocket className="size-5" />,
+/* ── Plan metadata (discount/original prices) ──────── */
+
+interface PlanMeta {
+  icon: React.ReactNode
+  originalMonthly: number   // giá gốc 1 tháng
+  discount: number          // % giảm
+  badge: string | null
+  tagline: string
 }
 
-const PLAN_BADGES: Record<string, string> = {
-  QUARTERLY: "Tiết kiệm 5%",
-  SEMI_ANNUAL: "Phổ biến nhất",
-  ANNUAL: "Tiết kiệm 20%",
+const PLAN_META: Record<string, PlanMeta> = {
+  MONTHLY: {
+    icon: <Zap className="size-5" />,
+    originalMonthly: 100_000,
+    discount: 50,
+    badge: "Giảm 50%",
+    tagline: "Trải nghiệm linh hoạt theo tháng",
+  },
+  SEMI_ANNUAL: {
+    icon: <Crown className="size-5" />,
+    originalMonthly: 100_000,
+    discount: 55,
+    badge: "Phổ biến nhất · Giảm 55%",
+    tagline: "Lựa chọn tiêu chuẩn, tối ưu chi phí",
+  },
+  ANNUAL: {
+    icon: <Rocket className="size-5" />,
+    originalMonthly: 100_000,
+    discount: 60,
+    badge: "Tiết kiệm tối đa · Giảm 60%",
+    tagline: "Đầu tư dài hạn, tiết kiệm tối đa",
+  },
 }
 
 const PREMIUM_FEATURES = [
@@ -87,7 +109,6 @@ export default function PremiumPage() {
       const res = await paymentsApi.createCheckout(planKey)
       const { checkoutUrl, fields } = res.data
 
-      // Create hidden form and submit to SePay
       const form = document.createElement("form")
       form.method = "POST"
       form.action = `${checkoutUrl}`
@@ -107,14 +128,14 @@ export default function PremiumPage() {
       let msg = "Không thể tạo đơn thanh toán"
       try {
         const body = await err?.response?.json()
-        msg = Array.isArray(body.message) ? body.message[0] : body.message || msg
+        const detail = body?.detail || body?.message
+        if (detail) msg = typeof detail === "string" ? detail : msg
       } catch { /* */ }
       toast.error(msg)
       setCheckingOut(null)
     }
   }
 
-  // Determine which plan is "popular"
   const popularPlan = "SEMI_ANNUAL"
 
   return (
@@ -143,7 +164,7 @@ export default function PremiumPage() {
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-medium mb-4">
             <Sparkles className="size-3" />
-            Đầu tư thông minh hơn
+            Ưu đãi đặc biệt — Giảm đến 60%
           </div>
           <h2 className="text-3xl font-bold tracking-tight mb-3">
             Mở khóa toàn bộ sức mạnh{" "}
@@ -164,116 +185,128 @@ export default function PremiumPage() {
           </div>
         ) : (
           <div className="grid md:grid-cols-3 gap-5 max-w-4xl mx-auto mb-12">
-            {plans
-              .filter((p) => p.plan !== "QUARTERLY")
-              .map((plan) => {
-                const isPopular = plan.plan === popularPlan
-                const icon = PLAN_ICONS[plan.plan] || <Zap className="size-5" />
-                const badge = PLAN_BADGES[plan.plan]
-                const monthlyPrice = Math.round(plan.price / plan.months)
-                const isCheckingOut = checkingOut === plan.plan
+            {plans.map((plan) => {
+              const meta = PLAN_META[plan.plan] || PLAN_META.MONTHLY
+              const isPopular = plan.plan === popularPlan
+              const isCheckingOut = checkingOut === plan.plan
+              const monthlyPrice = Math.round(plan.price / plan.months)
+              const originalTotal = meta.originalMonthly * plan.months
 
-                return (
-                  <div
-                    key={plan.plan}
-                    className={`relative rounded-2xl border transition-all duration-300 hover:-translate-y-1 ${
-                      isPopular
-                        ? "border-amber-500/30 bg-gradient-to-b from-amber-500/[0.04] to-transparent shadow-lg shadow-amber-500/5"
-                        : "border-border bg-card hover:border-border/80 hover:shadow-lg hover:shadow-black/10"
-                    }`}
-                  >
-                    {/* Popular badge */}
-                    {badge && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span className={`text-[10px] font-bold px-3 py-1 rounded-full ${
-                          isPopular
-                            ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white"
-                            : "bg-primary/10 text-primary border border-primary/20"
-                        }`}>
-                          {badge}
-                        </span>
+              return (
+                <div
+                  key={plan.plan}
+                  className={`relative rounded-2xl border transition-all duration-300 hover:-translate-y-1 ${
+                    isPopular
+                      ? "border-amber-500/30 bg-gradient-to-b from-amber-500/[0.04] to-transparent shadow-lg shadow-amber-500/5"
+                      : "border-border bg-card hover:border-border/80 hover:shadow-lg hover:shadow-black/10"
+                  }`}
+                >
+                  {/* Badge */}
+                  {meta.badge && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className={`text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap flex items-center gap-1 ${
+                        isPopular
+                          ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white"
+                          : "bg-red-500/10 text-red-500 border border-red-500/20"
+                      }`}>
+                        <BadgePercent className="size-3" />
+                        {meta.badge}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Top glow for popular */}
+                  {isPopular && (
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
+                  )}
+
+                  <div className="p-6">
+                    {/* Plan name */}
+                    <div className="flex items-center gap-2.5 mb-1">
+                      <div className={`${isPopular ? "text-amber-500" : "text-primary"}`}>
+                        {meta.icon}
                       </div>
-                    )}
+                      <h3 className="text-lg font-bold">{plan.label}</h3>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-5">
+                      {meta.tagline}
+                    </p>
 
-                    {/* Top glow for popular */}
-                    {isPopular && (
-                      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
-                    )}
-
-                    <div className="p-6">
-                      {/* Plan name */}
-                      <div className="flex items-center gap-2.5 mb-1">
-                        <div className={`${isPopular ? "text-amber-500" : "text-primary"}`}>
-                          {icon}
-                        </div>
-                        <h3 className="text-lg font-bold">{plan.label}</h3>
-                      </div>
-                      <p className="text-xs text-muted-foreground mb-5">
-                        {plan.months === 1
-                          ? "Trải nghiệm linh hoạt theo tháng"
-                          : plan.months === 6
-                            ? "Lựa chọn tiêu chuẩn, tối ưu chi phí"
-                            : "Đầu tư dài hạn, tiết kiệm tối đa"}
-                      </p>
-
-                      {/* Price */}
-                      <div className="mb-1">
+                    {/* Price section */}
+                    <div className="mb-1">
+                      <div className="flex items-baseline gap-2 mb-0.5">
                         <span className="text-3xl font-extrabold tracking-tight">
                           {fmtPrice(monthlyPrice)}
                         </span>
-                        <span className="text-sm text-muted-foreground ml-1">₫/tháng</span>
+                        <span className="text-sm text-muted-foreground">₫/tháng</span>
                       </div>
-                      {plan.months > 1 && (
-                        <p className="text-[11px] text-muted-foreground mb-5">
-                          Thanh toán {fmtPrice(plan.price)} ₫ cho {plan.months} tháng
-                        </p>
-                      )}
-                      {plan.months === 1 && (
-                        <p className="text-[11px] text-muted-foreground mb-5">&nbsp;</p>
-                      )}
-
-                      {/* CTA */}
-                      <Button
-                        className={`w-full h-10 font-semibold text-sm mb-5 ${
-                          isPopular
-                            ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-none shadow-md shadow-amber-500/20"
-                            : ""
-                        }`}
-                        variant={isPopular ? "default" : "outline"}
-                        disabled={isCheckingOut || isPremium}
-                        onClick={() => handleSelectPlan(plan.plan)}
-                      >
-                        {isCheckingOut ? (
-                          <>
-                            <Loader2 className="size-4 animate-spin mr-2" />
-                            Đang xử lý...
-                          </>
-                        ) : isPremium ? (
-                          "Bạn đã là Premium"
-                        ) : (
-                          "Chọn gói này"
-                        )}
-                      </Button>
-
-                      {/* Features */}
-                      <div className="space-y-2.5">
-                        {PREMIUM_FEATURES.map((f, i) => (
-                          <div key={i} className="flex items-start gap-2.5">
-                            <Check
-                              className={`size-3.5 mt-0.5 shrink-0 ${
-                                isPopular ? "text-amber-500" : "text-primary/60"
-                              }`}
-                            />
-                            <span className="text-xs text-muted-foreground leading-relaxed">
-                              {f.text}
-                            </span>
-                          </div>
-                        ))}
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground line-through">
+                          {fmtPrice(meta.originalMonthly)}₫
+                        </span>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/10 text-red-500">
+                          -{meta.discount}%
+                        </span>
                       </div>
                     </div>
+
+                    {plan.months > 1 ? (
+                      <p className="text-[11px] text-muted-foreground mb-5">
+                        Thanh toán <span className="font-semibold text-foreground">{fmtPrice(plan.price)}₫</span>{" "}
+                        cho {plan.months} tháng
+                        <span className="ml-1 line-through text-muted-foreground/60">{fmtPrice(originalTotal)}₫</span>
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground mb-5">
+                        Thanh toán <span className="font-semibold text-foreground">{fmtPrice(plan.price)}₫</span>/tháng
+                      </p>
+                    )}
+
+                    {/* CTA */}
+                    <Button
+                      className={`w-full h-10 font-semibold text-sm mb-5 ${
+                        isPopular
+                          ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-none shadow-md shadow-amber-500/20"
+                          : ""
+                      }`}
+                      variant={isPopular ? "default" : "outline"}
+                      disabled={isCheckingOut || isPremium}
+                      onClick={() => handleSelectPlan(plan.plan)}
+                    >
+                      {isCheckingOut ? (
+                        <>
+                          <Loader2 className="size-4 animate-spin mr-2" />
+                          Đang chuyển tới thanh toán...
+                        </>
+                      ) : isPremium ? (
+                        "Bạn đã là Premium ✓"
+                      ) : (
+                        <>
+                          Chọn gói này
+                          {isPopular && <Sparkles className="size-3.5 ml-1.5" />}
+                        </>
+                      )}
+                    </Button>
+
+                    {/* Features */}
+                    <div className="space-y-2.5">
+                      {PREMIUM_FEATURES.map((f, i) => (
+                        <div key={i} className="flex items-start gap-2.5">
+                          <Check
+                            className={`size-3.5 mt-0.5 shrink-0 ${
+                              isPopular ? "text-amber-500" : "text-primary/60"
+                            }`}
+                          />
+                          <span className="text-xs text-muted-foreground leading-relaxed">
+                            {f.text}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                )
-              })}
+                </div>
+              )
+            })}
           </div>
         )}
 

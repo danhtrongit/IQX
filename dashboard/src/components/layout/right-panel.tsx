@@ -260,7 +260,7 @@ export function RightPanel() {
                 if (isPremiumErr) {
                   toast.error(activateMsg, {
                     duration: 8000,
-                    action: { label: "Nâng cấp Premium", onClick: () => navigate("/premium") },
+                    action: { label: "Nâng cấp Premium", onClick: () => navigate("/nang-cap") },
                   })
                 } else {
                   toast.error(activateMsg)
@@ -272,7 +272,7 @@ export function RightPanel() {
       } else if (needPremium) {
         toast.error(msg, {
           duration: 8000,
-          action: { label: "Nâng cấp Premium", onClick: () => navigate("/premium") },
+          action: { label: "Nâng cấp Premium", onClick: () => navigate("/nang-cap") },
         })
       } else {
         toast.error(msg)
@@ -479,7 +479,7 @@ export function RightPanel() {
                   if (isPremiumErr) {
                     toast.error(msg, {
                       duration: 8000,
-                      action: { label: "Nâng cấp Premium", onClick: () => navigate("/premium") },
+                      action: { label: "Nâng cấp Premium", onClick: () => navigate("/nang-cap") },
                     })
                   } else {
                     toast.error(msg)
