@@ -355,13 +355,7 @@ export function Header() {
             {user.role === "user" && (
               <Button
                 size="sm"
-                onClick={() => {
-                  if (currentPath === "/") {
-                    document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })
-                  } else {
-                    navigate("/#pricing")
-                  }
-                }}
+                onClick={() => navigate("/nang-cap")}
                 className="h-7 text-[10px] gap-1 px-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold tracking-wide mr-1 shadow-sm border-none"
               >
                 <Crown className="size-3" />
