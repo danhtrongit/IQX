@@ -4,8 +4,6 @@ import {
   Search,
   Bell,
   Settings,
-  Moon,
-  Sun,
   ChevronDown,
   LayoutGrid,
   Newspaper,
@@ -249,7 +247,6 @@ function StockSearch() {
 }
 
 export function Header() {
-  const [isDark, setIsDark] = useState(true)
   const {
     user,
     isAuthenticated,
@@ -321,28 +318,6 @@ export function Header() {
 
       {/* Utility Icons */}
       <div id="header-utilities" className="hidden md:flex items-center gap-0.5">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7"
-              onClick={() => {
-                setIsDark(!isDark)
-                document.documentElement.classList.toggle("dark")
-              }}
-            >
-              {isDark ? (
-                <Sun className="size-3.5" />
-              ) : (
-                <Moon className="size-3.5" />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">
-            <p>{isDark ? "Chế độ sáng" : "Chế độ tối"}</p>
-          </TooltipContent>
-        </Tooltip>
       </div>
 
       <Separator orientation="vertical" className="h-5 mx-1" />
