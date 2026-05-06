@@ -573,7 +573,7 @@ function HoldingsTabContent() {
           <span className="w-[72px]">Mã CK</span>
           <span className="w-[32px] text-right">SL</span>
           <span className="flex-1 text-right">Giá vốn</span>
-          <span className="flex-1 text-right">Giá TT</span>
+          <span className="flex-1 text-right">Giá thị trường</span>
           <span className="w-[70px] text-right">Lãi/Lỗ</span>
         </div>
       )}
