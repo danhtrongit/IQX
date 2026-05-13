@@ -66,6 +66,16 @@ function pc(price: number, ref: number, ceil: number, floor: number): string {
   return "text-amber-400"
 }
 
+// Hex equivalents of pc() so sparkline stroke/gradient can match price text tone
+function pcHex(price: number, ref: number, ceil: number, floor: number): string {
+  if (!price || !ref) return "#94a3b8"
+  if (price >= ceil) return "#d946ef"
+  if (price <= floor) return "#22d3ee"
+  if (price > ref) return "#10b981"
+  if (price < ref) return "#ef4444"
+  return "#f59e0b"
+}
+
 // ── Symbol info cache (company name, industry) ──
 interface SymbolInfo {
   name: string
@@ -437,8 +447,9 @@ function WatchlistTabContent() {
                 const floor = d?.floorPrice || 0
                 const isUp = chg > 0
                 const isDown = chg < 0
+                // Unified color tone so price text, percent text, and sparkline stroke all match
                 const color = pc(price, ref, ceil, floor)
-                const sparkColor = isUp ? "#10b981" : isDown ? "#ef4444" : "#f59e0b"
+                const sparkColor = pcHex(price, ref, ceil, floor)
 
                 return (
 	                  <div key={sym} className={`relative group ${draggedSymbol === sym ? "opacity-50" : ""}`}>
@@ -465,27 +476,27 @@ function WatchlistTabContent() {
                         >
                           <Star className="size-3.5 fill-current" />
                         </button>
-                        <StockLogo symbol={sym} size={36} />
-                        {/* Info: Symbol + Company */}
-                        <div className="min-w-0 shrink-1">
+                        <StockLogo symbol={sym} size={32} />
+                        {/* Info: Symbol + Company — fixed width so sparkline aligns across rows */}
+                        <div className="w-[68px] min-w-0 shrink-0">
                           <div className="flex items-center gap-1.5">
                             <span className="text-sm font-bold text-foreground group-hover:text-primary">{sym}</span>
                           </div>
                           {info && (
-                            <p className="text-[9px] text-muted-foreground truncate leading-tight mt-0.5 max-w-[56px]">
+                            <p className="text-[9px] text-muted-foreground truncate leading-tight mt-0.5">
                               {info.shortName || info.name}
                             </p>
                           )}
                         </div>
-                        {/* Sparkline — 3-month daily */}
-                        <Sparkline data={spark || []} color={sparkColor} width={56} height={22} />
-                        {/* Spacer */}
-                        <div className="flex-1" />
-	                        {/* Price — pinned right */}
-	                        <div className="flex flex-col items-end shrink-0 min-w-[62px]">
+                        {/* Sparkline — 3-month daily, horizontally centered in its column */}
+                        <div className="flex-1 flex items-center justify-center min-w-0">
+                          <Sparkline data={spark || []} color={sparkColor} width={60} height={22} />
+                        </div>
+	                        {/* Price — pinned right, fixed width */}
+	                        <div className="flex flex-col items-end shrink-0 w-[66px]">
 	                          <FlashingPrice price={price} className={color} />
 	                          {price > 0 ? (
-                            <span className={`text-[10px] font-semibold tabular-nums ${isUp ? "text-emerald-500" : isDown ? "text-red-500" : "text-amber-500"}`}>
+                            <span className={`text-[10px] font-semibold tabular-nums ${color}`}>
                               {isUp ? "+" : ""}{(pct || 0).toFixed(2)}%{isUp ? " ↑" : isDown ? " ↓" : ""}
                             </span>
                           ) : (
@@ -638,7 +649,10 @@ function HoldingsTabContent() {
             <div className="divide-y divide-border/10">
               {filtered.map((item) => {
                 const live = priceMap[item.symbol.toUpperCase()]
-                const currentPrice = live?.closePrice || item.currentPrice || 0
+                // live.closePrice is in x1000 units (e.g. 22.8 = 22,800 VND); convert to raw VND
+                // to match the avgPrice (giá vốn) formatting produced by fv().
+                const livePriceVnd = live?.closePrice ? live.closePrice * 1000 : 0
+                const currentPrice = livePriceVnd || item.currentPrice || 0
                 const pnlVal = item.pnl
                 const pnlPct = item.pnlPercent
                 const isP = pnlVal >= 0

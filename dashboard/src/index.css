@@ -221,32 +221,47 @@
 
 @keyframes price-flash-up {
   0% {
-    background-color: color-mix(in oklch, #10b981 45%, transparent);
+    background-color: color-mix(in oklch, #10b981 70%, transparent);
+    box-shadow: 0 0 10px color-mix(in oklch, #10b981 55%, transparent);
+    color: #ffffff;
+  }
+  60% {
+    background-color: color-mix(in oklch, #10b981 30%, transparent);
+    box-shadow: 0 0 4px color-mix(in oklch, #10b981 20%, transparent);
   }
   100% {
     background-color: transparent;
+    box-shadow: 0 0 0 transparent;
   }
 }
 
 @keyframes price-flash-down {
   0% {
-    background-color: color-mix(in oklch, #ef4444 45%, transparent);
+    background-color: color-mix(in oklch, #ef4444 70%, transparent);
+    box-shadow: 0 0 10px color-mix(in oklch, #ef4444 55%, transparent);
+    color: #ffffff;
+  }
+  60% {
+    background-color: color-mix(in oklch, #ef4444 30%, transparent);
+    box-shadow: 0 0 4px color-mix(in oklch, #ef4444 20%, transparent);
   }
   100% {
     background-color: transparent;
+    box-shadow: 0 0 0 transparent;
   }
 }
 
 .price-flash-up,
 .price-flash-down {
   border-radius: 4px;
-  padding-inline: 2px;
+  padding-inline: 3px;
+  display: inline-block;
 }
 
 .price-flash-up {
-  animation: price-flash-up 650ms ease-out;
+  animation: price-flash-up 850ms ease-out;
 }
 
 .price-flash-down {
-  animation: price-flash-down 650ms ease-out;
+  animation: price-flash-down 850ms ease-out;
 }
