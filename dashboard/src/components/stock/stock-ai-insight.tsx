@@ -10,6 +10,7 @@ import {
 	  TrendingDown,
 	  CheckCircle2,
 	  AlertTriangle,
+	  AlertCircle,
 	  Target,
 	  MinusCircle,
 	  X,
@@ -199,6 +200,74 @@ function getValueColor(value: string): string {
   if (v.includes("mạnh")) return "text-blue-400"
   if (v.includes("yếu")) return "text-slate-400"
   return "text-foreground"
+}
+
+// Derive a warning level for Layer 4 (insider) from its "Tác động" output value.
+// Returns null when the value is empty/undefined so the card header stays clean.
+type InsiderWarning = {
+  label: string
+  icon: typeof AlertTriangle
+  cls: string
+}
+
+function getInsiderWarning(value: unknown): InsiderWarning | null {
+  if (value == null) return null
+  const v = String(value).toLowerCase().trim()
+  if (!v) return null
+
+  if (
+    v.includes("đáng lo") || v.includes("lo ngại") || v.includes("cảnh báo") ||
+    v.includes("rủi ro") || v.includes("tiêu cực") || v.includes("áp lực") ||
+    v.includes("nguy cơ") || v.includes("nghiêm trọng")
+  ) {
+    return {
+      label: "Cảnh báo cao",
+      icon: AlertTriangle,
+      cls: "bg-red-500/15 text-red-400 border-red-500/30",
+    }
+  }
+
+  if (
+    v.includes("hỗ trợ") || v.includes("tích cực") || v.includes("ủng hộ") ||
+    v.includes("thuận lợi") || v.includes("tốt")
+  ) {
+    return {
+      label: "Tích cực",
+      icon: CheckCircle2,
+      cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+    }
+  }
+
+  if (
+    v.includes("trung tính") || v.includes("ngang") || v.includes("không") ||
+    v.includes("chưa rõ") || v.includes("bình thường")
+  ) {
+    return {
+      label: "Trung tính",
+      icon: MinusCircle,
+      cls: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+    }
+  }
+
+  // Unknown/uncategorised — still expose with a neutral indicator
+  return {
+    label: "Chưa rõ",
+    icon: AlertCircle,
+    cls: "bg-slate-500/15 text-slate-400 border-slate-500/30",
+  }
+}
+
+function WarningBadge({ w }: { w: InsiderWarning }) {
+  const Icon = w.icon
+  return (
+    <span
+      className={`ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-[9px] font-bold leading-none ${w.cls}`}
+      title={w.label}
+    >
+      <Icon className="size-2.5" />
+      {w.label}
+    </span>
+  )
 }
 
 // ── Detail Panel ──
@@ -659,6 +728,9 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
 	              const headerValue = key === "liquidity"
                 ? (insight.layers?.[key]?.output?.["Thanh khoản"] || "")
                 : ""
+              const insiderWarning = key === "insider"
+                ? getInsiderWarning(insight.layers?.[key]?.output?.["Tác động"])
+                : null
               return (
                 <motion.div
                   key={key}
@@ -682,6 +754,7 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
                       {headerValue && (
 	                        <span className={`text-[10px] font-bold ml-auto ${getValueColor(headerValue)}`}>{String(headerValue)}</span>
                       )}
+                      {insiderWarning && <WarningBadge w={insiderWarning} />}
                     </div>
                     {/* Card rows */}
                     {items.map((item) => (
