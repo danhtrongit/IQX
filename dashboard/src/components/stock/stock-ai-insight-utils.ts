@@ -40,7 +40,16 @@ export function cleanLayerSummaryValue(layerKey: string, value: unknown, label?:
   if (!text) return ""
 
   if (layerKey === "moneyFlow") {
-    text = text.replace(/\s+[+-]?\d+(?:[.,]\d+)?\s*$/u, "").trim()
+    // Strip trailing numeric token (handles: " -10", " +432", " (-10)", " -10 tỷ",
+    // " 2,5 triệu", ", 10", ": -10", Unicode minus, etc.) — keep only descriptor text
+    text = text
+      .replace(
+        /[\s,;:()\-–—]*\(?\s*[+\-−–—]?\d[\d.,\s]*\)?\s*(?:tỷ|tr|triệu|[kK]|%|đ|đồng|VND)?\s*\.?\s*$/u,
+        "",
+      )
+      // Clean up any dangling punctuation left at end
+      .replace(/[\s,;:()\-–—.]+$/u, "")
+      .trim()
   }
 
   return text

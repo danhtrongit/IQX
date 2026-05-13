@@ -14,6 +14,22 @@ describe("stock AI insight summary helpers", () => {
   it("keeps only text for money-flow summary values that end with a number", () => {
     expect(cleanLayerSummaryValue("moneyFlow", "Bán ròng mạnh 40")).toBe("Bán ròng mạnh")
     expect(cleanLayerSummaryValue("moneyFlow", "Mua ròng nhẹ -23")).toBe("Mua ròng nhẹ")
+    // Signed ASCII
+    expect(cleanLayerSummaryValue("moneyFlow", "Bán ròng mạnh -10")).toBe("Bán ròng mạnh")
+    expect(cleanLayerSummaryValue("moneyFlow", "Mua ròng nhẹ +432")).toBe("Mua ròng nhẹ")
+    // Unicode minus / dashes
+    expect(cleanLayerSummaryValue("moneyFlow", "Bán ròng mạnh −10")).toBe("Bán ròng mạnh")
+    expect(cleanLayerSummaryValue("moneyFlow", "Bán ròng mạnh – 10")).toBe("Bán ròng mạnh")
+    // With Vietnamese currency units
+    expect(cleanLayerSummaryValue("moneyFlow", "Bán ròng mạnh -10 tỷ")).toBe("Bán ròng mạnh")
+    expect(cleanLayerSummaryValue("moneyFlow", "Mua ròng 2,5 triệu")).toBe("Mua ròng")
+    expect(cleanLayerSummaryValue("moneyFlow", "Mua ròng nhẹ +432K")).toBe("Mua ròng nhẹ")
+    // Parenthesised & alternate separators
+    expect(cleanLayerSummaryValue("moneyFlow", "Bán ròng mạnh (-10)")).toBe("Bán ròng mạnh")
+    expect(cleanLayerSummaryValue("moneyFlow", "Bán ròng mạnh: -10")).toBe("Bán ròng mạnh")
+    expect(cleanLayerSummaryValue("moneyFlow", "Bán ròng mạnh, -10")).toBe("Bán ròng mạnh")
+    // No number → unchanged
+    expect(cleanLayerSummaryValue("moneyFlow", "cảnh báo nhiễu")).toBe("cảnh báo nhiễu")
   })
 
   it("removes liquidity impact from the layer card summary", () => {
