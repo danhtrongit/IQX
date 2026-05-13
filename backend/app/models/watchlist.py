@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import uuid
+
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -16,7 +18,7 @@ class WatchlistItem(UUIDMixin, TimestampMixin, Base):
         UniqueConstraint("user_id", "symbol", name="uq_watchlist_items_user_symbol"),
     )
 
-    user_id: Mapped[str] = mapped_column(
+    user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True,
     )
     symbol: Mapped[str] = mapped_column(String(20), nullable=False, index=True)

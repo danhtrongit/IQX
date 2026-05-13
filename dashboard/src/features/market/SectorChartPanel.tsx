@@ -49,8 +49,8 @@ function shortenName(name: string): string {
 
 /** Format volume in VND: 1.8T, 494.6B, etc. */
 function formatVND(vnd: number): string {
-  if (vnd >= 1_000) return `${(vnd / 1_000).toFixed(1)}T`;
-  if (vnd >= 1) return `${vnd.toFixed(1)}B`;
+  if (vnd >= 1_000) return `${Math.round(vnd / 1_000).toLocaleString("vi-VN")}T`;
+  if (vnd >= 1) return `${Math.round(vnd).toLocaleString("vi-VN")}B`;
   return `${(vnd * 1_000).toFixed(0)}M`;
 }
 
@@ -82,7 +82,7 @@ function BubbleTooltip({
           style={{ color: d.performance >= 0 ? "#34d399" : "#f87171" }}
         >
           {d.performance >= 0 ? "+" : ""}
-          {d.performance.toFixed(2)}%
+          {Math.round(d.performance)}%
         </span>
       </div>
       <div className="flex items-center gap-2">
@@ -148,7 +148,7 @@ function BubbleShape(props: any) {
         fontSize={10}
         fontWeight={600}
       >
-        {isUp ? "+" : ""}{d.performance.toFixed(2)}%
+        {isUp ? "+" : ""}{Math.round(d.performance)}%
       </text>
       {/* GTGD value */}
       <text
@@ -240,7 +240,7 @@ export function SectorChartPanel() {
                     type="number"
                     domain={[yMin, yMax]}
                     tick={{ fill: "#64748b", fontSize: 10, fontWeight: 500 }}
-                    tickFormatter={(v: number) => `${v.toFixed(1)}%`}
+	                    tickFormatter={(v: number) => `${Math.round(v)}%`}
                     axisLine={false}
                     tickLine={false}
                     width={48}

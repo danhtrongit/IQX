@@ -65,7 +65,7 @@ export function MarketSentiment() {
               <span className="text-[9px] text-slate-400 font-semibold uppercase tracking-wide">KLGD</span>
               <span className="text-sm font-bold tabular-nums whitespace-nowrap">{formatVolume(volume)}</span>
               <span className={`text-[9px] tabular-nums font-semibold ${changeColor(changePct)}`}>
-                {changeArrow(changePct)} {changePct > 0 ? "+" : ""}{changePct.toFixed(2)}%
+                {changeArrow(changePct)} {changePct > 0 ? "+" : ""}{Math.round(changePct)}%
               </span>
             </div>
           </div>
@@ -76,7 +76,7 @@ export function MarketSentiment() {
               <span className="text-[9px] text-slate-400 font-semibold uppercase tracking-wide">NN mua</span>
               <span className="text-sm font-bold tabular-nums text-emerald-300 whitespace-nowrap">{formatVndBillion(foreign.buyValue)}</span>
               <span className="text-[9px] tabular-nums font-semibold text-emerald-300">
-                ▲ {totalFlow > 0 ? ((foreign.buyValue / totalFlow) * 100).toFixed(1) : "0.0"}%
+                ▲ {totalFlow > 0 ? Math.round((foreign.buyValue / totalFlow) * 100) : 0}%
               </span>
             </div>
           </div>
@@ -87,7 +87,7 @@ export function MarketSentiment() {
               <span className="text-[9px] text-slate-400 font-semibold uppercase tracking-wide">NN bán</span>
               <span className="text-sm font-bold tabular-nums text-red-400 whitespace-nowrap">{formatVndBillion(foreign.sellValue)}</span>
               <span className="text-[9px] tabular-nums font-semibold text-red-400">
-                ▼ {totalFlow > 0 ? ((foreign.sellValue / totalFlow) * 100).toFixed(1) : "0.0"}%
+                ▼ {totalFlow > 0 ? Math.round((foreign.sellValue / totalFlow) * 100) : 0}%
               </span>
             </div>
           </div>

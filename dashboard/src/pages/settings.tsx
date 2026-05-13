@@ -64,7 +64,7 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPw, setShowPw] = useState(false)
-  const [isSavingPassword, setIsSavingPassword] = useState(false)
+  const [isSavingPassword] = useState(false)
 
   // Payment history
   const [payments, setPayments] = useState<any[]>([])

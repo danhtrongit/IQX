@@ -19,16 +19,6 @@ interface SectorAnalysisItem {
   } | null
 }
 
-interface AiSectorsResponse {
-  message: string
-  data: {
-    group: string
-    asOfDate: string | null
-    total: number
-    sectors: SectorAnalysisItem[]
-  } | null
-}
-
 interface MarketIndex {
   symbol: string
   price: number

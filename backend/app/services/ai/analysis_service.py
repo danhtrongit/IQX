@@ -288,6 +288,12 @@ def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
     ohlcv = payload.get("ohlcv_30", [])
     price_board = payload.get("price_board")
 
+    def _pick(item: dict[str, Any], *keys: str, default: Any = 0) -> Any:
+        for key in keys:
+            if key in item and item[key] is not None:
+                return item[key]
+        return default
+
     # Realtime data from price_board
     realtime = None
     if isinstance(price_board, list) and price_board:
@@ -353,16 +359,43 @@ def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
     foreign_trade = payload.get("foreign_trade", [])
     proprietary = payload.get("proprietary", [])
 
-    def _normalize_flow(items: Any) -> list:
+    def _normalize_flow(items: Any, *, source: str) -> list:
         if not isinstance(items, list):
             return []
         result = []
         for item in items[-15:]:
+            if source == "foreign":
+                match_keys = (
+                    "matchNetVolume", "match_net_volume", "foreignNetVolumeMatched",
+                    "foreign_net_volume_matched", "netVolume", "net_volume",
+                )
+                deal_keys = (
+                    "dealNetVolume", "deal_net_volume", "foreignNetVolumeDeal",
+                    "foreign_net_volume_deal",
+                )
+                total_keys = (
+                    "totalNetVolume", "total_net_volume", "foreignNetVolumeTotal",
+                    "foreign_net_volume_total", "netVolume", "net_volume",
+                )
+            else:
+                match_keys = (
+                    "matchNetVolume", "match_net_volume", "totalMatchTradeNetVolume",
+                    "total_match_trade_net_volume", "netVolume", "net_volume",
+                )
+                deal_keys = (
+                    "dealNetVolume", "deal_net_volume", "totalDealTradeNetVolume",
+                    "total_deal_trade_net_volume",
+                )
+                total_keys = (
+                    "totalNetVolume", "total_net_volume", "totalTradeNetVolume",
+                    "total_trade_net_volume", "netVolume", "net_volume",
+                )
+
             result.append({
-                "date": item.get("tradingDate") or item.get("date") or item.get("trading_date"),
-                "matchNetVolume": item.get("matchNetVolume") or item.get("match_net_volume") or item.get("netVolume", 0),
-                "dealNetVolume": item.get("dealNetVolume") or item.get("deal_net_volume", 0),
-                "totalNetVolume": item.get("totalNetVolume") or item.get("total_net_volume") or item.get("netVolume", 0),
+                "date": _pick(item, "tradingDate", "date", "trading_date", "updateDate", "update_date", default=None),
+                "matchNetVolume": _pick(item, *match_keys, default=0),
+                "dealNetVolume": _pick(item, *deal_keys, default=0),
+                "totalNetVolume": _pick(item, *total_keys, default=0),
             })
         return result
 
@@ -372,10 +405,30 @@ def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
     if isinstance(insider_deals, list):
         for deal in insider_deals[:15]:
             insider_txns.append({
-                "action": deal.get("action") or deal.get("dealType") or deal.get("transactionType"),
-                "shareRegistered": deal.get("shareRegistered") or deal.get("volumeRegistered", 0),
-                "shareExecuted": deal.get("shareExecuted") or deal.get("volumeExecuted", 0),
-                "startDate": deal.get("startDate") or deal.get("fromDate") or deal.get("transactionDate"),
+                "action": _pick(
+                    deal,
+                    "action", "actionTypeVi", "action_type_vi", "dealType", "deal_type",
+                    "transactionType", "transaction_type",
+                    default=None,
+                ),
+                "shareRegistered": _pick(
+                    deal,
+                    "shareRegistered", "share_registered", "shareRegister", "share_register",
+                    "volumeRegistered", "volume_registered",
+                    default=0,
+                ),
+                "shareExecuted": _pick(
+                    deal,
+                    "shareExecuted", "share_executed", "shareAcquire", "share_acquire",
+                    "volumeExecuted", "volume_executed",
+                    default=0,
+                ),
+                "startDate": _pick(
+                    deal,
+                    "startDate", "start_date", "fromDate", "from_date", "transactionDate",
+                    "transaction_date", "displayDate1", "display_date1",
+                    default=None,
+                ),
             })
 
     # News
@@ -402,8 +455,8 @@ def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
             "history": liquidity_history,
         },
         "moneyFlow": {
-            "foreign": _normalize_flow(foreign_trade),
-            "proprietary": _normalize_flow(proprietary),
+            "foreign": _normalize_flow(foreign_trade, source="foreign"),
+            "proprietary": _normalize_flow(proprietary, source="proprietary"),
         },
         "insider": {
             "transactions": insider_txns,
@@ -413,4 +466,3 @@ def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
             "tickerScore": ticker_score,
         },
     }
-

@@ -113,10 +113,10 @@ export function SectorDataPanel() {
                 {/* Hiệu suất */}
                 <span
                   className={`text-[10px] font-semibold tabular-nums shrink-0 min-w-[50px] text-right ${changeColor(s.change)}`}
-                >
-                  {s.change > 0 ? "+" : ""}
-                  {s.change.toFixed(2)}%
-                </span>
+	                >
+	                  {s.change > 0 ? "+" : ""}
+	                  {Math.round(s.change)}%
+	                </span>
                 {/* GTGD */}
                 <span className="text-[10px] tabular-nums shrink-0 min-w-[55px] text-right text-slate-300">
                   {s.totalValueVnd > 0 ? formatVND(s.totalValueVnd) : "—"}

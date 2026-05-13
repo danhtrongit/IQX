@@ -10,6 +10,7 @@ from fastapi import APIRouter
 
 from app.api.deps import CurrentUser, DBSession
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
+from app.repositories.symbol import SymbolRepository
 from app.repositories.watchlist import WatchlistRepository
 from app.schemas.watchlist import (
     WatchlistAddRequest,
@@ -40,6 +41,15 @@ async def add_to_watchlist(
 ) -> WatchlistItemResponse:
     """Thêm cổ phiếu vào danh sách yêu thích."""
     repo = WatchlistRepository(db)
+    symbol_repo = SymbolRepository(db)
+    requested_symbol = body.symbol.upper()
+
+    symbol = await symbol_repo.get_by_symbol(requested_symbol)
+    if symbol is None or not symbol.is_active:
+        raise BadRequestError(f"Mã {requested_symbol} không tồn tại")
+
+    if symbol.is_index or (symbol.asset_type or "").lower() != "stock":
+        raise BadRequestError(f"Mã {requested_symbol} không phải là cổ phiếu")
 
     # Check max limit
     count = await repo.count(user.id)
@@ -47,11 +57,11 @@ async def add_to_watchlist(
         raise BadRequestError(f"Danh sách yêu thích tối đa {_MAX_ITEMS} mã")
 
     # Check duplicate
-    existing = await repo.get_item(user.id, body.symbol)
+    existing = await repo.get_item(user.id, requested_symbol)
     if existing:
-        raise ConflictError(f"Mã {body.symbol.upper()} đã có trong danh sách")
+        raise ConflictError(f"Mã {requested_symbol} đã có trong danh sách")
 
-    item = await repo.add_item(user.id, body.symbol)
+    item = await repo.add_item(user.id, requested_symbol)
     return WatchlistItemResponse.model_validate(item)
 
 

@@ -218,3 +218,35 @@
 .animation-delay-800 {
   animation-delay: 800ms;
 }
+
+@keyframes price-flash-up {
+  0% {
+    background-color: color-mix(in oklch, #10b981 45%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes price-flash-down {
+  0% {
+    background-color: color-mix(in oklch, #ef4444 45%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.price-flash-up,
+.price-flash-down {
+  border-radius: 4px;
+  padding-inline: 2px;
+}
+
+.price-flash-up {
+  animation: price-flash-up 650ms ease-out;
+}
+
+.price-flash-down {
+  animation: price-flash-down 650ms ease-out;
+}

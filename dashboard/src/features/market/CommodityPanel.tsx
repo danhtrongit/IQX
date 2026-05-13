@@ -174,7 +174,7 @@ function CommodityCard({ item }: { item: CommodityUI }) {
             className="text-[9px] font-semibold tabular-nums leading-tight"
             style={{ color: trendColor }}
           >
-            {isUp ? "▲" : "▼"} {item.changePercent > 0 ? "+" : ""}{item.changePercent.toFixed(2)}%
+            {isUp ? "▲" : "▼"} {item.changePercent > 0 ? "+" : ""}{Math.round(item.changePercent)}%
           </div>
         </div>
       </div>

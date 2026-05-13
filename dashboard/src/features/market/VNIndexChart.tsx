@@ -8,10 +8,11 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  CartesianGrid,
-  ReferenceLine,
 } from "recharts";
 import { TrendingUp } from "lucide-react";
+
+const wholeNumber = (value: number) =>
+  Math.round(value).toLocaleString("vi-VN");
 
 export function VNIndexChart() {
   const { data: ohlcv, source } = useVNIndexOHLCV();
@@ -42,14 +43,14 @@ export function VNIndexChart() {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-lg font-bold tabular-nums text-slate-100">
-            {m.value.toLocaleString("vi-VN")}
+            {wholeNumber(m.value)}
           </span>
           <span
             className={`text-sm font-semibold tabular-nums ${changeColor(m.change)}`}
           >
             {isUp ? "+" : ""}
-            {m.change.toFixed(2)} ({isUp ? "+" : ""}
-            {m.changePercent.toFixed(2)}%)
+            {wholeNumber(m.change)} ({isUp ? "+" : ""}
+            {wholeNumber(m.changePercent)}%)
           </span>
           <span
             className={`text-[8px] px-1.5 py-px leading-tight font-semibold tracking-wider rounded border ${
@@ -82,7 +83,6 @@ export function VNIndexChart() {
                 />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#164e63" />
             <XAxis
               dataKey="date"
               tick={{ fill: "#cbd5e1", fontSize: 9 }}
@@ -96,7 +96,7 @@ export function VNIndexChart() {
               tick={{ fill: "#cbd5e1", fontSize: 9 }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v: number) => v.toFixed(0)}
+              tickFormatter={(v: number) => wholeNumber(v)}
               width={40}
             />
             <YAxis
@@ -120,15 +120,8 @@ export function VNIndexChart() {
               formatter={(value: unknown, name: unknown) => {
                 const v = Number(value);
                 if (name === "volume") return [`${v}M`, "KLGD"];
-                return [v.toFixed(2), "Đóng cửa"];
+                return [wholeNumber(v), "Đóng cửa"];
               }}
-            />
-            <ReferenceLine
-              yAxisId="price"
-              y={chartData[0]?.open}
-              stroke="#94a3b8"
-              strokeDasharray="4 4"
-              strokeOpacity={0.4}
             />
             <Bar
               yAxisId="vol"

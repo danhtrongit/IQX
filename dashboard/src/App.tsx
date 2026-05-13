@@ -4,6 +4,7 @@ import { AuthModal } from "@/components/auth/auth-modal"
 
 const HomePage = lazy(() => import("@/pages/home"))
 const DashboardPage = lazy(() => import("@/pages/dashboard"))
+const StockDirectoryPage = lazy(() => import("@/pages/stock-directory"))
 const StockPage = lazy(() => import("@/pages/stock"))
 const SettingsPage = lazy(() => import("@/pages/settings"))
 const PremiumPage = lazy(() => import("@/pages/premium"))
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/thi-truong" element={<ThiTruongPage />} />
+          <Route path="/co-phieu" element={<StockDirectoryPage />} />
           <Route path="/co-phieu/:symbol" element={<StockPage />} />
           <Route path="/cai-dat" element={<SettingsPage />} />
           <Route path="/nang-cap" element={<PremiumPage />} />

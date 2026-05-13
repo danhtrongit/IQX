@@ -1,10 +1,11 @@
 // ─── Utility: Format VND ─────────────────────────────────
 
 export function formatVND(value: number): string {
-  if (Math.abs(value) >= 1e12) return `${(value / 1e12).toFixed(1)}T`;
-  if (Math.abs(value) >= 1e9) return `${(value / 1e9).toFixed(1)}B`;
-  if (Math.abs(value) >= 1e6) return `${(value / 1e6).toFixed(1)}M`;
-  return value.toLocaleString("vi-VN");
+  const abs = Math.abs(value);
+  if (abs >= 1e12) return `${Math.round(value / 1e12).toLocaleString("vi-VN")}T`;
+  if (abs >= 1e9) return `${Math.round(value / 1e9).toLocaleString("vi-VN")}B`;
+  if (abs >= 1e6) return `${Math.round(value / 1e6).toLocaleString("vi-VN")}M`;
+  return Math.round(value).toLocaleString("vi-VN");
 }
 
 // ─── Utility: Format number with locale ──────────────────
@@ -31,21 +32,21 @@ export function changeArrow(value: number): string {
 
 // ─── Utility: Format VND in tỷ ───────────────────────────
 // Always displays value in tỷ (1e9) with Vietnamese suffix.
-// e.g. 1_245_000_000_000 → "1,245.0 tỷ"
+// e.g. 1_245_000_000_000 → "1.245 tỷ"
 
 export function formatVndBillion(value: number): string {
   const billions = value / 1e9;
-  return `${billions.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} tỷ`;
+  return `${Math.round(billions).toLocaleString("vi-VN")} tỷ`;
 }
 
 // ─── Utility: Format share volume ────────────────────────
-// e.g. 850_000_000 → "850.0 triệu cp", 1_200_000_000 → "1.2 tỷ cp"
+// e.g. 850_000_000 → "850 triệu cp", 1_200_000_000 → "1 tỷ cp"
 
 export function formatVolume(value: number): string {
   if (Math.abs(value) >= 1e9) {
-    return `${(value / 1e9).toFixed(1)} tỷ cp`;
+    return `${Math.round(value / 1e9).toLocaleString("vi-VN")} tỷ cp`;
   }
-  return `${(value / 1e6).toFixed(1)} triệu cp`;
+  return `${Math.round(value / 1e6).toLocaleString("vi-VN")} triệu cp`;
 }
 
 // ─── Utility: Truncate ticker for bar-chart rows ─────────
@@ -58,23 +59,19 @@ export function displayTicker(symbol: string): string {
 
 // ─── Utility: Format index impact point ──────────────────
 // Contribution is index-impact points, not VND.
-// e.g. 1.25 → "+1.25đ", -0.84 → "-0.84đ"
+// e.g. 1.25 → "+1đ", -0.84 → "-1đ"
 
 export function formatImpactPoint(value: number): string {
-  const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toFixed(2)}đ`;
+  const rounded = Math.round(value);
+  const sign = rounded > 0 ? "+" : "";
+  return `${sign}${rounded.toLocaleString("vi-VN")}đ`;
 }
 
 // ─── Utility: Format percent with Vietnamese comma ───────
-// 5.5 → "5,50%", -3.1 → "-3,10%", 0 → "0,00%"
+// 5.5 → "6%", -3.1 → "-3%", 0 → "0%"
 
 export function formatPercent(value: number): string {
-  return (
-    value.toLocaleString("vi-VN", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }) + "%"
-  );
+  return `${Math.round(value).toLocaleString("vi-VN")}%`;
 }
 
 // ─── Layout constants ────────────────────────────────────

@@ -323,6 +323,7 @@ export interface NewsItemUI {
   time: string;
   category: 'macro' | 'earnings' | 'company' | 'analysis' | 'commodity';
   isHot: boolean;
+  slug?: string;
   link?: string;
   sentiment?: 'Positive' | 'Negative' | 'Neutral';
   /** Badge label: topic_name → industry (non-OTHER) → ticker → category label */

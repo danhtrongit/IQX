@@ -1,10 +1,9 @@
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import {
   Eye,
   Briefcase,
   History,
   Plus,
-  X,
   Loader2,
   Star,
   LogIn,
@@ -26,15 +25,15 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useAuth } from "@/contexts/auth-context"
 import { api } from "@/lib/api"
 import { useNavigate } from "react-router"
-import { type PriceBoardData } from "@/hooks/use-market-data"
 import { usePrices } from "@/contexts/market-data-context"
+import { toast } from "sonner"
 import {
   normalizePortfolioItem,
-  type PortfolioApiItem,
   type PortfolioItem,
 } from "./portfolio-utils"
 
 type WatchlistTab = "watchlist" | "holdings" | "history"
+const WATCHLIST_TAB_STORAGE_KEY = "iqx.watchlist.activeTab"
 
 interface WatchlistItemData {
   id: string
@@ -68,34 +67,74 @@ function pc(price: number, ref: number, ceil: number, floor: number): string {
 }
 
 // ── Symbol info cache (company name, industry) ──
-interface SymbolInfo { name: string; shortName: string; industry: string; exchange: string }
+interface SymbolInfo {
+  name: string
+  shortName: string
+  industry: string
+  exchange: string
+  assetType?: string
+  isIndex?: boolean
+}
 const _symbolInfoCache = new Map<string, SymbolInfo>()
+const API_BASE = import.meta.env.VITE_API_URL || "/api/v1"
+
+function toSymbolInfo(raw: any): SymbolInfo {
+  return {
+    name: raw.name || raw.organ_name || "",
+    shortName: raw.short_name || "",
+    industry: raw.icb_lv2 || raw.icb_lv1 || "",
+    exchange: raw.exchange || "",
+    assetType: raw.asset_type || "",
+    isIndex: Boolean(raw.is_index),
+  }
+}
 
 async function fetchSymbolInfoBatch(symbols: string[]): Promise<Map<string, SymbolInfo>> {
   const missing = symbols.filter(s => !_symbolInfoCache.has(s.toUpperCase()))
   if (missing.length > 0) {
     try {
       // Fetch each symbol's info (batch via individual lookups, cached)
-      const results = await Promise.allSettled(
-        missing.map(async (sym) => {
-          const resp = await fetch(`${import.meta.env.VITE_API_URL || '/api/v1'}/market-data/reference/symbols/search?q=${sym}&page_size=1`)
+	      await Promise.allSettled(
+	        missing.map(async (sym) => {
+	          const resp = await fetch(`${API_BASE}/market-data/reference/symbols/search?q=${sym}&page_size=1&asset_type=stock&include_indices=false`)
           if (!resp.ok) return
           const json = await resp.json()
           const items = json.items || json.data || []
-          const match = items.find((i: any) => (i.symbol || '').toUpperCase() === sym.toUpperCase()) || items[0]
-          if (match) {
-            _symbolInfoCache.set(sym.toUpperCase(), {
-              name: match.name || match.organ_name || '',
-              shortName: match.short_name || '',
-              industry: match.icb_lv2 || match.icb_lv1 || '',
-              exchange: match.exchange || '',
-            })
-          }
+	          const match = items.find((i: any) => (i.symbol || '').toUpperCase() === sym.toUpperCase()) || items[0]
+	          if (match) {
+	            _symbolInfoCache.set(sym.toUpperCase(), toSymbolInfo(match))
+	          }
         })
       )
     } catch { /* ignore */ }
   }
-  return _symbolInfoCache
+	return _symbolInfoCache
+}
+
+async function validateStockSymbol(symbol: string): Promise<string | null> {
+  const resp = await fetch(`${API_BASE}/market-data/reference/symbols/${symbol}`)
+  if (resp.status === 404) return `Mã ${symbol} không tồn tại`
+  if (!resp.ok) return "Không thể kiểm tra mã cổ phiếu"
+
+  const data = await resp.json()
+  const info = toSymbolInfo(data)
+  if (info.isIndex || (info.assetType || "").toLowerCase() !== "stock") {
+    return `Mã ${symbol} không phải là cổ phiếu`
+  }
+
+  _symbolInfoCache.set(symbol, info)
+  return null
+}
+
+async function getApiErrorMessage(err: unknown, fallback: string): Promise<string> {
+  const response = (err as { response?: Response })?.response
+  if (!response) return fallback
+  try {
+    const body = await response.json()
+    return body.detail || body.message || fallback
+  } catch {
+    return fallback
+  }
 }
 
 // ── Mini Area Sparkline SVG (green/red gradient fill) ──
@@ -161,77 +200,29 @@ function Sparkline({
   )
 }
 
-// ── Compact stock row — dense bảng giá style ──
-function StockRow({
-  symbol,
-  d,
-  onClick,
+function FlashingPrice({
+  price,
+  className,
 }: {
-  symbol: string
-  d?: PriceBoardData
-  onClick: () => void
+  price: number
+  className: string
 }) {
-  const price = d?.closePrice || 0
-  const chg = d?.priceChange || 0
-  const pct = d?.percentChange || 0
-  const ref = d?.referencePrice || 0
-  const ceil = d?.ceilingPrice || 0
-  const floor = d?.floorPrice || 0
-  const isUp = chg > 0
-  const isDown = chg < 0
+  const previous = useRef(price)
+  const [flash, setFlash] = useState<"up" | "down" | null>(null)
 
-  const color = pc(price, ref, ceil, floor)
+  useEffect(() => {
+    if (previous.current > 0 && price > 0 && previous.current !== price) {
+      setFlash(price > previous.current ? "up" : "down")
+      const timer = window.setTimeout(() => setFlash(null), 650)
+      previous.current = price
+      return () => window.clearTimeout(timer)
+    }
+    previous.current = price
+  }, [price])
 
   return (
-    <button
-      onClick={onClick}
-      className="w-full text-left px-2 py-1.5 hover:bg-muted/40 transition-colors group active:scale-[0.995]"
-    >
-      <div className="flex items-center gap-2">
-        <StockLogo symbol={symbol} size={28} />
-        <div className="flex-1 min-w-0 flex justify-between items-center">
-          {/* Left: Symbol */}
-          <div className="flex flex-col">
-            <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-              {symbol}
-            </span>
-          </div>
-
-          {/* Right: Price & Percent */}
-          <div className="flex flex-col items-end">
-            <span className={`text-xs font-black tabular-nums tracking-tight ${color}`}>
-              {fp(price)}
-            </span>
-            {price > 0 ? (
-              <div className="flex items-center gap-1 mt-0.5">
-                <span
-                  className={`text-[9px] font-semibold tabular-nums px-1 py-[1px] rounded leading-none ${
-                    isUp
-                      ? "bg-emerald-500/15 text-emerald-500"
-                      : isDown
-                        ? "bg-red-500/15 text-red-500"
-                        : "bg-muted text-amber-500"
-                  }`}
-                >
-                  {isUp ? "+" : ""}{(pct || 0).toFixed(2)}%
-                </span>
-              </div>
-            ) : (
-              <span className="text-[9px] text-muted-foreground/50 mt-0.5">---</span>
-            )}
-          </div>
-        </div>
-      </div>
-    </button>
-  )
-}
-
-// ── Pulse dot ──
-function PulseDot() {
-  return (
-    <span className="relative flex size-1.5">
-      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-      <span className="relative inline-flex rounded-full size-1.5 bg-emerald-500" />
+    <span className={`text-sm font-black tabular-nums ${className} ${flash === "up" ? "price-flash-up" : flash === "down" ? "price-flash-down" : ""}`}>
+      {fp(price)}
     </span>
   )
 }
@@ -242,6 +233,8 @@ function WatchlistTabContent() {
   const [loading, setLoading] = useState(true)
   const [addingSymbol, setAddingSymbol] = useState(false)
   const [newSymbol, setNewSymbol] = useState("")
+  const [draggedSymbol, setDraggedSymbol] = useState<string | null>(null)
+  const [reordering, setReordering] = useState(false)
   const navigate = useNavigate()
 
   const fetchList = useCallback(async () => {
@@ -306,21 +299,66 @@ function WatchlistTabContent() {
     return { total, up, down, flat, upPct: total ? Math.round(up / total * 100) : 0, downPct: total ? Math.round(down / total * 100) : 0, flatPct: total ? Math.round(flat / total * 100) : 0 }
   }, [allSymbols, priceMap])
 
-  const handleAddSymbol = async () => {
-    const sym = newSymbol.trim().toUpperCase()
-    if (!sym) return
-    setAddingSymbol(true)
-    try {
-      await api.post("watchlist", { json: { symbol: sym } }).json()
-      setNewSymbol("")
-      fetchList()
-    } catch {}
-    finally { setAddingSymbol(false) }
-  }
+	  const handleAddSymbol = async () => {
+	    const sym = newSymbol.trim().toUpperCase()
+	    if (!sym) return
+	    setAddingSymbol(true)
+	    try {
+	      const validationError = await validateStockSymbol(sym)
+	      if (validationError) {
+	        toast.warning(validationError)
+	        return
+	      }
+	      await api.post("watchlist", { json: { symbol: sym } }).json()
+	      setNewSymbol("")
+	      await fetchList()
+	      toast.success(`Đã thêm ${sym} vào danh mục theo dõi`)
+	    } catch (err) {
+	      toast.error(await getApiErrorMessage(err, `Không thể thêm ${sym}`))
+	    }
+	    finally { setAddingSymbol(false) }
+	  }
 
-  const handleRemoveSymbol = async (sym: string) => {
-    try { await api.delete(`watchlist/${sym}`); fetchList() } catch {}
-  }
+	  const handleRemoveSymbol = async (sym: string) => {
+	    try {
+	      await api.delete(`watchlist/${sym}`)
+	      await fetchList()
+	    } catch (err) {
+	      toast.error(await getApiErrorMessage(err, `Không thể xóa ${sym}`))
+	    }
+	  }
+
+	  const handleDropSymbol = async (targetSymbol: string) => {
+	    if (!draggedSymbol || draggedSymbol === targetSymbol || reordering) return
+	    const currentSymbols = items.map((item) => item.symbol)
+	    const fromIndex = currentSymbols.indexOf(draggedSymbol)
+	    const toIndex = currentSymbols.indexOf(targetSymbol)
+	    if (fromIndex < 0 || toIndex < 0) return
+
+	    const nextSymbols = [...currentSymbols]
+	    const [moved] = nextSymbols.splice(fromIndex, 1)
+	    nextSymbols.splice(toIndex, 0, moved)
+
+	    const itemBySymbol = new Map(items.map((item) => [item.symbol, item]))
+	    const nextItems = nextSymbols
+	      .map((symbol, index) => ({ ...itemBySymbol.get(symbol)!, sort_order: index }))
+	      .filter(Boolean)
+
+	    setItems(nextItems)
+	    setReordering(true)
+	    try {
+	      const res = await api
+	        .put("watchlist/reorder", { json: { symbols: nextSymbols } })
+	        .json<{ items: WatchlistItemData[]; count: number }>()
+	      setItems(res.items || nextItems)
+	    } catch (err) {
+	      await fetchList()
+	      toast.error(await getApiErrorMessage(err, "Không thể lưu thứ tự danh mục theo dõi"))
+	    } finally {
+	      setDraggedSymbol(null)
+	      setReordering(false)
+	    }
+	  }
 
   if (loading) {
     return (
@@ -403,15 +441,26 @@ function WatchlistTabContent() {
                 const sparkColor = isUp ? "#10b981" : isDown ? "#ef4444" : "#f59e0b"
 
                 return (
-                  <div key={sym} className="relative group">
-                    <button
-                      onClick={() => navigate(`/co-phieu/${sym}`)}
-                      className="w-full text-left px-2 py-2.5 hover:bg-muted/40 transition-colors active:scale-[0.995]"
-                    >
-                      <div className="flex items-center gap-1.5">
-                        {/* Star */}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleRemoveSymbol(sym) }}
+	                  <div key={sym} className={`relative group ${draggedSymbol === sym ? "opacity-50" : ""}`}>
+	                    <div
+	                      role="button"
+	                      tabIndex={0}
+	                      draggable
+	                      onClick={() => navigate(`/co-phieu/${sym}`)}
+	                      onKeyDown={(event) => {
+	                        if (event.key === "Enter" || event.key === " ") navigate(`/co-phieu/${sym}`)
+	                      }}
+	                      onDragStart={() => setDraggedSymbol(sym)}
+	                      onDragOver={(event) => event.preventDefault()}
+	                      onDrop={() => handleDropSymbol(sym)}
+	                      onDragEnd={() => setDraggedSymbol(null)}
+	                      className="w-full text-left px-2 py-2.5 hover:bg-muted/40 transition-colors active:scale-[0.995] cursor-pointer"
+	                    >
+	                      <div className="flex items-center gap-1.5">
+	                        <ArrowUpDown className="size-3 text-muted-foreground/40 cursor-grab shrink-0" />
+	                        {/* Star */}
+	                        <button
+	                          onClick={(e) => { e.stopPropagation(); handleRemoveSymbol(sym) }}
                           className="text-amber-500 hover:text-amber-400 shrink-0"
                         >
                           <Star className="size-3.5 fill-current" />
@@ -432,10 +481,10 @@ function WatchlistTabContent() {
                         <Sparkline data={spark || []} color={sparkColor} width={56} height={22} />
                         {/* Spacer */}
                         <div className="flex-1" />
-                        {/* Price — pinned right */}
-                        <div className="flex flex-col items-end shrink-0 min-w-[62px]">
-                          <span className={`text-sm font-black tabular-nums ${color}`}>{fp(price)}</span>
-                          {price > 0 ? (
+	                        {/* Price — pinned right */}
+	                        <div className="flex flex-col items-end shrink-0 min-w-[62px]">
+	                          <FlashingPrice price={price} className={color} />
+	                          {price > 0 ? (
                             <span className={`text-[10px] font-semibold tabular-nums ${isUp ? "text-emerald-500" : isDown ? "text-red-500" : "text-amber-500"}`}>
                               {isUp ? "+" : ""}{(pct || 0).toFixed(2)}%{isUp ? " ↑" : isDown ? " ↓" : ""}
                             </span>
@@ -444,8 +493,8 @@ function WatchlistTabContent() {
                           )}
                         </div>
                       </div>
-                    </button>
-                  </div>
+	                    </div>
+	                  </div>
                 )
               })}
             </div>
@@ -781,9 +830,22 @@ const TABS: { id: WatchlistTab; label: string; icon: React.ElementType }[] = [
   { id: "history", label: "Lịch sử", icon: History },
 ]
 
+function getInitialWatchlistTab(): WatchlistTab {
+  if (typeof window === "undefined") return "watchlist"
+  const stored = window.localStorage.getItem(WATCHLIST_TAB_STORAGE_KEY)
+  return stored === "holdings" || stored === "history" || stored === "watchlist"
+    ? stored
+    : "watchlist"
+}
+
 export function WatchlistPanel() {
   const { isAuthenticated, setShowAuthModal } = useAuth()
-  const [activeTab, setActiveTab] = useState<WatchlistTab>("watchlist")
+  const [activeTab, setActiveTab] = useState<WatchlistTab>(getInitialWatchlistTab)
+
+  const handleTabChange = (tab: WatchlistTab) => {
+    setActiveTab(tab)
+    window.localStorage.setItem(WATCHLIST_TAB_STORAGE_KEY, tab)
+  }
 
   if (!isAuthenticated) {
     return (
@@ -807,7 +869,7 @@ export function WatchlistPanel() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+	              onClick={() => handleTabChange(tab.id)}
               className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium transition-colors relative ${
                 isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
               }`}

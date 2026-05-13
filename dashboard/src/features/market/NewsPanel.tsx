@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Panel } from "./Panel";
 import { usePaginatedNews } from "./hooks";
 import { Newspaper } from "lucide-react";
 
+import { NewsDetailModal } from "@/components/news/news-detail-modal";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -53,6 +54,7 @@ function NewsSkeletons() {
 }
 
 export function NewsPanel() {
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const { data, source, loading } =
     usePaginatedNews({ pageSize: 8, kind: "topic" });
 
@@ -77,10 +79,10 @@ export function NewsPanel() {
               <article
                 key={item.id}
                 className="flex items-center gap-2 px-2 py-[7px] cursor-pointer transition-colors hover:bg-cyan-950/30 overflow-hidden"
-                onClick={() => {
-                  if (item.link) window.open(item.link, "_blank");
-                }}
-              >
+	                onClick={() => {
+	                  if (item.slug) setSelectedSlug(item.slug);
+	                }}
+	              >
                 {/* Sentiment dot */}
                 <span
                   className={`w-[7px] h-[7px] rounded-full shrink-0 ${sentimentColor[item.sentiment ?? ""] || "bg-slate-400"}`}
@@ -102,7 +104,12 @@ export function NewsPanel() {
             ))}
           </div>
         )}
-      </ScrollArea>
-    </Panel>
-  );
-}
+	      </ScrollArea>
+	      <NewsDetailModal
+	        slug={selectedSlug}
+	        open={Boolean(selectedSlug)}
+	        onClose={() => setSelectedSlug(null)}
+	      />
+	    </Panel>
+	  );
+	}

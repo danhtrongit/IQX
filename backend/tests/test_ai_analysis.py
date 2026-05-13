@@ -380,6 +380,47 @@ class TestPayloadBuilders:
         assert parsed["symbol"] == "VCB"
         assert "Việt Nam" in result  # ensure_ascii=False
 
+    def test_raw_input_accepts_snake_case_company_statistics_fields(self) -> None:
+        from app.services.ai.analysis_service import _build_raw_input
+
+        payload = {
+            "foreign_trade": [
+                {
+                    "trading_date": "2026-05-11",
+                    "foreign_net_volume_matched": 123_000,
+                    "foreign_net_volume_deal": -1_000,
+                    "foreign_net_volume_total": 122_000,
+                },
+            ],
+            "proprietary": [
+                {
+                    "trading_date": "2026-05-11",
+                    "total_match_trade_net_volume": -40_000,
+                    "total_deal_trade_net_volume": 5_000,
+                    "total_trade_net_volume": -35_000,
+                },
+            ],
+            "insider_deals": [
+                {
+                    "action_type_vi": "Đăng ký mua",
+                    "share_register": 250_000,
+                    "share_acquire": 100_000,
+                    "display_date1": "2026-05-10",
+                },
+            ],
+        }
+
+        raw_input = _build_raw_input(payload)
+
+        assert raw_input["moneyFlow"]["foreign"][0]["matchNetVolume"] == 123_000
+        assert raw_input["moneyFlow"]["foreign"][0]["dealNetVolume"] == -1_000
+        assert raw_input["moneyFlow"]["foreign"][0]["totalNetVolume"] == 122_000
+        assert raw_input["moneyFlow"]["proprietary"][0]["matchNetVolume"] == -40_000
+        assert raw_input["moneyFlow"]["proprietary"][0]["dealNetVolume"] == 5_000
+        assert raw_input["moneyFlow"]["proprietary"][0]["totalNetVolume"] == -35_000
+        assert raw_input["insider"]["transactions"][0]["shareRegistered"] == 250_000
+        assert raw_input["insider"]["transactions"][0]["shareExecuted"] == 100_000
+
 
 # ═══════════════════════════════════════════════════════
 # 4. API Endpoint Tests

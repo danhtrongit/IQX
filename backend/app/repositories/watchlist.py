@@ -20,7 +20,7 @@ class WatchlistRepository:
         """Get all watchlist items for a user, ordered by sort_order."""
         result = await self._session.execute(
             select(WatchlistItem)
-            .where(WatchlistItem.user_id == str(user_id))
+            .where(WatchlistItem.user_id == user_id)
             .order_by(WatchlistItem.sort_order.asc(), WatchlistItem.created_at.asc())
         )
         return list(result.scalars().all())
@@ -29,7 +29,7 @@ class WatchlistRepository:
         """Get a specific watchlist item."""
         result = await self._session.execute(
             select(WatchlistItem).where(
-                WatchlistItem.user_id == str(user_id),
+                WatchlistItem.user_id == user_id,
                 WatchlistItem.symbol == symbol.upper(),
             )
         )
@@ -40,12 +40,12 @@ class WatchlistRepository:
         # Get max sort_order
         result = await self._session.execute(
             select(func.coalesce(func.max(WatchlistItem.sort_order), -1))
-            .where(WatchlistItem.user_id == str(user_id))
+            .where(WatchlistItem.user_id == user_id)
         )
         max_order = result.scalar() or 0
 
         item = WatchlistItem(
-            user_id=str(user_id),
+            user_id=user_id,
             symbol=symbol.upper(),
             sort_order=max_order + 1,
         )
@@ -57,7 +57,7 @@ class WatchlistRepository:
         """Remove a symbol from the watchlist. Returns True if deleted."""
         result = await self._session.execute(
             delete(WatchlistItem).where(
-                WatchlistItem.user_id == str(user_id),
+                WatchlistItem.user_id == user_id,
                 WatchlistItem.symbol == symbol.upper(),
             )
         )
@@ -70,7 +70,7 @@ class WatchlistRepository:
             await self._session.execute(
                 update(WatchlistItem)
                 .where(
-                    WatchlistItem.user_id == str(user_id),
+                    WatchlistItem.user_id == user_id,
                     WatchlistItem.symbol == sym.upper(),
                 )
                 .values(sort_order=i)
@@ -81,6 +81,6 @@ class WatchlistRepository:
         """Count items in a user's watchlist."""
         result = await self._session.execute(
             select(func.count()).select_from(WatchlistItem)
-            .where(WatchlistItem.user_id == str(user_id))
+            .where(WatchlistItem.user_id == user_id)
         )
         return result.scalar() or 0

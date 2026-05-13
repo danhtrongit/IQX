@@ -56,6 +56,17 @@ function formatCompact(v: number): string {
   return String(v)
 }
 
+async function getErrorMessage(err: unknown, fallback: string): Promise<string> {
+  try {
+    const body = await (err as { response?: Response })?.response?.json()
+    const detail = body?.detail || body?.message
+    if (typeof detail === "string") return detail
+  } catch {
+    // ignore parse error
+  }
+  return fallback
+}
+
 function getPriceColor(price: number, ref: number, ceil: number, floor: number): string {
   if (!price || !ref) return "text-foreground"
   if (price >= ceil) return "text-fuchsia-500"
@@ -334,23 +345,28 @@ export function RightPanel() {
                       ? "text-amber-500 hover:text-amber-400"
                       : "text-muted-foreground hover:text-amber-500"
                   }`}
-                  onClick={() => {
-                    if (!isAuthenticated) {
-                      toast.warning("Đăng nhập để theo dõi mã CK", {
+	                  onClick={async () => {
+	                    if (!isAuthenticated) {
+	                      toast.warning("Đăng nhập để theo dõi mã CK", {
                         action: {
                           label: "Đăng nhập",
                           onClick: () => setShowAuthModal(true),
                         },
-                      })
-                      return
-                    }
-                    toggleSymbol(data.symbol)
-                    toast.success(
-                      isSymbolWatched(data.symbol)
-                        ? `Đã bỏ theo dõi ${data.symbol}`
-                        : `Đã thêm ${data.symbol} vào danh sách`,
-                    )
-                  }}
+	                      })
+	                      return
+	                    }
+	                    const wasWatched = isSymbolWatched(data.symbol)
+	                    try {
+	                      await toggleSymbol(data.symbol)
+	                      toast.success(
+	                        wasWatched
+	                          ? `Đã bỏ theo dõi ${data.symbol}`
+	                          : `Đã thêm ${data.symbol} vào danh sách`,
+	                      )
+	                    } catch (err) {
+	                      toast.error(await getErrorMessage(err, `Không thể cập nhật ${data.symbol}`))
+	                    }
+	                  }}
                 >
                   <Star
                     className={`size-3 ${

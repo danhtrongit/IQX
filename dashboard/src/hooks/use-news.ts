@@ -46,13 +46,6 @@ export interface NewsFilter {
   industry?: string
 }
 
-interface NewsListResponse {
-  data: NewsItem[]
-  total_records?: number
-  page?: number
-  page_size?: number
-}
-
 interface FilterOption {
   name: string
   value: string

@@ -263,9 +263,10 @@ export function adaptAINews(data: ApiAINewsItem[]): NewsItemUI[] {
       title: item.title ?? "",
       source: item.source_name ?? item.source ?? "unknown",
       time: timeSince(item.update_date?.replace(" ", "T") + "+07:00"),
-      category,
-      isHot: (item.score ?? 0) >= 9,
-      link: item.source_link,
+	      category,
+	      isHot: (item.score ?? 0) >= 9,
+	      slug: item.slug,
+	      link: item.source_link,
       sentiment: item.sentiment,
       badgeLabel,
     };

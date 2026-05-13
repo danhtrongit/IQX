@@ -2,19 +2,12 @@ import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router"
 import {
   Search,
-  Bell,
-  Settings,
   ChevronDown,
-  LayoutGrid,
-  Newspaper,
-  BrainCircuit,
-  CircleHelp,
   LogOut,
   LogIn,
   UserPlus,
   Crown,
   TrendingUp,
-
 } from "lucide-react"
 import { StockLogo } from "@/components/stock/stock-logo"
 import { Button } from "@/components/ui/button"
@@ -28,11 +21,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/contexts/auth-context"
 
@@ -48,6 +36,7 @@ interface StockResult {
 
 const NAV_ITEMS = [
   { label: "Thị trường", href: "/thi-truong" },
+  { label: "Cổ phiếu", href: "/co-phieu" },
 ]
 
 function getInitials(name: string | null, email: string): string {

@@ -5,16 +5,25 @@ import {
   Droplets,
   ArrowLeftRight,
   Users,
-  Newspaper,
-  Brain,
-  X,
-  Database,
-  Sparkles,
+	  Newspaper,
+	  Brain,
+	  TrendingDown,
+	  CheckCircle2,
+	  AlertTriangle,
+	  Target,
+	  MinusCircle,
+	  X,
+	  Database,
+	  Sparkles,
   Clock,
   ChevronDown,
   Table,
-} from "lucide-react"
-import { ScrollArea } from "@/components/ui/scroll-area"
+	} from "lucide-react"
+	import { ScrollArea } from "@/components/ui/scroll-area"
+	import {
+	  formatSupportResistance,
+	  getLayerSummary as buildLayerSummary,
+	} from "./stock-ai-insight-utils"
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api/v1"
 
@@ -98,11 +107,50 @@ function fmtNum(n: number): string {
   return n.toLocaleString("vi-VN")
 }
 
-function renderOutput(output: any): React.ReactNode {
+const DECISION_OUTPUT_ROWS: Array<{ key: string; icon: typeof Sparkles; color: string }> = [
+  { key: "Tổng quan", icon: Sparkles, color: "text-blue-400" },
+  { key: "Thanh khoản", icon: Droplets, color: "text-cyan-400" },
+  { key: "Dòng tiền", icon: ArrowLeftRight, color: "text-emerald-400" },
+  { key: "Giao dịch nội bộ", icon: Users, color: "text-amber-400" },
+  { key: "Tin tức", icon: Newspaper, color: "text-pink-400" },
+  { key: "Hành động chính", icon: CheckCircle2, color: "text-emerald-400" },
+  { key: "Kịch bản thuận lợi", icon: TrendingUp, color: "text-emerald-400" },
+  { key: "Kịch bản bất lợi", icon: TrendingDown, color: "text-red-400" },
+  { key: "Kịch bản đi ngang", icon: MinusCircle, color: "text-amber-400" },
+]
+
+function DecisionOutput({ output }: { output: Record<string, any> }) {
+  const rendered = new Set<string>()
+  const rows = DECISION_OUTPUT_ROWS
+    .filter((row) => output[row.key])
+    .map((row) => {
+      rendered.add(row.key)
+      return row
+    })
+
+  const extraRows = Object.keys(output)
+    .filter((key) => !rendered.has(key) && output[key] != null && output[key] !== "")
+    .map((key) => ({ key, icon: Target, color: "text-primary" }))
+
+  return (
+    <div className="space-y-2">
+      {[...rows, ...extraRows].map(({ key, icon: Icon, color }) => (
+        <div key={key} className="grid grid-cols-[16px_104px_minmax(0,1fr)] items-start gap-x-2">
+          <Icon className={`mt-[2px] size-3.5 ${color}`} />
+          <span className="text-[10px] font-semibold text-muted-foreground leading-relaxed">{key}:</span>
+          <span className="text-[11px] text-foreground/90 leading-relaxed">{String(output[key])}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function renderOutput(output: any, layerKey?: string): React.ReactNode {
   if (!output) return null
   if (typeof output === "string") return <span>{output}</span>
-  if (output.error) return <span className="text-red-400 text-[10px]">⚠️ {output.error}</span>
+  if (output.error) return <span className="text-red-400 text-[10px]"><AlertTriangle className="inline size-3 mr-1" />{output.error}</span>
   if (output.text) return <span className="whitespace-pre-wrap">{output.text}</span>
+  if (layerKey === "decision") return <DecisionOutput output={output} />
 
   // Structured JSON output → render key-value (keys are Vietnamese)
   return (
@@ -119,15 +167,23 @@ function renderOutput(output: any): React.ReactNode {
               ))}
             </div>
           )
-        }
-        return (
-          <div key={key} className="flex gap-2">
-            <span className="text-[10px] text-muted-foreground shrink-0 min-w-[80px] font-semibold">
-              {key}:
-            </span>
-            <span className="text-[11px] text-foreground/90">{String(val)}</span>
-          </div>
-        )
+	        }
+	        const value = key === "Hỗ trợ" || key === "Kháng cự"
+	          ? formatSupportResistance(val)
+	          : String(val)
+	        const valueColor = key === "Hỗ trợ"
+	          ? "text-emerald-400"
+	          : key === "Kháng cự"
+	            ? "text-red-400"
+	            : "text-foreground/90"
+	        return (
+	          <div key={key} className="flex gap-2">
+	            <span className="text-[10px] text-muted-foreground shrink-0 min-w-[80px] font-semibold">
+	              {key}:
+	            </span>
+	            <span className={`text-[11px] ${valueColor}`}>{value}</span>
+	          </div>
+	        )
       })}
     </div>
   )
@@ -198,7 +254,7 @@ function DetailPanel({
             <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Kết quả phân tích</span>
           </div>
           <div className="text-xs leading-relaxed">
-            {renderOutput(layerData.output)}
+	            {renderOutput(layerData.output, layerKey)}
           </div>
         </div>
 
@@ -541,34 +597,7 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
   // Build summary items for each layer card
   const getLayerSummary = useCallback((key: string) => {
     const out = insight?.layers?.[key]?.output
-    if (!out || typeof out !== "object") return []
-    const short = (v: any) => v ? String(v).split(/[,.]/)[0].trim() : "—"
-    switch (key) {
-      case "trend": return [
-        { label: "Xu hướng", value: short(out["Xu hướng"]) },
-        { label: "Trạng thái", value: short(out["Trạng thái"]) },
-        { label: "Hỗ trợ", value: short(out["Hỗ trợ"]) },
-        { label: "Kháng cự", value: short(out["Kháng cự"]) },
-      ]
-      case "liquidity": return [
-        { label: "Cung - Cầu", value: short(out["Cung - Cầu"]) },
-        { label: "Tác động", value: short(out["Tác động"]) },
-      ]
-      case "moneyFlow": return [
-        { label: "Khối ngoại", value: short(out["Khối ngoại"]) },
-        { label: "Tự doanh", value: short(out["Tự doanh"]) },
-        { label: "Tác động", value: short(out["Tác động"]) },
-      ]
-      case "insider": return [
-        { label: "Nội bộ", value: short(out["Nội bộ"]) },
-        { label: "Mức cảnh báo", value: short(out["Mức cảnh báo"]) },
-      ]
-      case "news": return [
-        { label: "Tổng quan", value: short(out["Tổng quan"]) },
-        { label: "Tác động", value: short(out["Tác động"]) },
-      ]
-      default: return []
-    }
+    return buildLayerSummary(key, out)
   }, [insight])
 
   if (isLoading) {
@@ -624,11 +653,10 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
         <ScrollArea className="w-[240px] shrink-0 border-r border-border/15">
           <div className="p-2 space-y-2">
             {LAYERS_ORDER.map((key) => {
-              const cfg = LAYER_CONFIG[key]
-              const items = getLayerSummary(key)
-              const isActive = selectedLayer === key
-              const Icon = cfg.icon
-              const headerValue = key === "liquidity"
+	              const cfg = LAYER_CONFIG[key]
+	              const items = getLayerSummary(key)
+	              const isActive = selectedLayer === key
+	              const headerValue = key === "liquidity"
                 ? (insight.layers?.[key]?.output?.["Thanh khoản"] || "")
                 : ""
               return (
@@ -652,14 +680,14 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
                       <span className="text-[9px] font-black uppercase tracking-[0.15em]" style={{ color: cfg.color }}>{cfg.shortLabel}</span>
                       <span className="text-[12px] font-bold text-foreground">{cfg.label}</span>
                       {headerValue && (
-                        <span className={`text-[10px] font-bold ml-auto ${getValueColor(headerValue)}`}>{headerValue.split(/[,.]/)[0]}</span>
+	                        <span className={`text-[10px] font-bold ml-auto ${getValueColor(headerValue)}`}>{String(headerValue)}</span>
                       )}
                     </div>
                     {/* Card rows */}
                     {items.map((item) => (
                       <div key={item.label} className="flex items-center justify-between py-0.5">
                         <span className="text-[10px] text-muted-foreground/70">{item.label}</span>
-                        <span className={`text-[11px] font-bold truncate max-w-[130px] text-right ${getValueColor(item.value)}`}>{item.value}</span>
+	                        <span className={`text-[11px] font-bold truncate max-w-[130px] text-right ${item.color || getValueColor(item.value)}`}>{item.value}</span>
                       </div>
                     ))}
                   </div>

@@ -157,11 +157,12 @@ export function VnindexChart() {
                 padding: "6px 10px",
               }}
               labelStyle={{ color: "#888", fontSize: 10, marginBottom: 4 }}
-              formatter={(value: any, name: string) => {
-                if (name === "close") return [Number(value).toFixed(2), "Giá"]
-                if (name === "volume") return [fmtVol(Number(value)), "KL"]
-                return [value, name]
-              }}
+	              formatter={(value: unknown, name: unknown) => {
+	                const key = String(name ?? "")
+	                if (key === "close") return [Number(value).toFixed(2), "Giá"]
+	                if (key === "volume") return [fmtVol(Number(value)), "KL"]
+	                return [String(value ?? ""), key]
+	              }}
             />
             {/* Volume bars */}
             <Bar

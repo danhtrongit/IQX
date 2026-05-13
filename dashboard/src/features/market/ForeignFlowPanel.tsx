@@ -1,5 +1,5 @@
 import { Panel } from "./Panel";
-import { formatVndBillion, changeColor, displayTicker } from "./utils";
+import { formatVndBillion, displayTicker } from "./utils";
 import { useForeignFlow } from "./hooks";
 import { Globe2 } from "lucide-react";
 
@@ -22,7 +22,7 @@ export function ForeignFlowPanel() {
               Mua ròng
             </span>
             <span
-              className={`text-xs font-bold tabular-nums ${changeColor(data.netValue)}`}
+              className="text-xs font-bold tabular-nums text-emerald-300"
             >
               +{formatVndBillion(data.buyValue)}
             </span>

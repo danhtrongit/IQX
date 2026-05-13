@@ -90,10 +90,11 @@ export function useWatchlist(): UseWatchlistReturn {
           // Optimistic add
           setItems((prev) => [...prev, item])
         }
-      } catch {
-        // Revert on error — refetch
-        fetchList()
-      }
+	      } catch (err) {
+	        // Revert on error — refetch
+	        await fetchList()
+	        throw err
+	      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [isAuthenticated, items, fetchList],

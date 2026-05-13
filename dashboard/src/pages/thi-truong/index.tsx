@@ -3,8 +3,6 @@ import { Header, MarketBar, Footer } from "@/components/layout"
 import { MarketDataProvider } from "@/contexts/market-data-context"
 import { SymbolProvider } from "@/contexts/symbol-context"
 import { terminalThemeVars } from "@/features/market/theme"
-import { useMarketOverview } from "@/features/market/hooks"
-import { changeColor } from "@/features/market/utils"
 import { VNIndexChart } from "@/features/market/VNIndexChart"
 import { MarketSentiment } from "@/features/market/MarketSentiment"
 import { AIAnalysisPanel } from "@/features/market/AIAnalysisPanel"
@@ -43,12 +41,12 @@ export default function ThiTruongPage() {
                 <VNIndexChart />
                 <MarketSentiment />
                 <AIAnalysisPanel type="market" />
-                <NewsPanel />
-                <MacroPanel />
-                <CommodityPanel />
                 <SectorDataPanel />
                 <SectorChartPanel />
                 <AIAnalysisPanel type="sector" />
+                <NewsPanel />
+                <MacroPanel />
+                <CommodityPanel />
                 <LeadingStocksPanel />
                 <ProprietaryPanel />
                 <ForeignFlowPanel />
