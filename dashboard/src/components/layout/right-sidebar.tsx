@@ -2,13 +2,14 @@ import { useSidebar } from "@/contexts/sidebar-context"
 import { NewsFeedPanel } from "@/components/news/news-feed-panel"
 
 import { WatchlistPanel } from "@/components/watchlist/watchlist-panel"
+import { AIPatternPanel } from "@/components/patterns/ai-pattern-panel"
 import { RightPanel as TradingPanel } from "./right-panel"
 import { X } from "lucide-react"
 
 /**
  * Dynamic right sidebar that switches between panels:
  * - news: Market news feed with filters
-
+ * - patterns: AI candle / chart pattern recognition
  * - trading: Stock trading form (order book + order placement)
  * - watchlist: Watchlist, holdings, and trade history
  */
@@ -19,7 +20,8 @@ export function RightSidebar() {
     switch (activePanel) {
       case "news":
         return <NewsFeedPanel />
-
+      case "patterns":
+        return <AIPatternPanel />
       case "trading":
         return <TradingPanel />
       case "watchlist":
@@ -31,7 +33,7 @@ export function RightSidebar() {
 
   const panelNames: Record<string, string> = {
     news: "Tin tức",
-
+    patterns: "AI Mẫu nến",
     trading: "Đặt lệnh",
     watchlist: "Danh mục",
   }

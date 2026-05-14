@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from "react"
 
-export type SidebarPanel = "news" | "trading" | "watchlist"
+export type SidebarPanel = "news" | "trading" | "watchlist" | "patterns"
 
 interface SidebarContextType {
   activePanel: SidebarPanel
