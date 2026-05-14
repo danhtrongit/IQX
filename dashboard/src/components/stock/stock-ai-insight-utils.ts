@@ -40,14 +40,32 @@ export function cleanLayerSummaryValue(layerKey: string, value: unknown, label?:
   if (!text) return ""
 
   if (layerKey === "moneyFlow") {
-    // Strip trailing numeric token (handles: " -10", " +432", " (-10)", " -10 tỷ",
-    // " 2,5 triệu", ", 10", ": -10", Unicode minus, etc.) — keep only descriptor text
+    // Lớp 3 ở thẻ tóm tắt chỉ cần hiển thị mô tả định tính (Mua ròng / Bán ròng /
+    // Cân bằng / Tích cực / Tiêu cực ...) — bỏ hết số/đơn vị/khoảng thời gian.
+    const lower = text.toLowerCase()
+    const QUALITATIVE: Array<[RegExp, string]> = [
+      [/\bmua\s*ròng\b/, "Mua ròng"],
+      [/\bbán\s*ròng\b/, "Bán ròng"],
+      [/\bcân\s*bằng\b/, "Cân bằng"],
+      [/\btrung\s*lập\b/, "Trung lập"],
+      [/\btích\s*cực\b/, "Tích cực"],
+      [/\btiêu\s*cực\b/, "Tiêu cực"],
+      [/\bhỗ\s*trợ\b/, "Hỗ trợ"],
+      [/\báp\s*lực\b/, "Áp lực"],
+    ]
+    for (const [re, normalized] of QUALITATIVE) {
+      if (re.test(lower)) return normalized
+    }
+
+    // Fallback: strip trailing numeric token (handles: " -10", " +432", " (-10)",
+    // " -10 tỷ", " 2,5 triệu", ", 10", ": -10", Unicode minus, etc.) and any
+    // numeric token anywhere in the string when no qualitative descriptor found.
     text = text
       .replace(
-        /[\s,;:()\-–—]*\(?\s*[+\-−–—]?\d[\d.,\s]*\)?\s*(?:tỷ|tr|triệu|[kK]|%|đ|đồng|VND)?\s*\.?\s*$/u,
-        "",
+        /[\s,;:()\-–—]*\(?\s*[+\-−–—]?\d[\d.,\s]*\)?\s*(?:tỷ|tr|triệu|[kK]|%|đ|đồng|VND|phiên|ngày)?\s*\.?\s*/giu,
+        " ",
       )
-      // Clean up any dangling punctuation left at end
+      .replace(/\s{2,}/g, " ")
       .replace(/[\s,;:()\-–—.]+$/u, "")
       .trim()
   }
