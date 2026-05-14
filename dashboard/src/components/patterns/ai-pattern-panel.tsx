@@ -1,22 +1,21 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   Sparkles,
   ChevronDown,
-  Loader2,
   CheckCircle2,
   Info,
   AlertTriangle,
+  CandlestickChart,
+  LineChart,
 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { useSymbol } from "@/contexts/symbol-context"
 import { api } from "@/lib/api"
+import {
+  CandlePatternIllustration,
+  ChartPatternIllustration,
+} from "./pattern-illustration"
+import { AIAnalyzingOverlay } from "./ai-analyzing-overlay"
 
 type PatternKind = "candles" | "charts"
 
@@ -81,6 +80,25 @@ export function AIPatternPanel() {
   const [error, setError] = useState<string | null>(null)
   const [activeIdx, setActiveIdx] = useState(0)
   const [detailsOpen, setDetailsOpen] = useState(false)
+  // Short "AI đang phân tích" overlay shown when the user picks a different
+  // pattern from the detail list. Independent from the fetch loading state.
+  const [analyzing, setAnalyzing] = useState(false)
+  const analyzeTimerRef = useRef<number | null>(null)
+
+  const triggerAnalyzing = (durationMs = 750) => {
+    if (analyzeTimerRef.current) window.clearTimeout(analyzeTimerRef.current)
+    setAnalyzing(true)
+    analyzeTimerRef.current = window.setTimeout(() => {
+      setAnalyzing(false)
+      analyzeTimerRef.current = null
+    }, durationMs)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (analyzeTimerRef.current) window.clearTimeout(analyzeTimerRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -111,6 +129,18 @@ export function AIPatternPanel() {
     }
   }, [symbol, kind])
 
+  const selectPattern = (idx: number) => {
+    if (idx === activeIdx) return
+    setActiveIdx(idx)
+    triggerAnalyzing()
+  }
+
+  const handleKindChange = (next: PatternKind) => {
+    if (next === kind) return
+    setKind(next)
+    triggerAnalyzing(900)
+  }
+
   const active = useMemo(
     () => (items.length > 0 ? items[Math.min(activeIdx, items.length - 1)] : null),
     [items, activeIdx],
@@ -118,40 +148,39 @@ export function AIPatternPanel() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header — kind selector */}
-      <div className="flex items-center gap-2 px-2.5 py-2 border-b border-border/50 bg-card">
-        <Sparkles className="size-3.5 text-primary shrink-0" />
-        <Select value={kind} onValueChange={(v) => setKind(v as PatternKind)}>
-          <SelectTrigger className="h-7 w-full text-xs border-transparent bg-transparent px-1.5 hover:bg-muted/40 focus:ring-0 [&>svg]:opacity-60">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent align="start" className="min-w-[180px]">
-            <SelectItem value="candles" className="text-xs">
-              <span className="inline-flex items-center gap-1.5">
-                <Sparkles className="size-3 text-primary" />
-                AI Mẫu nến
-              </span>
-            </SelectItem>
-            <SelectItem value="charts" className="text-xs">
-              <span className="inline-flex items-center gap-1.5">
-                <Sparkles className="size-3 text-primary" />
-                AI Mẫu hình giá
-              </span>
-            </SelectItem>
-          </SelectContent>
-        </Select>
-        <span className="text-[10px] text-muted-foreground tabular-nums">
+      {/* Header — segmented buttons to switch kind */}
+      <div className="flex items-center gap-1.5 px-2 py-2 border-b border-border/50 bg-card">
+        <div className="flex-1 inline-flex items-center rounded-md bg-muted/40 p-0.5 gap-0.5">
+          {([
+            { id: "candles" as const, icon: CandlestickChart, label: "AI Mẫu nến" },
+            { id: "charts" as const, icon: LineChart, label: "AI Mẫu giá" },
+          ]).map(({ id, icon: Icon, label }) => {
+            const active = kind === id
+            return (
+              <button
+                key={id}
+                onClick={() => handleKindChange(id)}
+                className={`flex-1 inline-flex items-center justify-center gap-1 h-7 rounded text-[11px] font-semibold transition-colors ${
+                  active
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                }`}
+              >
+                <Icon className="size-3.5" />
+                {label}
+              </button>
+            )
+          })}
+        </div>
+        <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
           {symbol}
         </span>
       </div>
 
       <ScrollArea className="flex-1 min-h-0">
         <div className="p-3 space-y-3">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-              <Loader2 className="size-4 animate-spin mb-2" />
-              <span className="text-[10px]">Đang phân tích {KIND_LABEL[kind]}...</span>
-            </div>
+          {loading || analyzing ? (
+            <AIAnalyzingOverlay label={loading ? `Đang phân tích ${KIND_LABEL[kind]}` : undefined} />
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
               <AlertTriangle className="size-4 mb-2 text-amber-500" />
@@ -189,7 +218,7 @@ export function AIPatternPanel() {
                 </div>
               </div>
 
-              {/* Illustration */}
+              {/* Illustration — rendered inline as theme-aware SVG */}
               <div className="rounded-lg border border-border/60 bg-muted/10 p-3">
                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-2">
                   <span>
@@ -197,20 +226,13 @@ export function AIPatternPanel() {
                   </span>
                   <Info className="size-3 opacity-60" />
                 </div>
-                {active.illustration ? (
-                  <div className="aspect-[4/3] w-full flex items-center justify-center">
-                    <img
-                      src={active.illustration}
-                      alt={active.name}
-                      className="max-h-full max-w-full object-contain"
-                      loading="lazy"
-                    />
-                  </div>
-                ) : (
-                  <div className="aspect-[4/3] w-full flex items-center justify-center text-[10px] text-muted-foreground">
-                    Chưa có hình minh họa
-                  </div>
-                )}
+                <div className="aspect-[4/3] w-full flex items-center justify-center">
+                  {kind === "candles" ? (
+                    <CandlePatternIllustration name={active.name} signal={active.signal} />
+                  ) : (
+                    <ChartPatternIllustration name={active.name} />
+                  )}
+                </div>
               </div>
 
               {/* Meaning card */}
@@ -264,7 +286,7 @@ export function AIPatternPanel() {
                     return (
                       <button
                         key={`${p.name}-${idx}`}
-                        onClick={() => setActiveIdx(idx)}
+                        onClick={() => selectPattern(idx)}
                         className={`w-full text-left rounded-md border px-2.5 py-1.5 transition-colors ${
                           isActive
                             ? "border-primary/50 bg-primary/10"
