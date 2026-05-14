@@ -147,17 +147,18 @@ async function getApiErrorMessage(err: unknown, fallback: string): Promise<strin
   }
 }
 
-// ── Mini Area Sparkline SVG (green/red gradient fill) ──
+// ── Mini Area Sparkline SVG (single-tone gradient fill matching price color) ──
 function Sparkline({
-  data, color, width = 60, height = 24, refPrice,
+  data, color, width = 60, height = 24,
 }: {
-  data: number[]; color: string; width?: number; height?: number; refPrice?: number;
+  data: number[]; color: string; width?: number; height?: number;
 }) {
   if (!data || data.length < 2) return <div style={{ width, height }} />
   const min = Math.min(...data)
   const max = Math.max(...data)
   const range = max - min || 1
-  const pad = 1
+  // Vertical padding so the line is visually centered within the SVG box
+  const pad = Math.max(2, Math.floor(height * 0.18))
 
   // Build the SVG path points
   const pts = data.map((v, i) => ({
@@ -166,44 +167,30 @@ function Sparkline({
   }))
   const linePath = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")
 
-  // Reference line Y (for green above / red below fill)
-  const ref = refPrice ?? data[0]
-  const refY = height - ((ref - min) / range) * (height - 2 * pad) - pad
-  const clampedRefY = Math.max(0, Math.min(height, refY))
-
   // Area fill path (line → bottom-right → bottom-left)
   const areaPath = `${linePath} L${width},${height} L0,${height} Z`
 
-  // Unique ID for clip/gradient (avoid collisions between multiple sparklines)
+  // Unique ID for gradient (avoid collisions between multiple sparklines)
   const uid = `sp${Math.random().toString(36).slice(2, 8)}`
 
   return (
-    <svg width={width} height={height} className="shrink-0" style={{ overflow: "visible" }}>
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="none"
+      className="shrink-0 block"
+    >
       <defs>
-        {/* Green gradient above reference */}
-        <linearGradient id={`${uid}-green`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#10b981" stopOpacity="0.5" />
-          <stop offset="100%" stopColor="#10b981" stopOpacity="0.05" />
+        {/* Single-tone gradient that matches the price color */}
+        <linearGradient id={`${uid}-fill`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.45" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.04" />
         </linearGradient>
-        {/* Red gradient below reference */}
-        <linearGradient id={`${uid}-red`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ef4444" stopOpacity="0.05" />
-          <stop offset="100%" stopColor="#ef4444" stopOpacity="0.5" />
-        </linearGradient>
-        {/* Clip: above ref line */}
-        <clipPath id={`${uid}-clip-above`}>
-          <rect x="0" y="0" width={width} height={clampedRefY} />
-        </clipPath>
-        {/* Clip: below ref line */}
-        <clipPath id={`${uid}-clip-below`}>
-          <rect x="0" y={clampedRefY} width={width} height={height - clampedRefY} />
-        </clipPath>
       </defs>
 
-      {/* Green fill above reference */}
-      <path d={areaPath} fill={`url(#${uid}-green)`} clipPath={`url(#${uid}-clip-above)`} />
-      {/* Red fill below reference */}
-      <path d={areaPath} fill={`url(#${uid}-red)`} clipPath={`url(#${uid}-clip-below)`} />
+      {/* Single unified fill (all green when up, all red when down) */}
+      <path d={areaPath} fill={`url(#${uid}-fill)`} />
       {/* Line */}
       <path d={linePath} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
