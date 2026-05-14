@@ -208,6 +208,10 @@ type InsiderWarning = {
   label: string
   icon: typeof AlertTriangle
   cls: string
+  /** 1 = nhẹ, 2 = vừa, 3 = nghiêm trọng (3-dot meter) */
+  severity: 1 | 2 | 3
+  /** Tone for the dot meter so it matches the badge color */
+  dotColor: string
 }
 
 function getInsiderWarning(value: unknown): InsiderWarning | null {
@@ -215,15 +219,30 @@ function getInsiderWarning(value: unknown): InsiderWarning | null {
   const v = String(value).toLowerCase().trim()
   if (!v) return null
 
-  if (
-    v.includes("đáng lo") || v.includes("lo ngại") || v.includes("cảnh báo") ||
-    v.includes("rủi ro") || v.includes("tiêu cực") || v.includes("áp lực") ||
-    v.includes("nguy cơ") || v.includes("nghiêm trọng")
-  ) {
+  // ── Cảnh báo (đỏ) — chia 3 mức ──
+  const isCritical =
+    v.includes("nghiêm trọng") || v.includes("rất tiêu cực") ||
+    v.includes("nguy cơ cao") || v.includes("rủi ro cao") ||
+    v.includes("báo động")
+  const isHigh =
+    v.includes("đáng lo") || v.includes("cảnh báo") ||
+    v.includes("rủi ro") || v.includes("tiêu cực") ||
+    v.includes("nguy cơ") || v.includes("áp lực bán")
+  const isMild =
+    v.includes("lo ngại") || v.includes("áp lực") ||
+    v.includes("thận trọng") || v.includes("cần lưu ý")
+
+  if (isCritical || isHigh || isMild) {
+    const severity: 1 | 2 | 3 = isCritical ? 3 : isHigh ? 2 : 1
+    const label =
+      severity === 3 ? "Cảnh báo nghiêm trọng" :
+      severity === 2 ? "Cảnh báo cao" : "Cảnh báo nhẹ"
     return {
-      label: "Cảnh báo cao",
+      label,
       icon: AlertTriangle,
       cls: "bg-red-500/15 text-red-400 border-red-500/30",
+      severity,
+      dotColor: "#f87171",
     }
   }
 
@@ -235,6 +254,8 @@ function getInsiderWarning(value: unknown): InsiderWarning | null {
       label: "Tích cực",
       icon: CheckCircle2,
       cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+      severity: 1,
+      dotColor: "#34d399",
     }
   }
 
@@ -246,6 +267,8 @@ function getInsiderWarning(value: unknown): InsiderWarning | null {
       label: "Trung tính",
       icon: MinusCircle,
       cls: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+      severity: 1,
+      dotColor: "#fbbf24",
     }
   }
 
@@ -254,6 +277,8 @@ function getInsiderWarning(value: unknown): InsiderWarning | null {
     label: "Chưa rõ",
     icon: AlertCircle,
     cls: "bg-slate-500/15 text-slate-400 border-slate-500/30",
+    severity: 1,
+    dotColor: "#94a3b8",
   }
 }
 
@@ -262,10 +287,25 @@ function WarningBadge({ w }: { w: InsiderWarning }) {
   return (
     <span
       className={`ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-[9px] font-bold leading-none ${w.cls}`}
-      title={w.label}
+      title={`${w.label} (mức ${w.severity}/3)`}
     >
       <Icon className="size-2.5" />
       {w.label}
+      {/* Dot meter — visualises severity level (1-3) */}
+      <span className="inline-flex items-center gap-0.5 ml-0.5" aria-label={`Mức ${w.severity} trên 3`}>
+        {[1, 2, 3].map((lvl) => (
+          <span
+            key={lvl}
+            className="rounded-full transition-opacity"
+            style={{
+              width: 4,
+              height: 4,
+              backgroundColor: w.dotColor,
+              opacity: lvl <= w.severity ? 1 : 0.25,
+            }}
+          />
+        ))}
+      </span>
     </span>
   )
 }
