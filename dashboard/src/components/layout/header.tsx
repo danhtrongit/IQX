@@ -36,6 +36,7 @@ interface StockResult {
 
 const NAV_ITEMS = [
   { label: "Trang chủ", href: "/" },
+  { label: "Dashboard", href: "/dashboard" },
   { label: "Thị trường", href: "/thi-truong" },
   { label: "Cổ phiếu", href: "/co-phieu" },
 ]
