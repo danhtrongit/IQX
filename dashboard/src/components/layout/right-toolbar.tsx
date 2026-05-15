@@ -4,6 +4,7 @@ import {
   Newspaper,
   Lightbulb,
   CandlestickChart,
+  TrendingUp,
 } from "lucide-react"
 import { useSidebar, type SidebarPanel } from "@/contexts/sidebar-context"
 
@@ -68,6 +69,7 @@ export function RightToolbar({ onActionClick }: { onActionClick?: (id: string) =
     { icon: Newspaper, label: "Tin tức", id: "news", panel: "news" },
     { icon: Lightbulb, label: "AI Phân tích", id: "ai-insight", onClick: () => onActionClick?.("ai-insight") },
     { icon: CandlestickChart, label: "AI Mẫu nến", id: "ai-patterns", panel: "patterns" },
+    { icon: TrendingUp, label: "Dự báo", id: "ai-forecast", panel: "forecast" },
   ]
 
   return (
