@@ -316,10 +316,13 @@ function DetailPanel({
   layerKey,
   insight,
   onClose,
+  hideOnMobileForDecision = false,
 }: {
   layerKey: string
   insight: InsightResponse
   onClose: () => void
+  /** If true, the panel stays hidden on mobile (decision is shown via the centre summary card). */
+  hideOnMobileForDecision?: boolean
 }) {
   const layerData = insight.layers[layerKey]
   const cfg = layerKey === "decision"
@@ -335,7 +338,9 @@ function DetailPanel({
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 340, opacity: 0 }}
       transition={{ type: "spring", stiffness: 220, damping: 26 }}
-      className="flex-1 min-w-[320px] bg-background/95 backdrop-blur-xl border-l border-border/30 shadow-2xl flex flex-col"
+      className={`absolute inset-0 z-10 md:static md:flex-1 md:min-w-[320px] bg-background/95 backdrop-blur-xl md:border-l border-border/30 shadow-2xl flex flex-col ${
+        hideOnMobileForDecision ? "hidden md:flex" : "flex"
+      }`}
     >
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-border/20 shrink-0">
@@ -756,10 +761,53 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
         </div>
       </div>
 
-      {/* ─── Body: 3-column layout ─── */}
-      <div className="flex-1 flex min-h-0 overflow-hidden">
-        {/* ─── LEFT: Layer Cards ─── */}
-        <ScrollArea className="w-[240px] shrink-0 border-r border-border/15">
+      {/* ─── Body: responsive layout
+              - Mobile (default): single column, horizontal layer chips, summary below, detail full-width
+              - md+: 3-column (layer cards | summary | detail panel) ─── */}
+      <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden relative">
+        {/* ─── Mobile: layer chip strip ─── */}
+        <div className="md:hidden border-b border-border/15 bg-card/40 shrink-0">
+          <ScrollArea className="w-full">
+            <div className="flex items-center gap-1.5 px-2 py-2 min-w-max">
+              {/* Tổng hợp chip */}
+              <button
+                onClick={() => setSelectedLayer(selectedLayer === "decision" ? null : "decision")}
+                className={`shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-[11px] font-bold transition-colors ${
+                  selectedLayer === "decision"
+                    ? "border-primary bg-primary/15 text-primary"
+                    : "border-border/40 bg-muted/20 text-muted-foreground"
+                }`}
+              >
+                <Sparkles className="size-3" />
+                Tổng hợp
+              </button>
+              {LAYERS_ORDER.map((key) => {
+                const cfg = LAYER_CONFIG[key]
+                const isActive = selectedLayer === key
+                return (
+                  <button
+                    key={`chip-${key}`}
+                    onClick={() => setSelectedLayer(isActive ? null : key)}
+                    className="shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-[11px] font-bold transition-colors"
+                    style={{
+                      borderColor: isActive ? cfg.color : `${cfg.color}30`,
+                      backgroundColor: isActive ? `${cfg.color}18` : "transparent",
+                      color: isActive ? cfg.color : "hsl(var(--muted-foreground))",
+                    }}
+                  >
+                    <span className="text-[9px] font-black uppercase tracking-[0.1em] opacity-80">
+                      {cfg.shortLabel}
+                    </span>
+                    {cfg.label}
+                  </button>
+                )
+              })}
+            </div>
+          </ScrollArea>
+        </div>
+
+        {/* ─── LEFT (md+): Layer Cards ─── */}
+        <ScrollArea className="hidden md:block w-[240px] shrink-0 border-r border-border/15">
           <div className="p-2 space-y-2">
             {LAYERS_ORDER.map((key) => {
 	              const cfg = LAYER_CONFIG[key]
@@ -814,97 +862,112 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
           </div>
         </ScrollArea>
 
-        {/* ─── CENTER: Summary Card ─── */}
-        <div className="w-[340px] shrink-0 flex flex-col items-center justify-center p-3">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, type: "spring", stiffness: 120 }}
-            onClick={() => setSelectedLayer(selectedLayer === "decision" ? null : "decision")}
-            className="w-full max-w-[340px] rounded-2xl border-2 border-primary/25 bg-gradient-to-br from-primary/5 via-background/95 to-background/85 backdrop-blur-sm p-4 shadow-xl cursor-pointer hover:border-primary/40 transition-colors"
-          >
-            {/* Title */}
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <Sparkles className="size-5 text-primary" />
-              <div className="text-center">
-                <p className="text-[14px] font-bold text-foreground">IQX AI Insights</p>
-                <p className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] mt-0.5">Tổng hợp phân tích</p>
-              </div>
-            </div>
-
-            {/* Trend Tags */}
-            {trendTags.length > 0 && (
-              <div className="flex justify-center gap-1.5 mb-3">
-                {trendTags[0] && (
-                  <span className="text-[11px] font-semibold px-3 py-1 rounded-full"
-                    style={{ backgroundColor: `${trendTags[0].color}20`, color: trendTags[0].color, border: `1px solid ${trendTags[0].color}30` }}>
-                    Xu hướng {trendTags[0].label}
-                  </span>
-                )}
-                {trendTags[1] && (
-                  <span className="text-[11px] font-semibold px-3 py-1 rounded-full"
-                    style={{ backgroundColor: `${trendTags[1].color}20`, color: trendTags[1].color, border: `1px solid ${trendTags[1].color}30` }}>
-                    Sức mạnh {trendTags[1].label}
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* Overview Quote */}
-            {overview && (
-              <div className="bg-background/40 rounded-lg p-3 border border-border/15 mb-3">
-                <p className="text-[12px] text-foreground/80 leading-relaxed">❝ {overview}</p>
-              </div>
-            )}
-
-            {/* Timestamp */}
-            <p className="text-[9px] text-muted-foreground text-center mb-3">
-              Cập nhật lúc {new Date(insight.timestamp).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
-            </p>
-
-            {/* Metrics Row */}
-            <div className="flex items-center justify-around rounded-lg bg-background/50 border border-border/15 py-3 px-2 mb-3">
-              {/* Confidence Gauge */}
-              <div className="text-center">
-                <p className="text-[9px] text-muted-foreground mb-1">Sức mạnh tổng thể</p>
-                <svg viewBox="0 0 60 40" className="w-14 h-9 mx-auto">
-                  <path d="M 5 35 A 25 25 0 0 1 55 35" fill="none" stroke="hsl(var(--border) / 0.2)" strokeWidth="5" strokeLinecap="round" />
-                  <path d="M 5 35 A 25 25 0 0 1 55 35" fill="none" stroke="#10b981" strokeWidth="5" strokeLinecap="round"
-                    strokeDasharray={`${(confidence / 100) * 78.5} 78.5`} />
-                </svg>
-              </div>
-              <div className="text-center">
-                <p className="text-[9px] text-muted-foreground mb-1">Độ tin cậy</p>
-                <p className="text-[18px] font-bold tabular-nums text-emerald-400">{confidence}%</p>
-                <div className="h-1 w-12 bg-border/30 rounded-full overflow-hidden mt-1 mx-auto">
-                  <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${confidence}%` }} />
+        {/* ─── CENTER: Summary Card
+                 Hidden on mobile when a layer is selected (detail takes the screen) ─── */}
+        <ScrollArea
+          className={`flex-1 md:flex-none md:w-[340px] md:shrink-0 ${
+            selectedLayer && selectedLayer !== "decision" ? "hidden md:block" : ""
+          }`}
+        >
+          <div className="flex items-center justify-center p-3 md:p-3 min-h-full">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, type: "spring", stiffness: 120 }}
+              onClick={() => setSelectedLayer(selectedLayer === "decision" ? null : "decision")}
+              className="w-full max-w-[420px] md:max-w-[340px] rounded-2xl border-2 border-primary/25 bg-gradient-to-br from-primary/5 via-background/95 to-background/85 backdrop-blur-sm p-4 shadow-xl cursor-pointer hover:border-primary/40 transition-colors"
+            >
+              {/* Title */}
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <Sparkles className="size-5 text-primary" />
+                <div className="text-center">
+                  <p className="text-[14px] font-bold text-foreground">IQX AI Insights</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] mt-0.5">Tổng hợp phân tích</p>
                 </div>
               </div>
-              <div className="text-center">
-                <p className="text-[9px] text-muted-foreground mb-1">Xác suất đảo chiều</p>
-                <p className="text-[18px] font-bold tabular-nums text-blue-400">{reversal}%</p>
-                <div className="h-1 w-12 bg-border/30 rounded-full overflow-hidden mt-1 mx-auto">
-                  <div className="h-full bg-blue-400 rounded-full" style={{ width: `${reversal}%` }} />
+
+              {/* Trend Tags */}
+              {trendTags.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-1.5 mb-3">
+                  {trendTags[0] && (
+                    <span className="text-[11px] font-semibold px-3 py-1 rounded-full"
+                      style={{ backgroundColor: `${trendTags[0].color}20`, color: trendTags[0].color, border: `1px solid ${trendTags[0].color}30` }}>
+                      Xu hướng {trendTags[0].label}
+                    </span>
+                  )}
+                  {trendTags[1] && (
+                    <span className="text-[11px] font-semibold px-3 py-1 rounded-full"
+                      style={{ backgroundColor: `${trendTags[1].color}20`, color: trendTags[1].color, border: `1px solid ${trendTags[1].color}30` }}>
+                      Sức mạnh {trendTags[1].label}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Overview Quote */}
+              {overview && (
+                <div className="bg-background/40 rounded-lg p-3 border border-border/15 mb-3">
+                  <p className="text-[12px] text-foreground/80 leading-relaxed">❝ {overview}</p>
+                </div>
+              )}
+
+              {/* Timestamp */}
+              <p className="text-[9px] text-muted-foreground text-center mb-3">
+                Cập nhật lúc {new Date(insight.timestamp).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
+              </p>
+
+              {/* Metrics Row */}
+              <div className="flex items-center justify-around rounded-lg bg-background/50 border border-border/15 py-3 px-2 mb-3">
+                {/* Confidence Gauge */}
+                <div className="text-center">
+                  <p className="text-[9px] text-muted-foreground mb-1">Sức mạnh tổng thể</p>
+                  <svg viewBox="0 0 60 40" className="w-14 h-9 mx-auto">
+                    <path d="M 5 35 A 25 25 0 0 1 55 35" fill="none" stroke="hsl(var(--border) / 0.2)" strokeWidth="5" strokeLinecap="round" />
+                    <path d="M 5 35 A 25 25 0 0 1 55 35" fill="none" stroke="#10b981" strokeWidth="5" strokeLinecap="round"
+                      strokeDasharray={`${(confidence / 100) * 78.5} 78.5`} />
+                  </svg>
+                </div>
+                <div className="text-center">
+                  <p className="text-[9px] text-muted-foreground mb-1">Độ tin cậy</p>
+                  <p className="text-[18px] font-bold tabular-nums text-emerald-400">{confidence}%</p>
+                  <div className="h-1 w-12 bg-border/30 rounded-full overflow-hidden mt-1 mx-auto">
+                    <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${confidence}%` }} />
+                  </div>
+                </div>
+                <div className="text-center">
+                  <p className="text-[9px] text-muted-foreground mb-1">Xác suất đảo chiều</p>
+                  <p className="text-[18px] font-bold tabular-nums text-blue-400">{reversal}%</p>
+                  <div className="h-1 w-12 bg-border/30 rounded-full overflow-hidden mt-1 mx-auto">
+                    <div className="h-full bg-blue-400 rounded-full" style={{ width: `${reversal}%` }} />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Action Hint */}
-            {actionHint && (
-              <div className="bg-background/40 rounded-lg p-2.5 border border-border/15">
-                <p className="text-[10px] text-muted-foreground mb-1 flex items-center gap-1">
-                  <Brain className="size-3 text-primary" /> Gợi ý hành động
-                </p>
-                <p className="text-[11px] text-foreground/80 leading-relaxed">{actionHint}</p>
-              </div>
-            )}
-          </motion.div>
-        </div>
+              {/* Action Hint */}
+              {actionHint && (
+                <div className="bg-background/40 rounded-lg p-2.5 border border-border/15">
+                  <p className="text-[10px] text-muted-foreground mb-1 flex items-center gap-1">
+                    <Brain className="size-3 text-primary" /> Gợi ý hành động
+                  </p>
+                  <p className="text-[11px] text-foreground/80 leading-relaxed">{actionHint}</p>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        </ScrollArea>
 
-        {/* ─── RIGHT: Detail Panel ─── */}
+        {/* ─── RIGHT: Detail Panel
+                 On mobile: takes the whole body when a non-summary layer is selected.
+                 Decision detail is hidden on mobile (the centre summary card already conveys it). ─── */}
         <AnimatePresence>
           {selectedLayer && insight && (
-            <DetailPanel layerKey={selectedLayer} insight={insight} onClose={() => setSelectedLayer(null)} />
+            <DetailPanel
+              key={selectedLayer}
+              layerKey={selectedLayer}
+              insight={insight}
+              onClose={() => setSelectedLayer(null)}
+              hideOnMobileForDecision={selectedLayer === "decision"}
+            />
           )}
         </AnimatePresence>
       </div>

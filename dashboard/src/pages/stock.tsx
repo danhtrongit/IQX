@@ -164,12 +164,12 @@ export default function StockPage() {
                   dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
                   dragMomentum={false}
                   dragElastic={0.05}
-                  className="absolute flex flex-col bg-card/95 backdrop-blur-xl border border-border shadow-2xl rounded-xl overflow-hidden pointer-events-auto"
+                  className="absolute flex flex-col bg-card/95 backdrop-blur-xl border border-border shadow-2xl rounded-xl overflow-hidden pointer-events-auto md:rounded-xl"
                   style={{
-                    width: "min(1100px, calc(100vw - 32px))",
-                    height: "min(700px, calc(100vh - 32px))",
-                    top: "max(16px, calc(50vh - min(350px, 50vh - 16px)))",
-                    left: "max(16px, calc(50vw - min(550px, 50vw - 16px)))",
+                    width: "min(1100px, calc(100vw - 16px))",
+                    height: "min(700px, calc(100vh - 24px))",
+                    top: "max(8px, calc(50vh - min(350px, 50vh - 12px)))",
+                    left: "max(8px, calc(50vw - min(550px, 50vw - 8px)))",
                   }}
                 >
                   <div
