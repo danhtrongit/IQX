@@ -24,6 +24,7 @@ dependencies = [
     "httpx>=0.28.1",
     "slowapi>=0.1.9",
     "redis[hiredis]>=5.0,<7.0",
+    "apscheduler>=3.10",
 ]
 
 [project.optional-dependencies]

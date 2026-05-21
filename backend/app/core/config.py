@@ -102,6 +102,9 @@ class Settings(BaseSettings):
     # ── Google Sheets ────────────────────────────────
     GOOGLE_SHEETS_API_KEY: str = ""
 
+    # ── Background Jobs ──────────────────────────────
+    JOBS_ENABLED: bool = True
+
     @property
     def cors_origins_list(self) -> list[str]:
         """Parse CORS_ORIGINS as a comma-separated string into a list."""

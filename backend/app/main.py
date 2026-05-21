@@ -46,9 +46,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     await redis_startup()
 
+    # Start background job scheduler
+    from app.services.jobs import shutdown as jobs_shutdown
+    from app.services.jobs import startup as jobs_startup
+
+    await jobs_startup()
+
     yield
 
     # Shutdown
+    await jobs_shutdown()
     await redis_shutdown()
     await http_shutdown()
     logger.info("👋 Shutting down %s", settings.APP_NAME)
