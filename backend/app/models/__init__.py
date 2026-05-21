@@ -19,3 +19,5 @@ except ImportError:
     pass
 
 from app.models.admin_audit import AdminAuditLog  # noqa: F401
+from app.models.ipn_log import SePayIPNLog  # noqa: F401
+from app.models.login_history import UserLoginHistory  # noqa: F401
