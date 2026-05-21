@@ -15,6 +15,7 @@ import {
   type LoginPayload,
   type RegisterPayload,
 } from "@/lib/api"
+import { invalidatePremiumStatus } from "@/hooks/use-premium-status"
 
 interface AuthContextValue {
   user: AuthUser | null
@@ -57,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const handler = () => {
       setUser(null)
       localStorage.removeItem("user")
+      invalidatePremiumStatus()
     }
     window.addEventListener("auth:logout", handler)
     return () => window.removeEventListener("auth:logout", handler)
@@ -70,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("refreshToken", res.refreshToken)
       localStorage.setItem("user", JSON.stringify(res.user))
       setUser(res.user)
+      invalidatePremiumStatus()
       setShowAuthModal(false)
     } catch (err) {
       throw err
@@ -86,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("refreshToken", res.refreshToken)
       localStorage.setItem("user", JSON.stringify(res.user))
       setUser(res.user)
+      invalidatePremiumStatus()
       setShowAuthModal(false)
     } catch (err) {
       throw err
@@ -105,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem("refreshToken")
       localStorage.removeItem("user")
       setUser(null)
+      invalidatePremiumStatus()
       setIsLoading(false)
     }
   }, [])

@@ -282,7 +282,10 @@ function RegisterForm({
         lastName: lastName.trim(),
         ...(phone && { phone }),
       })
-      toast.success("Đăng ký thành công! Chào mừng bạn đến với IQX 🎉")
+      toast.success("Đăng ký thành công!", {
+        description: "Bạn được tặng 7 ngày dùng thử Premium.",
+        duration: 6000,
+      })
     } catch (err) {
       const msg = await getErrorMessage(err)
       toast.error(msg)
