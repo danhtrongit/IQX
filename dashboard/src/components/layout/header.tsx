@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/contexts/auth-context"
+import { TrialBanner } from "./trial-banner"
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api/v1"
 
@@ -259,6 +260,7 @@ export function Header() {
   }
 
   return (
+    <>
     <header
       id="app-header"
       className="flex h-11 shrink-0 items-center border-b border-border bg-card px-2 gap-1.5"
@@ -412,5 +414,7 @@ export function Header() {
         )}
       </div>
     </header>
+    <TrialBanner />
+    </>
   )
 }
