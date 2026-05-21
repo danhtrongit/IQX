@@ -29,6 +29,7 @@ interface DataTableProps<TData> {
   onSortingChange?: OnChangeFn<SortingState>
   rowSelection?: RowSelectionState
   onRowSelectionChange?: OnChangeFn<RowSelectionState>
+  onRowClick?: (row: TData) => void
   loading?: boolean
   emptyMessage?: string
   className?: string
@@ -44,6 +45,7 @@ export function DataTable<TData>({
   onSortingChange,
   rowSelection,
   onRowSelectionChange,
+  onRowClick,
   loading = false,
   emptyMessage = "Không có dữ liệu",
   className,
@@ -115,7 +117,8 @@ export function DataTable<TData>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() ? "selected" : undefined}
-                className="hover:bg-muted/50"
+                className={cn("hover:bg-muted/50", onRowClick && "cursor-pointer")}
+                onClick={onRowClick ? () => onRowClick(row.original) : undefined}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

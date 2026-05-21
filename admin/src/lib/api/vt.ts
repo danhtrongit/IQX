@@ -3,6 +3,93 @@ import type { PaginatedResult } from "@/hooks/use-paginated-query"
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
+// Account 360 types
+export interface VTPosition {
+  id: string
+  accountId: string
+  symbol: string
+  quantityTotal: number
+  quantitySellable: number
+  quantityPending: number
+  quantityReserved: number
+  avgCostVnd: number
+  createdAt: string
+}
+
+export interface VTOrder {
+  id: string
+  accountId: string
+  userId: string
+  symbol: string
+  side: string
+  orderType: string
+  status: string
+  quantity: number
+  limitPriceVnd: number | null
+  filledPriceVnd: number | null
+  grossAmountVnd: number | null
+  feeVnd: number | null
+  taxVnd: number | null
+  netAmountVnd: number | null
+  tradingDate: string
+  rejectionReason: string | null
+  cancelReason: string | null
+  createdAt: string
+}
+
+export interface VTTrade {
+  id: string
+  orderId: string
+  accountId: string
+  symbol: string
+  side: string
+  quantity: number
+  priceVnd: number
+  grossAmountVnd: number
+  feeVnd: number
+  taxVnd: number
+  netAmountVnd: number
+  priceSource: string
+  tradedAt: string
+  createdAt: string
+}
+
+export interface VTLedgerEntry {
+  id: string
+  accountId: string
+  amountVnd: number
+  balanceAfterVnd: number
+  kind: string
+  referenceType: string | null
+  referenceId: string | null
+  note: string | null
+  createdAt: string
+}
+
+export interface VTSettlement {
+  id: string
+  accountId: string
+  tradeId: string
+  kind: string
+  amount: number
+  symbol: string | null
+  dueDate: string
+  status: string
+  settledAt: string | null
+  createdAt: string
+}
+
+export interface VTAccountStats {
+  accountId: string
+  totalOrders: number
+  totalTrades: number
+  grossBuyVnd: number
+  grossSellVnd: number
+  realizedPnlVnd: number
+  turnoverVnd: number
+  winRate: number | null
+}
+
 export interface VTAccountRow {
   id: string
   userId: string
@@ -36,6 +123,100 @@ export interface VTConfigData {
 }
 
 // ── Backend raw shapes ──────────────────────────────────────────────────────
+
+interface BackendPaginatedOf<T> {
+  items: T[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+}
+
+interface BackendPosition {
+  id: string
+  account_id: string
+  symbol: string
+  quantity_total: number
+  quantity_sellable: number
+  quantity_pending: number
+  quantity_reserved: number
+  avg_cost_vnd: number
+  created_at: string
+}
+
+interface BackendOrder {
+  id: string
+  account_id: string
+  user_id: string
+  symbol: string
+  side: string
+  order_type: string
+  status: string
+  quantity: number
+  limit_price_vnd: number | null
+  filled_price_vnd: number | null
+  gross_amount_vnd: number | null
+  fee_vnd: number | null
+  tax_vnd: number | null
+  net_amount_vnd: number | null
+  trading_date: string
+  rejection_reason: string | null
+  cancel_reason: string | null
+  created_at: string
+}
+
+interface BackendTrade {
+  id: string
+  order_id: string
+  account_id: string
+  symbol: string
+  side: string
+  quantity: number
+  price_vnd: number
+  gross_amount_vnd: number
+  fee_vnd: number
+  tax_vnd: number
+  net_amount_vnd: number
+  price_source: string
+  traded_at: string
+  created_at: string
+}
+
+interface BackendLedger {
+  id: string
+  account_id: string
+  amount_vnd: number
+  balance_after_vnd: number
+  kind: string
+  reference_type: string | null
+  reference_id: string | null
+  note: string | null
+  created_at: string
+}
+
+interface BackendSettlement {
+  id: string
+  account_id: string
+  trade_id: string
+  kind: string
+  amount: number
+  symbol: string | null
+  due_date: string
+  status: string
+  settled_at: string | null
+  created_at: string
+}
+
+interface BackendStats {
+  account_id: string
+  total_orders: number
+  total_trades: number
+  gross_buy_vnd: number
+  gross_sell_vnd: number
+  realized_pnl_vnd: number
+  turnover_vnd: number
+  win_rate: number | null
+}
 
 interface BackendAccount {
   id: string
@@ -78,6 +259,104 @@ interface BackendConfig {
 }
 
 // ── Adapters ───────────────────────────────────────────────────────────────
+
+function adaptPosition(raw: BackendPosition): VTPosition {
+  return {
+    id: String(raw.id),
+    accountId: String(raw.account_id),
+    symbol: raw.symbol,
+    quantityTotal: raw.quantity_total,
+    quantitySellable: raw.quantity_sellable,
+    quantityPending: raw.quantity_pending,
+    quantityReserved: raw.quantity_reserved,
+    avgCostVnd: raw.avg_cost_vnd,
+    createdAt: raw.created_at,
+  }
+}
+
+function adaptOrder(raw: BackendOrder): VTOrder {
+  return {
+    id: String(raw.id),
+    accountId: String(raw.account_id),
+    userId: String(raw.user_id),
+    symbol: raw.symbol,
+    side: raw.side,
+    orderType: raw.order_type,
+    status: raw.status,
+    quantity: raw.quantity,
+    limitPriceVnd: raw.limit_price_vnd,
+    filledPriceVnd: raw.filled_price_vnd,
+    grossAmountVnd: raw.gross_amount_vnd,
+    feeVnd: raw.fee_vnd,
+    taxVnd: raw.tax_vnd,
+    netAmountVnd: raw.net_amount_vnd,
+    tradingDate: raw.trading_date,
+    rejectionReason: raw.rejection_reason,
+    cancelReason: raw.cancel_reason,
+    createdAt: raw.created_at,
+  }
+}
+
+function adaptTrade(raw: BackendTrade): VTTrade {
+  return {
+    id: String(raw.id),
+    orderId: String(raw.order_id),
+    accountId: String(raw.account_id),
+    symbol: raw.symbol,
+    side: raw.side,
+    quantity: raw.quantity,
+    priceVnd: raw.price_vnd,
+    grossAmountVnd: raw.gross_amount_vnd,
+    feeVnd: raw.fee_vnd,
+    taxVnd: raw.tax_vnd,
+    netAmountVnd: raw.net_amount_vnd,
+    priceSource: raw.price_source,
+    tradedAt: raw.traded_at,
+    createdAt: raw.created_at,
+  }
+}
+
+function adaptLedger(raw: BackendLedger): VTLedgerEntry {
+  return {
+    id: String(raw.id),
+    accountId: String(raw.account_id),
+    amountVnd: raw.amount_vnd,
+    balanceAfterVnd: raw.balance_after_vnd,
+    kind: raw.kind,
+    referenceType: raw.reference_type,
+    referenceId: raw.reference_id ? String(raw.reference_id) : null,
+    note: raw.note,
+    createdAt: raw.created_at,
+  }
+}
+
+function adaptSettlement(raw: BackendSettlement): VTSettlement {
+  return {
+    id: String(raw.id),
+    accountId: String(raw.account_id),
+    tradeId: String(raw.trade_id),
+    kind: raw.kind,
+    amount: raw.amount,
+    symbol: raw.symbol,
+    dueDate: raw.due_date,
+    status: raw.status,
+    settledAt: raw.settled_at,
+    createdAt: raw.created_at,
+  }
+}
+
+function adaptStats(raw: BackendStats): VTAccountStats {
+  return {
+    accountId: String(raw.account_id),
+    totalOrders: raw.total_orders,
+    totalTrades: raw.total_trades,
+    grossBuyVnd: raw.gross_buy_vnd,
+    grossSellVnd: raw.gross_sell_vnd,
+    realizedPnlVnd: raw.realized_pnl_vnd,
+    turnoverVnd: raw.turnover_vnd,
+    winRate: raw.win_rate,
+  }
+}
 
 function adaptAccount(raw: BackendAccount): VTAccountRow {
   return {
@@ -210,5 +489,113 @@ export const vtApi = {
 
     const raw = await api.patch("virtual-trading/admin/config", { json: body }).json<BackendConfig>()
     return adaptConfig(raw)
+  },
+
+  // ── Account 360 ──────────────────────────────────────────────────────────
+
+  getAccount: async (accountId: string): Promise<VTAccountRow> => {
+    const raw = await api.get(`admin/vt/accounts/${accountId}`).json<BackendAccount>()
+    return adaptAccount(raw)
+  },
+
+  listPositions: async (accountId: string): Promise<VTPosition[]> => {
+    const raw = await api
+      .get(`admin/vt/accounts/${accountId}/positions`)
+      .json<BackendPosition[]>()
+    return raw.map(adaptPosition)
+  },
+
+  listOrders: async (
+    accountId: string,
+    params: { page: number; pageSize: number; status?: string; symbol?: string; dateFrom?: string; dateTo?: string },
+  ): Promise<PaginatedResult<VTOrder>> => {
+    const search = new URLSearchParams()
+    search.set("page", String(params.page))
+    search.set("page_size", String(params.pageSize))
+    if (params.status) search.set("status", params.status)
+    if (params.symbol) search.set("symbol", params.symbol)
+    if (params.dateFrom) search.set("date_from", params.dateFrom)
+    if (params.dateTo) search.set("date_to", params.dateTo)
+
+    const raw = await api
+      .get(`admin/vt/accounts/${accountId}/orders?${search}`)
+      .json<BackendPaginatedOf<BackendOrder>>()
+    return {
+      items: raw.items.map(adaptOrder),
+      total: raw.total,
+      page: raw.page,
+      pageSize: raw.page_size,
+      totalPages: raw.total_pages,
+    }
+  },
+
+  listTrades: async (
+    accountId: string,
+    params: { page: number; pageSize: number; symbol?: string },
+  ): Promise<PaginatedResult<VTTrade>> => {
+    const search = new URLSearchParams()
+    search.set("page", String(params.page))
+    search.set("page_size", String(params.pageSize))
+    if (params.symbol) search.set("symbol", params.symbol)
+
+    const raw = await api
+      .get(`admin/vt/accounts/${accountId}/trades?${search}`)
+      .json<BackendPaginatedOf<BackendTrade>>()
+    return {
+      items: raw.items.map(adaptTrade),
+      total: raw.total,
+      page: raw.page,
+      pageSize: raw.page_size,
+      totalPages: raw.total_pages,
+    }
+  },
+
+  listLedger: async (
+    accountId: string,
+    params: { page: number; pageSize: number; kind?: string },
+  ): Promise<PaginatedResult<VTLedgerEntry>> => {
+    const search = new URLSearchParams()
+    search.set("page", String(params.page))
+    search.set("page_size", String(params.pageSize))
+    if (params.kind) search.set("kind", params.kind)
+
+    const raw = await api
+      .get(`admin/vt/accounts/${accountId}/ledger?${search}`)
+      .json<BackendPaginatedOf<BackendLedger>>()
+    return {
+      items: raw.items.map(adaptLedger),
+      total: raw.total,
+      page: raw.page,
+      pageSize: raw.page_size,
+      totalPages: raw.total_pages,
+    }
+  },
+
+  listSettlements: async (
+    accountId: string,
+    params: { page: number; pageSize: number; status?: string },
+  ): Promise<PaginatedResult<VTSettlement>> => {
+    const search = new URLSearchParams()
+    search.set("page", String(params.page))
+    search.set("page_size", String(params.pageSize))
+    if (params.status) search.set("status", params.status)
+
+    const raw = await api
+      .get(`admin/vt/accounts/${accountId}/settlements?${search}`)
+      .json<BackendPaginatedOf<BackendSettlement>>()
+    return {
+      items: raw.items.map(adaptSettlement),
+      total: raw.total,
+      page: raw.page,
+      pageSize: raw.page_size,
+      totalPages: raw.total_pages,
+    }
+  },
+
+  getStats: async (accountId: string): Promise<VTAccountStats> => {
+    const raw = await api
+      .get(`admin/vt/accounts/${accountId}/stats`)
+      .json<BackendStats>()
+    return adaptStats(raw)
   },
 }
