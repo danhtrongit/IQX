@@ -425,17 +425,159 @@ async def get_ranking(
 # ══════════════════════════════════════════════════════
 
 
+_HTML_TAG_RE = re.compile(r"<[^>]+>")
+_WHITESPACE_RE = re.compile(r"\s+")
+_ICB_CACHE: dict[str, str] = {}
+
+
+def _strip_html_text(text: str | None) -> str:
+    """Remove HTML tags, decode entities, and collapse whitespace."""
+    if not text:
+        return ""
+    import html as _html
+
+    cleaned = _HTML_TAG_RE.sub(" ", text)
+    cleaned = _html.unescape(cleaned)
+    return _WHITESPACE_RE.sub(" ", cleaned).strip()
+
+
+async def _icb_lookup(code: Any) -> str | None:
+    """Resolve an ICB code to a Vietnamese sector name (cached)."""
+    if not code:
+        return None
+    key = str(code)
+    if key in _ICB_CACHE:
+        return _ICB_CACHE[key]
+    try:
+        items, _ = await vietcap.fetch_industries_icb()
+    except Exception:  # noqa: BLE001
+        return None
+    for it in items or []:
+        c = str(it.get("icb_code") or it.get("name") or "")
+        if c == key:
+            name = it.get("icb_name") or it.get("vi_sector") or it.get("viSector")
+            if name:
+                _ICB_CACHE[key] = str(name)
+                return _ICB_CACHE[key]
+    return None
+
+
+async def _merge_company_details(
+    overview: dict[str, Any], details: dict[str, Any]
+) -> None:
+    """Merge VCI ``/company/details`` payload into the KBS overview dict."""
+    mapping = {
+        "vi_organ_short_name": "organ_short_name",
+        "vi_organ_name": "organ_name",
+        "highest_price1_year": "highest_price_1y",
+        "lowest_price1_year": "lowest_price_1y",
+        "average_match_volume1_month": "average_match_volume_1_month",
+        "average_match_value1_month": "average_match_value_1_month",
+        "foreigner_percentage": "_foreign_owned_pct_raw",
+        "maximum_foreign_percentage": "_foreign_max_pct_raw",
+        "state_percentage": "_state_pct_raw",
+        "free_float_percentage": "free_float_percentage",
+        "free_float": "free_float",
+        "market_cap": "market_cap",
+        "current_price": "current_price",
+        "number_of_shares_mkt_cap": "issue_share",
+        "is_bank": "is_bank",
+        "sector": "sector",
+        "sector_vn": "sector_vn",
+    }
+    for src, dest in mapping.items():
+        v = details.get(src)
+        if v in (None, ""):
+            continue
+        # Don't overwrite values that are already populated from KBS.
+        if not overview.get(dest):
+            overview[dest] = v
+
+    # Profile text — prefer KBS-clean text, fall back to stripped VCI HTML.
+    if not overview.get("company_profile"):
+        text = _strip_html_text(details.get("profile"))
+        if text:
+            overview["company_profile"] = text
+
+    # Foreign room percentages: convert 0..1 to 0..100 once for the FE.
+    foreign_pct = details.get("foreigner_percentage")
+    if foreign_pct is not None:
+        try:
+            pct = float(foreign_pct)
+            overview.setdefault(
+                "foreign_current_percent", pct * 100 if pct < 1 else pct
+            )
+        except (TypeError, ValueError):
+            pass
+
+    # Resolve ICB names from codes (icbCodeLv2/Lv4).
+    for code_key, name_key in [("icb_code_lv2", "icb_name_2"), ("icb_code_lv4", "icb_name_4")]:
+        if overview.get(name_key):
+            continue
+        code = details.get(code_key)
+        if not code:
+            continue
+        name = await _icb_lookup(code)
+        if name:
+            overview[name_key] = name
+
+
 @router.get("/company/{symbol}/overview", tags=["Dữ liệu thị trường: Công ty"], response_model=MarketDataResponse)
 @redis_cached(ttl_setting="REDIS_TTL_MACRO_SECONDS")
 async def get_company_overview(request: Request, symbol: str) -> MarketDataResponse:
-    """Lấy thông tin tổng quan doanh nghiệp từ KBS."""
+    """Lấy thông tin tổng quan doanh nghiệp.
+
+    Source: KBS profile (chính) enriched with VCI ``/company/details``
+    (sector, profile, ICB, share metrics) and VCI 1Y/1W trading data
+    (52-week range, foreign room, average match volume).
+    """
     symbol = symbol.upper()
     if not _validate_symbol(symbol):
         raise HTTPException(status_code=422, detail=f"Mã chứng khoán không hợp lệ: {symbol}")
 
     async def _kbs() -> tuple[Any, str]:
         raw, url = await kbs.fetch_company_profile(symbol)
-        return kbs.normalize_overview(raw), url
+        overview = kbs.normalize_overview(raw)
+
+        # Best-effort enrichment from secondary sources. Each fetch is
+        # isolated so a failure in one source does not break the response.
+        try:
+            details, _ = await vietcap.fetch_company_details(symbol)
+            if isinstance(details, dict) and details:
+                await _merge_company_details(overview, details)
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("VCI company details failed for %s: %s", symbol, exc)
+
+        try:
+            yearly_rows, _ = await vietcap.fetch_trading_history(symbol, resolution="1Y", size=1)
+            if isinstance(yearly_rows, list) and yearly_rows:
+                row = yearly_rows[0]
+                overview.setdefault("highest_price_1y", row.get("highest_price"))
+                overview.setdefault("lowest_price_1y", row.get("lowest_price"))
+                overview.setdefault("foreign_current_room", row.get("foreign_current_room"))
+                overview.setdefault("foreign_total_room", row.get("foreign_total_room"))
+                fr_pct = row.get("foreign_owned_percentage")
+                if fr_pct is not None:
+                    overview.setdefault(
+                        "foreign_current_percent",
+                        fr_pct * 100 if fr_pct < 1 else fr_pct,
+                    )
+                overview.setdefault("foreign_room_percentage", row.get("foreign_room_percentage"))
+                overview.setdefault("market_cap", row.get("market_cap"))
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("VCI 1Y trading history failed for %s: %s", symbol, exc)
+
+        try:
+            weekly, _ = await vietcap.fetch_trading_history(symbol, resolution="1W", size=2)
+            if isinstance(weekly, list) and weekly:
+                vols = [w.get("total_match_volume") for w in weekly if w.get("total_match_volume")]
+                if vols:
+                    avg = sum(vols) / len(vols)
+                    overview["average_match_volume_2_week"] = avg
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("VCI 1W history failed for %s: %s", symbol, exc)
+
+        return overview, url
 
     try:
         return await fetch_with_fallback([("KBS", _kbs)])
@@ -539,6 +681,9 @@ async def get_financial_report(
     request: Request,
     symbol: str,
     report_type: str,
+    term_type: Annotated[int, Query(ge=1, le=2, description="1=Năm, 2=Quý")] = 2,
+    page_size: Annotated[int, Query(ge=1, le=20, description="Số kỳ trả về cho báo cáo")] = 8,
+    period: Annotated[str, Query(pattern="^[QY]$", description="Q hoặc Y (chỉ áp dụng cho ratio)")] = "Q",
 ) -> MarketDataResponse:
     """Lấy báo cáo tài chính: balance_sheet, income_statement, cash_flow, ratio."""
     symbol = symbol.upper()
@@ -551,7 +696,13 @@ async def get_financial_report(
         )
 
     async def _vci() -> tuple[Any, str]:
-        return await vietcap.fetch_financial_report(symbol, report_type=report_type)
+        return await vietcap.fetch_financial_report(
+            symbol,
+            report_type=report_type,
+            term_type=term_type,
+            page_size=page_size,
+            period=period,
+        )
 
     try:
         return await fetch_with_fallback([("VCI", _vci)])

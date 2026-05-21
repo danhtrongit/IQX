@@ -596,45 +596,134 @@ _FINANCE_TYPES = {
 }
 
 
+async def _fetch_financial_metrics(symbol: str) -> dict[str, list[dict[str, Any]]]:
+    """Fetch per-ticker metric metadata used to label report rows.
+
+    Returns a dict keyed by section (BALANCE_SHEET, INCOME_STATEMENT,
+    CASH_FLOW, NOTE) where each value is a list of metric descriptors
+    with ``field``, ``parent``, ``level``, ``titleVi``, etc.
+    """
+    url = f"{_IQ_BASE}/v1/company/{symbol.upper()}/financial-statement/metrics"
+    headers = get_headers(_SOURCE)
+    data = await fetch_json(url, headers=headers, source=_SOURCE)
+    payload = data.get("data") if isinstance(data, dict) else None
+    if not isinstance(payload, dict):
+        return {}
+    return {k: v for k, v in payload.items() if isinstance(v, list)}
+
+
+async def _fetch_financial_raw(
+    symbol: str,
+    *,
+    section: str,
+) -> tuple[dict[str, list[dict[str, Any]]], str]:
+    """Fetch raw VCI report (years/quarters lists) for a section."""
+    url = f"{_IQ_BASE}/v1/company/{symbol.upper()}/financial-statement"
+    params = {"section": section}
+    headers = get_headers(_SOURCE)
+    data = await fetch_json(url, headers=headers, params=params, source=_SOURCE)
+    raw_data = data.get("data") if isinstance(data, dict) else None
+    if not isinstance(raw_data, dict):
+        return {}, url
+
+    out: dict[str, list[dict[str, Any]]] = {}
+    for period_key, items_list in raw_data.items():
+        if not isinstance(items_list, list):
+            continue
+        out[period_key] = [
+            {_camel_to_snake(k): v for k, v in item.items()} for item in items_list
+        ]
+    return out, url
+
+
 async def fetch_financial_report(
     symbol: str,
     *,
     report_type: str = "balance_sheet",
-) -> tuple[list[dict[str, Any]], str]:
+    term_type: int = 2,
+    page_size: int = 8,
+    period: str = "Q",
+) -> tuple[Any, str]:
     """Fetch financial report data from VCI IQ Insight.
 
-    report_type: balance_sheet, income_statement, cash_flow, ratio
+    For ``balance_sheet``, ``income_statement``, ``cash_flow``: returns the
+    legacy KBS-shaped object ``{Head, Content}`` ready for the frontend.
+    For ``ratio``: returns a list of dicts (newest first) enriched with
+    canonical field names and YoY growth.
+
+    Args:
+        symbol: ticker.
+        report_type: balance_sheet | income_statement | cash_flow | ratio.
+        term_type: 1=year, 2=quarter (only for non-ratio reports).
+        page_size: number of periods to return (only for non-ratio reports).
+        period: 'Q' or 'Y' (only for ratio).
     """
+    from app.services.market_data.sources.vci_finance_normalize import (
+        enrich_ratio_records,
+        filter_ratio_period,
+        to_kbs_shape,
+    )
+
     sym = symbol.upper()
     section = _FINANCE_TYPES.get(report_type, "BALANCE_SHEET")
 
     if section == "RATIO":
         url = f"{_IQ_BASE}/v1/company/{sym}/statistics-financial"
-        params: dict[str, Any] = {}
-    else:
-        url = f"{_IQ_BASE}/v1/company/{sym}/financial-statement"
-        params = {"section": section}
+        headers = get_headers(_SOURCE)
+        data = await fetch_json(url, headers=headers, source=_SOURCE)
+        raw = data.get("data") if isinstance(data, dict) else data
+        rows: list[dict[str, Any]] = []
+        if isinstance(raw, list):
+            rows = [{_camel_to_snake(k): v for k, v in it.items()} for it in raw]
 
-    headers = get_headers(_SOURCE)
-    data = await fetch_json(url, headers=headers, params=params, source=_SOURCE)
+        # Pull income statement quarters AND years to synthesize
+        # revenue/net_profit/eps for banks (and as a fallback for any
+        # ticker missing those keys).
+        income_data, _ = await _fetch_financial_raw(sym, section="INCOME_STATEMENT")
+        income_quarters = income_data.get("quarters", []) or income_data.get(
+            "quarter", []
+        )
+        income_years = income_data.get("years", []) or income_data.get("year", [])
 
-    raw_data = data.get("data") if isinstance(data, dict) else data
+        enriched = enrich_ratio_records(
+            rows,
+            income_quarters=income_quarters,
+            income_years=income_years,
+        )
+        filtered = filter_ratio_period(enriched, period=period)
+        return filtered, url
 
-    records: list[dict[str, Any]] = []
-    if isinstance(raw_data, list):
-        # Ratio returns list directly
-        for item in raw_data:
-            records.append({_camel_to_snake(k): v for k, v in item.items()})
-    elif isinstance(raw_data, dict):
-        # Financial statements keyed by quarter
-        for period_key, items_list in raw_data.items():
-            if isinstance(items_list, list):
-                for item in items_list:
-                    row = {_camel_to_snake(k): v for k, v in item.items()}
-                    row["report_period"] = period_key.rstrip("s") if period_key else ""
-                    records.append(row)
+    # Statement reports (KQKD/CDKT/LCTT)
+    raw_data, url = await _fetch_financial_raw(sym, section=section)
+    metrics = await _fetch_financial_metrics(sym)
 
-    return records, url
+    bucket = "quarters" if term_type == 2 else "years"
+    items = raw_data.get(bucket) or raw_data.get(bucket.rstrip("s")) or []
+    # Some sections only populate one bucket; fall back to the other if empty.
+    if not items:
+        for fallback_key, candidate in raw_data.items():
+            if fallback_key != bucket and candidate:
+                items = candidate
+                break
+
+    metrics_section = metrics.get(section, [])
+    section_label = _SECTION_DISPLAY_LABEL.get(section, section.lower())
+
+    shaped = to_kbs_shape(
+        items=items,
+        metrics_section=metrics_section,
+        section_key=section_label,
+        term_type=term_type,
+        page_size=page_size,
+    )
+    return shaped, url
+
+
+_SECTION_DISPLAY_LABEL = {
+    "INCOME_STATEMENT": "KQKD",
+    "BALANCE_SHEET": "CDKT",
+    "CASH_FLOW": "LCTT",
+}
 
 
 # ══════════════════════════════════════════════════════
