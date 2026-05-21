@@ -37,6 +37,10 @@ class AdminMetricsService:
         today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
         d7 = now - timedelta(days=7)
         d30 = now - timedelta(days=30)
+        # User.created_at is a naive DateTime column; strip tzinfo for those comparisons.
+        today_start_naive = today_start.replace(tzinfo=None)
+        d7_naive = d7.replace(tzinfo=None)
+        d30_naive = d30.replace(tzinfo=None)
 
         # ── Users ─────────────────────────────────────────────────
         total_users = await self._scalar(
@@ -46,13 +50,13 @@ class AdminMetricsService:
             select(func.count()).select_from(User).where(User.status == UserStatus.ACTIVE)
         )
         new_users_today = await self._scalar(
-            select(func.count()).select_from(User).where(User.created_at >= today_start)
+            select(func.count()).select_from(User).where(User.created_at >= today_start_naive)
         )
         new_users_last_7d = await self._scalar(
-            select(func.count()).select_from(User).where(User.created_at >= d7)
+            select(func.count()).select_from(User).where(User.created_at >= d7_naive)
         )
         new_users_last_30d = await self._scalar(
-            select(func.count()).select_from(User).where(User.created_at >= d30)
+            select(func.count()).select_from(User).where(User.created_at >= d30_naive)
         )
 
         # ── Premium ───────────────────────────────────────────────
@@ -162,7 +166,7 @@ class AdminMetricsService:
         )
         vt_orders_today = await self._scalar(
             select(func.count()).select_from(VirtualOrder).where(
-                VirtualOrder.created_at >= today_start
+                VirtualOrder.created_at >= today_start_naive
             )
         )
 

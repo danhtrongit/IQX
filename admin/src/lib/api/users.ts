@@ -334,7 +334,7 @@ export const usersApi = {
     if (params.search) qs.set("search", params.search)
 
     const raw = await api
-      .get(`users?${qs.toString()}`)
+      .get(`users/?${qs.toString()}`)
       .json<BackendPaginated<BackendUserRow>>()
 
     return {
