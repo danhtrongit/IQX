@@ -116,3 +116,60 @@ async def test_grant_trial_sets_user_role_premium(db_session: AsyncSession) -> N
 
     await db_session.refresh(user)
     assert user.role == UserRole.PREMIUM
+
+
+async def test_register_grants_7day_trial(
+    db_session: AsyncSession, client: AsyncClient
+) -> None:
+    """POST /auth/register → user có sub TRIAL_7D ngay sau khi đăng ký."""
+    await _ensure_trial_plan(db_session)
+
+    payload = {
+        "email": "newreg@example.com",
+        "password": "StrongPass123!",
+        "first_name": "New",
+        "last_name": "Reg",
+    }
+    resp = await client.post("/api/v1/auth/register", json=payload)
+    assert resp.status_code == 201
+    user_data = resp.json()
+    user_id = uuid.UUID(user_data["id"])
+
+    res = await db_session.execute(
+        select(PremiumSubscription).where(PremiumSubscription.user_id == user_id)
+    )
+    sub = res.scalar_one_or_none()
+    assert sub is not None
+    assert sub.status == SubscriptionStatus.ACTIVE
+
+    res = await db_session.execute(
+        select(PremiumPlan).where(PremiumPlan.id == sub.current_plan_id)
+    )
+    plan = res.scalar_one()
+    assert plan.code == "TRIAL_7D"
+
+
+async def test_register_succeeds_even_if_trial_plan_missing(
+    db_session: AsyncSession, client: AsyncClient
+) -> None:
+    """Trial plan chưa seed → register vẫn 201, chỉ log warning."""
+    import sqlalchemy as sa
+    await db_session.execute(
+        sa.text("DELETE FROM premium_plans WHERE code = 'TRIAL_7D'")
+    )
+    await db_session.commit()
+
+    payload = {
+        "email": "no-trial-plan@example.com",
+        "password": "StrongPass123!",
+        "first_name": "No",
+        "last_name": "Trial",
+    }
+    resp = await client.post("/api/v1/auth/register", json=payload)
+    assert resp.status_code == 201
+
+    user_id = uuid.UUID(resp.json()["id"])
+    res = await db_session.execute(
+        select(PremiumSubscription).where(PremiumSubscription.user_id == user_id)
+    )
+    assert res.scalar_one_or_none() is None
