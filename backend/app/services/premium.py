@@ -157,6 +157,25 @@ class PremiumService:
             current_period_end=sub.current_period_end,
         )
 
+    async def grant_trial_if_eligible(self, user_id: uuid.UUID) -> PremiumSubscription | None:
+        """Cấp 7-day trial nếu user chưa từng có subscription.
+
+        Idempotent: nếu user đã có bất kỳ subscription nào (kể cả expired) → no-op,
+        trả về ``None``. Nếu plan ``TRIAL_7D`` chưa được seed → log warning và no-op.
+        """
+        existing = await self._sub_repo.get_by_user_id(user_id)
+        if existing is not None:
+            return None
+
+        trial_plan = await self._plan_repo.get_by_code("TRIAL_7D")
+        if trial_plan is None:
+            logger.warning("TRIAL_7D plan not seeded; skipping trial grant for user %s", user_id)
+            return None
+
+        sub = await self._extend_subscription(user_id=user_id, plan=trial_plan)
+        logger.info("Granted 7-day trial to user %s", user_id)
+        return sub
+
     # ══════════════════════════════════════════════════
     # Checkout (SePay form creation)
     # ══════════════════════════════════════════════════
@@ -466,11 +485,15 @@ class PremiumService:
 
     async def _set_user_role_premium(self, user_id: uuid.UUID) -> None:
         """Update user role to PREMIUM in the users table."""
-        from sqlalchemy import text
+        from sqlalchemy import func, update
+
+        from app.models.user import User as UserModel
+        from app.models.user import UserRole
 
         await self._session.execute(
-            text("UPDATE users SET role = 'premium', updated_at = NOW() WHERE id = :uid"),
-            {"uid": str(user_id)},
+            update(UserModel)
+            .where(UserModel.id == user_id)
+            .values(role=UserRole.PREMIUM, updated_at=func.now())
         )
         await self._session.commit()
         logger.info("User %s role updated to PREMIUM", user_id)
