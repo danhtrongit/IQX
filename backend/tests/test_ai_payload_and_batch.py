@@ -234,8 +234,10 @@ class TestBatchIndustryEndpoint:
 
     _MOCK_ANALYSIS = "Test sector analysis text"
 
-    async def test_batch_success_multiple_codes(self, client) -> None:  # noqa: ANN001
+    async def test_batch_success_multiple_codes(self, client, premium_user) -> None:  # noqa: ANN001
         """Batch endpoint returns results for multiple ICB codes."""
+        _user, headers = premium_user
+
         async def _mock_analyze(*, icb_code, language="vi", include_payload=False):  # noqa: ANN001
             return {
                 "type": "industry",
@@ -261,6 +263,7 @@ class TestBatchIndustryEndpoint:
             resp = await client.post(
                 "/api/v1/ai/industry/analyze-batch",
                 json={"icb_codes": [8300, 9500], "language": "vi"},
+                headers=headers,
             )
 
         assert resp.status_code == 200
@@ -268,8 +271,9 @@ class TestBatchIndustryEndpoint:
         assert "results" in data
         assert len(data["results"]) == 2
 
-    async def test_batch_per_item_error(self, client) -> None:  # noqa: ANN001
+    async def test_batch_per_item_error(self, client, premium_user) -> None:  # noqa: ANN001
         """If one sector fails, others still return successfully."""
+        _user, headers = premium_user
         call_count = 0
 
         async def _mock_chat(system_prompt, user_content):  # noqa: ANN001
@@ -291,6 +295,7 @@ class TestBatchIndustryEndpoint:
             resp = await client.post(
                 "/api/v1/ai/industry/analyze-batch",
                 json={"icb_codes": [8300, 9500], "language": "vi"},
+                headers=headers,
             )
 
         assert resp.status_code == 200
@@ -302,24 +307,29 @@ class TestBatchIndustryEndpoint:
         assert has_success
         assert has_error
 
-    async def test_batch_empty_list_rejected(self, client) -> None:  # noqa: ANN001
+    async def test_batch_empty_list_rejected(self, client, premium_user) -> None:  # noqa: ANN001
         """Empty icb_codes list returns 422."""
+        _user, headers = premium_user
         resp = await client.post(
             "/api/v1/ai/industry/analyze-batch",
             json={"icb_codes": [], "language": "vi"},
+            headers=headers,
         )
         assert resp.status_code == 422
 
-    async def test_batch_too_many_codes_rejected(self, client) -> None:  # noqa: ANN001
+    async def test_batch_too_many_codes_rejected(self, client, premium_user) -> None:  # noqa: ANN001
         """More than 20 codes returns 422."""
+        _user, headers = premium_user
         resp = await client.post(
             "/api/v1/ai/industry/analyze-batch",
             json={"icb_codes": list(range(1, 25)), "language": "vi"},
+            headers=headers,
         )
         assert resp.status_code == 422
 
-    async def test_batch_deduplicates_codes(self, client) -> None:  # noqa: ANN001
+    async def test_batch_deduplicates_codes(self, client, premium_user) -> None:  # noqa: ANN001
         """Duplicate ICB codes should be deduplicated."""
+        _user, headers = premium_user
         with (
             patch(
                 "app.services.ai.payloads.build_industry_payload_batch",
@@ -335,14 +345,16 @@ class TestBatchIndustryEndpoint:
             resp = await client.post(
                 "/api/v1/ai/industry/analyze-batch",
                 json={"icb_codes": [8300, 8300, 8300], "language": "vi"},
+                headers=headers,
             )
 
         assert resp.status_code == 200
         # Should only have 1 result (deduplicated)
         assert len(resp.json()["results"]) == 1
 
-    async def test_original_endpoint_still_works(self, client) -> None:  # noqa: ANN001
+    async def test_original_endpoint_still_works(self, client, premium_user) -> None:  # noqa: ANN001
         """Original single-industry endpoint is preserved for backward compat."""
+        _user, headers = premium_user
         result = {
             "type": "industry",
             "input": {"icb_code": 8300},
@@ -358,6 +370,7 @@ class TestBatchIndustryEndpoint:
             resp = await client.post(
                 "/api/v1/ai/industry/analyze",
                 json={"icb_code": 8300, "language": "vi"},
+                headers=headers,
             )
         assert resp.status_code == 200
         assert resp.json()["type"] == "industry"

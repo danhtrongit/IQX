@@ -160,6 +160,67 @@ async def admin_user(db_session: AsyncSession) -> User:
     return user
 
 
+import uuid as _uuid
+from datetime import UTC as _UTC, datetime as _dt, timedelta as _td
+
+
+@pytest_asyncio.fixture
+async def premium_user(db_session: AsyncSession) -> tuple[User, dict[str, str]]:
+    """User with an active 30-day Premium subscription + bearer auth headers."""
+    from app.core.security import create_access_token as _create_access_token
+    from app.models.premium import (
+        PremiumPlan as _PremiumPlan,
+        PremiumSubscription as _PremiumSubscription,
+        SubscriptionStatus as _SubscriptionStatus,
+    )
+    from sqlalchemy import select as _select
+
+    # User
+    user = User(
+        email=f"premium-{_uuid.uuid4().hex[:8]}@example.com",
+        hashed_password=hash_password("Test@1234"),
+        first_name="Premium",
+        last_name="User",
+        role=UserRole.PREMIUM,
+        status=UserStatus.ACTIVE,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    # Ensure TRIAL_7D plan exists (used as a generic "active plan" — duration_days doesn't matter here)
+    res = await db_session.execute(_select(_PremiumPlan).where(_PremiumPlan.code == "TRIAL_7D"))
+    plan = res.scalar_one_or_none()
+    if plan is None:
+        plan = _PremiumPlan(
+            code="TRIAL_7D",
+            name="Dùng thử 7 ngày",
+            price_vnd=0,
+            duration_days=7,
+            is_active=True,
+            sort_order=-1,
+        )
+        db_session.add(plan)
+        await db_session.commit()
+        await db_session.refresh(plan)
+
+    # Active subscription
+    now = _dt.now(_UTC)
+    sub = _PremiumSubscription(
+        user_id=user.id,
+        current_plan_id=plan.id,
+        current_period_start=now,
+        current_period_end=now + _td(days=30),
+        status=_SubscriptionStatus.ACTIVE,
+    )
+    db_session.add(sub)
+    await db_session.commit()
+
+    token = _create_access_token(subject=user.id, extra_claims={"role": user.role.value})
+    headers = {"Authorization": f"Bearer {token}"}
+    return user, headers
+
+
 def get_auth_headers(token: str) -> dict[str, str]:
     """Build authorization headers for requests."""
     return {"Authorization": f"Bearer {token}"}

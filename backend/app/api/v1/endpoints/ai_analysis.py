@@ -15,6 +15,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
+from app.api.deps import PremiumUser
 from app.services.ai.analysis_service import analyze_dashboard, analyze_industry, analyze_insight
 from app.services.ai.proxy_client import AIProxyError
 
@@ -84,7 +85,7 @@ class InsightAnalyzeRequest(BaseModel):
 
 
 @router.post("/dashboard/analyze")
-async def post_dashboard_analyze(body: DashboardAnalyzeRequest) -> dict[str, Any]:
+async def post_dashboard_analyze(body: DashboardAnalyzeRequest, user: PremiumUser) -> dict[str, Any]:
     """Phân tích AI tổng quan thị trường.
 
     Trả về đoạn phân tích ngắn gọn về trạng thái thị trường,
@@ -102,7 +103,7 @@ async def post_dashboard_analyze(body: DashboardAnalyzeRequest) -> dict[str, Any
 
 
 @router.post("/industry/analyze")
-async def post_industry_analyze(body: IndustryAnalyzeRequest) -> dict[str, Any]:
+async def post_industry_analyze(body: IndustryAnalyzeRequest, user: PremiumUser) -> dict[str, Any]:
     """Phân tích AI cho một ngành ICB cụ thể.
 
     Trả về 8 dòng phân tích: trạng thái, hiệu suất, dòng tiền,
@@ -121,7 +122,7 @@ async def post_industry_analyze(body: IndustryAnalyzeRequest) -> dict[str, Any]:
 
 
 @router.post("/industry/analyze-batch")
-async def post_industry_analyze_batch(body: IndustryBatchAnalyzeRequest) -> dict[str, Any]:
+async def post_industry_analyze_batch(body: IndustryBatchAnalyzeRequest, user: PremiumUser) -> dict[str, Any]:
     """Phân tích AI cho nhiều ngành ICB trong một request.
 
     Trả về kết quả phân tích cho từng ngành. Nếu một ngành lỗi,
@@ -230,7 +231,7 @@ async def post_industry_analyze_batch(body: IndustryBatchAnalyzeRequest) -> dict
 
 
 @router.post("/insight/analyze")
-async def post_insight_analyze(body: InsightAnalyzeRequest) -> dict[str, Any]:
+async def post_insight_analyze(body: InsightAnalyzeRequest, user: PremiumUser) -> dict[str, Any]:
     """Phân tích AI chuyên sâu cho một mã cổ phiếu (POST).
 
     Trả về phân tích 6 lớp: xu hướng, cung-cầu, dòng tiền lớn,
