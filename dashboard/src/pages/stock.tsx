@@ -33,7 +33,7 @@ export default function StockPage() {
   useSEO({
     title: `Cổ phiếu ${ticker} - Biểu đồ, Tài chính & Phân Tích AI | IQX`,
     description: `Xem đa chiều cổ phiếu ${ticker}: Biểu đồ kỹ thuật thời gian thực, Dữ liệu tài chính, và Nhận định độc quyền từ hệ thống AI 6 lớp của IQX.`,
-    url: `https://beta.iqx.vn/co-phieu/${ticker}`,
+    url: `https://iqx.vn/co-phieu/${ticker}`,
   })
   const [activeTab, setActiveTab] = useState<StockTab>("chart")
   const [isAiInsightOpen, setIsAiInsightOpen] = useState(false)

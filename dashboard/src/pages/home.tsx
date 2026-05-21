@@ -12,7 +12,7 @@ export default function HomePage() {
     useSEO({
         title: 'IQX - Trợ lý AI Phân Tích Chứng Khoán Thời Gian Thực',
         description: 'Tối ưu hóa lợi nhuận với AI của IQX. Phân tích xu hướng, thanh khoản, dòng tiền lớn, hành vi chỉ trong một nhịp chạm.',
-        url: 'https://beta.iqx.vn/',
+        url: 'https://iqx.vn/',
     });
 
     return (

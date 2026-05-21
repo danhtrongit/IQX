@@ -18,7 +18,7 @@ export default function DashboardPage() {
   useSEO({
     title: "IQX Dashboard - Toàn Cảnh Thị Trường",
     description: "Nhận định diễn biến thị trường tỷ đô, VN-Index, dòng tiền và tin tức tác động đến thị trường chứng khoán Việt Nam.",
-    url: "https://beta.iqx.vn/dashboard",
+    url: "https://iqx.vn/dashboard",
   });
   const handleActionClick = (id: string) => {
     if (id === "ai-insight") {

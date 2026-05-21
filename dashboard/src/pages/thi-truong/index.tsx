@@ -23,7 +23,7 @@ export default function ThiTruongPage() {
   useSEO({
     title: "Thị trường | IQX",
     description: "Tổng quan thị trường chứng khoán Việt Nam",
-    url: "https://beta.iqx.vn/thi-truong",
+    url: "https://iqx.vn/thi-truong",
   })
 
   return (
