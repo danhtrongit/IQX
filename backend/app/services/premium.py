@@ -132,22 +132,25 @@ class PremiumService:
         if not sub or _ensure_aware(sub.current_period_end) < now:
             return SubscriptionResponse(
                 is_premium=False,
+                is_trial=False,
                 status=sub.status.value if sub else None,
                 current_period_start=sub.current_period_start if sub else None,
                 current_period_end=sub.current_period_end if sub else None,
             )
 
-        # Load plan info
         plan = None
+        is_trial = False
         if sub.current_plan_id:
             plan_obj = await self._plan_repo.get_by_id(sub.current_plan_id)
             if plan_obj:
                 from app.schemas.premium import PlanResponse
 
                 plan = PlanResponse.model_validate(plan_obj)
+                is_trial = plan_obj.code == "TRIAL_7D"
 
         return SubscriptionResponse(
             is_premium=True,
+            is_trial=is_trial,
             status=sub.status.value,
             current_plan=plan,
             current_period_start=sub.current_period_start,
