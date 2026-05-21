@@ -10,6 +10,7 @@ from app.api.v1.endpoints import (
     admin_metrics,
     admin_payments,
     admin_subscriptions,
+    admin_system,
     admin_users,
     admin_vt,
     ai_analysis,
@@ -43,4 +44,5 @@ api_v1_router.include_router(admin_audit.router)
 api_v1_router.include_router(admin_users.router)
 api_v1_router.include_router(admin_vt.router)
 api_v1_router.include_router(admin_ipn.router)
+api_v1_router.include_router(admin_system.router)
 
