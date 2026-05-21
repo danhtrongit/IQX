@@ -82,3 +82,41 @@ async def test_unauthenticated_ai_endpoints_return_401(client: AsyncClient) -> N
     """Không có token → 401."""
     resp = await client.post("/api/v1/ai/dashboard/analyze", json={"language": "vi"})
     assert resp.status_code == 401
+
+
+async def test_patterns_candles_requires_premium(
+    db_session: AsyncSession, client: AsyncClient
+) -> None:
+    _user, headers = await _make_non_premium_user(db_session, "no-prem-candles")
+    resp = await client.get(
+        "/api/v1/ai/patterns/candles?symbol=VCB",
+        headers=headers,
+    )
+    assert resp.status_code == 403
+
+
+async def test_patterns_charts_requires_premium(
+    db_session: AsyncSession, client: AsyncClient
+) -> None:
+    _user, headers = await _make_non_premium_user(db_session, "no-prem-charts")
+    resp = await client.get(
+        "/api/v1/ai/patterns/charts?symbol=VCB",
+        headers=headers,
+    )
+    assert resp.status_code == 403
+
+
+async def test_patterns_unauthenticated_returns_401(client: AsyncClient) -> None:
+    resp = await client.get("/api/v1/ai/patterns/candles?symbol=VCB")
+    assert resp.status_code == 401
+
+
+async def test_patterns_symbols_requires_premium(
+    db_session: AsyncSession, client: AsyncClient
+) -> None:
+    _user, headers = await _make_non_premium_user(db_session, "no-prem-symbols")
+    resp = await client.get(
+        "/api/v1/ai/patterns/candles/symbols",
+        headers=headers,
+    )
+    assert resp.status_code == 403
