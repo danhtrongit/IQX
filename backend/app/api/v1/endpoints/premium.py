@@ -13,9 +13,12 @@ from fastapi import APIRouter, Header, Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
+import uuid
+
 from app.api.deps import AdminUser, CurrentUser, DBSession
+from app.api.deps_audit import AuditCtx
 from app.core.config import get_settings
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import BadRequestError, NotFoundError
 from app.schemas.premium import (
     AdminGrantRequest,
     CheckoutRequest,
@@ -27,6 +30,7 @@ from app.schemas.premium import (
     PlanUpdate,
     SubscriptionResponse,
 )
+from app.services.admin_audit import AdminAuditService
 from app.services.ipn_logs import IPNLogService
 from app.services.premium import PremiumService
 from app.services.user import UserService
@@ -235,59 +239,92 @@ async def admin_list_plans(admin: AdminUser, db: DBSession):
 async def admin_create_plan(
     body: PlanCreate,
     admin: AdminUser,
+    audit: AuditCtx,
     db: DBSession,
 ):
     """Quản trị: tạo gói Premium mới."""
     service = PremiumService(db)
     plan = await service.create_plan(body.model_dump())
+    await AdminAuditService(db).record(
+        audit,
+        action="premium.plan.create",
+        target_entity="plan",
+        target_id=str(plan.id),
+        after={"code": plan.code, "name": plan.name, "price_vnd": plan.price_vnd},
+    )
     return PlanResponse.model_validate(plan)
 
 
 @router.patch("/admin/plans/{plan_id}", response_model=PlanResponse)
 async def admin_update_plan(
-    plan_id: str,
+    plan_id: uuid.UUID,
     body: PlanUpdate,
     admin: AdminUser,
+    audit: AuditCtx,
     db: DBSession,
 ):
     """Quản trị: cập nhật gói Premium."""
-    import uuid as _uuid
-
-    try:
-        pid = _uuid.UUID(plan_id)
-    except ValueError:
-        raise NotFoundError("gói Premium") from None
-
     service = PremiumService(db)
-    plan = await service.update_plan(pid, body.model_dump(exclude_unset=True))
+    existing = await service.get_plan(plan_id)
+    patch = body.model_dump(exclude_unset=True)
+    before = {k: getattr(existing, k) for k in patch}
+    plan = await service.update_plan(plan_id, patch)
+    from app.services.admin_audit import diff_dict
+    b, a = diff_dict(before, patch)
+    await AdminAuditService(db).record(
+        audit,
+        action="premium.plan.update",
+        target_entity="plan",
+        target_id=str(plan.id),
+        before=b,
+        after=a,
+    )
     return PlanResponse.model_validate(plan)
+
+
+@router.delete("/admin/plans/{plan_id}", response_model=PlanResponse)
+async def admin_delete_plan(
+    plan_id: uuid.UUID,
+    admin: AdminUser,
+    audit: AuditCtx,
+    db: DBSession,
+):
+    """Soft-delete: marks is_active=False. Cannot delete TRIAL_7D."""
+    service = PremiumService(db)
+    plan = await service.get_plan(plan_id)
+    if plan.code == "TRIAL_7D":
+        raise BadRequestError("Không thể xoá gói TRIAL_7D")
+    before = {"is_active": plan.is_active}
+    updated = await service.update_plan(plan_id, {"is_active": False})
+    await AdminAuditService(db).record(
+        audit,
+        action="premium.plan.delete",
+        target_entity="plan",
+        target_id=str(updated.id),
+        before=before,
+        after={"is_active": False},
+    )
+    return PlanResponse.model_validate(updated)
 
 
 @router.post("/admin/users/{user_id}/grant", response_model=PaymentOrderResponse, status_code=201)
 async def admin_grant_premium(
-    user_id: str,
+    user_id: uuid.UUID,
     body: AdminGrantRequest,
     admin: AdminUser,
     db: DBSession,
 ):
     """Quản trị: cấp Premium thủ công cho người dùng."""
-    import uuid as _uuid
-
-    try:
-        uid = _uuid.UUID(user_id)
-    except ValueError:
-        raise NotFoundError("người dùng") from None
-
     # Verify user exists
     user_service = UserService(db)
     try:
-        await user_service.get_by_id(uid)
+        await user_service.get_by_id(user_id)
     except NotFoundError:
         raise NotFoundError("người dùng") from None
 
     service = PremiumService(db)
     order = await service.admin_grant_premium(
-        user_id=uid,
+        user_id=user_id,
         plan_id=body.plan_id,
         admin_id=admin.id,
         note=body.note,
