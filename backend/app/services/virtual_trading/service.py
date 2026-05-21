@@ -166,6 +166,8 @@ class VirtualTradingService:
             raise NotFoundError("tài khoản giao dịch ảo")
         if account.status != AccountStatus.ACTIVE:
             raise ForbiddenError("Tài khoản đã bị tạm khóa")
+        if account.frozen_at is not None:
+            raise ForbiddenError("Tài khoản tạm khóa")
 
         # Config snapshot — authoritative for fee/tax at fill time
         snapshot = json.dumps({
