@@ -315,23 +315,84 @@ async def admin_reset_all(admin: AdminUser, audit: AuditCtx, db: DBSession) -> R
     return ResetResponse(accounts_reset=count, message=f"Đã đặt lại {count} tài khoản")
 
 
-@router.get("/admin/accounts", response_model=list[AdminAccountResponse], tags=[_TAG_ADMIN])
-async def admin_list_accounts(admin: AdminUser, db: DBSession) -> list[AdminAccountResponse]:
-    """Quản trị: liệt kê tất cả tài khoản giao dịch ảo."""
-    svc = VirtualTradingService(db)
-    items = await svc.list_accounts_with_users()
-    return [
-        AdminAccountResponse(
-            id=item["account"].id, user_id=item["account"].user_id,
-            user_email=item["user_email"],
-            user_name=item["user_name"],
-            status=item["account"].status.value,
-            initial_cash_vnd=item["account"].initial_cash_vnd,
-            cash_available_vnd=item["account"].cash_available_vnd,
-            cash_reserved_vnd=item["account"].cash_reserved_vnd,
-            cash_pending_vnd=item["account"].cash_pending_vnd,
-            activated_at=item["account"].activated_at,
-            reset_at=item["account"].reset_at,
+@router.get("/admin/accounts", tags=[_TAG_ADMIN])
+async def admin_list_accounts(
+    admin: AdminUser,
+    db: DBSession,
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=200)] = 50,
+    status: str | None = Query(None),
+    frozen_only: bool | None = Query(None),
+    search: str | None = Query(None),
+):
+    """Quản trị: liệt kê tài khoản giao dịch ảo (hỗ trợ phân trang và lọc)."""
+    from app.schemas.common import PaginatedResponse
+    import math
+    from sqlalchemy import select as _select, func as _func, or_ as _or, and_ as _and
+    from app.models.virtual_trading import VirtualTradingAccount, AccountStatus
+    from app.models.user import User
+
+    conditions = []
+    if status:
+        try:
+            acct_status = AccountStatus(status)
+            conditions.append(VirtualTradingAccount.status == acct_status)
+        except ValueError:
+            pass
+    if frozen_only is True:
+        conditions.append(VirtualTradingAccount.frozen_at.isnot(None))
+    elif frozen_only is False:
+        conditions.append(VirtualTradingAccount.frozen_at.is_(None))
+    if search:
+        conditions.append(
+            _or(
+                User.email.ilike(f"%{search}%"),
+                User.full_name.ilike(f"%{search}%"),
+            )
         )
-        for item in items
+
+    where = _and(*conditions) if conditions else None
+
+    base = (
+        _select(VirtualTradingAccount, User.email.label("user_email"), User.full_name.label("user_name"))
+        .join(User, User.id == VirtualTradingAccount.user_id, isouter=True)
+    )
+    if where is not None:
+        base = base.where(where)
+
+    count_stmt = _select(_func.count()).select_from(base.subquery())
+    session = db
+    total: int = (await session.execute(count_stmt)).scalar_one()
+
+    items_stmt = (
+        base.order_by(VirtualTradingAccount.created_at.desc())
+        .limit(page_size)
+        .offset((page - 1) * page_size)
+    )
+    rows = (await session.execute(items_stmt)).all()
+
+    items = [
+        AdminAccountResponse(
+            id=r.VirtualTradingAccount.id,
+            user_id=r.VirtualTradingAccount.user_id,
+            user_email=r.user_email,
+            user_name=r.user_name,
+            status=r.VirtualTradingAccount.status.value,
+            initial_cash_vnd=r.VirtualTradingAccount.initial_cash_vnd,
+            cash_available_vnd=r.VirtualTradingAccount.cash_available_vnd,
+            cash_reserved_vnd=r.VirtualTradingAccount.cash_reserved_vnd,
+            cash_pending_vnd=r.VirtualTradingAccount.cash_pending_vnd,
+            activated_at=r.VirtualTradingAccount.activated_at,
+            reset_at=r.VirtualTradingAccount.reset_at,
+        )
+        for r in rows
     ]
+
+    total_pages = math.ceil(total / page_size) if total > 0 else 0
+    return PaginatedResponse(
+        items=items,
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages,
+    )
