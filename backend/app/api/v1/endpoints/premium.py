@@ -27,6 +27,7 @@ from app.schemas.premium import (
     PlanUpdate,
     SubscriptionResponse,
 )
+from app.services.ipn_logs import IPNLogService
 from app.services.premium import PremiumService
 from app.services.user import UserService
 
@@ -114,6 +115,8 @@ async def sepay_ipn(
     Xác thực qua header X-Secret-Key (so sánh constant-time).
     """
     settings = get_settings()
+    headers_dict = dict(request.headers)
+    log_service = IPNLogService(db)
 
     # Log headers for debugging
     secret_key = x_secret_key
@@ -138,8 +141,22 @@ async def sepay_ipn(
     )
 
     # Validate secret key (constant-time comparison)
-    if not secret_key or not hmac.compare_digest(secret_key, settings.SEPAY_SECRET_KEY):
+    secret_valid = bool(secret_key and hmac.compare_digest(secret_key, settings.SEPAY_SECRET_KEY))
+
+    if not secret_valid:
         logger.warning("IPN: invalid or missing secret key (tried X-Secret-Key, Authorization, X-Api-Key)")
+        # Attempt to read body for logging even on auth failure
+        try:
+            raw_body_for_log = await request.json()
+        except Exception:
+            raw_body_for_log = None
+        await log_service.record(
+            raw_body=raw_body_for_log,
+            raw_headers=headers_dict,
+            secret_key_valid=False,
+            result_status="secret_invalid",
+            sepay_transaction_id=None,
+        )
         return JSONResponse(status_code=401, content={"error": "unauthorized"})
 
     # Parse payload — narrow exceptions only
@@ -147,16 +164,58 @@ async def sepay_ipn(
         raw_body = await request.json()
     except (ValueError, UnicodeDecodeError):
         logger.warning("IPN: malformed JSON body")
+        await log_service.record(
+            raw_body=None,
+            raw_headers=headers_dict,
+            secret_key_valid=True,
+            result_status="invalid_json",
+            error_message="malformed JSON body",
+        )
         return JSONResponse(status_code=400, content={"error": "invalid_json"})
 
     try:
         payload = IPNPayload.model_validate(raw_body)
     except ValidationError as exc:
         logger.warning("IPN: payload validation failed (%d errors)", len(exc.errors()))
+        await log_service.record(
+            raw_body=raw_body,
+            raw_headers=headers_dict,
+            secret_key_valid=True,
+            result_status="invalid_payload",
+            error_message=str(exc.errors()),
+        )
         return JSONResponse(status_code=400, content={"error": "invalid_payload"})
+
+    # Extract SePay transaction ID from payload for logging
+    sepay_txn_id: str | None = None
+    if payload.transaction:
+        sepay_txn_id = payload.transaction.transaction_id
 
     service = PremiumService(db)
     result = await service.process_ipn(payload)
+
+    # Look up the matched order id by invoice_number (if present in payload)
+    matched_order_id = None
+    if payload.order and payload.order.order_invoice_number:
+        from sqlalchemy import select
+
+        from app.models.premium import PremiumPaymentOrder
+
+        r = await db.execute(
+            select(PremiumPaymentOrder.id).where(
+                PremiumPaymentOrder.invoice_number == payload.order.order_invoice_number
+            )
+        )
+        matched_order_id = r.scalar_one_or_none()
+
+    await log_service.record(
+        raw_body=raw_body,
+        raw_headers=headers_dict,
+        secret_key_valid=True,
+        result_status=result.get("message"),
+        matched_order_id=matched_order_id,
+        sepay_transaction_id=sepay_txn_id,
+    )
 
     return JSONResponse(status_code=200, content=result)
 

@@ -4,8 +4,12 @@ from __future__ import annotations
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user import User
+from app.core.security import hash_password
+from app.models.login_history import UserLoginHistory
+from app.models.user import User, UserRole, UserStatus
 from tests.conftest import get_auth_headers
 
 
@@ -243,3 +247,102 @@ async def test_deleted_user_token_returns_401(client: AsyncClient, admin_user: U
     )
     assert me_resp.status_code in (401, 403)
     assert "hashed_password" not in me_resp.text
+
+
+# ══════════════════════════════════════════════════════
+# T5 — Login history persistence
+# ══════════════════════════════════════════════════════
+
+
+@pytest.mark.asyncio
+async def test_login_success_records_history(
+    client: AsyncClient, test_user: User, db_session: AsyncSession
+):
+    """Successful login → row in user_login_history with success=True."""
+    resp = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "test@example.com", "password": "Test@1234"},
+    )
+    assert resp.status_code == 200
+
+    rows = (await db_session.execute(select(UserLoginHistory))).scalars().all()
+    assert len(rows) == 1
+    log = rows[0]
+    assert log.success is True
+    assert log.failure_reason is None
+    assert log.email == "test@example.com"
+    assert log.user_id == test_user.id
+
+
+@pytest.mark.asyncio
+async def test_login_invalid_password_records_history(
+    client: AsyncClient, test_user: User, db_session: AsyncSession
+):
+    """Wrong password → row with success=False, failure_reason='invalid_credentials'."""
+    resp = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "test@example.com", "password": "Wrong@Pass1"},
+    )
+    assert resp.status_code == 401
+
+    rows = (await db_session.execute(select(UserLoginHistory))).scalars().all()
+    assert len(rows) == 1
+    log = rows[0]
+    assert log.success is False
+    assert log.failure_reason == "invalid_credentials"
+    assert log.email == "test@example.com"
+    # User was found but password didn't match — user_id may or may not be set
+    # (in our impl, user_id is set to user.id when user exists)
+    assert log.user_id == test_user.id
+
+
+@pytest.mark.asyncio
+async def test_login_unknown_email_records_history(
+    client: AsyncClient, db_session: AsyncSession
+):
+    """Email that doesn't exist → row with user_id=NULL and success=False."""
+    resp = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "nobody@example.com", "password": "Test@1234"},
+    )
+    assert resp.status_code == 401
+
+    rows = (await db_session.execute(select(UserLoginHistory))).scalars().all()
+    assert len(rows) == 1
+    log = rows[0]
+    assert log.success is False
+    assert log.failure_reason == "invalid_credentials"
+    assert log.email == "nobody@example.com"
+    assert log.user_id is None
+
+
+@pytest.mark.asyncio
+async def test_login_inactive_user_records_history(
+    client: AsyncClient, db_session: AsyncSession
+):
+    """Inactive user → row with failure_reason starting with 'status:'."""
+    inactive = User(
+        email="inactive@example.com",
+        hashed_password=hash_password("Test@1234"),
+        first_name="Inactive",
+        last_name="User",
+        role=UserRole.USER,
+        status=UserStatus.INACTIVE,
+    )
+    db_session.add(inactive)
+    await db_session.commit()
+    await db_session.refresh(inactive)
+
+    resp = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "inactive@example.com", "password": "Test@1234"},
+    )
+    assert resp.status_code == 401
+
+    rows = (await db_session.execute(select(UserLoginHistory))).scalars().all()
+    assert len(rows) == 1
+    log = rows[0]
+    assert log.success is False
+    assert log.failure_reason == "status:inactive"
+    assert log.email == "inactive@example.com"
+    assert log.user_id == inactive.id

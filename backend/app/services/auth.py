@@ -23,6 +23,7 @@ from app.core.security import (
     decode_refresh_token,
     verify_password,
 )
+from app.models.login_history import UserLoginHistory
 from app.models.refresh_token import RefreshToken
 from app.models.user import User, UserStatus
 from app.repositories.refresh_token import RefreshTokenRepository
@@ -36,18 +37,44 @@ class AuthService:
     """Handles authentication flows with proper token rotation."""
 
     def __init__(self, session: AsyncSession) -> None:
+        self._session = session
         self._user_service = UserService(session)
         self._token_repo = RefreshTokenRepository(session)
 
     # ── Login ────────────────────────────────────────
-    async def login(self, email: str, password: str) -> TokenResponse:
+    async def login(
+        self,
+        email: str,
+        password: str,
+        *,
+        ip: str | None = None,
+        user_agent: str | None = None,
+    ) -> TokenResponse:
         """Authenticate user and return token pair."""
         user = await self._user_service.get_by_email(email)
 
         if not user or not verify_password(password, user.hashed_password):
+            await self._record_login(
+                user_id=user.id if user else None,
+                email=email,
+                success=False,
+                failure_reason="invalid_credentials",
+                ip=ip,
+                user_agent=user_agent,
+            )
+            await self._session.commit()
             raise UnauthorizedError("Email hoặc mật khẩu không đúng")
 
         if user.status != UserStatus.ACTIVE:
+            await self._record_login(
+                user_id=user.id,
+                email=email,
+                success=False,
+                failure_reason=f"status:{user.status.value}",
+                ip=ip,
+                user_agent=user_agent,
+            )
+            await self._session.commit()
             raise UnauthorizedError(f"Trạng thái tài khoản: {user.status.value}")
 
         # Update last login
@@ -78,10 +105,41 @@ class AuthService:
             )
         )
 
+        await self._record_login(
+            user_id=user.id,
+            email=email,
+            success=True,
+            failure_reason=None,
+            ip=ip,
+            user_agent=user_agent,
+        )
+
         logger.info("User logged in: %s", user.email)
         return TokenResponse(
             access_token=access_token,
             refresh_token=refresh_token,
+        )
+
+    async def _record_login(
+        self,
+        *,
+        user_id: uuid.UUID | None,
+        email: str,
+        success: bool,
+        failure_reason: str | None,
+        ip: str | None,
+        user_agent: str | None,
+    ) -> None:
+        """Append a row to user_login_history."""
+        self._session.add(
+            UserLoginHistory(
+                user_id=user_id,
+                email=email.lower(),
+                success=success,
+                failure_reason=failure_reason,
+                ip=ip,
+                user_agent=user_agent,
+            )
         )
 
     # ── Refresh tokens ───────────────────────────────

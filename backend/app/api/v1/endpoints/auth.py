@@ -41,7 +41,12 @@ async def register(request: Request, data: UserCreate, db: DBSession) -> UserRes
 @limiter.limit(_AUTH_LIMIT)
 async def login(request: Request, data: LoginRequest, db: DBSession) -> TokenResponse:
     service = AuthService(db)
-    return await service.login(data.email, data.password)
+    return await service.login(
+        data.email,
+        data.password,
+        ip=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+    )
 
 
 @router.post(
