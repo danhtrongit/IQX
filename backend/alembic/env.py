@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.core.config import get_settings  # noqa: E402
 from app.core.database import Base  # noqa: E402
+from app.models.admin_audit import AdminAuditLog  # noqa: F401, E402
 from app.models.premium import PremiumPaymentOrder, PremiumPlan, PremiumSubscription  # noqa: F401, E402
 from app.models.refresh_token import RefreshToken  # noqa: F401, E402
 from app.models.symbol import Symbol  # noqa: F401, E402

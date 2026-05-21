@@ -17,3 +17,5 @@ try:
     from app.models.watchlist import WatchlistItem  # noqa: F401
 except ImportError:
     pass
+
+from app.models.admin_audit import AdminAuditLog  # noqa: F401
