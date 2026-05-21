@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button"
 
 import { useSEO } from "@/hooks/use-seo"
 import { isSupportedStockRouteSymbol } from "@/lib/stock-route"
+import { PremiumGate } from "@/components/premium/premium-gate"
 
 type StockTab = "chart" | "overview" | "financials"
 
@@ -197,7 +198,12 @@ export default function StockPage() {
                   </div>
 
                   <div className="flex-1 min-h-0 relative bg-background/50">
-                    <StockAiInsight symbol={ticker} />
+                    <PremiumGate
+                      featureName="AI Insight"
+                      description="Phân tích AI đa lớp cho mã đang xem (Trend, Liquidity, Money Flow, Insider, News)."
+                    >
+                      <StockAiInsight symbol={ticker} />
+                    </PremiumGate>
                   </div>
                 </motion.div>
               </div>
