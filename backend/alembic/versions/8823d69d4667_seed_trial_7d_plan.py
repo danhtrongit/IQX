@@ -6,7 +6,6 @@ Create Date: 2026-05-21 09:30:07.899342
 
 """
 from typing import Sequence, Union
-import uuid
 
 from alembic import op
 import sqlalchemy as sa
@@ -25,10 +24,9 @@ TRIAL_PLAN_CODE = 'TRIAL_7D'
 def upgrade() -> None:
     op.execute(sa.text("""
         INSERT INTO premium_plans (id, code, name, description, price_vnd, duration_days, is_active, sort_order, created_at, updated_at)
-        VALUES (:id, :code, :name, :description, 0, 7, true, -1, NOW(), NOW())
+        VALUES (gen_random_uuid(), :code, :name, :description, 0, 7, true, -1, NOW(), NOW())
         ON CONFLICT (code) DO NOTHING
     """).bindparams(
-        id=str(uuid.uuid4()),
         code=TRIAL_PLAN_CODE,
         name='Dùng thử 7 ngày',
         description='Gói dùng thử Premium 7 ngày miễn phí, tự cấp khi đăng ký tài khoản mới.',
