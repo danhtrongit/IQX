@@ -160,3 +160,36 @@ async def test_forecast_with_premium_user_passes_auth(
     )
     # Premium gate passed; upstream Google Sheets có thể fail trong test env → 502 ok
     assert resp.status_code in (200, 502)
+
+
+async def test_virtual_trading_account_requires_premium(
+    db_session: AsyncSession, client: AsyncClient
+) -> None:
+    _user, headers = await _make_non_premium_user(db_session, "no-prem-vt-acct")
+    resp = await client.get(
+        "/api/v1/virtual-trading/account",
+        headers=headers,
+    )
+    assert resp.status_code == 403
+
+
+async def test_virtual_trading_portfolio_requires_premium(
+    db_session: AsyncSession, client: AsyncClient
+) -> None:
+    _user, headers = await _make_non_premium_user(db_session, "no-prem-vt-port")
+    resp = await client.get(
+        "/api/v1/virtual-trading/portfolio",
+        headers=headers,
+    )
+    assert resp.status_code == 403
+
+
+async def test_virtual_trading_orders_list_requires_premium(
+    db_session: AsyncSession, client: AsyncClient
+) -> None:
+    _user, headers = await _make_non_premium_user(db_session, "no-prem-vt-orders")
+    resp = await client.get(
+        "/api/v1/virtual-trading/orders",
+        headers=headers,
+    )
+    assert resp.status_code == 403

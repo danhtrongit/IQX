@@ -12,7 +12,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from app.api.deps import AdminUser, CurrentUser, DBSession, PremiumUser
+from app.api.deps import AdminUser, DBSession, PremiumUser
 from app.models.virtual_trading import OrderSide, OrderStatus
 from app.schemas.virtual_trading import (
     AccountResponse,
@@ -54,7 +54,7 @@ async def activate_account(user: PremiumUser, db: DBSession) -> AccountResponse:
 
 
 @router.get("/account", response_model=AccountResponse, tags=["Giao dịch ảo"])
-async def get_account(user: CurrentUser, db: DBSession) -> AccountResponse:
+async def get_account(user: PremiumUser, db: DBSession) -> AccountResponse:
     """Lấy tóm tắt tài khoản giao dịch ảo."""
     svc = VirtualTradingService(db)
     account = await svc.get_account(user.id)
@@ -64,7 +64,7 @@ async def get_account(user: CurrentUser, db: DBSession) -> AccountResponse:
 
 
 @router.get("/portfolio", response_model=PortfolioResponse, tags=["Giao dịch ảo"])
-async def get_portfolio(user: CurrentUser, db: DBSession) -> PortfolioResponse:
+async def get_portfolio(user: PremiumUser, db: DBSession) -> PortfolioResponse:
     """Lấy toàn bộ danh mục — chỉ đọc, không làm mới/thay đổi trạng thái."""
     svc = VirtualTradingService(db)
     data = await svc.get_portfolio(user.id)
@@ -99,7 +99,7 @@ async def place_order(body: OrderCreateRequest, user: PremiumUser, db: DBSession
 
 @router.get("/orders", response_model=OrderListResponse, tags=["Giao dịch ảo"])
 async def list_orders(
-    user: CurrentUser,
+    user: PremiumUser,
     db: DBSession,
     status: Annotated[
         str | None,
@@ -167,7 +167,7 @@ async def refresh(user: PremiumUser, db: DBSession) -> RefreshResponse:
 
 @router.get("/trades", response_model=TradeListResponse, tags=["Giao dịch ảo"])
 async def list_trades(
-    user: CurrentUser,
+    user: PremiumUser,
     db: DBSession,
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 20,
