@@ -120,3 +120,43 @@ async def test_patterns_symbols_requires_premium(
         headers=headers,
     )
     assert resp.status_code == 403
+
+
+async def test_forecast_ranking_requires_premium(
+    db_session: AsyncSession, client: AsyncClient
+) -> None:
+    _user, headers = await _make_non_premium_user(db_session, "no-prem-rank")
+    resp = await client.get(
+        "/api/v1/ai/forecast/ranking?horizon=5",
+        headers=headers,
+    )
+    assert resp.status_code == 403
+
+
+async def test_forecast_symbol_requires_premium(
+    db_session: AsyncSession, client: AsyncClient
+) -> None:
+    _user, headers = await _make_non_premium_user(db_session, "no-prem-fcsymbol")
+    resp = await client.get(
+        "/api/v1/ai/forecast/symbols/VCB",
+        headers=headers,
+    )
+    assert resp.status_code == 403
+
+
+async def test_forecast_unauthenticated_returns_401(client: AsyncClient) -> None:
+    resp = await client.get("/api/v1/ai/forecast/ranking?horizon=5")
+    assert resp.status_code == 401
+
+
+async def test_forecast_with_premium_user_passes_auth(
+    client: AsyncClient, premium_user
+) -> None:
+    """User có active sub → endpoint không trả 403 (có thể 200 hoặc 502 upstream)."""
+    _user, headers = premium_user
+    resp = await client.get(
+        "/api/v1/ai/forecast/ranking?horizon=5",
+        headers=headers,
+    )
+    # Premium gate passed; upstream Google Sheets có thể fail trong test env → 502 ok
+    assert resp.status_code in (200, 502)
