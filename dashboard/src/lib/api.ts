@@ -527,3 +527,47 @@ export const paymentsApi = {
     }
   },
 }
+
+// ── Premium API ──
+
+export interface BackendPremiumSubscription {
+  is_premium: boolean
+  is_trial: boolean
+  status: string | null
+  current_plan: {
+    id: string
+    code: string
+    name: string
+    price_vnd: number
+    duration_days: number
+  } | null
+  current_period_start: string | null
+  current_period_end: string | null
+}
+
+export interface PremiumSubscriptionStatus {
+  isPremium: boolean
+  isTrial: boolean
+  status: string | null
+  planCode: string | null
+  planName: string | null
+  periodEnd: Date | null
+}
+
+function adaptPremiumStatus(raw: BackendPremiumSubscription): PremiumSubscriptionStatus {
+  return {
+    isPremium: raw.is_premium,
+    isTrial: raw.is_trial,
+    status: raw.status,
+    planCode: raw.current_plan?.code ?? null,
+    planName: raw.current_plan?.name ?? null,
+    periodEnd: raw.current_period_end ? new Date(raw.current_period_end) : null,
+  }
+}
+
+export const premiumApi = {
+  getMe: async (): Promise<PremiumSubscriptionStatus> => {
+    const raw = await api.get("premium/me").json<BackendPremiumSubscription>()
+    return adaptPremiumStatus(raw)
+  },
+}
