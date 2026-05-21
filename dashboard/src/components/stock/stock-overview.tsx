@@ -43,11 +43,39 @@ interface CompanyProfile {
   organName?: string
   enOrganName?: string
   organShortName?: string
+  // Backend snake_case (preferred)
+  organ_name?: string
+  organ_short_name?: string
+  company_profile?: string
+  icb_name_2?: string
+  icb_name_3?: string
+  icb_name_4?: string
+  // Legacy camelCase (kept as fallback)
   icbName2?: string
   icbName3?: string
   icbName4?: string
   issueShare?: number
+  issue_share?: number
+  outstanding_shares?: number
   companyProfile?: string
+  exchange?: string
+  sector_vn?: string
+  is_bank?: boolean
+  // Enriched from VCI
+  highest_price_1y?: number
+  lowest_price_1y?: number
+  foreign_current_room?: number
+  foreign_total_room?: number
+  foreign_current_percent?: number
+  foreign_room_percentage?: number
+  market_cap?: number
+  current_price?: number
+  average_match_volume_2_week?: number
+  highestPrice1Year?: number
+  lowestPrice1Year?: number
+  foreignCurrentRoom?: number
+  foreignCurrentPercent?: number
+  averageMatchVolume2Week?: number
   [key: string]: any
 }
 
@@ -76,6 +104,7 @@ interface PriceInfo {
   foreignCurrentRoom?: number
   foreignCurrentPercent?: number
   averageMatchVolume2Week?: number
+  exchange?: string
   [key: string]: any
 }
 
@@ -127,33 +156,28 @@ export function StockOverview({ symbol }: { symbol: string }) {
     setIsLoading(true)
     const s = symbol.toUpperCase()
 
-    // New backend endpoints:
-    // /company/{s}/profile → /market-data/company/{s}/overview
-    // /company/{s}/price-info → /market-data/fundamentals/{s}/ratio + /market-data/company/{s}/overview
-    // /company/{s}/shareholders → /market-data/company/{s}/shareholders
-    // /company/{s}/managers → /market-data/company/{s}/officers
     Promise.all([
       fetch(`${API_BASE}/market-data/company/${s}/overview`).then((r) => r.json()).catch(() => null),
-      fetch(`${API_BASE}/market-data/fundamentals/${s}/ratio`).then((r) => r.json()).catch(() => null),
+      fetch(`${API_BASE}/market-data/fundamentals/${s}/ratio?period=Q`).then((r) => r.json()).catch(() => null),
       fetch(`${API_BASE}/market-data/company/${s}/shareholders`).then((r) => r.json()).catch(() => null),
       fetch(`${API_BASE}/market-data/company/${s}/officers`).then((r) => r.json()).catch(() => null),
     ]).then(([overviewRes, ratioRes, shRes, mgRes]) => {
-      // Overview data — may be wrapped in { data } or returned directly
-      const overviewData = overviewRes?.data || overviewRes
-      setProfile(overviewData || null)
+      // Overview is already enriched server-side (KBS + VCI details + 1Y trading).
+      const overviewData = overviewRes?.data ?? overviewRes ?? null
+      setProfile(overviewData)
 
-      // Ratio / price info — adapt from backend response
-      const ratioData = ratioRes?.data || ratioRes
-      if (ratioData) {
-        // Backend ratio may return { ratio: [...] } or just the ratio object
-        const ratioArr = ratioData?.ratio || ratioData
-        const latestRatio = Array.isArray(ratioArr) ? ratioArr[0] : ratioArr
+      // Ratio: backend returns array sorted newest → oldest with canonical
+      // snake_case keys (revenue, net_profit, eps, bvps, …).
+      const ratioData = ratioRes?.data ?? ratioRes
+      const ratioArr = Array.isArray(ratioData) ? ratioData : ratioData?.ratio
+      const latestRatio: any = Array.isArray(ratioArr) ? ratioArr[0] : ratioArr
+      if (latestRatio) {
         setPriceInfo({
-          financialRatio: latestRatio ? {
+          financialRatio: {
             yearReport: latestRatio.year_report ?? latestRatio.yearReport,
-            revenue: latestRatio.revenue,
+            revenue: latestRatio.revenue ?? latestRatio.totalOperatingIncome ?? latestRatio.total_operating_income,
             revenueGrowth: latestRatio.revenue_growth ?? latestRatio.revenueGrowth,
-            netProfit: latestRatio.net_profit ?? latestRatio.netProfit,
+            netProfit: latestRatio.net_profit ?? latestRatio.netProfit ?? latestRatio.profitAfterTax ?? latestRatio.profit_after_tax ?? latestRatio.net_profit_after_tax,
             netProfitGrowth: latestRatio.net_profit_growth ?? latestRatio.netProfitGrowth,
             roe: latestRatio.roe,
             roa: latestRatio.roa,
@@ -163,42 +187,74 @@ export function StockOverview({ symbol }: { symbol: string }) {
             bvps: latestRatio.bvps,
             currentRatio: latestRatio.current_ratio ?? latestRatio.currentRatio,
             grossMargin: latestRatio.gross_margin ?? latestRatio.grossMargin,
-            netProfitMargin: latestRatio.net_profit_margin ?? latestRatio.netProfitMargin,
-            de: latestRatio.de ?? latestRatio.debt_equity,
-            dividend: latestRatio.dividend,
+            netProfitMargin:
+              latestRatio.net_profit_margin ??
+              latestRatio.netProfitMargin ??
+              latestRatio.afterTaxProfitMargin ??
+              latestRatio.after_tax_profit_margin,
+            de: latestRatio.debt_to_equity ?? latestRatio.de ?? latestRatio.debtToEquity,
+            dividend: latestRatio.dividend ?? latestRatio.dividend_yield,
             marketCap: latestRatio.market_cap ?? latestRatio.marketCap,
-          } : undefined,
-          // TODO: 52-week high/low not in ratio endpoint. Degrade gracefully.
-          highestPrice1Year: overviewData?.highest_price_1y ?? overviewData?.highestPrice1Year ?? 0,
-          lowestPrice1Year: overviewData?.lowest_price_1y ?? overviewData?.lowestPrice1Year ?? 0,
-          foreignCurrentRoom: overviewData?.foreign_current_room ?? overviewData?.foreignCurrentRoom,
-          foreignCurrentPercent: overviewData?.foreign_current_percent ?? overviewData?.foreignCurrentPercent,
-          averageMatchVolume2Week: overviewData?.average_match_volume_2_week ?? overviewData?.averageMatchVolume2Week,
+          },
+          highestPrice1Year:
+            overviewData?.highest_price_1y ?? overviewData?.highestPrice1Year ?? 0,
+          lowestPrice1Year:
+            overviewData?.lowest_price_1y ?? overviewData?.lowestPrice1Year ?? 0,
+          foreignCurrentRoom:
+            overviewData?.foreign_current_room ?? overviewData?.foreignCurrentRoom,
+          foreignCurrentPercent:
+            overviewData?.foreign_current_percent ?? overviewData?.foreignCurrentPercent,
+          averageMatchVolume2Week:
+            overviewData?.average_match_volume_2_week ??
+            overviewData?.averageMatchVolume2Week,
+          exchange: overviewData?.exchange,
         } as PriceInfo)
       } else {
-        setPriceInfo(null)
+        // Even without ratio data we still want to show 52w/foreign blocks.
+        setPriceInfo({
+          highestPrice1Year:
+            overviewData?.highest_price_1y ?? overviewData?.highestPrice1Year ?? 0,
+          lowestPrice1Year:
+            overviewData?.lowest_price_1y ?? overviewData?.lowestPrice1Year ?? 0,
+          foreignCurrentRoom:
+            overviewData?.foreign_current_room ?? overviewData?.foreignCurrentRoom,
+          foreignCurrentPercent:
+            overviewData?.foreign_current_percent ?? overviewData?.foreignCurrentPercent,
+          averageMatchVolume2Week:
+            overviewData?.average_match_volume_2_week ??
+            overviewData?.averageMatchVolume2Week,
+          exchange: overviewData?.exchange,
+        } as PriceInfo)
       }
 
-      // Shareholders — adapt snake_case
-      const shData = shRes?.data || shRes
+      // Shareholders — KBS uses ownership_percentage / shares_owned.
+      const shData = shRes?.data ?? shRes
       if (Array.isArray(shData)) {
-        setShareholders(shData.map((sh: any) => ({
-          ownerFullName: sh.owner_full_name ?? sh.ownerFullName ?? sh.name ?? "",
-          percentage: sh.percentage ?? sh.ownership_pct ?? 0,
-          quantity: sh.quantity ?? sh.no_of_shares ?? 0,
-        })))
+        setShareholders(
+          shData.map((sh: any) => ({
+            ownerFullName:
+              sh.owner_full_name ?? sh.ownerFullName ?? sh.name ?? "",
+            percentage:
+              sh.ownership_percentage ?? sh.percentage ?? sh.ownership_pct ?? 0,
+            quantity: sh.shares_owned ?? sh.quantity ?? sh.no_of_shares ?? 0,
+          })),
+        )
       } else {
         setShareholders([])
       }
 
-      // Managers/Officers — adapt snake_case
-      const mgData = mgRes?.data || mgRes
+      // Managers/Officers — KBS uses position; percentage is unknown.
+      const mgData = mgRes?.data ?? mgRes
       if (Array.isArray(mgData)) {
-        setManagers(mgData.map((mg: any) => ({
-          fullName: mg.full_name ?? mg.fullName ?? mg.name ?? "",
-          positionName: mg.position_name ?? mg.positionName ?? mg.position ?? "",
-          percentage: mg.percentage ?? mg.ownership_pct ?? 0,
-        })))
+        setManagers(
+          mgData.map((mg: any) => ({
+            fullName: mg.full_name ?? mg.fullName ?? mg.name ?? "",
+            positionName:
+              mg.position_name ?? mg.positionName ?? mg.position ?? "",
+            percentage:
+              mg.percentage ?? mg.ownership_pct ?? null,
+          })),
+        )
       } else {
         setManagers([])
       }
@@ -242,8 +298,12 @@ export function StockOverview({ symbol }: { symbol: string }) {
             <div className="flex items-center gap-3 mb-1">
               <StockLogo symbol={symbol} size={36} />
               <div>
-                <span className="text-sm font-bold text-foreground">{profile?.organShortName || symbol}</span>
-                <p className="text-[10px] text-muted-foreground truncate max-w-[200px]">{profile?.organName || ""}</p>
+                <span className="text-sm font-bold text-foreground">
+                  {profile?.organ_short_name || profile?.organShortName || symbol}
+                </span>
+                <p className="text-[10px] text-muted-foreground truncate max-w-[200px]">
+                  {profile?.organ_name || profile?.organName || ""}
+                </p>
               </div>
             </div>
             <div className="flex items-baseline gap-2">
@@ -347,7 +407,9 @@ export function StockOverview({ symbol }: { symbol: string }) {
                       <span className="text-[10px] text-muted-foreground">{mg.positionName}</span>
                     </div>
                     <span className="text-xs font-semibold text-foreground tabular-nums whitespace-nowrap">
-                      {mg.percentage != null && mg.percentage > 0 ? mg.percentage.toFixed(2) + "%" : "0%"}
+                      {mg.percentage != null && mg.percentage > 0
+                        ? mg.percentage.toFixed(2) + "%"
+                        : "—"}
                     </span>
                   </div>
                 ))}
@@ -360,37 +422,39 @@ export function StockOverview({ symbol }: { symbol: string }) {
         <div className="p-4 space-y-4">
 
           {/* GIỚI THIỆU */}
-          {profile?.companyProfile && (
+          {(profile?.company_profile || profile?.companyProfile) && (
             <section>
               <SectionHead icon={<FileText className="size-3.5" />} title="Giới thiệu" />
               <p className="text-xs text-muted-foreground leading-[1.6] whitespace-pre-line line-clamp-4 md:line-clamp-none">
-                {profile.companyProfile.slice(0, 600)}
-                {profile.companyProfile.length > 600 ? "..." : ""}
+                {(() => {
+                  const text = profile?.company_profile || profile?.companyProfile || ""
+                  return text.length > 600 ? text.slice(0, 600) + "..." : text
+                })()}
               </p>
             </section>
           )}
 
           {/* PHÂN NGÀNH ICB */}
-          {(profile?.icbName2 || profile?.icbName3 || profile?.icbName4) && (
+          {(profile?.icb_name_2 || profile?.icbName2 || profile?.icb_name_3 || profile?.icbName3 || profile?.icb_name_4 || profile?.icbName4) && (
             <section>
               <SectionHead icon={<Building2 className="size-3.5" />} title="Phân ngành ICB" />
               <div className="space-y-0">
-                {profile?.icbName2 && (
+                {(profile?.icb_name_2 || profile?.icbName2) && (
                   <div className="flex items-center gap-2 py-[5px] border-b border-border/10">
                     <span className="text-[10px] text-muted-foreground w-5">L2</span>
-                    <span className="text-xs text-foreground">{profile.icbName2}</span>
+                    <span className="text-xs text-foreground">{profile?.icb_name_2 || profile?.icbName2}</span>
                   </div>
                 )}
-                {profile?.icbName3 && (
+                {(profile?.icb_name_3 || profile?.icbName3) && (
                   <div className="flex items-center gap-2 py-[5px] border-b border-border/10">
                     <span className="text-[10px] text-muted-foreground w-5">L3</span>
-                    <span className="text-xs text-foreground">{profile.icbName3}</span>
+                    <span className="text-xs text-foreground">{profile?.icb_name_3 || profile?.icbName3}</span>
                   </div>
                 )}
-                {profile?.icbName4 && (
+                {(profile?.icb_name_4 || profile?.icbName4) && (
                   <div className="flex items-center gap-2 py-[5px]">
                     <span className="text-[10px] text-muted-foreground w-5">L4</span>
-                    <span className="text-xs text-foreground">{profile.icbName4}</span>
+                    <span className="text-xs text-foreground">{profile?.icb_name_4 || profile?.icbName4}</span>
                   </div>
                 )}
               </div>
@@ -400,9 +464,19 @@ export function StockOverview({ symbol }: { symbol: string }) {
           {/* THÔNG TIN CƠ BẢN */}
           <section>
             <SectionHead icon={<Layers className="size-3.5" />} title="Thông tin cơ bản" />
-            <InfoRow label="Sàn" value={liveData?.exchange || priceInfo?.exchange || "—"} />
-            <InfoRow label="SLCP lưu hành" value={profile?.issueShare ? fmtVnd(profile.issueShare) : "—"} />
-            <InfoRow label="KL TB 2 tuần" value={priceInfo?.averageMatchVolume2Week ? fmtVnd(priceInfo.averageMatchVolume2Week) : "—"} />
+            <InfoRow label="Sàn" value={liveData?.exchange || profile?.exchange || priceInfo?.exchange || "—"} />
+            <InfoRow
+              label="SLCP lưu hành"
+              value={
+                profile?.issue_share || profile?.issueShare || profile?.outstanding_shares
+                  ? fmtVnd((profile?.issue_share || profile?.issueShare || profile?.outstanding_shares) as number)
+                  : "—"
+              }
+            />
+            <InfoRow
+              label="KL TB 2 tuần"
+              value={priceInfo?.averageMatchVolume2Week ? fmtVnd(priceInfo.averageMatchVolume2Week) : "—"}
+            />
           </section>
         </div>
       </div>
