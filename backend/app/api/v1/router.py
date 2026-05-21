@@ -9,6 +9,7 @@ from app.api.v1.endpoints import (
     admin_metrics,
     admin_payments,
     admin_subscriptions,
+    admin_users,
     ai_analysis,
     ai_forecast,
     ai_patterns,
@@ -37,4 +38,5 @@ api_v1_router.include_router(admin_metrics.router)
 api_v1_router.include_router(admin_payments.router)
 api_v1_router.include_router(admin_subscriptions.router)
 api_v1_router.include_router(admin_audit.router)
+api_v1_router.include_router(admin_users.router)
 
