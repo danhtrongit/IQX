@@ -6,6 +6,7 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     admin_audit,
+    admin_ipn,
     admin_metrics,
     admin_payments,
     admin_subscriptions,
@@ -41,4 +42,5 @@ api_v1_router.include_router(admin_subscriptions.router)
 api_v1_router.include_router(admin_audit.router)
 api_v1_router.include_router(admin_users.router)
 api_v1_router.include_router(admin_vt.router)
+api_v1_router.include_router(admin_ipn.router)
 
