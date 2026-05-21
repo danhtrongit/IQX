@@ -39,6 +39,8 @@ async def register(request: Request, data: UserCreate, db: DBSession) -> UserRes
     description="Xác thực bằng email và mật khẩu. Trả về access token và refresh token.",
 )
 @limiter.limit(_AUTH_LIMIT)
+# NOTE: Admin dashboard login uses this same endpoint, so rate limiting applies
+# equally to admin login attempts (T35 hardening).
 async def login(request: Request, data: LoginRequest, db: DBSession) -> TokenResponse:
     service = AuthService(db)
     return await service.login(

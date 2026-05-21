@@ -30,12 +30,18 @@ async def get_audit_context(
     request: Request,
     admin: AdminUser,
 ) -> AuditContext:
-    """Build an AuditContext from the current request + the authenticated admin."""
+    """Build an AuditContext from the current request + the authenticated admin.
+
+    Prefers request.state.request_id (set by RequestIDMiddleware) so the
+    request ID is always consistent even when the client omits the header.
+    """
     return AuditContext(
         admin_id=admin.id,
         ip=request.client.host if request.client else None,
         user_agent=request.headers.get("user-agent"),
-        request_id=request.headers.get("x-request-id") or str(uuid.uuid4()),
+        request_id=getattr(request.state, "request_id", None)
+        or request.headers.get("x-request-id")
+        or str(uuid.uuid4()),
     )
 
 
