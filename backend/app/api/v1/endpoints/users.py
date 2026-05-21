@@ -7,6 +7,7 @@ import uuid
 from fastapi import APIRouter, Query
 
 from app.api.deps import AdminUser, CurrentUser, DBSession
+from app.api.deps_audit import AuditCtx
 from app.models.user import UserRole, UserStatus
 from app.schemas.common import MessageResponse, PaginatedResponse
 from app.schemas.user import (
@@ -18,6 +19,7 @@ from app.schemas.user import (
     UserResponse,
     UserUpdate,
 )
+from app.services.admin_audit import AdminAuditService, diff_dict
 from app.services.user import UserService
 
 router = APIRouter(prefix="/users", tags=["Người dùng"])
@@ -109,10 +111,23 @@ async def get_user(
 async def admin_create_user(
     data: AdminUserCreate,
     admin: AdminUser,
+    audit: AuditCtx,
     db: DBSession,
 ) -> UserResponse:
     service = UserService(db)
     user = await service.admin_create(data)
+    await AdminAuditService(db).record(
+        audit,
+        action="user.create",
+        target_entity="user",
+        target_id=str(user.id),
+        before=None,
+        after={
+            "email": user.email,
+            "role": user.role.value,
+            "status": user.status.value,
+        },
+    )
     return UserResponse.model_validate(user)
 
 
@@ -127,10 +142,33 @@ async def admin_update_user(
     user_id: uuid.UUID,
     data: AdminUserUpdate,
     admin: AdminUser,
+    audit: AuditCtx,
     db: DBSession,
 ) -> UserResponse:
     service = UserService(db)
+    # Capture before state for changed fields only
+    existing = await service.get_by_id(user_id)
+    patch = data.model_dump(exclude_unset=True)
+    before_raw = {k: getattr(existing, k, None) for k in patch}
+    # Normalize enum values for diff comparison
+    before_vals = {
+        k: (v.value if hasattr(v, "value") else v)
+        for k, v in before_raw.items()
+    }
     user = await service.admin_update(user_id, data)
+    after_vals = {
+        k: (getattr(user, k).value if hasattr(getattr(user, k, None), "value") else getattr(user, k, None))
+        for k in patch
+    }
+    b, a = diff_dict(before_vals, after_vals)
+    await AdminAuditService(db).record(
+        audit,
+        action="user.update",
+        target_entity="user",
+        target_id=str(user.id),
+        before=b,
+        after=a,
+    )
     return UserResponse.model_validate(user)
 
 
@@ -144,8 +182,19 @@ async def admin_update_user(
 async def admin_delete_user(
     user_id: uuid.UUID,
     admin: AdminUser,
+    audit: AuditCtx,
     db: DBSession,
 ) -> MessageResponse:
     service = UserService(db)
+    existing = await service.get_by_id(user_id)
+    before_status = existing.status.value
     await service.soft_delete(user_id)
+    await AdminAuditService(db).record(
+        audit,
+        action="user.delete",
+        target_entity="user",
+        target_id=str(user_id),
+        before={"status": before_status},
+        after={"status": "deleted"},
+    )
     return MessageResponse(message="Xóa người dùng thành công")

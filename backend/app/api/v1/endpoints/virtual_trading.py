@@ -13,7 +13,9 @@ from typing import Annotated
 from fastapi import APIRouter, Query
 
 from app.api.deps import AdminUser, DBSession, PremiumUser
+from app.api.deps_audit import AuditCtx
 from app.models.virtual_trading import OrderSide, OrderStatus
+from app.services.admin_audit import AdminAuditService, diff_dict
 from app.schemas.virtual_trading import (
     AccountResponse,
     AdminAccountResponse,
@@ -228,10 +230,34 @@ async def admin_get_config(admin: AdminUser, db: DBSession) -> ConfigResponse:
 
 
 @router.patch("/admin/config", response_model=ConfigResponse, tags=[_TAG_ADMIN])
-async def admin_update_config(body: ConfigUpdate, admin: AdminUser, db: DBSession) -> ConfigResponse:
+async def admin_update_config(
+    body: ConfigUpdate, admin: AdminUser, audit: AuditCtx, db: DBSession
+) -> ConfigResponse:
     """Quản trị: cập nhật cấu hình giao dịch ảo."""
     svc = VirtualTradingService(db)
-    config = await svc.update_config(body.model_dump(exclude_unset=True), admin.id)
+    patch = body.model_dump(exclude_unset=True)
+    # Capture before state for changed fields
+    existing_config = await svc.get_or_create_config(admin.id)
+    before_raw = {k: getattr(existing_config, k, None) for k in patch}
+    before_vals = {
+        k: (v.value if hasattr(v, "value") else v)
+        for k, v in before_raw.items()
+    }
+    config = await svc.update_config(patch, admin.id)
+    after_raw = {k: getattr(config, k, None) for k in patch}
+    after_vals = {
+        k: (v.value if hasattr(v, "value") else v)
+        for k, v in after_raw.items()
+    }
+    b, a = diff_dict(before_vals, after_vals)
+    await AdminAuditService(db).record(
+        audit,
+        action="vt.config.update",
+        target_entity="vt_config",
+        target_id=str(config.id),
+        before=b,
+        after=a,
+    )
     holidays = json.loads(config.holidays) if config.holidays else []
     return ConfigResponse(
         id=config.id,
@@ -249,7 +275,9 @@ async def admin_update_config(body: ConfigUpdate, admin: AdminUser, db: DBSessio
 
 
 @router.post("/admin/users/{user_id}/reset", response_model=ResetResponse, tags=[_TAG_ADMIN])
-async def admin_reset_user(user_id: str, admin: AdminUser, db: DBSession) -> ResetResponse:
+async def admin_reset_user(
+    user_id: str, admin: AdminUser, audit: AuditCtx, db: DBSession
+) -> ResetResponse:
     """Quản trị: đặt lại tài khoản giao dịch ảo của một người dùng."""
     import uuid
 
@@ -262,14 +290,28 @@ async def admin_reset_user(user_id: str, admin: AdminUser, db: DBSession) -> Res
 
     svc = VirtualTradingService(db)
     await svc.reset_account(uid, admin.id)
+    await AdminAuditService(db).record(
+        audit,
+        action="vt.account.reset",
+        target_entity="vt_account",
+        target_id=str(uid),
+        note=f"reset user {uid}",
+    )
     return ResetResponse(accounts_reset=1, message="Đặt lại tài khoản thành công")
 
 
 @router.post("/admin/reset-all", response_model=ResetResponse, tags=[_TAG_ADMIN])
-async def admin_reset_all(admin: AdminUser, db: DBSession) -> ResetResponse:
+async def admin_reset_all(admin: AdminUser, audit: AuditCtx, db: DBSession) -> ResetResponse:
     """Quản trị: đặt lại tất cả tài khoản giao dịch ảo."""
     svc = VirtualTradingService(db)
     count = await svc.reset_all_accounts(admin.id)
+    await AdminAuditService(db).record(
+        audit,
+        action="vt.account.reset_all",
+        target_entity="vt_account",
+        note=f"reset all accounts (count={count})",
+        after={"count": count},
+    )
     return ResetResponse(accounts_reset=count, message=f"Đã đặt lại {count} tài khoản")
 
 

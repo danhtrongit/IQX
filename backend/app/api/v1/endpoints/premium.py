@@ -312,6 +312,7 @@ async def admin_grant_premium(
     user_id: uuid.UUID,
     body: AdminGrantRequest,
     admin: AdminUser,
+    audit: AuditCtx,
     db: DBSession,
 ):
     """Quản trị: cấp Premium thủ công cho người dùng."""
@@ -328,5 +329,16 @@ async def admin_grant_premium(
         plan_id=body.plan_id,
         admin_id=admin.id,
         note=body.note,
+    )
+    await AdminAuditService(db).record(
+        audit,
+        action="premium.grant",
+        target_entity="subscription",
+        target_id=str(order.id),
+        after={
+            "user_id": str(user_id),
+            "plan_id": str(body.plan_id),
+            "note": body.note,
+        },
     )
     return PaymentOrderResponse.model_validate(order)
