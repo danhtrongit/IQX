@@ -700,3 +700,99 @@ async def test_user_without_premium(client: AsyncClient, test_user: User):
     resp = await client.get("/api/v1/premium/me", headers=get_auth_headers(token))
     assert resp.status_code == 200
     assert resp.json()["is_premium"] is False
+
+
+# ══════════════════════════════════════════════════════
+# T9 — Plans soft-delete + audit on create/update (new tests)
+# ══════════════════════════════════════════════════════
+
+
+@pytest.mark.asyncio
+async def test_admin_delete_plan_soft(client: AsyncClient, admin_user: User, db_session: AsyncSession):
+    """DELETE /admin/plans/{id} flips is_active=False and records an audit row."""
+    from sqlalchemy import select as _select
+
+    from app.models.admin_audit import AdminAuditLog
+
+    plan = await _create_plan(db_session, code="DEL_ME", name="To Delete")
+    token = _user_token(admin_user)
+    resp = await client.delete(
+        f"/api/v1/premium/admin/plans/{plan.id}",
+        headers=get_auth_headers(token),
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["is_active"] is False
+
+    # Audit row must exist
+    rows = (
+        await db_session.execute(
+            _select(AdminAuditLog).where(AdminAuditLog.action == "premium.plan.delete")
+        )
+    ).scalars().all()
+    assert len(rows) >= 1
+
+
+@pytest.mark.asyncio
+async def test_admin_delete_trial_plan_rejected(
+    client: AsyncClient, admin_user: User, db_session: AsyncSession
+):
+    """Cannot soft-delete the TRIAL_7D plan."""
+    trial = await _create_plan(db_session, code="TRIAL_7D", name="Trial 7 Days")
+    token = _user_token(admin_user)
+    resp = await client.delete(
+        f"/api/v1/premium/admin/plans/{trial.id}",
+        headers=get_auth_headers(token),
+    )
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_admin_create_plan_records_audit(
+    client: AsyncClient, admin_user: User, db_session: AsyncSession
+):
+    """POST /admin/plans creates an audit row with action=premium.plan.create."""
+    from sqlalchemy import select as _select
+
+    from app.models.admin_audit import AdminAuditLog
+
+    token = _user_token(admin_user)
+    resp = await client.post(
+        "/api/v1/premium/admin/plans",
+        json={"code": "AUDIT_TEST", "name": "Audit Test", "price_vnd": 100_000, "duration_days": 30},
+        headers=get_auth_headers(token),
+    )
+    assert resp.status_code == 201
+
+    rows = (
+        await db_session.execute(
+            _select(AdminAuditLog).where(AdminAuditLog.action == "premium.plan.create")
+        )
+    ).scalars().all()
+    assert len(rows) >= 1
+
+
+@pytest.mark.asyncio
+async def test_admin_update_plan_records_audit(
+    client: AsyncClient, admin_user: User, db_session: AsyncSession
+):
+    """PATCH /admin/plans/{id} creates an audit row with action=premium.plan.update."""
+    from sqlalchemy import select as _select
+
+    from app.models.admin_audit import AdminAuditLog
+
+    plan = await _create_plan(db_session, code="UPD_AUDIT", name="Before")
+    token = _user_token(admin_user)
+    resp = await client.patch(
+        f"/api/v1/premium/admin/plans/{plan.id}",
+        json={"name": "After"},
+        headers=get_auth_headers(token),
+    )
+    assert resp.status_code == 200
+
+    rows = (
+        await db_session.execute(
+            _select(AdminAuditLog).where(AdminAuditLog.action == "premium.plan.update")
+        )
+    ).scalars().all()
+    assert len(rows) >= 1
