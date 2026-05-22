@@ -43,13 +43,18 @@ class UserCreate(BaseModel):
     def validate_phone(cls, v: str | None) -> str | None:
         if v is None:
             return v
+        v = v.strip()
+        if not v:
+            return None
+        # Accept both Vietnamese local (0912345678) and international (+84912345678).
+        # Default region VN handles "0..." correctly; "+" prefix overrides region.
         try:
-            parsed = phonenumbers.parse(v, None)
+            parsed = phonenumbers.parse(v, "VN")
             if not phonenumbers.is_valid_number(parsed):
                 raise ValueError("Số điện thoại không hợp lệ")
         except phonenumbers.NumberParseException:
             raise ValueError(
-                "Định dạng số điện thoại không hợp lệ. Dùng định dạng E.164, ví dụ: +84901234567"
+                "Số điện thoại không hợp lệ. Ví dụ: 0912345678 hoặc +84912345678"
             ) from None
         return v
 
@@ -76,13 +81,18 @@ class UserUpdate(BaseModel):
     def validate_phone(cls, v: str | None) -> str | None:
         if v is None:
             return v
+        v = v.strip()
+        if not v:
+            return None
+        # Accept both Vietnamese local (0912345678) and international (+84912345678).
+        # Default region VN handles "0..." correctly; "+" prefix overrides region.
         try:
-            parsed = phonenumbers.parse(v, None)
+            parsed = phonenumbers.parse(v, "VN")
             if not phonenumbers.is_valid_number(parsed):
                 raise ValueError("Số điện thoại không hợp lệ")
         except phonenumbers.NumberParseException:
             raise ValueError(
-                "Định dạng số điện thoại không hợp lệ. Dùng định dạng E.164, ví dụ: +84901234567"
+                "Số điện thoại không hợp lệ. Ví dụ: 0912345678 hoặc +84912345678"
             ) from None
         return v
 

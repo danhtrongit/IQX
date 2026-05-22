@@ -53,6 +53,49 @@ async def test_register_duplicate_email(client: AsyncClient, test_user: User):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "phone",
+    [
+        "0912345678",      # Vietnamese local (zero-prefix)
+        "+84912345678",    # International E.164
+        " 0912345678 ",    # Whitespace tolerated
+        "0901 234 567",    # With spaces
+    ],
+)
+async def test_register_accepts_vietnamese_phone_formats(
+    client: AsyncClient, phone: str
+):
+    """Phone validator should accept both 0... and +84... formats."""
+    response = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": f"phone-{abs(hash(phone)) % 100000}@example.com",
+            "password": "Str0ng@Pass",
+            "first_name": "Phone",
+            "last_name": "Test",
+            "phone_number": phone,
+        },
+    )
+    assert response.status_code == 201, response.text
+
+
+@pytest.mark.asyncio
+async def test_register_rejects_invalid_phone(client: AsyncClient):
+    """Genuinely malformed phone numbers still fail validation."""
+    response = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "badphone@example.com",
+            "password": "Str0ng@Pass",
+            "first_name": "Bad",
+            "last_name": "Phone",
+            "phone_number": "abc-not-a-number",
+        },
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
 async def test_register_weak_password(client: AsyncClient):
     """Registration with a weak password should fail validation."""
     response = await client.post(
