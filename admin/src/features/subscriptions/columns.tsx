@@ -2,7 +2,6 @@ import type { ColumnDef } from "@tanstack/react-table"
 import { Link } from "react-router"
 import { MoreHorizontal, Eye, XCircle, CalendarPlus } from "lucide-react"
 import { differenceInDays, parseISO } from "date-fns"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   DropdownMenu,
@@ -110,7 +109,8 @@ export function buildColumns(actions: ColumnActions): ColumnDef<SubscriptionRow>
         return (
           <DropdownMenu>
             <DropdownMenuTrigger
-              render={<Button variant="ghost" size="icon" className="size-7" />}
+              aria-label="Hành động"
+              className="inline-flex size-7 items-center justify-center rounded-md text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               <MoreHorizontal className="size-4" />
             </DropdownMenuTrigger>

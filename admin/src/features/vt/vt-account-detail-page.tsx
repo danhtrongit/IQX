@@ -216,7 +216,11 @@ export default function VTAccountDetailPage() {
         {/* Action menu */}
         {account && (
           <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="outline">Thao tác</Button>} />
+            <DropdownMenuTrigger
+              className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              Thao tác
+            </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {!account.frozenAt ? (
                 <DropdownMenuItem

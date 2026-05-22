@@ -1,6 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import { Lock, MoreHorizontal, Snowflake, Unlock, DollarSign, RotateCcw } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -112,7 +111,8 @@ export function buildColumns(actions: ColumnActions): ColumnDef<VTAccountRow>[] 
         return (
           <DropdownMenu>
             <DropdownMenuTrigger
-              render={<Button variant="ghost" size="icon" className="size-7" />}
+              aria-label="Hành động"
+              className="inline-flex size-7 items-center justify-center rounded-md text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               <MoreHorizontal className="size-4" />
             </DropdownMenuTrigger>
