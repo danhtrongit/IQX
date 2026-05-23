@@ -23,27 +23,28 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
+# Old constraint name was double-prefixed by the naming convention because the
+# model's CheckConstraint name itself already started with "ck_episodes_".
+# Use raw SQL with the exact names to avoid any further mangling.
 _OLD = "ck_episodes_ck_episodes_content_type_payload"
-_NEW_NAME = "ck_episodes_payload_shape"
+_NEW = "ck_episodes_payload_shape"
 
 
 def upgrade() -> None:
-    op.drop_constraint(_OLD, "episodes", type_="check")
-    op.create_check_constraint(
-        _NEW_NAME,
-        "episodes",
-        # text     → markdown_body required, file_url forbidden
-        # pdf/video → markdown_body forbidden, file_url optional (set after upload)
+    op.execute(f'ALTER TABLE episodes DROP CONSTRAINT "{_OLD}"')
+    op.execute(
+        f'ALTER TABLE episodes ADD CONSTRAINT "{_NEW}" CHECK ('
         "(content_type = 'text' AND markdown_body IS NOT NULL AND file_url IS NULL) "
-        "OR (content_type IN ('pdf','video') AND markdown_body IS NULL)",
+        "OR (content_type IN ('pdf','video') AND markdown_body IS NULL)"
+        ")"
     )
 
 
 def downgrade() -> None:
-    op.drop_constraint(_NEW_NAME, "episodes", type_="check")
-    op.create_check_constraint(
-        _OLD,
-        "episodes",
+    op.execute(f'ALTER TABLE episodes DROP CONSTRAINT "{_NEW}"')
+    op.execute(
+        f'ALTER TABLE episodes ADD CONSTRAINT "{_OLD}" CHECK ('
         "(content_type = 'text' AND markdown_body IS NOT NULL AND file_url IS NULL) "
-        "OR (content_type IN ('pdf','video') AND file_url IS NOT NULL AND markdown_body IS NULL)",
+        "OR (content_type IN ('pdf','video') AND file_url IS NOT NULL AND markdown_body IS NULL)"
+        ")"
     )
