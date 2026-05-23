@@ -111,6 +111,11 @@ export function buildColumns(actions: ColumnActions): ColumnDef<PaymentRow>[] {
           differenceInMinutes(new Date(), parseISO(payment.createdAt)) > 30
 
         return (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
           <DropdownMenu>
             <DropdownMenuTrigger
               aria-label="Hành động"
@@ -147,6 +152,7 @@ export function buildColumns(actions: ColumnActions): ColumnDef<PaymentRow>[] {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         )
       },
       size: 48,

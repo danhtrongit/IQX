@@ -109,6 +109,11 @@ export function buildColumns(actions: ColumnActions): ColumnDef<VTAccountRow>[] 
         const acct = row.original
         const isFrozen = !!acct.frozenAt
         return (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
           <DropdownMenu>
             <DropdownMenuTrigger
               aria-label="Hành động"
@@ -151,6 +156,7 @@ export function buildColumns(actions: ColumnActions): ColumnDef<VTAccountRow>[] 
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         )
       },
       size: 48,

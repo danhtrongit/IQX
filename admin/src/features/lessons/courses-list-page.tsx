@@ -157,11 +157,15 @@ function buildColumns(actions: {
       cell: ({ row }) => {
         const c = row.original
         return (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
           <DropdownMenu>
             <DropdownMenuTrigger
               aria-label="Hành động"
               className="inline-flex size-7 items-center justify-center rounded-md text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-              onClick={(e) => e.stopPropagation()}
             >
               <MoreHorizontal className="size-4" />
             </DropdownMenuTrigger>
@@ -208,6 +212,7 @@ function buildColumns(actions: {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         )
       },
       size: 48,

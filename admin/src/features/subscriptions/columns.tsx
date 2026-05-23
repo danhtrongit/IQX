@@ -107,6 +107,11 @@ export function buildColumns(actions: ColumnActions): ColumnDef<SubscriptionRow>
       cell: ({ row }) => {
         const sub = row.original
         return (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
           <DropdownMenu>
             <DropdownMenuTrigger
               aria-label="Hành động"
@@ -143,6 +148,7 @@ export function buildColumns(actions: ColumnActions): ColumnDef<SubscriptionRow>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         )
       },
       size: 48,
