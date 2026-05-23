@@ -19,6 +19,8 @@ const VTAccountDetailPage = lazy(() => import("@/features/vt/vt-account-detail-p
 const VTConfigPage = lazy(() => import("@/features/vt/vt-config-page"))
 const AuditPage = lazy(() => import("@/features/audit/audit-page"))
 const SystemPage = lazy(() => import("@/features/system/system-page"))
+const CoursesListPage = lazy(() => import("@/features/lessons/courses-list-page"))
+const CourseEditPage = lazy(() => import("@/features/lessons/course-edit-page"))
 
 export default function App() {
   return (
@@ -47,6 +49,9 @@ export default function App() {
           <Route path="vt/config" element={<VTConfigPage />} />
           <Route path="audit" element={<AuditPage />} />
           <Route path="system" element={<SystemPage />} />
+          <Route path="lessons" element={<CoursesListPage />} />
+          <Route path="lessons/new" element={<CourseEditPage />} />
+          <Route path="lessons/:id" element={<CourseEditPage />} />
         </Route>
       </Routes>
     </Suspense>

@@ -12,6 +12,7 @@ import {
   FileBarChart2,
   ChevronDown,
   ChevronRight,
+  BookOpen,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -33,6 +34,13 @@ const topNavItems: NavItem[] = [
 ]
 
 const navGroups: NavGroup[] = [
+  {
+    label: "Bài học",
+    icon: BookOpen,
+    items: [
+      { label: "Khoá học", href: "/lessons", icon: BookOpen },
+    ],
+  },
   {
     label: "Premium",
     icon: CreditCard,
