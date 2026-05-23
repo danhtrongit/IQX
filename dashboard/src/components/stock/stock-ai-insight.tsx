@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
+import { useNavigate } from "react-router"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   TrendingUp,
@@ -327,7 +328,7 @@ function DetailPanel({
     : LAYER_CONFIG[layerKey]
   if (!cfg || !layerData) return null
   const Icon = cfg.icon
-  const [showRawData, setShowRawData] = useState(false)
+  const [showRawData, setShowRawData] = useState(true)
 
   return (
     <motion.div
@@ -777,7 +778,7 @@ function MobileLayerSection({
   rawInput: InsightResponse["rawInput"]
 }) {
   const Icon = cfg.icon
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(true)
 
   return (
     <div
@@ -878,13 +879,29 @@ function MobileLayerSection({
 
 // ── Main Component ──
 
+// Indices (whole-market gauges) — AI Insight needs a specific listed stock.
+const INDEX_CODES = new Set(["VNINDEX", "VN30", "HNX", "HNXINDEX", "UPCOM", "UPCOMINDEX", "HNX30"])
+
+function isIndexSymbol(symbol: string): boolean {
+  return INDEX_CODES.has(symbol.toUpperCase())
+}
+
 export function StockAiInsight({ symbol }: { symbol: string }) {
+  const navigate = useNavigate()
   const [insight, setInsight] = useState<InsightResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
   const [selectedLayer, setSelectedLayer] = useState<string | null>(null)
+  const [pickSymbol, setPickSymbol] = useState("")
+  const isIndex = isIndexSymbol(symbol)
 
   useEffect(() => {
+    if (isIndex) {
+      setIsLoading(false)
+      setInsight(null)
+      setError("")
+      return
+    }
     setIsLoading(true)
     setError("")
     setSelectedLayer(null)
@@ -901,7 +918,7 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
       })
       .catch(() => setError("Lỗi kết nối tới AI Insight"))
       .finally(() => setIsLoading(false))
-  }, [symbol])
+  }, [symbol, isIndex])
 
   const trendTags = useMemo(() => {
     const trendOut = insight?.layers?.trend?.output
@@ -929,6 +946,51 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
     const out = insight?.layers?.[key]?.output
     return buildLayerSummary(key, out)
   }, [insight])
+
+  // ── Indices (VNINDEX, VN30...) — prompt user to pick a stock symbol ──
+  if (isIndex) {
+    const trimmed = pickSymbol.trim().toUpperCase()
+    const valid = /^[A-Z0-9]{2,10}$/.test(trimmed) && !isIndexSymbol(trimmed)
+    const go = () => {
+      if (valid) navigate(`/co-phieu/${trimmed}`)
+    }
+    return (
+      <div className="flex h-full items-center justify-center p-6">
+        <div className="w-full max-w-md rounded-2xl border border-border/40 bg-card/60 backdrop-blur p-6 flex flex-col items-center text-center gap-4 shadow-xl">
+          <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Brain className="size-7 text-primary" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-foreground">AI Insight chỉ áp dụng cho mã cổ phiếu</h3>
+            <p className="text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">{symbol.toUpperCase()}</span> là chỉ số thị trường.
+              Nhập mã cổ phiếu (vd. VCB, HPG, FPT) để chạy phân tích AI 6 lớp.
+            </p>
+          </div>
+          <div className="w-full flex gap-2 mt-1">
+            <input
+              type="text"
+              value={pickSymbol}
+              onChange={(e) => setPickSymbol(e.target.value.toUpperCase())}
+              onKeyDown={(e) => e.key === "Enter" && go()}
+              placeholder="VD: VCB"
+              maxLength={10}
+              autoFocus
+              className="flex-1 h-10 rounded-md border border-border bg-background px-3 text-sm font-mono uppercase tracking-wide outline-none focus:border-primary"
+            />
+            <button
+              type="button"
+              onClick={go}
+              disabled={!valid}
+              className="h-10 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Phân tích
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (
