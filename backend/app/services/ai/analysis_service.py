@@ -46,15 +46,12 @@ def _analysis_cache_key(analysis_type: str, identifier: str, language: str) -> s
 def _get_analysis_ttl(analysis_type: str = "insight") -> int:
     """Get TTL for AI analysis cache based on analysis type.
 
-    - dashboard / industry: cache until end of trading session (15:00 VN).
-      If after 15:00, cache until 15:00 next trading day.
-      Minimum 1 hour to avoid edge-case churn.
-    - insight: 3 hours fixed.
+    All analyses (dashboard / industry / insight) cache until end of the
+    current trading session (15:00 VN). If already past 15:00 → next day.
+    Minimum 1 hour. This keeps Layer 3 money-flow data fresh after each
+    session close (was previously cached 3h fixed which masked new data).
     """
-    if analysis_type in ("dashboard", "industry"):
-        return _ttl_until_end_of_session()
-    # insight: 3 hours
-    return 3 * 3600
+    return _ttl_until_end_of_session()
 
 
 def _ttl_until_end_of_session() -> int:
@@ -362,8 +359,11 @@ def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
     def _normalize_flow(items: Any, *, source: str) -> list:
         if not isinstance(items, list):
             return []
+        # Vietcap returns newest-first (descending); take the first 15 to keep
+        # the most recent sessions. Earlier code used items[-15:] which kept
+        # the 15 OLDEST and surfaced as "stale" money-flow data in Layer 3.
         result = []
-        for item in items[-15:]:
+        for item in items[:15]:
             if source == "foreign":
                 match_keys = (
                     "matchNetVolume", "match_net_volume", "foreignNetVolumeMatched",
