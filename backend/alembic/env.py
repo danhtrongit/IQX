@@ -19,6 +19,7 @@ from app.core.config import get_settings  # noqa: E402
 from app.core.database import Base  # noqa: E402
 from app.models.admin_audit import AdminAuditLog  # noqa: F401, E402
 from app.models.ipn_log import SePayIPNLog  # noqa: F401, E402
+from app.models.lesson import Course, Episode, EpisodeProgress  # noqa: F401, E402
 from app.models.login_history import UserLoginHistory  # noqa: F401, E402
 from app.models.premium import PremiumPaymentOrder, PremiumPlan, PremiumSubscription  # noqa: F401, E402
 from app.models.refresh_token import RefreshToken  # noqa: F401, E402

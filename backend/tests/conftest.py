@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import os
+import tempfile
 
 # ── Override settings BEFORE any app imports ────────
+_TEST_MEDIA_DIR = tempfile.mkdtemp(prefix="iqx_test_media_")
+
 os.environ.update(
     {
         "DATABASE_URL": "sqlite+aiosqlite:///",
@@ -21,6 +24,7 @@ os.environ.update(
         "AI_PROXY_MODEL": "test-model",
         "AI_PROXY_API_KEY": "test-api-key-not-real",
         "REDIS_ENABLED": "false",
+        "LESSON_MEDIA_DIR": _TEST_MEDIA_DIR,
     }
 )
 
