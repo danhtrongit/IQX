@@ -77,9 +77,11 @@ class Episode(Base):
     __tablename__ = "episodes"
     __table_args__ = (
         CheckConstraint(
+            # text     → markdown_body required, file_url forbidden
+            # pdf/video → markdown_body forbidden, file_url optional (set after upload)
             "(content_type = 'text' AND markdown_body IS NOT NULL AND file_url IS NULL) "
-            "OR (content_type IN ('pdf','video') AND file_url IS NOT NULL AND markdown_body IS NULL)",
-            name="ck_episodes_content_type_payload",
+            "OR (content_type IN ('pdf','video') AND markdown_body IS NULL)",
+            name="ck_episodes_payload_shape",
         ),
         UniqueConstraint("course_id", "sort_order", name="uq_episodes_course_sort"),
         Index("ix_episodes_course_sort", "course_id", "sort_order"),

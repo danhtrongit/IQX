@@ -156,6 +156,10 @@ class EpisodeService:
             content_type=data.content_type.value,
             markdown_body=data.markdown_body,
             sort_order=sort_order,
+            # New pdf/video episodes start unpublished until file uploaded.
+            # Text episodes can be published immediately because markdown_body is
+            # required at creation.
+            is_published=(data.content_type.value == "text"),
         )
         ep = await self._ep_repo.create(episode)
         await self._ep_repo.refresh_course_denorms(course_id)
@@ -166,6 +170,12 @@ class EpisodeService:
         if not episode:
             raise NotFoundError("Tập học")
         updates = data.model_dump(exclude_unset=True)
+        # Guard: cannot publish a pdf/video episode without an uploaded file.
+        wants_publish = updates.get("is_published") is True
+        if wants_publish and episode.content_type in ("pdf", "video") and not episode.file_url:
+            raise BadRequestError(
+                "Phải upload file trước khi xuất bản tập học dạng PDF/Video"
+            )
         return await self._ep_repo.update(episode, updates)
 
     async def delete(self, episode_id: uuid.UUID) -> None:
