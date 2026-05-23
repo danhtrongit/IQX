@@ -256,6 +256,16 @@ async def analyze_insight(
     # ── Build rawInput from payload ────────────────
     raw_input = _build_raw_input(payload)
 
+    # ── Layer 6 — deterministic scoring (see scoring.py) ──
+    from app.services.ai.scoring import score_all_layers
+
+    layer_scores, layer6_agg = score_all_layers(layers)
+    for key, sc in layer_scores.items():
+        if isinstance(layers.get(key), dict):
+            layers[key]["status"] = sc["status"]
+            layers[key]["score"] = sc["score"]
+    enriched_summary = {**summary, **layer6_agg}
+
     # ── Assemble final response ────────────────────
     now_str = datetime.now(UTC).isoformat()
     result: dict[str, Any] = {
@@ -267,7 +277,7 @@ async def analyze_insight(
             "model": model_used,
             "as_of": now_str,
         },
-        "summary": summary,
+        "summary": enriched_summary,
     }
 
     # Cache result (without large payload)
