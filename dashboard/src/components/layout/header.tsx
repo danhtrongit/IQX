@@ -39,6 +39,7 @@ const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Thị trường", href: "/thi-truong" },
   { label: "Cổ phiếu", href: "/co-phieu" },
+  { label: "Bài học", href: "/bai-hoc" },
 ]
 
 function getInitials(name: string | null, email: string): string {
