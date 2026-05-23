@@ -8,6 +8,7 @@ import {
   UserPlus,
   Crown,
   TrendingUp,
+  Menu,
 } from "lucide-react"
 import { StockLogo } from "@/components/stock/stock-logo"
 import { Button } from "@/components/ui/button"
@@ -283,7 +284,33 @@ export function Header() {
 
       <Separator orientation="vertical" className="h-5 mx-1" />
 
-      {/* Navigation */}
+      {/* Mobile hamburger menu */}
+      <div className="md:hidden">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="size-7">
+              <Menu className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-48">
+            {NAV_ITEMS.map((item) => (
+              <DropdownMenuItem
+                key={item.href}
+                onClick={() => navigate(item.href)}
+                className={
+                  currentPath === item.href
+                    ? "bg-primary/10 text-primary font-medium"
+                    : ""
+                }
+              >
+                {item.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Navigation (desktop) */}
       <nav id="header-nav" className="hidden md:flex items-center gap-0.5">
         {NAV_ITEMS.map((item) => (
           <a
