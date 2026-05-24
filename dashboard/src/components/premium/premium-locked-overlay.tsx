@@ -2,6 +2,7 @@ import { useNavigate } from "react-router"
 import { Lock, Crown, LogIn, UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/auth-context"
+import { useSidebar } from "@/contexts/sidebar-context"
 
 interface PremiumLockedOverlayProps {
   featureName: string
@@ -11,8 +12,10 @@ interface PremiumLockedOverlayProps {
 export function PremiumLockedOverlay({ featureName, description }: PremiumLockedOverlayProps) {
   const navigate = useNavigate()
   const { isAuthenticated, setShowAuthModal, setAuthModalTab } = useAuth()
+  const { setIsOpen: setSidebarOpen } = useSidebar()
 
   const openAuth = (tab: "login" | "register") => {
+    setSidebarOpen(false)
     setAuthModalTab(tab)
     setShowAuthModal(true)
   }
