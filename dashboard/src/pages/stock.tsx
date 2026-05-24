@@ -201,6 +201,7 @@ export default function StockPage() {
                     <PremiumGate
                       featureName="AI Insight"
                       description="Phân tích AI đa lớp cho mã đang xem (Trend, Liquidity, Money Flow, Insider, News)."
+                      onAuthRequested={() => setIsAiInsightOpen(false)}
                     >
                       <StockAiInsight symbol={ticker} />
                     </PremiumGate>

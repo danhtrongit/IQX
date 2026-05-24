@@ -7,15 +7,17 @@ import { useSidebar } from "@/contexts/sidebar-context"
 interface PremiumLockedOverlayProps {
   featureName: string
   description?: string
+  onAuthRequested?: () => void
 }
 
-export function PremiumLockedOverlay({ featureName, description }: PremiumLockedOverlayProps) {
+export function PremiumLockedOverlay({ featureName, description, onAuthRequested }: PremiumLockedOverlayProps) {
   const navigate = useNavigate()
   const { isAuthenticated, setShowAuthModal, setAuthModalTab } = useAuth()
   const { setIsOpen: setSidebarOpen } = useSidebar()
 
   const openAuth = (tab: "login" | "register") => {
     setSidebarOpen(false)
+    onAuthRequested?.()
     setAuthModalTab(tab)
     setShowAuthModal(true)
   }

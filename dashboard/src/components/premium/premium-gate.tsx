@@ -6,9 +6,10 @@ interface PremiumGateProps {
   featureName: string
   description?: string
   children: ReactNode
+  onAuthRequested?: () => void
 }
 
-export function PremiumGate({ featureName, description, children }: PremiumGateProps) {
+export function PremiumGate({ featureName, description, children, onAuthRequested }: PremiumGateProps) {
   const { isPremium, isLoading } = usePremiumStatus()
 
   if (isLoading) {
@@ -30,7 +31,7 @@ export function PremiumGate({ featureName, description, children }: PremiumGateP
       <div aria-hidden className="pointer-events-none blur-sm opacity-40 h-full w-full">
         {children}
       </div>
-      <PremiumLockedOverlay featureName={featureName} description={description} />
+      <PremiumLockedOverlay featureName={featureName} description={description} onAuthRequested={onAuthRequested} />
     </div>
   )
 }
