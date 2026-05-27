@@ -107,7 +107,7 @@ export default function LessonsCatalogPage() {
       <main className="flex-1 container mx-auto max-w-7xl px-4 py-8">
         {/* Page header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground mb-1">Bài học</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-1">Kiến thức</h1>
           <p className="text-sm text-muted-foreground">
             Khám phá các khoá học đầu tư chứng khoán từ cơ bản đến nâng cao
           </p>

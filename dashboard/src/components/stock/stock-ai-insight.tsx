@@ -18,7 +18,6 @@ import {
 	  Database,
 	  Sparkles,
   Clock,
-  ChevronDown,
   Table,
 	} from "lucide-react"
 	import { ScrollArea } from "@/components/ui/scroll-area"
@@ -403,7 +402,6 @@ function DetailPanel({
     ? { label: "Tổng hợp & Hành động", shortLabel: "L6", icon: Brain, color: "hsl(var(--primary))" }
     : LAYER_CONFIG[layerKey]
   const Icon = cfg?.icon
-  const [showRawData, setShowRawData] = useState(true)
   // Defer the heavy recharts mount until the panel finishes its 180ms slide-in.
   // Painting an SVG with dozens of <line>/<text> nodes mid-animation blocks
   // the main thread long enough that the slide jerked from ~50% to 100%.
@@ -463,29 +461,22 @@ function DetailPanel({
           </div>
         </div>
 
-        {/* Raw Input Data (expandable) */}
+        {/* Raw Input Data — always shown (accordion removed per ISSUE-016). */}
         {layerKey !== "decision" && (
           <div className="p-3">
-            <button
-              onClick={() => setShowRawData(!showRawData)}
-              className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground hover:text-foreground cursor-pointer transition-colors w-full"
-            >
+            <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground">
               <Database className="size-3" />
               <span className="uppercase tracking-wider">Dữ liệu đầu vào chi tiết</span>
-              <ChevronDown className={`size-3 ml-auto transition-transform ${showRawData ? "rotate-180" : ""}`} />
-            </button>
-
-            {showRawData && (
-              <div className="mt-3 space-y-3 min-h-[200px]">
-                {chartReady ? (
-                  <RawInputContent layerKey={layerKey} rawInput={insight.rawInput} />
-                ) : (
-                  <div className="flex items-center justify-center h-[200px] text-[10px] text-muted-foreground">
-                    Đang tải biểu đồ...
-                  </div>
-                )}
-              </div>
-            )}
+            </div>
+            <div className="mt-3 space-y-3 min-h-[200px]">
+              {chartReady ? (
+                <RawInputContent layerKey={layerKey} rawInput={insight.rawInput} />
+              ) : (
+                <div className="flex items-center justify-center h-[200px] text-[10px] text-muted-foreground">
+                  Đang tải biểu đồ...
+                </div>
+              )}
+            </div>
           </div>
         )}
       </ScrollArea>
@@ -553,11 +544,9 @@ function TrendRawInput({ data }: { data: InsightResponse["rawInput"]["trend"] })
         <DataRow label="Giá đóng cửa gần nhất" value={computed.latestClose?.toFixed(2) || "—"} />
       </div>
 
-      {/* OHLCV chart (close + MA10/MA20 + volume) */}
-      <div>
-        <SectionTitle>OHLCV ({ohlcv.length} phiên)</SectionTitle>
-        <TrendRawChart ohlcv={ohlcv} />
-      </div>
+      {/* OHLCV chart — chart has its own title; outer SectionTitle removed
+          to avoid the duplicate-heading issue reported in ISSUE-016. */}
+      <TrendRawChart ohlcv={ohlcv} />
     </>
   )
 }
@@ -588,12 +577,7 @@ function LiquidityRawInput({ data }: { data: InsightResponse["rawInput"]["liquid
           <DataRow label="Volume khớp TB" value={fmtNum(avg30.totalVolume)} color="text-amber-400" />
         </div>
       )}
-      {history.length > 0 && (
-        <div>
-          <SectionTitle>Lịch sử 10 phiên</SectionTitle>
-          <LiquidityRawChart history={history} />
-        </div>
-      )}
+      {history.length > 0 && <LiquidityRawChart history={history} />}
     </>
   )
 }
@@ -608,12 +592,8 @@ function MoneyFlowRawInput({ data }: { data: InsightResponse["rawInput"]["moneyF
 }
 
 function InsiderRawInput({ data }: { data: InsightResponse["rawInput"]["insider"] }) {
-  return (
-    <div>
-      <SectionTitle>Giao dịch nội bộ ({data.transactions.length})</SectionTitle>
-      <InsiderRawChart txns={data.transactions.slice(0, 15)} />
-    </div>
-  )
+  // Chart has its own "Giao dịch nội bộ (N)" header — outer SectionTitle removed.
+  return <InsiderRawChart txns={data.transactions.slice(0, 15)} />
 }
 
 function NewsRawInput({ data }: { data: InsightResponse["rawInput"]["news"] }) {
@@ -769,7 +749,6 @@ function MobileLayerSection({
   rawInput: InsightResponse["rawInput"]
 }) {
   const Icon = cfg.icon
-  const [expanded, setExpanded] = useState(true)
 
   return (
     <div
@@ -838,22 +817,14 @@ function MobileLayerSection({
         </div>
       </div>
 
-      {/* Raw input toggle */}
-      <button
-        onClick={() => setExpanded((s) => !s)}
-        className="w-full flex items-center gap-1.5 px-3 py-2 border-t border-border/10 text-[10px] font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-colors"
-      >
+      {/* Raw input — always shown (accordion removed per ISSUE-016). */}
+      <div className="flex items-center gap-1.5 px-3 py-2 border-t border-border/10 text-[10px] font-semibold text-muted-foreground">
         <Database className="size-3" />
         <span className="uppercase tracking-wider">Dữ liệu đầu vào</span>
-        <ChevronDown
-          className={`size-3 ml-auto transition-transform ${expanded ? "rotate-180" : ""}`}
-        />
-      </button>
-      {expanded && (
-        <div className="px-3 pb-3 space-y-3">
-          <RawInputContent layerKey={layerKey} rawInput={rawInput} />
-        </div>
-      )}
+      </div>
+      <div className="px-3 pb-3 space-y-3">
+        <RawInputContent layerKey={layerKey} rawInput={rawInput} />
+      </div>
     </div>
   )
 }

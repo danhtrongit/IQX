@@ -30,8 +30,12 @@ export default function App() {
     <>
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          {/* Dashboard promoted to the root path; old marketing landing now
+              lives at /gioi-thieu. `/dashboard` kept as alias so external
+              bookmarks still resolve. */}
+          <Route path="/" element={<DashboardPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/gioi-thieu" element={<HomePage />} />
           <Route path="/thi-truong" element={<ThiTruongPage />} />
           <Route path="/du-bao" element={<DuBaoPage />} />
           <Route path="/co-phieu" element={<StockDirectoryPage />} />

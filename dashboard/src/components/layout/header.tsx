@@ -37,10 +37,11 @@ interface StockResult {
 }
 
 const NAV_ITEMS = [
-  { label: "Dashboard", href: "/dashboard" },
+  { label: "Trang chủ", href: "/" },
   { label: "Thị trường", href: "/thi-truong" },
   { label: "Cổ phiếu", href: "/co-phieu" },
-  { label: "Bài học", href: "/bai-hoc" },
+  { label: "Kiến thức", href: "/bai-hoc" },
+  { label: "Giới thiệu", href: "/gioi-thieu" },
 ]
 
 function getInitials(name: string | null, email: string): string {
