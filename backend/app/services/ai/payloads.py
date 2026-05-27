@@ -652,7 +652,10 @@ def _label_supply_demand(payload: dict[str, Any], derived: dict[str, Any]) -> No
     avg_buy = sum(buy_vols) / len(buy_vols) if buy_vols else 0
     avg_sell = sum(sell_vols) / len(sell_vols) if sell_vols else 0
 
-    latest = sd_history[-1] if sd_history else {}
+    # Vietcap returns supply_demand newest-first (desc); the latest session is
+    # at index 0, not -1. Earlier code mislabelled buy/sell levels by reading
+    # the OLDEST session (ISSUE-013).
+    latest = sd_history[0] if sd_history else {}
     current_buy = _safe_float(latest.get("total_buy_trade_volume", 0))
     current_sell = _safe_float(latest.get("total_sell_trade_volume", 0))
 

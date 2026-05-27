@@ -335,12 +335,14 @@ def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
         "latestClose": derived.get("P0", 0),
     }
 
-    # Liquidity
+    # Liquidity — Vietcap returns trading_history newest-first (desc). Take the
+    # first 10 to keep the most recent sessions; earlier `supply_demand[-10:]`
+    # silently kept the 10 OLDEST and surfaced as stale data (ISSUE-013).
     supply_demand = payload.get("supply_demand")
     sd_summary = payload.get("supply_demand_summary")
     liquidity_history = []
     if isinstance(supply_demand, list):
-        for sd in supply_demand[-10:]:
+        for sd in supply_demand[:10]:
             liquidity_history.append({
                 "date": sd.get("trading_date"),
                 "buyUnmatchedVolume": sd.get("total_buy_unmatched_volume", 0),
@@ -352,7 +354,7 @@ def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
                 "sellTradeCount": sd.get("total_sell_trade_count", 0),
             })
 
-    liquidity_latest = liquidity_history[-1] if liquidity_history else None
+    liquidity_latest = liquidity_history[0] if liquidity_history else None
     liquidity_avg = None
     if liquidity_history and len(liquidity_history) >= 3:
         keys = ["buyUnmatchedVolume", "sellUnmatchedVolume", "totalVolume"]
