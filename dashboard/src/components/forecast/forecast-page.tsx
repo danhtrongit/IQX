@@ -3,7 +3,8 @@ import { Brain, LayoutList, Sparkles } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useForecastRanking, type ForecastHorizon } from "@/hooks/use-forecast-ranking"
 import { ForecastRankingList } from "./forecast-ranking-list"
-import { ForecastInsightSummary } from "./forecast-insight-summary"
+import { ForecastLayerCards } from "./forecast-layer-cards"
+import { ForecastPatterns } from "./forecast-patterns"
 import { ForecastRightRail } from "./forecast-right-rail"
 
 type MobileTab = "ranking" | "insight" | "patterns"
@@ -11,22 +12,23 @@ type MobileTab = "ranking" | "insight" | "patterns"
 const TABS: { id: MobileTab; label: string; icon: typeof LayoutList }[] = [
   { id: "ranking", label: "Đề xuất", icon: LayoutList },
   { id: "insight", label: "AI Phân tích", icon: Brain },
-  { id: "patterns", label: "AI Mẫu", icon: Sparkles },
+  { id: "patterns", label: "AI Mẫu + BCTC", icon: Sparkles },
 ]
 
+// Default horizon — kept fixed to match the mockup which has no horizon selector
+// on the page itself. Can be exposed later via a header dropdown if needed.
+const DEFAULT_HORIZON: ForecastHorizon = "5"
+
 export function ForecastPage() {
-  const [horizon, setHorizon] = useState<ForecastHorizon>("5")
-  const { items, loading, error } = useForecastRanking(horizon)
+  const { items, loading, error } = useForecastRanking(DEFAULT_HORIZON)
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null)
   const [mobileTab, setMobileTab] = useState<MobileTab>("ranking")
 
-  // Auto-pick the top-ranked stock once ranking loads or horizon changes.
   useEffect(() => {
     if (items.length === 0) {
       setSelectedSymbol(null)
       return
     }
-    // Keep previous selection if still in the new list; otherwise default to #1.
     setSelectedSymbol((prev) => {
       if (prev && items.some((it) => it.symbol === prev)) return prev
       return items[0].symbol
@@ -35,27 +37,15 @@ export function ForecastPage() {
 
   const handleSelect = (sym: string) => {
     setSelectedSymbol(sym)
-    // On mobile, jump to insight tab so user sees the analysis after picking.
-    if (typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches) {
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
       setMobileTab("insight")
     }
   }
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* Page title */}
-      <div className="px-3 py-2 md:px-4 md:py-3 border-b border-border/30 shrink-0">
-        <div className="flex items-center gap-2">
-          <Sparkles className="size-4 text-primary" />
-          <h1 className="text-sm md:text-base font-bold text-foreground">Đề xuất đầu tư</h1>
-          <span className="ml-auto text-[10px] text-muted-foreground hidden sm:inline">
-            AI dự báo lợi nhuận T+3 / T+5 / T+10
-          </span>
-        </div>
-      </div>
-
       {/* Mobile tab bar */}
-      <div className="md:hidden flex border-b border-border/30 bg-card/50 shrink-0">
+      <div className="lg:hidden flex border-b border-border/30 bg-card/40 shrink-0">
         {TABS.map(({ id, label, icon: Icon }) => {
           const active = id === mobileTab
           return (
@@ -76,16 +66,14 @@ export function ForecastPage() {
       </div>
 
       {/* Body */}
-      <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
-        {/* Ranking — left col (md+) / "Đề xuất" tab (mobile) */}
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
+        {/* Ranking — left col (lg+) / "Đề xuất" tab (mobile) */}
         <aside
-          className={`md:w-[260px] md:shrink-0 md:border-r md:border-border/30 ${
+          className={`lg:w-[280px] lg:shrink-0 lg:border-r lg:border-border/30 ${
             mobileTab === "ranking" ? "flex flex-1" : "hidden"
-          } md:flex md:flex-none md:flex-col min-h-0`}
+          } lg:flex lg:flex-none lg:flex-col min-h-0`}
         >
           <ForecastRankingList
-            horizon={horizon}
-            onHorizonChange={setHorizon}
             items={items}
             loading={loading}
             error={error}
@@ -94,25 +82,38 @@ export function ForecastPage() {
           />
         </aside>
 
-        {/* Insight summary — center (md+) / "AI Phân tích" tab (mobile) */}
+        {/* Center — layer cards + patterns (lg+) / "AI Phân tích" tab (mobile) */}
         <section
-          className={`flex-1 min-w-0 md:border-r md:border-border/30 ${
+          className={`flex-1 min-w-0 lg:border-r lg:border-border/30 ${
             mobileTab === "insight" ? "flex flex-1" : "hidden"
-          } md:flex md:flex-col min-h-0`}
+          } lg:flex lg:flex-col min-h-0`}
         >
           <ScrollArea className="flex-1 min-h-0">
-            <ForecastInsightSummary symbol={selectedSymbol} />
+            <div className="p-3 space-y-3">
+              <ForecastLayerCards symbol={selectedSymbol} />
+              <ForecastPatterns symbol={selectedSymbol} />
+              <p className="text-[10px] text-muted-foreground text-center italic pt-1">
+                Khuyến nghị chỉ có tính chất tham khảo, không phải là lời khuyên đầu tư.
+              </p>
+            </div>
           </ScrollArea>
         </section>
 
-        {/* Right rail — right col (md+) / "AI Mẫu" tab (mobile) */}
+        {/* Right rail — BCTC (lg+) / "AI Mẫu + BCTC" tab (mobile) */}
         <aside
-          className={`md:w-[340px] md:shrink-0 ${
+          className={`lg:w-[300px] lg:shrink-0 ${
             mobileTab === "patterns" ? "flex flex-1" : "hidden"
-          } md:flex md:flex-none md:flex-col min-h-0`}
+          } lg:flex lg:flex-none lg:flex-col min-h-0`}
         >
           <ScrollArea className="flex-1 min-h-0">
-            <ForecastRightRail symbol={selectedSymbol} />
+            <div className="p-3 space-y-3">
+              <ForecastRightRail symbol={selectedSymbol} />
+              {/* On mobile this tab also shows patterns since the center column
+                  isn't visible. */}
+              <div className="lg:hidden">
+                <ForecastPatterns symbol={selectedSymbol} />
+              </div>
+            </div>
           </ScrollArea>
         </aside>
       </div>

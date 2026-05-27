@@ -1,22 +1,19 @@
-import { AlertTriangle, ChevronRight, Info, Sparkles } from "lucide-react"
+import { useMemo, useState } from "react"
+import { AlertTriangle, ChevronDown, Sparkles, Star } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { StockLogo } from "@/components/stock/stock-logo"
 import { AIAnalyzingOverlay } from "@/components/patterns/ai-analyzing-overlay"
-import type {
-  ForecastHorizon,
-  ForecastItem,
-} from "@/hooks/use-forecast-ranking"
+import { usePrices } from "@/contexts/market-data-context"
+import { useWatchlist } from "@/hooks/use-watchlist"
+import type { ForecastItem } from "@/hooks/use-forecast-ranking"
 
-const HORIZONS: { id: ForecastHorizon; label: string }[] = [
-  { id: "3", label: "T+3" },
-  { id: "5", label: "T+5" },
-  { id: "10", label: "T+10" },
-]
+const PAGE_SIZE = 5
 
-const RANK_BADGE: Record<number, string> = {
-  1: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-  2: "bg-slate-400/15 text-slate-300 border-slate-400/30",
-  3: "bg-orange-500/15 text-orange-400 border-orange-500/30",
+type SortMode = "return" | "probability"
+
+const SORT_LABELS: Record<SortMode, string> = {
+  return: "Lợi nhuận dự kiến",
+  probability: "Xác suất tăng",
 }
 
 function fmtPct(v: number | null | undefined, signed = false): string {
@@ -26,62 +23,88 @@ function fmtPct(v: number | null | undefined, signed = false): string {
   return `${sign}${pct.toFixed(1)}%`
 }
 
-function returnColor(v: number): string {
-  return v >= 0 ? "text-emerald-400" : "text-red-400"
-}
-
-function probColor(v: number | null): string {
-  if (v == null) return "text-muted-foreground"
-  if (v >= 0.6) return "text-emerald-400"
-  if (v >= 0.5) return "text-amber-400"
-  return "text-red-400"
+/** Returns a stable accent color for the rounded logo badge by symbol. */
+function logoTint(symbol: string): { bg: string; ring: string } {
+  const palettes = [
+    { bg: "rgba(56,189,248,0.18)", ring: "rgba(56,189,248,0.55)" }, // cyan
+    { bg: "rgba(248,113,113,0.18)", ring: "rgba(248,113,113,0.55)" }, // red
+    { bg: "rgba(168,85,247,0.18)", ring: "rgba(168,85,247,0.55)" }, // purple
+    { bg: "rgba(245,158,11,0.18)", ring: "rgba(245,158,11,0.55)" }, // amber
+    { bg: "rgba(16,185,129,0.18)", ring: "rgba(16,185,129,0.55)" }, // emerald
+  ]
+  let hash = 0
+  for (let i = 0; i < symbol.length; i++) hash = (hash * 31 + symbol.charCodeAt(i)) >>> 0
+  return palettes[hash % palettes.length]
 }
 
 export function ForecastRankingList({
-  horizon,
-  onHorizonChange,
   items,
   loading,
   error,
   selectedSymbol,
   onSelect,
 }: {
-  horizon: ForecastHorizon
-  onHorizonChange: (h: ForecastHorizon) => void
   items: ForecastItem[]
   loading: boolean
   error: string | null
   selectedSymbol: string | null
   onSelect: (symbol: string) => void
 }) {
+  const [sortMode, setSortMode] = useState<SortMode>("return")
+  const [sortOpen, setSortOpen] = useState(false)
+  const [showAll, setShowAll] = useState(false)
+  const { isSymbolWatched, toggleSymbol, isUnavailable: watchlistUnavailable } = useWatchlist()
+
+  // Live prices for the visible symbols (subscribes via context).
+  const symbols = useMemo(() => items.map((it) => it.symbol), [items])
+  const { priceMap } = usePrices(symbols)
+
+  const sorted = useMemo(() => {
+    const copy = [...items]
+    if (sortMode === "probability") {
+      copy.sort((a, b) => (b.upProbability ?? 0) - (a.upProbability ?? 0))
+    } else {
+      copy.sort((a, b) => b.expectedReturn - a.expectedReturn)
+    }
+    return copy
+  }, [items, sortMode])
+
+  const visible = showAll ? sorted : sorted.slice(0, PAGE_SIZE)
+
   return (
     <div className="flex flex-col h-full">
-      {/* Header — title + horizon selector */}
-      <div className="px-2.5 py-2 border-b border-border/50 bg-card shrink-0">
-        <div className="flex items-center gap-1.5 mb-2">
-          <Sparkles className="size-3.5 text-primary" />
-          <span className="text-xs font-bold text-foreground">Mô hình dự báo</span>
-          <span className="ml-auto text-[10px] text-muted-foreground">
-            xếp hạng theo Return kỳ vọng
-          </span>
-        </div>
-        <div className="grid grid-cols-3 gap-1.5">
-          {HORIZONS.map(({ id, label }) => {
-            const active = id === horizon
-            return (
-              <button
-                key={id}
-                onClick={() => onHorizonChange(id)}
-                className={`h-8 rounded-md text-xs font-bold transition-colors border ${
-                  active
-                    ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/40 shadow-[0_0_0_1px_rgba(34,211,238,0.2)]"
-                    : "bg-muted/30 text-muted-foreground border-border/40 hover:text-foreground hover:bg-muted/50"
-                }`}
-              >
-                {label}
-              </button>
-            )
-          })}
+      {/* Header — title + sort dropdown */}
+      <div className="px-3 py-2.5 border-b border-border/40 bg-card/40 shrink-0 flex items-center gap-2">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">
+          Mã đề xuất
+        </span>
+        <Sparkles className="size-3 text-muted-foreground/60" />
+        <div className="ml-auto relative">
+          <button
+            onClick={() => setSortOpen((s) => !s)}
+            className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground"
+          >
+            Sắp xếp
+            <ChevronDown className={`size-3 transition-transform ${sortOpen ? "rotate-180" : ""}`} />
+          </button>
+          {sortOpen && (
+            <div className="absolute right-0 top-full mt-1 z-20 rounded-md border border-border/60 bg-popover shadow-xl py-1 w-40">
+              {(Object.keys(SORT_LABELS) as SortMode[]).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => {
+                    setSortMode(m)
+                    setSortOpen(false)
+                  }}
+                  className={`block w-full text-left px-2.5 py-1.5 text-[11px] hover:bg-muted/50 ${
+                    sortMode === m ? "text-primary font-semibold" : "text-foreground/80"
+                  }`}
+                >
+                  {SORT_LABELS[m]}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -93,79 +116,96 @@ export function ForecastRankingList({
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
             <AlertTriangle className="size-4 mb-2 text-amber-500" />
-            <span className="text-[10px]">{error}</span>
+            <span className="text-[10px] text-center px-4">{error}</span>
           </div>
-        ) : items.length === 0 ? (
+        ) : sorted.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
             <Sparkles className="size-4 mb-2 opacity-30" />
             <span className="text-[10px]">Chưa có dữ liệu mô hình</span>
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-[24px_1fr_60px_60px_16px] items-center gap-2 px-2.5 pt-2 pb-1.5 text-[9px] uppercase tracking-wider text-muted-foreground">
-              <span>#</span>
-              <span>Mã</span>
-              <span className="text-right inline-flex items-center justify-end gap-0.5">
-                Return
-                <Info className="size-2.5 opacity-60" />
-              </span>
-              <span className="text-right inline-flex items-center justify-end gap-0.5">
-                Xác suất
-                <Info className="size-2.5 opacity-60" />
-              </span>
-              <span />
-            </div>
-
-            <div className="divide-y divide-border/15">
-              {items.map((it) => {
-                const rankCls =
-                  RANK_BADGE[it.rank] ?? "bg-muted/40 text-muted-foreground border-border/40"
-                const isSelected = selectedSymbol === it.symbol
-                return (
-                  <button
-                    key={it.symbol}
-                    onClick={() => onSelect(it.symbol)}
-                    className={`group w-full grid grid-cols-[24px_1fr_60px_60px_16px] items-center gap-2 px-2.5 py-3 text-left transition-colors ${
-                      isSelected
-                        ? "bg-primary/10"
-                        : it.rank === 1
-                          ? "bg-emerald-500/5 hover:bg-muted/30"
-                          : "hover:bg-muted/30"
-                    }`}
-                  >
-                    <span
-                      className={`inline-flex items-center justify-center size-5 rounded-full border text-[10px] font-bold tabular-nums ${rankCls}`}
+          <div className="p-2 space-y-2">
+            {visible.map((it) => {
+              const isSelected = selectedSymbol === it.symbol
+              const price = priceMap[it.symbol]?.closePrice ?? priceMap[it.symbol]?.referencePrice
+              const tint = logoTint(it.symbol)
+              const watched = isSymbolWatched(it.symbol)
+              return (
+                <div
+                  key={it.symbol}
+                  onClick={() => onSelect(it.symbol)}
+                  className={`relative rounded-xl border bg-card/40 hover:bg-card/70 cursor-pointer transition-colors ${
+                    isSelected
+                      ? "border-primary/60 ring-1 ring-primary/30"
+                      : "border-border/30"
+                  }`}
+                >
+                  <div className="flex items-start gap-3 p-3">
+                    {/* Logo badge */}
+                    <div
+                      className="size-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
+                      style={{ backgroundColor: tint.bg, boxShadow: `inset 0 0 0 1px ${tint.ring}` }}
                     >
-                      {it.rank}
-                    </span>
-                    <span className="inline-flex items-center gap-2 min-w-0">
-                      <StockLogo symbol={it.symbol} size={26} />
-                      <span
-                        className={`text-sm font-extrabold truncate ${
-                          isSelected ? "text-primary" : "text-foreground group-hover:text-primary"
-                        }`}
+                      <StockLogo symbol={it.symbol} size={36} />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-extrabold text-foreground">{it.symbol}</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 mt-1">
+                        <div>
+                          <p className="text-[9px] text-muted-foreground">Giá dự phóng</p>
+                          <p className="text-sm font-bold tabular-nums text-foreground">
+                            {price != null && price > 0 ? price.toFixed(2) : "—"}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[9px] text-muted-foreground">Lợi nhuận dự kiến</p>
+                          <p
+                            className={`text-sm font-bold tabular-nums ${
+                              it.expectedReturn >= 0 ? "text-emerald-400" : "text-red-400"
+                            }`}
+                          >
+                            {fmtPct(it.expectedReturn, true)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Watchlist star */}
+                    {!watchlistUnavailable && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleSymbol(it.symbol)
+                        }}
+                        className="shrink-0 p-1 -m-1 text-muted-foreground hover:text-amber-400 transition-colors"
+                        aria-label={watched ? "Bỏ theo dõi" : "Theo dõi"}
                       >
-                        {it.symbol}
-                      </span>
-                    </span>
-                    <span className={`text-right text-xs font-bold tabular-nums ${returnColor(it.expectedReturn)}`}>
-                      {fmtPct(it.expectedReturn, true)}
-                    </span>
-                    <span className={`text-right text-xs font-bold tabular-nums ${probColor(it.upProbability)}`}>
-                      {fmtPct(it.upProbability)}
-                    </span>
-                    <ChevronRight
-                      className={`size-3 ${
-                        isSelected
-                          ? "text-primary"
-                          : "text-muted-foreground/50 group-hover:text-muted-foreground"
-                      }`}
-                    />
-                  </button>
-                )
-              })}
-            </div>
-          </>
+                        <Star
+                          className={`size-4 ${watched ? "fill-amber-400 text-amber-400" : ""}`}
+                        />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+
+            {/* Show-more / show-less */}
+            {sorted.length > PAGE_SIZE && (
+              <button
+                onClick={() => setShowAll((s) => !s)}
+                className="w-full mt-1 py-2 text-[11px] font-semibold text-primary hover:bg-primary/5 rounded-md inline-flex items-center justify-center gap-1"
+              >
+                {showAll ? "Thu gọn" : `Xem thêm mã đề xuất`}
+                <ChevronDown
+                  className={`size-3 transition-transform ${showAll ? "rotate-180" : ""}`}
+                />
+              </button>
+            )}
+          </div>
         )}
       </ScrollArea>
     </div>
