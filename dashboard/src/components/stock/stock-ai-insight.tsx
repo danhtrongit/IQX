@@ -26,6 +26,12 @@ import {
 	  formatSupportResistance,
 	  getLayerSummary as buildLayerSummary,
 	} from "./stock-ai-insight-utils"
+	import {
+	  InsiderRawChart,
+	  LiquidityRawChart,
+	  MoneyFlowRawChart,
+	  TrendRawChart,
+	} from "./stock-ai-insight-charts"
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api/v1"
 
@@ -539,35 +545,10 @@ function TrendRawInput({ data }: { data: InsightResponse["rawInput"]["trend"] })
         <DataRow label="Giá đóng cửa gần nhất" value={computed.latestClose?.toFixed(2) || "—"} />
       </div>
 
-      {/* OHLCV table (last 10) */}
+      {/* OHLCV chart (close + MA10/MA20 + volume) */}
       <div>
         <SectionTitle>OHLCV ({ohlcv.length} phiên)</SectionTitle>
-        <div className="overflow-x-auto">
-          <table className="w-full text-[9px]">
-            <thead>
-              <tr className="text-muted-foreground border-b border-border/20">
-                <th className="text-left py-1 pr-2">Ngày</th>
-                <th className="text-right px-1">O</th>
-                <th className="text-right px-1">H</th>
-                <th className="text-right px-1">L</th>
-                <th className="text-right px-1">C</th>
-                <th className="text-right pl-1">Vol</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ohlcv.slice(-10).map((r: any, i: number) => (
-                <tr key={i} className="border-b border-border/5 hover:bg-muted/10">
-                  <td className="py-0.5 pr-2 text-muted-foreground">{r.date?.split("T")[0]}</td>
-                  <td className="text-right px-1 tabular-nums">{r.open?.toFixed(1)}</td>
-                  <td className="text-right px-1 tabular-nums text-emerald-400">{r.high?.toFixed(1)}</td>
-                  <td className="text-right px-1 tabular-nums text-red-400">{r.low?.toFixed(1)}</td>
-                  <td className="text-right px-1 tabular-nums font-medium">{r.close?.toFixed(1)}</td>
-                  <td className="text-right pl-1 tabular-nums">{fmtNum(r.volume)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <TrendRawChart ohlcv={ohlcv} />
       </div>
     </>
   )
@@ -602,28 +583,7 @@ function LiquidityRawInput({ data }: { data: InsightResponse["rawInput"]["liquid
       {history.length > 0 && (
         <div>
           <SectionTitle>Lịch sử 10 phiên</SectionTitle>
-          <div className="overflow-x-auto">
-            <table className="w-full text-[9px]">
-              <thead>
-                <tr className="text-muted-foreground border-b border-border/20">
-                  <th className="text-left py-1">Ngày</th>
-                  <th className="text-right">Mua chưa khớp</th>
-                  <th className="text-right">Bán chưa khớp</th>
-                  <th className="text-right">Volume</th>
-                </tr>
-              </thead>
-              <tbody>
-                {history.slice(0, 10).map((r: any, i: number) => (
-                  <tr key={i} className="border-b border-border/5">
-                    <td className="py-0.5 text-muted-foreground">{r.date?.split("T")[0]}</td>
-                    <td className="text-right tabular-nums">{fmtNum(r.buyUnmatchedVolume)}</td>
-                    <td className="text-right tabular-nums">{fmtNum(r.sellUnmatchedVolume)}</td>
-                    <td className="text-right tabular-nums">{fmtNum(r.totalVolume)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <LiquidityRawChart history={history} />
         </div>
       )}
     </>
@@ -631,43 +591,10 @@ function LiquidityRawInput({ data }: { data: InsightResponse["rawInput"]["liquid
 }
 
 function MoneyFlowRawInput({ data }: { data: InsightResponse["rawInput"]["moneyFlow"] }) {
-  const renderTable = (items: any[], label: string) => (
-    <div>
-      <SectionTitle>{label} (15 phiên)</SectionTitle>
-      <table className="w-full text-[9px]">
-        <thead>
-          <tr className="text-muted-foreground border-b border-border/20">
-            <th className="text-left py-1">Ngày</th>
-            <th className="text-right">Ròng khớp</th>
-            <th className="text-right">Ròng deal</th>
-            <th className="text-right">Tổng ròng</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((r: any, i: number) => {
-            const net = r.totalNetVolume ?? r.matchNetVolume ?? 0
-            return (
-              <tr key={i} className="border-b border-border/5">
-                <td className="py-0.5 text-muted-foreground">{r.date?.split("T")[0]}</td>
-                <td className={`text-right tabular-nums ${(r.matchNetVolume ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                  {fmtNum(r.matchNetVolume ?? 0)}
-                </td>
-                <td className="text-right tabular-nums">{fmtNum(r.dealNetVolume ?? 0)}</td>
-                <td className={`text-right tabular-nums font-medium ${net >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                  {fmtNum(net)}
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
-  )
-
   return (
     <>
-      {renderTable(data.foreign, "Nước ngoài")}
-      {renderTable(data.proprietary, "Tự doanh")}
+      <MoneyFlowRawChart items={data.foreign} title={`Nước ngoài (${data.foreign.length} phiên)`} />
+      <MoneyFlowRawChart items={data.proprietary} title={`Tự doanh (${data.proprietary.length} phiên)`} />
     </>
   )
 }
@@ -676,28 +603,7 @@ function InsiderRawInput({ data }: { data: InsightResponse["rawInput"]["insider"
   return (
     <div>
       <SectionTitle>Giao dịch nội bộ ({data.transactions.length})</SectionTitle>
-      <table className="w-full text-[9px]">
-        <thead>
-          <tr className="text-muted-foreground border-b border-border/20">
-            <th className="text-left py-1">Hành động</th>
-            <th className="text-right">KL đăng ký</th>
-            <th className="text-right">KL thực hiện</th>
-            <th className="text-right">Ngày</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.transactions.slice(0, 15).map((r: any, i: number) => (
-            <tr key={i} className="border-b border-border/5">
-              <td className={`py-0.5 ${r.action?.includes("Bán") || r.action?.includes("bán") ? "text-red-400" : "text-emerald-400"}`}>
-                {r.action}
-              </td>
-              <td className="text-right tabular-nums">{fmtNum(r.shareRegistered)}</td>
-              <td className="text-right tabular-nums">{fmtNum(r.shareExecuted)}</td>
-              <td className="text-right text-muted-foreground">{r.startDate?.split("T")[0]}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <InsiderRawChart txns={data.transactions.slice(0, 15)} />
     </div>
   )
 }
