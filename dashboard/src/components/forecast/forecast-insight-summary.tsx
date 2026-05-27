@@ -101,7 +101,17 @@ export function ForecastInsightSummary({ symbol }: { symbol: string | null }) {
     setError(null)
 
     fetch(`${API_BASE}/ai/insight/${symbol.toUpperCase()}`, { signal: controller.signal })
-      .then((r) => r.json())
+      .then(async (r) => {
+        const body = await r.json().catch(() => null)
+        if (!r.ok) {
+          // FastAPI uses `detail`; fall back to `message` then a generic line.
+          throw new Error(
+            (body?.detail as string) || (body?.message as string) ||
+            `AI Insight lỗi (HTTP ${r.status})`,
+          )
+        }
+        return body
+      })
       .then((res) => {
         if (controller.signal.aborted) return
         if (res?.data) {
@@ -111,10 +121,10 @@ export function ForecastInsightSummary({ symbol }: { symbol: string | null }) {
           setError(res?.message || "Không có dữ liệu AI Insight")
         }
       })
-      .catch((e) => {
+      .catch((e: unknown) => {
         if (controller.signal.aborted) return
         setInsight(null)
-        setError("Lỗi kết nối tới AI Insight")
+        setError(e instanceof Error ? e.message : "Lỗi kết nối tới AI Insight")
         console.error(e)
       })
       .finally(() => {

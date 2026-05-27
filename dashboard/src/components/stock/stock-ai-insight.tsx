@@ -463,21 +463,11 @@ function DetailPanel({
               <ChevronDown className={`size-3 ml-auto transition-transform ${showRawData ? "rotate-180" : ""}`} />
             </button>
 
-            <AnimatePresence>
-              {showRawData && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="overflow-hidden"
-                >
-                  <div className="mt-3 space-y-3">
-                    <RawInputContent layerKey={layerKey} rawInput={insight.rawInput} />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {showRawData && (
+              <div className="mt-3 space-y-3">
+                <RawInputContent layerKey={layerKey} rawInput={insight.rawInput} />
+              </div>
+            )}
           </div>
         )}
       </ScrollArea>
@@ -841,21 +831,11 @@ function MobileLayerSection({
           className={`size-3 ml-auto transition-transform ${expanded ? "rotate-180" : ""}`}
         />
       </button>
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="overflow-hidden"
-          >
-            <div className="px-3 pb-3 space-y-3">
-              <RawInputContent layerKey={layerKey} rawInput={rawInput} />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {expanded && (
+        <div className="px-3 pb-3 space-y-3">
+          <RawInputContent layerKey={layerKey} rawInput={rawInput} />
+        </div>
+      )}
     </div>
   )
 }
@@ -890,7 +870,17 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
     setSelectedLayer(null)
 
     fetch(`${API_BASE}/ai/insight/${symbol.toUpperCase()}`)
-      .then((r) => r.json())
+      .then(async (r) => {
+        const body = await r.json().catch(() => null)
+        if (!r.ok) {
+          // FastAPI uses `detail`; fall back to `message` then a generic line.
+          throw new Error(
+            (body?.detail as string) || (body?.message as string) ||
+            `AI Insight lỗi (HTTP ${r.status})`,
+          )
+        }
+        return body
+      })
       .then((res) => {
         if (res?.data) {
           setInsight(res.data)
@@ -899,7 +889,9 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
           setError(res?.message || "Không có dữ liệu AI Insight")
         }
       })
-      .catch(() => setError("Lỗi kết nối tới AI Insight"))
+      .catch((e: unknown) =>
+        setError(e instanceof Error ? e.message : "Lỗi kết nối tới AI Insight"),
+      )
       .finally(() => setIsLoading(false))
   }, [symbol, isIndex])
 
@@ -1049,7 +1041,7 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
                 ? (layerData.output?.["Thanh khoản"] || "")
                 : ""
               const insiderWarning = key === "insider"
-                ? getInsiderWarning(layerData.output?.["Tác động"])
+                ? getInsiderWarning(layerData.output?.["Mức cảnh báo"])
                 : null
               return (
                 <MobileLayerSection
@@ -1078,7 +1070,7 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
                 ? (insight.layers?.[key]?.output?.["Thanh khoản"] || "")
                 : ""
               const insiderWarning = key === "insider"
-                ? getInsiderWarning(insight.layers?.[key]?.output?.["Tác động"])
+                ? getInsiderWarning(insight.layers?.[key]?.output?.["Mức cảnh báo"])
                 : null
               return (
                 <motion.div
