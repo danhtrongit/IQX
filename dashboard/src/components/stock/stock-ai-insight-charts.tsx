@@ -4,8 +4,9 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
-  ComposedChart,
+  LabelList,
   Line,
+  LineChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -16,15 +17,15 @@ import {
 // ─── Shared helpers ────────────────────────────────────
 
 function fmtNum(n: number | null | undefined): string {
-  if (n == null) return "—"
+  if (n == null || !Number.isFinite(n)) return "—"
   const abs = Math.abs(n)
-  if (abs >= 1e9) return (n / 1e9).toFixed(2) + "B"
+  if (abs >= 1e9) return (n / 1e9).toFixed(1) + "B"
   if (abs >= 1e6) return (n / 1e6).toFixed(1) + "M"
-  if (abs >= 1e3) return (n / 1e3).toFixed(0) + "K"
+  if (abs >= 1e3) return (n / 1e3).toFixed(1) + "K"
   return n.toLocaleString("vi-VN")
 }
 
-/** Display "YYYY-MM-DD" or ISO date as "DD/MM". */
+/** "YYYY-MM-DD" or ISO date → "DD/MM" */
 function shortDate(raw: string | undefined): string {
   if (!raw) return ""
   const datePart = raw.split("T")[0]
@@ -35,6 +36,14 @@ function shortDate(raw: string | undefined): string {
 
 const AXIS_TICK = { fill: "#64748b", fontSize: 9, fontWeight: 500 } as const
 const GRID_STROKE = "#1e293b"
+const LABEL_FILL = "#e2e8f0"
+const COLOR_BUY = "#f59e0b" // orange (mua, tăng, MA10)
+const COLOR_SELL = "#06b6d4" // cyan (bán, MA20)
+const COLOR_LINE_PRIMARY = "#f59e0b"
+const COLOR_LINE_SECONDARY = "#06b6d4"
+const COLOR_LINE_TERTIARY = "#a78bfa"
+const COLOR_POS = "#10b981"
+const COLOR_NEG = "#ef4444"
 
 interface TooltipRow {
   label: string
@@ -70,7 +79,32 @@ function ChartTooltip({
   )
 }
 
-// ─── L1 — Trend (close + MA10/MA20 lines + volume bars) ─
+/** Skip every other tick on the X axis when there are many points. */
+function xInterval(len: number): number {
+  if (len <= 7) return 0
+  if (len <= 14) return 1
+  return Math.ceil(len / 7)
+}
+
+/** Compact number formatter for point labels. */
+function labelFormatter(value: unknown): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) return ""
+  return fmtNum(value)
+}
+
+/** Sample indices for labels: thin to ~8 labels max — too many labels both
+ *  clutter the chart and slow first paint (each label is an SVG text node). */
+function sampledIndices(length: number, maxLabels = 8): Set<number> {
+  if (length <= maxLabels) return new Set(Array.from({ length }, (_, i) => i))
+  const step = Math.ceil(length / maxLabels)
+  const picked = new Set<number>()
+  for (let i = 0; i < length; i += step) picked.add(i)
+  picked.add(0)
+  picked.add(length - 1)
+  return picked
+}
+
+// ─── L1 — Trend (close + MA10 + MA20, value labels) ─
 
 interface OhlcvBar {
   date?: string
@@ -82,19 +116,16 @@ interface OhlcvBar {
 }
 
 export function TrendRawChart({ ohlcv }: { ohlcv: OhlcvBar[] }) {
-  // OHLCV from backend is ascending (oldest → newest). Compute rolling MA10/MA20
-  // so the chart shows the same indicators the AI prompt sees.
+  // OHLCV is ascending (oldest → newest). Compute rolling MAs over the full
+  // history (so MA values are accurate), then keep only the most recent ~20
+  // points for plotting — denser is unreadable and slow to render.
   const data = useMemo(() => {
     const closes = ohlcv.map((b) => Number(b.close ?? 0))
-    return ohlcv.map((bar, i) => {
+    const withMa = ohlcv.map((bar, i) => {
       const ma10 =
-        i >= 9
-          ? closes.slice(i - 9, i + 1).reduce((a, b) => a + b, 0) / 10
-          : null
+        i >= 9 ? closes.slice(i - 9, i + 1).reduce((a, b) => a + b, 0) / 10 : null
       const ma20 =
-        i >= 19
-          ? closes.slice(i - 19, i + 1).reduce((a, b) => a + b, 0) / 20
-          : null
+        i >= 19 ? closes.slice(i - 19, i + 1).reduce((a, b) => a + b, 0) / 20 : null
       return {
         date: shortDate(bar.date),
         close: Number(bar.close ?? 0),
@@ -103,6 +134,12 @@ export function TrendRawChart({ ohlcv }: { ohlcv: OhlcvBar[] }) {
         ma20,
       }
     })
+    const recent = withMa.slice(-20)
+    const labelIdx = sampledIndices(recent.length)
+    return recent.map((row, i) => ({
+      ...row,
+      closeLabel: labelIdx.has(i) ? row.close : null,
+    }))
   }, [ohlcv])
 
   if (data.length === 0) {
@@ -110,99 +147,108 @@ export function TrendRawChart({ ohlcv }: { ohlcv: OhlcvBar[] }) {
   }
 
   return (
-    <div className="h-[180px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={data} margin={{ top: 6, right: 4, left: 4, bottom: 4 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
-          <XAxis dataKey="date" tick={AXIS_TICK} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-          <YAxis
-            yAxisId="price"
-            tick={AXIS_TICK}
-            axisLine={false}
-            tickLine={false}
-            width={36}
-            domain={["auto", "auto"]}
-          />
-          <YAxis
-            yAxisId="volume"
-            orientation="right"
-            tick={AXIS_TICK}
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={(v: number) => fmtNum(v)}
-            width={38}
-          />
-          <Tooltip
-            content={({ active, label, payload }) => {
-              if (!active || !payload || !payload.length) return null
-              const p = payload[0].payload as (typeof data)[number]
-              return (
-                <ChartTooltip
-                  active={active}
-                  label={String(label)}
-                  rows={[
-                    { label: "Giá", value: p.close.toFixed(2), color: "#06b6d4" },
-                    {
-                      label: "MA10",
-                      value: p.ma10 != null ? p.ma10.toFixed(2) : "—",
-                      color: "#3b82f6",
-                    },
-                    {
-                      label: "MA20",
-                      value: p.ma20 != null ? p.ma20.toFixed(2) : "—",
-                      color: "#f59e0b",
-                    },
-                    { label: "Volume", value: fmtNum(p.volume), color: "#94a3b8" },
-                  ]}
-                />
-              )
-            }}
-          />
-          <Bar yAxisId="volume" dataKey="volume" fill="#475569" opacity={0.45} />
-          <Line
-            yAxisId="price"
-            type="monotone"
-            dataKey="close"
-            stroke="#06b6d4"
-            strokeWidth={2}
-            dot={false}
-            isAnimationActive={false}
-          />
-          <Line
-            yAxisId="price"
-            type="monotone"
-            dataKey="ma10"
-            stroke="#3b82f6"
-            strokeWidth={1.5}
-            dot={false}
-            strokeDasharray="4 2"
-            isAnimationActive={false}
-            connectNulls
-          />
-          <Line
-            yAxisId="price"
-            type="monotone"
-            dataKey="ma20"
-            stroke="#f59e0b"
-            strokeWidth={1.5}
-            dot={false}
-            strokeDasharray="4 2"
-            isAnimationActive={false}
-            connectNulls
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
+    <div>
+      <p className="text-[10px] font-bold uppercase tracking-wider text-foreground mb-1">
+        Giá đóng cửa & MA ({data.length} phiên)
+      </p>
+      <div className="h-[200px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={{ top: 20, right: 10, left: 4, bottom: 4 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
+            <XAxis
+              dataKey="date"
+              tick={AXIS_TICK}
+              axisLine={false}
+              tickLine={false}
+              interval={xInterval(data.length)}
+            />
+            <YAxis
+              tick={AXIS_TICK}
+              axisLine={false}
+              tickLine={false}
+              width={32}
+              domain={["auto", "auto"]}
+              tickFormatter={(v: number) => v.toFixed(0)}
+            />
+            <Tooltip
+              content={({ active, label, payload }) => {
+                if (!active || !payload || !payload.length) return null
+                const p = payload[0].payload as (typeof data)[number]
+                return (
+                  <ChartTooltip
+                    active={active}
+                    label={String(label)}
+                    rows={[
+                      { label: "Giá", value: p.close.toFixed(2), color: COLOR_LINE_PRIMARY },
+                      {
+                        label: "MA10",
+                        value: p.ma10 != null ? p.ma10.toFixed(2) : "—",
+                        color: COLOR_LINE_SECONDARY,
+                      },
+                      {
+                        label: "MA20",
+                        value: p.ma20 != null ? p.ma20.toFixed(2) : "—",
+                        color: COLOR_LINE_TERTIARY,
+                      },
+                      { label: "Volume", value: fmtNum(p.volume), color: "#94a3b8" },
+                    ]}
+                  />
+                )
+              }}
+            />
+            <Line
+              type="monotone"
+              dataKey="close"
+              stroke={COLOR_LINE_PRIMARY}
+              strokeWidth={2}
+              dot={{ r: 2.5, fill: COLOR_LINE_PRIMARY, stroke: "none" }}
+              activeDot={{ r: 4 }}
+              isAnimationActive={false}
+            >
+              <LabelList
+                dataKey="closeLabel"
+                position="top"
+                formatter={(v: unknown) =>
+                  typeof v === "number" ? v.toFixed(1) : ""
+                }
+                fill={LABEL_FILL}
+                fontSize={9}
+                fontWeight={700}
+              />
+            </Line>
+            <Line
+              type="monotone"
+              dataKey="ma10"
+              stroke={COLOR_LINE_SECONDARY}
+              strokeWidth={1.5}
+              strokeDasharray="4 2"
+              dot={false}
+              isAnimationActive={false}
+              connectNulls
+            />
+            <Line
+              type="monotone"
+              dataKey="ma20"
+              stroke={COLOR_LINE_TERTIARY}
+              strokeWidth={1.5}
+              strokeDasharray="4 2"
+              dot={false}
+              isAnimationActive={false}
+              connectNulls
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
       <div className="flex items-center justify-center gap-3 text-[9px] text-slate-400 mt-1">
-        <Legend swatch="#06b6d4">Giá đóng cửa</Legend>
-        <Legend swatch="#3b82f6" dashed>MA10</Legend>
-        <Legend swatch="#f59e0b" dashed>MA20</Legend>
-        <Legend swatch="#475569">Volume</Legend>
+        <Legend swatch={COLOR_LINE_PRIMARY}>Giá đóng cửa</Legend>
+        <Legend swatch={COLOR_LINE_SECONDARY} dashed>MA10</Legend>
+        <Legend swatch={COLOR_LINE_TERTIARY} dashed>MA20</Legend>
       </div>
     </div>
   )
 }
 
-// ─── L2 — Liquidity (buy/sell unmatched bars + matched volume line) ─
+// ─── L2 — Liquidity (Mua chưa khớp + Bán chưa khớp) ─
 
 interface LiquidityRow {
   date?: string
@@ -212,15 +258,13 @@ interface LiquidityRow {
 }
 
 export function LiquidityRawChart({ history }: { history: LiquidityRow[] }) {
-  // Backend returns history newest-first; reverse so the X axis goes
-  // oldest → newest (left → right), which is what humans read.
+  // Backend returns newest-first; reverse to oldest → newest (left → right).
   const data = useMemo(
     () =>
       [...history].reverse().map((r) => ({
         date: shortDate(r.date),
         buyUnmatched: Number(r.buyUnmatchedVolume ?? 0),
         sellUnmatched: Number(r.sellUnmatchedVolume ?? 0),
-        matched: Number(r.totalVolume ?? 0),
       })),
     [history],
   )
@@ -230,60 +274,92 @@ export function LiquidityRawChart({ history }: { history: LiquidityRow[] }) {
   }
 
   return (
-    <div className="h-[160px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={data} margin={{ top: 6, right: 4, left: 4, bottom: 4 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
-          <XAxis dataKey="date" tick={AXIS_TICK} axisLine={false} tickLine={false} interval={0} />
-          <YAxis
-            yAxisId="vol"
-            tick={AXIS_TICK}
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={(v: number) => fmtNum(v)}
-            width={42}
-          />
-          <Tooltip
-            content={({ active, label, payload }) => {
-              if (!active || !payload || !payload.length) return null
-              const p = payload[0].payload as (typeof data)[number]
-              return (
-                <ChartTooltip
-                  active={active}
-                  label={String(label)}
-                  rows={[
-                    { label: "Mua chưa khớp", value: fmtNum(p.buyUnmatched), color: "#34d399" },
-                    { label: "Bán chưa khớp", value: fmtNum(p.sellUnmatched), color: "#f87171" },
-                    { label: "Volume khớp", value: fmtNum(p.matched), color: "#06b6d4" },
-                  ]}
-                />
-              )
-            }}
-            cursor={{ fill: "#1e293b33" }}
-          />
-          <Bar yAxisId="vol" dataKey="buyUnmatched" fill="#34d399" opacity={0.85} />
-          <Bar yAxisId="vol" dataKey="sellUnmatched" fill="#f87171" opacity={0.85} />
-          <Line
-            yAxisId="vol"
-            type="monotone"
-            dataKey="matched"
-            stroke="#06b6d4"
-            strokeWidth={1.5}
-            dot={{ r: 2 }}
-            isAnimationActive={false}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
+    <div>
+      <p className="text-[10px] font-bold uppercase tracking-wider text-foreground mb-1">
+        Thanh khoản {data.length} phiên
+      </p>
+      <div className="h-[200px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={{ top: 22, right: 10, left: 4, bottom: 4 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
+            <XAxis
+              dataKey="date"
+              tick={AXIS_TICK}
+              axisLine={false}
+              tickLine={false}
+              interval={xInterval(data.length)}
+            />
+            <YAxis
+              tick={AXIS_TICK}
+              axisLine={false}
+              tickLine={false}
+              width={40}
+              tickFormatter={(v: number) => fmtNum(v)}
+            />
+            <Tooltip
+              content={({ active, label, payload }) => {
+                if (!active || !payload || !payload.length) return null
+                const p = payload[0].payload as (typeof data)[number]
+                return (
+                  <ChartTooltip
+                    active={active}
+                    label={String(label)}
+                    rows={[
+                      { label: "Mua chưa khớp", value: fmtNum(p.buyUnmatched), color: COLOR_BUY },
+                      { label: "Bán chưa khớp", value: fmtNum(p.sellUnmatched), color: COLOR_SELL },
+                    ]}
+                  />
+                )
+              }}
+            />
+            <Line
+              type="monotone"
+              dataKey="buyUnmatched"
+              stroke={COLOR_BUY}
+              strokeWidth={2}
+              dot={{ r: 3, fill: COLOR_BUY, stroke: "none" }}
+              activeDot={{ r: 4.5 }}
+              isAnimationActive={false}
+            >
+              <LabelList
+                dataKey="buyUnmatched"
+                position="top"
+                formatter={labelFormatter}
+                fill={LABEL_FILL}
+                fontSize={9}
+                fontWeight={700}
+              />
+            </Line>
+            <Line
+              type="monotone"
+              dataKey="sellUnmatched"
+              stroke={COLOR_SELL}
+              strokeWidth={2}
+              dot={{ r: 3, fill: COLOR_SELL, stroke: "none" }}
+              activeDot={{ r: 4.5 }}
+              isAnimationActive={false}
+            >
+              <LabelList
+                dataKey="sellUnmatched"
+                position="bottom"
+                formatter={labelFormatter}
+                fill={LABEL_FILL}
+                fontSize={9}
+                fontWeight={700}
+              />
+            </Line>
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
       <div className="flex items-center justify-center gap-3 text-[9px] text-slate-400 mt-1">
-        <Legend swatch="#34d399">Mua chưa khớp</Legend>
-        <Legend swatch="#f87171">Bán chưa khớp</Legend>
-        <Legend swatch="#06b6d4">Volume khớp</Legend>
+        <Legend swatch={COLOR_BUY}>Mua chưa khớp</Legend>
+        <Legend swatch={COLOR_SELL}>Bán chưa khớp</Legend>
       </div>
     </div>
   )
 }
 
-// ─── L3 — Money flow (net volume bar, color by sign) ──
+// ─── L3 — Money flow (1 line per chart, color points by sign) ─
 
 interface MoneyFlowRow {
   date?: string
@@ -299,17 +375,15 @@ export function MoneyFlowRawChart({
   items: MoneyFlowRow[]
   title: string
 }) {
-  // Backend returns desc; reverse so chart reads oldest → newest.
-  const data = useMemo(
-    () =>
-      [...items].reverse().map((r) => ({
-        date: shortDate(r.date),
-        match: Number(r.matchNetVolume ?? 0),
-        deal: Number(r.dealNetVolume ?? 0),
-        total: Number(r.totalNetVolume ?? 0),
-      })),
-    [items],
-  )
+  // Reverse desc → asc for X axis. Thin labels (15 labels feels crowded).
+  const data = useMemo(() => {
+    const rows = [...items].reverse().map((r) => ({
+      date: shortDate(r.date),
+      total: Number(r.totalNetVolume ?? 0),
+    }))
+    const labelIdx = sampledIndices(rows.length)
+    return rows.map((r, i) => ({ ...r, totalLabel: labelIdx.has(i) ? r.total : null }))
+  }, [items])
 
   if (data.length === 0) {
     return (
@@ -323,19 +397,25 @@ export function MoneyFlowRawChart({
   return (
     <div>
       <ChartTitle>{title}</ChartTitle>
-      <div className="h-[150px]">
+      <div className="h-[170px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 6, right: 4, left: 4, bottom: 4 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
-            <XAxis dataKey="date" tick={AXIS_TICK} axisLine={false} tickLine={false} interval={0} />
+          <LineChart data={data} margin={{ top: 22, right: 10, left: 4, bottom: 4 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
+            <XAxis
+              dataKey="date"
+              tick={AXIS_TICK}
+              axisLine={false}
+              tickLine={false}
+              interval={xInterval(data.length)}
+            />
             <YAxis
               tick={AXIS_TICK}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v: number) => fmtNum(v)}
               width={48}
+              tickFormatter={(v: number) => fmtNum(v)}
             />
-            <ReferenceLine y={0} stroke="#334155" strokeWidth={1} />
+            <ReferenceLine y={0} stroke="#475569" strokeDasharray="2 2" />
             <Tooltip
               content={({ active, label, payload }) => {
                 if (!active || !payload || !payload.length) return null
@@ -346,35 +426,59 @@ export function MoneyFlowRawChart({
                     label={String(label)}
                     rows={[
                       {
-                        label: "Ròng khớp",
-                        value: fmtNum(p.match),
-                        color: p.match >= 0 ? "#34d399" : "#f87171",
-                      },
-                      { label: "Ròng deal", value: fmtNum(p.deal), color: "#94a3b8" },
-                      {
                         label: "Tổng ròng",
                         value: fmtNum(p.total),
-                        color: p.total >= 0 ? "#34d399" : "#f87171",
+                        color: p.total >= 0 ? COLOR_POS : COLOR_NEG,
                       },
                     ]}
                   />
                 )
               }}
-              cursor={{ fill: "#1e293b33" }}
             />
-            <Bar dataKey="total">
-              {data.map((row, i) => (
-                <Cell key={i} fill={row.total >= 0 ? "#34d399" : "#f87171"} />
-              ))}
-            </Bar>
-          </BarChart>
+            <Line
+              type="monotone"
+              dataKey="total"
+              stroke={COLOR_LINE_PRIMARY}
+              strokeWidth={2}
+              isAnimationActive={false}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              dot={(props: any) => {
+                const value = (props.payload as (typeof data)[number] | undefined)?.total ?? 0
+                const color = value >= 0 ? COLOR_POS : COLOR_NEG
+                return (
+                  <circle
+                    key={`dot-${props.index ?? 0}`}
+                    cx={props.cx ?? 0}
+                    cy={props.cy ?? 0}
+                    r={3.5}
+                    fill={color}
+                    stroke="none"
+                  />
+                )
+              }}
+              activeDot={{ r: 5 }}
+            >
+              <LabelList
+                dataKey="totalLabel"
+                position="top"
+                formatter={labelFormatter}
+                fill={LABEL_FILL}
+                fontSize={9}
+                fontWeight={700}
+              />
+            </Line>
+          </LineChart>
         </ResponsiveContainer>
+      </div>
+      <div className="flex items-center justify-center gap-3 text-[9px] text-slate-400 mt-1">
+        <Legend swatch={COLOR_POS}>Mua ròng (+)</Legend>
+        <Legend swatch={COLOR_NEG}>Bán ròng (−)</Legend>
       </div>
     </div>
   )
 }
 
-// ─── L4 — Insider (registered + executed grouped bars by date) ─
+// ─── L4 — Insider (executed bars, color by Buy/Sell) ──
 
 interface InsiderTxn {
   action?: string
@@ -384,81 +488,94 @@ interface InsiderTxn {
 }
 
 export function InsiderRawChart({ txns }: { txns: InsiderTxn[] }) {
-  // Backend returns newest-first; reverse for chronological X axis.
-  const data = useMemo(
-    () =>
-      [...txns].reverse().map((t) => {
-        const isSell = (t.action || "").toLowerCase().includes("bán")
-        return {
-          date: shortDate(t.startDate),
-          registered: Number(t.shareRegistered ?? 0),
-          executed: Number(t.shareExecuted ?? 0),
-          action: t.action || "—",
-          isSell,
-        }
-      }),
-    [txns],
-  )
+  // Insider transactions are discrete events (not a continuous time series).
+  // Bar per transaction reads cleaner than a line that would jump between
+  // unrelated points. Keep the labelled+coloured aesthetic of the other charts.
+  const data = useMemo(() => {
+    const rows = [...txns].reverse().map((t) => {
+      const isSell = (t.action || "").toLowerCase().includes("bán")
+      return {
+        date: shortDate(t.startDate),
+        executed: Number(t.shareExecuted ?? 0),
+        action: t.action || "—",
+        isSell,
+      }
+    })
+    const labelIdx = sampledIndices(rows.length)
+    return rows.map((r, i) => ({ ...r, executedLabel: labelIdx.has(i) ? r.executed : null }))
+  }, [txns])
 
   if (data.length === 0) {
     return <p className="text-[10px] text-muted-foreground italic">Không có giao dịch</p>
   }
 
   return (
-    <div className="h-[160px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 6, right: 4, left: 4, bottom: 4 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
-          <XAxis dataKey="date" tick={AXIS_TICK} axisLine={false} tickLine={false} interval={0} />
-          <YAxis
-            tick={AXIS_TICK}
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={(v: number) => fmtNum(v)}
-            width={48}
-          />
-          <Tooltip
-            content={({ active, label, payload }) => {
-              if (!active || !payload || !payload.length) return null
-              const p = payload[0].payload as (typeof data)[number]
-              return (
-                <ChartTooltip
-                  active={active}
-                  label={String(label)}
-                  rows={[
-                    {
-                      label: "Hành động",
-                      value: p.action,
-                      color: p.isSell ? "#f87171" : "#34d399",
-                    },
-                    { label: "KL đăng ký", value: fmtNum(p.registered), color: "#94a3b8" },
-                    {
-                      label: "KL thực hiện",
-                      value: fmtNum(p.executed),
-                      color: p.isSell ? "#f87171" : "#34d399",
-                    },
-                  ]}
-                />
-              )
-            }}
-            cursor={{ fill: "#1e293b33" }}
-          />
-          <Bar dataKey="registered" opacity={0.45}>
-            {data.map((row, i) => (
-              <Cell key={`r-${i}`} fill={row.isSell ? "#f87171" : "#34d399"} />
-            ))}
-          </Bar>
-          <Bar dataKey="executed">
-            {data.map((row, i) => (
-              <Cell key={`e-${i}`} fill={row.isSell ? "#f87171" : "#34d399"} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+    <div>
+      <p className="text-[10px] font-bold uppercase tracking-wider text-foreground mb-1">
+        Giao dịch nội bộ ({data.length})
+      </p>
+      <div className="h-[180px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 22, right: 10, left: 4, bottom: 4 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
+            <XAxis
+              dataKey="date"
+              tick={AXIS_TICK}
+              axisLine={false}
+              tickLine={false}
+              interval={xInterval(data.length)}
+            />
+            <YAxis
+              tick={AXIS_TICK}
+              axisLine={false}
+              tickLine={false}
+              width={48}
+              tickFormatter={(v: number) => fmtNum(v)}
+            />
+            <Tooltip
+              content={({ active, label, payload }) => {
+                if (!active || !payload || !payload.length) return null
+                const p = payload[0].payload as (typeof data)[number]
+                return (
+                  <ChartTooltip
+                    active={active}
+                    label={String(label)}
+                    rows={[
+                      {
+                        label: "Hành động",
+                        value: p.action,
+                        color: p.isSell ? COLOR_NEG : COLOR_POS,
+                      },
+                      {
+                        label: "KL thực hiện",
+                        value: fmtNum(p.executed),
+                        color: p.isSell ? COLOR_NEG : COLOR_POS,
+                      },
+                    ]}
+                  />
+                )
+              }}
+              cursor={{ fill: "#1e293b33" }}
+            />
+            <Bar dataKey="executed">
+              {data.map((row, i) => (
+                <Cell key={i} fill={row.isSell ? COLOR_NEG : COLOR_POS} />
+              ))}
+              <LabelList
+                dataKey="executedLabel"
+                position="top"
+                formatter={labelFormatter}
+                fill={LABEL_FILL}
+                fontSize={9}
+                fontWeight={700}
+              />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
       <div className="flex items-center justify-center gap-3 text-[9px] text-slate-400 mt-1">
-        <Legend swatch="#34d399">Mua / đăng ký mua</Legend>
-        <Legend swatch="#f87171">Bán / đăng ký bán</Legend>
-        <span className="text-slate-500">Mờ = đăng ký, đậm = thực hiện</span>
+        <Legend swatch={COLOR_POS}>Mua</Legend>
+        <Legend swatch={COLOR_NEG}>Bán</Legend>
       </div>
     </div>
   )
