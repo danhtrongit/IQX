@@ -402,16 +402,28 @@ function DetailPanel({
   const cfg = layerKey === "decision"
     ? { label: "Tổng hợp & Hành động", shortLabel: "L6", icon: Brain, color: "hsl(var(--primary))" }
     : LAYER_CONFIG[layerKey]
-  if (!cfg || !layerData) return null
-  const Icon = cfg.icon
+  const Icon = cfg?.icon
   const [showRawData, setShowRawData] = useState(true)
+  // Defer the heavy recharts mount until the panel finishes its 180ms slide-in.
+  // Painting an SVG with dozens of <line>/<text> nodes mid-animation blocks
+  // the main thread long enough that the slide jerked from ~50% to 100%.
+  const [chartReady, setChartReady] = useState(false)
+  useEffect(() => {
+    setChartReady(false)
+    const t = window.setTimeout(() => setChartReady(true), 220)
+    return () => window.clearTimeout(t)
+  }, [layerKey])
+  if (!cfg || !layerData) return null
 
   return (
     <motion.div
       initial={{ x: 340, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 340, opacity: 0 }}
-      transition={{ type: "spring", stiffness: 220, damping: 26 }}
+      // Spring (stiffness 220) ran 500-800ms; if a heavy chart painted mid-
+      // animation, the main thread stalled and the panel jerked. Short tween
+      // finishes before recharts gets to its first paint.
+      transition={{ duration: 0.18, ease: "easeOut" }}
       className="hidden md:flex md:flex-1 md:min-w-[320px] bg-background/95 backdrop-blur-xl md:border-l border-border/30 shadow-2xl flex-col"
     >
       {/* Header */}
@@ -464,8 +476,14 @@ function DetailPanel({
             </button>
 
             {showRawData && (
-              <div className="mt-3 space-y-3">
-                <RawInputContent layerKey={layerKey} rawInput={insight.rawInput} />
+              <div className="mt-3 space-y-3 min-h-[200px]">
+                {chartReady ? (
+                  <RawInputContent layerKey={layerKey} rawInput={insight.rawInput} />
+                ) : (
+                  <div className="flex items-center justify-center h-[200px] text-[10px] text-muted-foreground">
+                    Đang tải biểu đồ...
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1205,10 +1223,13 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
         </ScrollArea>
 
         {/* ─── RIGHT (md+): Detail Panel — desktop only ─── */}
+        {/* No `key={selectedLayer}` here: remounting on every layer switch
+         * triggered a full AnimatePresence exit+enter while recharts was
+         * painting the new chart, causing the slide to stutter at ~50%.
+         * Without the key the panel stays mounted and only its content swaps. */}
         <AnimatePresence>
           {selectedLayer && insight && (
             <DetailPanel
-              key={selectedLayer}
               layerKey={selectedLayer}
               insight={insight}
               onClose={() => setSelectedLayer(null)}
