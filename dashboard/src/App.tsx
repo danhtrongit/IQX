@@ -10,6 +10,7 @@ const SettingsPage = lazy(() => import("@/pages/settings"))
 const PremiumPage = lazy(() => import("@/pages/premium"))
 const PaymentResultPage = lazy(() => import("@/pages/payment-result"))
 const ThiTruongPage = lazy(() => import("@/pages/thi-truong"))
+const DuBaoPage = lazy(() => import("@/pages/du-bao"))
 const NotFoundPage = lazy(() => import("@/pages/404"))
 const MaintenancePage = lazy(() => import("@/pages/503"))
 const LessonsCatalogPage = lazy(() => import("@/features/lessons/catalog-page"))
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/thi-truong" element={<ThiTruongPage />} />
+          <Route path="/du-bao" element={<DuBaoPage />} />
           <Route path="/co-phieu" element={<StockDirectoryPage />} />
           <Route path="/co-phieu/:symbol" element={<StockPage />} />
           <Route path="/cai-dat" element={<SettingsPage />} />
