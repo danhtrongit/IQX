@@ -318,7 +318,7 @@ class AdminUserService:
         buf = io.StringIO()
         writer = csv.writer(buf)
         writer.writerow([
-            "id", "email", "first_name", "last_name", "phone_e164",
+            "id", "email", "full_name", "phone_e164",
             "role", "status", "is_email_verified",
             "last_login_at", "created_at",
         ])
@@ -343,8 +343,7 @@ class AdminUserService:
                 writer.writerow([
                     str(u.id),
                     u.email,
-                    u.first_name,
-                    u.last_name,
+                    u.full_name,
                     u.phone_e164 or "",
                     u.role.value,
                     u.status.value,
@@ -372,8 +371,7 @@ def _apply_user_filters(stmt, params: UserExportParams):
         term = f"%{params.search}%"
         stmt = stmt.where(
             (User.email.ilike(term))
-            | (User.first_name.ilike(term))
-            | (User.last_name.ilike(term))
+            | (User.full_name.ilike(term))
         )
     if params.last_login_from:
         stmt = stmt.where(User.last_login_at >= params.last_login_from)

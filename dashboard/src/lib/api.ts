@@ -86,9 +86,7 @@ function adaptUserResponse(raw: BackendUserResponse): AuthUser {
   return {
     id: String(raw.id),
     email: raw.email,
-    fullName: raw.full_name || `${raw.first_name} ${raw.last_name}`.trim() || null,
-    firstName: raw.first_name,
-    lastName: raw.last_name,
+    fullName: raw.full_name || null,
     phone: raw.phone_number || null,
     role: raw.role,
     status: raw.status,
@@ -107,8 +105,7 @@ export interface LoginPayload {
 export interface RegisterPayload {
   email: string
   password: string
-  firstName: string
-  lastName: string
+  fullName: string
   phone?: string
 }
 
@@ -116,8 +113,6 @@ export interface AuthUser {
   id: string
   email: string
   fullName: string | null
-  firstName: string
-  lastName: string
   phone: string | null
   role: string
   status: string
@@ -129,8 +124,6 @@ export interface AuthUser {
 interface BackendUserResponse {
   id: string
   email: string
-  first_name: string
-  last_name: string
   full_name: string
   phone_number: string | null
   role: string
@@ -194,8 +187,7 @@ export const authApi = {
         json: {
           email: payload.email,
           password: payload.password,
-          first_name: payload.firstName,
-          last_name: payload.lastName,
+          full_name: payload.fullName,
           phone_number: payload.phone || undefined,
         },
       })
@@ -371,8 +363,6 @@ export interface UserProfile {
   id: string
   email: string
   fullName: string | null
-  firstName: string
-  lastName: string
   phone: string | null
   role: string
   isActive: boolean
@@ -382,8 +372,7 @@ export interface UserProfile {
 }
 
 export interface UpdateProfilePayload {
-  firstName?: string
-  lastName?: string
+  fullName?: string
   phone?: string
   // TODO: backend does not have self-change-password endpoint.
   // Do not send password via PATCH /users/me.
@@ -393,9 +382,7 @@ function adaptProfile(raw: BackendUserResponse): UserProfile {
   return {
     id: String(raw.id),
     email: raw.email,
-    fullName: raw.full_name || `${raw.first_name} ${raw.last_name}`.trim() || null,
-    firstName: raw.first_name,
-    lastName: raw.last_name,
+    fullName: raw.full_name || null,
     phone: raw.phone_number || null,
     role: raw.role,
     isActive: raw.status === "active",
@@ -413,8 +400,7 @@ export const usersApi = {
 
   updateProfile: async (payload: UpdateProfilePayload) => {
     const body: Record<string, string | undefined> = {}
-    if (payload.firstName !== undefined) body.first_name = payload.firstName
-    if (payload.lastName !== undefined) body.last_name = payload.lastName
+    if (payload.fullName !== undefined) body.full_name = payload.fullName
     if (payload.phone !== undefined) body.phone_number = payload.phone
     const raw = await api.patch("users/me", { json: body }).json<BackendUserResponse>()
     return { message: "OK", data: adaptProfile(raw) }

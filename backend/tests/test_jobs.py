@@ -30,8 +30,7 @@ async def _create_user(db: AsyncSession, role: UserRole = UserRole.PREMIUM) -> U
     user = User(
         email=f"testjob-{uuid.uuid4().hex[:8]}@example.com",
         hashed_password=hash_password("Test@1234"),
-        first_name="Job",
-        last_name="Test",
+        full_name="Job Test".strip(),
         role=role,
         status=UserStatus.ACTIVE,
     )

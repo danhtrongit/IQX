@@ -20,8 +20,7 @@ async def _create_admin(db: AsyncSession) -> tuple[User, dict[str, str]]:
     user = User(
         email=f"admin-sys-{uuid.uuid4().hex[:6]}@example.com",
         hashed_password=hash_password("Admin@1234"),
-        first_name="Admin",
-        last_name="Sys",
+        full_name="Admin Sys".strip(),
         role=UserRole.ADMIN,
         status=UserStatus.ACTIVE,
     )
@@ -36,8 +35,7 @@ async def _create_regular_user(db: AsyncSession) -> tuple[User, dict[str, str]]:
     user = User(
         email=f"user-{uuid.uuid4().hex[:6]}@example.com",
         hashed_password=hash_password("User@1234"),
-        first_name="Regular",
-        last_name="User",
+        full_name="Regular User".strip(),
         role=UserRole.USER,
         status=UserStatus.ACTIVE,
     )

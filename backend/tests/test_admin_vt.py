@@ -78,8 +78,7 @@ async def _make_premium_user(db: AsyncSession) -> tuple[User, VirtualTradingAcco
     user = User(
         email=f"prem-{uuid.uuid4().hex[:8]}@example.com",
         hashed_password=hash_password("Test@1234"),
-        first_name="Prem",
-        last_name="User",
+        full_name="Prem User".strip(),
         role=UserRole.PREMIUM,
         status=UserStatus.ACTIVE,
     )

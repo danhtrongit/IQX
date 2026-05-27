@@ -37,8 +37,7 @@ async def admin(db_session: AsyncSession) -> User:
     u = User(
         email="admin-lessons@example.com",
         hashed_password=hash_password("Admin@1234"),
-        first_name="Admin",
-        last_name="User",
+        full_name="Admin User".strip(),
         role=UserRole.ADMIN,
         status=UserStatus.ACTIVE,
     )
@@ -53,8 +52,7 @@ async def regular_user(db_session: AsyncSession) -> User:
     u = User(
         email="user-lessons@example.com",
         hashed_password=hash_password("User@1234"),
-        first_name="Regular",
-        last_name="User",
+        full_name="Regular User".strip(),
         role=UserRole.USER,
         status=UserStatus.ACTIVE,
     )

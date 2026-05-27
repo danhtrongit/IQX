@@ -89,8 +89,7 @@ async def _seed_full_account(db: AsyncSession) -> tuple[User, VirtualTradingAcco
     user = User(
         email=f"vt360-{uuid.uuid4().hex[:8]}@example.com",
         hashed_password=hash_password("Test@1234"),
-        first_name="VT360",
-        last_name="User",
+        full_name="VT360 User".strip(),
         role=UserRole.PREMIUM,
         status=UserStatus.ACTIVE,
     )

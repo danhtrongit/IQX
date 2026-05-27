@@ -39,8 +39,7 @@ async def _seed_user(session: AsyncSession) -> User:
     user = User(
         email=f"txn_{uuid.uuid4().hex[:8]}@example.com",
         hashed_password=hash_password("Test@1234"),
-        first_name="Txn",
-        last_name="User",
+        full_name="Txn User".strip(),
         role=UserRole.USER,
         status=UserStatus.ACTIVE,
     )
@@ -86,8 +85,7 @@ async def test_production_register_persists_data(
         json={
             "email": "persist_test@example.com",
             "password": "Str0ng@Pass",
-            "first_name": "Persist",
-            "last_name": "Test",
+            "full_name": "Persist Test".strip(),
         },
     )
     assert resp.status_code == 201
@@ -410,8 +408,7 @@ async def test_production_client_rollback_on_error(
         json={
             "email": "rollback_test@example.com",
             "password": "Str0ng@Pass",
-            "first_name": "R",
-            "last_name": "T",
+            "full_name": "R T".strip(),
         },
     )
     assert resp1.status_code == 201
@@ -422,8 +419,7 @@ async def test_production_client_rollback_on_error(
         json={
             "email": "rollback_test@example.com",
             "password": "Str0ng@Pass",
-            "first_name": "R",
-            "last_name": "T",
+            "full_name": "R T".strip(),
         },
     )
     assert resp2.status_code == 409

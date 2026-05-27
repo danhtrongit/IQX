@@ -34,8 +34,7 @@ async def _admin_headers(db: AsyncSession) -> dict[str, str]:
     user = User(
         email=f"adm-{uuid.uuid4().hex[:6]}@example.com",
         hashed_password=hash_password("Adm@1234"),
-        first_name="Adm",
-        last_name="In",
+        full_name="Adm In".strip(),
         role=UserRole.ADMIN,
         status=UserStatus.ACTIVE,
     )
@@ -54,8 +53,7 @@ async def _seed_user(
     u = User(
         email=f"u-{uuid.uuid4().hex[:6]}@example.com",
         hashed_password=hash_password("Test@1234"),
-        first_name="Test",
-        last_name="User",
+        full_name="Test User".strip(),
         role=role,
         status=UserStatus.ACTIVE,
         last_login_at=last_login_at,
@@ -371,7 +369,7 @@ async def test_export_csv_basic(db_session: AsyncSession, client: AsyncClient) -
     reader = list(csv.reader(io.StringIO(content)))
     # Header row + at least the seeded users (plus admin user)
     assert reader[0] == [
-        "id", "email", "first_name", "last_name", "phone_e164",
+        "id", "email", "full_name", "phone_e164",
         "role", "status", "is_email_verified",
         "last_login_at", "created_at",
     ]
@@ -392,7 +390,8 @@ async def test_export_csv_with_role_filter(db_session: AsyncSession, client: Asy
     # Skip header; every data row should have role == premium
     for row in reader[1:]:
         if row:  # skip empty trailing lines
-            assert row[5] == "premium"
+            # CSV columns: id, email, full_name, phone_e164, role, ... — role at idx 4.
+            assert row[4] == "premium"
 
 
 async def test_export_csv_cap_exceeded(

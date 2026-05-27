@@ -78,8 +78,7 @@ class UserService:
         user = User(
             email=data.email.lower(),
             hashed_password=hash_password(data.password),
-            first_name=data.first_name,
-            last_name=data.last_name,
+            full_name=data.full_name,
             role=UserRole.USER,
             status=UserStatus.ACTIVE,
             **phone_fields,
@@ -112,8 +111,7 @@ class UserService:
         user = User(
             email=data.email.lower(),
             hashed_password=hash_password(data.password),
-            first_name=data.first_name,
-            last_name=data.last_name,
+            full_name=data.full_name,
             role=data.role,
             status=data.status,
             **phone_fields,

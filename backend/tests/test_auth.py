@@ -21,15 +21,13 @@ async def test_register_success(client: AsyncClient):
         json={
             "email": "newuser@example.com",
             "password": "Str0ng@Pass",
-            "first_name": "New",
-            "last_name": "User",
+            "full_name": "New User".strip(),
         },
     )
     assert response.status_code == 201
     data = response.json()
     assert data["email"] == "newuser@example.com"
-    assert data["first_name"] == "New"
-    assert data["last_name"] == "User"
+    assert data["full_name"] == "New User"
     assert data["role"] == "user"
     assert data["status"] == "active"
     assert "id" in data
@@ -45,8 +43,7 @@ async def test_register_duplicate_email(client: AsyncClient, test_user: User):
         json={
             "email": "test@example.com",
             "password": "Str0ng@Pass",
-            "first_name": "Dup",
-            "last_name": "User",
+            "full_name": "Dup User".strip(),
         },
     )
     assert response.status_code == 409
@@ -71,8 +68,7 @@ async def test_register_accepts_vietnamese_phone_formats(
         json={
             "email": f"phone-{abs(hash(phone)) % 100000}@example.com",
             "password": "Str0ng@Pass",
-            "first_name": "Phone",
-            "last_name": "Test",
+            "full_name": "Phone Test".strip(),
             "phone_number": phone,
         },
     )
@@ -87,8 +83,7 @@ async def test_register_rejects_invalid_phone(client: AsyncClient):
         json={
             "email": "badphone@example.com",
             "password": "Str0ng@Pass",
-            "first_name": "Bad",
-            "last_name": "Phone",
+            "full_name": "Bad Phone".strip(),
             "phone_number": "abc-not-a-number",
         },
     )
@@ -103,8 +98,7 @@ async def test_register_weak_password(client: AsyncClient):
         json={
             "email": "weak@example.com",
             "password": "weak",
-            "first_name": "Weak",
-            "last_name": "Pass",
+            "full_name": "Weak Pass".strip(),
         },
     )
     assert response.status_code == 422
@@ -367,8 +361,7 @@ async def test_login_inactive_user_records_history(
     inactive = User(
         email="inactive@example.com",
         hashed_password=hash_password("Test@1234"),
-        first_name="Inactive",
-        last_name="User",
+        full_name="Inactive User".strip(),
         role=UserRole.USER,
         status=UserStatus.INACTIVE,
     )

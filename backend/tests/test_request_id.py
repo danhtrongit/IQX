@@ -28,8 +28,7 @@ async def _make_admin(db: AsyncSession) -> tuple[User, dict[str, str]]:
     user = User(
         email=f"adm-{uuid.uuid4().hex[:6]}@example.com",
         hashed_password=hash_password("Adm@1234"),
-        first_name="Adm",
-        last_name="In",
+        full_name="Adm In".strip(),
         role=UserRole.ADMIN,
         status=UserStatus.ACTIVE,
     )
@@ -44,8 +43,7 @@ async def _make_target_user(db: AsyncSession) -> User:
     user = User(
         email=f"target-{uuid.uuid4().hex[:6]}@example.com",
         hashed_password=hash_password("Target@1234"),
-        first_name="Target",
-        last_name="User",
+        full_name="Target User".strip(),
         role=UserRole.USER,
         status=UserStatus.ACTIVE,
     )
@@ -64,8 +62,7 @@ async def test_login_response_has_request_id_header(client: AsyncClient, db_sess
     user = User(
         email="rid-login@example.com",
         hashed_password=hash_password("Login@1234"),
-        first_name="RID",
-        last_name="Test",
+        full_name="RID Test".strip(),
         role=UserRole.USER,
         status=UserStatus.ACTIVE,
     )
@@ -87,8 +84,7 @@ async def test_login_echoes_client_request_id(client: AsyncClient, db_session: A
     user = User(
         email="rid-echo@example.com",
         hashed_password=hash_password("Login@1234"),
-        first_name="RID",
-        last_name="Echo",
+        full_name="RID Echo".strip(),
         role=UserRole.USER,
         status=UserStatus.ACTIVE,
     )
@@ -131,8 +127,7 @@ async def test_admin_mutation_audit_row_has_request_id(
         json={
             "email": admin_email,
             "password": admin_password,
-            "first_name": "Adm",
-            "last_name": "In",
+            "full_name": "Adm In".strip(),
         },
     )
     assert reg_resp.status_code == 201
@@ -165,8 +160,7 @@ async def test_admin_mutation_audit_row_has_request_id(
         json={
             "email": target_email,
             "password": "Target@1234",
-            "first_name": "Target",
-            "last_name": "User",
+            "full_name": "Target User".strip(),
         },
     )
     assert target_resp.status_code == 201

@@ -136,8 +136,7 @@ async def test_user(db_session: AsyncSession) -> User:
     user = User(
         email="test@example.com",
         hashed_password=hash_password("Test@1234"),
-        first_name="Test",
-        last_name="User",
+        full_name="Test User".strip(),
         role=UserRole.USER,
         status=UserStatus.ACTIVE,
     )
@@ -153,8 +152,7 @@ async def admin_user(db_session: AsyncSession) -> User:
     user = User(
         email="admin@example.com",
         hashed_password=hash_password("Admin@1234"),
-        first_name="Admin",
-        last_name="User",
+        full_name="Admin User".strip(),
         role=UserRole.ADMIN,
         status=UserStatus.ACTIVE,
     )
@@ -183,8 +181,7 @@ async def premium_user(db_session: AsyncSession) -> tuple[User, dict[str, str]]:
     user = User(
         email=f"premium-{_uuid.uuid4().hex[:8]}@example.com",
         hashed_password=hash_password("Test@1234"),
-        first_name="Premium",
-        last_name="User",
+        full_name="Premium User".strip(),
         role=UserRole.PREMIUM,
         status=UserStatus.ACTIVE,
     )

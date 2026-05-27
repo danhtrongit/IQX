@@ -21,8 +21,7 @@ async def _make_admin(db: AsyncSession) -> tuple[User, dict[str, str]]:
     user = User(
         email=f"adm-{uuid.uuid4().hex[:6]}@example.com",
         hashed_password=hash_password("Adm@1234"),
-        first_name="Adm",
-        last_name="In",
+        full_name="Adm In".strip(),
         role=UserRole.ADMIN,
         status=UserStatus.ACTIVE,
     )
@@ -160,8 +159,7 @@ async def test_non_admin_blocked(db_session, client):
     user = User(
         email=f"u-{uuid.uuid4().hex[:6]}@example.com",
         hashed_password=hash_password("Pwd@1234"),
-        first_name="U",
-        last_name="U",
+        full_name="U U".strip(),
         role=UserRole.USER,
         status=UserStatus.ACTIVE,
     )

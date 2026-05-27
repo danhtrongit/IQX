@@ -119,8 +119,7 @@ async def test_admin_create_user_records_audit(
         json={
             "email": "newuser@example.com",
             "password": "NewUser@1234",
-            "first_name": "New",
-            "last_name": "User",
+            "full_name": "New User".strip(),
         },
         headers=headers,
     )
@@ -167,8 +166,7 @@ async def test_admin_delete_user_records_audit(
     user = User(
         email="todelete@example.com",
         hashed_password=hash_password("Pass@1234"),
-        first_name="To",
-        last_name="Delete",
+        full_name="To Delete".strip(),
         role=UserRole.USER,
         status=UserStatus.ACTIVE,
     )
@@ -240,8 +238,7 @@ async def test_admin_reset_vt_account_records_audit(
     user = User(
         email=f"vtuser-{uuid.uuid4().hex[:8]}@example.com",
         hashed_password=hash_password("Pass@1234"),
-        first_name="VT",
-        last_name="User",
+        full_name="VT User".strip(),
         role=UserRole.PREMIUM,
         status=UserStatus.ACTIVE,
     )

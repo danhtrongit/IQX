@@ -18,8 +18,7 @@ async def _make_non_premium_user(db: AsyncSession, email_prefix: str) -> tuple[U
     user = User(
         email=f"{email_prefix}-{uuid.uuid4().hex[:6]}@example.com",
         hashed_password=hash_password("StrongPass123!"),
-        first_name="T",
-        last_name="U",
+        full_name="T U".strip(),
         role=UserRole.USER,
         status=UserStatus.ACTIVE,
     )

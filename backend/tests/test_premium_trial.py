@@ -41,8 +41,7 @@ async def _make_user(db: AsyncSession, email: str = "trial@example.com") -> User
     user = User(
         email=email,
         hashed_password="$2b$12$dummy",
-        first_name="T",
-        last_name="U",
+        full_name="T U".strip(),
         role=UserRole.USER,
         status=UserStatus.ACTIVE,
     )
@@ -127,8 +126,7 @@ async def test_register_grants_7day_trial(
     payload = {
         "email": "newreg@example.com",
         "password": "StrongPass123!",
-        "first_name": "New",
-        "last_name": "Reg",
+        "full_name": "New Reg".strip(),
     }
     resp = await client.post("/api/v1/auth/register", json=payload)
     assert resp.status_code == 201
@@ -162,8 +160,7 @@ async def test_register_succeeds_even_if_trial_plan_missing(
     payload = {
         "email": "no-trial-plan@example.com",
         "password": "StrongPass123!",
-        "first_name": "No",
-        "last_name": "Trial",
+        "full_name": "No Trial".strip(),
     }
     resp = await client.post("/api/v1/auth/register", json=payload)
     assert resp.status_code == 201

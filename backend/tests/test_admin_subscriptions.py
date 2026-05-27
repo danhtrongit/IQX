@@ -29,8 +29,7 @@ async def _admin_headers(db: AsyncSession) -> dict[str, str]:
     user = User(
         email=f"adm-{uuid.uuid4().hex[:6]}@example.com",
         hashed_password=hash_password("Adm@1234"),
-        first_name="Adm",
-        last_name="In",
+        full_name="Adm In".strip(),
         role=UserRole.ADMIN,
         status=UserStatus.ACTIVE,
     )
@@ -60,8 +59,7 @@ async def _seed_user(db: AsyncSession, role: UserRole = UserRole.USER) -> User:
     u = User(
         email=f"u-{uuid.uuid4().hex[:6]}@example.com",
         hashed_password="$2b$12$x",
-        first_name="T",
-        last_name="U",
+        full_name="T U".strip(),
         role=role,
         status=UserStatus.ACTIVE,
     )

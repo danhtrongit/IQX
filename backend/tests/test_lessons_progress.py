@@ -29,8 +29,7 @@ async def _make_user(db: AsyncSession) -> User:
     u = User(
         email=f"u-{uuid.uuid4().hex[:8]}@x.com",
         hashed_password=hash_password("Test@1234"),
-        first_name="Test",
-        last_name="User",
+        full_name="Test User".strip(),
         role=UserRole.USER,
         status=UserStatus.ACTIVE,
     )

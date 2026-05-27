@@ -27,8 +27,7 @@ async def _admin_headers(db: AsyncSession) -> dict[str, str]:
     user = User(
         email=f"adm-{uuid.uuid4().hex[:6]}@example.com",
         hashed_password=hash_password("Adm@1234"),
-        first_name="Adm",
-        last_name="In",
+        full_name="Adm In".strip(),
         role=UserRole.ADMIN,
         status=UserStatus.ACTIVE,
     )
@@ -58,8 +57,7 @@ async def _seed_user(db: AsyncSession, **kwargs) -> User:
     defaults = dict(
         email=f"u-{uuid.uuid4().hex[:6]}@example.com",
         hashed_password="$2b$12$d",
-        first_name="T",
-        last_name="U",
+        full_name="T U".strip(),
         role=UserRole.USER,
         status=UserStatus.ACTIVE,
     )
@@ -185,8 +183,7 @@ async def test_non_admin_cannot_access(db_session, client):
     user = User(
         email=f"reg-{uuid.uuid4().hex[:6]}@example.com",
         hashed_password=hash_password("Pwd@1234"),
-        first_name="Reg",
-        last_name="U",
+        full_name="Reg U".strip(),
         role=UserRole.USER,
         status=UserStatus.ACTIVE,
     )

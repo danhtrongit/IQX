@@ -88,9 +88,7 @@ class LoginHistoryRow(BaseModel):
 class UserBriefForAdmin(BaseModel):
     id: uuid.UUID
     email: str
-    full_name: str | None
-    first_name: str
-    last_name: str
+    full_name: str
     phone_number: str | None
     role: str
     status: str

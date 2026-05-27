@@ -21,8 +21,7 @@ class UserCreate(BaseModel):
 
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=128)
-    first_name: str = Field(..., min_length=1, max_length=100)
-    last_name: str = Field(..., min_length=1, max_length=100)
+    full_name: str = Field(..., min_length=1, max_length=200)
     phone_number: str | None = Field(None, max_length=30)
 
     @field_validator("password")
@@ -62,8 +61,7 @@ class UserCreate(BaseModel):
 class UserUpdate(BaseModel):
     """Self-profile update — users can only update these fields."""
 
-    first_name: str | None = Field(None, min_length=1, max_length=100)
-    last_name: str | None = Field(None, min_length=1, max_length=100)
+    full_name: str | None = Field(None, min_length=1, max_length=200)
     phone_number: str | None = Field(None, max_length=30)
     avatar_url: str | None = Field(None, max_length=2048)
     date_of_birth: date | None = None
@@ -122,8 +120,6 @@ class UserResponse(BaseModel):
 
     id: uuid.UUID
     email: str
-    first_name: str
-    last_name: str
     full_name: str
     phone_number: str | None = None
     phone_country_code: str | None = None
@@ -156,8 +152,6 @@ class UserBriefResponse(BaseModel):
 
     id: uuid.UUID
     email: str
-    first_name: str
-    last_name: str
     full_name: str
     role: UserRole
     status: UserStatus
@@ -172,8 +166,7 @@ SORTABLE_FIELDS = Literal[
     "created_at",
     "updated_at",
     "email",
-    "first_name",
-    "last_name",
+    "full_name",
     "role",
     "status",
     "last_login_at",
