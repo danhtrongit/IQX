@@ -48,8 +48,7 @@ export function MarketSentiment() {
           <img
             src={sentimentAsset}
             alt={`Tâm lý: ${sentiment}`}
-            className="w-full h-full rounded-lg object-cover"
-            style={{ objectPosition: "center 30%" }}
+            className="w-full h-full rounded-lg object-contain"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = "none";
             }}

@@ -3,7 +3,6 @@ import { changeColor, CHART_HEIGHT } from "./utils";
 import {
   ResponsiveContainer,
   ComposedChart,
-  Area,
   Bar,
   XAxis,
   YAxis,
@@ -14,19 +13,120 @@ import { TrendingUp } from "lucide-react";
 const wholeNumber = (value: number) =>
   Math.round(value).toLocaleString("vi-VN");
 
+const round2 = (v: number) => Math.round(v * 100) / 100;
+
+const CANDLE_UP = "#34d399";
+const CANDLE_DOWN = "#f87171";
+
+interface CandleDatum {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  /** [low, high] range bar — drives recharts' pixel scaling for the candle. */
+  range: [number, number];
+  volume: number;
+}
+
+/**
+ * Custom candlestick shape for a recharts range `Bar` whose dataKey is the
+ * `[low, high]` tuple. Recharts gives us `y` = pixel of `high` and `height` =
+ * pixel span down to `low`, so we can linearly map any price to a Y pixel and
+ * draw the wick (high→low) plus the open/close body.
+ */
+function Candle(props: {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  payload?: CandleDatum;
+}) {
+  const { x = 0, y = 0, width = 0, height = 0, payload } = props;
+  if (!payload) return null;
+  const { open, close, high, low } = payload;
+  const isUp = close >= open;
+  const color = isUp ? CANDLE_UP : CANDLE_DOWN;
+
+  const range = high - low;
+  const priceToY = (p: number) =>
+    range === 0 ? y : y + ((high - p) / range) * height;
+
+  const openY = priceToY(open);
+  const closeY = priceToY(close);
+  const bodyTop = Math.min(openY, closeY);
+  const bodyHeight = Math.max(Math.abs(closeY - openY), 1); // ≥1px doji
+  const cx = x + width / 2;
+  const bodyWidth = Math.max(width * 0.6, 1);
+  const bodyX = cx - bodyWidth / 2;
+
+  return (
+    <g>
+      {/* Wick: high → low */}
+      <line x1={cx} y1={y} x2={cx} y2={y + height} stroke={color} strokeWidth={1} />
+      {/* Body: open → close */}
+      <rect x={bodyX} y={bodyTop} width={bodyWidth} height={bodyHeight} fill={color} />
+    </g>
+  );
+}
+
+function ChartTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: Array<{ payload: CandleDatum }>;
+  label?: string;
+}) {
+  if (!active || !payload || payload.length === 0) return null;
+  const d = payload[0].payload;
+  if (!d) return null;
+  const isUp = d.close >= d.open;
+  const closeColor = isUp ? CANDLE_UP : CANDLE_DOWN;
+  return (
+    <div
+      className="rounded-md px-2.5 py-2 text-[11px]"
+      style={{ backgroundColor: "#0f172a", border: "1px solid #155e75", color: "#f1f5f9" }}
+    >
+      <div className="text-[10px] text-slate-400 mb-1">{label}</div>
+      <div className="flex justify-between gap-3"><span className="text-slate-400">Mở</span><span className="tabular-nums">{wholeNumber(d.open)}</span></div>
+      <div className="flex justify-between gap-3"><span className="text-slate-400">Cao</span><span className="tabular-nums text-emerald-300">{wholeNumber(d.high)}</span></div>
+      <div className="flex justify-between gap-3"><span className="text-slate-400">Thấp</span><span className="tabular-nums text-red-300">{wholeNumber(d.low)}</span></div>
+      <div className="flex justify-between gap-3"><span className="text-slate-400">Đóng</span><span className="tabular-nums font-semibold" style={{ color: closeColor }}>{wholeNumber(d.close)}</span></div>
+      <div className="flex justify-between gap-3 mt-0.5 pt-0.5 border-t border-slate-700"><span className="text-slate-400">KLGD</span><span className="tabular-nums">{d.volume}M</span></div>
+    </div>
+  );
+}
+
 export function VNIndexChart() {
   const { data: ohlcv, source } = useVNIndexOHLCV();
   const { data: market } = useMarketOverview();
 
-  const chartData = ohlcv.map((bar) => {
+  const chartData: CandleDatum[] = ohlcv.map((bar) => {
     const d = new Date(bar.time * 1000);
     return {
       date: `${d.getDate()}/${d.getMonth() + 1}`,
-      close: Math.round(bar.close * 100) / 100,
-      open: Math.round(bar.open * 100) / 100,
+      open: round2(bar.open),
+      high: round2(bar.high),
+      low: round2(bar.low),
+      close: round2(bar.close),
+      range: [round2(bar.low), round2(bar.high)],
       volume: Math.round(bar.volume / 1_000_000),
     };
   });
+
+  // Price axis domain from the low/high extremes (+5% padding) so candles
+  // aren't clipped at the chart edges.
+  const lows = chartData.map((d) => d.low).filter((v) => v > 0);
+  const highs = chartData.map((d) => d.high).filter((v) => v > 0);
+  const minLow = lows.length ? Math.min(...lows) : 0;
+  const maxHigh = highs.length ? Math.max(...highs) : 0;
+  const pad = (maxHigh - minLow) * 0.05 || 1;
+  const priceDomain: [number, number] = [
+    Math.floor(minLow - pad),
+    Math.ceil(maxHigh + pad),
+  ];
 
   const m = market.vnindex;
   const isUp = m.change >= 0;
@@ -69,20 +169,6 @@ export function VNIndexChart() {
             data={chartData}
             margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
           >
-            <defs>
-              <linearGradient id="vnidxFill" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor={isUp ? "#34d399" : "#f87171"}
-                  stopOpacity={0.25}
-                />
-                <stop
-                  offset="95%"
-                  stopColor={isUp ? "#34d399" : "#f87171"}
-                  stopOpacity={0}
-                />
-              </linearGradient>
-            </defs>
             <XAxis
               dataKey="date"
               tick={{ fill: "#cbd5e1", fontSize: 9 }}
@@ -92,7 +178,7 @@ export function VNIndexChart() {
             />
             <YAxis
               yAxisId="price"
-              domain={["auto", "auto"]}
+              domain={priceDomain}
               tick={{ fill: "#cbd5e1", fontSize: 9 }}
               axisLine={false}
               tickLine={false}
@@ -108,21 +194,7 @@ export function VNIndexChart() {
               tickLine={false}
               width={0}
             />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#0f172a",
-                border: "1px solid #155e75",
-                borderRadius: 6,
-                fontSize: 11,
-                color: "#f1f5f9",
-              }}
-              labelStyle={{ color: "#94a3b8" }}
-              formatter={(value: unknown, name: unknown) => {
-                const v = Number(value);
-                if (name === "volume") return [`${v}M`, "KLGD"];
-                return [wholeNumber(v), "Đóng cửa"];
-              }}
-            />
+            <Tooltip content={<ChartTooltip />} cursor={{ fill: "#1e293b55" }} />
             <Bar
               yAxisId="vol"
               dataKey="volume"
@@ -131,13 +203,10 @@ export function VNIndexChart() {
               radius={[1, 1, 0, 0]}
               isAnimationActive={false}
             />
-            <Area
+            <Bar
               yAxisId="price"
-              type="monotone"
-              dataKey="close"
-              stroke={isUp ? "#34d399" : "#f87171"}
-              strokeWidth={1.5}
-              fill="url(#vnidxFill)"
+              dataKey="range"
+              shape={<Candle />}
               isAnimationActive={false}
             />
           </ComposedChart>
