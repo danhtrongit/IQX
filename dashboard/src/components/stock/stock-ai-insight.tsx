@@ -127,74 +127,6 @@ const DECISION_OUTPUT_ROWS: Array<{ key: string; icon: typeof Sparkles; color: s
   { key: "Kịch bản đi ngang", icon: MinusCircle, color: "text-amber-400" },
 ]
 
-/**
- * Layer 6 score card — renders the three deterministic KPIs computed from
- * L1-L5 status: total power (−100% … +100%), reversal probability (0-100%),
- * confidence (0-100%). See backend/app/services/ai/scoring.py.
- */
-function Layer6ScoreCard({ insight }: { insight: InsightResponse }) {
-  const summary = insight.summary
-  const totalPower = summary?.totalPower ?? 0
-  const reversal = summary?.reversalProbability ?? 0
-  const confidence = summary?.confidence ?? 0
-  const powerColor = totalPower >= 0 ? "text-emerald-400" : "text-red-400"
-  const powerBg = totalPower >= 0 ? "bg-emerald-500/10" : "bg-red-500/10"
-
-  const LAYER_LABELS: Record<string, string> = {
-    trend: "L1",
-    liquidity: "L2",
-    moneyFlow: "L3",
-    insider: "L4",
-    news: "L5",
-  }
-
-  return (
-    <div className="space-y-2.5">
-      {/* 3 KPI grid */}
-      <div className="grid grid-cols-3 gap-1.5">
-        <div className={`rounded-lg p-2 ${powerBg} border border-border/20`}>
-          <p className="text-[9px] font-bold uppercase text-muted-foreground tracking-wider">Sức mạnh</p>
-          <p className={`text-base font-bold tabular-nums ${powerColor}`}>
-            {totalPower > 0 ? "+" : ""}{totalPower.toFixed(1)}%
-          </p>
-        </div>
-        <div className="rounded-lg p-2 bg-amber-500/10 border border-border/20">
-          <p className="text-[9px] font-bold uppercase text-muted-foreground tracking-wider">Đảo chiều</p>
-          <p className="text-base font-bold tabular-nums text-amber-400">
-            {reversal.toFixed(1)}%
-          </p>
-        </div>
-        <div className="rounded-lg p-2 bg-primary/10 border border-border/20">
-          <p className="text-[9px] font-bold uppercase text-muted-foreground tracking-wider">Tin cậy</p>
-          <p className="text-base font-bold tabular-nums text-primary">
-            {confidence.toFixed(1)}%
-          </p>
-        </div>
-      </div>
-
-      {/* L1-L5 status chain */}
-      <div className="rounded-lg border border-border/15 bg-muted/5 p-2 space-y-1">
-        <p className="text-[9px] font-bold uppercase text-muted-foreground tracking-wider mb-1">Trạng thái 5 lớp</p>
-        {(["trend", "liquidity", "moneyFlow", "insider", "news"] as const).map((key) => {
-          const layer = insight.layers[key]
-          if (!layer) return null
-          const score = layer.score ?? 0
-          const status = layer.status ?? "Trung tính"
-          const sign = score > 0 ? "+" : ""
-          const scoreColor = score > 0 ? "text-emerald-400" : score < 0 ? "text-red-400" : "text-muted-foreground"
-          return (
-            <div key={key} className="flex items-center justify-between text-[10px]">
-              <span className="font-bold text-muted-foreground w-6">{LAYER_LABELS[key]}</span>
-              <span className="flex-1 truncate text-foreground/80">{status}</span>
-              <span className={`tabular-nums font-bold ${scoreColor}`}>{sign}{score.toFixed(1)}</span>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
 
 function DecisionOutput({ output }: { output: Record<string, any> }) {
   const rendered = new Set<string>()
@@ -443,26 +375,18 @@ function DetailPanel({
       </div>
 
       <ScrollArea className="flex-1 min-h-0">
-        {/* Layer 6 — deterministic score card BEFORE AI's decision output */}
-        {layerKey === "decision" && (
-          <div className="p-3 border-b border-border/10">
-            <Layer6ScoreCard insight={insight} />
+        {/* AI Analysis Output — shown for every layer incl. L6. Per feedback
+            the L6 deterministic score block ("Tổng hợp & Hành động") was
+            removed from the detail; only this "Kết quả phân tích" is kept. */}
+        <div className="p-3 border-b border-border/10">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Sparkles className="size-3 text-primary" />
+            <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Kết quả phân tích</span>
           </div>
-        )}
-
-        {/* AI Analysis Output — hidden for L6 "Tổng hợp & Hành động": the
-            decision detail shows only the deterministic score card. */}
-        {layerKey !== "decision" && (
-          <div className="p-3 border-b border-border/10">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Sparkles className="size-3 text-primary" />
-              <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Kết quả phân tích</span>
-            </div>
-            <div className="text-xs leading-relaxed">
-              {renderOutput(layerData.output, layerKey)}
-            </div>
+          <div className="text-xs leading-relaxed">
+            {renderOutput(layerData.output, layerKey)}
           </div>
-        )}
+        </div>
 
         {/* Raw Input Data — always shown (accordion removed per ISSUE-016). */}
         {layerKey !== "decision" && (
