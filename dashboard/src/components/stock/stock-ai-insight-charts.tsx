@@ -7,7 +7,6 @@ import {
   ComposedChart,
   LabelList,
   Line,
-  LineChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -142,6 +141,22 @@ export function TrendRawChart({ ohlcv }: { ohlcv: OhlcvBar[] }) {
     }))
   }, [ohlcv])
 
+  // Price columns shouldn't start from 0 (variation would be invisible) — base
+  // the Y domain on the actual close/MA range with a little padding.
+  const domain = useMemo<[number, number]>(() => {
+    const vals: number[] = []
+    data.forEach((d) => {
+      if (d.close > 0) vals.push(d.close)
+      if (d.ma10 != null) vals.push(d.ma10)
+      if (d.ma20 != null) vals.push(d.ma20)
+    })
+    if (vals.length === 0) return [0, 1]
+    const min = Math.min(...vals)
+    const max = Math.max(...vals)
+    const pad = (max - min) * 0.08 || 1
+    return [Math.floor(min - pad), Math.ceil(max + pad)]
+  }, [data])
+
   if (data.length === 0) {
     return <p className="text-[10px] text-muted-foreground italic">Không có dữ liệu OHLCV</p>
   }
@@ -149,11 +164,11 @@ export function TrendRawChart({ ohlcv }: { ohlcv: OhlcvBar[] }) {
   return (
     <div>
       <p className="text-[10px] font-bold uppercase tracking-wider text-foreground mb-1">
-        Giá đóng cửa & MA ({data.length} phiên)
+        Giá & MA ({data.length} phiên)
       </p>
       <div className="h-[200px]">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 20, right: 10, left: 4, bottom: 4 }}>
+          <ComposedChart data={data} margin={{ top: 20, right: 10, left: 4, bottom: 4 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
             <XAxis
               dataKey="date"
@@ -167,7 +182,8 @@ export function TrendRawChart({ ohlcv }: { ohlcv: OhlcvBar[] }) {
               axisLine={false}
               tickLine={false}
               width={32}
-              domain={["auto", "auto"]}
+              domain={domain}
+              allowDataOverflow
               tickFormatter={(v: number) => v.toFixed(0)}
             />
             <Tooltip
@@ -195,16 +211,10 @@ export function TrendRawChart({ ohlcv }: { ohlcv: OhlcvBar[] }) {
                   />
                 )
               }}
+              cursor={{ fill: "#1e293b55" }}
             />
-            <Line
-              type="monotone"
-              dataKey="close"
-              stroke={COLOR_LINE_PRIMARY}
-              strokeWidth={2}
-              dot={{ r: 2.5, fill: COLOR_LINE_PRIMARY, stroke: "none" }}
-              activeDot={{ r: 4 }}
-              isAnimationActive={false}
-            >
+            {/* Cột: giá đóng cửa */}
+            <Bar dataKey="close" fill={COLOR_LINE_PRIMARY} fillOpacity={0.7} radius={[2, 2, 0, 0]} isAnimationActive={false}>
               <LabelList
                 dataKey="closeLabel"
                 position="top"
@@ -215,13 +225,13 @@ export function TrendRawChart({ ohlcv }: { ohlcv: OhlcvBar[] }) {
                 fontSize={9}
                 fontWeight={700}
               />
-            </Line>
+            </Bar>
+            {/* Line: MA10 / MA20 */}
             <Line
               type="monotone"
               dataKey="ma10"
               stroke={COLOR_LINE_SECONDARY}
               strokeWidth={1.5}
-              strokeDasharray="4 2"
               dot={false}
               isAnimationActive={false}
               connectNulls
@@ -231,18 +241,17 @@ export function TrendRawChart({ ohlcv }: { ohlcv: OhlcvBar[] }) {
               dataKey="ma20"
               stroke={COLOR_LINE_TERTIARY}
               strokeWidth={1.5}
-              strokeDasharray="4 2"
               dot={false}
               isAnimationActive={false}
               connectNulls
             />
-          </LineChart>
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
       <div className="flex items-center justify-center gap-3 text-[9px] text-slate-400 mt-1">
-        <Legend swatch={COLOR_LINE_PRIMARY}>Giá đóng cửa</Legend>
-        <Legend swatch={COLOR_LINE_SECONDARY} dashed>MA10</Legend>
-        <Legend swatch={COLOR_LINE_TERTIARY} dashed>MA20</Legend>
+        <Legend swatch={COLOR_LINE_PRIMARY}>Giá</Legend>
+        <Legend swatch={COLOR_LINE_SECONDARY}>MA10</Legend>
+        <Legend swatch={COLOR_LINE_TERTIARY}>MA20</Legend>
       </div>
     </div>
   )
