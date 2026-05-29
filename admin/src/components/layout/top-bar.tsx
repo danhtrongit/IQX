@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { userInitials } from "@/lib/api/users"
 
 export function TopBar() {
   const { user, logout } = useAuth()
@@ -25,9 +26,7 @@ export function TopBar() {
     }
   }
 
-  const initials = user
-    ? `${user.firstName[0] ?? ""}${user.lastName[0] ?? ""}`.toUpperCase()
-    : "A"
+  const initials = user ? userInitials(user.fullName, user.email) : "A"
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-card px-4">
@@ -56,7 +55,7 @@ export function TopBar() {
             {user && (
               <>
                 <div className="px-2 py-1.5 text-xs text-muted-foreground">
-                  {user.fullName ?? `${user.firstName} ${user.lastName}`}
+                  {user.fullName ?? user.email}
                 </div>
                 <DropdownMenuSeparator />
               </>

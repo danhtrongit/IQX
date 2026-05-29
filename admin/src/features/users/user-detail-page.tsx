@@ -53,7 +53,7 @@ import { DataTable } from "@/components/data-table/data-table"
 import { DataTablePagination } from "@/components/data-table/data-table-pagination"
 import type { ColumnDef, PaginationState } from "@tanstack/react-table"
 import { api } from "@/lib/api/client"
-import { usersApi, type User360, type LoginHistoryRow } from "@/lib/api/users"
+import { usersApi, userInitials, type User360, type LoginHistoryRow } from "@/lib/api/users"
 import { plansApi, type PlanRow } from "@/lib/api/plans"
 import { fmtVnd, fmtDate, fmtDateTime, fmtRelative } from "@/lib/format"
 
@@ -244,8 +244,8 @@ export default function UserDetailPage() {
   }
 
   const { user } = data360
-  const displayName = user.fullName ?? `${user.firstName} ${user.lastName}`
-  const initials = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
+  const displayName = user.fullName ?? user.email
+  const initials = userInitials(user.fullName, user.email)
 
   const loginPagination: PaginationState = { pageIndex: loginPage, pageSize: loginPageSize }
 
@@ -335,8 +335,6 @@ export default function UserDetailPage() {
               <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-3">
                 <ProfileField label="ID" value={user.id} mono />
                 <ProfileField label="Email" value={user.email} />
-                <ProfileField label="Họ" value={user.firstName} />
-                <ProfileField label="Tên" value={user.lastName} />
                 <ProfileField label="Họ và tên" value={user.fullName ?? "—"} />
                 <ProfileField label="SĐT" value={user.phoneNumber ?? "—"} />
                 <ProfileField

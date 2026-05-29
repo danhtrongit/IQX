@@ -6,8 +6,6 @@ import type { PaginatedResult } from "@/hooks/use-paginated-query"
 export interface AdminUserRow {
   id: string
   email: string
-  firstName: string
-  lastName: string
   fullName: string | null
   phoneNumber: string | null
   role: "user" | "premium" | "admin"
@@ -115,13 +113,23 @@ export interface UserListParams {
   search?: string
 }
 
+/** Two-letter avatar initials from a full name, falling back to the email. */
+export function userInitials(fullName: string | null | undefined, email: string): string {
+  const name = (fullName ?? "").trim()
+  if (name) {
+    const parts = name.split(/\s+/)
+    const first = parts[0]?.[0] ?? ""
+    const last = parts.length > 1 ? (parts[parts.length - 1][0] ?? "") : ""
+    return (first + last).toUpperCase()
+  }
+  return email.slice(0, 2).toUpperCase()
+}
+
 // ── Backend raw shapes ─────────────────────────────────────────────────────
 
 interface BackendUserRow {
   id: string
   email: string
-  first_name: string
-  last_name: string
   full_name: string | null
   phone_number: string | null
   role: string
@@ -220,9 +228,7 @@ function adaptUserRow(raw: BackendUserRow): AdminUserRow {
   return {
     id: String(raw.id),
     email: raw.email,
-    firstName: raw.first_name,
-    lastName: raw.last_name,
-    fullName: raw.full_name ?? `${raw.first_name} ${raw.last_name}`.trim(),
+    fullName: raw.full_name ?? null,
     phoneNumber: raw.phone_number,
     role: raw.role as AdminUserRow["role"],
     status: raw.status as AdminUserRow["status"],

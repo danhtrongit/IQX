@@ -12,7 +12,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { StatusBadge } from "@/components/common/status-badge"
 import { fmtRelative, fmtDate } from "@/lib/format"
-import type { AdminUserRow } from "@/lib/api/users"
+import { userInitials, type AdminUserRow } from "@/lib/api/users"
 
 
 const ROLE_LABELS: Record<string, string> = {
@@ -27,7 +27,7 @@ interface ColumnActions {
 }
 
 function initials(user: AdminUserRow): string {
-  return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
+  return userInitials(user.fullName, user.email)
 }
 
 export function buildColumns(actions: ColumnActions): ColumnDef<AdminUserRow>[] {
@@ -68,7 +68,7 @@ export function buildColumns(actions: ColumnActions): ColumnDef<AdminUserRow>[] 
             </Avatar>
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">
-                {user.fullName ?? `${user.firstName} ${user.lastName}`}
+                {user.fullName ?? user.email}
               </p>
               <p className="truncate text-xs text-muted-foreground">{user.email}</p>
             </div>

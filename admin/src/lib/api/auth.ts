@@ -3,8 +3,6 @@ import { api, setAccessToken, setRefreshToken } from "./client"
 export interface AdminUser {
   id: string
   email: string
-  firstName: string
-  lastName: string
   fullName: string | null
   role: string
   status: string
@@ -15,8 +13,6 @@ export interface AdminUser {
 interface BackendUserResponse {
   id: string
   email: string
-  first_name: string
-  last_name: string
   full_name: string | null
   phone_number: string | null
   role: string
@@ -43,9 +39,7 @@ function adaptUser(raw: BackendUserResponse): AdminUser {
   return {
     id: String(raw.id),
     email: raw.email,
-    firstName: raw.first_name,
-    lastName: raw.last_name,
-    fullName: raw.full_name || `${raw.first_name} ${raw.last_name}`.trim() || null,
+    fullName: raw.full_name || null,
     role: raw.role,
     status: raw.status,
     isActive: raw.status === "active",
