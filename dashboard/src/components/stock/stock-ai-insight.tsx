@@ -450,16 +450,19 @@ function DetailPanel({
           </div>
         )}
 
-        {/* AI Analysis Output */}
-        <div className="p-3 border-b border-border/10">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Sparkles className="size-3 text-primary" />
-            <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Kết quả phân tích</span>
+        {/* AI Analysis Output — hidden for L6 "Tổng hợp & Hành động": the
+            decision detail shows only the deterministic score card. */}
+        {layerKey !== "decision" && (
+          <div className="p-3 border-b border-border/10">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Sparkles className="size-3 text-primary" />
+              <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Kết quả phân tích</span>
+            </div>
+            <div className="text-xs leading-relaxed">
+              {renderOutput(layerData.output, layerKey)}
+            </div>
           </div>
-          <div className="text-xs leading-relaxed">
-	            {renderOutput(layerData.output, layerKey)}
-          </div>
-        </div>
+        )}
 
         {/* Raw Input Data — always shown (accordion removed per ISSUE-016). */}
         {layerKey !== "decision" && (
@@ -577,7 +580,9 @@ function LiquidityRawInput({ data }: { data: InsightResponse["rawInput"]["liquid
           <DataRow label="Volume khớp TB" value={fmtNum(avg30.totalVolume)} color="text-amber-400" />
         </div>
       )}
-      {history.length > 0 && <LiquidityRawChart history={history} />}
+      {history.length > 0 && (
+        <LiquidityRawChart history={history} avgVolume={avg30?.totalVolume} />
+      )}
     </>
   )
 }
@@ -643,6 +648,7 @@ function MobileSummaryCard({
   actionHint,
   confidence,
   reversal,
+  totalPower,
   trendTags,
 }: {
   insight: InsightResponse
@@ -650,8 +656,11 @@ function MobileSummaryCard({
   actionHint: string
   confidence: number
   reversal: number
+  totalPower: number
   trendTags: { label: string; color: string }[]
 }) {
+  const powerColor = totalPower >= 0 ? "text-emerald-400" : "text-red-400"
+  const powerBar = totalPower >= 0 ? "bg-emerald-400" : "bg-red-400"
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.96 }}
@@ -697,11 +706,12 @@ function MobileSummaryCard({
       <div className="flex items-center justify-around rounded-lg bg-background/50 border border-border/15 py-3 px-2 mb-3">
         <div className="text-center">
           <p className="text-[9px] text-muted-foreground mb-1">Sức mạnh tổng thể</p>
-          <svg viewBox="0 0 60 40" className="w-14 h-9 mx-auto">
-            <path d="M 5 35 A 25 25 0 0 1 55 35" fill="none" stroke="hsl(var(--border) / 0.2)" strokeWidth="5" strokeLinecap="round" />
-            <path d="M 5 35 A 25 25 0 0 1 55 35" fill="none" stroke="#10b981" strokeWidth="5" strokeLinecap="round"
-              strokeDasharray={`${(confidence / 100) * 78.5} 78.5`} />
-          </svg>
+          <p className={`text-[18px] font-bold tabular-nums ${powerColor}`}>
+            {totalPower > 0 ? "+" : ""}{totalPower}%
+          </p>
+          <div className="h-1 w-12 bg-border/30 rounded-full overflow-hidden mt-1 mx-auto">
+            <div className={`h-full ${powerBar} rounded-full`} style={{ width: `${Math.min(Math.abs(totalPower), 100)}%` }} />
+          </div>
         </div>
         <div className="text-center">
           <p className="text-[9px] text-muted-foreground mb-1">Độ tin cậy</p>
@@ -988,6 +998,9 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
   const summary = insight.summary
   const confidence = summary?.confidence || 0
   const reversal = summary?.reversalProbability || 0
+  const totalPower = summary?.totalPower || 0
+  const powerColor = totalPower >= 0 ? "text-emerald-400" : "text-red-400"
+  const powerBar = totalPower >= 0 ? "bg-emerald-400" : "bg-red-400"
 
   return (
     <div className="relative h-full w-full flex flex-col overflow-hidden">
@@ -1017,6 +1030,7 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
               actionHint={actionHint}
               confidence={confidence}
               reversal={reversal}
+              totalPower={totalPower}
               trendTags={trendTags}
             />
 
@@ -1155,14 +1169,15 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
 
               {/* Metrics Row */}
               <div className="flex items-center justify-around rounded-lg bg-background/50 border border-border/15 py-3 px-2 mb-3">
-                {/* Confidence Gauge */}
+                {/* Total power — % + bar, consistent with the other two */}
                 <div className="text-center">
                   <p className="text-[9px] text-muted-foreground mb-1">Sức mạnh tổng thể</p>
-                  <svg viewBox="0 0 60 40" className="w-14 h-9 mx-auto">
-                    <path d="M 5 35 A 25 25 0 0 1 55 35" fill="none" stroke="hsl(var(--border) / 0.2)" strokeWidth="5" strokeLinecap="round" />
-                    <path d="M 5 35 A 25 25 0 0 1 55 35" fill="none" stroke="#10b981" strokeWidth="5" strokeLinecap="round"
-                      strokeDasharray={`${(confidence / 100) * 78.5} 78.5`} />
-                  </svg>
+                  <p className={`text-[18px] font-bold tabular-nums ${powerColor}`}>
+                    {totalPower > 0 ? "+" : ""}{totalPower}%
+                  </p>
+                  <div className="h-1 w-12 bg-border/30 rounded-full overflow-hidden mt-1 mx-auto">
+                    <div className={`h-full ${powerBar} rounded-full`} style={{ width: `${Math.min(Math.abs(totalPower), 100)}%` }} />
+                  </div>
                 </div>
                 <div className="text-center">
                   <p className="text-[9px] text-muted-foreground mb-1">Độ tin cậy</p>

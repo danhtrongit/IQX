@@ -4,6 +4,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  ComposedChart,
   LabelList,
   Line,
   LineChart,
@@ -37,8 +38,7 @@ function shortDate(raw: string | undefined): string {
 const AXIS_TICK = { fill: "#64748b", fontSize: 9, fontWeight: 500 } as const
 const GRID_STROKE = "#1e293b"
 const LABEL_FILL = "#e2e8f0"
-const COLOR_BUY = "#f59e0b" // orange (mua, tăng, MA10)
-const COLOR_SELL = "#06b6d4" // cyan (bán, MA20)
+const COLOR_BUY = "#f59e0b" // orange (TB line, MA10)
 const COLOR_LINE_PRIMARY = "#f59e0b"
 const COLOR_LINE_SECONDARY = "#06b6d4"
 const COLOR_LINE_TERTIARY = "#a78bfa"
@@ -248,7 +248,7 @@ export function TrendRawChart({ ohlcv }: { ohlcv: OhlcvBar[] }) {
   )
 }
 
-// ─── L2 — Liquidity (Mua chưa khớp + Bán chưa khớp) ─
+// ─── L2 — Liquidity (volume bars + average matched-volume line) ─
 
 interface LiquidityRow {
   date?: string
@@ -257,17 +257,34 @@ interface LiquidityRow {
   totalVolume?: number
 }
 
-export function LiquidityRawChart({ history }: { history: LiquidityRow[] }) {
+export function LiquidityRawChart({
+  history,
+  avgVolume,
+}: {
+  history: LiquidityRow[]
+  /** "Volume khớp TB" — average matched volume (avg30) drawn as a flat line. */
+  avgVolume?: number
+}) {
   // Backend returns newest-first; reverse to oldest → newest (left → right).
-  const data = useMemo(
-    () =>
-      [...history].reverse().map((r) => ({
-        date: shortDate(r.date),
-        buyUnmatched: Number(r.buyUnmatchedVolume ?? 0),
-        sellUnmatched: Number(r.sellUnmatchedVolume ?? 0),
-      })),
-    [history],
-  )
+  const data = useMemo(() => {
+    const rows = [...history].reverse().map((r) => ({
+      date: shortDate(r.date),
+      volume: Number(r.totalVolume ?? 0),
+    }))
+    // Fall back to the period mean when avg30 isn't supplied.
+    const avg =
+      avgVolume != null && Number.isFinite(avgVolume) && avgVolume > 0
+        ? avgVolume
+        : rows.length
+          ? rows.reduce((s, r) => s + r.volume, 0) / rows.length
+          : 0
+    const labelIdx = sampledIndices(rows.length)
+    return rows.map((r, i) => ({
+      ...r,
+      avg,
+      volumeLabel: labelIdx.has(i) ? r.volume : null,
+    }))
+  }, [history, avgVolume])
 
   if (data.length === 0) {
     return <p className="text-[10px] text-muted-foreground italic">Không có dữ liệu</p>
@@ -280,7 +297,7 @@ export function LiquidityRawChart({ history }: { history: LiquidityRow[] }) {
       </p>
       <div className="h-[200px]">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 22, right: 10, left: 4, bottom: 4 }}>
+          <ComposedChart data={data} margin={{ top: 22, right: 10, left: 4, bottom: 4 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
             <XAxis
               dataKey="date"
@@ -305,61 +322,45 @@ export function LiquidityRawChart({ history }: { history: LiquidityRow[] }) {
                     active={active}
                     label={String(label)}
                     rows={[
-                      { label: "Mua chưa khớp", value: fmtNum(p.buyUnmatched), color: COLOR_BUY },
-                      { label: "Bán chưa khớp", value: fmtNum(p.sellUnmatched), color: COLOR_SELL },
+                      { label: "Volume khớp", value: fmtNum(p.volume), color: COLOR_LINE_SECONDARY },
+                      { label: "Volume khớp TB", value: fmtNum(p.avg), color: COLOR_BUY },
                     ]}
                   />
                 )
               }}
+              cursor={{ fill: "#1e293b55" }}
             />
-            <Line
-              type="monotone"
-              dataKey="buyUnmatched"
-              stroke={COLOR_BUY}
-              strokeWidth={2}
-              dot={{ r: 3, fill: COLOR_BUY, stroke: "none" }}
-              activeDot={{ r: 4.5 }}
-              isAnimationActive={false}
-            >
+            <Bar dataKey="volume" fill={COLOR_LINE_SECONDARY} fillOpacity={0.7} radius={[2, 2, 0, 0]} isAnimationActive={false}>
               <LabelList
-                dataKey="buyUnmatched"
+                dataKey="volumeLabel"
                 position="top"
                 formatter={labelFormatter}
                 fill={LABEL_FILL}
                 fontSize={9}
                 fontWeight={700}
               />
-            </Line>
+            </Bar>
             <Line
               type="monotone"
-              dataKey="sellUnmatched"
-              stroke={COLOR_SELL}
-              strokeWidth={2}
-              dot={{ r: 3, fill: COLOR_SELL, stroke: "none" }}
-              activeDot={{ r: 4.5 }}
+              dataKey="avg"
+              stroke={COLOR_BUY}
+              strokeWidth={1.5}
+              strokeDasharray="5 3"
+              dot={false}
               isAnimationActive={false}
-            >
-              <LabelList
-                dataKey="sellUnmatched"
-                position="bottom"
-                formatter={labelFormatter}
-                fill={LABEL_FILL}
-                fontSize={9}
-                fontWeight={700}
-              />
-            </Line>
-          </LineChart>
+            />
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
       <div className="flex items-center justify-center gap-3 text-[9px] text-slate-400 mt-1">
-        <Legend swatch={COLOR_BUY}>Mua chưa khớp</Legend>
-        <Legend swatch={COLOR_SELL}>Bán chưa khớp</Legend>
+        <Legend swatch={COLOR_LINE_SECONDARY}>Volume khớp</Legend>
+        <Legend swatch={COLOR_BUY} dashed>Volume khớp TB</Legend>
       </div>
     </div>
   )
 }
 
-// ─── L3 — Money flow (1 line per chart, color points by sign) ─
+// ─── L3 — Money flow (net-volume bars, colored by sign) ─
 
 interface MoneyFlowRow {
   date?: string
@@ -399,7 +400,7 @@ export function MoneyFlowRawChart({
       <ChartTitle>{title}</ChartTitle>
       <div className="h-[170px]">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 22, right: 10, left: 4, bottom: 4 }}>
+          <BarChart data={data} margin={{ top: 22, right: 10, left: 4, bottom: 4 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
             <XAxis
               dataKey="date"
@@ -434,30 +435,12 @@ export function MoneyFlowRawChart({
                   />
                 )
               }}
+              cursor={{ fill: "#1e293b55" }}
             />
-            <Line
-              type="monotone"
-              dataKey="total"
-              stroke={COLOR_LINE_PRIMARY}
-              strokeWidth={2}
-              isAnimationActive={false}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              dot={(props: any) => {
-                const value = (props.payload as (typeof data)[number] | undefined)?.total ?? 0
-                const color = value >= 0 ? COLOR_POS : COLOR_NEG
-                return (
-                  <circle
-                    key={`dot-${props.index ?? 0}`}
-                    cx={props.cx ?? 0}
-                    cy={props.cy ?? 0}
-                    r={3.5}
-                    fill={color}
-                    stroke="none"
-                  />
-                )
-              }}
-              activeDot={{ r: 5 }}
-            >
+            <Bar dataKey="total" radius={[2, 2, 0, 0]} isAnimationActive={false}>
+              {data.map((row, i) => (
+                <Cell key={i} fill={row.total >= 0 ? COLOR_POS : COLOR_NEG} />
+              ))}
               <LabelList
                 dataKey="totalLabel"
                 position="top"
@@ -466,8 +449,8 @@ export function MoneyFlowRawChart({
                 fontSize={9}
                 fontWeight={700}
               />
-            </Line>
-          </LineChart>
+            </Bar>
+          </BarChart>
         </ResponsiveContainer>
       </div>
       <div className="flex items-center justify-center gap-3 text-[9px] text-slate-400 mt-1">
