@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { AlertTriangle, Sparkles } from "lucide-react"
+import { AlertTriangle, Info, Sparkles } from "lucide-react"
 
 // ─── Types ─────────────────────────────────────────────
 
@@ -143,7 +143,7 @@ function Frame({ children }: { children: React.ReactNode }) {
         <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">
           Chỉ số BCTC
         </span>
-        <Sparkles className="size-3 text-muted-foreground/60" />
+        <Info className="size-3 text-muted-foreground/60" />
       </div>
       {children}
     </div>

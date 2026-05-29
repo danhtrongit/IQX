@@ -4,9 +4,10 @@ import {
   ArrowLeftRight,
   Droplets,
   Newspaper,
+  Settings2,
+  Shield,
   Sparkles,
   TrendingUp,
-  Users,
 } from "lucide-react"
 import { AIAnalyzingOverlay } from "@/components/patterns/ai-analyzing-overlay"
 
@@ -27,64 +28,61 @@ interface InsightResponse {
 }
 
 interface LayerSpec {
-  key: keyof InsightResponse["layers"] | string
+  key: string
   index: number
   title: string
   icon: typeof TrendingUp
-  iconColor: string
+  color: string
   iconBg: string
-  /** Which output keys to render as label/value rows (in display order). */
+  /** Output keys rendered as label/value rows (in display order). */
   rows: string[]
-  /** Output key to use for the status pill in the card header. */
-  statusKey?: string
 }
 
 const LAYERS: LayerSpec[] = [
   {
     key: "trend",
     index: 1,
-    title: "XU HƯỚNG",
+    title: "Xu hướng",
     icon: TrendingUp,
-    iconColor: "#f87171",
-    iconBg: "bg-red-500/15",
+    color: "#3b82f6",
+    iconBg: "bg-blue-500/15",
     rows: ["Xu hướng", "Trạng thái"],
   },
   {
     key: "liquidity",
     index: 2,
-    title: "THANH KHOẢN",
+    title: "Thanh khoản",
     icon: Droplets,
-    iconColor: "#06b6d4",
+    color: "#06b6d4",
     iconBg: "bg-cyan-500/15",
-    statusKey: "Thanh khoản",
     rows: ["Cung - Cầu"],
   },
   {
     key: "moneyFlow",
     index: 3,
-    title: "DÒNG TIỀN",
+    title: "Dòng tiền",
     icon: ArrowLeftRight,
-    iconColor: "#10b981",
+    color: "#10b981",
     iconBg: "bg-emerald-500/15",
     rows: ["Khối ngoại", "Tự doanh"],
   },
   {
     key: "insider",
     index: 4,
-    title: "NỘI BỘ",
-    icon: Users,
-    iconColor: "#f59e0b",
+    title: "Nội bộ",
+    icon: Shield,
+    color: "#f59e0b",
     iconBg: "bg-amber-500/15",
-    rows: ["Mức cảnh báo"],
+    rows: ["Nội bộ", "Mức cảnh báo"],
   },
   {
     key: "news",
     index: 5,
-    title: "TIN TỨC",
+    title: "Tin tức",
     icon: Newspaper,
-    iconColor: "#ec4899",
+    color: "#ec4899",
     iconBg: "bg-pink-500/15",
-    rows: ["Tác động"],
+    rows: ["Tổng quan", "Tác động"],
   },
 ]
 
@@ -93,12 +91,14 @@ function statusValueColor(value: string): string {
   const v = value.toLowerCase()
   if (
     v.includes("tăng") || v.includes("mua") || v.includes("tích cực") ||
-    v.includes("hỗ trợ") || v.includes("thuận lợi") || v.includes("cải thiện")
+    v.includes("hỗ trợ") || v.includes("thuận lợi") || v.includes("cải thiện") ||
+    v.includes("ủng hộ")
   )
     return "text-emerald-400"
   if (
     v.includes("giảm") || v.includes("bán") || v.includes("suy yếu") ||
-    v.includes("tiêu cực") || v.includes("yếu") || v.includes("áp lực")
+    v.includes("tiêu cực") || v.includes("yếu") || v.includes("áp lực") ||
+    v.includes("cảnh báo") || v.includes("kẹt")
   )
     return "text-red-400"
   if (v.includes("thận trọng") || v.includes("trung tính") || v.includes("ngang"))
@@ -199,7 +199,7 @@ export function ForecastLayerCards({ symbol }: { symbol: string | null }) {
 
   return (
     <Frame>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+      <div className="space-y-2">
         {LAYERS.map((spec) => (
           <LayerCard key={spec.key} spec={spec} layer={insight.layers?.[spec.key]} />
         ))}
@@ -215,7 +215,7 @@ function Frame({ children }: { children: React.ReactNode }) {
         <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">
           Tóm tắt 5 lớp dữ liệu
         </span>
-        <Sparkles className="size-3 text-muted-foreground/60" />
+        <Settings2 className="size-3 text-muted-foreground/60" />
       </div>
       {children}
     </div>
@@ -225,40 +225,47 @@ function Frame({ children }: { children: React.ReactNode }) {
 function LayerCard({ spec, layer }: { spec: LayerSpec; layer: LayerData | undefined }) {
   const Icon = spec.icon
   const output = layer?.output ?? null
-  const status = spec.statusKey ? readString(output, spec.statusKey) : ""
+  const rows = spec.rows
+    .map((key) => ({ label: key, value: readString(output, key) }))
+    .filter((r) => r.value)
 
   return (
-    <div className="rounded-lg border border-border/30 bg-background/40 p-2.5">
-      <div className="flex items-center gap-2 mb-2">
-        <div className={`size-7 rounded-md flex items-center justify-center shrink-0 ${spec.iconBg}`}>
-          <Icon className="size-3.5" style={{ color: spec.iconColor }} />
-        </div>
-        <span className="text-[11px] font-bold text-muted-foreground tabular-nums">
-          {spec.index}.
+    <div
+      className="flex rounded-lg border border-border/30 bg-background/40 overflow-hidden"
+      style={{ borderLeft: `3px solid ${spec.color}` }}
+    >
+      {/* L# badge column */}
+      <div className="flex items-center justify-center px-2 shrink-0">
+        <span
+          className="text-[10px] font-black tabular-nums"
+          style={{ color: spec.color }}
+        >
+          L{spec.index}
         </span>
-        <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">
-          {spec.title}
-        </span>
-        {status && (
-          <span className={`ml-auto text-[10px] font-semibold ${statusValueColor(status)}`}>
-            {status}
-          </span>
-        )}
       </div>
-      <div className="space-y-1">
-        {spec.rows.map((rowKey) => {
-          const value = readString(output, rowKey)
-          if (!value) return null
-          return (
-            <div key={rowKey} className="flex items-center justify-between gap-2">
-              <span className="text-[10px] text-muted-foreground shrink-0">{rowKey}</span>
-              <span className={`text-[11px] font-semibold text-right truncate ${statusValueColor(value)}`}>
-                {value}
-              </span>
-            </div>
-          )
-        })}
-        {!output && (
+
+      {/* Body */}
+      <div className="flex-1 min-w-0 py-2 pr-3">
+        <div className="flex items-center gap-2 mb-1">
+          <div className={`size-6 rounded-md flex items-center justify-center shrink-0 ${spec.iconBg}`}>
+            <Icon className="size-3.5" style={{ color: spec.color }} />
+          </div>
+          <span className="text-sm font-bold text-foreground">{spec.title}</span>
+        </div>
+        {rows.length > 0 ? (
+          <div className="space-y-0.5">
+            {rows.map((row) => (
+              <div key={row.label} className="flex items-start justify-between gap-3">
+                <span className="text-[11px] text-muted-foreground shrink-0">{row.label}</span>
+                <span
+                  className={`text-[11px] font-semibold text-right line-clamp-1 ${statusValueColor(row.value)}`}
+                >
+                  {row.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
           <span className="text-[10px] text-muted-foreground italic">Chưa có dữ liệu</span>
         )}
       </div>
