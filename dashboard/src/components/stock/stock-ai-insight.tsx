@@ -34,6 +34,14 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api/v1"
 
+// Radix ScrollArea's viewport renders an inner wrapper with inline
+// `display:table; min-width:100%`, which lets wide children (recharts charts,
+// long status text) grow to their max-content width and overflow the panel
+// horizontally — badly visible on mobile. Force that wrapper to block so it's
+// constrained to the viewport width; charts then measure the real width.
+const SCROLL_CONSTRAIN =
+  "[&>[data-slot=scroll-area-viewport]>div]:!block [&>[data-slot=scroll-area-viewport]>div]:!min-w-0"
+
 // ── Layer config ──
 
 const LAYERS_ORDER = ["trend", "liquidity", "moneyFlow", "insider", "news"] as const
@@ -374,7 +382,7 @@ function DetailPanel({
         </button>
       </div>
 
-      <ScrollArea className="flex-1 min-h-0">
+      <ScrollArea className={`flex-1 min-h-0 ${SCROLL_CONSTRAIN}`}>
         {/* AI Analysis Output — shown for every layer incl. L6. Per feedback
             the L6 deterministic score block ("Tổng hợp & Hành động") was
             removed from the detail; only this "Kết quả phân tích" is kept. */}
@@ -945,7 +953,7 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
               - md+: 3-column (layer cards | summary | detail panel) ─── */}
       <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden relative">
         {/* ─── Mobile: vertical scroll with everything stacked ─── */}
-        <ScrollArea className="md:hidden flex-1 min-h-0">
+        <ScrollArea className={`md:hidden flex-1 min-h-0 ${SCROLL_CONSTRAIN}`}>
           <div className="p-3 space-y-3">
             {/* Summary card */}
             <MobileSummaryCard
