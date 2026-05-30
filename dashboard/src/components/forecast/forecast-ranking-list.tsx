@@ -3,17 +3,16 @@ import { AlertTriangle, ChevronDown, Sparkles, Star } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { StockLogo } from "@/components/stock/stock-logo"
 import { AIAnalyzingOverlay } from "@/components/patterns/ai-analyzing-overlay"
-import { usePrices } from "@/contexts/market-data-context"
 import { useWatchlist } from "@/hooks/use-watchlist"
 import type { ForecastItem } from "@/hooks/use-forecast-ranking"
 
 const PAGE_SIZE = 5
 
-type SortMode = "return" | "probability"
+type SortMode = "return" | "price"
 
 const SORT_LABELS: Record<SortMode, string> = {
   return: "Lợi nhuận dự kiến",
-  probability: "Xác suất tăng",
+  price: "Giá dự phóng",
 }
 
 function fmtPct(v: number | null | undefined, signed = false): string {
@@ -21,6 +20,12 @@ function fmtPct(v: number | null | undefined, signed = false): string {
   const pct = v * 100
   const sign = signed && pct > 0 ? "+" : ""
   return `${sign}${pct.toFixed(1)}%`
+}
+
+/** Projected price is stored in VND; display in the app's thousands unit. */
+function fmtProjectedPrice(v: number | null | undefined): string {
+  if (v == null || !Number.isFinite(v) || v <= 0) return "—"
+  return (v / 1000).toFixed(2)
 }
 
 /** Returns a stable accent color for the rounded logo badge by symbol. */
@@ -55,14 +60,10 @@ export function ForecastRankingList({
   const [showAll, setShowAll] = useState(false)
   const { isSymbolWatched, toggleSymbol, isUnavailable: watchlistUnavailable } = useWatchlist()
 
-  // Live prices for the visible symbols (subscribes via context).
-  const symbols = useMemo(() => items.map((it) => it.symbol), [items])
-  const { priceMap } = usePrices(symbols)
-
   const sorted = useMemo(() => {
     const copy = [...items]
-    if (sortMode === "probability") {
-      copy.sort((a, b) => (b.upProbability ?? 0) - (a.upProbability ?? 0))
+    if (sortMode === "price") {
+      copy.sort((a, b) => (b.projectedPrice ?? 0) - (a.projectedPrice ?? 0))
     } else {
       copy.sort((a, b) => b.expectedReturn - a.expectedReturn)
     }
@@ -127,7 +128,6 @@ export function ForecastRankingList({
           <div className="p-2 space-y-2">
             {visible.map((it) => {
               const isSelected = selectedSymbol === it.symbol
-              const price = priceMap[it.symbol]?.closePrice ?? priceMap[it.symbol]?.referencePrice
               const tint = logoTint(it.symbol)
               const watched = isSymbolWatched(it.symbol)
               return (
@@ -157,7 +157,7 @@ export function ForecastRankingList({
                         <div>
                           <p className="text-[9px] text-muted-foreground">Giá dự phóng</p>
                           <p className="text-sm font-bold tabular-nums text-foreground">
-                            {price != null && price > 0 ? price.toFixed(2) : "—"}
+                            {fmtProjectedPrice(it.projectedPrice)}
                           </p>
                         </div>
                         <div className="text-right">

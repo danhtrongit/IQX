@@ -8,7 +8,9 @@ export interface ForecastItem {
   symbol: string
   /** Fractional return (0.04 = +4%). */
   expectedReturn: number
-  /** Probability of an upward move (0..1) — may be null if missing. */
+  /** Projected price target in VND (from the Du_Bao sheet); null if missing. */
+  projectedPrice: number | null
+  /** Probability of an upward move (0..1) — null for the Du_Bao list. */
   upProbability: number | null
 }
 
