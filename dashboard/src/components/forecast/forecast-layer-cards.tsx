@@ -77,7 +77,7 @@ const LAYERS: LayerSpec[] = [
     icon: Shield,
     color: "#f59e0b",
     iconBg: "bg-amber-500/15",
-    rows: ["Nội bộ", "Mức cảnh báo"],
+    rows: ["Mức cảnh báo"],
   },
   {
     key: "news",
