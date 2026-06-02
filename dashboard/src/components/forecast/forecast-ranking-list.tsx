@@ -5,6 +5,7 @@ import { StockLogo } from "@/components/stock/stock-logo"
 import { AIAnalyzingOverlay } from "@/components/patterns/ai-analyzing-overlay"
 import { useWatchlist } from "@/hooks/use-watchlist"
 import type { ForecastItem } from "@/hooks/use-forecast-ranking"
+import { fmtProjectedPrice, fmtPct } from "./forecast-format"
 
 const PAGE_SIZE = 5
 
@@ -13,19 +14,6 @@ type SortMode = "return" | "price"
 const SORT_LABELS: Record<SortMode, string> = {
   return: "Lợi nhuận dự kiến",
   price: "Giá dự phóng",
-}
-
-function fmtPct(v: number | null | undefined, signed = false): string {
-  if (v == null || !Number.isFinite(v)) return "—"
-  const pct = v * 100
-  const sign = signed && pct > 0 ? "+" : ""
-  return `${sign}${pct.toFixed(1)}%`
-}
-
-/** Projected price is stored in VND; display in the app's thousands unit. */
-function fmtProjectedPrice(v: number | null | undefined): string {
-  if (v == null || !Number.isFinite(v) || v <= 0) return "—"
-  return (v / 1000).toFixed(2)
 }
 
 /** Returns a stable accent color for the rounded logo badge by symbol. */

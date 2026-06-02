@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { Plus } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useForecastRanking, type ForecastHorizon } from "@/hooks/use-forecast-ranking"
 import { ForecastRankingList } from "./forecast-ranking-list"
@@ -7,6 +6,7 @@ import { ForecastStockHeader } from "./forecast-stock-header"
 import { ForecastLayerCards } from "./forecast-layer-cards"
 import { ForecastPatterns } from "./forecast-patterns"
 import { ForecastRightRail } from "./forecast-right-rail"
+import { fmtProjectedPrice, fmtPct } from "./forecast-format"
 
 // Default horizon — the page itself has no horizon selector in the mockup.
 const DEFAULT_HORIZON: ForecastHorizon = "5"
@@ -44,7 +44,7 @@ export function ForecastPage() {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* ── Mobile: horizontal symbol chips ── */}
+      {/* ── Mobile: thẻ mã kèm Giá dự phóng + Lợi nhuận dự kiến ── */}
       <div className="lg:hidden border-b border-border/30 bg-card/40 shrink-0">
         <div className="flex items-center gap-2 px-3 py-2 overflow-x-auto">
           {items.map((it) => {
@@ -53,22 +53,39 @@ export function ForecastPage() {
               <button
                 key={it.symbol}
                 onClick={() => setSelectedSymbol(it.symbol)}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border text-xs font-bold whitespace-nowrap transition-colors ${
+                className={`shrink-0 w-[150px] rounded-xl border px-3 py-2 text-left transition-colors ${
                   active
-                    ? "border-primary/60 bg-primary/10 text-primary"
-                    : "border-border/40 text-muted-foreground hover:text-foreground"
+                    ? "border-primary/60 bg-primary/10"
+                    : "border-border/40 bg-card/40 hover:border-border"
                 }`}
               >
-                <span
-                  className={`size-1.5 rounded-full ${active ? "bg-primary" : "bg-emerald-400"}`}
-                />
-                {it.symbol}
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={`size-1.5 rounded-full ${active ? "bg-primary" : "bg-emerald-400"}`}
+                  />
+                  <span className="text-sm font-extrabold text-foreground">{it.symbol}</span>
+                </div>
+                <div className="mt-1.5 flex items-end justify-between gap-2">
+                  <div>
+                    <p className="text-[9px] text-muted-foreground">Giá dự phóng</p>
+                    <p className="text-sm font-bold tabular-nums text-foreground">
+                      {fmtProjectedPrice(it.projectedPrice)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[9px] text-muted-foreground">Lợi nhuận</p>
+                    <p
+                      className={`text-sm font-bold tabular-nums ${
+                        it.expectedReturn >= 0 ? "text-emerald-400" : "text-red-400"
+                      }`}
+                    >
+                      {fmtPct(it.expectedReturn, true)}
+                    </p>
+                  </div>
+                </div>
               </button>
             )
           })}
-          <span className="inline-flex items-center justify-center size-6 rounded-full border border-border/40 text-muted-foreground shrink-0">
-            <Plus className="size-3" />
-          </span>
         </div>
       </div>
 
