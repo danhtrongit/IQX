@@ -10,6 +10,7 @@ import {
   TrendingUp,
 } from "lucide-react"
 import { AIAnalyzingOverlay } from "@/components/patterns/ai-analyzing-overlay"
+import { netFlowLabel } from "./forecast-format"
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api/v1"
 
@@ -36,6 +37,8 @@ interface LayerSpec {
   iconBg: string
   /** Output keys rendered as label/value rows (in display order). */
   rows: string[]
+  /** Biến đổi giá trị thô trước khi hiển thị (vd rút gọn dòng tiền). */
+  transform?: (value: string) => string
 }
 
 const LAYERS: LayerSpec[] = [
@@ -65,6 +68,7 @@ const LAYERS: LayerSpec[] = [
     color: "#10b981",
     iconBg: "bg-emerald-500/15",
     rows: ["Khối ngoại", "Tự doanh"],
+    transform: netFlowLabel,
   },
   {
     key: "insider",
@@ -226,7 +230,10 @@ function LayerCard({ spec, layer }: { spec: LayerSpec; layer: LayerData | undefi
   const Icon = spec.icon
   const output = layer?.output ?? null
   const rows = spec.rows
-    .map((key) => ({ label: key, value: readString(output, key) }))
+    .map((key) => {
+      const raw = readString(output, key)
+      return { label: key, value: spec.transform && raw ? spec.transform(raw) : raw }
+    })
     .filter((r) => r.value)
 
   return (
