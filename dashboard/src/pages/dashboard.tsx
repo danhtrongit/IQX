@@ -7,8 +7,10 @@ import {
   Footer,
 } from "@/components/layout"
 import { NewsMarkPopover } from "@/components/chart/news-mark-popover"
+import { ForecastWindow } from "@/components/forecast/forecast-window"
 import { SymbolProvider } from "@/contexts/symbol-context"
 import { MarketDataProvider } from "@/contexts/market-data-context"
+import { useSidebar } from "@/contexts/sidebar-context"
 import {
   Dialog,
   DialogContent,
@@ -58,6 +60,7 @@ export default function DashboardPage() {
   }
 
   const [activeMarkId, setActiveMarkId] = useState<string | number | null>(null)
+  const { forecastWindowOpen, closeForecastWindow } = useSidebar()
   const trimmedAiInsight = aiInsightSymbol.trim().toUpperCase()
   const aiInsightValid =
     /^[A-Z0-9]{2,10}$/.test(trimmedAiInsight) && !isIndexSymbol(trimmedAiInsight)
@@ -83,6 +86,9 @@ export default function DashboardPage() {
             markId={activeMarkId}
             onClose={() => setActiveMarkId(null)}
           />
+
+          {/* Mô hình dự báo — cửa sổ kéo–thả */}
+          <ForecastWindow open={forecastWindowOpen} onClose={closeForecastWindow} />
 
           {/* AI Insight symbol picker — opens when user taps "AI Phân tích"
               on the dashboard (which tracks VNINDEX, not a tradable stock). */}

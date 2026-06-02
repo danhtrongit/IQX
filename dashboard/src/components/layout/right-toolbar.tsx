@@ -6,7 +6,6 @@ import {
   CandlestickChart,
   TrendingUp,
 } from "lucide-react"
-import { useNavigate } from "react-router"
 import { useSidebar, type SidebarPanel } from "@/contexts/sidebar-context"
 
 interface ToolbarItem {
@@ -52,8 +51,7 @@ function ToolbarButton({
 }
 
 export function RightToolbar({ onActionClick }: { onActionClick?: (id: string) => void }) {
-  const { activePanel, setActivePanel } = useSidebar()
-  const navigate = useNavigate()
+  const { activePanel, setActivePanel, forecastWindowOpen, openForecastWindow } = useSidebar()
 
   const handleClick = (item: ToolbarItem) => {
     if (item.panel) {
@@ -71,7 +69,7 @@ export function RightToolbar({ onActionClick }: { onActionClick?: (id: string) =
     { icon: Newspaper, label: "Tin tức", id: "news", panel: "news" },
     { icon: Lightbulb, label: "AI Phân tích", id: "ai-insight", onClick: () => onActionClick?.("ai-insight") },
     { icon: CandlestickChart, label: "AI Mẫu nến", id: "ai-patterns", panel: "patterns" },
-    { icon: TrendingUp, label: "Dự báo", id: "ai-forecast", onClick: () => navigate("/du-bao") },
+    { icon: TrendingUp, label: "Dự báo", id: "ai-forecast", onClick: () => openForecastWindow() },
   ]
 
   return (
@@ -83,7 +81,7 @@ export function RightToolbar({ onActionClick }: { onActionClick?: (id: string) =
         <ToolbarButton
           key={item.id}
           item={item}
-          isActive={item.panel === activePanel}
+          isActive={item.id === "ai-forecast" ? forecastWindowOpen : item.panel === activePanel}
           onClick={() => handleClick(item)}
         />
       ))}

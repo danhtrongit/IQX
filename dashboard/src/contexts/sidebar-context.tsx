@@ -8,6 +8,9 @@ interface SidebarContextType {
   togglePanel: (panel: SidebarPanel) => void
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
+  forecastWindowOpen: boolean
+  openForecastWindow: () => void
+  closeForecastWindow: () => void
 }
 
 const SidebarContext = createContext<SidebarContextType>({
@@ -16,6 +19,9 @@ const SidebarContext = createContext<SidebarContextType>({
   togglePanel: () => {},
   isOpen: false,
   setIsOpen: () => {},
+  forecastWindowOpen: false,
+  openForecastWindow: () => {},
+  closeForecastWindow: () => {},
 })
 
 export function SidebarProvider({
@@ -27,6 +33,7 @@ export function SidebarProvider({
 }) {
   const [activePanel, setActivePanel] = useState<SidebarPanel>(defaultPanel)
   const [isOpen, setIsOpen] = useState(false)
+  const [forecastWindowOpen, setForecastWindowOpen] = useState(false)
 
   const togglePanel = (panel: SidebarPanel) => {
     setActivePanel((prev) => {
@@ -45,7 +52,18 @@ export function SidebarProvider({
   }
 
   return (
-    <SidebarContext.Provider value={{ activePanel, setActivePanel: handleSetActivePanel, togglePanel, isOpen, setIsOpen }}>
+    <SidebarContext.Provider
+      value={{
+        activePanel,
+        setActivePanel: handleSetActivePanel,
+        togglePanel,
+        isOpen,
+        setIsOpen,
+        forecastWindowOpen,
+        openForecastWindow: () => setForecastWindowOpen(true),
+        closeForecastWindow: () => setForecastWindowOpen(false),
+      }}
+    >
       {children}
     </SidebarContext.Provider>
   )

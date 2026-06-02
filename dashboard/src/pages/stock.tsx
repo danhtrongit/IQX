@@ -8,12 +8,14 @@ import {
 } from "@/components/layout"
 import { TVChart } from "@/components/chart/tv-chart"
 import { NewsMarkPopover } from "@/components/chart/news-mark-popover"
+import { ForecastWindow } from "@/components/forecast/forecast-window"
 import { StockOverview } from "@/components/stock/stock-overview"
 import { StockFinancials } from "@/components/stock/stock-financials"
 import { StockAiInsight } from "@/components/stock/stock-ai-insight"
 import { useParams, useNavigate, Navigate } from "react-router"
 import { SymbolProvider } from "@/contexts/symbol-context"
 import { MarketDataProvider } from "@/contexts/market-data-context"
+import { useSidebar } from "@/contexts/sidebar-context"
 import { BarChart3, LineChart, Info, X, GripHorizontal, Loader2 } from "lucide-react"
 import { motion, AnimatePresence, useDragControls } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -38,6 +40,7 @@ export default function StockPage() {
   const [activeTab, setActiveTab] = useState<StockTab>("chart")
   const [isAiInsightOpen, setIsAiInsightOpen] = useState(false)
   const [activeMarkId, setActiveMarkId] = useState<string | number | null>(null)
+  const { forecastWindowOpen, closeForecastWindow } = useSidebar()
   const dragControls = useDragControls()
 
   useEffect(() => {
@@ -210,6 +213,9 @@ export default function StockPage() {
               </div>
             )}
           </AnimatePresence>
+
+          {/* Mô hình dự báo — cửa sổ kéo–thả */}
+          <ForecastWindow open={forecastWindowOpen} onClose={closeForecastWindow} />
         </div>
       </SymbolProvider>
     </MarketDataProvider>
