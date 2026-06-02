@@ -55,8 +55,7 @@ export default function SettingsPage() {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
 
   // Profile form
-  const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName] = useState("")
+  const [fullName, setFullName] = useState("")
   const [phone, setPhone] = useState("")
   const [isSavingProfile, setIsSavingProfile] = useState(false)
 
@@ -85,8 +84,7 @@ export default function SettingsPage() {
     try {
       const res = await usersApi.getProfile()
       setProfile(res.data)
-      setFirstName(res.data.firstName || "")
-      setLastName(res.data.lastName || "")
+      setFullName(res.data.fullName || "")
       setPhone(res.data.phone || "")
     } catch {
       toast.error("Không thể tải thông tin tài khoản")
@@ -109,16 +107,13 @@ export default function SettingsPage() {
     setIsSavingProfile(true)
     try {
       const res = await usersApi.updateProfile({
-        firstName: firstName || undefined,
-        lastName: lastName || undefined,
+        fullName: fullName || undefined,
         phone: phone || undefined,
       })
       setProfile(res.data)
       localStorage.setItem("user", JSON.stringify({
         ...user,
         fullName: res.data.fullName,
-        firstName: res.data.firstName,
-        lastName: res.data.lastName,
         phone: res.data.phone,
       }))
       toast.success("Đã cập nhật thông tin!")
@@ -226,32 +221,18 @@ export default function SettingsPage() {
               <p className="text-[10px] text-muted-foreground">Email không thể thay đổi</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="s-fname" className="text-xs">Họ</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-                  <Input
-                    id="s-fname"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Nguyễn"
-                    className="h-10 pl-9 text-sm"
-                  />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="s-lname" className="text-xs">Tên</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-                  <Input
-                    id="s-lname"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Văn A"
-                    className="h-10 pl-9 text-sm"
-                  />
-                </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="s-fullname" className="text-xs">Họ và tên</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <Input
+                  id="s-fullname"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Nguyễn Văn A"
+                  className="h-10 pl-9 text-sm"
+                  autoComplete="name"
+                />
               </div>
             </div>
             <div className="space-y-1.5">

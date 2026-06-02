@@ -1,18 +1,19 @@
 """AI forecast model service.
 
-Reads model output published in the project's Google Spreadsheet, sheet
-``MODEL_AI``. The sheet stores expected return and probability of upward
-move for each ticker across three horizons (T+3, T+5, T+10).
+Reads the curated recommendation list published in the project's Google
+Spreadsheet, sheet ``Du_Bao``. The sheet stores, per ticker, a projected
+price target and the expected return.
 
 Sheet schema::
 
-    ticker | ER_3d | P_up_3d | ER_5d | P_up_5d | ER_10d | P_up_10d
+    ticker | price | return
 
-All numbers are stored as decimals using ``,`` as the fractional
-separator (Vietnamese locale). Values are fractions (``0.04`` = 4%).
+``price`` is the projected price in VND; ``return`` is a fraction
+(``0.06`` = +6%). Numbers use ``,`` as the decimal separator (Vietnamese
+locale).
 
-API exposes a single endpoint that returns the leaderboard for a given
-horizon, ranked by expected return (descending).
+API exposes a leaderboard ranked by expected return (descending) plus a
+per-symbol lookup.
 """
 
 from __future__ import annotations
@@ -25,13 +26,14 @@ from app.services.market_data.sources.google_sheets import fetch_sheet_data
 
 logger = logging.getLogger(__name__)
 
-_SHEET = "MODEL_AI"
+_SHEET = "Du_Bao"
 _CACHE_TTL = 300.0
 _cache: tuple[float, list[dict[str, Any]]] | None = None
 _cache_lock = asyncio.Lock()
 
+# Kept for endpoint query-param compatibility; the Du_Bao list is
+# horizon-agnostic so the value is accepted but not used for filtering.
 Horizon = Literal["3", "5", "10"]
-_VALID_HORIZONS: tuple[Horizon, ...] = ("3", "5", "10")
 
 
 def _to_float(value: Any) -> float | None:
@@ -49,7 +51,7 @@ def _to_float(value: Any) -> float | None:
 
 
 async def _fetch_rows() -> list[dict[str, Any]]:
-    """Read MODEL_AI sheet with TTL caching."""
+    """Read the Du_Bao sheet with TTL caching."""
     global _cache  # noqa: PLW0603
     now = asyncio.get_running_loop().time()
     if _cache and _cache[0] > now:
@@ -64,38 +66,27 @@ async def _fetch_rows() -> list[dict[str, Any]]:
 
 
 def _project(row: dict[str, Any]) -> dict[str, Any]:
-    """Adapt a raw sheet row to numeric forecast record."""
+    """Adapt a raw sheet row to a numeric forecast record."""
     return {
         "symbol": (row.get("ticker") or "").strip().upper(),
-        "expectedReturn": {
-            "3d": _to_float(row.get("ER_3d")),
-            "5d": _to_float(row.get("ER_5d")),
-            "10d": _to_float(row.get("ER_10d")),
-        },
-        "upProbability": {
-            "3d": _to_float(row.get("P_up_3d")),
-            "5d": _to_float(row.get("P_up_5d")),
-            "10d": _to_float(row.get("P_up_10d")),
-        },
+        "projectedPrice": _to_float(row.get("price")),
+        "expectedReturn": _to_float(row.get("return")),
     }
 
 
 async def get_forecast_ranking(
-    horizon: Horizon,
+    horizon: Horizon | None = None,
     *,
     limit: int = 20,
 ) -> dict[str, Any]:
-    """Return the leaderboard for ``horizon`` (3 / 5 / 10) sorted by ER desc.
+    """Return the recommendation leaderboard sorted by expected return desc.
 
-    Each item exposes the symbol, expected return and probability of an
-    upward move for the requested horizon. Tickers without a numeric
-    return are dropped.
+    Each item exposes the symbol, its projected price and the expected
+    return. ``horizon`` is accepted for backwards compatibility but the
+    Du_Bao list is a single curated set (no per-horizon columns).
+    Tickers without a numeric return are dropped.
     """
-    if horizon not in _VALID_HORIZONS:
-        raise ValueError(f"horizon must be one of {_VALID_HORIZONS}")
-
     rows = await _fetch_rows()
-    key = f"{horizon}d"
 
     items: list[dict[str, Any]] = []
     for raw in rows:
@@ -103,13 +94,15 @@ async def get_forecast_ranking(
         sym = rec["symbol"]
         if not sym:
             continue
-        er = rec["expectedReturn"][key]
+        er = rec["expectedReturn"]
         if er is None:
             continue
         items.append({
             "symbol": sym,
             "expectedReturn": er,
-            "upProbability": rec["upProbability"][key],
+            "projectedPrice": rec["projectedPrice"],
+            # No probability column in Du_Bao; kept null for response stability.
+            "upProbability": None,
         })
 
     items.sort(key=lambda x: x["expectedReturn"], reverse=True)
@@ -120,40 +113,27 @@ async def get_forecast_ranking(
         item["rank"] = i + 1
 
     return {
-        "horizon": f"T+{horizon}",
-        "horizonDays": int(horizon),
+        "horizon": f"T+{horizon}" if horizon else "Du_Bao",
+        "horizonDays": int(horizon) if horizon else 0,
         "count": len(items),
         "items": items,
     }
 
 
 async def get_forecast_for_symbol(symbol: str) -> dict[str, Any]:
-    """Return all three horizons for ``symbol``."""
+    """Return the projected price + expected return for ``symbol``."""
     sym = (symbol or "").strip().upper()
     if not sym:
-        return {"symbol": sym, "horizons": []}
+        return {"symbol": sym, "projectedPrice": None, "expectedReturn": None}
 
     rows = await _fetch_rows()
-    record: dict[str, Any] | None = None
     for raw in rows:
         if (raw.get("ticker") or "").strip().upper() == sym:
-            record = _project(raw)
-            break
+            rec = _project(raw)
+            return {
+                "symbol": sym,
+                "projectedPrice": rec["projectedPrice"],
+                "expectedReturn": rec["expectedReturn"],
+            }
 
-    if record is None:
-        return {"symbol": sym, "horizons": []}
-
-    horizons = []
-    for h in _VALID_HORIZONS:
-        key = f"{h}d"
-        er = record["expectedReturn"][key]
-        if er is None:
-            continue
-        horizons.append({
-            "horizon": f"T+{h}",
-            "horizonDays": int(h),
-            "expectedReturn": er,
-            "upProbability": record["upProbability"][key],
-        })
-
-    return {"symbol": sym, "horizons": horizons}
+    return {"symbol": sym, "projectedPrice": None, "expectedReturn": None}

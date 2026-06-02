@@ -22,6 +22,7 @@ export default function HomeHeader() {
     }, []);
 
     return (
+        <>
         <header
             id="site-header"
             style={{
@@ -143,7 +144,14 @@ export default function HomeHeader() {
                 {mobileOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
 
-            {mobileOpen && (
+            <style>{`
+        @media (max-width: 1024px) {
+          .desktop-nav { display: none !important; }
+          .mobile-menu-btn { display: block !important; }
+        }
+      `}</style>
+        </header>
+        {mobileOpen && (
                 <div
                     className="mobile-nav"
                     style={{
@@ -152,12 +160,13 @@ export default function HomeHeader() {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: 'rgba(0,0,0,0.95)',
-                        backdropFilter: 'blur(20px)',
+                        zIndex: 1001,
+                        background: '#0a0a0a',
                         padding: '24px',
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '8px',
+                        overflowY: 'auto',
                     }}
                 >
                     {navLinks.map((link) => (
@@ -197,13 +206,6 @@ export default function HomeHeader() {
                     </Link>
                 </div>
             )}
-
-            <style>{`
-        @media (max-width: 1024px) {
-          .desktop-nav { display: none !important; }
-          .mobile-menu-btn { display: block !important; }
-        }
-      `}</style>
-        </header>
+        </>
     );
 }

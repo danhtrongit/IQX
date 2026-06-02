@@ -32,9 +32,11 @@ class PremiumPlanRepository:
         return result.scalar_one_or_none()
 
     async def list_active(self) -> list[PremiumPlan]:
+        """Active plans visible to end users. Hides internal codes (e.g. TRIAL_7D)."""
         result = await self._session.execute(
             select(PremiumPlan)
             .where(PremiumPlan.is_active.is_(True))
+            .where(PremiumPlan.code != "TRIAL_7D")
             .order_by(PremiumPlan.sort_order, PremiumPlan.price_vnd)
         )
         return list(result.scalars().all())

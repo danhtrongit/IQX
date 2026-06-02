@@ -41,22 +41,28 @@ function fmtCompact(n: number): string {
   return String(n)
 }
 
-// KBS reports: format value (unit=1000 means values in thousands)
+// Backend now returns canonical VND raw values for all report fields.
+// Display in tỷ VND (divide by 1e9) with 2 decimal places.
 function fmtReport(v: number | null | undefined): string {
   if (v == null) return "—"
-  // Already in thousands from KBS. Show as: X,XXX.XX (tỷ = /1e6)
-  // Display raw number formatted with commas and 2 decimals for tỷ
-  const abs = Math.abs(v)
-  if (abs >= 1e6) {
-    const formatted = (v / 1e6).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    return formatted
-  }
-  if (abs >= 1e3) {
-    const formatted = (v / 1e3).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    return formatted
-  }
   if (v === 0) return "0"
-  return v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const abs = Math.abs(v)
+  if (abs >= 1e9) {
+    return (v / 1e9).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  }
+  if (abs >= 1e6) {
+    return (v / 1e6).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  }
+  return v.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
 }
 
 type FinSubTab = "KQKD" | "CDKT" | "LCTT" | "ratios"
@@ -125,14 +131,10 @@ function FinancialReport({
     )
       .then((r) => r.json())
       .then((res) => {
-        // Try new response shape first, then fallback to old KBS shape
         const d = res?.data || res
         if (d && d.Head && d.Content) {
           setHeads(d.Head || [])
           setSections(d.Content || {})
-        } else if (d && Array.isArray(d)) {
-          // Backend may return flat array — show empty state with clear message
-          setError("Định dạng dữ liệu mới — đang cập nhật hiển thị")
         } else {
           setError("Không có dữ liệu")
         }
@@ -302,34 +304,49 @@ function FinancialRatios({ symbol, ratioPeriod }: { symbol: string; ratioPeriod:
 
   useEffect(() => {
     setIsLoading(true)
-    // New backend: /market-data/fundamentals/{symbol}/ratio?period=Q|Y
+    // Backend returns ratios sorted newest → oldest with canonical
+    // snake_case keys (revenue, net_profit, eps, …).
     fetch(`${API_BASE}/market-data/fundamentals/${symbol.toUpperCase()}/ratio?period=${ratioPeriod}`)
       .then((r) => r.json())
       .then((res) => {
-        const d = res?.data || res
-        const data = d?.ratio || d
+        const d = res?.data ?? res
+        const data = Array.isArray(d) ? d : d?.ratio
         setRatios(Array.isArray(data) ? data : [])
       })
       .catch(() => setRatios([]))
       .finally(() => setIsLoading(false))
   }, [symbol, ratioPeriod])
 
-  const chronological = useMemo(() => [...ratios].reverse().slice(-12), [ratios])
+  // Backend already sorts newest → oldest. Take last 12, then reverse so the
+  // chart progresses left → right in chronological order.
+  const chronological = useMemo(
+    () => [...ratios].slice(0, 12).reverse(),
+    [ratios],
+  )
 
   const chartData = useMemo(
     () =>
-      chronological.map((r) => ({
-        period: ratioPeriod === "Q" ? `Q${r.lengthReport}/${r.yearReport}` : String(r.yearReport),
-        revenue: r.revenue ? +(r.revenue / 1e9).toFixed(0) : 0,
-        netProfit: r.netProfit ? +(r.netProfit / 1e9).toFixed(0) : 0,
-        grossMargin: r.grossMargin ? +(r.grossMargin * 100).toFixed(1) : 0,
-        netProfitMargin: r.netProfitMargin ? +(r.netProfitMargin * 100).toFixed(1) : 0,
-        roe: r.roe ? +(r.roe * 100).toFixed(1) : 0,
-      })),
-    [chronological, ratioPeriod]
+      chronological.map((r: any) => {
+        const length = r.length_report ?? r.lengthReport ?? r.quarter
+        const year = r.year_report ?? r.yearReport ?? r.year
+        const revenue = r.revenue ?? r.totalOperatingIncome ?? r.total_operating_income ?? 0
+        const netProfit = r.net_profit ?? r.netProfit ?? r.profitAfterTax ?? r.profit_after_tax ?? r.net_profit_after_tax ?? 0
+        const grossMargin = r.gross_margin ?? r.grossMargin ?? 0
+        const netProfitMargin = r.net_profit_margin ?? r.netProfitMargin ?? r.afterTaxProfitMargin ?? r.after_tax_profit_margin ?? 0
+        const roe = r.roe ?? 0
+        return {
+          period: ratioPeriod === "Q" ? `Q${length}/${year}` : String(year),
+          revenue: revenue ? +(revenue / 1e9).toFixed(0) : 0,
+          netProfit: netProfit ? +(netProfit / 1e9).toFixed(0) : 0,
+          grossMargin: grossMargin ? +(grossMargin * 100).toFixed(1) : 0,
+          netProfitMargin: netProfitMargin ? +(netProfitMargin * 100).toFixed(1) : 0,
+          roe: roe ? +(roe * 100).toFixed(1) : 0,
+        }
+      }),
+    [chronological, ratioPeriod],
   )
 
-  const latest = ratios[0] || null
+  const latest: any = ratios[0] || null
 
   if (isLoading) {
     return (
@@ -366,9 +383,26 @@ function FinancialRatios({ symbol, ratioPeriod }: { symbol: string; ratioPeriod:
           <>
             <InfoRow label="ROE" value={latest.roe ? (latest.roe * 100).toFixed(2) + "%" : "—"} />
             <InfoRow label="ROA" value={latest.roa ? (latest.roa * 100).toFixed(2) + "%" : "—"} />
-            <InfoRow label="Biên LN gộp" value={latest.grossMargin ? (latest.grossMargin * 100).toFixed(2) + "%" : "—"} />
-            <InfoRow label="Biên LN ròng" value={latest.netProfitMargin ? (latest.netProfitMargin * 100).toFixed(2) + "%" : "—"} />
-            <InfoRow label="Hệ số TT" value={latest.currentRatio?.toFixed(2) ?? "—"} />
+            <InfoRow
+              label="Biên LN gộp"
+              value={
+                (latest.gross_margin ?? latest.grossMargin)
+                  ? ((latest.gross_margin ?? latest.grossMargin) * 100).toFixed(2) + "%"
+                  : "—"
+              }
+            />
+            <InfoRow
+              label="Biên LN ròng"
+              value={
+                (latest.net_profit_margin ?? latest.netProfitMargin ?? latest.afterTaxProfitMargin ?? latest.after_tax_profit_margin)
+                  ? ((latest.net_profit_margin ?? latest.netProfitMargin ?? latest.afterTaxProfitMargin ?? latest.after_tax_profit_margin) * 100).toFixed(2) + "%"
+                  : "—"
+              }
+            />
+            <InfoRow
+              label="Hệ số TT"
+              value={(latest.current_ratio ?? latest.currentRatio)?.toFixed(2) ?? "—"}
+            />
           </>
         )}
       </div>
@@ -430,32 +464,36 @@ function FinancialRatios({ symbol, ratioPeriod }: { symbol: string; ratioPeriod:
               <thead>
                 <tr className="border-b border-border/40">
                   <th className="text-left py-1.5 px-2 text-muted-foreground font-medium min-w-[80px]"></th>
-                  {chronological.slice(-6).map((r, i) => (
-                    <th key={i} className="text-right py-1.5 px-2 text-muted-foreground font-semibold">
-                      {ratioPeriod === "Q" ? `Q${r.lengthReport}/${r.yearReport}` : r.yearReport}
-                    </th>
-                  ))}
+                  {chronological.slice(-6).map((r: any, i) => {
+                    const length = r.length_report ?? r.lengthReport ?? r.quarter
+                    const year = r.year_report ?? r.yearReport ?? r.year
+                    return (
+                      <th key={i} className="text-right py-1.5 px-2 text-muted-foreground font-semibold">
+                        {ratioPeriod === "Q" ? `Q${length}/${year}` : year}
+                      </th>
+                    )
+                  })}
                 </tr>
               </thead>
               <tbody>
                 {[
-                  { label: "Doanh thu", key: "revenue", fmt: (v: number) => fmtRatioVal(v), bold: true },
-                  { label: "Lợi nhuận", key: "netProfit", fmt: (v: number) => fmtRatioVal(v), bold: true },
-                  { label: "TT DT", key: "revenueGrowth", fmt: (v: number) => (v ? (v * 100).toFixed(1) + "%" : "—"), isGrowth: true },
-                  { label: "TT LN", key: "netProfitGrowth", fmt: (v: number) => (v ? (v * 100).toFixed(1) + "%" : "—"), isGrowth: true },
-                  { label: "Biên gộp", key: "grossMargin", fmt: (v: number) => (v ? (v * 100).toFixed(1) + "%" : "—") },
-                  { label: "Biên ròng", key: "netProfitMargin", fmt: (v: number) => (v ? (v * 100).toFixed(1) + "%" : "—") },
-                  { label: "ROE", key: "roe", fmt: (v: number) => (v ? (v * 100).toFixed(1) + "%" : "—") },
-                  { label: "ROA", key: "roa", fmt: (v: number) => (v ? (v * 100).toFixed(1) + "%" : "—") },
-                  { label: "P/E", key: "pe", fmt: (v: number) => v?.toFixed(1) ?? "—" },
-                  { label: "EPS", key: "eps", fmt: (v: number) => (v ? fmtVnd(v) : "—") },
+                  { label: "Doanh thu", keys: ["revenue", "totalOperatingIncome", "total_operating_income"], fmt: (v: number) => fmtRatioVal(v), bold: true },
+                  { label: "Lợi nhuận", keys: ["net_profit", "netProfit", "profitAfterTax", "profit_after_tax", "net_profit_after_tax"], fmt: (v: number) => fmtRatioVal(v), bold: true },
+                  { label: "TT DT", keys: ["revenue_growth", "revenueGrowth"], fmt: (v: number) => (v ? (v * 100).toFixed(1) + "%" : "—"), isGrowth: true },
+                  { label: "TT LN", keys: ["net_profit_growth", "netProfitGrowth"], fmt: (v: number) => (v ? (v * 100).toFixed(1) + "%" : "—"), isGrowth: true },
+                  { label: "Biên gộp", keys: ["gross_margin", "grossMargin"], fmt: (v: number) => (v ? (v * 100).toFixed(1) + "%" : "—") },
+                  { label: "Biên ròng", keys: ["net_profit_margin", "netProfitMargin", "afterTaxProfitMargin", "after_tax_profit_margin"], fmt: (v: number) => (v ? (v * 100).toFixed(1) + "%" : "—") },
+                  { label: "ROE", keys: ["roe"], fmt: (v: number) => (v ? (v * 100).toFixed(1) + "%" : "—") },
+                  { label: "ROA", keys: ["roa"], fmt: (v: number) => (v ? (v * 100).toFixed(1) + "%" : "—") },
+                  { label: "P/E", keys: ["pe"], fmt: (v: number) => v?.toFixed(1) ?? "—" },
+                  { label: "EPS", keys: ["eps"], fmt: (v: number) => (v ? fmtVnd(v) : "—") },
                 ].map((row) => (
-                  <tr key={row.key} className="border-b border-border/10 hover:bg-muted/10">
+                  <tr key={row.label} className="border-b border-border/10 hover:bg-muted/10">
                     <td className={`py-[5px] px-2 whitespace-nowrap ${(row as any).bold ? "font-bold text-foreground" : "text-foreground/80"}`}>
                       {row.label}
                     </td>
                     {chronological.slice(-6).map((r: any, i) => {
-                      const val = r[row.key]
+                      const val = row.keys.map((k) => r[k]).find((v) => v != null && v !== 0) ?? null
                       const isGrowth = (row as any).isGrowth
                       return (
                         <td key={i} className="text-right py-[5px] px-2 tabular-nums whitespace-nowrap">

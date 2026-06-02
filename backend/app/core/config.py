@@ -102,6 +102,15 @@ class Settings(BaseSettings):
     # ── Google Sheets ────────────────────────────────
     GOOGLE_SHEETS_API_KEY: str = ""
 
+    # ── Background Jobs ──────────────────────────────
+    JOBS_ENABLED: bool = True
+
+    # ── Lessons / Media ───────────────────────────────
+    LESSON_MEDIA_DIR: str = "./media"
+    LESSON_MAX_PDF_MB: int = 50
+    LESSON_MAX_VIDEO_MB: int = 500
+    LESSON_MAX_THUMBNAIL_MB: int = 5
+
     @property
     def cors_origins_list(self) -> list[str]:
         """Parse CORS_ORIGINS as a comma-separated string into a list."""

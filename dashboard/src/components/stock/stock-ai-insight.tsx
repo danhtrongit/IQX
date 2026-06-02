@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
+import { useNavigate } from "react-router"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   TrendingUp,
@@ -17,7 +18,6 @@ import {
 	  Database,
 	  Sparkles,
   Clock,
-  ChevronDown,
   Table,
 	} from "lucide-react"
 	import { ScrollArea } from "@/components/ui/scroll-area"
@@ -25,8 +25,22 @@ import {
 	  formatSupportResistance,
 	  getLayerSummary as buildLayerSummary,
 	} from "./stock-ai-insight-utils"
+	import {
+	  InsiderRawChart,
+	  LiquidityRawChart,
+	  MoneyFlowRawChart,
+	  TrendRawChart,
+	} from "./stock-ai-insight-charts"
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api/v1"
+
+// Radix ScrollArea's viewport renders an inner wrapper with inline
+// `display:table; min-width:100%`, which lets wide children (recharts charts,
+// long status text) grow to their max-content width and overflow the panel
+// horizontally — badly visible on mobile. Force that wrapper to block so it's
+// constrained to the viewport width; charts then measure the real width.
+const SCROLL_CONSTRAIN =
+  "[&>[data-slot=scroll-area-viewport]>div]:!block [&>[data-slot=scroll-area-viewport]>div]:!min-w-0"
 
 // ── Layer config ──
 
@@ -79,7 +93,7 @@ const LAYER_CONFIG: Record<string, {
 interface InsightResponse {
   symbol: string
   timestamp: string
-  layers: Record<string, { label: string; output: any }>
+  layers: Record<string, { label: string; output: any; status?: string; score?: number }>
   rawInput: {
     trend: { realtime: any; ohlcv: any[]; computed: { ma10: number; ma20: number; volMa10: number; volMa20: number; latestClose: number } }
     liquidity: { latest: any; avg30: any; history: any[] }
@@ -94,6 +108,7 @@ interface InsightResponse {
     action: string
     confidence: number
     reversalProbability: number
+    totalPower?: number
   }
 }
 
@@ -119,6 +134,7 @@ const DECISION_OUTPUT_ROWS: Array<{ key: string; icon: typeof Sparkles; color: s
   { key: "Kịch bản bất lợi", icon: TrendingDown, color: "text-red-400" },
   { key: "Kịch bản đi ngang", icon: MinusCircle, color: "text-amber-400" },
 ]
+
 
 function DecisionOutput({ output }: { output: Record<string, any> }) {
   const rendered = new Set<string>()
@@ -325,16 +341,27 @@ function DetailPanel({
   const cfg = layerKey === "decision"
     ? { label: "Tổng hợp & Hành động", shortLabel: "L6", icon: Brain, color: "hsl(var(--primary))" }
     : LAYER_CONFIG[layerKey]
+  const Icon = cfg?.icon
+  // Defer the heavy recharts mount until the panel finishes its 180ms slide-in.
+  // Painting an SVG with dozens of <line>/<text> nodes mid-animation blocks
+  // the main thread long enough that the slide jerked from ~50% to 100%.
+  const [chartReady, setChartReady] = useState(false)
+  useEffect(() => {
+    setChartReady(false)
+    const t = window.setTimeout(() => setChartReady(true), 220)
+    return () => window.clearTimeout(t)
+  }, [layerKey])
   if (!cfg || !layerData) return null
-  const Icon = cfg.icon
-  const [showRawData, setShowRawData] = useState(false)
 
   return (
     <motion.div
       initial={{ x: 340, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 340, opacity: 0 }}
-      transition={{ type: "spring", stiffness: 220, damping: 26 }}
+      // Spring (stiffness 220) ran 500-800ms; if a heavy chart painted mid-
+      // animation, the main thread stalled and the panel jerked. Short tween
+      // finishes before recharts gets to its first paint.
+      transition={{ duration: 0.18, ease: "easeOut" }}
       className="hidden md:flex md:flex-1 md:min-w-[320px] bg-background/95 backdrop-blur-xl md:border-l border-border/30 shadow-2xl flex-col"
     >
       {/* Header */}
@@ -355,45 +382,36 @@ function DetailPanel({
         </button>
       </div>
 
-      <ScrollArea className="flex-1 min-h-0">
-        {/* AI Analysis Output */}
+      <ScrollArea className={`flex-1 min-h-0 ${SCROLL_CONSTRAIN}`}>
+        {/* AI Analysis Output — shown for every layer incl. L6. Per feedback
+            the L6 deterministic score block ("Tổng hợp & Hành động") was
+            removed from the detail; only this "Kết quả phân tích" is kept. */}
         <div className="p-3 border-b border-border/10">
           <div className="flex items-center gap-1.5 mb-2">
             <Sparkles className="size-3 text-primary" />
             <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Kết quả phân tích</span>
           </div>
           <div className="text-xs leading-relaxed">
-	            {renderOutput(layerData.output, layerKey)}
+            {renderOutput(layerData.output, layerKey)}
           </div>
         </div>
 
-        {/* Raw Input Data (expandable) */}
+        {/* Raw Input Data — always shown (accordion removed per ISSUE-016). */}
         {layerKey !== "decision" && (
           <div className="p-3">
-            <button
-              onClick={() => setShowRawData(!showRawData)}
-              className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground hover:text-foreground cursor-pointer transition-colors w-full"
-            >
+            <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground">
               <Database className="size-3" />
               <span className="uppercase tracking-wider">Dữ liệu đầu vào chi tiết</span>
-              <ChevronDown className={`size-3 ml-auto transition-transform ${showRawData ? "rotate-180" : ""}`} />
-            </button>
-
-            <AnimatePresence>
-              {showRawData && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="overflow-hidden"
-                >
-                  <div className="mt-3 space-y-3">
-                    <RawInputContent layerKey={layerKey} rawInput={insight.rawInput} />
-                  </div>
-                </motion.div>
+            </div>
+            <div className="mt-3 space-y-3 min-h-[200px]">
+              {chartReady ? (
+                <RawInputContent layerKey={layerKey} rawInput={insight.rawInput} />
+              ) : (
+                <div className="flex items-center justify-center h-[200px] text-[10px] text-muted-foreground">
+                  Đang tải biểu đồ...
+                </div>
               )}
-            </AnimatePresence>
+            </div>
           </div>
         )}
       </ScrollArea>
@@ -461,36 +479,9 @@ function TrendRawInput({ data }: { data: InsightResponse["rawInput"]["trend"] })
         <DataRow label="Giá đóng cửa gần nhất" value={computed.latestClose?.toFixed(2) || "—"} />
       </div>
 
-      {/* OHLCV table (last 10) */}
-      <div>
-        <SectionTitle>OHLCV ({ohlcv.length} phiên)</SectionTitle>
-        <div className="overflow-x-auto">
-          <table className="w-full text-[9px]">
-            <thead>
-              <tr className="text-muted-foreground border-b border-border/20">
-                <th className="text-left py-1 pr-2">Ngày</th>
-                <th className="text-right px-1">O</th>
-                <th className="text-right px-1">H</th>
-                <th className="text-right px-1">L</th>
-                <th className="text-right px-1">C</th>
-                <th className="text-right pl-1">Vol</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ohlcv.slice(-10).map((r: any, i: number) => (
-                <tr key={i} className="border-b border-border/5 hover:bg-muted/10">
-                  <td className="py-0.5 pr-2 text-muted-foreground">{r.date?.split("T")[0]}</td>
-                  <td className="text-right px-1 tabular-nums">{r.open?.toFixed(1)}</td>
-                  <td className="text-right px-1 tabular-nums text-emerald-400">{r.high?.toFixed(1)}</td>
-                  <td className="text-right px-1 tabular-nums text-red-400">{r.low?.toFixed(1)}</td>
-                  <td className="text-right px-1 tabular-nums font-medium">{r.close?.toFixed(1)}</td>
-                  <td className="text-right pl-1 tabular-nums">{fmtNum(r.volume)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* OHLCV chart — chart has its own title; outer SectionTitle removed
+          to avoid the duplicate-heading issue reported in ISSUE-016. */}
+      <TrendRawChart ohlcv={ohlcv} />
     </>
   )
 }
@@ -522,106 +513,24 @@ function LiquidityRawInput({ data }: { data: InsightResponse["rawInput"]["liquid
         </div>
       )}
       {history.length > 0 && (
-        <div>
-          <SectionTitle>Lịch sử 10 phiên</SectionTitle>
-          <div className="overflow-x-auto">
-            <table className="w-full text-[9px]">
-              <thead>
-                <tr className="text-muted-foreground border-b border-border/20">
-                  <th className="text-left py-1">Ngày</th>
-                  <th className="text-right">Mua chưa khớp</th>
-                  <th className="text-right">Bán chưa khớp</th>
-                  <th className="text-right">Volume</th>
-                </tr>
-              </thead>
-              <tbody>
-                {history.slice(0, 10).map((r: any, i: number) => (
-                  <tr key={i} className="border-b border-border/5">
-                    <td className="py-0.5 text-muted-foreground">{r.date?.split("T")[0]}</td>
-                    <td className="text-right tabular-nums">{fmtNum(r.buyUnmatchedVolume)}</td>
-                    <td className="text-right tabular-nums">{fmtNum(r.sellUnmatchedVolume)}</td>
-                    <td className="text-right tabular-nums">{fmtNum(r.totalVolume)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <LiquidityRawChart history={history} avgVolume={avg30?.totalVolume} />
       )}
     </>
   )
 }
 
 function MoneyFlowRawInput({ data }: { data: InsightResponse["rawInput"]["moneyFlow"] }) {
-  const renderTable = (items: any[], label: string) => (
-    <div>
-      <SectionTitle>{label} (15 phiên)</SectionTitle>
-      <table className="w-full text-[9px]">
-        <thead>
-          <tr className="text-muted-foreground border-b border-border/20">
-            <th className="text-left py-1">Ngày</th>
-            <th className="text-right">Ròng khớp</th>
-            <th className="text-right">Ròng deal</th>
-            <th className="text-right">Tổng ròng</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((r: any, i: number) => {
-            const net = r.totalNetVolume ?? r.matchNetVolume ?? 0
-            return (
-              <tr key={i} className="border-b border-border/5">
-                <td className="py-0.5 text-muted-foreground">{r.date?.split("T")[0]}</td>
-                <td className={`text-right tabular-nums ${(r.matchNetVolume ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                  {fmtNum(r.matchNetVolume ?? 0)}
-                </td>
-                <td className="text-right tabular-nums">{fmtNum(r.dealNetVolume ?? 0)}</td>
-                <td className={`text-right tabular-nums font-medium ${net >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                  {fmtNum(net)}
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
-  )
-
   return (
     <>
-      {renderTable(data.foreign, "Nước ngoài")}
-      {renderTable(data.proprietary, "Tự doanh")}
+      <MoneyFlowRawChart items={data.foreign} title={`Nước ngoài (${data.foreign.length} phiên)`} />
+      <MoneyFlowRawChart items={data.proprietary} title={`Tự doanh (${data.proprietary.length} phiên)`} />
     </>
   )
 }
 
 function InsiderRawInput({ data }: { data: InsightResponse["rawInput"]["insider"] }) {
-  return (
-    <div>
-      <SectionTitle>Giao dịch nội bộ ({data.transactions.length})</SectionTitle>
-      <table className="w-full text-[9px]">
-        <thead>
-          <tr className="text-muted-foreground border-b border-border/20">
-            <th className="text-left py-1">Hành động</th>
-            <th className="text-right">KL đăng ký</th>
-            <th className="text-right">KL thực hiện</th>
-            <th className="text-right">Ngày</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.transactions.slice(0, 15).map((r: any, i: number) => (
-            <tr key={i} className="border-b border-border/5">
-              <td className={`py-0.5 ${r.action?.includes("Bán") || r.action?.includes("bán") ? "text-red-400" : "text-emerald-400"}`}>
-                {r.action}
-              </td>
-              <td className="text-right tabular-nums">{fmtNum(r.shareRegistered)}</td>
-              <td className="text-right tabular-nums">{fmtNum(r.shareExecuted)}</td>
-              <td className="text-right text-muted-foreground">{r.startDate?.split("T")[0]}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
+  // Chart has its own "Giao dịch nội bộ (N)" header — outer SectionTitle removed.
+  return <InsiderRawChart txns={data.transactions.slice(0, 15)} />
 }
 
 function NewsRawInput({ data }: { data: InsightResponse["rawInput"]["news"] }) {
@@ -671,6 +580,7 @@ function MobileSummaryCard({
   actionHint,
   confidence,
   reversal,
+  totalPower,
   trendTags,
 }: {
   insight: InsightResponse
@@ -678,8 +588,11 @@ function MobileSummaryCard({
   actionHint: string
   confidence: number
   reversal: number
+  totalPower: number
   trendTags: { label: string; color: string }[]
 }) {
+  const powerColor = totalPower >= 0 ? "text-emerald-400" : "text-red-400"
+  const powerBar = totalPower >= 0 ? "bg-emerald-400" : "bg-red-400"
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.96 }}
@@ -725,11 +638,12 @@ function MobileSummaryCard({
       <div className="flex items-center justify-around rounded-lg bg-background/50 border border-border/15 py-3 px-2 mb-3">
         <div className="text-center">
           <p className="text-[9px] text-muted-foreground mb-1">Sức mạnh tổng thể</p>
-          <svg viewBox="0 0 60 40" className="w-14 h-9 mx-auto">
-            <path d="M 5 35 A 25 25 0 0 1 55 35" fill="none" stroke="hsl(var(--border) / 0.2)" strokeWidth="5" strokeLinecap="round" />
-            <path d="M 5 35 A 25 25 0 0 1 55 35" fill="none" stroke="#10b981" strokeWidth="5" strokeLinecap="round"
-              strokeDasharray={`${(confidence / 100) * 78.5} 78.5`} />
-          </svg>
+          <p className={`text-[18px] font-bold tabular-nums ${powerColor}`}>
+            {totalPower > 0 ? "+" : ""}{totalPower}%
+          </p>
+          <div className="h-1 w-12 bg-border/30 rounded-full overflow-hidden mt-1 mx-auto">
+            <div className={`h-full ${powerBar} rounded-full`} style={{ width: `${Math.min(Math.abs(totalPower), 100)}%` }} />
+          </div>
         </div>
         <div className="text-center">
           <p className="text-[9px] text-muted-foreground mb-1">Độ tin cậy</p>
@@ -777,7 +691,6 @@ function MobileLayerSection({
   rawInput: InsightResponse["rawInput"]
 }) {
   const Icon = cfg.icon
-  const [expanded, setExpanded] = useState(false)
 
   return (
     <div
@@ -846,51 +759,59 @@ function MobileLayerSection({
         </div>
       </div>
 
-      {/* Raw input toggle */}
-      <button
-        onClick={() => setExpanded((s) => !s)}
-        className="w-full flex items-center gap-1.5 px-3 py-2 border-t border-border/10 text-[10px] font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-colors"
-      >
+      {/* Raw input — always shown (accordion removed per ISSUE-016). */}
+      <div className="flex items-center gap-1.5 px-3 py-2 border-t border-border/10 text-[10px] font-semibold text-muted-foreground">
         <Database className="size-3" />
         <span className="uppercase tracking-wider">Dữ liệu đầu vào</span>
-        <ChevronDown
-          className={`size-3 ml-auto transition-transform ${expanded ? "rotate-180" : ""}`}
-        />
-      </button>
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="overflow-hidden"
-          >
-            <div className="px-3 pb-3 space-y-3">
-              <RawInputContent layerKey={layerKey} rawInput={rawInput} />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </div>
+      <div className="px-3 pb-3 space-y-3">
+        <RawInputContent layerKey={layerKey} rawInput={rawInput} />
+      </div>
     </div>
   )
 }
 
 // ── Main Component ──
 
+// Indices (whole-market gauges) — AI Insight needs a specific listed stock.
+const INDEX_CODES = new Set(["VNINDEX", "VN30", "HNX", "HNXINDEX", "UPCOM", "UPCOMINDEX", "HNX30"])
+
+function isIndexSymbol(symbol: string): boolean {
+  return INDEX_CODES.has(symbol.toUpperCase())
+}
+
 export function StockAiInsight({ symbol }: { symbol: string }) {
+  const navigate = useNavigate()
   const [insight, setInsight] = useState<InsightResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
   const [selectedLayer, setSelectedLayer] = useState<string | null>(null)
+  const [pickSymbol, setPickSymbol] = useState("")
+  const isIndex = isIndexSymbol(symbol)
 
   useEffect(() => {
+    if (isIndex) {
+      setIsLoading(false)
+      setInsight(null)
+      setError("")
+      return
+    }
     setIsLoading(true)
     setError("")
     setSelectedLayer(null)
 
     fetch(`${API_BASE}/ai/insight/${symbol.toUpperCase()}`)
-      .then((r) => r.json())
+      .then(async (r) => {
+        const body = await r.json().catch(() => null)
+        if (!r.ok) {
+          // FastAPI uses `detail`; fall back to `message` then a generic line.
+          throw new Error(
+            (body?.detail as string) || (body?.message as string) ||
+            `AI Insight lỗi (HTTP ${r.status})`,
+          )
+        }
+        return body
+      })
       .then((res) => {
         if (res?.data) {
           setInsight(res.data)
@@ -899,9 +820,11 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
           setError(res?.message || "Không có dữ liệu AI Insight")
         }
       })
-      .catch(() => setError("Lỗi kết nối tới AI Insight"))
+      .catch((e: unknown) =>
+        setError(e instanceof Error ? e.message : "Lỗi kết nối tới AI Insight"),
+      )
       .finally(() => setIsLoading(false))
-  }, [symbol])
+  }, [symbol, isIndex])
 
   const trendTags = useMemo(() => {
     const trendOut = insight?.layers?.trend?.output
@@ -929,6 +852,51 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
     const out = insight?.layers?.[key]?.output
     return buildLayerSummary(key, out)
   }, [insight])
+
+  // ── Indices (VNINDEX, VN30...) — prompt user to pick a stock symbol ──
+  if (isIndex) {
+    const trimmed = pickSymbol.trim().toUpperCase()
+    const valid = /^[A-Z0-9]{2,10}$/.test(trimmed) && !isIndexSymbol(trimmed)
+    const go = () => {
+      if (valid) navigate(`/co-phieu/${trimmed}`)
+    }
+    return (
+      <div className="flex h-full items-center justify-center p-6">
+        <div className="w-full max-w-md rounded-2xl border border-border/40 bg-card/60 backdrop-blur p-6 flex flex-col items-center text-center gap-4 shadow-xl">
+          <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Brain className="size-7 text-primary" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-foreground">AI Insight chỉ áp dụng cho mã cổ phiếu</h3>
+            <p className="text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">{symbol.toUpperCase()}</span> là chỉ số thị trường.
+              Nhập mã cổ phiếu (vd. VCB, HPG, FPT) để chạy phân tích AI 6 lớp.
+            </p>
+          </div>
+          <div className="w-full flex gap-2 mt-1">
+            <input
+              type="text"
+              value={pickSymbol}
+              onChange={(e) => setPickSymbol(e.target.value.toUpperCase())}
+              onKeyDown={(e) => e.key === "Enter" && go()}
+              placeholder="VD: VCB"
+              maxLength={10}
+              autoFocus
+              className="flex-1 h-10 rounded-md border border-border bg-background px-3 text-sm font-mono uppercase tracking-wide outline-none focus:border-primary"
+            />
+            <button
+              type="button"
+              onClick={go}
+              disabled={!valid}
+              className="h-10 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Phân tích
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (
@@ -962,6 +930,9 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
   const summary = insight.summary
   const confidence = summary?.confidence || 0
   const reversal = summary?.reversalProbability || 0
+  const totalPower = summary?.totalPower || 0
+  const powerColor = totalPower >= 0 ? "text-emerald-400" : "text-red-400"
+  const powerBar = totalPower >= 0 ? "bg-emerald-400" : "bg-red-400"
 
   return (
     <div className="relative h-full w-full flex flex-col overflow-hidden">
@@ -982,7 +953,7 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
               - md+: 3-column (layer cards | summary | detail panel) ─── */}
       <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden relative">
         {/* ─── Mobile: vertical scroll with everything stacked ─── */}
-        <ScrollArea className="md:hidden flex-1 min-h-0">
+        <ScrollArea className={`md:hidden flex-1 min-h-0 ${SCROLL_CONSTRAIN}`}>
           <div className="p-3 space-y-3">
             {/* Summary card */}
             <MobileSummaryCard
@@ -991,6 +962,7 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
               actionHint={actionHint}
               confidence={confidence}
               reversal={reversal}
+              totalPower={totalPower}
               trendTags={trendTags}
             />
 
@@ -1004,7 +976,7 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
                 ? (layerData.output?.["Thanh khoản"] || "")
                 : ""
               const insiderWarning = key === "insider"
-                ? getInsiderWarning(layerData.output?.["Tác động"])
+                ? getInsiderWarning(layerData.output?.["Mức cảnh báo"])
                 : null
               return (
                 <MobileLayerSection
@@ -1033,7 +1005,7 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
                 ? (insight.layers?.[key]?.output?.["Thanh khoản"] || "")
                 : ""
               const insiderWarning = key === "insider"
-                ? getInsiderWarning(insight.layers?.[key]?.output?.["Tác động"])
+                ? getInsiderWarning(insight.layers?.[key]?.output?.["Mức cảnh báo"])
                 : null
               return (
                 <motion.div
@@ -1129,14 +1101,15 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
 
               {/* Metrics Row */}
               <div className="flex items-center justify-around rounded-lg bg-background/50 border border-border/15 py-3 px-2 mb-3">
-                {/* Confidence Gauge */}
+                {/* Total power — % + bar, consistent with the other two */}
                 <div className="text-center">
                   <p className="text-[9px] text-muted-foreground mb-1">Sức mạnh tổng thể</p>
-                  <svg viewBox="0 0 60 40" className="w-14 h-9 mx-auto">
-                    <path d="M 5 35 A 25 25 0 0 1 55 35" fill="none" stroke="hsl(var(--border) / 0.2)" strokeWidth="5" strokeLinecap="round" />
-                    <path d="M 5 35 A 25 25 0 0 1 55 35" fill="none" stroke="#10b981" strokeWidth="5" strokeLinecap="round"
-                      strokeDasharray={`${(confidence / 100) * 78.5} 78.5`} />
-                  </svg>
+                  <p className={`text-[18px] font-bold tabular-nums ${powerColor}`}>
+                    {totalPower > 0 ? "+" : ""}{totalPower}%
+                  </p>
+                  <div className="h-1 w-12 bg-border/30 rounded-full overflow-hidden mt-1 mx-auto">
+                    <div className={`h-full ${powerBar} rounded-full`} style={{ width: `${Math.min(Math.abs(totalPower), 100)}%` }} />
+                  </div>
                 </div>
                 <div className="text-center">
                   <p className="text-[9px] text-muted-foreground mb-1">Độ tin cậy</p>
@@ -1168,10 +1141,13 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
         </ScrollArea>
 
         {/* ─── RIGHT (md+): Detail Panel — desktop only ─── */}
+        {/* No `key={selectedLayer}` here: remounting on every layer switch
+         * triggered a full AnimatePresence exit+enter while recharts was
+         * painting the new chart, causing the slide to stutter at ~50%.
+         * Without the key the panel stays mounted and only its content swaps. */}
         <AnimatePresence>
           {selectedLayer && insight && (
             <DetailPanel
-              key={selectedLayer}
               layerKey={selectedLayer}
               insight={insight}
               onClose={() => setSelectedLayer(null)}

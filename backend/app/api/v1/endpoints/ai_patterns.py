@@ -29,6 +29,7 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.api.deps import PremiumUser
 from app.services.ai.patterns_service import (
     get_candle_patterns,
     get_chart_patterns,
@@ -42,6 +43,7 @@ router = APIRouter(prefix="/ai/patterns", tags=["AI Mẫu hình"])
 
 @router.get("/candles")
 async def get_candles(
+    user: PremiumUser,
     symbol: str = Query(..., min_length=1, max_length=10, description="Mã cổ phiếu, ví dụ VCB"),
 ) -> dict[str, Any]:
     """Mẫu hình nến TA-Lib cho mã cổ phiếu."""
@@ -54,6 +56,7 @@ async def get_candles(
 
 @router.get("/charts")
 async def get_charts(
+    user: PremiumUser,
     symbol: str = Query(..., min_length=1, max_length=10, description="Mã cổ phiếu, ví dụ VCB"),
 ) -> dict[str, Any]:
     """Mẫu hình giá kinh điển cho mã cổ phiếu."""
@@ -65,7 +68,10 @@ async def get_charts(
 
 
 @router.get("/{kind}/symbols")
-async def list_symbols(kind: Literal["candles", "charts"]) -> dict[str, Any]:
+async def list_symbols(
+    user: PremiumUser,
+    kind: Literal["candles", "charts"],
+) -> dict[str, Any]:
     """Danh sách mã có sẵn pattern recognition trong sheet."""
     try:
         return await list_pattern_symbols(kind)

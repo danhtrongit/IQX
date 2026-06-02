@@ -38,6 +38,7 @@ class PaymentOrderStatus(enum.StrEnum):
     PAID = "paid"
     FAILED = "failed"
     CANCELLED = "cancelled"
+    REFUNDED = "refunded"  # NEW
 
 
 # ── Models ───────────────────────────────────────────
@@ -84,6 +85,13 @@ class PremiumSubscription(UUIDMixin, TimestampMixin, Base):
         server_default=SubscriptionStatus.ACTIVE.value,
         nullable=False,
     )
+    cancelled_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    cancelled_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    cancel_reason: Mapped[str | None] = mapped_column(String(1000), nullable=True)
 
 
 class PremiumPaymentOrder(UUIDMixin, TimestampMixin, Base):

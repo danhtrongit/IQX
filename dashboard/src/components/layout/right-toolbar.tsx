@@ -51,7 +51,7 @@ function ToolbarButton({
 }
 
 export function RightToolbar({ onActionClick }: { onActionClick?: (id: string) => void }) {
-  const { activePanel, setActivePanel } = useSidebar()
+  const { activePanel, setActivePanel, forecastWindowOpen, openForecastWindow } = useSidebar()
 
   const handleClick = (item: ToolbarItem) => {
     if (item.panel) {
@@ -69,7 +69,7 @@ export function RightToolbar({ onActionClick }: { onActionClick?: (id: string) =
     { icon: Newspaper, label: "Tin tức", id: "news", panel: "news" },
     { icon: Lightbulb, label: "AI Phân tích", id: "ai-insight", onClick: () => onActionClick?.("ai-insight") },
     { icon: CandlestickChart, label: "AI Mẫu nến", id: "ai-patterns", panel: "patterns" },
-    { icon: TrendingUp, label: "Dự báo", id: "ai-forecast", panel: "forecast" },
+    { icon: TrendingUp, label: "Dự báo", id: "ai-forecast", onClick: () => openForecastWindow() },
   ]
 
   return (
@@ -81,7 +81,7 @@ export function RightToolbar({ onActionClick }: { onActionClick?: (id: string) =
         <ToolbarButton
           key={item.id}
           item={item}
-          isActive={item.panel === activePanel}
+          isActive={item.id === "ai-forecast" ? forecastWindowOpen : item.panel === activePanel}
           onClick={() => handleClick(item)}
         />
       ))}

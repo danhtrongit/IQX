@@ -4,8 +4,12 @@ from __future__ import annotations
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user import User
+from app.core.security import hash_password
+from app.models.login_history import UserLoginHistory
+from app.models.user import User, UserRole, UserStatus
 from tests.conftest import get_auth_headers
 
 
@@ -17,15 +21,13 @@ async def test_register_success(client: AsyncClient):
         json={
             "email": "newuser@example.com",
             "password": "Str0ng@Pass",
-            "first_name": "New",
-            "last_name": "User",
+            "full_name": "New User".strip(),
         },
     )
     assert response.status_code == 201
     data = response.json()
     assert data["email"] == "newuser@example.com"
-    assert data["first_name"] == "New"
-    assert data["last_name"] == "User"
+    assert data["full_name"] == "New User"
     assert data["role"] == "user"
     assert data["status"] == "active"
     assert "id" in data
@@ -41,11 +43,51 @@ async def test_register_duplicate_email(client: AsyncClient, test_user: User):
         json={
             "email": "test@example.com",
             "password": "Str0ng@Pass",
-            "first_name": "Dup",
-            "last_name": "User",
+            "full_name": "Dup User".strip(),
         },
     )
     assert response.status_code == 409
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "phone",
+    [
+        "0912345678",      # Vietnamese local (zero-prefix)
+        "+84912345678",    # International E.164
+        " 0912345678 ",    # Whitespace tolerated
+        "0901 234 567",    # With spaces
+    ],
+)
+async def test_register_accepts_vietnamese_phone_formats(
+    client: AsyncClient, phone: str
+):
+    """Phone validator should accept both 0... and +84... formats."""
+    response = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": f"phone-{abs(hash(phone)) % 100000}@example.com",
+            "password": "Str0ng@Pass",
+            "full_name": "Phone Test".strip(),
+            "phone_number": phone,
+        },
+    )
+    assert response.status_code == 201, response.text
+
+
+@pytest.mark.asyncio
+async def test_register_rejects_invalid_phone(client: AsyncClient):
+    """Genuinely malformed phone numbers still fail validation."""
+    response = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "badphone@example.com",
+            "password": "Str0ng@Pass",
+            "full_name": "Bad Phone".strip(),
+            "phone_number": "abc-not-a-number",
+        },
+    )
+    assert response.status_code == 422
 
 
 @pytest.mark.asyncio
@@ -56,8 +98,7 @@ async def test_register_weak_password(client: AsyncClient):
         json={
             "email": "weak@example.com",
             "password": "weak",
-            "first_name": "Weak",
-            "last_name": "Pass",
+            "full_name": "Weak Pass".strip(),
         },
     )
     assert response.status_code == 422
@@ -243,3 +284,101 @@ async def test_deleted_user_token_returns_401(client: AsyncClient, admin_user: U
     )
     assert me_resp.status_code in (401, 403)
     assert "hashed_password" not in me_resp.text
+
+
+# ══════════════════════════════════════════════════════
+# T5 — Login history persistence
+# ══════════════════════════════════════════════════════
+
+
+@pytest.mark.asyncio
+async def test_login_success_records_history(
+    client: AsyncClient, test_user: User, db_session: AsyncSession
+):
+    """Successful login → row in user_login_history with success=True."""
+    resp = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "test@example.com", "password": "Test@1234"},
+    )
+    assert resp.status_code == 200
+
+    rows = (await db_session.execute(select(UserLoginHistory))).scalars().all()
+    assert len(rows) == 1
+    log = rows[0]
+    assert log.success is True
+    assert log.failure_reason is None
+    assert log.email == "test@example.com"
+    assert log.user_id == test_user.id
+
+
+@pytest.mark.asyncio
+async def test_login_invalid_password_records_history(
+    client: AsyncClient, test_user: User, db_session: AsyncSession
+):
+    """Wrong password → row with success=False, failure_reason='invalid_credentials'."""
+    resp = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "test@example.com", "password": "Wrong@Pass1"},
+    )
+    assert resp.status_code == 401
+
+    rows = (await db_session.execute(select(UserLoginHistory))).scalars().all()
+    assert len(rows) == 1
+    log = rows[0]
+    assert log.success is False
+    assert log.failure_reason == "invalid_credentials"
+    assert log.email == "test@example.com"
+    # User was found but password didn't match — user_id may or may not be set
+    # (in our impl, user_id is set to user.id when user exists)
+    assert log.user_id == test_user.id
+
+
+@pytest.mark.asyncio
+async def test_login_unknown_email_records_history(
+    client: AsyncClient, db_session: AsyncSession
+):
+    """Email that doesn't exist → row with user_id=NULL and success=False."""
+    resp = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "nobody@example.com", "password": "Test@1234"},
+    )
+    assert resp.status_code == 401
+
+    rows = (await db_session.execute(select(UserLoginHistory))).scalars().all()
+    assert len(rows) == 1
+    log = rows[0]
+    assert log.success is False
+    assert log.failure_reason == "invalid_credentials"
+    assert log.email == "nobody@example.com"
+    assert log.user_id is None
+
+
+@pytest.mark.asyncio
+async def test_login_inactive_user_records_history(
+    client: AsyncClient, db_session: AsyncSession
+):
+    """Inactive user → row with failure_reason starting with 'status:'."""
+    inactive = User(
+        email="inactive@example.com",
+        hashed_password=hash_password("Test@1234"),
+        full_name="Inactive User".strip(),
+        role=UserRole.USER,
+        status=UserStatus.INACTIVE,
+    )
+    db_session.add(inactive)
+    await db_session.commit()
+    await db_session.refresh(inactive)
+
+    resp = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "inactive@example.com", "password": "Test@1234"},
+    )
+    assert resp.status_code == 401
+
+    rows = (await db_session.execute(select(UserLoginHistory))).scalars().all()
+    assert len(rows) == 1
+    log = rows[0]
+    assert log.success is False
+    assert log.failure_reason == "status:inactive"
+    assert log.email == "inactive@example.com"
+    assert log.user_id == inactive.id

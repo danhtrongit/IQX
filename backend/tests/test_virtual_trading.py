@@ -309,7 +309,7 @@ async def test_expired_order_reserves_cleared(client, premium_user, db_session):
 @patch(_VS, new=_vs_ok)
 @patch(_PR, new=_mp)
 async def test_portfolio_readonly_no_refresh(client, premium_user, db_session, test_user):
-    """GET /portfolio must NOT trigger refresh (expired premium can still view)."""
+    """GET /portfolio requires active premium — expired premium gets 403."""
     await client.post("/api/v1/virtual-trading/account/activate", headers=premium_user)
     await client.post("/api/v1/virtual-trading/orders", headers=premium_user, json={
         "symbol": "VCB", "side": "buy", "order_type": "market", "quantity": 100,
@@ -324,9 +324,9 @@ async def test_portfolio_readonly_no_refresh(client, premium_user, db_session, t
         )
     )
     await db_session.commit()
-    # Portfolio should still work (read-only)
+    # All user-facing virtual trading routes require active premium → 403
     resp = await client.get("/api/v1/virtual-trading/portfolio", headers=premium_user)
-    assert resp.status_code == 200
+    assert resp.status_code == 403
 
 @pytest.mark.asyncio
 @patch(_VS, new=_vs_ok)

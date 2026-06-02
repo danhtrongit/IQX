@@ -138,6 +138,14 @@ class VirtualTradingAccount(UUIDMixin, TimestampMixin, Base):
     activated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     reset_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    frozen_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    frozen_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    freeze_reason: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+
 
 class VirtualPosition(UUIDMixin, TimestampMixin, Base):
     """Portfolio position for a single symbol in a virtual account."""

@@ -52,8 +52,7 @@ class UserRepository:
             query = query.where(
                 or_(
                     User.email.ilike(search_term, escape="\\"),
-                    User.first_name.ilike(search_term, escape="\\"),
-                    User.last_name.ilike(search_term, escape="\\"),
+                    User.full_name.ilike(search_term, escape="\\"),
                     User.phone_number.ilike(search_term, escape="\\"),
                 )
             )

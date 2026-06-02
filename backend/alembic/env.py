@@ -3,14 +3,12 @@
 The database URL is loaded from app settings (not hardcoded in alembic.ini).
 """
 
-import asyncio
 import sys
 from logging.config import fileConfig
 from pathlib import Path
 
-from sqlalchemy import pool
+from sqlalchemy import create_engine, pool
 from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import create_async_engine
 
 from alembic import context
 
@@ -19,6 +17,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.core.config import get_settings  # noqa: E402
 from app.core.database import Base  # noqa: E402
+from app.models.admin_audit import AdminAuditLog  # noqa: F401, E402
+from app.models.ipn_log import SePayIPNLog  # noqa: F401, E402
+from app.models.lesson import Course, Episode, EpisodeProgress  # noqa: F401, E402
+from app.models.login_history import UserLoginHistory  # noqa: F401, E402
 from app.models.premium import PremiumPaymentOrder, PremiumPlan, PremiumSubscription  # noqa: F401, E402
 from app.models.refresh_token import RefreshToken  # noqa: F401, E402
 from app.models.symbol import Symbol  # noqa: F401, E402
@@ -84,23 +86,25 @@ def do_run_migrations(connection: Connection) -> None:
         context.run_migrations()
 
 
-async def run_async_migrations() -> None:
-    """Run migrations in 'online' mode using an async engine."""
+def _sync_db_url() -> str:
+    """Convert the runtime async URL to a sync psycopg URL for Alembic.
+
+    asyncpg's prepared-statement protocol mis-handles raw DDL like
+    ``CREATE TYPE`` (the statement gets executed twice). Migrations
+    use the sync ``psycopg`` driver instead; the runtime app still uses
+    ``asyncpg`` unchanged.
+    """
     settings = get_settings()
-    connectable = create_async_engine(
-        settings.DATABASE_URL,
-        poolclass=pool.NullPool,
-    )
-
-    async with connectable.connect() as connection:
-        await connection.run_sync(do_run_migrations)
-
-    await connectable.dispose()
+    return settings.DATABASE_URL.replace("+asyncpg", "+psycopg")
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode."""
-    asyncio.run(run_async_migrations())
+    """Run migrations in 'online' mode using a sync psycopg engine."""
+    connectable = create_engine(_sync_db_url(), poolclass=pool.NullPool)
+    with connectable.connect() as connection:
+        do_run_migrations(connection)
+        connection.commit()
+    connectable.dispose()
 
 
 if context.is_offline_mode():

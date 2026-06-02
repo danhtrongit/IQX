@@ -15,6 +15,7 @@ from typing import Sequence, Union
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy.dialects import postgresql
 
 revision: str = "000000000001"
 down_revision: Union[str, None] = None
@@ -64,13 +65,13 @@ def upgrade() -> None:
         sa.Column("postal_code", sa.String(length=20), nullable=True),
         sa.Column(
             "role",
-            sa.Enum("admin", "user", name="user_role", create_type=False),
+            postgresql.ENUM("admin", "user", name="user_role", create_type=False),
             server_default="user",
             nullable=False,
         ),
         sa.Column(
             "status",
-            sa.Enum("active", "inactive", "suspended", "deleted", name="user_status", create_type=False),
+            postgresql.ENUM("active", "inactive", "suspended", "deleted", name="user_status", create_type=False),
             server_default="active",
             nullable=False,
         ),

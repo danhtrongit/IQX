@@ -248,16 +248,14 @@ function RegisterForm({
   onSubmit: (p: {
     email: string
     password: string
-    firstName: string
-    lastName: string
+    fullName: string
     phone?: string
   }) => Promise<void>
 }) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName] = useState("")
+  const [fullName, setFullName] = useState("")
   const [phone, setPhone] = useState("")
   const [showPw, setShowPw] = useState(false)
 
@@ -269,7 +267,7 @@ function RegisterForm({
       return
     }
 
-    if (!firstName.trim() || !lastName.trim()) {
+    if (!fullName.trim()) {
       toast.error("Vui lòng nhập họ và tên")
       return
     }
@@ -278,11 +276,13 @@ function RegisterForm({
       await onSubmit({
         email,
         password,
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
+        fullName: fullName.trim(),
         ...(phone && { phone }),
       })
-      toast.success("Đăng ký thành công! Chào mừng bạn đến với IQX 🎉")
+      toast.success("Đăng ký thành công!", {
+        description: "Bạn được tặng 7 ngày dùng thử Premium.",
+        duration: 6000,
+      })
     } catch (err) {
       const msg = await getErrorMessage(err)
       toast.error(msg)
@@ -291,42 +291,22 @@ function RegisterForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="grid grid-cols-2 gap-2.5">
-        <div className="space-y-1.5">
-          <Label htmlFor="reg-fname" className="text-xs font-medium">
-            Họ <span className="text-destructive">*</span>
-          </Label>
-          <div className="relative">
-            <User className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-            <Input
-              id="reg-fname"
-              type="text"
-              placeholder="Nguyễn"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              required
-              className="h-9 pl-8 text-sm"
-              autoComplete="given-name"
-            />
-          </div>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="reg-lname" className="text-xs font-medium">
-            Tên <span className="text-destructive">*</span>
-          </Label>
-          <div className="relative">
-            <User className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-            <Input
-              id="reg-lname"
-              type="text"
-              placeholder="Văn A"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              required
-              className="h-9 pl-8 text-sm"
-              autoComplete="family-name"
-            />
-          </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="reg-fullname" className="text-xs font-medium">
+          Họ và tên <span className="text-destructive">*</span>
+        </Label>
+        <div className="relative">
+          <User className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+          <Input
+            id="reg-fullname"
+            type="text"
+            placeholder="Nguyễn Văn A"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+            className="h-9 pl-8 text-sm"
+            autoComplete="name"
+          />
         </div>
       </div>
 

@@ -11,6 +11,8 @@
 !/backend/**
 !/dashboard/
 !/dashboard/**
+!/admin/
+!/admin/**
 
 # Safety guard if the frontend was previously a standalone repo.
 /frontend/.git

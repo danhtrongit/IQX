@@ -12,8 +12,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from app.api.deps import AdminUser, CurrentUser, DBSession, PremiumUser
+from app.api.deps import AdminUser, DBSession, PremiumUser
+from app.api.deps_audit import AuditCtx
 from app.models.virtual_trading import OrderSide, OrderStatus
+from app.services.admin_audit import AdminAuditService, diff_dict
 from app.schemas.virtual_trading import (
     AccountResponse,
     AdminAccountResponse,
@@ -54,7 +56,7 @@ async def activate_account(user: PremiumUser, db: DBSession) -> AccountResponse:
 
 
 @router.get("/account", response_model=AccountResponse, tags=["Giao dịch ảo"])
-async def get_account(user: CurrentUser, db: DBSession) -> AccountResponse:
+async def get_account(user: PremiumUser, db: DBSession) -> AccountResponse:
     """Lấy tóm tắt tài khoản giao dịch ảo."""
     svc = VirtualTradingService(db)
     account = await svc.get_account(user.id)
@@ -64,7 +66,7 @@ async def get_account(user: CurrentUser, db: DBSession) -> AccountResponse:
 
 
 @router.get("/portfolio", response_model=PortfolioResponse, tags=["Giao dịch ảo"])
-async def get_portfolio(user: CurrentUser, db: DBSession) -> PortfolioResponse:
+async def get_portfolio(user: PremiumUser, db: DBSession) -> PortfolioResponse:
     """Lấy toàn bộ danh mục — chỉ đọc, không làm mới/thay đổi trạng thái."""
     svc = VirtualTradingService(db)
     data = await svc.get_portfolio(user.id)
@@ -99,7 +101,7 @@ async def place_order(body: OrderCreateRequest, user: PremiumUser, db: DBSession
 
 @router.get("/orders", response_model=OrderListResponse, tags=["Giao dịch ảo"])
 async def list_orders(
-    user: CurrentUser,
+    user: PremiumUser,
     db: DBSession,
     status: Annotated[
         str | None,
@@ -167,7 +169,7 @@ async def refresh(user: PremiumUser, db: DBSession) -> RefreshResponse:
 
 @router.get("/trades", response_model=TradeListResponse, tags=["Giao dịch ảo"])
 async def list_trades(
-    user: CurrentUser,
+    user: PremiumUser,
     db: DBSession,
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 20,
@@ -228,10 +230,34 @@ async def admin_get_config(admin: AdminUser, db: DBSession) -> ConfigResponse:
 
 
 @router.patch("/admin/config", response_model=ConfigResponse, tags=[_TAG_ADMIN])
-async def admin_update_config(body: ConfigUpdate, admin: AdminUser, db: DBSession) -> ConfigResponse:
+async def admin_update_config(
+    body: ConfigUpdate, admin: AdminUser, audit: AuditCtx, db: DBSession
+) -> ConfigResponse:
     """Quản trị: cập nhật cấu hình giao dịch ảo."""
     svc = VirtualTradingService(db)
-    config = await svc.update_config(body.model_dump(exclude_unset=True), admin.id)
+    patch = body.model_dump(exclude_unset=True)
+    # Capture before state for changed fields
+    existing_config = await svc.get_or_create_config(admin.id)
+    before_raw = {k: getattr(existing_config, k, None) for k in patch}
+    before_vals = {
+        k: (v.value if hasattr(v, "value") else v)
+        for k, v in before_raw.items()
+    }
+    config = await svc.update_config(patch, admin.id)
+    after_raw = {k: getattr(config, k, None) for k in patch}
+    after_vals = {
+        k: (v.value if hasattr(v, "value") else v)
+        for k, v in after_raw.items()
+    }
+    b, a = diff_dict(before_vals, after_vals)
+    await AdminAuditService(db).record(
+        audit,
+        action="vt.config.update",
+        target_entity="vt_config",
+        target_id=str(config.id),
+        before=b,
+        after=a,
+    )
     holidays = json.loads(config.holidays) if config.holidays else []
     return ConfigResponse(
         id=config.id,
@@ -249,7 +275,9 @@ async def admin_update_config(body: ConfigUpdate, admin: AdminUser, db: DBSessio
 
 
 @router.post("/admin/users/{user_id}/reset", response_model=ResetResponse, tags=[_TAG_ADMIN])
-async def admin_reset_user(user_id: str, admin: AdminUser, db: DBSession) -> ResetResponse:
+async def admin_reset_user(
+    user_id: str, admin: AdminUser, audit: AuditCtx, db: DBSession
+) -> ResetResponse:
     """Quản trị: đặt lại tài khoản giao dịch ảo của một người dùng."""
     import uuid
 
@@ -262,34 +290,109 @@ async def admin_reset_user(user_id: str, admin: AdminUser, db: DBSession) -> Res
 
     svc = VirtualTradingService(db)
     await svc.reset_account(uid, admin.id)
+    await AdminAuditService(db).record(
+        audit,
+        action="vt.account.reset",
+        target_entity="vt_account",
+        target_id=str(uid),
+        note=f"reset user {uid}",
+    )
     return ResetResponse(accounts_reset=1, message="Đặt lại tài khoản thành công")
 
 
 @router.post("/admin/reset-all", response_model=ResetResponse, tags=[_TAG_ADMIN])
-async def admin_reset_all(admin: AdminUser, db: DBSession) -> ResetResponse:
+async def admin_reset_all(admin: AdminUser, audit: AuditCtx, db: DBSession) -> ResetResponse:
     """Quản trị: đặt lại tất cả tài khoản giao dịch ảo."""
     svc = VirtualTradingService(db)
     count = await svc.reset_all_accounts(admin.id)
+    await AdminAuditService(db).record(
+        audit,
+        action="vt.account.reset_all",
+        target_entity="vt_account",
+        note=f"reset all accounts (count={count})",
+        after={"count": count},
+    )
     return ResetResponse(accounts_reset=count, message=f"Đã đặt lại {count} tài khoản")
 
 
-@router.get("/admin/accounts", response_model=list[AdminAccountResponse], tags=[_TAG_ADMIN])
-async def admin_list_accounts(admin: AdminUser, db: DBSession) -> list[AdminAccountResponse]:
-    """Quản trị: liệt kê tất cả tài khoản giao dịch ảo."""
-    svc = VirtualTradingService(db)
-    items = await svc.list_accounts_with_users()
-    return [
-        AdminAccountResponse(
-            id=item["account"].id, user_id=item["account"].user_id,
-            user_email=item["user_email"],
-            user_name=item["user_name"],
-            status=item["account"].status.value,
-            initial_cash_vnd=item["account"].initial_cash_vnd,
-            cash_available_vnd=item["account"].cash_available_vnd,
-            cash_reserved_vnd=item["account"].cash_reserved_vnd,
-            cash_pending_vnd=item["account"].cash_pending_vnd,
-            activated_at=item["account"].activated_at,
-            reset_at=item["account"].reset_at,
+@router.get("/admin/accounts", tags=[_TAG_ADMIN])
+async def admin_list_accounts(
+    admin: AdminUser,
+    db: DBSession,
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=200)] = 50,
+    status: str | None = Query(None),
+    frozen_only: bool | None = Query(None),
+    search: str | None = Query(None),
+):
+    """Quản trị: liệt kê tài khoản giao dịch ảo (hỗ trợ phân trang và lọc)."""
+    from app.schemas.common import PaginatedResponse
+    import math
+    from sqlalchemy import select as _select, func as _func, or_ as _or, and_ as _and
+    from app.models.virtual_trading import VirtualTradingAccount, AccountStatus
+    from app.models.user import User
+
+    conditions = []
+    if status:
+        try:
+            acct_status = AccountStatus(status)
+            conditions.append(VirtualTradingAccount.status == acct_status)
+        except ValueError:
+            pass
+    if frozen_only is True:
+        conditions.append(VirtualTradingAccount.frozen_at.isnot(None))
+    elif frozen_only is False:
+        conditions.append(VirtualTradingAccount.frozen_at.is_(None))
+    if search:
+        conditions.append(
+            _or(
+                User.email.ilike(f"%{search}%"),
+                User.full_name.ilike(f"%{search}%"),
+            )
         )
-        for item in items
+
+    where = _and(*conditions) if conditions else None
+
+    base = (
+        _select(VirtualTradingAccount, User.email.label("user_email"), User.full_name.label("user_name"))
+        .join(User, User.id == VirtualTradingAccount.user_id, isouter=True)
+    )
+    if where is not None:
+        base = base.where(where)
+
+    count_stmt = _select(_func.count()).select_from(base.subquery())
+    session = db
+    total: int = (await session.execute(count_stmt)).scalar_one()
+
+    items_stmt = (
+        base.order_by(VirtualTradingAccount.created_at.desc())
+        .limit(page_size)
+        .offset((page - 1) * page_size)
+    )
+    rows = (await session.execute(items_stmt)).all()
+
+    items = [
+        AdminAccountResponse(
+            id=r.VirtualTradingAccount.id,
+            user_id=r.VirtualTradingAccount.user_id,
+            user_email=r.user_email,
+            user_name=r.user_name,
+            status=r.VirtualTradingAccount.status.value,
+            initial_cash_vnd=r.VirtualTradingAccount.initial_cash_vnd,
+            cash_available_vnd=r.VirtualTradingAccount.cash_available_vnd,
+            cash_reserved_vnd=r.VirtualTradingAccount.cash_reserved_vnd,
+            cash_pending_vnd=r.VirtualTradingAccount.cash_pending_vnd,
+            activated_at=r.VirtualTradingAccount.activated_at,
+            reset_at=r.VirtualTradingAccount.reset_at,
+        )
+        for r in rows
     ]
+
+    total_pages = math.ceil(total / page_size) if total > 0 else 0
+    return PaginatedResponse(
+        items=items,
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages,
+    )

@@ -588,23 +588,48 @@ async def test_company_invalid_symbol_returns_422(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_fundamentals_balance_sheet(client: AsyncClient):
-    with patch(
-        "app.services.market_data.sources.vietcap.fetch_json",
-        new_callable=AsyncMock,
-    ) as mock:
-        mock.return_value = {
+    """Balance sheet should be normalized to {Head, Content} shape."""
+    def _side_effect(url, **_kw):
+        if "metrics" in url:
+            return {
+                "data": {
+                    "BALANCE_SHEET": [
+                        {
+                            "level": 1,
+                            "parent": None,
+                            "field": "bsa1",
+                            "titleVi": "Tổng tài sản",
+                            "titleEn": "Total Assets",
+                        },
+                    ],
+                }
+            }
+        return {
             "data": {
                 "quarters": [
-                    {"field_name": "total_assets", "year": 2024, "quarter": 3, "value": 1000000},
+                    {"yearReport": 2026, "lengthReport": 1, "bsa1": 1000000.0},
+                    {"yearReport": 2025, "lengthReport": 4, "bsa1": 980000.0},
                 ],
             }
         }
 
-        resp = await client.get("/api/v1/market-data/fundamentals/VCB/balance_sheet")
+    with patch(
+        "app.services.market_data.sources.vietcap.fetch_json",
+        new_callable=AsyncMock,
+        side_effect=_side_effect,
+    ):
+        resp = await client.get(
+            "/api/v1/market-data/fundamentals/VCB/balance_sheet?term_type=2&page_size=2"
+        )
         assert resp.status_code == 200
         body = resp.json()
         assert body["meta"]["source"] == "VCI"
-        assert len(body["data"]) > 0
+        assert "Head" in body["data"]
+        assert "Content" in body["data"]
+        assert len(body["data"]["Head"]) == 2
+        rows = list(body["data"]["Content"].values())[0]
+        assert rows[0]["Name"] == "Tổng tài sản"
+        assert rows[0]["FieldCode"] == "bsa1"
 
 
 @pytest.mark.asyncio
@@ -615,20 +640,57 @@ async def test_fundamentals_invalid_report_type(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_fundamentals_ratio(client: AsyncClient):
+    """Ratio response should be enriched with revenue/net_profit/eps fallbacks."""
+
+    def _side_effect(url, **_kw):
+        if "statistics-financial" in url:
+            return {
+                "data": [
+                    {
+                        "year": "2026",
+                        "quarter": 1,
+                        "yearReport": 2026,
+                        "pe": 12.5,
+                        "pb": 1.8,
+                        "roe": 0.15,
+                        "marketCap": 100_000_000_000.0,
+                        "numberOfSharesMktCap": 1_000_000.0,
+                    },
+                ]
+            }
+        # Income statement for revenue/profit/eps synthesis.
+        return {
+            "data": {
+                "quarters": [
+                    {
+                        "yearReport": 2026,
+                        "lengthReport": 1,
+                        "isa3": 50_000_000.0,
+                        "isa22": 10_000_000.0,
+                        "isa23": 4500.0,
+                    },
+                ],
+                "years": [],
+            }
+        }
+
     with patch(
         "app.services.market_data.sources.vietcap.fetch_json",
         new_callable=AsyncMock,
-    ) as mock:
-        mock.return_value = {
-            "data": [
-                {"pe": 12.5, "pb": 1.8, "eps": 5000, "year": 2024},
-            ]
-        }
-
-        resp = await client.get("/api/v1/market-data/fundamentals/VCB/ratio")
+        side_effect=_side_effect,
+    ):
+        resp = await client.get("/api/v1/market-data/fundamentals/VCB/ratio?period=Q")
         assert resp.status_code == 200
         body = resp.json()
         assert len(body["data"]) == 1
+        row = body["data"][0]
+        assert row["pe"] == 12.5
+        # Synthesized from income_statement.
+        assert row["revenue"] == 50_000_000.0
+        assert row["net_profit"] == 10_000_000.0
+        assert row["eps"] == 4500.0
+        # BVPS derived from market_cap / pb / shares.
+        assert row["bvps"] is not None
 
 
 # ══════════════════════════════════════════════════════

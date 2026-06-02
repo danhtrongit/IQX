@@ -21,6 +21,7 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.api.deps import PremiumUser
 from app.services.ai.forecast_service import (
     get_forecast_for_symbol,
     get_forecast_ranking,
@@ -33,6 +34,7 @@ router = APIRouter(prefix="/ai/forecast", tags=["AI Mô hình dự báo"])
 
 @router.get("/ranking")
 async def get_ranking(
+    user: PremiumUser,
     horizon: Literal["3", "5", "10"] = Query("5", description="Khung thời gian: 3, 5 hoặc 10"),
     limit: int = Query(20, ge=1, le=100, description="Số mã trả về (mặc định 20)"),
 ) -> dict[str, Any]:
@@ -47,7 +49,7 @@ async def get_ranking(
 
 
 @router.get("/symbols/{symbol}")
-async def get_symbol_forecast(symbol: str) -> dict[str, Any]:
+async def get_symbol_forecast(symbol: str, user: PremiumUser) -> dict[str, Any]:
     """Dự báo của 1 mã cho cả 3 khung T+3 / T+5 / T+10."""
     try:
         return await get_forecast_for_symbol(symbol)

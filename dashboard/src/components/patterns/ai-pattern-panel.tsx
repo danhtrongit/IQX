@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import {
   Sparkles,
-  ChevronDown,
   CheckCircle2,
   Info,
   AlertTriangle,
@@ -79,7 +78,6 @@ export function AIPatternPanel() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeIdx, setActiveIdx] = useState(0)
-  const [detailsOpen, setDetailsOpen] = useState(false)
   // Short "AI đang phân tích" overlay shown when the user picks a different
   // pattern from the detail list. Independent from the fetch loading state.
   const [analyzing, setAnalyzing] = useState(false)
@@ -261,26 +259,17 @@ export function AIPatternPanel() {
                 </div>
               )}
 
-              {/* Detail accordion — list of all patterns when there are multiple */}
-              <button
-                onClick={() => setDetailsOpen((s) => !s)}
-                className="w-full rounded-lg border border-border/60 bg-muted/10 px-3 py-2.5 flex items-center justify-between hover:bg-muted/20 transition-colors"
-              >
-                <span className="text-[11px] font-bold text-foreground inline-flex items-center gap-1.5">
-                  <Info className="size-3.5 text-primary" />
-                  Chi tiết nhận diện
-                  {items.length > 1 && (
-                    <span className="text-[9px] text-muted-foreground font-normal">
-                      ({items.length} pattern)
+              {/* All patterns rendered inline (no collapsible). Scroll via parent ScrollArea. */}
+              {items.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      Tất cả pattern
                     </span>
-                  )}
-                </span>
-                <ChevronDown
-                  className={`size-3.5 text-muted-foreground transition-transform ${detailsOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-              {detailsOpen && items.length > 0 && (
-                <div className="space-y-1">
+                    <span className="text-[9px] text-muted-foreground">
+                      {items.length} pattern
+                    </span>
+                  </div>
                   {items.map((p, idx) => {
                     const isActive = idx === activeIdx
                     return (

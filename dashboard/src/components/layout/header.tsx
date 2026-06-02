@@ -8,6 +8,7 @@ import {
   UserPlus,
   Crown,
   TrendingUp,
+  Menu,
 } from "lucide-react"
 import { StockLogo } from "@/components/stock/stock-logo"
 import { Button } from "@/components/ui/button"
@@ -23,6 +24,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/contexts/auth-context"
+import { TrialBanner } from "./trial-banner"
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api/v1"
 
@@ -36,9 +38,10 @@ interface StockResult {
 
 const NAV_ITEMS = [
   { label: "Trang chủ", href: "/" },
-  { label: "Dashboard", href: "/dashboard" },
   { label: "Thị trường", href: "/thi-truong" },
   { label: "Cổ phiếu", href: "/co-phieu" },
+  { label: "Kiến thức", href: "/bai-hoc" },
+  { label: "Giới thiệu", href: "/gioi-thieu" },
 ]
 
 function getInitials(name: string | null, email: string): string {
@@ -259,6 +262,7 @@ export function Header() {
   }
 
   return (
+    <>
     <header
       id="app-header"
       className="flex h-11 shrink-0 items-center border-b border-border bg-card px-2 gap-1.5"
@@ -281,7 +285,33 @@ export function Header() {
 
       <Separator orientation="vertical" className="h-5 mx-1" />
 
-      {/* Navigation */}
+      {/* Mobile hamburger menu */}
+      <div className="md:hidden">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="size-7">
+              <Menu className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-48">
+            {NAV_ITEMS.map((item) => (
+              <DropdownMenuItem
+                key={item.href}
+                onClick={() => navigate(item.href)}
+                className={
+                  currentPath === item.href
+                    ? "bg-primary/10 text-primary font-medium"
+                    : ""
+                }
+              >
+                {item.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Navigation (desktop) */}
       <nav id="header-nav" className="hidden md:flex items-center gap-0.5">
         {NAV_ITEMS.map((item) => (
           <a
@@ -412,5 +442,7 @@ export function Header() {
         )}
       </div>
     </header>
+    <TrialBanner />
+    </>
   )
 }

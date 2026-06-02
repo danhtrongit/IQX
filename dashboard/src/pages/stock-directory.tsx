@@ -37,7 +37,7 @@ export default function StockDirectoryPage() {
   useSEO({
     title: "Cổ phiếu theo ngành | IQX",
     description: "Danh mục tất cả cổ phiếu theo ngành trên IQX",
-    url: "https://beta.iqx.vn/co-phieu",
+    url: "https://iqx.vn/co-phieu",
   })
 
   const navigate = useNavigate()

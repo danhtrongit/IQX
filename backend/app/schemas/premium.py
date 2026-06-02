@@ -57,6 +57,7 @@ class SubscriptionResponse(BaseModel):
     """User's current premium subscription status."""
 
     is_premium: bool
+    is_trial: bool = False
     status: str | None
     current_plan: PlanResponse | None = None
     current_period_start: datetime | None

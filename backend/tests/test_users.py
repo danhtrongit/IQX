@@ -46,11 +46,11 @@ async def test_update_own_profile(client: AsyncClient, test_user: User):
     response = await client.patch(
         "/api/v1/users/me",
         headers=get_auth_headers(token),
-        json={"first_name": "Updated", "city": "Ho Chi Minh"},
+        json={"full_name": "Updated Name", "city": "Ho Chi Minh"},
     )
     assert response.status_code == 200
     data = response.json()
-    assert data["first_name"] == "Updated"
+    assert data["full_name"] == "Updated Name"
     assert data["city"] == "Ho Chi Minh"
 
 
@@ -102,8 +102,7 @@ async def test_admin_create_user(client: AsyncClient, admin_user: User):
         json={
             "email": "created@example.com",
             "password": "Created@1234",
-            "first_name": "Created",
-            "last_name": "User",
+            "full_name": "Created User".strip(),
             "role": "user",
         },
     )
@@ -193,7 +192,7 @@ async def test_invalid_sort_by_returns_422(client: AsyncClient, admin_user: User
     """sort_by with invalid column name should return 422, not 500."""
     token = await _admin_token(client)
     response = await client.get(
-        "/api/v1/users/?sort_by=full_name",
+        "/api/v1/users/?sort_by=password",
         headers=get_auth_headers(token),
     )
     assert response.status_code == 422

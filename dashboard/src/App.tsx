@@ -10,8 +10,12 @@ const SettingsPage = lazy(() => import("@/pages/settings"))
 const PremiumPage = lazy(() => import("@/pages/premium"))
 const PaymentResultPage = lazy(() => import("@/pages/payment-result"))
 const ThiTruongPage = lazy(() => import("@/pages/thi-truong"))
+const DuBaoPage = lazy(() => import("@/pages/du-bao"))
 const NotFoundPage = lazy(() => import("@/pages/404"))
 const MaintenancePage = lazy(() => import("@/pages/503"))
+const LessonsCatalogPage = lazy(() => import("@/features/lessons/catalog-page"))
+const CourseDetailPage = lazy(() => import("@/features/lessons/course-detail-page"))
+const EpisodeViewerPage = lazy(() => import("@/features/lessons/episode-viewer-page"))
 
 function PageLoader() {
   return (
@@ -26,9 +30,14 @@ export default function App() {
     <>
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          {/* Dashboard promoted to the root path; old marketing landing now
+              lives at /gioi-thieu. `/dashboard` kept as alias so external
+              bookmarks still resolve. */}
+          <Route path="/" element={<DashboardPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/gioi-thieu" element={<HomePage />} />
           <Route path="/thi-truong" element={<ThiTruongPage />} />
+          <Route path="/du-bao" element={<DuBaoPage />} />
           <Route path="/co-phieu" element={<StockDirectoryPage />} />
           <Route path="/co-phieu/:symbol" element={<StockPage />} />
           <Route path="/cai-dat" element={<SettingsPage />} />
@@ -40,6 +49,9 @@ export default function App() {
           <Route path="/payment/error" element={<PaymentResultPage type="error" />} />
           <Route path="/payment/cancel" element={<PaymentResultPage type="cancel" />} />
           <Route path="/503" element={<MaintenancePage />} />
+          <Route path="/bai-hoc" element={<LessonsCatalogPage />} />
+          <Route path="/bai-hoc/:slug" element={<CourseDetailPage />} />
+          <Route path="/bai-hoc/:slug/:episodeId" element={<EpisodeViewerPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>

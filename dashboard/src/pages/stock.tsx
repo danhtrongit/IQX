@@ -8,18 +8,21 @@ import {
 } from "@/components/layout"
 import { TVChart } from "@/components/chart/tv-chart"
 import { NewsMarkPopover } from "@/components/chart/news-mark-popover"
+import { ForecastWindow } from "@/components/forecast/forecast-window"
 import { StockOverview } from "@/components/stock/stock-overview"
 import { StockFinancials } from "@/components/stock/stock-financials"
 import { StockAiInsight } from "@/components/stock/stock-ai-insight"
 import { useParams, useNavigate, Navigate } from "react-router"
 import { SymbolProvider } from "@/contexts/symbol-context"
 import { MarketDataProvider } from "@/contexts/market-data-context"
+import { useSidebar } from "@/contexts/sidebar-context"
 import { BarChart3, LineChart, Info, X, GripHorizontal, Loader2 } from "lucide-react"
 import { motion, AnimatePresence, useDragControls } from "framer-motion"
 import { Button } from "@/components/ui/button"
 
 import { useSEO } from "@/hooks/use-seo"
 import { isSupportedStockRouteSymbol } from "@/lib/stock-route"
+import { PremiumGate } from "@/components/premium/premium-gate"
 
 type StockTab = "chart" | "overview" | "financials"
 
@@ -32,11 +35,12 @@ export default function StockPage() {
   useSEO({
     title: `Cổ phiếu ${ticker} - Biểu đồ, Tài chính & Phân Tích AI | IQX`,
     description: `Xem đa chiều cổ phiếu ${ticker}: Biểu đồ kỹ thuật thời gian thực, Dữ liệu tài chính, và Nhận định độc quyền từ hệ thống AI 6 lớp của IQX.`,
-    url: `https://beta.iqx.vn/co-phieu/${ticker}`,
+    url: `https://iqx.vn/co-phieu/${ticker}`,
   })
   const [activeTab, setActiveTab] = useState<StockTab>("chart")
   const [isAiInsightOpen, setIsAiInsightOpen] = useState(false)
   const [activeMarkId, setActiveMarkId] = useState<string | number | null>(null)
+  const { forecastWindowOpen, closeForecastWindow } = useSidebar()
   const dragControls = useDragControls()
 
   useEffect(() => {
@@ -197,12 +201,21 @@ export default function StockPage() {
                   </div>
 
                   <div className="flex-1 min-h-0 relative bg-background/50">
-                    <StockAiInsight symbol={ticker} />
+                    <PremiumGate
+                      featureName="AI Insight"
+                      description="Phân tích AI đa lớp cho mã đang xem (Trend, Liquidity, Money Flow, Insider, News)."
+                      onAuthRequested={() => setIsAiInsightOpen(false)}
+                    >
+                      <StockAiInsight symbol={ticker} />
+                    </PremiumGate>
                   </div>
                 </motion.div>
               </div>
             )}
           </AnimatePresence>
+
+          {/* Mô hình dự báo — cửa sổ kéo–thả */}
+          <ForecastWindow open={forecastWindowOpen} onClose={closeForecastWindow} />
         </div>
       </SymbolProvider>
     </MarketDataProvider>

@@ -4,12 +4,15 @@ export interface LayerSummaryItem {
   color?: string
 }
 
+// AI prompt's response keys per layer. Keep in sync with backend/docs/ai/ai-insight.md.
+// L4 insider returns "Nội bộ" + "Mức cảnh báo" (not "Giao dịch"/"Tác động").
+// L5 news returns "Tổng quan" + "Tác động" (not "Tin tức").
 const SUMMARY_KEYS: Record<string, string[]> = {
   trend: ["Xu hướng", "Trạng thái", "Hỗ trợ", "Kháng cự"],
   liquidity: ["Cung - Cầu"],
   moneyFlow: ["Khối ngoại", "Tự doanh", "Tác động"],
-  insider: ["Giao dịch", "Tác động"],
-  news: ["Tin tức", "Tác động"],
+  insider: ["Nội bộ", "Mức cảnh báo"],
+  news: ["Tổng quan", "Tác động"],
 }
 
 export function formatSupportResistance(value: unknown): string {

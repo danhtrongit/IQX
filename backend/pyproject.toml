@@ -24,6 +24,8 @@ dependencies = [
     "httpx>=0.28.1",
     "slowapi>=0.1.9",
     "redis[hiredis]>=5.0,<7.0",
+    "apscheduler>=3.10",
+    "pillow>=10.0,<12.0",
 ]
 
 [project.optional-dependencies]
@@ -77,6 +79,11 @@ check_untyped_defs = true
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
+
+[dependency-groups]
+dev = [
+    "psycopg[binary]>=3.3.4",
+]
 
 # Incremental strictness — stricter for new/stable modules
 [[tool.mypy.overrides]]

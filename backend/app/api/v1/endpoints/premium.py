@@ -13,9 +13,12 @@ from fastapi import APIRouter, Header, Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
+import uuid
+
 from app.api.deps import AdminUser, CurrentUser, DBSession
+from app.api.deps_audit import AuditCtx
 from app.core.config import get_settings
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import BadRequestError, NotFoundError
 from app.schemas.premium import (
     AdminGrantRequest,
     CheckoutRequest,
@@ -27,6 +30,8 @@ from app.schemas.premium import (
     PlanUpdate,
     SubscriptionResponse,
 )
+from app.services.admin_audit import AdminAuditService
+from app.services.ipn_logs import IPNLogService
 from app.services.premium import PremiumService
 from app.services.user import UserService
 
@@ -114,6 +119,8 @@ async def sepay_ipn(
     Xác thực qua header X-Secret-Key (so sánh constant-time).
     """
     settings = get_settings()
+    headers_dict = dict(request.headers)
+    log_service = IPNLogService(db)
 
     # Log headers for debugging
     secret_key = x_secret_key
@@ -138,8 +145,22 @@ async def sepay_ipn(
     )
 
     # Validate secret key (constant-time comparison)
-    if not secret_key or not hmac.compare_digest(secret_key, settings.SEPAY_SECRET_KEY):
+    secret_valid = bool(secret_key and hmac.compare_digest(secret_key, settings.SEPAY_SECRET_KEY))
+
+    if not secret_valid:
         logger.warning("IPN: invalid or missing secret key (tried X-Secret-Key, Authorization, X-Api-Key)")
+        # Attempt to read body for logging even on auth failure
+        try:
+            raw_body_for_log = await request.json()
+        except Exception:
+            raw_body_for_log = None
+        await log_service.record(
+            raw_body=raw_body_for_log,
+            raw_headers=headers_dict,
+            secret_key_valid=False,
+            result_status="secret_invalid",
+            sepay_transaction_id=None,
+        )
         return JSONResponse(status_code=401, content={"error": "unauthorized"})
 
     # Parse payload — narrow exceptions only
@@ -147,16 +168,58 @@ async def sepay_ipn(
         raw_body = await request.json()
     except (ValueError, UnicodeDecodeError):
         logger.warning("IPN: malformed JSON body")
+        await log_service.record(
+            raw_body=None,
+            raw_headers=headers_dict,
+            secret_key_valid=True,
+            result_status="invalid_json",
+            error_message="malformed JSON body",
+        )
         return JSONResponse(status_code=400, content={"error": "invalid_json"})
 
     try:
         payload = IPNPayload.model_validate(raw_body)
     except ValidationError as exc:
         logger.warning("IPN: payload validation failed (%d errors)", len(exc.errors()))
+        await log_service.record(
+            raw_body=raw_body,
+            raw_headers=headers_dict,
+            secret_key_valid=True,
+            result_status="invalid_payload",
+            error_message=str(exc.errors()),
+        )
         return JSONResponse(status_code=400, content={"error": "invalid_payload"})
+
+    # Extract SePay transaction ID from payload for logging
+    sepay_txn_id: str | None = None
+    if payload.transaction:
+        sepay_txn_id = payload.transaction.transaction_id
 
     service = PremiumService(db)
     result = await service.process_ipn(payload)
+
+    # Look up the matched order id by invoice_number (if present in payload)
+    matched_order_id = None
+    if payload.order and payload.order.order_invoice_number:
+        from sqlalchemy import select
+
+        from app.models.premium import PremiumPaymentOrder
+
+        r = await db.execute(
+            select(PremiumPaymentOrder.id).where(
+                PremiumPaymentOrder.invoice_number == payload.order.order_invoice_number
+            )
+        )
+        matched_order_id = r.scalar_one_or_none()
+
+    await log_service.record(
+        raw_body=raw_body,
+        raw_headers=headers_dict,
+        secret_key_valid=True,
+        result_status=result.get("message"),
+        matched_order_id=matched_order_id,
+        sepay_transaction_id=sepay_txn_id,
+    )
 
     return JSONResponse(status_code=200, content=result)
 
@@ -176,61 +239,106 @@ async def admin_list_plans(admin: AdminUser, db: DBSession):
 async def admin_create_plan(
     body: PlanCreate,
     admin: AdminUser,
+    audit: AuditCtx,
     db: DBSession,
 ):
     """Quản trị: tạo gói Premium mới."""
     service = PremiumService(db)
     plan = await service.create_plan(body.model_dump())
+    await AdminAuditService(db).record(
+        audit,
+        action="premium.plan.create",
+        target_entity="plan",
+        target_id=str(plan.id),
+        after={"code": plan.code, "name": plan.name, "price_vnd": plan.price_vnd},
+    )
     return PlanResponse.model_validate(plan)
 
 
 @router.patch("/admin/plans/{plan_id}", response_model=PlanResponse)
 async def admin_update_plan(
-    plan_id: str,
+    plan_id: uuid.UUID,
     body: PlanUpdate,
     admin: AdminUser,
+    audit: AuditCtx,
     db: DBSession,
 ):
     """Quản trị: cập nhật gói Premium."""
-    import uuid as _uuid
-
-    try:
-        pid = _uuid.UUID(plan_id)
-    except ValueError:
-        raise NotFoundError("gói Premium") from None
-
     service = PremiumService(db)
-    plan = await service.update_plan(pid, body.model_dump(exclude_unset=True))
+    existing = await service.get_plan(plan_id)
+    patch = body.model_dump(exclude_unset=True)
+    before = {k: getattr(existing, k) for k in patch}
+    plan = await service.update_plan(plan_id, patch)
+    from app.services.admin_audit import diff_dict
+    b, a = diff_dict(before, patch)
+    await AdminAuditService(db).record(
+        audit,
+        action="premium.plan.update",
+        target_entity="plan",
+        target_id=str(plan.id),
+        before=b,
+        after=a,
+    )
     return PlanResponse.model_validate(plan)
+
+
+@router.delete("/admin/plans/{plan_id}", response_model=PlanResponse)
+async def admin_delete_plan(
+    plan_id: uuid.UUID,
+    admin: AdminUser,
+    audit: AuditCtx,
+    db: DBSession,
+):
+    """Soft-delete: marks is_active=False. Cannot delete TRIAL_7D."""
+    service = PremiumService(db)
+    plan = await service.get_plan(plan_id)
+    if plan.code == "TRIAL_7D":
+        raise BadRequestError("Không thể xoá gói TRIAL_7D")
+    before = {"is_active": plan.is_active}
+    updated = await service.update_plan(plan_id, {"is_active": False})
+    await AdminAuditService(db).record(
+        audit,
+        action="premium.plan.delete",
+        target_entity="plan",
+        target_id=str(updated.id),
+        before=before,
+        after={"is_active": False},
+    )
+    return PlanResponse.model_validate(updated)
 
 
 @router.post("/admin/users/{user_id}/grant", response_model=PaymentOrderResponse, status_code=201)
 async def admin_grant_premium(
-    user_id: str,
+    user_id: uuid.UUID,
     body: AdminGrantRequest,
     admin: AdminUser,
+    audit: AuditCtx,
     db: DBSession,
 ):
     """Quản trị: cấp Premium thủ công cho người dùng."""
-    import uuid as _uuid
-
-    try:
-        uid = _uuid.UUID(user_id)
-    except ValueError:
-        raise NotFoundError("người dùng") from None
-
     # Verify user exists
     user_service = UserService(db)
     try:
-        await user_service.get_by_id(uid)
+        await user_service.get_by_id(user_id)
     except NotFoundError:
         raise NotFoundError("người dùng") from None
 
     service = PremiumService(db)
     order = await service.admin_grant_premium(
-        user_id=uid,
+        user_id=user_id,
         plan_id=body.plan_id,
         admin_id=admin.id,
         note=body.note,
+    )
+    await AdminAuditService(db).record(
+        audit,
+        action="premium.grant",
+        target_entity="subscription",
+        target_id=str(order.id),
+        after={
+            "user_id": str(user_id),
+            "plan_id": str(body.plan_id),
+            "note": body.note,
+        },
     )
     return PaymentOrderResponse.model_validate(order)

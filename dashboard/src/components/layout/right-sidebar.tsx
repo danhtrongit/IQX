@@ -1,9 +1,9 @@
 import { useSidebar } from "@/contexts/sidebar-context"
 import { NewsFeedPanel } from "@/components/news/news-feed-panel"
+import { PremiumGate } from "@/components/premium/premium-gate"
 
 import { WatchlistPanel } from "@/components/watchlist/watchlist-panel"
 import { AIPatternPanel } from "@/components/patterns/ai-pattern-panel"
-import { ForecastPanel } from "@/components/forecast/forecast-panel"
 import { RightPanel as TradingPanel } from "./right-panel"
 import { X } from "lucide-react"
 
@@ -11,9 +11,10 @@ import { X } from "lucide-react"
  * Dynamic right sidebar that switches between panels:
  * - news: Market news feed with filters
  * - patterns: AI candle / chart pattern recognition
- * - forecast: AI ranking by expected return (T+3 / T+5 / T+10)
  * - trading: Stock trading form (order book + order placement)
  * - watchlist: Watchlist, holdings, and trade history
+ *
+ * "Mô hình dự báo" is no longer a panel — it lives at /du-bao (see ISSUE-015).
  */
 export function RightSidebar() {
   const { activePanel, isOpen, setIsOpen } = useSidebar()
@@ -23,11 +24,23 @@ export function RightSidebar() {
       case "news":
         return <NewsFeedPanel />
       case "patterns":
-        return <AIPatternPanel />
-      case "forecast":
-        return <ForecastPanel />
+        return (
+          <PremiumGate
+            featureName="AI Mẫu nến"
+            description="Nhận diện mẫu nến tự động bằng AI cho mã đang xem."
+          >
+            <AIPatternPanel />
+          </PremiumGate>
+        )
       case "trading":
-        return <TradingPanel />
+        return (
+          <PremiumGate
+            featureName="Giao dịch ảo"
+            description="Đặt lệnh ảo trên tài khoản demo 1 tỷ VND."
+          >
+            <TradingPanel />
+          </PremiumGate>
+        )
       case "watchlist":
         return <WatchlistPanel />
       default:
@@ -38,7 +51,6 @@ export function RightSidebar() {
   const panelNames: Record<string, string> = {
     news: "Tin tức",
     patterns: "AI Mẫu nến",
-    forecast: "Mô hình dự báo",
     trading: "Đặt lệnh",
     watchlist: "Danh mục",
   }

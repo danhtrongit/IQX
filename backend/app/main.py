@@ -18,6 +18,7 @@ from app.core.config import get_settings
 from app.core.exceptions import AppException
 from app.core.logging import setup_logging
 from app.core.rate_limit import limiter
+from app.core.request_id import RequestIDMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +47,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     await redis_startup()
 
+    # Start background job scheduler
+    from app.services.jobs import shutdown as jobs_shutdown
+    from app.services.jobs import startup as jobs_startup
+
+    await jobs_startup()
+
     yield
 
     # Shutdown
+    await jobs_shutdown()
     await redis_shutdown()
     await http_shutdown()
     logger.info("👋 Shutting down %s", settings.APP_NAME)
@@ -73,6 +81,11 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    # ── Request-ID ───────────────────────────────────
+    # Must be outermost so X-Request-ID is emitted on every response,
+    # including CORS pre-flight errors. In Starlette, middleware added last
+    # wraps outermost — so we add it after CORS below.
+
     # ── CORS ─────────────────────────────────────────
     origins = settings.cors_origins_list
     allow_credentials = True
@@ -91,6 +104,10 @@ def create_app() -> FastAPI:
         allow_methods=settings.cors_methods_list,
         allow_headers=settings.cors_headers_list,
     )
+
+    # Add RequestIDMiddleware AFTER CORS so it wraps outermost in the stack,
+    # ensuring X-Request-ID header is present on every response.
+    app.add_middleware(RequestIDMiddleware)
 
     # ── Exception handlers ───────────────────────────
     @app.exception_handler(AppException)

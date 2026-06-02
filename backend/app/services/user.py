@@ -31,6 +31,7 @@ class UserService:
     """Orchestrates user-related business logic."""
 
     def __init__(self, session: AsyncSession) -> None:
+        self._session = session
         self._repo = UserRepository(session)
 
     # ── Helpers ──────────────────────────────────────
@@ -66,7 +67,7 @@ class UserService:
 
     # ── Register ─────────────────────────────────────
     async def register(self, data: UserCreate) -> User:
-        """Register a new user account."""
+        """Register a new user account and grant a 7-day Premium trial."""
         if await self._repo.email_exists(data.email):
             raise ConflictError("Đã tồn tại người dùng với email này")
 
@@ -77,14 +78,24 @@ class UserService:
         user = User(
             email=data.email.lower(),
             hashed_password=hash_password(data.password),
-            first_name=data.first_name,
-            last_name=data.last_name,
+            full_name=data.full_name,
             role=UserRole.USER,
             status=UserStatus.ACTIVE,
             **phone_fields,
         )
         created = await self._repo.create(user)
         logger.info("User registered: %s", created.email)
+
+        # Grant 7-day trial — failure must NOT block registration
+        try:
+            from app.services.premium import PremiumService
+
+            await PremiumService(self._session).grant_trial_if_eligible(created.id)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Failed to grant trial for user %s: %s", created.id, exc)
+
+        # Refresh the user object in case the session committed (expiring lazy attrs)
+        await self._session.refresh(created)
         return created
 
     # ── Admin create ──────────────────────────────────
@@ -100,8 +111,7 @@ class UserService:
         user = User(
             email=data.email.lower(),
             hashed_password=hash_password(data.password),
-            first_name=data.first_name,
-            last_name=data.last_name,
+            full_name=data.full_name,
             role=data.role,
             status=data.status,
             **phone_fields,

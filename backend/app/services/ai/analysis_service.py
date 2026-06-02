@@ -46,15 +46,12 @@ def _analysis_cache_key(analysis_type: str, identifier: str, language: str) -> s
 def _get_analysis_ttl(analysis_type: str = "insight") -> int:
     """Get TTL for AI analysis cache based on analysis type.
 
-    - dashboard / industry: cache until end of trading session (15:00 VN).
-      If after 15:00, cache until 15:00 next trading day.
-      Minimum 1 hour to avoid edge-case churn.
-    - insight: 3 hours fixed.
+    All analyses (dashboard / industry / insight) cache until end of the
+    current trading session (15:00 VN). If already past 15:00 → next day.
+    Minimum 1 hour. This keeps Layer 3 money-flow data fresh after each
+    session close (was previously cached 3h fixed which masked new data).
     """
-    if analysis_type in ("dashboard", "industry"):
-        return _ttl_until_end_of_session()
-    # insight: 3 hours
-    return 3 * 3600
+    return _ttl_until_end_of_session()
 
 
 def _ttl_until_end_of_session() -> int:
@@ -259,6 +256,16 @@ async def analyze_insight(
     # ── Build rawInput from payload ────────────────
     raw_input = _build_raw_input(payload)
 
+    # ── Layer 6 — deterministic scoring (see scoring.py) ──
+    from app.services.ai.scoring import score_all_layers
+
+    layer_scores, layer6_agg = score_all_layers(layers)
+    for key, sc in layer_scores.items():
+        if isinstance(layers.get(key), dict):
+            layers[key]["status"] = sc["status"]
+            layers[key]["score"] = sc["score"]
+    enriched_summary = {**summary, **layer6_agg}
+
     # ── Assemble final response ────────────────────
     now_str = datetime.now(UTC).isoformat()
     result: dict[str, Any] = {
@@ -270,7 +277,7 @@ async def analyze_insight(
             "model": model_used,
             "as_of": now_str,
         },
-        "summary": summary,
+        "summary": enriched_summary,
     }
 
     # Cache result (without large payload)
@@ -328,12 +335,14 @@ def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
         "latestClose": derived.get("P0", 0),
     }
 
-    # Liquidity
+    # Liquidity — Vietcap returns trading_history newest-first (desc). Take the
+    # first 10 to keep the most recent sessions; earlier `supply_demand[-10:]`
+    # silently kept the 10 OLDEST and surfaced as stale data (ISSUE-013).
     supply_demand = payload.get("supply_demand")
     sd_summary = payload.get("supply_demand_summary")
     liquidity_history = []
     if isinstance(supply_demand, list):
-        for sd in supply_demand[-10:]:
+        for sd in supply_demand[:10]:
             liquidity_history.append({
                 "date": sd.get("trading_date"),
                 "buyUnmatchedVolume": sd.get("total_buy_unmatched_volume", 0),
@@ -345,7 +354,7 @@ def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
                 "sellTradeCount": sd.get("total_sell_trade_count", 0),
             })
 
-    liquidity_latest = liquidity_history[-1] if liquidity_history else None
+    liquidity_latest = liquidity_history[0] if liquidity_history else None
     liquidity_avg = None
     if liquidity_history and len(liquidity_history) >= 3:
         keys = ["buyUnmatchedVolume", "sellUnmatchedVolume", "totalVolume"]
@@ -362,8 +371,11 @@ def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
     def _normalize_flow(items: Any, *, source: str) -> list:
         if not isinstance(items, list):
             return []
+        # Vietcap returns newest-first (descending); take the first 15 to keep
+        # the most recent sessions. Earlier code used items[-15:] which kept
+        # the 15 OLDEST and surfaced as "stale" money-flow data in Layer 3.
         result = []
-        for item in items[-15:]:
+        for item in items[:15]:
             if source == "foreign":
                 match_keys = (
                     "matchNetVolume", "match_net_volume", "foreignNetVolumeMatched",

@@ -421,6 +421,58 @@ class TestPayloadBuilders:
         assert raw_input["insider"]["transactions"][0]["shareRegistered"] == 250_000
         assert raw_input["insider"]["transactions"][0]["shareExecuted"] == 100_000
 
+    def test_build_raw_input_liquidity_uses_newest_sessions(self) -> None:
+        """ISSUE-013: Vietcap returns trading_history newest-first. _build_raw_input
+        must slice from the head to surface the latest sessions, and `latest` must
+        index the newest session (index 0), not the oldest (-1)."""
+        from app.services.ai.analysis_service import _build_raw_input
+
+        # 30 sessions, newest-first (desc). Index 0 is the latest trading date.
+        supply_demand = [
+            {
+                "trading_date": f"NEWEST-{i:02d}" if i == 0 else f"session-{i:02d}",
+                "total_buy_unmatched_volume": 1_000 + i,
+                "total_sell_unmatched_volume": 500 + i,
+                "total_buy_trade_volume": 10_000 + i,
+                "total_sell_trade_volume": 8_000 + i,
+                "total_buy_trade_count": 100 + i,
+                "total_sell_trade_count": 80 + i,
+            }
+            for i in range(30)
+        ]
+        payload = {"supply_demand": supply_demand}
+        raw_input = _build_raw_input(payload)
+
+        # Latest must be the newest session (index 0 in desc order), not oldest.
+        assert raw_input["liquidity"]["latest"]["date"] == "NEWEST-00"
+        assert raw_input["liquidity"]["history"][0]["date"] == "NEWEST-00"
+        assert len(raw_input["liquidity"]["history"]) == 10
+        # buyUnmatchedVolume of newest = 1_000 + 0 = 1_000 (index 0 in desc)
+        assert raw_input["liquidity"]["latest"]["buyUnmatchedVolume"] == 1_000
+
+    def test_label_supply_demand_uses_newest_session(self) -> None:
+        """ISSUE-013: _label_supply_demand reads `latest` from sd_history[0] (newest),
+        not sd_history[-1] (which is the oldest when Vietcap returns desc)."""
+        from app.services.ai.payloads import _enrich_insight_derived
+
+        ohlcv = [
+            {"open": 80, "high": 85, "low": 75, "close": 82, "volume": 1000}
+            for _ in range(30)
+        ]
+        # Newest-first: latest has buy=5000 (high), oldest has buy=100 (low).
+        # Average buy ≈ 2550. With ratio 5000/2550 ≈ 1.96 → "cao".
+        sd = [
+            {"total_buy_trade_volume": 5_000 - i * 170, "total_sell_trade_volume": 400}
+            for i in range(30)
+        ]
+        payload: dict = {"ohlcv_30": ohlcv, "supply_demand": sd}
+        _enrich_insight_derived(payload)
+
+        labels = payload["derived"].get("supply_demand_labels")
+        assert labels is not None
+        # If the bug were still here (latest = sd[-1] = lowest), buy_level would be "thấp".
+        assert labels["buy_level"] == "cao"
+
 
 # ═══════════════════════════════════════════════════════
 # 4. API Endpoint Tests
@@ -436,7 +488,8 @@ class TestAIEndpoints:
         "as_of": "2026-04-26T10:00:00+00:00",
     }
 
-    async def test_dashboard_analyze_success(self, client) -> None:  # noqa: ANN001
+    async def test_dashboard_analyze_success(self, client, premium_user) -> None:  # noqa: ANN001
+        _user, headers = premium_user
         with patch(
             "app.api.v1.endpoints.ai_analysis.analyze_dashboard",
             new_callable=AsyncMock,
@@ -445,6 +498,7 @@ class TestAIEndpoints:
             resp = await client.post(
                 "/api/v1/ai/dashboard/analyze",
                 json={"language": "vi", "include_payload": False},
+                headers=headers,
             )
 
         assert resp.status_code == 200
@@ -453,7 +507,8 @@ class TestAIEndpoints:
         assert data["analysis"] == "Test analysis text"
         assert "payload" not in data
 
-    async def test_dashboard_analyze_with_payload(self, client) -> None:  # noqa: ANN001
+    async def test_dashboard_analyze_with_payload(self, client, premium_user) -> None:  # noqa: ANN001
+        _user, headers = premium_user
         result = {**self._MOCK_RESULT, "payload": {"market_index": []}}
         with patch(
             "app.api.v1.endpoints.ai_analysis.analyze_dashboard",
@@ -463,12 +518,14 @@ class TestAIEndpoints:
             resp = await client.post(
                 "/api/v1/ai/dashboard/analyze",
                 json={"language": "vi", "include_payload": True},
+                headers=headers,
             )
 
         assert resp.status_code == 200
         assert "payload" in resp.json()
 
-    async def test_industry_analyze_success(self, client) -> None:  # noqa: ANN001
+    async def test_industry_analyze_success(self, client, premium_user) -> None:  # noqa: ANN001
+        _user, headers = premium_user
         result = {**self._MOCK_RESULT, "type": "industry", "input": {"icb_code": 8300}}
         with patch(
             "app.api.v1.endpoints.ai_analysis.analyze_industry",
@@ -478,19 +535,23 @@ class TestAIEndpoints:
             resp = await client.post(
                 "/api/v1/ai/industry/analyze",
                 json={"icb_code": 8300, "language": "vi"},
+                headers=headers,
             )
 
         assert resp.status_code == 200
         assert resp.json()["type"] == "industry"
 
-    async def test_industry_missing_icb_code(self, client) -> None:  # noqa: ANN001
+    async def test_industry_missing_icb_code(self, client, premium_user) -> None:  # noqa: ANN001
+        _user, headers = premium_user
         resp = await client.post(
             "/api/v1/ai/industry/analyze",
             json={"language": "vi"},
+            headers=headers,
         )
         assert resp.status_code == 422
 
-    async def test_insight_analyze_success(self, client) -> None:  # noqa: ANN001
+    async def test_insight_analyze_success(self, client, premium_user) -> None:  # noqa: ANN001
+        _user, headers = premium_user
         result = {**self._MOCK_RESULT, "type": "insight", "input": {"symbol": "VCB"}}
         with patch(
             "app.api.v1.endpoints.ai_analysis.analyze_insight",
@@ -500,26 +561,32 @@ class TestAIEndpoints:
             resp = await client.post(
                 "/api/v1/ai/insight/analyze",
                 json={"symbol": "VCB", "language": "vi"},
+                headers=headers,
             )
 
         assert resp.status_code == 200
         assert resp.json()["type"] == "insight"
 
-    async def test_insight_missing_symbol(self, client) -> None:  # noqa: ANN001
+    async def test_insight_missing_symbol(self, client, premium_user) -> None:  # noqa: ANN001
+        _user, headers = premium_user
         resp = await client.post(
             "/api/v1/ai/insight/analyze",
             json={"language": "vi"},
+            headers=headers,
         )
         assert resp.status_code == 422
 
-    async def test_insight_invalid_symbol(self, client) -> None:  # noqa: ANN001
+    async def test_insight_invalid_symbol(self, client, premium_user) -> None:  # noqa: ANN001
+        _user, headers = premium_user
         resp = await client.post(
             "/api/v1/ai/insight/analyze",
             json={"symbol": "invalid symbol!", "language": "vi"},
+            headers=headers,
         )
         assert resp.status_code == 422
 
-    async def test_proxy_error_returns_502(self, client) -> None:  # noqa: ANN001
+    async def test_proxy_error_returns_502(self, client, premium_user) -> None:  # noqa: ANN001
+        _user, headers = premium_user
         from app.services.ai.proxy_client import AIProxyError
 
         with patch(
@@ -530,12 +597,14 @@ class TestAIEndpoints:
             resp = await client.post(
                 "/api/v1/ai/dashboard/analyze",
                 json={"language": "vi"},
+                headers=headers,
             )
 
         assert resp.status_code == 502
         assert "timeout" in resp.json()["detail"].lower()
 
-    async def test_value_error_returns_422(self, client) -> None:  # noqa: ANN001
+    async def test_value_error_returns_422(self, client, premium_user) -> None:  # noqa: ANN001
+        _user, headers = premium_user
         with patch(
             "app.api.v1.endpoints.ai_analysis.analyze_dashboard",
             new_callable=AsyncMock,
@@ -544,11 +613,13 @@ class TestAIEndpoints:
             resp = await client.post(
                 "/api/v1/ai/dashboard/analyze",
                 json={"language": "vi"},
+                headers=headers,
             )
 
         assert resp.status_code == 422
 
-    async def test_include_payload_false_no_payload(self, client) -> None:  # noqa: ANN001
+    async def test_include_payload_false_no_payload(self, client, premium_user) -> None:  # noqa: ANN001
+        _user, headers = premium_user
         with patch(
             "app.api.v1.endpoints.ai_analysis.analyze_insight",
             new_callable=AsyncMock,
@@ -557,11 +628,13 @@ class TestAIEndpoints:
             resp = await client.post(
                 "/api/v1/ai/insight/analyze",
                 json={"symbol": "FPT", "include_payload": False},
+                headers=headers,
             )
         assert resp.status_code == 200
         assert "payload" not in resp.json()
 
-    async def test_include_payload_true_has_payload(self, client) -> None:  # noqa: ANN001
+    async def test_include_payload_true_has_payload(self, client, premium_user) -> None:  # noqa: ANN001
+        _user, headers = premium_user
         result_with = {**self._MOCK_RESULT, "type": "insight", "payload": {"key": "val"}}
         with patch(
             "app.api.v1.endpoints.ai_analysis.analyze_insight",
@@ -571,18 +644,20 @@ class TestAIEndpoints:
             resp = await client.post(
                 "/api/v1/ai/insight/analyze",
                 json={"symbol": "FPT", "include_payload": True},
+                headers=headers,
             )
         assert resp.status_code == 200
         assert "payload" in resp.json()
 
-    async def test_response_schema(self, client) -> None:  # noqa: ANN001
+    async def test_response_schema(self, client, premium_user) -> None:  # noqa: ANN001
+        _user, headers = premium_user
         with patch(
             "app.api.v1.endpoints.ai_analysis.analyze_dashboard",
             new_callable=AsyncMock,
             return_value=self._MOCK_RESULT,
         ):
             resp = await client.post(
-                "/api/v1/ai/dashboard/analyze", json={},
+                "/api/v1/ai/dashboard/analyze", json={}, headers=headers,
             )
         data = resp.json()
         assert "type" in data
