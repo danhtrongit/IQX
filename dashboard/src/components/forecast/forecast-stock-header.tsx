@@ -101,19 +101,19 @@ export function ForecastStockHeader({ symbol }: { symbol: string | null }) {
 
         {/* Metrics strip */}
         <div className="grid grid-cols-4 gap-3 md:gap-5 shrink-0">
-          <Metric label="Giá" value={price > 0 ? price.toFixed(2) : "—"} />
+          <Metric label="Giá hiện tại" value={price > 0 ? price.toFixed(2) : "—"} />
           <Metric
-            label="Tăng"
+            label="Tăng hiện tại"
             value={`${change > 0 ? "+" : ""}${change.toFixed(2)}`}
             valueClass={cc}
           />
           <Metric
-            label="% tăng/giảm"
+            label="% thay đổi hiện tại"
             value={`${pct > 0 ? "+" : ""}${pct.toFixed(2)}%`}
             valueClass={cc}
           />
           <Metric
-            label="Khối lượng"
+            label="Khối lượng hiện tại"
             value={fmtVolume(volume)}
             sub={value > 0 ? fmtValueVnd(value) : undefined}
           />
@@ -136,7 +136,7 @@ function Metric({
 }) {
   return (
     <div className="text-right md:text-center">
-      <p className="text-[10px] text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wider leading-tight">
         {label}
       </p>
       <p className={`text-base font-bold tabular-nums ${valueClass || "text-foreground"}`}>
