@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { AlertTriangle, Info, Sparkles } from "lucide-react"
+import { fmtRatioPlain } from "./forecast-format"
 
 // ─── Types ─────────────────────────────────────────────
 
@@ -18,11 +19,6 @@ interface FinancialRatio {
 function fmtVnd(v: number | null | undefined): string {
   if (v == null || !Number.isFinite(v)) return "—"
   return v.toLocaleString("vi-VN", { maximumFractionDigits: 0 })
-}
-
-function fmtRatio(v: number | null | undefined, suffix = "x"): string {
-  if (v == null || !Number.isFinite(v)) return "—"
-  return `${v.toFixed(2)}${suffix}`
 }
 
 function fmtPctFraction(v: number | null | undefined): string {
@@ -121,8 +117,8 @@ export function ForecastRightRail({ symbol }: { symbol: string | null }) {
     <Frame>
       {/* Top row: 4 simple ratios — P/E, P/B, EPS, BVPS */}
       <div className="grid grid-cols-4 gap-2">
-        <RatioCell label="P/E" value={fmtRatio(ratio.pe)} />
-        <RatioCell label="P/B" value={fmtRatio(ratio.pb)} />
+        <RatioCell label="P/E" value={fmtRatioPlain(ratio.pe)} />
+        <RatioCell label="P/B" value={fmtRatioPlain(ratio.pb)} />
         <RatioCell label="EPS" value={fmtVnd(ratio.eps)} />
         <RatioCell label="BVPS" value={fmtVnd(ratio.bvps)} />
       </div>
@@ -130,7 +126,7 @@ export function ForecastRightRail({ symbol }: { symbol: string | null }) {
       <div className="grid grid-cols-3 gap-2 mt-2">
         <RatioCell label="ROA" value={fmtPctFraction(ratio.roa)} />
         <RatioCell label="ROE" value={fmtPctFraction(ratio.roe)} />
-        <RatioCell label="D/E" value={fmtRatio(ratio.de)} />
+        <RatioCell label="D/E" value={fmtRatioPlain(ratio.de)} />
       </div>
     </Frame>
   )
@@ -153,7 +149,7 @@ function Frame({ children }: { children: React.ReactNode }) {
 function RatioCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md bg-background/40 border border-border/20 px-2 py-3 text-center">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-[11px] font-bold uppercase tracking-wider text-foreground">{label}</div>
       <div className="text-base font-bold tabular-nums text-foreground mt-1">{value}</div>
     </div>
   )
