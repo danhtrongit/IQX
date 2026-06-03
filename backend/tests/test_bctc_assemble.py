@@ -80,3 +80,29 @@ def test_assemble_nonbank_has_subsector() -> None:
     out = build_bctc_payload(bs_rows, is_rows, [])
     assert out.get("subsector") and out["subsector"]["label"]
     assert "blind_spots" in out  # always present (empty list for non-bank)
+
+
+def test_assemble_nonbank_has_valuation() -> None:
+    is_rows = [_mk(2025, 5, isa3=600.0, isa20=80.0), _mk(2024, 5, isa3=500.0)]
+    bs_rows = [_mk(2025, 5, bsa53=1000.0)]
+    ratio = [{"year_report": 2025, "pe": 14.0, "eps": 5000.0, "bvps": 20000.0, "roe": 0.25},
+             {"year_report": 2024, "pe": 18.0, "eps": 4000.0, "bvps": 18000.0, "roe": 0.25}]
+    out = build_bctc_payload(bs_rows, is_rows, [], ratio_rows=ratio)
+    assert "valuation" in out and out["valuation"]["pe_band"] is not None
+
+
+def test_assemble_valuation_present_without_ratio() -> None:
+    out = build_bctc_payload([], [_mk(2025, 5, isa3=1.0)], [])
+    assert "valuation" in out
+
+
+def test_assemble_bank_valuation() -> None:
+    is_rows = [_mk(2025, 5, isb38=100.0, isb27=70.0, isb39=-20.0, isb41=-5.0, isa19=-4.0, isa20=20.0),
+               _mk(2024, 5, isb38=90.0)]
+    bs_rows = [_mk(2025, 5, bsa53=1000.0, bsa78=100.0, bsb104=900.0, bsb106=100.0, bsb113=800.0),
+               _mk(2024, 5, bsa53=900.0, bsa78=90.0, bsb104=800.0, bsb106=100.0, bsb113=750.0)]
+    ratio = [{"year_report": 2025, "bvps": 26000.0, "roe": 0.20},
+             {"year_report": 2024, "bvps": 30000.0, "roe": 0.22}]
+    out = build_bctc_payload(bs_rows, is_rows, [], ratio_rows=ratio)
+    assert out["valuation"]["justified_pb"] is not None
+    assert "nim_cor_matrix" in out["valuation"]
