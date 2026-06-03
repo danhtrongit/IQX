@@ -26,7 +26,7 @@ function fmtCell(c: SnapshotCell): string {
   return fmtNumber(c.value, 2)
 }
 
-const PCT_KEYS = new Set(["cogs_pct", "selling_pct", "admin_pct", "nii_pct", "fee_pct", "cir", "cost_of_risk", "provision_ppop", "yield_ea", "cost_of_funds", "spread", "fcf_margin"])
+const PCT_KEYS = new Set(["cogs_pct", "selling_pct", "admin_pct", "nii_pct", "fee_pct", "cir", "cost_of_risk", "provision_ppop", "yield_ea", "cost_of_funds", "spread", "fcf_margin", "sloan_accrual"])
 const MARGIN_SUFFIX = ["margin"]
 const DAYS_KEYS = new Set(["dso", "dio", "dpo", "ccc"])
 
