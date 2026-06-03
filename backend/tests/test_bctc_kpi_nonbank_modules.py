@@ -22,6 +22,15 @@ def test_common_size_ratios() -> None:
     assert math.isclose(cs["net_margin"], 0.144)
 
 
+def test_common_size_negative_expenses_shown_positive() -> None:
+    # VCI lưu chi phí âm -> common-size phải hiện độ lớn dương.
+    p = _p(2025, net_revenue=200.0, cogs=-118.0, selling_expense=-17.4, admin_expense=-26.0)
+    cs = m.common_size(p)
+    assert math.isclose(cs["cogs_pct"], 0.59)
+    assert math.isclose(cs["selling_pct"], 0.087)
+    assert math.isclose(cs["admin_pct"], 0.13)
+
+
 def test_wcc_missing_provision_treated_as_zero() -> None:
     # Thiếu inventory_provision -> HTK ròng = HTK gộp (không vỡ, không None).
     cur = _p(2025, trade_receivables=50.0, inventory_gross=30.0,

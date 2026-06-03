@@ -9,13 +9,21 @@ def _pct(num: float | None, den: float | None) -> float | None:
     return num / den
 
 
+def _abs_pct(num: float | None, den: float | None) -> float | None:
+    # Chi phí (giá vốn, bán hàng, QLDN) lưu dạng âm trong VCI -> hiển thị độ lớn
+    # dương như % doanh thu (theo quy ước common-size của guide).
+    if num is None or not den:
+        return None
+    return abs(num) / den
+
+
 def common_size(p: Period) -> dict[str, float | None]:
     rev = val(p, "net_revenue")
     return {
-        "cogs_pct": _pct(val(p, "cogs"), rev),
+        "cogs_pct": _abs_pct(val(p, "cogs"), rev),
         "gross_margin": _pct(val(p, "gross_profit"), rev),
-        "selling_pct": _pct(val(p, "selling_expense"), rev),
-        "admin_pct": _pct(val(p, "admin_expense"), rev),
+        "selling_pct": _abs_pct(val(p, "selling_expense"), rev),
+        "admin_pct": _abs_pct(val(p, "admin_expense"), rev),
         "ebit_margin": _pct(val(p, "operating_profit"), rev),
         "net_margin": _pct(val(p, "npat"), rev),
     }
