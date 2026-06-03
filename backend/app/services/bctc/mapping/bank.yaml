@@ -1,0 +1,30 @@
+# Template B (ngân hàng, TT22) — concept -> VCI FieldCode.
+# Nguồn: discovery live trên VCB (xem dashboard/docs/specs/bctc-guide/fieldcode-map.md).
+interest_income_gross: isb25     # Thu nhập lãi & các khoản tương tự
+interest_expense: isb26          # Chi phí lãi & các chi phí tương tự
+net_interest_income: isb27       # Thu nhập lãi thuần
+net_fee_income: isb30            # Lãi/lỗ thuần từ hoạt động dịch vụ
+total_operating_income: isb38    # Tổng thu nhập hoạt động (TOI) — cờ ngân hàng
+operating_expense: isb39         # Chi phí quản lý DN (OPEX, âm)
+ppop_reported: isb40             # LN thuần trước trích lập dự phòng
+provision_expense: isb41         # Trích lập dự phòng tổn thất tín dụng (âm)
+profit_before_tax: isa16         # Tổng LN trước thuế
+npat: isa20                      # LN sau thuế
+npat_parent: isa22               # Cổ đông của Công ty mẹ
+eps: isa23                       # Lãi cơ bản trên cổ phiếu
+total_assets: bsa53              # TỔNG TÀI SẢN
+cash: bsa2                       # Tiền mặt, vàng bạc, đá quý
+deposits_at_sbv: bsb97           # Tiền gửi tại NHNN
+deposits_at_other_ci: bsb98      # Tiền gửi & cho vay các TCTD khác
+customer_loans: bsb104           # Cho vay khách hàng (gross)
+loan_loss_reserve: bsb105        # Dự phòng rủi ro cho vay KH (âm)
+investment_securities: bsb106    # Chứng khoán đầu tư
+total_liabilities: bsa54         # TỔNG NỢ PHẢI TRẢ
+customer_deposits: bsb113        # Tiền gửi của khách hàng
+equity: bsa78                    # VỐN CHỦ SỞ HỮU
+charter_capital: bsa80           # Vốn điều lệ
+retained_earnings: bsa90         # Lợi nhuận chưa phân phối
+# earning_assets / interest_bearing_liabilities: KHÔNG phải dòng đơn -> phải cộng (Phase 3).
+# Để trống -> NIM & NIM-decomposition hiện N/A trong Phase 1.
+earning_assets: null
+interest_bearing_liabilities: null
