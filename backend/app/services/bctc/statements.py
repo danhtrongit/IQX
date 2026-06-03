@@ -43,7 +43,7 @@ def build_periods(
             if k == (0, 0):
                 continue
             merged.setdefault(k, {}).update(_concepts(row, mapping))
-    periods = [Period(year=y, length=l, values=v) for (y, l), v in merged.items()]
+    periods = [Period(year=y, length=ln, values=v) for (y, ln), v in merged.items()]
     periods.sort(key=lambda p: (p.year, p.length), reverse=True)
     return periods
 
