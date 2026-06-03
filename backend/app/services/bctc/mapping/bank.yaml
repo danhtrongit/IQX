@@ -4,11 +4,16 @@ interest_income_gross: isb25     # Thu nhập lãi & các khoản tương tự
 interest_expense: isb26          # Chi phí lãi & các chi phí tương tự
 net_interest_income: isb27       # Thu nhập lãi thuần
 net_fee_income: isb30            # Lãi/lỗ thuần từ hoạt động dịch vụ
+fx_income: isb31                 # Lãi/lỗ thuần từ hoạt động ngoại hối
+trading_securities_income: isb32 # Lãi/lỗ thuần từ mua bán CK kinh doanh
+investment_securities_income: isb33  # Lãi/lỗ thuần từ mua bán CK đầu tư
+other_income_bank: isb36         # Thu nhập hoạt động khác
 total_operating_income: isb38    # Tổng thu nhập hoạt động (TOI) — cờ ngân hàng
 operating_expense: isb39         # Chi phí quản lý DN (OPEX, âm)
 ppop_reported: isb40             # LN thuần trước trích lập dự phòng
 provision_expense: isb41         # Trích lập dự phòng tổn thất tín dụng (âm)
 profit_before_tax: isa16         # Tổng LN trước thuế
+tax_expense: isa19               # Chi phí thuế TNDN
 npat: isa20                      # LN sau thuế
 npat_parent: isa22               # Cổ đông của Công ty mẹ
 eps: isa23                       # Lãi cơ bản trên cổ phiếu
@@ -16,11 +21,15 @@ total_assets: bsa53              # TỔNG TÀI SẢN
 cash: bsa2                       # Tiền mặt, vàng bạc, đá quý
 deposits_at_sbv: bsb97           # Tiền gửi tại NHNN
 deposits_at_other_ci: bsb98      # Tiền gửi & cho vay các TCTD khác
+trading_securities: bsb99        # Chứng khoán kinh doanh
 customer_loans: bsb104           # Cho vay khách hàng (gross)
 loan_loss_reserve: bsb105        # Dự phòng rủi ro cho vay KH (âm)
 investment_securities: bsb106    # Chứng khoán đầu tư
 total_liabilities: bsa54         # TỔNG NỢ PHẢI TRẢ
+govt_sbv_borrowings: bsb111      # Vay Chính phủ và NHNN
+ci_deposits_borrowings: bsb112   # Tiền gửi & vay các TCTD khác
 customer_deposits: bsb113        # Tiền gửi của khách hàng
+valuable_papers: bsb116          # Phát hành giấy tờ có giá
 equity: bsa78                    # VỐN CHỦ SỞ HỮU
 charter_capital: bsa80           # Vốn điều lệ
 retained_earnings: bsa90         # Lợi nhuận chưa phân phối

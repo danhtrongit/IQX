@@ -11,8 +11,9 @@ def _p(year: int, **values: float) -> Period:
 
 
 def test_nim_uses_average_earning_assets() -> None:
-    cur = _p(2025, net_interest_income=35.0, earning_assets=1100.0)
-    prev = _p(2024, earning_assets=900.0)
+    # earning_assets is now derived from components; use customer_loans as the sole component.
+    cur = _p(2025, net_interest_income=35.0, customer_loans=1100.0)
+    prev = _p(2024, customer_loans=900.0)
     assert math.isclose(kb.nim(cur, prev), 0.035)
 
 

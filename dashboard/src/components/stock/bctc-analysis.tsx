@@ -22,6 +22,8 @@ type BctcPayload = {
   forensic: { green: string[]; red: string[] }
   flags: { level: string; code: string; message: string }[]
   trinity?: { altman_z: number | null; piotroski_f?: { score: number | null }; beneish_m: number | null }
+  subsector?: { label: string; metrics: Record<string, number | null> } | null
+  blind_spots?: string[]
 }
 
 function fmtCell(c: SnapshotCell): string {
@@ -30,7 +32,7 @@ function fmtCell(c: SnapshotCell): string {
   return fmtNumber(c.value, 2)
 }
 
-const PCT_KEYS = new Set(["cogs_pct", "selling_pct", "admin_pct", "nii_pct", "fee_pct", "cir", "cost_of_risk", "provision_ppop", "yield_ea", "cost_of_funds", "spread", "fcf_margin", "sloan_accrual", "roe"])
+const PCT_KEYS = new Set(["cogs_pct", "selling_pct", "admin_pct", "nii_pct", "fee_pct", "cir", "cost_of_risk", "provision_ppop", "yield_ea", "cost_of_funds", "spread", "fcf_margin", "sloan_accrual", "roe", "roa", "nii_to_ta", "non_nii_to_ta", "opex_to_ta", "provision_to_ta", "tax_to_ta", "trading_pct", "other_pct"])
 const MARGIN_SUFFIX = ["margin"]
 const DAYS_KEYS = new Set(["dso", "dio", "dpo", "ccc"])
 
@@ -73,7 +75,7 @@ export function BctcAnalysis({ symbol }: { symbol: string }) {
     <ScrollArea className="h-full">
       <div className="mx-auto max-w-[1080px] px-4 py-4 space-y-6">
         <section>
-          <h3 className="font-serif text-base font-bold mb-3">① Thẻ Snapshot · {data.template === "B" ? "Ngân hàng" : "Standard"}</h3>
+          <h3 className="font-serif text-base font-bold mb-3">① Thẻ Snapshot · {data.template === "B" ? "Ngân hàng" : (data.subsector?.label ?? "Standard")}</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-border/30 rounded-lg overflow-hidden">
             {data.snapshot.map((c) => (
               <div key={c.key} className="bg-card p-3">
@@ -150,6 +152,21 @@ export function BctcAnalysis({ symbol }: { symbol: string }) {
                     <div className="text-[10px] uppercase text-muted-foreground">Beneish M</div>
                     <div className="font-sans text-xl font-bold tabular-nums">{fmtNumber(data.trinity.beneish_m, 2)}</div>
                   </div>
+                </div>
+              </PremiumGate>
+            </div>
+          </section>
+        )}
+
+        {data.blind_spots && data.blind_spots.length > 0 && (
+          <section className="mt-4">
+            <h3 className="font-serif text-base font-bold mb-2">Điểm mù dữ liệu (cần bản Pro)</h3>
+            <div className="relative min-h-[80px]">
+              <PremiumGate featureName="Điểm mù ngân hàng" description="Chỉ tiêu cần thuyết minh chi tiết (NPL nhóm, CASA, CAR).">
+                <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
+                  {data.blind_spots.map((s, i) => (
+                    <div key={i} className="text-xs text-muted-foreground mb-1">• {s}</div>
+                  ))}
                 </div>
               </PremiumGate>
             </div>

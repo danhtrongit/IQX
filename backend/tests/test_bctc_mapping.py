@@ -30,3 +30,11 @@ def test_load_bank_mapping_real_codes() -> None:
 def test_unknown_template_raises() -> None:
     with pytest.raises(ValueError):
         load_mapping("xxx")
+
+
+def test_bank_mapping_phase3_components() -> None:
+    m = load_mapping("bank")
+    assert m["deposits_at_other_ci"] == "bsb98"
+    assert m["valuable_papers"] == "bsb116"
+    assert m["fx_income"] == "isb31"
+    assert m["tax_expense"] == "isa19"

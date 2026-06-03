@@ -59,3 +59,24 @@ def test_assemble_bank_has_trinity_no_dupont() -> None:
     assert "dupont" not in [m["id"] for m in out["modules"]]   # bank DuPont deferred
     assert "trinity" in out                                     # trinity present (altman None for bank)
     assert out["trinity"]["altman_z"] is None
+
+
+def test_assemble_bank_has_nim_dupont_blindspots() -> None:
+    is_rows = [_mk(2025, 5, isb38=100.0, isb27=70.0, isb39=-20.0, isb41=-5.0, isa19=-4.0, isa20=20.0),
+               _mk(2024, 5, isb38=90.0, isb27=63.0)]
+    bs_rows = [_mk(2025, 5, bsa53=1000.0, bsa78=100.0, bsb104=900.0, bsb106=100.0, bsb113=800.0),
+               _mk(2024, 5, bsa53=900.0, bsa78=90.0, bsb104=800.0, bsb106=100.0, bsb113=750.0)]
+    out = build_bctc_payload(bs_rows, is_rows, [])
+    assert out["template"] == "B"
+    snap = {c["key"]: c["value"] for c in out["snapshot"]}
+    assert snap["nim"] is not None
+    assert "bank_dupont" in [m["id"] for m in out["modules"]]
+    assert "blind_spots" in out and len(out["blind_spots"]) > 0
+
+
+def test_assemble_nonbank_has_subsector() -> None:
+    is_rows = [_mk(2025, 5, isa3=600.0, isa20=80.0), _mk(2024, 5, isa3=500.0)]
+    bs_rows = [_mk(2025, 5, bsa53=1000.0, bsa29=10.0, bsa16=2.0)]
+    out = build_bctc_payload(bs_rows, is_rows, [])
+    assert out.get("subsector") and out["subsector"]["label"]
+    assert "blind_spots" in out  # always present (empty list for non-bank)

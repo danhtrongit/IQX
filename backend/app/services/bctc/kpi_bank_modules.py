@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from app.services.bctc.kpi_bank import _avg_derived, earning_assets, interest_bearing_liabilities
 from app.services.bctc.statements import Period, val
 
 
@@ -19,17 +20,25 @@ def _avg(cur: Period, prev: Period | None, concept: str) -> float | None:
 
 def toi_mix(p: Period) -> dict[str, float | None]:
     toi = val(p, "total_operating_income")
+    _trading = [
+        v for v in (val(p, "fx_income"), val(p, "trading_securities_income"), val(p, "investment_securities_income"))
+        if v is not None
+    ]
+    trading = sum(_trading) if _trading else None
     return {
         "nii_pct": _pct(val(p, "net_interest_income"), toi),
         "fee_pct": _pct(val(p, "net_fee_income"), toi),
+        "trading_pct": _pct(trading, toi),
+        "other_pct": _pct(val(p, "other_income_bank"), toi),
     }
 
 
 def nim_decomposition(cur: Period, prev: Period | None) -> dict[str, float | None]:
-    ea = _avg(cur, prev, "earning_assets")
-    ibl = _avg(cur, prev, "interest_bearing_liabilities")
+    ea = _avg_derived(cur, prev, earning_assets)
+    ibl = _avg_derived(cur, prev, interest_bearing_liabilities)
+    ie = val(cur, "interest_expense")
     y = _pct(val(cur, "interest_income_gross"), ea)
-    cof = _pct(val(cur, "interest_expense"), ibl)
+    cof = _pct(abs(ie) if ie is not None else None, ibl)
     spread = (y - cof) if y is not None and cof is not None else None
     return {"yield_ea": y, "cost_of_funds": cof, "spread": spread}
 

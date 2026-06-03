@@ -57,3 +57,17 @@ def test_bank_signals() -> None:
     panel = forensic_panel(metrics)
     assert any("NIM" in s for s in panel["green"])
     assert any("LDR" in s for s in panel["red"])
+
+
+def test_bank_blind_spots_exported() -> None:
+    from app.services.bctc.forensic import BANK_BLIND_SPOTS
+    assert any("CASA" in s for s in BANK_BLIND_SPOTS)
+    assert any("CAR" in s for s in BANK_BLIND_SPOTS)
+
+
+def test_bank_forensic_capital_and_llr_green() -> None:
+    from app.services.bctc.forensic import forensic_panel
+    panel = forensic_panel({"template": "B", "equity_ratio": 0.10, "llr_loans": 0.03,
+                            "nim_series": [], "roe_series": []})
+    joined = " ".join(panel["green"])
+    assert "VCSH" in joined or "Capital" in joined

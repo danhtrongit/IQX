@@ -2,6 +2,13 @@ from __future__ import annotations
 
 from typing import Any
 
+BANK_BLIND_SPOTS = [
+    "Nợ nhóm 2-5 (phân loại nợ) — cần thuyết minh",
+    "CASA (tỷ lệ tiền gửi không kỳ hạn) — cần thuyết minh",
+    "CAR (hệ số an toàn vốn) — cần RWA, ngoài BCTC thuần số",
+    "Nợ tái cơ cấu (TT02) — cần thuyết minh",
+]
+
 
 def _all_above(series: list[float] | None, threshold: float, n: int = 3) -> bool:
     if not series or len(series) < n:
@@ -36,6 +43,11 @@ def _bank(m: dict[str, Any], green: list[str], red: list[str]) -> None:
         green.append("ROE > 18% sustainable")
     if (cir := m.get("cir")) is not None and cir < 0.35:
         green.append("CIR best-in-class < 35%")
+
+    if (er := m.get("equity_ratio")) is not None and er > 0.08:
+        green.append("Capital position lành mạnh (VCSH/TS > 8%)")
+    if (llr := m.get("llr_loans")) is not None and llr > 0.025:
+        green.append("Buffer dự phòng dày (LLR > 2.5%)")
 
     if (ldr := m.get("ldr")) is not None and ldr > 0.85:
         red.append(f"LDR {ldr * 100:.0f}% vượt cap NHNN 85%")
