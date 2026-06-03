@@ -38,3 +38,12 @@ def test_ppop_cor() -> None:
     assert math.isclose(r["cir"], 0.35)
     assert math.isclose(r["provision_ppop"], 10.0 / 65.0)
     assert math.isclose(r["cost_of_risk"], 10.0 / 1000.0)
+
+
+def test_toi_mix_trading_and_other() -> None:
+    p = _p(2025, total_operating_income=100.0, net_interest_income=70.0, net_fee_income=10.0,
+           fx_income=5.0, trading_securities_income=3.0, investment_securities_income=2.0,
+           other_income_bank=10.0)
+    mix = bm.toi_mix(p)
+    assert math.isclose(mix["trading_pct"], (5.0+3.0+2.0)/100.0)
+    assert math.isclose(mix["other_pct"], 10.0/100.0)

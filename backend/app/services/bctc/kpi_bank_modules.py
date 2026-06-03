@@ -20,9 +20,16 @@ def _avg(cur: Period, prev: Period | None, concept: str) -> float | None:
 
 def toi_mix(p: Period) -> dict[str, float | None]:
     toi = val(p, "total_operating_income")
+    _trading = [
+        v for v in (val(p, "fx_income"), val(p, "trading_securities_income"), val(p, "investment_securities_income"))
+        if v is not None
+    ]
+    trading = sum(_trading) if _trading else None
     return {
         "nii_pct": _pct(val(p, "net_interest_income"), toi),
         "fee_pct": _pct(val(p, "net_fee_income"), toi),
+        "trading_pct": _pct(trading, toi),
+        "other_pct": _pct(val(p, "other_income_bank"), toi),
     }
 
 
