@@ -17,6 +17,7 @@ _DOCS_AI_DIR = Path(__file__).resolve().parents[3] / "docs" / "ai"
 
 # Mapping of prompt type → filename
 PROMPT_FILES: dict[str, str] = {
+    "bctc": "ai-bctc.md",
     "dashboard": "ai-dashboard.md",
     "industry": "ai-industry.md",
     "insight": "ai-insight.md",
