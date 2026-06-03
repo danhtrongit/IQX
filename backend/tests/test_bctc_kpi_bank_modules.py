@@ -18,9 +18,11 @@ def test_toi_mix() -> None:
 
 
 def test_nim_decomposition() -> None:
+    # earning_assets/IBL are now derived from components; use single components that reproduce same averages.
+    # EA: avg(1100, 900) = 1000; IBL: avg(1050, 950) = 1000
     cur = _p(2025, interest_income_gross=80.0, interest_expense=45.0,
-             earning_assets=1100.0, interest_bearing_liabilities=1050.0)
-    prev = _p(2024, earning_assets=900.0, interest_bearing_liabilities=950.0)
+             customer_loans=1100.0, customer_deposits=1050.0)
+    prev = _p(2024, customer_loans=900.0, customer_deposits=950.0)
     d = bm.nim_decomposition(cur, prev)
     assert math.isclose(d["yield_ea"], 0.08)
     assert math.isclose(d["cost_of_funds"], 0.045)

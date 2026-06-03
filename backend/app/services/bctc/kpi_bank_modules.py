@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from app.services.bctc.kpi_bank import _avg_derived, earning_assets, interest_bearing_liabilities
 from app.services.bctc.statements import Period, val
 
 
@@ -26,10 +27,11 @@ def toi_mix(p: Period) -> dict[str, float | None]:
 
 
 def nim_decomposition(cur: Period, prev: Period | None) -> dict[str, float | None]:
-    ea = _avg(cur, prev, "earning_assets")
-    ibl = _avg(cur, prev, "interest_bearing_liabilities")
+    ea = _avg_derived(cur, prev, earning_assets)
+    ibl = _avg_derived(cur, prev, interest_bearing_liabilities)
+    ie = val(cur, "interest_expense")
     y = _pct(val(cur, "interest_income_gross"), ea)
-    cof = _pct(val(cur, "interest_expense"), ibl)
+    cof = _pct(abs(ie) if ie is not None else None, ibl)
     spread = (y - cof) if y is not None and cof is not None else None
     return {"yield_ea": y, "cost_of_funds": cof, "spread": spread}
 
