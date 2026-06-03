@@ -3,12 +3,14 @@ from __future__ import annotations
 from typing import Any
 
 from app.services.bctc import kpi_bank, kpi_bank_modules, kpi_nonbank, kpi_nonbank_modules
+from app.services.bctc.bank_dupont import bank_dupont
 from app.services.bctc.dupont import dupont
-from app.services.bctc.forensic import forensic_panel
+from app.services.bctc.forensic import BANK_BLIND_SPOTS, forensic_panel
 from app.services.bctc.forensic_scores import beneish_m, piotroski_f
 from app.services.bctc.mapping_loader import load_mapping
-from app.services.bctc.sector import detect_template
+from app.services.bctc.sector import detect_subsector, detect_template
 from app.services.bctc.statements import Period, build_periods
+from app.services.bctc.subsector import subsector_spotlight
 from app.services.bctc.thresholds import classify
 from app.services.bctc.validation import balance_identity_flag, sanity_flags
 
@@ -116,6 +118,12 @@ def _modules_b(periods: list[Period]) -> list[dict[str, Any]]:
             "type": "ratios",
             "data": kpi_bank_modules.ppop_cor(cur, prev),
         },
+        {
+            "id": "bank_dupont",
+            "title": "DuPont Ngân hàng",
+            "type": "ratios",
+            "data": bank_dupont(cur, prev),
+        },
     ]
 
 
@@ -138,6 +146,8 @@ def build_bctc_payload(
             "forensic": {"green": [], "red": ["Không đủ dữ liệu BCTC"]},
             "flags": [],
             "trinity": {},
+            "blind_spots": [],
+            "subsector": None,
         }
 
     snap_values = _snapshot_b(periods) if is_bank else _snapshot_a(periods)
@@ -169,6 +179,8 @@ def build_bctc_payload(
         ),
         "cir": snap_values.get("cir"),
         "ldr": snap_values.get("ldr"),
+        "equity_ratio": snap_values.get("equity_ratio"),
+        "llr_loans": snap_values.get("llr_loans"),
     }
     forensic = forensic_panel(fmetrics)
 
@@ -185,6 +197,15 @@ def build_bctc_payload(
         "beneish_m": beneish_m(cur0, prev0),
     }
 
+    if is_bank:
+        blind_spots: list[str] = BANK_BLIND_SPOTS
+        subsector: dict[str, Any] | None = None
+    else:
+        blind_spots = []
+        wcc = kpi_nonbank_modules.working_capital_cycle(cur0, prev0)
+        sub = detect_subsector(cur0, ccc=wcc.get("ccc"))
+        subsector = subsector_spotlight(cur0, sub)
+
     return {
         "template": template,
         "sector": "bank" if is_bank else "nonbank",
@@ -196,4 +217,6 @@ def build_bctc_payload(
         "forensic": forensic,
         "flags": flags,
         "trinity": trinity,
+        "blind_spots": blind_spots,
+        "subsector": subsector,
     }
