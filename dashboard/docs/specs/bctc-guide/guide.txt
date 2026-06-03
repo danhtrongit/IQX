@@ -1,0 +1,2063 @@
+HƯỚNG DẪN TRIỂN KHAI
+DASHBOARD PHÂN TÍCH BCTC
+2 TEMPLATE — STANDARD VÀ NGÂN HÀNG
+Chi tiết từng module · Công thức · Nguồn dữ liệu · AI phân tích
+Tài liệu kỹ thuật cho nhà phân tích và kỹ sư phát triển
+Chỉ sử dụng dữ liệu thuần số từ 3 báo cáo tài chính
+PHẦN I · GIỚI THIỆU
+1.1. Mục đích tài liệu
+Tài liệu này là hướng dẫn triển khai chi tiết cho dashboard phân tích Báo cáo tài chính (BCTC) doanh nghiệp niêm yết Việt Nam, theo kiến trúc 2 template:
+	•	Template A — Standard: áp dụng cho khoảng 95% mã thị trường (mọi ngành không phải ngân hàng).
+	•	Template B — Ngân hàng: áp dụng cho ngân hàng thương mại (chuẩn mực BCTC khác biệt).
+Cả hai template chỉ sử dụng dữ liệu thuần số từ 3 báo cáo: Bảng cân đối kế toán (BCDKT), Báo cáo kết quả kinh doanh (KQKD), và Báo cáo lưu chuyển tiền tệ (LCTT). Không yêu cầu thuyết minh chi tiết hay dữ liệu công bố ngoài BCTC.
+1.2. Cách sử dụng tài liệu
+Tài liệu cấu trúc theo các phần:
+	•	Phần I-III: Tổng quan, kiến trúc, từ điển thuật ngữ Việt-Anh
+	•	Phần IV: Danh mục các khoản mục BCTC cần extract (mã TT200 và TT22)
+	•	Phần V: Template A — chi tiết 9 module
+	•	Phần VI: Template B — chi tiết 7 module
+	•	Phần VII: Tích hợp AI cấp module
+	•	Phần VIII: Validation và triển khai
+Mỗi module được trình bày theo cấu trúc 5 phần cố định:
+	•	Mục đích — Vì sao có module này, insight nó cung cấp
+	•	Dữ liệu đầu vào — Khoản mục BCTC cần lấy, kèm mã và vị trí
+	•	Cách tính — Công thức chi tiết với biến tham chiếu
+	•	AI phân tích gì — Nhiệm vụ cụ thể của AI khi bình luận module
+	•	Ví dụ output — Mẫu output AI thực tế cho doanh nghiệp cụ thể
+1.3. Nguyên tắc thiết kế
+	•	Ưu tiên thuật ngữ tiếng Việt cho mọi nội dung user-facing. Thuật ngữ tiếng Anh chỉ giữ khi đã thành chuẩn quốc tế (ROE, EBITDA) hoặc thiếu từ tương đương ngắn gọn.
+	•	Mỗi module có AI commentary riêng (60-150 từ) — không gộp tất cả vào một memo lớn ở đầu trang. Người đọc xem từng module có ngay phân tích kèm theo.
+	•	Mỗi công thức phải truy được đến mã khoản mục BCTC cụ thể. Engineer có thể implement không cần đoán.
+	•	Threshold xanh/vàng/đỏ là khuyến nghị tham chiếu, có thể điều chỉnh theo ngành.
+	•	AI không tự tính ratio — chỉ bình luận trên các số đã pre-compute. Đảm bảo deterministic.
+PHẦN II · KIẾN TRÚC TỔNG QUAN
+2.1. Sơ đồ pipeline xử lý
+Khi user truy cập dashboard của một mã cụ thể, hệ thống thực hiện chuỗi xử lý:
+Đầu vào: 3 BCTC dạng số (5 năm gần nhất)
+       ↓
+[1] Sector Router — phát hiện ngân hàng vs phi-ngân hàng
+       ↓
+   ┌───┴───┐
+Template A  Template B
+   ↓           ↓
+[2] Extract khoản mục theo schema (TT200 / TT22)
+       ↓
+[3] Tính 30 KPI (Template A) hoặc 20 KPI (Template B)
+       ↓
+[4] Phát hiện ngành phụ (chỉ Template A)
+       ↓
+[5] Phân loại ngưỡng (xanh / vàng / đỏ)
+       ↓
+[6] AI sinh commentary cho từng module
+       ↓
+[7] Render dashboard 5 layer
+2.2. Cấu trúc dashboard chung
+Cả 2 template đều có cấu trúc 5 layer xếp dọc:
+	•	Layer 1 — Thẻ Snapshot: 6 chỉ tiêu quan trọng nhất, mỗi cái có giá trị + xu hướng năm + ngưỡng phân loại
+	•	Layer 2 — AI Memo tổng: 200-300 từ tóm tắt research note cho toàn bộ dashboard
+	•	Layer 3 — Modules phân tích: 6-9 module chuyên sâu, mỗi module có AI commentary riêng
+	•	Layer 4 — Bảng Forensic: Tín hiệu xanh vs Cờ vàng/đỏ side-by-side
+	•	Layer 5 — Định giá: Football field tổng hợp các phương pháp
+2.3. Logic phát hiện ngân hàng
+Sector Router phân biệt ngân hàng vs phi-ngân hàng dựa trên sự xuất hiện của khoản mục đặc trưng:
+def la_ngan_hang(bctc):
+    bs_lines = bctc.balance_sheet.line_items
+    is_lines = bctc.income_statement.line_items
+    
+    # Kiểm tra 3 dấu hiệu đặc trưng của ngân hàng:
+    if (
+        "Cho vay khách hàng" in bs_lines and
+        "Tiền gửi của khách hàng" in bs_lines and
+        "Thu nhập lãi thuần" in is_lines
+    ):
+        return True  # → Template B
+    return False  # → Template A
+Logic này không phụ thuộc vào mã ngành ICB (có thể thiếu hoặc sai). Chỉ dựa vào schema BCTC thực tế.
+2.4. Logic phát hiện ngành phụ (Template A)
+Trong Template A, hệ thống tiếp tục phát hiện ngành phụ để hiển thị Sub-sector Spotlight phù hợp:
+Ngành phụ
+Điều kiện phát hiện
+Spotlight metric
+Bảo hiểm
+Có khoản mục 'Dự phòng nghiệp vụ' trong BCDKT
+Investment income / Doanh thu
+Chứng khoán
+Có 'Tài sản tài chính FVTPL' VÀ 'Các khoản cho vay' (margin)
+FVTPL / Tổng TS, Margin / Vốn CSH
+Bất động sản
+'Người mua trả tiền trước' / Tổng TS > 15% VÀ Hàng tồn kho / Tổng TS > 30%
+Người mua TTT / Doanh thu (backlog proxy)
+Tiện ích
+Tài sản cố định / Tổng TS > 60% VÀ Khấu hao / Doanh thu > 8%
+Biên EBITDA ổn định, CapEx / Khấu hao
+Bán lẻ
+Chu kỳ tiền mặt < 0 VÀ Hàng tồn kho / Tổng TS > 20%
+Vòng quay HTK, Chu kỳ tiền mặt
+CNTT/Dịch vụ
+TSCĐ / Tổng TS < 20% VÀ HTK / Tổng TS < 5%
+ROIC vs WACC, Cường độ tài sản
+Sản xuất
+Trường hợp mặc định (default)
+Vòng quay tài sản, ROIC, Chi đầu tư
+PHẦN III · TỪ ĐIỂN THUẬT NGỮ
+3.1. Tỷ suất sinh lời (Profitability)
+Viết tắt
+Tiếng Anh
+Tiếng Việt
+ROE
+Return on Equity
+Tỷ suất sinh lời trên vốn chủ sở hữu
+ROA
+Return on Assets
+Tỷ suất sinh lời trên tổng tài sản
+ROIC
+Return on Invested Capital
+Tỷ suất sinh lời trên vốn đầu tư
+EBIT
+Earnings Before Interest & Tax
+Lợi nhuận trước thuế và lãi vay
+EBITDA
+EBIT + Depreciation & Amortization
+Lợi nhuận trước thuế, lãi vay, khấu hao
+NOPAT
+Net Operating Profit After Tax
+Lợi nhuận hoạt động sau thuế
+GP Margin
+Gross Profit Margin
+Biên lợi nhuận gộp
+Net Margin
+Net Profit Margin
+Biên lợi nhuận sau thuế
+3.2. Dòng tiền và hiệu quả vốn (Cash Flow & Efficiency)
+Viết tắt
+Tiếng Anh
+Tiếng Việt
+CFO
+Cash Flow from Operations
+Dòng tiền từ hoạt động kinh doanh
+CFI
+Cash Flow from Investing
+Dòng tiền từ hoạt động đầu tư
+CFF
+Cash Flow from Financing
+Dòng tiền từ hoạt động tài chính
+FCF
+Free Cash Flow
+Dòng tiền tự do
+FCFF
+Free Cash Flow to Firm
+Dòng tiền tự do của doanh nghiệp
+FCFE
+Free Cash Flow to Equity
+Dòng tiền tự do của cổ đông
+CapEx
+Capital Expenditure
+Chi đầu tư tài sản cố định
+D&A
+Depreciation & Amortization
+Khấu hao tài sản
+DSO
+Days Sales Outstanding
+Số ngày phải thu khách hàng
+DIO
+Days Inventory Outstanding
+Số ngày tồn kho
+DPO
+Days Payable Outstanding
+Số ngày phải trả nhà cung cấp
+CCC
+Cash Conversion Cycle
+Chu kỳ luân chuyển tiền mặt
+NWC
+Net Working Capital
+Vốn lưu động ròng
+3.3. Đòn bẩy và cấu trúc vốn (Leverage)
+Viết tắt
+Tiếng Anh
+Tiếng Việt
+D/E
+Debt to Equity Ratio
+Tỷ lệ Nợ vay trên Vốn chủ sở hữu
+Net Debt
+Total Debt − Cash & Equivalents
+Nợ vay ròng
+TIE
+Times Interest Earned
+Hệ số khả năng thanh toán lãi vay
+WACC
+Weighted Average Cost of Capital
+Chi phí vốn bình quân
+Ke
+Cost of Equity
+Chi phí vốn chủ sở hữu
+Kd
+Cost of Debt
+Chi phí nợ vay
+3.4. Thuật ngữ riêng ngân hàng
+Viết tắt
+Tiếng Anh
+Tiếng Việt
+NIM
+Net Interest Margin
+Biên lãi ròng (biên lãi suất thuần)
+NII
+Net Interest Income
+Thu nhập lãi thuần
+TOI
+Total Operating Income
+Tổng thu nhập hoạt động
+COF
+Cost of Funds
+Chi phí huy động vốn
+CIR
+Cost-to-Income Ratio
+Tỷ lệ chi phí trên thu nhập
+PPOP
+Pre-Provision Operating Profit
+Lợi nhuận thuần trước dự phòng
+LDR
+Loan-to-Deposit Ratio
+Tỷ lệ dư nợ trên huy động
+CASA
+Current Account Savings Account
+Tỷ trọng tiền gửi không kỳ hạn
+CAR
+Capital Adequacy Ratio
+Tỷ lệ an toàn vốn
+NPL
+Non-Performing Loan
+Nợ xấu
+LLR
+Loan Loss Reserve
+Dự phòng rủi ro tín dụng
+CoR
+Cost of Risk / Cost of Credit
+Chi phí tín dụng
+RWA
+Risk-Weighted Assets
+Tài sản có rủi ro
+3.5. Định giá (Valuation)
+Viết tắt
+Tiếng Anh
+Tiếng Việt
+P/E
+Price-to-Earnings Ratio
+Giá trên lợi nhuận mỗi cổ phiếu
+P/B
+Price-to-Book Ratio
+Giá trên giá trị sổ sách
+EV
+Enterprise Value
+Giá trị doanh nghiệp
+DCF
+Discounted Cash Flow
+Chiết khấu dòng tiền
+RIM
+Residual Income Model
+Mô hình thu nhập thặng dư
+DDM
+Dividend Discount Model
+Mô hình chiết khấu cổ tức
+RNAV
+Revalued Net Asset Value
+Giá trị tài sản ròng định giá lại
+3.6. Forensic và Quality of Earnings
+Viết tắt
+Tiếng Anh
+Tiếng Việt
+Altman Z
+Altman Z-Score
+Điểm Z Altman (đo khả năng phá sản)
+Piotroski F
+Piotroski F-Score
+Điểm F Piotroski (chất lượng fundamental)
+Beneish M
+Beneish M-Score
+Điểm M Beneish (phát hiện manipulation)
+QoE
+Quality of Earnings
+Chất lượng lợi nhuận
+Sloan Accrual
+Sloan Accrual Ratio
+Tỷ lệ khoản dồn tích Sloan
+PHẦN IV · DANH MỤC KHOẢN MỤC BCTC CẦN EXTRACT
+Phần này liệt kê đầy đủ các khoản mục cần lấy từ 3 báo cáo tài chính, kèm mã khoản mục theo Thông tư 200/2014/TT-BTC (TT200) cho doanh nghiệp thường, và Thông tư 22/2017/TT-NHNN (TT22) cho ngân hàng. Mỗi khoản mục có biến (variable) chuẩn hóa để code engineer tham chiếu trong công thức.
+4.1. Bảng cân đối kế toán — TT200 (cho Template A)
+4.1.1. Tài sản (Asset)
+Mã
+Khoản mục BCTC
+Biến code
+Mục đích
+100
+A. TÀI SẢN NGẮN HẠN
+tai_san_ngan_han
+Tổng TS ngắn hạn
+110
+I. Tiền và các khoản tương đương tiền
+tien_va_tdt
+Khả năng thanh toán
+111
+1. Tiền
+tien_mat
+Cash component
+112
+2. Các khoản tương đương tiền
+tuong_duong_tien
+Cash equivalent
+120
+II. Đầu tư tài chính ngắn hạn
+dau_tu_tc_nh
+Tài sản thanh khoản
+130
+III. Các khoản phải thu ngắn hạn
+phai_thu_nh
+Phân tích DSO
+131
+1. Phải thu ngắn hạn của khách hàng
+phai_thu_khach_hang
+Tử số DSO
+132
+2. Trả trước cho người bán ngắn hạn
+tra_truoc_nguoi_ban
+Lưu ý prepayments
+134
+4. Phải thu theo tiến độ KH hợp đồng XD
+phai_thu_theo_tien_do
+Liên quan BĐS/XD
+135
+5. Phải thu cho vay ngắn hạn
+phai_thu_cho_vay_nh
+Nếu là DN tài chính
+136
+6. Phải thu ngắn hạn khác
+phai_thu_khac_nh
+Other receivables
+137
+7. Dự phòng phải thu khó đòi ngắn hạn
+du_phong_phai_thu_nh
+Số âm — giảm trừ
+140
+IV. Hàng tồn kho
+hang_ton_kho
+Tổng tồn kho (gross)
+141
+1. Hàng tồn kho
+ton_kho_chinh
+Chi tiết các loại
+149
+9. Dự phòng giảm giá hàng tồn kho
+du_phong_ton_kho
+Số âm — quality
+150
+V. Tài sản ngắn hạn khác
+tai_san_nh_khac
+Other current
+200
+B. TÀI SẢN DÀI HẠN
+tai_san_dai_han
+Tổng TS dài hạn
+210
+I. Các khoản phải thu dài hạn
+phai_thu_dh
+LT receivables
+220
+II. Tài sản cố định
+tscd
+Tổng TSCĐ ròng
+221
+1. TSCĐ hữu hình
+tscd_huu_hinh
+Tangible (net)
+222
+  - Nguyên giá
+tscd_nguyen_gia
+Gross PP&E
+223
+  - Giá trị hao mòn lũy kế
+khau_hao_luy_ke
+Accum. depreciation
+227
+3. TSCĐ vô hình
+tscd_vo_hinh
+Intangible
+230
+III. Bất động sản đầu tư
+bds_dau_tu
+Investment property
+240
+IV. Tài sản dở dang dài hạn
+ts_do_dang_dh
+Growth CapEx
+241
+1. Chi phí sản xuất KD dở dang dài hạn
+chi_phi_sx_dh
+
+242
+2. Chi phí xây dựng cơ bản dở dang
+chi_phi_xdcb
+Construction in progress
+250
+V. Đầu tư tài chính dài hạn
+dau_tu_tc_dh
+LT investments
+260
+VI. Tài sản dài hạn khác
+ts_dh_khac
+Other LT
+269
+5. Lợi thế thương mại
+loi_the_thuong_mai
+Goodwill — track impairment
+270
+TỔNG TÀI SẢN
+tong_tai_san
+TỔNG TS — denominator chính
+4.1.2. Nguồn vốn (Liabilities & Equity)
+Mã
+Khoản mục
+Biến code
+Mục đích
+300
+C. NỢ PHẢI TRẢ
+no_phai_tra
+Tổng nợ phải trả
+310
+I. Nợ ngắn hạn
+no_ngan_han
+Tổng nợ ngắn hạn
+311
+1. Phải trả người bán ngắn hạn
+phai_tra_nguoi_ban
+DPO
+312
+2. Người mua trả tiền trước ngắn hạn
+nguoi_mua_ttt
+Backlog proxy — quan trọng RE
+313
+3. Thuế và các khoản phải nộp Nhà nước
+thue_phai_nop
+Tax payable
+314
+4. Phải trả người lao động
+phai_tra_NLD
+Wage payable
+315
+5. Chi phí phải trả ngắn hạn
+chi_phi_phai_tra_nh
+Accrued expenses
+318
+8. Doanh thu chưa thực hiện ngắn hạn
+dt_chua_thuc_hien_nh
+Deferred revenue — RE
+320
+10. Vay và nợ thuê tài chính ngắn hạn
+vay_nh
+Short-term debt
+330
+II. Nợ dài hạn
+no_dai_han
+LT liabilities
+336
+6. Doanh thu chưa thực hiện dài hạn
+dt_chua_thuc_hien_dh
+LT deferred revenue
+338
+8. Vay và nợ thuê tài chính dài hạn
+vay_dh
+Long-term debt
+342
+12. Phải trả dài hạn khác
+phai_tra_dh_khac
+
+400
+D. VỐN CHỦ SỞ HỮU
+von_csh
+Tổng VCSH
+410
+I. Vốn chủ sở hữu
+von_csh_chinh
+Equity attributable
+411
+1. Vốn góp của chủ sở hữu
+von_gop
+Paid-in capital
+412
+2. Thặng dư vốn cổ phần
+thang_du_von
+Share premium
+418
+8. Quỹ đầu tư phát triển
+quy_dau_tu
+
+421
+11. Lợi nhuận sau thuế chưa phân phối
+lndp
+Retained earnings — Altman Z
+429
+19. Lợi ích cổ đông không kiểm soát
+loi_ich_nck
+Minority interest
+440
+TỔNG NGUỒN VỐN
+tong_nguon_von
+Phải = Tổng tài sản
+Lưu ý: Biến phái sinh quan trọng: 'tong_no_vay = vay_nh + vay_dh' (tổng nợ vay tài chính, không gồm phải trả người bán). 'tien_va_dau_tu_nh = tien_va_tdt + dau_tu_tc_nh' (tài sản thanh khoản). 'no_vay_rong = tong_no_vay − tien_va_dau_tu_nh' (Net Debt).
+4.2. Báo cáo Kết quả Kinh doanh — TT200
+Mã
+Khoản mục
+Biến code
+Mục đích
+01
+1. Doanh thu bán hàng và cung cấp dịch vụ
+doanh_thu_gross
+Gross revenue
+02
+2. Các khoản giảm trừ doanh thu
+giam_tru_dt
+Sales deductions
+10
+3. Doanh thu thuần
+doanh_thu_thuan
+TOP-LINE chính
+11
+4. Giá vốn hàng bán
+gia_von
+COGS
+20
+5. Lợi nhuận gộp
+loi_nhuan_gop
+Gross profit
+21
+6. Doanh thu hoạt động tài chính
+dt_tai_chinh
+Financial income
+22
+7. Chi phí tài chính
+chi_phi_tai_chinh
+Financial expense
+23
+  Trong đó: Chi phí lãi vay
+chi_phi_lai_vay
+Interest expense — quan trọng
+24
+8. Phần lãi/lỗ công ty LK, liên doanh
+lai_lo_lk_ld
+Equity method
+25
+9. Chi phí bán hàng
+chi_phi_ban_hang
+Selling expense
+26
+10. Chi phí quản lý doanh nghiệp
+chi_phi_quan_ly
+G&A expense
+30
+11. Lợi nhuận thuần từ HĐKD
+ln_thuan_hdkd
+Operating profit (core)
+31
+12. Thu nhập khác
+thu_nhap_khac
+ONE-OFF — phải tách
+32
+13. Chi phí khác
+chi_phi_khac
+ONE-OFF
+40
+14. Lợi nhuận khác
+loi_nhuan_khac
+Net one-off
+50
+15. Tổng LN kế toán trước thuế
+lntt
+Pre-tax profit
+51
+16. Chi phí thuế TNDN hiện hành
+thue_hien_hanh
+Current tax
+52
+17. Chi phí thuế TNDN hoãn lại
+thue_hoan_lai
+Deferred tax
+60
+18. Lợi nhuận sau thuế TNDN
+lnst
+Net Income
+61
+  - Lợi nhuận cổ đông không kiểm soát
+ln_co_dong_thieu_so
+Minority NI
+62
+  - Lợi nhuận cổ đông công ty mẹ
+ln_cd_cty_me
+Attributable NI — EPS basis
+70
+19. Lãi cơ bản trên cổ phiếu (EPS)
+eps_basic
+Basic EPS
+71
+20. Lãi suy giảm trên cổ phiếu
+eps_diluted
+Diluted EPS
+Biến phái sinh quan trọng: EBIT = ln_thuan_hdkd (đã loại tài chính và affiliate, là 'core operating'). EBIT điều chỉnh = ln_thuan_hdkd − thu_nhap_khac + chi_phi_khac (loại one-off). EBITDA = EBIT + khấu_hao (lấy từ LCTT mã 02).
+4.3. Báo cáo Lưu chuyển tiền tệ — TT200
+Mã
+Khoản mục
+Biến code
+Mục đích
+—
+I. LƯU CHUYỂN TIỀN TỪ HĐKD (gián tiếp)
+
+
+01
+1. LN trước thuế
+cf_lntt
+= mã 50 KQKD
+02
+2. Khấu hao TSCĐ và BĐS đầu tư
+khau_hao
+D&A — quan trọng
+03
+3. Các khoản dự phòng
+du_phong_cf
+Provision adj
+04
+4. Lãi/lỗ chênh lệch tỷ giá
+lai_lo_ty_gia
+FX adj
+05
+5. Lãi/lỗ từ HĐ đầu tư
+lai_lo_dau_tu
+Investment gain/loss
+06
+6. Chi phí lãi vay
+lai_vay_cf
+Add-back
+08
+8. Tăng/giảm các khoản phải thu
+thay_doi_phai_thu
+WC change
+09
+9. Tăng/giảm hàng tồn kho
+thay_doi_ton_kho
+WC change
+10
+10. Tăng/giảm các khoản phải trả
+thay_doi_phai_tra
+WC change
+20
+Lưu chuyển tiền thuần từ HĐKD
+cfo
+CFO — quan trọng nhất
+—
+II. LƯU CHUYỂN TIỀN TỪ HĐ ĐẦU TƯ
+
+
+21
+1. Tiền chi mua sắm TSCĐ và TSDH khác
+chi_mua_tscd
+CapEx — quan trọng
+22
+2. Tiền thu thanh lý TSCĐ
+thu_thanh_ly_tscd
+Asset disposal
+23
+3. Tiền chi cho vay, mua công cụ nợ
+chi_cho_vay
+Investment outflow
+25
+5. Tiền chi đầu tư vốn vào DN khác
+chi_dau_tu_cty_khac
+M&A spending
+27
+7. Tiền thu lãi cho vay, cổ tức
+thu_lai_co_tuc
+Investment income
+30
+Lưu chuyển tiền thuần từ HĐĐT
+cfi
+Investing CF
+—
+III. LƯU CHUYỂN TIỀN TỪ HĐ TÀI CHÍNH
+
+
+31
+1. Tiền thu từ phát hành cổ phiếu
+thu_phat_hanh_cp
+Equity issuance — Piotroski
+32
+2. Tiền chi mua cổ phiếu quỹ
+chi_co_phieu_quy
+Treasury stock
+33
+3. Tiền thu từ đi vay
+tien_vay_nhan
+Debt issuance
+34
+4. Tiền chi trả nợ gốc vay
+tien_tra_no_vay
+Debt repayment
+36
+6. Cổ tức, LN đã trả cho chủ sở hữu
+co_tuc_da_tra
+Dividend paid
+40
+Lưu chuyển tiền thuần từ HĐTC
+cff
+Financing CF
+50
+Lưu chuyển tiền thuần trong kỳ
+cf_thuan
+Total net CF
+60
+Tiền và tương đương tiền đầu kỳ
+tien_dau_ky
+Beginning cash
+70
+Tiền và tương đương tiền cuối kỳ
+tien_cuoi_ky
+Ending cash
+Biến phái sinh quan trọng: CapEx tổng = chi_mua_tscd + chi_dau_tu_cty_khac (nếu xem M&A là CapEx). FCF = cfo − chi_mua_tscd. FCF mở rộng = cfo − chi_mua_tscd − chi_dau_tu_cty_khac. Trong tài liệu này, dùng 'capex = chi_mua_tscd' làm mặc định.
+4.4. Bảng cân đối kế toán Ngân hàng — TT22 (cho Template B)
+Ngân hàng dùng schema BCTC hoàn toàn khác. Không có 'Doanh thu', 'Hàng tồn kho', 'Phải thu khách hàng' như doanh nghiệp thường.
+4.4.1. Tài sản ngân hàng
+Khoản mục BCTC ngân hàng
+Biến code
+Mục đích
+1. Tiền mặt, vàng bạc, đá quý
+tien_mat_nh
+Liquidity
+2. Tiền gửi tại NHNN
+tien_gui_nhnn
+Dự trữ bắt buộc
+3. Tiền gửi và cho vay TCTD khác
+tien_gui_cho_vay_tctd
+Interbank assets
+4. Chứng khoán kinh doanh (FVTPL)
+ck_kinh_doanh
+Trading book
+  Dự phòng giảm giá CKKD
+du_phong_ckkd
+Số âm
+5. Các công cụ tài chính phái sinh
+phai_sinh_ts
+Derivatives
+6. CHO VAY KHÁCH HÀNG
+cho_vay_khach_hang_gross
+TÀI SẢN CHÍNH — gross
+  Dự phòng rủi ro cho vay khách hàng
+du_phong_rui_ro
+LLR — số âm
+7. Chứng khoán đầu tư (AFS + HTM)
+ck_dau_tu
+Banking book
+8. Góp vốn, đầu tư dài hạn
+gop_von_dh
+Strategic invest
+9. Tài sản cố định
+tscd_nh
+Branch + IT
+TỔNG TÀI SẢN
+tong_ts_nh
+Tổng TS ngân hàng
+4.4.2. Nợ và Vốn chủ sở hữu ngân hàng
+Khoản mục
+Biến code
+Mục đích
+1. Các khoản nợ Chính phủ và NHNN
+no_chinh_phu_nhnn
+CB borrowings
+2. Tiền gửi và vay các TCTD khác
+tien_gui_vay_tctd
+Interbank funding
+3. TIỀN GỬI CỦA KHÁCH HÀNG
+tien_gui_kh
+FUNDING CHÍNH
+4. Các công cụ tài chính phái sinh nợ
+phai_sinh_no
+Derivatives liab
+5. Vốn tài trợ, ủy thác đầu tư
+von_tai_tro
+Trusts
+6. Phát hành giấy tờ có giá (GTCG)
+phat_hanh_gtcg
+Bonds, CDs
+7. Các khoản nợ khác
+no_khac_nh
+Other liab
+TỔNG NỢ PHẢI TRẢ
+tong_no_nh
+
+VỐN CHỦ SỞ HỮU
+von_csh_nh
+Tier 1 base
+Biến phái sinh ngân hàng: tai_san_sinh_lai = cho_vay_khach_hang_gross + tien_gui_cho_vay_tctd + ck_dau_tu + ck_kinh_doanh (Earning Assets — mẫu của NIM). no_chiu_lai = tien_gui_kh + tien_gui_vay_tctd + phat_hanh_gtcg + no_chinh_phu_nhnn (Interest-bearing Liab — mẫu của COF).
+4.5. Báo cáo Kết quả Kinh doanh Ngân hàng — TT22
+Khoản mục
+Biến code
+Mục đích
+1. Thu nhập lãi và các khoản tương tự
+thu_nhap_lai
+Interest income — gross
+2. Chi phí lãi và các khoản tương tự
+chi_phi_lai
+Interest expense
+I. Thu nhập lãi thuần
+thu_nhap_lai_thuan
+NII = (1) − (2)
+3. Thu nhập từ hoạt động dịch vụ
+thu_dich_vu
+Fee income gross
+4. Chi phí hoạt động dịch vụ
+chi_dich_vu
+Fee expense
+II. Lãi/lỗ thuần từ HĐ dịch vụ
+lai_dich_vu_thuan
+Net fee income
+III. Lãi/lỗ thuần từ KD ngoại hối
+lai_ngoai_hoi
+FX trading
+IV. Lãi/lỗ thuần từ mua bán CKKD
+lai_ckkd
+Trading securities P&L
+V. Lãi/lỗ thuần từ mua bán CK đầu tư
+lai_ck_dau_tu
+AFS sales (one-off prone)
+VI. Thu nhập từ hoạt động khác
+thu_khac_nh
+Other income
+VII. Thu nhập từ góp vốn, mua cổ phần
+thu_gop_von
+Dividend received
+TỔNG THU NHẬP HOẠT ĐỘNG
+tong_thu_nhap_hd
+TOI
+VIII. Chi phí hoạt động
+chi_phi_hd_nh
+OPEX
+IX. LN thuần từ HĐKD trước dự phòng
+ppop
+PPOP — quan trọng
+X. Chi phí dự phòng rủi ro tín dụng
+chi_phi_du_phong
+Provision expense
+XI. Tổng LN trước thuế
+lntt_nh
+PBT
+XII. Thuế TNDN
+thue_nh
+Tax
+XIII. LỢI NHUẬN SAU THUẾ
+lnst_nh
+Net Income
+4.6. Dữ liệu thị trường cần bổ sung
+Ngoài 3 BCTC, dashboard cần một số dữ liệu thị trường:
+Biến
+Nguồn lấy
+so_luong_cp_luu_hanh
+Cuối kỳ, từ BCTC hoặc thông tin doanh nghiệp
+gia_hien_tai
+Real-time price từ HOSE/HNX/UPCoM
+von_hoa_tt
+= gia_hien_tai × so_luong_cp_luu_hanh
+gia_lich_su_5y
+Cho historical band P/E, P/B
+co_tuc_da_tra_per_share
+Dividend lịch sử (cho DDM nếu cần)
+Khuyến nghị nguồn dữ liệu: vnstock (Python library) cho prototype miễn phí. FiinPro / TCBS API / SSI iBoard cho production. Kết hợp 2 nguồn để cross-validate. Nếu data từ một nguồn lệch >1% với nguồn khác, flag để analyst review.
+PHẦN V · TEMPLATE A — CHI TIẾT TỪNG MODULE
+Template A áp dụng cho khoảng 95% mã thị trường (mọi ngành không phải ngân hàng). Bao gồm 9 module xếp dọc trong dashboard. Mỗi module có AI commentary riêng (60-150 từ), đứng cạnh data của module đó.
+Cấu trúc tài liệu mỗi module: 1) Mục đích · 2) Dữ liệu đầu vào (mã khoản mục) · 3) Công thức tính · 4) AI sẽ phân tích gì · 5) Prompt template · 6) Ví dụ output AI thực tế.
+Module 1 — Thẻ Snapshot · 6 Chỉ tiêu chính
+Mục đích
+Thẻ Snapshot hiển thị 6 chỉ tiêu quan trọng nhất ở đầu dashboard. Mục tiêu: người dùng đọc 6 con số này trong 10 giây đã có overview về sức khỏe doanh nghiệp. 6 chỉ tiêu chọn cố ý universal — áp được cho mọi ngành phi-ngân hàng.
+Dữ liệu đầu vào
+Cần lấy
+Từ đâu
+Doanh thu thuần 5 năm
+Mã 10 KQKD, 5 năm gần nhất
+Lợi nhuận gộp
+Mã 20 KQKD
+LN sau thuế cổ đông công ty mẹ
+Mã 62 KQKD (hoặc mã 60 nếu không có minority)
+Tổng tài sản (đầu kỳ và cuối kỳ)
+Mã 270 BCDKT
+Vốn chủ sở hữu (đầu và cuối kỳ)
+Mã 400 BCDKT (trừ mã 429 minority nếu có)
+Vay nợ tổng (đầu và cuối kỳ)
+(Mã 320 + 338) BCDKT
+Tiền và đầu tư ngắn hạn
+(Mã 110 + 120) BCDKT
+Khấu hao
+Mã 02 LCTT
+CFO và CapEx
+Mã 20 và mã 21 LCTT
+Chi phí lãi vay
+Mã 23 KQKD
+Công thức 6 chỉ tiêu
+Chỉ tiêu 1 — Tăng trưởng Doanh thu (Revenue Growth YoY)
+Công thức: (Doanh thu thuần năm t / Doanh thu thuần năm t-1) − 1
+→ Ngưỡng: > 15% xanh · 5-15% vàng · < 5% đỏ
+Chỉ tiêu 2 — Biên Lợi nhuận gộp
+Công thức: Lợi nhuận gộp / Doanh thu thuần × 100%
+→ Ngưỡng: > 25% xanh · 15-25% vàng · < 15% đỏ (tùy ngành)
+Chỉ tiêu 3 — ROE (Tỷ suất sinh lời trên VCSH)
+Công thức: LNST cổ đông công ty mẹ / Trung bình VCSH cổ đông công ty mẹ
+→ Trung bình = (Đầu kỳ + Cuối kỳ) / 2. Ngưỡng: > 18% xanh · 12-18% vàng · < 12% đỏ
+Chỉ tiêu 4 — Nợ vay ròng / EBITDA
+Bước 1 — Nợ vay ròng: (Vay ngắn hạn + Vay dài hạn) − Tiền − Đầu tư tài chính ngắn hạn
+Bước 2 — EBITDA: LN thuần từ HĐKD + Khấu hao = (Mã 30 KQKD) + (Mã 02 LCTT)
+Bước 3 — Tỷ lệ: Nợ vay ròng / EBITDA
+→ Ngưỡng: < 1.5× xanh · 1.5-3× vàng · > 3× đỏ. Âm = Net Cash (rất tốt)
+Chỉ tiêu 5 — Biên Dòng tiền tự do (FCF Margin)
+Công thức: (CFO − CapEx) / Doanh thu thuần × 100% = (Mã 20 LCTT − Mã 21 LCTT) / Mã 10 KQKD
+→ Ngưỡng: > 8% xanh · 3-8% vàng · < 0 đỏ
+Chỉ tiêu 6 — Điểm Z Altman (Altman Z')
+Đo khả năng phá sản trong 2 năm tới. Công thức Z' (dành cho công ty không niêm yết hoặc dùng book value của equity):
+Z': 1.2·A + 1.4·B + 3.3·C + 0.6·D + 1.0·E
+	•	A = (Tài sản ngắn hạn − Nợ ngắn hạn) / Tổng tài sản
+	•	B = Lợi nhuận chưa phân phối / Tổng tài sản
+	•	C = LN thuần từ HĐKD / Tổng tài sản (proxy của EBIT/TA)
+	•	D = VCSH / Tổng nợ phải trả
+	•	E = Doanh thu thuần / Tổng tài sản
+Ngưỡng: Z > 2.99 = Vùng An toàn · 1.81 < Z ≤ 2.99 = Vùng Xám · Z ≤ 1.81 = Vùng Cảnh báo phá sản
+AI sẽ phân tích gì cho Module 1
+Module Snapshot không có AI commentary riêng — thay vào đó là AI Memo tổng ở Layer 2 (ngay dưới Snapshot). AI Memo tổng làm 4 nhiệm vụ:
+	•	Đánh giá tổng quan sức khỏe doanh nghiệp dựa trên 6 chỉ tiêu
+	•	Tóm tắt xu hướng chính 5 năm (cải thiện / suy giảm / ổn định)
+	•	Highlight 1-2 điểm mạnh và 1-2 điểm cần lưu ý
+	•	View định giá ngắn gọn (vị trí giá hiện tại trong dải fair value)
+Prompt template cho AI Memo tổng
+SYSTEM: Bạn là chuyên gia phân tích cổ phiếu cao cấp 10+ năm kinh nghiệm
+tại thị trường Việt Nam. Viết research note theo style institutional.
+ 
+NGÀNH PHỤ ĐÃ DETECT: {sub_sector}
+CONTEXT NGÀNH: {sub_sector_context}
+ 
+DỮ LIỆU ĐÃ TÍNH (KHÔNG TÍNH LẠI):
+- snapshot_6_kpis: {rev_growth, gross_margin, roe, net_debt_ebitda, fcf_margin, altman_z}
+- 5y_trends: {kpi_trends_5y}
+- threshold_classification: {green/amber/red per KPI}
+- valuation_summary: {fair_value_range, current_price}
+ 
+NHIỆM VỤ (200-250 từ):
+1. Câu mở: phân loại doanh nghiệp (quality compounder / cyclical / recovery / distress)
+2. Đoạn 1 (~80 từ): Đánh giá profitability + cash quality
+3. Đoạn 2 (~70 từ): Đòn bẩy + thanh khoản + Altman Z
+4. Đoạn 3 (~50 từ): View định giá + key risks
+ 
+CẤM:
+- "tích cực", "tiềm năng", "triển vọng tốt" — dùng số cụ thể thay vào
+- Tính lại bất kỳ ratio nào — chỉ dùng số đã pre-compute
+- Quy chụp ngoài data
+Ví dụ output AI cho FPT
+ FPT là quality compounder điển hình của ngành dịch vụ CNTT Việt Nam. Tăng trưởng doanh thu 18.7% năm gần nhất và CAGR 5 năm 15.8% cho thấy đà tăng ổn định trên nền tảng đa dạng (toàn cầu hóa, viễn thông, giáo dục). Biên lợi nhuận gộp mở rộng từ 38.8% lên 41.5% trong 5 năm phản ánh mix shift sang dịch vụ phần mềm có margin cao. ROE 24.1% và FCF margin 12.6% đứng top quartile ngành. Cấu trúc tài chính lành mạnh với Net Debt/EBITDA âm 0.2× (net cash). Altman Z 4.21 thuộc vùng an toàn rõ rệt. Định giá hiện tại ở 0.83× fair value trung vị của 4 phương pháp (DCF, RIM, P/E band, EV/EBITDA), cho upside 12-15% trong kịch bản base. Rủi ro chính: DSO tăng từ 76 lên 89 ngày trong 2 năm — cần theo dõi quality of receivables.
+Module 2 — Phân tích Common-Size Báo cáo Kết quả Kinh doanh
+Mục đích
+Common-Size chuyển toàn bộ khoản mục KQKD thành tỷ lệ phần trăm so với Doanh thu thuần. Mục tiêu: loại bỏ tác động của quy mô và tăng trưởng, tập trung vào cấu trúc chi phí. Doanh thu tăng 30% nhưng tỷ lệ Giá vốn từ 60% lên 70% là margin compression nghiêm trọng — đây là dạng vấn đề Common-Size phát hiện.
+Dữ liệu đầu vào
+Mã
+Khoản mục KQKD
+Biến
+Vai trò
+10
+Doanh thu thuần
+doanh_thu_thuan
+Mẫu số (= 100%)
+11
+Giá vốn hàng bán
+gia_von
+Tử số
+20
+Lợi nhuận gộp
+loi_nhuan_gop
+Tử số chính
+25
+Chi phí bán hàng
+chi_phi_ban_hang
+Tử số
+26
+Chi phí quản lý doanh nghiệp
+chi_phi_quan_ly
+Tử số
+30
+LN thuần từ HĐKD
+ln_thuan_hdkd
+Tử số EBIT
+50
+LN trước thuế
+lntt
+Tử số
+60
+LN sau thuế
+lnst
+Tử số biên ròng
+Cách tính
+Áp dụng công thức chung cho từng khoản mục:
+Tỷ lệ % của khoản mục X: (Giá trị X / Doanh thu thuần) × 100%
+Cụ thể, tính 6 tỷ lệ chính cho mỗi năm (làm 5 năm):
+	•	Tỷ lệ Giá vốn = Mã 11 / Mã 10 × 100%
+	•	Biên Lợi nhuận gộp = Mã 20 / Mã 10 × 100%
+	•	Tỷ lệ Chi phí bán hàng = Mã 25 / Mã 10 × 100%
+	•	Tỷ lệ Chi phí quản lý = Mã 26 / Mã 10 × 100%
+	•	Biên EBIT (LN thuần HĐKD) = Mã 30 / Mã 10 × 100%
+	•	Biên LNST = Mã 60 / Mã 10 × 100%
+Sau đó tính delta (Δ) — chênh lệch giữa năm gần nhất và năm 5 năm trước cho từng tỷ lệ:
+Δ X: Tỷ lệ X năm 2025 − Tỷ lệ X năm 2021 (đơn vị: điểm phần trăm, pp)
+Diễn giải xu hướng
+Khoản mục
+Δ > 0 (tăng)
+Δ < 0 (giảm)
+Biên lợi nhuận gộp
+Tích cực — pricing tốt
+Tiêu cực — margin compression
+Tỷ lệ Giá vốn
+Tiêu cực — chi phí đầu vào tăng
+Tích cực — efficiency
+Tỷ lệ Chi phí BH
+Phụ thuộc context (mở rộng?)
+Tích cực — operating leverage
+Tỷ lệ Chi phí QLDN
+Cần theo dõi — kém hiệu quả?
+Tích cực — scale benefit
+Biên EBIT
+Tích cực — operating leverage
+Tiêu cực
+Biên LNST
+Tích cực
+Tiêu cực
+AI sẽ phân tích gì cho Module 2
+AI commentary cho Module 2 thực hiện 4 task:
+	•	Identify top 2-3 thay đổi đáng kể nhất (|Δ| > 1pp) trong 5 năm
+	•	Phân loại mỗi thay đổi: tích cực / tiêu cực / trung tính
+	•	Suy luận driver: mix shift, pricing, scale, cost pressure?
+	•	Hàm ý: nếu xu hướng tiếp diễn, biên LNST sẽ ra sao trong 1-2 năm tới?
+Prompt template cho Module 2
+SYSTEM: Bạn đang viết bình luận cho Module 2 — Common-Size KQKD của {ticker}.
+ 
+INPUT:
+- common_size_table_5y: bảng cấu trúc chi phí 5 năm
+- deltas_pp: thay đổi mỗi khoản mục, đơn vị điểm phần trăm
+- sub_sector: ngành phụ đã detect
+ 
+NHIỆM VỤ (80-120 từ):
+1. Câu 1: Tổng kết key finding (biên gộp expansion / compression / stable)
+2. Câu 2-3: Bằng chứng số liệu cụ thể (Δ pp, năm bắt đầu - năm kết thúc)
+3. Câu 4: Hàm ý — nếu xu hướng tiếp diễn, biên LNST ra sao?
+ 
+FORMAT: Đoạn văn liền mạch (không bullet)
+CẤM: "tích cực", "cải thiện" không kèm số
+Ví dụ output AI cho Module 2 (FPT)
+ Biên lợi nhuận gộp của FPT mở rộng 270 điểm cơ bản trong 5 năm (38.8% → 41.5%), trong khi tỷ lệ Chi phí quản lý giảm 80bp (13.8% → 13.0%) và Chi phí bán hàng giảm 70bp (9.4% → 8.7%). Hai xu hướng cùng chiều cho thấy chiến lược chuyển dịch doanh thu sang mảng phần mềm có margin cao kết hợp với hiệu ứng quy mô (scale benefit) trên chi phí cố định. Biên EBIT mở rộng tương ứng 260bp lên 18.2%. Nếu duy trì pricing power và operating leverage, biên LNST có thể đạt 15-16% trong 2 năm tới (hiện 14.4%), đẩy ROE bền vững trên 25%.
+Module 3 — Phân tích DuPont 5 bước
+Mục đích
+DuPont 5 bước tách ROE thành 5 driver độc lập, mỗi driver có ý nghĩa kinh tế khác nhau. Giá trị lớn nhất: khi ROE tăng/giảm, biết được nguyên nhân đến từ đâu (operating efficiency, leverage, tax benefit, hay quản lý tài chính). ROE tăng do operating margin expansion có chất lượng cao hơn nhiều so với ROE tăng do leverage tăng.
+Dữ liệu đầu vào
+Cần tính
+Từ đâu
+Ghi chú
+LN sau thuế (cty mẹ)
+Mã 62 KQKD (hoặc 60)
+Tử số ROE
+LN trước thuế
+Mã 50 KQKD
+EBT
+LN thuần HĐKD
+Mã 30 KQKD
+EBIT proxy
+Doanh thu thuần
+Mã 10 KQKD
+
+Tổng tài sản TB
+(Mã 270 đầu kỳ + cuối kỳ)/2
+Avg balance
+VCSH TB
+(Mã 410 đầu kỳ + cuối kỳ)/2
+Avg balance
+Cách tính 5 bước
+ROE = : Tax Burden × Interest Burden × Op Margin × Asset Turnover × Equity Multiplier
+Bước 1 — Tax Burden (Gánh nặng thuế)
+Tax Burden: LN sau thuế / LN trước thuế = Mã 60 / Mã 50
+→ Bao nhiêu LN trước thuế còn lại sau thuế. = 1 − tỷ lệ thuế hiệu dụng
+Bước 2 — Interest Burden (Gánh nặng lãi vay)
+Interest Burden: LN trước thuế / LN thuần HĐKD = Mã 50 / Mã 30
+→ Bao nhiêu EBIT còn lại sau chi phí lãi vay
+Bước 3 — Biên Lợi nhuận Hoạt động
+Op Margin: LN thuần HĐKD / Doanh thu thuần = Mã 30 / Mã 10
+→ Hiệu quả hoạt động cốt lõi
+Bước 4 — Vòng quay Tài sản
+Asset Turnover: Doanh thu thuần / Tổng tài sản TB
+→ Mỗi đồng tài sản tạo bao nhiêu đồng doanh thu
+Bước 5 — Hệ số nhân Vốn chủ sở hữu (Đòn bẩy)
+Equity Multiplier: Tổng tài sản TB / VCSH TB
+→ Đòn bẩy tổng thể. Càng cao = càng rủi ro
+Change Attribution Analysis
+Phần quan trọng nhất của Module 3: phân tích nguồn thay đổi ROE qua các năm. Tính delta của ROE và phân bổ cho từng driver:
+# Pseudocode change attribution
+ROE_t = TB_t × IB_t × OM_t × AT_t × EM_t
+ROE_t-1 = TB_t-1 × IB_t-1 × OM_t-1 × AT_t-1 × EM_t-1
+ 
+# Đóng góp của từng driver (giữ các driver khác ở năm gốc)
+delta_from_TB = (TB_t − TB_t-1) × IB_t-1 × OM_t-1 × AT_t-1 × EM_t-1
+delta_from_IB = TB_t × (IB_t − IB_t-1) × OM_t-1 × AT_t-1 × EM_t-1
+delta_from_OM = TB_t × IB_t × (OM_t − OM_t-1) × AT_t-1 × EM_t-1
+delta_from_AT = TB_t × IB_t × OM_t × (AT_t − AT_t-1) × EM_t-1
+delta_from_EM = TB_t × IB_t × OM_t × AT_t × (EM_t − EM_t-1)
+ 
+# Sum ~ ROE_t − ROE_t-1 (có residual nhỏ)
+AI sẽ phân tích gì cho Module 3
+AI thực hiện 3 task:
+	•	Identify driver đóng góp lớn nhất vào thay đổi ROE (positive hay negative)
+	•	Phân loại chất lượng: ROE tăng do operating margin và asset turnover = quality. ROE tăng chủ yếu do leverage = thấp quality
+	•	Cảnh báo nếu pattern bất thường (ROE đẹp nhưng do leverage ngày càng tăng → unsustainable)
+Prompt template cho Module 3
+SYSTEM: Module 3 — DuPont 5 bước của {ticker}.
+ 
+INPUT:
+- dupont_5y: ma trận 5 driver × 5 năm
+- delta_roe_5y: ROE_2025 − ROE_2021
+- attribution: đóng góp pp từ mỗi driver
+ 
+NHIỆM VỤ (80-120 từ):
+1. Câu 1: ROE thay đổi như thế nào (từ X% lên Y%, hoặc giảm)
+2. Câu 2-3: Driver chính đóng góp (nêu pp cụ thể từng driver)
+3. Câu 4: Đánh giá chất lượng tăng/giảm
+ 
+QUALITY CLASSIFICATION:
+- High quality: Op Margin và/hoặc Asset Turnover đóng góp >50%
+- Medium quality: Tax Burden hoặc Interest Burden đóng góp lớn
+- Low quality: Equity Multiplier đóng góp >50% (leverage-driven)
+Ví dụ output AI cho Module 3 (FPT)
+ ROE của FPT tăng từ 21.4% lên 24.1% trong 5 năm (+2.7 điểm phần trăm). Phân tách nguồn tăng: Biên Hoạt động đóng góp +1.8pp (chiếm 67% mức tăng), Hệ số nhân Vốn chủ +0.7pp, Gánh nặng thuế +0.3pp, Vòng quay tài sản gần như không đổi. Đây là pattern tăng trưởng chất lượng cao: ROE tăng chủ yếu từ operating efficiency chứ không phụ thuộc đòn bẩy. Equity Multiplier ở mức 1.84× — đòn bẩy thấp, còn dư địa nâng nếu cần tăng trưởng nhanh hơn. Mô hình ROE bền vững, ít rủi ro xói mòn nếu thị trường hạ lãi suất.
+Module 4 — Chu kỳ Vốn lưu động (Working Capital Cycle)
+Mục đích
+Chu kỳ vốn lưu động đo lường hiệu quả vận hành: doanh nghiệp cần bao nhiêu ngày để chuyển hàng hóa và phải thu thành tiền mặt. Theo dõi DSO, DIO, DPO qua thời gian phát hiện các vấn đề: bán hàng cho khách chậm trả (DSO tăng), hàng tồn kho ứ đọng (DIO tăng), bị nhà cung cấp siết tín dụng (DPO giảm). Đây là cảnh báo sớm trước khi vấn đề hiện trên báo cáo LN.
+Dữ liệu đầu vào
+Cần lấy
+Vị trí trong BCTC
+Phải thu khách hàng ngắn hạn (đầu kỳ + cuối kỳ)
+Mã 131 BCDKT
+Hàng tồn kho gross (đầu kỳ + cuối kỳ)
+Mã 141 BCDKT
+Dự phòng giảm giá HTK (đầu kỳ + cuối kỳ)
+Mã 149 BCDKT
+Phải trả người bán ngắn hạn (đầu kỳ + cuối kỳ)
+Mã 311 BCDKT
+Doanh thu thuần (cả năm)
+Mã 10 KQKD
+Giá vốn hàng bán (cả năm)
+Mã 11 KQKD
+Cách tính
+DSO — Số ngày phải thu
+DSO: (Phải thu KH TB / Doanh thu thuần) × 365
+→ Phải thu TB = (Đầu kỳ + Cuối kỳ) / 2. Số ngày trung bình từ lúc xuất hóa đơn đến lúc thu tiền
+Ngưỡng (tùy ngành): < 45 ngày xanh · 45-90 ngày vàng · > 90 ngày đỏ
+DIO — Số ngày tồn kho
+DIO: (Hàng tồn kho ròng TB / Giá vốn hàng bán) × 365
+→ Hàng tồn kho ròng = Mã 141 − |Mã 149|. Số ngày trung bình hàng nằm trong kho
+Ngưỡng tùy ngành — sản xuất khác bán lẻ khác BĐS. So với trung vị ngành
+DPO — Số ngày phải trả
+DPO: (Phải trả người bán TB / Giá vốn hàng bán) × 365
+→ Số ngày trung bình từ khi nhận hàng đến khi thanh toán cho nhà cung cấp
+DPO cao là tốt (nhà cung cấp tài trợ vốn). DPO giảm liên tiếp = mất bargaining power
+CCC — Chu kỳ luân chuyển tiền mặt
+CCC: DSO + DIO − DPO
+→ Số ngày tiền bị 'kẹt' trong cycle. CCC âm = nhà cung cấp tài trợ vốn cho mình (rất tốt cho bán lẻ)
+AI sẽ phân tích gì cho Module 4
+AI commentary cho Module 4 thực hiện 3 task:
+	•	So sánh DSO/DIO/DPO hiện tại với 3-5 năm trước, identify component thay đổi đáng kể
+	•	Đánh giá ảnh hưởng đến CCC và dòng tiền
+	•	Cảnh báo các pattern nguy hiểm: DSO tăng + Doanh thu chậm = stuffing channel? DIO tăng + Doanh thu giảm = hàng tồn kho sắp markdown?
+Prompt template cho Module 4
+SYSTEM: Module 4 — Chu kỳ Vốn lưu động của {ticker}.
+ 
+INPUT:
+- working_capital_5y: {dso, dio, dpo, ccc} cho 5 năm
+- revenue_growth_5y: tăng trưởng doanh thu cùng kỳ
+- sub_sector: ngành phụ
+ 
+NHIỆM VỤ (80-100 từ):
+1. Câu 1: CCC hiện tại và so với 5 năm trước
+2. Câu 2-3: Component nào thay đổi nhiều nhất, nêu số cụ thể
+3. Câu 4: Cảnh báo pattern nguy hiểm nếu có
+ 
+LƯU Ý ĐẶC BIỆT:
+- Negative CCC ở bán lẻ là feature, không phải bug
+- DSO tăng đồng thời doanh thu giảm = warning
+- DIO tăng đồng thời doanh thu giảm = inventory markdown risk
+- DPO giảm liên tiếp = mất bargaining power với supplier
+Ví dụ output AI cho Module 4 (FPT)
+ Chu kỳ tiền mặt của FPT là 53 ngày năm 2025, tăng 11 ngày so với năm 2020 (42 ngày). Nguyên nhân chính: DSO tăng từ 76 lên 89 ngày trong khi DIO giảm nhẹ (42 → 42 ngày) và DPO ổn định (76 → 78 ngày). Doanh thu vẫn tăng đều 15-18% mỗi năm, nên DSO tăng không phải do channel stuffing mà có thể do dịch vụ phần mềm có terms thanh toán dài hơn (đặc biệt khách hàng nước ngoài). Cần theo dõi tiếp — nếu DSO tiếp tục tăng vượt 95 ngày trong khi doanh thu chậm lại, đó sẽ là cờ vàng về quality of receivables.
+Module 5 — Cầu nối Dòng tiền (Cash Flow Bridge)
+Mục đích
+Module này dựng cầu nối từ Lợi nhuận sau thuế (kế toán) đến Dòng tiền tự do (kinh tế thực). Câu hỏi cốt lõi: "LN ghi sổ có thật sự biến thành tiền không?". Đây là Quality of Earnings (QoE) test cơ bản nhất. Doanh nghiệp lãi đậm trên sổ nhưng CFO thấp → khả năng manipulation hoặc earnings không bền vững.
+Dữ liệu đầu vào
+Cần lấy
+Vị trí trong BCTC
+LN sau thuế
+Mã 60 KQKD
+Khấu hao TSCĐ và BĐS đầu tư
+Mã 02 LCTT
+Các khoản dự phòng
+Mã 03 LCTT
+Tăng/giảm phải thu
+Mã 08 LCTT (số âm = tăng phải thu)
+Tăng/giảm hàng tồn kho
+Mã 09 LCTT (số âm = tăng tồn kho)
+Tăng/giảm phải trả
+Mã 10 LCTT (số dương = tăng phải trả)
+CFO
+Mã 20 LCTT
+CapEx (tiền chi mua TSCĐ)
+Mã 21 LCTT (số âm)
+Doanh thu thuần
+Mã 10 KQKD
+Cách tính
+Bridge có 6 bước, mỗi bước là một dòng trong bảng:
+Bước 1: LN sau thuế (NI)              = mã 60 KQKD
+Bước 2: (+) Khấu hao                   = mã 02 LCTT
+Bước 3: (+) Dự phòng                   = mã 03 LCTT
+Bước 4: (±) Thay đổi vốn lưu động      = mã 08 + 09 + 10 LCTT
+Bước 5: = CFO                          = mã 20 LCTT (cross-check)
+Bước 6: (−) CapEx                      = |mã 21 LCTT|
+Bước 7: = FCF (Dòng tiền tự do)
+Các tỷ lệ chất lượng cần tính:
+CFO / NI: Mã 20 LCTT / Mã 60 KQKD
+→ > 1.0× là healthy. < 0.8× nhiều năm liên tiếp = QoE thấp
+FCF / Doanh thu: (Mã 20 LCTT − Mã 21 LCTT) / Mã 10 KQKD
+→ > 8% xanh · 3-8% vàng · < 0 đỏ
+Sloan Accrual Ratio: (LN sau thuế − CFO) / Tổng tài sản TB
+→ < 5% xanh · 5-10% vàng · > 10% đỏ (high accrual = low earnings quality)
+AI sẽ phân tích gì cho Module 5
+AI commentary thực hiện 4 task:
+	•	Cross-check: CFO của LCTT có khớp với tổng các bước bridge không (sai số < 1%)
+	•	Đánh giá QoE qua CFO/NI: > 1.0 = high quality, < 0.8 = warning
+	•	Xác định nguyên nhân gap NI vs CFO: do WC tăng, do non-cash items?
+	•	Đánh giá FCF: doanh nghiệp có generate FCF dương bền vững không?
+Prompt template cho Module 5
+SYSTEM: Module 5 — Cash Flow Bridge của {ticker}.
+ 
+INPUT:
+- cf_bridge_2025: NI → CFO → FCF với các bước
+- cfo_ni_ratio_5y: CFO/NI 5 năm gần nhất
+- sloan_accrual_5y: Sloan accrual ratio 5 năm
+- fcf_margin_5y: FCF margin 5 năm
+ 
+NHIỆM VỤ (80-120 từ):
+1. Câu 1: Đánh giá QoE thông qua CFO/NI (trend 5Y)
+2. Câu 2: Nguyên nhân chính của gap NI vs CFO năm gần nhất
+3. Câu 3: FCF generation — có đủ trả cổ tức + đầu tư không?
+4. Câu 4: Cảnh báo nếu accrual cao
+ 
+QUALITY GRADE:
+- A: CFO/NI > 1.0 và FCF/Rev > 8% trong 3+ năm
+- B: CFO/NI 0.8-1.0, FCF dương
+- C: CFO/NI < 0.8 hoặc FCF âm
+Ví dụ output AI cho Module 5 (FPT)
+ Quality of Earnings của FPT thuộc nhóm cao: CFO/NI duy trì 1.15-1.20× trong 5 năm gần nhất, phản ánh earnings có cash backing thực sự. Năm 2025, gap dương 1,600 tỷ giữa CFO (10,590) và LNST (8,990) chủ yếu do khấu hao 2,180 tỷ (đúng bản chất non-cash) bù đắp phần thay đổi vốn lưu động âm 580 tỷ. FCF margin 12.6% (CapEx 2,720 tỷ) đứng top quartile ngành. Sloan Accrual 5.2% — trong vùng healthy. Earnings được hỗ trợ bằng tiền mặt thực, không có dấu hiệu accrual manipulation. FCF dư đủ trả cổ tức và tái đầu tư R&D mà không cần vay nợ.
+Module 6 — Bộ ba Forensic (Forensic Trinity)
+Mục đích
+Ba điểm số đo ba khía cạnh khác nhau của sức khỏe doanh nghiệp: Altman Z đo rủi ro phá sản, Piotroski F đo chất lượng fundamental, Beneish M đo khả năng manipulation BCTC. Cả 3 điểm số chỉ cần dữ liệu từ 3 BCTC — không cần thuyết minh hay dữ liệu ngoài. Đây là bộ công cụ kinh điển của academic finance, được institutional dùng làm screening cơ bản.
+Score 1 — Altman Z' (Phá sản)
+Mục đích: dự báo khả năng phá sản trong 2 năm tới. Z' là biến thể dùng book value (không cần market cap).
+Dữ liệu cần
+	•	Tài sản ngắn hạn (Mã 100), Nợ ngắn hạn (Mã 310)
+	•	Lợi nhuận sau thuế chưa phân phối (Mã 421)
+	•	LN thuần từ HĐKD (Mã 30)
+	•	VCSH (Mã 400), Tổng nợ phải trả (Mã 300)
+	•	Doanh thu thuần (Mã 10)
+	•	Tổng tài sản (Mã 270)
+Công thức
+Z': 1.2·A + 1.4·B + 3.3·C + 0.6·D + 1.0·E
+	•	A = (Mã 100 − Mã 310) / Mã 270 — Working Capital / Total Assets
+	•	B = Mã 421 / Mã 270 — Retained Earnings / Total Assets
+	•	C = Mã 30 / Mã 270 — EBIT / Total Assets (proxy)
+	•	D = Mã 400 / Mã 300 — Book Equity / Total Liabilities
+	•	E = Mã 10 / Mã 270 — Sales / Total Assets
+Diễn giải
+	•	Z' > 2.99: Vùng An toàn — nguy cơ phá sản 2 năm rất thấp
+	•	1.81 < Z' ≤ 2.99: Vùng Xám — cần theo dõi
+	•	Z' ≤ 1.81: Vùng Cảnh báo — nguy cơ phá sản cao trong 2 năm
+Score 2 — Piotroski F-Score (Chất lượng Fundamental)
+Mục đích: chấm điểm chất lượng cơ bản doanh nghiệp trên 9 tiêu chí. Mỗi tiêu chí đạt được 1 điểm. Tổng từ 0 đến 9.
+9 tiêu chí Piotroski
+#
+Tiêu chí
+Đạt điểm khi
+Nguồn dữ liệu
+1
+ROA dương
+ROA năm hiện tại > 0
+Mã 60 / Mã 270
+2
+CFO dương
+CFO năm hiện tại > 0
+Mã 20 LCTT
+3
+ROA tăng
+ROA năm nay > năm trước
+Tính 2 năm
+4
+Chất lượng LN
+CFO > LN sau thuế
+Mã 20 LCTT > Mã 60 KQKD
+5
+Giảm đòn bẩy
+Nợ dài hạn năm nay < năm trước
+Mã 338 BCDKT
+6
+Thanh khoản tăng
+Current ratio năm nay > năm trước
+Mã 100 / Mã 310
+7
+Không pha loãng
+Không phát hành thêm cổ phiếu
+Mã 31 LCTT = 0
+8
+Biên gộp tăng
+Biên LN gộp năm nay > năm trước
+Mã 20 / Mã 10
+9
+Vòng quay TS tăng
+Asset turnover năm nay > năm trước
+Mã 10 / Mã 270
+Diễn giải
+	•	F ≥ 7: Strong — fundamental rất mạnh, công ty đang trên đường phát triển
+	•	4 ≤ F ≤ 6: Average — bình thường, không có vấn đề rõ rệt
+	•	F ≤ 3: Weak — fundamental yếu, nhiều dấu hiệu suy giảm
+Score 3 — Beneish M-Score (Manipulation Detection)
+Mục đích: phát hiện khả năng doanh nghiệp manipulate BCTC. M-Score sử dụng 8 chỉ số tài chính kết hợp theo công thức logistic.
+8 thành phần Beneish
+	•	DSRI = Days Sales in Receivables Index — DSO_t / DSO_t-1 (phải thu tăng nhanh hơn doanh thu?)
+	•	GMI = Gross Margin Index — Biên gộp_t-1 / Biên gộp_t (biên gộp giảm = áp lực manipulation)
+	•	AQI = Asset Quality Index — chất lượng tài sản thay đổi
+	•	SGI = Sales Growth Index — Doanh thu_t / Doanh thu_t-1
+	•	DEPI = Depreciation Index — Tỷ lệ khấu hao có giảm? (kéo dài useful life để boost LN)
+	•	SGAI = SG&A Index — Chi phí bán hàng + quản lý / Doanh thu
+	•	LVGI = Leverage Index — đòn bẩy thay đổi
+	•	TATA = Total Accruals to Total Assets = (NI − CFO) / Total Assets
+Công thức
+M: −4.84 + 0.92·DSRI + 0.528·GMI + 0.404·AQI + 0.892·SGI + 0.115·DEPI − 0.172·SGAI − 0.327·LVGI + 4.679·TATA
+Diễn giải
+	•	M > −1.78: Cảnh báo — khả năng có manipulation
+	•	M ≤ −1.78: An toàn — không có dấu hiệu manipulation rõ rệt
+Đặc biệt nguy hiểm khi M > −1.78 kèm DSRI > 1.2 và SGI > 1.5 (tăng trưởng nhanh kèm phải thu phình ra).
+AI sẽ phân tích gì cho Module 6
+AI commentary tổng hợp 3 score thành insight thống nhất:
+	•	Đánh giá tổng quát: doanh nghiệp ở trạng thái nào (healthy / mixed / concerning)
+	•	Khi có signal mâu thuẫn (ví dụ Z' cao nhưng M cao), giải thích nguyên nhân
+	•	Đề xuất khía cạnh cần điều tra thêm
+Prompt template cho Module 6
+SYSTEM: Module 6 — Bộ ba Forensic của {ticker}.
+ 
+INPUT:
+- altman_z_5y, altman_components: A, B, C, D, E hiện tại
+- piotroski_f_2025: 0-9 điểm, kèm chi tiết từng tiêu chí
+- beneish_m_2025: M-score, kèm 8 components
+- comparison: 3 score so với năm trước
+ 
+NHIỆM VỤ (80-120 từ):
+1. Câu 1: Đánh giá tổng (3 signals consistent hay mâu thuẫn?)
+2. Câu 2-3: Diễn giải từng score với số cụ thể
+3. Câu 4: Nếu có flag, đào sâu nguyên nhân từ component
+ 
+ĐẶC BIỆT LƯU Ý:
+- Z' giảm liên tiếp = leverage tăng + LN giảm
+- F-score < 4 + đang lỗ = high distress
+- M > -1.78 + DSRI > 1.2 = aggressive accruals
+Ví dụ output AI cho Module 6 (FPT)
+ Bộ ba forensic của FPT đều cho tín hiệu tích cực và nhất quán. Altman Z' đạt 4.21 — vượt xa ngưỡng an toàn 2.99, phản ánh cấu trúc tài chính lành mạnh (working capital dương, retained earnings tích lũy nhiều năm, ít nợ). Piotroski F-Score 8/9 thuộc nhóm Strong, mất 1 điểm duy nhất do FPT có phát hành cổ phiếu cho chương trình ESOP — không phải vấn đề chất lượng. Beneish M-Score −2.65 nằm sâu trong vùng an toàn (ngưỡng cảnh báo −1.78), không có dấu hiệu manipulation. Trong 5 năm, cả 3 điểm số đều ổn định ở vùng tốt. Cờ xanh toàn diện về fundamental.
+Module 7 — Sub-sector Spotlight
+Mục đích
+Module 7 là phần "thông minh" của Template A. Cùng layout dashboard, nhưng nội dung Module 7 thay đổi theo ngành phụ được auto-detect. Mục tiêu: hiển thị 3 chỉ tiêu đặc thù nhất của ngành phụ — những con số mà nhà phân tích ngành đó quan tâm trước nhất.
+Logic phát hiện ngành phụ
+Đã trình bày trong Phần 2.4. Tóm lại: hệ thống dùng heuristic dựa trên line items đặc trưng để classify thành 7 ngành phụ: Sản xuất, CNTT/Dịch vụ, Bán lẻ, Bất động sản, Chứng khoán, Bảo hiểm, Tiện ích.
+3 Chỉ tiêu spotlight cho từng ngành phụ
+Sản xuất / Công nghiệp
+Chỉ tiêu
+Công thức
+Mục đích
+Vòng quay TSCĐ
+Mã 10 / TB Mã 221 (TSCĐ hữu hình ròng)
+Hiệu quả sử dụng nhà máy
+ROIC
+(Mã 30 × (1-tax)) / (VCSH + Tổng nợ vay − Tiền)
+Hiệu quả vốn đầu tư
+CapEx / Khấu hao
+Mã 21 LCTT / Mã 02 LCTT
+Đang mở rộng hay maintenance?
+CNTT / Dịch vụ (như FPT)
+Chỉ tiêu
+Công thức
+Mục đích
+Spread ROIC vs WACC
+ROIC − WACC
+Value creator nếu > 0
+Cường độ tài sản
+Mã 220 / Mã 270 (TSCĐ / Tổng TS)
+Asset-light nếu < 20%
+Chuyển đổi tiền mặt
+FCF / EBITDA
+> 60% là top quartile
+Bán lẻ
+Chỉ tiêu
+Công thức
+Mục đích
+Vòng quay hàng tồn kho
+Mã 11 / TB Mã 141
+Tốc độ bán hàng
+Chu kỳ tiền mặt
+DSO + DIO − DPO
+Âm = NCC tài trợ vốn (feature của bán lẻ)
+Tỷ lệ dự phòng tồn kho
+|Mã 149| / Mã 141
+Adequacy của markdown reserve
+Bất động sản
+Chỉ tiêu
+Công thức
+Mục đích
+Backlog (proxy)
+Mã 312 / Mã 10 (Người mua TTT / Doanh thu)
+Doanh thu tương lai đã 'khóa'
+Cấu trúc tồn kho
+Mã 242 / Mã 141 (CIP / Tổng HTK)
+Pipeline đang triển khai
+Áp lực ngắn hạn
+Mã 320 / (Mã 320 + Mã 338)
+Vay NH / Tổng nợ vay — refinance risk
+Chứng khoán (CTCK)
+Chỉ tiêu
+Công thức
+Mục đích
+Tỷ trọng tự doanh
+FVTPL / Tổng TS
+Prop trading exposure
+Đòn bẩy margin
+Cho vay margin / VCSH
+Cap UBCKNN 2.0×
+ROE chu kỳ hóa
+Trung vị ROE 5 năm
+Loại bỏ peak ROE bull market
+Bảo hiểm
+Chỉ tiêu
+Công thức
+Mục đích
+Thu nhập đầu tư / DT
+DT tài chính / Doanh thu
+Float-driven earnings
+Đòn bẩy float
+Dự phòng nghiệp vụ / VCSH
+Buffett's float leverage
+Tỷ lệ bồi thường
+Chi phí bồi thường / DT thuần
+Loss ratio proxy
+Tiện ích / Điện
+Chỉ tiêu
+Công thức
+Mục đích
+Ổn định biên EBITDA
+Độ lệch chuẩn biên EBITDA 5Y
+Bond-like quality indicator
+CapEx / Khấu hao
+Mã 21 LCTT / Mã 02 LCTT
+Maintenance ~= 1.0, growth > 1.0
+Hệ số bao phủ lãi vay
+EBIT / Lãi vay = Mã 30 / Mã 23
+> 3× là healthy với utilities đòn bẩy cao
+AI sẽ phân tích gì cho Module 7
+AI commentary cho Module 7 chuyên biệt theo ngành phụ — mỗi ngành có prompt riêng để tận dụng context. Cấu trúc chung:
+	•	Đặt 3 chỉ tiêu spotlight vào context ngành (so với benchmark ngành)
+	•	Identify điểm mạnh / yếu so với peer ngành phụ
+	•	Hàm ý cho thesis đầu tư trong ngành
+Ví dụ output AI cho Module 7 — Real Estate (KDH)
+ Backlog proxy (Người mua trả tiền trước / Doanh thu) của KDH đạt 2.38× — tương đương 2.4 năm doanh thu đã được 'khóa'. Đây là mức visibility cao bậc nhất trong ngành (trung vị 1.5-2.0×). Cấu trúc tồn kho có 68% là Chi phí XDCB dở dang, cho thấy pipeline 12 dự án đang triển khai tích cực — sẽ recognize revenue trong 2026-2028. Tỷ lệ vay ngắn hạn 32.8% tổng nợ vay là vùng cần theo dõi: tương đương 4,200 tỷ trái phiếu doanh nghiệp đáo hạn 2026-27 cần refinance. Tổng hợp: chất lượng kinh doanh tốt, nhưng có pocket of refinance risk cần monitor.
+Module 8 — Định giá Football Field
+Mục đích
+Football Field tổng hợp 4 phương pháp định giá độc lập, vẽ thành các dải fair value chồng lên nhau với giá hiện tại. Mục tiêu: không phụ thuộc vào một phương pháp duy nhất (mỗi phương pháp có giả định khác nhau, có thể sai), triangulate qua 3-4 phương pháp tăng độ tin cậy. Cả 4 phương pháp dưới đây chỉ cần dữ liệu từ 3 BCTC + market data.
+Phương pháp 1 — DCF từ Reinvestment Rate
+Đây là phiên bản DCF không cần analyst forecast manual. Mọi giả định lấy từ historical pattern.
+Bước 1 — Tính ROIC và Reinvestment Rate
+ROIC: NOPAT / Vốn đầu tư = (EBIT × (1-thuế suất)) / (VCSH + Nợ vay − Tiền)
+Reinvestment Rate: (CapEx + Tăng vốn lưu động) / NOPAT
+→ Bao nhiêu % NOPAT được tái đầu tư
+Growth implied (g): ROIC × Reinvestment Rate
+→ Tăng trưởng bền vững dựa trên historical pattern
+Bước 2 — Discount bằng WACC
+WACC: (E/V) × Ke + (D/V) × Kd × (1 − thuế suất)
+	•	E/V = Vốn hóa thị trường / (Vốn hóa + Nợ vay)
+	•	D/V = Nợ vay / (Vốn hóa + Nợ vay)
+	•	Ke (CAPM) = Lãi suất phi rủi ro + β × Phần bù rủi ro thị trường = 4% + β × 8.5% (VN)
+	•	Kd = Chi phí lãi vay / Nợ vay TB (implicit cost of debt)
+	•	β = lấy từ historical 2-3 năm vs VN-Index
+Bước 3 — Build forecast 10 năm + Terminal
+Doanh thu năm 1-5: tăng với growth g historical. Năm 6-10: g giảm dần về terminal g (= 5-7%, ~ GDP nominal VN). Terminal: dùng Gordon growth.
+Phương pháp 2 — RIM (Residual Income Model)
+Định giá dựa trên "excess return" — doanh nghiệp tạo giá trị khi ROE > Cost of Equity.
+Giá trị VCSH: BV₀ + Σ [(ROE_t − Ke) × BV_t-1] / (1+Ke)^t + Terminal
+Ưu điểm: chỉ cần historical ROE (median 5Y) và Ke. Không cần forecast doanh thu chi tiết. Phù hợp đặc biệt với doanh nghiệp tài chính.
+Phương pháp 3 — P/E Historical Band
+Lấy P/E lịch sử 5 năm, tính min, max, median (trung vị). Apply 3 multiple này với EPS forward (TTM hoặc consensus) để có dải fair value.
+Fair Price (Bear): P/E_min × EPS_forward
+Fair Price (Base): P/E_median × EPS_forward
+Fair Price (Bull): P/E_max × EPS_forward
+Phương pháp 4 — Sàn giá trị sổ sách (Book Floor)
+Giá tối thiểu hợp lý nhất là book value/share. Với doanh nghiệp có ROE > Ke bền vững, giá sẽ > BV. Nhưng BV là floor cuối cùng trong các bear case extreme.
+Book Value / share: (VCSH − Lợi ích cổ đông thiểu số) / Số lượng CP lưu hành
+→ = (Mã 410 − Mã 429) / Shares outstanding
+AI sẽ phân tích gì cho Module 8
+	•	So sánh fair value range của 4 phương pháp — có hội tụ không?
+	•	Vị trí giá hiện tại trong dải tổng hợp — đắt, fair, hay rẻ?
+	•	Phương pháp nào cho fair value cao nhất / thấp nhất, vì sao?
+	•	Sensitivity analysis: nếu growth/WACC thay đổi ±1pp, fair value đổi bao nhiêu?
+Prompt template cho Module 8
+SYSTEM: Module 8 — Định giá Football Field của {ticker}.
+ 
+INPUT:
+- dcf_range: {bear, base, bull}
+- rim_range: {bear, base, bull}
+- pe_band_range: {min, median, max}
+- book_floor: BV/share
+- current_price: giá hiện tại
+- median_fair_value: trung vị của 4 phương pháp
+ 
+NHIỆM VỤ (80-120 từ):
+1. Câu 1: So sánh giá hiện tại với median fair value
+2. Câu 2: Mức độ hội tụ của 4 phương pháp (chênh lệch hẹp hay rộng?)
+3. Câu 3: Bull case + Bear case với upside/downside %
+4. Câu 4: Yếu tố sensitivity quan trọng nhất
+ 
+CẤM:
+- Đưa ra recommendation Mua/Bán/Giữ
+- Predict giá trong N tháng tới
+Ví dụ output AI cho Module 8 (FPT)
+ Trung vị 4 phương pháp định giá cho fair value 141,000 VND/cp, cao hơn giá hiện tại 135,000 khoảng 4.4%. DCF từ historical reinvestment cho dải 108k-158k, RIM cho 114k-159k, P/E band 5 năm 124k-158k, book floor 87k. Bốn phương pháp hội tụ khá tốt ở vùng base 130-150k. Bull case 159k (+18% upside) đòi hỏi maintain ROE > 24% và growth > 15% trong 5 năm tới. Bear case 108k (−20% downside) tương ứng với scenario margin compression và growth slowdown về 10%. Yếu tố nhạy cảm nhất là Ke (cost of equity) — mỗi 100bp Ke giảm tương đương fair value tăng 12-15%.
+Module 9 — Bảng Forensic Panel (Green/Red Signals)
+Mục đích
+Bảng Forensic Panel là tổng hợp cuối dashboard — hai cột side-by-side: Tín hiệu Xanh (điểm mạnh) và Cờ Vàng/Đỏ (điểm cảnh báo). Mục tiêu: cho user một summary actionable trong 30 giây. Mỗi mục là 1 dòng bullet ngắn, không quá 15 từ.
+Logic generate Green signals
+Auto-generate khi các điều kiện sau đạt:
+	•	ROE > 18% trong 3 năm liên tiếp → "ROE bền vững > 18%"
+	•	ROIC > WACC + 5pp → "Value creator vượt trội"
+	•	Net Debt/EBITDA < 0 → "Net cash position"
+	•	CFO/NI > 1.0 trong 3 năm → "QoE cao, earnings có cash backing"
+	•	Altman Z' > 3.5 → "Tài chính an toàn (Altman Z 4.21)"
+	•	Piotroski F ≥ 7 → "Fundamental mạnh (F-Score 8/9)"
+	•	Biên gộp expansion > 200bp/5Y → "Margin expansion 270bp"
+	•	FCF margin > 8% trong 3 năm → "FCF generation bền vững 12%"
+Logic generate Yellow/Red flags
+	•	DSO tăng > 20% trong 2 năm → "DSO tăng 76 → 89 ngày"
+	•	Inventory tăng nhanh hơn doanh thu → "Tồn kho phình ra so với DT"
+	•	CFO/NI < 0.8 trong 2 năm → "QoE suy giảm, CFO/NI 0.7×"
+	•	Net Debt/EBITDA > 3× → "Đòn bẩy cao 3.5×"
+	•	Beneish M > -1.78 → "M-Score cảnh báo manipulation"
+	•	Goodwill / TTS > 25% → "Goodwill cao, rủi ro impairment"
+	•	Vay NH / Tổng vay > 50% → "Refinance risk cao"
+	•	Related party receivable tăng → "Phải thu liên quan tăng, kiểm tra"
+AI sẽ làm gì cho Module 9
+Module 9 chủ yếu là rule-based generate, không cần AI commentary mới. AI chỉ cần:
+	•	Sắp xếp signals theo mức độ quan trọng (most material trước)
+	•	Viết lại từ template thô thành câu Tiếng Việt tự nhiên
+	•	Loại bỏ duplicate (ví dụ Z' high và Equity/TA cao là tương tự — chọn 1)
+	•	Giới hạn 5-6 signals mỗi cột để tránh overwhelm
+Prompt template cho Module 9
+SYSTEM: Module 9 — Tổng hợp Green/Red signals của {ticker}.
+ 
+INPUT:
+- raw_green_signals: [list tín hiệu xanh auto-detected]
+- raw_red_signals: [list cờ vàng/đỏ auto-detected]
+ 
+NHIỆM VỤ:
+1. Sắp xếp theo materiality (impact lớn nhất trước)
+2. Loại bỏ duplicate
+3. Viết lại mỗi signal thành 1 câu < 15 từ, có số liệu cụ thể
+4. Giới hạn 5-6 mục mỗi cột
+ 
+FORMAT output:
+{
+  "green_signals": ["...", "...", ...],
+  "red_signals": ["...", "...", ...]
+}
+PHẦN VI · TEMPLATE B — NGÂN HÀNG
+Template B áp dụng cho ngân hàng thương mại. Schema BCTC hoàn toàn khác Template A — không có "doanh thu", "giá vốn", "hàng tồn kho". Thay vào đó: "Thu nhập lãi thuần", "Cho vay khách hàng", "Tiền gửi của khách hàng".
+Phạm vi simplified: Template này chỉ bao gồm các chỉ tiêu tính được từ thuần số. Một số chỉ tiêu chuyên sâu (NPL theo 5 nhóm chi tiết, CASA breakdown, CAR/Tier 1/Tier 2 chi tiết) yêu cầu thuyết minh hoặc báo cáo regulatory — đã được loại khỏi template này. Khi nâng cấp data source, có thể bổ sung sau.
+Module 1B — Thẻ Snapshot Ngân hàng (6 chỉ tiêu)
+Mục đích
+6 chỉ tiêu KPI cho ngân hàng, hoàn toàn khác Template A. Universal-banking, áp được cho mọi ngân hàng Việt Nam.
+Chỉ tiêu 1 — NIM (Biên lãi ròng)
+Bước 1 — Tài sản sinh lãi (Earning Assets): Cho vay KH gross + Tiền gửi và cho vay TCTD + CK đầu tư + CK kinh doanh
+Bước 2 — NIM: Thu nhập lãi thuần / Tài sản sinh lãi TB
+→ Trung bình = (đầu kỳ + cuối kỳ) / 2. Ngưỡng: > 3.5% xanh · 2.5-3.5% vàng · < 2.5% đỏ
+Chỉ tiêu 2 — ROE Ngân hàng
+ROE: LN sau thuế / VCSH TB
+→ Banks healthy: > 18%. Top tier VN: 20-25%
+Chỉ tiêu 3 — LDR (Tỷ lệ Dư nợ trên Huy động)
+LDR: Cho vay khách hàng / Tiền gửi khách hàng
+→ Cap NHNN 85%. Ngưỡng: < 80% xanh · 80-85% vàng · > 85% đỏ
+Chỉ tiêu 4 — Equity / Total Assets
+Equity Ratio: VCSH / Tổng tài sản
+→ Proxy cho CAR (vì không có RWA). Ngưỡng: > 8% xanh · 6-8% vàng · < 6% đỏ
+Chỉ tiêu 5 — LLR / Loans (Tỷ lệ Dự phòng)
+LLR / Loans: |Dự phòng rủi ro| / Cho vay khách hàng gross
+→ Aggregate provision coverage. Ngưỡng: 1.5-3% là healthy
+Chỉ tiêu 6 — CIR (Tỷ lệ Chi phí trên Thu nhập)
+CIR: Chi phí hoạt động / Tổng thu nhập hoạt động (TOI)
+→ Ngưỡng: < 35% xanh · 35-45% vàng · > 45% đỏ
+AI Memo tổng cho dashboard ngân hàng
+SYSTEM: Bạn là analyst senior chuyên ngân hàng Việt Nam với 10+ năm kinh nghiệm.
+ 
+LƯU Ý ĐẶC BIỆT:
+1. Đòn bẩy A/E 8-15× là CHUẨN với ngân hàng — KHÔNG là red flag
+2. CFO theo TT200 vô nghĩa với ngân hàng — đừng dùng
+3. EBITDA không áp dụng
+4. Chỉ có aggregate provision — không thể nói chi tiết về NPL groups
+5. Không tính được CAR — equity/TA là proxy
+ 
+INPUT: 20 KPI banking đã pre-compute
+ 
+NHIỆM VỤ (~250 từ):
+1. Phân loại ngân hàng (premium franchise / mid-tier / underperformer)
+2. Đánh giá NIM dynamics và funding cost
+3. Đánh giá chất lượng tài sản qua aggregate provision
+4. Đánh giá capital adequacy qua Equity/TA
+5. Định giá P/B Justified vs current
+Module 2B — Cơ cấu Tổng thu nhập (TOI Mix)
+Mục đích
+Phân tích cấu trúc thu nhập ngân hàng. Top-line không phải "Doanh thu" mà là TOI (Tổng thu nhập hoạt động) — gồm 4 component: NII (thu nhập lãi thuần), Net Fee (lãi dịch vụ thuần), Trading (ngoại hối + CK kinh doanh + CK đầu tư), Other. Ngân hàng healthy có Non-NII / TOI > 25% — diversification ngoài cho vay.
+Dữ liệu đầu vào
+Cần lấy
+Vị trí trong KQKD ngân hàng
+Thu nhập lãi thuần (NII)
+Mục I trong KQKD ngân hàng
+Lãi dịch vụ thuần
+Mục II
+Lãi/lỗ KD ngoại hối
+Mục III
+Lãi/lỗ CK kinh doanh
+Mục IV
+Lãi/lỗ CK đầu tư
+Mục V
+Thu nhập khác
+Mục VI + VII
+TOI tổng
+Mục III + ... + VII + I + II
+Cách tính
+TOI: NII + Net Fee + FX P&L + Trading P&L + AFS P&L + Other
+Tính tỷ trọng từng component:
+	•	% NII = NII / TOI
+	•	% Fee = Lãi dịch vụ thuần / TOI
+	•	% Trading = (FX + CKKD + CK đầu tư) / TOI
+	•	% Other = Thu nhập khác / TOI
+AI sẽ phân tích gì cho Module 2B
+	•	Tỷ trọng NII so với top tier ngành (banking VN: 65-80% NII là norm)
+	•	Xu hướng diversification 5 năm — Fee tăng = quality
+	•	Tỷ trọng Trading > 15% là volatile — cảnh báo về sustainability
+Prompt template Module 2B
+SYSTEM: Module 2B — TOI Mix của {ticker} ngân hàng.
+ 
+INPUT:
+- toi_mix_2025: {nii_pct, fee_pct, trading_pct, other_pct}
+- toi_mix_5y: trend
+- toi_growth_5y
+ 
+NHIỆM VỤ (80 từ):
+1. Câu 1: Mức độ phụ thuộc NII (cao là norm với SOE bank, thấp hơn với private)
+2. Câu 2: Xu hướng Fee 5 năm — tăng = diversification
+3. Câu 3: Trading contribution — nếu > 15% kèm volatile = warning
+Ví dụ output cho VCB
+ Cơ cấu thu nhập VCB tập trung vào NII với tỷ trọng 71% TOI, ở mức trung bình ngành ngân hàng Việt Nam (65-80%). Điểm tích cực: tỷ trọng Lãi dịch vụ tăng từ 14% lên 18% trong 3 năm gần nhất, phản ánh thành công của chiến lược đẩy mạnh thẻ tín dụng, banking digital và thu phí. Tỷ trọng Trading + FX ở mức 7% là thấp và ổn định — không phụ thuộc vào earnings volatility từ trading book. Cơ cấu đa dạng hóa đang cải thiện đúng hướng.
+Module 3B — PPOP và Chi phí Dự phòng
+Mục đích
+PPOP (Lợi nhuận thuần trước dự phòng) là metric quan trọng nhất phản ánh "earnings capacity" của ngân hàng — lợi nhuận tạo ra từ vận hành cốt lõi, trước khi trừ chi phí tín dụng. Khi NPL tăng, provision tăng có thể nuốt hết PPOP. Tách PPOP ra giúp phân tích trend earnings capacity độc lập với credit cycle.
+Dữ liệu đầu vào
+Cần lấy
+Vị trí
+Tổng thu nhập hoạt động (TOI)
+Tính từ Module 2B
+Chi phí hoạt động (OPEX)
+Mục VIII trong KQKD ngân hàng
+PPOP
+Mục IX (= TOI − OPEX)
+Chi phí dự phòng rủi ro tín dụng
+Mục X
+LN trước thuế
+Mục XI
+Cho vay KH gross TB
+(Đầu kỳ + Cuối kỳ) / 2
+Cách tính
+PPOP: TOI − OPEX = Mục IX trong KQKD
+CIR: OPEX / TOI
+→ Cost-to-Income Ratio
+Tỷ lệ Dự phòng / PPOP: Chi phí dự phòng / PPOP
+→ Bao nhiêu % capacity bị nuốt bởi credit cost
+CoR (Cost of Risk): Chi phí dự phòng / Cho vay KH gross TB
+→ Chi phí tín dụng đơn vị. Ngưỡng: < 1% xanh · 1-1.5% vàng · > 1.5% đỏ
+AI sẽ phân tích gì cho Module 3B
+	•	Xu hướng PPOP và CIR 5 năm — efficiency improving hay deteriorating?
+	•	Tỷ lệ Provision/PPOP — bao nhiêu earnings capacity bị credit cost nuốt?
+	•	CoR so với historical median — đang trong credit cycle expansion/contraction?
+Ví dụ output cho VCB
+ PPOP của VCB đạt 46,600 tỷ năm 2025, tăng 14% YoY và CAGR 5 năm 16%, phản ánh earnings capacity bền vững. CIR 31.9% thuộc nhóm best-in-class ngành (trung vị 38-42%), cho thấy vận hành hiệu quả vượt trội. Chi phí dự phòng 11,200 tỷ chiếm 24% PPOP — credit cost vẫn ở mức kiểm soát. CoR 0.79% (~5Y median 0.82%) không có dấu hiệu stress đột biến. PPOP capacity cho phép VCB tăng provision lên 2× nếu cần mà vẫn duy trì LN trước thuế trên 25,000 tỷ.
+Module 4B — Phân rã Biên Lãi ròng (NIM Decomposition)
+Mục đích
+NIM là metric quan trọng nhất phân biệt chất lượng ngân hàng. Tách NIM thành Yield on Earning Assets (lợi suất tài sản sinh lãi) trừ Cost of Funds (chi phí huy động). Khi NIM giảm, cần biết nguyên nhân: Yield giảm (cạnh tranh cho vay) hay COF tăng (lãi huy động tăng)?
+Dữ liệu đầu vào
+Cần lấy
+Vị trí
+Thu nhập lãi (gross)
+Mục 1 KQKD ngân hàng
+Chi phí lãi
+Mục 2 KQKD ngân hàng
+Tài sản sinh lãi (Earning Assets)
+Cho vay + Tiền gửi TCTD + CK đầu tư + CK KD
+Nợ chịu lãi (Interest-bearing Liab)
+Tiền gửi KH + Tiền gửi vay TCTD + GTCG + Nợ NHNN
+Cách tính
+Yield on Earning Assets: Thu nhập lãi (gross) / Tài sản sinh lãi TB
+→ Lợi suất bình quân từ tất cả tài sản sinh lãi
+Cost of Funds (COF): Chi phí lãi / Nợ chịu lãi TB
+→ Chi phí huy động bình quân
+Net Interest Spread: Yield − COF
+→ Khác NIM một chút — NIM dùng Earning Assets làm mẫu
+NIM: (Thu nhập lãi − Chi phí lãi) / Tài sản sinh lãi TB
+→ = Net Interest Spread × (Earning Assets / Total Assets)
+AI sẽ phân tích gì cho Module 4B
+	•	So sánh NIM với ngành (top tier 3.5-4.5%, SOE 2.8-3.2%)
+	•	Yield trend vs COF trend — driver chính của NIM
+	•	Sustainability NIM — phụ thuộc CASA cao hay structural advantage?
+Ví dụ output cho VCB
+ NIM VCB đạt 3.18% năm 2025, vượt trung vị ngành 2.85% khoảng 33bp. Phân tách: Yield on Earning Assets 6.42% (cao hơn ngành 30bp nhờ mix khách hàng SOE quality + bán lẻ premium) trừ Cost of Funds 3.24% (thấp hơn ngành 60bp nhờ CASA cao). NIM advantage chủ yếu đến từ funding cost advantage chứ không phải yield aggressive. Trong 5 năm, NIM dao động 2.95-3.20% — ổn định. Nếu lãi suất huy động tăng 50bp trong môi trường tightening, NIM có thể giảm về khoảng 2.85-2.95% vì lag pricing trên loan book.
+Module 5B — DuPont cho Ngân hàng
+Mục đích
+DuPont 5 bước cổ điển không áp dụng cho ngân hàng. Thay vào đó dùng bank-specific DuPont: ROE = ROA × Equity Multiplier. Tiếp tục phân tách ROA thành 5 driver = (NII/TA) + (Non-NII/TA) − (OPEX/TA) − (Provision/TA) − (Tax/TA).
+Cách tính
+Bước 1: ROA = LN sau thuế / Tổng tài sản TB
+Bước 2: Equity Multiplier = Tổng TS TB / VCSH TB
+Bước 3: ROE = ROA × Equity Multiplier
+Phân tách ROA thành 5 driver:
+	•	NII / Tổng TS — Net Interest Income contribution
+	•	Non-NII / Tổng TS — diversification contribution
+	•	OPEX / Tổng TS — operating efficiency drain
+	•	Provision / Tổng TS — credit cost drain
+	•	Tax / Tổng TS — tax drain
+AI sẽ phân tích gì cho Module 5B
+	•	ROE driver chính — operating efficiency hay leverage?
+	•	Equity Multiplier 8-15× là norm. Nếu > 15× = aggressive
+	•	Change attribution ROE qua năm — quality assessment
+Ví dụ output cho VCB
+ ROE 21.4% của VCB tăng 0.8pp YoY, được tạo thành từ ROA 1.85% × Equity Multiplier 11.6×. Phân tách ROA: NII contribution 2.78% (dominant), Non-NII 1.13% (tăng dần), bị trừ bởi OPEX 1.25% (thấp), Provision 0.64% (kiểm soát), Tax 0.46%. Equity Multiplier 11.6× nằm giữa range chuẩn 8-15× — không aggressive. ROE growth trong 5 năm chủ yếu đến từ ROA improvement (0.3pp) chứ không phải tăng đòn bẩy. Quality growth pattern, sustainable.
+Module 6B — Định giá Ngân hàng (Justified P/B)
+Mục đích
+Ngân hàng không định giá bằng DCF FCFF như doanh nghiệp thường vì "cash flow" của ngân hàng bao gồm cả tiền gửi (không phải tài sản, là liability). Phương pháp chuẩn: Gordon Growth applied to P/B với ROE driver.
+Công thức Gordon Growth
+Justified P/B: (ROE − g) / (Ke − g)
+	•	ROE = ROE bền vững (lấy median 5 năm)
+	•	Ke = Cost of Equity, default 14% với ngân hàng VN (CAPM: Rf 4% + β 1.2 × ERP 8.5%)
+	•	g = Growth dài hạn, default 7% (GDP nominal VN)
+Sensitivity Analysis
+Vì 3 input có biến động, cần ma trận sensitivity 3×3 với NIM × CoR (2 driver quan trọng nhất ảnh hưởng ROE):
+              CoR 0.6%    CoR 0.8%    CoR 1.0%
+NIM 3.4%      2.35×       2.20×       2.05×
+NIM 3.2%      2.15×       2.00×       1.85×
+NIM 3.0%      1.95×       1.80×       1.65×
+Mỗi cell tính bằng: chạy lại ROE với NIM/CoR scenario → áp Gordon Growth
+Ví dụ output cho VCB
+ Justified P/B của VCB tính bằng Gordon Growth: (ROE 21% − g 7%) / (Ke 14% − g 7%) = 2.00×. P/B current 1.80× → upside 11.1% so với fair value. Sensitivity: ở NIM 3.2% và CoR 0.8% (base case), Justified P/B = 2.00×. Bull case (NIM 3.4%, CoR 0.6%): P/B 2.35× → upside 31%. Bear case (NIM 3.0%, CoR 1.0%): P/B 1.65× → downside 8%. Yếu tố nhạy cảm nhất là NIM — mỗi 20bp NIM thay đổi tương đương ~10% fair value.
+Module 7B — Bảng Forensic Panel Ngân hàng
+Mục đích
+Như Module 9 của Template A, nhưng signals khác biệt — phù hợp ngữ cảnh ngân hàng.
+Green signals cho ngân hàng
+	•	NIM > 3.5% trong 3 năm → "NIM top quartile, bền vững"
+	•	ROE > 18% 3 năm liên tiếp → "ROE > 18% sustainable"
+	•	CIR < 35% → "CIR best-in-class"
+	•	LLR/Loans > 2.5% → "Buffer dự phòng dày"
+	•	Non-NII/TOI > 25% → "Diversification tốt"
+	•	Equity/TA > 8% → "Capital position lành mạnh"
+Yellow/Red signals cho ngân hàng
+	•	LDR > 85% → "LDR vượt cap NHNN"
+	•	Loan growth > Deposit growth nhiều quý → "Áp lực COF tăng"
+	•	CoR tăng > 30bp YoY → "Credit cost spike"
+	•	NIM giảm > 30bp YoY → "NIM compression"
+	•	Provision Expense growth > 30% → "Provision cycle tăng tốc"
+	•	Equity Multiplier > 15× → "Đòn bẩy aggressive"
+	•	Trading + FX > 15% TOI → "Volatile earnings"
+Không thể detect (cần thuyết minh)
+Lưu ý các signal cờ vàng quan trọng KHÔNG detect được từ thuần số:
+	•	Nhóm 2 tăng nhanh (leading indicator NPL) — cần phân loại 5 nhóm
+	•	Restructured loans TT02 (provision shock risk)
+	•	BĐS concentration (sector risk)
+	•	CASA giảm (funding cost pressure)
+	•	CAR sát min (capital raise risk)
+Trong dashboard nên có note rõ ràng các metric này không có. Đây là incentive cho user upgrade data source.
+Prompt template Module 7B
+SYSTEM: Module 7B — Banking Forensic Panel.
+ 
+INPUT:
+- raw_green: tín hiệu xanh auto-detected
+- raw_red: cờ vàng/đỏ auto-detected
+- missing_info: list metric không detect được (NPL detail, CASA, CAR...)
+ 
+NHIỆM VỤ:
+1. Sắp xếp signals theo materiality
+2. Loại duplicate
+3. Viết Tiếng Việt < 15 từ mỗi mục
+4. Giới hạn 5-6 mục mỗi cột
+5. CUỐI panel: note 1-2 dòng về metric không detect được, giới thiệu data source nâng cấp
+ 
+OUTPUT:
+{
+  "green_signals": [...],
+  "red_signals": [...],
+  "blind_spots_note": "..."
+}
+PHẦN VII · KIẾN TRÚC TÍCH HỢP AI
+7.1. Tổng quan kiến trúc AI cấp module
+Dashboard sử dụng kiến trúc AI cấp module (module-level AI), khác với mô hình một-prompt-tổng-thể. Mỗi module có một AI commentary riêng (60-150 từ), được sinh độc lập với chỉ data của module đó. Lợi ích của kiến trúc này:
+	•	Focus cao — AI tập trung phân tích một loại dữ liệu cụ thể, sâu hơn
+	•	Reliability — Mỗi prompt nhỏ ít rủi ro hallucination hơn
+	•	Maintenance — Sửa logic của một module không ảnh hưởng module khác
+	•	Caching — Re-compute chỉ những module thay đổi
+	•	User experience — Người dùng xem từng phần có ngay insight kèm theo
+7.2. Sơ đồ luồng AI
+User mở dashboard cho {ticker}
+       ↓
+[1] Load 3 BCTC + market data từ database
+       ↓
+[2] Sector Router → quyết định Template A hay B
+       ↓
+[3] Compute layer: tính 30 KPI (A) hoặc 20 KPI (B)
+       ↓
+[4] Sub-sector detection (chỉ Template A)
+       ↓
+[5] Generate AI commentary parallel cho từng module:
+       
+       Module 1 ┐
+       Module 2 ├─ Đều gọi LLM song song
+       Module 3 │  với prompt riêng + data riêng
+       ...      ┘
+       
+[6] AI Memo tổng (overall) — gọi LLM cuối,
+    có context từ output các module
+       ↓
+[7] Render dashboard hoàn chỉnh
+7.3. Prompt design pattern chuẩn
+Mọi module prompt đều theo template 5 phần:
+Phần 1 — SYSTEM (Persona)
+SYSTEM: Bạn là [role] với [n] năm kinh nghiệm tại thị trường Việt Nam.
+Hiện đang phân tích Module [X] cho mã {ticker} thuộc ngành phụ {sub_sector}.
+Phần 2 — CONTEXT (sector benchmarks)
+CONTEXT NGÀNH (đã pre-load):
+- Trung vị {sub_sector} cho metric A: {value}
+- Top quartile {sub_sector} cho metric A: {value}
+- Các đặc điểm đặc thù: {context}
+Phần 3 — INPUTS (data đã pre-compute)
+INPUTS (đã pre-compute, KHÔNG tính lại):
+- {ratios}: {numbers}
+- {trends_5y}: {numbers}
+- {classifications}: {green/amber/red per KPI}
+Phần 4 — RULES (constraints)
+RULES NGHIÊM NGẶT:
+1. Mỗi nhận định PHẢI dẫn số liệu cụ thể từ INPUTS
+2. CẤM dùng "tích cực", "cải thiện", "triển vọng" không kèm số
+3. Format: [Quan sát] → [Bằng chứng số] → [Hàm ý]
+4. KHÔNG fabricate số. Không có data → "không có dữ liệu"
+5. Không recommend Mua/Bán/Giữ
+6. Sử dụng thuật ngữ Tiếng Việt theo từ điển Phần III
+Phần 5 — OUTPUT specification
+OUTPUT format:
+- Độ dài: [N từ]
+- Structure: [layout cụ thể]
+- Tone: [research note style, formal nhưng dễ đọc]
+7.4. Module Commentary Cheat Sheet
+Bảng tham chiếu nhanh cho Template A — độ dài và focus của mỗi module:
+#
+Module
+Độ dài
+Focus chính
+1
+Snapshot 6 KPI
+0 từ
+Không có commentary riêng — AI Memo tổng cover
+—
+AI Memo tổng
+200-250 từ
+Executive · Quality · Risk · Valuation
+2
+Common-Size KQKD
+80-120 từ
+Δ pp chính, driver margin, hàm ý
+3
+DuPont 5 bước
+80-120 từ
+ROE change attribution, quality assessment
+4
+Chu kỳ vốn lưu động
+80-100 từ
+DSO/DIO/DPO trend, dòng tiền implication
+5
+Cash Flow Bridge
+80-120 từ
+QoE qua CFO/NI, FCF sustainability
+6
+Forensic Trinity
+80-120 từ
+Tổng hợp Z + F + M, consistency check
+7
+Sub-sector Spotlight
+80-120 từ
+Sector-specific peer compare
+8
+Valuation Football Field
+80-120 từ
+Method convergence, sensitivity
+9
+Green/Red Panel
+Rule-based
+Auto-generate + AI rephrase
+Tổng cộng AI commentary cho Template A: ~700-900 từ phân bổ qua dashboard.
+7.5. Quản lý chất lượng AI output
+Pre-flight checks (trước khi gọi LLM)
+	•	Tất cả required fields trong INPUT phải có giá trị (không null)
+	•	Các giá trị ratio phải trong range hợp lý (filter outliers)
+	•	5Y history phải có đủ 5 năm data (không gap)
+Post-flight checks (sau khi nhận output)
+	•	Output không vượt quá độ dài tối đa (300 từ)
+	•	Output không chứa số nào KHÔNG có trong INPUT (cross-check bằng regex)
+	•	Output không recommend Mua/Bán/Giữ (regex filter)
+	•	Output không dùng từ banned ("tích cực", "cải thiện" không kèm số)
+	•	Output có ít nhất 3 số cụ thể
+Fallback khi fail check
+	•	Retry lần 1 với prompt nhấn mạnh constraint vi phạm
+	•	Retry lần 2 với temperature thấp hơn
+	•	Nếu vẫn fail: dùng template static (rule-based) làm fallback
+	•	Log incident để analyst review
+7.6. LLM Provider considerations
+Module-level commentary cần model với 3 đặc tính:
+	•	Tuân thủ instruction nghiêm ngặt (không hallucinate số)
+	•	Viết Tiếng Việt tự nhiên và chuyên ngành
+	•	Latency thấp (mỗi dashboard sinh 8+ AI commentary)
+Khuyến nghị:
+Tier
+Sử dụng
+Production (premium)
+Claude Sonnet hoặc GPT-4o cho AI Memo tổng (chất lượng cao, độ dài lớn)
+Production (module)
+Claude Haiku hoặc GPT-4o-mini cho 8 module commentary (latency thấp, đủ tốt)
+Development
+Claude Haiku cho mọi gọi (tiết kiệm cost)
+Fallback
+Template static khi LLM down hoặc fail check
+Cost estimation: Với ~1000 mã thị trường VN, refresh hằng quý: 1000 × 9 module × ~800 input tokens × ~150 output tokens. Production cost với Haiku-tier ~$150-300/quarter. Với Sonnet-tier cho memo tổng và Haiku cho modules: ~$400-600/quarter. Đây là rất tiết kiệm so với một analyst junior (vài chục triệu/tháng).
+PHẦN VIII · TRIỂN KHAI VÀ VALIDATION
+8.1. Lộ trình triển khai 8 tuần
+Tuần 1-2: Data extraction pipeline
+	•	Setup database schema theo line items đã định nghĩa ở Phần IV
+	•	Build extractor từ vnstock (free) hoặc FiinPro (paid) — extract 3 BCTC × 5 năm × ~500 line items
+	•	Implement sector router (banking detection)
+	•	Validation identity equations (BS balance, CF identity)
+Tuần 3-4: KPI computation engine
+	•	Implement 30 KPI Template A theo công thức Phần V
+	•	Implement 20 KPI Template B theo công thức Phần VI
+	•	Implement sub-sector detection logic
+	•	Test với 20-30 mã đại diện mỗi sub-sector
+Tuần 5-6: AI commentary integration
+	•	Build prompt templates cho 8 module × 2 template
+	•	Integrate LLM provider (Claude API hoặc OpenAI)
+	•	Implement pre-flight và post-flight validation
+	•	Build fallback static templates
+Tuần 7-8: Frontend & polish
+	•	Implement dashboard render layer (React/Vue + chart library)
+	•	Caching strategy (refresh quarterly cho ratios, monthly cho prices)
+	•	End-to-end testing với ~100 mã ngẫu nhiên
+	•	Performance optimization (LLM parallel calls)
+8.2. Validation rules chi tiết
+Identity equations
+# Balance Sheet identity (TT200)
+abs(Mã 270 − (Mã 300 + Mã 400)) / Mã 270 < 0.005
+# Tổng TS = Tổng Nợ phải trả + VCSH với sai số < 0.5%
+ 
+# Cash Flow identity
+abs(Cash_cuoi_ky − Cash_dau_ky − (CFO + CFI + CFF)) / Cash_cuoi_ky < 0.01
+ 
+# Income Statement consistency (loose check)
+gross_profit = revenue - cogs
+operating_profit ≈ gross_profit - selling - admin + financial_income - financial_expense
+net_income ≈ pbt - tax
+Sanity ranges
+# Profitability ranges
+0 < gross_margin < 1
+-1 < net_margin < 1
+0 < roe < 0.5  # > 50% là bất thường
+ 
+# Balance sheet structure
+total_debt ≥ 0
+equity > 0  # Negative equity = insolvent technical
+total_assets > 0
+ 
+# Working capital
+0 < dso < 365
+0 < dio < 730  # tối đa 2 năm tồn kho
+0 < dpo < 365
+ 
+# Banking specific
+0.01 < nim < 0.08
+5 < equity_multiplier < 25
+0.5 < ldr < 1.5
+Outlier detection (YoY)
+# Flag for analyst review if change too extreme
+critical_kpis = ['revenue', 'net_income', 'roe', 'gross_margin', 'cfo']
+ 
+for kpi in critical_kpis:
+    yoy_change = (value_t - value_t-1) / abs(value_t-1)
+    if abs(yoy_change) > 2.0:
+        flag_for_review(kpi, change=yoy_change)
+        # 200% YoY change cần được verify bởi human
+        # Có thể là M&A, divestiture, accounting change
+8.3. Edge cases cần xử lý
+Edge case
+Xử lý
+Doanh nghiệp mới niêm yết (< 5 năm history)
+Hiển thị bao nhiêu năm có. Các metric multi-year (CAGR 5Y, Median 5Y) hiển thị 'N/A' hoặc tính trên số năm available.
+Quý lỗ làm mẫu số ratio âm (P/E < 0)
+Hiển thị 'N/M' (Not Meaningful) thay vì số âm. Dùng EV/Sales, P/B làm valuation backup.
+Negative equity (insolvent technical)
+Flag đặc biệt. ROE 'N/M'. AI commentary cảnh báo distress.
+Tách/sáp nhập trong kỳ
+Pre-process loại bỏ year of M&A khỏi trend analysis. Note 'restated' nếu có data restated.
+Quyết định đổi năm tài chính
+Pro-rata adjustment hoặc loại bỏ năm transitional khỏi CAGR.
+Conglomerate (VIC, MSN, VRE)
+Sub-sector detection có thể fail. Fallback: dùng segment data nếu có, hoặc note 'mixed sector' và hiển thị Template A standard.
+Doanh nghiệp tài chính không phải bank (CTCK, BH)
+Auto-detect đưa về Template A với sub-sector spotlight đặc thù. Không nhầm sang Template B.
+8.4. Caching strategy
+Loại data
+Refresh
+Lý do
+3 BCTC (quarterly)
+Mỗi quý
+DN công bố mỗi quý
+Pre-computed KPIs
+Mỗi quý
+Phụ thuộc BCTC
+Sub-sector detection
+Mỗi năm
+Ngành ít đổi
+AI commentary
+Mỗi quý
+Refresh khi BCTC mới
+Giá hiện tại
+Real-time / 15-30s
+Market price
+Valuation metrics (P/E, P/B)
+Mỗi ngày EOD
+Cần price update
+Historical P/E band
+Hằng tuần
+5Y window dài, ít thay đổi
+8.5. Tổng kết tài liệu
+Tài liệu này đã trình bày đầy đủ specification cho 2 template phân tích BCTC:
+	•	Template A — Standard cho 95% mã thị trường (9 module chi tiết)
+	•	Template B — Banking cho ngân hàng (7 module chi tiết)
+Mỗi module có 5 phần: Mục đích → Dữ liệu đầu vào (mã khoản mục cụ thể) → Cách tính (công thức chi tiết) → AI sẽ phân tích gì → Prompt template + Ví dụ output.
+Thiết kế hoàn toàn chỉ phụ thuộc dữ liệu thuần số từ 3 BCTC. Khi đến lúc cần upgrade (sau MVP launch), có thể bổ sung data source ngoài (FiinPro tier 2, IR data, regulatory reports) để unlock các metric chuyên sâu hơn (NPL theo nhóm, CASA breakdown, Pre-sales BĐS, Combined Ratio chi tiết Bảo hiểm).
+Sản phẩm cuối: dashboard giúp nhà phân tích đọc qua một mã cổ phiếu Việt Nam trong 5-10 phút có insight depth tương đương 2-3 giờ phân tích manual, nhờ pre-computed KPIs + module-level AI commentary có context ngành rõ ràng.

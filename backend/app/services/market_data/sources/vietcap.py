@@ -636,6 +636,29 @@ async def _fetch_financial_raw(
     return out, url
 
 
+async def fetch_bctc_statements(
+    symbol: str, *, term_type: int = 1
+) -> tuple[dict[str, list[dict[str, Any]]], str]:
+    """Trả 3 báo cáo dạng flat-rows keyed by FieldCode (cho engine BCTC).
+
+    term_type: 1 = năm (length_report == 5), 2 = quý.
+    """
+    sym = symbol.upper()
+    sections = {
+        "balance_sheet": "BALANCE_SHEET",
+        "income_statement": "INCOME_STATEMENT",
+        "cash_flow": "CASH_FLOW",
+    }
+    out: dict[str, list[dict[str, Any]]] = {}
+    url = ""
+    period_key = "years" if term_type == 1 else "quarters"
+    for key, section in sections.items():
+        raw, url = await _fetch_financial_raw(sym, section=section)
+        rows = raw.get(period_key, []) if isinstance(raw, dict) else []
+        out[key] = list(rows)
+    return out, url
+
+
 async def fetch_financial_report(
     symbol: str,
     *,

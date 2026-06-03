@@ -10,6 +10,7 @@ import {
   Minus,
 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { BctcAnalysis } from "./bctc-analysis"
 import {
   ChartContainer,
   ChartTooltip,
@@ -521,33 +522,44 @@ export function StockFinancials({ symbol }: { symbol: string }) {
   const [termType, setTermType] = useState<1 | 2>(2)
   const [ratioPeriod, setRatioPeriod] = useState<"Q" | "Y">("Q")
   const [periodCount, setPeriodCount] = useState<number>(8)
+  const [viewGroup, setViewGroup] = useState<"analysis" | "raw">("analysis")
 
   const isReport = subTab !== "ratios"
 
   return (
-    <ScrollArea className="h-full">
-      <div className="space-y-0">
-        {/* Toolbar - matches reference image */}
-        <div className="flex items-center justify-between px-3 py-2 border-b border-border/20 sticky top-0 bg-background z-30">
-          {/* Sub-tabs */}
-          <div className="flex items-center gap-0.5">
-            {SUB_TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setSubTab(tab.id)}
-                className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium rounded transition-colors cursor-pointer ${
-                  subTab === tab.id
-                    ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                }`}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
+    <div className="flex flex-col h-full">
+      {/* Toolbar - matches reference image */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border/20 sticky top-0 bg-background z-30 shrink-0">
+        {/* Left cluster */}
+        <div className="flex items-center gap-0.5">
+          {/* View group toggle */}
+          <div className="flex items-center bg-muted/40 rounded overflow-hidden border border-border/20 mr-2">
+            <button onClick={() => setViewGroup("analysis")} className={`px-2 py-1 text-xs ${viewGroup === "analysis" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}>Phân tích</button>
+            <button onClick={() => setViewGroup("raw")} className={`px-2 py-1 text-xs ${viewGroup === "raw" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}>Số liệu thô</button>
           </div>
 
-          {/* Controls */}
+          {viewGroup === "raw" && (
+            <>
+              {SUB_TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setSubTab(tab.id)}
+                  className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium rounded transition-colors cursor-pointer ${
+                    subTab === tab.id
+                      ? "bg-muted text-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </>
+          )}
+        </div>
+
+        {/* Controls */}
+        {viewGroup === "raw" && (
           <div className="flex items-center gap-2">
             {/* Period toggle */}
             <div className="flex items-center bg-muted/40 rounded overflow-hidden border border-border/20">
@@ -592,15 +604,23 @@ export function StockFinancials({ symbol }: { symbol: string }) {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Content */}
-        {isReport ? (
-          <FinancialReport symbol={symbol} type={subTab} termType={termType} periodCount={periodCount} />
-        ) : (
-          <FinancialRatios symbol={symbol} ratioPeriod={ratioPeriod} />
         )}
       </div>
-    </ScrollArea>
+
+      {/* Content */}
+      {viewGroup === "analysis" ? (
+        <BctcAnalysis symbol={symbol} />
+      ) : (
+        <ScrollArea className="h-full">
+          <div className="space-y-0">
+            {isReport ? (
+              <FinancialReport symbol={symbol} type={subTab} termType={termType} periodCount={periodCount} />
+            ) : (
+              <FinancialRatios symbol={symbol} ratioPeriod={ratioPeriod} />
+            )}
+          </div>
+        </ScrollArea>
+      )}
+    </div>
   )
 }
