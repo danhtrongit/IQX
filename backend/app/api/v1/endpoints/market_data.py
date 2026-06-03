@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.rate_limit import limiter
+from app.services.bctc.service import get_bctc
 from app.services.cache.decorator import redis_cached
 from app.services.market_data.fallback import fetch_with_fallback
 from app.services.market_data.schemas import MarketDataResponse
@@ -703,6 +704,31 @@ async def get_financial_report(
             page_size=page_size,
             period=period,
         )
+
+    try:
+        return await fetch_with_fallback([("VCI", _vci)])
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.get(
+    "/bctc/{symbol}",
+    tags=["Dữ liệu thị trường: Cơ bản"],
+    response_model=MarketDataResponse,
+)
+@redis_cached(ttl_setting="REDIS_TTL_MACRO_SECONDS")
+async def get_bctc_dashboard(
+    request: Request,
+    symbol: str,
+    term_type: Annotated[int, Query(ge=1, le=2, description="1=Năm, 2=Quý")] = 1,
+) -> MarketDataResponse:
+    """Dashboard phân tích BCTC (Snapshot + module + forensic, KPI pre-computed)."""
+    symbol = symbol.upper()
+    if not _validate_symbol(symbol):
+        raise HTTPException(status_code=422, detail=f"Mã chứng khoán không hợp lệ: {symbol}")
+
+    async def _vci() -> tuple[Any, str]:
+        return await get_bctc(symbol, term_type=term_type)
 
     try:
         return await fetch_with_fallback([("VCI", _vci)])
