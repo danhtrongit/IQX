@@ -38,12 +38,41 @@ def extract_allowed_numbers(kpi_payload: dict[str, Any] | None) -> set[float]:
     return out
 
 
-def _close(n: float, allowed: set[float], tol: float = 0.15) -> bool:
+def _close(n: float, allowed: set[float], tol: float = 0.05) -> bool:
     return any(abs(n - a) <= tol or (a != 0 and abs(n - a) / abs(a) <= 0.02) for a in allowed)
 
 
+def _token_values(tok: str) -> list[float]:
+    """Diễn giải 1 token số theo cả hai locale (EN: ',' nghìn / VI: ',' thập phân)."""
+    cands: list[float] = []
+    for raw in (tok.replace(",", ""), tok.replace(".", "").replace(",", ".")):
+        try:
+            cands.append(float(raw))
+        except ValueError:
+            continue
+    return cands
+
+
+# AI diễn đạt số theo nhiều thang: tỷ lệ thô, %, tỷ VND... -> chấp nhận mọi thang.
+_SCALES = (1.0, 0.01, 100.0, 1e9, 1e-9, 1e6)
+
+
+def _number_ok(tok: str, allowed: set[float]) -> bool:
+    for c in _token_values(tok):
+        # Số nguyên 1990–2100: coi là năm (không phải số tài chính bịa).
+        if c.is_integer() and 1990 <= c <= 2100:
+            return True
+        if any(_close(c * s, allowed) for s in _SCALES):
+            return True
+    return False
+
+
 def sanitize_ai_output(text: str, allowed_numbers: set[float]) -> dict[str, Any]:
-    """Post-flight guard: chặn khuyến nghị giao dịch + số bịa. Trả {ok, violations}."""
+    """Post-flight guard: chặn khuyến nghị giao dịch + số bịa. Trả {ok, violations}.
+
+    Khớp số theo cả hai locale (dấu ',' nghìn EN / thập phân VI) và mọi thang
+    (tỷ lệ thô, %, tỷ VND), whitelist năm — để không loại nhầm số hợp lệ AI diễn đạt lại.
+    """
     violations: list[str] = []
     if not text or not text.strip():
         return {"ok": False, "violations": ["empty"]}
@@ -51,11 +80,6 @@ def sanitize_ai_output(text: str, allowed_numbers: set[float]) -> dict[str, Any]
     if m:
         violations.append(f"banned_phrase: {m.group(0)!r}")
     for tok in _NUM_RE.findall(text):
-        raw = tok.replace(",", "")
-        try:
-            n = float(raw)
-        except ValueError:
-            continue
-        if not _close(n, allowed_numbers) and not _close(n / 100, allowed_numbers):
+        if not _number_ok(tok, allowed_numbers):
             violations.append(f"fabricated_number: {tok}")
     return {"ok": not violations, "violations": violations}
