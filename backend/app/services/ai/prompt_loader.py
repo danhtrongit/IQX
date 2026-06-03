@@ -17,6 +17,7 @@ _DOCS_AI_DIR = Path(__file__).resolve().parents[3] / "docs" / "ai"
 
 # Mapping of prompt type → filename
 PROMPT_FILES: dict[str, str] = {
+    "bctc": "ai-bctc.md",
     "dashboard": "ai-dashboard.md",
     "industry": "ai-industry.md",
     "insight": "ai-insight.md",
@@ -28,7 +29,7 @@ def load_prompt(prompt_type: str) -> str:
     """Load and return the content of a prompt markdown file.
 
     Args:
-        prompt_type: One of 'dashboard', 'industry', 'insight'.
+        prompt_type: One of 'dashboard', 'industry', 'insight', 'bctc'.
 
     Returns:
         The full text content of the prompt file.

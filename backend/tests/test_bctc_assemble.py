@@ -39,3 +39,23 @@ def test_assemble_bank_three_periods_no_nim_does_not_crash() -> None:
     nim_cell = next(s for s in out["snapshot"] if s["key"] == "nim")
     assert nim_cell["value"] is None and nim_cell["status"] == "na"
     assert {"green", "red"} <= set(out["forensic"])
+
+
+def test_assemble_includes_dupont_and_trinity_nonbank() -> None:
+    is_rows = [_mk(2025, 5, isa3=600.0, isa20=87.0, isa16=100.0, isa11=120.0),
+               _mk(2024, 5, isa3=500.0, isa20=70.0, isa16=90.0, isa11=100.0)]
+    bs_rows = [_mk(2025, 5, bsa53=720.0, bsa78=400.0), _mk(2024, 5, bsa53=680.0, bsa78=360.0)]
+    out = build_bctc_payload(bs_rows, is_rows, [])
+    mod_ids = [m["id"] for m in out["modules"]]
+    assert "dupont" in mod_ids
+    assert "trinity" in out
+    assert set(out["trinity"]).issuperset({"altman_z", "piotroski_f", "beneish_m"})
+
+
+def test_assemble_bank_has_trinity_no_dupont() -> None:
+    is_rows = [_mk(2025, 5, isb38=100.0), _mk(2024, 5, isb38=90.0)]
+    out = build_bctc_payload([], is_rows, [])
+    assert out["template"] == "B"
+    assert "dupont" not in [m["id"] for m in out["modules"]]   # bank DuPont deferred
+    assert "trinity" in out                                     # trinity present (altman None for bank)
+    assert out["trinity"]["altman_z"] is None

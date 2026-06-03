@@ -3,7 +3,9 @@ from __future__ import annotations
 from typing import Any
 
 from app.services.bctc import kpi_bank, kpi_bank_modules, kpi_nonbank, kpi_nonbank_modules
+from app.services.bctc.dupont import dupont
 from app.services.bctc.forensic import forensic_panel
+from app.services.bctc.forensic_scores import beneish_m, piotroski_f
 from app.services.bctc.mapping_loader import load_mapping
 from app.services.bctc.sector import detect_template
 from app.services.bctc.statements import Period, build_periods
@@ -88,6 +90,7 @@ def _modules_a(periods: list[Period]) -> list[dict[str, Any]]:
             "type": "bridge",
             "data": kpi_nonbank_modules.cash_flow_bridge(cur),
         },
+        {"id": "dupont", "title": "DuPont 5 bước", "type": "ratios", "data": dupont(cur, prev)},
     ]
 
 
@@ -134,6 +137,7 @@ def build_bctc_payload(
             "modules": [],
             "forensic": {"green": [], "red": ["Không đủ dữ liệu BCTC"]},
             "flags": [],
+            "trinity": {},
         }
 
     snap_values = _snapshot_b(periods) if is_bank else _snapshot_a(periods)
@@ -173,6 +177,14 @@ def build_bctc_payload(
     if bf:
         flags.append(bf)
 
+    cur0 = periods[0]
+    prev0 = periods[1] if len(periods) > 1 else None
+    trinity = {
+        "altman_z": (kpi_nonbank.altman_z(cur0) if not is_bank else None),
+        "piotroski_f": piotroski_f(cur0, prev0),
+        "beneish_m": beneish_m(cur0, prev0),
+    }
+
     return {
         "template": template,
         "sector": "bank" if is_bank else "nonbank",
@@ -183,4 +195,5 @@ def build_bctc_payload(
         "modules": modules,
         "forensic": forensic,
         "flags": flags,
+        "trinity": trinity,
     }

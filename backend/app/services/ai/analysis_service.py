@@ -22,11 +22,14 @@ TTL: REDIS_TTL_AI_ANALYSIS_SECONDS (default 1800 = 30 min)
 
 from __future__ import annotations
 
+import json
 import logging
+import re
 from datetime import UTC, datetime
 from typing import Any
 
 from app.services.ai.payloads import (
+    build_bctc_ai_payload,
     build_dashboard_payload,
     build_industry_payload,
     build_insight_payload,
@@ -34,6 +37,7 @@ from app.services.ai.payloads import (
 )
 from app.services.ai.prompt_loader import load_prompt
 from app.services.ai.proxy_client import chat_completion
+from app.services.bctc.ai_guard import extract_allowed_numbers, sanitize_ai_output
 
 logger = logging.getLogger(__name__)
 
@@ -287,6 +291,57 @@ async def analyze_insight(
         result["payload"] = payload
 
     return result
+
+
+async def analyze_bctc(*, symbol: str, term_type: int = 1, language: str = "vi",
+                       include_payload: bool = False) -> dict[str, Any]:
+    sym = symbol.upper()
+    cache_key = _analysis_cache_key("bctc", f"{sym}:{term_type}", language)
+    cached = await _cache_get_analysis(cache_key)
+    if cached and "analysis" in cached:
+        return cached
+    prompt = load_prompt("bctc")
+    payload = await build_bctc_ai_payload(symbol=sym, term_type=term_type, language=language)
+    text, model_used = await chat_completion(system_prompt=prompt, user_content=payload_to_json(payload))
+    parsed = _parse_bctc_ai(text)
+    allowed = extract_allowed_numbers(payload.get("bctc"))
+    memo = parsed.get("memo", "") if sanitize_ai_output(parsed.get("memo", ""), allowed)["ok"] else ""
+    notes: dict[str, str] = {}
+    for mid, note in (parsed.get("modules") or {}).items():
+        if isinstance(note, str) and sanitize_ai_output(note, allowed)["ok"]:
+            notes[mid] = note
+    result: dict[str, Any] = {
+        "type": "bctc",
+        "input": {"symbol": sym, "term_type": term_type, "language": language},
+        "analysis": {"memo": memo, "modules": notes},
+        "model": model_used,
+        "as_of": datetime.now(UTC).isoformat(),
+    }
+    await _cache_set_analysis(cache_key, result, analysis_type="bctc")
+    if include_payload:
+        result["payload"] = payload
+    return result
+
+
+def _parse_bctc_ai(text: str) -> dict[str, Any]:
+    """Trích JSON {memo, modules} từ output AI, chịu được prose/fence bao quanh.
+
+    Ưu tiên khối ```json {...} ```; nếu không có, lấy object {...} đầu tiên. Output
+    sai cấu trúc -> trả memo rỗng (KHÔNG để prose lọt vào memo, qua mặt guard).
+    """
+    raw = (text or "").strip()
+    fenced = re.search(r"```(?:json)?\s*(\{.*\})\s*```", raw, re.DOTALL)
+    candidate = fenced.group(1) if fenced else None
+    if candidate is None:
+        obj_match = re.search(r"\{.*\}", raw, re.DOTALL)
+        candidate = obj_match.group(0) if obj_match else ""
+    try:
+        obj = json.loads(candidate)
+        if isinstance(obj, dict):
+            return {"memo": str(obj.get("memo", "")), "modules": obj.get("modules") or {}}
+    except (json.JSONDecodeError, ValueError):
+        pass
+    return {"memo": "", "modules": {}}
 
 
 def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
