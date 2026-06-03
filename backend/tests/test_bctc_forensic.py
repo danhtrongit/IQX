@@ -32,6 +32,18 @@ def test_nonbank_red_flags() -> None:
     joined = " ".join(panel["red"])
     assert "DSO" in joined
     assert any("đòn bẩy" in s.lower() or "net debt" in s.lower() for s in panel["red"])
+    assert any("Altman" in s for s in panel["red"])  # z=1.5 <= 1.81
+
+
+def test_short_series_does_not_fire_3y_green() -> None:
+    # roe_series chỉ 2 phần tử -> KHÔNG kích hoạt luật ROE 3 năm.
+    panel = forensic_panel({"template": "A", "roe_series": [0.30, 0.25]})
+    assert not any("ROE bền vững" in s for s in panel["green"])
+
+
+def test_no_red_flags_fallback() -> None:
+    panel = forensic_panel({"template": "A", "altman_z": 4.0, "net_debt_ebitda": -0.5})
+    assert panel["red"] == ["Không có cờ đỏ trọng yếu"]
 
 
 def test_bank_signals() -> None:
