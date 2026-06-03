@@ -21,3 +21,10 @@ def test_detect_bank_by_nii_code() -> None:
     # isb27 (Thu nhập lãi thuần) cũng là chữ ký ngân hàng.
     is_rows = [{"year_report": 2025, "length_report": 5, "isb27": 500.0}]
     assert detect_template(is_rows) == "B"
+
+
+def test_detect_nonbank_when_isb_present_but_zero() -> None:
+    # Schema VCI hợp nhất: phi-ngân hàng (FPT) có isb38/isb27 = 0.0 + isa3 thật.
+    is_rows = [{"year_report": 2025, "length_report": 5,
+                "isa3": 70_000.0, "isb38": 0.0, "isb27": 0.0}]
+    assert detect_template(is_rows) == "A"
