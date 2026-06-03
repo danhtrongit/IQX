@@ -29,7 +29,7 @@ def load_prompt(prompt_type: str) -> str:
     """Load and return the content of a prompt markdown file.
 
     Args:
-        prompt_type: One of 'dashboard', 'industry', 'insight'.
+        prompt_type: One of 'dashboard', 'industry', 'insight', 'bctc'.
 
     Returns:
         The full text content of the prompt file.

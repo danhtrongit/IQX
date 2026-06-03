@@ -324,14 +324,24 @@ async def analyze_bctc(*, symbol: str, term_type: int = 1, language: str = "vi",
 
 
 def _parse_bctc_ai(text: str) -> dict[str, Any]:
-    cleaned = re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.MULTILINE).strip()
+    """Trích JSON {memo, modules} từ output AI, chịu được prose/fence bao quanh.
+
+    Ưu tiên khối ```json {...} ```; nếu không có, lấy object {...} đầu tiên. Output
+    sai cấu trúc -> trả memo rỗng (KHÔNG để prose lọt vào memo, qua mặt guard).
+    """
+    raw = (text or "").strip()
+    fenced = re.search(r"```(?:json)?\s*(\{.*\})\s*```", raw, re.DOTALL)
+    candidate = fenced.group(1) if fenced else None
+    if candidate is None:
+        obj_match = re.search(r"\{.*\}", raw, re.DOTALL)
+        candidate = obj_match.group(0) if obj_match else ""
     try:
-        obj = json.loads(cleaned)
+        obj = json.loads(candidate)
         if isinstance(obj, dict):
             return {"memo": str(obj.get("memo", "")), "modules": obj.get("modules") or {}}
     except (json.JSONDecodeError, ValueError):
         pass
-    return {"memo": text.strip(), "modules": {}}
+    return {"memo": "", "modules": {}}
 
 
 def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
