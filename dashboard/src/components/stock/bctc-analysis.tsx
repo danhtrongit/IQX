@@ -5,6 +5,9 @@ import {
   fmtPercent, fmtMultiple, fmtNumber,
   statusColorClass, statusLabel, type BctcStatus,
 } from "./bctc-format"
+import { PremiumGate } from "@/components/premium/premium-gate"
+import { useBctcAi, BctcAiMemo, BctcModuleNote } from "./bctc-ai-memo"
+import { moduleNote } from "./bctc-ai"
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api/v1"
 
@@ -18,6 +21,7 @@ type BctcPayload = {
   modules: ModuleBlock[]
   forensic: { green: string[]; red: string[] }
   flags: { level: string; code: string; message: string }[]
+  trinity?: { altman_z: number | null; piotroski_f?: { score: number | null }; beneish_m: number | null }
 }
 
 function fmtCell(c: SnapshotCell): string {
@@ -43,6 +47,7 @@ export function BctcAnalysis({ symbol }: { symbol: string }) {
   const [data, setData] = useState<BctcPayload | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
+  const { ai, isLoading: aiLoading, error: aiError } = useBctcAi(symbol)
 
   useEffect(() => {
     let alive = true
@@ -82,6 +87,15 @@ export function BctcAnalysis({ symbol }: { symbol: string }) {
           </div>
         </section>
 
+        <section>
+          <h3 className="font-serif text-base font-bold mb-3">② AI Memo tổng</h3>
+          <div className="relative min-h-[160px]">
+            <PremiumGate featureName="Nhận định AI BCTC" description="AI Memo và ghi chú từng module phân tích báo cáo tài chính.">
+              <BctcAiMemo ai={ai} isLoading={aiLoading} error={aiError} />
+            </PremiumGate>
+          </div>
+        </section>
+
         <section className="space-y-4">
           <h3 className="font-serif text-base font-bold">③ Modules phân tích</h3>
           {data.modules.map((mod) => (
@@ -95,6 +109,7 @@ export function BctcAnalysis({ symbol }: { symbol: string }) {
                   </div>
                 ))}
               </div>
+              <BctcModuleNote note={moduleNote(ai, mod.id)} />
             </div>
           ))}
         </section>
@@ -116,6 +131,30 @@ export function BctcAnalysis({ symbol }: { symbol: string }) {
             </div>
           </div>
         </section>
+
+        {data.trinity && (
+          <section className="mt-4">
+            <h3 className="font-serif text-base font-bold mb-3">Bộ ba Forensic</h3>
+            <div className="relative min-h-[90px]">
+              <PremiumGate featureName="Bộ ba Forensic" description="Altman Z, Piotroski F, Beneish M.">
+                <div className="grid grid-cols-3 gap-px bg-border/30 rounded-lg overflow-hidden">
+                  <div className="bg-card p-3 text-center">
+                    <div className="text-[10px] uppercase text-muted-foreground">Altman Z'</div>
+                    <div className="font-sans text-xl font-bold tabular-nums">{fmtNumber(data.trinity.altman_z, 2)}</div>
+                  </div>
+                  <div className="bg-card p-3 text-center">
+                    <div className="text-[10px] uppercase text-muted-foreground">Piotroski F</div>
+                    <div className="font-sans text-xl font-bold tabular-nums">{data.trinity.piotroski_f?.score ?? "—"}<span className="text-xs text-muted-foreground">/9</span></div>
+                  </div>
+                  <div className="bg-card p-3 text-center">
+                    <div className="text-[10px] uppercase text-muted-foreground">Beneish M</div>
+                    <div className="font-sans text-xl font-bold tabular-nums">{fmtNumber(data.trinity.beneish_m, 2)}</div>
+                  </div>
+                </div>
+              </PremiumGate>
+            </div>
+          </section>
+        )}
 
         {data.flags.length > 0 && (
           <div className="text-[10px] text-amber-400/80">{data.flags.map((f) => f.message).join(" · ")}</div>
