@@ -153,8 +153,12 @@ def build_bctc_payload(
         "altman_z": snap_values.get("altman_z"),
         "nim_series": (
             [
-                kpi_bank.nim(periods[i], periods[i + 1] if i + 1 < len(periods) else None)
-                for i in range(min(3, len(periods)))
+                v
+                for v in (
+                    kpi_bank.nim(periods[i], periods[i + 1] if i + 1 < len(periods) else None)
+                    for i in range(min(3, len(periods)))
+                )
+                if v is not None
             ]
             if is_bank
             else None

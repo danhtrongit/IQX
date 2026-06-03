@@ -28,3 +28,14 @@ def test_assemble_detects_bank() -> None:
     assert out["template"] == "B"
     assert out["sector"] == "bank"
     assert len(out["snapshot"]) == 6
+
+
+def test_assemble_bank_three_periods_no_nim_does_not_crash() -> None:
+    # NIM = None mọi kỳ (earning_assets chưa map ở Phase 1). Với >=3 kỳ, nim_series
+    # phải lọc None trước khi vào forensic — nếu không sẽ TypeError.
+    is_rows = [_mk(y, 5, isb38=100.0, isb27=70.0) for y in (2025, 2024, 2023)]
+    out = build_bctc_payload([], is_rows, [])
+    assert out["template"] == "B"
+    nim_cell = next(s for s in out["snapshot"] if s["key"] == "nim")
+    assert nim_cell["value"] is None and nim_cell["status"] == "na"
+    assert {"green", "red"} <= set(out["forensic"])
