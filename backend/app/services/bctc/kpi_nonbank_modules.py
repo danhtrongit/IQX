@@ -41,7 +41,7 @@ def working_capital_cycle(cur: Period, prev: Period | None) -> dict[str, float |
     dso = (ar / rev * 365) if ar is not None and rev else None
     dio = (inv_net / cogs * 365) if inv_net is not None and cogs else None
     dpo = (ap / cogs * 365) if ap is not None and cogs else None
-    ccc = (dso + dio - dpo) if None not in (dso, dio, dpo) else None
+    ccc = (dso + dio - dpo) if (dso is not None and dio is not None and dpo is not None) else None
     return {"dso": dso, "dio": dio, "dpo": dpo, "ccc": ccc}
 
 

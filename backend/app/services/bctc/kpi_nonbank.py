@@ -13,7 +13,7 @@ def _avg(cur: Period, prev: Period | None, concept: str) -> float | None:
 
 def revenue_growth(cur: Period, prev: Period | None) -> float | None:
     a, b = val(cur, "net_revenue"), val(prev, "net_revenue")
-    if a is None or b in (None, 0):
+    if a is None or b is None or b == 0:
         return None
     return a / b - 1
 
@@ -34,12 +34,14 @@ def roe(cur: Period, prev: Period | None) -> float | None:
 
 
 def net_debt_ebitda(p: Period) -> float | None:
-    parts = [val(p, c) for c in ("st_debt", "lt_debt", "cash", "st_investments")]
-    if any(x is None for x in parts):
-        return None
-    st_debt, lt_debt, cash, sti = (parts[0], parts[1], parts[2], parts[3])
-    ebit, dep = val(p, "operating_profit"), val(p, "depreciation")
-    if ebit is None or dep is None:
+    st_debt = val(p, "st_debt")
+    lt_debt = val(p, "lt_debt")
+    cash = val(p, "cash")
+    sti = val(p, "st_investments")
+    ebit = val(p, "operating_profit")
+    dep = val(p, "depreciation")
+    if (st_debt is None or lt_debt is None or cash is None or sti is None
+            or ebit is None or dep is None):
         return None
     ebitda = ebit + dep
     if ebitda == 0:
