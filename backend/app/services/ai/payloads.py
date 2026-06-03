@@ -20,6 +20,8 @@ import logging
 from datetime import UTC, datetime
 from typing import Any
 
+from app.services.bctc.service import get_bctc
+
 logger = logging.getLogger(__name__)
 
 def _get_dashboard_ttl() -> int:
@@ -680,3 +682,27 @@ def _classify_level(current: float, average: float) -> str:
 def payload_to_json(payload: dict[str, Any]) -> str:
     """Serialize payload to compact JSON for the AI request."""
     return json.dumps(payload, ensure_ascii=False, default=str)
+
+
+# ═══════════════════════════════════════════════════════
+# BCTC Payload
+# ═══════════════════════════════════════════════════════
+
+
+async def build_bctc_ai_payload(*, symbol: str, term_type: int = 1, language: str = "vi") -> dict[str, Any]:
+    """Payload cho AI: CHỈ KPI đã pre-compute (không gửi statement thô)."""
+    sym = symbol.upper()
+    cache_key = f"iqx:ai:payload:bctc:{sym}:{term_type}:{language}"
+    cached = await _cache_get(cache_key)
+    if cached is not None:
+        return cached
+    kpi_payload, _url = await get_bctc(sym, term_type=term_type)
+    payload: dict[str, Any] = {
+        "as_of": datetime.now(UTC).isoformat(),
+        "symbol": sym,
+        "term_type": term_type,
+        "language": language,
+        "bctc": kpi_payload,
+    }
+    await _cache_set(cache_key, payload, 600)
+    return payload
