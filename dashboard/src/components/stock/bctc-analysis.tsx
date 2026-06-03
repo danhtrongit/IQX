@@ -24,7 +24,19 @@ type BctcPayload = {
   trinity?: { altman_z: number | null; piotroski_f?: { score: number | null }; beneish_m: number | null }
   subsector?: { label: string; metrics: Record<string, number | null> } | null
   blind_spots?: string[]
+  valuation?: {
+    pe_band?: { bear: number; base: number; bull: number } | null
+    rim?: number | null
+    book_floor?: number | null
+    justified_pb?: number | null
+    fair_value?: number | null
+    roe_sustainable?: number | null
+    summary?: { bear: number | null; base: number | null; bull: number | null } | null
+    nim_cor_matrix?: { rows: { nim: number | null; cells: { cor: number | null; justified_pb: number | null }[] }[] }
+  } | null
 }
+
+function fmtKvnd(v: number | null | undefined): string { return v == null ? "—" : fmtNumber(v / 1000, 1) + "k" }
 
 function fmtCell(c: SnapshotCell): string {
   if (c.unit === "%") return fmtPercent(c.value)
@@ -168,6 +180,54 @@ export function BctcAnalysis({ symbol }: { symbol: string }) {
                     <div key={i} className="text-xs text-muted-foreground mb-1">• {s}</div>
                   ))}
                 </div>
+              </PremiumGate>
+            </div>
+          </section>
+        )}
+
+        {data.valuation && (
+          <section className="mt-4">
+            <h3 className="font-serif text-base font-bold mb-3">⑤ Định giá</h3>
+            <div className="relative min-h-[120px]">
+              <PremiumGate featureName="Định giá BCTC" description="Football field (P/E band, RIM, Book floor) hoặc Justified P/B + ma trận NIM×CoR.">
+                {data.template === "B" ? (
+                  <div className="bg-card border border-border rounded-lg p-4 space-y-3">
+                    <div className="flex gap-6 text-sm">
+                      <div><span className="text-muted-foreground text-xs uppercase">Justified P/B</span><div className="font-sans text-xl font-bold tabular-nums">{data.valuation.justified_pb != null ? fmtNumber(data.valuation.justified_pb, 2) + "×" : "—"}</div></div>
+                      <div><span className="text-muted-foreground text-xs uppercase">Fair value/cp</span><div className="font-sans text-xl font-bold tabular-nums">{fmtKvnd(data.valuation.fair_value)}</div></div>
+                    </div>
+                    {data.valuation.nim_cor_matrix && (
+                      <div>
+                        <div className="text-[10px] uppercase text-muted-foreground mb-1">Ma trận NIM × CoR (Justified P/B)</div>
+                        <table className="text-xs tabular-nums w-full">
+                          <tbody>
+                            {data.valuation.nim_cor_matrix.rows.map((r, i) => (
+                              <tr key={i}>
+                                <td className="text-muted-foreground pr-2">NIM {r.nim != null ? (r.nim * 100).toFixed(1) + "%" : "—"}</td>
+                                {r.cells.map((c, j) => (
+                                  <td key={j} className="px-2 py-0.5 text-center">{c.justified_pb != null ? c.justified_pb.toFixed(2) + "×" : "—"}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-card border border-border rounded-lg p-4">
+                    <table className="text-sm tabular-nums w-full">
+                      <thead><tr className="text-[10px] uppercase text-muted-foreground"><th className="text-left">Phương pháp</th><th className="text-right">Thấp</th><th className="text-right">Cơ sở</th><th className="text-right">Cao</th></tr></thead>
+                      <tbody>
+                        {data.valuation.pe_band && (<tr><td>P/E band</td><td className="text-right">{fmtKvnd(data.valuation.pe_band.bear)}</td><td className="text-right">{fmtKvnd(data.valuation.pe_band.base)}</td><td className="text-right">{fmtKvnd(data.valuation.pe_band.bull)}</td></tr>)}
+                        <tr><td>RIM</td><td className="text-right" colSpan={2}>{fmtKvnd(data.valuation.rim)}</td><td></td></tr>
+                        <tr><td>Book floor</td><td className="text-right" colSpan={2}>{fmtKvnd(data.valuation.book_floor)}</td><td></td></tr>
+                        {data.valuation.summary && (<tr className="font-bold border-t border-border/30"><td>Tổng hợp</td><td className="text-right">{fmtKvnd(data.valuation.summary.bear)}</td><td className="text-right">{fmtKvnd(data.valuation.summary.base)}</td><td className="text-right">{fmtKvnd(data.valuation.summary.bull)}</td></tr>)}
+                      </tbody>
+                    </table>
+                    <p className="text-[10px] text-muted-foreground mt-2">Đơn vị: nghìn đ/cp · Ke mặc định (CAPM β chuẩn), g dài hạn — tham chiếu, không phải khuyến nghị.</p>
+                  </div>
+                )}
               </PremiumGate>
             </div>
           </section>

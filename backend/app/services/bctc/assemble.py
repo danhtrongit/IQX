@@ -7,12 +7,14 @@ from app.services.bctc.bank_dupont import bank_dupont
 from app.services.bctc.dupont import dupont
 from app.services.bctc.forensic import BANK_BLIND_SPOTS, forensic_panel
 from app.services.bctc.forensic_scores import beneish_m, piotroski_f
+from app.services.bctc.kpi_bank import earning_assets
 from app.services.bctc.mapping_loader import load_mapping
 from app.services.bctc.sector import detect_subsector, detect_template
-from app.services.bctc.statements import Period, build_periods
+from app.services.bctc.statements import Period, build_periods, val
 from app.services.bctc.subsector import subsector_spotlight
 from app.services.bctc.thresholds import classify
 from app.services.bctc.validation import balance_identity_flag, sanity_flags
+from app.services.bctc.valuation import valuation_bank, valuation_nonbank
 
 _SNAP_A = [
     ("revenue_growth", "Tăng trưởng Doanh thu", "%"),
@@ -131,6 +133,7 @@ def build_bctc_payload(
     bs_rows: list[dict[str, Any]],
     is_rows: list[dict[str, Any]],
     cf_rows: list[dict[str, Any]],
+    ratio_rows: list[dict] | None = None,
 ) -> dict[str, Any]:
     template = detect_template(is_rows)
     is_bank = template == "B"
@@ -148,6 +151,7 @@ def build_bctc_payload(
             "trinity": {},
             "blind_spots": [],
             "subsector": None,
+            "valuation": None,
         }
 
     snap_values = _snapshot_b(periods) if is_bank else _snapshot_a(periods)
@@ -206,6 +210,25 @@ def build_bctc_payload(
         sub = detect_subsector(cur0, ccc=wcc.get("ccc"))
         subsector = subsector_spotlight(cur0, sub)
 
+    rr = ratio_rows or []
+    if is_bank:
+        cor = next((m["data"].get("cost_of_risk") for m in modules if m["id"] == "ppop_cor"), None)
+        bd: dict[str, Any] = next((m["data"] for m in modules if m["id"] == "bank_dupont"), {})
+        ta0 = val(cur0, "total_assets")
+        ea0 = earning_assets(cur0)
+        loans0 = val(cur0, "customer_loans")
+        valuation: dict[str, Any] = valuation_bank(
+            rr,
+            nim=snap_values.get("nim"),
+            cost_of_risk=cor,
+            roa=bd.get("roa"),
+            equity_multiplier=bd.get("equity_multiplier"),
+            earning_assets_ratio=(ea0 / ta0) if ea0 is not None and ta0 else None,
+            loans_ratio=(loans0 / ta0) if loans0 is not None and ta0 else None,
+        )
+    else:
+        valuation = valuation_nonbank(rr)
+
     return {
         "template": template,
         "sector": "bank" if is_bank else "nonbank",
@@ -219,4 +242,5 @@ def build_bctc_payload(
         "trinity": trinity,
         "blind_spots": blind_spots,
         "subsector": subsector,
+        "valuation": valuation,
     }

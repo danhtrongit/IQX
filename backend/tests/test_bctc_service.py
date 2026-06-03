@@ -14,11 +14,8 @@ async def test_get_bctc_assembles_from_mocked_fetch() -> None:
         ],
         "cash_flow": [],
     }
-    with patch(
-        "app.services.bctc.service.vietcap.fetch_bctc_statements",
-        new_callable=AsyncMock,
-        return_value=(statements, "https://vci/..."),
-    ):
+    with patch("app.services.bctc.service.vietcap.fetch_bctc_statements", new_callable=AsyncMock, return_value=(statements, "https://vci/...")), \
+         patch("app.services.bctc.service.vietcap.fetch_financial_report", new_callable=AsyncMock, return_value=([], "u")):
         payload, url = await get_bctc("FPT")
     assert payload["template"] == "A"
     rg = next(s for s in payload["snapshot"] if s["key"] == "revenue_growth")
