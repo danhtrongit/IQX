@@ -16,7 +16,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.api.deps import PremiumUser
-from app.services.ai.analysis_service import analyze_dashboard, analyze_industry, analyze_insight
+from app.services.ai.analysis_service import analyze_bctc, analyze_dashboard, analyze_industry, analyze_insight
 from app.services.ai.proxy_client import AIProxyError
 
 logger = logging.getLogger(__name__)
@@ -263,6 +263,20 @@ async def get_insight_analyze(
             symbol=symbol.upper(),
             language=language,
         )
+        return {"data": result}
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except AIProxyError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.get("/bctc/{symbol}")
+async def get_bctc_analyze(
+    symbol: str, user: PremiumUser, term_type: int = 1, language: str = "vi"
+) -> dict[str, Any]:
+    """AI Memo + ghi chú từng module cho phân tích BCTC (premium)."""
+    try:
+        result = await analyze_bctc(symbol=symbol.upper(), term_type=term_type, language=language)
         return {"data": result}
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
