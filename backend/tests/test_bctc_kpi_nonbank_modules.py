@@ -16,7 +16,18 @@ def test_common_size_ratios() -> None:
     cs = m.common_size(p)
     assert math.isclose(cs["cogs_pct"], 0.59)
     assert math.isclose(cs["gross_margin"], 0.41)
+    assert math.isclose(cs["selling_pct"], 17.4 / 200.0)
+    assert math.isclose(cs["admin_pct"], 26.0 / 200.0)
+    assert math.isclose(cs["ebit_margin"], 36.4 / 200.0)
     assert math.isclose(cs["net_margin"], 0.144)
+
+
+def test_wcc_missing_provision_treated_as_zero() -> None:
+    # Thiếu inventory_provision -> HTK ròng = HTK gộp (không vỡ, không None).
+    cur = _p(2025, trade_receivables=50.0, inventory_gross=30.0,
+             trade_payables=40.0, net_revenue=365.0, cogs=365.0)
+    wcc = m.working_capital_cycle(cur, None)
+    assert math.isclose(wcc["dio"], 30.0)
 
 
 def test_working_capital_cycle() -> None:
@@ -37,3 +48,5 @@ def test_cash_flow_bridge() -> None:
     br = m.cash_flow_bridge(p)
     assert math.isclose(br["fcf"], 105.9 - 27.2)
     assert math.isclose(br["cfo_ni"], 105.9 / 89.0)
+    assert math.isclose(br["fcf_margin"], (105.9 - 27.2) / 300.0)
+    assert math.isclose(br["sloan_accrual"], (89.0 - 105.9) / 1000.0)

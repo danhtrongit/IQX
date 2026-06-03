@@ -33,6 +33,8 @@ def working_capital_cycle(cur: Period, prev: Period | None) -> dict[str, float |
     rev, cogs = val(cur, "net_revenue"), val(cur, "cogs")
     ar = _avg(cur, prev, "trade_receivables")
     inv_g = _avg(cur, prev, "inventory_gross")
+    # Dự phòng giảm giá HTK thiếu/None -> coi như 0 (HTK ròng = HTK gộp). Đây là
+    # mặc định tài chính đúng: không có khoản trích lập = tồn kho ở giá gốc.
     inv_p = _avg(cur, prev, "inventory_provision") or 0.0
     inv_net = (inv_g - abs(inv_p)) if inv_g is not None else None
     ap = _avg(cur, prev, "trade_payables")
