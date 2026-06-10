@@ -5,10 +5,12 @@ from __future__ import annotations
 import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -126,6 +128,9 @@ def create_app() -> FastAPI:
     app.add_middleware(SlowAPIMiddleware)
 
     # ── Routers ──────────────────────────────────────
+    media_dir = Path(settings.LESSON_MEDIA_DIR)
+    media_dir.mkdir(parents=True, exist_ok=True)
+    app.mount("/media", StaticFiles(directory=media_dir), name="media")
     app.include_router(api_v1_router)
 
     return app
