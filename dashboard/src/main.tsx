@@ -1,6 +1,14 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { BrowserRouter } from "react-router"
+// Arco 2.x's imperative APIs (Message, Notification, Modal.confirm) render via an
+// internal polyfill that falls back to the legacy `ReactDOM.render`, which was
+// removed in React 19 — causing "CopyReactDOM.render is not a function". Arco
+// exposes `setCreateRoot` so the host app can supply React 19's createRoot.
+// This MUST run before any imperative Arco API is invoked.
+import { setCreateRoot } from "@arco-design/web-react/es/_util/react-dom"
+
+setCreateRoot(createRoot)
 
 // Arco Design's internal ResizeObserver/Trigger still read the deprecated
 // `element.ref` under React 19 (see @arco-design/web-react/es/_util/resizeObserver).
