@@ -628,7 +628,7 @@ export function WatchlistPanel() {
         activeTab={activeTab}
         onChange={handleTabChange}
         size="small"
-        className="flex h-full flex-col [&_.arco-tabs-content]:min-h-0 [&_.arco-tabs-content]:flex-1"
+        className="flex h-full flex-col [&_.arco-tabs-content]:min-h-0 [&_.arco-tabs-content]:flex-1 [&_.arco-tabs-content-inner]:h-full [&_.arco-tabs-content-item-active]:h-full"
       >
         <Tabs.TabPane key="watchlist" title={<TabTitle icon={<IconEye />} label="Theo dõi" />}>
           <WatchlistTab />
