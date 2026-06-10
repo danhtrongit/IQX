@@ -8,7 +8,7 @@ import { useAuthStore } from "@/stores/auth"
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
-const title = computed(() => route.meta.title ?? "Admin")
+const title = computed(() => route.meta.title ?? "Quản trị")
 
 async function logout() {
   await auth.logout()

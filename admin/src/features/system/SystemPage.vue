@@ -19,8 +19,8 @@ let timer: ReturnType<typeof setTimeout> | null = null
 const columns: DataTableColumns<JobInfo> = [
   { title: "Job", key: "id", width: 180, className: "mono" },
   { title: "Tên", key: "name", minWidth: 260 },
-  { title: "Next run", key: "nextRunAt", minWidth: 220, render: (row) => row.nextRunAt ? `${fmtDateTime(row.nextRunAt)} (${fmtRelative(row.nextRunAt)})` : "-" },
-  { title: "Trigger", key: "trigger", minWidth: 180 },
+  { title: "Lần chạy tiếp theo", key: "nextRunAt", minWidth: 220, render: (row) => row.nextRunAt ? `${fmtDateTime(row.nextRunAt)} (${fmtRelative(row.nextRunAt)})` : "-" },
+  { title: "Kích hoạt bởi", key: "trigger", minWidth: 180 },
   { title: "Thao tác", key: "action", width: 130, render: (row) => h(NButton, { size: "small", secondary: true, loading: runningJob.value === row.id, onClick: () => confirmRun(row) }, { icon: () => h(Play, { size: 14 }), default: () => "Chạy" }) },
 ]
 
@@ -77,10 +77,10 @@ onUnmounted(() => { if (timer) clearTimeout(timer) })
     <ErrorState v-if="error" :message="error" @retry="load" />
     <div class="grid-kpis">
       <KpiCard label="Phiên bản" :value="status?.version ?? '-'" :sub-text="`Môi trường: ${status?.environment ?? '-'}`" :icon="Server" :loading="loading" />
-      <KpiCard label="Users" :value="status?.dbStats.users ?? 0" :icon="Database" :loading="loading" />
-      <KpiCard label="Subscriptions" :value="status?.dbStats.subscriptions ?? 0" :loading="loading" />
+      <KpiCard label="Người dùng" :value="status?.dbStats.users ?? 0" :icon="Database" :loading="loading" />
+      <KpiCard label="Thuê bao" :value="status?.dbStats.subscriptions ?? 0" :loading="loading" />
       <KpiCard label="IPN 24h" :value="status?.lastIpnProcessedCount24h ?? 0" :icon="Activity" :loading="loading" />
     </div>
-    <n-card title="Scheduler"><n-space vertical><StatusTag :status="status?.schedulerRunning ?? false" :label="status?.schedulerRunning ? 'Running' : 'Stopped'" /><n-data-table :columns="columns" :data="status?.jobs ?? []" :loading="loading" :bordered="true" /></n-space></n-card>
+    <n-card title="Bộ lập lịch"><n-space vertical><StatusTag :status="status?.schedulerRunning ?? false" :label="status?.schedulerRunning ? 'Đang chạy' : 'Đã dừng'" /><n-data-table :columns="columns" :data="status?.jobs ?? []" :loading="loading" :bordered="true" /></n-space></n-card>
   </div>
 </template>

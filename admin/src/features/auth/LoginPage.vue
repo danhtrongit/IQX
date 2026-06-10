@@ -36,7 +36,7 @@ async function submit() {
     <n-card class="login-card" :bordered="true">
       <n-space vertical align="center" size="small" class="login-head">
         <div class="login-icon"><ShieldCheck :size="26" /></div>
-        <h1>IQX Admin</h1>
+        <h1>Quản trị IQX</h1>
         <n-text depth="3">Đăng nhập để truy cập trang quản trị</n-text>
       </n-space>
       <n-form @submit.prevent="submit">

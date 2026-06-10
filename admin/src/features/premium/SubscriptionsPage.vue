@@ -6,15 +6,16 @@ import RemoteDataTable from "@/components/table/RemoteDataTable.vue"
 import StatusTag from "@/components/common/StatusTag.vue"
 import ErrorState from "@/components/common/ErrorState.vue"
 import { fmtDate } from "@/lib/format"
+import { labelForStatus } from "@/lib/labels"
 import { useRemotePage } from "@/composables/useRemotePage"
 import { subscriptionsApi, type SubscriptionRow } from "@/lib/api/subscriptions"
 
 const status = ref<string | null>(null)
 const userId = ref("")
 const page = useRemotePage<SubscriptionRow>((p) => subscriptionsApi.list({ page: Number(p.page), pageSize: Number(p.pageSize), status: status.value || undefined, userId: userId.value || undefined }))
-const statusOptions = ["active", "cancelled", "expired", "trial"].map((value) => ({ label: value, value }))
+const statusOptions = ["active", "cancelled", "expired", "trial"].map((value) => ({ label: labelForStatus(value), value }))
 const columns: DataTableColumns<SubscriptionRow> = [
-  { title: "User", key: "userEmail", minWidth: 220, render: (row) => h(RouterLink, { to: `/users/${row.userId}` }, { default: () => row.userEmail ?? row.userId }) },
+  { title: "Người dùng", key: "userEmail", minWidth: 220, render: (row) => h(RouterLink, { to: `/users/${row.userId}` }, { default: () => row.userEmail ?? row.userId }) },
   { title: "Gói", key: "planName", render: (row) => row.planName ?? row.planCode ?? "-" },
   { title: "Trạng thái", key: "status", render: (row) => h(StatusTag, { status: row.status }) },
   { title: "Bắt đầu", key: "currentPeriodStart", render: (row) => fmtDate(row.currentPeriodStart) },
@@ -24,4 +25,4 @@ const columns: DataTableColumns<SubscriptionRow> = [
 function search() { void page.load({ page: 1 }) }
 onMounted(() => void page.load())
 </script>
-<template><div class="page-stack"><div class="page-header"><div><h1 class="page-title">Thuê bao</h1><p class="page-subtitle">{{ page.total.value }} thuê bao</p></div></div><n-card><n-space><n-select v-model:value="status" clearable :options="statusOptions" placeholder="Trạng thái" style="width: 180px" /><n-input v-model:value="userId" clearable placeholder="User ID" style="width: 260px" @keyup.enter="search" /><n-button type="primary" @click="search">Lọc</n-button></n-space></n-card><ErrorState v-if="page.error.value" :message="page.error.value" @retry="page.load" /><RemoteDataTable :columns="columns" :rows="page.rows.value" :loading="page.loading.value" :page="page.params.page" :page-size="page.params.pageSize" :item-count="page.total.value" @page-change="page.setPage" @page-size-change="page.setPageSize" /></div></template>
+<template><div class="page-stack"><div class="page-header"><div><h1 class="page-title">Thuê bao</h1><p class="page-subtitle">{{ page.total.value }} thuê bao</p></div></div><n-card><n-space><n-select v-model:value="status" clearable :options="statusOptions" placeholder="Trạng thái" style="width: 180px" /><n-input v-model:value="userId" clearable placeholder="ID người dùng" style="width: 260px" @keyup.enter="search" /><n-button type="primary" @click="search">Lọc</n-button></n-space></n-card><ErrorState v-if="page.error.value" :message="page.error.value" @retry="page.load" /><RemoteDataTable :columns="columns" :rows="page.rows.value" :loading="page.loading.value" :page="page.params.page" :page-size="page.params.pageSize" :item-count="page.total.value" @page-change="page.setPage" @page-size-change="page.setPageSize" /></div></template>

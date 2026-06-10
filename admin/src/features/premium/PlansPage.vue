@@ -62,7 +62,7 @@ onMounted(() => void load())
         <n-form-item label="Tên"><n-input v-model:value="form.name" /></n-form-item>
         <n-form-item label="Mô tả"><n-input v-model:value="form.description" type="textarea" /></n-form-item>
         <n-space><n-form-item label="Giá"><n-input-number v-model:value="form.priceVnd" :min="0" /></n-form-item><n-form-item label="Thời hạn"><n-input-number v-model:value="form.durationDays" :min="1" /></n-form-item><n-form-item label="Thứ tự"><n-input-number v-model:value="form.sortOrder" :min="0" /></n-form-item></n-space>
-        <n-form-item label="Active"><n-switch v-model:value="form.isActive" /></n-form-item>
+        <n-form-item label="Đang hoạt động"><n-switch v-model:value="form.isActive" /></n-form-item>
         <n-space justify="end"><n-button secondary @click="modalOpen = false">Hủy</n-button><n-button type="primary" @click="save">Lưu</n-button></n-space>
       </n-form>
     </n-modal>

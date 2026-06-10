@@ -89,7 +89,7 @@ export async function downloadBlob(path: string, filename: string) {
   const response = await fetch(`${API_BASE}/${path}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   })
-  if (!response.ok) throw new Error("Export thất bại")
+  if (!response.ok) throw new Error("Xuất tệp thất bại")
   const href = URL.createObjectURL(await response.blob())
   const link = document.createElement("a")
   link.href = href
@@ -118,8 +118,8 @@ export function uploadFile(
       if (xhr.status < 300) resolve(new Response(xhr.responseText, { status: xhr.status }))
       else reject(new Error(parseUploadError(xhr.responseText, xhr.status)))
     }
-    xhr.onerror = () => reject(new Error("Upload failed"))
-    xhr.onabort = () => reject(new Error("Upload cancelled"))
+    xhr.onerror = () => reject(new Error("Tải tệp thất bại"))
+    xhr.onabort = () => reject(new Error("Đã hủy tải tệp"))
     signal?.addEventListener("abort", () => xhr.abort())
     const formData = new FormData()
     formData.append("file", file)
@@ -130,8 +130,8 @@ export function uploadFile(
 function parseUploadError(text: string, status: number): string {
   try {
     const body = JSON.parse(text) as { detail?: string }
-    return body.detail ?? `Upload failed (${status})`
+    return body.detail ?? `Tải tệp thất bại (${status})`
   } catch {
-    return `Upload failed (${status})`
+    return `Tải tệp thất bại (${status})`
   }
 }

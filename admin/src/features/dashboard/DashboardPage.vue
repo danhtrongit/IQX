@@ -74,16 +74,16 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
     <div class="grid-kpis">
       <KpiCard label="Tổng người dùng" :value="fmtCompact(overview?.total_users ?? 0)" :sub-text="`Hôm nay: +${overview?.new_users_today ?? 0}`" :icon="Users" :loading="loading" />
       <KpiCard label="Người dùng mới" :value="overview?.new_users_today ?? 0" :sub-text="`7 ngày: ${overview?.new_users_last_7d ?? 0}`" :icon="UserPlus" :loading="loading" />
-      <KpiCard label="Premium active" :value="overview?.active_paid_count ?? 0" :sub-text="`Trial: ${overview?.active_trial_count ?? 0}`" :icon="CreditCard" :loading="loading" />
-      <KpiCard label="MRR" :value="fmtVnd(overview?.mrr_vnd ?? 0)" :sub-text="`30 ngày: ${fmtVnd(overview?.revenue_last_30d_vnd ?? 0)}`" :icon="TrendingUp" :loading="loading" />
+      <KpiCard label="Premium đang hoạt động" :value="overview?.active_paid_count ?? 0" :sub-text="`Dùng thử: ${overview?.active_trial_count ?? 0}`" :icon="CreditCard" :loading="loading" />
+      <KpiCard label="Doanh thu định kỳ" :value="fmtVnd(overview?.mrr_vnd ?? 0)" :sub-text="`30 ngày: ${fmtVnd(overview?.revenue_last_30d_vnd ?? 0)}`" :icon="TrendingUp" :loading="loading" />
     </div>
     <div class="charts">
       <n-card title="Doanh thu 30 ngày"><v-chart class="chart" :option="revenueOption" autoresize /></n-card>
       <n-card title="Phân bổ gói Premium"><v-chart class="chart" :option="planOption" autoresize /></n-card>
     </div>
     <n-space>
-      <KpiCard label="VT active" :value="overview?.vt_active_accounts ?? 0" :icon="BarChart3" :loading="loading" />
-      <KpiCard label="VT orders hôm nay" :value="overview?.vt_orders_today ?? 0" :loading="loading" />
+      <KpiCard label="Tài khoản VT hoạt động" :value="overview?.vt_active_accounts ?? 0" :icon="BarChart3" :loading="loading" />
+      <KpiCard label="Lệnh VT hôm nay" :value="overview?.vt_orders_today ?? 0" :loading="loading" />
     </n-space>
   </div>
 </template>

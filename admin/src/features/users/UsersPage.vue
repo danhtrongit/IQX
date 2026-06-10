@@ -8,6 +8,7 @@ import StatusTag from "@/components/common/StatusTag.vue"
 import ErrorState from "@/components/common/ErrorState.vue"
 import { feedback } from "@/lib/feedback"
 import { fmtDateTime } from "@/lib/format"
+import { labelForRole } from "@/lib/labels"
 import { useRemotePage } from "@/composables/useRemotePage"
 import { usersApi, type AdminUserRow, type BulkOp } from "@/lib/api/users"
 
@@ -22,9 +23,9 @@ const exporting = ref(false)
 const page = useRemotePage<AdminUserRow>((params) => usersApi.list({ page: Number(params.page), pageSize: Number(params.pageSize), sortBy: "created_at", sortDir: "desc", search: searchText.value || undefined, role: role.value || undefined, status: status.value || undefined }))
 
 const roleOptions = [
-  { label: "User", value: "user" },
+  { label: "Người dùng", value: "user" },
   { label: "Premium", value: "premium" },
-  { label: "Admin", value: "admin" },
+  { label: "Quản trị viên", value: "admin" },
 ]
 const statusOptions = [
   { label: "Đang hoạt động", value: "active" },
@@ -36,12 +37,12 @@ const columns: DataTableColumns<AdminUserRow> = [
   { type: "selection" },
   { title: "Email", key: "email", minWidth: 240, render: (row) => h(RouterLink, { to: `/users/${row.id}` }, { default: () => row.email }) },
   { title: "Tên", key: "fullName", minWidth: 180, render: (row) => row.fullName ?? "-" },
-  { title: "Vai trò", key: "role", width: 120, render: (row) => h(StatusTag, { status: row.role, label: row.role }) },
+  { title: "Vai trò", key: "role", width: 120, render: (row) => h(StatusTag, { status: row.role, label: labelForRole(row.role) }) },
   { title: "Trạng thái", key: "status", width: 150, render: (row) => h(StatusTag, { status: row.status }) },
-  { title: "Verified", key: "isEmailVerified", width: 110, render: (row) => h(StatusTag, { status: row.isEmailVerified }) },
+  { title: "Xác thực", key: "isEmailVerified", width: 110, render: (row) => h(StatusTag, { status: row.isEmailVerified }) },
   { title: "Đăng nhập", key: "lastLoginAt", width: 160, render: (row) => row.lastLoginAt ? fmtDateTime(row.lastLoginAt) : "-" },
   { title: "Tạo lúc", key: "createdAt", width: 160, render: (row) => fmtDateTime(row.createdAt) },
-  { title: "Thao tác", key: "actions", width: 170, render: (row) => h(NSpace, { size: 4 }, { default: () => [h(NButton, { size: "small", secondary: true, onClick: () => resetPassword(row) }, { icon: () => h(KeyRound, { size: 14 }), default: () => "Reset" }), h(NButton, { size: "small", secondary: true, onClick: () => resend(row) }, { icon: () => h(Mail, { size: 14 }) })] }) },
+  { title: "Thao tác", key: "actions", width: 170, render: (row) => h(NSpace, { size: 4 }, { default: () => [h(NButton, { size: "small", secondary: true, onClick: () => resetPassword(row) }, { icon: () => h(KeyRound, { size: 14 }), default: () => "Đặt lại" }), h(NButton, { size: "small", secondary: true, onClick: () => resend(row) }, { icon: () => h(Mail, { size: 14 }) })] }) },
 ]
 
 function loadFirstPage() { void page.load({ page: 1 }) }
@@ -100,7 +101,7 @@ async function exportCsv() {
     await usersApi.exportCsv(filters)
     feedback.message?.success("Đã xuất CSV thành công")
   } catch (error) {
-    feedback.message?.error(error instanceof Error ? error.message : "Export thất bại")
+    feedback.message?.error(error instanceof Error ? error.message : "Xuất CSV thất bại")
   } finally {
     exporting.value = false
   }
@@ -111,7 +112,7 @@ onMounted(() => void page.load())
 
 <template>
   <div class="page-stack">
-    <div class="page-header"><div><h1 class="page-title">Người dùng</h1><p class="page-subtitle">{{ page.total.value }} người dùng</p></div><n-button secondary :loading="exporting" @click="exportCsv"><template #icon><Download :size="16" /></template>Export CSV</n-button></div>
+    <div class="page-header"><div><h1 class="page-title">Người dùng</h1><p class="page-subtitle">{{ page.total.value }} người dùng</p></div><n-button secondary :loading="exporting" @click="exportCsv"><template #icon><Download :size="16" /></template>Xuất CSV</n-button></div>
     <n-card>
       <n-space align="center" wrap>
         <n-input v-model:value="searchText" clearable placeholder="Tìm email, tên..." style="width: 260px" @keyup.enter="loadFirstPage"><template #prefix><Search :size="16" /></template></n-input>

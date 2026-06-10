@@ -14,11 +14,11 @@ const page = useRemotePage<AuditLogRow>((params) => auditApi.list({ page: Number
 
 const columns: DataTableColumns<AuditLogRow> = [
   { title: "Thời gian", key: "createdAt", width: 160, render: (row) => fmtDateTime(row.createdAt) },
-  { title: "Admin", key: "adminEmail", width: 220, render: (row) => row.adminEmail ?? row.adminUserId ?? "system" },
-  { title: "Action", key: "action", minWidth: 220 },
-  { title: "Target", key: "target", minWidth: 180, render: (row) => `${row.targetEntity ?? "-"}/${row.targetId ?? "-"}` },
+  { title: "Quản trị viên", key: "adminEmail", width: 220, render: (row) => row.adminEmail ?? row.adminUserId ?? "hệ thống" },
+  { title: "Hành động", key: "action", minWidth: 220 },
+  { title: "Đối tượng", key: "target", minWidth: 180, render: (row) => `${row.targetEntity ?? "-"}/${row.targetId ?? "-"}` },
   { title: "IP", key: "ip", width: 140 },
-  { title: "Payload", key: "payload", width: 120, render: (row) => h(NCollapse, { accordion: true }, { default: () => h(NCollapseItem, { title: "JSON", name: row.id }, { default: () => h(JsonViewer, { data: { before: row.payloadBefore, after: row.payloadAfter, note: row.note }, maxHeight: "260px" }) }) }) },
+  { title: "Dữ liệu", key: "payload", width: 120, render: (row) => h(NCollapse, { accordion: true }, { default: () => h(NCollapseItem, { title: "JSON", name: row.id }, { default: () => h(JsonViewer, { data: { before: row.payloadBefore, after: row.payloadAfter, note: row.note }, maxHeight: "260px" }) }) }) },
 ]
 
 function search() { void page.load({ page: 1 }) }
@@ -27,11 +27,11 @@ onMounted(() => void page.load())
 
 <template>
   <div class="page-stack">
-    <div class="page-header"><div><h1 class="page-title">Audit Log</h1><p class="page-subtitle">Theo dõi các mutation từ admin</p></div></div>
+    <div class="page-header"><div><h1 class="page-title">Nhật ký kiểm toán</h1><p class="page-subtitle">Theo dõi các thao tác thay đổi từ quản trị viên</p></div></div>
     <n-card>
       <n-space>
-        <n-input v-model:value="actionPrefix" clearable placeholder="Action prefix" style="width: 220px" @keyup.enter="search" />
-        <n-input v-model:value="targetEntity" clearable placeholder="Target entity" style="width: 220px" @keyup.enter="search" />
+        <n-input v-model:value="actionPrefix" clearable placeholder="Tiền tố hành động" style="width: 220px" @keyup.enter="search" />
+        <n-input v-model:value="targetEntity" clearable placeholder="Loại đối tượng" style="width: 220px" @keyup.enter="search" />
         <n-button type="primary" @click="search">Lọc</n-button>
       </n-space>
     </n-card>

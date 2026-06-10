@@ -25,7 +25,7 @@ const options: MenuOption[] = [
       link("Gói", "/plans", Package),
       link("Thuê bao", "/subscriptions", ScrollText),
       link("Thanh toán", "/payments", CreditCard),
-      link("IPN Logs", "/ipn", Webhook),
+      link("Nhật ký IPN", "/ipn", Webhook),
     ],
   },
   {
@@ -34,8 +34,8 @@ const options: MenuOption[] = [
     icon: renderIcon(TrendingUp),
     children: [link("Tài khoản", "/vt/accounts", Users), link("Cấu hình", "/vt/config", Settings)],
   },
-  link("Audit Log", "/audit", FileBarChart2),
-  link("System", "/system", Settings),
+  link("Nhật ký kiểm toán", "/audit", FileBarChart2),
+  link("Hệ thống", "/system", Settings),
 ]
 
 function link(label: string, path: string, icon: any): MenuOption {
@@ -55,8 +55,8 @@ function renderIcon(icon: any) {
   <div class="brand">
     <div class="brand-mark">IQ</div>
     <div>
-      <div class="brand-title">IQX Admin</div>
-      <div class="brand-subtitle">Control Center</div>
+      <div class="brand-title">Quản trị IQX</div>
+      <div class="brand-subtitle">Trung tâm điều hành</div>
     </div>
   </div>
   <n-menu :value="selectedKey" :options="options" :default-expanded-keys="['lessons-group', 'premium-group', 'vt-group']" />
