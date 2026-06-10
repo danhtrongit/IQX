@@ -24,7 +24,7 @@ function daysBetween(end: Date | null): number {
  * Enabled only when authenticated; invalidated via `premium.me` on auth change.
  */
 export function usePremiumStatus(): PremiumStatusResult {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
 
   const { data, isLoading } = useQuery({
     queryKey: premiumKeys.me,
@@ -33,8 +33,11 @@ export function usePremiumStatus(): PremiumStatusResult {
     staleTime: 60_000,
   })
 
+  // Admins implicitly have full access (mirrors the backend admin bypass).
+  const isAdmin = user?.role === "admin"
+
   return {
-    isPremium: data?.isPremium ?? false,
+    isPremium: isAdmin || (data?.isPremium ?? false),
     isTrial: data?.isTrial ?? false,
     daysRemaining: daysBetween(data?.periodEnd ?? null),
     periodEnd: data?.periodEnd ?? null,

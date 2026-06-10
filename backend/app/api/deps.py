@@ -51,7 +51,13 @@ async def get_premium_active_user(
     current_user: Annotated[User, Depends(get_current_active_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> User:
-    """Ensure the current user has an active premium subscription."""
+    """Ensure the current user has premium access.
+
+    Admins implicitly have full access and bypass the subscription check.
+    """
+    if current_user.role == UserRole.ADMIN:
+        return current_user
+
     from app.services.premium import PremiumService
 
     service = PremiumService(db)

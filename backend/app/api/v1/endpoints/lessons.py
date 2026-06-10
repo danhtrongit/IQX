@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import CurrentUser, DBSession
 from app.core.database import get_db
 from app.core.exceptions import ForbiddenError, NotFoundError
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.repositories.lesson import EpisodeRepository, ProgressRepository
 from app.schemas.common import PaginatedResponse
 from app.schemas.lesson import (
@@ -122,7 +122,7 @@ async def get_episode_content(
     if episode is None or not episode.course.is_published or not episode.is_published:
         raise NotFoundError("Tập học")
 
-    if episode.course.is_premium:
+    if episode.course.is_premium and current_user.role != UserRole.ADMIN:
         from app.services.premium import PremiumService
 
         sub = await PremiumService(db).get_user_subscription(current_user.id)
