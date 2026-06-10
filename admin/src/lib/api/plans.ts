@@ -1,7 +1,5 @@
 import { api } from "./client"
 
-// ── Types ──────────────────────────────────────────────────────────────────
-
 export interface PlanRow {
   id: string
   code: string
@@ -25,9 +23,7 @@ export interface PlanCreate {
   sort_order?: number
 }
 
-// ── Backend raw shape ──────────────────────────────────────────────────────
-
-interface BackendPlanResponse {
+export interface BackendPlanResponse {
   id: string
   code: string
   name: string
@@ -40,9 +36,7 @@ interface BackendPlanResponse {
   updated_at: string
 }
 
-// ── Adapter ────────────────────────────────────────────────────────────────
-
-function adapt(raw: BackendPlanResponse): PlanRow {
+export function adaptPlan(raw: BackendPlanResponse): PlanRow {
   return {
     id: String(raw.id),
     code: raw.code,
@@ -57,34 +51,9 @@ function adapt(raw: BackendPlanResponse): PlanRow {
   }
 }
 
-// ── API client ─────────────────────────────────────────────────────────────
-
 export const plansApi = {
-  list: async (): Promise<PlanRow[]> => {
-    const raw = await api
-      .get("premium/admin/plans")
-      .json<BackendPlanResponse[]>()
-    return raw.map(adapt)
-  },
-
-  create: async (body: PlanCreate): Promise<PlanRow> => {
-    const raw = await api
-      .post("premium/admin/plans", { json: body })
-      .json<BackendPlanResponse>()
-    return adapt(raw)
-  },
-
-  update: async (id: string, body: Partial<PlanCreate>): Promise<PlanRow> => {
-    const raw = await api
-      .patch(`premium/admin/plans/${id}`, { json: body })
-      .json<BackendPlanResponse>()
-    return adapt(raw)
-  },
-
-  delete: async (id: string): Promise<PlanRow> => {
-    const raw = await api
-      .delete(`premium/admin/plans/${id}`)
-      .json<BackendPlanResponse>()
-    return adapt(raw)
-  },
+  list: async (): Promise<PlanRow[]> => (await api.get("premium/admin/plans").json<BackendPlanResponse[]>()).map(adaptPlan),
+  create: async (body: PlanCreate): Promise<PlanRow> => adaptPlan(await api.post("premium/admin/plans", { json: body }).json<BackendPlanResponse>()),
+  update: async (id: string, body: Partial<PlanCreate>): Promise<PlanRow> => adaptPlan(await api.patch(`premium/admin/plans/${id}`, { json: body }).json<BackendPlanResponse>()),
+  delete: async (id: string): Promise<PlanRow> => adaptPlan(await api.delete(`premium/admin/plans/${id}`).json<BackendPlanResponse>()),
 }

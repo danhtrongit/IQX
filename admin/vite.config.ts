@@ -1,10 +1,9 @@
 import path from "node:path"
-import { defineConfig } from "vite"
-import react from "@vitejs/plugin-react"
-import tailwindcss from "@tailwindcss/vite"
+import { defineConfig } from "vitest/config"
+import vue from "@vitejs/plugin-vue"
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [vue()],
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
   },
@@ -14,39 +13,22 @@ export default defineConfig({
       "/api": { target: "http://localhost:8000", changeOrigin: true },
     },
   },
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./src/test/setup.ts"],
+  },
   build: {
     outDir: "dist",
     sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks(id: string) {
-          if (id.includes("node_modules")) {
-            if (
-              id.includes("react-dom") ||
-              id.includes("react-router") ||
-              (id.includes("/react/") && !id.includes("react-"))
-            ) {
-              return "vendor-react"
-            }
-            if (
-              id.includes("@radix-ui") ||
-              id.includes("class-variance-authority") ||
-              id.includes("clsx") ||
-              id.includes("tailwind-merge") ||
-              id.includes("sonner")
-            ) {
-              return "vendor-ui"
-            }
-            if (id.includes("@tanstack/react-table")) {
-              return "vendor-table"
-            }
-            if (id.includes("recharts") || id.includes("d3-")) {
-              return "vendor-charts"
-            }
-            if (id.includes("react-hook-form") || id.includes("zod") || id.includes("@hookform")) {
-              return "vendor-forms"
-            }
-          }
+          if (!id.includes("node_modules")) return undefined
+          if (id.includes("vue") || id.includes("pinia")) return "vendor-vue"
+          if (id.includes("naive-ui") || id.includes("vueuc") || id.includes("vooks")) return "vendor-ui"
+          if (id.includes("echarts") || id.includes("vue-echarts")) return "vendor-charts"
+          return undefined
         },
       },
     },

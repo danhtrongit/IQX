@@ -1,0 +1,19 @@
+<script setup lang="ts">
+import { h, onMounted, ref } from "vue"
+import { useRoute, useRouter, RouterLink } from "vue-router"
+import { ArrowLeft } from "lucide-vue-next"
+import { NButton, NCard, NDescriptions, NDescriptionsItem, NInputNumber, NModal, NSpace, NInput } from "naive-ui"
+import StatusTag from "@/components/common/StatusTag.vue"
+import ErrorState from "@/components/common/ErrorState.vue"
+import { feedback } from "@/lib/feedback"
+import { fmtDate, fmtDateTime } from "@/lib/format"
+import { subscriptionsApi, type SubscriptionDetail } from "@/lib/api/subscriptions"
+
+const route = useRoute(); const router = useRouter(); const sub = ref<SubscriptionDetail | null>(null); const loading = ref(true); const error = ref<string | null>(null)
+const extendOpen = ref(false); const extendDays = ref(30); const extendReason = ref("")
+async function load() { loading.value = true; error.value = null; try { sub.value = await subscriptionsApi.get(String(route.params.subId)) } catch (err) { error.value = err instanceof Error ? err.message : "Không thể tải thuê bao" } finally { loading.value = false } }
+function cancelSub() { if (!sub.value) return; const reason = ref(""); feedback.dialog?.warning({ title: "Hủy thuê bao", content: () => h(NInput, { value: reason.value, type: "textarea", placeholder: "Lý do", onUpdateValue: (v: string) => { reason.value = v } }), positiveText: "Hủy thuê bao", negativeText: "Đóng", onPositiveClick: async () => { if (!reason.value.trim()) { feedback.message?.error("Lý do bắt buộc"); return false } sub.value = await subscriptionsApi.cancel(sub.value!.id, reason.value); feedback.message?.success("Đã hủy thuê bao") } }) }
+async function extendSub() { if (!sub.value) return; sub.value = await subscriptionsApi.extend(sub.value.id, extendDays.value, extendReason.value || undefined); feedback.message?.success(`Đã gia hạn ${extendDays.value} ngày`); extendOpen.value = false }
+onMounted(() => void load())
+</script>
+<template><div class="page-stack"><div class="page-header"><div><n-button quaternary size="small" @click="router.back()"><template #icon><ArrowLeft :size="16" /></template>Quay lại</n-button><h1 class="page-title">Chi tiết thuê bao</h1><p class="page-subtitle mono">{{ route.params.subId }}</p></div><n-space v-if="sub?.status === 'active'"><n-button secondary @click="extendOpen = true">Gia hạn</n-button><n-button type="error" @click="cancelSub">Hủy thuê bao</n-button></n-space></div><ErrorState v-if="error" :message="error" @retry="load" /><n-card v-if="sub" :loading="loading"><n-descriptions bordered :column="2"><n-descriptions-item label="User"><RouterLink :to="`/users/${sub.userId}`">{{ sub.userEmail ?? sub.userId }}</RouterLink></n-descriptions-item><n-descriptions-item label="Gói">{{ sub.planName ?? sub.planCode ?? '-' }}</n-descriptions-item><n-descriptions-item label="Trạng thái"><StatusTag :status="sub.status" /></n-descriptions-item><n-descriptions-item label="Thời hạn">{{ fmtDate(sub.currentPeriodStart) }} - {{ fmtDate(sub.currentPeriodEnd) }}</n-descriptions-item><n-descriptions-item label="Tạo lúc">{{ fmtDateTime(sub.createdAt) }}</n-descriptions-item><n-descriptions-item label="Cập nhật">{{ fmtDateTime(sub.updatedAt) }}</n-descriptions-item><n-descriptions-item v-if="sub.cancelReason" label="Lý do hủy">{{ sub.cancelReason }}</n-descriptions-item></n-descriptions></n-card><n-modal v-model:show="extendOpen" preset="card" title="Gia hạn thuê bao" style="max-width: 420px"><n-space vertical><n-input-number v-model:value="extendDays" :min="1" /><n-input v-model:value="extendReason" type="textarea" placeholder="Lý do" /><n-space justify="end"><n-button secondary @click="extendOpen = false">Hủy</n-button><n-button type="primary" @click="extendSub">Gia hạn</n-button></n-space></n-space></n-modal></div></template>

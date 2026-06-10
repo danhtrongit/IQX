@@ -34,8 +34,6 @@ export interface DailyRevenuePoint {
 
 export const metricsApi = {
   overview: () => api.get("admin/metrics/overview").json<MetricsOverview>(),
-  revenue: (days = 30) =>
-    api.get(`admin/metrics/revenue?days=${days}`).json<DailyRevenuePoint[]>(),
-  planDistribution: () =>
-    api.get("admin/metrics/plan-distribution").json<PlanDistributionPoint[]>(),
+  revenue: (days = 30) => api.get(`admin/metrics/revenue?days=${days}`).json<DailyRevenuePoint[]>(),
+  planDistribution: () => api.get("admin/metrics/plan-distribution").json<PlanDistributionPoint[]>(),
 }

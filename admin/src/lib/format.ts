@@ -1,37 +1,56 @@
-import { format, formatDistanceToNow, isValid, parseISO } from "date-fns"
+import { format, formatDistanceToNowStrict, isValid } from "date-fns"
 import { vi } from "date-fns/locale"
 
-export function fmtVnd(n: number): string {
-  return n.toLocaleString("vi-VN") + " ₫"
+export function fmtVnd(value: number | null | undefined): string {
+  return `${Math.round(value ?? 0).toLocaleString("vi-VN")} ₫`
 }
 
-export function fmtCompact(n: number): string {
-  if (n >= 1_000_000_000) {
-    return (n / 1_000_000_000).toFixed(1).replace(/\.0$/, "") + "B"
-  }
-  if (n >= 1_000_000) {
-    return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M"
-  }
-  if (n >= 1_000) {
-    return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "K"
-  }
+export function fmtCompact(value: number | null | undefined): string {
+  const n = value ?? 0
+  const abs = Math.abs(n)
+  if (abs >= 1_000_000_000) return `${trimNumber(n / 1_000_000_000)} T`
+  if (abs >= 1_000_000) return `${trimNumber(n / 1_000_000)} Tr`
+  if (abs >= 1_000) return `${trimNumber(n / 1_000)} N`
   return String(n)
 }
 
-function toDate(s: string | Date): Date {
-  if (s instanceof Date) return s
-  const d = parseISO(s)
-  return isValid(d) ? d : new Date(s)
+export function fmtDate(value: string | Date | null | undefined): string {
+  const date = toDate(value)
+  return date ? format(date, "dd/MM/yyyy", { locale: vi }) : "-"
 }
 
-export function fmtDate(s: string | Date): string {
-  return format(toDate(s), "dd/MM/yyyy", { locale: vi })
+export function fmtDateTime(value: string | Date | null | undefined): string {
+  const date = toDate(value)
+  return date ? format(date, "dd/MM/yyyy HH:mm", { locale: vi }) : "-"
 }
 
-export function fmtDateTime(s: string | Date): string {
-  return format(toDate(s), "dd/MM/yyyy HH:mm", { locale: vi })
+export function fmtRelative(value: string | Date | null | undefined): string {
+  const date = toDate(value)
+  if (!date) return "-"
+  const seconds = Math.abs(Date.now() - date.getTime()) / 1000
+  if (seconds < 45) return "vừa xong"
+  return `${formatDistanceToNowStrict(date, { locale: vi })} trước`
 }
 
-export function fmtRelative(s: string | Date): string {
-  return formatDistanceToNow(toDate(s), { addSuffix: true, locale: vi })
+export function slugify(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/gi, "d")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 120)
+}
+
+function toDate(value: string | Date | null | undefined): Date | null {
+  if (!value) return null
+  const date = value instanceof Date ? value : new Date(value)
+  return isValid(date) ? date : null
+}
+
+function trimNumber(value: number): string {
+  return new Intl.NumberFormat("vi-VN", {
+    maximumFractionDigits: value >= 10 ? 1 : 2,
+  }).format(value)
 }

@@ -13,6 +13,8 @@
 !/dashboard/**
 !/admin/
 !/admin/**
+!/admin-bak/
+!/admin-bak/**
 
 # Safety guard if the frontend was previously a standalone repo.
 /frontend/.git

@@ -1,0 +1,56 @@
+import type { GlobalThemeOverrides } from "naive-ui"
+
+export const themeOverrides: GlobalThemeOverrides = {
+  common: {
+    fontFamily: "'Be Vietnam Pro', system-ui, sans-serif",
+    fontFamilyMono: "'SFMono-Regular', Consolas, 'Liberation Mono', monospace",
+    borderRadius: "8px",
+    borderRadiusSmall: "6px",
+    bodyColor: "#061224",
+    cardColor: "#0B1B33",
+    modalColor: "#0F233D",
+    popoverColor: "#0F233D",
+    tableColor: "#0B1B33",
+    primaryColor: "#2F80ED",
+    primaryColorHover: "#5A9EF4",
+    primaryColorPressed: "#1D62BC",
+    primaryColorSuppl: "#2F80ED",
+    successColor: "#10B981",
+    warningColor: "#F59E0B",
+    errorColor: "#EF4444",
+    infoColor: "#38BDF8",
+    textColorBase: "#EAF1FA",
+    textColor1: "#F8FAFC",
+    textColor2: "#D7E2F0",
+    textColor3: "#A9B9CF",
+    borderColor: "#1D3452",
+    dividerColor: "#1D3452",
+    inputColor: "#07172B",
+    codeColor: "#102540",
+  },
+  Layout: {
+    color: "#061224",
+    siderColor: "#061224",
+    headerColor: "#0B1B33",
+  },
+  Card: {
+    color: "#0B1B33",
+    colorModal: "#0F233D",
+    borderColor: "#1D3452",
+  },
+  DataTable: {
+    thColor: "#102540",
+    tdColor: "#0B1B33",
+    borderColor: "#1D3452",
+  },
+  Menu: {
+    itemTextColor: "#A9B9CF",
+    itemTextColorActive: "#FFFFFF",
+    itemColorActive: "#102D55",
+    itemIconColorActive: "#5A9EF4",
+  },
+  LoadingBar: {
+    colorLoading: "#2F80ED",
+    colorError: "#EF4444",
+  },
+}

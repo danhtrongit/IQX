@@ -1,4 +1,4 @@
-import { api, setAccessToken, setRefreshToken } from "./client"
+import { api, getAccessToken, setAccessToken, setRefreshToken } from "./client"
 
 export interface AdminUser {
   id: string
@@ -14,13 +14,9 @@ interface BackendUserResponse {
   id: string
   email: string
   full_name: string | null
-  phone_number: string | null
   role: string
   status: string
-  is_email_verified: boolean
   created_at: string
-  updated_at: string
-  [key: string]: unknown
 }
 
 interface BackendTokenResponse {
@@ -35,7 +31,7 @@ export interface AuthResponse {
   refreshToken: string
 }
 
-function adaptUser(raw: BackendUserResponse): AdminUser {
+export function adaptAdminUser(raw: BackendUserResponse): AdminUser {
   return {
     id: String(raw.id),
     email: raw.email,
@@ -49,36 +45,21 @@ function adaptUser(raw: BackendUserResponse): AdminUser {
 
 export const authApi = {
   login: async (payload: { email: string; password: string }): Promise<AuthResponse> => {
-    const tokenRes = await api
-      .post("auth/login", { json: payload })
-      .json<BackendTokenResponse>()
-
-    // Set token temporarily to call /auth/me
+    const tokenRes = await api.post("auth/login", { json: payload }).json<BackendTokenResponse>()
     setAccessToken(tokenRes.access_token)
-
     const userRaw = await api.get("auth/me").json<BackendUserResponse>()
-
     if (userRaw.role !== "admin") {
-      // Reject non-admin logins
       setAccessToken(null)
       throw new Error("Tài khoản này không có quyền truy cập trang quản trị")
     }
-
-    const user = adaptUser(userRaw)
-
     return {
-      user,
+      user: adaptAdminUser(userRaw),
       accessToken: tokenRes.access_token,
       refreshToken: tokenRes.refresh_token,
     }
   },
-
   logout: () => api.post("auth/logout").json<{ message: string }>(),
-
-  getMe: async (): Promise<AdminUser> => {
-    const raw = await api.get("auth/me").json<BackendUserResponse>()
-    return adaptUser(raw)
-  },
+  getMe: async (): Promise<AdminUser> => adaptAdminUser(await api.get("auth/me").json<BackendUserResponse>()),
 }
 
-export { setRefreshToken, setAccessToken }
+export { getAccessToken, setAccessToken, setRefreshToken }

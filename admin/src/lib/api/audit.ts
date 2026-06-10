@@ -1,7 +1,5 @@
 import { api } from "./client"
-import type { PaginatedResult } from "@/hooks/use-paginated-query"
-
-// ── Types ──────────────────────────────────────────────────────────────────
+import { adaptPage, type BackendPaginated, type PaginatedResult } from "./types"
 
 export interface AuditLogRow {
   id: string
@@ -19,8 +17,6 @@ export interface AuditLogRow {
   createdAt: string
 }
 
-// ── Backend raw shapes ──────────────────────────────────────────────────────
-
 interface BackendAuditLog {
   id: string
   admin_user_id: string | null
@@ -37,17 +33,7 @@ interface BackendAuditLog {
   created_at: string
 }
 
-interface BackendPaginated {
-  items: BackendAuditLog[]
-  total: number
-  page: number
-  page_size: number
-  total_pages: number
-}
-
-// ── Adapters ───────────────────────────────────────────────────────────────
-
-function adaptAuditLog(raw: BackendAuditLog): AuditLogRow {
+export function adaptAuditLog(raw: BackendAuditLog): AuditLogRow {
   return {
     id: String(raw.id),
     adminUserId: raw.admin_user_id ? String(raw.admin_user_id) : null,
@@ -65,39 +51,15 @@ function adaptAuditLog(raw: BackendAuditLog): AuditLogRow {
   }
 }
 
-// ── API client ─────────────────────────────────────────────────────────────
-
 export const auditApi = {
-  list: async (params: {
-    page: number
-    pageSize: number
-    adminUserId?: string
-    actionPrefix?: string
-    targetEntity?: string
-    targetId?: string
-    dateFrom?: string
-    dateTo?: string
-  }): Promise<PaginatedResult<AuditLogRow>> => {
-    const search = new URLSearchParams()
-    search.set("page", String(params.page))
-    search.set("page_size", String(params.pageSize))
-    if (params.adminUserId) search.set("admin_user_id", params.adminUserId)
-    if (params.actionPrefix) search.set("action_prefix", params.actionPrefix)
-    if (params.targetEntity) search.set("target_entity", params.targetEntity)
-    if (params.targetId) search.set("target_id", params.targetId)
-    if (params.dateFrom) search.set("date_from", params.dateFrom)
-    if (params.dateTo) search.set("date_to", params.dateTo)
-
-    const raw = await api
-      .get(`admin/audit?${search}`)
-      .json<BackendPaginated>()
-
-    return {
-      items: raw.items.map(adaptAuditLog),
-      total: raw.total,
-      page: raw.page,
-      pageSize: raw.page_size,
-      totalPages: raw.total_pages,
-    }
+  list: async (params: { page: number; pageSize: number; adminUserId?: string; actionPrefix?: string; targetEntity?: string; targetId?: string; dateFrom?: string; dateTo?: string }): Promise<PaginatedResult<AuditLogRow>> => {
+    const qs = new URLSearchParams({ page: String(params.page), page_size: String(params.pageSize) })
+    if (params.adminUserId) qs.set("admin_user_id", params.adminUserId)
+    if (params.actionPrefix) qs.set("action_prefix", params.actionPrefix)
+    if (params.targetEntity) qs.set("target_entity", params.targetEntity)
+    if (params.targetId) qs.set("target_id", params.targetId)
+    if (params.dateFrom) qs.set("date_from", params.dateFrom)
+    if (params.dateTo) qs.set("date_to", params.dateTo)
+    return adaptPage(await api.get(`admin/audit?${qs}`).json<BackendPaginated<BackendAuditLog>>(), adaptAuditLog)
   },
 }

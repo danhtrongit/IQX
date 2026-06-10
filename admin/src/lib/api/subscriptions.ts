@@ -1,7 +1,5 @@
 import { api } from "./client"
-import type { PaginatedResult } from "@/hooks/use-paginated-query"
-
-// ── Types ──────────────────────────────────────────────────────────────────
+import { adaptPage, type BackendPaginated, type PaginatedResult } from "./types"
 
 export interface SubscriptionRow {
   id: string
@@ -23,8 +21,6 @@ export interface SubscriptionDetail extends SubscriptionRow {
   cancelledByUserId: string | null
 }
 
-// ── Backend raw shapes ──────────────────────────────────────────────────────
-
 interface BackendBrief {
   id: string
   user_id: string
@@ -45,8 +41,6 @@ interface BackendDetail extends BackendBrief {
   cancelled_by_user_id: string | null
 }
 
-// ── Adapters ───────────────────────────────────────────────────────────────
-
 function adaptBrief(raw: BackendBrief): SubscriptionRow {
   return {
     id: String(raw.id),
@@ -65,67 +59,19 @@ function adaptBrief(raw: BackendBrief): SubscriptionRow {
 }
 
 function adaptDetail(raw: BackendDetail): SubscriptionDetail {
-  return {
-    ...adaptBrief(raw),
-    updatedAt: raw.updated_at,
-    cancelledByUserId: raw.cancelled_by_user_id ? String(raw.cancelled_by_user_id) : null,
-  }
+  return { ...adaptBrief(raw), updatedAt: raw.updated_at, cancelledByUserId: raw.cancelled_by_user_id ? String(raw.cancelled_by_user_id) : null }
 }
-
-interface BackendPaginated {
-  items: BackendBrief[]
-  total: number
-  page: number
-  page_size: number
-  total_pages: number
-}
-
-// ── API client ─────────────────────────────────────────────────────────────
 
 export const subscriptionsApi = {
-  list: async (params: {
-    page: number
-    pageSize: number
-    status?: string
-    planId?: string
-    userId?: string
-    expiringWithinDays?: number
-  }): Promise<PaginatedResult<SubscriptionRow>> => {
-    const search = new URLSearchParams()
-    search.set("page", String(params.page))
-    search.set("page_size", String(params.pageSize))
-    if (params.status) search.set("status", params.status)
-    if (params.planId) search.set("plan_id", params.planId)
-    if (params.userId) search.set("user_id", params.userId)
-    if (params.expiringWithinDays !== undefined)
-      search.set("expiring_within_days", String(params.expiringWithinDays))
-
-    const raw = await api.get(`admin/subscriptions?${search}`).json<BackendPaginated>()
-    return {
-      items: raw.items.map(adaptBrief),
-      total: raw.total,
-      page: raw.page,
-      pageSize: raw.page_size,
-      totalPages: raw.total_pages,
-    }
+  list: async (params: { page: number; pageSize: number; status?: string; planId?: string; userId?: string; expiringWithinDays?: number }): Promise<PaginatedResult<SubscriptionRow>> => {
+    const qs = new URLSearchParams({ page: String(params.page), page_size: String(params.pageSize) })
+    if (params.status) qs.set("status", params.status)
+    if (params.planId) qs.set("plan_id", params.planId)
+    if (params.userId) qs.set("user_id", params.userId)
+    if (params.expiringWithinDays !== undefined) qs.set("expiring_within_days", String(params.expiringWithinDays))
+    return adaptPage(await api.get(`admin/subscriptions?${qs}`).json<BackendPaginated<BackendBrief>>(), adaptBrief)
   },
-
-  get: async (id: string): Promise<SubscriptionDetail> => {
-    const raw = await api.get(`admin/subscriptions/${id}`).json<BackendDetail>()
-    return adaptDetail(raw)
-  },
-
-  cancel: async (id: string, reason: string): Promise<SubscriptionDetail> => {
-    const raw = await api
-      .post(`admin/subscriptions/${id}/cancel`, { json: { reason } })
-      .json<BackendDetail>()
-    return adaptDetail(raw)
-  },
-
-  extend: async (id: string, days: number, reason?: string): Promise<SubscriptionDetail> => {
-    const raw = await api
-      .post(`admin/subscriptions/${id}/extend`, { json: { days, reason } })
-      .json<BackendDetail>()
-    return adaptDetail(raw)
-  },
+  get: async (id: string): Promise<SubscriptionDetail> => adaptDetail(await api.get(`admin/subscriptions/${id}`).json<BackendDetail>()),
+  cancel: async (id: string, reason: string): Promise<SubscriptionDetail> => adaptDetail(await api.post(`admin/subscriptions/${id}/cancel`, { json: { reason } }).json<BackendDetail>()),
+  extend: async (id: string, days: number, reason?: string): Promise<SubscriptionDetail> => adaptDetail(await api.post(`admin/subscriptions/${id}/extend`, { json: { days, reason } }).json<BackendDetail>()),
 }

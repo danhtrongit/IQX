@@ -1,0 +1,88 @@
+:root {
+  font-family: "Be Vietnam Pro", system-ui, sans-serif;
+  color-scheme: dark;
+  background: #061224;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #061224;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.page-subtitle {
+  color: #a9b9cf;
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+
+.grid-kpis {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.two-column-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mono {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+@media (max-width: 1100px) {
+  .grid-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .page-header,
+  .two-column-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header {
+    flex-direction: column;
+  }
+
+  .grid-kpis {
+    grid-template-columns: 1fr;
+  }
+}

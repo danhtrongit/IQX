@@ -1,9 +1,5 @@
-node_modules/
-dist/
-dist-ssr/
-.vite/
-*.local
+dist
+node_modules
 .DS_Store
-*.log
-.env.local
-.env.*.local
+*.local
+coverage

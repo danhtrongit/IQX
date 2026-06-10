@@ -1,18 +1,32 @@
-import { api, API_BASE, getAccessToken } from "./client"
-import type { PaginatedResult } from "@/hooks/use-paginated-query"
+import { api, API_BASE, downloadBlob, getAccessToken } from "./client"
+import { adaptPage, type BackendPaginated, type PaginatedResult } from "./types"
 
-// ── Types ──────────────────────────────────────────────────────────────────
+export type AdminRole = "user" | "premium" | "admin"
+export type AdminStatus = "active" | "inactive" | "suspended" | "deleted"
+export type BulkOp = "set_role" | "set_status" | "soft_delete"
 
 export interface AdminUserRow {
   id: string
   email: string
   fullName: string | null
   phoneNumber: string | null
-  role: "user" | "premium" | "admin"
-  status: "active" | "inactive" | "suspended" | "deleted"
+  role: AdminRole
+  status: AdminStatus
   isEmailVerified: boolean
   lastLoginAt: string | null
   createdAt: string
+}
+
+export interface BackendUserRow {
+  id: string
+  email: string
+  full_name: string | null
+  phone_number: string | null
+  role: string
+  status: string
+  is_email_verified: boolean
+  last_login_at: string | null
+  created_at: string
 }
 
 export interface PlanBrief {
@@ -89,8 +103,6 @@ export interface User360 {
   loginHistory: LoginHistoryRow[]
 }
 
-export type BulkOp = "set_role" | "set_status" | "soft_delete"
-
 export interface BulkRequest {
   user_ids: string[]
   op: BulkOp
@@ -111,33 +123,6 @@ export interface UserListParams {
   role?: string
   status?: string
   search?: string
-}
-
-/** Two-letter avatar initials from a full name, falling back to the email. */
-export function userInitials(fullName: string | null | undefined, email: string): string {
-  const name = (fullName ?? "").trim()
-  if (name) {
-    const parts = name.split(/\s+/)
-    const first = parts[0]?.[0] ?? ""
-    const last = parts.length > 1 ? (parts[parts.length - 1][0] ?? "") : ""
-    return (first + last).toUpperCase()
-  }
-  return email.slice(0, 2).toUpperCase()
-}
-
-// ── Backend raw shapes ─────────────────────────────────────────────────────
-
-interface BackendUserRow {
-  id: string
-  email: string
-  full_name: string | null
-  phone_number: string | null
-  role: string
-  status: string
-  is_email_verified: boolean
-  last_login_at: string | null
-  created_at: string
-  [key: string]: unknown
 }
 
 interface BackendPlanBrief {
@@ -214,38 +199,29 @@ interface BackendUser360 {
   login_history: BackendLoginHistoryRow[]
 }
 
-interface BackendPaginated<T> {
-  items: T[]
-  total: number
-  page: number
-  page_size: number
-  total_pages: number
-}
-
-// ── Adapters ───────────────────────────────────────────────────────────────
-
-function adaptUserRow(raw: BackendUserRow): AdminUserRow {
+export function adaptUserRow(raw: BackendUserRow): AdminUserRow {
   return {
     id: String(raw.id),
     email: raw.email,
     fullName: raw.full_name ?? null,
     phoneNumber: raw.phone_number,
-    role: raw.role as AdminUserRow["role"],
-    status: raw.status as AdminUserRow["status"],
+    role: raw.role as AdminRole,
+    status: raw.status as AdminStatus,
     isEmailVerified: raw.is_email_verified,
     lastLoginAt: raw.last_login_at,
     createdAt: raw.created_at,
   }
 }
 
+export function userInitials(fullName: string | null | undefined, email: string): string {
+  const name = (fullName ?? "").trim()
+  if (!name) return email.slice(0, 2).toUpperCase()
+  const parts = name.split(/\s+/)
+  return `${parts[0]?.[0] ?? ""}${parts.length > 1 ? parts.at(-1)?.[0] ?? "" : ""}`.toUpperCase()
+}
+
 function adaptPlanBrief(raw: BackendPlanBrief): PlanBrief {
-  return {
-    id: String(raw.id),
-    code: raw.code,
-    name: raw.name,
-    priceVnd: raw.price_vnd,
-    durationDays: raw.duration_days,
-  }
+  return { id: String(raw.id), code: raw.code, name: raw.name, priceVnd: raw.price_vnd, durationDays: raw.duration_days }
 }
 
 function adaptSubscription(raw: BackendSubscriptionBrief): SubscriptionBrief {
@@ -326,8 +302,6 @@ function adaptUser360(raw: BackendUser360): User360 {
   }
 }
 
-// ── API client ─────────────────────────────────────────────────────────────
-
 export const usersApi = {
   list: async (params: UserListParams): Promise<PaginatedResult<AdminUserRow>> => {
     const qs = new URLSearchParams()
@@ -338,78 +312,25 @@ export const usersApi = {
     if (params.role) qs.set("role", params.role)
     if (params.status) qs.set("status", params.status)
     if (params.search) qs.set("search", params.search)
-
-    const raw = await api
-      .get(`users/?${qs.toString()}`)
-      .json<BackendPaginated<BackendUserRow>>()
-
-    return {
-      items: raw.items.map(adaptUserRow),
-      total: raw.total,
-      page: raw.page,
-      pageSize: raw.page_size,
-      totalPages: raw.total_pages,
-    }
+    return adaptPage(await api.get(`users/?${qs}`).json<BackendPaginated<BackendUserRow>>(), adaptUserRow)
   },
-
-  get: async (id: string): Promise<AdminUserRow> => {
-    const raw = await api.get(`users/${id}`).json<BackendUserRow>()
-    return adaptUserRow(raw)
+  get: async (id: string): Promise<AdminUserRow> => adaptUserRow(await api.get(`users/${id}`).json<BackendUserRow>()),
+  get360: async (id: string): Promise<User360> => adaptUser360(await api.get(`admin/users/${id}/360`).json<BackendUser360>()),
+  bulk: (body: BulkRequest) => api.post("admin/users/bulk", { json: body }).json<BulkResponse>(),
+  resetPassword: (id: string) => api.post(`admin/users/${id}/reset-password`).json<{ temporary_password: string }>(),
+  resendVerification: (id: string) => api.post(`admin/users/${id}/resend-verification`),
+  loginHistory: async (id: string, params: { page: number; pageSize: number }): Promise<PaginatedResult<LoginHistoryRow>> => {
+    const qs = new URLSearchParams({ page: String(params.page), page_size: String(params.pageSize) })
+    return adaptPage(await api.get(`admin/users/${id}/login-history?${qs}`).json<BackendPaginated<BackendLoginHistoryRow>>(), adaptLoginHistory)
   },
-
-  get360: async (id: string): Promise<User360> => {
-    const raw = await api.get(`admin/users/${id}/360`).json<BackendUser360>()
-    return adaptUser360(raw)
-  },
-
-  bulk: (body: BulkRequest) =>
-    api.post("admin/users/bulk", { json: body }).json<BulkResponse>(),
-
-  resetPassword: (id: string) =>
-    api
-      .post(`admin/users/${id}/reset-password`)
-      .json<{ temporary_password: string }>(),
-
-  resendVerification: (id: string) =>
-    api.post(`admin/users/${id}/resend-verification`),
-
-  loginHistory: async (
-    id: string,
-    params: { page: number; page_size: number },
-  ): Promise<PaginatedResult<LoginHistoryRow>> => {
-    const qs = new URLSearchParams()
-    qs.set("page", String(params.page))
-    qs.set("page_size", String(params.page_size))
-    const raw = await api
-      .get(`admin/users/${id}/login-history?${qs.toString()}`)
-      .json<BackendPaginated<BackendLoginHistoryRow>>()
-    return {
-      items: raw.items.map(adaptLoginHistory),
-      total: raw.total,
-      page: raw.page,
-      pageSize: raw.page_size,
-      totalPages: raw.total_pages,
-    }
-  },
-
   exportCsv: async (filters: Record<string, string>) => {
     const qs = new URLSearchParams(filters)
-    const token = getAccessToken()
-    const url = `${API_BASE}/admin/users/export?${qs.toString()}`
-    const response = await fetch(url, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-    if (!response.ok) throw new Error("Export thất bại")
-    const blob = await response.blob()
     const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19)
-    const filename = `users_${ts}.csv`
-    const href = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = href
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(href)
+    await downloadBlob(`admin/users/export?${qs}`, `users_${ts}.csv`)
+  },
+  exportCsvUrl: (filters: Record<string, string>) => `${API_BASE}/admin/users/export?${new URLSearchParams(filters)}`,
+  authHeaders: () => {
+    const token = getAccessToken()
+    return token ? { Authorization: `Bearer ${token}` } : {}
   },
 }
