@@ -108,7 +108,7 @@ function adaptOrderResult(raw: Raw): VTOrderResult {
 function adaptPosition(raw: Raw): VTPosition {
   return {
     symbol: String(raw.symbol ?? "").toUpperCase(),
-    quantity: num(raw.quantity),
+    quantity: num(raw.quantity_total ?? raw.quantity),
     avgBuyPrice: num(raw.avg_cost_vnd ?? raw.avgBuyPrice),
     currentPrice: num(raw.current_price_vnd),
     marketValue: num(raw.market_value_vnd),
