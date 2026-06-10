@@ -12,17 +12,17 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@fontsource/be-vietnam-pro": "^5.2.8",
+    "@fontsource/manrope": "^5.2.8",
     "date-fns": "^4.4.0",
     "echarts": "^6.1.0",
     "ky": "^2.0.2",
     "lucide-vue-next": "^1.0.0",
     "naive-ui": "^2.44.1",
     "pinia": "^3.0.4",
-    "vuedraggable": "npm:vuedraggable@next",
     "vue": "^3.5.35",
     "vue-echarts": "^8.0.1",
-    "vue-router": "^5.1.0"
+    "vue-router": "^5.1.0",
+    "vuedraggable": "npm:vuedraggable@next"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

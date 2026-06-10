@@ -25,18 +25,18 @@ const revenueOption = computed(() => ({
   backgroundColor: "transparent",
   tooltip: { trigger: "axis", valueFormatter: (value: number) => fmtVnd(value) },
   grid: { left: 52, right: 16, top: 20, bottom: 32 },
-  xAxis: { type: "category", data: revenue.value.map((p) => fmtDate(p.date).slice(0, 5)), axisLabel: { color: "#A9B9CF" } },
-  yAxis: { type: "value", axisLabel: { color: "#A9B9CF", formatter: (value: number) => fmtCompact(value) }, splitLine: { lineStyle: { color: "#1D3452" } } },
-  series: [{ type: "line", smooth: true, data: revenue.value.map((p) => p.revenue_vnd), showSymbol: false, lineStyle: { color: "#2F80ED", width: 3 }, areaStyle: { color: "rgba(47, 128, 237, .15)" } }],
+  xAxis: { type: "category", data: revenue.value.map((p) => fmtDate(p.date).slice(0, 5)), axisLabel: { color: "#64748B" } },
+  yAxis: { type: "value", axisLabel: { color: "#64748B", formatter: (value: number) => fmtCompact(value) }, splitLine: { lineStyle: { color: "#E2E8F0" } } },
+  series: [{ type: "line", smooth: true, data: revenue.value.map((p) => p.revenue_vnd), showSymbol: false, lineStyle: { color: "#2563EB", width: 3 }, areaStyle: { color: "rgba(37, 99, 235, .12)" } }],
 }))
 
 const planOption = computed(() => ({
   backgroundColor: "transparent",
   tooltip: { trigger: "axis" },
   grid: { left: 92, right: 16, top: 20, bottom: 24 },
-  xAxis: { type: "value", axisLabel: { color: "#A9B9CF" }, splitLine: { lineStyle: { color: "#1D3452" } } },
-  yAxis: { type: "category", data: planDist.value.map((p) => p.plan_name), axisLabel: { color: "#A9B9CF" } },
-  series: [{ type: "bar", data: planDist.value.map((p) => p.active_subscriptions), itemStyle: { color: "#38BDF8", borderRadius: [0, 4, 4, 0] } }],
+  xAxis: { type: "value", axisLabel: { color: "#64748B" }, splitLine: { lineStyle: { color: "#E2E8F0" } } },
+  yAxis: { type: "category", data: planDist.value.map((p) => p.plan_name), axisLabel: { color: "#64748B" } },
+  series: [{ type: "bar", data: planDist.value.map((p) => p.active_subscriptions), itemStyle: { color: "#0284C7", borderRadius: [0, 4, 4, 0] } }],
 }))
 
 async function load() {

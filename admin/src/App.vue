@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { darkTheme, NConfigProvider, NDialogProvider, NGlobalStyle, NLoadingBarProvider, NMessageProvider, NNotificationProvider } from "naive-ui"
+import { NConfigProvider, NDialogProvider, NGlobalStyle, NLoadingBarProvider, NMessageProvider, NNotificationProvider } from "naive-ui"
 import FeedbackBridge from "@/components/common/FeedbackBridge.vue"
 import { themeOverrides } from "@/theme"
 </script>
 
 <template>
-  <n-config-provider :theme="darkTheme" :theme-overrides="themeOverrides">
+  <n-config-provider :theme-overrides="themeOverrides">
     <n-global-style />
     <n-loading-bar-provider>
       <n-message-provider placement="top-right">

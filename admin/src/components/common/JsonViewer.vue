@@ -14,10 +14,10 @@ const json = computed(() => JSON.stringify(props.data ?? null, null, 2))
 
 <style scoped>
 .json-viewer {
-  background: #07172b;
-  border: 1px solid #1d3452;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  color: #d7e2f0;
+  color: #334155;
   font-size: 12px;
   line-height: 1.5;
   margin: 0;

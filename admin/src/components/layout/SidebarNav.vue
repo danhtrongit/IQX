@@ -71,7 +71,7 @@ function renderIcon(icon: any) {
 }
 .brand-mark {
   align-items: center;
-  background: #2f80ed;
+  background: #2563eb;
   border-radius: 8px;
   color: white;
   display: flex;
@@ -81,12 +81,12 @@ function renderIcon(icon: any) {
   width: 36px;
 }
 .brand-title {
-  color: #f8fafc;
+  color: #0f172a;
   font-size: 15px;
   font-weight: 700;
 }
 .brand-subtitle {
-  color: #a9b9cf;
+  color: #64748b;
   font-size: 11px;
 }
 </style>

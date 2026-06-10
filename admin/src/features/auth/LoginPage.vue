@@ -61,7 +61,7 @@ async function submit() {
 <style scoped>
 .login-page {
   align-items: center;
-  background: #061224;
+  background: #f6f8fc;
   display: flex;
   min-height: 100vh;
   justify-content: center;
@@ -81,9 +81,9 @@ async function submit() {
 }
 .login-icon {
   align-items: center;
-  background: #102d55;
+  background: #eff6ff;
   border-radius: 10px;
-  color: #5a9ef4;
+  color: #2563eb;
   display: flex;
   height: 52px;
   justify-content: center;

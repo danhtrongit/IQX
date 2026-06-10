@@ -34,11 +34,11 @@ defineProps<{
 }
 .kpi-label,
 .kpi-sub {
-  color: #a9b9cf;
+  color: #64748b;
   font-size: 12px;
 }
 .kpi-value {
-  color: #f8fafc;
+  color: #0f172a;
   font-size: 22px;
   font-weight: 700;
   line-height: 1.25;
@@ -50,9 +50,9 @@ defineProps<{
 }
 .kpi-icon {
   align-items: center;
-  background: #102d55;
+  background: #eff6ff;
   border-radius: 8px;
-  color: #5a9ef4;
+  color: #2563eb;
   display: flex;
   height: 40px;
   justify-content: center;

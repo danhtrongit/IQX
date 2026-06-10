@@ -1,7 +1,7 @@
 :root {
-  font-family: "Be Vietnam Pro", system-ui, sans-serif;
-  color-scheme: dark;
-  background: #061224;
+  font-family: "Manrope", system-ui, sans-serif;
+  color-scheme: light;
+  background: #f6f8fc;
 }
 
 * {
@@ -16,7 +16,8 @@ body,
 }
 
 body {
-  background: #061224;
+  background: #f6f8fc;
+  color: #0f172a;
 }
 
 a {
@@ -45,7 +46,7 @@ a {
 }
 
 .page-subtitle {
-  color: #a9b9cf;
+  color: #64748b;
   font-size: 13px;
   margin: 4px 0 0;
 }
