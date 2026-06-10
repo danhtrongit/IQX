@@ -1,8 +1,19 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+/* ============================================================
+   IQX Dashboard — global styles
+   - Arco Design owns the CSS reset (arco.css imported in main.tsx).
+   - Tailwind v4 *utilities only* (NO Preflight) so utilities never
+     clobber Arco component styling; we reach for them sparingly.
+   - Dark mode follows Arco's body[arco-theme] attribute, set by the
+     pre-paint bootstrap in index.html and by ThemeProvider at runtime.
+   ============================================================ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@plugin "@tailwindcss/typography";
 
-/* ── Local Fonts ── */
+@custom-variant dark (&:where([arco-theme="dark"], [arco-theme="dark"] *));
+
+/* ── Local font: Tahoma ── */
 @font-face {
   font-family: "Tahoma";
   font-style: normal;
@@ -19,140 +30,107 @@
   src: url("@/assets/fonts/Tahoma-Bold.woff2") format("woff2");
 }
 
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: 'Tahoma', sans-serif;
-    --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-foreground: var(--foreground);
-    --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+@theme {
+  --font-sans: "Tahoma", sans-serif;
+  /* Vietnamese stock-board semantic colors → text-up / bg-down / border-reference ... */
+  --color-up: #10b981;
+  /* tăng giá */
+  --color-down: #ef4444;
+  /* giảm giá */
+  --color-reference: #eab308;
+  /* tham chiếu */
+  --color-ceiling: #b388ff;
+  /* trần */
+  --color-floor: #06b6d4;
+  /* sàn */
 }
 
-:root {
-    --background: oklch(0.995 0.002 234.82);
-    --foreground: oklch(0.15 0.015 234.82);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.15 0.015 234.82);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.15 0.015 234.82);
-    --primary: oklch(0.69 0.15 234.82);
-    --primary-foreground: oklch(0.99 0 0);
-    --secondary: oklch(0.955 0.02 234.82);
-    --secondary-foreground: oklch(0.28 0.06 234.82);
-    --muted: oklch(0.96 0.012 234.82);
-    --muted-foreground: oklch(0.50 0.04 234.82);
-    --accent: oklch(0.955 0.02 234.82);
-    --accent-foreground: oklch(0.28 0.06 234.82);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.91 0.015 234.82);
-    --input: oklch(0.91 0.015 234.82);
-    --ring: oklch(0.69 0.15 234.82);
-    --chart-1: oklch(0.69 0.15 234.82);
-    --chart-2: oklch(0.72 0.14 195);
-    --chart-3: oklch(0.62 0.15 275);
-    --chart-4: oklch(0.74 0.17 155);
-    --chart-5: oklch(0.65 0.18 350);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.98 0.008 234.82);
-    --sidebar-foreground: oklch(0.15 0.015 234.82);
-    --sidebar-primary: oklch(0.69 0.15 234.82);
-    --sidebar-primary-foreground: oklch(0.99 0 0);
-    --sidebar-accent: oklch(0.955 0.02 234.82);
-    --sidebar-accent-foreground: oklch(0.28 0.06 234.82);
-    --sidebar-border: oklch(0.91 0.015 234.82);
-    --sidebar-ring: oklch(0.69 0.15 234.82);
+/* Tahoma everywhere — Arco components inherit from body. */
+html,
+body {
+  font-family: "Tahoma", sans-serif;
 }
 
-.dark {
-    --background: oklch(0.145 0.015 234.82);
-    --foreground: oklch(0.985 0.005 234.82);
-    --card: oklch(0.20 0.02 234.82);
-    --card-foreground: oklch(0.985 0.005 234.82);
-    --popover: oklch(0.20 0.02 234.82);
-    --popover-foreground: oklch(0.985 0.005 234.82);
-    --primary: oklch(0.69 0.15 234.82);
-    --primary-foreground: oklch(0.99 0 0);
-    --secondary: oklch(0.27 0.025 234.82);
-    --secondary-foreground: oklch(0.96 0.005 234.82);
-    --muted: oklch(0.27 0.025 234.82);
-    --muted-foreground: oklch(0.68 0.04 234.82);
-    --accent: oklch(0.27 0.025 234.82);
-    --accent-foreground: oklch(0.96 0.005 234.82);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(0.34 0.03 234.82);
-    --input: oklch(0.34 0.03 234.82);
-    --ring: oklch(0.55 0.12 234.82);
-    --chart-1: oklch(0.72 0.15 234.82);
-    --chart-2: oklch(0.75 0.14 195);
-    --chart-3: oklch(0.68 0.15 275);
-    --chart-4: oklch(0.76 0.17 155);
-    --chart-5: oklch(0.71 0.18 350);
-    --sidebar: oklch(0.17 0.02 234.82);
-    --sidebar-foreground: oklch(0.985 0.005 234.82);
-    --sidebar-primary: oklch(0.69 0.15 234.82);
-    --sidebar-primary-foreground: oklch(0.99 0 0);
-    --sidebar-accent: oklch(0.27 0.025 234.82);
-    --sidebar-accent-foreground: oklch(0.96 0.005 234.82);
-    --sidebar-border: oklch(0.34 0.03 234.82);
-    --sidebar-ring: oklch(0.55 0.12 234.82);
+body {
+  margin: 0;
+  color: var(--color-text-1);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Curated base reset ──
+   We skip Tailwind Preflight (Arco owns the reset), but Arco only resets its
+   OWN components — raw <button>/<a>/headings used in our markup would otherwise
+   show native browser chrome (e.g. grey/white default buttons, glaring in dark
+   mode). Restore just the safe parts of Preflight, in @layer base so Arco's
+   class-based styles (unlayered, higher priority) always win. We deliberately
+   do NOT add the global `* { border: 0 }` — that's the part that breaks Arco.
+
+   The button reset is additionally scoped with :not([class*="arco-"]) so it
+   never touches Arco's internal buttons (Modal close, Select clear, InputNumber
+   steppers, Pagination items…), which are <button>s but not always `.arco-btn`. */
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-    }
-  body {
-    @apply bg-background text-foreground;
-    }
-  html {
-    @apply font-sans;
-    scroll-behavior: smooth;
-    }
+
+  *,
+  ::before,
+  ::after {
+    box-sizing: border-box;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+
+  button:not([class*="arco-"]) {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    text-align: inherit;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  input,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  :where(h1, h2, h3, h4, h5, h6) {
+    font-size: inherit;
+    font-weight: inherit;
+    margin: 0;
+  }
+
+  :where(p, figure, blockquote, dl, dd) {
+    margin: 0;
+  }
+
+  :where(ul, ol) {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
 }
 
-/* ── Homepage Animations ── */
+/* ── Marketing landing animations ── */
 @keyframes pulse-glow {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.6;
     transform: scale(1);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.05);
@@ -164,6 +142,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -175,6 +154,7 @@
     opacity: 0;
     transform: translateX(-50px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -186,6 +166,7 @@
     opacity: 0;
     transform: translateX(50px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -220,16 +201,19 @@
   animation-delay: 800ms;
 }
 
+/* ── Real-time price flash (green up / red down) ── */
 @keyframes price-flash-up {
   0% {
     background-color: color-mix(in oklch, #10b981 70%, transparent);
     box-shadow: 0 0 10px color-mix(in oklch, #10b981 55%, transparent);
     color: #ffffff;
   }
+
   60% {
     background-color: color-mix(in oklch, #10b981 30%, transparent);
     box-shadow: 0 0 4px color-mix(in oklch, #10b981 20%, transparent);
   }
+
   100% {
     background-color: transparent;
     box-shadow: 0 0 0 transparent;
@@ -242,10 +226,12 @@
     box-shadow: 0 0 10px color-mix(in oklch, #ef4444 55%, transparent);
     color: #ffffff;
   }
+
   60% {
     background-color: color-mix(in oklch, #ef4444 30%, transparent);
     box-shadow: 0 0 4px color-mix(in oklch, #ef4444 20%, transparent);
   }
+
   100% {
     background-color: transparent;
     box-shadow: 0 0 0 transparent;
@@ -265,4 +251,173 @@
 
 .price-flash-down {
   animation: price-flash-down 850ms ease-out;
+}
+
+/* ── Brand primary: Xanh Royal/Azure (#2563EB) sang trọng, hiện đại.
+   Arco's --color-primary-light-* and rgb(var(--primary-6)) all derive from these,
+   so the whole UI re-themes from one place. Loaded after arco.css → wins.
+   Scale = Tailwind blue (50→950); primary-6 = blue-600 (#2563EB). ── */
+html body {
+  --primary-1: 239, 246, 255;
+  /* blue-50  */
+  --primary-2: 219, 234, 254;
+  /* blue-100 */
+  --primary-3: 191, 219, 254;
+  /* blue-200 */
+  --primary-4: 147, 197, 253;
+  /* blue-300 */
+  --primary-5: 59, 130, 246;
+  /* blue-500 */
+  --primary-6: 37, 99, 235;
+  /* blue-600 — brand */
+  --primary-7: 29, 78, 216;
+  /* blue-700 */
+  --primary-8: 30, 64, 175;
+  /* blue-800 */
+  --primary-9: 30, 58, 138;
+  /* blue-900 */
+  --primary-10: 23, 37, 84;
+  /* blue-950 */
+}
+
+html body[arco-theme="dark"] {
+  /* Inverted: darkest at -1, lightest at -10; primary-6 brighter (blue-500)
+     so brand elements pop against dark surfaces. */
+  --primary-1: 23, 37, 84;
+  /* blue-950 */
+  --primary-2: 30, 58, 138;
+  /* blue-900 */
+  --primary-3: 30, 64, 175;
+  /* blue-800 */
+  --primary-4: 29, 78, 216;
+  /* blue-700 */
+  --primary-5: 37, 99, 235;
+  /* blue-600 */
+  --primary-6: 59, 130, 246;
+  /* blue-500 — brand (dark) */
+  --primary-7: 96, 165, 250;
+  /* blue-400 */
+  --primary-8: 147, 197, 253;
+  /* blue-300 */
+  --primary-9: 191, 219, 254;
+  /* blue-200 */
+  --primary-10: 239, 246, 255;
+  /* blue-50 */
+}
+
+/* ── Global top loading bar (replaces spinner loaders) ── */
+@keyframes loading-bar-indeterminate {
+  0% {
+    left: -40%;
+    width: 40%;
+  }
+
+  50% {
+    left: 25%;
+    width: 55%;
+  }
+
+  100% {
+    left: 100%;
+    width: 40%;
+  }
+}
+
+.loading-bar-track {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  height: 3px;
+  z-index: 10000;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.loading-bar-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: rgb(var(--primary-6));
+  box-shadow: 0 0 8px rgb(var(--primary-6) / 0.6);
+  animation: loading-bar-indeterminate 1.1s ease-in-out infinite;
+}
+
+/* ── Custom scrollbar ──
+   Scoped to the document scroll + an opt-in `.custom-scrollbar` utility so
+   Arco component internals (Select dropdowns, Modals, Tables…) keep their
+   own native scrollbars. We deliberately avoid the universal `*` selector
+   here — same reason we skip `* { border: 0 }` above: it leaks into Arco. */
+:root {
+  --scrollbar-size: 10px;
+  --scrollbar-thumb: var(--color-fill-3, rgb(201, 205, 212));
+  --scrollbar-thumb-hover: rgb(var(--primary-6));
+}
+
+/* Firefox — themed on the root scroller only (color + thinness, no layout shift). */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+/* WebKit (Chrome / Safari / Edge) — page scroll + opt-in regions only. */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 999px;
+  /* Transparent border creates padding around the thumb (inset look). */
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+html::-webkit-scrollbar-thumb:active,
+body::-webkit-scrollbar-thumb:active,
+.custom-scrollbar::-webkit-scrollbar-thumb:active {
+  background-color: rgb(var(--primary-7));
+}
+
+/* Thin variant (opt-in) for dense inner panels (tables, dropdowns, sidebars). */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Hide scrollbar but keep scrolling (opt-in — carousels, chip rows). */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }

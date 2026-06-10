@@ -21,6 +21,7 @@ from app.core.rate_limit import limiter
 from app.services.bctc.service import get_bctc
 from app.services.cache.decorator import redis_cached
 from app.services.market_data.fallback import fetch_with_fallback
+from app.services.market_data.orchestrator import fetch_from_registry
 from app.services.market_data.schemas import MarketDataResponse
 from app.services.market_data.sources import fmarket, google_sheets, kbs, mbk, news, spl, vietcap, vndirect
 
@@ -96,16 +97,10 @@ async def list_symbols(
         data, url = await vndirect.fetch_symbols(exchange=ex)
         return _filter_symbols(data, exchange, asset_type), url
 
-    sources: list[tuple[str, Any]] = []
-    if source and source.upper() == "VND":
-        sources = [("VND", _vnd)]
-    elif source and source.upper() == "VCI":
-        sources = [("VCI", _vci)]
-    else:
-        sources = [("VCI", _vci), ("VND", _vnd)]
-
     try:
-        return await fetch_with_fallback(sources)
+        return await fetch_from_registry(
+            "reference.symbols", {"VCI": _vci, "VND": _vnd}, override=source
+        )
     except RuntimeError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
@@ -302,18 +297,11 @@ async def get_ohlcv(
             symbol, start_ts=start_ts, end_ts=end_ts, interval=interval
         )
 
-    # VND is primary for OHLCV (simpler public chart API), VCI fallback
-    src = (source or "auto").upper()
-    sources: list[tuple[str, Any]] = []
-    if src == "VCI":
-        sources = [("VCI", _vci)]
-    elif src == "VND":
-        sources = [("VND", _vnd)]
-    else:
-        sources = [("VND", _vnd), ("VCI", _vci)]
-
+    # Source chain (VND primary, VCI fallback) is defined in the registry.
     try:
-        return await fetch_with_fallback(sources)
+        return await fetch_from_registry(
+            "quote.ohlcv", {"VND": _vnd, "VCI": _vci}, override=source
+        )
     except RuntimeError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 

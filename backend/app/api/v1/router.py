@@ -21,6 +21,7 @@ from app.api.v1.endpoints import (
     health,
     lessons,
     market_data,
+    market_global,
     premium,
     users,
     virtual_trading,
@@ -34,6 +35,7 @@ api_v1_router.include_router(auth.router)
 api_v1_router.include_router(users.router)
 api_v1_router.include_router(premium.router)
 api_v1_router.include_router(market_data.router)
+api_v1_router.include_router(market_global.router)
 api_v1_router.include_router(virtual_trading.router)
 api_v1_router.include_router(ai_analysis.router)
 api_v1_router.include_router(ai_patterns.router)

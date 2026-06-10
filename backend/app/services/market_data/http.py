@@ -71,6 +71,23 @@ _SOURCE_HEADERS: dict[str, dict[str, str]] = {
     },
     "SPL": {},
     "RSS": {},
+    "SJC": {
+        "Referer": "https://sjc.com.vn/bieu-do-gia-vang",
+        "Origin": "https://sjc.com.vn",
+    },
+    "VCB": {
+        "Referer": "https://www.vietcombank.com.vn/",
+        "Origin": "https://www.vietcombank.com.vn",
+    },
+    "ASEAN": {
+        "Referer": "https://research.aseansc.com.vn/",
+        "Origin": "https://research.aseansc.com.vn",
+    },
+    "MSN": {
+        "Referer": "https://www.msn.com/",
+        "Origin": "https://www.msn.com",
+    },
+    "SIMPLIZE": {},
 }
 
 _DEFAULT_TIMEOUT = 15.0
