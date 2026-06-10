@@ -46,7 +46,10 @@ export function StockLogo({ symbol, size = 24, className }: StockLogoProps) {
       height={size}
       onError={handleError}
       loading="lazy"
-      className={cn("shrink-0 rounded-md bg-[var(--color-fill-2)] object-cover", className)}
+      className={cn(
+        "box-border shrink-0 rounded-md bg-[var(--color-fill-2)] object-contain p-px",
+        className,
+      )}
     />
   )
 }
