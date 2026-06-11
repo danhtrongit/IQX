@@ -103,18 +103,25 @@ export async function fetchMarketIndices(): Promise<IndexData[]> {
 function adaptPriceBoardItem(raw: any): PriceBoardData {
   const toK = (v: number | null | undefined) => (v != null ? v / 1000 : 0)
 
-  const closePrice = toK(raw.close_price ?? raw.closePrice)
   const referencePrice = toK(raw.reference_price ?? raw.referencePrice)
+  const rawClose = toK(raw.close_price ?? raw.closePrice)
+  // Pre-market / no trades yet: backend returns close_price=0. Fall back to the
+  // reference price so the board shows a valid price with 0 change (standard VN
+  // price-board behavior) instead of "—" and a false -100%.
+  const hasTraded = rawClose > 0
+  const closePrice = hasTraded ? rawClose : referencePrice
   const priceChange =
     raw.price_change != null
       ? toK(raw.price_change)
       : raw.priceChange != null
         ? raw.priceChange
-        : closePrice - referencePrice
+        : hasTraded
+          ? closePrice - referencePrice
+          : 0
   const percentChange =
     raw.percent_change ??
     raw.percentChange ??
-    (referencePrice > 0 ? (priceChange / referencePrice) * 100 : 0)
+    (hasTraded && referencePrice > 0 ? (priceChange / referencePrice) * 100 : 0)
 
   return {
     symbol: raw.symbol || "",

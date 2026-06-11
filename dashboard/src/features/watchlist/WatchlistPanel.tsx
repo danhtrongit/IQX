@@ -628,7 +628,7 @@ export function WatchlistPanel() {
         activeTab={activeTab}
         onChange={handleTabChange}
         size="small"
-        className="flex h-full flex-col [&_.arco-tabs-content]:min-h-0 [&_.arco-tabs-content]:flex-1 [&_.arco-tabs-content-inner]:h-full [&_.arco-tabs-content-item-active]:h-full"
+        className="flex h-full flex-col [&_.arco-tabs-content]:flex [&_.arco-tabs-content]:flex-1 [&_.arco-tabs-content]:flex-col [&_.arco-tabs-content]:min-h-0 [&_.arco-tabs-content-inner]:flex-1 [&_.arco-tabs-content-inner]:min-h-0 [&_.arco-tabs-content-item-active]:flex [&_.arco-tabs-content-item-active]:h-full [&_.arco-tabs-content-item-active]:flex-col [&_.arco-tabs-content-item-active]:min-h-0 [&_.arco-tabs-pane]:flex-1 [&_.arco-tabs-pane]:min-h-0"
       >
         <Tabs.TabPane key="watchlist" title={<TabTitle icon={<IconEye />} label="Theo dõi" />}>
           <WatchlistTab />
