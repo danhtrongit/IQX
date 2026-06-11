@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { fetchDailyCloses, prevSessionChangePct, searchSymbols } from "./api"
 import { marketDataKeys } from "./keys"
 import { useMarketDataContext } from "./provider"
+import type { OhlcMessage, OrderBookMessage, TickMessage } from "./realtime"
 import type { IndexData, PriceBoardData, SymbolSearchResult } from "./types"
 
 /** Subscribe to a single symbol's live price. */
@@ -112,4 +113,72 @@ export function usePreviousSessionChange(
     staleTime: 30 * 60_000,
   })
   return useMemo(() => prevSessionChangePct(query.data ?? []), [query.data])
+}
+
+/**
+ * Subscribe to live matched-trade ticks for a symbol via the shared WS client.
+ * Returns the most recent tick (or null). For UIs that want a stream, pass an
+ * `onTick` callback.
+ */
+export function useRealtimeTicks(
+  symbol: string,
+  onTick?: (tick: TickMessage) => void,
+): TickMessage | null {
+  const { getRealtimeClient } = useMarketDataContext()
+  const [last, setLast] = useState<TickMessage | null>(null)
+  const cbRef = useRef(onTick)
+  cbRef.current = onTick
+
+  useEffect(() => {
+    const client = getRealtimeClient()
+    const upper = symbol.toUpperCase()
+    if (!client || !upper) return
+    return client.on(upper, "tick", (msg) => {
+      const tick = msg as TickMessage
+      setLast(tick)
+      cbRef.current?.(tick)
+    })
+  }, [symbol, getRealtimeClient])
+
+  return last
+}
+
+/** Subscribe to the live order book (bid/ask depth) for a symbol. */
+export function useOrderBook(symbol: string): OrderBookMessage | null {
+  const { getRealtimeClient } = useMarketDataContext()
+  const [book, setBook] = useState<OrderBookMessage | null>(null)
+
+  useEffect(() => {
+    const client = getRealtimeClient()
+    const upper = symbol.toUpperCase()
+    if (!client || !upper) return
+    setBook(null)
+    return client.on(upper, "orderbook", (msg) => setBook(msg as OrderBookMessage))
+  }, [symbol, getRealtimeClient])
+
+  return book
+}
+
+/** Subscribe to live 1-minute OHLC bars for a symbol. */
+export function useRealtimeOhlc(
+  symbol: string,
+  onBar?: (bar: OhlcMessage) => void,
+): OhlcMessage | null {
+  const { getRealtimeClient } = useMarketDataContext()
+  const [last, setLast] = useState<OhlcMessage | null>(null)
+  const cbRef = useRef(onBar)
+  cbRef.current = onBar
+
+  useEffect(() => {
+    const client = getRealtimeClient()
+    const upper = symbol.toUpperCase()
+    if (!client || !upper) return
+    return client.on(upper, "ohlc", (msg) => {
+      const bar = msg as OhlcMessage
+      setLast(bar)
+      cbRef.current?.(bar)
+    })
+  }, [symbol, getRealtimeClient])
+
+  return last
 }

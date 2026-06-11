@@ -16,15 +16,17 @@ import { RightSidebar, RightToolbar, NewsMarkPopover, TVChart } from "@/features
 import { cn } from "@/shared/lib/cn"
 import { IconCandlestick } from "@/shared/icons"
 import { BctcAnalysis } from "./components/BctcAnalysis"
+import { OrderBook } from "./components/OrderBook"
 import { StockAiInsight } from "./components/StockAiInsight"
 import { StockFinancials } from "./components/StockFinancials"
 import { StockOverview } from "./components/StockOverview"
 import { IconBars } from "./icons"
 
-type StockTab = "chart" | "overview" | "financials"
+type StockTab = "chart" | "overview" | "financials" | "orderbook"
 
 const TABS: { id: StockTab; label: string; icon: ComponentType<{ className?: string }> }[] = [
   { id: "chart", label: "Biểu đồ", icon: IconCandlestick },
+  { id: "orderbook", label: "Sổ lệnh", icon: IconBars },
   { id: "overview", label: "Tổng quan", icon: IconInfoCircle },
   { id: "financials", label: "Tài chính", icon: IconBars },
 ]
@@ -109,6 +111,11 @@ function StockTerminal() {
                 onSymbolChanged={handleSymbolChanged}
                 onMarkClick={setActiveMarkId}
               />
+            )}
+            {activeTab === "orderbook" && (
+              <div className="h-full overflow-y-auto p-3">
+                <OrderBook symbol={symbol} />
+              </div>
             )}
             {activeTab === "overview" && <StockOverview symbol={symbol} />}
             {activeTab === "financials" && (

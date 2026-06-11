@@ -52,6 +52,7 @@ export default defineConfig({
         // so pooled proxy sockets don't get closed mid-poll → ECONNRESET → 502.
         target: "http://127.0.0.1:8000",
         changeOrigin: true,
+        ws: true, // proxy WebSocket upgrades (realtime /market-data/ws)
         timeout: 60000,
         proxyTimeout: 60000,
         configure: (proxy) => {

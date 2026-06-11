@@ -27,6 +27,7 @@ dependencies = [
     "apscheduler>=3.10",
     "pillow>=10.0,<12.0",
     "pyyaml>=6.0,<7.0",
+    "aiomqtt>=2.3,<3.0",
 ]
 
 [project.optional-dependencies]

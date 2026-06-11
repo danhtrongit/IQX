@@ -55,9 +55,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     await jobs_startup()
 
+    # Start realtime DNSE bridge (no-op unless REALTIME_ENABLED)
+    from app.services.realtime import shutdown as rt_shutdown
+    from app.services.realtime import startup as rt_startup
+
+    await rt_startup()
+
     yield
 
     # Shutdown
+    await rt_shutdown()
     await jobs_shutdown()
     await redis_shutdown()
     await http_shutdown()

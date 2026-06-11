@@ -111,6 +111,23 @@ class Settings(BaseSettings):
     LESSON_MAX_VIDEO_MB: int = 500
     LESSON_MAX_THUMBNAIL_MB: int = 5
 
+    # ── Realtime / DNSE (MQTT KRX streaming) ─────────
+    REALTIME_ENABLED: bool = False
+    DNSE_USERNAME: str = ""
+    DNSE_PASSWORD: str = ""
+    DNSE_AUTH_URL: str = "https://services.entrade.com.vn/dnse-user-service/api/auth"
+    DNSE_ME_URL: str = "https://services.entrade.com.vn/dnse-user-service/api/me"
+    DNSE_MQTT_HOST: str = "datafeed-lts.dnse.com.vn"
+    DNSE_MQTT_PORT: int = 443
+    DNSE_MQTT_WS_PATH: str = "/wss"
+    REALTIME_LEADER_LOCK_TTL: int = 30          # giây — TTL khoá leader
+    REALTIME_LEADER_RENEW_SECONDS: int = 10     # nhịp gia hạn / thử giành lock
+    REALTIME_TOKEN_REFRESH_HOURS: int = 7       # refresh JWT trước hạn ~8h
+    REALTIME_SUBSCRIBE_POLL_SECONDS: float = 1.5  # nhịp leader đọc demand để (un)subscribe
+    REALTIME_FALLBACK_POLL_SECONDS: float = 2.0   # nhịp polling VCI khi mất broker
+    REALTIME_MAX_SYMBOLS: int = 200             # trần số mã subscribe đồng thời
+    REALTIME_WS_MAX_SYMBOLS_PER_CONN: int = 100 # trần số mã mỗi WS connection
+
     @property
     def cors_origins_list(self) -> list[str]:
         """Parse CORS_ORIGINS as a comma-separated string into a list."""
