@@ -282,6 +282,18 @@ async def fetch_price_board(
         for item in data:
             listing = item.get("listingInfo", {})
             match = item.get("matchPrice", {})
+            bid_ask = item.get("bidAsk", {}) or {}
+
+            # Depth: VCI returns up to 3 bid/ask steps (price in VND absolute).
+            def _levels(raw_levels: Any) -> list[dict[str, Any]]:
+                out: list[dict[str, Any]] = []
+                for lvl in (raw_levels or [])[:3]:
+                    out.append(
+                        {"price": lvl.get("price"), "volume": lvl.get("volume")}
+                    )
+                return out
+
+            current_room = match.get("currentRoom")
             records.append(
                 {
                     "symbol": listing.get("symbol", ""),
@@ -295,7 +307,24 @@ async def fetch_price_board(
                     "close_price": match.get("matchPrice"),
                     "average_price": match.get("avgMatchPrice"),
                     "total_volume": match.get("accumulatedVolume"),
-                    "total_value": match.get("accumulatedValue"),
+                    # accumulatedValue is in triệu đồng → ×1e6 to get VND absolute.
+                    "total_value": (
+                        match.get("accumulatedValue") * 1_000_000
+                        if match.get("accumulatedValue") is not None
+                        else None
+                    ),
+                    # Order book depth (bid/ask up to 3 levels).
+                    "bid_prices": _levels(bid_ask.get("bidPrices")),
+                    "ask_prices": _levels(bid_ask.get("askPrices")),
+                    # Foreign trading.
+                    "foreign_buy_volume": match.get("foreignBuyVolume"),
+                    "foreign_sell_volume": match.get("foreignSellVolume"),
+                    "foreign_buy_value": match.get("foreignBuyValue"),
+                    "foreign_sell_value": match.get("foreignSellValue"),
+                    # Room: shares foreigners may still buy (currentRoom),
+                    # plus total room for context.
+                    "foreign_remaining_room": current_room,
+                    "foreign_total_room": match.get("totalRoom"),
                 }
             )
 

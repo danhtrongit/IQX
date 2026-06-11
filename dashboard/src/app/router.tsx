@@ -23,6 +23,9 @@ const PaymentResultPage = lazy(() =>
 const StockDirectoryPage = lazy(() =>
   import("@/features/stock-directory").then((m) => ({ default: m.StockDirectoryPage })),
 )
+const BangGiaPage = lazy(() =>
+  import("@/features/price-board").then((m) => ({ default: m.BangGiaPage })),
+)
 const StockPage = lazy(() =>
   import("@/features/stock").then((m) => ({ default: m.StockPage })),
 )
@@ -67,6 +70,7 @@ export function AppRouter() {
           <Route path="/thi-truong" element={<MarketOverviewPage />} />
           <Route path="/du-bao" element={<DuBaoPage />} />
           <Route path="/co-phieu" element={<StockDirectoryPage />} />
+          <Route path="/bang-gia" element={<BangGiaPage />} />
           <Route path="/cai-dat" element={<SettingsPage />} />
           <Route path="/nang-cap" element={<PremiumPage />} />
           <Route path="/thanh-toan/thanh-cong" element={<PaymentResultPage type="success" />} />

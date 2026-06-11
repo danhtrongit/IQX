@@ -24,6 +24,7 @@ import { IconCrown } from "./icons"
 const NAV_ITEMS = [
   { label: "Trang chủ", href: "/" },
   { label: "Thị trường", href: "/thi-truong" },
+  { label: "Bảng giá", href: "/bang-gia" },
   { label: "Cổ phiếu", href: "/co-phieu" },
   { label: "Kiến thức", href: "/bai-hoc" },
   { label: "Giới thiệu", href: "/gioi-thieu" },
