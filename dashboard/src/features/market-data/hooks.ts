@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { fetchDailyCloses, prevSessionChangePct, searchSymbols } from "./api"
+import { useMarketDataContext } from "./context"
 import { marketDataKeys } from "./keys"
-import { useMarketDataContext } from "./provider"
 import type { OhlcMessage, OrderBookMessage, TickMessage } from "./realtime"
 import type { IndexData, PriceBoardData, SymbolSearchResult } from "./types"
 
@@ -30,7 +30,7 @@ export function usePrices(symbols: string[]): {
   priceMap: Record<string, PriceBoardData>
   isLoading: boolean
 } {
-  const ctx = useMarketDataContext()
+  const { subscribe, priceMap, isPriceLoading } = useMarketDataContext()
 
   const symbolsKey = useMemo(
     () =>
@@ -44,24 +44,30 @@ export function usePrices(symbols: string[]): {
   useEffect(() => {
     const syms = symbolsKey.split(",").filter(Boolean)
     if (syms.length === 0) return
-    return ctx.subscribe(syms)
-  }, [symbolsKey, ctx.subscribe])
+    return subscribe(syms)
+  }, [symbolsKey, subscribe])
 
   const subset = useMemo(() => {
     const result: Record<string, PriceBoardData> = {}
     for (const sym of symbolsKey.split(",")) {
-      if (sym && ctx.priceMap[sym]) result[sym] = ctx.priceMap[sym]
+      if (sym && priceMap[sym]) result[sym] = priceMap[sym]
     }
     return result
-  }, [symbolsKey, ctx.priceMap])
+  }, [symbolsKey, priceMap])
 
-  return { priceMap: subset, isLoading: ctx.isPriceLoading }
+  return { priceMap: subset, isLoading: isPriceLoading }
 }
 
-/** Get market indices data (auto-polled every 10s). */
+/** Get market indices data (live index channel over a 10s REST poll). */
 export function useIndices(): { indices: IndexData[]; isLoading: boolean } {
   const { indices, isIndicesLoading } = useMarketDataContext()
   return { indices, isLoading: isIndicesLoading && indices.length === 0 }
+}
+
+/** Whether the realtime WS is currently connected (vs REST-polling fallback). */
+export function useRealtimeStatus(): boolean {
+  const { isRealtime } = useMarketDataContext()
+  return isRealtime
 }
 
 /** Debounce a string value (250ms) for typeahead search. */
@@ -127,7 +133,9 @@ export function useRealtimeTicks(
   const { getRealtimeClient } = useMarketDataContext()
   const [last, setLast] = useState<TickMessage | null>(null)
   const cbRef = useRef(onTick)
-  cbRef.current = onTick
+  useEffect(() => {
+    cbRef.current = onTick
+  }, [onTick])
 
   useEffect(() => {
     const client = getRealtimeClient()
@@ -152,11 +160,11 @@ export function useOrderBook(symbol: string): OrderBookMessage | null {
     const client = getRealtimeClient()
     const upper = symbol.toUpperCase()
     if (!client || !upper) return
-    setBook(null)
     return client.on(upper, "orderbook", (msg) => setBook(msg as OrderBookMessage))
   }, [symbol, getRealtimeClient])
 
-  return book
+  // Đổi mã → book cũ không còn hợp lệ; trả null thay vì reset state trong effect.
+  return book && book.symbol.toUpperCase() === symbol.toUpperCase() ? book : null
 }
 
 /** Subscribe to live 1-minute OHLC bars for a symbol. */
@@ -167,7 +175,9 @@ export function useRealtimeOhlc(
   const { getRealtimeClient } = useMarketDataContext()
   const [last, setLast] = useState<OhlcMessage | null>(null)
   const cbRef = useRef(onBar)
-  cbRef.current = onBar
+  useEffect(() => {
+    cbRef.current = onBar
+  }, [onBar])
 
   useEffect(() => {
     const client = getRealtimeClient()

@@ -9,7 +9,7 @@
  * cannot connect it falls back to polling (handled in the provider).
  */
 
-export type RealtimeChannel = "tick" | "orderbook" | "ohlc"
+export type RealtimeChannel = "tick" | "orderbook" | "ohlc" | "index"
 
 export interface TickMessage {
   type: "tick"
@@ -42,7 +42,25 @@ export interface OhlcMessage {
   last_updated: number
 }
 
-export type RealtimeMessage = TickMessage | OrderBookMessage | OhlcMessage
+export interface IndexMessage {
+  type: "index"
+  code: string // VNINDEX | VN30 | HNX | HNX30 | UPCOM…
+  value: number // điểm chỉ số
+  change: number
+  change_percent: number
+  total_volume: number
+  total_value: number
+  advances: number
+  declines: number
+  nochange: number
+  time: string | null
+}
+
+export type RealtimeMessage =
+  | TickMessage
+  | OrderBookMessage
+  | OhlcMessage
+  | IndexMessage
 type Listener = (msg: RealtimeMessage) => void
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api/v1"
@@ -68,6 +86,11 @@ export class RealtimeClient {
   private pingTimer: ReturnType<typeof setInterval> | null = null
   private intentionalClose = false
   private onStatusChange?: (connected: boolean) => void
+  // (Un)subscribe được gom lô: net delta theo `${channel}:${SYM}`, flush 1
+  // frame/channel — đổi tab lớn (VN30→VN100) chỉ tốn vài frame thay vì hàng
+  // trăm, và cặp unsub+sub của mã trùng nhau tự triệt tiêu.
+  private pendingOps = new Map<string, number>()
+  private flushTimer: ReturnType<typeof setTimeout> | null = null
 
   constructor(opts?: { onStatusChange?: (connected: boolean) => void }) {
     this.onStatusChange = opts?.onStatusChange
@@ -100,10 +123,22 @@ export class RealtimeClient {
       } catch {
         return
       }
-      const anyMsg = msg as unknown as { type?: string; symbol?: string }
-      if (!anyMsg.type || !anyMsg.symbol) return
+      const anyMsg = msg as unknown as {
+        type?: string
+        symbol?: string
+        code?: string
+        detail?: string
+      }
+      // Server từ chối subscribe (VD: "symbol limit reached") — đừng nuốt im lặng.
+      if (anyMsg.type === "error") {
+        console.warn("[realtime] server error:", anyMsg.detail)
+        return
+      }
+      // Bản tin chỉ số dùng "code" thay vì "symbol" → fallback để key thành index:CODE.
+      const ident = anyMsg.symbol || anyMsg.code
+      if (!anyMsg.type || !ident) return
       const channel = anyMsg.type === "orderbook" ? "orderbook" : anyMsg.type
-      const key = `${channel}:${anyMsg.symbol.toUpperCase()}`
+      const key = `${channel}:${ident.toUpperCase()}`
       const set = this.listeners.get(key)
       if (set) for (const fn of set) fn(msg)
     }
@@ -121,7 +156,18 @@ export class RealtimeClient {
 
   disconnect(): void {
     this.intentionalClose = true
-    if (this.reconnectTimer) clearTimeout(this.reconnectTimer)
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer)
+      // Phải reset về null — scheduleReconnect() early-return khi còn handle cũ,
+      // nếu không thì sau connect() lại (StrictMode remount) sẽ không bao giờ
+      // reconnect được nữa.
+      this.reconnectTimer = null
+    }
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer)
+      this.flushTimer = null
+    }
+    this.pendingOps.clear()
     this.stopPing()
     this.ws?.close()
     this.ws = null
@@ -140,7 +186,7 @@ export class RealtimeClient {
 
     const prev = this.refCount.get(key) || 0
     this.refCount.set(key, prev + 1)
-    if (prev === 0) this.send({ action: "subscribe", symbols: [sym], channels: [channel] })
+    if (prev === 0) this.queueOp(key, 1)
 
     return () => {
       const s = this.listeners.get(key)
@@ -149,7 +195,7 @@ export class RealtimeClient {
       if (count <= 1) {
         this.refCount.delete(key)
         this.listeners.delete(key)
-        this.send({ action: "unsubscribe", symbols: [sym], channels: [channel] })
+        this.queueOp(key, -1)
       } else {
         this.refCount.set(key, count - 1)
       }
@@ -167,7 +213,43 @@ export class RealtimeClient {
     }
   }
 
+  private queueOp(key: string, delta: 1 | -1): void {
+    const net = (this.pendingOps.get(key) || 0) + delta
+    if (net === 0) this.pendingOps.delete(key)
+    else this.pendingOps.set(key, net)
+    if (!this.flushTimer) {
+      this.flushTimer = setTimeout(() => {
+        this.flushTimer = null
+        this.flushOps()
+      }, 16)
+    }
+  }
+
+  private flushOps(): void {
+    if (this.pendingOps.size === 0) return
+    const sub: Record<string, string[]> = {}
+    const unsub: Record<string, string[]> = {}
+    for (const [key, net] of this.pendingOps) {
+      const [channel, sym] = key.split(":")
+      if (net > 0) (sub[channel] ||= []).push(sym)
+      else (unsub[channel] ||= []).push(sym)
+    }
+    this.pendingOps.clear()
+    for (const [channel, symbols] of Object.entries(unsub)) {
+      this.send({ action: "unsubscribe", symbols, channels: [channel] })
+    }
+    for (const [channel, symbols] of Object.entries(sub)) {
+      this.send({ action: "subscribe", symbols, channels: [channel] })
+    }
+  }
+
   private resync(): void {
+    // refCount là nguồn sự thật khi reconnect — các op dồn cho socket cũ bỏ đi.
+    this.pendingOps.clear()
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer)
+      this.flushTimer = null
+    }
     // Group active subscriptions by channel and re-send.
     const byChannel: Record<string, string[]> = {}
     for (const key of this.refCount.keys()) {

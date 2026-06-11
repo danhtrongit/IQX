@@ -14,4 +14,7 @@ export const marketDataKeys = {
   /** Per-symbol recent daily closes (for off-hours previous-session change). */
   dailyCloses: (symbol: string) =>
     ["market-data", "daily-closes", symbol] as const,
+  /** Per-index intraday 5m closes (Bảng giá index strip charts). */
+  indexIntraday: (symbol: string) =>
+    ["market-data", "index-intraday", symbol] as const,
 } as const

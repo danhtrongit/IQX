@@ -253,6 +253,49 @@ html {
   animation: price-flash-down 850ms ease-out;
 }
 
+/* ── Bảng giá: nhấp nháy nền ô khi giá trị đổi (tăng/giảm/trung tính) ── */
+@keyframes board-flash-up {
+  from {
+    background-color: color-mix(in oklch, #10b981 28%, transparent);
+  }
+
+  to {
+    background-color: transparent;
+  }
+}
+
+@keyframes board-flash-down {
+  from {
+    background-color: color-mix(in oklch, #ef4444 28%, transparent);
+  }
+
+  to {
+    background-color: transparent;
+  }
+}
+
+@keyframes board-flash-neutral {
+  from {
+    background-color: color-mix(in oklch, #eab308 22%, transparent);
+  }
+
+  to {
+    background-color: transparent;
+  }
+}
+
+.board-flash-up {
+  animation: board-flash-up 600ms ease-out;
+}
+
+.board-flash-down {
+  animation: board-flash-down 600ms ease-out;
+}
+
+.board-flash-neutral {
+  animation: board-flash-neutral 600ms ease-out;
+}
+
 /* ── Brand primary: Xanh Royal/Azure (#2563EB) sang trọng, hiện đại.
    Arco's --color-primary-light-* and rgb(var(--primary-6)) all derive from these,
    so the whole UI re-themes from one place. Loaded after arco.css → wins.

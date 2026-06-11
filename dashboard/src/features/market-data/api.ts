@@ -1,4 +1,5 @@
 import { api, unwrap } from "@/shared/http/client"
+import { splitIntradayRows, type IndexIntraday } from "./intraday"
 import type { IndexData, PriceBoardData, SymbolSearchResult } from "./types"
 
 // ── Index constants / adapters (ported from dashboard-bak) ──
@@ -6,8 +7,9 @@ import type { IndexData, PriceBoardData, SymbolSearchResult } from "./types"
 /** Symbols sent to the market-index endpoint. */
 const INDEX_REQUEST_SYMBOLS = ["VNINDEX", "VN30", "HNXIndex", "HNX30", "HNXUpcomIndex"]
 /** Order in which main indices are displayed. */
-const MAIN_INDEX_KEYS = ["VNINDEX", "VN30", "HNX", "UPCOM"]
-const INDEX_DISPLAY: Record<string, string> = {
+const MAIN_INDEX_KEYS = ["VNINDEX", "VN30", "HNX30", "HNX", "UPCOM"]
+/** Normalized index code (DNSE/realtime convention) → UI display name. */
+export const INDEX_CODE_TO_NAME: Record<string, string> = {
   VNINDEX: "VN-Index",
   VN30: "VN30",
   HNX: "HNX-Index",
@@ -57,12 +59,15 @@ function adaptMarketIndex(raw: BackendMarketIndex): IndexData | null {
   const value = Number(raw.price ?? raw.index_value) || 0
 
   return {
-    name: INDEX_DISPLAY[symbol] || symbol,
+    name: INDEX_CODE_TO_NAME[symbol] || symbol,
     value,
     change,
     changePercent,
     trend: change > 0 ? "up" : change < 0 ? "down" : "flat",
     volume: raw.total_shares ? Number(raw.total_shares) : undefined,
+    totalValue: raw.total_value_million_vnd
+      ? Number(raw.total_value_million_vnd) * 1e6
+      : undefined,
     advances: raw.total_stock_increase ? Number(raw.total_stock_increase) : undefined,
     declines: raw.total_stock_decline ? Number(raw.total_stock_decline) : undefined,
     noChange: raw.total_stock_no_change ? Number(raw.total_stock_no_change) : undefined,
@@ -89,18 +94,22 @@ export async function fetchMarketIndices(): Promise<IndexData[]> {
 
   // Sort by MAIN_INDEX_KEYS order.
   return MAIN_INDEX_KEYS.map((key) =>
-    adapted.find((r) => r.name === (INDEX_DISPLAY[key] || key)),
+    adapted.find((r) => r.name === (INDEX_CODE_TO_NAME[key] || key)),
   ).filter((item): item is IndexData => item != null)
 }
 
 // ── Price-board adapter (ported from dashboard-bak) ──
+
+/** Tolerant backend row: snake_case fields with occasional camelCase variants. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- adapter đọc payload linh hoạt theo cả 2 kiểu đặt tên
+type RawRecord = Record<string, any>
 
 /**
  * Adapt backend snake_case price-board item to camelCase PriceBoardData.
  * Backend returns prices in raw VND (e.g. 219500). The UI expects prices in
  * x1000 format (e.g. 219.5) and displays via `* 1000`, so we divide by 1000.
  */
-function adaptPriceBoardItem(raw: any): PriceBoardData {
+function adaptPriceBoardItem(raw: RawRecord): PriceBoardData {
   const toK = (v: number | null | undefined) => (v != null ? v / 1000 : 0)
 
   const referencePrice = toK(raw.reference_price ?? raw.referencePrice)
@@ -139,10 +148,10 @@ function adaptPriceBoardItem(raw: any): PriceBoardData {
     totalVolume: raw.total_volume ?? raw.totalVolume ?? 0,
     totalValue: raw.total_value ?? raw.totalValue ?? 0,
     bid: Array.isArray(raw.bid_prices)
-      ? raw.bid_prices.map((b: any) => ({ price: toK(b.price), volume: b.volume ?? 0 }))
+      ? raw.bid_prices.map((b: RawRecord) => ({ price: toK(b.price), volume: b.volume ?? 0 }))
       : raw.bid || [],
     ask: Array.isArray(raw.ask_prices)
-      ? raw.ask_prices.map((a: any) => ({ price: toK(a.price), volume: a.volume ?? 0 }))
+      ? raw.ask_prices.map((a: RawRecord) => ({ price: toK(a.price), volume: a.volume ?? 0 }))
       : raw.ask || [],
     foreignBuy: raw.foreign_buy_volume ?? raw.foreignBuy ?? 0,
     foreignSell: raw.foreign_sell_volume ?? raw.foreignSell ?? 0,
@@ -151,13 +160,26 @@ function adaptPriceBoardItem(raw: any): PriceBoardData {
 }
 
 /** POST market-data/trading/price-board — live price-board for a batch of symbols. */
+/** Backend PriceBoardRequest chỉ nhận tối đa 50 mã/request. */
+const PRICE_BOARD_CHUNK = 50
+
 export async function fetchPriceBoard(symbols: string[]): Promise<PriceBoardData[]> {
   if (symbols.length === 0) return []
-  const res = await api
-    .post("market-data/trading/price-board", { json: { symbols } })
-    .json<unknown>()
-  const rawItems = unwrap<any[]>(res as never)
-  return Array.isArray(rawItems) ? rawItems.map(adaptPriceBoardItem) : []
+  // Tab lớn (VN100/HOSE/…) vượt giới hạn 50 mã → chia lô song song rồi gộp.
+  const chunks: string[][] = []
+  for (let i = 0; i < symbols.length; i += PRICE_BOARD_CHUNK) {
+    chunks.push(symbols.slice(i, i + PRICE_BOARD_CHUNK))
+  }
+  const results = await Promise.all(
+    chunks.map(async (chunk) => {
+      const res = await api
+        .post("market-data/trading/price-board", { json: { symbols: chunk } })
+        .json<unknown>()
+      const rawItems = unwrap<RawRecord[]>(res as never)
+      return Array.isArray(rawItems) ? rawItems.map(adaptPriceBoardItem) : []
+    }),
+  )
+  return results.flat()
 }
 
 /** GET market-data/quotes/{symbol}/ohlcv — recent daily closes (ascending by time). */
@@ -184,6 +206,34 @@ export async function fetchDailyCloses(symbol: string): Promise<number[]> {
 }
 
 /**
+ * GET market-data/quotes/{symbol}/ohlcv?interval=5m — today's intraday closes
+ * for an index (e.g. VNINDEX, VN30, HNXIndex, HNX30) plus the previous
+ * session's last close as reference. Returns empty arrays on any failure.
+ */
+export async function fetchIndexIntraday(symbol: string): Promise<IndexIntraday> {
+  if (!symbol) return { times: [], closes: [], refValue: null }
+  try {
+    const now = new Date()
+    // end = ngày mai để chắc chắn lấy trọn phiên hôm nay (backend parse end là 00:00 UTC).
+    const end = new Date(now.getTime() + 24 * 3600 * 1000).toISOString().slice(0, 10)
+    const start = new Date(now.getTime() - 7 * 24 * 3600 * 1000)
+      .toISOString()
+      .slice(0, 10)
+    const json = await api
+      .get(`market-data/quotes/${symbol.toUpperCase()}/ohlcv`, {
+        searchParams: { start, end, interval: "5m" },
+      })
+      .json<{ data?: Record<string, unknown>[] } | Record<string, unknown>[]>()
+    const rows = Array.isArray(json) ? json : json.data || []
+    const startOfToday =
+      new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000
+    return splitIntradayRows(rows, startOfToday)
+  } catch {
+    return { times: [], closes: [], refValue: null }
+  }
+}
+
+/**
  * Previous-session % change from a series of daily closes (ascending).
  * Compares the last close to the one before it. Scale-invariant, so adjusted
  * closes are fine. Returns 0 when there are fewer than 2 valid points.
@@ -196,7 +246,7 @@ export function prevSessionChangePct(closes: number[]): number {
   return ((last - prev) / prev) * 100
 }
 
-function adaptSymbolSearchItem(raw: any): SymbolSearchResult {
+function adaptSymbolSearchItem(raw: RawRecord): SymbolSearchResult {
   return {
     symbol: (raw.symbol || raw.ticker || "").toUpperCase(),
     name: raw.name || raw.organ_name || raw.organName || "",

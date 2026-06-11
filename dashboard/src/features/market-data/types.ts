@@ -6,6 +6,8 @@ export interface IndexData {
   changePercent: number
   trend: "up" | "down" | "flat"
   volume?: number
+  /** Tổng giá trị giao dịch (VND tuyệt đối). */
+  totalValue?: number
   advances?: number
   declines?: number
   noChange?: number
@@ -28,6 +30,8 @@ export interface PriceBoardData {
   hasTraded: boolean
   totalVolume: number
   totalValue: number
+  /** KL của lệnh khớp gần nhất (cổ phiếu) — chỉ có khi nhận tick realtime. */
+  lastMatchVolume?: number
   bid: { price: number; volume: number }[]
   ask: { price: number; volume: number }[]
   foreignBuy: number
