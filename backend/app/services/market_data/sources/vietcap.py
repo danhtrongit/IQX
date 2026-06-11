@@ -280,9 +280,13 @@ async def fetch_price_board(
     records: list[dict[str, Any]] = []
     if isinstance(data, list):
         for item in data:
-            listing = item.get("listingInfo", {})
-            match = item.get("matchPrice", {})
-            bid_ask = item.get("bidAsk", {}) or {}
+            # VCI trả null cho mã không có trên bảng giá (VD: mã chỉ số) —
+            # bỏ qua thay vì làm hỏng cả batch.
+            if not isinstance(item, dict):
+                continue
+            listing = item.get("listingInfo") or {}
+            match = item.get("matchPrice") or {}
+            bid_ask = item.get("bidAsk") or {}
 
             # Depth: VCI returns up to 3 bid/ask steps (price in VND absolute).
             def _levels(raw_levels: Any) -> list[dict[str, Any]]:

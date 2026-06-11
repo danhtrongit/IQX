@@ -113,8 +113,12 @@ class Settings(BaseSettings):
 
     # ── Realtime / DNSE (MQTT KRX streaming) ─────────
     REALTIME_ENABLED: bool = False
+    DNSE_TRANSPORT: str = "auto"                # auto | openapi | mqtt
     DNSE_USERNAME: str = ""
     DNSE_PASSWORD: str = ""
+    DNSE_API_KEY: str = ""                      # OpenAPI (LightSpeed) — entradex.dnse.com.vn
+    DNSE_API_SECRET: str = ""
+    DNSE_OPENAPI_WS_URL: str = "wss://ws-openapi.dnse.com.vn/v1/stream"
     DNSE_AUTH_URL: str = "https://services.entrade.com.vn/dnse-user-service/api/auth"
     DNSE_ME_URL: str = "https://services.entrade.com.vn/dnse-user-service/api/me"
     DNSE_MQTT_HOST: str = "datafeed-lts.dnse.com.vn"

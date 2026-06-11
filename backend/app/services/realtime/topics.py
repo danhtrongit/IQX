@@ -16,7 +16,7 @@ from app.services.realtime.normalize import (
 _KRX = "plaintext/quotes/krx/mdds"
 
 # Canonical channel names the WS handler subscribes to in the client request.
-CHANNELS = (KIND_TICK, KIND_ORDERBOOK, KIND_OHLC)
+CHANNELS = (KIND_TICK, KIND_ORDERBOOK, KIND_OHLC, KIND_INDEX)
 
 
 def mqtt_topic(kind: str, symbol: str) -> str | None:

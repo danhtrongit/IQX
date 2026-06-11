@@ -6,8 +6,9 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-# Channels a client may request.
-Channel = Literal["tick", "orderbook", "ohlc"]
+# Channels a client may request. ``index`` symbols are DNSE index names
+# (VNINDEX, VN30, HNX, HNX30, UPCOM, VN100...).
+Channel = Literal["tick", "orderbook", "ohlc", "index"]
 
 
 class ClientMessage(BaseModel):

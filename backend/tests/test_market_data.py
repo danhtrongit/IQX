@@ -361,6 +361,29 @@ async def test_price_board(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_price_board_tolerates_null_entries(client: AsyncClient):
+    """VCI trả null cho mã không có trên bảng giá (VD: VNINDEX) — phải bỏ qua
+    entry đó thay vì làm hỏng cả batch (degraded-mode bridge poll dựa vào đây)."""
+    with patch("app.services.market_data.sources.vietcap.fetch_json", new_callable=AsyncMock) as mock:
+        mock.return_value = [
+            None,  # mã chỉ số / không tồn tại
+            {
+                "listingInfo": {"symbol": "VCB", "board": "HSX", "refPrice": 95},
+                "matchPrice": None,  # chưa có khớp lệnh
+            },
+        ]
+
+        resp = await client.post(
+            "/api/v1/market-data/trading/price-board",
+            json={"symbols": ["VNINDEX", "VCB"]},
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert len(body["data"]) == 1
+        assert body["data"][0]["symbol"] == "VCB"
+
+
+@pytest.mark.asyncio
 async def test_price_board_empty_symbols_returns_422(client: AsyncClient):
     resp = await client.post(
         "/api/v1/market-data/trading/price-board",

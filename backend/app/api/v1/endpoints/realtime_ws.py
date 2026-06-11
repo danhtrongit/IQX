@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Realtime"])
 
-_CHANNEL_KIND = {"tick": "tick", "orderbook": "orderbook", "ohlc": "ohlc"}
+_CHANNEL_KIND = {"tick": "tick", "orderbook": "orderbook", "ohlc": "ohlc", "index": "index"}
 
 
 class _Connection:
@@ -73,9 +73,15 @@ class _Connection:
                     pair = (sym, ch)
                     if pair in self.subs:
                         continue
-                    # enforce per-connection symbol cap (by distinct symbols)
-                    distinct = {s for s, _ in self.subs}
-                    if sym not in distinct and len(distinct) >= settings.REALTIME_WS_MAX_SYMBOLS_PER_CONN:
+                    # enforce per-connection symbol cap (by distinct symbols);
+                    # mã chỉ số không tính vào cap — chỉ vài mã, dùng chung cho
+                    # mọi client, và không được để tab lớn đẩy chỉ số ra ngoài.
+                    distinct = {s for s, c in self.subs if c != "index"}
+                    if (
+                        ch != "index"
+                        and sym not in distinct
+                        and len(distinct) >= settings.REALTIME_WS_MAX_SYMBOLS_PER_CONN
+                    ):
                         await self.ws.send_json(
                             {"type": "error", "detail": "symbol limit reached"}
                         )
