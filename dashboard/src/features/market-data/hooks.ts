@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { searchSymbols } from "./api"
+import { fetchDailyCloses, prevSessionChangePct, searchSymbols } from "./api"
 import { marketDataKeys } from "./keys"
 import { useMarketDataContext } from "./provider"
 import type { IndexData, PriceBoardData, SymbolSearchResult } from "./types"
@@ -93,4 +93,23 @@ export function useSymbolSearch(q: string): {
     isLoading: query.isLoading && debouncedQ.length >= 1,
     isFetching: query.isFetching,
   }
+}
+
+/**
+ * Previous-session % change for a symbol (last daily close vs the one before).
+ * Used off-hours when the live board has no trade for today. Only fetches when
+ * `enabled` is true; cached 30 min since off-hours data is static.
+ */
+export function usePreviousSessionChange(
+  symbol: string,
+  enabled: boolean,
+): number {
+  const upper = symbol.toUpperCase()
+  const query = useQuery<number[]>({
+    queryKey: marketDataKeys.dailyCloses(upper),
+    queryFn: () => fetchDailyCloses(upper),
+    enabled: Boolean(upper) && enabled,
+    staleTime: 30 * 60_000,
+  })
+  return useMemo(() => prevSessionChangePct(query.data ?? []), [query.data])
 }

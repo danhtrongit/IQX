@@ -4,10 +4,13 @@ export {
   usePrices,
   useIndices,
   useSymbolSearch,
+  usePreviousSessionChange,
 } from "./hooks"
 export {
   fetchPriceBoard,
   fetchMarketIndices,
+  fetchDailyCloses,
+  prevSessionChangePct,
   searchSymbols,
 } from "./api"
 export { marketDataKeys } from "./keys"

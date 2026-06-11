@@ -22,7 +22,7 @@ import {
   IconStarFill,
   IconUser,
 } from "@arco-design/web-react/icon"
-import { usePrices } from "@/features/market-data"
+import { prevSessionChangePct, usePrices } from "@/features/market-data"
 import { useAuth } from "@/features/auth"
 import { getErrorMessage } from "@/shared/http/client"
 import { cn } from "@/shared/lib/cn"
@@ -198,6 +198,7 @@ function WatchlistTab() {
                 pct={pct}
                 isUp={isUp}
                 isDown={isDown}
+                hasTraded={d?.hasTraded ?? false}
                 colorClass={colorClass}
                 sparkColor={sparkColor}
                 onOpen={() => navigate(`/co-phieu/${sym}`)}
@@ -217,6 +218,7 @@ function WatchlistItemRow({
   pct,
   isUp,
   isDown,
+  hasTraded,
   colorClass,
   sparkColor,
   onOpen,
@@ -227,6 +229,7 @@ function WatchlistItemRow({
   pct: number
   isUp: boolean
   isDown: boolean
+  hasTraded: boolean
   colorClass: string
   sparkColor: string
   onOpen: () => void
@@ -234,6 +237,20 @@ function WatchlistItemRow({
 }) {
   const { data: info } = useSymbolInfo(symbol)
   const { data: spark } = useSparkline(symbol)
+
+  // Off-hours / no trade today: derive change from the last two daily closes
+  // (sparkline data is already fetched, so this is free).
+  const prevPct = prevSessionChangePct(spark || [])
+  const effPct = hasTraded ? pct : prevPct
+  const effUp = hasTraded ? isUp : effPct > 0
+  const effDown = hasTraded ? isDown : effPct < 0
+  const pctColorClass = hasTraded
+    ? colorClass
+    : effUp
+      ? "text-up"
+      : effDown
+        ? "text-down"
+        : "text-reference"
 
   return (
     <div
@@ -272,9 +289,9 @@ function WatchlistItemRow({
         <div className="flex w-[66px] shrink-0 flex-col items-end">
           <FlashingPrice price={price} className={colorClass} />
           {price > 0 ? (
-            <span className={cn("text-[10px] font-semibold tabular-nums", colorClass)}>
-              {isUp ? "+" : ""}
-              {pct.toFixed(2)}%{isUp ? " ↑" : isDown ? " ↓" : ""}
+            <span className={cn("text-[10px] font-semibold tabular-nums", pctColorClass)}>
+              {effUp ? "+" : ""}
+              {effPct.toFixed(2)}%{effUp ? " ↑" : effDown ? " ↓" : ""}
             </span>
           ) : (
             <span className="text-[10px] text-[var(--color-text-4)]">---</span>

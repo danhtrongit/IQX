@@ -24,6 +24,8 @@ export interface PriceBoardData {
   lowestPrice: number
   priceChange: number
   percentChange: number
+  /** False when no trade happened today (pre-market / off-hours): price falls back to reference. */
+  hasTraded: boolean
   totalVolume: number
   totalValue: number
   bid: { price: number; volume: number }[]

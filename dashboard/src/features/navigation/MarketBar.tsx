@@ -2,7 +2,7 @@ import { memo, useEffect, useRef } from "react"
 import { useNavigate } from "react-router"
 import { Divider, Spin } from "@arco-design/web-react"
 import { IconMinus } from "@arco-design/web-react/icon"
-import { useIndices, usePrice, type IndexData } from "@/features/market-data"
+import { useIndices, usePrice, usePreviousSessionChange, type IndexData } from "@/features/market-data"
 import { useSymbol } from "@/shared/contexts/symbol-context"
 import { isKnownIndexSymbol } from "@/shared/lib/market-symbols"
 import { StockLogo } from "./StockLogo"
@@ -137,10 +137,19 @@ export function MarketBar() {
   const isIndex = isKnownIndexSymbol(symbol)
   const { data: stockData } = usePrice(isIndex ? "" : symbol)
 
+  // Off-hours / pre-market: no trade today → show the last completed session's change.
+  const needsPrevSession = Boolean(stockData) && stockData?.hasTraded === false
+  const prevSessionPct = usePreviousSessionChange(
+    isIndex ? "" : symbol,
+    needsPrevSession,
+  )
+  const effectivePct =
+    stockData && stockData.hasTraded ? stockData.percentChange : prevSessionPct
+
   const pctClass =
-    stockData && stockData.percentChange > 0
+    stockData && effectivePct > 0
       ? "bg-up/15 text-up"
-      : stockData && stockData.percentChange < 0
+      : stockData && effectivePct < 0
         ? "bg-down/15 text-down"
         : "bg-reference/15 text-reference"
 
@@ -168,8 +177,8 @@ export function MarketBar() {
             {formatNumber(stockData.closePrice * 1000, 0)}
           </span>
           <span className={`rounded px-1.5 text-[10px] font-semibold tabular-nums ${pctClass}`}>
-            {stockData.percentChange >= 0 ? "+" : ""}
-            {formatNumber(stockData.percentChange)}%
+            {effectivePct >= 0 ? "+" : ""}
+            {formatNumber(effectivePct)}%
           </span>
         </button>
       )}

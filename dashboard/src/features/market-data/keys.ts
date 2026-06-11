@@ -11,4 +11,7 @@ export const marketDataKeys = {
   indices: () => ["market-data", "indices"] as const,
   /** Symbol typeahead search. */
   symbolSearch: (q: string) => ["market-data", "symbol-search", q] as const,
+  /** Per-symbol recent daily closes (for off-hours previous-session change). */
+  dailyCloses: (symbol: string) =>
+    ["market-data", "daily-closes", symbol] as const,
 } as const

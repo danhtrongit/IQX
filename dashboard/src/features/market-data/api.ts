@@ -135,6 +135,7 @@ function adaptPriceBoardItem(raw: any): PriceBoardData {
     lowestPrice: toK(raw.low_price ?? raw.lowestPrice),
     priceChange,
     percentChange,
+    hasTraded,
     totalVolume: raw.total_volume ?? raw.totalVolume ?? 0,
     totalValue: raw.total_value ?? raw.totalValue ?? 0,
     bid: Array.isArray(raw.bid_prices)
@@ -159,7 +160,41 @@ export async function fetchPriceBoard(symbols: string[]): Promise<PriceBoardData
   return Array.isArray(rawItems) ? rawItems.map(adaptPriceBoardItem) : []
 }
 
-// ── Symbol search (typeahead) ──
+/** GET market-data/quotes/{symbol}/ohlcv — recent daily closes (ascending by time). */
+export async function fetchDailyCloses(symbol: string): Promise<number[]> {
+  if (!symbol) return []
+  try {
+    const now = new Date()
+    const end = now.toISOString().slice(0, 10)
+    const start = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate())
+      .toISOString()
+      .slice(0, 10)
+    const json = await api
+      .get(`market-data/quotes/${symbol.toUpperCase()}/ohlcv`, {
+        searchParams: { start, end, interval: "1D" },
+      })
+      .json<{ data?: Record<string, unknown>[] } | Record<string, unknown>[]>()
+    const rows = Array.isArray(json) ? json : json.data || []
+    return rows
+      .map((p) => Number(p.close ?? p.close_price ?? 0))
+      .filter((v) => v > 0)
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Previous-session % change from a series of daily closes (ascending).
+ * Compares the last close to the one before it. Scale-invariant, so adjusted
+ * closes are fine. Returns 0 when there are fewer than 2 valid points.
+ */
+export function prevSessionChangePct(closes: number[]): number {
+  if (!Array.isArray(closes) || closes.length < 2) return 0
+  const last = closes[closes.length - 1]
+  const prev = closes[closes.length - 2]
+  if (!prev) return 0
+  return ((last - prev) / prev) * 100
+}
 
 function adaptSymbolSearchItem(raw: any): SymbolSearchResult {
   return {
