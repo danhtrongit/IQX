@@ -105,11 +105,27 @@ export interface BctcSnapshotCell {
   status: BctcStatus
 }
 
+/** One ratio row in a multi-period common-size table (values align to columns). */
+export interface CommonSizeTableRow {
+  key: string
+  label: string
+  emphasis: boolean
+  unit: string
+  values: (number | null)[]
+}
+
+/** Self-describing multi-period table (Module 2 Common-Size KQKD). */
+export interface CommonSizeTable {
+  columns: string[]
+  rows: CommonSizeTableRow[]
+}
+
 export interface BctcModuleBlock {
   id: string
   title: string
   type: string
-  data: Record<string, number | null>
+  /** `ratios`/`bridge` → flat key→value; `common_size_table` → CommonSizeTable. */
+  data: Record<string, number | null> | CommonSizeTable
 }
 
 export interface BctcValuation {

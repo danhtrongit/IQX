@@ -79,8 +79,8 @@ def _modules_a(periods: list[Period]) -> list[dict[str, Any]]:
         {
             "id": "common_size",
             "title": "Common-Size KQKD",
-            "type": "ratios",
-            "data": kpi_nonbank_modules.common_size(cur),
+            "type": "common_size_table",
+            "data": kpi_nonbank_modules.common_size_table(periods),
         },
         {
             "id": "wcc",

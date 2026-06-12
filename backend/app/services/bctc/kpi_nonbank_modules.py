@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from app.services.bctc.statements import Period, val
+from typing import Any
+
+from app.services.bctc.statements import Period, period_label, val
 
 
 def _pct(num: float | None, den: float | None) -> float | None:
@@ -27,6 +29,40 @@ def common_size(p: Period) -> dict[str, float | None]:
         "ebit_margin": _pct(val(p, "operating_profit"), rev),
         "net_margin": _pct(val(p, "npat"), rev),
     }
+
+
+# Thứ tự + nhãn hiển thị của bảng Common-Size KQKD (theo cấu trúc KQKD: giá
+# vốn -> biên gộp -> chi phí BH/QLDN -> biên EBIT -> biên LNST). `emphasis` =
+# dòng biên (subtotal) được in đậm.
+_COMMON_SIZE_ROWS = [
+    ("cogs_pct", "Giá vốn hàng bán", False),
+    ("gross_margin", "Biên lợi nhuận gộp", True),
+    ("selling_pct", "Chi phí bán hàng", False),
+    ("admin_pct", "Chi phí quản lý DN", False),
+    ("ebit_margin", "Biên EBIT (LN thuần HĐKD)", True),
+    ("net_margin", "Biên LNST", False),
+]
+
+
+def common_size_table(periods: list[Period], max_cols: int = 5) -> dict[str, Any]:
+    """Bảng Common-Size KQKD nhiều kỳ (self-describing: columns + rows).
+
+    `periods` mới-nhất-trước; cột hiển thị tăng dần (cũ -> mới) như bảng KQKD.
+    Mỗi dòng: {key, label, emphasis, unit, values[]} khớp số cột.
+    """
+    cols = list(reversed(periods[:max_cols]))  # cũ -> mới
+    per_period = [common_size(p) for p in cols]
+    rows = [
+        {
+            "key": key,
+            "label": label,
+            "emphasis": emphasis,
+            "unit": "%",
+            "values": [cs.get(key) for cs in per_period],
+        }
+        for key, label, emphasis in _COMMON_SIZE_ROWS
+    ]
+    return {"columns": [period_label(p) for p in cols], "rows": rows}
 
 
 def _avg(cur: Period, prev: Period | None, concept: str) -> float | None:

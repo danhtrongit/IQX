@@ -52,3 +52,8 @@ def val(period: Period | None, concept: str) -> float | None:
     if period is None:
         return None
     return period.values.get(concept)
+
+
+def period_label(p: Period) -> str:
+    """Nhãn kỳ cho cột bảng: năm 'YYYY' hoặc quý 'Qn/YYYY'."""
+    return f"{'Q' + str(p.length) + '/' if p.length < 5 else ''}{p.year}"

@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { PremiumGate } from "@/features/premium"
 import { useBctc, useBctcAi } from "../hooks"
-import type { BctcAi, BctcSnapshotCell } from "../types"
+import type { BctcAi, BctcSnapshotCell, CommonSizeTable } from "../types"
 import {
   fmtMultiple,
   fmtNumber,
@@ -43,6 +43,56 @@ function fmtModuleValue(key: string, v: number | null): string {
   if (DAYS_KEYS.has(key)) return fmtNumber(v, 0)
   if (v != null && Math.abs(v) >= 1e9) return `${fmtNumber(v / 1e9, 1)} tỷ`
   return fmtNumber(v, 2)
+}
+
+/**
+ * Multi-period common-size table (Module 2). Renders one row per chỉ tiêu with
+ * a column per kỳ — labels + ordering come from the backend (self-describing).
+ * Margin subtotals (`emphasis`) are bold. Keeps the existing web style (CSS
+ * vars, mini borders, tabular figures), only the layout is tabular.
+ */
+function CommonSizeTableView({ table }: { table: CommonSizeTable }) {
+  if (!table?.rows?.length) {
+    return <div className="text-xs text-[var(--color-text-3)]">Không đủ dữ liệu.</div>
+  }
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse text-sm">
+        <thead>
+          <tr className="border-b border-[var(--color-border-2)] text-[10px] uppercase text-[var(--color-text-3)]">
+            <th className="py-2 pr-3 text-left font-medium">Khoản mục (% DT thuần)</th>
+            {table.columns.map((col) => (
+              <th key={col} className="py-2 pl-3 text-right font-medium tabular-nums">
+                {col}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {table.rows.map((row) => (
+            <tr
+              key={row.key}
+              className={`border-b border-[var(--color-border-1)] last:border-0 ${
+                row.emphasis ? "font-bold text-[var(--color-text-1)]" : ""
+              }`}
+            >
+              <td className="py-2 pr-3 text-left">{row.label}</td>
+              {row.values.map((v, i) => (
+                <td
+                  key={i}
+                  className={`py-2 pl-3 text-right tabular-nums ${
+                    row.emphasis ? "" : "text-[var(--color-text-2)]"
+                  }`}
+                >
+                  {fmtPercent(v)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
 }
 
 /* ── AI memo + module note (premium overlays) ──────────────────────────────── */
@@ -160,14 +210,18 @@ export function BctcAnalysis({ symbol }: { symbol: string }) {
         {data.modules.map((mod) => (
           <div key={mod.id} className="rounded-lg border border-[var(--color-border-2)] bg-[var(--color-bg-2)] p-4">
             <div className="mb-2 text-lg font-bold">{mod.title}</div>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-              {Object.entries(mod.data).map(([k, v]) => (
-                <div key={k} className="flex flex-col">
-                  <span className="text-[10px] uppercase text-[var(--color-text-3)]">{k}</span>
-                  <span className="tabular-nums">{fmtModuleValue(k, v)}</span>
-                </div>
-              ))}
-            </div>
+            {mod.type === "common_size_table" ? (
+              <CommonSizeTableView table={mod.data as CommonSizeTable} />
+            ) : (
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                {Object.entries(mod.data as Record<string, number | null>).map(([k, v]) => (
+                  <div key={k} className="flex flex-col">
+                    <span className="text-[10px] uppercase text-[var(--color-text-3)]">{k}</span>
+                    <span className="tabular-nums">{fmtModuleValue(k, v)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             <BctcModuleNote note={moduleNote(ai, mod.id)} />
           </div>
         ))}
