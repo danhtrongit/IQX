@@ -60,6 +60,14 @@ class Settings(BaseSettings):
     SEPAY_CHECKOUT_URL: str = "https://pay-sandbox.sepay.vn/v1/checkout/init"
     APP_PUBLIC_URL: str = "http://localhost:3000"
 
+    # ── Email / Resend ───────────────────────────────
+    RESEND_API_KEY: str = ""
+    EMAIL_ENABLED: bool = False                 # when off, sends are logged, not delivered
+    EMAIL_FROM: str = "IQX <no-reply@iqx.vn>"   # must be a Resend-verified domain
+    EMAIL_LINK_BASE_URL: str = ""               # public base for email links; falls back to APP_PUBLIC_URL
+    EMAIL_VERIFY_TOKEN_TTL_HOURS: int = 48
+    PASSWORD_RESET_TOKEN_TTL_HOURS: int = 2
+
     # ── Logging ──────────────────────────────────────
     LOG_LEVEL: str = "INFO"
 

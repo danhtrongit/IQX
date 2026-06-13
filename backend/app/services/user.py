@@ -130,6 +130,24 @@ class UserService:
     async def get_by_email(self, email: str) -> User | None:
         return await self._repo.get_by_email(email.lower())
 
+    # ── Email verification ───────────────────────────
+    async def verify_email_with_token(self, token: str) -> User:
+        """Validate a verification token and mark the user's email verified.
+
+        Idempotent: re-verifying an already-verified user is a no-op success.
+        Raises ``EmailTokenError`` (invalid/expired) or ``NotFoundError`` (user gone).
+        """
+        from app.core.email_tokens import decode_email_verify_token
+
+        payload = decode_email_verify_token(token)
+        user = await self.get_by_id(uuid.UUID(str(payload["sub"])))
+        if not user.is_email_verified:
+            await self._repo.update(
+                user,
+                {"is_email_verified": True, "email_verified_at": datetime.now(UTC)},
+            )
+        return user
+
     # ── List ─────────────────────────────────────────
     async def list_users(self, params: UserListParams) -> PaginatedResponse[UserBriefResponse]:
         users, total = await self._repo.list_users(params)

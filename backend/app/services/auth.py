@@ -271,3 +271,40 @@ class AuthService:
         """Revoke all refresh tokens for the user."""
         await self._token_repo.revoke_all_for_user(user_id)
         logger.info("User logged out (all refresh tokens revoked): %s", user_id)
+
+    # ── Password reset (via emailed token) ───────────
+    async def reset_password_with_token(self, token: str, new_password: str) -> None:
+        """Set a new password from a valid reset token, then revoke all sessions.
+
+        The token is verified against the user's *current* password hash, so it
+        is single-use. Any failure (malformed / expired / unknown user) maps to
+        a generic ``BadRequestError`` to avoid leaking which links are valid.
+        """
+        from app.core.email_tokens import (
+            EmailTokenError,
+            decode_password_reset_token,
+            read_unverified_subject,
+        )
+        from app.core.exceptions import BadRequestError
+        from app.core.security import hash_password
+
+        invalid = "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn"
+        try:
+            user_id = read_unverified_subject(token)
+        except EmailTokenError:
+            raise BadRequestError(invalid) from None
+
+        try:
+            user = await self._user_service.get_by_id(user_id)
+        except NotFoundError:
+            raise BadRequestError(invalid) from None
+
+        try:
+            decode_password_reset_token(token, user.hashed_password)
+        except EmailTokenError:
+            raise BadRequestError(invalid) from None
+
+        user.hashed_password = hash_password(new_password)
+        await self._session.flush()
+        await self._token_repo.revoke_all_for_user(user.id)
+        logger.info("Password reset via token for user %s", user.id)

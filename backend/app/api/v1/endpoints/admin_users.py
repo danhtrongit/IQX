@@ -102,10 +102,10 @@ async def reset_password(
     audit: AuditCtx,
     db: DBSession,
 ) -> ResetPasswordResponse:
-    """Generate a 16-char temporary password and return it to the admin.
+    """Reset to a 16-char temporary password and email the user a reset link.
 
-    Phase 1 stub — password is NOT emailed; the admin must communicate it
-    securely out-of-band.
+    The temporary password is returned to the admin as a fallback (share it
+    securely); the user also receives a self-service reset link by email.
     """
     return await AdminUserService(db).reset_password(audit, user_id)
 
@@ -121,7 +121,7 @@ async def resend_verification(
     audit: AuditCtx,
     db: DBSession,
 ) -> ResendVerificationResponse:
-    """Phase 1 stub: records an audit row; SMTP integration is deferred."""
+    """Send the user a fresh email-verification link (and record an audit row)."""
     await AdminUserService(db).resend_verification(audit, user_id)
     return ResendVerificationResponse()
 

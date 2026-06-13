@@ -13,6 +13,23 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from app.models.user import UserRole, UserStatus
 
 
+def validate_password_strength(v: str) -> str:
+    """Shared password policy: ≥1 uppercase, lowercase, digit and special char.
+
+    Reused by registration, admin-create and the password-reset flow so the
+    rules stay in exactly one place.
+    """
+    if not re.search(r"[A-Z]", v):
+        raise ValueError("Mật khẩu phải chứa ít nhất một chữ in hoa")
+    if not re.search(r"[a-z]", v):
+        raise ValueError("Mật khẩu phải chứa ít nhất một chữ thường")
+    if not re.search(r"\d", v):
+        raise ValueError("Mật khẩu phải chứa ít nhất một chữ số")
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", v):
+        raise ValueError("Mật khẩu phải chứa ít nhất một ký tự đặc biệt")
+    return v
+
+
 # ──────────────────────────────────────────────────────
 # Request schemas
 # ──────────────────────────────────────────────────────
@@ -26,16 +43,8 @@ class UserCreate(BaseModel):
 
     @field_validator("password")
     @classmethod
-    def validate_password_strength(cls, v: str) -> str:
-        if not re.search(r"[A-Z]", v):
-            raise ValueError("Mật khẩu phải chứa ít nhất một chữ in hoa")
-        if not re.search(r"[a-z]", v):
-            raise ValueError("Mật khẩu phải chứa ít nhất một chữ thường")
-        if not re.search(r"\d", v):
-            raise ValueError("Mật khẩu phải chứa ít nhất một chữ số")
-        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", v):
-            raise ValueError("Mật khẩu phải chứa ít nhất một ký tự đặc biệt")
-        return v
+    def _validate_password(cls, v: str) -> str:
+        return validate_password_strength(v)
 
     @field_validator("phone_number")
     @classmethod

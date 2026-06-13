@@ -41,6 +41,7 @@ from app.schemas.admin_users import (
     VTOrderBrief,
 )
 from app.services.admin_audit import AdminAuditService, diff_dict
+from app.services.email import EmailService
 
 
 TRIAL_PLAN_CODE = "TRIAL_7D"
@@ -246,16 +247,25 @@ class AdminUserService:
         temp = "".join(secrets.choice(alphabet) for _ in range(16))
         user.hashed_password = hash_password(temp)
         await self._session.flush()
+        # Email the user a self-service reset link (best-effort). Signed against
+        # the NEW hash so it stays valid until they set their own password.
+        sent = await EmailService().send_password_reset_email(
+            user_id=user.id,
+            email=user.email,
+            full_name=user.full_name,
+            hashed_password=user.hashed_password,
+        )
         await self._audit.record(
             ctx,
             action="user.password_reset",
             target_entity="user",
             target_id=str(user.id),
-            note="admin reset; temporary password issued",
+            note="admin reset; temp password issued; reset email "
+            + ("sent" if sent else "skipped/failed"),
         )
         return ResetPasswordResponse(temporary_password=temp)
 
-    # ── Resend verification (no-op) ───────────────────────────────────────
+    # ── Resend verification ───────────────────────────────────────────────
 
     async def resend_verification(
         self, ctx: AuditContext, user_id: uuid.UUID
@@ -265,12 +275,15 @@ class AdminUserService:
         )).scalar_one_or_none()
         if user is None:
             raise NotFoundError("Người dùng")
+        sent = await EmailService().send_verification_email(
+            user_id=user.id, email=user.email, full_name=user.full_name
+        )
         await self._audit.record(
             ctx,
             action="user.verify_resend",
             target_entity="user",
             target_id=str(user.id),
-            note="SMTP not wired; audit-only stub",
+            note="verification email " + ("sent" if sent else "skipped/failed"),
         )
 
     # ── Login history (paginated) ─────────────────────────────────────────

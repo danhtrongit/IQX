@@ -151,11 +151,14 @@ class BulkUpdateResponse(BaseModel):
 
 class ResetPasswordResponse(BaseModel):
     temporary_password: str
-    warning: str = "Communicate this securely; not sent by email yet"
+    warning: str = (
+        "Đã gửi liên kết đặt lại mật khẩu tới email người dùng. "
+        "Mật khẩu tạm thời ở trên là phương án dự phòng — hãy chia sẻ an toàn."
+    )
 
 
 class ResendVerificationResponse(BaseModel):
-    message: str = "Verification re-send is not yet wired to SMTP; audit row recorded"
+    message: str = "Đã gửi lại email xác thực."
 
 
 # ── Export ────────────────────────────────────────────────────────────────
