@@ -29,8 +29,8 @@ interface AuthContextValue {
   refreshUser: () => Promise<void>
   showAuthModal: boolean
   setShowAuthModal: (open: boolean) => void
-  authModalTab: "login" | "register"
-  setAuthModalTab: (tab: "login" | "register") => void
+  authModalTab: "login" | "register" | "forgot"
+  setAuthModalTab: (tab: "login" | "register" | "forgot") => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(loadUser)
   const [isLoading, setIsLoading] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const [authModalTab, setAuthModalTab] = useState<"login" | "register">("login")
+  const [authModalTab, setAuthModalTab] = useState<"login" | "register" | "forgot">("login")
 
   /** Invalidate every user-scoped query (premium, watchlist, …) on auth change. */
   const invalidateUserScoped = useCallback(() => {

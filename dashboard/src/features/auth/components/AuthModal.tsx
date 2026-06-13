@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Modal, Tabs, Form, Input, Button, Message, Typography } from "@arco-design/web-react"
 import {
   IconUser,
@@ -6,8 +7,11 @@ import {
   IconLock,
   IconArrowRight,
   IconSafe,
+  IconCheckCircleFill,
+  IconLeft,
 } from "@arco-design/web-react/icon"
 import { getErrorMessage } from "@/shared/http/client"
+import { authApi } from "../api"
 import { useAuth } from "../auth-context"
 import type { LoginPayload, RegisterPayload } from "../types"
 
@@ -43,6 +47,18 @@ export function AuthModal() {
     isLoading,
   } = useAuth()
 
+  const isForgot = authModalTab === "forgot"
+  const titleText = isForgot
+    ? "Quên mật khẩu"
+    : authModalTab === "login"
+      ? "Đăng nhập vào IQX"
+      : "Tạo tài khoản IQX"
+  const subtitleText = isForgot
+    ? "Nhập email của bạn — chúng tôi sẽ gửi liên kết đặt lại mật khẩu"
+    : authModalTab === "login"
+      ? "Truy cập bảng phân tích, công cụ AI và danh mục đầu tư cá nhân"
+      : "Bắt đầu hành trình đầu tư thông minh cùng IQX"
+
   return (
     <Modal
       visible={showAuthModal}
@@ -70,29 +86,33 @@ export function AuthModal() {
           >
             IQ
           </span>
-          <span style={{ fontWeight: 700 }}>
-            {authModalTab === "login" ? "Đăng nhập vào IQX" : "Tạo tài khoản IQX"}
-          </span>
+          <span style={{ fontWeight: 700 }}>{titleText}</span>
         </div>
       }
     >
       <Typography.Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 16 }}>
-        {authModalTab === "login"
-          ? "Truy cập bảng phân tích, công cụ AI và danh mục đầu tư cá nhân"
-          : "Bắt đầu hành trình đầu tư thông minh cùng IQX"}
+        {subtitleText}
       </Typography.Text>
 
-      <Tabs
-        activeTab={authModalTab}
-        onChange={(key) => setAuthModalTab(key as "login" | "register")}
-      >
-        <TabPane key="login" title="Đăng nhập">
-          <LoginForm isLoading={isLoading} onSubmit={login} />
-        </TabPane>
-        <TabPane key="register" title="Đăng ký">
-          <RegisterForm isLoading={isLoading} onSubmit={register} />
-        </TabPane>
-      </Tabs>
+      {isForgot ? (
+        <ForgotPasswordForm onBack={() => setAuthModalTab("login")} />
+      ) : (
+        <Tabs
+          activeTab={authModalTab}
+          onChange={(key) => setAuthModalTab(key as "login" | "register")}
+        >
+          <TabPane key="login" title="Đăng nhập">
+            <LoginForm
+              isLoading={isLoading}
+              onSubmit={login}
+              onForgot={() => setAuthModalTab("forgot")}
+            />
+          </TabPane>
+          <TabPane key="register" title="Đăng ký">
+            <RegisterForm isLoading={isLoading} onSubmit={register} />
+          </TabPane>
+        </Tabs>
+      )}
 
       <div
         style={{
@@ -117,9 +137,11 @@ export function AuthModal() {
 function LoginForm({
   isLoading,
   onSubmit,
+  onForgot,
 }: {
   isLoading: boolean
   onSubmit: (p: LoginPayload) => Promise<void>
+  onForgot: () => void
 }) {
   const [form] = Form.useForm<LoginFields>()
 
@@ -160,6 +182,12 @@ function LoginForm({
         />
       </FormItem>
 
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: -8, marginBottom: 12 }}>
+        <Button type="text" size="mini" onClick={onForgot} style={{ padding: "0 4px" }}>
+          Quên mật khẩu?
+        </Button>
+      </div>
+
       <Button
         type="primary"
         long
@@ -169,6 +197,74 @@ function LoginForm({
       >
         {isLoading ? "Đang xử lý..." : "Đăng nhập"}
       </Button>
+    </Form>
+  )
+}
+
+function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
+  const [form] = Form.useForm<{ email: string }>()
+  const [submitting, setSubmitting] = useState(false)
+  const [sentTo, setSentTo] = useState<string | null>(null)
+
+  async function handleSubmit(values: { email: string }) {
+    setSubmitting(true)
+    try {
+      await authApi.forgotPassword(values.email)
+      // Always succeeds server-side (no account enumeration); show confirmation.
+      setSentTo(values.email)
+    } catch (err) {
+      Message.error(await getErrorMessage(err))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (sentTo) {
+    return (
+      <div style={{ textAlign: "center", padding: "8px 4px 4px" }}>
+        <IconCheckCircleFill style={{ fontSize: 40, color: "rgb(var(--success-6))" }} />
+        <Typography.Paragraph style={{ marginTop: 12, marginBottom: 4, fontWeight: 600 }}>
+          Kiểm tra hộp thư của bạn
+        </Typography.Paragraph>
+        <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+          Nếu <b>{sentTo}</b> tồn tại trong hệ thống, chúng tôi đã gửi liên kết đặt lại mật khẩu.
+          Vui lòng kiểm tra cả mục thư rác (spam).
+        </Typography.Text>
+        <Button long style={{ marginTop: 20 }} onClick={onBack} icon={<IconLeft />}>
+          Quay lại đăng nhập
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <Form form={form} layout="vertical" requiredSymbol={false} onSubmit={handleSubmit}>
+      <FormItem
+        field="email"
+        label="Email"
+        rules={[
+          { required: true, message: "Vui lòng nhập email" },
+          { type: "email", message: "Email không hợp lệ" },
+        ]}
+      >
+        <Input prefix={<IconEmail />} placeholder="name@company.com" autoComplete="email" />
+      </FormItem>
+
+      <Button
+        type="primary"
+        long
+        htmlType="submit"
+        loading={submitting}
+        icon={!submitting ? <IconArrowRight /> : undefined}
+      >
+        {submitting ? "Đang gửi..." : "Gửi liên kết đặt lại"}
+      </Button>
+
+      <div style={{ display: "flex", justifyContent: "center", marginTop: 12 }}>
+        <Button type="text" size="mini" onClick={onBack} icon={<IconLeft />}>
+          Quay lại đăng nhập
+        </Button>
+      </div>
     </Form>
   )
 }

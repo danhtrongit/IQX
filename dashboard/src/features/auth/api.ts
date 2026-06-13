@@ -63,6 +63,10 @@ export const authApi = {
 
   logout: () => api.post("auth/logout").json<{ message: string }>(),
 
+  /** POST /auth/forgot-password — always succeeds (no account enumeration). */
+  forgotPassword: (email: string) =>
+    api.post("auth/forgot-password", { json: { email } }).json<{ message: string }>(),
+
   getMe: async (): Promise<AuthUser> => {
     const raw = await api.get("auth/me").json<BackendUserResponse>()
     return adaptUser(raw)
