@@ -21,6 +21,8 @@ interface TradingViewWidgetOptionsParams {
   theme: "dark" | "light"
   autosize: boolean
   containerId: string
+  /** Previously-saved full chart layout (from widget.save) to restore drawings. */
+  savedData?: object
 }
 
 export function buildTradingViewWidgetOptions({
@@ -29,6 +31,7 @@ export function buildTradingViewWidgetOptions({
   theme,
   autosize,
   containerId,
+  savedData,
 }: TradingViewWidgetOptionsParams) {
   return {
     symbol,
@@ -40,6 +43,8 @@ export function buildTradingViewWidgetOptions({
     timezone: VIETNAM_TIMEZONE,
     theme,
     autosize,
+    // Restore the saved layout (incl. drawings) at construction — no flicker.
+    ...(savedData ? { saved_data: savedData } : {}),
 
     // UI customization
     disabled_features: [
@@ -51,13 +56,7 @@ export function buildTradingViewWidgetOptions({
       "header_saveload",
       "study_templates",
     ],
-    enabled_features: [
-      "side_toolbar_in_fullscreen_mode",
-      "drawing_templates",
-      // Required for chart.getLineToolsState() / applyLineToolsState() — without
-      // it those throw and drawings never persist (see drawing-persistence).
-      "saveload_separate_drawings_storage",
-    ],
+    enabled_features: ["side_toolbar_in_fullscreen_mode", "drawing_templates"],
 
     // Dark finance theme
     overrides: {
@@ -146,8 +145,11 @@ function TVChartInner({
     const containerId = `tv_chart_${Date.now()}`
     containerRef.current.id = containerId
 
+    let cancelled = false
+    let saveTimer: ReturnType<typeof setTimeout> | undefined
+
     // Wait for the TradingView library (loaded globally via index.html).
-    const initChart = () => {
+    const initChart = async () => {
       const TradingView = (window as any).TradingView
       if (!TradingView) {
         setTimeout(initChart, 200)
@@ -162,6 +164,22 @@ function TVChartInner({
         }
       }
 
+      // Restore the previously-saved layout (incl. drawings) BEFORE constructing
+      // so it renders immediately. localStorage is instant; backend adds a small
+      // delay for signed-in users. Never let a load error block the chart.
+      const persist = persistenceRef.current
+      const sym = symbol
+      let savedData: object | undefined
+      if (persist) {
+        try {
+          const loaded = await persist.load(sym)
+          if (loaded && typeof loaded === "object") savedData = loaded as object
+        } catch {
+          // ignore — start with a fresh chart
+        }
+      }
+      if (cancelled) return
+
       const widget = new TradingView.widget(
         buildTradingViewWidgetOptions({
           symbol,
@@ -169,6 +187,7 @@ function TVChartInner({
           theme,
           autosize,
           containerId,
+          savedData,
         }),
       )
 
@@ -194,39 +213,25 @@ function TVChartInner({
           }
         })
 
-        // Restore saved drawings, then persist on change. The `saveReady`
-        // guard prevents the empty initial state from clobbering what was
-        // saved before the load+apply completes.
-        const persist = persistenceRef.current
+        // Persist the full layout (incl. drawings) when the user changes the
+        // chart. `drawing_event` fires immediately on create/move/remove;
+        // `onAutoSaveNeeded` covers other undoable edits. Debounced because
+        // widget.save serializes the whole layout.
         if (persist) {
-          const sym = symbol
-          let saveReady = false
-          const saveDrawings = () => {
-            if (!saveReady) return
-            try {
-              const state = chart.getLineToolsState()
-              if (state) persist.save(sym, state)
-            } catch {
-              // ignore — never let persistence break the chart
-            }
-          }
-
-          persist
-            .load(sym)
-            .then((state) => {
-              if (state) {
-                return Promise.resolve(chart.applyLineToolsState(state)).catch(() => {})
+          const scheduleSave = () => {
+            if (saveTimer) clearTimeout(saveTimer)
+            saveTimer = setTimeout(() => {
+              try {
+                widget.save((state: object) =>
+                  persist.save(sym, state as Record<string, unknown>),
+                )
+              } catch {
+                // ignore — never let persistence break the chart
               }
-            })
-            .catch(() => {})
-            .finally(() => {
-              saveReady = true
-            })
-
-          // `drawing_event` fires immediately on create/move/remove (precise);
-          // `onAutoSaveNeeded` (≥5s throttle) also covers other undoable edits.
-          widget.subscribe("drawing_event", saveDrawings)
-          widget.subscribe("onAutoSaveNeeded", saveDrawings)
+            }, 700)
+          }
+          widget.subscribe("drawing_event", scheduleSave)
+          widget.subscribe("onAutoSaveNeeded", scheduleSave)
         }
       })
     }
@@ -234,6 +239,8 @@ function TVChartInner({
     initChart()
 
     return () => {
+      cancelled = true
+      if (saveTimer) clearTimeout(saveTimer)
       if (widgetRef.current) {
         try {
           widgetRef.current.remove()
