@@ -173,7 +173,16 @@ function TVChartInner({
       if (persist) {
         try {
           const loaded = await persist.load(sym)
-          if (loaded && typeof loaded === "object") savedData = loaded as object
+          // Only accept a real widget.save layout (has a `charts` array). Guards
+          // against stale/foreign payloads (e.g. an old line-tools-state object)
+          // which would otherwise wedge the widget on a loading spinner.
+          if (
+            loaded &&
+            typeof loaded === "object" &&
+            Array.isArray((loaded as { charts?: unknown }).charts)
+          ) {
+            savedData = loaded as object
+          }
         } catch {
           // ignore — start with a fresh chart
         }
