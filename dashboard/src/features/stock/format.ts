@@ -79,6 +79,21 @@ export function fmtNumber(v: number | null | undefined, digits = 2): string {
   return v.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits })
 }
 
+/** Signed percentage-point from a fraction delta, e.g. 0.018 → "+1.8pp". */
+export function fmtSignedPp(v: number | null | undefined, digits = 1): string {
+  if (v == null || Number.isNaN(v)) return "—"
+  const pp = v * 100
+  const sign = pp > 0 ? "+" : pp < 0 ? "−" : ""
+  return `${sign}${Math.abs(pp).toFixed(digits)}pp`
+}
+
+/** Signed plain number, e.g. 0.09 → "+0.09", -0.01 → "−0.01". */
+export function fmtSignedNum(v: number | null | undefined, digits = 2): string {
+  if (v == null || Number.isNaN(v)) return "—"
+  const sign = v > 0 ? "+" : v < 0 ? "−" : ""
+  return `${sign}${Math.abs(v).toFixed(digits)}`
+}
+
 /** Trio of Arco-aware status colors for forensic snapshot badges. */
 export function statusColors(status: BctcStatus): { bg: string; color: string; border: string } {
   switch (status) {

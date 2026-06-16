@@ -4,7 +4,14 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { PremiumGate } from "@/features/premium"
 import { useBctc, useBctcAi } from "../hooks"
-import type { BctcAi, BctcSnapshotCell, CommonSizeTable } from "../types"
+import type {
+  BctcAi,
+  BctcSnapshotCell,
+  CfBridge,
+  CommonSizeTable,
+  DuPontData,
+  WccSeries,
+} from "../types"
 import {
   fmtMultiple,
   fmtNumber,
@@ -15,6 +22,11 @@ import {
   statusLabel,
 } from "../format"
 import { IconSparkles } from "../icons"
+import { CashFlowBridgeView } from "./bctc/CashFlowBridgeView"
+import { DuPontView } from "./bctc/DuPontView"
+import { FootballField } from "./bctc/FootballField"
+import { TrinityCards } from "./bctc/TrinityCards"
+import { WccView } from "./bctc/WccView"
 
 const MD_CLS =
   "text-[var(--color-text-2)] [&_p]:text-sm [&_p]:leading-relaxed [&_p]:mb-2 [&_strong]:text-[var(--color-text-1)] [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-5 [&_li]:text-sm [&_table]:w-full [&_th]:text-left [&_th]:text-xs [&_td]:text-sm"
@@ -212,6 +224,12 @@ export function BctcAnalysis({ symbol }: { symbol: string }) {
             <div className="mb-2 text-lg font-bold">{mod.title}</div>
             {mod.type === "common_size_table" ? (
               <CommonSizeTableView table={mod.data as CommonSizeTable} />
+            ) : mod.type === "dupont" ? (
+              <DuPontView data={mod.data as DuPontData} />
+            ) : mod.type === "wcc" ? (
+              <WccView data={mod.data as WccSeries} />
+            ) : mod.type === "cf_bridge" ? (
+              <CashFlowBridgeView data={mod.data as CfBridge} />
             ) : (
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
                 {Object.entries(mod.data as Record<string, number | null>).map(([k, v]) => (
@@ -260,23 +278,8 @@ export function BctcAnalysis({ symbol }: { symbol: string }) {
           <h3 className="mb-3 text-base font-bold">Bộ ba Forensic</h3>
           <div className="relative min-h-[90px]">
             <PremiumGate featureName="Bộ ba Forensic" description="Altman Z, Piotroski F, Beneish M.">
-              <div className="grid grid-cols-3 gap-px overflow-hidden rounded-lg bg-[var(--color-border-2)]">
-                <div className="bg-[var(--color-bg-2)] p-3 text-center">
-                  <div className="text-[10px] uppercase text-[var(--color-text-3)]">Altman Z&apos;</div>
-                  <div className="text-xl font-bold tabular-nums">{fmtNumber(data.trinity.altman_z, 2)}</div>
-                </div>
-                <div className="bg-[var(--color-bg-2)] p-3 text-center">
-                  <div className="text-[10px] uppercase text-[var(--color-text-3)]">Piotroski F</div>
-                  <div className="text-xl font-bold tabular-nums">
-                    {data.trinity.piotroski_f?.score ?? "—"}
-                    <span className="text-xs text-[var(--color-text-3)]">/9</span>
-                  </div>
-                </div>
-                <div className="bg-[var(--color-bg-2)] p-3 text-center">
-                  <div className="text-[10px] uppercase text-[var(--color-text-3)]">Beneish M</div>
-                  <div className="text-xl font-bold tabular-nums">{fmtNumber(data.trinity.beneish_m, 2)}</div>
-                </div>
-              </div>
+              <TrinityCards trinity={data.trinity} />
+              <BctcModuleNote note={moduleNote(ai, "trinity")} />
             </PremiumGate>
           </div>
         </section>
@@ -353,54 +356,7 @@ export function BctcAnalysis({ symbol }: { symbol: string }) {
                   )}
                 </div>
               ) : (
-                <div className="rounded-lg border border-[var(--color-border-2)] bg-[var(--color-bg-2)] p-4">
-                  <table className="w-full text-sm tabular-nums">
-                    <thead>
-                      <tr className="text-[10px] uppercase text-[var(--color-text-3)]">
-                        <th className="text-left">Phương pháp</th>
-                        <th className="text-right">Thấp</th>
-                        <th className="text-right">Cơ sở</th>
-                        <th className="text-right">Cao</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.valuation.pe_band && (
-                        <tr>
-                          <td>P/E band</td>
-                          <td className="text-right">{fmtKvnd(data.valuation.pe_band.bear)}</td>
-                          <td className="text-right">{fmtKvnd(data.valuation.pe_band.base)}</td>
-                          <td className="text-right">{fmtKvnd(data.valuation.pe_band.bull)}</td>
-                        </tr>
-                      )}
-                      <tr>
-                        <td>RIM</td>
-                        <td className="text-right" colSpan={2}>
-                          {fmtKvnd(data.valuation.rim)}
-                        </td>
-                        <td />
-                      </tr>
-                      <tr>
-                        <td>Book floor</td>
-                        <td className="text-right" colSpan={2}>
-                          {fmtKvnd(data.valuation.book_floor)}
-                        </td>
-                        <td />
-                      </tr>
-                      {data.valuation.summary && (
-                        <tr className="border-t border-[var(--color-border-2)] font-bold">
-                          <td>Tổng hợp</td>
-                          <td className="text-right">{fmtKvnd(data.valuation.summary.bear)}</td>
-                          <td className="text-right">{fmtKvnd(data.valuation.summary.base)}</td>
-                          <td className="text-right">{fmtKvnd(data.valuation.summary.bull)}</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                  <p className="mt-2 text-[10px] text-[var(--color-text-3)]">
-                    Đơn vị: nghìn đ/cp · Ke mặc định (CAPM β chuẩn), g dài hạn — tham chiếu, không
-                    phải khuyến nghị.
-                  </p>
-                </div>
+                <FootballField valuation={data.valuation} symbol={symbol} />
               )}
             </PremiumGate>
           </div>

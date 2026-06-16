@@ -120,12 +120,68 @@ export interface CommonSizeTable {
   rows: CommonSizeTableRow[]
 }
 
+/** One DuPont driver with its prior value, delta and contribution to ΔROE. */
+export interface DuPontDriver {
+  key: string
+  label: string
+  abbr: string
+  /** `"x"` (hệ số) hoặc `"%"` (biên). */
+  unit: string
+  value: number | null
+  prev: number | null
+  delta: number | null
+  /** Đóng góp (pp) vào thay đổi ROE; null khi không đủ dữ liệu. */
+  contribution: number | null
+}
+
+/** DuPont 5-step decomposition (module `dupont`). */
+export interface DuPontData {
+  roe: number | null
+  roe_prev: number | null
+  roe_delta: number | null
+  drivers: DuPontDriver[]
+}
+
+/** Multi-period working-capital-cycle row. */
+export interface WccRow {
+  key: string
+  label: string
+  values: (number | null)[]
+}
+
+/** Working-capital-cycle series (module `wcc`). */
+export interface WccSeries {
+  columns: string[]
+  rows: WccRow[]
+  latest: { dso: number | null; dio: number | null; dpo: number | null; ccc: number | null }
+}
+
+/** One line of the cash-flow waterfall. */
+export interface CfBridgeLine {
+  key: string
+  label: string
+  value: number | null
+  kind: "base" | "add" | "sub" | "subtotal" | "total"
+}
+
+/** Cash-flow bridge (module `cf_bridge`). */
+export interface CfBridge {
+  lines: CfBridgeLine[]
+  cfo_ni: number | null
+  fcf_margin: number | null
+  sloan_accrual: number | null
+}
+
 export interface BctcModuleBlock {
   id: string
   title: string
   type: string
-  /** `ratios`/`bridge` → flat key→value; `common_size_table` → CommonSizeTable. */
-  data: Record<string, number | null> | CommonSizeTable
+  /**
+   * Shape depends on `type`: `common_size_table` → CommonSizeTable; `dupont`
+   * → DuPontData; `wcc` → WccSeries; `cf_bridge` → CfBridge; otherwise
+   * (`ratios`/bank modules) a flat key→value record.
+   */
+  data: Record<string, number | null> | CommonSizeTable | DuPontData | WccSeries | CfBridge
 }
 
 export interface BctcValuation {
