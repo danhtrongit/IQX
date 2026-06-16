@@ -89,14 +89,69 @@ def working_capital_cycle(cur: Period, prev: Period | None) -> dict[str, float |
     return {"dso": dso, "dio": dio, "dpo": dpo, "ccc": ccc}
 
 
-def cash_flow_bridge(p: Period) -> dict[str, float | None]:
+# Nhãn các dòng bảng Chu kỳ Vốn lưu động (đổi tên theo mockup).
+_WCC_ROWS = [
+    ("dso", "DSO — Phải thu"),
+    ("dio", "DIO — Tồn kho"),
+    ("dpo", "DPO — Phải trả"),
+    ("ccc", "CCC — Chu kỳ tiền mặt"),
+]
+
+
+def working_capital_cycle_series(
+    periods: list[Period], max_cols: int = 5
+) -> dict[str, Any]:
+    """Bảng Chu kỳ Vốn lưu động nhiều kỳ (self-describing: columns + rows).
+
+    `periods` mới-nhất-trước; cột hiển thị cũ -> mới như bảng KQKD. Mỗi kỳ tính
+    DSO/DIO/DPO/CCC bằng `working_capital_cycle` với kỳ liền trước (cũ hơn) làm
+    `prev` để bình quân số dư. `latest` = cột mới nhất (dùng cho dải công thức).
+    """
+    n = min(max_cols, len(periods))
+    cols_idx = list(range(n))[::-1]  # cũ -> mới, ví dụ n=3 -> [2, 1, 0]
+    per_col = [
+        working_capital_cycle(
+            periods[i], periods[i + 1] if i + 1 < len(periods) else None
+        )
+        for i in cols_idx
+    ]
+    rows = [
+        {"key": key, "label": label, "values": [c.get(key) for c in per_col]}
+        for key, label in _WCC_ROWS
+    ]
+    latest = per_col[-1] if per_col else {"dso": None, "dio": None, "dpo": None, "ccc": None}
+    return {
+        "columns": [period_label(periods[i]) for i in cols_idx],
+        "rows": rows,
+        "latest": latest,
+    }
+
+
+def cash_flow_bridge(p: Period) -> dict[str, Any]:
     ni, dep, prov = val(p, "npat"), val(p, "depreciation"), val(p, "provisions_cf")
     cfo, capex, rev, ta = (val(p, "cfo"), val(p, "capex"), val(p, "net_revenue"),
                            val(p, "total_assets"))
     fcf = (cfo + capex) if cfo is not None and capex is not None else None
+    # Thay đổi vốn lưu động = phần CFO còn lại sau NI + khấu hao + dự phòng (số
+    # chốt để waterfall NI -> CFO khớp tuyệt đối). Khấu hao/dự phòng thiếu -> 0.
+    wc_change = (
+        cfo - (ni + (dep or 0.0) + (prov or 0.0))
+        if cfo is not None and ni is not None
+        else None
+    )
+    lines = [
+        {"key": "ni", "label": "Lợi nhuận sau thuế (NI)", "value": ni, "kind": "base"},
+        {"key": "depreciation", "label": "(+) Khấu hao", "value": dep, "kind": "add"},
+        {"key": "provisions", "label": "(+) Dự phòng", "value": prov, "kind": "add"},
+        {"key": "wc_change", "label": "(±) Thay đổi vốn lưu động", "value": wc_change, "kind": "add"},
+        {"key": "cfo", "label": "= CFO", "value": cfo, "kind": "subtotal"},
+        {"key": "capex", "label": "(−) CapEx", "value": capex, "kind": "sub"},
+        {"key": "fcf", "label": "= FCF (Dòng tiền tự do)", "value": fcf, "kind": "total"},
+    ]
     return {
         "ni": ni, "depreciation": dep, "provisions": prov, "cfo": cfo,
-        "capex": capex, "fcf": fcf,
+        "capex": capex, "fcf": fcf, "wc_change": wc_change,
+        "lines": lines,
         "cfo_ni": _pct(cfo, ni),
         "fcf_margin": _pct(fcf, rev),
         "sloan_accrual": (_pct((ni - cfo), ta) if ni is not None and cfo is not None else None),

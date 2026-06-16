@@ -4,7 +4,7 @@ from typing import Any
 
 from app.services.bctc import kpi_bank, kpi_bank_modules, kpi_nonbank, kpi_nonbank_modules
 from app.services.bctc.bank_dupont import bank_dupont
-from app.services.bctc.dupont import dupont
+from app.services.bctc.dupont import dupont_decomposition
 from app.services.bctc.forensic import BANK_BLIND_SPOTS, forensic_panel
 from app.services.bctc.forensic_scores import beneish_m, piotroski_f
 from app.services.bctc.kpi_bank import earning_assets
@@ -74,7 +74,6 @@ def _snapshot_cells(
 
 def _modules_a(periods: list[Period]) -> list[dict[str, Any]]:
     cur = periods[0]
-    prev = periods[1] if len(periods) > 1 else None
     return [
         {
             "id": "common_size",
@@ -85,16 +84,21 @@ def _modules_a(periods: list[Period]) -> list[dict[str, Any]]:
         {
             "id": "wcc",
             "title": "Chu kỳ Vốn lưu động",
-            "type": "ratios",
-            "data": kpi_nonbank_modules.working_capital_cycle(cur, prev),
+            "type": "wcc",
+            "data": kpi_nonbank_modules.working_capital_cycle_series(periods),
         },
         {
             "id": "cf_bridge",
             "title": "Cầu nối Dòng tiền",
-            "type": "bridge",
+            "type": "cf_bridge",
             "data": kpi_nonbank_modules.cash_flow_bridge(cur),
         },
-        {"id": "dupont", "title": "DuPont 5 bước", "type": "ratios", "data": dupont(cur, prev)},
+        {
+            "id": "dupont",
+            "title": "DuPont 5 bước",
+            "type": "dupont",
+            "data": dupont_decomposition(periods),
+        },
     ]
 
 
