@@ -51,7 +51,13 @@ export function buildTradingViewWidgetOptions({
       "header_saveload",
       "study_templates",
     ],
-    enabled_features: ["side_toolbar_in_fullscreen_mode", "drawing_templates"],
+    enabled_features: [
+      "side_toolbar_in_fullscreen_mode",
+      "drawing_templates",
+      // Required for chart.getLineToolsState() / applyLineToolsState() — without
+      // it those throw and drawings never persist (see drawing-persistence).
+      "saveload_separate_drawings_storage",
+    ],
 
     // Dark finance theme
     overrides: {
@@ -195,6 +201,16 @@ function TVChartInner({
         if (persist) {
           const sym = symbol
           let saveReady = false
+          const saveDrawings = () => {
+            if (!saveReady) return
+            try {
+              const state = chart.getLineToolsState()
+              if (state) persist.save(sym, state)
+            } catch {
+              // ignore — never let persistence break the chart
+            }
+          }
+
           persist
             .load(sym)
             .then((state) => {
@@ -207,15 +223,10 @@ function TVChartInner({
               saveReady = true
             })
 
-          widget.subscribe("onAutoSaveNeeded", () => {
-            if (!saveReady) return
-            try {
-              const state = chart.getLineToolsState()
-              if (state) persist.save(sym, state)
-            } catch {
-              // ignore — never let persistence break the chart
-            }
-          })
+          // `drawing_event` fires immediately on create/move/remove (precise);
+          // `onAutoSaveNeeded` (≥5s throttle) also covers other undoable edits.
+          widget.subscribe("drawing_event", saveDrawings)
+          widget.subscribe("onAutoSaveNeeded", saveDrawings)
         }
       })
     }
