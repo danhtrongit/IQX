@@ -1,5 +1,6 @@
 export { DashboardPage } from "./DashboardPage"
 export { TVChart } from "./chart/TVChart"
+export { getDrawingPersistence } from "./chart/drawing-persistence"
 export { createDataFeed, getNewsMarkGroup } from "./chart/datafeed"
 export type { NewsMarkGroup, NewsMarkItem } from "./chart/datafeed"
 export { CenterPanel } from "./components/CenterPanel"

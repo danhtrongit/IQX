@@ -1,5 +1,6 @@
 import { useEffect, useRef, memo } from "react"
 import { createDataFeed } from "./datafeed"
+import type { DrawingPersistence } from "./drawing-persistence"
 import { VIETNAM_TIMEZONE } from "./timezone"
 
 interface TVChartProps {
@@ -10,6 +11,8 @@ interface TVChartProps {
   className?: string
   onSymbolChanged?: (symbol: string) => void
   onMarkClick?: (markId: string | number) => void
+  /** Optional per-symbol drawing persistence (backend / localStorage). */
+  persistence?: DrawingPersistence
 }
 
 interface TradingViewWidgetOptionsParams {
@@ -83,6 +86,9 @@ export function buildTradingViewWidgetOptions({
       foregroundColor: "#2962ff",
     },
 
+    // Debounce drawing/layout changes before onAutoSaveNeeded fires.
+    auto_save_delay: 2,
+
     // Custom toolbar CSS
     custom_css_url: "",
     toolbar_bg: theme === "dark" ? "#0a0a0f" : "#ffffff",
@@ -107,11 +113,13 @@ function TVChartInner({
   className = "",
   onSymbolChanged,
   onMarkClick,
+  persistence,
 }: TVChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const widgetRef = useRef<any>(null)
   const onSymbolChangedRef = useRef(onSymbolChanged)
   const onMarkClickRef = useRef(onMarkClick)
+  const persistenceRef = useRef(persistence)
 
   // Keep refs in sync to avoid re-creating the widget on callback change.
   useEffect(() => {
@@ -121,6 +129,10 @@ function TVChartInner({
   useEffect(() => {
     onMarkClickRef.current = onMarkClick
   }, [onMarkClick])
+
+  useEffect(() => {
+    persistenceRef.current = persistence
+  }, [persistence])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -175,6 +187,36 @@ function TVChartInner({
             onMarkClickRef.current(markId)
           }
         })
+
+        // Restore saved drawings, then persist on change. The `saveReady`
+        // guard prevents the empty initial state from clobbering what was
+        // saved before the load+apply completes.
+        const persist = persistenceRef.current
+        if (persist) {
+          const sym = symbol
+          let saveReady = false
+          persist
+            .load(sym)
+            .then((state) => {
+              if (state) {
+                return Promise.resolve(chart.applyLineToolsState(state)).catch(() => {})
+              }
+            })
+            .catch(() => {})
+            .finally(() => {
+              saveReady = true
+            })
+
+          widget.subscribe("onAutoSaveNeeded", () => {
+            if (!saveReady) return
+            try {
+              const state = chart.getLineToolsState()
+              if (state) persist.save(sym, state)
+            } catch {
+              // ignore — never let persistence break the chart
+            }
+          })
+        }
       })
     }
 

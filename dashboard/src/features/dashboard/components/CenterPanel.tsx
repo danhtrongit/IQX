@@ -3,6 +3,7 @@ import { useNavigate } from "react-router"
 import { useSymbol } from "@/shared/contexts/symbol-context"
 import { useTheme } from "@/shared/theme/ThemeProvider"
 import { TVChart } from "../chart/TVChart"
+import { getDrawingPersistence } from "../chart/drawing-persistence"
 
 interface CenterPanelProps {
   onMarkClick?: (markId: string | number) => void
@@ -37,6 +38,7 @@ export function CenterPanel({ onMarkClick }: CenterPanelProps = {}) {
           theme={theme}
           onSymbolChanged={handleSymbolChanged}
           onMarkClick={onMarkClick}
+          persistence={getDrawingPersistence()}
         />
       </div>
     </section>

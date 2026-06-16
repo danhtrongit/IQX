@@ -12,7 +12,13 @@ import { useTheme } from "@/shared/theme/ThemeProvider"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
 import { ForecastWindow } from "@/features/forecast"
 import { PremiumGate } from "@/features/premium"
-import { RightSidebar, RightToolbar, NewsMarkPopover, TVChart } from "@/features/dashboard"
+import {
+  RightSidebar,
+  RightToolbar,
+  NewsMarkPopover,
+  TVChart,
+  getDrawingPersistence,
+} from "@/features/dashboard"
 import { cn } from "@/shared/lib/cn"
 import { IconCandlestick } from "@/shared/icons"
 import { BctcAnalysis } from "./components/BctcAnalysis"
@@ -110,6 +116,7 @@ function StockTerminal() {
                 theme={theme}
                 onSymbolChanged={handleSymbolChanged}
                 onMarkClick={setActiveMarkId}
+                persistence={getDrawingPersistence()}
               />
             )}
             {activeTab === "orderbook" && (
