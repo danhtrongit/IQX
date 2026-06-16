@@ -2,7 +2,14 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, patch
 
-from app.services.ai.analysis_service import analyze_bctc
+from app.services.ai.analysis_service import _get_analysis_ttl, analyze_bctc
+
+
+def test_bctc_analysis_caches_for_one_week() -> None:
+    # BCTC chỉ đổi khi có báo cáo mới -> cache 1 tuần, không theo phiên.
+    assert _get_analysis_ttl("bctc") == 7 * 24 * 3600
+    # Các loại khác vẫn cache theo phiên (<= 1 ngày).
+    assert _get_analysis_ttl("insight") <= 24 * 3600
 
 
 async def test_analyze_bctc_parses_and_guards() -> None:

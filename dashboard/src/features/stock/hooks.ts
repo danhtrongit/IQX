@@ -59,7 +59,10 @@ export function useBctcAi(symbol: string, termType = 1) {
     queryKey: stockKeys.bctcAi(symbol, termType),
     queryFn: () => stockApi.getBctcAi(symbol, termType),
     enabled: !!symbol && isPremium,
-    staleTime: 10 * 60_000,
+    // BCTC AI chỉ đổi khi có báo cáo mới → backend cache 1 tuần. Giữ client
+    // "fresh" 1 tuần để không gọi lại; có sẵn thì hiển thị ngay (load sẵn).
+    staleTime: 7 * 24 * 60 * 60_000,
+    gcTime: 7 * 24 * 60 * 60_000,
   })
 }
 

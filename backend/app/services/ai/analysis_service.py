@@ -47,14 +47,21 @@ def _analysis_cache_key(analysis_type: str, identifier: str, language: str) -> s
     return f"iqx:ai:analysis:{analysis_type}:{identifier}:{language}"
 
 
+_BCTC_ANALYSIS_TTL = 7 * 24 * 3600  # 1 tuần
+
+
 def _get_analysis_ttl(analysis_type: str = "insight") -> int:
     """Get TTL for AI analysis cache based on analysis type.
 
-    All analyses (dashboard / industry / insight) cache until end of the
-    current trading session (15:00 VN). If already past 15:00 → next day.
-    Minimum 1 hour. This keeps Layer 3 money-flow data fresh after each
-    session close (was previously cached 3h fixed which masked new data).
+    BCTC (phân tích báo cáo tài chính) chỉ đổi khi có BCTC mới (quý/năm), không
+    biến động trong phiên → cache 1 tuần để tái dùng và tránh gọi LLM thừa.
+
+    Các phân tích khác (dashboard / industry / insight) cache đến hết phiên giao
+    dịch hiện tại (15:00 VN); quá 15:00 → ngày kế. Tối thiểu 1 giờ. Giữ dữ liệu
+    dòng tiền Layer 3 tươi sau mỗi phiên.
     """
+    if analysis_type == "bctc":
+        return _BCTC_ANALYSIS_TTL
     return _ttl_until_end_of_session()
 
 
