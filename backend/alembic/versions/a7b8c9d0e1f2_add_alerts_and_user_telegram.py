@@ -18,7 +18,9 @@ down_revision: Union[str, None] = "f6a7b8c9d0e1"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-_side = sa.Enum("buy", "sell", name="alert_side")
+# create_type=False → we create the enum exactly once below (avoids "type already
+# exists" when two tables reference it in the same migration).
+_side = postgresql.ENUM("buy", "sell", name="alert_side", create_type=False)
 
 
 def upgrade() -> None:
