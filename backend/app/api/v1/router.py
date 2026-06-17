@@ -18,6 +18,7 @@ from app.api.v1.endpoints import (
     ai_forecast,
     ai_patterns,
     auth,
+    backtest,
     chart_drawings,
     health,
     lessons,
@@ -45,6 +46,7 @@ api_v1_router.include_router(ai_patterns.router)
 api_v1_router.include_router(ai_forecast.router)
 api_v1_router.include_router(watchlist.router)
 api_v1_router.include_router(chart_drawings.router)
+api_v1_router.include_router(backtest.router)
 api_v1_router.include_router(lessons.router)
 api_v1_router.include_router(admin_lessons.router)
 api_v1_router.include_router(admin_metrics.router)
