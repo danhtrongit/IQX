@@ -71,6 +71,59 @@ def test_and_or_logic():
     assert list(evaluate_series(frame, comb_or)) == [True, True, True]
 
 
+def test_mixed_and_or_precedence():
+    # (uptrend AND bb_squeeze) OR death_cross  — sum-of-products
+    frame = _frame(
+        uptrend=[1, 1, 0, 0],
+        bb_squeeze=[1, 0, 1, 0],
+        death_cross=[0, 0, 1, 1],
+    )
+    comb = Combination(
+        "AND",
+        [
+            Condition("uptrend", "is_true"),
+            Condition("bb_squeeze", "is_true", join="AND"),
+            Condition("death_cross", "is_true", join="OR"),
+        ],
+    )
+    assert list(evaluate_series(frame, comb)) == [True, False, True, True]
+
+
+def test_join_overrides_default_logic():
+    frame = _frame(uptrend=[1, 0, 1], bb_squeeze=[0, 0, 1])
+    # default OR, but second condition AND-joined → uptrend AND bb_squeeze
+    comb = Combination("OR", [Condition("uptrend", "is_true"), Condition("bb_squeeze", "is_true", join="AND")])
+    assert list(evaluate_series(frame, comb)) == [False, False, True]
+
+
+def test_no_join_reduces_to_flat_logic():
+    frame = _frame(uptrend=[1, 1, 0], bb_squeeze=[1, 0, 0])
+    assert list(
+        evaluate_series(
+            frame, Combination("AND", [Condition("uptrend", "is_true"), Condition("bb_squeeze", "is_true")])
+        )
+    ) == [True, False, False]
+    assert list(
+        evaluate_series(frame, Combination("OR", [Condition("uptrend", "is_true"), Condition("bb_squeeze", "is_true")]))
+    ) == [True, True, False]
+
+
+def test_join_roundtrip_and_validation():
+    raw = {
+        "logic": "AND",
+        "conditions": [
+            {"indicator": "uptrend", "op": "is_true", "value": None},
+            {"indicator": "rsi_14", "op": "<", "value": 30, "join": "OR"},
+        ],
+    }
+    comb = Combination.from_dict(raw)
+    assert comb.conditions[1].join == "OR"
+    assert comb.conditions[1].to_dict()["join"] == "OR"
+    validate_combination(comb)  # no raise
+    with pytest.raises(CombinationError):
+        validate_combination(Combination("AND", [Condition("uptrend", "is_true", join="XOR")]))
+
+
 def test_evaluate_latest():
     frame = _frame(rsi_14=[20.0, 35.0, 25.0])
     comb = Combination("AND", [Condition("rsi_14", "<", 30)])

@@ -13,6 +13,7 @@ class ConditionSchema(BaseModel):
     indicator: str
     op: str
     value: float | str | None = None
+    join: Literal["AND", "OR"] | None = None
 
 
 class CombinationSchema(BaseModel):

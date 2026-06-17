@@ -5,6 +5,8 @@ export interface Condition {
   indicator: string
   op: string
   value: number | string | null
+  /** Connector to the previous condition (AND/OR); omitted on the first. */
+  join?: Logic | null
 }
 
 export interface Combination {

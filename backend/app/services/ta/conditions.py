@@ -47,28 +47,42 @@ class Condition:
     """One comparison: ``indicator <op> value``.
 
     ``value`` is a number, ``None`` (for ``is_true``), or a field name (str) for
-    a field-vs-field comparison (e.g. ``close > ma_50``).
+    a field-vs-field comparison (e.g. ``close > ma_50``). ``join`` is the boolean
+    connector to the PREVIOUS condition (``AND``/``OR``); ignored on the first
+    condition. When absent it falls back to the combination's ``logic``.
     """
 
     indicator: str
     op: str
     value: float | str | None = None
+    join: str | None = None
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> Condition:
+        join = raw.get("join")
         return cls(
             indicator=str(raw["indicator"]),
             op=str(raw["op"]),
             value=raw.get("value"),
+            join=str(join).upper() if join else None,
         )
 
     def to_dict(self) -> dict[str, Any]:
-        return {"indicator": self.indicator, "op": self.op, "value": self.value}
+        out: dict[str, Any] = {"indicator": self.indicator, "op": self.op, "value": self.value}
+        if self.join:
+            out["join"] = self.join
+        return out
 
 
 @dataclass(slots=True)
 class Combination:
-    """A flat AND/OR set of conditions."""
+    """An AND/OR set of conditions.
+
+    ``logic`` is the DEFAULT connector; individual conditions may override it via
+    their ``join`` field, giving mixed logic. Evaluation uses standard precedence
+    (AND binds tighter than OR): consecutive AND-joined conditions form a group,
+    and the groups are OR-ed together (sum-of-products).
+    """
 
     logic: str = LOGIC_AND
     conditions: list[Condition] = field(default_factory=list)
@@ -109,6 +123,8 @@ def validate_condition(cond: Condition) -> None:
         raise CombinationError(f"Chỉ số không hợp lệ: {cond.indicator!r}")
     if cond.op not in ALL_OPS:
         raise CombinationError(f"Toán tử không hợp lệ: {cond.op!r}")
+    if cond.join is not None and cond.join not in (LOGIC_AND, LOGIC_OR):
+        raise CombinationError(f"Liên kết phải là AND/OR, nhận {cond.join!r}")
     if cond.op == "is_true":
         if cond.indicator not in BINARY_INDICATORS:
             raise CombinationError(f"'is_true' chỉ dùng cho chỉ số nhị phân, không phải {cond.indicator!r}")
@@ -186,13 +202,29 @@ def eval_condition_series(frame: dict[str, FloatArray], cond: Condition) -> Bool
 
 
 def evaluate_series(frame: dict[str, FloatArray], comb: Combination) -> BoolArray:
-    """Evaluate a combination across every bar -> boolean array."""
+    """Evaluate a combination across every bar -> boolean array.
+
+    Mixed logic with standard precedence: consecutive AND-joined conditions form a
+    group; groups are OR-ed (sum-of-products). Each condition's connector is its
+    ``join`` (falling back to ``comb.logic``); the first condition's join is the
+    group seed. With a single uniform logic this reduces to flat AND / flat OR.
+    """
     if not comb.conditions:
         n = len(next(iter(frame.values()))) if frame else 0
         return np.zeros(n, dtype=bool)
-    per_cond = [eval_condition_series(frame, c) for c in comb.conditions]
-    stacked = np.vstack(per_cond)
-    combined = stacked.any(axis=0) if comb.logic == LOGIC_OR else stacked.all(axis=0)
+
+    default = LOGIC_OR if comb.logic == LOGIC_OR else LOGIC_AND
+    groups: list[list[BoolArray]] = [[eval_condition_series(frame, comb.conditions[0])]]
+    for cond in comb.conditions[1:]:
+        join = (cond.join or default).upper()
+        series = eval_condition_series(frame, cond)
+        if join == LOGIC_OR:
+            groups.append([series])
+        else:  # AND → extend the current group
+            groups[-1].append(series)
+
+    group_results = [np.vstack(g).all(axis=0) for g in groups]
+    combined = np.vstack(group_results).any(axis=0)
     return cast(BoolArray, combined)
 
 

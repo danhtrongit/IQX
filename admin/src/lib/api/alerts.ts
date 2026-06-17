@@ -7,6 +7,8 @@ export interface AlertCondition {
   indicator: string
   op: string
   value: number | string | null
+  /** Connector to the previous condition (AND/OR); ignored on the first row. */
+  join?: AlertLogic | null
 }
 
 export interface AlertCombination {
