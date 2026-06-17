@@ -32,6 +32,9 @@ const StockPage = lazy(() =>
 const BacktestPage = lazy(() =>
   import("@/features/backtest").then((m) => ({ default: m.BacktestPage })),
 )
+const AlertsPage = lazy(() =>
+  import("@/features/alerts").then((m) => ({ default: m.AlertsPage })),
+)
 const MarketOverviewPage = lazy(() =>
   import("@/features/market-overview").then((m) => ({ default: m.MarketOverviewPage })),
 )
@@ -77,6 +80,7 @@ export function AppRouter() {
           <Route path="/co-phieu" element={<StockDirectoryPage />} />
           <Route path="/bang-gia" element={<BangGiaPage />} />
           <Route path="/cai-dat" element={<SettingsPage />} />
+          <Route path="/canh-bao" element={<AlertsPage />} />
           <Route path="/nang-cap" element={<PremiumPage />} />
           <Route path="/thanh-toan/thanh-cong" element={<PaymentResultPage type="success" />} />
           <Route path="/thanh-toan/that-bai" element={<PaymentResultPage type="error" />} />

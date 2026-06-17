@@ -27,6 +27,7 @@ const NAV_ITEMS = [
   { label: "Bảng giá", href: "/bang-gia" },
   { label: "Cổ phiếu", href: "/co-phieu" },
   { label: "Backtest", href: "/backtest" },
+  { label: "Cảnh báo", href: "/canh-bao" },
   { label: "Kiến thức", href: "/bai-hoc" },
   { label: "Giới thiệu", href: "/gioi-thieu" },
 ]

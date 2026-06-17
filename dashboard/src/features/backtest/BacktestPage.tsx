@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router"
 import { Button, Dropdown, Input, Menu, Message, Modal, Spin } from "@arco-design/web-react"
 import { IconDown, IconLoading, IconPlayArrow, IconSave } from "@arco-design/web-react/icon"
 import { PremiumGate } from "@/features/premium"
+import { alertsApi } from "@/features/alerts/api"
 import { ConfigBar } from "./components/ConfigBar"
 import { FactorLibrary } from "./components/FactorLibrary"
 import { ResultsView } from "./components/ResultsView"
@@ -38,6 +39,9 @@ function BacktestLab({ initialSymbol }: { initialSymbol: string }) {
   const [risk, setRisk] = useState<RiskInput>(DEFAULT_RISK)
   const [saveOpen, setSaveOpen] = useState(false)
   const [saveName, setSaveName] = useState("")
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertName, setAlertName] = useState("")
+  const [alertSaving, setAlertSaving] = useState(false)
 
   const factorsById = useMemo<Record<string, Factor>>(() => {
     const map: Record<string, Factor> = {}
@@ -130,6 +134,42 @@ function BacktestLab({ initialSymbol }: { initialSymbol: string }) {
     )
   }
 
+  const onCreateAlert = async () => {
+    if (!alertName.trim()) {
+      Message.warning("Nhập tên cảnh báo")
+      return
+    }
+    if (buy.length === 0) {
+      Message.warning("Cần ít nhất 1 tín hiệu MUA để tạo cảnh báo")
+      return
+    }
+    setAlertSaving(true)
+    try {
+      await alertsApi.createRule({
+        name: alertName.trim(),
+        side: "buy",
+        combination: {
+          logic: buyLogic,
+          conditions: buy.map((s) => {
+            const f = factorsById[s.id]
+            return {
+              indicator: f.indicator,
+              op: f.op,
+              value: f.op === "is_true" ? null : (s.value ?? f.default),
+            }
+          }),
+        },
+      })
+      Message.success("Đã tạo cảnh báo từ tín hiệu MUA")
+      setAlertOpen(false)
+      setAlertName("")
+    } catch {
+      Message.error("Tạo cảnh báo thất bại (kiểm tra gói Premium)")
+    } finally {
+      setAlertSaving(false)
+    }
+  }
+
   const templateMenu = (
     <Menu
       onClickMenuItem={(key) => {
@@ -210,6 +250,9 @@ function BacktestLab({ initialSymbol }: { initialSymbol: string }) {
           <Button size="small" type="outline" icon={<IconSave />} onClick={() => setSaveOpen(true)}>
             Lưu strategy
           </Button>
+          <Button size="small" onClick={() => setAlertOpen(true)}>
+            Tạo cảnh báo
+          </Button>
           <Link to="/" className="ml-1 text-xs text-[var(--color-text-3)] hover:text-[rgb(var(--primary-6))]">
             ← Về ứng dụng
           </Link>
@@ -279,6 +322,21 @@ function BacktestLab({ initialSymbol }: { initialSymbol: string }) {
         cancelText="Hủy"
       >
         <Input placeholder="Tên chiến lược" value={saveName} onChange={setSaveName} onPressEnter={onSave} />
+      </Modal>
+
+      <Modal
+        title="Tạo cảnh báo từ tín hiệu MUA"
+        visible={alertOpen}
+        onCancel={() => setAlertOpen(false)}
+        onOk={onCreateAlert}
+        confirmLoading={alertSaving}
+        okText="Tạo"
+        cancelText="Hủy"
+      >
+        <p className="mb-2 text-xs text-[var(--color-text-3)]">
+          Cảnh báo sẽ kích hoạt khi tổ hợp tín hiệu MUA hiện tại xuất hiện trên các mã trong watchlist của bạn.
+        </p>
+        <Input placeholder="Tên cảnh báo" value={alertName} onChange={setAlertName} onPressEnter={onCreateAlert} />
       </Modal>
     </div>
   )
