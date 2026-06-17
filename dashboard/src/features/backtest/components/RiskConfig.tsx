@@ -1,3 +1,4 @@
+import { InputNumber, Select } from "@arco-design/web-react"
 import type { RiskInput } from "../types"
 
 interface Props {
@@ -6,10 +7,30 @@ interface Props {
 }
 
 const labelCls = "mb-1 block text-[11px] text-[var(--color-text-3)]"
-const fieldCls =
-  "w-full rounded border border-[var(--color-border-2)] bg-[var(--color-bg-1)] px-2 py-1.5 text-[12px] text-[var(--color-text-1)] outline-none focus:border-[rgb(var(--primary-6))]"
 
-/** Encode/decode the stop-loss preset into a single <select> value. */
+const STOP_OPTIONS = [
+  { label: "2.0× ATR", value: "atr:2" },
+  { label: "1.5× ATR", value: "atr:1.5" },
+  { label: "3.0× ATR", value: "atr:3" },
+  { label: "Cố định 5%", value: "fixed:0.05" },
+  { label: "Không có", value: "none" },
+]
+const TP_OPTIONS = [
+  { label: "Không (theo signal)", value: "null" },
+  { label: "10%", value: "0.1" },
+  { label: "15%", value: "0.15" },
+  { label: "20%", value: "0.2" },
+]
+const SIZE_OPTIONS = [
+  { label: "100% vốn còn lại", value: "all" },
+  { label: "50% vốn còn lại", value: "half" },
+  { label: "Cố định 10tr/lệnh", value: "fixed" },
+]
+const FEE_OPTIONS = [
+  { label: "Chuẩn (0.15% + 0.1%)", value: "standard" },
+  { label: "Thấp (0.10%)", value: "low" },
+]
+
 function stopValue(r: RiskInput): string {
   if (r.stop_loss === "none") return "none"
   if (r.stop_loss === "fixed") return `fixed:${r.stop_fixed_pct}`
@@ -25,71 +46,52 @@ export function RiskConfig({ risk, onChange }: Props) {
       <div className="mt-2.5 grid grid-cols-2 gap-3.5 md:grid-cols-3">
         <div>
           <label className={labelCls}>Cắt lỗ (Stop loss)</label>
-          <select
-            className={fieldCls}
+          <Select
             value={stopValue(risk)}
-            onChange={(e) => {
-              const v = e.target.value
+            options={STOP_OPTIONS}
+            onChange={(v: string) => {
               if (v === "none") onChange({ stop_loss: "none" })
               else if (v.startsWith("fixed:")) onChange({ stop_loss: "fixed", stop_fixed_pct: Number(v.split(":")[1]) })
               else onChange({ stop_loss: "atr", stop_atr_mult: Number(v.split(":")[1]) })
             }}
-          >
-            <option value="atr:2">2.0× ATR</option>
-            <option value="atr:1.5">1.5× ATR</option>
-            <option value="atr:3">3.0× ATR</option>
-            <option value="fixed:0.05">Cố định 5%</option>
-            <option value="none">Không có</option>
-          </select>
+            style={{ width: "100%" }}
+          />
         </div>
         <div>
           <label className={labelCls}>Chốt lời (Take profit)</label>
-          <select
-            className={fieldCls}
+          <Select
             value={risk.take_profit_pct == null ? "null" : String(risk.take_profit_pct)}
-            onChange={(e) =>
-              onChange({ take_profit_pct: e.target.value === "null" ? null : Number(e.target.value) })
-            }
-          >
-            <option value="null">Không (theo signal)</option>
-            <option value="0.1">10%</option>
-            <option value="0.15">15%</option>
-            <option value="0.2">20%</option>
-          </select>
+            options={TP_OPTIONS}
+            onChange={(v: string) => onChange({ take_profit_pct: v === "null" ? null : Number(v) })}
+            style={{ width: "100%" }}
+          />
         </div>
         <div>
           <label className={labelCls}>Max holding (phiên)</label>
-          <input
-            type="number"
-            className={fieldCls}
-            value={risk.max_holding ?? ""}
-            onChange={(e) =>
-              onChange({ max_holding: e.target.value === "" ? null : Number(e.target.value) })
-            }
+          <InputNumber
+            value={risk.max_holding ?? undefined}
+            min={1}
+            onChange={(v) => onChange({ max_holding: v == null ? null : Number(v) })}
+            style={{ width: "100%" }}
           />
         </div>
         <div>
           <label className={labelCls}>Khối lượng lệnh</label>
-          <select
-            className={fieldCls}
+          <Select
             value={risk.position_size}
-            onChange={(e) => onChange({ position_size: e.target.value as RiskInput["position_size"] })}
-          >
-            <option value="all">100% vốn còn lại</option>
-            <option value="half">50% vốn còn lại</option>
-            <option value="fixed">Cố định 10tr/lệnh</option>
-          </select>
+            options={SIZE_OPTIONS}
+            onChange={(v: RiskInput["position_size"]) => onChange({ position_size: v })}
+            style={{ width: "100%" }}
+          />
         </div>
         <div>
           <label className={labelCls}>Phí giao dịch</label>
-          <select
-            className={fieldCls}
+          <Select
             value={risk.fee}
-            onChange={(e) => onChange({ fee: e.target.value as RiskInput["fee"] })}
-          >
-            <option value="standard">Chuẩn (0.15% + 0.1%)</option>
-            <option value="low">Thấp (0.10%)</option>
-          </select>
+            options={FEE_OPTIONS}
+            onChange={(v: RiskInput["fee"]) => onChange({ fee: v })}
+            style={{ width: "100%" }}
+          />
         </div>
       </div>
     </div>

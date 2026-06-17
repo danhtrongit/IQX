@@ -1,4 +1,4 @@
-import { fmtMoney, parseMoney } from "../format"
+import { DatePicker, Input, InputNumber } from "@arco-design/web-react"
 
 interface Props {
   symbol: string
@@ -12,35 +12,49 @@ interface Props {
 }
 
 const labelCls = "mb-1.5 block text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-text-3)]"
-const inputCls =
-  "w-full rounded border border-[var(--color-border-2)] bg-[var(--color-bg-1)] px-2.5 py-2 text-[13px] text-[var(--color-text-1)] outline-none focus:border-[rgb(var(--primary-6))]"
 
 export function ConfigBar({ symbol, start, end, capital, onSymbol, onStart, onEnd, onCapital }: Props) {
   return (
     <div className="grid grid-cols-1 items-end gap-4 rounded-lg border border-[var(--color-border-2)] bg-[var(--color-bg-2)] p-4 md:grid-cols-[2fr_1fr_1fr_1.2fr]">
       <div>
         <label className={labelCls}>Cổ phiếu</label>
-        <input
+        <Input
           value={symbol}
-          onChange={(e) => onSymbol(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+          onChange={(v) => onSymbol(v.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
           placeholder="FPT"
-          className={`${inputCls} font-mono text-[15px] font-bold tracking-wide`}
+          style={{ fontFamily: "var(--font-mono, monospace)", fontWeight: 700, letterSpacing: "0.04em" }}
         />
       </div>
       <div>
         <label className={labelCls}>Từ ngày</label>
-        <input type="date" value={start} onChange={(e) => onStart(e.target.value)} className={`${inputCls} font-mono`} />
+        <DatePicker
+          value={start}
+          onChange={(v) => v && onStart(v)}
+          format="YYYY-MM-DD"
+          allowClear={false}
+          style={{ width: "100%" }}
+        />
       </div>
       <div>
         <label className={labelCls}>Đến ngày</label>
-        <input type="date" value={end} onChange={(e) => onEnd(e.target.value)} className={`${inputCls} font-mono`} />
+        <DatePicker
+          value={end}
+          onChange={(v) => v && onEnd(v)}
+          format="YYYY-MM-DD"
+          allowClear={false}
+          style={{ width: "100%" }}
+        />
       </div>
       <div>
         <label className={labelCls}>Vốn ban đầu (VND)</label>
-        <input
-          value={fmtMoney(capital)}
-          onChange={(e) => onCapital(parseMoney(e.target.value))}
-          className={`${inputCls} font-mono`}
+        <InputNumber
+          value={capital}
+          onChange={(v) => onCapital(v ?? 0)}
+          min={0}
+          step={1_000_000}
+          formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+          parser={(value) => value.replace(/,/g, "")}
+          style={{ width: "100%" }}
         />
       </div>
     </div>

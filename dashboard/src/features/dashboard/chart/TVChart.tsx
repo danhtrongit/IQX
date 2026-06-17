@@ -25,6 +25,31 @@ interface TradingViewWidgetOptionsParams {
   savedData?: object
 }
 
+/**
+ * Theme color overrides. Extracted so they can be **re-applied on chart ready** —
+ * `saved_data` restores the saved layout's pane background and would otherwise
+ * override the constructor overrides (this is the dark-mode regression from the
+ * save-chart feature). Re-applying after restore forces the correct theme.
+ */
+export function buildThemeOverrides(theme: "dark" | "light") {
+  return {
+    timezone: VIETNAM_TIMEZONE,
+    "paneProperties.background": theme === "dark" ? "#0a0a0f" : "#ffffff",
+    "paneProperties.backgroundType": "solid",
+    "paneProperties.vertGridProperties.color": theme === "dark" ? "#1a1a2e" : "#f0f0f0",
+    "paneProperties.horzGridProperties.color": theme === "dark" ? "#1a1a2e" : "#f0f0f0",
+    "scalesProperties.textColor": theme === "dark" ? "#94A3B8" : "#334155",
+    "scalesProperties.lineColor": theme === "dark" ? "#1a1a2e" : "#e2e8f0",
+    "mainSeriesProperties.candleStyle.upColor": "#00c853",
+    "mainSeriesProperties.candleStyle.borderUpColor": "#00c853",
+    "mainSeriesProperties.candleStyle.wickUpColor": "#00c853",
+    "mainSeriesProperties.candleStyle.downColor": "#ff1744",
+    "mainSeriesProperties.candleStyle.borderDownColor": "#ff1744",
+    "mainSeriesProperties.candleStyle.wickDownColor": "#ff1744",
+    volumePaneSize: "medium",
+  }
+}
+
 export function buildTradingViewWidgetOptions({
   symbol,
   interval,
@@ -58,32 +83,8 @@ export function buildTradingViewWidgetOptions({
     ],
     enabled_features: ["side_toolbar_in_fullscreen_mode", "drawing_templates"],
 
-    // Dark finance theme
-    overrides: {
-      timezone: VIETNAM_TIMEZONE,
-      // Chart background
-      "paneProperties.background": theme === "dark" ? "#0a0a0f" : "#ffffff",
-      "paneProperties.backgroundType": "solid",
-
-      // Grid
-      "paneProperties.vertGridProperties.color":
-        theme === "dark" ? "#1a1a2e" : "#f0f0f0",
-      "paneProperties.horzGridProperties.color":
-        theme === "dark" ? "#1a1a2e" : "#f0f0f0",
-
-      // Candles - bullish (green)
-      "mainSeriesProperties.candleStyle.upColor": "#00c853",
-      "mainSeriesProperties.candleStyle.borderUpColor": "#00c853",
-      "mainSeriesProperties.candleStyle.wickUpColor": "#00c853",
-
-      // Candles - bearish (red)
-      "mainSeriesProperties.candleStyle.downColor": "#ff1744",
-      "mainSeriesProperties.candleStyle.borderDownColor": "#ff1744",
-      "mainSeriesProperties.candleStyle.wickDownColor": "#ff1744",
-
-      // Volume
-      volumePaneSize: "medium",
-    },
+    // Dark finance theme (also re-applied on chart ready after saved_data restore)
+    overrides: buildThemeOverrides(theme),
 
     // Loading indicator
     loading_screen: {
@@ -205,6 +206,14 @@ function TVChartInner({
       // Listen for symbol changes inside the TradingView widget.
       widget.onChartReady(() => {
         const chart = widget.activeChart()
+
+        // Re-assert the theme AFTER any saved_data layout restore, so a chart
+        // saved with a stale/light background can't break dark mode.
+        try {
+          widget.applyOverrides(buildThemeOverrides(theme))
+        } catch {
+          // ignore — never let theming break the chart
+        }
 
         chart.onSymbolChanged().subscribe(null, () => {
           const info = chart.symbolExt()

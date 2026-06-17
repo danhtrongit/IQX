@@ -81,11 +81,18 @@ function downsample(points: EquityPoint[], max = 400): EquityPoint[] {
 }
 
 function EquityChart({ data }: { data: EquityPoint[] }) {
+  if (!data.length) {
+    return (
+      <div className="flex h-[200px] items-center justify-center p-4 text-xs italic text-[var(--color-text-3)]">
+        Không có dữ liệu giá trong khoảng thời gian đã chọn.
+      </div>
+    )
+  }
   const series = downsample(data)
   return (
     <div className="p-4">
-      <div className="h-[280px] w-full">
-        <ResponsiveContainer>
+      <div className="h-[280px] w-full min-w-0">
+        <ResponsiveContainer width="100%" height="100%">
           <LineChart data={series} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
             <CartesianGrid stroke="var(--color-border-2)" strokeOpacity={0.5} />
             <XAxis

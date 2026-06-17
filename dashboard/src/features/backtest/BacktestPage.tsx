@@ -42,6 +42,7 @@ function BacktestLab({ initialSymbol }: { initialSymbol: string }) {
   const [alertOpen, setAlertOpen] = useState(false)
   const [alertName, setAlertName] = useState("")
   const [alertSaving, setAlertSaving] = useState(false)
+  const [libOpen, setLibOpen] = useState(false) // factor-library drawer (mobile)
 
   const factorsById = useMemo<Record<string, Factor>>(() => {
     const map: Record<string, Factor> = {}
@@ -226,17 +227,20 @@ function BacktestLab({ initialSymbol }: { initialSymbol: string }) {
   return (
     <div className="flex h-screen flex-col bg-[var(--color-bg-1)]">
       {/* Top bar */}
-      <header className="flex items-center justify-between border-b border-[var(--color-border-2)] bg-[var(--color-bg-2)] px-5 py-3">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--color-border-2)] bg-[var(--color-bg-2)] px-3 py-2.5 sm:px-5 sm:py-3">
         <div className="flex items-center gap-3">
+          <Button size="small" className="lg:!hidden" onClick={() => setLibOpen(true)}>
+            ☰ Chỉ tiêu
+          </Button>
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-[rgb(var(--primary-6))] to-[#6FA8F5] text-[13px] font-bold text-white">
             IQ
           </div>
           <div>
             <span className="text-sm font-semibold text-[var(--color-text-1)]">IQX Backtester</span>
-            <span className="ml-2 text-xs text-[var(--color-text-3)]">· Strategy Lab · T+2 · giá điều chỉnh</span>
+            <span className="ml-2 hidden text-xs text-[var(--color-text-3)] sm:inline">· Strategy Lab · T+2 · giá điều chỉnh</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Dropdown droplist={savedMenu} position="br">
             <Button size="small" icon={<IconDown />}>
               Đã lưu
@@ -260,10 +264,30 @@ function BacktestLab({ initialSymbol }: { initialSymbol: string }) {
       </header>
 
       {/* Body */}
-      <div className="flex flex-1 overflow-hidden">
-        <FactorLibrary library={catalog.factors} selectedIds={selectedIds} onAdd={addFactor} />
+      <div className="relative flex flex-1 overflow-hidden">
+        <div
+          className={`${
+            libOpen ? "absolute inset-y-0 left-0 z-40 flex shadow-2xl" : "hidden"
+          } lg:static lg:z-auto lg:flex`}
+        >
+          <FactorLibrary
+            library={catalog.factors}
+            selectedIds={selectedIds}
+            onAdd={(f) => {
+              addFactor(f)
+              setLibOpen(false)
+            }}
+          />
+        </div>
+        {libOpen && (
+          <div
+            aria-hidden
+            className="absolute inset-0 z-30 bg-black/50 lg:hidden"
+            onClick={() => setLibOpen(false)}
+          />
+        )}
 
-        <div className="flex-1 overflow-y-auto p-5">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-5">
           <div className="mx-auto flex max-w-[1100px] flex-col gap-4">
             <ConfigBar
               symbol={symbol}
