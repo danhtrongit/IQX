@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { h, onMounted, ref } from "vue"
-import { Plus, RefreshCw } from "lucide-vue-next"
+import { GripVertical, Plus, RefreshCw, Trash2 } from "lucide-vue-next"
 import {
   NButton,
   NCard,
   NDataTable,
-  NDynamicInput,
   NForm,
   NFormItem,
   NInput,
@@ -32,13 +31,13 @@ interface EditableCondition {
   indicator: string
   op: string
   value: string // edited as text; parsed on save
+  join: "AND" | "OR" // connector to the previous row (ignored on the first)
 }
 interface EditForm {
   key: string
   side: "buy" | "sell"
   taName: string
   messageTitle: string
-  logic: "AND" | "OR"
   conditions: EditableCondition[]
   isEnabled: boolean
   sortOrder: number
@@ -51,6 +50,7 @@ const modalOpen = ref(false)
 const saving = ref(false)
 const isCreate = ref(false)
 const form = ref<EditForm>(blankForm())
+const dragIndex = ref<number | null>(null)
 
 const indicatorOptions = ALERT_INDICATORS.map((i) => ({ label: i, value: i }))
 const opOptions = ALERT_OPS.map((o) => ({ label: o, value: o }))
@@ -58,19 +58,21 @@ const sideOptions = [
   { label: "MUA", value: "buy" },
   { label: "BÁN", value: "sell" },
 ]
-const logicOptions = [
-  { label: "AND (tất cả điều kiện)", value: "AND" },
-  { label: "OR (một trong số)", value: "OR" },
+const joinOptions = [
+  { label: "VÀ", value: "AND" },
+  { label: "HOẶC", value: "OR" },
 ]
 
+function blankCondition(): EditableCondition {
+  return { indicator: "rsi_14", op: "<", value: "30", join: "AND" }
+}
 function blankForm(): EditForm {
   return {
     key: "",
     side: "buy",
     taName: "",
     messageTitle: "",
-    logic: "AND",
-    conditions: [{ indicator: "rsi_14", op: "<", value: "30" }],
+    conditions: [blankCondition()],
     isEnabled: true,
     sortOrder: 0,
   }
@@ -95,15 +97,16 @@ function openEdit(s: AlertSignal) {
     side: s.side,
     taName: s.taName,
     messageTitle: s.messageTitle,
-    logic: s.combination.logic,
+    isEnabled: s.isEnabled,
+    sortOrder: s.sortOrder,
     conditions: s.combination.conditions.map((c) => ({
       indicator: c.indicator,
       op: c.op,
       value: c.value == null ? "" : String(c.value),
+      join: (c.join ?? s.combination.logic) as "AND" | "OR",
     })),
-    isEnabled: s.isEnabled,
-    sortOrder: s.sortOrder,
   }
+  if (form.value.conditions.length === 0) form.value.conditions = [blankCondition()]
   modalOpen.value = true
 }
 
@@ -111,6 +114,25 @@ function openCreate() {
   isCreate.value = true
   form.value = blankForm()
   modalOpen.value = true
+}
+
+function addCondition() {
+  form.value.conditions.push(blankCondition())
+}
+function removeCondition(i: number) {
+  form.value.conditions.splice(i, 1)
+  if (form.value.conditions.length === 0) form.value.conditions.push(blankCondition())
+}
+function onDragStart(i: number) {
+  dragIndex.value = i
+}
+function onDrop(i: number) {
+  const from = dragIndex.value
+  dragIndex.value = null
+  if (from === null || from === i) return
+  const arr = form.value.conditions
+  const [moved] = arr.splice(from, 1)
+  arr.splice(i, 0, moved)
 }
 
 function buildPayload(): AlertSignalUpsert {
@@ -121,14 +143,20 @@ function buildPayload(): AlertSignalUpsert {
     isEnabled: form.value.isEnabled,
     sortOrder: form.value.sortOrder,
     combination: {
-      logic: form.value.logic,
-      conditions: form.value.conditions.map((c) => {
+      logic: "AND", // default; per-row `join` drives mixed logic
+      conditions: form.value.conditions.map((c, i) => {
         let value: number | string | null
         if (c.op === "is_true") value = null
         else if (c.value.trim() === "") value = null
         else if (!Number.isNaN(Number(c.value))) value = Number(c.value)
         else value = c.value.trim()
-        return { indicator: c.indicator, op: c.op, value }
+        const cond: { indicator: string; op: string; value: number | string | null; join?: "AND" | "OR" } = {
+          indicator: c.indicator,
+          op: c.op,
+          value,
+        }
+        if (i > 0) cond.join = c.join
+        return cond
       }),
     },
   }
@@ -176,9 +204,9 @@ function confirmDelete(s: AlertSignal) {
   })
 }
 
-async function seed(overwrite: boolean) {
+async function seed() {
   try {
-    const res = await alertsAdminApi.seed(overwrite)
+    const res = await alertsAdminApi.seed(false)
     feedback.message?.success(`Đã tạo ${res.created} tín hiệu mặc định`)
     await load()
   } catch (err) {
@@ -199,8 +227,8 @@ const columns: DataTableColumns<AlertSignal> = [
   {
     title: "Tổ hợp",
     key: "combination",
-    minWidth: 120,
-    render: (row) => `${row.combination.conditions.length} điều kiện (${row.combination.logic})`,
+    minWidth: 110,
+    render: (row) => `${row.combination.conditions.length} điều kiện`,
   },
   {
     title: "Bật",
@@ -249,11 +277,11 @@ onMounted(load)
     <div class="page-header">
       <div>
         <h1 class="page-title">Tín hiệu cảnh báo</h1>
-        <p class="page-subtitle">Cấu hình tổ hợp chỉ số cho 10 tín hiệu gửi qua Telegram.</p>
+        <p class="page-subtitle">Cấu hình tổ hợp chỉ số cho các tín hiệu gửi qua Telegram.</p>
       </div>
       <n-space>
         <n-button secondary :loading="loading" @click="load"><template #icon><RefreshCw :size="16" /></template>Làm mới</n-button>
-        <n-button secondary @click="seed(false)">Tạo 10 mặc định</n-button>
+        <n-button secondary @click="seed">Tạo 10 mặc định</n-button>
         <n-button type="primary" @click="openCreate"><template #icon><Plus :size="16" /></template>Thêm tín hiệu</n-button>
       </n-space>
     </div>
@@ -267,7 +295,7 @@ onMounted(load)
     <n-modal
       v-model:show="modalOpen"
       preset="card"
-      style="width: 680px"
+      style="width: 760px"
       :title="isCreate ? 'Thêm tín hiệu' : `Sửa tín hiệu · ${form.key}`"
     >
       <n-form label-placement="top">
@@ -292,27 +320,45 @@ onMounted(load)
           <n-form-item label="Tiêu đề tin nhắn (gửi Telegram)">
             <n-input v-model:value="form.messageTitle" placeholder="vd: Mua khi giá điều chỉnh nhẹ" />
           </n-form-item>
-          <n-form-item label="Logic kết hợp">
-            <n-select v-model:value="form.logic" :options="logicOptions" style="width: 220px" />
-          </n-form-item>
-          <n-form-item label="Điều kiện">
-            <n-dynamic-input
-              v-model:value="form.conditions"
-              :on-create="() => ({ indicator: 'rsi_14', op: '<', value: '30' })"
-            >
-              <template #default="{ value }">
-                <n-space align="center" style="width: 100%">
-                  <n-select v-model:value="value.indicator" :options="indicatorOptions" filterable style="width: 200px" />
-                  <n-select v-model:value="value.op" :options="opOptions" style="width: 140px" />
-                  <n-input
-                    v-model:value="value.value"
-                    :disabled="value.op === 'is_true' || BINARY_INDICATORS.has(value.indicator)"
-                    :placeholder="value.op === 'is_true' ? '(không cần)' : 'ngưỡng / chỉ số'"
-                    style="width: 160px"
-                  />
-                </n-space>
-              </template>
-            </n-dynamic-input>
+
+          <n-form-item label="Điều kiện (kéo ⠿ để sắp xếp · VÀ/HOẶC cho từng dòng)">
+            <div class="cond-editor">
+              <div
+                v-for="(c, i) in form.conditions"
+                :key="i"
+                class="cond-row"
+                :class="{ dragging: dragIndex === i }"
+                @dragover.prevent
+                @drop="onDrop(i)"
+              >
+                <span class="grip" draggable="true" @dragstart="onDragStart(i)" title="Kéo để sắp xếp">
+                  <GripVertical :size="15" />
+                </span>
+                <n-select
+                  v-if="i > 0"
+                  v-model:value="c.join"
+                  :options="joinOptions"
+                  size="small"
+                  style="width: 84px"
+                />
+                <span v-else class="when">KHI</span>
+                <n-select v-model:value="c.indicator" :options="indicatorOptions" filterable size="small" style="width: 188px" />
+                <n-select v-model:value="c.op" :options="opOptions" size="small" style="width: 122px" />
+                <n-input
+                  v-model:value="c.value"
+                  size="small"
+                  :disabled="c.op === 'is_true' || BINARY_INDICATORS.has(c.indicator)"
+                  :placeholder="c.op === 'is_true' ? '(không cần)' : 'ngưỡng / chỉ số'"
+                  style="width: 150px"
+                />
+                <n-button quaternary circle size="small" type="error" @click="removeCondition(i)" title="Xóa điều kiện">
+                  <template #icon><Trash2 :size="14" /></template>
+                </n-button>
+              </div>
+              <n-button dashed size="small" class="add-cond" @click="addCondition">
+                <template #icon><Plus :size="14" /></template>Thêm điều kiện
+              </n-button>
+            </div>
           </n-form-item>
         </n-space>
       </n-form>
@@ -325,3 +371,39 @@ onMounted(load)
     </n-modal>
   </div>
 </template>
+
+<style scoped>
+.cond-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.cond-row {
+  align-items: center;
+  background: var(--card-color, #fff);
+  border: 1px solid var(--n-border-color, #e2e8f0);
+  border-radius: 6px;
+  display: flex;
+  gap: 8px;
+  padding: 6px 8px;
+}
+.cond-row.dragging {
+  opacity: 0.5;
+}
+.grip {
+  align-items: center;
+  color: #94a3b8;
+  cursor: grab;
+  display: flex;
+}
+.when {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  width: 84px;
+}
+.add-cond {
+  align-self: flex-start;
+}
+</style>
