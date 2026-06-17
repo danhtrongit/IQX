@@ -29,6 +29,9 @@ const BangGiaPage = lazy(() =>
 const StockPage = lazy(() =>
   import("@/features/stock").then((m) => ({ default: m.StockPage })),
 )
+const BacktestPage = lazy(() =>
+  import("@/features/backtest").then((m) => ({ default: m.BacktestPage })),
+)
 const MarketOverviewPage = lazy(() =>
   import("@/features/market-overview").then((m) => ({ default: m.MarketOverviewPage })),
 )
@@ -64,6 +67,8 @@ export function AppRouter() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/gioi-thieu" element={<MarketingPage />} />
         <Route path="/co-phieu/:symbol" element={<StockPage />} />
+        <Route path="/backtest" element={<BacktestPage />} />
+        <Route path="/backtest/:symbol" element={<BacktestPage />} />
 
         {/* App shell */}
         <Route element={<AppShell />}>
