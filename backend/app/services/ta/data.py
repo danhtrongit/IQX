@@ -45,7 +45,14 @@ def _normalize(records: list[dict]) -> list[dict]:
         raw_t = r.get("time")
         if raw_t is None:
             continue
-        iso = _iso_from_epoch(raw_t) if isinstance(raw_t, (int, float)) else str(raw_t)[:10]
+        if isinstance(raw_t, (int, float)):
+            iso = _iso_from_epoch(raw_t)
+        elif isinstance(raw_t, str) and raw_t.isdigit():
+            # VCI returns the epoch as a numeric STRING ("1415145600") — convert
+            # it, else date comparison for start_index breaks (0 sessions bug).
+            iso = _iso_from_epoch(int(raw_t))
+        else:
+            iso = str(raw_t)[:10]
         try:
             close = float(r["close"])
         except (TypeError, ValueError, KeyError):
