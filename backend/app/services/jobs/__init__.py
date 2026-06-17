@@ -10,6 +10,7 @@ and for ops emergency disable).
 from __future__ import annotations
 
 import logging
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
@@ -44,6 +45,18 @@ async def startup() -> None:
         name="Scan stuck PENDING payment orders against IPN logs",
         max_instances=1, coalesce=True, replace_existing=True,
     )
+
+    if getattr(settings, "ALERTS_ENABLED", False):
+        from .alert_scan import run_alert_scan_job
+
+        interval = max(int(getattr(settings, "ALERT_SCAN_INTERVAL_MINUTES", 10)), 1)
+        _scheduler.add_job(
+            run_alert_scan_job, IntervalTrigger(minutes=interval),
+            id="alert_scan",
+            name="Evaluate alert rules against watchlists (intraday) → Telegram",
+            max_instances=1, coalesce=True, replace_existing=True,
+        )
+
     _scheduler.start()
     logger.info("Scheduler started with %d jobs", len(_scheduler.get_jobs()))
 

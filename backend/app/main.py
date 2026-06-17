@@ -55,6 +55,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     await jobs_startup()
 
+    # Seed alert presets + register Telegram webhook (best-effort)
+    from app.services.alerts.startup import alerts_startup
+
+    await alerts_startup()
+
     # Start realtime DNSE bridge (no-op unless REALTIME_ENABLED)
     from app.services.realtime import shutdown as rt_shutdown
     from app.services.realtime import startup as rt_startup

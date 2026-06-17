@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
+    admin_alerts,
     admin_audit,
     admin_ipn,
     admin_lessons,
@@ -17,6 +18,7 @@ from app.api.v1.endpoints import (
     ai_analysis,
     ai_forecast,
     ai_patterns,
+    alerts,
     auth,
     backtest,
     chart_drawings,
@@ -26,6 +28,7 @@ from app.api.v1.endpoints import (
     market_global,
     premium,
     realtime_ws,
+    telegram,
     users,
     virtual_trading,
     watchlist,
@@ -47,6 +50,9 @@ api_v1_router.include_router(ai_forecast.router)
 api_v1_router.include_router(watchlist.router)
 api_v1_router.include_router(chart_drawings.router)
 api_v1_router.include_router(backtest.router)
+api_v1_router.include_router(alerts.router)
+api_v1_router.include_router(admin_alerts.router)
+api_v1_router.include_router(telegram.router)
 api_v1_router.include_router(lessons.router)
 api_v1_router.include_router(admin_lessons.router)
 api_v1_router.include_router(admin_metrics.router)

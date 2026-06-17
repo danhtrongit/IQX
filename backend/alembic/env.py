@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app.core.config import get_settings  # noqa: E402
 from app.core.database import Base  # noqa: E402
 from app.models.admin_audit import AdminAuditLog  # noqa: F401, E402
+from app.models.alert import AlertEvent, AlertSignal, UserAlertRule  # noqa: F401, E402
 from app.models.backtest_strategy import BacktestStrategy  # noqa: F401, E402
 from app.models.chart_drawing import ChartDrawing  # noqa: F401, E402
 from app.models.ipn_log import SePayIPNLog  # noqa: F401, E402

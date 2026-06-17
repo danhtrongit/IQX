@@ -113,6 +113,13 @@ class Settings(BaseSettings):
     # ── Background Jobs ──────────────────────────────
     JOBS_ENABLED: bool = True
 
+    # ── Telegram / Alerts ────────────────────────────
+    TELEGRAM_BOT_TOKEN: str = ""          # secret — set in env, never commit
+    TELEGRAM_BOT_USERNAME: str = ""       # e.g. "iqx_alerts_bot" (no @) for deep-links
+    TELEGRAM_WEBHOOK_SECRET: str = ""     # path segment guarding the webhook
+    ALERTS_ENABLED: bool = False          # master switch for the intraday scan job
+    ALERT_SCAN_INTERVAL_MINUTES: int = 10
+
     # ── Lessons / Media ───────────────────────────────
     LESSON_MEDIA_DIR: str = "./media"
     LESSON_MAX_PDF_MB: int = 50

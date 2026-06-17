@@ -73,6 +73,10 @@ class User(UUIDMixin, TimestampMixin, Base):
         nullable=False,
     )
 
+    # ── Telegram (alert delivery) ────────────────────
+    telegram_chat_id: Mapped[str | None] = mapped_column(String(32), unique=True, index=True, nullable=True)
+    telegram_linked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
     # ── Verification & timestamps ────────────────────
     is_email_verified: Mapped[bool] = mapped_column(default=False, server_default="false", nullable=False)
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
