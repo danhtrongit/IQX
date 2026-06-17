@@ -31,6 +31,7 @@ const routes: RouteRecordRaw[] = [
       { path: "vt/config", name: "vt-config", meta: { title: "Cấu hình VT" }, component: () => import("@/features/vt/VTConfigPage.vue") },
       { path: "audit", name: "audit", meta: { title: "Nhật ký kiểm toán" }, component: () => import("@/features/audit/AuditPage.vue") },
       { path: "system", name: "system", meta: { title: "Hệ thống" }, component: () => import("@/features/system/SystemPage.vue") },
+      { path: "alerts", name: "alerts", meta: { title: "Tín hiệu cảnh báo" }, component: () => import("@/features/alerts/AlertSignalsPage.vue") },
       { path: "lessons", name: "lessons", meta: { title: "Khoá học" }, component: () => import("@/features/lessons/CoursesListPage.vue") },
       { path: "lessons/new", name: "lesson-new", meta: { title: "Tạo khoá học" }, component: () => import("@/features/lessons/CourseEditPage.vue") },
       { path: "lessons/:id", name: "lesson-edit", meta: { title: "Sửa khoá học" }, component: () => import("@/features/lessons/CourseEditPage.vue") },

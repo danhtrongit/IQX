@@ -3,7 +3,7 @@ import { computed, h } from "vue"
 import { RouterLink, useRoute } from "vue-router"
 import { NMenu } from "naive-ui"
 import type { MenuOption } from "naive-ui"
-import { BookOpen, CreditCard, FileBarChart2, LayoutDashboard, Package, ScrollText, Settings, TrendingUp, Users, Webhook } from "lucide-vue-next"
+import { Bell, BookOpen, CreditCard, FileBarChart2, LayoutDashboard, Package, ScrollText, Settings, TrendingUp, Users, Webhook } from "lucide-vue-next"
 
 const route = useRoute()
 const selectedKey = computed(() => route.path)
@@ -34,6 +34,7 @@ const options: MenuOption[] = [
     icon: renderIcon(TrendingUp),
     children: [link("Tài khoản", "/vt/accounts", Users), link("Cấu hình", "/vt/config", Settings)],
   },
+  link("Tín hiệu cảnh báo", "/alerts", Bell),
   link("Nhật ký kiểm toán", "/audit", FileBarChart2),
   link("Hệ thống", "/system", Settings),
 ]
