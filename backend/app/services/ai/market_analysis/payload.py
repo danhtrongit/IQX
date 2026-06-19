@@ -133,22 +133,33 @@ def _build_internal_heat(b20: list[dict], b50: list[dict]) -> dict:
     }
 
 
-def _build_volume(vn_snap: dict) -> dict:
-    """Thanh khoản phiên (snapshot). MA20 lịch sử CHƯA khả dụng.
-
-    `fetch_liquidity(ONE_DAY)` trả bucket nội phiên (phút), không phải chuỗi
-    EOD theo ngày, nên không tính được MA20 đáng tin. Cần job EOD persistence
-    (đã nêu trong audit) để có baseline thanh khoản. Không bịa ratio.
+def _build_volume(idx_ohlc: list[dict], vn_snap: dict) -> dict:
+    """Thanh khoản phiên + MA20, từ chuỗi `accumulatedValue` (triệu VND) của
+    gap-chart VNINDEX — mỗi bar 1D = tổng GTGD ngày đó. MA20 = trung bình 20
+    phiên TRƯỚC (không gồm phiên đang xét, để bar partial giữa phiên không tự
+    bóp méo MA của chính nó).
     """
-    today_million = vn_snap.get("total_value_million_vnd")
+    values = [r.get("value") for r in (idx_ohlc or []) if r.get("value")]
+    today_million = values[-1] if values else vn_snap.get("total_value_million_vnd")
     today_b = today_million / _MILLION_PER_B if today_million else None
+
+    ma20_million = None
+    if len(values) >= 21:
+        ma20_million = statistics.fmean(values[-21:-1])
+    elif len(values) >= 2:
+        ma20_million = statistics.fmean(values[:-1])
+    ma20_b = ma20_million / _MILLION_PER_B if ma20_million else None
+
+    ratio = today_b / ma20_b if (today_b and ma20_b) else None
+    label = None
+    if ratio is not None:
+        pct = (ratio - 1) * 100
+        label = f"{'vượt' if pct >= 0 else 'thấp hơn'} {abs(pct):.0f}% MA20"
     return {
         "total_value_vnd_billion": _r(today_b, 0),
-        "ma20_value_vnd_billion": None,
-        "ratio_vs_ma20": None,
-        "ratio_vs_ma20_label": None,
-        "_note": ("Giá trị lũy kế trong phiên (HOSE). MA20 lịch sử chưa có "
-                  "(cần job EOD snapshot) — KHÔNG được suy luận ratio vs MA20."),
+        "ma20_value_vnd_billion": _r(ma20_b, 0),
+        "ratio_vs_ma20": _r(ratio),
+        "ratio_vs_ma20_label": label,
     }
 
 
@@ -285,14 +296,17 @@ def _build_sectors(secs: list[dict], icb_names: dict[int, str]) -> list[dict]:
     return top + [r for r in bottom if r not in top]
 
 
-async def _build_global() -> dict | None:
-    """Best-effort downscoped global context via MSN. Tolerates failure."""
+async def _msn_indices() -> dict[str, Any]:
+    """Best-effort world indices via MSN. Returns {} when MSN is unreachable
+    (the apikey resolver is currently flaky upstream)."""
     try:
         from app.services.market_data.sources import msn
-    except Exception:
-        return None
+        apikey = await asyncio.wait_for(msn.resolve_apikey(None), timeout=12)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("global indices skipped (MSN): %s", exc)
+        return {}
 
-    async def _idx(sym: str, apikey: str) -> tuple[str, dict | None]:
+    async def _idx(sym: str) -> tuple[str, dict | None]:
         try:
             series, _ = await msn.fetch_world_index(sym, apikey)
             if series:
@@ -303,35 +317,48 @@ async def _build_global() -> dict | None:
             pass
         return sym, None
 
-    try:
-        apikey = await asyncio.wait_for(msn.resolve_apikey(None), timeout=15)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("global context skipped (apikey): %s", exc)
-        return None
-
     results = await asyncio.gather(
-        _idx("INX", apikey), _idx("N225", apikey), _idx("HSI", apikey),
-        return_exceptions=True,
+        _idx("INX"), _idx("N225"), _idx("HSI"), return_exceptions=True,
     )
-    idx_map: dict[str, Any] = {}
-    for r in results:
-        if isinstance(r, tuple) and r[1]:
-            idx_map[r[0]] = r[1]
-    usdvnd = None
+    return {r[0]: r[1] for r in results if isinstance(r, tuple) and r[1]}
+
+
+async def _build_global(session_date: str) -> dict | None:
+    """Downscoped global context. USD/VND (VCB) + gold (SJC) are reliable and
+    used regardless of MSN; world indices (SPX/N225/HSI) are best-effort MSN."""
+    fx_commodities: dict[str, Any] = {}
+
+    # USD/VND — Vietcombank (no apikey, reliable)
     try:
-        fx, _ = await msn.fetch_forex("USDVND", apikey)
-        if fx:
-            usdvnd = {"value": _r(fx[-1].get("value"), 0),
-                      "change_pct": _r(fx[-1].get("change") or fx[-1].get("changePercent"))}
-    except Exception:
-        pass
-    if not idx_map and not usdvnd:
-        return None
-    return {
-        "us_overnight": {"spx": idx_map.get("INX")},
-        "asia_today": {"n225": idx_map.get("N225"), "hsi": idx_map.get("HSI")},
-        "fx_commodities": {"usdvnd": usdvnd},
-    }
+        from app.services.market_data.sources import vcb
+        rows = await _safe(vcb.fetch_fx(session_date), "vcb_fx")
+        usd = next((r for r in (rows or []) if r.get("currency_code") == "USD"), None)
+        if usd and usd.get("sell"):
+            fx_commodities["usdvnd"] = {"value": _r(usd["sell"], 0)}
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("usdvnd fetch failed: %s", exc)
+
+    # Gold — SJC (reliable)
+    try:
+        from app.services.market_data.sources import sjc
+        rows = await _safe(sjc.fetch_gold(session_date), "sjc_gold")
+        gold = next((r for r in (rows or []) if r.get("sell_price")), None)
+        if gold:
+            fx_commodities["gold"] = {"value": gold["sell_price"], "name": gold.get("name")}
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("gold fetch failed: %s", exc)
+
+    idx_map = await _msn_indices()
+
+    block: dict[str, Any] = {}
+    if idx_map.get("INX"):
+        block["us_overnight"] = {"spx": idx_map["INX"]}
+    asia = {k: idx_map[v] for k, v in {"n225": "N225", "hsi": "HSI"}.items() if idx_map.get(v)}
+    if asia:
+        block["asia_today"] = asia
+    if fx_commodities:
+        block["fx_commodities"] = fx_commodities
+    return block or None
 
 
 async def _icb_name_map() -> dict[int, str]:
@@ -426,13 +453,13 @@ async def build_analysis_payload() -> dict[str, Any]:
         },
         "breadth": _build_breadth(vn_snap),
         "internal_heat": _build_internal_heat(b20, b50),
-        "volume": _build_volume(vn_snap),
+        "volume": _build_volume(idx_ohlc, vn_snap),
         "point_contribution": _build_contribution(imp, vnindex.get("change_points")),
         "foreign_flow": _build_foreign(fser, ftop),
         "prop_trading": _build_prop(pser, ptop),
         "sectors": _build_sectors(secs, icb_names),
         "technical_levels": levels,
-        "global_context": await _build_global(),
+        "global_context": await _build_global(session_date or date.today().isoformat()),
         "calendar_hardcoded": cal.build_calendar_block(
             date.fromisoformat(session_date) if session_date else date.today()
         ),
@@ -451,17 +478,20 @@ async def build_analysis_payload() -> dict[str, Any]:
         if payload.get(k) and not (isinstance(payload[k], dict) and payload[k].get("_missing"))
     )
     payload["meta"]["data_completeness"] = round(present / len(key_blocks), 2)
-    missing = ["volume.ma20_value", "volume.ratio_vs_ma20", "vnindex.last_30min_change_pct"]
+    missing = ["vnindex.last_30min_change_pct"]
+    if payload["volume"].get("ratio_vs_ma20") is None:
+        missing.append("volume.ratio_vs_ma20")
     if payload["global_context"] is None:
         missing.append("global_context")
+    elif not (payload["global_context"].get("us_overnight") or payload["global_context"].get("asia_today")):
+        missing.append("global_context.indices")  # MSN down → chỉ có USD/VND + vàng
     if payload["internal_heat"].get("_missing"):
         missing.append("internal_heat")
     payload["meta"]["missing_fields"] = missing
     payload["meta"]["data_notes"] = [
-        "Chạy thử GIỮA PHIÊN: breadth/thanh khoản là snapshot lũy kế trong phiên "
-        "(chưa phải EOD); foreign_flow & internal_heat phản ánh phiên EOD gần nhất. "
-        "Bản chạy thật 16:30 sau ATC sẽ đồng bộ mọi field về cùng 1 phiên.",
-        "KHÔNG có MA20 thanh khoản → KHÔNG được nói 'vượt X% MA20' cho thanh khoản.",
-        "global_context = null (nguồn MSN đang lỗi 404) → bỏ qua đoạn thế giới, không bịa.",
+        "Nếu chạy GIỮA PHIÊN: thanh khoản phiên hiện tại là lũy kế đang chạy "
+        "(chưa đủ phiên) nên ratio vs MA20 có thể thấp; bản 16:30 sau ATC là số EOD đầy đủ.",
+        "global_context: USD/VND + vàng từ nguồn nội (VCB/SJC) đáng tin; chỉ số "
+        "thế giới (S&P500, Nikkei, Hang Seng) best-effort qua MSN — nếu thiếu thì bỏ qua, không bịa.",
     ]
     return payload

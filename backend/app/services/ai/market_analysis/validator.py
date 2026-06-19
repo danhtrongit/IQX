@@ -18,6 +18,8 @@ NON_TICKER_ACRONYMS = {
     # non-ticker acronyms that appear in our own payload / common usage
     "ICB", "VN30", "VN100", "UPCOM", "EPS", "ROE", "ROA", "PE", "PB", "YOY",
     "ADR", "SPX", "DJI", "USDVND", "ATD",
+    # gold brand + world-index codes (global_context)
+    "SJC", "HSI", "INX", "DXY", "KOSPI", "SHCOMP", "TWII", "FTSE", "KG", "L",
 }
 
 FORBIDDEN_EMPTY = [

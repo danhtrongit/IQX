@@ -177,6 +177,8 @@ async def fetch_ohlcv(
         lows = chart.get("l", [])
         closes = chart.get("c", [])
         volumes = chart.get("v", [])
+        # accumulatedValue = per-bar traded value in million VND (EOD turnover for 1D)
+        values = chart.get("accumulatedValue", [])
 
         for i in range(len(times)):
             records.append(
@@ -187,6 +189,7 @@ async def fetch_ohlcv(
                     "low": lows[i] if i < len(lows) else 0,
                     "close": closes[i] if i < len(closes) else 0,
                     "volume": volumes[i] if i < len(volumes) else 0,
+                    "value": values[i] if i < len(values) else None,
                 }
             )
 
