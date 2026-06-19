@@ -467,6 +467,28 @@ async def fetch_sectors_allocation(
     ], url
 
 
+# ── 6b. ICB Sector Codes (reference) ────────────────
+
+
+async def fetch_icb_codes() -> tuple[list[dict[str, Any]], str]:
+    """Fetch ICB sector code → name reference (vi/en) across all ICB levels."""
+    data, url = await _get_iq(
+        "/api/iq-insight-service/v1/sectors/icb-codes", None,
+    )
+    items = _unwrap_iq(data, url)
+    items = _require_list(items, "icb-codes")
+    return [
+        {
+            "icb_code": _to_int_amount(i.get("name")),
+            "vi_sector": i.get("viSector", ""),
+            "en_sector": i.get("enSector", ""),
+            "icb_level": _to_int_amount(i.get("icbLevel")),
+        }
+        for i in items
+        if isinstance(i, dict) and i.get("name")
+    ], url
+
+
 # ── 7. Valuation ────────────────────────────────────
 
 

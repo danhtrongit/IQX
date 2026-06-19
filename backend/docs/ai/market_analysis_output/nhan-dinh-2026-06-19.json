@@ -1,0 +1,422 @@
+{
+  "generated_at": "2026-06-19T04:38:03.669046+00:00",
+  "valid": true,
+  "attempts": 1,
+  "session_type": "low_volatility",
+  "model": "deepseek-v4-pro",
+  "generation_time_ms": 26483,
+  "errors": [],
+  "output": {
+    "id": "vnindex-2026-06-19",
+    "session_date": "2026-06-19",
+    "session_type": "low_volatility",
+    "headline": "VN-Index giảm nhẹ 0,17%, độ rộng tiêu cực — khối ngoại bán ròng 1.868 tỷ",
+    "tagline": {
+      "direction": "down",
+      "text": "GIẢM · Độ rộng tiêu cực · Khối ngoại bán ròng mạnh"
+    },
+    "paragraphs": {
+      "structure": "VN-Index lùi 3,06 điểm về 1.827,41 (-0,17%) trong phiên có biên độ hẹp 0,71%. Mức giảm không lớn nhưng độ rộng lại xấu rõ rệt: 89 mã tăng so với 181 mã giảm, tỷ lệ 0,49 — cứ 2 mã giảm mới có 1 mã tăng. Sự phân hóa thể hiện rõ qua điểm đóng góp: VHM kéo chỉ số +2,26 điểm nhưng THD một mình lấy đi 5,04 điểm, chiếm 164,8% tổng mức giảm. BID, VIC, GVR, GAS cũng góp mặt trong top kéo giảm. Concentration cực đoan: riêng THD đã vượt toàn bộ mức giảm của chỉ số.",
+      "smart_money": "Khối ngoại bán ròng 1.867,8 tỷ — phiên thứ 3 liên tiếp xả hàng. Áp lực tập trung vào FPT (-501,1 tỷ) và VHM (-276,4 tỷ), hai mã vốn hóa lớn thường được khối này ưa thích. TCB, VCB, STB cũng bị bán trên 100 tỷ mỗi mã. Phía mua vào chỉ xuất hiện VIC (+73,9 tỷ) và PVS (+33,5 tỷ) — giá trị không đáng kể so với chiều bán. Tự doanh cũng đồng thuận bán ròng 239,2 tỷ, trong đó HPG (-90,6 tỷ) và MWG (-72,7 tỷ) chịu áp lực lớn nhất. Mua MSB 372,5 tỷ là điểm sáng hiếm hoi.",
+      "internal_heat": "Sức nóng nội tại hạ nhiệt nhanh. Tỷ lệ mã trên MA20 giảm từ 48,6% xuống còn 43,4% — mất 5,2 điểm phần trăm trong một phiên, xu hướng 5 ngày gần đây cũng thể hiện rõ đỉnh 48,6% hôm qua đã quay đầu giảm. VN-Index hiện nằm dưới MA20 (1.829,1) và MA50 (1.845,9), VN30 cũng dưới cả hai đường trung bình động chính. Thanh khoản 7.914 tỷ — thấp, phù hợp với phiên không có catalyst. Dòng tiền co cụm vào một vài ngành: Dịch vụ tài chính +0,5%, trong khi Dầu khí -0,83% và Hóa chất -1,01% chịu áp lực rõ rệt.",
+      "historical_pattern": null,
+      "global_context": null
+    },
+    "scenarios": [
+      {
+        "condition": "Nếu VN-Index giữ được hỗ trợ MA200 tại 1.753,7 và khối ngoại giảm bán ròng",
+        "outcome": "chỉ số có thể hồi phục kỹ thuật về vùng MA20 1.829,1"
+      },
+      {
+        "condition": "Nếu áp lực bán ròng từ khối ngoại tiếp diễn với quy mô trên 1.000 tỷ/phiên và độ rộng tiếp tục xấu",
+        "outcome": "vùng hỗ trợ 1.775,7 có thể được thử thách trong vài phiên tới"
+      }
+    ],
+    "watchlist": [
+      {
+        "ticker": "THD",
+        "reason": "Mã kéo giảm 5,04 điểm — chiếm 164,8% mức giảm của VN-Index, biến động bất thường cần quan sát thêm"
+      },
+      {
+        "ticker": "FPT",
+        "reason": "Bị khối ngoại bán ròng 501,1 tỷ — giá trị lớn nhất trong top sell, phản ánh áp lực thoát vốn rõ rệt"
+      },
+      {
+        "ticker": "MSB",
+        "reason": "Được tự doanh mua ròng 372,5 tỷ — giá trị vượt trội so với các mã khác, dòng tiền nội đang chú ý"
+      }
+    ],
+    "unexplained": "HNX giảm 3% trong khi VN-Index chỉ giảm 0,17% — mức chênh lệch lớn bất thường không được phản ánh qua dữ liệu ngành hoặc dòng tiền hiện có"
+  },
+  "payload": {
+    "meta": {
+      "generated_for_date": "2026-06-19",
+      "as_of": "2026-06-19T04:37:37.648965+00:00",
+      "session_type": "low_volatility",
+      "missing_fields": [
+        "volume.ma20_value",
+        "volume.ratio_vs_ma20",
+        "vnindex.last_30min_change_pct",
+        "global_context"
+      ],
+      "data_completeness": 1.0,
+      "data_notes": [
+        "Chạy thử GIỮA PHIÊN: breadth/thanh khoản là snapshot lũy kế trong phiên (chưa phải EOD); foreign_flow & internal_heat phản ánh phiên EOD gần nhất. Bản chạy thật 16:30 sau ATC sẽ đồng bộ mọi field về cùng 1 phiên.",
+        "KHÔNG có MA20 thanh khoản → KHÔNG được nói 'vượt X% MA20' cho thanh khoản.",
+        "global_context = null (nguồn MSN đang lỗi 404) → bỏ qua đoạn thế giới, không bịa."
+      ]
+    },
+    "vnindex": {
+      "close": 1827.41,
+      "open": 1837.38,
+      "high": 1838.52,
+      "low": 1825.51,
+      "reference": 1830.47,
+      "change_points": -3.06,
+      "change_pct": -0.17,
+      "intraday_range_pct": 0.71,
+      "last_30min_change_pct": null
+    },
+    "vn30": {
+      "close": 1962.37,
+      "change_pct": -0.25,
+      "ma20": 1976.3,
+      "ma50": 1997.9,
+      "above_ma20": false,
+      "above_ma50": false
+    },
+    "hnx": {
+      "close": 326.09,
+      "change_pct": -3.0
+    },
+    "upcom": {
+      "close": 128.05,
+      "change_pct": -0.14
+    },
+    "breadth": {
+      "advances": 89,
+      "declines": 181,
+      "unchanged": 63,
+      "total_traded": 333,
+      "advance_decline_ratio": 0.49,
+      "ceiling_count": 1,
+      "floor_count": 3
+    },
+    "internal_heat": {
+      "pct_above_ma20": 43.4,
+      "pct_above_ma20_yesterday": 48.6,
+      "pct_above_ma20_5d_trend": [
+        28.8,
+        39.5,
+        42.9,
+        48.6,
+        43.4
+      ],
+      "pct_above_ma50": 33.5,
+      "pct_above_ma200": null,
+      "biggest_1d_change_60d": 33.7,
+      "biggest_1d_drop_60d": -8.5,
+      "_note": "pct_above_ma20≈EMA20, pct_above_ma50≈EMA50 (API chỉ trả EMA20/EMA50)"
+    },
+    "volume": {
+      "total_value_vnd_billion": 7914.0,
+      "ma20_value_vnd_billion": null,
+      "ratio_vs_ma20": null,
+      "ratio_vs_ma20_label": null,
+      "_note": "Giá trị lũy kế trong phiên (HOSE). MA20 lịch sử chưa có (cần job EOD snapshot) — KHÔNG được suy luận ratio vs MA20."
+    },
+    "point_contribution": {
+      "top_positive": [
+        {
+          "ticker": "VHM",
+          "points": 2.26,
+          "pct_of_change": -74.0
+        },
+        {
+          "ticker": "TCX",
+          "points": 0.32,
+          "pct_of_change": -10.6
+        },
+        {
+          "ticker": "HVN",
+          "points": 0.26,
+          "pct_of_change": -8.6
+        },
+        {
+          "ticker": "BAB",
+          "points": 0.21,
+          "pct_of_change": -6.9
+        },
+        {
+          "ticker": "MBS",
+          "points": 0.2,
+          "pct_of_change": -6.4
+        }
+      ],
+      "top_negative": [
+        {
+          "ticker": "THD",
+          "points": -5.04,
+          "pct_of_change": 164.8
+        },
+        {
+          "ticker": "BID",
+          "points": -0.54,
+          "pct_of_change": 17.7
+        },
+        {
+          "ticker": "VIC",
+          "points": -0.49,
+          "pct_of_change": 16.0
+        },
+        {
+          "ticker": "GVR",
+          "points": -0.47,
+          "pct_of_change": 15.2
+        },
+        {
+          "ticker": "GAS",
+          "points": -0.36,
+          "pct_of_change": 11.7
+        }
+      ],
+      "concentration": {
+        "top1_pct": 74.0,
+        "top3_pct": 93.2,
+        "top5_pct": 106.5
+      },
+      "_note": null
+    },
+    "foreign_flow": {
+      "net_value_vnd_billion": -1867.83,
+      "buy_value_vnd_billion": 1279.8,
+      "sell_value_vnd_billion": 3147.63,
+      "streak_direction": "sell",
+      "streak_count": 3,
+      "5d_cumulative_vnd_billion": -1743.16,
+      "top_buy": [
+        {
+          "ticker": "VIC",
+          "value_vnd_billion": 73.88
+        },
+        {
+          "ticker": "PVS",
+          "value_vnd_billion": 33.54
+        },
+        {
+          "ticker": "PC1",
+          "value_vnd_billion": 32.99
+        },
+        {
+          "ticker": "MBB",
+          "value_vnd_billion": 23.12
+        },
+        {
+          "ticker": "ACB",
+          "value_vnd_billion": 22.93
+        }
+      ],
+      "top_sell": [
+        {
+          "ticker": "FPT",
+          "value_vnd_billion": -501.09
+        },
+        {
+          "ticker": "VHM",
+          "value_vnd_billion": -276.38
+        },
+        {
+          "ticker": "TCB",
+          "value_vnd_billion": -159.3
+        },
+        {
+          "ticker": "VCB",
+          "value_vnd_billion": -126.74
+        },
+        {
+          "ticker": "STB",
+          "value_vnd_billion": -106.15
+        }
+      ]
+    },
+    "prop_trading": {
+      "net_value_vnd_billion": -239.15,
+      "buy_value_vnd_billion": 552.88,
+      "sell_value_vnd_billion": 792.03,
+      "vs_avg_5d_label": null,
+      "top_buy": [
+        {
+          "ticker": "MSB",
+          "value_vnd_billion": 372.5
+        },
+        {
+          "ticker": "ABB",
+          "value_vnd_billion": 128.0
+        },
+        {
+          "ticker": "TSJ",
+          "value_vnd_billion": 74.69
+        },
+        {
+          "ticker": "KBC",
+          "value_vnd_billion": 14.39
+        },
+        {
+          "ticker": "CTG",
+          "value_vnd_billion": 12.2
+        }
+      ],
+      "top_sell": [
+        {
+          "ticker": "HPG",
+          "value_vnd_billion": -90.62
+        },
+        {
+          "ticker": "MWG",
+          "value_vnd_billion": -72.65
+        },
+        {
+          "ticker": "ACB",
+          "value_vnd_billion": -43.4
+        },
+        {
+          "ticker": "VIC",
+          "value_vnd_billion": -37.08
+        },
+        {
+          "ticker": "VHM",
+          "value_vnd_billion": -28.35
+        }
+      ]
+    },
+    "sectors": [
+      {
+        "name": "Dịch vụ tài chính",
+        "icb_code": 8700,
+        "change_pct": 0.5,
+        "volume_vnd_billion": 1011.0
+      },
+      {
+        "name": "Ô tô và phụ tùng",
+        "icb_code": 3300,
+        "change_pct": 0.35,
+        "volume_vnd_billion": 31.0
+      },
+      {
+        "name": "Du lịch và Giải trí",
+        "icb_code": 5700,
+        "change_pct": 0.08,
+        "volume_vnd_billion": 112.0
+      },
+      {
+        "name": "Bất động sản",
+        "icb_code": 8600,
+        "change_pct": -0.1,
+        "volume_vnd_billion": 1725.0
+      },
+      {
+        "name": "Dầu khí",
+        "icb_code": 1,
+        "change_pct": -0.83,
+        "volume_vnd_billion": 159.0
+      },
+      {
+        "name": "Hóa chất",
+        "icb_code": 1300,
+        "change_pct": -1.01,
+        "volume_vnd_billion": 104.0
+      },
+      {
+        "name": "Viễn thông",
+        "icb_code": 6000,
+        "change_pct": -1.19,
+        "volume_vnd_billion": 13.0
+      }
+    ],
+    "technical_levels": {
+      "vnindex_support": [
+        1775.7,
+        1629.7
+      ],
+      "vnindex_resistance": [
+        1891.3,
+        1933.1
+      ],
+      "vnindex_ma20": 1829.1,
+      "vnindex_ma50": 1845.9,
+      "vnindex_ma200": 1753.7
+    },
+    "global_context": null,
+    "calendar_hardcoded": {
+      "next_futures_expiry": {
+        "date": "2026-07-16",
+        "code": "VN30F2607",
+        "days_until": 27,
+        "is_expiry_today": false
+      },
+      "current_earnings_season": null,
+      "next_earnings_season": {
+        "name": "Q2",
+        "starts": "2026-07-01",
+        "days_until": 12
+      },
+      "next_macro_publish": {
+        "type": "CPI/IIP/XNK tháng 6",
+        "date": "2026-06-29",
+        "days_until": 10
+      }
+    },
+    "top_news_24h": [
+      {
+        "title": "BID: Sắp phát hành hơn 498 triệu cổ phiếu để tăng vốn điều lệ",
+        "sentiment": "Positive",
+        "tickers": [
+          "BID"
+        ]
+      },
+      {
+        "title": "ACB: Nhóm Âu Lạc tăng sở hữu lên 9,5% vốn ACB",
+        "sentiment": "Positive",
+        "tickers": [
+          "ACB"
+        ]
+      },
+      {
+        "title": "ABW: Chứng khoán An Bình tăng vốn lên hơn 3.000 tỷ đồng sau đợt chào bán riêng lẻ",
+        "sentiment": "Positive",
+        "tickers": [
+          "ABW"
+        ]
+      },
+      {
+        "title": "PNJ: Một Thành viên HĐQT PNJ 'sang tay' cổ phiếu cho người thân",
+        "sentiment": "Positive",
+        "tickers": [
+          "PNJ"
+        ]
+      },
+      {
+        "title": "ITC: Becamex ITC tất toán lô trái phiếu phát hành năm 2019",
+        "sentiment": "Positive",
+        "tickers": [
+          "ITC"
+        ]
+      },
+      {
+        "title": "LPB: LPBank phát hành thêm lô trái phiếu 100 tỷ đồng",
+        "sentiment": "Neutral",
+        "tickers": [
+          "LPB"
+        ]
+      }
+    ],
+    "historical_pattern_match": {
+      "found": false
+    },
+    "memory_context": {
+      "last_analysis": null,
+      "recent_5_sessions_overview": [],
+      "verifiable_claims_from_recent_analyses": []
+    }
+  }
+}
