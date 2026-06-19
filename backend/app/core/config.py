@@ -120,6 +120,11 @@ class Settings(BaseSettings):
     ALERTS_ENABLED: bool = False          # master switch for the intraday scan job
     ALERT_SCAN_INTERVAL_MINUTES: int = 10
 
+    # ── Daily AI Market Analysis ─────────────────────
+    MARKET_ANALYSIS_ENABLED: bool = False  # master switch for the 16:30 EOD job
+    MARKET_ANALYSIS_CRON_HOUR: int = 16    # ICT
+    MARKET_ANALYSIS_CRON_MINUTE: int = 30
+
     # ── Lessons / Media ───────────────────────────────
     LESSON_MEDIA_DIR: str = "./media"
     LESSON_MAX_PDF_MB: int = 50

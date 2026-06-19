@@ -12,6 +12,7 @@ from __future__ import annotations
 import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from app.core.config import get_settings
@@ -54,6 +55,22 @@ async def startup() -> None:
             run_alert_scan_job, IntervalTrigger(minutes=interval),
             id="alert_scan",
             name="Evaluate alert rules against watchlists (intraday) → Telegram",
+            max_instances=1, coalesce=True, replace_existing=True,
+        )
+
+    if getattr(settings, "MARKET_ANALYSIS_ENABLED", False):
+        from .market_analysis_job import run_market_analysis_job
+
+        _scheduler.add_job(
+            run_market_analysis_job,
+            CronTrigger(
+                day_of_week="mon-fri",
+                hour=int(getattr(settings, "MARKET_ANALYSIS_CRON_HOUR", 16)),
+                minute=int(getattr(settings, "MARKET_ANALYSIS_CRON_MINUTE", 30)),
+                timezone="Asia/Ho_Chi_Minh",
+            ),
+            id="market_analysis_daily",
+            name="Generate daily VN-Index AI analysis (16:30 ICT, EOD)",
             max_instances=1, coalesce=True, replace_existing=True,
         )
 
