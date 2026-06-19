@@ -25,3 +25,4 @@ from app.models.chart_drawing import ChartDrawing  # noqa: F401
 from app.models.ipn_log import SePayIPNLog  # noqa: F401
 from app.models.lesson import Course, Episode, EpisodeProgress  # noqa: F401
 from app.models.login_history import UserLoginHistory  # noqa: F401
+from app.models.market_analysis import AnalysisClaim, AnalysisHistory  # noqa: F401
