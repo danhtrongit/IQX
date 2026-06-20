@@ -15,6 +15,8 @@ import { BreadthChart } from "./charts/BreadthChart"
 import { ContributionChart } from "./charts/ContributionChart"
 import { ForeignFlowCard } from "./charts/ForeignFlowCard"
 import { PropFlowCard } from "./charts/PropFlowCard"
+import { HealthLineChart } from "./charts/HealthLineChart"
+import { RotationChart } from "./charts/RotationChart"
 
 // ─── Modal body (mounted only when open) ─────────────────────────────────────
 
@@ -62,6 +64,17 @@ function ModalBody() {
                 charts.foreign_detail.total_sell_vnd_billion
               }
             />
+          </div>
+        </div>
+      )}
+
+      {/* ── Sức khỏe thị trường (health line + rotation) ── */}
+      {charts && charts.market_health_detail && charts.sector_rotation && (
+        <div>
+          <TierLabel label="Sức khỏe thị trường" />
+          <div className="grid grid-cols-2 gap-3.5">
+            <HealthLineChart data={charts.market_health_detail} />
+            <RotationChart data={charts.sector_rotation} />
           </div>
         </div>
       )}
