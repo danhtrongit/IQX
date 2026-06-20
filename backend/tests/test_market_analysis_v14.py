@@ -120,3 +120,19 @@ def test_parse_scenario_condition_strips_html():
     from app.services.ai.market_analysis.memory import parse_scenario_condition
     cond = parse_scenario_condition("Giữ trên <strong>1.825</strong> với KN bán dưới 80 tỷ")
     assert cond.get("vnindex_above") == 1825
+
+
+# ── v1.4 endpoint serializer tests (Task 7) ─────────────────────────────────
+
+from app.api.v1.endpoints.market_analysis import AnalysisOut
+
+
+def test_analysis_out_accepts_v14_shape():
+    o = AnalysisOut(id="x", session_date="2026-06-19", session_type="hidden_distribution",
+        session_type_display="Rút tiền ngầm", generated_at="2026-06-19T16:30:00+07:00",
+        headline="h", tagline={"direction":"down","marker":"▼","text":"t"},
+        paragraphs={"structure":"<span>1</span>","smart_money":"x","market_health":"y"},
+        scenarios=[{"direction":"down","condition_html":"a","outcome_html":"b"}],
+        watchlist=[{"ticker":"VHM","alert":True,"reason_html":"r"}], unexplained=None)
+    assert o.session_type_display == "Rút tiền ngầm"
+    assert o.paragraphs["market_health"] == "y"
