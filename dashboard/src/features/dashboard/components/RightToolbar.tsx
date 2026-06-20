@@ -37,7 +37,7 @@ function ToolbarButton({
       )}
     >
       <Icon className="text-[18px]" />
-      <span className="text-[9px] font-medium leading-tight text-center">
+      <span className="text-[9px] font-medium leading-tight text-center md:whitespace-nowrap">
         {item.label}
       </span>
       {item.badge != null && item.badge > 0 && (
@@ -85,7 +85,7 @@ export function RightToolbar({
   return (
     <aside
       id="right-toolbar"
-      className="fixed bottom-0 left-0 right-0 z-50 w-full h-[52px] bg-[var(--color-bg-2)] border-t border-[var(--color-border-2)] flex flex-row items-center justify-around px-2 pb-[env(safe-area-inset-bottom)] md:static md:w-12 md:h-full md:flex-col md:border-l md:border-t-0 md:py-1 md:px-0.5 gap-0.5"
+      className="fixed bottom-0 left-0 right-0 z-50 w-full h-[52px] bg-[var(--color-bg-2)] border-t border-[var(--color-border-2)] flex flex-row items-center justify-around px-2 pb-[env(safe-area-inset-bottom)] md:static md:w-20 md:h-full md:flex-col md:border-l md:border-t-0 md:py-1 md:px-0.5 gap-0.5"
     >
       {ITEMS.map((item) => (
         <ToolbarButton
