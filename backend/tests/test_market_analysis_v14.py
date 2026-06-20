@@ -64,3 +64,11 @@ def test_prompt_has_v14_rules():
                  "TỔNG PHÍA GIẢM","tương đương MA20","Chưa giải thích được",
                  "KHÔNG đoạn","HTML-inline"]:
         assert must in SYSTEM_PROMPT or must.lower() in SYSTEM_PROMPT.lower(), must
+
+
+def test_prompt_no_legacy_contradictions():
+    """Assert that OLD contradicting schema/rules are absent from SYSTEM_PROMPT."""
+    assert '"internal_heat"' not in SYSTEM_PROMPT, 'legacy key "internal_heat" still present'
+    assert '"global_context"' not in SYSTEM_PROMPT, 'legacy key "global_context" still present'
+    assert '7 phần' not in SYSTEM_PROMPT, 'legacy "7 phần" count still present'
+    assert '"condition": "..."' not in SYSTEM_PROMPT, 'old scenario schema with "condition" key still present'
