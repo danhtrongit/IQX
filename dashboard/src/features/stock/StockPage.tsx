@@ -10,7 +10,6 @@ import {
 import { SymbolProvider, useSymbol } from "@/shared/contexts/symbol-context"
 import { useTheme } from "@/shared/theme/ThemeProvider"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
-import { ForecastWindow } from "@/features/forecast"
 import { PremiumGate } from "@/features/premium"
 import {
   RightSidebar,
@@ -207,8 +206,6 @@ function StockTerminal() {
         )}
       </AnimatePresence>
 
-      {/* Forecast window — self-gates on sidebar context */}
-      <ForecastWindow />
     </div>
   )
 }

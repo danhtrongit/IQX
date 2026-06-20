@@ -6,7 +6,7 @@ export interface DailyAnalysis {
   id: string
   session_date: string
   session_type: string
-  session_type_display: string
+  session_type_display: string | null
   headline: string
   tagline: {
     direction: Direction

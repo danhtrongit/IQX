@@ -41,7 +41,7 @@ const fixture: DailyAnalysis = {
       reason_html: "Khối lượng đột biến",
     },
   ],
-  unexplained: "Một số tín hiệu bất thường cần theo dõi thêm.",
+  unexplained: 'Có <span class="num">817</span> mã bất thường. <script>alert(1)</script>',
 }
 
 // ─── Import component after mocks are set up ────────────────────────────────
@@ -171,8 +171,27 @@ describe("MarketAnalysisArticle", () => {
       error: null,
     } as ReturnType<typeof useDailyMarketAnalysis>)
 
-    render(<MarketAnalysisArticle />)
-    expect(screen.getByText(/Một số tín hiệu bất thường/)).toBeInTheDocument()
+    const { container } = render(<MarketAnalysisArticle />)
+    // The .num span inside unexplained must render as real HTML
+    const numSpan = container.querySelector(".am-unexplained-body span.num")
+    expect(numSpan).not.toBeNull()
+    expect(numSpan?.textContent).toBe("817")
+  })
+
+  it("sanitizes script tags from unexplained (XSS prevention)", () => {
+    mockHook.mockReturnValue({
+      data: fixture,
+      isLoading: false,
+      isError: false,
+      error: null,
+    } as ReturnType<typeof useDailyMarketAnalysis>)
+
+    const { container } = render(<MarketAnalysisArticle />)
+    // script element must NOT appear in the unexplained section
+    expect(container.querySelector(".am-unexplained-body script")).toBeNull()
+    // raw script text must NOT be in the DOM as text content
+    const body = container.querySelector(".am-unexplained-body")
+    expect(body?.textContent).not.toContain("<script>")
   })
 
   it("shows skeleton/loading state and does not crash", () => {

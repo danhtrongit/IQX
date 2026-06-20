@@ -32,7 +32,7 @@ function isIndexSymbol(s: string): boolean {
  *
  * Renders the FULL standalone chrome (NOT inside AppShell): TrialBanner +
  * Header + MarketBar + a flex body [LeftSidebar(40) | CenterPanel(flex-1) |
- * RightSidebar(280) | RightToolbar(48)] + Footer + ForecastWindow. The market
+ * RightSidebar(280) | RightToolbar(48)] + Footer. The market
  * data + sidebar providers are global (providers.tsx); only SymbolProvider is
  * scoped here, defaulting to VNINDEX. Ported from dashboard-bak/pages/dashboard.
  */

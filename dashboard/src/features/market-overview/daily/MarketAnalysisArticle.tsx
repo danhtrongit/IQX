@@ -75,7 +75,9 @@ export function MarketAnalysisArticle() {
         <div className="am-title-row">
           <span className="am-badge">IQX AI</span>
           <span className="am-session-label">Nhận định phiên {session_date}</span>
-          <span className="am-session-type">Loại phiên: {session_type_display}</span>
+          {session_type_display && (
+            <span className="am-session-type">Loại phiên: {session_type_display}</span>
+          )}
         </div>
       </div>
 
@@ -104,7 +106,7 @@ export function MarketAnalysisArticle() {
       {unexplained && (
         <div className="am-unexplained">
           <strong className="am-unexplained-title">Điểm chú ý</strong>
-          {unexplained}
+          <div className="am-unexplained-body" dangerouslySetInnerHTML={{ __html: sanitizeInline(unexplained) }} />
         </div>
       )}
     </article>
