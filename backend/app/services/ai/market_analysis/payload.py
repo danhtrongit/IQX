@@ -164,6 +164,8 @@ def _build_volume(idx_ohlc: list[dict], vn_snap: dict) -> dict:
 
 
 def _contribution_pct(top_up: list, top_down: list, change_points: float) -> dict:
+    if not top_up and not top_down:
+        return {"_missing": True}
     ups = sorted([x for x in top_up if (x.get("impact") or 0) > 0], key=lambda x: -x["impact"])
     downs = sorted([x for x in top_down if (x.get("impact") or 0) < 0], key=lambda x: x["impact"])
     tp = sum(x["impact"] for x in ups) or 1
@@ -210,39 +212,6 @@ def _scenario_range(close: float) -> dict:
     return {"current": round(close, 1), "near_resistance": round(close * 1.015, 1),
             "far_resistance": round(close * 1.06, 1), "near_support": round(close * 0.985, 1),
             "far_support": round(close * 0.94, 1), "extreme_support": round(close * 0.90, 1)}
-
-
-def _build_contribution(imp: dict, change_points: float | None) -> dict:
-    if not imp:
-        return {"_missing": True}
-    ups = sorted(imp.get("top_up", []), key=lambda x: x.get("impact") or 0, reverse=True)
-    downs = sorted(imp.get("top_down", []), key=lambda x: x.get("impact") or 0)
-
-    # % of change chỉ có nghĩa khi index dịch chuyển đủ lớn; phiên gần như đi
-    # ngang (mẫu số ~0) sẽ cho % vô nghĩa (>100%) → bỏ qua, chỉ dùng điểm tuyệt đối.
-    meaningful = change_points is not None and abs(change_points) >= 3.0
-
-    def _row(x: dict) -> dict:
-        pts = x.get("impact")
-        return {
-            "ticker": x.get("symbol"), "points": _r(pts),
-            "pct_of_change": _r(pts / change_points * 100, 1) if (meaningful and pts) else None,
-        }
-
-    top_pos = [_row(x) for x in ups[:5]]
-    top_neg = [_row(x) for x in downs[:5]]
-
-    def _cum(n: int) -> float | None:
-        if not meaningful:
-            return None
-        s = sum(abs(x.get("impact") or 0) for x in ups[:n])
-        return _r(s / abs(change_points) * 100, 1)
-
-    return {
-        "top_positive": top_pos, "top_negative": top_neg,
-        "concentration": {"top1_pct": _cum(1), "top3_pct": _cum(3), "top5_pct": _cum(5)},
-        "_note": None if meaningful else "Index gần đi ngang — bỏ % đóng góp (mẫu số ~0), chỉ dùng điểm tuyệt đối.",
-    }
 
 
 def _build_foreign(fseries: list[dict], ftop: dict) -> dict:
@@ -343,71 +312,6 @@ def _build_sectors(secs: list[dict], icb_names: dict[int, str]) -> list[dict]:
     top = rows[:4]
     bottom = rows[-3:]
     return top + [r for r in bottom if r not in top]
-
-
-async def _msn_indices() -> dict[str, Any]:
-    """Best-effort world indices via MSN. Returns {} when MSN is unreachable
-    (the apikey resolver is currently flaky upstream)."""
-    try:
-        from app.services.market_data.sources import msn
-        apikey = await asyncio.wait_for(msn.resolve_apikey(None), timeout=12)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("global indices skipped (MSN): %s", exc)
-        return {}
-
-    async def _idx(sym: str) -> tuple[str, dict | None]:
-        try:
-            series, _ = await msn.fetch_world_index(sym, apikey)
-            if series:
-                last = series[-1]
-                return sym, {"value": _r(last.get("value"), 1),
-                             "change_pct": _r(last.get("change") or last.get("changePercent"))}
-        except Exception:
-            pass
-        return sym, None
-
-    results = await asyncio.gather(
-        _idx("INX"), _idx("N225"), _idx("HSI"), return_exceptions=True,
-    )
-    return {r[0]: r[1] for r in results if isinstance(r, tuple) and r[1]}
-
-
-async def _build_global(session_date: str) -> dict | None:
-    """Downscoped global context. USD/VND (VCB) + gold (SJC) are reliable and
-    used regardless of MSN; world indices (SPX/N225/HSI) are best-effort MSN."""
-    fx_commodities: dict[str, Any] = {}
-
-    # USD/VND — Vietcombank (no apikey, reliable)
-    try:
-        from app.services.market_data.sources import vcb
-        rows = await _safe(vcb.fetch_fx(session_date), "vcb_fx")
-        usd = next((r for r in (rows or []) if r.get("currency_code") == "USD"), None)
-        if usd and usd.get("sell"):
-            fx_commodities["usdvnd"] = {"value": _r(usd["sell"], 0)}
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("usdvnd fetch failed: %s", exc)
-
-    # Gold — SJC (reliable)
-    try:
-        from app.services.market_data.sources import sjc
-        rows = await _safe(sjc.fetch_gold(session_date), "sjc_gold")
-        gold = next((r for r in (rows or []) if r.get("sell_price")), None)
-        if gold:
-            fx_commodities["gold"] = {"value": gold["sell_price"], "name": gold.get("name")}
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("gold fetch failed: %s", exc)
-
-    idx_map = await _msn_indices()
-
-    block: dict[str, Any] = {}
-    if idx_map.get("INX"):
-        block["us_overnight"] = {"spx": idx_map["INX"]}
-    asia = {k: idx_map[v] for k, v in {"n225": "N225", "hsi": "HSI"}.items() if idx_map.get(v)}
-    if asia:
-        block["asia_today"] = asia
-    if fx_commodities:
-        block["fx_commodities"] = fx_commodities
-    return block or None
 
 
 async def _icb_name_map() -> dict[int, str]:

@@ -26,3 +26,7 @@ def test_ma_label_small_diff_is_tuong_duong():
 def test_scenario_range_bounds():
     r = P._scenario_range(1824.5)
     assert r["far_support"] < 1824.5 < r["far_resistance"]
+
+
+def test_contribution_pct_missing_when_empty():
+    assert P._contribution_pct([], [], -5.0) == {"_missing": True}
