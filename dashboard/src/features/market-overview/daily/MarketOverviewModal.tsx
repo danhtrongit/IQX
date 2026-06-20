@@ -44,7 +44,7 @@ function ModalBody() {
       {charts && (
         <div>
           <TierLabel label="Cấu trúc phiên" />
-          <div className="grid grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             <BreadthChart data={charts.breadth} />
             <ContributionChart data={charts.contribution} />
           </div>
@@ -55,7 +55,7 @@ function ModalBody() {
       {charts && charts.foreign_detail && charts.prop_detail && (
         <div>
           <TierLabel label="Dòng tiền" />
-          <div className="grid grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             <ForeignFlowCard data={charts.foreign_detail} />
             <PropFlowCard
               data={charts.prop_detail}
@@ -72,7 +72,7 @@ function ModalBody() {
       {charts && charts.market_health_detail && charts.sector_rotation && (
         <div>
           <TierLabel label="Sức khỏe thị trường" />
-          <div className="grid grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             <HealthLineChart
               data={charts.market_health_detail}
               classification={charts.breadth.classification}
