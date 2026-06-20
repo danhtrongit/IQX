@@ -104,3 +104,19 @@ def test_validator_flags_marker_in_tagline():
 def test_validator_flags_missing_unexplained_on_contradiction():
     o = _ok_out(); o["unexplained"] = None
     assert any("BUG21" in e for e in validate_output(o, _PAYLOAD))
+
+
+# ── v1.4 generator / memory tests (Task 6) ──────────────────────────────────
+
+import json
+from app.services.ai.market_analysis import generator as G
+
+
+def test_parse_json_strips_fence():
+    assert G._parse_json('```json\n{"a":1}\n```')["a"] == 1
+
+
+def test_parse_scenario_condition_strips_html():
+    from app.services.ai.market_analysis.memory import parse_scenario_condition
+    cond = parse_scenario_condition("Giữ trên <strong>1.825</strong> với KN bán dưới 80 tỷ")
+    assert cond.get("vnindex_above") == 1825

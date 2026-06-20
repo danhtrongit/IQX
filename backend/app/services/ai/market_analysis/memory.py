@@ -39,6 +39,7 @@ def _parse_number(s: str) -> float:
 
 def parse_scenario_condition(text: str) -> dict[str, Any]:
     """Parse a VN scenario condition string → machine-readable JSON (spec §6.5)."""
+    text = re.sub(r"<[^>]+>", "", text)
     result: dict[str, Any] = {}
     low = text.lower()
 
@@ -61,7 +62,7 @@ def extract_claims(output: dict[str, Any]) -> list[dict[str, Any]]:
     """Extract verifiable claims from the generated scenarios."""
     claims = []
     for i, scenario in enumerate(output.get("scenarios", [])):
-        cond = scenario.get("condition", "")
+        cond = scenario.get("condition_html") or scenario.get("condition", "")
         parsed = parse_scenario_condition(cond)
         if not parsed:
             continue  # nothing verifiable in this scenario

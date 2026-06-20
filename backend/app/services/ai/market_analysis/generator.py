@@ -28,6 +28,15 @@ logger = logging.getLogger(__name__)
 
 _FENCE = re.compile(r"^```(?:json)?\s*|\s*```$", re.MULTILINE)
 
+SESSION_DISPLAY: dict[str, str] = {
+    "narrow_rally": "Tăng phân hóa",
+    "broad_rally": "Tăng lan tỏa",
+    "broad_selloff": "Giảm sâu",
+    "low_volatility": "Đi ngang",
+    "derivatives_anomaly": "Đáo hạn phái sinh",
+    "hidden_distribution": "Rút tiền ngầm",
+}
+
 
 def _parse_json(text: str) -> dict[str, Any]:
     cleaned = _FENCE.sub("", text).strip()
@@ -98,6 +107,7 @@ async def generate_analysis(
         output.setdefault("session_type", session_type)
         output.setdefault("session_date", payload["meta"]["generated_for_date"])
         output.setdefault("id", f"vnindex-{payload['meta']['generated_for_date']}")
+        output.setdefault("session_type_display", SESSION_DISPLAY.get(session_type))
         output.setdefault("meta", {})
         if isinstance(output["meta"], dict):
             output["meta"].update({
