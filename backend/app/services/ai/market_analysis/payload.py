@@ -326,6 +326,190 @@ async def _icb_name_map() -> dict[int, str]:
     return out
 
 
+def _breadth_classification(up: int, down: int) -> str:
+    ratio = up / max(down, 1)
+    if ratio < 0.5:
+        return "Phân hóa tiêu cực"
+    if ratio < 0.8:
+        return "Nghiêng giảm"
+    if ratio <= 1.25:
+        return "Cân bằng"
+    if ratio <= 2:
+        return "Nghiêng tăng"
+    return "Tích cực"
+
+
+def _health_callout(change: float) -> dict:
+    if change < -1:
+        return {
+            "type": "warning",
+            "text": f"Tỷ lệ mã trên MA20 giảm {abs(change):.1f} điểm — nội tại suy yếu.",
+        }
+    if change > 1:
+        return {
+            "type": "positive",
+            "text": f"Tỷ lệ mã trên MA20 tăng {change:.1f} điểm — nội tại cải thiện.",
+        }
+    return {
+        "type": "neutral",
+        "text": "Tỷ lệ mã trên MA20 gần như không đổi so với phiên trước.",
+    }
+
+
+def _build_charts(
+    *,
+    breadth_block: dict,
+    b20: list[dict] | None,
+    b50: list[dict] | None,
+    fser: list[dict] | None,
+    pser: list[dict] | None,
+    point_contribution: dict,
+    foreign_flow: dict,
+    prop_trading: dict,
+    sectors: list[dict],
+) -> dict:
+    """Build the deterministic ``charts`` block (spec §5.1).
+
+    All inputs are already-fetched objects from ``build_analysis_payload``; no
+    new network calls are made here.
+    """
+
+    # ── breadth ──────────────────────────────────────────────────────────────
+    up = breadth_block.get("advances") or 0
+    down = breadth_block.get("declines") or 0
+    flat = breadth_block.get("unchanged") or 0
+    ceiling = breadth_block.get("ceiling_count") or 0
+    floor_ = breadth_block.get("floor_count") or 0
+    ratio_float = up / max(down, 1)
+    ratio_str = f"1 : {(1 / ratio_float):.1f}".replace(".", ",") if ratio_float < 1 else f"{ratio_float:.1f} : 1".replace(".", ",")
+
+    # pct_above_ma20 from b20 series
+    s20 = [r["percent"] * 100 for r in (b20 or []) if r.get("percent") is not None]
+    pct_ma20 = _r(s20[-1], 1) if s20 else None
+
+    breadth_charts = {
+        "ceiling": ceiling,
+        "up": up,
+        "flat": flat,
+        "down": down,
+        "floor": floor_,
+        "ratio_up_down": ratio_str,
+        "classification": _breadth_classification(up, down),
+        "pct_above_ma20": pct_ma20,
+    }
+
+    # ── contribution ─────────────────────────────────────────────────────────
+    if point_contribution.get("_missing"):
+        contribution_charts: dict = {"top_negative": [], "top_positive": []}
+    else:
+        contribution_charts = {
+            "top_negative": [
+                {"ticker": x["ticker"], "points": x["points"]}
+                for x in (point_contribution.get("top_negative") or [])[:8]
+            ],
+            "top_positive": [
+                {"ticker": x["ticker"], "points": x["points"]}
+                for x in (point_contribution.get("top_positive") or [])[:8]
+            ],
+        }
+
+    # ── foreign_detail ───────────────────────────────────────────────────────
+    f_nets_raw = [
+        (r.get("foreign_buy_value_vnd") or 0) - (r.get("foreign_sell_value_vnd") or 0)
+        for r in (fser or [])
+    ]
+    last_12_f = [_r(v / _VND_B, 1) for v in f_nets_raw[-12:]]
+    cum5_f = _r(sum(f_nets_raw[-5:]) / _VND_B, 1) if len(f_nets_raw) >= 5 else None
+
+    foreign_detail: dict = {
+        "total_buy_vnd_billion": foreign_flow.get("buy_value_vnd_billion"),
+        "total_sell_vnd_billion": foreign_flow.get("sell_value_vnd_billion"),
+        "streak": {
+            "count": foreign_flow.get("streak_count") or 0,
+            "direction": foreign_flow.get("streak_direction") or "sell",
+            "last_5d_cumulative": cum5_f,
+        },
+        "last_12_sessions": last_12_f,
+        "top_sell": [
+            {"ticker": x["ticker"], "value": x.get("value_vnd_billion")}
+            for x in (foreign_flow.get("top_sell") or [])[:8]
+        ],
+        "top_buy": [
+            {"ticker": x["ticker"], "value": x.get("value_vnd_billion")}
+            for x in (foreign_flow.get("top_buy") or [])[:8]
+        ],
+    }
+
+    # ── prop_detail ──────────────────────────────────────────────────────────
+    p_nets_raw = []
+    for r in (pser or []):
+        b, s = r.get("total_buy_value_vnd"), r.get("total_sell_value_vnd")
+        if b is not None and s is not None:
+            p_nets_raw.append(b - s)
+        else:
+            p_nets_raw.append(0)
+    last_12_p = [_r(v / _VND_B, 1) for v in p_nets_raw[-12:]]
+
+    # anomaly ticker from buy_concentration_flag
+    conc_flag = prop_trading.get("buy_concentration_flag") or {}
+    anomaly_ticker = conc_flag.get("ticker") if conc_flag.get("concentrated") else None
+
+    prop_top_buy = []
+    for x in (prop_trading.get("top_buy") or [])[:8]:
+        item: dict = {"ticker": x.get("ticker"), "value": x.get("value_vnd_billion")}
+        if anomaly_ticker and x.get("ticker") == anomaly_ticker:
+            item["anomaly"] = True
+        prop_top_buy.append(item)
+
+    prop_detail: dict = {
+        "total_buy_vnd_billion": prop_trading.get("buy_value_vnd_billion"),
+        "total_sell_vnd_billion": prop_trading.get("sell_value_vnd_billion"),
+        "net_vnd_billion": prop_trading.get("net_value_vnd_billion"),
+        "last_12_sessions": last_12_p,
+        "top_buy": prop_top_buy,
+        "top_sell": [
+            {"ticker": x.get("ticker"), "value": x.get("value_vnd_billion")}
+            for x in (prop_trading.get("top_sell") or [])[:8]
+        ],
+    }
+
+    # ── market_health_detail ─────────────────────────────────────────────────
+    s50 = [r["percent"] * 100 for r in (b50 or []) if r.get("percent") is not None]
+    trend_20d = [_r(v, 1) for v in s20[-20:]]
+    pct_ma20_val = s20[-1] if s20 else None
+    pct_ma20_prev = s20[-2] if len(s20) >= 2 else None
+    pct_ma20_change = _r(pct_ma20_val - pct_ma20_prev, 1) if (pct_ma20_val is not None and pct_ma20_prev is not None) else 0.0
+    pct_ma50 = _r(s50[-1], 1) if s50 else None
+    callout = _health_callout(pct_ma20_change or 0.0)
+
+    market_health_detail: dict = {
+        "pct_above_ma20": _r(pct_ma20_val, 1),
+        "pct_above_ma20_change": pct_ma20_change,
+        "pct_above_ma50": pct_ma50,
+        "pct_above_ma200": None,
+        "trend_20d": trend_20d,
+        "callout": callout,
+    }
+
+    # ── sector_rotation ──────────────────────────────────────────────────────
+    sector_rotation: dict = {
+        "sectors_today": sorted(
+            [{"name": s["name"], "pct": s["change_pct"]} for s in sectors if s.get("change_pct") is not None],
+            key=lambda x: x["pct"],
+            reverse=True,
+        )
+    }
+
+    return {
+        "breadth": breadth_charts,
+        "contribution": contribution_charts,
+        "foreign_detail": foreign_detail,
+        "prop_detail": prop_detail,
+        "market_health_detail": market_health_detail,
+        "sector_rotation": sector_rotation,
+    }
+
+
 async def _build_news() -> list[dict]:
     try:
         from app.services.market_data.sources.vietcap_ai_news import fetch_news_list
@@ -445,6 +629,19 @@ async def build_analysis_payload() -> dict[str, Any]:
                            "recent_5_sessions_overview": [],
                            "verifiable_claims_from_recent_analyses": []},
     }
+
+    # ── charts block (spec §5.1) ─────────────────────────────────────────────
+    payload["charts"] = _build_charts(
+        breadth_block=payload["breadth"],
+        b20=b20,
+        b50=b50,
+        fser=fser,
+        pser=pser,
+        point_contribution=point_contribution,
+        foreign_flow=foreign_flow,
+        prop_trading=prop_trading,
+        sectors=payload["sectors"],
+    )
 
     # data completeness over key blocks
     key_blocks = ["vnindex", "breadth", "market_health", "volume",
