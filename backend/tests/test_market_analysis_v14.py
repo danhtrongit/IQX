@@ -43,3 +43,14 @@ def test_classifier_hidden_distribution():
          "foreign_flow":{"net_value_vnd_billion":-1868,"streak_count":3},
          "volume":{"ratio_vs_ma20":0.99}}
     assert classify_session(p) == "hidden_distribution"
+
+
+from app.services.ai.market_analysis import samples as S
+
+
+def test_samples_v14_clean():
+    blob = "\n".join(S.SAMPLES.values()).lower()
+    for bad in ["sức nóng nội tại","catalyst","rotation","breakout","sell-off","phân phối ngầm","bối cảnh thế giới","s&p500"]:
+        assert bad not in blob, bad
+    assert "hidden_distribution" in S.SAMPLES
+    assert "sức khỏe thị trường" in blob
