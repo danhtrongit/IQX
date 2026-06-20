@@ -217,7 +217,9 @@ async def persist_analysis(
         scenarios=output.get("scenarios") or [],
         watchlist=output.get("watchlist"),
         unexplained=output.get("unexplained"),
-        meta={**(output.get("meta") or {}), "session_type_display": output.get("session_type_display")},
+        meta={**(output.get("meta") or {}),
+              "session_type_display": output.get("session_type_display"),
+              "charts": output.get("charts")},
         is_published=True,
     )
 

@@ -122,6 +122,11 @@ async def generate_analysis(
         logger.warning("attempt %d validation errors: %s", attempt, last_errors)
 
     valid = not last_errors and output is not None
+
+    # Attach charts block from payload so persist_analysis can store it in meta
+    if output is not None:
+        output["charts"] = payload.get("charts")
+
     persisted = False
     if db is not None and valid:
         try:

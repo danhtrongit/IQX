@@ -143,3 +143,127 @@ def test_extract_claims_reads_outcome_html():
     out = {"scenarios":[{"direction":"down","condition_html":"Mất <strong>1.815</strong>","outcome_html":"test <strong>1.795</strong>"}]}
     claims = extract_claims(out)
     assert claims and claims[0]["predicted_outcome"] == "test <strong>1.795</strong>"
+
+
+# ── v1.4 charts block tests (Task charts-v14) ────────────────────────────────
+
+def test_build_charts_shape():
+    """_build_charts returns all required top-level keys with correct sub-structure."""
+    breadth_block = {
+        "advances": 81, "declines": 203, "unchanged": 62,
+        "ceiling_count": 18, "floor_count": 23,
+    }
+    b20 = [{"percent": 0.434, "trading_date": "2026-06-17"},
+           {"percent": 0.486, "trading_date": "2026-06-18"},
+           {"percent": 0.434, "trading_date": "2026-06-19"}]
+    b50 = [{"percent": 0.387, "trading_date": "2026-06-19"}]
+    fser = [
+        {"foreign_buy_value_vnd": 1_860_000_000_000, "foreign_sell_value_vnd": 0},
+        {"foreign_buy_value_vnd": 186_000_000_000,   "foreign_sell_value_vnd": 1_868_000_000_000},
+    ]
+    pser = [
+        {"total_buy_value_vnd": 400_000_000_000, "total_sell_value_vnd": 100_000_000_000},
+        {"total_buy_value_vnd": 372_500_000_000, "total_sell_value_vnd": 50_000_000_000},
+    ]
+    point_contribution = {
+        "top_positive": [{"ticker": "VHM", "points": 2.26, "pct_of_positive_side": 60.0}],
+        "top_negative": [{"ticker": "THD", "points": -5.04, "pct_of_negative_side": 83.3}],
+    }
+    foreign_flow = {
+        "buy_value_vnd_billion": 186,
+        "sell_value_vnd_billion": -1868,
+        "streak_count": 3,
+        "streak_direction": "sell",
+        "top_sell": [{"ticker": "VHM", "value_vnd_billion": -817.7}],
+        "top_buy":  [{"ticker": "VIC", "value_vnd_billion": 73.9}],
+    }
+    prop_trading = {
+        "buy_value_vnd_billion": 400,
+        "sell_value_vnd_billion": -100,
+        "net_value_vnd_billion": 300,
+        "top_buy":  [{"ticker": "MSB", "value_vnd_billion": 372.5}],
+        "top_sell": [{"ticker": "BSR", "value_vnd_billion": -24.8}],
+        "buy_concentration_flag": {"concentrated": True, "ticker": "MSB", "pct_of_same_side": 94},
+    }
+    sectors = [
+        {"name": "Du lịch", "change_pct": 0.76},
+        {"name": "Ngân hàng", "change_pct": -0.45},
+    ]
+
+    charts = P._build_charts(
+        breadth_block=breadth_block,
+        b20=b20, b50=b50,
+        fser=fser, pser=pser,
+        point_contribution=point_contribution,
+        foreign_flow=foreign_flow,
+        prop_trading=prop_trading,
+        sectors=sectors,
+    )
+
+    # All six top-level keys present
+    assert set(charts.keys()) == {
+        "breadth", "contribution", "foreign_detail",
+        "prop_detail", "market_health_detail", "sector_rotation",
+    }
+
+    # breadth
+    b = charts["breadth"]
+    assert b["up"] == 81 and b["down"] == 203 and b["flat"] == 62
+    assert b["ceiling"] == 18 and b["floor"] == 23
+    assert isinstance(b["classification"], str) and b["classification"]  # non-empty
+    assert b["pct_above_ma20"] == 43.4  # 0.434 * 100
+
+    # contribution
+    c = charts["contribution"]
+    assert c["top_negative"][0]["ticker"] == "THD"
+    assert c["top_positive"][0]["ticker"] == "VHM"
+
+    # foreign_detail
+    fd = charts["foreign_detail"]
+    assert "last_12_sessions" in fd and isinstance(fd["last_12_sessions"], list)
+    assert fd["streak"]["count"] == 3 and fd["streak"]["direction"] == "sell"
+
+    # prop_detail — anomaly flag on MSB
+    pd = charts["prop_detail"]
+    msb_item = next((x for x in pd["top_buy"] if x["ticker"] == "MSB"), None)
+    assert msb_item is not None and msb_item.get("anomaly") is True
+
+    # market_health_detail
+    mh = charts["market_health_detail"]
+    assert mh["pct_above_ma20"] == 43.4
+    assert isinstance(mh["trend_20d"], list)
+    assert mh["callout"]["type"] in ("warning", "neutral", "positive")
+
+    # sector_rotation — sorted desc by pct
+    sr = charts["sector_rotation"]["sectors_today"]
+    assert sr[0]["name"] == "Du lịch"  # 0.76 > -0.45
+
+
+def test_analysis_out_has_charts():
+    """AnalysisOut Pydantic model accepts charts: dict | None."""
+    from app.api.v1.endpoints.market_analysis import AnalysisOut
+    o = AnalysisOut(
+        id="x", session_date="2026-06-19", session_type="hidden_distribution",
+        generated_at="2026-06-19T16:30:00+07:00",
+        headline="h", tagline={"direction": "down", "marker": "▼", "text": "t"},
+        paragraphs={"structure": "s", "smart_money": "m", "market_health": "h"},
+        scenarios=[],
+        charts={
+            "breadth": {"ceiling": 18, "up": 81, "flat": 62, "down": 203, "floor": 23,
+                        "ratio_up_down": "1 : 2,5", "classification": "Phân hóa tiêu cực",
+                        "pct_above_ma20": 43.4},
+            "contribution": {"top_negative": [], "top_positive": []},
+            "foreign_detail": {"total_buy_vnd_billion": 186, "total_sell_vnd_billion": -1868,
+                               "streak": {"count": 3, "direction": "sell", "last_5d_cumulative": -1743},
+                               "last_12_sessions": [], "top_sell": [], "top_buy": []},
+            "prop_detail": {"total_buy_vnd_billion": 400, "total_sell_vnd_billion": -100,
+                            "net_vnd_billion": 300, "last_12_sessions": [], "top_buy": [], "top_sell": []},
+            "market_health_detail": {"pct_above_ma20": 43.4, "pct_above_ma20_change": -5.2,
+                                     "pct_above_ma50": 38.7, "pct_above_ma200": None,
+                                     "trend_20d": [43.4], "callout": {"type": "warning", "text": "x"}},
+            "sector_rotation": {"sectors_today": [{"name": "Du lịch", "pct": 0.76}]},
+        },
+    )
+    assert o.charts is not None
+    assert o.charts["breadth"]["classification"] == "Phân hóa tiêu cực"
+    assert o.charts.get("sector_rotation") is not None

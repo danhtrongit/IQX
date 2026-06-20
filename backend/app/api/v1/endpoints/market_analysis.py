@@ -34,6 +34,7 @@ class AnalysisOut(BaseModel):
     watchlist: list | None = None
     unexplained: str | None = None
     meta: dict | None = None
+    charts: dict | None = None
 
 
 class AnalysisListItem(BaseModel):
@@ -58,6 +59,7 @@ def _to_out(a: AnalysisHistory) -> AnalysisOut:
         watchlist=a.watchlist,
         unexplained=a.unexplained,
         meta=a.meta,
+        charts=(a.meta or {}).get("charts"),
     )
 
 
