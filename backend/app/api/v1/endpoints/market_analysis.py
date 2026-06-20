@@ -25,6 +25,7 @@ class AnalysisOut(BaseModel):
     id: str
     session_date: date
     session_type: str
+    session_type_display: str | None = None
     generated_at: datetime
     headline: str
     tagline: dict
@@ -48,6 +49,7 @@ def _to_out(a: AnalysisHistory) -> AnalysisOut:
         id=a.public_id,
         session_date=a.session_date,
         session_type=a.session_type,
+        session_type_display=(a.meta or {}).get("session_type_display"),
         generated_at=a.generated_at,
         headline=a.headline,
         tagline=a.tagline or {},

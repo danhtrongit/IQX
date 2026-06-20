@@ -39,6 +39,7 @@ def _parse_number(s: str) -> float:
 
 def parse_scenario_condition(text: str) -> dict[str, Any]:
     """Parse a VN scenario condition string → machine-readable JSON (spec §6.5)."""
+    text = re.sub(r"<[^>]+>", "", text)
     result: dict[str, Any] = {}
     low = text.lower()
 
@@ -61,15 +62,16 @@ def extract_claims(output: dict[str, Any]) -> list[dict[str, Any]]:
     """Extract verifiable claims from the generated scenarios."""
     claims = []
     for i, scenario in enumerate(output.get("scenarios", [])):
-        cond = scenario.get("condition", "")
+        cond = scenario.get("condition_html") or scenario.get("condition", "")
         parsed = parse_scenario_condition(cond)
         if not parsed:
             continue  # nothing verifiable in this scenario
+        outcome = scenario.get("outcome_html") or scenario.get("outcome", "")
         claims.append({
-            "claim_text": f"{cond} → {scenario.get('outcome', '')}",
+            "claim_text": f"{cond} → {outcome}",
             "claim_type": "scenario_up" if i == 0 else "scenario_down",
             "conditions": parsed,
-            "predicted_outcome": scenario.get("outcome", ""),
+            "predicted_outcome": outcome,
         })
     return claims
 
@@ -215,7 +217,7 @@ async def persist_analysis(
         scenarios=output.get("scenarios") or [],
         watchlist=output.get("watchlist"),
         unexplained=output.get("unexplained"),
-        meta=output.get("meta"),
+        meta={**(output.get("meta") or {}), "session_type_display": output.get("session_type_display")},
         is_published=True,
     )
 

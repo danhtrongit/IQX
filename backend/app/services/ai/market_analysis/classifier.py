@@ -44,6 +44,16 @@ def classify_session(payload: dict) -> str:
     if idx_change < -2.0 and breadth_ratio < 0.3 and foreign_net_billion < -500:
         return "broad_selloff"
 
+    # Priority 2.5: phân phối ẩn (hidden distribution)
+    foreign_net = (payload.get("foreign_flow") or {}).get("net_value_vnd_billion") or 0.0
+    streak = (payload.get("foreign_flow") or {}).get("streak_count") or 0
+    if abs(idx_change) < 0.5 and sum([
+        abs(foreign_net) > 500 and foreign_net < 0,
+        breadth_ratio < 0.6,
+        streak >= 3,
+    ]) >= 2:
+        return "hidden_distribution"
+
     # Priority 3: tăng lan tỏa
     if idx_change > 1.0 and breadth_ratio > 3.0 and top3_pct < 50:
         return "broad_rally"

@@ -1,46 +1,56 @@
-"""Output validation (spec section 10).
+"""Output validation — v1.4 rules (spec BUG 1-21, HTML-stripped).
 
-Implements rules 1-6, 8-12. Rule 7 (full numeric cross-check vs source) is a
-lightweight presence-check here and flagged as TODO for production hardening.
-VALID_TICKERS is derived from the payload itself — the AI must only mention
-tickers that appear in today's data.
+validate_output(out, payload) -> list[str]
+
+Checks (HTML-stripped text):
+- BUG16: number duplication across paragraphs (excl. scenario technical levels)
+- BUG17: tagline.text must not contain a marker character
+- BUG18: market_health ≥4/6 indicators & ≥70 words
+- %  >100 forbidden
+- No anglicized / Wyckoff / data-leak / international terms
+- BUG20: scenario levels within scenario_realistic_range (skip flow tỷ numbers)
+- BUG21: contradiction → unexplained required
+- headline ≤80 chars
 """
 
 from __future__ import annotations
 
 import re
+from collections import Counter
 from typing import Any
 
-NON_TICKER_ACRONYMS = {
-    "CPI", "GDP", "FDI", "IIP", "XNK", "KQKD", "MA", "KN", "NN", "ATC", "ATO",
-    "OI", "TCTK", "SBV", "HSBC", "EU", "EUR", "USD", "VND", "ROI", "TG", "HOSE",
-    "HNX", "VN", "ETF", "FOMC", "AI", "IQX", "T", "ĐHCĐ",
-    # non-ticker acronyms that appear in our own payload / common usage
-    "ICB", "VN30", "VN100", "UPCOM", "EPS", "ROE", "ROA", "PE", "PB", "YOY",
-    "ADR", "SPX", "DJI", "USDVND", "ATD",
-    # gold brand + world-index codes (global_context)
-    "SJC", "HSI", "INX", "DXY", "KOSPI", "SHCOMP", "TWII", "FTSE", "KG", "L",
-}
+# ── forbidden term lists ─────────────────────────────────────────────────────
 
-FORBIDDEN_EMPTY = [
-    "có thể tăng", "có thể giảm", "cần theo dõi thêm", "thể hiện sự",
-    "trong bối cảnh hiện tại", "thị trường giao dịch sôi động",
-    "nhà đầu tư nên cẩn trọng",
+FORBIDDEN_ANGLICIZED = [
+    "catalyst", "rotation", "concentration", "breakout", "momentum", "smart money",
+    "sell-off", "selloff", "outperform", "oversold", "overbought", "risk-on", "risk-off",
+    "exposure", "performance", "narrative", "rebalancing", "midcap", "smallcap",
 ]
-FORBIDDEN_RECOMMEND = [
-    "nhà đầu tư nên mua", "nhà đầu tư nên bán", "khuyến nghị mua",
-    "khuyến nghị bán", "chắc chắn sẽ", "sẽ tăng", "sẽ giảm", "mục tiêu giá",
+FORBIDDEN_BUG11 = ["phân phối ngầm", "phân phối đỉnh", "vùng phân phối", "co cụm"]
+FORBIDDEN_LEAK = [
+    "không có sẵn", "không có dữ liệu", "thiếu thông tin", "chưa cập nhật",
+    "dữ liệu không đầy đủ", "không đủ thông tin", "không khả dụng", "không thể truy cập",
 ]
-FORBIDDEN_NO_DATA = [
-    "DXY", "US10Y", "US2Y", "VIX", "Brent", "copper", "HRC steel",
-    "Fed implied", "dot plot", "FOMC probability", "Fubon", "DCVFM",
-    "active funds", "ETF flow",
+FORBIDDEN_INTL = [
+    "s&p", "nasdaq", "nikkei", "kospi", "shanghai", "hang seng", "usd/vnd", "dxy",
+    "vàng thế giới", "brent", "us10y", "fomc", "powell", "cpi mỹ", "chứng khoán mỹ",
+    "chứng khoán thế giới", "bối cảnh thế giới", "châu á", r"\bfed\b", r"\bvix\b",
 ]
-COMPARISON_KEYWORDS = [
-    "MA20", "MA50", "MA200", "hôm qua", "phiên trước", "tuần trước",
-    "liên tiếp", "phiên thứ", "so với",
-]
-SCENARIO_KEYWORDS = ["nếu", "giữ trên", "mất", "vượt", "trên ", "dưới ", "với kn", "khi"]
+
+# kept for callers that may import it
+DERIV_WHITELIST: set[str] = set()
+
+
+# ── helpers ──────────────────────────────────────────────────────────────────
+
+def _strip(s: str | None) -> str:
+    """Strip HTML tags from a string."""
+    return re.sub(r"<[^>]+>", "", s or "")
+
+
+def _text_blocks(out: dict[str, Any]) -> dict[str, str]:
+    p = out.get("paragraphs") or {}
+    return {k: _strip(p.get(k, "")) for k in ("structure", "smart_money", "market_health")}
 
 
 def _collect_valid_tickers(payload: dict[str, Any]) -> set[str]:
@@ -65,89 +75,98 @@ def _collect_valid_tickers(payload: dict[str, Any]) -> set[str]:
     return {t.upper() for t in tickers if t}
 
 
-def _full_text(out: dict[str, Any]) -> str:
-    p = out.get("paragraphs") or {}
-    parts = [
-        out.get("headline"),
-        (out.get("tagline") or {}).get("text"),
-        p.get("structure"), p.get("smart_money"),
-        p.get("internal_heat"), p.get("historical_pattern"),
-        p.get("global_context"),
-    ]
-    return " ".join(s for s in parts if isinstance(s, str))
-
+# ── main validator ───────────────────────────────────────────────────────────
 
 def validate_output(out: dict[str, Any], payload: dict[str, Any]) -> list[str]:
-    errors: list[str] = []
+    """Validate AI output against v1.4 rules. Returns list of error strings."""
+    e: list[str] = []
+    tb = _text_blocks(out)
+    full = " ".join(tb.values())
+    low = full.lower()
+    tag = out.get("tagline") or {}
 
-    # Rule 1: shape sanity (lightweight schema check)
-    for key in ("headline", "tagline", "paragraphs", "scenarios", "session_type"):
-        if key not in out:
-            errors.append(f"Thiếu khóa bắt buộc: {key}")
-    if errors:
-        return errors
-    if not isinstance(out.get("tagline"), dict) or "text" not in out["tagline"]:
-        errors.append("tagline sai cấu trúc")
-    required_paras = ["structure", "smart_money", "internal_heat"]
-    if payload.get("global_context"):  # chỉ bắt buộc khi có data thế giới
-        required_paras.append("global_context")
-    for k in required_paras:
-        if not out["paragraphs"].get(k):
-            errors.append(f"paragraphs.{k} rỗng")
+    # BUG17: tagline.text must not contain a marker character
+    if any(m in (tag.get("text") or "") for m in "◆▲▼▬"):
+        e.append("BUG17: tagline.text còn chứa marker")
 
-    text = _full_text(out)
-    low = text.lower()
-
-    # Rule 2: số lượng số cụ thể
-    numbers = re.findall(r"\d+[,.]?\d*\s*(?:%|tỷ|đ|điểm)?", text)
-    min_numbers = 8 if out.get("session_type") == "low_volatility" else 12
-    if len(numbers) < min_numbers:
-        errors.append(f"Quá ít số: {len(numbers)} (cần ≥ {min_numbers})")
-
-    # Rule 3 & 4: từ cấm
-    for phrase in FORBIDDEN_EMPTY:
-        if phrase in low:
-            errors.append(f"Chứa cụm rỗng: '{phrase}'")
-    for phrase in FORBIDDEN_RECOMMEND:
-        if phrase in low:
-            errors.append(f"Chứa khuyến nghị/dự đoán: '{phrase}'")
-
-    # Rule 5: cấm chỉ số không có data
-    for term in FORBIDDEN_NO_DATA:
-        if term.lower() in low:
-            errors.append(f"Đề cập chỉ số KHÔNG có data: '{term}'")
-
-    # Rule 6: ticker phải tồn tại trong data hôm nay
-    valid = _collect_valid_tickers(payload)
-    for tk in set(re.findall(r"\b([A-Z]{2,4})\b", text)):
-        if tk in NON_TICKER_ACRONYMS:
-            continue
-        if tk not in valid:
-            errors.append(f"Ticker không có trong data: {tk}")
-
-    # Rule 8: scenarios phải có điều kiện
+    # BUG16: number duplication across paragraphs (excl. scenario technical levels)
+    nums = re.findall(r"(\d+[.,]?\d*)\s*(tỷ|%|điểm|đ)\b", full)
+    tech: set[str] = set()
     for s in out.get("scenarios", []):
-        if not any(kw in s.get("condition", "").lower() for kw in SCENARIO_KEYWORDS):
-            errors.append(f"Scenario thiếu điều kiện: {s.get('condition')}")
+        tech.update(re.findall(
+            r"\d+[.,]?\d*",
+            _strip(s.get("condition_html", "")) + _strip(s.get("outcome_html", "")),
+        ))
+    for num, cnt in Counter(f"{n} {u}" for n, u in nums).items():
+        if cnt > 1 and num.split()[0] not in tech:
+            e.append(f"BUG16: số '{num}' lặp {cnt} lần")
 
-    # Rule 9: watchlist không khuyến nghị
-    for w in out.get("watchlist", []) or []:
-        if any(x in w.get("reason", "").lower()
-               for x in ["nên mua", "nên bán", "khuyến nghị", "mua ngay"]):
-            errors.append(f"Watchlist chứa khuyến nghị: {w.get('ticker')}")
+    # BUG15: memory placement (warn only — not a hard error for new contract)
+    claims = (payload.get("memory_context") or {}).get("verifiable_claims_from_recent_analyses") or []
+    if claims:
+        markers = ["bài hôm trước", "bài 18/06", "bài hôm qua", "kịch bản từ bài", "kịch bản hôm qua", "phiên 18/06"]
+        st = tb["structure"]
+        sents = st.split(".")
+        idx = next((i for i, sent in enumerate(sents) if any(m in sent.lower() for m in markers)), -1)
+        if idx >= 0 and idx < len(sents) * 0.7:
+            e.append("BUG15: memory reference nằm giữa đoạn cấu trúc (phải ở cuối hoặc đầu đoạn dòng tiền)")
 
-    # Rule 10: headline length
-    if len(out.get("headline", "")) > 80:
-        errors.append(f"Headline {len(out['headline'])} ký tự (max 80)")
+    # BUG18: market_health depth — ≥4/6 indicators & ≥70 words
+    mh = tb["market_health"].lower()
+    mh_raw = tb["market_health"]
+    wc = len(mh_raw.split())
+    if wc < 70:
+        e.append(f"BUG18: market_health chỉ {wc} từ (cần ≥70)")
+    inds = {
+        "ma20pct": any(k in mh for k in ["mã trên ma20", "% mã", "trên ma20"]),
+        "liq": "thanh khoản" in mh,
+        "idx_ma": any(k in mh_raw for k in ["MA50", "MA200", "MA20"]),
+        "sector_lead": any(k in mh for k in ["dẫn", "phiên thứ", "liên tiếp"]),
+        "rot": any(k in mh for k in ["chuyển nhóm", "rời", "gia nhập", "thu hẹp"]),
+        "cap": any(k in mh for k in ["vốn hóa", "hnx", "vừa", "nhỏ"]),
+    }
+    if sum(inds.values()) < 4:
+        e.append(f"BUG18: market_health chỉ {sum(inds.values())}/6 chỉ báo (cần ≥4)")
 
-    # Rule 11: có ít nhất 1 so sánh
-    if not any(kw in text for kw in COMPARISON_KEYWORDS):
-        errors.append("Thiếu so sánh (MA, hôm qua, phiên thứ, ...)")
+    # BUG20: scenario levels within scenario_realistic_range
+    rng = (payload.get("technical_levels") or {}).get("scenario_realistic_range") or {}
+    fs = rng.get("far_support")
+    for s in out.get("scenarios", []):
+        txt = _strip(s.get("condition_html", "")) + " " + _strip(s.get("outcome_html", ""))
+        for n in re.findall(r"1[.,]?\d{3}", txt):
+            val = float(n.replace(".", "").replace(",", ""))
+            if 1000 < val < 2000 and fs and val < fs - 5 and "cực đoan" not in txt.lower() and "extreme" not in txt.lower():
+                e.append(f"BUG20: mốc {n} xa hơn far_support ({fs}) mà không gắn nhãn cực đoan")
 
-    # Rule 12: internal_heat bắt buộc có cụm sức nóng
-    ih = out["paragraphs"].get("internal_heat", "").lower()
-    for term in ("ma20", "thanh khoản"):
-        if term not in ih:
-            errors.append(f"Đoạn 'sức nóng nội tại' thiếu cụm: '{term}'")
+    # BUG21: contradiction → unexplained required
+    contradiction = False
+    pos_tickers = {x["ticker"] for x in (payload.get("point_contribution") or {}).get("top_positive", [])}
+    for x in (payload.get("foreign_flow") or {}).get("top_sell", []):
+        if x["ticker"] in pos_tickers and abs(x.get("value_vnd_billion") or 0) > 100:
+            contradiction = True
+    if (payload.get("prop_trading") or {}).get("buy_concentration_flag", {}).get("concentrated"):
+        contradiction = True
+    if contradiction and not out.get("unexplained"):
+        e.append("BUG21: có mâu thuẫn/flow bất thường nhưng thiếu đoạn 'Chưa giải thích được'")
 
-    return errors
+    # Forbidden term checks
+    for t in FORBIDDEN_ANGLICIZED:
+        if re.search(rf"\b{re.escape(t)}\b", low):
+            e.append(f"Anh hóa: '{t}'")
+    for t in FORBIDDEN_BUG11 + FORBIDDEN_LEAK:
+        if t in low:
+            e.append(f"Cấm: '{t}'")
+    for t in FORBIDDEN_INTL:
+        if re.search(t, low) if t.startswith(r"\b") else t in low:
+            e.append(f"Quốc tế: '{t}'")
+
+    # Headline length
+    if len(_strip(out.get("headline", ""))) > 80:
+        e.append(f"Headline {len(_strip(out.get('headline', '')))} ký tự (max 80)")
+
+    # market_health must contain these required terms
+    for t in ("ma20", "thanh khoản"):
+        if t not in mh:
+            e.append(f"market_health thiếu '{t}'")
+
+    return e

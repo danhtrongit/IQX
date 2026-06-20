@@ -3,7 +3,6 @@ import { useNavigate } from "react-router"
 import { Modal, Input, Button } from "@arco-design/web-react"
 import { SymbolProvider } from "@/shared/contexts/symbol-context"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
-import { ForecastWindow } from "@/features/forecast"
 import { IconBrainCircuit } from "@/shared/icons"
 import { CenterPanel } from "./components/CenterPanel"
 import { RightSidebar } from "./components/RightSidebar"
@@ -33,7 +32,7 @@ function isIndexSymbol(s: string): boolean {
  *
  * Renders the FULL standalone chrome (NOT inside AppShell): TrialBanner +
  * Header + MarketBar + a flex body [LeftSidebar(40) | CenterPanel(flex-1) |
- * RightSidebar(280) | RightToolbar(48)] + Footer + ForecastWindow. The market
+ * RightSidebar(280) | RightToolbar(48)] + Footer. The market
  * data + sidebar providers are global (providers.tsx); only SymbolProvider is
  * scoped here, defaulting to VNINDEX. Ported from dashboard-bak/pages/dashboard.
  */
@@ -104,9 +103,6 @@ function DashboardTerminal() {
         markId={activeMarkId}
         onClose={() => setActiveMarkId(null)}
       />
-
-      {/* Mô hình dự báo — cửa sổ kéo–thả (self-gates on sidebar context) */}
-      <ForecastWindow />
 
       {/* AI Insight symbol picker */}
       <Modal

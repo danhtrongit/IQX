@@ -1,8 +1,9 @@
 import type { ComponentType } from "react"
-import { IconEye } from "@arco-design/web-react/icon"
+import { IconEye, IconStorage } from "@arco-design/web-react/icon"
 import { useSidebar, type SidebarPanel } from "@/shared/contexts/sidebar-context"
+import { useMarketModal } from "@/shared/contexts/market-modal-context"
 import { cn } from "@/shared/lib/cn"
-import { IconBulb, IconTrendLineChart } from "@/shared/icons"
+import { IconBulb } from "@/shared/icons"
 import { IconShoppingCart, IconNewspaper, IconCandlestick } from "../icons"
 
 interface ToolbarItem {
@@ -53,8 +54,9 @@ export function RightToolbar({
 }: {
   onActionClick?: (id: string) => void
 }) {
-  const { activePanel, setActivePanel, forecastWindowOpen, openForecastWindow } =
+  const { activePanel, setActivePanel } =
     useSidebar()
+  const { openMarketModal } = useMarketModal()
 
   const handleClick = (item: ToolbarItem) => {
     if (item.panel) {
@@ -77,12 +79,7 @@ export function RightToolbar({
       onClick: () => onActionClick?.("ai-insight"),
     },
     { icon: IconCandlestick, label: "AI Mẫu nến", id: "ai-patterns", panel: "patterns" },
-    {
-      icon: IconTrendLineChart,
-      label: "Dự báo",
-      id: "ai-forecast",
-      onClick: () => openForecastWindow(),
-    },
+    { icon: IconStorage, label: "Thị trường", id: "market", onClick: () => openMarketModal() },
   ]
 
   return (
@@ -94,9 +91,7 @@ export function RightToolbar({
         <ToolbarButton
           key={item.id}
           item={item}
-          isActive={
-            item.id === "ai-forecast" ? forecastWindowOpen : item.panel === activePanel
-          }
+          isActive={item.panel === activePanel}
           onClick={() => handleClick(item)}
         />
       ))}

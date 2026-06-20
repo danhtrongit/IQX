@@ -163,37 +163,55 @@ def _build_volume(idx_ohlc: list[dict], vn_snap: dict) -> dict:
     }
 
 
-def _build_contribution(imp: dict, change_points: float | None) -> dict:
-    if not imp:
+def _contribution_pct(top_up: list, top_down: list, change_points: float) -> dict:
+    if not top_up and not top_down:
         return {"_missing": True}
-    ups = sorted(imp.get("top_up", []), key=lambda x: x.get("impact") or 0, reverse=True)
-    downs = sorted(imp.get("top_down", []), key=lambda x: x.get("impact") or 0)
+    ups = sorted([x for x in top_up if (x.get("impact") or 0) > 0], key=lambda x: -x["impact"])
+    downs = sorted([x for x in top_down if (x.get("impact") or 0) < 0], key=lambda x: x["impact"])
+    tp = sum(x["impact"] for x in ups) or 1
+    tn = abs(sum(x["impact"] for x in downs)) or 1
+    pos = [{"ticker": x["symbol"], "points": round(x["impact"], 2),
+            "pct_of_positive_side": round(x["impact"] / tp * 100, 1)} for x in ups[:8]]
+    neg = [{"ticker": x["symbol"], "points": round(x["impact"], 2),
+            "pct_of_negative_side": round(abs(x["impact"]) / tn * 100, 1)} for x in downs[:8]]
+    return {"top_positive": pos, "top_negative": neg,
+            "total_positive_points": round(tp, 2), "total_negative_points": round(tn, 2),
+            "index_net_change": change_points,
+            "is_offsetting_session": min(tp, tn) / max(tp, tn) > 0.3,
+            "concentration_negative": {
+                "top1_pct_of_negative": neg[0]["pct_of_negative_side"] if neg else None,
+                "top3_pct_of_negative": round(sum(abs(x["points"]) for x in neg[:3]) / tn * 100, 1)}}
 
-    # % of change chỉ có nghĩa khi index dịch chuyển đủ lớn; phiên gần như đi
-    # ngang (mẫu số ~0) sẽ cho % vô nghĩa (>100%) → bỏ qua, chỉ dùng điểm tuyệt đối.
-    meaningful = change_points is not None and abs(change_points) >= 3.0
 
-    def _row(x: dict) -> dict:
-        pts = x.get("impact")
-        return {
-            "ticker": x.get("symbol"), "points": _r(pts),
-            "pct_of_change": _r(pts / change_points * 100, 1) if (meaningful and pts) else None,
-        }
+def _conc_flag(rows: list) -> dict:
+    rows = [r for r in (rows or []) if r.get("value_vnd_billion")]
+    if not rows:
+        return {"concentrated": False}
+    top = max(rows, key=lambda r: abs(r["value_vnd_billion"]))
+    same = sum(abs(r["value_vnd_billion"]) for r in rows
+               if (r["value_vnd_billion"] > 0) == (top["value_vnd_billion"] > 0))
+    if same > 0 and abs(top["value_vnd_billion"]) / same > 0.5:
+        return {"concentrated": True, "ticker": top["ticker"],
+                "pct_of_same_side": round(abs(top["value_vnd_billion"]) / same * 100)}
+    return {"concentrated": False}
 
-    top_pos = [_row(x) for x in ups[:5]]
-    top_neg = [_row(x) for x in downs[:5]]
 
-    def _cum(n: int) -> float | None:
-        if not meaningful:
-            return None
-        s = sum(abs(x.get("impact") or 0) for x in ups[:n])
-        return _r(s / abs(change_points) * 100, 1)
+def _ma_label(value: float | None, ma: float | None) -> str | None:
+    if not value or not ma:
+        return None
+    d = (value - ma) / ma * 100
+    a = abs(d)
+    if a < 5:
+        return "thanh khoản tương đương MA20"
+    if a < 15:
+        return f"thanh khoản {'trên' if d > 0 else 'dưới'} MA20 {a:.0f}%"
+    return f"thanh khoản {'vượt' if d > 0 else 'thấp hơn'} {a:.0f}% MA20"
 
-    return {
-        "top_positive": top_pos, "top_negative": top_neg,
-        "concentration": {"top1_pct": _cum(1), "top3_pct": _cum(3), "top5_pct": _cum(5)},
-        "_note": None if meaningful else "Index gần đi ngang — bỏ % đóng góp (mẫu số ~0), chỉ dùng điểm tuyệt đối.",
-    }
+
+def _scenario_range(close: float) -> dict:
+    return {"current": round(close, 1), "near_resistance": round(close * 1.015, 1),
+            "far_resistance": round(close * 1.06, 1), "near_support": round(close * 0.985, 1),
+            "far_support": round(close * 0.94, 1), "extreme_support": round(close * 0.90, 1)}
 
 
 def _build_foreign(fseries: list[dict], ftop: dict) -> dict:
@@ -296,71 +314,6 @@ def _build_sectors(secs: list[dict], icb_names: dict[int, str]) -> list[dict]:
     return top + [r for r in bottom if r not in top]
 
 
-async def _msn_indices() -> dict[str, Any]:
-    """Best-effort world indices via MSN. Returns {} when MSN is unreachable
-    (the apikey resolver is currently flaky upstream)."""
-    try:
-        from app.services.market_data.sources import msn
-        apikey = await asyncio.wait_for(msn.resolve_apikey(None), timeout=12)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("global indices skipped (MSN): %s", exc)
-        return {}
-
-    async def _idx(sym: str) -> tuple[str, dict | None]:
-        try:
-            series, _ = await msn.fetch_world_index(sym, apikey)
-            if series:
-                last = series[-1]
-                return sym, {"value": _r(last.get("value"), 1),
-                             "change_pct": _r(last.get("change") or last.get("changePercent"))}
-        except Exception:
-            pass
-        return sym, None
-
-    results = await asyncio.gather(
-        _idx("INX"), _idx("N225"), _idx("HSI"), return_exceptions=True,
-    )
-    return {r[0]: r[1] for r in results if isinstance(r, tuple) and r[1]}
-
-
-async def _build_global(session_date: str) -> dict | None:
-    """Downscoped global context. USD/VND (VCB) + gold (SJC) are reliable and
-    used regardless of MSN; world indices (SPX/N225/HSI) are best-effort MSN."""
-    fx_commodities: dict[str, Any] = {}
-
-    # USD/VND — Vietcombank (no apikey, reliable)
-    try:
-        from app.services.market_data.sources import vcb
-        rows = await _safe(vcb.fetch_fx(session_date), "vcb_fx")
-        usd = next((r for r in (rows or []) if r.get("currency_code") == "USD"), None)
-        if usd and usd.get("sell"):
-            fx_commodities["usdvnd"] = {"value": _r(usd["sell"], 0)}
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("usdvnd fetch failed: %s", exc)
-
-    # Gold — SJC (reliable)
-    try:
-        from app.services.market_data.sources import sjc
-        rows = await _safe(sjc.fetch_gold(session_date), "sjc_gold")
-        gold = next((r for r in (rows or []) if r.get("sell_price")), None)
-        if gold:
-            fx_commodities["gold"] = {"value": gold["sell_price"], "name": gold.get("name")}
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("gold fetch failed: %s", exc)
-
-    idx_map = await _msn_indices()
-
-    block: dict[str, Any] = {}
-    if idx_map.get("INX"):
-        block["us_overnight"] = {"spx": idx_map["INX"]}
-    asia = {k: idx_map[v] for k, v in {"n225": "N225", "hsi": "HSI"}.items() if idx_map.get(v)}
-    if asia:
-        block["asia_today"] = asia
-    if fx_commodities:
-        block["fx_commodities"] = fx_commodities
-    return block or None
-
-
 async def _icb_name_map() -> dict[int, str]:
     """Map ICB code → Vietnamese sector name from VCI reference endpoint."""
     data = await _safe(mo.fetch_icb_codes(), "icb_codes")
@@ -434,6 +387,30 @@ async def build_analysis_payload() -> dict[str, Any]:
         except Exception:
             session_date = date.today().isoformat()
 
+    # v1.4 derived fields
+    imp_safe = imp if imp else {}
+    point_contribution = _contribution_pct(
+        imp_safe.get("top_up", []),
+        imp_safe.get("top_down", []),
+        vnindex.get("change_points") or 0.0,
+    )
+
+    volume_block = _build_volume(idx_ohlc, vn_snap)
+    volume_block["comparison_label"] = _ma_label(
+        volume_block.get("total_value_vnd_billion"),
+        volume_block.get("ma20_value_vnd_billion"),
+    )
+
+    foreign_flow = _build_foreign(fser, ftop)
+    foreign_flow["sell_concentration_flag"] = _conc_flag(foreign_flow.get("top_sell", []))
+
+    prop_trading = _build_prop(pser, ptop)
+    prop_trading["buy_concentration_flag"] = _conc_flag(prop_trading.get("top_buy", []))
+
+    close = vnindex.get("close") or 0.0
+    if levels and close:
+        levels["scenario_realistic_range"] = _scenario_range(close)
+
     payload: dict[str, Any] = {
         "meta": {
             "generated_for_date": session_date or date.today().isoformat(),
@@ -452,14 +429,13 @@ async def build_analysis_payload() -> dict[str, Any]:
             "change_pct": _r((snap.get("HNXUpcomIndex") or {}).get("change_percent")),
         },
         "breadth": _build_breadth(vn_snap),
-        "internal_heat": _build_internal_heat(b20, b50),
-        "volume": _build_volume(idx_ohlc, vn_snap),
-        "point_contribution": _build_contribution(imp, vnindex.get("change_points")),
-        "foreign_flow": _build_foreign(fser, ftop),
-        "prop_trading": _build_prop(pser, ptop),
+        "market_health": _build_internal_heat(b20, b50),
+        "volume": volume_block,
+        "point_contribution": point_contribution,
+        "foreign_flow": foreign_flow,
+        "prop_trading": prop_trading,
         "sectors": _build_sectors(secs, icb_names),
         "technical_levels": levels,
-        "global_context": await _build_global(session_date or date.today().isoformat()),
         "calendar_hardcoded": cal.build_calendar_block(
             date.fromisoformat(session_date) if session_date else date.today()
         ),
@@ -471,7 +447,7 @@ async def build_analysis_payload() -> dict[str, Any]:
     }
 
     # data completeness over key blocks
-    key_blocks = ["vnindex", "breadth", "internal_heat", "volume",
+    key_blocks = ["vnindex", "breadth", "market_health", "volume",
                   "point_contribution", "foreign_flow", "prop_trading", "sectors"]
     present = sum(
         1 for k in key_blocks
@@ -481,17 +457,11 @@ async def build_analysis_payload() -> dict[str, Any]:
     missing = ["vnindex.last_30min_change_pct"]
     if payload["volume"].get("ratio_vs_ma20") is None:
         missing.append("volume.ratio_vs_ma20")
-    if payload["global_context"] is None:
-        missing.append("global_context")
-    elif not (payload["global_context"].get("us_overnight") or payload["global_context"].get("asia_today")):
-        missing.append("global_context.indices")  # MSN down → chỉ có USD/VND + vàng
-    if payload["internal_heat"].get("_missing"):
-        missing.append("internal_heat")
+    if payload["market_health"].get("_missing"):
+        missing.append("market_health")
     payload["meta"]["missing_fields"] = missing
     payload["meta"]["data_notes"] = [
         "Nếu chạy GIỮA PHIÊN: thanh khoản phiên hiện tại là lũy kế đang chạy "
         "(chưa đủ phiên) nên ratio vs MA20 có thể thấp; bản 16:30 sau ATC là số EOD đầy đủ.",
-        "global_context: USD/VND + vàng từ nguồn nội (VCB/SJC) đáng tin; chỉ số "
-        "thế giới (S&P500, Nikkei, Hang Seng) best-effort qua MSN — nếu thiếu thì bỏ qua, không bịa.",
     ]
     return payload
