@@ -14,9 +14,9 @@ interface RotationChartProps {
 // ── Component ─────────────────────────────────────────────────────────────
 
 export function RotationChart({ data }: RotationChartProps) {
-  // Sort descending by net (inflows first)
-  const sorted = [...data].sort((a, b) => b.net - a.net)
-  const maxAbs = Math.max(...sorted.map((row) => Math.abs(row.net)), 1)
+  // Backend already sorts desc; keep that order (stable sort preserves it)
+  const rows = data.sectors_today
+  const maxAbs = Math.max(...rows.map((row) => Math.abs(row.pct)), 1)
 
   return (
     <ChartCard title="Dòng tiền chuyển nhóm">
@@ -31,19 +31,28 @@ export function RotationChart({ data }: RotationChartProps) {
           fontWeight: 600,
         }}
       >
-        DÒNG TIỀN THEO NGÀNH (tỷ VND)
+        BIẾN ĐỘNG THEO NGÀNH (%)
       </div>
 
       {/* Rows */}
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-        {sorted.map((row) => {
-          const isPositive = row.net >= 0
+        {rows.map((row) => {
+          const isPositive = row.pct >= 0
           const barColor = isPositive ? "#10b981" : "#ef4444"
-          const barWidthPct = (Math.abs(row.net) / maxAbs) * 48
+          const barWidthPct = (Math.abs(row.pct) / maxAbs) * 48
+
+          const valueLabel =
+            (isPositive ? "+" : "") +
+            row.pct.toLocaleString("vi-VN", {
+              minimumFractionDigits: 1,
+              maximumFractionDigits: 1,
+            }) +
+            "%"
 
           return (
             <div
-              key={row.sector}
+              key={row.name}
+              className={isPositive ? "rotation-row-positive" : "rotation-row-negative"}
               style={{
                 display: "grid",
                 gridTemplateColumns: "110px 1fr 52px",
@@ -62,7 +71,7 @@ export function RotationChart({ data }: RotationChartProps) {
                   whiteSpace: "nowrap",
                 }}
               >
-                {row.sector}
+                {row.name}
               </div>
 
               {/* Col 2: diverging bar */}
@@ -105,8 +114,7 @@ export function RotationChart({ data }: RotationChartProps) {
                   whiteSpace: "nowrap",
                 }}
               >
-                {isPositive ? "+" : ""}
-                {row.net.toFixed(2)} tỷ
+                {valueLabel}
               </div>
             </div>
           )

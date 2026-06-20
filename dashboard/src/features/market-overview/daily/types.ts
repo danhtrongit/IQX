@@ -50,13 +50,16 @@ export interface MarketCharts {
     top_sell: TickerValue[]
   }
   market_health_detail: {
-    pct_above_ma20_today: number         // e.g. 36.5
-    classification: string               // e.g. "Phân hóa tiêu cực"
+    pct_above_ma20: number | null        // today's % of stocks above MA20, e.g. 36.5
+    pct_above_ma20_change: number        // change vs prev session, signed
+    pct_above_ma50: number | null
+    pct_above_ma200: number | null       // always null currently
     trend_20d: number[]                  // length ~20, oldest→newest; last = today
-    peak: { value: number; index: number } | null   // peak within trend_20d
-    callout: { level: "warning" | "info" | "good" | string; text: string } | null
+    callout: { type: "warning" | "positive" | "neutral"; text: string } | null
   }
-  sector_rotation: { sector: string; net: number }[]   // ~7 rows, net tỷ VND signed
+  sector_rotation: {
+    sectors_today: { name: string; pct: number }[]   // sector % change, sorted by pct DESC, ~7+ rows
+  }
 }
 
 // ─── Main analysis shape ─────────────────────────────────

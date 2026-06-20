@@ -73,7 +73,10 @@ function ModalBody() {
         <div>
           <TierLabel label="Sức khỏe thị trường" />
           <div className="grid grid-cols-2 gap-3.5">
-            <HealthLineChart data={charts.market_health_detail} />
+            <HealthLineChart
+              data={charts.market_health_detail}
+              classification={charts.breadth.classification}
+            />
             <RotationChart data={charts.sector_rotation} />
           </div>
         </div>

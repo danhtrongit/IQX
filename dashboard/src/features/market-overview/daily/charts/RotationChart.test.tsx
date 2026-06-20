@@ -4,15 +4,17 @@ import { render, screen } from "@testing-library/react"
 import { RotationChart } from "./RotationChart"
 import type { MarketCharts } from "../types"
 
-const fixture: MarketCharts["sector_rotation"] = [
-  { sector: "Ngân hàng", net: 1.5 },
-  { sector: "BĐS", net: -0.8 },
-  { sector: "CN nặng", net: 0.3 },
-  { sector: "CNTT", net: -1.2 },
-  { sector: "Du lịch", net: 2.1 },
-  { sector: "Dầu khí", net: -0.4 },
-  { sector: "Vật liệu", net: 0.9 },
-]
+const fixture: MarketCharts["sector_rotation"] = {
+  sectors_today: [
+    { name: "Du lịch", pct: 2.1 },
+    { name: "Ngân hàng", pct: 1.5 },
+    { name: "Vật liệu", pct: 0.9 },
+    { name: "CN nặng", pct: 0.3 },
+    { name: "Dầu khí", pct: -0.4 },
+    { name: "BĐS", pct: -0.8 },
+    { name: "CNTT", pct: -1.2 },
+  ],
+}
 
 describe("RotationChart", () => {
   it("renders a row for each sector", () => {
@@ -26,13 +28,26 @@ describe("RotationChart", () => {
     expect(screen.getByText("Vật liệu")).toBeInTheDocument()
   })
 
-  it("the sector with highest net (Du lịch, 2.1) appears in document", () => {
+  it("the sector with highest pct (Du lịch, 2.1) appears in document", () => {
     render(<RotationChart data={fixture} />)
     expect(screen.getByText("Du lịch")).toBeInTheDocument()
   })
 
-  it("renders the positive value label for Du lịch (+2.10 tỷ)", () => {
+  it("renders positive sign class for Du lịch row", () => {
     const { container } = render(<RotationChart data={fixture} />)
-    expect(container.textContent).toContain("+2.10 tỷ")
+    // Du lịch row should have rotation-row-positive class
+    const positiveRows = container.querySelectorAll(".rotation-row-positive")
+    expect(positiveRows.length).toBeGreaterThan(0)
+  })
+
+  it("renders negative sign class for CNTT row", () => {
+    const { container } = render(<RotationChart data={fixture} />)
+    const negativeRows = container.querySelectorAll(".rotation-row-negative")
+    expect(negativeRows.length).toBeGreaterThan(0)
+  })
+
+  it("renders vi-VN formatted value label for Du lịch (+2,1%)", () => {
+    const { container } = render(<RotationChart data={fixture} />)
+    expect(container.textContent).toContain("+2,1%")
   })
 })

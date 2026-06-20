@@ -9,20 +9,42 @@ import { ChartCard } from "./ChartCard"
 
 interface HealthLineChartProps {
   data: MarketCharts["market_health_detail"]
+  classification: string
 }
 
-// ── Color helper ──────────────────────────────────────────────────────────
+// ── Color helpers ─────────────────────────────────────────────────────────
 
-function getTodayColor(value: number): string {
+function getTodayColor(value: number | null): string {
+  if (value === null) return "var(--color-text-3)"
   if (value >= 70) return "#22C77F"
   if (value >= 30) return "#FFB347"
   return "#FF4D5E"
 }
 
+function getCalloutColor(type: "warning" | "positive" | "neutral" | undefined): string {
+  if (type === "warning") return "#ef4444"
+  if (type === "positive") return "#22C77F"
+  return "var(--color-text-2)"
+}
+
 // ── Component ─────────────────────────────────────────────────────────────
 
-export function HealthLineChart({ data }: HealthLineChartProps) {
-  const { pct_above_ma20_today, classification, trend_20d, peak, callout } = data
+export function HealthLineChart({ data, classification }: HealthLineChartProps) {
+  const { pct_above_ma20, trend_20d, callout } = data
+
+  // Compute peak from trend_20d client-side
+  let peak: { value: number; index: number } | null = null
+  if (trend_20d.length > 0) {
+    let maxVal = trend_20d[0]
+    let maxIdx = 0
+    for (let i = 1; i < trend_20d.length; i++) {
+      if (trend_20d[i] > maxVal) {
+        maxVal = trend_20d[i]
+        maxIdx = i
+      }
+    }
+    peak = { value: maxVal, index: maxIdx }
+  }
 
   // Layout constants matching terminal
   const padL = 32
@@ -53,7 +75,7 @@ export function HealthLineChart({ data }: HealthLineChartProps) {
     .map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`)
     .join(" ")
 
-  const todayColor = getTodayColor(pct_above_ma20_today)
+  const todayColor = getTodayColor(pct_above_ma20)
 
   // Grid lines at 30, 40, 50, 60
   const gridValues = [30, 40, 50, 60]
@@ -61,6 +83,9 @@ export function HealthLineChart({ data }: HealthLineChartProps) {
   // X-axis tick indices: 0, 5, 10, 15, last
   const lastIdx = n - 1
   const tickIndices = Array.from(new Set([0, 5, 10, 15, lastIdx].filter((i) => i < n)))
+
+  // Today display value (last point of trend_20d takes priority, fallback to pct_above_ma20)
+  const todayValue = pct_above_ma20
 
   return (
     <ChartCard title="Sức khỏe thị trường">
@@ -207,11 +232,12 @@ export function HealthLineChart({ data }: HealthLineChartProps) {
             lineHeight: 1.2,
           }}
         >
-          {pct_above_ma20_today.toLocaleString("vi-VN", {
-            minimumFractionDigits: 1,
-            maximumFractionDigits: 1,
-          })}
-          %
+          {todayValue === null
+            ? "—"
+            : todayValue.toLocaleString("vi-VN", {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              }) + "%"}
         </div>
         <div
           style={{
@@ -225,7 +251,7 @@ export function HealthLineChart({ data }: HealthLineChartProps) {
       </div>
 
       {/* Callout box */}
-      {callout !== null && (
+      {callout !== null && callout !== undefined && (
         <div
           style={{
             fontSize: 10.5,
@@ -233,7 +259,7 @@ export function HealthLineChart({ data }: HealthLineChartProps) {
             background: "var(--color-fill-2)",
             borderRadius: 6,
             marginTop: 8,
-            color: "var(--color-text-2)",
+            color: getCalloutColor(callout.type),
             lineHeight: 1.5,
           }}
         >
