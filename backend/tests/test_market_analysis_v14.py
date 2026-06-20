@@ -30,3 +30,16 @@ def test_scenario_range_bounds():
 
 def test_contribution_pct_missing_when_empty():
     assert P._contribution_pct([], [], -5.0) == {"_missing": True}
+
+
+from app.services.ai.market_analysis.classifier import classify_session
+
+
+def test_classifier_hidden_distribution():
+    p = {"meta":{"generated_for_date":"2026-06-19"},
+         "vnindex":{"change_pct":-0.32,"intraday_range_pct":2.0,"last_30min_change_pct":0},
+         "breadth":{"advances":81,"declines":203},
+         "point_contribution":{"concentration":{}},
+         "foreign_flow":{"net_value_vnd_billion":-1868,"streak_count":3},
+         "volume":{"ratio_vs_ma20":0.99}}
+    assert classify_session(p) == "hidden_distribution"
