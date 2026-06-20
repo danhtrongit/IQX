@@ -72,3 +72,35 @@ def test_prompt_no_legacy_contradictions():
     assert '"global_context"' not in SYSTEM_PROMPT, 'legacy key "global_context" still present'
     assert '7 phần' not in SYSTEM_PROMPT, 'legacy "7 phần" count still present'
     assert '"condition": "..."' not in SYSTEM_PROMPT, 'old scenario schema with "condition" key still present'
+
+
+# ── v1.4 validator tests (Task 5) ───────────────────────────────────────────
+
+from app.services.ai.market_analysis.validator import validate_output
+
+_PAYLOAD = {"point_contribution":{"top_positive":[{"ticker":"VHM"}]},
+            "foreign_flow":{"top_sell":[{"ticker":"VHM","value_vnd_billion":-817}]},
+            "prop_trading":{"buy_concentration_flag":{"concentrated":True}},
+            "technical_levels":{"scenario_realistic_range":{"far_support":1715.1}},
+            "memory_context":{"verifiable_claims_from_recent_analyses":[]}}
+
+def _ok_out():
+    return {"headline":"Bề mặt giảm nhẹ — HNX lao dốc","session_type":"hidden_distribution",
+            "tagline":{"direction":"down","marker":"▼","text":"RÚT TIỀN NGẦM · ngoại bán"},
+            "paragraphs":{"structure":"<span class='num'>1.824</span> điểm.",
+                          "smart_money":"Khối ngoại bán ròng <span class='num'>1.868 tỷ</span>.",
+                          "market_health":"Tỷ lệ mã trên MA20 còn 43%, giảm so với phiên trước, thanh khoản tương đương MA20, VN30 dưới MA50 và MA200 cho thấy xu hướng yếu, ngành dẫn dắt như bất động sản và ngân hàng đều giảm liên tiếp hai phiên, vốn hóa nhỏ và vừa giảm mạnh hơn bluechip, dòng tiền thu hẹp rõ rệt khiến sức khỏe thị trường suy yếu rõ nét trên diện rộng toàn phiên giao dịch."},
+            "scenarios":[{"direction":"down","condition_html":"Mất <strong>1.815</strong>","outcome_html":"test <strong>1.795</strong>"}],
+            "watchlist":[{"ticker":"VHM","alert":True,"reason_html":"— mâu thuẫn"}],
+            "unexplained":"VHM tăng nhưng KN bán mạnh."}
+
+def test_validator_passes_good_output():
+    assert validate_output(_ok_out(), _PAYLOAD) == []
+
+def test_validator_flags_marker_in_tagline():
+    o = _ok_out(); o["tagline"]["text"] = "◆ RÚT TIỀN NGẦM"
+    assert any("BUG17" in e for e in validate_output(o, _PAYLOAD))
+
+def test_validator_flags_missing_unexplained_on_contradiction():
+    o = _ok_out(); o["unexplained"] = None
+    assert any("BUG21" in e for e in validate_output(o, _PAYLOAD))
