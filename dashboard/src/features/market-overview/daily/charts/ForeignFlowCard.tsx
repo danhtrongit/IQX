@@ -13,8 +13,10 @@ export function ForeignFlowCard({ data }: ForeignFlowCardProps) {
   const { streak } = data
   const dirLabel = streak.direction === "sell" ? "bán" : "mua"
   const streakColor = streak.direction === "sell" ? "#ef4444" : "#10b981"
-  const cumColor = streak.last_5d_cumulative >= 0 ? "#10b981" : "#ef4444"
-  const cumSign = streak.last_5d_cumulative >= 0 ? "+" : ""
+  const cum = streak.last_5d_cumulative
+  const cumColor =
+    cum === null ? "var(--color-text-2)" : cum >= 0 ? "#10b981" : "#ef4444"
+  const cumSign = cum !== null && cum >= 0 ? "+" : ""
 
   const streakLabel = (
     <>
@@ -24,13 +26,17 @@ export function ForeignFlowCard({ data }: ForeignFlowCardProps) {
       <br />
       <span style={{ color: "var(--color-text-2)", fontSize: 10 }}>
         5 ngày:{" "}
-        <span style={{ color: cumColor }}>
-          {cumSign}
-          {streak.last_5d_cumulative.toLocaleString("vi-VN", {
-            maximumFractionDigits: 0,
-          })}{" "}
-          tỷ
-        </span>
+        {cum === null ? (
+          <span style={{ color: "var(--color-text-2)" }}>—</span>
+        ) : (
+          <span style={{ color: cumColor }}>
+            {cumSign}
+            {cum.toLocaleString("vi-VN", {
+              maximumFractionDigits: 0,
+            })}{" "}
+            tỷ
+          </span>
+        )}
       </span>
     </>
   )

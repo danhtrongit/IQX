@@ -56,7 +56,12 @@ interface BreadthChartProps {
 
 export function BreadthChart({ data }: BreadthChartProps) {
   const total = data.ceiling + data.up + data.flat + data.down + data.floor
-  const pctAboveMa20Colored = data.pct_above_ma20 < 50 ? "#ef4444" : "#10b981"
+  const pctAboveMa20Colored =
+    data.pct_above_ma20 === null
+      ? "var(--color-text-2)"
+      : data.pct_above_ma20 < 50
+        ? "#ef4444"
+        : "#10b981"
   const ratioColored = data.ratio_up_down.startsWith("1 :") ? "#ef4444" : "#10b981"
 
   return (
@@ -187,11 +192,12 @@ export function BreadthChart({ data }: BreadthChartProps) {
             className="font-mono font-semibold"
             style={{ fontSize: 13, color: pctAboveMa20Colored }}
           >
-            {data.pct_above_ma20.toLocaleString("vi-VN", {
-              minimumFractionDigits: 1,
-              maximumFractionDigits: 1,
-            })}
-            %
+            {data.pct_above_ma20 === null
+              ? "—"
+              : data.pct_above_ma20.toLocaleString("vi-VN", {
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 1,
+                }) + "%"}
           </div>
         </div>
       </div>

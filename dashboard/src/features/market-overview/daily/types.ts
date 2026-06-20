@@ -23,7 +23,7 @@ export interface MarketCharts {
     floor: number
     ratio_up_down: string
     classification: string
-    pct_above_ma20: number
+    pct_above_ma20: number | null
   }
   contribution: {
     top_negative: TickerPoints[]   // points already signed (negative)
@@ -35,7 +35,7 @@ export interface MarketCharts {
     streak: {
       count: number
       direction: "buy" | "sell" | "mixed"
-      last_5d_cumulative: number
+      last_5d_cumulative: number | null
     }
     last_12_sessions: number[]
     top_sell: TickerValue[]

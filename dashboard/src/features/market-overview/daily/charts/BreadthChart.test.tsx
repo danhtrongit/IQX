@@ -56,4 +56,15 @@ describe("BreadthChart", () => {
     // vi-VN locale formats 36.5 as "36,5"
     expect(container.textContent).toContain("36,5%")
   })
+
+  it("does not crash and renders '—' when pct_above_ma20 is null", () => {
+    const nullFixture: MarketCharts["breadth"] = {
+      ...fixture,
+      pct_above_ma20: null,
+    }
+    const { container } = render(<BreadthChart data={nullFixture} />)
+    // Should render the em-dash placeholder, not a percentage
+    expect(container.textContent).toContain("—")
+    expect(container.textContent).not.toMatch(/\d+,\d+%/)
+  })
 })

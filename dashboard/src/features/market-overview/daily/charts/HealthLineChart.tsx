@@ -67,7 +67,8 @@ export function HealthLineChart({ data, classification }: HealthLineChartProps) 
     return padL + (n <= 1 ? 0 : (i / (n - 1)) * innerW)
   }
   function y(v: number): number {
-    return padT + ((yMax - v) / (yMax - yMin)) * innerH
+    const clamped = Math.min(yMax, Math.max(yMin, v))
+    return padT + ((yMax - clamped) / (yMax - yMin)) * innerH
   }
 
   // Build polyline points string

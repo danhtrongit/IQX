@@ -21,7 +21,7 @@ export interface FlowCardProps {
   sellValue: number        // tỷ VND, positive (absolute), shown with − prefix
   streakBars: number[]     // up to 12 daily net values, signed; last = today
   streakLabel: ReactNode
-  topSell: FlowTopItem[]   // values negative
+  topSell: FlowTopItem[]   // values may be positive or negative; component normalizes with Math.abs
   topBuy: FlowTopItem[]    // values positive; may have anomaly
   topSellHeading?: string  // default "▼ TOP BÁN"
   topBuyHeading?: string   // default "▲ TOP MUA"
