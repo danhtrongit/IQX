@@ -1,6 +1,7 @@
 import type { ComponentType } from "react"
-import { IconEye } from "@arco-design/web-react/icon"
+import { IconEye, IconStorage } from "@arco-design/web-react/icon"
 import { useSidebar, type SidebarPanel } from "@/shared/contexts/sidebar-context"
+import { useMarketModal } from "@/shared/contexts/market-modal-context"
 import { cn } from "@/shared/lib/cn"
 import { IconBulb } from "@/shared/icons"
 import { IconShoppingCart, IconNewspaper, IconCandlestick } from "../icons"
@@ -55,6 +56,7 @@ export function RightToolbar({
 }) {
   const { activePanel, setActivePanel } =
     useSidebar()
+  const { openMarketModal } = useMarketModal()
 
   const handleClick = (item: ToolbarItem) => {
     if (item.panel) {
@@ -77,6 +79,7 @@ export function RightToolbar({
       onClick: () => onActionClick?.("ai-insight"),
     },
     { icon: IconCandlestick, label: "AI Mẫu nến", id: "ai-patterns", panel: "patterns" },
+    { icon: IconStorage, label: "Thị trường", id: "market", onClick: () => openMarketModal() },
   ]
 
   return (
