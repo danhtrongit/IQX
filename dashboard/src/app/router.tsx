@@ -38,9 +38,6 @@ const AlertsPage = lazy(() =>
 const MarketOverviewPage = lazy(() =>
   import("@/features/market-overview").then((m) => ({ default: m.MarketOverviewPage })),
 )
-const DuBaoPage = lazy(() =>
-  import("@/features/forecast").then((m) => ({ default: m.DuBaoPage })),
-)
 const CatalogPage = lazy(() =>
   import("@/features/lessons").then((m) => ({ default: m.CatalogPage })),
 )
@@ -76,7 +73,6 @@ export function AppRouter() {
         {/* App shell */}
         <Route element={<AppShell />}>
           <Route path="/thi-truong" element={<MarketOverviewPage />} />
-          <Route path="/du-bao" element={<DuBaoPage />} />
           <Route path="/co-phieu" element={<StockDirectoryPage />} />
           <Route path="/bang-gia" element={<BangGiaPage />} />
           <Route path="/cai-dat" element={<SettingsPage />} />

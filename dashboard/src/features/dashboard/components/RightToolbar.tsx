@@ -2,7 +2,7 @@ import type { ComponentType } from "react"
 import { IconEye } from "@arco-design/web-react/icon"
 import { useSidebar, type SidebarPanel } from "@/shared/contexts/sidebar-context"
 import { cn } from "@/shared/lib/cn"
-import { IconBulb, IconTrendLineChart } from "@/shared/icons"
+import { IconBulb } from "@/shared/icons"
 import { IconShoppingCart, IconNewspaper, IconCandlestick } from "../icons"
 
 interface ToolbarItem {
@@ -53,7 +53,7 @@ export function RightToolbar({
 }: {
   onActionClick?: (id: string) => void
 }) {
-  const { activePanel, setActivePanel, forecastWindowOpen, openForecastWindow } =
+  const { activePanel, setActivePanel } =
     useSidebar()
 
   const handleClick = (item: ToolbarItem) => {
@@ -77,12 +77,6 @@ export function RightToolbar({
       onClick: () => onActionClick?.("ai-insight"),
     },
     { icon: IconCandlestick, label: "AI Mẫu nến", id: "ai-patterns", panel: "patterns" },
-    {
-      icon: IconTrendLineChart,
-      label: "Dự báo",
-      id: "ai-forecast",
-      onClick: () => openForecastWindow(),
-    },
   ]
 
   return (
@@ -94,9 +88,7 @@ export function RightToolbar({
         <ToolbarButton
           key={item.id}
           item={item}
-          isActive={
-            item.id === "ai-forecast" ? forecastWindowOpen : item.panel === activePanel
-          }
+          isActive={item.panel === activePanel}
           onClick={() => handleClick(item)}
         />
       ))}
