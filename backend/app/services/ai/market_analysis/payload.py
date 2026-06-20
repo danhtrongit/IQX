@@ -163,6 +163,55 @@ def _build_volume(idx_ohlc: list[dict], vn_snap: dict) -> dict:
     }
 
 
+def _contribution_pct(top_up: list, top_down: list, change_points: float) -> dict:
+    ups = sorted([x for x in top_up if (x.get("impact") or 0) > 0], key=lambda x: -x["impact"])
+    downs = sorted([x for x in top_down if (x.get("impact") or 0) < 0], key=lambda x: x["impact"])
+    tp = sum(x["impact"] for x in ups) or 1
+    tn = abs(sum(x["impact"] for x in downs)) or 1
+    pos = [{"ticker": x["symbol"], "points": round(x["impact"], 2),
+            "pct_of_positive_side": round(x["impact"] / tp * 100, 1)} for x in ups[:8]]
+    neg = [{"ticker": x["symbol"], "points": round(x["impact"], 2),
+            "pct_of_negative_side": round(abs(x["impact"]) / tn * 100, 1)} for x in downs[:8]]
+    return {"top_positive": pos, "top_negative": neg,
+            "total_positive_points": round(tp, 2), "total_negative_points": round(tn, 2),
+            "index_net_change": change_points,
+            "is_offsetting_session": min(tp, tn) / max(tp, tn) > 0.3,
+            "concentration_negative": {
+                "top1_pct_of_negative": neg[0]["pct_of_negative_side"] if neg else None,
+                "top3_pct_of_negative": round(sum(abs(x["points"]) for x in neg[:3]) / tn * 100, 1)}}
+
+
+def _conc_flag(rows: list) -> dict:
+    rows = [r for r in (rows or []) if r.get("value_vnd_billion")]
+    if not rows:
+        return {"concentrated": False}
+    top = max(rows, key=lambda r: abs(r["value_vnd_billion"]))
+    same = sum(abs(r["value_vnd_billion"]) for r in rows
+               if (r["value_vnd_billion"] > 0) == (top["value_vnd_billion"] > 0))
+    if same > 0 and abs(top["value_vnd_billion"]) / same > 0.5:
+        return {"concentrated": True, "ticker": top["ticker"],
+                "pct_of_same_side": round(abs(top["value_vnd_billion"]) / same * 100)}
+    return {"concentrated": False}
+
+
+def _ma_label(value: float | None, ma: float | None) -> str | None:
+    if not value or not ma:
+        return None
+    d = (value - ma) / ma * 100
+    a = abs(d)
+    if a < 5:
+        return "thanh khoản tương đương MA20"
+    if a < 15:
+        return f"thanh khoản {'trên' if d > 0 else 'dưới'} MA20 {a:.0f}%"
+    return f"thanh khoản {'vượt' if d > 0 else 'thấp hơn'} {a:.0f}% MA20"
+
+
+def _scenario_range(close: float) -> dict:
+    return {"current": round(close, 1), "near_resistance": round(close * 1.015, 1),
+            "far_resistance": round(close * 1.06, 1), "near_support": round(close * 0.985, 1),
+            "far_support": round(close * 0.94, 1), "extreme_support": round(close * 0.90, 1)}
+
+
 def _build_contribution(imp: dict, change_points: float | None) -> dict:
     if not imp:
         return {"_missing": True}
@@ -434,6 +483,30 @@ async def build_analysis_payload() -> dict[str, Any]:
         except Exception:
             session_date = date.today().isoformat()
 
+    # v1.4 derived fields
+    imp_safe = imp if imp else {}
+    point_contribution = _contribution_pct(
+        imp_safe.get("top_up", []),
+        imp_safe.get("top_down", []),
+        vnindex.get("change_points") or 0.0,
+    )
+
+    volume_block = _build_volume(idx_ohlc, vn_snap)
+    volume_block["comparison_label"] = _ma_label(
+        volume_block.get("total_value_vnd_billion"),
+        volume_block.get("ma20_value_vnd_billion"),
+    )
+
+    foreign_flow = _build_foreign(fser, ftop)
+    foreign_flow["sell_concentration_flag"] = _conc_flag(foreign_flow.get("top_sell", []))
+
+    prop_trading = _build_prop(pser, ptop)
+    prop_trading["buy_concentration_flag"] = _conc_flag(prop_trading.get("top_buy", []))
+
+    close = vnindex.get("close") or 0.0
+    if levels and close:
+        levels["scenario_realistic_range"] = _scenario_range(close)
+
     payload: dict[str, Any] = {
         "meta": {
             "generated_for_date": session_date or date.today().isoformat(),
@@ -452,14 +525,13 @@ async def build_analysis_payload() -> dict[str, Any]:
             "change_pct": _r((snap.get("HNXUpcomIndex") or {}).get("change_percent")),
         },
         "breadth": _build_breadth(vn_snap),
-        "internal_heat": _build_internal_heat(b20, b50),
-        "volume": _build_volume(idx_ohlc, vn_snap),
-        "point_contribution": _build_contribution(imp, vnindex.get("change_points")),
-        "foreign_flow": _build_foreign(fser, ftop),
-        "prop_trading": _build_prop(pser, ptop),
+        "market_health": _build_internal_heat(b20, b50),
+        "volume": volume_block,
+        "point_contribution": point_contribution,
+        "foreign_flow": foreign_flow,
+        "prop_trading": prop_trading,
         "sectors": _build_sectors(secs, icb_names),
         "technical_levels": levels,
-        "global_context": await _build_global(session_date or date.today().isoformat()),
         "calendar_hardcoded": cal.build_calendar_block(
             date.fromisoformat(session_date) if session_date else date.today()
         ),
@@ -471,7 +543,7 @@ async def build_analysis_payload() -> dict[str, Any]:
     }
 
     # data completeness over key blocks
-    key_blocks = ["vnindex", "breadth", "internal_heat", "volume",
+    key_blocks = ["vnindex", "breadth", "market_health", "volume",
                   "point_contribution", "foreign_flow", "prop_trading", "sectors"]
     present = sum(
         1 for k in key_blocks
@@ -481,17 +553,11 @@ async def build_analysis_payload() -> dict[str, Any]:
     missing = ["vnindex.last_30min_change_pct"]
     if payload["volume"].get("ratio_vs_ma20") is None:
         missing.append("volume.ratio_vs_ma20")
-    if payload["global_context"] is None:
-        missing.append("global_context")
-    elif not (payload["global_context"].get("us_overnight") or payload["global_context"].get("asia_today")):
-        missing.append("global_context.indices")  # MSN down → chỉ có USD/VND + vàng
-    if payload["internal_heat"].get("_missing"):
-        missing.append("internal_heat")
+    if payload["market_health"].get("_missing"):
+        missing.append("market_health")
     payload["meta"]["missing_fields"] = missing
     payload["meta"]["data_notes"] = [
         "Nếu chạy GIỮA PHIÊN: thanh khoản phiên hiện tại là lũy kế đang chạy "
         "(chưa đủ phiên) nên ratio vs MA20 có thể thấp; bản 16:30 sau ATC là số EOD đầy đủ.",
-        "global_context: USD/VND + vàng từ nguồn nội (VCB/SJC) đáng tin; chỉ số "
-        "thế giới (S&P500, Nikkei, Hang Seng) best-effort qua MSN — nếu thiếu thì bỏ qua, không bịa.",
     ]
     return payload
