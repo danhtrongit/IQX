@@ -136,3 +136,10 @@ def test_analysis_out_accepts_v14_shape():
         watchlist=[{"ticker":"VHM","alert":True,"reason_html":"r"}], unexplained=None)
     assert o.session_type_display == "Rút tiền ngầm"
     assert o.paragraphs["market_health"] == "y"
+
+
+def test_extract_claims_reads_outcome_html():
+    from app.services.ai.market_analysis.memory import extract_claims
+    out = {"scenarios":[{"direction":"down","condition_html":"Mất <strong>1.815</strong>","outcome_html":"test <strong>1.795</strong>"}]}
+    claims = extract_claims(out)
+    assert claims and claims[0]["predicted_outcome"] == "test <strong>1.795</strong>"

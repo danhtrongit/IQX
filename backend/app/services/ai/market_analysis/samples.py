@@ -237,7 +237,7 @@ _SECONDARY: dict[str, str | None] = {
 
 
 def select_samples(session_type: str) -> tuple[str, str | None]:
-    primary = SAMPLES[session_type]
+    primary = SAMPLES.get(session_type, SAMPLES["low_volatility"])
     sec_type = _SECONDARY.get(session_type)
     secondary = SAMPLES.get(sec_type) if sec_type else None
     return primary, secondary

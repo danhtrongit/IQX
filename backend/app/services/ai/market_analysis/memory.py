@@ -66,11 +66,12 @@ def extract_claims(output: dict[str, Any]) -> list[dict[str, Any]]:
         parsed = parse_scenario_condition(cond)
         if not parsed:
             continue  # nothing verifiable in this scenario
+        outcome = scenario.get("outcome_html") or scenario.get("outcome", "")
         claims.append({
-            "claim_text": f"{cond} → {scenario.get('outcome', '')}",
+            "claim_text": f"{cond} → {outcome}",
             "claim_type": "scenario_up" if i == 0 else "scenario_down",
             "conditions": parsed,
-            "predicted_outcome": scenario.get("outcome", ""),
+            "predicted_outcome": outcome,
         })
     return claims
 
