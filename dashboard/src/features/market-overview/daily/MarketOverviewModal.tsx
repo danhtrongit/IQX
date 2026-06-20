@@ -1,18 +1,24 @@
 // ─── MarketOverviewModal ───────────────────────────────────────────────────────
-// Market modal (v1.4 layout) — chỉ các thành phần MỚI:
-//   MarketAnalysisArticle + MarketPulseBar + MarketTakeaway.
-// Các panel chart cũ (tái dùng từ trang thị trường cũ) đã được bỏ.
-// Gate: the body is mounted only when isOpen (`{isOpen && <Body/>}` inside <Modal visible={isOpen}>).
+// Market modal (v1.5 layout):
+//   MarketAnalysisArticle + MarketPulseBar + MarketTakeaway + Cấu trúc phiên charts.
+// Gate: the body is mounted only when isOpen.
 
 import { Modal } from "@arco-design/web-react"
 import { useMarketModal } from "@/shared/contexts/market-modal-context"
 import { MarketAnalysisArticle } from "./MarketAnalysisArticle"
 import { MarketPulseBar } from "./MarketPulseBar"
 import { MarketTakeaway } from "./MarketTakeaway"
+import { useDailyMarketAnalysis } from "./useDailyMarketAnalysis"
+import { TierLabel } from "./charts/TierLabel"
+import { BreadthChart } from "./charts/BreadthChart"
+import { ContributionChart } from "./charts/ContributionChart"
 
 // ─── Modal body (mounted only when open) ─────────────────────────────────────
 
 function ModalBody() {
+  const { data } = useDailyMarketAnalysis()
+  const charts = data?.charts
+
   return (
     <div
       style={{ maxHeight: "82vh", overflowY: "auto" }}
@@ -28,6 +34,17 @@ function ModalBody() {
 
       {/* ── Takeaway (kịch bản + đáng quan sát) ── */}
       <MarketTakeaway />
+
+      {/* ── Cấu trúc phiên (Breadth + Contribution charts) ── */}
+      {charts && (
+        <div>
+          <TierLabel label="Cấu trúc phiên" />
+          <div className="grid grid-cols-2 gap-3.5">
+            <BreadthChart data={charts.breadth} />
+            <ContributionChart data={charts.contribution} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
