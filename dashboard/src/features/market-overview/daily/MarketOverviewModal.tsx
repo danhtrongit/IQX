@@ -1,6 +1,7 @@
 // ─── MarketOverviewModal ───────────────────────────────────────────────────────
-// Market modal (v1.5 layout):
-//   MarketAnalysisArticle + MarketPulseBar + MarketTakeaway + Cấu trúc phiên charts.
+// Market modal (v1.6 layout):
+//   MarketAnalysisArticle + MarketPulseBar + MarketTakeaway
+//   + Cấu trúc phiên charts + Dòng tiền flow cards.
 // Gate: the body is mounted only when isOpen.
 
 import { Modal } from "@arco-design/web-react"
@@ -12,6 +13,8 @@ import { useDailyMarketAnalysis } from "./useDailyMarketAnalysis"
 import { TierLabel } from "./charts/TierLabel"
 import { BreadthChart } from "./charts/BreadthChart"
 import { ContributionChart } from "./charts/ContributionChart"
+import { ForeignFlowCard } from "./charts/ForeignFlowCard"
+import { PropFlowCard } from "./charts/PropFlowCard"
 
 // ─── Modal body (mounted only when open) ─────────────────────────────────────
 
@@ -42,6 +45,23 @@ function ModalBody() {
           <div className="grid grid-cols-2 gap-3.5">
             <BreadthChart data={charts.breadth} />
             <ContributionChart data={charts.contribution} />
+          </div>
+        </div>
+      )}
+
+      {/* ── Dòng tiền (Foreign + Prop flow cards) ── */}
+      {charts && charts.foreign_detail && charts.prop_detail && (
+        <div>
+          <TierLabel label="Dòng tiền" />
+          <div className="grid grid-cols-2 gap-3.5">
+            <ForeignFlowCard data={charts.foreign_detail} />
+            <PropFlowCard
+              data={charts.prop_detail}
+              foreignNet={
+                charts.foreign_detail.total_buy_vnd_billion -
+                charts.foreign_detail.total_sell_vnd_billion
+              }
+            />
           </div>
         </div>
       )}
