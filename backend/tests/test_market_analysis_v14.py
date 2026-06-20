@@ -54,3 +54,13 @@ def test_samples_v14_clean():
         assert bad not in blob, bad
     assert "hidden_distribution" in S.SAMPLES
     assert "sức khỏe thị trường" in blob
+
+
+from app.services.ai.market_analysis.prompts import SYSTEM_PROMPT
+
+
+def test_prompt_has_v14_rules():
+    for must in ["market_health","condition_html","watchlist","marker","Rút tiền ngầm",
+                 "TỔNG PHÍA GIẢM","tương đương MA20","Chưa giải thích được",
+                 "KHÔNG đoạn","HTML-inline"]:
+        assert must in SYSTEM_PROMPT or must.lower() in SYSTEM_PROMPT.lower(), must

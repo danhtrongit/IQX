@@ -55,7 +55,33 @@ OUTPUT JSON SCHEMA (đúng các khóa này):
   "unexplained": "... hoặc null"
 }
 
-QUY TRÌNH SUY NGHĨ (không xuất ra): 1) Bản chất phiên? 2) Diễn biến quan trọng nhất? 3) Có gì bất thường? 4) Có gì bình thường không cần nhắc? 5) Memory: bài hôm qua có claim cần xác nhận? 6) Pattern lịch sử nào trong data? 7) Điều gì không giải thích được? Sau đó viết theo cấu trúc."""
+QUY TRÌNH SUY NGHĨ (không xuất ra): 1) Bản chất phiên? 2) Diễn biến quan trọng nhất? 3) Có gì bất thường? 4) Có gì bình thường không cần nhắc? 5) Memory: bài hôm qua có claim cần xác nhận? 6) Pattern lịch sử nào trong data? 7) Điều gì không giải thích được? Sau đó viết theo cấu trúc.
+
+=== QUY TẮC TÍCH LŨY (v1.1→v1.3) — tóm tắt ===
+- % đóng góp: dùng "X chiếm Y% TỔNG PHÍA GIẢM/TĂNG", KHÔNG >100%, KHÔNG "% mức giảm của Index".
+- Flow 1 mã chiếm >50%: gọi "bất thường/giao dịch đơn lẻ 1 tổ chức", KHÔNG "điểm sáng".
+- Index biên độ nhỏ + tín hiệu lớn → mở "Bề mặt Index chỉ đổi X%, nhưng bên dưới...".
+- NGÔN NGỮ ĐẠI CHÚNG, CẤM Anh hóa (catalyst/rotation/breakout/momentum/smart money/sell-off/streak/...) + Wyckoff ("phân phối ngầm"→"tổ chức xả hàng âm thầm", "midcap"→"vốn hóa vừa", "co cụm"→"thu hẹp"). Loại phiên hiển thị: "Rút tiền ngầm".
+- BỎ HOÀN TOÀN yếu tố quốc tế (S&P500/Nikkei/USD/VND/vàng/Fed...). Chỉ thị trường VN. KHÔNG đoạn "Bối cảnh thế giới".
+- KHÔNG lộ data thiếu ("không có sẵn"...). MA20: chênh <5% → "tương đương MA20".
+- THAM CHIẾU BÀI CŨ (rule 8): nếu memory_context có claim, BẮT BUỘC nêu trạng thái xác nhận/phủ định/một phần.
+
+=== BỔ SUNG (v1.4) — ƯU TIÊN CAO NHẤT ===
+R20. VỊ TRÍ MEMORY: câu tham chiếu bài cũ đặt ở CUỐI đoạn cấu trúc (câu bridge) HOẶC ĐẦU đoạn dòng tiền — KHÔNG nhồi vào giữa đoạn cấu trúc.
+R21. KHÔNG LẶP SỐ LIỆU giữa các đoạn: mỗi con số (X tỷ, X%, X điểm) chỉ xuất hiện 1 lần toàn bài (trừ mốc kỹ thuật ở Kịch bản). Câu memory dùng cụm ĐỊNH TÍNH ("áp lực ngoại vượt xa ngưỡng cảnh báo"); con số cụ thể chỉ xuất hiện ở đoạn dòng tiền.
+R-TAG. Tagline.text KHÔNG chứa ký tự marker (◆▲▼▬) — marker để riêng ở field "marker".
+R22. ĐOẠN "Sức khỏe thị trường" SÂU: ≥4/6 chỉ báo (1.%mã trên MA20 vs hôm qua+xu hướng; 2.thanh khoản vs MA20; 3.vị trí Index/VN30 vs MA20/MA50/MA200; 4.ngành dẫn dắt+chuỗi phiên; 5.đảo chiều nhóm ngành; 6.phân hóa vốn hóa lớn vs vừa/nhỏ). Dài 80-110 từ. Kết luận quan điểm rõ ("sức khỏe đang suy yếu rõ"...).
+R-EXPLAIN. Chỉ số ít phổ biến phải giải thích ngắn trong ngoặc: "HNX -3,37% (HNX chủ yếu là cổ phiếu vốn hóa vừa và nhỏ)"; "tỷ lệ A/D (mã tăng/mã giảm)".
+R23. MỐC KỊCH BẢN trong tầm ±5-7% giá hiện tại (dùng scenario_realistic_range trong data). Mốc xa hơn 7% CHỈ dùng nếu gắn nhãn "kịch bản cực đoan". KHÔNG nêu mốc phi thực tế (vd thấp hơn far_support).
+R-UNEXP. BẮT BUỘC có đoạn "Chưa giải thích được" (field unexplained, KHÔNG nhét vào watchlist) khi có: mã tăng giá nhưng KN bán mạnh; flow tổ chức bất thường (1 mã >50%); hoặc chênh lệch chỉ số lớn (HNX -3% vs VN-Index -0,3%). Nêu hiện tượng + giả thuyết + gợi ý quan sát.
+
+=== ĐỊNH DẠNG OUTPUT JSON CHO FRONTEND (BẮT BUỘC) ===
+paragraphs.{structure,smart_money,market_health} là chuỗi HTML-inline: bọc số trong <span class="num">…</span>; % tăng/giá tăng trong <span class="up-text">+X%</span>; % giảm/số âm trong <span class="down-text">−X%</span>.
+tagline = {"direction":"up|down|flat|anomaly","marker":"◆","text":"..."} (text KHÔNG có marker).
+scenarios = [{"direction":"up|down","condition_html":"... <strong>1.815</strong> ...","outcome_html":"..."}].
+watchlist = [{"ticker":"VHM","alert":true|false,"reason_html":"— ..."}] (alert=true khi flow bất thường hoặc mâu thuẫn).
+unexplained = chuỗi HTML hoặc null.
+Các khóa JSON: id, session_date, session_type, session_type_display, headline, tagline, paragraphs, scenarios, watchlist, unexplained. KHÔNG kèm markdown fence."""
 
 
 USER_TEMPLATE = """Sinh bài nhận định cho phiên đóng cửa ngày {session_date}.
