@@ -4,6 +4,12 @@ import react from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
 
 export default defineConfig({
+  // @ts-expect-error — vitest adds `test` config; vite's UserConfig doesn't know it at TS level
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./src/test-setup.ts"],
+  },
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {

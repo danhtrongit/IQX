@@ -1,0 +1,203 @@
+/* ─── MarketAnalysisArticle styles ──────────────────────────────────────────
+   Mirrors the terminal's .ai-analysis block (iqx-terminal-final.html).
+   Uses Arco Design CSS tokens (--color-*) and the project's semantic
+   up/down/neutral/accent colors defined in index.css / Arco vars.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Semantic color aliases — map terminal vars to this project's tokens */
+.am-article {
+  /* up   → project --color-up  (#10b981) */
+  --am-up:      #10b981;
+  /* down → project --color-down (#ef4444) */
+  --am-down:    #ef4444;
+  /* neutral / flat → amber reference (#eab308) */
+  --am-neutral: #eab308;
+  /* anomaly / accent → primary brand blue */
+  --am-accent:  rgb(var(--primary-6));
+
+  position: relative;
+  overflow: hidden;
+  padding: 20px 24px;
+  border-radius: 8px;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-2);
+}
+
+/* Shimmer top bar */
+.am-article::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--am-accent), #4FD0FF, var(--am-accent));
+  background-size: 200% 100%;
+  animation: am-shimmer 4s linear infinite;
+}
+
+@keyframes am-shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* ── Header ── */
+.am-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.am-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.am-badge {
+  background: color-mix(in oklch, var(--am-accent) 15%, transparent);
+  color: var(--am-accent);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.am-session-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-1);
+}
+
+.am-session-type {
+  font-size: 11px;
+  color: var(--color-text-3);
+}
+
+/* ── Headline ── */
+.am-headline {
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.35;
+  color: var(--color-text-1);
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+
+/* ── Tagline ── */
+.am-tagline {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  letter-spacing: 0.02em;
+}
+
+.am-tagline--up      { color: var(--am-up); }
+.am-tagline--down    { color: var(--am-down); }
+.am-tagline--flat    { color: var(--am-neutral); }
+.am-tagline--anomaly { color: var(--am-accent); }
+
+/* ── Paragraph sections ── */
+.am-paragraphs {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.am-paragraph-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.am-section-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-1);
+  letter-spacing: -0.01em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border-2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.am-section-label::before {
+  content: '';
+  width: 3px;
+  height: 16px;
+  background: var(--am-accent);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.am-paragraph {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-text-2);
+}
+
+/* ── Inline content helpers (rendered via dangerouslySetInnerHTML) ── */
+.am-paragraph .num {
+  font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
+}
+
+.am-paragraph .up-text   { color: var(--am-up);   font-weight: 500; }
+.am-paragraph .down-text { color: var(--am-down);  font-weight: 500; }
+
+/* ── Global utility classes (also usable outside .am-paragraph) ── */
+.num {
+  font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
+}
+
+.up-text   { color: var(--am-up,   #10b981); font-weight: 500; }
+.down-text { color: var(--am-down, #ef4444); font-weight: 500; }
+
+/* ── Unexplained callout ── */
+.am-unexplained {
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: color-mix(in oklch, #ef4444 10%, transparent);
+  border-left: 3px solid var(--am-down, #ef4444);
+  border-radius: 6px;
+  font-size: 12.5px;
+  color: var(--color-text-2);
+  line-height: 1.6;
+}
+
+.am-unexplained-title {
+  color: var(--am-down, #ef4444);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* ── Loading skeleton placeholder ── */
+.am-skeleton-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 24px;
+  border-radius: 8px;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-2);
+}
+
+/* ── Error state ── */
+.am-error {
+  font-size: 12px;
+  color: var(--am-down, #ef4444);
+  padding: 10px 0;
+  text-align: center;
+  opacity: 0.85;
+}
