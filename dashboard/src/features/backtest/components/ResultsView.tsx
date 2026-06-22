@@ -127,7 +127,32 @@ function downsample(points: EquityPoint[], max = 400): EquityPoint[] {
   return out
 }
 
-function EquityChart({ data }: { data: EquityPoint[] }) {
+/** Convert base-100 equity series to % cumulative return from each series' own first point. */
+export function toPctSeries(
+  points: EquityPoint[],
+): Array<{ date: string; strategy: number; buy_hold: number; vnindex?: number }> {
+  if (!points.length) return []
+  const firstStrategy = points[0].strategy
+  const firstBuyHold = points[0].buy_hold
+  // Determine first vnindex — use the first value that exists
+  const firstVnindexPoint = points.find((p) => p.vnindex != null)
+  const firstVnindex = firstVnindexPoint?.vnindex
+  const hasVnindex = firstVnindex != null
+
+  return points.map((p) => {
+    const base: { date: string; strategy: number; buy_hold: number; vnindex?: number } = {
+      date: p.date,
+      strategy: (p.strategy / firstStrategy - 1) * 100,
+      buy_hold: (p.buy_hold / firstBuyHold - 1) * 100,
+    }
+    if (hasVnindex && p.vnindex != null) {
+      base.vnindex = (p.vnindex / firstVnindex! - 1) * 100
+    }
+    return base
+  })
+}
+
+function EquityChart({ data, symbol }: { data: EquityPoint[]; symbol: string }) {
   if (!data.length) {
     return (
       <div className="flex h-[200px] items-center justify-center p-4 text-xs italic text-[var(--color-text-3)]">
@@ -135,7 +160,9 @@ function EquityChart({ data }: { data: EquityPoint[] }) {
       </div>
     )
   }
-  const series = downsample(data)
+  const series = toPctSeries(downsample(data))
+  const hasVnindex = series.some((p) => p.vnindex != null)
+  const fmtPct = (v: number) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%"
   return (
     <div className="p-4">
       <div className="h-[280px] w-full min-w-0">
@@ -146,12 +173,12 @@ function EquityChart({ data }: { data: EquityPoint[] }) {
               dataKey="date"
               tick={{ fill: "#64748b", fontSize: 10, fontFamily: "monospace" }}
               minTickGap={48}
-              tickFormatter={(d: string) => d.slice(0, 7)}
+              tickFormatter={(d: string) => fmtDateVN(d)}
             />
             <YAxis
               tick={{ fill: "#64748b", fontSize: 10, fontFamily: "monospace" }}
-              tickFormatter={(v: number) => v.toFixed(0)}
-              width={44}
+              tickFormatter={(v: number) => (v >= 0 ? "+" : "") + v.toFixed(0) + "%"}
+              width={52}
               domain={["auto", "auto"]}
             />
             <Tooltip
@@ -162,26 +189,38 @@ function EquityChart({ data }: { data: EquityPoint[] }) {
                 fontSize: 12,
               }}
               labelStyle={{ color: "var(--color-text-1)" }}
-              formatter={(v, name) => [Number(v).toFixed(1), name]}
+              labelFormatter={(label) => fmtDateVN(String(label))}
+              formatter={(v: unknown) => [fmtPct(Number(v))]}
             />
             <Legend wrapperStyle={{ fontSize: 12 }} align="right" verticalAlign="top" />
             <Line
               type="monotone"
               dataKey="strategy"
-              name="Chiến lược"
-              stroke="rgb(var(--primary-6))"
-              strokeWidth={2}
+              name="Chiến lược của bạn"
+              stroke="#2563EB"
+              strokeWidth={2.5}
               dot={false}
             />
             <Line
               type="monotone"
               dataKey="buy_hold"
-              name="Buy & Hold"
-              stroke="#94A3B8"
+              name={`Mua-giữ ${symbol}`}
+              stroke="#6B7280"
               strokeWidth={1.5}
-              strokeDasharray="4 4"
+              strokeDasharray="6 4"
               dot={false}
             />
+            {hasVnindex && (
+              <Line
+                type="monotone"
+                dataKey="vnindex"
+                name="VN-Index"
+                stroke="#F59E0B"
+                strokeWidth={1.5}
+                strokeDasharray="2 3"
+                dot={false}
+              />
+            )}
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -258,7 +297,7 @@ export function ResultsView({ result }: { result: RunResult }) {
         </span>
       </div>
       <KpiGrid kpis={kpis} meta={meta} />
-      <EquityChart data={equity_curve} />
+      <EquityChart data={equity_curve} symbol={meta.symbol} />
       <TradesTable trades={trades} />
     </div>
   )
