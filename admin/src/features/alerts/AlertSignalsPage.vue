@@ -22,7 +22,9 @@ import {
   ALERT_INDICATORS,
   ALERT_OPS,
   BINARY_INDICATORS,
+  RAW_FIELD_LABELS,
   alertsAdminApi,
+  fetchIndicatorOptions,
   type AlertSignal,
   type AlertSignalUpsert,
 } from "@/lib/api/alerts"
@@ -52,7 +54,13 @@ const isCreate = ref(false)
 const form = ref<EditForm>(blankForm())
 const dragIndex = ref<number | null>(null)
 
-const indicatorOptions = ALERT_INDICATORS.map((i) => ({ label: i, value: i }))
+/** Falls back to raw id as label if the backend fetch fails. */
+const RAW_PRICE_IDS = new Set(Object.keys(RAW_FIELD_LABELS))
+const fallbackIndicatorOptions = ALERT_INDICATORS.map((i) => ({
+  label: RAW_PRICE_IDS.has(i) ? (RAW_FIELD_LABELS[i] ?? i) : i,
+  value: i,
+}))
+const indicatorOptions = ref(fallbackIndicatorOptions)
 const opOptions = ALERT_OPS.map((o) => ({ label: o, value: o }))
 const sideOptions = [
   { label: "MUA", value: "buy" },
@@ -82,7 +90,22 @@ async function load() {
   loading.value = true
   error.value = null
   try {
-    signals.value = await alertsAdminApi.list()
+    const [signalList] = await Promise.allSettled([
+      alertsAdminApi.list(),
+      fetchIndicatorOptions().then((opts) => {
+        // Build options from backend display names + 5 raw price fields appended client-side
+        const backendOpts = opts.map((o) => ({ label: o.label, value: o.id }))
+        const rawOpts = Object.entries(RAW_FIELD_LABELS).map(([id, label]) => ({ label, value: id }))
+        indicatorOptions.value = [...backendOpts, ...rawOpts]
+      }).catch(() => {
+        // Fetch failed — keep fallback options already set (raw ids + translated price fields)
+      }),
+    ])
+    if (signalList.status === "fulfilled") {
+      signals.value = signalList.value
+    } else {
+      throw signalList.reason
+    }
   } catch (err) {
     error.value = err instanceof Error ? err.message : "Không tải được danh sách tín hiệu"
   } finally {

@@ -87,6 +87,25 @@ export const alertsAdminApi = {
       .json<{ created: number; overwrite: boolean }>(),
 }
 
+export interface IndicatorOption {
+  id: string
+  label: string
+  kind: string
+}
+
+/** Fetch Vietnamese display names for all 38 indicators from the backend. */
+export const fetchIndicatorOptions = () =>
+  api.get("admin/alerts/indicators").json<IndicatorOption[]>()
+
+/** Display labels for the 5 raw price fields not included in the 38-indicator backend map. */
+export const RAW_FIELD_LABELS: Record<string, string> = {
+  close: "Giá đóng cửa",
+  open: "Giá mở cửa",
+  high: "Giá cao nhất",
+  low: "Giá thấp nhất",
+  volume: "Khối lượng",
+}
+
 /** The 38 indicators + raw price fields a condition may reference. */
 export const ALERT_INDICATORS = [
   "ma_5", "ma_20", "ma_50", "ma_200", "ma_stack_bull", "uptrend", "death_cross",
