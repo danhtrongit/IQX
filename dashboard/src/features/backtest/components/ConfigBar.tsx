@@ -29,8 +29,8 @@ export function ConfigBar({ symbol, start, end, capital, onSymbol, onStart, onEn
         <label className={labelCls}>Từ ngày</label>
         <DatePicker
           value={start}
-          onChange={(v) => v && onStart(v)}
-          format="YYYY-MM-DD"
+          onChange={(_, d) => d && onStart(d.format("YYYY-MM-DD"))}
+          format="DD/MM/YYYY"
           allowClear={false}
           style={{ width: "100%" }}
         />
@@ -39,8 +39,8 @@ export function ConfigBar({ symbol, start, end, capital, onSymbol, onStart, onEn
         <label className={labelCls}>Đến ngày</label>
         <DatePicker
           value={end}
-          onChange={(v) => v && onEnd(v)}
-          format="YYYY-MM-DD"
+          onChange={(_, d) => d && onEnd(d.format("YYYY-MM-DD"))}
+          format="DD/MM/YYYY"
           allowClear={false}
           style={{ width: "100%" }}
         />
