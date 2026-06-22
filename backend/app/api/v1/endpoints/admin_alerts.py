@@ -15,6 +15,7 @@ from app.schemas.alert import (
 )
 from app.services.alerts.seeder import seed_alert_signals
 from app.services.ta.conditions import Combination, CombinationError, validate_combination
+from app.services.ta.display_names import INDICATOR_DISPLAY, INDICATOR_KIND
 
 router = APIRouter(prefix="/admin/alerts", tags=["Admin · Cảnh báo"])
 
@@ -37,6 +38,15 @@ async def _audit(db: DBSession, admin_id, action: str, key: str, payload: dict) 
             note=f"{action} {key}",
         )
     )
+
+
+def _indicator_options() -> list[dict]:
+    return [{"id": id_, "label": INDICATOR_DISPLAY[id_], "kind": INDICATOR_KIND[id_]} for id_ in INDICATOR_DISPLAY]
+
+
+@router.get("/indicators")
+async def list_indicator_options(admin: AdminUser) -> list[dict]:
+    return _indicator_options()
 
 
 @router.get("/signals", response_model=list[AlertSignalResponse])
