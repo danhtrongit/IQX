@@ -36,7 +36,7 @@ class RiskConfig:
     stop_fixed_pct: float = 0.05
     take_profit_pct: float | None = None  # e.g. 0.10
     max_holding: int | None = 60  # sessions; None = unlimited
-    position_size: str = "all"  # "all" | "half" | "fixed"
+    position_size: str = "all"  # "all" | "half" | "quarter" | "tenth" | "fixed"
     position_fixed_amount: float = 10_000_000.0
     fee_buy: float = 0.0015
     fee_sell: float = 0.0025  # incl. 0.1% transfer tax on sell
@@ -75,15 +75,26 @@ class BacktestRun:
         return {"kpis": self.kpis, "equity_curve": self.equity_curve, "trades": self.trades}
 
 
+_POSITION_FRACTIONS: dict[str, float] = {
+    "all": 1.0,
+    "half": 0.5,
+    "quarter": 0.25,
+    "tenth": 0.10,
+}
+
+
+def _position_fraction(size: str) -> float:
+    """Return the fraction of capital to deploy for a given position-size label."""
+    return _POSITION_FRACTIONS[size]
+
+
 def _shares_for(cash: float, price: float, fee_buy: float, risk: RiskConfig) -> int:
     if price <= 0:
         return 0
-    if risk.position_size == "half":
-        budget = cash * 0.5
-    elif risk.position_size == "fixed":
+    if risk.position_size == "fixed":
         budget = min(risk.position_fixed_amount, cash)
-    else:  # "all"
-        budget = cash
+    else:
+        budget = cash * _position_fraction(risk.position_size)
     per_share = price * (1.0 + fee_buy)
     lots = int(budget // (per_share * LOT))
     return lots * LOT

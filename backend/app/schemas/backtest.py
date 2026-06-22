@@ -25,7 +25,7 @@ class RiskInput(BaseModel):
     stop_fixed_pct: float = 0.05
     take_profit_pct: float | None = None
     max_holding: int | None = 60
-    position_size: Literal["all", "half", "fixed"] = "all"
+    position_size: Literal["all", "half", "quarter", "tenth", "fixed"] = "all"
     position_fixed_amount: float = 10_000_000.0
     fee: Literal["standard", "low"] = "standard"
 
