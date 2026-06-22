@@ -9,6 +9,7 @@ import { FactorLibrary } from "./components/FactorLibrary"
 import { ResultsView } from "./components/ResultsView"
 import { RiskConfig } from "./components/RiskConfig"
 import { SignalPanels } from "./components/SignalPanels"
+import { SymbolInfoBox } from "./components/SymbolInfoBox"
 import { useCatalog, useDeleteStrategy, useRunBacktest, useSaveStrategy, useStrategies } from "./hooks"
 import {
   DEFAULT_RISK,
@@ -299,6 +300,8 @@ function BacktestLab({ initialSymbol }: { initialSymbol: string }) {
               onEnd={setEnd}
               onCapital={setCapital}
             />
+
+            <SymbolInfoBox symbol={symbol} meta={run.data?.meta ?? null} />
 
             <SignalPanels
               factorsById={factorsById}
