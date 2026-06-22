@@ -16,9 +16,11 @@ import numpy as np
 
 from app.services.ta.conditions import (
     Combination,
+    Condition,
     eval_condition_series,
     evaluate_series,
 )
+from app.services.ta.display_names import display_name
 from app.services.ta.indicators import OHLCV
 
 LOT = 100  # HOSE board-lot
@@ -60,6 +62,7 @@ class _Trade:
     hold: int
     pnl_pct: float
     trigger: str
+    entry_trigger: str = ""
 
 
 @dataclass(slots=True)
@@ -86,14 +89,44 @@ def _shares_for(cash: float, price: float, fee_buy: float, risk: RiskConfig) -> 
     return lots * LOT
 
 
+_VN_EXIT_LABELS: dict[str, str] = {
+    "stop_loss": "Cắt lỗ",
+    "take_profit": "Chốt lời",
+    "time_exit": "Hết thời gian giữ",
+}
+
+
+def _vn_exit_label(kind: str) -> str:
+    """Return Vietnamese label for a non-signal exit kind."""
+    return _VN_EXIT_LABELS.get(kind, kind)
+
+
+def _format_conditions(conds: list[Condition]) -> str:
+    """Format a list of conditions into a human-readable Vietnamese string.
+
+    For ``is_true``/signal conditions: emit just the display name.
+    For comparator conditions: emit ``"{name} {op} {value}"``.
+    Multiple conditions are joined with `` + ``.
+    """
+    parts: list[str] = []
+    for c in conds:
+        name = display_name(c.indicator)
+        if c.op == "is_true":
+            parts.append(name)
+        else:
+            parts.append(f"{name} {c.op} {c.value}")
+    return " + ".join(parts)
+
+
 def _format_trigger(frame: dict[str, np.ndarray], sell: Combination, idx: int) -> str:
-    """Label a signal exit with the first sell condition true at ``idx``."""
+    """Label a signal exit with all sell conditions true at ``idx``."""
+    matched: list[Condition] = []
     for cond in sell.conditions:
         series = eval_condition_series(frame, cond)
         if idx < len(series) and series[idx]:
-            if cond.op == "is_true":
-                return cond.indicator
-            return f"{cond.indicator} {cond.op} {cond.value}"
+            matched.append(cond)
+    if matched:
+        return _format_conditions(matched)
     return "Tín hiệu bán"
 
 
@@ -164,6 +197,7 @@ def run_backtest(
 
     cash = float(capital)
     position: _Position | None = None
+    _pending_entry_trigger: str = ""
     trades: list[_Trade] = []
     equity_values: list[float] = []
     base_close = float(close[start_index])
@@ -178,7 +212,14 @@ def run_backtest(
                     cash -= shares * price * (1.0 + risk.fee_buy)
                     stop = _stop_price(price, frame, i, risk)
                     take = price * (1.0 + risk.take_profit_pct) if risk.take_profit_pct else None
+                    # Capture which buy conditions were true at this bar
+                    matched_buy = [
+                        c for c in buy.conditions
+                        if i < len(eval_condition_series(frame, c)) and eval_condition_series(frame, c)[i]
+                    ]
+                    _entry_trigger = _format_conditions(matched_buy) if matched_buy else ""
                     position = _Position(entry_idx=i, entry_price=price, shares=shares, stop=stop, take=take)
+                    _pending_entry_trigger = _entry_trigger
         else:
             held = i - position.entry_idx
             if held >= 2:  # T+2 settlement: not sellable before entry+2 sessions
@@ -198,6 +239,7 @@ def run_backtest(
                             hold=held,
                             pnl_pct=exit_price / position.entry_price - 1.0,
                             trigger=exit_reason,
+                            entry_trigger=_pending_entry_trigger,
                         )
                     )
                     position = None
@@ -232,6 +274,7 @@ def run_backtest(
             "hold": t.hold,
             "pnl_pct": round(t.pnl_pct, 4),
             "trigger": t.trigger,
+            "entry_trigger": t.entry_trigger,
         }
         for j, t in enumerate(trades)
     ]
@@ -264,11 +307,11 @@ def _check_exit(
 ) -> tuple[str | None, float]:
     # Priority: stop-loss → take-profit → max-holding → sell signal
     if position.stop is not None and bar_low <= position.stop:
-        return "Stop loss", position.stop
+        return _vn_exit_label("stop_loss"), position.stop
     if position.take is not None and bar_high >= position.take:
-        return "Take profit", position.take
+        return _vn_exit_label("take_profit"), position.take
     if risk.max_holding is not None and held >= risk.max_holding:
-        return f"Time exit ({risk.max_holding})", price
+        return _vn_exit_label("time_exit"), price
     if sell.conditions and sell_sig[i]:
         return _format_trigger(frame, sell, i), price
     return None, price

@@ -76,7 +76,7 @@ def test_fixed_stop_loss():
     )
     assert run.kpis["n_trades"] == 1
     t = run.trades[0]
-    assert t["trigger"] == "Stop loss"
+    assert t["trigger"] == "Cắt lỗ"
     assert t["exit_price"] == 95.0  # entry 100 * (1-0.05)
     assert t["hold"] == 3  # first sellable bar where low<=95
 
@@ -85,7 +85,7 @@ def test_take_profit():
     data, frame = _mk([100, 101, 102, 111, 112], high=[100, 101, 102, 111, 112], buy_at=[0])
     run = run_backtest(data, frame, BUY, NO_SELL, _risk(take_profit_pct=0.10), capital=100_000, start_index=0)
     t = run.trades[0]
-    assert t["trigger"] == "Take profit"
+    assert t["trigger"] == "Chốt lời"
     assert t["exit_price"] == 110.0  # entry 100 * 1.10
     assert t["hold"] == 3
 
@@ -98,7 +98,7 @@ def test_atr_stop():
         data, frame, BUY, NO_SELL, _risk(stop_loss="atr", stop_atr_mult=2.0), capital=100_000, start_index=0
     )
     t = run.trades[0]
-    assert t["trigger"] == "Stop loss"
+    assert t["trigger"] == "Cắt lỗ"
     assert t["exit_price"] == 96.0
 
 
@@ -106,7 +106,7 @@ def test_max_holding_time_exit():
     data, frame = _mk([100, 100, 100, 100, 100, 100], buy_at=[0])
     run = run_backtest(data, frame, BUY, NO_SELL, _risk(max_holding=3), capital=100_000, start_index=0)
     t = run.trades[0]
-    assert t["trigger"] == "Time exit (3)"
+    assert t["trigger"] == "Hết thời gian giữ"
     assert t["hold"] == 3
 
 
@@ -116,7 +116,7 @@ def test_exit_priority_stop_over_signal():
     run = run_backtest(
         data, frame, BUY, SELL, _risk(stop_loss="fixed", stop_fixed_pct=0.05), capital=100_000, start_index=0
     )
-    assert run.trades[0]["trigger"] == "Stop loss"
+    assert run.trades[0]["trigger"] == "Cắt lỗ"
 
 
 def test_no_entry_when_cash_too_small():
