@@ -8,25 +8,55 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import { fmtNum, fmtPrice, fmtSignedPct } from "../format"
+import { Tooltip as ArcoTooltip } from "@arco-design/web-react"
+import { fmtNum, fmtPrice, fmtSignedPct, fmtDateVN } from "../format"
 import type { EquityPoint, Kpis, RunResult, Trade } from "../types"
+
+export function sharpeBand(s: number | null): string {
+  if (s == null) return "—"
+  if (s < 0) return "Tệ"
+  if (s < 1) return "Kém"
+  if (s <= 2) return "Tốt"
+  return "Rất tốt"
+}
+
+function SharpeTooltipContent({ sharpe }: { sharpe: number | null }) {
+  return (
+    <div className="max-w-[260px] space-y-1.5 p-1 text-[12px] leading-snug">
+      <p className="font-semibold">Sharpe ratio là gì?</p>
+      <p>Đo lường lợi nhuận kiếm được trên mỗi đơn vị rủi ro. Sharpe càng cao, chiến lược càng hiệu quả so với mức biến động.</p>
+      <ul className="space-y-0.5 pl-3 text-[11px]">
+        <li>{"< 0 → Tệ (tệ hơn không rủi ro)"}</li>
+        <li>{"0–1 → Kém"}</li>
+        <li>{"1–2 → Tốt"}</li>
+        <li>{"> 2 → Rất tốt"}</li>
+      </ul>
+      <p className="border-t border-[var(--color-border-2)] pt-1 font-semibold">
+        Chiến lược của bạn: {fmtNum(sharpe, 2)} → {sharpeBand(sharpe)}
+      </p>
+    </div>
+  )
+}
 
 function Kpi({
   label,
   value,
   sub,
   tone,
+  info,
 }: {
   label: string
   value: string
   sub?: string
   tone?: "pos" | "neg"
+  info?: React.ReactNode
 }) {
   const color = tone === "pos" ? "text-up" : tone === "neg" ? "text-down" : "text-[var(--color-text-1)]"
   return (
     <div className="border-r border-[var(--color-border-2)] px-4 py-4 last:border-r-0">
-      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-text-3)]">
+      <div className="flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-text-3)]">
         {label}
+        {info}
       </div>
       <div className={`mt-1.5 font-mono text-[20px] font-semibold ${color}`}>{value}</div>
       {sub && <div className="mt-0.5 font-mono text-[11px] text-[var(--color-text-3)]">{sub}</div>}
@@ -34,38 +64,55 @@ function Kpi({
   )
 }
 
-function KpiGrid({ kpis }: { kpis: Kpis }) {
-  const [lo, hi] = kpis.sharpe_ci
+export function KpiGrid({ kpis, meta }: { kpis: Kpis; meta: RunResult["meta"] }) {
+  const sharpeInfo = (
+    <ArcoTooltip
+      content={<SharpeTooltipContent sharpe={kpis.sharpe} />}
+      position="top"
+    >
+      <span
+        className="cursor-help select-none text-[10px] text-[var(--color-text-3)] hover:text-[var(--color-text-2)]"
+        aria-label="Giải thích Sharpe ratio"
+      >
+        ⓘ
+      </span>
+    </ArcoTooltip>
+  )
+
   return (
     <div className="grid grid-cols-2 border-b border-[var(--color-border-2)] md:grid-cols-3 lg:grid-cols-6">
       <Kpi
-        label="CAGR"
+        label="Lãi trung bình mỗi năm"
         value={fmtSignedPct(kpis.cagr)}
-        sub={`vs Buy-Hold ${fmtSignedPct(kpis.buy_hold_return)}`}
         tone={(kpis.cagr ?? 0) >= 0 ? "pos" : "neg"}
       />
       <Kpi
-        label="Sharpe"
-        value={fmtNum(kpis.sharpe)}
-        sub={lo != null && hi != null ? `[${fmtNum(lo)} — ${fmtNum(hi)}] 95% CI` : undefined}
-      />
-      <Kpi
-        label="Max Drawdown"
-        value={fmtSignedPct(kpis.max_drawdown)}
-        sub={kpis.dd_recovery_sessions != null ? `${kpis.dd_recovery_sessions} phiên hồi phục` : undefined}
-        tone="neg"
-      />
-      <Kpi
-        label="Win rate"
-        value={kpis.win_rate == null ? "—" : `${(kpis.win_rate * 100).toFixed(1)}%`}
-        sub={`${kpis.n_wins} / ${kpis.n_trades} trades`}
-      />
-      <Kpi label="Avg hold" value={fmtNum(kpis.avg_hold, 1)} sub="phiên giao dịch" />
-      <Kpi
-        label="Net return"
+        label="Tổng lãi sau phí + thuế"
         value={fmtSignedPct(kpis.net_return)}
-        sub="sau phí + thuế"
+        sub={`Trong ${((kpis.n_sessions ?? 0) / 252).toFixed(1)} năm`}
         tone={(kpis.net_return ?? 0) >= 0 ? "pos" : "neg"}
+      />
+      <Kpi
+        label="Lãi nếu chỉ mua và giữ"
+        value={fmtSignedPct(kpis.buy_hold_return)}
+        sub={`Mua ${fmtDateVN(meta.start)}, giữ đến nay`}
+        tone={(kpis.buy_hold_return ?? 0) >= 0 ? "pos" : "neg"}
+      />
+      <Kpi
+        label="Sharpe ratio"
+        value={fmtNum(kpis.sharpe, 2)}
+        sub="Đã điều chỉnh rủi ro"
+        info={sharpeInfo}
+      />
+      <Kpi
+        label="Tỷ lệ lệnh bán có lãi"
+        value={`${Math.round((kpis.win_rate ?? 0) * 100)}%`}
+        sub={`${kpis.n_wins} lệnh lãi / ${kpis.n_trades} lệnh đã đóng`}
+      />
+      <Kpi
+        label="Số phiên giữ trung bình"
+        value={`${kpis.avg_hold} phiên`}
+        sub={`~${((kpis.avg_hold ?? 0) / 20).toFixed(1)} tháng mỗi lệnh`}
       />
     </div>
   )
@@ -210,7 +257,7 @@ export function ResultsView({ result }: { result: RunResult }) {
           {meta.symbol} · {meta.start} → {meta.end} · {meta.n_sessions} phiên
         </span>
       </div>
-      <KpiGrid kpis={kpis} />
+      <KpiGrid kpis={kpis} meta={meta} />
       <EquityChart data={equity_curve} />
       <TradesTable trades={trades} />
     </div>
