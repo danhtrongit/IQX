@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from app.services.ta.conditions import Condition
+from app.services.ta.display_names import display_name
 
 
 @dataclass(slots=True, frozen=True)
@@ -488,6 +489,11 @@ CATALOG: tuple[Factor, ...] = (
         desc="Nến nhấn chìm giảm",
     ),
 )
+
+# Normalise every factor's label to the Vietnamese display name of its indicator.
+# Factor is frozen, so we use object.__setattr__ to set the label after construction.
+for _f in CATALOG:
+    object.__setattr__(_f, "label", display_name(_f.indicator))
 
 FACTORS_BY_ID: dict[str, Factor] = {f.id: f for f in CATALOG}
 

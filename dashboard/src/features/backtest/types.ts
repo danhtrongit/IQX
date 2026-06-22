@@ -75,9 +75,9 @@ export interface RiskInput {
   stop_fixed_pct: number
   take_profit_pct: number | null
   max_holding: number | null
-  position_size: "all" | "half" | "fixed"
+  position_size: "all" | "half" | "quarter" | "tenth" | "fixed"
   position_fixed_amount: number
-  fee: "standard" | "low"
+  fee: "standard" | "low" | "none"
 }
 
 export interface RunRequest {
@@ -109,6 +109,7 @@ export interface EquityPoint {
   date: string
   strategy: number
   buy_hold: number
+  vnindex?: number
 }
 
 export interface Trade {
@@ -120,6 +121,7 @@ export interface Trade {
   hold: number
   pnl_pct: number
   trigger: string
+  entry_trigger: string
 }
 
 export interface RunResult {
@@ -145,12 +147,12 @@ export interface Selection {
 }
 
 export const DEFAULT_RISK: RiskInput = {
-  stop_loss: "atr",
+  stop_loss: "fixed",
   stop_atr_mult: 2.0,
   stop_fixed_pct: 0.05,
-  take_profit_pct: null,
+  take_profit_pct: 0.15,
   max_holding: 60,
-  position_size: "all",
+  position_size: "half",
   position_fixed_amount: 10_000_000,
   fee: "standard",
 }

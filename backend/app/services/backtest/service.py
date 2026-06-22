@@ -22,6 +22,7 @@ _RESULT_TTL = 600  # cache a run for 10 minutes by config-hash
 _FEES = {
     "standard": (0.0015, 0.0025),  # buy 0.15%, sell 0.25% (incl. 0.1% tax)
     "low": (0.0010, 0.0010),
+    "none": (0.0, 0.0),  # zero-fee (simulation only)
 }
 
 
@@ -43,6 +44,37 @@ def _build_risk(r: RiskInput) -> RiskConfig:
         fee_buy=fee_buy,
         fee_sell=fee_sell,
     )
+
+
+def _attach_vnindex(
+    curve: list[dict],
+    vn_dates: list[str],
+    vn_closes: list[float],
+) -> list[dict]:
+    """Attach a ``vnindex`` field (base 100) to each equity-curve point.
+
+    The VN-Index series is aligned to the strategy curve by date with
+    forward-fill when a curve date is missing from the VN-Index data.
+    Returns the same list (mutated in-place) with ``vnindex`` added to each
+    point, or the list unchanged if ``vn_dates`` is empty.
+    """
+    if not vn_dates or not curve:
+        return curve
+
+    date_close: dict[str, float] = dict(zip(vn_dates, vn_closes))
+
+    # Determine base: close at the first curve date if present, else first vn close
+    first_date = curve[0]["date"]
+    base = date_close.get(first_date, vn_closes[0])
+
+    last_seen: float = base
+    for point in curve:
+        d = point["date"]
+        if d in date_close:
+            last_seen = date_close[d]
+        point["vnindex"] = round(last_seen / base * 100, 2)
+
+    return curve
 
 
 def _config_hash(req: BacktestRunRequest) -> str:
@@ -116,6 +148,15 @@ async def run_backtest_request(req: BacktestRunRequest, *, use_cache: bool = Tru
         },
         **run.to_dict(),
     }
+    # Attach VN-Index benchmark to each equity_curve point (base 100, forward-fill)
+    try:
+        vn_ohlcv, _ = await get_adjusted_ohlcv("VNINDEX", req.start, req.end)
+        vn_dates: list[str] = vn_ohlcv.time
+        vn_closes: list[float] = vn_ohlcv.close.tolist()
+        payload["equity_curve"] = _attach_vnindex(payload["equity_curve"], vn_dates, vn_closes)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("VN-Index benchmark fetch failed, equity_curve has no vnindex: %s", exc)
+
     if use_cache and run.kpis.get("n_sessions", 0) > 0:
         await cache_set_json(cache_key, payload, _RESULT_TTL)
     return payload

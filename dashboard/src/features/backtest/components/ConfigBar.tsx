@@ -1,4 +1,5 @@
 import { DatePicker, Input, InputNumber } from "@arco-design/web-react"
+import dayjs from "dayjs"
 
 interface Props {
   symbol: string
@@ -28,9 +29,9 @@ export function ConfigBar({ symbol, start, end, capital, onSymbol, onStart, onEn
       <div>
         <label className={labelCls}>Từ ngày</label>
         <DatePicker
-          value={start}
-          onChange={(v) => v && onStart(v)}
-          format="YYYY-MM-DD"
+          value={start ? dayjs(start) : undefined}
+          onChange={(_, d) => d && onStart(d.format("YYYY-MM-DD"))}
+          format="DD/MM/YYYY"
           allowClear={false}
           style={{ width: "100%" }}
         />
@@ -38,9 +39,9 @@ export function ConfigBar({ symbol, start, end, capital, onSymbol, onStart, onEn
       <div>
         <label className={labelCls}>Đến ngày</label>
         <DatePicker
-          value={end}
-          onChange={(v) => v && onEnd(v)}
-          format="YYYY-MM-DD"
+          value={end ? dayjs(end) : undefined}
+          onChange={(_, d) => d && onEnd(d.format("YYYY-MM-DD"))}
+          format="DD/MM/YYYY"
           allowClear={false}
           style={{ width: "100%" }}
         />

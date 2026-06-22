@@ -2,6 +2,9 @@ import { IconClose } from "@arco-design/web-react/icon"
 import { toDisplayValue, toStoredValue } from "../format"
 import type { Factor, Logic, Selection, Side } from "../types"
 
+export const BUY_TITLE = "▲ ĐIỀU KIỆN MUA"
+export const SELL_TITLE = "▼ ĐIỀU KIỆN BÁN"
+
 interface Props {
   factorsById: Record<string, Factor>
   buy: Selection[]
@@ -164,7 +167,7 @@ export function SignalPanels(props: Props) {
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <Panel
         side="buy"
-        title="▲ TÍN HIỆU MUA (entry)"
+        title={BUY_TITLE}
         selections={props.buy}
         logic={props.buyLogic}
         factorsById={props.factorsById}
@@ -174,7 +177,7 @@ export function SignalPanels(props: Props) {
       />
       <Panel
         side="sell"
-        title="▼ TÍN HIỆU BÁN (exit)"
+        title={SELL_TITLE}
         selections={props.sell}
         logic={props.sellLogic}
         factorsById={props.factorsById}
