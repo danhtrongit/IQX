@@ -9,17 +9,17 @@ interface Props {
 const labelCls = "mb-1 block text-[11px] text-[var(--color-text-3)]"
 
 const STOP_OPTIONS = [
-  { label: "3% (chặt)", value: "0.03" },
-  { label: "5% (cân bằng)", value: "0.05" },
-  { label: "8% (rộng)", value: "0.08" },
-  { label: "10% (rất rộng)", value: "0.10" },
+  { label: "3% (chặt)", value: (0.03).toFixed(2) },
+  { label: "5% (cân bằng)", value: (0.05).toFixed(2) },
+  { label: "8% (rộng)", value: (0.08).toFixed(2) },
+  { label: "10% (rất rộng)", value: (0.10).toFixed(2) },
 ]
 
 const TP_OPTIONS = [
-  { label: "10%", value: "0.10" },
-  { label: "15%", value: "0.15" },
-  { label: "20%", value: "0.20" },
-  { label: "30%", value: "0.30" },
+  { label: "10%", value: (0.10).toFixed(2) },
+  { label: "15%", value: (0.15).toFixed(2) },
+  { label: "20%", value: (0.20).toFixed(2) },
+  { label: "30%", value: (0.30).toFixed(2) },
   { label: "Theo tín hiệu", value: "null" },
 ]
 
@@ -43,8 +43,8 @@ const FEE_OPTIONS = [
 ]
 
 export function RiskConfig({ risk, onChange }: Props) {
-  const stopValue = String(risk.stop_fixed_pct ?? 0.05)
-  const tpValue = risk.take_profit_pct == null ? "null" : String(risk.take_profit_pct)
+  const stopValue = (risk.stop_fixed_pct ?? 0.05).toFixed(2)
+  const tpValue = risk.take_profit_pct == null ? "null" : risk.take_profit_pct.toFixed(2)
   const holdingValue = risk.max_holding == null ? "null" : String(risk.max_holding)
 
   return (

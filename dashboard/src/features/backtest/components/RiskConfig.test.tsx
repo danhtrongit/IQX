@@ -34,3 +34,19 @@ it("calls onChange with fixed stop_loss + pct when stop option changes", () => {
   fireEvent.click(option)
   expect(onChange).toHaveBeenCalledWith({ stop_loss: "fixed", stop_fixed_pct: 0.08 })
 })
+
+// Regression: String(0.10) === "0.1" but option value is "0.10" — the select must
+// show the correct label when the numeric value happens to be 0.10.
+it("stop-loss 10% and take-profit 10% presets render as selected (not blank)", () => {
+  const risk = {
+    ...DEFAULT_RISK,
+    stop_fixed_pct: 0.10,
+    take_profit_pct: 0.10,
+  }
+  render(<RiskConfig risk={risk} onChange={() => {}} />)
+  // Arco Design Select renders the selected option label inside the trigger button.
+  // If value doesn't match any option the trigger is blank; here both should show "10%…".
+  expect(screen.getByText("10% (rất rộng)")).toBeInTheDocument()
+  // TP dropdown: label is "10%"
+  expect(screen.getAllByText("10%").length).toBeGreaterThanOrEqual(1)
+})
