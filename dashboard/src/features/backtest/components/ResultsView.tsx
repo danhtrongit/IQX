@@ -1,3 +1,4 @@
+import React from "react"
 import {
   CartesianGrid,
   Legend,
@@ -228,9 +229,14 @@ function EquityChart({ data, symbol }: { data: EquityPoint[]; symbol: string }) 
   )
 }
 
-function TradesTable({ trades }: { trades: Trade[] }) {
-  const recent = [...trades].reverse().slice(0, 12)
-  if (!recent.length) {
+export function TradesTable({ trades }: { trades: Trade[] }) {
+  const [expanded, setExpanded] = React.useState(false)
+  const reversed = [...trades].reverse()
+  const total = reversed.length
+  const shown = expanded ? total : Math.min(12, total)
+  const visible = reversed.slice(0, shown)
+
+  if (!total) {
     return (
       <div className="border-t border-[var(--color-border-2)] p-4 text-xs italic text-[var(--color-text-3)]">
         Không có lệnh nào khớp với chiến lược trong khoảng thời gian này.
@@ -239,30 +245,47 @@ function TradesTable({ trades }: { trades: Trade[] }) {
   }
   return (
     <div className="border-t border-[var(--color-border-2)] p-4">
-      <div className="mb-3 text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-2)]">
-        {recent.length} lệnh gần nhất
+      <div className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-2)]">
+        <span>Lịch sử giao dịch</span>
+        <span className="font-normal normal-case text-[var(--color-text-3)]">
+          · Hiển thị {shown} / {total} lệnh
+        </span>
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="ml-1 font-normal normal-case text-[var(--color-brand-6,#165DFF)] underline-offset-2 hover:underline"
+        >
+          {expanded ? "Thu gọn" : "Xem tất cả"}
+        </button>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-[12px]">
           <thead>
             <tr className="text-[10.5px] uppercase tracking-wide text-[var(--color-text-3)]">
-              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-left">#</th>
-              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-left">Entry</th>
-              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-left">Giá vào</th>
-              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-left">Exit</th>
-              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-left">Giá ra</th>
-              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-right">Hold</th>
-              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-right">P&amp;L</th>
-              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-left">Trigger</th>
+              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-left">Lệnh #</th>
+              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-left">Ngày mua</th>
+              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-left">Lý do mua</th>
+              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-left">Giá mua</th>
+              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-left">Ngày bán</th>
+              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-left">Lý do bán</th>
+              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-left">Giá bán</th>
+              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-right">Số phiên giữ</th>
+              <th className="border-b border-[var(--color-border-2)] px-2.5 py-2 text-right">Lãi/Lỗ</th>
             </tr>
           </thead>
           <tbody className="font-mono">
-            {recent.map((t) => (
+            {visible.map((t) => (
               <tr key={t.idx} className="hover:bg-[var(--color-fill-1)]">
                 <td className="border-b border-[var(--color-border-1)] px-2.5 py-2">{t.idx}</td>
-                <td className="border-b border-[var(--color-border-1)] px-2.5 py-2">{t.entry_date}</td>
+                <td className="border-b border-[var(--color-border-1)] px-2.5 py-2">{fmtDateVN(t.entry_date)}</td>
+                <td className="border-b border-[var(--color-border-1)] px-2.5 py-2 text-[var(--color-text-2)]">
+                  {t.entry_trigger}
+                </td>
                 <td className="border-b border-[var(--color-border-1)] px-2.5 py-2">{fmtPrice(t.entry_price)}</td>
-                <td className="border-b border-[var(--color-border-1)] px-2.5 py-2">{t.exit_date}</td>
+                <td className="border-b border-[var(--color-border-1)] px-2.5 py-2">{fmtDateVN(t.exit_date)}</td>
+                <td className="border-b border-[var(--color-border-1)] px-2.5 py-2 text-[var(--color-text-2)]">
+                  {t.trigger}
+                </td>
                 <td className="border-b border-[var(--color-border-1)] px-2.5 py-2">{fmtPrice(t.exit_price)}</td>
                 <td className="border-b border-[var(--color-border-1)] px-2.5 py-2 text-right">{t.hold}</td>
                 <td
@@ -271,9 +294,6 @@ function TradesTable({ trades }: { trades: Trade[] }) {
                   }`}
                 >
                   {fmtSignedPct(t.pnl_pct)}
-                </td>
-                <td className="border-b border-[var(--color-border-1)] px-2.5 py-2 text-[var(--color-text-2)]">
-                  {t.trigger}
                 </td>
               </tr>
             ))}
