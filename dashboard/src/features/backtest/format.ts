@@ -33,3 +33,9 @@ export function toStoredValue(f: Factor, display: number): number {
 export function toDisplayValue(f: Factor, stored: number): number {
   return f.is_percent ? Number((stored * 100).toFixed(2)) : stored
 }
+
+export function fmtDateVN(iso: string): string {
+  if (!iso) return ""
+  const [y, m, d] = iso.slice(0, 10).split("-")
+  return d && m && y ? `${d}/${m}/${y}` : iso
+}

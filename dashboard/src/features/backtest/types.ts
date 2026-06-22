@@ -75,7 +75,7 @@ export interface RiskInput {
   stop_fixed_pct: number
   take_profit_pct: number | null
   max_holding: number | null
-  position_size: "all" | "half" | "fixed"
+  position_size: "all" | "half" | "quarter" | "tenth" | "fixed"
   position_fixed_amount: number
   fee: "standard" | "low"
 }
@@ -109,6 +109,7 @@ export interface EquityPoint {
   date: string
   strategy: number
   buy_hold: number
+  vnindex?: number
 }
 
 export interface Trade {
@@ -120,6 +121,7 @@ export interface Trade {
   hold: number
   pnl_pct: number
   trigger: string
+  entry_trigger: string
 }
 
 export interface RunResult {
