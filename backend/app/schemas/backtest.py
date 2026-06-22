@@ -27,7 +27,7 @@ class RiskInput(BaseModel):
     max_holding: int | None = 60
     position_size: Literal["all", "half", "quarter", "tenth", "fixed"] = "all"
     position_fixed_amount: float = 10_000_000.0
-    fee: Literal["standard", "low"] = "standard"
+    fee: Literal["standard", "low", "none"] = "standard"
 
 
 class BacktestRunRequest(BaseModel):

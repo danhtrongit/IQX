@@ -22,6 +22,7 @@ _RESULT_TTL = 600  # cache a run for 10 minutes by config-hash
 _FEES = {
     "standard": (0.0015, 0.0025),  # buy 0.15%, sell 0.25% (incl. 0.1% tax)
     "low": (0.0010, 0.0010),
+    "none": (0.0, 0.0),  # zero-fee (simulation only)
 }
 
 

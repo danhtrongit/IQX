@@ -77,7 +77,7 @@ export interface RiskInput {
   max_holding: number | null
   position_size: "all" | "half" | "quarter" | "tenth" | "fixed"
   position_fixed_amount: number
-  fee: "standard" | "low"
+  fee: "standard" | "low" | "none"
 }
 
 export interface RunRequest {
@@ -147,12 +147,12 @@ export interface Selection {
 }
 
 export const DEFAULT_RISK: RiskInput = {
-  stop_loss: "atr",
+  stop_loss: "fixed",
   stop_atr_mult: 2.0,
   stop_fixed_pct: 0.05,
-  take_profit_pct: null,
+  take_profit_pct: 0.15,
   max_holding: 60,
-  position_size: "all",
+  position_size: "half",
   position_fixed_amount: 10_000_000,
   fee: "standard",
 }
