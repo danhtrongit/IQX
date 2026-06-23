@@ -44,7 +44,8 @@ const EpisodeViewerPage = lazy(() =>
 
 function RedirectBacktestSymbol() {
   const { symbol } = useParams()
-  return <Navigate to={`/chien-luoc?tab=backtest&symbol=${symbol}`} replace />
+  const sym = (symbol ?? "").toUpperCase()
+  return <Navigate to={`/chien-luoc?tab=backtest&symbol=${sym}`} replace />
 }
 
 function PageLoader() {
