@@ -71,3 +71,22 @@ it("search spanning the other side auto-switches", () => {
   fireEvent.change(screen.getByPlaceholderText(/Tìm chỉ tiêu/), { target: { value: "RSI" } })
   expect(screen.getByText("RSI 14")).toBeInTheDocument() // switched to sell automatically
 })
+
+it("renders ⓘ trigger per buy factor row", () => {
+  render(<FactorLibrary library={lib as any} selectedIds={new Set()} onAdd={() => {}} />)
+  // MUA tab is default — one buy factor visible
+  const infoButtons = screen.getAllByLabelText("Thông tin chỉ báo")
+  expect(infoButtons.length).toBeGreaterThanOrEqual(1)
+})
+
+it("clicking ⓘ does NOT call onAdd; clicking factor label does", () => {
+  const onAdd = vi.fn()
+  render(<FactorLibrary library={lib as any} selectedIds={new Set()} onAdd={onAdd} />)
+  // Click the ⓘ button — must NOT add the factor
+  const infoBtn = screen.getByLabelText("Thông tin chỉ báo")
+  fireEvent.click(infoBtn)
+  expect(onAdd).not.toHaveBeenCalled()
+  // Click the factor row add-area — must add the factor
+  fireEvent.click(screen.getByRole("button", { name: /MA20/i }))
+  expect(onAdd).toHaveBeenCalledTimes(1)
+})

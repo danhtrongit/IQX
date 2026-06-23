@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
-import { IconSearch } from "@arco-design/web-react/icon"
+import { IconSearch, IconInfoCircle } from "@arco-design/web-react/icon"
+import { IndicatorInfoPopover } from "../../strategy/IndicatorInfoPopover"
 import type { Factor, FactorGroup, FactorLibrary as Lib } from "../types"
 
 interface Props {
@@ -39,21 +40,39 @@ function GroupBlock({
       {factors.map((f) => {
         const added = selectedIds.has(f.id)
         return (
-          <button
+          <div
             key={f.id}
-            type="button"
-            disabled={added}
-            onClick={() => onAdd(f)}
-            className={`flex w-full items-center justify-between gap-2 border-l-2 border-transparent py-1.5 pl-7 pr-4 text-left text-xs transition-colors ${
+            className={`flex w-full items-center gap-2 border-l-2 border-transparent py-1.5 pl-7 pr-4 text-xs transition-colors ${
               added
                 ? "cursor-default text-[var(--color-text-3)]"
                 : "text-[var(--color-text-2)] hover:bg-[var(--color-fill-2)] hover:text-[var(--color-text-1)]"
             }`}
           >
-            <span className="truncate">
-              {added && <span className="mr-1 text-[rgb(var(--primary-6))]">✓</span>}
-              {f.label}
-            </span>
+            {/* Add-action area — fills available space */}
+            <button
+              type="button"
+              disabled={added}
+              onClick={() => onAdd(f)}
+              className="flex min-w-0 flex-1 items-center justify-between gap-2 text-left"
+              aria-label={f.label}
+            >
+              <span className="truncate">
+                {added && <span className="mr-1 text-[rgb(var(--primary-6))]">✓</span>}
+                {f.label}
+              </span>
+            </button>
+            {/* ⓘ info button — sibling, not nested in the add button */}
+            <IndicatorInfoPopover indicatorId={f.indicator} label={f.label}>
+              <button
+                type="button"
+                aria-label="Thông tin chỉ báo"
+                onClick={(e) => { e.stopPropagation() }}
+                className="shrink-0 text-[var(--color-text-3)] transition-colors hover:text-[rgb(var(--primary-6))]"
+              >
+                <IconInfoCircle />
+              </button>
+            </IndicatorInfoPopover>
+            {/* NUM/BIN badge */}
             <span
               className={`shrink-0 rounded px-1.5 py-px font-mono text-[9.5px] ${
                 f.kind === "bin"
@@ -63,7 +82,7 @@ function GroupBlock({
             >
               {f.kind.toUpperCase()}
             </span>
-          </button>
+          </div>
         )
       })}
     </div>
