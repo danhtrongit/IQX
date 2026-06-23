@@ -16,7 +16,7 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
   )
 }
 
-function AlertsInner() {
+export function AlertsInner() {
   return (
     <div className="mx-auto flex max-w-[960px] flex-col gap-7 px-4 py-6">
       <div>
