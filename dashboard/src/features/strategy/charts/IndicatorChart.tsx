@@ -74,12 +74,359 @@ const SIG_PTS: [number, number][] = SIG_LINE_RAW.map((v, i) => [
 // crossover at index 5 (histogram flips from -1 → 1)
 const CROSS_IDX = 5
 
+// ─── Volatility (Bollinger Bands) synthetic data ──────────────────────────────
+
+// mid line (same as price, but smoother)
+const VOL_MID_PTS: [number, number][] = [
+  [10, 90], [21, 88], [32, 85], [43, 83], [54, 82], [65, 80],
+  [76, 79], [87, 78], [98, 76], [109, 74], [120, 73], [131, 72],
+  [142, 71], [153, 70], [164, 68], [175, 67], [186, 65], [197, 64],
+  [208, 62], [219, 60], [230, 59], [241, 57], [252, 55], [263, 53],
+]
+
+// bandwidth: wide at start, narrow in mid (squeeze), widen at end
+const VOL_BW: number[] = [
+  22, 20, 18, 16, 14, 12, 10, 8, 6, 5, 5, 6, 8, 10, 12, 15, 18, 20, 22, 24, 26, 26, 25, 24,
+]
+
+const VOL_UPPER_PTS: [number, number][] = VOL_MID_PTS.map(([x, y], i) => [x, y - VOL_BW[i]])
+const VOL_LOWER_PTS: [number, number][] = VOL_MID_PTS.map(([x, y], i) => [x, y + VOL_BW[i]])
+
+// ─── Volume synthetic data ────────────────────────────────────────────────────
+
+const VOL_BAR_COUNT = 24
+const VOL_BAR_W = 9
+const VOL_BAR_MARGIN = 2
+const VOL_TOTAL_W = VOL_BAR_COUNT * (VOL_BAR_W + VOL_BAR_MARGIN) - VOL_BAR_MARGIN
+const VOL_START_X = (280 - VOL_TOTAL_W) / 2
+const VOL_BASE_Y = 128
+
+// 24 bar heights (0–65 range); index 14 is the spike
+const VOL_BAR_HEIGHTS: number[] = [
+  28, 32, 25, 38, 30, 22, 35, 40, 28, 33, 26, 30,
+  35, 28, 72, 40, 34, 28, 36, 30, 25, 32, 28, 34,
+]
+const VOL_SPIKE_IDX = 14
+
+// volume MA (simple 5-period average)
+const VOL_MA_PTS: [number, number][] = VOL_BAR_HEIGHTS.map((_, i) => {
+  const lo = Math.max(0, i - 2)
+  const hi = Math.min(VOL_BAR_HEIGHTS.length - 1, i + 2)
+  const avg = VOL_BAR_HEIGHTS.slice(lo, hi + 1).reduce((s, v) => s + v, 0) / (hi - lo + 1)
+  const cx = VOL_START_X + i * (VOL_BAR_W + VOL_BAR_MARGIN) + VOL_BAR_W / 2
+  return [cx, VOL_BASE_Y - avg]
+})
+
+// OBV rising line (for obv/obv_ma_20 ids)
+const OBV_RAW: number[] = [
+  10, 14, 18, 15, 20, 24, 22, 28, 32, 30, 35, 40,
+  38, 44, 50, 48, 54, 60, 58, 64, 70, 68, 74, 80,
+]
+const OBV_PTS: [number, number][] = OBV_RAW.map((v, i) => [
+  VOL_START_X + i * (VOL_BAR_W + VOL_BAR_MARGIN) + VOL_BAR_W / 2,
+  120 - v * 0.9, // scale to 120–48 range
+])
+// OBV MA (5-period smooth)
+const OBV_MA_PTS: [number, number][] = OBV_RAW.map((_, i) => {
+  const lo = Math.max(0, i - 2)
+  const hi = Math.min(OBV_RAW.length - 1, i + 2)
+  const avg = OBV_RAW.slice(lo, hi + 1).reduce((s, v) => s + v, 0) / (hi - lo + 1)
+  return [
+    VOL_START_X + i * (VOL_BAR_W + VOL_BAR_MARGIN) + VOL_BAR_W / 2,
+    120 - avg * 0.9,
+  ]
+})
+
+// ─── Level-breakout synthetic data ────────────────────────────────────────────
+
+// price that approaches and then breaks a resistance level
+const LVL_PRICE_PTS: [number, number][] = [
+  [10, 110], [32, 105], [54, 100], [76, 97], [98, 93],
+  [120, 90], [142, 88], [164, 85], [186, 82], [208, 78],
+  [230, 75], [252, 68], [263, 52], // breakout above resistance
+]
+const LVL_RESISTANCE_Y = 75  // resistance level for high/breakout
+const LVL_SUPPORT_Y = 88     // support level for low/breakdown
+// breakout happens at index 12 (last point)
+const LVL_BREAK_X = 263
+const LVL_BREAK_RESISTANCE_Y = 52  // price above resistance (up breakout)
+const LVL_BREAK_SUPPORT_Y = 108    // price below support (down breakdown)
+
+// ─── Candlestick synthetic data ───────────────────────────────────────────────
+
+// Each candle: { x, open, high, low, close }
+// SVG y-axis: higher value = lower on screen; y=20 top, y=120 bottom
+
+interface Candle {
+  x: number
+  open: number
+  high: number
+  low: number
+  close: number
+}
+
+// helper to map price → svg y (price range 50–150 → svg 120–20)
+function priceToY(p: number): number {
+  return 120 - (p - 50) * (100 / 100) // (p-50)/100 * 100 mapped to 0–100 in svg
+}
+
+const CANDLES_HAMMER: Candle[] = [
+  { x: 40,  open: 95, high: 98, low: 70, close: 96 },  // prior bearish
+  { x: 80,  open: 94, high: 97, low: 68, close: 95 },  // bearish
+  { x: 120, open: 93, high: 96, low: 67, close: 94 },  // bearish
+  { x: 160, open: 76, high: 80, low: 55, close: 79 },  // hammer: long lower wick
+  { x: 200, open: 79, high: 92, low: 77, close: 90 },  // bullish confirmation
+]
+
+const CANDLES_BULL_ENGULFING: Candle[] = [
+  { x: 40,  open: 90, high: 93, low: 84, close: 85 },  // small red
+  { x: 80,  open: 88, high: 92, low: 82, close: 84 },  // small red
+  { x: 120, open: 87, high: 91, low: 81, close: 83 },  // small red (engulfed)
+  { x: 160, open: 80, high: 95, low: 78, close: 94 },  // big green engulfing
+  { x: 200, open: 94, high: 98, low: 90, close: 97 },  // bullish continuation
+]
+
+const CANDLES_BEAR_ENGULFING: Candle[] = [
+  { x: 40,  open: 78, high: 84, low: 76, close: 83 },  // small green
+  { x: 80,  open: 80, high: 86, low: 78, close: 85 },  // small green
+  { x: 120, open: 82, high: 88, low: 80, close: 87 },  // small green (engulfed)
+  { x: 160, open: 92, high: 94, low: 77, close: 78 },  // big red engulfing
+  { x: 200, open: 78, high: 80, low: 70, close: 72 },  // bearish continuation
+]
+
+const CANDLES_SHOOTING_STAR: Candle[] = [
+  { x: 40,  open: 78, high: 85, low: 76, close: 84 },  // bullish
+  { x: 80,  open: 84, high: 92, low: 82, close: 90 },  // bullish
+  { x: 120, open: 90, high: 97, low: 88, close: 95 },  // bullish
+  { x: 160, open: 95, high: 118, low: 93, close: 96 }, // shooting star: long upper wick
+  { x: 200, open: 95, high: 97, low: 82, close: 83 },  // bearish reversal
+]
+
 // default archetype: single diagonal line
 const DEFAULT_PTS: [number, number][] = [
   [10, 120], [90, 90], [140, 70], [200, 55], [270, 40],
 ]
 
 // ─── Sub-renderers ────────────────────────────────────────────────────────────
+
+function VolatilityMarks({ indicatorId }: { indicatorId: string }) {
+  const isSqueeze = indicatorId.includes("squeeze")
+  // For squeeze flavor use the squeeze-shaped bandwidth data (already encoded in VOL_BW)
+  // For non-squeeze, use a fixed wider band (offset the squeeze center)
+  const upperPts = isSqueeze
+    ? VOL_UPPER_PTS
+    : VOL_MID_PTS.map(([x, y]) => [x, y - 18] as [number, number])
+  const lowerPts = isSqueeze
+    ? VOL_LOWER_PTS
+    : VOL_MID_PTS.map(([x, y]) => [x, y + 18] as [number, number])
+  const bandPoly: [number, number][] = [
+    ...upperPts,
+    ...[...lowerPts].reverse(),
+  ]
+
+  return (
+    <>
+      {/* shaded band area */}
+      <polygon
+        points={toPath(bandPoly)}
+        fill="#2563EB"
+        fillOpacity="0.12"
+        stroke="none"
+      />
+      {/* upper band */}
+      <polyline
+        points={toPath(upperPts)}
+        fill="none"
+        stroke="#2563EB"
+        strokeWidth="1.2"
+        strokeDasharray="4 2"
+        strokeLinejoin="round"
+      />
+      {/* lower band */}
+      <polyline
+        points={toPath(lowerPts)}
+        fill="none"
+        stroke="#2563EB"
+        strokeWidth="1.2"
+        strokeDasharray="4 2"
+        strokeLinejoin="round"
+      />
+      {/* mid / price polyline */}
+      <polyline
+        points={toPath(VOL_MID_PTS)}
+        fill="none"
+        stroke="var(--color-text-3)"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </>
+  )
+}
+
+function VolumeMarks({ indicatorId }: { indicatorId: string }) {
+  const isObv = indicatorId === "obv" || indicatorId === "obv_ma_20"
+
+  if (isObv) {
+    return (
+      <>
+        {/* OBV rising line */}
+        <polyline
+          points={toPath(OBV_PTS)}
+          fill="none"
+          stroke="#2563EB"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+        {/* OBV MA */}
+        <polyline
+          points={toPath(OBV_MA_PTS)}
+          fill="none"
+          stroke="#ef4444"
+          strokeWidth="1.2"
+          strokeDasharray="4 2"
+          strokeLinejoin="round"
+        />
+        {/* end dot */}
+        <circle
+          cx={OBV_PTS[OBV_PTS.length - 1][0]}
+          cy={OBV_PTS[OBV_PTS.length - 1][1]}
+          r="3"
+          fill="#2563EB"
+        />
+      </>
+    )
+  }
+
+  return (
+    <>
+      {/* volume bars */}
+      {VOL_BAR_HEIGHTS.map((h, i) => {
+        const bx = VOL_START_X + i * (VOL_BAR_W + VOL_BAR_MARGIN)
+        const isSpike = i === VOL_SPIKE_IDX
+        return (
+          <rect
+            key={i}
+            x={bx}
+            y={VOL_BASE_Y - h}
+            width={VOL_BAR_W}
+            height={h}
+            fill={isSpike ? "#ef4444" : "#2563EB"}
+            fillOpacity={isSpike ? "0.85" : "0.5"}
+          />
+        )
+      })}
+      {/* volume MA polyline */}
+      <polyline
+        points={toPath(VOL_MA_PTS)}
+        fill="none"
+        stroke="#ef4444"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </>
+  )
+}
+
+function LevelBreakoutMarks({ indicatorId }: { indicatorId: string }) {
+  const isDown =
+    indicatorId.startsWith("low_") || indicatorId.includes("breakdown")
+  const levelY = isDown ? LVL_SUPPORT_Y : LVL_RESISTANCE_Y
+  const breakY = isDown ? LVL_BREAK_SUPPORT_Y : LVL_BREAK_RESISTANCE_Y
+  const color = isDown ? "#ef4444" : "#16a34a"
+
+  // triangle marker pointing up (breakout) or down (breakdown)
+  const triSize = 6
+  const triPoints = isDown
+    ? `${LVL_BREAK_X},${breakY + triSize * 2} ${LVL_BREAK_X - triSize},${breakY} ${LVL_BREAK_X + triSize},${breakY}`
+    : `${LVL_BREAK_X},${breakY - triSize * 2} ${LVL_BREAK_X - triSize},${breakY} ${LVL_BREAK_X + triSize},${breakY}`
+
+  return (
+    <>
+      {/* price polyline */}
+      <polyline
+        points={toPath(LVL_PRICE_PTS)}
+        fill="none"
+        stroke="var(--color-text-3)"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      {/* level line (resistance or support) */}
+      <line
+        x1="10" y1={levelY} x2="270" y2={levelY}
+        stroke={color}
+        strokeWidth="1.2"
+        strokeDasharray="5 3"
+      />
+      {/* breakout marker dot */}
+      <circle
+        cx={LVL_BREAK_X}
+        cy={breakY}
+        r="4"
+        fill={color}
+        fillOpacity="0.9"
+      />
+      {/* breakout triangle arrow */}
+      <polygon
+        points={triPoints}
+        fill={color}
+        fillOpacity="0.85"
+      />
+    </>
+  )
+}
+
+function CandlestickMarks({ indicatorId }: { indicatorId: string }) {
+  let candles: Candle[]
+  if (indicatorId === "bull_engulfing") {
+    candles = CANDLES_BULL_ENGULFING
+  } else if (indicatorId === "bear_engulfing") {
+    candles = CANDLES_BEAR_ENGULFING
+  } else if (indicatorId === "shooting_star") {
+    candles = CANDLES_SHOOTING_STAR
+  } else {
+    // default: hammer
+    candles = CANDLES_HAMMER
+  }
+
+  const bodyW = 22
+
+  return (
+    <>
+      {candles.map((c, i) => {
+        const openY = priceToY(c.open)
+        const closeY = priceToY(c.close)
+        const highY = priceToY(c.high)
+        const lowY = priceToY(c.low)
+        const isBull = c.close >= c.open
+        const color = isBull ? "#16a34a" : "#ef4444"
+        const bodyTop = Math.min(openY, closeY)
+        const bodyH = Math.max(Math.abs(closeY - openY), 2)
+        const midX = c.x
+
+        return (
+          <g key={i}>
+            {/* wick high–low */}
+            <line
+              x1={midX} y1={highY}
+              x2={midX} y2={lowY}
+              stroke={color}
+              strokeWidth="1.5"
+            />
+            {/* candle body */}
+            <rect
+              x={midX - bodyW / 2}
+              y={bodyTop}
+              width={bodyW}
+              height={bodyH}
+              fill={color}
+              fillOpacity="0.85"
+            />
+          </g>
+        )
+      })}
+    </>
+  )
+}
 
 function PriceMaMarks({ indicatorId }: { indicatorId: string }) {
   const showDeathCross = indicatorId === "death_cross"
@@ -289,6 +636,18 @@ export function IndicatorChart({
       break
     case "macd":
       marks = <MacdMarks />
+      break
+    case "volatility":
+      marks = <VolatilityMarks indicatorId={indicatorId} />
+      break
+    case "volume":
+      marks = <VolumeMarks indicatorId={indicatorId} />
+      break
+    case "level-breakout":
+      marks = <LevelBreakoutMarks indicatorId={indicatorId} />
+      break
+    case "candlestick":
+      marks = <CandlestickMarks indicatorId={indicatorId} />
       break
     default:
       marks = (
