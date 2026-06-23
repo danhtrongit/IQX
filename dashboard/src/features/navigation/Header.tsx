@@ -23,22 +23,15 @@ import { SymbolSearch } from "./SymbolSearch"
 import { IconCrown } from "./icons"
 
 type NavItem =
-  | { label: string; href: string; modal?: undefined; children?: undefined }
-  | { label: string; modal: true; href?: undefined; children?: undefined }
-  | { label: string; children: { label: string; href: string }[]; href?: undefined; modal?: undefined }
+  | { label: string; href: string; modal?: undefined }
+  | { label: string; modal: true; href?: undefined }
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "Trang chủ", href: "/" },
   { label: "Thị trường", modal: true },
   { label: "Bảng giá", href: "/bang-gia" },
   { label: "Cổ phiếu", href: "/co-phieu" },
-  {
-    label: "Chiến lược",
-    children: [
-      { label: "Cảnh báo", href: "/canh-bao" },
-      { label: "Backtest", href: "/backtest" },
-    ],
-  },
+  { label: "Chiến lược", href: "/chien-luoc" },
   { label: "Kiến thức", href: "/bai-hoc" },
   { label: "Giới thiệu", href: "/gioi-thieu" },
 ]
@@ -118,15 +111,6 @@ export function Header() {
                 if (item.modal) {
                   return <Menu.Item key="__market">{item.label}</Menu.Item>
                 }
-                if (item.children) {
-                  return (
-                    <Menu.SubMenu key="strategy" title={item.label}>
-                      {item.children.map((child) => (
-                        <Menu.Item key={child.href}>{child.label}</Menu.Item>
-                      ))}
-                    </Menu.SubMenu>
-                  )
-                }
                 return <Menu.Item key={item.href}>{item.label}</Menu.Item>
               })}
             </Menu>
@@ -154,35 +138,6 @@ export function Header() {
               >
                 {item.label}
               </button>
-            )
-          }
-          if (item.children) {
-            const active = item.children.some((child) => pathname === child.href)
-            return (
-              <Dropdown
-                key={item.label}
-                position="bl"
-                droplist={
-                  <Menu onClickMenuItem={(key) => navigate(key)}>
-                    {item.children.map((child) => (
-                      <Menu.Item key={child.href}>{child.label}</Menu.Item>
-                    ))}
-                  </Menu>
-                }
-              >
-                <button
-                  type="button"
-                  className="flex items-center gap-0.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
-                  style={
-                    active
-                      ? { background: "var(--color-primary-light-1)", color: "rgb(var(--primary-6))" }
-                      : { color: "var(--color-text-2)" }
-                  }
-                >
-                  {item.label}
-                  <IconDown className="text-[0.6rem]" />
-                </button>
-              </Dropdown>
             )
           }
           const active =
