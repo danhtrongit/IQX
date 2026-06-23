@@ -1,4 +1,5 @@
-import { IconClose } from "@arco-design/web-react/icon"
+import { IconClose, IconInfoCircle } from "@arco-design/web-react/icon"
+import { IndicatorInfoPopover } from "../../strategy/IndicatorInfoPopover"
 import { toDisplayValue, toStoredValue } from "../format"
 import type { Factor, Logic, Selection, Side } from "../types"
 
@@ -55,8 +56,20 @@ function IndicatorRow({
   return (
     <div className="mb-2 flex items-center justify-between gap-3 rounded-md border border-[var(--color-border-2)] bg-[var(--color-fill-1)] px-3 py-2.5">
       <div className="min-w-0">
-        <div className="truncate font-mono text-[12.5px] font-semibold text-[var(--color-text-1)]">
-          {factor.label}
+        <div className="flex items-center gap-1">
+          <span className="truncate font-mono text-[12.5px] font-semibold text-[var(--color-text-1)]">
+            {factor.label}
+          </span>
+          <IndicatorInfoPopover indicatorId={factor.indicator} label={factor.label}>
+            <button
+              type="button"
+              aria-label="Thông tin chỉ báo"
+              onClick={(e) => { e.stopPropagation() }}
+              className="shrink-0 text-[var(--color-text-3)] transition-colors hover:text-[rgb(var(--primary-6))]"
+            >
+              <IconInfoCircle />
+            </button>
+          </IndicatorInfoPopover>
         </div>
         {factor.kind === "bin" ? (
           <div className="mt-1 text-[11px] italic text-[var(--color-text-3)]">

@@ -1,5 +1,6 @@
-import { useState } from "react"
-import { IconSearch } from "@arco-design/web-react/icon"
+import { useState, useEffect } from "react"
+import { IconSearch, IconInfoCircle } from "@arco-design/web-react/icon"
+import { IndicatorInfoPopover } from "../../strategy/IndicatorInfoPopover"
 import type { Factor, FactorGroup, FactorLibrary as Lib } from "../types"
 
 interface Props {
@@ -39,21 +40,39 @@ function GroupBlock({
       {factors.map((f) => {
         const added = selectedIds.has(f.id)
         return (
-          <button
+          <div
             key={f.id}
-            type="button"
-            disabled={added}
-            onClick={() => onAdd(f)}
-            className={`flex w-full items-center justify-between gap-2 border-l-2 border-transparent py-1.5 pl-7 pr-4 text-left text-xs transition-colors ${
+            className={`flex w-full items-center gap-2 border-l-2 border-transparent py-1.5 pl-7 pr-4 text-xs transition-colors ${
               added
                 ? "cursor-default text-[var(--color-text-3)]"
                 : "text-[var(--color-text-2)] hover:bg-[var(--color-fill-2)] hover:text-[var(--color-text-1)]"
             }`}
           >
-            <span className="truncate">
-              {added && <span className="mr-1 text-[rgb(var(--primary-6))]">✓</span>}
-              {f.label}
-            </span>
+            {/* Add-action area — fills available space */}
+            <button
+              type="button"
+              disabled={added}
+              onClick={() => onAdd(f)}
+              className="flex min-w-0 flex-1 items-center justify-between gap-2 text-left"
+              aria-label={f.label}
+            >
+              <span className="truncate">
+                {added && <span className="mr-1 text-[rgb(var(--primary-6))]">✓</span>}
+                {f.label}
+              </span>
+            </button>
+            {/* ⓘ info button — sibling, not nested in the add button */}
+            <IndicatorInfoPopover indicatorId={f.indicator} label={f.label}>
+              <button
+                type="button"
+                aria-label="Thông tin chỉ báo"
+                onClick={(e) => { e.stopPropagation() }}
+                className="shrink-0 text-[var(--color-text-3)] transition-colors hover:text-[rgb(var(--primary-6))]"
+              >
+                <IconInfoCircle />
+              </button>
+            </IndicatorInfoPopover>
+            {/* NUM/BIN badge */}
             <span
               className={`shrink-0 rounded px-1.5 py-px font-mono text-[9.5px] ${
                 f.kind === "bin"
@@ -63,7 +82,7 @@ function GroupBlock({
             >
               {f.kind.toUpperCase()}
             </span>
-          </button>
+          </div>
         )
       })}
     </div>
@@ -72,6 +91,29 @@ function GroupBlock({
 
 export function FactorLibrary({ library, selectedIds, onAdd }: Props) {
   const [query, setQuery] = useState("")
+  const [side, setSide] = useState<"buy" | "sell">("buy")
+
+  const buyCount = library.buy.reduce((n, g) => n + g.factors.length, 0)
+  const sellCount = library.sell.reduce((n, g) => n + g.factors.length, 0)
+
+  // Search-spans-both: auto-switch side when query matches only the other side
+  useEffect(() => {
+    if (!query) return
+    const buyMatches = library.buy.reduce(
+      (n, g) => n + g.factors.filter((f) => matches(f, query)).length,
+      0,
+    )
+    const sellMatches = library.sell.reduce(
+      (n, g) => n + g.factors.filter((f) => matches(f, query)).length,
+      0,
+    )
+    if (side === "buy" && buyMatches === 0 && sellMatches > 0) {
+      setSide("sell")
+    } else if (side === "sell" && sellMatches === 0 && buyMatches > 0) {
+      setSide("buy")
+    }
+  }, [query, library, side])
+
   return (
     <aside className="flex h-full w-[300px] shrink-0 flex-col overflow-hidden border-r border-[var(--color-border-2)] bg-[var(--color-bg-2)]">
       <div className="sticky top-0 z-[5] border-b border-[var(--color-border-2)] bg-[var(--color-bg-2)] p-3">
@@ -87,29 +129,37 @@ export function FactorLibrary({ library, selectedIds, onAdd }: Props) {
             className="w-full rounded border border-[var(--color-border-2)] bg-[var(--color-bg-1)] py-1.5 pl-7 pr-2 text-xs text-[var(--color-text-1)] outline-none focus:border-[rgb(var(--primary-6))]"
           />
         </div>
+
+        {/* Segmented control */}
+        <div className="mt-2 flex overflow-hidden rounded border border-[var(--color-border-2)] text-[10.5px] font-semibold">
+          <button
+            type="button"
+            onClick={() => setSide("buy")}
+            className={`flex-1 py-1 transition-colors ${
+              side === "buy"
+                ? "bg-[rgb(var(--primary-6))] text-white"
+                : "bg-[var(--color-bg-1)] text-[var(--color-text-3)]"
+            }`}
+          >
+            ▲ Chỉ báo MUA ({buyCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => setSide("sell")}
+            className={`flex-1 py-1 transition-colors ${
+              side === "sell"
+                ? "bg-[rgb(var(--primary-6))] text-white"
+                : "bg-[var(--color-bg-1)] text-[var(--color-text-3)]"
+            }`}
+          >
+            ▼ Chỉ báo BÁN ({sellCount})
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="border-b border-[var(--color-border-2)] py-2">
-          <div className="flex items-center justify-between px-4 pb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-up">▲ Nhóm MUA</span>
-            <span className="font-mono text-[10px] text-[var(--color-text-3)]">
-              {library.buy.reduce((n, g) => n + g.factors.length, 0)}
-            </span>
-          </div>
-          {library.buy.map((g) => (
-            <GroupBlock key={g.group} group={g} selectedIds={selectedIds} onAdd={onAdd} query={query} />
-          ))}
-        </div>
-
         <div className="py-2">
-          <div className="flex items-center justify-between px-4 pb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-down">▼ Nhóm BÁN</span>
-            <span className="font-mono text-[10px] text-[var(--color-text-3)]">
-              {library.sell.reduce((n, g) => n + g.factors.length, 0)}
-            </span>
-          </div>
-          {library.sell.map((g) => (
+          {library[side].map((g) => (
             <GroupBlock key={g.group} group={g} selectedIds={selectedIds} onAdd={onAdd} query={query} />
           ))}
         </div>

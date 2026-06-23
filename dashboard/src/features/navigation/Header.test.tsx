@@ -35,50 +35,42 @@ vi.mock("./SymbolSearch", () => ({
 import { Header, NAV_ITEMS } from "./Header"
 
 describe("Header – NAV_ITEMS structure", () => {
-  it('has a "Chiến lược" group containing Cảnh báo and Backtest', () => {
-    const group = NAV_ITEMS.find(
-      (item) => "children" in item && item.label === "Chiến lược"
-    )
-    expect(group).toBeDefined()
-    expect(group).toHaveProperty("children")
-    if (!group || !("children" in group)) return
-
-    const { children } = group
-    expect(children).toHaveLength(2)
-    // Cảnh báo must be first (default)
-    expect(children[0]).toEqual({ label: "Cảnh báo", href: "/canh-bao" })
-    // Backtest second
-    expect(children[1]).toEqual({ label: "Backtest", href: "/backtest" })
+  it('has a single flat "Chiến lược" item pointing to /chien-luoc (no children)', () => {
+    const item = NAV_ITEMS.find((i) => i.label === "Chiến lược")
+    expect(item).toBeDefined()
+    expect(item).toEqual({ label: "Chiến lược", href: "/chien-luoc" })
+    // Must not have children
+    expect(item).not.toHaveProperty("children")
   })
 
-  it('no flat "Backtest" or "Cảnh báo" items remain at top level', () => {
-    const flat = NAV_ITEMS.filter(
-      (item) => !("children" in item) && (item.label === "Backtest" || item.label === "Cảnh báo")
+  it('no flat "/backtest" or "/canh-bao" nav items remain', () => {
+    const stale = NAV_ITEMS.filter(
+      (item) =>
+        "href" in item &&
+        (item.href === "/backtest" || item.href === "/canh-bao"),
     )
-    expect(flat).toHaveLength(0)
+    expect(stale).toHaveLength(0)
   })
 })
 
-describe("Header – renders Chiến lược trigger in desktop nav", () => {
-  it('shows "Chiến lược" button in the desktop nav at /backtest', () => {
+describe("Header – renders Chiến lược in desktop nav", () => {
+  it('shows "Chiến lược" button in the desktop nav at /chien-luoc', () => {
     render(
-      <MemoryRouter initialEntries={["/backtest"]}>
+      <MemoryRouter initialEntries={["/chien-luoc"]}>
         <Header />
       </MemoryRouter>
     )
-    // The desktop nav renders a "Chiến lược" button (trigger for the dropdown)
     const triggers = screen.getAllByRole("button", { name: /Chiến lược/i })
     expect(triggers.length).toBeGreaterThanOrEqual(1)
   })
 
-  it('"Chiến lược" button is active (primary color) when pathname is /backtest', () => {
+  it('"Chiến lược" button is active (primary color) when pathname starts with /chien-luoc', () => {
     render(
-      <MemoryRouter initialEntries={["/backtest"]}>
+      <MemoryRouter initialEntries={["/chien-luoc"]}>
         <Header />
       </MemoryRouter>
     )
     const trigger = screen.getAllByRole("button", { name: /Chiến lược/i })[0]
-    // Active style sets color to rgb(var(--primary-6))
     expect(trigger).toHaveStyle({ color: "rgb(var(--primary-6))" })
   })
 })

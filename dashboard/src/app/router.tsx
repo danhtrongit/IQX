@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react"
-import { Route, Routes } from "react-router"
+import { Navigate, Route, Routes, useParams } from "react-router"
 import { AppShell } from "./shell/AppShell"
 import { NotFoundPage, MaintenancePage } from "@/pages/placeholder"
 import { TopLoadingBar } from "@/shared/ui/TopLoadingBar"
@@ -29,11 +29,8 @@ const BangGiaPage = lazy(() =>
 const StockPage = lazy(() =>
   import("@/features/stock").then((m) => ({ default: m.StockPage })),
 )
-const BacktestPage = lazy(() =>
-  import("@/features/backtest").then((m) => ({ default: m.BacktestPage })),
-)
-const AlertsPage = lazy(() =>
-  import("@/features/alerts").then((m) => ({ default: m.AlertsPage })),
+const StrategyPage = lazy(() =>
+  import("@/features/strategy").then((m) => ({ default: m.StrategyPage })),
 )
 const CatalogPage = lazy(() =>
   import("@/features/lessons").then((m) => ({ default: m.CatalogPage })),
@@ -44,6 +41,12 @@ const CourseDetailPage = lazy(() =>
 const EpisodeViewerPage = lazy(() =>
   import("@/features/lessons").then((m) => ({ default: m.EpisodeViewerPage })),
 )
+
+function RedirectBacktestSymbol() {
+  const { symbol } = useParams()
+  const sym = (symbol ?? "").toUpperCase()
+  return <Navigate to={`/chien-luoc?tab=backtest&symbol=${sym}`} replace />
+}
 
 function PageLoader() {
   // Route chunk loading → top progress bar (no spinner).
@@ -64,15 +67,16 @@ export function AppRouter() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/gioi-thieu" element={<MarketingPage />} />
         <Route path="/co-phieu/:symbol" element={<StockPage />} />
-        <Route path="/backtest" element={<BacktestPage />} />
-        <Route path="/backtest/:symbol" element={<BacktestPage />} />
+        <Route path="/backtest" element={<Navigate to="/chien-luoc?tab=backtest" replace />} />
+        <Route path="/backtest/:symbol" element={<RedirectBacktestSymbol />} />
 
         {/* App shell */}
         <Route element={<AppShell />}>
           <Route path="/co-phieu" element={<StockDirectoryPage />} />
           <Route path="/bang-gia" element={<BangGiaPage />} />
           <Route path="/cai-dat" element={<SettingsPage />} />
-          <Route path="/canh-bao" element={<AlertsPage />} />
+          <Route path="/canh-bao" element={<Navigate to="/chien-luoc?tab=canh-bao" replace />} />
+          <Route path="/chien-luoc" element={<StrategyPage />} />
           <Route path="/nang-cap" element={<PremiumPage />} />
           <Route path="/thanh-toan/thanh-cong" element={<PaymentResultPage type="success" />} />
           <Route path="/thanh-toan/that-bai" element={<PaymentResultPage type="error" />} />
