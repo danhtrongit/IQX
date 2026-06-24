@@ -189,6 +189,7 @@ export function Header() {
               size="small"
               type="primary"
               status="warning"
+              className="!hidden sm:!inline-flex"
               icon={<IconCrown />}
               onClick={() => navigate("/nang-cap")}
             >
@@ -242,7 +243,7 @@ export function Header() {
                     {getInitials(user.fullName, user.email)}
                   </span>
                 </Avatar>
-                <span className="max-w-20 truncate text-xs font-medium">
+                <span className="hidden max-w-20 truncate text-xs font-medium sm:inline">
                   {user.fullName || user.email.split("@")[0]}
                 </span>
                 {isTrial && (
@@ -259,6 +260,7 @@ export function Header() {
             size="small"
             type="primary"
             status="warning"
+            className="!hidden sm:!inline-flex"
             icon={<IconCrown />}
             onClick={() => navigate("/nang-cap")}
           >

@@ -26,6 +26,7 @@ export function SymbolSearch() {
   }
 
   return (
+    <div className="w-28 min-w-0 shrink sm:w-44 md:w-60">
     <Select
       showSearch
       filterOption={false}
@@ -46,7 +47,7 @@ export function SymbolSearch() {
       }
       loading={isFetching}
       prefix={<IconSearch />}
-      style={{ width: 240 }}
+      style={{ width: "100%" }}
       arrowIcon={null}
       onSearch={setQuery}
       onChange={(value) => value && go(value)}
@@ -84,5 +85,6 @@ export function SymbolSearch() {
         </Option>
       ))}
     </Select>
+    </div>
   )
 }
