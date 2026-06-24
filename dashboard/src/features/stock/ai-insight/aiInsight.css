@@ -1,0 +1,53 @@
+/**
+ * AI Insight v2 — Editorial design tokens & typography
+ * Fixed-dark palette, scoped to .ai-insight-v2
+ */
+
+.ai-insight-v2 {
+  /* ============ COLOR TOKENS ============ */
+  --bg-0: #0c1118;
+  --bg-1: #121822;
+  --bg-2: #19212e;
+  --bg-3: #222b3a;
+  --border: #2a3445;
+  --border-soft: #1f2735;
+  --text-0: #ede6d6;
+  --text-1: #b5ad9b;
+  --text-2: #7a7869;
+  --text-3: #4a493f;
+  --bull: #7dd6a5;
+  --bull-deep: #5cb88a;
+  --bear: #e87a82;
+  --bear-deep: #c8636a;
+  --warn: #e8b369;
+  --neutral: #8b9099;
+  --info: #8eb8d4;
+  --gold: #d4a574;
+  --gold-deep: #b88c5c;
+  /* chart colors */
+  --chart-amber: #d97b3d;
+  --chart-cyan: #4ec9d4;
+  --chart-violet: #8b7fd4;
+  --chart-green: #1cb88a;
+  --chart-red: #e8556f;
+
+  /* ============ BASE TYPOGRAPHY ============ */
+  background: var(--bg-0);
+  color: var(--text-0);
+  font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Serif accent (Fraunces) */
+.ai-insight-v2 .serif {
+  font-family: 'Fraunces', serif;
+}
+
+/* Monospace numbers (JetBrains Mono with tabular numerals) */
+.ai-insight-v2 .num {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-variant-numeric: tabular-nums;
+}
