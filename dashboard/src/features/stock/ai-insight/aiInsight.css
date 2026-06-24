@@ -66,6 +66,46 @@ body[arco-theme='light'] .ai-insight-v2 {
   font-variant-numeric: tabular-nums;
 }
 
+/* ============ LOADING STATE ============ */
+.ai-insight-v2 .ai-loading-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0 20px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.ai-insight-v2 .ai-loading-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-0);
+}
+.ai-insight-v2 .ai-loading-sub {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-top: 2px;
+  line-height: 1.5;
+}
+/* Shimmer skeleton block */
+.ai-insight-v2 .skel {
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    var(--color-fill-2) 25%,
+    var(--color-fill-1) 37%,
+    var(--color-fill-2) 63%
+  );
+  background-size: 400% 100%;
+  animation: ai-skel-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes ai-skel-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-insight-v2 .skel { animation: none; }
+}
+
 /* ============ MASTHEAD ============ */
 .ai-insight-v2 .masthead {
   display: flex;

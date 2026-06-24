@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Spin } from '@arco-design/web-react'
 import './aiInsight.css'
 import { useStockAiInsight } from '../hooks'
 import { Masthead } from './Masthead'
@@ -8,52 +9,28 @@ import { LayerCard } from './LayerCard'
 import { LayerCharts } from './LayerCharts'
 import { NewsList } from './NewsList'
 
-/** Compact loading skeleton scoped inside .ai-insight-v2. */
-function LoadingSkeleton() {
+/**
+ * Loading state: an explicit spinner + message (the analyze call is an LLM
+ * request that can take ~30–60s) above an animated shimmer skeleton, so the
+ * user clearly sees it is working.
+ */
+function LoadingState({ symbol }: { symbol: string }) {
   return (
-    <div data-testid="ai-insight-skeleton" style={{ padding: '32px 24px' }}>
-      {/* Masthead placeholder */}
-      <div
-        style={{
-          height: 40,
-          borderRadius: 6,
-          background: 'var(--color-fill-2)',
-          marginBottom: 16,
-          opacity: 0.7,
-        }}
-      />
-      {/* HeaderStrip placeholder */}
-      <div
-        style={{
-          height: 72,
-          borderRadius: 8,
-          background: 'var(--color-fill-2)',
-          marginBottom: 16,
-          opacity: 0.6,
-        }}
-      />
-      {/* BriefingCard placeholder */}
-      <div
-        style={{
-          height: 220,
-          borderRadius: 8,
-          background: 'var(--color-fill-2)',
-          marginBottom: 24,
-          opacity: 0.5,
-        }}
-      />
-      {/* Layer placeholders */}
+    <div className="ai-insight-v2" data-testid="ai-insight-skeleton" style={{ padding: '24px' }}>
+      <div className="ai-loading-head">
+        <Spin />
+        <div>
+          <div className="ai-loading-title">AI đang phân tích {symbol}…</div>
+          <div className="ai-loading-sub">
+            Đang tổng hợp 6 lớp dữ liệu (xu hướng, thanh khoản, dòng tiền, nội bộ, tin tức).
+            Có thể mất khoảng 30–60 giây.
+          </div>
+        </div>
+      </div>
+      <div className="skel" style={{ height: 72, marginTop: 18, marginBottom: 16 }} />
+      <div className="skel" style={{ height: 220, marginBottom: 24 }} />
       {[1, 2, 3, 4, 5].map((i) => (
-        <div
-          key={i}
-          style={{
-            height: 80,
-            borderRadius: 8,
-            background: 'var(--color-fill-2)',
-            marginBottom: 12,
-            opacity: 0.4 - i * 0.04,
-          }}
-        />
+        <div key={i} className="skel" style={{ height: 80, marginBottom: 12 }} />
       ))}
     </div>
   )
@@ -66,12 +43,11 @@ export function AiInsightBriefing({ symbol }: { symbol: string }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { analyze() }, [])
 
-  if (isPending) {
-    return (
-      <div className="ai-insight-v2">
-        <LoadingSkeleton />
-      </div>
-    )
+  // Show the loading state while the request is in flight AND for the initial
+  // render before analyze() fires (isPending is still false then) — avoids a
+  // blank flash. Only the error / loaded branches below take over.
+  if (isPending || (!insight && !isError)) {
+    return <LoadingState symbol={symbol} />
   }
 
   if (isError) {
