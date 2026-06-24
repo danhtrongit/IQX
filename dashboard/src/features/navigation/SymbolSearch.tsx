@@ -61,7 +61,7 @@ export function SymbolSearch() {
         }
       }}
       triggerProps={{ autoAlignPopupWidth: false }}
-      dropdownMenuStyle={{ maxHeight: 320, minWidth: 320 }}
+      dropdownMenuStyle={{ maxHeight: 320, minWidth: 280, maxWidth: "calc(100vw - 24px)" }}
     >
       {results.map((stock) => (
         <Option key={stock.symbol} value={stock.symbol}>

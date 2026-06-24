@@ -21,9 +21,9 @@
   --text-2: var(--color-text-3);
   --text-3: var(--color-text-4);
   --bull: var(--color-up);
-  --bull-deep: var(--color-up);
+  --bull-deep: color-mix(in srgb, var(--color-up) 72%, #000);
   --bear: var(--color-down);
-  --bear-deep: var(--color-down);
+  --bear-deep: color-mix(in srgb, var(--color-down) 72%, #000);
   --warn: var(--color-reference);
   --neutral: var(--color-text-3);
   --info: rgb(var(--primary-6));
@@ -50,6 +50,7 @@
 body[arco-theme='light'] .ai-insight-v2 {
   --gold: #a9762e;
   --gold-deep: #8a5f24;
+  --warn: #92650a; /* darker amber: legible small-text contrast on light surfaces */
 }
 
 /* Serif accent (Fraunces) */
@@ -283,7 +284,7 @@ body[arco-theme='light'] .ai-insight-v2 {
 .ai-insight-v2 .diff-block {
   border-left: 2px solid var(--gold);
   padding: 12px 18px;
-  background: rgba(212, 165, 116, 0.04);
+  background: color-mix(in srgb, var(--gold) 5%, transparent);
   margin-bottom: 28px;
   display: flex;
   gap: 14px;
@@ -503,7 +504,7 @@ body[arco-theme='light'] .ai-insight-v2 {
 .ai-insight-v2 .layer-diff {
   margin-top: 16px;
   padding: 10px 14px;
-  background: rgba(212, 165, 116, 0.05);
+  background: color-mix(in srgb, var(--gold) 6%, transparent);
   border-left: 2px solid var(--gold);
   display: flex;
   gap: 12px;
@@ -572,7 +573,7 @@ body[arco-theme='light'] .ai-insight-v2 {
   font-size: 10px;
   text-transform: uppercase;
   color: var(--gold);
-  background: rgba(212, 165, 116, 0.08);
+  background: color-mix(in srgb, var(--gold) 12%, transparent);
   padding: 3px 7px;
   white-space: nowrap;
   letter-spacing: 0.05em;
