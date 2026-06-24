@@ -417,6 +417,197 @@
   color: var(--bear);
 }
 
+/* ============ LAYER CARD (L1–L5) ============ */
+.ai-insight-v2 .layer {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 22px 26px;
+  margin-bottom: 14px;
+}
+.ai-insight-v2 .layer-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+}
+.ai-insight-v2 .layer-title {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+}
+.ai-insight-v2 .layer-num {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+}
+.ai-insight-v2 .layer-name {
+  font-family: 'Fraunces', serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--text-0);
+}
+.ai-insight-v2 .layer-status {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.ai-insight-v2 .status-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Field list */
+.ai-insight-v2 .field-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ai-insight-v2 .field-row {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 18px;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.ai-insight-v2 .field-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--text-2);
+  letter-spacing: 0.06em;
+  padding-top: 1px;
+}
+.ai-insight-v2 .field-value {
+  color: var(--text-0);
+}
+
+/* Layer diff (compact version at bottom of layer card) */
+.ai-insight-v2 .layer-diff {
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: rgba(212, 165, 116, 0.05);
+  border-left: 2px solid var(--gold);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+/* ============ CHART BLOCK ============ */
+.ai-insight-v2 .chart-block {
+  background: var(--bg-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 3px;
+  padding: 18px 16px 12px;
+  margin-top: 20px;
+}
+.ai-insight-v2 .chart-block-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--gold);
+  letter-spacing: 0.12em;
+  margin-bottom: 14px;
+}
+.ai-insight-v2 .chart-block-canvas {
+  width: 100%;
+}
+.ai-insight-v2 .chart-block-legend {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--text-2);
+}
+
+/* ============ NEWS LIST (L5) ============ */
+.ai-insight-v2 .news-list {
+  margin-top: 16px;
+}
+.ai-insight-v2 .news-material {
+  display: flex;
+  flex-direction: column;
+}
+.ai-insight-v2 .news-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  padding: 6px 0;
+  align-items: start;
+}
+.ai-insight-v2 .news-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ai-insight-v2 .news-title {
+  font-size: 13px;
+  color: var(--text-0);
+  line-height: 1.45;
+}
+.ai-insight-v2 .news-subtitle {
+  font-size: 11px;
+  color: var(--text-2);
+}
+.ai-insight-v2 .news-tag {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(212, 165, 116, 0.08);
+  padding: 3px 7px;
+  white-space: nowrap;
+  letter-spacing: 0.05em;
+}
+
+/* Filler news inline list */
+.ai-insight-v2 .news-filler-list {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.ai-insight-v2 .news-filler-list .filler-item {
+  display: inline-block;
+  margin-right: 12px;
+  margin-bottom: 4px;
+}
+.ai-insight-v2 .news-filler-list .filler-tag {
+  margin-left: 4px;
+  font-size: 10px;
+  background: var(--bg-3);
+  color: var(--text-2);
+  padding: 1px 5px;
+}
+
+/* ============ ROLE TAG (L4) ============ */
+.ai-insight-v2 .role-tag {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+.ai-insight-v2 .role-tag.senior {
+  background: rgba(141, 184, 212, 0.12);
+  color: var(--info);
+}
+.ai-insight-v2 .role-tag.major {
+  background: rgba(139, 144, 153, 0.12);
+  color: var(--neutral);
+}
+.ai-insight-v2 .role-tag.related {
+  background: rgba(122, 120, 105, 0.10);
+  color: var(--text-2);
+}
+
 /* Responsive */
 @media (max-width: 720px) {
   .ai-insight-v2 .briefing {
@@ -431,5 +622,9 @@
   }
   .ai-insight-v2 .verdict-word {
     font-size: 24px;
+  }
+  .ai-insight-v2 .field-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
   }
 }
