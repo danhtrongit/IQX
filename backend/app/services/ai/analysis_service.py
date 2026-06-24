@@ -28,6 +28,9 @@ import re
 from datetime import UTC, datetime
 from typing import Any
 
+from app.core.database import get_session_factory
+from app.services.ai.insight_history import load_prev_insight, save_insight
+from app.services.ai.insight_response import build_insight_response
 from app.services.ai.payloads import (
     build_bctc_ai_payload,
     build_dashboard_payload,
@@ -211,13 +214,12 @@ async def analyze_industry(
 async def analyze_insight(
     *, symbol: str, language: str = "vi", include_payload: bool = False,
 ) -> dict[str, Any]:
-    """Run stock insight AI analysis for a specific symbol.
+    """Run stock insight AI analysis for a specific symbol (v2).
 
-    Returns structured JSON matching the frontend InsightResponse interface:
-    { symbol, timestamp, layers, rawInput, dataSummary, summary }
+    Returns structured JSON matching the v2 AIInsightResponse contract:
+    { symbol, updatedAt, header, briefing, layers:{L1..L5}, rawInput, dataSummary }
     """
     import json as _json
-    import re
 
     sym = symbol.upper()
 
@@ -228,70 +230,65 @@ async def analyze_insight(
         logger.debug("AI insight analysis cache HIT: %s", cache_key)
         return cached
 
-    # ── Build payload & call AI ────────────────────
-    prompt = load_prompt("insight")
+    # ── Build payload ──────────────────────────────
     payload = await build_insight_payload(symbol=sym, language=language)
-    payload_json = payload_to_json(payload)
+    payload["rawInput"] = _build_raw_input(payload)
 
-    analysis_text, model_used = await chat_completion(
-        system_prompt=prompt,
-        user_content=payload_json,
-    )
+    # ── Open DB session: load prev + call AI + save ─
+    from datetime import date
 
-    # ── Parse structured JSON from AI response ─────
-    # Strip markdown code fences if present
-    cleaned = analysis_text.strip()
-    cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
-    cleaned = re.sub(r"\s*```$", "", cleaned)
-    cleaned = cleaned.strip()
+    factory = get_session_factory()
+    async with factory() as db:
+        today = date.today()
+        prev = await load_prev_insight(db, sym, today)
 
-    try:
-        ai_json = _json.loads(cleaned)
-    except _json.JSONDecodeError:
-        logger.warning("AI insight returned non-JSON, wrapping as text")
-        ai_json = {
-            "layers": {
-                "trend": {"label": "Xu hướng", "output": {"text": analysis_text}},
-                "liquidity": {"label": "Thanh khoản", "output": {}},
-                "moneyFlow": {"label": "Dòng tiền", "output": {}},
-                "insider": {"label": "Nội bộ", "output": {}},
-                "news": {"label": "Tin tức", "output": {}},
-                "decision": {"label": "Tổng hợp & Hành động", "output": {"Tổng quan": analysis_text}},
-            },
-            "summary": {"trend": "—", "state": "—", "action": "—", "confidence": 0, "reversalProbability": 0},
-        }
+        # Build user content: payload JSON + PHIÊN TRƯỚC block
+        payload_json = payload_to_json(payload)
+        prev_block = "\n\nPHIÊN TRƯỚC:\n" + _json.dumps(prev or {}, ensure_ascii=False)
+        user_content = payload_json + prev_block
 
-    layers = ai_json.get("layers", {})
-    summary = ai_json.get("summary", {})
+        analysis_text, model_used = await chat_completion(
+            system_prompt=load_prompt("insight"),
+            user_content=user_content,
+        )
 
-    # ── Build rawInput from payload ────────────────
-    raw_input = _build_raw_input(payload)
+        # ── Parse structured JSON from AI response ─────
+        # Strip markdown code fences if present
+        cleaned = analysis_text.strip()
+        cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+        cleaned = re.sub(r"\s*```$", "", cleaned)
+        cleaned = cleaned.strip()
 
-    # ── Layer 6 — deterministic scoring (see scoring.py) ──
-    from app.services.ai.scoring import score_all_layers
+        try:
+            ai_json = _json.loads(cleaned)
+        except _json.JSONDecodeError:
+            logger.warning("AI insight returned non-JSON, using minimal v2 fallback")
+            ai_json = {
+                "L1": {"xu_huong": "—", "statusLabel": "—", "diff": "lần đầu"},
+                "L2": {"thanh_khoan": "—", "statusLabel": "—", "diff": "lần đầu"},
+                "L3": {"khoi_ngoai": "—", "statusLabel": "—", "diff": "lần đầu"},
+                "L4": {"noi_bo": "—", "statusLabel": "—", "diff": "lần đầu"},
+                "L5": {"tong_quan": analysis_text[:500], "statusLabel": "—", "diff": "lần đầu"},
+                "L6": {
+                    "trend": "—",
+                    "status": "—",
+                    "timeframe": "—",
+                    "narrative": analysis_text[:500],
+                    "diff": "lần đầu",
+                    "observations": {},
+                    "watchLevels": [],
+                    "recommendation": "Quan sát thêm",
+                },
+            }
 
-    layer_scores, layer6_agg = score_all_layers(layers)
-    for key, sc in layer_scores.items():
-        if isinstance(layers.get(key), dict):
-            layers[key]["status"] = sc["status"]
-            layers[key]["score"] = sc["score"]
-    enriched_summary = {**summary, **layer6_agg}
+        # ── Build v2 response ──────────────────────
+        result = build_insight_response(ai_json, payload, prev)
+        result["dataSummary"] = {"model": model_used, "as_of": result["updatedAt"]}
 
-    # ── Assemble final response ────────────────────
-    now_str = datetime.now(UTC).isoformat()
-    result: dict[str, Any] = {
-        "symbol": sym,
-        "timestamp": now_str,
-        "layers": layers,
-        "rawInput": raw_input,
-        "dataSummary": {
-            "model": model_used,
-            "as_of": now_str,
-        },
-        "summary": enriched_summary,
-    }
+        # ── Persist RAW ai_json (so next session's PHIÊN TRƯỚC matches prompt schema) ─
+        await save_insight(db, sym, today, ai_json)
 
-    # Cache result (without large payload)
+    # ── Cache result ───────────────────────────────
     await _cache_set_analysis(cache_key, result, analysis_type="insight")
 
     if include_payload:
