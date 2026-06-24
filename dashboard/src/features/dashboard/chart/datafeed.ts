@@ -13,6 +13,7 @@ import {
   getVietnamDateStartTimestamp,
 } from "./timezone"
 import { INDEX_SYMBOLS } from "./market-symbols"
+import { extractSearchItems } from "./search-utils"
 
 // ── News mark types (exported for popover) ──
 
@@ -399,12 +400,11 @@ export function createDataFeed(): any {
               include_indices: true,
             },
           })
-          .json<{ data?: any[] } | any[]>()
+          .json<unknown>()
 
-        const items =
-          (json as { data?: any[] })?.data ?? (Array.isArray(json) ? json : [])
+        const items = extractSearchItems(json)
 
-        const results = (Array.isArray(items) ? items : []).map((item: any) => {
+        const results = items.map((item: any) => {
           const symbol = (item.symbol || item.ticker || "").toUpperCase()
           const isIndex = INDEX_SYMBOLS.has(symbol)
           return {
