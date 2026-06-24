@@ -1,12 +1,12 @@
 import { api, unwrap } from "@/shared/http/client"
 import type {
+  AIInsightResponse,
   BctcAi,
   BctcPayload,
   CompanyProfile,
   FinancialRatioSnapshot,
   FinReport,
   FinReportType,
-  InsightResponse,
   Manager,
   RatioRow,
   Shareholder,
@@ -196,13 +196,13 @@ export const stockApi = {
    * Premium: 6-layer AI insight. Uses the POST endpoint (premium-gated) with
    * `include_payload` so the detail panels can render the raw-input charts.
    */
-  analyzeInsight: async (symbol: string): Promise<InsightResponse> => {
+  analyzeInsight: async (symbol: string): Promise<AIInsightResponse> => {
     const res = await api
       .post("ai/insight/analyze", {
         json: { symbol: symbol.toUpperCase(), language: "vi", include_payload: true },
         timeout: 120_000,
       })
-      .json<{ data?: InsightResponse } | InsightResponse>()
-    return (unwrap(res as never) ?? res) as InsightResponse
+      .json<{ data?: AIInsightResponse } | AIInsightResponse>()
+    return (unwrap(res as never) ?? res) as AIInsightResponse
   },
 }

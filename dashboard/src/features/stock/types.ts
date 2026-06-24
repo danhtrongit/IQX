@@ -267,3 +267,107 @@ export interface InsightResponse {
     totalPower?: number
   }
 }
+
+/* ── AI Insight v2 (Briefing data contract) ────────────────────────────────── */
+
+/** Rich text fragment for narrative, diff, and observations. */
+export type NarrativeFragment =
+  | { type: 'text'; content: string }
+  | { type: 'emphasis'; content: string; variant: 'bull' | 'bear' | 'warn' | 'info' }
+  | { type: 'number'; content: string }
+  | { type: 'highlight'; content: string }
+
+/** Stock header with current price and metadata. */
+export interface StockHeader {
+  symbol: string
+  sector: string
+  indexGroup: string
+  price: number
+  changePercent: number
+  high: number
+  low: number
+  volume: string
+  isLive: boolean
+}
+
+/** L6 briefing card — the hero/main content. */
+export interface BriefingCard {
+  updatedAt: string
+
+  // Khối 1
+  trend: string
+  status: string
+  statusVariant: 'bull' | 'warn' | 'bear' | 'neutral'
+  timeframe: string
+
+  // Khối 2 — narrative
+  narrative: NarrativeFragment[]
+
+  // Khối 3 — diff
+  diff: {
+    text: NarrativeFragment[]
+    hasChange: boolean
+    isFirstAnalysis: boolean
+  }
+
+  // Khối 4 — 5 observations
+  observations: {
+    liquidity: NarrativeFragment[]
+    moneyFlow: NarrativeFragment[]
+    insider: NarrativeFragment[]
+    news: NarrativeFragment[]
+    supportResistance: NarrativeFragment[]
+  }
+
+  // Khối 5 — watch levels
+  watchLevels: [
+    { tag: string; description: string },
+    { tag: string; description: string },
+  ]
+
+  // Khối 6 — recommendation
+  recommendation:
+    | 'Chờ điểm mua'
+    | 'Có thể mua thử'
+    | 'Quan sát thêm'
+    | 'Nên giảm bớt'
+    | 'Bán bớt'
+}
+
+/** L1–L5 layer card (detail panel). */
+export interface LayerCard {
+  layerNum: 'L1' | 'L2' | 'L3' | 'L4' | 'L5'
+  layerName: string
+  statusLabel: string
+  statusLevel: 1 | 2 | 3 | 4 | 5
+  fields: { label: string; value: NarrativeFragment[] }[]
+  chart?: {
+    title: string
+    data: Record<string, unknown>
+  }
+  diff: {
+    text: NarrativeFragment[]
+    hasChange: boolean
+  }
+  /** Structured news — only present on L5. */
+  news?: {
+    material: { title: string; subtitle?: string; tag: string }[]
+    filler: { title: string; tag: string }[]
+  }
+}
+
+/** Complete v2 AI Insight response from backend. */
+export interface AIInsightResponse {
+  symbol: string
+  updatedAt: string
+  header: StockHeader
+  briefing: BriefingCard
+  layers: {
+    L1: LayerCard
+    L2: LayerCard
+    L3: LayerCard
+    L4: LayerCard
+    L5: LayerCard
+  }
+  rawInput: InsightRawInput
+}

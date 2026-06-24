@@ -2,7 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import { usePremiumStatus } from "@/features/premium"
 import { stockApi } from "./api"
 import { stockKeys } from "./keys"
-import type { FinReportType, InsightResponse } from "./types"
+import type { AIInsightResponse, FinReportType } from "./types"
 
 /** Company overview + ratio + shareholders + officers (composite). */
 export function useStockOverview(symbol: string) {
@@ -87,7 +87,7 @@ export function isIndexSymbol(symbol: string): boolean {
  * Returns the data alongside `analyze`/`isPending`/`error` for the component.
  */
 export function useStockAiInsight(symbol: string) {
-  const mutation = useMutation<InsightResponse, Error>({
+  const mutation = useMutation<AIInsightResponse, Error>({
     mutationKey: stockKeys.aiInsight(symbol),
     mutationFn: () => stockApi.analyzeInsight(symbol),
   })

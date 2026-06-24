@@ -3,7 +3,7 @@ export { StockPage } from "./StockPage"
 export { StockOverview } from "./components/StockOverview"
 export { StockFinancials } from "./components/StockFinancials"
 export { BctcAnalysis } from "./components/BctcAnalysis"
-export { StockAiInsight } from "./components/StockAiInsight"
+export { AiInsightBriefing } from "./ai-insight"
 
 export {
   useStockOverview,
@@ -29,5 +29,4 @@ export type {
   RatioRow,
   BctcPayload,
   BctcAi,
-  InsightResponse,
 } from "./types"

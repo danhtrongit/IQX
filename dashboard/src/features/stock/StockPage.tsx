@@ -1,12 +1,7 @@
 import { useCallback, useState, type ComponentType } from "react"
 import { useNavigate, useParams } from "react-router"
-import { AnimatePresence, motion, useDragControls } from "framer-motion"
-import { Button } from "@arco-design/web-react"
-import {
-  IconClose,
-  IconDragDotVertical,
-  IconInfoCircle,
-} from "@arco-design/web-react/icon"
+import { Modal } from "@arco-design/web-react"
+import { IconInfoCircle } from "@arco-design/web-react/icon"
 import { SymbolProvider, useSymbol } from "@/shared/contexts/symbol-context"
 import { useTheme } from "@/shared/theme/ThemeProvider"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
@@ -22,9 +17,9 @@ import { cn } from "@/shared/lib/cn"
 import { IconCandlestick } from "@/shared/icons"
 import { BctcAnalysis } from "./components/BctcAnalysis"
 import { OrderBook } from "./components/OrderBook"
-import { StockAiInsight } from "./components/StockAiInsight"
 import { StockFinancials } from "./components/StockFinancials"
 import { StockOverview } from "./components/StockOverview"
+import { AiInsightBriefing } from "./ai-insight"
 import { IconBars } from "./icons"
 
 type StockTab = "chart" | "overview" | "financials" | "orderbook"
@@ -51,7 +46,6 @@ function StockTerminal() {
   const [activeTab, setActiveTab] = useState<StockTab>("chart")
   const [activeMarkId, setActiveMarkId] = useState<string | number | null>(null)
   const [aiInsightOpen, setAiInsightOpen] = useState(false)
-  const dragControls = useDragControls()
 
   const handleSymbolChanged = useCallback(
     (newSymbol: string) => {
@@ -146,65 +140,25 @@ function StockTerminal() {
         onClose={() => setActiveMarkId(null)}
       />
 
-      {/* Draggable AI Insight window */}
-      <AnimatePresence>
-        {aiInsightOpen && (
-          <div className="pointer-events-none fixed inset-0 z-[100] overflow-hidden">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.92, y: 24 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.92, y: 24 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              drag
-              dragControls={dragControls}
-              dragListener={false}
-              dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
-              dragMomentum={false}
-              dragElastic={0.05}
-              className="pointer-events-auto absolute flex flex-col overflow-hidden rounded-xl border border-[var(--color-border-2)] bg-[var(--color-bg-1)] shadow-2xl"
-              style={{
-                width: "min(1100px, calc(100vw - 16px))",
-                height: "min(700px, calc(100vh - 24px))",
-                top: "max(8px, calc(50vh - min(350px, 50vh - 12px)))",
-                left: "max(8px, calc(50vw - min(550px, 50vw - 8px)))",
-              }}
-            >
-              <div
-                className="flex shrink-0 cursor-move items-center justify-between border-b border-[var(--color-border-2)] bg-[var(--color-bg-2)] px-4 py-2"
-                onPointerDown={(e) => dragControls.start(e)}
-              >
-                <div className="flex items-center gap-2 text-[var(--color-text-3)]">
-                  <IconDragDotVertical style={{ fontSize: 16 }} />
-                  <span className="select-none text-xs font-bold uppercase tracking-wider text-[var(--color-text-1)]">
-                    AI Insight — {symbol}
-                  </span>
-                </div>
-                <Button
-                  type="text"
-                  size="mini"
-                  icon={<IconClose />}
-                  aria-label="Đóng"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setAiInsightOpen(false)
-                  }}
-                  onPointerDown={(e) => e.stopPropagation()}
-                />
-              </div>
-
-              <div className="relative min-h-0 flex-1 bg-[var(--color-bg-1)]">
-                <PremiumGate
-                  featureName="AI Insight"
-                  description="Phân tích AI đa lớp cho mã đang xem (Xu hướng, Thanh khoản, Dòng tiền, Nội bộ, Tin tức)."
-                  onAuthRequested={() => setAiInsightOpen(false)}
-                >
-                  <StockAiInsight symbol={symbol} />
-                </PremiumGate>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* AI Insight modal */}
+      <Modal
+        visible={aiInsightOpen}
+        onCancel={() => setAiInsightOpen(false)}
+        footer={null}
+        title={null}
+        style={{ width: "min(960px, 94vw)", top: 24 }}
+        autoFocus={false}
+      >
+        <div style={{ maxHeight: "86vh", overflowY: "auto" }}>
+          <PremiumGate
+            featureName="AI Insight"
+            description="Phân tích AI đa lớp cho mã đang xem (Xu hướng, Thanh khoản, Dòng tiền, Nội bộ, Tin tức)."
+            onAuthRequested={() => setAiInsightOpen(false)}
+          >
+            <AiInsightBriefing symbol={symbol} />
+          </PremiumGate>
+        </div>
+      </Modal>
 
     </div>
   )

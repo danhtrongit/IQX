@@ -37,12 +37,13 @@ function shortDate(raw: string | undefined): string {
 const AXIS_TICK = { fill: "#64748b", fontSize: 9, fontWeight: 500 } as const
 const GRID_STROKE = "var(--color-border-2)"
 const LABEL_FILL = "var(--color-text-1)"
-const COLOR_BUY = "#f59e0b"
-const COLOR_LINE_PRIMARY = "#f59e0b"
-const COLOR_LINE_SECONDARY = "#06b6d4"
-const COLOR_LINE_TERTIARY = "#a78bfa"
-const COLOR_POS = "#10b981"
-const COLOR_NEG = "#ef4444"
+// Editorial --chart-* palette (matches tokens in aiInsight.css)
+const COLOR_BUY = "#d97b3d"         // --chart-amber
+const COLOR_LINE_PRIMARY = "#d97b3d"  // --chart-amber
+const COLOR_LINE_SECONDARY = "#4ec9d4" // --chart-cyan
+const COLOR_LINE_TERTIARY = "#8b7fd4"  // --chart-violet
+const COLOR_POS = "#1cb88a"           // --chart-green
+const COLOR_NEG = "#e8556f"           // --chart-red
 
 interface TooltipRow {
   label: string
