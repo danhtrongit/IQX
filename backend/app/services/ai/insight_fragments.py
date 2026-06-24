@@ -1,6 +1,17 @@
 import re
 from typing import Any
 
+# Strips any residual markup token so it never reaches the UI as literal text.
+# The model sometimes nests tags (e.g. "[bull]... [num]18,000[/num] ...[/bull]");
+# the single-level matcher below captures the outer content verbatim, and a
+# stray opening tag with no partner survives the matcher entirely, so every
+# fragment's content must be cleaned before it is emitted.
+_RESIDUAL_TAG = re.compile(r"\[/?(?:bull|bear|warn|info|num|gold)\]")
+
+
+def _clean(content: str) -> str:
+    return _RESIDUAL_TAG.sub("", content)
+
 
 def parse_fragments(text: str) -> list[dict[str, Any]]:
     """
@@ -27,12 +38,12 @@ def parse_fragments(text: str) -> list[dict[str, Any]]:
     for match in re.finditer(pattern, text):
         # Add any plain text before this match
         if match.start() > last_end:
-            plain_text = text[last_end:match.start()]
+            plain_text = _clean(text[last_end:match.start()])
             if plain_text:
                 fragments.append({"type": "text", "content": plain_text})
 
         tag = match.group(1)
-        content = match.group(2)
+        content = _clean(match.group(2))
 
         # Map tags to fragment types
         if tag == "num":
@@ -50,7 +61,7 @@ def parse_fragments(text: str) -> list[dict[str, Any]]:
 
     # Add any remaining plain text after the last match
     if last_end < len(text):
-        plain_text = text[last_end:]
+        plain_text = _clean(text[last_end:])
         if plain_text:
             fragments.append({"type": "text", "content": plain_text})
 
