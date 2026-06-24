@@ -534,6 +534,12 @@ async def build_insight_payload(
     else:
         payload["news"] = None
 
+    # ── Free-float shares for L3 money-flow normalization ──
+    payload["free_float_shares"] = _extract_free_float(
+        payload.get("company_overview") or {},
+        payload.get("company_details") or {},
+    )
+
     # Compute derived technical indicators
     _enrich_insight_derived(payload)
 
@@ -570,6 +576,30 @@ def _extract_foreign(record: dict[str, Any]) -> dict[str, Any]:
         for key, value in record.items()
         if key.startswith("foreign")
     }
+
+
+def _extract_free_float(company_overview: dict, company_details: dict) -> float | None:
+    """Return the best-available free-float share count for L3 normalization.
+
+    Data sources checked (in priority order):
+    1. company_overview["outstanding_shares"] from KBS normalize_overview.
+       KBS maps KLCPLH → outstanding_shares (exact share count).
+       No true free-float % field exists in KBS or Vietcap company data,
+       so outstanding_shares is the best available denominator.
+    2. company_details — reserved for future expansion; currently unused.
+
+    Returns:
+        float: the share count (cast from any numeric type/string), or
+        None: if the field is absent or zero (zero is not a useful denominator).
+    """
+    raw = company_overview.get("outstanding_shares") if company_overview else None
+    if raw is None:
+        return None
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return None
+    return value if value > 0 else None
 
 
 def _enrich_insight_derived(payload: dict[str, Any]) -> None:
