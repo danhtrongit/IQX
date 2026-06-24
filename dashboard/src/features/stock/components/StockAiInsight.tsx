@@ -14,7 +14,7 @@ import {
 } from "@arco-design/web-react/icon"
 import { getErrorMessage } from "@/shared/http/client"
 import { isIndexSymbol, useStockAiInsight } from "../hooks"
-import type { InsightRawInput, InsightResponse } from "../types"
+import type { AIInsightResponse, InsightRawInput, InsightResponse } from "../types"
 import { formatSupportResistance, getLayerSummary as buildLayerSummary } from "../format"
 import {
   IconArrowLeftRight,
@@ -365,7 +365,7 @@ function SummaryCard({
   trendTags,
   onClick,
 }: {
-  insight: InsightResponse
+  insight: InsightResponse | AIInsightResponse
   overview: string
   actionHint: string
   confidence: number
@@ -412,7 +412,7 @@ function SummaryCard({
 
       <p className="mb-3 text-center text-[9px] text-[var(--color-text-3)]">
         Cập nhật lúc{" "}
-        {new Date(insight.timestamp).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
+        {new Date((insight as unknown as InsightResponse).timestamp).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
       </p>
 
       <div className="mb-3 flex items-center justify-around rounded-lg border border-[var(--color-border-2)] bg-[var(--color-fill-1)] px-2 py-3">
@@ -458,7 +458,9 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
   }, [isError, error])
 
   const trendTags = useMemo(() => {
-    const trendOut = insight?.layers?.trend?.output
+    // v1 compatibility: cast to access .trend property (v2 uses .L1 in separate task)
+    const insightAsV1 = insight as unknown as InsightResponse
+    const trendOut = insightAsV1?.layers?.trend?.output
     if (!trendOut || typeof trendOut !== "object") return []
     const out = trendOut as Record<string, unknown>
     const result: { label: string; color: string }[] = []
@@ -549,10 +551,12 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
 
   if (!insight) return null
 
-  const decisionOut = (insight.layers?.decision?.output ?? {}) as Record<string, unknown>
+  // Cast to v1 type for now — v2 migration in FT9
+  const insightV1 = insight as unknown as InsightResponse
+  const decisionOut = (insightV1.layers?.decision?.output ?? {}) as Record<string, unknown>
   const overview = String(decisionOut["Tổng quan"] || decisionOut.overview || "")
   const actionHint = String(decisionOut["Hành động chính"] || "")
-  const summary = insight.summary
+  const summary = insightV1.summary
   const confidence = summary?.confidence || 0
   const reversal = summary?.reversalProbability || 0
   const totalPower = summary?.totalPower || 0
@@ -562,11 +566,11 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
       {/* Header */}
       <div className="flex shrink-0 items-center gap-2 border-b border-[var(--color-border-2)] px-4 py-2.5">
         <IconSparkles className="text-[rgb(var(--primary-6))]" />
-        <span className="text-xs font-bold text-[var(--color-text-1)]">{insight.symbol}</span>
+        <span className="text-xs font-bold text-[var(--color-text-1)]">{insightV1.symbol}</span>
         <div className="ml-auto flex items-center gap-1 text-[var(--color-text-3)]">
           <IconClockCircle />
           <span className="text-[10px]">
-            {new Date(insight.timestamp).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
+            {new Date(insightV1.timestamp).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
           </span>
         </div>
       </div>
@@ -599,7 +603,7 @@ export function StockAiInsight({ symbol }: { symbol: string }) {
 
           {LAYERS_ORDER.map((key) => {
             const cfg = LAYER_CONFIG[key]
-            const layerData = insight.layers?.[key]
+            const layerData = insightV1.layers?.[key]
             if (!layerData) return null
             const items = buildLayerSummary(key, (layerData.output ?? null) as Record<string, unknown> | null)
             const out = (layerData.output ?? {}) as Record<string, unknown>
