@@ -7,45 +7,6 @@ import { BriefingCard } from './BriefingCard'
 import { LayerCard } from './LayerCard'
 import { LayerCharts } from './LayerCharts'
 import { NewsList } from './NewsList'
-import type { InsightRawInput } from '../types'
-
-/** Build NewsList props from rawInput.news. Returns null when no items are available. */
-function buildNewsList(rawInput: InsightRawInput) {
-  const items = rawInput.news.items
-  if (!items || items.length === 0) return null
-
-  const material: { title: string; subtitle?: string; tag: string }[] = []
-  const filler: { title: string; tag: string }[] = []
-
-  for (const n of items) {
-    const item = n as Record<string, unknown>
-    const title = String(item.title || '')
-    if (!title) continue
-    const tag = String(item.sentiment || item.tag || '—')
-    const isMaterial =
-      item.isMaterial === true ||
-      (typeof item.sentiment === 'string' &&
-        (item.sentiment === 'positive' || item.sentiment === 'negative'))
-    if (isMaterial) {
-      material.push({
-        title,
-        subtitle: item.sourceName ? String(item.sourceName) : undefined,
-        tag,
-      })
-    } else {
-      filler.push({ title, tag })
-    }
-  }
-
-  // If everything is neutral / unclassified, show first 5 as material
-  if (material.length === 0 && filler.length > 0) {
-    const first5 = filler.splice(0, 5)
-    for (const f of first5) material.push({ title: f.title, tag: f.tag })
-  }
-
-  if (material.length === 0 && filler.length === 0) return null
-  return { material, filler }
-}
 
 /** Compact loading skeleton scoped inside .ai-insight-v2. */
 function LoadingSkeleton() {
@@ -140,8 +101,6 @@ export function AiInsightBriefing({ symbol }: { symbol: string }) {
     insight.layers.L5,
   ] as const
 
-  const newsListProps = buildNewsList(insight.rawInput)
-
   return (
     <div
       className="ai-insight-v2"
@@ -192,11 +151,12 @@ export function AiInsightBriefing({ symbol }: { symbol: string }) {
       {layers.map((layer) => {
         const isL5 = layer.layerNum === 'L5'
 
-        // L1–L4: pass LayerCharts as chart slot
+        // L1–L4: pass LayerCharts as chart slot; L5: pass NewsList from structured layer news
         const chartSlot = isL5
-          ? newsListProps
-            ? <NewsList material={newsListProps.material} filler={newsListProps.filler} />
-            : undefined
+          ? <NewsList
+              material={layer.news?.material ?? []}
+              filler={layer.news?.filler ?? []}
+            />
           : (
             <LayerCharts
               layer={layer.layerNum as 'L1' | 'L2' | 'L3' | 'L4'}

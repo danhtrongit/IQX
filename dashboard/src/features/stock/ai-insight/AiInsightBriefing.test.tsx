@@ -84,6 +84,14 @@ const fixture: AIInsightResponse = {
       statusLevel: 3,
       fields: [],
       diff: { text: [], hasChange: false },
+      news: {
+        material: [
+          { title: 'Phát hành trái phiếu thành công', subtitle: 'củng cố vốn cho năm 2026', tag: 'Phát hành' },
+        ],
+        filler: [
+          { title: 'Khen thưởng nội bộ', tag: 'Nhân sự' },
+        ],
+      },
     },
   },
   rawInput: {
@@ -162,6 +170,13 @@ describe('AiInsightBriefing', () => {
       const { AiInsightBriefing } = await import('./AiInsightBriefing')
       render(<AiInsightBriefing symbol="VCB" />)
       expect(screen.getByText(/Chi tiết phân tích/i)).toBeInTheDocument()
+    })
+
+    it('renders L5 NewsList tag "Phát hành" from layers.L5.news (not rawInput)', async () => {
+      const { AiInsightBriefing } = await import('./AiInsightBriefing')
+      render(<AiInsightBriefing symbol="VCB" />)
+      // The real LLM tag "Phát hành" must appear; "—" must NOT appear as a tag
+      expect(screen.getByText('Phát hành')).toBeInTheDocument()
     })
 
     it('calls analyze() once on mount', async () => {

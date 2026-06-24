@@ -61,4 +61,15 @@ describe('NewsList', () => {
     expect(screen.getByText('Phát hành trái phiếu thành công')).toBeInTheDocument()
     expect(screen.queryByText('Khen thưởng nội bộ tháng 6')).toBeNull()
   })
+
+  it('renders real LLM tag (e.g. "Phát hành") and not dash placeholder', () => {
+    const items = [
+      { title: 'Phát hành trái phiếu thành công', tag: 'Phát hành' },
+    ]
+    render(<NewsList material={items} filler={[]} />, { wrapper: Wrapper })
+    const tags = document.querySelectorAll('.news-tag')
+    expect(tags[0].textContent).toBe('Phát hành')
+    // dash placeholder must NOT appear
+    expect(screen.queryByText('—')).toBeNull()
+  })
 })

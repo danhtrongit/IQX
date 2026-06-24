@@ -349,6 +349,11 @@ export interface LayerCard {
     text: NarrativeFragment[]
     hasChange: boolean
   }
+  /** Structured news — only present on L5. */
+  news?: {
+    material: { title: string; subtitle?: string; tag: string }[]
+    filler: { title: string; tag: string }[]
+  }
 }
 
 /** Complete v2 AI Insight response from backend. */

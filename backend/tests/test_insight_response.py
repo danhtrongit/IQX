@@ -282,6 +282,54 @@ def test_l5_fields_include_tin_material():
     assert any("material" in lbl.lower() or "tin" in lbl.lower() for lbl in labels)
 
 
+def test_l5_news_structured_object_present():
+    """L5 LayerCard must expose a structured `news` object (not from rawInput)."""
+    out = build_insight_response(AI_JSON, PAYLOAD, prev=None)
+    l5 = out["layers"]["L5"]
+    assert "news" in l5, "L5 LayerCard must have a 'news' key"
+    news = l5["news"]
+    assert "material" in news
+    assert "filler" in news
+    assert isinstance(news["material"], list)
+    assert isinstance(news["filler"], list)
+
+
+def test_l5_news_material_tag_is_llm_tag():
+    """The material item's tag must come from the LLM (e.g. 'Phát hành'), not '—'."""
+    out = build_insight_response(AI_JSON, PAYLOAD, prev=None)
+    news = out["layers"]["L5"]["news"]
+    assert len(news["material"]) >= 1
+    first = news["material"][0]
+    assert first["tag"] == "Phát hành"
+    assert first["title"] == "Phát hành trái phiếu thành công"
+
+
+def test_l5_news_material_subtitle_from_tac_dong_ngan():
+    """Material item subtitle must come from tac_dong_ngan."""
+    out = build_insight_response(AI_JSON, PAYLOAD, prev=None)
+    first = out["layers"]["L5"]["news"]["material"][0]
+    assert first.get("subtitle") == "củng cố vốn cho năm 2026"
+
+
+def test_l5_news_filler_tag_is_llm_tag():
+    """Filler item tag must come from the LLM (e.g. 'Nhân sự'), not raw sentiment."""
+    out = build_insight_response(AI_JSON, PAYLOAD, prev=None)
+    news = out["layers"]["L5"]["news"]
+    assert len(news["filler"]) >= 1
+    first_filler = news["filler"][0]
+    assert first_filler["tag"] == "Nhân sự"
+    assert first_filler["title"] == "Khen thưởng nội bộ"
+
+
+def test_l5_news_empty_when_no_items():
+    """When tin_material and tin_filler are empty, news lists are empty."""
+    ai_no_news = {**AI_JSON, "L5": {**AI_JSON["L5"], "tin_material": [], "tin_filler": []}}
+    out = build_insight_response(ai_no_news, PAYLOAD, prev=None)
+    news = out["layers"]["L5"]["news"]
+    assert news["material"] == []
+    assert news["filler"] == []
+
+
 def test_raw_input_carried_through():
     out = build_insight_response(AI_JSON, PAYLOAD, prev=None)
     assert "rawInput" in out

@@ -214,6 +214,33 @@ _LAYER_FIELD_BUILDERS = {
 }
 
 
+def _build_l5_news(layer: dict[str, Any]) -> dict[str, Any]:
+    """Parse L5 tin_material / tin_filler into a structured news dict."""
+    material_out: list[dict[str, Any]] = []
+    for item in layer.get("tin_material") or []:
+        if not isinstance(item, dict):
+            continue
+        entry: dict[str, Any] = {
+            "title": str(item.get("tieu_de", "")),
+            "tag": str(item.get("tag", "")),
+        }
+        tac_dong = item.get("tac_dong_ngan", "")
+        if tac_dong:
+            entry["subtitle"] = str(tac_dong)
+        material_out.append(entry)
+
+    filler_out: list[dict[str, Any]] = []
+    for item in layer.get("tin_filler") or []:
+        if not isinstance(item, dict):
+            continue
+        filler_out.append({
+            "title": str(item.get("tieu_de", "")),
+            "tag": str(item.get("tag", "")),
+        })
+
+    return {"material": material_out, "filler": filler_out}
+
+
 def _build_layer_card(layer_key: str, layer: dict[str, Any], *, is_first: bool) -> dict[str, Any]:
     status_label = layer.get("statusLabel", "")
     diff_text = layer.get("diff", "")
@@ -221,7 +248,7 @@ def _build_layer_card(layer_key: str, layer: dict[str, Any], *, is_first: bool) 
     field_builder = _LAYER_FIELD_BUILDERS.get(layer_key)
     fields = field_builder(layer) if field_builder else []
 
-    return {
+    card: dict[str, Any] = {
         "layerNum": layer_key,
         "layerName": _LAYER_NAMES.get(layer_key, layer_key),
         "statusLabel": status_label,
@@ -229,6 +256,11 @@ def _build_layer_card(layer_key: str, layer: dict[str, Any], *, is_first: bool) 
         "fields": fields,
         "diff": _build_diff(diff_text, is_first=is_first),
     }
+
+    if layer_key == "L5":
+        card["news"] = _build_l5_news(layer)
+
+    return card
 
 
 # ── Briefing builder ─────────────────────────────────────────────────────────
