@@ -189,8 +189,7 @@ export function Header() {
               size="small"
               type="primary"
               status="warning"
-              className="!hidden sm:!inline-flex"
-              style={{ alignItems: "center" }}
+              className="!hidden sm:!inline-flex items-center"
               icon={<IconCrown />}
               onClick={() => navigate("/nang-cap")}
             >
