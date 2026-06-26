@@ -73,7 +73,7 @@ export function Closing({ onRegister }: { onRegister: () => void }) {
           max-width: 760px;
           margin-inline: auto;
           text-align: center;
-          padding: clamp(36px, 6vw, 64px) clamp(22px, 5vw, 56px);
+          padding: clamp(28px, 4.5vw, 48px) clamp(20px, 4vw, 48px);
           background: var(--lp-azure-soft);
           border: 1px solid var(--lp-azure-line);
           border-radius: var(--lp-r-lg);

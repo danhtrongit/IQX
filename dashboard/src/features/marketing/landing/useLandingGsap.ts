@@ -19,8 +19,6 @@ const viFmt = (decimals: number) =>
  *  - `.lp-reveal`            → batch fade-up on scroll
  *  - `[data-countup]`        → number tween (data-decimals/-prefix/-suffix)
  *  - `.lp-tape`              → hairline draw-in
- *  - `[data-pin]`            → the single pinned scrolly; contains
- *      `[data-beat]` text rows + `[data-fig]` stacked figures (same count)
  */
 export function useLandingGsap(rootRef: RefObject<HTMLElement | null>) {
   useEffect(() => {
@@ -32,12 +30,9 @@ export function useLandingGsap(rootRef: RefObject<HTMLElement | null>) {
 
       // ── full motion ──
       mm.add(
-        {
-          motion: "(prefers-reduced-motion: no-preference)",
-          desktop: "(min-width: 880px)",
-        },
+        { motion: "(prefers-reduced-motion: no-preference)" },
         (context) => {
-          const conditions = context.conditions as { motion: boolean; desktop: boolean }
+          const conditions = context.conditions as { motion: boolean }
           if (!conditions.motion) return
           root.classList.add("lp-js")
 
@@ -92,31 +87,6 @@ export function useLandingGsap(rootRef: RefObject<HTMLElement | null>) {
               },
             )
           })
-
-          // ── single pinned scrolly (desktop only) ──
-          const pin = root.querySelector<HTMLElement>("[data-pin]")
-          if (pin && conditions.desktop) {
-            const beats = gsap.utils.toArray<HTMLElement>("[data-beat]", pin)
-            const figs = gsap.utils.toArray<HTMLElement>("[data-fig]", pin)
-            const setActive = (idx: number) => {
-              beats.forEach((b, i) => b.classList.toggle("is-active", i === idx))
-              figs.forEach((f, i) => f.classList.toggle("is-active", i === idx))
-            }
-            setActive(0)
-            const steps = Math.max(beats.length, 1)
-            ScrollTrigger.create({
-              trigger: pin,
-              start: "top top",
-              end: "+=" + steps * 80 + "%",
-              pin: true,
-              pinSpacing: true,
-              scrub: 0.4,
-              onUpdate: (self) => {
-                const idx = Math.min(steps - 1, Math.floor(self.progress * steps))
-                setActive(idx)
-              },
-            })
-          }
 
           ScrollTrigger.refresh()
         },

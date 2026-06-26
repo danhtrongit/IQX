@@ -116,7 +116,7 @@
 }
 .lp-section {
   position: relative;
-  padding-block: clamp(56px, 9vw, 118px);
+  padding-block: clamp(36px, 5.5vw, 78px);
 }
 .lp-section--tint {
   background: var(--lp-bg-2);
@@ -430,7 +430,7 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  padding-block: clamp(48px, 9vw, 96px) clamp(40px, 7vw, 88px);
+  padding-block: clamp(30px, 5vw, 60px) clamp(28px, 4.5vw, 56px);
 }
 .lp-hero__bg {
   position: absolute;
@@ -455,7 +455,7 @@
 }
 .lp-hero__grid {
   display: grid;
-  gap: clamp(32px, 5vw, 56px);
+  gap: clamp(26px, 4vw, 44px);
   align-items: center;
 }
 @media (min-width: 1000px) {
@@ -524,7 +524,7 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1px;
-  margin-top: 34px;
+  margin-top: 22px;
   background: var(--lp-border-soft);
   border: 1px solid var(--lp-border-soft);
   border-radius: var(--lp-r);
