@@ -108,7 +108,7 @@ export function HowItWorks() {
           border-radius: 7px; padding: 5px 9px;
         }
         .lp-how__pipe { display: flex; align-items: center; gap: 12px; }
-        .lp-how__pipeline { flex: 1; height: 2px; background: linear-gradient(90deg, transparent, var(--lp-azure)); border-radius: 2px; }
+        .lp-how__pipeline { flex: 1; height: 2px; background: var(--lp-azure-line); border-radius: 2px; }
         .lp-how__pipenode {
           font-size: 13px; font-weight: 700; color: #fff; background: var(--lp-azure);
           border-radius: 8px; padding: 8px 12px; white-space: nowrap;

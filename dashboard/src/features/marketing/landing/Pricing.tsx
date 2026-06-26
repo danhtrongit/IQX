@@ -183,17 +183,15 @@ export function Pricing({ onRegister }: { onRegister: () => void }) {
           letter-spacing: 0.06em;
           text-transform: uppercase;
           color: #fff;
-          background: linear-gradient(180deg, var(--lp-azure-2), var(--lp-azure));
+          background: var(--lp-azure);
           border-radius: 999px;
           padding: 5px 13px;
-          box-shadow: 0 10px 22px -10px var(--lp-glow);
+          box-shadow: var(--lp-shadow-sm);
           white-space: nowrap;
         }
         .lp-price__card.is-highlight {
           border-color: var(--lp-azure);
-          background:
-            linear-gradient(180deg, var(--lp-azure-soft), transparent 60%),
-            var(--lp-panel);
+          background: var(--lp-azure-soft);
           box-shadow: var(--lp-shadow);
         }
         .lp-price__card.is-highlight .lp-price__check {

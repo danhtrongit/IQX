@@ -53,12 +53,6 @@ export function StrategyAlerts({ onRegister }: { onRegister: () => void }) {
 
             <div className="lp-strat__chart">
               <svg viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="none" aria-hidden="true">
-                <defs>
-                  <linearGradient id="lpStratFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--lp-azure)" stopOpacity="0.22" />
-                    <stop offset="100%" stopColor="var(--lp-azure)" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
                 {/* index — thin dashed reference (buy & hold) */}
                 <path
                   d={idx.line}
@@ -69,7 +63,7 @@ export function StrategyAlerts({ onRegister }: { onRegister: () => void }) {
                   vectorEffect="non-scaling-stroke"
                 />
                 {/* strategy — area fill + thicker line */}
-                <path d={strat.area} fill="url(#lpStratFill)" />
+                <path d={strat.area} fill="var(--lp-azure)" fillOpacity="0.08" />
                 <path
                   d={strat.line}
                   fill="none"

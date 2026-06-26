@@ -134,13 +134,7 @@ export function Hero({ onPrimary }: { onPrimary: () => void }) {
               </div>
             </div>
             <svg className="lp-term__spark" viewBox="0 0 320 92" preserveAspectRatio="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="lpHeroSpark" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--lp-up)" stopOpacity="0.28" />
-                  <stop offset="100%" stopColor="var(--lp-up)" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path d={spark.area} fill="url(#lpHeroSpark)" />
+              <path d={spark.area} fill="var(--lp-up)" fillOpacity="0.08" />
               <path d={spark.line} fill="none" stroke="var(--lp-up)" strokeWidth="2" />
             </svg>
             <div className="lp-term__sig">

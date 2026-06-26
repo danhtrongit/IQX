@@ -132,9 +132,7 @@ export function FeaturesBento({ onRegister }: { onRegister: () => void }) {
 
         /* flagship */
         .lp-bento__cell.is-flagship {
-          background:
-            linear-gradient(180deg, var(--lp-azure-soft), transparent 70%),
-            var(--lp-panel);
+          background: var(--lp-azure-soft);
           border-color: var(--lp-azure-line);
         }
         .is-flagship .lp-bento__icon {
@@ -180,8 +178,8 @@ export function FeaturesBento({ onRegister }: { onRegister: () => void }) {
         .lp-bento__viz-bar {
           width: 100%;
           border-radius: 6px 6px 3px 3px;
-          background: linear-gradient(180deg, var(--lp-azure-2), var(--lp-azure));
-          opacity: 0.9;
+          background: var(--lp-azure);
+          opacity: 0.85;
         }
         .lp-bento__viz-id { font-size: 10.5px; color: var(--lp-t3); }
 

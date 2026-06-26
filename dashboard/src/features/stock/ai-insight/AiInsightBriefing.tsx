@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Spin } from '@arco-design/web-react'
 import './aiInsight.css'
+import type { AIInsightResponse } from '../types'
 import { useStockAiInsight } from '../hooks'
 import { Masthead } from './Masthead'
 import { HeaderStrip } from './HeaderStrip'
@@ -36,21 +37,33 @@ function LoadingState({ symbol }: { symbol: string }) {
   )
 }
 
-export function AiInsightBriefing({ symbol }: { symbol: string }) {
-  const { insight, analyze, isPending, isError } = useStockAiInsight(symbol)
+export function AiInsightBriefing({
+  symbol,
+  injected,
+  teaser = false,
+}: {
+  symbol: string
+  /** Pre-supplied analysis — skips the (premium-gated) API call. Used by the
+   *  public landing page so the real component renders without auth. */
+  injected?: AIInsightResponse
+  /** Show only the briefing + L1 (the public teaser); hide detail layers L2–L5. */
+  teaser?: boolean
+}) {
+  const { insight: fetched, analyze, isPending, isError } = useStockAiInsight(symbol)
+  const insight = injected ?? fetched
 
-  // Call analyze() exactly once on first mount (like old StockAiInsight did).
+  // Call analyze() exactly once on first mount — but never when data is injected.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { analyze() }, [])
+  useEffect(() => { if (!injected) analyze() }, [])
 
   // Show the loading state while the request is in flight AND for the initial
   // render before analyze() fires (isPending is still false then) — avoids a
   // blank flash. Only the error / loaded branches below take over.
-  if (isPending || (!insight && !isError)) {
+  if (!injected && (isPending || (!fetched && !isError))) {
     return <LoadingState symbol={symbol} />
   }
 
-  if (isError) {
+  if (!injected && isError) {
     return (
       <div className="ai-insight-v2" style={{ padding: '32px 24px' }}>
         <p
@@ -69,13 +82,15 @@ export function AiInsightBriefing({ symbol }: { symbol: string }) {
 
   if (!insight) return null
 
-  const layers = [
-    insight.layers.L1,
-    insight.layers.L2,
-    insight.layers.L3,
-    insight.layers.L4,
-    insight.layers.L5,
-  ] as const
+  const layers = teaser
+    ? ([insight.layers.L1] as const)
+    : ([
+        insight.layers.L1,
+        insight.layers.L2,
+        insight.layers.L3,
+        insight.layers.L4,
+        insight.layers.L5,
+      ] as const)
 
   return (
     <div
