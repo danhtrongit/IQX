@@ -106,6 +106,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true)
       try {
         persist(await authApi.register(payload))
+        // SPA: the Facebook pixel's PageView fires once at load, so a successful
+        // signup must report CompleteRegistration manually (drives ad optimization).
+        ;(window as unknown as { fbq?: (...a: unknown[]) => void }).fbq?.(
+          "track",
+          "CompleteRegistration",
+        )
       } finally {
         setIsLoading(false)
       }
