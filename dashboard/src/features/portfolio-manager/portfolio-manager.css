@@ -1,0 +1,254 @@
+/* dashboard/src/features/portfolio-manager/portfolio-manager.css
+ * Editorial design tokens & section styles — scoped to .portfolio-manager
+ * Theme-adaptive (Arco dark default; warm "paper" light override).
+ * No external @import — fonts via project --font-sans and inline --serif var.
+ */
+
+/* ============ STEP 1: TOKEN BLOCK ============ */
+.portfolio-manager {
+  --paper: var(--color-bg-2);
+  --card: var(--color-bg-1);
+  --ink: var(--color-text-1);
+  --ink-2: var(--color-text-2);
+  --ink-3: var(--color-text-3);
+  --line: var(--color-border-1);
+  --line-2: var(--color-border-2);
+  --saffron: #d4a574;
+  --saffron-deep: #c8923f;
+  --up: var(--color-up);
+  --up-soft: color-mix(in srgb, var(--color-up) 14%, transparent);
+  --down: var(--color-down);
+  --down-soft: color-mix(in srgb, var(--color-down) 14%, transparent);
+  --neutral: var(--color-text-3);
+  --serif: Georgia, "Times New Roman", var(--font-sans, "Tahoma"), serif;
+
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans, "Tahoma"), sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+body[arco-theme='light'] .portfolio-manager {
+  --paper: #f6f2eb;          /* warm paper, light mode only */
+  --card: #fffdf8;
+  --ink: #1f1c17;
+  --ink-2: #544e44;
+  --ink-3: #8a8276;
+  --line: #e6e0d4;
+  --line-2: #d6cdbd;
+  --saffron-deep: #b8860b;
+}
+
+.pm-mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.pm-serif { font-family: var(--serif); }
+.pm-pos { color: var(--up); }
+.pm-neg { color: var(--down); }
+
+/* ============ STEP 2: SECTION STYLES ============ */
+
+/* MASTHEAD */
+.portfolio-manager .head { padding: 32px clamp(26px, 6vw, 62px) 26px; border-bottom: 1px solid var(--line); }
+.portfolio-manager .head-top { display: flex; justify-content: space-between; align-items: center; }
+.portfolio-manager .brand { display: flex; align-items: center; gap: 9px; }
+.portfolio-manager .brand-mark { width: 30px; height: 30px; border: 2px solid var(--ink); border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-weight: 600; font-size: 16px; }
+.portfolio-manager .brand-name { font-family: var(--serif); font-weight: 600; font-size: 19px; letter-spacing: .3px; }
+.portfolio-manager .brand-name span { color: var(--saffron-deep); }
+.portfolio-manager .kicker { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+.portfolio-manager .title { font-family: var(--serif); font-weight: 600; font-size: clamp(27px, 5vw, 37px); letter-spacing: -.4px; line-height: 1.08; margin: 22px 0 12px; }
+.portfolio-manager .sub { display: flex; gap: 18px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-3); }
+.portfolio-manager .sub .mono { color: var(--ink-2); }
+
+/* HERO SCORE */
+.portfolio-manager .hero { display: grid; grid-template-columns: 170px 1fr; border-bottom: 1px solid var(--line); }
+.portfolio-manager .hero-score { padding: 26px clamp(26px, 6vw, 62px); border-right: 1px solid var(--line); display: flex; flex-direction: column; justify-content: center; background: radial-gradient(circle at 30% 20%, rgba(212,165,116,.13), transparent 65%); }
+.portfolio-manager .hero-score .lbl { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px; }
+.portfolio-manager .hero-score .num { font-family: var(--serif); font-weight: 600; font-size: 58px; line-height: .9; letter-spacing: -2px; }
+.portfolio-manager .hero-score .num small { font-size: 22px; color: var(--ink-3); font-weight: 400; }
+.portfolio-manager .hero-score .trend { margin-top: 10px; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; color: var(--up); font-weight: 600; }
+.portfolio-manager .hero-verdict { padding: 26px clamp(22px, 4vw, 30px); display: flex; flex-direction: column; justify-content: center; }
+.portfolio-manager .hero-verdict .eb { font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--saffron-deep); font-weight: 700; margin-bottom: 8px; }
+.portfolio-manager .hero-verdict .vh { font-family: var(--serif); font-weight: 500; font-size: clamp(19px, 2.5vw, 23px); line-height: 1.25; color: var(--ink); }
+.portfolio-manager .hero-verdict .vh em { font-style: italic; color: var(--saffron-deep); }
+
+/* LEDE */
+.portfolio-manager .lede { padding: 28px clamp(26px, 6vw, 62px) 4px; font-family: var(--serif); font-size: 19px; line-height: 1.5; font-weight: 400; color: var(--ink); }
+
+/* SECTION LAYER */
+.portfolio-manager .layer { padding: 26px 0; border-bottom: 1px solid var(--line); }
+.portfolio-manager .layer:last-of-type { border-bottom: none; }
+.portfolio-manager h2.sec { font-family: var(--serif); font-weight: 600; font-size: 18px; letter-spacing: -.2px; margin: 0 0 4px; display: flex; align-items: baseline; gap: 11px; }
+.portfolio-manager .lno { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; font-weight: 600; color: var(--saffron-deep); }
+.portfolio-manager p { margin: 12px 0; color: var(--ink-2); }
+.portfolio-manager p strong,
+.portfolio-manager .lede strong { color: var(--ink); font-weight: 600; }
+
+/* FIG inline code highlight */
+.portfolio-manager .fig { font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 600; color: var(--ink); background: var(--card); padding: 1px 6px; border-radius: 3px; font-size: .94em; white-space: nowrap; }
+.portfolio-manager .fig.up { color: var(--up); background: var(--up-soft); }
+.portfolio-manager .fig.down { color: var(--down); background: var(--down-soft); }
+
+/* MANAGER VOICE INLINE */
+.portfolio-manager .mgr { border-left: 2px solid var(--saffron); padding: 2px 0 2px 16px; margin: 14px 0; font-size: 14.5px; color: var(--ink-2); font-style: italic; }
+.portfolio-manager .mgr strong { font-style: normal; }
+
+/* PROGRESS COMPARE */
+.portfolio-manager .compare { display: flex; gap: 14px; flex-wrap: wrap; margin: 14px 0; padding: 15px 18px; background: var(--up-soft); border: 1px solid var(--line); border-radius: 4px; }
+.portfolio-manager .compare .ico { font-family: var(--serif); font-size: 22px; color: var(--up); line-height: 1; }
+.portfolio-manager .compare .ct { flex: 1; min-width: 200px; font-size: 14.5px; color: var(--ink-2); }
+.portfolio-manager .compare .ct b { color: var(--ink); font-weight: 600; }
+.portfolio-manager .compare .delta { font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 600; color: var(--up); align-self: center; }
+
+/* HOLDINGS TABLE */
+.portfolio-manager table.hold { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 6px 0; }
+.portfolio-manager table.hold th { font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; text-align: right; padding: 8px 10px; border-bottom: 1.5px solid var(--ink); }
+.portfolio-manager table.hold th:first-child { text-align: left; }
+.portfolio-manager table.hold td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: right; font-family: "JetBrains Mono", ui-monospace, monospace; }
+.portfolio-manager table.hold td:first-child { text-align: left; font-family: var(--font-sans, "Tahoma"), sans-serif; font-weight: 600; }
+.portfolio-manager table.hold td:nth-child(2) { text-align: left; font-family: var(--font-sans, "Tahoma"), sans-serif; color: var(--ink-3); font-weight: 400; }
+.portfolio-manager table.hold tr:last-child td { border-bottom: none; }
+.portfolio-manager .pos { color: var(--up); }
+.portfolio-manager .neg { color: var(--down); }
+.portfolio-manager tr.cash td:first-child { color: var(--ink-3); font-style: italic; }
+.portfolio-manager .flag { font-size: 10px; background: var(--card); color: var(--neutral); padding: 1px 5px; border-radius: 3px; margin-left: 6px; font-family: var(--font-sans, "Tahoma"), sans-serif; font-weight: 500; }
+
+/* STAT GRID */
+.portfolio-manager .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 6px 0; }
+.portfolio-manager .stat-grid.c2 { grid-template-columns: repeat(2, 1fr); }
+.portfolio-manager .stat { background: var(--card); padding: 13px 14px; }
+.portfolio-manager .stat .k { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 5px; }
+.portfolio-manager .stat .v { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 20px; font-weight: 600; letter-spacing: -.5px; }
+.portfolio-manager .stat .v.up { color: var(--up); }
+.portfolio-manager .stat .v.down { color: var(--down); }
+.portfolio-manager .stat .sub { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px; color: var(--ink-3); margin-top: 3px; }
+
+/* ALLOCATION BARS */
+.portfolio-manager .wbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.portfolio-manager .wbar .lbl { font-size: 12.5px; min-width: 92px; font-weight: 500; }
+.portfolio-manager .wbar .track { flex: 1; height: 18px; background: var(--card); border-radius: 2px; position: relative; overflow: hidden; }
+.portfolio-manager .wbar .fill { height: 100%; border-radius: 2px; background: var(--saffron); }
+.portfolio-manager .wbar .bench { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); }
+.portfolio-manager .wbar .pct { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; min-width: 42px; text-align: right; font-weight: 600; }
+.portfolio-manager .legend { display: flex; gap: 18px; font-size: 11px; color: var(--ink-3); margin-top: 6px; }
+.portfolio-manager .legend span { display: flex; align-items: center; gap: 6px; }
+.portfolio-manager .legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; background: var(--saffron); }
+.portfolio-manager .legend i.b { width: 2px; height: 12px; background: var(--ink); border-radius: 0; }
+
+/* STRESS TEST */
+.portfolio-manager .stress { margin: 16px 0; border: 1px solid var(--ink); border-radius: 4px; overflow: hidden; background: #1f1c17; color: #efe7d8; }
+.portfolio-manager .stress-head { padding: 15px 18px 11px; border-bottom: 1px solid rgba(255,255,255,.12); }
+.portfolio-manager .stress-head .st { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--saffron); font-weight: 700; margin-bottom: 4px; }
+.portfolio-manager .stress-head .sd { font-size: 13px; color: #c9c0b0; line-height: 1.5; }
+.portfolio-manager .stress-body { padding: 16px 18px 18px; }
+.portfolio-manager .seg { display: flex; gap: 6px; margin-bottom: 18px; }
+.portfolio-manager .seg button { flex: 1; background: #2a2620; border: 1px solid #3d382f; color: #c9c0b0; font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 600; font-size: 13px; padding: 9px 0; border-radius: 3px; cursor: pointer; transition: .15s; }
+.portfolio-manager .seg button:hover { border-color: var(--saffron); }
+.portfolio-manager .seg button.on { background: var(--saffron); border-color: var(--saffron); color: #2a1c06; }
+.portfolio-manager .stress-out { display: flex; align-items: flex-end; gap: 22px; flex-wrap: wrap; }
+.portfolio-manager .stress-num { font-family: var(--serif); font-weight: 600; font-size: 48px; line-height: .9; color: #fff; letter-spacing: -1px; }
+.portfolio-manager .stress-num .vnd { display: block; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 14px; color: var(--saffron); font-weight: 500; margin-top: 8px; letter-spacing: 0; }
+.portfolio-manager .stress-expl { flex: 1; min-width: 220px; font-size: 12.5px; color: #c9c0b0; line-height: 1.55; }
+.portfolio-manager .stress-bar { height: 7px; background: #332e26; border-radius: 4px; margin-top: 13px; overflow: hidden; }
+.portfolio-manager .stress-bar i { display: block; height: 100%; background: var(--down); width: 50%; transition: width .4s cubic-bezier(.2,.7,.3,1); }
+
+/* CORRELATION HEATMAP */
+.portfolio-manager .heat { border-collapse: separate; border-spacing: 3px; font-family: "JetBrains Mono", ui-monospace, monospace; margin: 8px 0; }
+.portfolio-manager .heat th { font-size: 11px; color: var(--ink-2); font-weight: 600; padding: 2px 5px; text-align: center; }
+.portfolio-manager .heat td { padding: 0; text-align: center; }
+.portfolio-manager .heat .cell { width: 46px; height: 34px; display: grid; place-items: center; font-size: 12px; font-weight: 600; border-radius: 3px; color: #fff; }
+.portfolio-manager .heat .self { background: var(--card); color: var(--ink-3); }
+.portfolio-manager .sig-call { margin-top: 10px; font-size: 13px; color: var(--ink-2); display: flex; gap: 10px; align-items: flex-start; }
+.portfolio-manager .sig-call .badge { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #fff; background: var(--down); padding: 2px 8px; border-radius: 2px; white-space: nowrap; margin-top: 2px; }
+
+/* DATA CONFIDENCE (lowdata) */
+.portfolio-manager .lowdata { margin: 14px 0; padding: 13px 16px; border: 1px dashed var(--line-2); border-radius: 4px; background: var(--card); display: flex; gap: 12px; }
+.portfolio-manager .lowdata .d { width: 9px; height: 9px; border-radius: 50%; background: var(--neutral); margin-top: 6px; flex-shrink: 0; }
+.portfolio-manager .lowdata .lt { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--neutral); font-weight: 600; margin-bottom: 4px; }
+.portfolio-manager .lowdata p { margin: 0; font-size: 13px; color: var(--ink-2); }
+
+/* ATTRIBUTION */
+.portfolio-manager .attr { margin-bottom: 8px; }
+.portfolio-manager .attr-row { display: flex; align-items: center; gap: 10px; }
+.portfolio-manager .attr .nm { min-width: 58px; font-weight: 600; font-size: 13px; }
+.portfolio-manager .attr .track { flex: 1; height: 20px; background: var(--card); border-radius: 2px; overflow: hidden; display: flex; }
+.portfolio-manager .attr .track.r { justify-content: flex-end; }
+.portfolio-manager .attr .fill { height: 100%; }
+.portfolio-manager .attr .fill.p { background: var(--up); }
+.portfolio-manager .attr .fill.n { background: var(--down); }
+.portfolio-manager .attr .val { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; min-width: 54px; text-align: right; font-weight: 600; }
+.portfolio-manager .attr .val.p { color: var(--up); }
+.portfolio-manager .attr .val.n { color: var(--down); }
+
+/* REVEAL SIGNATURE INSIGHT */
+.portfolio-manager .reveal { margin: 16px 0; border: 1px solid var(--saffron); border-radius: 4px; background: var(--paper); overflow: hidden; }
+.portfolio-manager .reveal .tag { display: flex; align-items: center; gap: 8px; background: var(--saffron); color: #3a2a08; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 7px 16px; }
+.portfolio-manager .reveal .tag::before { content: "◆"; font-size: 9px; }
+.portfolio-manager .reveal .body { padding: 15px 18px; }
+.portfolio-manager .reveal .body p { margin: 0; color: var(--ink-2); }
+
+/* SECTOR BENCHMARK */
+.portfolio-manager .sectorbench { margin: 14px 0; padding: 13px 16px; background: var(--card); border-radius: 4px; }
+.portfolio-manager .sectorbench .sbt { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; margin-bottom: 10px; }
+.portfolio-manager .sbrow { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; font-size: 13px; }
+.portfolio-manager .sbrow .nm { min-width: 118px; color: var(--ink-2); }
+.portfolio-manager .sbrow .track { flex: 1; height: 14px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.portfolio-manager .sbrow .track i { display: block; height: 100%; border-radius: 2px; }
+.portfolio-manager .sbrow.you .track i { background: var(--saffron); }
+.portfolio-manager .sbrow.ind .track i { background: var(--ink-3); }
+.portfolio-manager .sbrow .v { font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 600; min-width: 46px; text-align: right; font-size: 12px; }
+
+/* QUALITY CHIPS */
+.portfolio-manager .chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 6px 0; }
+.portfolio-manager .chip { background: var(--card); padding: 14px 12px; text-align: center; }
+.portfolio-manager .chip .v { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 21px; font-weight: 600; }
+.portfolio-manager .chip .k { font-size: 10px; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); margin-top: 4px; }
+
+/* HEALTH PILLARS */
+.portfolio-manager .health { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 14px; }
+.portfolio-manager .health th { text-align: left; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; padding: 8px; border-bottom: 1.5px solid var(--ink); }
+.portfolio-manager .health th:nth-child(2) { text-align: center; width: 118px; }
+.portfolio-manager .health td { padding: 11px 8px; border-bottom: 1px solid var(--line); color: var(--ink-2); vertical-align: middle; }
+.portfolio-manager .health td:first-child { font-weight: 600; color: var(--ink); }
+.portfolio-manager .health tr:last-child td { border-bottom: none; }
+.portfolio-manager .dots { display: flex; gap: 3px; justify-content: center; }
+.portfolio-manager .dot5 { width: 13px; height: 6px; border-radius: 2px; background: var(--line-2); }
+.portfolio-manager .dot5.on { background: var(--saffron-deep); }
+.portfolio-manager .dot5.on.lo { background: var(--down); }
+
+/* ACTIONS */
+.portfolio-manager .actions { margin: 8px 0; counter-reset: act; }
+.portfolio-manager .action { display: flex; gap: 16px; padding: 15px 0; border-bottom: 1px solid var(--line); }
+.portfolio-manager .action:last-child { border-bottom: none; }
+.portfolio-manager .action::before { counter-increment: act; content: counter(act); font-family: var(--serif); font-weight: 600; font-size: 17px; color: #fff; background: var(--ink); min-width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }
+.portfolio-manager .action .at { font-weight: 600; color: var(--ink); margin-bottom: 3px; font-size: 15px; }
+.portfolio-manager .action .ad { font-size: 13.5px; color: var(--ink-2); margin: 0; }
+
+/* WATCH */
+.portfolio-manager .watch { margin: 8px 0; padding: 15px 18px; border-left: 3px solid var(--ink); background: var(--card); }
+.portfolio-manager .watch .wt { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; margin-bottom: 6px; }
+.portfolio-manager .watch p { margin: 0; font-size: 14px; color: var(--ink-2); }
+
+/* CLOSING */
+.portfolio-manager .closing { margin: 22px 0 8px; padding: 20px 22px; background: var(--ink); color: #efe7d8; border-radius: 4px; font-size: 15px; line-height: 1.6; }
+.portfolio-manager .closing strong { color: #fff; }
+
+/* SIGNOFF */
+.portfolio-manager .signoff { padding: 0 clamp(26px, 6vw, 62px); margin: 22px 0 6px; display: flex; align-items: center; gap: 12px; }
+.portfolio-manager .signoff .av { width: 40px; height: 40px; border-radius: 50%; background: var(--saffron); display: grid; place-items: center; font-family: var(--serif); font-weight: 600; color: #3a2a08; font-size: 18px; }
+.portfolio-manager .signoff .sn b { font-family: var(--serif); font-weight: 600; color: var(--ink); display: block; font-size: 15px; }
+.portfolio-manager .signoff .sn span { font-size: 12px; color: var(--ink-3); }
+
+/* FOOT (disclaimer) */
+.portfolio-manager .foot { padding: 18px clamp(26px, 6vw, 62px) 34px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--ink-3); font-style: italic; line-height: 1.6; }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 600px) {
+  .portfolio-manager .hero { grid-template-columns: 1fr; }
+  .portfolio-manager .hero-score { border-right: none; border-bottom: 1px solid var(--line); flex-direction: row; align-items: center; gap: 16px; }
+  .portfolio-manager .stat-grid { grid-template-columns: 1fr 1fr; }
+  .portfolio-manager .chips { grid-template-columns: 1fr 1fr; }
+  .portfolio-manager .lede { font-size: 18px; }
+  .portfolio-manager .stress-num { font-size: 40px; }
+  .portfolio-manager .heat .cell { width: 40px; }
+}
