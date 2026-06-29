@@ -28,7 +28,7 @@ function isIndexSymbol(s: string): boolean {
 }
 
 /**
- * Flagship Bloomberg-style trading terminal (`/` and `/dashboard`).
+ * Flagship Bloomberg-style trading terminal (`/bieu-do`; `/dashboard` redirects here).
  *
  * Renders the FULL standalone chrome (NOT inside AppShell): TrialBanner +
  * Header + MarketBar + a flex body [LeftSidebar(40) | CenterPanel(flex-1) |

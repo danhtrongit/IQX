@@ -25,7 +25,7 @@ export function StressTest({ beta, nav, managerVoice, topHoldings }: StressTestP
   const drivers =
     topHoldings.length > 0
       ? topHoldings.slice(0, 3).join(", ")
-      : "các vị thế lớn nhất"
+      : "các vị thế lớn nhất của bạn"
 
   return (
     <div>
@@ -57,8 +57,8 @@ export function StressTest({ beta, nav, managerVoice, topHoldings }: StressTestP
             </div>
             <div className="stress-expl">
               {scenText} sẽ kéo danh mục của bạn xuống khoảng{" "}
-              <b style={{ color: "#fff" }}>{lossPct}</b>. Phần lớn mức giảm đến từ {drivers}{" "}
-              — những vị thế lớn nhất của bạn.
+              <b style={{ color: "#fff" }}>{lossPct}</b>. Phần lớn mức giảm đến từ {drivers}
+              {topHoldings.length > 0 ? " — những vị thế lớn nhất của bạn" : ""}.
             </div>
           </div>
           <div className="stress-bar">
