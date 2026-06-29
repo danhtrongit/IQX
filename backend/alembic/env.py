@@ -39,6 +39,7 @@ from app.models.virtual_trading import (  # noqa: F401, E402
     VirtualTradingAccount,
     VirtualTradingConfig,
 )
+from app.models.portfolio_report import PortfolioReport  # noqa: F401, E402
 
 # Alembic Config object
 config = context.config
