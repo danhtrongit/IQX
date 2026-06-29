@@ -40,6 +40,18 @@ FORBIDDEN_INTL = [
 # kept for callers that may import it
 DERIV_WHITELIST: set[str] = set()
 
+# Cosmetic/style rules. They are still surfaced by validate_output() (so the retry loop
+# tries to produce a fully-clean article), but they must NEVER block publication on their
+# own — otherwise a single stylistic nit can take the daily article offline for days.
+# Everything NOT in this set (forbidden EN/leak/intl terms, BUG20/BUG21, headline length,
+# required market_health terms) is a hard/blocking error.
+SOFT_ERROR_PREFIXES: tuple[str, ...] = ("BUG15", "BUG16", "BUG17", "BUG18")
+
+
+def hard_errors(errors: list[str]) -> list[str]:
+    """Return only the blocking errors — the cosmetic SOFT_ERROR_PREFIXES are excluded."""
+    return [e for e in errors if not e.startswith(SOFT_ERROR_PREFIXES)]
+
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -97,8 +109,11 @@ def validate_output(out: dict[str, Any], payload: dict[str, Any]) -> list[str]:
             r"\d+[.,]?\d*",
             _strip(s.get("condition_html", "")) + _strip(s.get("outcome_html", "")),
         ))
+    # A figure repeated exactly twice across a multi-paragraph editorial is normal and
+    # readable; only flag genuinely redundant repetition (3+). BUG16 is cosmetic anyway
+    # (see SOFT_ERROR_PREFIXES / hard_errors) so it never blocks publication on its own.
     for num, cnt in Counter(f"{n} {u}" for n, u in nums).items():
-        if cnt > 1 and num.split()[0] not in tech:
+        if cnt >= 3 and num.split()[0] not in tech:
             e.append(f"BUG16: số '{num}' lặp {cnt} lần")
 
     # BUG15: memory placement (warn only — not a hard error for new contract)

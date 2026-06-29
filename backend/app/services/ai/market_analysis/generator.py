@@ -22,7 +22,7 @@ from .classifier import classify_session
 from .memory import build_memory_context, persist_analysis, verify_pending_claims
 from .payload import build_analysis_payload
 from .prompts import SYSTEM_PROMPT, build_user_prompt
-from .validator import validate_output
+from .validator import hard_errors, validate_output
 
 logger = logging.getLogger(__name__)
 
@@ -121,14 +121,28 @@ async def generate_analysis(
             break
         logger.warning("attempt %d validation errors: %s", attempt, last_errors)
 
-    valid = not last_errors and output is not None
+    valid = not last_errors and output is not None  # fully clean (no errors at all)
+    # Publish when no BLOCKING errors remain — cosmetic rules (BUG15/16/17/18) must not
+    # take the daily article offline. After exhausting retries we still ship the best
+    # attempt if its only residual issues are cosmetic, logging them for observability.
+    blocking = hard_errors(last_errors) if output is not None else list(last_errors)
+    publishable = output is not None and not blocking
 
     # Attach charts block from payload so persist_analysis can store it in meta
     if output is not None:
         output["charts"] = payload.get("charts")
+        if last_errors:
+            meta = output.setdefault("meta", {})
+            if isinstance(meta, dict):
+                meta["validation_warnings"] = last_errors
+            if publishable:
+                logger.info(
+                    "publishing best-effort with %d cosmetic warning(s): %s",
+                    len(last_errors), last_errors,
+                )
 
     persisted = False
-    if db is not None and valid:
+    if db is not None and publishable:
         try:
             await persist_analysis(db, output, session_date, session_type)
             persisted = True

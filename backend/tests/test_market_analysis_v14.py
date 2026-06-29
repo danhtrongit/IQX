@@ -105,6 +105,34 @@ def test_validator_flags_missing_unexplained_on_contradiction():
     o = _ok_out(); o["unexplained"] = None
     assert any("BUG21" in e for e in validate_output(o, _PAYLOAD))
 
+def test_validator_bug16_allows_number_repeated_twice():
+    # A figure appearing exactly twice across paragraphs is normal editorial — must NOT flag.
+    o = _ok_out()
+    o["paragraphs"]["structure"] = "VN-Index giảm 1,08 điểm so với tham chiếu."
+    o["paragraphs"]["smart_money"] = "Nhóm dẫn dắt mất 1,08 điểm, kéo chỉ số đi xuống."
+    assert not any("BUG16" in e for e in validate_output(o, _PAYLOAD))
+
+def test_validator_bug16_flags_triple_repeat():
+    o = _ok_out()
+    o["paragraphs"]["structure"] = "Mức 2,15 điểm xuất hiện ở đây."
+    o["paragraphs"]["smart_money"] = "Lại 2,15 điểm một lần nữa."
+    o["paragraphs"]["market_health"] = o["paragraphs"]["market_health"] + " Thêm 2,15 điểm lần thứ ba."
+    assert any("BUG16" in e for e in validate_output(o, _PAYLOAD))
+
+def test_hard_errors_excludes_cosmetic_rules():
+    from app.services.ai.market_analysis.validator import hard_errors
+    errs = [
+        "BUG16: số '1,08 điểm' lặp 3 lần", "BUG17: tagline.text còn chứa marker",
+        "BUG18: market_health chỉ 50 từ (cần ≥70)", "BUG15: memory reference giữa đoạn",
+        "Anh hóa: 'momentum'", "BUG21: có mâu thuẫn nhưng thiếu 'Chưa giải thích được'",
+        "Quốc tế: 'fed'",
+    ]
+    hard = hard_errors(errs)
+    assert "Anh hóa: 'momentum'" in hard
+    assert any(x.startswith("BUG21") for x in hard)
+    assert any(x.startswith("Quốc tế") for x in hard)
+    assert not any(x.startswith(("BUG15", "BUG16", "BUG17", "BUG18")) for x in hard)
+
 
 # ── v1.4 generator / memory tests (Task 6) ──────────────────────────────────
 
