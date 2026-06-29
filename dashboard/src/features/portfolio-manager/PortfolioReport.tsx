@@ -18,7 +18,7 @@ import { QualitySector } from "./components/QualitySector"
 import { BehaviorLowData } from "./components/BehaviorLowData"
 import { HealthPillars } from "./components/HealthPillars"
 import { ActionsWatchClosing } from "./components/ActionsWatchClosing"
-import { pct, signedPct, vndShort, points } from "./format"
+import { signedPct, vndShort, points } from "./format"
 
 function LoadingState() {
   return (
