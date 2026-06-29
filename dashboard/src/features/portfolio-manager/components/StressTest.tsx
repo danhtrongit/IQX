@@ -11,9 +11,10 @@ interface StressTestProps {
   beta: number
   nav: number
   managerVoice: string
+  topHoldings: string[]
 }
 
-export function StressTest({ beta, nav, managerVoice }: StressTestProps) {
+export function StressTest({ beta, nav, managerVoice, topHoldings }: StressTestProps) {
   const [d, setD] = useState<5 | 10 | 15>(10)
 
   const loss = d * beta
@@ -21,6 +22,10 @@ export function StressTest({ beta, nav, managerVoice }: StressTestProps) {
   const barWidth = Math.min(loss * 4, 100)
   const lossPct = signedPct(-loss / 100)
   const scenText = SCENARIOS[d]
+  const drivers =
+    topHoldings.length > 0
+      ? topHoldings.slice(0, 3).join(", ")
+      : "các vị thế lớn nhất"
 
   return (
     <div>
@@ -52,7 +57,8 @@ export function StressTest({ beta, nav, managerVoice }: StressTestProps) {
             </div>
             <div className="stress-expl">
               {scenText} sẽ kéo danh mục của bạn xuống khoảng{" "}
-              <b style={{ color: "#fff" }}>{lossPct}</b>. Phần lớn mức giảm đến từ các vị thế lớn nhất và những mã nhạy nhất với thị trường.
+              <b style={{ color: "#fff" }}>{lossPct}</b>. Phần lớn mức giảm đến từ {drivers}{" "}
+              — những vị thế lớn nhất của bạn.
             </div>
           </div>
           <div className="stress-bar">

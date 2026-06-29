@@ -155,6 +155,10 @@ export function PortfolioReport({ injected }: { injected?: AnalyzeResponse }) {
         beta={analysis.risk.beta}
         nav={analysis.overview.nav}
         managerVoice={narrative.layers.stress}
+        topHoldings={[...analysis.overview.positions]
+          .sort((a, b) => b.weight - a.weight)
+          .slice(0, 3)
+          .map((p) => p.ticker)}
       />
 
       {/* 8. CorrelationHeatmap */}
