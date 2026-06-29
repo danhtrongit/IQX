@@ -8,6 +8,9 @@ import { TopLoadingBar } from "@/shared/ui/TopLoadingBar"
 const DashboardPage = lazy(() =>
   import("@/features/dashboard").then((m) => ({ default: m.DashboardPage })),
 )
+const MarketDailyPage = lazy(() =>
+  import("@/features/market-overview/daily/MarketDailyPage").then((m) => ({ default: m.MarketDailyPage })),
+)
 const MarketingPage = lazy(() =>
   import("@/features/marketing").then((m) => ({ default: m.MarketingPage })),
 )
@@ -63,8 +66,8 @@ export function AppRouter() {
     <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* Standalone (own chrome / full-screen terminal) */}
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/bieu-do" element={<DashboardPage />} />
+        <Route path="/dashboard" element={<Navigate to="/bieu-do" replace />} />
         <Route path="/gioi-thieu" element={<MarketingPage />} />
         <Route path="/co-phieu/:symbol" element={<StockPage />} />
         <Route path="/backtest" element={<Navigate to="/chien-luoc?tab=backtest" replace />} />
@@ -72,6 +75,7 @@ export function AppRouter() {
 
         {/* App shell */}
         <Route element={<AppShell />}>
+          <Route path="/" element={<MarketDailyPage />} />
           <Route path="/co-phieu" element={<StockDirectoryPage />} />
           <Route path="/bang-gia" element={<BangGiaPage />} />
           <Route path="/cai-dat" element={<SettingsPage />} />
