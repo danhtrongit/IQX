@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .inputs import Holding, PortfolioInputs
+from .inputs import Holding, PortfolioInputs, normalize_sector_name
 from . import returns as R
 
 
@@ -71,3 +71,23 @@ def layer_performance(inp: PortfolioInputs, *, nav_series: list[float] | None = 
         "max_drawdown": _r3(mdd),
         "method": "simple_inception",
     }
+
+
+def layer_allocation(inp: PortfolioInputs) -> list[dict]:
+    by_sector: dict[str, float] = {}
+    for h in inp.holdings:
+        by_sector[h.sector] = by_sector.get(h.sector, 0.0) + _weight(h, inp.nav)
+
+    bench_by_norm = {normalize_sector_name(k): v for k, v in inp.sector_weights.items()}
+
+    rows = []
+    for sector, weight in by_sector.items():
+        bench = bench_by_norm.get(normalize_sector_name(sector))
+        rows.append({
+            "sector": sector,
+            "weight": _r3(weight),
+            "benchmark": _r3(bench) if bench is not None else None,
+            "active": _r3(weight - bench) if bench is not None else None,
+        })
+    rows.sort(key=lambda r: r["weight"], reverse=True)
+    return rows
