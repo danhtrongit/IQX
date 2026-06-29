@@ -27,5 +27,9 @@ def test_overview_weights_and_cash():
 
 def test_concentration_hhi_and_effective_n():
     out = L.layer_concentration(_inp())
-    assert out["top1"] >= out["largest_sector"] or out["top1"] <= 1.0  # sanity
+    # top1 = TCB weight ≈ 99.858M / 534M ≈ 0.187
+    assert math.isclose(out["top1"], 99_858_000 / 534_000_000, abs_tol=1e-3)
+    # hhi = (85.44M/534M)^2 + (99.858M/534M)^2 ; effective_n = 1/hhi
+    expected_hhi = (85_440_000 / 534_000_000) ** 2 + (99_858_000 / 534_000_000) ** 2
+    assert math.isclose(out["effective_n"], 1.0 / expected_hhi, abs_tol=1e-2)
     assert out["effective_n"] > 1.0
