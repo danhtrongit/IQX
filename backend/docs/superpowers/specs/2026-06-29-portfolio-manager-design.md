@@ -19,7 +19,7 @@ This is an **integration design**: it records how the provided product spec is r
 | Trigger / cache | **On-demand + day-cache** by `(account_id, trading_date)`. A "kỳ" = each generated report; "previous period" = the user's last saved snapshot |
 | Performance method | **Simple since-inception return** (TWR deferred) |
 | Insight library | **6 starter templates** (full 10+ library deferred) |
-| Deferred (explicitly out of scope) | TWR, Brinson attribution, remaining 4 insight templates, any per-user scheduled generation |
+| Deferred (explicitly out of scope) | TWR, Brinson attribution, remaining 4 insight templates, any per-user scheduled generation, **the conditional sector-benchmark in Layer 07** (`quality.sector_benchmark` stays `null` in v1; `SECTOR_BENCH_THRESHOLD` is reserved for it), **weekend/holiday fold of the day-cache onto the last trading session** (v1 keys on the ICT calendar date) |
 
 ---
 
