@@ -7,8 +7,6 @@ import { arcoComponentConfig, arcoLocale } from "@/shared/theme/arco-config"
 import { AuthProvider } from "@/features/auth"
 import { MarketDataProvider } from "@/features/market-data"
 import { SidebarProvider } from "@/shared/contexts/sidebar-context"
-import { MarketModalProvider } from "@/shared/contexts/market-modal-context"
-import { MarketOverviewModal } from "@/features/market-overview/daily/MarketOverviewModal"
 
 type ConfigProviderProps = ComponentProps<typeof ConfigProvider>
 
@@ -29,10 +27,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
           <AuthProvider>
             <MarketDataProvider>
               <SidebarProvider defaultPanel="news">
-                <MarketModalProvider>
-                  <MarketOverviewModal />
-                  {children}
-                </MarketModalProvider>
+                {children}
               </SidebarProvider>
             </MarketDataProvider>
           </AuthProvider>
