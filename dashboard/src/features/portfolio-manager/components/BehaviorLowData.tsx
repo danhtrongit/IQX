@@ -1,5 +1,5 @@
-import type { AnalysisJSON, NarrativeJSON } from "../types"
-import { signedPct } from "../format"
+import type { AnalysisJSON } from "../types"
+import { num, signedPct } from "../format"
 import { StatGrid } from "./StatGrid"
 
 interface BehaviorLowDataProps {
@@ -12,12 +12,12 @@ export function BehaviorLowData({ behavior, managerVoice, lowDataNote }: Behavio
   const cells = [
     {
       label: "Nắm giữ bình quân",
-      value: `${behavior.avg_holding_days}`,
+      value: num(behavior.avg_holding_days, 0),
       sub: "ngày",
     },
     {
       label: "Mã đang lỗ",
-      value: `${behavior.losing_count}`,
+      value: num(behavior.losing_count, 0),
       tone: behavior.losing_count > 0 ? ("down" as const) : undefined,
     },
     {

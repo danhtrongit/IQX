@@ -1,4 +1,4 @@
-import type { AttributionRow, NarrativeJSON } from "../types"
+import type { AttributionRow } from "../types"
 import { vndShort } from "../format"
 
 interface AttributionProps {
