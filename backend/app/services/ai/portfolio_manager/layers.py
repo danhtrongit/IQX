@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from .inputs import Holding, PortfolioInputs
+from . import returns as R
 
 
 def _r3(x: float | None) -> float | None:
@@ -49,4 +50,24 @@ def layer_concentration(inp: PortfolioInputs) -> dict:
         "top3": _r3(sum(weights_sorted[:3])),
         "effective_n": _r3(1.0 / hhi) if hhi > 0 else 0.0,
         "largest_sector": _r3(max(sector_w.values())) if sector_w else 0.0,
+    }
+
+
+def layer_performance(inp: PortfolioInputs, *, nav_series: list[float] | None = None) -> dict:
+    total_pnl = sum(h.unrealized_pnl for h in inp.holdings)
+    total_cost = sum(h.cost_basis for h in inp.holdings)
+    portfolio_return = total_pnl / total_cost if total_cost else 0.0
+
+    bench = inp.benchmark_closes
+    benchmark_return = (bench[-1] / bench[0] - 1.0) if len(bench) >= 2 and bench[0] else 0.0
+
+    dd_source = nav_series if nav_series else bench
+    mdd = R.max_drawdown(dd_source) if dd_source else 0.0
+
+    return {
+        "portfolio_return": _r3(portfolio_return),
+        "benchmark_return": _r3(benchmark_return),
+        "excess_return": _r3(portfolio_return - benchmark_return),
+        "max_drawdown": _r3(mdd),
+        "method": "simple_inception",
     }
