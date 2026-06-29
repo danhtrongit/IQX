@@ -115,6 +115,9 @@ def layer_risk(inp: PortfolioInputs) -> tuple[dict, dict[str, bool]]:
 
     series_lengths = [len(bench_returns)] + [len(r) for r in per_returns.values()]
     n = min(series_lengths) if series_lengths else 0
+    # Degrade only when there is no usable data at all (0 confident holdings or <2 return points).
+    # A SINGLE confident holding intentionally still yields a real single-asset beta/volatility —
+    # zeroing it here would feed beta=0 into the risk-pillar score and mislabel the book as max-risk.
     if n < 2 or len(confident) < 1:
         return ({"beta": 0.0, "volatility": 0.0, "tracking_error": 0.0,
                  "correlation": [], "excluded": excluded}, low_conf)
