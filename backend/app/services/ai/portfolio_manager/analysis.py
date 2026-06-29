@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import date
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError
@@ -11,7 +9,7 @@ from app.repositories.portfolio_manager import PortfolioReportRepository
 from app.services.virtual_trading.service import VirtualTradingService
 
 from . import layers as L
-from .config import CHANGED_WEIGHT_THRESHOLD, MIN_POSITIONS_FOR_ANALYSIS, SECTOR_BENCH_THRESHOLD
+from .config import CHANGED_WEIGHT_THRESHOLD, MIN_POSITIONS_FOR_ANALYSIS
 from .insights import select_insights
 from .inputs import PortfolioInputs, load_inputs
 from .scoring import overall_score, score_pillars

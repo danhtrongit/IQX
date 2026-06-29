@@ -1,15 +1,8 @@
-import json
 from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import AsyncClient
 
-from app.core.config import get_settings
-
-
-async def _premium_headers(client, premium_user):
-    _, headers = premium_user
-    return headers
 
 
 @pytest.mark.asyncio

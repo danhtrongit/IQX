@@ -11,8 +11,8 @@ export function PerformanceStats({ performance, managerVoice }: PerformanceStats
   const cells = [
     {
       label: "Danh mục",
-      value: pct(performance.portfolio_return),
-      tone: "up" as const,
+      value: signedPct(performance.portfolio_return),
+      tone: performance.portfolio_return >= 0 ? ("up" as const) : ("down" as const),
     },
     {
       label: "VN-Index",

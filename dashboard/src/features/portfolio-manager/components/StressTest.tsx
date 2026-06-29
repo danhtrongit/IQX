@@ -52,9 +52,7 @@ export function StressTest({ beta, nav, managerVoice }: StressTestProps) {
             </div>
             <div className="stress-expl">
               {scenText} sẽ kéo danh mục của bạn xuống khoảng{" "}
-              <b style={{ color: "#fff" }}>{lossPct}</b>. Phần lớn cú giảm đến
-              từ HPG, nhóm ngân hàng và chứng khoán — những vị thế lớn nhất
-              của bạn.
+              <b style={{ color: "#fff" }}>{lossPct}</b>. Phần lớn mức giảm đến từ các vị thế lớn nhất và những mã nhạy nhất với thị trường.
             </div>
           </div>
           <div className="stress-bar">

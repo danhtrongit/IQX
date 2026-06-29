@@ -18,7 +18,7 @@ import { QualitySector } from "./components/QualitySector"
 import { BehaviorLowData } from "./components/BehaviorLowData"
 import { HealthPillars } from "./components/HealthPillars"
 import { ActionsWatchClosing } from "./components/ActionsWatchClosing"
-import { pct, vndShort, points } from "./format"
+import { pct, signedPct, vndShort, points } from "./format"
 
 function LoadingState() {
   return (
@@ -85,7 +85,7 @@ export function PortfolioReport({ injected }: { injected?: AnalyzeResponse }) {
     },
     {
       label: "Lợi nhuận",
-      value: pct(analysis.overview.total_return),
+      value: signedPct(analysis.overview.total_return),
       tone: analysis.overview.total_return >= 0 ? ("up" as const) : ("down" as const),
     },
     {
@@ -118,6 +118,9 @@ export function PortfolioReport({ injected }: { injected?: AnalyzeResponse }) {
         scores={analysis.scores}
         verdict={narrative.verdict}
       />
+
+      {/* 2b. Lede */}
+      <p className="lede">{narrative.lede}</p>
 
       {/* 3. ProgressCompare */}
       <ProgressCompare
