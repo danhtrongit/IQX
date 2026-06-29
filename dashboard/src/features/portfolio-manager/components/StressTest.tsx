@@ -66,7 +66,7 @@ export function StressTest({ beta, nav, managerVoice, topHoldings }: StressTestP
           </div>
         </div>
       </div>
-      <div className="mgr">{managerVoice}</div>
+      {managerVoice && <div className="mgr">{managerVoice}</div>}
     </div>
   )
 }
