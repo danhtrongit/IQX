@@ -101,12 +101,6 @@ async def build_analysis(db: AsyncSession, user_id) -> dict:
         prev_overall = (prev.scores or {}).get("overall")
         progress["prev_actions"] = _diff_prev_actions(prev.recommended_actions or [], current_weights, prev_snapshot or {})
 
-    # NOTE: quality.sector_benchmark is left as None in v1 — per-sector return attribution
-    # (computing `your_return` vs `industry_return` for each sector) requires a per-sector
-    # OHLCV series that is not yet available in load_inputs. Full sector-benchmark merge is
-    # deferred to Phase 2 (see spec §8 deferred list). The layer_quality call already returns
-    # sector_benchmark=None; nothing more to merge here.
-
     analysis = {
         "meta": {"portfolio_id": str(account_id)[:8], "date": inp.as_of.isoformat(),
                  "mode": mode, "period": f"kỳ {period_number}", "period_number": period_number},

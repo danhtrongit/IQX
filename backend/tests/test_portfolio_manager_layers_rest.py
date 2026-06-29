@@ -31,3 +31,34 @@ def test_behavior_losing_count_and_worst_loser():
     out = L.layer_behavior(_inp())
     assert out["losing_count"] == 1
     assert out["worst_loser"]["ticker"] == "VND"
+
+
+def test_quality_sector_benchmark_when_sector_dominant():
+    # Two Ngân hàng holdings dominate (>25%); both up ~10% over the window; sector ~14%.
+    def closes(g):  # 130 bars, end/start-126 ≈ (1+g)
+        base = [100.0] * 4 + [100.0 * (1 + g) ** (i / 125) for i in range(126)]
+        return base
+    h = [
+        Holding("TCB", 1, 1, 1, "Ngân hàng", 120_000_000, 0, 109_000_000, closes=closes(0.10)),
+        Holding("MBB", 1, 1, 1, "Ngân hàng", 100_000_000, 0, 91_000_000, closes=closes(0.10)),
+        Holding("HPG", 1, 1, 1, "Thép", 30_000_000, 0, 28_000_000, closes=closes(0.05)),
+    ]
+    inp = PortfolioInputs(nav=300_000_000, cash=0, holdings=h, benchmark_closes=[],
+                          sector_weights={}, inception_date=None, trades=[],
+                          as_of=__import__("datetime").date(2026, 6, 23),
+                          sector_returns_6m={"Ngân hàng": 0.14})
+    out = L.layer_quality(inp)
+    sb = out["sector_benchmark"]
+    assert sb is not None
+    assert sb["sector"] == "Ngân hàng"
+    assert abs(sb["your_return"] - 0.10) < 0.02
+    assert abs(sb["industry_return"] - 0.14) < 1e-9
+    assert abs(sb["gap"] - (sb["your_return"] - sb["industry_return"])) < 1e-9
+
+
+def test_quality_sector_benchmark_none_when_no_dominant_sector():
+    h = [Holding("HPG", 1, 1, 1, "Thép", 10, 0, 10, closes=[1.0] * 130)]
+    inp = PortfolioInputs(nav=1000, cash=990, holdings=h, benchmark_closes=[], sector_weights={},
+                          inception_date=None, trades=[], as_of=__import__("datetime").date(2026, 6, 23),
+                          sector_returns_6m={})
+    assert L.layer_quality(inp)["sector_benchmark"] is None

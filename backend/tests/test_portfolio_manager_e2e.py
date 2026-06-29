@@ -65,7 +65,7 @@ async def test_full_pipeline_then_cache_hit(db_session, premium_user):
          patch.object(I, "fetch_ohlcv", new=AsyncMock(return_value=(_bars(), "u"))), \
          patch.object(I, "fetch_financial_report",
                       new=AsyncMock(return_value=([{"pe": 9.8, "pb": 1.4, "roe": 0.16, "dividend": 0.02}], "u"))), \
-         patch.object(I, "_load_sector_weights", new=AsyncMock(return_value={"Ngân hàng": 0.38, "Thép": 0.05})), \
+         patch.object(I, "_load_sector_info", new=AsyncMock(return_value=({"Ngân hàng": 0.38, "Thép": 0.05}, {}))), \
          patch.object(I, "_load_sectors_for",
                       new=AsyncMock(return_value={"HPG": "Thép", "TCB": "Ngân hàng", "MBB": "Ngân hàng"})), \
          patch.object(I, "_load_all_trades", new=AsyncMock(return_value=trades)), \

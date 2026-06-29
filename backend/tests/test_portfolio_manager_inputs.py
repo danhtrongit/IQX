@@ -27,7 +27,7 @@ async def test_load_inputs_shapes_holdings_and_benchmark(db_session, premium_use
     with patch.object(I, "VirtualTradingService") as Svc, \
          patch.object(I, "fetch_ohlcv", new=AsyncMock(return_value=(ohlcv_bars, "u"))), \
          patch.object(I, "fetch_financial_report", new=AsyncMock(return_value=(ratio_rows, "u"))), \
-         patch.object(I, "_load_sector_weights", new=AsyncMock(return_value={"Tài nguyên Cơ bản": 0.05})), \
+         patch.object(I, "_load_sector_info", new=AsyncMock(return_value=({"Tài nguyên Cơ bản": 0.05}, {}))), \
          patch.object(I, "_load_sectors_for", new=AsyncMock(return_value={"HPG": "Tài nguyên Cơ bản"})):
         svc = Svc.return_value
         svc.get_portfolio = AsyncMock(return_value=portfolio)

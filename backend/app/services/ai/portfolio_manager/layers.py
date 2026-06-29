@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from itertools import combinations
 
+from .config import SECTOR_BENCH_THRESHOLD
 from .data_confidence import evaluate_confidence
 from .inputs import Holding, PortfolioInputs, normalize_sector_name
 from . import returns as R
@@ -164,13 +165,47 @@ def _weighted(inp: PortfolioInputs, attr: str) -> float | None:
     return sum((h.market_value / total_mv) * v for h, v in pairs)
 
 
+_SECTOR_WINDOW = 126  # ~6 trading months, to match the sector 6m change
+
+
+def _sector_benchmark(inp: PortfolioInputs) -> dict | None:
+    # dominant sector by portfolio weight
+    by_sector: dict[str, float] = {}
+    for h in inp.holdings:
+        by_sector[h.sector] = by_sector.get(h.sector, 0.0) + (h.market_value / inp.nav if inp.nav else 0.0)
+    if not by_sector:
+        return None
+    sector, weight = max(by_sector.items(), key=lambda kv: kv[1])
+    if weight < SECTOR_BENCH_THRESHOLD:
+        return None
+    industry = inp.sector_returns_6m.get(sector)
+    if industry is None:
+        # fall back to a normalized-name match (uses the module-level normalize_sector_name)
+        norm = {normalize_sector_name(k): v for k, v in inp.sector_returns_6m.items()}
+        industry = norm.get(normalize_sector_name(sector))
+    if industry is None:
+        return None
+    # your_return: MV-weighted ~6m return of the dominant sector's holdings
+    members = [h for h in inp.holdings if h.sector == sector and len(h.closes) >= 2]
+    total_mv = sum(h.market_value for h in members)
+    if total_mv <= 0:
+        return None
+    your = 0.0
+    for h in members:
+        w = h.closes[-_SECTOR_WINDOW:] if len(h.closes) >= _SECTOR_WINDOW else h.closes
+        base = w[0] or 1.0
+        your += (h.market_value / total_mv) * (w[-1] / base - 1.0)
+    return {"sector": sector, "your_return": _r3(your), "industry_return": _r3(industry),
+            "gap": _r3(your - industry)}
+
+
 def layer_quality(inp: PortfolioInputs) -> dict:
     return {
         "pe": _r3(_weighted(inp, "pe")),
         "pb": _r3(_weighted(inp, "pb")),
         "roe": _r3(_weighted(inp, "roe")),
         "dividend": _r3(_weighted(inp, "dividend")),
-        "sector_benchmark": None,  # merged by orchestrator (needs per-stock returns)
+        "sector_benchmark": _sector_benchmark(inp),
     }
 
 

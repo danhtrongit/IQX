@@ -54,6 +54,7 @@ class PortfolioInputs:
     inception_date: date | None
     trades: list[VirtualTrade]
     as_of: date
+    sector_returns_6m: dict[str, float] = field(default_factory=dict)
 
 
 def _norm_sector(name: str) -> str:
@@ -112,33 +113,42 @@ def _icb_int(v) -> int | None:
         return None
 
 
-async def _load_sector_weights() -> dict[str, float]:
-    """VN-Index sector weights by market cap (spec §1.6). {} if unavailable."""
+def _pct_to_fraction(v) -> float | None:
+    n = _num(v)
+    if n is None:
+        return None
+    return n / 100.0 if abs(n) > 1.5 else n  # VCI may give percent (14.0) or fraction (0.14)
+
+
+async def _load_sector_info() -> tuple[dict[str, float], dict[str, float]]:
+    """Returns (sector_weights, sector_returns_6m) keyed by VN sector name. ({}, {}) if unavailable."""
     info = await _safe(sector_src.fetch_sector_information(icb_level=2), default=[])
     icb_names = await _safe(mo.fetch_icb_codes(), default=[])
     if not info or not icb_names:
-        return {}
+        return {}, {}
     name_by_code: dict[int, str] = {}
     for r in icb_names:
         code = _icb_int(r.get("icb_code"))
         if code is not None and r.get("vi_sector"):
             name_by_code[code] = r["vi_sector"]
     caps: dict[str, float] = {}
-    matched = 0
+    rets: dict[str, float] = {}
     for row in info:
         code = _icb_int(row.get("icb_code"))
-        cap = row.get("market_cap")
         vi = name_by_code.get(code) if code is not None else None
-        if vi and isinstance(cap, (int, float)) and cap > 0:
+        if not vi:
+            continue
+        cap = row.get("market_cap")
+        if isinstance(cap, (int, float)) and cap > 0:
             caps[vi] = caps.get(vi, 0.0) + float(cap)
-            matched += 1
-    if matched == 0:
-        # Observable degrade: Layer 03 active-weight will fall back to "no benchmark".
-        logger.warning("portfolio_manager: sector-weight join matched 0 sectors (ICB code mismatch?)")
+        r6 = _pct_to_fraction(row.get("percent_price_change_6m"))
+        if r6 is not None:
+            rets[vi] = r6
     total = sum(caps.values())
-    if total <= 0:
-        return {}
-    return {name: cap / total for name, cap in caps.items()}
+    weights = {name: cap / total for name, cap in caps.items()} if total > 0 else {}
+    if not weights:
+        logger.warning("portfolio_manager: sector-weight join matched 0 sectors (ICB code mismatch?)")
+    return weights, rets
 
 
 async def load_inputs(db: AsyncSession, user_id) -> PortfolioInputs:
@@ -151,7 +161,7 @@ async def load_inputs(db: AsyncSession, user_id) -> PortfolioInputs:
     tickers = [p["symbol"] for p in raw_positions]
 
     sectors = await _load_sectors_for(db, tickers)
-    sector_weights = await _load_sector_weights()
+    sector_weights, sector_returns_6m = await _load_sector_info()
 
     holdings: list[Holding] = []
     for p in raw_positions:
@@ -193,6 +203,7 @@ async def load_inputs(db: AsyncSession, user_id) -> PortfolioInputs:
         inception_date=inception,
         trades=all_trades,
         as_of=datetime.now(UTC).date(),
+        sector_returns_6m=sector_returns_6m,
     )
 
 
