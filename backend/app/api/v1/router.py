@@ -27,6 +27,7 @@ from app.api.v1.endpoints import (
     market_analysis,
     market_data,
     market_global,
+    portfolio_manager,
     premium,
     realtime_ws,
     telegram,
@@ -65,4 +66,5 @@ api_v1_router.include_router(admin_users.router)
 api_v1_router.include_router(admin_vt.router)
 api_v1_router.include_router(admin_ipn.router)
 api_v1_router.include_router(admin_system.router)
+api_v1_router.include_router(portfolio_manager.router)
 
