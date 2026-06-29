@@ -43,3 +43,18 @@ async def test_load_inputs_shapes_holdings_and_benchmark(db_session, premium_use
     assert h.pe == 9.8 and h.roe == 0.16
     assert len(h.closes) == 130
     assert len(result.benchmark_closes) == 130
+
+
+def test_pick_extracts_real_vci_ratio_keys():
+    """Lock the `_pick` candidate lists to the REAL VCI ratio schema (verified live 2026-06-29).
+
+    `fetch_financial_report(report_type="ratio")` rows expose pe/pb/roe as literal keys and
+    dividend as `dividend_yield`. If VCI renames a key, this regression fails instead of the
+    quality pillar silently going null.
+    """
+    row = {"pe": 11.79, "pb": 1.396, "roe": 0.1269, "dividend_yield": 0.0213,
+           "eps": 5000.0, "market_cap": 2.1e14}
+    assert I._pick(row, "pe", "price_to_earning", "pe_ratio") == 11.79
+    assert I._pick(row, "pb", "price_to_book", "pb_ratio") == 1.396
+    assert I._pick(row, "roe", "roea", "roe_ratio") == 0.1269
+    assert I._pick(row, "dividend", "cash_dividend", "dividend_yield") == 0.0213
