@@ -8,6 +8,7 @@
 .portfolio-manager {
   --paper: var(--color-bg-2);
   --card: var(--color-bg-1);
+  --chip: var(--color-fill-2);   /* warm parchment surface for chips/tracks/panels */
   --ink: var(--color-text-1);
   --ink-2: var(--color-text-2);
   --ink-3: var(--color-text-3);
@@ -33,6 +34,7 @@
 body[arco-theme='light'] .portfolio-manager {
   --paper: #f6f2eb;          /* warm paper, light mode only */
   --card: #fffdf8;
+  --chip: #f3ece0;           /* warm parchment (light only) */
   --ink: #1f1c17;
   --ink-2: #544e44;
   --ink-3: #8a8276;
@@ -85,7 +87,7 @@ body[arco-theme='light'] .portfolio-manager {
 .portfolio-manager .lede strong { color: var(--ink); font-weight: 600; }
 
 /* FIG inline code highlight */
-.portfolio-manager .fig { font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 600; color: var(--ink); background: var(--card); padding: 1px 6px; border-radius: 3px; font-size: .94em; white-space: nowrap; }
+.portfolio-manager .fig { font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 600; color: var(--ink); background: var(--chip); padding: 1px 6px; border-radius: 3px; font-size: .94em; white-space: nowrap; }
 .portfolio-manager .fig.up { color: var(--up); background: var(--up-soft); }
 .portfolio-manager .fig.down { color: var(--down); background: var(--down-soft); }
 
@@ -111,12 +113,12 @@ body[arco-theme='light'] .portfolio-manager {
 .portfolio-manager .pos { color: var(--up); }
 .portfolio-manager .neg { color: var(--down); }
 .portfolio-manager tr.cash td:first-child { color: var(--ink-3); font-style: italic; }
-.portfolio-manager .flag { font-size: 10px; background: var(--card); color: var(--neutral); padding: 1px 5px; border-radius: 3px; margin-left: 6px; font-family: var(--font-sans, "Tahoma"), sans-serif; font-weight: 500; }
+.portfolio-manager .flag { font-size: 10px; background: var(--chip); color: var(--neutral); padding: 1px 5px; border-radius: 3px; margin-left: 6px; font-family: var(--font-sans, "Tahoma"), sans-serif; font-weight: 500; }
 
 /* STAT GRID */
 .portfolio-manager .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 6px 0; }
 .portfolio-manager .stat-grid.c2 { grid-template-columns: repeat(2, 1fr); }
-.portfolio-manager .stat { background: var(--card); padding: 13px 14px; }
+.portfolio-manager .stat { background: var(--chip); padding: 13px 14px; }
 .portfolio-manager .stat .k { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 5px; }
 .portfolio-manager .stat .v { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 20px; font-weight: 600; letter-spacing: -.5px; }
 .portfolio-manager .stat .v.up { color: var(--up); }
@@ -126,7 +128,7 @@ body[arco-theme='light'] .portfolio-manager {
 /* ALLOCATION BARS */
 .portfolio-manager .wbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .portfolio-manager .wbar .lbl { font-size: 12.5px; min-width: 92px; font-weight: 500; }
-.portfolio-manager .wbar .track { flex: 1; height: 18px; background: var(--card); border-radius: 2px; position: relative; overflow: hidden; }
+.portfolio-manager .wbar .track { flex: 1; height: 18px; background: var(--chip); border-radius: 2px; position: relative; overflow: hidden; }
 .portfolio-manager .wbar .fill { height: 100%; border-radius: 2px; background: var(--saffron); }
 .portfolio-manager .wbar .bench { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); }
 .portfolio-manager .wbar .pct { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; min-width: 42px; text-align: right; font-weight: 600; }
@@ -157,12 +159,12 @@ body[arco-theme='light'] .portfolio-manager {
 .portfolio-manager .heat th { font-size: 11px; color: var(--ink-2); font-weight: 600; padding: 2px 5px; text-align: center; }
 .portfolio-manager .heat td { padding: 0; text-align: center; }
 .portfolio-manager .heat .cell { width: 46px; height: 34px; display: grid; place-items: center; font-size: 12px; font-weight: 600; border-radius: 3px; color: #fff; }
-.portfolio-manager .heat .self { background: var(--card); color: var(--ink-3); }
+.portfolio-manager .heat .self { background: var(--chip); color: var(--ink-3); }
 .portfolio-manager .sig-call { margin-top: 10px; font-size: 13px; color: var(--ink-2); display: flex; gap: 10px; align-items: flex-start; }
 .portfolio-manager .sig-call .badge { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #fff; background: var(--down); padding: 2px 8px; border-radius: 2px; white-space: nowrap; margin-top: 2px; }
 
 /* DATA CONFIDENCE (lowdata) */
-.portfolio-manager .lowdata { margin: 14px 0; padding: 13px 16px; border: 1px dashed var(--line-2); border-radius: 4px; background: var(--card); display: flex; gap: 12px; }
+.portfolio-manager .lowdata { margin: 14px 0; padding: 13px 16px; border: 1px dashed var(--line-2); border-radius: 4px; background: var(--chip); display: flex; gap: 12px; }
 .portfolio-manager .lowdata .d { width: 9px; height: 9px; border-radius: 50%; background: var(--neutral); margin-top: 6px; flex-shrink: 0; }
 .portfolio-manager .lowdata .lt { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--neutral); font-weight: 600; margin-bottom: 4px; }
 .portfolio-manager .lowdata p { margin: 0; font-size: 13px; color: var(--ink-2); }
@@ -171,7 +173,7 @@ body[arco-theme='light'] .portfolio-manager {
 .portfolio-manager .attr { margin-bottom: 8px; }
 .portfolio-manager .attr-row { display: flex; align-items: center; gap: 10px; }
 .portfolio-manager .attr .nm { min-width: 58px; font-weight: 600; font-size: 13px; }
-.portfolio-manager .attr .track { flex: 1; height: 20px; background: var(--card); border-radius: 2px; overflow: hidden; display: flex; }
+.portfolio-manager .attr .track { flex: 1; height: 20px; background: var(--chip); border-radius: 2px; overflow: hidden; display: flex; }
 .portfolio-manager .attr .track.r { justify-content: flex-end; }
 .portfolio-manager .attr .fill { height: 100%; }
 .portfolio-manager .attr .fill.p { background: var(--up); }
@@ -188,7 +190,7 @@ body[arco-theme='light'] .portfolio-manager {
 .portfolio-manager .reveal .body p { margin: 0; color: var(--ink-2); }
 
 /* SECTOR BENCHMARK */
-.portfolio-manager .sectorbench { margin: 14px 0; padding: 13px 16px; background: var(--card); border-radius: 4px; }
+.portfolio-manager .sectorbench { margin: 14px 0; padding: 13px 16px; background: var(--chip); border-radius: 4px; }
 .portfolio-manager .sectorbench .sbt { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; margin-bottom: 10px; }
 .portfolio-manager .sbrow { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; font-size: 13px; }
 .portfolio-manager .sbrow .nm { min-width: 118px; color: var(--ink-2); }
@@ -200,7 +202,7 @@ body[arco-theme='light'] .portfolio-manager {
 
 /* QUALITY CHIPS */
 .portfolio-manager .chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 6px 0; }
-.portfolio-manager .chip { background: var(--card); padding: 14px 12px; text-align: center; }
+.portfolio-manager .chip { background: var(--chip); padding: 14px 12px; text-align: center; }
 .portfolio-manager .chip .v { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 21px; font-weight: 600; }
 .portfolio-manager .chip .k { font-size: 10px; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); margin-top: 4px; }
 
@@ -225,7 +227,7 @@ body[arco-theme='light'] .portfolio-manager {
 .portfolio-manager .action .ad { font-size: 13.5px; color: var(--ink-2); margin: 0; }
 
 /* WATCH */
-.portfolio-manager .watch { margin: 8px 0; padding: 15px 18px; border-left: 3px solid var(--ink); background: var(--card); }
+.portfolio-manager .watch { margin: 8px 0; padding: 15px 18px; border-left: 3px solid var(--ink); background: var(--chip); }
 .portfolio-manager .watch .wt { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; margin-bottom: 6px; }
 .portfolio-manager .watch p { margin: 0; font-size: 14px; color: var(--ink-2); }
 
