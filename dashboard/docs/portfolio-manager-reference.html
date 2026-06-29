@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IQX · Báo cáo phân tích danh mục đầy đủ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f6f2eb;--card:#fffdf8;--ink:#1f1c17;--ink-2:#544e44;--ink-3:#8a8276;
+    --line:#e6e0d4;--line-2:#d6cdbd;--saffron:#d4a574;--saffron-deep:#b8860b;
+    --up:#3f7a5f;--up-soft:#e9f1eb;--down:#a8453a;--down-soft:#f7e8e5;--neutral:#7a7264;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:'Be Vietnam Pro',sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased;font-size:16px}
+  .mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+  .sheet{max-width:740px;margin:30px auto;background:var(--card);border:1px solid var(--line-2);box-shadow:0 1px 0 rgba(0,0,0,.02),0 18px 50px -30px rgba(60,45,20,.35)}
+  .pad{padding:0 clamp(26px,6vw,62px)}
+
+  /* MASTHEAD */
+  .head{padding:32px clamp(26px,6vw,62px) 26px;border-bottom:1px solid var(--line)}
+  .head-top{display:flex;justify-content:space-between;align-items:center}
+  .brand{display:flex;align-items:center;gap:9px}
+  .brand-mark{width:30px;height:30px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-family:'Fraunces',serif;font-weight:600;font-size:16px}
+  .brand-name{font-family:'Fraunces',serif;font-weight:600;font-size:19px;letter-spacing:.3px}
+  .brand-name span{color:var(--saffron-deep)}
+  .kicker{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+  .title{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(27px,5vw,37px);letter-spacing:-.4px;line-height:1.08;margin:22px 0 12px}
+  .sub{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-3)}
+  .sub .mono{color:var(--ink-2)}
+
+  /* HERO SCORE */
+  .hero{display:grid;grid-template-columns:170px 1fr;border-bottom:1px solid var(--line)}
+  .hero-score{padding:26px clamp(26px,6vw,62px);border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;background:radial-gradient(circle at 30% 20%,rgba(212,165,116,.13),transparent 65%)}
+  .hero-score .lbl{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+  .hero-score .num{font-family:'Fraunces',serif;font-weight:600;font-size:58px;line-height:.9;letter-spacing:-2px}
+  .hero-score .num small{font-size:22px;color:var(--ink-3);font-weight:400}
+  .hero-score .trend{margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--up);font-weight:600}
+  .hero-verdict{padding:26px clamp(22px,4vw,30px);display:flex;flex-direction:column;justify-content:center}
+  .hero-verdict .eb{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--saffron-deep);font-weight:700;margin-bottom:8px}
+  .hero-verdict .vh{font-family:'Fraunces',serif;font-weight:500;font-size:clamp(19px,2.5vw,23px);line-height:1.25;color:var(--ink)}
+  .hero-verdict .vh em{font-style:italic;color:var(--saffron-deep)}
+
+  /* LEDE */
+  .lede{padding:28px clamp(26px,6vw,62px) 4px;font-family:'Fraunces',serif;font-size:19px;line-height:1.5;font-weight:400;color:var(--ink)}
+
+  /* SECTION */
+  .layer{padding:26px 0;border-bottom:1px solid var(--line)}
+  .layer:last-of-type{border-bottom:none}
+  h2.sec{font-family:'Fraunces',serif;font-weight:600;font-size:18px;letter-spacing:-.2px;margin:0 0 4px;display:flex;align-items:baseline;gap:11px}
+  .lno{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--saffron-deep)}
+  p{margin:12px 0;color:var(--ink-2)}
+  p strong,.lede strong{color:var(--ink);font-weight:600}
+  .fig{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);background:#f3ece0;padding:1px 6px;border-radius:3px;font-size:.94em;white-space:nowrap}
+  .fig.up{color:var(--up);background:var(--up-soft)}
+  .fig.down{color:var(--down);background:var(--down-soft)}
+
+  /* manager voice inline */
+  .mgr{border-left:2px solid var(--saffron);padding:2px 0 2px 16px;margin:14px 0;font-size:14.5px;color:var(--ink-2);font-style:italic}
+  .mgr strong{font-style:normal}
+
+  /* progress compare */
+  .compare{display:flex;gap:14px;flex-wrap:wrap;margin:14px 0;padding:15px 18px;background:var(--up-soft);border:1px solid #cfe0d4;border-radius:4px}
+  .compare .ico{font-family:'Fraunces',serif;font-size:22px;color:var(--up);line-height:1}
+  .compare .ct{flex:1;min-width:200px;font-size:14.5px;color:var(--ink-2)}
+  .compare .ct b{color:var(--ink);font-weight:600}
+  .compare .delta{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--up);align-self:center}
+
+  /* holdings table */
+  table.hold{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0}
+  table.hold th{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);font-weight:600;text-align:right;padding:8px 10px;border-bottom:1.5px solid var(--ink)}
+  table.hold th:first-child{text-align:left}
+  table.hold td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;font-family:'JetBrains Mono',monospace}
+  table.hold td:first-child{text-align:left;font-family:'Be Vietnam Pro',sans-serif;font-weight:600}
+  table.hold td:nth-child(2){text-align:left;font-family:'Be Vietnam Pro',sans-serif;color:var(--ink-3);font-weight:400}
+  table.hold tr:last-child td{border-bottom:none}
+  .pos{color:var(--up)}.neg{color:var(--down)}
+  tr.cash td:first-child{color:var(--ink-3);font-style:italic}
+  .flag{font-size:10px;background:#efe7d8;color:var(--neutral);padding:1px 5px;border-radius:3px;margin-left:6px;font-family:'Be Vietnam Pro',sans-serif;font-weight:500}
+
+  /* stat grid */
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin:6px 0}
+  .stat-grid.c2{grid-template-columns:repeat(2,1fr)}
+  .stat{background:var(--card);padding:13px 14px}
+  .stat .k{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
+  .stat .v{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;letter-spacing:-.5px}
+  .stat .v.up{color:var(--up)}.stat .v.down{color:var(--down)}
+  .stat .sub{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink-3);margin-top:3px}
+
+  /* allocation bars */
+  .wbar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .wbar .lbl{font-size:12.5px;min-width:92px;font-weight:500}
+  .wbar .track{flex:1;height:18px;background:#efe9df;border-radius:2px;position:relative;overflow:hidden}
+  .wbar .fill{height:100%;border-radius:2px;background:var(--saffron)}
+  .wbar .bench{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink)}
+  .wbar .pct{font-family:'JetBrains Mono',monospace;font-size:12px;min-width:42px;text-align:right;font-weight:600}
+  .legend{display:flex;gap:18px;font-size:11px;color:var(--ink-3);margin-top:6px}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .legend i{width:10px;height:10px;border-radius:2px;display:inline-block;background:var(--saffron)}
+  .legend i.b{width:2px;height:12px;background:var(--ink);border-radius:0}
+
+  /* stress test */
+  .stress{margin:16px 0;border:1px solid var(--ink);border-radius:4px;overflow:hidden;background:#1f1c17;color:#efe7d8}
+  .stress-head{padding:15px 18px 11px;border-bottom:1px solid rgba(255,255,255,.12)}
+  .stress-head .st{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--saffron);font-weight:700;margin-bottom:4px}
+  .stress-head .sd{font-size:13px;color:#c9c0b0;line-height:1.5}
+  .stress-body{padding:16px 18px 18px}
+  .seg{display:flex;gap:6px;margin-bottom:18px}
+  .seg button{flex:1;background:#2a2620;border:1px solid #3d382f;color:#c9c0b0;font-family:'JetBrains Mono',monospace;font-weight:600;font-size:13px;padding:9px 0;border-radius:3px;cursor:pointer;transition:.15s}
+  .seg button:hover{border-color:var(--saffron)}
+  .seg button.on{background:var(--saffron);border-color:var(--saffron);color:#2a1c06}
+  .stress-out{display:flex;align-items:flex-end;gap:22px;flex-wrap:wrap}
+  .stress-num{font-family:'Fraunces',serif;font-weight:600;font-size:48px;line-height:.9;color:#fff;letter-spacing:-1px}
+  .stress-num .vnd{display:block;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--saffron);font-weight:500;margin-top:8px;letter-spacing:0}
+  .stress-expl{flex:1;min-width:220px;font-size:12.5px;color:#c9c0b0;line-height:1.55}
+  .stress-bar{height:7px;background:#332e26;border-radius:4px;margin-top:13px;overflow:hidden}
+  .stress-bar i{display:block;height:100%;background:var(--down);width:50%;transition:width .4s cubic-bezier(.2,.7,.3,1)}
+
+  /* correlation heatmap */
+  .heat{border-collapse:separate;border-spacing:3px;font-family:'JetBrains Mono',monospace;margin:8px 0}
+  .heat th{font-size:11px;color:var(--ink-2);font-weight:600;padding:2px 5px;text-align:center}
+  .heat td{padding:0;text-align:center}
+  .heat .cell{width:46px;height:34px;display:grid;place-items:center;font-size:12px;font-weight:600;border-radius:3px;color:#fff}
+  .heat .self{background:#efe9df;color:var(--ink-3)}
+  .sig-call{margin-top:10px;font-size:13px;color:var(--ink-2);display:flex;gap:10px;align-items:flex-start}
+  .sig-call .badge{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#fff;background:var(--down);padding:2px 8px;border-radius:2px;white-space:nowrap;margin-top:2px}
+
+  /* data confidence */
+  .lowdata{margin:14px 0;padding:13px 16px;border:1px dashed var(--line-2);border-radius:4px;background:#f8f5ee;display:flex;gap:12px}
+  .lowdata .d{width:9px;height:9px;border-radius:50%;background:var(--neutral);margin-top:6px;flex-shrink:0}
+  .lowdata .lt{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--neutral);font-weight:600;margin-bottom:4px}
+  .lowdata p{margin:0;font-size:13px;color:var(--ink-2)}
+
+  /* attribution */
+  .attr{margin-bottom:8px}
+  .attr-row{display:flex;align-items:center;gap:10px}
+  .attr .nm{min-width:58px;font-weight:600;font-size:13px}
+  .attr .track{flex:1;height:20px;background:#efe9df;border-radius:2px;overflow:hidden;display:flex}
+  .attr .track.r{justify-content:flex-end}
+  .attr .fill{height:100%}
+  .attr .fill.p{background:var(--up)}.attr .fill.n{background:var(--down)}
+  .attr .val{font-family:'JetBrains Mono',monospace;font-size:12px;min-width:54px;text-align:right;font-weight:600}
+  .attr .val.p{color:var(--up)}.attr .val.n{color:var(--down)}
+
+  /* reveal signature */
+  .reveal{margin:16px 0;border:1px solid var(--saffron);border-radius:4px;background:linear-gradient(180deg,#fdf8ee,#fffdf8);overflow:hidden}
+  .reveal .tag{display:flex;align-items:center;gap:8px;background:var(--saffron);color:#3a2a08;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:7px 16px}
+  .reveal .tag::before{content:"◆";font-size:9px}
+  .reveal .body{padding:15px 18px}
+  .reveal .body p{margin:0;color:var(--ink-2)}
+
+  /* sector bench */
+  .sectorbench{margin:14px 0;padding:13px 16px;background:#f3ece0;border-radius:4px}
+  .sectorbench .sbt{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:10px}
+  .sbrow{display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:13px}
+  .sbrow .nm{min-width:118px;color:var(--ink-2)}
+  .sbrow .track{flex:1;height:14px;background:#e6ddcc;border-radius:2px;overflow:hidden}
+  .sbrow .track i{display:block;height:100%;border-radius:2px}
+  .sbrow.you .track i{background:var(--saffron)}
+  .sbrow.ind .track i{background:var(--ink-3)}
+  .sbrow .v{font-family:'JetBrains Mono',monospace;font-weight:600;min-width:46px;text-align:right;font-size:12px}
+
+  /* quality chips */
+  .chips{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin:6px 0}
+  .chip{background:var(--card);padding:14px 12px;text-align:center}
+  .chip .v{font-family:'JetBrains Mono',monospace;font-size:21px;font-weight:600}
+  .chip .k{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);margin-top:4px}
+
+  /* health pillars */
+  .health{width:100%;border-collapse:collapse;margin:8px 0;font-size:14px}
+  .health th{text-align:left;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600;padding:8px;border-bottom:1.5px solid var(--ink)}
+  .health th:nth-child(2){text-align:center;width:118px}
+  .health td{padding:11px 8px;border-bottom:1px solid var(--line);color:var(--ink-2);vertical-align:middle}
+  .health td:first-child{font-weight:600;color:var(--ink)}
+  .health tr:last-child td{border-bottom:none}
+  .dots{display:flex;gap:3px;justify-content:center}
+  .dot5{width:13px;height:6px;border-radius:2px;background:var(--line-2)}
+  .dot5.on{background:var(--saffron-deep)}.dot5.on.lo{background:var(--down)}
+
+  /* actions */
+  .actions{margin:8px 0;counter-reset:act}
+  .action{display:flex;gap:16px;padding:15px 0;border-bottom:1px solid var(--line)}
+  .action:last-child{border-bottom:none}
+  .action::before{counter-increment:act;content:counter(act);font-family:'Fraunces',serif;font-weight:600;font-size:17px;color:#fff;background:var(--ink);min-width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex-shrink:0}
+  .action .at{font-weight:600;color:var(--ink);margin-bottom:3px;font-size:15px}
+  .action .ad{font-size:13.5px;color:var(--ink-2);margin:0}
+
+  .watch{margin:8px 0;padding:15px 18px;border-left:3px solid var(--ink);background:#f8f4ec}
+  .watch .wt{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:6px}
+  .watch p{margin:0;font-size:14px;color:var(--ink-2)}
+
+  .closing{margin:22px 0 8px;padding:20px 22px;background:var(--ink);color:#efe7d8;border-radius:4px;font-size:15px;line-height:1.6}
+  .closing strong{color:#fff}
+
+  .signoff{padding:0 clamp(26px,6vw,62px);margin:22px 0 6px;display:flex;align-items:center;gap:12px}
+  .signoff .av{width:40px;height:40px;border-radius:50%;background:var(--saffron);display:grid;place-items:center;font-family:'Fraunces',serif;font-weight:600;color:#3a2a08;font-size:18px}
+  .signoff .sn b{font-family:'Fraunces',serif;font-weight:600;color:var(--ink);display:block;font-size:15px}
+  .signoff .sn span{font-size:12px;color:var(--ink-3)}
+  .foot{padding:18px clamp(26px,6vw,62px) 34px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-3);font-style:italic;line-height:1.6}
+
+  @media(max-width:600px){
+    .sheet{margin:0;border-left:none;border-right:none}
+    .hero{grid-template-columns:1fr}
+    .hero-score{border-right:none;border-bottom:1px solid var(--line);flex-direction:row;align-items:center;gap:16px}
+    .stat-grid{grid-template-columns:1fr 1fr}
+    .chips{grid-template-columns:1fr 1fr}
+    .lede{font-size:18px}.stress-num{font-size:40px}.heat .cell{width:40px}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <!-- MASTHEAD -->
+  <header class="head">
+    <div class="head-top">
+      <div class="brand"><div class="brand-mark">Q</div><div class="brand-name">IQ<span>X</span></div></div>
+      <div class="kicker">Báo cáo phân tích danh mục · Kỳ 3</div>
+    </div>
+    <h1 class="title">Danh mục bạn khỏe lên,<br>giờ là lúc chuẩn bị cho lúc xấu.</h1>
+    <div class="sub">
+      <span>Danh mục <span class="mono">#A-0412</span></span>
+      <span>Giá trị hiện tại <span class="mono">534.000.000&nbsp;₫</span></span>
+      <span>Ngày <span class="mono">23.06.2026</span></span>
+    </div>
+  </header>
+
+  <!-- HERO SCORE + VERDICT -->
+  <section class="hero">
+    <div class="hero-score">
+      <div class="lbl">Sức khỏe</div>
+      <div class="num mono">3,5<small>/5</small></div>
+      <div class="trend">▲ từ 3,2 kỳ trước</div>
+    </div>
+    <div class="hero-verdict">
+      <div class="eb">Kết luận</div>
+      <div class="vh">Một danh mục <em>đang khỏe lên nhưng vẫn nghiêng về kịch bản thị trường tăng.</em> Việc cần làm bây giờ là siết kỷ luật và dựng đệm phòng thủ.</div>
+    </div>
+  </section>
+
+  <!-- LEDE -->
+  <div class="lede">
+    Một câu trước khi đi vào chi tiết: danh mục của bạn đã bớt mong manh so với kỳ trước, nhưng vẫn còn hai điểm cần xử lý — một mã lỗ chưa dứt, và đệm tiền mặt hơi mỏng so với mức rủi ro đang gánh. Tôi sẽ đi qua từng phần, rồi chốt lại bằng việc cụ thể nên làm.
+  </div>
+
+  <div class="pad">
+
+    <!-- 00 SO VỚI KỲ TRƯỚC -->
+    <section class="layer">
+      <h2 class="sec"><span class="lno">00</span> So với kỳ trước</h2>
+      <div class="compare">
+        <div class="ico">↗</div>
+        <div class="ct"><b>Bạn đã làm đúng việc tôi gợi ý.</b> Kỳ trước tôi đề nghị chốt bớt HPG — bạn đã giảm từ 25,0% về <span class="fig">16,0%</span>, khóa được phần lãi và hạ độ tập trung. Điểm phân tán rủi ro nhờ đó nhích lên.</div>
+        <div class="delta mono">3,2 → 3,5</div>
+      </div>
+      <p>Còn cổ phiếu VND tôi nhắc hai kỳ liền — bạn vẫn chưa xử lý. Đây giờ không còn là chuyện một mã, mà là một thói quen tôi muốn cùng bạn nhìn lại ở cuối báo cáo.</p>
+    </section>
+
+    <!-- 01 TỔNG QUAN -->
+    <section class="layer">
+      <h2 class="sec"><span class="lno">01</span> Danh mục đang nắm giữ</h2>
+      <table class="hold">
+        <thead><tr><th>Mã</th><th>Ngành</th><th>Tỷ trọng</th><th>Lãi/lỗ</th></tr></thead>
+        <tbody>
+          <tr><td>HPG</td><td>Thép</td><td>16,0%</td><td><span class="pos">+38tr</span></td></tr>
+          <tr><td>TCB</td><td>Ngân hàng</td><td>18,7%</td><td><span class="pos">+9tr</span></td></tr>
+          <tr><td>MBB</td><td>Ngân hàng</td><td>15,7%</td><td><span class="pos">+6tr</span></td></tr>
+          <tr><td>FPT</td><td>Công nghệ</td><td>14,2%</td><td><span class="pos">+11tr</span></td></tr>
+          <tr><td>DGC</td><td>Hóa chất</td><td>10,8%</td><td><span class="neg">−4tr</span></td></tr>
+          <tr><td>VND</td><td>Chứng khoán</td><td>7,4%</td><td><span class="neg">−7tr</span></td></tr>
+          <tr><td>APG<span class="flag">mới · ít dữ liệu</span></td><td>Chứng khoán</td><td>8,0%</td><td><span class="neg">−1tr</span></td></tr>
+          <tr class="cash"><td>Tiền mặt</td><td>—</td><td>9,2%</td><td>0</td></tr>
+        </tbody>
+      </table>
+      <div class="stat-grid">
+        <div class="stat"><div class="k">Lãi tạm tính</div><div class="v up">+10,7%</div><div class="sub">+52tr</div></div>
+        <div class="stat"><div class="k">Tiền mặt</div><div class="v">9,2%</div><div class="sub">đệm mỏng</div></div>
+        <div class="stat"><div class="k">Số mã</div><div class="v">7</div></div>
+        <div class="stat"><div class="k">Kỳ nắm giữ</div><div class="v">7<span style="font-size:12px;color:var(--ink-3)">th</span></div></div>
+      </div>
+      <div class="mgr">Danh mục vẫn giải ngân gần hết, tiền mặt <strong>9,2%</strong> — tôi sẽ quay lại con số này, vì nó liên quan trực tiếp tới phần kiểm tra sức chịu đựng phía dưới.</div>
+    </section>
+
+    <!-- 02 HIỆU SUẤT -->
+    <section class="layer">
+      <h2 class="sec"><span class="lno">02</span> Hiệu suất so với thị trường</h2>
+      <div class="stat-grid">
+        <div class="stat"><div class="k">Danh mục</div><div class="v up">+10,7%</div></div>
+        <div class="stat"><div class="k">VN-Index</div><div class="v">+7,2%</div></div>
+        <div class="stat"><div class="k">Vượt chuẩn</div><div class="v up">+3,5đ%</div></div>
+        <div class="stat"><div class="k">Lỗ sâu nhất</div><div class="v down">−9,0%</div></div>
+      </div>
+      <div class="mgr">Bạn vẫn vượt thị trường <strong>3,5 điểm %</strong> — kết quả tốt. Nhưng phần thắng đã bớt phụ thuộc vào một mã so với kỳ trước, đó là tiến bộ thật. Chi tiết ở phần nguồn gốc lợi nhuận.</div>
+    </section>
+
+    <!-- 03 PHÂN BỔ -->
+    <section class="layer">
+      <h2 class="sec"><span class="lno">03</span> Phân bổ so với thị trường</h2>
+      <div class="wbar"><span class="lbl">Ngân hàng</span><div class="track"><div class="fill" style="width:72%"></div><div class="bench" style="left:80%"></div></div><span class="pct">34,4%</span></div>
+      <div class="wbar"><span class="lbl">Thép</span><div class="track"><div class="fill" style="width:51%"></div><div class="bench" style="left:16%"></div></div><span class="pct">16,0%</span></div>
+      <div class="wbar"><span class="lbl">Chứng khoán</span><div class="track"><div class="fill" style="width:49%"></div><div class="bench" style="left:18%"></div></div><span class="pct">15,4%</span></div>
+      <div class="wbar"><span class="lbl">Công nghệ</span><div class="track"><div class="fill" style="width:45%"></div><div class="bench" style="left:24%"></div></div><span class="pct">14,2%</span></div>
+      <div class="wbar"><span class="lbl">Hóa chất</span><div class="track"><div class="fill" style="width:34%"></div><div class="bench" style="left:10%"></div></div><span class="pct">10,8%</span></div>
+      <div class="legend"><span><i></i> Của bạn</span><span><i class="b"></i> VN-Index</span></div>
+      <div class="mgr">Bạn đã hạ thép xuống nhưng vẫn còn nặng nhóm <strong>chứng khoán</strong> (VND + APG = 15,4%) — gấp đôi thị trường. Nhóm này biến động mạnh theo thị trường chung, nên nó góp phần đẩy rủi ro phòng thủ lên — điều bạn sẽ thấy rõ ở bài kiểm tra ngay dưới.</div>
+    </section>
+
+    <!-- 04 STRESS TEST -->
+    <section class="layer">
+      <h2 class="sec"><span class="lno">04</span> Nếu thị trường quay đầu</h2>
+      <p>Thay vì những chỉ số rủi ro trừu tượng, tôi cho bạn thấy điều cụ thể: danh mục sẽ ra sao trong một nhịp giảm. Bạn thử chọn mức giảm của thị trường:</p>
+      <div class="stress">
+        <div class="stress-head">
+          <div class="st">Bài kiểm tra sức chịu đựng</div>
+          <div class="sd">Danh mục của bạn hiện nhạy hơn thị trường khoảng 25% (độ nhạy 1,25).</div>
+        </div>
+        <div class="stress-body">
+          <div class="seg">
+            <button data-d="5">VN-Index −5,0%</button>
+            <button data-d="10" class="on">−10,0%</button>
+            <button data-d="15">−15,0%</button>
+          </div>
+          <div class="stress-out">
+            <div class="stress-num"><span id="pct">−12,5%</span><span class="vnd" id="vnd">≈ −66.750.000 ₫</span></div>
+            <div class="stress-expl" id="expl">Một nhịp giảm 10% như hồi tháng 4 năm ngoái sẽ kéo danh mục của bạn xuống khoảng <b style="color:#fff">−12,5%</b>. Phần lớn cú giảm đến từ HPG, nhóm ngân hàng và chứng khoán — những vị thế lớn nhất của bạn.</div>
+          </div>
+          <div class="stress-bar"><i id="bar"></i></div>
+        </div>
+      </div>
+      <div class="mgr">Đây không phải dự báo thị trường sẽ giảm — nó cho bạn thấy đang gánh bao nhiêu rủi ro để đổi lấy phần lãi. Với <strong>9,2% tiền mặt</strong>, đệm của bạn còn mỏng so với mức này.</div>
+    </section>
+
+    <!-- 05 RỦI RO + TƯƠNG QUAN -->
+    <section class="layer">
+      <h2 class="sec"><span class="lno">05</span> Rủi ro &amp; sự trùng lặp ẩn</h2>
+      <div class="stat-grid c2">
+        <div class="stat"><div class="k">Độ nhạy với thị trường</div><div class="v down">1,25</div><div class="sub">cao hơn mức 1,0 của thị trường</div></div>
+        <div class="stat"><div class="k">Mức độ biến động/năm</div><div class="v">21%</div><div class="sub">thị trường ~16%</div></div>
+      </div>
+      <table class="heat">
+        <thead><tr><th></th><th>HPG</th><th>TCB</th><th>MBB</th><th>FPT</th></tr></thead>
+        <tbody>
+          <tr><th>HPG</th><td><div class="cell self">1,0</div></td><td><div class="cell" style="background:#cdb89a">.31</div></td><td><div class="cell" style="background:#cdb89a">.28</div></td><td><div class="cell" style="background:#d8c8b0">.22</div></td></tr>
+          <tr><th>TCB</th><td><div class="cell" style="background:#cdb89a">.31</div></td><td><div class="cell self">1,0</div></td><td><div class="cell" style="background:#a8453a">.82</div></td><td><div class="cell" style="background:#c9a87f">.41</div></td></tr>
+          <tr><th>MBB</th><td><div class="cell" style="background:#cdb89a">.28</div></td><td><div class="cell" style="background:#a8453a">.82</div></td><td><div class="cell self">1,0</div></td><td><div class="cell" style="background:#c9a87f">.38</div></td></tr>
+          <tr><th>FPT</th><td><div class="cell" style="background:#d8c8b0">.22</div></td><td><div class="cell" style="background:#c9a87f">.41</div></td><td><div class="cell" style="background:#c9a87f">.38</div></td><td><div class="cell self">1,0</div></td></tr>
+        </tbody>
+      </table>
+      <div class="sig-call"><span class="badge">0,82</span><span>TCB và MBB dịch chuyển gần như cùng nhịp — cầm cả hai không thực sự chia được rủi ro.</span></div>
+
+      <div class="reveal">
+        <div class="tag">Điều bạn có thể chưa để ý</div>
+        <div class="body">
+          <p>Bạn giữ hai mã ngân hàng TCB và MBB, có lẽ nghĩ cầm hai thì an toàn hơn một. Nhưng nhìn dữ liệu, chúng vận động như một (tương quan <strong>0,82</strong>). Cộng lại là <strong>34,4%</strong> danh mục dồn vào cùng một hướng — giống như để phần lớn trứng vào một giỏ mà cứ tưởng đã chia ra.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 NGUỒN GỐC LỢI NHUẬN -->
+    <section class="layer">
+      <h2 class="sec"><span class="lno">06</span> Lợi nhuận của bạn đến từ đâu</h2>
+      <div class="attr"><div class="attr-row"><span class="nm">HPG</span><div class="track"><div class="fill p" style="width:62%"></div></div><span class="val p">+38tr</span></div></div>
+      <div class="attr"><div class="attr-row"><span class="nm">FPT</span><div class="track"><div class="fill p" style="width:18%"></div></div><span class="val p">+11tr</span></div></div>
+      <div class="attr"><div class="attr-row"><span class="nm">TCB+MBB</span><div class="track"><div class="fill p" style="width:24%"></div></div><span class="val p">+15tr</span></div></div>
+      <div class="attr"><div class="attr-row"><span class="nm">DGC</span><div class="track r"><div class="fill n" style="width:7%"></div></div><span class="val n">−4tr</span></div></div>
+      <div class="attr"><div class="attr-row"><span class="nm">VND</span><div class="track r"><div class="fill n" style="width:11%"></div></div><span class="val n">−7tr</span></div></div>
+      <div class="mgr">Tin tốt: HPG giờ chỉ còn đóng góp <strong>~63%</strong> lợi nhuận, giảm từ 87% kỳ trước — vì bạn đã chốt bớt và FPT, ngân hàng gánh thêm phần việc. Danh mục của bạn <strong>đang khỏe đều hơn</strong>, không còn dồn hết vào một cược như trước.</div>
+    </section>
+
+    <!-- 07 CHẤT LƯỢNG + SO NGÀNH -->
+    <section class="layer">
+      <h2 class="sec"><span class="lno">07</span> Chất lượng danh mục</h2>
+      <div class="chips">
+        <div class="chip"><div class="v">11,4</div><div class="k">Giá / lợi nhuận</div></div>
+        <div class="chip"><div class="v">1,6</div><div class="k">Giá / sổ sách</div></div>
+        <div class="chip"><div class="v">18%</div><div class="k">Sinh lời vốn chủ</div></div>
+        <div class="chip"><div class="v">2,0%</div><div class="k">Cổ tức</div></div>
+      </div>
+      <p>Về định giá, danh mục thuộc nhóm <strong>hợp lý, không đắt</strong> — những doanh nghiệp làm ăn thật. Nhưng vì nhóm ngân hàng chiếm tỷ trọng lớn, kỳ này tôi so thêm với riêng rổ ngân hàng:</p>
+      <div class="sectorbench">
+        <div class="sbt">Nhóm ngân hàng của bạn vs trung bình ngành</div>
+        <div class="sbrow you"><span class="nm">Của bạn</span><span class="track"><i style="width:64%"></i></span><span class="v">+9,0%</span></div>
+        <div class="sbrow ind"><span class="nm">Trung bình ngành</span><span class="track"><i style="width:100%"></i></span><span class="v">+14,0%</span></div>
+      </div>
+      <div class="mgr">Bạn đặt cược <strong>đúng ngành</strong> — ngân hàng dẫn dắt kỳ vừa rồi. Nhưng kém <strong>5,0 điểm %</strong> so với chính ngành mình chọn, nghĩa là vấn đề nằm ở chọn mã trong ngành, chứ không phải chọn ngành. Điều này chỉ so với VN-Index sẽ không lộ ra.</div>
+    </section>
+
+    <!-- 08 KỶ LUẬT + DATA CONFIDENCE -->
+    <section class="layer">
+      <h2 class="sec"><span class="lno">08</span> Kỷ luật &amp; hành vi</h2>
+      <div class="stat-grid">
+        <div class="stat"><div class="k">Nắm giữ bình quân</div><div class="v">48<span style="font-size:12px;color:var(--ink-3)">ngày</span></div></div>
+        <div class="stat"><div class="k">Mã đang lỗ</div><div class="v down">3</div><div class="sub">DGC, VND, APG</div></div>
+        <div class="stat"><div class="k">VND</div><div class="v down">−15%</div><div class="sub">3 kỳ chưa cắt</div></div>
+        <div class="stat"><div class="k">Vòng quay</div><div class="v">Vừa</div></div>
+      </div>
+      <div class="mgr">Vẫn còn dấu hiệu <strong>giữ mã lỗ quá lâu</strong>: bạn chốt lãi khá nhanh nhưng để mã thua kéo dài. VND là ví dụ rõ nhất — và đó là lý do khía cạnh kỷ luật đang kéo điểm tổng xuống.</div>
+      <div class="lowdata">
+        <span class="d"></span>
+        <div>
+          <div class="lt">Một mã tôi chưa chấm điểm</div>
+          <p>Với APG bạn mới thêm tuần trước, tôi chưa đưa con số rủi ro: mã này thanh khoản mỏng và lịch sử giá ngắn, nên tính độ nhạy hay tương quan lúc này dễ sai lệch. Tôi sẽ đánh giá khi đủ dữ liệu. Trước mắt, việc một vị thế khó đo lường cũng là một loại rủi ro.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- HEALTH PILLARS -->
+    <section class="layer">
+      <h2 class="sec"><span class="lno">＝</span> Điểm sức khỏe theo từng khía cạnh</h2>
+      <table class="health">
+        <thead><tr><th>Khía cạnh</th><th>Đánh giá</th><th>Một dòng</th></tr></thead>
+        <tbody>
+          <tr><td>Hiệu suất</td><td><div class="dots"><i class="dot5 on"></i><i class="dot5 on"></i><i class="dot5 on"></i><i class="dot5 on"></i><i class="dot5"></i></div></td><td>Vẫn vượt thị trường</td></tr>
+          <tr><td>Rủi ro</td><td><div class="dots"><i class="dot5 on"></i><i class="dot5 on"></i><i class="dot5 on"></i><i class="dot5"></i><i class="dot5"></i></div></td><td>Cải thiện, còn nghiêng về thị trường lên</td></tr>
+          <tr><td>Phân tán rủi ro</td><td><div class="dots"><i class="dot5 on"></i><i class="dot5 on"></i><i class="dot5 on"></i><i class="dot5"></i><i class="dot5"></i></div></td><td>Đỡ hơn, còn cặp ngân hàng trùng lặp</td></tr>
+          <tr><td>Chất lượng</td><td><div class="dots"><i class="dot5 on"></i><i class="dot5 on"></i><i class="dot5 on"></i><i class="dot5 on"></i><i class="dot5"></i></div></td><td>Định giá hợp lý, doanh nghiệp tốt</td></tr>
+          <tr><td>Kỷ luật</td><td><div class="dots"><i class="dot5 on lo"></i><i class="dot5 on lo"></i><i class="dot5"></i><i class="dot5"></i><i class="dot5"></i></div></td><td>Giữ mã lỗ quá lâu</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ACTIONS -->
+    <section class="layer">
+      <h2 class="sec"><span class="lno">→</span> Vậy bạn nên làm gì</h2>
+      <div class="actions">
+        <div class="action"><div><div class="at">Dứt điểm cổ phiếu VND — đặt ngưỡng dừng rõ ràng</div><p class="ad">Kỳ thứ ba tôi nhắc. Mã đang lỗ −15,0% và bạn vẫn chờ về giá vốn. Nếu VND giảm thêm dưới ngưỡng bạn tự đặt, bán dứt khoát. Vấn đề không nằm ở con số, mà ở thói quen nó đang nuôi.</p></div></div>
+        <div class="action"><div><div class="at">Nâng tiền mặt từ 9,2% lên quanh 15,0% trước khi mua thêm</div><p class="ad">Bài kiểm tra phía trên cho thấy đệm phòng thủ còn mỏng so với rủi ro đang gánh. Thêm tiền mặt vừa an toàn hơn nếu thị trường quay đầu, vừa có đạn để mua khi giá tốt.</p></div></div>
+        <div class="action"><div><div class="at">Xem lại lựa chọn mã trong nhóm ngân hàng</div><p class="ad">Bạn đúng ngành nhưng kém ngành 5,0 điểm %, lại thêm việc TCB và MBB trùng lặp. Cân nhắc gộp về một mã dẫn dắt hơn để vừa bớt trùng, vừa cải thiện hiệu suất nhóm.</p></div></div>
+      </div>
+    </section>
+
+    <!-- WATCH -->
+    <div class="watch">
+      <div class="wt">Điều cần theo dõi tới kỳ sau</div>
+      <p>Ba mốc tôi sẽ chú ý: VND đã được xử lý chưa, tiền mặt có nâng lên không, và APG khi đủ dữ liệu để tôi chấm điểm rủi ro cho nó.</p>
+    </div>
+
+    <!-- CLOSING -->
+    <div class="closing">
+      Tổng kết: bạn đang đi đúng hướng — danh mục khỏe hơn thật, điểm số lên đều hai kỳ, lợi nhuận đã bớt dồn vào một mã. Việc còn lại gói trong một câu: <strong>dứt khoát hơn với mã lỗ, và dựng sẵn đệm cho lúc thị trường xấu.</strong> Làm được hai điều đó, kỳ sau gần như chắc chắn bạn lên mức 4/5.
+    </div>
+
+  </div>
+
+  <div class="signoff">
+    <div class="av">Q</div>
+    <div class="sn"><b>Người quản lý danh mục của bạn</b><span>IQX · tự động cập nhật mỗi kỳ</span></div>
+  </div>
+
+  <footer class="foot">
+    Báo cáo này nhằm mục đích phân tích và tham khảo, không phải khuyến nghị mua bán. Mọi số liệu được tính tự động từ dữ liệu giá và báo cáo tài chính; những mã chưa đủ dữ liệu được ghi rõ thay vì ước tính. Quyết định cuối cùng là của bạn.
+  </footer>
+
+</div>
+
+<script>
+  var NAV = 534000000, beta = 1.25;
+  var scen = {5:'Một nhịp giảm nhẹ 5% của thị trường',10:'Một nhịp giảm 10% như hồi tháng 4 năm ngoái',15:'Một nhịp giảm mạnh 15% như giai đoạn căng thẳng'};
+  function fmtVnd(n){return '≈ −' + Math.round(n).toLocaleString('vi-VN') + ' ₫';}
+  function pct(n){return '−' + n.toFixed(1).replace('.',',') + '%';}
+  function setBar(){document.getElementById('bar').style.width = '50%';}
+  setBar();
+  document.querySelectorAll('.seg button').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('.seg button').forEach(function(x){x.classList.remove('on')});
+      b.classList.add('on');
+      var d = +b.dataset.d, loss = d*beta, vnd = NAV*loss/100;
+      document.getElementById('pct').textContent = pct(loss);
+      document.getElementById('vnd').textContent = fmtVnd(vnd);
+      document.getElementById('bar').style.width = Math.min(loss*4,100)+'%';
+      document.getElementById('expl').innerHTML = scen[d] + ' sẽ kéo danh mục của bạn xuống khoảng <b style="color:#fff">' + pct(loss) + '</b>. Phần lớn cú giảm đến từ HPG, nhóm ngân hàng và chứng khoán — những vị thế lớn nhất của bạn.';
+    });
+  });
+</script>
+</body>
+</html>
