@@ -40,3 +40,10 @@ def test_dot_decimal_flagged():
     n = _good()
     n["verdict"] = "Danh mục tăng 10.7%."
     assert any(e.startswith("DECIMAL_COMMA") for e in validate_narrative(n, _analysis()))
+
+
+def test_thousands_dotted_vnd_not_flagged():
+    n = _good()
+    n["verdict"] = "Danh mục trị giá 534.000.000 ₫ và 1.250.000 ₫."   # thousands dots — valid
+    errs = validate_narrative(n, _analysis())
+    assert not any(e.startswith("DECIMAL_COMMA") for e in errs)

@@ -8,7 +8,7 @@ _REQUIRED = ("title", "verdict", "lede", "layers", "actions", "watch", "closing"
 _LAYER_KEYS = ("overview", "performance", "allocation", "stress", "risk", "attribution", "quality", "behavior")
 _FORBIDDEN_RECO = ("khuyến nghị mua", "khuyến nghị bán")
 _FORBIDDEN_CERTAINTY = ("chắc chắn tăng", "chắc chắn giảm")
-_DOT_DECIMAL = re.compile(r"\d+\.\d")
+_DOT_DECIMAL = re.compile(r"\d+\.\d{1,2}(?!\d)")  # Flags decimal dots (1-2 fractional digits), not thousands separators (always 3 digits)
 _DIGIT = re.compile(r"\d")
 
 
