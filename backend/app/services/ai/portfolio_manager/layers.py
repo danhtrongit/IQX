@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from itertools import combinations
+
+from .data_confidence import evaluate_confidence
 from .inputs import Holding, PortfolioInputs, normalize_sector_name
 from . import returns as R
 
@@ -91,3 +94,49 @@ def layer_allocation(inp: PortfolioInputs) -> list[dict]:
         })
     rows.sort(key=lambda r: r["weight"], reverse=True)
     return rows
+
+
+def layer_risk(inp: PortfolioInputs) -> tuple[dict, dict[str, bool]]:
+    low_conf: dict[str, bool] = {}
+    confident: list[Holding] = []
+    excluded: list[dict] = []
+    for h in inp.holdings:
+        ok, reason = evaluate_confidence(
+            [{"close": c, "volume": v} for c, v in zip(h.closes, h.volumes, strict=False)]
+        )
+        low_conf[h.ticker] = not ok
+        if ok:
+            confident.append(h)
+        else:
+            excluded.append({"ticker": h.ticker, "reason": reason})
+
+    bench_returns = R.daily_returns(inp.benchmark_closes)
+    per_returns = {h.ticker: R.daily_returns(h.closes) for h in confident}
+
+    series_lengths = [len(bench_returns)] + [len(r) for r in per_returns.values()]
+    n = min(series_lengths) if series_lengths else 0
+    if n < 2 or len(confident) < 1:
+        return ({"beta": 0.0, "volatility": 0.0, "tracking_error": 0.0,
+                 "correlation": [], "excluded": excluded}, low_conf)
+
+    bench_returns = bench_returns[-n:]
+    for t in per_returns:
+        per_returns[t] = per_returns[t][-n:]
+
+    total_mv = sum(h.market_value for h in confident) or 1
+    weights = {h.ticker: h.market_value / total_mv for h in confident}
+    port_returns = [
+        sum(weights[t] * per_returns[t][i] for t in per_returns) for i in range(n)
+    ]
+
+    beta = R.beta(port_returns, bench_returns)
+    vol = R.annualized_vol(port_returns)
+    te_series = [port_returns[i] - bench_returns[i] for i in range(n)]
+    tracking_error = R.annualized_vol(te_series)
+
+    corr = []
+    for a, b in combinations(sorted(per_returns), 2):
+        corr.append({"a": a, "b": b, "value": _r3(R.correlation(per_returns[a], per_returns[b]))})
+
+    return ({"beta": _r3(beta), "volatility": _r3(vol), "tracking_error": _r3(tracking_error),
+             "correlation": corr, "excluded": excluded}, low_conf)
