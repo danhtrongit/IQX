@@ -37,6 +37,7 @@ import {
 } from "./hooks"
 import { watchlistApi } from "./api"
 import { usePortfolio, useOrders } from "@/features/trading"
+import { PortfolioAnalysisButton } from "@/features/portfolio-manager"
 import {
   FlashingPrice,
   Sparkline,
@@ -376,6 +377,11 @@ function HoldingsTab() {
           </SummaryCard>
         </div>
       )}
+
+      {/* Analyse button */}
+      <div className="flex justify-end border-b border-[var(--color-border-2)] px-2 py-1.5">
+        <PortfolioAnalysisButton />
+      </div>
 
       {/* Filter */}
       <div className="flex items-center gap-1 border-b border-[var(--color-border-2)] px-2 py-1">
