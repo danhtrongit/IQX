@@ -22,10 +22,6 @@ vi.mock("@/shared/theme/ThemeProvider", () => ({
   useTheme: () => ({ theme: "light", toggleTheme: vi.fn() }),
 }))
 
-vi.mock("@/shared/contexts/market-modal-context", () => ({
-  useMarketModal: () => ({ isOpen: false, openMarketModal: vi.fn() }),
-}))
-
 // ─── Mock SymbolSearch (has its own data dependencies) ───────────────────────
 vi.mock("./SymbolSearch", () => ({
   SymbolSearch: () => null,
@@ -50,6 +46,26 @@ describe("Header – NAV_ITEMS structure", () => {
         (item.href === "/backtest" || item.href === "/canh-bao"),
     )
     expect(stale).toHaveLength(0)
+  })
+})
+
+describe("Header – Biểu đồ replaces Thị trường", () => {
+  it('renders "Biểu đồ" in the nav', () => {
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <Header />
+      </MemoryRouter>
+    )
+    expect(screen.getByText("Biểu đồ")).toBeInTheDocument()
+  })
+
+  it('does NOT render "Thị trường" anywhere', () => {
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <Header />
+      </MemoryRouter>
+    )
+    expect(screen.queryByText("Thị trường")).not.toBeInTheDocument()
   })
 })
 

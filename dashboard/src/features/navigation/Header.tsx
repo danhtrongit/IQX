@@ -18,17 +18,14 @@ import {
 import { useAuth } from "@/features/auth"
 import { usePremiumStatus } from "@/features/premium"
 import { useTheme } from "@/shared/theme/ThemeProvider"
-import { useMarketModal } from "@/shared/contexts/market-modal-context"
 import { SymbolSearch } from "./SymbolSearch"
 import { IconCrown } from "./icons"
 
-type NavItem =
-  | { label: string; href: string; modal?: undefined }
-  | { label: string; modal: true; href?: undefined }
+type NavItem = { label: string; href: string }
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "Trang chủ", href: "/" },
-  { label: "Thị trường", modal: true },
+  { label: "Biểu đồ", href: "/bieu-do" },
   { label: "Bảng giá", href: "/bang-gia" },
   { label: "Cổ phiếu", href: "/co-phieu" },
   { label: "Chiến lược", href: "/chien-luoc" },
@@ -63,7 +60,6 @@ export function Header() {
   const { theme, toggleTheme } = useTheme()
   const { user, isAuthenticated, logout, setShowAuthModal, setAuthModalTab } = useAuth()
   const { isPremium, isTrial } = usePremiumStatus()
-  const { isOpen: isMarketOpen, openMarketModal } = useMarketModal()
 
   const openAuth = (tab: "login" | "register") => {
     setAuthModalTab(tab)
@@ -98,21 +94,12 @@ export function Header() {
           position="bl"
           droplist={
             <Menu
-              onClickMenuItem={(key) => {
-                if (key === "__market") {
-                  openMarketModal()
-                } else {
-                  navigate(key)
-                }
-              }}
-              selectedKeys={[isMarketOpen ? "__market" : pathname]}
+              onClickMenuItem={(key) => navigate(key)}
+              selectedKeys={[pathname]}
             >
-              {NAV_ITEMS.map((item) => {
-                if (item.modal) {
-                  return <Menu.Item key="__market">{item.label}</Menu.Item>
-                }
-                return <Menu.Item key={item.href}>{item.label}</Menu.Item>
-              })}
+              {NAV_ITEMS.map((item) => (
+                <Menu.Item key={item.href}>{item.label}</Menu.Item>
+              ))}
             </Menu>
           }
         >
@@ -123,23 +110,6 @@ export function Header() {
       {/* Desktop nav */}
       <nav className="hidden items-center gap-0.5 md:flex">
         {NAV_ITEMS.map((item) => {
-          if (item.modal) {
-            return (
-              <button
-                key="__market"
-                type="button"
-                onClick={openMarketModal}
-                className="rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
-                style={
-                  isMarketOpen
-                    ? { background: "var(--color-primary-light-1)", color: "rgb(var(--primary-6))" }
-                    : { color: "var(--color-text-2)" }
-                }
-              >
-                {item.label}
-              </button>
-            )
-          }
           const active =
             item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
           return (
