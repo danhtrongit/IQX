@@ -21,7 +21,8 @@ export function points(n: number, digits = 1): string {
 }
 
 export function vnd(n: number): string {
-  return `${Math.round(n).toLocaleString("vi-VN")} ₫`
+  const abs = Math.round(Math.abs(n)).toLocaleString("vi-VN")
+  return `${n < 0 ? MINUS : ""}${abs} ₫`
 }
 
 export function vndShort(n: number): string {

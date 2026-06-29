@@ -58,7 +58,7 @@ export function QualitySector({ quality, managerVoice }: QualityProps) {
         </div>
       )}
 
-      <div className="mgr">{managerVoice}</div>
+      {managerVoice && <div className="mgr">{managerVoice}</div>}
     </div>
   )
 }

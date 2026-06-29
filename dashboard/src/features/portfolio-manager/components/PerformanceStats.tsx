@@ -33,7 +33,7 @@ export function PerformanceStats({ performance, managerVoice }: PerformanceStats
   return (
     <div>
       <StatGrid cells={cells} />
-      <div className="mgr">{managerVoice}</div>
+      {managerVoice && <div className="mgr">{managerVoice}</div>}
     </div>
   )
 }

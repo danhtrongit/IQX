@@ -39,7 +39,7 @@ export function AllocationBars({ allocation, managerVoice }: AllocationBarsProps
         </span>
       </div>
 
-      <div className="mgr">{managerVoice}</div>
+      {managerVoice && <div className="mgr">{managerVoice}</div>}
     </div>
   )
 }

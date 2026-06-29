@@ -42,7 +42,7 @@ export function Attribution({ attribution, managerVoice }: AttributionProps) {
         )
       })}
 
-      <div className="mgr">{managerVoice}</div>
+      {managerVoice && <div className="mgr">{managerVoice}</div>}
     </div>
   )
 }

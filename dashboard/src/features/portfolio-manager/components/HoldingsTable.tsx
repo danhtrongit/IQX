@@ -41,11 +41,11 @@ export function HoldingsTable({ positions, cash_pct, managerVoice }: HoldingsTab
             <td>Tiền mặt</td>
             <td>—</td>
             <td>{pct(cash_pct)}</td>
-            <td>0</td>
+            <td>—</td>
           </tr>
         </tbody>
       </table>
-      <div className="mgr">{managerVoice}</div>
+      {managerVoice && <div className="mgr">{managerVoice}</div>}
     </>
   )
 }

@@ -54,7 +54,7 @@ export function BehaviorLowData({ behavior, managerVoice, lowDataNote }: Behavio
         </div>
       )}
 
-      <div className="mgr">{managerVoice}</div>
+      {managerVoice && <div className="mgr">{managerVoice}</div>}
     </div>
   )
 }
