@@ -1,4 +1,3 @@
-import React from "react"
 import type { AnalysisJSON, NarrativeJSON } from "../types"
 import { vnd } from "../format"
 
@@ -27,7 +26,9 @@ export function Masthead({ title, meta, nav }: MastheadProps) {
         </div>
       </div>
 
-      <h1 className="title">{title}</h1>
+      <h1 className="title">{title.split("\n").map((line, i, arr) => (
+        <span key={i}>{line}{i < arr.length - 1 ? <br /> : null}</span>
+      ))}</h1>
 
       <div className="sub">
         <span>

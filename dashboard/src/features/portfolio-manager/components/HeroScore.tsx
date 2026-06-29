@@ -1,4 +1,3 @@
-import React from "react"
 import type { AnalysisJSON, NarrativeJSON } from "../types"
 import { score } from "../format"
 
@@ -28,10 +27,7 @@ export function HeroScore({ scores, verdict }: HeroScoreProps) {
 
       <div className="hero-verdict">
         <div className="eb">Kết luận</div>
-        <div
-          className="vh pm-serif"
-          dangerouslySetInnerHTML={{ __html: verdict }}
-        />
+        <div className="vh pm-serif">{verdict}</div>
       </div>
     </section>
   )

@@ -1,4 +1,3 @@
-import React from "react"
 import type { AnalysisJSON, NarrativeJSON } from "../types"
 import { score } from "../format"
 
@@ -32,7 +31,7 @@ export function ProgressCompare({
     <div className="compare">
       <div className="ico">↗</div>
       <div className="ct">
-        <span dangerouslySetInnerHTML={{ __html: progress_text }} />
+        <span>{progress_text}</span>
         {totalCount > 0 && (
           <span>
             {" "}
