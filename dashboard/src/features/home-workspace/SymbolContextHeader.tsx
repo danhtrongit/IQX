@@ -119,8 +119,8 @@ export function SymbolContextHeader() {
               {fmtPrice(data.closePrice)}
             </span>
             <span className={cn("text-xs font-semibold", data.priceChange >= 0 ? "text-up" : "text-down")}>
-              {data.priceChange >= 0 ? "▲ +" : "▼ "}
-              {fmtPrice(data.priceChange)} ({data.percentChange >= 0 ? "+" : ""}
+              {data.priceChange >= 0 ? "▲ +" : "▼ -"}
+              {fmtPrice(Math.abs(data.priceChange))} ({data.percentChange >= 0 ? "+" : ""}
               {data.percentChange?.toFixed(2)}%)
             </span>
           </div>
