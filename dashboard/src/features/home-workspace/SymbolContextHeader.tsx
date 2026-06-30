@@ -118,11 +118,17 @@ export function SymbolContextHeader() {
             >
               {fmtPrice(data.closePrice)}
             </span>
-            <span className={cn("text-xs font-semibold", data.priceChange >= 0 ? "text-up" : "text-down")}>
-              {data.priceChange >= 0 ? "▲ +" : "▼ -"}
-              {fmtPrice(Math.abs(data.priceChange))} ({data.percentChange >= 0 ? "+" : ""}
-              {data.percentChange?.toFixed(2)}%)
-            </span>
+            {data.priceChange === 0 ? (
+              <span className="text-xs font-semibold text-[var(--color-text-3)]">
+                ■ 0 ({data.percentChange?.toFixed(2) ?? "0,00"}%)
+              </span>
+            ) : (
+              <span className={cn("text-xs font-semibold", data.priceChange > 0 ? "text-up" : "text-down")}>
+                {data.priceChange > 0 ? "▲ +" : "▼ -"}
+                {fmtPrice(Math.abs(data.priceChange))} ({data.percentChange >= 0 ? "+" : ""}
+                {data.percentChange?.toFixed(2)}%)
+              </span>
+            )}
           </div>
 
           <div className="mt-2.5 grid grid-cols-3 gap-x-3 gap-y-0.5 border-t border-[var(--color-border-2)] pt-2.5 text-[11px]">

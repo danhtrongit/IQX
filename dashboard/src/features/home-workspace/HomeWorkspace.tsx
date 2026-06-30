@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button, Drawer } from "@arco-design/web-react"
 import { IconApps } from "@arco-design/web-react/icon"
 import { SymbolProvider, useSymbol } from "@/shared/contexts/symbol-context"
@@ -6,7 +6,7 @@ import { isIndexSymbol } from "@/features/stock"
 import { MarketDailyPage } from "@/features/market-overview/daily/MarketDailyPage"
 import { HomeSidePanel } from "./HomeSidePanel"
 import { HomeIconRail } from "./HomeIconRail"
-import { useInitialSymbol } from "./useInitialSymbol"
+import { useInitialSymbol, persistLastViewedSymbol } from "./useInitialSymbol"
 import { useMediaQuery } from "./useMediaQuery"
 import type { HomeTab } from "./types"
 
@@ -16,6 +16,10 @@ function WorkspaceBody() {
   const [active, setActive] = useState<HomeTab>("order")
   const [drawerOpen, setDrawerOpen] = useState(false)
   const isDesktop = useMediaQuery("(min-width: 1024px)")
+
+  useEffect(() => {
+    persistLastViewedSymbol(symbol)
+  }, [symbol])
 
   const market = (
     <div className="min-h-0 overflow-y-auto">
@@ -69,7 +73,8 @@ function WorkspaceBody() {
 }
 
 export function HomeWorkspace() {
-  const initial = useInitialSymbol()
+  const resolved = useInitialSymbol()
+  const [initial] = useState(resolved)
   return (
     <SymbolProvider symbol={initial}>
       <WorkspaceBody />

@@ -13,6 +13,9 @@ const UP = {
 const DOWN = {
   ...UP, closePrice: 27.15, priceChange: -0.65, percentChange: -2.34,
 }
+const FLAT = {
+  ...UP, closePrice: 27.8, priceChange: 0, percentChange: 0,
+}
 
 const h = vi.hoisted(() => ({ data: null as Record<string, unknown> | null }))
 
@@ -52,5 +55,18 @@ describe("SymbolContextHeader", () => {
     // priceChange -0.65 → ▼ -650 (sign from arrow + prefix; magnitude formatted)
     expect(container.textContent).toContain("▼ -650")
     expect(container.textContent).not.toContain("▼ —")
+  })
+
+  it("flat stock (priceChange 0) shows neutral '■ 0' and no '▲ +—' or '—'", () => {
+    h.data = FLAT
+    const { container } = render(<SymbolContextHeader />)
+    // Must NOT show the up-arrow format that previously produced '▲ +—'
+    expect(container.textContent).not.toContain("▲ +—")
+    // Must NOT have a dash placeholder for the change amount
+    expect(container.textContent).not.toMatch(/[▲▼] [+-]—/)
+    // Must show a '0' literal for the change amount
+    expect(container.textContent).toContain("0")
+    // Must show the neutral marker ■
+    expect(container.textContent).toContain("■")
   })
 })
