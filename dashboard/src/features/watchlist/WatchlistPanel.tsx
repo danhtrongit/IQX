@@ -57,8 +57,9 @@ function getInitialTab(): WatchlistTab {
 
 /* ─────────────────────────── Tab: Theo dõi ─────────────────────────── */
 
-function WatchlistTab() {
+function WatchlistTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void } = {}) {
   const navigate = useNavigate()
+  const open = (s: string) => (onRowSelect ? onRowSelect(s) : navigate(`/co-phieu/${s}`))
   const { data: items, isLoading } = useWatchlist()
   const add = useAddToWatchlist()
   const remove = useRemoveFromWatchlist()
@@ -202,7 +203,7 @@ function WatchlistTab() {
                 hasTraded={d?.hasTraded ?? false}
                 colorClass={colorClass}
                 sparkColor={sparkColor}
-                onOpen={() => navigate(`/co-phieu/${sym}`)}
+                onOpen={() => open(sym)}
                 onRemove={() => handleRemove(sym)}
               />
             )
@@ -305,8 +306,9 @@ function WatchlistItemRow({
 
 /* ─────────────────────────── Tab: Nắm giữ ─────────────────────────── */
 
-function HoldingsTab() {
+function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void } = {}) {
   const navigate = useNavigate()
+  const open = (s: string) => (onRowSelect ? onRowSelect(s) : navigate(`/co-phieu/${s}`))
   const { data: portfolio, isLoading } = usePortfolio()
   const [filter, setFilter] = useState<"all" | "profit" | "loss">("all")
 
@@ -435,7 +437,7 @@ function HoldingsTab() {
               <button
                 key={item.symbol}
                 type="button"
-                onClick={() => navigate(`/co-phieu/${item.symbol}`)}
+                onClick={() => open(item.symbol)}
                 className="group w-full px-2 py-2 text-left transition-colors hover:bg-[var(--color-fill-1)]"
               >
                 <div className="flex items-center">
@@ -624,7 +626,7 @@ function HistoryTab() {
 
 /* ─────────────────────────── Panel shell ─────────────────────────── */
 
-export function WatchlistPanel() {
+export function WatchlistPanel({ onRowSelect }: { onRowSelect?: (symbol: string) => void } = {}) {
   const { isAuthenticated, setShowAuthModal } = useAuth()
   const [activeTab, setActiveTab] = useState<WatchlistTab>(getInitialTab)
 
@@ -654,10 +656,10 @@ export function WatchlistPanel() {
         className="flex h-full flex-col [&_.arco-tabs-content]:flex [&_.arco-tabs-content]:flex-1 [&_.arco-tabs-content]:flex-col [&_.arco-tabs-content]:min-h-0 [&_.arco-tabs-content-inner]:flex-1 [&_.arco-tabs-content-inner]:min-h-0 [&_.arco-tabs-content-item-active]:flex [&_.arco-tabs-content-item-active]:h-full [&_.arco-tabs-content-item-active]:flex-col [&_.arco-tabs-content-item-active]:min-h-0 [&_.arco-tabs-pane]:flex-1 [&_.arco-tabs-pane]:min-h-0"
       >
         <Tabs.TabPane key="watchlist" title={<TabTitle icon={<IconEye />} label="Theo dõi" />}>
-          <WatchlistTab />
+          <WatchlistTab onRowSelect={onRowSelect} />
         </Tabs.TabPane>
         <Tabs.TabPane key="holdings" title={<TabTitle icon={<IconBriefcase />} label="Nắm giữ" />}>
-          <HoldingsTab />
+          <HoldingsTab onRowSelect={onRowSelect} />
         </Tabs.TabPane>
         <Tabs.TabPane key="history" title={<TabTitle icon={<IconHistory />} label="Lịch sử" />}>
           <HistoryTab />

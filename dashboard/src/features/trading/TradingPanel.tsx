@@ -594,7 +594,7 @@ function GatedOrderEntry(props: {
 }
 
 /* ── Main panel ── */
-export function TradingPanel() {
+export function TradingPanel({ hideHeader = false }: { hideHeader?: boolean } = {}) {
   const { symbol } = useSymbol()
   const { data, isLoading } = usePrice(symbol)
   const { data: account } = useAccount()
@@ -609,7 +609,7 @@ export function TradingPanel() {
 
   return (
     <aside className="flex h-full w-full shrink-0 flex-col bg-[var(--color-bg-2)]">
-      <StockHeader symbol={symbol} data={data} isLoading={isLoading} />
+      {!hideHeader && <StockHeader symbol={symbol} data={data} isLoading={isLoading} />}
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {data && <OrderBookView data={data} />}
