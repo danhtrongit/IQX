@@ -8,8 +8,8 @@ import { TopLoadingBar } from "@/shared/ui/TopLoadingBar"
 const DashboardPage = lazy(() =>
   import("@/features/dashboard").then((m) => ({ default: m.DashboardPage })),
 )
-const MarketDailyPage = lazy(() =>
-  import("@/features/market-overview/daily/MarketDailyPage").then((m) => ({ default: m.MarketDailyPage })),
+const HomeWorkspace = lazy(() =>
+  import("@/features/home-workspace").then((m) => ({ default: m.HomeWorkspace })),
 )
 const MarketingPage = lazy(() =>
   import("@/features/marketing").then((m) => ({ default: m.MarketingPage })),
@@ -75,7 +75,7 @@ export function AppRouter() {
 
         {/* App shell */}
         <Route element={<AppShell />}>
-          <Route path="/" element={<MarketDailyPage />} />
+          <Route path="/" element={<HomeWorkspace />} />
           <Route path="/co-phieu" element={<StockDirectoryPage />} />
           <Route path="/bang-gia" element={<BangGiaPage />} />
           <Route path="/cai-dat" element={<SettingsPage />} />

@@ -4,8 +4,8 @@ import { act, render, screen } from "@testing-library/react"
 import { MemoryRouter, Outlet } from "react-router"
 
 // Stub the lazy page modules to avoid pulling the whole feature trees.
-vi.mock("@/features/market-overview/daily/MarketDailyPage", () => ({
-  MarketDailyPage: () => <div>MARKET_HOME</div>,
+vi.mock("@/features/home-workspace", () => ({
+  HomeWorkspace: () => <div>home-workspace</div>,
 }))
 vi.mock("@/features/dashboard", () => ({ DashboardPage: () => <div>TERMINAL</div> }))
 // AppShell pulls navigation features with heavy providers; stub it to a pass-through.
@@ -24,11 +24,11 @@ function renderAt(path: string) {
 }
 
 describe("AppRouter swap", () => {
-  it("renders the market page at /", async () => {
+  it("renders the home workspace at /", async () => {
     await act(async () => {
       renderAt("/")
     })
-    expect(await screen.findByText("MARKET_HOME")).toBeInTheDocument()
+    expect(await screen.findByText("home-workspace")).toBeInTheDocument()
   })
   it("renders the terminal at /bieu-do", async () => {
     renderAt("/bieu-do")
