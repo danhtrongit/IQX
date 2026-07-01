@@ -149,7 +149,7 @@ def _build_midday_charts(
       - absent   → data_state = "unavailable"
     """
 
-    def _am_block(data: dict | None, key: str) -> dict:
+    def _am_block(data: dict | None) -> dict:
         if data is None:
             return {"data_state": "unavailable"}
         return {**data, "data_state": "am_session"}
@@ -162,10 +162,10 @@ def _build_midday_charts(
         return {"data_state": "unavailable"}
 
     return {
-        "breadth": _am_block(breadth, "breadth"),
-        "contribution": _am_block(contribution, "contribution"),
-        "foreign_detail": _am_block(foreign_detail, "foreign_detail"),
-        "prop_detail": _am_block(prop_detail, "prop_detail"),
+        "breadth": _am_block(breadth),
+        "contribution": _am_block(contribution),
+        "foreign_detail": _am_block(foreign_detail),
+        "prop_detail": _am_block(prop_detail),
         "market_health_detail": _frozen_block("market_health_detail"),
         "sector_rotation": _frozen_block("sector_rotation"),
     }
@@ -264,7 +264,7 @@ def _build_am_foreign(fser: list[dict] | None, ftop: dict | None) -> dict | None
             if sym not in seen or abs(v) > abs(seen[sym]):
                 seen[sym] = v
         rows = sorted(seen.items(), key=lambda kv: abs(kv[1]), reverse=True)[:5]
-        return [{"ticker": s, "value_vnd_billion": _r(v / _VND_B)} for s, v in rows]
+        return [{"ticker": s, "value": _r(v / _VND_B)} for s, v in rows]
 
     return {
         "total_buy_vnd_billion": _r(buy_v / _VND_B),
@@ -295,7 +295,7 @@ def _build_am_prop(pser: list[dict] | None, ptop: dict | None) -> dict | None:
 
     def _top(items: list[dict]) -> list[dict]:
         return [
-            {"ticker": x.get("ticker"), "value_vnd_billion": _r((x.get("total_value_vnd") or 0) / _VND_B)}
+            {"ticker": x.get("ticker"), "value": _r((x.get("total_value_vnd") or 0) / _VND_B)}
             for x in (items or [])[:5]
         ]
 
@@ -427,7 +427,7 @@ async def build_midday_payload(db: AsyncSession) -> dict[str, Any]:
     if ma20_partial:
         missing.append("am_ma20_partial")
 
-    if liq_rows is None:
+    if not liq_rows:
         missing.append("am_liquidity")
 
     # ── EOD-frozen context ────────────────────────────────────────────────────
