@@ -11,8 +11,9 @@ import json
 import logging
 import re
 import time
+from dataclasses import dataclass
 from datetime import date
-from typing import Any
+from typing import Any, Awaitable, Callable
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -38,6 +39,20 @@ SESSION_DISPLAY: dict[str, str] = {
 }
 
 
+@dataclass
+class SessionConfig:
+    """Configuration for a session analysis pipeline variant."""
+
+    report_type: str
+    payload_builder: Callable[[], Awaitable[dict]]
+    prompt_builder: Callable[[dict, str], str]
+    system_prompt: str
+    validator: Callable[[dict, dict], list[str]]
+    session_display: dict[str, str]
+    use_memory: bool
+    persist_claims: bool
+
+
 def _parse_json(text: str) -> dict[str, Any]:
     cleaned = _FENCE.sub("", text).strip()
     try:
@@ -49,24 +64,29 @@ def _parse_json(text: str) -> dict[str, Any]:
         raise
 
 
-async def generate_analysis(
-    *, max_retries: int = 3, temperature: float = 0.3,
-    payload: dict[str, Any] | None = None, db: AsyncSession | None = None,
+async def run_session_analysis(
+    config: SessionConfig,
+    *,
+    max_retries: int = 3,
+    temperature: float = 0.3,
+    payload: dict[str, Any] | None = None,
+    db: AsyncSession | None = None,
 ) -> dict[str, Any]:
-    """Generate one validated analysis article.
+    """Generalized session analysis pipeline parameterized by ``config``.
 
-    If ``db`` is provided: load memory continuity into the payload before
-    generation and persist the article + claims after a valid generation.
+    If ``db`` is provided: optionally load memory continuity into the payload
+    (gated on ``config.use_memory``) and persist the article after a valid
+    generation (passing ``config.report_type`` and ``config.persist_claims``).
     """
     t0 = time.monotonic()
     if payload is None:
-        payload = await build_analysis_payload()
+        payload = await config.payload_builder()
 
     session_date = date.fromisoformat(payload["meta"]["generated_for_date"])
     memory_loaded = False
 
     # ── Memory continuity (spec §6) ──────────────────
-    if db is not None:
+    if config.use_memory and db is not None:
         try:
             mem = await build_memory_context(db, session_date)
             mem["verifiable_claims_from_recent_analyses"] = await verify_pending_claims(
@@ -88,14 +108,14 @@ async def generate_analysis(
     attempt = 0
 
     for attempt in range(max_retries + 1):
-        user_prompt = build_user_prompt(payload, session_type)
+        user_prompt = config.prompt_builder(payload, session_type)
         if attempt > 0:
             user_prompt += (
                 "\n\n=== SỬA LỖI ===\nBài trước có lỗi sau, hãy sửa và sinh lại:\n"
                 + "\n".join(f"- {e}" for e in last_errors)
             )
         text, model_used = await chat_completion(
-            system_prompt=SYSTEM_PROMPT, user_content=user_prompt, temperature=temperature,
+            system_prompt=config.system_prompt, user_content=user_prompt, temperature=temperature,
         )
         try:
             output = _parse_json(text)
@@ -107,7 +127,7 @@ async def generate_analysis(
         output.setdefault("session_type", session_type)
         output.setdefault("session_date", payload["meta"]["generated_for_date"])
         output.setdefault("id", f"vnindex-{payload['meta']['generated_for_date']}")
-        output.setdefault("session_type_display", SESSION_DISPLAY.get(session_type))
+        output.setdefault("session_type_display", config.session_display.get(session_type))
         output.setdefault("meta", {})
         if isinstance(output["meta"], dict):
             output["meta"].update({
@@ -116,7 +136,7 @@ async def generate_analysis(
                 "memory_loaded": memory_loaded,
             })
 
-        last_errors = validate_output(output, payload)
+        last_errors = config.validator(output, payload)
         if not last_errors:
             break
         logger.warning("attempt %d validation errors: %s", attempt, last_errors)
@@ -144,7 +164,11 @@ async def generate_analysis(
     persisted = False
     if db is not None and publishable:
         try:
-            await persist_analysis(db, output, session_date, session_type)
+            await persist_analysis(
+                db, output, session_date, session_type,
+                report_type=config.report_type,
+                persist_claims=config.persist_claims,
+            )
             persisted = True
         except Exception as exc:  # noqa: BLE001
             logger.error("persist_analysis failed: %s", exc)
@@ -163,6 +187,39 @@ async def generate_analysis(
         "persisted": persisted,
         "generation_time_ms": int((time.monotonic() - t0) * 1000),
     }
+
+
+DAILY_CONFIG = SessionConfig(
+    report_type="daily",
+    payload_builder=build_analysis_payload,
+    prompt_builder=build_user_prompt,
+    system_prompt=SYSTEM_PROMPT,
+    validator=validate_output,
+    session_display=SESSION_DISPLAY,
+    use_memory=True,
+    persist_claims=True,
+)
+
+
+async def generate_analysis(
+    *, max_retries: int = 3, temperature: float = 0.3,
+    payload: dict[str, Any] | None = None, db: AsyncSession | None = None,
+) -> dict[str, Any]:
+    """Generate one validated analysis article.
+
+    If ``db`` is provided: load memory continuity into the payload before
+    generation and persist the article + claims after a valid generation.
+
+    Delegates to ``run_session_analysis(DAILY_CONFIG, ...)`` — behavior is
+    byte-equivalent to the previous implementation.
+    """
+    return await run_session_analysis(
+        DAILY_CONFIG,
+        max_retries=max_retries,
+        temperature=temperature,
+        payload=payload,
+        db=db,
+    )
 
 
 async def run_daily_analysis(session: AsyncSession | None = None) -> dict[str, Any]:

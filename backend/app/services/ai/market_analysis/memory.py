@@ -199,11 +199,25 @@ async def verify_pending_claims(
 
 
 async def persist_analysis(
-    db: AsyncSession, output: dict[str, Any], session_date: date, session_type: str,
+    db: AsyncSession,
+    output: dict[str, Any],
+    session_date: date,
+    session_type: str,
+    *,
+    report_type: str = "daily",
+    persist_claims: bool = True,
 ) -> AnalysisHistory:
-    """Upsert the article by session_date and (re)create its extracted claims."""
+    """Upsert the article by (session_date, report_type) and (re)create its extracted claims.
+
+    ``report_type`` disambiguates daily vs midday vs premarket rows for the same date.
+    When ``persist_claims=False`` the claim extraction/insertion is skipped entirely
+    (e.g. midday reports have no scenario claims to track).
+    """
     existing = (await db.execute(
-        select(AnalysisHistory).where(AnalysisHistory.session_date == session_date)
+        select(AnalysisHistory).where(
+            AnalysisHistory.session_date == session_date,
+            AnalysisHistory.report_type == report_type,
+        )
     )).scalar_one_or_none()
 
     fields = dict(
@@ -211,6 +225,7 @@ async def persist_analysis(
         session_date=session_date,
         generated_at=datetime.now(UTC),
         session_type=session_type,
+        report_type=report_type,
         headline=output.get("headline", ""),
         tagline=output.get("tagline") or {},
         paragraphs=output.get("paragraphs") or {},
@@ -226,7 +241,8 @@ async def persist_analysis(
     if existing:
         for k, v in fields.items():
             setattr(existing, k, v)
-        await db.execute(delete(AnalysisClaim).where(AnalysisClaim.analysis_id == existing.id))
+        if persist_claims:
+            await db.execute(delete(AnalysisClaim).where(AnalysisClaim.analysis_id == existing.id))
         analysis = existing
     else:
         analysis = AnalysisHistory(id=uuid.uuid4(), **fields)
@@ -234,16 +250,17 @@ async def persist_analysis(
 
     await db.flush()  # ensure analysis.id is available
 
-    expires = session_date + timedelta(days=CLAIM_EXPIRY_DAYS)
-    for c in extract_claims(output):
-        db.add(AnalysisClaim(
-            id=uuid.uuid4(),
-            analysis_id=analysis.id,
-            session_date=session_date,
-            expires_at=expires,
-            status="pending",
-            **c,
-        ))
+    if persist_claims:
+        expires = session_date + timedelta(days=CLAIM_EXPIRY_DAYS)
+        for c in extract_claims(output):
+            db.add(AnalysisClaim(
+                id=uuid.uuid4(),
+                analysis_id=analysis.id,
+                session_date=session_date,
+                expires_at=expires,
+                status="pending",
+                **c,
+            ))
 
     await db.commit()
     return analysis
