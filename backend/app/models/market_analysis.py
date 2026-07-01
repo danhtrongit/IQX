@@ -23,22 +23,28 @@ from sqlalchemy import (
     Index,
     String,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.sql import func
 
 from app.core.database import Base, TimestampMixin, UUIDMixin
 
 
 class AnalysisHistory(UUIDMixin, TimestampMixin, Base):
-    """One published daily VN-Index analysis, keyed by session_date."""
+    """One published daily VN-Index analysis, keyed by (session_date, report_type)."""
 
     __tablename__ = "analysis_history"
+    __table_args__ = (
+        UniqueConstraint("session_date", "report_type", name="uq_analysis_session_date_report_type"),
+    )
 
     # human-readable id used for URLs, e.g. "vnindex-2026-06-18"
     public_id: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
-    session_date: Mapped[date] = mapped_column(Date, unique=True, index=True, nullable=False)
-    generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    session_date: Mapped[date] = mapped_column(Date, index=True, nullable=False)
+    generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     session_type: Mapped[str] = mapped_column(String(30), index=True, nullable=False)
+    report_type: Mapped[str] = mapped_column(String(16), nullable=False, server_default="daily", index=True)
     headline: Mapped[str] = mapped_column(Text, nullable=False)
     tagline: Mapped[dict] = mapped_column(JSON, nullable=False)
     paragraphs: Mapped[dict] = mapped_column(JSON, nullable=False)
