@@ -1,0 +1,253 @@
+/* ─── MidDay article styles — orange variant ─────────────────────────────────
+   Mirrors article.css but uses the orange accent (#FFB347) for the mid-day
+   phiên sáng report. Uses .mm-* class prefix to avoid collision with .am-*.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Root token block ── */
+.mm-article {
+  --mm-accent:      #FFB347;
+  --mm-accent-soft: #FFB34722;
+  --mm-up:          #10b981;
+  --mm-down:        #ef4444;
+  --mm-neutral:     #eab308;
+
+  position: relative;
+  overflow: hidden;
+  padding: 20px 24px;
+  border-radius: 8px;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-2);
+}
+
+/* Shimmer top bar — orange gradient */
+.mm-article::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--mm-accent), #FFD580, var(--mm-accent));
+  background-size: 200% 100%;
+  animation: mm-shimmer 4s linear infinite;
+}
+
+@keyframes mm-shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* ── Header ── */
+.mm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mm-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Orange badge */
+.mm-badge {
+  background: var(--mm-accent-soft);
+  color: var(--mm-accent);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.mm-session-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-1);
+}
+
+.mm-session-type {
+  font-size: 11px;
+  color: var(--color-text-3);
+}
+
+/* ── Headline ── */
+.mm-headline {
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.35;
+  color: var(--color-text-1);
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+
+/* ── Tagline ── */
+.mm-tagline {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  letter-spacing: 0.02em;
+}
+
+.mm-tagline-marker {
+  margin-right: 4px;
+}
+
+.mm-tagline--up      { color: var(--mm-up); }
+.mm-tagline--down    { color: var(--mm-down); }
+.mm-tagline--neutral { color: var(--mm-neutral); }
+
+/* ── Paragraph sections ── */
+.mm-paragraphs {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mm-paragraph-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mm-section-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-1);
+  letter-spacing: -0.01em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border-2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Orange accent bar on section label */
+.mm-section-label::before {
+  content: '';
+  width: 3px;
+  height: 16px;
+  background: var(--mm-accent);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.mm-paragraph {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-text-2);
+}
+
+/* ── Inline content helpers (rendered via dangerouslySetInnerHTML + sanitizeInline) ── */
+.mm-paragraph .num {
+  font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
+}
+
+.mm-paragraph .up-text   { color: var(--mm-up);   font-weight: 500; }
+.mm-paragraph .down-text { color: var(--mm-down);  font-weight: 500; }
+
+/* ── Pending placeholder (market_health not yet published) ── */
+.mm-pending {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1.5px dashed var(--mm-accent);
+  border-radius: 6px;
+  background: var(--mm-accent-soft);
+  font-size: 12.5px;
+  color: var(--color-text-2);
+  line-height: 1.6;
+}
+
+.mm-pending-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.mm-pending-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--mm-accent);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.mm-pending-message {
+  font-size: 12.5px;
+  color: var(--color-text-2);
+}
+
+/* ── Unexplained callout — orange left border ── */
+.mm-unexplained {
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: var(--mm-accent-soft);
+  border-left: 3px solid var(--mm-accent);
+  border-radius: 6px;
+  font-size: 12.5px;
+  color: var(--color-text-2);
+  line-height: 1.6;
+}
+
+.mm-unexplained-title {
+  color: var(--mm-accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.mm-unexplained-body {
+  font-size: 12.5px;
+  color: var(--color-text-2);
+}
+
+/* ─── MidDay takeaway styles ─────────────────────────────────────────────── */
+
+.mm-takeaway {
+  --mm-accent:      #FFB347;
+  --mm-accent-soft: #FFB34722;
+}
+
+/* ── Countdown pill ── */
+.mm-countdown-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--mm-accent-soft);
+  border: 1px solid var(--mm-accent);
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mm-accent);
+  margin-left: 8px;
+  letter-spacing: 0.02em;
+}
+
+/* ── Alert level dots (watchlist) ── */
+.mm-watchlist-dot--normal  { background: var(--color-text-3, #999); }
+.mm-watchlist-dot--alert   { background: #eab308; }
+.mm-watchlist-dot--warn    { background: #ef4444; }
+
+/* ── Watchlist row highlight ── */
+.mm-watchlist-row--alert {
+  background: color-mix(in oklch, #eab308 8%, transparent);
+  border-radius: 6px;
+}
+
+.mm-watchlist-row--warn {
+  background: color-mix(in oklch, #ef4444 8%, transparent);
+  border-radius: 6px;
+}
