@@ -1,7 +1,9 @@
-"""Daily VN-Index AI market-analysis: public read + admin manual trigger.
+"""VN-Index AI market-analysis: public read + admin manual trigger.
 
 Public:  GET /market-analysis/daily/latest, /daily/{session_date}, /daily
-Admin:   POST /market-analysis/daily/run  (manual generation, audited)
+         GET /market-analysis/midday/latest, /midday/{session_date}
+Admin:   POST /market-analysis/daily/run   (manual generation, audited)
+         POST /market-analysis/midday/run  (manual generation, audited)
 """
 
 from __future__ import annotations
@@ -63,15 +65,38 @@ def _to_out(a: AnalysisHistory) -> AnalysisOut:
     )
 
 
-@router.get("/daily/latest", response_model=AnalysisOut)
-async def get_latest(db: DBSession) -> AnalysisOut:
-    """Bài nhận định mới nhất đã publish."""
-    a = (await db.execute(
+# ── shared query helpers ──────────────────────────────────────────────────────
+
+async def _get_latest(db: DBSession, report_type: str) -> AnalysisHistory | None:
+    """Return the most recent published row for the given report_type."""
+    return (await db.execute(
         select(AnalysisHistory)
-        .where(AnalysisHistory.is_published.is_(True))
+        .where(
+            AnalysisHistory.is_published.is_(True),
+            AnalysisHistory.report_type == report_type,
+        )
         .order_by(AnalysisHistory.session_date.desc())
         .limit(1)
     )).scalar_one_or_none()
+
+
+async def _get_by_date(db: DBSession, session_date: date, report_type: str) -> AnalysisHistory | None:
+    """Return the published row for (session_date, report_type), or None."""
+    return (await db.execute(
+        select(AnalysisHistory).where(
+            AnalysisHistory.session_date == session_date,
+            AnalysisHistory.is_published.is_(True),
+            AnalysisHistory.report_type == report_type,
+        )
+    )).scalar_one_or_none()
+
+
+# ── daily endpoints ───────────────────────────────────────────────────────────
+
+@router.get("/daily/latest", response_model=AnalysisOut)
+async def get_latest(db: DBSession) -> AnalysisOut:
+    """Bài nhận định cuối ngày mới nhất đã publish."""
+    a = await _get_latest(db, "daily")
     if a is None:
         raise NotFoundError("Chưa có bài nhận định nào")
     return _to_out(a)
@@ -82,10 +107,13 @@ async def list_recent(
     db: DBSession,
     limit: int = Query(20, ge=1, le=100),
 ) -> list[AnalysisListItem]:
-    """Danh sách bài gần nhất (headline + tagline) để hiển thị mục lục."""
+    """Danh sách bài nhận định cuối ngày gần nhất (headline + tagline) để hiển thị mục lục."""
     rows = (await db.execute(
         select(AnalysisHistory)
-        .where(AnalysisHistory.is_published.is_(True))
+        .where(
+            AnalysisHistory.is_published.is_(True),
+            AnalysisHistory.report_type == "daily",
+        )
         .order_by(AnalysisHistory.session_date.desc())
         .limit(limit)
     )).scalars().all()
@@ -103,13 +131,8 @@ async def get_by_date(
     db: DBSession,
     session_date: date = Path(..., description="Ngày phiên YYYY-MM-DD"),
 ) -> AnalysisOut:
-    """Bài nhận định của một phiên cụ thể."""
-    a = (await db.execute(
-        select(AnalysisHistory).where(
-            AnalysisHistory.session_date == session_date,
-            AnalysisHistory.is_published.is_(True),
-        )
-    )).scalar_one_or_none()
+    """Bài nhận định cuối ngày của một phiên cụ thể."""
+    a = await _get_by_date(db, session_date, "daily")
     if a is None:
         raise NotFoundError(f"Không có bài nhận định cho ngày {session_date.isoformat()}")
     return _to_out(a)
@@ -129,7 +152,7 @@ class GenerateResult(BaseModel):
 
 @router.post("/daily/run", response_model=GenerateResult)
 async def run_now(admin: AdminUser, audit: AuditCtx, db: DBSession) -> GenerateResult:
-    """Kích hoạt sinh bài thủ công (admin). Dùng session riêng để tránh
+    """Kích hoạt sinh bài cuối ngày thủ công (admin). Dùng session riêng để tránh
     đụng transaction của request; ghi audit log."""
     from app.services.ai.market_analysis import run_daily_analysis
 
@@ -143,5 +166,47 @@ async def run_now(admin: AdminUser, audit: AuditCtx, db: DBSession) -> GenerateR
         target_id=str(result.get("session_date")),
         after=result,
         note="Manual market-analysis generation",
+    )
+    return GenerateResult(**result)
+
+
+# ── midday endpoints ──────────────────────────────────────────────────────────
+
+@router.get("/midday/latest", response_model=AnalysisOut)
+async def get_midday_latest(db: DBSession) -> AnalysisOut:
+    """Bài nhận định giữa phiên mới nhất đã publish."""
+    a = await _get_latest(db, "midday")
+    if a is None:
+        raise NotFoundError("Chưa có bài nhận định giữa phiên nào")
+    return _to_out(a)
+
+
+@router.get("/midday/{session_date}", response_model=AnalysisOut)
+async def get_midday_by_date(
+    db: DBSession,
+    session_date: date = Path(..., description="Ngày phiên YYYY-MM-DD"),
+) -> AnalysisOut:
+    """Bài nhận định giữa phiên của một ngày cụ thể."""
+    a = await _get_by_date(db, session_date, "midday")
+    if a is None:
+        raise NotFoundError(f"Không có bài nhận định giữa phiên cho ngày {session_date.isoformat()}")
+    return _to_out(a)
+
+
+@router.post("/midday/run", response_model=GenerateResult)
+async def run_midday_now(admin: AdminUser, audit: AuditCtx, db: DBSession) -> GenerateResult:
+    """Kích hoạt sinh bài giữa phiên thủ công (admin). Dùng session riêng để tránh
+    đụng transaction của request; ghi audit log."""
+    from app.services.ai.market_analysis.generator import run_midday_analysis
+
+    result = await run_midday_analysis()
+
+    await AdminAuditService(db).record(
+        audit,
+        action="market_analysis.midday.run",
+        target_entity="market_analysis",
+        target_id=str(result.get("session_date")),
+        after=result,
+        note="Manual midday market-analysis generation",
     )
     return GenerateResult(**result)
