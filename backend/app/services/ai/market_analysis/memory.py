@@ -230,6 +230,13 @@ async def persist_analysis(
         )
     )).scalar_one_or_none()
 
+    # unexplained is a Text column; midday reports emit it as a dict — serialize
+    # to a JSON string so both daily (str|None) and midday (dict) are accepted.
+    _unexplained = output.get("unexplained")
+    if isinstance(_unexplained, dict):
+        import json as _json
+        _unexplained = _json.dumps(_unexplained, ensure_ascii=False)
+
     fields = dict(
         public_id=output.get("id") or f"vnindex-{session_date.isoformat()}",
         session_date=session_date,
@@ -241,7 +248,7 @@ async def persist_analysis(
         paragraphs=output.get("paragraphs") or {},
         scenarios=output.get("scenarios") or [],
         watchlist=output.get("watchlist"),
-        unexplained=output.get("unexplained"),
+        unexplained=_unexplained,
         meta={**(output.get("meta") or {}),
               "session_type_display": output.get("session_type_display"),
               "charts": output.get("charts")},
