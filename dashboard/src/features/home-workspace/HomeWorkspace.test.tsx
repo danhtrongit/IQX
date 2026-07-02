@@ -14,7 +14,11 @@ vi.mock("./useInitialSymbol", () => ({
   persistLastViewedSymbol: mockPersistLastViewedSymbol,
 }))
 vi.mock("./useMediaQuery", () => ({ useMediaQuery: () => true }))
-vi.mock("@/features/market-overview/daily/MarketDailyPage", () => ({ MarketDailyPage: () => <div>MARKET_DAILY</div> }))
+// Mock HomeWorkspace's DIRECT child (not the transitive MarketDailyPage):
+// HomeMarketView switches on the REAL wall clock (getDisplayMode(new Date())),
+// so mocking only the grandchild made this suite fail during 11:30–16:30
+// (the midday branch mounted the real MidDayView without a QueryClientProvider).
+vi.mock("@/features/market-overview/HomeMarketView", () => ({ HomeMarketView: () => <div>MARKET_DAILY</div> }))
 vi.mock("./HomeSidePanel", () => ({ HomeSidePanel: ({ active }: { active: string }) => <div>SIDE_{active}</div> }))
 vi.mock("./HomeIconRail", () => ({ HomeIconRail: ({ active }: { active: string }) => <div>RAIL_{active}</div> }))
 
