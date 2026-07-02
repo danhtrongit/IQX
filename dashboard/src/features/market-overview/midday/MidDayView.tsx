@@ -17,6 +17,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Spin } from "@arco-design/web-react"
 import { api } from "@/shared/http/client"
 import { MarketDailyPage } from "../daily/MarketDailyPage"
+import { ChartCard } from "../daily/charts/ChartCard"
 import { TierLabel } from "../daily/charts/TierLabel"
 import { BreadthChart } from "../daily/charts/BreadthChart"
 import { ContributionChart } from "../daily/charts/ContributionChart"
@@ -34,6 +35,26 @@ import type { MidDayAnalysis } from "./types"
 function computeIsLunch(now: Date): boolean {
   const minutes = now.getHours() * 60 + now.getMinutes()
   return minutes >= 690 && minutes < 780 // 11:30 → 13:00
+}
+
+// ─── AM chart-block gating ────────────────────────────────────────────────────
+// A degraded AM block arrives as {data_state:"unavailable"} — truthy, but every
+// field the chart component dereferences is missing. Only "am_session" blocks
+// are safe to mount.
+
+function isAm(block?: { data_state?: string } | null): boolean {
+  return block?.data_state === "am_session"
+}
+
+/** Placeholder shown in a chart slot whose AM data source degraded. */
+function AmUnavailableCard({ title }: { title: string }) {
+  return (
+    <ChartCard title={title}>
+      <div className="flex min-h-[120px] items-center justify-center px-4 py-6 text-center text-[13px] text-[var(--color-text-3)]">
+        Đang xử lý · số đầy đủ có trong bản cuối ngày 16:30
+      </div>
+    </ChartCard>
+  )
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -110,30 +131,53 @@ export function MidDayView() {
       {/* ── Takeaway (kịch bản phiên chiều + watchlist) ── */}
       <MidDayTakeaway data={data} />
 
-      {/* ── Cấu trúc phiên (Breadth + Contribution) ── */}
-      {charts?.breadth && charts?.contribution && (
+      {/* ── Cấu trúc phiên (Breadth + Contribution) ──
+          Per-card data_state gate: a degraded block arrives as
+          {data_state:"unavailable"} — truthy but missing every field the chart
+          dereferences (the 2026-07-02 prod crash: ForeignFlowCard read
+          streak.direction of undefined). Only mount a card on "am_session";
+          otherwise show the processing placeholder. */}
+      {(isAm(charts?.breadth) || isAm(charts?.contribution)) && (
         <div>
           <TierLabel label="Cấu trúc phiên" />
           <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
-            <BreadthChart data={charts.breadth} />
-            <ContributionChart data={charts.contribution} />
+            {isAm(charts?.breadth) ? (
+              <BreadthChart data={charts!.breadth} />
+            ) : (
+              <AmUnavailableCard title="Độ rộng thị trường HOSE" />
+            )}
+            {isAm(charts?.contribution) ? (
+              <ContributionChart data={charts!.contribution} />
+            ) : (
+              <AmUnavailableCard title="Top mã đóng góp ±" />
+            )}
           </div>
         </div>
       )}
 
       {/* ── Dòng tiền (Foreign + Prop flow cards) ── */}
-      {charts?.foreign_detail && charts?.prop_detail && (
+      {(isAm(charts?.foreign_detail) || isAm(charts?.prop_detail)) && (
         <div>
           <TierLabel label="Dòng tiền" />
           <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
-            <ForeignFlowCard data={charts.foreign_detail} />
-            <PropFlowCard
-              data={charts.prop_detail}
-              foreignNet={
-                charts.foreign_detail.total_buy_vnd_billion -
-                charts.foreign_detail.total_sell_vnd_billion
-              }
-            />
+            {isAm(charts?.foreign_detail) ? (
+              <ForeignFlowCard data={charts!.foreign_detail} />
+            ) : (
+              <AmUnavailableCard title="Khối ngoại" />
+            )}
+            {isAm(charts?.prop_detail) ? (
+              <PropFlowCard
+                data={charts!.prop_detail}
+                foreignNet={
+                  isAm(charts?.foreign_detail)
+                    ? charts!.foreign_detail.total_buy_vnd_billion -
+                      charts!.foreign_detail.total_sell_vnd_billion
+                    : undefined
+                }
+              />
+            ) : (
+              <AmUnavailableCard title="Tự doanh CTCK" />
+            )}
           </div>
         </div>
       )}

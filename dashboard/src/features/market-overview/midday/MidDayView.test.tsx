@@ -37,8 +37,10 @@ const coldStart = {
   },
 }
 
+const h = vi.hoisted(() => ({ payload: null as unknown }))
+
 vi.mock("@/shared/http/client", () => ({
-  api: { get: () => ({ json: async () => coldStart }) },
+  api: { get: () => ({ json: async () => h.payload }) },
 }))
 
 import { MidDayView } from "./MidDayView"
@@ -54,6 +56,7 @@ function renderView() {
 
 describe("MidDayView cold-start", () => {
   it("renders without crashing and skips the frozen health tier when data_state is unavailable", async () => {
+    h.payload = coldStart
     renderView()
     // AM article renders (headline present) once the query resolves
     await waitFor(() => expect(screen.getByText(/PHIÊN SÁNG/)).toBeInTheDocument())
@@ -64,5 +67,31 @@ describe("MidDayView cold-start", () => {
     expect(screen.queryByText("Dòng tiền chuyển nhóm")).not.toBeInTheDocument()
     // The article's pending "Sức khỏe thị trường" block still shows exactly once.
     expect(screen.getAllByText("Sức khỏe thị trường")).toHaveLength(1)
+  })
+
+  it("does not crash when foreign_detail is unavailable (truthy) but prop_detail has AM data — the 2026-07-02 prod crash", async () => {
+    // Exact prod shape: foreign flow degraded ({data_state:"unavailable"}, no
+    // streak/totals) while prop flow has real AM data. The old truthiness gate
+    // rendered ForeignFlowCard which dereferences data.streak.direction → boom.
+    h.payload = {
+      ...coldStart,
+      id: "m-degraded",
+      charts: {
+        ...coldStart.charts,
+        foreign_detail: { data_state: "unavailable" },
+        prop_detail: {
+          total_buy_vnd_billion: 120, total_sell_vnd_billion: 80, net_vnd_billion: 40,
+          last_12_sessions: [1, -2, 3], top_buy: [{ ticker: "SSI", value: 30 }],
+          top_sell: [{ ticker: "VND", value: -20 }], data_state: "am_session",
+        },
+      },
+    }
+    renderView()
+    await waitFor(() => expect(screen.getByText(/PHIÊN SÁNG/)).toBeInTheDocument())
+    // The prop card (real AM data) must render…
+    expect(screen.getByText("Tự doanh CTCK")).toBeInTheDocument()
+    // …while the degraded foreign block must NOT mount ForeignFlowCard
+    // (its streak label would have crashed); a processing placeholder is fine.
+    expect(screen.getByText(/Đang xử lý/)).toBeInTheDocument()
   })
 })
