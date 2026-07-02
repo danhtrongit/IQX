@@ -10,6 +10,12 @@ import { ChartCard } from "./ChartCard"
 interface HealthLineChartProps {
   data: MarketCharts["market_health_detail"]
   classification: string
+  /** When true, dims the chart body and shows a bottom banner */
+  frozen?: boolean
+  /** Tag pill label shown in the card header (e.g. "Cuối ngày 30/06") */
+  dataTag?: string
+  /** Text shown in the bottom frozen banner */
+  frozenNote?: string
 }
 
 // ── Color helpers ─────────────────────────────────────────────────────────
@@ -29,7 +35,7 @@ function getCalloutColor(type: "warning" | "positive" | "neutral" | undefined): 
 
 // ── Component ─────────────────────────────────────────────────────────────
 
-export function HealthLineChart({ data, classification }: HealthLineChartProps) {
+export function HealthLineChart({ data, classification, frozen, dataTag, frozenNote }: HealthLineChartProps) {
   const { pct_above_ma20, trend_20d, callout } = data
 
   // Compute peak from trend_20d client-side
@@ -88,8 +94,12 @@ export function HealthLineChart({ data, classification }: HealthLineChartProps) 
   // Today display value (last point of trend_20d takes priority, fallback to pct_above_ma20)
   const todayValue = pct_above_ma20
 
+  const tag = dataTag
+    ? { label: dataTag, tone: (frozen ? "frozen" : "am") as "frozen" | "am" }
+    : undefined
+
   return (
-    <ChartCard title="Sức khỏe thị trường">
+    <ChartCard title="Sức khỏe thị trường" tag={tag} frozen={frozen} frozenNote={frozenNote}>
       {/* SVG line chart */}
       <svg
         width="100%"

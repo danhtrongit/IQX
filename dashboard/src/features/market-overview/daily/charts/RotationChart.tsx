@@ -9,17 +9,27 @@ import { ChartCard } from "./ChartCard"
 
 interface RotationChartProps {
   data: MarketCharts["sector_rotation"]
+  /** When true, dims the chart body and shows a bottom banner */
+  frozen?: boolean
+  /** Tag pill label shown in the card header (e.g. "Cuối ngày 30/06") */
+  dataTag?: string
+  /** Text shown in the bottom frozen banner */
+  frozenNote?: string
 }
 
 // ── Component ─────────────────────────────────────────────────────────────
 
-export function RotationChart({ data }: RotationChartProps) {
+export function RotationChart({ data, frozen, dataTag, frozenNote }: RotationChartProps) {
   // Backend already sorts desc; keep that order (stable sort preserves it)
   const rows = data.sectors_today
   const maxAbs = Math.max(...rows.map((row) => Math.abs(row.pct)), 1)
 
+  const tag = dataTag
+    ? { label: dataTag, tone: (frozen ? "frozen" : "am") as "frozen" | "am" }
+    : undefined
+
   return (
-    <ChartCard title="Dòng tiền chuyển nhóm">
+    <ChartCard title="Dòng tiền chuyển nhóm" tag={tag} frozen={frozen} frozenNote={frozenNote}>
       {/* Subtitle */}
       <div
         style={{
