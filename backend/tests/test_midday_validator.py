@@ -44,3 +44,18 @@ def test_scenarios_must_be_three():
 def test_ascii_hyphen_before_digit_flagged():
     o = _ok(); o["paragraphs"]["money_flow"]["content"] = "bán -120 tỷ"
     assert any("−" in e or "U+2212" in e or "hyphen" in e.lower() for e in validate_midday(o, {}))
+
+
+def test_hyphen_in_html_attribute_not_flagged_but_visible_negative_is():
+    o = _ok()
+    # HTML attribute with hyphen-digit in an otherwise-valid content → must NOT flag U+2212
+    o["paragraphs"]["session_structure"]["content"] = "<span class='col-1'>Chỉ số tăng</span>"
+    errs = validate_midday(o, {})
+    assert not any(("−" in e or "U+2212" in e or "hyphen" in e.lower()) for e in errs), \
+        f"HTML attribute col-1 falsely triggered U+2212 check: {errs}"
+
+    # but a visible ASCII negative still flags
+    o["paragraphs"]["money_flow"]["content"] = "bán -120 tỷ"
+    errs = validate_midday(o, {})
+    assert any(("−" in e or "U+2212" in e or "hyphen" in e.lower()) for e in errs), \
+        f"Visible negative -120 should be flagged but wasn't: {errs}"

@@ -21,6 +21,9 @@ from app.services.ai.proxy_client import chat_completion
 
 from .classifier import classify_session
 from .memory import build_memory_context, persist_analysis, verify_pending_claims
+from .midday_payload import build_midday_payload
+from .midday_prompts import MIDDAY_SYSTEM_PROMPT, build_midday_user_prompt
+from .midday_validator import validate_midday
 from .payload import build_analysis_payload
 from .prompts import SYSTEM_PROMPT, build_user_prompt
 from .validator import hard_errors, validate_output
@@ -201,6 +204,33 @@ DAILY_CONFIG = SessionConfig(
 )
 
 
+def _midday_payload_stub() -> None:
+    """Stub payload_builder for MIDDAY_CONFIG.
+
+    MIDDAY_CONFIG should never be called via its payload_builder because
+    ``run_midday_analysis`` builds the payload itself (``build_midday_payload``
+    requires a ``db`` session) and passes it via the ``payload=`` kwarg to
+    ``run_session_analysis``.  This stub exists only to satisfy the dataclass
+    field; calling it directly is a programming error.
+    """
+    raise RuntimeError(
+        "MIDDAY_CONFIG.payload_builder must not be called directly — "
+        "pass payload= to run_session_analysis instead."
+    )
+
+
+MIDDAY_CONFIG = SessionConfig(
+    report_type="midday",
+    payload_builder=_midday_payload_stub,
+    prompt_builder=build_midday_user_prompt,
+    system_prompt=MIDDAY_SYSTEM_PROMPT,
+    validator=validate_midday,
+    session_display=SESSION_DISPLAY,
+    use_memory=False,
+    persist_claims=False,
+)
+
+
 async def generate_analysis(
     *, max_retries: int = 3, temperature: float = 0.3,
     payload: dict[str, Any] | None = None, db: AsyncSession | None = None,
@@ -229,6 +259,39 @@ async def run_daily_analysis(session: AsyncSession | None = None) -> dict[str, A
     """
     async def _run(db: AsyncSession) -> dict[str, Any]:
         res = await generate_analysis(db=db)
+        return {
+            "session_date": res["session_date"],
+            "session_type": res["session_type"],
+            "valid": res["valid"],
+            "persisted": res["persisted"],
+            "memory_loaded": res["memory_loaded"],
+            "attempts": res["attempts"],
+            "errors": res["errors"],
+            "model": res["model"],
+            "generation_time_ms": res["generation_time_ms"],
+        }
+
+    if session is None:
+        from app.core.database import get_session_factory
+        factory = get_session_factory()
+        async with factory() as db:
+            return await _run(db)
+    return await _run(session)
+
+
+async def run_midday_analysis(session: AsyncSession | None = None) -> dict[str, Any]:
+    """Scheduler/CLI entrypoint for the mid-day AM session brief.
+
+    Opens its own DB session when not provided (mirrors ``run_daily_analysis``).
+    Builds the payload here (because ``build_midday_payload`` needs a ``db``
+    session) and passes it via ``payload=`` — never calls
+    ``MIDDAY_CONFIG.payload_builder``.
+
+    Returns a compact summary dict for logging / manual-trigger responses.
+    """
+    async def _run(db: AsyncSession) -> dict[str, Any]:
+        payload = await build_midday_payload(db)
+        res = await run_session_analysis(MIDDAY_CONFIG, payload=payload, db=db)
         return {
             "session_date": res["session_date"],
             "session_type": res["session_type"],

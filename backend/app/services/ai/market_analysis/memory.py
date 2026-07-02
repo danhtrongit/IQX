@@ -121,17 +121,27 @@ async def build_memory_context(db: AsyncSession, today: date) -> dict[str, Any]:
     Verification uses each pending claim's OWN session payload is not stored, so we
     verify against TODAY's payload — passed in separately by the generator.
     """
-    # placeholder; today's payload is injected by verify_pending_claims()
+    # Filter to report_type=="daily" so mid-day rows (same date) never surface as
+    # the daily's last_analysis or recent overview — once midday records exist,
+    # they must NOT pollute EOD memory continuity.
     last = (await db.execute(
         select(AnalysisHistory)
-        .where(AnalysisHistory.session_date < today, AnalysisHistory.is_published.is_(True))
+        .where(
+            AnalysisHistory.session_date < today,
+            AnalysisHistory.is_published.is_(True),
+            AnalysisHistory.report_type == "daily",
+        )
         .order_by(AnalysisHistory.session_date.desc())
         .limit(1)
     )).scalar_one_or_none()
 
     recent = (await db.execute(
         select(AnalysisHistory)
-        .where(AnalysisHistory.session_date < today, AnalysisHistory.is_published.is_(True))
+        .where(
+            AnalysisHistory.session_date < today,
+            AnalysisHistory.is_published.is_(True),
+            AnalysisHistory.report_type == "daily",
+        )
         .order_by(AnalysisHistory.session_date.desc())
         .limit(LOAD_LAST_N)
     )).scalars().all()

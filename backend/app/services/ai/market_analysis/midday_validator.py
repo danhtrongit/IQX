@@ -134,9 +134,9 @@ def validate_midday(out: dict[str, Any], payload: dict[str, Any]) -> list[str]:
     low = full_text.lower()
 
     # ── HARD: ASCII hyphen before digit (must use U+2212 '−') ─────────────────
-    # Check raw (un-stripped) content so we catch it inside HTML too
+    # Check visible text only (stripped of HTML tags) to avoid false-positives on attributes
     for text in all_texts:
-        if re.search(r"-\d", text):
+        if re.search(r"-\d", _strip(text)):
             e.append(
                 "U+2212: dùng '−' (U+2212) cho số âm, không dùng ASCII hyphen '-' trước chữ số"
             )

@@ -125,6 +125,11 @@ class Settings(BaseSettings):
     MARKET_ANALYSIS_CRON_HOUR: int = 16    # ICT
     MARKET_ANALYSIS_CRON_MINUTE: int = 30
 
+    # ── Mid-day AI Market Analysis ───────────────────
+    MIDDAY_ANALYSIS_ENABLED: bool = False  # master switch for the 11:30 mid-day job
+    MIDDAY_ANALYSIS_CRON_HOUR: int = 11    # ICT
+    MIDDAY_ANALYSIS_CRON_MINUTE: int = 30
+
     # ── Lessons / Media ───────────────────────────────
     LESSON_MEDIA_DIR: str = "./media"
     LESSON_MAX_PDF_MB: int = 50
