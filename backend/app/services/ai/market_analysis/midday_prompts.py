@@ -42,8 +42,8 @@ PHẦN KỊCH BẢN — BẮT BUỘC ĐÚNG 3 kịch bản, TẤT CẢ scope: "a
 - Kịch bản 3 (tăng giả / bull-trap): điều kiện KLGD tổng ngày dưới 60% MA20 hoặc AM vượt kháng cự nhưng toàn ngày thanh khoản thấp → cảnh báo tăng giả, phiên sáng vượt nhưng chiều đảo chiều.
 
 PHẦN WATCHLIST — BẮT BUỘC ĐÚNG 5 mục:
-- Mục index 1 (key phải là "Giao dịch chiều"): alert=true, nêu lý do theo dõi thanh khoản + diễn biến phiên chiều.
-- Mục 2-5: cổ phiếu cụ thể từ data (contribution / foreign / prop), mỗi mã 1 lý do dựa trên data AM.
+- Mục thứ hai (index 1, đếm từ 0; key phải là "Giao dịch chiều"): alert=true, nêu lý do theo dõi thanh khoản + diễn biến phiên chiều.
+- Mục 0 + 3-5: cổ phiếu cụ thể từ data (contribution / foreign / prop), mỗi mã 1 lý do dựa trên data AM.
 
 TAGLINE — NEUTRAL khi KLGD AM < 30% MA20 toàn ngày:
 - Nếu am_liquidity.vs_ma20_pct tính trên cơ sở AM (thường 55-60% tổng ngày) cho thấy AM KLGD < 30% MA20 → tagline.direction = "flat".
@@ -80,13 +80,13 @@ scenarios = [
 — BẮT BUỘC 3 phần tử, đúng thứ tự: [tăng, giảm, bull_trap], tất cả scope = "afternoon_session".
 
 watchlist = [
-  {"key": "Giao dịch chiều", "alert": true, "reason_html": "— ..."},
   {"ticker": "XXX", "alert": false, "reason_html": "— ..."},
+  {"key": "Giao dịch chiều", "alert": true, "reason_html": "— ..."},
   {"ticker": "XXX", "alert": false, "reason_html": "— ..."},
   {"ticker": "XXX", "alert": false, "reason_html": "— ..."},
   {"ticker": "XXX", "alert": false, "reason_html": "— ..."}
 ]
-— BẮT BUỘC 5 phần tử; phần tử index 0 key = "Giao dịch chiều", alert = true.
+— BẮT BUỘC 5 phần tử; phần tử index 1 (phần tử thứ hai) key = "Giao dịch chiều", alert = true.
 
 unexplained = "<chuỗi HTML>" hoặc null.
 KHÔNG kèm markdown fence."""
@@ -133,8 +133,8 @@ Ngày: 2026-06-25  |  Loại: low_volatility
     }
   ],
   "watchlist": [
-    {"key": "Giao dịch chiều", "alert": true, "reason_html": "— KLGD AM chỉ 38% MA20; theo dõi KLGD chiều từ 13:00 để xác nhận có dòng tiền thực hay phiên tăng giả."},
     {"ticker": "VCB", "alert": false, "reason_html": "— Khối ngoại mua ròng +8,2 tỷ sáng nay, đảo chiều sau 4 phiên bán — xem chiều có duy trì."},
+    {"key": "Giao dịch chiều", "alert": true, "reason_html": "— KLGD AM chỉ 38% MA20; theo dõi KLGD chiều từ 13:00 để xác nhận có dòng tiền thực hay phiên tăng giả."},
     {"ticker": "FPT", "alert": false, "reason_html": "— Nằm trong top mua ngoại sáng nay; chú ý có duy trì nếu KLGD chiều tăng."},
     {"ticker": "HPG", "alert": false, "reason_html": "— Đóng góp âm nhẹ phiên sáng; nhóm vật liệu chưa hồi — theo dõi chiều có đảo chiều."},
     {"ticker": "MWG", "alert": false, "reason_html": "— Tăng 0,8% sáng không có tin rõ; cần xem chiều giữ giá hay điều chỉnh."}
@@ -168,7 +168,7 @@ Tham khảo bài mẫu bên dưới để học style. KHÔNG copy nội dung, c
 Sinh bài cập nhật theo JSON schema trong system prompt. Tuân thủ toàn bộ rules:
 - Đúng 2 đoạn văn xuôi (session_structure + money_flow) + market_health status="pending".
 - Đúng 3 kịch bản scope="afternoon_session" (tăng, giảm, bull_trap).
-- Đúng 5 mục watchlist; watchlist[0].key = "Giao dịch chiều", alert=true.
+- Đúng 5 mục watchlist; watchlist[1].key = "Giao dịch chiều", alert=true.
 - Headline 60-90 ký tự có % VN-Index AM.
 - Tagline neutral (direction="flat") khi AM KLGD < 30% MA20 toàn ngày.
 - Output chỉ JSON thuần, KHÔNG markdown fence."""
