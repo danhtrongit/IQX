@@ -74,6 +74,22 @@ async def startup() -> None:
             max_instances=1, coalesce=True, replace_existing=True,
         )
 
+    if getattr(settings, "MIDDAY_ANALYSIS_ENABLED", False):
+        from .market_analysis_job import run_midday_analysis_job
+
+        _scheduler.add_job(
+            run_midday_analysis_job,
+            CronTrigger(
+                day_of_week="mon-fri",
+                hour=int(getattr(settings, "MIDDAY_ANALYSIS_CRON_HOUR", 11)),
+                minute=int(getattr(settings, "MIDDAY_ANALYSIS_CRON_MINUTE", 30)),
+                timezone="Asia/Ho_Chi_Minh",
+            ),
+            id="market_analysis_midday",
+            name="Generate mid-day VN-Index AI analysis (11:30 ICT, midday)",
+            max_instances=1, coalesce=True, replace_existing=True,
+        )
+
     _scheduler.start()
     logger.info("Scheduler started with %d jobs", len(_scheduler.get_jobs()))
 
