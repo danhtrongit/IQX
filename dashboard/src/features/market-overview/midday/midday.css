@@ -236,11 +236,6 @@
   letter-spacing: 0.02em;
 }
 
-/* ── Alert level dots (watchlist) ── */
-.mm-watchlist-dot--normal  { background: var(--color-text-3, #999); }
-.mm-watchlist-dot--alert   { background: #eab308; }
-.mm-watchlist-dot--warn    { background: #ef4444; }
-
 /* ── Watchlist row highlight ── */
 .mm-watchlist-row--alert {
   background: color-mix(in oklch, #eab308 8%, transparent);

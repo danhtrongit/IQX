@@ -2,7 +2,7 @@
 import { renderHook, waitFor } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import React from "react"
-import { describe, it, expect, vi } from "vitest"
+import { it, expect, vi } from "vitest"
 vi.mock("@/shared/http/client", () => ({ api: { get: () => ({ json: async () => ({ report_type: "midday", headline: "M" }) }) } }))
 import { useMidDayMarketAnalysis } from "./useMidDayMarketAnalysis"
 

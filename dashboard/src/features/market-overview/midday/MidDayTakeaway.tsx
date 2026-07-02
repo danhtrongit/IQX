@@ -5,6 +5,7 @@
 //   • "Đáng quan sát phiên chiều" — 5 watchlist bullets styled by alert_level
 // HTML content is sanitized via sanitizeInline — same mechanism as MarketTakeaway.
 
+import { useState, useEffect } from "react"
 import type { ReactNode } from "react"
 import { sanitizeInline } from "@/shared/utils/sanitize-inline"
 import type { MidDayAnalysis } from "./types"
@@ -13,6 +14,11 @@ import "./midday.css"
 // ─── Countdown to 14:45 ───────────────────────────────────────────────────────
 
 function useCountdownTo1445(): string {
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 60000)
+    return () => clearInterval(id)
+  }, [])
   const now = new Date()
   const target = new Date(now)
   target.setHours(14, 45, 0, 0)
@@ -72,7 +78,6 @@ function ScenarioItem({
       />
       <div>
         <span
-          className="mm-takeaway-condition"
           dangerouslySetInnerHTML={{ __html: sanitizeInline(condition) }}
         />
         <span className="mx-1 text-[var(--color-text-3)]" aria-hidden>→</span>
