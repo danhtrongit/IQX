@@ -34,6 +34,7 @@ def _make_row(
     report_type: str,
     headline: str,
     is_published: bool = True,
+    meta: dict | None = None,
 ) -> AnalysisHistory:
     return AnalysisHistory(
         public_id=public_id,
@@ -45,7 +46,7 @@ def _make_row(
         paragraphs={"structure": "s", "smart_money": "m", "market_health": "h"},
         scenarios=[],
         watchlist=[],
-        meta={"charts": {}},
+        meta={"charts": {}} if meta is None else meta,
         is_published=is_published,
     )
 
@@ -182,6 +183,45 @@ async def test_midday_latest_response_shape(client: AsyncClient, db_session: Asy
     for key in ("id", "session_date", "session_type", "generated_at", "headline", "tagline", "paragraphs", "scenarios"):
         assert key in body, f"missing key: {key}"
     assert body["charts"] == {}  # extracted from meta["charts"]
+
+
+# ── pulse round-trip (C3) ─────────────────────────────────────────────────────
+
+async def test_midday_latest_returns_pulse_from_meta(client: AsyncClient, db_session: AsyncSession):
+    """CROSS-BOUNDARY GUARD (C3): a midday row whose meta carries a pulse block
+    must surface through /midday/latest as AnalysisOut.pulse. Without wiring
+    pulse through persist → AnalysisOut, MidDayView's `{data.pulse && ...}` is
+    always false and the Pulse Bar never renders."""
+    d = dt.date(2026, 7, 2)
+    pulse = {
+        "vn_index": {"value": 1842.3, "change": 2.14, "change_pct": 0.12, "sparkline": [1840.0, 1842.3]},
+        "breadth": {"up": 198, "down": 185},
+        "foreign_net_billion": 12.4,
+        "liquidity": {"am_value_billion": 7850.0, "ma20_billion": 20658.0, "vs_ma20_pct": 38.0},
+    }
+    db_session.add(_make_row(
+        public_id="m-pulse", session_date=d, report_type="midday", headline="Pulse round-trip",
+        meta={"charts": {}, "pulse": pulse},
+    ))
+    await db_session.commit()
+
+    r = await client.get("/api/v1/market-analysis/midday/latest")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["pulse"] == pulse
+    assert body["pulse"]["breadth"]["up"] == 198
+
+
+async def test_daily_latest_pulse_defaults_null(client: AsyncClient, db_session: AsyncSession):
+    """Daily rows have no pulse — AnalysisOut.pulse must default to null and the
+    daily endpoint must not break (pulse is midday-only)."""
+    d = dt.date(2026, 7, 2)
+    db_session.add(_make_row(public_id="d-nopulse", session_date=d, report_type="daily", headline="EOD no pulse"))
+    await db_session.commit()
+
+    r = await client.get("/api/v1/market-analysis/daily/latest")
+    assert r.status_code == 200
+    assert r.json()["pulse"] is None
 
 
 # ── admin midday/run ──────────────────────────────────────────────────────────

@@ -139,7 +139,12 @@ export function MidDayView() {
       )}
 
       {/* ── Sức khỏe thị trường (FROZEN — EOD data, available after 16:30) ── */}
-      {charts?.market_health_detail && charts?.sector_rotation && (
+      {/* Gate on real prior-EOD data only. On cold-start (no prior EOD) these
+          blocks come back as {data_state:"unavailable"} (truthy but missing
+          trend_20d / sectors_today), which would crash HealthLineChart /
+          RotationChart — so skip the tier unless both are "eod_previous". */}
+      {charts?.market_health_detail?.data_state === "eod_previous" &&
+        charts?.sector_rotation?.data_state === "eod_previous" && (
         <div>
           <TierLabel label="Sức khỏe thị trường" />
           <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">

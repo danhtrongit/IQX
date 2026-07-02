@@ -37,6 +37,7 @@ class AnalysisOut(BaseModel):
     unexplained: str | None = None
     meta: dict | None = None
     charts: dict | None = None
+    pulse: dict | None = None
 
 
 class AnalysisListItem(BaseModel):
@@ -62,6 +63,7 @@ def _to_out(a: AnalysisHistory) -> AnalysisOut:
         unexplained=a.unexplained,
         meta=a.meta,
         charts=(a.meta or {}).get("charts"),
+        pulse=(a.meta or {}).get("pulse"),
     )
 
 

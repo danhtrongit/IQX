@@ -1,6 +1,13 @@
 # backend/tests/test_midday_prompts.py
 import json
 from app.services.ai.market_analysis.midday_prompts import MIDDAY_SYSTEM_PROMPT, build_midday_user_prompt, _MIDDAY_SAMPLE
+from app.services.ai.market_analysis.midday_validator import validate_midday
+
+
+def _parse_sample() -> dict:
+    """Extract the JSON object embedded in the _MIDDAY_SAMPLE few-shot string."""
+    json_start = _MIDDAY_SAMPLE.index("{")
+    return json.loads(_MIDDAY_SAMPLE[json_start:])
 
 
 def test_system_prompt_encodes_midday_contract():
@@ -19,12 +26,18 @@ def test_user_prompt_embeds_payload_and_schema():
 
 def test_one_shot_watchlist_index1_is_giao_dich_chieu():
     """Verify that the one-shot example has 'Giao dịch chiều' at watchlist index 1 (second position)."""
-    # Extract JSON from _MIDDAY_SAMPLE (it starts after the === line and {)
-    json_start = _MIDDAY_SAMPLE.index("{")
-    json_str = _MIDDAY_SAMPLE[json_start:]
-    data = json.loads(json_str)
+    data = _parse_sample()
     assert data["watchlist"][1]["key"] == "Giao dịch chiều"
-    assert data["watchlist"][1]["alert"] is True
+    assert data["watchlist"][1]["alert_level"] == "alert"
+
+
+def test_midday_sample_passes_validator():
+    """CROSS-BOUNDARY GUARD (C1): the prompt's few-shot MUST satisfy the same
+    validator the live LLM output is checked against. If this fails, every real
+    generation will re-fail the identical rules and the feature is dead on
+    arrival. Parses the JSON out of _MIDDAY_SAMPLE and asserts zero errors."""
+    sample = _parse_sample()
+    assert validate_midday(sample, {}) == []
 
 
 def test_system_prompt_schema_encodes_index1():

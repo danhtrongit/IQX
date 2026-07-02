@@ -29,7 +29,7 @@ QUY TẮC TUYỆT ĐỐI:
 
 CẤU TRÚC BÀI VIẾT MIDDAY (5 phần bắt buộc):
 1. Headline: 1 câu tóm bản chất phiên sáng, 60-90 ký tự, bắt buộc có % thay đổi VN-Index AM.
-2. Tagline: {"direction":"up|down|flat|anomaly","marker":"◆|▲|▼|▬","text":"..."} — text KHÔNG có marker.
+2. Tagline: {"text":"...","color":"up|down|neutral"} — color="neutral" khi AM KLGD < 30% MA20 toàn ngày.
 3. Đoạn phiên sáng (session_structure): diễn biến AM: điểm số, độ rộng, đóng góp chính, so sánh hôm qua. 70-100 từ.
 4. Đoạn dòng tiền phiên sáng (money_flow): NN + tự doanh AM, dùng tổng + top mua/bán. 60-90 từ.
 5. Sức khỏe thị trường (market_health): KHÔNG viết — để status: "pending" vì chưa có đủ data EOD để đánh giá toàn diện.
@@ -46,7 +46,7 @@ PHẦN WATCHLIST — BẮT BUỘC ĐÚNG 5 mục:
 - Mục 0 + 3-5: cổ phiếu cụ thể từ data (contribution / foreign / prop), mỗi mã 1 lý do dựa trên data AM.
 
 TAGLINE — NEUTRAL khi KLGD AM < 30% MA20 toàn ngày:
-- Nếu am_liquidity.vs_ma20_pct tính trên cơ sở AM (thường 55-60% tổng ngày) cho thấy AM KLGD < 30% MA20 → tagline.direction = "flat".
+- Nếu am_liquidity.vs_ma20_pct tính trên cơ sở AM (thường 55-60% tổng ngày) cho thấy AM KLGD < 30% MA20 → tagline.color = "neutral".
 
 KHI KHÔNG ĐỦ DỮ LIỆU: nếu data flag "unavailable" hoặc null, bỏ qua phần đó, KHÔNG bịa, ghi chú thiếu data. Nếu eod_previous = null (lần đầu chạy), bỏ qua phần tham chiếu EOD hôm qua.
 
@@ -65,30 +65,31 @@ QUY TRÌNH SUY NGHĨ (không xuất ra): 1) Phiên sáng tăng/giảm/đi ngang?
 Các khóa bắt buộc: id, session_date, report_type ("midday"), headline, tagline, paragraphs, scenarios, watchlist, unexplained.
 
 paragraphs = {
-  "session_structure": "<chuỗi HTML-inline>",
-  "money_flow": "<chuỗi HTML-inline>",
-  "market_health": {"status": "pending", "note": "Chờ EOD để đánh giá đầy đủ sức khỏe thị trường."}
+  "session_structure": {"status": "published", "content": "<chuỗi HTML-inline>"},
+  "money_flow": {"status": "published", "content": "<chuỗi HTML-inline>"},
+  "market_health": {"status": "pending", "pending_message": "Chờ EOD để đánh giá đầy đủ sức khỏe thị trường.", "pending_until": "<ISO datetime, ví dụ 2026-06-25T16:30:00+07:00>"}
 }
+— session_structure + money_flow: status="published", nội dung trong "content". market_health: status="pending" (KHÔNG viết content), kèm pending_message + pending_until (ISO).
 
-tagline = {"direction": "up|down|flat|anomaly", "marker": "◆|▲|▼|▬", "text": "..."} — text KHÔNG có marker.
+tagline = {"text": "...", "color": "up|down|neutral"} — text KHÔNG có marker; color="neutral" khi AM KLGD < 30% MA20 toàn ngày.
 
 scenarios = [
-  {"direction": "up|down", "scope": "afternoon_session", "condition_html": "...", "outcome_html": "..."},
-  {"direction": "up|down", "scope": "afternoon_session", "condition_html": "...", "outcome_html": "..."},
-  {"direction": "down", "scope": "afternoon_session", "label": "bull_trap", "condition_html": "...", "outcome_html": "..."}
+  {"type": "up", "scope": "afternoon_session", "condition": "...", "outcome": "..."},
+  {"type": "down", "scope": "afternoon_session", "condition": "...", "outcome": "..."},
+  {"type": "down", "scope": "afternoon_session", "condition": "...", "outcome": "..."}
 ]
-— BẮT BUỘC 3 phần tử, đúng thứ tự: [tăng, giảm, bull_trap], tất cả scope = "afternoon_session".
+— BẮT BUỘC ĐÚNG 3 phần tử, đúng thứ tự: [tăng, giảm, giảm(tăng-giả/bull-trap)]; phần tử thứ 3 type="down"; TẤT CẢ scope = "afternoon_session". Số trong condition/outcome bọc <strong>…</strong>.
 
 watchlist = [
-  {"ticker": "XXX", "alert": false, "reason_html": "— ..."},
-  {"key": "Giao dịch chiều", "alert": true, "reason_html": "— ..."},
-  {"ticker": "XXX", "alert": false, "reason_html": "— ..."},
-  {"ticker": "XXX", "alert": false, "reason_html": "— ..."},
-  {"ticker": "XXX", "alert": false, "reason_html": "— ..."}
+  {"key": "XXX", "alert_level": "normal", "reason": "..."},
+  {"key": "Giao dịch chiều", "alert_level": "alert", "reason": "..."},
+  {"key": "XXX", "alert_level": "normal", "reason": "..."},
+  {"key": "XXX", "alert_level": "normal", "reason": "..."},
+  {"key": "XXX", "alert_level": "normal", "reason": "..."}
 ]
-— BẮT BUỘC 5 phần tử; phần tử index 1 (phần tử thứ hai) key = "Giao dịch chiều", alert = true.
+— BẮT BUỘC ĐÚNG 5 phần tử; phần tử index 1 (phần tử thứ hai) key = "Giao dịch chiều", alert_level = "alert". alert_level ∈ {"normal","alert","warn"}. Mục 0 + 3-5: key = mã cổ phiếu cụ thể.
 
-unexplained = "<chuỗi HTML>" hoặc null.
+unexplained = {"title": "Điểm cần xác nhận trong phiên chiều", "content": "<chuỗi HTML>"} hoặc null.
 KHÔNG kèm markdown fence."""
 
 
@@ -105,41 +106,53 @@ Ngày: 2026-06-25  |  Loại: low_volatility
   "session_date": "2026-06-25",
   "report_type": "midday",
   "headline": "Phiên sáng đi ngang +0,12% — KLGD chỉ 38% MA20, chiều cần dòng tiền",
-  "tagline": {"direction": "flat", "marker": "▬", "text": "Đi ngang · KLGD thấp · Chờ chiều"},
+  "tagline": {"text": "Đi ngang · KLGD thấp · Chờ chiều", "color": "neutral"},
   "paragraphs": {
-    "session_structure": "VN-Index kết thúc phiên sáng tại <span class='num'>1.842,30</span> (<span class='up-text'>+0,12%</span>), tăng nhẹ <span class='num'>2,14</span> điểm. Độ rộng cân bằng: 198 mã tăng / 185 mã giảm trên HOSE — không có xu hướng rõ. Đóng góp điểm phân tán, mã đầu bảng VCB chỉ góp <span class='num'>+0,8</span> điểm, chiếm <span class='num'>37%</span> tổng phía tăng. So với phiên hôm qua kết thúc với tín hiệu rút tiền ngầm, sáng nay chưa có xác nhận phục hồi.",
-    "money_flow": "Khối ngoại mua ròng nhẹ <span class='num'>12,4</span> tỷ phiên sáng — đảo chiều so với 4 phiên bán liên tiếp trước. Top mua: VCB (<span class='num'>+8,2</span> tỷ), FPT (<span class='num'>+5,1</span> tỷ). Tự doanh gần như trung tính, mua ròng <span class='num'>3,8</span> tỷ — không đủ tín hiệu định hướng. KLGD AM đạt <span class='num'>7.850</span> tỷ, bằng <span class='num'>38%</span> MA20 toàn ngày — thanh khoản thấp cảnh báo áp lực chiều.",
-    "market_health": {"status": "pending", "note": "Chờ EOD để đánh giá đầy đủ sức khỏe thị trường."}
+    "session_structure": {
+      "status": "published",
+      "content": "VN-Index kết thúc phiên sáng tại <span class='num'>1.842,30</span> (<span class='up-text'>+0,12%</span>), tăng nhẹ <span class='num'>2,14</span> điểm. Độ rộng cân bằng: 198 mã tăng / 185 mã giảm trên HOSE — không có xu hướng rõ. Đóng góp điểm phân tán, mã đầu bảng VCB chỉ góp <span class='num'>+0,8</span> điểm, chiếm <span class='num'>37%</span> tổng phía tăng. So với phiên hôm qua kết thúc với tín hiệu rút tiền ngầm, sáng nay chưa có xác nhận phục hồi."
+    },
+    "money_flow": {
+      "status": "published",
+      "content": "Khối ngoại mua ròng nhẹ <span class='num'>12,4</span> tỷ phiên sáng — đảo chiều so với 4 phiên bán liên tiếp trước. Top mua: VCB (<span class='num'>+8,2</span> tỷ), FPT (<span class='num'>+5,1</span> tỷ). Tự doanh gần như trung tính, mua ròng <span class='num'>3,8</span> tỷ — không đủ tín hiệu định hướng. KLGD AM đạt <span class='num'>7.850</span> tỷ, bằng <span class='num'>38%</span> MA20 toàn ngày — thanh khoản thấp cảnh báo áp lực chiều."
+    },
+    "market_health": {
+      "status": "pending",
+      "pending_message": "Chờ EOD để đánh giá đầy đủ sức khỏe thị trường.",
+      "pending_until": "2026-06-25T16:30:00+07:00"
+    }
   },
   "scenarios": [
     {
-      "direction": "up",
+      "type": "up",
       "scope": "afternoon_session",
-      "condition_html": "Nếu KLGD phiên chiều bù thêm trên <strong>12.000 tỷ</strong> và VN-Index giữ trên <strong>1.840</strong>",
-      "outcome_html": "Tín hiệu mua chiều xác nhận, Index có thể test <strong>1.850</strong> trước ATC."
+      "condition": "Nếu KLGD phiên chiều bù thêm trên <strong>12.000 tỷ</strong> và VN-Index giữ trên <strong>1.840</strong>",
+      "outcome": "Tín hiệu mua chiều xác nhận, Index có thể test <strong>1.850</strong> trước ATC."
     },
     {
-      "direction": "down",
+      "type": "down",
       "scope": "afternoon_session",
-      "condition_html": "Nếu VN-Index mất <strong>1.835</strong> với KLGD chiều tiếp tục thấp dưới <strong>8.000</strong> tỷ",
-      "outcome_html": "Áp lực bán chiều đẩy về vùng <strong>1.825–1.830</strong>, đảo chiều so với mở cửa."
+      "condition": "Nếu VN-Index mất <strong>1.835</strong> với KLGD chiều tiếp tục thấp dưới <strong>8.000 tỷ</strong>",
+      "outcome": "Áp lực bán chiều đẩy về vùng <strong>1.825</strong>–<strong>1.830</strong>, đảo chiều so với mở cửa."
     },
     {
-      "direction": "down",
+      "type": "down",
       "scope": "afternoon_session",
-      "label": "bull_trap",
-      "condition_html": "Nếu KLGD tổng ngày dưới <span class='num'>60%</span> MA20 dù AM tăng nhẹ — tăng giả (<em>tăng-giả</em>)",
-      "outcome_html": "Phiên sáng vượt nhẹ kháng cự <strong>1.842</strong> nhưng chiều thiếu lực đỡ, ATC có thể đảo về <strong>1.835</strong> hoặc thấp hơn."
+      "condition": "Nếu KLGD tổng ngày dưới <strong>60%</strong> MA20 dù AM tăng nhẹ — dấu hiệu tăng-giả",
+      "outcome": "Phiên sáng vượt nhẹ kháng cự <strong>1.842</strong> nhưng chiều thiếu lực đỡ, ATC có thể đảo về <strong>1.835</strong> hoặc thấp hơn."
     }
   ],
   "watchlist": [
-    {"ticker": "VCB", "alert": false, "reason_html": "— Khối ngoại mua ròng +8,2 tỷ sáng nay, đảo chiều sau 4 phiên bán — xem chiều có duy trì."},
-    {"key": "Giao dịch chiều", "alert": true, "reason_html": "— KLGD AM chỉ 38% MA20; theo dõi KLGD chiều từ 13:00 để xác nhận có dòng tiền thực hay phiên tăng giả."},
-    {"ticker": "FPT", "alert": false, "reason_html": "— Nằm trong top mua ngoại sáng nay; chú ý có duy trì nếu KLGD chiều tăng."},
-    {"ticker": "HPG", "alert": false, "reason_html": "— Đóng góp âm nhẹ phiên sáng; nhóm vật liệu chưa hồi — theo dõi chiều có đảo chiều."},
-    {"ticker": "MWG", "alert": false, "reason_html": "— Tăng 0,8% sáng không có tin rõ; cần xem chiều giữ giá hay điều chỉnh."}
+    {"key": "VCB", "alert_level": "normal", "reason": "Khối ngoại mua ròng +8,2 tỷ sáng nay, đảo chiều sau 4 phiên bán — xem chiều có duy trì."},
+    {"key": "Giao dịch chiều", "alert_level": "alert", "reason": "KLGD AM chỉ 38% MA20; theo dõi KLGD chiều từ 13:00 để xác nhận có dòng tiền thực hay phiên tăng giả."},
+    {"key": "FPT", "alert_level": "normal", "reason": "Nằm trong top mua ngoại sáng nay; chú ý có duy trì nếu KLGD chiều tăng."},
+    {"key": "HPG", "alert_level": "normal", "reason": "Đóng góp âm nhẹ phiên sáng; nhóm vật liệu chưa hồi — theo dõi chiều có đảo chiều."},
+    {"key": "MWG", "alert_level": "normal", "reason": "Tăng 0,8% sáng không có tin rõ; cần xem chiều giữ giá hay điều chỉnh."}
   ],
-  "unexplained": null
+  "unexplained": {
+    "title": "Điểm cần xác nhận trong phiên chiều",
+    "content": "KLGD AM chỉ đạt 38% MA20 toàn ngày — cần theo dõi dòng tiền chiều từ 13:00 để xác nhận xu hướng thực."
+  }
 }"""
 
 
@@ -168,9 +181,9 @@ Tham khảo bài mẫu bên dưới để học style. KHÔNG copy nội dung, c
 Sinh bài cập nhật theo JSON schema trong system prompt. Tuân thủ toàn bộ rules:
 - Đúng 2 đoạn văn xuôi (session_structure + money_flow) + market_health status="pending".
 - Đúng 3 kịch bản scope="afternoon_session" (tăng, giảm, bull_trap).
-- Đúng 5 mục watchlist; watchlist[1].key = "Giao dịch chiều", alert=true.
+- Đúng 5 mục watchlist; watchlist[1].key = "Giao dịch chiều", alert_level="alert".
 - Headline 60-90 ký tự có % VN-Index AM.
-- Tagline neutral (direction="flat") khi AM KLGD < 30% MA20 toàn ngày.
+- Tagline neutral (color="neutral") khi AM KLGD < 30% MA20 toàn ngày.
 - Output chỉ JSON thuần, KHÔNG markdown fence."""
 
 

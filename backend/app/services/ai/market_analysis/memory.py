@@ -251,7 +251,8 @@ async def persist_analysis(
         unexplained=_unexplained,
         meta={**(output.get("meta") or {}),
               "session_type_display": output.get("session_type_display"),
-              "charts": output.get("charts")},
+              "charts": output.get("charts"),
+              "pulse": output.get("pulse")},
         is_published=True,
     )
 

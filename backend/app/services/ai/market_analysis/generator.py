@@ -151,9 +151,13 @@ async def run_session_analysis(
     blocking = hard_errors(last_errors) if output is not None else list(last_errors)
     publishable = output is not None and not blocking
 
-    # Attach charts block from payload so persist_analysis can store it in meta
+    # Attach charts + pulse blocks from payload so persist_analysis can store
+    # them in meta. pulse is deterministic AM payload data (not LLM output);
+    # only the midday payload carries it — daily payloads have no "pulse" key,
+    # so this resolves to None and daily rows stay pulse-free.
     if output is not None:
         output["charts"] = payload.get("charts")
+        output["pulse"] = payload.get("pulse")
         if last_errors:
             meta = output.setdefault("meta", {})
             if isinstance(meta, dict):
