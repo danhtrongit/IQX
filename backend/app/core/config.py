@@ -124,6 +124,8 @@ class Settings(BaseSettings):
     MARKET_ANALYSIS_ENABLED: bool = False  # master switch for the 16:30 EOD job
     MARKET_ANALYSIS_CRON_HOUR: int = 16    # ICT
     MARKET_ANALYSIS_CRON_MINUTE: int = 30
+    MARKET_ANALYSIS_RETRY_HOUR: int = 17   # ICT — safety-net re-run if 16:30 failed
+    MARKET_ANALYSIS_RETRY_MINUTE: int = 0
 
     # ── Mid-day AI Market Analysis ───────────────────
     MIDDAY_ANALYSIS_ENABLED: bool = False  # master switch for the 11:30 mid-day job

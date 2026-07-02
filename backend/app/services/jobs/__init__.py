@@ -59,7 +59,7 @@ async def startup() -> None:
         )
 
     if getattr(settings, "MARKET_ANALYSIS_ENABLED", False):
-        from .market_analysis_job import run_market_analysis_job
+        from .market_analysis_job import run_daily_retry_job, run_market_analysis_job
 
         _scheduler.add_job(
             run_market_analysis_job,
@@ -71,6 +71,18 @@ async def startup() -> None:
             ),
             id="market_analysis_daily",
             name="Generate daily VN-Index AI analysis (16:30 ICT, EOD)",
+            max_instances=1, coalesce=True, replace_existing=True,
+        )
+        _scheduler.add_job(
+            run_daily_retry_job,
+            CronTrigger(
+                day_of_week="mon-fri",
+                hour=int(getattr(settings, "MARKET_ANALYSIS_RETRY_HOUR", 17)),
+                minute=int(getattr(settings, "MARKET_ANALYSIS_RETRY_MINUTE", 0)),
+                timezone="Asia/Ho_Chi_Minh",
+            ),
+            id="market_analysis_daily_retry",
+            name="Retry daily EOD analysis if the 16:30 run failed (17:00 ICT)",
             max_instances=1, coalesce=True, replace_existing=True,
         )
 

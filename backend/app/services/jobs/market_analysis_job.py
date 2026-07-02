@@ -22,6 +22,7 @@ _ICT = timezone(timedelta(hours=7))
 # generator's internal commits and is released in finally.
 _LOCK_KEY = 826_101_730
 _MIDDAY_LOCK_KEY = 826_101_731
+_RETRY_LOCK_KEY = 826_101_732
 
 
 async def _generate(session: Any) -> dict[str, Any]:
@@ -77,6 +78,64 @@ async def run_market_analysis_job(session: Any | None = None) -> dict[str, Any]:
             return await _generate(db)
         finally:
             await db.execute(text("SELECT pg_advisory_unlock(:k)"), {"k": _LOCK_KEY})
+            await db.commit()
+
+
+async def _has_published_daily(db: Any, day) -> bool:
+    from sqlalchemy import select
+
+    from app.models.market_analysis import AnalysisHistory
+
+    row = (
+        await db.execute(
+            select(AnalysisHistory.id)
+            .where(
+                AnalysisHistory.session_date == day,
+                AnalysisHistory.report_type == "daily",
+                AnalysisHistory.is_published.is_(True),
+            )
+            .limit(1)
+        )
+    ).scalar_one_or_none()
+    return row is not None
+
+
+async def run_daily_retry_job(session: Any | None = None) -> dict[str, Any]:
+    """Safety net for the 16:30 EOD run (17:00 ICT).
+
+    If today's published daily analysis is missing (e.g. the 16:30 firing died
+    on a transient network/LLM failure), re-run the generation once. Idempotent:
+    skips when the record already exists.
+    """
+    today = datetime.now(_ICT).date()
+    if not is_trading_day(today):
+        logger.info("Daily retry skipped: %s is not a VN trading day", today)
+        return {"skipped": "not_trading_day", "date": today.isoformat()}
+
+    if session is not None:
+        if await _has_published_daily(session, today):
+            return {"skipped": "already_published", "date": today.isoformat()}
+        logger.warning("Daily retry: no published EOD for %s — re-running generation", today)
+        return await _generate(session)
+
+    from app.core.database import get_session_factory
+
+    factory = get_session_factory()
+    async with factory() as db:
+        if await _has_published_daily(db, today):
+            logger.info("Daily retry: EOD for %s already published — nothing to do", today)
+            return {"skipped": "already_published", "date": today.isoformat()}
+        got = (
+            await db.execute(text("SELECT pg_try_advisory_lock(:k)"), {"k": _RETRY_LOCK_KEY})
+        ).scalar()
+        if not got:
+            logger.info("Daily retry: lock held by another worker — skipping")
+            return {"skipped": "locked", "date": today.isoformat()}
+        try:
+            logger.warning("Daily retry: no published EOD for %s — re-running generation", today)
+            return await _generate(db)
+        finally:
+            await db.execute(text("SELECT pg_advisory_unlock(:k)"), {"k": _RETRY_LOCK_KEY})
             await db.commit()
 
 
