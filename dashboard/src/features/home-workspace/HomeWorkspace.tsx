@@ -3,7 +3,7 @@ import { Button, Drawer } from "@arco-design/web-react"
 import { IconApps } from "@arco-design/web-react/icon"
 import { SymbolProvider, useSymbol } from "@/shared/contexts/symbol-context"
 import { isIndexSymbol } from "@/features/stock"
-import { MarketDailyPage } from "@/features/market-overview/daily/MarketDailyPage"
+import { HomeMarketView } from "@/features/market-overview/HomeMarketView"
 import { HomeSidePanel } from "./HomeSidePanel"
 import { HomeIconRail } from "./HomeIconRail"
 import { useInitialSymbol, persistLastViewedSymbol } from "./useInitialSymbol"
@@ -23,7 +23,7 @@ function WorkspaceBody() {
 
   const market = (
     <div className="min-h-0 overflow-y-auto">
-      <MarketDailyPage />
+      <HomeMarketView />
     </div>
   )
 
