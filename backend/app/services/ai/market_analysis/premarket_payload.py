@@ -496,6 +496,45 @@ def _build_global_markets(
     return {"cells": cells, "context": context}
 
 
+def _stale_out_outdated_snapshot(snapshot_rows: list, today_ict: date) -> list:
+    """Force every snapshot row stale when the snapshot pre-dates today (ICT).
+
+    load_latest_snapshot returns MAX(snapshot_date) with no today check: if no
+    fetch wave ran today (flag misconfig, deploy window across the crons,
+    scheduler death) it silently serves yesterday's prices, which would render
+    as fresh cells and be narrated as overnight moves. Days-old data must go
+    through the existing stale-cell path ("—" + note, stale VND=X → VCB
+    fallback) instead.
+
+    Rows are copied into lightweight stand-ins rather than mutated: flipping
+    ``stale`` on live ORM rows would dirty the session and get flushed back to
+    the DB by the pipeline's later commits. Rows without a readable
+    snapshot_date are left untouched.
+    """
+    snap_dates = [
+        d for d in (getattr(r, "snapshot_date", None) for r in snapshot_rows) if d is not None
+    ]
+    if not snap_dates or max(snap_dates) >= today_ict:
+        return snapshot_rows
+
+    logger.warning(
+        "premarket_payload: latest intl snapshot is %s (< today %s ICT) — forcing all %d rows stale",
+        max(snap_dates).isoformat(), today_ict.isoformat(), len(snapshot_rows),
+    )
+
+    class _StaleRow:
+        __slots__ = ("symbol", "last_price", "change_percent", "stale", "snapshot_date")
+
+        def __init__(self, row: Any) -> None:
+            self.symbol = row.symbol
+            self.last_price = row.last_price
+            self.change_percent = row.change_percent
+            self.stale = True
+            self.snapshot_date = getattr(row, "snapshot_date", None)
+
+    return [_StaleRow(r) for r in snapshot_rows]
+
+
 # ── Main entry point ──────────────────────────────────────────────────────────
 
 
@@ -550,6 +589,10 @@ async def build_premarket_payload(db: AsyncSession) -> dict[str, Any]:
     # list, so it passes through directly (or None on failure).
     if snapshot_rows is None:
         snapshot_rows = []
+
+    # Freshness guard: a snapshot dated before today (ICT) must not render as
+    # fresh overnight moves — force every row through the stale-cell path.
+    snapshot_rows = _stale_out_outdated_snapshot(snapshot_rows, datetime.now(ICT).date())
 
     # ── News pool ─────────────────────────────────────────────────────────────
     if news_raw is None:

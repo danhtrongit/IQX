@@ -9,7 +9,7 @@ import pytest
 from app.services.ai.market_analysis import premarket_payload as PP
 
 
-def _snap(symbol, price, pct, stale=False):
+def _snap(symbol, price, pct, stale=False, snapshot_date=None):
     class R:  # minimal stand-in for MarketDataSnapshot row
         pass
 
@@ -20,6 +20,7 @@ def _snap(symbol, price, pct, stale=False):
     r.stale = stale
     r.asset_category = "fx" if symbol == "VND=X" else "us_index"
     r.name = symbol
+    r.snapshot_date = snapshot_date
     return r
 
 
@@ -353,3 +354,75 @@ async def test_decimal_prices_converted_to_float(db_session):
     cells = {c["id"]: c for c in p["global_markets"]["cells"]}
     assert isinstance(cells["^GSPC"]["value"], float)
     assert isinstance(cells["^GSPC"]["change_pct"], float)
+
+
+# ── Outdated-snapshot freshness guard (Finding 2 regression) ──────────────────
+
+
+@pytest.mark.asyncio
+async def test_outdated_snapshot_forces_all_cells_stale(db_session):
+    """If no wave ran today, load_latest_snapshot returns YESTERDAY's rows.
+
+    Those prices must NOT render as fresh overnight moves: every cell must be
+    forced stale, and the stale-VND=X path must fall back to the VCB rate.
+    """
+    yesterday = dt.datetime.now(PP.ICT).date() - dt.timedelta(days=1)
+    rows = [
+        _snap("^GSPC", 6124.85, 0.40, snapshot_date=yesterday),
+        _snap("^IXIC", 20100.0, 0.25, snapshot_date=yesterday),
+        _snap("^N225", 38950.0, 0.55, snapshot_date=yesterday),
+        _snap("BZ=F", 84.2, -0.40, snapshot_date=yesterday),
+        _snap("GC=F", 2338.0, 0.10, snapshot_date=yesterday),
+        _snap("VND=X", 26100.0, -0.15, snapshot_date=yesterday),
+    ]
+    vcb_rows = [{"currency_code": "USD", "buy": 26000.0, "sell": 26150.0}]
+    with patch.object(PP, "load_latest_snapshot", new=AsyncMock(return_value=rows)), \
+         patch.object(PP, "fetch_news_list", new=AsyncMock(return_value=([], 0, "u"))), \
+         patch.object(PP, "fetch_events_calendar", new=AsyncMock(return_value=([], "u"))), \
+         patch.object(PP, "fetch_fx", new=AsyncMock(return_value=(vcb_rows, "u"))):
+        p = await PP.build_premarket_payload(db_session)
+
+    cells = {c["id"]: c for c in p["global_markets"]["cells"]}
+    for sym in ("^GSPC", "^IXIC", "^N225", "BZ=F", "GC=F"):
+        assert cells[sym]["stale"] is True, f"{sym} must be stale when snapshot pre-dates today"
+    # Stale VND=X must take the (fresh) VCB fallback instead of yesterday's Yahoo rate
+    assert cells["VND=X"]["source"] == "vcb"
+    assert cells["VND=X"]["value"] == 26150.0
+    assert cells["VND=X"]["stale"] is False
+
+
+@pytest.mark.asyncio
+async def test_outdated_snapshot_must_not_dirty_orm_rows(db_session):
+    """Forcing staleness is a payload-level effect only — the loaded rows
+    themselves must not be mutated (an ORM row flipped to stale=True would be
+    flushed back to the DB by the pipeline's later commits)."""
+    yesterday = dt.datetime.now(PP.ICT).date() - dt.timedelta(days=1)
+    rows = [_snap("^GSPC", 6124.85, 0.40, snapshot_date=yesterday)]
+    with patch.object(PP, "load_latest_snapshot", new=AsyncMock(return_value=rows)), \
+         patch.object(PP, "fetch_news_list", new=AsyncMock(return_value=([], 0, "u"))), \
+         patch.object(PP, "fetch_events_calendar", new=AsyncMock(return_value=([], "u"))):
+        p = await PP.build_premarket_payload(db_session)
+
+    cells = {c["id"]: c for c in p["global_markets"]["cells"]}
+    assert cells["^GSPC"]["stale"] is True
+    assert rows[0].stale is False, "loaded snapshot row must not be mutated"
+
+
+@pytest.mark.asyncio
+async def test_today_snapshot_keeps_fresh_cells(db_session):
+    """Rows dated TODAY (ICT) keep the existing behavior: fresh rows stay fresh,
+    per-row stale flags pass through untouched."""
+    today = dt.datetime.now(PP.ICT).date()
+    rows = [
+        _snap("^GSPC", 6124.85, 0.40, snapshot_date=today),
+        _snap("GC=F", 2338.0, 0.10, stale=True, snapshot_date=today),
+    ]
+    with patch.object(PP, "load_latest_snapshot", new=AsyncMock(return_value=rows)), \
+         patch.object(PP, "fetch_news_list", new=AsyncMock(return_value=([], 0, "u"))), \
+         patch.object(PP, "fetch_events_calendar", new=AsyncMock(return_value=([], "u"))):
+        p = await PP.build_premarket_payload(db_session)
+
+    cells = {c["id"]: c for c in p["global_markets"]["cells"]}
+    assert cells["^GSPC"]["stale"] is False
+    assert cells["^GSPC"]["value"] == 6124.85
+    assert cells["GC=F"]["stale"] is True  # per-row stale flag passes through
