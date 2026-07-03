@@ -141,11 +141,12 @@ async def _run(wave: int, session: Any) -> dict[str, Any]:
     critical_stale = any(s in absent for s in CRITICAL_SYMBOLS if s not in missing)
 
     if threshold_exceeded or critical_missing or critical_stale:
-        alert_symbols = list(absent | set(missing))
+        alert_symbols = sorted(absent | set(missing))
         logger.error(
             "intl_snapshot_job wave=%d: data quality alert — "
-            "missing=%r stale_copied=%d (critical symbols affected: %r)",
+            "affected=%r missing=%r stale_copied=%d (critical symbols affected: %r)",
             wave,
+            alert_symbols,
             missing,
             stale_copied,
             [s for s in CRITICAL_SYMBOLS if s in absent or s in missing],
