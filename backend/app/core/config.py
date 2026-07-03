@@ -132,6 +132,11 @@ class Settings(BaseSettings):
     MIDDAY_ANALYSIS_CRON_HOUR: int = 11    # ICT
     MIDDAY_ANALYSIS_CRON_MINUTE: int = 30
 
+    # ── Pre-market AI Market Analysis ────────────────
+    PREMARKET_ANALYSIS_ENABLED: bool = False  # master switch for the 07:15 pre-market job
+    PREMARKET_ANALYSIS_CRON_HOUR: int = 7     # ICT
+    PREMARKET_ANALYSIS_CRON_MINUTE: int = 15
+
     # ── International Market Data Snapshots ──────────
     INTL_DATA_ENABLED: bool = False  # master switch for the 3-wave pre-market snapshot jobs
 

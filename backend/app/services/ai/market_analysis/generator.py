@@ -11,7 +11,7 @@ import json
 import logging
 import re
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from typing import Any, Awaitable, Callable
 
@@ -25,6 +25,9 @@ from .midday_payload import build_midday_payload
 from .midday_prompts import MIDDAY_SYSTEM_PROMPT, build_midday_user_prompt
 from .midday_validator import validate_midday
 from .payload import build_analysis_payload
+from .premarket_payload import build_premarket_payload
+from .premarket_prompts import PREMARKET_SYSTEM_PROMPT, build_premarket_user_prompt
+from .premarket_validator import validate_premarket
 from .prompts import SYSTEM_PROMPT, build_user_prompt
 from .validator import hard_errors, validate_output
 
@@ -54,6 +57,10 @@ class SessionConfig:
     session_display: dict[str, str]
     use_memory: bool
     persist_claims: bool
+    # Optional post-validate hook applied to output right before persist_analysis.
+    # Signature: (output: dict, payload: dict) -> dict
+    # daily and midday leave this None — their behaviour is byte-identical.
+    postprocess: Callable[[dict, dict], dict] | None = field(default=None)
 
 
 def _parse_json(text: str) -> dict[str, Any]:
@@ -171,6 +178,10 @@ async def run_session_analysis(
     persisted = False
     if db is not None and publishable:
         try:
+            # Apply optional post-validate hook (e.g. premarket id→object resolver).
+            # daily/midday have postprocess=None — no change to their behaviour.
+            if config.postprocess is not None and output is not None:
+                output = config.postprocess(output, payload)
             await persist_analysis(
                 db, output, session_date, session_type,
                 report_type=config.report_type,
@@ -296,6 +307,141 @@ async def run_midday_analysis(session: AsyncSession | None = None) -> dict[str, 
     async def _run(db: AsyncSession) -> dict[str, Any]:
         payload = await build_midday_payload(db)
         res = await run_session_analysis(MIDDAY_CONFIG, payload=payload, db=db)
+        return {
+            "session_date": res["session_date"],
+            "session_type": res["session_type"],
+            "valid": res["valid"],
+            "persisted": res["persisted"],
+            "memory_loaded": res["memory_loaded"],
+            "attempts": res["attempts"],
+            "errors": res["errors"],
+            "model": res["model"],
+            "generation_time_ms": res["generation_time_ms"],
+        }
+
+    if session is None:
+        from app.core.database import get_session_factory
+        factory = get_session_factory()
+        async with factory() as db:
+            return await _run(db)
+    return await _run(session)
+
+
+# ── Pre-market analysis ───────────────────────────────────────────────────────
+
+
+def _resolve_premarket_output(output: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    """Post-validate resolver for the premarket pipeline.
+
+    Transforms the raw LLM output before persist:
+
+    1. hot_news[].id → full news_pool object merged with {insight, rank_order}
+    2. events_filtered[].id → full events_pool object merged with {note, impact}
+    3. plain-string tagline → {"text": <string>}
+    4. attach output["world_overview"] = payload["global_markets"]
+    5. set output["paragraphs"] = {"world_paragraph": <world_paragraph>}
+    6. set output["watchlist"] = output["watch_today"]
+
+    Unknown ids do NOT crash — a warning is logged and the item is skipped.
+    The validator already guarantees id membership; this guard is defensive only.
+    """
+    # Build lookup maps
+    news_by_id: dict[str, dict] = {item["id"]: item for item in (payload.get("news_pool") or []) if item.get("id")}
+    events_by_id: dict[str, dict] = {item["id"]: item for item in (payload.get("events_pool") or []) if item.get("id")}
+
+    # 1. Resolve hot_news
+    resolved_hot_news: list[dict] = []
+    for item in (output.get("hot_news") or []):
+        nid = item.get("id")
+        pool_obj = news_by_id.get(nid)
+        if pool_obj is None:
+            logger.warning("premarket resolver: hot_news id %r not found in news_pool — skipping", nid)
+            continue
+        resolved_hot_news.append({
+            **pool_obj,
+            "insight": item.get("insight"),
+            "rank_order": item.get("rank_order"),
+        })
+
+    # 2. Resolve events_filtered
+    resolved_events: list[dict] = []
+    for item in (output.get("events_filtered") or []):
+        eid = item.get("id")
+        pool_obj = events_by_id.get(eid)
+        if pool_obj is None:
+            logger.warning("premarket resolver: events_filtered id %r not found in events_pool — skipping", eid)
+            continue
+        resolved_events.append({
+            **pool_obj,
+            "note": item.get("note"),
+            "impact": item.get("impact"),
+        })
+
+    # 3. Normalize tagline: plain string → {"text": <string>}
+    raw_tagline = output.get("tagline")
+    if isinstance(raw_tagline, str):
+        output["tagline"] = {"text": raw_tagline}
+
+    # 4. Attach world_overview from payload
+    output["world_overview"] = payload.get("global_markets")
+
+    # 5. Map world_paragraph into paragraphs field
+    output["paragraphs"] = {"world_paragraph": output.get("world_paragraph")}
+
+    # 6. Map watch_today → watchlist
+    output["watchlist"] = output.get("watch_today")
+
+    # 7. Store resolved collections in meta (will be merged into meta by persist_analysis)
+    meta = output.setdefault("meta", {})
+    if isinstance(meta, dict):
+        meta["hot_news"] = resolved_hot_news
+        meta["events_filtered"] = resolved_events
+        meta["world_overview"] = output["world_overview"]
+
+    return output
+
+
+def _premarket_payload_stub() -> None:
+    """Stub payload_builder for PREMARKET_CONFIG.
+
+    PREMARKET_CONFIG should never be called via its payload_builder because
+    ``run_premarket_analysis`` builds the payload itself (``build_premarket_payload``
+    requires a ``db`` session) and passes it via the ``payload=`` kwarg to
+    ``run_session_analysis``.  This stub exists only to satisfy the dataclass
+    field; calling it directly is a programming error.
+    """
+    raise RuntimeError(
+        "PREMARKET_CONFIG.payload_builder must not be called directly — "
+        "pass payload= to run_session_analysis instead."
+    )
+
+
+PREMARKET_CONFIG = SessionConfig(
+    report_type="premarket",
+    payload_builder=_premarket_payload_stub,
+    prompt_builder=build_premarket_user_prompt,
+    system_prompt=PREMARKET_SYSTEM_PROMPT,
+    validator=validate_premarket,
+    session_display=SESSION_DISPLAY,
+    use_memory=False,
+    persist_claims=False,
+    postprocess=_resolve_premarket_output,
+)
+
+
+async def run_premarket_analysis(session: AsyncSession | None = None) -> dict[str, Any]:
+    """Scheduler/CLI entrypoint for the pre-market brief.
+
+    Opens its own DB session when not provided (mirrors ``run_midday_analysis``).
+    Builds the payload here (because ``build_premarket_payload`` needs a ``db``
+    session) and passes it via ``payload=`` — never calls
+    ``PREMARKET_CONFIG.payload_builder``.
+
+    Returns a compact summary dict for logging / manual-trigger responses.
+    """
+    async def _run(db: AsyncSession) -> dict[str, Any]:
+        payload = await build_premarket_payload(db)
+        res = await run_session_analysis(PREMARKET_CONFIG, payload=payload, db=db, temperature=0.5)
         return {
             "session_date": res["session_date"],
             "session_type": res["session_type"],

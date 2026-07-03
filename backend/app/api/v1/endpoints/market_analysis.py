@@ -2,8 +2,10 @@
 
 Public:  GET /market-analysis/daily/latest, /daily/{session_date}, /daily
          GET /market-analysis/midday/latest, /midday/{session_date}
-Admin:   POST /market-analysis/daily/run   (manual generation, audited)
-         POST /market-analysis/midday/run  (manual generation, audited)
+         GET /market-analysis/premarket/latest, /premarket/{session_date}
+Admin:   POST /market-analysis/daily/run      (manual generation, audited)
+         POST /market-analysis/midday/run     (manual generation, audited)
+         POST /market-analysis/premarket/run  (manual generation, audited)
 """
 
 from __future__ import annotations
@@ -210,5 +212,47 @@ async def run_midday_now(admin: AdminUser, audit: AuditCtx, db: DBSession) -> Ge
         target_id=str(result.get("session_date")),
         after=result,
         note="Manual midday market-analysis generation",
+    )
+    return GenerateResult(**result)
+
+
+# ── premarket endpoints ───────────────────────────────────────────────────────
+
+@router.get("/premarket/latest", response_model=AnalysisOut)
+async def get_premarket_latest(db: DBSession) -> AnalysisOut:
+    """Bài nhận định trước phiên mới nhất đã publish."""
+    a = await _get_latest(db, "premarket")
+    if a is None:
+        raise NotFoundError("Chưa có bài nhận định trước phiên nào")
+    return _to_out(a)
+
+
+@router.get("/premarket/{session_date}", response_model=AnalysisOut)
+async def get_premarket_by_date(
+    db: DBSession,
+    session_date: date = Path(..., description="Ngày phiên YYYY-MM-DD"),
+) -> AnalysisOut:
+    """Bài nhận định trước phiên của một ngày cụ thể."""
+    a = await _get_by_date(db, session_date, "premarket")
+    if a is None:
+        raise NotFoundError(f"Không có bài nhận định trước phiên cho ngày {session_date.isoformat()}")
+    return _to_out(a)
+
+
+@router.post("/premarket/run", response_model=GenerateResult)
+async def run_premarket_now(admin: AdminUser, audit: AuditCtx, db: DBSession) -> GenerateResult:
+    """Kích hoạt sinh bài trước phiên thủ công (admin). Dùng session riêng để tránh
+    đụng transaction của request; ghi audit log."""
+    from app.services.ai.market_analysis.generator import run_premarket_analysis
+
+    result = await run_premarket_analysis()
+
+    await AdminAuditService(db).record(
+        audit,
+        action="market_analysis.premarket.run",
+        target_entity="market_analysis",
+        target_id=str(result.get("session_date")),
+        after=result,
+        note="Manual premarket market-analysis generation",
     )
     return GenerateResult(**result)
