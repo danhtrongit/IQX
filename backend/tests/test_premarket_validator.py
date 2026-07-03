@@ -144,6 +144,15 @@ def test_valid_news_ids_pass():
     assert not any("hot_news" in e and "id" in e.lower() for e in errs)
 
 
+def test_news_pool_empty_zero_hot_news_passes():
+    s = _ok()
+    s["hot_news"] = []
+    payload = _pool(s)
+    payload["news_pool"] = []
+    errs = validate_premarket(s, payload)
+    assert not any("hot_news" in e for e in errs)
+
+
 # ── hard: events_filtered count (2–10) ───────────────────────────────────────
 
 def test_events_filtered_too_few():
