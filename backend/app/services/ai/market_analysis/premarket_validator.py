@@ -61,15 +61,16 @@ def _wc(s: str) -> int:
 
 
 def _all_content_texts(out: dict[str, Any]) -> list[str]:
-    """Collect all user-visible text strings for banned-word / hyphen scanning.
+    """Collect the DOMESTIC-focused text strings for the FORBIDDEN_INTL scan.
 
-    world_paragraph is intentionally excluded from FORBIDDEN_INTL scanning
-    because it explicitly describes global markets (S&P, Nikkei, Brent, etc.)
-    per the pre-market contract. It is still scanned for hyphen issues and
+    world_paragraph AND headline are intentionally excluded: both are
+    international-summary fields per the pre-market contract (the headline
+    must "tóm bức tranh thị trường quốc tế", so S&P/Nikkei/Brent are its
+    required content — banning them there made generation fail 4/4 attempts
+    in prod). Both are still scanned for hyphen issues and
     FORBIDDEN_ANGLICIZED / FORBIDDEN_BUG11 / FORBIDDEN_LEAK terms.
     """
     texts: list[str] = []
-    texts.append(out.get("headline") or "")
     texts.append(out.get("tagline") or "")
     for item in out.get("hot_news") or []:
         texts.append(item.get("insight") or "")
@@ -81,8 +82,9 @@ def _all_content_texts(out: dict[str, Any]) -> list[str]:
 
 
 def _all_texts_including_world(out: dict[str, Any]) -> list[str]:
-    """All texts including world_paragraph (for hyphen + FORBIDDEN_ANGLICIZED scanning)."""
+    """All texts including headline + world_paragraph (hyphen + ANGLICIZED/BUG11/LEAK)."""
     texts = _all_content_texts(out)
+    texts.append(out.get("headline") or "")
     wp = out.get("world_paragraph")
     if wp:
         texts.append(wp)
@@ -237,9 +239,9 @@ def validate_premarket(out: dict[str, Any], payload: dict[str, Any]) -> list[str
         if t in low:
             e.append(f"Cấm: '{t}'")
 
-    # ── HARD: FORBIDDEN_INTL — only non-world_paragraph fields ───────────────
-    # world_paragraph explicitly discusses global markets (S&P, Nikkei, Brent, etc.)
-    # by contract, so FORBIDDEN_INTL is scoped to the domestic-focused sections.
+    # ── HARD: FORBIDDEN_INTL — domestic-focused fields only ──────────────────
+    # headline + world_paragraph explicitly discuss global markets (S&P, Nikkei,
+    # Brent, etc.) by contract, so FORBIDDEN_INTL is scoped to the rest.
     no_world_text = " ".join(_strip(t) for t in all_texts_no_world)
     no_world_low = no_world_text.lower()
 

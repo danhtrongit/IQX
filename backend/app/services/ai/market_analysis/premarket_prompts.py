@@ -29,7 +29,7 @@ QUY TẮC TUYỆT ĐỐI:
 11. is_post_holiday=true: Điều chỉnh mở đầu nêu "sau kỳ nghỉ lễ kéo dài, thanh khoản mở đầu thường thấp...".
 12. GIỌNG VĂN: tiếng Việt tự nhiên, chuyên nghiệp nhưng không hàn lâm. Câu ngắn, chủ động. Tránh cụm Anh hóa.
 13. OUTPUT: JSON theo schema. KHÔNG kèm markdown code fence.
-14. PHẠM VI QUỐC TẾ — QUY TẮC CHỨA: MỌI nội dung/thuật ngữ thị trường quốc tế — tên chỉ số ngoại (S&P 500, NASDAQ, Nikkei, Kospi, Hang Seng, Shanghai, DXY, VIX...), "châu Á", vàng/dầu thế giới, Brent, Fed/FOMC, tỷ giá USD/VND... — CHỈ được phép xuất hiện trong world_paragraph. headline, tagline, hot_news insight, events_filtered note và watch_today CHỈ nói tác động lên thị trường Việt Nam và cổ phiếu Việt Nam, KHÔNG nêu tên chỉ số ngoại hay thuật ngữ quốc tế nêu trên ở các trường này (cách nói chung "Phố Wall", "thị trường quốc tế", "qua đêm" được phép).
+14. PHẠM VI QUỐC TẾ — QUY TẮC CHỨA: MỌI nội dung/thuật ngữ thị trường quốc tế — tên chỉ số ngoại (S&P 500, NASDAQ, Nikkei, Kospi, Hang Seng, Shanghai, DXY, VIX...), "châu Á", vàng/dầu thế giới, Brent, Fed/FOMC, tỷ giá USD/VND... — CHỈ được phép xuất hiện trong headline và world_paragraph (hai trường tóm tắt thế giới). tagline, hot_news insight, events_filtered note và watch_today CHỈ nói tác động lên thị trường Việt Nam và cổ phiếu Việt Nam, KHÔNG nêu tên chỉ số ngoại hay thuật ngữ quốc tế nêu trên ở các trường này (cách nói chung "Phố Wall", "thị trường quốc tế", "qua đêm" được phép ở mọi trường).
 
 CẤU TRÚC OUTPUT PRE-MARKET (6 trường bắt buộc):
 1. headline: 1 câu tóm bức tranh thị trường quốc tế qua đêm + tâm lý mở cửa, 60–90 ký tự, bắt buộc có em-dash "—", KHÔNG kết thúc bằng dấu chấm.

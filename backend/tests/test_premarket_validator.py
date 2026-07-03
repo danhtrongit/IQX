@@ -326,3 +326,26 @@ def test_bug16_number_repetition_is_soft():
     from app.services.ai.market_analysis.validator import hard_errors
     hard = hard_errors(errs)
     assert not any("BUG16" in e for e in hard)
+
+
+# ── hard: FORBIDDEN_INTL scope (headline is an international-summary field) ───
+
+def test_headline_may_name_international_indices():
+    """The headline contract REQUIRES summarizing the overnight world picture —
+    specific index/commodity names there must NOT trip FORBIDDEN_INTL.
+    (Prod burn 2026-07-03: 4/4 attempts died on s&p/brent in the headline.)"""
+    s = _ok()
+    s["headline"] = "S&P 500 lập đỉnh, dầu Brent hạ nhiệt — VN-Index chờ tín hiệu quanh 1.280"
+    assert 60 <= len(s["headline"]) <= 90
+    errs = validate_premarket(s, _pool(s))
+    assert not any("Quốc tế" in e for e in errs), errs
+
+
+def test_watch_today_still_bans_international_terms():
+    s = _ok()
+    s["watch_today"][1]["content"] = (
+        "Chỉ số s&p tăng mạnh nên nhóm xuất khẩu có thể hưởng lợi trong "
+        "phiên sáng nay, chú ý vùng giá mở cửa và thanh khoản khớp lệnh"
+    )
+    errs = validate_premarket(s, _pool(s))
+    assert any("Quốc tế" in e for e in errs)

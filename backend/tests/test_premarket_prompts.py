@@ -13,13 +13,15 @@ def test_system_prompt_encodes_contract():
 
 def test_system_prompt_contains_intl_containment_rule():
     """A live generation burned all 4 attempts on FORBIDDEN_INTL leaks (kospi,
-    'châu á', 'vàng thế giới') OUTSIDE world_paragraph — the validator rejects
-    them, so the system prompt must state the containment rule explicitly:
-    international market content is ONLY allowed inside world_paragraph.
+    'châu á', 'vàng thế giới') outside the international-summary fields — the
+    validator rejects them, so the system prompt must state the containment
+    rule explicitly: international market content is ONLY allowed inside the
+    headline and world_paragraph (headline is an intl-summary field by
+    contract; the 2026-07-03 prod burn proved banning it there fails 4/4).
     """
     s = PREMARKET_SYSTEM_PROMPT
     # The containment phrasing itself
-    assert "CHỈ được phép xuất hiện trong world_paragraph" in s
+    assert "CHỈ được phép xuất hiện trong headline và world_paragraph" in s
     # Concrete forbidden-outside-world examples must be named in the rule
     for token in ["Kospi", "vàng/dầu thế giới", "chỉ số ngoại", "tỷ giá"]:
         assert token in s, f"missing token in containment rule: {token}"
