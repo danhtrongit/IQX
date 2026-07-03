@@ -102,6 +102,22 @@ async def startup() -> None:
             max_instances=1, coalesce=True, replace_existing=True,
         )
 
+    if getattr(settings, "PREMARKET_ANALYSIS_ENABLED", False):
+        from .market_analysis_job import run_premarket_analysis_job
+
+        _scheduler.add_job(
+            run_premarket_analysis_job,
+            CronTrigger(
+                day_of_week="mon-fri",
+                hour=int(getattr(settings, "PREMARKET_ANALYSIS_CRON_HOUR", 7)),
+                minute=int(getattr(settings, "PREMARKET_ANALYSIS_CRON_MINUTE", 15)),
+                timezone="Asia/Ho_Chi_Minh",
+            ),
+            id="market_analysis_premarket",
+            name="Generate pre-market VN-Index AI analysis (07:15 ICT, pre-market)",
+            max_instances=1, coalesce=True, replace_existing=True,
+        )
+
     if getattr(settings, "INTL_DATA_ENABLED", False):
         from .intl_snapshot_job import run_intl_wave1, run_intl_wave2, run_intl_wave3
 

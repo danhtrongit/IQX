@@ -23,6 +23,7 @@ _ICT = timezone(timedelta(hours=7))
 _LOCK_KEY = 826_101_730
 _MIDDAY_LOCK_KEY = 826_101_731
 _RETRY_LOCK_KEY = 826_101_732
+_PREMARKET_LOCK_KEY = 826_101_734
 
 
 async def _generate(session: Any) -> dict[str, Any]:
@@ -43,6 +44,18 @@ async def _generate_midday(session: Any) -> dict[str, Any]:
     result = await run_midday_analysis(session=session)
     logger.info(
         "Midday market-analysis: date=%s type=%s valid=%s persisted=%s attempts=%s",
+        result.get("session_date"), result.get("session_type"),
+        result.get("valid"), result.get("persisted"), result.get("attempts"),
+    )
+    return result
+
+
+async def _generate_premarket(session: Any) -> dict[str, Any]:
+    from app.services.ai.market_analysis import run_premarket_analysis
+
+    result = await run_premarket_analysis(session=session)
+    logger.info(
+        "Premarket market-analysis: date=%s type=%s valid=%s persisted=%s attempts=%s",
         result.get("session_date"), result.get("session_type"),
         result.get("valid"), result.get("persisted"), result.get("attempts"),
     )
@@ -168,4 +181,36 @@ async def run_midday_analysis_job(session: Any | None = None) -> dict[str, Any]:
             return await _generate_midday(db)
         finally:
             await db.execute(text("SELECT pg_advisory_unlock(:k)"), {"k": _MIDDAY_LOCK_KEY})
+            await db.commit()
+
+
+async def run_premarket_analysis_job(session: Any | None = None) -> dict[str, Any]:
+    """Generate today's VN-Index pre-market analysis if today is a trading day.
+
+    Scheduled run (session=None) takes a pg advisory lock so only one uvicorn
+    worker generates. Manual/test triggers may pass an explicit session and
+    skip the lock.
+    """
+    today = datetime.now(_ICT).date()
+    if not is_trading_day(today):
+        logger.info("Premarket market-analysis skipped: %s is not a VN trading day", today)
+        return {"skipped": "not_trading_day", "date": today.isoformat()}
+
+    if session is not None:
+        return await _generate_premarket(session)
+
+    from app.core.database import get_session_factory
+
+    factory = get_session_factory()
+    async with factory() as db:
+        got = (
+            await db.execute(text("SELECT pg_try_advisory_lock(:k)"), {"k": _PREMARKET_LOCK_KEY})
+        ).scalar()
+        if not got:
+            logger.info("Premarket market-analysis: lock held by another worker — skipping")
+            return {"skipped": "locked", "date": today.isoformat()}
+        try:
+            return await _generate_premarket(db)
+        finally:
+            await db.execute(text("SELECT pg_advisory_unlock(:k)"), {"k": _PREMARKET_LOCK_KEY})
             await db.commit()
