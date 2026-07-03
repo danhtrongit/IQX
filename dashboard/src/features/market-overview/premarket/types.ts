@@ -25,7 +25,7 @@ export interface ResolvedEvent {
   title: string
   tickers: string[]
   note: string
-  impact: string
+  impact: "high" | "medium" | "low"
 }
 
 // ─── World overview cell ──────────────────────────────────
@@ -52,7 +52,7 @@ export interface PreMarketAnalysis {
     world_paragraph?: string
   }
   watchlist: {
-    level: string
+    level: "normal" | "alert" | "warn"
     content: string
   }[]
   meta: {
