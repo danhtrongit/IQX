@@ -117,15 +117,20 @@ function WorldCellCard({ cell }: { cell: WorldCell }) {
 // ─── News card ────────────────────────────────────────────────────────────────
 
 function NewsCard({ item }: { item: import("./types").ResolvedNews }) {
-  const sentimentChipClass =
-    item.sentiment === "pos"
-      ? "pm-news-chip--pos"
-      : item.sentiment === "neg"
-        ? "pm-news-chip--neg"
-        : "pm-news-chip--neu"
+  // Backend passes vietcap sentiment through VERBATIM ("Positive"/"Negative"/
+  // "Neutral") — match case-insensitively by prefix, like NewsFeedPanel does.
+  const sentiment = (item.sentiment ?? "").toLowerCase()
+  const sentimentChipClass = sentiment.startsWith("pos")
+    ? "pm-news-chip--pos"
+    : sentiment.startsWith("neg")
+      ? "pm-news-chip--neg"
+      : "pm-news-chip--neu"
 
-  const sentimentLabel =
-    item.sentiment === "pos" ? "Tích cực" : item.sentiment === "neg" ? "Tiêu cực" : "Trung lập"
+  const sentimentLabel = sentiment.startsWith("pos")
+    ? "Tích cực"
+    : sentiment.startsWith("neg")
+      ? "Tiêu cực"
+      : "Trung lập"
 
   // Format published_at → simple HH:MM
   let timeStr = ""

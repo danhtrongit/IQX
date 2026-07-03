@@ -49,7 +49,9 @@ const fixture = {
         source: "Bloomberg",
         published_at: "2026-07-03T02:00:00Z",
         tickers: ["VCB", "TCB"],
-        sentiment: "pos",
+        // REAL backend value: vietcap sentiment passes through VERBATIM
+        // ("Positive"/"Negative"/"Neutral") — never lowercase "pos"/"neg".
+        sentiment: "Positive",
         url: "#",
         insight: "Tín hiệu tích cực cho <strong>ngân hàng</strong>.",
         rank_order: 1,
@@ -61,7 +63,7 @@ const fixture = {
         source: "Reuters",
         published_at: "2026-07-03T01:30:00Z",
         tickers: ["GAS", "PLX"],
-        sentiment: "neg",
+        sentiment: "Negative",
         url: "#",
         insight: "Áp lực lên chi phí sản xuất.",
         rank_order: 2,
@@ -130,6 +132,26 @@ describe("PreMarketView — with data", () => {
     expect(countdown).toBeInTheDocument()
     // Should render HH:MM:SS format
     expect(countdown.textContent).toMatch(/\d{2}:\d{2}:\d{2}/)
+  })
+
+  it("maps real backend sentiment values (Positive/Negative) to pos/neg chips", async () => {
+    h.payload = fixture
+    renderView()
+
+    await waitFor(() =>
+      expect(screen.getByText(/SÁNG NAY/)).toBeInTheDocument(),
+    )
+
+    // "Positive" → green chip "Tích cực"
+    const pos = screen.getByText("Tích cực")
+    expect(pos).toHaveClass("pm-news-chip--pos")
+
+    // "Negative" → red chip "Tiêu cực"
+    const neg = screen.getByText("Tiêu cực")
+    expect(neg).toHaveClass("pm-news-chip--neg")
+
+    // Neither chip may fall through to the neutral default
+    expect(screen.queryByText("Trung lập")).not.toBeInTheDocument()
   })
 })
 
