@@ -190,6 +190,63 @@ async def test_stale_cell_in_missing_fields(db_session):
 
 
 @pytest.mark.asyncio
+async def test_stale_vndx_uses_vcb_fallback(db_session):
+    """VND=X row present but stale=True + VCB available → cell uses VCB value, source vcb."""
+    # Provide all 6 grid symbols so no other symbol is absent (only VND=X is stale)
+    rows = [
+        _snap("^GSPC", 6124.85, 0.40),
+        _snap("^IXIC", 19800.0, 0.30),
+        _snap("^N225", 39500.0, -0.20),
+        _snap("BZ=F", 78.5, -0.30),
+        _snap("GC=F", 3350.0, 0.20),
+        _snap("VND=X", 25900.0, -0.10, stale=True),
+    ]
+    vcb_rows = [
+        {"currency_code": "USD", "sell": 26200.0, "date": "2026-07-03"},
+    ]
+    with patch.object(PP, "load_latest_snapshot", new=AsyncMock(return_value=rows)), \
+         patch.object(PP, "fetch_news_list", new=AsyncMock(return_value=([], 0, "u"))), \
+         patch.object(PP, "fetch_events_calendar", new=AsyncMock(return_value=([], "u"))), \
+         patch.object(PP, "fetch_fx", new=AsyncMock(return_value=(vcb_rows, "u"))):
+        p = await PP.build_premarket_payload(db_session)
+    cells = {c["id"]: c for c in p["global_markets"]["cells"]}
+    vnd_cell = cells["VND=X"]
+    assert vnd_cell["value"] == 26200.0
+    assert vnd_cell["change_pct"] is None
+    assert vnd_cell.get("source") == "vcb"
+    assert vnd_cell["stale"] is False
+    assert vnd_cell["sentiment"] == "flat"
+    # VND=X resolved via VCB — must NOT contribute to missing_fields
+    assert "global_markets" not in p["meta"]["missing_fields"]
+
+
+@pytest.mark.asyncio
+async def test_stale_vndx_vcb_also_fails_uses_stale_row(db_session):
+    """VND=X row stale=True + VCB fails → falls back to stale row, NOT in missing_fields."""
+    # Provide all 6 grid symbols so VND=X stale is the only issue
+    rows = [
+        _snap("^GSPC", 6124.85, 0.40),
+        _snap("^IXIC", 19800.0, 0.30),
+        _snap("^N225", 39500.0, -0.20),
+        _snap("BZ=F", 78.5, -0.30),
+        _snap("GC=F", 3350.0, 0.20),
+        _snap("VND=X", 25900.0, -0.10, stale=True),
+    ]
+    with patch.object(PP, "load_latest_snapshot", new=AsyncMock(return_value=rows)), \
+         patch.object(PP, "fetch_news_list", new=AsyncMock(return_value=([], 0, "u"))), \
+         patch.object(PP, "fetch_events_calendar", new=AsyncMock(return_value=([], "u"))), \
+         patch.object(PP, "fetch_fx", new=AsyncMock(side_effect=Exception("vcb down"))):
+        p = await PP.build_premarket_payload(db_session)
+    cells = {c["id"]: c for c in p["global_markets"]["cells"]}
+    vnd_cell = cells["VND=X"]
+    assert vnd_cell["value"] == 25900.0
+    assert vnd_cell["stale"] is True
+    assert vnd_cell["value"] is not None
+    # A stale price beats None — stale row is not absent, must NOT degrade global_markets
+    assert "global_markets" not in p["meta"]["missing_fields"]
+
+
+@pytest.mark.asyncio
 async def test_decimal_prices_converted_to_float(db_session):
     """Decimal values from the ORM must be converted to float in cells."""
     rows = [_snap("^GSPC", Decimal("6124.85"), Decimal("0.40"))]

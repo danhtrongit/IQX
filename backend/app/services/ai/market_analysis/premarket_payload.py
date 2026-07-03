@@ -420,8 +420,10 @@ def _build_global_markets(
         row = by_symbol.get(sym)
         is_usdvnd = sym == "VND=X"
 
-        if row is None:
-            # Absent symbol — try VCB fallback for VND=X
+        row_is_stale_usdvnd = is_usdvnd and row is not None and bool(row.stale)
+
+        if row is None or row_is_stale_usdvnd:
+            # Absent symbol OR stale VND=X — try VCB fallback for VND=X
             if is_usdvnd and vcb_usd_sell is not None:
                 cell: dict = {
                     "id": sym,
@@ -431,6 +433,20 @@ def _build_global_markets(
                     "sentiment": "flat",
                     "stale": False,
                     "source": "vcb",
+                }
+            elif row_is_stale_usdvnd:
+                # VCB also unavailable but we have a stale row — stale beats nothing
+                raw_price = row.last_price  # type: ignore[union-attr]
+                raw_pct = row.change_percent  # type: ignore[union-attr]
+                price_f: float | None = float(raw_price) if raw_price is not None else None
+                pct_f: float | None = float(raw_pct) if raw_pct is not None else None
+                cell = {
+                    "id": sym,
+                    "label": label,
+                    "value": price_f,
+                    "change_pct": pct_f,
+                    "sentiment": _sentiment(pct_f, invert=True),
+                    "stale": True,
                 }
             else:
                 any_missing = True
@@ -445,8 +461,8 @@ def _build_global_markets(
         else:
             raw_price = row.last_price
             raw_pct = row.change_percent
-            price_f: float | None = float(raw_price) if raw_price is not None else None
-            pct_f: float | None = float(raw_pct) if raw_pct is not None else None
+            price_f = float(raw_price) if raw_price is not None else None
+            pct_f = float(raw_pct) if raw_pct is not None else None
 
             cell = {
                 "id": sym,
