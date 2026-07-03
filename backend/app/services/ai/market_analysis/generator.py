@@ -136,7 +136,12 @@ async def run_session_analysis(
 
         output.setdefault("session_type", session_type)
         output.setdefault("session_date", payload["meta"]["generated_for_date"])
-        output.setdefault("id", f"vnindex-{payload['meta']['generated_for_date']}")
+        # public_id fallback must be report-type-aware: analysis_history.public_id is
+        # UNIQUE, so a non-daily run falling back to the daily "vnindex-{date}" id would
+        # squat on it and make the daily INSERT for the same date fail (IntegrityError).
+        # daily keeps "vnindex-{date}" — the LIVE public contract — unchanged.
+        _id_prefix = "vnindex" if config.report_type == "daily" else config.report_type
+        output.setdefault("id", f"{_id_prefix}-{payload['meta']['generated_for_date']}")
         output.setdefault("session_type_display", config.session_display.get(session_type))
         output.setdefault("meta", {})
         if isinstance(output["meta"], dict):

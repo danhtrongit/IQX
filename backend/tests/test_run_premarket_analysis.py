@@ -385,6 +385,82 @@ def test_run_premarket_analysis_is_importable():
     assert callable(run_premarket_analysis)
 
 
+# ── Daily-side mocks (valid daily output/payload, mirrors test_market_analysis_v14) ──
+
+_DAILY_PAYLOAD = {
+    "meta": {"generated_for_date": "2026-07-03"},
+    "point_contribution": {"top_positive": [{"ticker": "VHM"}]},
+    "foreign_flow": {"top_sell": [{"ticker": "VHM", "value_vnd_billion": -817}]},
+    "prop_trading": {"buy_concentration_flag": {"concentrated": True}},
+    "technical_levels": {"scenario_realistic_range": {"far_support": 1715.1}},
+    "memory_context": {"verifiable_claims_from_recent_analyses": []},
+}
+
+_VALID_DAILY = json.dumps(
+    {
+        "headline": "Bề mặt giảm nhẹ — HNX lao dốc",
+        "session_type": "hidden_distribution",
+        "tagline": {"direction": "down", "marker": "▼", "text": "RÚT TIỀN NGẦM · ngoại bán"},
+        "paragraphs": {
+            "structure": "<span class='num'>1.824</span> điểm.",
+            "smart_money": "Khối ngoại bán ròng <span class='num'>1.868 tỷ</span>.",
+            "market_health": (
+                "Tỷ lệ mã trên MA20 còn 43%, giảm so với phiên trước, thanh khoản tương đương MA20, "
+                "VN30 dưới MA50 và MA200 cho thấy xu hướng yếu, ngành dẫn dắt như bất động sản và "
+                "ngân hàng đều giảm liên tiếp hai phiên, vốn hóa nhỏ và vừa giảm mạnh hơn bluechip, "
+                "dòng tiền thu hẹp rõ rệt khiến sức khỏe thị trường suy yếu rõ nét trên diện rộng "
+                "toàn phiên giao dịch."
+            ),
+        },
+        "scenarios": [{"direction": "down", "condition_html": "Mất <strong>1.815</strong>", "outcome_html": "test <strong>1.795</strong>"}],
+        "watchlist": [{"ticker": "VHM", "alert": True, "reason_html": "— mâu thuẫn"}],
+        "unexplained": "VHM tăng nhưng KN bán mạnh.",
+    },
+    ensure_ascii=False,
+)
+
+
+@pytest.mark.asyncio
+async def test_premarket_then_daily_same_date_distinct_public_ids(db_session):
+    """Regression (public_id collision): a premarket run followed by a daily run for the
+    SAME session_date must persist BOTH rows with DISTINCT public_ids.
+
+    On the buggy code both fall back to public_id='vnindex-{date}' (UNIQUE column) —
+    the daily INSERT hits the unique violation and the LIVE daily brief fails to persist.
+    """
+    from app.services.ai.market_analysis import generator as G2
+
+    # 07:15 — premarket run persists its row
+    with (
+        patch.object(G2, "build_premarket_payload", new=AsyncMock(return_value=_MOCK_PAYLOAD)),
+        patch.object(G2, "chat_completion", new=AsyncMock(return_value=(VALID_PREMARKET, "deepseek"))),
+    ):
+        res_pm = await G2.run_premarket_analysis(session=db_session)
+    assert res_pm["persisted"] is True, f"premarket persist failed: {res_pm['errors']}"
+
+    # 16:30 — daily run for the SAME session_date must also persist
+    with patch.object(G2, "chat_completion", new=AsyncMock(return_value=(_VALID_DAILY, "deepseek"))):
+        res_daily = await G2.generate_analysis(payload=dict(_DAILY_PAYLOAD), db=db_session)
+    assert res_daily["persisted"] is True, (
+        f"daily persist failed (public_id collision with premarket row?): {res_daily['errors']}"
+    )
+
+    rows = (
+        await db_session.execute(
+            select(AnalysisHistory).where(AnalysisHistory.session_date == dt.date(2026, 7, 3))
+        )
+    ).scalars().all()
+    assert len(rows) == 2, f"expected premarket + daily rows, got {[(r.report_type, r.public_id) for r in rows]}"
+
+    by_type = {r.report_type: r for r in rows}
+    assert set(by_type) == {"premarket", "daily"}
+    assert by_type["premarket"].public_id != by_type["daily"].public_id
+    # premarket must NOT squat on the daily public contract id
+    assert by_type["premarket"].public_id.startswith("premarket-"), by_type["premarket"].public_id
+    # daily keeps the LIVE public contract id format
+    assert by_type["daily"].public_id == "vnindex-2026-07-03"
+
+
 @pytest.mark.asyncio
 async def test_postprocess_exception_aborts_persist(db_session):
     """A resolver crash must abort the persist (rollback path), never store a bad row."""
