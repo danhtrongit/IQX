@@ -40,8 +40,25 @@ async def persist_snapshot_rows(
     stale_copied = 0
     missing: list[str] = []
 
+    # ── 0. Pre-filter incomplete parsed rows (NOT NULL guard) ────────────────
+    valid_parsed = {
+        sym: d for sym, d in parsed.items()
+        if d.get("last_price") is not None
+        and d.get("previous_close") is not None
+        and d.get("change_value") is not None
+        and d.get("change_percent") is not None
+    }
+
+    # Log dropped symbols that are missing required fields
+    dropped = [s for s in parsed if s not in valid_parsed]
+    if dropped:
+        logger.warning(
+            "intl_snapshot: missing required price fields for symbols %r — routing to stale/missing path",
+            dropped,
+        )
+
     # ── 1. Upsert each parsed symbol ────────────────────────────────────────
-    for symbol, data in parsed.items():
+    for symbol, data in valid_parsed.items():
         category = CATEGORY_BY_SYMBOL.get(symbol)
         if category is None:
             logger.warning("intl_snapshot: unknown symbol %r, defaulting category to 'other'", symbol)
@@ -103,8 +120,8 @@ async def persist_snapshot_rows(
 
         upserted += 1
 
-    # ── 2. Handle requested symbols absent from parsed ───────────────────────
-    absent = [s for s in requested if s not in parsed]
+    # ── 2. Handle requested symbols absent from valid_parsed ─────────────────
+    absent = [s for s in requested if s not in valid_parsed]
 
     for symbol in absent:
         # Look for the newest row strictly before `day`

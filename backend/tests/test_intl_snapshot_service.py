@@ -28,3 +28,14 @@ async def test_stale_copy_from_previous_day(db_session):
 async def test_missing_when_no_history(db_session):
     res = await persist_snapshot_rows(db_session, dt.date(2026, 7, 3), {}, requested=["ES=F"])
     assert res["missing"] == ["ES=F"] and res["stale_copied"] == 0
+
+@pytest.mark.asyncio
+async def test_incomplete_parsed_row_routes_to_stale_path(db_session):
+    y, t = dt.date(2026, 7, 2), dt.date(2026, 7, 3)
+    await persist_snapshot_rows(db_session, y, P, requested=["^GSPC"])  # good history yesterday
+    bad = {"^GSPC": {"symbol": "^GSPC", "name": "S&P 500", "last_price": 6124.85,
+                     "previous_close": None, "change_value": None, "change_percent": None}}
+    res = await persist_snapshot_rows(db_session, t, bad, requested=["^GSPC"])
+    assert res["upserted"] == 0 and res["stale_copied"] == 1
+    rows = await load_latest_snapshot(db_session)
+    assert rows[0].stale is True and rows[0].snapshot_date == t and float(rows[0].previous_close) == float(P["^GSPC"]["previous_close"])
