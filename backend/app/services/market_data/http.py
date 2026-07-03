@@ -87,6 +87,10 @@ _SOURCE_HEADERS: dict[str, dict[str, str]] = {
         "Referer": "https://www.msn.com/",
         "Origin": "https://www.msn.com",
     },
+    "YAHOO": {
+        "Referer": "https://finance.yahoo.com/",
+        "Origin": "https://finance.yahoo.com",
+    },
     "SIMPLIZE": {},
 }
 
