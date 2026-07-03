@@ -22,4 +22,22 @@ describe("getDisplayMode", () => {
     expect(getDisplayMode(at(12, 0), { isTradingDay: false })).toBe(
       "eod_yesterday"
     ))
+
+  // ─── Pre-market window [480, 540) ─────────────────────────
+  it("08:00 on trading day → premarket", () =>
+    expect(getDisplayMode(at(8, 0))).toBe("premarket"))
+
+  it("08:59 on trading day → premarket", () =>
+    expect(getDisplayMode(at(8, 59))).toBe("premarket"))
+
+  it("09:00 on trading day → eod_yesterday", () =>
+    expect(getDisplayMode(at(9, 0))).toBe("eod_yesterday"))
+
+  it("07:59 on trading day → eod_yesterday", () =>
+    expect(getDisplayMode(at(7, 59))).toBe("eod_yesterday"))
+
+  it("08:30 non-trading-day → eod_yesterday (premarket window ignored)", () =>
+    expect(getDisplayMode(at(8, 30), { isTradingDay: false })).toBe(
+      "eod_yesterday"
+    ))
 })
