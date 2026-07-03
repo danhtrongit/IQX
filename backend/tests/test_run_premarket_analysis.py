@@ -383,3 +383,27 @@ def test_run_premarket_analysis_is_importable():
     from app.services.ai.market_analysis import run_premarket_analysis  # noqa: F401
 
     assert callable(run_premarket_analysis)
+
+
+@pytest.mark.asyncio
+async def test_postprocess_exception_aborts_persist(db_session):
+    """A resolver crash must abort the persist (rollback path), never store a bad row."""
+    from app.services.ai.market_analysis import generator as G2
+
+    def _boom(output, payload):
+        raise RuntimeError("resolver crashed")
+
+    with (
+        patch.object(G2, "build_premarket_payload", new=AsyncMock(return_value=_MOCK_PAYLOAD)),
+        patch.object(G2, "chat_completion", new=AsyncMock(return_value=(VALID_PREMARKET, "deepseek"))),
+        patch.object(G2.PREMARKET_CONFIG, "postprocess", new=_boom),
+    ):
+        res = await G2.run_premarket_analysis(session=db_session)
+
+    assert res["persisted"] is False
+    rows = (
+        await db_session.execute(
+            select(AnalysisHistory).where(AnalysisHistory.report_type == "premarket")
+        )
+    ).scalars().all()
+    assert rows == [], "no premarket row may be persisted when postprocess raises"
