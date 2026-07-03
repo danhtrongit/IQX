@@ -1,0 +1,393 @@
+/* ─── PreMarket article styles — cyan variant ─────────────────────────────────
+   Mirrors midday.css but uses the cyan accent (#4FD0FF) for the pre-market
+   "trước phiên" report. Uses .pm-* class prefix to avoid collision with .mm-*
+   and .am-* classes.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Root token block ── */
+.pm-view {
+  --pm-accent:      #4FD0FF;
+  --pm-accent-soft: #4FD0FF22;
+  --pm-up:          #10b981;
+  --pm-down:        #ef4444;
+  --pm-neutral:     #eab308;
+}
+
+/* ── Article card ── */
+.pm-article {
+  --pm-accent:      #4FD0FF;
+  --pm-accent-soft: #4FD0FF22;
+
+  position: relative;
+  overflow: hidden;
+  padding: 20px 24px;
+  border-radius: 8px;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-2);
+}
+
+/* Shimmer top bar — cyan gradient */
+.pm-article::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--pm-accent), #A8EDFF, var(--pm-accent));
+  background-size: 200% 100%;
+  animation: pm-shimmer 4s linear infinite;
+}
+
+@keyframes pm-shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* ── Header ── */
+.pm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pm-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Cyan badge */
+.pm-badge {
+  background: var(--pm-accent-soft);
+  color: var(--pm-accent);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.pm-session-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-1);
+}
+
+/* ── Headline ── */
+.pm-headline {
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.35;
+  color: var(--color-text-1);
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+
+/* ── Tagline — ALWAYS cyan, not sentiment-driven ── */
+.pm-tagline {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  letter-spacing: 0.02em;
+  color: var(--pm-accent);
+}
+
+.pm-tagline-marker {
+  margin-right: 4px;
+}
+
+/* ── World grid ── */
+.pm-world-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.pm-world-cell {
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--color-fill-2);
+  border: 1px solid var(--color-border-2);
+  min-width: 0;
+}
+
+.pm-world-cell--up    { border-color: color-mix(in oklch, #10b981 40%, transparent); }
+.pm-world-cell--down  { border-color: color-mix(in oklch, #ef4444 40%, transparent); }
+.pm-world-cell--stale { opacity: 0.5; }
+
+.pm-world-cell-label {
+  font-size: 11px;
+  color: var(--color-text-3);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pm-world-cell-value {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-1);
+}
+
+.pm-world-cell-change {
+  font-size: 11px;
+  font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+}
+
+.pm-world-cell-change--up   { color: #10b981; }
+.pm-world-cell-change--down { color: #ef4444; }
+.pm-world-cell-change--flat { color: var(--color-text-3); }
+
+/* ── World paragraph ── */
+.pm-world-paragraph {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-text-2);
+  margin-bottom: 20px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border-2);
+}
+
+.pm-world-paragraph .num {
+  font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-world-paragraph .up-text   { color: #10b981; font-weight: 500; }
+.pm-world-paragraph .down-text { color: #ef4444;  font-weight: 500; }
+
+/* ── Section title ── */
+.pm-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-1);
+  letter-spacing: -0.01em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border-2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.pm-section-title::before {
+  content: '';
+  width: 3px;
+  height: 16px;
+  background: var(--pm-accent);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── News cards ── */
+.pm-news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.pm-news-card {
+  padding: 12px 14px;
+  border-radius: 6px;
+  background: var(--color-fill-2);
+  border: 1px solid var(--color-border-2);
+}
+
+.pm-news-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.pm-news-chip {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pm-news-chip--pos { background: #10b98120; color: #10b981; }
+.pm-news-chip--neg { background: #ef444420; color: #ef4444; }
+.pm-news-chip--neu { background: var(--color-fill-3); color: var(--color-text-3); }
+
+.pm-news-source {
+  font-size: 11px;
+  color: var(--color-text-3);
+}
+
+.pm-news-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-1);
+  line-height: 1.45;
+  margin-bottom: 4px;
+}
+
+.pm-news-tickers {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.pm-ticker-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--pm-accent-soft);
+  color: var(--pm-accent);
+  font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+  letter-spacing: 0.02em;
+}
+
+.pm-news-insight {
+  font-size: 12.5px;
+  color: var(--color-text-2);
+  line-height: 1.6;
+}
+
+.pm-news-insight .up-text   { color: #10b981; font-weight: 500; }
+.pm-news-insight .down-text { color: #ef4444;  font-weight: 500; }
+
+/* ── Events timeline ── */
+.pm-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.pm-event-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--color-fill-2);
+  border: 1px solid var(--color-border-2);
+}
+
+.pm-event-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  width: 20px;
+  text-align: center;
+}
+
+.pm-event-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.pm-event-time {
+  font-size: 11px;
+  color: var(--color-text-3);
+  margin-bottom: 2px;
+}
+
+.pm-event-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-1);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.pm-event-tickers {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.pm-event-impact {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.pm-event-impact--high   { background: #ef444420; color: #ef4444; }
+.pm-event-impact--medium { background: #eab30820; color: #eab308; }
+.pm-event-impact--low    { background: var(--color-fill-3); color: var(--color-text-3); }
+
+/* ── Watchlist ── */
+.pm-watchlist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.pm-watchlist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.pm-watchlist-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+  display: inline-block;
+}
+
+.pm-watchlist-item--alert {
+  background: color-mix(in oklch, #eab308 8%, transparent);
+}
+
+.pm-watchlist-item--warn {
+  background: color-mix(in oklch, #ef4444 8%, transparent);
+}
+
+/* ── ATO countdown section ── */
+.pm-countdown-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--pm-accent-soft);
+  border: 1px solid var(--pm-accent);
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.pm-countdown-label {
+  font-size: 12px;
+  color: var(--color-text-2);
+  flex: 1;
+  min-width: 180px;
+}
+
+.pm-countdown-clock {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--pm-accent);
+  letter-spacing: 0.03em;
+}
