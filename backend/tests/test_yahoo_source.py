@@ -1,4 +1,9 @@
 # backend/tests/test_yahoo_source.py
+from unittest.mock import AsyncMock, patch
+
+import pytest
+
+from app.services.market_data.sources import yahoo as Y
 from app.services.market_data.sources.yahoo import parse_chart_meta
 
 META = {
@@ -55,3 +60,83 @@ def test_parse_chart_meta_zero_chart_previous_close_not_bypassed():
     p = parse_chart_meta({"regularMarketPrice": 1.0, "chartPreviousClose": 0.0, "previousClose": 8.0}, "X")
     assert p["previous_close"] == 0.0
     assert p["change_value"] == 1.0 and p["change_percent"] is None  # no div-by-zero
+
+
+# ── fetch_many retry pass (429-burst robustness) ──────────────────────────────
+
+
+def _quote(sym: str) -> dict:
+    return {"symbol": sym, "last_price": 100.0}
+
+
+@pytest.mark.asyncio
+async def test_fetch_many_retries_failed_symbols_once():
+    """A symbol that 429s on the first pass must be retried once (fixed 2.0 s
+    pre-delay, same semaphore/jitter) and land in the result on success."""
+    calls: dict[str, int] = {}
+
+    async def fake_fetch(sym):
+        calls[sym] = calls.get(sym, 0) + 1
+        if sym == "^VIX" and calls[sym] == 1:
+            raise RuntimeError("HTTP 429 Too Many Requests")
+        return _quote(sym), "url"
+
+    sleep_mock = AsyncMock()
+    with patch.object(Y, "fetch_chart", side_effect=fake_fetch) as fc, \
+         patch.object(Y.asyncio, "sleep", sleep_mock):
+        out = await Y.fetch_many(["^VIX", "^GSPC"])
+
+    assert set(out) == {"^VIX", "^GSPC"}
+    assert out["^VIX"]["last_price"] == 100.0
+    assert fc.await_count == 3  # 2 first pass + 1 retry
+    # retry pass uses a fixed 2.0 s pre-delay
+    assert any(c.args == (2.0,) for c in sleep_mock.await_args_list)
+
+
+@pytest.mark.asyncio
+async def test_fetch_many_omits_symbols_that_fail_twice():
+    """Existing contract preserved: a symbol failing BOTH passes is omitted."""
+    calls: dict[str, int] = {}
+
+    async def fake_fetch(sym):
+        calls[sym] = calls.get(sym, 0) + 1
+        if sym == "^VIX":
+            raise RuntimeError("HTTP 429 Too Many Requests")
+        return _quote(sym), "url"
+
+    with patch.object(Y, "fetch_chart", side_effect=fake_fetch), \
+         patch.object(Y.asyncio, "sleep", AsyncMock()):
+        out = await Y.fetch_many(["^VIX", "^GSPC"])
+
+    assert set(out) == {"^GSPC"}
+    assert calls["^VIX"] == 2   # exactly ONE retry, then dropped
+    assert calls["^GSPC"] == 1  # successful symbols are not re-fetched
+
+
+@pytest.mark.asyncio
+async def test_fetch_many_no_retry_pass_when_all_succeed():
+    """No failures → no retry pass, no 2.0 s pre-delay sleeps."""
+    async def fake_fetch(sym):
+        return _quote(sym), "url"
+
+    sleep_mock = AsyncMock()
+    with patch.object(Y, "fetch_chart", side_effect=fake_fetch) as fc, \
+         patch.object(Y.asyncio, "sleep", sleep_mock):
+        out = await Y.fetch_many(["^GSPC", "GC=F"])
+
+    assert set(out) == {"^GSPC", "GC=F"}
+    assert fc.await_count == 2
+    assert not any(c.args == (2.0,) for c in sleep_mock.await_args_list)
+
+
+@pytest.mark.asyncio
+async def test_fetch_many_missing_last_price_still_treated_as_failure():
+    """last_price=None counts as failure on both passes → omitted."""
+    async def fake_fetch(sym):
+        return {"symbol": sym, "last_price": None}, "url"
+
+    with patch.object(Y, "fetch_chart", side_effect=fake_fetch), \
+         patch.object(Y.asyncio, "sleep", AsyncMock()):
+        out = await Y.fetch_many(["^VIX"])
+
+    assert out == {}

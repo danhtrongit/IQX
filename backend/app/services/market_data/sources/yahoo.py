@@ -21,6 +21,9 @@ _SOURCE = "YAHOO"
 _CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
 _CHART_PARAMS = {"interval": "1d", "range": "5d"}
 _SEMAPHORE_LIMIT = 5
+# Fixed pre-delay (seconds) applied to each request of the single retry pass —
+# cools down a 429 burst without a config flag.
+_RETRY_PRE_DELAY_S = 2.0
 
 
 def parse_chart_meta(meta: dict[str, Any], symbol: str) -> dict[str, Any]:
@@ -119,8 +122,11 @@ async def fetch_many(symbols: list[str]) -> dict[str, dict[str, Any]]:
     """Fetch quotes for multiple symbols concurrently with rate-limiting.
 
     Uses an ``asyncio.Semaphore(5)`` and a random jitter sleep of
-    0.1–0.2 s before each request. Failed symbols are logged at WARNING
-    level and omitted from the result dict.
+    0.1–0.2 s before each request. Symbols that fail the first pass
+    (e.g. a cold-burst 429) get exactly ONE retry pass with a fixed
+    2.0 s pre-delay per request under the same semaphore/jitter
+    discipline. Symbols failing both passes are logged at WARNING level
+    and omitted from the result dict (unchanged contract).
 
     Args:
         symbols: List of Yahoo Finance tickers.
@@ -131,8 +137,10 @@ async def fetch_many(symbols: list[str]) -> dict[str, dict[str, Any]]:
     semaphore = asyncio.Semaphore(_SEMAPHORE_LIMIT)
     results: dict[str, dict[str, Any]] = {}
 
-    async def _fetch_one(sym: str) -> None:
+    async def _fetch_one(sym: str, *, pre_delay: float = 0.0) -> None:
         async with semaphore:
+            if pre_delay:
+                await asyncio.sleep(pre_delay)
             await asyncio.sleep(random.uniform(0.1, 0.2))
             try:
                 parsed, _ = await fetch_chart(sym)
@@ -144,4 +152,15 @@ async def fetch_many(symbols: list[str]) -> dict[str, dict[str, Any]]:
                 logger.warning("Yahoo fetch_many: failed for %r — %s", sym, exc)
 
     await asyncio.gather(*(_fetch_one(s) for s in symbols))
+
+    failed = [s for s in symbols if s not in results]
+    if failed:
+        logger.info(
+            "Yahoo fetch_many: retry pass for %d failed symbol(s): %s",
+            len(failed), failed,
+        )
+        await asyncio.gather(
+            *(_fetch_one(s, pre_delay=_RETRY_PRE_DELAY_S) for s in failed)
+        )
+
     return results
