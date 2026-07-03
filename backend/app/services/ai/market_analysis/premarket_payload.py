@@ -1,8 +1,7 @@
 """Pre-market brief payload helpers.
 
 Contains normalizers for news and events consumed by the pre-market
-analysis pipeline.  The payload builder (which assembles the full
-payload dict and calls the LLM) will be added in a subsequent task.
+analysis pipeline, plus the main `build_premarket_payload` entry point.
 
 Step-0 live verification (2026-07-03):
   VCI events API real field names (after camelCase→snake_case conversion):
@@ -17,9 +16,41 @@ Step-0 live verification (2026-07-03):
 
 from __future__ import annotations
 
+import asyncio
 import difflib
-from datetime import datetime, timezone
+import logging
+from datetime import UTC, date, datetime, timedelta, timezone
 from typing import Any
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
+
+# ── ICT timezone ───────────────────────────────────────────────────────────────
+ICT = timezone(timedelta(hours=7))
+
+# ── Re-export for patchability in tests ──────────────────────────────────────
+# Tests patch these names on this module; so we import them at module level.
+from app.services.market_data.intl_snapshot import load_latest_snapshot  # noqa: E402
+from app.services.market_data.sources.vietcap_ai_news import fetch_news_list  # noqa: E402
+from app.services.market_data.sources.vietcap import fetch_events_calendar  # noqa: E402
+from app.services.market_data.sources.vcb import fetch_fx  # noqa: E402
+
+# ── Vietnamese weekday names ───────────────────────────────────────────────────
+_WEEKDAY_VI = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"]
+
+# ── Grid cell definitions (fixed order) ───────────────────────────────────────
+_GRID_CELLS: list[tuple[str, str]] = [
+    ("^GSPC",    "S&P 500"),
+    ("^IXIC",    "NASDAQ"),
+    ("^N225",    "NIKKEI 225"),
+    ("BZ=F",     "Dầu Brent"),
+    ("GC=F",     "Vàng"),
+    ("VND=X",    "USD/VND"),
+]
+
+# Context symbols (not in the 6 fixed cells)
+_CONTEXT_SYMBOLS = {"^KS11", "DX-Y.NYB", "ES=F", "NQ=F", "^VIX"}
 
 # ── Source ranking (lower = higher priority) ──────────────────────────────────
 # Used by normalize_news dedup to keep the higher-ranked source.
@@ -250,3 +281,322 @@ def _extract_time_and_label(display_date: str) -> tuple[str | None, str]:
         return time_component, time_component
     else:
         return None, date_part
+
+
+# ── Shared safe-fetch helper ───────────────────────────────────────────────────
+
+
+async def _safe(coro: Any, label: str) -> Any:
+    """Await a fetch coroutine, unwrap (data, url) tuple → data, swallow errors."""
+    try:
+        res = await coro
+        return res[0] if isinstance(res, tuple) else res
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("premarket_payload source '%s' failed: %s", label, exc)
+        return None
+
+
+# ── Previous EOD loader (reuses the midday query pattern) ─────────────────────
+
+
+async def _load_previous_eod(db: AsyncSession) -> dict | None:
+    """Return the latest published daily AnalysisHistory record.
+
+    Returns a dict with headline/tagline/scenarios/watchlist, or None.
+    """
+    from sqlalchemy import select
+    from app.models.market_analysis import AnalysisHistory
+
+    try:
+        row = (await db.execute(
+            select(AnalysisHistory)
+            .where(
+                AnalysisHistory.report_type == "daily",
+                AnalysisHistory.is_published.is_(True),
+            )
+            .order_by(AnalysisHistory.session_date.desc())
+            .limit(1)
+        )).scalar_one_or_none()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("premarket_payload _load_previous_eod DB query failed: %s", exc)
+        return None
+
+    if row is None:
+        return None
+
+    return {
+        "headline": row.headline,
+        "tagline": row.tagline,
+        "scenarios": row.scenarios,
+        "watchlist": row.watchlist,
+        "session_date": row.session_date.isoformat() if row.session_date else None,
+    }
+
+
+# ── Calendar helpers ───────────────────────────────────────────────────────────
+
+
+def _compute_calendar_flags(today: date) -> tuple[bool, bool]:
+    """Return (is_post_weekend, is_post_holiday).
+
+    is_post_weekend: today is Monday (weekday 0).
+    is_post_holiday: the previous CALENDAR day was a weekday but not a trading day
+                     (i.e. it was a holiday, not a weekend day).
+    """
+    from app.services.ai.market_analysis.market_calendar import is_trading_day
+
+    is_post_weekend = today.weekday() == 0  # Monday
+
+    prev_calendar_day = today - timedelta(days=1)
+    # is_post_holiday: prev day was a weekday AND was not a trading day
+    is_post_holiday = (
+        prev_calendar_day.weekday() < 5
+        and not is_trading_day(prev_calendar_day)
+    )
+
+    return is_post_weekend, is_post_holiday
+
+
+def _prev_trading_day(today: date) -> date:
+    """Walk back from `today` (exclusive) to find the most recent trading day."""
+    from app.services.ai.market_analysis.market_calendar import is_trading_day
+
+    d = today - timedelta(days=1)
+    for _ in range(14):  # safety cap
+        if is_trading_day(d):
+            return d
+        d -= timedelta(days=1)
+    return today - timedelta(days=1)  # fallback: yesterday
+
+
+# ── Sentiment helper ───────────────────────────────────────────────────────────
+
+
+def _sentiment(change_pct: float | None, *, invert: bool = False) -> str:
+    """Convert a change percentage to a sentiment string.
+
+    Args:
+        change_pct: Percentage change value (or None).
+        invert: When True, negative change → "up", positive → "down"
+                (used for USD/VND: USD weakening is good for VN market).
+
+    Returns:
+        "up" | "down" | "flat"
+    """
+    if change_pct is None:
+        return "flat"
+    if change_pct == 0:
+        return "flat"
+    if invert:
+        return "up" if change_pct < 0 else "down"
+    return "up" if change_pct > 0 else "down"
+
+
+# ── Global-markets builder ────────────────────────────────────────────────────
+
+
+def _build_global_markets(
+    snapshot_rows: list,
+    vcb_usd_sell: float | None,
+    missing_fields: list[str],
+) -> dict:
+    """Build the global_markets block.
+
+    Args:
+        snapshot_rows: List of MarketDataSnapshot ORM rows.
+        vcb_usd_sell: VCB sell rate for USD (fallback for VND=X).
+        missing_fields: Mutable list; entries appended if symbols are absent.
+
+    Returns:
+        {cells: [6 dicts], context: {...}}
+    """
+    # Index by symbol
+    by_symbol: dict[str, Any] = {r.symbol: r for r in snapshot_rows}
+
+    cells: list[dict] = []
+    any_missing = False
+
+    for sym, label in _GRID_CELLS:
+        row = by_symbol.get(sym)
+        is_usdvnd = sym == "VND=X"
+
+        if row is None:
+            # Absent symbol — try VCB fallback for VND=X
+            if is_usdvnd and vcb_usd_sell is not None:
+                cell: dict = {
+                    "id": sym,
+                    "label": label,
+                    "value": float(vcb_usd_sell),
+                    "change_pct": None,
+                    "sentiment": "flat",
+                    "stale": False,
+                    "source": "vcb",
+                }
+            else:
+                any_missing = True
+                cell = {
+                    "id": sym,
+                    "label": label,
+                    "value": None,
+                    "change_pct": None,
+                    "sentiment": "flat",
+                    "stale": True,
+                }
+        else:
+            raw_price = row.last_price
+            raw_pct = row.change_percent
+            price_f: float | None = float(raw_price) if raw_price is not None else None
+            pct_f: float | None = float(raw_pct) if raw_pct is not None else None
+
+            cell = {
+                "id": sym,
+                "label": label,
+                "value": price_f,
+                "change_pct": pct_f,
+                "sentiment": _sentiment(pct_f, invert=is_usdvnd),
+                "stale": bool(row.stale),
+            }
+
+        cells.append(cell)
+
+    if any_missing:
+        missing_fields.append("global_markets")
+
+    # Context block (non-grid symbols)
+    context: dict = {}
+    for row in snapshot_rows:
+        if row.symbol in _CONTEXT_SYMBOLS:
+            raw_price = row.last_price
+            raw_pct = row.change_percent
+            context[row.symbol] = {
+                "value": float(raw_price) if raw_price is not None else None,
+                "change_pct": float(raw_pct) if raw_pct is not None else None,
+                "stale": bool(row.stale),
+            }
+
+    return {"cells": cells, "context": context}
+
+
+# ── Main entry point ──────────────────────────────────────────────────────────
+
+
+async def build_premarket_payload(db: AsyncSession) -> dict[str, Any]:
+    """Build the pre-market payload dict for the AI prompt.
+
+    Assembles: meta, global_markets (6 fixed cells + context), news_pool,
+    events_pool, eod_previous_summary, and config.
+
+    Degrades gracefully: absent symbols → stale cells; fetch failures → empty
+    pools with missing_fields entries.  Never fabricates data.
+    """
+    today = date.today()
+    today_str = today.isoformat()
+
+    is_post_weekend, is_post_holiday = _compute_calendar_flags(today)
+    weekday_vi = _WEEKDAY_VI[today.weekday()]
+
+    missing: list[str] = []
+
+    # ── News window: 17:00 prev trading day → 06:30 today (ICT) ─────────────
+    prev_td = _prev_trading_day(today)
+    window_start = datetime(prev_td.year, prev_td.month, prev_td.day, 17, 0, 0, tzinfo=ICT)
+    window_end   = datetime(today.year, today.month, today.day, 6, 30, 0, tzinfo=ICT)
+    window_start_str = prev_td.isoformat()
+    window_end_str   = today_str
+
+    # ── Fetch all sources concurrently ────────────────────────────────────────
+    (
+        snapshot_rows,
+        news_raw,
+        events_raw,
+        vcb_fx,
+        eod_prev,
+    ) = await asyncio.gather(
+        _safe(load_latest_snapshot(db), "snapshot"),
+        _safe(fetch_news_list("business", page=1, page_size=20,
+                              update_from=window_start_str, update_to=window_end_str),
+              "news"),
+        _safe(fetch_events_calendar(start=today_str, end=today_str), "events"),
+        _safe(fetch_fx(today_str), "vcb_fx"),
+        _load_previous_eod(db),
+        return_exceptions=False,
+    )
+
+    # load_latest_snapshot is not a coroutine that returns (data, url); _safe
+    # unwraps tuples — but load_latest_snapshot returns a plain list, so _safe
+    # will return it directly.  However we need to call it as a coroutine:
+    # The _safe wrapper above already handled it via `load_latest_snapshot(db)`.
+    if snapshot_rows is None:
+        snapshot_rows = []
+
+    # ── News pool ─────────────────────────────────────────────────────────────
+    if news_raw is None:
+        news_pool: list[dict] = []
+        missing.append("news_pool")
+    else:
+        raw_items = news_raw if isinstance(news_raw, list) else []
+        news_pool = normalize_news(
+            raw_items,
+            window_start=window_start,
+            window_end=window_end,
+        )
+
+    # ── Events pool ───────────────────────────────────────────────────────────
+    if events_raw is None:
+        events_pool: list[dict] = []
+        missing.append("events_pool")
+    else:
+        raw_events = events_raw if isinstance(events_raw, list) else []
+        events_pool = normalize_events(raw_events)
+
+    # ── VCB USD/VND fallback value ────────────────────────────────────────────
+    vcb_usd_sell: float | None = None
+    if vcb_fx is not None:
+        fx_rows = vcb_fx if isinstance(vcb_fx, list) else []
+        for fx_row in fx_rows:
+            if fx_row.get("currency_code") == "USD":
+                sell_val = fx_row.get("sell")
+                if sell_val is not None:
+                    vcb_usd_sell = float(sell_val)
+                break
+
+    # ── Global markets ────────────────────────────────────────────────────────
+    global_markets = _build_global_markets(snapshot_rows, vcb_usd_sell, missing)
+
+    # ── EOD previous summary ──────────────────────────────────────────────────
+    eod_previous_summary: dict | None = None
+    if eod_prev is not None:
+        eod_previous_summary = {
+            "headline":  eod_prev.get("headline"),
+            "tagline":   eod_prev.get("tagline"),
+            "scenarios": eod_prev.get("scenarios"),
+            "watchlist": eod_prev.get("watchlist"),
+            "session_date": eod_prev.get("session_date"),
+        }
+
+    # ── Assemble payload ──────────────────────────────────────────────────────
+    meta: dict[str, Any] = {
+        "report_type": "premarket",
+        "generated_for_date": today_str,
+        "missing_fields": missing,
+        "weekday_vi": weekday_vi,
+        "is_post_weekend": is_post_weekend,
+        "is_post_holiday": is_post_holiday,
+        "as_of": datetime.now(UTC).isoformat(),
+    }
+
+    config: dict[str, Any] = {
+        "generated_for_date": today_str,
+        "weekday_vi": weekday_vi,
+        "is_post_weekend": is_post_weekend,
+        "is_post_holiday": is_post_holiday,
+    }
+
+    return {
+        "meta": meta,
+        "global_markets": global_markets,
+        "news_pool": news_pool,
+        "events_pool": events_pool,
+        "eod_previous_summary": eod_previous_summary,
+        "config": config,
+    }
