@@ -48,3 +48,10 @@ def test_wave_symbols():
     assert "BZ=F" in CRITICAL_SYMBOLS
     assert "GC=F" in CRITICAL_SYMBOLS
     assert "VNM" in CRITICAL_SYMBOLS
+
+
+def test_parse_chart_meta_zero_chart_previous_close_not_bypassed():
+    # Nullish (not falsy) aliasing: an explicit 0.0 chartPreviousClose must win.
+    p = parse_chart_meta({"regularMarketPrice": 1.0, "chartPreviousClose": 0.0, "previousClose": 8.0}, "X")
+    assert p["previous_close"] == 0.0
+    assert p["change_value"] == 1.0 and p["change_percent"] is None  # no div-by-zero

@@ -37,15 +37,18 @@ def parse_chart_meta(meta: dict[str, Any], symbol: str) -> dict[str, Any]:
     """
     last_price: float | None = meta.get("regularMarketPrice")
 
-    # chartPreviousClose takes priority over previousClose (brief requirement)
-    previous_close: float | None = meta.get("chartPreviousClose") or meta.get("previousClose")
+    # chartPreviousClose takes priority over previousClose (nullish semantics:
+    # only fall back when absent/None — `or` would misroute a legitimate 0.0)
+    _cpc = meta.get("chartPreviousClose")
+    previous_close: float | None = _cpc if _cpc is not None else meta.get("previousClose")
 
-    # Compute change fields; both are None-safe
+    # Compute change fields; None-safe, and percent guards against a 0.0 close
     change_value: float | None = None
     change_percent: float | None = None
     if last_price is not None and previous_close is not None:
         change_value = last_price - previous_close
-        change_percent = (change_value / previous_close) * 100
+        if previous_close != 0:
+            change_percent = (change_value / previous_close) * 100
 
     # market_time: epoch seconds → ISO-8601 UTC string
     raw_time: int | None = meta.get("regularMarketTime")
