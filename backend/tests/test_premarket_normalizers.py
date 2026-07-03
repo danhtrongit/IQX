@@ -48,6 +48,36 @@ def test_news_window_filter_and_shape():
     assert set(out[0]) >= {"id", "title", "summary", "source", "published_at", "tickers", "sentiment", "url"}
 
 
+def test_news_naive_timestamps_are_ict_morning_news_survives():
+    """Vietcap update_date strings are NAIVE local ICT — they must be localized
+    as ICT, not UTC. A naive 05:30 today is inside the [prev 17:00 → today
+    06:30 ICT] window and MUST survive; treating it as UTC shifts it to 12:30
+    ICT and silently drops every 00:00–06:30 morning item in the 07:15 run.
+    """
+    ws = datetime(2026, 7, 2, 17, 0, tzinfo=_ICT)
+    we = datetime(2026, 7, 3, 6, 30, tzinfo=_ICT)
+    items = [
+        _news("Tin sáng sớm trong cửa sổ", "CafeF", "2026-07-03T05:30:00", id="morning"),
+        _news("Tin sau giờ mở cửa sổ", "CafeF", "2026-07-03T07:00:00", id="late"),
+    ]
+    out = normalize_news(items, window_start=ws, window_end=we)
+    assert [n["id"] for n in out] == ["morning"]
+
+
+def test_news_aware_timestamps_pass_through_unchanged():
+    """Timezone-aware update_date strings must NOT be re-localized."""
+    ws = datetime(2026, 7, 2, 17, 0, tzinfo=_ICT)
+    we = datetime(2026, 7, 3, 6, 30, tzinfo=_ICT)
+    items = [
+        # 22:30 UTC on 07-02 == 05:30 ICT on 07-03 → in window
+        _news("Aware trong cửa sổ", "CafeF", "2026-07-02T22:30:00+00:00", id="in"),
+        # 00:00 UTC on 07-03 == 07:00 ICT → out of window
+        _news("Aware ngoài cửa sổ", "CafeF", "2026-07-03T00:00:00+00:00", id="out"),
+    ]
+    out = normalize_news(items, window_start=ws, window_end=we)
+    assert [n["id"] for n in out] == ["in"]
+
+
 def test_news_dedup_keeps_higher_ranked_source():
     ws = datetime(2026, 7, 2, 17, 0, tzinfo=_ICT)
     we = datetime(2026, 7, 3, 6, 30, tzinfo=_ICT)

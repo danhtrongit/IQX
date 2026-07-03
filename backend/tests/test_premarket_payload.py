@@ -246,6 +246,102 @@ async def test_stale_vndx_vcb_also_fails_uses_stale_row(db_session):
     assert "global_markets" not in p["meta"]["missing_fields"]
 
 
+def _seed_daily_row():
+    from app.models.market_analysis import AnalysisHistory
+
+    return AnalysisHistory(
+        public_id="vnindex-2026-07-02",
+        session_date=dt.date(2026, 7, 2),
+        session_type="normal",
+        report_type="daily",
+        headline="VN-Index giữ vững 1.300 — dòng tiền lan tỏa",
+        tagline={"text": "TÍCH CỰC"},
+        paragraphs={},
+        scenarios=[{"condition": "nếu giữ 1.295", "outcome": "hồi phục"}],
+        watchlist=[{"key": "VN-Index", "reason": "ngưỡng 1.295"}],
+        is_published=True,
+    )
+
+
+class _StrictConcurrencySession:
+    """Real-session proxy mimicking the production driver contract.
+
+    asyncpg/Postgres (unlike test aiosqlite, which queues cursor ops through a
+    worker thread) forbids concurrent operations on one AsyncSession — that is
+    exactly what SQLAlchemy raises in production. Queries are still executed
+    for real against the wrapped session; overlapping `execute` calls raise.
+    """
+
+    def __init__(self, inner):
+        self._inner = inner
+        self._in_flight = False
+
+    def __getattr__(self, name):
+        return getattr(self._inner, name)
+
+    async def execute(self, *args, **kwargs):
+        import asyncio as _asyncio
+
+        if self._in_flight:
+            raise RuntimeError(
+                "concurrent operations are not permitted on one AsyncSession"
+            )
+        self._in_flight = True
+        try:
+            await _asyncio.sleep(0)  # deterministic interleave point (real drivers yield on IO)
+            return await self._inner.execute(*args, **kwargs)
+        finally:
+            self._in_flight = False
+
+
+@pytest.mark.asyncio
+async def test_eod_previous_summary_loads_with_shared_session(db_session):
+    """eod_previous_summary must be populated from a REAL session.
+
+    Regression: `_load_previous_eod(db)` used to run inside asyncio.gather
+    together with `load_latest_snapshot(db)` on the SAME AsyncSession —
+    forbidden by SQLAlchemy, the query raised on every production run and the
+    try/except silently returned None. Both DB queries are intentionally NOT
+    mocked here; only the external HTTP fetches are.
+    """
+    db_session.add(_seed_daily_row())
+    await db_session.commit()
+
+    with patch.object(PP, "fetch_news_list", new=AsyncMock(return_value=([], 0, "u"))), \
+         patch.object(PP, "fetch_events_calendar", new=AsyncMock(return_value=([], "u"))), \
+         patch.object(PP, "fetch_fx", new=AsyncMock(return_value=([], "u"))):
+        p = await PP.build_premarket_payload(db_session)
+
+    eod = p["eod_previous_summary"]
+    assert eod is not None
+    assert eod["headline"] == "VN-Index giữ vững 1.300 — dòng tiền lan tỏa"
+    assert eod["session_date"] == "2026-07-02"
+    assert eod["scenarios"] == [{"condition": "nếu giữ 1.295", "outcome": "hồi phục"}]
+
+
+@pytest.mark.asyncio
+async def test_db_queries_are_sequential_under_strict_session(db_session):
+    """The two DB queries (snapshot + previous EOD) must never overlap.
+
+    Uses the strict proxy above to enforce the production driver contract; on
+    the old gather-based code the previous-EOD query overlapped the snapshot
+    query, raised, and eod_previous_summary silently degraded to None.
+    """
+    db_session.add(_seed_daily_row())
+    await db_session.commit()
+
+    strict_db = _StrictConcurrencySession(db_session)
+
+    with patch.object(PP, "fetch_news_list", new=AsyncMock(return_value=([], 0, "u"))), \
+         patch.object(PP, "fetch_events_calendar", new=AsyncMock(return_value=([], "u"))), \
+         patch.object(PP, "fetch_fx", new=AsyncMock(return_value=([], "u"))):
+        p = await PP.build_premarket_payload(strict_db)
+
+    eod = p["eod_previous_summary"]
+    assert eod is not None
+    assert eod["headline"] == "VN-Index giữ vững 1.300 — dòng tiền lan tỏa"
+
+
 @pytest.mark.asyncio
 async def test_decimal_prices_converted_to_float(db_session):
     """Decimal values from the ORM must be converted to float in cells."""

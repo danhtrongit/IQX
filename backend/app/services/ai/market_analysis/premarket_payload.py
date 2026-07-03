@@ -91,15 +91,18 @@ _DEFAULT_EVENT_TYPE = "other"
 def _parse_dt(ts: str) -> datetime | None:
     """Parse an ISO 8601 datetime string to an aware datetime.
 
-    If the string has no timezone info, it is assumed to be UTC.
-    Returns None on parse failure.
+    Vietcap news `update_date` strings are NAIVE local ICT timestamps, so a
+    naive string is localized as ICT (UTC+7). Assuming UTC here would shift
+    every naive timestamp +7h at comparison time and silently drop all
+    00:00–06:30 ICT morning news from the pre-market window. Aware strings
+    are passed through unchanged. Returns None on parse failure.
     """
     if not ts:
         return None
     try:
         dt = datetime.fromisoformat(ts)
         if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
+            dt = dt.replace(tzinfo=ICT)
         return dt
     except (ValueError, TypeError):
         return None
@@ -520,28 +523,31 @@ async def build_premarket_payload(db: AsyncSession) -> dict[str, Any]:
     window_start_str = prev_td.isoformat()
     window_end_str   = today_str
 
-    # ── Fetch all sources concurrently ────────────────────────────────────────
+    # ── Fetch sources ─────────────────────────────────────────────────────────
+    # The two DB queries (snapshot + previous EOD) run SEQUENTIALLY: they share
+    # the one AsyncSession and SQLAlchemy forbids concurrent operations on a
+    # single session — running them inside the gather crashed _load_previous_eod
+    # on every run, silently nulling eod_previous_summary. Only the external
+    # HTTP fetches are gathered concurrently.
+    snapshot_rows = await _safe(load_latest_snapshot(db), "snapshot")
+
     (
-        snapshot_rows,
         news_raw,
         events_raw,
         vcb_fx,
-        eod_prev,
     ) = await asyncio.gather(
-        _safe(load_latest_snapshot(db), "snapshot"),
         _safe(fetch_news_list("business", page=1, page_size=20,
                               update_from=window_start_str, update_to=window_end_str),
               "news"),
         _safe(fetch_events_calendar(start=today_str, end=today_str), "events"),
         _safe(fetch_fx(today_str), "vcb_fx"),
-        _load_previous_eod(db),
         return_exceptions=False,
     )
 
-    # load_latest_snapshot is not a coroutine that returns (data, url); _safe
-    # unwraps tuples — but load_latest_snapshot returns a plain list, so _safe
-    # will return it directly.  However we need to call it as a coroutine:
-    # The _safe wrapper above already handled it via `load_latest_snapshot(db)`.
+    eod_prev = await _load_previous_eod(db)
+
+    # _safe unwraps (data, url) tuples; load_latest_snapshot returns a plain
+    # list, so it passes through directly (or None on failure).
     if snapshot_rows is None:
         snapshot_rows = []
 
