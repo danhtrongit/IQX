@@ -132,6 +132,9 @@ class Settings(BaseSettings):
     MIDDAY_ANALYSIS_CRON_HOUR: int = 11    # ICT
     MIDDAY_ANALYSIS_CRON_MINUTE: int = 30
 
+    # ── International Market Data Snapshots ──────────
+    INTL_DATA_ENABLED: bool = False  # master switch for the 3-wave pre-market snapshot jobs
+
     # ── Lessons / Media ───────────────────────────────
     LESSON_MEDIA_DIR: str = "./media"
     LESSON_MAX_PDF_MB: int = 50

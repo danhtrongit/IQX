@@ -102,6 +102,46 @@ async def startup() -> None:
             max_instances=1, coalesce=True, replace_existing=True,
         )
 
+    if getattr(settings, "INTL_DATA_ENABLED", False):
+        from .intl_snapshot_job import run_intl_wave1, run_intl_wave2, run_intl_wave3
+
+        _scheduler.add_job(
+            run_intl_wave1,
+            CronTrigger(
+                day_of_week="mon-fri",
+                hour=6,
+                minute=0,
+                timezone="Asia/Ho_Chi_Minh",
+            ),
+            id="intl_snapshot_wave1",
+            name="International snapshot wave 1 — ALL_SYMBOLS (06:00 ICT)",
+            max_instances=1, coalesce=True, replace_existing=True,
+        )
+        _scheduler.add_job(
+            run_intl_wave2,
+            CronTrigger(
+                day_of_week="mon-fri",
+                hour=7,
+                minute=5,
+                timezone="Asia/Ho_Chi_Minh",
+            ),
+            id="intl_snapshot_wave2",
+            name="International snapshot wave 2 — WAVE2_SYMBOLS (07:05 ICT)",
+            max_instances=1, coalesce=True, replace_existing=True,
+        )
+        _scheduler.add_job(
+            run_intl_wave3,
+            CronTrigger(
+                day_of_week="mon-fri",
+                hour=8,
+                minute=30,
+                timezone="Asia/Ho_Chi_Minh",
+            ),
+            id="intl_snapshot_wave3",
+            name="International snapshot wave 3 — WAVE3_SYMBOLS (08:30 ICT)",
+            max_instances=1, coalesce=True, replace_existing=True,
+        )
+
     _scheduler.start()
     logger.info("Scheduler started with %d jobs", len(_scheduler.get_jobs()))
 
