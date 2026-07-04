@@ -1,4 +1,4 @@
-export type HomeTab = "order" | "watchlist" | "news" | "phan-tich" | "patterns"
+export type HomeTab = "order" | "watchlist" | "news" | "phan-tich" | "bctc" | "patterns"
 
 export interface HomeTabMeta {
   id: HomeTab
@@ -12,5 +12,6 @@ export const HOME_TABS: HomeTabMeta[] = [
   { id: "watchlist", label: "Danh mục" },
   { id: "news", label: "Tin tức" },
   { id: "phan-tich", label: "Phân tích" },
+  { id: "bctc", label: "BCTC" },
   { id: "patterns", label: "Mẫu nến" },
 ]

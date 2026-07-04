@@ -4,10 +4,10 @@ import { describe, it, expect, vi } from "vitest"
 import { HomeIconRail } from "./HomeIconRail"
 
 describe("HomeIconRail", () => {
-  it("renders the 5 tab labels and fires onSelect", () => {
+  it("renders the 6 tab labels and fires onSelect", () => {
     const onSelect = vi.fn()
     render(<HomeIconRail active="order" onSelect={onSelect} isIndex={false} />)
-    for (const label of ["Đặt lệnh", "Danh mục", "Tin tức", "Phân tích", "Mẫu nến"]) {
+    for (const label of ["Đặt lệnh", "Danh mục", "Tin tức", "Phân tích", "BCTC", "Mẫu nến"]) {
       expect(screen.getByText(label)).toBeInTheDocument()
     }
     fireEvent.click(screen.getByRole("button", { name: /Tin tức/ }))

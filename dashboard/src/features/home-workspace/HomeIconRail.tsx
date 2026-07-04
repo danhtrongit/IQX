@@ -1,5 +1,5 @@
 import type { ComponentType } from "react"
-import { IconEye } from "@arco-design/web-react/icon"
+import { IconEye, IconFile } from "@arco-design/web-react/icon"
 import { IconBulb } from "@/shared/icons"
 import { IconShoppingCart, IconNewspaper, IconCandlestick } from "@/features/dashboard/icons"
 import { cn } from "@/shared/lib/cn"
@@ -10,6 +10,7 @@ const ICONS: Record<HomeTab, ComponentType<{ className?: string }>> = {
   watchlist: IconEye,
   news: IconNewspaper,
   "phan-tich": IconBulb,
+  bctc: IconFile,
   patterns: IconCandlestick,
 }
 

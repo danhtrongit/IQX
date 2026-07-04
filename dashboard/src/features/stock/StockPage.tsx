@@ -1,5 +1,5 @@
 import { useCallback, useState, type ComponentType } from "react"
-import { useNavigate, useParams } from "react-router"
+import { useNavigate, useParams, useSearchParams } from "react-router"
 import { Modal } from "@arco-design/web-react"
 import { IconInfoCircle } from "@arco-design/web-react/icon"
 import { SymbolProvider, useSymbol } from "@/shared/contexts/symbol-context"
@@ -43,7 +43,11 @@ function StockTerminal() {
   const { theme } = useTheme()
   const navigate = useNavigate()
 
-  const [activeTab, setActiveTab] = useState<StockTab>("chart")
+  const [searchParams] = useSearchParams()
+  const [activeTab, setActiveTab] = useState<StockTab>(() => {
+    const t = searchParams.get("tab")
+    return t === "financials" || t === "overview" || t === "orderbook" ? t : "chart"
+  })
   const [activeMarkId, setActiveMarkId] = useState<string | number | null>(null)
   const [aiInsightOpen, setAiInsightOpen] = useState(false)
 

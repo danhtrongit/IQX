@@ -6,7 +6,7 @@ import { PremiumGate } from "@/features/premium"
 import { isIndexSymbol } from "@/features/stock"
 import { useSymbol } from "@/shared/contexts/symbol-context"
 import { SymbolContextHeader } from "./SymbolContextHeader"
-import { PhanTichLauncher, SelectStockEmptyState } from "./PhanTichLauncher"
+import { BctcLauncher, PhanTichLauncher, SelectStockEmptyState } from "./PhanTichLauncher"
 import type { HomeTab } from "./types"
 
 function TabBody({ active }: { active: HomeTab }) {
@@ -20,6 +20,8 @@ function TabBody({ active }: { active: HomeTab }) {
       return <NewsFeedPanel />
     case "phan-tich":
       return <PhanTichLauncher />
+    case "bctc":
+      return <BctcLauncher />
     case "patterns":
       if (isIndexSymbol(symbol)) return <SelectStockEmptyState what="nhận diện mẫu nến" />
       return (

@@ -44,3 +44,29 @@ export function PhanTichLauncher() {
     </div>
   )
 }
+
+export function BctcLauncher() {
+  const { symbol } = useSymbol()
+  const navigate = useNavigate()
+
+  if (isIndexSymbol(symbol)) {
+    return <SelectStockEmptyState what="phân tích BCTC" />
+  }
+
+  return (
+    <div className="px-3 py-4">
+      <div className="rounded-lg border border-[var(--color-border-2)] bg-[var(--color-bg-1)] p-4">
+        <div className="mb-1 inline-flex items-center gap-1.5 rounded bg-[var(--color-primary-light-1)] px-2 py-0.5 text-[10px] font-semibold text-[rgb(var(--primary-6))]">
+          📋 Phân tích BCTC bởi IQX AI
+        </div>
+        <h4 className="mt-1 text-sm font-bold text-[var(--color-text-1)]">Báo cáo tài chính {symbol}</h4>
+        <p className="mt-1 text-xs text-[var(--color-text-3)]">
+          Common-size, DuPont, chất lượng dòng tiền, Z-Score/F-Score và định giá — trên tab Tài chính của trang mã.
+        </p>
+        <Button type="primary" long className="mt-3" onClick={() => navigate(`/co-phieu/${symbol.toUpperCase()}?tab=financials`)}>
+          Mở phân tích BCTC
+        </Button>
+      </div>
+    </div>
+  )
+}
