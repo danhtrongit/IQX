@@ -18,3 +18,8 @@ describe("getDefaultActivePeriod", () => {
   it("isTradingDay=false override → eod kể cả T2 sáng", () =>
     expect(getDefaultActivePeriod(at(8, 30), { isTradingDay: false })).toBe("eod"))
 })
+
+// override ngược: lịch giao dịch nói T7 là ngày GD (hiếm) → vẫn tính theo giờ
+it("isTradingDay=true override trên T7 → premarket theo giờ, không phải eod", () => {
+  expect(getDefaultActivePeriod(new Date(2026, 6, 4, 8, 30), { isTradingDay: true })).toBe("premarket")
+})
