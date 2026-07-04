@@ -2,15 +2,24 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import React from "react"
-import { describe, it, expect, vi } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 
 // ─── Cold-start midday payload (no prior EOD) ────────────────────────────────
 // AM tiers are real (am_session); frozen tiers come back "unavailable" with the
 // trend_20d / sectors_today keys ABSENT — exactly the shape that crashed
 // HealthLineChart / RotationChart before the data_state gate was added.
+// session_date matches local today so the stale-brief gate never fires in these
+// tests (they test frozen-tier rendering, not date-gating).
+function localTodayForFixture() {
+  const d = new Date()
+  const mm = String(d.getMonth() + 1).padStart(2, "0")
+  const dd = String(d.getDate()).padStart(2, "0")
+  return `${d.getFullYear()}-${mm}-${dd}`
+}
+
 const coldStart = {
   id: "m-cold",
-  session_date: "2026-07-02",
+  session_date: localTodayForFixture(),
   session_type: "midday",
   session_type_display: null,
   report_type: "midday",
@@ -43,6 +52,10 @@ vi.mock("@/shared/http/client", () => ({
   api: { get: () => ({ json: async () => h.payload }) },
 }))
 
+vi.mock("../daily/MarketDailyPage", () => ({
+  MarketDailyPage: () => <div data-testid="market-daily-page">MarketDailyPage</div>,
+}))
+
 import { MidDayView } from "./MidDayView"
 
 function renderView() {
@@ -53,6 +66,97 @@ function renderView() {
     </QueryClientProvider>,
   )
 }
+
+// ─── Stale-brief date-gate fixtures ──────────────────────────────────────────
+// All test times use fixed dates where the weekday/weekend status is certain:
+//   2026-07-06 (Monday, getDay()=1) — weekday test anchor
+//   2026-07-05 (Sunday, getDay()=0) — weekend test anchor
+// A brief from 2026-07-05 is "yesterday" relative to Monday 2026-07-06.
+const WEEKDAY_MON_0915 = new Date(2026, 6, 6, 9, 15, 0)  // Mon Jul 6 09:15
+const WEEKDAY_MON_1145 = new Date(2026, 6, 6, 11, 45, 0) // Mon Jul 6 11:45 (before 14:45)
+const SUNDAY_1000      = new Date(2026, 6, 5, 10, 0, 0)   // Sun Jul 5 10:00
+
+// Brief dated Sunday (yesterday relative to Monday; stale on Monday)
+const yesterdayBrief = {
+  ...coldStart,
+  id: "m-yesterday",
+  session_date: "2026-07-05", // Sunday — stale on Monday 2026-07-06
+}
+
+// Brief dated Monday (today relative to Monday anchor)
+const todayBrief = {
+  ...coldStart,
+  id: "m-today",
+  session_date: "2026-07-06", // Monday — matches WEEKDAY_MON_*
+}
+
+// ─── Finding 1: stale-brief date-gate tests ───────────────────────────────────
+
+describe("MidDayView — stale-brief date-gate", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it("weekday + yesterday's session_date → shows fallback notice, article NOT rendered", async () => {
+    vi.setSystemTime(WEEKDAY_MON_0915)
+    h.payload = yesterdayBrief
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    render(
+      <QueryClientProvider client={qc}>
+        <MidDayView />
+      </QueryClientProvider>,
+    )
+    // Fallback notice must appear
+    await waitFor(() =>
+      expect(screen.getByText(/Bản phiên sáng đang xử lý/)).toBeInTheDocument(),
+    )
+    // MarketDailyPage fallback rendered
+    expect(screen.getByTestId("market-daily-page")).toBeInTheDocument()
+    // Article badge must NOT appear
+    expect(screen.queryByText(/PHIÊN SÁNG/)).not.toBeInTheDocument()
+  })
+
+  it("weekend + stale session_date → article IS rendered, countdown NOT rendered", async () => {
+    // Sunday July 5; brief is from Saturday July 4 (≠ Sunday → stale but weekend → show)
+    vi.setSystemTime(SUNDAY_1000)
+    h.payload = {
+      ...coldStart,
+      id: "m-sat-brief",
+      session_date: "2026-07-04", // Saturday — ≠ Sunday 2026-07-05, but weekend → show
+    }
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    render(
+      <QueryClientProvider client={qc}>
+        <MidDayView />
+      </QueryClientProvider>,
+    )
+    // Article renders (stale display on weekend)
+    await waitFor(() => expect(screen.getByText(/PHIÊN SÁNG/)).toBeInTheDocument())
+    // Countdown must NOT appear (data.session_date ≠ localTodayIso)
+    expect(screen.queryByLabelText(/đến 14:45/)).not.toBeInTheDocument()
+  })
+
+  it("weekday + today's session_date → article + countdown rendered (regression guard)", async () => {
+    // Monday Jul 6 at 11:45 — countdown to 14:45 is still in the future
+    vi.setSystemTime(WEEKDAY_MON_1145)
+    h.payload = todayBrief // session_date "2026-07-06" = today
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    render(
+      <QueryClientProvider client={qc}>
+        <MidDayView />
+      </QueryClientProvider>,
+    )
+    // Article renders
+    await waitFor(() => expect(screen.getByText(/PHIÊN SÁNG/)).toBeInTheDocument())
+    // Countdown pill must be present
+    await waitFor(() => expect(screen.getByLabelText(/đến 14:45/)).toBeInTheDocument())
+    // No fallback
+    expect(screen.queryByTestId("market-daily-page")).not.toBeInTheDocument()
+  })
+})
 
 describe("MidDayView cold-start", () => {
   it("renders without crashing and skips the frozen health tier when data_state is unavailable", async () => {

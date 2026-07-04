@@ -10,6 +10,7 @@ import { Spin } from "@arco-design/web-react"
 import { sanitizeInline } from "@/shared/utils/sanitize-inline"
 import { MarketDailyPage } from "../daily/MarketDailyPage"
 import { usePreMarketAnalysis } from "./usePreMarketAnalysis"
+import { localTodayIso } from "../home-analysis/localDate"
 import type { WorldCell, ResolvedEvent } from "./types"
 import "./premarket.css"
 
@@ -256,6 +257,18 @@ function SectionTitle({ label }: { label: string }) {
 export function PreMarketView() {
   const { data, isLoading } = usePreMarketAnalysis()
 
+  // ─── Stale-brief gate ─────────────────────────────────────────────────────
+  // Backend always returns the LATEST row (200), so `data` is truthy even when it
+  // belongs to yesterday. On a weekday, yesterday's brief must NOT be shown as
+  // live content — fall through to the same "processing" notice + EOD fallback.
+  // On a weekend (getDay 0|6) we intentionally show the previous week's brief.
+  const isWeekend = [0, 6].includes(new Date().getDay())
+  const isDataForToday = !!data && data.session_date === localTodayIso()
+  const isStaleOnWeekday = !!data && !isDataForToday && !isWeekend
+
+  // Belt-and-suspenders: only show ATO countdown when brief is today's
+  const showAtoCountdown = isDataForToday
+
   // Loading spinner (first load only)
   if (isLoading && !data) {
     return (
@@ -265,8 +278,8 @@ export function PreMarketView() {
     )
   }
 
-  // No data → EOD fallback
-  if (!data) {
+  // No data OR stale brief on a weekday → EOD fallback
+  if (!data || isStaleOnWeekday) {
     return (
       <div>
         <div
@@ -380,8 +393,8 @@ export function PreMarketView() {
         </section>
       )}
 
-      {/* ── ATO Countdown ── */}
-      <AtoCountdown />
+      {/* ── ATO Countdown — only for today's brief ── */}
+      {showAtoCountdown && <AtoCountdown />}
     </div>
   )
 }

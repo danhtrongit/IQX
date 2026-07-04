@@ -28,6 +28,7 @@ import { RotationChart } from "../daily/charts/RotationChart"
 import { MidDayArticle } from "./MidDayArticle"
 import { MidDayPulseBar } from "./MidDayPulseBar"
 import { MidDayTakeaway } from "./MidDayTakeaway"
+import { localTodayIso } from "../home-analysis/localDate"
 import type { MidDayAnalysis } from "./types"
 
 // ─── Lunch window detection (11:30–13:00 local) ──────────────────────────────
@@ -90,8 +91,20 @@ export function MidDayView() {
     )
   }
 
+  // ─── Stale-brief gate ─────────────────────────────────────────────────────
+  // Backend always returns the LATEST row (200), so `data` is truthy even when it
+  // belongs to yesterday. On a weekday, yesterday's brief must NOT be shown as
+  // live content — fall through to the same "processing" notice + EOD fallback.
+  // On a weekend (getDay 0|6) we intentionally show the previous week's brief.
+  const isWeekend = [0, 6].includes(new Date().getDay())
+  const isDataForToday = !!data && data.session_date === localTodayIso()
+  const isStaleOnWeekday = !!data && !isDataForToday && !isWeekend
+
+  // Belt-and-suspenders: is the data actually for today (used to gate countdowns)
+  const showCountdown = isDataForToday
+
   // No data yet (midday_loading / backend still processing) → EOD fallback
-  if (!data) {
+  if (!data || isStaleOnWeekday) {
     return (
       <div>
         {/* Processing notice */}
@@ -129,7 +142,7 @@ export function MidDayView() {
       )}
 
       {/* ── Takeaway (kịch bản phiên chiều + watchlist) ── */}
-      <MidDayTakeaway data={data} />
+      <MidDayTakeaway data={data} showCountdown={showCountdown} />
 
       {/* ── Cấu trúc phiên (Breadth + Contribution) ──
           Per-card data_state gate: a degraded block arrives as

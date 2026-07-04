@@ -6,9 +6,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 
 // ─── Test fixture ─────────────────────────────────────────────────────────────
 // 2 world cells (one null/stale), 2 news, 1 event, 3 watchlist items
+// session_date "2026-07-03" is used together with fake timers set to that date
+// so the stale-brief gate (session_date === localTodayIso) evaluates correctly.
+const FIXTURE_DATE = "2026-07-03" // Thursday — a real weekday
 const fixture = {
   id: "pm-test-1",
-  session_date: "2026-07-03",
+  session_date: FIXTURE_DATE,
   report_type: "premarket" as const,
   headline: "Thị trường toàn cầu ổn định — VN-Index có thể mở cửa tích cực",
   tagline: { text: "Thận trọng, chờ xác nhận" },
@@ -108,7 +111,18 @@ function renderView() {
 }
 
 // ─── Test 1: with data ────────────────────────────────────────────────────────
+// Pin system time to the fixture date (2026-07-03) so session_date === localTodayIso()
+// and the ATO countdown is visible (before 09:00).
 describe("PreMarketView — with data", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    // Thursday July 3 07:30 — fixture date matches today, countdown is before 09:00
+    vi.setSystemTime(new Date(2026, 6, 3, 7, 30, 0))
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it("renders SÁNG NAY badge, a null/stale cell as '—', news insight, impact chip, and countdown", async () => {
     h.payload = fixture
     renderView()
@@ -200,5 +214,69 @@ describe("PreMarketView — no data (EOD fallback)", () => {
     expect(
       screen.getByText(/Bản trước phiên đang xử lý — hiển thị bản cuối ngày hôm trước\./),
     ).toBeInTheDocument()
+  })
+})
+
+// ─── Test 3 (Finding 1): stale-brief date-gate for PreMarketView ──────────────
+// Weekday anchor: Monday July 6, 2026 (getDay()=1).
+// Weekend anchor: Sunday July 5, 2026 (getDay()=0).
+// yesterdayFixture.session_date = "2026-07-05" (Sunday) — stale when system=Monday.
+// todayFixture.session_date     = "2026-07-06" (Monday) — matches system=Monday.
+const MON_JUL6_0730 = new Date(2026, 6, 6, 7, 30, 0) // Monday Jul 6
+const SUN_JUL5_0800 = new Date(2026, 6, 5, 8, 0, 0)  // Sunday Jul 5
+
+const yesterdayFixture = {
+  ...fixture,
+  id: "pm-yesterday",
+  session_date: "2026-07-05", // Sunday — stale on Monday
+}
+
+// Today's fixture — session_date matches Monday 2026-07-06
+const todayFixture = {
+  ...fixture,
+  id: "pm-today",
+  session_date: "2026-07-06",
+}
+
+describe("PreMarketView — stale-brief date-gate", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it("weekday + yesterday's session_date → shows fallback notice, article NOT rendered", async () => {
+    vi.setSystemTime(MON_JUL6_0730) // Monday Jul 6
+    h.payload = yesterdayFixture    // session_date "2026-07-05" ≠ "2026-07-06"
+    renderView()
+
+    await waitFor(() =>
+      expect(screen.getByText(/Bản trước phiên đang xử lý — hiển thị bản cuối ngày hôm trước\./)).toBeInTheDocument(),
+    )
+    expect(screen.getByTestId("market-daily-page")).toBeInTheDocument()
+    // Article badge must NOT appear
+    expect(screen.queryByText(/SÁNG NAY/)).not.toBeInTheDocument()
+  })
+
+  it("weekend + stale session_date → article IS rendered, ATO countdown NOT rendered", async () => {
+    vi.setSystemTime(SUN_JUL5_0800) // Sunday Jul 5
+    // Brief is from Saturday July 4 — stale vs Sunday but weekend → show
+    h.payload = { ...fixture, id: "pm-sat", session_date: "2026-07-04" }
+    renderView()
+
+    await waitFor(() => expect(screen.getByText(/SÁNG NAY/)).toBeInTheDocument())
+    // ATO countdown must NOT appear (session_date "2026-07-04" ≠ today "2026-07-05")
+    expect(screen.queryByTestId("ato-countdown")).not.toBeInTheDocument()
+  })
+
+  it("weekday + today's session_date → article + ATO countdown rendered (regression guard)", async () => {
+    vi.setSystemTime(MON_JUL6_0730) // Monday Jul 6 07:30 — before 09:00, countdown shows
+    h.payload = todayFixture         // session_date "2026-07-06" = today
+    renderView()
+
+    await waitFor(() => expect(screen.getByText(/SÁNG NAY/)).toBeInTheDocument())
+    expect(screen.getByTestId("ato-countdown")).toBeInTheDocument()
+    expect(screen.queryByTestId("market-daily-page")).not.toBeInTheDocument()
   })
 })

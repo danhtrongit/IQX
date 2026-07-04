@@ -138,7 +138,14 @@ function WatchlistItem({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function MidDayTakeaway({ data }: { data: MidDayAnalysis }) {
+export function MidDayTakeaway({
+  data,
+  showCountdown = true,
+}: {
+  data: MidDayAnalysis
+  /** Gate the 14:45 countdown to today's brief only. Defaults true for backwards-compat. */
+  showCountdown?: boolean
+}) {
   const { scenarios, watchlist } = data
   const displayScenarios = scenarios.slice(0, 3)
   const displayWatchlist = watchlist.slice(0, 5)
@@ -166,7 +173,7 @@ export function MidDayTakeaway({ data }: { data: MidDayAnalysis }) {
         {/* ── Left: Scenarios ── */}
         <div>
           <BlockTitle icon="🎯" label="Kịch bản phiên chiều">
-            <CountdownPill />
+            {showCountdown && <CountdownPill />}
           </BlockTitle>
           {displayScenarios.length === 0 ? (
             <p className="text-[12px] text-[var(--color-text-3)] italic">Chưa có kịch bản.</p>

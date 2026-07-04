@@ -8,19 +8,13 @@ import { getDefaultActivePeriod, type SessionPeriod } from "./home-analysis/getD
 import { SessionMeta } from "./home-analysis/SessionMeta"
 import { SessionTabs } from "./home-analysis/SessionTabs"
 import { formatSessionDate } from "./home-analysis/formatSessionDate"
+import { localTodayIso } from "./home-analysis/localDate"
 import { useDailyMarketAnalysis } from "./daily/useDailyMarketAnalysis"
 import { useMidDayAnalysis } from "./midday/useMidDayAnalysis"
 import { usePreMarketAnalysis } from "./premarket/usePreMarketAnalysis"
 import { MidDayView } from "./midday/MidDayView"
 import { MarketDailyPage } from "./daily/MarketDailyPage"
 import { PreMarketView } from "./premarket/PreMarketView"
-
-function localTodayIso(): string {
-  const d = new Date()
-  const mm = String(d.getMonth() + 1).padStart(2, "0")
-  const dd = String(d.getDate()).padStart(2, "0")
-  return `${d.getFullYear()}-${mm}-${dd}`
-}
 
 export function HomeMarketView() {
   const [active, setActive] = useState<SessionPeriod>(() => getDefaultActivePeriod(new Date()))
