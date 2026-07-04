@@ -47,6 +47,7 @@ export interface MidDayPulse {
 export interface MidDayAnalysis {
   id: string
   session_date: string
+  generated_at: string
   session_type: string
   session_type_display: string | null
   report_type: "midday"

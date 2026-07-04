@@ -45,6 +45,7 @@ export interface WorldCell {
 export interface PreMarketAnalysis {
   id: string
   session_date: string
+  generated_at: string
   report_type: "premarket"
   headline: string
   tagline: { text: string }

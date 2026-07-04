@@ -67,6 +67,7 @@ export interface MarketCharts {
 export interface DailyAnalysis {
   id: string
   session_date: string
+  generated_at: string
   session_type: string
   session_type_display: string | null
   headline: string

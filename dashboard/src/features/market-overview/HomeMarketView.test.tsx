@@ -1,46 +1,69 @@
-// HomeMarketView.test.tsx
-import { render, screen } from "@testing-library/react"
 import React from "react"
-import { describe, it, expect, vi } from "vitest"
-
-// Mutable mode so each test picks the display mode without touching the wall
-// clock. Only DIRECT children are mocked (never transitive grandchildren).
-const mocks = vi.hoisted(() => ({ mode: "midday" }))
-vi.mock("./midday/getDisplayMode", () => ({ getDisplayMode: () => mocks.mode }))
-vi.mock("./midday/MidDayView", () => ({ MidDayView: () => <div>MIDDAY_VIEW</div> }))
-vi.mock("./daily/MarketDailyPage", () => ({ MarketDailyPage: () => <div>EOD_PAGE</div> }))
-vi.mock("./premarket/PreMarketView", () => ({ PreMarketView: () => <div>PREMARKET_VIEW</div> }))
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest"
+import { render, screen, fireEvent } from "@testing-library/react"
 import { HomeMarketView } from "./HomeMarketView"
 
-describe("HomeMarketView", () => {
-  it("renders MidDayView in midday mode", () => {
-    mocks.mode = "midday"
-    render(<HomeMarketView />)
-    expect(screen.getByText("MIDDAY_VIEW")).toBeInTheDocument()
-    expect(screen.queryByText("EOD_PAGE")).not.toBeInTheDocument()
-    expect(screen.queryByText("PREMARKET_VIEW")).not.toBeInTheDocument()
-  })
+vi.mock("./daily/MarketDailyPage", () => ({ MarketDailyPage: () => <div data-testid="eod-view" /> }))
+vi.mock("./midday/MidDayView", () => ({ MidDayView: () => <div data-testid="midday-view" /> }))
+vi.mock("./premarket/PreMarketView", () => ({ PreMarketView: () => <div data-testid="premarket-view" /> }))
 
-  it("renders MidDayView in midday_loading mode", () => {
-    mocks.mode = "midday_loading"
-    render(<HomeMarketView />)
-    expect(screen.getByText("MIDDAY_VIEW")).toBeInTheDocument()
-    expect(screen.queryByText("PREMARKET_VIEW")).not.toBeInTheDocument()
-  })
+const daily = vi.hoisted(() => ({ data: undefined as unknown }))
+const midday = vi.hoisted(() => ({ data: undefined as unknown }))
+const premarket = vi.hoisted(() => ({ data: undefined as unknown }))
+vi.mock("./daily/useDailyMarketAnalysis", () => ({ useDailyMarketAnalysis: () => daily }))
+vi.mock("./midday/useMidDayAnalysis", () => ({ useMidDayAnalysis: () => midday }))
+vi.mock("./premarket/usePreMarketAnalysis", () => ({ usePreMarketAnalysis: () => premarket }))
 
-  it("renders PreMarketView in premarket mode", () => {
-    mocks.mode = "premarket"
-    render(<HomeMarketView />)
-    expect(screen.getByText("PREMARKET_VIEW")).toBeInTheDocument()
-    expect(screen.queryByText("MIDDAY_VIEW")).not.toBeInTheDocument()
-    expect(screen.queryByText("EOD_PAGE")).not.toBeInTheDocument()
-  })
+beforeEach(() => {
+  daily.data = undefined
+  midday.data = undefined
+  premarket.data = undefined
+  vi.useFakeTimers({ shouldAdvanceTime: true })
+})
+afterEach(() => vi.useRealTimers())
 
-  it("renders MarketDailyPage in eod modes", () => {
-    mocks.mode = "eod_today"
+describe("HomeMarketView (session tabs)", () => {
+  it("20:00 T2 → tab Cuối phiên active, render EOD view", () => {
+    vi.setSystemTime(new Date(2026, 6, 6, 20, 0))
     render(<HomeMarketView />)
-    expect(screen.getByText("EOD_PAGE")).toBeInTheDocument()
-    expect(screen.queryByText("MIDDAY_VIEW")).not.toBeInTheDocument()
-    expect(screen.queryByText("PREMARKET_VIEW")).not.toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: /Cuối phiên/ })).toHaveAttribute("aria-selected", "true")
+    expect(screen.getByTestId("eod-view")).toBeInTheDocument()
+  })
+  it("08:30 T2 → tab Trước phiên active, render premarket view", () => {
+    vi.setSystemTime(new Date(2026, 6, 6, 8, 30))
+    render(<HomeMarketView />)
+    expect(screen.getByTestId("premarket-view")).toBeInTheDocument()
+  })
+  it("10:00 T7 → Cuối phiên active (cuối tuần)", () => {
+    vi.setSystemTime(new Date(2026, 6, 4, 10, 0))
+    render(<HomeMarketView />)
+    expect(screen.getByRole("tab", { name: /Cuối phiên/ })).toHaveAttribute("aria-selected", "true")
+  })
+  it("click tab khác đổi view, không auto-revert", () => {
+    vi.setSystemTime(new Date(2026, 6, 6, 20, 0))
+    render(<HomeMarketView />)
+    fireEvent.click(screen.getByRole("tab", { name: /Giữa phiên/ }))
+    expect(screen.getByTestId("midday-view")).toBeInTheDocument()
+    expect(screen.queryByTestId("eod-view")).not.toBeInTheDocument()
+  })
+  it("meta hiển thị ngày của brief đang xem", () => {
+    vi.setSystemTime(new Date(2026, 6, 6, 20, 0))
+    daily.data = { session_date: "2026-07-06", generated_at: "2026-07-06T16:30:00" }
+    render(<HomeMarketView />)
+    expect(screen.getByText("Thứ Hai, 06/07/2026")).toBeInTheDocument()
+  })
+  it("pill MỚI trên tab có generated_at mới nhất hôm nay", () => {
+    vi.setSystemTime(new Date(2026, 6, 6, 12, 0))
+    premarket.data = { session_date: "2026-07-06", generated_at: "2026-07-06T07:15:00" }
+    midday.data = { session_date: "2026-07-06", generated_at: "2026-07-06T11:30:00" }
+    render(<HomeMarketView />)
+    expect(screen.getByRole("tab", { name: /Giữa phiên/ })).toHaveTextContent("MỚI")
+    expect(screen.getByRole("tab", { name: /Trước phiên/ })).not.toHaveTextContent("MỚI")
+  })
+  it("brief cũ (không phải hôm nay) → không MỚI", () => {
+    vi.setSystemTime(new Date(2026, 6, 6, 12, 0))
+    midday.data = { session_date: "2026-07-03", generated_at: "2026-07-03T11:30:00" }
+    render(<HomeMarketView />)
+    expect(screen.queryByText("MỚI")).not.toBeInTheDocument()
   })
 })

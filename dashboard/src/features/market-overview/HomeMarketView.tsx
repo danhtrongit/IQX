@@ -1,38 +1,67 @@
 // ─── HomeMarketView ───────────────────────────────────────────────────────────
-// Computes display mode from wall clock (recomputed every 30 s via setInterval)
-// and switches between PreMarketView, MidDayView and MarketDailyPage.
-//
-// Display mode rules (from getDisplayMode):
-//   "eod_yesterday" → EOD (before 08:00)
-//   "premarket"      → pre-market brief (08:00–08:59)
-//   "midday_loading" → mid-day (backend still processing; MidDayView falls back)
-//   "midday"         → mid-day
-//   "eod_today"      → EOD (after 16:30)
+// 3 session tab (Trước/Giữa/Cuối phiên) luôn hiển thị; tab active mặc định theo
+// giờ truy cập (getDefaultActivePeriod, tính 1 lần khi mount — không auto đổi
+// tab trong phiên xem). Nội dung mỗi tab là view brief đầy đủ sẵn có.
 
-import { useState, useEffect } from "react"
-import { getDisplayMode } from "./midday/getDisplayMode"
+import { useMemo, useState } from "react"
+import { getDefaultActivePeriod, type SessionPeriod } from "./home-analysis/getDefaultActivePeriod"
+import { SessionMeta } from "./home-analysis/SessionMeta"
+import { SessionTabs } from "./home-analysis/SessionTabs"
+import { formatSessionDate } from "./home-analysis/formatSessionDate"
+import { useDailyMarketAnalysis } from "./daily/useDailyMarketAnalysis"
+import { useMidDayAnalysis } from "./midday/useMidDayAnalysis"
+import { usePreMarketAnalysis } from "./premarket/usePreMarketAnalysis"
 import { MidDayView } from "./midday/MidDayView"
 import { MarketDailyPage } from "./daily/MarketDailyPage"
 import { PreMarketView } from "./premarket/PreMarketView"
 
+function localTodayIso(): string {
+  const d = new Date()
+  const mm = String(d.getMonth() + 1).padStart(2, "0")
+  const dd = String(d.getDate()).padStart(2, "0")
+  return `${d.getFullYear()}-${mm}-${dd}`
+}
+
 export function HomeMarketView() {
-  const [mode, setMode] = useState(() => getDisplayMode(new Date()))
+  const [active, setActive] = useState<SessionPeriod>(() => getDefaultActivePeriod(new Date()))
 
-  // Recompute mode every 30 s so the view advances across daily boundaries
-  useEffect(() => {
-    const id = setInterval(() => {
-      setMode(getDisplayMode(new Date()))
-    }, 30_000)
-    return () => clearInterval(id)
-  }, [])
+  const { data: dailyData } = useDailyMarketAnalysis()
+  const { data: middayData } = useMidDayAnalysis()
+  const { data: premarketData } = usePreMarketAnalysis()
 
-  if (mode === "premarket") {
-    return <PreMarketView />
+  const briefs: Record<SessionPeriod, { session_date?: string; generated_at?: string } | undefined> = {
+    premarket: premarketData,
+    midday: middayData,
+    eod: dailyData,
   }
 
-  if (mode === "midday" || mode === "midday_loading") {
-    return <MidDayView />
-  }
+  // Pill MỚI: brief của HÔM NAY có generated_at lớn nhất
+  const newPeriod = useMemo<SessionPeriod | null>(() => {
+    const today = localTodayIso()
+    let best: SessionPeriod | null = null
+    let bestTs = ""
+    for (const p of ["premarket", "midday", "eod"] as const) {
+      const b = briefs[p]
+      if (b?.session_date === today && b.generated_at && b.generated_at > bestTs) {
+        best = p
+        bestTs = b.generated_at
+      }
+    }
+    return best
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [premarketData, middayData, dailyData])
 
-  return <MarketDailyPage />
+  const dateLabel = briefs[active]?.session_date
+    ? formatSessionDate(briefs[active]!.session_date!)
+    : null
+
+  return (
+    <div className="mx-auto w-full max-w-[980px] px-4 py-6 pb-20 lg:px-8">
+      <SessionMeta dateLabel={dateLabel} />
+      <SessionTabs active={active} onSelect={setActive} newPeriod={newPeriod} />
+      {active === "premarket" && <PreMarketView />}
+      {active === "midday" && <MidDayView />}
+      {active === "eod" && <MarketDailyPage />}
+    </div>
+  )
 }
