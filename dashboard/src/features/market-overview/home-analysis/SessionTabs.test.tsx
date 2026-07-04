@@ -55,4 +55,21 @@ describe("SessionTabs", () => {
     render(<SessionTabs active="eod" onSelect={() => {}} newPeriod={null} />)
     expect(screen.queryByText("MỚI")).not.toBeInTheDocument()
   })
+
+  // ─── Finding 2: mobile-overflow fix ─────────────────────────────────────────
+  it("tablist has overflow-x-auto class to prevent horizontal scroll on 360px phones", () => {
+    render(<SessionTabs active="midday" onSelect={() => {}} newPeriod={null} />)
+    const tablist = screen.getByRole("tablist")
+    expect(tablist).toHaveClass("overflow-x-auto")
+  })
+
+  it("time spans carry hidden sm:inline responsive classes to hide on small screens", () => {
+    render(<SessionTabs active="midday" onSelect={() => {}} newPeriod={null} />)
+    const timeSpans = screen.getAllByText(/^· \d{2}:\d{2}$/)
+    expect(timeSpans.length).toBe(3)
+    timeSpans.forEach(span => {
+      expect(span).toHaveClass("hidden")
+      expect(span).toHaveClass("sm:inline")
+    })
+  })
 })
