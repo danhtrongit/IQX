@@ -35,6 +35,9 @@ export function HomeMarketView() {
     eod: dailyData,
   }
 
+  // Cả 3 hook fetch eager (kể cả tab chưa mở): pill MỚI phải so sánh đủ 3 brief.
+  // Brief chưa publish → 404 → data undefined → view của tab đó render fallback
+  // "đang xử lý + bản cuối ngày hôm trước" — đó là degrade chủ đích, không phải lỗi.
   // Pill MỚI: brief của HÔM NAY có generated_at lớn nhất
   const newPeriod = useMemo<SessionPeriod | null>(() => {
     const today = localTodayIso()

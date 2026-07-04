@@ -10,6 +10,7 @@ import type { MidDayAnalysis } from "./types"
 const DATA: MidDayAnalysis = {
   id: "test-1",
   session_date: "2026-07-02",
+  generated_at: "2026-07-02T11:30:00",
   session_type: "midday",
   session_type_display: null,
   report_type: "midday",

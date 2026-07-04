@@ -12,6 +12,7 @@ vi.mock("./useDailyMarketAnalysis", () => ({
 const fixture: DailyAnalysis = {
   id: "test-id-1",
   session_date: "2026-06-20",
+  generated_at: "2026-06-20T16:30:00",
   session_type: "regular",
   session_type_display: "Phiên thường",
   headline: "VN-Index phục hồi sau nhịp điều chỉnh",
