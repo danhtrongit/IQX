@@ -426,3 +426,73 @@ async def test_today_snapshot_keeps_fresh_cells(db_session):
     assert cells["^GSPC"]["stale"] is False
     assert cells["^GSPC"]["value"] == 6124.85
     assert cells["GC=F"]["stale"] is True  # per-row stale flag passes through
+
+
+# ── News pagination: reach 17:00-prev-day regardless of run time ──────────────
+# Page 1 (newest-first) fills with intraday items on afternoon runs; the fetch
+# must page back until it passes the window start so overnight news still loads.
+
+def _raw_news(i: int, ts: str) -> dict:
+    return {"id": f"n{i}", "title": f"t{i}", "update_date": ts}
+
+
+def _page(n: int, ts: str, start: int = 0) -> list[dict]:
+    return [_raw_news(start + i, ts) for i in range(n)]
+
+
+_WS = dt.datetime(2026, 7, 2, 17, 0, tzinfo=PP.ICT)  # window start: 17:00 hôm trước
+
+
+@pytest.mark.asyncio
+async def test_news_paging_stops_after_reaching_window_start():
+    p1 = _page(50, "2026-07-03T10:00:00")                       # toàn tin trong phiên (mới hơn start)
+    p2 = _page(49, "2026-07-03T07:00:00") + [_raw_news(99, "2026-07-02T16:59:00")]  # chạm trước 17:00
+    p3 = _page(50, "2026-07-02T12:00:00")
+    m = AsyncMock(side_effect=[(p1, 300, "u"), (p2, 300, "u"), (p3, 300, "u")])
+    with patch.object(PP, "fetch_news_list", new=m):
+        items = await PP._fetch_news_window(_WS, "2026-07-02", "2026-07-03")
+    assert m.await_count == 2, "phải dừng ngay khi trang chứa tin cũ hơn window start"
+    assert len(items) == 100
+
+
+@pytest.mark.asyncio
+async def test_news_paging_single_call_when_page1_reaches_start():
+    p1 = _page(49, "2026-07-03T05:00:00") + [_raw_news(49, "2026-07-02T16:00:00")]
+    m = AsyncMock(return_value=(p1, 50, "u"))
+    with patch.object(PP, "fetch_news_list", new=m):
+        items = await PP._fetch_news_window(_WS, "2026-07-02", "2026-07-03")
+    assert m.await_count == 1
+    assert len(items) == 50
+
+
+@pytest.mark.asyncio
+async def test_news_paging_short_page_stops():
+    m = AsyncMock(return_value=(_page(3, "2026-07-03T10:00:00"), 3, "u"))
+    with patch.object(PP, "fetch_news_list", new=m):
+        items = await PP._fetch_news_window(_WS, "2026-07-02", "2026-07-03")
+    assert m.await_count == 1
+    assert len(items) == 3
+
+
+@pytest.mark.asyncio
+async def test_news_paging_caps_at_max_pages():
+    m = AsyncMock(return_value=(_page(50, "2026-07-03T10:00:00"), 10_000, "u"))
+    with patch.object(PP, "fetch_news_list", new=m):
+        items = await PP._fetch_news_window(_WS, "2026-07-02", "2026-07-03")
+    assert m.await_count == PP._NEWS_MAX_PAGES
+    assert len(items) == 50 * PP._NEWS_MAX_PAGES
+
+
+@pytest.mark.asyncio
+async def test_news_paging_page1_failure_returns_none():
+    m = AsyncMock(side_effect=Exception("network err"))
+    with patch.object(PP, "fetch_news_list", new=m):
+        assert await PP._fetch_news_window(_WS, "2026-07-02", "2026-07-03") is None
+
+
+@pytest.mark.asyncio
+async def test_news_paging_later_failure_returns_partial():
+    m = AsyncMock(side_effect=[(_page(50, "2026-07-03T10:00:00"), 300, "u"), Exception("boom")])
+    with patch.object(PP, "fetch_news_list", new=m):
+        items = await PP._fetch_news_window(_WS, "2026-07-02", "2026-07-03")
+    assert len(items) == 50

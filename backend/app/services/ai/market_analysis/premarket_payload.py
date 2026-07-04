@@ -299,6 +299,50 @@ async def _safe(coro: Any, label: str) -> Any:
         return None
 
 
+# ── Paged news fetch (reach 17:00 hôm trước bất kể giờ chạy) ───────────────────
+
+_NEWS_PAGE_SIZE = 50
+_NEWS_MAX_PAGES = 4
+
+
+async def _fetch_news_window(
+    window_start: datetime, update_from: str, update_to: str
+) -> list[dict] | None:
+    """Fetch business-news pages (newest-first) until passing ``window_start``.
+
+    The news_info API filters by DATE only; an afternoon run finds page 1 full
+    of intraday items and the overnight window (17:00 prev day → 06:30) would
+    come back empty. Paging back until a page contains an item older than the
+    window start guarantees every in-window item has been seen — later pages
+    are older still. The 07:15 cron keeps its single-request behavior (page 1
+    already spans the window then).
+
+    Returns None only when the FIRST page fails (missing-source signal);
+    a later-page failure returns the partial accumulation.
+    """
+    all_items: list[dict] = []
+    for page in range(1, _NEWS_MAX_PAGES + 1):
+        res = await _safe(
+            fetch_news_list(
+                "business", page=page, page_size=_NEWS_PAGE_SIZE,
+                update_from=update_from, update_to=update_to,
+            ),
+            f"news_p{page}",
+        )
+        if res is None:
+            return None if page == 1 else all_items
+        items = res if isinstance(res, list) else []
+        if not items:
+            break
+        all_items.extend(items)
+        page_ts = [t for t in (_parse_dt(i.get("update_date") or "") for i in items) if t is not None]
+        if page_ts and min(page_ts) < window_start:
+            break  # đã đi qua đầu cửa sổ — các trang sau chỉ cũ hơn
+        if len(items) < _NEWS_PAGE_SIZE:
+            break  # trang cuối
+    return all_items
+
+
 # ── Previous EOD loader (reuses the midday query pattern) ─────────────────────
 
 
@@ -575,9 +619,7 @@ async def build_premarket_payload(db: AsyncSession) -> dict[str, Any]:
         events_raw,
         vcb_fx,
     ) = await asyncio.gather(
-        _safe(fetch_news_list("business", page=1, page_size=20,
-                              update_from=window_start_str, update_to=window_end_str),
-              "news"),
+        _fetch_news_window(window_start, window_start_str, window_end_str),
         _safe(fetch_events_calendar(start=today_str, end=today_str), "events"),
         _safe(fetch_fx(today_str), "vcb_fx"),
         return_exceptions=False,
