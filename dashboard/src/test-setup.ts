@@ -1,8 +1,8 @@
 import "@testing-library/jest-dom"
 
-// jsdom in this project's config does NOT provide localStorage; tests that use it
-// (e.g. useInitialSymbol) need this guarded polyfill. Verified: removing it makes
-// those tests error at setup. The guard means it only activates when truly absent.
+// jsdom in this project's config does NOT provide localStorage; tests that read or
+// write it need this guarded polyfill. Verified: removing it makes those tests error
+// at setup. The guard means it only activates when truly absent.
 if (typeof localStorage === "undefined") {
   Object.defineProperty(window, "localStorage", {
     value: (() => {
