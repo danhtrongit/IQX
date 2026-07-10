@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { HomeMarketView } from "@/features/market-overview/HomeMarketView"
 import { HomeAnalysisRail, type HomeView } from "./HomeAnalysisRail"
 import { StockAnalysisView } from "./StockAnalysisView"
@@ -8,14 +8,18 @@ import { useMediaQuery } from "./useMediaQuery"
 export function HomeWorkspace() {
   const [active, setActive] = useState<HomeView>("market")
   const isDesktop = useMediaQuery("(min-width: 1024px)")
+  const contentRef = useRef<HTMLDivElement>(null)
 
   const select = (v: HomeView) => {
     setActive(v)
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" })
+    // The window never scrolls (app shell is h-svh) — reset the real scrollers instead:
+    // desktop = this content div itself; mobile = the shell's ancestor <main>.
+    contentRef.current?.scrollTo({ top: 0, behavior: "smooth" })
+    contentRef.current?.closest("main")?.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   const content = (
-    <div className="min-h-0 overflow-y-auto">
+    <div ref={contentRef} className="min-h-0 overflow-y-auto">
       {active === "market" && <HomeMarketView />}
       {active === "stock" && <StockAnalysisView />}
       {active === "financial" && <FinancialAnalysisView />}
@@ -32,7 +36,7 @@ export function HomeWorkspace() {
   }
 
   return (
-    <div className="h-full pb-16">
+    <div className="h-full">
       {content}
       <HomeAnalysisRail active={active} onSelect={select} variant="bottom" />
     </div>

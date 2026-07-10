@@ -36,4 +36,18 @@ describe("HomeWorkspace (3-view switch)", () => {
     expect(screen.getAllByRole("tab")).toHaveLength(3)
     expect(screen.getByTestId("market-view")).toBeInTheDocument()
   })
+  it("mobile: wrapper không còn pb-16 chết (clearance nằm ở view con)", () => {
+    mq.desktop = false
+    const { container } = render(<HomeWorkspace />)
+    expect(container.firstChild).toHaveClass("h-full")
+    expect(container.firstChild).not.toHaveClass("pb-16")
+  })
+  it("click tab reset scroll trên content div thật (không throw, không dùng window.scrollTo)", () => {
+    const windowScrollSpy = vi.spyOn(window, "scrollTo")
+    render(<HomeWorkspace />)
+    expect(() => fireEvent.click(screen.getByRole("tab", { name: /BCTC/i }))).not.toThrow()
+    expect(screen.getByTestId("financial-view")).toBeInTheDocument()
+    expect(windowScrollSpy).not.toHaveBeenCalled()
+    windowScrollSpy.mockRestore()
+  })
 })

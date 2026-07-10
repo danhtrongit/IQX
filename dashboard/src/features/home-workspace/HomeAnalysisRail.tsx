@@ -24,7 +24,7 @@ export function HomeAnalysisRail({
       className={cn(
         variant === "side"
           ? "sticky top-0 flex h-full w-[88px] flex-col gap-1 border-l border-[var(--color-border-2)] bg-[var(--color-bg-2)] py-4"
-          : "fixed inset-x-0 bottom-0 z-40 flex flex-row border-t border-[var(--color-border-2)] bg-[var(--color-bg-2)]",
+          : "fixed inset-x-0 bottom-0 z-40 flex flex-row border-t border-[var(--color-border-2)] bg-[var(--color-bg-2)] pb-[env(safe-area-inset-bottom)]",
       )}
     >
       {TABS.map((t) => {

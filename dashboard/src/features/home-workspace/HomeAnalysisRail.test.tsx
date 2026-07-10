@@ -23,4 +23,10 @@ describe("HomeAnalysisRail", () => {
     rerender(<HomeAnalysisRail active="market" onSelect={() => {}} variant="bottom" />)
     expect(screen.getByRole("tablist").className).toContain("fixed")
   })
+  it("variant bottom → có safe-area-inset-bottom padding cho home-indicator iOS; side thì không", () => {
+    const { rerender } = render(<HomeAnalysisRail active="market" onSelect={() => {}} variant="bottom" />)
+    expect(screen.getByRole("tablist").className).toContain("pb-[env(safe-area-inset-bottom)]")
+    rerender(<HomeAnalysisRail active="market" onSelect={() => {}} variant="side" />)
+    expect(screen.getByRole("tablist").className).not.toContain("safe-area-inset-bottom")
+  })
 })

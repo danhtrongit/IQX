@@ -23,3 +23,11 @@ if (typeof localStorage === "undefined") {
     writable: true,
   })
 }
+
+// jsdom does not implement Element.prototype.scrollTo (only a no-op stub exists on
+// window). HomeWorkspace's tab-switch scroll-reset calls it on a content <div> ref;
+// without this, clicking a tab in tests throws "scrollTo is not a function". Guarded
+// so it only activates when truly absent.
+if (typeof Element.prototype.scrollTo !== "function") {
+  Element.prototype.scrollTo = function () {}
+}
