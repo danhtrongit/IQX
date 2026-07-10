@@ -1,72 +1,39 @@
 import React from "react"
-import { render, screen, act } from "@testing-library/react"
-import { MemoryRouter } from "react-router"
-import { describe, it, expect, vi, beforeEach } from "vitest"
-
-// Use vi.hoisted so these values are available when vi.mock factories run.
-const { mockInitialSymbol, mockPersistLastViewedSymbol } = vi.hoisted(() => ({
-  mockInitialSymbol: vi.fn(() => "HPG"),
-  mockPersistLastViewedSymbol: vi.fn(),
-}))
-
-vi.mock("./useInitialSymbol", () => ({
-  useInitialSymbol: () => mockInitialSymbol(),
-  persistLastViewedSymbol: mockPersistLastViewedSymbol,
-}))
-vi.mock("./useMediaQuery", () => ({ useMediaQuery: () => true }))
-// Mock HomeWorkspace's DIRECT child (not a transitive grandchild):
-// HomeMarketView mounts three data hooks (daily/midday/premarket latest) that
-// need a QueryClientProvider — mocking only a grandchild would mount them for
-// real and fail. Direct-child mocks also keep wall-clock defaults out of here.
-vi.mock("@/features/market-overview/HomeMarketView", () => ({ HomeMarketView: () => <div>MARKET_DAILY</div> }))
-vi.mock("./HomeSidePanel", () => ({ HomeSidePanel: ({ active }: { active: string }) => <div>SIDE_{active}</div> }))
-vi.mock("./HomeIconRail", () => ({ HomeIconRail: ({ active }: { active: string }) => <div>RAIL_{active}</div> }))
-
-// Mock SymbolProvider so we can observe which symbol prop it received.
-// Renders a data-testid attribute with the symbol value so assertions can inspect it.
-vi.mock("@/shared/contexts/symbol-context", () => ({
-  SymbolProvider: ({ symbol, children }: { symbol: string; children: React.ReactNode }) => (
-    <div data-testid="symbol-provider" data-symbol={symbol}>{children}</div>
-  ),
-  useSymbol: () => ({ symbol: "HPG", setSymbol: vi.fn() }),
-  isIndexSymbol: () => false,
-}))
-
+import { describe, expect, it, vi, beforeEach } from "vitest"
+import { render, screen, fireEvent } from "@testing-library/react"
 import { HomeWorkspace } from "./HomeWorkspace"
 
-describe("HomeWorkspace", () => {
-  beforeEach(() => {
-    mockInitialSymbol.mockReturnValue("HPG")
-    mockPersistLastViewedSymbol.mockClear()
+vi.mock("@/features/market-overview/HomeMarketView", () => ({ HomeMarketView: () => <div data-testid="market-view" /> }))
+vi.mock("./StockAnalysisView", () => ({ StockAnalysisView: () => <div data-testid="stock-view" /> }))
+vi.mock("./FinancialAnalysisView", () => ({ FinancialAnalysisView: () => <div data-testid="financial-view" /> }))
+
+const mq = vi.hoisted(() => ({ desktop: true }))
+vi.mock("./useMediaQuery", () => ({ useMediaQuery: () => mq.desktop }))
+
+beforeEach(() => { mq.desktop = true })
+
+describe("HomeWorkspace (3-view switch)", () => {
+  it("mặc định render market view + rail 3 tab", () => {
+    render(<HomeWorkspace />)
+    expect(screen.getByTestId("market-view")).toBeInTheDocument()
+    expect(screen.getAllByRole("tab")).toHaveLength(3)
+    expect(screen.queryByTestId("stock-view")).not.toBeInTheDocument()
   })
-
-  it("renders the market content, side panel, and rail with the default tab", () => {
-    render(<MemoryRouter><HomeWorkspace /></MemoryRouter>)
-    expect(screen.getByText("MARKET_DAILY")).toBeInTheDocument()
-    expect(screen.getByText("SIDE_order")).toBeInTheDocument()
-    expect(screen.getByText("RAIL_order")).toBeInTheDocument()
+  it("click tab Cổ phiếu → stock view; market ẩn", () => {
+    render(<HomeWorkspace />)
+    fireEvent.click(screen.getByRole("tab", { name: /cổ phiếu/i }))
+    expect(screen.getByTestId("stock-view")).toBeInTheDocument()
+    expect(screen.queryByTestId("market-view")).not.toBeInTheDocument()
   })
-
-  it("freezes the initial symbol — does NOT reset when useInitialSymbol returns a different value on re-render", () => {
-    // First render: useInitialSymbol returns "VNINDEX"
-    mockInitialSymbol.mockReturnValue("VNINDEX")
-    const { rerender } = render(<MemoryRouter><HomeWorkspace /></MemoryRouter>)
-    const provider = screen.getByTestId("symbol-provider")
-    expect(provider.getAttribute("data-symbol")).toBe("VNINDEX")
-
-    // Simulate watchlist resolving — useInitialSymbol now returns "FPT"
-    mockInitialSymbol.mockReturnValue("FPT")
-    act(() => {
-      rerender(<MemoryRouter><HomeWorkspace /></MemoryRouter>)
-    })
-
-    // The symbol prop on SymbolProvider must stay frozen at "VNINDEX"
-    expect(screen.getByTestId("symbol-provider").getAttribute("data-symbol")).toBe("VNINDEX")
+  it("click tab BCTC → financial view", () => {
+    render(<HomeWorkspace />)
+    fireEvent.click(screen.getByRole("tab", { name: /BCTC/i }))
+    expect(screen.getByTestId("financial-view")).toBeInTheDocument()
   })
-
-  it("calls persistLastViewedSymbol with the active symbol when WorkspaceBody mounts", () => {
-    mockInitialSymbol.mockReturnValue("HPG")
-    render(<MemoryRouter><HomeWorkspace /></MemoryRouter>)
-    expect(mockPersistLastViewedSymbol).toHaveBeenCalledWith("HPG")
+  it("mobile: vẫn render đủ 3 tab (bottom bar)", () => {
+    mq.desktop = false
+    render(<HomeWorkspace />)
+    expect(screen.getAllByRole("tab")).toHaveLength(3)
+    expect(screen.getByTestId("market-view")).toBeInTheDocument()
   })
 })
