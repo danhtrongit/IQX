@@ -23,7 +23,12 @@ export function StockAnalysisView() {
               featureName="AI Insight"
               description="Phân tích AI đa lớp cho mã đang xem (Xu hướng, Thanh khoản, Dòng tiền, Nội bộ, Tin tức)."
             >
-              <AiInsightBriefing symbol={symbol} />
+              {/* key=symbol forces a remount on symbol change: AiInsightBriefing fetches via a
+                  mount-once useEffect([]) backed by useStockAiInsight's useMutation, whose data
+                  does NOT re-fire on prop changes. Without this key, resubmitting a new symbol
+                  in the persistent search box would silently keep showing the previous symbol's
+                  insight. Fix belongs here (call site), not in the shared AiInsightBriefing. */}
+              <AiInsightBriefing key={symbol} symbol={symbol} />
             </PremiumGate>
           </div>
         ) : undefined
