@@ -70,19 +70,16 @@ function useAtoCountdown(): string {
 
 // ─── World cell ───────────────────────────────────────────────────────────────
 
-function WorldCellCard({ cell }: { cell: WorldCell }) {
-  const isUnavailable = cell.value == null || cell.stale
-
-  const sentimentClass = isUnavailable
+export function WorldCellCard({ cell }: { cell: WorldCell }) {
+  const hasValue = cell.value != null
+  const sentimentClass = !hasValue
     ? ""
     : cell.sentiment === "up"
       ? "pm-world-cell--up"
       : cell.sentiment === "down"
         ? "pm-world-cell--down"
         : ""
-
   const staleClass = cell.stale ? " pm-world-cell--stale" : ""
-
   const changeClass =
     cell.sentiment === "up"
       ? "pm-world-cell-change--up"
@@ -93,16 +90,23 @@ function WorldCellCard({ cell }: { cell: WorldCell }) {
   return (
     <div
       className={`pm-world-cell ${sentimentClass}${staleClass}`}
-      title={isUnavailable ? `${cell.label}: dữ liệu chưa có` : undefined}
+      title={
+        !hasValue
+          ? `${cell.label}: dữ liệu chưa có`
+          : cell.stale
+            ? `${cell.label}: số phiên gần nhất (chưa cập nhật hôm nay)`
+            : undefined
+      }
     >
-      <div className="pm-world-cell-label">{cell.label}</div>
-      {isUnavailable ? (
+      <div className="pm-world-cell-label">
+        {cell.label}
+        {hasValue && cell.stale && <span className="pm-world-cell-stale-tag"> · cũ</span>}
+      </div>
+      {!hasValue ? (
         <div className="pm-world-cell-value">—</div>
       ) : (
         <>
-          <div className="pm-world-cell-value">
-            {cell.value!.toLocaleString("vi-VN")}
-          </div>
+          <div className="pm-world-cell-value">{cell.value!.toLocaleString("vi-VN")}</div>
           {cell.change_pct != null && (
             <div className={`pm-world-cell-change ${changeClass}`}>
               {cell.change_pct > 0 ? "+" : ""}

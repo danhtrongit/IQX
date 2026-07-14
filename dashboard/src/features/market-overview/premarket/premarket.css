@@ -119,6 +119,8 @@
 .pm-world-cell--down  { border-color: color-mix(in oklch, #ef4444 40%, transparent); }
 .pm-world-cell--stale { opacity: 0.5; }
 
+.pm-world-cell-stale-tag { color: var(--color-text-3); font-weight: 400; font-size: 0.85em; }
+
 .pm-world-cell-label {
   font-size: 11px;
   color: var(--color-text-3);
