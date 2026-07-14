@@ -6,14 +6,21 @@ import { FinancialAnalysisView } from "./FinancialAnalysisView"
 
 const navigate = vi.fn()
 vi.mock("react-router", () => ({ useNavigate: () => navigate }))
+vi.mock("@/features/stock", () => ({
+  AiInsightBriefing: ({ symbol }: { symbol: string }) => <div data-testid="ai-insight">{symbol}</div>,
+}))
+vi.mock("@/features/premium", () => ({
+  PremiumGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}))
 
 describe("Stock/Financial analysis views", () => {
-  it("StockAnalysisView: submit → /co-phieu/FPT", () => {
+  it("StockAnalysisView: nhập mã → render AiInsightBriefing inline (không điều hướng)", () => {
     navigate.mockClear()
     render(<StockAnalysisView />)
     fireEvent.change(screen.getByPlaceholderText("Nhập mã cổ phiếu..."), { target: { value: "fpt" } })
     fireEvent.click(screen.getByRole("button", { name: "Phân tích" }))
-    expect(navigate).toHaveBeenCalledWith("/co-phieu/FPT")
+    expect(screen.getByTestId("ai-insight")).toHaveTextContent("FPT")
+    expect(navigate).not.toHaveBeenCalled()
   })
   it("StockAnalysisView: hiển thị đúng tiêu đề + subtitle", () => {
     render(<StockAnalysisView />)

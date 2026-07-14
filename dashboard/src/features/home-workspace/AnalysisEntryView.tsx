@@ -9,10 +9,11 @@ export interface AnalysisEntryProps {
   emptyTitle: string
   emptyDesc: string
   onSubmit: (symbol: string) => void
+  result?: ReactNode
 }
 
 export function AnalysisEntryView({
-  icon, title, subtitle, placeholder, emptyIcon, emptyTitle, emptyDesc, onSubmit,
+  icon, title, subtitle, placeholder, emptyIcon, emptyTitle, emptyDesc, onSubmit, result,
 }: AnalysisEntryProps) {
   const [value, setValue] = useState("")
 
@@ -52,12 +53,14 @@ export function AnalysisEntryView({
         </button>
       </div>
 
-      {/* Empty state */}
-      <div className="mx-auto max-w-[480px] px-6 pb-20 pt-[100px] text-center">
-        <div className="mb-5 text-[56px] opacity-30">{emptyIcon}</div>
-        <div className="mb-3 text-[20px] font-bold text-[var(--color-text-1)]">{emptyTitle}</div>
-        <div className="text-[14px] leading-[1.65] text-[var(--color-text-2)]">{emptyDesc}</div>
-      </div>
+      {/* dưới search: result nếu có, ngược lại empty-state */}
+      {result ?? (
+        <div className="mx-auto max-w-[480px] px-6 pb-20 pt-[100px] text-center">
+          <div className="mb-5 text-[56px] opacity-30">{emptyIcon}</div>
+          <div className="mb-3 text-[20px] font-bold text-[var(--color-text-1)]">{emptyTitle}</div>
+          <div className="text-[14px] leading-[1.65] text-[var(--color-text-2)]">{emptyDesc}</div>
+        </div>
+      )}
     </div>
   )
 }

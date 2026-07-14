@@ -43,4 +43,11 @@ describe("AnalysisEntryView", () => {
     fireEvent.click(screen.getByRole("button", { name: "Phân tích" }))
     expect(onSubmit).not.toHaveBeenCalled()
   })
+  it("có result → render result, KHÔNG render empty-state", () => {
+    render(<AnalysisEntryView {...base} onSubmit={() => {}} result={<div data-testid="res" />} />)
+    expect(screen.getByTestId("res")).toBeInTheDocument()
+    expect(screen.queryByText(base.emptyTitle)).not.toBeInTheDocument()
+    // ô search vẫn còn
+    expect(screen.getByPlaceholderText(base.placeholder)).toBeInTheDocument()
+  })
 })
