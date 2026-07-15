@@ -29,3 +29,4 @@ from app.models.market_analysis import AnalysisClaim, AnalysisHistory  # noqa: F
 from app.models.ai_insight_history import AIInsightHistory  # noqa: F401
 from app.models.portfolio_report import PortfolioReport  # noqa: F401
 from app.models.market_data_snapshot import MarketDataSnapshot  # noqa: F401
+from app.models.sector_median_cache import SectorMedianCache  # noqa: F401
