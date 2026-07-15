@@ -1,0 +1,174 @@
+/* ============================================================
+   IQX · Dashboard Phân tích BCTC — DARK THEME tokens (SPEC §5)
+   ------------------------------------------------------------
+   Scoped to the `.bctc-dash` wrapper (NOT :root) so these tokens
+   never leak into the rest of the Arco-themed app. Every chart
+   colours via these vars — no hex lives in the .tsx chart files.
+
+   Fonts: Fraunces / Newsreader / IBM Plex Mono / IBM Plex Sans are
+   loaded from Google Fonts here (the app otherwise ships only local
+   Tahoma). Each token carries an offline fallback (Georgia / serif /
+   monospace / system-ui) so if the webfont can't load the layout
+   still reads correctly.
+   ============================================================ */
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap");
+
+.bctc-dash {
+  /* nền & khung */
+  --paper: #0e0f0e; /* nền trang (đen) */
+  --card: #171917; /* nền card */
+  --ink: #ecebe3; /* chữ chính (trắng ngà) */
+  --ink-soft: #b4b2a6; /* chữ phụ */
+  --ink-faint: #7f8177; /* chữ mờ / caption */
+  --line: #2b2d28; /* đường kẻ */
+  --line-strong: #3d403a; /* đường kẻ đậm / dải trung tính */
+
+  /* màu ngữ nghĩa — đã làm sáng để nổi trên nền đen */
+  --green: #4fae7e;
+  --green-bg: #16271e;
+  --amber: #d29a3f;
+  --amber-bg: #2b2312;
+  --red: #d8635a;
+  --red-bg: #2c1613;
+  --accent: #5b9bd0;
+  --accent-soft: #152430;
+
+  /* chữ trên dải màu đậm (nền dải luôn tối → giữ trắng) */
+  --on-fill: #ffffff;
+
+  /* font */
+  --serif: "Fraunces", Georgia, serif;
+  --body: "Newsreader", Georgia, serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --sans: "IBM Plex Sans", system-ui, sans-serif;
+
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  /* 2 vệt radial-gradient rất nhẹ ở góc tạo chiều sâu (SPEC §5) */
+  background-image: radial-gradient(
+      circle at 12% 6%,
+      rgba(91, 155, 208, 0.06),
+      transparent 42%
+    ),
+    radial-gradient(circle at 88% 94%, rgba(216, 99, 90, 0.05), transparent 45%);
+}
+
+/* Light theme reference set (SPEC §5) — toggle by adding `.bctc-light`. */
+.bctc-dash.bctc-light {
+  --paper: #f7f5ef;
+  --card: #fffdf8;
+  --ink: #1a1c1a;
+  --ink-soft: #4a4d48;
+  --ink-faint: #8a8d86;
+  --line: #dcd8cc;
+  --line-strong: #c5c0b1;
+  --green: #2f6b4f;
+  --green-bg: #e6efe7;
+  --amber: #9a6b1e;
+  --amber-bg: #f5ecd8;
+  --red: #a33a32;
+  --red-bg: #f3e2df;
+  --accent: #1f4a6b;
+  --accent-soft: #e4ecf2;
+}
+
+/* ── shared chart primitives ── */
+.bctc-dash .bctc-chart-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  font-family: var(--mono);
+}
+.bctc-dash .bctc-cx-lbl {
+  font-family: var(--sans);
+  font-size: 11px;
+  fill: var(--ink-faint);
+}
+.bctc-dash .bctc-cy-lbl {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  fill: var(--ink-faint);
+}
+.bctc-dash .bctc-val-lbl {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--ink);
+  font-weight: 600;
+}
+.bctc-dash .bctc-val-in {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  fill: var(--on-fill);
+  font-weight: 600;
+}
+
+/* ── RadarScorecard ── */
+.bctc-dash .bctc-radar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.bctc-dash .bctc-radar-svg {
+  width: 185px;
+  height: 185px;
+}
+.bctc-dash .bctc-radar-score {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--green);
+  background: var(--green-bg);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+.bctc-dash .bctc-dims {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px 26px;
+  width: 100%;
+}
+.bctc-dash .bctc-dim {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bctc-dash .bctc-dim-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.bctc-dash .bctc-dim-name {
+  font-family: var(--sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.bctc-dash .bctc-dim-verdict {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+}
+.bctc-dash .bctc-dim-bar {
+  height: 6px;
+  background: var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.bctc-dash .bctc-dim-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+}
+
+@media (max-width: 640px) {
+  .bctc-dash .bctc-dims {
+    grid-template-columns: 1fr;
+  }
+}
