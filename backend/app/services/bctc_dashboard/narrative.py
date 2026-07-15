@@ -110,8 +110,23 @@ async def generate_narrative(
             f"AI không trả về JSON hợp lệ cho narrative BCTC sau {attempt + 1} lần thử"
         )
     if last_errors:
+        # Fail CLOSED on the compliance-critical classes: a narrative that still
+        # names an academic model or gives a buy/sell/hold recommendation after
+        # all retries must NOT reach a user — that guard is the whole point.
+        # Purely structural residuals fall through to best-effort (brief's
+        # "returns best/valid").
+        blocking = [
+            e
+            for e in last_errors
+            if e.startswith("Cấm tên mô hình học thuật")
+            or e.startswith("Cấm khuyến nghị")
+        ]
+        if blocking:
+            raise AIProxyError(
+                f"narrative BCTC vi phạm quy tắc bắt buộc sau {attempt + 1} lần thử: {blocking}"
+            )
         logger.warning(
-            "narrative %s: trả về best-effort với %d lỗi còn lại: %s",
+            "narrative %s: trả về best-effort với %d lỗi cấu trúc còn lại: %s",
             sym,
             len(last_errors),
             last_errors,

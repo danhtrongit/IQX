@@ -12,13 +12,14 @@ import copy
 import json
 from unittest.mock import AsyncMock, patch
 
+import pytest
+
 from app.services.bctc_dashboard.narrative import generate_narrative
 from app.services.bctc_dashboard.narrative_prompt import (
     SYSTEM_PROMPT,
     build_user_content,
 )
 from app.services.bctc_dashboard.narrative_validator import validate_narrative
-
 
 # ── sample valid narratives ──────────────────────────────────────────────────
 
@@ -356,3 +357,15 @@ async def test_endpoint_bctc_dashboard_narrative_proxy_error_502(
     ):
         resp = await client.get("/api/v1/ai/bctc-dashboard/FPT", headers=headers)
     assert resp.status_code == 502
+
+
+async def test_generate_narrative_fails_closed_when_forbidden_persists() -> None:
+    from app.services.ai.proxy_client import AIProxyError
+    # Every attempt keeps a recommendation phrase → after retries, fail CLOSED
+    # (raise), never return the violating narrative to a premium user.
+    bad = copy.deepcopy(_valid_a())
+    bad["verdict_oneliner"] = "Nhà đầu tư nên mua ngay."
+    payload = json.dumps(bad, ensure_ascii=False)
+    mock = AsyncMock(return_value=(payload, "m"))
+    with patch("app.services.bctc_dashboard.narrative.chat_completion", mock), pytest.raises(AIProxyError):
+        await generate_narrative("FPT", data=_fake_dashboard_a(), max_retries=2)
