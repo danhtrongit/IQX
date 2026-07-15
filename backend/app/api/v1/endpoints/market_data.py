@@ -735,6 +735,7 @@ async def get_bctc_storytelling_dashboard(
     request: Request,
     symbol: str,
     term_type: Annotated[int, Query(ge=1, le=2, description="1=Năm, 2=Quý")] = 1,
+    db: AsyncSession = Depends(get_db),
 ) -> MarketDataResponse:
     """Dashboard "kể chuyện" BCTC (BctcDashboardData): hero, radar, 6 khối phân tích."""
     symbol = symbol.upper()
@@ -742,7 +743,7 @@ async def get_bctc_storytelling_dashboard(
         raise HTTPException(status_code=422, detail=f"Mã chứng khoán không hợp lệ: {symbol}")
 
     async def _vci() -> tuple[Any, str]:
-        return await compute_dashboard_with_url(symbol, term_type=term_type)
+        return await compute_dashboard_with_url(symbol, term_type=term_type, db=db)
 
     try:
         return await fetch_with_fallback([("VCI", _vci)])

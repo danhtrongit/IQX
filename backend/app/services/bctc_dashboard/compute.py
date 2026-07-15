@@ -13,8 +13,15 @@ B1 fills every deterministic series/metric. It intentionally leaves
 
 from __future__ import annotations
 
+import logging
+from datetime import date
 from typing import Any
 
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.sector_median_cache import SectorMedianCache
+from app.repositories.symbol import SymbolRepository
 from app.services.bctc import kpi_bank, kpi_bank_modules, kpi_nonbank, kpi_nonbank_modules
 from app.services.bctc.kpi_bank import earning_assets
 from app.services.bctc.mapping_loader import load_mapping
@@ -22,7 +29,11 @@ from app.services.bctc.sector import detect_subsector, detect_template
 from app.services.bctc.statements import Period, build_periods, period_label, val
 from app.services.bctc.subsector import subsector_spotlight
 from app.services.bctc.valuation import valuation_bank, valuation_nonbank
+from app.services.bctc_dashboard.benchmark import apply_benchmark
+from app.services.bctc_dashboard.peer_median import get_sector_medians
 from app.services.market_data.sources import vietcap
+
+logger = logging.getLogger(__name__)
 
 _MAX_YEARS = 5
 
@@ -171,8 +182,11 @@ def _hero(
     }
 
 
-def _radar(dims_spec: list[tuple[str, str, str | None]]) -> dict[str, Any]:
-    # score/band left None for B3; value_label carries the deterministic value.
+def _radar(
+    dims_spec: list[tuple[str, str, str | None, float | None]],
+) -> dict[str, Any]:
+    # score/band left None for B3 to fill; value_label carries the display
+    # string, ``value`` the raw number B3 scores against sub-sector thresholds.
     return {
         "dims": [
             {
@@ -181,8 +195,9 @@ def _radar(dims_spec: list[tuple[str, str, str | None]]) -> dict[str, Any]:
                 "score": None,
                 "band": None,
                 "value_label": value_label,
+                "value": value,
             }
-            for key, label, value_label in dims_spec
+            for key, label, value_label, value in dims_spec
         ]
     }
 
@@ -748,26 +763,34 @@ def assemble_dashboard(
     hero = _hero(symbol, overview, price, fair_value)
 
     # radar dims (score/band → B3; value_label deterministic)
+    upside = valuation.get("upside_pct")
     if is_bank:
         toi_now, toi_prev = val(cur, "total_operating_income"), val(prev, "total_operating_income")
         toi_growth = _div((toi_now - toi_prev), toi_prev) if toi_now is not None and toi_prev else None
+        roe_v = kpi_bank.roe(cur, prev)
+        npl_v = kpi_bank.llr_loans(cur)
+        cap_v = kpi_bank.equity_ratio(cur)
         radar = _radar(
             [
-                ("growth", "Tăng trưởng", _fmt_pct(toi_growth)),
-                ("profitability", "Sinh lời", _fmt_pct(kpi_bank.roe(cur, prev))),
-                ("asset_quality", "Chất lượng tài sản", _fmt_pct(kpi_bank.llr_loans(cur))),
-                ("capital", "An toàn vốn", _fmt_pct(kpi_bank.equity_ratio(cur))),
-                ("valuation", "Định giá", _fmt_pct(valuation.get("upside_pct"))),
+                ("growth", "Tăng trưởng", _fmt_pct(toi_growth), toi_growth),
+                ("profitability", "Sinh lời", _fmt_pct(roe_v), roe_v),
+                ("asset_quality", "Chất lượng tài sản", _fmt_pct(npl_v), npl_v),
+                ("capital", "An toàn vốn", _fmt_pct(cap_v), cap_v),
+                ("valuation", "Định giá", _fmt_pct(upside), upside),
             ]
         )
     else:
+        rev_g = kpi_nonbank.revenue_growth(cur, prev)
+        roe_v = kpi_nonbank.roe(cur, prev)
+        cfo_ni_v = kpi_nonbank_modules.cash_flow_bridge(cur).get("cfo_ni")
+        nde_v = kpi_nonbank.net_debt_ebitda(cur)
         radar = _radar(
             [
-                ("business", "Kinh doanh", _fmt_pct(kpi_nonbank.revenue_growth(cur, prev))),
-                ("profitability", "Sinh lời", _fmt_pct(kpi_nonbank.roe(cur, prev))),
-                ("cashflow", "Dòng tiền", _fmt_x(kpi_nonbank_modules.cash_flow_bridge(cur).get("cfo_ni"))),
-                ("safety", "An toàn tài chính", _fmt_x(kpi_nonbank.net_debt_ebitda(cur))),
-                ("valuation", "Định giá", _fmt_pct(valuation.get("upside_pct"))),
+                ("business", "Kinh doanh", _fmt_pct(rev_g), rev_g),
+                ("profitability", "Sinh lời", _fmt_pct(roe_v), roe_v),
+                ("cashflow", "Dòng tiền", _fmt_x(cfo_ni_v), cfo_ni_v),
+                ("safety", "An toàn tài chính", _fmt_x(nde_v), nde_v),
+                ("valuation", "Định giá", _fmt_pct(upside), upside),
             ]
         )
 
@@ -810,10 +833,63 @@ def assemble_dashboard(
 # ══════════════════════════════════════════════════════
 
 
+async def _apply_peer_benchmark(
+    data: dict[str, Any],
+    db: AsyncSession,
+    symbol: str,
+    overview: dict[str, Any],
+) -> None:
+    """Fill peer_median/color + radar score/band from sector medians (B3).
+
+    Best-effort: any failure degrades to the un-benchmarked B1 shape (peers /
+    colors stay ``None``) rather than breaking the dashboard.
+    """
+    try:
+        icb_lv2: str | None = None
+        try:
+            row = await SymbolRepository(db).get_by_symbol(symbol)
+            icb_lv2 = getattr(row, "icb_lv2", None) if row is not None else None
+        except Exception:  # noqa: BLE001
+            icb_lv2 = None
+        if not icb_lv2:
+            icb_lv2 = overview.get("icb_name_2")
+        if not icb_lv2:
+            return
+
+        asof = date.today()
+        medians = await get_sector_medians(db, icb_lv2, asof=asof)
+        apply_benchmark(data, medians)
+        data["meta"]["peer_asof"] = asof.isoformat()
+
+        # Real peer count from the cache row written by get_sector_medians.
+        try:
+            count = (
+                await db.execute(
+                    select(SectorMedianCache.peer_count).where(
+                        SectorMedianCache.icb_lv2 == icb_lv2,
+                        SectorMedianCache.asof_date == asof,
+                    )
+                )
+            ).scalar_one_or_none()
+            if count is not None:
+                data["meta"]["peer_count"] = int(count)
+        except Exception:  # noqa: BLE001
+            pass
+    except Exception:  # noqa: BLE001
+        logger.warning(
+            "bctc_dashboard: peer benchmark failed for %s", symbol, exc_info=True
+        )
+
+
 async def compute_dashboard_with_url(
-    symbol: str, *, term_type: int = 1
+    symbol: str, *, term_type: int = 1, db: AsyncSession | None = None
 ) -> tuple[dict[str, Any], str]:
-    """Fetch VCI inputs + assemble the dashboard. Returns (data, raw_url)."""
+    """Fetch VCI inputs + assemble the dashboard. Returns (data, raw_url).
+
+    When ``db`` is provided, the B3 benchmark layer is applied (peer medians,
+    threshold colors, radar scores). With ``db=None`` the dashboard is left in
+    its deterministic B1 shape (peer/color/radar-score all ``None``).
+    """
     sym = symbol.upper()
     statements, url = await vietcap.fetch_bctc_statements(sym, term_type=term_type)
 
@@ -840,10 +916,16 @@ async def compute_dashboard_with_url(
         overview,
         symbol=sym,
     )
+
+    if db is not None:
+        await _apply_peer_benchmark(data, db, sym, overview)
+
     return data, url
 
 
-async def compute_dashboard(symbol: str, *, term_type: int = 1) -> dict[str, Any]:
+async def compute_dashboard(
+    symbol: str, *, term_type: int = 1, db: AsyncSession | None = None
+) -> dict[str, Any]:
     """Public compute entrypoint → ``BctcDashboardData`` dict."""
-    data, _url = await compute_dashboard_with_url(symbol, term_type=term_type)
+    data, _url = await compute_dashboard_with_url(symbol, term_type=term_type, db=db)
     return data
