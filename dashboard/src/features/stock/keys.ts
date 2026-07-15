@@ -12,5 +12,9 @@ export const stockKeys = {
   ratio: (symbol: string, period: "Q" | "Y") => ["stock", "ratio", symbol, period] as const,
   bctc: (symbol: string, termType: number) => ["stock", "bctc", symbol, termType] as const,
   bctcAi: (symbol: string, termType: number) => ["stock", "bctc-ai", symbol, termType] as const,
+  bctcDashboard: (symbol: string, termType: number) =>
+    ["stock", "bctc-dashboard", symbol, termType] as const,
+  bctcDashboardAi: (symbol: string, termType: number) =>
+    ["stock", "bctc-dashboard-ai", symbol, termType] as const,
   aiInsight: (symbol: string) => ["stock", "ai-insight", symbol] as const,
 } as const

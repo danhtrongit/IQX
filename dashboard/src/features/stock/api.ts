@@ -1,4 +1,5 @@
 import { api, unwrap } from "@/shared/http/client"
+import type { BctcDashboardData, BctcNarrative } from "./bctc-dashboard/types"
 import type {
   AIInsightResponse,
   BctcAi,
@@ -190,6 +191,32 @@ export const stockApi = {
       .get(`ai/bctc/${symbol.toUpperCase()}`, { searchParams: { term_type: termType } })
       .json<{ data?: { analysis?: BctcAi }; analysis?: BctcAi }>()
     return res?.data?.analysis ?? res?.analysis ?? null
+  },
+
+  /**
+   * Storytelling BCTC dashboard — deterministic compute layer (public).
+   * Returns `BctcDashboardData` (hero, radar, 6 blocks, meta) per template A/B.
+   */
+  getBctcDashboard: async (symbol: string, termType = 1): Promise<BctcDashboardData> => {
+    const res = await api
+      .get(`market-data/bctc-dashboard/${symbol.toUpperCase()}`, {
+        searchParams: { term_type: termType },
+      })
+      .json<unknown>()
+    return unwrap(res as never) as BctcDashboardData
+  },
+
+  /**
+   * Premium: AI narrative for the dashboard — `{ data: { verdict_oneliner,
+   * story, blocks{...} } }` (block keys follow the template A/B shape).
+   */
+  getBctcDashboardAi: async (symbol: string, termType = 1): Promise<BctcNarrative | null> => {
+    const res = await api
+      .get(`ai/bctc-dashboard/${symbol.toUpperCase()}`, {
+        searchParams: { term_type: termType },
+      })
+      .json<{ data?: BctcNarrative }>()
+    return res?.data ?? null
   },
 
   /**

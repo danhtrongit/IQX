@@ -19,7 +19,6 @@ export interface PeerBarProps {
 }
 
 const W = 320
-const LABEL_W = 94
 const TRACK_X = 98
 const TRACK_W = 174
 const BAR_H = 16
