@@ -22,6 +22,9 @@ vi.mock("@/features/stock", () => ({
 vi.mock("@/features/premium", () => ({
   PremiumGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
+vi.mock("@/features/stock/bctc-dashboard", () => ({
+  BctcDashboard: ({ symbol }: { symbol: string }) => <div data-testid="bctc-dash">{symbol}</div>,
+}))
 
 describe("Stock/Financial analysis views", () => {
   it("StockAnalysisView: nhập mã → render AiInsightBriefing inline (không điều hướng)", () => {
@@ -54,12 +57,13 @@ describe("Stock/Financial analysis views", () => {
     expect(screen.getByText("Phân tích cổ phiếu")).toBeInTheDocument()
     expect(screen.getByText("6 lớp dữ liệu · Cập nhật theo phiên giao dịch")).toBeInTheDocument()
   })
-  it("FinancialAnalysisView: submit → /co-phieu/HPG?tab=financials", () => {
+  it("FinancialAnalysisView: submit → render BctcDashboard inline (không điều hướng)", () => {
     navigate.mockClear()
     render(<FinancialAnalysisView />)
-    fireEvent.change(screen.getByPlaceholderText("Nhập mã cổ phiếu..."), { target: { value: "hpg" } })
+    fireEvent.change(screen.getByPlaceholderText("Nhập mã cổ phiếu..."), { target: { value: "vcb" } })
     fireEvent.click(screen.getByRole("button", { name: "Phân tích" }))
-    expect(navigate).toHaveBeenCalledWith("/co-phieu/HPG?tab=financials")
+    expect(screen.getByTestId("bctc-dash")).toHaveTextContent("VCB")
+    expect(navigate).not.toHaveBeenCalled()
   })
   it("FinancialAnalysisView: tiêu đề BCTC", () => {
     render(<FinancialAnalysisView />)
