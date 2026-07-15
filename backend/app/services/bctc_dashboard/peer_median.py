@@ -29,7 +29,6 @@ the target on any of ``icb_code_lv2`` / ``vi_sector`` / ``en_sector``.
 from __future__ import annotations
 
 import asyncio
-import contextlib
 import hashlib
 import logging
 import random
@@ -56,7 +55,9 @@ _METRIC_FIELDS: dict[str, list[str]] = {
     "roe": ["roe"],
     "gross_margin": ["gross_margin", "gross_profit_margin"],
     "revenue_growth": ["revenue_growth", "revenue_yoy"],
-    "dividend_yield": ["dividend_yield", "dividend"],
+    # NOTE: no "dividend" fallback — that field is a cash-dividend AMOUNT, not a
+    # yield; medianing it would be a unit mismatch. Leave None when no true yield.
+    "dividend_yield": ["dividend_yield"],
     "net_debt_ebitda": ["net_debt_ebitda", "net_debt_to_ebitda"],
     "dso": ["dso", "days_sales_outstanding"],
 }
@@ -235,32 +236,33 @@ async def _upsert_cache(
     medians: dict[str, float | None],
     peer_count: int,
 ) -> None:
-    existing = (
-        await db.execute(
-            select(SectorMedianCache).where(
-                SectorMedianCache.icb_lv2 == icb_lv2,
-                SectorMedianCache.asof_date == asof,
-            )
-        )
-    ).scalar_one_or_none()
-    if existing is not None:
-        existing.medians = medians
-        existing.peer_count = peer_count
-    else:
-        db.add(
-            SectorMedianCache(
-                icb_lv2=icb_lv2,
-                asof_date=asof,
-                medians=medians,
-                peer_count=peer_count,
-            )
-        )
+    # Best-effort cache write inside a SAVEPOINT so a flush failure (e.g. a
+    # concurrent-insert race) rolls back ONLY this cache row, never the
+    # caller's surrounding transaction.
     try:
-        await db.flush()
+        async with db.begin_nested():
+            existing = (
+                await db.execute(
+                    select(SectorMedianCache).where(
+                        SectorMedianCache.icb_lv2 == icb_lv2,
+                        SectorMedianCache.asof_date == asof,
+                    )
+                )
+            ).scalar_one_or_none()
+            if existing is not None:
+                existing.medians = medians
+                existing.peer_count = peer_count
+            else:
+                db.add(
+                    SectorMedianCache(
+                        icb_lv2=icb_lv2,
+                        asof_date=asof,
+                        medians=medians,
+                        peer_count=peer_count,
+                    )
+                )
     except Exception as exc:  # concurrent insert race — cache is best-effort
-        logger.warning("peer_median: cache upsert flush failed: %s", exc)
-        with contextlib.suppress(Exception):
-            await db.rollback()
+        logger.warning("peer_median: cache upsert failed: %s", exc)
 
 
 # ── public API ───────────────────────────────────────
