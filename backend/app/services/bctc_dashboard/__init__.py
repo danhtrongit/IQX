@@ -13,5 +13,13 @@ from app.services.bctc_dashboard.compute import (
     compute_dashboard,
     compute_dashboard_with_url,
 )
+from app.services.bctc_dashboard.narrative import generate_narrative
+from app.services.bctc_dashboard.narrative_validator import validate_narrative
 
-__all__ = ["assemble_dashboard", "compute_dashboard", "compute_dashboard_with_url"]
+__all__ = [
+    "assemble_dashboard",
+    "compute_dashboard",
+    "compute_dashboard_with_url",
+    "generate_narrative",
+    "validate_narrative",
+]

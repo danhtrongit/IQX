@@ -15,9 +15,10 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from app.api.deps import PremiumUser
+from app.api.deps import DBSession, PremiumUser
 from app.services.ai.analysis_service import analyze_bctc, analyze_dashboard, analyze_industry, analyze_insight
 from app.services.ai.proxy_client import AIProxyError
+from app.services.bctc_dashboard.narrative import generate_narrative
 
 logger = logging.getLogger(__name__)
 
@@ -278,6 +279,31 @@ async def get_bctc_analyze(
     try:
         result = await analyze_bctc(symbol=symbol.upper(), term_type=term_type, language=language)
         return {"data": result}
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except AIProxyError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.get("/bctc-dashboard/{symbol}")
+async def get_bctc_dashboard_narrative(
+    symbol: str,
+    user: PremiumUser,
+    db: DBSession,
+    term_type: int = 1,
+    language: str = "vi",
+) -> dict[str, Any]:
+    """AI narrative kể chuyện cho dashboard phân tích BCTC (premium).
+
+    Sinh phần chữ (verdict_oneliner + story + câu trả lời từng khối) từ các
+    con số đã được lớp compute tính sẵn. Trả về ``{data: narrative}`` với key
+    theo template A (phi ngân hàng) / B (ngân hàng).
+    """
+    try:
+        narrative = await generate_narrative(
+            symbol=symbol.upper(), term_type=term_type, language=language, db=db
+        )
+        return {"data": narrative}
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except AIProxyError as exc:
