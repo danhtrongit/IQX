@@ -606,6 +606,21 @@ export function BctcDashboard({ symbol }: { symbol: string }) {
     )
   }
 
+  // Backend returns a 200 "empty dashboard" (blocks: {}) for symbols with no
+  // BCTC periods — status/validator treat it as success, so it reaches here
+  // with data present but no blocks. Render a friendly notice (with any
+  // disclaimers the backend attached) instead of crashing on data.blocks.valuation.
+  if (!data.blocks?.valuation) {
+    return (
+      <div className="bctc-dash">
+        <div className="bctc-dash-state">
+          {(data.meta?.disclaimers && data.meta.disclaimers[0]) ||
+            "Không đủ dữ liệu báo cáo tài chính để dựng phân tích cho mã này."}
+        </div>
+      </div>
+    )
+  }
+
   const isBank = data.template === "B"
   const nb = narrative?.blocks
   const ans = (key: string): string => nb?.[key]?.answer ?? ""

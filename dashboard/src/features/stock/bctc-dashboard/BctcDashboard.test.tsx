@@ -358,6 +358,24 @@ describe("BctcDashboard — loading & error", () => {
     // Arco Spin renders an element with a class containing "spin"
     expect(container.querySelector('[class*="spin"]')).not.toBeNull()
   })
+
+  it("renders a friendly notice (no crash) for an empty-blocks dashboard", () => {
+    // Backend returns a 200 empty dashboard (blocks: {}) for symbols with no BCTC.
+    h.compute = {
+      template: "A",
+      sub_sector: null,
+      hero: { ticker: "XYZ" },
+      radar: { dims: [] },
+      blocks: {},
+      meta: { periods: [], is_estimated_fields: [], disclaimers: ["Không đủ dữ liệu báo cáo tài chính để dựng phân tích cho mã này."] },
+    } as unknown as BctcDashboardData
+    h.ai = null
+    const { container } = render(<BctcDashboard symbol="XYZ" />)
+    expect(container.querySelector(".bctc-dash")).not.toBeNull()
+    expect(container.textContent).toContain("Không đủ dữ liệu")
+    // no chart / question card rendered
+    expect(container.querySelector(".bctc-qcard")).toBeNull()
+  })
 })
 
 describe("BctcDashboard — Template A (FPT)", () => {
