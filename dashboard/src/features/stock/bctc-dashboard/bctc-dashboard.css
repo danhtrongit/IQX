@@ -57,7 +57,12 @@
     radial-gradient(circle at 88% 94%, rgba(216, 99, 90, 0.05), transparent 45%);
 }
 
-/* Light theme reference set (SPEC §5) — toggle by adding `.bctc-light`. */
+/* Follow the app theme: the base `.bctc-dash` above is the dark set (SPEC §5
+   default, applies under body[arco-theme="dark"]); these light tokens apply when
+   the app is in light mode. Higher specificity (body[attr] .class) wins over the
+   base in light mode; in dark mode nothing overrides so the dark set stands.
+   `.bctc-light` kept as a manual escape hatch. */
+body[arco-theme="light"] .bctc-dash,
 .bctc-dash.bctc-light {
   --paper: #f7f5ef;
   --card: #fffdf8;
