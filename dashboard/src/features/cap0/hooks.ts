@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/features/auth"
+import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { cap0Api } from "./api"
 import { cap0Keys } from "./keys"
 import type { Cap0Gate, Cap0Progress, PlacementResult } from "./types"
@@ -49,12 +50,27 @@ export function usePlacement() {
   })
 }
 
-/** PATCH /cap0/task — mark a task done (with an optional behaviour gate). */
+/**
+ * PATCH /cap0/task — mark a task done (with an optional behaviour gate).
+ *
+ * Centralizes spec §7's "auto-chuyển tab Hành trình khi hoàn thành nhiệm vụ"
+ * (moment thưởng, KHÔNG confetti) here in the hook's `onSuccess` — rather
+ * than in each of the (currently 3, likely more later) call sites
+ * (`Gbar`/nhiệm vụ ①, `TradingPanel`'s SL keydown/nhiệm vụ ⑤,
+ * `DebriefModal`/nhiệm vụ ⑥) — so every current AND future caller gets the
+ * auto-tab for free without having to remember to wire it. `useSidebar()`
+ * outside a `SidebarProvider` returns the app's no-op default context, so
+ * this is safe to call from anywhere `useCompleteTask` is used.
+ */
 export function useCompleteTask() {
   const invalidate = useInvalidateCap0()
+  const { setActivePanel } = useSidebar()
   return useMutation<Cap0Progress, unknown, { taskNo: number; gate?: Cap0Gate }>({
     mutationFn: ({ taskNo, gate }) => cap0Api.completeTask(taskNo, gate),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate()
+      setActivePanel("journey")
+    },
   })
 }
 

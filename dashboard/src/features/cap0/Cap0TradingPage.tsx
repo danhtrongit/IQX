@@ -10,8 +10,10 @@ import { Cap0Provider } from "./Cap0Context"
 import { ModeBadge } from "./ModeBadge"
 import { JourneyBar } from "./JourneyBar"
 import { Gbar } from "./Gbar"
+import { GraduationModal } from "./GraduationModal"
 import { useCap0Progress, useEnterCap0, usePlacement } from "./hooks"
 import { PlacementModal } from "./PlacementModal"
+import { tradingModeFor } from "./types"
 import "./cap0.css"
 
 const SEO_TITLE = "IQX Demo Trading · Cấp 0 «Nhập môn»"
@@ -187,7 +189,7 @@ function Cap0Terminal() {
           mode badge at its right edge. */}
       <div className="cap0-topbar">
         <JourneyBar />
-        <ModeBadge mode="san_tap" />
+        <ModeBadge mode={tradingModeFor(progress)} />
       </div>
 
       {/* Sticky reminder bar for nhiệm vụ ① (spec §6 "sticky dưới journey
@@ -209,6 +211,11 @@ function Cap0Terminal() {
         onNeverTraded={handleNeverTraded}
         onTradedBefore={handleTradedBefore}
       />
+
+      {/* Màn tốt nghiệp (spec §9) — self-contained: opens itself once
+          progress shows 6/6 + both behaviour gates (see `isGraduationReady`),
+          closes itself once `graduated_at` comes back from the mutation. */}
+      <GraduationModal />
 
       {/* AI Insight symbol picker — identical to DashboardPage's */}
       <Modal

@@ -4,7 +4,7 @@ import { cn } from "@/shared/lib/cn"
 import { Badge, LEVELS } from "./Badge"
 import { ModeBadge } from "./ModeBadge"
 import { useCap0Progress } from "./hooks"
-import { countTasksDone, type Cap0Progress } from "./types"
+import { countTasksDone, tradingModeFor, type Cap0Progress } from "./types"
 
 /**
  * The 6 Cấp 0 tasks — names verbatim spec §7. Task numbers are the spec's
@@ -130,7 +130,7 @@ export function JourneyPanel() {
               "Hiểu sân chơi, và đi trọn vòng đời một lệnh."
             </div>
           </div>
-          <ModeBadge mode="san_tap" />
+          <ModeBadge mode={tradingModeFor(progress)} />
         </div>
 
         <div className="cap0-journey-checklist-header">

@@ -89,6 +89,19 @@ describe("JourneyPanel", () => {
     expect(screen.getByText("SÂN TẬP · T+0")).toBeInTheDocument()
   })
 
+  it('shows "THỰC CHIẾN" instead once graduated_at is set (spec §9 mode switch)', () => {
+    useCap0ProgressMock.mockReturnValue({
+      data: makeProgress({ graduated_at: "2026-07-21T00:00:00Z" }),
+    })
+    render(
+      <SidebarProvider>
+        <JourneyPanel />
+      </SidebarProvider>,
+    )
+    expect(screen.getByText("THỰC CHIẾN")).toBeInTheDocument()
+    expect(screen.queryByText("SÂN TẬP · T+0")).not.toBeInTheDocument()
+  })
+
   it('shows the checklist header "TRƯỚC KHI LÊN CẤP 1 · 0/6" with fresh progress', () => {
     useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
     render(

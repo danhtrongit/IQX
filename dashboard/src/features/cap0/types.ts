@@ -81,3 +81,15 @@ export function countTasksDone(progress: Cap0Progress | null | undefined): numbe
     ].filter((t) => t != null).length
   )
 }
+
+/**
+ * spec §9 "Sau khi bấm: badge góc màn hình đổi từ SÂN TẬP · T+0 sang THỰC
+ * CHIẾN" — the single source of truth for the mode pill everywhere it's
+ * shown (`Cap0TradingPage`'s topbar, `JourneyPanel`'s level card). Driven
+ * purely by `graduated_at` (set server-side by `POST /cap0/graduate`), so
+ * every consumer flips together the instant the shared `useCap0Progress`
+ * query refetches — no extra local state needed.
+ */
+export function tradingModeFor(progress: Cap0Progress | null | undefined): TradingMode {
+  return progress?.graduated_at ? "thuc_chien" : "san_tap"
+}

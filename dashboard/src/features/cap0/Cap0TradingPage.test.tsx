@@ -10,7 +10,7 @@ import type { Cap0Progress } from "./types"
 // `vi.hoisted` — `vi.mock` calls are hoisted above ALL other statements
 // (including plain top-level `const`s), so a factory closing over a plain
 // `const` can hit a TDZ ReferenceError at mock-invocation time.
-const { useCap0ProgressMock, enterMutate, placementMutate, completeTaskMutate, messageInfo, navigateMock } = vi.hoisted(() => ({
+const { useCap0ProgressMock, enterMutate, placementMutate, completeTaskMutate, graduateMutate, messageInfo, navigateMock } = vi.hoisted(() => ({
   useCap0ProgressMock: vi.fn(),
   // Mirror react-query's real `mutate(variables, options)` shape: by default,
   // synchronously invoke the caller's `onSuccess` (the "happy path" a normal
@@ -27,6 +27,11 @@ const { useCap0ProgressMock, enterMutate, placementMutate, completeTaskMutate, m
   // no-op spy is enough here since this file only exercises the Cấp 0 shell,
   // not nhiệm vụ ①'s own behaviour (see `gbar.test.tsx`).
   completeTaskMutate: vi.fn(),
+  // `GraduationModal` (now mounted unconditionally alongside PlacementModal)
+  // calls `useGraduate` itself — a no-op spy is enough here since this file
+  // only exercises the Cấp 0 shell/mode badge, not the modal's own gating/
+  // button behaviour (see `graduation.test.tsx`).
+  graduateMutate: vi.fn(),
   messageInfo: vi.fn(),
   navigateMock: vi.fn(),
 }))
@@ -77,6 +82,7 @@ vi.mock("./hooks", () => ({
   useEnterCap0: () => ({ mutate: enterMutate }),
   usePlacement: () => ({ mutate: placementMutate }),
   useCompleteTask: () => ({ mutate: completeTaskMutate }),
+  useGraduate: () => ({ mutate: graduateMutate, isPending: false }),
 }))
 
 // Only stub `Message` (used for the "Đã từng" toast) — keep the real Modal/
@@ -125,6 +131,7 @@ describe("Cap0TradingPage", () => {
     placementMutate.mockImplementation((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
       opts?.onSuccess?.()
     })
+    graduateMutate.mockReset()
     messageInfo.mockReset()
     navigateMock.mockReset()
     window.localStorage.clear()
@@ -151,6 +158,16 @@ describe("Cap0TradingPage", () => {
     useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
     renderCap0(<Cap0TradingPage />)
     expect(screen.getByText("SÂN TẬP · T+0")).toBeInTheDocument()
+  })
+
+  it('flips the mode badge to "THỰC CHIẾN" once progress.graduated_at is set (spec §9)', () => {
+    useCap0ProgressMock.mockReturnValue({
+      data: { ...fakeProgress, graduated_at: "2026-07-21T00:00:00Z" },
+      isFetched: true,
+    })
+    renderCap0(<Cap0TradingPage />)
+    expect(screen.getByText("THỰC CHIẾN")).toBeInTheDocument()
+    expect(screen.queryByText("SÂN TẬP · T+0")).not.toBeInTheDocument()
   })
 
   it("shows PlacementModal when the user has no progress yet (first visit)", () => {

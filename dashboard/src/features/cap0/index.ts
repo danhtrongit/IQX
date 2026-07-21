@@ -10,6 +10,7 @@ export { PlanBlock, type PlanBlockProps } from "./PlanBlock"
 export { cap0Visibility, type Cap0Visibility } from "./cap0Visibility"
 export { coachTemplate, type CoachSituation } from "./coachTemplate"
 export { DebriefModal, type DebriefData, type DebriefModalProps } from "./DebriefModal"
+export { GraduationModal, isGraduationReady } from "./GraduationModal"
 export {
   gbarReducer,
   gbarStep,
@@ -42,6 +43,7 @@ export { cap0Api } from "./api"
 export { cap0Keys } from "./keys"
 export {
   countTasksDone,
+  tradingModeFor,
   type BadgeOptions,
   type Cap0Gate,
   type Cap0Level,
