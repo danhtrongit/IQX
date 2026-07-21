@@ -81,10 +81,8 @@
 }
 
 /* ── Top bar (spec §7 `.jbar`) ────────────────────────────────────────────────
-   Sticky strip above the terminal body. FE2 only mounts the mode badge here;
-   FE3 fills the rest of this row with the real JourneyBar (progress + next
-   task) — see the `data-testid="cap0-journey-slot"` placeholder in
-   Cap0TradingPage. */
+   Sticky strip above the terminal body: holds the JourneyBar (progress + next
+   task) and the mode badge. */
 .cap0-topbar {
   position: sticky;
   top: 0;

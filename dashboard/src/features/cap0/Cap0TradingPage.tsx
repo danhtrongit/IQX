@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router"
 import { Message, Modal, Input, Button } from "@arco-design/web-react"
 import { SymbolProvider } from "@/shared/contexts/symbol-context"
@@ -96,18 +96,22 @@ function Cap0Terminal() {
   const enterCap0 = useEnterCap0()
   const placement = usePlacement()
   const [placementSeen, setPlacementSeen] = useState(() => hasSeenPlacement())
-  const { setActivePanel } = useSidebar()
+  const { activePanel, setActivePanel } = useSidebar()
 
   // Spec §7: "Là view mặc định khi user vào app lần đầu và mỗi lần vào lại
   // giữa chừng" — the sidebar's `SidebarProvider` is a SINGLE app-root
   // instance shared by every route (defaultPanel="news", see
   // `app/providers.tsx`), so Cấp 0 can't set its own default — it overrides
-  // on mount instead. Mount-only (empty deps): `setActivePanel`'s identity
-  // changes every `SidebarProvider` render, so depending on it would re-fire
-  // this on every re-render and fight the user's own panel switches.
+  // to "journey" on mount and RESTORES the previous panel on unmount.
+  // Without the restore, "journey" leaks into /bieu-do & /co-phieu (they share
+  // this global provider) e.g. after a CenterPanel search navigates away.
+  // Capture the pre-mount panel once via a ref (not activePanel dep, which
+  // would re-fire on every switch and fight the user).
+  const prevPanelRef = useRef(activePanel)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setActivePanel("journey")
+    return () => setActivePanel(prevPanelRef.current)
   }, [])
 
   // Guard (§3): show only once — needs BOTH the server truth (no progress row

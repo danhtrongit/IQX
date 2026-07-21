@@ -262,6 +262,33 @@ describe("Cap0TradingPage", () => {
     expect(screen.getByTestId("panel-spy")).toHaveTextContent("journey")
   })
 
+  it("restores the previous sidebar panel on unmount (no 'journey' leak into other routes)", () => {
+    useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
+    function PanelSpy() {
+      const { activePanel } = useSidebar()
+      return <div data-testid="panel-spy">{activePanel}</div>
+    }
+    const { rerender } = render(
+      <MemoryRouter initialEntries={["/dau-truong"]}>
+        <SidebarProvider defaultPanel="news">
+          <Cap0TradingPage />
+          <PanelSpy />
+        </SidebarProvider>
+      </MemoryRouter>,
+    )
+    expect(screen.getByTestId("panel-spy")).toHaveTextContent("journey")
+    // Leave Cấp 0 (unmount the page) but keep the shared provider mounted —
+    // the panel must fall back to what it was before, not stay "journey".
+    rerender(
+      <MemoryRouter initialEntries={["/dau-truong"]}>
+        <SidebarProvider defaultPanel="news">
+          <PanelSpy />
+        </SidebarProvider>
+      </MemoryRouter>,
+    )
+    expect(screen.getByTestId("panel-spy")).not.toHaveTextContent("journey")
+  })
+
   it('clicking "AI Phân tích" in the toolbar opens the AI Insight symbol-picker modal (not a no-op)', () => {
     useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
     renderCap0(<Cap0TradingPage />)
