@@ -3,6 +3,7 @@ import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { cn } from "@/shared/lib/cn"
 import { Badge, LEVELS } from "./Badge"
 import { ModeBadge } from "./ModeBadge"
+import { useCap0Events } from "./Cap0Context"
 import { useCap0Progress } from "./hooks"
 import { countTasksDone, tradingModeFor, type Cap0Progress } from "./types"
 
@@ -107,9 +108,20 @@ function ChecklistItem({
  * 🎯 Tab "Hành trình" (spec §7) — first sidebar-right panel while in Cấp 0.
  * Level card + `TRƯỚC KHI LÊN CẤP 1 · x/6` header + 3-stage/6-task checklist +
  * graduation goal box. Entirely driven by `useCap0Progress` — no props.
+ *
+ * `RightSidebar` normally only ever resolves to this panel while
+ * `isCap0Active` (either `activePanel === "journey"` set by
+ * `Cap0TradingPage`, or as its hide-by-level fallback) — but the sidebar's
+ * `SidebarProvider` is a single app-root singleton shared by `/bieu-do` &
+ * `/co-phieu`, and a race in `useCompleteTask`'s `onSuccess` can leak
+ * `activePanel="journey"` onto those routes too (see that hook's comment).
+ * Mirror the `isCap0Active`-gated `useCap0Progress(enabled)` pattern already
+ * used by `RightSidebar`/`RightToolbar`/`TradingPanel` so THIS panel never
+ * fires `GET /cap0/progress` when rendered outside a real `Cap0Provider`.
  */
 export function JourneyPanel() {
-  const { data: progress } = useCap0Progress()
+  const { isCap0Active } = useCap0Events()
+  const { data: progress } = useCap0Progress(isCap0Active)
   const { setActivePanel } = useSidebar()
   const tasksDone = countTasksDone(progress)
   const level = LEVELS[0]

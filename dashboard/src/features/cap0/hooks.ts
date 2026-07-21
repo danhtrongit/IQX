@@ -61,6 +61,18 @@ export function usePlacement() {
  * auto-tab for free without having to remember to wire it. `useSidebar()`
  * outside a `SidebarProvider` returns the app's no-op default context, so
  * this is safe to call from anywhere `useCompleteTask` is used.
+ *
+ * A config-level `onSuccess` on `useMutation` fires even after the calling
+ * component has unmounted (TanStack Query keeps the mutation observer alive
+ * until the promise settles). `Cap0TradingPage` restores the sidebar's
+ * pre-Cấp-0 panel on unmount (see its own comment) — but if a task PATCH is
+ * still in flight at that moment (e.g. user types SL for nhiệm vụ ⑤, then
+ * immediately clicks the ticker to navigate to `/co-phieu/:symbol`), this
+ * `onSuccess` resolves AFTER that restore and would otherwise clobber the
+ * panel back to "journey", leaking the Cấp 0 sidebar into the shared
+ * `/bieu-do` & `/co-phieu` terminals. Guard with the same route check
+ * `Cap0TradingPage` is only ever mounted under: only auto-tab when the user
+ * is still actually on `/dau-truong`.
  */
 export function useCompleteTask() {
   const invalidate = useInvalidateCap0()
@@ -69,7 +81,9 @@ export function useCompleteTask() {
     mutationFn: ({ taskNo, gate }) => cap0Api.completeTask(taskNo, gate),
     onSuccess: () => {
       invalidate()
-      setActivePanel("journey")
+      if (window.location.pathname === "/dau-truong") {
+        setActivePanel("journey")
+      }
     },
   })
 }
