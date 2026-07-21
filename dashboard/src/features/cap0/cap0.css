@@ -1,0 +1,81 @@
+/* ============================================================
+   IQX · Cấp 0 «Nhập môn» — design tokens (SPEC §11)
+   ------------------------------------------------------------
+   Scoped to the `.cap0` wrapper (NOT :root / @theme) so these
+   dark tokens never leak into the rest of the Arco-themed app.
+
+   Font: Space Grotesk is the Cấp 0 display face (spec §12 badge
+   number, §5 P&L, §9 graduation title). The app otherwise ships
+   only Tahoma, and this webfont can be CSP-blocked in prod — so
+   `--cap0-font-display` carries a system-ui / sans-serif fallback
+   that reads fine on its own (mirrors the BCTC-dashboard font
+   lesson).
+   ============================================================ */
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap");
+
+.cap0 {
+  /* thương hiệu */
+  --brand: #4f8ff7; /* xanh chính */
+  --brand-soft: rgba(79, 143, 247, 0.16);
+  --brand-bd: rgba(79, 143, 247, 0.4);
+
+  /* nền & khung */
+  --bg1: #171923; /* nền chính */
+  --bg2: #1f2230; /* nền card */
+  --bg3: #282c3d; /* nền input */
+  --bd: #39405a; /* border */
+
+  /* chữ */
+  --t1: #f0f2f7; /* text chính */
+  --t2: #b8bdcc; /* text phụ */
+  --t3: #8a90a5; /* text mờ */
+
+  /* ngữ nghĩa */
+  --up: #35d07f; /* xanh lá */
+  --down: #ff6b6b; /* đỏ */
+  --warn: #ffc53d; /* vàng — gbar, tham chiếu TC */
+  --ceil: #d48aff; /* tím — trần */
+  --floor: #4dc3ff; /* xanh dương — sàn */
+
+  /* font hiển thị — có fallback chạy tốt khi webfont bị chặn */
+  --cap0-font-display: "Space Grotesk", system-ui, sans-serif;
+}
+
+/* Tiện ích: gắn font hiển thị cho tiêu đề / số lớn trong phạm vi Cấp 0. */
+.cap0-display {
+  font-family: var(--cap0-font-display);
+}
+
+/* ── Badge wrapper (SVG do badge() sinh ra) ─────────────────────────────────── */
+.cap0-badge {
+  display: inline-flex;
+  line-height: 0;
+}
+
+/* ── Mode pill (spec §2) — self-contained (literal colours) nên dùng được cả
+   ngoài phạm vi `.cap0`. Font mono có fallback hệ thống (app không ship
+   JetBrains Mono). ─────────────────────────────────────────────────────────── */
+.cap0-mode {
+  display: inline-block;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border-radius: 6px;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+
+/* SÂN TẬP · T+0 — vàng (warn) */
+.cap0-mode--warn {
+  color: #ffc53d;
+  border: 1px solid rgba(255, 197, 61, 0.45);
+  background: rgba(255, 197, 61, 0.08);
+}
+
+/* THỰC CHIẾN — xanh brand */
+.cap0-mode--brand {
+  color: #4f8ff7;
+  border: 1px solid rgba(79, 143, 247, 0.4);
+  background: rgba(79, 143, 247, 0.16);
+}
