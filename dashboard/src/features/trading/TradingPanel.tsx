@@ -168,6 +168,11 @@ function OrderEntry({
   const navigate = useNavigate()
   const placeOrder = usePlaceOrder()
   const cap0Events = useCap0Events()
+  // `isCap0Active` is the SAME signal `GatedOrderEntry` uses to ungate the
+  // form (false outside a `Cap0Provider`, i.e. on /bieu-do & /co-phieu) — the
+  // Kế hoạch block + its reason-gate below are scoped to it too, so neither
+  // has any effect on normal trading outside Cấp 0.
+  const { isCap0Active } = cap0Events
   const [side, setSide] = useState<"buy" | "sell">("buy")
   const [method, setMethod] = useState<"market" | "limit">("market")
   const [price, setPrice] = useState<number | undefined>(undefined)
@@ -214,10 +219,12 @@ function OrderEntry({
       return
     }
     // Cấp 0 nhiệm vụ ① (spec §4): block the first BUY until a Kế hoạch
-    // reason chip is picked — outside Cấp 0, or once task ① is done,
-    // `requireReasonBeforeOrder` is false and this never fires (🔵
+    // reason chip is picked — ONLY inside Cấp 0 (`isCap0Active`). Outside
+    // Cấp 0, or once task ① is done, `requireReasonBeforeOrder` is false and
+    // this never fires either way; the explicit `isCap0Active` check is
+    // belt-and-suspenders so a normal buy is NEVER blocked outside Cấp 0 (🔵
     // minimal-touch: everything else in this function is untouched).
-    if (side === "buy" && cap0Events.requireReasonBeforeOrder && !reason) {
+    if (side === "buy" && isCap0Active && cap0Events.requireReasonBeforeOrder && !reason) {
       cap0Events.onGbarWarn?.()
       return
     }
@@ -337,9 +344,11 @@ function OrderEntry({
         </div>
       </div>
 
-      {/* Kế hoạch (spec §4 THÊM MỚI) — buy-side only: the reason chips + SL/TP
-          preset only make sense when planning a NEW entry, not an exit. */}
-      {side === "buy" && (
+      {/* Kế hoạch (spec §4 THÊM MỚI) — buy-side only AND Cấp 0-only:
+          the reason chips + SL/TP preset are a Cấp 0 onboarding aid and must
+          have zero effect on normal trading outside Cấp 0 (`isCap0Active`
+          false on /bieu-do & /co-phieu → this never renders there). */}
+      {side === "buy" && isCap0Active && (
         <PlanBlock
           symbol={symbol}
           presetMode="filled"

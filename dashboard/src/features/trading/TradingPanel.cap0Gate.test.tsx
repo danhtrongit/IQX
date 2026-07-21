@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { render, screen } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import React from "react"
 import { describe, expect, it, vi } from "vitest"
 
@@ -37,10 +37,17 @@ const priceData = {
 vi.mock("@/features/market-data", () => ({
   usePrice: () => ({ data: priceData, isLoading: false }),
 }))
+// Module-scoped spy (not a fresh `vi.fn()` per hook call) so tests can assert
+// whether a submitted BUY actually reached `placeOrder.mutateAsync` — this is
+// how "reason-gate does not fire outside Cấp 0" gets proven, rather than just
+// asserted against the gate's own internal state.
+const placeOrderMock = vi.fn(() =>
+  Promise.resolve({ symbol: "VNM", side: "BUY", quantity: 100, price: 62400, total: 6_240_000, status: "FILLED" }),
+)
 vi.mock("./hooks", () => ({
   useAccount: () => ({ data: { balance: 250_000_000, pnl: 0, pnlPercent: 0, winRate: 0 } }),
   usePortfolio: () => ({ data: { positions: [] } }),
-  usePlaceOrder: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  usePlaceOrder: () => ({ mutateAsync: placeOrderMock, isPending: false }),
   useActivateAccount: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 vi.mock("@/features/auth", () => ({ useAuth: () => ({ isAuthenticated: false, setShowAuthModal: vi.fn() }) }))
@@ -49,6 +56,18 @@ vi.mock("@/features/watchlist", () => ({
   useSymbolInfo: () => ({ data: undefined }),
 }))
 vi.mock("react-router", () => ({ useNavigate: () => vi.fn() }))
+
+// Spy on `Message.{success,warning,error}` (same pattern as `gbar.test.tsx`)
+// — a real submitted BUY calls `Message.success`, which reaches into
+// Arco's toast portal (`ReactDOM.render`) and isn't happy in jsdom; keep the
+// rest of the library real and just stub the toast calls.
+vi.mock("@arco-design/web-react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@arco-design/web-react")>()
+  return {
+    ...actual,
+    Message: { ...actual.Message, success: vi.fn(), warning: vi.fn(), error: vi.fn() },
+  }
+})
 
 // Real `@/features/cap0` module — Cap0Provider needs `useCap0Progress`
 // (react-query + http client), so mock the ky client (same pattern as
@@ -82,6 +101,7 @@ describe("GatedOrderEntry — Cấp 0 ungate", () => {
 
   it("ungates the order form INSIDE Cấp 0 (real Cap0Provider) even though isPremium is false", async () => {
     vi.resetModules()
+    placeOrderMock.mockClear()
     vi.doMock("@/features/premium", () => ({ usePremiumStatus: () => ({ isPremium: false, isLoading: false }) }))
     get.mockReturnValue({ json: () => Promise.resolve(null) })
     const { TradingPanel: FreshTradingPanel } = await import("./TradingPanel")
@@ -98,12 +118,17 @@ describe("GatedOrderEntry — Cấp 0 ungate", () => {
       screen.queryByText("Đặt lệnh Đấu trường ảo yêu cầu gói Premium."),
     ).not.toBeInTheDocument()
     expect(screen.getByText("ĐẶT LỆNH MUA")).toBeInTheDocument()
-    // The Kế hoạch block comes along with it (buy side, always rendered in `OrderEntry`).
+    // The Kế hoạch block + its reason-gate are Cấp 0-only (`isCap0Active`) —
+    // inside the real `Cap0Provider` it renders, and (with no
+    // `task_1_done_at` in the mocked progress) the reason chip is required.
     expect(screen.getByText("KẾ HOẠCH")).toBeInTheDocument()
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+    await waitFor(() => expect(placeOrderMock).not.toHaveBeenCalled())
   })
 
-  it("still renders the order form normally when isPremium is true, Cấp 0 or not (unchanged existing behaviour)", async () => {
+  it("renders the order form normally when isPremium is true and NO Cap0Provider — no Kế hoạch block, and a BUY submits WITHOUT picking a reason (no scope leak into normal trading)", async () => {
     vi.resetModules()
+    placeOrderMock.mockClear()
     vi.doMock("@/features/premium", () => ({ usePremiumStatus: () => ({ isPremium: true, isLoading: false }) }))
     get.mockReturnValue({ json: () => Promise.resolve(null) })
     const { TradingPanel: FreshTradingPanel } = await import("./TradingPanel")
@@ -114,5 +139,15 @@ describe("GatedOrderEntry — Cấp 0 ungate", () => {
       </QueryClientProvider>,
     )
     expect(screen.getByText("ĐẶT LỆNH MUA")).toBeInTheDocument()
+    // (a) No Cap0Provider → `isCap0Active` is false → the Kế hoạch block must
+    // NOT render on /bieu-do & /co-phieu.
+    expect(screen.queryByText("KẾ HOẠCH")).not.toBeInTheDocument()
+    // (b) No reason chip was picked (there's no chip to pick), yet the buy
+    // must reach `placeOrder.mutateAsync` — the reason-gate must not fire.
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+    await waitFor(() => expect(placeOrderMock).toHaveBeenCalledTimes(1))
+    expect(placeOrderMock).toHaveBeenCalledWith(
+      expect.objectContaining({ symbol: "VNM", side: "buy", quantity: 100 }),
+    )
   })
 })
