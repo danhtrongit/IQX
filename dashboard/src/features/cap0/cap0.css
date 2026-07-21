@@ -79,3 +79,82 @@
   border: 1px solid rgba(79, 143, 247, 0.4);
   background: rgba(79, 143, 247, 0.16);
 }
+
+/* ── Top bar (spec §7 `.jbar`) ────────────────────────────────────────────────
+   Sticky strip above the terminal body. FE2 only mounts the mode badge here;
+   FE3 fills the rest of this row with the real JourneyBar (progress + next
+   task) — see the `data-testid="cap0-journey-slot"` placeholder in
+   Cap0TradingPage. */
+.cap0-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: linear-gradient(to right, var(--brand-soft), rgba(79, 143, 247, 0.03));
+  border-bottom: 1px solid var(--brand-bd);
+  color: var(--t1);
+  flex-shrink: 0;
+}
+
+/* ── Placement modal (spec §3) — reuses the mockup's `.mtag/.mtitle/.mopt` look. */
+.cap0-placement-tag {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--brand);
+  margin-bottom: 9px;
+}
+
+.cap0-placement-title {
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--t1);
+  margin: 0 0 11px;
+}
+
+.cap0-placement-question {
+  margin: 15px 0 0;
+  font-weight: 600;
+  color: var(--t1);
+  font-size: 13.5px;
+}
+
+.cap0-placement-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.cap0-placement-opt {
+  text-align: left;
+  background: var(--bg3);
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  padding: 10px 13px;
+  color: var(--t1);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+
+.cap0-placement-opt:hover {
+  border-color: var(--brand);
+}
+
+.cap0-placement-opt-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cap0-placement-opt-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--t3);
+}

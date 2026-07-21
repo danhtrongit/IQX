@@ -8,6 +8,9 @@ import { TopLoadingBar } from "@/shared/ui/TopLoadingBar"
 const DashboardPage = lazy(() =>
   import("@/features/dashboard").then((m) => ({ default: m.DashboardPage })),
 )
+const Cap0TradingPage = lazy(() =>
+  import("@/features/cap0").then((m) => ({ default: m.Cap0TradingPage })),
+)
 const HomeWorkspace = lazy(() =>
   import("@/features/home-workspace").then((m) => ({ default: m.HomeWorkspace })),
 )
@@ -68,6 +71,7 @@ export function AppRouter() {
         {/* Standalone (own chrome / full-screen terminal) */}
         <Route path="/bieu-do" element={<DashboardPage />} />
         <Route path="/dashboard" element={<Navigate to="/bieu-do" replace />} />
+        <Route path="/dau-truong" element={<Cap0TradingPage />} />
         <Route path="/gioi-thieu" element={<MarketingPage />} />
         <Route path="/co-phieu/:symbol" element={<StockPage />} />
         <Route path="/backtest" element={<Navigate to="/chien-luoc?tab=backtest" replace />} />

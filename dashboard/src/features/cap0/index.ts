@@ -2,6 +2,8 @@ import "./cap0.css"
 
 export { Badge, badge, LEVELS } from "./Badge"
 export { ModeBadge } from "./ModeBadge"
+export { PlacementModal } from "./PlacementModal"
+export { Cap0TradingPage } from "./Cap0TradingPage"
 export {
   Cap0Provider,
   useCap0Events,

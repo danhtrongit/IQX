@@ -8,6 +8,7 @@ vi.mock("@/features/home-workspace", () => ({
   HomeWorkspace: () => <div>home-workspace</div>,
 }))
 vi.mock("@/features/dashboard", () => ({ DashboardPage: () => <div>TERMINAL</div> }))
+vi.mock("@/features/cap0", () => ({ Cap0TradingPage: () => <div>CAP0-TERMINAL</div> }))
 // AppShell pulls navigation features with heavy providers; stub it to a pass-through.
 vi.mock("./shell/AppShell", () => ({ AppShell: () => <Outlet /> }))
 // TopLoadingBar (Suspense fallback) calls useIsFetching which needs QueryClientProvider.
@@ -33,5 +34,9 @@ describe("AppRouter swap", () => {
   it("renders the terminal at /bieu-do", async () => {
     renderAt("/bieu-do")
     expect(await screen.findByText("TERMINAL")).toBeInTheDocument()
+  })
+  it("renders the Cấp 0 terminal at /dau-truong", async () => {
+    renderAt("/dau-truong")
+    expect(await screen.findByText("CAP0-TERMINAL")).toBeInTheDocument()
   })
 })
