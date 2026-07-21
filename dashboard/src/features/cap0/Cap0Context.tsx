@@ -6,18 +6,20 @@ import {
   useRef,
   type ReactNode,
 } from "react"
+import { useCap0Progress } from "./hooks"
 
 /**
  * Cấp 0 event bus.
  *
  * This is the seam that lets the EXISTING, untouched TradingPanel / StockHeader
  * notify Cấp 0 of user actions WITHOUT Cấp 0 knowing their internals (and
- * without them knowing Cấp 0's). The notifier side calls `onOrderFilled` /
- * `onStarToggled`; the Cấp 0 journey logic (a later task) supplies the actual
- * handlers via `registerHandlers`.
+ * without them knowing Cấp 0's). The notifier side calls `onReasonPicked` /
+ * `onOrderFilled` / `onStarToggled` / `onGbarWarn`; the Cấp 0 journey logic
+ * (`Gbar.tsx`) supplies the actual handlers via `registerHandlers`.
  *
- * Outside a `Cap0Provider` the hook is a safe no-op: the two notify functions
- * are `undefined` (so callers guard with `?.`) and `registerHandlers` does
+ * Outside a `Cap0Provider` the hook is a safe no-op: the notify functions are
+ * `undefined` (so callers guard with `?.`), `isCap0Active`/
+ * `requireReasonBeforeOrder` are `false`, and `registerHandlers` does
  * nothing — this is how the same components keep working when Cấp 0 is off.
  */
 
@@ -32,13 +34,26 @@ export interface Cap0OrderEvent {
 
 /** Handlers the Cấp 0 journey registers to react to trading-UI events. */
 export interface Cap0EventHandlers {
+  /** A Kế hoạch reason chip was picked (spec §4 THÊM MỚI — new UI, no web-existing equivalent). */
+  onReasonPicked?: (reason: string) => void
   onOrderFilled?: (order: Cap0OrderEvent) => void
   onStarToggled?: (symbol: string, watched: boolean) => void
+  /** A guarded action was attempted without its precondition (spec §6 "Làm SAI") — flash the gbar red + `gshake` for ~1.6s. */
+  onGbarWarn?: () => void
 }
 
 /** The bus value: notify fns (undefined when no handlers) + `registerHandlers`. */
 export interface Cap0EventBus extends Cap0EventHandlers {
   registerHandlers: (handlers: Cap0EventHandlers) => void
+  /** True only inside a `Cap0Provider` (i.e. the Cấp 0 «Sân tập» practice-trading shell). Lets `GatedOrderEntry` ungate the order form without a premium plan. */
+  isCap0Active: boolean
+  /**
+   * True while Cấp 0 nhiệm vụ ① is still open — `OrderEntry` must block
+   * "ĐẶT LỆNH MUA" until a Kế hoạch reason chip is picked (spec §4 "chặn nếu
+   * chưa chọn chip lý do → gbar warn") and call `onGbarWarn` instead. `false`
+   * once task ① is done, or entirely outside Cấp 0.
+   */
+  requireReasonBeforeOrder: boolean
 }
 
 const Cap0EventsContext = createContext<Cap0EventBus | null>(null)
@@ -47,9 +62,14 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
   // Handlers live in a ref so registering them never re-renders notifiers and
   // the notify fns keep a stable identity.
   const handlersRef = useRef<Cap0EventHandlers>({})
+  const { data: progress } = useCap0Progress()
 
   const registerHandlers = useCallback((handlers: Cap0EventHandlers) => {
     handlersRef.current = handlers
+  }, [])
+
+  const onReasonPicked = useCallback((reason: string) => {
+    handlersRef.current.onReasonPicked?.(reason)
   }, [])
 
   const onOrderFilled = useCallback((order: Cap0OrderEvent) => {
@@ -60,9 +80,26 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
     handlersRef.current.onStarToggled?.(symbol, watched)
   }, [])
 
+  const onGbarWarn = useCallback(() => {
+    handlersRef.current.onGbarWarn?.()
+  }, [])
+
+  // Fail-closed while progress is still loading (`progress` undefined →
+  // `task_1_done_at` undefined → the gate stays required), matching the
+  // product's "chặn nếu chưa chọn" protective default.
+  const requireReasonBeforeOrder = !progress?.task_1_done_at
+
   const value = useMemo<Cap0EventBus>(
-    () => ({ onOrderFilled, onStarToggled, registerHandlers }),
-    [onOrderFilled, onStarToggled, registerHandlers],
+    () => ({
+      onReasonPicked,
+      onOrderFilled,
+      onStarToggled,
+      onGbarWarn,
+      registerHandlers,
+      isCap0Active: true,
+      requireReasonBeforeOrder,
+    }),
+    [onReasonPicked, onOrderFilled, onStarToggled, onGbarWarn, registerHandlers, requireReasonBeforeOrder],
   )
 
   return <Cap0EventsContext.Provider value={value}>{children}</Cap0EventsContext.Provider>
@@ -71,11 +108,14 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
 /** Safe no-op bus used outside a provider — notify fns undefined. */
 const NOOP_BUS: Cap0EventBus = {
   registerHandlers: () => {},
+  isCap0Active: false,
+  requireReasonBeforeOrder: false,
 }
 
 /**
  * Access the Cấp 0 event bus. Always safe to call: outside a `Cap0Provider`
- * it returns the no-op bus (`onOrderFilled`/`onStarToggled` are `undefined`).
+ * it returns the no-op bus (notify fns `undefined`, `isCap0Active`/
+ * `requireReasonBeforeOrder` `false`).
  */
 export function useCap0Events(): Cap0EventBus {
   return useContext(Cap0EventsContext) ?? NOOP_BUS

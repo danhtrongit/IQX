@@ -97,6 +97,60 @@
   flex-shrink: 0;
 }
 
+/* ── Gbar (spec §6/§11 `.gbar`) — sustained reminder bar for nhiệm vụ ①,
+   mounted right below `.cap0-topbar` (spec "sticky dưới journey bar"). Normal
+   (amber) vs warn (red + `gshake` 0.3s, spec §11 exact colours). */
+.cap0-gbar {
+  position: sticky;
+  top: 0;
+  z-index: 39;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  background: rgba(255, 197, 61, 0.1);
+  border-bottom: 1px solid rgba(255, 197, 61, 0.45);
+  font-size: 12.5px;
+  color: var(--t1);
+  flex-shrink: 0;
+}
+
+.cap0-gbar-tag {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--warn);
+  border: 1px solid rgba(255, 197, 61, 0.5);
+  border-radius: 5px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
+.cap0-gbar--warn {
+  background: rgba(255, 107, 107, 0.12);
+  border-bottom-color: rgba(255, 107, 107, 0.55);
+  animation: cap0-gshake 0.3s;
+}
+
+.cap0-gbar--warn .cap0-gbar-tag {
+  color: var(--down);
+  border-color: rgba(255, 107, 107, 0.6);
+}
+
+@keyframes cap0-gshake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
 /* ── Placement modal (spec §3) — reuses the mockup's `.mtag/.mtitle/.mopt` look. */
 .cap0-placement-tag {
   font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;

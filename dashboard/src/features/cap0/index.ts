@@ -5,6 +5,21 @@ export { ModeBadge } from "./ModeBadge"
 export { PlacementModal } from "./PlacementModal"
 export { JourneyPanel } from "./JourneyPanel"
 export { JourneyBar } from "./JourneyBar"
+export { Gbar } from "./Gbar"
+export { PlanBlock, type PlanBlockProps } from "./PlanBlock"
+export {
+  gbarReducer,
+  gbarStep,
+  gbarStepMessage,
+  gbarText,
+  gbarVisible,
+  initialGbarState,
+  GBAR_TAG,
+  type GbarAction,
+  type GbarState,
+  type GbarStep,
+  type GbarTone,
+} from "./gbarMachine"
 export { Cap0TradingPage } from "./Cap0TradingPage"
 export {
   Cap0Provider,

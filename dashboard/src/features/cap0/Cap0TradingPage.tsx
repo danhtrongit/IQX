@@ -9,6 +9,7 @@ import { IconBrainCircuit } from "@/shared/icons"
 import { Cap0Provider } from "./Cap0Context"
 import { ModeBadge } from "./ModeBadge"
 import { JourneyBar } from "./JourneyBar"
+import { Gbar } from "./Gbar"
 import { useCap0Progress, useEnterCap0, usePlacement } from "./hooks"
 import { PlacementModal } from "./PlacementModal"
 import "./cap0.css"
@@ -188,6 +189,11 @@ function Cap0Terminal() {
         <JourneyBar />
         <ModeBadge mode="san_tap" />
       </div>
+
+      {/* Sticky reminder bar for nhiệm vụ ① (spec §6 "sticky dưới journey
+          bar") — sits right below `.cap0-topbar`, not inside it (own sticky
+          offset), and renders nothing once hidden/not applicable. */}
+      <Gbar />
 
       {/* No custom LeftSidebar — TradingView provides its own drawing toolbar on the left. */}
       <div className="flex flex-1 min-h-0 pb-[52px] md:pb-0">

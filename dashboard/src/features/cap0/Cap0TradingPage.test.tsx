@@ -10,7 +10,7 @@ import type { Cap0Progress } from "./types"
 // `vi.hoisted` — `vi.mock` calls are hoisted above ALL other statements
 // (including plain top-level `const`s), so a factory closing over a plain
 // `const` can hit a TDZ ReferenceError at mock-invocation time.
-const { useCap0ProgressMock, enterMutate, placementMutate, messageInfo, navigateMock } = vi.hoisted(() => ({
+const { useCap0ProgressMock, enterMutate, placementMutate, completeTaskMutate, messageInfo, navigateMock } = vi.hoisted(() => ({
   useCap0ProgressMock: vi.fn(),
   // Mirror react-query's real `mutate(variables, options)` shape: by default,
   // synchronously invoke the caller's `onSuccess` (the "happy path" a normal
@@ -23,6 +23,10 @@ const { useCap0ProgressMock, enterMutate, placementMutate, messageInfo, navigate
   placementMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
     opts?.onSuccess?.()
   }),
+  // `Gbar` (now mounted below the journey bar) calls `useCompleteTask` — a
+  // no-op spy is enough here since this file only exercises the Cấp 0 shell,
+  // not nhiệm vụ ①'s own behaviour (see `gbar.test.tsx`).
+  completeTaskMutate: vi.fn(),
   messageInfo: vi.fn(),
   navigateMock: vi.fn(),
 }))
@@ -72,6 +76,7 @@ vi.mock("./hooks", () => ({
   useCap0Progress: (...a: unknown[]) => useCap0ProgressMock(...a),
   useEnterCap0: () => ({ mutate: enterMutate }),
   usePlacement: () => ({ mutate: placementMutate }),
+  useCompleteTask: () => ({ mutate: completeTaskMutate }),
 }))
 
 // Only stub `Message` (used for the "Đã từng" toast) — keep the real Modal/

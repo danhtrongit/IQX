@@ -25,6 +25,7 @@ import { usePrice, type PriceBoardData } from "@/features/market-data"
 import { useSymbol } from "@/shared/contexts/symbol-context"
 import { useAuth } from "@/features/auth"
 import { usePremiumStatus } from "@/features/premium"
+import { PlanBlock, useCap0Events } from "@/features/cap0"
 import { getErrorMessage } from "@/shared/http/client"
 import { cn } from "@/shared/lib/cn"
 import { StockLogo } from "@/features/navigation/StockLogo"
@@ -52,6 +53,11 @@ function fmtCompact(v: number): string {
   if (v >= 1e6) return (v / 1e6).toFixed(1) + "M"
   if (v >= 1e3) return (v / 1e3).toFixed(1) + "K"
   return String(v)
+}
+
+/** Kế hoạch preset SL/TP (spec §4 "−5%/+10% điền sẵn") — nearest 100 VND tick. */
+function roundToStep(n: number, step = 100): number {
+  return Math.round(n / step) * step
 }
 
 function priceColorClass(price: number, ref: number, ceil: number, floor: number): string {
@@ -161,16 +167,23 @@ function OrderEntry({
 }) {
   const navigate = useNavigate()
   const placeOrder = usePlaceOrder()
+  const cap0Events = useCap0Events()
   const [side, setSide] = useState<"buy" | "sell">("buy")
   const [method, setMethod] = useState<"market" | "limit">("market")
   const [price, setPrice] = useState<number | undefined>(undefined)
   const [volume, setVolume] = useState<number>(100)
+  const [reason, setReason] = useState<string | null>(null)
 
   const currentPrice = data?.closePrice ? data.closePrice * 1000 : 0
   const numPrice = price ?? currentPrice
   const numVolume = volume || 0
   const orderValue = numPrice * numVolume
   const fee = Math.round(orderValue * 0.0015)
+
+  // Kế hoạch preset SL/TP (spec §4, THÊM MỚI) — display-only, never sent to
+  // the order backend (spec: "KHÔNG ghi vào backend đặt lệnh của web hiện tại").
+  const presetSl = currentPrice > 0 ? roundToStep(currentPrice * 0.95) : null
+  const presetTp = currentPrice > 0 ? roundToStep(currentPrice * 1.1) : null
 
   const handlePct = (pct: number) => {
     if (side === "buy" && numPrice > 0) {
@@ -200,6 +213,14 @@ function OrderEntry({
       Message.warning("Vui lòng nhập giá hợp lệ cho lệnh giới hạn")
       return
     }
+    // Cấp 0 nhiệm vụ ① (spec §4): block the first BUY until a Kế hoạch
+    // reason chip is picked — outside Cấp 0, or once task ① is done,
+    // `requireReasonBeforeOrder` is false and this never fires (🔵
+    // minimal-touch: everything else in this function is untouched).
+    if (side === "buy" && cap0Events.requireReasonBeforeOrder && !reason) {
+      cap0Events.onGbarWarn?.()
+      return
+    }
 
     const label = side === "buy" ? "MUA" : "BÁN"
     try {
@@ -210,6 +231,12 @@ function OrderEntry({
         quantity: numVolume,
         price: numPrice,
       })
+      // `order.side` is a plain `string` off the wire (backend returns
+      // "BUY"/"SELL"); the bus's `Cap0OrderEvent.side` is the UI's own
+      // lowercase `"buy" | "sell"` union, so build the event from the local
+      // `side` state (what was actually requested) instead of re-narrowing
+      // the response field.
+      cap0Events.onOrderFilled?.({ symbol, side, quantity: order.quantity, price: order.price })
       const totalStr = (order.total || order.price * order.quantity).toLocaleString("vi-VN")
       Message.success(
         `Đặt lệnh ${label} ${symbol} thành công — ${order.quantity} CP × ${order.price.toLocaleString("vi-VN")} = ${totalStr} VND${order.status === "PENDING" ? " (chờ khớp)" : ""}`,
@@ -309,6 +336,22 @@ function OrderEntry({
           </span>
         </div>
       </div>
+
+      {/* Kế hoạch (spec §4 THÊM MỚI) — buy-side only: the reason chips + SL/TP
+          preset only make sense when planning a NEW entry, not an exit. */}
+      {side === "buy" && (
+        <PlanBlock
+          symbol={symbol}
+          presetMode="filled"
+          reason={reason}
+          onReason={(r) => {
+            setReason(r)
+            cap0Events.onReasonPicked?.(r)
+          }}
+          sl={presetSl}
+          tp={presetTp}
+        />
+      )}
 
       {/* Submit */}
       <Button
@@ -435,6 +478,7 @@ function StockHeader({
   const { isAuthenticated, setShowAuthModal } = useAuth()
   const { isWatched, toggle, isPending } = useWatchlistToggle()
   const { data: info } = useSymbolInfo(symbol)
+  const cap0Events = useCap0Events()
 
   const handleToggle = async () => {
     if (!isAuthenticated) {
@@ -445,6 +489,8 @@ function StockHeader({
     const wasWatched = isWatched(symbol)
     try {
       await toggle(symbol)
+      const nowWatched = !wasWatched
+      cap0Events.onStarToggled?.(symbol, nowWatched)
       Message.success(
         wasWatched ? `Đã bỏ theo dõi ${symbol}` : `Đã thêm ${symbol} vào danh sách`,
       )
@@ -567,6 +613,7 @@ function GatedOrderEntry(props: {
   positionQty: number
 }) {
   const { isPremium, isLoading } = usePremiumStatus()
+  const { isCap0Active } = useCap0Events()
   const navigate = useNavigate()
 
   if (isLoading) {
@@ -577,7 +624,11 @@ function GatedOrderEntry(props: {
     )
   }
 
-  if (!isPremium) {
+  // Cấp 0 «Sân tập» practice trading ungates the order form without a
+  // premium plan (spec §2) — `isCap0Active` is only ever true inside a
+  // `Cap0Provider` (i.e. `Cap0TradingPage`), so /bieu-do & /co-phieu (no
+  // provider there) keep the premium gate exactly as before.
+  if (!isPremium && !isCap0Active) {
     return (
       <div className="space-y-2 px-2 py-4 text-center">
         <p className="text-xs text-[var(--color-text-3)]">
