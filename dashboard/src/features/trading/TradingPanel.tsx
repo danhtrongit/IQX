@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router"
 import {
   Button,
@@ -10,6 +10,7 @@ import {
   Spin,
   Tabs,
   Tag,
+  Tooltip,
 } from "@arco-design/web-react"
 import {
   IconArrowFall,
@@ -25,7 +26,7 @@ import { usePrice, type PriceBoardData } from "@/features/market-data"
 import { useSymbol } from "@/shared/contexts/symbol-context"
 import { useAuth } from "@/features/auth"
 import { usePremiumStatus } from "@/features/premium"
-import { PlanBlock, useCap0Events } from "@/features/cap0"
+import { PlanBlock, useCap0Events, useCap0Progress, useCompleteTask, cap0Visibility } from "@/features/cap0"
 import { getErrorMessage } from "@/shared/http/client"
 import { cn } from "@/shared/lib/cn"
 import { StockLogo } from "@/features/navigation/StockLogo"
@@ -173,11 +174,41 @@ function OrderEntry({
   // Kế hoạch block + its reason-gate below are scoped to it too, so neither
   // has any effect on normal trading outside Cấp 0.
   const { isCap0Active } = cap0Events
+  // Hide-by-level (spec §8) — `useCap0Progress(isCap0Active)` only queries
+  // when actually inside Cấp 0 (the `enabled` param), so this has zero
+  // effect — no extra request, no hiding — outside a `Cap0Provider`.
+  const { data: cap0Progress } = useCap0Progress(isCap0Active)
+  const completeTask5 = useCompleteTask()
   const [side, setSide] = useState<"buy" | "sell">("buy")
   const [method, setMethod] = useState<"market" | "limit">("market")
   const [price, setPrice] = useState<number | undefined>(undefined)
   const [volume, setVolume] = useState<number>(100)
   const [reason, setReason] = useState<string | null>(null)
+  // Nhiệm vụ ⑤ (spec §4 Chặng 3) — manual, user-typed SL/TP once task ① is
+  // done (replaces the nhiệm vụ ① preset). Kept separate from `presetSl`/
+  // `presetTp` below so switching modes never shows a stale preset value.
+  const [slManual, setSlManual] = useState<number | null>(null)
+  const [tpManual, setTpManual] = useState<number | null>(null)
+  // Cổng chất lượng 1 fires on the FIRST keydown only (not on every
+  // keystroke while typing a multi-digit number) — reset per mount, which is
+  // fine: `task5_sl_typed` server-side is the authoritative "already gated"
+  // guard below, this ref just avoids redundant mutations within one mount.
+  const slGateFiredRef = useRef(false)
+
+  const task1Done = !!cap0Progress?.task_1_done_at
+  const cap0Vis = cap0Visibility(cap0Progress)
+  // Ô Giá + dropdown loại lệnh ẩn cho đến nhiệm vụ ⑤ (spec §8) — ONLY inside
+  // Cấp 0; outside it (`isCap0Active` false) this is always visible, exactly
+  // as today.
+  const hidePriceAndType = isCap0Active && !cap0Vis.priceField
+
+  const handleSlKeydown = () => {
+    if (!isCap0Active || !task1Done || cap0Progress?.task5_sl_typed || slGateFiredRef.current) {
+      return
+    }
+    slGateFiredRef.current = true
+    completeTask5.mutate({ taskNo: 5, gate: "sl_typed" })
+  }
 
   const currentPrice = data?.closePrice ? data.closePrice * 1000 : 0
   const numPrice = price ?? currentPrice
@@ -187,6 +218,8 @@ function OrderEntry({
 
   // Kế hoạch preset SL/TP (spec §4, THÊM MỚI) — display-only, never sent to
   // the order backend (spec: "KHÔNG ghi vào backend đặt lệnh của web hiện tại").
+  // Only shown pre-⑤ (nhiệm vụ ⑤ switches `PlanBlock` to manual, user-typed
+  // values below).
   const presetSl = currentPrice > 0 ? roundToStep(currentPrice * 0.95) : null
   const presetTp = currentPrice > 0 ? roundToStep(currentPrice * 1.1) : null
 
@@ -243,7 +276,18 @@ function OrderEntry({
       // lowercase `"buy" | "sell"` union, so build the event from the local
       // `side` state (what was actually requested) instead of re-narrowing
       // the response field.
-      cap0Events.onOrderFilled?.({ symbol, side, quantity: order.quantity, price: order.price })
+      // BUY fills also carry the Kế hoạch SL/TP shown/typed at order time
+      // (preset pre-⑤, manually-typed from ⑤ on) — the trading backend never
+      // persists these, so nhiệm vụ ⑥'s later debrief needs them off the bus.
+      const effectiveSl = task1Done ? (slManual ?? undefined) : (presetSl ?? undefined)
+      const effectiveTp = task1Done ? (tpManual ?? undefined) : (presetTp ?? undefined)
+      cap0Events.onOrderFilled?.({
+        symbol,
+        side,
+        quantity: order.quantity,
+        price: order.price,
+        ...(side === "buy" ? { sl: effectiveSl, tp: effectiveTp } : {}),
+      })
       const totalStr = (order.total || order.price * order.quantity).toLocaleString("vi-VN")
       Message.success(
         `Đặt lệnh ${label} ${symbol} thành công — ${order.quantity} CP × ${order.price.toLocaleString("vi-VN")} = ${totalStr} VND${order.status === "PENDING" ? " (chờ khớp)" : ""}`,
@@ -274,25 +318,41 @@ function OrderEntry({
         <Tabs.TabPane key="sell" title={<span className="font-semibold">BÁN</span>} />
       </Tabs>
 
-      {/* Order method */}
-      <Select value={method} onChange={(v) => setMethod(v)} size="small">
-        <Select.Option value="market">Lệnh thị trường (MP)</Select.Option>
-        <Select.Option value="limit">Lệnh giới hạn (LO)</Select.Option>
-      </Select>
+      {/* Order method + Price — hidden until nhiệm vụ ⑤ while in Cấp 0
+          (spec §8; `hidePriceAndType` is always false outside Cấp 0, so this
+          renders exactly as before on /bieu-do & /co-phieu). */}
+      {!hidePriceAndType && (
+        <>
+          {/* Order method */}
+          <Select value={method} onChange={(v) => setMethod(v)} size="small">
+            <Select.Option value="market">Lệnh thị trường (MP)</Select.Option>
+            <Select.Option value="limit">Lệnh giới hạn (LO)</Select.Option>
+          </Select>
 
-      {/* Price */}
-      <div className="space-y-1">
-        <label className="text-xs font-medium text-[var(--color-text-3)]">Giá</label>
-        <InputNumber
-          mode="button"
-          step={100}
-          min={0}
-          value={numPrice}
-          onChange={(v) => setPrice(v ?? 0)}
-          disabled={method === "market"}
-          className="w-full"
-        />
-      </div>
+          {/* Price */}
+          <Tooltip
+            content={
+              isCap0Active && task1Done
+                ? 'Bạn vừa mở khóa ô Giá. Nãy giờ bạn dùng lệnh THỊ TRƯỜNG (MP) — mua ngay ở giá bên bán. Nhập giá cụ thể vào ô này là lệnh GIỚI HẠN (LO): "tôi chỉ mua nếu giá về mức X" — máy chờ giúp bạn. Chủ động hơn, nhưng có thể không khớp.'
+                : ""
+              }
+            disabled={!(isCap0Active && task1Done)}
+          >
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--color-text-3)]">Giá</label>
+              <InputNumber
+                mode="button"
+                step={100}
+                min={0}
+                value={numPrice}
+                onChange={(v) => setPrice(v ?? 0)}
+                disabled={method === "market"}
+                className="w-full"
+              />
+            </div>
+          </Tooltip>
+        </>
+      )}
 
       {/* Volume */}
       <div className="space-y-1">
@@ -347,19 +407,37 @@ function OrderEntry({
       {/* Kế hoạch (spec §4 THÊM MỚI) — buy-side only AND Cấp 0-only:
           the reason chips + SL/TP preset are a Cấp 0 onboarding aid and must
           have zero effect on normal trading outside Cấp 0 (`isCap0Active`
-          false on /bieu-do & /co-phieu → this never renders there). */}
+          false on /bieu-do & /co-phieu → this never renders there).
+          Nhiệm vụ ⑤ (spec §4 Chặng 3): once task ① is done, switches to
+          `presetMode="manual"` — SL/TP are no longer pre-filled, the user
+          types them, and the FIRST `keydown` into the SL field (not a click
+          on any auto-fill button — cổng chất lượng 1) marks the gate. */}
       {side === "buy" && isCap0Active && (
-        <PlanBlock
-          symbol={symbol}
-          presetMode="filled"
-          reason={reason}
-          onReason={(r) => {
-            setReason(r)
-            cap0Events.onReasonPicked?.(r)
-          }}
-          sl={presetSl}
-          tp={presetTp}
-        />
+        <Tooltip
+          content={
+            task1Done
+              ? "Lần này bạn tự quyết: nếu sai, bạn chấp nhận dừng ở giá nào? Gõ con số của bạn — nó là lời hứa với chính mình, không phải ô phải điền cho qua."
+              : ""
+          }
+          disabled={!task1Done}
+        >
+          <div>
+            <PlanBlock
+              symbol={symbol}
+              presetMode={task1Done ? "manual" : "filled"}
+              reason={reason}
+              onReason={(r) => {
+                setReason(r)
+                cap0Events.onReasonPicked?.(r)
+              }}
+              sl={task1Done ? slManual : presetSl}
+              tp={task1Done ? tpManual : presetTp}
+              onSlChange={task1Done ? setSlManual : undefined}
+              onTpChange={task1Done ? setTpManual : undefined}
+              onSlKeydown={task1Done ? handleSlKeydown : undefined}
+            />
+          </div>
+        </Tooltip>
       )}
 
       {/* Submit */}
@@ -659,6 +737,13 @@ export function TradingPanel({ hideHeader = false }: { hideHeader?: boolean } = 
   const { data, isLoading } = usePrice(symbol)
   const { data: account } = useAccount()
   const { data: portfolio } = usePortfolio()
+  const { isCap0Active } = useCap0Events()
+  // Hide-by-level (spec §8) — sổ lệnh bid/ask ẩn cho đến nhiệm vụ ② (tour
+  // bảng điện, not built this delivery — Chặng 2 is 3 locked slots, so this
+  // stays hidden for this delivery's whole Cấp 0 run, as intended).
+  // `useCap0Progress(isCap0Active)` only queries inside Cấp 0.
+  const { data: cap0Progress } = useCap0Progress(isCap0Active)
+  const hideOrderBook = isCap0Active && !cap0Visibility(cap0Progress).orderBook
 
   const positionQty = useMemo(() => {
     const pos = portfolio?.positions.find(
@@ -672,7 +757,7 @@ export function TradingPanel({ hideHeader = false }: { hideHeader?: boolean } = 
       {!hideHeader && <StockHeader symbol={symbol} data={data} isLoading={isLoading} />}
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {data && <OrderBookView data={data} />}
+        {data && !hideOrderBook && <OrderBookView data={data} />}
         <Divider className="my-1" />
         <AccountStrip positionQty={positionQty} symbol={symbol} />
         <GatedOrderEntry

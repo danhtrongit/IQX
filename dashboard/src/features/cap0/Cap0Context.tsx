@@ -30,6 +30,15 @@ export interface Cap0OrderEvent {
   quantity: number
   /** Filled price (VND). */
   price: number
+  /**
+   * Kế hoạch cắt lỗ/chốt lời shown (nhiệm vụ ①, preset) or typed (nhiệm vụ
+   * ⑤, manual) at BUY time — `undefined` on sell events and outside Cấp 0.
+   * Cấp 0 needs these later (§5 Kết sổ) but the trading backend never
+   * persists them (spec: "chỉ để hiển thị"), so the FE carries them on the
+   * bus at buy-time for whoever handles the later sell (`Gbar`).
+   */
+  sl?: number
+  tp?: number
 }
 
 /** Handlers the Cấp 0 journey registers to react to trading-UI events. */

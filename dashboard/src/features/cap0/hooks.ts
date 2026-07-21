@@ -8,13 +8,18 @@ import type { Cap0Gate, Cap0Progress, PlacementResult } from "./types"
  * Current user's Cấp 0 progress. `staleTime: 0` so it always refetches after a
  * mutation invalidates it (the journey bar / checklist reflect live progress).
  * `data` is `null` when the user hasn't entered Cấp 0 yet.
+ *
+ * `enabled` (default `true`) lets callers OUTSIDE `Cap0TradingPage` (e.g.
+ * `TradingPanel`/`RightSidebar`/`RightToolbar`, shared with /bieu-do &
+ * /co-phieu) pass their own `isCap0Active` so this query — and the hide-by-
+ * level decision it feeds (spec §8) — never fires outside Cấp 0.
  */
-export function useCap0Progress() {
+export function useCap0Progress(enabled = true) {
   const { isAuthenticated } = useAuth()
   return useQuery<Cap0Progress | null>({
     queryKey: cap0Keys.progress(),
     queryFn: cap0Api.getProgress,
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && enabled,
     staleTime: 0,
     retry: false,
   })

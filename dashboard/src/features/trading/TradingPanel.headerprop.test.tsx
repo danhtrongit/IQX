@@ -1,4 +1,5 @@
 import React from "react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi } from "vitest"
 
@@ -18,12 +19,21 @@ vi.mock("@/features/watchlist", () => ({ useWatchlistToggle: () => ({ isWatched:
 vi.mock("react-router", () => ({ useNavigate: () => vi.fn() }))
 import { TradingPanel } from "./TradingPanel"
 
+function renderWithClient(ui: React.ReactElement) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>)
+}
+
 describe("TradingPanel hideHeader", () => {
   it("omits the StockHeader symbol button when hideHeader is set", () => {
-    const { rerender } = render(<TradingPanel />)
+    const { rerender } = renderWithClient(<TradingPanel />)
     // Default: StockHeader renders the symbol as a button
     expect(screen.getAllByText("HPG").length).toBeGreaterThan(0)
-    rerender(<TradingPanel hideHeader />)
+    rerender(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <TradingPanel hideHeader />
+      </QueryClientProvider>,
+    )
     // With hideHeader, the StockHeader's exchange Tag ("HOSE") is gone
     expect(screen.queryByText("HOSE")).not.toBeInTheDocument()
   })

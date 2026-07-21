@@ -4,6 +4,12 @@ import { useSidebar, type SidebarPanel } from "@/shared/contexts/sidebar-context
 import { cn } from "@/shared/lib/cn"
 import { IconBulb } from "@/shared/icons"
 import { IconShoppingCart, IconNewspaper, IconCandlestick } from "../icons"
+// Concrete-file imports (NOT the `@/features/cap0` barrel) — see
+// `RightSidebar.tsx`'s comment: the barrel re-exports `Cap0TradingPage`,
+// which imports `RightToolbar` back from `@/features/dashboard`.
+import { useCap0Events } from "@/features/cap0/Cap0Context"
+import { useCap0Progress } from "@/features/cap0/hooks"
+import { cap0Visibility } from "@/features/cap0/cap0Visibility"
 
 interface ToolbarItem {
   icon: ComponentType<{ className?: string }>
@@ -55,6 +61,15 @@ export function RightToolbar({
 }) {
   const { activePanel, setActivePanel } =
     useSidebar()
+  // Hide-by-level (spec §8) — "Tin tức" / "AI Mẫu nến" tab buttons stay
+  // hidden until Cấp 1 (graduation) while in Cấp 0.
+  // `useCap0Progress(isCap0Active)` only queries inside Cấp 0, so this has
+  // zero effect on /bieu-do & /co-phieu (both flags default to visible).
+  const { isCap0Active } = useCap0Events()
+  const { data: cap0Progress } = useCap0Progress(isCap0Active)
+  const visibility = cap0Visibility(cap0Progress)
+  const showNewsTab = !isCap0Active || visibility.newsTab
+  const showAiPatternsTab = !isCap0Active || visibility.aiPatternsTab
 
   const handleClick = (item: ToolbarItem) => {
     if (item.panel) {
@@ -73,14 +88,25 @@ export function RightToolbar({
     { icon: IconCompass, label: "Hành trình", id: "journey", panel: "journey" },
     { icon: IconShoppingCart, label: "Đặt lệnh", id: "order", panel: "trading" },
     { icon: IconEye, label: "Danh mục", id: "watchlist", panel: "watchlist" },
-    { icon: IconNewspaper, label: "Tin tức", id: "news", panel: "news" },
+    ...(showNewsTab
+      ? [{ icon: IconNewspaper, label: "Tin tức", id: "news", panel: "news" } as ToolbarItem]
+      : []),
     {
       icon: IconBulb,
       label: "AI Phân tích",
       id: "ai-insight",
       onClick: () => onActionClick?.("ai-insight"),
     },
-    { icon: IconCandlestick, label: "AI Mẫu nến", id: "ai-patterns", panel: "patterns" },
+    ...(showAiPatternsTab
+      ? [
+          {
+            icon: IconCandlestick,
+            label: "AI Mẫu nến",
+            id: "ai-patterns",
+            panel: "patterns",
+          } as ToolbarItem,
+        ]
+      : []),
   ]
 
   return (

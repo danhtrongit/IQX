@@ -7,6 +7,9 @@ export { JourneyPanel } from "./JourneyPanel"
 export { JourneyBar } from "./JourneyBar"
 export { Gbar } from "./Gbar"
 export { PlanBlock, type PlanBlockProps } from "./PlanBlock"
+export { cap0Visibility, type Cap0Visibility } from "./cap0Visibility"
+export { coachTemplate, type CoachSituation } from "./coachTemplate"
+export { DebriefModal, type DebriefData, type DebriefModalProps } from "./DebriefModal"
 export {
   gbarReducer,
   gbarStep,

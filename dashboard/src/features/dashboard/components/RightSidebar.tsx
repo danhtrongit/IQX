@@ -6,11 +6,14 @@ import { TradingPanel } from "@/features/trading"
 import { WatchlistPanel } from "@/features/watchlist"
 import { PremiumGate } from "@/features/premium"
 import { AIPatternPanel } from "@/features/patterns"
-// Imported from the concrete file (NOT the `@/features/cap0` barrel) — that
+// Imported from the concrete files (NOT the `@/features/cap0` barrel) — that
 // barrel re-exports `Cap0TradingPage`, which itself imports `CenterPanel`/
 // `RightSidebar`/`RightToolbar` from `@/features/dashboard`. Going through the
 // barrel here would create a module-graph cycle between the two features.
 import { JourneyPanel } from "@/features/cap0/JourneyPanel"
+import { useCap0Events } from "@/features/cap0/Cap0Context"
+import { useCap0Progress } from "@/features/cap0/hooks"
+import { cap0Visibility } from "@/features/cap0/cap0Visibility"
 
 /**
  * Dynamic right sidebar that switches between panels:
@@ -25,12 +28,23 @@ import { JourneyPanel } from "@/features/cap0/JourneyPanel"
  */
 export function RightSidebar() {
   const { activePanel, isOpen, setIsOpen } = useSidebar()
+  // Hide-by-level (spec §8) — "Tin tức" / "AI Mẫu nến" stay hidden until
+  // Cấp 1 (graduation) while in Cấp 0. `useCap0Progress(isCap0Active)` only
+  // queries inside Cấp 0, so this has zero effect on /bieu-do & /co-phieu.
+  const { isCap0Active } = useCap0Events()
+  const { data: cap0Progress } = useCap0Progress(isCap0Active)
+  const visibility = cap0Visibility(cap0Progress)
 
   const getPanelContent = () => {
     switch (activePanel) {
       case "news":
+        // Defense-in-depth: even if something else lands `activePanel` on
+        // "news" while it's hidden (spec §8), fall back to the Cấp 0 default
+        // view instead of showing the hidden panel.
+        if (isCap0Active && !visibility.newsTab) return <JourneyPanel />
         return <NewsFeedPanel />
       case "patterns":
+        if (isCap0Active && !visibility.aiPatternsTab) return <JourneyPanel />
         return (
           <PremiumGate
             featureName="AI Mẫu nến"

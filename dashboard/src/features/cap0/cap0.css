@@ -437,3 +437,87 @@
 .cap0-journey-goal strong {
   color: var(--t1);
 }
+
+/* ── Kết sổ / Debrief modal (spec §5) ───────────────────────────────────────── */
+.cap0-debrief-tag {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--brand);
+}
+
+.cap0-debrief-pnl {
+  margin-top: 8px;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cap0-debrief-sub {
+  margin-top: 7px;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 11px;
+  color: var(--t3);
+}
+
+.cap0-debrief-table {
+  width: 100%;
+  margin-top: 16px;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+
+.cap0-debrief-table th {
+  padding-bottom: 6px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--t3);
+}
+
+.cap0-debrief-table td {
+  padding: 7px 0;
+  border-top: 1px solid var(--bd);
+  color: var(--t1);
+}
+
+.cap0-debrief-table td:first-child {
+  color: var(--t3);
+}
+
+.cap0-debrief-coach {
+  margin-top: 16px;
+  padding: 11px 13px;
+  background: var(--brand-soft);
+  border-left: 2px solid var(--brand);
+  border-radius: 8px;
+}
+
+.cap0-debrief-coach-tag {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--brand);
+}
+
+.cap0-debrief-coach-body {
+  margin-top: 6px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--t2);
+}
+
+.cap0-debrief-close {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 11px 12px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
