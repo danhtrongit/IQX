@@ -676,6 +676,64 @@ async def test_non_premium_order_never_thuc_chien_even_if_admin_sets_t2(
 @pytest.mark.asyncio
 @patch(_VS, new=_vs_ok)
 @patch(_PR, new=_mp)
+async def test_non_premium_limit_order_fills_san_tap_t0_even_if_admin_sets_t2_before_refresh(
+    client, non_premium_headers, admin_headers,
+):
+    """Regression: a non-premium LIMIT order that stays pending and fills LATER
+    via /refresh must still settle san_tap/T0 — even if the admin flips the
+    GLOBAL settlement_mode to T2 in the gap between order placement and fill.
+
+    Settlement is frozen in the order's config_snapshot at creation time
+    (see place_order's ``effective_settlement_mode``), not re-derived from the
+    live config at fill time — so this must hold regardless of what the admin
+    does to the global config while the order is pending.
+    """
+    await client.post("/api/v1/cap0/enter", headers=non_premium_headers)
+
+    # Limit orders don't resolve price at creation, so this stays pending
+    # regardless of the limit price — but pick one above the mocked market
+    # price (100_000) so it is reachable and fills on /refresh below.
+    resp = await client.post("/api/v1/virtual-trading/orders", headers=non_premium_headers, json={
+        "symbol": "VCB", "side": "buy", "order_type": "limit", "quantity": 100, "limit_price_vnd": 110_000,
+    })
+    assert resp.status_code == 201
+    d = resp.json()
+    assert d["status"] == "pending"
+    assert d["mode"] == "san_tap"
+
+    # Admin flips the GLOBAL settlement_mode to T2 while the order is still pending.
+    resp = await client.patch(
+        "/api/v1/virtual-trading/admin/config", headers=admin_headers, json={"settlement_mode": "T2"},
+    )
+    assert resp.json()["settlement_mode"] == "T2"
+
+    # Trigger the fill: mocked price 100_000 <= limit 110_000 → should_fill.
+    r = await client.post("/api/v1/virtual-trading/refresh", headers=non_premium_headers)
+    assert r.status_code == 200
+    assert r.json()["orders_filled"] == 1
+
+    orders = (await client.get(
+        "/api/v1/virtual-trading/orders?status=filled", headers=non_premium_headers,
+    )).json()
+    filled = orders["orders"][0]
+    assert filled["mode"] == "san_tap"
+    assert filled["mode"] != "thuc_chien"
+
+    # T0 proof: shares must be immediately sellable, not held pending for T+2,
+    # and cash_pending_vnd must be untouched — despite the global config now
+    # being T2.
+    portfolio = (await client.get("/api/v1/virtual-trading/portfolio", headers=non_premium_headers)).json()
+    pos = portfolio["positions"][0]
+    assert pos["quantity_sellable"] == 100
+    assert pos["quantity_pending"] == 0
+
+    account = (await client.get("/api/v1/virtual-trading/account", headers=non_premium_headers)).json()
+    assert account["cash_pending_vnd"] == 0
+
+
+@pytest.mark.asyncio
+@patch(_VS, new=_vs_ok)
+@patch(_PR, new=_mp)
 async def test_premium_order_mode_unchanged_thuc_chien(client, premium_user):
     """Premium behavior is UNCHANGED: orders still default to mode=thuc_chien."""
     await client.post("/api/v1/virtual-trading/account/activate", headers=premium_user)

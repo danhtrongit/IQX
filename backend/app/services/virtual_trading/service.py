@@ -116,7 +116,7 @@ class VirtualTradingService:
         order_type: str,
         quantity: int,
         limit_price_vnd: int | None = None,
-        is_premium: bool = True,
+        is_premium: bool = False,
     ):
         """Place a virtual order.
 
@@ -126,7 +126,10 @@ class VirtualTradingService:
         non-premium (Cấp 0 / sân tập) orders are ALWAYS tagged ``mode="san_tap"``
         and settled T0, regardless of the global admin config's settlement_mode.
         Premium orders keep today's behavior (``mode="thuc_chien"``, config-driven
-        settlement). Defaults to ``True`` to preserve behavior for any other caller.
+        settlement). Defaults to ``False`` (fail-closed): an unspecified caller
+        gets the restricted sân tập/T0 behavior, never the paid thực chiến path.
+        The sole call site (``app.api.v1.endpoints.virtual_trading.place_order``)
+        always passes this explicitly, so this default only guards future callers.
         """
         mode = "thuc_chien" if is_premium else "san_tap"
 
