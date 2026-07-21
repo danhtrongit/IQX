@@ -24,6 +24,7 @@ class OrderResponse(BaseModel):
     id: uuid.UUID
     account_id: uuid.UUID
     symbol: str
+    mode: str
     side: str
     order_type: str
     status: str

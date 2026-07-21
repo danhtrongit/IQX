@@ -47,6 +47,24 @@ async def get_current_admin(
     return current_user
 
 
+async def is_premium_active(user: User, db: AsyncSession) -> bool:
+    """Centralized premium check — the single source of truth for "is this user premium".
+
+    Admins implicitly count as premium (full access, no subscription needed).
+    Used both as the hard-403 gate (``get_premium_active_user``) and inline by
+    endpoints/services that need to branch behavior instead of rejecting outright
+    (e.g. Cấp 0 san_tap-only enforcement for non-premium virtual-trading users).
+    """
+    if user.role == UserRole.ADMIN:
+        return True
+
+    from app.services.premium import PremiumService
+
+    service = PremiumService(db)
+    sub = await service.get_user_subscription(user.id)
+    return sub.is_premium
+
+
 async def get_premium_active_user(
     current_user: Annotated[User, Depends(get_current_active_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -55,14 +73,7 @@ async def get_premium_active_user(
 
     Admins implicitly have full access and bypass the subscription check.
     """
-    if current_user.role == UserRole.ADMIN:
-        return current_user
-
-    from app.services.premium import PremiumService
-
-    service = PremiumService(db)
-    sub = await service.get_user_subscription(current_user.id)
-    if not sub.is_premium:
+    if not await is_premium_active(current_user, db):
         raise ForbiddenError("Yêu cầu gói Premium đang hoạt động")
     return current_user
 

@@ -161,34 +161,44 @@ async def test_forecast_with_premium_user_passes_auth(
     assert resp.status_code in (200, 502)
 
 
-async def test_virtual_trading_account_requires_premium(
+async def test_virtual_trading_account_no_longer_requires_premium_cap0_gap_closed(
     db_session: AsyncSession, client: AsyncClient
 ) -> None:
+    """Cấp 0 (free onboarding) gap closed: virtual-trading read endpoints are
+    CurrentUser-gated now, not Premium-gated (see backend/app/api/deps.py
+    ``is_premium_active`` + virtual_trading.py). A non-premium user with no
+    account yet gets 404 (not found), never 403 (not authorized) — auth passes,
+    only "does this account exist" is checked. Real-rules (thuc_chien) T+2
+    trading remains premium-only, enforced at order-placement time instead
+    (see tests/test_virtual_trading.py Cấp 0 section).
+    """
     _user, headers = await _make_non_premium_user(db_session, "no-prem-vt-acct")
     resp = await client.get(
         "/api/v1/virtual-trading/account",
         headers=headers,
     )
-    assert resp.status_code == 403
+    assert resp.status_code == 404
 
 
-async def test_virtual_trading_portfolio_requires_premium(
+async def test_virtual_trading_portfolio_no_longer_requires_premium_cap0_gap_closed(
     db_session: AsyncSession, client: AsyncClient
 ) -> None:
+    """See test_virtual_trading_account_no_longer_requires_premium_cap0_gap_closed."""
     _user, headers = await _make_non_premium_user(db_session, "no-prem-vt-port")
     resp = await client.get(
         "/api/v1/virtual-trading/portfolio",
         headers=headers,
     )
-    assert resp.status_code == 403
+    assert resp.status_code == 404
 
 
-async def test_virtual_trading_orders_list_requires_premium(
+async def test_virtual_trading_orders_list_no_longer_requires_premium_cap0_gap_closed(
     db_session: AsyncSession, client: AsyncClient
 ) -> None:
+    """See test_virtual_trading_account_no_longer_requires_premium_cap0_gap_closed."""
     _user, headers = await _make_non_premium_user(db_session, "no-prem-vt-orders")
     resp = await client.get(
         "/api/v1/virtual-trading/orders",
         headers=headers,
     )
-    assert resp.status_code == 403
+    assert resp.status_code == 404

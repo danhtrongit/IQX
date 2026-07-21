@@ -308,8 +308,17 @@ async def test_expired_order_reserves_cleared(client, premium_user, db_session):
 @pytest.mark.asyncio
 @patch(_VS, new=_vs_ok)
 @patch(_PR, new=_mp)
-async def test_portfolio_readonly_no_refresh(client, premium_user, db_session, test_user):
-    """GET /portfolio requires active premium — expired premium gets 403."""
+async def test_portfolio_accessible_after_premium_expires_cap0_gap_closed(
+    client, premium_user, db_session, test_user,
+):
+    """GET /portfolio no longer 403s once premium expires (Cấp 0 gap closed).
+
+    Was: "expired premium gets 403" (pre-Cap0). Now: virtual-trading read/write
+    endpoints are CurrentUser-gated so a lapsed/non-premium user keeps san_tap
+    access to their OWN account — only real-rules (thuc_chien) stays premium-only,
+    which is enforced at order-placement time (see test_virtual_trading Cấp 0
+    section), not by locking users out of their own portfolio.
+    """
     await client.post("/api/v1/virtual-trading/account/activate", headers=premium_user)
     await client.post("/api/v1/virtual-trading/orders", headers=premium_user, json={
         "symbol": "VCB", "side": "buy", "order_type": "market", "quantity": 100,
@@ -324,15 +333,21 @@ async def test_portfolio_readonly_no_refresh(client, premium_user, db_session, t
         )
     )
     await db_session.commit()
-    # All user-facing virtual trading routes require active premium → 403
     resp = await client.get("/api/v1/virtual-trading/portfolio", headers=premium_user)
-    assert resp.status_code == 403
+    assert resp.status_code == 200
 
 @pytest.mark.asyncio
 @patch(_VS, new=_vs_ok)
 @patch(_PR, new=_mp)
-async def test_refresh_requires_premium(client, premium_user, db_session, test_user):
-    """POST /refresh requires active premium."""
+async def test_refresh_accessible_after_premium_expires_cap0_gap_closed(
+    client, premium_user, db_session, test_user,
+):
+    """POST /refresh no longer 403s once premium expires (Cấp 0 gap closed).
+
+    See test_portfolio_accessible_after_premium_expires_cap0_gap_closed docstring.
+    Refresh only processes the account's OWN already-existing orders/settlements,
+    whose mode/settlement was already locked in at placement time.
+    """
     await client.post("/api/v1/virtual-trading/account/activate", headers=premium_user)
     # Expire premium
     from sqlalchemy import update
@@ -345,7 +360,7 @@ async def test_refresh_requires_premium(client, premium_user, db_session, test_u
     )
     await db_session.commit()
     resp = await client.post("/api/v1/virtual-trading/refresh", headers=premium_user)
-    assert resp.status_code == 403
+    assert resp.status_code == 200
 
 # ══════════════════════════════════════════════════════
 # Fix 5: Leaderboard safety
@@ -562,6 +577,156 @@ async def test_leaderboard_has_transparency_fields(client, premium_user):
     assert d["evaluated_count"] >= 1
     assert d["total_eligible"] >= d["evaluated_count"]
     assert d["total"] == d["evaluated_count"]
+
+# ══════════════════════════════════════════════════════
+# Cấp 0 (san_tap) — non-premium virtual trading, real-rules stays premium-only
+# ══════════════════════════════════════════════════════
+
+
+@pytest_asyncio.fixture
+async def non_premium_headers(client, test_user):
+    """Genuinely non-premium (Cấp 0 free) user — no subscription at all."""
+    resp = await client.post(
+        "/api/v1/auth/login", json={"email": "test@example.com", "password": "Test@1234"},
+    )
+    return {"Authorization": f"Bearer {resp.json()['access_token']}"}
+
+
+@pytest_asyncio.fixture
+async def second_non_premium_headers(client, db_session):
+    """A second, distinct non-premium user — for cross-account ownership checks."""
+    from app.core.security import hash_password
+    from app.models.user import User, UserRole, UserStatus
+
+    user = User(
+        email="cap0-second@example.com",
+        hashed_password=hash_password("Test@1234"),
+        full_name="Cap0 Second User",
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    resp = await client.post(
+        "/api/v1/auth/login", json={"email": "cap0-second@example.com", "password": "Test@1234"},
+    )
+    return user, {"Authorization": f"Bearer {resp.json()['access_token']}"}
+
+
+@pytest.mark.asyncio
+@patch(_VS, new=_vs_ok)
+@patch(_PR, new=_mp)
+async def test_non_premium_can_enter_cap0_and_trade_san_tap(client, non_premium_headers):
+    """Cấp 0 free user: cap0/enter seeds account, then account/portfolio/orders all work (no 403)."""
+    r = await client.post("/api/v1/cap0/enter", headers=non_premium_headers)
+    assert r.status_code == 200
+
+    r = await client.get("/api/v1/virtual-trading/account", headers=non_premium_headers)
+    assert r.status_code == 200
+    assert r.json()["cash_available_vnd"] == 250_000_000
+
+    r = await client.get("/api/v1/virtual-trading/portfolio", headers=non_premium_headers)
+    assert r.status_code == 200
+
+    r = await client.post("/api/v1/virtual-trading/orders", headers=non_premium_headers, json={
+        "symbol": "VCB", "side": "buy", "order_type": "market", "quantity": 100,
+    })
+    assert r.status_code == 201
+    d = r.json()
+    assert d["status"] == "filled"
+    assert d["mode"] == "san_tap"
+
+    r = await client.get("/api/v1/virtual-trading/orders", headers=non_premium_headers)
+    assert r.status_code == 200 and r.json()["total"] >= 1
+    r = await client.get("/api/v1/virtual-trading/trades", headers=non_premium_headers)
+    assert r.status_code == 200 and r.json()["total"] >= 1
+    r = await client.post("/api/v1/virtual-trading/refresh", headers=non_premium_headers)
+    assert r.status_code == 200
+
+
+@pytest.mark.asyncio
+@patch(_VS, new=_vs_ok)
+@patch(_PR, new=_mp)
+async def test_non_premium_order_never_thuc_chien_even_if_admin_sets_t2(
+    client, non_premium_headers, admin_headers,
+):
+    """Even if the admin flips the GLOBAL settlement_mode to T2, a non-premium
+    user's order must still be forced san_tap/T0 — never real-rules T+2.
+    """
+    await client.patch(
+        "/api/v1/virtual-trading/admin/config", headers=admin_headers, json={"settlement_mode": "T2"},
+    )
+    await client.post("/api/v1/cap0/enter", headers=non_premium_headers)
+    resp = await client.post("/api/v1/virtual-trading/orders", headers=non_premium_headers, json={
+        "symbol": "VCB", "side": "buy", "order_type": "market", "quantity": 100,
+    })
+    assert resp.status_code == 201
+    d = resp.json()
+    assert d["mode"] == "san_tap"
+    assert d["mode"] != "thuc_chien"
+
+    # T0 proof: shares must be immediately sellable, not stuck pending for T+2.
+    portfolio = (await client.get("/api/v1/virtual-trading/portfolio", headers=non_premium_headers)).json()
+    pos = portfolio["positions"][0]
+    assert pos["quantity_sellable"] == 100
+    assert pos["quantity_pending"] == 0
+
+
+@pytest.mark.asyncio
+@patch(_VS, new=_vs_ok)
+@patch(_PR, new=_mp)
+async def test_premium_order_mode_unchanged_thuc_chien(client, premium_user):
+    """Premium behavior is UNCHANGED: orders still default to mode=thuc_chien."""
+    await client.post("/api/v1/virtual-trading/account/activate", headers=premium_user)
+    resp = await client.post("/api/v1/virtual-trading/orders", headers=premium_user, json={
+        "symbol": "VCB", "side": "buy", "order_type": "market", "quantity": 100,
+    })
+    assert resp.status_code == 201
+    assert resp.json()["mode"] == "thuc_chien"
+
+
+@pytest.mark.asyncio
+@patch(_VS, new=_vs_ok)
+@patch(_PR, new=_mp)
+async def test_non_premium_cannot_cancel_another_users_order(
+    client, non_premium_headers, second_non_premium_headers,
+):
+    """Ownership must still be enforced across two non-premium (Cấp 0) accounts."""
+    await client.post("/api/v1/cap0/enter", headers=non_premium_headers)
+    resp = await client.post("/api/v1/virtual-trading/orders", headers=non_premium_headers, json={
+        "symbol": "VCB", "side": "buy", "order_type": "limit", "quantity": 100, "limit_price_vnd": 90_000,
+    })
+    order_id = resp.json()["id"]
+
+    _second_user, second_headers = second_non_premium_headers
+    await client.post("/api/v1/cap0/enter", headers=second_headers)
+    resp = await client.post(
+        f"/api/v1/virtual-trading/orders/{order_id}/cancel", headers=second_headers,
+    )
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+@patch(_VS, new=_vs_ok)
+@patch(_PR, new=_mp)
+async def test_non_premium_cannot_see_another_users_account_balance(
+    client, non_premium_headers, second_non_premium_headers,
+):
+    """GET /account is scoped by the caller's own user_id — never leaks another account."""
+    await client.post("/api/v1/cap0/enter", headers=non_premium_headers)
+    await client.post("/api/v1/virtual-trading/orders", headers=non_premium_headers, json={
+        "symbol": "VCB", "side": "buy", "order_type": "market", "quantity": 100,
+    })
+    own_acct = (await client.get("/api/v1/virtual-trading/account", headers=non_premium_headers)).json()
+
+    _second_user, second_headers = second_non_premium_headers
+    await client.post("/api/v1/cap0/enter", headers=second_headers)
+    other_acct = (await client.get("/api/v1/virtual-trading/account", headers=second_headers)).json()
+
+    assert own_acct["id"] != other_acct["id"]
+    assert other_acct["cash_available_vnd"] == 250_000_000  # untouched by the first user's trade
+
 
 @pytest.mark.asyncio
 @patch(_VS, new=_vs_ok)

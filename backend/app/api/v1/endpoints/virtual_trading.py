@@ -1,7 +1,12 @@
 """Virtual Trading API endpoints.
 
 All endpoints under /api/v1/virtual-trading.
-User routes require auth; write ops require premium active.
+User routes require auth (``CurrentUser``) — Cấp 0 (sân tập, free) users may use
+them too, but the virtual-trading service ALWAYS forces their orders to
+``mode="san_tap"`` + T0 settlement (see ``VirtualTradingService.place_order``);
+real-rules ``thuc_chien`` (T+2) behavior stays premium-only.
+``POST /account/activate`` (the paid 1B-VND account) still requires Premium —
+Cấp 0 users get their practice account seeded via ``POST /cap0/enter`` instead.
 Admin routes require admin role.
 """
 
@@ -12,7 +17,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from app.api.deps import AdminUser, DBSession, PremiumUser
+from app.api.deps import AdminUser, CurrentUser, DBSession, PremiumUser, is_premium_active
 from app.api.deps_audit import AuditCtx
 from app.models.virtual_trading import OrderSide, OrderStatus
 from app.services.admin_audit import AdminAuditService, diff_dict
@@ -56,8 +61,12 @@ async def activate_account(user: PremiumUser, db: DBSession) -> AccountResponse:
 
 
 @router.get("/account", response_model=AccountResponse, tags=["Giao dịch ảo"])
-async def get_account(user: PremiumUser, db: DBSession) -> AccountResponse:
-    """Lấy tóm tắt tài khoản giao dịch ảo."""
+async def get_account(user: CurrentUser, db: DBSession) -> AccountResponse:
+    """Lấy tóm tắt tài khoản giao dịch ảo.
+
+    Không yêu cầu Premium: người dùng Cấp 0 (sân tập, miễn phí) cũng đọc được
+    tài khoản ảo của chính mình (ví dụ tài khoản được seed qua ``POST /cap0/enter``).
+    """
     svc = VirtualTradingService(db)
     account = await svc.get_account(user.id)
     resp = AccountResponse.model_validate(account)
@@ -66,8 +75,11 @@ async def get_account(user: PremiumUser, db: DBSession) -> AccountResponse:
 
 
 @router.get("/portfolio", response_model=PortfolioResponse, tags=["Giao dịch ảo"])
-async def get_portfolio(user: PremiumUser, db: DBSession) -> PortfolioResponse:
-    """Lấy toàn bộ danh mục — chỉ đọc, không làm mới/thay đổi trạng thái."""
+async def get_portfolio(user: CurrentUser, db: DBSession) -> PortfolioResponse:
+    """Lấy toàn bộ danh mục — chỉ đọc, không làm mới/thay đổi trạng thái.
+
+    Không yêu cầu Premium (Cấp 0 sân tập được đọc danh mục của chính mình).
+    """
     svc = VirtualTradingService(db)
     data = await svc.get_portfolio(user.id)
     account = data["account"]
@@ -85,8 +97,13 @@ async def get_portfolio(user: PremiumUser, db: DBSession) -> PortfolioResponse:
 
 
 @router.post("/orders", response_model=OrderResponse, status_code=201, tags=["Giao dịch ảo"])
-async def place_order(body: OrderCreateRequest, user: PremiumUser, db: DBSession) -> OrderResponse:
-    """Đặt lệnh giao dịch ảo. Yêu cầu Premium đang hoạt động."""
+async def place_order(body: OrderCreateRequest, user: CurrentUser, db: DBSession) -> OrderResponse:
+    """Đặt lệnh giao dịch ảo.
+
+    Không yêu cầu Premium: người dùng Cấp 0 (sân tập, miễn phí) được đặt lệnh,
+    nhưng lệnh của họ LUÔN bị ép về ``mode="san_tap"`` + thanh toán T0, bất kể
+    cấu hình hệ thống — thực chiến (T+2) vẫn chỉ dành cho Premium.
+    """
     svc = VirtualTradingService(db)
     order = await svc.place_order(
         user_id=user.id,
@@ -95,13 +112,14 @@ async def place_order(body: OrderCreateRequest, user: PremiumUser, db: DBSession
         order_type=body.order_type,
         quantity=body.quantity,
         limit_price_vnd=body.limit_price_vnd,
+        is_premium=await is_premium_active(user, db),
     )
     return OrderResponse.model_validate(order)
 
 
 @router.get("/orders", response_model=OrderListResponse, tags=["Giao dịch ảo"])
 async def list_orders(
-    user: PremiumUser,
+    user: CurrentUser,
     db: DBSession,
     status: Annotated[
         str | None,
@@ -143,8 +161,8 @@ async def list_orders(
 
 
 @router.post("/orders/{order_id}/cancel", response_model=OrderResponse, tags=["Giao dịch ảo"])
-async def cancel_order(order_id: str, user: PremiumUser, db: DBSession) -> OrderResponse:
-    """Hủy lệnh đang chờ. Yêu cầu Premium đang hoạt động."""
+async def cancel_order(order_id: str, user: CurrentUser, db: DBSession) -> OrderResponse:
+    """Hủy lệnh đang chờ. Không yêu cầu Premium (quyền sở hữu vẫn được kiểm tra)."""
     import uuid
 
     try:
@@ -160,8 +178,12 @@ async def cancel_order(order_id: str, user: PremiumUser, db: DBSession) -> Order
 
 
 @router.post("/refresh", response_model=RefreshResponse, tags=["Giao dịch ảo"])
-async def refresh(user: PremiumUser, db: DBSession) -> RefreshResponse:
-    """Xử lý lệnh limit đang chờ, hết hạn GFD, thanh toán T2. Yêu cầu Premium đang hoạt động."""
+async def refresh(user: CurrentUser, db: DBSession) -> RefreshResponse:
+    """Xử lý lệnh limit đang chờ, hết hạn GFD, thanh toán T2.
+
+    Không yêu cầu Premium — chỉ xử lý các lệnh/thanh toán đã tồn tại của
+    chính tài khoản này (mode/thanh toán đã bị chốt tại thời điểm đặt lệnh).
+    """
     svc = VirtualTradingService(db)
     result = await svc.refresh(user.id)
     return RefreshResponse(**result)
@@ -169,7 +191,7 @@ async def refresh(user: PremiumUser, db: DBSession) -> RefreshResponse:
 
 @router.get("/trades", response_model=TradeListResponse, tags=["Giao dịch ảo"])
 async def list_trades(
-    user: PremiumUser,
+    user: CurrentUser,
     db: DBSession,
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 20,

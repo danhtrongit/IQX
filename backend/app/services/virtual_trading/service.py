@@ -116,7 +116,20 @@ class VirtualTradingService:
         order_type: str,
         quantity: int,
         limit_price_vnd: int | None = None,
+        is_premium: bool = True,
     ):
+        """Place a virtual order.
+
+        ``is_premium`` is the caller-resolved, centralized premium check
+        (``app.api.deps.is_premium_active``). It is NOT re-derived here — the
+        service trusts the caller but enforces the invariant unconditionally:
+        non-premium (Cấp 0 / sân tập) orders are ALWAYS tagged ``mode="san_tap"``
+        and settled T0, regardless of the global admin config's settlement_mode.
+        Premium orders keep today's behavior (``mode="thuc_chien"``, config-driven
+        settlement). Defaults to ``True`` to preserve behavior for any other caller.
+        """
+        mode = "thuc_chien" if is_premium else "san_tap"
+
         config = await self.get_or_create_config()
         if not config.trading_enabled:
             raise ForbiddenError("Giao dịch ảo hiện đang bị tạm dừng")
@@ -169,12 +182,17 @@ class VirtualTradingService:
         if account.frozen_at is not None:
             raise ForbiddenError("Tài khoản tạm khóa")
 
-        # Config snapshot — authoritative for fee/tax at fill time
+        # Config snapshot — authoritative for fee/tax/settlement at fill time.
+        # Non-premium (san_tap) orders are ALWAYS T0, no matter the live/global
+        # admin setting — this is what keeps real-rules T+2 premium-only.
+        effective_settlement_mode = (
+            config.settlement_mode if is_premium else SettlementMode.T0
+        )
         snapshot = json.dumps({
             "buy_fee_rate_bps": config.buy_fee_rate_bps,
             "sell_fee_rate_bps": config.sell_fee_rate_bps,
             "sell_tax_rate_bps": config.sell_tax_rate_bps,
-            "settlement_mode": config.settlement_mode.value,
+            "settlement_mode": effective_settlement_mode.value,
             "board_lot_size": config.board_lot_size,
         })
 
@@ -184,17 +202,19 @@ class VirtualTradingService:
         if o_type == OrderType.MARKET:
             return await self._execute_market_order(
                 account, config, symbol, order_side, quantity,
-                trading_date, snapshot, holidays,
+                trading_date, snapshot, holidays, mode=mode,
+                settlement_mode_override=effective_settlement_mode,
             )
         else:
             return await self._create_limit_order(
                 account, config, symbol, order_side, quantity,
-                limit_price_vnd, trading_date, snapshot,
+                limit_price_vnd, trading_date, snapshot, mode=mode,
             )
 
     async def _execute_market_order(
         self, account, config, symbol, side, quantity,
-        trading_date, snapshot, holidays=None,
+        trading_date, snapshot, holidays=None, mode="thuc_chien",
+        settlement_mode_override=None,
     ):
         """Execute a market order immediately at current price."""
         try:
@@ -206,7 +226,7 @@ class VirtualTradingService:
                 account_id=account.id, user_id=account.user_id, symbol=symbol,
                 side=side, order_type=OrderType.MARKET, status=OrderStatus.REJECTED,
                 quantity=quantity, trading_date=trading_date,
-                rejection_reason=str(exc), config_snapshot=snapshot,
+                rejection_reason=str(exc), config_snapshot=snapshot, mode=mode,
             )
             return await self._repo.create_order(order)
 
@@ -219,11 +239,13 @@ class VirtualTradingService:
 
         return await self._fill_order_at_price(
             account, config, symbol, side, OrderType.MARKET,
-            quantity, price_result, trading_date, snapshot,
+            quantity, price_result, trading_date, snapshot, mode=mode,
+            settlement_mode_override=settlement_mode_override,
         )
 
     async def _create_limit_order(
         self, account, config, symbol, side, quantity, limit_price_vnd, trading_date, snapshot,
+        mode="thuc_chien",
     ):
         """Create a pending limit order with reserves."""
         # Enforce max gross
@@ -247,7 +269,7 @@ class VirtualTradingService:
                 side=side, order_type=OrderType.LIMIT, status=OrderStatus.PENDING,
                 quantity=quantity, limit_price_vnd=limit_price_vnd,
                 reserved_cash_vnd=reserve_cash, trading_date=trading_date,
-                config_snapshot=snapshot,
+                config_snapshot=snapshot, mode=mode,
             )
         else:  # SELL
             position = await self._repo.get_position_for_update(account.id, symbol)
@@ -261,7 +283,7 @@ class VirtualTradingService:
                 side=side, order_type=OrderType.LIMIT, status=OrderStatus.PENDING,
                 quantity=quantity, limit_price_vnd=limit_price_vnd,
                 reserved_quantity=quantity, trading_date=trading_date,
-                config_snapshot=snapshot,
+                config_snapshot=snapshot, mode=mode,
             )
 
         return await self._repo.create_order(order)
@@ -269,13 +291,20 @@ class VirtualTradingService:
     async def _fill_order_at_price(
         self, account, config, symbol, side, order_type, quantity,
         price_result: PriceResult, trading_date, snapshot,
-        limit_price_vnd=None, existing_order=None,
+        limit_price_vnd=None, existing_order=None, mode="thuc_chien",
+        settlement_mode_override=None,
     ):
         """Fill an order at the given price. Handles buy/sell, T0/T2, fee/tax.
 
         When filling a pending order (existing_order is set), fee/tax/settlement
         are computed from the order's config_snapshot, NOT the current config.
         This ensures admin config changes don't affect pending orders.
+
+        ``settlement_mode_override`` is used for a brand-new (non-pending) fill
+        — e.g. a non-premium/Cấp 0 market order, which must settle T0 even if
+        the live global config's settlement_mode is T2. Without this override,
+        a same-moment market fill would read ``config.settlement_mode`` directly
+        and could leak real-rules T+2 behavior to a non-premium user.
         """
         price_vnd = price_result.price_vnd
         now = datetime.now(UTC)
@@ -293,7 +322,11 @@ class VirtualTradingService:
             eff_buy_fee = config.buy_fee_rate_bps
             eff_sell_fee = config.sell_fee_rate_bps
             eff_sell_tax = config.sell_tax_rate_bps
-            eff_settlement = config.settlement_mode
+            eff_settlement = (
+                settlement_mode_override
+                if settlement_mode_override is not None
+                else config.settlement_mode
+            )
 
         holidays = parse_holidays(config.holidays)
 
@@ -398,7 +431,7 @@ class VirtualTradingService:
                 quantity=quantity, limit_price_vnd=limit_price_vnd,
                 filled_price_vnd=price_vnd, gross_amount_vnd=gross,
                 fee_vnd=fee, tax_vnd=tax, net_amount_vnd=net,
-                trading_date=trading_date, config_snapshot=snapshot,
+                trading_date=trading_date, config_snapshot=snapshot, mode=mode,
             )
             order = await self._repo.create_order(order)
 
