@@ -6,6 +6,11 @@ import { TradingPanel } from "@/features/trading"
 import { WatchlistPanel } from "@/features/watchlist"
 import { PremiumGate } from "@/features/premium"
 import { AIPatternPanel } from "@/features/patterns"
+// Imported from the concrete file (NOT the `@/features/cap0` barrel) — that
+// barrel re-exports `Cap0TradingPage`, which itself imports `CenterPanel`/
+// `RightSidebar`/`RightToolbar` from `@/features/dashboard`. Going through the
+// barrel here would create a module-graph cycle between the two features.
+import { JourneyPanel } from "@/features/cap0/JourneyPanel"
 
 /**
  * Dynamic right sidebar that switches between panels:
@@ -13,6 +18,8 @@ import { AIPatternPanel } from "@/features/patterns"
  * - patterns: AI candle / chart pattern recognition (premium)
  * - trading: Virtual-trading order form + order book (premium)
  * - watchlist: Watchlist, holdings, and trade history
+ * - journey: Cấp 0 «Nhập môn» onboarding checklist (only reachable on
+ *   `/dau-truong` — `Cap0TradingPage` sets it as the default panel).
  *
  * "Mô hình dự báo" is no longer a panel — it lives at /du-bao.
  */
@@ -36,6 +43,8 @@ export function RightSidebar() {
         return <TradingPanel />
       case "watchlist":
         return <WatchlistPanel />
+      case "journey":
+        return <JourneyPanel />
       default:
         return <NewsFeedPanel />
     }
@@ -46,6 +55,7 @@ export function RightSidebar() {
     patterns: "AI Mẫu nến",
     trading: "Đặt lệnh",
     watchlist: "Danh mục",
+    journey: "Hành trình",
   }
 
   return (

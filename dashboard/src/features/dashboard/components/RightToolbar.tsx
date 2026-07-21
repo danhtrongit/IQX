@@ -1,5 +1,5 @@
 import type { ComponentType } from "react"
-import { IconEye } from "@arco-design/web-react/icon"
+import { IconCompass, IconEye } from "@arco-design/web-react/icon"
 import { useSidebar, type SidebarPanel } from "@/shared/contexts/sidebar-context"
 import { cn } from "@/shared/lib/cn"
 import { IconBulb } from "@/shared/icons"
@@ -67,6 +67,10 @@ export function RightToolbar({
   }
 
   const ITEMS: ToolbarItem[] = [
+    // Cấp 0 «Nhập môn» onboarding tab (spec §7) — first item, only meaningful
+    // on `/dau-truong`; harmless elsewhere (unmounted RightSidebar case is
+    // handled by `panelNames`/the switch, not here).
+    { icon: IconCompass, label: "Hành trình", id: "journey", panel: "journey" },
     { icon: IconShoppingCart, label: "Đặt lệnh", id: "order", panel: "trading" },
     { icon: IconEye, label: "Danh mục", id: "watchlist", panel: "watchlist" },
     { icon: IconNewspaper, label: "Tin tức", id: "news", panel: "news" },

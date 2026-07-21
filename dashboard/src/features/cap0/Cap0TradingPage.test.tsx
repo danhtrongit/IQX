@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, within } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 import type { Cap0Progress } from "./types"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
@@ -132,10 +133,26 @@ describe("Cap0TradingPage", () => {
     expect(window.localStorage.getItem("iqx_cap0_placement_seen")).toBe("1")
   })
 
-  it("leaves a placeholder slot for FE3's JourneyBar", () => {
+  it("mounts the real JourneyBar (progress x/6 + next-task copy) in the top bar", () => {
     useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
     render(<Cap0TradingPage />)
-    expect(screen.getByTestId("cap0-journey-slot")).toBeInTheDocument()
+    expect(screen.getByText("CẤP 0 · 0/6")).toBeInTheDocument()
+    expect(screen.getByTitle("Bấm để mở Hành trình")).toBeInTheDocument()
+  })
+
+  it("defaults the sidebar to the journey panel on mount (overrides the app-root 'news' default)", () => {
+    useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
+    function PanelSpy() {
+      const { activePanel } = useSidebar()
+      return <div data-testid="panel-spy">{activePanel}</div>
+    }
+    render(
+      <SidebarProvider defaultPanel="news">
+        <Cap0TradingPage />
+        <PanelSpy />
+      </SidebarProvider>,
+    )
+    expect(screen.getByTestId("panel-spy")).toHaveTextContent("journey")
   })
 })
 

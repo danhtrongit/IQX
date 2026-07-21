@@ -158,3 +158,230 @@
   font-size: 11px;
   color: var(--t3);
 }
+
+/* ── Journey bar (spec §7 `.jbar`) — sits inside `.cap0-topbar`, which owns
+   the sticky positioning; this fills the bar's `flex-1` slot next to the
+   mode badge. Rendered as a <button> (whole bar is one click target) reset
+   to look like the plain flex row from the mockup. ─────────────────────────── */
+.cap0-jbar {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cap0-jbar-day {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--brand);
+  background: rgba(79, 143, 247, 0.15);
+  border: 1px solid var(--brand-bd);
+  border-radius: 6px;
+  padding: 3px 9px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cap0-jbar-task {
+  font-size: 12.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.cap0-jbar-dots {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.cap0-jd {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: 1px solid var(--bd);
+  display: inline-block;
+}
+
+.cap0-jd--done {
+  background: rgba(53, 208, 127, 0.6);
+  border-color: rgba(53, 208, 127, 0.6);
+}
+
+.cap0-jd--now {
+  background: var(--brand);
+  border-color: var(--brand);
+  box-shadow: 0 0 6px rgba(79, 143, 247, 0.7);
+}
+
+/* ── Journey tab / checklist (spec §7 tab Hành trình) ───────────────────────── */
+.cap0-level-card {
+  background: var(--bg2);
+  border: 1px solid var(--brand-bd);
+  border-radius: 11px;
+  padding: 14px 13px;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 13px;
+  align-items: center;
+}
+
+.cap0-level-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.cap0-level-card-tag {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--brand);
+}
+
+.cap0-level-card-name {
+  font-size: 19px;
+  font-weight: 700;
+  margin: 2px 0 4px;
+}
+
+.cap0-level-card-lesson {
+  font-size: 10.5px;
+  color: var(--t2);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.cap0-journey-checklist-header {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 7px;
+}
+
+.cap0-stage-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--t3);
+  margin: 11px 0 5px;
+}
+
+.cap0-stage-label--done {
+  color: rgba(53, 208, 127, 0.75);
+}
+
+.cap0-checklist-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 11.5px;
+  color: var(--t3);
+  padding: 6px 8px;
+  border-radius: 8px;
+  margin-bottom: 2px;
+}
+
+.cap0-checklist-num {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  background: var(--bg3);
+  border: 1px solid var(--bd);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cap0-checklist-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.cap0-checklist-item--done {
+  opacity: 0.55;
+}
+
+.cap0-checklist-item--done .cap0-checklist-name {
+  text-decoration: line-through;
+}
+
+.cap0-checklist-item--done .cap0-checklist-num {
+  background: rgba(53, 208, 127, 0.15);
+  border-color: rgba(53, 208, 127, 0.45);
+  color: var(--up);
+}
+
+.cap0-checklist-item--active {
+  background: var(--brand-soft);
+  border: 1px solid var(--brand-bd);
+  color: #fff;
+  font-weight: 600;
+}
+
+.cap0-checklist-item--active .cap0-checklist-num {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+.cap0-checklist-item--locked {
+  opacity: 0.45;
+}
+
+.cap0-checklist-desc {
+  font-size: 10px;
+  color: var(--t2);
+  font-weight: 400;
+  margin-top: 3px;
+  line-height: 1.45;
+}
+
+.cap0-checklist-golink {
+  display: block;
+  margin-top: 6px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cap0-journey-goal {
+  margin-top: 11px;
+  padding: 10px 11px;
+  background: var(--bg2);
+  border: 1px solid var(--bd);
+  border-radius: 9px;
+  font-size: 10.5px;
+  color: var(--t3);
+  line-height: 1.5;
+}
+
+.cap0-journey-goal strong {
+  color: var(--t1);
+}

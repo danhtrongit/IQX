@@ -3,6 +3,8 @@ import "./cap0.css"
 export { Badge, badge, LEVELS } from "./Badge"
 export { ModeBadge } from "./ModeBadge"
 export { PlacementModal } from "./PlacementModal"
+export { JourneyPanel } from "./JourneyPanel"
+export { JourneyBar } from "./JourneyBar"
 export { Cap0TradingPage } from "./Cap0TradingPage"
 export {
   Cap0Provider,

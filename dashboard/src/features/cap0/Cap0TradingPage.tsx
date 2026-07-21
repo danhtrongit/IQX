@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
 import { Message } from "@arco-design/web-react"
 import { SymbolProvider } from "@/shared/contexts/symbol-context"
+import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { CenterPanel, RightSidebar, RightToolbar } from "@/features/dashboard"
 import { Cap0Provider } from "./Cap0Context"
 import { ModeBadge } from "./ModeBadge"
+import { JourneyBar } from "./JourneyBar"
 import { useCap0Progress, useEnterCap0, usePlacement } from "./hooks"
 import { PlacementModal } from "./PlacementModal"
 import "./cap0.css"
@@ -71,6 +73,19 @@ function Cap0Terminal() {
   const enterCap0 = useEnterCap0()
   const placement = usePlacement()
   const [placementSeen, setPlacementSeen] = useState(() => hasSeenPlacement())
+  const { setActivePanel } = useSidebar()
+
+  // Spec §7: "Là view mặc định khi user vào app lần đầu và mỗi lần vào lại
+  // giữa chừng" — the sidebar's `SidebarProvider` is a SINGLE app-root
+  // instance shared by every route (defaultPanel="news", see
+  // `app/providers.tsx`), so Cấp 0 can't set its own default — it overrides
+  // on mount instead. Mount-only (empty deps): `setActivePanel`'s identity
+  // changes every `SidebarProvider` render, so depending on it would re-fire
+  // this on every re-render and fight the user's own panel switches.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setActivePanel("journey")
+  }, [])
 
   // Guard (§3): show only once — needs BOTH the server truth (no progress row
   // yet, i.e. never entered Cấp 0) AND the local "already answered" flag
@@ -97,11 +112,11 @@ function Cap0Terminal() {
 
   return (
     <div className="cap0 flex h-svh flex-col overflow-hidden bg-[var(--bg1)]">
-      {/* Top bar (spec §7 journey bar sticky trên đầu). FE3 mounts the real
-          `<JourneyBar/>` (progress "x/6" + next task + dots) into this slot —
-          this task only wires the mode badge that sits at its right edge. */}
+      {/* Top bar (spec §7 journey bar sticky trên đầu): `<JourneyBar/>`
+          (progress "x/6" + next task + dots, click → tab Hành trình) + the
+          mode badge at its right edge. */}
       <div className="cap0-topbar">
-        <div className="flex-1 min-w-0" data-testid="cap0-journey-slot" />
+        <JourneyBar />
         <ModeBadge mode="san_tap" />
       </div>
 
