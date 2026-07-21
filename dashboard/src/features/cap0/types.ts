@@ -85,11 +85,21 @@ export function countTasksDone(progress: Cap0Progress | null | undefined): numbe
 /**
  * spec §9 "Sau khi bấm: badge góc màn hình đổi từ SÂN TẬP · T+0 sang THỰC
  * CHIẾN" — the single source of truth for the mode pill everywhere it's
- * shown (`Cap0TradingPage`'s topbar, `JourneyPanel`'s level card). Driven
- * purely by `graduated_at` (set server-side by `POST /cap0/graduate`), so
- * every consumer flips together the instant the shared `useCap0Progress`
- * query refetches — no extra local state needed.
+ * shown (`Cap0TradingPage`'s topbar, `JourneyPanel`'s level card).
+ *
+ * IMPORTANT (final-review fix — premium-honest mode): the backend only ever
+ * routes a user's orders through the real T+2,5 `thuc_chien` engine when
+ * they're premium — a free user's orders stay `san_tap`/T+0 regardless of
+ * `graduated_at` (see `backend/.../orders.py` place-order fail-closed guard).
+ * So the UI must require BOTH `graduated_at` AND `isPremium` before claiming
+ * "THỰC CHIẾN" — otherwise a free graduate sees a badge promising rules the
+ * backend never actually applies to their orders. Every consumer must thread
+ * the SAME `usePremiumStatus().isPremium` in so the topbar and journey card
+ * never disagree.
  */
-export function tradingModeFor(progress: Cap0Progress | null | undefined): TradingMode {
-  return progress?.graduated_at ? "thuc_chien" : "san_tap"
+export function tradingModeFor(
+  progress: Cap0Progress | null | undefined,
+  isPremium: boolean,
+): TradingMode {
+  return progress?.graduated_at && isPremium ? "thuc_chien" : "san_tap"
 }

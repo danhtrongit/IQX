@@ -3,6 +3,7 @@ import { useNavigate } from "react-router"
 import { Message, Modal, Input, Button } from "@arco-design/web-react"
 import { SymbolProvider } from "@/shared/contexts/symbol-context"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
+import { usePremiumStatus } from "@/features/premium"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
 import { CenterPanel, RightSidebar, RightToolbar } from "@/features/dashboard"
 import { IconBrainCircuit } from "@/shared/icons"
@@ -96,6 +97,7 @@ export function Cap0TradingPage() {
 function Cap0Terminal() {
   const navigate = useNavigate()
   const { data: progress, isFetched } = useCap0Progress()
+  const { isPremium } = usePremiumStatus()
   const enterCap0 = useEnterCap0()
   const placement = usePlacement()
   const [placementSeen, setPlacementSeen] = useState(() => hasSeenPlacement())
@@ -189,7 +191,7 @@ function Cap0Terminal() {
           mode badge at its right edge. */}
       <div className="cap0-topbar">
         <JourneyBar />
-        <ModeBadge mode={tradingModeFor(progress)} />
+        <ModeBadge mode={tradingModeFor(progress, isPremium)} />
       </div>
 
       {/* Sticky reminder bar for nhiệm vụ ① (spec §6 "sticky dưới journey

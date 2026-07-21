@@ -1,4 +1,6 @@
+import { useNavigate } from "react-router"
 import { Message, Modal } from "@arco-design/web-react"
+import { usePremiumStatus } from "@/features/premium"
 import { Badge, LEVELS } from "./Badge"
 import { useCap0Progress, useGraduate } from "./hooks"
 import { countTasksDone, type Cap0Progress } from "./types"
@@ -25,8 +27,17 @@ const BLOCK_1 =
 const BLOCK_2 =
   "Nói thẳng: bạn đã biết **CÁCH CHƠI**, chưa biết **CHƠI GIỎI** — và đó là chủ đích. Cấp 1 «Học việc» dạy bạn lập kế hoạch thật sự cho từng lệnh. Câu hỏi 'chọn mã nào' sẽ được trả lời dần từ chính dữ liệu 6 lớp bạn vừa làm quen."
 
-const BLOCK_3 =
+const BLOCK_3_PREMIUM =
   "**Từ giờ: chế độ THỰC CHIẾN.** Luật thật 100% — mua xong chờ T+2,5 ngày cổ phiếu mới về, biên độ, phí, thuế đầy đủ. Vì hồ sơ nhà đầu tư của bạn bắt đầu được tính từ đây."
+
+// Final-review fix (premium-honest mode): the backend only ever routes
+// orders through the real T+2,5 `thuc_chien` engine for PREMIUM accounts —
+// a free graduate's orders stay `san_tap`/T+0 no matter what this screen
+// says. So a free graduate must NOT hear "chế độ THỰC CHIẾN" here; instead
+// this khối is an honest upsell: Cấp 0 is genuinely done, but Thực chiến
+// (and Cấp 1) is gated behind Premium.
+const BLOCK_3_FREE =
+  "**Cấp 0 hoàn tất.** Thực chiến — luật thật T+2,5, biên độ, phí thuế đầy đủ — là tính năng dành cho tài khoản Premium. Nâng cấp để mở khoá Thực chiến và bước vào Cấp 1 «Học việc»."
 
 /** Splits on the spec's own `**bold**` markers and renders them as `<strong>`. */
 function renderInlineBold(text: string) {
@@ -39,26 +50,53 @@ function renderInlineBold(text: string) {
  * `useCompleteTask`): the consumer (`Cap0TradingPage`) just mounts
  * `<GraduationModal />` unconditionally, this component decides its own
  * visibility via `isGraduationReady`. 3 khối (Ghi nhận / Định vị trung thực /
- * Chuyển chế độ, viền xanh) + huy hiệu "vừa đúc xong" (n=0, fill=1, size=120,
- * glow — spec §12) + `Vào Cấp 1 «Học việc» →`.
+ * Khối 3, viền xanh) + huy hiệu "vừa đúc xong" (n=0, fill=1, size=120, glow —
+ * spec §12) + CTA button.
  *
- * On success, `useGraduate`'s `onSuccess` already invalidates every Cấp 0
- * query (see `hooks.ts`), so `ModeBadge` (`Cap0TradingPage`/`JourneyPanel`,
- * both driven by `tradingModeFor(progress)`) flips SÂN TẬP → THỰC CHIẾN the
- * instant `graduated_at` comes back — no extra prop wiring needed here. No
- * Cấp 1 flow exists yet, so this delivery just toasts a placeholder and lets
- * `isGraduationReady` close the modal (its own `graduated_at` guard).
+ * Khối 3 + the CTA are premium-gated (final-review fix): the backend only
+ * ever runs a PREMIUM user's orders through the real T+2,5 `thuc_chien`
+ * engine — a free user's orders stay `san_tap`/T+0 forever, graduated or not.
+ * So this screen must not promise "chế độ THỰC CHIẾN" to a free graduate.
+ * `usePremiumStatus` (the SAME source `tradingModeFor` uses in
+ * `Cap0TradingPage`/`JourneyPanel`) picks the honest copy: premium graduates
+ * keep the verbatim spec §9 "Từ giờ: chế độ THỰC CHIẾN" + `Vào Cấp 1 «Học
+ * việc» →`; free graduates instead get an upsell inviting them to Premium,
+ * and the button routes to `/nang-cap` on success instead of teasing Cấp 1.
+ *
+ * `useGraduate()` still fires for BOTH tiers — graduating (recording
+ * `graduated_at`) happens regardless of premium status; only what the screen
+ * PROMISES as a consequence differs. On success, `useGraduate`'s `onSuccess`
+ * already invalidates every Cấp 0 query (see `hooks.ts`), so `ModeBadge`
+ * (`Cap0TradingPage`/`JourneyPanel`, both driven by
+ * `tradingModeFor(progress, isPremium)`) updates the instant `graduated_at`
+ * comes back — no extra prop wiring needed here.
  */
 export function GraduationModal() {
   const { data: progress } = useCap0Progress()
+  const { isPremium } = usePremiumStatus()
   const graduate = useGraduate()
+  const navigate = useNavigate()
   const level = LEVELS[0]
   const visible = isGraduationReady(progress)
 
   const handleGraduate = () => {
+    if (isPremium) {
+      // No Cấp 1 flow exists yet, so this delivery just toasts a placeholder
+      // and lets `isGraduationReady` close the modal (its own `graduated_at`
+      // guard) — unchanged from the original spec §9 delivery.
+      graduate.mutate(undefined, {
+        onSuccess: () => {
+          Message.info("Cấp 1 sắp ra mắt")
+        },
+      })
+      return
+    }
+    // Free graduate: still record the graduation server-side, but send them
+    // to the real, already-existing Premium upgrade page instead of a Cấp 1
+    // placeholder toast — that's the actual next step available to them.
     graduate.mutate(undefined, {
       onSuccess: () => {
-        Message.info("Cấp 1 sắp ra mắt")
+        navigate("/nang-cap")
       },
     })
   }
@@ -92,7 +130,9 @@ export function GraduationModal() {
 
       <div className="cap0-grad-block">{renderInlineBold(BLOCK_1)}</div>
       <div className="cap0-grad-block">{renderInlineBold(BLOCK_2)}</div>
-      <div className="cap0-grad-block cap0-grad-block--mode">{renderInlineBold(BLOCK_3)}</div>
+      <div className="cap0-grad-block cap0-grad-block--mode">
+        {renderInlineBold(isPremium ? BLOCK_3_PREMIUM : BLOCK_3_FREE)}
+      </div>
 
       <button
         type="button"
@@ -100,7 +140,7 @@ export function GraduationModal() {
         onClick={handleGraduate}
         disabled={graduate.isPending}
       >
-        Vào Cấp 1 «Học việc» →
+        {isPremium ? "Vào Cấp 1 «Học việc» →" : "Nâng cấp Premium →"}
       </button>
     </Modal>
   )

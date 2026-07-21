@@ -1,5 +1,6 @@
 import "./cap0.css"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
+import { usePremiumStatus } from "@/features/premium"
 import { cn } from "@/shared/lib/cn"
 import { Badge, LEVELS } from "./Badge"
 import { ModeBadge } from "./ModeBadge"
@@ -107,7 +108,8 @@ function ChecklistItem({
 /**
  * 🎯 Tab "Hành trình" (spec §7) — first sidebar-right panel while in Cấp 0.
  * Level card + `TRƯỚC KHI LÊN CẤP 1 · x/6` header + 3-stage/6-task checklist +
- * graduation goal box. Entirely driven by `useCap0Progress` — no props.
+ * graduation goal box. Driven by `useCap0Progress` + `usePremiumStatus` (the
+ * level card's `ModeBadge` needs both — see `tradingModeFor`'s doc) — no props.
  *
  * `RightSidebar` normally only ever resolves to this panel while
  * `isCap0Active` (either `activePanel === "journey"` set by
@@ -122,6 +124,7 @@ function ChecklistItem({
 export function JourneyPanel() {
   const { isCap0Active } = useCap0Events()
   const { data: progress } = useCap0Progress(isCap0Active)
+  const { isPremium } = usePremiumStatus()
   const { setActivePanel } = useSidebar()
   const tasksDone = countTasksDone(progress)
   const level = LEVELS[0]
@@ -142,7 +145,7 @@ export function JourneyPanel() {
               "Hiểu sân chơi, và đi trọn vòng đời một lệnh."
             </div>
           </div>
-          <ModeBadge mode={tradingModeFor(progress)} />
+          <ModeBadge mode={tradingModeFor(progress, isPremium)} />
         </div>
 
         <div className="cap0-journey-checklist-header">

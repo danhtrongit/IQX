@@ -1,18 +1,25 @@
 import { render, screen, fireEvent } from "@testing-library/react"
 import React from "react"
+import { MemoryRouter } from "react-router"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Cap0Progress } from "./types"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
-const { useCap0ProgressMock, graduateMutate, messageInfo } = vi.hoisted(() => ({
-  useCap0ProgressMock: vi.fn(),
-  // Mirror react-query's real `mutate(variables, options)` shape — by
-  // default synchronously invoke `onSuccess` (the happy path).
-  graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
-    opts?.onSuccess?.()
-  }),
-  messageInfo: vi.fn(),
-}))
+const { useCap0ProgressMock, usePremiumStatusMock, graduateMutate, messageInfo, navigateMock } =
+  vi.hoisted(() => ({
+    useCap0ProgressMock: vi.fn(),
+    // Defaults to a premium user so the many pre-existing tests below (all
+    // written before the premium-honest fix) keep exercising the ORIGINAL
+    // spec §9 verbatim copy without every one of them needing to opt in.
+    usePremiumStatusMock: vi.fn(() => ({ isPremium: true, isLoading: false })),
+    // Mirror react-query's real `mutate(variables, options)` shape — by
+    // default synchronously invoke `onSuccess` (the happy path).
+    graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
+      opts?.onSuccess?.()
+    }),
+    messageInfo: vi.fn(),
+    navigateMock: vi.fn(),
+  }))
 
 // `GraduationModal` only needs `useCap0Progress` + `useGraduate` — mock
 // `./hooks` directly (same pattern as `Cap0TradingPage.test.tsx`/
@@ -22,12 +29,35 @@ vi.mock("./hooks", () => ({
   useGraduate: () => ({ mutate: graduateMutate, isPending: false }),
 }))
 
+// Premium-honest mode fix — `GraduationModal` now reads `usePremiumStatus`
+// to decide which Khối 3 copy + CTA to show (see `types.ts#tradingModeFor`).
+vi.mock("@/features/premium", () => ({
+  usePremiumStatus: (...a: unknown[]) => usePremiumStatusMock(...a),
+}))
+
+// Same fix also added a `useNavigate()` call (free-graduate CTA routes to
+// `/nang-cap`) — spy on it the same way `Cap0TradingPage.test.tsx` does,
+// keeping the real `MemoryRouter` so the component still has Router context.
+vi.mock("react-router", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-router")>()
+  return { ...actual, useNavigate: () => navigateMock }
+})
+
 vi.mock("@arco-design/web-react", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@arco-design/web-react")>()
   return { ...actual, Message: { ...actual.Message, info: messageInfo } }
 })
 
 import { GraduationModal, isGraduationReady } from "./GraduationModal"
+
+/** `GraduationModal` calls `useNavigate()` (free-graduate CTA) — needs Router context. */
+function renderModal() {
+  return render(
+    <MemoryRouter>
+      <GraduationModal />
+    </MemoryRouter>,
+  )
+}
 
 function makeProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
   return {
@@ -101,22 +131,25 @@ describe("isGraduationReady", () => {
 describe("GraduationModal", () => {
   beforeEach(() => {
     useCap0ProgressMock.mockReset()
+    usePremiumStatusMock.mockReset()
+    usePremiumStatusMock.mockReturnValue({ isPremium: true, isLoading: false })
     graduateMutate.mockReset()
     graduateMutate.mockImplementation((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
       opts?.onSuccess?.()
     })
     messageInfo.mockReset()
+    navigateMock.mockReset()
   })
 
   it("does not render when the 6/6+2-gate condition isn't met", () => {
     useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
-    render(<GraduationModal />)
+    renderModal()
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
   })
 
-  it("renders the header + 3 khối (verbatim §9 copy) + button once ready", () => {
+  it("renders the header + 3 khối (verbatim §9 copy) + button once ready (premium graduate)", () => {
     useCap0ProgressMock.mockReturnValue({ data: readyProgress() })
-    render(<GraduationModal />)
+    renderModal()
 
     // Header
     expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
@@ -147,7 +180,7 @@ describe("GraduationModal", () => {
 
   it("renders the 120px glowing badge (spec §12 n=0, fill=1 — \"vừa đúc xong\")", () => {
     useCap0ProgressMock.mockReturnValue({ data: readyProgress() })
-    render(<GraduationModal />)
+    renderModal()
     // Arco's `Modal` renders its content via a portal into `document.body`
     // (outside RTL's `container`), so query the document directly — same
     // reason other Cap0 modal tests use `screen` rather than `container`.
@@ -156,22 +189,83 @@ describe("GraduationModal", () => {
     expect(svg?.getAttribute("width")).toBe("120")
   })
 
-  it('clicking "Vào Cấp 1" calls useGraduate().mutate and toasts a Cấp 1 placeholder', () => {
+  it('clicking "Vào Cấp 1" (premium graduate) calls useGraduate().mutate and toasts a Cấp 1 placeholder', () => {
     useCap0ProgressMock.mockReturnValue({ data: readyProgress() })
-    render(<GraduationModal />)
+    renderModal()
     fireEvent.click(screen.getByText("Vào Cấp 1 «Học việc» →"))
     expect(graduateMutate).toHaveBeenCalledWith(
       undefined,
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     )
     expect(messageInfo).toHaveBeenCalledWith(expect.stringContaining("Cấp 1"))
+    expect(navigateMock).not.toHaveBeenCalled()
   })
 
   it("closes itself once graduated_at comes back (progress refetch)", () => {
     useCap0ProgressMock.mockReturnValue({
       data: readyProgress({ graduated_at: "2026-07-21T00:00:00Z" }),
     })
-    render(<GraduationModal />)
+    renderModal()
+    expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
+  })
+})
+
+// ── GraduationModal — free (non-premium) graduate: premium-honest mode fix ──
+// A free user's orders stay `san_tap`/T+0 forever regardless of
+// `graduated_at` (backend forces it), so this screen must NOT promise
+// "chế độ THỰC CHIẾN" to them — see `types.ts#tradingModeFor`.
+describe("GraduationModal — free (non-premium) graduate", () => {
+  beforeEach(() => {
+    useCap0ProgressMock.mockReset()
+    usePremiumStatusMock.mockReset()
+    usePremiumStatusMock.mockReturnValue({ isPremium: false, isLoading: false })
+    graduateMutate.mockReset()
+    graduateMutate.mockImplementation((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
+      opts?.onSuccess?.()
+    })
+    messageInfo.mockReset()
+    navigateMock.mockReset()
+  })
+
+  it("does NOT claim THỰC CHIẾN — shows an upgrade-to-Premium invitation instead", () => {
+    useCap0ProgressMock.mockReturnValue({ data: readyProgress() })
+    renderModal()
+
+    // Khối 1/2 stay verbatim (spec §9) regardless of tier.
+    expect(screen.getByText(/Bạn đã đi trọn Cấp 0 «Nhập môn»/)).toBeInTheDocument()
+    expect(screen.getByText(/Nói thẳng: bạn đã biết/)).toBeInTheDocument()
+
+    // Khối 3 must NOT contain the "chế độ THỰC CHIẾN" claim.
+    expect(screen.queryByText("Từ giờ: chế độ THỰC CHIẾN.")).not.toBeInTheDocument()
+    expect(screen.queryByText(/chế độ THỰC CHIẾN/)).not.toBeInTheDocument()
+
+    // Instead: an honest, Premium-gated upsell.
+    expect(screen.getByText("Cấp 0 hoàn tất.")).toBeInTheDocument()
+    expect(screen.getByText(/là tính năng dành cho tài khoản Premium/)).toBeInTheDocument()
+
+    // Button is an upgrade CTA, not the "Vào Cấp 1" claim.
+    expect(screen.queryByText("Vào Cấp 1 «Học việc» →")).not.toBeInTheDocument()
+    expect(screen.getByText("Nâng cấp Premium →")).toBeInTheDocument()
+  })
+
+  it('clicking the upgrade CTA still calls useGraduate().mutate (graduation is recorded regardless of tier), then navigates to /nang-cap', () => {
+    useCap0ProgressMock.mockReturnValue({ data: readyProgress() })
+    renderModal()
+    fireEvent.click(screen.getByText("Nâng cấp Premium →"))
+    expect(graduateMutate).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    )
+    expect(navigateMock).toHaveBeenCalledWith("/nang-cap")
+    // No "Cấp 1 sắp ra mắt" placeholder toast for the free branch.
+    expect(messageInfo).not.toHaveBeenCalled()
+  })
+
+  it("still closes itself once graduated_at comes back (one-way trip, same as premium)", () => {
+    useCap0ProgressMock.mockReturnValue({
+      data: readyProgress({ graduated_at: "2026-07-21T00:00:00Z" }),
+    })
+    renderModal()
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
   })
 })

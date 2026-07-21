@@ -10,8 +10,13 @@ import type { Cap0Progress } from "./types"
 // `vi.hoisted` — `vi.mock` calls are hoisted above ALL other statements
 // (including plain top-level `const`s), so a factory closing over a plain
 // `const` can hit a TDZ ReferenceError at mock-invocation time.
-const { useCap0ProgressMock, enterMutate, placementMutate, completeTaskMutate, graduateMutate, messageInfo, navigateMock } = vi.hoisted(() => ({
+const { useCap0ProgressMock, usePremiumStatusMock, enterMutate, placementMutate, completeTaskMutate, graduateMutate, messageInfo, navigateMock } = vi.hoisted(() => ({
   useCap0ProgressMock: vi.fn(),
+  // Premium-honest mode fix — `tradingModeFor` now needs `isPremium` too.
+  // Default to a free user (the common case) so pre-existing "SÂN TẬP"
+  // assertions keep passing without every test needing to opt in; the
+  // premium-graduate case is exercised explicitly below.
+  usePremiumStatusMock: vi.fn(() => ({ isPremium: false, isLoading: false })),
   // Mirror react-query's real `mutate(variables, options)` shape: by default,
   // synchronously invoke the caller's `onSuccess` (the "happy path" a normal
   // mutation resolves to) so existing synchronous assertions keep working.
@@ -75,6 +80,12 @@ vi.mock("@/features/navigation", () => ({
   Footer: () => <div data-testid="footer" />,
 }))
 
+// Premium-honest mode fix — `Cap0TradingPage`'s `ModeBadge` now needs
+// `usePremiumStatus()` too (threaded into `tradingModeFor`).
+vi.mock("@/features/premium", () => ({
+  usePremiumStatus: (...a: unknown[]) => usePremiumStatusMock(...a),
+}))
+
 // FE1 hooks — mocked so this test controls progress state without a real
 // QueryClient/API.
 vi.mock("./hooks", () => ({
@@ -123,6 +134,8 @@ function renderCap0(ui: React.ReactNode) {
 describe("Cap0TradingPage", () => {
   beforeEach(() => {
     useCap0ProgressMock.mockReset()
+    usePremiumStatusMock.mockReset()
+    usePremiumStatusMock.mockReturnValue({ isPremium: false, isLoading: false })
     enterMutate.mockReset()
     enterMutate.mockImplementation((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
       opts?.onSuccess?.()
@@ -160,11 +173,23 @@ describe("Cap0TradingPage", () => {
     expect(screen.getByText("SÂN TẬP · T+0")).toBeInTheDocument()
   })
 
-  it('flips the mode badge to "THỰC CHIẾN" once progress.graduated_at is set (spec §9)', () => {
+  it('keeps the mode badge on "SÂN TẬP · T+0" once graduated_at is set for a FREE (non-premium) user — premium-honest mode fix: the backend never routes a free user\'s orders through thuc_chien', () => {
     useCap0ProgressMock.mockReturnValue({
       data: { ...fakeProgress, graduated_at: "2026-07-21T00:00:00Z" },
       isFetched: true,
     })
+    usePremiumStatusMock.mockReturnValue({ isPremium: false, isLoading: false })
+    renderCap0(<Cap0TradingPage />)
+    expect(screen.getByText("SÂN TẬP · T+0")).toBeInTheDocument()
+    expect(screen.queryByText("THỰC CHIẾN")).not.toBeInTheDocument()
+  })
+
+  it('flips the mode badge to "THỰC CHIẾN" once progress.graduated_at is set AND the user is premium (spec §9)', () => {
+    useCap0ProgressMock.mockReturnValue({
+      data: { ...fakeProgress, graduated_at: "2026-07-21T00:00:00Z" },
+      isFetched: true,
+    })
+    usePremiumStatusMock.mockReturnValue({ isPremium: true, isLoading: false })
     renderCap0(<Cap0TradingPage />)
     expect(screen.getByText("THỰC CHIẾN")).toBeInTheDocument()
     expect(screen.queryByText("SÂN TẬP · T+0")).not.toBeInTheDocument()

@@ -7,8 +7,14 @@ import type { Cap0Progress } from "./types"
 // ── Mocks ────────────────────────────────────────────────────────────────────
 // Spies referenced from inside `vi.mock` factories MUST go through
 // `vi.hoisted` (see the same pattern in `Cap0TradingPage.test.tsx`).
-const { useCap0ProgressMock } = vi.hoisted(() => ({
+const { useCap0ProgressMock, usePremiumStatusMock } = vi.hoisted(() => ({
   useCap0ProgressMock: vi.fn(),
+  // Premium-honest mode fix — `JourneyPanel`'s level-card `ModeBadge` now
+  // needs `usePremiumStatus()` too (threaded into `tradingModeFor`). Default
+  // to a free user so the many pre-existing "SÂN TẬP" tests below keep
+  // passing without opting in; the premium-graduate case is exercised
+  // explicitly.
+  usePremiumStatusMock: vi.fn(() => ({ isPremium: false, isLoading: false })),
 }))
 
 vi.mock("./hooks", () => ({
@@ -32,6 +38,7 @@ vi.mock("@/features/premium", () => ({
   PremiumGate: ({ children }: { children: ReactNode }) => (
     <div data-testid="premium-gate">{children}</div>
   ),
+  usePremiumStatus: (...a: unknown[]) => usePremiumStatusMock(...a),
 }))
 vi.mock("@/features/patterns", () => ({
   AIPatternPanel: () => <div data-testid="patterns-panel" />,
@@ -72,6 +79,8 @@ function PanelSpy() {
 describe("JourneyPanel", () => {
   beforeEach(() => {
     useCap0ProgressMock.mockReset()
+    usePremiumStatusMock.mockReset()
+    usePremiumStatusMock.mockReturnValue({ isPremium: false, isLoading: false })
   })
 
   it("renders the level card — CẤP 0 / NHẬP MÔN / italic lesson / mode badge", () => {
@@ -89,10 +98,25 @@ describe("JourneyPanel", () => {
     expect(screen.getByText("SÂN TẬP · T+0")).toBeInTheDocument()
   })
 
-  it('shows "THỰC CHIẾN" instead once graduated_at is set (spec §9 mode switch)', () => {
+  it('keeps "SÂN TẬP · T+0" once graduated_at is set for a FREE (non-premium) user — premium-honest mode fix', () => {
     useCap0ProgressMock.mockReturnValue({
       data: makeProgress({ graduated_at: "2026-07-21T00:00:00Z" }),
     })
+    usePremiumStatusMock.mockReturnValue({ isPremium: false, isLoading: false })
+    render(
+      <SidebarProvider>
+        <JourneyPanel />
+      </SidebarProvider>,
+    )
+    expect(screen.getByText("SÂN TẬP · T+0")).toBeInTheDocument()
+    expect(screen.queryByText("THỰC CHIẾN")).not.toBeInTheDocument()
+  })
+
+  it('shows "THỰC CHIẾN" instead once graduated_at is set AND the user is premium (spec §9 mode switch)', () => {
+    useCap0ProgressMock.mockReturnValue({
+      data: makeProgress({ graduated_at: "2026-07-21T00:00:00Z" }),
+    })
+    usePremiumStatusMock.mockReturnValue({ isPremium: true, isLoading: false })
     render(
       <SidebarProvider>
         <JourneyPanel />
