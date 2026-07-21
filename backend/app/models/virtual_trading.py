@@ -176,6 +176,10 @@ class VirtualOrder(UUIDMixin, TimestampMixin, Base):
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     symbol: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
+    # Cấp 0 onboarding tags orders as "san_tap" (practice) vs "thuc_chien" (live).
+    mode: Mapped[str] = mapped_column(
+        String, nullable=False, default="thuc_chien", server_default="thuc_chien"
+    )
     side: Mapped[OrderSide] = mapped_column(
         Enum(OrderSide, name="vt_order_side", values_callable=lambda e: [m.value for m in e]),
         nullable=False,
