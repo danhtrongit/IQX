@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IQX — Cấp 0 · Chặng 1 «Vào sân»</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+:root {
+  --brand:#4f8ff7; --brand-soft:rgba(79,143,247,.16); --brand-bd:rgba(79,143,247,.4);
+  --bg1:#171923; --bg2:#1f2230; --bg3:#282c3d; --bd:#39405a;
+  --t1:#f0f2f7; --t2:#b8bdcc; --t3:#8a90a5;
+  --up:#35d07f; --down:#ff6b6b; --warn:#ffc53d; --ceil:#d48aff; --floor:#4dc3ff;
+}
+body { font-family:'Inter',sans-serif; background:var(--bg1); color:var(--t1); font-size:13px; line-height:1.5; overflow-x:hidden; }
+.num { font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; }
+button { font-family:inherit; cursor:pointer; }
+
+/* ===== JOURNEY BAR ===== */
+.jbar { background:linear-gradient(to right,var(--brand-soft),rgba(79,143,247,.03)); border-bottom:1px solid var(--brand-bd); padding:8px 16px; display:flex; align-items:center; gap:13px; position:sticky; top:0; z-index:40; }
+.jday { font-family:'JetBrains Mono'; font-size:10.5px; font-weight:700; letter-spacing:1px; color:var(--brand); background:rgba(79,143,247,.15); border:1px solid var(--brand-bd); border-radius:6px; padding:3px 9px; white-space:nowrap; }
+.jtask { font-size:12.5px; }
+.mode { margin-left:auto; font-family:'JetBrains Mono'; font-size:9.5px; font-weight:700; letter-spacing:1px; color:var(--warn); border:1px solid rgba(255,197,61,.45); background:rgba(255,197,61,.08); border-radius:6px; padding:3px 9px; }
+.jdots { display:flex; gap:4px; }
+.jd { width:7px; height:7px; border-radius:50%; background:var(--bg3); border:1px solid var(--bd); }
+.jd.done { background:rgba(53,208,127,.6); border-color:rgba(53,208,127,.6); }
+.jd.now { background:var(--brand); border-color:var(--brand); box-shadow:0 0 6px rgba(79,143,247,.7); }
+
+/* ===== APP LAYOUT (theo web thật) ===== */
+.app { display:grid; grid-template-columns:44px 1fr 300px 64px; height:calc(100vh - 40px); }
+
+/* toolbar trái */
+.ltools { background:#141722; border-right:1px solid var(--bd); display:flex; flex-direction:column; align-items:center; padding-top:10px; gap:14px; color:var(--t3); font-size:15px; }
+.ltools span { opacity:.7; cursor:pointer; }
+
+/* vùng chart */
+.chartzone { display:flex; flex-direction:column; border-right:1px solid var(--bd); min-width:0; }
+.ctabs { display:flex; gap:2px; padding:8px 12px 0; border-bottom:1px solid var(--bd); background:#141722; }
+.ctab { padding:8px 14px; font-size:12.5px; color:var(--t3); border-bottom:2px solid transparent; cursor:pointer; }
+.ctab.on { color:var(--brand); border-bottom-color:var(--brand); font-weight:600; }
+.cbar { display:flex; align-items:center; gap:12px; padding:8px 12px; border-bottom:1px solid var(--bd); background:#141722; }
+.csearch { display:flex; align-items:center; gap:7px; background:var(--bg2); border:1px solid var(--bd); border-radius:8px; padding:6px 11px; font-size:12.5px; color:var(--t2); min-width:170px; }
+.cinfo { font-size:11.5px; color:var(--t3); }
+.cinfo b { color:var(--t1); }
+.chartbox { flex:1; position:relative; background:#12141d; }
+.chartbox svg { position:absolute; inset:0; width:100%; height:100%; }
+.ohlc { position:absolute; top:10px; left:14px; font-size:11.5px; color:var(--t2); z-index:2; }
+.ohlc b { font-family:'Space Grotesk'; font-size:13px; color:#fff; }
+.ohlc .num { font-size:11px; }
+
+/* panel đặt lệnh */
+.opanel { background:#181b27; overflow-y:auto; padding:12px; }
+.shead { border-bottom:1px solid var(--bd); padding-bottom:10px; margin-bottom:10px; }
+.srow1 { display:flex; align-items:center; gap:8px; }
+.scode { font-family:'Space Grotesk'; font-size:17px; font-weight:700; }
+.star { font-size:16px; color:var(--t3); background:none; border:none; padding:0 2px; }
+.star.on { color:var(--warn); }
+.sexch { margin-left:auto; font-size:9px; font-weight:700; letter-spacing:.5px; color:var(--t3); background:var(--bg3); border-radius:4px; padding:2px 7px; }
+.sname { font-size:10.5px; color:var(--t3); margin-top:1px; }
+.sprice { font-family:'JetBrains Mono'; font-size:23px; font-weight:700; color:var(--up); margin-top:5px; }
+.schg { font-family:'JetBrains Mono'; font-size:11px; color:var(--up); }
+.slims { display:flex; gap:12px; margin-top:7px; font-size:10.5px; color:var(--t3); }
+.slims .num { font-size:11px; }
+.sbal { display:flex; justify-content:space-between; align-items:center; background:var(--bg2); border:1px solid var(--bd); border-radius:9px; padding:9px 11px; margin-bottom:11px; font-size:11.5px; color:var(--t2); }
+.sbal .num { color:#fff; font-weight:700; font-size:12.5px; }
+.mbtabs { display:flex; gap:0; border-bottom:1px solid var(--bd); margin-bottom:11px; }
+.mbt { flex:1; text-align:center; padding:8px; font-size:13px; font-weight:700; color:var(--t3); border-bottom:2px solid transparent; cursor:pointer; }
+.mbt.mua { color:var(--up); border-bottom-color:var(--up); }
+.flab { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--t3); margin-bottom:5px; }
+.qtyrow { display:flex; align-items:stretch; gap:6px; margin-bottom:7px; }
+.qbtn { width:32px; background:var(--bg3); border:1px solid var(--bd); border-radius:8px; color:var(--t2); font-size:15px; }
+.finp { flex:1; background:var(--bg3); border:1px solid var(--bd); border-radius:8px; padding:8px 11px; color:#fff; font-family:'JetBrains Mono'; font-size:14px; font-weight:600; text-align:center; width:100%; }
+.finp:focus { outline:none; border-color:var(--brand); }
+.pct { display:flex; gap:5px; margin-bottom:11px; }
+.pct button { flex:1; background:var(--bg2); border:1px solid var(--bd); border-radius:7px; padding:5px; font-size:10.5px; color:var(--t3); }
+.fnote { font-size:10px; color:var(--t3); margin:-5px 0 10px; }
+.fees { font-size:11.5px; color:var(--t2); border-top:1px dashed var(--bd); padding-top:8px; }
+.fee { display:flex; justify-content:space-between; padding:2px 0; }
+.fee.tot { font-weight:700; color:#fff; padding-top:5px; font-size:12.5px; }
+.fee.tot .num { color:var(--brand); }
+
+.plan { margin-top:11px; background:var(--bg3); border:1px solid var(--bd); border-radius:10px; padding:11px; position:relative; overflow:hidden; }
+.plan::before { content:''; position:absolute; inset:0 0 auto 0; height:2px; background:linear-gradient(to right,var(--brand),transparent 60%); }
+.plab { font-size:9px; font-weight:700; letter-spacing:1.3px; text-transform:uppercase; color:var(--brand); margin-bottom:7px; }
+.q { font-size:12px; font-weight:600; margin-bottom:6px; }
+.chips { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:9px; }
+.chip { background:var(--bg2); border:1px solid var(--bd); border-radius:999px; padding:5px 10px; font-size:10.5px; color:var(--t2); transition:all .12s; }
+.chip.on { background:var(--brand-soft); border-color:var(--brand); color:var(--brand); font-weight:600; }
+.presets { display:flex; gap:6px; }
+.preset { flex:1; background:var(--bg2); border:1px solid var(--bd); border-radius:8px; padding:7px 9px; }
+.pk { font-size:8.5px; letter-spacing:.7px; text-transform:uppercase; color:var(--t3); }
+.pv { font-family:'JetBrains Mono'; font-size:11.5px; font-weight:700; margin-top:2px; }
+.pnote { font-size:9.5px; color:var(--t3); margin-top:7px; line-height:1.45; }
+.buyBtn { width:100%; margin-top:11px; padding:12px; background:var(--up); color:#052e12; border:none; border-radius:9px; font-size:13.5px; font-weight:700; }
+
+/* Danh mục panel (thay thế opanel khi bấm sidebar) */
+.ptabs { display:flex; gap:4px; margin-bottom:10px; }
+.ptab { flex:1; text-align:center; padding:7px; border-radius:8px; font-size:11.5px; font-weight:600; color:var(--t3); background:var(--bg2); border:1px solid var(--bd); cursor:pointer; }
+.ptab.on { color:#fff; background:var(--brand-soft); border-color:var(--brand-bd); }
+.stat4 { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:10px; }
+.st { background:var(--bg2); border:1px solid var(--bd); border-radius:8px; padding:8px 10px; }
+.stk { font-size:9px; color:var(--t3); }
+.stv { font-family:'JetBrains Mono'; font-size:12px; font-weight:700; margin-top:2px; }
+.pos { display:flex; align-items:center; justify-content:space-between; background:var(--bg2); border:1px solid var(--bd); border-radius:8px; padding:8px 10px; margin-bottom:5px; }
+.pos .c { font-weight:700; font-size:12.5px; }
+.pos .g { font-size:9.5px; color:var(--t3); font-family:'JetBrains Mono'; }
+.pos .r { text-align:right; font-family:'JetBrains Mono'; font-size:10.5px; }
+.watch { display:flex; align-items:center; gap:8px; background:var(--bg2); border:1px solid var(--bd); border-radius:8px; padding:8px 10px; margin-bottom:5px; }
+.empty { font-size:11px; color:var(--t3); text-align:center; padding:14px 6px; }
+
+/* sidebar phải */
+.rtools { background:#141722; border-left:1px solid var(--bd); display:flex; flex-direction:column; align-items:center; padding-top:8px; gap:4px; }
+.rt { width:56px; padding:9px 2px; border-radius:9px; text-align:center; font-size:9px; color:var(--t3); cursor:pointer; line-height:1.3; }
+.rt .ic { font-size:16px; display:block; margin-bottom:2px; }
+.rt.on { background:var(--brand-soft); border:1px solid var(--brand-bd); color:var(--brand); }
+
+/* thanh nhắc nhở bền vững — chỉ mất khi hoàn thành */
+.gbar { display:none; align-items:center; gap:10px; background:rgba(255,197,61,.10); border-bottom:1px solid rgba(255,197,61,.45); padding:8px 18px; font-size:12.5px; color:var(--t1); position:sticky; top:40px; z-index:39; }
+.gbar.on { display:flex; }
+.gbar .gtag { font-family:'JetBrains Mono'; font-size:9.5px; font-weight:700; letter-spacing:1px; color:var(--warn); border:1px solid rgba(255,197,61,.5); border-radius:5px; padding:2px 7px; white-space:nowrap; }
+.gbar.warn { background:rgba(255,107,107,.12); border-bottom-color:rgba(255,107,107,.55); animation:gshake .3s; }
+.gbar.warn .gtag { color:var(--down); border-color:rgba(255,107,107,.6); }
+@keyframes gshake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+
+/* checklist trong tab Hành trình */
+.hstg { font-size:9px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:var(--t3); margin:11px 0 5px; }
+.hstg.ok { color:rgba(53,208,127,.75); }
+.cfi { display:flex; gap:8px; align-items:flex-start; font-size:11.5px; color:var(--t3); padding:6px 8px; border-radius:8px; margin-bottom:2px; }
+.cfi .n { width:17px; height:17px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono'; font-size:8.5px; font-weight:700; background:var(--bg3); border:1px solid var(--bd); flex-shrink:0; margin-top:1px; }
+.cfi.done { opacity:.55; } .cfi.done .t { text-decoration:line-through; }
+.cfi.done .n { background:rgba(53,208,127,.15); border-color:rgba(53,208,127,.45); color:var(--up); }
+.cfi.now { background:var(--brand-soft); border:1px solid var(--brand-bd); color:#fff; font-weight:600; }
+.cfi.now .n { background:var(--brand); border-color:var(--brand); color:#fff; }
+.cfi.lock { opacity:.45; }
+.hdesc { font-size:10px; color:var(--t2); font-weight:400; margin-top:3px; line-height:1.45; }
+.golink { display:block; margin-top:6px; background:var(--brand); color:#fff; border:none; border-radius:7px; padding:6px 12px; font-size:10.5px; font-weight:700; }
+
+/* ===== SPOTLIGHT ===== */
+#ovl { position:fixed; inset:0; z-index:100; display:none; }
+#hole { position:absolute; border-radius:13px; box-shadow:0 0 0 9999px rgba(10,12,20,.52); border:3px solid var(--brand); outline:2px solid rgba(255,255,255,.25); transition:all .35s ease-out; }
+#tipb { position:absolute; max-width:350px; background:#fff; color:#1a2033; border-radius:14px; padding:15px 17px; box-shadow:0 12px 48px rgba(0,0,0,.55); transition:all .35s ease-out; pointer-events:auto; }
+.tstep { font-family:'JetBrains Mono'; font-size:10px; font-weight:700; color:var(--brand); letter-spacing:1.4px; margin-bottom:6px; }
+.ttext { font-size:13px; line-height:1.6; color:#2a3045; }
+.ttext strong { color:#10131f; }
+.thint { font-size:11px; color:#d97706; margin-top:8px; display:none; }
+.tact { display:flex; align-items:center; gap:10px; margin-top:12px; }
+.tnext { background:var(--brand); color:#fff; border:none; border-radius:9px; padding:8px 17px; font-size:12.5px; font-weight:700; }
+.tnext:disabled { opacity:.45; }
+.tskip { background:none; border:none; color:#8a90a5; font-size:11px; text-decoration:underline; }
+.tcnt { margin-left:auto; font-family:'JetBrains Mono'; font-size:10.5px; color:#b0b5c6; }
+
+/* ===== MODAL THẺ LẬT ===== */
+.modal { position:fixed; inset:0; background:rgba(8,10,16,.82); z-index:110; display:none; align-items:center; justify-content:center; padding:22px; }
+.modal.on { display:flex; }
+.mcard { background:var(--bg2); border:1px solid var(--bd); border-radius:16px; max-width:540px; width:100%; padding:24px; max-height:88vh; overflow-y:auto; }
+.mtag { font-family:'JetBrains Mono'; font-size:10px; font-weight:700; letter-spacing:1.5px; color:var(--brand); margin-bottom:9px; }
+.mtitle { font-family:'Space Grotesk'; font-size:21px; font-weight:700; margin-bottom:11px; }
+.mbody { color:var(--t2); font-size:13.5px; }
+.mq { margin-top:15px; font-weight:600; color:#fff; font-size:13.5px; }
+.mopts { display:flex; flex-direction:column; gap:7px; margin-top:9px; }
+.mopt { text-align:left; background:var(--bg3); border:1px solid var(--bd); border-radius:10px; padding:10px 13px; color:var(--t1); font-size:12.5px; }
+.mopt:hover { border-color:var(--brand); }
+.mexp { margin-top:11px; border-left:3px solid var(--brand); background:var(--brand-soft); border-radius:0 9px 9px 0; padding:10px 12px; font-size:12px; display:none; }
+.mnext { margin-top:15px; width:100%; padding:11px; background:var(--brand); color:#fff; border:none; border-radius:10px; font-size:13px; font-weight:700; }
+.mnext:disabled { opacity:.4; }
+/* toast */
+.toast { position:fixed; top:52px; left:50%; transform:translateX(-50%); background:#fff; color:#10131f; font-size:12.5px; font-weight:600; border-radius:10px; padding:10px 18px; box-shadow:0 10px 36px rgba(0,0,0,.5); z-index:120; display:none; }
+</style>
+</head>
+<body>
+
+<!-- JOURNEY BAR -->
+<div class="jbar" onclick="rview('ht')" style="cursor:pointer;" title="Bấm để mở Hành trình">
+  <span class="jday" id="jday">CẤP 0 · 0/7</span>
+  <span class="jtask" id="jtask">Chặng 1 «Vào sân» — bắt đầu: <b>Cổ phiếu là gì?</b></span>
+  <div class="jdots" id="jdots"></div>
+  <span class="mode">SÂN TẬP · T+0</span>
+</div>
+
+<!-- THANH NHẮC NHỞ — ở lại đến khi hoàn thành bước -->
+<div class="gbar" id="gbar"><span class="gtag">CẦN LÀM</span><span id="gtext"></span></div>
+
+<div class="app">
+  <!-- toolbar trái -->
+  <div class="ltools"><span>✚</span><span>╱</span><span>≡</span><span>⌖</span><span>T</span><span>◎</span><span>⌀</span><span>🔍</span></div>
+
+  <!-- chart zone -->
+  <div class="chartzone">
+    <div class="ctabs">
+      <div class="ctab on">📊 Biểu đồ</div><div class="ctab">Số lệnh</div><div class="ctab">Tổng quan</div><div class="ctab">Tài chính</div>
+    </div>
+    <div class="cbar">
+      <div class="csearch" id="sp-search">🔍 <span id="searchtxt">Tìm công ty bạn biết… (VNM, MWG, VCB)</span></div>
+      <span class="cinfo">D · Các chỉ báo</span>
+    </div>
+    <div class="chartbox" id="sp-chart">
+      <div class="ohlc"><b id="c-code">—</b> · 1D <span class="num" id="c-ohlc"></span></div>
+      <svg viewBox="0 0 900 420" preserveAspectRatio="none" id="candles"></svg>
+    </div>
+  </div>
+
+  <!-- ORDER PANEL (KHÔNG có sổ lệnh) -->
+  <div class="opanel" id="opanel">
+    <!-- view: HÀNH TRÌNH -->
+    <div id="pv-ht">
+      <div style="background:var(--bg2); border:1px solid var(--brand-bd); border-radius:11px; padding:14px 13px; margin-bottom:12px; display:flex; gap:13px; align-items:center;">
+        <span id="ht-badge"></span>
+        <div style="flex:1; min-width:0;">
+          <div style="font-family:'JetBrains Mono'; font-size:9.5px; font-weight:700; letter-spacing:1.5px; color:var(--brand);">CẤP 0</div>
+          <div style="font-family:'Space Grotesk'; font-size:19px; font-weight:700; margin:2px 0 4px;">NHẬP MÔN</div>
+          <div style="font-size:10.5px; color:var(--t2); font-style:italic; line-height:1.4;">"Hiểu sân chơi, và đi trọn vòng đời một lệnh."</div>
+        </div>
+      </div>
+      <div class="cft" style="font-size:9.5px; font-weight:700; letter-spacing:1.3px; text-transform:uppercase; color:var(--t3); margin-bottom:7px; display:flex;">TRƯỚC KHI LÊN CẤP 1 <span class="num" style="margin-left:auto; color:var(--brand);" id="htc">0/6</span></div>
+
+      <div class="hstg" id="hs1">CHẶNG 1 — VÀO SÂN</div>
+      <div class="cfi now" id="ht1"><span class="n">1</span><div style="flex:1"><span class="t">Lệnh đầu tiên + Nắm giữ + Theo dõi</span><div class="hdesc" id="hd1">Mua công ty bạn biết · chọn lý do trong Kế hoạch · xem tiền nằm đâu · gắn sao ★. Làm thiếu bước nào, hệ thống sẽ nhắc.<button class="golink" onclick="goTask(1)">Làm ngay →</button></div></div></div>
+
+      <div class="hstg">CHẶNG 2 — HIỂU SÂN CHƠI · TOUR SẢN PHẨM IQX</div>
+      <div class="cfi lock"><span class="n">2</span><span class="t">Tour bảng điện — 8 điểm</span></div>
+      <div class="cfi lock"><span class="n">3</span><span class="t">Tour bản tin thị trường</span></div>
+      <div class="cfi lock"><span class="n">4</span><span class="t">Tour "6 người chơi" trên mã của bạn</span></div>
+
+      <div class="hstg">CHẶNG 3 — KHÉP VÒNG</div>
+      <div class="cfi lock"><span class="n">5</span><span class="t">Lệnh thứ hai — tự đặt ngưỡng cắt lỗ</span></div>
+      <div class="cfi lock"><span class="n">6</span><span class="t">Bán một lệnh — kết sổ đầu tiên</span></div>
+
+      <div style="margin-top:11px; padding:10px 11px; background:var(--bg2); border:1px solid var(--bd); border-radius:9px; font-size:10.5px; color:var(--t3); line-height:1.5;">
+        Xong cả 6 → tốt nghiệp <b style="color:var(--t1)">Cấp 0 «Nhập môn»</b>, chuyển chế độ <b style="color:var(--t1)">Thực chiến</b> (T+2,5 · biên độ · hồ sơ bắt đầu tính).
+      </div>
+    </div>
+
+    <!-- view: đặt lệnh -->
+    <div id="pv-order" style="display:none;">
+      <div class="shead">
+        <div class="srow1">
+          <span class="scode" id="scode">—</span>
+          <button class="star" id="starBtn" onclick="clickStar()">☆</button>
+          <span class="sexch">HOSE</span>
+        </div>
+        <div class="sname" id="sname">Chọn mã để bắt đầu</div>
+        <div class="sprice num" id="sprice">—</div>
+        <div class="schg num" id="schg"></div>
+        <div class="slims"><span>Trần <span class="num" style="color:var(--ceil)" id="l-tran">—</span></span><span>TC <span class="num" style="color:var(--warn)" id="l-tc">—</span></span><span>Sàn <span class="num" style="color:var(--floor)" id="l-san">—</span></span></div>
+      </div>
+      <div class="sbal" id="sp-bal"><span>💼 Số dư</span><span class="num">248.935.775đ</span></div>
+      <div class="mbtabs"><div class="mbt mua">MUA</div><div class="mbt">BÁN</div></div>
+
+      <div class="flab">Khối lượng</div>
+      <div class="qtyrow" id="sp-kl">
+        <button class="qbtn">−</button><input class="finp" id="inp-kl" value="100"><button class="qbtn">+</button>
+      </div>
+      <div class="pct"><button>10%</button><button>25%</button><button>50%</button><button>100%</button></div>
+      <div class="fnote" id="klnote">100 cổ phiếu ≈ 6,24 triệu tiền ảo — mức vừa phải để học</div>
+
+      <div class="fees" id="sp-fee">
+        <div class="fee"><span>Giá trị</span><span class="num" id="f-gt">6.240.000</span></div>
+        <div class="fee"><span>Phí GD (0,15%)</span><span class="num" id="f-phi">9.360</span></div>
+        <div class="fee tot"><span>Tổng</span><span class="num" id="f-tong">6.249.360</span></div>
+      </div>
+
+      <div class="plan" id="sp-plan">
+        <div class="plab">Kế hoạch</div>
+        <div class="q">Vì sao bạn chọn <span id="planCode">mã này</span>?</div>
+        <div class="chips" id="chips">
+          <button class="chip">Công ty tôi biết</button><button class="chip">Người quen giới thiệu</button><button class="chip">Thấy trên mạng</button><button class="chip">Giá đang tăng</button><button class="chip">Thử cho biết</button>
+        </div>
+        <div class="presets">
+          <div class="preset"><div class="pk">Cắt lỗ (đề xuất)</div><div class="pv num" style="color:var(--down)" id="pv-sl">—</div></div>
+          <div class="preset"><div class="pk">Chốt lời (đề xuất)</div><div class="pv num" style="color:var(--up)" id="pv-tp">—</div></div>
+        </div>
+        <div class="pnote">Cắt lỗ: nếu giá giảm tới đây, bán để bảo toàn vốn. Lệnh đầu hệ thống đề xuất sẵn — chỉ cần đồng ý.</div>
+      </div>
+
+      <button class="buyBtn" id="sp-buy" onclick="doBuy()">ĐẶT LỆNH MUA</button>
+    </div>
+
+    <!-- view: danh mục -->
+    <div id="pv-dm" style="display:none;">
+      <div class="ptabs">
+        <div class="ptab" id="tab-td" onclick="ptab('td')">👁 Theo dõi</div>
+        <div class="ptab on" id="tab-ng" onclick="ptab('ng')">💼 Nắm giữ</div>
+      </div>
+      <div id="p-ng">
+        <div class="stat4" id="sp-stat4">
+          <div class="st"><div class="stk">Tổng tài sản</div><div class="stv num" id="st-ts">248.935.775</div></div>
+          <div class="st"><div class="stk">Tiền mặt</div><div class="stv num" id="st-tm">248.935.775</div></div>
+          <div class="st"><div class="stk">Lãi/Lỗ tạm tính</div><div class="stv num" id="st-pnl">0</div></div>
+          <div class="st"><div class="stk">Hiệu suất</div><div class="stv num" id="st-hs">0,00%</div></div>
+        </div>
+        <div id="positions"><div class="empty">Chưa có mã nào.</div></div>
+      </div>
+      <div id="p-td" style="display:none;">
+        <div id="watchlist"><div class="empty">Chưa theo dõi mã nào.<br>Bấm ★ cạnh tên mã để thêm.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- sidebar phải: Hành trình đứng đầu · BỎ Tin tức + AI Mẫu nến -->
+  <div class="rtools">
+    <div class="rt on" id="rt-ht" onclick="rview('ht')"><span class="ic">🎯</span>Hành trình</div>
+    <div class="rt" id="rt-order" onclick="rview('order')"><span class="ic">🛒</span>Đặt lệnh</div>
+    <div class="rt" id="rt-dm" onclick="rview('dm')"><span class="ic">👁</span>Danh mục</div>
+    <div class="rt"><span class="ic">💡</span>AI Phân tích</div>
+  </div>
+</div>
+
+<!-- SPOTLIGHT -->
+<div id="ovl"><div id="hole"></div><div id="tipb">
+  <div class="tstep" id="tstep"></div>
+  <div class="ttext" id="ttext"></div>
+  <div class="thint" id="thint"></div>
+  <div class="tact"><button class="tnext" id="tnext">Tiếp theo</button><button class="tskip" onclick="endTour()">Bỏ qua</button><span class="tcnt" id="tcnt"></span></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+/* ===== BADGE — huy hiệu cấp độ (spec §12) ===== */
+const LEVELS = [
+  { n:0, name:'Nhập môn',   color:'#8a90a5', fill:0 },
+  { n:1, name:'Học việc',   color:'#c97b4a', fill:1 },
+  { n:2, name:'Kỷ luật',    color:'#7dd3c0', fill:2 },
+  { n:3, name:'Bản lĩnh',   color:'#4f8ff7', fill:3 },
+  { n:4, name:'Thuần thục', color:'#a78bfa', fill:4 },
+  { n:5, name:'Lão luyện',  color:'#e0b64d', fill:5 },
+];
+function badge(o){
+  const s=o.size||96, c=s/2, R=s*0.34;
+  const col=o.color, fill=o.fill, ring=o.ring, glow=o.glow;
+  const pts=[];
+  for(let i=0;i<6;i++){ const a=Math.PI/2 + i*Math.PI/3; pts.push([c+R*Math.cos(a), c-R*Math.sin(a)]); }
+  const uid='g'+Math.random().toString(36).slice(2,7);
+  let litEdges='';
+  for(let i=0;i<6;i++){
+    const p1=pts[i], p2=pts[(i+1)%6];
+    const lit = i < Math.min(fill+1,6);
+    litEdges += `<line x1="${p1[0].toFixed(1)}" y1="${p1[1].toFixed(1)}" x2="${p2[0].toFixed(1)}" y2="${p2[1].toFixed(1)}" stroke="${lit?col:'#3a3f52'}" stroke-width="${lit?2.4:1.4}" stroke-linecap="round" opacity="${lit?1:.6}"/>`;
+  }
+  const coreOpacity = [0,0.10,0.20,0.34,0.52,0.9][fill];
+  const innerR = R*0.56;
+  const innerPts=[];
+  for(let i=0;i<6;i++){ const a=Math.PI/2 + i*Math.PI/3; innerPts.push((c+innerR*Math.cos(a)).toFixed(1)+','+(c-innerR*Math.sin(a)).toFixed(1)); }
+  const showNum = o.showNum!==false;
+  let rays='';
+  if(fill>=4){
+    for(let i=0;i<6;i++){ const a=Math.PI/2 + i*Math.PI/3 + Math.PI/6;
+      const x1=c+R*1.05*Math.cos(a), y1=c-R*1.05*Math.sin(a);
+      const x2=c+R*1.3*Math.cos(a),  y2=c-R*1.3*Math.sin(a);
+      rays+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="1.6" stroke-linecap="round" opacity="${fill===5?.9:.5}"/>`;
+    }
+  }
+  let ringSvg='';
+  if(ring!=null){
+    const rr=R*1.5, cir=2*Math.PI*rr;
+    ringSvg=`<circle cx="${c}" cy="${c}" r="${rr}" fill="none" stroke="#2c3244" stroke-width="3"/>
+    <circle cx="${c}" cy="${c}" r="${rr}" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round"
+      stroke-dasharray="${cir}" stroke-dashoffset="${(cir*(1-ring)).toFixed(1)}" transform="rotate(-90 ${c} ${c})"/>`;
+  }
+  return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" style="display:block;">
+    <defs>
+      <radialGradient id="${uid}c" cx="50%" cy="42%" r="60%">
+        <stop offset="0%" stop-color="${col}" stop-opacity="${Math.min(coreOpacity+0.15,1)}"/>
+        <stop offset="100%" stop-color="${col}" stop-opacity="${coreOpacity*0.5}"/>
+      </radialGradient>
+      ${glow?`<filter id="${uid}g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`:''}
+    </defs>
+    ${ringSvg}
+    <g ${glow?`filter="url(#${uid}g)"`:''}>
+      ${rays}
+      <polygon points="${innerPts.join(' ')}" fill="url(#${uid}c)"/>
+      ${litEdges}
+      ${showNum?`<text x="${c}" y="${c+1}" text-anchor="middle" dominant-baseline="central"
+        font-family="'Space Grotesk',sans-serif" font-weight="700" font-size="${s*0.26}"
+        fill="${fill>=3?'#fff':col}" opacity="${fill===0?.6:1}">${o.n}</text>`:''}
+    </g>
+  </svg>`;
+}
+function renderBadges(pct){
+  // pct: tiến độ trong Cấp 0 (0..1) → vòng progress bọc quanh huy hiệu ở tab Hành trình
+  const htEl = document.getElementById('ht-badge');
+  if(htEl) htEl.innerHTML = badge({n:0, color:LEVELS[0].color, fill:0, size:64, ring:pct, glow:true});
+  const hdrEl = document.getElementById('hdr-badge');
+  if(hdrEl) hdrEl.innerHTML = badge({n:0, color:LEVELS[0].color, fill:0, size:28});
+}
+
+/* ============ STATE ============ */
+const S = { done:[false,false,false,false,false,false], picked:false, bought:false, starred:false };
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none', 3200); }
+function renderProg(){
+  const n=S.done.filter(Boolean).length;
+  document.getElementById('htc').textContent=n+'/6';
+  document.getElementById('jday').textContent='CẤP 0 · '+n+'/6';
+  document.getElementById('ht1').className='cfi'+(S.done[0]?' done':' now');
+  document.getElementById('hd1').style.display = (!S.done[0])?'block':'none';
+  if(S.done[0]){ document.querySelector('#ht1 .n').textContent='✓'; document.getElementById('hs1').classList.add('ok'); }
+  let d=''; for(let i=0;i<6;i++) d+=`<span class="jd ${i<n?'done':(i===n?'now':'')}"></span>`;
+  document.getElementById('jdots').innerHTML=d;
+  document.getElementById('jtask').innerHTML = n===0 ? 'Chặng 1 «Vào sân» — <b>Lệnh đầu tiên của bạn</b>'
+    : '✓ Chặng 1 hoàn thành! Tiếp: Chặng 2 — tour sản phẩm IQX (spotlight)';
+  renderBadges(S.done.filter(Boolean).length/6);
+}
+
+/* ============ RIGHT PANEL VIEWS ============ */
+function rview(v){
+  document.getElementById('pv-ht').style.display = v==='ht'?'block':'none';
+  document.getElementById('pv-order').style.display = v==='order'?'block':'none';
+  document.getElementById('pv-dm').style.display = v==='dm'?'block':'none';
+  document.getElementById('rt-ht').classList.toggle('on', v==='ht');
+  document.getElementById('rt-order').classList.toggle('on', v==='order');
+  document.getElementById('rt-dm').classList.toggle('on', v==='dm');
+}
+function goTask(i){
+  if(i===1){ rview('order'); S.taskActive=true; updateGuide(); }
+}
+/* Thanh nhắc: nội dung Ở LẠI cho đến khi bước đó hoàn thành */
+function updateGuide(warn){
+  const g=document.getElementById('gbar'), t=document.getElementById('gtext');
+  if(!S.taskActive || S.done[0]){ g.classList.remove('on','warn'); return; }
+  let msg='';
+  if(!S.picked) msg='Bước 1/3 — Chọn 1 lý do trong khối KẾ HOẠCH (panel Đặt lệnh) trước khi mua';
+  else if(!S.bought) msg='Bước 2/3 — Bấm ĐẶT LỆNH MUA để mua 100 VNM';
+  else msg='Bước 3/3 — Mở 👁 Danh mục xem tab Nắm giữ, rồi quay lại Đặt lệnh gắn ★ cạnh VNM';
+  t.textContent = (warn? '⚠ ' : '') + msg;
+  g.classList.add('on');
+  g.classList.toggle('warn', !!warn);
+  if(warn) setTimeout(()=>g.classList.remove('warn'), 1600);
+}
+function ptab(t){
+  document.getElementById('tab-td').classList.toggle('on', t==='td');
+  document.getElementById('tab-ng').classList.toggle('on', t==='ng');
+  document.getElementById('p-td').style.display = t==='td'?'block':'none';
+  document.getElementById('p-ng').style.display = t==='ng'?'block':'none';
+}
+
+/* ============ SPOTLIGHT ENGINE (chỉ dùng cho tour giới thiệu tính năng IQX — Chặng 2) ============ */
+let tour=null, ti=0;
+const ovl=document.getElementById('ovl'), hole=document.getElementById('hole'), tipb=document.getElementById('tipb');
+function runTour(st){ tour=st; ti=0; ovl.style.display='block'; showStep(); }
+function endTour(){ ovl.style.display='none'; tour=null; }
+function showStep(){
+  const s=tour[ti]; if(s.pre) s.pre();
+  const el=document.getElementById(s.t); const r=el.getBoundingClientRect(); const pad=7;
+  hole.style.left=(r.left-pad)+'px'; hole.style.top=(r.top-pad)+'px';
+  hole.style.width=(r.width+pad*2)+'px'; hole.style.height=(r.height+pad*2)+'px';
+  document.getElementById('tstep').textContent='ĐIỂM '+(ti+1)+'/'+tour.length;
+  document.getElementById('ttext').innerHTML=s.h;
+  document.getElementById('tcnt').textContent=(ti+1)+'/'+tour.length;
+  const nx=document.getElementById('tnext');
+  nx.textContent = ti===tour.length-1?'Hoàn thành ✓':'Tiếp theo';
+  const tw=350; let tx=r.left, ty=r.bottom+pad+13;
+  if(r.left>window.innerWidth-420){ tx=r.left-tw-22; ty=Math.max(r.top,60); }
+  if(ty>window.innerHeight-220) ty=Math.max(60, r.top-190);
+  tx=Math.max(14,Math.min(tx,window.innerWidth-tw-14));
+  tipb.style.left=tx+'px'; tipb.style.top=ty+'px';
+}
+document.getElementById('tnext').addEventListener('click',()=>{
+  ti++;
+  if(ti>=tour.length){ endTour(); }
+  else showStep();
+});
+
+/* ============ NHIỆM VỤ 1: LỆNH ĐẦU — không spotlight, nhắc nhở khi thiếu ============ */
+function pickVNM(){
+  document.getElementById('searchtxt').textContent='VNM — Vinamilk';
+  document.getElementById('scode').textContent='VNM';
+  document.getElementById('sname').textContent='CTCP Sữa Việt Nam — Vinamilk';
+  document.getElementById('sprice').textContent='62.400';
+  document.getElementById('schg').textContent='+600 (+0,97%)';
+  document.getElementById('l-tran').textContent='67,90'; document.getElementById('l-tc').textContent='63,60'; document.getElementById('l-san').textContent='59,30';
+  document.getElementById('planCode').textContent='VNM';
+  document.getElementById('pv-sl').textContent='59.300 · −5%';
+  document.getElementById('pv-tp').textContent='68.600 · +10%';
+  document.getElementById('c-code').textContent='VNM';
+  document.getElementById('c-ohlc').textContent='O61.900 H62.600 L61.700 C62.400 (+0,97%)';
+  drawCandles();
+}
+document.querySelectorAll('#chips .chip').forEach(c=>c.onclick=()=>{
+  document.querySelectorAll('#chips .chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on'); S.picked=true; updateGuide();
+});
+function doBuy(){
+  /* làm thiếu → thanh nhắc chuyển cảnh báo và Ở LẠI, không tự mất */
+  if(!S.picked){ S.taskActive=true; updateGuide(true); return; }
+  if(S.bought) return;
+  S.bought=true;
+  document.getElementById('st-ts').textContent='248.986.415';
+  document.getElementById('st-tm').textContent='242.686.415';
+  document.getElementById('st-pnl').innerHTML='<span style="color:var(--up)">+60.000</span>';
+  document.getElementById('st-hs').innerHTML='<span style="color:var(--up)">+0,02%</span>';
+  document.getElementById('positions').innerHTML=
+   `<div class="pos"><div><div class="c">VNM</div><div class="g">100 · vốn 61.800</div></div><div class="r"><div>TT <span style="color:var(--up)">62.400</span></div><div style="color:var(--up)">+60.000 · +0,97%</div></div></div>`;
+  updateGuide(); toast('✓ Khớp lệnh MUA 100 VNM @ 61.800');
+}
+function clickStar(){
+  const st=document.getElementById('starBtn');
+  if(!S.bought){ S.taskActive=true; updateGuide(true); return; }
+  S.starred=true; st.textContent='★'; st.classList.add('on');
+  document.getElementById('watchlist').innerHTML=
+   `<div class="watch"><span style="color:var(--warn)">★</span><div style="flex:1"><b>VNM</b> <span style="font-size:9.5px;color:var(--t3)">Vinamilk</span></div><span class="num" style="font-size:11.5px;color:var(--up)">62.400</span></div>`;
+  S.done[0]=true; renderProg(); updateGuide(); rview('ht');
+  toast('🎉 Nhiệm vụ 1 hoàn thành! Nắm giữ = tiền đang nằm · Theo dõi = mắt đang canh');
+}
+
+/* ============ CHART ============ */
+function drawCandles(){
+  const g=document.getElementById('candles'); const N=60, W=900, H=420, step=W/(N+2);
+  let price=300, out='';
+  // downtrend → nền → uptrend như ABB
+  for(let i=0;i<N;i++){
+    let drift = i<15 ? 2.2 : (i<28 ? 0 : -2.6);
+    const dir = Math.sin(i*2.4)+Math.random()*1.4-0.55+(drift<0?0.45:-0.35);
+    const up = dir>0 ^ (drift>0);
+    const body=6+Math.abs(Math.sin(i*1.7))*16;
+    const o=price, c=price+(up?-body:body);
+    price=c+drift*0.35+(Math.random()*4-2);
+    price=Math.max(120,Math.min(360,price));
+    const x=step*(i+1), top=Math.min(o,c), bot=Math.max(o,c);
+    const col = up?'#35d07f':'#ff6b6b';
+    out+=`<line x1="${x}" y1="${top-5}" x2="${x}" y2="${bot+5}" stroke="${col}" stroke-width="1.3"/>`;
+    out+=`<rect x="${x-3.5}" y="${top}" width="7" height="${Math.max(bot-top,2)}" fill="${col}" rx="1"/>`;
+    out+=`<rect x="${x-3.5}" y="${400-Math.abs(Math.sin(i*2.1))*30-6}" width="7" height="${Math.abs(Math.sin(i*2.1))*30+6}" fill="${col}" opacity=".35"/>`;
+  }
+  g.innerHTML='<g stroke="#232738" stroke-width="1"><line x1="0" y1="90" x2="900" y2="90"/><line x1="0" y1="180" x2="900" y2="180"/><line x1="0" y1="270" x2="900" y2="270"/><line x1="0" y1="360" x2="900" y2="360"/></g>'+out;
+}
+drawCandles();
+
+/* INIT — mở sẵn tab Hành trình; mã VNM chọn sẵn */
+pickVNM();
+S.taskActive=true;
+renderProg();
+updateGuide();
+</script>
+</body>
+</html>

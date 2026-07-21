@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IQX Mobile — Cấp 0 «Nhập môn»</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+:root {
+  --brand:#4f8ff7; --brand-soft:rgba(79,143,247,.16); --brand-bd:rgba(79,143,247,.4);
+  --bg1:#171923; --bg2:#1f2230; --bg3:#282c3d; --bd:#39405a;
+  --t1:#f0f2f7; --t2:#b8bdcc; --t3:#8a90a5;
+  --up:#35d07f; --down:#ff6b6b; --warn:#ffc53d; --ceil:#d48aff; --floor:#4dc3ff;
+}
+body { font-family:'Inter',sans-serif; background:#0d0f16; color:var(--t1); font-size:13px; line-height:1.5; display:flex; justify-content:center; padding:18px 0; min-height:100vh; }
+.num { font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; }
+button { font-family:inherit; cursor:pointer; }
+
+/* khung điện thoại */
+.phone { width:390px; height:820px; background:var(--bg1); border:1px solid var(--bd); border-radius:26px; overflow:hidden; display:flex; flex-direction:column; position:relative; box-shadow:0 20px 80px rgba(0,0,0,.6); }
+
+/* topbar */
+.top { display:flex; align-items:center; gap:9px; padding:11px 13px 8px; }
+.logo-i { width:26px; height:26px; border-radius:7px; background:var(--brand); color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; }
+.logo-t { font-family:'Space Grotesk'; font-weight:700; font-size:15px; }
+.search { flex:1; background:var(--bg2); border:1px solid var(--bd); border-radius:9px; padding:7px 11px; color:var(--t3); font-size:12px; }
+.ava { width:26px; height:26px; border-radius:50%; background:var(--brand-soft); border:1px solid var(--brand-bd); color:var(--brand); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; }
+
+/* ticker */
+.tick { display:flex; gap:14px; padding:4px 13px 8px; font-size:10.5px; color:var(--t3); border-bottom:1px solid var(--bd); overflow:hidden; white-space:nowrap; }
+
+/* journey bar */
+.jbar { background:linear-gradient(to right,var(--brand-soft),rgba(79,143,247,.03)); border-bottom:1px solid var(--brand-bd); padding:8px 13px; display:flex; align-items:center; gap:10px; cursor:pointer; }
+.jday { font-family:'JetBrains Mono'; font-size:9.5px; font-weight:700; letter-spacing:.8px; color:var(--brand); background:rgba(79,143,247,.15); border:1px solid var(--brand-bd); border-radius:6px; padding:3px 8px; white-space:nowrap; }
+.jtask { font-size:11px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.jarrow { color:var(--brand); font-size:13px; }
+
+/* content */
+.content { flex:1; overflow-y:auto; padding:12px 13px 8px; }
+.view { display:none; }
+.view.on { display:block; }
+
+/* ===== VIEW HÀNH TRÌNH ===== */
+.capcard { background:var(--bg2); border:1px solid var(--brand-bd); border-radius:12px; padding:13px 14px; margin-bottom:13px; }
+.capk { font-family:'JetBrains Mono'; font-size:9.5px; font-weight:700; letter-spacing:1.5px; color:var(--brand); }
+.capn { font-family:'Space Grotesk'; font-size:21px; font-weight:700; margin:3px 0 5px; }
+.caps { font-size:12px; color:var(--t2); font-style:italic; }
+.modepill { display:inline-block; margin-top:9px; font-family:'JetBrains Mono'; font-size:9px; font-weight:700; letter-spacing:.8px; color:var(--warn); border:1px solid rgba(255,197,61,.45); background:rgba(255,197,61,.08); border-radius:6px; padding:3px 8px; }
+.cft { font-size:10px; font-weight:700; letter-spacing:1.3px; text-transform:uppercase; color:var(--t3); margin-bottom:8px; display:flex; }
+.cft .num { margin-left:auto; color:var(--brand); }
+.hstg { font-size:9px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:var(--t3); margin:12px 0 5px; }
+.hstg.ok { color:rgba(53,208,127,.75); }
+.cfi { display:flex; gap:9px; align-items:flex-start; font-size:12px; color:var(--t3); padding:8px 9px; border-radius:9px; margin-bottom:3px; }
+.cfi .n { width:19px; height:19px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono'; font-size:9px; font-weight:700; background:var(--bg3); border:1px solid var(--bd); flex-shrink:0; margin-top:1px; }
+.cfi.done { opacity:.55; } .cfi.done .t { text-decoration:line-through; }
+.cfi.done .n { background:rgba(53,208,127,.15); border-color:rgba(53,208,127,.45); color:var(--up); }
+.cfi.now { background:var(--brand-soft); border:1px solid var(--brand-bd); color:#fff; font-weight:600; }
+.cfi.now .n { background:var(--brand); border-color:var(--brand); color:#fff; }
+.cfi.lock { opacity:.45; }
+.hdesc { font-size:10.5px; color:var(--t2); font-weight:400; margin-top:4px; line-height:1.5; }
+.golink { display:block; margin-top:7px; background:var(--brand); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-size:11.5px; font-weight:700; }
+.goal { margin-top:12px; padding:11px 12px; background:var(--bg2); border:1px solid var(--bd); border-radius:10px; font-size:11px; color:var(--t3); line-height:1.55; }
+
+/* ===== VIEW ĐẶT LỆNH (không sổ lệnh) ===== */
+.ph { font-size:11px; font-weight:700; letter-spacing:1.5px; color:var(--t2); padding-bottom:9px; border-bottom:1px solid var(--bd); margin-bottom:11px; display:flex; }
+.srow { display:flex; align-items:center; gap:8px; }
+.scode { font-family:'Space Grotesk'; font-size:18px; font-weight:700; }
+.star { font-size:17px; color:var(--t3); background:none; border:none; padding:0 2px; }
+.star.on { color:var(--warn); }
+.sexch { margin-left:auto; font-size:9px; font-weight:700; color:var(--t3); background:var(--bg3); border-radius:4px; padding:2px 7px; }
+.sname { font-size:10.5px; color:var(--t3); margin-top:1px; }
+.sprice { font-family:'JetBrains Mono'; font-size:26px; font-weight:700; color:var(--up); margin-top:6px; }
+.schg { font-family:'JetBrains Mono'; font-size:11.5px; color:var(--up); }
+.slims { display:flex; justify-content:space-between; margin-top:8px; font-size:10.5px; color:var(--t3); padding-bottom:10px; border-bottom:1px solid var(--bd); }
+.sbal { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--bd); font-size:12px; color:var(--t2); margin-bottom:10px; }
+.sbal .num { color:#fff; font-weight:700; }
+.mbtabs { display:flex; border-bottom:1px solid var(--bd); margin-bottom:12px; }
+.mbt { flex:1; text-align:center; padding:9px; font-size:13.5px; font-weight:700; color:var(--t3); border-bottom:2px solid transparent; }
+.mbt.mua { color:var(--brand); border-bottom-color:var(--brand); }
+.flab { font-size:11px; color:var(--t2); margin-bottom:6px; }
+.qtyrow { display:flex; align-items:stretch; gap:7px; margin-bottom:8px; }
+.qbtn { width:38px; background:var(--bg3); border:1px solid var(--bd); border-radius:8px; color:var(--t2); font-size:16px; }
+.finp { flex:1; background:var(--bg3); border:1px solid var(--bd); border-radius:8px; padding:10px; color:#fff; font-family:'JetBrains Mono'; font-size:15px; font-weight:600; text-align:center; min-width:0; }
+.pct { display:flex; gap:6px; margin-bottom:12px; }
+.pct button { flex:1; background:var(--bg2); border:1px solid var(--bd); border-radius:7px; padding:7px; font-size:11px; color:var(--t3); }
+.fees { font-size:12px; color:var(--t2); border-top:1px solid var(--bd); padding-top:9px; }
+.fee { display:flex; justify-content:space-between; padding:2.5px 0; }
+.fee.tot { font-weight:700; color:#fff; padding-top:7px; font-size:14px; }
+.fee.tot .num { color:var(--brand); }
+.plan { margin-top:12px; background:var(--bg3); border:1px solid var(--bd); border-radius:11px; padding:12px; position:relative; overflow:hidden; }
+.plan::before { content:''; position:absolute; inset:0 0 auto 0; height:2px; background:linear-gradient(to right,var(--brand),transparent 60%); }
+.plab { font-size:9px; font-weight:700; letter-spacing:1.3px; text-transform:uppercase; color:var(--brand); margin-bottom:8px; }
+.q { font-size:12.5px; font-weight:600; margin-bottom:7px; }
+.chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.chip { background:var(--bg2); border:1px solid var(--bd); border-radius:999px; padding:7px 12px; font-size:11.5px; color:var(--t2); }
+.chip.on { background:var(--brand-soft); border-color:var(--brand); color:var(--brand); font-weight:600; }
+.presets { display:flex; gap:7px; }
+.preset { flex:1; background:var(--bg2); border:1px solid var(--bd); border-radius:9px; padding:8px 10px; }
+.pk { font-size:8.5px; letter-spacing:.7px; text-transform:uppercase; color:var(--t3); }
+.pv { font-family:'JetBrains Mono'; font-size:12px; font-weight:700; margin-top:2px; }
+.pnote { font-size:10px; color:var(--t3); margin-top:8px; line-height:1.5; }
+.buyBtn { width:100%; margin-top:12px; padding:14px; background:var(--up); color:#052e12; border:none; border-radius:10px; font-size:14px; font-weight:700; }
+
+/* ===== VIEW DANH MỤC ===== */
+.ptabs { display:flex; gap:5px; margin-bottom:11px; }
+.ptab { flex:1; text-align:center; padding:9px; border-radius:9px; font-size:12px; font-weight:600; color:var(--t3); background:var(--bg2); border:1px solid var(--bd); }
+.ptab.on { color:#fff; background:var(--brand-soft); border-color:var(--brand-bd); }
+.stat4 { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:11px; }
+.st { background:var(--bg2); border:1px solid var(--bd); border-radius:9px; padding:10px 11px; }
+.stk { font-size:9.5px; color:var(--t3); }
+.stv { font-family:'JetBrains Mono'; font-size:13px; font-weight:700; margin-top:2px; }
+.pos { display:flex; align-items:center; justify-content:space-between; background:var(--bg2); border:1px solid var(--bd); border-radius:9px; padding:10px 11px; margin-bottom:6px; }
+.pos .c { font-weight:700; font-size:13px; }
+.pos .g { font-size:10px; color:var(--t3); font-family:'JetBrains Mono'; }
+.pos .r { text-align:right; font-family:'JetBrains Mono'; font-size:11px; }
+.watch { display:flex; align-items:center; gap:9px; background:var(--bg2); border:1px solid var(--bd); border-radius:9px; padding:10px 11px; margin-bottom:6px; }
+.empty { font-size:11.5px; color:var(--t3); text-align:center; padding:18px 8px; }
+
+/* ===== BOTTOM NAV: Hành trình đứng đầu, bỏ Tin tức + AI Mẫu nến ===== */
+.bnav { display:flex; border-top:1px solid var(--bd); background:#141722; }
+.bn { flex:1; text-align:center; padding:9px 2px 11px; font-size:9.5px; color:var(--t3); cursor:pointer; position:relative; }
+.bn .ic { font-size:17px; display:block; margin-bottom:2px; }
+.bn.on { color:var(--brand); }
+.bn.on::after { content:''; position:absolute; top:0; left:22%; right:22%; height:2px; background:var(--brand); border-radius:2px; }
+.bn .dot { position:absolute; top:6px; right:20%; width:7px; height:7px; border-radius:50%; background:var(--down); display:none; }
+
+/* thanh nhắc nhở bền vững */
+.gbar { display:none; align-items:center; gap:8px; background:rgba(255,197,61,.10); border-bottom:1px solid rgba(255,197,61,.45); padding:7px 13px; font-size:11px; color:var(--t1); }
+.gbar.on { display:flex; }
+.gbar .gtag { font-family:'JetBrains Mono'; font-size:8.5px; font-weight:700; letter-spacing:.8px; color:var(--warn); border:1px solid rgba(255,197,61,.5); border-radius:5px; padding:2px 6px; white-space:nowrap; }
+.gbar.warn { background:rgba(255,107,107,.12); border-bottom-color:rgba(255,107,107,.55); animation:gshake .3s; }
+.gbar.warn .gtag { color:var(--down); border-color:rgba(255,107,107,.6); }
+@keyframes gshake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }
+
+/* modal + toast */
+.modal { position:absolute; inset:0; background:rgba(8,10,16,.85); z-index:110; display:none; align-items:center; justify-content:center; padding:16px; }
+.modal.on { display:flex; }
+.mcard { background:var(--bg2); border:1px solid var(--bd); border-radius:15px; width:100%; padding:19px; max-height:88%; overflow-y:auto; }
+.mtag { font-family:'JetBrains Mono'; font-size:9.5px; font-weight:700; letter-spacing:1.4px; color:var(--brand); margin-bottom:8px; }
+.mtitle { font-family:'Space Grotesk'; font-size:18px; font-weight:700; margin-bottom:9px; }
+.mbody { color:var(--t2); font-size:12.5px; }
+.mq { margin-top:13px; font-weight:600; color:#fff; font-size:12.5px; }
+.mopts { display:flex; flex-direction:column; gap:7px; margin-top:8px; }
+.mopt { text-align:left; background:var(--bg3); border:1px solid var(--bd); border-radius:10px; padding:10px 12px; color:var(--t1); font-size:12px; }
+.mexp { margin-top:10px; border-left:3px solid var(--brand); background:var(--brand-soft); border-radius:0 9px 9px 0; padding:9px 11px; font-size:11.5px; display:none; }
+.mnext { margin-top:14px; width:100%; padding:11px; background:var(--brand); color:#fff; border:none; border-radius:10px; font-size:12.5px; font-weight:700; }
+.mnext:disabled { opacity:.4; }
+.toast { position:absolute; top:130px; left:50%; transform:translateX(-50%); background:#fff; color:#10131f; font-size:11.5px; font-weight:600; border-radius:10px; padding:9px 15px; box-shadow:0 10px 36px rgba(0,0,0,.5); z-index:120; display:none; width:max-content; max-width:88%; text-align:center; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <!-- TOP -->
+  <div class="top">
+    <div class="logo-i">IQ</div><div class="logo-t">IQX<span style="color:var(--brand)">.</span></div>
+    <div class="search">🔍 Tìm mã…</div>
+    <span id="hdr-badge" style="display:flex; align-items:center;"></span>
+    <div class="ava">HL</div>
+  </div>
+  <div class="tick">
+    <span>VN-Index <b class="num" style="color:var(--down)">1.775,12 −0,39%</b></span>
+    <span>UPCOM <b class="num" style="color:var(--up)">126,62 +0,1%</b></span>
+  </div>
+
+  <!-- JOURNEY BAR (bấm → mở Hành trình) -->
+  <div class="jbar" onclick="bnav('ht')">
+    <span class="jday" id="jday">CẤP 0 · 0/7</span>
+    <span class="jtask" id="jtask">Bắt đầu: Cổ phiếu là gì? — 5 thẻ</span>
+    <span class="jarrow">›</span>
+  </div>
+
+  <!-- THANH NHẮC NHỞ -->
+  <div class="gbar" id="gbar"><span class="gtag">CẦN LÀM</span><span id="gtext"></span></div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- VIEW: HÀNH TRÌNH -->
+    <div class="view on" id="v-ht">
+      <div class="capcard" style="display:flex; gap:12px; align-items:center;">
+        <span id="ht-badge"></span>
+        <div style="flex:1; min-width:0;">
+          <div class="capk">CẤP 0</div>
+          <div class="capn" style="font-size:19px; margin:2px 0 4px;">NHẬP MÔN</div>
+          <div class="caps" style="font-size:11px; line-height:1.4;">"Hiểu sân chơi, và đi trọn vòng đời một lệnh."</div>
+          <span class="modepill" style="margin-top:6px;">SÂN TẬP · T+0</span>
+        </div>
+      </div>
+      <div class="cft">TRƯỚC KHI LÊN CẤP 1 <span class="num" id="htc">0/7</span></div>
+
+      <div class="hstg" id="hs1">CHẶNG 1 — VÀO SÂN</div>
+      <div class="cfi now" id="ht1"><span class="n">1</span><div style="flex:1"><span class="t">Lệnh đầu tiên + Nắm giữ + Theo dõi</span>
+        <div class="hdesc" id="hd1">Mua công ty bạn biết · chọn lý do trong Kế hoạch · gắn sao ★. Làm thiếu bước nào, hệ thống sẽ nhắc.<button class="golink" onclick="goTask2()">Làm ngay →</button></div></div></div>
+
+      <div class="hstg">CHẶNG 2 — HIỂU SÂN CHƠI · TOUR SẢN PHẨM IQX</div>
+      <div class="cfi lock"><span class="n">2</span><span class="t">Tour bảng điện — 8 điểm</span></div>
+      <div class="cfi lock"><span class="n">3</span><span class="t">Tour bản tin thị trường</span></div>
+      <div class="cfi lock"><span class="n">4</span><span class="t">Tour "6 người chơi" trên mã của bạn</span></div>
+
+      <div class="hstg">CHẶNG 3 — KHÉP VÒNG</div>
+      <div class="cfi lock"><span class="n">5</span><span class="t">Lệnh thứ hai — tự đặt ngưỡng cắt lỗ</span></div>
+      <div class="cfi lock"><span class="n">6</span><span class="t">Bán một lệnh — kết sổ đầu tiên</span></div>
+
+      <div class="goal">Xong cả 6 → tốt nghiệp <b style="color:var(--t1)">Cấp 0 «Nhập môn»</b>, chuyển chế độ <b style="color:var(--t1)">Thực chiến</b> (T+2,5 · biên độ · hồ sơ bắt đầu tính).</div>
+    </div>
+
+    <!-- VIEW: ĐẶT LỆNH -->
+    <div class="view" id="v-order">
+      <div class="ph">ĐẶT LỆNH <span style="margin-left:auto; color:var(--t3); cursor:pointer;">✕</span></div>
+      <div class="srow">
+        <span class="scode" id="scode">VNM</span>
+        <button class="star" id="starBtn" onclick="clickStar()">☆</button>
+        <span class="sexch">HOSE</span>
+      </div>
+      <div class="sname">CTCP Sữa Việt Nam — Vinamilk</div>
+      <div class="sprice num">62.400</div>
+      <div class="schg num">↑ +600 (+0,97%)</div>
+      <div class="slims">
+        <span>Trần <b class="num" style="color:var(--ceil)">67,90</b></span>
+        <span>TC <b class="num" style="color:var(--warn)">63,60</b></span>
+        <span>Sàn <b class="num" style="color:var(--floor)">59,30</b></span>
+      </div>
+      <!-- KHÔNG có sổ lệnh -->
+      <div class="sbal"><span>💼 Số dư</span><span class="num">248.935.775đ</span></div>
+      <div class="mbtabs"><div class="mbt mua">MUA</div><div class="mbt">BÁN</div></div>
+      <!-- Cấp 0: không dropdown loại lệnh, không ô Giá -->
+      <div class="flab">Khối lượng</div>
+      <div class="qtyrow"><button class="qbtn">−</button><input class="finp num" value="100"><button class="qbtn">+</button></div>
+      <div class="pct"><button>10%</button><button>25%</button><button>50%</button><button>100%</button></div>
+      <div class="fees">
+        <div class="fee"><span>Giá trị</span><span class="num">6.240.000</span></div>
+        <div class="fee"><span>Phí GD (0,15%)</span><span class="num">9.360</span></div>
+        <div class="fee tot"><span>Tổng</span><span class="num">6.249.360</span></div>
+      </div>
+      <div class="plan">
+        <div class="plab">KẾ HOẠCH</div>
+        <div class="q">Vì sao bạn chọn VNM?</div>
+        <div class="chips" id="chips">
+          <button class="chip">Công ty tôi biết</button><button class="chip">Người quen giới thiệu</button><button class="chip">Thấy trên mạng</button><button class="chip">Giá đang tăng</button><button class="chip">Thử cho biết</button>
+        </div>
+        <div class="presets">
+          <div class="preset"><div class="pk">Cắt lỗ (đề xuất)</div><div class="pv num" style="color:var(--down)">59.300 · −5%</div></div>
+          <div class="preset"><div class="pk">Chốt lời (đề xuất)</div><div class="pv num" style="color:var(--up)">68.600 · +10%</div></div>
+        </div>
+        <div class="pnote">Cắt lỗ: nếu giá giảm tới đây, bán để bảo toàn vốn. Lệnh đầu hệ thống đề xuất sẵn — chỉ cần đồng ý.</div>
+      </div>
+      <button class="buyBtn" onclick="doBuy()">ĐẶT LỆNH MUA</button>
+      <div style="height:14px"></div>
+    </div>
+
+    <!-- VIEW: DANH MỤC -->
+    <div class="view" id="v-dm">
+      <div class="ptabs">
+        <div class="ptab" id="tab-td" onclick="ptab('td')">👁 Theo dõi</div>
+        <div class="ptab on" id="tab-ng" onclick="ptab('ng')">💼 Nắm giữ</div>
+      </div>
+      <div id="p-ng">
+        <div class="stat4">
+          <div class="st"><div class="stk">Tổng tài sản</div><div class="stv num" id="st-ts">248.935.775</div></div>
+          <div class="st"><div class="stk">Tiền mặt</div><div class="stv num" id="st-tm">248.935.775</div></div>
+          <div class="st"><div class="stk">Lãi/Lỗ tạm tính</div><div class="stv num" id="st-pnl">0</div></div>
+          <div class="st"><div class="stk">Hiệu suất</div><div class="stv num" id="st-hs">0,00%</div></div>
+        </div>
+        <div id="positions"><div class="empty">Chưa có mã nào — hoàn thành nhiệm vụ 2 để có lệnh đầu tiên.</div></div>
+      </div>
+      <div id="p-td" style="display:none;">
+        <div id="watchlist"><div class="empty">Chưa theo dõi mã nào.<br>Bấm ★ cạnh tên mã để thêm.</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bnav">
+    <div class="bn on" id="bn-ht" onclick="bnav('ht')"><span class="ic">🎯</span>Hành trình<span class="dot" id="htdot"></span></div>
+    <div class="bn" id="bn-order" onclick="bnav('order')"><span class="ic">🛒</span>Đặt lệnh</div>
+    <div class="bn" id="bn-dm" onclick="bnav('dm')"><span class="ic">👁</span>Danh mục</div>
+    <div class="bn"><span class="ic">💡</span>AI Phân tích</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+
+/* ===== BADGE — huy hiệu cấp độ (spec §12) ===== */
+const LEVELS = [
+  { n:0, name:'Nhập môn',   color:'#8a90a5', fill:0 },
+  { n:1, name:'Học việc',   color:'#c97b4a', fill:1 },
+  { n:2, name:'Kỷ luật',    color:'#7dd3c0', fill:2 },
+  { n:3, name:'Bản lĩnh',   color:'#4f8ff7', fill:3 },
+  { n:4, name:'Thuần thục', color:'#a78bfa', fill:4 },
+  { n:5, name:'Lão luyện',  color:'#e0b64d', fill:5 },
+];
+function badge(o){
+  const s=o.size||96, c=s/2, R=s*0.34;
+  const col=o.color, fill=o.fill, ring=o.ring, glow=o.glow;
+  const pts=[];
+  for(let i=0;i<6;i++){ const a=Math.PI/2 + i*Math.PI/3; pts.push([c+R*Math.cos(a), c-R*Math.sin(a)]); }
+  const uid='g'+Math.random().toString(36).slice(2,7);
+  let litEdges='';
+  for(let i=0;i<6;i++){
+    const p1=pts[i], p2=pts[(i+1)%6];
+    const lit = i < Math.min(fill+1,6);
+    litEdges += `<line x1="${p1[0].toFixed(1)}" y1="${p1[1].toFixed(1)}" x2="${p2[0].toFixed(1)}" y2="${p2[1].toFixed(1)}" stroke="${lit?col:'#3a3f52'}" stroke-width="${lit?2.4:1.4}" stroke-linecap="round" opacity="${lit?1:.6}"/>`;
+  }
+  const coreOpacity = [0,0.10,0.20,0.34,0.52,0.9][fill];
+  const innerR = R*0.56;
+  const innerPts=[];
+  for(let i=0;i<6;i++){ const a=Math.PI/2 + i*Math.PI/3; innerPts.push((c+innerR*Math.cos(a)).toFixed(1)+','+(c-innerR*Math.sin(a)).toFixed(1)); }
+  const showNum = o.showNum!==false;
+  let rays='';
+  if(fill>=4){
+    for(let i=0;i<6;i++){ const a=Math.PI/2 + i*Math.PI/3 + Math.PI/6;
+      const x1=c+R*1.05*Math.cos(a), y1=c-R*1.05*Math.sin(a);
+      const x2=c+R*1.3*Math.cos(a),  y2=c-R*1.3*Math.sin(a);
+      rays+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="1.6" stroke-linecap="round" opacity="${fill===5?.9:.5}"/>`;
+    }
+  }
+  let ringSvg='';
+  if(ring!=null){
+    const rr=R*1.5, cir=2*Math.PI*rr;
+    ringSvg=`<circle cx="${c}" cy="${c}" r="${rr}" fill="none" stroke="#2c3244" stroke-width="3"/>
+    <circle cx="${c}" cy="${c}" r="${rr}" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round"
+      stroke-dasharray="${cir}" stroke-dashoffset="${(cir*(1-ring)).toFixed(1)}" transform="rotate(-90 ${c} ${c})"/>`;
+  }
+  return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" style="display:block;">
+    <defs>
+      <radialGradient id="${uid}c" cx="50%" cy="42%" r="60%">
+        <stop offset="0%" stop-color="${col}" stop-opacity="${Math.min(coreOpacity+0.15,1)}"/>
+        <stop offset="100%" stop-color="${col}" stop-opacity="${coreOpacity*0.5}"/>
+      </radialGradient>
+      ${glow?`<filter id="${uid}g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`:''}
+    </defs>
+    ${ringSvg}
+    <g ${glow?`filter="url(#${uid}g)"`:''}>
+      ${rays}
+      <polygon points="${innerPts.join(' ')}" fill="url(#${uid}c)"/>
+      ${litEdges}
+      ${showNum?`<text x="${c}" y="${c+1}" text-anchor="middle" dominant-baseline="central"
+        font-family="'Space Grotesk',sans-serif" font-weight="700" font-size="${s*0.26}"
+        fill="${fill>=3?'#fff':col}" opacity="${fill===0?.6:1}">${o.n}</text>`:''}
+    </g>
+  </svg>`;
+}
+function renderBadges(pct){
+  // pct: tiến độ trong Cấp 0 (0..1) → vòng progress bọc quanh huy hiệu ở tab Hành trình
+  const htEl = document.getElementById('ht-badge');
+  if(htEl) htEl.innerHTML = badge({n:0, color:LEVELS[0].color, fill:0, size:64, ring:pct, glow:true});
+  const hdrEl = document.getElementById('hdr-badge');
+  if(hdrEl) hdrEl.innerHTML = badge({n:0, color:LEVELS[0].color, fill:0, size:28});
+}
+
+const S = { done:[false,false,false,false,false,false], picked:false, bought:false, starred:false };
+function toast(m){ const t=document.getElementById('toast'); t.innerHTML=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2800); }
+
+/* nav */
+function bnav(v){
+  ['ht','order','dm'].forEach(x=>{
+    document.getElementById('v-'+x).classList.toggle('on', x===v);
+    const b=document.getElementById('bn-'+x); if(b) b.classList.toggle('on', x===v);
+  });
+}
+function ptab(t){
+  document.getElementById('tab-td').classList.toggle('on', t==='td');
+  document.getElementById('tab-ng').classList.toggle('on', t==='ng');
+  document.getElementById('p-td').style.display=t==='td'?'block':'none';
+  document.getElementById('p-ng').style.display=t==='ng'?'block':'none';
+}
+
+function renderProg(){
+  const n=S.done.filter(Boolean).length;
+  document.getElementById('htc').textContent=n+'/6';
+  document.getElementById('jday').textContent='CẤP 0 · '+n+'/6';
+  document.getElementById('ht1').className='cfi'+(S.done[0]?' done':' now');
+  document.getElementById('hd1').style.display=(!S.done[0])?'block':'none';
+  if(S.done[0]){ document.querySelector('#ht1 .n').textContent='✓'; document.getElementById('hs1').classList.add('ok'); }
+  document.getElementById('jtask').textContent = n===0 ? 'Chặng 1: Lệnh đầu tiên của bạn'
+    : '✓ Chặng 1 xong! Tiếp: tour sản phẩm IQX';
+  renderBadges(S.done.filter(Boolean).length/6);
+}
+
+/* nhiệm vụ 1 — nhắc nhở bền vững, chỉ mất khi hoàn thành */
+function goTask2(){ bnav('order'); S.taskActive=true; updateGuide(); }
+function updateGuide(warn){
+  const g=document.getElementById('gbar'), t=document.getElementById('gtext');
+  if(!S.taskActive || S.done[0]){ g.classList.remove('on','warn'); return; }
+  let msg='';
+  if(!S.picked) msg='Bước 1/3 — Chọn 1 lý do trong khối KẾ HOẠCH';
+  else if(!S.bought) msg='Bước 2/3 — Bấm ĐẶT LỆNH MUA';
+  else msg='Bước 3/3 — Gắn ★ cạnh tên VNM (xem Nắm giữ ở tab Danh mục)';
+  t.textContent=(warn?'⚠ ':'')+msg;
+  g.classList.add('on');
+  g.classList.toggle('warn', !!warn);
+  if(warn) setTimeout(()=>g.classList.remove('warn'),1600);
+}
+document.querySelectorAll('#chips .chip').forEach(c=>c.onclick=()=>{
+  document.querySelectorAll('#chips .chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on'); S.picked=true; updateGuide();
+});
+function doBuy(){
+  if(!S.picked){ S.taskActive=true; updateGuide(true); return; }
+  if(S.bought) return;
+  S.bought=true;
+  document.getElementById('st-ts').textContent='248.986.415';
+  document.getElementById('st-tm').textContent='242.686.415';
+  document.getElementById('st-pnl').innerHTML='<span style="color:var(--up)">+60.000</span>';
+  document.getElementById('st-hs').innerHTML='<span style="color:var(--up)">+0,02%</span>';
+  document.getElementById('positions').innerHTML=
+   `<div class="pos"><div><div class="c">VNM</div><div class="g">100 · vốn 61.800</div></div><div class="r"><div>TT <span style="color:var(--up)">62.400</span></div><div style="color:var(--up)">+60.000 · +0,97%</div></div></div>`;
+  updateGuide(); toast('✓ Khớp lệnh MUA 100 VNM @ 61.800');
+}
+function clickStar(){
+  if(!S.bought){ S.taskActive=true; updateGuide(true); return; }
+  const st=document.getElementById('starBtn');
+  S.starred=true; st.textContent='★'; st.classList.add('on');
+  document.getElementById('watchlist').innerHTML=
+   `<div class="watch"><span style="color:var(--warn)">★</span><div style="flex:1"><b>VNM</b> <span style="font-size:9.5px;color:var(--t3)">Vinamilk</span></div><span class="num" style="font-size:11.5px;color:var(--up)">62.400</span></div>`;
+  S.done[0]=true; renderProg(); updateGuide(); bnav('ht');
+  toast('🎉 Chặng 1 hoàn thành! Nắm giữ = tiền đang nằm · Theo dõi = mắt đang canh');
+}
+
+S.taskActive=true;
+renderProg();
+updateGuide();
+</script>
+</body>
+</html>
