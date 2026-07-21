@@ -112,8 +112,11 @@ export function PlanBlock({
       ) : (
         <div className="flex gap-1.5">
           <div className="flex-1 space-y-0.5">
+            {/* Nhiệm vụ ⑤ explicitly stops suggesting values ("KHÔNG điền
+                sẵn cắt lỗ/chốt lời — user tự gõ", spec §4 Chặng 3) — unlike
+                "filled" mode's presets above, so this label drops "(đề xuất)". */}
             <label className="text-[8.5px] uppercase tracking-wide text-[var(--color-text-3)]">
-              {"Cắt lỗ (đề xuất)"}
+              {"Cắt lỗ"}
             </label>
             <InputNumber
               mode="button"
@@ -127,7 +130,7 @@ export function PlanBlock({
           </div>
           <div className="flex-1 space-y-0.5">
             <label className="text-[8.5px] uppercase tracking-wide text-[var(--color-text-3)]">
-              {"Chốt lời (đề xuất)"}
+              {"Chốt lời"}
             </label>
             <InputNumber
               mode="button"

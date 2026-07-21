@@ -11,6 +11,9 @@ import {
   gbarReducer,
   gbarText,
   initialGbarState,
+  initialTask5State,
+  task5Reducer,
+  task5Text,
 } from "./gbarMachine"
 import "./cap0.css"
 
@@ -61,18 +64,27 @@ export function Gbar() {
   const warnTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const completedRef = useRef(false)
 
-  // Nhiệm vụ ⑥ (spec §5/§4 "bán khớp → mở màn Kết sổ") — `lastBuyRef`
-  // remembers the most recent BUY fill's price/sl/tp (the Kế hoạch data the
-  // debrief later reconciles against; the trading backend never persists
-  // SL/TP, so the FE must). `debriefCountRef` is the "#{n}" in "KẾT SỔ LỆNH
+  // Nhiệm vụ ⑥ (spec §5/§4 "bán khớp → mở màn Kết sổ") — `lastBuyBySymbolRef`
+  // remembers each symbol's most recent BUY fill price/sl/tp (the Kế hoạch
+  // data the debrief later reconciles against; the trading backend never
+  // persists SL/TP, so the FE must) keyed by symbol — NOT a single slot —
+  // so buying two different symbols before selling one of them still
+  // reconciles the SOLD symbol's own entry/SL/TP, not whichever was bought
+  // most recently overall. `debriefCountRef` is the "#{n}" in "KẾT SỔ LỆNH
   // · #{n}" — this component is mounted once for the whole Cấp 0 session
   // (sibling of `CenterPanel`/`RightSidebar` in `Cap0TradingPage`, NOT inside
   // the sidebar's panel switch), so both refs survive the user switching
   // between the Hành trình/Đặt lệnh/Danh mục tabs in between.
-  const lastBuyRef = useRef<{ price: number; sl?: number; tp?: number } | null>(null)
+  const lastBuyBySymbolRef = useRef<Map<string, { price: number; sl?: number; tp?: number }>>(
+    new Map(),
+  )
   const debriefCountRef = useRef(0)
   const [debrief, setDebrief] = useState<DebriefData | null>(null)
   const prevVisibilityRef = useRef<Cap0Visibility | null>(null)
+  // Nhiệm vụ ⑤'s 2-step gbar (spec §4 Chặng 3 / §6) — see `gbarMachine.ts`'s
+  // `Task5State` docstring for why this stays entirely local rather than
+  // reading `progress.task5_sl_typed`/`task_5_done_at`.
+  const [task5State, dispatchTask5] = useReducer(task5Reducer, initialTask5State)
 
   const task1Done = !!progress?.task_1_done_at
 
@@ -84,13 +96,24 @@ export function Gbar() {
       },
       onOrderFilled: (order: Cap0OrderEvent) => {
         if (order.side === "buy") {
-          // Unconditional — nhiệm vụ ⑤'s second buy also needs to be
-          // remembered, regardless of whether task ① is already done.
-          lastBuyRef.current = { price: order.price, sl: order.sl, tp: order.tp }
+          // Keyed by symbol (not a single last-buy slot) — see
+          // `lastBuyBySymbolRef`'s docstring above.
+          lastBuyBySymbolRef.current.set(order.symbol.toUpperCase(), {
+            price: order.price,
+            sl: order.sl,
+            tp: order.tp,
+          })
+          if (task1Done) {
+            // Nhiệm vụ ① already done → this is nhiệm vụ ⑤'s second buy,
+            // completing its 2-step gbar (spec §6). Nothing below applies to
+            // it (that's task ①-only: VNM-symbol check, its own toast/flag).
+            dispatchTask5({ type: "ORDER_PLACED" })
+            return
+          }
         }
         if (order.side === "sell") {
           debriefCountRef.current += 1
-          const buy = lastBuyRef.current
+          const buy = lastBuyBySymbolRef.current.get(order.symbol.toUpperCase())
           setDebrief({
             n: debriefCountRef.current,
             symbol: order.symbol,
@@ -120,6 +143,10 @@ export function Gbar() {
         dispatch({ type: "WARN" })
         if (warnTimerRef.current) clearTimeout(warnTimerRef.current)
         warnTimerRef.current = setTimeout(() => dispatch({ type: "WARN_TIMEOUT" }), WARN_MS)
+      },
+      onSlTyped: () => {
+        if (!task1Done) return
+        dispatchTask5({ type: "SL_TYPED" })
       },
     })
   }, [registerHandlers, task1Done])
@@ -165,7 +192,12 @@ export function Gbar() {
   }, [state.reasonPicked, state.orderFilled, state.starToggled, task1Done])
 
   const closeDebrief = () => setDebrief(null)
-  const text = task1Done ? null : gbarText(state)
+  // Task ① steps show until task ① is done; task ⑤'s 2-step steps show only
+  // once task ① IS done (⑤ unlocked) and task5's local reducer isn't yet
+  // "done" (`task5Text` returns `null` once `orderPlaced`) — the two bars
+  // are mutually exclusive by construction, so this is a plain fallback, not
+  // a priority pick.
+  const text = task1Done ? task5Text(task5State) : gbarText(state)
 
   return (
     <>

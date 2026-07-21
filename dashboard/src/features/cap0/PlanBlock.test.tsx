@@ -129,4 +129,20 @@ describe("PlanBlock", () => {
       screen.queryByText(/Lệnh đầu hệ thống đề xuất sẵn/),
     ).not.toBeInTheDocument()
   })
+
+  it('manual mode labels drop "(đề xuất)" — nhiệm vụ ⑤ explicitly stops suggesting values', () => {
+    render(
+      <PlanBlock
+        symbol="VNM"
+        presetMode="manual"
+        reason={null}
+        onReason={vi.fn()}
+        sl={null}
+        tp={null}
+      />,
+    )
+    expect(screen.getByText("Cắt lỗ", { selector: "label" })).toBeInTheDocument()
+    expect(screen.getByText("Chốt lời", { selector: "label" })).toBeInTheDocument()
+    expect(screen.queryByText(/\(đề xuất\)/)).not.toBeInTheDocument()
+  })
 })

@@ -99,3 +99,67 @@ export function gbarText(state: GbarState): string | null {
 export function gbarVisible(state: GbarState): boolean {
   return gbarStep(state) !== null
 }
+
+/**
+ * Nhiệm vụ ⑤ gbar (spec §4 Chặng 3 / §6 "Nội dung nhiệm vụ ⑤: xem §4 Chặng 3
+ * ở trên") — a SECOND, independent 2-flag reducer, mirroring nhiệm vụ ①'s
+ * 3-flag design above but entirely LOCAL (never reads server progress):
+ *
+ *  - `slTyped` is driven by the SL field's `keydown` event (same DOM event
+ *    `TradingPanel`'s `handleSlKeydown` already reacts to for the "cổng chất
+ *    lượng 1" PATCH — `Gbar` just also gets notified via the bus so step 1→2
+ *    updates instantly, without waiting on that mutation's round trip).
+ *  - `orderPlaced` is driven by the SAME `onOrderFilled` BUY bus event nhiệm
+ *    vụ ① uses, but only once task ① is already done (i.e. this buy is
+ *    nhiệm vụ ⑤'s second order, not the first).
+ *
+ * Deliberately NOT keyed off `progress.task_5_done_at` — the backend marks
+ * that (and `task5_sl_typed`) done at the very FIRST keydown, not after the
+ * follow-up buy (see `service.py`'s `complete_task`), so gating hide-on-that
+ * would make step 2/2 disappear before the user ever gets to place the
+ * order. `orderPlaced` (this reducer's own flag) is the sole "done → hide"
+ * signal, exactly as the review calls for.
+ */
+export interface Task5State {
+  slTyped: boolean
+  orderPlaced: boolean
+}
+
+export const initialTask5State: Task5State = {
+  slTyped: false,
+  orderPlaced: false,
+}
+
+export type Task5Action = { type: "SL_TYPED" } | { type: "ORDER_PLACED" }
+
+export function task5Reducer(state: Task5State, action: Task5Action): Task5State {
+  switch (action.type) {
+    case "SL_TYPED":
+      return state.slTyped ? state : { ...state, slTyped: true }
+    case "ORDER_PLACED":
+      return state.orderPlaced ? state : { ...state, orderPlaced: true }
+    default:
+      return state
+  }
+}
+
+export type Task5Step = 1 | 2
+
+/** `null` once the second order is placed (task done → gbar hides). */
+export function task5Step(state: Task5State): Task5Step | null {
+  if (state.orderPlaced) return null
+  return state.slTyped ? 2 : 1
+}
+
+/** Step messages, verbatim spec §4 Chặng 3 lines ~140-142. */
+export function task5StepMessage(step: Task5Step): string {
+  if (step === 1) {
+    return "Bước 1/2 — Tự gõ ngưỡng cắt lỗ vào ô (nhập bằng bàn phím, đây là lời hứa của bạn)"
+  }
+  return "Bước 2/2 — Bấm ĐẶT LỆNH MUA để hoàn tất lệnh thứ hai"
+}
+
+export function task5Text(state: Task5State): string | null {
+  const step = task5Step(state)
+  return step === null ? null : task5StepMessage(step)
+}

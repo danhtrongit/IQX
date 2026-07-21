@@ -21,12 +21,18 @@ vi.mock("@/shared/http/client", () => ({
 }))
 vi.mock("@/features/auth", () => ({ useAuth: () => ({ isAuthenticated: true }) }))
 
-// Spy on `Message.success` (the 3 spec §4 toasts) while keeping everything
-// else in the library real.
-const { messageSuccess } = vi.hoisted(() => ({ messageSuccess: vi.fn() }))
+// Spy on `Message.success` (the 3 spec §4 toasts) and `Message.info` (the
+// spec §8 unlock toast) while keeping everything else in the library real.
+const { messageSuccess, messageInfo } = vi.hoisted(() => ({
+  messageSuccess: vi.fn(),
+  messageInfo: vi.fn(),
+}))
 vi.mock("@arco-design/web-react", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@arco-design/web-react")>()
-  return { ...actual, Message: { ...actual.Message, success: messageSuccess } }
+  return {
+    ...actual,
+    Message: { ...actual.Message, success: messageSuccess, info: messageInfo },
+  }
 })
 
 import { Cap0Provider, useCap0Events } from "./Cap0Context"
@@ -82,6 +88,44 @@ function EventTrigger() {
       </button>
       <button onClick={() => events.onStarToggled?.("VNM", true)}>star-toggle</button>
       <button onClick={() => events.onGbarWarn?.()}>warn</button>
+      {/* Buy events carrying Kế hoạch sl/tp (nhiệm vụ ①'s preset, or nhiệm vụ
+          ⑤'s manually-typed values) — used by the buy→sell debrief tests. */}
+      <button
+        onClick={() =>
+          events.onOrderFilled?.({
+            symbol: "VNM",
+            side: "buy",
+            quantity: 100,
+            price: 61800,
+            sl: 58710,
+            tp: 67980,
+          })
+        }
+      >
+        buy-vnm-with-plan
+      </button>
+      <button
+        onClick={() =>
+          events.onOrderFilled?.({
+            symbol: "HPG",
+            side: "buy",
+            quantity: 200,
+            price: 30000,
+            sl: 28500,
+            tp: 33000,
+          })
+        }
+      >
+        buy-hpg-with-plan
+      </button>
+      <button
+        onClick={() =>
+          events.onOrderFilled?.({ symbol: "VNM", side: "sell", quantity: 100, price: 63000 })
+        }
+      >
+        sell-vnm
+      </button>
+      <button onClick={() => events.onSlTyped?.()}>sl-typed</button>
     </div>
   )
 }
@@ -114,6 +158,7 @@ describe("Gbar", () => {
     post.mockReset()
     patch.mockReset()
     messageSuccess.mockReset()
+    messageInfo.mockReset()
     vi.useRealTimers()
   })
 
@@ -188,10 +233,18 @@ describe("Gbar", () => {
     )
   })
 
-  it("renders nothing once task ① is already done server-side (fresh mount)", async () => {
+  it("shows nhiệm vụ ⑤'s «Bước 1/2» (not nhiệm vụ ①'s bar) once task ① is already done server-side (fresh mount)", async () => {
     renderGbar(makeProgress({ task_1_done_at: "2026-07-20T00:00:00Z" }))
-    await waitFor(() => expect(screen.queryByText(/Bước/)).not.toBeInTheDocument())
-    expect(screen.queryByText("CẦN LÀM")).not.toBeInTheDocument()
+    // Nhiệm vụ ① is done — its own 3-step bar is gone...
+    await waitFor(() => expect(screen.queryByText(/Bước \d\/3/)).not.toBeInTheDocument())
+    // ...but nhiệm vụ ⑤ (spec §4 Chặng 3 / §6) is now active and takes over
+    // the SAME `.gbar` slot.
+    expect(
+      screen.getByText(
+        "Bước 1/2 — Tự gõ ngưỡng cắt lỗ vào ô (nhập bằng bàn phím, đây là lời hứa của bạn)",
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByText("CẦN LÀM")).toBeInTheDocument()
   })
 
   it("wrong action (buy without a reason) flashes warn (red + ⚠ prefix), then reverts to amber after ~1.6s but stays", async () => {
@@ -218,5 +271,183 @@ describe("Gbar", () => {
     ).toBeInTheDocument()
     expect(document.querySelector(".cap0-gbar--warn")).toBeNull()
     vi.useRealTimers()
+  })
+})
+
+describe("Gbar — nhiệm vụ ⑤ 2-step (spec §4 Chặng 3 / §6)", () => {
+  beforeEach(() => {
+    get.mockReset()
+    post.mockReset()
+    patch.mockReset()
+    messageSuccess.mockReset()
+    messageInfo.mockReset()
+    vi.useRealTimers()
+  })
+
+  it("shows «Bước 1/2» once task ① is done, before the SL field is typed", async () => {
+    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "Bước 1/2 — Tự gõ ngưỡng cắt lỗ vào ô (nhập bằng bàn phím, đây là lời hứa của bạn)",
+        ),
+      ).toBeInTheDocument(),
+    )
+  })
+
+  it("the SL-typed bus event (`onSlTyped`) advances «Bước 1/2 → 2/2» instantly (no PATCH round trip needed)", async () => {
+    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
+    await waitFor(() => expect(screen.getByText(/Bước 1\/2/)).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText("sl-typed"))
+
+    expect(
+      screen.getByText("Bước 2/2 — Bấm ĐẶT LỆNH MUA để hoàn tất lệnh thứ hai"),
+    ).toBeInTheDocument()
+  })
+
+  it("a subsequent BUY (nhiệm vụ ⑤'s second order) completes the task and hides the bar", async () => {
+    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
+    await waitFor(() => expect(screen.getByText(/Bước 1\/2/)).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText("sl-typed"))
+    expect(screen.getByText(/Bước 2\/2/)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText("buy-vnm-with-plan"))
+
+    expect(screen.queryByText(/Bước/)).not.toBeInTheDocument()
+  })
+
+  it("a BUY completes the task even if the SL field was never typed (order-placed is the sole hide signal)", async () => {
+    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
+    await waitFor(() => expect(screen.getByText(/Bước 1\/2/)).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText("buy-vnm-with-plan"))
+
+    expect(screen.queryByText(/Bước/)).not.toBeInTheDocument()
+  })
+
+  it("a BUY before task ① is done does NOT trip nhiệm vụ ⑤'s bar (it's task ①'s own order, tracked separately)", async () => {
+    renderGbar(makeProgress())
+    await waitFor(() => expect(screen.getByText(/Bước 1\/3/)).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText("pick-reason"))
+    fireEvent.click(screen.getByText("fill-order"))
+
+    // Still task ①'s 3-step bar (step 3/3) — nhiệm vụ ⑤ hasn't started yet.
+    expect(screen.getByText(/Bước 3\/3/)).toBeInTheDocument()
+  })
+})
+
+describe("Gbar — buy → sell opens the Kết sổ debrief (spec §5/§6, nhiệm vụ ⑥)", () => {
+  beforeEach(() => {
+    get.mockReset()
+    post.mockReset()
+    patch.mockReset()
+    messageSuccess.mockReset()
+    messageInfo.mockReset()
+    vi.useRealTimers()
+  })
+
+  it("a BUY then a SELL opens DebriefModal with the entry price / SL / TP / order #n captured from the buy", async () => {
+    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
+    await waitFor(() => expect(screen.getByText(/Bước 1\/2/)).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText("buy-vnm-with-plan"))
+    fireEvent.click(screen.getByText("sell-vnm"))
+
+    // Header "#1" (first debrief this session) + Kế hoạch/Thực tế reconciled
+    // against the BUY's captured price (61.800) / sl (58.710 · −5.0%) / tp
+    // (67.980 · +10.0%), against the SELL's exit price (63.000).
+    expect(screen.getByText("KẾT SỔ LỆNH · #1 · SÂN TẬP")).toBeInTheDocument()
+    expect(screen.getByText("+120.000 ₫ · MUA 100 VNM → BÁN")).toBeInTheDocument()
+    expect(screen.getAllByText("61.800").length).toBeGreaterThanOrEqual(2)
+    expect(screen.getByText("58.710 · −5.0%")).toBeInTheDocument()
+    expect(screen.getByText("67.980 · +10.0%")).toBeInTheDocument()
+    expect(screen.getByText(/63\.000/)).toBeInTheDocument()
+  })
+
+  it("buy A, buy B, then sell A → the debrief reconciles against A's captured plan, not B's", async () => {
+    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
+    await waitFor(() => expect(screen.getByText(/Bước 1\/2/)).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText("buy-vnm-with-plan")) // A — VNM, sl 58.710 / tp 67.980
+    fireEvent.click(screen.getByText("buy-hpg-with-plan")) // B — HPG, sl 28.500 / tp 33.000
+    fireEvent.click(screen.getByText("sell-vnm")) // sell A (VNM)
+
+    expect(screen.getByText(/MUA 100 VNM → BÁN/)).toBeInTheDocument()
+    expect(screen.getByText("58.710 · −5.0%")).toBeInTheDocument()
+    expect(screen.getByText("67.980 · +10.0%")).toBeInTheDocument()
+    // B's (HPG's) figures must NOT leak into A's debrief.
+    expect(screen.queryByText(/28\.500/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/33\.000/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/30\.000/)).not.toBeInTheDocument()
+  })
+})
+
+describe("Gbar — spec §8 unlock toast", () => {
+  beforeEach(() => {
+    get.mockReset()
+    post.mockReset()
+    patch.mockReset()
+    messageSuccess.mockReset()
+    messageInfo.mockReset()
+    vi.useRealTimers()
+  })
+
+  it('completing nhiệm vụ ① (task_1_done_at flips true server-side) toasts "Bạn vừa mở khóa: Ô Giá & loại lệnh (LO/MP)."', async () => {
+    // A stateful `get` mock: starts fresh, then reflects the server state the
+    // PATCH mock "persists" once nhiệm vụ ① completes — driving the SAME
+    // `progress` transition (false → true) the real app produces when
+    // `completeTask`'s mutation invalidates + refetches `useCap0Progress`.
+    let serverProgress = makeProgress()
+    get.mockImplementation(() => ({ json: () => Promise.resolve(serverProgress) }))
+    patch.mockImplementation(() => {
+      serverProgress = makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" })
+      return { json: () => Promise.resolve(serverProgress) }
+    })
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    render(
+      <QueryClientProvider client={client}>
+        <SidebarProvider defaultPanel="trading">
+          <Cap0Provider>
+            <Gbar />
+            <EventTrigger />
+          </Cap0Provider>
+        </SidebarProvider>
+      </QueryClientProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByText(/Bước 1\/3/)).toBeInTheDocument())
+    fireEvent.click(screen.getByText("pick-reason"))
+    fireEvent.click(screen.getByText("fill-order"))
+    fireEvent.click(screen.getByText("star-toggle"))
+
+    await waitFor(() =>
+      expect(messageInfo).toHaveBeenCalledWith("Bạn vừa mở khóa: Ô Giá & loại lệnh (LO/MP)."),
+    )
+    // Not the OTHER pairs — those unlock on different conditions (task ②,
+    // graduation) that this scenario never reaches.
+    expect(messageInfo).not.toHaveBeenCalledWith("Bạn vừa mở khóa: Sổ lệnh bid/ask.")
+    expect(messageInfo).not.toHaveBeenCalledWith("Bạn vừa mở khóa: Tin tức & AI Mẫu nến.")
+  })
+
+  it("does NOT toast on a fresh mount where task ① is already done (no spurious loading→resolved transition)", async () => {
+    get.mockReturnValue({
+      json: () => Promise.resolve(makeProgress({ task_1_done_at: "2026-07-20T00:00:00Z" })),
+    })
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    render(
+      <QueryClientProvider client={client}>
+        <SidebarProvider defaultPanel="trading">
+          <Cap0Provider>
+            <Gbar />
+          </Cap0Provider>
+        </SidebarProvider>
+      </QueryClientProvider>,
+    )
+
+    await waitFor(() => expect(screen.getByText(/Bước 1\/2/)).toBeInTheDocument())
+    expect(messageInfo).not.toHaveBeenCalled()
   })
 })

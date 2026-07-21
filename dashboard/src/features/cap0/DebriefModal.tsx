@@ -39,6 +39,18 @@ function fmtPct(pct: number): string {
   return `${sign}${Math.abs(rounded).toFixed(1)}%`
 }
 
+/**
+ * Signed VND amount using the SAME typographic minus "−" (U+2212) as
+ * `fmtPct` — `Number.prototype.toLocaleString`'s own negative formatting
+ * uses a plain ASCII hyphen, which would otherwise read inconsistently next
+ * to the P&L percentage's "−" right above it.
+ */
+function fmtVndSigned(n: number): string {
+  const rounded = Math.round(n)
+  const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : ""
+  return `${sign}${fmtVnd(Math.abs(rounded))} ₫`
+}
+
 /** Splits on the spec's own `**bold**` markers and renders them as `<strong>`. */
 function renderInlineBold(text: string) {
   return text.split("**").map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : part))
@@ -131,7 +143,7 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
       </div>
 
       <div className="cap0-debrief-sub">
-        {`${pnlVnd >= 0 ? "+" : ""}${fmtVnd(pnlVnd)} ₫ · MUA ${quantity} ${symbol} → BÁN`}
+        {`${fmtVndSigned(pnlVnd)} · MUA ${quantity} ${symbol} → BÁN`}
       </div>
 
       <table className="cap0-debrief-table">

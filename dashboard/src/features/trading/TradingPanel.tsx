@@ -203,9 +203,14 @@ function OrderEntry({
   const hidePriceAndType = isCap0Active && !cap0Vis.priceField
 
   const handleSlKeydown = () => {
-    if (!isCap0Active || !task1Done || cap0Progress?.task5_sl_typed || slGateFiredRef.current) {
-      return
-    }
+    if (!isCap0Active || !task1Done) return
+    // Notify the gbar INSTANTLY (spec §6 "Bước 1/2 → 2/2") off the raw
+    // keydown — not gated by `task5_sl_typed`/`slGateFiredRef` below, which
+    // exist only to avoid a REDUNDANT PATCH, not to throttle the local UI
+    // update (a user retyping after those flags are already true should
+    // still see the gbar reflect "đã gõ").
+    cap0Events.onSlTyped?.()
+    if (cap0Progress?.task5_sl_typed || slGateFiredRef.current) return
     slGateFiredRef.current = true
     completeTask5.mutate({ taskNo: 5, gate: "sl_typed" })
   }
@@ -333,7 +338,7 @@ function OrderEntry({
           <Tooltip
             content={
               isCap0Active && task1Done
-                ? 'Bạn vừa mở khóa ô Giá. Nãy giờ bạn dùng lệnh THỊ TRƯỜNG (MP) — mua ngay ở giá bên bán. Nhập giá cụ thể vào ô này là lệnh GIỚI HẠN (LO): "tôi chỉ mua nếu giá về mức X" — máy chờ giúp bạn. Chủ động hơn, nhưng có thể không khớp.'
+                ? "Bạn vừa mở khóa ô Giá. Nãy giờ bạn dùng lệnh THỊ TRƯỜNG (MP) — mua ngay ở giá bên bán. Nhập giá cụ thể vào ô này là lệnh GIỚI HẠN (LO): 'tôi chỉ mua nếu giá về mức X' — máy chờ giúp bạn. Chủ động hơn, nhưng có thể không khớp."
                 : ""
               }
             disabled={!(isCap0Active && task1Done)}

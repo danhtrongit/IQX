@@ -136,7 +136,7 @@ function renderOutsideCap0() {
  *  robust regardless of how many OTHER spinbuttons (Giá/Khối lượng/Chốt lời)
  *  are on the page. */
 function getSlInput(): HTMLElement {
-  const label = screen.getByText("Cắt lỗ (đề xuất)")
+  const label = screen.getByText("Cắt lỗ", { selector: "label" })
   const container = label.closest("div") as HTMLElement
   return within(container).getByRole("spinbutton")
 }
@@ -206,7 +206,7 @@ describe("Nhiệm vụ ⑤ — cổng chất lượng 1 (keydown vào ô cắt l
     renderInCap0(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
     await waitFor(() => expect(screen.getByText("Giá", { selector: "label" })).toBeInTheDocument())
     // Confirm manual mode actually switched in (label, not the filled-mode div).
-    expect(screen.getByText("Cắt lỗ (đề xuất)", { selector: "label" })).toBeInTheDocument()
+    expect(screen.getByText("Cắt lỗ", { selector: "label" })).toBeInTheDocument()
 
     fireEvent.keyDown(getSlInput(), { key: "5", code: "Digit5" })
 
@@ -219,7 +219,7 @@ describe("Nhiệm vụ ⑤ — cổng chất lượng 1 (keydown vào ô cắt l
     renderInCap0(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
     await waitFor(() => expect(screen.getByText("Giá", { selector: "label" })).toBeInTheDocument())
     // Confirm manual mode actually switched in (label, not the filled-mode div).
-    expect(screen.getByText("Cắt lỗ (đề xuất)", { selector: "label" })).toBeInTheDocument()
+    expect(screen.getByText("Cắt lỗ", { selector: "label" })).toBeInTheDocument()
 
     fireEvent.mouseDown(getSlStepButton())
 
@@ -237,7 +237,7 @@ describe("Nhiệm vụ ⑤ — cổng chất lượng 1 (keydown vào ô cắt l
     )
     await waitFor(() => expect(screen.getByText("Giá", { selector: "label" })).toBeInTheDocument())
     // Confirm manual mode actually switched in (label, not the filled-mode div).
-    expect(screen.getByText("Cắt lỗ (đề xuất)", { selector: "label" })).toBeInTheDocument()
+    expect(screen.getByText("Cắt lỗ", { selector: "label" })).toBeInTheDocument()
 
     fireEvent.keyDown(getSlInput(), { key: "5", code: "Digit5" })
 

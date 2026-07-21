@@ -198,6 +198,23 @@ describe("DebriefModal", () => {
     expect(screen.getByText("chạm")).toBeInTheDocument()
   })
 
+  it("uses the typographic minus «−» (U+2212) for a NEGATIVE VND subline, same glyph as the P&L %", () => {
+    const lossData: DebriefData = {
+      n: 2,
+      symbol: "VNM",
+      quantity: 100,
+      entryPrice: 62000,
+      exitPrice: 58900,
+      sl: 58900,
+      tp: 68000,
+    }
+    render(<DebriefModal data={lossData} onClose={vi.fn()} />)
+    // (58.900 − 62.000) × 100 = −310.000 ₫ — must use "−" (U+2212), never a
+    // plain ASCII hyphen ("-", U+002D), which `toLocaleString` would emit.
+    expect(screen.getByText("−310.000 ₫ · MUA 100 VNM → BÁN")).toBeInTheDocument()
+    expect(screen.queryByText(/-310\.000/)).not.toBeInTheDocument()
+  })
+
   it("falls back to '—' for SL/TP cells when no Kế hoạch data was captured", () => {
     const noplanData: DebriefData = {
       n: 3,

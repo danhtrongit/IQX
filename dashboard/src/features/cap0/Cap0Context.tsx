@@ -49,6 +49,15 @@ export interface Cap0EventHandlers {
   onStarToggled?: (symbol: string, watched: boolean) => void
   /** A guarded action was attempted without its precondition (spec §6 "Làm SAI") — flash the gbar red + `gshake` for ~1.6s. */
   onGbarWarn?: () => void
+  /**
+   * Nhiệm vụ ⑤'s `keydown` into the (now-manual) ô cắt lỗ (spec §4 Chặng 3
+   * "cổng chất lượng 1"). Notified INSTANTLY off the DOM event itself — not
+   * derived from the `task5_sl_typed` PATCH's round trip — so the gbar's
+   * "Bước 1/2 → 2/2" text (spec §6) advances the moment the user types,
+   * exactly mirroring how nhiệm vụ ①'s `onReasonPicked`/`onStarToggled`
+   * update the bar before any server confirmation.
+   */
+  onSlTyped?: () => void
 }
 
 /** The bus value: notify fns (undefined when no handlers) + `registerHandlers`. */
@@ -93,6 +102,10 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
     handlersRef.current.onGbarWarn?.()
   }, [])
 
+  const onSlTyped = useCallback(() => {
+    handlersRef.current.onSlTyped?.()
+  }, [])
+
   // Fail-closed while progress is still loading (`progress` undefined →
   // `task_1_done_at` undefined → the gate stays required), matching the
   // product's "chặn nếu chưa chọn" protective default.
@@ -104,11 +117,20 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
       onOrderFilled,
       onStarToggled,
       onGbarWarn,
+      onSlTyped,
       registerHandlers,
       isCap0Active: true,
       requireReasonBeforeOrder,
     }),
-    [onReasonPicked, onOrderFilled, onStarToggled, onGbarWarn, registerHandlers, requireReasonBeforeOrder],
+    [
+      onReasonPicked,
+      onOrderFilled,
+      onStarToggled,
+      onGbarWarn,
+      onSlTyped,
+      registerHandlers,
+      requireReasonBeforeOrder,
+    ],
   )
 
   return <Cap0EventsContext.Provider value={value}>{children}</Cap0EventsContext.Provider>
