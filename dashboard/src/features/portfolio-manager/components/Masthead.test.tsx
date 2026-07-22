@@ -47,15 +47,15 @@ describe("Masthead", () => {
 })
 
 describe("HeroScore", () => {
-  it("renders the overall score as '3,5'", () => {
+  it("renders the overall score as '3.5'", () => {
     render(
       <HeroScore
         scores={sampleAnalysis.scores}
         verdict={sampleNarrative.verdict}
       />,
     )
-    // score(3.5) → "3,5"
-    expect(screen.getByText(/3,5/)).toBeInTheDocument()
+    // score(3.5) → "3.5"
+    expect(screen.getByText(/3\.5/)).toBeInTheDocument()
   })
 
   it("renders the trend line showing previous score", () => {
@@ -65,7 +65,7 @@ describe("HeroScore", () => {
         verdict={sampleNarrative.verdict}
       />,
     )
-    expect(screen.getByText(/3,2/)).toBeInTheDocument()
+    expect(screen.getByText(/3\.2/)).toBeInTheDocument()
   })
 
   it("renders the verdict text", () => {
@@ -93,7 +93,7 @@ describe("ProgressCompare", () => {
     expect(container.querySelector(".compare")).toBeInTheDocument()
   })
 
-  it("renders the score delta '3,2 → 3,5'", () => {
+  it("renders the score delta '3.2 → 3.5'", () => {
     render(
       <ProgressCompare
         meta={sampleAnalysis.meta}
@@ -102,7 +102,7 @@ describe("ProgressCompare", () => {
         progress_text={sampleNarrative.progress_text}
       />,
     )
-    expect(screen.getByText(/3,2 → 3,5/)).toBeInTheDocument()
+    expect(screen.getByText(/3\.2 → 3\.5/)).toBeInTheDocument()
   })
 
   it("returns null when mode is 'first'", () => {

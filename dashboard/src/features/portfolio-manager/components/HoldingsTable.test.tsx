@@ -31,7 +31,7 @@ describe("HoldingsTable", () => {
     expect(cashRow).toHaveTextContent("Tiền mặt")
   })
 
-  it("HPG weight shows '16,0%'", () => {
+  it("HPG weight shows '16.0%'", () => {
     render(
       <HoldingsTable
         positions={sampleAnalysis.overview.positions}
@@ -39,8 +39,8 @@ describe("HoldingsTable", () => {
         managerVoice={sampleNarrative.layers.overview}
       />,
     )
-    // pct(0.160) → "16,0%"
-    expect(screen.getByText("16,0%")).toBeInTheDocument()
+    // pct(0.160) → "16.0%"
+    expect(screen.getByText("16.0%")).toBeInTheDocument()
   })
 
   it("renders the low_confidence flag for APG", () => {

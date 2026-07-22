@@ -39,8 +39,8 @@ describe("QualitySector", () => {
     const sb = container.querySelector(".sectorbench")
     expect(sb).not.toBeNull()
     // Should show your_return and industry_return formatted values
-    expect(sb?.textContent).toContain("+9,0%")
-    expect(sb?.textContent).toContain("+14,0%")
+    expect(sb?.textContent).toContain("+9.0%")
+    expect(sb?.textContent).toContain("+14.0%")
   })
 
   it("null pe/pb/roe/dividend show — dash", () => {

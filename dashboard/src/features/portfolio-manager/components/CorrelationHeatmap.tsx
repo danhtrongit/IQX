@@ -71,7 +71,7 @@ export function CorrelationHeatmap({ correlation, positions }: CorrelationHeatma
                 if (rowTicker === colTicker) {
                   return (
                     <td key={colTicker}>
-                      <div className="cell self">1,0</div>
+                      <div className="cell self">1.0</div>
                     </td>
                   )
                 }

@@ -5,7 +5,7 @@ import { CorrelationHeatmap } from "./CorrelationHeatmap"
 import { sampleAnalysis } from "../__fixtures__/sample"
 
 describe("CorrelationHeatmap", () => {
-  it("renders the 0,82 badge for the TCB–MBB max pair", () => {
+  it("renders the 0.82 badge for the TCB–MBB max pair", () => {
     render(
       <CorrelationHeatmap
         correlation={sampleAnalysis.risk.correlation}
@@ -15,10 +15,10 @@ describe("CorrelationHeatmap", () => {
     // The badge inside .sig-call should show the max correlation value
     const badge = document.querySelector(".badge")
     expect(badge).not.toBeNull()
-    expect(badge?.textContent).toBe("0,82")
+    expect(badge?.textContent).toBe("0.82")
   })
 
-  it("renders diagonal cells with 1,0", () => {
+  it("renders diagonal cells with 1.0", () => {
     render(
       <CorrelationHeatmap
         correlation={sampleAnalysis.risk.correlation}
@@ -29,7 +29,7 @@ describe("CorrelationHeatmap", () => {
     // Top 4 positions → 4 diagonal self cells
     expect(selfCells.length).toBe(4)
     selfCells.forEach((cell) => {
-      expect(cell.textContent).toBe("1,0")
+      expect(cell.textContent).toBe("1.0")
     })
   })
 

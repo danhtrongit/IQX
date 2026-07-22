@@ -34,7 +34,7 @@ export function StressTest({ beta, nav, managerVoice, topHoldings }: StressTestP
           <div className="st">Bài kiểm tra sức chịu đựng</div>
           <div className="sd">
             Danh mục của bạn hiện nhạy hơn thị trường khoảng{" "}
-            {Math.round((beta - 1) * 100)}% (độ nhạy {beta.toFixed(2).replace(".", ",")}).
+            {Math.round((beta - 1) * 100)}% (độ nhạy {beta.toFixed(2)}).
           </div>
         </div>
         <div className="stress-body">
@@ -46,7 +46,7 @@ export function StressTest({ beta, nav, managerVoice, topHoldings }: StressTestP
                 className={d === val ? "on" : undefined}
                 onClick={() => setD(val)}
               >
-                {val === 5 ? "VN-Index −5,0%" : `−${val},0%`}
+                {val === 5 ? "VN-Index −5.0%" : `−${val}.0%`}
               </button>
             ))}
           </div>
