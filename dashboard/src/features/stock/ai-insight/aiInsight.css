@@ -621,23 +621,22 @@ body[arco-theme='light'] .ai-insight-v2 {
   letter-spacing: 0.05em;
 }
 
-/* Filler news inline list */
-.ai-insight-v2 .news-filler-list {
-  margin-top: 12px;
-  font-size: 12px;
-  color: var(--text-2);
-}
-.ai-insight-v2 .news-filler-list .filler-item {
-  display: inline-block;
-  margin-right: 12px;
-  margin-bottom: 4px;
-}
-.ai-insight-v2 .news-filler-list .filler-tag {
-  margin-left: 4px;
+/* Section headers ("Tin trọng yếu" / "Tin phụ") */
+.ai-insight-v2 .news-section-header {
   font-size: 10px;
-  background: var(--bg-3);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+/* Filler news — one item per line, same treatment as material */
+.ai-insight-v2 .news-filler-list {
+  margin-top: 16px;
+}
+.ai-insight-v2 .news-filler-list .news-section-header {
   color: var(--text-2);
-  padding: 1px 5px;
 }
 
 /* ============ ROLE TAG (L4) ============ */

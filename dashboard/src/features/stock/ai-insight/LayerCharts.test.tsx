@@ -37,8 +37,8 @@ function Wrapper({ children }: { children: React.ReactNode }) {
 describe('LayerCharts L3', () => {
   it('renders two chart-block titles for L3', () => {
     render(<LayerCharts layer="L3" rawInput={fixture} />, { wrapper: Wrapper })
-    expect(screen.getByText('Nước ngoài (15 phiên)')).toBeInTheDocument()
-    expect(screen.getByText('Tự doanh (15 phiên)')).toBeInTheDocument()
+    expect(screen.getByText('Nước ngoài (10 phiên)')).toBeInTheDocument()
+    expect(screen.getByText('Tự doanh (10 phiên)')).toBeInTheDocument()
   })
 
   it('renders two chart-block containers for L3', () => {

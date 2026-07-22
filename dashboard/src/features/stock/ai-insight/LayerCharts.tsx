@@ -40,13 +40,13 @@ export function LayerCharts({ layer, rawInput }: LayerChartsProps) {
   if (layer === 'L3') {
     return (
       <>
-        <ChartBlock title="Nước ngoài (15 phiên)">
+        <ChartBlock title="Nước ngoài (10 phiên)">
           <MoneyFlowRawChart
             items={rawInput.moneyFlow.foreign as Parameters<typeof MoneyFlowRawChart>[0]['items']}
             title="Nước ngoài"
           />
         </ChartBlock>
-        <ChartBlock title="Tự doanh (15 phiên)">
+        <ChartBlock title="Tự doanh (10 phiên)">
           <MoneyFlowRawChart
             items={rawInput.moneyFlow.proprietary as Parameters<typeof MoneyFlowRawChart>[0]['items']}
             title="Tự doanh"
