@@ -11,9 +11,9 @@ interface HeaderStripProps {
 export function HeaderStrip({ header }: HeaderStripProps) {
   const { symbol, sector, indexGroup, price, changePercent, high, low, volume, isLive } = header
 
-  // Format a number with thousands separator (Vietnamese locale)
+  // Format a number with thousands separator (en-US locale)
   function fmtPrice(n: number): string {
-    return n.toLocaleString('vi-VN')
+    return n.toLocaleString('en-US')
   }
 
   // Format changePercent with explicit sign and 2 decimals, e.g. "+0.16%" or "-1.23%"

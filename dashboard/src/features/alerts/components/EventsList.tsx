@@ -24,14 +24,17 @@ export function EventsList() {
           {events.map((e) => (
             <tr key={e.id} className="hover:bg-[var(--color-fill-1)]">
               <td className="border-b border-[var(--color-border-1)] px-2.5 py-2">
-                {new Date(e.fired_at).toLocaleString("vi-VN")}
+                {(() => {
+                  const d = new Date(e.fired_at)
+                  return `${d.toLocaleDateString("vi-VN")} ${d.toLocaleTimeString("vi-VN")}`
+                })()}
               </td>
               <td className="border-b border-[var(--color-border-1)] px-2.5 py-2 font-semibold">{e.symbol}</td>
               <td className="border-b border-[var(--color-border-1)] px-2.5 py-2 text-[var(--color-text-2)]">
                 {e.signal_key ?? "—"}
               </td>
               <td className="border-b border-[var(--color-border-1)] px-2.5 py-2 text-right">
-                {e.price == null ? "—" : Math.round(e.price).toLocaleString("vi-VN")}
+                {e.price == null ? "—" : Math.round(e.price).toLocaleString("en-US")}
               </td>
               <td className="border-b border-[var(--color-border-1)] px-2.5 py-2">
                 <Tag size="small" color={e.delivered ? "green" : "gray"}>

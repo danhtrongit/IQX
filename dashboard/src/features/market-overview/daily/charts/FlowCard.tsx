@@ -30,7 +30,7 @@ export interface FlowCardProps {
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 function fmtBillion(val: number): string {
-  return Math.abs(val).toLocaleString("vi-VN", { maximumFractionDigits: 0 })
+  return Math.abs(val).toLocaleString("en-US", { maximumFractionDigits: 0 })
 }
 
 function StreakBars({ bars }: { bars: number[] }) {

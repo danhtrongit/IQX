@@ -5,7 +5,7 @@ import { cn } from "@/shared/lib/cn"
 /** Format absolute VND price with locale separators. */
 function fmtVnd(n: number): string {
   if (!n || n <= 0) return "—"
-  return n.toLocaleString("vi-VN", { maximumFractionDigits: 0 })
+  return n.toLocaleString("en-US", { maximumFractionDigits: 0 })
 }
 
 /** Compact share volume (e.g. 11,410 → "11.4K"). */

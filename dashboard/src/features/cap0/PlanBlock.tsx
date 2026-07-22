@@ -23,7 +23,7 @@ const REASON_CHIPS: readonly string[] = [
 ]
 
 function fmtVnd(n: number): string {
-  return Math.round(n).toLocaleString("vi-VN")
+  return Math.round(n).toLocaleString("en-US")
 }
 
 export interface PlanBlockProps {

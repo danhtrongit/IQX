@@ -54,6 +54,6 @@ describe("ForeignFlowCard", () => {
     }
     const { container } = render(<ForeignFlowCard data={posFixture} />)
     expect(container.textContent).toContain("+")
-    expect(container.textContent).toContain("2.500")
+    expect(container.textContent).toContain("2,500")
   })
 })

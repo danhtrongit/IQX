@@ -46,8 +46,8 @@ function shortenName(name: string): string {
 }
 
 function formatVND(vnd: number): string {
-  if (vnd >= 1_000) return `${Math.round(vnd / 1_000).toLocaleString("vi-VN")}T`
-  if (vnd >= 1) return `${Math.round(vnd).toLocaleString("vi-VN")}B`
+  if (vnd >= 1_000) return `${Math.round(vnd / 1_000).toLocaleString("en-US")}T`
+  if (vnd >= 1) return `${Math.round(vnd).toLocaleString("en-US")}B`
   return `${(vnd * 1_000).toFixed(0)}M`
 }
 

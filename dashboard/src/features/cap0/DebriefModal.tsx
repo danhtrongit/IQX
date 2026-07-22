@@ -29,7 +29,7 @@ export interface DebriefModalProps {
 }
 
 function fmtVnd(n: number): string {
-  return Math.round(n).toLocaleString("vi-VN")
+  return Math.round(n).toLocaleString("en-US")
 }
 
 /** `+10.0%` / `−5.0%` / `0.0%` — spec's literal minus glyph "−", not a hyphen. */

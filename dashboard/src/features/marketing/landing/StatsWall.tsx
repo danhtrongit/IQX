@@ -20,7 +20,7 @@ export function StatsWall() {
                 <div className="lp-stats__value lp-mono">
                   <span data-countup={s.value} data-prefix={prefix} data-decimals="0">
                     {prefix}
-                    {s.value.toLocaleString("vi-VN")}
+                    {s.value.toLocaleString("en-US")}
                   </span>
                 </div>
                 <div className="lp-stats__label">{s.label}</div>

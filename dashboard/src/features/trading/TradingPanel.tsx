@@ -40,13 +40,13 @@ import { useAccount, usePortfolio, usePlaceOrder, useActivateAccount } from "./h
 /* ── formatting helpers ── */
 function fmtPrice(price: number): string {
   if (!price || price <= 0) return "—"
-  return (price * 1000).toLocaleString("vi-VN", { maximumFractionDigits: 0 })
+  return (price * 1000).toLocaleString("en-US", { maximumFractionDigits: 0 })
 }
 function fmtVnd(n: number): string {
-  return Math.round(n).toLocaleString("vi-VN")
+  return Math.round(n).toLocaleString("en-US")
 }
 function fmtVolume(v: number): string {
-  return v ? v.toLocaleString("vi-VN") : "—"
+  return v ? v.toLocaleString("en-US") : "—"
 }
 function fmtCompact(v: number): string {
   if (!v) return "—"
@@ -293,9 +293,9 @@ function OrderEntry({
         price: order.price,
         ...(side === "buy" ? { sl: effectiveSl, tp: effectiveTp } : {}),
       })
-      const totalStr = (order.total || order.price * order.quantity).toLocaleString("vi-VN")
+      const totalStr = (order.total || order.price * order.quantity).toLocaleString("en-US")
       Message.success(
-        `Đặt lệnh ${label} ${symbol} thành công — ${order.quantity} CP × ${order.price.toLocaleString("vi-VN")} = ${totalStr} VND${order.status === "PENDING" ? " (chờ khớp)" : ""}`,
+        `Đặt lệnh ${label} ${symbol} thành công — ${order.quantity} CP × ${order.price.toLocaleString("en-US")} = ${totalStr} VND${order.status === "PENDING" ? " (chờ khớp)" : ""}`,
       )
     } catch (err) {
       const msg = await getErrorMessage(err, `Đặt lệnh ${label} ${symbol} thất bại`)
@@ -365,7 +365,7 @@ function OrderEntry({
           <label className="text-xs font-medium text-[var(--color-text-3)]">Khối lượng</label>
           {side === "sell" && positionQty > 0 && (
             <span className="text-xs text-[var(--color-text-3)]">
-              Tối đa: {positionQty.toLocaleString("vi-VN")}
+              Tối đa: {positionQty.toLocaleString("en-US")}
             </span>
           )}
         </div>
@@ -548,7 +548,7 @@ function AccountStrip({
         <div className="flex items-center justify-between rounded bg-[var(--color-fill-2)] px-1.5 py-0.5 text-[10px]">
           <span className="text-[var(--color-text-3)]">Đang giữ {symbol}</span>
           <span className="font-semibold text-[var(--color-text-1)]">
-            {positionQty.toLocaleString("vi-VN")} CP
+            {positionQty.toLocaleString("en-US")} CP
           </span>
         </div>
       )}

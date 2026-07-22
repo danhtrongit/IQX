@@ -108,7 +108,7 @@ export function WorldCellCard({ cell }: { cell: WorldCell }) {
         <div className="pm-world-cell-value">—</div>
       ) : (
         <>
-          <div className="pm-world-cell-value">{cell.value!.toLocaleString("vi-VN")}</div>
+          <div className="pm-world-cell-value">{cell.value!.toLocaleString("en-US")}</div>
           {cell.change_pct != null && (
             <div className={`pm-world-cell-change ${changeClass}`}>
               {cell.change_pct > 0 ? "+" : ""}

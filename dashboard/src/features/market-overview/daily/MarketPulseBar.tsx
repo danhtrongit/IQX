@@ -13,7 +13,7 @@ import "./article.css" // for .num / .up-text / .down-text tokens
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function fmt(n: number, decimals = 2): string {
-  return n.toLocaleString("vi-VN", {
+  return n.toLocaleString("en-US", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   })
@@ -108,15 +108,15 @@ export function MarketPulseBar() {
       {/* ── Cell 2: Độ rộng ── */}
       <PulseCell label="ĐỘ RỘNG">
         <div className="flex items-baseline gap-1 text-lg font-semibold tabular-nums">
-          <span className="text-up num">{loading ? "—" : breadth.advance.toLocaleString("vi-VN")}</span>
+          <span className="text-up num">{loading ? "—" : breadth.advance.toLocaleString("en-US")}</span>
           <span className="text-[var(--color-text-3)] text-sm">·</span>
-          <span className="text-down num">{loading ? "—" : breadth.decline.toLocaleString("vi-VN")}</span>
+          <span className="text-down num">{loading ? "—" : breadth.decline.toLocaleString("en-US")}</span>
         </div>
         {!loading && (
           <>
             <span className="text-[11px] text-[var(--color-text-3)] mt-1">
               {ratioStr}
-              {breadth.unchanged > 0 && ` · ${breadth.unchanged.toLocaleString("vi-VN")} đứng`}
+              {breadth.unchanged > 0 && ` · ${breadth.unchanged.toLocaleString("en-US")} đứng`}
             </span>
             {/* Breadth bar */}
             <div className="h-1.5 rounded-full overflow-hidden bg-[var(--color-fill-2)] flex mt-2">

@@ -71,7 +71,7 @@ const PREMIUM_FEATURES = [
 ]
 
 function fmtPrice(amount: number) {
-  return new Intl.NumberFormat("vi-VN").format(amount)
+  return new Intl.NumberFormat("en-US").format(amount)
 }
 
 export default function PremiumPage() {

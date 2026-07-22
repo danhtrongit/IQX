@@ -34,7 +34,7 @@ export function fmtValueVnd(v: number | null | undefined): string {
   if (v == null || !Number.isFinite(v) || v === 0) return "—"
   if (v >= 1e9) return (v / 1e9).toFixed(1) + " tỷ"
   if (v >= 1e6) return (v / 1e6).toFixed(1) + " tr"
-  return v.toLocaleString("vi-VN")
+  return v.toLocaleString("en-US")
 }
 
 /** Định dạng khối lượng cổ phiếu (B / M / K). */
@@ -43,13 +43,13 @@ export function fmtVolume(v: number | null | undefined): string {
   if (v >= 1e9) return (v / 1e9).toFixed(2) + "B"
   if (v >= 1e6) return (v / 1e6).toFixed(2) + "M"
   if (v >= 1e3) return (v / 1e3).toFixed(0) + "K"
-  return v.toLocaleString("vi-VN")
+  return v.toLocaleString("en-US")
 }
 
 /** Định dạng số tiền VND tròn (cho EPS / BVPS). */
 export function fmtVnd(v: number | null | undefined): string {
   if (v == null || !Number.isFinite(v)) return "—"
-  return v.toLocaleString("vi-VN", { maximumFractionDigits: 0 })
+  return v.toLocaleString("en-US", { maximumFractionDigits: 0 })
 }
 
 /** Định dạng một phân số (0.12) thành chuỗi phần trăm "12.0%". */

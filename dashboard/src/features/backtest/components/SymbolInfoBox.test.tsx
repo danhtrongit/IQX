@@ -44,7 +44,7 @@ describe("SymbolInfoBox", () => {
   it("renders price with + sign and text-up class for positive percent", () => {
     render(<SymbolInfoBox symbol="FPT" meta={null} />)
     // Price formatted
-    expect(screen.getByText(/142\.500/)).toBeInTheDocument()
+    expect(screen.getByText(/142,500/)).toBeInTheDocument()
     // Percent with + sign inside a text-up element
     const pctEl = screen.getByText(/\+1\.78%/)
     expect(pctEl.closest("[class]")?.className ?? pctEl.className).toMatch(/text-up/)

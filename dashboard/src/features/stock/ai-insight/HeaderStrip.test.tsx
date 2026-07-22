@@ -38,8 +38,7 @@ describe('HeaderStrip', () => {
 
   it('renders the price (61,700)', () => {
     renderWithWrapper(VCB_POSITIVE)
-    // toLocaleString('vi-VN') produces "61.700" with period separator on vi-VN locale
-    // but in test environments it may produce "61,700" — match both
+    // toLocaleString('en-US') produces "61,700" (comma thousands separator)
     const priceEl = screen.getByText(/61[.,]700/)
     expect(priceEl).toBeInTheDocument()
   })

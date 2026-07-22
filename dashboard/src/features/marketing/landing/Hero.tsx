@@ -104,7 +104,7 @@ export function Hero({ onPrimary }: { onPrimary: () => void }) {
                   data-suffix={m.suffix ?? ""}
                 >
                   {m.prefix ?? ""}
-                  {m.value.toLocaleString("vi-VN")}
+                  {m.value.toLocaleString("en-US")}
                   {m.suffix ?? ""}
                 </div>
                 <div className="lp-metrics__k">{m.label}</div>

@@ -87,8 +87,8 @@ describe("PlanBlock", () => {
     )
     expect(screen.getByText("Cắt lỗ (đề xuất)")).toBeInTheDocument()
     expect(screen.getByText("Chốt lời (đề xuất)")).toBeInTheDocument()
-    expect(screen.getByText("59.300 · −5%")).toBeInTheDocument()
-    expect(screen.getByText("68.600 · +10%")).toBeInTheDocument()
+    expect(screen.getByText("59,300 · −5%")).toBeInTheDocument()
+    expect(screen.getByText("68,600 · +10%")).toBeInTheDocument()
     expect(
       screen.getByText(
         "Cắt lỗ: nếu giá giảm tới đây, bán để bảo toàn vốn. Lệnh đầu hệ thống đề xuất sẵn — chỉ cần đồng ý.",

@@ -12,7 +12,7 @@ const features = [
 ]
 
 function fmtVndAmount(amount: number) {
-  return new Intl.NumberFormat("vi-VN").format(amount)
+  return new Intl.NumberFormat("en-US").format(amount)
 }
 
 const plans: {

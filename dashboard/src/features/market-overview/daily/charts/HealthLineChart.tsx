@@ -245,7 +245,7 @@ export function HealthLineChart({ data, classification, frozen, dataTag, frozenN
         >
           {todayValue === null
             ? "—"
-            : todayValue.toLocaleString("vi-VN", {
+            : todayValue.toLocaleString("en-US", {
                 minimumFractionDigits: 1,
                 maximumFractionDigits: 1,
               }) + "%"}

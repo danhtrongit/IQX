@@ -19,10 +19,10 @@ const fixture: MarketCharts["market_health_detail"] = {
 const classification = "Phân hóa tiêu cực"
 
 describe("HealthLineChart", () => {
-  it("renders the today value in vi-VN locale", () => {
+  it("renders the today value in en-US locale", () => {
     const { container } = render(<HealthLineChart data={fixture} classification={classification} />)
-    // vi-VN locale formats 43.4 as "43,4"
-    expect(container.textContent).toContain("43,4%")
+    // en-US locale formats 43.4 as "43.4"
+    expect(container.textContent).toContain("43.4%")
   })
 
   it("renders a <polyline> element", () => {

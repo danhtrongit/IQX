@@ -53,7 +53,7 @@ export function RotationChart({ data, frozen, dataTag, frozenNote }: RotationCha
 
           const valueLabel =
             (isPositive ? "+" : "") +
-            row.pct.toLocaleString("vi-VN", {
+            row.pct.toLocaleString("en-US", {
               minimumFractionDigits: 1,
               maximumFractionDigits: 1,
             }) +

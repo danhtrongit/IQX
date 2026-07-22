@@ -8,9 +8,9 @@ describe("format", () => {
     expect(signedPct(-0.09)).toBe("−9,0%")
   })
   it("points formats difference of rates", () => { expect(points(0.035)).toBe("+3,5 điểm %") })
-  it("vnd groups thousands with dots", () => { expect(vnd(534000000)).toBe("534.000.000 ₫") })
+  it("vnd groups thousands with commas", () => { expect(vnd(534000000)).toBe("534,000,000 ₫") })
   it("vnd renders negatives with the U+2212 minus (consistent with signedPct)", () => {
-    expect(vnd(-534000000)).toBe("−534.000.000 ₫")  // U+2212, not ASCII -
+    expect(vnd(-534000000)).toBe("−534,000,000 ₫")  // U+2212, not ASCII -
   })
   it("vndShort renders millions with sign", () => {
     expect(vndShort(38000000)).toBe("+38tr")

@@ -10,9 +10,9 @@ export const fmtNum = (v: number | null | undefined, digits = 2): string =>
   v == null ? "—" : v.toFixed(digits)
 
 export const fmtPrice = (v: number | null | undefined): string =>
-  v == null ? "—" : Math.round(v).toLocaleString("vi-VN")
+  v == null ? "—" : Math.round(v).toLocaleString("en-US")
 
-export const fmtMoney = (v: number): string => v.toLocaleString("vi-VN")
+export const fmtMoney = (v: number): string => v.toLocaleString("en-US")
 
 export const parseMoney = (s: string): number => Number(s.replace(/[^\d]/g, "")) || 0
 

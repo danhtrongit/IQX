@@ -46,8 +46,8 @@ describe("RotationChart", () => {
     expect(negativeRows.length).toBeGreaterThan(0)
   })
 
-  it("renders vi-VN formatted value label for Du lịch (+2,1%)", () => {
+  it("renders en-US formatted value label for Du lịch (+2.1%)", () => {
     const { container } = render(<RotationChart data={fixture} />)
-    expect(container.textContent).toContain("+2,1%")
+    expect(container.textContent).toContain("+2.1%")
   })
 })

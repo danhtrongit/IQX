@@ -17,7 +17,7 @@ describe("WorldCellCard", () => {
         }}
       />
     )
-    expect(screen.getByText("7.483,24")).toBeInTheDocument()
+    expect(screen.getByText("7,483.24")).toBeInTheDocument()
     expect(screen.getByText(/cũ/i)).toBeInTheDocument()
     expect(screen.queryByText("—")).not.toBeInTheDocument()
   })
@@ -51,7 +51,7 @@ describe("WorldCellCard", () => {
         }}
       />
     )
-    expect(screen.getByText("26.470")).toBeInTheDocument()
+    expect(screen.getByText("26,470")).toBeInTheDocument()
     expect(screen.queryByText(/cũ/i)).not.toBeInTheDocument()
   })
 })

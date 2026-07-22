@@ -20,14 +20,14 @@ import "./midday.css"
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmt(n: number, decimals = 2): string {
-  return n.toLocaleString("vi-VN", {
+  return n.toLocaleString("en-US", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   })
 }
 
 function fmtInt(n: number): string {
-  return Math.round(n).toLocaleString("vi-VN")
+  return Math.round(n).toLocaleString("en-US")
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -238,11 +238,11 @@ export function MidDayPulseBar({ data, isLunch }: Props) {
         <PulseCell label="ĐỘ RỘNG">
           <div className="flex items-baseline gap-1 text-lg font-semibold tabular-nums">
             <span className="text-up num">
-              {breadthUp != null ? breadthUp.toLocaleString("vi-VN") : "—"}
+              {breadthUp != null ? breadthUp.toLocaleString("en-US") : "—"}
             </span>
             <span className="text-[var(--color-text-3)] text-sm">·</span>
             <span className="text-down num">
-              {breadthDown != null ? breadthDown.toLocaleString("vi-VN") : "—"}
+              {breadthDown != null ? breadthDown.toLocaleString("en-US") : "—"}
             </span>
           </div>
           <span className="text-[11px] text-[var(--color-text-3)] mt-1">

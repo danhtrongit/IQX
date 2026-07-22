@@ -51,10 +51,10 @@ describe("BreadthChart", () => {
     expect(container.textContent).toContain("Phân hóa tiêu cực")
   })
 
-  it("renders pct_above_ma20 formatted with Vietnamese locale", () => {
+  it("renders pct_above_ma20 formatted with en-US locale", () => {
     const { container } = render(<BreadthChart data={fixture} />)
-    // vi-VN locale formats 36.5 as "36,5"
-    expect(container.textContent).toContain("36,5%")
+    // en-US locale formats 36.5 as "36.5"
+    expect(container.textContent).toContain("36.5%")
   })
 
   it("does not crash and renders '—' when pct_above_ma20 is null", () => {

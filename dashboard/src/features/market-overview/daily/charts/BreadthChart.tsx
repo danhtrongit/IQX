@@ -194,7 +194,7 @@ export function BreadthChart({ data }: BreadthChartProps) {
           >
             {data.pct_above_ma20 === null
               ? "—"
-              : data.pct_above_ma20.toLocaleString("vi-VN", {
+              : data.pct_above_ma20.toLocaleString("en-US", {
                   minimumFractionDigits: 1,
                   maximumFractionDigits: 1,
                 }) + "%"}

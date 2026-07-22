@@ -32,7 +32,7 @@ export function PropFlowCard({ data, foreignNet }: PropFlowCardProps) {
       Net:{" "}
       <strong style={{ color: netColor }}>
         {netSign}
-        {Math.abs(net).toLocaleString("vi-VN", { maximumFractionDigits: 0 })}{" "}
+        {Math.abs(net).toLocaleString("en-US", { maximumFractionDigits: 0 })}{" "}
         tỷ
       </strong>
       <br />

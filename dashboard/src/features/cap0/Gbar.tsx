@@ -36,7 +36,7 @@ function announceUnlocks(prev: Cap0Visibility, next: Cap0Visibility): void {
 }
 
 function fmtVnd(n: number): string {
-  return Math.round(n).toLocaleString("vi-VN")
+  return Math.round(n).toLocaleString("en-US")
 }
 
 /**

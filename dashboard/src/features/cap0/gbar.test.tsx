@@ -193,7 +193,7 @@ describe("Gbar", () => {
         "Bước 3/3 — Mở 👁 Danh mục xem tab Nắm giữ, rồi quay lại Đặt lệnh gắn ★ cạnh VNM",
       ),
     ).toBeInTheDocument()
-    expect(messageSuccess).toHaveBeenCalledWith("✓ Khớp lệnh MUA 100 VNM @ 61.800")
+    expect(messageSuccess).toHaveBeenCalledWith("✓ Khớp lệnh MUA 100 VNM @ 61,800")
   })
 
   it("ignores a SELL fill (does not advance step 2 → 3)", async () => {
@@ -357,31 +357,31 @@ describe("Gbar — buy → sell opens the Kết sổ debrief (spec §5/§6, nhi�
     fireEvent.click(screen.getByText("sell-vnm"))
 
     // Header "#1" (first debrief this session) + Kế hoạch/Thực tế reconciled
-    // against the BUY's captured price (61.800) / sl (58.710 · −5.0%) / tp
-    // (67.980 · +10.0%), against the SELL's exit price (63.000).
+    // against the BUY's captured price (61,800) / sl (58,710 · −5.0%) / tp
+    // (67,980 · +10.0%), against the SELL's exit price (63,000).
     expect(screen.getByText("KẾT SỔ LỆNH · #1 · SÂN TẬP")).toBeInTheDocument()
-    expect(screen.getByText("+120.000 ₫ · MUA 100 VNM → BÁN")).toBeInTheDocument()
-    expect(screen.getAllByText("61.800").length).toBeGreaterThanOrEqual(2)
-    expect(screen.getByText("58.710 · −5.0%")).toBeInTheDocument()
-    expect(screen.getByText("67.980 · +10.0%")).toBeInTheDocument()
-    expect(screen.getByText(/63\.000/)).toBeInTheDocument()
+    expect(screen.getByText("+120,000 ₫ · MUA 100 VNM → BÁN")).toBeInTheDocument()
+    expect(screen.getAllByText("61,800").length).toBeGreaterThanOrEqual(2)
+    expect(screen.getByText("58,710 · −5.0%")).toBeInTheDocument()
+    expect(screen.getByText("67,980 · +10.0%")).toBeInTheDocument()
+    expect(screen.getByText(/63,000/)).toBeInTheDocument()
   })
 
   it("buy A, buy B, then sell A → the debrief reconciles against A's captured plan, not B's", async () => {
     renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
     await waitFor(() => expect(screen.getByText(/Bước 1\/2/)).toBeInTheDocument())
 
-    fireEvent.click(screen.getByText("buy-vnm-with-plan")) // A — VNM, sl 58.710 / tp 67.980
-    fireEvent.click(screen.getByText("buy-hpg-with-plan")) // B — HPG, sl 28.500 / tp 33.000
+    fireEvent.click(screen.getByText("buy-vnm-with-plan")) // A — VNM, sl 58,710 / tp 67,980
+    fireEvent.click(screen.getByText("buy-hpg-with-plan")) // B — HPG, sl 28,500 / tp 33,000
     fireEvent.click(screen.getByText("sell-vnm")) // sell A (VNM)
 
     expect(screen.getByText(/MUA 100 VNM → BÁN/)).toBeInTheDocument()
-    expect(screen.getByText("58.710 · −5.0%")).toBeInTheDocument()
-    expect(screen.getByText("67.980 · +10.0%")).toBeInTheDocument()
+    expect(screen.getByText("58,710 · −5.0%")).toBeInTheDocument()
+    expect(screen.getByText("67,980 · +10.0%")).toBeInTheDocument()
     // B's (HPG's) figures must NOT leak into A's debrief.
-    expect(screen.queryByText(/28\.500/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/33\.000/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/30\.000/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/28,500/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/33,000/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/30,000/)).not.toBeInTheDocument()
   })
 })
 

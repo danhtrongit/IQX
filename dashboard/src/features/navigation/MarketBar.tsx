@@ -10,7 +10,7 @@ import { IconTrendingDown, IconTrendingUp } from "./icons"
 
 function formatNumber(n: number | undefined | null, decimals = 2): string {
   if (n == null || isNaN(n)) return "—"
-  return n.toLocaleString("vi-VN", {
+  return n.toLocaleString("en-US", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   })

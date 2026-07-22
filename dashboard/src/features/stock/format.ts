@@ -4,13 +4,13 @@ import type { BctcStatus } from "./types"
 
 /** Round + Vietnamese locale separators. */
 export function fmtVnd(n: number): string {
-  return Math.round(n).toLocaleString("vi-VN")
+  return Math.round(n).toLocaleString("en-US")
 }
 
 /** MSN live price is x1000 (128.8 → 128,800 VND). */
 export function fmtPrice(n: number): string {
   if (!n || n <= 0) return "—"
-  return (n * 1000).toLocaleString("vi-VN", { maximumFractionDigits: 0 })
+  return (n * 1000).toLocaleString("en-US", { maximumFractionDigits: 0 })
 }
 
 /** Large VND amount → "X nghìn tỷ / X tỷ / X triệu". */

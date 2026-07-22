@@ -31,7 +31,7 @@ export function ForeignFlowCard({ data }: ForeignFlowCardProps) {
         ) : (
           <span style={{ color: cumColor }}>
             {cumSign}
-            {cum.toLocaleString("vi-VN", {
+            {cum.toLocaleString("en-US", {
               maximumFractionDigits: 0,
             })}{" "}
             tỷ

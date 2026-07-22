@@ -448,7 +448,7 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
                     </span>
                   </div>
                   <span className="w-[32px] text-right text-[10px] tabular-nums text-[var(--color-text-3)]">
-                    {item.quantity.toLocaleString("vi-VN")}
+                    {item.quantity.toLocaleString("en-US")}
                   </span>
                   <span className="flex-1 text-right text-[10px] tabular-nums text-[var(--color-text-3)]">
                     {fmtVnd(item.avgBuyPrice)}

@@ -4,12 +4,12 @@ import { cn } from "@/shared/lib/cn"
 /** Price (in x1000 units) → raw VND display, or "—". */
 export function fmtBoardPrice(n: number): string {
   if (!n || n <= 0) return "—"
-  return (n * 1000).toLocaleString("vi-VN", { maximumFractionDigits: 0 })
+  return (n * 1000).toLocaleString("en-US", { maximumFractionDigits: 0 })
 }
 
 /** Round to a whole VND amount with locale separators. */
 export function fmtVnd(n: number): string {
-  return Math.round(n).toLocaleString("vi-VN")
+  return Math.round(n).toLocaleString("en-US")
 }
 
 /**

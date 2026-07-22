@@ -2,10 +2,10 @@
 
 export function formatVND(value: number): string {
   const abs = Math.abs(value)
-  if (abs >= 1e12) return `${Math.round(value / 1e12).toLocaleString("vi-VN")}T`
-  if (abs >= 1e9) return `${Math.round(value / 1e9).toLocaleString("vi-VN")}B`
-  if (abs >= 1e6) return `${Math.round(value / 1e6).toLocaleString("vi-VN")}M`
-  return Math.round(value).toLocaleString("vi-VN")
+  if (abs >= 1e12) return `${Math.round(value / 1e12).toLocaleString("en-US")}T`
+  if (abs >= 1e9) return `${Math.round(value / 1e9).toLocaleString("en-US")}B`
+  if (abs >= 1e6) return `${Math.round(value / 1e6).toLocaleString("en-US")}M`
+  return Math.round(value).toLocaleString("en-US")
 }
 
 /** Tailwind text-color class for positive/negative/zero (semantic tokens). */
@@ -21,18 +21,18 @@ export function changeArrow(value: number): string {
   return "■"
 }
 
-/** 1_245_000_000_000 → "1.245 tỷ" */
+/** 1_245_000_000_000 → "1,245 tỷ" */
 export function formatVndBillion(value: number): string {
   const billions = value / 1e9
-  return `${Math.round(billions).toLocaleString("vi-VN")} tỷ`
+  return `${Math.round(billions).toLocaleString("en-US")} tỷ`
 }
 
 /** 850_000_000 → "850 triệu cp", 1_200_000_000 → "1 tỷ cp" */
 export function formatVolume(value: number): string {
   if (Math.abs(value) >= 1e9) {
-    return `${Math.round(value / 1e9).toLocaleString("vi-VN")} tỷ cp`
+    return `${Math.round(value / 1e9).toLocaleString("en-US")} tỷ cp`
   }
-  return `${Math.round(value / 1e6).toLocaleString("vi-VN")} triệu cp`
+  return `${Math.round(value / 1e6).toLocaleString("en-US")} triệu cp`
 }
 
 /** Keep max 3 chars so the bar column starts at a consistent x-offset. */
@@ -44,10 +44,10 @@ export function displayTicker(symbol: string): string {
 export function formatImpactPoint(value: number): string {
   const rounded = Math.round(value)
   const sign = rounded > 0 ? "+" : ""
-  return `${sign}${rounded.toLocaleString("vi-VN")}đ`
+  return `${sign}${rounded.toLocaleString("en-US")}đ`
 }
 
-const wholeNumber = (value: number) => Math.round(value).toLocaleString("vi-VN")
+const wholeNumber = (value: number) => Math.round(value).toLocaleString("en-US")
 export { wholeNumber }
 
 export const MASCOT_HEIGHT = 190

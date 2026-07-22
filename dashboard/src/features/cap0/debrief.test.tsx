@@ -209,10 +209,10 @@ describe("DebriefModal", () => {
       tp: 68000,
     }
     render(<DebriefModal data={lossData} onClose={vi.fn()} />)
-    // (58.900 − 62.000) × 100 = −310.000 ₫ — must use "−" (U+2212), never a
+    // (58,900 − 62,000) × 100 = −310,000 ₫ — must use "−" (U+2212), never a
     // plain ASCII hyphen ("-", U+002D), which `toLocaleString` would emit.
-    expect(screen.getByText("−310.000 ₫ · MUA 100 VNM → BÁN")).toBeInTheDocument()
-    expect(screen.queryByText(/-310\.000/)).not.toBeInTheDocument()
+    expect(screen.getByText("−310,000 ₫ · MUA 100 VNM → BÁN")).toBeInTheDocument()
+    expect(screen.queryByText(/-310,000/)).not.toBeInTheDocument()
   })
 
   it("falls back to '—' for SL/TP cells when no Kế hoạch data was captured", () => {
