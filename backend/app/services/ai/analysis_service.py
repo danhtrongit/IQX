@@ -526,12 +526,17 @@ def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
 
     if isinstance(insider_deals, list):
         if trading_date_ref:
-            lo, hi = min(trading_date_ref), max(trading_date_ref)
+            # Normalize both bounds and each insider date to a bare YYYY-MM-DD
+            # prefix before the lexicographic compare: trading_date_ref entries
+            # are bare dates, but insider `displayDate1` can carry a time
+            # component ("2026-07-15 09:30:00"), which would sort AFTER the
+            # matching bare `hi` and wrongly exclude a deal on the newest date.
+            lo, hi = str(min(trading_date_ref))[:10], str(max(trading_date_ref))[:10]
             windowed_deals = [
                 deal for deal in insider_deals
                 if isinstance(deal, dict)
                 and (_d := _insider_date(deal)) is not None
-                and lo <= _d <= hi
+                and lo <= str(_d)[:10] <= hi
             ]
         else:
             # Fallback: no trading-date reference available — preserve prior

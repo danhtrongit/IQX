@@ -255,8 +255,8 @@ Dòng `tac_dong` phải nêu:
 **Vai trò:** Đánh giá dòng tiền lớn (khối ngoại + tự doanh) đang vào/ra cổ phiếu.
 
 **Input:**
-- Khối ngoại mua/bán ròng 15 phiên gần nhất (đơn vị: cổ phiếu)
-- Tự doanh mua/bán ròng 15 phiên gần nhất (đơn vị: cổ phiếu)
+- Khối ngoại mua/bán ròng 10 phiên gần nhất (đơn vị: cổ phiếu)
+- Tự doanh mua/bán ròng 10 phiên gần nhất (đơn vị: cổ phiếu)
 - Free float của cổ phiếu (đơn vị: triệu cổ phiếu)
 
 **Logic:**
@@ -289,7 +289,7 @@ Trường `khoi_ngoai` và `tu_doanh`: mô tả ngắn (Mua/Bán ròng + đáng 
 **Vai trò:** Phân tích hoạt động giao dịch của người trong cuộc (lãnh đạo + cổ đông lớn + người có liên quan).
 
 **Input:**
-- Lịch sử 15 giao dịch nội bộ gần nhất: người thực hiện, vai trò, hành động (mua/bán), khối lượng, ngày.
+- Các giao dịch nội bộ nằm trong khoảng 10 phiên giao dịch gần nhất: người thực hiện, vai trò, hành động (mua/bán), khối lượng, ngày.
 - LƯU Ý: KHÔNG có dữ liệu % holding của lãnh đạo — chỉ dùng khối lượng tuyệt đối.
 
 **Logic:**
