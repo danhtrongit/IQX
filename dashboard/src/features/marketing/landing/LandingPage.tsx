@@ -17,7 +17,7 @@ import { Closing } from "./Closing"
 const SEO = {
   title: "IQX — Trợ lý phân tích chứng khoán Việt Nam",
   description:
-    "Gõ một mã, nhận phân tích AI 6 lớp trong vài giây. Nhận định thị trường mỗi phiên, backtest chiến lược, cảnh báo Telegram, BCTC và định giá — trên dữ liệu thật của ~2.048 mã.",
+    "Gõ một mã, nhận phân tích AI 6 lớp trong vài giây. Nhận định thị trường mỗi phiên, backtest chiến lược, cảnh báo Telegram, BCTC và định giá — trên dữ liệu thật của ~2,048 mã.",
 }
 
 function useSeo() {

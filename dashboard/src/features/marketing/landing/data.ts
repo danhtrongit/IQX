@@ -46,8 +46,8 @@ export const DEMO_STOCKS: DemoStock[] = [
   {
     ticker: "VCB",
     sector: "Ngân hàng · VN30",
-    price: "61.700",
-    change: "+0,16%",
+    price: "61,700",
+    change: "+0.16%",
     tone: "up",
     trend: "Đi ngang",
     status: "Yếu",
@@ -55,11 +55,11 @@ export const DEMO_STOCKS: DemoStock[] = [
     horizon: "trung hạn 1–2 tuần",
     recommendation: "Quan sát thêm",
     brief:
-      "Khối ngoại bán mạnh phiên thứ 3 liên tiếp khiến VCB khó bứt phá quanh 61.600. Tin phát hành trái phiếu và lãnh đạo mua thêm giữ tâm lý ổn định, nhưng chưa đủ lấn át áp lực bán. Vùng 61.600–61.900 sẽ quyết định hướng đi.",
+      "Khối ngoại bán mạnh phiên thứ 3 liên tiếp khiến VCB khó bứt phá quanh 61,600. Tin phát hành trái phiếu và lãnh đạo mua thêm giữ tâm lý ổn định, nhưng chưa đủ lấn át áp lực bán. Vùng 61,600–61,900 sẽ quyết định hướng đi.",
     layers: [
-      { id: "L1", name: "Xu hướng", verdict: "Yếu", tone: "warn", note: "Giá dưới MA20, động lượng suy yếu; chưa thủng hỗ trợ 61.600." },
-      { id: "L2", name: "Thanh khoản", verdict: "Dưới trung bình", tone: "warn", note: "Khớp 15,6 triệu cp, thấp hơn trung bình 30 phiên." },
-      { id: "L3", name: "Dòng tiền", verdict: "Cảnh báo nhẹ", tone: "down", note: "Khối ngoại bán ròng 3 phiên (−4,9 triệu cp); tự doanh mua nhẹ không đủ bù." },
+      { id: "L1", name: "Xu hướng", verdict: "Yếu", tone: "warn", note: "Giá dưới MA20, động lượng suy yếu; chưa thủng hỗ trợ 61,600." },
+      { id: "L2", name: "Thanh khoản", verdict: "Dưới trung bình", tone: "warn", note: "Khớp 15.6 triệu cp, thấp hơn trung bình 30 phiên." },
+      { id: "L3", name: "Dòng tiền", verdict: "Cảnh báo nhẹ", tone: "down", note: "Khối ngoại bán ròng 3 phiên (−4.9 triệu cp); tự doanh mua nhẹ không đủ bù." },
       { id: "L4", name: "Nội bộ", verdict: "Tích cực", tone: "up", note: "Chuỗi mua từ HĐQT và Phó TGĐ trong 14 ngày, hỗ trợ tâm lý." },
       { id: "L5", name: "Tin tức", verdict: "Trung lập", tone: "flat", note: "Phát hành trái phiếu và tài chính số củng cố định giá dài hạn." },
       { id: "L6", name: "Tổng hợp", verdict: "Quan sát thêm", tone: "warn", note: "Cân bằng giữa nội bộ tích cực và dòng tiền ngoại tiêu cực." },
@@ -68,8 +68,8 @@ export const DEMO_STOCKS: DemoStock[] = [
   {
     ticker: "FPT",
     sector: "Công nghệ · VN30",
-    price: "126.400",
-    change: "−0,71%",
+    price: "126,400",
+    change: "−0.71%",
     tone: "down",
     trend: "Giảm ngắn hạn",
     status: "Áp lực",
@@ -90,8 +90,8 @@ export const DEMO_STOCKS: DemoStock[] = [
   {
     ticker: "HPG",
     sector: "Thép · VN30",
-    price: "27.850",
-    change: "+1,64%",
+    price: "27,850",
+    change: "+1.64%",
     tone: "up",
     trend: "Hồi phục",
     status: "Cải thiện",
@@ -99,7 +99,7 @@ export const DEMO_STOCKS: DemoStock[] = [
     horizon: "trung hạn 1–2 tuần",
     recommendation: "Có thể mua thử",
     brief:
-      "HPG lấy lại MA20 với thanh khoản trên trung bình, dẫn dắt nhóm cyclical. Tự doanh quay lại mua ròng sau chuỗi bán, dòng tiền cải thiện. Giữ trên 27.500 mở ra dư địa hồi về vùng 29.000.",
+      "HPG lấy lại MA20 với thanh khoản trên trung bình, dẫn dắt nhóm cyclical. Tự doanh quay lại mua ròng sau chuỗi bán, dòng tiền cải thiện. Giữ trên 27,500 mở ra dư địa hồi về vùng 29,000.",
     layers: [
       { id: "L1", name: "Xu hướng", verdict: "Cải thiện", tone: "up", note: "Vượt lại MA20, động lượng dương; cấu trúc hồi phục." },
       { id: "L2", name: "Thanh khoản", verdict: "Trên trung bình", tone: "up", note: "Dòng tiền tham gia tốt trong nhịp tăng, xác nhận xu hướng." },
@@ -118,21 +118,21 @@ export const MARKET = {
   status: "Đã đóng cửa",
   verdict: "Rút tiền ngầm",
   verdictTone: "down" as Tone,
-  headline: "Bề mặt chỉ −0,32%, nhưng bên dưới là một phiên rút tiền âm thầm.",
+  headline: "Bề mặt chỉ −0.32%, nhưng bên dưới là một phiên rút tiền âm thầm.",
   sub: "Cổ phiếu vừa và nhỏ lao dốc · dòng tiền lớn cùng chiều bán",
   pulse: [
-    { k: "VN-Index", v: "1.824,53", d: "−5,94 · −0,32%", tone: "down" as Tone },
-    { k: "Độ rộng", v: "81 · 203", d: "1:2,5 · 62 đứng", tone: "flat" as Tone },
-    { k: "Khối ngoại", v: "−1.868 tỷ", d: "bán ròng phiên 3", tone: "down" as Tone },
-    { k: "Thanh khoản", v: "18.804 tỷ", d: "tương đương MA20", tone: "flat" as Tone },
+    { k: "VN-Index", v: "1,824.53", d: "−5.94 · −0.32%", tone: "down" as Tone },
+    { k: "Độ rộng", v: "81 · 203", d: "1:2.5 · 62 đứng", tone: "flat" as Tone },
+    { k: "Khối ngoại", v: "−1,868 tỷ", d: "bán ròng phiên 3", tone: "down" as Tone },
+    { k: "Thanh khoản", v: "18,804 tỷ", d: "tương đương MA20", tone: "flat" as Tone },
   ],
-  read: "VN-Index giảm nhẹ nhưng khối ngoại bán ròng phiên thứ 3 và độ rộng xấu đi — bề mặt êm, bên dưới là phiên phân phối. Vùng 1.815 là ranh giới cho phiên sau.",
+  read: "VN-Index giảm nhẹ nhưng khối ngoại bán ròng phiên thứ 3 và độ rộng xấu đi — bề mặt êm, bên dưới là phiên phân phối. Vùng 1,815 là ranh giới cho phiên sau.",
   breadth: { up: 81, flat: 62, down: 203 },
   /* foreign net flow, 15 sessions (tỷ đồng) */
   foreign: [0.7, -0.8, -0.2, 1.4, 0.1, -0.3, -1.3, -2.6, 0.4, -0.5, -0.6, -1.8, -0.9, -1.2, -1.87],
   scenarios: [
-    { cond: "Giữ trên 1.815 · KN bán < 800 tỷ", out: "tích lũy, hồi về 1.830", tone: "up" as Tone },
-    { cond: "Mất 1.815 · KN bán > 1.000 tỷ", out: "test vùng 1.795–1.800", tone: "down" as Tone },
+    { cond: "Giữ trên 1,815 · KN bán < 800 tỷ", out: "tích lũy, hồi về 1,830", tone: "up" as Tone },
+    { cond: "Mất 1,815 · KN bán > 1,000 tỷ", out: "test vùng 1,795–1,800", tone: "down" as Tone },
   ],
 }
 
@@ -253,8 +253,8 @@ export const EQUITY = {
   kpis: [
     { k: "Lợi nhuận", v: "+66%", tone: "up" as Tone },
     { k: "So với VN-Index", v: "+48%", tone: "up" as Tone },
-    { k: "Sharpe (95% CI)", v: "1,84", tone: "flat" as Tone },
-    { k: "Max Drawdown", v: "−11,2%", tone: "down" as Tone },
+    { k: "Sharpe (95% CI)", v: "1.84", tone: "flat" as Tone },
+    { k: "Max Drawdown", v: "−11.2%", tone: "down" as Tone },
   ],
 }
 
@@ -262,22 +262,22 @@ export const ALERT_SAMPLE = {
   bot: "@IQX_Alert_BOT",
   signal: "MUA · Vượt MA20 + dòng tiền dương",
   ticker: "HPG",
-  detail: "Giá 27.850 (+1,64%) vượt MA20 với khối lượng trên trung bình. Tự doanh mua ròng.",
+  detail: "Giá 27,850 (+1.64%) vượt MA20 với khối lượng trên trung bình. Tự doanh mua ròng.",
   time: "10:42 · 19/06",
 }
 
 /* ── §6 research depth ── */
 export const DUPONT = [
-  { k: "Biên lợi nhuận ròng", v: "21,4%" },
-  { k: "Vòng quay tài sản", v: "0,18×" },
-  { k: "Đòn bẩy tài chính", v: "6,3×" },
-  { k: "ROE", v: "24,3%", accent: true },
+  { k: "Biên lợi nhuận ròng", v: "21.4%" },
+  { k: "Vòng quay tài sản", v: "0.18×" },
+  { k: "Đòn bẩy tài chính", v: "6.3×" },
+  { k: "ROE", v: "24.3%", accent: true },
 ]
 
 export const TRINITY = [
-  { k: "Altman Z-Score", v: "3,12", state: "An toàn", tone: "up" as Tone },
+  { k: "Altman Z-Score", v: "3.12", state: "An toàn", tone: "up" as Tone },
   { k: "Piotroski F-Score", v: "7 / 9", state: "Khỏe", tone: "up" as Tone },
-  { k: "Beneish M-Score", v: "−2,61", state: "Khó thao túng", tone: "up" as Tone },
+  { k: "Beneish M-Score", v: "−2.61", state: "Khó thao túng", tone: "up" as Tone },
 ]
 
 export const FOOTBALL = {

@@ -51,11 +51,11 @@ export const AI_SAMPLE: AIInsightResponse = {
       { type: "text", content: "Khối ngoại " },
       { type: "emphasis", content: "bán mạnh phiên thứ 3 liên tiếp", variant: "bear" },
       { type: "text", content: ", khiến VCB khó bứt phá quanh " },
-      { type: "number", content: "61.600" },
+      { type: "number", content: "61,600" },
       { type: "text", content: ". Tin phát hành trái phiếu và " },
       { type: "emphasis", content: "lãnh đạo mua thêm", variant: "bull" },
       { type: "text", content: " giữ tâm lý ổn định, nhưng chưa đủ lấn át áp lực bán. Vùng " },
-      { type: "highlight", content: "61.600–61.900" },
+      { type: "highlight", content: "61,600–61,900" },
       { type: "text", content: " sẽ quyết định hướng đi." },
     ],
     diff: {
@@ -70,13 +70,13 @@ export const AI_SAMPLE: AIInsightResponse = {
     observations: {
       liquidity: [
         { type: "text", content: "Khớp " },
-        { type: "number", content: "15,6 triệu cp" },
+        { type: "number", content: "15.6 triệu cp" },
         { type: "text", content: ", dưới trung bình 30 phiên." },
       ],
       moneyFlow: [
         { type: "emphasis", content: "Khối ngoại bán ròng 3 phiên", variant: "bear" },
         { type: "text", content: " (tổng " },
-        { type: "number", content: "−4,9 triệu cp" },
+        { type: "number", content: "−4.9 triệu cp" },
         { type: "text", content: "), tự doanh mua nhẹ không đủ bù." },
       ],
       insider: [
@@ -86,15 +86,15 @@ export const AI_SAMPLE: AIInsightResponse = {
       news: [{ type: "text", content: "Phát hành trái phiếu và tài chính số củng cố định giá dài hạn." }],
       supportResistance: [
         { type: "text", content: "Hỗ trợ " },
-        { type: "number", content: "61.600" },
+        { type: "number", content: "61,600" },
         { type: "text", content: " chạm 3 lần, kháng cự " },
-        { type: "number", content: "61.900" },
+        { type: "number", content: "61,900" },
         { type: "text", content: " cản trên." },
       ],
     },
     watchLevels: [
-      { tag: "Hỗ trợ", description: "61.600 — chạm 3 lần, nếu thủng có thể lan rộng" },
-      { tag: "Kháng cự", description: "61.900 — nếu vượt, tâm lý cải thiện" },
+      { tag: "Hỗ trợ", description: "61,600 — chạm 3 lần, nếu thủng có thể lan rộng" },
+      { tag: "Kháng cự", description: "61,900 — nếu vượt, tâm lý cải thiện" },
     ],
     recommendation: "Quan sát thêm",
   },
@@ -111,7 +111,7 @@ export const AI_SAMPLE: AIInsightResponse = {
             { type: "text", content: "Giá dưới " },
             { type: "number", content: "MA20" },
             { type: "text", content: ", dao động hẹp quanh " },
-            { type: "number", content: "61.700" },
+            { type: "number", content: "61,700" },
             { type: "text", content: "." },
           ],
         },
@@ -119,7 +119,7 @@ export const AI_SAMPLE: AIInsightResponse = {
           label: "Động lượng",
           value: [
             { type: "emphasis", content: "Suy yếu", variant: "warn" },
-            { type: "text", content: " — chưa thủng hỗ trợ 61.600." },
+            { type: "text", content: " — chưa thủng hỗ trợ 61,600." },
           ],
         },
       ],
