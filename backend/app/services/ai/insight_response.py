@@ -190,7 +190,7 @@ def _layer_fields_l5(layer: dict[str, Any]) -> list[dict[str, Any]]:
             for item in tin_material
             if isinstance(item, dict)
         )
-        fields.append({"label": "Tin material", "value": parse_fragments(material_lines)})
+        fields.append({"label": "Tin trọng yếu", "value": parse_fragments(material_lines)})
     # Tin filler — plain list
     tin_filler = layer.get("tin_filler") or []
     if tin_filler:
@@ -199,7 +199,7 @@ def _layer_fields_l5(layer: dict[str, Any]) -> list[dict[str, Any]]:
             for item in tin_filler
             if isinstance(item, dict)
         )
-        fields.append({"label": "Tin filler", "value": parse_fragments(filler_lines)})
+        fields.append({"label": "Tin phụ", "value": parse_fragments(filler_lines)})
     if layer.get("tac_dong"):
         fields.append({"label": "Tác động", "value": parse_fragments(str(layer["tac_dong"]))})
     return fields

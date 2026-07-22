@@ -327,7 +327,7 @@ Quy tắc văn phong trong trường `noi_bo`:
 **Vai trò:** Tổng hợp tin tức doanh nghiệp gần đây và đánh giá tác động ngắn hạn lên tâm lý nhà đầu tư.
 
 **Input:**
-- Danh sách tin tức 7 ngày gần nhất từ FireAnt: tiêu đề, ngày đăng, nguồn.
+- Danh sách tin tức 10 phiên gần nhất từ FireAnt: tiêu đề, ngày đăng, nguồn.
 - LƯU Ý: KHÔNG có dữ liệu lịch sự kiện sắp tới — không bịa.
 
 **Logic:**
@@ -357,7 +357,7 @@ Dòng `tac_dong` phải gắn vào yếu tố cụ thể (định giá / chiến
 **Quy tắc diff (thứ tự ưu tiên):**
 1. Có tin material mới (chưa có ở phiên trước) → nêu tên tin
 2. tong_quan đổi bậc
-3. Tin material biến mất (cũ quá 7 ngày)
+3. Tin material biến mất (cũ quá 10 phiên)
 
 ---
 

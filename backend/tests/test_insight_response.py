@@ -282,6 +282,18 @@ def test_l5_fields_include_tin_material():
     assert any("material" in lbl.lower() or "tin" in lbl.lower() for lbl in labels)
 
 
+def test_l5_field_labels_are_vietnamese_material_filler():
+    """Field-row labels must be 'Tin trọng yếu' / 'Tin phụ' (not the English-ish
+    'Tin material' / 'Tin filler')."""
+    out = build_insight_response(AI_JSON, PAYLOAD, prev=None)
+    l5 = out["layers"]["L5"]
+    labels = [f["label"] for f in l5["fields"]]
+    assert "Tin trọng yếu" in labels
+    assert "Tin phụ" in labels
+    assert "Tin material" not in labels
+    assert "Tin filler" not in labels
+
+
 def test_l5_news_structured_object_present():
     """L5 LayerCard must expose a structured `news` object (not from rawInput)."""
     out = build_insight_response(AI_JSON, PAYLOAD, prev=None)

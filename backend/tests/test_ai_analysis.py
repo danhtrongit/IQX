@@ -338,6 +338,57 @@ class TestPayloadBuilders:
         ]:
             assert key in payload
 
+    async def test_insight_news_window_covers_10_sessions(self) -> None:
+        """News lookback is now '10 phiên gần nhất' (was '7 ngày'). page_size=10
+        items may not span 10 trading sessions once weekends/holidays are mixed
+        in, so build_insight_payload must ask for enough items (>=20) to cover
+        ~10 sessions."""
+        captured: dict = {}
+
+        async def _mock_fetch(*a, **kw):  # noqa: ANN002
+            return [], "http://mock"
+
+        async def _mock_fetch_single(*a, **kw):  # noqa: ANN002
+            return {}, "http://mock"
+
+        async def _mock_news(*a, **kw):  # noqa: ANN002
+            captured["args"] = a
+            captured["kwargs"] = kw
+            return [], 0, "http://mock"
+
+        async def _mock_profile(*a, **kw):  # noqa: ANN002
+            return {}, "http://mock"
+
+        _v = "app.services.market_data.sources.vietcap"
+        _k = "app.services.market_data.sources.kbs"
+        _ai = "app.services.market_data.sources.vietcap_ai_news"
+        patches = [
+            patch(f"{_v}.fetch_ohlcv", _mock_fetch),
+            patch(f"{_v}.fetch_price_board", _mock_fetch),
+            patch(f"{_v}.fetch_intraday", _mock_fetch),
+            patch(f"{_v}.fetch_price_depth", _mock_fetch),
+            patch(f"{_v}.fetch_trading_history", _mock_fetch),
+            patch(f"{_v}.fetch_trading_summary", _mock_fetch_single),
+            patch(f"{_v}.fetch_foreign_trade", _mock_fetch),
+            patch(f"{_v}.fetch_proprietary_history", _mock_fetch),
+            patch(f"{_v}.fetch_proprietary_summary", _mock_fetch_single),
+            patch(f"{_v}.fetch_insider_deals", _mock_fetch),
+            patch(f"{_v}.fetch_company_details", _mock_fetch_single),
+            patch(f"{_ai}.fetch_news_list", _mock_news),
+            patch(f"{_k}.fetch_company_profile", _mock_profile),
+            patch(f"{_k}.normalize_overview", lambda x: x),
+        ]
+        for p in patches:
+            p.start()
+        try:
+            from app.services.ai.payloads import build_insight_payload
+            await build_insight_payload(symbol="VCB", language="vi")
+        finally:
+            for p in patches:
+                p.stop()
+
+        assert captured["kwargs"].get("page_size", 0) >= 20
+
     def test_derived_technical_indicators(self) -> None:
         from app.services.ai.payloads import _enrich_insight_derived
 
@@ -472,6 +523,125 @@ class TestPayloadBuilders:
         assert labels is not None
         # If the bug were still here (latest = sd[-1] = lowest), buy_level would be "thấp".
         assert labels["buy_level"] == "cao"
+
+    # ── T2: last-10-trading-session window (zero-filled) ───────────────────
+
+    @staticmethod
+    def _ten_trading_dates() -> list[str]:
+        """10 distinct ISO dates, newest-first: 2026-07-22 .. 2026-07-13."""
+        return [f"2026-07-{22 - i:02d}" for i in range(10)]
+
+    def test_build_raw_input_foreign_zero_fills_missing_trading_date(self) -> None:
+        """foreign money-flow must emit exactly the 10 reference trading dates
+        (from supply_demand), zero-filling any date the flow API omitted —
+        not just `items[:10]` which can silently skip no-activity dates."""
+        from app.services.ai.analysis_service import _build_raw_input
+
+        dates = self._ten_trading_dates()
+        supply_demand = [{"trading_date": d} for d in dates]
+
+        # Flow API SKIPS one trading date (2026-07-18, the 5th newest).
+        skipped_date = "2026-07-18"
+        foreign_trade = [
+            {
+                "trading_date": d,
+                "foreign_net_volume_matched": 1_000 + i,
+                "foreign_net_volume_deal": 100 + i,
+                "foreign_net_volume_total": 1_100 + i,
+            }
+            for i, d in enumerate(dates)
+            if d != skipped_date
+        ]
+
+        payload = {"supply_demand": supply_demand, "foreign_trade": foreign_trade}
+        raw_input = _build_raw_input(payload)
+        foreign = raw_input["moneyFlow"]["foreign"]
+
+        assert len(foreign) == 10
+        assert [row["date"] for row in foreign] == dates
+
+        skipped_row = next(row for row in foreign if row["date"] == skipped_date)
+        assert skipped_row["matchNetVolume"] == 0
+        assert skipped_row["dealNetVolume"] == 0
+        assert skipped_row["totalNetVolume"] == 0
+
+        # A present date keeps its real values (not zero-filled).
+        present_row = next(row for row in foreign if row["date"] == dates[0])
+        assert present_row["matchNetVolume"] == 1_000
+
+    def test_build_raw_input_proprietary_zero_fills_missing_trading_date(self) -> None:
+        from app.services.ai.analysis_service import _build_raw_input
+
+        dates = self._ten_trading_dates()
+        supply_demand = [{"trading_date": d} for d in dates]
+
+        skipped_date = "2026-07-14"
+        proprietary = [
+            {
+                "trading_date": d,
+                "total_match_trade_net_volume": -500 - i,
+                "total_deal_trade_net_volume": 10 + i,
+                "total_trade_net_volume": -490 - i,
+            }
+            for i, d in enumerate(dates)
+            if d != skipped_date
+        ]
+
+        payload = {"supply_demand": supply_demand, "proprietary": proprietary}
+        raw_input = _build_raw_input(payload)
+        prop = raw_input["moneyFlow"]["proprietary"]
+
+        assert len(prop) == 10
+        assert [row["date"] for row in prop] == dates
+        skipped_row = next(row for row in prop if row["date"] == skipped_date)
+        assert skipped_row["matchNetVolume"] == 0
+        assert skipped_row["dealNetVolume"] == 0
+        assert skipped_row["totalNetVolume"] == 0
+
+    def test_build_raw_input_insider_windowed_to_last_10_sessions(self) -> None:
+        """Insider deals are sparse/event-based: window to deals whose date falls
+        within the last-10-trading-session range, don't zero-fill individual deals."""
+        from app.services.ai.analysis_service import _build_raw_input
+
+        dates = self._ten_trading_dates()  # 2026-07-13 .. 2026-07-22
+        supply_demand = [{"trading_date": d} for d in dates]
+
+        insider_deals = [
+            {
+                "action_type_vi": "Đăng ký mua",
+                "share_register": 111_000,
+                "display_date1": "2026-07-15",  # inside window
+            },
+            {
+                "action_type_vi": "Đăng ký bán",
+                "share_register": 222_000,
+                "display_date1": "2026-07-01",  # too old, outside window
+            },
+            {
+                "action_type_vi": "Đăng ký mua",
+                "share_register": 333_000,
+                "display_date1": "2026-07-25",  # after window
+            },
+        ]
+
+        payload = {"supply_demand": supply_demand, "insider_deals": insider_deals}
+        raw_input = _build_raw_input(payload)
+        txns = raw_input["insider"]["transactions"]
+
+        assert len(txns) == 1
+        assert txns[0]["shareRegistered"] == 111_000
+
+    def test_build_raw_input_insider_empty_when_none_in_window(self) -> None:
+        from app.services.ai.analysis_service import _build_raw_input
+
+        dates = self._ten_trading_dates()
+        supply_demand = [{"trading_date": d} for d in dates]
+        insider_deals = [
+            {"action_type_vi": "Đăng ký mua", "share_register": 1, "display_date1": "2026-06-01"},
+        ]
+        payload = {"supply_demand": supply_demand, "insider_deals": insider_deals}
+        raw_input = _build_raw_input(payload)
+        assert raw_input["insider"]["transactions"] == []
 
 
 # ═══════════════════════════════════════════════════════

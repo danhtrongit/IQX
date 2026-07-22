@@ -423,58 +423,122 @@ def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
             avg[k] = sum(vals) / len(vals) if vals else 0
         liquidity_avg = avg
 
+    # Reference trading-date list — `supply_demand` has exactly one row per
+    # trading date (unlike foreign/proprietary flow feeds, which can omit a
+    # date entirely when there is no matching activity). Use its newest 10
+    # dates as the canonical "last 10 trading sessions" window so L3/L4 flow
+    # charts align to real calendar sessions instead of "last N rows the API
+    # happened to return".
+    trading_date_ref: list[Any] = []
+    if isinstance(supply_demand, list):
+        for sd in supply_demand[:10]:
+            d = sd.get("trading_date")
+            if d is not None:
+                trading_date_ref.append(d)
+
     # Money flow
     foreign_trade = payload.get("foreign_trade", [])
     proprietary = payload.get("proprietary", [])
 
+    def _flow_row(item: dict[str, Any], *, source: str, date_override: Any = None) -> dict[str, Any]:
+        if source == "foreign":
+            match_keys = (
+                "matchNetVolume", "match_net_volume", "foreignNetVolumeMatched",
+                "foreign_net_volume_matched", "netVolume", "net_volume",
+            )
+            deal_keys = (
+                "dealNetVolume", "deal_net_volume", "foreignNetVolumeDeal",
+                "foreign_net_volume_deal",
+            )
+            total_keys = (
+                "totalNetVolume", "total_net_volume", "foreignNetVolumeTotal",
+                "foreign_net_volume_total", "netVolume", "net_volume",
+            )
+        else:
+            match_keys = (
+                "matchNetVolume", "match_net_volume", "totalMatchTradeNetVolume",
+                "total_match_trade_net_volume", "netVolume", "net_volume",
+            )
+            deal_keys = (
+                "dealNetVolume", "deal_net_volume", "totalDealTradeNetVolume",
+                "total_deal_trade_net_volume",
+            )
+            total_keys = (
+                "totalNetVolume", "total_net_volume", "totalTradeNetVolume",
+                "total_trade_net_volume", "netVolume", "net_volume",
+            )
+
+        date = date_override
+        if date is None:
+            date = _pick(item, "tradingDate", "date", "trading_date", "updateDate", "update_date", default=None)
+        return {
+            "date": date,
+            "matchNetVolume": _pick(item, *match_keys, default=0),
+            "dealNetVolume": _pick(item, *deal_keys, default=0),
+            "totalNetVolume": _pick(item, *total_keys, default=0),
+        }
+
+    def _zero_flow_row(date: Any) -> dict[str, Any]:
+        return {"date": date, "matchNetVolume": 0, "dealNetVolume": 0, "totalNetVolume": 0}
+
     def _normalize_flow(items: Any, *, source: str) -> list:
         if not isinstance(items, list):
-            return []
-        # Vietcap returns newest-first (descending); take the first 15 to keep
-        # the most recent sessions. Earlier code used items[-15:] which kept
-        # the 15 OLDEST and surfaced as "stale" money-flow data in Layer 3.
-        result = []
-        for item in items[:15]:
-            if source == "foreign":
-                match_keys = (
-                    "matchNetVolume", "match_net_volume", "foreignNetVolumeMatched",
-                    "foreign_net_volume_matched", "netVolume", "net_volume",
-                )
-                deal_keys = (
-                    "dealNetVolume", "deal_net_volume", "foreignNetVolumeDeal",
-                    "foreign_net_volume_deal",
-                )
-                total_keys = (
-                    "totalNetVolume", "total_net_volume", "foreignNetVolumeTotal",
-                    "foreign_net_volume_total", "netVolume", "net_volume",
-                )
-            else:
-                match_keys = (
-                    "matchNetVolume", "match_net_volume", "totalMatchTradeNetVolume",
-                    "total_match_trade_net_volume", "netVolume", "net_volume",
-                )
-                deal_keys = (
-                    "dealNetVolume", "deal_net_volume", "totalDealTradeNetVolume",
-                    "total_deal_trade_net_volume",
-                )
-                total_keys = (
-                    "totalNetVolume", "total_net_volume", "totalTradeNetVolume",
-                    "total_trade_net_volume", "netVolume", "net_volume",
-                )
+            items = []
 
-            result.append({
-                "date": _pick(item, "tradingDate", "date", "trading_date", "updateDate", "update_date", default=None),
-                "matchNetVolume": _pick(item, *match_keys, default=0),
-                "dealNetVolume": _pick(item, *deal_keys, default=0),
-                "totalNetVolume": _pick(item, *total_keys, default=0),
-            })
-        return result
+        # Index rows by trading date so they can be aligned to `trading_date_ref`
+        # (first occurrence wins — feeds are newest-first).
+        by_date: dict[Any, dict[str, Any]] = {}
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            d = _pick(item, "tradingDate", "date", "trading_date", "updateDate", "update_date", default=None)
+            if d is not None and d not in by_date:
+                by_date[d] = item
 
-    # Insider
+        if trading_date_ref:
+            result = []
+            for d in trading_date_ref:
+                item = by_date.get(d)
+                if item is not None:
+                    result.append(_flow_row(item, source=source, date_override=d))
+                else:
+                    result.append(_zero_flow_row(d))
+            return result
+
+        # Fallback: no trading-date reference available (e.g. `supply_demand`
+        # missing/empty). Preserve prior behavior — first 10 items as returned
+        # (Vietcap returns newest-first).
+        return [_flow_row(item, source=source) for item in items[:10] if isinstance(item, dict)]
+
+    # Insider — deals are sparse/event-based (not one-per-trading-date), so
+    # rather than zero-filling individual dates, filter to deals whose date
+    # falls within the last-10-trading-session range.
     insider_deals = payload.get("insider_deals", [])
     insider_txns = []
+
+    def _insider_date(deal: dict[str, Any]) -> Any:
+        return _pick(
+            deal,
+            "startDate", "start_date", "fromDate", "from_date", "transactionDate",
+            "transaction_date", "displayDate1", "display_date1",
+            default=None,
+        )
+
     if isinstance(insider_deals, list):
-        for deal in insider_deals[:15]:
+        if trading_date_ref:
+            lo, hi = min(trading_date_ref), max(trading_date_ref)
+            windowed_deals = [
+                deal for deal in insider_deals
+                if isinstance(deal, dict)
+                and (_d := _insider_date(deal)) is not None
+                and lo <= _d <= hi
+            ]
+        else:
+            # Fallback: no trading-date reference available — preserve prior
+            # behavior (last 10 deals as returned).
+            windowed_deals = [deal for deal in insider_deals[:10] if isinstance(deal, dict)]
+
+        for deal in windowed_deals:
             insider_txns.append({
                 "action": _pick(
                     deal,

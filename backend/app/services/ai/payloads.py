@@ -463,7 +463,10 @@ async def build_insight_payload(
         return data
 
     async def _fetch_news():
-        items, _total, _ = await fetch_news_list("business", page=1, page_size=10, ticker=sym)
+        # Window is "10 phiên gần nhất" (last 10 trading sessions). page_size=10
+        # items may not span 10 trading sessions once low-volume days/weekends
+        # are mixed in, so ask for more to make sure the LLM has the material.
+        items, _total, _ = await fetch_news_list("business", page=1, page_size=20, ticker=sym)
         return items
 
     async def _fetch_company_overview():
