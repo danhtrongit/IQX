@@ -25,10 +25,7 @@ type NavItem = { label: string; href: string }
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "Trang chủ", href: "/" },
-  { label: "Biểu đồ", href: "/bieu-do" },
-  { label: "Bảng giá", href: "/bang-gia" },
-  { label: "Cổ phiếu", href: "/co-phieu" },
-  { label: "Chiến lược", href: "/chien-luoc" },
+  { label: "Demo Trading", href: "/dau-truong" },
   { label: "Kiến thức", href: "/bai-hoc" },
   { label: "Giới thiệu", href: "/gioi-thieu" },
 ]

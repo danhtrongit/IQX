@@ -3,6 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import React from "react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { formatSessionDate } from "../home-analysis/formatSessionDate"
 
 // ─── Cold-start midday payload (no prior EOD) ────────────────────────────────
 // AM tiers are real (am_session); frozen tiers come back "unavailable" with the
@@ -52,10 +53,6 @@ vi.mock("@/shared/http/client", () => ({
   api: { get: () => ({ json: async () => h.payload }) },
 }))
 
-vi.mock("../daily/MarketDailyPage", () => ({
-  MarketDailyPage: () => <div data-testid="market-daily-page">MarketDailyPage</div>,
-}))
-
 import { MidDayView } from "./MidDayView"
 
 function renderView() {
@@ -100,7 +97,7 @@ describe("MidDayView — stale-brief date-gate", () => {
     vi.useRealTimers()
   })
 
-  it("weekday + yesterday's session_date → shows fallback notice, article NOT rendered", async () => {
+  it("weekday + yesterday's session_date → renders the brief's OWN headline + stale banner, no EOD fallback, no countdown", async () => {
     vi.setSystemTime(WEEKDAY_MON_0915)
     h.payload = yesterdayBrief
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -109,17 +106,23 @@ describe("MidDayView — stale-brief date-gate", () => {
         <MidDayView />
       </QueryClientProvider>,
     )
-    // Fallback notice must appear
-    await waitFor(() =>
-      expect(screen.getByText(/Bản phiên sáng đang xử lý/)).toBeInTheDocument(),
-    )
-    // MarketDailyPage fallback rendered
-    expect(screen.getByTestId("market-daily-page")).toBeInTheDocument()
-    // Article badge must NOT appear
-    expect(screen.queryByText(/PHIÊN SÁNG/)).not.toBeInTheDocument()
+    // The midday brief's own headline renders (NOT the EOD fallback)
+    await waitFor(() => expect(screen.getByText(/PHIÊN SÁNG/)).toBeInTheDocument())
+    expect(screen.getByText(yesterdayBrief.headline)).toBeInTheDocument()
+
+    // Stale banner present, referencing the brief's own (old) session date
+    expect(
+      screen.getByText(
+        new RegExp(`Bản gần nhất ${formatSessionDate(yesterdayBrief.session_date)} · chưa cập nhật hôm nay`),
+      ),
+    ).toBeInTheDocument()
+
+    // Never falls back to MarketDailyPage / EOD, and no live countdown
+    expect(screen.queryByTestId("market-daily-page")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/đến 14:45/)).not.toBeInTheDocument()
   })
 
-  it("weekend + stale session_date → article IS rendered, countdown NOT rendered", async () => {
+  it("weekend + stale session_date → article IS rendered with stale banner, countdown NOT rendered", async () => {
     // Sunday July 5; brief is from Saturday July 4 (≠ Sunday → stale but weekend → show)
     vi.setSystemTime(SUNDAY_1000)
     h.payload = {
@@ -135,11 +138,15 @@ describe("MidDayView — stale-brief date-gate", () => {
     )
     // Article renders (stale display on weekend)
     await waitFor(() => expect(screen.getByText(/PHIÊN SÁNG/)).toBeInTheDocument())
+    // Stale banner present
+    expect(
+      screen.getByText(new RegExp(`Bản gần nhất ${formatSessionDate("2026-07-04")} · chưa cập nhật hôm nay`)),
+    ).toBeInTheDocument()
     // Countdown must NOT appear (data.session_date ≠ localTodayIso)
     expect(screen.queryByLabelText(/đến 14:45/)).not.toBeInTheDocument()
   })
 
-  it("weekday + today's session_date → article + countdown rendered (regression guard)", async () => {
+  it("weekday + today's session_date → article + countdown rendered, no stale banner (regression guard)", async () => {
     // Monday Jul 6 at 11:45 — countdown to 14:45 is still in the future
     vi.setSystemTime(WEEKDAY_MON_1145)
     h.payload = todayBrief // session_date "2026-07-06" = today
@@ -153,8 +160,9 @@ describe("MidDayView — stale-brief date-gate", () => {
     await waitFor(() => expect(screen.getByText(/PHIÊN SÁNG/)).toBeInTheDocument())
     // Countdown pill must be present
     await waitFor(() => expect(screen.getByLabelText(/đến 14:45/)).toBeInTheDocument())
-    // No fallback
+    // No fallback, no stale banner
     expect(screen.queryByTestId("market-daily-page")).not.toBeInTheDocument()
+    expect(screen.queryByText(/chưa cập nhật hôm nay/)).not.toBeInTheDocument()
   })
 })
 

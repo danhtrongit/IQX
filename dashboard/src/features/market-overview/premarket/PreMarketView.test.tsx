@@ -3,6 +3,7 @@ import { render, screen, waitFor, act } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import React from "react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { formatSessionDate } from "../home-analysis/formatSessionDate"
 
 // ─── Test fixture ─────────────────────────────────────────────────────────────
 // 2 world cells (one null/stale), 2 news, 1 event, 3 watchlist items
@@ -92,11 +93,6 @@ const h = vi.hoisted(() => ({ payload: null as unknown }))
 
 vi.mock("@/shared/http/client", () => ({
   api: { get: () => ({ json: async () => h.payload }) },
-}))
-
-// Mock MarketDailyPage (used in no-data fallback)
-vi.mock("../daily/MarketDailyPage", () => ({
-  MarketDailyPage: () => <div data-testid="market-daily-page">MarketDailyPage</div>,
 }))
 
 import { PreMarketView } from "./PreMarketView"
@@ -200,20 +196,19 @@ describe("PreMarketView — ATO countdown tick", () => {
   })
 })
 
-// ─── Test 2: no data → EOD fallback ──────────────────────────────────────────
-describe("PreMarketView — no data (EOD fallback)", () => {
-  it("renders MarketDailyPage + processing notice when data is absent", async () => {
+// ─── Test 2: no data → "đang xử lý" notice, no brief ever ────────────────────
+describe("PreMarketView — no data", () => {
+  it('renders the "đang xử lý" notice and nothing else when data is absent', async () => {
     h.payload = null
     renderView()
 
     await waitFor(() =>
-      expect(screen.getByTestId("market-daily-page")).toBeInTheDocument(),
+      expect(screen.getByText(/Bản trước phiên đang xử lý\./)).toBeInTheDocument(),
     )
 
-    // Processing notice text per brief
-    expect(
-      screen.getByText(/Bản trước phiên đang xử lý — hiển thị bản cuối ngày hôm trước\./),
-    ).toBeInTheDocument()
+    // No brief content, and no EOD fallback of any kind
+    expect(screen.queryByText(/SÁNG NAY/)).not.toBeInTheDocument()
+    expect(screen.queryByTestId("market-daily-page")).not.toBeInTheDocument()
   })
 })
 
@@ -246,31 +241,43 @@ describe("PreMarketView — stale-brief date-gate", () => {
     vi.useRealTimers()
   })
 
-  it("weekday + yesterday's session_date → shows fallback notice, article NOT rendered", async () => {
+  it("weekday + yesterday's session_date → renders the brief's OWN headline + stale banner, no EOD fallback, no countdown", async () => {
     vi.setSystemTime(MON_JUL6_0730) // Monday Jul 6
     h.payload = yesterdayFixture    // session_date "2026-07-05" ≠ "2026-07-06"
     renderView()
 
-    await waitFor(() =>
-      expect(screen.getByText(/Bản trước phiên đang xử lý — hiển thị bản cuối ngày hôm trước\./)).toBeInTheDocument(),
-    )
-    expect(screen.getByTestId("market-daily-page")).toBeInTheDocument()
-    // Article badge must NOT appear
-    expect(screen.queryByText(/SÁNG NAY/)).not.toBeInTheDocument()
+    // The premarket brief's own headline renders (NOT the EOD fallback)
+    await waitFor(() => expect(screen.getByText(/SÁNG NAY/)).toBeInTheDocument())
+    expect(screen.getByText(yesterdayFixture.headline)).toBeInTheDocument()
+
+    // Stale banner present, referencing the brief's own (old) session date
+    expect(
+      screen.getByText(
+        new RegExp(`Bản gần nhất ${formatSessionDate(yesterdayFixture.session_date)} · chưa cập nhật hôm nay`),
+      ),
+    ).toBeInTheDocument()
+
+    // Never falls back to MarketDailyPage / EOD, and no live countdown
+    expect(screen.queryByTestId("market-daily-page")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("ato-countdown")).not.toBeInTheDocument()
   })
 
-  it("weekend + stale session_date → article IS rendered, ATO countdown NOT rendered", async () => {
+  it("weekend + stale session_date → article IS rendered with stale banner, ATO countdown NOT rendered", async () => {
     vi.setSystemTime(SUN_JUL5_0800) // Sunday Jul 5
     // Brief is from Saturday July 4 — stale vs Sunday but weekend → show
     h.payload = { ...fixture, id: "pm-sat", session_date: "2026-07-04" }
     renderView()
 
     await waitFor(() => expect(screen.getByText(/SÁNG NAY/)).toBeInTheDocument())
+    // Stale banner present
+    expect(
+      screen.getByText(new RegExp(`Bản gần nhất ${formatSessionDate("2026-07-04")} · chưa cập nhật hôm nay`)),
+    ).toBeInTheDocument()
     // ATO countdown must NOT appear (session_date "2026-07-04" ≠ today "2026-07-05")
     expect(screen.queryByTestId("ato-countdown")).not.toBeInTheDocument()
   })
 
-  it("weekday + today's session_date → article + ATO countdown rendered (regression guard)", async () => {
+  it("weekday + today's session_date → article + ATO countdown rendered, no stale banner (regression guard)", async () => {
     vi.setSystemTime(MON_JUL6_0730) // Monday Jul 6 07:30 — before 09:00, countdown shows
     h.payload = todayFixture         // session_date "2026-07-06" = today
     renderView()
@@ -278,5 +285,6 @@ describe("PreMarketView — stale-brief date-gate", () => {
     await waitFor(() => expect(screen.getByText(/SÁNG NAY/)).toBeInTheDocument())
     expect(screen.getByTestId("ato-countdown")).toBeInTheDocument()
     expect(screen.queryByTestId("market-daily-page")).not.toBeInTheDocument()
+    expect(screen.queryByText(/chưa cập nhật hôm nay/)).not.toBeInTheDocument()
   })
 })

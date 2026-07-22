@@ -74,6 +74,22 @@
   color: var(--color-text-3);
 }
 
+/* Stale-brief banner — shown above the article when the latest brief isn't
+   today's. Muted pill, mirrors .pm-world-cell-stale-tag's visual language. */
+.mm-stale-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  margin-bottom: 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-3);
+  background: var(--color-fill-2);
+  border: 1px solid var(--color-border-2);
+}
+
 /* ── Headline ── */
 .mm-headline {
   font-weight: 700;

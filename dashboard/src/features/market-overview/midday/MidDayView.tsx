@@ -1,7 +1,9 @@
 // ─── MidDayView ──────────────────────────────────────────────────────────────
 // Fetches the mid-day analysis and renders the full phiên sáng layout.
-// Falls back to <MarketDailyPage/> (previous EOD) when data is absent or still
-// being processed (midday_loading / no data), showing a small "processing" notice.
+// Always renders ITS OWN latest brief — never falls back to the end-of-day
+// (cuối phiên) report. When no brief exists at all, shows a "processing" notice.
+// When the latest brief isn't today's, a stale banner is shown instead and the
+// countdown is suppressed (an old brief must never look live).
 //
 // Refetch control:
 //   isLunch (11:30–13:00) → refetchInterval disabled (data frozen at end-of-AM)
@@ -16,7 +18,6 @@ import { useState, useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Spin } from "@arco-design/web-react"
 import { api } from "@/shared/http/client"
-import { MarketDailyPage } from "../daily/MarketDailyPage"
 import { ChartCard } from "../daily/charts/ChartCard"
 import { TierLabel } from "../daily/charts/TierLabel"
 import { BreadthChart } from "../daily/charts/BreadthChart"
@@ -29,6 +30,7 @@ import { MidDayArticle } from "./MidDayArticle"
 import { MidDayPulseBar } from "./MidDayPulseBar"
 import { MidDayTakeaway } from "./MidDayTakeaway"
 import { localTodayIso } from "../home-analysis/localDate"
+import { formatSessionDate } from "../home-analysis/formatSessionDate"
 import type { MidDayAnalysis } from "./types"
 
 // ─── Lunch window detection (11:30–13:00 local) ──────────────────────────────
@@ -93,44 +95,46 @@ export function MidDayView() {
 
   // ─── Stale-brief gate ─────────────────────────────────────────────────────
   // Backend always returns the LATEST row (200), so `data` is truthy even when it
-  // belongs to yesterday. On a weekday, yesterday's brief must NOT be shown as
-  // live content — fall through to the same "processing" notice + EOD fallback.
-  // On a weekend (getDay 0|6) we intentionally show the previous week's brief.
-  const isWeekend = [0, 6].includes(new Date().getDay())
+  // belongs to a previous session. We always render THIS view's own brief —
+  // never the end-of-day (cuối phiên) report. When it isn't today's, show a
+  // stale banner instead of hiding the content.
   const isDataForToday = !!data && data.session_date === localTodayIso()
-  const isStaleOnWeekday = !!data && !isDataForToday && !isWeekend
+  const isStale = !!data && !isDataForToday
 
   // Belt-and-suspenders: is the data actually for today (used to gate countdowns)
   const showCountdown = isDataForToday
 
-  // No data yet (midday_loading / backend still processing) → EOD fallback
-  if (!data || isStaleOnWeekday) {
+  // No brief at all → "processing" notice (there is nothing else to show)
+  if (!data) {
     return (
-      <div>
-        {/* Processing notice */}
+      <div className="mx-auto w-full max-w-[1280px] px-2 py-2 md:px-4">
         <div
-          className="mx-auto w-full max-w-[1280px] px-2 py-2 md:px-4"
-          style={{ marginBottom: 8 }}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-[12px]"
+          style={{
+            background: "var(--color-fill-2)",
+            border: "1px solid var(--color-border-2)",
+            color: "var(--color-text-3)",
+          }}
         >
-          <div
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-[12px]"
-            style={{
-              background: "var(--color-fill-2)",
-              border: "1px solid var(--color-border-2)",
-              color: "var(--color-text-3)",
-            }}
-          >
-            <span aria-hidden>⏱</span>
-            <span>Bản phiên sáng đang xử lý — hiển thị nhận định cuối ngày hôm qua.</span>
-          </div>
+          <span aria-hidden>⏱</span>
+          <span>Bản phiên sáng đang xử lý.</span>
         </div>
-        <MarketDailyPage />
       </div>
     )
   }
 
   return (
     <div className="mx-auto w-full max-w-[1280px] px-2 py-3 md:px-4">
+      {/* ── Stale banner — shown when the latest brief isn't today's ── */}
+      {isStale && (
+        <div className="mm-stale-banner">
+          <span aria-hidden>⏱</span>
+          <span>
+            Bản gần nhất {formatSessionDate(data.session_date)} · chưa cập nhật hôm nay
+          </span>
+        </div>
+      )}
+
       {/* ── AI article (phiên sáng) ── */}
       <MidDayArticle data={data} />
 

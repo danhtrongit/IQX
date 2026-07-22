@@ -1,6 +1,8 @@
 // ─── PreMarketView ────────────────────────────────────────────────────────────
 // Fetches pre-market analysis and renders the full "trước phiên" layout.
-// Falls back to <MarketDailyPage/> (previous EOD) when data is absent.
+// Always renders ITS OWN latest brief — never falls back to the end-of-day
+// (cuối phiên) report. When the latest brief isn't today's, a stale banner is
+// shown and the ATO countdown is suppressed (an old brief must never look live).
 //
 // Accent colour: cyan #4FD0FF  (EOD=default, midday=orange, premarket=cyan)
 // Countdown: ticks every 1 000 ms → renders HH:MM:SS to 09:00:00
@@ -8,9 +10,9 @@
 import { useState, useEffect } from "react"
 import { Spin } from "@arco-design/web-react"
 import { sanitizeInline } from "@/shared/utils/sanitize-inline"
-import { MarketDailyPage } from "../daily/MarketDailyPage"
 import { usePreMarketAnalysis } from "./usePreMarketAnalysis"
 import { localTodayIso } from "../home-analysis/localDate"
+import { formatSessionDate } from "../home-analysis/formatSessionDate"
 import type { WorldCell, ResolvedEvent } from "./types"
 import "./premarket.css"
 
@@ -263,12 +265,11 @@ export function PreMarketView() {
 
   // ─── Stale-brief gate ─────────────────────────────────────────────────────
   // Backend always returns the LATEST row (200), so `data` is truthy even when it
-  // belongs to yesterday. On a weekday, yesterday's brief must NOT be shown as
-  // live content — fall through to the same "processing" notice + EOD fallback.
-  // On a weekend (getDay 0|6) we intentionally show the previous week's brief.
-  const isWeekend = [0, 6].includes(new Date().getDay())
+  // belongs to a previous session. We always render THIS view's own brief —
+  // never the end-of-day (cuối phiên) report. When it isn't today's, show a
+  // stale banner instead of hiding the content.
   const isDataForToday = !!data && data.session_date === localTodayIso()
-  const isStaleOnWeekday = !!data && !isDataForToday && !isWeekend
+  const isStale = !!data && !isDataForToday
 
   // Belt-and-suspenders: only show ATO countdown when brief is today's
   const showAtoCountdown = isDataForToday
@@ -282,27 +283,21 @@ export function PreMarketView() {
     )
   }
 
-  // No data OR stale brief on a weekday → EOD fallback
-  if (!data || isStaleOnWeekday) {
+  // No brief at all → "processing" notice (there is nothing else to show)
+  if (!data) {
     return (
-      <div>
+      <div className="mx-auto w-full max-w-[1280px] px-2 py-2 md:px-4">
         <div
-          className="mx-auto w-full max-w-[1280px] px-2 py-2 md:px-4"
-          style={{ marginBottom: 8 }}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-[12px]"
+          style={{
+            background: "var(--color-fill-2)",
+            border: "1px solid var(--color-border-2)",
+            color: "var(--color-text-3)",
+          }}
         >
-          <div
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-[12px]"
-            style={{
-              background: "var(--color-fill-2)",
-              border: "1px solid var(--color-border-2)",
-              color: "var(--color-text-3)",
-            }}
-          >
-            <span aria-hidden>⏱</span>
-            <span>Bản trước phiên đang xử lý — hiển thị bản cuối ngày hôm trước.</span>
-          </div>
+          <span aria-hidden>⏱</span>
+          <span>Bản trước phiên đang xử lý.</span>
         </div>
-        <MarketDailyPage />
       </div>
     )
   }
@@ -320,6 +315,16 @@ export function PreMarketView() {
 
   return (
     <div className="pm-view mx-auto w-full max-w-[1280px] px-2 py-3 md:px-4">
+      {/* ── Stale banner — shown when the latest brief isn't today's ── */}
+      {isStale && (
+        <div className="pm-stale-banner">
+          <span aria-hidden>⏱</span>
+          <span>
+            Bản gần nhất {formatSessionDate(data.session_date)} · chưa cập nhật hôm nay
+          </span>
+        </div>
+      )}
+
       {/* ── Article card ── */}
       <article className="pm-article" style={{ marginBottom: 14 }}>
         {/* Header */}
