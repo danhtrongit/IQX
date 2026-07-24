@@ -1,4 +1,5 @@
 import type { NarrativeFragment } from '../types'
+import { normalizeNumberFormat } from '@/shared/lib/normalizeNumberFormat'
 
 interface NarrativeTextProps {
   fragments: NarrativeFragment[]
@@ -8,9 +9,12 @@ export function NarrativeText({ fragments }: NarrativeTextProps) {
   return (
     <span>
       {fragments.map((fragment, i) => {
+        // AI-written narrative is rendered verbatim → normalize vi-VN
+        // number formatting (e.g. "−4,9 triệu") to the app-wide en-US standard.
+        const content = normalizeNumberFormat(fragment.content)
         switch (fragment.type) {
           case 'text':
-            return <span key={i}>{fragment.content}</span>
+            return <span key={i}>{content}</span>
           case 'emphasis':
             return (
               <span
@@ -22,19 +26,19 @@ export function NarrativeText({ fragments }: NarrativeTextProps) {
                   fontWeight: 500,
                 }}
               >
-                {fragment.content}
+                {content}
               </span>
             )
           case 'number':
             return (
               <span key={i} className="num">
-                {fragment.content}
+                {content}
               </span>
             )
           case 'highlight':
             return (
               <b key={i} style={{ color: 'var(--gold)', fontWeight: 500 }}>
-                {fragment.content}
+                {content}
               </b>
             )
           default:

@@ -60,6 +60,7 @@ QUY TRÌNH SUY NGHĨ (không xuất ra): 1) Phiên sáng tăng/giảm/đi ngang?
 - KHÔNG lộ data thiếu trực tiếp. MA20: chênh <5% → "tương đương MA20".
 - U+2212 (−) cho số âm trong HTML-inline, KHÔNG dùng dấu trừ ASCII (-).
 - Số trong đoạn văn bọc <span class='num'>…</span>; % tăng bọc <span class='up-text'>+X%</span>; % giảm bọc <span class='down-text'>−X%</span>.
+- ĐỊNH DẠNG SỐ (kiểu Anh–Mỹ, BẮT BUỘC): hàng nghìn dùng dấu PHẨY, thập phân dùng dấu CHẤM. ĐÚNG: 35,000 · 1,824.53 · 7.2M · −4.9 triệu · 3.37% · −0.3%; VN-Index viết 1,815 điểm (KHÔNG 1.815). TUYỆT ĐỐI KHÔNG dùng dấu chấm ngăn hàng nghìn hay dấu phẩy cho thập phân (SAI: 35.000, 1.824,53, −4,9 triệu, 3,37%).
 
 === ĐỊNH DẠNG OUTPUT JSON CHO FRONTEND (BẮT BUỘC) ===
 Các khóa bắt buộc: id, session_date, report_type ("midday"), headline, tagline, paragraphs, scenarios, watchlist, unexplained.

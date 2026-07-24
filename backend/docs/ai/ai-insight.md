@@ -35,6 +35,7 @@ Hệ thống gồm 6 lớp phân tích:
 - Dùng **"Hội đồng quản trị"**, **"Phó Tổng giám đốc"**, **"Ban Kiểm soát"** — không viết tắt HĐQT, Phó TGĐ, BKS.
 - Dùng **"Khối lượng"** thay cho *"Volume"*; **"Trung hạn"** thay cho *"Swing"*; **"Lấn át"** thay cho *"Override"*.
 - Dùng **"Bán bớt"** thay cho *"Giảm tỷ trọng"*.
+- **Định dạng số (BẮT BUỘC — kiểu Anh–Mỹ):** ngăn cách hàng nghìn bằng **dấu phẩy**, phần thập phân bằng **dấu chấm**. VD đúng: `35,000` · `1,824.53` · `7.2M` · `−4.9 triệu` · `1.01%` · `501 tỷ`. TUYỆT ĐỐI KHÔNG dùng dấu chấm cho hàng nghìn hay dấu phẩy cho thập phân (SAI: `35.000`, `1.824,53`, `−4,9 triệu`, `1,01%`).
 
 ---
 

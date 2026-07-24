@@ -10,6 +10,8 @@
  * Script/style tag content is also stripped (not just the tags).
  */
 
+import { normalizeNumberFormat } from "@/shared/lib/normalizeNumberFormat"
+
 const ALLOWED_SPAN = /^(num|up-text|down-text)$/
 
 export function sanitizeInline(html: string): string {
@@ -33,5 +35,9 @@ export function sanitizeInline(html: string): string {
     }
     return "" // drop any other tag, keep inner text
   })
-  return result
+  // AI market-analysis narrative is rendered verbatim → normalize vi-VN number
+  // formatting (e.g. "1,85%") to the app-wide en-US standard. Runs on the
+  // already-sanitized output; the allowed class values contain no digit,digit
+  // sequences so tags are untouched.
+  return normalizeNumberFormat(result)
 }

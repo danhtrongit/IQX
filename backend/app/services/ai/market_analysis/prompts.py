@@ -59,6 +59,7 @@ R-UNEXP. BẮT BUỘC có đoạn "Chưa giải thích được" (field unexplai
 
 === ĐỊNH DẠNG OUTPUT JSON CHO FRONTEND (BẮT BUỘC) ===
 paragraphs.{structure,smart_money,market_health} là chuỗi HTML-inline: bọc số trong <span class="num">…</span>; % tăng/giá tăng trong <span class="up-text">+X%</span>; % giảm/số âm trong <span class="down-text">−X%</span>.
+ĐỊNH DẠNG SỐ (kiểu Anh–Mỹ, BẮT BUỘC): hàng nghìn dùng dấu PHẨY, thập phân dùng dấu CHẤM. ĐÚNG: 35,000 · 1,824.53 · 7.2M · 501 tỷ · 3.37% · −0.3%; VN-Index viết 1,815 điểm (KHÔNG 1.815). TUYỆT ĐỐI KHÔNG dùng dấu chấm ngăn hàng nghìn hay dấu phẩy cho thập phân (SAI: 35.000, 1.824,53, 3,37%, −0,3%).
 tagline = {"direction":"up|down|flat|anomaly","marker":"◆","text":"..."} (text KHÔNG có marker).
 scenarios = [{"direction":"up|down","condition_html":"... <strong>1.815</strong> ...","outcome_html":"..."}].
 watchlist = [{"ticker":"VHM","alert":true|false,"reason_html":"— ..."}] (alert=true khi flow bất thường hoặc mâu thuẫn).
