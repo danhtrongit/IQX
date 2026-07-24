@@ -190,9 +190,9 @@ def _build_am_breadth(vn_snap: dict) -> dict | None:
     floor_ = vn_snap.get("total_stock_floor") or 0
     ratio_float = adv / max(dec, 1)
     ratio_str = (
-        f"1 : {(1 / ratio_float):.1f}".replace(".", ",")
+        f"1 : {(1 / ratio_float):.1f}"
         if ratio_float < 1
-        else f"{ratio_float:.1f} : 1".replace(".", ",")
+        else f"{ratio_float:.1f} : 1"
     )
     classification = _breadth_classification(adv, dec)
     return {

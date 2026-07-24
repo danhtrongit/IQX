@@ -381,7 +381,7 @@ def _build_charts(
     ceiling = breadth_block.get("ceiling_count") or 0
     floor_ = breadth_block.get("floor_count") or 0
     ratio_float = up / max(down, 1)
-    ratio_str = f"1 : {(1 / ratio_float):.1f}".replace(".", ",") if ratio_float < 1 else f"{ratio_float:.1f} : 1".replace(".", ",")
+    ratio_str = f"1 : {(1 / ratio_float):.1f}" if ratio_float < 1 else f"{ratio_float:.1f} : 1"
 
     # pct_above_ma20 from b20 series
     s20 = [r["percent"] * 100 for r in (b20 or []) if r.get("percent") is not None]
