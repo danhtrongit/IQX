@@ -78,6 +78,12 @@ function RightSidebarStub() {
       <button data-testid="launch-bangdien-tour" onClick={() => onLaunchTour?.(2)}>
         launch bảng điện
       </button>
+      <button data-testid="launch-bantin-tour" onClick={() => onLaunchTour?.(3)}>
+        launch bản tin
+      </button>
+      <button data-testid="launch-6nguoichoi-tour" onClick={() => onLaunchTour?.(4)}>
+        launch 6 người chơi
+      </button>
     </div>
   )
 }
@@ -393,6 +399,38 @@ describe("Cap0TradingPage — Chặng 2 tour host (T2, Journey→tour wiring)", 
     fireEvent.click(screen.getByTestId("launch-bangdien-tour"))
     fireEvent.click(screen.getByText("Bỏ qua tour"))
     expect(completeTaskMutate).toHaveBeenCalledWith({ taskNo: 2 })
+  })
+
+  it('an "onLaunchTour(4)" request (Journey\'s "Làm ngay →" on task ④) starts the 6-người-chơi tour overlay (6 concept-card steps)', () => {
+    useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
+    renderCap0(<Cap0TradingPage />)
+    expect(screen.queryByText("ĐIỂM 1/6")).not.toBeInTheDocument()
+    fireEvent.click(screen.getByTestId("launch-6nguoichoi-tour"))
+    expect(screen.getByText("ĐIỂM 1/6")).toBeInTheDocument()
+  })
+
+  it('completing the 6-người-chơi tour via "Bỏ qua tour" (skip = complete) calls useCompleteTask with taskNo 4', () => {
+    useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
+    renderCap0(<Cap0TradingPage />)
+    fireEvent.click(screen.getByTestId("launch-6nguoichoi-tour"))
+    fireEvent.click(screen.getByText("Bỏ qua tour"))
+    expect(completeTaskMutate).toHaveBeenCalledWith({ taskNo: 4 })
+  })
+
+  it('an "onLaunchTour(3)" request (Journey\'s "Làm ngay →" on task ③) starts the Bản tin tour overlay (concept-card steps)', () => {
+    useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
+    renderCap0(<Cap0TradingPage />)
+    expect(screen.queryByText("ĐIỂM 1/5")).not.toBeInTheDocument()
+    fireEvent.click(screen.getByTestId("launch-bantin-tour"))
+    expect(screen.getByText("ĐIỂM 1/5")).toBeInTheDocument()
+  })
+
+  it('completing the Bản tin tour via "Bỏ qua tour" (skip = complete) calls useCompleteTask with taskNo 3', () => {
+    useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
+    renderCap0(<Cap0TradingPage />)
+    fireEvent.click(screen.getByTestId("launch-bantin-tour"))
+    fireEvent.click(screen.getByText("Bỏ qua tour"))
+    expect(completeTaskMutate).toHaveBeenCalledWith({ taskNo: 3 })
   })
 })
 

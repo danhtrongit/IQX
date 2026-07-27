@@ -17,6 +17,8 @@ import { useCap0Progress, useCompleteTask, useEnterCap0, usePlacement } from "./
 import { PlacementModal } from "./PlacementModal"
 import { tradingModeFor } from "./types"
 import { bangDienTour, bangDienTourStepPanels } from "./tours/bangDienTour"
+import { banTinTour } from "./tours/banTinTour"
+import { sauNguoiChoiTour } from "./tours/sauNguoiChoiTour"
 import "./cap0.css"
 
 const SEO_TITLE = "IQX Demo Trading · Cấp 0 «Nhập môn»"
@@ -121,14 +123,18 @@ function Cap0Terminal() {
     return () => setActivePanel(prevPanelRef.current)
   }, [])
 
-  // Chặng 2 tour host (T2, `docs/superpowers/plans/2026-07-27-cap0-tours.md`):
-  // this is where the `useTour`/`TourOverlay` instances actually live —
-  // Journey's "Làm ngay →" for tasks ②③④ just calls `onLaunchTour(no)` on the
-  // Cap0 event bus (see `JourneyPanel`), and THIS is the one place that
-  // registers a handler for it. `registerHandlers` MERGES (doesn't replace)
-  // with `Gbar`'s own registration — see `Cap0Context.tsx`'s comment. Only ②
-  // (Bảng điện) has a real tour built this delivery; ③/④ launches are a
-  // no-op until T3/T4 add their configs here.
+  // Chặng 2 tour host (T2/T3/T4, `docs/superpowers/plans/2026-07-27-cap0-tours.md`):
+  // this is where the `useTour`/`TourOverlay` instances for ALL THREE Chặng 2
+  // tours actually live — Journey's "Làm ngay →" for tasks ②③④ just calls
+  // `onLaunchTour(no)` on the Cap0 event bus (see `JourneyPanel`), and THIS is
+  // the one place that registers a handler for it. `registerHandlers` MERGES
+  // (doesn't replace) with `Gbar`'s own registration — see `Cap0Context.tsx`'s
+  // comment.
+  //
+  // ③ (Bản tin) and ④ (6 người chơi) are both pure `centered: true` concept
+  // tours (no `data-tour-id` targets to switch sidebar panels for — see each
+  // config's own file header for why), so unlike ② they need no
+  // `onStepView` panel-switching at all.
   const { registerHandlers } = useCap0Events()
   const completeTask = useCompleteTask()
 
@@ -143,10 +149,20 @@ function Cap0Terminal() {
     },
   })
 
+  const banTinTourController = useTour(banTinTour, {
+    onComplete: () => completeTask.mutate({ taskNo: 3 }),
+  })
+
+  const sauNguoiChoiTourController = useTour(sauNguoiChoiTour, {
+    onComplete: () => completeTask.mutate({ taskNo: 4 }),
+  })
+
   useEffect(() => {
     registerHandlers({
       onLaunchTour: (taskNo) => {
         if (taskNo === 2) bangDienTourController.start()
+        else if (taskNo === 3) banTinTourController.start()
+        else if (taskNo === 4) sauNguoiChoiTourController.start()
       },
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -252,10 +268,12 @@ function Cap0Terminal() {
           closes itself once `graduated_at` comes back from the mutation. */}
       <GraduationModal />
 
-      {/* Chặng 2 Bảng điện tour (T2) — renders nothing until
-          `bangDienTourController.start()` is called (Journey "Làm ngay →"
-          on task ②, via the Cap0 event bus). */}
+      {/* Chặng 2 tours (T2 ②, T4 ③, T3 ④) — each renders nothing until its
+          own controller's `.start()` is called (Journey "Làm ngay →" on the
+          matching task, via the Cap0 event bus). */}
       <TourOverlay config={bangDienTour} controller={bangDienTourController} />
+      <TourOverlay config={banTinTour} controller={banTinTourController} />
+      <TourOverlay config={sauNguoiChoiTour} controller={sauNguoiChoiTourController} />
 
       {/* AI Insight symbol picker — identical to DashboardPage's */}
       <Modal
