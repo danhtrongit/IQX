@@ -56,16 +56,31 @@ vi.mock("react-router", async (importOriginal) => {
 // Cap0 shell (chrome + placement modal + mode badge + wiring), not the real
 // terminal. `RightToolbar`'s stub still forwards `onActionClick` so the "AI
 // Phân tích" wiring (FE2 review Important #2) can be exercised without
-// rendering the real toolbar's icons/panels.
+// rendering the real toolbar's icons/panels. `RightSidebar`'s stub also
+// exposes a button wired to the REAL Cap0 event bus's `onLaunchTour` (T2 —
+// `Cap0Context` is NOT mocked in this file) so tests can simulate Journey's
+// "Làm ngay →" for task ② without needing the real `JourneyPanel`/sidebar
+// panel-switching machinery.
 vi.mock("@/features/dashboard", () => ({
   CenterPanel: () => <div data-testid="center-panel" />,
-  RightSidebar: () => <div data-testid="right-sidebar" />,
+  RightSidebar: () => <RightSidebarStub />,
   RightToolbar: ({ onActionClick }: { onActionClick?: (id: string) => void }) => (
     <button data-testid="right-toolbar" onClick={() => onActionClick?.("ai-insight")}>
       AI Phân tích
     </button>
   ),
 }))
+
+function RightSidebarStub() {
+  const { onLaunchTour } = useCap0Events()
+  return (
+    <div data-testid="right-sidebar">
+      <button data-testid="launch-bangdien-tour" onClick={() => onLaunchTour?.(2)}>
+        launch bảng điện
+      </button>
+    </div>
+  )
+}
 
 // App chrome (Header/MarketBar/Footer/TrialBanner) is the EXISTING, untouched
 // `DashboardPage` chrome — stub it here too (each depends on its own
@@ -105,6 +120,7 @@ vi.mock("@arco-design/web-react", async (importOriginal) => {
 })
 
 import { Cap0TradingPage } from "./Cap0TradingPage"
+import { useCap0Events } from "./Cap0Context"
 
 const fakeProgress: Cap0Progress = {
   id: "11111111-1111-1111-1111-111111111111",
@@ -352,6 +368,31 @@ describe("Cap0TradingPage", () => {
     fireEvent.change(input, { target: { value: "VCB" } })
     fireEvent.click(screen.getByText("Phân tích"))
     expect(navigateMock).toHaveBeenCalledWith("/co-phieu/VCB")
+  })
+})
+
+describe("Cap0TradingPage — Chặng 2 tour host (T2, Journey→tour wiring)", () => {
+  beforeEach(() => {
+    useCap0ProgressMock.mockReset()
+    usePremiumStatusMock.mockReset()
+    usePremiumStatusMock.mockReturnValue({ isPremium: false, isLoading: false })
+    completeTaskMutate.mockReset()
+  })
+
+  it('an "onLaunchTour(2)" request (Journey\'s "Làm ngay →" on task ②) starts the Bảng điện tour overlay', () => {
+    useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
+    renderCap0(<Cap0TradingPage />)
+    expect(screen.queryByText("ĐIỂM 1/8")).not.toBeInTheDocument()
+    fireEvent.click(screen.getByTestId("launch-bangdien-tour"))
+    expect(screen.getByText("ĐIỂM 1/8")).toBeInTheDocument()
+  })
+
+  it('completing the Bảng điện tour via "Bỏ qua tour" (skip = complete) calls useCompleteTask with taskNo 2', () => {
+    useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
+    renderCap0(<Cap0TradingPage />)
+    fireEvent.click(screen.getByTestId("launch-bangdien-tour"))
+    fireEvent.click(screen.getByText("Bỏ qua tour"))
+    expect(completeTaskMutate).toHaveBeenCalledWith({ taskNo: 2 })
   })
 })
 

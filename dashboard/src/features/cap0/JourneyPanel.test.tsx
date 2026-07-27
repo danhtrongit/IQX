@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, within } from "@testing-library/react"
-import React, { type ReactNode } from "react"
+import React, { useEffect, type ReactNode } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 import type { Cap0Progress } from "./types"
@@ -48,6 +48,7 @@ import { JourneyPanel } from "./JourneyPanel"
 import { JourneyBar } from "./JourneyBar"
 import { RightSidebar } from "@/features/dashboard/components/RightSidebar"
 import { RightToolbar } from "@/features/dashboard/components/RightToolbar"
+import { Cap0Provider, useCap0Events } from "./Cap0Context"
 
 function makeProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
   return {
@@ -74,6 +75,18 @@ function makeProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
 function PanelSpy() {
   const { activePanel } = useSidebar()
   return <div data-testid="panel-spy">{activePanel}</div>
+}
+
+/** Registers a spy as the Cap0 event bus's `onLaunchTour` handler — mirrors
+ *  how `Cap0TradingPage` registers the real tour-launch dispatch, so tests
+ *  can assert `JourneyPanel`'s "Làm ngay →" calls `onLaunchTour(no)` for
+ *  Chặng 2 tasks instead of `setActivePanel("trading")`. */
+function LaunchTourSpy({ onLaunch }: { onLaunch: (taskNo: number) => void }) {
+  const { registerHandlers } = useCap0Events()
+  useEffect(() => {
+    registerHandlers({ onLaunchTour: onLaunch })
+  }, [registerHandlers, onLaunch])
+  return null
 }
 
 describe("JourneyPanel", () => {
@@ -168,7 +181,7 @@ describe("JourneyPanel", () => {
     expect(screen.getAllByText("Làm ngay →")).toHaveLength(1)
   })
 
-  it("once ① is done: header 1/6, ① done (✓, no button), ②③④ still locked, ⑤ becomes active", () => {
+  it("once ① is done: header 1/6, ① done (✓, no button), ②③④ become active (independent, T2), ⑤ becomes active too", () => {
     useCap0ProgressMock.mockReturnValue({
       data: makeProgress({ task_1_done_at: "2026-07-21T01:00:00Z" }),
     })
@@ -184,15 +197,60 @@ describe("JourneyPanel", () => {
     expect(within(task1).getByText("✓")).toBeInTheDocument()
     expect(within(task1).queryByText("Làm ngay →")).not.toBeInTheDocument()
 
+    // ②③④ (Chặng 2 tours) — independent of each other, any order (T2).
     for (const no of [2, 3, 4]) {
-      expect(screen.getByTestId(`cap0-task-${no}`).className).toContain(
-        "cap0-checklist-item--locked",
-      )
+      const item = screen.getByTestId(`cap0-task-${no}`)
+      expect(item.className).toContain("cap0-checklist-item--active")
+      expect(within(item).getByText("Làm ngay →")).toBeInTheDocument()
     }
 
     const task5 = screen.getByTestId("cap0-task-5")
     expect(task5.className).toContain("cap0-checklist-item--active")
     expect(within(task5).getByText("Làm ngay →")).toBeInTheDocument()
+  })
+
+  it("② is done (✓, no button) once task_2_done_at is set, independent of ③④'s own state", () => {
+    useCap0ProgressMock.mockReturnValue({
+      data: makeProgress({
+        task_1_done_at: "2026-07-21T01:00:00Z",
+        task_2_done_at: "2026-07-21T02:00:00Z",
+      }),
+    })
+    render(
+      <SidebarProvider>
+        <JourneyPanel />
+      </SidebarProvider>,
+    )
+    const task2 = screen.getByTestId("cap0-task-2")
+    expect(task2.className).toContain("cap0-checklist-item--done")
+    expect(within(task2).getByText("✓")).toBeInTheDocument()
+    expect(within(task2).queryByText("Làm ngay →")).not.toBeInTheDocument()
+
+    // ③④ stay active (not blocked by ② being done, not yet done themselves).
+    for (const no of [3, 4]) {
+      const item = screen.getByTestId(`cap0-task-${no}`)
+      expect(item.className).toContain("cap0-checklist-item--active")
+    }
+  })
+
+  it('clicking «Làm ngay →» on task ② calls onLaunchTour(2) instead of switching to the trading panel', () => {
+    useCap0ProgressMock.mockReturnValue({
+      data: makeProgress({ task_1_done_at: "2026-07-21T01:00:00Z" }),
+    })
+    const onLaunch = vi.fn()
+    render(
+      <SidebarProvider>
+        <Cap0Provider>
+          <JourneyPanel />
+          <LaunchTourSpy onLaunch={onLaunch} />
+        </Cap0Provider>
+        <PanelSpy />
+      </SidebarProvider>,
+    )
+    const task2 = screen.getByTestId("cap0-task-2")
+    fireEvent.click(within(task2).getByText("Làm ngay →"))
+    expect(onLaunch).toHaveBeenCalledWith(2)
+    expect(screen.getByTestId("panel-spy")).not.toHaveTextContent("trading")
   })
 
   it('clicking «Làm ngay →» switches the sidebar to the trading panel', () => {

@@ -313,15 +313,20 @@ function OrderEntry({
 
   return (
     <div className="space-y-2 px-2 pb-3">
-      {/* Buy / Sell */}
-      <Tabs
-        activeTab={side}
-        onChange={(v) => setSide(v as "buy" | "sell")}
-        className="mt-2 [&_.arco-tabs-content]:hidden"
-      >
-        <Tabs.TabPane key="buy" title={<span className="font-semibold">MUA</span>} />
-        <Tabs.TabPane key="sell" title={<span className="font-semibold">BÁN</span>} />
-      </Tabs>
+      {/* Buy / Sell — wrapped for the Bảng điện tour's point ⑤ (MUA/BÁN +
+          Số dư, spec `IQX-Tour-BangDien.md`); Số dư itself lives in
+          `AccountStrip` just above (not a DOM sibling here without a
+          bigger restructure) and is covered in that step's copy instead. */}
+      <div data-tour-id="cap0-tour-buysell-balance">
+        <Tabs
+          activeTab={side}
+          onChange={(v) => setSide(v as "buy" | "sell")}
+          className="mt-2 [&_.arco-tabs-content]:hidden"
+        >
+          <Tabs.TabPane key="buy" title={<span className="font-semibold">MUA</span>} />
+          <Tabs.TabPane key="sell" title={<span className="font-semibold">BÁN</span>} />
+        </Tabs>
+      </div>
 
       {/* Order method + Price — hidden until nhiệm vụ ⑤ while in Cấp 0
           (spec §8; `hidePriceAndType` is always false outside Cấp 0, so this
@@ -359,53 +364,58 @@ function OrderEntry({
         </>
       )}
 
-      {/* Volume */}
-      <div className="space-y-1">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-medium text-[var(--color-text-3)]">Khối lượng</label>
-          {side === "sell" && positionQty > 0 && (
-            <span className="text-xs text-[var(--color-text-3)]">
-              Tối đa: {positionQty.toLocaleString("en-US")}
-            </span>
-          )}
+      {/* Volume + fee — merged under one `data-tour-id` (Bảng điện tour point
+          ⑥, spec `IQX-Tour-BangDien.md`): real adjacent siblings already,
+          just wrapped so the spotlight covers both blocks. */}
+      <div data-tour-id="cap0-tour-volume-fee">
+        {/* Volume */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-medium text-[var(--color-text-3)]">Khối lượng</label>
+            {side === "sell" && positionQty > 0 && (
+              <span className="text-xs text-[var(--color-text-3)]">
+                Tối đa: {positionQty.toLocaleString("en-US")}
+              </span>
+            )}
+          </div>
+          <InputNumber
+            mode="button"
+            step={100}
+            min={0}
+            value={volume}
+            onChange={(v) => setVolume(v ?? 0)}
+            className="w-full"
+          />
+          <Radio.Group
+            type="button"
+            size="mini"
+            className="w-full pt-1"
+            onChange={(v) => handlePct(v)}
+            options={[10, 25, 50, 100].map((p) => ({ label: `${p}%`, value: p }))}
+          />
         </div>
-        <InputNumber
-          mode="button"
-          step={100}
-          min={0}
-          value={volume}
-          onChange={(v) => setVolume(v ?? 0)}
-          className="w-full"
-        />
-        <Radio.Group
-          type="button"
-          size="mini"
-          className="w-full pt-1"
-          onChange={(v) => handlePct(v)}
-          options={[10, 25, 50, 100].map((p) => ({ label: `${p}%`, value: p }))}
-        />
-      </div>
 
-      {/* Summary */}
-      <div className="mt-2 space-y-1 rounded-md bg-[var(--color-fill-2)] p-2 text-xs">
-        <div className="flex justify-between">
-          <span className="text-[var(--color-text-3)]">Giá trị</span>
-          <span className="font-medium tabular-nums text-[var(--color-text-1)]">
-            {orderValue > 0 ? fmtVnd(orderValue) : "—"}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-[var(--color-text-3)]">Phí GD (0.15%)</span>
-          <span className="font-medium tabular-nums text-[var(--color-text-1)]">
-            {fee > 0 ? fmtVnd(fee) : "—"}
-          </span>
-        </div>
-        <Divider className="my-1" />
-        <div className="flex justify-between text-sm font-semibold">
-          <span>Tổng</span>
-          <span className="tabular-nums text-[rgb(var(--primary-6))]">
-            {orderValue > 0 ? fmtVnd(orderValue + fee) : "—"}
-          </span>
+        {/* Summary */}
+        <div className="mt-2 space-y-1 rounded-md bg-[var(--color-fill-2)] p-2 text-xs">
+          <div className="flex justify-between">
+            <span className="text-[var(--color-text-3)]">Giá trị</span>
+            <span className="font-medium tabular-nums text-[var(--color-text-1)]">
+              {orderValue > 0 ? fmtVnd(orderValue) : "—"}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-[var(--color-text-3)]">Phí GD (0.15%)</span>
+            <span className="font-medium tabular-nums text-[var(--color-text-1)]">
+              {fee > 0 ? fmtVnd(fee) : "—"}
+            </span>
+          </div>
+          <Divider className="my-1" />
+          <div className="flex justify-between text-sm font-semibold">
+            <span>Tổng</span>
+            <span className="tabular-nums text-[rgb(var(--primary-6))]">
+              {orderValue > 0 ? fmtVnd(orderValue + fee) : "—"}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -417,48 +427,54 @@ function OrderEntry({
           `presetMode="manual"` — SL/TP are no longer pre-filled, the user
           types them, and the FIRST `keydown` into the SL field (not a click
           on any auto-fill button — cổng chất lượng 1) marks the gate. */}
-      {side === "buy" && isCap0Active && (
-        <Tooltip
-          content={
-            task1Done
-              ? "Lần này bạn tự quyết: nếu sai, bạn chấp nhận dừng ở giá nào? Gõ con số của bạn — nó là lời hứa với chính mình, không phải ô phải điền cho qua."
-              : ""
-          }
-          disabled={!task1Done}
-        >
-          <div>
-            <PlanBlock
-              symbol={symbol}
-              presetMode={task1Done ? "manual" : "filled"}
-              reason={reason}
-              onReason={(r) => {
-                setReason(r)
-                cap0Events.onReasonPicked?.(r)
-              }}
-              sl={task1Done ? slManual : presetSl}
-              tp={task1Done ? tpManual : presetTp}
-              onSlChange={task1Done ? setSlManual : undefined}
-              onTpChange={task1Done ? setTpManual : undefined}
-              onSlKeydown={task1Done ? handleSlKeydown : undefined}
-            />
-          </div>
-        </Tooltip>
-      )}
-
-      {/* Submit */}
-      <Button
-        long
-        loading={placeOrder.isPending}
-        onClick={handleSubmit}
-        className={cn(
-          "mt-2 font-bold text-white",
-          side === "buy"
-            ? "!border-up !bg-up hover:!opacity-90"
-            : "!border-down !bg-down hover:!opacity-90",
+      {/* Kế hoạch + nút Đặt lệnh — merged under one `data-tour-id` (Bảng
+          điện tour point ⑦, spec `IQX-Tour-BangDien.md`): real adjacent
+          blocks (Kế hoạch renders only buy-side/Cấp 0; the Submit button
+          always renders). */}
+      <div data-tour-id="cap0-tour-plan-submit">
+        {side === "buy" && isCap0Active && (
+          <Tooltip
+            content={
+              task1Done
+                ? "Lần này bạn tự quyết: nếu sai, bạn chấp nhận dừng ở giá nào? Gõ con số của bạn — nó là lời hứa với chính mình, không phải ô phải điền cho qua."
+                : ""
+            }
+            disabled={!task1Done}
+          >
+            <div>
+              <PlanBlock
+                symbol={symbol}
+                presetMode={task1Done ? "manual" : "filled"}
+                reason={reason}
+                onReason={(r) => {
+                  setReason(r)
+                  cap0Events.onReasonPicked?.(r)
+                }}
+                sl={task1Done ? slManual : presetSl}
+                tp={task1Done ? tpManual : presetTp}
+                onSlChange={task1Done ? setSlManual : undefined}
+                onTpChange={task1Done ? setTpManual : undefined}
+                onSlKeydown={task1Done ? handleSlKeydown : undefined}
+              />
+            </div>
+          </Tooltip>
         )}
-      >
-        {side === "buy" ? "ĐẶT LỆNH MUA" : "ĐẶT LỆNH BÁN"}
-      </Button>
+
+        {/* Submit */}
+        <Button
+          long
+          loading={placeOrder.isPending}
+          onClick={handleSubmit}
+          className={cn(
+            "mt-2 font-bold text-white",
+            side === "buy"
+              ? "!border-up !bg-up hover:!opacity-90"
+              : "!border-down !bg-down hover:!opacity-90",
+          )}
+        >
+          {side === "buy" ? "ĐẶT LỆNH MUA" : "ĐẶT LỆNH BÁN"}
+        </Button>
+      </div>
     </div>
   )
 }
@@ -602,7 +618,10 @@ function StockHeader({
   const watched = isWatched(data.symbol)
 
   return (
-    <div className="space-y-1 border-b border-[var(--color-border-2)] px-3 py-2">
+    <div
+      data-tour-id="cap0-tour-stock-header"
+      className="space-y-1 border-b border-[var(--color-border-2)] px-3 py-2"
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <StockLogo symbol={data.symbol} size={28} />
@@ -662,7 +681,10 @@ function StockHeader({
       </div>
 
       {/* Mini stats */}
-      <div className="grid grid-cols-3 gap-x-3 gap-y-0.5 text-[10px]">
+      <div
+        data-tour-id="cap0-tour-price-bands"
+        className="grid grid-cols-3 gap-x-3 gap-y-0.5 text-[10px]"
+      >
         <Stat label="Trần" value={fmtPrice(data.ceilingPrice)} className="text-ceiling" />
         <Stat label="TC" value={fmtPrice(data.referencePrice)} className="text-reference" />
         <Stat label="Sàn" value={fmtPrice(data.floorPrice)} className="text-floor" />

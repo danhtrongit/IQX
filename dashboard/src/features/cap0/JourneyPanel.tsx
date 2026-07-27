@@ -24,15 +24,16 @@ const TASK_NAMES: Record<number, string> = {
 
 /**
  * Descriptions shown under an ACTIVE task (spec §7 "có dòng mô tả"). Only
- * task ① has a verbatim description in the mockup (`#hd1`) — ⑤/⑥ descriptions
- * here are a reasonable paraphrase of their spec §4 Chặng 3 behaviour (not a
+ * task ① has a verbatim description in the mockup (`#hd1`) — ②③④/⑤/⑥
+ * descriptions here are reasonable paraphrases of their spec behaviour (not a
  * verbatim requirement per the task brief, which only calls out level card /
- * checklist headers / 6 task names / journey-bar copy as verbatim). Tasks
- * ②③④ never render as active this delivery (see `taskState`), so they have
- * no entry here.
+ * checklist headers / 6 task names / journey-bar copy as verbatim).
  */
 const TASK_DESCRIPTIONS: Partial<Record<number, string>> = {
   1: "Mua công ty bạn biết · chọn lý do trong Kế hoạch · xem tiền nằm đâu · gắn sao ★. Làm thiếu bước nào, hệ thống sẽ nhắc.",
+  2: "Tour ngắn ~2-3 phút, 8 điểm: nhận mặt các khu vực trên sân chơi bạn vừa dùng ở nhiệm vụ ①.",
+  3: "Tour giới thiệu bản tin thị trường IQX — nơi tổng hợp diễn biến phiên.",
+  4: 'Tour "6 người chơi" — ai đang mua/bán ảnh hưởng tới giá mã bạn chọn.',
   5: "Đặt lệnh mua thứ hai. Lần này tự gõ ngưỡng cắt lỗ vào ô — không dùng preset có sẵn.",
   6: "Bán một lệnh đang có để khép vòng đời lệnh đầu tiên. Xong sẽ mở màn Kết sổ.",
 }
@@ -49,16 +50,23 @@ type TaskState = "done" | "active" | "locked"
  * State of one checklist task (spec §7 "Trạng thái mỗi mục checklist").
  *
  * - ①: the entry task — active until `task_1_done_at`, then done.
- * - ②③④: the product tour (Chặng 2) — **out of scope this delivery** (spec
- *   §0/Chặng 2: "KHÔNG bao gồm 3 tour sản phẩm... chỉ tạo 3 slot locked").
- *   Always `locked`, independent of progress.
- * - ⑤: spec §4 Chặng 3 "Điều kiện mở: xong ①" — active once ① is done (the
- *   tour gap is skipped, not a blocker).
+ * - ②③④: the 3 Chặng 2 product tours (T2/T3/T4,
+ *   `docs/superpowers/plans/2026-07-27-cap0-tours.md`) — done once their own
+ *   `task_N_done_at` is set, else active once ① is done. INDEPENDENT of each
+ *   other within Chặng 2 (any order — do NOT hard-sequence ②→③→④; a user can
+ *   run them in whatever order they click "Làm ngay →").
+ * - ⑤: spec §4 Chặng 3 "Điều kiện mở: xong ①" — active once ① is done (does
+ *   NOT wait on ②③④ — Chặng 2 and Chặng 3 gate off the SAME ① flag).
  * - ⑥: opens once ⑤ is done (this panel only has `useCap0Progress`, not live
  *   position data — a reasonable approximation of spec's "có ≥1 lệnh đang mở").
  */
 function taskState(no: number, progress: Cap0Progress | null | undefined): TaskState {
-  if (no === 2 || no === 3 || no === 4) return "locked"
+  if (no === 2 || no === 3 || no === 4) {
+    const doneAt =
+      no === 2 ? progress?.task_2_done_at : no === 3 ? progress?.task_3_done_at : progress?.task_4_done_at
+    if (doneAt) return "done"
+    return progress?.task_1_done_at ? "active" : "locked"
+  }
   if (no === 1) return progress?.task_1_done_at ? "done" : "active"
   if (no === 5) {
     if (progress?.task_5_done_at) return "done"
@@ -122,14 +130,23 @@ function ChecklistItem({
  * fires `GET /cap0/progress` when rendered outside a real `Cap0Provider`.
  */
 export function JourneyPanel() {
-  const { isCap0Active } = useCap0Events()
+  const { isCap0Active, onLaunchTour } = useCap0Events()
   const { data: progress } = useCap0Progress(isCap0Active)
   const { isPremium } = usePremiumStatus()
   const { setActivePanel } = useSidebar()
   const tasksDone = countTasksDone(progress)
   const level = LEVELS[0]
 
-  const goToTrading = () => setActivePanel("trading")
+  // ②③④ (Chặng 2) launch their product tour instead of switching to the
+  // trading panel (T2) — `Cap0TradingPage` registers the real dispatch via
+  // the Cap0 event bus; ①⑤⑥ still just switch to the "Đặt lệnh" tab.
+  const handleGo = (no: number) => {
+    if (no === 2 || no === 3 || no === 4) {
+      onLaunchTour?.(no)
+      return
+    }
+    setActivePanel("trading")
+  }
 
   const stageDone = (tasks: number[]) => tasks.every((no) => taskState(no, progress) === "done")
 
@@ -167,7 +184,7 @@ export function JourneyPanel() {
                 key={no}
                 no={no}
                 state={taskState(no, progress)}
-                onGo={goToTrading}
+                onGo={() => handleGo(no)}
               />
             ))}
           </div>

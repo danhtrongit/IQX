@@ -58,6 +58,14 @@ export interface Cap0EventHandlers {
    * update the bar before any server confirmation.
    */
   onSlTyped?: () => void
+  /**
+   * Journey's "Làm ngay →" for a Chặng 2 task (②/③/④) — launches that task's
+   * product tour instead of switching to the trading panel (T2,
+   * `docs/superpowers/plans/2026-07-27-cap0-tours.md`). `Cap0TradingPage`
+   * (the tour host — it owns the `useTour`/`TourOverlay` instances) registers
+   * the real dispatch; `JourneyPanel` just calls `onLaunchTour(no)`.
+   */
+  onLaunchTour?: (taskNo: number) => void
 }
 
 /** The bus value: notify fns (undefined when no handlers) + `registerHandlers`. */
@@ -82,8 +90,16 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
   const handlersRef = useRef<Cap0EventHandlers>({})
   const { data: progress } = useCap0Progress()
 
+  // MERGE (not replace) — there are now TWO independent registrants: `Gbar`
+  // (task ①/⑤/⑥ events) and `Cap0TradingPage`'s tour host (`onLaunchTour`,
+  // T2). A plain `handlersRef.current = handlers` would let whichever one's
+  // effect runs/re-runs LAST wipe out the other's handlers entirely (both
+  // call this on mount, and `Gbar`'s also re-fires on `task1Done` changes).
+  // Merging keeps every previously-registered key intact unless the SAME
+  // caller re-registers it (which just refreshes that key's closure, as
+  // `Gbar` already relies on for its `task1Done`-dependent handlers).
   const registerHandlers = useCallback((handlers: Cap0EventHandlers) => {
-    handlersRef.current = handlers
+    handlersRef.current = { ...handlersRef.current, ...handlers }
   }, [])
 
   const onReasonPicked = useCallback((reason: string) => {
@@ -106,6 +122,10 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
     handlersRef.current.onSlTyped?.()
   }, [])
 
+  const onLaunchTour = useCallback((taskNo: number) => {
+    handlersRef.current.onLaunchTour?.(taskNo)
+  }, [])
+
   // Fail-closed while progress is still loading (`progress` undefined →
   // `task_1_done_at` undefined → the gate stays required), matching the
   // product's "chặn nếu chưa chọn" protective default.
@@ -118,6 +138,7 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
       onStarToggled,
       onGbarWarn,
       onSlTyped,
+      onLaunchTour,
       registerHandlers,
       isCap0Active: true,
       requireReasonBeforeOrder,
@@ -128,6 +149,7 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
       onStarToggled,
       onGbarWarn,
       onSlTyped,
+      onLaunchTour,
       registerHandlers,
       requireReasonBeforeOrder,
     ],

@@ -31,7 +31,7 @@ export function CenterPanel({ onMarkClick }: CenterPanelProps = {}) {
       className="flex flex-1 flex-col min-w-0 bg-[var(--color-bg-1)]"
     >
       {/* TradingView Chart - fills entire center panel */}
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0" data-tour-id="cap0-tour-chart">
         <TVChart
           symbol={symbol}
           interval="D"

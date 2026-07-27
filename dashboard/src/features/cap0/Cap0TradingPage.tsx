@@ -7,14 +7,16 @@ import { usePremiumStatus } from "@/features/premium"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
 import { CenterPanel, RightSidebar, RightToolbar } from "@/features/dashboard"
 import { IconBrainCircuit } from "@/shared/icons"
-import { Cap0Provider } from "./Cap0Context"
+import { useTour, TourOverlay } from "@/features/tour"
+import { Cap0Provider, useCap0Events } from "./Cap0Context"
 import { ModeBadge } from "./ModeBadge"
 import { JourneyBar } from "./JourneyBar"
 import { Gbar } from "./Gbar"
 import { GraduationModal } from "./GraduationModal"
-import { useCap0Progress, useEnterCap0, usePlacement } from "./hooks"
+import { useCap0Progress, useCompleteTask, useEnterCap0, usePlacement } from "./hooks"
 import { PlacementModal } from "./PlacementModal"
 import { tradingModeFor } from "./types"
+import { bangDienTour, bangDienTourStepPanels } from "./tours/bangDienTour"
 import "./cap0.css"
 
 const SEO_TITLE = "IQX Demo Trading · Cấp 0 «Nhập môn»"
@@ -119,6 +121,37 @@ function Cap0Terminal() {
     return () => setActivePanel(prevPanelRef.current)
   }, [])
 
+  // Chặng 2 tour host (T2, `docs/superpowers/plans/2026-07-27-cap0-tours.md`):
+  // this is where the `useTour`/`TourOverlay` instances actually live —
+  // Journey's "Làm ngay →" for tasks ②③④ just calls `onLaunchTour(no)` on the
+  // Cap0 event bus (see `JourneyPanel`), and THIS is the one place that
+  // registers a handler for it. `registerHandlers` MERGES (doesn't replace)
+  // with `Gbar`'s own registration — see `Cap0Context.tsx`'s comment. Only ②
+  // (Bảng điện) has a real tour built this delivery; ③/④ launches are a
+  // no-op until T3/T4 add their configs here.
+  const { registerHandlers } = useCap0Events()
+  const completeTask = useCompleteTask()
+
+  const bangDienTourController = useTour(bangDienTour, {
+    onComplete: () => completeTask.mutate({ taskNo: 2 }),
+    // `RightSidebar` only ever renders ONE panel at a time — switch to
+    // whichever panel each step's target actually lives in (see
+    // `bangDienTourStepPanels`'s docstring); `undefined` = no switch needed.
+    onStepView: (i) => {
+      const panel = bangDienTourStepPanels[i]
+      if (panel) setActivePanel(panel)
+    },
+  })
+
+  useEffect(() => {
+    registerHandlers({
+      onLaunchTour: (taskNo) => {
+        if (taskNo === 2) bangDienTourController.start()
+      },
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registerHandlers])
+
   // Guard (§3): show only once — needs BOTH the server truth (no progress row
   // yet, i.e. never entered Cấp 0) AND the local "already answered" flag
   // (covers the "Đã từng" branch, which never creates a progress row). Wait
@@ -218,6 +251,11 @@ function Cap0Terminal() {
           progress shows 6/6 + both behaviour gates (see `isGraduationReady`),
           closes itself once `graduated_at` comes back from the mutation. */}
       <GraduationModal />
+
+      {/* Chặng 2 Bảng điện tour (T2) — renders nothing until
+          `bangDienTourController.start()` is called (Journey "Làm ngay →"
+          on task ②, via the Cap0 event bus). */}
+      <TourOverlay config={bangDienTour} controller={bangDienTourController} />
 
       {/* AI Insight symbol picker — identical to DashboardPage's */}
       <Modal

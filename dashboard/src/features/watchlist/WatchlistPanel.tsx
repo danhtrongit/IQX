@@ -649,22 +649,30 @@ export function WatchlistPanel({ onRowSelect }: { onRowSelect?: (symbol: string)
 
   return (
     <aside className="flex h-full w-full shrink-0 flex-col bg-[var(--color-bg-2)]">
-      <Tabs
-        activeTab={activeTab}
-        onChange={handleTabChange}
-        size="small"
-        className="flex h-full flex-col [&_.arco-tabs-content]:flex [&_.arco-tabs-content]:flex-1 [&_.arco-tabs-content]:flex-col [&_.arco-tabs-content]:min-h-0 [&_.arco-tabs-content-inner]:flex-1 [&_.arco-tabs-content-inner]:min-h-0 [&_.arco-tabs-content-item-active]:flex [&_.arco-tabs-content-item-active]:h-full [&_.arco-tabs-content-item-active]:flex-col [&_.arco-tabs-content-item-active]:min-h-0 [&_.arco-tabs-pane]:flex-1 [&_.arco-tabs-pane]:min-h-0"
+      {/* Bảng điện tour point ⑧ (spec `IQX-Tour-BangDien.md`) targets this
+          cụm 3 tab — wrapped so `data-tour-id` doesn't need to typecheck
+          against Arco's `TabsProps`. */}
+      <div
+        data-tour-id="cap0-tour-portfolio-tabs"
+        className="flex h-full min-h-0 flex-1 flex-col"
       >
-        <Tabs.TabPane key="watchlist" title={<TabTitle icon={<IconEye />} label="Theo dõi" />}>
-          <WatchlistTab onRowSelect={onRowSelect} />
-        </Tabs.TabPane>
-        <Tabs.TabPane key="holdings" title={<TabTitle icon={<IconBriefcase />} label="Nắm giữ" />}>
-          <HoldingsTab onRowSelect={onRowSelect} />
-        </Tabs.TabPane>
-        <Tabs.TabPane key="history" title={<TabTitle icon={<IconHistory />} label="Lịch sử" />}>
-          <HistoryTab />
-        </Tabs.TabPane>
-      </Tabs>
+        <Tabs
+          activeTab={activeTab}
+          onChange={handleTabChange}
+          size="small"
+          className="flex h-full flex-col [&_.arco-tabs-content]:flex [&_.arco-tabs-content]:flex-1 [&_.arco-tabs-content]:flex-col [&_.arco-tabs-content]:min-h-0 [&_.arco-tabs-content-inner]:flex-1 [&_.arco-tabs-content-inner]:min-h-0 [&_.arco-tabs-content-item-active]:flex [&_.arco-tabs-content-item-active]:h-full [&_.arco-tabs-content-item-active]:flex-col [&_.arco-tabs-content-item-active]:min-h-0 [&_.arco-tabs-pane]:flex-1 [&_.arco-tabs-pane]:min-h-0"
+        >
+          <Tabs.TabPane key="watchlist" title={<TabTitle icon={<IconEye />} label="Theo dõi" />}>
+            <WatchlistTab onRowSelect={onRowSelect} />
+          </Tabs.TabPane>
+          <Tabs.TabPane key="holdings" title={<TabTitle icon={<IconBriefcase />} label="Nắm giữ" />}>
+            <HoldingsTab onRowSelect={onRowSelect} />
+          </Tabs.TabPane>
+          <Tabs.TabPane key="history" title={<TabTitle icon={<IconHistory />} label="Lịch sử" />}>
+            <HistoryTab />
+          </Tabs.TabPane>
+        </Tabs>
+      </div>
     </aside>
   )
 }
