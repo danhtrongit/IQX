@@ -1,0 +1,128 @@
+/* ============================================================
+   IQX · Reusable spotlight tour engine — shared visual standard
+   (Global Constraints, docs/superpowers/plans/2026-07-27-cap0-tours.md):
+   overlay dim, spotlight-hole border/padding/radius, tooltip surface,
+   "2-phase fade" transition timing. Scoped under `.iqx-tour-*`
+   classNames so nothing here leaks into the rest of the app (mirrors
+   the `.cap0` wrapper convention in features/cap0/cap0.css).
+   ============================================================ */
+
+.iqx-tour-root {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+}
+
+/* Dim bands tile the viewport around the spotlight hole (see TourOverlay's
+   `dimBands` — a single full-viewport band when there's no hole). Global
+   Constraints offer two overlay tones ("IQX chuẩn" rgba(10,12,20,.52) vs the
+   tour docs' rgba(6,8,14,.72)) and say to pick one and apply it consistently
+   — this engine uses the darker/more opaque tour-docs value for stronger
+   spotlight contrast against the trading terminal's own dark theme. */
+.iqx-tour-dim {
+  position: fixed;
+  background: rgba(6, 8, 14, 0.72);
+  pointer-events: auto;
+}
+
+/* Spotlight hole ring — brand border + white outline, đệm 9px (padding baked
+   into the rect TourOverlay computes), bo 12px. `pointer-events: none` so it
+   never intercepts clicks meant for the (still-interactive) real target. */
+.iqx-tour-hole {
+  position: fixed;
+  border-radius: 12px;
+  border: 3px solid rgb(var(--primary-6));
+  outline: 2px solid #fff;
+  pointer-events: none;
+  transition:
+    top 350ms ease,
+    left 350ms ease,
+    width 350ms ease,
+    height 350ms ease;
+}
+
+.iqx-tour-tooltip {
+  position: fixed;
+  z-index: 2001;
+  max-width: 380px;
+  padding: 18px;
+  border-radius: 14px;
+  background: #fff;
+  color: #111;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  transition:
+    top 350ms ease,
+    left 350ms ease,
+    opacity 180ms ease;
+}
+
+.iqx-tour-counter {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgb(var(--primary-6));
+  margin-bottom: 6px;
+}
+
+.iqx-tour-tang {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(var(--primary-6), 0.12);
+  color: rgb(var(--primary-6));
+  margin-bottom: 8px;
+}
+
+.iqx-tour-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 6px;
+}
+
+.iqx-tour-body {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #333;
+  margin-bottom: 14px;
+}
+
+.iqx-tour-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.iqx-tour-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iqx-tour-btn {
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+}
+
+.iqx-tour-btn--ghost {
+  color: #888;
+}
+
+.iqx-tour-btn--back {
+  color: rgb(var(--primary-6));
+  border-color: rgba(var(--primary-6), 0.35);
+}
+
+.iqx-tour-btn--primary {
+  background: rgb(var(--primary-6));
+  color: #fff;
+}
