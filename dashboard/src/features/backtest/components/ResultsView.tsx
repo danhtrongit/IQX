@@ -81,7 +81,10 @@ export function KpiGrid({ kpis, meta }: { kpis: Kpis; meta: RunResult["meta"] })
   )
 
   return (
-    <div className="grid grid-cols-2 border-b border-[var(--color-border-2)] md:grid-cols-3 lg:grid-cols-6">
+    <div
+      className="grid grid-cols-2 border-b border-[var(--color-border-2)] md:grid-cols-3 lg:grid-cols-6"
+      data-tour-id="tour-backtester-kpi-grid"
+    >
       <Kpi
         label="Lãi trung bình mỗi năm"
         value={fmtSignedPct(kpis.cagr)}
@@ -156,7 +159,10 @@ export function toPctSeries(
 function EquityChart({ data, symbol }: { data: EquityPoint[]; symbol: string }) {
   if (!data.length) {
     return (
-      <div className="flex h-[200px] items-center justify-center p-4 text-xs italic text-[var(--color-text-3)]">
+      <div
+        className="flex h-[200px] items-center justify-center p-4 text-xs italic text-[var(--color-text-3)]"
+        data-tour-id="tour-backtester-equity-chart"
+      >
         Không có dữ liệu giá trong khoảng thời gian đã chọn.
       </div>
     )
@@ -165,7 +171,7 @@ function EquityChart({ data, symbol }: { data: EquityPoint[]; symbol: string }) 
   const hasVnindex = series.some((p) => p.vnindex != null)
   const fmtPct = (v: number) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%"
   return (
-    <div className="p-4">
+    <div className="p-4" data-tour-id="tour-backtester-equity-chart">
       <div className="h-[280px] w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={series} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
@@ -238,13 +244,16 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
 
   if (!total) {
     return (
-      <div className="border-t border-[var(--color-border-2)] p-4 text-xs italic text-[var(--color-text-3)]">
+      <div
+        className="border-t border-[var(--color-border-2)] p-4 text-xs italic text-[var(--color-text-3)]"
+        data-tour-id="tour-backtester-trades-table"
+      >
         Không có lệnh nào khớp với chiến lược trong khoảng thời gian này.
       </div>
     )
   }
   return (
-    <div className="border-t border-[var(--color-border-2)] p-4">
+    <div className="border-t border-[var(--color-border-2)] p-4" data-tour-id="tour-backtester-trades-table">
       <div className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-2)]">
         <span>Lịch sử giao dịch</span>
         <span className="font-normal normal-case text-[var(--color-text-3)]">
@@ -308,7 +317,10 @@ export function ResultsView({ result }: { result: RunResult }) {
   const { meta, kpis, equity_curve, trades } = result
   return (
     <div className="overflow-hidden rounded-lg border border-[var(--color-border-2)] bg-[var(--color-bg-2)]">
-      <div className="flex items-center justify-between border-b border-[var(--color-border-2)] px-4 py-3.5">
+      <div
+        className="flex items-center justify-between border-b border-[var(--color-border-2)] px-4 py-3.5"
+        data-tour-id="tour-backtester-results-header"
+      >
         <span className="text-[12px] font-bold uppercase tracking-wide text-[var(--color-text-1)]">
           Kết quả backtest
         </span>

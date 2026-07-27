@@ -19,3 +19,8 @@ it("honors ?tab=backtest", () => {
   render(<MemoryRouter initialEntries={["/chien-luoc?tab=backtest"]}><StrategyPage /></MemoryRouter>)
   expect(screen.getByText("BACKTEST_TAB")).toBeInTheDocument()
 })
+
+it("carries a data-tour-id on the tab bar (Backtester tour's step 1 target, T3)", () => {
+  const { container } = render(<MemoryRouter initialEntries={["/chien-luoc"]}><StrategyPage /></MemoryRouter>)
+  expect(container.querySelector('[data-tour-id="tour-strategy-tabs"]')).not.toBeNull()
+})

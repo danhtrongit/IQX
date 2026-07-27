@@ -50,6 +50,7 @@ export function StrategyPage() {
         <div
           role="tablist"
           aria-label="Chiến lược"
+          data-tour-id="tour-strategy-tabs"
           className="flex shrink-0 items-center gap-1 border-b border-[var(--color-border-2)] bg-[var(--color-bg-2)] px-3"
         >
           {TABS.map((t) => {

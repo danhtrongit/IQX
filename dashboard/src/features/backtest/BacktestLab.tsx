@@ -2,6 +2,9 @@ import { useMemo, useState } from "react"
 import { Button, Dropdown, Input, Menu, Message, Modal, Spin } from "@arco-design/web-react"
 import { IconDown, IconLoading, IconPlayArrow, IconSave } from "@arco-design/web-react/icon"
 import { alertsApi } from "@/features/alerts/api"
+import { usePremiumStatus } from "@/features/premium"
+import { TourLaunchButton, TourOverlay, useFeatureTour } from "@/features/tour"
+import { backtesterTour } from "@/features/tour/configs/backtesterTour"
 import { ConfigBar } from "./components/ConfigBar"
 import { FactorLibrary } from "./components/FactorLibrary"
 import { ResultsView } from "./components/ResultsView"
@@ -39,6 +42,13 @@ export function BacktestLab({ initialSymbol }: { initialSymbol?: string }) {
   const { data: saved } = useStrategies()
   const saveStrategy = useSaveStrategy()
   const deleteStrategy = useDeleteStrategy()
+
+  // On-demand product tour (T3, docs/superpowers/plans/2026-07-27-feature-tours.md).
+  // PREMIUM feature — `/chien-luoc`'s shared `PremiumGate` still renders this
+  // component (blurred) for free users, so the launch button gates on its
+  // own explicit premium check rather than the ambient gate.
+  const { isPremium } = usePremiumStatus()
+  const tour = useFeatureTour(backtesterTour, { storageKey: "iqx_tour_backtester" })
 
   const [symbol, setSymbol] = useState(initialSymbol ?? "FPT")
   const [start, setStart] = useState("2020-01-01")
@@ -246,22 +256,27 @@ export function BacktestLab({ initialSymbol }: { initialSymbol?: string }) {
           </Button>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {isPremium && <TourLaunchButton onClick={tour.start} />}
           <Dropdown droplist={savedMenu} position="br">
             <Button size="small" icon={<IconDown />}>
               Đã lưu
             </Button>
           </Dropdown>
-          <Dropdown droplist={templateMenu} position="br">
-            <Button size="small" icon={<IconDown />}>
-              Tải mẫu
+          <div data-tour-id="tour-backtester-load-template">
+            <Dropdown droplist={templateMenu} position="br">
+              <Button size="small" icon={<IconDown />}>
+                Tải mẫu
+              </Button>
+            </Dropdown>
+          </div>
+          <div className="flex items-center gap-2" data-tour-id="tour-backtester-save-alert">
+            <Button size="small" type="outline" icon={<IconSave />} onClick={() => setSaveOpen(true)}>
+              Lưu strategy
             </Button>
-          </Dropdown>
-          <Button size="small" type="outline" icon={<IconSave />} onClick={() => setSaveOpen(true)}>
-            Lưu strategy
-          </Button>
-          <Button size="small" onClick={() => setAlertOpen(true)}>
-            Tạo cảnh báo
-          </Button>
+            <Button size="small" onClick={() => setAlertOpen(true)}>
+              Tạo cảnh báo
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -317,7 +332,10 @@ export function BacktestLab({ initialSymbol }: { initialSymbol?: string }) {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_240px]">
               <RiskConfig risk={risk} onChange={(patch) => setRisk((r) => ({ ...r, ...patch }))} />
-              <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-[var(--color-border-3)] bg-[var(--color-fill-1)] p-4">
+              <div
+                className="flex flex-col items-center justify-center gap-2 rounded-lg border border-[var(--color-border-3)] bg-[var(--color-fill-1)] p-4"
+                data-tour-id="tour-backtester-run"
+              >
                 <Button
                   long
                   type="primary"
@@ -366,6 +384,8 @@ export function BacktestLab({ initialSymbol }: { initialSymbol?: string }) {
         </p>
         <Input placeholder="Tên cảnh báo" value={alertName} onChange={setAlertName} onPressEnter={onCreateAlert} />
       </Modal>
+
+      <TourOverlay config={backtesterTour} controller={tour.controller} />
     </div>
   )
 }

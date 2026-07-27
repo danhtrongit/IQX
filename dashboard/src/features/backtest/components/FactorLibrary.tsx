@@ -115,7 +115,10 @@ export function FactorLibrary({ library, selectedIds, onAdd }: Props) {
   }, [query, library, side])
 
   return (
-    <aside className="flex h-full w-[300px] shrink-0 flex-col overflow-hidden border-r border-[var(--color-border-2)] bg-[var(--color-bg-2)]">
+    <aside
+      className="flex h-full w-[300px] shrink-0 flex-col overflow-hidden border-r border-[var(--color-border-2)] bg-[var(--color-bg-2)]"
+      data-tour-id="tour-backtester-factor-library"
+    >
       <div className="sticky top-0 z-[5] border-b border-[var(--color-border-2)] bg-[var(--color-bg-2)] p-3">
         <div className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-3)]">
           Factor Library · {library.count} chỉ tiêu

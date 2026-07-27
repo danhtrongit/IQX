@@ -21,7 +21,10 @@ export function SymbolInfoBox({ symbol, meta }: Props) {
   const pct = priceData?.percentChange ?? null
 
   return (
-    <div className="rounded-lg border border-[var(--color-border-2)] bg-[var(--color-bg-2)] px-4 py-2.5 text-xs text-[var(--color-text-2)]">
+    <div
+      className="rounded-lg border border-[var(--color-border-2)] bg-[var(--color-bg-2)] px-4 py-2.5 text-xs text-[var(--color-text-2)]"
+      data-tour-id="tour-backtester-symbol-info"
+    >
       {/* Row 1: company name · exchange · industry */}
       <div className="flex flex-wrap gap-x-1.5 font-medium text-[var(--color-text-1)]">
         {profile?.organName && <span>{profile.organName}</span>}

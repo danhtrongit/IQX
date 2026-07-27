@@ -48,7 +48,10 @@ export function RiskConfig({ risk, onChange }: Props) {
   const holdingValue = risk.max_holding == null ? "null" : String(risk.max_holding)
 
   return (
-    <div className="rounded-lg border border-[var(--color-border-2)] bg-[var(--color-bg-2)] p-4">
+    <div
+      className="rounded-lg border border-[var(--color-border-2)] bg-[var(--color-bg-2)] p-4"
+      data-tour-id="tour-backtester-risk"
+    >
       <div className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-3)]">
         Quản trị rủi ro
       </div>

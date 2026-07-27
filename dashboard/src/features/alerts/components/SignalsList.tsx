@@ -32,9 +32,20 @@ export function SignalsList() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-      {(signals ?? []).map((s) => {
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2" data-tour-id="tour-canhbao-signals">
+      {(signals ?? []).map((s, i) => {
         const subscribed = !!ruleFor(s.key)
+        const toggleButton = (
+          <Button
+            size="small"
+            type={subscribed ? "outline" : "primary"}
+            status={subscribed ? "danger" : "default"}
+            loading={createRule.isPending || deleteRule.isPending}
+            onClick={() => onToggle(s)}
+          >
+            {subscribed ? "Bỏ theo dõi" : "Theo dõi"}
+          </Button>
+        )
         return (
           <div
             key={s.key}
@@ -49,15 +60,7 @@ export function SignalsList() {
               </div>
               <div className="mt-1 truncate text-xs text-[var(--color-text-3)]">{s.message_title}</div>
             </div>
-            <Button
-              size="small"
-              type={subscribed ? "outline" : "primary"}
-              status={subscribed ? "danger" : "default"}
-              loading={createRule.isPending || deleteRule.isPending}
-              onClick={() => onToggle(s)}
-            >
-              {subscribed ? "Bỏ theo dõi" : "Theo dõi"}
-            </Button>
+            {i === 0 ? <div data-tour-id="tour-canhbao-signal-toggle">{toggleButton}</div> : toggleButton}
           </div>
         )
       })}

@@ -5,11 +5,15 @@ export function EventsList() {
   const { data: events } = useEvents()
 
   if (!events || events.length === 0) {
-    return <Empty description="Chưa có tín hiệu nào được bắn." />
+    return (
+      <div data-tour-id="tour-canhbao-events">
+        <Empty description="Chưa có tín hiệu nào được bắn." />
+      </div>
+    )
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto" data-tour-id="tour-canhbao-events">
       <table className="w-full border-collapse text-[12px]">
         <thead>
           <tr className="text-[10.5px] uppercase tracking-wide text-[var(--color-text-3)]">

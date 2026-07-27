@@ -23,7 +23,10 @@ export function TelegramConnect() {
   }
 
   return (
-    <div className="rounded-lg border border-[var(--color-border-2)] bg-[var(--color-bg-2)] p-5">
+    <div
+      className="rounded-lg border border-[var(--color-border-2)] bg-[var(--color-bg-2)] p-5"
+      data-tour-id="tour-canhbao-telegram"
+    >
       <div className="flex items-center justify-between gap-4">
         <div>
           <div className="text-sm font-semibold text-[var(--color-text-1)]">Kết nối Telegram</div>

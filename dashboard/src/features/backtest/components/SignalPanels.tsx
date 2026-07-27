@@ -139,7 +139,10 @@ function Panel({
   const accent = side === "buy" ? "text-up" : "text-down"
   const headBg = side === "buy" ? "bg-up/10" : "bg-down/10"
   return (
-    <div className="overflow-hidden rounded-lg border border-[var(--color-border-2)] bg-[var(--color-bg-2)]">
+    <div
+      className="overflow-hidden rounded-lg border border-[var(--color-border-2)] bg-[var(--color-bg-2)]"
+      data-tour-id={side === "buy" ? "tour-backtester-buy" : "tour-backtester-sell"}
+    >
       <div className={`flex items-center justify-between border-b border-[var(--color-border-2)] px-4 py-2.5 ${headBg}`}>
         <span className={`text-[12px] font-bold tracking-wide ${accent}`}>{title}</span>
         <div className="flex items-center gap-2">

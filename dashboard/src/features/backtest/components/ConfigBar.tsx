@@ -16,7 +16,10 @@ const labelCls = "mb-1.5 block text-[10.5px] font-semibold uppercase tracking-wi
 
 export function ConfigBar({ symbol, start, end, capital, onSymbol, onStart, onEnd, onCapital }: Props) {
   return (
-    <div className="grid grid-cols-1 items-end gap-4 rounded-lg border border-[var(--color-border-2)] bg-[var(--color-bg-2)] p-4 md:grid-cols-[2fr_1fr_1fr_1.2fr]">
+    <div
+      className="grid grid-cols-1 items-end gap-4 rounded-lg border border-[var(--color-border-2)] bg-[var(--color-bg-2)] p-4 md:grid-cols-[2fr_1fr_1fr_1.2fr]"
+      data-tour-id="tour-backtester-config-bar"
+    >
       <div>
         <label className={labelCls}>Cổ phiếu</label>
         <Input

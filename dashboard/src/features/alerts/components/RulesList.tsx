@@ -8,11 +8,15 @@ export function RulesList() {
   const deleteRule = useDeleteRule()
 
   if (!rules || rules.length === 0) {
-    return <Empty description="Chưa có cảnh báo nào. Theo dõi một tín hiệu ở trên để bắt đầu." />
+    return (
+      <div data-tour-id="tour-canhbao-rules">
+        <Empty description="Chưa có cảnh báo nào. Theo dõi một tín hiệu ở trên để bắt đầu." />
+      </div>
+    )
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2" data-tour-id="tour-canhbao-rules">
       {rules.map((r) => (
         <div
           key={r.id}
