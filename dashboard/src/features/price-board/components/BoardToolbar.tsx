@@ -1,4 +1,5 @@
 import { useRealtimeStatus } from "@/features/market-data"
+import { TourLaunchButton } from "@/features/tour"
 import { cn } from "@/shared/lib/cn"
 
 /** Board tabs: "WATCHLIST" = danh mục của user, còn lại là nhóm chỉ số/sàn. */
@@ -27,21 +28,24 @@ interface BoardToolbarProps {
   tab: BoardTab
   onTabChange: (tab: BoardTab) => void
   rowCount: number
+  /** Launches the Bảng giá tour (T1). Omit to hide the "Xem hướng dẫn" button. */
+  onLaunchTour?: () => void
 }
 
-/** Search + group tabs on the left, live status + row count on the right. */
+/** Search + group tabs on the left, tour button + live status + row count on the right. */
 export function BoardToolbar({
   search,
   onSearchChange,
   tab,
   onTabChange,
   rowCount,
+  onLaunchTour,
 }: BoardToolbarProps) {
   const isRealtime = useRealtimeStatus()
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2" data-tour-id="tour-banggia-search-tabs">
         <input
           value={search}
           onChange={(e) => onSearchChange(e.target.value.toUpperCase())}
@@ -69,16 +73,22 @@ export function BoardToolbar({
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-3)]">
-        <span
-          className={cn(
-            "size-1.5 rounded-full",
-            isRealtime ? "bg-up" : "bg-[var(--color-fill-4)]",
-          )}
-        />
-        <span>{isRealtime ? "Realtime" : "Cập nhật định kỳ"}</span>
-        <span>·</span>
-        <span className="tabular-nums">{rowCount} mã</span>
+      <div className="flex items-center gap-2">
+        {onLaunchTour && <TourLaunchButton onClick={onLaunchTour} />}
+        <div
+          className="flex items-center gap-1.5 text-xs text-[var(--color-text-3)]"
+          data-tour-id="tour-banggia-realtime"
+        >
+          <span
+            className={cn(
+              "size-1.5 rounded-full",
+              isRealtime ? "bg-up" : "bg-[var(--color-fill-4)]",
+            )}
+          />
+          <span>{isRealtime ? "Realtime" : "Cập nhật định kỳ"}</span>
+          <span>·</span>
+          <span className="tabular-nums">{rowCount} mã</span>
+        </div>
       </div>
     </div>
   )

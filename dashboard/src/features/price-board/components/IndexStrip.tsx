@@ -185,7 +185,10 @@ function IndexCard({
 export function IndexStrip() {
   const { indices } = useIndices()
   return (
-    <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 lg:grid-cols-4">
+    <div
+      className="grid min-w-0 flex-1 grid-cols-2 gap-2 lg:grid-cols-4"
+      data-tour-id="tour-banggia-index-strip"
+    >
       {CARDS.map((card) => (
         <IndexCard
           key={card.code}

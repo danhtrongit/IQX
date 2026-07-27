@@ -3,6 +3,8 @@ import { useNavigate } from "react-router"
 import { useAuth } from "@/features/auth"
 import { usePrices } from "@/features/market-data"
 import { useGroups } from "@/features/stock-directory/hooks"
+import { useFeatureTour, TourOverlay } from "@/features/tour"
+import { bangGiaTour } from "@/features/tour/configs/bangGiaTour"
 import { useWatchlist } from "@/features/watchlist"
 import { BoardTable } from "./components/BoardTable"
 import { BoardToolbar, type BoardTab } from "./components/BoardToolbar"
@@ -77,6 +79,10 @@ export default function BangGiaPage() {
     [navigate],
   )
 
+  // On-demand product tour (T1, docs/superpowers/plans/2026-07-27-feature-tours.md).
+  // Free page — no premium gate on the launch button.
+  const banGiaTour = useFeatureTour(bangGiaTour, { storageKey: "iqx_tour_banggia" })
+
   return (
     <div className="mx-auto flex w-full max-w-[1700px] flex-col gap-3 px-3 py-3">
       <div className="flex items-stretch gap-3">
@@ -89,8 +95,10 @@ export default function BangGiaPage() {
         tab={tab}
         onTabChange={setTab}
         rowCount={rows.length}
+        onLaunchTour={banGiaTour.start}
       />
       <BoardTable rows={rows} emptyHint={emptyHint} onOpen={onOpen} />
+      <TourOverlay config={bangGiaTour} controller={banGiaTour.controller} />
     </div>
   )
 }

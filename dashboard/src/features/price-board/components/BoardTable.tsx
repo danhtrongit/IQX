@@ -24,18 +24,18 @@ export function BoardTable({ rows, emptyHint, onOpen }: BoardTableProps) {
       <table className="w-full min-w-[1280px] border-collapse text-xs">
         <thead className="sticky top-0 z-20 bg-[var(--color-bg-2)] text-[10px] uppercase text-[var(--color-text-3)]">
           <tr className="border-b border-[var(--color-border-2)]">
-            <th rowSpan={2} className="sticky left-0 z-30 bg-[var(--color-bg-2)] px-2 py-2 text-left">Mã</th>
-            <th rowSpan={2} className="px-2 py-2 text-right">Trần</th>
+            <th rowSpan={2} className="sticky left-0 z-30 bg-[var(--color-bg-2)] px-2 py-2 text-left" data-tour-id="tour-banggia-col-symbol">Mã</th>
+            <th rowSpan={2} className="px-2 py-2 text-right" data-tour-id="tour-banggia-col-price-bands">Trần</th>
             <th rowSpan={2} className="px-2 py-2 text-right">Sàn</th>
             <th rowSpan={2} className="px-2 py-2 text-right">TC</th>
-            <th colSpan={6} className="border-l border-[var(--color-border-2)] px-2 py-1 text-center text-up">Bên mua</th>
-            <th colSpan={4} className="border-l border-[var(--color-border-2)] px-2 py-1 text-center">Khớp lệnh</th>
-            <th colSpan={6} className="border-l border-[var(--color-border-2)] px-2 py-1 text-center text-down">Bên bán</th>
+            <th colSpan={6} className="border-l border-[var(--color-border-2)] px-2 py-1 text-center text-up" data-tour-id="tour-banggia-bid">Bên mua</th>
+            <th colSpan={4} className="border-l border-[var(--color-border-2)] px-2 py-1 text-center" data-tour-id="tour-banggia-match">Khớp lệnh</th>
+            <th colSpan={6} className="border-l border-[var(--color-border-2)] px-2 py-1 text-center text-down" data-tour-id="tour-banggia-ask">Bên bán</th>
             <th rowSpan={2} className="border-l border-[var(--color-border-2)] px-2 py-2 text-right">Tổng KL</th>
             <th rowSpan={2} className="px-2 py-2 text-right">GT (tỷ)</th>
             <th rowSpan={2} className="px-2 py-2 text-right">Cao</th>
             <th rowSpan={2} className="px-2 py-2 text-right">Thấp</th>
-            <th colSpan={3} className="border-l border-[var(--color-border-2)] px-2 py-1 text-center">ĐTNN</th>
+            <th colSpan={3} className="border-l border-[var(--color-border-2)] px-2 py-1 text-center" data-tour-id="tour-banggia-foreign">ĐTNN</th>
           </tr>
           <tr className="border-b border-[var(--color-border-2)]">
             <th className={TH_BL}>Giá 3</th>
