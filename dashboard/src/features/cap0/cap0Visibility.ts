@@ -10,9 +10,9 @@ import type { Cap0Progress } from "./types"
  * component renders exactly as it does today.
  *
  * Spec §8 table → condition mở lại:
- *  - Sổ lệnh bid/ask            → xong nhiệm vụ ② (tour bảng điện — NOT built
- *    this delivery, Chặng 2 is 3 locked slots, so this stays hidden for the
- *    whole of this delivery's Cấp 0 — expected, not a bug).
+ *  - Sổ lệnh bid/ask            → xong nhiệm vụ ② (tour bảng điện — now built
+ *    this delivery: `bangDienTour`/`TourOverlay`, launched from Journey's
+ *    "Làm ngay →" on task ②; completing the tour's last step unlocks this).
  *  - Ô Giá / dropdown MP/LO     → nhiệm vụ ⑤ mở, tức là xong nhiệm vụ ①.
  *  - Tab "Tin tức" / "AI Mẫu nến" → lên Cấp 1 (tốt nghiệp Cấp 0).
  *

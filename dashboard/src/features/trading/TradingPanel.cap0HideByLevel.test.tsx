@@ -5,8 +5,10 @@ import { describe, expect, it, vi, beforeEach } from "vitest"
 
 /**
  * Progressive hide-by-level (spec §8) inside `TradingPanel`/`OrderEntry`:
- *  - Sổ lệnh bid/ask ẩn cho đến nhiệm vụ ② (never done this delivery — stays
- *    hidden throughout, that's expected, not a bug).
+ *  - Sổ lệnh bid/ask ẩn cho đến nhiệm vụ ② (nhiệm vụ ② is completed via the
+ *    Bảng điện tour — `bangDienTour`/`TourOverlay` — this delivery; these
+ *    tests only exercise `cap0Visibility`'s reaction to `task_2_done_at`
+ *    directly, not the tour itself).
  *  - Ô Giá + dropdown loại lệnh (MP/LO) ẩn cho đến nhiệm vụ ⑤ (tức là xong
  *    nhiệm vụ ①).
  *  - Cổng chất lượng 1 (nhiệm vụ ⑤): `keydown` vào ô cắt lỗ (manual mode) →
@@ -170,7 +172,7 @@ describe("TradingPanel — hide-by-level (spec §8)", () => {
     expect(screen.queryByText("Lệnh thị trường (MP)")).not.toBeInTheDocument()
   })
 
-  it("reveals Ô Giá + dropdown loại lệnh once task ① is done (nhiệm vụ ⑤ mở) — sổ lệnh stays hidden (task ② never done this delivery)", async () => {
+  it("reveals Ô Giá + dropdown loại lệnh once task ① is done (nhiệm vụ ⑤ mở) — sổ lệnh stays hidden (task ② not done in this fixture)", async () => {
     renderInCap0(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
     await waitFor(() => expect(screen.getByText("Giá")).toBeInTheDocument())
 

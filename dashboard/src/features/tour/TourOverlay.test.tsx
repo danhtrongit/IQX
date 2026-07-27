@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react"
-import React from "react"
+import React, { useState } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import type { TourConfig } from "./tourTypes"
 import { useTour, type UseTourOptions } from "./useTour"
@@ -21,6 +21,32 @@ function Harness({ config, callbacks }: { config: TourConfig; callbacks: UseTour
       <button type="button" onClick={controller.start}>
         __start__
       </button>
+      <TourOverlay config={config} controller={controller} />
+    </>
+  )
+}
+
+/**
+ * Reproduces the target-resolution race (bug fix under test): the step's
+ * `data-tour-id` target does NOT exist in the DOM on the render where
+ * `TourOverlay`'s layout effect first resolves it — it only mounts once
+ * `onStepView` fires. `useTour` fires `onStepView` from a `useEffect`, i.e. a
+ * PASSIVE effect that commits after `TourOverlay`'s `useLayoutEffect`, same
+ * ordering as the real bug (`Cap0TradingPage`'s `onStepView` → `setActivePanel`
+ * switching the sidebar panel that owns the target).
+ */
+function LateTargetHarness({ config }: { config: TourConfig }) {
+  const [showTarget, setShowTarget] = useState(false)
+  const controller = useTour(config, {
+    onComplete: vi.fn(),
+    onStepView: () => setShowTarget(true),
+  })
+  return (
+    <>
+      <button type="button" onClick={controller.start}>
+        __start__
+      </button>
+      {showTarget && <div data-tour-id="late-target" style={{ width: 40, height: 40 }} />}
       <TourOverlay config={config} controller={controller} />
     </>
   )
@@ -175,5 +201,32 @@ describe("TourOverlay", () => {
     })
     expect(screen.getByText("ĐIỂM 2/3")).toBeInTheDocument()
     expect(onStepView).not.toHaveBeenCalledWith(2)
+  })
+
+  it("resolves the spotlight hole once the target mounts a render AFTER the step becomes active (panel-switch race)", () => {
+    const config: TourConfig = {
+      name: "late-target-tour",
+      steps: [{ targetId: "late-target", title: "Bảng điện", body: "Nội dung" }],
+    }
+    render(<LateTargetHarness config={config} />)
+
+    act(() => {
+      fireEvent.click(screen.getByText("__start__"))
+    })
+
+    // Immediately on activation the target isn't in the DOM yet (mirrors the
+    // real Cấp 0 Bảng điện tour's step 0/7 before `onStepView`'s
+    // `setActivePanel` has switched the sidebar panel) — no hole yet, without
+    // the fix this would never change.
+    expect(document.querySelector(".iqx-tour-hole")).not.toBeInTheDocument()
+
+    // Flush the fake-timer clock: this both lets the passive `onStepView`
+    // effect mount the target AND lets `TourOverlay`'s rAF poll (also on the
+    // fake clock) notice it and measure the hole.
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+
+    expect(document.querySelector(".iqx-tour-hole")).toBeInTheDocument()
   })
 })

@@ -17,6 +17,12 @@ const SCROLL_SETTLE_MS = 300
 const HOLE_PADDING = 9
 const TOOLTIP_GAP = 14
 const VIEWPORT_MARGIN = 12
+/**
+ * Bound on re-resolving a non-`centered` step's target when it isn't in the
+ * DOM yet on the first attempt (~1s at one rAF tick each) — see the
+ * `useLayoutEffect` below for why this race exists.
+ */
+const TARGET_POLL_MAX_FRAMES = 30
 
 interface Rect {
   top: number
@@ -137,27 +143,74 @@ export function TourOverlay({ config, controller }: TourOverlayProps) {
   // the ~350-400ms window has elapsed. Keyed on [active, index] only — `step`
   // is fully determined by `index` for a given `config`, and `controller`'s
   // handler identities are stable (`useCallback` in useTour).
+  //
+  // Target-resolution race: some steps (e.g. `bangDienTour`'s step 0/7) only
+  // have their target mount once a SIBLING effect switches the sidebar panel
+  // (`Cap0TradingPage`'s `onStepView` → `setActivePanel`, a passive effect
+  // that commits AFTER this layout effect). On the first render of such a
+  // step, `resolveTarget` finds nothing. Rather than settling for a
+  // permanent `hole: null` (no-target/centered fallback), poll for the
+  // target via `requestAnimationFrame` for up to `TARGET_POLL_MAX_FRAMES`
+  // (~1s) — once it appears, measure it (scrolling into view first if it's
+  // off-screen) same as the immediate-resolution path. `centered` steps and
+  // steps whose target resolves immediately never enter this branch, so
+  // their behaviour is unchanged.
   useLayoutEffect(() => {
     if (!active || !step) return
 
     const el = resolveTarget(step)
-    const measure = () => setHole(el ? toHole(el.getBoundingClientRect()) : null)
-    measure()
+    const measure = (target: HTMLElement | null) => setHole(target ? toHole(target.getBoundingClientRect()) : null)
+    measure(el)
 
     let settleTimer: ReturnType<typeof window.setTimeout> | undefined
     let busyTimer: ReturnType<typeof window.setTimeout>
+    let pollRafId: number | undefined
+    let pollSettleTimer: ReturnType<typeof window.setTimeout> | undefined
+
+    const stopPolling = () => {
+      if (pollRafId !== undefined && typeof window.cancelAnimationFrame === "function") {
+        window.cancelAnimationFrame(pollRafId)
+      }
+      pollRafId = undefined
+      if (pollSettleTimer !== undefined) window.clearTimeout(pollSettleTimer)
+    }
+
+    if (!el && !step.centered && typeof window.requestAnimationFrame === "function") {
+      let framesLeft = TARGET_POLL_MAX_FRAMES
+      const poll = () => {
+        pollRafId = undefined
+        const found = resolveTarget(step)
+        if (found) {
+          if (isInViewport(found.getBoundingClientRect())) {
+            measure(found)
+          } else {
+            if (typeof found.scrollIntoView === "function") {
+              found.scrollIntoView({ block: "center" })
+            }
+            pollSettleTimer = window.setTimeout(() => measure(resolveTarget(step)), SCROLL_SETTLE_MS)
+          }
+          return
+        }
+        framesLeft -= 1
+        if (framesLeft > 0) {
+          pollRafId = window.requestAnimationFrame(poll)
+        }
+      }
+      pollRafId = window.requestAnimationFrame(poll)
+    }
 
     if (el && !isInViewport(el.getBoundingClientRect())) {
       if (typeof el.scrollIntoView === "function") {
         el.scrollIntoView({ block: "center" })
       }
-      settleTimer = window.setTimeout(measure, SCROLL_SETTLE_MS)
+      settleTimer = window.setTimeout(() => measure(el), SCROLL_SETTLE_MS)
       busyTimer = window.setTimeout(() => controller.setBusy(false), SCROLL_SETTLE_MS + TRANSITION_MS)
     } else {
       busyTimer = window.setTimeout(() => controller.setBusy(false), TRANSITION_MS)
     }
 
     return () => {
+      stopPolling()
       if (settleTimer !== undefined) window.clearTimeout(settleTimer)
       window.clearTimeout(busyTimer)
     }
