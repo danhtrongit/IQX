@@ -114,6 +114,7 @@ const MarketTicker = memo(function MarketTicker({ indices }: { indices: IndexDat
   return (
     <div
       ref={containerRef}
+      data-tour-id="tour-bieudo-market-ticker"
       className="flex-1 overflow-hidden"
       onMouseEnter={() => { pausedRef.current = true }}
       onMouseLeave={() => { pausedRef.current = false }}

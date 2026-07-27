@@ -4,6 +4,8 @@ import { Modal, Input, Button } from "@arco-design/web-react"
 import { SymbolProvider } from "@/shared/contexts/symbol-context"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
 import { IconBrainCircuit } from "@/shared/icons"
+import { useFeatureTour, TourOverlay, TourLaunchButton } from "@/features/tour"
+import { bieuDoTour } from "@/features/tour/configs/bieuDoTour"
 import { CenterPanel } from "./components/CenterPanel"
 import { RightSidebar } from "./components/RightSidebar"
 import { RightToolbar } from "./components/RightToolbar"
@@ -79,6 +81,10 @@ function DashboardTerminal() {
     navigate(`/co-phieu/${trimmedAiInsight}`)
   }
 
+  // On-demand product tour (T2, docs/superpowers/plans/2026-07-27-feature-tours.md).
+  // Free page — no premium gate on the launch button.
+  const bieuDo = useFeatureTour(bieuDoTour, { storageKey: "iqx_tour_bieudo" })
+
   return (
     <div
       id="dashboard-root"
@@ -87,6 +93,11 @@ function DashboardTerminal() {
       <TrialBanner />
       <Header />
       <MarketBar />
+
+      {/* Slim header corner of the terminal — hosts the tour affordance only. */}
+      <div className="flex items-center justify-end border-b border-[var(--color-border-2)] px-2">
+        <TourLaunchButton onClick={bieuDo.start} />
+      </div>
 
       {/* No custom LeftSidebar — TradingView provides its own drawing toolbar on the left. */}
       <div className="flex flex-1 min-h-0 pb-[52px] md:pb-0">
@@ -103,6 +114,8 @@ function DashboardTerminal() {
         markId={activeMarkId}
         onClose={() => setActiveMarkId(null)}
       />
+
+      <TourOverlay config={bieuDoTour} controller={bieuDo.controller} />
 
       {/* AI Insight symbol picker */}
       <Modal
