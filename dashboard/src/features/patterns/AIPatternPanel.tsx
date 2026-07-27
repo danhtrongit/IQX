@@ -7,6 +7,9 @@ import {
 import { useSymbol } from "@/shared/contexts/symbol-context"
 import { cn } from "@/shared/lib/cn"
 import { IconCandlestick, IconTrendLineChart, IconSparkles } from "@/shared/icons"
+import { usePremiumStatus } from "@/features/premium"
+import { TourLaunchButton, TourOverlay, useFeatureTour } from "@/features/tour"
+import { mauNenTour } from "@/features/tour/configs/mauNenTour"
 import { usePatterns } from "./hooks"
 import type { PatternKind, PatternSignal } from "./api"
 import { CandlePatternIllustration, ChartPatternIllustration } from "./PatternIllustration"
@@ -56,6 +59,15 @@ export function AIPatternPanel() {
 
   const { items, isLoading, isError } = usePatterns(kind, symbol || null)
 
+  // On-demand product tour (T5, docs/superpowers/plans/2026-07-27-feature-tours.md).
+  // PREMIUM feature — `RightSidebar` already wraps this panel in a
+  // `<PremiumGate>`, but that gate still renders its children (blurred) for
+  // free users, so the launch button gates on its own explicit
+  // `usePremiumStatus()` check (same rationale as `canhBaoTour`/
+  // `quanLyDanhMucTour`'s launch buttons).
+  const { isPremium } = usePremiumStatus()
+  const tour = useFeatureTour(mauNenTour, { storageKey: "iqx_tour_maunen" })
+
   // Reset the active index whenever the result set changes.
   useEffect(() => {
     setActiveIdx(0)
@@ -95,9 +107,20 @@ export function AIPatternPanel() {
 
   return (
     <div className="flex flex-col h-full">
+      {isPremium && (
+        <div className="flex items-center justify-end px-2 pt-1.5">
+          <TourLaunchButton onClick={tour.start} />
+        </div>
+      )}
       {/* Header — segmented buttons to switch kind */}
-      <div className="flex items-center gap-1.5 px-2 py-2 border-b border-[var(--color-border-2)] bg-[var(--color-bg-2)]">
-        <div className="flex-1 inline-flex items-center rounded-md bg-[var(--color-fill-2)] p-0.5 gap-0.5">
+      <div
+        data-tour-id="tour-maunen-header"
+        className="flex items-center gap-1.5 px-2 py-2 border-b border-[var(--color-border-2)] bg-[var(--color-bg-2)]"
+      >
+        <div
+          data-tour-id="tour-maunen-kind-switch"
+          className="flex-1 inline-flex items-center rounded-md bg-[var(--color-fill-2)] p-0.5 gap-0.5"
+        >
           {(
             [
               { id: "candles" as const, icon: IconCandlestick, label: "AI Mẫu nến" },
@@ -146,7 +169,7 @@ export function AIPatternPanel() {
           ) : (
             <>
               {/* Hero header — pattern name + signal/state badges */}
-              <div className="flex items-start justify-between gap-2">
+              <div data-tour-id="tour-maunen-hero" className="flex items-start justify-between gap-2">
                 <h2 className="text-2xl font-extrabold text-[var(--color-text-1)] leading-tight tracking-tight">
                   {active.name}
                 </h2>
@@ -171,7 +194,10 @@ export function AIPatternPanel() {
               </div>
 
               {/* Illustration — rendered inline as theme-aware SVG */}
-              <div className="rounded-lg border border-[var(--color-border-2)] bg-[var(--color-fill-1)] p-3">
+              <div
+                data-tour-id="tour-maunen-illustration"
+                className="rounded-lg border border-[var(--color-border-2)] bg-[var(--color-fill-1)] p-3"
+              >
                 <div className="flex items-center gap-1 text-[10px] text-[var(--color-text-3)] mb-2">
                   <span>
                     {kind === "candles"
@@ -189,35 +215,41 @@ export function AIPatternPanel() {
                 </div>
               </div>
 
-              {/* Meaning card */}
-              {active.meaning && (
-                <div className="rounded-lg border border-[var(--color-border-2)] bg-[var(--color-fill-1)] p-3 space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-[var(--color-text-1)]">
-                    <IconInfoCircle className="text-[rgb(var(--primary-6))]" />
-                    <span>Ý nghĩa</span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-[var(--color-text-2)]">
-                    {active.meaning}
-                  </p>
-                </div>
-              )}
+              {/* Meaning + Action cards — grouped under one tour target (tour
+                  step "Ý nghĩa + Hành động đề xuất" covers both in one stop). */}
+              {(active.meaning || active.action) && (
+                <div data-tour-id="tour-maunen-meaning-action" className="space-y-3">
+                  {/* Meaning card */}
+                  {active.meaning && (
+                    <div className="rounded-lg border border-[var(--color-border-2)] bg-[var(--color-fill-1)] p-3 space-y-1.5">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-[var(--color-text-1)]">
+                        <IconInfoCircle className="text-[rgb(var(--primary-6))]" />
+                        <span>Ý nghĩa</span>
+                      </div>
+                      <p className="text-[11px] leading-relaxed text-[var(--color-text-2)]">
+                        {active.meaning}
+                      </p>
+                    </div>
+                  )}
 
-              {/* Action card */}
-              {active.action && (
-                <div className="rounded-lg border border-[var(--color-success-light-3)] bg-[var(--color-success-light-1)] p-3 space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-up">
-                    <IconCheckCircle />
-                    <span>Hành động đề xuất</span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-[var(--color-text-2)]">
-                    {active.action}
-                  </p>
+                  {/* Action card */}
+                  {active.action && (
+                    <div className="rounded-lg border border-[var(--color-success-light-3)] bg-[var(--color-success-light-1)] p-3 space-y-1.5">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-up">
+                        <IconCheckCircle />
+                        <span>Hành động đề xuất</span>
+                      </div>
+                      <p className="text-[11px] leading-relaxed text-[var(--color-text-2)]">
+                        {active.action}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* All patterns rendered inline. Scroll via parent. */}
               {items.length > 0 && (
-                <div className="space-y-1.5">
+                <div data-tour-id="tour-maunen-list" className="space-y-1.5">
                   <div className="flex items-center justify-between px-1">
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-3)]">
                       Tất cả pattern
@@ -261,6 +293,8 @@ export function AIPatternPanel() {
           )}
         </div>
       </div>
+
+      <TourOverlay config={mauNenTour} controller={tour.controller} />
     </div>
   )
 }

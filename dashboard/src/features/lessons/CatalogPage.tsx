@@ -9,6 +9,8 @@ import {
   Typography,
 } from "@arco-design/web-react"
 import { IconSearch } from "@arco-design/web-react/icon"
+import { TourLaunchButton, TourOverlay, useFeatureTour } from "@/features/tour"
+import { baiHocTour } from "@/features/tour/configs/baiHocTour"
 import { LessonCard } from "./components/LessonCard"
 import { useCourses } from "./hooks"
 import {
@@ -68,6 +70,12 @@ export default function CatalogPage() {
   const courses = data?.items ?? []
   const total = data?.total ?? 0
 
+  // On-demand product tour (T5, docs/superpowers/plans/2026-07-27-feature-tours.md).
+  // FREE feature — the catalog + course detail are free to browse, so no
+  // premium gate on the launch button (unlike mauNenTour/canhBaoTour/
+  // backtesterTour/quanLyDanhMucTour).
+  const tour = useFeatureTour(baiHocTour, { storageKey: "iqx_tour_baihoc" })
+
   const hasFilters =
     !!search || level !== "all" || category !== "all" || premiumFilter !== "all"
 
@@ -82,13 +90,16 @@ export default function CatalogPage() {
   return (
     <main className="flex-1 container mx-auto max-w-7xl px-4 py-8">
       {/* Page header */}
-      <div className="mb-8">
-        <Typography.Title heading={4} style={{ marginTop: 0, marginBottom: 4 }}>
-          Kiến thức
-        </Typography.Title>
-        <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-          Khám phá các khoá học đầu tư chứng khoán từ cơ bản đến nâng cao
-        </Typography.Text>
+      <div className="mb-8 flex items-start justify-between gap-3">
+        <div>
+          <Typography.Title heading={4} style={{ marginTop: 0, marginBottom: 4 }}>
+            Kiến thức
+          </Typography.Title>
+          <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+            Khám phá các khoá học đầu tư chứng khoán từ cơ bản đến nâng cao
+          </Typography.Text>
+        </div>
+        <TourLaunchButton onClick={tour.start} />
       </div>
 
       {/* Filters */}
@@ -177,6 +188,8 @@ export default function CatalogPage() {
           />
         </div>
       )}
+
+      <TourOverlay config={baiHocTour} controller={tour.controller} />
     </main>
   )
 }

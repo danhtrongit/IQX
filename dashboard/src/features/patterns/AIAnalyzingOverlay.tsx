@@ -42,7 +42,7 @@ export function AIAnalyzingOverlay({ label }: { label?: string }) {
   }, [])
 
   return (
-    <div className="flex flex-col items-center justify-center py-10 px-4">
+    <div data-tour-id="tour-maunen-scanning" className="flex flex-col items-center justify-center py-10 px-4">
       {/* Visual: candle skeleton with a scanning beam */}
       <div className="relative w-full max-w-[260px] aspect-[16/9] rounded-xl border border-[var(--color-primary-light-3)] bg-gradient-to-br from-[var(--color-primary-light-1)] via-[var(--color-bg-2)] to-[var(--color-bg-2)] overflow-hidden mb-4">
         {/* Faint candles */}
