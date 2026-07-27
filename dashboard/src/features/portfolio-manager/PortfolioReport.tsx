@@ -106,98 +106,117 @@ export function PortfolioReport({ injected }: { injected?: AnalyzeResponse }) {
 
   return (
     <div className="portfolio-manager">
-      {/* 1. Masthead */}
-      <Masthead
-        title={narrative.title}
-        meta={analysis.meta}
-        nav={analysis.overview.nav}
-      />
+      {/* 1-2b. Masthead + HeroScore + Lede — Người quản lý danh mục tour (T4) step 2 */}
+      <div data-tour-id="tour-pm-overview">
+        <Masthead
+          title={narrative.title}
+          meta={analysis.meta}
+          nav={analysis.overview.nav}
+        />
 
-      {/* 2. HeroScore */}
-      <HeroScore
-        scores={analysis.scores}
-        verdict={narrative.verdict}
-      />
+        <HeroScore
+          scores={analysis.scores}
+          verdict={narrative.verdict}
+        />
 
-      {/* 2b. Lede */}
-      <p className="lede">{narrative.lede}</p>
+        <p className="lede">{narrative.lede}</p>
+      </div>
 
-      {/* 3. ProgressCompare */}
-      <ProgressCompare
-        meta={analysis.meta}
-        scores={analysis.scores}
-        progress={analysis.progress}
-        progress_text={narrative.progress_text}
-      />
+      {/* 3. ProgressCompare — tour step 3 */}
+      <div data-tour-id="tour-pm-progress">
+        <ProgressCompare
+          meta={analysis.meta}
+          scores={analysis.scores}
+          progress={analysis.progress}
+          progress_text={narrative.progress_text}
+        />
+      </div>
 
-      {/* 4. HoldingsTable + overview StatGrid */}
-      <HoldingsTable
-        positions={analysis.overview.positions}
-        cash_pct={analysis.overview.cash_pct}
-        managerVoice={narrative.layers.overview}
-      />
-      <StatGrid cells={overviewCells} cols={4} />
+      {/* 4. HoldingsTable + overview StatGrid — tour step 4 */}
+      <div data-tour-id="tour-pm-holdings">
+        <HoldingsTable
+          positions={analysis.overview.positions}
+          cash_pct={analysis.overview.cash_pct}
+          managerVoice={narrative.layers.overview}
+        />
+        <StatGrid cells={overviewCells} cols={4} />
+      </div>
 
-      {/* 5. PerformanceStats */}
-      <PerformanceStats
-        performance={analysis.performance}
-        managerVoice={narrative.layers.performance}
-      />
+      {/* 5. PerformanceStats — tour step 5 */}
+      <div data-tour-id="tour-pm-performance">
+        <PerformanceStats
+          performance={analysis.performance}
+          managerVoice={narrative.layers.performance}
+        />
+      </div>
 
-      {/* 6. AllocationBars */}
-      <AllocationBars
-        allocation={analysis.allocation}
-        managerVoice={narrative.layers.allocation}
-      />
+      {/* 6. AllocationBars — tour step 6 */}
+      <div data-tour-id="tour-pm-allocation">
+        <AllocationBars
+          allocation={analysis.allocation}
+          managerVoice={narrative.layers.allocation}
+        />
+      </div>
 
-      {/* 7. StressTest */}
-      <StressTest
-        beta={analysis.risk.beta}
-        nav={analysis.overview.nav}
-        managerVoice={narrative.layers.stress}
-        topHoldings={[...analysis.overview.positions]
-          .sort((a, b) => b.weight - a.weight)
-          .slice(0, 3)
-          .map((p) => p.ticker)}
-      />
+      {/* 7. StressTest — tour step 7 */}
+      <div data-tour-id="tour-pm-stress">
+        <StressTest
+          beta={analysis.risk.beta}
+          nav={analysis.overview.nav}
+          managerVoice={narrative.layers.stress}
+          topHoldings={[...analysis.overview.positions]
+            .sort((a, b) => b.weight - a.weight)
+            .slice(0, 3)
+            .map((p) => p.ticker)}
+        />
+      </div>
 
-      {/* 8. CorrelationHeatmap */}
-      <CorrelationHeatmap
-        correlation={analysis.risk.correlation}
-        positions={analysis.overview.positions}
-      />
+      {/* 8. CorrelationHeatmap — tour step 8 (no managerVoice: narrative.layers.risk
+          is never rendered here — see quanLyDanhMucTour.ts's FAITHFULNESS note) */}
+      <div data-tour-id="tour-pm-correlation">
+        <CorrelationHeatmap
+          correlation={analysis.risk.correlation}
+          positions={analysis.overview.positions}
+        />
+      </div>
 
-      {/* 9. RevealInsight */}
-      <RevealInsight insight={narrative.insight} />
+      {/* 9. RevealInsight — tour step 9 */}
+      <div data-tour-id="tour-pm-insight">
+        <RevealInsight insight={narrative.insight} />
+      </div>
 
-      {/* 10. Attribution */}
-      <Attribution
-        attribution={analysis.attribution}
-        managerVoice={narrative.layers.attribution}
-      />
+      {/* 10. Attribution — tour step 10 */}
+      <div data-tour-id="tour-pm-attribution">
+        <Attribution
+          attribution={analysis.attribution}
+          managerVoice={narrative.layers.attribution}
+        />
+      </div>
 
-      {/* 11. QualitySector */}
-      <QualitySector
-        quality={analysis.quality}
-        managerVoice={narrative.layers.quality}
-      />
+      {/* 11. QualitySector + BehaviorLowData — tour step 11 */}
+      <div data-tour-id="tour-pm-quality-behavior">
+        <QualitySector
+          quality={analysis.quality}
+          managerVoice={narrative.layers.quality}
+        />
 
-      {/* 12. BehaviorLowData */}
-      <BehaviorLowData
-        behavior={analysis.behavior}
-        managerVoice={narrative.layers.behavior}
-        lowDataNote={narrative.low_data_note}
-      />
+        <BehaviorLowData
+          behavior={analysis.behavior}
+          managerVoice={narrative.layers.behavior}
+          lowDataNote={narrative.low_data_note}
+        />
+      </div>
 
-      {/* 13. HealthPillars */}
-      <HealthPillars pillars={analysis.scores.pillars} />
+      {/* 12-13. HealthPillars + ActionsWatchClosing — tour step 12 */}
+      <div data-tour-id="tour-pm-pillars-actions">
+        <HealthPillars pillars={analysis.scores.pillars} />
 
-      {/* 14. ActionsWatchClosing */}
-      <ActionsWatchClosing
-        actions={narrative.actions}
-        watch={narrative.watch}
-        closing={narrative.closing}
-      />
+        <ActionsWatchClosing
+          actions={narrative.actions}
+          watch={narrative.watch}
+          closing={narrative.closing}
+        />
+      </div>
     </div>
   )
 }
