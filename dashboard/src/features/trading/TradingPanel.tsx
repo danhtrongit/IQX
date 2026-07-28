@@ -27,6 +27,16 @@ import { useSymbol } from "@/shared/contexts/symbol-context"
 import { useAuth } from "@/features/auth"
 import { usePremiumStatus } from "@/features/premium"
 import { PlanBlock, useCap0Events, useCap0Progress, useCompleteTask, cap0Visibility } from "@/features/cap0"
+import {
+  AiThanhTra,
+  PlanFormCap1,
+  isKehoachValid,
+  useCap1Events,
+  useRecordKehoach,
+  verdictToTrangThai,
+  type LyDo,
+  type Verdict,
+} from "@/features/cap1"
 import { getErrorMessage } from "@/shared/http/client"
 import { cn } from "@/shared/lib/cn"
 import { StockLogo } from "@/features/navigation/StockLogo"
@@ -179,6 +189,25 @@ function OrderEntry({
   // effect — no extra request, no hiding — outside a `Cap0Provider`.
   const { data: cap0Progress } = useCap0Progress(isCap0Active)
   const completeTask5 = useCompleteTask()
+  const cap1Events = useCap1Events()
+  // `isCap1Active` mirrors `isCap0Active` above — false outside a
+  // `Cap1Provider`, so the Form Kế hoạch + AI Thanh tra + hard gate below
+  // have zero effect on Cấp 0 or normal (non-cap) trading.
+  const { isCap1Active } = cap1Events
+  const recordKehoach = useRecordKehoach()
+  const [cap1LyDo, setCap1LyDo] = useState<LyDo | null>(null)
+  // "Vùng mua" default = giá hiện tại (spec §4) — same "computed, not
+  // stored" convention as `presetSl`/`presetTp` below: only an explicit user
+  // edit is kept in state, the effective value is computed each render.
+  // `undefined` = "untouched, follow the current-price default"; `null` =
+  // "user explicitly cleared the field" (must NOT silently fall back to the
+  // default — the hard gate needs to see this as genuinely missing).
+  const [cap1VungMuaOverride, setCap1VungMuaOverride] = useState<number | null | undefined>(
+    undefined,
+  )
+  const [cap1Verdict, setCap1Verdict] = useState<Verdict | null>(null)
+  const [cap1Snapshot, setCap1Snapshot] = useState<Record<string, unknown> | null>(null)
+  const [cap1DocChiTiet, setCap1DocChiTiet] = useState(false)
   const [side, setSide] = useState<"buy" | "sell">("buy")
   const [method, setMethod] = useState<"market" | "limit">("market")
   const [price, setPrice] = useState<number | undefined>(undefined)
@@ -228,6 +257,16 @@ function OrderEntry({
   const presetSl = currentPrice > 0 ? roundToStep(currentPrice * 0.95) : null
   const presetTp = currentPrice > 0 ? roundToStep(currentPrice * 1.1) : null
 
+  // Cấp 1 Form Kế hoạch (spec §4) — "Vùng mua" defaults to giá hiện tại until
+  // the user types their own value (or explicitly clears it — `null` is a
+  // real "missing" value here, only `undefined` follows the default).
+  const cap1VungMua =
+    cap1VungMuaOverride === undefined ? (currentPrice > 0 ? currentPrice : null) : cap1VungMuaOverride
+  // Cổng cứng (spec §4): MUA disabled unless (lý do chosen) AND (vùng mua > 0).
+  // Only ever true for a BUY inside Cấp 1 — never affects Cấp 0 or normal
+  // trading (`isCap1Active` is false outside a `Cap1Provider`).
+  const cap1SubmitDisabled = side === "buy" && isCap1Active && !isKehoachValid(cap1LyDo, cap1VungMua)
+
   const handlePct = (pct: number) => {
     if (side === "buy" && numPrice > 0) {
       const maxShares = Math.floor(balance / (numPrice * 1.0015) / 100) * 100
@@ -266,6 +305,14 @@ function OrderEntry({
       cap0Events.onGbarWarn?.()
       return
     }
+    // Cấp 1 Form Kế hoạch cổng cứng (spec §4) — belt-and-suspenders behind
+    // the Submit button's own `disabled` (a user could still reach this via
+    // Enter/programmatic click). ONLY inside Cấp 1 — never affects Cấp 0 or
+    // normal trading.
+    if (cap1SubmitDisabled) {
+      Message.warning("Chọn lý do mua và vùng mua mới đặt được lệnh.")
+      return
+    }
 
     const label = side === "buy" ? "MUA" : "BÁN"
     try {
@@ -293,6 +340,39 @@ function OrderEntry({
         price: order.price,
         ...(side === "buy" ? { sl: effectiveSl, tp: effectiveTp } : {}),
       })
+      // Cấp 1 (spec §4 "Ghi hồ sơ khi đặt lệnh") — a BUY fill inside Cấp 1
+      // (only reachable once `cap1SubmitDisabled` is false, i.e. lý do +
+      // vùng mua are both set) records the Form Kế hoạch. `trangThai_luc_dat`
+      // is the AI Thanh tra verdict AT PICK TIME (spec §5); default to
+      // "trung_tinh" for the (never-expected, degrade-gracefully) case where
+      // no verdict resolved yet.
+      if (side === "buy" && isCap1Active && cap1LyDo && cap1VungMua) {
+        const trangThai = verdictToTrangThai(cap1Verdict ?? "trung_tinh")
+        recordKehoach.mutate({
+          order_id: order.id,
+          lyDo: cap1LyDo,
+          trangThai_luc_dat: trangThai,
+          vung_mua: cap1VungMua,
+          co_bam_doc_chi_tiet: cap1DocChiTiet,
+          snapshot: cap1Snapshot,
+        })
+        cap1Events.onOrderFilled?.({
+          symbol,
+          side,
+          quantity: order.quantity,
+          price: order.price,
+          orderId: order.id,
+          lyDo: cap1LyDo,
+          trangThaiLucDat: trangThai,
+          vungMua: cap1VungMua,
+        })
+        // Reset the Kế hoạch form for the next order.
+        setCap1LyDo(null)
+        setCap1VungMuaOverride(undefined)
+        setCap1Verdict(null)
+        setCap1Snapshot(null)
+        setCap1DocChiTiet(false)
+      }
       const totalStr = (order.total || order.price * order.quantity).toLocaleString("en-US")
       Message.success(
         `Đặt lệnh ${label} ${symbol} thành công — ${order.quantity} CP × ${order.price.toLocaleString("en-US")} = ${totalStr} VND${order.status === "PENDING" ? " (chờ khớp)" : ""}`,
@@ -432,7 +512,12 @@ function OrderEntry({
           blocks (Kế hoạch renders only buy-side/Cấp 0; the Submit button
           always renders). */}
       <div data-tour-id="cap0-tour-plan-submit">
-        {side === "buy" && isCap0Active && (
+        {/* Cấp 0's 5-chip Kế hoạch block is hidden inside Cấp 1 (spec §0
+            "ẨN THEO CẤP — Khối 5 chip lý do đời thường của Cấp 0 → ẨN, thay
+            bằng Form Kế hoạch 2 trường") — the explicit `!isCap1Active` is
+            belt-and-suspenders since the two providers shouldn't both wrap
+            the page at once, but keeps this branch inert either way. */}
+        {side === "buy" && isCap0Active && !isCap1Active && (
           <Tooltip
             content={
               task1Done
@@ -460,20 +545,72 @@ function OrderEntry({
           </Tooltip>
         )}
 
-        {/* Submit */}
-        <Button
-          long
-          loading={placeOrder.isPending}
-          onClick={handleSubmit}
-          className={cn(
-            "mt-2 font-bold text-white",
-            side === "buy"
-              ? "!border-up !bg-up hover:!opacity-90"
-              : "!border-down !bg-down hover:!opacity-90",
-          )}
+        {/* Cấp 1 Form Kế hoạch 2 trường + AI Thanh tra (spec §4/§5, THÊM MỚI)
+            — buy-side only AND Cấp 1-only (`isCap1Active` false outside a
+            `Cap1Provider` → zero effect on Cấp 0 or normal trading). */}
+        {side === "buy" && isCap1Active && (
+          <>
+            <PlanFormCap1
+              symbol={symbol}
+              lyDo={cap1LyDo}
+              onLyDoChange={(l) => {
+                setCap1LyDo(l)
+                setCap1Verdict(null)
+                setCap1Snapshot(null)
+                setCap1DocChiTiet(false)
+                cap1Events.onLyDoPicked?.(l)
+              }}
+              vungMua={cap1VungMua}
+              onVungMuaChange={setCap1VungMuaOverride}
+            />
+            {cap1LyDo && (
+              <AiThanhTra
+                symbol={symbol}
+                lyDo={cap1LyDo}
+                currentPrice={currentPrice}
+                onVerdict={(v, snapshot) => {
+                  setCap1Verdict(v)
+                  setCap1Snapshot(snapshot)
+                }}
+                onDocChiTiet={() => {
+                  setCap1DocChiTiet(true)
+                  cap1Events.onDocChiTietClicked?.(cap1LyDo)
+                }}
+                onChonLyDoKhac={() => {
+                  setCap1LyDo(null)
+                  setCap1Verdict(null)
+                  setCap1Snapshot(null)
+                }}
+              />
+            )}
+          </>
+        )}
+
+        {/* Submit — Cấp 1's cổng cứng (spec §4) disables MUA until lý do +
+            vùng mua are both set; `cap1SubmitDisabled` is always false
+            outside Cấp 1 or on a SELL, so this never affects Cấp 0 or
+            normal trading. */}
+        <Tooltip
+          content={cap1SubmitDisabled ? "Chọn lý do mua và vùng mua mới đặt được lệnh." : ""}
+          disabled={!cap1SubmitDisabled}
         >
-          {side === "buy" ? "ĐẶT LỆNH MUA" : "ĐẶT LỆNH BÁN"}
-        </Button>
+          <div>
+            <Button
+              long
+              loading={placeOrder.isPending}
+              disabled={cap1SubmitDisabled}
+              onClick={handleSubmit}
+              className={cn(
+                "mt-2 font-bold text-white",
+                side === "buy"
+                  ? "!border-up !bg-up hover:!opacity-90"
+                  : "!border-down !bg-down hover:!opacity-90",
+              )}
+            >
+              {side === "buy" ? "ĐẶT LỆNH MUA" : "ĐẶT LỆNH BÁN"}
+            </Button>
+          </div>
+        </Tooltip>
       </div>
     </div>
   )
@@ -765,12 +902,15 @@ export function TradingPanel({ hideHeader = false }: { hideHeader?: boolean } = 
   const { data: account } = useAccount()
   const { data: portfolio } = usePortfolio()
   const { isCap0Active } = useCap0Events()
+  const { isCap1Active } = useCap1Events()
   // Hide-by-level (spec §8) — sổ lệnh bid/ask ẩn cho đến nhiệm vụ ② (tour
   // bảng điện, not built this delivery — Chặng 2 is 3 locked slots, so this
   // stays hidden for this delivery's whole Cấp 0 run, as intended).
   // `useCap0Progress(isCap0Active)` only queries inside Cấp 0.
   const { data: cap0Progress } = useCap0Progress(isCap0Active)
-  const hideOrderBook = isCap0Active && !cap0Visibility(cap0Progress).orderBook
+  // Cấp 1 spec §0: "Sổ lệnh bid/ask vẫn ẨN (chỉ mở ở Cấp 2)" — stays hidden
+  // for the whole Cấp 1 run too (unconditionally, no task gates it yet).
+  const hideOrderBook = (isCap0Active && !cap0Visibility(cap0Progress).orderBook) || isCap1Active
 
   const positionQty = useMemo(() => {
     const pos = portfolio?.positions.find(
