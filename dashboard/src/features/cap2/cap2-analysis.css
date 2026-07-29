@@ -1,0 +1,151 @@
+/**
+ * Cấp 2 «Kỷ luật» — Phân tích danh mục, Khối 5-7 (spec §12).
+ *
+ * Rendered inside the SAME sidebar-panel context as `Cap1PortfolioAnalysis`
+ * (see `Cap1PortfolioAnalysisPanel.tsx` — plain `--color-bg-1`, NOT the
+ * `.cap0` immersive game-shell wrapper), so this file uses the app's Arco
+ * design tokens (`--color-*`) for surfaces/text/borders, matching Cấp 1's
+ * inline-Tailwind convention. The xanh/vàng/đỏ semantic hexes match
+ * `cap2-discipline.css`'s `DiemKyLuatCard` (#35d07f/#ffc53d/#ff6b6b) so the
+ * same 3 colours mean the same thing everywhere in Cấp 2.
+ */
+
+/* ── Khối 5 — mini bar chart (điểm kỷ luật 30 ngày) ─────────────────────── */
+.cap2-pa-khoi5-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 44px;
+  margin-top: 6px;
+  padding: 4px 0;
+}
+
+.cap2-pa-khoi5-bar {
+  flex: 1 1 auto;
+  min-width: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--color-fill-3, rgba(150, 150, 150, 0.4));
+}
+
+.cap2-pa-khoi5-bar--xanh {
+  background: #35d07f;
+}
+
+.cap2-pa-khoi5-bar--vang {
+  background: #ffc53d;
+}
+
+.cap2-pa-khoi5-bar--do {
+  background: #ff6b6b;
+}
+
+.cap2-pa-khoi5-avg-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.cap2-pa-khoi5-avg {
+  display: flex;
+  flex-direction: column;
+}
+
+.cap2-pa-khoi5-avg-label {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-3);
+}
+
+.cap2-pa-khoi5-avg-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-1);
+}
+
+.cap2-pa-khoi5-dist {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 11px;
+}
+
+.cap2-pa-khoi5-dist-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 4px;
+  border-radius: 50%;
+}
+
+.cap2-pa-khoi5-dist-dot--xanh {
+  background: #35d07f;
+}
+
+.cap2-pa-khoi5-dist-dot--vang {
+  background: #ffc53d;
+}
+
+.cap2-pa-khoi5-dist-dot--do {
+  background: #ff6b6b;
+}
+
+/* ── Khối 6 — bảng 4 tuần x 4 loại vi phạm ───────────────────────────────── */
+.cap2-pa-khoi6-table {
+  width: 100%;
+  margin-top: 6px;
+  font-size: 11px;
+  border-collapse: collapse;
+}
+
+.cap2-pa-khoi6-table th,
+.cap2-pa-khoi6-table td {
+  padding: 3px 4px;
+  text-align: center;
+  border-bottom: 1px solid var(--color-border-2);
+}
+
+.cap2-pa-khoi6-table th {
+  font-weight: 500;
+  color: var(--color-text-3);
+}
+
+.cap2-pa-khoi6-table td:first-child,
+.cap2-pa-khoi6-table th:first-child {
+  text-align: left;
+}
+
+/* ── Khối 7 — reflection insight cards ───────────────────────────────────── */
+.cap2-pa-khoi7-insight {
+  padding: 8px 10px;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-text-2);
+  background: var(--color-bg-3, var(--color-bg-2));
+  border-left: 2px solid rgb(var(--primary-6));
+  border-radius: 6px;
+}
+
+.cap2-pa-khoi7-insight + .cap2-pa-khoi7-insight {
+  margin-top: 6px;
+}
+
+/* ── Khối 4 — mini 20-cell window widget ─────────────────────────────────── */
+.cap2-pa-khoi4-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 6px;
+}
+
+.cap2-pa-khoi4-cell {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--color-fill-3, rgba(150, 150, 150, 0.35));
+}
+
+.cap2-pa-khoi4-cell--vipham {
+  background: #ff6b6b;
+}
