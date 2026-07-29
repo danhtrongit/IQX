@@ -1,0 +1,75 @@
+/**
+ * Cấp 2 «Kỷ luật» — Kết sổ additions on top of Cấp 0/Cấp 1's shared debrief
+ * shell (`features/cap0/cap0.css` + `features/cap1/cap1.css`, imported
+ * alongside from `KetsoModalCap2.tsx` — same layering Cấp 1 itself used over
+ * Cấp 0). Scoped to `.cap2-ketso-*` classes only; the đối chiếu table and CAM
+ * KẾT table both reuse `.cap0-debrief-table` verbatim for a single consistent
+ * table look, so no table rule is redefined here.
+ *
+ * Ngọc lam `#7dd3c0` is Cấp 2's huy hiệu colour (spec's bảng màu) — used here
+ * to visually mark the blocks Cấp 2 adds (CAM KẾT vs THỰC TẾ, the "KỶ LUẬT"
+ * coach layer) as distinct from Cấp 0/1's brand-blue blocks.
+ */
+
+/* ── CAM KẾT vs THỰC TẾ (spec §5.6/§6 — SL/TP cắt lỗ/chốt lời reconciliation) */
+.cap2-ketso-camket {
+  margin-top: 14px;
+  padding: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+}
+
+.cap2-ketso-camket-title {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #7dd3c0;
+}
+
+.cap2-ketso-camket table {
+  margin-top: 8px;
+}
+
+/* ── Dòng tác động chuỗi (spec §6 "giữ / làm đứt chuỗi") ────────────────── */
+.cap2-ketso-chuoi-impact {
+  margin: 10px 0 0;
+  padding: 7px 9px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--t2);
+  background: var(--bg2);
+  border-left: 2px solid rgba(125, 211, 192, 0.55);
+  border-radius: 5px;
+}
+
+.cap2-ketso-chuoi-impact--broken {
+  border-left-color: #ff6b6b;
+}
+
+/* ── Lớp coach thứ 2 "KỶ LUẬT" (spec §1/§5.6 — Cấp 2 discipline nhắc, đứng
+   cạnh Cấp 1's "NHÌN LẠI" chứ không thay thế) ───────────────────────────── */
+.cap2-ketso-coach {
+  margin-top: 12px;
+  padding: 11px 13px;
+  background: rgba(125, 211, 192, 0.08);
+  border-left: 2px solid #7dd3c0;
+  border-radius: 8px;
+}
+
+.cap2-ketso-coach-tag {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #7dd3c0;
+}
+
+.cap2-ketso-coach-body {
+  margin-top: 6px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--t2);
+}
