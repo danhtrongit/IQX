@@ -97,6 +97,13 @@ vi.mock("./hooks", () => ({
   useRecordKetso: () => ({ mutate: recordKetsoMutate, isPending: false }),
 }))
 
+// Cấp 2 is live (Task FE4) — `GraduationModalCap1` now fires `useEnterCap2`
+// on success. Mocked here (this file only exercises Cấp 1's own page wiring,
+// not Cấp 2's entry) with no real QueryClient in this render tree.
+vi.mock("@/features/cap2/hooks", () => ({
+  useEnterCap2: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+
 import { Cap1TradingPage } from "./Cap1TradingPage"
 import { useCap1Events } from "./Cap1Context"
 

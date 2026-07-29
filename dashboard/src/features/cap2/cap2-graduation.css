@@ -1,0 +1,12 @@
+/**
+ * Màn tốt nghiệp Cấp 2 (spec §13 Khối 3 "viền xanh brand") — reuses
+ * `.cap0-grad-block` for layout (mirrors `cap1/cap1.css`'s
+ * `.cap1-grad-block--cap2`, one level up): overrides the border colour to
+ * Cấp 3's brand blue `#4f8ff7`. NOTE: the CTA button needs no colour
+ * override here (unlike Cấp 1→2's) — `.cap0-grad-cta`'s DEFAULT background
+ * is already `var(--brand)` (`#4f8ff7`), which happens to be Cấp 3's exact
+ * colour.
+ */
+.cap2-grad-block--cap3 {
+  border-color: rgba(79, 143, 247, 0.5);
+}

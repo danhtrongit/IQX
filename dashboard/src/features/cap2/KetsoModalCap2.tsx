@@ -8,11 +8,7 @@ import {
   isLenhCoChuyen,
   type KetsoDataCap1,
 } from "@/features/cap1/KetsoModalCap1"
-import {
-  coachTemplateCap1,
-  type CoachParamsCap1,
-  type CoachSituationCap1,
-} from "@/features/cap1/coachTemplateCap1"
+import type { CoachParamsCap1, CoachSituationCap1 } from "@/features/cap1/coachTemplateCap1"
 import { LY_DO_OPTIONS, type CamXuc, type Cap1Progress, type LyDo, type TrangThaiLucDat } from "@/features/cap1/types"
 import type { Cap1TradeRecord } from "@/features/cap1/tradeLog"
 import { useRecordKetsoCap2 } from "./hooks"

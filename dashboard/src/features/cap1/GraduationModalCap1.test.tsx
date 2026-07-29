@@ -3,12 +3,12 @@ import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Cap1Progress } from "./types"
 
-const { useCap1ProgressMock, graduateMutate, messageInfo } = vi.hoisted(() => ({
+const { useCap1ProgressMock, graduateMutate, enterCap2Mutate } = vi.hoisted(() => ({
   useCap1ProgressMock: vi.fn(),
   graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
     opts?.onSuccess?.()
   }),
-  messageInfo: vi.fn(),
+  enterCap2Mutate: vi.fn(),
 }))
 
 vi.mock("./hooks", () => ({
@@ -16,10 +16,12 @@ vi.mock("./hooks", () => ({
   useGraduateCap1: () => ({ mutate: graduateMutate, isPending: false }),
 }))
 
-vi.mock("@arco-design/web-react", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@arco-design/web-react")>()
-  return { ...actual, Message: { ...actual.Message, info: messageInfo } }
-})
+// Cấp 2 is live (Task FE4) — concrete-file import (NOT the `@/features/cap2`
+// barrel), same anti-cycle rationale `cap0/GraduationModal.tsx` already
+// documents for its own `@/features/cap1/hooks` import.
+vi.mock("@/features/cap2/hooks", () => ({
+  useEnterCap2: () => ({ mutate: enterCap2Mutate, isPending: false }),
+}))
 
 import { GraduationModalCap1, isGraduationReadyCap1 } from "./GraduationModalCap1"
 
@@ -86,7 +88,7 @@ describe("GraduationModalCap1", () => {
     graduateMutate.mockImplementation((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
       opts?.onSuccess?.()
     })
-    messageInfo.mockReset()
+    enterCap2Mutate.mockReset()
   })
 
   it("does not render when 6/6 isn't met", () => {
@@ -128,7 +130,7 @@ describe("GraduationModalCap1", () => {
     expect(svg?.getAttribute("width")).toBe("120")
   })
 
-  it('clicking "Vào Cấp 2" calls useGraduateCap1().mutate and toasts "Cấp 2 sắp ra mắt" (Cấp 2 not built yet)', () => {
+  it('clicking "Vào Cấp 2" calls useGraduateCap1().mutate, then really enters Cấp 2 (POST /cap2/enter) — Cấp 2 is live', () => {
     useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap1 />)
     fireEvent.click(screen.getByText("Vào Cấp 2 «Kỷ luật» →"))
@@ -136,7 +138,7 @@ describe("GraduationModalCap1", () => {
       undefined,
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     )
-    expect(messageInfo).toHaveBeenCalledWith(expect.stringContaining("Cấp 2"))
+    expect(enterCap2Mutate).toHaveBeenCalledTimes(1)
   })
 
   it("closes itself once graduated_at comes back (progress refetch)", () => {

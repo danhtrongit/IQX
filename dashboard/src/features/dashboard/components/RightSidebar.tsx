@@ -20,6 +20,12 @@ import { cap0Visibility } from "@/features/cap0/cap0Visibility"
 import { JourneyPanelCap1 } from "@/features/cap1/JourneyPanelCap1"
 import { Cap1PortfolioAnalysisPanel } from "@/features/cap1/Cap1PortfolioAnalysisPanel"
 import { useCap1Events } from "@/features/cap1/Cap1Context"
+// Same anti-cycle rationale, two levels up — `@/features/cap2`'s barrel
+// re-exports `Cap2TradingPage`, which itself imports `CenterPanel`/
+// `RightSidebar`/`RightToolbar` from `@/features/dashboard`.
+import { JourneyPanelCap2 } from "@/features/cap2/JourneyPanelCap2"
+import { Cap2PortfolioAnalysisPanel } from "@/features/cap2/Cap2PortfolioAnalysisPanel"
+import { useCap2Events } from "@/features/cap2/Cap2Context"
 
 /**
  * Dynamic right sidebar that switches between panels:
@@ -40,10 +46,15 @@ export function RightSidebar() {
   const { isCap0Active } = useCap0Events()
   const { data: cap0Progress } = useCap0Progress(isCap0Active)
   const visibility = cap0Visibility(cap0Progress)
-  // Cấp 0 and Cấp 1 providers are never both mounted at once (progression
-  // routing — `DauTruongPage` — picks exactly one flow per visit), so
-  // "journey" safely resolves to whichever level is actually active.
+  // Cấp 0, Cấp 1 and Cấp 2 providers are never all independently mounted
+  // (progression routing — `DauTruongPage` — picks exactly one shell per
+  // visit), EXCEPT that a Cấp 2 session wraps BOTH `Cap1Provider` AND
+  // `Cap2Provider` at once (Cấp 2 reuses Cấp 1's Form Kế hoạch 100% intact —
+  // see `Cap2TradingPage`), so `isCap1Active` is ALSO true during Cấp 2.
+  // "journey"/"cap2-analysis" therefore check `isCap2Active` FIRST (more
+  // specific), falling through to `isCap1Active` then Cấp 0's default.
   const { isCap1Active } = useCap1Events()
+  const { isCap2Active } = useCap2Events()
 
   const getPanelContent = () => {
     switch (activePanel) {
@@ -68,11 +79,15 @@ export function RightSidebar() {
       case "watchlist":
         return <WatchlistPanel />
       case "journey":
+        if (isCap2Active) return <JourneyPanelCap2 />
         return isCap1Active ? <JourneyPanelCap1 /> : <JourneyPanel />
       case "cap1-analysis":
         // Only reachable from `JourneyPanelCap1`'s own button (inside Cấp 1)
         // — defensive fallback mirrors the "journey" case above.
         return isCap1Active ? <Cap1PortfolioAnalysisPanel /> : <JourneyPanel />
+      case "cap2-analysis":
+        // Only reachable from `JourneyPanelCap2`'s own button (inside Cấp 2).
+        return isCap2Active ? <Cap2PortfolioAnalysisPanel /> : <JourneyPanel />
       default:
         return <NewsFeedPanel />
     }
@@ -85,6 +100,7 @@ export function RightSidebar() {
     watchlist: "Danh mục",
     journey: "Hành trình",
     "cap1-analysis": "Phân tích danh mục",
+    "cap2-analysis": "Phân tích danh mục",
   }
 
   return (
