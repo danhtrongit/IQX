@@ -23,6 +23,7 @@ from app.api.v1.endpoints import (
     backtest,
     cap0,
     cap1,
+    cap2,
     chart_drawings,
     health,
     lessons,
@@ -71,4 +72,5 @@ api_v1_router.include_router(admin_system.router)
 api_v1_router.include_router(portfolio_manager.router)
 api_v1_router.include_router(cap0.router)
 api_v1_router.include_router(cap1.router)
+api_v1_router.include_router(cap2.router)
 

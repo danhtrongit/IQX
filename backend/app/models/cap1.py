@@ -9,6 +9,12 @@ data model this mirrors.
 
 NOTE: ``lyDo`` / ``trangThai_luc_dat`` intentionally keep the spec's exact
 (mixed-case) field names — §9 lists this schema as VERBATIM.
+
+Cấp 2 «Kỷ luật» (``~/Downloads/DEMO TRADING/LEVEL 2/IQX-Cap2-Spec.md``) EXTENDS
+``OrderKehoach``/``OrderKetso`` in place (same physical tables, new columns
+added by a later migration) rather than creating new tables — see
+``PhuongPhapSlTp`` and the "Cấp 2 additions" column blocks below. Cấp 2's own
+new table (``cap2_progress``) lives in ``app.models.cap2``.
 """
 
 from __future__ import annotations
@@ -60,6 +66,16 @@ class CamXuc(enum.StrEnum):
     SO = "so"
     HOI_TIEC = "hoi_tiec"
     KHONG_RO = "khong_ro"
+
+
+class PhuongPhapSlTp(enum.StrEnum):
+    """Cấp 2 addition (spec §5) — 2 cách chọn 1 for cắt lỗ/chốt lời, recorded
+    on ``OrderKehoach``. Lives here (not in ``app.models.cap2``) because it
+    decorates a column on this module's ``OrderKehoach`` class — same
+    physical ``order_kehoach`` table, extended by Cấp 2's migration."""
+
+    HO_TRO_KHANG_CU = "ho_tro_khang_cu"
+    BIEN_DO_DAO_DONG = "bien_do_dao_dong"
 
 
 class Cap1Progress(UUIDMixin, TimestampMixin, Base):
@@ -127,6 +143,18 @@ class OrderKehoach(UUIDMixin, TimestampMixin, Base):
     )
     snapshot_lop_du_lieu: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
+    # ── Cấp 2 additions (spec §5) — cắt lỗ/chốt lời, 2 cách chọn 1 ────
+    phuong_phap_sl_tp: Mapped[PhuongPhapSlTp | None] = mapped_column(
+        Enum(
+            PhuongPhapSlTp,
+            name="cap2_phuong_phap_sl_tp",
+            values_callable=lambda e: [m.value for m in e],
+        ),
+        nullable=True,
+    )
+    cat_lo: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    chot_loi: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+
 
 class OrderKetso(UUIDMixin, TimestampMixin, Base):
     """Kết sổ reconciliation recorded at SELL time — one row per sell order."""
@@ -149,3 +177,26 @@ class OrderKetso(UUIDMixin, TimestampMixin, Base):
         nullable=True,
     )
     closed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    # ── Cấp 2 additions (spec §8/§9/§13) — 4 vi phạm kỷ luật đo được ──
+    cham_SL_cuoi_phien: Mapped[bool] = mapped_column(  # noqa: N815 — spec §13 verbatim
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    cham_SL_cat_dung_phien_ke: Mapped[bool] = mapped_column(  # noqa: N815 — spec §13 verbatim
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    cham_SL_khong_cat: Mapped[bool] = mapped_column(  # noqa: N815 — spec §13 verbatim
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    giu_cham_SL_bao_nhieu_phien: Mapped[int | None] = mapped_column(  # noqa: N815
+        Integer, nullable=True, default=0, server_default="0"
+    )
+    cham_TP_giu_lam_hut: Mapped[bool] = mapped_column(  # noqa: N815 — spec §13 verbatim
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    ban_som_khi_lo_nhe: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    nhoi_lenh_khi_lo: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
