@@ -37,6 +37,13 @@ import {
   type LyDo,
   type Verdict,
 } from "@/features/cap1"
+import {
+  SlTpBlock,
+  isSlTpValid,
+  useCap2Events,
+  useRecordKehoachCap2,
+  type PhuongPhapSlTp,
+} from "@/features/cap2"
 import { getErrorMessage } from "@/shared/http/client"
 import { cn } from "@/shared/lib/cn"
 import { StockLogo } from "@/features/navigation/StockLogo"
@@ -208,6 +215,19 @@ function OrderEntry({
   const [cap1Verdict, setCap1Verdict] = useState<Verdict | null>(null)
   const [cap1Snapshot, setCap1Snapshot] = useState<Record<string, unknown> | null>(null)
   const [cap1DocChiTiet, setCap1DocChiTiet] = useState(false)
+  const cap2Events = useCap2Events()
+  // `isCap2Active` mirrors `isCap1Active` above — false outside a
+  // `Cap2Provider`, so `SlTpBlock` + its hard gate below have zero effect on
+  // Cấp 0/Cấp 1-only or normal (non-cap) trading. A Cấp 2 session also has
+  // `isCap1Active` true (Cấp 2 reuses Cấp 1's Form Kế hoạch 100% intact,
+  // spec §0).
+  const { isCap2Active } = cap2Events
+  const recordKehoachCap2 = useRecordKehoachCap2()
+  // Cấp 2 khối "Cắt lỗ / Chốt lời" (spec §5.4) — KHÔNG nhập tay tự do, only
+  // ever set via `SlTpBlock`'s "Chọn cách này".
+  const [cap2Method, setCap2Method] = useState<PhuongPhapSlTp | null>(null)
+  const [cap2CatLo, setCap2CatLo] = useState<number | null>(null)
+  const [cap2ChotLoi, setCap2ChotLoi] = useState<number | null>(null)
   const [side, setSide] = useState<"buy" | "sell">("buy")
   const [method, setMethod] = useState<"market" | "limit">("market")
   const [price, setPrice] = useState<number | undefined>(undefined)
@@ -266,6 +286,13 @@ function OrderEntry({
   // Only ever true for a BUY inside Cấp 1 — never affects Cấp 0 or normal
   // trading (`isCap1Active` is false outside a `Cap1Provider`).
   const cap1SubmitDisabled = side === "buy" && isCap1Active && !isKehoachValid(cap1LyDo, cap1VungMua)
+  // Cổng cứng (spec §5.4): MUA disabled unless a cách cắt lỗ/chốt lời is
+  // chosen — ON TOP OF (not instead of) Cấp 1's gate above, since Cấp 2
+  // keeps Cấp 1's Form Kế hoạch 100% intact. Only ever true for a BUY inside
+  // Cấp 2 — never affects Cấp 0/Cấp 1-only or normal trading (`isCap2Active`
+  // is false outside a `Cap2Provider`).
+  const cap2SubmitDisabled =
+    side === "buy" && isCap2Active && !isSlTpValid(cap2Method, cap2CatLo, cap2ChotLoi)
 
   const handlePct = (pct: number) => {
     if (side === "buy" && numPrice > 0) {
@@ -313,6 +340,13 @@ function OrderEntry({
       Message.warning("Chọn lý do mua và vùng mua mới đặt được lệnh.")
       return
     }
+    // Cấp 2 khối Cắt lỗ/Chốt lời cổng cứng (spec §5.4) — belt-and-suspenders
+    // behind the Submit button's own `disabled`. ONLY inside Cấp 2 — never
+    // affects Cấp 0/Cấp 1-only or normal trading.
+    if (cap2SubmitDisabled) {
+      Message.warning("Chọn 1 trong 2 cách cắt lỗ/chốt lời mới đặt được lệnh.")
+      return
+    }
 
     const label = side === "buy" ? "MUA" : "BÁN"
     try {
@@ -348,14 +382,31 @@ function OrderEntry({
       // no verdict resolved yet.
       if (side === "buy" && isCap1Active && cap1LyDo && cap1VungMua) {
         const trangThai = verdictToTrangThai(cap1Verdict ?? "trung_tinh")
-        recordKehoach.mutate({
+        const kehoachPayload = {
           order_id: order.id,
           lyDo: cap1LyDo,
           trangThai_luc_dat: trangThai,
           vung_mua: cap1VungMua,
           co_bam_doc_chi_tiet: cap1DocChiTiet,
           snapshot: cap1Snapshot,
-        })
+        }
+        // Cấp 2 (spec §5.4 "Ghi hồ sơ") — `/cap2/kehoach` 404s unless the
+        // Cấp 1 kehoach row it extends already exists, so inside Cấp 2 the
+        // Cấp 1 POST must be AWAITED (not fire-and-forget) and succeed
+        // BEFORE the Cấp 2 SL/TP commitment POST fires. Outside Cấp 2 (or
+        // once `cap2SubmitDisabled` is false, i.e. a cách is chosen), Cấp 1's
+        // own fire-and-forget `mutate` is unchanged.
+        if (isCap2Active && cap2Method && cap2CatLo && cap2ChotLoi) {
+          await recordKehoach.mutateAsync(kehoachPayload)
+          await recordKehoachCap2.mutateAsync({
+            order_id: order.id,
+            phuong_phap_sl_tp: cap2Method,
+            cat_lo: cap2CatLo,
+            chot_loi: cap2ChotLoi,
+          })
+        } else {
+          recordKehoach.mutate(kehoachPayload)
+        }
         cap1Events.onOrderFilled?.({
           symbol,
           side,
@@ -366,12 +417,25 @@ function OrderEntry({
           trangThaiLucDat: trangThai,
           vungMua: cap1VungMua,
         })
+        cap2Events.onOrderFilled?.({
+          symbol,
+          side,
+          quantity: order.quantity,
+          price: order.price,
+          orderId: order.id,
+          ...(cap2Method && cap2CatLo && cap2ChotLoi
+            ? { phuongPhapSlTp: cap2Method, catLo: cap2CatLo, chotLoi: cap2ChotLoi }
+            : {}),
+        })
         // Reset the Kế hoạch form for the next order.
         setCap1LyDo(null)
         setCap1VungMuaOverride(undefined)
         setCap1Verdict(null)
         setCap1Snapshot(null)
         setCap1DocChiTiet(false)
+        setCap2Method(null)
+        setCap2CatLo(null)
+        setCap2ChotLoi(null)
       }
       // Cấp 1 (spec §6 "Kết sổ mở khi user bán 1 lệnh Thực chiến") — a SELL
       // fill inside Cấp 1 notifies the bus too (no `lyDo`/`trangThaiLucDat`/
@@ -380,6 +444,13 @@ function OrderEntry({
       // this against the tracked buy for the same symbol to open Kết sổ.
       if (side === "sell" && isCap1Active) {
         cap1Events.onOrderFilled?.({
+          symbol,
+          side,
+          quantity: order.quantity,
+          price: order.price,
+          orderId: order.id,
+        })
+        cap2Events.onOrderFilled?.({
           symbol,
           side,
           quantity: order.quantity,
@@ -577,6 +648,25 @@ function OrderEntry({
               vungMua={cap1VungMua}
               onVungMuaChange={setCap1VungMuaOverride}
             />
+            {/* Cấp 2 khối "Cắt lỗ / Chốt lời" (spec §5.1/§5.4, THÊM MỚI) —
+                inserted NGAY SAU trường Vùng mua (i.e. right after
+                `PlanFormCap1`, before AI Thanh tra) — buy-side only AND Cấp
+                2-only (`isCap2Active` false outside a `Cap2Provider` → zero
+                effect on Cấp 1-only or normal trading). Hiện LUÔN (not
+                gated on `cap1LyDo` — spec §5.1 "không phải bấm nút mới hiện"). */}
+            {isCap2Active && (
+              <SlTpBlock
+                symbol={symbol}
+                giaVao={cap1VungMua ?? currentPrice}
+                selected={cap2Method}
+                onSelect={(m, catLo, chotLoi) => {
+                  setCap2Method(m)
+                  setCap2CatLo(catLo)
+                  setCap2ChotLoi(chotLoi)
+                  cap2Events.onSlTpPicked?.(m, catLo, chotLoi)
+                }}
+              />
+            )}
             {cap1LyDo && (
               <AiThanhTra
                 symbol={symbol}
@@ -601,18 +691,26 @@ function OrderEntry({
         )}
 
         {/* Submit — Cấp 1's cổng cứng (spec §4) disables MUA until lý do +
-            vùng mua are both set; `cap1SubmitDisabled` is always false
-            outside Cấp 1 or on a SELL, so this never affects Cấp 0 or
-            normal trading. */}
+            vùng mua are both set; Cấp 2's cổng cứng (spec §5.4) ALSO
+            requires a cách cắt lỗ/chốt lời chosen (ON TOP OF Cấp 1's, since
+            Cấp 2 keeps Cấp 1's form 100% intact). Both flags are always
+            false outside their own cấp or on a SELL, so neither affects
+            Cấp 0 or normal trading. */}
         <Tooltip
-          content={cap1SubmitDisabled ? "Chọn lý do mua và vùng mua mới đặt được lệnh." : ""}
-          disabled={!cap1SubmitDisabled}
+          content={
+            cap1SubmitDisabled
+              ? "Chọn lý do mua và vùng mua mới đặt được lệnh."
+              : cap2SubmitDisabled
+                ? "Chọn 1 trong 2 cách cắt lỗ/chốt lời mới đặt được lệnh."
+                : ""
+          }
+          disabled={!(cap1SubmitDisabled || cap2SubmitDisabled)}
         >
           <div>
             <Button
               long
               loading={placeOrder.isPending}
-              disabled={cap1SubmitDisabled}
+              disabled={cap1SubmitDisabled || cap2SubmitDisabled}
               onClick={handleSubmit}
               className={cn(
                 "mt-2 font-bold text-white",
@@ -917,6 +1015,7 @@ export function TradingPanel({ hideHeader = false }: { hideHeader?: boolean } = 
   const { data: portfolio } = usePortfolio()
   const { isCap0Active } = useCap0Events()
   const { isCap1Active } = useCap1Events()
+  const { isCap2Active } = useCap2Events()
   // Hide-by-level (spec §8) — sổ lệnh bid/ask ẩn cho đến nhiệm vụ ② (tour
   // bảng điện, not built this delivery — Chặng 2 is 3 locked slots, so this
   // stays hidden for this delivery's whole Cấp 0 run, as intended).
@@ -924,7 +1023,13 @@ export function TradingPanel({ hideHeader = false }: { hideHeader?: boolean } = 
   const { data: cap0Progress } = useCap0Progress(isCap0Active)
   // Cấp 1 spec §0: "Sổ lệnh bid/ask vẫn ẨN (chỉ mở ở Cấp 2)" — stays hidden
   // for the whole Cấp 1 run too (unconditionally, no task gates it yet).
-  const hideOrderBook = (isCap0Active && !cap0Visibility(cap0Progress).orderBook) || isCap1Active
+  // Cấp 2 spec §C9: "Sổ lệnh bid/ask MỞ ở Cấp 2" — `isCap2Active` short-
+  // circuits both the Cấp 0 task-gate AND the Cấp 1 unconditional-hide back
+  // to visible (a Cấp 2 session also has `isCap1Active` true, since Cấp 2
+  // reuses Cấp 1's Form Kế hoạch — without this short-circuit the `|| isCap1Active`
+  // clause above would still hide it).
+  const hideOrderBook =
+    !isCap2Active && ((isCap0Active && !cap0Visibility(cap0Progress).orderBook) || isCap1Active)
 
   const positionQty = useMemo(() => {
     const pos = portfolio?.positions.find(
