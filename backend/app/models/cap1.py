@@ -78,6 +78,38 @@ class PhuongPhapSlTp(enum.StrEnum):
     BIEN_DO_DAO_DONG = "bien_do_dao_dong"
 
 
+class KhauViRuiRo(enum.StrEnum):
+    """Cấp 3 addition (spec §5) — 3-mức khẩu vị rủi ro (% vốn tối đa/lệnh).
+
+    Lives here (not in ``app.models.cap3``) because it decorates a column on
+    this module's ``OrderKehoach`` class (the per-order snapshot of the
+    khẩu vị active when the order was placed — spec §7 "Khẩu vị rủi ro lúc
+    đặt"). It is ALSO the canonical enum for ``Cap3Progress.khau_vi`` (the
+    live profile setting) — see ``app.models.cap3`` for why no separate
+    ``khau_vi_rui_ro`` column exists.
+    """
+
+    THAN_TRONG = "than_trong"  # trần 10%
+    CAN_BANG = "can_bang"  # trần 20% (mặc định gợi ý)
+    TAN_CONG = "tan_cong"  # trần 30%
+
+
+class CachKhoiLuong(enum.StrEnum):
+    """Cấp 3 addition (spec §6.3) — 2 cách chọn 1 for khối lượng mua,
+    recorded on ``OrderKehoach``. Lives here for the same reason as
+    ``PhuongPhapSlTp``/``KhauViRuiRo`` above.
+
+    NOTE: the implementation task's literal instructions specify these two
+    wire values (matching the human-readable "linh hoạt"/"kỷ luật" labels
+    used throughout §6.3's headers); §10's data-model sketch alternatively
+    names them ``khau_vi_tu_tin``/``chia_deu`` — we follow the task's
+    explicit values since it is the operative directive for this build.
+    """
+
+    LINH_HOAT = "linh_hoat"  # Cách 1 — khẩu vị × tự tin
+    KY_LUAT = "ky_luat"  # Cách 2 — chia đều theo khẩu vị
+
+
 class Cap1Progress(UUIDMixin, TimestampMixin, Base):
     """Per-user Cấp 1 onboarding progress. One row per user."""
 
@@ -154,6 +186,27 @@ class OrderKehoach(UUIDMixin, TimestampMixin, Base):
     )
     cat_lo: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     chot_loi: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+
+    # ── Cấp 3 additions (spec §6/§10) — quản lý vốn: khẩu vị + tự tin + khối lượng ──
+    khau_vi: Mapped[KhauViRuiRo | None] = mapped_column(
+        Enum(
+            KhauViRuiRo,
+            name="cap3_khau_vi_rui_ro",
+            values_callable=lambda e: [m.value for m in e],
+        ),
+        nullable=True,
+    )
+    muc_tu_tin: Mapped[int | None] = mapped_column(Integer, nullable=True)  # 1/2/3 = Thấp/Vừa/Cao
+    cach_khoi_luong: Mapped[CachKhoiLuong | None] = mapped_column(
+        Enum(
+            CachKhoiLuong,
+            name="cap3_cach_khoi_luong",
+            values_callable=lambda e: [m.value for m in e],
+        ),
+        nullable=True,
+    )
+    khoi_luong: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    pct_von: Mapped[float | None] = mapped_column(Float, nullable=True)
 
 
 class OrderKetso(UUIDMixin, TimestampMixin, Base):
