@@ -1,0 +1,187 @@
+/**
+ * Cấp 2 «Kỷ luật» — chuỗi lệnh kỷ luật + điểm kỷ luật (spec §6, §7).
+ * Ngọc lam `#7dd3c0` là màu cấp; các dải điểm dùng xanh/vàng/đỏ theo §7.
+ */
+
+/* ── 🔥 Chuỗi lệnh kỷ luật (spec §6) ────────────────────────────────────── */
+.cap2-chuoi {
+  padding: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+}
+
+.cap2-chuoi--hot {
+  border-color: rgba(125, 211, 192, 0.55);
+  background: linear-gradient(180deg, rgba(125, 211, 192, 0.1), transparent);
+}
+
+.cap2-chuoi-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cap2-chuoi-flame {
+  font-size: 14px;
+}
+
+.cap2-chuoi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: #7dd3c0;
+}
+
+.cap2-chuoi-body {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin-top: 6px;
+}
+
+.cap2-chuoi-current {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--t1);
+}
+
+.cap2-chuoi--hot .cap2-chuoi-current {
+  color: #7dd3c0;
+}
+
+.cap2-chuoi-unit {
+  font-size: 11.5px;
+  color: var(--t3);
+}
+
+.cap2-chuoi-record {
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: var(--t2);
+}
+
+.cap2-chuoi-note {
+  margin-top: 8px;
+  padding: 7px 9px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--t2);
+  background: var(--bg2);
+  border-left: 2px solid var(--bd);
+  border-radius: 5px;
+}
+
+.cap2-chuoi-note--reset {
+  border-left-color: #ffc53d;
+}
+
+/* ── Điểm kỷ luật (spec §7 + §C12c) ─────────────────────────────────────── */
+.cap2-diem {
+  padding: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--bd);
+  border-left-width: 3px;
+  border-radius: 10px;
+}
+
+.cap2-diem--xanh {
+  border-left-color: #35d07f;
+}
+
+.cap2-diem--vang {
+  border-left-color: #ffc53d;
+}
+
+.cap2-diem--do {
+  border-left-color: #ff6b6b;
+}
+
+.cap2-diem-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cap2-diem-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+
+.cap2-diem-band {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--t2);
+}
+
+.cap2-diem-value {
+  margin-top: 4px;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--t1);
+}
+
+.cap2-diem--xanh .cap2-diem-value {
+  color: #35d07f;
+}
+
+.cap2-diem--vang .cap2-diem-value {
+  color: #ffc53d;
+}
+
+.cap2-diem--do .cap2-diem-value {
+  color: #ff6b6b;
+}
+
+.cap2-diem-max {
+  margin-left: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--t3);
+}
+
+.cap2-diem-giaithich {
+  margin: 7px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--t2);
+}
+
+.cap2-diem-breakdown {
+  margin: 9px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px dotted var(--bd);
+}
+
+.cap2-diem-breakdown li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 11.5px;
+}
+
+.cap2-diem-breakdown-label {
+  color: var(--t3);
+}
+
+.cap2-diem-breakdown-value {
+  font-weight: 600;
+  color: var(--t2);
+}
+
+.cap2-diem-skeleton {
+  height: 30px;
+  margin-top: 6px;
+  background: var(--bg4);
+  border-radius: 6px;
+}

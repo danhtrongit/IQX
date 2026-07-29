@@ -1,0 +1,133 @@
+/**
+ * Cấp 2 «Kỷ luật» — cảnh báo (spec §8 chạm cắt lỗ · §9 nhồi lệnh) và
+ * "Ghi nhận nhỏ" (spec §11 — toast nhẹ 2s, KHÔNG huy chương/confetti).
+ */
+
+.cap2-alert {
+  padding: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--bd);
+  border-left: 3px solid #ffc53d;
+  border-radius: 10px;
+}
+
+.cap2-alert--severe {
+  border-left-color: #ff6b6b;
+  background: linear-gradient(180deg, rgba(255, 107, 107, 0.08), transparent);
+}
+
+.cap2-alert--nhoilenh {
+  border-left-color: #ff6b6b;
+}
+
+.cap2-alert-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #ffc53d;
+}
+
+.cap2-alert--severe .cap2-alert-head,
+.cap2-alert--nhoilenh .cap2-alert-head {
+  color: #ff6b6b;
+}
+
+.cap2-alert-figures {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--t1);
+}
+
+.cap2-alert-body {
+  margin: 7px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--t2);
+}
+
+.cap2-alert-typebox {
+  display: block;
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: var(--t2);
+}
+
+.cap2-alert-typebox input {
+  width: 100%;
+  margin-top: 5px;
+  padding: 7px 9px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--t1);
+  background: var(--bg2);
+  border: 1px solid var(--bd);
+  border-radius: 6px;
+}
+
+.cap2-alert-typebox input:focus {
+  outline: none;
+  border-color: #7dd3c0;
+}
+
+.cap2-alert-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 11px;
+}
+
+.cap2-alert-btn {
+  padding: 8px 13px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--t2);
+  background: var(--bg2);
+  border: 1px solid var(--bd);
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.cap2-alert-btn:hover:not(:disabled) {
+  color: var(--t1);
+  border-color: #7dd3c0;
+}
+
+.cap2-alert-btn--primary {
+  color: #0d2420;
+  background: #7dd3c0;
+  border-color: #7dd3c0;
+}
+
+.cap2-alert-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Ghi nhận nhỏ (spec §11) ────────────────────────────────────────────── */
+.cap2-ghinhan {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  font-size: 12.5px;
+  color: var(--t1);
+  background: var(--bg3);
+  border: 1px solid rgba(125, 211, 192, 0.45);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+}
+
+.cap2-ghinhan-tick {
+  color: #7dd3c0;
+  font-weight: 700;
+}
+
+.cap2-ghinhan-text {
+  line-height: 1.5;
+}
