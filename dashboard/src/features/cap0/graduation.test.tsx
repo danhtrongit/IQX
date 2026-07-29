@@ -5,21 +5,28 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Cap0Progress } from "./types"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
-const { useCap0ProgressMock, usePremiumStatusMock, graduateMutate, messageInfo, navigateMock } =
-  vi.hoisted(() => ({
-    useCap0ProgressMock: vi.fn(),
-    // Defaults to a premium user so the many pre-existing tests below (all
-    // written before the premium-honest fix) keep exercising the ORIGINAL
-    // spec §9 verbatim copy without every one of them needing to opt in.
-    usePremiumStatusMock: vi.fn(() => ({ isPremium: true, isLoading: false })),
-    // Mirror react-query's real `mutate(variables, options)` shape — by
-    // default synchronously invoke `onSuccess` (the happy path).
-    graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
-      opts?.onSuccess?.()
-    }),
-    messageInfo: vi.fn(),
-    navigateMock: vi.fn(),
-  }))
+const {
+  useCap0ProgressMock,
+  usePremiumStatusMock,
+  graduateMutate,
+  enterCap1Mutate,
+  messageInfo,
+  navigateMock,
+} = vi.hoisted(() => ({
+  useCap0ProgressMock: vi.fn(),
+  // Defaults to a premium user so the many pre-existing tests below (all
+  // written before the premium-honest fix) keep exercising the ORIGINAL
+  // spec §9 verbatim copy without every one of them needing to opt in.
+  usePremiumStatusMock: vi.fn(() => ({ isPremium: true, isLoading: false })),
+  // Mirror react-query's real `mutate(variables, options)` shape — by
+  // default synchronously invoke `onSuccess` (the happy path).
+  graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
+    opts?.onSuccess?.()
+  }),
+  enterCap1Mutate: vi.fn(),
+  messageInfo: vi.fn(),
+  navigateMock: vi.fn(),
+}))
 
 // `GraduationModal` only needs `useCap0Progress` + `useGraduate` — mock
 // `./hooks` directly (same pattern as `Cap0TradingPage.test.tsx`/
@@ -27,6 +34,13 @@ const { useCap0ProgressMock, usePremiumStatusMock, graduateMutate, messageInfo, 
 vi.mock("./hooks", () => ({
   useCap0Progress: (...a: unknown[]) => useCap0ProgressMock(...a),
   useGraduate: () => ({ mutate: graduateMutate, isPending: false }),
+}))
+
+// Task FE3 — the premium "Vào Cấp 1" branch now also fires the idempotent
+// `POST /cap1/enter` (concrete-file import, see `GraduationModal.tsx`'s own
+// comment on why not the `@/features/cap1` barrel).
+vi.mock("@/features/cap1/hooks", () => ({
+  useEnterCap1: () => ({ mutate: enterCap1Mutate, isPending: false }),
 }))
 
 // Premium-honest mode fix — `GraduationModal` now reads `usePremiumStatus`
@@ -137,6 +151,7 @@ describe("GraduationModal", () => {
     graduateMutate.mockImplementation((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
       opts?.onSuccess?.()
     })
+    enterCap1Mutate.mockReset()
     messageInfo.mockReset()
     navigateMock.mockReset()
   })
@@ -189,7 +204,7 @@ describe("GraduationModal", () => {
     expect(svg?.getAttribute("width")).toBe("120")
   })
 
-  it('clicking "Vào Cấp 1" (premium graduate) calls useGraduate().mutate and toasts a Cấp 1 placeholder', () => {
+  it('clicking "Vào Cấp 1" (premium graduate) calls useGraduate().mutate, then enters Cấp 1 (Task FE3 — Cấp 1 is live, replaces the old placeholder toast)', () => {
     useCap0ProgressMock.mockReturnValue({ data: readyProgress() })
     renderModal()
     fireEvent.click(screen.getByText("Vào Cấp 1 «Học việc» →"))
@@ -197,7 +212,11 @@ describe("GraduationModal", () => {
       undefined,
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     )
-    expect(messageInfo).toHaveBeenCalledWith(expect.stringContaining("Cấp 1"))
+    expect(enterCap1Mutate).toHaveBeenCalledTimes(1)
+    // No placeholder toast anymore, and no navigation — the page swap into
+    // Cap1TradingPage is driven by `DauTruongPage` re-reading the SAME
+    // `useCap0Progress` query this mutation just invalidated.
+    expect(messageInfo).not.toHaveBeenCalled()
     expect(navigateMock).not.toHaveBeenCalled()
   })
 
@@ -223,6 +242,7 @@ describe("GraduationModal — free (non-premium) graduate", () => {
     graduateMutate.mockImplementation((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
       opts?.onSuccess?.()
     })
+    enterCap1Mutate.mockReset()
     messageInfo.mockReset()
     navigateMock.mockReset()
   })
@@ -257,8 +277,11 @@ describe("GraduationModal — free (non-premium) graduate", () => {
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     )
     expect(navigateMock).toHaveBeenCalledWith("/nang-cap")
-    // No "Cấp 1 sắp ra mắt" placeholder toast for the free branch.
+    // No "Cấp 1 sắp ra mắt" placeholder toast for the free branch, and no
+    // Cấp 1 entry either — a free user's orders never route through the real
+    // Thực chiến engine, so entering Cấp 1 makes no sense for them yet.
     expect(messageInfo).not.toHaveBeenCalled()
+    expect(enterCap1Mutate).not.toHaveBeenCalled()
   })
 
   it("still closes itself once graduated_at comes back (one-way trip, same as premium)", () => {

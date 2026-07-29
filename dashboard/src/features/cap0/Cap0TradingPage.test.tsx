@@ -117,6 +117,14 @@ vi.mock("./hooks", () => ({
   useGraduate: () => ({ mutate: graduateMutate, isPending: false }),
 }))
 
+// `GraduationModal` (mounted unconditionally inside `Cap0TradingPage`) now
+// also calls `useEnterCap1` (Task FE3 — wires "Vào Cấp 1" to actually enter)
+// — a no-op spy is enough here since this file only exercises the Cấp 0
+// shell, not that button's own behaviour (see `graduation.test.tsx`).
+vi.mock("@/features/cap1/hooks", () => ({
+  useEnterCap1: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+
 // Only stub `Message` (used for the "Đã từng" toast) — keep the real Modal/
 // Button so PlacementModal (and the AI Insight symbol-picker modal) render
 // faithfully.

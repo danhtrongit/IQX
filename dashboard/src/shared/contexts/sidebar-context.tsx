@@ -1,6 +1,15 @@
 import { createContext, useContext, useState, type ReactNode } from "react"
 
-export type SidebarPanel = "news" | "trading" | "watchlist" | "patterns" | "journey"
+export type SidebarPanel =
+  | "news"
+  | "trading"
+  | "watchlist"
+  | "patterns"
+  | "journey"
+  // Cấp 1 "Phân tích danh mục" (spec §7) — only reachable from
+  // `JourneyPanelCap1`'s button while inside `Cap1Provider`; harmless
+  // elsewhere (mirrors "journey"'s own doc).
+  | "cap1-analysis"
 
 interface SidebarContextValue {
   activePanel: SidebarPanel

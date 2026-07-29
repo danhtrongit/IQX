@@ -14,6 +14,12 @@ import { JourneyPanel } from "@/features/cap0/JourneyPanel"
 import { useCap0Events } from "@/features/cap0/Cap0Context"
 import { useCap0Progress } from "@/features/cap0/hooks"
 import { cap0Visibility } from "@/features/cap0/cap0Visibility"
+// Same anti-cycle rationale as the cap0 imports above — `@/features/cap1`'s
+// barrel re-exports `Cap1TradingPage`, which itself imports `CenterPanel`/
+// `RightSidebar`/`RightToolbar` from `@/features/dashboard`.
+import { JourneyPanelCap1 } from "@/features/cap1/JourneyPanelCap1"
+import { Cap1PortfolioAnalysisPanel } from "@/features/cap1/Cap1PortfolioAnalysisPanel"
+import { useCap1Events } from "@/features/cap1/Cap1Context"
 
 /**
  * Dynamic right sidebar that switches between panels:
@@ -34,6 +40,10 @@ export function RightSidebar() {
   const { isCap0Active } = useCap0Events()
   const { data: cap0Progress } = useCap0Progress(isCap0Active)
   const visibility = cap0Visibility(cap0Progress)
+  // Cấp 0 and Cấp 1 providers are never both mounted at once (progression
+  // routing — `DauTruongPage` — picks exactly one flow per visit), so
+  // "journey" safely resolves to whichever level is actually active.
+  const { isCap1Active } = useCap1Events()
 
   const getPanelContent = () => {
     switch (activePanel) {
@@ -58,7 +68,11 @@ export function RightSidebar() {
       case "watchlist":
         return <WatchlistPanel />
       case "journey":
-        return <JourneyPanel />
+        return isCap1Active ? <JourneyPanelCap1 /> : <JourneyPanel />
+      case "cap1-analysis":
+        // Only reachable from `JourneyPanelCap1`'s own button (inside Cấp 1)
+        // — defensive fallback mirrors the "journey" case above.
+        return isCap1Active ? <Cap1PortfolioAnalysisPanel /> : <JourneyPanel />
       default:
         return <NewsFeedPanel />
     }
@@ -70,6 +84,7 @@ export function RightSidebar() {
     trading: "Đặt lệnh",
     watchlist: "Danh mục",
     journey: "Hành trình",
+    "cap1-analysis": "Phân tích danh mục",
   }
 
   return (

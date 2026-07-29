@@ -128,13 +128,25 @@ function computeKhoi2(trades: Cap1TradeRecord[]): ReasonRow[] {
   return rows.sort((a, b) => b.totalPnlVnd - a.totalPnlVnd)
 }
 
+/**
+ * Per-lý-do ✓/✗ coverage grid (spec §7 Khối 3 "ĐỘ PHỦ 5 LÝ DO" / §8 nhiệm vụ
+ * ③'s "bảng 5 ô lý do ✓/✗") — derived from the client closed-trade log (see
+ * `tradeLog.ts`'s docstring for why this is the best-effort source, not the
+ * server's `so_ly_do_da_dung` count, which can't say WHICH lý do were used).
+ * Exported so `JourneyPanelCap1` can render the same grid for nhiệm vụ ③
+ * without duplicating this computation.
+ */
+export function reasonCoverage(trades: Cap1TradeRecord[]): Record<LyDo, boolean> {
+  return Object.fromEntries(
+    LY_DO_OPTIONS.map((opt) => [opt.value, trades.some((t) => t.lyDo === opt.value)]),
+  ) as Record<LyDo, boolean>
+}
+
 function computeKhoi3(
   trades: Cap1TradeRecord[],
   progress: Cap1Progress | null,
 ): Cap1PortfolioAnalysisResult["khoi3"] {
-  const coverage = Object.fromEntries(
-    LY_DO_OPTIONS.map((opt) => [opt.value, trades.some((t) => t.lyDo === opt.value)]),
-  ) as Record<LyDo, boolean>
+  const coverage = reasonCoverage(trades)
   const usedCount = Object.values(coverage).filter(Boolean).length
   return {
     coverage,

@@ -31,6 +31,7 @@ export {
 } from "./Cap1PortfolioAnalysis"
 export {
   computeCap1PortfolioAnalysis,
+  reasonCoverage,
   type Cap1PortfolioAnalysisResult,
   type Khoi4Task,
   type MauPhatHien,
@@ -62,6 +63,7 @@ export {
 export {
   LY_DO_OPTIONS,
   isKehoachValid,
+  countCap1TasksDone,
   type Cap1Progress,
   type CamXuc,
   type KehoachInput,
@@ -72,3 +74,8 @@ export {
   type OrderKetso,
   type TrangThaiLucDat,
 } from "./types"
+export { JourneyPanelCap1 } from "./JourneyPanelCap1"
+export { GraduationModalCap1, isGraduationReadyCap1 } from "./GraduationModalCap1"
+export { Cap1PortfolioAnalysisPanel } from "./Cap1PortfolioAnalysisPanel"
+export { Cap1TradingPage } from "./Cap1TradingPage"
+export { DauTruongPage } from "./DauTruongPage"

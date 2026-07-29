@@ -373,6 +373,20 @@ function OrderEntry({
         setCap1Snapshot(null)
         setCap1DocChiTiet(false)
       }
+      // Cấp 1 (spec §6 "Kết sổ mở khi user bán 1 lệnh Thực chiến") — a SELL
+      // fill inside Cấp 1 notifies the bus too (no `lyDo`/`trangThaiLucDat`/
+      // `vungMua` — those are BUY-time kế hoạch fields, undefined on sell
+      // events per `Cap1OrderEvent`'s own doc). `Cap1TradingPage` matches
+      // this against the tracked buy for the same symbol to open Kết sổ.
+      if (side === "sell" && isCap1Active) {
+        cap1Events.onOrderFilled?.({
+          symbol,
+          side,
+          quantity: order.quantity,
+          price: order.price,
+          orderId: order.id,
+        })
+      }
       const totalStr = (order.total || order.price * order.quantity).toLocaleString("en-US")
       Message.success(
         `Đặt lệnh ${label} ${symbol} thành công — ${order.quantity} CP × ${order.price.toLocaleString("en-US")} = ${totalStr} VND${order.status === "PENDING" ? " (chờ khớp)" : ""}`,

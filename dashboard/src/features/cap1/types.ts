@@ -108,3 +108,22 @@ export const LY_DO_OPTIONS: readonly LyDoOption[] = [
 export function isKehoachValid(lyDo: LyDo | null, vungMua: number | null): boolean {
   return lyDo != null && vungMua != null && vungMua > 0
 }
+
+/**
+ * How many of the 6 Cấp 1 tasks are complete (mirrors `cap0/types.ts`'s
+ * `countTasksDone`) — used by `JourneyPanelCap1` (ring progress + checklist
+ * header "x/6") and `GraduationModalCap1` (`isGraduationReadyCap1`).
+ */
+export function countCap1TasksDone(progress: Cap1Progress | null | undefined): number {
+  if (!progress) return 0
+  return (
+    [
+      progress.task_1_done_at,
+      progress.task_2_done_at,
+      progress.task_3_done_at,
+      progress.task_4_done_at,
+      progress.task_5_done_at,
+      progress.task_6_done_at,
+    ].filter((t) => t != null).length
+  )
+}

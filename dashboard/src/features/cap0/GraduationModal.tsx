@@ -1,9 +1,16 @@
 import { useNavigate } from "react-router"
-import { Message, Modal } from "@arco-design/web-react"
+import { Modal } from "@arco-design/web-react"
 import { usePremiumStatus } from "@/features/premium"
 import { Badge, LEVELS } from "./Badge"
 import { useCap0Progress, useGraduate } from "./hooks"
 import { countTasksDone, type Cap0Progress } from "./types"
+// Concrete-file import (NOT the `@/features/cap1` barrel) — that barrel
+// re-exports `Cap1TradingPage`, which imports `CenterPanel`/`RightSidebar`/
+// `RightToolbar` from `@/features/dashboard`; going through the barrel here
+// risks a module cycle the same way `RightSidebar.tsx`'s own comment
+// describes for its cap0 imports. `@/features/cap1/hooks` has no cap0/
+// dashboard dependency, so this is safe.
+import { useEnterCap1 } from "@/features/cap1/hooks"
 import "./cap0.css"
 
 /**
@@ -75,18 +82,23 @@ export function GraduationModal() {
   const { data: progress } = useCap0Progress()
   const { isPremium } = usePremiumStatus()
   const graduate = useGraduate()
+  const enterCap1 = useEnterCap1()
   const navigate = useNavigate()
   const level = LEVELS[0]
   const visible = isGraduationReady(progress)
 
   const handleGraduate = () => {
     if (isPremium) {
-      // No Cấp 1 flow exists yet, so this delivery just toasts a placeholder
-      // and lets `isGraduationReady` close the modal (its own `graduated_at`
-      // guard) — unchanged from the original spec §9 delivery.
+      // Cấp 1 is live (Task FE3) — record the graduation, then fire the
+      // idempotent `POST /cap1/enter` right here too (not just relying on
+      // `DauTruongPage`'s own effect) so Cấp 1 progress is ready the instant
+      // `DauTruongPage` swaps this Cấp 0 shell out for `Cap1TradingPage` —
+      // driven by the SAME `useCap0Progress` query this mutation's
+      // `graduated_at` just invalidated. No navigation call needed: this
+      // modal only ever renders while already on `/dau-truong`.
       graduate.mutate(undefined, {
         onSuccess: () => {
-          Message.info("Cấp 1 sắp ra mắt")
+          enterCap1.mutate()
         },
       })
       return

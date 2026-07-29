@@ -235,4 +235,32 @@ describe("TradingPanel — Cấp 1 wiring (Task FE1)", () => {
       expect.objectContaining({ orderId: "order-1", lyDo: "dong_tien", trangThaiLucDat: "ung_ho" }),
     )
   })
+
+  it("on a successful SELL fill, notifies the Cấp 1 event bus WITHOUT lý do/vùng mua (Task FE3 — Kết sổ Cấp 1 wiring)", async () => {
+    placeOrderMock.mockResolvedValueOnce({
+      id: "order-2",
+      symbol: "VNM",
+      side: "SELL",
+      quantity: 100,
+      price: 65_000,
+      total: 6_500_000,
+      status: "FILLED",
+    })
+    renderPanel()
+    fireEvent.click(screen.getByText("BÁN"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH BÁN"))
+
+    await waitFor(() => expect(placeOrderMock).toHaveBeenCalledTimes(1))
+    await waitFor(() =>
+      expect(onOrderFilledMock).toHaveBeenCalledWith({
+        symbol: "VNM",
+        side: "sell",
+        quantity: 100,
+        price: 65_000,
+        orderId: "order-2",
+      }),
+    )
+    // A SELL never records a Form Kế hoạch (that's a BUY-only concept).
+    expect(recordKehoachMock).not.toHaveBeenCalled()
+  })
 })

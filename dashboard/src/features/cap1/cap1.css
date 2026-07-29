@@ -70,3 +70,22 @@
 .cap1-ketso-profile-list li + li {
   margin-top: 4px;
 }
+
+/* ── Màn tốt nghiệp Cấp 1 (spec §3 Khối 3 "viền ngọc lam" + CTA) ────────────
+   Reuses `.cap0-grad-block`/`.cap0-grad-cta` for layout — these 2 classes
+   only override the colour to Cấp 2's ngọc lam `#7dd3c0`. */
+.cap1-grad-block--cap2 {
+  border-color: rgba(125, 211, 192, 0.5);
+}
+
+.cap1-grad-cta--cap2 {
+  background: #7dd3c0;
+  color: #0d2420;
+}
+
+/* ── Cấp 1 topbar (mirrors `.cap0-topbar`) ──────────────────────────────── */
+.cap1-topbar-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
