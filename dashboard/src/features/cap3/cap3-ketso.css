@@ -1,0 +1,81 @@
+/**
+ * Cấp 3 «Bản lĩnh» — phần THÊM của Kết sổ, đặt trên bộ shell dùng chung của
+ * Cấp 0/1/2 (`cap0.css` + `cap1.css` + `cap2-ketso.css`, đều được
+ * `KetsoModalCap3.tsx` import cùng lúc — đúng lớp mà Cấp 2 đã dựng trên Cấp 1).
+ * Chỉ scope `.cap3-ketso-*`; bảng Quản lý vốn dùng lại `.cap0-debrief-table`
+ * nguyên vẹn nên không định nghĩa lại luật table nào.
+ *
+ * Xanh brand `#4f8ff7` là màu Cấp 3 (`cap3.css`) — dùng ở đây để đánh dấu 2
+ * khối Cấp 3 thêm (Quản lý vốn + coach "TỰ TIN VS KẾT QUẢ") khác với khối ngọc
+ * lam của Cấp 2 và khối xanh nhạt của Cấp 0/1.
+ */
+
+/* ── Khối Quản lý vốn (spec §7 — đối chiếu khẩu vị/tự tin/khối lượng) ────── */
+.cap3-ketso-quanlyvon {
+  margin-top: 14px;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(79, 143, 247, 0.09), transparent);
+  border: 1px solid rgba(79, 143, 247, 0.4);
+  border-radius: 10px;
+}
+
+.cap3-ketso-quanlyvon-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cap3-ketso-quanlyvon-title {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #4f8ff7;
+}
+
+.cap3-ketso-badge {
+  padding: 1px 6px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: #4f8ff7;
+  background: rgba(79, 143, 247, 0.14);
+  border: 1px solid rgba(79, 143, 247, 0.35);
+  border-radius: 999px;
+}
+
+.cap3-ketso-quanlyvon table {
+  margin-top: 8px;
+}
+
+/* Dòng "Mức tự tin" được làm nổi (spec §7: "dòng làm nổi"). */
+.cap3-ketso-tutin-row td {
+  font-weight: 600;
+  color: #4f8ff7;
+}
+
+/* ── Lớp coach thứ 3 "TỰ TIN VS KẾT QUẢ" — đứng cạnh "NHÌN LẠI" (Cấp 1) và
+   "KỶ LUẬT" (Cấp 2), không thay thế ────────────────────────────────────── */
+.cap3-ketso-coach {
+  margin-top: 12px;
+  padding: 11px 13px;
+  background: rgba(79, 143, 247, 0.08);
+  border-left: 2px solid #4f8ff7;
+  border-radius: 8px;
+}
+
+.cap3-ketso-coach-tag {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #4f8ff7;
+}
+
+.cap3-ketso-coach-body {
+  margin-top: 6px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--t2);
+}
