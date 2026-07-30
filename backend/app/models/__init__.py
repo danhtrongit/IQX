@@ -25,6 +25,7 @@ from app.models.cap1 import Cap1Progress, OrderKehoach, OrderKetso  # noqa: F401
 from app.models.cap2 import Cap2Progress  # noqa: F401
 from app.models.cap3 import Cap3Progress  # noqa: F401
 from app.models.cap4 import Cap4Progress  # noqa: F401
+from app.models.cap5 import Cap5Progress, StandbyDecision  # noqa: F401
 from app.models.backtest_strategy import BacktestStrategy  # noqa: F401
 from app.models.chart_drawing import ChartDrawing  # noqa: F401
 from app.models.ipn_log import SePayIPNLog  # noqa: F401

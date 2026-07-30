@@ -26,6 +26,7 @@ from app.api.v1.endpoints import (
     cap2,
     cap3,
     cap4,
+    cap5,
     chart_drawings,
     health,
     lessons,
@@ -77,4 +78,5 @@ api_v1_router.include_router(cap1.router)
 api_v1_router.include_router(cap2.router)
 api_v1_router.include_router(cap3.router)
 api_v1_router.include_router(cap4.router)
+api_v1_router.include_router(cap5.router)
 

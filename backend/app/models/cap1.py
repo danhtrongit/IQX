@@ -17,7 +17,10 @@ added by a later migration) rather than creating new tables — see
 new table (``cap2_progress``) lives in ``app.models.cap2``. Cấp 3 «Bản lĩnh»
 and Cấp 4 «Thuần thục» follow the same pattern (``cap3_progress`` /
 ``cap4_progress`` in ``app.models.cap3``/``app.models.cap4``, plus the "Cấp 3
-additions" / "Cấp 4 additions" column blocks on ``OrderKehoach``).
+additions" / "Cấp 4 additions" column blocks on ``OrderKehoach``). Cấp 5
+«Lão luyện» extends ``OrderKetso`` the same way (the "Cấp 5 additions" column
+block below — verdict hệ/user + provenance + 4 ô) and owns ``cap5_progress`` +
+``standby_decision`` in ``app.models.cap5``.
 """
 
 from __future__ import annotations
@@ -36,6 +39,8 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
+    String,
+    Text,
     UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column
@@ -270,3 +275,20 @@ class OrderKetso(UUIDMixin, TimestampMixin, Base):
     nhoi_lenh_khi_lo: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="false"
     )
+
+    # ── Cấp 5 additions (spec §4/§8) — "phân loại 4 ô": tách QUYẾT ĐỊNH khỏi
+    # KẾT QUẢ. ``verdict_he`` là gợi ý của hệ suy ra từ dữ liệu quy trình Cấp
+    # 1-4 đã ghi trên chính lệnh này; ``verdict_user`` là chốt của user (hybrid
+    # §C12c — user luôn sửa được, sửa thì bắt ghi ``ly_do_sua``);
+    # ``verdict_provenance`` là JSON các tín hiệu dẫn tới verdict hệ (FE hiện
+    # nguyên văn, KHÔNG bao giờ hiện verdict trơ); ``o_4`` = verdict cuối ×
+    # thắng/thua. Xem ``app.models.cap5`` (Verdict/O4) cho lý do dùng String +
+    # JSON thay vì PG enum. Tất cả nullable để lệnh Cấp 1-4 cũ vẫn hợp lệ.
+    #
+    # ★ ``pnl_pct`` KHÔNG bao giờ ảnh hưởng verdict — nó chỉ chọn CỘT của ma
+    # trận 4 ô (lệnh thua mà làm đúng quy trình là ``dung_thua``).
+    verdict_he: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    verdict_user: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    verdict_provenance: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    o_4: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    ly_do_sua: Mapped[str | None] = mapped_column(Text, nullable=True)
