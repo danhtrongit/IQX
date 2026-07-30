@@ -44,6 +44,16 @@ import {
   useRecordKehoachCap2,
   type PhuongPhapSlTp,
 } from "@/features/cap2"
+import {
+  KhauViModal,
+  QuanLyVonBlock,
+  isKhoiLuongValid,
+  useCap3Events,
+  useCap3Progress,
+  useRecordKehoachCap3,
+  type CachKhoiLuong,
+  type MucTuTin,
+} from "@/features/cap3"
 import { getErrorMessage } from "@/shared/http/client"
 import { cn } from "@/shared/lib/cn"
 import { StockLogo } from "@/features/navigation/StockLogo"
@@ -228,6 +238,26 @@ function OrderEntry({
   const [cap2Method, setCap2Method] = useState<PhuongPhapSlTp | null>(null)
   const [cap2CatLo, setCap2CatLo] = useState<number | null>(null)
   const [cap2ChotLoi, setCap2ChotLoi] = useState<number | null>(null)
+  const cap3Events = useCap3Events()
+  // `isCap3Active` mirrors `isCap2Active` above — false outside a
+  // `Cap3Provider`, so the khối Quản lý vốn + its hard gate below have zero
+  // effect on Cấp 0/1/2-only or normal trading. A Cấp 3 session also has
+  // `isCap1Active`/`isCap2Active` true (Cấp 3 keeps their blocks 100% intact,
+  // spec §0).
+  const { isCap3Active } = cap3Events
+  const { data: cap3Progress } = useCap3Progress(isCap3Active)
+  const recordKehoachCap3 = useRecordKehoachCap3()
+  // Cấp 3 khối "Quản lý vốn" (spec §6) — mức tự tin do user TỰ chấm (KHÔNG có
+  // AI gợi ý, spec §6.2) + 1 trong 2 cách khối lượng.
+  const [cap3MucTuTin, setCap3MucTuTin] = useState<MucTuTin | null>(null)
+  const [cap3Cach, setCap3Cach] = useState<CachKhoiLuong | null>(null)
+  const [cap3KhoiLuong, setCap3KhoiLuong] = useState<number | null>(null)
+  const [cap3PctVon, setCap3PctVon] = useState<number | null>(null)
+  // Ô Khối lượng: tự điền theo khối lượng đề xuất, NHƯNG user sửa tay được
+  // (spec §6.3). Một lần user tự sửa thì thôi ghi đè — tới khi họ đổi mức tự
+  // tin / cách khối lượng (một ý định mới) thì auto-fill lại.
+  const [cap3VolumeTouched, setCap3VolumeTouched] = useState(false)
+  const [cap3KhauViOpen, setCap3KhauViOpen] = useState(false)
   const [side, setSide] = useState<"buy" | "sell">("buy")
   const [method, setMethod] = useState<"market" | "limit">("market")
   const [price, setPrice] = useState<number | undefined>(undefined)
@@ -293,6 +323,11 @@ function OrderEntry({
   // is false outside a `Cap2Provider`).
   const cap2SubmitDisabled =
     side === "buy" && isCap2Active && !isSlTpValid(cap2Method, cap2CatLo, cap2ChotLoi)
+  // Cổng cứng (spec §6.4): MUA disabled unless (mức tự tin chấm) AND (một cách
+  // khối lượng chọn) — ON TOP OF Cấp 1 + Cấp 2's gates above, since Cấp 3 keeps
+  // both intact. Only ever true for a BUY inside Cấp 3.
+  const cap3SubmitDisabled =
+    side === "buy" && isCap3Active && !isKhoiLuongValid(cap3MucTuTin, cap3Cach)
 
   const handlePct = (pct: number) => {
     if (side === "buy" && numPrice > 0) {
@@ -345,6 +380,12 @@ function OrderEntry({
     // affects Cấp 0/Cấp 1-only or normal trading.
     if (cap2SubmitDisabled) {
       Message.warning("Chọn 1 trong 2 cách cắt lỗ/chốt lời mới đặt được lệnh.")
+      return
+    }
+    // Cấp 3 khối Quản lý vốn cổng cứng (spec §6.4) — belt-and-suspenders behind
+    // the Submit button's own `disabled`. ONLY inside Cấp 3.
+    if (cap3SubmitDisabled) {
+      Message.warning("Chấm mức tự tin và chọn cách tính khối lượng mới đặt được lệnh.")
       return
     }
 
@@ -404,6 +445,26 @@ function OrderEntry({
             cat_lo: cap2CatLo,
             chot_loi: cap2ChotLoi,
           })
+          // Cấp 3 (spec §6 "Ghi hồ sơ") — same chained-await reason as Cấp 2:
+          // `/cap3/kehoach` extends the SAME `order_kehoach` row, so it must
+          // fire only AFTER Cấp 1's (and Cấp 2's) POST has created/updated it.
+          if (
+            isCap3Active &&
+            cap3Progress?.khau_vi &&
+            cap3MucTuTin &&
+            cap3Cach &&
+            cap3KhoiLuong != null &&
+            cap3PctVon != null
+          ) {
+            await recordKehoachCap3.mutateAsync({
+              order_id: order.id,
+              khau_vi: cap3Progress.khau_vi,
+              muc_tu_tin: cap3MucTuTin,
+              cach_khoi_luong: cap3Cach,
+              khoi_luong: cap3KhoiLuong,
+              pct_von: cap3PctVon,
+            })
+          }
         } else {
           recordKehoach.mutate(kehoachPayload)
         }
@@ -427,6 +488,22 @@ function OrderEntry({
             ? { phuongPhapSlTp: cap2Method, catLo: cap2CatLo, chotLoi: cap2ChotLoi }
             : {}),
         })
+        cap3Events.onOrderFilled?.({
+          symbol,
+          side,
+          quantity: order.quantity,
+          price: order.price,
+          orderId: order.id,
+          ...(cap3Progress?.khau_vi && cap3MucTuTin && cap3Cach
+            ? {
+                khauVi: cap3Progress.khau_vi,
+                mucTuTin: cap3MucTuTin,
+                cachKhoiLuong: cap3Cach,
+                ...(cap3KhoiLuong != null ? { khoiLuong: cap3KhoiLuong } : {}),
+                ...(cap3PctVon != null ? { pctVon: cap3PctVon } : {}),
+              }
+            : {}),
+        })
         // Reset the Kế hoạch form for the next order.
         setCap1LyDo(null)
         setCap1VungMuaOverride(undefined)
@@ -436,6 +513,11 @@ function OrderEntry({
         setCap2Method(null)
         setCap2CatLo(null)
         setCap2ChotLoi(null)
+        setCap3MucTuTin(null)
+        setCap3Cach(null)
+        setCap3KhoiLuong(null)
+        setCap3PctVon(null)
+        setCap3VolumeTouched(false)
       }
       // Cấp 1 (spec §6 "Kết sổ mở khi user bán 1 lệnh Thực chiến") — a SELL
       // fill inside Cấp 1 notifies the bus too (no `lyDo`/`trangThaiLucDat`/
@@ -548,7 +630,12 @@ function OrderEntry({
             step={100}
             min={0}
             value={volume}
-            onChange={(v) => setVolume(v ?? 0)}
+            onChange={(v) => {
+              setVolume(v ?? 0)
+              // Cấp 3: user sửa tay → thôi auto-fill (spec §6.3 "vẫn sửa tay
+              // được"). No-op outside Cấp 3.
+              if (isCap3Active) setCap3VolumeTouched(true)
+            }}
             className="w-full"
           />
           <Radio.Group
@@ -667,6 +754,44 @@ function OrderEntry({
                 }}
               />
             )}
+            {/* Cấp 3 khối "Quản lý vốn" (spec §6, THÊM MỚI) — buy-side only AND
+                Cấp 3-only. Khẩu vị phải đặt xong (`khau_vi`) mới tính được khối
+                lượng; `KhauViModal` bên dưới lo phần đó. */}
+            {isCap3Active && cap3Progress?.khau_vi && (
+              <QuanLyVonBlock
+                khauVi={cap3Progress.khau_vi}
+                vonBanDau={cap3Progress.von_ban_dau}
+                giaVao={cap1VungMua ?? currentPrice}
+                mucTuTin={cap3MucTuTin}
+                onMucTuTin={(m) => {
+                  setCap3MucTuTin(m)
+                  // Đổi mức tự tin = ý định mới → cho auto-fill ô Khối lượng lại.
+                  setCap3VolumeTouched(false)
+                }}
+                cachKhoiLuong={cap3Cach}
+                onCachKhoiLuong={(c) => {
+                  setCap3Cach(c)
+                  setCap3VolumeTouched(false)
+                }}
+                onKhoiLuong={(kl, pctVon) => {
+                  setCap3KhoiLuong(kl)
+                  setCap3PctVon(pctVon)
+                  // Tự điền ô Khối lượng — trừ khi user đã sửa tay (spec §6.3).
+                  if (!cap3VolumeTouched && kl > 0) setVolume(kl)
+                }}
+                onDoiKhauVi={() => setCap3KhauViOpen(true)}
+              />
+            )}
+            {/* Chỉ instance ĐỔI khẩu vị (spec §5.2 "không khoá vĩnh viễn").
+                Instance bắt buộc lần đầu do trang Cấp 3 mount (xem
+                `KhauViModal`'s doc) — không nhân bản ở đây. */}
+            {isCap3Active && cap3KhauViOpen && (
+              <KhauViModal
+                vonBanDau={cap3Progress?.von_ban_dau}
+                forceOpen
+                onClose={() => setCap3KhauViOpen(false)}
+              />
+            )}
             {cap1LyDo && (
               <AiThanhTra
                 symbol={symbol}
@@ -702,15 +827,17 @@ function OrderEntry({
               ? "Chọn lý do mua và vùng mua mới đặt được lệnh."
               : cap2SubmitDisabled
                 ? "Chọn 1 trong 2 cách cắt lỗ/chốt lời mới đặt được lệnh."
-                : ""
+                : cap3SubmitDisabled
+                  ? "Chấm mức tự tin và chọn cách tính khối lượng mới đặt được lệnh."
+                  : ""
           }
-          disabled={!(cap1SubmitDisabled || cap2SubmitDisabled)}
+          disabled={!(cap1SubmitDisabled || cap2SubmitDisabled || cap3SubmitDisabled)}
         >
           <div>
             <Button
               long
               loading={placeOrder.isPending}
-              disabled={cap1SubmitDisabled || cap2SubmitDisabled}
+              disabled={cap1SubmitDisabled || cap2SubmitDisabled || cap3SubmitDisabled}
               onClick={handleSubmit}
               className={cn(
                 "mt-2 font-bold text-white",

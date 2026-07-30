@@ -26,8 +26,9 @@ export interface QuanLyVonBlockProps {
   onMucTuTin: (muc: MucTuTin) => void
   cachKhoiLuong: CachKhoiLuong | null
   onCachKhoiLuong: (cach: CachKhoiLuong) => void
-  /** Báo khối lượng vừa tính lên panel (để tự điền ô Khối lượng). */
-  onKhoiLuong: (khoiLuong: number) => void
+  /** Báo khối lượng + %vốn vừa tính lên panel (để tự điền ô Khối lượng và ghi
+   * hồ sơ khi lệnh khớp). */
+  onKhoiLuong: (khoiLuong: number, pctVon: number) => void
   /** Mở lại màn chọn khẩu vị (spec: đổi được, không khoá vĩnh viễn). */
   onDoiKhauVi: () => void
 }
@@ -79,10 +80,10 @@ export function QuanLyVonBlock({
 
   // Đẩy khối lượng vừa tính lên panel để tự điền ô Khối lượng (spec §6.3).
   useEffect(() => {
-    if (result) onKhoiLuong(result.khoiLuong)
+    if (result) onKhoiLuong(result.khoiLuong, result.pctVon)
     // `onKhoiLuong` thường là lambda inline — chỉ chạy lại khi con số đổi.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [result?.khoiLuong])
+  }, [result?.khoiLuong, result?.pctVon])
 
   const heSo = cachKhoiLuong === "linh_hoat" && mucTuTin != null ? MUC_TU_TIN_HE_SO[mucTuTin] : 100
 

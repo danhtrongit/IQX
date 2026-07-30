@@ -85,9 +85,10 @@ describe("QuanLyVonBlock (spec §6)", () => {
     expect(provenance.textContent ?? "").toMatch(/100%/)
   })
 
-  it("reports the computed khối lượng upward so the panel can auto-fill it", () => {
+  it("reports the computed khối lượng + %vốn upward so the panel can auto-fill it", () => {
     const props = setup({ mucTuTin: 3, cachKhoiLuong: "ky_luat" })
-    expect(props.onKhoiLuong).toHaveBeenCalledWith(300)
+    // 300 cp × 62,400 / 100,000,000 = 18.72% vốn thực tế (sau khi làm tròn lô).
+    expect(props.onKhoiLuong).toHaveBeenCalledWith(300, expect.closeTo(18.72, 2))
   })
 
   it("prompts (and computes nothing) until both tự tin + cách are chosen", () => {
