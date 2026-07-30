@@ -4,33 +4,40 @@ import { MemoryRouter } from "react-router"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 import type { Cap1Progress } from "@/features/cap1/types"
-import type { Cap2Progress, DiemKyLuat } from "./types"
+import type { Cap2Progress, DiemKyLuat } from "@/features/cap2/types"
+import type { Cap3Progress } from "./types"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 const {
   useCap1ProgressMock,
   useCap2ProgressMock,
+  useCap3ProgressMock,
   useDiemKyLuatMock,
   recordKetsoCap1Mutate,
   recordKetsoCap2Mutate,
-  graduateCap2Mutate,
+  completeCap3TaskMutate,
+  graduateCap3Mutate,
+  setKhauViMutate,
+  recordCap1TradeMock,
   recordCap2TradeMock,
   recordCap2ScoreMock,
-  recordCap1TradeMock,
+  recordCap3TradeMock,
   navigateMock,
-  enterCap3Mutate,
 } = vi.hoisted(() => ({
   useCap1ProgressMock: vi.fn(),
   useCap2ProgressMock: vi.fn(),
+  useCap3ProgressMock: vi.fn(),
   useDiemKyLuatMock: vi.fn(),
   recordKetsoCap1Mutate: vi.fn(),
   recordKetsoCap2Mutate: vi.fn(),
-  graduateCap2Mutate: vi.fn(),
+  completeCap3TaskMutate: vi.fn(),
+  graduateCap3Mutate: vi.fn(),
+  setKhauViMutate: vi.fn(),
+  recordCap1TradeMock: vi.fn(),
   recordCap2TradeMock: vi.fn(),
   recordCap2ScoreMock: vi.fn(),
-  recordCap1TradeMock: vi.fn(),
+  recordCap3TradeMock: vi.fn(),
   navigateMock: vi.fn(),
-  enterCap3Mutate: vi.fn(),
 }))
 
 vi.mock("react-router", async (importOriginal) => {
@@ -38,12 +45,10 @@ vi.mock("react-router", async (importOriginal) => {
   return { ...actual, useNavigate: () => navigateMock }
 })
 
-// Terminal children (CenterPanel/RightSidebar/RightToolbar) are the EXISTING,
-// untouched dashboard components — stub them (mirrors
-// `Cap1TradingPage.test.tsx`). `RightSidebar`'s stub fires BOTH the Cấp 1 AND
-// Cấp 2 event buses for a buy/sell — mirroring exactly what the real
-// `TradingPanel` does (it notifies both buses for the same fill, since Cấp 2
-// wraps Cấp 1's Form Kế hoạch — see `TradingPanel.tsx` lines ~410-459).
+// Terminal children are the EXISTING, untouched dashboard components — stub
+// them (mirrors `cap2/Cap2TradingPage.test.tsx`). The stub fires the SAME buses
+// the real `TradingPanel` fires: cap1+cap2+cap3 on a BUY, cap1+cap2 ONLY on a
+// SELL (see `TradingPanel.tsx` — it never notifies the Cấp 3 bus on sell).
 vi.mock("@/features/dashboard", () => ({
   CenterPanel: () => <div data-testid="center-panel" />,
   RightSidebar: () => <RightSidebarStub />,
@@ -55,17 +60,19 @@ vi.mock("@/features/dashboard", () => ({
 }))
 
 function RightSidebarStub() {
-  const { onOrderFilled: cap1OnOrderFilled } = useCap1Events()
-  const { onOrderFilled: cap2OnOrderFilled } = useCap2Events()
+  const { onOrderFilled: cap1OnOrderFilled, isCap1Active } = useCap1Events()
+  const { onOrderFilled: cap2OnOrderFilled, isCap2Active } = useCap2Events()
+  const { onOrderFilled: cap3OnOrderFilled, isCap3Active } = useCap3Events()
   return (
     <div data-testid="right-sidebar">
+      <span data-testid="bus-spy">{`${isCap1Active}-${isCap2Active}-${isCap3Active}`}</span>
       <button
         data-testid="fire-buy"
         onClick={() => {
           cap1OnOrderFilled?.({
             symbol: "VNM",
             side: "buy",
-            quantity: 100,
+            quantity: 300,
             price: 60_000,
             orderId: "buy-1",
             lyDo: "dong_tien",
@@ -75,16 +82,55 @@ function RightSidebarStub() {
           cap2OnOrderFilled?.({
             symbol: "VNM",
             side: "buy",
-            quantity: 100,
+            quantity: 300,
             price: 60_000,
             orderId: "buy-1",
             phuongPhapSlTp: "ho_tro_khang_cu",
             catLo: 58_000,
             chotLoi: 65_000,
           })
+          cap3OnOrderFilled?.({
+            symbol: "VNM",
+            side: "buy",
+            quantity: 300,
+            price: 60_000,
+            orderId: "buy-1",
+            khauVi: "can_bang",
+            mucTuTin: 3,
+            cachKhoiLuong: "linh_hoat",
+            khoiLuong: 300,
+            pctVon: 18,
+          })
         }}
       >
         fire buy
+      </button>
+      <button
+        data-testid="fire-buy-no-quanlyvon"
+        onClick={() => {
+          cap1OnOrderFilled?.({
+            symbol: "HPG",
+            side: "buy",
+            quantity: 100,
+            price: 30_000,
+            orderId: "buy-2",
+            lyDo: "dong_tien",
+            trangThaiLucDat: "ung_ho",
+            vungMua: 30_000,
+          })
+          cap2OnOrderFilled?.({
+            symbol: "HPG",
+            side: "buy",
+            quantity: 100,
+            price: 30_000,
+            orderId: "buy-2",
+            phuongPhapSlTp: "ho_tro_khang_cu",
+            catLo: 29_000,
+            chotLoi: 33_000,
+          })
+        }}
+      >
+        fire buy without quản lý vốn
       </button>
       <button
         data-testid="fire-sell"
@@ -92,14 +138,14 @@ function RightSidebarStub() {
           cap1OnOrderFilled?.({
             symbol: "VNM",
             side: "sell",
-            quantity: 100,
+            quantity: 300,
             price: 65_500,
             orderId: "sell-1",
           })
           cap2OnOrderFilled?.({
             symbol: "VNM",
             side: "sell",
-            quantity: 100,
+            quantity: 300,
             price: 65_500,
             orderId: "sell-1",
           })
@@ -108,25 +154,25 @@ function RightSidebarStub() {
         fire sell
       </button>
       <button
-        data-testid="fire-sell-cut-loss"
+        data-testid="fire-sell-hpg"
         onClick={() => {
           cap1OnOrderFilled?.({
-            symbol: "VNM",
+            symbol: "HPG",
             side: "sell",
             quantity: 100,
-            price: 57_000,
+            price: 31_000,
             orderId: "sell-2",
           })
           cap2OnOrderFilled?.({
-            symbol: "VNM",
+            symbol: "HPG",
             side: "sell",
             quantity: 100,
-            price: 57_000,
+            price: 31_000,
             orderId: "sell-2",
           })
         }}
       >
-        fire sell cut loss
+        fire sell HPG
       </button>
     </div>
   )
@@ -143,9 +189,6 @@ vi.mock("@/features/auth", () => ({
   useAuth: () => ({ isAuthenticated: true, user: { id: "u1" } }),
 }))
 
-// Cấp 1 pieces used directly by Cap2Terminal/KetsoModalCap2 — concrete paths
-// (NOT the `@/features/cap1` barrel, same anti-cycle convention
-// `KetsoModalCap2.tsx` already established).
 vi.mock("@/features/cap1/hooks", () => ({
   useCap1Progress: (...a: unknown[]) => useCap1ProgressMock(...a),
   useRecordKetso: () => ({ mutate: recordKetsoCap1Mutate }),
@@ -153,15 +196,12 @@ vi.mock("@/features/cap1/hooks", () => ({
 vi.mock("@/features/cap1/tradeLog", () => ({
   useCap1TradeLog: () => ({ trades: [], record: recordCap1TradeMock }),
 }))
-
-// Cấp 2's own hooks + trade log.
-vi.mock("./hooks", () => ({
+vi.mock("@/features/cap2/hooks", () => ({
   useCap2Progress: (...a: unknown[]) => useCap2ProgressMock(...a),
-  useGraduateCap2: () => ({ mutate: graduateCap2Mutate, isPending: false }),
   useRecordKetsoCap2: () => ({ mutate: recordKetsoCap2Mutate }),
   useDiemKyLuat: (...a: unknown[]) => useDiemKyLuatMock(...a),
 }))
-vi.mock("./tradeLogCap2", () => ({
+vi.mock("@/features/cap2/tradeLogCap2", () => ({
   useCap2TradeLog: () => ({
     trades: [],
     scores: [],
@@ -170,15 +210,26 @@ vi.mock("./tradeLogCap2", () => ({
   }),
 }))
 
-// `GraduationModalCap2` now REALLY enters Cấp 3 on graduation (Cấp 3 Task FE3)
-// — stub that mutation so this page's tests need no QueryClient.
-vi.mock("@/features/cap3/hooks", () => ({
-  useEnterCap3: () => ({ mutate: enterCap3Mutate, isPending: false }),
+// Cấp 3's own hooks + trade log.
+vi.mock("./hooks", () => ({
+  useCap3Progress: (...a: unknown[]) => useCap3ProgressMock(...a),
+  useCompleteCap3Task: () => ({ mutate: completeCap3TaskMutate }),
+  useGraduateCap3: () => ({ mutate: graduateCap3Mutate, isPending: false }),
+  useSetKhauVi: () => ({ mutate: setKhauViMutate, isPending: false }),
+  useThachThuc: () => ({ data: undefined }),
+  // Needed because this page reuses `computeKetsoFlagsCap2` from
+  // `cap2/Cap2TradingPage`, whose module also pulls in `GraduationModalCap2`
+  // (which now enters Cấp 3).
+  useEnterCap3: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+vi.mock("./tradeLogCap3", () => ({
+  useCap3TradeLog: () => ({ trades: [], record: recordCap3TradeMock }),
 }))
 
-import { Cap2TradingPage, computeKetsoFlagsCap2 } from "./Cap2TradingPage"
+import { Cap3TradingPage } from "./Cap3TradingPage"
 import { useCap1Events } from "@/features/cap1/Cap1Context"
-import { useCap2Events } from "./Cap2Context"
+import { useCap2Events } from "@/features/cap2/Cap2Context"
+import { useCap3Events } from "./Cap3Context"
 
 function fakeCap1Progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
   return {
@@ -195,7 +246,7 @@ function fakeCap1Progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
     so_ly_do_da_dung: 5,
     so_lenh_ly_do_ung_ho: 3,
     so_lan_xem_danh_muc: 3,
-    so_lenh_thuc_chien: 10,
+    so_lenh_thuc_chien: 30,
     graduated_at: "2026-01-05T00:00:00Z",
     time_to_graduate_hours: 40,
     ...overrides,
@@ -207,14 +258,34 @@ function fakeCap2Progress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
     id: "p2",
     user_id: "u1",
     entered_at: "2026-01-06T00:00:00Z",
+    task_1_done_at: "t",
+    task_2_done_at: "t",
+    task_3_done_at: "t",
+    task_4_done_at: "t",
+    task_5_done_at: "t",
+    chuoi_current: 6,
+    chuoi_record: 8,
+    last_chuoi_reset_at: null,
+    graduated_at: "2026-01-20T00:00:00Z",
+    time_to_graduate_hours: 80,
+    ...overrides,
+  }
+}
+
+function fakeCap3Progress(overrides: Partial<Cap3Progress> = {}): Cap3Progress {
+  return {
+    id: "p3",
+    user_id: "u1",
+    entered_at: "2026-01-21T00:00:00Z",
+    khau_vi_da_dat: true,
+    khau_vi: "can_bang",
+    von_ban_dau: 100_000_000,
     task_1_done_at: null,
     task_2_done_at: null,
     task_3_done_at: null,
-    task_4_done_at: null,
-    task_5_done_at: null,
-    chuoi_current: 0,
-    chuoi_record: 0,
-    last_chuoi_reset_at: null,
+    so_lenh_cap3: 0,
+    lai_pct_cap3: 0,
+    diem_ky_luat_tb_cap3: 0,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
@@ -223,7 +294,7 @@ function fakeCap2Progress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
 
 function fakeDiemKyLuat(overrides: Partial<DiemKyLuat> = {}): DiemKyLuat {
   return {
-    ngay: "2026-01-06",
+    ngay: "2026-01-21",
     co_giao_dich: false,
     co_tinh_huong: false,
     diem: null,
@@ -234,47 +305,57 @@ function fakeDiemKyLuat(overrides: Partial<DiemKyLuat> = {}): DiemKyLuat {
   }
 }
 
-function renderCap2(ui: React.ReactNode) {
+function renderCap3(ui: React.ReactNode) {
   return render(<MemoryRouter initialEntries={["/dau-truong"]}>{ui}</MemoryRouter>)
 }
 
-describe("Cap2TradingPage", () => {
+describe("Cap3TradingPage", () => {
   beforeEach(() => {
     useCap1ProgressMock.mockReset()
     useCap1ProgressMock.mockReturnValue({ data: fakeCap1Progress() })
     useCap2ProgressMock.mockReset()
     useCap2ProgressMock.mockReturnValue({ data: fakeCap2Progress() })
+    useCap3ProgressMock.mockReset()
+    useCap3ProgressMock.mockReturnValue({ data: fakeCap3Progress() })
     useDiemKyLuatMock.mockReset()
     useDiemKyLuatMock.mockReturnValue({ data: fakeDiemKyLuat(), isLoading: false })
     recordKetsoCap1Mutate.mockReset()
     recordKetsoCap2Mutate.mockReset()
-    graduateCap2Mutate.mockReset()
+    completeCap3TaskMutate.mockReset()
+    graduateCap3Mutate.mockReset()
+    setKhauViMutate.mockReset()
+    recordCap1TradeMock.mockReset()
     recordCap2TradeMock.mockReset()
     recordCap2ScoreMock.mockReset()
-    recordCap1TradeMock.mockReset()
+    recordCap3TradeMock.mockReset()
     navigateMock.mockReset()
     window.localStorage.clear()
   })
 
   it("renders the reused terminal children (CenterPanel/RightSidebar/RightToolbar)", () => {
-    renderCap2(<Cap2TradingPage />)
+    renderCap3(<Cap3TradingPage />)
     expect(screen.getByTestId("center-panel")).toBeInTheDocument()
     expect(screen.getByTestId("right-sidebar")).toBeInTheDocument()
     expect(screen.getByTestId("right-toolbar")).toBeInTheDocument()
   })
 
-  it("renders the SAME surrounding chrome as DashboardPage/Cap1TradingPage", () => {
-    renderCap2(<Cap2TradingPage />)
+  it("renders the SAME surrounding chrome as Cap1TradingPage/Cap2TradingPage", () => {
+    renderCap3(<Cap3TradingPage />)
     expect(screen.getByTestId("trial-banner")).toBeInTheDocument()
     expect(screen.getByTestId("header")).toBeInTheDocument()
     expect(screen.getByTestId("market-bar")).toBeInTheDocument()
     expect(screen.getByTestId("footer")).toBeInTheDocument()
   })
 
-  it('shows the "CẤP 2 · KỶ LUẬT" label and the THỰC CHIẾN mode badge', () => {
-    renderCap2(<Cap2TradingPage />)
-    expect(screen.getByText("CẤP 2 · KỶ LUẬT")).toBeInTheDocument()
+  it('shows the "CẤP 3 · BẢN LĨNH" label and the THỰC CHIẾN mode badge', () => {
+    renderCap3(<Cap3TradingPage />)
+    expect(screen.getByText("CẤP 3 · BẢN LĨNH")).toBeInTheDocument()
     expect(screen.getByText("THỰC CHIẾN")).toBeInTheDocument()
+  })
+
+  it("keeps the Cấp 1 + Cấp 2 + Cấp 3 buses ALL active (cộng dồn)", () => {
+    renderCap3(<Cap3TradingPage />)
+    expect(screen.getByTestId("bus-spy")).toHaveTextContent("true-true-true")
   })
 
   it("defaults the sidebar to the journey panel on mount, restores previous panel on unmount", () => {
@@ -285,7 +366,7 @@ describe("Cap2TradingPage", () => {
     const { rerender } = render(
       <MemoryRouter initialEntries={["/dau-truong"]}>
         <SidebarProvider defaultPanel="news">
-          <Cap2TradingPage />
+          <Cap3TradingPage />
           <PanelSpy />
         </SidebarProvider>
       </MemoryRouter>,
@@ -302,8 +383,21 @@ describe("Cap2TradingPage", () => {
     expect(screen.getByTestId("panel-spy")).not.toHaveTextContent("journey")
   })
 
-  it("a BUY then SELL fill on the same symbol opens Kết sổ Cấp 2 (reconciled against the buy-time kế hoạch + SL/TP)", () => {
-    renderCap2(<Cap2TradingPage />)
+  it("mounts the MANDATORY KhauViModal on first entry (khẩu vị chưa đặt)", () => {
+    useCap3ProgressMock.mockReturnValue({
+      data: fakeCap3Progress({ khau_vi_da_dat: false, khau_vi: null }),
+    })
+    renderCap3(<Cap3TradingPage />)
+    expect(screen.getByText("Chọn khẩu vị rủi ro")).toBeInTheDocument()
+  })
+
+  it("does NOT show the KhauViModal once khẩu vị đã đặt", () => {
+    renderCap3(<Cap3TradingPage />)
+    expect(screen.queryByText("Chọn khẩu vị rủi ro")).not.toBeInTheDocument()
+  })
+
+  it("a BUY then SELL on the same symbol opens Kết sổ Cấp 3 with the quản lý vốn block", () => {
+    renderCap3(<Cap3TradingPage />)
     expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByTestId("fire-buy"))
@@ -311,22 +405,34 @@ describe("Cap2TradingPage", () => {
 
     fireEvent.click(screen.getByTestId("fire-sell"))
     expect(screen.getByText("KẾT SỔ LỆNH · #1 · THỰC CHIẾN")).toBeInTheDocument()
-    // Reconciled against the tracked buy (kế hoạch's lý do label) + the SL/TP
-    // commitment tracked from the Cấp 2 buy event.
+    // Cấp 1 + Cấp 2 content still there (cộng dồn) …
     expect(screen.getByText("💰 Dòng tiền")).toBeInTheDocument()
-    const camket = screen.getByTestId("cap2-ketso-camket")
-    expect(camket).toHaveTextContent("58,000")
-    expect(camket).toHaveTextContent("65,000")
+    expect(screen.getByTestId("cap2-ketso-camket")).toHaveTextContent("58,000")
+    // … plus Cấp 3's own khối Quản lý vốn, fed from the BUY-time event.
+    const quanLyVon = screen.getByTestId("cap3-ketso-quanlyvon")
+    expect(quanLyVon).toHaveTextContent("Cân bằng")
+    expect(quanLyVon).toHaveTextContent("300")
   })
 
-  it('a sell that never touched the SL/TP commitment does not open Kết sổ (no tracked buy for the symbol)', () => {
-    renderCap2(<Cap2TradingPage />)
+  it("a SELL with no tracked BUY does not open Kết sổ", () => {
+    renderCap3(<Cap3TradingPage />)
     fireEvent.click(screen.getByTestId("fire-sell"))
     expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
   })
 
-  it('closing Kết sổ posts BOTH /cap1/ketso and /cap2/ketso, and records BOTH trade logs', () => {
-    renderCap2(<Cap2TradingPage />)
+  it("a BUY whose quản lý vốn never resolved does not open Kết sổ Cấp 3 (hard gate upstream)", () => {
+    renderCap3(<Cap3TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-buy-no-quanlyvon"))
+    fireEvent.click(screen.getByTestId("fire-sell-hpg"))
+    expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
+  })
+
+  // NOTE: the Cấp 3 write is owned by `KetsoModalCap3` itself (documented in
+  // that module: "Modal ĐÃ tự ghi vào nhật ký Cấp 3"), so the page must NOT
+  // record it a second time — hence exactly 1 call, with the full quản lý vốn
+  // payload khối ⑦/⑧ need.
+  it("closing Kết sổ records the closed trade into the Cấp 1, Cấp 2 AND Cấp 3 trade logs", () => {
+    renderCap3(<Cap3TradingPage />)
     fireEvent.click(screen.getByTestId("fire-buy"))
     fireEvent.click(screen.getByTestId("fire-sell"))
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
@@ -339,60 +445,48 @@ describe("Cap2TradingPage", () => {
     )
     expect(recordCap1TradeMock).toHaveBeenCalledTimes(1)
     expect(recordCap2TradeMock).toHaveBeenCalledTimes(1)
-    const cap2Record = recordCap2TradeMock.mock.calls[0][0]
-    expect(cap2Record.orderId).toBe("sell-1")
-    expect(cap2Record.lyDo).toBe("dong_tien")
-    // Clean order (chốt lời đúng, no vi phạm) → all 4 flags false.
-    expect(cap2Record.chamSlKhongCat).toBe(false)
-    expect(cap2Record.nhoiLenhKhiLo).toBe(false)
+    expect(recordCap3TradeMock).toHaveBeenCalledTimes(1)
+    const rec = recordCap3TradeMock.mock.calls[0][0]
+    expect(rec.orderId).toBe("sell-1")
+    expect(rec.mucTuTin).toBe(3)
+    expect(rec.cachKhoiLuong).toBe("linh_hoat")
+    expect(rec.khoiLuong).toBe(300)
+    expect(rec.pctVon).toBe(18)
   })
 
-  it("a sell that touches the cắt lỗ commitment records cham_SL_cat_dung_phien_ke on /cap2/ketso", () => {
-    renderCap2(<Cap2TradingPage />)
-    fireEvent.click(screen.getByTestId("fire-buy"))
-    fireEvent.click(screen.getByTestId("fire-sell-cut-loss"))
-    fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
-
-    expect(recordKetsoCap2Mutate).toHaveBeenCalledWith(
-      expect.objectContaining({ order_id: "sell-2", cham_SL_cat_dung_phien_ke: true }),
-    )
-  })
-
-  it("records today's điểm kỷ luật into the Cấp 2 score log once useDiemKyLuat resolves a real score", () => {
+  it("records today's điểm kỷ luật into the shared score log once a real score resolves", () => {
     useDiemKyLuatMock.mockReturnValue({
-      data: fakeDiemKyLuat({ co_giao_dich: true, co_tinh_huong: true, diem: 90, xep_loai: "xanh" }),
+      data: fakeDiemKyLuat({ co_giao_dich: true, co_tinh_huong: true, diem: 88, xep_loai: "xanh" }),
       isLoading: false,
     })
-    renderCap2(<Cap2TradingPage />)
-    expect(recordCap2ScoreMock).toHaveBeenCalledWith({ ngay: "2026-01-06", diem: 90, xepLoai: "xanh" })
+    renderCap3(<Cap3TradingPage />)
+    expect(recordCap2ScoreMock).toHaveBeenCalledWith({
+      ngay: "2026-01-21",
+      diem: 88,
+      xepLoai: "xanh",
+    })
   })
 
-  it("does NOT record a score while there is no real điểm to show (diem null)", () => {
-    renderCap2(<Cap2TradingPage />)
-    expect(recordCap2ScoreMock).not.toHaveBeenCalled()
-  })
-
-  it("mounts GraduationModalCap2 (hidden until 5/5 nhiệm vụ)", () => {
-    renderCap2(<Cap2TradingPage />)
+  it("mounts GraduationModalCap3 (hidden until 3/3 nhiệm vụ)", () => {
+    renderCap3(<Cap3TradingPage />)
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
 
-    useCap2ProgressMock.mockReturnValue({
-      data: fakeCap2Progress({
+    useCap3ProgressMock.mockReturnValue({
+      data: fakeCap3Progress({
         task_1_done_at: "t",
         task_2_done_at: "t",
         task_3_done_at: "t",
-        task_4_done_at: "t",
-        task_5_done_at: "t",
-        chuoi_current: 20,
-        chuoi_record: 20,
+        so_lenh_cap3: 16,
+        lai_pct_cap3: 6.4,
+        diem_ky_luat_tb_cap3: 84,
       }),
     })
-    renderCap2(<Cap2TradingPage />)
+    renderCap3(<Cap3TradingPage />)
     expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
   })
 
-  it('clicking "AI Phân tích" opens the AI Insight symbol-picker modal, and submitting a valid symbol navigates', () => {
-    renderCap2(<Cap2TradingPage />)
+  it('clicking "AI Phân tích" opens the AI Insight symbol-picker modal, and submitting navigates', () => {
+    renderCap3(<Cap3TradingPage />)
     expect(screen.queryByText("Phân tích AI cho 1 mã cổ phiếu")).not.toBeInTheDocument()
     fireEvent.click(screen.getByTestId("right-toolbar"))
     expect(screen.getByText("Phân tích AI cho 1 mã cổ phiếu")).toBeInTheDocument()
@@ -401,78 +495,5 @@ describe("Cap2TradingPage", () => {
     fireEvent.change(input, { target: { value: "VCB" } })
     fireEvent.click(screen.getByText("Phân tích"))
     expect(navigateMock).toHaveBeenCalledWith("/co-phieu/VCB")
-  })
-})
-
-describe("computeKetsoFlagsCap2 (spec §1 — best-effort client-side approximation)", () => {
-  it("cắt lỗ đúng phiên: exit at/below cắt lỗ, held ≤1 phiên", () => {
-    const flags = computeKetsoFlagsCap2({
-      entryPrice: 60_000,
-      exitPrice: 57_000,
-      catLo: 58_000,
-      soPhienGiu: 0,
-    })
-    expect(flags.cham_SL_cat_dung_phien_ke).toBe(true)
-    expect(flags.cham_SL_khong_cat).toBe(false)
-    expect(flags.ban_som_khi_lo_nhe).toBe(false)
-  })
-
-  it("cắt lỗ chậm: exit at/below cắt lỗ, held >1 phiên", () => {
-    const flags = computeKetsoFlagsCap2({
-      entryPrice: 60_000,
-      exitPrice: 57_000,
-      catLo: 58_000,
-      soPhienGiu: 3,
-    })
-    expect(flags.cham_SL_khong_cat).toBe(true)
-    expect(flags.cham_SL_cat_dung_phien_ke).toBe(false)
-    expect(flags.giu_cham_SL_bao_nhieu_phien).toBe(2)
-  })
-
-  it("bán sớm khi lỗ nhẹ: loss between 0 and −2%, chưa chạm cắt lỗ", () => {
-    const flags = computeKetsoFlagsCap2({
-      entryPrice: 60_000,
-      exitPrice: 59_400, // -1.0%
-      catLo: 58_000,
-      soPhienGiu: 0,
-    })
-    expect(flags.ban_som_khi_lo_nhe).toBe(true)
-    expect(flags.cham_SL_khong_cat).toBe(false)
-    expect(flags.cham_SL_cat_dung_phien_ke).toBe(false)
-  })
-
-  it("a loss deeper than −2% that hasn't touched cắt lỗ is NOT bán sớm (spec's own >−2% boundary)", () => {
-    const flags = computeKetsoFlagsCap2({
-      entryPrice: 60_000,
-      exitPrice: 58_500, // -2.5%, still above catLo=58,000
-      catLo: 58_000,
-      soPhienGiu: 0,
-    })
-    expect(flags.ban_som_khi_lo_nhe).toBe(false)
-  })
-
-  it("a profitable exit sets no vi phạm flags at all", () => {
-    const flags = computeKetsoFlagsCap2({
-      entryPrice: 60_000,
-      exitPrice: 65_000,
-      catLo: 58_000,
-      soPhienGiu: 2,
-    })
-    expect(flags.cham_SL_khong_cat).toBe(false)
-    expect(flags.cham_SL_cat_dung_phien_ke).toBe(false)
-    expect(flags.ban_som_khi_lo_nhe).toBe(false)
-    expect(flags.cham_TP_giu_lam_hut).toBe(false)
-    expect(flags.nhoi_lenh_khi_lo).toBe(false)
-  })
-
-  it("cham_TP_giu_lam_hut and nhoi_lenh_khi_lo are always false (documented client-side gap — need intraday/multi-order history this component doesn't have)", () => {
-    const flags = computeKetsoFlagsCap2({
-      entryPrice: 60_000,
-      exitPrice: 65_500,
-      catLo: 58_000,
-      soPhienGiu: 1,
-    })
-    expect(flags.cham_TP_giu_lam_hut).toBe(false)
-    expect(flags.nhoi_lenh_khi_lo).toBe(false)
   })
 })

@@ -35,6 +35,18 @@ export interface Cap3Progress {
   time_to_graduate_hours: number | null
 }
 
+/**
+ * How many of the 3 Cấp 3 nhiệm vụ are complete (mirrors
+ * `cap2/types.ts`'s `countCap2TasksDone`) — used by `JourneyPanelCap3`'s
+ * checklist header/ring and by `GraduationModalCap3`'s open condition.
+ */
+export function countCap3TasksDone(progress: Cap3Progress | null | undefined): number {
+  if (!progress) return 0
+  return [progress.task_1_done_at, progress.task_2_done_at, progress.task_3_done_at].filter(
+    (t) => t != null,
+  ).length
+}
+
 export interface KehoachInputCap3 {
   order_id: string
   khau_vi: KhauViLoai

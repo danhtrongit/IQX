@@ -3,17 +3,23 @@ import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Cap2Progress } from "./types"
 
-const { useCap2ProgressMock, graduateMutate, messageInfo } = vi.hoisted(() => ({
+const { useCap2ProgressMock, graduateMutate, messageInfo, enterCap3Mutate } = vi.hoisted(() => ({
   useCap2ProgressMock: vi.fn(),
   graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
     opts?.onSuccess?.()
   }),
   messageInfo: vi.fn(),
+  enterCap3Mutate: vi.fn(),
 }))
 
 vi.mock("./hooks", () => ({
   useCap2Progress: (...a: unknown[]) => useCap2ProgressMock(...a),
   useGraduateCap2: () => ({ mutate: graduateMutate, isPending: false }),
+}))
+
+// Cấp 3 is live — concrete-file import (NOT the `@/features/cap3` barrel).
+vi.mock("@/features/cap3/hooks", () => ({
+  useEnterCap3: () => ({ mutate: enterCap3Mutate, isPending: false }),
 }))
 
 vi.mock("@arco-design/web-react", async (importOriginal) => {
@@ -84,6 +90,7 @@ describe("GraduationModalCap2", () => {
       opts?.onSuccess?.()
     })
     messageInfo.mockReset()
+    enterCap3Mutate.mockReset()
   })
 
   it("does not render when 5/5 isn't met", () => {
@@ -127,7 +134,7 @@ describe("GraduationModalCap2", () => {
     expect(svg?.getAttribute("width")).toBe("120")
   })
 
-  it('clicking "Vào Cấp 3" calls useGraduateCap2().mutate and toasts "Cấp 3 sắp ra mắt" (Cấp 3 not built yet)', () => {
+  it('clicking "Vào Cấp 3" graduates Cấp 2 and REALLY enters Cấp 3 (Cấp 3 is live)', () => {
     useCap2ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap2 />)
     fireEvent.click(screen.getByText("Vào Cấp 3 «Bản lĩnh» →"))
@@ -135,7 +142,10 @@ describe("GraduationModalCap2", () => {
       undefined,
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     )
-    expect(messageInfo).toHaveBeenCalledWith(expect.stringContaining("Cấp 3"))
+    expect(enterCap3Mutate).toHaveBeenCalledTimes(1)
+    // No more "sắp ra mắt" placeholder toast — the user is routed into Cấp 3
+    // by `DauTruongPage` off the same invalidated progress query.
+    expect(messageInfo).not.toHaveBeenCalled()
   })
 
   it("closes itself once graduated_at comes back (progress refetch)", () => {

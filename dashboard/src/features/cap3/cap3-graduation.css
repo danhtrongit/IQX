@@ -1,0 +1,17 @@
+/**
+ * Màn tốt nghiệp Cấp 3 (spec §3 Khối 3 "viền tím `#a78bfa`") — dùng lại
+ * `.cap0-grad-block`/`.cap0-grad-cta` cho layout (mirror
+ * `cap2/cap2-graduation.css` + `cap1/cap1.css`'s `.cap1-grad-cta--cap2`), chỉ
+ * đổi màu sang Cấp 4 «Thuần thục» (tím `#a78bfa`). Khác Cấp 2→3: nút CTA PHẢI
+ * override màu, vì `.cap0-grad-cta` mặc định là `var(--brand)` (#4f8ff7 —
+ * đúng màu Cấp 3, KHÔNG phải Cấp 4).
+ */
+
+.cap3-grad-block--cap4 {
+  border-color: rgba(167, 139, 250, 0.5);
+}
+
+.cap3-grad-cta--cap4 {
+  background: #a78bfa;
+  color: #1b1230;
+}

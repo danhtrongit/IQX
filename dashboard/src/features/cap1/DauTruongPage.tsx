@@ -11,6 +11,10 @@ import { Cap1TradingPage } from "./Cap1TradingPage"
 // `RightToolbar` from `@/features/dashboard`).
 import { useCap2Progress, useEnterCap2 } from "@/features/cap2/hooks"
 import { Cap2TradingPage } from "@/features/cap2/Cap2TradingPage"
+// Cấp 3 is live (Cấp 3 Task FE3) — concrete-file imports, same anti-cycle
+// rationale as the Cấp 2 imports above.
+import { useCap3Progress, useEnterCap3 } from "@/features/cap3/hooks"
+import { Cap3TradingPage } from "@/features/cap3/Cap3TradingPage"
 
 function FullPageSpinner() {
   return (
@@ -36,10 +40,13 @@ function FullPageSpinner() {
  *  - Cấp 1 graduated, Cấp 2 not entered/not graduated → `Cap2TradingPage`
  *    (Task FE4), firing the idempotent `POST /cap2/enter` on first arrival —
  *    same pattern one level up.
- *  - Cấp 1 graduated AND Cấp 2 already graduated → still `Cap2TradingPage`
- *    (Cấp 3 doesn't exist yet — same honest "next level not built" pattern
- *    `GraduationModalCap1` used for Cấp 2 before FE4, now used by
- *    `GraduationModalCap2` for Cấp 3).
+ *  - Cấp 2 graduated, Cấp 3 not entered/not graduated → `Cap3TradingPage`
+ *    (Cấp 3 Task FE3), firing the idempotent `POST /cap3/enter` on first
+ *    arrival — same pattern, one more level up.
+ *  - Cấp 2 graduated AND Cấp 3 already graduated → still `Cap3TradingPage`
+ *    (Cấp 4 doesn't exist yet — same honest "next level not built" pattern
+ *    `GraduationModalCap1`/`GraduationModalCap2` used before their own next
+ *    level shipped, now used by `GraduationModalCap3` for Cấp 4).
  */
 export function DauTruongPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth()
@@ -80,6 +87,24 @@ export function DauTruongPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldQueryCap2, cap2Fetched, cap2Progress])
 
+  const cap2Graduated = !!cap2Progress?.graduated_at
+
+  // Only query Cấp 3 progress once Cấp 2 is confirmed graduated — mirrors the
+  // Cấp 1 → Cấp 2 gating above, one level up.
+  const shouldQueryCap3 = shouldQueryCap2 && cap2Graduated
+  const { data: cap3Progress, isFetched: cap3Fetched } = useCap3Progress(shouldQueryCap3)
+  const enterCap3 = useEnterCap3()
+  const enterCap3AttemptedRef = useRef(false)
+
+  useEffect(() => {
+    if (!shouldQueryCap3 || !cap3Fetched) return
+    if (cap3Progress != null) return // already entered (idempotent no-op otherwise)
+    if (enterCap3AttemptedRef.current) return
+    enterCap3AttemptedRef.current = true
+    enterCap3.mutate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldQueryCap3, cap3Fetched, cap3Progress])
+
   if (authLoading) return <FullPageSpinner />
   if (!isAuthenticated) return <Cap0TradingPage />
   if (!cap0Fetched) return <FullPageSpinner />
@@ -87,5 +112,7 @@ export function DauTruongPage() {
   if (!cap1Fetched) return <FullPageSpinner />
   if (!cap1Graduated) return <Cap1TradingPage />
   if (!cap2Fetched) return <FullPageSpinner />
-  return <Cap2TradingPage />
+  if (!cap2Graduated) return <Cap2TradingPage />
+  if (!cap3Fetched) return <FullPageSpinner />
+  return <Cap3TradingPage />
 }

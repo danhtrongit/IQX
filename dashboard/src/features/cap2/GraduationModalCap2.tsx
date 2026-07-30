@@ -1,9 +1,15 @@
-import { Message, Modal } from "@arco-design/web-react"
+import { Modal } from "@arco-design/web-react"
 import { Badge, LEVELS } from "@/features/cap0/Badge"
 import "@/features/cap0/cap0.css"
 import "./cap2-graduation.css"
 import { useCap2Progress, useGraduateCap2 } from "./hooks"
 import { countCap2TasksDone, type Cap2Progress } from "./types"
+// Cấp 3 is live (Cấp 3 Task FE3) — concrete-file import (NOT the
+// `@/features/cap3` barrel), same anti-cycle rationale
+// `cap1/GraduationModalCap1.tsx` documents for its own `@/features/cap2/hooks`
+// import (that barrel re-exports `Cap3TradingPage`, which imports
+// `CenterPanel`/`RightSidebar`/`RightToolbar` from `@/features/dashboard`).
+import { useEnterCap3 } from "@/features/cap3/hooks"
 
 /**
  * Điều kiện mở màn tốt nghiệp Cấp 2 (spec §3): 5/5 nhiệm vụ, chưa từng tốt
@@ -42,21 +48,26 @@ function renderInlineBold(text: string) {
  * Cấp 2's own ngọc lam) + 3 khối VERBATIM (Ghi nhận / Định vị / Chuyển cấp
  * viền xanh brand `#4f8ff7` — Cấp 3's colour) + CTA.
  *
- * Cấp 3 isn't built yet — same honest pattern `GraduationModalCap1` used for
- * Cấp 2 before THIS delivery wired it up: record the graduation server-side
- * (so progress genuinely advances / this modal never re-opens), then toast
- * "Cấp 3 sắp ra mắt" instead of routing anywhere.
+ * Cấp 3 is live (Cấp 3 Task FE3) — mirrors how `GraduationModalCap1` enters
+ * Cấp 2 on success (which itself mirrors `cap0/GraduationModal.tsx`): record
+ * the graduation server-side, then fire the idempotent `POST /cap3/enter`
+ * right here too (not just relying on `DauTruongPage`'s own effect) so Cấp 3
+ * progress is ready the instant `DauTruongPage` swaps this Cấp 2 shell out for
+ * `Cap3TradingPage` — driven by the SAME `useCap2Progress` query this
+ * mutation's `graduated_at` just invalidated. No navigation call needed: this
+ * modal only ever renders while already on `/dau-truong`.
  */
 export function GraduationModalCap2() {
   const { data: progress } = useCap2Progress()
   const graduate = useGraduateCap2()
+  const enterCap3 = useEnterCap3()
   const level = LEVELS[2]
   const visible = isGraduationReadyCap2(progress)
 
   const handleGraduate = () => {
     graduate.mutate(undefined, {
       onSuccess: () => {
-        Message.info("Cấp 3 sắp ra mắt")
+        enterCap3.mutate()
       },
     })
   }

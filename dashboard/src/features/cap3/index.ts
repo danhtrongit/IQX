@@ -69,6 +69,11 @@ export {
   SAN_PCT_GIA_DINH,
   type KhauViConsequence,
 } from "./khauViConsequence"
+export { JourneyPanelCap3, taskStateCap3 } from "./JourneyPanelCap3"
+export { GraduationModalCap3, isGraduationReadyCap3 } from "./GraduationModalCap3"
+export { Cap3PortfolioAnalysisPanel } from "./Cap3PortfolioAnalysisPanel"
+export { Cap3TradingPage } from "./Cap3TradingPage"
+export { countCap3TasksDone } from "./types"
 export type {
   CachKhoiLuong,
   Cap3Progress,

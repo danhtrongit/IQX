@@ -14,6 +14,10 @@ export type SidebarPanel =
   // `JourneyPanelCap2`'s button while inside `Cap2Provider`; harmless
   // elsewhere (mirrors "cap1-analysis"'s own doc, one level up).
   | "cap2-analysis"
+  // Cấp 3 "Phân tích danh mục" (Cấp 3 spec §8) — only reachable from
+  // `JourneyPanelCap3`'s button while inside `Cap3Provider`; harmless
+  // elsewhere (mirrors "cap2-analysis"'s own doc, one level up).
+  | "cap3-analysis"
 
 interface SidebarContextValue {
   activePanel: SidebarPanel
