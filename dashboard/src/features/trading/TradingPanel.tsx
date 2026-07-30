@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router"
 import {
   Button,
@@ -54,6 +54,16 @@ import {
   type CachKhoiLuong,
   type MucTuTin,
 } from "@/features/cap3"
+import {
+  Doc5LopBlock,
+  countDongThuan,
+  countKhacAi,
+  deriveLyDoForCap1,
+  isDoc5LopComplete,
+  useCap4Events,
+  useRecordKehoachCap4,
+  type Lop5Partial,
+} from "@/features/cap4"
 import { getErrorMessage } from "@/shared/http/client"
 import { cn } from "@/shared/lib/cn"
 import { StockLogo } from "@/features/navigation/StockLogo"
@@ -258,6 +268,20 @@ function OrderEntry({
   // tin / cách khối lượng (một ý định mới) thì auto-fill lại.
   const [cap3VolumeTouched, setCap3VolumeTouched] = useState(false)
   const [cap3KhauViOpen, setCap3KhauViOpen] = useState(false)
+  const cap4Events = useCap4Events()
+  // `isCap4Active` mirrors `isCap3Active` above — false outside a
+  // `Cap4Provider`, so the khối "Đọc 5 lớp" + its hard gate + the HIDING of
+  // Cấp 1's lý-do field have zero effect on Cấp 0/1/2/3-only or normal
+  // trading. A Cấp 4 session also has `isCap1Active`/`isCap2Active`/
+  // `isCap3Active` true (Cấp 4 keeps Vùng mua + SL/TP + Quản lý vốn 100%
+  // intact and replaces ONLY Cấp 1's lý-do field — spec §0/§5).
+  const { isCap4Active } = cap4Events
+  const recordKehoachCap4 = useRecordKehoachCap4()
+  // Cấp 4 khối "Đọc 5 lớp" (spec §5) — user tự chấm cả 5 lớp; AI's own per-lớp
+  // view (`cap4Ai5Lop`) only arrives once all 5 are rated ("AI ẨN tới khi chấm
+  // đủ", spec §5.2), which is exactly when it becomes safe to record.
+  const [cap4Doc5Lop, setCap4Doc5Lop] = useState<Lop5Partial>({})
+  const [cap4Ai5Lop, setCap4Ai5Lop] = useState<Lop5Partial | null>(null)
   const [side, setSide] = useState<"buy" | "sell">("buy")
   const [method, setMethod] = useState<"market" | "limit">("market")
   const [price, setPrice] = useState<number | undefined>(undefined)
@@ -312,10 +336,18 @@ function OrderEntry({
   // real "missing" value here, only `undefined` follows the default).
   const cap1VungMua =
     cap1VungMuaOverride === undefined ? (currentPrice > 0 ? currentPrice : null) : cap1VungMuaOverride
-  // Cổng cứng (spec §4): MUA disabled unless (lý do chosen) AND (vùng mua > 0).
-  // Only ever true for a BUY inside Cấp 1 — never affects Cấp 0 or normal
-  // trading (`isCap1Active` is false outside a `Cap1Provider`).
-  const cap1SubmitDisabled = side === "buy" && isCap1Active && !isKehoachValid(cap1LyDo, cap1VungMua)
+  // Cấp 4 REPLACES Cấp 1's lý-do field with the khối "Đọc 5 lớp" (spec §5), but
+  // `order_kehoach.lyDo` is still NOT NULL on the backend — so inside Cấp 4 the
+  // lý do is DERIVED from the 5 ratings instead of picked (see
+  // `deriveLyDoForCap1`'s doc for the rule). Outside Cấp 4 this is `null` and
+  // the user's own pick governs, exactly as before.
+  const cap4LyDo = isCap4Active ? deriveLyDoForCap1(cap4Doc5Lop, cap4Ai5Lop) : null
+  const effectiveLyDo = cap4LyDo ?? cap1LyDo
+  // Cổng cứng (spec §4): MUA disabled unless (lý do chosen/derived) AND (vùng
+  // mua > 0). Only ever true for a BUY inside Cấp 1 — never affects Cấp 0 or
+  // normal trading (`isCap1Active` is false outside a `Cap1Provider`).
+  const cap1SubmitDisabled =
+    side === "buy" && isCap1Active && !isKehoachValid(effectiveLyDo, cap1VungMua)
   // Cổng cứng (spec §5.4): MUA disabled unless a cách cắt lỗ/chốt lời is
   // chosen — ON TOP OF (not instead of) Cấp 1's gate above, since Cấp 2
   // keeps Cấp 1's Form Kế hoạch 100% intact. Only ever true for a BUY inside
@@ -328,6 +360,19 @@ function OrderEntry({
   // both intact. Only ever true for a BUY inside Cấp 3.
   const cap3SubmitDisabled =
     side === "buy" && isCap3Active && !isKhoiLuongValid(cap3MucTuTin, cap3Cach)
+  // Cổng cứng (spec §5.2): MUA disabled until all 5 lớp are rated — ON TOP OF
+  // Cấp 1 + Cấp 2 + Cấp 3's gates above, since Cấp 4 keeps all three blocks
+  // (minus Cấp 1's lý-do field). Only ever true for a BUY inside Cấp 4.
+  const cap4SubmitDisabled = side === "buy" && isCap4Active && !isDoc5LopComplete(cap4Doc5Lop)
+
+  // Analytics `cap4_lo_ai(so_khac_ai)` (spec §8) — fires once per reveal, when
+  // `Doc5LopBlock` reports the AI đối chiếu it just un-hid. By the time this
+  // effect runs, `cap4Doc5Lop` is already the completed 5-lớp map (same render
+  // batch), so the neutral khác-AI count is accurate.
+  useEffect(() => {
+    if (cap4Ai5Lop) cap4Events.onAiRevealed?.(countKhacAi(cap4Doc5Lop, cap4Ai5Lop))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cap4Ai5Lop])
 
   const handlePct = (pct: number) => {
     if (side === "buy" && numPrice > 0) {
@@ -372,7 +417,13 @@ function OrderEntry({
     // Enter/programmatic click). ONLY inside Cấp 1 — never affects Cấp 0 or
     // normal trading.
     if (cap1SubmitDisabled) {
-      Message.warning("Chọn lý do mua và vùng mua mới đặt được lệnh.")
+      // Inside Cấp 4 the lý do is derived from the khối "Đọc 5 lớp", so only
+      // Vùng mua can be the missing piece here.
+      Message.warning(
+        isCap4Active
+          ? "Nhập vùng mua mới đặt được lệnh."
+          : "Chọn lý do mua và vùng mua mới đặt được lệnh.",
+      )
       return
     }
     // Cấp 2 khối Cắt lỗ/Chốt lời cổng cứng (spec §5.4) — belt-and-suspenders
@@ -386,6 +437,12 @@ function OrderEntry({
     // the Submit button's own `disabled`. ONLY inside Cấp 3.
     if (cap3SubmitDisabled) {
       Message.warning("Chấm mức tự tin và chọn cách tính khối lượng mới đặt được lệnh.")
+      return
+    }
+    // Cấp 4 khối Đọc 5 lớp cổng cứng (spec §5.2) — belt-and-suspenders behind
+    // the Submit button's own `disabled`. ONLY inside Cấp 4.
+    if (cap4SubmitDisabled) {
+      Message.warning("Chấm đủ cả 5 lớp mới đặt được lệnh.")
       return
     }
 
@@ -421,11 +478,13 @@ function OrderEntry({
       // is the AI Thanh tra verdict AT PICK TIME (spec §5); default to
       // "trung_tinh" for the (never-expected, degrade-gracefully) case where
       // no verdict resolved yet.
-      if (side === "buy" && isCap1Active && cap1LyDo && cap1VungMua) {
+      if (side === "buy" && isCap1Active && effectiveLyDo && cap1VungMua) {
         const trangThai = verdictToTrangThai(cap1Verdict ?? "trung_tinh")
         const kehoachPayload = {
           order_id: order.id,
-          lyDo: cap1LyDo,
+          // Inside Cấp 4 this is the DERIVED lý do (its own UI field is gone,
+          // but the column is NOT NULL) — see `cap4LyDo` above.
+          lyDo: effectiveLyDo,
           trangThai_luc_dat: trangThai,
           vung_mua: cap1VungMua,
           co_bam_doc_chi_tiet: cap1DocChiTiet,
@@ -437,14 +496,18 @@ function OrderEntry({
         // BEFORE the Cấp 2 SL/TP commitment POST fires. Outside Cấp 2 (or
         // once `cap2SubmitDisabled` is false, i.e. a cách is chosen), Cấp 1's
         // own fire-and-forget `mutate` is unchanged.
-        if (isCap2Active && cap2Method && cap2CatLo && cap2ChotLoi) {
+        const cap2Ready = isCap2Active && !!cap2Method && !!cap2CatLo && !!cap2ChotLoi
+        const cap4Ready = isCap4Active && isDoc5LopComplete(cap4Doc5Lop)
+        if (cap2Ready || cap4Ready) {
           await recordKehoach.mutateAsync(kehoachPayload)
-          await recordKehoachCap2.mutateAsync({
-            order_id: order.id,
-            phuong_phap_sl_tp: cap2Method,
-            cat_lo: cap2CatLo,
-            chot_loi: cap2ChotLoi,
-          })
+          if (isCap2Active && cap2Method && cap2CatLo && cap2ChotLoi) {
+            await recordKehoachCap2.mutateAsync({
+              order_id: order.id,
+              phuong_phap_sl_tp: cap2Method,
+              cat_lo: cap2CatLo,
+              chot_loi: cap2ChotLoi,
+            })
+          }
           // Cấp 3 (spec §6 "Ghi hồ sơ") — same chained-await reason as Cấp 2:
           // `/cap3/kehoach` extends the SAME `order_kehoach` row, so it must
           // fire only AFTER Cấp 1's (and Cấp 2's) POST has created/updated it.
@@ -465,6 +528,20 @@ function OrderEntry({
               pct_von: cap3PctVon,
             })
           }
+          // Cấp 4 (spec §8 "Dữ liệu cần ghi") — LAST in the chain, same single
+          // `order_kehoach` row. BOTH JSON blobs go up: without `ai_5_lop` the
+          // backend leaves `so_lop_dong_thuan` NULL and the order never counts
+          // toward nhiệm vụ ③ (đồng thuận cao). `so_lop_dong_thuan`/
+          // `so_lop_khac_ai` are advisory — the server re-derives them.
+          if (cap4Ready) {
+            await recordKehoachCap4.mutateAsync({
+              order_id: order.id,
+              doc_5_lop: cap4Doc5Lop,
+              ai_5_lop: cap4Ai5Lop,
+              so_lop_dong_thuan: countDongThuan(cap4Ai5Lop),
+              so_lop_khac_ai: countKhacAi(cap4Doc5Lop, cap4Ai5Lop),
+            })
+          }
         } else {
           recordKehoach.mutate(kehoachPayload)
         }
@@ -474,7 +551,7 @@ function OrderEntry({
           quantity: order.quantity,
           price: order.price,
           orderId: order.id,
-          lyDo: cap1LyDo,
+          lyDo: effectiveLyDo,
           trangThaiLucDat: trangThai,
           vungMua: cap1VungMua,
         })
@@ -504,6 +581,21 @@ function OrderEntry({
               }
             : {}),
         })
+        cap4Events.onOrderFilled?.({
+          symbol,
+          side,
+          quantity: order.quantity,
+          price: order.price,
+          orderId: order.id,
+          ...(isCap4Active && isDoc5LopComplete(cap4Doc5Lop)
+            ? {
+                doc5Lop: cap4Doc5Lop,
+                ai5Lop: cap4Ai5Lop,
+                soLopDongThuan: countDongThuan(cap4Ai5Lop),
+                soLopKhacAi: countKhacAi(cap4Doc5Lop, cap4Ai5Lop),
+              }
+            : {}),
+        })
         // Reset the Kế hoạch form for the next order.
         setCap1LyDo(null)
         setCap1VungMuaOverride(undefined)
@@ -518,27 +610,33 @@ function OrderEntry({
         setCap3KhoiLuong(null)
         setCap3PctVon(null)
         setCap3VolumeTouched(false)
+        // Cấp 4: the next order must be read + rated from scratch (and the AI
+        // đối chiếu hidden again) — that IS the habit nhiệm vụ ③ measures.
+        setCap4Doc5Lop({})
+        setCap4Ai5Lop(null)
       }
       // Cấp 1 (spec §6 "Kết sổ mở khi user bán 1 lệnh Thực chiến") — a SELL
       // fill inside Cấp 1 notifies the bus too (no `lyDo`/`trangThaiLucDat`/
       // `vungMua` — those are BUY-time kế hoạch fields, undefined on sell
       // events per `Cap1OrderEvent`'s own doc). `Cap1TradingPage` matches
       // this against the tracked buy for the same symbol to open Kết sổ.
-      if (side === "sell" && isCap1Active) {
-        cap1Events.onOrderFilled?.({
+      //
+      // Cấp 3 + Cấp 4 get their OWN sell event too (they used to piggyback on
+      // Cấp 2's, so `KetsoModalCap3` opened off another cấp's bus) — each
+      // cấp's Kết sổ now listens to its own. The `?.` calls are no-ops outside
+      // each provider, so the `||` widening cannot regress Cấp 1/2.
+      if (side === "sell" && (isCap1Active || isCap3Active || isCap4Active)) {
+        const sellEvent = {
           symbol,
           side,
           quantity: order.quantity,
           price: order.price,
           orderId: order.id,
-        })
-        cap2Events.onOrderFilled?.({
-          symbol,
-          side,
-          quantity: order.quantity,
-          price: order.price,
-          orderId: order.id,
-        })
+        }
+        cap1Events.onOrderFilled?.(sellEvent)
+        cap2Events.onOrderFilled?.(sellEvent)
+        cap3Events.onOrderFilled?.(sellEvent)
+        cap4Events.onOrderFilled?.(sellEvent)
       }
       const totalStr = (order.total || order.price * order.quantity).toLocaleString("en-US")
       Message.success(
@@ -722,8 +820,27 @@ function OrderEntry({
             `Cap1Provider` → zero effect on Cấp 0 or normal trading). */}
         {side === "buy" && isCap1Active && (
           <>
+            {/* Cấp 4 khối "Đọc 5 lớp" (spec §5, THÊM MỚI) — REPLACES Cấp 1's
+                lý-do field (hidden via `hideLyDo` below) and Cấp 1's AI Thanh
+                tra; Vùng mua + Cấp 2's SL/TP + Cấp 3's Quản lý vốn stay
+                intact. Rendered FIRST, per the spec's panel order
+                (1. Đọc 5 lớp → 2. Vùng mua → 3. Cắt lỗ/Chốt lời). Buy-side
+                only AND Cấp 4-only. */}
+            {isCap4Active && (
+              <Doc5LopBlock
+                symbol={symbol}
+                currentPrice={currentPrice}
+                doc5Lop={cap4Doc5Lop}
+                onRate={(lop, nhanDinh) => {
+                  setCap4Doc5Lop((prev) => ({ ...prev, [lop]: nhanDinh }))
+                  cap4Events.onLopRated?.(lop, nhanDinh)
+                }}
+                onAi5Lop={setCap4Ai5Lop}
+              />
+            )}
             <PlanFormCap1
               symbol={symbol}
+              hideLyDo={isCap4Active}
               lyDo={cap1LyDo}
               onLyDoChange={(l) => {
                 setCap1LyDo(l)
@@ -792,7 +909,12 @@ function OrderEntry({
                 onClose={() => setCap3KhauViOpen(false)}
               />
             )}
-            {cap1LyDo && (
+            {/* Cấp 1's AI Thanh tra is HIDDEN inside Cấp 4 (spec §5: the khối
+                "Đọc 5 lớp" replaces it — showing AI per-lớp before the user
+                rates would be exactly the "nhìn bài" it forbids). `cap1LyDo`
+                is always null in Cấp 4 anyway (no picker), so the explicit
+                `!isCap4Active` is belt-and-suspenders. */}
+            {cap1LyDo && !isCap4Active && (
               <AiThanhTra
                 symbol={symbol}
                 lyDo={cap1LyDo}
@@ -824,20 +946,36 @@ function OrderEntry({
         <Tooltip
           content={
             cap1SubmitDisabled
-              ? "Chọn lý do mua và vùng mua mới đặt được lệnh."
+              ? isCap4Active
+                ? "Nhập vùng mua mới đặt được lệnh."
+                : "Chọn lý do mua và vùng mua mới đặt được lệnh."
               : cap2SubmitDisabled
                 ? "Chọn 1 trong 2 cách cắt lỗ/chốt lời mới đặt được lệnh."
                 : cap3SubmitDisabled
                   ? "Chấm mức tự tin và chọn cách tính khối lượng mới đặt được lệnh."
-                  : ""
+                  : cap4SubmitDisabled
+                    ? "Chấm đủ cả 5 lớp mới đặt được lệnh."
+                    : ""
           }
-          disabled={!(cap1SubmitDisabled || cap2SubmitDisabled || cap3SubmitDisabled)}
+          disabled={
+            !(
+              cap1SubmitDisabled ||
+              cap2SubmitDisabled ||
+              cap3SubmitDisabled ||
+              cap4SubmitDisabled
+            )
+          }
         >
           <div>
             <Button
               long
               loading={placeOrder.isPending}
-              disabled={cap1SubmitDisabled || cap2SubmitDisabled || cap3SubmitDisabled}
+              disabled={
+                cap1SubmitDisabled ||
+                cap2SubmitDisabled ||
+                cap3SubmitDisabled ||
+                cap4SubmitDisabled
+              }
               onClick={handleSubmit}
               className={cn(
                 "mt-2 font-bold text-white",

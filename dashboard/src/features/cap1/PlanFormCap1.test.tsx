@@ -94,3 +94,38 @@ describe("PlanFormCap1 (spec §4 Form Kế hoạch 2 trường)", () => {
     expect(onVungMuaChange).toHaveBeenCalledWith(60_000)
   })
 })
+
+describe("PlanFormCap1 — hideLyDo (Cấp 4 thay trường Lý do mua bằng khối Đọc 5 lớp)", () => {
+  it("hides Trường 1 (the 5 lý do chips + its question) but KEEPS Vùng mua", () => {
+    render(
+      <PlanFormCap1
+        symbol="VNM"
+        lyDo={null}
+        onLyDoChange={vi.fn()}
+        vungMua={62_400}
+        onVungMuaChange={vi.fn()}
+        hideLyDo
+      />,
+    )
+    expect(screen.queryByText("Vì sao bạn mua VNM?")).not.toBeInTheDocument()
+    expect(screen.queryByText("🎯 Kỹ thuật")).not.toBeInTheDocument()
+    expect(screen.queryAllByRole("button").length).toBe(0)
+    // Vùng mua (spec §5: "Vùng mua ... GIỮ NGUYÊN") is untouched.
+    expect(screen.getByText("Vùng mua")).toBeInTheDocument()
+    expect(screen.getByDisplayValue("62400")).toBeInTheDocument()
+  })
+
+  it("still shows the 5 lý do chips by default (Cấp 1/2/3 unchanged)", () => {
+    render(
+      <PlanFormCap1
+        symbol="VNM"
+        lyDo={null}
+        onLyDoChange={vi.fn()}
+        vungMua={62_400}
+        onVungMuaChange={vi.fn()}
+      />,
+    )
+    expect(screen.getByText("Vì sao bạn mua VNM?")).toBeInTheDocument()
+    expect(screen.getByText("🎯 Kỹ thuật")).toBeInTheDocument()
+  })
+})

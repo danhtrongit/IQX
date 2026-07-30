@@ -21,6 +21,13 @@ export interface PlanFormCap1Props {
   onLyDoChange: (lyDo: LyDo) => void
   vungMua: number | null
   onVungMuaChange: (value: number | null) => void
+  /**
+   * Hide Trường 1 (the 1-trong-5 lý do chips) while keeping Trường 2 (Vùng
+   * mua) — Cấp 4 «Thuần thục» REPLACES "chọn 1 lý do" with its khối "Đọc 5
+   * lớp" but keeps Vùng mua untouched (Cấp 4 spec §5's "Vùng mua … GIỮ
+   * NGUYÊN"). Defaults to `false`, so Cấp 1/2/3 render exactly as before.
+   */
+  hideLyDo?: boolean
 }
 
 export function PlanFormCap1({
@@ -29,6 +36,7 @@ export function PlanFormCap1({
   onLyDoChange,
   vungMua,
   onVungMuaChange,
+  hideLyDo = false,
 }: PlanFormCap1Props) {
   return (
     <div className="mt-2 space-y-2.5 rounded-md border border-[var(--color-border-2)] bg-[var(--color-fill-2)] p-2.5">
@@ -36,31 +44,33 @@ export function PlanFormCap1({
         {"KẾ HOẠCH"}
       </div>
 
-      {/* Trường 1 — Lý do mua */}
-      <div className="space-y-1.5">
-        <div className="text-xs font-semibold text-[var(--color-text-1)]">
-          {"Vì sao bạn mua "}
-          {symbol}
-          {"?"}
+      {/* Trường 1 — Lý do mua (ẩn ở Cấp 4: khối "Đọc 5 lớp" thay thế) */}
+      {!hideLyDo && (
+        <div className="space-y-1.5">
+          <div className="text-xs font-semibold text-[var(--color-text-1)]">
+            {"Vì sao bạn mua "}
+            {symbol}
+            {"?"}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {LY_DO_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => onLyDoChange(opt.value)}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-[10.5px] transition-colors",
+                  lyDo === opt.value
+                    ? "border-[rgb(var(--primary-6))] bg-[rgb(var(--primary-6))]/15 font-semibold text-[rgb(var(--primary-6))]"
+                    : "border-[var(--color-border-2)] bg-[var(--color-bg-2)] text-[var(--color-text-3)]",
+                )}
+              >
+                {opt.icon} {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {LY_DO_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => onLyDoChange(opt.value)}
-              className={cn(
-                "rounded-full border px-2.5 py-1 text-[10.5px] transition-colors",
-                lyDo === opt.value
-                  ? "border-[rgb(var(--primary-6))] bg-[rgb(var(--primary-6))]/15 font-semibold text-[rgb(var(--primary-6))]"
-                  : "border-[var(--color-border-2)] bg-[var(--color-bg-2)] text-[var(--color-text-3)]",
-              )}
-            >
-              {opt.icon} {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* Trường 2 — Vùng mua */}
       <div className="space-y-0.5">

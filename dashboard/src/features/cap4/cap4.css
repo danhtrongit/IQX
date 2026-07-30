@@ -1,0 +1,211 @@
+/* ============================================================
+   IQX · Cấp 4 «Thuần thục» — khối "Đọc 5 lớp" (spec §5)
+   ------------------------------------------------------------
+   Màu cấp: tím `#a78bfa`. The dark tokens (--t1/--bg3/--bd…) are
+   scoped to the `.cap0` shell every cấp page wraps in, so each
+   `var()` below carries an Arco fallback — the block then still
+   reads correctly if it ever renders outside that shell.
+
+   ★ `--cap4-khac` (tím) is the colour of "góc nhìn khác AI". It is
+   deliberately NOT a warning colour: differing from AI is a
+   different viewpoint to verify, never a mistake (spec §4.2).
+   ============================================================ */
+
+.cap4-doc5lop {
+  --cap4: #a78bfa;
+  --cap4-soft: rgba(167, 139, 250, 0.14);
+  --cap4-bd: rgba(167, 139, 250, 0.4);
+  --cap4-cung: #35d07f;
+
+  padding: 12px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+  background: linear-gradient(180deg, rgba(167, 139, 250, 0.1), transparent);
+  border: 1px solid var(--cap4-bd);
+  border-radius: 10px;
+}
+
+.cap4-block-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--cap4);
+}
+
+.cap4-block-title {
+  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--t1, var(--color-text-1));
+}
+
+/* ── Một lớp ─────────────────────────────────────────────────────────────── */
+.cap4-lop-row {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--bd, var(--color-border-2));
+}
+
+.cap4-lop-row:last-of-type {
+  border-bottom: none;
+}
+
+.cap4-lop-head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.cap4-lop-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.cap4-lop-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--t1, var(--color-text-1));
+}
+
+.cap4-lop-status {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--cap4);
+}
+
+.cap4-lop-data {
+  margin-top: 3px;
+}
+
+.cap4-lop-line {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--t2, var(--color-text-2));
+}
+
+.cap4-lop-diff {
+  margin-top: 2px;
+  font-size: 10.5px;
+  font-style: italic;
+  color: var(--t3, var(--color-text-3));
+}
+
+.cap4-lop-source {
+  margin-top: 2px;
+  font-size: 9.5px;
+  color: var(--t3, var(--color-text-3));
+}
+
+.cap4-lop-hint {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--t3, var(--color-text-3));
+}
+
+/* ── 3 nút tự chấm ───────────────────────────────────────────────────────── */
+.cap4-lop-rate-label {
+  margin-top: 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--t2, var(--color-text-2));
+}
+
+.cap4-lop-rate-group {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.cap4-rate-btn {
+  flex: 1;
+  padding: 6px 4px;
+  font-family: inherit;
+  font-size: 10.5px;
+  color: var(--t2, var(--color-text-2));
+  background: var(--bg3, var(--color-fill-2));
+  border: 1px solid var(--bd, var(--color-border-2));
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.cap4-rate-btn:hover {
+  border-color: var(--cap4);
+  color: var(--t1, var(--color-text-1));
+}
+
+.cap4-rate-btn--on {
+  font-weight: 600;
+  color: var(--cap4);
+  background: var(--cap4-soft);
+  border-color: var(--cap4);
+}
+
+/* ── Ô đối chiếu AI (chỉ hiện khi đã chấm đủ 5 lớp) ──────────────────────── */
+.cap4-ai-cell {
+  margin-top: 6px;
+  padding: 5px 7px;
+  font-size: 10.5px;
+  border-radius: 6px;
+}
+
+.cap4-ai-cell--cung {
+  color: var(--cap4-cung);
+  background: rgba(53, 208, 127, 0.12);
+  border: 1px solid rgba(53, 208, 127, 0.35);
+}
+
+/* Tím, TRUNG TÍNH — không phải cảnh báo, không phán "sai". */
+.cap4-ai-cell--khac {
+  color: var(--cap4);
+  background: var(--cap4-soft);
+  border: 1px solid var(--cap4-bd);
+}
+
+.cap4-ai-cell--nodata {
+  color: var(--t3, var(--color-text-3));
+  background: var(--bg3, var(--color-fill-2));
+  border: 1px solid var(--bd, var(--color-border-2));
+}
+
+/* ── Cổng cứng / điểm đồng thuận ─────────────────────────────────────────── */
+.cap4-locked {
+  margin-top: 8px;
+  padding: 7px;
+  text-align: center;
+  background: var(--bg3, var(--color-fill-2));
+  border: 1px dashed var(--cap4-bd);
+  border-radius: 8px;
+}
+
+.cap4-locked-main {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--t2, var(--color-text-2));
+}
+
+.cap4-locked-sub {
+  margin-top: 2px;
+  font-size: 9.5px;
+  color: var(--t3, var(--color-text-3));
+}
+
+.cap4-dongthuan {
+  margin-top: 8px;
+  padding: 7px;
+  background: var(--cap4-soft);
+  border: 1px solid var(--cap4-bd);
+  border-radius: 8px;
+}
+
+.cap4-dongthuan-main {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--cap4);
+}
+
+.cap4-dongthuan-sub {
+  margin-top: 3px;
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: var(--t3, var(--color-text-3));
+}
