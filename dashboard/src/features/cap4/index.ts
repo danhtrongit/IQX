@@ -17,6 +17,10 @@ export {
 export { cap4Api } from "./api"
 export { cap4Keys } from "./keys"
 export { Doc5LopBlock, type Doc5LopBlockProps } from "./Doc5LopBlock"
+export { JourneyPanelCap4, taskStateCap4 } from "./JourneyPanelCap4"
+export { GraduationModalCap4, isGraduationReadyCap4 } from "./GraduationModalCap4"
+export { Cap4PortfolioAnalysisPanel } from "./Cap4PortfolioAnalysisPanel"
+export { Cap4TradingPage } from "./Cap4TradingPage"
 export { KetsoModalCap4, type KetsoDataCap4, type KetsoModalCap4Props } from "./KetsoModalCap4"
 export {
   Cap4PortfolioAnalysis,

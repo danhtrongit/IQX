@@ -1,0 +1,16 @@
+/**
+ * Màn tốt nghiệp Cấp 4 (spec §3 Khối 3 "viền vàng kim `#e0b64d`") — dùng lại
+ * `.cap0-grad-block`/`.cap0-grad-cta` cho layout (mirror
+ * `cap3/cap3-graduation.css`), chỉ đổi màu sang Cấp 5 «Lão luyện» (vàng kim
+ * `#e0b64d`). Nút CTA PHẢI override màu vì `.cap0-grad-cta` mặc định là
+ * `var(--brand)` (#4f8ff7 — màu Cấp 3, không phải Cấp 5).
+ */
+
+.cap4-grad-block--cap5 {
+  border-color: rgba(224, 182, 77, 0.5);
+}
+
+.cap4-grad-cta--cap5 {
+  background: #e0b64d;
+  color: #2a2008;
+}
