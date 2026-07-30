@@ -14,7 +14,10 @@ Cấp 2 «Kỷ luật» (``~/Downloads/DEMO TRADING/LEVEL 2/IQX-Cap2-Spec.md``) 
 ``OrderKehoach``/``OrderKetso`` in place (same physical tables, new columns
 added by a later migration) rather than creating new tables — see
 ``PhuongPhapSlTp`` and the "Cấp 2 additions" column blocks below. Cấp 2's own
-new table (``cap2_progress``) lives in ``app.models.cap2``.
+new table (``cap2_progress``) lives in ``app.models.cap2``. Cấp 3 «Bản lĩnh»
+and Cấp 4 «Thuần thục» follow the same pattern (``cap3_progress`` /
+``cap4_progress`` in ``app.models.cap3``/``app.models.cap4``, plus the "Cấp 3
+additions" / "Cấp 4 additions" column blocks on ``OrderKehoach``).
 """
 
 from __future__ import annotations
@@ -207,6 +210,20 @@ class OrderKehoach(UUIDMixin, TimestampMixin, Base):
     )
     khoi_luong: Mapped[int | None] = mapped_column(Integer, nullable=True)
     pct_von: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    # ── Cấp 4 additions (spec §5/§8) — "Đọc 5 lớp": user tự chấm cả 5 lớp
+    # (thay trường "chọn 1 lý do" của Cấp 1) + đánh giá AI rút về 3 mức.
+    # ``doc_5_lop`` / ``ai_5_lop``: {lop: 'ok'|'neu'|'bad'} với lop ∈ 5 giá trị
+    # của ``LyDo`` — xem ``app.models.cap4`` (LOP_KEYS/NhanDinhLop) cho lý do
+    # dùng JSON thay vì 10 cột enum. Tất cả nullable để lệnh Cấp 1/2/3 cũ
+    # (chưa từng đọc 5 lớp) vẫn hợp lệ.
+    doc_5_lop: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    ai_5_lop: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    # Số lớp AI đánh giá Ủng hộ (0-5) — "điểm đồng thuận" §5.2.
+    so_lop_dong_thuan: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Số lớp user đọc khác AI — COUNT TRUNG TÍNH (§4.2/§9: không bao giờ được
+    # dùng để chấm đúng/sai; chất lượng đọc chỉ đo bằng kết quả thật).
+    so_lop_khac_ai: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class OrderKetso(UUIDMixin, TimestampMixin, Base):
