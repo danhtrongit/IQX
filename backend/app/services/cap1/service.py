@@ -270,7 +270,20 @@ class Cap1Service:
         cam_xuc: str | None = None,
     ) -> OrderKetso:
         """Record Kết sổ for a filled SELL order — computes pnl/phiên from the
-        VirtualOrder and its matched buy (spec §6)."""
+        VirtualOrder and its matched buy (spec §6).
+
+        **``cam_xuc`` is UPSERTed.** From Cấp 5 on, the FE posts this endpoint
+        as a PRE-FLIGHT step (right after the sell fills, so the pnl/số phiên the
+        Kết sổ modal displays exist before it opens) — at which point the user
+        has not picked an emotion yet, so ``cam_xuc`` is ``None``. The modal then
+        posts AGAIN with the real emotion. That second call therefore finds an
+        existing row: when it carries a non-null ``cam_xuc`` it UPDATES that row
+        instead of 409-ing (which is why the emotion silently stopped persisting
+        at Cấp 5). Everything else is unchanged: a repeat call WITHOUT an emotion
+        still conflicts (nothing to add), the computed pnl/phiên fields are never
+        recomputed on the second pass, and a non-null ``cam_xuc`` is never wiped
+        back to null.
+        """
         progress = await self._get_progress_row(user_id)
         if progress is None:
             raise NotFoundError("tiến trình Cấp 1")
@@ -283,9 +296,23 @@ class Cap1Service:
         if sell_order.status != OrderStatus.FILLED:
             raise BadRequestError("Lệnh bán chưa khớp")
 
+        try:
+            cam_xuc_enum = CamXuc(cam_xuc) if cam_xuc else None
+        except ValueError as exc:
+            raise BadRequestError("cam_xuc không hợp lệ") from exc
+
         existing = await self._get_ketso_by_order(order_id)
         if existing is not None:
-            raise ConflictError("Lệnh này đã kết sổ")
+            if cam_xuc_enum is None:
+                raise ConflictError("Lệnh này đã kết sổ")
+            existing.cam_xuc = cam_xuc_enum
+            await self._session.flush()
+            await self._session.refresh(existing)
+            if progress.task_2_done_at is None:
+                progress.task_2_done_at = datetime.now(UTC)
+                await self._session.flush()
+                await self._session.refresh(progress)
+            return existing
 
         buy_order = await self._find_matching_buy(sell_order)
         if buy_order is None:
@@ -302,11 +329,6 @@ class Cap1Service:
         pnl_vnd = sell_net + buy_net
         cost_basis = -buy_net
         pnl_pct = (pnl_vnd / cost_basis * 100.0) if cost_basis else 0.0
-
-        try:
-            cam_xuc_enum = CamXuc(cam_xuc) if cam_xuc else None
-        except ValueError as exc:
-            raise BadRequestError("cam_xuc không hợp lệ") from exc
 
         ketso = OrderKetso(
             order_id=order_id,

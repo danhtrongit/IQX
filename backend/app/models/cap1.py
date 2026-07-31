@@ -20,7 +20,10 @@ and Cấp 4 «Thuần thục» follow the same pattern (``cap3_progress`` /
 additions" / "Cấp 4 additions" column blocks on ``OrderKehoach``). Cấp 5
 «Lão luyện» extends ``OrderKetso`` the same way (the "Cấp 5 additions" column
 block below — verdict hệ/user + provenance + 4 ô) and owns ``cap5_progress`` +
-``standby_decision`` in ``app.models.cap5``.
+``standby_decision`` in ``app.models.cap5``. Cấp 6 «Đối chiếu» extends
+``OrderKehoach`` again (the "Cấp 6 additions" column block — kiểu cổ phiếu +
+lớp mâu thuẫn + trọng số gợi ý + lớp quyết định) and owns ``cap6_progress`` in
+``app.models.cap6``.
 """
 
 from __future__ import annotations
@@ -229,6 +232,31 @@ class OrderKehoach(UUIDMixin, TimestampMixin, Base):
     # Số lớp user đọc khác AI — COUNT TRUNG TÍNH (§4.2/§9: không bao giờ được
     # dùng để chấm đúng/sai; chất lượng đọc chỉ đo bằng kết quả thật).
     so_lop_khac_ai: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    # ── Cấp 6 additions (spec §4/§9) — bước "Đối chiếu": CHỈ điền khi 5 lớp
+    # user tự chấm mâu thuẫn (≥1 lớp 'ok' Ủng hộ VÀ ≥1 lớp 'bad' Ngược chiều).
+    # Lệnh không mâu thuẫn — và mọi lệnh Cấp 1-5 — để NULL hết, nên tất cả các
+    # cột dưới đây đều nullable.
+    #   · ``kieu_co_phieu`` — 1 trong 6 kiểu, hệ suy ra từ NGÀNH của mã
+    #     (``Symbol.icb_lv2``/``icb_lv1``); NULL = "chưa phân loại".
+    #   · ``lop_mau_thuan`` — JSON tóm tắt lớp nào Ủng hộ / Ngược chiều lúc đặt
+    #     (suy lại từ ``doc_5_lop``, xem ``app.services.cap6.service``).
+    #   · ``trong_so_goi_y`` — JSON bảng trọng số của kiểu đó + câu "vì sao"
+    #     (§C12c: FE hiện nguyên văn, KHÔNG bao giờ hiện gợi ý trơ).
+    #   · ``lop_quyet_dinh`` — lớp user CHỌN tin cho lệnh này.
+    #   · ``khop_goi_y`` — lop_quyet_dinh có nằm trong nhóm gợi ý không. NULL
+    #     khi chưa phân loại được kiểu (không có gợi ý thì không có gì để khớp).
+    #   · ``ly_do_doi_chieu`` — 1 dòng vì sao, BẮT BUỘC.
+    #
+    # ★ ``khop_goi_y = False`` là một DỮ KIỆN TRUNG TÍNH, không bao giờ là
+    # "sai": trọng số chỉ là GỢI Ý (spec §5/§10), trọng tài cuối là kết quả
+    # thật. Xem ``app.models.cap6`` (KIEU_CO_PHIEU) và service của Cấp 6.
+    kieu_co_phieu: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    lop_mau_thuan: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    trong_so_goi_y: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    lop_quyet_dinh: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    khop_goi_y: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    ly_do_doi_chieu: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 class OrderKetso(UUIDMixin, TimestampMixin, Base):
