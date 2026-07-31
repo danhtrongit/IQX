@@ -119,6 +119,14 @@
   color: #ff6b6b;
 }
 
+/* Câu giải thích verdict / trạng thái đang tải-lỗi của khối phân loại. */
+.cap5-phanloai-note {
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--t3);
+}
+
 .cap5-phanloai-why {
   margin: 8px 0 0;
   padding: 0;
