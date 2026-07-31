@@ -1,10 +1,16 @@
-import { Message, Modal } from "@arco-design/web-react"
+import { Modal } from "@arco-design/web-react"
 import { Badge, LEVELS } from "@/features/cap0/Badge"
 import "@/features/cap0/cap0.css"
 import "./cap4-graduation.css"
 import { lopLabelCap4 } from "./coachTemplateCap4"
 import { useCap4Progress, useGraduateCap4 } from "./hooks"
 import { countCap4TasksDone, type Cap4Progress, type Lop } from "./types"
+// Cấp 5 is live (Cấp 5 Task FE3) — concrete-file import (NOT the `@/features/cap5`
+// barrel), same anti-cycle rationale `cap3/GraduationModalCap3.tsx` documents for
+// its own `@/features/cap4/hooks` import (that barrel re-exports
+// `Cap5TradingPage`, which imports `CenterPanel`/`RightSidebar`/`RightToolbar`
+// from `@/features/dashboard`).
+import { useEnterCap5 } from "@/features/cap5/hooks"
 
 /**
  * Điều kiện mở màn tốt nghiệp Cấp 4 (spec §3): 3/3 nhiệm vụ, chưa từng tốt
@@ -59,23 +65,27 @@ function renderInlineBold(text: string) {
  * VERBATIM (Ghi nhận / Định vị / Chuyển cấp viền **vàng kim `#e0b64d`** — màu
  * Cấp 5) + CTA vàng kim.
  *
- * Cấp 5 CHƯA được xây — dùng đúng pattern trung thực mà `GraduationModalCap1`
- * (trước Cấp 2), `GraduationModalCap2` (trước Cấp 3) và `GraduationModalCap3`
- * (trước Cấp 4) đã dùng: ghi tốt nghiệp về server (để tiến trình thật sự đi
- * tiếp / modal không mở lại), rồi báo "Cấp 5 sắp ra mắt" thay vì điều hướng đi
- * đâu. Khi Cấp 5 lên sóng, đổi `onSuccess` thành `enterCap5.mutate()` đúng như
- * `GraduationModalCap3` vừa được sửa trong delivery này.
+ * Cấp 5 is live (Cấp 5 Task FE3) — mirrors how `GraduationModalCap3` enters Cấp 4
+ * (which itself mirrors Cấp 2 → Cấp 3 → …): record the graduation server-side,
+ * then fire the idempotent `POST /cap5/enter` right here too (not just relying on
+ * `DauTruongPage`'s own effect) so Cấp 5 progress is ready the instant
+ * `DauTruongPage` swaps this Cấp 4 shell out for `Cap5TradingPage` — driven by the
+ * SAME `useCap4Progress` query this mutation's `graduated_at` just invalidated. No
+ * navigation call needed: this modal only ever renders while already on
+ * `/dau-truong`. (Replaces the honest "Cấp 5 sắp ra mắt" placeholder used before
+ * Cấp 5 shipped.)
  */
 export function GraduationModalCap4() {
   const { data: progress } = useCap4Progress()
   const graduate = useGraduateCap4()
+  const enterCap5 = useEnterCap5()
   const level = LEVELS[4]
   const visible = isGraduationReadyCap4(progress)
 
   const handleGraduate = () => {
     graduate.mutate(undefined, {
       onSuccess: () => {
-        Message.info("Cấp 5 «Lão luyện» sắp ra mắt")
+        enterCap5.mutate()
       },
     })
   }

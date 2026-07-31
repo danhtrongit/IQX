@@ -38,6 +38,12 @@ import { useCap3Events } from "@/features/cap3/Cap3Context"
 import { JourneyPanelCap4 } from "@/features/cap4/JourneyPanelCap4"
 import { Cap4PortfolioAnalysisPanel } from "@/features/cap4/Cap4PortfolioAnalysisPanel"
 import { useCap4Events } from "@/features/cap4/Cap4Context"
+// Same anti-cycle rationale, five levels up — `@/features/cap5`'s barrel
+// re-exports `Cap5TradingPage`, which itself imports `CenterPanel`/
+// `RightSidebar`/`RightToolbar` from `@/features/dashboard`.
+import { JourneyPanelCap5 } from "@/features/cap5/JourneyPanelCap5"
+import { Cap5PortfolioAnalysisPanel } from "@/features/cap5/Cap5PortfolioAnalysisPanel"
+import { useCap5Events } from "@/features/cap5/Cap5Context"
 
 /**
  * Dynamic right sidebar that switches between panels:
@@ -58,19 +64,19 @@ export function RightSidebar() {
   const { isCap0Active } = useCap0Events()
   const { data: cap0Progress } = useCap0Progress(isCap0Active)
   const visibility = cap0Visibility(cap0Progress)
-  // Cấp 0, Cấp 1, Cấp 2, Cấp 3 and Cấp 4 providers are never all independently
-  // mounted (progression routing — `DauTruongPage` — picks exactly one shell
-  // per visit), EXCEPT that each level's shell wraps every EARLIER level's
-  // provider too (cộng dồn: a Cấp 4 session wraps `Cap1Provider` +
-  // `Cap2Provider` + `Cap3Provider` + `Cap4Provider` — see `Cap4TradingPage`),
-  // so `isCap1Active`/`isCap2Active`/`isCap3Active` are ALSO true during Cấp 4.
-  // "journey" and the per-level analysis panels therefore check the HIGHEST
-  // level FIRST (most specific), falling through to lower levels then Cấp 0's
-  // default.
+  // Cấp 0 … Cấp 5 providers are never all independently mounted (progression
+  // routing — `DauTruongPage` — picks exactly one shell per visit), EXCEPT that
+  // each level's shell wraps every EARLIER level's provider too (cộng dồn: a Cấp
+  // 5 session wraps `Cap1Provider` + `Cap2Provider` + `Cap3Provider` +
+  // `Cap4Provider` + `Cap5Provider` — see `Cap5TradingPage`), so
+  // `isCap1Active`…`isCap4Active` are ALSO true during Cấp 5. "journey" and the
+  // per-level analysis panels therefore check the HIGHEST level FIRST (most
+  // specific), falling through to lower levels then Cấp 0's default.
   const { isCap1Active } = useCap1Events()
   const { isCap2Active } = useCap2Events()
   const { isCap3Active } = useCap3Events()
   const { isCap4Active } = useCap4Events()
+  const { isCap5Active } = useCap5Events()
 
   const getPanelContent = () => {
     switch (activePanel) {
@@ -95,6 +101,7 @@ export function RightSidebar() {
       case "watchlist":
         return <WatchlistPanel />
       case "journey":
+        if (isCap5Active) return <JourneyPanelCap5 />
         if (isCap4Active) return <JourneyPanelCap4 />
         if (isCap3Active) return <JourneyPanelCap3 />
         if (isCap2Active) return <JourneyPanelCap2 />
@@ -112,6 +119,9 @@ export function RightSidebar() {
       case "cap4-analysis":
         // Only reachable from `JourneyPanelCap4`'s own button (inside Cấp 4).
         return isCap4Active ? <Cap4PortfolioAnalysisPanel /> : <JourneyPanel />
+      case "cap5-analysis":
+        // Only reachable from `JourneyPanelCap5`'s own button (inside Cấp 5).
+        return isCap5Active ? <Cap5PortfolioAnalysisPanel /> : <JourneyPanel />
       default:
         return <NewsFeedPanel />
     }
@@ -127,6 +137,7 @@ export function RightSidebar() {
     "cap2-analysis": "Phân tích danh mục",
     "cap3-analysis": "Phân tích danh mục",
     "cap4-analysis": "Phân tích danh mục",
+    "cap5-analysis": "Phân tích danh mục",
   }
 
   return (

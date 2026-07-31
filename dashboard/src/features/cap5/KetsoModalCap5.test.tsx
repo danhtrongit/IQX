@@ -350,6 +350,54 @@ describe("KetsoModalCap5 — «Đóng kết sổ ✓» là CỔNG (spec §4)", (
   })
 })
 
+/**
+ * Cổng fail-closed KHÔNG được biến thành bẫy: nếu verdict không lấy được thì
+ * user vẫn phải có đường ra (nếu không, `closable={false}` + cổng khoá = màn
+ * hình chết). Chỉ hiện khi query verdict LỖI — không phải khi đang tải.
+ */
+describe("KetsoModalCap5 — lối ra khi KHÔNG lấy được verdict (không bao giờ kẹt)", () => {
+  it("không có lối ra khi mọi thứ bình thường (cổng vẫn là cổng)", () => {
+    renderModal()
+    expect(screen.queryByTestId("cap5-ketso-escape")).not.toBeInTheDocument()
+  })
+
+  it("không có lối ra khi verdict CÒN ĐANG TẢI (chờ, không phải kẹt)", () => {
+    verdictQuery.current = { data: undefined, isPending: true, isError: false }
+    renderModal()
+    expect(screen.queryByTestId("cap5-ketso-escape")).not.toBeInTheDocument()
+  })
+
+  it("verdict lỗi → hiện lối ra và nói thẳng lệnh này chưa được phân loại", () => {
+    verdictQuery.current = { data: undefined, isPending: false, isError: true }
+    renderModal()
+    const escape = screen.getByTestId("cap5-ketso-escape")
+    expect(escape).toBeEnabled()
+    expect(screen.getByTestId("cap5-ketso-escape-note")).toHaveTextContent(/chưa được phân loại/)
+  })
+
+  it("bấm lối ra: KHÔNG post /cap5/ketso, vẫn ghi 7 cờ kỷ luật Cấp 2 rồi đóng", async () => {
+    verdictQuery.current = { data: undefined, isPending: false, isError: true }
+    const onClose = vi.fn()
+    const onRecorded = vi.fn()
+    renderModal({ flags: { order_id: "order-61", cham_SL_khong_cat: true } }, { onClose, onRecorded })
+    fireEvent.click(screen.getByTestId("cap5-ketso-escape"))
+
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
+    expect(recordKetsoCap5Async).not.toHaveBeenCalled()
+    expect(recordKetsoCap2Mutate).toHaveBeenCalledWith({
+      order_id: "order-61",
+      cham_SL_khong_cat: true,
+    })
+    // Lệnh vẫn vào nhật ký, nhưng ô 4 để NULL (chưa phân loại) — khối ⑫ đếm
+    // riêng chứ không vu cho user một verdict họ chưa chốt.
+    const [rec] = readCap5TradeLog("user-1")
+    expect(rec.orderId).toBe("order-61")
+    expect(rec.o4).toBeNull()
+    expect(rec.verdictUser).toBeNull()
+    expect(onRecorded).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe("KetsoModalCap5 — đóng kết sổ: POST /cap5/ketso + đủ việc của Cấp 4", () => {
   it("post verdict đã chốt rồi làm tiếp đúng chuỗi Cấp 4, rồi đóng", async () => {
     const onClose = vi.fn()

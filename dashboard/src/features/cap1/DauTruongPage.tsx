@@ -19,6 +19,10 @@ import { Cap3TradingPage } from "@/features/cap3/Cap3TradingPage"
 // rationale as the Cấp 2/Cấp 3 imports above.
 import { useCap4Progress, useEnterCap4 } from "@/features/cap4/hooks"
 import { Cap4TradingPage } from "@/features/cap4/Cap4TradingPage"
+// Cấp 5 is live (Cấp 5 Task FE3) — concrete-file imports, same anti-cycle
+// rationale as the Cấp 2/Cấp 3/Cấp 4 imports above.
+import { useCap5Progress, useEnterCap5 } from "@/features/cap5/hooks"
+import { Cap5TradingPage } from "@/features/cap5/Cap5TradingPage"
 
 function FullPageSpinner() {
   return (
@@ -50,11 +54,13 @@ function FullPageSpinner() {
  *  - Cấp 3 graduated, Cấp 4 not entered/not graduated → `Cap4TradingPage`
  *    (Cấp 4 Task FE3), firing the idempotent `POST /cap4/enter` on first
  *    arrival — same pattern, one more level up.
- *  - Cấp 3 graduated AND Cấp 4 already graduated → still `Cap4TradingPage`
- *    (Cấp 5 doesn't exist yet — same honest "next level not built" pattern
- *    `GraduationModalCap1`/`GraduationModalCap2`/`GraduationModalCap3` used
- *    before their own next level shipped, now used by `GraduationModalCap4`
- *    for Cấp 5).
+ *  - Cấp 4 graduated, Cấp 5 not entered/not graduated → `Cap5TradingPage`
+ *    (Cấp 5 Task FE3), firing the idempotent `POST /cap5/enter` on first
+ *    arrival — same pattern, one more level up.
+ *  - Cấp 4 graduated AND Cấp 5 already graduated → still `Cap5TradingPage`
+ *    (Cấp 6 doesn't exist yet — same honest "next level not built" pattern
+ *    `GraduationModalCap1` … `GraduationModalCap4` used before their own next
+ *    level shipped, now used by `GraduationModalCap5` for Cấp 6).
  */
 export function DauTruongPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth()
@@ -131,6 +137,24 @@ export function DauTruongPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldQueryCap4, cap4Fetched, cap4Progress])
 
+  const cap4Graduated = !!cap4Progress?.graduated_at
+
+  // Only query Cấp 5 progress once Cấp 4 is confirmed graduated — mirrors the
+  // Cấp 3 → Cấp 4 gating above, one level up.
+  const shouldQueryCap5 = shouldQueryCap4 && cap4Graduated
+  const { data: cap5Progress, isFetched: cap5Fetched } = useCap5Progress(shouldQueryCap5)
+  const enterCap5 = useEnterCap5()
+  const enterCap5AttemptedRef = useRef(false)
+
+  useEffect(() => {
+    if (!shouldQueryCap5 || !cap5Fetched) return
+    if (cap5Progress != null) return // already entered (idempotent no-op otherwise)
+    if (enterCap5AttemptedRef.current) return
+    enterCap5AttemptedRef.current = true
+    enterCap5.mutate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldQueryCap5, cap5Fetched, cap5Progress])
+
   if (authLoading) return <FullPageSpinner />
   if (!isAuthenticated) return <Cap0TradingPage />
   if (!cap0Fetched) return <FullPageSpinner />
@@ -142,5 +166,7 @@ export function DauTruongPage() {
   if (!cap3Fetched) return <FullPageSpinner />
   if (!cap3Graduated) return <Cap3TradingPage />
   if (!cap4Fetched) return <FullPageSpinner />
-  return <Cap4TradingPage />
+  if (!cap4Graduated) return <Cap4TradingPage />
+  if (!cap5Fetched) return <FullPageSpinner />
+  return <Cap5TradingPage />
 }

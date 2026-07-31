@@ -43,7 +43,7 @@ import {
 import { useRecordKetsoCap5, useVerdictGoiY } from "./hooks"
 import { PhanLoai4O } from "./PhanLoai4O"
 import { useCap5TradeLog, type Cap5TradeRecord } from "./tradeLogCap5"
-import { O4_LABEL, type Verdict } from "./types"
+import { O4_LABEL, type O4, type Verdict } from "./types"
 // Kết sổ Cấp 5 = Kết sổ Cấp 4's content (đối chiếu Cấp 1 + CAM KẾT vs THỰC TẾ
 // Cấp 2 + Quản lý vốn Cấp 3 + Đọc 5 lớp Cấp 4 + khối cảm xúc + 4 lớp coach +
 // HỒ SƠ + count-up) — CỘNG khối "Phân loại 4 ô" và lớp coach "QUYẾT ĐỊNH VS
@@ -386,6 +386,65 @@ export function KetsoModalCap5({
       ? `Với lý do ${lyDoLabel(lyDo)}, bạn có ${sameLyDoWins}/${sameLyDo.length} lệnh lãi.`
       : `Còn ${MIN_TRADES_FOR_STAT - sameLyDo.length} lệnh nữa để hệ thống tìm mẫu riêng của bạn.`
 
+  /**
+   * Bản ghi nhật ký Cấp 5 của lệnh này. `o4`/`verdictHe`/`verdictUser` là tham
+   * số vì có HAI đường đóng: đường thường (đã chốt phân loại → 3 giá trị thật)
+   * và lối ra khi verdict không lấy được (→ `null` cả ba, đúng hợp đồng
+   * `Cap5TradeRecord`: `null` = CHƯA phân loại, khối ⑫ đếm riêng chứ không gộp
+   * vào ô nào).
+   */
+  const buildRecord = (
+    o4Final: O4 | null,
+    verdictHeFinal: Verdict | null,
+    verdictUserFinal: Verdict | null,
+  ): Cap5TradeRecord => ({
+    orderId,
+    lyDo,
+    trangThaiLucDat,
+    pnlPct,
+    pnlVnd,
+    closedAt: new Date(`${sellDate.slice(0, 10)}T00:00:00Z`).toISOString(),
+    chamSlKhongCat: Boolean(flags.cham_SL_khong_cat),
+    chamTpGiuLamHut: Boolean(flags.cham_TP_giu_lam_hut),
+    banSomKhiLoNhe: Boolean(flags.ban_som_khi_lo_nhe),
+    nhoiLenhKhiLo: Boolean(flags.nhoi_lenh_khi_lo),
+    ghiChuNhinLai: null,
+    khauVi,
+    mucTuTin,
+    cachKhoiLuong,
+    khoiLuong,
+    pctVon,
+    doc_5_lop: doc5Lop,
+    ai_5_lop: ai5Lop,
+    // Chưa lộ AI → để NULL đúng như backend, KHÔNG quy về 0 (giữ nguyên Cấp 4).
+    so_lop_dong_thuan: ai5Lop ? soDongThuan : null,
+    so_lop_khac_ai: ai5Lop ? soKhacAi : null,
+    o4: o4Final,
+    verdictHe: verdictHeFinal,
+    verdictUser: verdictUserFinal,
+  })
+
+  /**
+   * ★ Lối ra BẮT BUỘC (không có trong Cấp 1-4): modal này `closable={false}` +
+   * cổng fail-closed, nên nếu `GET /cap5/verdict` lỗi thì KHÔNG có verdict để
+   * chốt → nút "Đóng kết sổ ✓" khoá vĩnh viễn → user kẹt trong một màn không
+   * đóng được. Khi (và chỉ khi) query verdict LỖI, hiện một lối ra: ghi 7 cờ kỷ
+   * luật Cấp 2 (chúng không phụ thuộc verdict, mất là mất thật), ghi nhật ký với
+   * ô 4 = NULL, rồi đóng — KHÔNG `POST /cap5/ketso` (chưa có gì để ghi).
+   * Đang tải KHÔNG hiện lối ra: chờ là chờ, chưa phải kẹt.
+   */
+  const escapeVisible = Boolean(verdictQuery.isError) && !verdictUser
+
+  const handleEscape = () => {
+    if (closing) return
+    setClosing(true)
+    recordKetsoCap2.mutate({ ...flags, order_id: orderId })
+    const record = buildRecord(null, null, null)
+    recordCap5Trade(record)
+    onRecorded?.(record)
+    onClose()
+  }
+
   const handleClose = async () => {
     // Cổng: không có verdict đã chốt thì không đóng được (kể cả bấm bằng Enter).
     if (!verdictUser || !o4 || closing) return
@@ -421,34 +480,13 @@ export function KetsoModalCap5({
       return
     }
 
-    const record: Cap5TradeRecord = {
-      orderId,
-      lyDo,
-      trangThaiLucDat,
-      pnlPct,
-      pnlVnd,
-      closedAt: new Date(`${sellDate.slice(0, 10)}T00:00:00Z`).toISOString(),
-      chamSlKhongCat: Boolean(flags.cham_SL_khong_cat),
-      chamTpGiuLamHut: Boolean(flags.cham_TP_giu_lam_hut),
-      banSomKhiLoNhe: Boolean(flags.ban_som_khi_lo_nhe),
-      nhoiLenhKhiLo: Boolean(flags.nhoi_lenh_khi_lo),
-      ghiChuNhinLai: null,
-      khauVi,
-      mucTuTin,
-      cachKhoiLuong,
-      khoiLuong,
-      pctVon,
-      doc_5_lop: doc5Lop,
-      ai_5_lop: ai5Lop,
-      // Chưa lộ AI → để NULL đúng như backend, KHÔNG quy về 0 (giữ nguyên Cấp 4).
-      so_lop_dong_thuan: ai5Lop ? soDongThuan : null,
-      so_lop_khac_ai: ai5Lop ? soKhacAi : null,
-      // Ưu tiên giá trị SERVER vừa trả (nó tự re-derive, là bản authoritative);
-      // fallback về giá trị suy ra tại đây để nhật ký không bao giờ trống ô.
-      o4: ketso?.o_4 ?? o4,
-      verdictHe: ketso?.verdict_he ?? goiY?.verdict ?? null,
-      verdictUser: ketso?.verdict_user ?? verdictUser,
-    }
+    // Ưu tiên giá trị SERVER vừa trả (nó tự re-derive, là bản authoritative);
+    // fallback về giá trị suy ra tại đây để nhật ký không bao giờ trống ô.
+    const record = buildRecord(
+      ketso?.o_4 ?? o4,
+      ketso?.verdict_he ?? goiY?.verdict ?? null,
+      ketso?.verdict_user ?? verdictUser,
+    )
     recordCap5Trade(record)
     onRecorded?.(record)
     // Analytics `cap5_phan_loai` (spec §8) — `daSua` là một sự thật TRUNG TÍNH
@@ -742,11 +780,31 @@ export function KetsoModalCap5({
       >
         Đóng kết sổ ✓
       </button>
-      {!verdictUser && (
+      {!verdictUser && !escapeVisible && (
         <p className="cap5-ketso-gate-note" data-testid="cap5-ketso-gate-note">
           Chốt phân loại 4 ô ở trên mới đóng được kết sổ — đó là bước biến lệnh
           này thành dữ liệu «tỷ lệ quyết định đúng» của bạn.
         </p>
+      )}
+
+      {/* Lối ra khi hệ KHÔNG lấy được verdict — xem `handleEscape`. */}
+      {escapeVisible && (
+        <>
+          <button
+            type="button"
+            className="cap5-ketso-escape"
+            onClick={handleEscape}
+            disabled={closing}
+            data-testid="cap5-ketso-escape"
+          >
+            Đóng kết sổ — chưa phân loại được
+          </button>
+          <p className="cap5-ketso-escape-note" data-testid="cap5-ketso-escape-note">
+            Hệ chưa lấy được verdict của lệnh này nên lệnh sẽ vào nhật ký mà{" "}
+            <strong>chưa được phân loại 4 ô</strong> — nó không tính vào «tỷ lệ quyết định đúng».
+            Bạn không bị kẹt ở đây: đóng lại và thử ở lệnh sau.
+          </p>
+        </>
       )}
     </Modal>
   )

@@ -3,12 +3,12 @@ import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Cap4Progress } from "./types"
 
-const { useCap4ProgressMock, graduateMutate, messageInfo } = vi.hoisted(() => ({
+const { useCap4ProgressMock, graduateMutate, enterCap5Mutate } = vi.hoisted(() => ({
   useCap4ProgressMock: vi.fn(),
   graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
     opts?.onSuccess?.()
   }),
-  messageInfo: vi.fn(),
+  enterCap5Mutate: vi.fn(),
 }))
 
 vi.mock("./hooks", () => ({
@@ -16,10 +16,10 @@ vi.mock("./hooks", () => ({
   useGraduateCap4: () => ({ mutate: graduateMutate, isPending: false }),
 }))
 
-vi.mock("@arco-design/web-react", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@arco-design/web-react")>()
-  return { ...actual, Message: { ...actual.Message, info: messageInfo } }
-})
+// Cấp 5 is live (Cấp 5 Task FE3) — the CTA now really enters Cấp 5.
+vi.mock("@/features/cap5/hooks", () => ({
+  useEnterCap5: () => ({ mutate: enterCap5Mutate, isPending: false }),
+}))
 
 import { GraduationModalCap4, isGraduationReadyCap4 } from "./GraduationModalCap4"
 
@@ -82,7 +82,7 @@ describe("GraduationModalCap4", () => {
     graduateMutate.mockImplementation((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
       opts?.onSuccess?.()
     })
-    messageInfo.mockReset()
+    enterCap5Mutate.mockReset()
   })
 
   it("does not render when 3/3 isn't met", () => {
@@ -145,7 +145,7 @@ describe("GraduationModalCap4", () => {
     expect(document.querySelector(".cap4-grad-cta--cap5")).not.toBeNull()
   })
 
-  it('clicking "Vào Cấp 5" graduates Cấp 4 and says Cấp 5 is coming (not built yet)', () => {
+  it('clicking "Vào Cấp 5" graduates Cấp 4 and REALLY enters Cấp 5 (now live)', () => {
     useCap4ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap4 />)
     fireEvent.click(screen.getByText("Vào Cấp 5 «Lão luyện» →"))
@@ -153,8 +153,17 @@ describe("GraduationModalCap4", () => {
       undefined,
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     )
-    expect(messageInfo).toHaveBeenCalledWith(expect.stringContaining("Cấp 5"))
-    expect(messageInfo).toHaveBeenCalledWith(expect.stringContaining("sắp ra mắt"))
+    expect(enterCap5Mutate).toHaveBeenCalledTimes(1)
+  })
+
+  it("does NOT enter Cấp 5 before the Cấp 4 graduation actually succeeds", () => {
+    useCap4ProgressMock.mockReturnValue({ data: readyProgress() })
+    graduateMutate.mockImplementation(() => {
+      /* pending — no onSuccess */
+    })
+    render(<GraduationModalCap4 />)
+    fireEvent.click(screen.getByText("Vào Cấp 5 «Lão luyện» →"))
+    expect(enterCap5Mutate).not.toHaveBeenCalled()
   })
 
   it("degrades honestly when the system never concluded a vũ khí/điểm mù lớp", () => {

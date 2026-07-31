@@ -1,0 +1,16 @@
+/**
+ * Màn tốt nghiệp Cấp 5 (spec §3 Khối 3 "viền màu Cấp 6 — đỏ son `#d64550` tạm,
+ * chốt khi xây Cấp 6") — dùng lại `.cap0-grad-block`/`.cap0-grad-cta` cho layout
+ * (mirror `cap4/cap4-graduation.css`), chỉ đổi màu sang Cấp 6 «Đối chiếu» (đỏ son
+ * `#d64550`). Nút CTA PHẢI override màu vì `.cap0-grad-cta` mặc định là
+ * `var(--brand)` (#4f8ff7 — màu Cấp 3, không phải Cấp 6).
+ */
+
+.cap5-grad-block--cap6 {
+  border-color: rgba(214, 69, 80, 0.5);
+}
+
+.cap5-grad-cta--cap6 {
+  background: #d64550;
+  color: #fff5f5;
+}

@@ -30,6 +30,10 @@ export {
   Cap5PortfolioAnalysis,
   type Cap5PortfolioAnalysisProps,
 } from "./Cap5PortfolioAnalysis"
+export { Cap5PortfolioAnalysisPanel } from "./Cap5PortfolioAnalysisPanel"
+export { JourneyPanelCap5, taskStateCap5 } from "./JourneyPanelCap5"
+export { GraduationModalCap5, isGraduationReadyCap5 } from "./GraduationModalCap5"
+export { Cap5TradingPage } from "./Cap5TradingPage"
 export {
   composeCoachCap5,
   deriveO4,

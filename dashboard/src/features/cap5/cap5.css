@@ -236,3 +236,32 @@
   text-align: center;
   color: var(--t3);
 }
+
+/* Lối ra khi KHÔNG lấy được verdict: cổng fail-closed không được thành bẫy.
+   Cố tình mờ hơn nút chính — đây là đường thoát, không phải đường đi thường. */
+.cap5-ketso-escape {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  margin-top: 8px;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--t2);
+  background: transparent;
+  border: 1px dashed var(--bd);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.cap5-ketso-escape:hover {
+  color: var(--t1);
+  border-color: var(--t3);
+}
+
+.cap5-ketso-escape-note {
+  margin: 7px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--t3);
+}

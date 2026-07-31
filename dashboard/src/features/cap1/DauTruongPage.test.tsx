@@ -10,10 +10,12 @@ const {
   useCap2ProgressMock,
   useCap3ProgressMock,
   useCap4ProgressMock,
+  useCap5ProgressMock,
   enterCap1Mutate,
   enterCap2Mutate,
   enterCap3Mutate,
   enterCap4Mutate,
+  enterCap5Mutate,
 } = vi.hoisted(() => ({
   useAuthMock: vi.fn(),
   useCap0ProgressMock: vi.fn(),
@@ -21,10 +23,12 @@ const {
   useCap2ProgressMock: vi.fn(),
   useCap3ProgressMock: vi.fn(),
   useCap4ProgressMock: vi.fn(),
+  useCap5ProgressMock: vi.fn(),
   enterCap1Mutate: vi.fn(),
   enterCap2Mutate: vi.fn(),
   enterCap3Mutate: vi.fn(),
   enterCap4Mutate: vi.fn(),
+  enterCap5Mutate: vi.fn(),
 }))
 
 vi.mock("@/features/auth", () => ({ useAuth: () => useAuthMock() }))
@@ -72,6 +76,16 @@ vi.mock("@/features/cap4/hooks", () => ({
 
 vi.mock("@/features/cap4/Cap4TradingPage", () => ({
   Cap4TradingPage: () => <div data-testid="cap4-page" />,
+}))
+
+// Cấp 5 is live (Cấp 5 Task FE3) — concrete-file imports, same anti-cycle rationale.
+vi.mock("@/features/cap5/hooks", () => ({
+  useCap5Progress: (...a: unknown[]) => useCap5ProgressMock(...a),
+  useEnterCap5: () => ({ mutate: enterCap5Mutate, isPending: false }),
+}))
+
+vi.mock("@/features/cap5/Cap5TradingPage", () => ({
+  Cap5TradingPage: () => <div data-testid="cap5-page" />,
 }))
 
 import { DauTruongPage } from "./DauTruongPage"
@@ -155,7 +169,24 @@ function fakeCap4Progress(overrides: Record<string, unknown> = {}) {
   }
 }
 
-describe("DauTruongPage — progression routing (Task FE3 + FE4 + Cấp 3 FE3 + Cấp 4 FE3)", () => {
+function fakeCap5Progress(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "p5",
+    user_id: "u1",
+    entered_at: "2026-08-21T00:00:00Z",
+    task_1_done_at: null,
+    task_2_done_at: null,
+    task_3_done_at: null,
+    so_lenh_phan_loai: 0,
+    so_lan_dung_ngoai_da_cham: 0,
+    ty_le_quyet_dinh_dung: 0,
+    graduated_at: null,
+    time_to_graduate_hours: null,
+    ...overrides,
+  }
+}
+
+describe("DauTruongPage — progression routing (Task FE3 + FE4 + Cấp 3/4/5 FE3)", () => {
   beforeEach(() => {
     useAuthMock.mockReset()
     useCap0ProgressMock.mockReset()
@@ -166,10 +197,13 @@ describe("DauTruongPage — progression routing (Task FE3 + FE4 + Cấp 3 FE3 + 
     useCap3ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
     useCap4ProgressMock.mockReset()
     useCap4ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
+    useCap5ProgressMock.mockReset()
+    useCap5ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
     enterCap1Mutate.mockReset()
     enterCap2Mutate.mockReset()
     enterCap3Mutate.mockReset()
     enterCap4Mutate.mockReset()
+    enterCap5Mutate.mockReset()
   })
 
   it("shows a spinner while auth is still loading", () => {
@@ -388,15 +422,58 @@ describe("DauTruongPage — progression routing (Task FE3 + FE4 + Cấp 3 FE3 + 
     expect(enterCap4Mutate).not.toHaveBeenCalled()
   })
 
-  it("still renders Cap4TradingPage when Cấp 4 is ALREADY graduated (Cấp 5 not built yet)", () => {
+  it("does not query Cấp 5 progress (nor enter it) while Cấp 4 hasn't graduated yet", () => {
+    cap3GraduatedMocks()
+    useCap4ProgressMock.mockReturnValue({ data: fakeCap4Progress(), isFetched: true })
+    render(<DauTruongPage />)
+    expect(screen.getByTestId("cap4-page")).toBeInTheDocument()
+    expect(useCap5ProgressMock).toHaveBeenCalledWith(false)
+    expect(enterCap5Mutate).not.toHaveBeenCalled()
+  })
+
+  // ── Cấp 4 → Cấp 5 (this delivery) ─────────────────────────────────────────
+  function cap4GraduatedMocks() {
     cap3GraduatedMocks()
     useCap4ProgressMock.mockReturnValue({
       data: fakeCap4Progress({ graduated_at: "2026-08-20T00:00:00Z" }),
       isFetched: true,
     })
+  }
+
+  it("shows a spinner once Cấp 4 is graduated but Cấp 5 progress hasn't resolved yet", () => {
+    cap4GraduatedMocks()
+    useCap5ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
     render(<DauTruongPage />)
-    expect(screen.getByTestId("cap4-page")).toBeInTheDocument()
-    expect(enterCap4Mutate).not.toHaveBeenCalled()
+    expect(screen.queryByTestId("cap4-page")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap5-page")).not.toBeInTheDocument()
+  })
+
+  it("renders Cap5TradingPage + calls POST /cap5/enter once when Cấp 4 is graduated and Cấp 5 hasn't been entered yet", () => {
+    cap4GraduatedMocks()
+    useCap5ProgressMock.mockReturnValue({ data: null, isFetched: true })
+    render(<DauTruongPage />)
+    expect(screen.getByTestId("cap5-page")).toBeInTheDocument()
+    expect(screen.queryByTestId("cap4-page")).not.toBeInTheDocument()
+    expect(enterCap5Mutate).toHaveBeenCalledTimes(1)
+  })
+
+  it("renders Cap5TradingPage WITHOUT re-entering when Cấp 5 progress already exists", () => {
+    cap4GraduatedMocks()
+    useCap5ProgressMock.mockReturnValue({ data: fakeCap5Progress(), isFetched: true })
+    render(<DauTruongPage />)
+    expect(screen.getByTestId("cap5-page")).toBeInTheDocument()
+    expect(enterCap5Mutate).not.toHaveBeenCalled()
+  })
+
+  it("still renders Cap5TradingPage when Cấp 5 is ALREADY graduated (Cấp 6 not built yet)", () => {
+    cap4GraduatedMocks()
+    useCap5ProgressMock.mockReturnValue({
+      data: fakeCap5Progress({ graduated_at: "2026-09-10T00:00:00Z" }),
+      isFetched: true,
+    })
+    render(<DauTruongPage />)
+    expect(screen.getByTestId("cap5-page")).toBeInTheDocument()
+    expect(enterCap5Mutate).not.toHaveBeenCalled()
   })
 
   it("keeps rendering Cap2TradingPage (and never enters Cấp 3) while Cấp 2 hasn't graduated", () => {
