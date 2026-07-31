@@ -62,9 +62,18 @@ import {
   isDoc5LopComplete,
   useCap4Events,
   useRecordKehoachCap4,
+  type Lop,
   type Lop5Partial,
 } from "@/features/cap4"
 import { DungNgoaiButton, useCap5Events } from "@/features/cap5"
+import {
+  DoiChieuBlock,
+  coMauThuan,
+  isDoiChieuValid,
+  useCap6Events,
+  useRecordKehoachCap6,
+  type KieuCoPhieu,
+} from "@/features/cap6"
 import { getErrorMessage } from "@/shared/http/client"
 import { cn } from "@/shared/lib/cn"
 import { StockLogo } from "@/features/navigation/StockLogo"
@@ -291,6 +300,21 @@ function OrderEntry({
   // the "Đứng ngoài có chủ đích" affordance below (a decision NOT to buy) plus
   // its own copy of the order-filled event.
   const { isCap5Active } = cap5Events
+  const cap6Events = useCap6Events()
+  // `isCap6Active` mirrors `isCap5Active` above — false outside a
+  // `Cap6Provider`. Cấp 6 keeps Cấp 0-5's blocks, cổng cứng chain and Cấp 3's
+  // volume auto-fill 100% intact (spec §0) and INSERTS exactly one step: the
+  // khối "Đối chiếu" below, which itself renders ONLY when the user's 5 lớp
+  // conflict. With no conflict Cấp 6 adds NO gate at all.
+  const { isCap6Active } = cap6Events
+  const recordKehoachCap6 = useRecordKehoachCap6()
+  // Cấp 6 bước "Đối chiếu" (spec §4) — lớp user chọn TIN khi các lớp nói ngược
+  // nhau + 1 dòng vì sao (bắt buộc). `cap6Kieu` chỉ được đặt qua lối dự phòng
+  // khi server KHÔNG phân loại được kiểu từ ngành (server re-derive lúc ghi và
+  // giá trị của server thắng — xem `DoiChieuBlock`'s doc).
+  const [cap6LopQuyetDinh, setCap6LopQuyetDinh] = useState<Lop | null>(null)
+  const [cap6LyDo, setCap6LyDo] = useState("")
+  const [cap6Kieu, setCap6Kieu] = useState<KieuCoPhieu | null>(null)
   const [side, setSide] = useState<"buy" | "sell">("buy")
   const [method, setMethod] = useState<"market" | "limit">("market")
   const [price, setPrice] = useState<number | undefined>(undefined)
@@ -373,6 +397,16 @@ function OrderEntry({
   // Cấp 1 + Cấp 2 + Cấp 3's gates above, since Cấp 4 keeps all three blocks
   // (minus Cấp 1's lý-do field). Only ever true for a BUY inside Cấp 4.
   const cap4SubmitDisabled = side === "buy" && isCap4Active && !isDoc5LopComplete(cap4Doc5Lop)
+  // Cấp 6 (spec §4): the bước Đối chiếu only exists when the user's own 5 lớp
+  // CONFLICT (≥1 Ủng hộ AND ≥1 Ngược chiều) — that same predicate decides both
+  // whether the khối renders and whether there is a gate at all.
+  const cap6CoMauThuan = isCap6Active && coMauThuan(cap4Doc5Lop)
+  // Cổng cứng (spec §4): với lệnh CÓ mâu thuẫn, MUA khoá tới khi chọn lớp quyết
+  // định + ghi 1 dòng vì sao — ON TOP OF Cấp 1-4's gates (Cấp 6 keeps all of
+  // them intact). KHÔNG mâu thuẫn → Cấp 6 không thêm cổng nào. Only ever true
+  // for a BUY inside Cấp 6.
+  const cap6SubmitDisabled =
+    side === "buy" && cap6CoMauThuan && !isDoiChieuValid(cap6LopQuyetDinh, cap6LyDo)
 
   // Analytics `cap4_lo_ai(so_khac_ai)` (spec §8) — fires once per reveal, when
   // `Doc5LopBlock` reports the AI đối chiếu it just un-hid. By the time this
@@ -454,6 +488,13 @@ function OrderEntry({
       Message.warning("Chấm đủ cả 5 lớp mới đặt được lệnh.")
       return
     }
+    // Cấp 6 bước Đối chiếu cổng cứng (spec §4) — belt-and-suspenders behind the
+    // Submit button's own `disabled`. ONLY inside Cấp 6 AND only when the 5 lớp
+    // conflict.
+    if (cap6SubmitDisabled) {
+      Message.warning("Chọn lớp bạn quyết định tin và ghi 1 dòng vì sao mới đặt được lệnh.")
+      return
+    }
 
     const label = side === "buy" ? "MUA" : "BÁN"
     try {
@@ -507,7 +548,12 @@ function OrderEntry({
         // own fire-and-forget `mutate` is unchanged.
         const cap2Ready = isCap2Active && !!cap2Method && !!cap2CatLo && !!cap2ChotLoi
         const cap4Ready = isCap4Active && isDoc5LopComplete(cap4Doc5Lop)
-        if (cap2Ready || cap4Ready) {
+        // Cấp 6 chỉ ghi khối Đối chiếu khi lệnh này THẬT SỰ có mâu thuẫn và user
+        // đã quyết (spec §9: "chỉ điền khi lệnh có mâu thuẫn; lệnh không mâu
+        // thuẫn để null").
+        const cap6Ready =
+          cap6CoMauThuan && isDoiChieuValid(cap6LopQuyetDinh, cap6LyDo) && !!cap6LopQuyetDinh
+        if (cap2Ready || cap4Ready || cap6Ready) {
           await recordKehoach.mutateAsync(kehoachPayload)
           if (isCap2Active && cap2Method && cap2CatLo && cap2ChotLoi) {
             await recordKehoachCap2.mutateAsync({
@@ -549,6 +595,22 @@ function OrderEntry({
               ai_5_lop: cap4Ai5Lop,
               so_lop_dong_thuan: countDongThuan(cap4Ai5Lop),
               so_lop_khac_ai: countKhacAi(cap4Doc5Lop, cap4Ai5Lop),
+            })
+          }
+          // Cấp 6 (spec §4/§9 "Ghi") — LAST in the chain, same single
+          // `order_kehoach` row (Cấp 6 only INSERTS the Đối chiếu block). Only
+          // `lop_quyet_dinh` + `ly_do_doi_chieu` are the user's own judgement:
+          // the server re-derives the kiểu from ngành and derives
+          // `trong_so_goi_y`/`khop_goi_y` itself, and prefers the row's
+          // persisted `doc_5_lop` over the `lop_mau_thuan` fallback sent here.
+          if (cap6Ready && cap6LopQuyetDinh) {
+            await recordKehoachCap6.mutateAsync({
+              order_id: order.id,
+              lop_quyet_dinh: cap6LopQuyetDinh,
+              ly_do_doi_chieu: cap6LyDo.trim(),
+              // Chỉ có giá trị khi server KHÔNG phân loại được kiểu từ ngành.
+              kieu_co_phieu: cap6Kieu,
+              lop_mau_thuan: cap4Doc5Lop,
             })
           }
         } else {
@@ -615,6 +677,23 @@ function OrderEntry({
           price: order.price,
           orderId: order.id,
         })
+        // Cấp 6 — khối Đối chiếu đi kèm CHỈ khi lệnh này có mâu thuẫn và user đã
+        // quyết (spec §9: lệnh không mâu thuẫn để null).
+        cap6Events.onOrderFilled?.({
+          symbol,
+          side,
+          quantity: order.quantity,
+          price: order.price,
+          orderId: order.id,
+          ...(cap6Ready && cap6LopQuyetDinh
+            ? {
+                kieuCoPhieu: cap6Kieu,
+                lopQuyetDinh: cap6LopQuyetDinh,
+                lyDoDoiChieu: cap6LyDo.trim(),
+                lopMauThuan: cap4Doc5Lop,
+              }
+            : {}),
+        })
         // Reset the Kế hoạch form for the next order.
         setCap1LyDo(null)
         setCap1VungMuaOverride(undefined)
@@ -633,6 +712,11 @@ function OrderEntry({
         // đối chiếu hidden again) — that IS the habit nhiệm vụ ③ measures.
         setCap4Doc5Lop({})
         setCap4Ai5Lop(null)
+        // Cấp 6: lệnh sau phải đối chiếu lại từ đầu (bản chấm 5 lớp đã xoá ở
+        // trên, nên khối Đối chiếu cũng tự ẩn tới khi có mâu thuẫn mới).
+        setCap6LopQuyetDinh(null)
+        setCap6LyDo("")
+        setCap6Kieu(null)
       }
       // Cấp 1 (spec §6 "Kết sổ mở khi user bán 1 lệnh Thực chiến") — a SELL
       // fill inside Cấp 1 notifies the bus too (no `lyDo`/`trangThaiLucDat`/
@@ -646,7 +730,7 @@ function OrderEntry({
       // each provider, so the `||` widening cannot regress Cấp 1/2.
       if (
         side === "sell" &&
-        (isCap1Active || isCap3Active || isCap4Active || isCap5Active)
+        (isCap1Active || isCap3Active || isCap4Active || isCap5Active || isCap6Active)
       ) {
         const sellEvent = {
           symbol,
@@ -662,6 +746,8 @@ function OrderEntry({
         // Cấp 5's Kết sổ (phân loại 4 ô) mở từ event của CHÍNH nó — cùng cách
         // Cấp 3/Cấp 4 đã sửa để không đi nhờ bus của cấp khác.
         cap5Events.onOrderFilled?.(sellEvent)
+        // Cấp 6's Kết sổ (đối chiếu nhìn lại) — cùng lý do, bus của chính nó.
+        cap6Events.onOrderFilled?.(sellEvent)
       }
       const totalStr = (order.total || order.price * order.quantity).toLocaleString("en-US")
       Message.success(
@@ -863,6 +949,25 @@ function OrderEntry({
                 onAi5Lop={setCap4Ai5Lop}
               />
             )}
+            {/* Cấp 6 bước "Đối chiếu" (spec §4, THÊM MỚI) — NGAY DƯỚI khối Đọc 5
+                lớp: nó đọc chính bản chấm đó, nên các mức phải có trước. Khối tự
+                trả `null` khi 5 lớp KHÔNG mâu thuẫn → không khối, không request,
+                không cổng cứng (đặt lệnh y như Cấp 5). Buy-side only AND Cấp
+                6-only (`isCap6Active` false outside a `Cap6Provider` → zero
+                effect on Cấp 0-5 or normal trading). KHÔNG chạm vào bất kỳ khối
+                nào của Cấp 1-5. */}
+            {isCap6Active && (
+              <DoiChieuBlock
+                symbol={symbol}
+                doc5Lop={cap4Doc5Lop}
+                lopQuyetDinh={cap6LopQuyetDinh}
+                onLopQuyetDinh={setCap6LopQuyetDinh}
+                lyDo={cap6LyDo}
+                onLyDo={setCap6LyDo}
+                kieuCoPhieu={cap6Kieu}
+                onKieuCoPhieu={setCap6Kieu}
+              />
+            )}
             <PlanFormCap1
               symbol={symbol}
               hideLyDo={isCap4Active}
@@ -980,14 +1085,17 @@ function OrderEntry({
                   ? "Chấm mức tự tin và chọn cách tính khối lượng mới đặt được lệnh."
                   : cap4SubmitDisabled
                     ? "Chấm đủ cả 5 lớp mới đặt được lệnh."
-                    : ""
+                    : cap6SubmitDisabled
+                      ? "Chọn lớp bạn quyết định tin và ghi 1 dòng vì sao mới đặt được lệnh."
+                      : ""
           }
           disabled={
             !(
               cap1SubmitDisabled ||
               cap2SubmitDisabled ||
               cap3SubmitDisabled ||
-              cap4SubmitDisabled
+              cap4SubmitDisabled ||
+              cap6SubmitDisabled
             )
           }
         >
@@ -999,7 +1107,8 @@ function OrderEntry({
                 cap1SubmitDisabled ||
                 cap2SubmitDisabled ||
                 cap3SubmitDisabled ||
-                cap4SubmitDisabled
+                cap4SubmitDisabled ||
+                cap6SubmitDisabled
               }
               onClick={handleSubmit}
               className={cn(

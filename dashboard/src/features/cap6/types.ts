@@ -1,0 +1,188 @@
+import type { Lop, Lop5Partial } from "@/features/cap4/types"
+
+/**
+ * Cấp 6 «Đối chiếu» — shared types.
+ *
+ * Wire shapes mirror the backend `Cap6*` schemas 1:1
+ * (`backend/app/schemas/cap6.py`), whose `KieuLiteral` comes from
+ * `backend/app/models/cap6.py#KieuCoPhieu` and whose `LopLiteral` is Cấp 4's
+ * `LOP_KEYS`. Cấp 6 keeps Cấp 5's panel 100% intact and INSERTS one step — the
+ * bước "Đối chiếu" that only appears when the user's own 5 lớp CONFLICT.
+ */
+
+/**
+ * spec §5 — the 6 kiểu cổ phiếu whose trọng số decides which lớp is worth
+ * prioritising when the lớp disagree. The server derives this from the symbol's
+ * ngành and its value WINS on write; a client value is only ever used when the
+ * server cannot classify (see `GoiYCap6.kieu === null`).
+ */
+export type KieuCoPhieu =
+  | "ngan_hang"
+  | "tang_truong"
+  | "chu_ky"
+  | "phong_thu"
+  | "bat_dong_san"
+  | "dau_co_nho"
+
+/** Re-exported so Cấp 6 consumers never re-declare Cấp 4's lớp vocabulary. */
+export type { Lop, Lop5Partial }
+
+export interface Cap6Progress {
+  id: string
+  user_id: string
+  entered_at: string
+  task_1_done_at: string | null
+  task_2_done_at: string | null
+  task_3_done_at: string | null
+  /** ③ đk 1 — số lệnh có mâu thuẫn đã qua bước Đối chiếu. */
+  so_lenh_doi_chieu: number
+  /** ③ đk 2 — số kiểu cổ phiếu khác nhau đã gặp. */
+  so_kieu_da_gap: number
+  /** ③ đk 3 — % thắng của nhóm lệnh KHỚP trọng số gợi ý. */
+  ty_le_thang_khop: number
+  /**
+   * % thắng của nhóm lệnh LỆCH trọng số gợi ý. ★ Con số này KHÔNG phải một lời
+   * phán về người dùng (spec §5/§10): lệch gợi ý là một sự thật trung tính.
+   */
+  ty_le_thang_lech: number
+  graduated_at: string | null
+  time_to_graduate_hours: number | null
+}
+
+/**
+ * `GET /cap6/goi-y?symbol=` — the kiểu cổ phiếu of a symbol + which lớp to
+ * prioritise for it + **why**.
+ *
+ * ★ `kieu === null` means "chưa phân loại" (ngành missing or deliberately
+ * unmapped — e.g. `icb_lv1 == "Tài chính"`, and the market-cap-based
+ * `dau_co_nho`, which is not derivable from ngành at all). Then `lop_uu_tien` /
+ * `lop_it_tin` come back empty and `giai_thich` says so honestly — the FE still
+ * lets the user pick a lớp quyết định (spec §4/§10), and that is the ONLY case
+ * where a client-picked `kieu_co_phieu` is used.
+ *
+ * `giai_thich` is rendered **VERBATIM** (§C12c: never a bare suggestion).
+ */
+export interface GoiYCap6 {
+  symbol: string
+  /** The ICB ngành the kiểu was derived FROM (provenance; null when unknown). */
+  nganh: string | null
+  kieu: KieuCoPhieu | null
+  kieu_ten: string | null
+  lop_uu_tien: Lop[]
+  lop_uu_tien_ten: string[]
+  lop_it_tin: Lop[]
+  lop_it_tin_ten: string[]
+  giai_thich: string
+}
+
+/**
+ * `POST /cap6/kehoach` — the Đối chiếu block appended to the `order_kehoach`
+ * row Cấp 1 already created for this BUY (Cấp 2/3/4 fill their own blocks on
+ * the same row first).
+ *
+ * `ly_do_doi_chieu` is REQUIRED (the server 422s on a blank one — the FE mirrors
+ * that rule in `isDoiChieuValid` so the user never sees a raw error).
+ * `kieu_co_phieu` is only honoured when the server cannot classify the symbol.
+ * `lop_mau_thuan` is a FALLBACK: the server prefers the row's persisted
+ * `doc_5_lop`. `trong_so_goi_y` / `khop_goi_y` are NEVER sent — the server
+ * derives both from its own kiểu table.
+ */
+export interface KehoachInputCap6 {
+  order_id: string
+  lop_quyet_dinh: Lop
+  ly_do_doi_chieu: string
+  kieu_co_phieu: KieuCoPhieu | null
+  lop_mau_thuan: Lop5Partial | null
+}
+
+/** Cấp 6's view of `order_kehoach` — the Đối chiếu block + its labels. */
+export interface OrderKehoachCap6 {
+  id: string
+  order_id: string
+  kieu_co_phieu: KieuCoPhieu | null
+  kieu_ten: string | null
+  lop_mau_thuan: Record<string, unknown> | null
+  trong_so_goi_y: Record<string, unknown> | null
+  lop_quyet_dinh: Lop | null
+  lop_quyet_dinh_ten: string | null
+  /**
+   * ★ `false` is a NEUTRAL FACT (spec §5/§10), never "sai". `null` = kiểu chưa
+   * phân loại, so there was no suggestion to match in the first place.
+   */
+  khop_goi_y: boolean | null
+  ly_do_doi_chieu: string | null
+}
+
+/** One of the 3 sub-conditions of nhiệm vụ ③ (§C12c: value + explanation). */
+export interface ThachThucDieuKienCap6 {
+  ten: string
+  gia_tri_hien_tai: number
+  muc_tieu: number
+  dat: boolean
+  /** `false` = chưa đủ dữ liệu để xét — không tính là chưa đạt của người dùng. */
+  du_du_lieu: boolean
+  giai_thich: string
+}
+
+/** One side of the khớp-vs-lệch comparison (spec §7 khối ⑮). */
+export interface NhomDoiChieuCap6 {
+  khop: boolean
+  ten: string
+  so_lenh: number
+  so_thang: number
+  ty_le_thang: number | null
+  du_du_lieu: boolean
+  so_lenh_toi_thieu: number
+  giai_thich: string
+}
+
+/** `GET /cap6/thach-thuc` — 3 điều kiện của nhiệm vụ ③ + 2 nhóm so sánh. */
+export interface ThachThucCap6 {
+  dat_ca_3: boolean
+  so_lenh_doi_chieu: ThachThucDieuKienCap6
+  so_kieu_da_gap: ThachThucDieuKienCap6
+  doi_chieu_giup_ich: ThachThucDieuKienCap6
+  nhom_khop: NhomDoiChieuCap6
+  nhom_lech: NhomDoiChieuCap6
+}
+
+/**
+ * spec §5 — the 6 kiểu, in the spec's table order, with the spec's icons. The
+ * `label` values are exactly the backend's `KIEU_CO_PHIEU[...]["ten"]`, so the
+ * picker and the server can never show different names for the same kiểu.
+ *
+ * This list is used ONLY for the client-side fallback picker (`kieu === null`)
+ * and for icons next to the server's own `kieu_ten` — the mapping ngành → kiểu
+ * itself lives server-side (spec §10: "Kiểu cổ phiếu do user tự gán tay —
+ * KHÔNG").
+ */
+export const KIEU_OPTIONS: readonly { value: KieuCoPhieu; icon: string; label: string }[] = [
+  { value: "ngan_hang", icon: "🏦", label: "Ngân hàng" },
+  { value: "tang_truong", icon: "🚀", label: "Tăng trưởng / công nghệ" },
+  { value: "chu_ky", icon: "🏭", label: "Chu kỳ / công nghiệp" },
+  { value: "phong_thu", icon: "🛡️", label: "Phòng thủ / tiêu dùng" },
+  { value: "bat_dong_san", icon: "🏢", label: "Bất động sản" },
+  { value: "dau_co_nho", icon: "🎲", label: "Đầu cơ / vốn hóa nhỏ" },
+] as const
+
+export const KIEU_ICON: Record<KieuCoPhieu, string> = {
+  ngan_hang: "🏦",
+  tang_truong: "🚀",
+  chu_ky: "🏭",
+  phong_thu: "🛡️",
+  bat_dong_san: "🏢",
+  dau_co_nho: "🎲",
+}
+
+/** Số lệnh đối chiếu cần có để xét nhiệm vụ ③ (spec §2③). */
+export const TARGET_LENH_DOI_CHIEU = 15
+/** Số kiểu cổ phiếu khác nhau cần gặp (spec §2③). */
+export const TARGET_KIEU_DA_GAP = 3
+
+/** Số nhiệm vụ Cấp 6 đã xong (mirrors `cap5/types.ts#countCap5TasksDone`). */
+export function countCap6TasksDone(progress: Cap6Progress | null | undefined): number {
+  if (!progress) return 0
+  return [progress.task_1_done_at, progress.task_2_done_at, progress.task_3_done_at].filter(
+    (t) => t != null,
+  ).length
+}

@@ -1,0 +1,234 @@
+/* ============================================================
+   IQX · Cấp 6 «Đối chiếu» — bước Đối chiếu trong panel (spec §4)
+   ------------------------------------------------------------
+   Màu cấp: đỏ son `#d64550`. The dark tokens (--t1/--bg3/--bd…) are
+   scoped to the `.cap0` shell every cấp page wraps in, so each
+   `var()` below carries an Arco fallback — the block then still
+   reads correctly if it ever renders outside that shell.
+
+   ★ Nothing in here is a warning colour for the user's PICK. Đỏ son is
+   the cấp's identity colour; choosing a lớp outside the gợi ý is a
+   neutral fact (spec §5/§10), so no state below turns red-as-error.
+   The only semantic colours are the two SIDES of the conflict
+   (Ủng hộ xanh / Ngược chiều đỏ) — they describe the DATA, not the user.
+   ============================================================ */
+
+.cap6-doichieu {
+  --cap6: #d64550;
+  --cap6-soft: rgba(214, 69, 80, 0.13);
+  --cap6-bd: rgba(214, 69, 80, 0.4);
+  --cap6-ungho: #35d07f;
+  --cap6-nguoc: #ff6b6b;
+
+  padding: 12px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+  background: linear-gradient(180deg, rgba(214, 69, 80, 0.1), transparent);
+  border: 1px solid var(--cap6-bd);
+  border-radius: 10px;
+}
+
+.cap6-block-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--cap6);
+}
+
+.cap6-block-title {
+  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--t1, var(--color-text-1));
+}
+
+/* ── Hai phía của mâu thuẫn ──────────────────────────────────────────────── */
+.cap6-mau-thuan {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.cap6-phia {
+  flex: 1 1 45%;
+  padding: 6px 8px;
+  font-size: 10.5px;
+  line-height: 1.5;
+  background: var(--bg3, var(--color-fill-2));
+  border: 1px solid var(--bd, var(--color-border-2));
+  border-radius: 7px;
+  color: var(--t2, var(--color-text-2));
+}
+
+.cap6-phia-label {
+  font-weight: 700;
+}
+
+.cap6-phia--ungho .cap6-phia-label {
+  color: var(--cap6-ungho);
+}
+
+.cap6-phia--nguoc .cap6-phia-label {
+  color: var(--cap6-nguoc);
+}
+
+/* ── Kiểu cổ phiếu + trọng số gợi ý (§C12c) ──────────────────────────────── */
+.cap6-goi-y {
+  margin-top: 9px;
+  padding: 8px 9px;
+  background: var(--cap6-soft);
+  border: 1px solid var(--cap6-bd);
+  border-radius: 8px;
+}
+
+.cap6-kieu {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--cap6);
+}
+
+.cap6-nganh {
+  margin: 2px 0 0;
+  font-size: 9.5px;
+  color: var(--t3, var(--color-text-3));
+}
+
+.cap6-goi-y-line {
+  margin: 5px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--t2, var(--color-text-2));
+}
+
+.cap6-goi-y-line-label {
+  color: var(--t3, var(--color-text-3));
+}
+
+.cap6-giai-thich {
+  margin: 6px 0 0;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--t2, var(--color-text-2));
+}
+
+.cap6-goi-y-note {
+  margin: 6px 0 0;
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: var(--t3, var(--color-text-3));
+}
+
+.cap6-goi-y-state {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--t3, var(--color-text-3));
+}
+
+/* ── Ô chọn kiểu (chỉ khi hệ chưa phân loại được) ────────────────────────── */
+.cap6-kieu-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.cap6-kieu-btn {
+  padding: 5px 8px;
+  font-family: inherit;
+  font-size: 10.5px;
+  color: var(--t2, var(--color-text-2));
+  background: var(--bg3, var(--color-fill-2));
+  border: 1px solid var(--bd, var(--color-border-2));
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.cap6-kieu-btn:hover {
+  color: var(--t1, var(--color-text-1));
+  border-color: var(--cap6);
+}
+
+.cap6-kieu-btn--on {
+  font-weight: 600;
+  color: var(--cap6);
+  background: var(--cap6-soft);
+  border-color: var(--cap6);
+}
+
+/* ── Lớp quyết định + lý do ──────────────────────────────────────────────── */
+.cap6-quyet-dinh-label {
+  margin-top: 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--t2, var(--color-text-2));
+}
+
+.cap6-lop-picker {
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.cap6-lop-btn {
+  flex: 1;
+  padding: 6px 3px;
+  font-family: inherit;
+  font-size: 10px;
+  color: var(--t2, var(--color-text-2));
+  background: var(--bg3, var(--color-fill-2));
+  border: 1px solid var(--bd, var(--color-border-2));
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.cap6-lop-btn:hover {
+  color: var(--t1, var(--color-text-1));
+  border-color: var(--cap6);
+}
+
+.cap6-lop-btn--on {
+  font-weight: 600;
+  color: var(--cap6);
+  background: var(--cap6-soft);
+  border-color: var(--cap6);
+}
+
+.cap6-lop-btn-icon {
+  display: block;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.cap6-ly-do {
+  display: block;
+  margin-top: 9px;
+  font-size: 10.5px;
+  color: var(--t2, var(--color-text-2));
+}
+
+.cap6-ly-do input {
+  width: 100%;
+  margin-top: 4px;
+  padding: 7px 9px;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--t1, var(--color-text-1));
+  background: var(--bg2, var(--color-bg-2));
+  border: 1px solid var(--bd, var(--color-border-2));
+  border-radius: 6px;
+}
+
+.cap6-ly-do input:focus {
+  outline: none;
+  border-color: var(--cap6);
+}
+
+.cap6-gate-note {
+  margin: 6px 0 0;
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: var(--t3, var(--color-text-3));
+}
