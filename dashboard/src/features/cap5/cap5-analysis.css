@@ -1,0 +1,173 @@
+/**
+ * Cấp 5 «Lão luyện» — Phân tích danh mục, khối ⑫ ma trận quyết định + ⑬ nhật ký
+ * đứng ngoài (spec `IQX-Cap5-Spec.md` §6).
+ *
+ * ★ Vì sao KHÔNG dùng `cap5.css`: file đó phục vụ nút/form Đứng ngoài và khối
+ * phân loại 4 ô BÊN TRONG Kết sổ, tức là bên trong game-shell `.cap0` với bộ
+ * token riêng (`--t1`, `--bg2`, `--bd`). Phân tích danh mục lại render trong
+ * sidebar-panel thường (xem `Cap1PortfolioAnalysisPanel.tsx` — `--color-bg-1`,
+ * KHÔNG bọc `.cap0`), nên file này dùng token Arco `--color-*` như
+ * `cap2-analysis.css` đã lập tiền lệ. Vàng kim `#e0b64d` là màu cấp 5, giống
+ * `cap5.css`; xanh/vàng/đỏ ngữ nghĩa (#35d07f/#ffc53d/#ff6b6b) giữ đúng nghĩa
+ * chúng có ở mọi cấp.
+ */
+
+/* ── Khối ⑫ — ma trận quyết định 2×2 ─────────────────────────────────────── */
+.cap5-pa-matrix {
+  width: 100%;
+  margin-top: 6px;
+  font-size: 11.5px;
+  border-collapse: collapse;
+}
+
+.cap5-pa-matrix th,
+.cap5-pa-matrix td {
+  padding: 5px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--color-border-2);
+}
+
+.cap5-pa-matrix thead th {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--color-text-3);
+}
+
+.cap5-pa-matrix tbody th {
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--color-text-2);
+}
+
+.cap5-pa-matrix-cell {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-1);
+}
+
+/* Đúng-Thắng: chuẩn mực. */
+.cap5-pa-matrix-cell--dung_thang {
+  color: #35d07f;
+  font-weight: 600;
+}
+
+/* Đúng-Thua: chấp nhận được — giữ cách làm đúng. */
+.cap5-pa-matrix-cell--dung_thua {
+  color: #e0b64d;
+}
+
+/* Sai-Thắng: ô nguy hiểm nhất (may mắn, không phải năng lực). */
+.cap5-pa-matrix-cell--sai_thang {
+  color: #ff6b6b;
+  font-weight: 600;
+}
+
+/* Sai-Thua: bài học rõ ràng nhất — không tô đậm để không cạnh với ô Sai-Thắng. */
+.cap5-pa-matrix-cell--sai_thua {
+  color: var(--color-text-2);
+}
+
+.cap5-pa-matrix-total {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--color-text-1);
+  border-left: 1px solid var(--color-border-2);
+}
+
+.cap5-pa-phathien {
+  padding: 8px 10px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-text-1);
+  background: var(--color-bg-3, var(--color-bg-2));
+  border-left: 2px solid #e0b64d;
+  border-radius: 6px;
+}
+
+.cap5-pa-phathien--canhbao {
+  border-left-color: #ff6b6b;
+}
+
+/* ── Khối ⑬ — nhật ký đứng ngoài ─────────────────────────────────────────── */
+.cap5-pa-dn-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-2);
+}
+
+.cap5-pa-dn-count-value {
+  font-weight: 700;
+  color: var(--color-text-1);
+}
+
+.cap5-pa-dn-count--ne_dung .cap5-pa-dn-count-value {
+  color: #35d07f;
+}
+
+.cap5-pa-dn-count--ne_hut .cap5-pa-dn-count-value {
+  color: #ff6b6b;
+}
+
+.cap5-pa-dn-list {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px dotted var(--color-border-2);
+}
+
+.cap5-pa-dn-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  border-bottom: 1px dotted var(--color-border-2);
+}
+
+.cap5-pa-dn-symbol {
+  font-weight: 700;
+  color: var(--color-text-1);
+}
+
+.cap5-pa-dn-reason {
+  color: var(--color-text-3);
+}
+
+.cap5-pa-dn-kq {
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 999px;
+  background: var(--color-fill-2);
+  color: var(--color-text-2);
+}
+
+.cap5-pa-dn-kq--ne_dung {
+  background: rgba(53, 208, 127, 0.14);
+  color: #35d07f;
+}
+
+.cap5-pa-dn-kq--ne_hut {
+  background: rgba(255, 107, 107, 0.14);
+  color: #ff6b6b;
+}
+
+.cap5-pa-dn-kq--trung_tinh {
+  background: rgba(255, 197, 61, 0.14);
+  color: #ffc53d;
+}
+
+.cap5-pa-dn-pct {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-2);
+}
