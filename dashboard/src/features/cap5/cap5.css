@@ -191,7 +191,48 @@
   border-color: #e0b64d;
 }
 
+/* ── Lớp coach thứ 5 "QUYẾT ĐỊNH VS KẾT QUẢ" trong Kết sổ ─────────────────
+   Đứng CẠNH 4 lớp coach cũ (NHÌN LẠI · KỶ LUẬT · TỰ TIN VS KẾT QUẢ · GÓC NHÌN
+   KHÁC AI), không thay thế — cùng khung như `.cap4-ketso-coach`, đổi màu cấp. */
+.cap5-ketso-coach {
+  margin-top: 12px;
+  padding: 11px 13px;
+  background: rgba(224, 182, 77, 0.1);
+  border-left: 2px solid #e0b64d;
+  border-radius: 8px;
+}
+
+.cap5-ketso-coach-tag {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #e0b64d;
+}
+
+.cap5-ketso-coach-body {
+  margin-top: 6px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--t2);
+}
+
+.cap5-ketso-coach-body strong {
+  font-weight: 700;
+  color: var(--t1);
+}
+
 /* Coach Cấp 5 — ô Sai-Thắng hiện như cảnh báo, không phải lời khen. */
 .cap5-coach--canhbao {
   border-left-color: #ff6b6b !important;
+  background: rgba(255, 107, 107, 0.09);
+}
+
+/* Vì sao nút "Đóng kết sổ ✓" đang mờ — nói thẳng thay vì để user đoán. */
+.cap5-ketso-gate-note {
+  margin: 7px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--t3);
 }

@@ -64,6 +64,7 @@ import {
   useRecordKehoachCap4,
   type Lop5Partial,
 } from "@/features/cap4"
+import { DungNgoaiButton, useCap5Events } from "@/features/cap5"
 import { getErrorMessage } from "@/shared/http/client"
 import { cn } from "@/shared/lib/cn"
 import { StockLogo } from "@/features/navigation/StockLogo"
@@ -282,6 +283,14 @@ function OrderEntry({
   // đủ", spec §5.2), which is exactly when it becomes safe to record.
   const [cap4Doc5Lop, setCap4Doc5Lop] = useState<Lop5Partial>({})
   const [cap4Ai5Lop, setCap4Ai5Lop] = useState<Lop5Partial | null>(null)
+  const cap5Events = useCap5Events()
+  // `isCap5Active` mirrors `isCap4Active` above — false outside a
+  // `Cap5Provider`. Cấp 5 is PURELY ADDITIVE to this panel (spec §0): it adds
+  // NO state, NO khối, NO cổng cứng and changes NOTHING about Cấp 0-4's blocks,
+  // the cổng cứng chain or Cấp 3's volume auto-fill. The only thing it adds is
+  // the "Đứng ngoài có chủ đích" affordance below (a decision NOT to buy) plus
+  // its own copy of the order-filled event.
+  const { isCap5Active } = cap5Events
   const [side, setSide] = useState<"buy" | "sell">("buy")
   const [method, setMethod] = useState<"market" | "limit">("market")
   const [price, setPrice] = useState<number | undefined>(undefined)
@@ -596,6 +605,16 @@ function OrderEntry({
               }
             : {}),
         })
+        // Cấp 5 — KHÔNG có kế hoạch riêng để ghi (không có `/cap5/kehoach`):
+        // cấp này đo QUYẾT ĐỊNH lúc kết sổ, không thêm gì lúc đặt. Event chỉ
+        // để Hành trình/Kết sổ Cấp 5 biết lệnh nào vừa mở.
+        cap5Events.onOrderFilled?.({
+          symbol,
+          side,
+          quantity: order.quantity,
+          price: order.price,
+          orderId: order.id,
+        })
         // Reset the Kế hoạch form for the next order.
         setCap1LyDo(null)
         setCap1VungMuaOverride(undefined)
@@ -625,7 +644,10 @@ function OrderEntry({
       // Cấp 2's, so `KetsoModalCap3` opened off another cấp's bus) — each
       // cấp's Kết sổ now listens to its own. The `?.` calls are no-ops outside
       // each provider, so the `||` widening cannot regress Cấp 1/2.
-      if (side === "sell" && (isCap1Active || isCap3Active || isCap4Active)) {
+      if (
+        side === "sell" &&
+        (isCap1Active || isCap3Active || isCap4Active || isCap5Active)
+      ) {
         const sellEvent = {
           symbol,
           side,
@@ -637,6 +659,9 @@ function OrderEntry({
         cap2Events.onOrderFilled?.(sellEvent)
         cap3Events.onOrderFilled?.(sellEvent)
         cap4Events.onOrderFilled?.(sellEvent)
+        // Cấp 5's Kết sổ (phân loại 4 ô) mở từ event của CHÍNH nó — cùng cách
+        // Cấp 3/Cấp 4 đã sửa để không đi nhờ bus của cấp khác.
+        cap5Events.onOrderFilled?.(sellEvent)
       }
       const totalStr = (order.total || order.price * order.quantity).toLocaleString("en-US")
       Message.success(
@@ -989,6 +1014,14 @@ function OrderEntry({
           </div>
         </Tooltip>
       </div>
+
+      {/* Cấp 5 "Đứng ngoài có chủ đích" (spec §5, THÊM MỚI) — buy-side only AND
+          Cấp 5-only (`isCap5Active` false outside a `Cap5Provider` → zero effect
+          on Cấp 0-4 or normal trading). Đặt NGAY DƯỚI nút đặt lệnh, NGOÀI khối
+          `cap0-tour-plan-submit` (không đổi vùng spotlight của tour Bảng điện)
+          và KHÔNG chạm vào bất kỳ khối/cổng nào ở trên: nó là lối ghi lại một
+          quyết định KHÔNG MUA, không phải một bước của luồng mua. */}
+      {side === "buy" && isCap5Active && <DungNgoaiButton symbol={symbol} />}
     </div>
   )
 }
