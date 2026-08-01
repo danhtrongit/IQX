@@ -1,5 +1,6 @@
 """Cấp 7 «Đọc sổ lệnh» API — progress, enter, task, giờ giao dịch + hằng số của
-chỉ số Lực, bước đọc lực, chấm đọc lực, thách thức đọc sổ lệnh, graduate.
+chỉ số Lực, bước đọc lực, đọc lại đọc lực của 1 lệnh (Kết sổ), chấm đọc lực,
+thách thức đọc sổ lệnh, graduate.
 
 Cấp 7 is FREE: all endpoints use ``CurrentUser`` (authenticated), NOT
 ``PremiumUser``.
@@ -7,12 +8,15 @@ Cấp 7 is FREE: all endpoints use ``CurrentUser`` (authenticated), NOT
 
 from __future__ import annotations
 
+import uuid
+
 from fastapi import APIRouter
 
 from app.api.deps import CurrentUser, DBSession
 from app.schemas.cap7 import (
     Cap7ProgressOut,
     ChamOut,
+    KehoachCap7DetailOut,
     KehoachCap7Out,
     KehoachRequest,
     PhienOut,
@@ -92,6 +96,30 @@ async def record_kehoach(
         hanh_vi_co=body.hanh_vi_co,
     )
     return KehoachCap7Out(**svc.kehoach_out(kehoach))
+
+
+@router.get("/kehoach/{order_id}", response_model=KehoachCap7DetailOut)
+async def get_kehoach(
+    order_id: uuid.UUID, user: CurrentUser, db: DBSession
+) -> KehoachCap7DetailOut:
+    """Bước đọc lực ĐÃ GHI trên 1 lệnh — cho màn Kết sổ đọc lại, kèm số phiên
+    chấm, dead band, ngày tới hạn chấm và diễn biến giá nếu đã chấm.
+
+    ★ Lượt đọc này CHẠY LUÔN vòng chấm lười (đúng vòng mà ``/cap7/progress`` và
+    ``/cap7/cham`` chạy), nên mở Kết sổ sau khi qua hạn sẽ thấy kết quả ĐÃ CHẤM.
+    Không có endpoint này thì khối Cấp 7 trong Kết sổ mãi mãi báo "chưa tới hạn
+    chấm".
+
+    ★ ``doc_luc_dung`` giữ nguyên 3 trạng thái: true (đọc đúng) · false (đọc
+    sai) · null (chưa chấm — chưa tới hạn hoặc chưa lấy được giá phiên đó).
+    ``null`` KHÔNG bao giờ được hiểu thành "sai"; ``da_toi_han_cham`` để phân
+    biệt hai kiểu null.
+
+    404 nếu lệnh không tồn tại HOẶC là lệnh của người khác (không phải 403).
+    Lệnh chưa có dữ liệu Cấp 7 vẫn trả 200 kèm ``co_du_lieu = false``.
+    """
+    svc = Cap7Service(db)
+    return KehoachCap7DetailOut(**await svc.get_kehoach(user.id, order_id))
 
 
 @router.post("/cham", response_model=ChamOut)

@@ -141,6 +141,21 @@ _CHUA_PHAN_LOAI_GIAI_THICH = (
     "hoạt động bình thường: bạn tự chọn lớp quyết định và ghi vì sao."
 )
 
+#: What the Kết sổ shows for an order that never went through bước Đối chiếu.
+#: ★ Deliberately NOT phrased as a shortcoming: the step only appears when the 5
+#: lớp actually conflict (spec §4), and orders placed before Cấp 6 existed have
+#: all-null columns by design.
+COPY_CHUA_DOI_CHIEU = (
+    "Lệnh này chưa đi qua bước Đối chiếu — hoặc nó được đặt trước khi bạn vào "
+    "Cấp 6, hoặc 5 lớp lúc đó không mâu thuẫn nên bước Đối chiếu không hiện. "
+    "Không có gì để đối chiếu lại, và điều đó không bị tính là thiếu sót."
+)
+
+#: Labels for ``khop_goi_y``. ★ Neither says "đúng"/"sai" — lệch gợi ý is a
+#: NEUTRAL fact (spec §5/§10); it only names which comparison group the order
+#: joined.
+KHOP_GOI_Y_LABELS: dict[bool, str] = {True: "Khớp gợi ý", False: "Lệch gợi ý"}
+
 
 # ══════════════════════════════════════════════════════
 # Ngành → kiểu cổ phiếu (see the module docstring's DECISION block)
@@ -508,6 +523,156 @@ class Cap6Service:
             "khop_goi_y": kehoach.khop_goi_y,
             "ly_do_doi_chieu": kehoach.ly_do_doi_chieu,
         }
+
+    # ── Đọc lại đối chiếu của MỘT lệnh (Kết sổ) ────────
+
+    async def get_kehoach(self, user_id: uuid.UUID, order_id: uuid.UUID) -> dict:
+        """``GET /cap6/kehoach/{order_id}`` — the Đối chiếu block RECORDED on one
+        order, with every label + the §C12c provenance sentence the Kết sổ needs
+        to show khớp/lệch honestly.
+
+        ★ **Why this cannot be served by ``/cap6/goi-y``.** That endpoint
+        re-derives the kiểu from the symbol's ngành *now*. For a symbol the
+        server could not classify, the kiểu came from the CLIENT and lives only
+        on this row — ``/goi-y`` would still answer "chưa phân loại" and a Kết sổ
+        built on it would render "không xét" even though a ``khop_goi_y`` WAS
+        recorded. So everything below is read from the stored columns; nothing
+        is re-derived, and nothing is written.
+
+        Ownership: a foreign or unknown ``order_id`` is 404 (never 403) —
+        ``record_kehoach``'s convention, and it does not leak whether the order
+        exists. An order with NO Cấp 6 data is a normal 200 carrying
+        ``co_du_lieu = False``, so the FE can tell "lệnh có trước Cấp 6" apart
+        from "endpoint hỏng".
+        """
+        await self._require_progress(user_id)
+        order = await self._vt_repo.get_order_by_id(order_id)
+        if order is None or order.user_id != user_id:
+            raise NotFoundError("lệnh")
+        kehoach = await self._get_kehoach_by_order(order_id)
+        return self.kehoach_detail_out(kehoach, order_id=order_id, symbol=order.symbol)
+
+    @staticmethod
+    def kehoach_detail_out(
+        kehoach: OrderKehoach | None, *, order_id: uuid.UUID, symbol: str
+    ) -> dict:
+        """The per-order Đối chiếu payload — ``kehoach_out`` plus the display
+        block (kiểu label, lớp ưu tiên/ít tin, khớp label, giải thích) read OUT
+        OF ``trong_so_goi_y`` as it was stored.
+
+        The top-level ``kieu_ten`` / ``lop_uu_tien`` / ``lop_it_tin`` /
+        ``giai_thich`` deliberately mirror ``GoiYOut``'s shape so the Kết sổ can
+        reuse the suggestion component verbatim — sourced from the recording, not
+        from a fresh derivation.
+        """
+        empty = {
+            "id": None,
+            "order_id": order_id,
+            "symbol": symbol,
+            "kieu_co_phieu": None,
+            "kieu_ten": None,
+            "nganh": None,
+            "lop_mau_thuan": None,
+            "trong_so_goi_y": None,
+            "lop_uu_tien": [],
+            "lop_uu_tien_ten": [],
+            "lop_it_tin": [],
+            "lop_it_tin_ten": [],
+            "lop_quyet_dinh": None,
+            "lop_quyet_dinh_ten": None,
+            "khop_goi_y": None,
+            "khop_goi_y_ten": None,
+            "ly_do_doi_chieu": None,
+            "co_du_lieu": False,
+            "giai_thich": COPY_CHUA_DOI_CHIEU,
+        }
+        # No ``order_kehoach`` row at all, or a row that never went through the
+        # Đối chiếu step (``lop_quyet_dinh`` is the column only this step writes).
+        if kehoach is None or kehoach.lop_quyet_dinh is None:
+            return empty
+
+        trong_so = (
+            kehoach.trong_so_goi_y if isinstance(kehoach.trong_so_goi_y, dict) else {}
+        )
+        uu_tien = [
+            lop for lop in (trong_so.get("lop_uu_tien") or []) if lop in _LOP_VALUES
+        ]
+        it_tin = [
+            lop for lop in (trong_so.get("lop_it_tin") or []) if lop in _LOP_VALUES
+        ]
+        khop = kehoach.khop_goi_y
+        return {
+            **empty,
+            **Cap6Service.kehoach_out(kehoach),
+            "symbol": symbol,
+            "nganh": trong_so.get("nganh"),
+            "lop_uu_tien": uu_tien,
+            "lop_uu_tien_ten": lop_ten(uu_tien),
+            "lop_it_tin": it_tin,
+            "lop_it_tin_ten": lop_ten(it_tin),
+            "khop_goi_y_ten": (
+                None if khop is None else KHOP_GOI_Y_LABELS[bool(khop)]
+            ),
+            "co_du_lieu": True,
+            "giai_thich": Cap6Service._giai_thich_da_doi_chieu(
+                kehoach, symbol=symbol, trong_so=trong_so, uu_tien=uu_tien
+            ),
+        }
+
+    @staticmethod
+    def _giai_thich_da_doi_chieu(
+        kehoach: OrderKehoach,
+        *,
+        symbol: str,
+        trong_so: dict,
+        uu_tien: list[str],
+    ) -> str:
+        """The §C12c sentence for a recorded đối chiếu: which kiểu, where the
+        kiểu came from, what IQX suggested, and what the user chose.
+
+        ★ The lệch wording is the SAME neutral wording ``_nhom`` uses — lệch gợi
+        ý is never called "sai" anywhere in Cấp 6.
+        """
+        lop = kehoach.lop_quyet_dinh or ""
+        lop_label = LOP_LABELS.get(lop, lop)
+        row = KIEU_CO_PHIEU.get(kehoach.kieu_co_phieu or "")
+
+        if row is None:
+            # Kiểu chưa phân loại và không có fallback nào → không có gợi ý nào
+            # để so, nên khop_goi_y là NULL (xem record_kehoach).
+            return (
+                _CHUA_PHAN_LOAI_GIAI_THICH.format(symbol=symbol)
+                + f' Lần đó bạn chọn tin lớp "{lop_label}" — không có gợi ý nào '
+                "để đối chiếu, nên lệnh này không nằm trong nhóm khớp lẫn nhóm "
+                "lệch."
+            )
+
+        nguon = trong_so.get("nguon")
+        nganh = trong_so.get("nganh")
+        if nguon == "nganh" and nganh:
+            provenance = f"suy từ ngành {nganh}"
+        elif nguon == "client":
+            provenance = "bạn tự chọn vì hệ chưa có dữ liệu ngành cho mã này"
+        else:
+            provenance = "đã ghi lúc đối chiếu"
+        vi_sao = trong_so.get("giai_thich") or row["giai_thich"]
+        uu_tien_ten = ", ".join(lop_ten(uu_tien)) or "—"
+
+        phan = [f"{symbol} thuộc kiểu {row['ten']} ({provenance}). {vi_sao}"]
+        if kehoach.khop_goi_y is None:
+            phan.append(f'Lần đó bạn chọn tin lớp "{lop_label}".')
+        elif kehoach.khop_goi_y:
+            phan.append(
+                f'Bạn chọn tin lớp "{lop_label}" — KHỚP lớp IQX gợi ý ưu tiên cho '
+                f"kiểu này ({uu_tien_ten})."
+            )
+        else:
+            phan.append(
+                f'Bạn chọn tin lớp "{lop_label}" — LỆCH gợi ý ưu tiên '
+                f"({uu_tien_ten}). Lệch gợi ý KHÔNG bị tính là sai: đó chỉ là "
+                "nhóm thứ hai để so, và trọng tài là kết quả thật."
+            )
+        return " ".join(phan)
 
     # ── Source rows ───────────────────────────────────
 

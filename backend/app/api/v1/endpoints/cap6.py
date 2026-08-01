@@ -1,5 +1,6 @@
 """Cấp 6 «Đối chiếu» API — progress, enter, task, gợi ý trọng số theo kiểu cổ
-phiếu (+ vì sao), bước Đối chiếu, thách thức đối chiếu, graduate.
+phiếu (+ vì sao), bước Đối chiếu, đọc lại đối chiếu của 1 lệnh (Kết sổ), thách
+thức đối chiếu, graduate.
 
 Cấp 6 is FREE: all endpoints use ``CurrentUser`` (authenticated), NOT
 ``PremiumUser``.
@@ -7,12 +8,15 @@ Cấp 6 is FREE: all endpoints use ``CurrentUser`` (authenticated), NOT
 
 from __future__ import annotations
 
+import uuid
+
 from fastapi import APIRouter, Query
 
 from app.api.deps import CurrentUser, DBSession
 from app.schemas.cap6 import (
     Cap6ProgressOut,
     GoiYOut,
+    KehoachCap6DetailOut,
     KehoachCap6Out,
     KehoachRequest,
     TaskRequest,
@@ -86,6 +90,28 @@ async def record_kehoach(
         lop_mau_thuan=body.lop_mau_thuan,
     )
     return KehoachCap6Out(**svc.kehoach_out(kehoach))
+
+
+@router.get("/kehoach/{order_id}", response_model=KehoachCap6DetailOut)
+async def get_kehoach(
+    order_id: uuid.UUID, user: CurrentUser, db: DBSession
+) -> KehoachCap6DetailOut:
+    """Bước Đối chiếu ĐÃ GHI trên 1 lệnh — cho màn Kết sổ đọc lại, kèm tên kiểu,
+    lớp ưu tiên/ít tin và câu "vì sao" (§C12c) để hiện khớp/lệch cho trung thực.
+
+    ★ Không dùng ``GET /cap6/goi-y`` cho việc này được: endpoint đó suy lại kiểu
+    từ NGÀNH ở thời điểm hiện tại, nên với mã hệ không phân loại được (kiểu do
+    user tự chọn lúc mua) nó vẫn trả "chưa phân loại" — Kết sổ sẽ hiện "không
+    xét" dù server ĐÃ ghi ``khop_goi_y`` cho lệnh đó. Ở đây mọi thứ đọc từ cột đã
+    lưu: không tính lại, không ghi đè.
+
+    404 nếu lệnh không tồn tại HOẶC là lệnh của người khác (không phải 403 —
+    cùng quy ước với ``POST /cap6/kehoach``). Lệnh chưa có dữ liệu Cấp 6 vẫn trả
+    200 kèm ``co_du_lieu = false`` để FE phân biệt "lệnh có trước Cấp 6" với
+    "gọi hỏng".
+    """
+    svc = Cap6Service(db)
+    return KehoachCap6DetailOut(**await svc.get_kehoach(user.id, order_id))
 
 
 @router.get("/thach-thuc", response_model=ThachThucOut)

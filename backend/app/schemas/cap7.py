@@ -5,7 +5,7 @@ bước đọc lực, chấm "đọc lực đúng", Thách thức Đọc sổ l�
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -160,6 +160,40 @@ class KehoachCap7Out(BaseModel):
     #: §C12c — the one-sentence explanation of what was recorded and how it will
     #: be judged. Shown verbatim.
     giai_thich: str
+
+
+class KehoachCap7DetailOut(KehoachCap7Out):
+    """Response for ``GET /cap7/kehoach/{order_id}`` — the đọc-lực block recorded
+    on one order + the scoring context the Kết sổ needs.
+
+    ★ Reading this endpoint RUNS the lazy chấm pass (the same one every Cấp 7
+    read runs), so an order whose ``so_phien_cham`` sessions have elapsed comes
+    back SCORED. Without it the Kết sổ could only ever say "chưa tới hạn chấm".
+
+    ★ ``doc_luc_dung`` has THREE meanings and they must never be collapsed:
+    ``True`` đọc đúng · ``False`` đọc sai · ``None`` chưa chấm. ``None`` is NOT
+    "sai" — it means the deadline has not arrived, or the price for that session
+    is still unavailable. ``da_toi_han_cham`` separates those two ``None`` cases.
+
+    ``co_du_lieu = False`` marks an order with no Cấp 7 data at all (placed
+    before the level existed, or the user simply skipped the optional step). That
+    is a normal 200, NOT a 404.
+    """
+
+    #: ``None`` only when the order has no ``order_kehoach`` row at all.
+    id: uuid.UUID | None = None
+    symbol: str
+    #: False = lệnh này không có dữ liệu Cấp 7 (không phải lỗi, và không phải
+    #: thiếu sót — đọc lực chưa bao giờ là điều kiện để mua).
+    co_du_lieu: bool
+    #: |%| inside which the close counts as unchanged — published here so the Kết
+    #: sổ explains the verdict with the SERVER's threshold, not its own.
+    dead_band_pct: float
+    #: The trading session this reading is (or will be) judged against.
+    han_cham_ngay: date | None = None
+    #: Has that session arrived? ``doc_luc_dung is None`` + ``False`` = chưa tới
+    #: hạn; ``doc_luc_dung is None`` + ``True`` = tới hạn nhưng chưa lấy được giá.
+    da_toi_han_cham: bool
 
 
 class ChamOut(BaseModel):

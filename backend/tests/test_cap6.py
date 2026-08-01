@@ -31,7 +31,7 @@ from app.core.exceptions import (
     NotFoundError,
     UnprocessableEntityError,
 )
-from app.models.cap1 import Cap1Progress
+from app.models.cap1 import Cap1Progress, OrderKehoach
 from app.models.cap2 import Cap2Progress
 from app.models.cap3 import Cap3Progress
 from app.models.cap4 import Cap4Progress
@@ -1104,6 +1104,258 @@ async def test_cap1_ketso_upserts_cam_xuc(db_session, test_user):
 
 
 # ══════════════════════════════════════════════════════
+# GET /cap6/kehoach/{order_id} — đọc lại đối chiếu của MỘT lệnh (Kết sổ)
+# ══════════════════════════════════════════════════════
+
+
+async def _second_user(db_session, email: str = "other-cap6@example.com"):
+    """A second user + their own VT account — for the ownership check."""
+    from app.core.security import hash_password
+    from app.models.user import User, UserRole, UserStatus
+
+    user = User(
+        email=email,
+        hashed_password=hash_password("Test@1234"),
+        full_name="Other User",
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+    db_session.add(user)
+    await db_session.flush()
+    await db_session.refresh(user)
+    account = await VirtualTradingRepository(db_session).create_account(
+        user.id, 250_000_000
+    )
+    return user, account
+
+
+@pytest.mark.asyncio
+async def test_get_kehoach_returns_the_stored_doi_chieu_with_its_labels(
+    db_session, test_user
+):
+    """The Kết sổ reads back exactly what was recorded, with every label + the
+    vì-sao sentence it needs to render khớp/lệch — nothing recomputed."""
+    services, account = await _enter_cap6(db_session, test_user.id)
+    await _seed_symbol(db_session, "VCB", icb_lv1="Ngân hàng", icb_lv2="Ngân hàng")
+    buy = await _buy_with_plan(
+        db_session, services, account.id, test_user.id, symbol="VCB"
+    )
+    await services["cap6"].record_kehoach(
+        test_user.id,
+        buy.id,
+        lop_quyet_dinh="dinh_gia",
+        ly_do_doi_chieu="P/B rẻ hơn trung bình ngành.",
+    )
+
+    out = await services["cap6"].get_kehoach(test_user.id, buy.id)
+    assert out["co_du_lieu"] is True
+    assert out["order_id"] == buy.id
+    assert out["symbol"] == "VCB"
+    assert out["kieu_co_phieu"] == KieuCoPhieu.NGAN_HANG.value
+    assert out["kieu_ten"] == "Ngân hàng"
+    assert out["nganh"] == "Ngân hàng"
+    assert out["lop_uu_tien"] == ["dinh_gia", "noi_bo"]
+    assert out["lop_uu_tien_ten"] == ["Định giá", "Nội bộ"]
+    assert out["lop_it_tin"] == ["ky_thuat"]
+    assert out["lop_it_tin_ten"] == ["Kỹ thuật"]
+    assert out["lop_quyet_dinh"] == "dinh_gia"
+    assert out["lop_quyet_dinh_ten"] == "Định giá"
+    assert out["khop_goi_y"] is True
+    assert out["khop_goi_y_ten"] == "Khớp gợi ý"
+    assert out["ly_do_doi_chieu"] == "P/B rẻ hơn trung bình ngành."
+    assert out["lop_mau_thuan"]["co_mau_thuan"] is True
+    assert out["trong_so_goi_y"]["nguon"] == "nganh"
+    # The §C12c provenance sentence, verbatim from the kiểu table.
+    assert "P/B" in out["giai_thich"]
+    assert "KHỚP" in out["giai_thich"]
+
+
+@pytest.mark.asyncio
+async def test_get_kehoach_says_lech_without_ever_calling_it_wrong(
+    db_session, test_user
+):
+    """★ Lệch gợi ý is a NEUTRAL fact (spec §5/§10) — the Kết sổ sentence must
+    say so out loud, never "sai"."""
+    services, account = await _enter_cap6(db_session, test_user.id)
+    await _seed_symbol(db_session, "VCB", icb_lv1="Ngân hàng", icb_lv2="Ngân hàng")
+    buy = await _buy_with_plan(
+        db_session, services, account.id, test_user.id, symbol="VCB"
+    )
+    await services["cap6"].record_kehoach(
+        test_user.id,
+        buy.id,
+        lop_quyet_dinh="ky_thuat",  # ← ít tin cho ngân hàng ⇒ lệch
+        ly_do_doi_chieu="Nền giá vừa bứt lên.",
+    )
+
+    out = await services["cap6"].get_kehoach(test_user.id, buy.id)
+    assert out["khop_goi_y"] is False
+    assert out["khop_goi_y_ten"] == "Lệch gợi ý"
+    assert "LỆCH" in out["giai_thich"]
+    assert "KHÔNG bị tính là sai" in out["giai_thich"]
+
+
+@pytest.mark.asyncio
+async def test_get_kehoach_serves_a_client_picked_kieu_that_goi_y_cannot(
+    db_session, test_user
+):
+    """★ THE GAP THIS ENDPOINT CLOSES.
+
+    For a symbol the server cannot classify, the kiểu came from the CLIENT and
+    lives only on the order. ``/cap6/goi-y`` re-derives from ngành and therefore
+    still answers "chưa phân loại" — so a Kết sổ built on it renders "không xét"
+    even though the server DID record a ``khop_goi_y``. The per-order read
+    returns what was recorded.
+    """
+    services, account = await _enter_cap6(db_session, test_user.id)
+    # No ``symbols`` row for ZZZZ → server cannot classify → client fallback.
+    buy = await _buy_with_plan(
+        db_session, services, account.id, test_user.id, symbol="ZZZZ"
+    )
+    await services["cap6"].record_kehoach(
+        test_user.id,
+        buy.id,
+        kieu_co_phieu=KieuCoPhieu.DAU_CO_NHO.value,
+        lop_quyet_dinh="dong_tien",
+        ly_do_doi_chieu="Dòng tiền vào rất mạnh mấy phiên nay.",
+    )
+
+    # /cap6/goi-y still knows nothing about ZZZZ …
+    goi_y = await services["cap6"].goi_y(test_user.id, "ZZZZ")
+    assert goi_y["kieu"] is None
+    assert goi_y["lop_uu_tien"] == []
+
+    # … but the per-order read serves the RECORDED đối chiếu in full.
+    out = await services["cap6"].get_kehoach(test_user.id, buy.id)
+    assert out["co_du_lieu"] is True
+    assert out["kieu_co_phieu"] == KieuCoPhieu.DAU_CO_NHO.value
+    assert out["kieu_ten"] == KIEU_CO_PHIEU[KieuCoPhieu.DAU_CO_NHO.value]["ten"]
+    assert out["lop_uu_tien"] == ["dong_tien", "ky_thuat"]
+    assert out["khop_goi_y"] is True
+    assert out["khop_goi_y_ten"] == "Khớp gợi ý"
+    assert out["trong_so_goi_y"]["nguon"] == "client"
+    assert "chưa phân loại" not in out["giai_thich"].lower()
+
+
+@pytest.mark.asyncio
+async def test_get_kehoach_stays_honest_when_the_kieu_was_never_known(
+    db_session, test_user
+):
+    """Kiểu unknown AND no client fallback → ``khop_goi_y`` is NULL (never
+    False) and the sentence is the same "chưa phân loại" one ``/goi-y``
+    returns: the user is never marked lệch against a suggestion never made."""
+    services, account = await _enter_cap6(db_session, test_user.id)
+    buy = await _buy_with_plan(
+        db_session, services, account.id, test_user.id, symbol="ZZZZ"
+    )
+    await services["cap6"].record_kehoach(
+        test_user.id,
+        buy.id,
+        lop_quyet_dinh="dinh_gia",
+        ly_do_doi_chieu="Tôi tin định giá cho mã này.",
+    )
+
+    out = await services["cap6"].get_kehoach(test_user.id, buy.id)
+    assert out["co_du_lieu"] is True
+    assert out["kieu_co_phieu"] is None
+    assert out["kieu_ten"] is None
+    assert out["khop_goi_y"] is None
+    assert out["khop_goi_y_ten"] is None
+    assert out["lop_uu_tien"] == []
+    assert "Chưa phân loại được kiểu cổ phiếu cho ZZZZ" in out["giai_thich"]
+
+
+@pytest.mark.asyncio
+async def test_get_kehoach_404_for_another_users_order(db_session, test_user):
+    """Ownership check — a foreign order is 404 (never 403), the same
+    convention ``record_kehoach`` uses for an unknown order."""
+    services, _account = await _enter_cap6(db_session, test_user.id)
+    other, other_account = await _second_user(db_session)
+    foreign = await _make_order(db_session, other_account.id, other.id, symbol="AAA")
+
+    with pytest.raises(NotFoundError):
+        await services["cap6"].get_kehoach(test_user.id, foreign.id)
+
+    # An order that does not exist at all behaves identically.
+    import uuid as _uuid
+
+    with pytest.raises(NotFoundError):
+        await services["cap6"].get_kehoach(test_user.id, _uuid.uuid4())
+
+
+@pytest.mark.asyncio
+async def test_get_kehoach_200_with_an_explicit_no_data_signal(db_session, test_user):
+    """An order that predates Cấp 6 (all-null columns) is a NORMAL read with
+    ``co_du_lieu = False`` — not a 404, so the FE can tell "chưa có bước Đối
+    chiếu" apart from "endpoint hỏng"."""
+    services, account = await _enter_cap6(db_session, test_user.id)
+
+    # (a) row exists (Cấp 1-4 blocks) but no Đối chiếu was ever recorded
+    buy = await _buy_with_plan(
+        db_session, services, account.id, test_user.id, symbol="OLD"
+    )
+    out = await services["cap6"].get_kehoach(test_user.id, buy.id)
+    assert out["co_du_lieu"] is False
+    assert out["order_id"] == buy.id
+    assert out["symbol"] == "OLD"
+    assert out["kieu_co_phieu"] is None
+    assert out["lop_quyet_dinh"] is None
+    assert out["khop_goi_y"] is None
+    assert out["ly_do_doi_chieu"] is None
+    assert out["lop_uu_tien"] == []
+    assert out["giai_thich"]
+
+    # (b) no ``order_kehoach`` row at all — same shape, still a 200
+    bare = await _make_order(db_session, account.id, test_user.id, symbol="BARE")
+    bare_out = await services["cap6"].get_kehoach(test_user.id, bare.id)
+    assert bare_out["co_du_lieu"] is False
+    assert bare_out["id"] is None
+    assert bare_out["giai_thich"] == out["giai_thich"]
+
+
+@pytest.mark.asyncio
+async def test_get_kehoach_never_rewrites_what_was_recorded(db_session, test_user):
+    """A read is a READ: even after the symbol gains an ngành that maps to a
+    different kiểu, the order keeps the kiểu (and the khớp) it was recorded
+    with. Recomputing here would rewrite history after the outcome is known."""
+    services, account = await _enter_cap6(db_session, test_user.id)
+    buy = await _buy_with_plan(
+        db_session, services, account.id, test_user.id, symbol="ZZZZ"
+    )
+    await services["cap6"].record_kehoach(
+        test_user.id,
+        buy.id,
+        kieu_co_phieu=KieuCoPhieu.DAU_CO_NHO.value,
+        lop_quyet_dinh="dong_tien",
+        ly_do_doi_chieu="Dòng tiền vào rất mạnh.",
+    )
+    # The ngành arrives later and maps to a DIFFERENT kiểu.
+    await _seed_symbol(db_session, "ZZZZ", icb_lv1="Ngân hàng", icb_lv2="Ngân hàng")
+
+    first = await services["cap6"].get_kehoach(test_user.id, buy.id)
+    second = await services["cap6"].get_kehoach(test_user.id, buy.id)
+    assert first == second
+    assert first["kieu_co_phieu"] == KieuCoPhieu.DAU_CO_NHO.value
+    assert first["khop_goi_y"] is True
+
+    kehoach = (
+        await db_session.execute(
+            select(OrderKehoach).where(OrderKehoach.order_id == buy.id)
+        )
+    ).scalar_one()
+    assert kehoach.kieu_co_phieu == KieuCoPhieu.DAU_CO_NHO.value
+    assert kehoach.khop_goi_y is True
+
+
+@pytest.mark.asyncio
+async def test_get_kehoach_requires_progress(db_session, test_user):
+    account = await _fast_track_cap5(db_session, test_user.id)
+    order = await _make_order(db_session, account.id, test_user.id, symbol="AAA")
+    with pytest.raises(NotFoundError):
+        await Cap6Service(db_session).get_kehoach(test_user.id, order.id)
+
+
+# ══════════════════════════════════════════════════════
 # HTTP wiring
 # ══════════════════════════════════════════════════════
 
@@ -1190,6 +1442,23 @@ async def test_cap6_endpoints_wired_and_free(client, db_session, test_user):
     assert kbody["kieu_co_phieu"] == "ngan_hang"
     assert kbody["kieu_ten"] == "Ngân hàng"
     assert kbody["khop_goi_y"] is True
+
+    # Per-order read-back for the Kết sổ.
+    r = await client.get(f"/api/v1/cap6/kehoach/{buy.id}", headers=headers)
+    assert r.status_code == 200, r.text
+    dbody = r.json()
+    assert dbody["co_du_lieu"] is True
+    assert dbody["kieu_co_phieu"] == "ngan_hang"
+    assert dbody["kieu_ten"] == "Ngân hàng"
+    assert dbody["lop_uu_tien"] == ["dinh_gia", "noi_bo"]
+    assert dbody["khop_goi_y"] is True
+    assert dbody["khop_goi_y_ten"] == "Khớp gợi ý"
+    assert dbody["giai_thich"]
+
+    import uuid as _uuid
+
+    r = await client.get(f"/api/v1/cap6/kehoach/{_uuid.uuid4()}", headers=headers)
+    assert r.status_code == 404, r.text
 
     r = await client.patch("/api/v1/cap6/task", headers=headers, json={"task_no": 1})
     assert r.status_code == 200, r.text

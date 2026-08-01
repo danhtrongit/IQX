@@ -226,6 +226,15 @@ COPY_TRONG_GIO = (
     "là dự báo."
 )
 
+#: What the Kết sổ shows for an order that never recorded a đọc lực.
+#: ★ Deliberately NOT phrased as a shortcoming: reading the book is never a
+#: precondition for buying (spec §9), and orders placed before Cấp 7 existed
+#: have all-null columns by design.
+COPY_CHUA_DOC_LUC = (
+    "Lệnh này chưa ghi bước đọc lực — sổ lệnh chỉ đọc được trong giờ giao dịch, "
+    "và đọc lực không bao giờ là điều kiện bắt buộc để mua."
+)
+
 GIO_GIAO_DICH_TEXT = (
     "Giờ giao dịch: 09:00–11:30 (phiên sáng) và 13:00–14:45 (phiên chiều), "
     "các ngày trong tuần."
@@ -655,10 +664,7 @@ class Cap7Service:
         hanh_vi_ten = HANH_VI_CO_LABELS.get(hanh_vi or "") or None
 
         if ratio is None or doc is None:
-            giai_thich = (
-                "Lệnh này chưa ghi bước đọc lực — sổ lệnh chỉ đọc được trong giờ "
-                "giao dịch, và đọc lực không bao giờ là điều kiện bắt buộc để mua."
-            )
+            giai_thich = COPY_CHUA_DOC_LUC
         else:
             band_ten = BAND_LUC_LABELS.get(band or "") or "không đọc được"
             phan = [
@@ -701,6 +707,88 @@ class Cap7Service:
             "hanh_vi_co_ten": hanh_vi_ten,
             "so_phien_cham": SO_PHIEN_CHAM_LUC,
             "giai_thich": giai_thich,
+        }
+
+    # ── Đọc lại đọc lực của MỘT lệnh (Kết sổ) ──────────
+
+    async def get_kehoach(self, user_id: uuid.UUID, order_id: uuid.UUID) -> dict:
+        """``GET /cap7/kehoach/{order_id}`` — the đọc-lực block recorded on one
+        order + the scoring context the Kết sổ needs to explain it.
+
+        ★ **This read RUNS THE CHẤM.** ``doc_luc_dung`` is computed server-side
+        ``SO_PHIEN_CHAM_LUC`` phiên after the buy, so a Kết sổ that only ever read
+        stored columns could never show a scored reading — it would say "chưa tới
+        hạn chấm" forever. This calls the SAME ``_recompute_progress`` pass every
+        other Cấp 7 read calls (which runs ``_score_due_orders``), so opening the
+        Kết sổ after the window returns a scored result. Nothing is duplicated and
+        nothing extra is written: an already-scored row is skipped, and a row that
+        cannot be scored stays NULL.
+
+        ★ ``doc_luc_dung`` keeps THREE states and this endpoint never collapses
+        them: ``True`` đọc đúng · ``False`` đọc sai · ``None`` chưa tới hạn chấm
+        hoặc chưa lấy được giá phiên đó. ``da_toi_han_cham`` tells the two ``None``
+        cases apart.
+
+        Ownership: a foreign or unknown ``order_id`` is 404 (never 403) —
+        ``record_kehoach``'s convention. An order with NO Cấp 7 data is a normal
+        200 carrying ``co_du_lieu = False``, so the FE can tell "lệnh có trước
+        Cấp 7" apart from "endpoint hỏng".
+        """
+        progress = await self._require_progress(user_id)
+        order = await self._vt_repo.get_order_by_id(order_id)
+        if order is None or order.user_id != user_id:
+            raise NotFoundError("lệnh")
+
+        # Lazy compute-on-read, the shared path (see the module docstring).
+        await self._recompute_progress(user_id, progress)
+
+        kehoach = await self._get_kehoach_by_order(order_id)
+        return self.kehoach_detail_out(kehoach, order=order)
+
+    @staticmethod
+    def kehoach_detail_out(
+        kehoach: OrderKehoach | None, *, order: VirtualOrder
+    ) -> dict:
+        """``kehoach_out`` + the scoring context: số phiên chấm, dead band, the
+        session the reading is judged against, and whether that session has
+        arrived.
+
+        ``han_cham_ngay``/``da_toi_han_cham`` are DERIVED for display only (the FE
+        cannot compute them — they need trading-day arithmetic and the server's
+        own clock). Nothing here writes.
+        """
+        if kehoach is None:
+            base: dict = {
+                "id": None,
+                "order_id": order.id,
+                "luc_chi_so": None,
+                "luc_band": None,
+                "luc_band_ten": None,
+                "luc_doc_user": None,
+                "luc_doc_user_ten": None,
+                "doc_luc_dung": None,
+                "dien_bien_pct": None,
+                "co_canh_giac_lenh_gia": None,
+                "hanh_vi_co": None,
+                "hanh_vi_co_ten": None,
+                "so_phien_cham": SO_PHIEN_CHAM_LUC,
+                "giai_thich": COPY_CHUA_DOC_LUC,
+            }
+        else:
+            base = Cap7Service.kehoach_out(kehoach)
+
+        han = han_cham_luc_date(order.trading_date) if order.trading_date else None
+        return {
+            **base,
+            "symbol": order.symbol,
+            # ``luc_doc_user`` is the column that marks a recorded reading — the
+            # same predicate ``_doc_luc_rows`` filters on.
+            "co_du_lieu": base["luc_doc_user"] is not None,
+            "dead_band_pct": NGUONG_DEAD_BAND_PCT,
+            "han_cham_ngay": han,
+            "da_toi_han_cham": bool(
+                han is not None and han <= datetime.now(_VN_TZ).date()
+            ),
         }
 
     # ── Source rows ───────────────────────────────────

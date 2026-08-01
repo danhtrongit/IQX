@@ -116,6 +116,48 @@ class KehoachCap6Out(BaseModel):
     ly_do_doi_chieu: str | None = None
 
 
+class KehoachCap6DetailOut(KehoachCap6Out):
+    """Response for ``GET /cap6/kehoach/{order_id}`` — the Đối chiếu block
+    RECORDED on one order, everything the Kết sổ needs to render it, and nothing
+    recomputed.
+
+    ★ Why this exists next to ``GoiYOut``: ``/cap6/goi-y`` re-derives the kiểu
+    from the symbol's ngành *now*, so for a symbol the server cannot classify it
+    keeps answering "chưa phân loại" — even for an order whose kiểu came from the
+    client and whose ``khop_goi_y`` the server DID record. This endpoint reads the
+    stored columns instead, so the Kết sổ can show khớp/lệch honestly.
+
+    ``co_du_lieu = False`` marks an order with no Cấp 6 data at all (placed
+    before the level existed, or the lớp never conflicted so the step never
+    appeared). That is a normal 200, NOT a 404: the FE must be able to tell it
+    apart from a failed call. Every other field is then null/empty and
+    ``giai_thich`` says so.
+
+    ``khop_goi_y`` keeps its three states: ``True`` khớp · ``False`` lệch (a
+    NEUTRAL fact, never "sai") · ``None`` kiểu chưa phân loại, so no suggestion
+    existed to match.
+    """
+
+    #: ``None`` only when the order has no ``order_kehoach`` row at all.
+    id: uuid.UUID | None = None
+    symbol: str
+    #: The ICB ngành recorded in ``trong_so_goi_y`` (provenance; null when the
+    #: kiểu was unknown or came from the client).
+    nganh: str | None = None
+    #: Read out of the STORED ``trong_so_goi_y``, not re-derived — same shape as
+    #: ``GoiYOut`` so the FE reuses one component.
+    lop_uu_tien: list[LopLiteral] = Field(default_factory=list)
+    lop_uu_tien_ten: list[str] = Field(default_factory=list)
+    lop_it_tin: list[LopLiteral] = Field(default_factory=list)
+    lop_it_tin_ten: list[str] = Field(default_factory=list)
+    #: "Khớp gợi ý" / "Lệch gợi ý" / null. Neither label says đúng or sai.
+    khop_goi_y_ten: str | None = None
+    #: False = lệnh này không có dữ liệu Cấp 6 (không phải lỗi).
+    co_du_lieu: bool
+    #: §C12c — shown VERBATIM; never a bare khớp/lệch badge.
+    giai_thich: str
+
+
 # ── Thách thức Đối chiếu (§2③ / §7 khối ⑮) ────────────
 
 

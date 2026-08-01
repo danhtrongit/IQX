@@ -1210,7 +1210,7 @@ async def test_api_copy_never_claims_fake_order_detection(
     services, account = await _enter_cap7(db_session, test_user.id)
     cap7 = services["cap7"]
     _patch_ohlcv(monkeypatch, {})
-    _buy, kehoach = await _doc_luc_order(
+    buy, kehoach = await _doc_luc_order(
         db_session, services, account.id, test_user.id,
         symbol="HN1", co=True, hanh_vi="mua_duoi_theo",
     )
@@ -1220,6 +1220,7 @@ async def test_api_copy_never_claims_fake_order_detection(
         await cap7.thach_thuc(test_user.id),
         await cap7.get_progress(test_user.id),
         cap7.kehoach_out(kehoach),
+        await cap7.get_kehoach(test_user.id, buy.id),
     ]
     strings = [s for p in payloads for s in _all_strings(p)]
     assert strings
@@ -1282,6 +1283,218 @@ async def test_graduate_requires_3_of_3(db_session, test_user, monkeypatch):
     first = progress["graduated_at"]
     again = await cap7.graduate(test_user.id)
     assert again["graduated_at"] == first
+
+
+# ══════════════════════════════════════════════════════
+# GET /cap7/kehoach/{order_id} — đọc lại đọc lực của MỘT lệnh (Kết sổ)
+# ══════════════════════════════════════════════════════
+
+
+async def _second_user(db_session, email: str = "other-cap7@example.com"):
+    """A second user + their own VT account — for the ownership check."""
+    from app.core.security import hash_password
+    from app.models.user import User, UserRole, UserStatus
+
+    user = User(
+        email=email,
+        hashed_password=hash_password("Test@1234"),
+        full_name="Other User",
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+    db_session.add(user)
+    await db_session.flush()
+    await db_session.refresh(user)
+    account = await VirtualTradingRepository(db_session).create_account(
+        user.id, 250_000_000
+    )
+    return user, account
+
+
+@pytest.mark.asyncio
+async def test_get_kehoach_returns_the_stored_reading_with_its_scoring_context(
+    db_session, test_user, monkeypatch
+):
+    """The Kết sổ reads back the reading + everything it needs to explain how it
+    will be judged (số phiên chấm, dead band, hạn chấm) — no FE-side rules."""
+    services, account = await _enter_cap7(db_session, test_user.id)
+    _patch_ohlcv(monkeypatch, {})
+    buy, _kehoach = await _doc_luc_order(
+        db_session, services, account.id, test_user.id,
+        symbol="RD1", luc_chi_so=1.9, luc_doc_user="manh", co=True,
+        hanh_vi="cho_xac_nhan", days_ago=0,
+    )
+
+    out = await services["cap7"].get_kehoach(test_user.id, buy.id)
+    assert out["co_du_lieu"] is True
+    assert out["order_id"] == buy.id
+    assert out["symbol"] == "RD1"
+    assert out["luc_chi_so"] == pytest.approx(1.9)
+    assert out["luc_band"] == BandLuc.CAU_AP_DAO.value
+    assert out["luc_band_ten"]
+    assert out["luc_doc_user"] == LucDocUser.MANH.value
+    assert out["luc_doc_user_ten"]
+    assert out["co_canh_giac_lenh_gia"] is True
+    assert out["hanh_vi_co"] == HanhViCo.CHO_XAC_NHAN.value
+    assert out["hanh_vi_co_ten"]
+    # Scoring context — the FE must render THESE numbers, not its own.
+    assert out["so_phien_cham"] == SO_PHIEN_CHAM_LUC
+    assert out["dead_band_pct"] == NGUONG_DEAD_BAND_PCT
+    assert out["han_cham_ngay"] == han_cham_luc_date(buy.trading_date)
+    assert out["da_toi_han_cham"] is False
+    # Not due yet ⇒ no verdict, and the coach paragraph says so.
+    assert out["doc_luc_dung"] is None
+    assert out["dien_bien_pct"] is None
+    assert out["giai_thich"]
+
+
+@pytest.mark.asyncio
+async def test_get_kehoach_scores_a_due_order_on_read(
+    db_session, test_user, monkeypatch
+):
+    """★ THE GAP THIS ENDPOINT CLOSES. ``doc_luc_dung`` is computed server-side
+    later, so without a per-order read the Kết sổ could only ever say "chưa tới
+    hạn chấm". This read runs the SAME lazy compute-on-read pass every other
+    Cấp 7 read runs, so opening the Kết sổ after the window returns a SCORED
+    result."""
+    services, account = await _enter_cap7(db_session, test_user.id)
+    cap7 = services["cap7"]
+    _patch_ohlcv(monkeypatch, {})
+    buy, kehoach = await _doc_luc_order(
+        db_session, services, account.id, test_user.id,
+        symbol="RD2", luc_doc_user="manh", days_ago=30,
+    )
+    assert kehoach.doc_luc_dung is None  # nothing scored yet
+
+    _patch_ohlcv(monkeypatch, _series_for(buy.trading_date, _BUY_PRICE * 1.05))
+    out = await cap7.get_kehoach(test_user.id, buy.id)
+
+    assert out["doc_luc_dung"] is True
+    assert out["dien_bien_pct"] == pytest.approx(5.0)
+    assert out["da_toi_han_cham"] is True
+    assert "ĐÚNG" in out["giai_thich"]
+    # …and it was persisted by the shared scoring path, not faked for the read.
+    await db_session.refresh(kehoach)
+    assert kehoach.doc_luc_dung is True
+    assert kehoach.dien_bien_pct == pytest.approx(5.0)
+
+
+@pytest.mark.asyncio
+async def test_get_kehoach_keeps_null_distinct_from_false(
+    db_session, test_user, monkeypatch
+):
+    """★ ``None`` = chưa tới hạn chấm / chưa chấm được · ``False`` = đoán sai.
+    Collapsing them would tell a user they were wrong when nothing was scored."""
+    services, account = await _enter_cap7(db_session, test_user.id)
+    cap7 = services["cap7"]
+    _patch_ohlcv(monkeypatch, {})
+
+    # (a) not due yet — a wildly bullish series exists but the deadline has not
+    #     arrived, so the reading stays UNSCORED.
+    buy_new, _ = await _doc_luc_order(
+        db_session, services, account.id, test_user.id,
+        symbol="NUL", luc_doc_user="manh", days_ago=0,
+    )
+    _patch_ohlcv(monkeypatch, _series_for(buy_new.trading_date, _BUY_PRICE * 2))
+    fresh = await cap7.get_kehoach(test_user.id, buy_new.id)
+    assert fresh["doc_luc_dung"] is None
+    assert fresh["doc_luc_dung"] is not False
+    assert fresh["da_toi_han_cham"] is False
+
+    # (b) due AND the guess was wrong — that is a real False.
+    _patch_ohlcv(monkeypatch, {})
+    buy_old, _ = await _doc_luc_order(
+        db_session, services, account.id, test_user.id,
+        symbol="FLS", luc_doc_user="manh", days_ago=30,
+    )
+    _patch_ohlcv(monkeypatch, _series_for(buy_old.trading_date, _BUY_PRICE * 0.95))
+    wrong = await cap7.get_kehoach(test_user.id, buy_old.id)
+    assert wrong["doc_luc_dung"] is False
+    assert wrong["dien_bien_pct"] == pytest.approx(-5.0)
+    assert wrong["da_toi_han_cham"] is True
+
+
+@pytest.mark.asyncio
+async def test_get_kehoach_leaves_an_unscoreable_order_null(
+    db_session, test_user, monkeypatch
+):
+    """Past the deadline but the price for that session is unavailable → still
+    ``None``, never "đọc sai" (spec §7 / HONESTY NOTE 2)."""
+    services, account = await _enter_cap7(db_session, test_user.id)
+    cap7 = services["cap7"]
+    _patch_ohlcv(monkeypatch, {})
+    buy, _kehoach = await _doc_luc_order(
+        db_session, services, account.id, test_user.id,
+        symbol="GAP", luc_doc_user="manh", days_ago=30,
+    )
+    _patch_ohlcv(monkeypatch, None)  # the price source raises
+
+    out = await cap7.get_kehoach(test_user.id, buy.id)
+    assert out["doc_luc_dung"] is None
+    assert out["dien_bien_pct"] is None
+    assert out["da_toi_han_cham"] is True  # tới hạn nhưng chưa chấm được
+
+
+@pytest.mark.asyncio
+async def test_get_kehoach_404_for_another_users_order(
+    db_session, test_user, monkeypatch
+):
+    """Ownership check — a foreign order is 404 (never 403), the same
+    convention ``record_kehoach`` uses for an unknown order."""
+    services, _account = await _enter_cap7(db_session, test_user.id)
+    _patch_ohlcv(monkeypatch, {})
+    other, other_account = await _second_user(db_session)
+    foreign = await _make_order(db_session, other_account.id, other.id, symbol="AAA")
+
+    with pytest.raises(NotFoundError):
+        await services["cap7"].get_kehoach(test_user.id, foreign.id)
+
+    import uuid as _uuid
+
+    with pytest.raises(NotFoundError):
+        await services["cap7"].get_kehoach(test_user.id, _uuid.uuid4())
+
+
+@pytest.mark.asyncio
+async def test_get_kehoach_200_with_an_explicit_no_data_signal(
+    db_session, test_user, monkeypatch
+):
+    """An order that predates Cấp 7 (all-null columns) is a NORMAL read with
+    ``co_du_lieu = False`` — not a 404, so the FE can tell "chưa ghi bước đọc
+    lực" apart from "endpoint hỏng"."""
+    services, account = await _enter_cap7(db_session, test_user.id)
+    _patch_ohlcv(monkeypatch, {})
+
+    # (a) row exists (Cấp 1 block) but no đọc lực was ever recorded
+    buy = await _buy_with_cap1_plan(
+        db_session, services, account.id, test_user.id, symbol="OLD"
+    )
+    out = await services["cap7"].get_kehoach(test_user.id, buy.id)
+    assert out["co_du_lieu"] is False
+    assert out["order_id"] == buy.id
+    assert out["symbol"] == "OLD"
+    assert out["luc_chi_so"] is None
+    assert out["luc_band"] is None
+    assert out["luc_doc_user"] is None
+    assert out["doc_luc_dung"] is None
+    assert out["so_phien_cham"] == SO_PHIEN_CHAM_LUC
+    assert out["dead_band_pct"] == NGUONG_DEAD_BAND_PCT
+    assert out["giai_thich"]
+
+    # (b) no ``order_kehoach`` row at all — same shape, still a 200
+    bare = await _make_order(db_session, account.id, test_user.id, symbol="BARE")
+    bare_out = await services["cap7"].get_kehoach(test_user.id, bare.id)
+    assert bare_out["co_du_lieu"] is False
+    assert bare_out["id"] is None
+    assert bare_out["giai_thich"] == out["giai_thich"]
+
+
+@pytest.mark.asyncio
+async def test_get_kehoach_requires_progress(db_session, test_user):
+    account = await _fast_track_cap6(db_session, test_user.id)
+    order = await _make_order(db_session, account.id, test_user.id, symbol="AAA")
+    with pytest.raises(NotFoundError):
+        await Cap7Service(db_session).get_kehoach(test_user.id, order.id)
 
 
 # ══════════════════════════════════════════════════════
@@ -1366,6 +1579,25 @@ async def test_cap7_endpoints_wired_and_free(client, db_session, test_user):
     assert kbody["luc_band"] == "cau_ap_dao"
     assert kbody["doc_luc_dung"] is None
     assert kbody["giai_thich"]
+
+    # Per-order read-back for the Kết sổ (runs the lazy chấm pass).
+    r = await client.get(f"/api/v1/cap7/kehoach/{buy.id}", headers=headers)
+    assert r.status_code == 200, r.text
+    dbody = r.json()
+    assert dbody["co_du_lieu"] is True
+    assert dbody["luc_doc_user"] == "manh"
+    assert dbody["luc_band"] == "cau_ap_dao"
+    assert dbody["doc_luc_dung"] is None  # chưa tới hạn — KHÔNG phải "sai"
+    assert dbody["da_toi_han_cham"] is False
+    assert dbody["so_phien_cham"] == SO_PHIEN_CHAM_LUC
+    assert dbody["dead_band_pct"] == NGUONG_DEAD_BAND_PCT
+    assert dbody["han_cham_ngay"]
+    assert dbody["giai_thich"]
+
+    import uuid as _uuid
+
+    r = await client.get(f"/api/v1/cap7/kehoach/{_uuid.uuid4()}", headers=headers)
+    assert r.status_code == 404, r.text
 
     r = await client.patch("/api/v1/cap7/task", headers=headers, json={"task_no": 1})
     assert r.status_code == 200, r.text
