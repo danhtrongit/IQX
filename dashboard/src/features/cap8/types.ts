@@ -172,10 +172,34 @@ export interface KiemTraInputCap8 {
  * could post an empty warning list and keep its "mua bất chấp" count clean).
  * `hanh_vi_canh_bao` must AGREE with what actually fired — see
  * `hanhViCanhBaoToSend`.
+ *
+ * ★★ The block is WRITE-ONCE server-side: re-posting the SAME
+ * `hanh_vi_canh_bao` is a no-op, a DIFFERENT one is a 409. The row is a snapshot
+ * of the danh mục at the moment of the order and graduation condition ② is
+ * computed from it, so it must not be re-writable after the fact.
  */
 export interface KehoachInputCap8 {
   order_id: string
   hanh_vi_canh_bao: HanhViCanhBao
+  /**
+   * The `canh_bao[].ma` of the very `GET /cap8/kiem-tra` the user responded to.
+   *
+   * ★★ REQUIRED whenever `hanh_vi_canh_bao` is `giam_kl` or `chon_ma_khac`, and
+   * IGNORED for `van_mua`/`khong_canh_bao` (for those the server's own
+   * re-derivation is the only honest source).
+   *
+   * Reducing the size — or switching symbol — is EXACTLY what makes a warning
+   * stop firing, so the server re-deriving against the post-adjustment order
+   * finds nothing and would reject the two "user listened" answers. Without this
+   * field an order where the user demonstrably saw a warning and acted on it can
+   * only be recorded as "danh mục không có cảnh báo nào", which makes the
+   * compliant coach branch reachable only when the adjustment FAILED.
+   *
+   * It must come from the check the user actually saw — the same response whose
+   * `canh_bao` decided `hanhViCanhBaoToSend`'s `coCanhBao`, never a fresher one
+   * fetched after the adjustment.
+   */
+  canh_bao_da_hien?: LoaiCanhBao[]
 }
 
 /** Cấp 8's view of `order_kehoach` — the Kiểm tra danh mục block. */

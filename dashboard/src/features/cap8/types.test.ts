@@ -16,7 +16,28 @@ import {
   giamKhoiLuong,
   hanhViCanhBaoToSend,
   type Cap8Progress,
+  type KehoachInputCap8,
 } from "./types"
+
+describe("KehoachInputCap8 — hợp đồng gửi lên /cap8/kehoach", () => {
+  it("★ khai lại được cảnh báo ĐÃ HIỆN cho 'giam_kl'/'chon_ma_khac'", () => {
+    // Giảm khối lượng / đổi mã chính là thứ làm cảnh báo tắt, nên server suy lại
+    // theo lệnh đã điều chỉnh không còn thấy cảnh báo nào để chấp nhận hai lựa
+    // chọn đó. Không có trường này, một lệnh user ĐÃ NGHE lời chỉ ghi được thành
+    // "danh mục không có cảnh báo nào".
+    const payload: KehoachInputCap8 = {
+      order_id: "ord-1",
+      hanh_vi_canh_bao: "giam_kl",
+      canh_bao_da_hien: ["don_nganh", "tong_rui_ro"],
+    }
+    expect(payload.canh_bao_da_hien).toEqual(["don_nganh", "tong_rui_ro"])
+  })
+
+  it("là TÙY CHỌN — 'van_mua'/'khong_canh_bao' không gửi (server bỏ qua)", () => {
+    const payload: KehoachInputCap8 = { order_id: "ord-1", hanh_vi_canh_bao: "van_mua" }
+    expect(payload.canh_bao_da_hien).toBeUndefined()
+  })
+})
 
 describe("hanhViCanhBaoToSend — phải khớp với thứ THẬT SỰ bật (server 400 nếu lệch)", () => {
   it("KHÔNG cảnh báo nào → 'khong_canh_bao', dù user đã bấm nút nào trước đó", () => {

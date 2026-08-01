@@ -264,6 +264,28 @@ vi.mock("@/features/cap4", async (importOriginal) => {
         >
           RATE_ALL
         </button>
+        {/* Cùng khối, nhưng chấm CÓ MÂU THUẪN (≥1 Ủng hộ + ≥1 Ngược chiều) — đó
+            là điều kiện duy nhất làm bước Đối chiếu của Cấp 6 tồn tại, nên cũng
+            là điều kiện duy nhất để `/cap6/kehoach` được gọi. */}
+        <button
+          type="button"
+          onClick={() => {
+            props.onRate("ky_thuat", "ok")
+            props.onRate("dong_tien", "ok")
+            props.onRate("noi_bo", "bad")
+            props.onRate("tin_tuc", "bad")
+            props.onRate("dinh_gia", "neu")
+            props.onAi5Lop?.({
+              ky_thuat: "ok",
+              dong_tien: "neu",
+              noi_bo: "bad",
+              tin_tuc: "ok",
+              dinh_gia: "ok",
+            })
+          }}
+        >
+          RATE_MAU_THUAN
+        </button>
       </div>
     ),
   }
@@ -306,7 +328,22 @@ vi.mock("@/features/cap6", async (importOriginal) => {
       mutateAsync: recordKehoachCap6AsyncMock,
       isPending: false,
     }),
-    DoiChieuBlock: () => <div data-testid="doichieu-mock" />,
+    DoiChieuBlock: (props: {
+      onLopQuyetDinh: (lop: string) => void
+      onLyDo: (lyDo: string) => void
+    }) => (
+      <div data-testid="doichieu-mock">
+        <button
+          type="button"
+          onClick={() => {
+            props.onLopQuyetDinh("ky_thuat")
+            props.onLyDo("Tin lớp kỹ thuật vì nền giá vừa xác nhận.")
+          }}
+        >
+          PICK_DOICHIEU
+        </button>
+      </div>
+    ),
   }
 })
 
@@ -379,11 +416,15 @@ let kiemTraProps: {
 
 const CO_CANH_BAO = {
   symbol: "VCB",
+  khoi_luong: 100,
+  nganh: "Ngân hàng",
   canh_bao: [{ ma: "don_nganh", ten: "Dồn ngành", text: "Dồn ngành Ngân hàng: 46.0%…" }],
   don_nganh_pct_sau: 46,
   tuong_quan: { symbol: "MBB", he_so: 0.82 },
   tuong_quan_canh_bao: false,
+  tuong_quan_du_lieu: true,
   tong_rui_ro_pct_sau: 17,
+  so_vi_the_thieu_cat_lo: 2,
 } as unknown as KiemTraCap8
 
 const KHONG_CANH_BAO = {
@@ -398,6 +439,17 @@ let kiemTraState: { data: KiemTraCap8 | undefined; isLoading: boolean; isError: 
   isError: false,
 }
 
+/**
+ * ★ `null` = kết quả kiểm tra đã BẮT KỊP lệnh đang soạn (mock echo lại đúng mã +
+ * khối lượng được hỏi) — trạng thái bình thường, sau khi debounce lắng.
+ *
+ * Đặt một giá trị vào đây để mô phỏng CỬA SỔ DEBOUNCE 400 ms của
+ * `useKiemTraCap8`: user vừa đổi mã / đổi khối lượng, nhưng phản hồi đang giữ
+ * vẫn tả LỆNH TRƯỚC. Mỗi bài dùng nó chỉ lệch ĐÚNG MỘT chiều (mã, hoặc khối
+ * lượng) so với lệnh đang soạn, để biết chắc cổng nào đang chặn.
+ */
+let kiemTraLatch: { symbol: string; khoiLuong: number } | null = null
+
 vi.mock("@/features/cap8", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/features/cap8")>()
   return {
@@ -409,7 +461,14 @@ vi.mock("@/features/cap8", async (importOriginal) => {
       onOrderFilled: onOrderFilledCap8Mock,
       registerHandlers: vi.fn(),
     }),
-    useKiemTraCap8: () => kiemTraState,
+    useKiemTraCap8: (input: { symbol: string; khoiLuong: number }) => {
+      if (!kiemTraState.data) return kiemTraState
+      const tra = kiemTraLatch ?? { symbol: input.symbol, khoiLuong: input.khoiLuong }
+      return {
+        ...kiemTraState,
+        data: { ...kiemTraState.data, symbol: tra.symbol, khoi_luong: tra.khoiLuong },
+      }
+    },
     useRecordKehoachCap8: () => ({
       mutate: vi.fn(),
       mutateAsync: recordKehoachCap8AsyncMock,
@@ -490,6 +549,7 @@ beforeEach(() => {
   isCap8ActiveFlag = true
   kiemTraProps = {}
   kiemTraState = { data: CO_CANH_BAO, isLoading: false, isError: false }
+  kiemTraLatch = null
   placeOrderMock.mockClear()
   messageErrorMock.mockClear()
   setSymbolMock.mockClear()
@@ -501,6 +561,14 @@ beforeEach(() => {
   recordKehoachCap6AsyncMock.mockClear()
   recordKehoachCap7AsyncMock.mockClear()
   recordKehoachCap8AsyncMock.mockClear()
+  // ★ `mockClear` KHÔNG gỡ implementation: một bài dùng `mockRejectedValue` sẽ để
+  // lại lời hứa hỏng đó cho mọi bài sau nếu không đặt lại ở đây.
+  recordKehoachAsyncMock.mockResolvedValue({ id: "kh1" })
+  recordKehoachCap2AsyncMock.mockResolvedValue({ id: "khc2-1" })
+  recordKehoachCap3AsyncMock.mockResolvedValue({ id: "khc3-1" })
+  recordKehoachCap4AsyncMock.mockResolvedValue({ id: "khc4-1" })
+  recordKehoachCap6AsyncMock.mockResolvedValue({ id: "khc6-1" })
+  recordKehoachCap7AsyncMock.mockResolvedValue({ id: "khc7-1" })
   recordKehoachCap8AsyncMock.mockResolvedValue({ id: "khc8-1" })
   onOrderFilledCap1Mock.mockClear()
   onOrderFilledCap5Mock.mockClear()
@@ -613,11 +681,36 @@ describe("TradingPanel — 'Giảm khối lượng' và 'Chọn mã khác'", () 
     expect(kiemTraProps.khoiLuong).toBe(400)
   })
 
-  it("Chọn mã khác → bỏ mã đang chọn", () => {
+  it("★ Chọn mã khác KHÔNG đẩy mã rỗng qua terminal dùng chung", () => {
+    // Mã rỗng không phải một trạng thái nào trong terminal: `CenterPanel` →
+    // `TVChart` key toàn bộ effect khởi tạo theo `symbol`, nên một `setSymbol("")`
+    // huỷ + dựng lại widget TradingView trên một mã không phân giải được, rồi huỷ
+    // + dựng lại lần nữa khi bước chọn mã trả mã về. Bước chọn mã được mở từ
+    // event `onCheckHanhVi("chon_ma_khac")` của bus Cấp 8 thay vì từ mã rỗng.
     renderPanel()
     satisfyCap1To7()
     fireEvent.click(screen.getByText("CHON_MA_KHAC"))
-    expect(setSymbolMock).toHaveBeenCalledTimes(1)
+    expect(setSymbolMock).not.toHaveBeenCalled()
+  })
+
+  it("★ bấm 'Chọn mã khác' rồi vẫn mua CHÍNH mã đó → ghi 'van_mua'", async () => {
+    // Cảnh báo bật trên VCB → «Chọn mã khác» → user quay lại và mua VCB Y NGUYÊN.
+    // Ghi 'chon_ma_khac' ở đây là miễn cho lệnh một lần "mua bất chấp" ở nhiệm vụ
+    // ②, in "bạn: Chọn mã khác ✓" ở Kết sổ và để coach khen một điều chỉnh KHÔNG
+    // HỀ XẢY RA.
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("CHON_MA_KHAC"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(recordKehoachCap8AsyncMock).toHaveBeenCalledTimes(1))
+    expect(recordKehoachCap8AsyncMock).toHaveBeenCalledWith({
+      order_id: "order-1",
+      hanh_vi_canh_bao: "van_mua",
+    })
+    expect(onOrderFilledCap8Mock).toHaveBeenCalledWith(
+      expect.objectContaining({ hanhViCanhBao: "van_mua" }),
+    )
   })
 })
 
@@ -719,6 +812,161 @@ describe("TradingPanel — ghi bước Kiểm tra danh mục sau cùng trong chu
   })
 })
 
+describe("★★ TradingPanel — kết quả kiểm tra phải nói về ĐÚNG lệnh đang đặt", () => {
+  it("★ phản hồi còn tả MÃ KHÁC (cửa sổ debounce) → KHÔNG ghi khối Cấp 8", async () => {
+    // `useKiemTraCap8` debounce 400 ms + cache 30 s: ngay sau khi đổi mã, phản hồi
+    // đang giữ vẫn là của mã trước. Không có cổng cứng nào reset khi đổi mã, nên
+    // nút MUA đã mở sẵn.
+    kiemTraLatch = { symbol: "HPG", khoiLuong: 800 }
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(recordKehoachCap4AsyncMock).toHaveBeenCalledTimes(1))
+    expect(recordKehoachCap8AsyncMock).not.toHaveBeenCalled()
+    // …và lệnh vẫn khớp bình thường, chỉ là khối Cấp 8 để trống.
+    expect(placeOrderMock).toHaveBeenCalledTimes(1)
+  })
+
+  it("★ phản hồi của mã khác KHÔNG được lên bus (Kết sổ sẽ kể ngành của mã đó)", async () => {
+    kiemTraLatch = { symbol: "HPG", khoiLuong: 800 }
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(onOrderFilledCap8Mock).toHaveBeenCalledTimes(1))
+    const event = onOrderFilledCap8Mock.mock.calls[0][0] as Record<string, unknown>
+    expect(event.symbol).toBe("VCB")
+    expect(event.nganh).toBeUndefined()
+    expect(event.donNganhPct).toBeUndefined()
+    expect(event.tongRuiRoPct).toBeUndefined()
+    expect(event.danhMucCanhBao).toBeUndefined()
+    expect(event.hanhViCanhBao).toBeUndefined()
+  })
+
+  it("★ phản hồi còn tả KHỐI LƯỢNG KHÁC → KHÔNG ghi khối Cấp 8", async () => {
+    // Chỉ lệch ĐÚNG một chiều so với bài trên: cùng mã VCB, khác khối lượng (Cấp
+    // 3 tự điền 800 CP, phản hồi còn của 400 CP) — con số dồn ngành/rủi ro của
+    // một lệnh 400 CP không mô tả một lệnh 800 CP.
+    kiemTraLatch = { symbol: "VCB", khoiLuong: 400 }
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(recordKehoachCap4AsyncMock).toHaveBeenCalledTimes(1))
+    expect(recordKehoachCap8AsyncMock).not.toHaveBeenCalled()
+    expect(placeOrderMock).toHaveBeenCalledTimes(1)
+  })
+
+  it("phản hồi khớp cả mã lẫn khối lượng → ghi bình thường (đối chứng)", async () => {
+    kiemTraLatch = { symbol: "VCB", khoiLuong: 800 }
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(recordKehoachCap8AsyncMock).toHaveBeenCalledTimes(1))
+  })
+
+  it("★ tương quan CHƯA TÍNH ĐƯỢC không được lên bus dù cờ cảnh báo bật", async () => {
+    // `tuong_quan_du_lieu: false` = chưa đủ dữ liệu. Nếu chỉ xét
+    // `tuong_quan_canh_bao`, Kết sổ sẽ in "MBB (~0.00)" — một hệ số server KHÔNG
+    // tính được, hiện ra thành một con số.
+    kiemTraState = {
+      data: {
+        ...CO_CANH_BAO,
+        tuong_quan_canh_bao: true,
+        tuong_quan_du_lieu: false,
+      } as unknown as KiemTraCap8,
+      isLoading: false,
+      isError: false,
+    }
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(onOrderFilledCap8Mock).toHaveBeenCalledTimes(1))
+    expect(onOrderFilledCap8Mock).toHaveBeenCalledWith(
+      expect.objectContaining({ tuongQuanCaoVoi: null }),
+    )
+  })
+
+  it("tương quan tính được + cờ bật → vẫn lên bus (đối chứng)", async () => {
+    kiemTraState = {
+      data: {
+        ...CO_CANH_BAO,
+        tuong_quan_canh_bao: true,
+        tuong_quan_du_lieu: true,
+      } as unknown as KiemTraCap8,
+      isLoading: false,
+      isError: false,
+    }
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(onOrderFilledCap8Mock).toHaveBeenCalledTimes(1))
+    expect(onOrderFilledCap8Mock).toHaveBeenCalledWith(
+      expect.objectContaining({ tuongQuanCaoVoi: { symbol: "MBB", he_so: 0.82 } }),
+    )
+  })
+})
+
+describe("★★ TradingPanel — 'Giảm khối lượng' phải ghi được kể cả khi nó làm tắt cảnh báo", () => {
+  it("★ giảm KL làm cảnh báo tắt → vẫn ghi 'giam_kl' kèm canh_bao_da_hien", async () => {
+    // Giảm khối lượng CHÍNH LÀ thứ làm cảnh báo tắt: server suy lại theo lệnh đã
+    // giảm sẽ không thấy cảnh báo nào và từ chối 'giam_kl'. Nếu FE hạ xuống
+    // 'khong_canh_bao', một lệnh mà user ĐÃ NGHE lời được ghi thành "danh mục
+    // không có cảnh báo nào" — nhánh coach khen người tuân thủ không bao giờ với
+    // tới được.
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("GIAM_KL"))
+    // Lần kiểm tra sau khi giảm (800 → 400 CP) sạch cảnh báo.
+    kiemTraState = { data: KHONG_CANH_BAO, isLoading: false, isError: false }
+    fireEvent.click(screen.getByText("BÁN"))
+    fireEvent.click(screen.getByText("MUA"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(recordKehoachCap8AsyncMock).toHaveBeenCalledTimes(1))
+    expect(recordKehoachCap8AsyncMock).toHaveBeenCalledWith({
+      order_id: "order-1",
+      hanh_vi_canh_bao: "giam_kl",
+      canh_bao_da_hien: ["don_nganh"],
+    })
+  })
+
+  it("★ Kết sổ kể lại đúng cảnh báo user đã thấy, không phải bản sau điều chỉnh", async () => {
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("GIAM_KL"))
+    kiemTraState = { data: KHONG_CANH_BAO, isLoading: false, isError: false }
+    fireEvent.click(screen.getByText("BÁN"))
+    fireEvent.click(screen.getByText("MUA"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(onOrderFilledCap8Mock).toHaveBeenCalledTimes(1))
+    expect(onOrderFilledCap8Mock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        danhMucCanhBao: ["don_nganh"],
+        hanhViCanhBao: "giam_kl",
+      }),
+    )
+  })
+
+  it("★ 'Vẫn mua' KHÔNG kèm canh_bao_da_hien (server tự suy lại là nguồn đúng)", async () => {
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("VAN_MUA"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(recordKehoachCap8AsyncMock).toHaveBeenCalledTimes(1))
+    expect(recordKehoachCap8AsyncMock).toHaveBeenCalledWith({
+      order_id: "order-1",
+      hanh_vi_canh_bao: "van_mua",
+    })
+  })
+})
+
 describe("★★ TradingPanel — 400 từ /cap8/kehoach là KHÔNG CHÍ MẠNG", () => {
   it("★ lỗi ghi Cấp 8 KHÔNG nuốt event lệnh khớp của bất kỳ cấp nào", async () => {
     // Danh mục dịch chuyển giữa lúc kiểm tra và lúc server suy lại → 400. Lệnh
@@ -754,6 +1002,126 @@ describe("★★ TradingPanel — 400 từ /cap8/kehoach là KHÔNG CHÍ MẠNG"
     await waitFor(() => expect(onOrderFilledCap8Mock).toHaveBeenCalledTimes(1))
 
     // Form đã reset → cổng cứng Cấp 4 (5 lớp) khoá lại như một lệnh mới.
+    expect(submitButton()).toBeDisabled()
+  })
+})
+
+/**
+ * ★★★ CÙNG MỘT HIỂM HOẠ, CHO CẢ TÁM CẤP.
+ *
+ * Cấp 8 được bọc `try/catch` từ đầu, nhưng `/cap1/kehoach` … `/cap7/kehoach` thì
+ * không: một 500/timeout ở BẤT KỲ cái nào trong số đó ném lỗi ra `catch` của
+ * `handleSubmit` → user thấy "Đặt lệnh MUA VCB thất bại" cho một lệnh ĐÃ khớp,
+ * form không reset, và toàn bộ chuỗi `onOrderFilled` bị bỏ qua. Không có
+ * `onOrderFilled` thì trang không ghi lệnh mua này vào `lastBuyBySymbolRef`, nên
+ * khi user bán, Kết sổ của MỌI cấp lặng lẽ không mở (`if (!buy) return`) và lệnh
+ * không bao giờ vào nhật ký.
+ */
+describe("★★★ TradingPanel — MỘT lần ghi kế hoạch hỏng KHÔNG được nuốt bus của cấp nào", () => {
+  /** Mọi bus phải bắn đúng 1 lần cho lệnh MUA vừa khớp. */
+  async function expectMoiBusVanBan() {
+    await waitFor(() => expect(onOrderFilledCap1Mock).toHaveBeenCalledTimes(1))
+    expect(onOrderFilledCap5Mock).toHaveBeenCalledTimes(1)
+    expect(onOrderFilledCap6Mock).toHaveBeenCalledTimes(1)
+    expect(onOrderFilledCap7Mock).toHaveBeenCalledTimes(1)
+    expect(onOrderFilledCap8Mock).toHaveBeenCalledTimes(1)
+    expect(messageErrorMock).not.toHaveBeenCalled()
+  }
+
+  it("★ /cap6/kehoach 500 → mọi bus vẫn bắn, không toast lỗi", async () => {
+    recordKehoachCap6AsyncMock.mockRejectedValue(new Error("500: ghi đối chiếu hỏng"))
+    renderPanel()
+    fireEvent.click(screen.getByText("PICK_SLTP"))
+    fireEvent.click(screen.getByText("PICK_VON"))
+    fireEvent.click(screen.getByText("RATE_MAU_THUAN"))
+    fireEvent.click(screen.getByText("PICK_DOICHIEU"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(recordKehoachCap6AsyncMock).toHaveBeenCalledTimes(1))
+    await expectMoiBusVanBan()
+  })
+
+  it("★ /cap6/kehoach 500 → các cấp SAU nó vẫn được ghi", async () => {
+    recordKehoachCap6AsyncMock.mockRejectedValue(new Error("500"))
+    renderPanel()
+    fireEvent.click(screen.getByText("PICK_SLTP"))
+    fireEvent.click(screen.getByText("PICK_VON"))
+    fireEvent.click(screen.getByText("RATE_MAU_THUAN"))
+    fireEvent.click(screen.getByText("PICK_DOICHIEU"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(recordKehoachCap8AsyncMock).toHaveBeenCalledTimes(1))
+  })
+
+  it("★ /cap7/kehoach timeout → mọi bus vẫn bắn, không toast lỗi", async () => {
+    recordKehoachCap7AsyncMock.mockRejectedValue(new Error("timeout"))
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("DOC_MANH"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(recordKehoachCap7AsyncMock).toHaveBeenCalledTimes(1))
+    await expectMoiBusVanBan()
+  })
+
+  it("★ /cap7/kehoach timeout → khối Cấp 8 sau nó vẫn được ghi", async () => {
+    recordKehoachCap7AsyncMock.mockRejectedValue(new Error("timeout"))
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("DOC_MANH"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(recordKehoachCap8AsyncMock).toHaveBeenCalledTimes(1))
+  })
+
+  it("★ /cap1/kehoach 500 (gốc của cả chuỗi) → mọi bus vẫn bắn", async () => {
+    recordKehoachAsyncMock.mockRejectedValue(new Error("500"))
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(recordKehoachAsyncMock).toHaveBeenCalledTimes(1))
+    await expectMoiBusVanBan()
+  })
+
+  it("★ /cap2/kehoach 500 → mọi bus vẫn bắn", async () => {
+    recordKehoachCap2AsyncMock.mockRejectedValue(new Error("500"))
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(recordKehoachCap2AsyncMock).toHaveBeenCalledTimes(1))
+    await expectMoiBusVanBan()
+  })
+
+  it("★ /cap3/kehoach 500 → mọi bus vẫn bắn", async () => {
+    recordKehoachCap3AsyncMock.mockRejectedValue(new Error("500"))
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(recordKehoachCap3AsyncMock).toHaveBeenCalledTimes(1))
+    await expectMoiBusVanBan()
+  })
+
+  it("★ /cap4/kehoach 500 → mọi bus vẫn bắn", async () => {
+    recordKehoachCap4AsyncMock.mockRejectedValue(new Error("500"))
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(recordKehoachCap4AsyncMock).toHaveBeenCalledTimes(1))
+    await expectMoiBusVanBan()
+  })
+
+  it("★ /cap7/kehoach hỏng cũng KHÔNG chặn reset form cho lệnh sau", async () => {
+    recordKehoachCap7AsyncMock.mockRejectedValue(new Error("timeout"))
+    renderPanel()
+    satisfyCap1To7()
+    fireEvent.click(screen.getByText("DOC_MANH"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+    await waitFor(() => expect(onOrderFilledCap8Mock).toHaveBeenCalledTimes(1))
+
     expect(submitButton()).toBeDisabled()
   })
 })
