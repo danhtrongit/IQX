@@ -272,13 +272,14 @@ describe("JourneyPanelCap5", () => {
     expect(screen.getByTestId("panel-spy")).toHaveTextContent("trading")
   })
 
-  it("shows the goal box: 3/3 closes the 0-5 foundational arc, next is Cấp 6 (sắp ra mắt)", () => {
+  it("shows the goal box: 3/3 closes the 0-5 foundational arc, next is Cấp 6 (now live)", () => {
     renderPanel()
     const goal = screen.getByTestId("cap5-journey-goal")
     expect(goal).toHaveTextContent(/tốt nghiệp Cấp 5/)
     expect(goal).toHaveTextContent(/mạch nền tảng/)
     expect(goal).toHaveTextContent(/Cấp 6 «Đối chiếu»/)
-    expect(goal).toHaveTextContent(/sắp ra mắt/)
+    // Cấp 6 đã có thật (Cấp 6 Task FE3) — không còn hứa "sắp ra mắt".
+    expect(goal.textContent).not.toMatch(/sắp ra mắt/)
   })
 
   it("does NOT render any medal cabinet / Tủ huân chương (spec §9 — no cấp has one)", () => {

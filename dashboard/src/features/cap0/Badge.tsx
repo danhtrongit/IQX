@@ -2,9 +2,14 @@ import "./cap0.css"
 import type { BadgeOptions, Cap0Level } from "./types"
 
 /**
- * Level colour table — spec §12. Same evolving hexagon across 6 levels: the
- * edge glows brighter, the core fills denser, rays appear from level 4, glow at
- * level 5.
+ * Level colour table — spec §12 (Cấp 0-5, the "mạch nền tảng"), EXTENDED as the
+ * theme levels ship. The evolving hexagon: the edge glows brighter, the core
+ * fills denser, rays appear from level 4, glow at level 5+.
+ *
+ * Cấp 6 «Đối chiếu» (đỏ son `#d64550`, fill=6) is the first theme level — spec
+ * `IQX-Cap6-Spec.md` §0/§1. Each cấp also declares its own hex inside its own
+ * CSS (there is no single colour map); this table is only what the shared
+ * `Badge` needs.
  */
 export const LEVELS: Cap0Level[] = [
   { n: 0, name: "Nhập môn", color: "#8a90a5", fill: 0 },
@@ -13,6 +18,7 @@ export const LEVELS: Cap0Level[] = [
   { n: 3, name: "Bản lĩnh", color: "#4f8ff7", fill: 3 },
   { n: 4, name: "Thuần thục", color: "#a78bfa", fill: 4 },
   { n: 5, name: "Lão luyện", color: "#e0b64d", fill: 5 },
+  { n: 6, name: "Đối chiếu", color: "#d64550", fill: 6 },
 ]
 
 /**
@@ -43,7 +49,11 @@ export function badge(o: BadgeOptions): string {
     litEdges += `<line x1="${p1[0].toFixed(1)}" y1="${p1[1].toFixed(1)}" x2="${p2[0].toFixed(1)}" y2="${p2[1].toFixed(1)}" stroke="${lit ? col : "#3a3f52"}" stroke-width="${lit ? 2.4 : 1.4}" stroke-linecap="round" opacity="${lit ? 1 : 0.6}"/>`
   }
 
-  const coreOpacity = [0, 0.1, 0.2, 0.34, 0.52, 0.9][fill]
+  // Spec §12's table stops at fill=5 (Cấp 0-5). One entry is APPENDED for
+  // fill=6 (Cấp 6) — indices 0-5 are byte-for-byte the spec's, so every existing
+  // badge renders identically; without it `coreOpacity` would be `undefined` and
+  // the gradient's stop-opacity would render as `NaN`.
+  const coreOpacity = [0, 0.1, 0.2, 0.34, 0.52, 0.9, 1][fill]
   const innerR = R * 0.56
   const innerPts: string[] = []
   for (let i = 0; i < 6; i++) {
@@ -60,7 +70,9 @@ export function badge(o: BadgeOptions): string {
         y1 = c - R * 1.05 * Math.sin(a)
       const x2 = c + R * 1.3 * Math.cos(a),
         y2 = c - R * 1.3 * Math.sin(a)
-      rays += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="1.6" stroke-linecap="round" opacity="${fill === 5 ? 0.9 : 0.5}"/>`
+      // `fill >= 5` (was `fill === 5`) so Cấp 6 keeps the bright rays instead of
+      // regressing to Cấp 4's dim ones. Identical output for fill 0-5.
+      rays += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="1.6" stroke-linecap="round" opacity="${fill >= 5 ? 0.9 : 0.5}"/>`
     }
   }
 

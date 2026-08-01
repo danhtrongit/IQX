@@ -1,0 +1,189 @@
+/**
+ * Tab "Hành trình" Cấp 6 (spec §8 + §2③) — chỉ những gì Cấp 0-5 CHƯA có: chip
+ * bài học trong thẻ cấp, widget nổi bật "Đối chiếu theo kiểu" và widget "Thách
+ * thức Đối chiếu" (3 điều kiện + thanh tiến độ + giải thích §C12c). Mọi phần
+ * khác (thẻ cấp, checklist, hộp mục tiêu) dùng lại `cap0.css`.
+ *
+ * Màu cấp: đỏ son `#d64550` (khai báo tại chỗ, đúng quy ước "mỗi cấp tự khai
+ * hex của mình trong CSS của nó" — xem `cap6.css:17`).
+ *
+ * Mirror `cap5/cap5-journey.css` một cấp lên — cùng bộ class, chỉ đổi tiền tố
+ * và màu, KHÔNG sửa file của Cấp 5 (Cấp 5 vẫn đang chạy production).
+ *
+ * ★ KHÔNG có state nào ở đây tô đỏ-cảnh-báo cho lựa chọn của user: "lệch gợi ý"
+ * là một sự thật TRUNG TÍNH (spec §5/§10). Đỏ son là màu NHẬN DIỆN của cấp.
+ */
+
+.cap6-journey-tag {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: #d64550;
+  background: rgba(214, 69, 80, 0.16);
+  border: 1px solid rgba(214, 69, 80, 0.4);
+  border-radius: 5px;
+}
+
+/* ── Widget nổi bật "Đối chiếu theo kiểu" (spec §8 mục 2) ─────────────────── */
+.cap6-doichieu-widget {
+  padding: 14px;
+  margin-bottom: 7px;
+  text-align: center;
+  background: rgba(214, 69, 80, 0.16);
+  border: 1px solid rgba(214, 69, 80, 0.4);
+  border-radius: 10px;
+}
+
+.cap6-doichieu-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: #d64550;
+  text-transform: uppercase;
+}
+
+.cap6-doichieu-value {
+  margin: 4px 0 2px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  color: var(--t1);
+}
+
+.cap6-doichieu-giaithich,
+.cap6-doichieu-empty {
+  margin: 6px 0 0;
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: left;
+  color: var(--t3);
+}
+
+.cap6-doichieu-conu {
+  margin: 4px 0 0;
+  font-size: 10px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+  color: var(--t2);
+}
+
+.cap6-doichieu-why {
+  padding-top: 8px;
+  margin: 8px 0 0;
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: left;
+  color: var(--t3);
+  border-top: 1px solid var(--bd);
+}
+
+/* ── Widget Thách thức Đối chiếu (nhiệm vụ ③) ─────────────────────────────── */
+.cap6-thachthuc {
+  padding: 14px;
+  margin-bottom: 7px;
+  background: var(--bg2);
+  border: 1px solid rgba(214, 69, 80, 0.4);
+  border-radius: 10px;
+}
+
+.cap6-thachthuc-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #d64550;
+}
+
+.cap6-thachthuc-cond {
+  margin-bottom: 9px;
+}
+
+.cap6-thachthuc-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 11.5px;
+}
+
+.cap6-thachthuc-ic {
+  width: 16px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.cap6-thachthuc-label {
+  flex: 1;
+  color: var(--t2);
+}
+
+.cap6-thachthuc-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--t1);
+}
+
+.cap6-thachthuc-cond[data-dat="true"] .cap6-thachthuc-value {
+  color: #35d07f;
+}
+
+/* Chưa đủ dữ liệu ≠ chưa đạt: chữ mờ, KHÔNG màu cảnh báo, KHÔNG con số. */
+.cap6-thachthuc-cond[data-du-du-lieu="false"] .cap6-thachthuc-value {
+  font-weight: 500;
+  color: var(--t3);
+}
+
+.cap6-thachthuc-bar {
+  height: 5px;
+  margin-left: 24px;
+  overflow: hidden;
+  background: var(--bg4);
+  border-radius: 3px;
+}
+
+.cap6-thachthuc-bar > i {
+  display: block;
+  height: 100%;
+  background: #d64550;
+  border-radius: 3px;
+}
+
+.cap6-thachthuc-cond[data-dat="true"] .cap6-thachthuc-bar > i {
+  background: #35d07f;
+}
+
+.cap6-thachthuc-giaithich {
+  margin: 2px 0 0 24px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--t3);
+}
+
+.cap6-thachthuc-conu {
+  margin: 3px 0 0 24px;
+  font-size: 10px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  color: var(--t2);
+}
+
+.cap6-thachthuc-why {
+  padding-top: 8px;
+  margin-top: 10px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--t3);
+  border-top: 1px solid var(--bd);
+}
+
+.cap6-thachthuc-loading {
+  font-size: 11px;
+  color: var(--t3);
+}

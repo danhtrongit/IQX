@@ -4,8 +4,8 @@
  *
  * FE1: the event bus, the API/hooks/keys/types layer, the PURE conflict helpers
  * and the panel's bước Đối chiếu. FE2: Kết sổ Cấp 6, the coach's 6th paragraph,
- * and khối ⑭⑮ of Phân tích danh mục. The Hành trình tab, the graduation screen
- * and the page/routing pieces arrive in FE3.
+ * and khối ⑭⑮ of Phân tích danh mục. FE3: the Hành trình tab, the graduation
+ * screen, the Phân tích danh mục panel and the page itself.
  */
 export {
   Cap6Provider,
@@ -83,3 +83,9 @@ export {
   type Cap6TradeRecord,
   type UseCap6TradeLogReturn,
 } from "./tradeLogCap6"
+
+// ── FE3: Hành trình + tốt nghiệp + panel Phân tích danh mục + trang Cấp 6 ────
+export { JourneyPanelCap6, taskStateCap6 } from "./JourneyPanelCap6"
+export { GraduationModalCap6, isGraduationReadyCap6 } from "./GraduationModalCap6"
+export { Cap6PortfolioAnalysisPanel } from "./Cap6PortfolioAnalysisPanel"
+export { Cap6TradingPage } from "./Cap6TradingPage"

@@ -322,7 +322,7 @@ export function JourneyPanelCap5() {
         <div className="cap0-journey-goal" data-testid="cap5-journey-goal">
           Xong 3/3 → tốt nghiệp Cấp 5 «Lão luyện» — <strong>hết mạch nền tảng</strong> (Nhập môn →
           Lão luyện). Tiếp theo: <strong>Cấp 6 «Đối chiếu»</strong> — tin lớp nào khi các lớp nói
-          ngược nhau (sắp ra mắt).
+          ngược nhau.
         </div>
       </div>
     </div>
