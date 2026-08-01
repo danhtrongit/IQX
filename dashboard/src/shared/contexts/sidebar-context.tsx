@@ -34,6 +34,10 @@ export type SidebarPanel =
   // `JourneyPanelCap7`'s button while inside `Cap7Provider`; harmless
   // elsewhere (mirrors "cap6-analysis"'s own doc, one level up).
   | "cap7-analysis"
+  // Cấp 8 "Phân tích danh mục" (Cấp 8 spec §7) — only reachable from
+  // `JourneyPanelCap8`'s button while inside `Cap8Provider`; harmless
+  // elsewhere (mirrors "cap7-analysis"'s own doc, one level up).
+  | "cap8-analysis"
 
 interface SidebarContextValue {
   activePanel: SidebarPanel

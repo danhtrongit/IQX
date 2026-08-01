@@ -26,17 +26,54 @@ import type { Cap0Progress } from "./types"
 
 // ── LEVELS (spec §12) ─────────────────────────────────────────────────────────
 describe("LEVELS", () => {
-  it("has the 6 nền-tảng levels + Cấp 6 + Cấp 7; level 0 is «Nhập môn» grey with fill 0", () => {
+  it("has the 6 nền-tảng levels + Cấp 6 + Cấp 7 + Cấp 8; level 0 is «Nhập môn» grey with fill 0", () => {
     // 0-5 = spec §12's own table (mạch nền tảng); index 6 was APPENDED when
     // Cấp 6 «Đối chiếu» shipped (đỏ son #d64550, fill=6), index 7 when Cấp 7
-    // «Đọc sổ lệnh» shipped (hồng magenta #c65cae, fill=7).
-    expect(LEVELS).toHaveLength(8)
+    // «Đọc sổ lệnh» shipped (hồng magenta #c65cae, fill=7), index 8 when Cấp 8
+    // «Quản trị rủi ro danh mục» shipped (xanh lá #3f9b5a, fill=8 — the LAST
+    // level of the current program).
+    expect(LEVELS).toHaveLength(9)
     expect(LEVELS[0].name).toBe("Nhập môn")
     expect(LEVELS[0].color).toBe("#8a90a5")
     expect(LEVELS[0].fill).toBe(0)
     expect(LEVELS[5].name).toBe("Lão luyện")
     expect(LEVELS[6]).toEqual({ n: 6, name: "Đối chiếu", color: "#d64550", fill: 6 })
     expect(LEVELS[7]).toEqual({ n: 7, name: "Đọc sổ lệnh", color: "#c65cae", fill: 7 })
+    expect(LEVELS[8]).toEqual({
+      n: 8,
+      name: "Quản trị rủi ro danh mục",
+      color: "#3f9b5a",
+      fill: 8,
+    })
+  })
+
+  // ★ The full 0-8 rail is the payoff of `GraduationModalCap8`'s CTA — every one
+  // of the nine badges must render with ITS OWN colour and number. A single
+  // `undefined` in the opacity table turns one rail cell invisible, and the
+  // moment the whole program builds to is a hole in a row of badges.
+  it("★ renders all NINE rail states, each with its own colour + number, no NaN", () => {
+    // Expected hexes written out LITERALLY, not read back off `LEVELS`: a test
+    // that feeds `LEVELS[i].color` into `badge()` and then looks for that same
+    // string in the output can never notice a wrong colour in `LEVELS`.
+    const EXPECTED = [
+      "#8a90a5",
+      "#c97b4a",
+      "#7dd3c0",
+      "#4f8ff7",
+      "#a78bfa",
+      "#e0b64d",
+      "#d64550",
+      "#c65cae",
+      "#3f9b5a",
+    ]
+    expect(LEVELS.map((l) => l.color)).toEqual(EXPECTED)
+    expect(LEVELS.map((l) => l.fill)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8])
+    LEVELS.forEach((level, i) => {
+      const svg = badge({ n: level.n, color: level.color, fill: level.fill, size: 34 })
+      expect(svg, `Cấp ${level.n}`).not.toContain("NaN")
+      expect(svg, `Cấp ${level.n}`).toContain(EXPECTED[i])
+      expect(svg, `Cấp ${level.n}`).toContain(`>${level.n}<`)
+    })
   })
 
   it("renders a fill=6 badge without NaN opacities (spec §12's table stops at 5)", () => {
@@ -52,6 +89,21 @@ describe("LEVELS", () => {
     expect(svg).not.toContain("NaN")
     expect(svg).toContain("#c65cae")
     // fill ≥ 5 keeps the bright rays; fill ≥ 3 keeps the white numeral.
+    expect(svg).toContain('opacity="0.9"')
+    expect(svg).toContain('fill="#fff"')
+  })
+
+  // ★ Regression (Cấp 8): SAME bug, one index further. `coreOpacity` stopping at
+  // 7 made `fill=8` render `stop-opacity="NaN"` — and Cấp 8's badge is the one
+  // the graduation screen shows at 120px as the finale of the whole program.
+  it("★ renders a fill=8 badge without NaN opacities (Cấp 8 xanh lá)", () => {
+    const svg = badge({ n: 8, color: "#3f9b5a", fill: 8, size: 120, glow: true })
+    expect(svg).not.toContain("NaN")
+    expect(svg).not.toContain("stop-opacity=\"undefined\"")
+    expect(svg).toContain("#3f9b5a")
+    // Core is fully opaque from fill=6 up; the outer stop is half of that.
+    expect(svg).toContain('stop-opacity="1"')
+    expect(svg).toContain('stop-opacity="0.5"')
     expect(svg).toContain('opacity="0.9"')
     expect(svg).toContain('fill="#fff"')
   })

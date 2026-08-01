@@ -1,0 +1,45 @@
+/**
+ * Màn tốt nghiệp Cấp 8 — **màn cuối của cả chương trình 0-8** (spec §3). Dùng lại
+ * `.cap0-grad-block`/`.cap0-grad-cta` cho layout (mirror `cap7/
+ * cap7-graduation.css`), chỉ đổi màu sang xanh lá Cấp 8 `#3f9b5a`. Nút CTA PHẢI
+ * override màu vì `.cap0-grad-cta` mặc định là `var(--brand)` (#4f8ff7 — màu Cấp
+ * 3).
+ *
+ * ★ KHÔNG confetti, KHÔNG huy chương, KHÔNG âm thanh (§C10 / spec §9). Màu cấp +
+ * rail 0-8 đã hoàn thành là toàn bộ "khoảnh khắc" — và đó là cố ý.
+ *
+ * ★ Khối 3 KHÔNG có viền "màu cấp sau": không có cấp sau. Nó dùng chính xanh lá
+ * của Cấp 8 — một viền màu lạ ở đây sẽ ngầm hứa một cấp chưa tồn tại.
+ */
+
+.cap8-grad-block--top {
+  border-color: rgba(63, 155, 90, 0.5);
+}
+
+.cap8-grad-cta--top {
+  background: #3f9b5a;
+  color: #f2fbf5;
+}
+
+/* Dòng nhỏ dưới huy hiệu 120px — "Trọn mạch Nhập môn → đây." (spec §3 header). */
+.cap8-grad-tronmach {
+  margin: 6px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: #3f9b5a;
+}
+
+/* Dòng provenance §C12c dưới Khối 1 — con số thật đứng sau lời ghi nhận. */
+.cap8-grad-provenance {
+  margin: -4px 0 10px;
+  font-size: 10.5px;
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+  color: var(--t3);
+}
+
+/* Rail 0-8 trong màn tốt nghiệp — mốc "trọn mạch 0-8" (spec §10 checklist). */
+.cap8-grad-rail {
+  margin: 10px 0 12px;
+}

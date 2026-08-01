@@ -8,9 +8,16 @@ import type { BadgeOptions, Cap0Level } from "./types"
  *
  * Cấp 6 «Đối chiếu» (đỏ son `#d64550`, fill=6) is the first theme level — spec
  * `IQX-Cap6-Spec.md` §0/§1 — followed by Cấp 7 «Đọc sổ lệnh» (hồng magenta
- * `#c65cae`, fill=7 — `IQX-Cap7-Spec.md` §1). Each cấp also declares its own hex
- * inside its own CSS (there is no single colour map); this table is only what
- * the shared `Badge` needs.
+ * `#c65cae`, fill=7 — `IQX-Cap7-Spec.md` §1) and Cấp 8 «Quản trị rủi ro danh
+ * mục» (xanh lá `#3f9b5a`, fill=8 — `IQX-Cap8-Spec.md` §1), the LAST level of
+ * the current program. Each cấp also declares its own hex inside its own CSS
+ * (there is no single colour map); this table is only what the shared `Badge`
+ * needs.
+ *
+ * ★ This array IS the 0-8 rail (`JourneyPanelCap8`'s huy-hiệu rail renders it in
+ * order, and `iqx-badges.html` — the roadmap's §D "mockup chuẩn" for the rail —
+ * uses exactly these colours). Adding a level here adds a rail cell; nothing
+ * else needs a second colour table.
  */
 export const LEVELS: Cap0Level[] = [
   { n: 0, name: "Nhập môn", color: "#8a90a5", fill: 0 },
@@ -21,6 +28,7 @@ export const LEVELS: Cap0Level[] = [
   { n: 5, name: "Lão luyện", color: "#e0b64d", fill: 5 },
   { n: 6, name: "Đối chiếu", color: "#d64550", fill: 6 },
   { n: 7, name: "Đọc sổ lệnh", color: "#c65cae", fill: 7 },
+  { n: 8, name: "Quản trị rủi ro danh mục", color: "#3f9b5a", fill: 8 },
 ]
 
 /**
@@ -52,11 +60,14 @@ export function badge(o: BadgeOptions): string {
   }
 
   // Spec §12's table stops at fill=5 (Cấp 0-5). Entries are APPENDED for fill=6
-  // (Cấp 6) and fill=7 (Cấp 7) — indices 0-5 are byte-for-byte the spec's, so
-  // every existing badge renders identically; without them `coreOpacity` would
-  // be `undefined` and the gradient's stop-opacity would render as `NaN` (an
-  // invisible badge, the exact bug Cấp 6 hit at fill=6).
-  const coreOpacity = [0, 0.1, 0.2, 0.34, 0.52, 0.9, 1, 1][fill]
+  // (Cấp 6), fill=7 (Cấp 7) and fill=8 (Cấp 8) — indices 0-5 are byte-for-byte
+  // the spec's, so every existing badge renders identically; without them
+  // `coreOpacity` would be `undefined` and the gradient's stop-opacity would
+  // render as `NaN` (an invisible badge — the exact bug Cấp 6 hit at fill=6,
+  // Cấp 7 hit again at fill=7 and Cấp 8 hit again at fill=8).
+  //
+  // ★ ONE ENTRY PER LEVEL: this array must stay at least as long as `LEVELS`.
+  const coreOpacity = [0, 0.1, 0.2, 0.34, 0.52, 0.9, 1, 1, 1][fill]
   const innerR = R * 0.56
   const innerPts: string[] = []
   for (let i = 0; i < 6; i++) {

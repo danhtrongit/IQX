@@ -4,8 +4,14 @@
  *
  * FE1: the event bus, the API/hooks/keys/types layer, the two pure rules and the
  * panel's khối Kiểm tra danh mục. FE2: Kết sổ Cấp 8, the coach's 8th paragraph,
- * and khối ⑱ of Phân tích danh mục. The Hành trình tab, the graduation screen
- * (the program's finale) and the page/routing pieces arrive in FE3.
+ * and khối ⑱ of Phân tích danh mục. FE3: the Hành trình tab + rail 0-8, the
+ * graduation screen (the program's finale) and the page.
+ *
+ * ★ `Cap8TradingPage` is exported from this barrel like every other cấp's page,
+ * but `DauTruongPage`/`RightSidebar`/`GraduationModalCap7` deliberately import it
+ * (and `JourneyPanelCap8`/`Cap8PortfolioAnalysisPanel`/`hooks`) from their
+ * concrete files instead: this barrel pulls in the page, which pulls in
+ * `@/features/dashboard`, which pulls in `RightSidebar` — a module cycle.
  *
  * ★ Cấp 8 cố ý KHÔNG có `tradeLogCap8`: nó không thêm trường nào vào nhật ký
  * lệnh (khối ⑱ đọc thẳng từ `GET /cap8/thach-thuc`), nên Kết sổ và Phân tích
@@ -63,6 +69,11 @@ export {
   Cap8PortfolioAnalysis,
   type Cap8PortfolioAnalysisProps,
 } from "./Cap8PortfolioAnalysis"
+export { Cap8PortfolioAnalysisPanel } from "./Cap8PortfolioAnalysisPanel"
+export { JourneyPanelCap8, taskStateCap8 } from "./JourneyPanelCap8"
+export { HuyHieuRailCap8, type HuyHieuRailCap8Props } from "./HuyHieuRailCap8"
+export { GraduationModalCap8, isGraduationReadyCap8 } from "./GraduationModalCap8"
+export { Cap8TradingPage } from "./Cap8TradingPage"
 export {
   countCap8TasksDone,
   giamKhoiLuong,

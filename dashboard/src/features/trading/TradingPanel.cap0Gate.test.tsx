@@ -83,6 +83,18 @@ vi.mock("@/shared/http/client", () => ({
 // there is no static top-level import of `TradingPanel`/`Cap0Provider` here
 // on purpose.
 
+/**
+ * ★ `COLD_IMPORT_TIMEOUT` — these three tests each `vi.resetModules()` and then
+ * dynamically `import("./TradingPanel")`, so every one of them pays for a COLD
+ * transform of the panel's whole module graph. That graph has grown with every
+ * cấp (it now reaches Cấp 0 … Cấp 8's blocks), and under a fully parallel
+ * `vitest run` the transform alone can pass vitest's 5s default — the file then
+ * fails with "Test timed out in 5000ms" while passing in isolation. The waits
+ * inside the tests are unchanged (`waitFor` keeps its own default); this only
+ * stops a cold module transform from being reported as a product failure.
+ */
+const COLD_IMPORT_TIMEOUT = 30_000
+
 describe("GatedOrderEntry — Cấp 0 ungate", () => {
   it("keeps the premium gate intact OUTSIDE Cấp 0 (no Cap0Provider), matching today's /bieu-do & /co-phieu behaviour", async () => {
     vi.resetModules()
@@ -97,7 +109,7 @@ describe("GatedOrderEntry — Cấp 0 ungate", () => {
     )
     expect(screen.getByText("Đặt lệnh Đấu trường ảo yêu cầu gói Premium.")).toBeInTheDocument()
     expect(screen.queryByText("ĐẶT LỆNH MUA")).not.toBeInTheDocument()
-  })
+  }, COLD_IMPORT_TIMEOUT)
 
   it("ungates the order form INSIDE Cấp 0 (real Cap0Provider) even though isPremium is false", async () => {
     vi.resetModules()
@@ -124,7 +136,7 @@ describe("GatedOrderEntry — Cấp 0 ungate", () => {
     expect(screen.getByText("KẾ HOẠCH")).toBeInTheDocument()
     fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
     await waitFor(() => expect(placeOrderMock).not.toHaveBeenCalled())
-  })
+  }, COLD_IMPORT_TIMEOUT)
 
   it("renders the order form normally when isPremium is true and NO Cap0Provider — no Kế hoạch block, and a BUY submits WITHOUT picking a reason (no scope leak into normal trading)", async () => {
     vi.resetModules()
@@ -149,5 +161,5 @@ describe("GatedOrderEntry — Cấp 0 ungate", () => {
     expect(placeOrderMock).toHaveBeenCalledWith(
       expect.objectContaining({ symbol: "VNM", side: "buy", quantity: 100 }),
     )
-  })
+  }, COLD_IMPORT_TIMEOUT)
 })

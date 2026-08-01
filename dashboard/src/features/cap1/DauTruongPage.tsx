@@ -31,6 +31,11 @@ import { Cap6TradingPage } from "@/features/cap6/Cap6TradingPage"
 // rationale as the Cấp 2/Cấp 3/Cấp 4/Cấp 5/Cấp 6 imports above.
 import { useCap7Progress, useEnterCap7 } from "@/features/cap7/hooks"
 import { Cap7TradingPage } from "@/features/cap7/Cap7TradingPage"
+// Cấp 8 is live (Cấp 8 Task FE3) — concrete-file imports, same anti-cycle
+// rationale as the Cấp 2/Cấp 3/Cấp 4/Cấp 5/Cấp 6/Cấp 7 imports above. ★ Cấp 8 is
+// the LAST level of the program: nothing routes past it.
+import { useCap8Progress, useEnterCap8 } from "@/features/cap8/hooks"
+import { Cap8TradingPage } from "@/features/cap8/Cap8TradingPage"
 
 function FullPageSpinner() {
   return (
@@ -42,9 +47,9 @@ function FullPageSpinner() {
 
 /**
  * `/dau-truong` progression router (Task FE3) — the ONE route that serves the
- * whole level program (Cấp 0 … Cấp 7 today). Picks the flow by the user's ACTUAL
- * progress rather than anything URL/param-based, so each new cấp reuses the exact
- * same pattern (just add another `if`).
+ * whole level program (Cấp 0 … Cấp 8, the FULL 0-8 arc). Picks the flow by the
+ * user's ACTUAL progress rather than anything URL/param-based, so each new cấp
+ * reuses the exact same pattern (just add another `if`).
  *
  * Rules (plan §"Progression routing"):
  *  - not authenticated, or still resolving auth/progress → same as before
@@ -71,11 +76,16 @@ function FullPageSpinner() {
  *  - Cấp 6 graduated, Cấp 7 not entered/not graduated → `Cap7TradingPage`
  *    (Cấp 7 Task FE3), firing the idempotent `POST /cap7/enter` on first
  *    arrival — same pattern, one more level up.
- *  - Cấp 6 graduated AND Cấp 7 already graduated → still `Cap7TradingPage`
- *    (Cấp 8 «Quản trị rủi ro danh mục» doesn't exist yet — same honest "next
- *    level not built" pattern `GraduationModalCap1` … `GraduationModalCap6`
- *    used before their own next level shipped, now used by
- *    `GraduationModalCap7` for Cấp 8).
+ *  - Cấp 7 graduated, Cấp 8 not entered/not graduated → `Cap8TradingPage`
+ *    (Cấp 8 Task FE3), firing the idempotent `POST /cap8/enter` on first
+ *    arrival — same pattern, one more level up.
+ *  - **Cấp 7 graduated AND Cấp 8 already graduated → still `Cap8TradingPage`.**
+ *    This is the TERMINAL branch of the whole program: Cấp 8 «Quản trị rủi ro
+ *    danh mục» is the last level (Cấp 9+ is "sắp ra mắt" text only — Cấp 8 spec
+ *    §3), so there is no next page to route on to, and a graduate of the full
+ *    0-8 arc keeps their own level's shell rather than being demoted to a lower
+ *    one. When a Cấp 9 ships, this branch becomes another `if` exactly like the
+ *    seven above it.
  */
 export function DauTruongPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth()
@@ -206,6 +216,24 @@ export function DauTruongPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldQueryCap7, cap7Fetched, cap7Progress])
 
+  const cap7Graduated = !!cap7Progress?.graduated_at
+
+  // Only query Cấp 8 progress once Cấp 7 is confirmed graduated — mirrors the
+  // Cấp 6 → Cấp 7 gating above, one level up (and the last time).
+  const shouldQueryCap8 = shouldQueryCap7 && cap7Graduated
+  const { data: cap8Progress, isFetched: cap8Fetched } = useCap8Progress(shouldQueryCap8)
+  const enterCap8 = useEnterCap8()
+  const enterCap8AttemptedRef = useRef(false)
+
+  useEffect(() => {
+    if (!shouldQueryCap8 || !cap8Fetched) return
+    if (cap8Progress != null) return // already entered (idempotent no-op otherwise)
+    if (enterCap8AttemptedRef.current) return
+    enterCap8AttemptedRef.current = true
+    enterCap8.mutate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldQueryCap8, cap8Fetched, cap8Progress])
+
   if (authLoading) return <FullPageSpinner />
   if (!isAuthenticated) return <Cap0TradingPage />
   if (!cap0Fetched) return <FullPageSpinner />
@@ -223,5 +251,9 @@ export function DauTruongPage() {
   if (!cap6Fetched) return <FullPageSpinner />
   if (!cap6Graduated) return <Cap6TradingPage />
   if (!cap7Fetched) return <FullPageSpinner />
-  return <Cap7TradingPage />
+  if (!cap7Graduated) return <Cap7TradingPage />
+  if (!cap8Fetched) return <FullPageSpinner />
+  // ★ TERMINAL: no `if (!cap8Graduated)` — Cấp 8 is the last level, so a
+  // cap8-graduated user lands here too (see the doc-comment above).
+  return <Cap8TradingPage />
 }

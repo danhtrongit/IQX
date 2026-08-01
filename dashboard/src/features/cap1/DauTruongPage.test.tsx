@@ -13,6 +13,7 @@ const {
   useCap5ProgressMock,
   useCap6ProgressMock,
   useCap7ProgressMock,
+  useCap8ProgressMock,
   enterCap1Mutate,
   enterCap2Mutate,
   enterCap3Mutate,
@@ -20,6 +21,7 @@ const {
   enterCap5Mutate,
   enterCap6Mutate,
   enterCap7Mutate,
+  enterCap8Mutate,
 } = vi.hoisted(() => ({
   useAuthMock: vi.fn(),
   useCap0ProgressMock: vi.fn(),
@@ -30,6 +32,7 @@ const {
   useCap5ProgressMock: vi.fn(),
   useCap6ProgressMock: vi.fn(),
   useCap7ProgressMock: vi.fn(),
+  useCap8ProgressMock: vi.fn(),
   enterCap1Mutate: vi.fn(),
   enterCap2Mutate: vi.fn(),
   enterCap3Mutate: vi.fn(),
@@ -37,6 +40,7 @@ const {
   enterCap5Mutate: vi.fn(),
   enterCap6Mutate: vi.fn(),
   enterCap7Mutate: vi.fn(),
+  enterCap8Mutate: vi.fn(),
 }))
 
 vi.mock("@/features/auth", () => ({ useAuth: () => useAuthMock() }))
@@ -114,6 +118,17 @@ vi.mock("@/features/cap7/hooks", () => ({
 
 vi.mock("@/features/cap7/Cap7TradingPage", () => ({
   Cap7TradingPage: () => <div data-testid="cap7-page" />,
+}))
+
+// Cấp 8 is live (Cấp 8 Task FE3) — concrete-file imports, same anti-cycle
+// rationale. ★ This is the LAST level: there is no Cấp 9 page to route on to.
+vi.mock("@/features/cap8/hooks", () => ({
+  useCap8Progress: (...a: unknown[]) => useCap8ProgressMock(...a),
+  useEnterCap8: () => ({ mutate: enterCap8Mutate, isPending: false }),
+}))
+
+vi.mock("@/features/cap8/Cap8TradingPage", () => ({
+  Cap8TradingPage: () => <div data-testid="cap8-page" />,
 }))
 
 import { DauTruongPage } from "./DauTruongPage"
@@ -255,7 +270,30 @@ function fakeCap7Progress(overrides: Record<string, unknown> = {}) {
   }
 }
 
-describe("DauTruongPage — progression routing (Task FE3 + FE4 + Cấp 3/4/5/6/7 FE3)", () => {
+function fakeCap8Progress(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "p8",
+    user_id: "u1",
+    entered_at: "2026-11-02T00:00:00Z",
+    task_1_done_at: null,
+    task_2_done_at: null,
+    task_3_done_at: null,
+    so_lenh_kiem_tra: 0,
+    so_lan_mua_bat_chap_canh_bao: 0,
+    // ★ `null` = chưa tính được, KHÔNG phải 0 — xem `cap8/types.ts`.
+    don_nganh_max_pct: null,
+    tong_rui_ro_pct: null,
+    graduated_at: null,
+    time_to_graduate_hours: null,
+    so_lan_co_canh_bao: 0,
+    bat_chap_gan_day: 0,
+    cua_so_gan_day: 15,
+    so_lenh_da_ket_so: 0,
+    ...overrides,
+  }
+}
+
+describe("DauTruongPage — progression routing (Task FE3 + FE4 + Cấp 3/4/5/6/7/8 FE3)", () => {
   beforeEach(() => {
     useAuthMock.mockReset()
     useCap0ProgressMock.mockReset()
@@ -272,6 +310,9 @@ describe("DauTruongPage — progression routing (Task FE3 + FE4 + Cấp 3/4/5/6/
     useCap6ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
     useCap7ProgressMock.mockReset()
     useCap7ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
+    useCap8ProgressMock.mockReset()
+    useCap8ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
+    enterCap8Mutate.mockReset()
     enterCap7Mutate.mockReset()
     enterCap1Mutate.mockReset()
     enterCap2Mutate.mockReset()
@@ -626,15 +667,63 @@ describe("DauTruongPage — progression routing (Task FE3 + FE4 + Cấp 3/4/5/6/
     expect(enterCap7Mutate).not.toHaveBeenCalled()
   })
 
-  it("still renders Cap7TradingPage when Cấp 7 is ALREADY graduated (Cấp 8 not built yet)", () => {
+  it("does not query Cấp 8 progress (nor enter it) while Cấp 7 hasn't graduated yet", () => {
+    cap6GraduatedMocks()
+    useCap7ProgressMock.mockReturnValue({ data: fakeCap7Progress(), isFetched: true })
+    render(<DauTruongPage />)
+    expect(screen.getByTestId("cap7-page")).toBeInTheDocument()
+    expect(useCap8ProgressMock).toHaveBeenCalledWith(false)
+    expect(enterCap8Mutate).not.toHaveBeenCalled()
+  })
+
+  // ── Cấp 7 → Cấp 8 (this delivery — the LAST level of the program) ─────────
+  function cap7GraduatedMocks() {
     cap6GraduatedMocks()
     useCap7ProgressMock.mockReturnValue({
       data: fakeCap7Progress({ graduated_at: "2026-11-01T00:00:00Z" }),
       isFetched: true,
     })
+  }
+
+  it("shows a spinner once Cấp 7 is graduated but Cấp 8 progress hasn't resolved yet", () => {
+    cap7GraduatedMocks()
+    useCap8ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
     render(<DauTruongPage />)
-    expect(screen.getByTestId("cap7-page")).toBeInTheDocument()
-    expect(enterCap7Mutate).not.toHaveBeenCalled()
+    expect(screen.queryByTestId("cap7-page")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap8-page")).not.toBeInTheDocument()
+  })
+
+  it("renders Cap8TradingPage + calls POST /cap8/enter once when Cấp 7 is graduated and Cấp 8 hasn't been entered yet", () => {
+    cap7GraduatedMocks()
+    useCap8ProgressMock.mockReturnValue({ data: null, isFetched: true })
+    render(<DauTruongPage />)
+    expect(screen.getByTestId("cap8-page")).toBeInTheDocument()
+    expect(screen.queryByTestId("cap7-page")).not.toBeInTheDocument()
+    expect(enterCap8Mutate).toHaveBeenCalledTimes(1)
+  })
+
+  it("renders Cap8TradingPage WITHOUT re-entering when Cấp 8 progress already exists", () => {
+    cap7GraduatedMocks()
+    useCap8ProgressMock.mockReturnValue({ data: fakeCap8Progress(), isFetched: true })
+    render(<DauTruongPage />)
+    expect(screen.getByTestId("cap8-page")).toBeInTheDocument()
+    expect(enterCap8Mutate).not.toHaveBeenCalled()
+  })
+
+  // ★★ TERMINAL BRANCH. Cấp 8 is the last level of the program — a user who has
+  // already graduated it still lands on `Cap8TradingPage`, because there is no
+  // Cấp 9 page to send them to. Falling back to a lower cấp's shell (or a
+  // spinner) here would demote a graduate of the whole 0-8 arc.
+  it("★ still renders Cap8TradingPage when Cấp 8 is ALREADY graduated (no Cấp 9 exists)", () => {
+    cap7GraduatedMocks()
+    useCap8ProgressMock.mockReturnValue({
+      data: fakeCap8Progress({ graduated_at: "2026-12-01T00:00:00Z" }),
+      isFetched: true,
+    })
+    render(<DauTruongPage />)
+    expect(screen.getByTestId("cap8-page")).toBeInTheDocument()
+    expect(screen.queryByTestId("cap7-page")).not.toBeInTheDocument()
+    expect(enterCap8Mutate).not.toHaveBeenCalled()
   })
 
   it("keeps rendering Cap2TradingPage (and never enters Cấp 3) while Cấp 2 hasn't graduated", () => {

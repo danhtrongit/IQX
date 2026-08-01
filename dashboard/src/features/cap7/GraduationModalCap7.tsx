@@ -1,5 +1,10 @@
-import { Message, Modal } from "@arco-design/web-react"
+import { Modal } from "@arco-design/web-react"
 import { Badge, LEVELS } from "@/features/cap0/Badge"
+// Concrete-file import (NOT the `@/features/cap8` barrel) — that barrel
+// re-exports `Cap8TradingPage`, which imports `CenterPanel`/`RightSidebar`/
+// `RightToolbar` from `@/features/dashboard`; the same anti-cycle rationale
+// `GraduationModalCap6` documents for its own Cấp 7 import.
+import { useEnterCap8 } from "@/features/cap8/hooks"
 import "@/features/cap0/cap0.css"
 import "./cap7-graduation.css"
 import { useCap7Progress, useGraduateCap7 } from "./hooks"
@@ -82,26 +87,30 @@ function renderInlineBold(text: string) {
  * hồng magenta Cấp 7 `#c65cae`) + 3 khối (Ghi nhận / Định vị / Chuyển cấp viền
  * **xanh lá `#3f9b5a`** — màu Cấp 8) + CTA xanh lá.
  *
- * ★ **CẤP 8 CHƯA BUILD → nút KHÔNG điều hướng đi đâu**, và nói thẳng "sắp ra
- * mắt" ngay trên nút. Nhưng nút vẫn PHẢI bấm được và vẫn ghi tốt nghiệp về
- * server: modal này `closable={false}` + `visible = isGraduationReadyCap7(...)`,
- * nên một nút `disabled` sẽ nhốt VĨNH VIỄN mọi user đã xong 3/3 trong một màn
- * không có lối ra (và `POST /cap8/enter` sau này cũng sẽ đòi Cấp 7 đã tốt
- * nghiệp). Đây đúng là pattern trung thực mà `GraduationModalCap1` …
- * `GraduationModalCap6` đã dùng trước khi cấp kế tiếp lên sóng. Khi Cấp 8 ship,
- * đổi `onSuccess` thành `enterCap8.mutate()` và bỏ dòng "sắp ra mắt" — đúng như
- * `GraduationModalCap6` được sửa trong delivery này.
+ * ★ **Cấp 8 ĐÃ SHIP (Cấp 8 Task FE3)** — nút này giờ vào Cấp 8 THẬT, mirror đúng
+ * cách `GraduationModalCap6` vào Cấp 6 → 7 (và Cấp 2 → 3 → …): ghi tốt nghiệp
+ * server-side, rồi bắn luôn `POST /cap8/enter` (idempotent) NGAY tại đây chứ
+ * không chỉ trông vào effect của `DauTruongPage`, để hồ sơ Cấp 8 sẵn sàng đúng
+ * lúc `DauTruongPage` thay vỏ Cấp 7 bằng `Cap8TradingPage` — do CHÍNH query
+ * `useCap7Progress` mà `graduated_at` của mutation này vừa invalidate. Không cần
+ * `navigate`: modal này chỉ render khi đã ở `/dau-truong`. (Thay cho placeholder
+ * trung thực "Cấp 8 sắp ra mắt" dùng trước khi Cấp 8 lên sóng.)
+ *
+ * ★ Nút vẫn PHẢI bấm được: modal này `closable={false}` +
+ * `visible = isGraduationReadyCap7(...)`, nên một nút `disabled` vĩnh viễn sẽ
+ * nhốt mọi user đã xong 3/3 trong một màn không có lối ra.
  */
 export function GraduationModalCap7() {
   const { data: progress } = useCap7Progress()
   const graduate = useGraduateCap7()
+  const enterCap8 = useEnterCap8()
   const level = LEVELS[7]
   const visible = isGraduationReadyCap7(progress)
 
   const handleGraduate = () => {
     graduate.mutate(undefined, {
       onSuccess: () => {
-        Message.info("Cấp 8 «Quản trị rủi ro danh mục» sắp ra mắt")
+        enterCap8.mutate()
       },
     })
   }
@@ -159,7 +168,6 @@ export function GraduationModalCap7() {
         disabled={graduate.isPending}
       >
         Vào Cấp 8 «Quản trị rủi ro danh mục» →
-        <span className="cap7-grad-cta-soon">Cấp 8 sắp ra mắt — ghi nhận tốt nghiệp Cấp 7</span>
       </button>
     </Modal>
   )

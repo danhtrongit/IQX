@@ -875,10 +875,18 @@ function OrderEntry({
           ...(cap8Ready && cap8KiemTra
             ? {
                 donNganhPct: cap8KiemTra.don_nganh_pct_sau,
+                // ★ `nganh` + `so_vi_the_thieu_cat_lo` KHÔNG có cột nào trên
+                // `order_kehoach`, nên phản hồi `GET /cap8/kiem-tra` này là nguồn
+                // DUY NHẤT để Kết sổ gọi tên được ngành và nói ra được caveat "N
+                // vị thế chưa có cắt lỗ". Không gửi kèm thì khối Kết sổ phải viết
+                // "Ngành của mã" và tự nhận là không biết có vị thế nào thiếu cắt
+                // lỗ hay không — trong khi lúc mua hệ ĐÃ biết cả hai.
+                nganh: cap8KiemTra.nganh,
                 tuongQuanCaoVoi: cap8KiemTra.tuong_quan_canh_bao
                   ? cap8KiemTra.tuong_quan
                   : null,
                 tongRuiRoPct: cap8KiemTra.tong_rui_ro_pct_sau,
+                soViTheThieuCatLo: cap8KiemTra.so_vi_the_thieu_cat_lo,
                 danhMucCanhBao: cap8CanhBao.map((c) => c.ma),
                 hanhViCanhBao: hanhViCanhBaoToSend(cap8CanhBao.length > 0, cap8HanhVi),
               }

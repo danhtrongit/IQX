@@ -3,18 +3,26 @@ import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Cap7Progress } from "./types"
 
-const { useCap7ProgressMock, graduateMutate, messageInfo, navigateMock } = vi.hoisted(() => ({
-  useCap7ProgressMock: vi.fn(),
-  graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
-    opts?.onSuccess?.()
-  }),
-  messageInfo: vi.fn(),
-  navigateMock: vi.fn(),
-}))
+const { useCap7ProgressMock, graduateMutate, enterCap8Mutate, messageInfo, navigateMock } =
+  vi.hoisted(() => ({
+    useCap7ProgressMock: vi.fn(),
+    graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
+      opts?.onSuccess?.()
+    }),
+    enterCap8Mutate: vi.fn(),
+    messageInfo: vi.fn(),
+    navigateMock: vi.fn(),
+  }))
 
 vi.mock("./hooks", () => ({
   useCap7Progress: (...a: unknown[]) => useCap7ProgressMock(...a),
   useGraduateCap7: () => ({ mutate: graduateMutate, isPending: false }),
+}))
+
+// Cấp 8 «Quản trị rủi ro danh mục» đã ship (Cấp 8 Task FE3) — nút này vào Cấp 8
+// THẬT, nên hook `POST /cap8/enter` phải được mock ở đây.
+vi.mock("@/features/cap8/hooks", () => ({
+  useEnterCap8: () => ({ mutate: enterCap8Mutate, isPending: false }),
 }))
 
 vi.mock("react-router", async (importOriginal) => {
@@ -97,6 +105,7 @@ describe("GraduationModalCap7", () => {
     graduateMutate.mockImplementation((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
       opts?.onSuccess?.()
     })
+    enterCap8Mutate.mockReset()
     messageInfo.mockReset()
     navigateMock.mockReset()
   })
@@ -186,12 +195,15 @@ describe("GraduationModalCap7", () => {
     expect(document.querySelector(".cap7-grad-cta--cap8")).not.toBeNull()
   })
 
-  it('the Cấp 8 button is labelled "sắp ra mắt" and NEVER navigates', () => {
+  // ★ Cấp 8 «Quản trị rủi ro danh mục» đã ship — nút KHÔNG còn "sắp ra mắt" nữa.
+  // Nó vẫn KHÔNG điều hướng: `DauTruongPage` tự đổi shell khi `graduated_at` về
+  // (cùng query `useCap7Progress` mà mutation này vừa invalidate).
+  it("the Cấp 8 button no longer says «sắp ra mắt», and still NEVER navigates", () => {
     useCap7ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap7 />)
     const cta = screen.getByTestId("cap7-grad-cta")
     expect(cta).toHaveTextContent("Vào Cấp 8 «Quản trị rủi ro danh mục»")
-    expect(cta).toHaveTextContent("sắp ra mắt")
+    expect(cta.textContent).not.toMatch(/sắp ra mắt/)
     fireEvent.click(cta)
     expect(navigateMock).not.toHaveBeenCalled()
   })
@@ -205,7 +217,7 @@ describe("GraduationModalCap7", () => {
     expect(screen.getByTestId("cap7-grad-cta")).not.toBeDisabled()
   })
 
-  it("clicking it records the graduation and says Cấp 8 is coming (not built yet)", () => {
+  it("clicking it records the graduation and REALLY enters Cấp 8", () => {
     useCap7ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap7 />)
     fireEvent.click(screen.getByTestId("cap7-grad-cta"))
@@ -213,18 +225,22 @@ describe("GraduationModalCap7", () => {
       undefined,
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     )
-    expect(messageInfo).toHaveBeenCalledWith(expect.stringContaining("Cấp 8"))
-    expect(messageInfo).toHaveBeenCalledWith(expect.stringContaining("sắp ra mắt"))
+    expect(enterCap8Mutate).toHaveBeenCalledTimes(1)
+    // ★ Không còn thông báo "sắp ra mắt" nào — Cấp 8 có thật.
+    expect(messageInfo).not.toHaveBeenCalled()
   })
 
-  it("does NOT announce Cấp 8 before the graduation actually succeeds", () => {
+  // ★★ `POST /cap8/enter` đòi Cấp 7 ĐÃ tốt nghiệp. Bắn nó trước khi
+  // `POST /cap7/graduate` thành công thì server 400/403 và user vừa xong 3/3 lại
+  // không vào được cấp mới.
+  it("★ does NOT enter Cấp 8 before the graduation actually succeeds", () => {
     useCap7ProgressMock.mockReturnValue({ data: readyProgress() })
     graduateMutate.mockImplementation(() => {
       /* pending — no onSuccess */
     })
     render(<GraduationModalCap7 />)
     fireEvent.click(screen.getByTestId("cap7-grad-cta"))
-    expect(messageInfo).not.toHaveBeenCalled()
+    expect(enterCap8Mutate).not.toHaveBeenCalled()
   })
 
   it("closes itself once graduated_at comes back (progress refetch)", () => {

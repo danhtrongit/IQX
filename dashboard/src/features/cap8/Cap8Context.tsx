@@ -38,8 +38,23 @@ export interface Cap8OrderEvent {
    * the user was looking at, not so anything can be persisted from them.
    */
   donNganhPct?: number | null
+  /**
+   * Tên ngành ICB của mã lúc kiểm tra — để Kết sổ gọi tên được cái ngành mà lệnh
+   * dồn vào. Backend Cấp 8 KHÔNG lưu tên ngành trên `order_kehoach` (chỉ lưu %),
+   * nên đây là nguồn DUY NHẤT của nó; `null` = server chưa xác định được ngành.
+   */
+  nganh?: string | null
   tuongQuanCaoVoi?: TuongQuanCap8 | null
   tongRuiRoPct?: number | null
+  /**
+   * Số vị thế bị LOẠI khỏi tổng vốn ở rủi ro vì chưa có cắt lỗ. Cũng không có
+   * trên `order_kehoach`, nên nó đi cùng đường với `nganh`.
+   *
+   * ★ `0` và `undefined` là HAI sự thật khác nhau: `0` = đã đo, mọi vị thế đều
+   * có cắt lỗ; `undefined` = bước kiểm tra không chạy nên KHÔNG AI BIẾT. Người
+   * nhận không được phép gộp chúng lại thành `0`.
+   */
+  soViTheThieuCatLo?: number | null
   danhMucCanhBao?: LoaiCanhBao[]
   /** ★ `van_mua` is recorded, never penalised (spec §9: không cổng cứng). */
   hanhViCanhBao?: HanhViCanhBao
