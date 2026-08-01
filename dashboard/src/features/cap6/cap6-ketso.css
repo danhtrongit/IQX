@@ -84,6 +84,15 @@
   color: var(--t2, var(--color-text-2));
 }
 
+/* Câu "vì sao" của server cho CHÍNH lệnh (`GET /cap6/kehoach/{order_id}`) —
+   hiện nguyên văn, cùng cấp độ nhấn với dòng lý do, KHÔNG màu cảnh báo. */
+.cap6-ketso-giaithich {
+  margin: 6px 0 0;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--t2, var(--color-text-2));
+}
+
 /* ── Lớp coach thứ 6 ─────────────────────────────────────────────────────── */
 .cap6-ketso-coach {
   --cap6: #d64550;

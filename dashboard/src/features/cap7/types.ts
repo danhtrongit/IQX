@@ -147,6 +147,46 @@ export interface OrderKehoachCap7 {
   giai_thich: string
 }
 
+/**
+ * `GET /cap7/kehoach/{order_id}` — the đọc-lực block recorded on ONE order plus
+ * the scoring context the Kết sổ needs. Mirrors `KehoachCap7DetailOut`.
+ *
+ * ★ Reading this endpoint RUNS the server's lazy chấm pass, so an order whose
+ * `so_phien_cham` sessions have elapsed comes back **SCORED**. Without it the
+ * Kết sổ could only ever say "chưa tới hạn chấm": `doc_luc_dung` is decided
+ * 1-3 trading sessions after the buy, long after the FE's own in-session data
+ * was captured.
+ *
+ * ★★ `doc_luc_dung` has THREE meanings and they must never be collapsed:
+ * `true` đọc đúng · `false` đọc sai · `null` CHƯA CHẤM. `null` is NOT "sai" —
+ * the deadline has not arrived, or the price for that session is unavailable.
+ * `da_toi_han_cham` is the only way to tell those two `null` cases apart (it
+ * needs trading-day arithmetic + the server's clock, which the FE does not have).
+ *
+ * `co_du_lieu === false` marks an order with no Cấp 7 data at all — a normal
+ * 200, and never a shortcoming: reading the book is never required to buy.
+ *
+ * The endpoint **404s unless the user has a Cấp 7 progress row**, so callers must
+ * gate it on `isCap7Active` and degrade silently on any error.
+ */
+export interface KehoachDetailCap7 extends Omit<OrderKehoachCap7, "id"> {
+  /** `null` only when the order has no `order_kehoach` row at all. */
+  id: string | null
+  symbol: string
+  /** `false` = lệnh này không có dữ liệu Cấp 7 (KHÔNG phải lỗi, không phải thiếu sót). */
+  co_du_lieu: boolean
+  /** |%| inside which the close counts as unchanged — the SERVER's threshold. */
+  dead_band_pct: number
+  /** The trading session this reading is (or will be) judged against (`YYYY-MM-DD`). */
+  han_cham_ngay: string | null
+  /**
+   * ★ Has that session arrived? `doc_luc_dung === null` + `false` = chưa tới hạn;
+   * `doc_luc_dung === null` + `true` = tới hạn nhưng chưa lấy được giá. Two
+   * different honest sentences — never a verdict either way.
+   */
+  da_toi_han_cham: boolean
+}
+
 /** `POST /cap7/cham` — the lazy scoring pass, exposed explicitly (idempotent). */
 export interface ChamCap7 {
   so_moi_cham: number

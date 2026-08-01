@@ -2,6 +2,7 @@ import { api, unwrap } from "@/shared/http/client"
 import type {
   Cap7Progress,
   ChamCap7,
+  KehoachDetailCap7,
   KehoachInputCap7,
   OrderKehoachCap7,
   PhienCap7,
@@ -63,6 +64,26 @@ export const cap7Api = {
   recordKehoach: async (input: KehoachInputCap7): Promise<OrderKehoachCap7> => {
     const res = await api.post("cap7/kehoach", { json: input }).json<unknown>()
     return unwrap(res as never) as OrderKehoachCap7
+  },
+
+  /**
+   * GET /cap7/kehoach/{order_id} — the đọc-lực block recorded on that order +
+   * the scoring context (`dead_band_pct`, `han_cham_ngay`, `da_toi_han_cham`).
+   *
+   * ★ Reading it RUNS the server's lazy chấm pass, so an order past its
+   * `so_phien_cham` window comes back SCORED — the whole reason the Kết sổ can
+   * finally show a verdict instead of "chưa tới hạn chấm" forever. Because that
+   * pass may fetch prices, the first call after a long absence can be slow; it
+   * is idempotent, so repeats are cheap.
+   *
+   * **404s** for a foreign/unknown order, and for a user with no Cấp 7 progress
+   * row — so callers gate it on `isCap7Active` and degrade silently. An order
+   * that simply never recorded a reading is a normal 200 with `co_du_lieu:
+   * false`.
+   */
+  getKehoach: async (orderId: string): Promise<KehoachDetailCap7> => {
+    const res = await api.get(`cap7/kehoach/${orderId}`).json<unknown>()
+    return unwrap(res as never) as KehoachDetailCap7
   },
 
   /** POST /cap7/cham — the lazy scoring pass, exposed explicitly (idempotent). */

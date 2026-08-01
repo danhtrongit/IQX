@@ -17,6 +17,8 @@ const {
   markCap6Task,
   markCap7Task,
   verdictQuery,
+  kehoachCap7,
+  kehoachCap6,
   messageError,
 } = vi.hoisted(() => ({
   recordKetsoCap1Async: vi.fn(),
@@ -25,6 +27,10 @@ const {
   markCap6Task: vi.fn(),
   markCap7Task: vi.fn(),
   verdictQuery: { current: {} as Record<string, unknown> },
+  // `GET /cap7/kehoach/{order_id}` + `GET /cap6/kehoach/{order_id}` — giá trị
+  // trả về + ĐỐI SỐ mỗi lần gọi (cổng `enabled`: chỉ gọi khi user ở cấp đó).
+  kehoachCap7: { current: {} as Record<string, unknown>, calls: [] as unknown[][] },
+  kehoachCap6: { current: {} as Record<string, unknown>, calls: [] as unknown[][] },
   messageError: vi.fn(),
 }))
 
@@ -40,9 +46,17 @@ vi.mock("@/features/cap5/hooks", () => ({
 }))
 vi.mock("@/features/cap6/hooks", () => ({
   useCompleteCap6Task: () => ({ mutate: markCap6Task }),
+  useKehoachCap6: (...args: unknown[]) => {
+    kehoachCap6.calls.push(args)
+    return kehoachCap6.current
+  },
 }))
 vi.mock("./hooks", () => ({
   useCompleteCap7Task: () => ({ mutate: markCap7Task }),
+  useKehoachCap7: (...args: unknown[]) => {
+    kehoachCap7.calls.push(args)
+    return kehoachCap7.current
+  },
 }))
 vi.mock("@/features/auth", () => ({
   useAuth: () => ({ user: { id: "user-1" } }),
@@ -59,7 +73,11 @@ vi.mock("@arco-design/web-react", async (importOriginal) => {
 })
 
 import { KetsoModalCap7, type DocLucKetsoCap7, type KetsoDataCap7 } from "./KetsoModalCap7"
+import { Cap7Provider } from "./Cap7Context"
+import { Cap6Provider } from "@/features/cap6/Cap6Context"
 import { readCap7TradeLog, type Cap7TradeRecord } from "./tradeLogCap7"
+import type { KehoachDetailCap7 } from "./types"
+import type { KehoachDetailCap6 } from "@/features/cap6/types"
 import type { DoiChieuKetsoCap6 } from "@/features/cap6/KetsoModalCap6"
 import type { Cap1Progress } from "@/features/cap1/types"
 import type { Cap2Progress } from "@/features/cap2/types"
@@ -204,6 +222,72 @@ function renderModal(
   )
 }
 
+/**
+ * Cùng modal, nhưng BÊN TRONG `Cap6Provider` + `Cap7Provider` — tức user thật sự
+ * đang ở Cấp 7 (trang Cấp 7 bọc cả sáu provider). Chỉ khi đó modal mới được phép
+ * gọi `GET /cap6|7/kehoach/{order_id}` (hai endpoint 404 khi thiếu hàng tiến độ).
+ */
+function renderInCap7(
+  overrides: Partial<KetsoDataCap7> = {},
+  props: { onClose?: () => void; onRecorded?: (r: Cap7TradeRecord) => void } = {},
+) {
+  return render(
+    <Cap6Provider>
+      <Cap7Provider>
+        <KetsoModalCap7
+          data={{ ...data, ...overrides }}
+          progress={cap1Progress()}
+          trades={[]}
+          cap2Progress={cap2Progress()}
+          onClose={props.onClose ?? vi.fn()}
+          onRecorded={props.onRecorded}
+        />
+      </Cap7Provider>
+    </Cap6Provider>,
+  )
+}
+
+/**
+ * `GET /cap7/kehoach/{order_id}` — khối đọc lực ĐÃ GHI + bối cảnh chấm.
+ *
+ * Mẫu mặc định là ca "đã tới hạn và đã chấm": chính thứ mà Kết sổ trước đây
+ * KHÔNG BAO GIỜ thấy được, vì FE chỉ có dữ liệu lúc mua.
+ */
+function kehoachDetail7(overrides: Partial<KehoachDetailCap7> = {}): KehoachDetailCap7 {
+  return {
+    id: "kh-96",
+    order_id: "order-96",
+    symbol: "VCB",
+    luc_chi_so: 1.94,
+    luc_band: "cau_ap_dao",
+    luc_band_ten: "Cầu áp đảo",
+    luc_doc_user: "manh",
+    luc_doc_user_ten: "Cầu mạnh",
+    doc_luc_dung: true,
+    dien_bien_pct: 2.4,
+    co_canh_giac_lenh_gia: false,
+    hanh_vi_co: null,
+    hanh_vi_co_ten: null,
+    so_phien_cham: 2,
+    giai_thich: "GIẢI THÍCH CHẤM CỦA SERVER",
+    co_du_lieu: true,
+    dead_band_pct: 0.5,
+    han_cham_ngay: "2026-07-06",
+    da_toi_han_cham: true,
+    ...overrides,
+  }
+}
+
+/**
+ * Khối đọc lực dựng từ dữ liệu lúc MUA — `docLucDung`/`dienBienPct` luôn `null`
+ * vì phiên đích chưa xảy ra lúc đó. Đây là trạng thái "cũ" của Kết sổ.
+ */
+const docLucChuaCham: DocLucKetsoCap7 = {
+  ...docLuc,
+  docLucDung: null,
+  dienBienPct: null,
+}
+
 function closeButton(): HTMLElement {
   return screen.getByTestId("cap7-ketso-close")
 }
@@ -236,6 +320,10 @@ beforeEach(() => {
   markCap7Task.mockReset()
   messageError.mockReset()
   verdictQuery.current = { data: goiY(), isPending: false, isError: false }
+  kehoachCap7.current = { data: undefined, isPending: false, isError: false }
+  kehoachCap7.calls.length = 0
+  kehoachCap6.current = { data: undefined, isPending: false, isError: false }
+  kehoachCap6.calls.length = 0
   window.localStorage.clear()
 })
 
@@ -425,6 +513,224 @@ describe("KetsoModalCap7 — khối ĐỌC SỔ LỆNH — NHÌN LẠI (spec §6
     expect(screen.queryByTestId("cap7-ketso-coach")).not.toBeInTheDocument()
     expect(screen.getByTestId("cap6-ketso-doichieu")).toBeInTheDocument()
     expect(screen.getByTestId("cap5-phanloai")).toBeInTheDocument()
+  })
+})
+
+describe("KetsoModalCap7 — đọc lại đọc lực ĐÃ CHẤM của chính lệnh (GET /cap7/kehoach)", () => {
+  it("ngoài Cấp 7 → KHÔNG gọi endpoint (nó 404 khi user chưa có hàng Cấp 7)", () => {
+    renderModal()
+    expect(kehoachCap7.calls.length).toBeGreaterThan(0)
+    for (const args of kehoachCap7.calls) expect(args).toEqual(["order-96", false])
+  })
+
+  it("đang ở Cấp 7 → gọi CẢ hai endpoint với ĐÚNG order_id của lệnh", () => {
+    renderInCap7()
+    expect(kehoachCap7.calls.length).toBeGreaterThan(0)
+    for (const args of kehoachCap7.calls) expect(args).toEqual(["order-96", true])
+    expect(kehoachCap6.calls.length).toBeGreaterThan(0)
+    for (const args of kehoachCap6.calls) expect(args).toEqual(["order-96", true])
+  })
+
+  it("lệnh ĐÃ tới hạn và server đã chấm → hiện phán quyết THẬT + đoạn coach Cấp 7", () => {
+    kehoachCap7.current = { data: kehoachDetail7(), isPending: false, isError: false }
+    renderInCap7({ docLuc: docLucChuaCham })
+    const dienBien = screen.getByTestId("cap7-ketso-dienbien").textContent!
+    expect(dienBien).toContain("2 phiên")
+    expect(dienBien).toContain("+2.4%")
+    expect(dienBien).toContain("ĐÚNG")
+    expect(dienBien).not.toContain("chưa tới hạn chấm")
+    // ★ Điểm cốt lõi: trước đây đoạn coach này KHÔNG BAO GIỜ hiện được.
+    expect(screen.getByTestId("cap7-ketso-coach")).toBeInTheDocument()
+  })
+
+  it("hiện NGUYÊN VĂN câu giải thích chấm của server, thay câu cũ", () => {
+    kehoachCap7.current = { data: kehoachDetail7(), isPending: false, isError: false }
+    renderInCap7({ docLuc: docLucChuaCham })
+    expect(screen.getByTestId("cap7-ketso-docluc-giaithich").textContent).toBe(
+      "GIẢI THÍCH CHẤM CỦA SERVER",
+    )
+  })
+
+  /**
+   * ★★ HAI TEST DƯỚI ĐÂY DÙNG CHUNG MỘT FIXTURE, KHÁC NHAU ĐÚNG MỘT TRƯỜNG
+   * (`doc_luc_dung`: `null` vs `false`). `dien_bien_pct` và `da_toi_han_cham`
+   * GIỮ NGUYÊN ở cả hai, nên bất kỳ cách gộp `null` thành `false` nào (vd.
+   * `?? false`, `Boolean(...)`) cũng làm test `null` đỏ ngay — và ngược lại.
+   */
+  it("★ doc_luc_dung === null (đã tới hạn, chưa lấy được giá) → KHÔNG phán quyết", () => {
+    kehoachCap7.current = {
+      data: kehoachDetail7({ doc_luc_dung: null, dien_bien_pct: -1.8 }),
+      isPending: false,
+      isError: false,
+    }
+    renderInCap7({ docLuc: docLucChuaCham })
+    const dienBien = screen.getByTestId("cap7-ketso-dienbien").textContent!
+    expect(dienBien).toContain("chưa")
+    expect(dienBien).not.toContain("CHƯA ĐÚNG")
+    expect(dienBien).not.toContain("ĐÚNG")
+    expect(dienBien).not.toContain("SAI")
+    expect(screen.queryByTestId("cap7-ketso-coach")).not.toBeInTheDocument()
+  })
+
+  it("★ doc_luc_dung === false (cùng fixture, chỉ khác trường này) → 'CHƯA ĐÚNG'", () => {
+    kehoachCap7.current = {
+      data: kehoachDetail7({ doc_luc_dung: false, dien_bien_pct: -1.8 }),
+      isPending: false,
+      isError: false,
+    }
+    renderInCap7({ docLuc: docLucChuaCham })
+    const dienBien = screen.getByTestId("cap7-ketso-dienbien").textContent!
+    expect(dienBien).toContain("CHƯA ĐÚNG")
+    expect(dienBien).toContain("−1.8%")
+    expect(dienBien).not.toContain("chưa tới hạn chấm")
+    expect(screen.getByTestId("cap7-ketso-coach")).toBeInTheDocument()
+    // Đọc sai vẫn KHÔNG bị mắng.
+    const block = screen.getByTestId("cap7-ketso-docluc").textContent!.toLowerCase()
+    for (const tu of CAM_TU) expect(block).not.toContain(tu)
+  })
+
+  it("chưa tới hạn chấm (da_toi_han_cham = false) → nói đúng là chưa tới hạn", () => {
+    kehoachCap7.current = {
+      data: kehoachDetail7({
+        doc_luc_dung: null,
+        dien_bien_pct: null,
+        da_toi_han_cham: false,
+        han_cham_ngay: "2026-07-14",
+      }),
+      isPending: false,
+      isError: false,
+    }
+    renderInCap7({ docLuc: docLucChuaCham })
+    const dienBien = screen.getByTestId("cap7-ketso-dienbien").textContent!
+    expect(dienBien).toContain("chưa tới hạn chấm")
+    expect(dienBien).not.toContain("ĐÚNG")
+    expect(screen.queryByTestId("cap7-ketso-coach")).not.toBeInTheDocument()
+  })
+
+  it("đã tới hạn nhưng chưa chấm được → NÓI KHÁC 'chưa tới hạn' (hai ca khác nhau)", () => {
+    kehoachCap7.current = {
+      data: kehoachDetail7({ doc_luc_dung: null, dien_bien_pct: null, da_toi_han_cham: true }),
+      isPending: false,
+      isError: false,
+    }
+    renderInCap7({ docLuc: docLucChuaCham })
+    const dienBien = screen.getByTestId("cap7-ketso-dienbien").textContent!
+    expect(dienBien).not.toContain("chưa tới hạn chấm")
+    expect(dienBien).toContain("chưa lấy được giá")
+    expect(dienBien).not.toContain("ĐÚNG")
+  })
+
+  it("404 / lỗi mạng → im lặng giữ nguyên trạng thái cũ, modal VẪN đóng được", async () => {
+    const onClose = vi.fn()
+    kehoachCap7.current = { data: undefined, isPending: false, isError: true }
+    kehoachCap6.current = { data: undefined, isPending: false, isError: true }
+    renderInCap7({ docLuc: docLucChuaCham }, { onClose })
+    expect(screen.getByTestId("cap7-ketso-dienbien").textContent).toContain("chưa tới hạn chấm")
+    expect(screen.queryByTestId("cap7-ketso-coach")).not.toBeInTheDocument()
+    expect(messageError).not.toHaveBeenCalled()
+    chotPhanLoai()
+    expect(closeButton()).not.toBeDisabled()
+    fireEvent.click(closeButton())
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
+  })
+
+  it("co_du_lieu = false → giữ nguyên khối cũ, KHÔNG xoá khối đã dựng", () => {
+    kehoachCap7.current = {
+      data: kehoachDetail7({
+        id: null,
+        luc_chi_so: null,
+        luc_band: null,
+        luc_band_ten: null,
+        luc_doc_user: null,
+        luc_doc_user_ten: null,
+        doc_luc_dung: null,
+        dien_bien_pct: null,
+        co_canh_giac_lenh_gia: null,
+        co_du_lieu: false,
+        giai_thich: "Lệnh này chưa ghi bước đọc lực.",
+      }),
+      isPending: false,
+      isError: false,
+    }
+    renderInCap7()
+    expect(screen.getByTestId("cap7-ketso-luc").textContent).toContain("Cầu áp đảo")
+    expect(screen.getByTestId("cap7-ketso-dienbien").textContent).toContain("ĐÚNG")
+    expect(screen.getByTestId("cap7-ketso-docluc-giaithich").textContent).toContain(
+      "GIẢI THÍCH CỦA HỆ THỐNG",
+    )
+  })
+
+  it("FE không dựng nổi khối (thiếu quy_tac) nhưng server CÓ dữ liệu → khối vẫn hiện", () => {
+    kehoachCap7.current = { data: kehoachDetail7(), isPending: false, isError: false }
+    renderInCap7({ docLuc: null })
+    const block = within(screen.getByTestId("cap7-ketso-docluc"))
+    expect(block.getByTestId("cap7-ketso-luc").textContent).toContain("Cầu áp đảo")
+    expect(block.getByTestId("cap7-ketso-dienbien").textContent).toContain("ĐÚNG")
+  })
+
+  it("nhật ký ghi kết quả chấm THẬT của server, không phải null cũ", async () => {
+    const onRecorded = vi.fn()
+    kehoachCap7.current = {
+      data: kehoachDetail7({ doc_luc_dung: false, dien_bien_pct: -1.8 }),
+      isPending: false,
+      isError: false,
+    }
+    renderInCap7({ docLuc: docLucChuaCham }, { onRecorded })
+    chotPhanLoai()
+    fireEvent.click(closeButton())
+    await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1))
+    const rec = onRecorded.mock.calls[0][0] as Cap7TradeRecord
+    expect(rec.docLucDung).toBe(false)
+    expect(rec.dienBienPct).toBe(-1.8)
+  })
+
+  it("chưa chấm → nhật ký giữ docLucDung = null (KHÔNG quy về false)", async () => {
+    const onRecorded = vi.fn()
+    kehoachCap7.current = {
+      data: kehoachDetail7({ doc_luc_dung: null, dien_bien_pct: -1.8 }),
+      isPending: false,
+      isError: false,
+    }
+    renderInCap7({ docLuc: docLucChuaCham }, { onRecorded })
+    chotPhanLoai()
+    fireEvent.click(closeButton())
+    await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1))
+    const rec = onRecorded.mock.calls[0][0] as Cap7TradeRecord
+    expect(rec.docLucDung).toBeNull()
+  })
+
+  it("khối Đối chiếu Cấp 6 trong Kết sổ Cấp 7 cũng đọc từ server", () => {
+    const detail6: KehoachDetailCap6 = {
+      id: "kh-96",
+      order_id: "order-96",
+      symbol: "VCB",
+      kieu_co_phieu: "dau_co_nho",
+      kieu_ten: "Đầu cơ / vốn hóa nhỏ",
+      nganh: null,
+      lop_mau_thuan: null,
+      trong_so_goi_y: null,
+      lop_uu_tien: ["ky_thuat", "dong_tien"],
+      lop_uu_tien_ten: ["Kỹ thuật", "Dòng tiền"],
+      lop_it_tin: [],
+      lop_it_tin_ten: [],
+      lop_quyet_dinh: "dinh_gia",
+      lop_quyet_dinh_ten: "Định giá",
+      khop_goi_y: false,
+      khop_goi_y_ten: "Lệch gợi ý",
+      ly_do_doi_chieu: "P/B 1.2 — thấp hơn trung vị 3 năm",
+      co_du_lieu: true,
+      giai_thich: "GIẢI THÍCH ĐỐI CHIẾU CỦA SERVER",
+    }
+    kehoachCap6.current = { data: detail6, isPending: false, isError: false }
+    renderInCap7({
+      doiChieu: { ...doiChieu, kieu: null, kieuTen: null, lopUuTien: [], khopGoiY: null },
+    })
+    const block = within(screen.getByTestId("cap6-ketso-doichieu"))
+    expect(block.getByTestId("cap6-ketso-kieu").textContent).toContain("Đầu cơ / vốn hóa nhỏ")
+    expect(block.getByTestId("cap6-ketso-khop").textContent).toContain("khác gợi ý")
+    expect(block.getByTestId("cap6-ketso-giaithich").textContent).toBe(
+      "GIẢI THÍCH ĐỐI CHIẾU CỦA SERVER",
+    )
   })
 })
 

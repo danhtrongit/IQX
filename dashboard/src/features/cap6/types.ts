@@ -113,6 +113,46 @@ export interface OrderKehoachCap6 {
   ly_do_doi_chieu: string | null
 }
 
+/**
+ * `GET /cap6/kehoach/{order_id}` — the Đối chiếu block **RECORDED on one order**,
+ * plus every label the Kết sổ renders. Mirrors `KehoachCap6DetailOut`.
+ *
+ * ★ WHY THIS EXISTS NEXT TO `GoiYCap6`: `/cap6/goi-y` re-derives the kiểu from
+ * the symbol's ngành *now*, so for a symbol the server cannot classify it keeps
+ * answering "chưa phân loại" — even for an order whose kiểu came from the client
+ * and whose `khop_goi_y` the server DID record. This endpoint reads the stored
+ * columns instead, so the Kết sổ can show khớp/lệch honestly.
+ *
+ * `co_du_lieu === false` marks an order with no Cấp 6 data at all (placed before
+ * the level existed, or the 5 lớp never conflicted so the step never appeared).
+ * That is a normal 200, **not** an error — every other field is then null/empty.
+ *
+ * ★ `khop_goi_y` keeps its three states: `true` khớp · `false` lệch (a NEUTRAL
+ * fact, never "sai") · `null` kiểu chưa phân loại, so no suggestion existed to
+ * match. `null` must NEVER be rendered as lệch.
+ *
+ * The endpoint **404s unless the user has a Cấp 6 progress row**, so callers must
+ * gate it on `isCap6Active` and degrade silently on any error.
+ */
+export interface KehoachDetailCap6 extends Omit<OrderKehoachCap6, "id"> {
+  /** `null` only when the order has no `order_kehoach` row at all. */
+  id: string | null
+  symbol: string
+  /** ICB ngành recorded in `trong_so_goi_y` (provenance; null when unknown). */
+  nganh: string | null
+  /** Read out of the STORED `trong_so_goi_y`, never re-derived. */
+  lop_uu_tien: Lop[]
+  lop_uu_tien_ten: string[]
+  lop_it_tin: Lop[]
+  lop_it_tin_ten: string[]
+  /** "Khớp gợi ý" / "Lệch gợi ý" / null. Neither label says đúng or sai. */
+  khop_goi_y_ten: string | null
+  /** `false` = lệnh này không có dữ liệu Cấp 6 (KHÔNG phải lỗi). */
+  co_du_lieu: boolean
+  /** §C12c — shown VERBATIM; never a bare khớp/lệch badge. */
+  giai_thich: string
+}
+
 /** One of the 3 sub-conditions of nhiệm vụ ③ (§C12c: value + explanation). */
 export interface ThachThucDieuKienCap6 {
   ten: string

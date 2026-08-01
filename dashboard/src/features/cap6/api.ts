@@ -2,6 +2,7 @@ import { api, unwrap } from "@/shared/http/client"
 import type {
   Cap6Progress,
   GoiYCap6,
+  KehoachDetailCap6,
   KehoachInputCap6,
   OrderKehoachCap6,
   ThachThucCap6,
@@ -56,6 +57,24 @@ export const cap6Api = {
   recordKehoach: async (input: KehoachInputCap6): Promise<OrderKehoachCap6> => {
     const res = await api.post("cap6/kehoach", { json: input }).json<unknown>()
     return unwrap(res as never) as OrderKehoachCap6
+  },
+
+  /**
+   * GET /cap6/kehoach/{order_id} — the Đối chiếu block **as recorded on that
+   * order**, with every label + the §C12c provenance sentence.
+   *
+   * ★ This is NOT `getGoiY`: that one re-derives the kiểu from the symbol's
+   * ngành *now*, so it keeps answering "chưa phân loại" for a symbol the server
+   * cannot classify — even when the order's `khop_goi_y` WAS recorded. Only this
+   * endpoint can tell the Kết sổ the truth for those orders.
+   *
+   * **404s** for a foreign/unknown order, and for a user with no Cấp 6 progress
+   * row — so callers gate it on `isCap6Active` and degrade silently. An order
+   * that simply has no Cấp 6 data is a normal 200 with `co_du_lieu: false`.
+   */
+  getKehoach: async (orderId: string): Promise<KehoachDetailCap6> => {
+    const res = await api.get(`cap6/kehoach/${orderId}`).json<unknown>()
+    return unwrap(res as never) as KehoachDetailCap6
   },
 
   /** GET /cap6/thach-thuc — 3 điều kiện của nhiệm vụ ③ + 2 nhóm khớp/lệch. */

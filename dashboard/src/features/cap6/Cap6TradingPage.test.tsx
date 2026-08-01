@@ -332,6 +332,10 @@ vi.mock("./hooks", () => ({
   useCompleteCap6Task: () => ({ mutate: completeCap6TaskMutate, isPending: false }),
   useGraduateCap6: () => ({ mutate: graduateCap6Mutate, isPending: false }),
   useThachThucCap6: () => ({ data: undefined }),
+  // `KetsoModalCap6` đọc lại khối Đối chiếu của lệnh qua hook này. Ở đây nó
+  // KHÔNG có dữ liệu → modal dùng đúng khối trang này dựng, tức chính thứ các
+  // test dưới đang kiểm.
+  useKehoachCap6: () => ({ data: undefined, isPending: false, isError: false }),
 }))
 vi.mock("./api", () => ({ cap6Api: { getGoiY: (...a: unknown[]) => getGoiYMock(...a) } }))
 // `GraduationModalCap6` now REALLY enters Cấp 7 on success (Cấp 7 Task FE3) —

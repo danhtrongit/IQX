@@ -5,6 +5,7 @@ import { cap6Keys } from "./keys"
 import type {
   Cap6Progress,
   GoiYCap6,
+  KehoachDetailCap6,
   KehoachInputCap6,
   OrderKehoachCap6,
   ThachThucCap6,
@@ -75,6 +76,27 @@ export function useRecordKehoachCap6() {
   return useMutation<OrderKehoachCap6, unknown, KehoachInputCap6>({
     mutationFn: cap6Api.recordKehoach,
     onSuccess: invalidate,
+  })
+}
+
+/**
+ * GET /cap6/kehoach/{order_id} — the Đối chiếu block RECORDED on one order, for
+ * the Kết sổ to show real khớp/lệch instead of "chưa phân loại".
+ *
+ * ★ `enabled` is NOT optional in practice: the endpoint **404s for a user
+ * without a Cấp 6 progress row**, so callers must pass their own `isCap6Active`.
+ * `retry: false` so that 404 (and any other failure) surfaces at once and the
+ * caller can fall back to what it already had — the Kết sổ modal is
+ * `closable={false}`, so it must never depend on this call succeeding.
+ */
+export function useKehoachCap6(orderId: string | null, enabled = true) {
+  const { isAuthenticated } = useAuth()
+  return useQuery<KehoachDetailCap6>({
+    queryKey: cap6Keys.kehoach(orderId ?? "none"),
+    queryFn: () => cap6Api.getKehoach(orderId as string),
+    enabled: isAuthenticated && enabled && !!orderId,
+    staleTime: 0,
+    retry: false,
   })
 }
 

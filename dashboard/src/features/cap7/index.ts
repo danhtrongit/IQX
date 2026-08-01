@@ -25,6 +25,7 @@ export {
   useEnterCap7,
   useCompleteCap7Task,
   usePhienCap7,
+  useKehoachCap7,
   useRecordKehoachCap7,
   useChamCap7,
   useThachThucCap7,
@@ -54,6 +55,7 @@ export type {
   Cap7Progress,
   ChamCap7,
   HanhViCo,
+  KehoachDetailCap7,
   KehoachInputCap7,
   LucDocUser,
   OrderKehoachCap7,
@@ -64,7 +66,7 @@ export type {
 } from "./types"
 
 // ── FE2: Kết sổ Cấp 7 + coach lớp 7 + khối ⑯⑰ ───────────────────────────────
-export { KetsoModalCap7 } from "./KetsoModalCap7"
+export { KetsoModalCap7, mergeDocLucCap7 } from "./KetsoModalCap7"
 export type { DocLucKetsoCap7, KetsoDataCap7, KetsoModalCap7Props } from "./KetsoModalCap7"
 export {
   COACH_CAP7_LABEL,

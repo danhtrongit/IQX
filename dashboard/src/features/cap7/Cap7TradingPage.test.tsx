@@ -353,6 +353,9 @@ vi.mock("@/features/cap5/tradeLogCap5", async (importOriginal) => {
 vi.mock("@/features/cap6/hooks", () => ({
   useCap6Progress: () => ({ data: null }),
   useCompleteCap6Task: () => ({ mutate: completeCap6TaskMutate, isPending: false }),
+  // `KetsoModalCap7` đọc lại khối Đối chiếu của lệnh qua hook này — không dữ
+  // liệu ở đây → modal dùng đúng khối trang này dựng (thứ các test dưới kiểm).
+  useKehoachCap6: () => ({ data: undefined, isPending: false, isError: false }),
 }))
 vi.mock("@/features/cap6/tradeLogCap6", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/features/cap6/tradeLogCap6")>()
@@ -370,6 +373,9 @@ vi.mock("./hooks", () => ({
   useCompleteCap7Task: () => ({ mutate: completeCap7TaskMutate, isPending: false }),
   useGraduateCap7: () => ({ mutate: graduateCap7Mutate, isPending: false }),
   useThachThucCap7: () => ({ data: undefined }),
+  // `KetsoModalCap7` đọc lại khối đọc lực (đã chấm) của lệnh qua hook này —
+  // không dữ liệu ở đây → modal dùng đúng khối `buildDocLucCap7` dựng lúc mua.
+  useKehoachCap7: () => ({ data: undefined, isPending: false, isError: false }),
 }))
 vi.mock("./tradeLogCap7", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./tradeLogCap7")>()

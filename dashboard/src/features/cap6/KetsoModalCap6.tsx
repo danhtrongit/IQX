@@ -51,10 +51,11 @@ import {
   COACH_CAP6_LABEL,
   type CoachSituationCap6,
 } from "./coachTemplateCap6"
+import { useCap6Events } from "./Cap6Context"
 import { lopNguocChieu, lopUngHo } from "./doiChieu"
-import { useCompleteCap6Task } from "./hooks"
+import { useCompleteCap6Task, useKehoachCap6 } from "./hooks"
 import { useCap6TradeLog, type Cap6TradeRecord } from "./tradeLogCap6"
-import { KIEU_ICON, type KieuCoPhieu, type Lop } from "./types"
+import { KIEU_ICON, type KehoachDetailCap6, type KieuCoPhieu, type Lop } from "./types"
 // Kết sổ Cấp 6 = Kết sổ Cấp 5's content (đối chiếu Cấp 1 + CAM KẾT vs THỰC TẾ Cấp
 // 2 + Quản lý vốn Cấp 3 + Đọc 5 lớp Cấp 4 + khối cảm xúc + PHÂN LOẠI 4 Ô Cấp 5 +
 // 5 lớp coach + HỒ SƠ + count-up) — CỘNG khối "Đối chiếu — nhìn lại" và lớp coach
@@ -127,6 +128,49 @@ export interface DoiChieuKetsoCap6 {
   khopGoiY: boolean | null
   /** `order_kehoach.ly_do_doi_chieu` — 1 dòng vì sao user ghi lúc đặt. */
   lyDo: string | null
+  /**
+   * §C12c — câu "vì sao" của server cho CHÍNH lệnh này
+   * (`GET /cap6/kehoach/{order_id}`), hiện NGUYÊN VĂN. Vắng mặt khi khối được
+   * dựng từ sự kiện lệnh (FE không có câu nào để hiện, và không được bịa).
+   */
+  giaiThich?: string | null
+}
+
+/**
+ * Khối Đối chiếu để RENDER = khối server đã ghi cho lệnh, nếu đọc được; nếu
+ * không thì đúng khối cũ dựng từ sự kiện lệnh.
+ *
+ * ★ Vì sao phải ưu tiên server: `/cap6/goi-y` suy lại kiểu từ ngành *bây giờ*,
+ * nên với mã hệ không phân loại được nó mãi trả "chưa phân loại" — trong khi
+ * `POST /cap6/kehoach` ĐÃ ghi `khop_goi_y` cho lệnh đó. Chỉ hàng đã lưu mới nói
+ * được sự thật.
+ *
+ * ★ FAIL-CLOSED, KHÔNG BAO GIỜ FAIL-LOUD: `detail` là `undefined` khi query
+ * đang chạy, 404 (user chưa ở Cấp 6 / lệnh không phải của user) hoặc lỗi mạng →
+ * trả lại y nguyên `local`, tức đúng hành vi cũ. Modal `closable={false}` nên
+ * một exception ở đây sẽ nhốt user.
+ *
+ * ★ `co_du_lieu === false` KHÔNG phải lỗi và cũng KHÔNG phải lý do để xoá khối:
+ * nó chỉ nói hàng `order_kehoach` không có bước Đối chiếu. Giữ `local`.
+ *
+ * ★ `khop_goi_y === null` đi thẳng vào `khopGoiY` — TUYỆT ĐỐI không `?? false`:
+ * "chưa phân loại" và "lệch gợi ý" là hai chuyện khác nhau.
+ */
+export function mergeDoiChieuCap6(
+  local: DoiChieuKetsoCap6 | null,
+  detail: KehoachDetailCap6 | null | undefined,
+): DoiChieuKetsoCap6 | null {
+  if (!detail || !detail.co_du_lieu) return local
+  return {
+    kieu: detail.kieu_co_phieu,
+    kieuTen: detail.kieu_ten,
+    nganh: detail.nganh,
+    lopQuyetDinh: detail.lop_quyet_dinh,
+    lopUuTien: detail.lop_uu_tien,
+    khopGoiY: detail.khop_goi_y,
+    lyDo: detail.ly_do_doi_chieu,
+    giaiThich: detail.giai_thich,
+  }
 }
 
 /**
@@ -281,6 +325,7 @@ export function KetsoModalCap6({
   onRecorded,
 }: KetsoModalCap6Props) {
   const cap5Events = useCap5Events()
+  const { isCap6Active } = useCap6Events()
   const recordKetsoCap1 = useRecordKetso()
   const recordKetsoCap2 = useRecordKetsoCap2()
   const recordKetsoCap5 = useRecordKetsoCap5()
@@ -298,6 +343,16 @@ export function KetsoModalCap6({
   // và `verdict` hệ để ghi `verdictHe` vào nhật ký.
   const verdictQuery = useVerdictGoiY(data?.orderId ?? null)
   const goiY = verdictQuery.data
+
+  /**
+   * `GET /cap6/kehoach/{order_id}` — khối Đối chiếu ĐÃ GHI của chính lệnh này.
+   *
+   * ★ Chỉ gọi khi user THẬT SỰ đang ở Cấp 6 (`isCap6Active`): endpoint 404 khi
+   * chưa có hàng tiến độ Cấp 6, và một 404 vô ích mỗi lần mở Kết sổ là tiếng ồn.
+   * Lỗi (404/mạng/500) KHÔNG bao giờ nổi lên UI — `mergeDoiChieuCap6` trả lại
+   * khối cũ, y hệt hành vi trước khi có endpoint này.
+   */
+  const kehoachQuery = useKehoachCap6(data?.orderId ?? null, isCap6Active)
 
   const entryPrice = data?.entryPrice ?? 0
   const exitPrice = data?.exitPrice ?? 0
@@ -357,8 +412,11 @@ export function KetsoModalCap6({
     pctVon,
     doc5Lop,
     ai5Lop,
-    doiChieu,
+    doiChieu: doiChieuLocal,
   } = data
+  // Hàng đã lưu của server thắng khối dựng từ sự kiện lệnh — xem
+  // `mergeDoiChieuCap6`. Query lỗi/chưa về → nguyên khối cũ.
+  const doiChieu = mergeDoiChieuCap6(doiChieuLocal, kehoachQuery.data)
   const soPhienGiu = countTradingSessions(buyDate, sellDate)
   const soNgayLich = countCalendarDays(buyDate, sellDate)
   const pnlPositive = pnlVnd > 0
@@ -877,6 +935,14 @@ export function KetsoModalCap6({
           {doiChieu.lyDo && (
             <p className="cap6-ketso-lydo" data-testid="cap6-ketso-lydo">
               {`Vì sao bạn tin lớp đó (ghi lúc đặt): «${doiChieu.lyDo}»`}
+            </p>
+          )}
+          {/* §C12c — câu của server cho CHÍNH lệnh này, hiện NGUYÊN VĂN (kể cả
+              provenance của kiểu và cách diễn đạt trung tính của "lệch"). Chỉ có
+              khi khối đến từ `GET /cap6/kehoach/{order_id}`. */}
+          {doiChieu.giaiThich && (
+            <p className="cap6-ketso-giaithich" data-testid="cap6-ketso-giaithich">
+              {doiChieu.giaiThich}
             </p>
           )}
         </div>

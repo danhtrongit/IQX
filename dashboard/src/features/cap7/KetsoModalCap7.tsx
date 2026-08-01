@@ -45,24 +45,27 @@ import {
 import { useRecordKetsoCap5, useVerdictGoiY } from "@/features/cap5/hooks"
 import { PhanLoai4O } from "@/features/cap5/PhanLoai4O"
 import { O4_LABEL, type O4, type Verdict } from "@/features/cap5/types"
+import { useCap6Events } from "@/features/cap6/Cap6Context"
 import { COACH_CAP6_LABEL, type CoachSituationCap6 } from "@/features/cap6/coachTemplateCap6"
 import { lopNguocChieu, lopUngHo } from "@/features/cap6/doiChieu"
-import { useCompleteCap6Task } from "@/features/cap6/hooks"
-import type { KetsoDataCap6 } from "@/features/cap6/KetsoModalCap6"
+import { useCompleteCap6Task, useKehoachCap6 } from "@/features/cap6/hooks"
+import { mergeDoiChieuCap6, type KetsoDataCap6 } from "@/features/cap6/KetsoModalCap6"
 import { KIEU_ICON, type Lop } from "@/features/cap6/types"
+import { useCap7Events } from "./Cap7Context"
 import {
   composeCoachCap7,
   COACH_CAP7_LABEL,
   COACH_CO_CAP7_LABEL,
   type CoachSituationCap7,
 } from "./coachTemplateCap7"
-import { useCompleteCap7Task } from "./hooks"
+import { useCompleteCap7Task, useKehoachCap7 } from "./hooks"
 import { useCap7TradeLog, type Cap7TradeRecord } from "./tradeLogCap7"
 import {
   HANH_VI_CO_LABEL,
   LUC_DOC_OPTIONS,
   type BandLuc,
   type HanhViCo,
+  type KehoachDetailCap7,
   type LucDocUser,
 } from "./types"
 // Kết sổ Cấp 7 = Kết sổ Cấp 6's content (đối chiếu Cấp 1 + CAM KẾT vs THỰC TẾ Cấp
@@ -148,6 +151,83 @@ export interface DocLucKetsoCap7 {
   giaCo: number | null
   /** §C12c — 1 câu của server, hiện NGUYÊN VĂN. */
   giaiThich: string | null
+  /**
+   * ★ `da_toi_han_cham` — CHỈ có ý nghĩa khi `docLucDung == null`, và nó tách
+   * hai ca hoàn toàn khác nhau: `false`/vắng mặt = *chưa tới hạn chấm*; `true` =
+   * *đã tới hạn nhưng hệ chưa lấy được giá phiên đích*. Cả hai đều KHÔNG phải
+   * phán quyết. FE không tự tính được (cần lịch phiên + đồng hồ server), nên
+   * vắng mặt nghĩa là "không biết" → giữ câu "chưa tới hạn chấm" như trước.
+   */
+  daToiHanCham?: boolean | null
+}
+
+/**
+ * Khối Đọc sổ lệnh để RENDER = khối server đã ghi (và đã chấm) cho lệnh, nếu
+ * đọc được; nếu không thì đúng khối cũ dựng từ dữ liệu lúc MUA.
+ *
+ * ★ Vì sao phải hỏi server: `docLucDung`/`dienBienPct` được chấm bằng giá đóng
+ * cửa THẬT `so_phien_cham` phiên SAU khi mua — muộn hơn hẳn mọi thứ FE có lúc
+ * đặt lệnh. Không đọc lại thì khối này mãi mãi nói "chưa tới hạn chấm" và đoạn
+ * coach Cấp 7 KHÔNG BAO GIỜ hiện được.
+ *
+ * ★ FAIL-CLOSED: `detail` `undefined` (đang tải), 404 (chưa ở Cấp 7 / lệnh không
+ * phải của user) hay lỗi mạng → trả lại `local` y nguyên, tức hành vi cũ. Modal
+ * `closable={false}` nên một exception ở đây sẽ nhốt user.
+ *
+ * ★ `doc_luc_dung` đi THẲNG vào `docLucDung` — không `?? false`, không
+ * `Boolean(...)`: `null` là "chưa chấm", `false` là "đọc sai"; gộp hai thứ đó
+ * là nói với user rằng họ sai trong khi chưa có gì được chấm.
+ *
+ * `giaCo` lấy từ `local`: backend KHÔNG lưu mức nào của sổ đã kích cờ, nên đó là
+ * nguồn duy nhất có thể có (thực tế luôn `null` — copy tự bỏ cụm "ở {giá}").
+ */
+export function mergeDocLucCap7(
+  local: DocLucKetsoCap7 | null,
+  detail: KehoachDetailCap7 | null | undefined,
+): DocLucKetsoCap7 | null {
+  if (!detail || !detail.co_du_lieu) return local
+  return {
+    lucChiSo: detail.luc_chi_so,
+    lucBand: detail.luc_band,
+    lucBandTen: detail.luc_band_ten,
+    lucDocUser: detail.luc_doc_user,
+    lucDocUserTen: detail.luc_doc_user_ten,
+    docLucDung: detail.doc_luc_dung,
+    dienBienPct: detail.dien_bien_pct,
+    soPhienCham: detail.so_phien_cham,
+    deadBandPct: detail.dead_band_pct,
+    coCanhGiac: Boolean(detail.co_canh_giac_lenh_gia),
+    hanhViCo: detail.hanh_vi_co,
+    hanhViCoTen: detail.hanh_vi_co_ten,
+    giaCo: local?.giaCo ?? null,
+    giaiThich: detail.giai_thich,
+    daToiHanCham: detail.da_toi_han_cham,
+  }
+}
+
+/**
+ * Dòng "Diễn biến ngay sau" — BA trạng thái, và trạng thái thứ ba lại tách làm
+ * hai câu khác nhau. KHÔNG câu nào trong hai câu `null` là một phán quyết.
+ */
+function dienBienText(docLuc: DocLucKetsoCap7): string {
+  if (docLuc.docLucDung == null) {
+    if (docLuc.daToiHanCham === true) {
+      return (
+        `đã tới mốc ${docLuc.soPhienCham} phiên sau khi mua, nhưng hệ chưa lấy ` +
+        "được giá đóng cửa của phiên đó nên chưa chấm được (và nó không bị tính " +
+        "là đọc sai)"
+      )
+    }
+    return (
+      `chưa tới hạn chấm — hệ chấm bằng giá đóng cửa ${docLuc.soPhienCham} phiên ` +
+      "sau khi mua, lệnh này chưa tới mốc đó nên chưa có kết quả (và nó không bị " +
+      "tính là đọc sai)"
+    )
+  }
+  const pct = docLuc.dienBienPct != null ? `: ${fmtPct(docLuc.dienBienPct)}` : ""
+  return `${docLuc.soPhienCham} phiên${pct} → đọc lực ${
+    docLuc.docLucDung ? "ĐÚNG ✓" : "CHƯA ĐÚNG"
+  }`
 }
 
 /**
@@ -315,6 +395,8 @@ export function KetsoModalCap7({
   onRecorded,
 }: KetsoModalCap7Props) {
   const cap5Events = useCap5Events()
+  const { isCap6Active } = useCap6Events()
+  const { isCap7Active } = useCap7Events()
   const recordKetsoCap1 = useRecordKetso()
   const recordKetsoCap2 = useRecordKetsoCap2()
   const recordKetsoCap5 = useRecordKetsoCap5()
@@ -330,6 +412,18 @@ export function KetsoModalCap7({
 
   const verdictQuery = useVerdictGoiY(data?.orderId ?? null)
   const goiY = verdictQuery.data
+
+  /**
+   * Hai endpoint đọc-lại-theo-lệnh: `GET /cap7/kehoach/{order_id}` (khối đọc lực
+   * + KẾT QUẢ CHẤM — thứ FE không thể tự có) và `GET /cap6/kehoach/{order_id}`
+   * (khối Đối chiếu đã ghi).
+   *
+   * ★ Mỗi cái chỉ được gọi khi user thật sự đang ở cấp đó — cả hai 404 khi thiếu
+   * hàng tiến độ của cấp. Lỗi KHÔNG bao giờ nổi lên UI: hai hàm `merge*` trả lại
+   * khối cũ, đúng hành vi trước khi có hai endpoint này.
+   */
+  const kehoachCap7Query = useKehoachCap7(data?.orderId ?? null, isCap7Active)
+  const kehoachCap6Query = useKehoachCap6(data?.orderId ?? null, isCap6Active)
 
   const entryPrice = data?.entryPrice ?? 0
   const exitPrice = data?.exitPrice ?? 0
@@ -387,9 +481,13 @@ export function KetsoModalCap7({
     pctVon,
     doc5Lop,
     ai5Lop,
-    doiChieu,
-    docLuc,
+    doiChieu: doiChieuLocal,
+    docLuc: docLucLocal,
   } = data
+  // Hàng đã lưu (và đã chấm) của server thắng khối dựng lúc mua — xem
+  // `mergeDocLucCap7` / `mergeDoiChieuCap6`. Query lỗi/chưa về → nguyên khối cũ.
+  const doiChieu = mergeDoiChieuCap6(doiChieuLocal, kehoachCap6Query.data)
+  const docLuc = mergeDocLucCap7(docLucLocal, kehoachCap7Query.data)
   const soPhienGiu = countTradingSessions(buyDate, sellDate)
   const soNgayLich = countCalendarDays(buyDate, sellDate)
   const pnlPositive = pnlVnd > 0
@@ -907,6 +1005,13 @@ export function KetsoModalCap7({
               {`Vì sao bạn tin lớp đó (ghi lúc đặt): «${doiChieu.lyDo}»`}
             </p>
           )}
+          {/* §C12c — câu của server cho CHÍNH lệnh này (`GET /cap6/kehoach/…`),
+              hiện NGUYÊN VĂN. Vắng mặt khi khối dựng từ sự kiện lệnh. */}
+          {doiChieu.giaiThich && (
+            <p className="cap6-ketso-giaithich" data-testid="cap6-ketso-giaithich">
+              {doiChieu.giaiThich}
+            </p>
+          )}
         </div>
       )}
 
@@ -945,11 +1050,7 @@ export function KetsoModalCap7({
                   }`}
                   data-testid="cap7-ketso-dienbien"
                 >
-                  {docLuc.docLucDung == null
-                    ? `chưa tới hạn chấm — hệ chấm bằng giá đóng cửa ${docLuc.soPhienCham} phiên sau khi mua, lệnh này chưa tới mốc đó nên chưa có kết quả (và nó không bị tính là đọc sai)`
-                    : `${docLuc.soPhienCham} phiên${
-                        docLuc.dienBienPct != null ? `: ${fmtPct(docLuc.dienBienPct)}` : ""
-                      } → đọc lực ${docLuc.docLucDung ? "ĐÚNG ✓" : "CHƯA ĐÚNG"}`}
+                  {dienBienText(docLuc)}
                 </td>
               </tr>
               {/* Dòng cờ — chỉ khi cờ THỰC SỰ hiện lúc đặt lệnh. */}

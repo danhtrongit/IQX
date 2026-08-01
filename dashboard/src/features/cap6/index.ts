@@ -19,6 +19,7 @@ export {
   useEnterCap6,
   useCompleteCap6Task,
   useGoiYCap6,
+  useKehoachCap6,
   useRecordKehoachCap6,
   useThachThucCap6,
   useGraduateCap6,
@@ -37,6 +38,7 @@ export {
 export type {
   Cap6Progress,
   GoiYCap6,
+  KehoachDetailCap6,
   KehoachInputCap6,
   KieuCoPhieu,
   NhomDoiChieuCap6,
@@ -46,7 +48,7 @@ export type {
 } from "./types"
 
 // ── FE2: Kết sổ Cấp 6 + coach lớp 6 + khối ⑭⑮ ───────────────────────────────
-export { KetsoModalCap6 } from "./KetsoModalCap6"
+export { KetsoModalCap6, mergeDoiChieuCap6 } from "./KetsoModalCap6"
 export type { DoiChieuKetsoCap6, KetsoDataCap6, KetsoModalCap6Props } from "./KetsoModalCap6"
 export {
   COACH_CAP6_LABEL,

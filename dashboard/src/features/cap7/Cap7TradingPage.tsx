@@ -199,11 +199,19 @@ interface LastBuyCap7 {
  * ★★ **`docLucDung` và `dienBienPct` LUÔN `null` ở đây, có chủ đích.** Lệnh này
  * vừa được mua trong CHÍNH phiên làm việc hiện tại (`lastBuyBySymbolRef` chỉ nhớ
  * lệnh mua của phiên này), nên phiên đích để chấm còn chưa xảy ra: backend chấm
- * bằng giá đóng cửa thật `so_phien_cham` phiên sau ngày mua, và không có endpoint
- * đọc lại một `order_kehoach` lẻ. `KetsoModalCap7` render `null` thành "chưa tới
- * hạn chấm" và `pickCoachCap7` tự trả `null` — không dòng nào đoán hộ một phán
- * quyết. Con số thật xuất hiện ở khối ⑯ của Phân tích danh mục sau khi
- * `POST /cap7/cham` chạy.
+ * bằng giá đóng cửa thật `so_phien_cham` phiên sau ngày mua. Hàm này KHÔNG được
+ * đoán hộ một phán quyết, nên nó để `null` và `KetsoModalCap7` render `null`
+ * thành "chưa tới hạn chấm" (`pickCoachCap7` cũng tự trả `null`).
+ *
+ * ★ Kết quả chấm THẬT thì `KetsoModalCap7` tự đọc bằng
+ * `GET /cap7/kehoach/{order_id}` (chính lần đọc đó chạy pass chấm của server) và
+ * ghi đè khối này qua `mergeDocLucCap7` — nhờ vậy một lệnh mở lại Kết sổ sau khi
+ * đã tới hạn hiện được phán quyết + đoạn coach Cấp 7. Endpoint đó 404 khi user
+ * chưa có hàng tiến độ Cấp 7 và mọi lỗi đều rơi lại về đúng khối dựng ở đây.
+ *
+ * ★ `quyTac` chưa về cũng không còn là ngõ cụt: hàm này trả `null` (xem dưới),
+ * nhưng nếu server CÓ dữ liệu Cấp 7 cho lệnh thì `mergeDocLucCap7` vẫn dựng được
+ * khối từ payload của server.
  *
  * ★ `giaCo` LUÔN `null`: backend KHÔNG lưu mức nào của sổ đã kích cờ (chỉ lưu
  * `co_canh_giac_lenh_gia` + `hanh_vi_co`), và `Cap7OrderEvent` cũng không mang

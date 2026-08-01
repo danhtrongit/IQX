@@ -5,6 +5,7 @@ import { cap7Keys } from "./keys"
 import type {
   Cap7Progress,
   ChamCap7,
+  KehoachDetailCap7,
   KehoachInputCap7,
   OrderKehoachCap7,
   PhienCap7,
@@ -83,6 +84,27 @@ export function useRecordKehoachCap7() {
   return useMutation<OrderKehoachCap7, unknown, KehoachInputCap7>({
     mutationFn: cap7Api.recordKehoach,
     onSuccess: invalidate,
+  })
+}
+
+/**
+ * GET /cap7/kehoach/{order_id} — the đọc-lực block of one order, **scored** if
+ * its window has elapsed (reading it runs the server's lazy chấm pass).
+ *
+ * ★ `enabled` is NOT optional in practice: the endpoint **404s for a user
+ * without a Cấp 7 progress row**, so callers must pass their own `isCap7Active`.
+ * `retry: false` so 404 (and any other failure) surfaces at once and the caller
+ * can fall back to what it already had — the Kết sổ modal is `closable={false}`,
+ * so it must never depend on this call succeeding.
+ */
+export function useKehoachCap7(orderId: string | null, enabled = true) {
+  const { isAuthenticated } = useAuth()
+  return useQuery<KehoachDetailCap7>({
+    queryKey: cap7Keys.kehoach(orderId ?? "none"),
+    queryFn: () => cap7Api.getKehoach(orderId as string),
+    enabled: isAuthenticated && enabled && !!orderId,
+    staleTime: 0,
+    retry: false,
   })
 }
 
