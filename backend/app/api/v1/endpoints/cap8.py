@@ -119,13 +119,27 @@ async def record_kehoach(
 
     ``hanh_vi_canh_bao`` thì LẤY TỪ CLIENT — chỉ user biết mình bấm nút nào —
     nhưng phải khớp với thứ thật sự bật: ``khong_canh_bao`` trong khi CÓ cảnh
-    báo (hoặc ngược lại) là mâu thuẫn và bị từ chối 400, không tự sửa im lặng.
+    báo (hoặc ``van_mua`` trong khi KHÔNG có) là mâu thuẫn và bị từ chối 400,
+    không tự sửa im lặng.
+
+    ★ GHI MỘT LẦN. Khối này là ẢNH CHỤP danh mục lúc mua, và điều kiện tốt
+    nghiệp ② được tính từ chính nó. Gửi lại đúng giá trị cũ → trả về hàng đã ghi,
+    không đo lại gì (retry an toàn); gửi giá trị khác → 409. Nếu không, chỉ cần
+    bán bớt ngành đang dồn rồi ghi đè "không có cảnh báo" là xoá sạch ô ②.
+
+    ★ ``canh_bao_da_hien`` — các cảnh báo của CHÍNH lần kiểm tra user đã phản hồi
+    — là thứ DUY NHẤT client kể về bước kiểm tra, và chỉ dùng cho ``giam_kl`` /
+    ``chon_ma_khac``: giảm khối lượng hay đổi mã chính là thứ làm cảnh báo tắt,
+    nên nếu server chỉ suy lại từ lệnh ĐÃ điều chỉnh thì hai lựa chọn "đã nghe
+    cảnh báo" chỉ ghi được đúng lúc user… không nghe. Nó KHÔNG ảnh hưởng
+    ``van_mua`` (giá trị duy nhất ô ② đếm) hay ``khong_canh_bao``.
     """
     svc = Cap8Service(db)
     kehoach = await svc.record_kehoach(
         user.id,
         body.order_id,
         hanh_vi_canh_bao=body.hanh_vi_canh_bao,
+        canh_bao_da_hien=body.canh_bao_da_hien,
         don_nganh_pct=body.don_nganh_pct,
         tuong_quan_cao_voi=body.tuong_quan_cao_voi,
         tong_rui_ro_pct=body.tong_rui_ro_pct,

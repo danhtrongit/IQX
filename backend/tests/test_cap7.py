@@ -40,7 +40,7 @@ import pytest
 from sqlalchemy import select
 
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
-from app.models.cap1 import Cap1Progress
+from app.models.cap1 import Cap1Progress, OrderKehoach
 from app.models.cap2 import Cap2Progress
 from app.models.cap3 import Cap3Progress
 from app.models.cap4 import Cap4Progress
@@ -56,6 +56,7 @@ from app.services.cap3.service import Cap3Service
 from app.services.cap4.service import Cap4Service
 from app.services.cap6.service import Cap6Service
 from app.services.cap7.service import (
+    CHAM_MISS_MAX_LAN,
     CO_CANH_GIAC_HE_SO,
     CO_CANH_GIAC_MIN_MUC,
     NGUONG_CAU_AP_DAO,
@@ -67,6 +68,7 @@ from app.services.cap7.service import (
     co_canh_giac,
     doc_luc_dung_rule,
     han_cham_luc_date,
+    quen_cham_miss,
 )
 from app.services.ta.indicators import OHLCV
 
@@ -82,6 +84,16 @@ _ALL_NEU = {
 _MAU_THUAN = {**_ALL_NEU, "ky_thuat": "ok", "dinh_gia": "bad"}
 
 _BUY_PRICE = 20_000
+
+
+@pytest.fixture(autouse=True)
+def _clear_cham_miss():
+    """The chấm pass's negative memo is PROCESS-wide (it is keyed by mã + phiên,
+    which is user-independent). Clear it around every test so one test's
+    unscoreable symbol can never park another test's."""
+    quen_cham_miss()
+    yield
+    quen_cham_miss()
 
 
 # ══════════════════════════════════════════════════════
@@ -254,6 +266,23 @@ async def _sell_and_ketso(
     return sell
 
 
+async def _age_order(db_session, order: VirtualOrder, days_ago: int) -> VirtualOrder:
+    """Backdate an order's ``trading_date`` AFTER its đọc lực was recorded.
+
+    ★ WHY THE READING IS NEVER WRITTEN ONTO AN ALREADY-OLD ORDER. ``record_kehoach``
+    refuses any reading — first write included — once
+    ``han_cham_luc_date(trading_date)`` has passed, because by then the outcome
+    exists and the guess would be a back-fill. So a legitimate reading is always
+    committed while the deadline is still in the FUTURE; ageing the order
+    afterwards is what makes the SCORING path reachable in a test without going
+    through a route the service must reject.
+    """
+    order.trading_date = date.today() - timedelta(days=days_ago)
+    await db_session.flush()
+    await db_session.refresh(order)
+    return order
+
+
 async def _doc_luc_order(
     db_session,
     services,
@@ -268,9 +297,13 @@ async def _doc_luc_order(
     days_ago: int = 0,
     close: bool = False,
 ):
-    """One Cấp 7 order: buy + Cấp 1 kế hoạch + đọc lực (optionally closed)."""
+    """One Cấp 7 order: buy + Cấp 1 kế hoạch + đọc lực (optionally closed).
+
+    ``days_ago`` ages the order AFTER the reading is committed — see
+    ``_age_order`` for why it can never be done the other way round.
+    """
     buy = await _buy_with_cap1_plan(
-        db_session, services, account_id, user_id, symbol=symbol, days_ago=days_ago
+        db_session, services, account_id, user_id, symbol=symbol
     )
     kehoach = await services["cap7"].record_kehoach(
         user_id,
@@ -280,6 +313,8 @@ async def _doc_luc_order(
         co_canh_giac_lenh_gia=co,
         hanh_vi_co=hanh_vi,
     )
+    if days_ago:
+        await _age_order(db_session, buy, days_ago)
     if close:
         await _sell_and_ketso(
             db_session, services, account_id, user_id, symbol=symbol
@@ -741,14 +776,16 @@ async def test_luc_doc_is_locked_once_the_window_has_elapsed(
     )
     assert rewritten.luc_doc_user == LucDocUser.YEU.value
 
-    # Backdated order whose window has elapsed → locked.
+    # Reading committed while the deadline was still ahead, then the order ages
+    # past it → locked.
     old = await _buy_with_cap1_plan(
-        db_session, services, account.id, test_user.id, symbol="LK2", days_ago=30
+        db_session, services, account.id, test_user.id, symbol="LK2"
     )
     await cap7.record_kehoach(
         test_user.id, old.id, luc_chi_so=1.9, luc_doc_user="manh",
         co_canh_giac_lenh_gia=False, hanh_vi_co=None,
     )
+    await _age_order(db_session, old, 30)
     with pytest.raises(ConflictError):
         await cap7.record_kehoach(
             test_user.id, old.id, luc_chi_so=0.4, luc_doc_user="yeu",
@@ -765,6 +802,61 @@ async def test_luc_doc_is_locked_once_the_window_has_elapsed(
         co_canh_giac_lenh_gia=False, hanh_vi_co=None,
     )
     assert same.luc_doc_user == LucDocUser.MANH.value
+
+
+@pytest.mark.asyncio
+async def test_the_first_reading_cannot_be_back_filled_after_the_deadline(
+    db_session, test_user, monkeypatch
+):
+    """★ THE EXPLOIT THE LOCK MUST ALSO STOP — the FIRST write.
+
+    Placing a buy WITHOUT recording a đọc lực is perfectly legal (the step is
+    soft, spec §9), so a user can accumulate orders with all-NULL Cấp 7 columns,
+    wait for the chấm window to elapse, read the real 2-phiên move off the chart
+    and only THEN post the matching guess. Every one of those readings would be
+    scored ĐÚNG from real prices, and ``ty_le_doc_luc_dung`` would be 100% on
+    fabricated data.
+
+    A deadline that only guards OVERWRITES guards nothing: the reading must be
+    committed BEFORE the outcome exists, first write included.
+    """
+    services, account = await _enter_cap7(db_session, test_user.id)
+    cap7 = services["cap7"]
+
+    old = await _buy_with_cap1_plan(
+        db_session, services, account.id, test_user.id, symbol="BF1"
+    )
+    await _age_order(db_session, old, 30)
+    # The outcome already exists and is visible to the user…
+    _patch_ohlcv(monkeypatch, _series_for(old.trading_date, _BUY_PRICE * 1.05))
+
+    # …so the matching guess is refused, even though nothing was ever recorded.
+    with pytest.raises(ConflictError):
+        await cap7.record_kehoach(
+            test_user.id, old.id, luc_chi_so=1.9, luc_doc_user="manh",
+            co_canh_giac_lenh_gia=False, hanh_vi_co=None,
+        )
+
+    kehoach = (
+        await db_session.execute(
+            select(OrderKehoach).where(OrderKehoach.order_id == old.id)
+        )
+    ).scalar_one()
+    assert kehoach.luc_doc_user is None  # nothing was written
+    assert kehoach.luc_chi_so is None
+    assert kehoach.co_canh_giac_lenh_gia is None
+
+    # …and the discipline flag cannot be back-filled either (leg ② of nhiệm vụ ③).
+    with pytest.raises(ConflictError):
+        await cap7.record_kehoach(
+            test_user.id, old.id, luc_chi_so=1.9, luc_doc_user="manh",
+            co_canh_giac_lenh_gia=True, hanh_vi_co="cho_xac_nhan",
+        )
+
+    progress = await cap7.get_progress(test_user.id)
+    assert progress["so_lenh_doc_luc"] == 0
+    assert progress["so_lan_khong_duoi_theo_co"] == 0
+    assert progress["ty_le_doc_luc_dung"] == 0.0
 
 
 # ══════════════════════════════════════════════════════
@@ -942,7 +1034,6 @@ async def test_unfilled_buy_is_never_scored(db_session, test_user, monkeypatch):
         test_user.id,
         symbol="UF1",
         status=OrderStatus.PENDING,
-        trading_date=date.today() - timedelta(days=30),
     )
     await services["cap1"].record_kehoach(
         test_user.id, buy.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho", vung_mua=_BUY_PRICE
@@ -951,11 +1042,88 @@ async def test_unfilled_buy_is_never_scored(db_session, test_user, monkeypatch):
         test_user.id, buy.id, luc_chi_so=1.9, luc_doc_user="manh",
         co_canh_giac_lenh_gia=False, hanh_vi_co=None,
     )
+    await _age_order(db_session, buy, 30)
     _patch_ohlcv(monkeypatch, _series_for(buy.trading_date, _BUY_PRICE * 1.05))
     progress = await cap7.get_progress(test_user.id)
     await db_session.refresh(kehoach)
     assert kehoach.doc_luc_dung is None
     assert progress["so_lenh_chua_cham"] == 1
+
+
+# ══════════════════════════════════════════════════════
+# Bounded scoring work (the chấm pass runs on EVERY read)
+# ══════════════════════════════════════════════════════
+
+
+@pytest.mark.asyncio
+async def test_scoring_stops_retrying_a_permanently_unscoreable_order(
+    db_session, test_user, monkeypatch
+):
+    """★ An order that can NEVER be scored (delisted mã, permanent data gap)
+    must not be re-fetched on every read forever — the chấm pass runs on
+    ``/cap7/progress``, ``/cap7/thach-thuc`` AND on every per-order Kết sổ read.
+
+    After ``CHAM_MISS_MAX_LAN`` failed attempts the order is parked for
+    ``CHAM_MISS_TTL``; it stays UNSCORED (never "đọc sai") and keeps its place in
+    ``so_lenh_chua_cham``.
+    """
+    services, account = await _enter_cap7(db_session, test_user.id)
+    cap7 = services["cap7"]
+    _patch_ohlcv(monkeypatch, {})
+    buy, kehoach = await _doc_luc_order(
+        db_session, services, account.id, test_user.id,
+        symbol="DEAD", luc_doc_user="manh", days_ago=30,
+    )
+
+    calls: list[str] = []
+
+    async def _always_fails(symbol, start, end, **kwargs):
+        calls.append(symbol)
+        raise ValueError("test: delisted")
+
+    monkeypatch.setattr(f"{_SVC}.get_adjusted_ohlcv", _always_fails)
+
+    for _ in range(6):
+        await cap7.get_progress(test_user.id)
+
+    assert len(calls) == CHAM_MISS_MAX_LAN  # …and then it gives up, for a while
+    await db_session.refresh(kehoach)
+    assert kehoach.doc_luc_dung is None  # ★ parked, NEVER counted as wrong
+    progress = await cap7.get_progress(test_user.id)
+    assert progress["so_lenh_chua_cham"] == 1
+    assert progress["ty_le_doc_luc_dung"] == 0.0
+
+    # A parked order is retried again once the TTL has elapsed — "give up for
+    # now", never "give up forever".
+    monkeypatch.setattr(f"{_SVC}.CHAM_MISS_TTL", timedelta(seconds=0))
+    await cap7.get_progress(test_user.id)
+    assert len(calls) == CHAM_MISS_MAX_LAN + 1
+
+
+@pytest.mark.asyncio
+async def test_scoring_work_is_bounded_per_request(db_session, test_user, monkeypatch):
+    """One read scores at most ``MAX_CHAM_MOI_LAN`` orders; the rest are picked
+    up by the next read. Unbounded, sequential price fetches on a path the Kết sổ
+    calls per order is a latency bomb, not a feature."""
+    services, account = await _enter_cap7(db_session, test_user.id)
+    cap7 = services["cap7"]
+    monkeypatch.setattr(f"{_SVC}.MAX_CHAM_MOI_LAN", 2)
+    _patch_ohlcv(monkeypatch, {})
+
+    trading_date = date.today() - timedelta(days=30)
+    for i in range(3):
+        await _doc_luc_order(
+            db_session, services, account.id, test_user.id,
+            symbol=f"BD{i}", luc_doc_user="manh", days_ago=30,
+        )
+    _patch_ohlcv(monkeypatch, _series_for(trading_date, _BUY_PRICE * 1.05))
+
+    first = await cap7.cham(test_user.id)
+    assert first["so_moi_cham"] == 2
+    assert first["so_lenh_chua_cham"] == 1
+    second = await cap7.cham(test_user.id)
+    assert second["so_moi_cham"] == 1
+    assert second["so_lenh_chua_cham"] == 0
 
 
 # ══════════════════════════════════════════════════════

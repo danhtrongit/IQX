@@ -195,13 +195,30 @@ class KehoachRequest(BaseModel):
 
     ``hanh_vi_canh_bao`` IS the client's to report (only the user knows which
     button they pressed) but must agree with what actually fired:
-    ``khong_canh_bao`` while warnings are present — or a warning-response while
-    none are — is rejected (400), never silently normalised.
+    ``khong_canh_bao`` while warnings are present — or ``van_mua`` while none
+    are — is rejected (400), never silently normalised.
+
+    ★ The block is WRITE-ONCE. Re-posting the same ``hanh_vi_canh_bao`` returns
+    the stored row unchanged (a retried call must not 409, and must not re-price
+    the snapshot against a newer portfolio either); re-posting a different one is
+    a 409. The record is a snapshot of the danh mục at the moment of the order,
+    and graduation condition ② is computed from it.
     """
 
     order_id: uuid.UUID
     hanh_vi_canh_bao: str = Field(
         description="'van_mua' | 'giam_kl' | 'chon_ma_khac' | 'khong_canh_bao'"
+    )
+    canh_bao_da_hien: list[str] | None = Field(
+        default=None,
+        description=(
+            "Các ``canh_bao[].ma`` của CHÍNH lần ``GET /cap8/kiem-tra`` mà user "
+            "đã phản hồi. BẮT BUỘC gửi khi hanh_vi_canh_bao là 'giam_kl' hoặc "
+            "'chon_ma_khac': giảm khối lượng / đổi mã chính là thứ làm cảnh báo "
+            "tắt đi, nên server không thể suy lại cảnh báo đó từ lệnh đã điều "
+            "chỉnh. Bị BỎ QUA với 'van_mua' và 'khong_canh_bao' — hai giá trị đó "
+            "luôn do server tự suy lại quyết định."
+        ),
     )
     don_nganh_pct: float | None = Field(default=None, description="Bỏ qua — server tự tính")
     tuong_quan_cao_voi: dict | None = Field(

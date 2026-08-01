@@ -23,22 +23,45 @@ instant the user pressed MUA. So ``luc_chi_so`` arrives from the client and the
 server takes it on trust. **We do not pretend otherwise, and we do not fake a
 server-side re-derivation.**
 
-Two things — and only these two — keep the graduation metric sound:
+★ WHICH LEGS ARE VERIFIED, AND WHICH ARE NOT. The three legs of nhiệm vụ ③ do
+not rest on the same thing, and this module refuses to blur them:
 
-  1. **The TIME-LOCK.** ``luc_chi_so`` and ``luc_doc_user`` are committed
-     *before the outcome exists*. Once the chấm deadline has passed,
-     ``record_kehoach`` REFUSES to change either of them (or the discipline
-     flags) — ``ConflictError``, never a silent overwrite. A user therefore
-     cannot back-fill a flattering reading after seeing what the price did.
-     An identical re-post stays idempotent so a retried network call never 409s.
-  2. **``doc_luc_dung`` is scored SERVER-SIDE from real price history** —
-     ``SO_PHIEN_CHAM_LUC`` trading sessions after the buy, against the user's
-     own fill price, using the same adjusted-OHLCV source the rest of the app
-     trusts. The client never supplies the verdict, only the guess.
+  · **Leg ③ — ``ty_le_doc_luc_dung`` ≥ 55% — is SERVER-VERIFIED.** Exactly two
+    mechanisms make it so:
 
-A wrong ``luc_chi_so`` can therefore only ever mislabel the *band shown back to
-the user* — it can never manufacture a passing ``ty_le_doc_luc_dung``, because
-the pass/fail comes from prices the client does not control.
+      1. **The TIME-LOCK.** ``luc_chi_so`` and ``luc_doc_user`` are committed
+         *before the outcome exists*. Once ``han_cham_luc_date(trading_date)``
+         has arrived, ``record_kehoach`` refuses to WRITE them at all — **the
+         FIRST write included, not only an overwrite** — with ``ConflictError``,
+         never a silent overwrite. Skipping the (deliberately soft) reading step,
+         waiting to see what the price did and then back-filling the matching
+         guess is therefore impossible. An identical re-post stays idempotent so
+         a retried network call never 409s.
+      2. **``doc_luc_dung`` is scored SERVER-SIDE from real price history** —
+         ``SO_PHIEN_CHAM_LUC`` trading sessions after the buy, against the user's
+         own fill price, using the same adjusted-OHLCV source the rest of the app
+         trusts. The client never supplies the verdict, only the guess.
+
+    A wrong ``luc_chi_so`` can therefore only ever mislabel the *band shown back
+    to the user* — it can never manufacture a passing rate, because the pass/fail
+    comes from prices the client does not control.
+
+  · **Leg ② — "không đuổi theo ≥ 3 cờ cảnh giác" — is CLIENT-ASSERTED, and the
+    server CANNOT check it.** ``co_canh_giac_lenh_gia`` (a cờ appeared) and
+    ``hanh_vi_co`` (what the user did about it) are both computed in the browser
+    from the same live ladder the server does not keep — the very reason
+    ``luc_chi_so`` is untrusted. ``_validate_reading`` only refuses the
+    internally inconsistent pair (a behaviour recorded with no cờ, or a cờ with
+    no behaviour); nothing verifies that a cờ ever fired, and a client that posts
+    ``co_canh_giac_lenh_gia=true`` with ``hanh_vi_co='cho_xac_nhan'`` three times
+    satisfies this leg. **We do not pretend otherwise, and we do not fake a
+    check.** What the time-lock does buy here is that the claim must be made
+    before the outcome is known and can never be edited afterwards.
+
+  · **Leg ① — "đọc lực cho ≥ 15 lệnh" — counts REAL orders** (every row hangs off
+    a Thực chiến ``VirtualOrder`` the user actually placed and its
+    ``order_kehoach``), but *that a reading happened* is again the client's word,
+    committed under the same time-lock.
 
 ═══════════════════════════════════════════════════════════════════════════
 ★★ HONESTY NOTE 2 — the cờ is EDUCATIONAL, never a detection claim ★★
@@ -71,10 +94,15 @@ Design notes (documented here since the spec leaves them implicit):
     a rate over *all* readings.
 
   - **Lazy compute-on-read, no cron** (Cấp 5's ``_score_due_decisions``
-    pattern): every read of ``/cap7/progress``, ``/cap7/thach-thuc`` (and every
-    write) scores whatever has come due, and ``POST /cap7/cham`` exposes the
-    same routine explicitly. Idempotent by construction — an already-scored row
-    is skipped.
+    pattern): every read of ``/cap7/progress``, ``/cap7/thach-thuc``,
+    ``GET /cap7/kehoach/{order_id}`` (and every write) scores whatever has come
+    due, and ``POST /cap7/cham`` exposes the same routine explicitly. Idempotent
+    by construction — an already-scored row is skipped. **The work that pass may
+    do is BOUNDED** in two directions, because it rides on a path the Kết sổ
+    calls once per lệnh: at most ``MAX_CHAM_MOI_LAN`` price fetches per pass, and
+    a (mã, phiên) that has failed ``CHAM_MISS_MAX_LAN`` times in a row is parked
+    for ``CHAM_MISS_TTL`` instead of being retried on every single read forever.
+    A parked order stays ``doc_luc_dung IS NULL`` — it is never marked wrong.
 
   - **Holiday tolerance** is inherited verbatim from Cấp 5's ``_fetch_close_vnd``:
     ``add_trading_days`` knows Mon-Fri but carries no holiday calendar, so a due
@@ -206,6 +234,75 @@ _TASK3_TY_LE_MIN = 55.0
 #: The tỷ lệ leg (and the FE's khối ⑯) stay HIDDEN below this many SCORED
 #: readings — spec §7's "<3 lệnh đọc lực đã đóng → chỉ đếm, ẩn thống kê".
 MIN_DA_CHAM_THONG_KE = 3
+
+# ══════════════════════════════════════════════════════
+# ★ BOUNDING THE CHẤM PASS
+#
+# ``_score_due_orders`` runs on EVERY Cấp 7 read — ``/progress``,
+# ``/thach-thuc``, ``/cham`` and the per-order ``GET /cap7/kehoach/{order_id}``
+# the Kết sổ calls once per lệnh — and every unscored order costs one SEQUENTIAL
+# price fetch. ``get_adjusted_ohlcv``'s cache is keyed ``symbol:start:end`` and
+# each order asks for its own range, so there is no reuse between orders and a
+# failure is not cached at all. Unbounded, that is a request whose cost grows
+# with the user's whole history and never stops paying for orders that can never
+# be scored (delisted mã, permanent data gap).
+# ══════════════════════════════════════════════════════
+
+#: Price fetches one scoring pass may make. Whatever is left over is picked up by
+#: the next read — scoring is idempotent, so nothing is ever lost, only deferred.
+MAX_CHAM_MOI_LAN = 20
+
+#: Consecutive failures for one (mã, phiên) before it is parked.
+CHAM_MISS_MAX_LAN = 3
+
+#: How long a parked (mã, phiên) stays parked. ★ "Give up FOR NOW", never "give
+#: up forever": a delisted mã stops costing a fetch on every read, while a source
+#: that was merely down recovers by itself on the next window — which matters
+#: because scoring is lazy, so a user's first read can legitimately come months
+#: after the deadline.
+CHAM_MISS_TTL = timedelta(hours=6)
+
+#: Ceiling on the memo's size — it is a cache, not a record, and must never be
+#: allowed to grow without bound in a long-lived process.
+_CHAM_MISS_MAX_ENTRIES = 4096
+
+#: Process-local negative memo ``(mã, phiên ISO) -> (số lần hỏng, lần cuối)``.
+#: Deliberately keyed by mã + phiên and NOT by user: whether a session's price
+#: exists is a property of the DATA, so one user's failure spares every other
+#: user the same fetch. Losing it on restart is harmless — the worst case is one
+#: extra round of retries.
+_cham_miss: dict[tuple[str, str], tuple[int, datetime]] = {}
+
+
+def quen_cham_miss() -> None:
+    """Forget every parked (mã, phiên). Only tests need this."""
+    _cham_miss.clear()
+
+
+def _cham_miss_key(symbol: str, target: date) -> tuple[str, str]:
+    return (symbol.upper(), target.isoformat())
+
+
+def _cham_bi_park(key: tuple[str, str]) -> bool:
+    """Has this (mã, phiên) failed often enough, recently enough, to skip?"""
+    entry = _cham_miss.get(key)
+    if entry is None:
+        return False
+    so_lan, lan_cuoi = entry
+    if so_lan < CHAM_MISS_MAX_LAN:
+        return False
+    if datetime.now(UTC) - lan_cuoi >= CHAM_MISS_TTL:
+        # The park has expired — drop it so the next failure starts a fresh count.
+        _cham_miss.pop(key, None)
+        return False
+    return True
+
+
+def _cham_miss_ghi(key: tuple[str, str]) -> None:
+    if len(_cham_miss) >= _CHAM_MISS_MAX_ENTRIES and key not in _cham_miss:
+        _cham_miss.clear()  # a cache, not a record: dropping it costs a retry
+    so_lan = _cham_miss.get(key, (0, None))[0]
+    _cham_miss[key] = (so_lan + 1, datetime.now(UTC))
 
 #: The cờ copy, spec §5 verbatim. Heuristic and honest: it says a big resting
 #: order MAY not be real, and never that IQX found one that isn't.
@@ -597,12 +694,16 @@ class Cap7Service:
         the server cannot re-derive it — see HONESTY NOTE 1 in the module
         docstring. The TIME-LOCK below is what makes that acceptable:
 
-        Re-submitting is allowed **while the chấm deadline has not passed** (the
-        panel is a form the user can step back in). Once
-        ``han_cham_luc_date(trading_date)`` has arrived, the outcome exists, so a
-        re-post that CHANGES the reading is rejected with 409 — the guess can
-        never be back-filled to match what the price did. An identical re-post
-        stays idempotent.
+        Writing is allowed **while the chấm deadline has not passed** (the panel
+        is a form the user can step back in, and a reading may be added to an
+        order at any point before its window closes). Once
+        ``han_cham_luc_date(trading_date)`` has arrived the outcome exists, so
+        **every** write is rejected with 409 — not only one that CHANGES an
+        existing reading, but the FIRST write too. Recording no đọc lực at buy
+        time is legal (the step is soft, spec §9), so a lock that only guarded
+        overwrites would leave the whole metric open: place the orders, wait out
+        the window, read the real move off the chart and post the matching guess.
+        An identical re-post stays idempotent, before and after the deadline.
         """
         progress = await self._require_progress(user_id)
 
@@ -621,21 +722,19 @@ class Cap7Service:
         if kehoach is None:
             raise NotFoundError("kế hoạch Cấp 1 — cần ghi vùng mua trước")
 
-        # ★ THE TIME-LOCK (see the docstring above).
-        if kehoach.luc_doc_user is not None:
-            today_vn = datetime.now(_VN_TZ).date()
-            da_toi_han = han_cham_luc_date(order.trading_date) <= today_vn
-            same = self._same_reading(
-                kehoach, ratio, luc_doc_user, co_canh_giac_lenh_gia, hanh_vi_co
+        # ★ THE TIME-LOCK (see the docstring above). Deliberately OUTSIDE the
+        # "already has a reading" branch: the FIRST write is exactly the write
+        # that must be blocked once the outcome exists.
+        if kehoach.luc_doc_user is not None and self._same_reading(
+            kehoach, ratio, luc_doc_user, co_canh_giac_lenh_gia, hanh_vi_co
+        ):
+            return kehoach  # a retried network call is a no-op, never a 409
+        if han_cham_luc_date(order.trading_date) <= datetime.now(_VN_TZ).date():
+            raise ConflictError(
+                "Lệnh này đã qua hạn chấm đọc lực — không ghi hay sửa đọc lực "
+                "được nữa. Chỉ số Lực và phần bạn đọc phải được chốt TRƯỚC khi "
+                "biết giá đi đâu, đó là điều làm thống kê đọc lực có nghĩa."
             )
-            if same:
-                return kehoach
-            if da_toi_han:
-                raise ConflictError(
-                    "Lệnh này đã qua hạn chấm đọc lực — không sửa được nữa. Chỉ "
-                    "số Lực và phần bạn đọc phải được chốt TRƯỚC khi biết giá đi "
-                    "đâu, đó là điều làm thống kê đọc lực có nghĩa."
-                )
 
         kehoach.luc_chi_so = ratio
         kehoach.luc_doc_user = luc_doc_user
@@ -777,7 +876,8 @@ class Cap7Service:
         else:
             base = Cap7Service.kehoach_out(kehoach)
 
-        han = han_cham_luc_date(order.trading_date) if order.trading_date else None
+        # ``trading_date`` is NOT NULL on ``virtual_orders`` — no None branch.
+        han = han_cham_luc_date(order.trading_date)
         return {
             **base,
             "symbol": order.symbol,
@@ -786,9 +886,7 @@ class Cap7Service:
             "co_du_lieu": base["luc_doc_user"] is not None,
             "dead_band_pct": NGUONG_DEAD_BAND_PCT,
             "han_cham_ngay": han,
-            "da_toi_han_cham": bool(
-                han is not None and han <= datetime.now(_VN_TZ).date()
-            ),
+            "da_toi_han_cham": han <= datetime.now(_VN_TZ).date(),
         }
 
     # ── Source rows ───────────────────────────────────
@@ -867,18 +965,23 @@ class Cap7Service:
         """Score every unscored đọc lực whose ``SO_PHIEN_CHAM_LUC`` phiên have
         elapsed. Returns how many were newly scored.
 
-        ★ Three ways an order is SKIPPED rather than judged — none of them ever
+        ★ FIVE ways an order is SKIPPED rather than judged — none of them ever
         counts as "đọc sai":
           · the buy never filled (no reference price to compare against);
           · the chấm deadline has not arrived (the outcome does not exist yet);
-          · the target session's price is unavailable (data gap / delisting).
+          · the target session's price is unavailable (data gap / delisting);
+          · its (mã, phiên) is PARKED after ``CHAM_MISS_MAX_LAN`` failures — it is
+            retried again once ``CHAM_MISS_TTL`` has elapsed, never abandoned for
+            good;
+          · this pass already spent its ``MAX_CHAM_MOI_LAN`` price fetches.
         Skipped orders keep ``doc_luc_dung IS NULL``, stay out of
         ``ty_le_doc_luc_dung``'s denominator, are counted in
-        ``so_lenh_chua_cham``, and are retried on the next read.
+        ``so_lenh_chua_cham``, and are retried on a later read.
         """
         rows = await self._doc_luc_rows(user_id)
         today_vn = datetime.now(_VN_TZ).date()
         scored = 0
+        da_thu = 0
         for kehoach, order in rows:
             if kehoach.doc_luc_dung is not None:
                 continue  # already scored — idempotent
@@ -890,9 +993,17 @@ class Cap7Service:
             target = han_cham_luc_date(order.trading_date)
             if target > today_vn:
                 continue  # chưa tới hạn
+            key = _cham_miss_key(order.symbol, target)
+            if _cham_bi_park(key):
+                continue  # ★ parked — costs no fetch, and still never "wrong"
+            if da_thu >= MAX_CHAM_MOI_LAN:
+                break  # ★ the rest wait for the next read
+            da_thu += 1
             gia_sau = await _fetch_close_vnd(order.symbol, order.trading_date, target)
             if gia_sau is None:
+                _cham_miss_ghi(key)
                 continue  # ★ unavailable ⇒ unscored, never "wrong"
+            _cham_miss.pop(key, None)
             pct = (gia_sau - gia_mua) / gia_mua * 100.0
             kehoach.dien_bien_pct = pct
             kehoach.doc_luc_dung = doc_luc_dung_rule(kehoach.luc_doc_user or "", pct)
@@ -906,7 +1017,10 @@ class Cap7Service:
         exposed explicitly. Idempotent: a second call scores 0."""
         progress = await self._require_progress(user_id)
         so_moi_cham = await self._score_due_orders(user_id)
-        metrics = await self._recompute_progress(user_id, progress)
+        # ``score=False``: the pass has just run. Letting the recompute run it a
+        # SECOND time would double this endpoint's price-fetch budget and make
+        # ``so_moi_cham`` disagree with the counters returned beside it.
+        metrics = await self._recompute_progress(user_id, progress, score=False)
         return {
             "so_moi_cham": so_moi_cham,
             "so_lenh_doc_luc": metrics["so_lenh_doc_luc"],

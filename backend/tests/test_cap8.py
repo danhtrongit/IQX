@@ -1000,6 +1000,208 @@ async def test_record_kehoach_requires_khong_canh_bao_when_nothing_fired(
 
 
 @pytest.mark.asyncio
+async def test_a_recorded_check_can_never_be_rewritten_afterwards(
+    db_session, test_user, monkeypatch
+):
+    """★ THE EXPLOIT WRITE-ONCE MUST STOP.
+
+    Condition ② is "≤ 2 lần mua bất chấp cảnh báo trong 15 lệnh gần nhất", and
+    ``_la_bat_chap`` reads the STORED ``danh_muc_canh_bao``. If a re-post
+    re-derived that list from TODAY's portfolio, a user sitting on 3 defiances
+    could simply sell the concentrated ngành down until the >40% warning stops
+    firing, re-post each old order as "không có cảnh báo", and watch condition ②
+    turn green — the record of what the danh mục looked like AT THE MOMENT OF THE
+    ORDER rewritten into something that never happened.
+    """
+    services, account = await _enter_cap8(db_session, test_user.id)
+    cap8 = services["cap8"]
+    await _held(
+        db_session, services, account.id, test_user.id,
+        symbol="AAA", qty=5_000, cat_lo=18_000, nganh="Ngân hàng",
+    )
+    await _seed_symbol(db_session, "BBB", icb_lv2="Ngân hàng")
+    _patch_prices(monkeypatch, {"AAA": 20_000, "BBB": 20_000})
+    _patch_history(monkeypatch, {})
+
+    buy = await _buy_with_cap1_plan(
+        db_session, services, account.id, test_user.id,
+        symbol="BBB", cat_lo=18_000, qty=2_500, status=OrderStatus.PENDING,
+    )
+    await cap8.record_kehoach(test_user.id, buy.id, hanh_vi_canh_bao="van_mua")
+    progress = await cap8.get_progress(test_user.id)
+    assert progress["bat_chap_gan_day"] == 1
+
+    # The user now sells the concentrated ngành down: nothing would warn today.
+    position = (
+        await db_session.execute(
+            select(VirtualPosition).where(VirtualPosition.symbol == "AAA")
+        )
+    ).scalar_one()
+    await db_session.delete(position)
+    await db_session.flush()
+    fresh = await cap8.kiem_tra(test_user.id, "BBB", 2_500, 20_000, cat_lo=18_000)
+    assert fresh["canh_bao"] == []  # …the warning really has stopped firing
+
+    with pytest.raises(ConflictError):
+        await cap8.record_kehoach(
+            test_user.id, buy.id, hanh_vi_canh_bao="khong_canh_bao"
+        )
+
+    row = (
+        await db_session.execute(
+            select(OrderKehoach).where(OrderKehoach.order_id == buy.id)
+        )
+    ).scalar_one()
+    assert row.danh_muc_canh_bao == [LoaiCanhBao.DON_NGANH.value]  # history intact
+    assert row.hanh_vi_canh_bao == HanhViCanhBao.VAN_MUA.value
+    assert float(row.don_nganh_pct) == pytest.approx(42.857, abs=1e-2)
+
+    progress = await cap8.get_progress(test_user.id)
+    assert progress["bat_chap_gan_day"] == 1
+    assert progress["so_lan_mua_bat_chap_canh_bao"] == 1
+
+    # An identical re-post is still a no-op (a retried network call must not 409).
+    same = await cap8.record_kehoach(test_user.id, buy.id, hanh_vi_canh_bao="van_mua")
+    assert same.danh_muc_canh_bao == [LoaiCanhBao.DON_NGANH.value]
+    assert float(same.don_nganh_pct) == pytest.approx(42.857, abs=1e-2)
+
+
+@pytest.mark.asyncio
+async def test_giam_kl_is_recordable_when_the_reduction_cleared_the_warning(
+    db_session, test_user, monkeypatch
+):
+    """★ Compliance must be representable. Reducing the size is exactly what
+    makes a dồn-ngành warning stop firing, so a server that re-derives against
+    the POST-adjustment order sees no warning and rejects ``giam_kl`` — i.e. the
+    two "đã nghe cảnh báo" outcomes were recordable only when the user's
+    reduction did NOT work.
+
+    ``canh_bao_da_hien`` carries the warnings from the CHECK THE USER RESPONDED
+    TO, so the compliant order records what it actually was.
+    """
+    services, account = await _enter_cap8(db_session, test_user.id)
+    cap8 = services["cap8"]
+    await _held(
+        db_session, services, account.id, test_user.id,
+        symbol="AAA", qty=5_000, cat_lo=18_000, nganh="Ngân hàng",
+    )
+    await _seed_symbol(db_session, "BBB", icb_lv2="Ngân hàng")
+    _patch_prices(monkeypatch, {"AAA": 20_000, "BBB": 20_000})
+    _patch_history(monkeypatch, {})
+
+    # The check the user saw: 2,500 lô would push Ngân hàng to 42.86% (>40%).
+    check = await cap8.kiem_tra(test_user.id, "BBB", 2_500, 20_000, cat_lo=18_000)
+    assert [c["ma"] for c in check["canh_bao"]] == [LoaiCanhBao.DON_NGANH.value]
+
+    # They pressed "Giảm khối lượng" and bought 100 lô instead — which clears it.
+    buy = await _buy_with_cap1_plan(
+        db_session, services, account.id, test_user.id,
+        symbol="BBB", cat_lo=18_000, qty=100, status=OrderStatus.PENDING,
+    )
+    with pytest.raises(BadRequestError):  # no evidence any warning ever fired
+        await cap8.record_kehoach(test_user.id, buy.id, hanh_vi_canh_bao="giam_kl")
+
+    kehoach = await cap8.record_kehoach(
+        test_user.id,
+        buy.id,
+        hanh_vi_canh_bao="giam_kl",
+        canh_bao_da_hien=[c["ma"] for c in check["canh_bao"]],
+    )
+    assert kehoach.hanh_vi_canh_bao == HanhViCanhBao.GIAM_KL.value
+    assert kehoach.danh_muc_canh_bao == [LoaiCanhBao.DON_NGANH.value]
+    # ★ The stored measures stay the SERVER's own, computed after the reduction.
+    assert float(kehoach.don_nganh_pct) == pytest.approx(29.14, abs=1e-2)
+
+    out = cap8.kehoach_out(kehoach)
+    assert "Giảm khối lượng" in out["giai_thich"]
+    # …and it must NOT read as "danh mục không có cảnh báo nào".
+    assert "không có cảnh báo nào" not in out["giai_thich"]
+
+    # Complying is not defiance.
+    progress = await cap8.get_progress(test_user.id)
+    assert progress["so_lan_mua_bat_chap_canh_bao"] == 0
+    assert progress["bat_chap_gan_day"] == 0
+
+
+@pytest.mark.asyncio
+async def test_canh_bao_da_hien_can_never_manufacture_or_erase_a_defiance(
+    db_session, test_user, monkeypatch
+):
+    """``canh_bao_da_hien`` is the ONE thing the client reports about the check,
+    so it may only ever justify a COMPLIANCE answer. ``van_mua`` (which feeds
+    condition ②) and ``khong_canh_bao`` stay decided by the server's own
+    re-derivation alone — in both directions."""
+    services, account = await _enter_cap8(db_session, test_user.id)
+    cap8 = services["cap8"]
+    await _seed_symbol(db_session, "BBB", icb_lv2="Ngân hàng")
+    _patch_prices(monkeypatch, {"BBB": 20_000})
+    _patch_history(monkeypatch, {})
+
+    small = await _buy_with_cap1_plan(
+        db_session, services, account.id, test_user.id,
+        symbol="BBB", cat_lo=18_000, qty=100, status=OrderStatus.PENDING,
+    )
+    # A client claiming a warning it never got cannot record "mua bất chấp"…
+    with pytest.raises(BadRequestError):
+        await cap8.record_kehoach(
+            test_user.id, small.id, hanh_vi_canh_bao="van_mua",
+            canh_bao_da_hien=[LoaiCanhBao.DON_NGANH.value],
+        )
+
+    # …and a client hiding the warning it DID get cannot record "no warning".
+    await _held(
+        db_session, services, account.id, test_user.id,
+        symbol="AAA", qty=5_000, cat_lo=18_000, nganh="Ngân hàng",
+    )
+    _patch_prices(monkeypatch, {"AAA": 20_000, "BBB": 20_000})
+    big = await _buy_with_cap1_plan(
+        db_session, services, account.id, test_user.id,
+        symbol="BBB", cat_lo=18_000, qty=2_500, status=OrderStatus.PENDING,
+    )
+    with pytest.raises(BadRequestError):
+        await cap8.record_kehoach(
+            test_user.id, big.id, hanh_vi_canh_bao="khong_canh_bao",
+            canh_bao_da_hien=[],
+        )
+
+    # Garbage in the list is dropped, never stored.
+    ok = await cap8.record_kehoach(
+        test_user.id, small.id, hanh_vi_canh_bao="chon_ma_khac",
+        canh_bao_da_hien=["khong_ton_tai", LoaiCanhBao.TUONG_QUAN.value],
+    )
+    assert ok.danh_muc_canh_bao == [LoaiCanhBao.TUONG_QUAN.value]
+
+
+@pytest.mark.asyncio
+async def test_record_kehoach_falls_back_to_the_planned_vung_mua_for_an_unfilled_market_order(
+    db_session, test_user, monkeypatch
+):
+    """A MARKET order that has not filled has NO price of its own — neither
+    ``filled_price_vnd`` nor ``limit_price_vnd``. Refusing it would mean the Cấp
+    8 block is simply never recorded for that order; Cấp 1's vùng mua is the
+    price the user themself planned to pay, and is the honest stand-in."""
+    services, account = await _enter_cap8(db_session, test_user.id)
+    cap8 = services["cap8"]
+    await _seed_symbol(db_session, "BBB", icb_lv2="Ngân hàng")
+    _patch_prices(monkeypatch, {"BBB": 20_000})
+    _patch_history(monkeypatch, {})
+
+    buy = await _buy_with_cap1_plan(
+        db_session, services, account.id, test_user.id,
+        symbol="BBB", cat_lo=18_000, status=OrderStatus.PENDING,
+    )
+    buy.limit_price_vnd = None  # a MARKET order, still queued
+    await db_session.flush()
+
+    kehoach = await cap8.record_kehoach(
+        test_user.id, buy.id, hanh_vi_canh_bao="khong_canh_bao"
+    )
+    assert kehoach.hanh_vi_canh_bao == HanhViCanhBao.KHONG_CANH_BAO.value
+    assert kehoach.danh_muc_canh_bao == []
+    assert kehoach.don_nganh_pct is not None
+
+
+@pytest.mark.asyncio
 async def test_record_kehoach_validates_and_needs_a_cap1_plan(
     db_session, test_user, monkeypatch
 ):
@@ -1520,11 +1722,32 @@ async def test_cap8_endpoints_wired_and_free(
     assert kb["hanh_vi_canh_bao"] == "khong_canh_bao"
     assert kb["giai_thich"]
 
-    # Claiming a warning-response when nothing fired is a contradiction → 400.
+    # Re-posting a DIFFERENT hành vi onto a recorded order is 409 — the snapshot
+    # is write-once (a re-derivation against today's danh mục would erase ②).
     r = await client.post(
         "/api/v1/cap8/kehoach",
         headers=headers,
         json={"order_id": str(buy.id), "hanh_vi_canh_bao": "van_mua"},
+    )
+    assert r.status_code == 409, r.text
+    # …while an identical re-post is a plain no-op (retried network call).
+    r = await client.post(
+        "/api/v1/cap8/kehoach",
+        headers=headers,
+        json={"order_id": str(buy.id), "hanh_vi_canh_bao": "khong_canh_bao"},
+    )
+    assert r.status_code == 200, r.text
+
+    # Claiming a warning-response when nothing fired is a contradiction → 400.
+    buy2 = await _buy_with_cap1_plan(
+        db_session, services, account.id, test_user.id,
+        symbol="HTTP", cat_lo=18_000, status=OrderStatus.PENDING,
+    )
+    await db_session.commit()
+    r = await client.post(
+        "/api/v1/cap8/kehoach",
+        headers=headers,
+        json={"order_id": str(buy2.id), "hanh_vi_canh_bao": "van_mua"},
     )
     assert r.status_code == 400, r.text
 

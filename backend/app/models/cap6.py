@@ -197,15 +197,17 @@ class Cap6Progress(UUIDMixin, TimestampMixin, Base):
     )
     # Win rate (%) of closed đối-chiếu lệnh whose lớp quyết định KHỚP the
     # suggestion, vs those that did not. ★ A low ty_le_thang_lech is NOT a
-    # judgement on the user — see the module's CRITICAL PRINCIPLE. Both stay 0.0
-    # until their group has closed lệnh; the ≥3-per-group minimum before they
-    # may be COMPARED lives in the service (spec §7 khối ⑮).
-    ty_le_thang_khop: Mapped[float] = mapped_column(
-        Float, nullable=False, default=0.0, server_default="0"
-    )
-    ty_le_thang_lech: Mapped[float] = mapped_column(
-        Float, nullable=False, default=0.0, server_default="0"
-    )
+    # judgement on the user — see the module's CRITICAL PRINCIPLE. The
+    # ≥3-per-group minimum before they may be COMPARED lives in the service
+    # (spec §7 khối ⑮).
+    #
+    # ★★ NULL = "nhóm này chưa có lệnh đã đóng nào", and it is NOT 0.0. ``0.0``
+    # is a real statement — closed lệnh, none of them winners — and rendering
+    # "chưa có dữ liệu" as "thắng 0%" tells the user a result they never earned.
+    # Cấp 8's ``don_nganh_max_pct``/``tong_rui_ro_pct`` are nullable for exactly
+    # this reason.
+    ty_le_thang_khop: Mapped[float | None] = mapped_column(Float, nullable=True)
+    ty_le_thang_lech: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     graduated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     time_to_graduate_hours: Mapped[float | None] = mapped_column(Float, nullable=True)

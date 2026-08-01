@@ -81,10 +81,46 @@ forever — the same principle as Cấp 6's kiểu cổ phiếu.
 
 ``hanh_vi_canh_bao`` IS taken from the client, because only the user knows which
 of the three buttons they pressed. It is then cross-checked against the
-recomputed warnings: ``khong_canh_bao`` with warnings present, or a
-warning-response with no warnings present, is a contradiction and is REJECTED
-(400) rather than silently normalised — normalising either way would corrupt
-the discipline count, in opposite directions.
+recomputed warnings: ``khong_canh_bao`` with warnings present, or ``van_mua``
+with no warnings present, is a contradiction and is REJECTED (400) rather than
+silently normalised — normalising either way would corrupt the discipline count,
+in opposite directions.
+
+═══════════════════════════════════════════════════════════════════════════
+★★ HONESTY NOTE 5 — the record is WRITE-ONCE, and compliance is recordable ★★
+═══════════════════════════════════════════════════════════════════════════
+Two properties of ``record_kehoach`` that have to be designed together, because
+they are the same seam:
+
+  1. **WRITE-ONCE per order.** The Cấp 8 block is a SNAPSHOT of what the danh
+     mục looked like at the moment of the order, and graduation condition ②
+     ("≤ 2 lần mua bất chấp cảnh báo trong 15 lệnh gần nhất") is computed from
+     the stored ``danh_muc_canh_bao``. A re-post that re-derived that list from
+     TODAY's portfolio would let a user sell the concentrated ngành down until
+     the warning stops firing and then rewrite each defiant order as "không có
+     cảnh báo" — erasing ② and, worse, making ``kehoach_out`` render a "Lúc
+     mua: ⚠ …" snapshot that is simply false. So once ``hanh_vi_canh_bao`` is
+     set, an identical re-post is a no-op and anything else is a 409. The
+     write-once rule holds whatever the order's status is: an unfilled order
+     still counts in ``_kiem_tra_rows``, so its record must be immutable too.
+     Nothing is lost — the panel step-back the FE offers happens BEFORE the
+     order (and therefore before this call) exists.
+  2. **``giam_kl`` / ``chon_ma_khac`` need the warnings from the check the user
+     RESPONDED TO.** Reducing the size, or switching symbol, is precisely what
+     makes a warning stop firing — so a server that only ever re-derives against
+     the POST-adjustment order sees nothing, and the two "đã nghe cảnh báo"
+     outcomes become recordable exactly when the user FAILED to clear the
+     warning. ``canh_bao_da_hien`` (the ``canh_bao[].ma`` list from the
+     ``/cap8/kiem-tra`` response the user acted on) closes that gap.
+
+     ★ It is the ONE thing the client reports about the check, so it is confined
+     to where it cannot game anything: it may only ever justify a COMPLIANCE
+     answer. ``van_mua`` — the only value condition ② counts — and
+     ``khong_canh_bao`` stay decided by the server's own re-derivation alone, in
+     both directions. Claiming a warning that never fired therefore cannot
+     manufacture a clean record (it is not accepted for ``van_mua``), and hiding
+     one that did cannot erase a defiance (the server sees it anyway). What it
+     can do is make an honest ``giam_kl`` recordable, which is the whole point.
 
 Design notes (documented here since the spec leaves them implicit):
 
@@ -222,6 +258,15 @@ _HANH_VI_CO_CANH_BAO = frozenset(
         HanhViCanhBao.GIAM_KL.value,
         HanhViCanhBao.CHON_MA_KHAC.value,
     }
+)
+#: The two "đã nghe cảnh báo" responses. ★ Acting on a warning is exactly what
+#: makes it stop firing, so for these two the server CANNOT re-derive the warning
+#: from the order it is recording — see HONESTY NOTE 5.2. They are also the two
+#: whose Kết sổ copy must describe the danh mục AFTER the adjustment, not "lúc
+#: mua". Deliberately NOT including ``van_mua``: nothing was adjusted there, and
+#: it is the only value graduation condition ② counts.
+_HANH_VI_NGHE_CANH_BAO = frozenset(
+    {HanhViCanhBao.GIAM_KL.value, HanhViCanhBao.CHON_MA_KHAC.value}
 )
 
 
@@ -911,12 +956,27 @@ class Cap8Service:
         )
         return result.scalar_one_or_none()
 
+    @staticmethod
+    def _validate_canh_bao_da_hien(value: list | None) -> list[str]:
+        """The warning codes the CLIENT reports having been shown, cleaned.
+
+        Lenient rather than 400-ing: unknown codes are dropped and duplicates
+        collapsed, in ``LoaiCanhBao`` order. This list can only ever justify a
+        compliance answer (HONESTY NOTE 5), so a malformed one costs the user a
+        rejected ``giam_kl`` — never a corrupted discipline count.
+        """
+        if not isinstance(value, list):
+            return []
+        seen = {str(v) for v in value}
+        return [m.value for m in LoaiCanhBao if m.value in seen]
+
     async def record_kehoach(
         self,
         user_id: uuid.UUID,
         order_id: uuid.UUID,
         *,
         hanh_vi_canh_bao: str | None,
+        canh_bao_da_hien: list | None = None,
         don_nganh_pct: float | None = None,
         tuong_quan_cao_voi: dict | None = None,
         tong_rui_ro_pct: float | None = None,
@@ -936,8 +996,22 @@ class Cap8Service:
 
         ``hanh_vi_canh_bao`` IS the client's to report — only the user knows
         which button they pressed — but it must agree with what actually fired:
-        ``khong_canh_bao`` while warnings are present (or a warning-response
-        while none are) is a contradiction and is rejected (400).
+        ``khong_canh_bao`` while warnings are present (or ``van_mua`` while none
+        are) is a contradiction and is rejected (400).
+
+        ★ WRITE-ONCE (HONESTY NOTE 5.1). Once the block is recorded it is frozen:
+        an identical re-post returns the stored row untouched (a retried network
+        call must not 409, and must not silently re-price the snapshot against a
+        newer portfolio either), anything else raises ``ConflictError``.
+
+        ★ ``canh_bao_da_hien`` (HONESTY NOTE 5.2) is the ``canh_bao[].ma`` list
+        from the ``/cap8/kiem-tra`` response the user responded to. It is used
+        for exactly one thing: letting ``giam_kl`` / ``chon_ma_khac`` be recorded
+        when the adjustment WORKED and the warning no longer fires. It is ignored
+        for ``van_mua`` and ``khong_canh_bao``, which stay server-decided. For
+        ``chon_ma_khac`` the warnings are those of the ABANDONED candidate — this
+        order is a different mã, so the server could not re-derive them even in
+        principle.
         """
         del don_nganh_pct, tuong_quan_cao_voi, tong_rui_ro_pct, danh_muc_canh_bao
 
@@ -959,12 +1033,29 @@ class Cap8Service:
         if kehoach is None:
             raise NotFoundError("kế hoạch Cấp 1 — cần ghi vùng mua trước")
 
+        # ★ WRITE-ONCE (see the docstring / HONESTY NOTE 5.1). Checked BEFORE the
+        # portfolio is priced: a retry must not even re-measure, let alone rewrite.
+        if kehoach.hanh_vi_canh_bao is not None:
+            if kehoach.hanh_vi_canh_bao == hanh_vi_canh_bao:
+                return kehoach  # retried network call — a no-op, never a 409
+            raise ConflictError(
+                "Lệnh này đã ghi bước Kiểm tra danh mục rồi — ảnh chụp danh mục "
+                "LÚC MUA không sửa lại được. Đó là điều làm ô \"mua bất chấp cảnh "
+                "báo\" có nghĩa: nó ghi lại điều đã xảy ra, không phải điều danh "
+                "mục trông như thế nào hôm nay."
+            )
+
         snapshot = await self._danh_muc_snapshot(user_id)
         if snapshot is None:
             raise BadRequestError("Chưa lấy được danh mục để kiểm tra — thử lại sau")
 
-        gia = order.filled_price_vnd or order.limit_price_vnd
-        if not gia:
+        # ★ An unfilled MARKET order has NO price of its own — no fill price and
+        # no limit price. Cấp 1's vùng mua is the price the USER planned to pay
+        # and is the honest stand-in; 400-ing instead would mean the Cấp 8 block
+        # is simply never recorded for such an order, and the level's central
+        # step silently disappears for it.
+        gia = order.filled_price_vnd or order.limit_price_vnd or kehoach.vung_mua
+        if not gia or int(gia) <= 0:
             raise BadRequestError("Lệnh chưa có giá để tính tác động lên danh mục")
 
         # ★ A FILLED order is already inside the priced portfolio, so "sau lệnh"
@@ -988,10 +1079,19 @@ class Cap8Service:
                 + ") nên không ghi được 'không có cảnh báo'."
             )
         if not co_canh_bao and hanh_vi_canh_bao in _HANH_VI_CO_CANH_BAO:
-            raise BadRequestError(
-                "Lệnh này KHÔNG có cảnh báo danh mục nào nên chỉ ghi được "
-                "'khong_canh_bao'."
-            )
+            # ★ THE COMPLIANCE CASE (HONESTY NOTE 5.2). Giảm khối lượng / chọn mã
+            # khác is exactly what makes the warning stop firing, so "nothing
+            # fires now" is the EXPECTED state for a user who listened. The
+            # warnings from the check they responded to make that recordable.
+            da_hien = self._validate_canh_bao_da_hien(canh_bao_da_hien)
+            if hanh_vi_canh_bao in _HANH_VI_NGHE_CANH_BAO and da_hien:
+                ma_canh_bao = da_hien
+            else:
+                raise BadRequestError(
+                    "Lệnh này KHÔNG có cảnh báo danh mục nào nên chỉ ghi được "
+                    "'khong_canh_bao' — trừ khi bạn gửi kèm canh_bao_da_hien "
+                    "(các cảnh báo của chính lần kiểm tra bạn đã phản hồi)."
+                )
 
         kehoach.don_nganh_pct = check["don_nganh_pct_sau"]
         kehoach.tuong_quan_cao_voi = (
@@ -1029,7 +1129,16 @@ class Cap8Service:
                 "danh mục mất cân đối."
             )
         else:
-            phan = [f"Lúc mua: ⚠ {canh_bao_text}."]
+            # ★ For giảm khối lượng / chọn mã khác the warning belongs to the
+            # CHECK the user responded to, and every number below is the danh mục
+            # AFTER they adjusted — saying "Lúc mua: ⚠ …" there would describe a
+            # danh mục that never existed. The two cases get their own opening.
+            da_nghe = hanh_vi in _HANH_VI_NGHE_CANH_BAO
+            phan = [
+                f"Lúc kiểm tra: ⚠ {canh_bao_text}."
+                if da_nghe
+                else f"Lúc mua: ⚠ {canh_bao_text}."
+            ]
             if kehoach.don_nganh_pct is not None:
                 phan.append(f"Dồn ngành sau lệnh: {float(kehoach.don_nganh_pct):.1f}%.")
             if kehoach.tuong_quan_cao_voi:
@@ -1048,6 +1157,12 @@ class Cap8Service:
                 phan.append(
                     "Vẫn mua là một lựa chọn hợp lệ — IQX cảnh báo chứ không "
                     "quyết thay bạn."
+                )
+            elif da_nghe:
+                phan.append(
+                    "Các con số trên là ảnh chụp danh mục SAU khi bạn điều "
+                    "chỉnh, nên chúng có thể đã nằm trong ngưỡng — đó chính là "
+                    "tác dụng của việc bạn nghe cảnh báo."
                 )
             giai_thich = " ".join(phan)
 
@@ -1240,11 +1355,14 @@ class Cap8Service:
             else:
                 don_nganh_max_pct = 0.0
             nganh_ok = don_nganh_max_pct <= NGUONG_DON_NGANH_PCT
+            # ``tong`` is non-NULL whenever the danh mục is priced — see
+            # ``_danh_muc_snapshot``, which sets it to NULL only when NAV is 0,
+            # and this whole branch already requires ``nav_vnd > 0``.
             tong = snapshot["tong_rui_ro_pct"]
             tran = snapshot["tran_khau_vi_pct"]
-            if tong is None or tran is None:
+            if tran is None:
                 # No khẩu vị set ⇒ no ceiling ⇒ nothing to check against.
-                danh_muc_du_lieu = tran is not None
+                danh_muc_du_lieu = False
                 rui_ro_ok = False
             else:
                 rui_ro_ok = tong <= tran

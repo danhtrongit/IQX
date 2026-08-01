@@ -36,7 +36,7 @@ from app.models.cap2 import Cap2Progress
 from app.models.cap3 import Cap3Progress
 from app.models.cap4 import Cap4Progress
 from app.models.cap5 import Cap5Progress
-from app.models.cap6 import KIEU_CO_PHIEU, KieuCoPhieu
+from app.models.cap6 import KIEU_CO_PHIEU, Cap6Progress, KieuCoPhieu
 from app.models.symbol import Symbol
 from app.models.virtual_trading import OrderSide, OrderStatus, OrderType, VirtualOrder
 from app.repositories.virtual_trading import VirtualTradingRepository
@@ -274,8 +274,11 @@ async def test_enter_requires_cap5_graduated(db_session, test_user):
     assert progress.graduated_at is None
     assert progress.so_lenh_doi_chieu == 0
     assert progress.so_kieu_da_gap == 0
-    assert progress.ty_le_thang_khop == 0.0
-    assert progress.ty_le_thang_lech == 0.0
+    # ★ "chưa có lệnh đã đóng nào" is NULL, never 0.0 — a 0% win rate is a REAL
+    # and very different statement (Cấp 8 makes its equivalents nullable for
+    # exactly this reason).
+    assert progress.ty_le_thang_khop is None
+    assert progress.ty_le_thang_lech is None
 
     # idempotent
     again = await cap6.enter(test_user.id)
@@ -798,6 +801,164 @@ async def test_win_rate_groups_need_at_least_3_closed_trades_each(db_session, te
     progress = await cap6.get_progress(test_user.id)
     assert progress.ty_le_thang_khop == pytest.approx(100.0)
     assert progress.ty_le_thang_lech == pytest.approx(0.0)
+
+
+@pytest.mark.asyncio
+async def test_progress_win_rates_keep_null_distinct_from_zero(db_session, test_user):
+    """★ ``0.0`` means "đã đóng lệnh và thua hết"; ``None`` means "chưa có lệnh
+    đã đóng nào ở nhóm này". Collapsing the second into the first tells the user
+    a 0% win rate they never earned."""
+    services, account = await _enter_cap6(db_session, test_user.id)
+    cap6 = services["cap6"]
+
+    # An OPEN đối chiếu: recorded, but nothing has closed yet.
+    await _doi_chieu_round_trip(
+        db_session, services, account.id, test_user.id,
+        symbol="NU1", icb_lv2="Ngân hàng", lop_quyet_dinh="dinh_gia", close=False,
+    )
+    progress = await cap6.get_progress(test_user.id)
+    assert progress.so_lenh_doi_chieu == 1
+    assert progress.ty_le_thang_khop is None
+    assert progress.ty_le_thang_lech is None
+
+    # One closed LOSER in the khớp group → a genuine 0.0, which must survive.
+    await _doi_chieu_round_trip(
+        db_session, services, account.id, test_user.id,
+        symbol="NU2", icb_lv2="Ngân hàng", lop_quyet_dinh="dinh_gia", win=False,
+    )
+    progress = await cap6.get_progress(test_user.id)
+    assert progress.ty_le_thang_khop == 0.0
+    assert progress.ty_le_thang_lech is None
+
+
+@pytest.mark.asyncio
+async def test_enter_returns_metrics_recomputed_not_stale(db_session, test_user):
+    """``/cap6/enter`` is idempotent and the FE renders what it returns, so it
+    must recompute like Cấp 7's and Cấp 8's do — otherwise a returning user is
+    shown zeros until something else happens to call ``/cap6/progress``."""
+    services, account = await _enter_cap6(db_session, test_user.id)
+    cap6 = services["cap6"]
+    await _doi_chieu_round_trip(
+        db_session, services, account.id, test_user.id,
+        symbol="EN1", icb_lv2="Ngân hàng", lop_quyet_dinh="dinh_gia", win=True,
+    )
+
+    # Simulate a row whose stored aggregates have gone stale.
+    row = (
+        await db_session.execute(
+            select(Cap6Progress).where(Cap6Progress.user_id == test_user.id)
+        )
+    ).scalar_one()
+    row.so_lenh_doi_chieu = 0
+    row.so_kieu_da_gap = 0
+    row.ty_le_thang_khop = None
+    await db_session.flush()
+
+    progress = await cap6.enter(test_user.id)
+    assert progress.so_lenh_doi_chieu == 1
+    assert progress.so_kieu_da_gap == 1
+    assert progress.ty_le_thang_khop == pytest.approx(100.0)
+
+
+@pytest.mark.asyncio
+async def test_lop_quyet_dinh_is_frozen_once_the_order_has_filled(
+    db_session, test_user
+):
+    """★ THE EXPLOIT THE FREEZE MUST STOP. Leg ③ compares the win rate of the
+    khớp group against the lệch group. Without a lock, a user whose closed lệnh
+    are ALL in the lệch group can wait until the outcomes are known and re-post
+    the WINNERS with a ``lop_quyet_dinh`` inside ``lop_uu_tien`` — moving them
+    into the khớp group and turning a failing leg into 100% vs 0%.
+
+    Cấp 7 added a time-lock for exactly this class of problem; the Cấp 6 đối
+    chiếu is the same kind of before-the-fact commitment.
+    """
+    services, account = await _enter_cap6(db_session, test_user.id)
+    cap6 = services["cap6"]
+
+    # 4 winners + 4 losers, ALL lệch gợi ý → leg ③ fails (0% vs 50%).
+    for i in range(8):
+        await _doi_chieu_round_trip(
+            db_session, services, account.id, test_user.id,
+            symbol=f"FZ{i}", icb_lv2="Ngân hàng",
+            lop_quyet_dinh="ky_thuat",  # lớp ÍT TIN của ngân hàng ⇒ lệch
+            win=i < 4,
+        )
+    result = await cap6.thach_thuc(test_user.id)
+    assert result["nhom_lech"]["so_lenh"] == 8
+    assert result["doi_chieu_giup_ich"]["dat"] is False
+
+    # Now that the outcomes are known, "correct" the 4 winners into the khớp
+    # group. Every one of those orders has FILLED, so every one is frozen.
+    for i in range(4):
+        buy = (
+            await db_session.execute(
+                select(VirtualOrder).where(
+                    VirtualOrder.symbol == f"FZ{i}", VirtualOrder.side == OrderSide.BUY
+                )
+            )
+        ).scalar_one()
+        with pytest.raises(ConflictError):
+            await cap6.record_kehoach(
+                test_user.id,
+                buy.id,
+                lop_mau_thuan=_MAU_THUAN,
+                lop_quyet_dinh="dinh_gia",  # ∈ lop_uu_tien ⇒ would become khớp
+                ly_do_doi_chieu="Thật ra tôi tin định giá.",
+            )
+
+    after = await cap6.thach_thuc(test_user.id)
+    assert after["nhom_khop"]["so_lenh"] == 0
+    assert after["nhom_lech"]["so_lenh"] == 8
+    assert after["doi_chieu_giup_ich"]["dat"] is False
+
+    # An identical re-post is still a no-op (a retried network call must not 409).
+    buy0 = (
+        await db_session.execute(
+            select(VirtualOrder).where(
+                VirtualOrder.symbol == "FZ0", VirtualOrder.side == OrderSide.BUY
+            )
+        )
+    ).scalar_one()
+    same = await cap6.record_kehoach(
+        test_user.id,
+        buy0.id,
+        lop_mau_thuan=_MAU_THUAN,
+        lop_quyet_dinh="ky_thuat",
+        ly_do_doi_chieu="Định giá là lớp tôi tin cho nhóm này.",
+    )
+    assert same.lop_quyet_dinh == "ky_thuat"
+
+
+@pytest.mark.asyncio
+async def test_doi_chieu_stays_editable_while_the_order_has_not_filled(
+    db_session, test_user
+):
+    """The freeze is tied to the FILL, not to the first write: an order still
+    waiting to match has no outcome and can never join a closed pair (
+    ``_closed_pairs`` only ever matches FILLED buys), so stepping back a step in
+    the panel must keep working."""
+    services, account = await _enter_cap6(db_session, test_user.id)
+    cap6 = services["cap6"]
+    await _seed_symbol(db_session, "PND", icb_lv2="Ngân hàng")
+    buy = await _make_order(
+        db_session, account.id, test_user.id, symbol="PND", status=OrderStatus.PENDING
+    )
+    await services["cap1"].record_kehoach(
+        test_user.id, buy.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho", vung_mua=20_000
+    )
+    await cap6.record_kehoach(
+        test_user.id, buy.id,
+        lop_mau_thuan=_MAU_THUAN, lop_quyet_dinh="ky_thuat",
+        ly_do_doi_chieu="Tôi tin đà giá.",
+    )
+    doi_y = await cap6.record_kehoach(
+        test_user.id, buy.id,
+        lop_mau_thuan=_MAU_THUAN, lop_quyet_dinh="dinh_gia",
+        ly_do_doi_chieu="Nghĩ lại, định giá thuyết phục hơn.",
+    )
+    assert doi_y.lop_quyet_dinh == "dinh_gia"
+    assert doi_y.khop_goi_y is True
 
 
 @pytest.mark.asyncio

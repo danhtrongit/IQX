@@ -34,8 +34,12 @@ class Cap6ProgressOut(BaseModel):
     task_3_done_at: datetime | None = None
     so_lenh_doi_chieu: int
     so_kieu_da_gap: int
-    ty_le_thang_khop: float
-    ty_le_thang_lech: float
+    #: ★ ``null`` = nhóm chưa có lệnh đã đóng nào — NOT 0%. ``0.0`` is a real
+    #: result (đã đóng lệnh, không thắng lệnh nào) and the FE must render the two
+    #: differently: a null belongs in the "chưa đủ dữ liệu" state, never in a
+    #: number. ``/cap6/thach-thuc`` carries the same rates beside ``du_du_lieu``.
+    ty_le_thang_khop: float | None = None
+    ty_le_thang_lech: float | None = None
     graduated_at: datetime | None = None
     time_to_graduate_hours: float | None = None
 

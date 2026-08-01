@@ -36,7 +36,11 @@ async def get_progress(user: CurrentUser, db: DBSession) -> Cap6ProgressOut | No
 
 @router.post("/enter", response_model=Cap6ProgressOut)
 async def enter(user: CurrentUser, db: DBSession) -> Cap6ProgressOut:
-    """Vào Cấp 6 (idempotent) — yêu cầu đã tốt nghiệp Cấp 5."""
+    """Vào Cấp 6 (idempotent) — yêu cầu đã tốt nghiệp Cấp 5.
+
+    Tính lại toàn bộ chỉ số trước khi trả về (giống ``/cap7/enter`` và
+    ``/cap8/enter``): endpoint này idempotent và FE hiện đúng thứ nó trả, nên
+    user quay lại không được thấy số cũ cho tới lần gọi ``/cap6/progress`` sau."""
     svc = Cap6Service(db)
     return await svc.enter(user.id)
 

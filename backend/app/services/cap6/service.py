@@ -85,6 +85,23 @@ Other design notes (documented here since the spec leaves them implicit):
     before they may be compared. Below that the group is reported
     ``du_du_lieu = False`` and nhiệm vụ ③'s third leg simply does not pass —
     we never declare a winner off 1-2 trades in either direction.
+  - **``ty_le_thang_khop``/``ty_le_thang_lech`` are NULLABLE, and NULL never
+    becomes 0.** A group with no closed lệnh has no win rate; ``0.0`` is a real
+    and very different statement ("đã đóng lệnh và thua hết"). Cấp 8 made its
+    ``don_nganh_max_pct``/``tong_rui_ro_pct`` nullable for exactly this reason,
+    and ``/cap6/thach-thuc`` has always carried ``du_du_lieu`` beside a nullable
+    ``ty_le_thang``; the progress row now agrees with both.
+  - **★ THE ĐỐI CHIẾU IS FROZEN ONCE THE ORDER FILLS.** ``lop_quyet_dinh`` is a
+    before-the-fact commitment: leg ③ compares the win rate of the khớp group
+    against the lệch group, so a decision that could still be edited after the
+    outcome was known would let a user move their winners into the khớp group and
+    manufacture the leg. ``record_kehoach`` therefore rejects any CHANGE to the
+    block once the buy is FILLED (an identical re-post stays idempotent). While
+    the order is still unfilled the block stays editable — the panel is a form
+    the user can step back in, and an unfilled buy can never join a closed pair
+    (``_closed_pairs`` only ever matches FILLED buys), so there is no outcome to
+    edit towards. This is Cấp 7's time-lock applied to the one input Cấp 6 takes
+    from the user.
   - **Pairing a kế hoạch (BUY) with its outcome (``order_ketso``, keyed on the
     SELL)** reuses Cấp 1's own rule verbatim (``Cap1Service._find_matching_buy``:
     the most recent FILLED buy for the same account+symbol at/before the sell),
@@ -299,24 +316,30 @@ class Cap6Service:
         return progress
 
     async def enter(self, user_id: uuid.UUID) -> Cap6Progress:
-        """Enter Cấp 6 (idempotent). Requires the user to have graduated Cấp 5."""
+        """Enter Cấp 6 (idempotent). Requires the user to have graduated Cấp 5.
+
+        ★ Recomputes before returning, exactly like Cấp 7's and Cấp 8's ``enter``:
+        this endpoint is idempotent and the FE renders what it returns, so a
+        returning user would otherwise be shown the row's stale counters until
+        something else happened to call ``/cap6/progress``.
+        """
         progress = await self._get_progress_row(user_id)
-        if progress is not None:
-            return progress
+        if progress is None:
+            cap5_result = await self._session.execute(
+                select(Cap5Progress).where(Cap5Progress.user_id == user_id)
+            )
+            cap5_progress = cap5_result.scalar_one_or_none()
+            if cap5_progress is None:
+                raise NotFoundError("tiến trình Cấp 5")
+            if cap5_progress.graduated_at is None:
+                raise ConflictError("Chưa tốt nghiệp Cấp 5")
 
-        cap5_result = await self._session.execute(
-            select(Cap5Progress).where(Cap5Progress.user_id == user_id)
-        )
-        cap5_progress = cap5_result.scalar_one_or_none()
-        if cap5_progress is None:
-            raise NotFoundError("tiến trình Cấp 5")
-        if cap5_progress.graduated_at is None:
-            raise ConflictError("Chưa tốt nghiệp Cấp 5")
+            progress = Cap6Progress(user_id=user_id, entered_at=datetime.now(UTC))
+            self._session.add(progress)
+            await self._session.flush()
+            await self._session.refresh(progress)
 
-        progress = Cap6Progress(user_id=user_id, entered_at=datetime.now(UTC))
-        self._session.add(progress)
-        await self._session.flush()
-        await self._session.refresh(progress)
+        await self._recompute_progress(user_id, progress)
         return progress
 
     # ── Kiểu cổ phiếu (server-side, từ ngành) ─────────
@@ -430,9 +453,18 @@ class Cap6Service:
         See the module docstring's SECTOR → KIỂU DECISION block.
 
         ``ly_do_doi_chieu`` is REQUIRED (422 when missing/blank — spec §4: never
-        a bare pick). Re-submitting the same order overwrites its đối chiếu (the
-        panel is a form the user can go back a step in); every derived field is
-        re-derived, so a rewrite can never invent a suggestion or a match.
+        a bare pick).
+
+        ★ **THE FREEZE.** Re-submitting overwrites the đối chiếu **only while the
+        buy has not FILLED** (the panel is a form the user can go back a step in,
+        and an unfilled buy can never join a closed pair). Once the order is
+        FILLED the block is frozen: an identical re-post is a no-op, anything else
+        is a 409. Leg ③ of nhiệm vụ ③ compares the khớp group's win rate against
+        the lệch group's, so an editable ``lop_quyet_dinh`` would let a user wait
+        for the outcomes and then move their winners into the khớp group — the
+        same class of hole Cấp 7's time-lock closes for ``luc_doc_user``. Every
+        derived field is still re-derived on the writes that ARE allowed, so a
+        rewrite can never invent a suggestion or a match either.
         """
         progress = await self._require_progress(user_id)
 
@@ -463,6 +495,21 @@ class Cap6Service:
         kehoach = await self._get_kehoach_by_order(order_id)
         if kehoach is None:
             raise NotFoundError("kế hoạch Cấp 1 — cần ghi vùng mua trước")
+
+        # ★ THE FREEZE (see the docstring above).
+        if kehoach.lop_quyet_dinh is not None:
+            same = (
+                kehoach.lop_quyet_dinh == lop_quyet_dinh
+                and (kehoach.ly_do_doi_chieu or "") == ly_do_clean
+            )
+            if same:
+                return kehoach  # a retried network call is a no-op, never a 409
+            if order.status == OrderStatus.FILLED:
+                raise ConflictError(
+                    "Lệnh này đã khớp — phần Đối chiếu không sửa được nữa. Lớp bạn "
+                    "chọn tin phải được chốt TRƯỚC khi biết lệnh lãi hay lỗ, đó là "
+                    "điều làm so sánh khớp/lệch gợi ý có nghĩa."
+                )
 
         # lop_mau_thuan: prefer the persisted Cấp 4 ratings over the client's copy.
         doc_map = self._validate_lop_map(kehoach.doc_5_lop)
@@ -832,8 +879,11 @@ class Cap6Service:
             "so_lenh_da_ket_so": len(pairs),
             "nhom_khop": nhom_khop,
             "nhom_lech": nhom_lech,
-            "ty_le_thang_khop": nhom_khop["ty_le_thang"] or 0.0,
-            "ty_le_thang_lech": nhom_lech["ty_le_thang"] or 0.0,
+            # ★ NULL, not 0.0, when the group has no closed lệnh — and a genuine
+            # 0.0 (closed lệnh, none of them winners) survives untouched. ``or``
+            # would have collapsed both into the same number.
+            "ty_le_thang_khop": nhom_khop["ty_le_thang"],
+            "ty_le_thang_lech": nhom_lech["ty_le_thang"],
             "du_ca_2_nhom": du_ca_2_nhom,
             "doi_chieu_giup_ich": giup_ich,
         }
@@ -963,8 +1013,20 @@ class Cap6Service:
             },
             "doi_chieu_giup_ich": {
                 "ten": "Nhóm khớp gợi ý thắng ≥ nhóm lệch (mỗi nhóm ≥ 3 lệnh)",
-                "gia_tri_hien_tai": metrics["ty_le_thang_khop"],
-                "muc_tieu": metrics["ty_le_thang_lech"],
+                # A condition block keeps the shape Cấp 7/8 use — a number plus
+                # ``du_du_lieu`` saying whether it means anything. The nullable
+                # rates live on ``nhom_khop``/``nhom_lech`` right below, where a
+                # missing group is visible as ``ty_le_thang = null``.
+                "gia_tri_hien_tai": (
+                    metrics["ty_le_thang_khop"]
+                    if metrics["ty_le_thang_khop"] is not None
+                    else 0.0
+                ),
+                "muc_tieu": (
+                    metrics["ty_le_thang_lech"]
+                    if metrics["ty_le_thang_lech"] is not None
+                    else 0.0
+                ),
                 "dat": legs["giup_ich_dat"],
                 "du_du_lieu": metrics["du_ca_2_nhom"],
                 "giai_thich": giup_ich_giai_thich,
