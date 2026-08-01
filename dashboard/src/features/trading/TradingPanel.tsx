@@ -74,6 +74,15 @@ import {
   useRecordKehoachCap6,
   type KieuCoPhieu,
 } from "@/features/cap6"
+import {
+  DocSoLenhBlock,
+  docSoLenhSnapshot,
+  useCap7Events,
+  usePhienCap7,
+  useRecordKehoachCap7,
+  type HanhViCo,
+  type LucDocUser,
+} from "@/features/cap7"
 import { getErrorMessage } from "@/shared/http/client"
 import { cn } from "@/shared/lib/cn"
 import { StockLogo } from "@/features/navigation/StockLogo"
@@ -315,6 +324,27 @@ function OrderEntry({
   const [cap6LopQuyetDinh, setCap6LopQuyetDinh] = useState<Lop | null>(null)
   const [cap6LyDo, setCap6LyDo] = useState("")
   const [cap6Kieu, setCap6Kieu] = useState<KieuCoPhieu | null>(null)
+  const cap7Events = useCap7Events()
+  // `isCap7Active` mirrors `isCap6Active` above — false outside a
+  // `Cap7Provider`. Cấp 7 keeps Cấp 0-6's blocks, cổng cứng chain and Cấp 3's
+  // volume auto-fill 100% intact (spec §0) and adds ONE reading overlay on the
+  // bid/ask book that has been visible since Cấp 2.
+  //
+  // ★★ IT ADDS NO GATE AT ALL (spec §9: đọc lực là SOFT — nhiệm vụ ① chỉ cần
+  // ghi ≥ 1 lần). `isCap7Active` must NEVER appear in the `disabled` chain of
+  // the MUA button below; a user who skips the step places an order exactly as
+  // they did at Cấp 6.
+  const { isCap7Active } = cap7Events
+  const recordKehoachCap7 = useRecordKehoachCap7()
+  // ★ `trong_phien` + every threshold come from the SERVER (`GET /cap7/phien`).
+  // The FE must never compute market-open from the browser clock — a user in
+  // another timezone would be told the market is open when it is not. Only
+  // queried inside Cấp 7.
+  const { data: cap7Phien } = usePhienCap7(isCap7Active)
+  // Cấp 7 bước "Đọc sổ lệnh" (spec §4/§5) — phần user TỰ đoán + hành vi trước
+  // cờ cảnh giác. Cả hai đều tùy chọn: không có cũng đặt lệnh được.
+  const [cap7DocLuc, setCap7DocLuc] = useState<LucDocUser | null>(null)
+  const [cap7HanhViCo, setCap7HanhViCo] = useState<HanhViCo | null>(null)
   const [side, setSide] = useState<"buy" | "sell">("buy")
   const [method, setMethod] = useState<"market" | "limit">("market")
   const [price, setPrice] = useState<number | undefined>(undefined)
@@ -407,6 +437,22 @@ function OrderEntry({
   // for a BUY inside Cấp 6.
   const cap6SubmitDisabled =
     side === "buy" && cap6CoMauThuan && !isDoiChieuValid(cap6LopQuyetDinh, cap6LyDo)
+  // Cấp 7 (spec §4/§5) — ONE reading of the SAME book `OrderBookView` already
+  // draws from `data`, computed once per render so the number the user sees on
+  // the gauge and the number `POST /cap7/kehoach` commits are the SAME number
+  // (the ladder moves on every quote tick).
+  //
+  // ★ There is deliberately NO `cap7SubmitDisabled`. Cấp 7 never gates MUA
+  // (spec §9) — see `isCap7Active`'s note above.
+  const cap7Snapshot = docSoLenhSnapshot(data?.bid, data?.ask, cap7Phien?.quy_tac)
+  // Ghi bước đọc lực chỉ khi: đang trong Cấp 7, SERVER nói đang trong phiên, sổ
+  // đọc được (chỉ số hữu hạn > 0 — không bao giờ gửi 0/vô cực) và user đã tự
+  // chốt phần đọc của mình.
+  const cap7Ready =
+    isCap7Active &&
+    cap7Phien?.trong_phien === true &&
+    cap7Snapshot.chiSo != null &&
+    cap7DocLuc != null
 
   // Analytics `cap4_lo_ai(so_khac_ai)` (spec §8) — fires once per reveal, when
   // `Doc5LopBlock` reports the AI đối chiếu it just un-hid. By the time this
@@ -553,7 +599,10 @@ function OrderEntry({
         // thuẫn để null").
         const cap6Ready =
           cap6CoMauThuan && isDoiChieuValid(cap6LopQuyetDinh, cap6LyDo) && !!cap6LopQuyetDinh
-        if (cap2Ready || cap4Ready || cap6Ready) {
+        // `cap7Ready` joins this OR for the same reason as the others:
+        // `/cap7/kehoach` 404s unless the Cấp 1 row it extends already exists,
+        // so a Cấp 7 reading must not fall into the fire-and-forget branch.
+        if (cap2Ready || cap4Ready || cap6Ready || cap7Ready) {
           await recordKehoach.mutateAsync(kehoachPayload)
           if (isCap2Active && cap2Method && cap2CatLo && cap2ChotLoi) {
             await recordKehoachCap2.mutateAsync({
@@ -611,6 +660,24 @@ function OrderEntry({
               // Chỉ có giá trị khi server KHÔNG phân loại được kiểu từ ngành.
               kieu_co_phieu: cap6Kieu,
               lop_mau_thuan: cap4Doc5Lop,
+            })
+          }
+          // Cấp 7 (spec §4/§5 "Ghi") — LAST in the chain, same single
+          // `order_kehoach` row (Cấp 7 only adds the đọc-lực block).
+          //
+          // ★ `co_canh_giac_lenh_gia` and `hanh_vi_co` come from the SAME
+          // snapshot as `luc_chi_so`, because the server enforces "hành vi
+          // non-null IFF có cờ" and rejects the inconsistent pair. A cờ that is
+          // showing but never acted on is recorded as `mua_duoi_theo` — a FACT
+          // for the Kết sổ to reflect back, never a penalty (spec §5 "không
+          // phạt cứng").
+          if (cap7Ready && cap7DocLuc && cap7Snapshot.chiSo != null) {
+            await recordKehoachCap7.mutateAsync({
+              order_id: order.id,
+              luc_chi_so: cap7Snapshot.chiSo,
+              luc_doc_user: cap7DocLuc,
+              co_canh_giac_lenh_gia: !!cap7Snapshot.co,
+              hanh_vi_co: cap7Snapshot.co ? (cap7HanhViCo ?? "mua_duoi_theo") : null,
             })
           }
         } else {
@@ -694,6 +761,24 @@ function OrderEntry({
               }
             : {}),
         })
+        // Cấp 7 — phần đọc lực đi kèm CHỈ khi lệnh này thật sự ghi được nó
+        // (trong phiên + sổ đọc được + user đã tự chốt). Đọc lực không bao giờ
+        // là điều kiện để mua, nên phần lớn lệnh sẽ không có khối này.
+        cap7Events.onOrderFilled?.({
+          symbol,
+          side,
+          quantity: order.quantity,
+          price: order.price,
+          orderId: order.id,
+          ...(cap7Ready && cap7DocLuc && cap7Snapshot.chiSo != null
+            ? {
+                lucChiSo: cap7Snapshot.chiSo,
+                lucDocUser: cap7DocLuc,
+                coCanhGiac: !!cap7Snapshot.co,
+                hanhViCo: cap7Snapshot.co ? (cap7HanhViCo ?? "mua_duoi_theo") : null,
+              }
+            : {}),
+        })
         // Reset the Kế hoạch form for the next order.
         setCap1LyDo(null)
         setCap1VungMuaOverride(undefined)
@@ -717,6 +802,10 @@ function OrderEntry({
         setCap6LopQuyetDinh(null)
         setCap6LyDo("")
         setCap6Kieu(null)
+        // Cấp 7: lệnh sau phải đọc lại sổ từ đầu — sổ lệnh đổi từng giây, một
+        // phần đọc còn sót lại từ lệnh trước sẽ là một con số đã cũ.
+        setCap7DocLuc(null)
+        setCap7HanhViCo(null)
       }
       // Cấp 1 (spec §6 "Kết sổ mở khi user bán 1 lệnh Thực chiến") — a SELL
       // fill inside Cấp 1 notifies the bus too (no `lyDo`/`trangThaiLucDat`/
@@ -730,7 +819,12 @@ function OrderEntry({
       // each provider, so the `||` widening cannot regress Cấp 1/2.
       if (
         side === "sell" &&
-        (isCap1Active || isCap3Active || isCap4Active || isCap5Active || isCap6Active)
+        (isCap1Active ||
+          isCap3Active ||
+          isCap4Active ||
+          isCap5Active ||
+          isCap6Active ||
+          isCap7Active)
       ) {
         const sellEvent = {
           symbol,
@@ -748,6 +842,9 @@ function OrderEntry({
         cap5Events.onOrderFilled?.(sellEvent)
         // Cấp 6's Kết sổ (đối chiếu nhìn lại) — cùng lý do, bus của chính nó.
         cap6Events.onOrderFilled?.(sellEvent)
+        // Cấp 7's Kết sổ (đối chiếu lực đã đọc vs diễn biến ngay sau) — bus của
+        // chính nó, cùng lý do.
+        cap7Events.onOrderFilled?.(sellEvent)
       }
       const totalStr = (order.total || order.price * order.quantity).toLocaleString("en-US")
       Message.success(
@@ -1065,6 +1162,28 @@ function OrderEntry({
               />
             )}
           </>
+        )}
+
+        {/* Cấp 7 khối "Đọc sổ lệnh" (spec §4/§5, THÊM MỚI) — NGAY TRƯỚC nút MUA.
+            Một LỚP PHỦ ĐỌC lên chính sổ bid/ask `OrderBookView` đang vẽ ở trên
+            (spec §4: "thêm lớp phủ đọc… KHÔNG dựng lại sổ"): `data.bid`/
+            `data.ask` truyền xuống làm prop, khối không tự gọi `usePrice`.
+            Buy-side only AND Cấp 7-only (`isCap7Active` false outside a
+            `Cap7Provider` → zero effect on Cấp 0-6 or normal trading).
+
+            ★ KHÔNG nằm trong khối `isCap1Active` ở trên và KHÔNG có mặt trong
+            chuỗi `disabled` bên dưới: Cấp 7 không thêm bất kỳ cổng cứng nào
+            (spec §9) — bỏ qua bước này thì đặt lệnh y như Cấp 6. */}
+        {side === "buy" && isCap7Active && (
+          <DocSoLenhBlock
+            symbol={symbol}
+            bid={data?.bid ?? []}
+            ask={data?.ask ?? []}
+            docLuc={cap7DocLuc}
+            onDocLuc={setCap7DocLuc}
+            hanhViCo={cap7HanhViCo}
+            onHanhViCo={setCap7HanhViCo}
+          />
         )}
 
         {/* Submit — Cấp 1's cổng cứng (spec §4) disables MUA until lý do +

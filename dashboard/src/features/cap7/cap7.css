@@ -1,0 +1,227 @@
+/* ============================================================
+   IQX · Cấp 7 «Đọc sổ lệnh» — khối đọc sổ lệnh trong panel (spec §4/§5)
+   ------------------------------------------------------------
+   Màu cấp: hồng magenta `#c65cae`. The dark tokens (--t1/--bg3/--bd…)
+   are scoped to the `.cap0` shell every cấp page wraps in, so each
+   `var()` below carries an Arco fallback — the block then still reads
+   correctly if it ever renders outside that shell.
+
+   ★ Nothing in here is a warning colour for the user's READING. Hồng
+   magenta is the cấp's identity colour; guessing "Cầu mạnh" and being
+   wrong is a neutral fact the market arbitrates, not an error state.
+   The only semantic colours are the two SIDES of the book (dư mua xanh
+   / dư bán đỏ) — they describe the DATA — and the cờ's amber, which
+   marks a "look twice", NEVER a detection claim (spec §9).
+   ============================================================ */
+
+.cap7-docsolenh {
+  --cap7: #c65cae;
+  --cap7-soft: rgba(198, 92, 174, 0.13);
+  --cap7-bd: rgba(198, 92, 174, 0.4);
+  --cap7-mua: #35d07f;
+  --cap7-ban: #ff6b6b;
+  --cap7-co: #e8a33d;
+
+  padding: 12px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+  background: linear-gradient(180deg, rgba(198, 92, 174, 0.1), transparent);
+  border: 1px solid var(--cap7-bd);
+  border-radius: 10px;
+}
+
+.cap7-block-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--cap7);
+}
+
+.cap7-block-title {
+  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--t1, var(--color-text-1));
+}
+
+/* ── Tổng dư 2 bên (số liệu thô trước, kết luận sau — §C12c) ─────────────── */
+.cap7-tong-du {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.cap7-tong-du-o {
+  flex: 1 1 45%;
+  padding: 6px 8px;
+  font-size: 10.5px;
+  line-height: 1.5;
+  background: var(--bg3, var(--color-fill-2));
+  border: 1px solid var(--bd, var(--color-border-2));
+  border-radius: 7px;
+  color: var(--t2, var(--color-text-2));
+}
+
+.cap7-tong-du-label {
+  color: var(--t3, var(--color-text-3));
+}
+
+.cap7-tong-du-mua {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--cap7-mua);
+}
+
+.cap7-tong-du-ban {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--cap7-ban);
+}
+
+/* ── Thanh Lực + band ────────────────────────────────────────────────────── */
+.cap7-luc {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 9px;
+  padding: 8px 9px;
+  background: var(--cap7-soft);
+  border: 1px solid var(--cap7-bd);
+  border-radius: 8px;
+}
+
+.cap7-gauge {
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  color: var(--cap7);
+  white-space: nowrap;
+}
+
+.cap7-band {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--cap7);
+}
+
+.cap7-vi-sao,
+.cap7-nguong {
+  margin: 6px 0 0;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--t2, var(--color-text-2));
+}
+
+.cap7-label {
+  color: var(--t3, var(--color-text-3));
+}
+
+.cap7-note {
+  margin: 6px 0 0;
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: var(--t3, var(--color-text-3));
+}
+
+.cap7-state {
+  margin: 8px 0 0;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--t3, var(--color-text-3));
+}
+
+.cap7-ngoai-gio .cap7-state {
+  margin-top: 0;
+}
+
+.cap7-ngoai-gio {
+  margin-top: 8px;
+  padding: 8px 9px;
+  background: var(--bg3, var(--color-fill-2));
+  border: 1px solid var(--bd, var(--color-border-2));
+  border-radius: 8px;
+}
+
+/* ── Ô đoán lực (user tự chốt) ───────────────────────────────────────────── */
+.cap7-picker-label {
+  margin-top: 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--t2, var(--color-text-2));
+}
+
+.cap7-picker {
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.cap7-doc-btn {
+  flex: 1;
+  padding: 7px 4px;
+  font-family: inherit;
+  font-size: 10.5px;
+  color: var(--t2, var(--color-text-2));
+  background: var(--bg3, var(--color-fill-2));
+  border: 1px solid var(--bd, var(--color-border-2));
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.cap7-doc-btn:hover {
+  color: var(--t1, var(--color-text-1));
+  border-color: var(--cap7);
+}
+
+.cap7-doc-btn--on {
+  font-weight: 600;
+  color: var(--cap7);
+  background: var(--cap7-soft);
+  border-color: var(--cap7);
+}
+
+/* ── Cờ cảnh giác (giáo dục — KHÔNG chặn, KHÔNG kết luận) ────────────────── */
+.cap7-co {
+  margin-top: 9px;
+  padding: 8px 9px;
+  background: rgba(232, 163, 61, 0.1);
+  border: 1px solid rgba(232, 163, 61, 0.4);
+  border-radius: 8px;
+}
+
+.cap7-co-title {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--cap7-co);
+}
+
+.cap7-co-copy {
+  margin: 5px 0 0;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--t2, var(--color-text-2));
+}
+
+.cap7-co-btn {
+  margin-top: 7px;
+  padding: 6px 10px;
+  font-family: inherit;
+  font-size: 10.5px;
+  color: var(--cap7-co);
+  background: transparent;
+  border: 1px solid var(--cap7-co);
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.cap7-co-btn:hover {
+  background: rgba(232, 163, 61, 0.14);
+}
+
+.cap7-co-btn--on {
+  font-weight: 600;
+  background: rgba(232, 163, 61, 0.2);
+}
