@@ -3,12 +3,12 @@ import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Cap6Progress } from "./types"
 
-const { useCap6ProgressMock, graduateMutate, messageInfo, navigateMock } = vi.hoisted(() => ({
+const { useCap6ProgressMock, graduateMutate, enterCap7Mutate, navigateMock } = vi.hoisted(() => ({
   useCap6ProgressMock: vi.fn(),
   graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
     opts?.onSuccess?.()
   }),
-  messageInfo: vi.fn(),
+  enterCap7Mutate: vi.fn(),
   navigateMock: vi.fn(),
 }))
 
@@ -17,14 +17,13 @@ vi.mock("./hooks", () => ({
   useGraduateCap6: () => ({ mutate: graduateMutate, isPending: false }),
 }))
 
+vi.mock("@/features/cap7/hooks", () => ({
+  useEnterCap7: () => ({ mutate: enterCap7Mutate, isPending: false }),
+}))
+
 vi.mock("react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-router")>()
   return { ...actual, useNavigate: () => navigateMock }
-})
-
-vi.mock("@arco-design/web-react", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@arco-design/web-react")>()
-  return { ...actual, Message: { ...actual.Message, info: messageInfo } }
 })
 
 import { GraduationModalCap6, isGraduationReadyCap6 } from "./GraduationModalCap6"
@@ -89,7 +88,7 @@ describe("GraduationModalCap6", () => {
     graduateMutate.mockImplementation((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
       opts?.onSuccess?.()
     })
-    messageInfo.mockReset()
+    enterCap7Mutate.mockReset()
     navigateMock.mockReset()
   })
 
@@ -167,17 +166,19 @@ describe("GraduationModalCap6", () => {
     expect(document.querySelector(".cap6-grad-cta--cap7")).not.toBeNull()
   })
 
-  it('the Cấp 7 button is labelled "sắp ra mắt" and NEVER navigates', () => {
+  // ★ Cấp 7 «Đọc sổ lệnh» đã ship — nút KHÔNG còn "sắp ra mắt" nữa. Nó vẫn KHÔNG
+  // điều hướng: `DauTruongPage` tự đổi shell khi `graduated_at` về (cùng query).
+  it("the Cấp 7 button no longer says «sắp ra mắt», and still NEVER navigates", () => {
     useCap6ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap6 />)
     const cta = screen.getByTestId("cap6-grad-cta")
     expect(cta).toHaveTextContent("Vào Cấp 7 «Đọc sổ lệnh»")
-    expect(cta).toHaveTextContent("sắp ra mắt")
+    expect(cta.textContent).not.toMatch(/sắp ra mắt/)
     fireEvent.click(cta)
     expect(navigateMock).not.toHaveBeenCalled()
   })
 
-  it("clicking it records the graduation and says Cấp 7 is coming (not built yet)", () => {
+  it("clicking it records the graduation and REALLY enters Cấp 7", () => {
     useCap6ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap6 />)
     fireEvent.click(screen.getByTestId("cap6-grad-cta"))
@@ -185,18 +186,17 @@ describe("GraduationModalCap6", () => {
       undefined,
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     )
-    expect(messageInfo).toHaveBeenCalledWith(expect.stringContaining("Cấp 7"))
-    expect(messageInfo).toHaveBeenCalledWith(expect.stringContaining("sắp ra mắt"))
+    expect(enterCap7Mutate).toHaveBeenCalledTimes(1)
   })
 
-  it("does NOT announce Cấp 7 before the graduation actually succeeds", () => {
+  it("does NOT enter Cấp 7 before the graduation actually succeeds", () => {
     useCap6ProgressMock.mockReturnValue({ data: readyProgress() })
     graduateMutate.mockImplementation(() => {
       /* pending — no onSuccess */
     })
     render(<GraduationModalCap6 />)
     fireEvent.click(screen.getByTestId("cap6-grad-cta"))
-    expect(messageInfo).not.toHaveBeenCalled()
+    expect(enterCap7Mutate).not.toHaveBeenCalled()
   })
 
   it("closes itself once graduated_at comes back (progress refetch)", () => {

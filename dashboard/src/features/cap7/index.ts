@@ -4,8 +4,14 @@
  *
  * FE1: the event bus, the API/hooks/keys/types layer, the PURE reading helpers
  * and the panel's khối Đọc sổ lệnh. FE2: Kết sổ Cấp 7, the coach's 7th
- * paragraph, and khối ⑯⑰ of Phân tích danh mục. The Hành trình tab, the
- * graduation screen and the page/routing pieces arrive in FE3.
+ * paragraph, and khối ⑯⑰ of Phân tích danh mục. FE3: the Hành trình tab, the
+ * graduation screen and the page/routing pieces.
+ *
+ * ★ `RightSidebar`, `DauTruongPage` and `GraduationModalCap6` import the CONCRETE
+ * files (`./JourneyPanelCap7`, `./Cap7TradingPage`, `./hooks`) rather than this
+ * barrel: it re-exports `Cap7TradingPage`, which imports `CenterPanel`/
+ * `RightSidebar`/`RightToolbar` from `@/features/dashboard` — going through the
+ * barrel there would create a module-graph cycle (same rule Cấp 1-6 follow).
  */
 export {
   Cap7Provider,
@@ -99,3 +105,9 @@ export {
   type Cap7TradeRecord,
   type UseCap7TradeLogReturn,
 } from "./tradeLogCap7"
+
+// ── FE3: Hành trình + tốt nghiệp + trang Cấp 7 ──────────────────────────────
+export { JourneyPanelCap7, taskStateCap7 } from "./JourneyPanelCap7"
+export { GraduationModalCap7, isGraduationReadyCap7 } from "./GraduationModalCap7"
+export { Cap7PortfolioAnalysisPanel } from "./Cap7PortfolioAnalysisPanel"
+export { Cap7TradingPage } from "./Cap7TradingPage"

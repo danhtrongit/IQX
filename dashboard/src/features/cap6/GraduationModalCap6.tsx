@@ -1,7 +1,12 @@
-import { Message, Modal } from "@arco-design/web-react"
+import { Modal } from "@arco-design/web-react"
 import { Badge, LEVELS } from "@/features/cap0/Badge"
 import "@/features/cap0/cap0.css"
 import "./cap6-graduation.css"
+// Concrete-file import (NOT the `@/features/cap7` barrel) — that barrel
+// re-exports `Cap7TradingPage`, which imports `CenterPanel`/`RightSidebar`/
+// `RightToolbar` from `@/features/dashboard`; going through it here would create
+// a module-graph cycle (same rationale `GraduationModalCap5` documents for Cấp 6).
+import { useEnterCap7 } from "@/features/cap7/hooks"
 import { useCap6Progress, useGraduateCap6 } from "./hooks"
 import { countCap6TasksDone, type Cap6Progress } from "./types"
 
@@ -75,26 +80,27 @@ function renderInlineBold(text: string) {
  * phát sáng, đỏ son Cấp 6 `#d64550`) + 3 khối (Ghi nhận / Định vị / Chuyển cấp
  * viền **hồng magenta `#c65cae`** — màu Cấp 7) + CTA hồng magenta.
  *
- * ★ **CẤP 7 CHƯA BUILD → nút KHÔNG điều hướng đi đâu**, và nói thẳng "sắp ra
- * mắt" ngay trên nút. Nhưng nút vẫn PHẢI bấm được và vẫn ghi tốt nghiệp về
- * server: modal này `closable={false}` + `visible = isGraduationReadyCap6(...)`,
- * nên một nút `disabled` sẽ nhốt VĨNH VIỄN mọi user đã xong 3/3 trong một màn
- * không có lối ra (và `POST /cap7/enter` sau này cũng đòi Cấp 6 đã tốt nghiệp).
- * Đây đúng là pattern trung thực mà `GraduationModalCap1` … `GraduationModalCap5`
- * đã dùng trước khi cấp kế tiếp lên sóng. Khi Cấp 7 ship, đổi `onSuccess` thành
- * `enterCap7.mutate()` và bỏ dòng "sắp ra mắt" — đúng như `GraduationModalCap5`
- * vừa được sửa trong delivery này.
+ * Cấp 7 is live (Cấp 7 Task FE3) — mirrors how `GraduationModalCap5` enters Cấp
+ * 6 (which itself mirrors Cấp 2 → Cấp 3 → …): record the graduation server-side,
+ * then fire the idempotent `POST /cap7/enter` right here too (not just relying on
+ * `DauTruongPage`'s own effect) so Cấp 7 progress is ready the instant
+ * `DauTruongPage` swaps this Cấp 6 shell out for `Cap7TradingPage` — driven by
+ * the SAME `useCap6Progress` query this mutation's `graduated_at` just
+ * invalidated. No navigation call needed: this modal only ever renders while
+ * already on `/dau-truong`. (Replaces the honest "Cấp 7 sắp ra mắt" placeholder
+ * used before Cấp 7 shipped.)
  */
 export function GraduationModalCap6() {
   const { data: progress } = useCap6Progress()
   const graduate = useGraduateCap6()
+  const enterCap7 = useEnterCap7()
   const level = LEVELS[6]
   const visible = isGraduationReadyCap6(progress)
 
   const handleGraduate = () => {
     graduate.mutate(undefined, {
       onSuccess: () => {
-        Message.info("Cấp 7 «Đọc sổ lệnh» sắp ra mắt")
+        enterCap7.mutate()
       },
     })
   }
@@ -154,7 +160,6 @@ export function GraduationModalCap6() {
         disabled={graduate.isPending}
       >
         Vào Cấp 7 «Đọc sổ lệnh» →
-        <span className="cap6-grad-cta-soon">Cấp 7 sắp ra mắt — ghi nhận tốt nghiệp Cấp 6</span>
       </button>
     </Modal>
   )

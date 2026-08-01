@@ -50,6 +50,12 @@ import { useCap5Events } from "@/features/cap5/Cap5Context"
 import { JourneyPanelCap6 } from "@/features/cap6/JourneyPanelCap6"
 import { Cap6PortfolioAnalysisPanel } from "@/features/cap6/Cap6PortfolioAnalysisPanel"
 import { useCap6Events } from "@/features/cap6/Cap6Context"
+// Same anti-cycle rationale, seven levels up — `@/features/cap7`'s barrel
+// re-exports `Cap7TradingPage`, which itself imports `CenterPanel`/
+// `RightSidebar`/`RightToolbar` from `@/features/dashboard`.
+import { JourneyPanelCap7 } from "@/features/cap7/JourneyPanelCap7"
+import { Cap7PortfolioAnalysisPanel } from "@/features/cap7/Cap7PortfolioAnalysisPanel"
+import { useCap7Events } from "@/features/cap7/Cap7Context"
 
 /**
  * Dynamic right sidebar that switches between panels:
@@ -70,12 +76,12 @@ export function RightSidebar() {
   const { isCap0Active } = useCap0Events()
   const { data: cap0Progress } = useCap0Progress(isCap0Active)
   const visibility = cap0Visibility(cap0Progress)
-  // Cấp 0 … Cấp 6 providers are never all independently mounted (progression
+  // Cấp 0 … Cấp 7 providers are never all independently mounted (progression
   // routing — `DauTruongPage` — picks exactly one shell per visit), EXCEPT that
   // each level's shell wraps every EARLIER level's provider too (cộng dồn: a Cấp
-  // 6 session wraps `Cap1Provider` + … + `Cap6Provider` — see
-  // `Cap6TradingPage`), so `isCap1Active`…`isCap5Active` are ALSO true during
-  // Cấp 6. "journey" and the per-level analysis panels therefore check the
+  // 7 session wraps `Cap1Provider` + … + `Cap7Provider` — see
+  // `Cap7TradingPage`), so `isCap1Active`…`isCap6Active` are ALSO true during
+  // Cấp 7. "journey" and the per-level analysis panels therefore check the
   // HIGHEST level FIRST (most specific), falling through to lower levels then
   // Cấp 0's default.
   const { isCap1Active } = useCap1Events()
@@ -84,6 +90,7 @@ export function RightSidebar() {
   const { isCap4Active } = useCap4Events()
   const { isCap5Active } = useCap5Events()
   const { isCap6Active } = useCap6Events()
+  const { isCap7Active } = useCap7Events()
 
   const getPanelContent = () => {
     switch (activePanel) {
@@ -108,6 +115,7 @@ export function RightSidebar() {
       case "watchlist":
         return <WatchlistPanel />
       case "journey":
+        if (isCap7Active) return <JourneyPanelCap7 />
         if (isCap6Active) return <JourneyPanelCap6 />
         if (isCap5Active) return <JourneyPanelCap5 />
         if (isCap4Active) return <JourneyPanelCap4 />
@@ -133,6 +141,9 @@ export function RightSidebar() {
       case "cap6-analysis":
         // Only reachable from `JourneyPanelCap6`'s own button (inside Cấp 6).
         return isCap6Active ? <Cap6PortfolioAnalysisPanel /> : <JourneyPanel />
+      case "cap7-analysis":
+        // Only reachable from `JourneyPanelCap7`'s own button (inside Cấp 7).
+        return isCap7Active ? <Cap7PortfolioAnalysisPanel /> : <JourneyPanel />
       default:
         return <NewsFeedPanel />
     }
@@ -150,6 +161,7 @@ export function RightSidebar() {
     "cap4-analysis": "Phân tích danh mục",
     "cap5-analysis": "Phân tích danh mục",
     "cap6-analysis": "Phân tích danh mục",
+    "cap7-analysis": "Phân tích danh mục",
   }
 
   return (

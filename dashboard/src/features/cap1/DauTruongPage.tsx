@@ -27,6 +27,10 @@ import { Cap5TradingPage } from "@/features/cap5/Cap5TradingPage"
 // rationale as the Cấp 2/Cấp 3/Cấp 4/Cấp 5 imports above.
 import { useCap6Progress, useEnterCap6 } from "@/features/cap6/hooks"
 import { Cap6TradingPage } from "@/features/cap6/Cap6TradingPage"
+// Cấp 7 is live (Cấp 7 Task FE3) — concrete-file imports, same anti-cycle
+// rationale as the Cấp 2/Cấp 3/Cấp 4/Cấp 5/Cấp 6 imports above.
+import { useCap7Progress, useEnterCap7 } from "@/features/cap7/hooks"
+import { Cap7TradingPage } from "@/features/cap7/Cap7TradingPage"
 
 function FullPageSpinner() {
   return (
@@ -38,9 +42,9 @@ function FullPageSpinner() {
 
 /**
  * `/dau-truong` progression router (Task FE3) — the ONE route that serves the
- * whole level program. Picks the flow by the user's ACTUAL progress rather
- * than anything URL/param-based, so Cấp 2+ can reuse the exact same pattern
- * later (just add another `if`).
+ * whole level program (Cấp 0 … Cấp 7 today). Picks the flow by the user's ACTUAL
+ * progress rather than anything URL/param-based, so each new cấp reuses the exact
+ * same pattern (just add another `if`).
  *
  * Rules (plan §"Progression routing"):
  *  - not authenticated, or still resolving auth/progress → same as before
@@ -64,11 +68,14 @@ function FullPageSpinner() {
  *  - Cấp 5 graduated, Cấp 6 not entered/not graduated → `Cap6TradingPage`
  *    (Cấp 6 Task FE3), firing the idempotent `POST /cap6/enter` on first
  *    arrival — same pattern, one more level up.
- *  - Cấp 5 graduated AND Cấp 6 already graduated → still `Cap6TradingPage`
- *    (Cấp 7 «Đọc sổ lệnh» doesn't exist yet — same honest "next level not
- *    built" pattern `GraduationModalCap1` … `GraduationModalCap5` used before
- *    their own next level shipped, now used by `GraduationModalCap6` for
- *    Cấp 7).
+ *  - Cấp 6 graduated, Cấp 7 not entered/not graduated → `Cap7TradingPage`
+ *    (Cấp 7 Task FE3), firing the idempotent `POST /cap7/enter` on first
+ *    arrival — same pattern, one more level up.
+ *  - Cấp 6 graduated AND Cấp 7 already graduated → still `Cap7TradingPage`
+ *    (Cấp 8 «Quản trị rủi ro danh mục» doesn't exist yet — same honest "next
+ *    level not built" pattern `GraduationModalCap1` … `GraduationModalCap6`
+ *    used before their own next level shipped, now used by
+ *    `GraduationModalCap7` for Cấp 8).
  */
 export function DauTruongPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth()
@@ -181,6 +188,24 @@ export function DauTruongPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldQueryCap6, cap6Fetched, cap6Progress])
 
+  const cap6Graduated = !!cap6Progress?.graduated_at
+
+  // Only query Cấp 7 progress once Cấp 6 is confirmed graduated — mirrors the
+  // Cấp 5 → Cấp 6 gating above, one level up.
+  const shouldQueryCap7 = shouldQueryCap6 && cap6Graduated
+  const { data: cap7Progress, isFetched: cap7Fetched } = useCap7Progress(shouldQueryCap7)
+  const enterCap7 = useEnterCap7()
+  const enterCap7AttemptedRef = useRef(false)
+
+  useEffect(() => {
+    if (!shouldQueryCap7 || !cap7Fetched) return
+    if (cap7Progress != null) return // already entered (idempotent no-op otherwise)
+    if (enterCap7AttemptedRef.current) return
+    enterCap7AttemptedRef.current = true
+    enterCap7.mutate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldQueryCap7, cap7Fetched, cap7Progress])
+
   if (authLoading) return <FullPageSpinner />
   if (!isAuthenticated) return <Cap0TradingPage />
   if (!cap0Fetched) return <FullPageSpinner />
@@ -196,5 +221,7 @@ export function DauTruongPage() {
   if (!cap5Fetched) return <FullPageSpinner />
   if (!cap5Graduated) return <Cap5TradingPage />
   if (!cap6Fetched) return <FullPageSpinner />
-  return <Cap6TradingPage />
+  if (!cap6Graduated) return <Cap6TradingPage />
+  if (!cap7Fetched) return <FullPageSpinner />
+  return <Cap7TradingPage />
 }

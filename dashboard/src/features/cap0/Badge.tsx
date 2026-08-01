@@ -7,9 +7,10 @@ import type { BadgeOptions, Cap0Level } from "./types"
  * fills denser, rays appear from level 4, glow at level 5+.
  *
  * Cấp 6 «Đối chiếu» (đỏ son `#d64550`, fill=6) is the first theme level — spec
- * `IQX-Cap6-Spec.md` §0/§1. Each cấp also declares its own hex inside its own
- * CSS (there is no single colour map); this table is only what the shared
- * `Badge` needs.
+ * `IQX-Cap6-Spec.md` §0/§1 — followed by Cấp 7 «Đọc sổ lệnh» (hồng magenta
+ * `#c65cae`, fill=7 — `IQX-Cap7-Spec.md` §1). Each cấp also declares its own hex
+ * inside its own CSS (there is no single colour map); this table is only what
+ * the shared `Badge` needs.
  */
 export const LEVELS: Cap0Level[] = [
   { n: 0, name: "Nhập môn", color: "#8a90a5", fill: 0 },
@@ -19,6 +20,7 @@ export const LEVELS: Cap0Level[] = [
   { n: 4, name: "Thuần thục", color: "#a78bfa", fill: 4 },
   { n: 5, name: "Lão luyện", color: "#e0b64d", fill: 5 },
   { n: 6, name: "Đối chiếu", color: "#d64550", fill: 6 },
+  { n: 7, name: "Đọc sổ lệnh", color: "#c65cae", fill: 7 },
 ]
 
 /**
@@ -49,11 +51,12 @@ export function badge(o: BadgeOptions): string {
     litEdges += `<line x1="${p1[0].toFixed(1)}" y1="${p1[1].toFixed(1)}" x2="${p2[0].toFixed(1)}" y2="${p2[1].toFixed(1)}" stroke="${lit ? col : "#3a3f52"}" stroke-width="${lit ? 2.4 : 1.4}" stroke-linecap="round" opacity="${lit ? 1 : 0.6}"/>`
   }
 
-  // Spec §12's table stops at fill=5 (Cấp 0-5). One entry is APPENDED for
-  // fill=6 (Cấp 6) — indices 0-5 are byte-for-byte the spec's, so every existing
-  // badge renders identically; without it `coreOpacity` would be `undefined` and
-  // the gradient's stop-opacity would render as `NaN`.
-  const coreOpacity = [0, 0.1, 0.2, 0.34, 0.52, 0.9, 1][fill]
+  // Spec §12's table stops at fill=5 (Cấp 0-5). Entries are APPENDED for fill=6
+  // (Cấp 6) and fill=7 (Cấp 7) — indices 0-5 are byte-for-byte the spec's, so
+  // every existing badge renders identically; without them `coreOpacity` would
+  // be `undefined` and the gradient's stop-opacity would render as `NaN` (an
+  // invisible badge, the exact bug Cấp 6 hit at fill=6).
+  const coreOpacity = [0, 0.1, 0.2, 0.34, 0.52, 0.9, 1, 1][fill]
   const innerR = R * 0.56
   const innerPts: string[] = []
   for (let i = 0; i < 6; i++) {

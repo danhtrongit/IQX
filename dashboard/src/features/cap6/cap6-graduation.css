@@ -15,15 +15,9 @@
   color: #fff5fc;
 }
 
-/* Dòng "sắp ra mắt" trong CTA — Cấp 7 chưa build, nút KHÔNG điều hướng đi đâu. */
-.cap6-grad-cta-soon {
-  display: block;
-  margin-top: 2px;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-  opacity: 0.85;
-}
+/* (Dòng "sắp ra mắt" trong CTA đã bỏ khi Cấp 7 «Đọc sổ lệnh» lên sóng — nút giờ
+   ghi tốt nghiệp rồi `POST /cap7/enter` thật. `cap7-graduation.css` giữ bản của
+   riêng nó cho Cấp 8.) */
 
 /* Dòng provenance §C12c dưới Khối 1 — con số thật đứng sau lời ghi nhận. */
 .cap6-grad-provenance {

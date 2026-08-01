@@ -26,21 +26,34 @@ import type { Cap0Progress } from "./types"
 
 // ── LEVELS (spec §12) ─────────────────────────────────────────────────────────
 describe("LEVELS", () => {
-  it("has the 6 nền-tảng levels + Cấp 6; level 0 is «Nhập môn» grey with fill 0", () => {
+  it("has the 6 nền-tảng levels + Cấp 6 + Cấp 7; level 0 is «Nhập môn» grey with fill 0", () => {
     // 0-5 = spec §12's own table (mạch nền tảng); index 6 was APPENDED when
-    // Cấp 6 «Đối chiếu» shipped (đỏ son #d64550, fill=6).
-    expect(LEVELS).toHaveLength(7)
+    // Cấp 6 «Đối chiếu» shipped (đỏ son #d64550, fill=6), index 7 when Cấp 7
+    // «Đọc sổ lệnh» shipped (hồng magenta #c65cae, fill=7).
+    expect(LEVELS).toHaveLength(8)
     expect(LEVELS[0].name).toBe("Nhập môn")
     expect(LEVELS[0].color).toBe("#8a90a5")
     expect(LEVELS[0].fill).toBe(0)
     expect(LEVELS[5].name).toBe("Lão luyện")
     expect(LEVELS[6]).toEqual({ n: 6, name: "Đối chiếu", color: "#d64550", fill: 6 })
+    expect(LEVELS[7]).toEqual({ n: 7, name: "Đọc sổ lệnh", color: "#c65cae", fill: 7 })
   })
 
   it("renders a fill=6 badge without NaN opacities (spec §12's table stops at 5)", () => {
     const svg = badge({ n: 6, color: "#d64550", fill: 6, size: 64 })
     expect(svg).not.toContain("NaN")
     expect(svg).toContain("#d64550")
+  })
+
+  // ★ Regression (Cấp 7): the core-opacity table is indexed BY `fill`. When it
+  // stopped at 6, `fill=7` produced `stop-opacity="NaN"` — an invisible badge.
+  it("renders a fill=7 badge without NaN opacities (Cấp 7 hồng magenta)", () => {
+    const svg = badge({ n: 7, color: "#c65cae", fill: 7, size: 64 })
+    expect(svg).not.toContain("NaN")
+    expect(svg).toContain("#c65cae")
+    // fill ≥ 5 keeps the bright rays; fill ≥ 3 keeps the white numeral.
+    expect(svg).toContain('opacity="0.9"')
+    expect(svg).toContain('fill="#fff"')
   })
 })
 
