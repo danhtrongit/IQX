@@ -1,0 +1,119 @@
+/* ============================================================
+   IQX · Cấp 7 «Đọc sổ lệnh» — khối "Đọc sổ lệnh — nhìn lại" +
+   lớp coach thứ 7 trong Kết sổ (spec §6)
+   ------------------------------------------------------------
+   Màu cấp: hồng magenta `#c65cae`. Kết sổ render TRONG game-shell
+   `.cap0` nên các token tối (--t1/--t2/--t3/--bg3/--bd) có sẵn;
+   mỗi `var()` vẫn kèm fallback Arco để khối đọc được nếu nó có
+   bao giờ render ngoài shell đó.
+
+   ★ "CHƯA ĐÚNG" KHÔNG phải màu lỗi. Đọc trượt một chỉ số vốn dĩ
+   chỉ đúng trong vài phút là chuyện bình thường (spec §6: ô đọc
+   sai không mắng), nên nó dùng chính hồng magenta của cấp — màu
+   ĐỊNH DANH — chứ không phải đỏ cảnh báo. Xanh của "ĐÚNG" chỉ là
+   dấu xác nhận dữ liệu.
+
+   ★ "chưa tới hạn chấm" là THIẾU DỮ LIỆU, không phải một phán
+   quyết → xám, chữ thường, không icon.
+   ============================================================ */
+
+.cap7-ketso-docluc {
+  --cap7: #c65cae;
+  --cap7-soft: rgba(198, 92, 174, 0.13);
+  --cap7-bd: rgba(198, 92, 174, 0.4);
+
+  padding: 10px 11px;
+  margin-top: 14px;
+  background: var(--cap7-soft);
+  border: 1px solid var(--cap7-bd);
+  border-radius: 10px;
+}
+
+.cap7-ketso-docluc-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.cap7-ketso-docluc-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--cap7);
+}
+
+.cap7-ketso-badge {
+  padding: 1px 6px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--cap7);
+  border: 1px solid var(--cap7);
+  border-radius: 999px;
+}
+
+/* Dòng chấm — 3 trạng thái, KHÔNG trạng thái nào là lỗi. */
+.cap7-ketso-cham {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.cap7-ketso-cham--dung {
+  color: #35d07f;
+}
+
+.cap7-ketso-cham--chua {
+  color: var(--cap7);
+}
+
+/* Chưa tới hạn chấm — thiếu dữ liệu, không phải lựa chọn của user. */
+.cap7-ketso-cham--chuacham {
+  font-weight: 400;
+  color: var(--t3, var(--color-text-3));
+}
+
+.cap7-ketso-co-note {
+  margin: 6px 0 0;
+  font-size: 10px;
+  line-height: 1.55;
+  color: var(--t2, var(--color-text-2));
+}
+
+.cap7-ketso-docluc-giaithich {
+  margin: 4px 0 0;
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: var(--t3, var(--color-text-3));
+}
+
+/* ── Lớp coach thứ 7 ─────────────────────────────────────────────────────── */
+.cap7-ketso-coach {
+  --cap7: #c65cae;
+
+  padding: 10px 11px;
+  margin-top: 10px;
+  background: var(--bg3, var(--color-fill-2));
+  border-left: 2px solid var(--cap7);
+  border-radius: 8px;
+}
+
+.cap7-ketso-coach-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--cap7);
+}
+
+.cap7-ketso-coach-body {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--t1, var(--color-text-1));
+}
+
+.cap7-ketso-coach-body strong {
+  font-weight: 700;
+  color: var(--cap7);
+}

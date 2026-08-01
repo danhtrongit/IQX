@@ -1,0 +1,100 @@
+/**
+ * Cấp 7 «Đọc sổ lệnh» — Phân tích danh mục, khối ⑯ (đọc lực có đúng không) +
+ * ⑰ (kỷ luật cảnh giác lệnh treo lớn) — spec `IQX-Cap7-Spec.md` §7.
+ *
+ * ★ Vì sao KHÔNG dùng `cap7.css`/`cap7-ketso.css`: hai file đó phục vụ khối Đọc
+ * sổ lệnh trong panel và khối trong Kết sổ, tức là bên trong game-shell `.cap0`
+ * với bộ token riêng (`--t1`, `--bg2`, `--bd`). Phân tích danh mục render trong
+ * sidebar-panel thường (xem `Cap1PortfolioAnalysisPanel.tsx` — `--color-bg-1`,
+ * KHÔNG bọc `.cap0`), nên file này dùng token Arco `--color-*` như
+ * `cap6-analysis.css` đã lập tiền lệ. Hồng magenta `#c65cae` là màu Cấp 7.
+ *
+ * ★ KHÔNG màu cảnh báo cho nhóm "mua đuổi": hai nhóm của khối ⑰ được trình bày
+ * ngang nhau (spec §5 "không phạt cứng"). Hồng magenta là màu ĐỊNH DANH của cấp,
+ * không phải màu lỗi; và "—" của một nhóm chưa đủ lệnh là thiếu dữ liệu, không
+ * phải kết quả kém.
+ */
+
+/* ── Khối ⑯ — tỷ lệ đọc lực đúng ─────────────────────────────────────────── */
+.cap7-pa-tyle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.cap7-pa-tyle-value {
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: #c65cae;
+}
+
+.cap7-pa-tyle-label {
+  font-size: 10px;
+  line-height: 1.45;
+  color: var(--color-text-3);
+}
+
+/* Xu hướng 2 nửa — tính từ nhật ký máy này, nên nhẹ hơn dòng phát hiện. */
+.cap7-pa-xuhuong {
+  padding: 6px 8px;
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-2);
+  background: var(--color-fill-1, var(--color-bg-2));
+  border-radius: 6px;
+}
+
+/* ── Khối ⑰ — hai nhóm chờ xác nhận / mua đuổi ───────────────────────────── */
+.cap7-pa-nhom-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.cap7-pa-nhom {
+  flex: 1;
+  padding: 7px 8px;
+  text-align: center;
+  background: var(--color-fill-1, var(--color-bg-2));
+  border: 1px solid var(--color-border-2);
+  border-radius: 7px;
+}
+
+.cap7-pa-nhom-value {
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  color: var(--color-text-1);
+}
+
+.cap7-pa-nhom-label {
+  margin-top: 2px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--color-text-3);
+}
+
+.cap7-pa-nhom-count {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-2);
+}
+
+/* Dòng phát hiện — cùng khuôn với `.cap6-pa-phathien`, viền hồng magenta. */
+.cap7-pa-phathien {
+  padding: 8px 10px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-text-1);
+  background: var(--color-bg-3, var(--color-bg-2));
+  border-left: 2px solid #c65cae;
+  border-radius: 6px;
+}
