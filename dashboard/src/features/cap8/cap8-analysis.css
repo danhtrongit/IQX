@@ -1,0 +1,102 @@
+/**
+ * Cấp 8 «Quản trị rủi ro danh mục» — Phân tích danh mục, khối ⑱ (bản đồ rủi ro
+ * danh mục) — spec `IQX-Cap8-Spec.md` §7.
+ *
+ * ★ Vì sao KHÔNG dùng `cap8.css`: file đó phục vụ khối Kiểm tra danh mục TRONG
+ * panel đặt lệnh, tức là bên trong game-shell `.cap0` với bộ token riêng
+ * (`--t1`, `--bg3`, `--bd`). Phân tích danh mục render trong sidebar-panel
+ * thường (xem `Cap1PortfolioAnalysisPanel.tsx` — `--color-bg-1`, KHÔNG bọc
+ * `.cap0`), nên file này dùng token Arco `--color-*` như `cap7-analysis.css` đã
+ * lập tiền lệ. Xanh lá `#3f9b5a` là màu Cấp 8.
+ *
+ * ★ MÀU HỔ PHÁCH CHỈ ĐÁNH DẤU MỘT SỰ THẬT VỀ DANH MỤC (một ngành vượt ngưỡng,
+ * tổng rủi ro vượt trần, một khoảng trống dữ liệu) — nó KHÔNG BAO GIỜ chấm điểm
+ * một quyết định của user. Cấp 8 cảnh báo mềm, không phạt (§C8, spec §9).
+ *
+ * ★ "chưa tính được" / "chưa đủ dữ liệu" là THIẾU DỮ LIỆU → xám, chữ thường,
+ * không icon: chúng không phải một kết quả tốt, cũng không phải một kết quả xấu.
+ */
+
+/* ── Phân bổ ngành — các ô cộng lại đúng 100% (tiền mặt là một ô) ─────────── */
+.cap8-pa-phanbo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.cap8-pa-o {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-1);
+  background: var(--color-fill-1, var(--color-bg-2));
+  border: 1px solid var(--color-border-2);
+  border-radius: 7px;
+}
+
+.cap8-pa-o--max {
+  color: #3f9b5a;
+  border-color: #3f9b5a;
+}
+
+/* Ngành vượt ngưỡng — một SỰ THẬT về danh mục, không phải một lỗi của user. */
+.cap8-pa-o--canh {
+  color: #e8a33d;
+  background: rgba(232, 163, 61, 0.1);
+  border-color: rgba(232, 163, 61, 0.45);
+}
+
+.cap8-pa-o-pct {
+  font-weight: 700;
+}
+
+/* ── Nhãn từng phần của bản đồ ────────────────────────────────────────────── */
+.cap8-pa-nhan {
+  margin-top: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--color-text-3);
+}
+
+.cap8-pa-dong {
+  margin: 3px 0 0;
+  font-size: 11.5px;
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-1);
+}
+
+/* "chưa đủ dữ liệu" — KHÔNG phải "hai mã không đi cùng nhịp". */
+.cap8-pa-dong--chua {
+  color: var(--color-text-3);
+}
+
+.cap8-pa-dong--canh {
+  color: #e8a33d;
+}
+
+/* ── Caveat: con số ở trên chỉ là phần ĐÃ BIẾT ───────────────────────────── */
+.cap8-pa-caveat {
+  padding: 6px 8px;
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #e8a33d;
+  background: rgba(232, 163, 61, 0.1);
+  border-radius: 6px;
+}
+
+/* Dòng phát hiện — cùng khuôn `.cap7-pa-phathien`, viền xanh lá Cấp 8. */
+.cap8-pa-phathien {
+  padding: 8px 10px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-text-1);
+  background: var(--color-bg-3, var(--color-bg-2));
+  border-left: 2px solid #3f9b5a;
+  border-radius: 6px;
+}

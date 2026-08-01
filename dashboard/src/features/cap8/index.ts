@@ -6,6 +6,10 @@
  * panel's khối Kiểm tra danh mục. FE2: Kết sổ Cấp 8, the coach's 8th paragraph,
  * and khối ⑱ of Phân tích danh mục. The Hành trình tab, the graduation screen
  * (the program's finale) and the page/routing pieces arrive in FE3.
+ *
+ * ★ Cấp 8 cố ý KHÔNG có `tradeLogCap8`: nó không thêm trường nào vào nhật ký
+ * lệnh (khối ⑱ đọc thẳng từ `GET /cap8/thach-thuc`), nên Kết sổ và Phân tích
+ * dùng lại `useCap7TradeLog` / `Cap7TradeRecord` nguyên vẹn.
  */
 export {
   Cap8Provider,
@@ -30,6 +34,35 @@ export {
   KiemTraDanhMucBlock,
   type KiemTraDanhMucBlockProps,
 } from "./KiemTraDanhMucBlock"
+export {
+  KetsoModalCap8,
+  type KetsoDataCap8,
+  type KetsoModalCap8Props,
+  type KiemTraKetsoCap8,
+} from "./KetsoModalCap8"
+export {
+  composeCoachCap8,
+  pickCoachCap8,
+  COACH_CAP8_LABEL,
+  type CoachIdCap8,
+  type CoachResultCap8,
+  type CoachSituationCap8,
+  type ComposedCoachCap8,
+} from "./coachTemplateCap8"
+export {
+  computeCap8Khoi18BanDoRuiRo,
+  computeCap8PortfolioAnalysis,
+  KHOI18_CROSS_REF_PM,
+  KHOI18_MIN_VI_THE_TUONG_QUAN,
+  KHOI18_NGUONG_DON_NGANH_MAC_DINH,
+  KHOI18_TRAN_KHAU_VI_NOTE,
+  type Cap8Khoi18BanDoRuiRo,
+  type Cap8PortfolioAnalysisResult,
+} from "./portfolioAnalysisCap8"
+export {
+  Cap8PortfolioAnalysis,
+  type Cap8PortfolioAnalysisProps,
+} from "./Cap8PortfolioAnalysis"
 export {
   countCap8TasksDone,
   giamKhoiLuong,
