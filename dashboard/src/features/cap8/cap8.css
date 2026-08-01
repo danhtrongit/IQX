@@ -1,0 +1,192 @@
+/* ============================================================
+   IQX · Cấp 8 «Quản trị rủi ro danh mục» — khối Kiểm tra danh mục
+   trong panel đặt lệnh (spec §4)
+   ------------------------------------------------------------
+   Màu cấp: xanh lá `#3f9b5a`. The dark tokens (--t1/--bg3/--bd…)
+   are scoped to the `.cap0` shell every cấp page wraps in, so each
+   `var()` below carries an Arco fallback — the block then still reads
+   correctly if it ever renders outside that shell.
+
+   ★ THE ONE COLOUR RULE OF THIS FILE. Amber (`--cap8-canh`) marks a
+   WARNING THAT FIRED — a fact about the portfolio. It is NEVER applied
+   to any of the three action buttons: `[ Vẫn mua ]` is a legitimate,
+   unpenalised choice (spec §9 rules out a cổng cứng; §C8 puts the
+   decision with the user), so all three share ONE neutral button style.
+   Colouring "Vẫn mua" as the wrong answer would be a soft gate in
+   disguise.
+   ============================================================ */
+
+.cap8-kiemtra {
+  --cap8: #3f9b5a;
+  --cap8-soft: rgba(63, 155, 90, 0.13);
+  --cap8-bd: rgba(63, 155, 90, 0.4);
+  --cap8-canh: #e8a33d;
+
+  padding: 12px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+  background: linear-gradient(180deg, rgba(63, 155, 90, 0.1), transparent);
+  border: 1px solid var(--cap8-bd);
+  border-radius: 10px;
+}
+
+.cap8-block-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--cap8);
+}
+
+.cap8-block-title {
+  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--t1, var(--color-text-1));
+}
+
+/* ── 3 thước đo (số liệu + "vì sao" NGUYÊN VĂN của server) ───────────────── */
+.cap8-do {
+  margin-top: 9px;
+  padding: 8px 9px;
+  background: var(--bg3, var(--color-fill-2));
+  border: 1px solid var(--bd, var(--color-border-2));
+  border-radius: 8px;
+}
+
+.cap8-do--canh {
+  background: rgba(232, 163, 61, 0.1);
+  border-color: rgba(232, 163, 61, 0.4);
+}
+
+.cap8-do-ten {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cap8);
+}
+
+.cap8-do--canh .cap8-do-ten {
+  color: var(--cap8-canh);
+}
+
+.cap8-do-vi-sao {
+  margin: 5px 0 0;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--t2, var(--color-text-2));
+}
+
+/* Hệ số tương quan — chỉ hiện khi server TÍNH ĐƯỢC nó. */
+.cap8-he-so {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 3px 7px;
+  font-size: 10.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--cap8);
+  background: var(--cap8-soft);
+  border: 1px solid var(--cap8-bd);
+  border-radius: 6px;
+}
+
+/* "chưa đủ dữ liệu" — một trạng thái riêng, KHÔNG phải một con số bằng 0. */
+.cap8-chua-du {
+  margin: 5px 0 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--t3, var(--color-text-3));
+}
+
+/* ── Cảnh báo đã bật ─────────────────────────────────────────────────────── */
+.cap8-canh-bao {
+  margin-top: 9px;
+  padding: 8px 9px;
+  background: rgba(232, 163, 61, 0.1);
+  border: 1px solid rgba(232, 163, 61, 0.4);
+  border-radius: 8px;
+}
+
+.cap8-canh-bao-item {
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--cap8-canh);
+}
+
+.cap8-canh-bao-item + .cap8-canh-bao-item {
+  margin-top: 5px;
+}
+
+/* ── Hàng 3 lựa chọn (CHỈ khi có cảnh báo) ───────────────────────────────── */
+.cap8-hanh-vi-label {
+  margin-top: 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--t2, var(--color-text-2));
+}
+
+.cap8-hanh-vi {
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+/* ★ MỘT kiểu nút cho cả ba. Không có biến thể "sai" cho "Vẫn mua". */
+.cap8-hanh-vi-btn {
+  flex: 1;
+  padding: 7px 4px;
+  font-family: inherit;
+  font-size: 10.5px;
+  color: var(--t2, var(--color-text-2));
+  background: var(--bg3, var(--color-fill-2));
+  border: 1px solid var(--bd, var(--color-border-2));
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.cap8-hanh-vi-btn:hover {
+  color: var(--t1, var(--color-text-1));
+  border-color: var(--cap8);
+}
+
+.cap8-hanh-vi-btn--on {
+  font-weight: 600;
+  color: var(--cap8);
+  background: var(--cap8-soft);
+  border-color: var(--cap8);
+}
+
+/* ── Ghi chú / trạng thái ────────────────────────────────────────────────── */
+.cap8-note {
+  margin: 6px 0 0;
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: var(--t3, var(--color-text-3));
+}
+
+.cap8-state {
+  margin: 8px 0 0;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--t3, var(--color-text-3));
+}
+
+/* "{N} vị thế chưa có cắt lỗ" — phải đọc như một khoảng trống, không như
+   một chi tiết phụ: con số tổng ở trên chỉ là phần ĐÃ BIẾT. */
+.cap8-caveat {
+  margin: 6px 0 0;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--cap8-canh);
+}
+
+.cap8-sach {
+  margin: 9px 0 0;
+  padding: 8px 9px;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--cap8);
+  background: var(--cap8-soft);
+  border: 1px solid var(--cap8-bd);
+  border-radius: 8px;
+}
