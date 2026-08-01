@@ -1,7 +1,6 @@
 import { api, unwrap } from "@/shared/http/client"
 import type {
   Cap7Progress,
-  ChamCap7,
   KehoachDetailCap7,
   KehoachInputCap7,
   OrderKehoachCap7,
@@ -86,11 +85,12 @@ export const cap7Api = {
     return unwrap(res as never) as KehoachDetailCap7
   },
 
-  /** POST /cap7/cham — the lazy scoring pass, exposed explicitly (idempotent). */
-  cham: async (): Promise<ChamCap7> => {
-    const res = await api.post("cap7/cham").json<unknown>()
-    return unwrap(res as never) as ChamCap7
-  },
+  /**
+   * ★ `POST /cap7/cham` KHÔNG được bọc ở đây, có chủ đích. Nó chỉ chạy lại đúng
+   * cái lazy chấm pass mà MỌI read của Cấp 7 đã chạy — và `getKehoach` ở trên
+   * chạy nó ngay trước khi Kết sổ đọc kết quả, nên không luồng FE nào cần một
+   * request riêng cho nó.
+   */
 
   /** GET /cap7/thach-thuc — 3 điều kiện của nhiệm vụ ③ (§C12c). */
   getThachThuc: async (): Promise<ThachThucCap7> => {

@@ -224,6 +224,41 @@ describe("JourneyPanelCap7", () => {
     expect(empty).toHaveTextContent("4 lệnh chưa tới hạn chấm")
   })
 
+  /**
+   * ★ REGRESSION (fix wave FE-2). `KHOI16_MIN_DA_CHAM = 3` là bản MIRROR bằng tay
+   * của `MIN_DA_CHAM_THONG_KE` phía server, và server KHÔNG công bố con số đó trên
+   * wire — chỉ công bố cờ `du_du_lieu`. Cái CỔNG thì an toàn (nó AND với cờ của
+   * server nên không trôi được), nhưng CÂU CHỮ thì trôi: server nâng lên 5 là
+   * widget in "4/3 lệnh đọc lực đã chấm" ngay cạnh dòng "chưa đủ dữ liệu" — một
+   * phân số đã đạt, đứng cạnh một câu nói chưa đạt.
+   *
+   * Fixture đổi ĐÚNG MỘT thứ so với `makeThachThucChuaDu()`: `so_lenh_da_cham` từ
+   * 1 lên 4 (vượt hằng số FE) trong khi `du_du_lieu` vẫn `false`.
+   */
+  it("★ server nâng ngưỡng (đã chấm > hằng số FE mà vẫn chưa đủ) → KHÔNG in '4/3'", () => {
+    const base = makeThachThucChuaDu()
+    useThachThucCap7Mock.mockReturnValue({
+      data: { ...base, so_lenh_da_cham: 4 },
+    })
+    renderPanel()
+    const empty = screen.getByTestId("cap7-journey-docluc-empty").textContent!
+    expect(empty).not.toContain("4/3")
+    // Vẫn phải nói ra con số THẬT của user + nói rõ hệ chưa chốt được tỷ lệ.
+    expect(empty).toContain("4 lệnh đọc lực đã chấm")
+    expect(empty).toMatch(/chưa chốt được|chưa đủ/i)
+
+    const tyLe = screen.getByTestId("cap7-thachthuc-ty_le_doc_luc_dung").textContent!
+    expect(tyLe).not.toContain("4/3")
+  })
+
+  it("dưới hằng số FE và server cũng nói chưa đủ → VẪN in phân số 1/3 như cũ", () => {
+    useThachThucCap7Mock.mockReturnValue({ data: makeThachThucChuaDu() })
+    renderPanel()
+    expect(screen.getByTestId("cap7-journey-docluc-empty").textContent).toContain(
+      "1/3 lệnh đọc lực đã chấm",
+    )
+  })
+
   // ── Widget "Thách thức Đọc sổ lệnh" = nhiệm vụ ③ (spec §2③) ───────────────
   it("renders the Thách thức widget with ALL THREE conditions", () => {
     renderPanel()

@@ -4,20 +4,24 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 import type { Cap8Progress } from "./types"
 
-const { useCap8ProgressMock, graduateMutate, graduatePending } = vi.hoisted(() => ({
-  useCap8ProgressMock: vi.fn(),
-  graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
-    opts?.onSuccess?.()
-  }),
-  graduatePending: { current: false },
-}))
+const { useCap8ProgressMock, useThachThucCap8Mock, graduateMutate, graduatePending } =
+  vi.hoisted(() => ({
+    useCap8ProgressMock: vi.fn(),
+    useThachThucCap8Mock: vi.fn(),
+    graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
+      opts?.onSuccess?.()
+    }),
+    graduatePending: { current: false },
+  }))
 
 vi.mock("./hooks", () => ({
   useCap8Progress: (...a: unknown[]) => useCap8ProgressMock(...a),
+  useThachThucCap8: (...a: unknown[]) => useThachThucCap8Mock(...a),
   useGraduateCap8: () => ({ mutate: graduateMutate, isPending: graduatePending.current }),
 }))
 
 import { GraduationModalCap8, isGraduationReadyCap8 } from "./GraduationModalCap8"
+import type { DanhMucCap8, ThachThucCap8 } from "./types"
 
 function makeProgress(overrides: Partial<Cap8Progress> = {}): Cap8Progress {
   return {
@@ -58,6 +62,54 @@ function readyProgress(overrides: Partial<Cap8Progress> = {}): Cap8Progress {
   })
 }
 
+/**
+ * `GET /cap8/thach-thuc` → `danh_muc` — the ONLY payload that carries BOTH the
+ * live tổng rủi ro AND the "{N} vị thế chưa có cắt lỗ" caveat, measured together.
+ * `cap8_progress` deliberately carries neither the count nor the caveat.
+ */
+function makeDanhMuc(overrides: Partial<DanhMucCap8> = {}): DanhMucCap8 {
+  return {
+    nav_vnd: 1_000_000_000,
+    so_vi_the: 4,
+    so_vi_the_thieu_cat_lo: 0,
+    so_vi_the_thieu_gia: 0,
+    phan_bo_nganh: [{ nganh: "Ngân hàng", pct: 31 }],
+    don_nganh_max: { nganh: "Ngân hàng", pct: 31 },
+    tong_rui_ro_pct: 14,
+    khau_vi: "can_bang",
+    khau_vi_ten: "Cân bằng",
+    tran_khau_vi_pct: 20,
+    cap_tuong_quan_cao: [],
+    tuong_quan_du_lieu: true,
+    caveat: "",
+    cross_ref_pm: "Muốn phân tích sâu hơn? Mở 'Phân tích danh mục'.",
+    ...overrides,
+  }
+}
+
+function makeThachThuc(overrides: Partial<ThachThucCap8> = {}): ThachThucCap8 {
+  const cond = {
+    ten: "t",
+    gia_tri_hien_tai: 1,
+    muc_tieu: 1,
+    dat: true,
+    du_du_lieu: true,
+    giai_thich: "g",
+  }
+  return {
+    dat_ca_3: true,
+    so_lenh_kiem_tra: cond,
+    mua_bat_chap: cond,
+    danh_muc_an_toan: { ...cond, muc_tieu: 40 },
+    so_lenh_da_ket_so: 12,
+    so_lan_co_canh_bao: 7,
+    so_lan_mua_bat_chap_canh_bao: 3,
+    cua_so_gan_day: 15,
+    danh_muc: makeDanhMuc(),
+    ...overrides,
+  }
+}
+
 function renderModal() {
   return render(
     <SidebarProvider defaultPanel="trading">
@@ -89,6 +141,8 @@ describe("GraduationModalCap8 — màn cuối của chương trình 0-8 (spec §
   beforeEach(() => {
     useCap8ProgressMock.mockReset()
     useCap8ProgressMock.mockReturnValue({ data: readyProgress() })
+    useThachThucCap8Mock.mockReset()
+    useThachThucCap8Mock.mockReturnValue({ data: makeThachThuc() })
     graduateMutate.mockClear()
     graduatePending.current = false
   })
@@ -120,10 +174,29 @@ describe("GraduationModalCap8 — màn cuối của chương trình 0-8 (spec §
   // congratulates them for measuring it.
   it("★ a null tổng rủi ro renders as «chưa tính được», NEVER as 0%", () => {
     useCap8ProgressMock.mockReturnValue({ data: readyProgress({ tong_rui_ro_pct: null }) })
+    useThachThucCap8Mock.mockReturnValue({
+      data: makeThachThuc({ danh_muc: makeDanhMuc({ tong_rui_ro_pct: null }) }),
+    })
     renderModal()
     const sub = screen.getByTestId("cap8-grad-sub")
     expect(sub).toHaveTextContent("tổng rủi ro chưa tính được")
     expect(sub.textContent).not.toMatch(/tổng rủi ro 0\s*%/)
+  })
+
+  /**
+   * ★ MỘT NGUỒN cho con số VÀ cho caveat. `/cap8/thach-thuc` định giá lại danh mục
+   * lúc đọc và trả tổng rủi ro CÙNG `so_vi_the_thieu_cat_lo` trong một lần đo;
+   * `cap8_progress` cố ý chỉ là ảnh chụp của lần chấm gần nhất và không có caveat.
+   * Ghép số của ảnh chụp với caveat của lần đo khác là kể sai một trong hai.
+   */
+  it("★ số sống của /thach-thuc THẮNG ảnh chụp cap8_progress", () => {
+    useCap8ProgressMock.mockReturnValue({ data: readyProgress({ tong_rui_ro_pct: 14 }) })
+    useThachThucCap8Mock.mockReturnValue({
+      data: makeThachThuc({ danh_muc: makeDanhMuc({ tong_rui_ro_pct: 22 }) }),
+    })
+    renderModal()
+    expect(screen.getByTestId("cap8-grad-sub").textContent).toContain("tổng rủi ro 22%")
+    expect(screen.getByTestId("cap8-grad-khoi1-provenance").textContent).toContain("22%")
   })
 
   it("★ a null dồn-ngành max renders as «chưa tính được» in the provenance line too", () => {
@@ -149,6 +222,72 @@ describe("GraduationModalCap8 — màn cuối của chương trình 0-8 (spec §
     expect(prov).toHaveTextContent("1/15 lệnh gần nhất")
     expect(prov).toHaveTextContent("14%")
     expect(prov).toHaveTextContent("31%")
+  })
+
+  /**
+   * ★★ REGRESSION (fix wave FE-2) — MÀN CUỐI CỦA CẢ CHƯƠNG TRÌNH.
+   *
+   * Một vị thế chưa có cắt lỗ có rủi ro CHƯA BIẾT, không phải rủi ro 0 — nên nó bị
+   * LOẠI khỏi tổng, và mọi bề mặt khác của Cấp 8 (khối kiểm tra live, Kết sổ, khối
+   * ⑱, widget Hành trình) đều đi kèm câu "{N} vị thế chưa có cắt lỗ". Riêng màn tốt
+   * nghiệp in `tổng rủi ro 14%` trần trụi ở CẢ dòng phụ lẫn dòng provenance, vì
+   * `Cap8Progress` không mang theo `so_vi_the_thieu_cat_lo` lẫn caveat. Người dùng
+   * đóng lại cả chương trình với một con số hiểu nhầm được, trên đúng màn hình được
+   * thiết kế để tin.
+   */
+  it("★ 2 vị thế chưa có cắt lỗ → dòng phụ NÓI RA, không in tổng trần trụi", () => {
+    useThachThucCap8Mock.mockReturnValue({
+      data: makeThachThuc({
+        danh_muc: makeDanhMuc({ so_vi_the_thieu_cat_lo: 2, tong_rui_ro_pct: 12 }),
+      }),
+    })
+    renderModal()
+    const sub = screen.getByTestId("cap8-grad-sub").textContent!
+    expect(sub).toContain("tổng rủi ro 12%")
+    expect(sub).toMatch(/2 vị thế chưa có cắt lỗ/)
+  })
+
+  it("★ 2 vị thế chưa có cắt lỗ → dòng provenance mang nguyên câu caveat", () => {
+    const caveat =
+      "2 vị thế chưa có cắt lỗ — chưa tính được rủi ro của các vị thế này, nên con số trên là phần ĐÃ BIẾT, không phải toàn bộ."
+    useThachThucCap8Mock.mockReturnValue({
+      data: makeThachThuc({
+        danh_muc: makeDanhMuc({ so_vi_the_thieu_cat_lo: 2, caveat, tong_rui_ro_pct: 12 }),
+      }),
+    })
+    renderModal()
+    expect(screen.getByTestId("cap8-grad-caveat")).toHaveTextContent(caveat)
+  })
+
+  it("★ server trả caveat RỖNG mà vẫn thiếu cắt lỗ → màn tốt nghiệp TỰ nói ra", () => {
+    useThachThucCap8Mock.mockReturnValue({
+      data: makeThachThuc({
+        danh_muc: makeDanhMuc({ so_vi_the_thieu_cat_lo: 3, caveat: "" }),
+      }),
+    })
+    renderModal()
+    expect(screen.getByTestId("cap8-grad-caveat")).toHaveTextContent("3 vị thế chưa có cắt lỗ")
+  })
+
+  it("mọi vị thế đều có cắt lỗ → dòng phụ KHÔNG bịa ra một caveat", () => {
+    renderModal()
+    const sub = screen.getByTestId("cap8-grad-sub").textContent!
+    expect(sub).toContain("tổng rủi ro 14%")
+    expect(sub).not.toMatch(/chưa có cắt lỗ/)
+    expect(screen.getByTestId("cap8-grad-caveat").textContent).toMatch(
+      /đều đã có cắt lỗ/,
+    )
+  })
+
+  it("★ chưa lấy được /cap8/thach-thuc → nói thẳng là chưa biết, KHÔNG im lặng", () => {
+    useThachThucCap8Mock.mockReturnValue({ data: undefined })
+    renderModal()
+    // Con số ảnh chụp của `cap8_progress` vẫn được dùng (14%)…
+    expect(screen.getByTestId("cap8-grad-sub").textContent).toContain("tổng rủi ro 14%")
+    // …nhưng KHÔNG được để trần: chưa biết có vị thế nào thiếu cắt lỗ hay không.
+    const caveat = screen.getByTestId("cap8-grad-caveat").textContent!
+    expect(caveat).toMatch(/chưa biết/i)
+    expect(caveat).toMatch(/ĐÃ BIẾT/)
   })
 
   it("Khối 2 — Định vị, spec §3 verbatim", () => {

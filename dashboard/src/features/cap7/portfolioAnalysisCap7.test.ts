@@ -414,34 +414,35 @@ describe("computeCap7Khoi17KyLuatCo — so 2 nhóm, trung thực cả hai chiề
 describe("computeCap7PortfolioAnalysis — delegate ①-⑮ xuống Cấp 6", () => {
   const scores: Cap2DailyScoreRecord[] = []
 
-  it("kết quả chứa MỌI khối Cấp 1-6 + ⑯ + ⑰", () => {
-    const result = computeCap7PortfolioAnalysis(
-      trades(4),
-      scores,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      thachThuc(),
-      new Date("2026-07-31T12:00:00Z"),
-    )
-    // Khối của Cấp 6 / 5 / 4 vẫn còn nguyên trên cùng một object.
-    expect(result.khoi14LopTheoKieu).toBeDefined()
-    expect(result.khoi15DoiChieu).toBeDefined()
-    expect(result.khoi16DocLuc).toBeDefined()
-    expect(result.khoi17KyLuatCo).toBeDefined()
-  })
+  const NOW = new Date("2026-07-31T12:00:00Z")
 
-  it("KHÔNG tính lại ①-⑮: khối ⑭ giống HỆT computeCap6PortfolioAnalysis", async () => {
+  /**
+   * ★ 5 trường "số của server" mà CHÍNH Cấp 7 thêm vào, ngoài 2 khối ⑯⑰. Liệt kê
+   * tường minh để phép so "khoá thừa" bên dưới là một hợp đồng đọc được, không
+   * phải một con số ma thuật.
+   */
+  const KHOA_MOI_CAP7 = [
+    "khoi16DocLuc",
+    "khoi17KyLuatCo",
+    "soLenhDocLucServer",
+    "soLanKhongDuoiTheoCoServer",
+    "tyLeDocLucDungServer",
+  ] as const
+
+  /**
+   * ★★ PIN DELEGATION CHO **MỌI** KHOÁ CỦA CẤP 6, không phải hai khoá được chọn.
+   *
+   * Bản cũ chỉ deep-equal `khoi14LopTheoKieu` + `khoi15DoiChieu`, nên một bản
+   * DỰNG LẠI khối ①-⑬ ngay trong Cấp 7 (tính khác đi, hoặc chỉ lệch một trường)
+   * vẫn xanh. Vòng lặp dưới đây so từng khoá một, nên bất kỳ khối kế thừa nào bị
+   * tính lại khác đi đều đỏ — và tên khoá lệch sẽ nằm ngay trong thông báo lỗi.
+   */
+  it("★ KHÔNG tính lại ①-⑮: MỌI khoá của Cấp 6 giống HỆT computeCap6PortfolioAnalysis", async () => {
     const { computeCap6PortfolioAnalysis } = await import(
       "@/features/cap6/portfolioAnalysisCap6"
     )
     const log = trades(4)
-    const now = new Date("2026-07-31T12:00:00Z")
-    const cap6 = computeCap6PortfolioAnalysis(log, scores, null, null, null, null, null, null, now)
+    const cap6 = computeCap6PortfolioAnalysis(log, scores, null, null, null, null, null, null, NOW)
     const cap7 = computeCap7PortfolioAnalysis(
       log,
       scores,
@@ -453,9 +454,96 @@ describe("computeCap7PortfolioAnalysis — delegate ①-⑮ xuống Cấp 6", ()
       null,
       null,
       thachThuc(),
-      now,
+      NOW,
     )
-    expect(cap7.khoi14LopTheoKieu).toEqual(cap6.khoi14LopTheoKieu)
-    expect(cap7.khoi15DoiChieu).toEqual(cap6.khoi15DoiChieu)
+
+    const khoaCap6 = Object.keys(cap6)
+    // Không khoá nào của Cấp 6 được rơi rụng…
+    expect(Object.keys(cap7)).toEqual(expect.arrayContaining(khoaCap6))
+    // …và giá trị của TỪNG khoá phải y hệt.
+    for (const khoa of khoaCap6) {
+      expect({ [khoa]: cap7[khoa as keyof typeof cap7] }).toEqual({
+        [khoa]: cap6[khoa as keyof typeof cap6],
+      })
+    }
+    // Cấp 7 chỉ ĐƯỢC PHÉP thêm đúng 5 khoá — thêm nữa nghĩa là một khối mới đang
+    // sống ngoài hợp đồng đã ghi (và ngoài mọi test của nó).
+    expect(Object.keys(cap7).filter((k) => !khoaCap6.includes(k)).sort()).toEqual(
+      [...KHOA_MOI_CAP7].sort(),
+    )
+  })
+
+  /**
+   * ★ Hai khối RIÊNG của Cấp 7 phải là CHÍNH kết quả của hai hàm khối, không phải
+   * một bản tính lại song song. Bản cũ ở đây chỉ có 4 lần `toBeDefined()` — một
+   * object rỗng cũng qua.
+   */
+  it("★ ⑯ và ⑰ trên object tổng = ĐÚNG kết quả của hai hàm khối", () => {
+    const log = trades(4)
+    const tt = thachThuc()
+    const result = computeCap7PortfolioAnalysis(
+      log,
+      scores,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      tt,
+      NOW,
+    )
+    expect(result.khoi16DocLuc).toEqual(computeCap7Khoi16DocLuc(tt, log))
+    expect(result.khoi17KyLuatCo).toEqual(computeCap7Khoi17KyLuatCo(tt, log))
+  })
+
+  it("★ 3 số server của Cấp 7 đọc từ cap7Progress, `null` khi chưa vào cấp", () => {
+    const log = trades(2)
+    const goi = (cap7Progress: Parameters<typeof computeCap7PortfolioAnalysis>[8]) =>
+      computeCap7PortfolioAnalysis(
+        log,
+        scores,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        cap7Progress,
+        thachThuc(),
+        NOW,
+      )
+
+    const chua = goi(null)
+    expect(chua.soLenhDocLucServer).toBeNull()
+    expect(chua.soLanKhongDuoiTheoCoServer).toBeNull()
+    expect(chua.tyLeDocLucDungServer).toBeNull()
+
+    // ★ Fixture chỉ đổi ĐÚNG một thứ: có hồ sơ Cấp 7 thay vì `null`.
+    const co = goi({
+      id: "p",
+      user_id: "u",
+      entered_at: "2026-07-21T00:00:00Z",
+      task_1_done_at: null,
+      task_2_done_at: null,
+      task_3_done_at: null,
+      so_lenh_doc_luc: 12,
+      so_lan_khong_duoi_theo_co: 4,
+      // ★ `0` phải đi qua NGUYÊN VẸN: `?? 0`/`|| null` ở tầng này sẽ biến một tỷ
+      // lệ thật bằng 0 thành "chưa có hồ sơ".
+      ty_le_doc_luc_dung: 0,
+      graduated_at: null,
+      time_to_graduate_hours: null,
+      trong_phien: true,
+      so_lenh_da_cham: 8,
+      so_lenh_chua_cham: 4,
+      so_lan_gap_co: 7,
+      so_lan_mua_duoi_theo: 3,
+      so_phien_cham: 2,
+    })
+    expect(co.soLenhDocLucServer).toBe(12)
+    expect(co.soLanKhongDuoiTheoCoServer).toBe(4)
+    expect(co.tyLeDocLucDungServer).toBe(0)
   })
 })

@@ -24,13 +24,16 @@ import { Cap8PortfolioAnalysis } from "./Cap8PortfolioAnalysis"
  * kỷ luật dùng chung (`useCap2TradeLog().scores`) mà các khối kế thừa Cấp 1-7
  * cần.
  *
- * Mọi query đều gate bằng `isCap8Active` nên panel này vô hại nếu `activePanel`
- * tình cờ là "cap8-analysis" ở ngoài Cấp 8 (`SidebarProvider` là singleton
- * app-root). LƯU Ý: `Cap8PortfolioAnalysis` tự gọi `useThachThucCap8()` (khối ⑱
- * đọc thẳng từ server) và các component Cấp 4/5/6/7 bên trong nó tự gọi
- * `useVuKhiDiemMu()` / `useDanhSachDungNgoai()` / `useThachThucCap6()` /
- * `useThachThucCap7()` — tất cả auth-gated bên trong hook, nên mọi test/mount của
- * panel này cần provider auth + QueryClient (hoặc mock hook).
+ * ★ **`isCap8Active` gate CÁC QUERY DO CHÍNH PANEL NÀY GỌI, không phải mọi query
+ * trong cây con.** Bảy `useCapNProgress` bên dưới đều nhận `isCap8Active`, nên
+ * panel vô hại nếu `activePanel` tình cờ là "cap8-analysis" ở ngoài Cấp 8
+ * (`SidebarProvider` là singleton app-root). Nhưng `Cap8PortfolioAnalysis` tự gọi
+ * `useThachThucCap8()` KHÔNG gate, và các component Cấp 4/5/6/7 bên trong nó tự
+ * gọi `useVuKhiDiemMu()` / `useDanhSachDungNgoai()` / `useThachThucCap6()` /
+ * `useThachThucCap7()` cũng vậy — mỗi hook đó tự gate bằng `isAuthenticated` và
+ * tự fail-closed, và panel này chỉ được mount từ bên trong Cấp 8, nên chuyện đó
+ * vô hại. Hệ quả cho test: mọi test/mount của panel cần provider auth +
+ * QueryClient (hoặc mock hook), chứ `isCap8Active` một mình không chặn được gì.
  *
  * Cấp 8 không có nhiệm vụ nào gắn với "mở trang Phân tích danh mục N lần" (3
  * nhiệm vụ đều dựa trên hành vi Kiểm tra danh mục — spec §2), nên panel không có

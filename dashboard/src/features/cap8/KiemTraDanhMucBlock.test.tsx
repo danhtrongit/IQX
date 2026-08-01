@@ -115,13 +115,26 @@ const KHONG_CANH_BAO: KiemTraCap8 = {
   canh_bao: [],
 }
 
+/**
+ * ★ `duDuKien` mặc định `true` vì đó là hình dạng thường trực của hook thật khi
+ * mã + khối lượng + giá đã đủ. Nó nằm trong khuôn này (chứ không phải một `true`
+ * rải rác ở từng test) để cái mock không bao giờ nói dối về hợp đồng của hook:
+ * một query bị `enabled: false` KHÔNG phải `isError`, KHÔNG phải `isLoading`, và
+ * chỉ `duDuKien` phân biệt được nó với một lần gọi máy chủ thất bại.
+ */
 function mockCheck(
-  state: Partial<{ data: KiemTraCap8 | undefined; isLoading: boolean; isError: boolean }>,
+  state: Partial<{
+    data: KiemTraCap8 | undefined
+    isLoading: boolean
+    isError: boolean
+    duDuKien: boolean
+  }>,
 ) {
   kiemTraMock.mockReturnValue({
     data: undefined,
     isLoading: false,
     isError: false,
+    duDuKien: true,
     ...state,
   })
 }
@@ -381,6 +394,33 @@ describe("★ KiemTraDanhMucBlock — KHÔNG BAO GIỜ chặn MUA (spec §9/§C8
     renderBlock()
     expect(screen.getByTestId("cap8-dang-tai")).toBeInTheDocument()
     expect(screen.queryByTestId("cap8-hanh-vi")).not.toBeInTheDocument()
+  })
+
+  /**
+   * ★ REGRESSION (fix wave FE-2). `useKiemTraCap8` tắt query khi thiếu mã/khối
+   * lượng/giá. Ở TanStack Query v5, một query bị tắt là `isPending` nhưng KHÔNG
+   * `isFetching` → `isLoading === false`, `isError === false`, `data ===
+   * undefined`, và khối rơi vào nhánh LỖI: nó nói "không hỏi được máy chủ" trước
+   * khi hỏi ai một câu nào, và nói mãi với mã chưa lấy được giá.
+   */
+  it("★ chưa đủ dữ kiện → trạng thái RIÊNG, KHÔNG phải câu lỗi máy chủ", () => {
+    mockCheck({ duDuKien: false })
+    renderBlock()
+    expect(screen.queryByTestId("cap8-loi")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap8-dang-tai")).not.toBeInTheDocument()
+    const note = screen.getByTestId("cap8-chua-du-du-kien").textContent!
+    expect(note).toMatch(/chưa đủ dữ kiện/i)
+    expect(note).not.toMatch(/máy chủ/i)
+    // Vẫn KHÔNG chặn MUA, và không hàng lựa chọn nào bắt user phải bấm.
+    expect(note).toMatch(/không chặn/i)
+    expect(screen.queryByTestId("cap8-hanh-vi")).not.toBeInTheDocument()
+  })
+
+  it("lỗi thật của máy chủ VẪN nói đúng là lỗi máy chủ (không bị nuốt)", () => {
+    mockCheck({ isError: true, duDuKien: true })
+    renderBlock()
+    expect(screen.queryByTestId("cap8-chua-du-du-kien")).not.toBeInTheDocument()
+    expect(screen.getByTestId("cap8-loi").textContent).toMatch(/không hỏi được máy chủ/i)
   })
 
   it("có cảnh báo mà chưa bấm gì → khối vẫn nói rõ là không chặn lệnh", () => {

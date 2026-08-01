@@ -110,6 +110,15 @@ export interface Khoi16XuHuong {
 }
 
 export interface Cap7Khoi16DocLuc {
+  /**
+   * ★ ĐÃ LẤY ĐƯỢC `GET /cap7/thach-thuc` hay chưa — KHÁC HẲN `duDuLieu`.
+   *
+   * `false` = chưa tải được/lỗi, nên `soDaCham`/`soChuaCham` chỉ là placeholder
+   * `0`. Tầng render PHẢI dùng cờ này trước khi in bất kỳ con số nào của khối:
+   * `— 0 LỆNH ĐÃ CHẤM` trên header nói với một người đã có 8 lệnh được chấm rằng
+   * họ chưa có lệnh nào, và câu "chưa lấy được" bên dưới không gỡ được lời đó.
+   */
+  coSoLieuServer: boolean
   /** Đủ điều kiện hiện TỶ LỆ hay chưa. `false` → chỉ đếm (spec §7). */
   duDuLieu: boolean
   /** % đọc lực đúng của SERVER. `null` khi chưa đủ dữ liệu / chưa tải được. */
@@ -220,6 +229,7 @@ export function computeCap7Khoi16DocLuc(
   if (!thachThuc) {
     return {
       ...base,
+      coSoLieuServer: false,
       duDuLieu: false,
       tyLe: null,
       soDaCham: 0,
@@ -255,6 +265,7 @@ export function computeCap7Khoi16DocLuc(
         : `hệ thống chưa chốt được tỷ lệ (cần tối thiểu ${KHOI16_MIN_DA_CHAM} lệnh đã chấm)`
     return {
       ...base,
+      coSoLieuServer: true,
       duDuLieu: false,
       tyLe: null,
       soDaCham,
@@ -279,6 +290,7 @@ export function computeCap7Khoi16DocLuc(
 
   return {
     ...base,
+    coSoLieuServer: true,
     duDuLieu: true,
     tyLe,
     soDaCham,
@@ -306,7 +318,16 @@ export interface Khoi17Nhom {
 }
 
 export interface Cap7Khoi17KyLuatCo {
-  /** 3 con số của SERVER — luôn hiện, kể cả khi chưa so được 2 nhóm. */
+  /**
+   * ★ ĐÃ LẤY ĐƯỢC `GET /cap7/thach-thuc` hay chưa.
+   *
+   * `false` → `soLanGapCo`/`soChoXacNhan`/`soMuaDuoi` chỉ là placeholder `0` và
+   * tầng render KHÔNG được in dòng 3 con số: "Gặp cờ cảnh giác: 0 lần · chờ xác
+   * nhận: 0 lần · mua đuổi: 0 lần." đứng ngay trên câu "Chưa lấy được số lần gặp
+   * cờ" là ba lời khẳng định sai về một người có thể đã gặp cờ 8 lần và chờ 5.
+   */
+  coSoLieuServer: boolean
+  /** 3 con số của SERVER — hiện khi `coSoLieuServer`, kể cả khi chưa so 2 nhóm. */
   soLanGapCo: number
   soChoXacNhan: number
   soMuaDuoi: number
@@ -395,6 +416,7 @@ export function computeCap7Khoi17KyLuatCo(
   if (!thachThuc) {
     return {
       ...base,
+      coSoLieuServer: false,
       soLanGapCo: 0,
       soChoXacNhan: 0,
       soMuaDuoi: 0,
@@ -411,7 +433,7 @@ export function computeCap7Khoi17KyLuatCo(
   const soLanGapCo = thachThuc.so_lan_gap_co
   const soChoXacNhan = thachThuc.so_lan_khong_duoi_theo_co.gia_tri_hien_tai
   const soMuaDuoi = thachThuc.so_lan_mua_duoi_theo
-  const soCount = { soLanGapCo, soChoXacNhan, soMuaDuoi }
+  const soCount = { coSoLieuServer: true, soLanGapCo, soChoXacNhan, soMuaDuoi }
 
   if (!choXacNhan.duDuLieu || !muaDuoi.duDuLieu) {
     const thieuCho = Math.max(0, KHOI17_MIN_LENH_MOI_NHOM - choXacNhan.soCoDienBien)

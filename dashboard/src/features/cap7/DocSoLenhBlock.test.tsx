@@ -409,9 +409,29 @@ describe("★ DocSoLenhBlock — KHÔNG BAO GIỜ khẳng định đã phát hi�
     expect(text).not.toMatch(/đang bị thao túng/i)
   })
 
-  it("nói ĐÚNG điều được phép nói: lệnh treo to CHƯA CHẮC là thật", () => {
+  /**
+   * ★ REGRESSION (fix wave FE-2). Bản cũ khớp `/chưa chắc/i` trên TOÀN khối, và
+   * cụm đó đến từ `co_canh_giac_copy` của FIXTURE (câu của server), không phải từ
+   * một chuỗi nào của frontend. Câu TỰ VIẾT của FE (`cap7-co-honesty`) nói "IQX
+   * không kết luận gì" và không chứa "chưa chắc" — nên **xoá hẳn câu đó của FE
+   * vẫn để test xanh**. Test này khoá đúng câu của FE.
+   */
+  it("★ FE tự nói: đây là cảnh giác theo HÌNH DẠNG sổ lệnh, IQX không kết luận gì", () => {
     renderBlock({ bid: BID_CO_TUONG })
-    expect(screen.getByTestId("cap7-docsolenh").textContent).toMatch(/chưa chắc/i)
+    const honesty = screen.getByTestId("cap7-co-honesty").textContent!
+    expect(honesty).toContain("HÌNH DẠNG sổ lệnh")
+    expect(honesty).toContain("IQX không kết luận gì về lệnh treo đó")
+    expect(honesty).toContain("chỉ nhắc bạn nhìn kỹ")
+    // Ngưỡng in ra phải là của SERVER (`co_canh_giac_he_so = 3`), không phải một
+    // con số FE tự khai.
+    expect(honesty).toContain("3× trung bình các mức còn lại")
+    // …và nó KHÔNG được chỉ là bản sao câu của server.
+    expect(honesty).not.toBe(COPY_CO_CANH_GIAC)
+  })
+
+  it("câu NGUYÊN VĂN của server vẫn hiện đủ, cạnh câu của FE (§C12c)", () => {
+    renderBlock({ bid: BID_CO_TUONG })
+    expect(screen.getByTestId("cap7-co-copy").textContent).toBe(COPY_CO_CANH_GIAC)
   })
 })
 

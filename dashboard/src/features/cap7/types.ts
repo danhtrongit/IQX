@@ -187,16 +187,13 @@ export interface KehoachDetailCap7 extends Omit<OrderKehoachCap7, "id"> {
   da_toi_han_cham: boolean
 }
 
-/** `POST /cap7/cham` — the lazy scoring pass, exposed explicitly (idempotent). */
-export interface ChamCap7 {
-  so_moi_cham: number
-  so_lenh_doc_luc: number
-  so_lenh_da_cham: number
-  so_lenh_chua_cham: number
-  ty_le_doc_luc_dung: number
-  so_phien_cham: number
-  giai_thich: string
-}
+/**
+ * ★ KHÔNG có `ChamCap7` ở đây. `POST /cap7/cham` tồn tại phía server, nhưng FE
+ * không có caller nào theo THIẾT KẾ: lazy chấm pass chạy như một side effect của
+ * mọi read Cấp 7, và `GET /cap7/kehoach/{order_id}` chạy nó ngay trước khi Kết sổ
+ * đọc kết quả (xem `KehoachDetailCap7` ở trên). Một kiểu wire không ai giải mã
+ * chỉ là một lời hứa về hình dạng payload mà không test nào giữ.
+ */
 
 /** One of the 3 sub-conditions of nhiệm vụ ③ (§C12c: value + explanation). */
 export interface ThachThucDieuKienCap7 {

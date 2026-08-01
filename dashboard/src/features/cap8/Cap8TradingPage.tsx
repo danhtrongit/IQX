@@ -372,7 +372,10 @@ function Cap8Terminal() {
   // chấm chính lệnh này. FE KHÔNG BAO GIỜ tự khai ngưỡng.
   const { data: cap7Phien } = usePhienCap7(isCap7Active)
   const { activePanel, setActivePanel } = useSidebar()
-  const { symbol, setSymbol } = useSymbol()
+  // ★ CHỈ `setSymbol`: bước «Chọn mã khác» nay mở bằng sự kiện bus, nên trang này
+  // không còn đọc `symbol` để suy ra trạng thái "không còn mã nào" — và mã đang
+  // xem không bao giờ bị xoá nữa (xem docstring của `chonMaOpen` bên dưới).
+  const { setSymbol } = useSymbol()
   const { trades: cap1Trades, record: recordCap1Trade } = useCap1TradeLog()
   const { record: recordCap2Trade, recordScore: recordCap2Score } = useCap2TradeLog()
   const { record: recordCap3Trade } = useCap3TradeLog()
@@ -745,29 +748,41 @@ function Cap8Terminal() {
   /**
    * ★★ Bước chọn mã sau «Chọn mã khác» (spec §4).
    *
-   * `KiemTraDanhMucBlock`'s third action is wired (in `TradingPanel`) to
-   * `setSymbol("")` — nó BỎ mã đang chọn, đúng như tên nút, nhưng chỉ mình nó thì
-   * để user lại trong một terminal KHÔNG CÒN MÃ NÀO, ngay lúc họ vừa nghe theo
-   * lời hệ và làm điều an toàn hơn. Trang này bắt đúng trạng thái rỗng đó và mở
-   * một bước chọn mã.
+   * MỞ BẰNG SỰ KIỆN BUS, KHÔNG BẰNG "mã rỗng". `KiemTraDanhMucBlock.handleHanhVi`
+   * bắn `cap8Events.onCheckHanhVi(value)` cho cả ba lựa chọn rồi mới gọi callback
+   * của panel, nên trang này chỉ cần lắng nghe đúng `chon_ma_khac`.
    *
-   * ★ KHÔNG BAO GIỜ NHỐT USER: modal đóng được bằng nút Huỷ / mask / ESC, và mỗi
-   * lối ra đều TRẢ LẠI mã đang xem trước đó (`lastSymbolRef`) chứ không để trống
-   * — nếu không, huỷ sẽ đưa họ về đúng cái ngõ cụt vừa thoát ra.
+   * ★ VÌ SAO KHÔNG CÒN LÀ `symbol.trim() === ""`: bản trước đó dựa vào việc
+   * `TradingPanel.onChonMaKhac` gọi `setSymbol("")`. Mã rỗng ấy đi qua CHÍNH
+   * terminal dùng chung — `TVChart` huỷ rồi dựng lại widget trên một mã không
+   * phân giải được (và `chartDrawingsApi.get("")` bắn theo) mỗi lần user bấm nút.
+   * Fix wave FE-1 bỏ `setSymbol("")` khỏi `TradingPanel`; nếu trang này vẫn đọc
+   * trạng thái rỗng thì nút «Chọn mã khác» chỉ còn bắn analytics rồi KHÔNG LÀM GÌ.
+   *
+   * ★ KHÔNG BAO GIỜ NHỐT USER: modal đóng được bằng nút Huỷ / mask / ESC, và vì
+   * mã đang xem chưa từng bị bỏ đi, mọi lối ra đều trả user về đúng chỗ họ đứng.
    *
    * ★ Đây là bước chọn mã để MUA, nên chỉ nhận mã cổ phiếu niêm yết: một chỉ số
    * (VNINDEX/VN30/…) không đặt lệnh được, và nhận nó vào sẽ làm hỏng cả panel
    * thay vì báo cho user biết ngay tại đây.
    */
-  const lastSymbolRef = useRef(symbol || DEFAULT_SYMBOL)
-  useEffect(() => {
-    if (symbol) lastSymbolRef.current = symbol
-  }, [symbol])
+  const [chonMaOpen, setChonMaOpen] = useState(false)
 
-  const chonMaOpen = symbol.trim() === ""
-  // ★ `lastSymbolRef` chỉ được đọc TRONG event handler này, không đọc lúc render
-  // (một ref đọc lúc render không kéo theo re-render và sẽ hiện số liệu cũ).
-  const cancelChonMa = () => setSymbol(lastSymbolRef.current || DEFAULT_SYMBOL)
+  useEffect(() => {
+    // Provider MERGE handlers (xem `Cap8Context`), nên đăng ký riêng key này
+    // không đè lên `onOrderFilled` đã đăng ký ở effect trên.
+    registerCap8Handlers({
+      onCheckHanhVi: (hanhVi) => {
+        if (hanhVi === "chon_ma_khac") setChonMaOpen(true)
+      },
+    })
+  }, [registerCap8Handlers])
+
+  const cancelChonMa = () => setChonMaOpen(false)
+  const pickChonMa = (ma: string) => {
+    setSymbol(ma)
+    setChonMaOpen(false)
+  }
 
   return (
     <div className="cap0 flex h-svh flex-col overflow-hidden bg-[var(--bg1)]">
@@ -822,15 +837,14 @@ function Cap8Terminal() {
         title={null}
         style={{ width: 420 }}
         autoFocus={false}
-        /* Bỏ hẳn DOM khi đóng: bước này gắn với MỘT trạng thái "không còn mã
-           nào", nên để lại một hộp ẩn (kèm ô nhập còn nguyên chữ cũ) sẽ hiện lại
-           đúng chữ đó ở lần «Chọn mã khác» sau. */
+        /* Bỏ hẳn DOM khi đóng: để lại một hộp ẩn (kèm ô nhập còn nguyên chữ cũ)
+           sẽ hiện lại đúng chữ đó ở lần «Chọn mã khác» sau. */
         unmountOnExit
       >
         {/* Nội dung gắn với `chonMaOpen` chứ không chỉ với `visible`: hoạt ảnh
             đóng của Arco giữ node lại thêm một nhịp, và một ô nhập mã còn sống
-            trong lúc panel đã có mã trở lại là một cái bẫy focus nhỏ. */}
-        {chonMaOpen && <ChonMaKhacBody onPick={setSymbol} onCancel={cancelChonMa} />}
+            sau khi user đã chọn xong là một cái bẫy focus nhỏ. */}
+        {chonMaOpen && <ChonMaKhacBody onPick={pickChonMa} onCancel={cancelChonMa} />}
       </Modal>
 
       {/* AI Insight symbol picker — identical to Cap7TradingPage's. */}

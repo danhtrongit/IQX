@@ -82,6 +82,38 @@ export const KHOI18_TRAN_KHAU_VI_NOTE =
   "đặt ở Cấp 3), còn tổng vốn ở rủi ro là phần vốn mất nếu MỌI cắt lỗ trên cả danh " +
   "mục bị chạm cùng lúc. Cấp 8 mượn lại chính con số đó làm mức trần cho cả danh mục."
 
+/**
+ * ★★ MỘT NGUỒN DUY NHẤT cho câu "{N} vị thế chưa có cắt lỗ".
+ *
+ * Câu của server (`DanhMucCap8.caveat`) là bản CHÍNH. Nhưng nó là một chuỗi có
+ * thể RỖNG, và một chuỗi rỗng đi kèm `so_vi_the_thieu_cat_lo > 0` là khoảng
+ * trống nguy hiểm nhất của cả cấp: tổng vốn ở rủi ro lúc đó trông như đầy đủ
+ * trong khi vài vị thế đã bị loại khỏi phép cộng. Nên hàm này tự dựng câu cho
+ * đúng trường hợp đó.
+ *
+ * Hàm được EXPORT vì khối ⑱, widget "Danh mục hiện tại" ở tab Hành trình và màn
+ * tốt nghiệp Cấp 8 đều phải nói một câu GIỐNG NHAU trên cùng một payload — trước
+ * fix wave FE-2, widget Hành trình render caveat chỉ khi chuỗi server khác rỗng
+ * còn khối ⑱ thì tự dựng, nên cùng một danh mục lại được kể hai kiểu.
+ *
+ * `null` = THẬT SỰ không thiếu vị thế nào (và server cũng không nói gì) — chỉ khi
+ * đó mới được im lặng.
+ */
+export function caveatThieuCatLoCap8(
+  caveatServer: string | null | undefined,
+  soViTheThieuCatLo: number | null | undefined,
+): string | null {
+  const cauServer = (caveatServer ?? "").trim()
+  if (cauServer.length > 0) return cauServer
+  if (soViTheThieuCatLo != null && soViTheThieuCatLo > 0) {
+    return (
+      `${soViTheThieuCatLo} vị thế chưa có cắt lỗ — chưa tính được rủi ro của các vị thế này, ` +
+      "nên con số trên là phần ĐÃ BIẾT, không phải toàn bộ."
+    )
+  }
+  return null
+}
+
 /** `46%` — số en-US, làm tròn nguyên; dấu trừ typographic "−" (U+2212). */
 function fmtPct0(pct: number): string {
   const r = Math.round(pct)
@@ -97,6 +129,8 @@ export interface Cap8Khoi18BanDoRuiRo {
   /** Server đã dựng được bản đồ hay chưa. `false` → KHÔNG con số nào. */
   duDuLieu: boolean
   soViThe: number
+  /** ★ Vị thế bị LOẠI khỏi tổng vì rủi ro của chúng CHƯA BIẾT (không phải 0). */
+  soViTheThieuCatLo: number
   /** Phân bổ ngành theo đúng thứ tự server trả (tiền mặt là MỘT ô riêng). */
   phanBoNganh: PhanBoNganhCap8[]
   donNganhMax: DonNganhMaxCap8 | null
@@ -196,6 +230,7 @@ export function computeCap8Khoi18BanDoRuiRo(
       ...base,
       duDuLieu: false,
       soViThe: 0,
+      soViTheThieuCatLo: 0,
       phanBoNganh: [],
       donNganhMax: null,
       donNganhCanhBao: false,
@@ -239,15 +274,9 @@ export function computeCap8Khoi18BanDoRuiRo(
 
   // ★ Caveat: câu của server là bản chính; nếu nó rỗng mà vẫn có vị thế thiếu
   // cắt lỗ thì khối tự nói ra — im lặng ở đây sẽ biến một khoảng trống đã biết
-  // thành một con số trông như đầy đủ.
-  const caveatServer = danhMuc.caveat.trim()
-  const caveat =
-    caveatServer.length > 0
-      ? caveatServer
-      : soThieuCatLo > 0
-        ? `${soThieuCatLo} vị thế chưa có cắt lỗ — chưa tính được rủi ro của các vị thế này, ` +
-          "nên con số trên là phần ĐÃ BIẾT, không phải toàn bộ."
-        : null
+  // thành một con số trông như đầy đủ. Dùng CHUNG `caveatThieuCatLoCap8` với
+  // widget Hành trình + màn tốt nghiệp để ba bề mặt không kể khác nhau.
+  const caveat = caveatThieuCatLoCap8(danhMuc.caveat, soThieuCatLo)
 
   let phatHien: string
   if (donNganhCanhBao && donNganhMax) {
@@ -273,6 +302,7 @@ export function computeCap8Khoi18BanDoRuiRo(
     ...base,
     duDuLieu: true,
     soViThe: danhMuc.so_vi_the,
+    soViTheThieuCatLo: soThieuCatLo,
     phanBoNganh: danhMuc.phan_bo_nganh,
     donNganhMax,
     donNganhCanhBao,

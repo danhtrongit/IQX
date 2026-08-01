@@ -5,6 +5,7 @@ import { ModeBadge } from "@/features/cap0/ModeBadge"
 import { HuyHieuRailCap8 } from "./HuyHieuRailCap8"
 import { useCap8Events } from "./Cap8Context"
 import { useCap8Progress, useThachThucCap8 } from "./hooks"
+import { caveatThieuCatLoCap8 } from "./portfolioAnalysisCap8"
 import {
   countCap8TasksDone,
   type Cap8Progress,
@@ -229,6 +230,7 @@ function DanhMucWidget({ danhMuc }: { danhMuc: DanhMucCap8 | null | undefined })
   const tong = danhMuc?.tong_rui_ro_pct ?? null
   const tran = danhMuc?.tran_khau_vi_pct ?? null
   const donNganh = danhMuc?.don_nganh_max ?? null
+  const caveat = caveatThieuCatLoCap8(danhMuc?.caveat, danhMuc?.so_vi_the_thieu_cat_lo)
 
   return (
     <div className="cap8-danhmuc-widget" data-testid="cap8-journey-danhmuc">
@@ -253,10 +255,14 @@ function DanhMucWidget({ danhMuc }: { danhMuc: DanhMucCap8 | null | undefined })
           ? "Ngành lớn nhất: chưa tính được."
           : `Ngành lớn nhất: ${donNganh.nganh} ${fmtPct0(donNganh.pct)}.`}
       </p>
-      {/* ★ Ở ĐÂU HIỆN TỔNG RỦI RO, Ở ĐÓ CÓ CAVEAT — nguyên văn câu của server. */}
-      {danhMuc?.caveat ? (
+      {/* ★ Ở ĐÂU HIỆN TỔNG RỦI RO, Ở ĐÓ CÓ CAVEAT — câu của server khi có, và
+          `caveatThieuCatLoCap8` tự dựng khi server trả chuỗi RỖNG mà vẫn còn vị
+          thế thiếu cắt lỗ. Dùng CHUNG hàm đó với khối ⑱ và màn tốt nghiệp: trước
+          fix wave FE-2 widget này chỉ render chuỗi server, nên cùng một payload
+          mà khối ⑱ cảnh báo còn tab Hành trình im lặng. */}
+      {caveat ? (
         <p className="cap8-danhmuc-caveat" data-testid="cap8-journey-danhmuc-caveat">
-          {danhMuc.caveat}
+          {caveat}
         </p>
       ) : null}
       <p className="cap8-danhmuc-why">

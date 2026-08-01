@@ -71,7 +71,16 @@ export const cap8Api = {
    * cross-checked against what actually fired and the contradiction is rejected
    * with 400 rather than normalised — see `hanhViCanhBaoToSend`.
    *
-   * ★ A 400 here is NON-FATAL for the caller: this call runs AFTER the buy has
+   * ★★ **409 = WRITE-ONCE, not a transient failure** (backend `4b01918`). Once
+   * `hanh_vi_canh_bao` is recorded the block is frozen: an **identical** re-post
+   * returns the stored row untouched (a retried network call must not 409, and
+   * must not re-price the snapshot against a newer portfolio either), and a
+   * *different* `hanh_vi_canh_bao` raises `ConflictError` → HTTP 409. Its `detail`
+   * already reads "Lệnh này đã ghi bước Kiểm tra danh mục rồi — ảnh chụp danh mục
+   * LÚC MUA không sửa lại được…", which is exactly the sentence a user needs; it
+   * must never be replaced by a generic error.
+   *
+   * ★ A 400/409 here is NON-FATAL for the caller: this call runs AFTER the buy has
    * already filled, so it must never surface as an error over a completed order
    * and must never abort the order-filled event chain.
    */

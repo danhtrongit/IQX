@@ -356,14 +356,21 @@ describe("KetsoModalCap7 — cộng dồn: giữ NGUYÊN mọi khối Cấp 1-6"
     expect(screen.getByTestId("cap6-ketso-doichieu")).toBeInTheDocument()
   })
 
+  /**
+   * ★ REGRESSION (fix wave FE-2). Bản cũ tự nhận là kiểm "đủ 6 lớp coach Cấp 1-6"
+   * nhưng chỉ hỏi coach 3-6 — coach 1 (Cấp 1) và coach 2 (Cấp 2) không có testid
+   * và không được assert, nên xoá cả hai lớp đó đi test vẫn xanh. Nay cả sáu đều
+   * được đếm, và cả sáu đều phải có NỘI DUNG (một div rỗng không phải một lớp coach).
+   */
   it("giữ khối phân loại 4 ô + đủ 6 lớp coach Cấp 1-6 + HỒ SƠ", () => {
     renderModal()
     expect(screen.getByTestId("cap5-phanloai")).toBeInTheDocument()
     chotPhanLoai()
-    expect(screen.getByTestId("cap3-ketso-coach")).toBeInTheDocument()
-    expect(screen.getByTestId("cap4-ketso-coach")).toBeInTheDocument()
-    expect(screen.getByTestId("cap5-ketso-coach")).toBeInTheDocument()
-    expect(screen.getByTestId("cap6-ketso-coach")).toBeInTheDocument()
+    for (const n of [1, 2, 3, 4, 5, 6]) {
+      const coach = screen.getByTestId(`cap${n}-ketso-coach`)
+      expect(coach).toBeInTheDocument()
+      expect((coach.textContent ?? "").trim().length).toBeGreaterThan(0)
+    }
     expect(screen.getByTestId("cap7-ketso-profile")).toBeInTheDocument()
   })
 })

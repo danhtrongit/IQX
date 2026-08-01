@@ -4,7 +4,6 @@ import { cap7Api } from "./api"
 import { cap7Keys } from "./keys"
 import type {
   Cap7Progress,
-  ChamCap7,
   KehoachDetailCap7,
   KehoachInputCap7,
   OrderKehoachCap7,
@@ -108,14 +107,13 @@ export function useKehoachCap7(orderId: string | null, enabled = true) {
   })
 }
 
-/** POST /cap7/cham — chấm các lệnh đã tới hạn (idempotent, an toàn gọi lại). */
-export function useChamCap7() {
-  const invalidate = useInvalidateCap7()
-  return useMutation<ChamCap7, unknown, void>({
-    mutationFn: cap7Api.cham,
-    onSuccess: invalidate,
-  })
-}
+/**
+ * ★ KHÔNG CÓ `useChamCap7`. `POST /cap7/cham` tồn tại phía server nhưng FE không
+ * có chỗ nào cần gọi nó: MỌI read của Cấp 7 đều chạy CHÍNH cái lazy chấm pass ấy,
+ * và cụ thể `GET /cap7/kehoach/{order_id}` (`useKehoachCap7`) chạy nó ngay trước
+ * khi Kết sổ đọc kết quả. Một hook gọi thêm sẽ chỉ là một request thừa đi kèm một
+ * đường ghi thứ hai vào cùng bộ dữ liệu.
+ */
 
 /** GET /cap7/thach-thuc — the 3 sub-conditions of nhiệm vụ ③ (§C12c). */
 export function useThachThucCap7(enabled = true) {

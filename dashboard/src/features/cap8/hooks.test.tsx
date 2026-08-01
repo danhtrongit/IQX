@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { act, renderHook, waitFor } from "@testing-library/react"
+import { act, render, renderHook, screen, waitFor } from "@testing-library/react"
 import React from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -22,7 +22,9 @@ vi.mock("@/features/auth", () => ({
   useAuth: () => ({ isAuthenticated: true }),
 }))
 
+import { Cap8Provider } from "./Cap8Context"
 import { KIEM_TRA_DEBOUNCE_MS, useKiemTraCap8 } from "./hooks"
+import { KiemTraDanhMucBlock } from "./KiemTraDanhMucBlock"
 import type { KiemTraInputCap8 } from "./types"
 
 const RESPONSE = { symbol: "VCB", canh_bao: [] }
@@ -112,6 +114,79 @@ describe("useKiemTraCap8 — debounce (bước kiểm tra RẤT đắt)", () => 
       await vi.advanceTimersByTimeAsync(KIEM_TRA_DEBOUNCE_MS + 50)
     })
     expect(getKiemTraMock).not.toHaveBeenCalled()
+  })
+
+  /**
+   * ★ REGRESSION (fix wave FE-2). Test "không gọi khi… chưa hợp lệ" ở trên chỉ
+   * kiểm là KHÔNG có request — nó không hề kiểm hook ĐANG NÓI GÌ với caller. Và
+   * ở TanStack Query v5, một query bị `enabled: false` là `isPending` nhưng KHÔNG
+   * `isFetching`, nên `isLoading = isPending && isFetching` là `false`, `isError`
+   * cũng `false`, `data` là `undefined` — tức là caller rơi thẳng vào nhánh LỖI
+   * và nói "không hỏi được máy chủ" trong khi chưa hề hỏi ai.
+   *
+   * Hook phải phát ra một tín hiệu RIÊNG cho trạng thái đó.
+   */
+  it("★ chưa đủ dữ kiện → hook nói `duDuKien: false`, KHÔNG phải lỗi/đang tải", async () => {
+    const { result } = renderHook(() => useKiemTraCap8({ ...INPUT, gia: 0 }), { wrapper })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(KIEM_TRA_DEBOUNCE_MS + 50)
+    })
+    expect(result.current.duDuKien).toBe(false)
+    // …và KHÔNG được trông giống một lần gọi máy chủ thất bại:
+    expect(result.current.isError).toBe(false)
+    expect(result.current.isLoading).toBe(false)
+    expect(result.current.data).toBeUndefined()
+  })
+
+  it("khối lượng 0 cũng là 'chưa đủ dữ kiện', không phải lỗi", async () => {
+    const { result } = renderHook(() => useKiemTraCap8({ ...INPUT, khoiLuong: 0 }), { wrapper })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(KIEM_TRA_DEBOUNCE_MS + 50)
+    })
+    expect(result.current.duDuKien).toBe(false)
+    expect(result.current.isError).toBe(false)
+  })
+
+  it("đủ dữ kiện → `duDuKien: true` (cờ không kẹt ở false)", async () => {
+    const { result } = renderHook(() => useKiemTraCap8(INPUT), { wrapper })
+    await waitFor(() => expect(result.current.data).toEqual(RESPONSE))
+    expect(result.current.duDuKien).toBe(true)
+  })
+
+  /**
+   * ★ END-TO-END của chính lỗi trên: KHÔNG mock `./hooks` (file này mock `./api`),
+   * nên block nhận ĐÚNG hình dạng mà query bị disable trả về — hình dạng mà
+   * `KiemTraDanhMucBlock.test.tsx` không bao giờ dựng được vì nó mock cả hook.
+   *
+   * Kịch bản thật: user vào `/dau-truong`, `usePrice` chưa trả giá nên `gia = 0`.
+   */
+  it("★ block với giá 0 → nói 'chưa đủ dữ kiện', KHÔNG nói 'không hỏi được máy chủ'", async () => {
+    render(
+      <QueryClientProvider
+        client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}
+      >
+        <Cap8Provider>
+          <KiemTraDanhMucBlock
+            symbol="VCB"
+            khoiLuong={200}
+            gia={0}
+            catLo={null}
+            hanhVi={null}
+            onHanhVi={() => {}}
+            onGiamKhoiLuong={() => {}}
+            onChonMaKhac={() => {}}
+          />
+        </Cap8Provider>
+      </QueryClientProvider>,
+    )
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(KIEM_TRA_DEBOUNCE_MS + 50)
+    })
+    expect(getKiemTraMock).not.toHaveBeenCalled()
+    expect(screen.queryByTestId("cap8-loi")).not.toBeInTheDocument()
+    const chuaDu = screen.getByTestId("cap8-chua-du-du-kien")
+    expect(chuaDu.textContent).not.toMatch(/máy chủ/i)
+    expect(chuaDu.textContent).toMatch(/chưa đủ dữ kiện/i)
   })
 
   it("`enabled=false` (ngoài Cấp 8) → không request nào cả", async () => {

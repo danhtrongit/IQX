@@ -1089,14 +1089,16 @@ export function KetsoModalCap7({
         </div>
       )}
 
-      {/* Lớp coach 1 — Cấp 1 (lưới lý do × kết quả), giữ nguyên. */}
-      <div className="cap0-debrief-coach">
+      {/* Lớp coach 1 — Cấp 1 (lưới lý do × kết quả), giữ nguyên.
+          ★ `data-testid` để test "đủ 6 lớp coach Cấp 1-6" đếm được ĐÚNG 6 lớp:
+          không có nó, hai lớp đầu vô hình với test và có thể biến mất lặng lẽ. */}
+      <div className="cap0-debrief-coach" data-testid="cap1-ketso-coach">
         <div className="cap0-debrief-coach-tag">NHÌN LẠI</div>
         <p className="cap0-debrief-coach-body">{coach.cap1Text}</p>
       </div>
 
       {/* Lớp coach 2 — Cấp 2 (kỷ luật cắt lỗ/chốt lời), giữ nguyên. */}
-      <div className="cap2-ketso-coach">
+      <div className="cap2-ketso-coach" data-testid="cap2-ketso-coach">
         <div className="cap2-ketso-coach-tag">KỶ LUẬT</div>
         <p className="cap2-ketso-coach-body">{coach.cap2.text}</p>
       </div>

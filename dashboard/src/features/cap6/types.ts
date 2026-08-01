@@ -38,13 +38,24 @@ export interface Cap6Progress {
   so_lenh_doi_chieu: number
   /** ③ đk 2 — số kiểu cổ phiếu khác nhau đã gặp. */
   so_kieu_da_gap: number
-  /** ③ đk 3 — % thắng của nhóm lệnh KHỚP trọng số gợi ý. */
-  ty_le_thang_khop: number
+  /**
+   * ③ đk 3 — % thắng của nhóm lệnh KHỚP trọng số gợi ý.
+   *
+   * ★★ **`null` ≠ `0`.** `null` = nhóm này CHƯA CÓ lệnh đã đóng nào, nên chưa có
+   * tỷ lệ để nói; `0.0` là một KẾT QUẢ THẬT (có lệnh đã đóng, không lệnh nào
+   * thắng). Backend đổi hai trường này thành nullable ở commit `4b01918` chính vì
+   * `0.0` đã trở thành một câu trả lời hợp lệ. Mọi tầng render PHẢI phân biệt hai
+   * trạng thái đó — **không `?? 0` ở bất kỳ đâu**: gộp lại là nói với người dùng
+   * rằng họ thắng 0% ở một nhóm họ chưa từng có lệnh nào.
+   */
+  ty_le_thang_khop: number | null
   /**
    * % thắng của nhóm lệnh LỆCH trọng số gợi ý. ★ Con số này KHÔNG phải một lời
    * phán về người dùng (spec §5/§10): lệch gợi ý là một sự thật trung tính.
+   *
+   * ★★ Nullable với đúng nghĩa như `ty_le_thang_khop` ở trên.
    */
-  ty_le_thang_lech: number
+  ty_le_thang_lech: number | null
   graduated_at: string | null
   time_to_graduate_hours: number | null
 }

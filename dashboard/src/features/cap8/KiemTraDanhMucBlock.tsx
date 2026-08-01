@@ -42,6 +42,13 @@ import "./cap8.css"
  *    `so_vi_the_thieu_cat_lo` is stated out loud: a position with no stop has
  *    UNKNOWN risk, not zero risk, and the total above it is only the part we
  *    know.
+ *
+ * ★6 "CHƯA ĐỦ DỮ KIỆN" IS ITS OWN STATE, NOT AN ERROR. `useKiemTraCap8` disables
+ *    the query until symbol + khối lượng + giá are all present, and a disabled
+ *    TanStack v5 query is neither `isLoading` nor `isError` — so without the
+ *    hook's `duDuKien` flag this block accused the server of being unreachable
+ *    before a single request had been attempted (and permanently for a symbol
+ *    whose price never resolves). That branch is checked FIRST, above both.
  * ══════════════════════════════════════════════════════════════════════════
  *
  * Controlled: `TradingPanel` owns `hanhVi` (it needs it for `POST
@@ -71,6 +78,17 @@ const NOTE_KHONG_CHAN =
 const NOTE_LOI =
   "Chưa chạy được bước Kiểm tra danh mục lúc này (không hỏi được máy chủ). IQX không đoán thay ba con số này — bỏ qua thì đặt lệnh vẫn bình thường."
 
+/**
+ * ★★ TRẠNG THÁI RIÊNG cho "chưa đủ dữ kiện", KHÔNG dùng chung với `NOTE_LOI`.
+ *
+ * Ba thước đo cần mã + khối lượng + giá dự kiến; thiếu một thứ thì `useKiemTraCap8`
+ * còn chưa BẬT query. Nói "không hỏi được máy chủ" ở đây là buộc tội một máy chủ
+ * chưa được hỏi — và nó sẽ nằm đó vĩnh viễn với một mã `usePrice` chưa trả giá, ở
+ * đúng khối trung tâm của cả cấp.
+ */
+const NOTE_CHUA_DU_DU_KIEN =
+  "Chưa đủ dữ kiện để chạy bước Kiểm tra danh mục — bước này cần mã, khối lượng và giá dự kiến khớp. Điền đủ ba thứ đó là nó tự chạy; nó không chặn lệnh MUA."
+
 const NOTE_DANG_TAI = "Đang tính xem lệnh này ảnh hưởng danh mục thế nào…"
 
 const NOTE_SACH =
@@ -97,7 +115,15 @@ export function KiemTraDanhMucBlock({
   // ★ Debounced inside the hook — this check is O(vị thế) price lookups plus a
   // bounded O(n²) set of correlation fetches, and it hangs off a field the user
   // types into.
-  const { data, isLoading, isError } = useKiemTraCap8({ symbol, khoiLuong, gia, catLo })
+  // ★ `duDuKien` phải được đọc ra ở đây: một query bị `enabled: false` KHÔNG phải
+  // `isLoading` và KHÔNG phải `isError` (xem docstring của `useKiemTraCap8`), nên
+  // nếu không có cờ này thì thiếu dữ kiện = rơi vào nhánh lỗi máy chủ.
+  const { data, isLoading, isError, duDuKien } = useKiemTraCap8({
+    symbol,
+    khoiLuong,
+    gia,
+    catLo,
+  })
 
   const canhBao = data?.canh_bao ?? []
   const coCanhBao = canhBao.length > 0
@@ -132,7 +158,14 @@ export function KiemTraDanhMucBlock({
       <div className="cap8-block-tag">{"KIỂM TRA DANH MỤC"}</div>
       <div className="cap8-block-title">{`🗺️ Thêm ${symbol} ảnh hưởng danh mục thế nào?`}</div>
 
-      {isLoading ? (
+      {/* ★ THỨ TỰ NHÁNH QUAN TRỌNG: "chưa đủ dữ kiện" phải đứng TRƯỚC cả đang-tải
+          lẫn lỗi — nó là trạng thái mà query còn chưa được bật, nên hai cờ kia
+          đều `false` và mọi nhánh sau sẽ mô tả sai chuyện đang xảy ra. */}
+      {!duDuKien ? (
+        <p className="cap8-state" data-testid="cap8-chua-du-du-kien">
+          {NOTE_CHUA_DU_DU_KIEN}
+        </p>
+      ) : isLoading ? (
         <p className="cap8-state" data-testid="cap8-dang-tai">
           {NOTE_DANG_TAI}
         </p>

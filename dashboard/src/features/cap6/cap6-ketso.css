@@ -11,8 +11,20 @@
    "khác gợi ý" được trình bày NGANG NHAU (spec §5/§10: lệch gợi
    ý là một sự thật trung tính, không phải "sai"), nên khối này
    KHÔNG có biến thể `--canhbao` như Cấp 5's ô Sai-Thắng. Xanh
-   chỉ dùng cho "khớp" như một dấu xác nhận dữ liệu, còn "khác"
-   dùng chính đỏ son của cấp — màu ĐỊNH DANH, không phải màu lỗi.
+   chỉ dùng cho "khớp" như một dấu xác nhận dữ liệu.
+
+   ★★ VÀ "khác gợi ý" KHÔNG ĐƯỢC DÙNG ĐỎ SON CỦA CẤP. Đỏ son
+   `#d64550` là màu ĐỊNH DANH ở mọi chỗ khác của Cấp 6, nhưng
+   trong CHÍNH cái `<table>` này, hai hàng bên dưới, ô "Kết quả"
+   dùng `text-down` = `#ff6b6b`. Ở 12px hai đỏ đó không phân biệt
+   được: một lệnh lỗ đi lệch gợi ý sẽ hiện `khác gợi ý…` và
+   `−4.2%` cùng một màu đỏ ngay cạnh nhau, trong khi `khớp gợi ý
+   ✓` xanh — mắt đọc ra một PHÁN QUYẾT mà chữ không hề nói. Cấp 7
+   thoát chuyện này nhờ hồng magenta `#c65cae` ở xa hẳn bảng
+   up/down; Cấp 6 thì không có lối đó, nên "khác" dùng ĐÚNG màu
+   chữ thường của thân bảng (đậm 600 để vẫn là một trạng thái),
+   chính là cách khối ⑮ ở Phân tích danh mục đã làm: ô "lệch"
+   để nguyên `--color-text-1`, không tô màu nào.
    ============================================================ */
 
 .cap6-ketso-doichieu {
@@ -60,8 +72,9 @@
   color: #35d07f;
 }
 
+/* ★ Màu chữ thân bảng, KHÔNG phải đỏ son của cấp — xem đầu file. */
 .cap6-ketso-khop--khac {
-  color: var(--cap6);
+  color: var(--t1, var(--color-text-1));
 }
 
 /* "chưa phân loại" là thiếu dữ liệu, không phải một lựa chọn của user → xám. */

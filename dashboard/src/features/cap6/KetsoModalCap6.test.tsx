@@ -521,6 +521,38 @@ describe("KetsoModalCap6 — đọc lại Đối chiếu ĐÃ GHI của chính l
     expect(screen.getByTestId("cap6-ketso-khop").className).not.toContain("canhbao")
   })
 
+  /**
+   * ★ REGRESSION MÀU (fix wave FE-2) — jsdom không nạp CSS nên phải đọc thẳng file.
+   *
+   * `.cap6-ketso-khop--khac` từng dùng `var(--cap6)` = `#d64550`. Hai hàng bên dưới
+   * TRONG CÙNG MỘT `<table>`, ô "Kết quả" dùng `text-down` = `#ff6b6b`. Ở 12px hai
+   * đỏ đó không phân biệt được, nên một lệnh lỗ đi lệch gợi ý hiện `khác gợi ý…` và
+   * `−4.2%` cạnh nhau cùng một màu đỏ, trong khi `khớp gợi ý ✓` xanh — mắt đọc ra
+   * một PHÁN QUYẾT, và lệch gợi ý thì KHÔNG BAO GIỜ được đóng khung là sai (spec
+   * §5/§10). Chữ đã trung tính sẵn; chỉ còn màu.
+   */
+  it("★ 'khác gợi ý' KHÔNG dùng màu đỏ — nó ở ngay trên một ô text-down đỏ", async () => {
+    // Đọc thẳng từ đĩa: vitest stub CSS import (`css: false`), nên `?raw` cũng
+    // không mang nội dung thật về. `process.cwd()` là root của vitest (`dashboard/`).
+    const { readFileSync } = await import("node:fs")
+    const { resolve } = await import("node:path")
+    const css = readFileSync(
+      resolve(process.cwd(), "src/features/cap6/cap6-ketso.css"),
+      "utf8",
+    )
+    const rule = /\.cap6-ketso-khop--khac\s*\{([^}]*)\}/.exec(css)
+    expect(rule).not.toBeNull()
+    const decl = rule![1]
+    // Không phải đỏ son của cấp (var(--cap6) hoặc literal), không phải bất kỳ đỏ
+    // nào của bảng giá.
+    expect(decl).not.toContain("--cap6")
+    expect(decl.toLowerCase()).not.toContain("#d64550")
+    expect(decl.toLowerCase()).not.toContain("#ff6b6b")
+    expect(decl.toLowerCase()).not.toMatch(/#[ef][0-9a-f]{5}/)
+    // …nhưng vẫn PHẢI có một khai báo màu: bỏ trắng ô sẽ làm nó tàng hình.
+    expect(decl).toMatch(/color\s*:/)
+  })
+
   it("có kiểu + có gợi ý nhưng khop_goi_y === null → 'không xét', TUYỆT ĐỐI không thành lệch", () => {
     // ★ Fixture này khác fixture "đã chấm" ĐÚNG MỘT TRƯỜNG (`khop_goi_y`), nên
     // bất kỳ cách gộp `null` vào `false` nào (vd. `?? false`) đều làm test đỏ.

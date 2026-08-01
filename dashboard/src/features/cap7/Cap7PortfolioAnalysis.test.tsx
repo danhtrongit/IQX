@@ -362,6 +362,33 @@ describe("Cap7PortfolioAnalysis — khối ⑯ đọc lực có đúng không", 
     expect(screen.getByTestId("cap7-pa-khoi16-note").textContent).toContain("Chưa lấy được")
   })
 
+  /**
+   * ★ REGRESSION (fix wave FE-2). Header từng in `— 0 LỆNH ĐÃ CHẤM` ở CẢ nhánh
+   * đang-tải lẫn nhánh lỗi, vì `soDaCham` của tầng compute là placeholder `0` khi
+   * chưa có payload. Một người đã có 8 lệnh được chấm bị nói là 0.
+   */
+  it("query lỗi/đang tải → header KHÔNG in '0 LỆNH ĐÃ CHẤM'", () => {
+    for (const state of [
+      { data: undefined, isPending: false, isError: true },
+      { data: undefined, isPending: true, isError: false },
+    ]) {
+      thachThuc.current = state
+      const { unmount } = renderPanel(trades(9))
+      const header = screen.getByTestId("cap7-pa-khoi16-header").textContent!
+      expect(header).toContain("ĐỌC LỰC CÓ ĐÚNG KHÔNG")
+      expect(header).not.toMatch(/LỆNH ĐÃ CHẤM/)
+      expect(header).not.toMatch(/\d/)
+      unmount()
+    }
+  })
+
+  it("có số của server → header VẪN nêu số lệnh đã chấm (không bị cắt oan)", () => {
+    renderPanel(trades(9))
+    expect(screen.getByTestId("cap7-pa-khoi16-header").textContent).toContain(
+      "8 LỆNH ĐÃ CHẤM",
+    )
+  })
+
   it("đang tải → nói đang tải, không hiện con số nào", () => {
     thachThuc.current = { data: undefined, isPending: true, isError: false }
     renderPanel(trades(9))
@@ -446,6 +473,31 @@ describe("Cap7PortfolioAnalysis — khối ⑰ kỷ luật cảnh giác", () => 
     ])
     expect(screen.queryByTestId("cap7-pa-khoi17-phathien")).not.toBeInTheDocument()
     expect(screen.getByTestId("cap7-pa-khoi17-note").textContent).toContain("Chưa lấy được")
+  })
+
+  /**
+   * ★ REGRESSION (fix wave FE-2). Dòng 3 con số render VÔ ĐIỀU KIỆN, nên nhánh lỗi
+   * in "Gặp cờ cảnh giác: 0 lần · chờ xác nhận: 0 lần · mua đuổi: 0 lần." NGAY TRÊN
+   * câu "Chưa lấy được số lần gặp cờ từ hệ thống." — 3 con số 0 đó là placeholder
+   * của tầng compute, không phải sự thật về người dùng.
+   */
+  it("query lỗi → KHÔNG in dòng '0 lần · 0 lần · 0 lần' bịa", () => {
+    thachThuc.current = { data: undefined, isPending: false, isError: true }
+    renderPanel([
+      ...Array.from({ length: 4 }, () => tradeCo("cho_xac_nhan", 2)),
+      ...Array.from({ length: 4 }, () => tradeCo("mua_duoi_theo", -3)),
+    ])
+    expect(screen.queryByTestId("cap7-pa-khoi17-counts")).not.toBeInTheDocument()
+    const khoi = screen.getByTestId("cap7-pa-khoi17").textContent!
+    expect(khoi).not.toContain("Gặp cờ cảnh giác:")
+    expect(khoi).not.toMatch(/0 lần/)
+    expect(khoi).toContain("Chưa lấy được số lần gặp cờ")
+  })
+
+  it("có số của server → dòng 3 con số VẪN hiện (không bị ẩn oan)", () => {
+    renderPanel([])
+    const counts = screen.getByTestId("cap7-pa-khoi17-counts").textContent!
+    expect(counts).toContain("Gặp cờ cảnh giác: 1,234 lần")
   })
 
   it("KHÔNG BAO GIỜ gọi mua đuổi là lỗi, và KHÔNG hứa phát hiện lệnh giả", () => {

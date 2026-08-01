@@ -1113,13 +1113,21 @@ export function KetsoModalCap8({
           </table>
           {/* ★ Ở ĐÂU HIỆN TỔNG RỦI RO, Ở ĐÓ CÓ CAVEAT. Một vị thế chưa đặt cắt lỗ
               có rủi ro CHƯA BIẾT, không phải rủi ro 0 — và khi hệ không ghi lại
-              được cả con số đó thì khối nói thẳng là nó không biết. */}
+              được cả con số đó thì khối nói thẳng là nó không biết.
+
+              ★★ Nhánh cuối phải xét CẢ `tongRuiRoPct`: khi hệ không ghi lại được
+              tổng, hàng ở trên nói "chưa tính được", nên câu "…nên tổng ở trên là
+              toàn bộ phần vốn ở rủi ro" đang mô tả một con số KHÔNG có trên màn
+              hình. Hai sự thật ("mọi vị thế đều có cắt lỗ" và "hệ không ghi lại
+              được tổng") đều phải được nói ra, không cái nào thay được cái kia. */}
           <p className="cap8-ketso-caveat" data-testid="cap8-ketso-caveat">
             {kiemTra.soViTheThieuCatLo == null
               ? "⚠ Hệ chưa ghi lại được lúc đó có vị thế nào chưa đặt cắt lỗ hay không — nếu có, con số tổng ở trên chỉ là phần ĐÃ BIẾT."
               : kiemTra.soViTheThieuCatLo > 0
                 ? `⚠ ${kiemTra.soViTheThieuCatLo} vị thế chưa có cắt lỗ — chưa tính được rủi ro của các vị thế này, nên con số trên là phần ĐÃ BIẾT, không phải toàn bộ.`
-                : "Mọi vị thế lúc đó đều đã có cắt lỗ, nên tổng ở trên là toàn bộ phần vốn ở rủi ro."}
+                : kiemTra.tongRuiRoPct == null
+                  ? "Mọi vị thế lúc đó đều đã có cắt lỗ — nhưng hệ không ghi lại được tổng vốn ở rủi ro của lệnh này, nên không có con số nào ở trên để đối chiếu."
+                  : "Mọi vị thế lúc đó đều đã có cắt lỗ, nên tổng ở trên là toàn bộ phần vốn ở rủi ro."}
           </p>
           {kiemTra.giaiThich && (
             <p className="cap8-ketso-kiemtra-giaithich" data-testid="cap8-ketso-giaithich">

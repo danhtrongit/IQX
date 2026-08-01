@@ -261,6 +261,47 @@ describe("Cap6PortfolioAnalysis — cộng dồn bằng DELEGATION", () => {
     renderPanel(trades(3), null)
     expect(screen.getByTestId("cap6-pa-khoi1").textContent).toContain("Chưa có hồ sơ Cấp 6")
   })
+
+  /**
+   * ★ HỢP ĐỒNG BACKEND MỚI (commit `4b01918`): `ty_le_thang_khop`/`_lech` NULLABLE.
+   * `null` = nhóm chưa có lệnh đã đóng nào · `0.0` = có lệnh đã đóng, không lệnh
+   * nào thắng. Hai câu chuyện KHÁC NHAU, và `Math.round(null)` = 0 gộp chúng lại.
+   *
+   * Ba case dưới đổi ĐÚNG MỘT biến (hai trường tỷ lệ), mọi thứ khác giữ nguyên.
+   */
+  it("null ≠ 0: nhóm chưa có lệnh hiện 'chưa đủ dữ liệu', KHÔNG phải 0%", () => {
+    renderPanel(trades(3), {
+      ...cap6Progress(),
+      ty_le_thang_khop: null,
+      ty_le_thang_lech: null,
+    })
+    const tyLe = screen.getByTestId("cap6-pa-khoi1-tyle").textContent!
+    expect(tyLe).not.toMatch(/0%/)
+    expect(tyLe).toContain("chưa đủ dữ liệu")
+  })
+
+  it("0% là KẾT QUẢ THẬT (có lệnh đã đóng, không lệnh nào thắng) → in 0%", () => {
+    renderPanel(trades(3), {
+      ...cap6Progress(),
+      ty_le_thang_khop: 0,
+      ty_le_thang_lech: 0,
+    })
+    const tyLe = screen.getByTestId("cap6-pa-khoi1-tyle").textContent!
+    expect(tyLe).toContain("nhóm khớp gợi ý: 0%")
+    expect(tyLe).toContain("nhóm lệch: 0%")
+    expect(tyLe).not.toContain("chưa đủ dữ liệu")
+  })
+
+  it("một nhóm null, nhóm kia 0 → mỗi nhóm nói đúng chuyện của nó", () => {
+    renderPanel(trades(3), {
+      ...cap6Progress(),
+      ty_le_thang_khop: null,
+      ty_le_thang_lech: 0,
+    })
+    const tyLe = screen.getByTestId("cap6-pa-khoi1-tyle").textContent!
+    expect(tyLe).toContain("nhóm khớp gợi ý: chưa đủ dữ liệu")
+    expect(tyLe).toContain("nhóm lệch: 0%")
+  })
 })
 
 describe("Cap6PortfolioAnalysis — khối ⑭ lớp nào đúng cho kiểu nào", () => {
@@ -355,6 +396,34 @@ describe("Cap6PortfolioAnalysis — khối ⑮ đối chiếu có giúp không",
     expect(screen.getByTestId("cap6-pa-khoi15-note").textContent).toContain(
       "Chưa lấy được số khớp/lệch",
     )
+  })
+
+  /**
+   * ★ REGRESSION (fix wave FE-2). Nhánh lỗi từng render 2 ô nhóm bằng số PLACEHOLDER
+   * của tầng compute (`0/0 lệnh đã đóng`, `—`) NGAY TRÊN câu "Chưa lấy được số
+   * khớp/lệch" — một người có 8 lệnh khớp thắng 6 bị nói thẳng vào mặt là 0/0. Test
+   * cũ chỉ kiểm `phatHien` vắng + note có mặt, nên con số bịa lọt qua.
+   */
+  it("query lỗi → KHÔNG in ô nhóm `0/0 lệnh đã đóng` bịa cạnh câu 'chưa lấy được'", () => {
+    thachThuc.current = { data: undefined, isPending: false, isError: true }
+    renderPanel(trades(3))
+    expect(screen.queryByTestId("cap6-pa-khoi15-counts")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap6-pa-khoi15-nhom-khop")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap6-pa-khoi15-nhom-lech")).not.toBeInTheDocument()
+    const khoi = screen.getByTestId("cap6-pa-khoi15").textContent!
+    expect(khoi).not.toContain("0/0 lệnh đã đóng")
+    expect(khoi).toContain("Chưa lấy được số khớp/lệch")
+  })
+
+  /**
+   * ★ Cùng lỗi, chiều ngược lại: khi CÓ số của server thì 2 ô phải còn nguyên. Nếu
+   * không có test này, "sửa" bằng cách xoá hẳn 2 ô sẽ vẫn xanh.
+   */
+  it("có số của server → 2 ô nhóm VẪN hiện đầy đủ (không bị ẩn oan)", () => {
+    renderPanel(trades(3))
+    expect(screen.getByTestId("cap6-pa-khoi15-counts")).toBeInTheDocument()
+    expect(screen.getByTestId("cap6-pa-khoi15-nhom-khop").textContent).toContain("lệnh đã đóng")
+    expect(screen.getByTestId("cap6-pa-khoi15-nhom-lech").textContent).toContain("lệnh đã đóng")
   })
 
   it("đang tải → nói đang tải, không hiện con số nào", () => {

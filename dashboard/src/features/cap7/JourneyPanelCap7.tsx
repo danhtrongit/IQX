@@ -95,14 +95,44 @@ function fmtInt(n: number): string {
  * điều kiện ③ khi `du_du_lieu === false`. §C12c: nói THẲNG cần thêm bao nhiêu
  * lệnh ĐÃ CHẤM, và nói rõ lệnh chưa tới hạn KHÔNG bị tính là đọc sai.
  *
- * ★ `KHOI16_MIN_DA_CHAM` là bản mirror FE của `MIN_DA_CHAM_THONG_KE` phía server
- * (dùng lại đúng hằng số của khối ⑯ chứ không khai một con số thứ hai — hai chỗ
- * lệch nhau thì widget này và Phân tích danh mục sẽ nói khác nhau).
+ * ★★ **KHÔNG BAO GIỜ IN MỘT PHÂN SỐ MÂU THUẪN VỚI SERVER.**
+ * `KHOI16_MIN_DA_CHAM` là bản mirror bằng tay của `MIN_DA_CHAM_THONG_KE` phía
+ * server, và server KHÔNG công bố con số đó trên wire — nó chỉ công bố cờ
+ * `du_du_lieu`. Cái CỔNG của khối ⑯ an toàn vì nó AND với cờ ấy, nhưng câu chữ
+ * thì không: ngày server nâng ngưỡng lên 5, một user có 4 lệnh đã chấm sẽ đọc
+ * thấy "4/3 lệnh đọc lực đã chấm" — một phân số ĐÃ ĐẠT — ngay cạnh một widget
+ * nói "chưa đủ dữ liệu".
+ *
+ * Nên mẫu số CHỈ được in khi nó còn nhất quán với câu trả lời của server (tức là
+ * số đã chấm thật sự còn dưới hằng số FE). Vượt qua nó mà server vẫn nói chưa đủ
+ * thì hằng số FE đã lỗi thời — câu chữ bỏ mẫu số đi và dẫn theo cờ của server,
+ * bên DUY NHẤT biết ngưỡng thật.
  */
 function conThieuChamText(data: ThachThucCap7): string {
-  const daCham = `${fmtInt(data.so_lenh_da_cham)}/${fmtInt(KHOI16_MIN_DA_CHAM)} lệnh đọc lực đã chấm`
-  if (data.so_lenh_chua_cham <= 0) return `${daCham}.`
-  return `${daCham} · ${fmtInt(data.so_lenh_chua_cham)} lệnh chưa tới hạn chấm — chưa tới hạn KHÔNG phải là đọc sai.`
+  const daCham = fmtInt(data.so_lenh_da_cham)
+  const nguongConDung = data.so_lenh_da_cham < KHOI16_MIN_DA_CHAM
+  const phan = nguongConDung
+    ? `${daCham}/${fmtInt(KHOI16_MIN_DA_CHAM)} lệnh đọc lực đã chấm`
+    : `${daCham} lệnh đọc lực đã chấm — hệ thống chưa chốt được tỷ lệ`
+  if (data.so_lenh_chua_cham <= 0) return `${phan}.`
+  return `${phan} · ${fmtInt(data.so_lenh_chua_cham)} lệnh chưa tới hạn chấm — chưa tới hạn KHÔNG phải là đọc sai.`
+}
+
+/**
+ * Cụm "ngưỡng tối thiểu" dùng trong hai câu GIẢI THÍCH LUẬT của tab này.
+ *
+ * Cùng lý do với `conThieuChamText`: chỉ nêu đích danh `KHOI16_MIN_DA_CHAM` khi
+ * nó còn khớp với câu trả lời của server. Nếu user đã vượt hằng số FE mà server
+ * vẫn nói chưa đủ, một câu "cần ít nhất 3 lệnh đã chấm" đứng cạnh 4 lệnh đã chấm
+ * là một lời SAI, và nó lại nằm ngay ở chỗ dùng để giải thích vì sao chưa có tỷ
+ * lệ. `data` chưa có (đang tải) → dùng hằng số FE, vì lúc đó không có gì mâu
+ * thuẫn để tránh.
+ */
+function nguongDaChamText(data: ThachThucCap7 | undefined): string {
+  const drift = data != null && data.so_lenh_da_cham >= KHOI16_MIN_DA_CHAM && !data.ty_le_doc_luc_dung.du_du_lieu
+  return drift
+    ? "đủ số lệnh đọc lực đã chấm mà hệ thống yêu cầu"
+    : `ít nhất ${fmtInt(KHOI16_MIN_DA_CHAM)} lệnh đọc lực đã được chấm`
 }
 
 /**
@@ -217,9 +247,8 @@ function ThachThucWidget({ data }: { data: ThachThucCap7 | undefined }) {
       )}
       <p className="cap7-thachthuc-why">
         Đạt <strong>CẢ 3 điều kiện</strong> cùng lúc mới xong nhiệm vụ này. Điều kiện thứ ba chỉ
-        được xét khi có{" "}
-        <strong>ít nhất {fmtInt(KHOI16_MIN_DA_CHAM)} lệnh đọc lực đã được chấm</strong> — dưới mức
-        đó con số không nói được gì, nên IQX chỉ đếm. Lệnh chưa tới hạn chấm nằm ngoài mẫu số.
+        được xét khi có <strong>{nguongDaChamText(data)}</strong> — dưới mức đó con số không nói
+        được gì, nên IQX chỉ đếm. Lệnh chưa tới hạn chấm nằm ngoài mẫu số.
       </p>
     </div>
   )
@@ -250,7 +279,7 @@ function DocLucWidget({ thachThuc }: { thachThuc: ThachThucCap7 | undefined }) {
         </div>
       ) : (
         <p className="cap7-docluc-empty" data-testid="cap7-journey-docluc-empty">
-          Chưa hiện tỷ lệ — cần ít nhất {fmtInt(KHOI16_MIN_DA_CHAM)} lệnh đọc lực đã được chấm.
+          Chưa hiện tỷ lệ — cần {nguongDaChamText(thachThuc)}.
           {thachThuc && (
             <span className="cap7-docluc-conu">{` ${conThieuChamText(thachThuc)}`}</span>
           )}

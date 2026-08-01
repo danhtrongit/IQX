@@ -4,8 +4,9 @@ import { Badge, LEVELS } from "@/features/cap0/Badge"
 import "@/features/cap0/cap0.css"
 import "./cap8-graduation.css"
 import { HuyHieuRailCap8 } from "./HuyHieuRailCap8"
-import { useCap8Progress, useGraduateCap8 } from "./hooks"
-import { countCap8TasksDone, type Cap8Progress } from "./types"
+import { useCap8Progress, useGraduateCap8, useThachThucCap8 } from "./hooks"
+import { caveatThieuCatLoCap8 } from "./portfolioAnalysisCap8"
+import { countCap8TasksDone, type Cap8Progress, type DanhMucCap8 } from "./types"
 
 /**
  * Điều kiện mở màn tốt nghiệp Cấp 8 (spec §3): 3/3 nhiệm vụ, chưa từng tốt
@@ -62,12 +63,15 @@ function block1(progress: Cap8Progress | null | undefined): string {
  * ★ Và "Vẫn mua" KHÔNG được viết như một lỗi: nó là lựa chọn hợp lệ (§C8, spec
  * §9) — câu chỉ ĐẾM, không phán.
  */
-function block1Provenance(progress: Cap8Progress | null | undefined): string {
+function block1Provenance(
+  progress: Cap8Progress | null | undefined,
+  tongRuiRo: number | null,
+): string {
   const canhBao = fmtInt(progress?.so_lan_co_canh_bao ?? 0)
   const batChap = fmtInt(progress?.bat_chap_gan_day ?? 0)
   const cuaSo = fmtInt(progress?.cua_so_gan_day ?? 0)
   const doiBatChap = fmtInt(progress?.so_lan_mua_bat_chap_canh_bao ?? 0)
-  const tong = fmtPctOrChua(progress?.tong_rui_ro_pct ?? null)
+  const tong = fmtPctOrChua(tongRuiRo)
   const nganh = fmtPctOrChua(progress?.don_nganh_max_pct ?? null)
   return (
     `(Số của bạn: ${canhBao} lần bước kiểm tra bật cảnh báo · vẫn mua ${batChap}/${cuaSo} ` +
@@ -75,6 +79,36 @@ function block1Provenance(progress: Cap8Progress | null | undefined): string {
     `đây chỉ là con số · ngành lớn nhất ${nganh} · tổng vốn ở rủi ro ${tong} nếu mọi cắt lỗ ` +
     "bị chạm.)"
   )
+}
+
+/**
+ * ★★ CAVEAT CẮT LỖ CHO MÀN CUỐI — bắt buộc, không phải trang trí.
+ *
+ * Một vị thế chưa đặt cắt lỗ có rủi ro **CHƯA BIẾT, không phải bằng 0**, nên
+ * server LOẠI nó khỏi tổng vốn ở rủi ro. Mọi bề mặt khác của Cấp 8 (khối Kiểm tra
+ * danh mục lúc mua, Kết sổ, khối ⑱, widget "Danh mục hiện tại") đều đi kèm câu
+ * "{N} vị thế chưa có cắt lỗ". Màn tốt nghiệp trước fix wave FE-2 thì KHÔNG — nó
+ * in `tổng rủi ro 12%` trần trụi, vì `Cap8Progress` không mang theo cả
+ * `so_vi_the_thieu_cat_lo` lẫn caveat. Đây lại đúng là màn hình được thiết kế để
+ * người dùng tin, và là câu chốt của cả chương trình 0-8.
+ *
+ * Ba trạng thái, không trạng thái nào được im lặng:
+ *  · có vị thế thiếu cắt lỗ → câu caveat (của server, hoặc tự dựng);
+ *  · không thiếu vị thế nào → nói thẳng tổng ở trên là toàn bộ;
+ *  · CHƯA lấy được `/cap8/thach-thuc` → nói thẳng là chưa biết. Im lặng ở nhánh
+ *    này sẽ khiến một con số ảnh chụp của `cap8_progress` trông như đã đầy đủ.
+ */
+function gradCaveat(danhMuc: DanhMucCap8 | null | undefined): string {
+  if (!danhMuc) {
+    return (
+      "⚠ Chưa đối chiếu lại được danh mục lúc này nên chưa biết có vị thế nào chưa đặt cắt lỗ " +
+      "hay không — nếu có, con số tổng ở trên chỉ là phần ĐÃ BIẾT."
+    )
+  }
+  const caveat = caveatThieuCatLoCap8(danhMuc.caveat, danhMuc.so_vi_the_thieu_cat_lo)
+  return caveat != null
+    ? `⚠ ${caveat}`
+    : "Mọi vị thế đều đã có cắt lỗ, nên tổng ở trên là toàn bộ phần vốn ở rủi ro."
 }
 
 // Khối 2 — Định vị. VERBATIM spec §3.
@@ -116,10 +150,23 @@ function renderInlineBold(text: string) {
  */
 export function GraduationModalCap8() {
   const { data: progress } = useCap8Progress()
+  // ★ `GET /cap8/thach-thuc` là endpoint DUY NHẤT mang theo cả tổng vốn ở rủi ro
+  // lẫn `so_vi_the_thieu_cat_lo`/`caveat`, đo CÙNG một lúc — `cap8_progress` cố ý
+  // chỉ là ảnh chụp và không có hai trường sau. Không có nó thì màn cuối không thể
+  // nói ra vị thế nào đã bị loại khỏi tổng.
+  const { data: thachThuc } = useThachThucCap8()
+  const danhMuc = thachThuc?.danh_muc ?? null
   const graduate = useGraduateCap8()
   const { setActivePanel } = useSidebar()
   const level = LEVELS[8]
   const visible = isGraduationReadyCap8(progress)
+
+  // Con số sống của `/thach-thuc` THẮNG ảnh chụp `cap8_progress` (nó được đo cùng
+  // lúc với caveat bên dưới, nên hai thứ không thể lệch nhau); chưa tải được thì
+  // rơi về ảnh chụp — và `gradCaveat` nói thẳng rằng lúc đó chưa biết có vị thế
+  // nào thiếu cắt lỗ hay không.
+  const tongRuiRo = danhMuc?.tong_rui_ro_pct ?? progress?.tong_rui_ro_pct ?? null
+  const soThieuCatLo = danhMuc?.so_vi_the_thieu_cat_lo ?? 0
 
   const handleGraduate = () => {
     // Chống double-submit mà KHÔNG dùng `disabled` — xem docstring.
@@ -135,10 +182,18 @@ export function GraduationModalCap8() {
 
   // Dòng phụ spec §3 `3/3 · danh mục phân tán · tổng rủi ro {X}%` — số THẬT
   // (§C12c), và `null` thành "chưa tính được" chứ KHÔNG thành 0%.
+  //
+  // ★ Kèm ĐUÔI "(chưa gồm N vị thế chưa có cắt lỗ)" khi có vị thế bị loại khỏi
+  // tổng: một dòng tóm tắt là chỗ dễ được đọc nhất và dễ trích dẫn nhất, nên nó
+  // không được phép là chỗ duy nhất bỏ qua caveat.
+  const duoiCatLo =
+    soThieuCatLo > 0 && tongRuiRo != null
+      ? ` (chưa gồm ${fmtInt(soThieuCatLo)} vị thế chưa có cắt lỗ)`
+      : ""
   const sub = progress
     ? `${countCap8TasksDone(progress)}/3 · danh mục phân tán · tổng rủi ro ${fmtPctOrChua(
-        progress.tong_rui_ro_pct,
-      )}`
+        tongRuiRo,
+      )}${duoiCatLo}`
     : ""
 
   return (
@@ -190,7 +245,11 @@ export function GraduationModalCap8() {
         {renderInlineBold(block1(progress))}
       </div>
       <p className="cap8-grad-provenance" data-testid="cap8-grad-khoi1-provenance">
-        {block1Provenance(progress)}
+        {block1Provenance(progress, tongRuiRo)}
+      </p>
+      {/* ★ Ở ĐÂU HIỆN TỔNG RỦI RO, Ở ĐÓ CÓ CAVEAT — kể cả ở màn cuối cùng. */}
+      <p className="cap8-grad-caveat" data-testid="cap8-grad-caveat">
+        {gradCaveat(danhMuc)}
       </p>
       <div className="cap0-grad-block" data-testid="cap8-grad-khoi2">
         {renderInlineBold(BLOCK_2)}

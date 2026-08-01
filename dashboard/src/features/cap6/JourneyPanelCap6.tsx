@@ -212,9 +212,11 @@ function ThachThucWidget({ data }: { data: ThachThucCap6 | undefined }) {
  * Widget nổi bật "Đối chiếu theo kiểu" (spec §8 mục 2 + §C12c).
  *
  * ★ KHÔNG BAO GIỜ hiện con số trơ, và KHÔNG BAO GIỜ hiện "0% vs 0%": khi một
- * trong hai nhóm chưa có đủ 3 lệnh đã đóng, `ty_le_thang_khop`/`ty_le_thang_lech`
- * của server là 0 theo mặc định — in ra sẽ vu cho người dùng thua sạch. Thay vào
- * đó nói thẳng còn thiếu bao nhiêu lệnh mỗi nhóm.
+ * trong hai nhóm chưa có đủ 3 lệnh đã đóng thì chưa có tỷ lệ nào để nói — in một
+ * số 0 ra sẽ vu cho người dùng thua sạch. Thay vào đó nói thẳng còn thiếu bao
+ * nhiêu lệnh mỗi nhóm. (Trên `cap6_progress`, cùng ý đó nay là một `null` tường
+ * minh: `ty_le_thang_khop`/`_lech` là `number | null` kể từ backend `4b01918`, và
+ * `0.0` ở đó là một KẾT QUẢ THẬT chứ không còn là giá trị mặc định.)
  *
  * ★ Hai con số lấy từ `GET /cap6/thach-thuc` (không phải `cap6_progress`) vì
  * chính endpoint đó mang theo cờ `du_du_lieu` + câu `giai_thich` đi kèm — dùng

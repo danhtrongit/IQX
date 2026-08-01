@@ -81,6 +81,17 @@ export const KIEM_TRA_DEBOUNCE_MS = 400
  * `retry: false` so a failure surfaces at once and `KiemTraDanhMucBlock` can
  * degrade OPEN (an honest note + the order still goes through) instead of
  * hanging over a buy it is not allowed to block.
+ *
+ * ★★ **`duDuKien` IS PART OF THE CONTRACT — a disabled query is NOT an error.**
+ * TanStack Query v5 reports a query with `enabled: false` as `isPending` but not
+ * `isFetching`, and `isLoading = isPending && isFetching`. So when the inputs are
+ * incomplete the caller sees `isLoading === false`, `isError === false` and
+ * `data === undefined` — indistinguishable, on those three fields alone, from a
+ * request that was made and failed. `KiemTraDanhMucBlock` used exactly that shape
+ * to print "không hỏi được máy chủ" **before any request was attempted**, and
+ * permanently for a symbol whose price never resolves (`usePrice` still pending ⇒
+ * `gia === 0`, or the user clearing Giá / typing `0` into Khối lượng). This flag
+ * is the only honest way to tell "chưa đủ dữ kiện để hỏi" from "đã hỏi và hỏng".
  */
 export function useKiemTraCap8(
   input: KiemTraInputCap8,
@@ -102,7 +113,7 @@ export function useKiemTraCap8(
 
   const hopLe = !!settled.symbol && settled.khoiLuong > 0 && settled.gia > 0
 
-  return useQuery<KiemTraCap8>({
+  const query = useQuery<KiemTraCap8>({
     queryKey: cap8Keys.kiemTra(
       settled.symbol,
       settled.khoiLuong,
@@ -114,6 +125,11 @@ export function useKiemTraCap8(
     staleTime: 30_000,
     retry: false,
   })
+
+  // ★ `hopLe` (đã debounce) là NGUỒN DUY NHẤT của cả `enabled` lẫn `duDuKien`, nên
+  // hai thứ đó không thể phân kỳ: caller không bao giờ thấy "đủ dữ kiện" cho một
+  // query chưa từng được bật, và ngược lại.
+  return { ...query, duDuKien: hopLe }
 }
 
 /**

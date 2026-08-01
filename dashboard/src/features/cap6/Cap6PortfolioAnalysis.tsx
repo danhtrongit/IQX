@@ -82,6 +82,18 @@ function fmtInt(n: number): string {
   return Math.round(n).toLocaleString("en-US")
 }
 
+/**
+ * `64` → `"64%"`, `0` → `"0%"`, `null` → `"chưa đủ dữ liệu"`.
+ *
+ * ★★ **`null` ≠ `0`** (hợp đồng `Cap6Progress.ty_le_thang_*`, backend `4b01918`):
+ * `null` = nhóm chưa có lệnh đã đóng nào · `0%` = có lệnh đã đóng và không lệnh
+ * nào thắng. `Math.round(null)` trả `0` và sẽ nói với người dùng rằng họ thua
+ * sạch một nhóm họ chưa từng có lệnh — nên KHÔNG có `?? 0` ở file này.
+ */
+function pctHoacChuaDu(pct: number | null): string {
+  return pct == null ? "chưa đủ dữ liệu" : `${Math.round(pct)}%`
+}
+
 export function Cap6PortfolioAnalysis({
   cap2Progress,
   cap3Progress,
@@ -121,14 +133,14 @@ export function Cap6PortfolioAnalysis({
                 cap6Progress.so_kieu_da_gap,
               )}/${TARGET_KIEU_DA_GAP} kiểu cổ phiếu khác nhau.`}
             </p>
-            <p className="text-xs text-[var(--color-text-1)]">
-              {`Tỷ lệ thắng nhóm khớp gợi ý: ${Math.round(
+            <p className="text-xs text-[var(--color-text-1)]" data-testid="cap6-pa-khoi1-tyle">
+              {`Tỷ lệ thắng nhóm khớp gợi ý: ${pctHoacChuaDu(
                 cap6Progress.ty_le_thang_khop,
-              )}% · nhóm lệch: ${Math.round(cap6Progress.ty_le_thang_lech)}%.`}
+              )} · nhóm lệch: ${pctHoacChuaDu(cap6Progress.ty_le_thang_lech)}.`}
             </p>
             <p className={HINT}>
               {
-                "Hai con số trên do hệ thống chốt (mỗi nhóm cần ít nhất 3 lệnh đã đóng mới được so). Lệch gợi ý là một sự thật trung tính — nó chỉ quyết định lệnh vào nhóm nào để so, không bao giờ là một điểm trừ."
+                "Hai con số trên do hệ thống chốt (mỗi nhóm cần ít nhất 3 lệnh đã đóng mới được so). «Chưa đủ dữ liệu» nghĩa là nhóm đó chưa có lệnh đã đóng nào — KHÔNG phải bằng 0%. Lệch gợi ý là một sự thật trung tính — nó chỉ quyết định lệnh vào nhóm nào để so, không bao giờ là một điểm trừ."
               }
             </p>
           </>
@@ -239,7 +251,13 @@ export function Cap6PortfolioAnalysis({
           </p>
         ) : (
           <>
-            {/* Hai nhóm cạnh nhau, TRÌNH BÀY NGANG NHAU (spec §5/§10). */}
+            {/* ★★ HAI Ô CHỈ HIỆN KHI SERVER ĐÃ TRẢ SỐ. Khi query lỗi, mọi trường
+                của `khop`/`lech` là giá trị mặc định của `toNhom` — render chúng
+                sẽ in `0/0 lệnh đã đóng` NGAY TRÊN câu "Chưa lấy được số khớp/lệch",
+                tức là nói với một người có 8 lệnh khớp thắng 6 rằng họ có 0. Cờ
+                `coSoLieuServer` là CỔNG DUY NHẤT của việc đó (không lặp lại điều
+                kiện `data == null` ở đây — hai cổng sẽ âm thầm phân kỳ). */}
+            {khoi15.coSoLieuServer && (
             <div className="cap6-pa-nhom-row" data-testid="cap6-pa-khoi15-counts">
               {[khoi15.khop, khoi15.lech].map((nhom, i) => (
                 <div
@@ -257,6 +275,7 @@ export function Cap6PortfolioAnalysis({
                 </div>
               ))}
             </div>
+            )}
 
             {khoi15.phatHien && (
               <p className="cap6-pa-phathien" data-testid="cap6-pa-khoi15-phathien">

@@ -385,6 +385,31 @@ describe("khối Kiểm tra danh mục — nhìn lại (spec §6)", () => {
     expect(screen.getByTestId("cap8-ketso-caveat")).toBeInTheDocument()
   })
 
+  /**
+   * ★ REGRESSION (fix wave FE-2). Với `tongRuiRoPct == null` VÀ
+   * `soViTheThieuCatLo === 0`, hàng "Tổng vốn ở rủi ro" nói "chưa tính được" còn
+   * dòng ngay bên dưới lại nói "…nên tổng ở trên là toàn bộ phần vốn ở rủi ro" —
+   * mô tả một con số không hề có trên màn hình.
+   *
+   * Fixture đổi ĐÚNG MỘT biến so với test trên: `tongRuiRoPct`.
+   */
+  it("★ tổng rủi ro chưa ghi lại được → caveat KHÔNG nói về 'tổng ở trên'", () => {
+    renderModal({ kiemTra: kiemTra({ tongRuiRoPct: null, soViTheThieuCatLo: 0 }) })
+    const caveat = screen.getByTestId("cap8-ketso-caveat").textContent!
+    expect(caveat).not.toMatch(/tổng ở trên là toàn bộ/)
+    // Vẫn phải nói ra CẢ hai sự thật: mọi vị thế đã có cắt lỗ, nhưng tổng thì hệ
+    // không ghi lại được — im lặng một trong hai là bỏ rơi người đọc.
+    expect(caveat).toMatch(/đều đã có cắt lỗ/)
+    expect(caveat).toMatch(/không ghi lại được/)
+  })
+
+  it("có tổng + không thiếu cắt lỗ → VẪN nói tổng là toàn bộ (không bị cắt oan)", () => {
+    renderModal({ kiemTra: kiemTra({ tongRuiRoPct: 17, soViTheThieuCatLo: 0 }) })
+    expect(screen.getByTestId("cap8-ketso-caveat").textContent).toMatch(
+      /tổng ở trên là toàn bộ phần vốn ở rủi ro/,
+    )
+  })
+
   it("hàng tương quan chỉ hiện khi THẬT SỰ có cặp bị gắn cờ", () => {
     renderModal()
     expect(screen.queryByTestId("cap8-ketso-tuongquan")).not.toBeInTheDocument()

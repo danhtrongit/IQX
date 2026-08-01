@@ -53,6 +53,15 @@ export const cap6Api = {
    * `/cap1/kehoach` first, plus Cấp 2/3/4's, since all five extend the SAME
    * `order_kehoach` row). The server derives `trong_so_goi_y` + `khop_goi_y`
    * itself and re-derives the kiểu from ngành.
+   *
+   * ★★ **409 = THE FREEZE, not a transient failure** (backend `4b01918`). Once the
+   * BUY has FILLED the Đối chiếu block is frozen: an **identical** re-post is a
+   * 200 no-op (so retry logic is unaffected), and a *changed* one raises
+   * `ConflictError` → HTTP 409. Its `detail` already reads "Lệnh này đã khớp —
+   * phần Đối chiếu không sửa được nữa…" and `getErrorMessage` surfaces that
+   * string VERBATIM, so callers must NOT replace it with a generic "đặt lệnh thất
+   * bại": the sentence explains *why* the freeze exists (the lớp must be committed
+   * before the outcome is known, or the khớp-vs-lệch comparison means nothing).
    */
   recordKehoach: async (input: KehoachInputCap6): Promise<OrderKehoachCap6> => {
     const res = await api.post("cap6/kehoach", { json: input }).json<unknown>()

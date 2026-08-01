@@ -178,8 +178,14 @@ export function Cap7PortfolioAnalysis({
       {/* ⑯ Đọc lực có đúng không — TỶ LỆ TỪ SERVER, xu hướng từ nhật ký (spec §7) */}
       <div className={CARD} data-testid="cap7-pa-khoi16">
         <div className="flex items-center gap-2">
+          {/* ★★ Số lệnh đã chấm CHỈ vào tiêu đề khi server đã trả nó. Chưa tải
+              được/lỗi thì `soDaCham` là placeholder 0, và `— 0 LỆNH ĐÃ CHẤM` là
+              một lời khẳng định về người dùng mà câu "chưa lấy được" bên dưới
+              không gỡ nổi. */}
           <span className={SECTION_HEADER} data-testid="cap7-pa-khoi16-header">
-            {`⑯ ĐỌC LỰC CÓ ĐÚNG KHÔNG — ${fmtInt(khoi16.soDaCham)} LỆNH ĐÃ CHẤM`}
+            {khoi16.coSoLieuServer
+              ? `⑯ ĐỌC LỰC CÓ ĐÚNG KHÔNG — ${fmtInt(khoi16.soDaCham)} LỆNH ĐÃ CHẤM`
+              : "⑯ ĐỌC LỰC CÓ ĐÚNG KHÔNG"}
           </span>
           <span className={BADGE_NEW}>mới ở Cấp 7</span>
         </div>
@@ -254,11 +260,17 @@ export function Cap7PortfolioAnalysis({
           </p>
         ) : (
           <>
-            <p className="text-xs text-[var(--color-text-1)]" data-testid="cap7-pa-khoi17-counts">
-              {`Gặp cờ cảnh giác: ${fmtInt(khoi17.soLanGapCo)} lần · chờ xác nhận: ${fmtInt(
-                khoi17.soChoXacNhan,
-              )} lần · mua đuổi: ${fmtInt(khoi17.soMuaDuoi)} lần.`}
-            </p>
+            {/* ★★ 3 con số CHỈ hiện khi server đã trả chúng. Nhánh lỗi trước đây
+                in "0 lần · 0 lần · 0 lần" ngay trên câu "Chưa lấy được số lần gặp
+                cờ" — ba con số đó là placeholder của tầng compute, và với người đã
+                gặp cờ 8 lần thì chúng là ba lời nói sai. */}
+            {khoi17.coSoLieuServer && (
+              <p className="text-xs text-[var(--color-text-1)]" data-testid="cap7-pa-khoi17-counts">
+                {`Gặp cờ cảnh giác: ${fmtInt(khoi17.soLanGapCo)} lần · chờ xác nhận: ${fmtInt(
+                  khoi17.soChoXacNhan,
+                )} lần · mua đuổi: ${fmtInt(khoi17.soMuaDuoi)} lần.`}
+              </p>
+            )}
 
             {/* Hai nhóm cạnh nhau, TRÌNH BÀY NGANG NHAU (spec §5). */}
             <div className="cap7-pa-nhom-row">

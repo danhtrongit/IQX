@@ -132,6 +132,45 @@ describe("GraduationModalCap6", () => {
     )
   })
 
+  /**
+   * ★ HỢP ĐỒNG BACKEND MỚI (commit `4b01918`): `ty_le_thang_khop`/`_lech` là
+   * NULLABLE. `null` = nhóm đó chưa có lệnh đã đóng nào; `0.0` là một KẾT QUẢ
+   * THẬT (có lệnh đã đóng, không lệnh nào thắng). `?? 0` gộp hai thứ đó lại và
+   * nói với người vừa tốt nghiệp rằng họ thắng 0% ở một nhóm họ chưa từng có lệnh.
+   *
+   * Fixture đổi ĐÚNG MỘT thứ giữa hai case (null vs 0) để test không thể xanh nhờ
+   * một khác biệt khác.
+   */
+  it("null ≠ 0: nhóm chưa có lệnh hiện 'chưa đủ dữ liệu', KHÔNG phải 0%", () => {
+    useCap6ProgressMock.mockReturnValue({
+      data: readyProgress({ ty_le_thang_khop: null, ty_le_thang_lech: null }),
+    })
+    render(<GraduationModalCap6 />)
+    const prov = screen.getByTestId("cap6-grad-khoi1-provenance").textContent!
+    expect(prov).not.toMatch(/0%/)
+    expect(prov).toContain("chưa đủ dữ liệu")
+  })
+
+  it("0% là một KẾT QUẢ THẬT và vẫn được in ra là 0%", () => {
+    useCap6ProgressMock.mockReturnValue({
+      data: readyProgress({ ty_le_thang_khop: 0, ty_le_thang_lech: 0 }),
+    })
+    render(<GraduationModalCap6 />)
+    const prov = screen.getByTestId("cap6-grad-khoi1-provenance").textContent!
+    expect(prov).toContain("khớp gợi ý thắng 0% vs lệch gợi ý 0%")
+    expect(prov).not.toContain("chưa đủ dữ liệu")
+  })
+
+  it("một nhóm null, nhóm kia 0 → mỗi nhóm nói đúng chuyện của nó", () => {
+    useCap6ProgressMock.mockReturnValue({
+      data: readyProgress({ ty_le_thang_khop: null, ty_le_thang_lech: 0 }),
+    })
+    render(<GraduationModalCap6 />)
+    const prov = screen.getByTestId("cap6-grad-khoi1-provenance").textContent!
+    expect(prov).toContain("khớp gợi ý thắng chưa đủ dữ liệu")
+    expect(prov).toContain("lệch gợi ý 0%")
+  })
+
   it("renders Khối 2 — Định vị (what the order book adds)", () => {
     useCap6ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap6 />)

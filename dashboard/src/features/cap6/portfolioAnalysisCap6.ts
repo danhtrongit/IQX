@@ -234,6 +234,16 @@ export interface Khoi15Nhom {
 export interface Cap6Khoi15DoiChieu {
   khop: Khoi15Nhom
   lech: Khoi15Nhom
+  /**
+   * ★ ĐÃ LẤY ĐƯỢC payload của server hay chưa — KHÁC HẲN `duCa2Nhom`.
+   *
+   * `false` = `GET /cap6/thach-thuc` chưa tải được/lỗi, nên MỌI con số trong
+   * `khop`/`lech` chỉ là giá trị mặc định của `toNhom` (0/0, `tyLeThang: null`).
+   * Tầng render PHẢI dùng cờ này để ẩn hẳn 2 ô nhóm: `0/0 lệnh đã đóng` in ra
+   * cạnh câu "chưa lấy được số" là một lời khẳng định về người dùng mà không ai
+   * có cơ sở để nói — và một người có 8 lệnh khớp thắng 6 sẽ đọc thấy mình 0/0.
+   */
+  coSoLieuServer: boolean
   /** Cả 2 nhóm đủ lệnh để so. `false` → KHÔNG kết luận gì. */
   duCa2Nhom: boolean
   /** Điểm % khớp − lệch. `null` khi chưa so được. */
@@ -298,9 +308,14 @@ export function computeCap6Khoi15DoiChieu(
 ): Cap6Khoi15DoiChieu {
   const khop = toNhom(nhomKhop, "Khớp gợi ý")
   const lech = toNhom(nhomLech, "Lệch gợi ý")
-  const base = { khop, lech, giaiThich: KHOI15_GIAI_THICH }
-
   const chuaTai = nhomKhop == null && nhomLech == null
+  const base = {
+    khop,
+    lech,
+    coSoLieuServer: !chuaTai,
+    giaiThich: KHOI15_GIAI_THICH,
+  }
+
   const duCa2Nhom =
     !chuaTai && khop.duDuLieu && lech.duDuLieu && khop.tyLeThang != null && lech.tyLeThang != null
 

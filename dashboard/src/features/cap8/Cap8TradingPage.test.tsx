@@ -124,8 +124,12 @@ function RightSidebarStub() {
   const { onOrderFilled: cap5OnOrderFilled, isCap5Active } = useCap5Events()
   const { onOrderFilled: cap6OnOrderFilled, isCap6Active } = useCap6Events()
   const { onOrderFilled: cap7OnOrderFilled, isCap7Active } = useCap7Events()
-  const { onOrderFilled: cap8OnOrderFilled, isCap8Active } = useCap8Events()
-  const { symbol, setSymbol } = useSymbol()
+  const {
+    onOrderFilled: cap8OnOrderFilled,
+    onCheckHanhVi: cap8OnCheckHanhVi,
+    isCap8Active,
+  } = useCap8Events()
+  const { symbol } = useSymbol()
 
   const fireLowerBuy = (sym: string, orderId: string, withDoc5Lop: boolean) => {
     cap1OnOrderFilled?.({
@@ -218,9 +222,20 @@ function RightSidebarStub() {
         {`${isCap1Active}-${isCap2Active}-${isCap3Active}-${isCap4Active}-${isCap5Active}-${isCap6Active}-${isCap7Active}-${isCap8Active}`}
       </span>
       <span data-testid="symbol-spy">{symbol}</span>
-      {/* Cấp 8's `Chọn mã khác` — FE1 wires exactly this `setSymbol("")`. */}
-      <button data-testid="chon-ma-khac" onClick={() => setSymbol("")}>
+      {/* Cấp 8's «Chọn mã khác» — ĐÚNG những gì `KiemTraDanhMucBlock.handleHanhVi`
+          làm sau fix wave FE-1: bắn `onCheckHanhVi("chon_ma_khac")` lên bus rồi
+          gọi `onChonMaKhac` (nay là no-op có chủ đích trong `TradingPanel`).
+          ★ KHÔNG còn `setSymbol("")`: một mã rỗng đi qua terminal dùng chung làm
+          `TVChart` huỷ + dựng lại widget trên một mã không phân giải được. */}
+      <button data-testid="chon-ma-khac" onClick={() => cap8OnCheckHanhVi?.("chon_ma_khac")}>
         chọn mã khác
+      </button>
+      {/* Hai lựa chọn còn lại của cùng hàng nút — chúng KHÔNG được mở bước chọn mã. */}
+      <button data-testid="van-mua" onClick={() => cap8OnCheckHanhVi?.("van_mua")}>
+        vẫn mua
+      </button>
+      <button data-testid="giam-kl" onClick={() => cap8OnCheckHanhVi?.("giam_kl")}>
+        giảm khối lượng
       </button>
       <button
         data-testid="fire-buy"
@@ -973,17 +988,35 @@ describe("Cap8TradingPage", () => {
   })
 
   // ── Cấp 8 «Chọn mã khác» (spec §4) ────────────────────────────────────────
-  // ★★ FE1's `Chọn mã khác` chỉ `setSymbol("")`. Không có bước chọn mã ở đây thì
-  // user rơi vào một terminal KHÔNG có mã nào — đúng vào lúc họ vừa làm điều an
-  // toàn hơn mà hệ vừa gợi ý.
-  describe("«Chọn mã khác» — trạng thái không còn mã nào", () => {
-    it("★ opens a symbol picker when the panel clears the symbol", () => {
+  //
+  // ★★ SAU FIX WAVE FE-1, bước chọn mã mở bằng SỰ KIỆN BUS, không bằng "mã rỗng".
+  //
+  // Trước đó `TradingPanel.onChonMaKhac` gọi `setSymbol("")` và trang này bắt
+  // trạng thái rỗng ấy (`chonMaOpen = symbol.trim() === ""`). Nhưng mã rỗng đi
+  // qua CHÍNH terminal dùng chung: `TVChart` huỷ và dựng lại widget trên một mã
+  // không phân giải được, và `chartDrawingsApi.get("")` cũng bắn theo. FE-1 bỏ
+  // `setSymbol("")`, nên nếu không đổi ở đây thì nút «Chọn mã khác» CHẾT HẲN —
+  // nó chỉ còn bắn analytics rồi không làm gì.
+  describe("«Chọn mã khác» — mở bước chọn mã, KHÔNG bao giờ xoá mã", () => {
+    it("★ bấm «Chọn mã khác» → mở bước chọn mã VÀ mã đang xem KHÔNG bị xoá", () => {
       renderCap8(<Cap8TradingPage />)
       expect(screen.queryByTestId("cap8-chon-ma")).not.toBeInTheDocument()
+      expect(screen.getByTestId("symbol-spy")).toHaveTextContent("VNM")
 
       fireEvent.click(screen.getByTestId("chon-ma-khac"))
       expect(screen.getByTestId("cap8-chon-ma")).toBeInTheDocument()
-      expect(screen.getByTestId("symbol-spy")).toHaveTextContent("")
+      // ★★ ĐÂY là hồi quy mà FE-1 sinh ra để ngăn: terminal dùng chung KHÔNG BAO
+      // GIỜ được thấy một mã rỗng.
+      expect(screen.getByTestId("symbol-spy")).toHaveTextContent("VNM")
+    })
+
+    it("★ «Vẫn mua» / «Giảm khối lượng» KHÔNG mở bước chọn mã", () => {
+      renderCap8(<Cap8TradingPage />)
+      fireEvent.click(screen.getByTestId("van-mua"))
+      expect(screen.queryByTestId("cap8-chon-ma")).not.toBeInTheDocument()
+      fireEvent.click(screen.getByTestId("giam-kl"))
+      expect(screen.queryByTestId("cap8-chon-ma")).not.toBeInTheDocument()
+      expect(screen.getByTestId("symbol-spy")).toHaveTextContent("VNM")
     })
 
     it("picking a mã sets it and closes the picker", () => {
@@ -1002,11 +1035,13 @@ describe("Cap8TradingPage", () => {
       fireEvent.change(screen.getByPlaceholderText("VD: HPG"), { target: { value: "VNINDEX" } })
       expect(screen.getByTestId("cap8-chon-ma-ok")).toBeDisabled()
       fireEvent.click(screen.getByTestId("cap8-chon-ma-ok"))
-      expect(screen.getByTestId("symbol-spy")).toHaveTextContent("")
+      // Mã cũ vẫn nguyên, bước chọn mã vẫn mở — không ai bị đẩy đi đâu cả.
+      expect(screen.getByTestId("symbol-spy")).toHaveTextContent("VNM")
+      expect(screen.getByTestId("cap8-chon-ma")).toBeInTheDocument()
     })
 
-    // ★★ Không bao giờ nhốt user: huỷ thì quay lại ĐÚNG mã đang xem trước đó.
-    it("★ cancelling restores the previous mã instead of trapping the user", () => {
+    // ★★ Không bao giờ nhốt user: huỷ thì đóng bước chọn mã và giữ nguyên mã cũ.
+    it("★ cancelling closes the picker and keeps the mã the user was on", () => {
       renderCap8(<Cap8TradingPage />)
       expect(screen.getByTestId("symbol-spy")).toHaveTextContent("VNM")
       fireEvent.click(screen.getByTestId("chon-ma-khac"))
@@ -1014,6 +1049,15 @@ describe("Cap8TradingPage", () => {
 
       expect(screen.getByTestId("symbol-spy")).toHaveTextContent("VNM")
       expect(screen.queryByTestId("cap8-chon-ma")).not.toBeInTheDocument()
+    })
+
+    it("★ mở lại được sau khi đã đóng (state không kẹt ở true)", () => {
+      renderCap8(<Cap8TradingPage />)
+      fireEvent.click(screen.getByTestId("chon-ma-khac"))
+      fireEvent.click(screen.getByTestId("cap8-chon-ma-huy"))
+      expect(screen.queryByTestId("cap8-chon-ma")).not.toBeInTheDocument()
+      fireEvent.click(screen.getByTestId("chon-ma-khac"))
+      expect(screen.getByTestId("cap8-chon-ma")).toBeInTheDocument()
     })
   })
 

@@ -27,7 +27,6 @@ export {
   usePhienCap7,
   useKehoachCap7,
   useRecordKehoachCap7,
-  useChamCap7,
   useThachThucCap7,
   useGraduateCap7,
 } from "./hooks"
@@ -53,7 +52,6 @@ export type {
   BandCap7,
   BandLuc,
   Cap7Progress,
-  ChamCap7,
   HanhViCo,
   KehoachDetailCap7,
   KehoachInputCap7,

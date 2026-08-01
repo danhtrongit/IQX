@@ -44,14 +44,37 @@ function block1(progress: Cap6Progress | null | undefined): string {
 }
 
 /**
+ * `64` → `"64%"`, `0` → `"0%"`, `null` → `"chưa đủ dữ liệu"`.
+ *
+ * ★★ **`null` ≠ `0`** (hợp đồng `Cap6Progress.ty_le_thang_*`, backend `4b01918`):
+ * `null` = nhóm chưa có lệnh đã đóng nào · `0%` = có lệnh đã đóng và không lệnh
+ * nào thắng. `?? 0` ở màn tốt nghiệp sẽ chúc mừng người dùng bằng một con số nói
+ * rằng họ thua sạch một nhóm mà họ chưa từng có lệnh nào trong đó.
+ */
+function pctHoacChuaDu(pct: number | null | undefined): string {
+  return pct == null ? "chưa đủ dữ liệu" : `${Math.round(pct)}%`
+}
+
+/**
  * §C12c — Khối 1 là lời GHI NHẬN (copy spec), nên con số đứng sau nó ngay lập
  * tức: hai tỷ lệ thắng thật của user để câu "kết quả tốt hơn rõ rệt" kiểm chứng
  * được, không phải một lời khen suông.
  */
 function block1Provenance(progress: Cap6Progress | null | undefined): string {
-  const khop = Math.round(progress?.ty_le_thang_khop ?? 0)
-  const lech = Math.round(progress?.ty_le_thang_lech ?? 0)
-  return `(Số của bạn: khớp gợi ý thắng ${khop}% vs lệch gợi ý ${lech}% — hai nhóm lệnh đã đóng, mỗi nhóm ≥ 3 lệnh.)`
+  const khop = pctHoacChuaDu(progress?.ty_le_thang_khop)
+  const lech = pctHoacChuaDu(progress?.ty_le_thang_lech)
+  // ★ Câu giải nghĩa CHỈ xuất hiện khi thật sự có một nhóm chưa đủ dữ liệu —
+  // dán nó vào mọi lần render sẽ nhắc tới một trạng thái không tồn tại trên màn
+  // hình (và làm chính test "0% là kết quả thật" không kiểm được gì).
+  const coChuaDu =
+    progress?.ty_le_thang_khop == null || progress?.ty_le_thang_lech == null
+  const chuThich = coChuaDu
+    ? " «Chưa đủ dữ liệu» = nhóm đó chưa có lệnh đã đóng nào, không phải bằng không."
+    : ""
+  return (
+    `(Số của bạn: khớp gợi ý thắng ${khop} vs lệch gợi ý ${lech} — hai nhóm lệnh đã đóng, ` +
+    `mỗi nhóm ≥ 3 lệnh.${chuThich})`
+  )
 }
 
 // Khối 2 — Định vị. Bám spec §3 nhưng chỉ hứa ĐÚNG những gì Cấp 7 làm: đọc lực

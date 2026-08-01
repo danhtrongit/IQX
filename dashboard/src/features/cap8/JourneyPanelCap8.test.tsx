@@ -291,6 +291,27 @@ describe("JourneyPanelCap8", () => {
     expect(screen.queryByTestId("cap8-journey-danhmuc-caveat")).not.toBeInTheDocument()
   })
 
+  /**
+   * ★ REGRESSION (fix wave FE-2). Widget này render caveat CHỈ khi chuỗi của server
+   * khác rỗng, trong khi `computeCap8Khoi18BanDoRuiRo` (khối ⑱) cố ý TỰ dựng câu
+   * từ `so_vi_the_thieu_cat_lo` cho đúng trường hợp đó. Cùng một payload, hai bề
+   * mặt nói hai chuyện: khối ⑱ cảnh báo, Hành trình im lặng.
+   *
+   * Fixture đổi ĐÚNG MỘT thứ so với test trên: `so_vi_the_thieu_cat_lo` (caveat của
+   * server vẫn là chuỗi rỗng mặc định của `makeDanhMuc`).
+   */
+  it("★ server trả caveat RỖNG mà vẫn có vị thế thiếu cắt lỗ → widget TỰ nói ra", () => {
+    useThachThucCap8Mock.mockReturnValue({
+      data: makeThachThuc({
+        danh_muc: makeDanhMuc({ so_vi_the_thieu_cat_lo: 2, caveat: "" }),
+      }),
+    })
+    renderPanel()
+    const caveat = screen.getByTestId("cap8-journey-danhmuc-caveat")
+    expect(caveat).toHaveTextContent("2 vị thế chưa có cắt lỗ")
+    expect(caveat).toHaveTextContent("phần ĐÃ BIẾT")
+  })
+
   // ── Widget Thách thức (nhiệm vụ ③) ─────────────────────────────────────────
   it("renders ALL THREE sub-conditions with value/target + the server's giải thích verbatim", () => {
     const data = makeThachThuc()
