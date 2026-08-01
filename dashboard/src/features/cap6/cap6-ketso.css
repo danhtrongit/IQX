@@ -1,0 +1,116 @@
+/* ============================================================
+   IQX · Cấp 6 «Đối chiếu» — khối "Đối chiếu — nhìn lại" + lớp
+   coach thứ 6 trong Kết sổ (spec §6)
+   ------------------------------------------------------------
+   Màu cấp: đỏ son `#d64550`. Kết sổ render TRONG game-shell
+   `.cap0` nên các token tối (--t1/--t2/--t3/--bg3/--bd) có sẵn;
+   mỗi `var()` vẫn kèm fallback Arco để khối đọc được nếu nó có
+   bao giờ render ngoài shell đó.
+
+   ★ KHÔNG trạng thái nào ở đây là màu cảnh báo. "Khớp gợi ý" và
+   "khác gợi ý" được trình bày NGANG NHAU (spec §5/§10: lệch gợi
+   ý là một sự thật trung tính, không phải "sai"), nên khối này
+   KHÔNG có biến thể `--canhbao` như Cấp 5's ô Sai-Thắng. Xanh
+   chỉ dùng cho "khớp" như một dấu xác nhận dữ liệu, còn "khác"
+   dùng chính đỏ son của cấp — màu ĐỊNH DANH, không phải màu lỗi.
+   ============================================================ */
+
+.cap6-ketso-doichieu {
+  --cap6: #d64550;
+  --cap6-soft: rgba(214, 69, 80, 0.13);
+  --cap6-bd: rgba(214, 69, 80, 0.4);
+
+  padding: 10px 11px;
+  margin-top: 14px;
+  background: var(--cap6-soft);
+  border: 1px solid var(--cap6-bd);
+  border-radius: 10px;
+}
+
+.cap6-ketso-doichieu-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.cap6-ketso-doichieu-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--cap6);
+}
+
+.cap6-ketso-badge {
+  padding: 1px 6px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--cap6);
+  border: 1px solid var(--cap6);
+  border-radius: 999px;
+}
+
+/* Dòng "Đối chiếu" — 3 trạng thái, KHÔNG có trạng thái nào là lỗi. */
+.cap6-ketso-khop {
+  font-weight: 600;
+}
+
+.cap6-ketso-khop--khop {
+  color: #35d07f;
+}
+
+.cap6-ketso-khop--khac {
+  color: var(--cap6);
+}
+
+/* "chưa phân loại" là thiếu dữ liệu, không phải một lựa chọn của user → xám. */
+.cap6-ketso-khop--chua {
+  font-weight: 400;
+  color: var(--t3, var(--color-text-3));
+}
+
+.cap6-ketso-nganh {
+  margin: 6px 0 0;
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: var(--t3, var(--color-text-3));
+}
+
+.cap6-ketso-lydo {
+  margin: 4px 0 0;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--t2, var(--color-text-2));
+}
+
+/* ── Lớp coach thứ 6 ─────────────────────────────────────────────────────── */
+.cap6-ketso-coach {
+  --cap6: #d64550;
+
+  padding: 10px 11px;
+  margin-top: 10px;
+  background: var(--bg3, var(--color-fill-2));
+  border-left: 2px solid var(--cap6);
+  border-radius: 8px;
+}
+
+.cap6-ketso-coach-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--cap6);
+}
+
+.cap6-ketso-coach-body {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--t1, var(--color-text-1));
+}
+
+.cap6-ketso-coach-body strong {
+  font-weight: 700;
+  color: var(--cap6);
+}

@@ -1,0 +1,114 @@
+/**
+ * Cấp 6 «Đối chiếu» — Phân tích danh mục, khối ⑭ (lớp nào đúng cho kiểu nào) +
+ * ⑮ (đối chiếu có giúp không) — spec `IQX-Cap6-Spec.md` §7.
+ *
+ * ★ Vì sao KHÔNG dùng `cap6.css`/`cap6-ketso.css`: hai file đó phục vụ bước Đối
+ * chiếu trong panel và khối trong Kết sổ, tức là bên trong game-shell `.cap0` với
+ * bộ token riêng (`--t1`, `--bg2`, `--bd`). Phân tích danh mục render trong
+ * sidebar-panel thường (xem `Cap1PortfolioAnalysisPanel.tsx` — `--color-bg-1`,
+ * KHÔNG bọc `.cap0`), nên file này dùng token Arco `--color-*` như
+ * `cap5-analysis.css` đã lập tiền lệ. Đỏ son `#d64550` là màu Cấp 6.
+ *
+ * ★ KHÔNG màu cảnh báo cho nhóm "lệch": hai nhóm của khối ⑮ được trình bày ngang
+ * nhau (spec §5/§10). Đỏ son là màu ĐỊNH DANH của cấp, không phải màu lỗi; và ô
+ * "chưa đủ dữ liệu" của khối ⑭ là xám (thiếu dữ liệu), không phải đỏ.
+ */
+
+/* ── Khối ⑭ — ma trận kiểu × lớp quyết định ──────────────────────────────── */
+.cap6-pa-matrix {
+  width: 100%;
+  margin-top: 6px;
+  font-size: 11.5px;
+  border-collapse: collapse;
+}
+
+.cap6-pa-matrix th,
+.cap6-pa-matrix td {
+  padding: 5px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--color-border-2);
+}
+
+.cap6-pa-matrix thead th {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--color-text-3);
+}
+
+.cap6-pa-matrix tbody th {
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--color-text-2);
+}
+
+.cap6-pa-cell {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-1);
+}
+
+/* Ô CHƯA đủ 3 lệnh — xám nhạt: đây là thiếu dữ liệu, không phải kết quả kém. */
+.cap6-pa-cell--chuadu {
+  font-size: 10px;
+  color: var(--color-text-3);
+}
+
+/* Ô trống (kiểu đó chưa từng tin lớp này) — không in "0", chỉ một gạch. */
+.cap6-pa-cell--trong {
+  color: var(--color-text-4, var(--color-text-3));
+}
+
+/* ── Khối ⑮ — hai nhóm khớp / lệch ───────────────────────────────────────── */
+.cap6-pa-nhom-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.cap6-pa-nhom {
+  flex: 1;
+  padding: 7px 8px;
+  text-align: center;
+  background: var(--color-fill-1, var(--color-bg-2));
+  border: 1px solid var(--color-border-2);
+  border-radius: 7px;
+}
+
+.cap6-pa-nhom-value {
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  color: var(--color-text-1);
+}
+
+.cap6-pa-nhom--khop .cap6-pa-nhom-value {
+  color: #d64550;
+}
+
+.cap6-pa-nhom-label {
+  margin-top: 2px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--color-text-3);
+}
+
+.cap6-pa-nhom-count {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-2);
+}
+
+/* Dòng phát hiện — cùng khuôn với `.cap5-pa-phathien`, viền đỏ son. */
+.cap6-pa-phathien {
+  padding: 8px 10px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-text-1);
+  background: var(--color-bg-3, var(--color-bg-2));
+  border-left: 2px solid #d64550;
+  border-radius: 6px;
+}
