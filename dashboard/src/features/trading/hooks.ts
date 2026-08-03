@@ -33,14 +33,21 @@ export function usePortfolio() {
   })
 }
 
-/** GET /virtual-trading/orders (optional status filter). */
-export function useOrders(status?: string) {
+/**
+ * GET /virtual-trading/orders (optional status filter).
+ *
+ * `enabled` (default `true`) lets a caller that only conditionally needs the
+ * history skip the request entirely — same opt-out convention as
+ * `useCap0Progress(enabled)`. Used by `Gbar`, which only reads order history
+ * while Cấp 0 nhiệm vụ ⑥ is still unfinished.
+ */
+export function useOrders(status?: string, enabled = true) {
   const { isAuthenticated } = useAuth()
   const normalized = status && status !== "all" ? status : undefined
   return useQuery<VTOrder[]>({
     queryKey: tradingKeys.orders(normalized),
     queryFn: () => tradingApi.getOrders(1, 30, normalized),
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && enabled,
     staleTime: 10_000,
   })
 }

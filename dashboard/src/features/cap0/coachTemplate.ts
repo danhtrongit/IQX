@@ -12,6 +12,17 @@ export interface CoachSituation {
   hitSL: boolean
   /** Giá ra chạm/vượt mục tiêu chốt lời kế hoạch. */
   hitTP: boolean
+  /**
+   * Có ghi nhận được ngưỡng cắt lỗ kế hoạch của lệnh này hay không. Mặc định
+   * `true` (mọi caller cũ giữ nguyên hành vi).
+   *
+   * `false` cho màn Kết sổ mở lại từ lịch sử lệnh (`findRetroDebrief`): backend
+   * giao dịch KHÔNG lưu sl/tp, nên với một vòng lệnh dựng lại từ lịch sử ta
+   * thật sự không biết người dùng đã đặt ngưỡng nào. Khi đó template D ("Bán
+   * khi chưa chạm cắt lỗ") là một CÁO BUỘC dữ liệu không chứng minh được — nên
+   * dùng template E trung thực thay thế.
+   */
+  slKnown?: boolean
 }
 
 /** A. Lệnh lãi, không chạm SL, không chạm TP (bán tay khi đang lãi). */
@@ -35,12 +46,29 @@ function templateD(): string {
 }
 
 /**
- * Chọn 1 trong 4 đoạn coach (spec §5) theo tình huống lệnh vừa Kết sổ.
+ * E. Lệnh KHÔNG lãi, và KHÔNG có ngưỡng cắt lỗ nào được ghi nhận (Kết sổ mở
+ * lại từ lịch sử lệnh — xem `retroDebrief.ts`). Ngoài spec §5: cần thiết vì cả
+ * C và D đều phát biểu về một ngưỡng cắt lỗ mà ở nhánh này ta không có dữ liệu.
+ * Cố tình KHÔNG khẳng định lãi/lỗ — nhánh này cũng nhận cả trường hợp hoà vốn
+ * đúng bằng 0 (`pnlPositive` là `pnlVnd > 0`).
+ */
+function templateE(): string {
+  return `Vòng lệnh đã khép: bạn đã mua, đã bán, và giờ là nhìn lại. **Không có dữ liệu ngưỡng cắt lỗ/chốt lời của lệnh này, nên phần Kế hoạch để trống — điều đó KHÔNG có nghĩa là bạn đã bán trước kế hoạch.** Từ lệnh sau, hãy gõ ngưỡng cắt lỗ ngay trong màn đặt lệnh để phần đối chiếu ở đây nói đúng câu chuyện. Chú ý dòng thuế bán 0,1% — bán luôn tốn thêm một khoản.`
+}
+
+/**
+ * Chọn 1 trong 4 đoạn coach (spec §5) theo tình huống lệnh vừa Kết sổ — cộng
+ * template E cho nhánh "lỗ nhưng không biết ngưỡng cắt lỗ" (xem `slKnown`).
  * `orderNo` (mặc định 1) chỉ được dùng trong template A ("Lệnh {số} khép trọn
- * vòng đời...") — 3 template còn lại không tham chiếu số lệnh.
+ * vòng đời...") — các template còn lại không tham chiếu số lệnh.
  */
 export function coachTemplate(situation: CoachSituation, orderNo = 1): string {
-  const { pnlPositive, hitTP, hitSL } = situation
+  const { pnlPositive, hitTP, hitSL, slKnown = true } = situation
+  // A/B không phát biểu gì về ngưỡng cắt lỗ, nên `slKnown` không ảnh hưởng
+  // nhánh lãi (B còn đòi `tp != null` mới `hitTP` được → luôn có căn cứ).
   if (pnlPositive) return hitTP ? templateB() : templateA(orderNo)
+  // Không có ngưỡng cắt lỗ được ghi nhận → không được dùng D (cáo buộc "bán
+  // trước kế hoạch"). C không thể tới đây: `hitSL` đòi `sl != null`.
+  if (!slKnown) return templateE()
   return hitSL ? templateC() : templateD()
 }

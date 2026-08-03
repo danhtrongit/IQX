@@ -117,6 +117,17 @@ vi.mock("./hooks", () => ({
   useGraduate: () => ({ mutate: graduateMutate, isPending: false }),
 }))
 
+// `Gbar` reads FILLED order history (`useOrders`) to re-open the Kết sổ for a
+// round trip that closed off-route or before a reload (nhiệm vụ ⑥ recovery —
+// see `retroDebrief.ts`). The real hook calls `useAuth`, which throws outside
+// an `AuthProvider` this file deliberately doesn't mount (it mocks `./hooks`
+// for the same reason). Empty history = the retro path finds nothing, so the
+// Cấp 0 shell assertions below are unaffected; the recovery behaviour itself
+// is covered in `gbar.test.tsx`.
+vi.mock("@/features/trading/hooks", () => ({
+  useOrders: () => ({ data: [] }),
+}))
+
 // `GraduationModal` (mounted unconditionally inside `Cap0TradingPage`) now
 // also calls `useEnterCap1` (Task FE3 — wires "Vào Cấp 1" to actually enter)
 // — a no-op spy is enough here since this file only exercises the Cấp 0

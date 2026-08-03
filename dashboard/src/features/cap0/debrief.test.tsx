@@ -70,6 +70,50 @@ describe("coachTemplate", () => {
     const text = coachTemplate({ pnlPositive: true, hitSL: true, hitTP: true })
     expect(text).toContain("Kế hoạch chốt lời chạm đúng mục tiêu")
   })
+
+  // ── slKnown: never accuse the user of a stop they never set ──────────────
+  // Template D ("Bán khi chưa chạm cắt lỗ") is a factual CLAIM about the
+  // user's plan. For a retroactive Kết sổ rebuilt from order history the plan
+  // is genuinely unknown (the trading backend never persists sl/tp), so D
+  // would be an accusation the data cannot support.
+  it("E — lỗ but NO recorded cắt lỗ: does NOT claim the user sold before their stop", () => {
+    const text = coachTemplate({ pnlPositive: false, hitSL: false, hitTP: false, slKnown: false })
+    expect(text).not.toContain("Bán khi chưa chạm cắt lỗ")
+    expect(text).not.toContain("hoảng loạn")
+    // ...and says plainly WHY the Kế hoạch column is blank.
+    expect(text).toContain("Không có dữ liệu ngưỡng cắt lỗ/chốt lời của lệnh này")
+    expect(text).toContain("KHÔNG có nghĩa là bạn đã bán trước kế hoạch")
+  })
+
+  it("E makes no lãi/lỗ claim either — it is also reached at exactly break-even (pnl = 0)", () => {
+    const text = coachTemplate({ pnlPositive: false, hitSL: false, hitTP: false, slKnown: false })
+    expect(text).not.toContain("Lệnh này lỗ")
+    expect(text).not.toContain("Lệnh lãi")
+  })
+
+  it("slKnown defaults to true — every pre-existing caller keeps templates C/D verbatim", () => {
+    // No `slKnown` key at all → same behaviour as before this fix.
+    expect(coachTemplate({ pnlPositive: false, hitSL: false, hitTP: false })).toContain(
+      "Bán khi chưa chạm cắt lỗ",
+    )
+    expect(coachTemplate({ pnlPositive: false, hitSL: true, hitTP: false })).toContain(
+      "Cắt lỗ đúng kế hoạch",
+    )
+  })
+
+  it("slKnown: true keeps D — a stop WAS set and the user sold before it (the claim is earned)", () => {
+    const text = coachTemplate({ pnlPositive: false, hitSL: false, hitTP: false, slKnown: true })
+    expect(text).toContain("Bán khi chưa chạm cắt lỗ")
+  })
+
+  it("slKnown: false does not hijack the PROFIT templates (A/B make no cắt-lỗ claim)", () => {
+    expect(
+      coachTemplate({ pnlPositive: true, hitSL: false, hitTP: false, slKnown: false }, 2),
+    ).toContain("Lệnh 2 khép trọn vòng đời")
+    expect(
+      coachTemplate({ pnlPositive: true, hitSL: false, hitTP: true, slKnown: false }),
+    ).toContain("Kế hoạch chốt lời chạm đúng mục tiêu")
+  })
 })
 
 // ── cap0Visibility (spec §8 hide-by-level) ─────────────────────────────────────
@@ -225,5 +269,91 @@ describe("DebriefModal", () => {
     }
     render(<DebriefModal data={noplanData} onClose={vi.fn()} />)
     expect(screen.getAllByText("—").length).toBeGreaterThanOrEqual(2)
+  })
+})
+
+// ── DebriefModal — absent sl/tp must read HONESTLY ──────────────────────────
+// A retroactive Kết sổ (`findRetroDebrief`, opened for a round trip that
+// closed on another route or before a reload) genuinely does not know the
+// user's Kế hoạch cắt lỗ/chốt lời — the trading backend never persists them.
+// The "Thực tế" column must therefore not assert anything about thresholds
+// that may never have existed.
+describe("DebriefModal — unknown Kế hoạch (retroactive Kết sổ) reads honestly", () => {
+  const retroData: DebriefData = {
+    n: 2,
+    symbol: "VNM",
+    quantity: 100,
+    entryPrice: 62000,
+    exitPrice: 58900, // a LOSS — the case that used to accuse the user
+  }
+
+  beforeEach(() => {
+    completeTaskMutate.mockReset()
+  })
+
+  it("does NOT say «không chạm» for cắt lỗ when no cắt lỗ was ever recorded", () => {
+    render(<DebriefModal data={retroData} onClose={vi.fn()} />)
+    // "không chạm" states that a stop existed and was not reached.
+    expect(screen.queryByText("không chạm")).not.toBeInTheDocument()
+    expect(screen.queryByText("chạm")).not.toBeInTheDocument()
+  })
+
+  it("does NOT say «chưa tới — bán tay» for chốt lời when no target was ever recorded", () => {
+    render(<DebriefModal data={retroData} onClose={vi.fn()} />)
+    expect(screen.queryByText("chưa tới — bán tay")).not.toBeInTheDocument()
+    expect(screen.queryByText("chạm mục tiêu ✓")).not.toBeInTheDocument()
+  })
+
+  it("says «không ghi nhận» in BOTH Thực tế cells instead", () => {
+    render(<DebriefModal data={retroData} onClose={vi.fn()} />)
+    expect(screen.getAllByText("không ghi nhận")).toHaveLength(2)
+  })
+
+  it("the coach block does not accuse the user of selling before a stop they never set", () => {
+    render(<DebriefModal data={retroData} onClose={vi.fn()} />)
+    expect(screen.queryByText(/Bán khi chưa chạm cắt lỗ/)).not.toBeInTheDocument()
+    expect(screen.getByText(/Không có dữ liệu ngưỡng cắt lỗ\/chốt lời của lệnh này/)).toBeInTheDocument()
+  })
+
+  it("still completes nhiệm vụ ⑥ when closed — the user really did read a Kết sổ", () => {
+    const onClose = vi.fn()
+    render(<DebriefModal data={retroData} onClose={onClose} />)
+    fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
+    expect(completeTaskMutate).toHaveBeenCalledWith({ taskNo: 6, gate: "debrief" })
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it("a KNOWN plan is unaffected — real sl/tp still reconcile verbatim", () => {
+    const knownPlan: DebriefData = {
+      n: 1,
+      symbol: "VNM",
+      quantity: 100,
+      entryPrice: 62000,
+      exitPrice: 58900,
+      sl: 58900,
+      tp: 68000,
+    }
+    render(<DebriefModal data={knownPlan} onClose={vi.fn()} />)
+    expect(screen.getByText("chạm")).toBeInTheDocument()
+    expect(screen.getByText("chưa tới — bán tay")).toBeInTheDocument()
+    expect(screen.queryByText("không ghi nhận")).not.toBeInTheDocument()
+    expect(screen.getByText(/Cắt lỗ đúng kế hoạch/)).toBeInTheDocument()
+  })
+
+  it("only the MISSING side degrades — sl known, tp unknown", () => {
+    const slOnly: DebriefData = {
+      n: 1,
+      symbol: "VNM",
+      quantity: 100,
+      entryPrice: 62000,
+      exitPrice: 58900,
+      sl: 58900,
+    }
+    render(<DebriefModal data={slOnly} onClose={vi.fn()} />)
+    // Cắt lỗ was set and hit → keep the real verdict...
+    expect(screen.getByText("chạm")).toBeInTheDocument()
+    // ...while the never-set chốt lời stays honest.
+    expect(screen.getAllByText("không ghi nhận")).toHaveLength(1)
+    expect(screen.queryByText("chưa tới — bán tay")).not.toBeInTheDocument()
   })
 })

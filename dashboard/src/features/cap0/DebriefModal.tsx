@@ -104,7 +104,10 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
   const hitSL = sl != null && exitPrice <= sl
   const hitTP = tp != null && exitPrice >= tp
   const tax = Math.round(exitPrice * quantity * 0.001)
-  const coach = coachTemplate({ pnlPositive, hitSL, hitTP }, n)
+  // `slKnown: sl != null` — with no recorded cắt lỗ, template D ("Bán khi chưa
+  // chạm cắt lỗ") would accuse the user about a threshold we have no data for.
+  // See `coachTemplate`'s `slKnown` docstring and `retroDebrief.ts`.
+  const coach = coachTemplate({ pnlPositive, hitSL, hitTP, slKnown: sl != null }, n)
   const slPct = sl != null && entryPrice > 0 ? ((sl - entryPrice) / entryPrice) * 100 : null
   const tpPct = tp != null && entryPrice > 0 ? ((tp - entryPrice) / entryPrice) * 100 : null
 
@@ -160,15 +163,23 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
             <td>{fmtVnd(entryPrice)}</td>
             <td>{fmtVnd(entryPrice)}</td>
           </tr>
+          {/* "Thực tế" only ever states a verdict about a threshold we ACTUALLY
+              have. With no Kế hoạch recorded, "không chạm" / "chưa tới — bán
+              tay" would assert that a stop/target existed and the user missed
+              it — false for a Kết sổ rebuilt from order history, where sl/tp
+              are genuinely unknown (the trading backend never persists them).
+              See `retroDebrief.ts`. */}
           <tr>
             <td>Cắt lỗ</td>
             <td>{sl != null ? `${fmtVnd(sl)} · ${fmtPct(slPct ?? 0)}` : "—"}</td>
-            <td>{hitSL ? "chạm" : "không chạm"}</td>
+            <td>{sl != null ? (hitSL ? "chạm" : "không chạm") : "không ghi nhận"}</td>
           </tr>
           <tr>
             <td>Chốt lời</td>
             <td>{tp != null ? `${fmtVnd(tp)} · ${fmtPct(tpPct ?? 0)}` : "—"}</td>
-            <td>{hitTP ? "chạm mục tiêu ✓" : "chưa tới — bán tay"}</td>
+            <td>
+              {tp != null ? (hitTP ? "chạm mục tiêu ✓" : "chưa tới — bán tay") : "không ghi nhận"}
+            </td>
           </tr>
           <tr>
             <td>Giá ra · thuế bán 0,1%</td>

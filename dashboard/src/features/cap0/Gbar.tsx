@@ -2,10 +2,17 @@ import { useEffect, useReducer, useRef, useState } from "react"
 import { Message } from "@arco-design/web-react"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { cn } from "@/shared/lib/cn"
+// Concrete-file import, NOT the `@/features/trading` barrel: that barrel
+// re-exports `TradingPanel`, which imports from `@/features/cap0` — going
+// through it from inside cap0 would close a real module cycle (same rationale
+// `GraduationModal.tsx` documents for `@/features/cap1/hooks`).
+// `features/trading/hooks` has no cap0 dependency, so this is safe.
+import { useOrders } from "@/features/trading/hooks"
 import { useCap0Events, type Cap0OrderEvent } from "./Cap0Context"
 import { useCap0Progress, useCompleteTask } from "./hooks"
 import { cap0Visibility, type Cap0Visibility } from "./cap0Visibility"
 import { DebriefModal, type DebriefData } from "./DebriefModal"
+import { findRetroDebrief } from "./retroDebrief"
 import {
   GBAR_TAG,
   gbarReducer,
@@ -87,6 +94,55 @@ export function Gbar() {
   const [task5State, dispatchTask5] = useReducer(task5Reducer, initialTask5State)
 
   const task1Done = !!progress?.task_1_done_at
+  // Nhiệm vụ ⑥ RECOVERY (production bug: Cấp 0 was ungraduatable). The live
+  // sell branch below is the ONLY way task ⑥ ever completed, and it depends on
+  // two things a real user routinely doesn't have:
+  //   • the Cấp 0 event bus, which exists only inside `Cap0Provider` — so a
+  //     sell placed from `/bieu-do` or `/co-phieu` (the SAME `TradingPanel`,
+  //     but with the no-op bus) fired into the void; and
+  //   • `lastBuyBySymbolRef`/`debriefCountRef`, session-local refs a page
+  //     reload wipes.
+  // Since `Cap0Service.graduate` requires 6/6 tasks + both gates, missing ⑥
+  // meant `isGraduationReady` never opened the graduation modal and the user
+  // was stuck in Cấp 0 forever. So: when the user IS on `/dau-truong` with a
+  // round trip that ALREADY closed but ⑥ still unfinished, re-open the Kết sổ
+  // from SERVER order history so they can read it and complete ⑥ themselves.
+  // Deliberately NOT auto-completed server-side — ⑥ teaches reading the Kết sổ.
+  const task6Done = !!progress?.task_6_done_at
+  // Only fetch history when it could actually be needed (`enabled`) — a user
+  // who already did ⑥ makes no extra request. Shares the query cache with
+  // `WatchlistPanel`'s own `useOrders("filled")`.
+  const { data: filledOrders } = useOrders("filled", !!progress && !task6Done)
+  const retroOpenedRef = useRef(false)
+
+  useEffect(() => {
+    // One-shot per session, and never in competition with the live path:
+    if (retroOpenedRef.current) return
+    if (!progress || task6Done) return // not in Cấp 0, or ⑥ already earned
+    if (filledOrders === undefined) return // history still loading
+    // A live debrief already opened this session (`debriefCountRef` > 0) or one
+    // is on screen → the live path owns this, with its real sl/tp. This is
+    // what stops the SAME sell producing a second, plan-less Kết sổ once
+    // `usePlaceOrder`'s invalidation refetches the history.
+    if (debriefCountRef.current > 0 || debrief !== null) return
+
+    const retro = findRetroDebrief(filledOrders)
+    if (!retro) return // nothing truthful to show — see `findRetroDebrief`
+
+    retroOpenedRef.current = true
+    // Seed the live counter from the server-derived count so a subsequent live
+    // sell continues the numbering (#N → #N+1) instead of restarting at #1.
+    debriefCountRef.current = retro.n
+    // Genuinely "subscribe to an external system": the Kết sổ to show is only
+    // knowable once the server's order history arrives, and it must land in the
+    // SAME `debrief` state the live bus path writes so the two can never both
+    // own the modal. `retroOpenedRef` makes it strictly one-shot, so this
+    // cannot cascade. Deriving it during render instead would mean reading
+    // `debriefCountRef` while rendering and a second "already dismissed" state
+    // to stop it re-appearing between "Đóng kết sổ ✓" and the PATCH landing.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDebrief(retro)
+  }, [progress, task6Done, filledOrders, debrief])
 
   useEffect(() => {
     registerHandlers({

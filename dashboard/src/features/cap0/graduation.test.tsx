@@ -64,7 +64,11 @@ vi.mock("@arco-design/web-react", async (importOriginal) => {
 
 import { GraduationModal, isGraduationReady } from "./GraduationModal"
 
-/** `GraduationModal` calls `useNavigate()` (free-graduate CTA) — needs Router context. */
+/**
+ * Kept wrapped in `MemoryRouter` (and `useNavigate` kept spied) so the tests
+ * below can assert the modal NO LONGER navigates anywhere — Cấp 1 is free, so
+ * the free-graduate CTA enters Cấp 1 rather than routing to `/nang-cap`.
+ */
 function renderModal() {
   return render(
     <MemoryRouter>
@@ -229,10 +233,17 @@ describe("GraduationModal", () => {
   })
 })
 
-// ── GraduationModal — free (non-premium) graduate: premium-honest mode fix ──
-// A free user's orders stay `san_tap`/T+0 forever regardless of
-// `graduated_at` (backend forces it), so this screen must NOT promise
-// "chế độ THỰC CHIẾN" to them — see `types.ts#tradingModeFor`.
+// ── GraduationModal — free (non-premium) graduate ───────────────────────────
+// TWO separate truths, previously conflated into one false claim:
+//   • The MODE is premium-gated. A free user's orders stay `san_tap`/T+0
+//     forever regardless of `graduated_at` (`VirtualTradingService.place_order`:
+//     `mode = "thuc_chien" if is_premium else "san_tap"`), so this screen must
+//     NOT promise "chế độ THỰC CHIẾN" to them — see `types.ts#tradingModeFor`.
+//   • Cấp 1 the LEVEL is FREE. `backend/app/api/v1/endpoints/cap1.py` states it
+//     verbatim ("Cap 1 is FREE: all endpoints use `CurrentUser`... NOT
+//     `PremiumUser`") and `DauTruongPage`'s Cấp 1 entry effect is not premium-
+//     gated either. Sending a free graduate to `/nang-cap` paywalled a level
+//     they already had access to, so they could never proceed.
 describe("GraduationModal — free (non-premium) graduate", () => {
   beforeEach(() => {
     useCap0ProgressMock.mockReset()
@@ -247,7 +258,7 @@ describe("GraduationModal — free (non-premium) graduate", () => {
     navigateMock.mockReset()
   })
 
-  it("does NOT claim THỰC CHIẾN — shows an upgrade-to-Premium invitation instead", () => {
+  it("does NOT claim THỰC CHIẾN (the mode really is premium-gated)", () => {
     useCap0ProgressMock.mockReturnValue({ data: readyProgress() })
     renderModal()
 
@@ -255,33 +266,47 @@ describe("GraduationModal — free (non-premium) graduate", () => {
     expect(screen.getByText(/Bạn đã đi trọn Cấp 0 «Nhập môn»/)).toBeInTheDocument()
     expect(screen.getByText(/Nói thẳng: bạn đã biết/)).toBeInTheDocument()
 
-    // Khối 3 must NOT contain the "chế độ THỰC CHIẾN" claim.
+    // Khối 3 must NOT contain the "Từ giờ: chế độ THỰC CHIẾN" promise.
     expect(screen.queryByText("Từ giờ: chế độ THỰC CHIẾN.")).not.toBeInTheDocument()
-    expect(screen.queryByText(/chế độ THỰC CHIẾN/)).not.toBeInTheDocument()
-
-    // Instead: an honest, Premium-gated upsell.
-    expect(screen.getByText("Cấp 0 hoàn tất.")).toBeInTheDocument()
-    expect(screen.getByText(/là tính năng dành cho tài khoản Premium/)).toBeInTheDocument()
-
-    // Button is an upgrade CTA, not the "Vào Cấp 1" claim.
-    expect(screen.queryByText("Vào Cấp 1 «Học việc» →")).not.toBeInTheDocument()
-    expect(screen.getByText("Nâng cấp Premium →")).toBeInTheDocument()
+    // It still names Thực chiến as the Premium feature it genuinely is.
+    expect(screen.getByText(/dành cho tài khoản Premium/)).toBeInTheDocument()
+    // ...and is honest that they stay on sân tập.
+    expect(screen.getByText(/SÂN TẬP/)).toBeInTheDocument()
   })
 
-  it('clicking the upgrade CTA still calls useGraduate().mutate (graduation is recorded regardless of tier), then navigates to /nang-cap', () => {
+  it("does NOT tell a free graduate that Cấp 1 needs Premium — Cấp 1 shipped FREE", () => {
     useCap0ProgressMock.mockReturnValue({ data: readyProgress() })
     renderModal()
-    fireEvent.click(screen.getByText("Nâng cấp Premium →"))
+
+    // The old copy said Thực chiến "và Cấp 1" were both behind Premium, and
+    // told the user to upgrade in order to "bước vào Cấp 1". Both are false.
+    expect(screen.queryByText(/Nâng cấp để mở khoá/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/bước vào Cấp 1/)).not.toBeInTheDocument()
+    // Instead Khối 3 says plainly that Cấp 1 is open now.
+    expect(screen.getByText(/Cấp 1 «Học việc» mở ngay/)).toBeInTheDocument()
+  })
+
+  it("the CTA enters Cấp 1 for a free graduate too — no paywall button", () => {
+    useCap0ProgressMock.mockReturnValue({ data: readyProgress() })
+    renderModal()
+    expect(screen.queryByText("Nâng cấp Premium →")).not.toBeInTheDocument()
+    expect(screen.getByText("Vào Cấp 1 «Học việc» →")).toBeInTheDocument()
+  })
+
+  it("clicking it records the graduation AND enters Cấp 1, and does NOT navigate to /nang-cap", () => {
+    useCap0ProgressMock.mockReturnValue({ data: readyProgress() })
+    renderModal()
+    fireEvent.click(screen.getByText("Vào Cấp 1 «Học việc» →"))
+
     expect(graduateMutate).toHaveBeenCalledWith(
       undefined,
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     )
-    expect(navigateMock).toHaveBeenCalledWith("/nang-cap")
-    // No "Cấp 1 sắp ra mắt" placeholder toast for the free branch, and no
-    // Cấp 1 entry either — a free user's orders never route through the real
-    // Thực chiến engine, so entering Cấp 1 makes no sense for them yet.
+    // The whole point of the fix: a free graduate proceeds into Cấp 1 instead
+    // of being bounced to the upgrade page for a level they already have.
+    expect(enterCap1Mutate).toHaveBeenCalledTimes(1)
+    expect(navigateMock).not.toHaveBeenCalled()
     expect(messageInfo).not.toHaveBeenCalled()
-    expect(enterCap1Mutate).not.toHaveBeenCalled()
   })
 
   it("still closes itself once graduated_at comes back (one-way trip, same as premium)", () => {
