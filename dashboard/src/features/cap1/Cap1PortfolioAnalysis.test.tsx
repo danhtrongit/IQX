@@ -84,6 +84,21 @@ describe("Cap1PortfolioAnalysis (spec §7 — 4 khối)", () => {
     expect(screen.getByText(/Cần ≥5 lệnh/)).toBeInTheDocument()
   })
 
+  // ★ MỘT ký hiệu tiền cho cả sản phẩm: mockup (và `cap0/DebriefModal`) dùng
+  // `đ` dính liền số — không phải `₫` cách một dấu cách. Hai glyph tiền trong
+  // cùng một sản phẩm đọc như hai đơn vị khác nhau.
+  it("★ formats VND with the mockups' «đ», never « ₫»", () => {
+    const trades = [
+      ...Array.from({ length: 4 }, (_, i) =>
+        trade({ orderId: `w${i}`, lyDo: "dong_tien", pnlVnd: 250_000 }),
+      ),
+      trade({ orderId: "l1", lyDo: "dong_tien", pnlVnd: -50_000 }),
+    ]
+    const { container } = render(<Cap1PortfolioAnalysis progress={progress()} trades={trades} />)
+    expect(screen.getByText("+950,000đ")).toBeInTheDocument()
+    expect(container.textContent).not.toContain("₫")
+  })
+
   it(">=5 lệnh: shows Khối 2 bảng thắng/thua", () => {
     const trades = Array.from({ length: 5 }, (_, i) => trade({ orderId: String(i) }))
     render(<Cap1PortfolioAnalysis progress={progress()} trades={trades} />)

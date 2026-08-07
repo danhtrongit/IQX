@@ -26,10 +26,16 @@ function fmtDate(iso: string): string {
   return new Date(iso).toLocaleDateString("vi-VN")
 }
 
+/**
+ * `+950,000đ` / `−50,000đ`. Ký hiệu tiền là `đ` dính liền số — ĐÚNG mockup và
+ * đúng `cap0/DebriefModal.tsx#fmtVndSigned`; ` ₫` (glyph khác + dấu cách) đọc
+ * như một đơn vị thứ hai trong cùng một sản phẩm. Dấu trừ là "−" (U+2212) chứ
+ * không phải hyphen, cùng lý do đã ghi ở Cấp 0.
+ */
 function fmtVndSigned(n: number): string {
   const rounded = Math.round(n)
   const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : ""
-  return `${sign}${Math.abs(rounded).toLocaleString("en-US")} ₫`
+  return `${sign}${Math.abs(rounded).toLocaleString("en-US")}đ`
 }
 
 const SECTION_HEADER =

@@ -4,6 +4,7 @@ import "./cap1.css"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { Badge, LEVELS } from "@/features/cap0/Badge"
 import { ModeBadge } from "@/features/cap0/ModeBadge"
+import { CAP_2_PLUS_ENABLED } from "./capFlags"
 import { useCap1Events } from "./Cap1Context"
 import { useCap1Progress } from "./hooks"
 import { useCap1TradeLog } from "./tradeLog"
@@ -183,12 +184,26 @@ export function JourneyPanelCap1() {
             <div className="cap0-level-card-lesson">
               "Vào lệnh phải biết VÌ SAO mua và mua vùng nào."
             </div>
+            {/* Mockup `.lvcard .info .mode` (dòng 24) — viên pill thuộc cột
+                info, dưới tên cấp, KHÔNG phải phần tử flex thứ ba cạnh huy
+                hiệu. Giống hệt `cap0/JourneyPanel.tsx`; CSS
+                (`.cap0-level-card-mode`) là của chung hai cấp. */}
+            <div className="cap0-level-card-mode">
+              <ModeBadge mode="thuc_chien" />
+            </div>
           </div>
-          <ModeBadge mode="thuc_chien" />
         </div>
 
+        {/* Mockup `.ck-head` (dòng 25-27): `.t` tiêu đề xám bên trái + `.c` bộ
+            đếm 14px mang MÀU CỦA CẤP bên phải — hai phần tử, không phải một
+            chuỗi "… · x/6". Màu lấy từ `LEVELS[1].color` (đồng `#c97b4a`) thay
+            vì hard-code trong CSS dùng chung: cùng một luật phục vụ cả Cấp 0
+            (xám `#8a90a5`) lẫn Cấp 1, đúng `var(--lvl)` của từng mockup. */}
         <div className="cap0-journey-checklist-header">
-          TRƯỚC KHI LÊN CẤP 2 · {tasksDone}/6
+          <span className="cap0-journey-checklist-title">TRƯỚC KHI LÊN CẤP 2</span>
+          <span className="cap0-journey-checklist-count cap0-display" style={{ color: level.color }}>
+            {tasksDone}/6
+          </span>
         </div>
 
         <ChecklistItem no={1} state={states[1]} onGo={goToTrading} />
@@ -241,10 +256,25 @@ export function JourneyPanelCap1() {
           </button>
         </div>
 
-        <div className="cap0-journey-goal">
-          Xong 6/6 → tốt nghiệp <strong>Cấp 1 «Học việc»</strong>, lên{" "}
-          <strong>Cấp 2 «Kỷ luật»</strong> (viên lục giác ngọc lam). Cấp 2 thêm cắt
-          lỗ/chốt lời + sổ lệnh.
+        {/* ★★ TRẠNG THÁI CUỐI của một người đã tốt nghiệp Cấp 1 ★★ — modal tốt
+            nghiệp unmount xong là về đúng màn này, checklist 6/6, và ô này là
+            câu cuối cùng họ đọc. Khi `CAP_2_PLUS_ENABLED = false` nó KHÔNG được
+            hứa một cấp chưa tồn tại; khi cờ bật lại, câu nguyên bản tự quay về.
+            (Checklist bật lại nằm trong docstring của cờ ở `./capFlags`.) */}
+        <div className="cap0-journey-goal" data-testid="cap1-journey-goal">
+          {CAP_2_PLUS_ENABLED ? (
+            <>
+              Xong 6/6 → tốt nghiệp <strong>Cấp 1 «Học việc»</strong>, lên{" "}
+              <strong>Cấp 2 «Kỷ luật»</strong> (viên lục giác ngọc lam). Cấp 2 thêm cắt
+              lỗ/chốt lời + sổ lệnh.
+            </>
+          ) : (
+            <>
+              Xong 6/6 → tốt nghiệp <strong>Cấp 1 «Học việc»</strong> — chặng cuối của
+              chương trình hiện tại. <strong>Cấp 2 «Kỷ luật» chưa ra mắt</strong>; khi mở,
+              nó sẽ dạy đặt cắt lỗ/chốt lời có cơ sở và giữ đúng cam kết của chính mình.
+            </>
+          )}
         </div>
       </div>
     </div>

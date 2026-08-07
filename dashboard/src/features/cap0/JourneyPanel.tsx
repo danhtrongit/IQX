@@ -190,10 +190,14 @@ export function JourneyPanel() {
           </div>
         </div>
 
-        {/* Mockup `.ck-head`: tiêu đề trái, bộ đếm phải. */}
+        {/* Mockup `.ck-head`: tiêu đề trái, bộ đếm phải. `.c` mang MÀU CỦA CẤP
+            (`var(--lvl)` — Cấp 0 là xám `#8a90a5`), là thứ duy nhất được tô
+            trong một `.ck-head` có tiêu đề cố tình xám `--t3`. Màu lấy từ
+            `LEVELS[n].color` thay vì hard-code trong CSS dùng chung, để cùng
+            một luật phục vụ đúng cả Cấp 0 lẫn Cấp 1 (đồng `#c97b4a`). */}
         <div className="cap0-journey-checklist-header">
           <span className="cap0-journey-checklist-title">TRƯỚC KHI LÊN CẤP 1</span>
-          <span className="cap0-journey-checklist-count cap0-display">
+          <span className="cap0-journey-checklist-count cap0-display" style={{ color: level.color }}>
             {tasksDone}/{TOTAL_TASKS}
           </span>
         </div>

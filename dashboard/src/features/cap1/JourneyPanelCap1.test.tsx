@@ -6,10 +6,20 @@ import type { Cap1Progress } from "./types"
 import type { Cap1TradeRecord } from "./tradeLog"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
-const { useCap1ProgressMock, useCap1EventsMock, useCap1TradeLogMock } = vi.hoisted(() => ({
+const { useCap1ProgressMock, useCap1EventsMock, useCap1TradeLogMock, flags } = vi.hoisted(() => ({
   useCap1ProgressMock: vi.fn(),
   useCap1EventsMock: vi.fn(() => ({ isCap1Active: true })),
   useCap1TradeLogMock: vi.fn(() => ({ trades: [], record: vi.fn() })),
+  // Mutable so the goal box can be asserted in BOTH states of the công tắc.
+  flags: { CAP_2_PLUS_ENABLED: false },
+}))
+
+// Getter (not a plain value): the panel must read the flag at RENDER time, so
+// flipping `flags` between tests actually flips the copy.
+vi.mock("./capFlags", () => ({
+  get CAP_2_PLUS_ENABLED() {
+    return flags.CAP_2_PLUS_ENABLED
+  },
 }))
 
 vi.mock("./hooks", () => ({
@@ -73,6 +83,7 @@ describe("JourneyPanelCap1", () => {
     useCap1EventsMock.mockReturnValue({ isCap1Active: true })
     useCap1TradeLogMock.mockReset()
     useCap1TradeLogMock.mockReturnValue({ trades: [], record: vi.fn() })
+    flags.CAP_2_PLUS_ENABLED = false
   })
 
   it("renders the level card — CẤP 1 / HỌC VIỆC / italic bài học / badge THỰC CHIẾN", () => {
@@ -86,10 +97,55 @@ describe("JourneyPanelCap1", () => {
     expect(screen.getByText("THỰC CHIẾN")).toBeInTheDocument()
   })
 
-  it('shows the checklist header "TRƯỚC KHI LÊN CẤP 2 · 0/6" with fresh progress', () => {
+  // Mockup `iqx-cap1-hanhtrinh.html` `.ck-head` (lines 25-27): `.t` tiêu đề bên
+  // trái + `.c` bộ đếm bên phải — HAI phần tử, không phải một chuỗi "… · x/6".
+  // Cùng một `.ck-head` mà Cấp 0 đã dựng; CSS là của chung nên Cấp 1 phải khớp
+  // y hệt, nếu không nó ăn màu xám phẳng của `.t` cho cả bộ đếm.
+  it("shows the checklist header as title + counter (mockup .ck-head), not one joined string", () => {
     useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
-    renderPanel()
-    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 2 · 0/6")).toBeInTheDocument()
+    const { container } = renderPanel()
+
+    const header = container.querySelector(".cap0-journey-checklist-header")
+    expect(header).not.toBeNull()
+    const head = within(header as HTMLElement)
+
+    const title = head.getByText("TRƯỚC KHI LÊN CẤP 2")
+    expect(title.className).toContain("cap0-journey-checklist-title")
+    const count = head.getByText("0/6")
+    expect(count.className).toContain("cap0-journey-checklist-count")
+    expect(title).not.toBe(count)
+
+    // Chuỗi gộp cũ phải biến mất — nếu còn, `.c` không bao giờ được tô riêng.
+    expect(screen.queryByText("TRƯỚC KHI LÊN CẤP 2 · 0/6")).not.toBeInTheDocument()
+  })
+
+  // Mockup `.ck-head .c { color: var(--lvl) }` — bộ đếm mang MÀU CỦA CẤP
+  // (Cấp 1 = đồng `#c97b4a`), không phải màu xám `--t3` của tiêu đề. Đây chính
+  // là "brand emphasis" mà Cấp 1 đánh mất khi `.cap0-journey-checklist-header`
+  // đổi sang `var(--t3)`.
+  it("colours the counter with the Cấp 1 level colour, not the header's grey", () => {
+    useCap1ProgressMock.mockReturnValue({
+      data: makeProgress({ task_1_done_at: "t", task_2_done_at: "t" }),
+    })
+    const { container } = renderPanel()
+    const count = container.querySelector(".cap0-journey-checklist-count") as HTMLElement
+    expect(count).not.toBeNull()
+    expect(count).toHaveTextContent("2/6")
+    // LEVELS[1].color
+    expect(count).toHaveStyle({ color: "#c97b4a" })
+  })
+
+  // Mockup `.lvcard .info .mode` (line 24): viên pill chế độ nằm TRONG cột info,
+  // dưới tên cấp — không phải phần tử flex thứ ba cạnh huy hiệu.
+  it("puts the mode pill inside the level-card info column, under the name", () => {
+    useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
+    const { container } = renderPanel()
+    const body = container.querySelector(".cap0-level-card-body")
+    expect(body).not.toBeNull()
+    expect(within(body as HTMLElement).getByText("THỰC CHIẾN")).toBeInTheDocument()
+    // ...và KHÔNG còn là con trực tiếp của `.cap0-level-card`.
+    const card = container.querySelector(".cap0-level-card") as HTMLElement
+    expect(card.querySelector(":scope > .cap0-mode")).toBeNull()
   })
 
   it("renders all 6 task names verbatim", () => {
@@ -256,11 +312,41 @@ describe("JourneyPanelCap1", () => {
     expect(screen.getByTestId("panel-spy")).toHaveTextContent("cap1-analysis")
   })
 
-  it("shows the graduation goal box copy", () => {
+  // ── ★★ Ô mục tiêu: TRẠNG THÁI CUỐI của một người đã tốt nghiệp Cấp 1 ★★ ────
+  // Modal tốt nghiệp unmount xong là về đúng màn này, checklist 6/6, và ô mục
+  // tiêu là câu cuối cùng họ đọc. Khi `CAP_2_PLUS_ENABLED = false` nó KHÔNG được
+  // hứa một cấp chưa tồn tại.
+  it("★ goal box never promises Cấp 2 while CAP_2_PLUS_ENABLED is false", () => {
+    flags.CAP_2_PLUS_ENABLED = false
+    useCap1ProgressMock.mockReturnValue({
+      data: makeProgress({
+        task_1_done_at: "t",
+        task_2_done_at: "t",
+        task_3_done_at: "t",
+        task_4_done_at: "t",
+        task_5_done_at: "t",
+        task_6_done_at: "t",
+      }),
+    })
+    renderPanel()
+    const goal = screen.getByTestId("cap1-journey-goal")
+    expect(goal).toHaveTextContent(/tốt nghiệp/)
+    // Không hứa "lên Cấp 2", không liệt kê tính năng Cấp 2 như thể sắp có.
+    expect(goal).not.toHaveTextContent(/lên\s+Cấp 2/)
+    expect(goal).not.toHaveTextContent(/Cấp 2 thêm cắt lỗ/)
+    expect(goal).not.toHaveTextContent(/viên lục giác ngọc lam/)
+    // ...mà nói thẳng Cấp 2 chưa mở.
+    expect(goal).toHaveTextContent(/chưa (ra mắt|mở)/)
+  })
+
+  it("★ goal box restores the Cấp 2 wording the moment CAP_2_PLUS_ENABLED flips back on", () => {
+    flags.CAP_2_PLUS_ENABLED = true
     useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
     renderPanel()
-    expect(screen.getByText(/tốt nghiệp/)).toBeInTheDocument()
-    expect(screen.getByText(/Cấp 2 «Kỷ luật»/)).toBeInTheDocument()
+    const goal = screen.getByTestId("cap1-journey-goal")
+    expect(goal).toHaveTextContent("Xong 6/6 → tốt nghiệp Cấp 1 «Học việc», lên Cấp 2 «Kỷ luật»")
+    expect(goal).toHaveTextContent("Cấp 2 thêm cắt lỗ/chốt lời + sổ lệnh")
+    expect(goal).not.toHaveTextContent(/chưa ra mắt/)
   })
 
   it("does NOT render any medal cabinet / Tủ huân chương (spec §8 — Cấp 1 has none)", () => {

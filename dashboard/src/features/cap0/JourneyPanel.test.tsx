@@ -142,14 +142,41 @@ describe("JourneyPanel", () => {
   // mockup gives the layout).
   it('shows the checklist header as title + counter — "TRƯỚC KHI LÊN CẤP 1" and "0/5"', () => {
     useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
-    render(
+    const { container } = render(
       <SidebarProvider>
         <JourneyPanel />
       </SidebarProvider>,
     )
-    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 1")).toBeInTheDocument()
-    expect(screen.getByText("0/5")).toBeInTheDocument()
+    const header = container.querySelector(".cap0-journey-checklist-header")
+    expect(header).not.toBeNull()
+    const head = within(header as HTMLElement)
+
+    const title = head.getByText("TRƯỚC KHI LÊN CẤP 1")
+    expect(title.className).toContain("cap0-journey-checklist-title")
+    const count = head.getByText("0/5")
+    expect(count.className).toContain("cap0-journey-checklist-count")
+    expect(title).not.toBe(count)
+
     expect(screen.queryByText("TRƯỚC KHI LÊN CẤP 1 · 0/5")).not.toBeInTheDocument()
+  })
+
+  // Mockup `.ck-head .c { color: var(--lvl) }` — Cấp 0's `--lvl` is its own grey
+  // `#8a90a5` (`LEVELS[0].color`), Cấp 1's is copper. The counter is the ONE
+  // level-coloured thing in a `.ck-head` whose title is deliberately `--t3` grey,
+  // and the rule lives in shared CSS, so both levels assert it.
+  it("colours the counter with the Cấp 0 level colour", () => {
+    useCap0ProgressMock.mockReturnValue({
+      data: makeProgress({ task_1_done_at: "2026-07-21T01:00:00Z" }),
+    })
+    const { container } = render(
+      <SidebarProvider>
+        <JourneyPanel />
+      </SidebarProvider>,
+    )
+    const count = container.querySelector(".cap0-journey-checklist-count") as HTMLElement
+    expect(count).not.toBeNull()
+    expect(count).toHaveTextContent("1/5")
+    expect(count).toHaveStyle({ color: "#8a90a5" })
   })
 
   // Mockup `.lvcard .info`: the mode pill sits INSIDE the info column under the

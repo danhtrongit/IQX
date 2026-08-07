@@ -2,19 +2,23 @@ import { Message, Modal } from "@arco-design/web-react"
 import { Badge, LEVELS } from "@/features/cap0/Badge"
 import "@/features/cap0/cap0.css"
 import "./cap1.css"
+import { CAP_2_PLUS_ENABLED } from "./capFlags"
 import { useCap1Progress, useGraduateCap1 } from "./hooks"
 import { countCap1TasksDone, type Cap1Progress } from "./types"
-// ★ CẤP 2 TẠM TẮT (xem `CAP_2_PLUS_ENABLED` trong `DauTruongPage.tsx`) — file
-// này KHÔNG còn import `useEnterCap2` nữa. Khi bật lại Cấp 2, khôi phục đúng 3
-// thứ đã bị gỡ ở đây:
+// ★ CẤP 2 TẠM TẮT (xem docstring của `CAP_2_PLUS_ENABLED` trong `./capFlags` —
+// cờ sống ở file riêng chứ không ở `DauTruongPage.tsx`, vì file này không thể
+// import file đó: vòng `DauTruongPage → Cap1TradingPage → GraduationModalCap1`).
+//
+// Câu chữ đã GẮN THEO CỜ (Khối 3 + dòng "sắp ra mắt" dưới CTA) nên bật lại cờ
+// là chúng tự đúng. Thứ DUY NHẤT còn phải nối tay là cái import đã gỡ hẳn:
 //   1. `import { useEnterCap2 } from "@/features/cap2/hooks"` — concrete-file
 //      import (KHÔNG dùng barrel `@/features/cap2`), theo đúng anti-cycle
 //      rationale mà `cap0/GraduationModal.tsx` đã ghi cho import
 //      `@/features/cap1/hooks` của nó (barrel đó re-export `Cap2TradingPage`,
 //      vốn import `CenterPanel`/`RightSidebar`/`RightToolbar` từ
 //      `@/features/dashboard`);
-//   2. `const enterCap2 = useEnterCap2()` + `onSuccess: () => enterCap2.mutate()`;
-//   3. xoá dòng "sắp ra mắt" trong CTA + toast `Message.info(...)`.
+//   2. `const enterCap2 = useEnterCap2()` + `onSuccess: () => enterCap2.mutate()`
+//      thay cho toast `Message.info("… sắp ra mắt …")` bên dưới.
 
 /**
  * Điều kiện mở màn tốt nghiệp Cấp 1 (spec §3): 6/6 nhiệm vụ, chưa từng tốt
@@ -36,6 +40,19 @@ const BLOCK_2 =
 
 const BLOCK_3 =
   "**Từ giờ: Cấp 2 «Kỷ luật».** Form Kế hoạch thêm 2 phần: Cắt lỗ và Chốt lời — với 2 cách đặt có cơ sở. Bạn sẽ có thêm: chuỗi lệnh kỷ luật · điểm kỷ luật hằng ngày · cảnh báo khi giá chạm cắt lỗ."
+
+/**
+ * Khối 3 khi `CAP_2_PLUS_ENABLED = false`. Nguyên văn spec §3 ở trên nói thì
+ * HIỆN TẠI ("Từ giờ: Cấp 2 «Kỷ luật».", "Bạn sẽ có thêm: …") — đọc như thể Cấp
+ * 2 vừa mở ra ngay sau nút bấm, trong khi dòng ngay dưới CTA nói "Cấp 2 sắp ra
+ * mắt". Một màn hình không được tự mâu thuẫn với chính nó.
+ *
+ * Bản này giữ NGUYÊN nội dung Cấp 2 sẽ mang lại (user vẫn cần biết mình đang
+ * chờ gì) nhưng ở thì TƯƠNG LAI và nói thẳng cấp đó chưa mở. Cờ bật lại → câu
+ * nguyên văn spec quay về, không phải sửa dòng nào.
+ */
+const BLOCK_3_CAP2_CHUA_MO =
+  "**Cấp 2 «Kỷ luật» chưa ra mắt.** Cấp 1 là chặng cuối của chương trình hiện tại — bạn đã đi hết phần đang mở. Khi Cấp 2 mở, form Kế hoạch sẽ thêm 2 phần Cắt lỗ và Chốt lời (2 cách đặt có cơ sở), kèm chuỗi lệnh kỷ luật · điểm kỷ luật hằng ngày · cảnh báo khi giá chạm cắt lỗ."
 
 /** Splits on the spec's own `**bold**` markers and renders them as `<strong>`. */
 function renderInlineBold(text: string) {
@@ -106,7 +123,9 @@ export function GraduationModalCap1() {
 
       <div className="cap0-grad-block">{renderInlineBold(BLOCK_1)}</div>
       <div className="cap0-grad-block">{renderInlineBold(BLOCK_2)}</div>
-      <div className="cap0-grad-block cap1-grad-block--cap2">{renderInlineBold(BLOCK_3)}</div>
+      <div className="cap0-grad-block cap1-grad-block--cap2" data-testid="cap1-grad-khoi3">
+        {renderInlineBold(CAP_2_PLUS_ENABLED ? BLOCK_3 : BLOCK_3_CAP2_CHUA_MO)}
+      </div>
 
       {/* ★ KHÔNG bao giờ `disabled` như một trạng thái "sắp ra mắt" (xem
           doc-comment ở trên): modal này `closable={false}` và chỉ unmount khi
@@ -124,21 +143,23 @@ export function GraduationModalCap1() {
       >
         Vào Cấp 2 «Kỷ luật» →
         {/* Dòng "sắp ra mắt" — style inline vì `cap1.css` đang do task khác sở
-            hữu; khi bật lại Cấp 2 thì xoá cả span này. Giống
-            `.cap7-grad-cta-soon`. */}
-        <span
-          className="cap1-grad-cta-soon"
-          style={{
-            display: "block",
-            marginTop: 2,
-            fontSize: 10,
-            fontWeight: 500,
-            letterSpacing: "0.3px",
-            opacity: 0.85,
-          }}
-        >
-          Cấp 2 sắp ra mắt — bấm để ghi nhận tốt nghiệp Cấp 1
-        </span>
+            hữu. Giống `.cap7-grad-cta-soon`. Gắn theo cờ (không hard-code) nên
+            bật lại Cấp 2 là nó tự biến mất cùng lúc với Khối 3 ở trên. */}
+        {!CAP_2_PLUS_ENABLED && (
+          <span
+            className="cap1-grad-cta-soon"
+            style={{
+              display: "block",
+              marginTop: 2,
+              fontSize: 10,
+              fontWeight: 500,
+              letterSpacing: "0.3px",
+              opacity: 0.85,
+            }}
+          >
+            Cấp 2 sắp ra mắt — bấm để ghi nhận tốt nghiệp Cấp 1
+          </span>
+        )}
       </button>
     </Modal>
   )

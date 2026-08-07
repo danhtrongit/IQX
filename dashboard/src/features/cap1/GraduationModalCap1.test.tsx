@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen, fireEvent, within } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Cap1Progress } from "./types"
@@ -10,7 +10,10 @@ const {
   enterCap2Mutate,
   messageInfo,
   navigateMock,
+  flags,
 } = vi.hoisted(() => ({
+  // Mutable so Khối 3 + dòng CTA can be asserted in BOTH states of the công tắc.
+  flags: { CAP_2_PLUS_ENABLED: false },
   useCap1ProgressMock: vi.fn(),
   graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
     opts?.onSuccess?.()
@@ -26,6 +29,13 @@ const {
 vi.mock("./hooks", () => ({
   useCap1Progress: (...a: unknown[]) => useCap1ProgressMock(...a),
   useGraduateCap1: () => ({ mutate: graduateMutate, isPending: graduatePending.value }),
+}))
+
+// Getter (not a plain value): the modal must read the flag at RENDER time.
+vi.mock("./capFlags", () => ({
+  get CAP_2_PLUS_ENABLED() {
+    return flags.CAP_2_PLUS_ENABLED
+  },
 }))
 
 // ★ Cấp 2-8 TẠM TẮT: `GraduationModalCap1` không còn gọi `useEnterCap2` nữa.
@@ -117,6 +127,7 @@ describe("GraduationModalCap1", () => {
     enterCap2Mutate.mockReset()
     messageInfo.mockReset()
     navigateMock.mockReset()
+    flags.CAP_2_PLUS_ENABLED = false
   })
 
   it("does not render when 6/6 isn't met", () => {
@@ -146,16 +157,43 @@ describe("GraduationModalCap1", () => {
       ),
     ).toBeInTheDocument()
 
-    // Khối 3 — Chuyển cấp (viền ngọc lam)
-    expect(screen.getByText("Từ giờ: Cấp 2 «Kỷ luật».")).toBeInTheDocument()
-    expect(screen.getByText(/Bạn sẽ có thêm: chuỗi lệnh kỷ luật/)).toBeInTheDocument()
-
     // Button
     expect(screen.getByTestId("cap1-grad-cta")).toHaveTextContent("Vào Cấp 2 «Kỷ luật» →")
 
     const svg = document.querySelector(".cap0-grad-badge-wrap svg")
     expect(svg).not.toBeNull()
     expect(svg?.getAttribute("width")).toBe("120")
+  })
+
+  // ── ★★ Khối 3 phải TRUNG THỰC khi Cấp 2 chưa mở ★★ ────────────────────────
+  // Nguyên văn spec §3 nói ở thì HIỆN TẠI ("Từ giờ: Cấp 2 «Kỷ luật».", "Bạn sẽ
+  // có thêm: …") trong khi dòng dưới CTA nói "Cấp 2 sắp ra mắt" — cùng một màn
+  // hình tự mâu thuẫn. Khi `CAP_2_PLUS_ENABLED = false`, Khối 3 phải nói đúng
+  // sự thật; khi bật lại, nguyên văn spec quay về mà không phải sửa dòng nào.
+  it("★ Khối 3 does not claim Cấp 2 has started while CAP_2_PLUS_ENABLED is false", () => {
+    flags.CAP_2_PLUS_ENABLED = false
+    useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
+    render(<GraduationModalCap1 />)
+    const khoi3 = screen.getByTestId("cap1-grad-khoi3")
+    expect(khoi3).not.toHaveTextContent("Từ giờ: Cấp 2 «Kỷ luật».")
+    expect(khoi3).not.toHaveTextContent(/^.*Bạn sẽ có thêm: chuỗi lệnh kỷ luật/)
+    expect(khoi3).toHaveTextContent(/Cấp 2 «Kỷ luật» chưa ra mắt/)
+    // Vẫn được nói Cấp 2 SẼ có gì — miễn là ở thì tương lai, không phải "từ giờ".
+    expect(khoi3).toHaveTextContent(/Khi Cấp 2 mở/)
+  })
+
+  it("★ Khối 3 restores the verbatim spec §3 wording the moment the flag flips back on", () => {
+    flags.CAP_2_PLUS_ENABLED = true
+    useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
+    render(<GraduationModalCap1 />)
+    const khoi3 = screen.getByTestId("cap1-grad-khoi3")
+    expect(within(khoi3).getByText("Từ giờ: Cấp 2 «Kỷ luật».")).toBeInTheDocument()
+    expect(khoi3).toHaveTextContent(
+      "Form Kế hoạch thêm 2 phần: Cắt lỗ và Chốt lời — với 2 cách đặt có cơ sở. Bạn sẽ có thêm: chuỗi lệnh kỷ luật · điểm kỷ luật hằng ngày · cảnh báo khi giá chạm cắt lỗ.",
+    )
+    expect(khoi3).not.toHaveTextContent(/chưa ra mắt/)
+    // ...và dòng "sắp ra mắt" dưới CTA tự biến mất cùng lúc.
+    expect(screen.getByTestId("cap1-grad-cta")).not.toHaveTextContent(/sắp ra mắt/)
   })
 
   // ── ★★ CẤP 2 TẠM TẮT ★★ ───────────────────────────────────────────────────

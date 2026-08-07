@@ -37,30 +37,13 @@ import { Cap7TradingPage } from "@/features/cap7/Cap7TradingPage"
 import { useCap8Progress, useEnterCap8 } from "@/features/cap8/hooks"
 import { Cap8TradingPage } from "@/features/cap8/Cap8TradingPage"
 
-/**
- * ★★ CÔNG TẮC TẠM TẮT CẤP 2-8 — MỘT CHỖ DUY NHẤT, ĐỔI `false` → `true` LÀ BẬT
- * LẠI TOÀN BỘ ★★
- *
- * Founder quyết định sản phẩm ra mắt với **Cấp 0 + Cấp 1 thôi**; Cấp 2-8 đã
- * build xong và **KHÔNG bị xoá** — chỉ tạm tắt. Cờ này là chỗ duy nhất quyết
- * định điều đó:
- *
- *  - `false` (hiện tại): routing DỪNG ở `Cap1TradingPage`. Vì mọi `shouldQuery`
- *    của cấp trên đều móc xích vào `progressPastCap1` bên dưới, KHÔNG có
- *    `GET /capN/progress` lẫn `POST /capN/enter` nào (N = 2…8) được bắn ra ở
- *    bất kỳ trạng thái nào — các `useEffect` `enterCapN` đều return sớm.
- *  - `true`: nguyên chuỗi Cấp 2 → Cấp 8 bên dưới sống lại y như trước, không
- *    phải sửa gì thêm ở file này.
- *
- * **Bật lại cần đúng 2 việc:** (1) đổi cờ này thành `true`; (2) gỡ dòng "sắp ra
- * mắt" + nối lại `useEnterCap2` trong `GraduationModalCap1.tsx` (file đó ghi rõ
- * cách). Test cho cả chuỗi Cấp 2-8 vẫn còn nguyên trong `DauTruongPage.test.tsx`
- * dưới `describe.runIf(CAP_2_PLUS_ENABLED)` — chúng tự chạy lại khi cờ bật.
- *
- * An toàn khi bật/tắt: trên production chưa ai qua khỏi Cấp 0 (`cap1_progress`
- * rỗng), nên không có user nào bị kẹt giữa chừng.
- */
-export const CAP_2_PLUS_ENABLED = false
+// ★★ CÔNG TẮC TẠM TẮT CẤP 2-8 ★★ — nguồn sự thật (kèm checklist bật lại đầy đủ)
+// nằm ở `./capFlags`, KHÔNG ở file này: `GraduationModalCap1`/`JourneyPanelCap1`
+// cũng phải đọc cờ để nói đúng sự thật, mà chúng không thể import file này (vòng
+// `DauTruongPage → Cap1TradingPage → GraduationModalCap1`). Re-export để mọi
+// import cũ `from "./DauTruongPage"` vẫn chạy y như trước.
+import { CAP_2_PLUS_ENABLED } from "./capFlags"
+export { CAP_2_PLUS_ENABLED } from "./capFlags"
 
 function FullPageSpinner() {
   return (

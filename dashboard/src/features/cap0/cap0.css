@@ -344,6 +344,12 @@
   margin-bottom: 10px;
 }
 
+/* Mockup `.ck-head .c` — 14px, đậm, và mang MÀU CỦA CẤP (`var(--lvl)`), thứ duy
+   nhất được tô trong một `.ck-head` có tiêu đề cố tình xám `--t3`. Vì luật này
+   dùng chung cho Cấp 0 (xám `#8a90a5`) lẫn Cấp 1 (đồng `#c97b4a`), MÀU do
+   component truyền vào bằng inline style từ `LEVELS[n].color` — `--t2` dưới đây
+   chỉ là fallback nếu ai đó render span này mà quên màu. Đừng gỡ inline style
+   đó: gỡ là hai cấp lại dùng chung một màu sai. */
 .cap0-journey-checklist-count {
   font-size: 14px;
   font-weight: 700;
@@ -568,10 +574,21 @@
   margin-bottom: 8px;
 }
 
+/* ★ `border-collapse: collapse` BỎ QUA `border-radius` (CSS 2.1 §17.6.2 — mô
+   hình collapsed borders không vẽ bo góc), nên thẻ đối chiếu "bo tròn" của
+   mockup vẫn ra góc vuông. `separate` + `border-spacing: 0` cho ra ĐÚNG cùng
+   một lưới 1px (mỗi ô chỉ vẽ viền dưới/phải, ô cuối hàng/cột bỏ viền — xem 3
+   luật ngay dưới) nhưng bo góc thì có hiệu lực.
+
+   `overflow: hidden` giữ lại nhưng KHÔNG dựa vào nó: clip bằng overflow trên
+   chính `<table>` (`display: table`) là vùng xám giữa các engine, và ở đây
+   không có wrapper để bọc — `DebriefModal`/`KetsoModalCap1…8` đều render
+   `<table>` trần. Nên 4 ô góc tự bo lấy (4 luật cuối khối này). */
 .cap0-debrief-table {
   width: 100%;
   table-layout: fixed;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   border: 1px solid var(--bd);
   border-radius: 8px;
   overflow: hidden;
@@ -616,6 +633,26 @@
   font-family: inherit;
   font-weight: 400;
   color: var(--t2);
+}
+
+/* 4 ô góc tự bo (xem lý do ở khối `.cap0-debrief-table`). `th` có nền `--bg3`
+   nên nếu không bo, góc trên của bảng lòi ra hai mẩu vuông xám ngay trong đường
+   bo 8px. Dùng `first-of-type`/`last-of-type` để bám đúng hàng đầu của `thead`
+   và hàng cuối của `tbody` — ô giữa không có nền nên bo thừa cũng vô hình. */
+.cap0-debrief-table thead tr:first-of-type th:first-of-type {
+  border-top-left-radius: 7px;
+}
+
+.cap0-debrief-table thead tr:first-of-type th:last-of-type {
+  border-top-right-radius: 7px;
+}
+
+.cap0-debrief-table tbody tr:last-of-type td:first-of-type {
+  border-bottom-left-radius: 7px;
+}
+
+.cap0-debrief-table tbody tr:last-of-type td:last-of-type {
+  border-bottom-right-radius: 7px;
 }
 
 .cap0-debrief-coach {
