@@ -172,7 +172,6 @@ export function KetsoModalCap1({
 
   const { n, orderId, symbol, vungMua, lyDo, trangThaiLucDat, buyDate, sellDate } = data
   const soPhienGiu = countTradingSessions(buyDate, sellDate)
-  const soNgayLich = countCalendarDays(buyDate, sellDate)
   const pnlPositive = pnlVnd > 0
   const tax = Math.round(exitPrice * quantity * 0.001)
   const coChuyen = isLenhCoChuyen({ pnlPct, soPhienGiu })
@@ -251,6 +250,8 @@ export function KetsoModalCap1({
         {`${fmtVndSigned(pnlVnd)} · MUA ${quantity} ${symbol} → BÁN · Giữ ${soPhienGiu} phiên`}
       </div>
 
+      <div className="cap1-ketso-section-label">Đối chiếu kế hoạch với thực tế</div>
+
       <table className="cap0-debrief-table">
         <thead>
           <tr>
@@ -260,15 +261,15 @@ export function KetsoModalCap1({
           </tr>
         </thead>
         <tbody>
+          {/* Lý do + Trạng thái không có vế "Thực tế" (spec §6 bảng: cột phải là
+              "—") → trải ngang 2 cột như mockup thay vì vẽ một ô "—" trống. */}
           <tr>
             <td>Lý do</td>
-            <td>{lyDoLabel(lyDo)}</td>
-            <td>—</td>
+            <td colSpan={2}>{lyDoLabel(lyDo)}</td>
           </tr>
           <tr>
             <td>Trạng thái lớp lúc đặt</td>
-            <td>{TRANG_THAI_LABEL[trangThaiLucDat]}</td>
-            <td>—</td>
+            <td colSpan={2}>{TRANG_THAI_LABEL[trangThaiLucDat]}</td>
           </tr>
           <tr>
             <td>Vùng mua</td>
@@ -276,16 +277,16 @@ export function KetsoModalCap1({
             <td>{fmtVnd(entryPrice)}</td>
           </tr>
           <tr>
-            <td>Giá ra · thuế bán 0,1%</td>
+            <td>Giá ra · thuế</td>
             <td>—</td>
             <td>
               {fmtVnd(exitPrice)} · <span className="text-down">{fmtVnd(tax)}</span>
             </td>
           </tr>
           <tr>
-            <td>Thời gian giữ lệnh</td>
+            <td>Thời gian giữ</td>
             <td>—</td>
-            <td>{`${soPhienGiu} phiên · ${soNgayLich} ngày`}</td>
+            <td>{`${soPhienGiu} phiên`}</td>
           </tr>
         </tbody>
       </table>

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, within } from "@testing-library/react"
 import React from "react"
 import { describe, expect, it } from "vitest"
 import { Cap1PortfolioAnalysis } from "./Cap1PortfolioAnalysis"
@@ -40,6 +40,21 @@ function trade(overrides: Partial<Cap1TradeRecord>): Cap1TradeRecord {
 }
 
 describe("Cap1PortfolioAnalysis (spec §7 — 4 khối)", () => {
+  it("titles the 4 khối with the mockup's circled numerals + wording", () => {
+    const trades = Array.from({ length: 5 }, (_, i) => trade({ orderId: String(i) }))
+    render(<Cap1PortfolioAnalysis progress={progress()} trades={trades} />)
+    expect(screen.getByText("① Hồ sơ tổng quan")).toBeInTheDocument()
+    expect(screen.getByText("② Thắng / thua theo 5 lý do")).toBeInTheDocument()
+    expect(screen.getByText("③ Độ phủ 5 lý do + Chọn lý do có cơ sở")).toBeInTheDocument()
+    expect(screen.getByText("④ Tiến trình 6 nhiệm vụ")).toBeInTheDocument()
+    expect(screen.getByText("🔍 Mẫu hệ thống phát hiện (về lý do)")).toBeInTheDocument()
+  })
+
+  it("does NOT render the mockup's page header (this is a sidebar panel)", () => {
+    render(<Cap1PortfolioAnalysis progress={progress()} trades={[]} />)
+    expect(screen.queryByText(/Quay lại Nắm giữ/)).not.toBeInTheDocument()
+  })
+
   it("renders Khối 1 hồ sơ tổng quan", () => {
     const trades = [
       trade({ orderId: "1", pnlVnd: 100 }),
@@ -57,7 +72,7 @@ describe("Cap1PortfolioAnalysis (spec §7 — 4 khối)", () => {
 
   it("renders Khối 4 tiến trình 6 nhiệm vụ with the done/pending state from progress", () => {
     render(<Cap1PortfolioAnalysis progress={progress()} trades={[]} />)
-    expect(screen.getByText("6 NHIỆM VỤ CẤP 1")).toBeInTheDocument()
+    expect(screen.getByText("④ Tiến trình 6 nhiệm vụ")).toBeInTheDocument()
     expect(screen.getByText(/Lệnh đầu có kế hoạch/)).toBeInTheDocument()
     expect(screen.getByText(/10 lệnh/)).toBeInTheDocument()
   })
@@ -65,29 +80,56 @@ describe("Cap1PortfolioAnalysis (spec §7 — 4 khối)", () => {
   it("<5 lệnh: hides Khối 2 and shows the fallback note", () => {
     const trades = [trade({ orderId: "1" }), trade({ orderId: "2" })]
     render(<Cap1PortfolioAnalysis progress={progress()} trades={trades} />)
-    expect(screen.queryByText("BẢNG THẮNG/THUA THEO 5 LÝ DO")).not.toBeInTheDocument()
+    expect(screen.queryByText("② Thắng / thua theo 5 lý do")).not.toBeInTheDocument()
     expect(screen.getByText(/Cần ≥5 lệnh/)).toBeInTheDocument()
   })
 
   it(">=5 lệnh: shows Khối 2 bảng thắng/thua", () => {
     const trades = Array.from({ length: 5 }, (_, i) => trade({ orderId: String(i) }))
     render(<Cap1PortfolioAnalysis progress={progress()} trades={trades} />)
-    expect(screen.getByText("BẢNG THẮNG/THUA THEO 5 LÝ DO")).toBeInTheDocument()
+    expect(screen.getByText("② Thắng / thua theo 5 lý do")).toBeInTheDocument()
+    // Column headers stay spec §7's wording.
+    expect(screen.getByText("Số lệnh")).toBeInTheDocument()
+    expect(screen.getByText("Tỷ lệ thắng")).toBeInTheDocument()
   })
 
-  it("renders Khối 3 độ phủ 5 lý do", () => {
+  it("renders Khối 3 độ phủ 5 lý do + chọn lý do có cơ sở", () => {
     render(<Cap1PortfolioAnalysis progress={progress()} trades={[]} />)
-    expect(screen.getByText(/ĐỘ PHỦ 5 LÝ DO/)).toBeInTheDocument()
-    expect(screen.getByText(/CHỌN LÝ DO CÓ CƠ SỞ/)).toBeInTheDocument()
+    expect(screen.getByText("③ Độ phủ 5 lý do + Chọn lý do có cơ sở")).toBeInTheDocument()
+    expect(screen.getByText(/Đã dùng 0\/5/)).toBeInTheDocument()
+    expect(screen.getByText(/Lệnh có lý do ✅ Ủng hộ lúc đặt/)).toBeInTheDocument()
   })
 
-  it("fires Mẫu 1 (Vũ khí riêng) when its condition is met", () => {
+  it("fires Mẫu 1 (Vũ khí riêng) — icon + bold lead + body, «good» variant", () => {
     const trades = [
       ...Array.from({ length: 4 }, (_, i) => trade({ orderId: `w${i}`, lyDo: "dong_tien", pnlVnd: 100 })),
       trade({ orderId: "l1", lyDo: "dong_tien", pnlVnd: -100 }),
     ]
     render(<Cap1PortfolioAnalysis progress={progress()} trades={trades} />)
-    expect(screen.getByText(/Bạn thắng nhiều nhất khi mua vì/)).toBeInTheDocument()
+    const mau = screen.getByTestId("cap1-mau-vu_khi_rieng")
+    expect(within(mau).getByText("🎯")).toBeInTheDocument()
+    expect(within(mau).getByText("Vũ khí riêng").tagName).toBe("B")
+    expect(within(mau).getByText(/Bạn thắng nhiều nhất khi mua vì/)).toBeInTheDocument()
+    expect(mau.className).toContain("border-up/25")
+  })
+
+  it("renders Mẫu 3 (Cơ sở đáng giá) with the «info» variant", () => {
+    const ungHo = Array.from({ length: 4 }, (_, i) =>
+      trade({ orderId: `u${i}`, trangThaiLucDat: "ung_ho", lyDo: "ky_thuat", pnlVnd: 100 }),
+    )
+    const others = Array.from({ length: 4 }, (_, i) =>
+      trade({ orderId: `o${i}`, trangThaiLucDat: "trung_tinh", lyDo: "tin_tuc", pnlVnd: -100 }),
+    )
+    render(<Cap1PortfolioAnalysis progress={progress()} trades={[...ungHo, ...others]} />)
+    const mau = screen.getByTestId("cap1-mau-co_so_dang_gia")
+    expect(within(mau).getByText("Cơ sở đáng giá").tagName).toBe("B")
+    expect(mau.className).toContain("rgb(var(--primary-6))")
+  })
+
+  it("keeps the honest empty state when no mẫu fires", () => {
+    render(<Cap1PortfolioAnalysis progress={progress()} trades={[]} />)
+    expect(screen.getByText("🔍 Mẫu hệ thống phát hiện (về lý do)")).toBeInTheDocument()
+    expect(screen.getByText(/lệnh nữa để hệ thống tìm mẫu riêng của bạn/)).toBeInTheDocument()
   })
 
   it("shows the graduation CTA once 6/6 nhiệm vụ are done", () => {

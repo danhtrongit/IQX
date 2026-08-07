@@ -6,6 +6,88 @@
  * Scoped to the Cấp-1-only classes so nothing here can affect Cấp 0.
  */
 
+/* ── Tab Hành trình (mockup `iqx-cap1-hanhtrinh.html`) ───────────────────────
+   `.cap0-checklist-*` vẫn là khung nền; phần dưới đây chỉ thêm những gì Cấp 1
+   có mà Cấp 0 không có: glyph trạng thái, ô ordinal, dải độ phủ, hàng công cụ. */
+.cap1-checklist-glyph {
+  flex-shrink: 0;
+  width: 20px;
+  font-size: 13px;
+  line-height: 1.2;
+  text-align: center;
+  margin-top: 1px;
+}
+
+/* Trạng thái thứ 3: đã mở nhưng chưa tới lượt (khác 🔒 khoá — không làm mờ). */
+.cap1-checklist-item--open {
+  border: 1px solid var(--bd);
+  background: var(--bg2);
+}
+
+.cap1-checklist-no {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color: var(--t3);
+  margin-right: 5px;
+}
+
+.cap1-checklist-item--active .cap1-checklist-no {
+  color: inherit;
+}
+
+.cap1-coverage {
+  display: flex;
+  gap: 8px;
+  font-size: 15px;
+  margin-top: 5px;
+}
+
+/* `.off` của mockup — lý do chưa dùng lần nào. */
+.cap1-coverage-off {
+  opacity: 0.25;
+}
+
+.cap1-tools {
+  display: flex;
+  gap: 8px;
+  margin: 14px 0 0;
+}
+
+.cap1-tool {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--t2);
+  background: var(--bg2);
+  border: 1px solid var(--bd);
+  border-radius: 8px;
+}
+
+button.cap1-tool {
+  cursor: pointer;
+}
+
+button.cap1-tool:hover {
+  color: var(--t1);
+  border-color: var(--brand-bd);
+}
+
+/* Ô công cụ chỉ để chú thích (không bấm được) — mờ hơn nút thật. */
+.cap1-tool--static {
+  opacity: 0.6;
+}
+
+/* ── Nhãn khối "Đối chiếu" của màn Kết sổ (mockup `.ks-section-label`) ───── */
+.cap1-ketso-section-label {
+  margin: 14px 0 6px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--t3);
+}
+
 /* ── Khối cảm xúc (spec §6 — only for lệnh "có chuyện") ─────────────────── */
 .cap1-ketso-emotion {
   margin-top: 14px;

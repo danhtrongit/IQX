@@ -74,6 +74,7 @@ describe("KetsoModalCap1", () => {
     // + "HỒ SƠ CỦA BẠN" lines (spec §6 quotes both VERBATIM in template A), so
     // scope these two to the bảng đối chiếu instead of the whole document.
     const doiChieu = within(screen.getByRole("table"))
+    expect(screen.getByText("Đối chiếu kế hoạch với thực tế")).toBeInTheDocument()
     expect(screen.getByText("Lý do")).toBeInTheDocument()
     expect(doiChieu.getByText(/💰 Dòng tiền/)).toBeInTheDocument()
     expect(screen.getByText("Trạng thái lớp lúc đặt")).toBeInTheDocument()
@@ -81,11 +82,23 @@ describe("KetsoModalCap1", () => {
     expect(screen.getByText("Vùng mua")).toBeInTheDocument()
     expect(screen.getByText("61,500")).toBeInTheDocument()
     expect(screen.getByText("61,800")).toBeInTheDocument()
-    expect(screen.getByText("Giá ra · thuế bán 0,1%")).toBeInTheDocument()
-    expect(screen.getByText("Thời gian giữ lệnh")).toBeInTheDocument()
-    expect(screen.getByText(/2 phiên · 2 ngày/)).toBeInTheDocument()
+    expect(screen.getByText("Giá ra · thuế")).toBeInTheDocument()
+    expect(screen.getByText("Thời gian giữ")).toBeInTheDocument()
+    expect(doiChieu.getByText("2 phiên")).toBeInTheDocument()
 
     await waitFor(() => expect(screen.getByText("+1.9%")).toBeInTheDocument(), { timeout: 2000 })
+  })
+
+  it("spans Lý do + Trạng thái across both Kế hoạch/Thực tế columns (no bogus «—»)", () => {
+    render(<KetsoModalCap1 data={cleanWin} progress={progress()} trades={[]} onClose={vi.fn()} />)
+    const doiChieu = within(screen.getByRole("table"))
+    expect(doiChieu.getByText(/💰 Dòng tiền/)).toHaveAttribute("colspan", "2")
+    expect(doiChieu.getByText(/✅ Ủng hộ/)).toHaveAttribute("colspan", "2")
+  })
+
+  it("shows Thời gian giữ in phiên only (no calendar-day suffix)", () => {
+    render(<KetsoModalCap1 data={cleanWin} progress={progress()} trades={[]} onClose={vi.fn()} />)
+    expect(screen.queryByText(/\d+ ngày/)).not.toBeInTheDocument()
   })
 
   it('does NOT show Khối cảm xúc for a "bình thường" lệnh (không có chuyện)', () => {

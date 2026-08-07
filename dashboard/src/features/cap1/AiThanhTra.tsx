@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router"
 import { Spin } from "@arco-design/web-react"
+import { cn } from "@/shared/lib/cn"
 import { useStockAiInsight } from "@/features/stock"
 import { useBctcDashboard } from "@/features/stock/bctc-dashboard"
 import { LY_DO_OPTIONS, type LyDo } from "./types"
@@ -16,6 +17,19 @@ const LAYER_BY_REASON: Partial<Record<LyDo, "L1" | "L3" | "L4" | "L5">> = {
 
 function fmtVnd(n: number): string {
   return Math.round(n).toLocaleString("en-US")
+}
+
+/**
+ * Màu của pill trạng thái (mockup `iqx-cap1-datlenh.html` `.tt-verdict`) —
+ * ✅ xanh lên giá · ⚠ vàng cảnh báo · ❌ đỏ xuống giá · ⚪ trung tính xám.
+ */
+const VERDICT_TONE: Record<Verdict, string> = {
+  ung_ho_manh: "border-up/35 bg-up/10 text-up",
+  ung_ho: "border-up/35 bg-up/10 text-up",
+  trung_tinh: "border-[var(--color-border-2)] bg-[var(--color-fill-2)] text-[var(--color-text-2)]",
+  can_chu_y:
+    "border-[rgb(var(--warning-6))]/35 bg-[rgb(var(--warning-6))]/10 text-[rgb(var(--warning-6))]",
+  nguoc_chieu: "border-down/35 bg-down/10 text-down",
 }
 
 interface Resolved {
@@ -163,8 +177,10 @@ export function AiThanhTra({
       data-testid="ai-thanh-tra"
       className="mt-2 space-y-2 rounded-md border border-[var(--color-border-2)] bg-[var(--color-bg-2)] p-2.5"
     >
-      <div className="text-xs font-semibold text-[var(--color-text-1)]">
-        {`🔍 AI ĐANG THẤY GÌ VỀ ${symbol} Ở LỚP "${option.label}"?`}
+      {/* Header (mockup): 🔍 AI Thanh tra · {tên lớp} — L{n}. 💎 Định giá không
+          phải lớp AI Insight (spec §4: BCTC KHỐI 02) nên ghi "BCTC". */}
+      <div className="text-[11.5px] font-bold text-[var(--color-text-1)]">
+        {`🔍 AI Thanh tra · ${option.label} — ${layerKey ?? "BCTC"}`}
       </div>
       <div className="text-[9.5px] text-[var(--color-text-3)]">{`(Dữ liệu từ ${option.source})`}</div>
 
@@ -183,8 +199,15 @@ export function AiThanhTra({
             ))}
           </div>
 
-          <div className="text-[11.5px] font-semibold text-[var(--color-text-1)]">
-            {"Trạng thái: "}
+          {/* Trạng thái = pill full-width (mockup `.tt-verdict`). Chữ hoa bằng
+              CSS nên nội dung vẫn đúng nguyên văn `VERDICT_LABEL`. */}
+          <div
+            data-testid="ai-thanh-tra-verdict"
+            className={cn(
+              "w-full rounded-md border px-2.5 py-1.5 text-[11.5px] font-semibold uppercase",
+              VERDICT_TONE[resolved.verdict],
+            )}
+          >
             {VERDICT_LABEL[resolved.verdict]}
           </div>
 

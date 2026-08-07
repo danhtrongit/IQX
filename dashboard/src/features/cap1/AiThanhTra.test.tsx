@@ -100,12 +100,43 @@ describe("AiThanhTra — AI Insight-backed lý do (spec §5)", () => {
   it('shows the layer header + source + summary lines + "Đọc chi tiết" for a loaded layer', () => {
     mockInsight(4)
     render(<AiThanhTra symbol="VNM" lyDo="ky_thuat" currentPrice={62_400} />)
-    expect(
-      screen.getByText('🔍 AI ĐANG THẤY GÌ VỀ VNM Ở LỚP "Kỹ thuật"?'),
-    ).toBeInTheDocument()
+    expect(screen.getByText("🔍 AI Thanh tra · Kỹ thuật — L1")).toBeInTheDocument()
     expect(screen.getByText("(Dữ liệu từ AI Insight · L1 Xu hướng)")).toBeInTheDocument()
     expect(screen.getByText("Xu hướng: Tăng")).toBeInTheDocument()
     expect(screen.getByText("Đọc chi tiết lớp này →")).toBeInTheDocument()
+  })
+
+  it("names the backing layer in the header for each AI-Insight-backed lý do", () => {
+    mockInsight(4, {}, "L3")
+    const { unmount } = render(<AiThanhTra symbol="VNM" lyDo="dong_tien" currentPrice={62_400} />)
+    expect(screen.getByText("🔍 AI Thanh tra · Dòng tiền — L3")).toBeInTheDocument()
+    unmount()
+
+    mockInsight(4, {}, "L5")
+    render(<AiThanhTra symbol="VNM" lyDo="tin_tuc" currentPrice={62_400} />)
+    expect(screen.getByText("🔍 AI Thanh tra · Tin tức — L5")).toBeInTheDocument()
+  })
+
+  it("renders the verdict as a full-width coloured pill (no «Trạng thái:» line)", () => {
+    mockInsight(4)
+    render(<AiThanhTra symbol="VNM" lyDo="ky_thuat" currentPrice={62_400} />)
+    const pill = screen.getByTestId("ai-thanh-tra-verdict")
+    expect(pill).toHaveTextContent("✅ Ủng hộ")
+    expect(pill.className).toContain("w-full")
+    expect(pill.className).toContain("text-up")
+    expect(screen.queryByText(/Trạng thái:/)).not.toBeInTheDocument()
+  })
+
+  it("colours the pill by verdict — ❌ Ngược chiều is the down colour", () => {
+    mockInsight(1, {}, "L4")
+    render(<AiThanhTra symbol="VNM" lyDo="noi_bo" currentPrice={62_400} />)
+    expect(screen.getByTestId("ai-thanh-tra-verdict").className).toContain("text-down")
+  })
+
+  it("colours the pill by verdict — ⚠ Cần chú ý is the warning colour", () => {
+    mockInsight(2, {}, "L4")
+    render(<AiThanhTra symbol="VNM" lyDo="noi_bo" currentPrice={62_400} />)
+    expect(screen.getByTestId("ai-thanh-tra-verdict").className).toContain("warning-6")
   })
 
   it("maps statusLevel 5 → ✅ Ủng hộ mạnh", () => {
@@ -189,9 +220,9 @@ describe("AiThanhTra — 💎 Định giá (BCTC KHỐI 02)", () => {
   it("price below the whole valuation range → ✅ Ủng hộ mạnh", () => {
     mockBctc({ current_price: 70 })
     render(<AiThanhTra symbol="VNM" lyDo="dinh_gia" currentPrice={0} />)
-    expect(
-      screen.getByText('🔍 AI ĐANG THẤY GÌ VỀ VNM Ở LỚP "Định giá"?'),
-    ).toBeInTheDocument()
+    // 💎 Định giá is NOT an AI Insight layer (spec §4: BCTC KHỐI 02) — so the
+    // header says BCTC where the other 4 lý do say L{n}.
+    expect(screen.getByText("🔍 AI Thanh tra · Định giá — BCTC")).toBeInTheDocument()
     expect(screen.getByText("✅ Ủng hộ mạnh", { exact: false })).toBeInTheDocument()
   })
 

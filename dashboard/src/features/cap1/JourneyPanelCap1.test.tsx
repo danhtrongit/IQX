@@ -107,45 +107,96 @@ describe("JourneyPanelCap1", () => {
     expect(screen.getByText("Tổng số lệnh Thực chiến — 10 lệnh")).toBeInTheDocument()
   })
 
-  it("① and ⑥ are active at 0/6; ②③④⑤ are locked until ① is done", () => {
+  it("shows the ordinal ①..⑥ next to each (full, unshortened) task name", () => {
     useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
     renderPanel()
-    expect(screen.getByTestId("cap1-task-1").className).toContain("cap0-checklist-item--active")
-    expect(screen.getByTestId("cap1-task-6").className).toContain("cap0-checklist-item--active")
+    const task2 = within(screen.getByTestId("cap1-task-2"))
+    expect(task2.getByText("②")).toBeInTheDocument()
+    expect(task2.getByText("Bán lệnh đầu — Kết sổ đầu")).toBeInTheDocument()
+  })
+
+  it("at 0/6: ① is the 🎯 active task, ⑥ is 🔲 open, ②③④⑤ are 🔒 locked", () => {
+    useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
+    renderPanel()
+    const task1 = screen.getByTestId("cap1-task-1")
+    expect(task1.className).toContain("cap0-checklist-item--active")
+    expect(within(task1).getByText("🎯")).toBeInTheDocument()
+
+    const task6 = screen.getByTestId("cap1-task-6")
+    expect(task6.className).toContain("cap1-checklist-item--open")
+    expect(task6.className).not.toContain("cap0-checklist-item--active")
+    expect(within(task6).getByText("🔲")).toBeInTheDocument()
+
     for (const no of [2, 3, 4, 5]) {
-      expect(screen.getByTestId(`cap1-task-${no}`).className).toContain(
-        "cap0-checklist-item--locked",
-      )
+      const task = screen.getByTestId(`cap1-task-${no}`)
+      expect(task.className).toContain("cap0-checklist-item--locked")
+      expect(within(task).getByText("🔒")).toBeInTheDocument()
     }
   })
 
-  it("once ① is done, ②③④⑤ become active", () => {
+  it("once ① is done it shows ✅, ② becomes the single 🎯 active task and ③④⑤⑥ are 🔲 open", () => {
     useCap1ProgressMock.mockReturnValue({
       data: makeProgress({ task_1_done_at: "2026-07-21T01:00:00Z" }),
     })
     renderPanel()
-    for (const no of [2, 3, 4, 5]) {
-      expect(screen.getByTestId(`cap1-task-${no}`).className).toContain(
-        "cap0-checklist-item--active",
-      )
+    const task1 = screen.getByTestId("cap1-task-1")
+    expect(task1.className).toContain("cap0-checklist-item--done")
+    expect(within(task1).getByText("✅")).toBeInTheDocument()
+
+    expect(screen.getByTestId("cap1-task-2").className).toContain("cap0-checklist-item--active")
+    for (const no of [3, 4, 5, 6]) {
+      const task = screen.getByTestId(`cap1-task-${no}`)
+      expect(task.className).toContain("cap1-checklist-item--open")
+      expect(task.className).not.toContain("cap0-checklist-item--active")
     }
+    // Exactly ONE 🎯 in the whole checklist.
+    expect(screen.getAllByText("🎯").filter((el) => el.className.includes("checklist"))).toHaveLength(
+      1,
+    )
   })
 
-  it("③ shows the 5-ô lý do ✓/✗ grid computed from the trade log", () => {
+  it('unlocked-but-not-focused tasks keep their "Làm ngay →" shortcut', () => {
     useCap1ProgressMock.mockReturnValue({
-      data: makeProgress({ task_1_done_at: "t" }),
+      data: makeProgress({ task_1_done_at: "2026-07-21T01:00:00Z" }),
+    })
+    renderPanel()
+    expect(within(screen.getByTestId("cap1-task-5")).getByText("Làm ngay →")).toBeInTheDocument()
+    expect(within(screen.getByTestId("cap1-task-3")).getByText("Làm ngay →")).toBeInTheDocument()
+  })
+
+  it("③ shows the 5 lý do emoji strip — unused lý do dimmed (.off) — plus «Đã dùng n/5 lý do»", () => {
+    useCap1ProgressMock.mockReturnValue({
+      data: makeProgress({ task_1_done_at: "t", so_ly_do_da_dung: 2 }),
     })
     useCap1TradeLogMock.mockReturnValue({
       trades: [trade({ lyDo: "dong_tien" }), trade({ lyDo: "ky_thuat" })],
       record: vi.fn(),
     })
     renderPanel()
-    const task3 = screen.getByTestId("cap1-task-3")
-    expect(within(task3).getByText(/🎯✓/)).toBeInTheDocument()
-    expect(within(task3).getByText(/💰✓/)).toBeInTheDocument()
-    expect(within(task3).getByText(/👤✗/)).toBeInTheDocument()
-    expect(within(task3).getByText(/📰✗/)).toBeInTheDocument()
-    expect(within(task3).getByText(/💎✗/)).toBeInTheDocument()
+    const task3 = within(screen.getByTestId("cap1-task-3"))
+    // Đã dùng → sáng; chưa dùng → mờ (class `.off` như mockup)
+    expect(task3.getByTestId("cap1-coverage-ky_thuat").className).not.toContain("cap1-coverage-off")
+    expect(task3.getByTestId("cap1-coverage-dong_tien").className).not.toContain(
+      "cap1-coverage-off",
+    )
+    for (const value of ["noi_bo", "tin_tuc", "dinh_gia"]) {
+      expect(task3.getByTestId(`cap1-coverage-${value}`).className).toContain("cap1-coverage-off")
+    }
+    // Emoji only — the old "✓/✗" pairs are gone.
+    expect(task3.getByTestId("cap1-coverage-noi_bo")).toHaveTextContent("👤")
+    expect(task3.queryByText(/✗/)).not.toBeInTheDocument()
+    expect(task3.getByText("Đã dùng 2/5 lý do")).toBeInTheDocument()
+  })
+
+  it("③'s «Đã dùng» never under-reports the server count when the local trade log is empty", () => {
+    useCap1ProgressMock.mockReturnValue({
+      data: makeProgress({ task_1_done_at: "t", so_ly_do_da_dung: 4 }),
+    })
+    useCap1TradeLogMock.mockReturnValue({ trades: [], record: vi.fn() })
+    renderPanel()
+    expect(
+      within(screen.getByTestId("cap1-task-3")).getByText("Đã dùng 4/5 lý do"),
+    ).toBeInTheDocument()
   })
 
   it("④ shows «Lý do có cơ sở (✅): X/3»", () => {
@@ -178,7 +229,18 @@ describe("JourneyPanelCap1", () => {
     ).toBeInTheDocument()
   })
 
-  it('clicking "Xem Phân tích danh mục →" switches the sidebar to the cap1-analysis panel', () => {
+  it("renders the two-tool row 📓 Kết sổ + 📊 Phân tích danh mục", () => {
+    useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
+    renderPanel()
+    const tools = within(screen.getByTestId("cap1-tools"))
+    expect(tools.getByText("📓 Kết sổ")).toBeInTheDocument()
+    expect(tools.getByRole("button", { name: "📊 Phân tích danh mục" })).toBeInTheDocument()
+    // Kết sổ tự mở khi bán lệnh (spec §6) — không có màn để mở tay, nên ô này
+    // KHÔNG phải nút bấm chết.
+    expect(tools.getAllByRole("button")).toHaveLength(1)
+  })
+
+  it('clicking "📊 Phân tích danh mục" switches the sidebar to the cap1-analysis panel', () => {
     useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
     function PanelSpy() {
       const { activePanel } = useSidebar()
@@ -190,7 +252,7 @@ describe("JourneyPanelCap1", () => {
         <PanelSpy />
       </SidebarProvider>,
     )
-    fireEvent.click(screen.getByText("Xem Phân tích danh mục →"))
+    fireEvent.click(screen.getByRole("button", { name: "📊 Phân tích danh mục" }))
     expect(screen.getByTestId("panel-spy")).toHaveTextContent("cap1-analysis")
   })
 

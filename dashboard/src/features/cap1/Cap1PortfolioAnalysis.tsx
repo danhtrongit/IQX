@@ -1,5 +1,11 @@
 import { cn } from "@/shared/lib/cn"
-import { computeCap1PortfolioAnalysis, type Khoi4Task, type ReasonRow } from "./portfolioAnalysis"
+import {
+  computeCap1PortfolioAnalysis,
+  type Khoi4Task,
+  type MauPhatHien,
+  type MauPhatHienId,
+  type ReasonRow,
+} from "./portfolioAnalysis"
 import type { Cap1TradeRecord } from "./tradeLog"
 import { LY_DO_OPTIONS, type Cap1Progress, type LyDo } from "./types"
 
@@ -31,6 +37,48 @@ const SECTION_HEADER =
 const CARD =
   "space-y-2 rounded-md border border-[var(--color-border-2)] bg-[var(--color-bg-2)] p-3"
 
+/**
+ * Tiêu đề 4 khối + khối mẫu — nguyên văn mockup `iqx-cap1-phantich-danhmuc.html`
+ * (số khoanh tròn ①..④). Bản chữ của spec §7 ("HỒ SƠ NHÀ ĐẦU TƯ CỦA BẠN…",
+ * "Lệnh có lý do ✅ Ủng hộ lúc đặt…") vẫn giữ NGUYÊN VĂN bên trong từng khối.
+ */
+const KHOI_TITLE = {
+  khoi1: "① Hồ sơ tổng quan",
+  khoi2: "② Thắng / thua theo 5 lý do",
+  khoi3: "③ Độ phủ 5 lý do + Chọn lý do có cơ sở",
+  khoi4: "④ Tiến trình 6 nhiệm vụ",
+  mau: "🔍 Mẫu hệ thống phát hiện (về lý do)",
+} as const
+
+/** Icon + tên mẫu (spec §7 "Mẫu 1/2/3 — …") + biến thể màu (mockup `.pat.good` / `.pat.info`). */
+const MAU_META: Record<MauPhatHienId, { icon: string; lead: string; variant: "good" | "info" }> = {
+  vu_khi_rieng: { icon: "🎯", lead: "Vũ khí riêng", variant: "good" },
+  diem_mu: { icon: "⚠", lead: "Điểm mù", variant: "info" },
+  co_so_dang_gia: { icon: "✅", lead: "Cơ sở đáng giá", variant: "info" },
+}
+
+const MAU_VARIANT: Record<"good" | "info", string> = {
+  good: "border-up/25 bg-up/[0.08]",
+  info: "border-[rgb(var(--primary-6))]/30 bg-[rgb(var(--primary-6))]/10",
+}
+
+function MauRow({ mau }: { mau: MauPhatHien }) {
+  const meta = MAU_META[mau.id]
+  return (
+    <div
+      data-testid={`cap1-mau-${mau.id}`}
+      className={cn("flex gap-2 rounded-md border p-2.5", MAU_VARIANT[meta.variant])}
+    >
+      <span className="text-[15px] leading-tight">{meta.icon}</span>
+      <p className="text-[11px] leading-relaxed text-[var(--color-text-2)]">
+        <b className="text-[var(--color-text-1)]">{meta.lead}</b>
+        {" — "}
+        {mau.text}
+      </p>
+    </div>
+  )
+}
+
 function ReasonBadgeIcon({ badge }: { badge: ReasonRow["badge"] }) {
   if (!badge) return null
   return <span>{badge}</span>
@@ -45,7 +93,10 @@ function Khoi1({
 }) {
   return (
     <div className={CARD}>
-      <div className={SECTION_HEADER}>{"HỒ SƠ NHÀ ĐẦU TƯ CỦA BẠN · Cấp 1 «Học việc»"}</div>
+      <div className={SECTION_HEADER}>{KHOI_TITLE.khoi1}</div>
+      <p className="text-[10.5px] text-[var(--color-text-3)]">
+        {"HỒ SƠ NHÀ ĐẦU TƯ CỦA BẠN · Cấp 1 «Học việc»"}
+      </p>
       <p className="text-xs text-[var(--color-text-2)]">
         {`${khoi1.totalTrades} lệnh Thực chiến`}
         {progress ? ` · từ ${fmtDate(progress.entered_at)}` : null}
@@ -76,7 +127,7 @@ function Khoi1({
 function Khoi2({ rows }: { rows: ReasonRow[] }) {
   return (
     <div className={CARD}>
-      <div className={SECTION_HEADER}>{"BẢNG THẮNG/THUA THEO 5 LÝ DO"}</div>
+      <div className={SECTION_HEADER}>{KHOI_TITLE.khoi2}</div>
       <table className="w-full text-xs">
         <thead>
           <tr className="text-left text-[var(--color-text-3)]">
@@ -134,7 +185,7 @@ function Khoi3({
 }) {
   return (
     <div className={CARD}>
-      <div className={SECTION_HEADER}>{"ĐỘ PHỦ 5 LÝ DO"}</div>
+      <div className={SECTION_HEADER}>{KHOI_TITLE.khoi3}</div>
       <div className="flex flex-wrap gap-2 text-xs text-[var(--color-text-1)]">
         {LY_DO_OPTIONS.map((opt) => (
           <span key={opt.value}>
@@ -143,7 +194,6 @@ function Khoi3({
         ))}
       </div>
       <p className="text-xs text-[var(--color-text-2)]">{`→ Đã dùng ${usedCount}/5`}</p>
-      <div className={cn(SECTION_HEADER, "mt-2")}>{"CHỌN LÝ DO CÓ CƠ SỞ"}</div>
       <p className="text-xs text-[var(--color-text-2)]">
         {`Lệnh có lý do ✅ Ủng hộ lúc đặt: ${ungHoCount}/${totalTrades} · Nhiệm vụ ④: ${Math.min(ungHoCount, 3)}/3${task4Done ? " ✓" : ""}`}
       </p>
@@ -186,7 +236,7 @@ function Khoi4({
   const summary = khoi4SummaryLine(tasks, progress)
   return (
     <div className={CARD}>
-      <div className={SECTION_HEADER}>{"6 NHIỆM VỤ CẤP 1"}</div>
+      <div className={SECTION_HEADER}>{KHOI_TITLE.khoi4}</div>
       <p className="text-[9.5px] text-[var(--color-text-3)]">{`${tasksDone}/6`}</p>
       <ul className="space-y-1 text-xs text-[var(--color-text-1)]">
         {tasks.map((task) => (
@@ -243,17 +293,15 @@ export function Cap1PortfolioAnalysis({ progress, trades }: Cap1PortfolioAnalysi
 
       {result.mauPhatHien.length > 0 ? (
         <div className={CARD}>
-          <div className={SECTION_HEADER}>{"MẪU TỰ PHÁT HIỆN"}</div>
+          <div className={SECTION_HEADER}>{KHOI_TITLE.mau}</div>
           {result.mauPhatHien.map((mau) => (
-            <p key={mau.id} className="text-xs text-[var(--color-text-1)]">
-              {mau.text}
-            </p>
+            <MauRow key={mau.id} mau={mau} />
           ))}
         </div>
       ) : (
         result.mauInsufficientNote && (
           <div className={CARD}>
-            <div className={SECTION_HEADER}>{"MẪU TỰ PHÁT HIỆN"}</div>
+            <div className={SECTION_HEADER}>{KHOI_TITLE.mau}</div>
             <p className="text-xs text-[var(--color-text-3)]">{result.mauInsufficientNote}</p>
           </div>
         )
