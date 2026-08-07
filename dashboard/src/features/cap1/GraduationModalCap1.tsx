@@ -1,15 +1,20 @@
-import { Modal } from "@arco-design/web-react"
+import { Message, Modal } from "@arco-design/web-react"
 import { Badge, LEVELS } from "@/features/cap0/Badge"
 import "@/features/cap0/cap0.css"
 import "./cap1.css"
 import { useCap1Progress, useGraduateCap1 } from "./hooks"
 import { countCap1TasksDone, type Cap1Progress } from "./types"
-// Cấp 2 is live (Task FE4) — concrete-file import (NOT the `@/features/cap2`
-// barrel), same anti-cycle rationale `cap0/GraduationModal.tsx` already
-// documents for its own `@/features/cap1/hooks` import (that barrel
-// re-exports `Cap2TradingPage`, which imports `CenterPanel`/`RightSidebar`/
-// `RightToolbar` from `@/features/dashboard`).
-import { useEnterCap2 } from "@/features/cap2/hooks"
+// ★ CẤP 2 TẠM TẮT (xem `CAP_2_PLUS_ENABLED` trong `DauTruongPage.tsx`) — file
+// này KHÔNG còn import `useEnterCap2` nữa. Khi bật lại Cấp 2, khôi phục đúng 3
+// thứ đã bị gỡ ở đây:
+//   1. `import { useEnterCap2 } from "@/features/cap2/hooks"` — concrete-file
+//      import (KHÔNG dùng barrel `@/features/cap2`), theo đúng anti-cycle
+//      rationale mà `cap0/GraduationModal.tsx` đã ghi cho import
+//      `@/features/cap1/hooks` của nó (barrel đó re-export `Cap2TradingPage`,
+//      vốn import `CenterPanel`/`RightSidebar`/`RightToolbar` từ
+//      `@/features/dashboard`);
+//   2. `const enterCap2 = useEnterCap2()` + `onSuccess: () => enterCap2.mutate()`;
+//   3. xoá dòng "sắp ra mắt" trong CTA + toast `Message.info(...)`.
 
 /**
  * Điều kiện mở màn tốt nghiệp Cấp 1 (spec §3): 6/6 nhiệm vụ, chưa từng tốt
@@ -46,26 +51,28 @@ function renderInlineBold(text: string) {
  * khối VERBATIM (Ghi nhận / Định vị / Chuyển cấp viền ngọc lam `#7dd3c0`) +
  * CTA.
  *
- * Cấp 2 is live (Task FE4) — mirrors how `cap0/GraduationModal.tsx` enters
- * Cấp 1 on success: record the graduation server-side, then fire the
- * idempotent `POST /cap2/enter` right here too (not just relying on
- * `DauTruongPage`'s own effect) so Cấp 2 progress is ready the instant
- * `DauTruongPage` swaps this Cấp 1 shell out for `Cap2TradingPage` — driven
- * by the SAME `useCap1Progress` query this mutation's `graduated_at` just
- * invalidated. No navigation call needed: this modal only ever renders while
- * already on `/dau-truong`.
+ * ★ **CẤP 2 TẠM TẮT → nút KHÔNG điều hướng đi đâu**, và nói thẳng "sắp ra mắt"
+ * ngay trên nút. Nhưng nút vẫn PHẢI bấm được và vẫn ghi tốt nghiệp về server:
+ * modal này `closable={false}` + `visible = isGraduationReadyCap1(...)`, nên
+ * một nút `disabled` sẽ **nhốt VĨNH VIỄN** mọi user đã xong 6/6 trong một màn
+ * không có lối ra — đúng lỗi đã phải sửa hai lần trên codebase này. Đây chính
+ * là pattern trung thực mà `GraduationModalCap6`/`GraduationModalCap7` đã dùng
+ * trước khi cấp kế tiếp lên sóng. Không cần gọi navigation: modal này chỉ hiện
+ * khi user đã đứng sẵn trên `/dau-truong`.
  */
 export function GraduationModalCap1() {
   const { data: progress } = useCap1Progress()
   const graduate = useGraduateCap1()
-  const enterCap2 = useEnterCap2()
   const level = LEVELS[1]
   const visible = isGraduationReadyCap1(progress)
 
   const handleGraduate = () => {
     graduate.mutate(undefined, {
+      // Chỉ báo sau khi server đã GHI NHẬN tốt nghiệp — hỏng mạng thì không
+      // toast gì cả, để user bấm lại (modal vẫn còn đó vì `graduated_at` chưa
+      // về).
       onSuccess: () => {
-        enterCap2.mutate()
+        Message.info("Cấp 2 «Kỷ luật» sắp ra mắt — đã ghi nhận tốt nghiệp Cấp 1")
       },
     })
   }
@@ -101,13 +108,32 @@ export function GraduationModalCap1() {
       <div className="cap0-grad-block">{renderInlineBold(BLOCK_2)}</div>
       <div className="cap0-grad-block cap1-grad-block--cap2">{renderInlineBold(BLOCK_3)}</div>
 
+      {/* ★ KHÔNG bao giờ `disabled` (xem doc-comment ở trên) — `graduate
+          .isPending` cũng không, vì mutation hỏng sẽ khoá nút vĩnh viễn trong
+          một modal `closable={false}`. */}
       <button
         type="button"
         className="cap0-grad-cta cap1-grad-cta--cap2"
+        data-testid="cap1-grad-cta"
         onClick={handleGraduate}
-        disabled={graduate.isPending}
       >
         Vào Cấp 2 «Kỷ luật» →
+        {/* Dòng "sắp ra mắt" — style inline vì `cap1.css` đang do task khác sở
+            hữu; khi bật lại Cấp 2 thì xoá cả span này. Giống
+            `.cap7-grad-cta-soon`. */}
+        <span
+          className="cap1-grad-cta-soon"
+          style={{
+            display: "block",
+            marginTop: 2,
+            fontSize: 10,
+            fontWeight: 500,
+            letterSpacing: "0.3px",
+            opacity: 0.85,
+          }}
+        >
+          Cấp 2 sắp ra mắt — bấm để ghi nhận tốt nghiệp Cấp 1
+        </span>
       </button>
     </Modal>
   )

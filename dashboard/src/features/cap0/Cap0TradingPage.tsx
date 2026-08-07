@@ -14,7 +14,7 @@ import { JourneyBar } from "./JourneyBar"
 import { Gbar } from "./Gbar"
 import { GraduationModal } from "./GraduationModal"
 import { useCap0Progress, useCompleteTask, useEnterCap0, usePlacement } from "./hooks"
-import { PlacementModal } from "./PlacementModal"
+import { PlacementModal, type PlacementAnswer } from "./PlacementModal"
 import { tradingModeFor } from "./types"
 import { bangDienTour, bangDienTourStepPanels } from "./tours/bangDienTour"
 import { banTinTour } from "./tours/banTinTour"
@@ -24,14 +24,14 @@ import "./cap0.css"
 const SEO_TITLE = "IQX Demo Trading · Cấp 0 «Nhập môn»"
 
 // No backend GET exists for `user_placement` (BE1 only exposes POST
-// /cap0/placement) — so once a user answers "Đã từng" no `cap0_progress` row
-// is ever created and the server-side guard (`!progress`) alone can't tell
-// "already answered" apart from "brand new". This local flag is the
-// best-effort second guard for that branch (mirrors the pattern in
+// /cap0/placement), so "đã trả lời rồi" is not directly readable from the
+// server. Since v3.0 all THREE placement answers call `POST /cap0/enter`, the
+// server-side guard (`!progress`) is now the primary one and this local flag
+// is a second guard that closes the window between answering and the progress
+// query refetching (mirrors the pattern in
 // `features/navigation/TrialBanner.tsx`). Known gap: a different browser/
-// device, or clearing site data, will show the modal again for that user —
-// acceptable for this delivery per the brief; a durable fix needs a
-// `GET /cap0/placement` endpoint (follow-up).
+// device, or clearing site data, only matters for a user whose `/cap0/enter`
+// never landed — they get the modal again, which is the correct retry.
 const PLACEMENT_SEEN_KEY = "iqx_cap0_placement_seen"
 
 function hasSeenPlacement(): boolean {
@@ -170,9 +170,9 @@ function Cap0Terminal() {
 
   // Guard (§3): show only once — needs BOTH the server truth (no progress row
   // yet, i.e. never entered Cấp 0) AND the local "already answered" flag
-  // (covers the "Đã từng" branch, which never creates a progress row). Wait
-  // for the query to settle first so a loading flicker doesn't briefly show
-  // the modal to a returning user.
+  // (covers the window before the progress query refetches). Wait for the
+  // query to settle first so a loading flicker doesn't briefly show the modal
+  // to a returning user.
   const showPlacement = isFetched && !progress && !placementSeen
 
   // Cấp 0 tracks a single preselected stock (VNM); AI Insight still needs
@@ -199,8 +199,24 @@ function Cap0Terminal() {
     navigate(`/co-phieu/${trimmedAiInsight}`)
   }
 
-  const handleNeverTraded = () => {
-    placement.mutate(false)
+  /**
+   * Câu hỏi xếp lớp §3 (v3.0) — 3 đáp án, MỘT handler.
+   *
+   * ★ **Trần bị kẹp xuống Cấp 1, và cả ba đáp án đều vào Cấp 0.** Spec §3 muốn
+   * xếp thẳng người có kinh nghiệm lên Cấp 1/Cấp 2, nhưng backend chưa có
+   * đường đó: `POST /cap0/placement` chỉ ghi một dòng `user_placement`
+   * (`has_traded_before` boolean → `placed_level` 0/2) mà **không cấp nào đọc
+   * để routing**, còn `POST /cap1/enter` thì 409 "Chưa tốt nghiệp Cấp 0". Vì
+   * vậy FE làm đúng cái duy nhất có thật: ghi câu trả lời, rồi VÀO CẤP 0 cho
+   * cả ba nhánh — và nói thẳng trần hiện tại là Cấp 1 thay vì hứa Cấp 2.
+   *
+   * Trước đây nhánh "Đã từng" KHÔNG gọi `enterCap0`, nên user rơi vào ngõ cụt:
+   * modal đóng, đứng trên màn Cấp 0 mà không có `cap0_progress` row nào → mọi
+   * `PATCH /cap0/task` sau đó đều 404. Nay cả ba nhánh đều vào Cấp 0 thật.
+   */
+  const handlePlacement = (answer: PlacementAnswer) => {
+    const hasTradedBefore = answer !== "never"
+    placement.mutate(hasTradedBefore)
     // Mark "seen" only once `enterCap0` actually SUCCEEDS. If it fails
     // (network error), `progress` stays falsy AND `placementSeen` stays
     // false, so `showPlacement` is still true and the modal remains
@@ -210,21 +226,11 @@ function Cap0Terminal() {
       onSuccess: () => {
         markPlacementSeen()
         setPlacementSeen(true)
-      },
-    })
-  }
-
-  const handleTradedBefore = () => {
-    // Same success-gated pattern as `handleNeverTraded` — only mark "seen"
-    // (and only then toast) once the placement answer is actually recorded
-    // server-side, so a failed request leaves the modal retryable.
-    placement.mutate(true, {
-      onSuccess: () => {
-        markPlacementSeen()
-        setPlacementSeen(true)
-        // This delivery only records placed_level=2 — no placement quiz / Cấp 1
-        // routing yet (spec §3 "bài xếp lớp" ships separately).
-        Message.info("Bài xếp lớp sẽ sớm ra mắt")
+        // Chỉ người đã từng giao dịch mới cần lời giải thích vì sao họ vẫn bắt
+        // đầu ở Cấp 0 — người mới hoàn toàn vốn thuộc về đó.
+        if (hasTradedBefore) {
+          Message.info("Chương trình hiện mở tới Cấp 1 «Học việc» — bạn bắt đầu ở Cấp 0")
+        }
       },
     })
   }
@@ -257,11 +263,7 @@ function Cap0Terminal() {
 
       <Footer />
 
-      <PlacementModal
-        visible={showPlacement}
-        onNeverTraded={handleNeverTraded}
-        onTradedBefore={handleTradedBefore}
-      />
+      <PlacementModal visible={showPlacement} onChoose={handlePlacement} />
 
       {/* Màn tốt nghiệp (spec §9) — self-contained: opens itself once
           progress shows 5/5 + the debrief gate (see `isGraduationReady`),

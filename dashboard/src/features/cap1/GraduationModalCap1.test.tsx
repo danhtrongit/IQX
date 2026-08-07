@@ -3,25 +3,50 @@ import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Cap1Progress } from "./types"
 
-const { useCap1ProgressMock, graduateMutate, enterCap2Mutate } = vi.hoisted(() => ({
+const {
+  useCap1ProgressMock,
+  graduateMutate,
+  graduatePending,
+  enterCap2Mutate,
+  messageInfo,
+  navigateMock,
+} = vi.hoisted(() => ({
   useCap1ProgressMock: vi.fn(),
   graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
     opts?.onSuccess?.()
   }),
+  // Mutable so a test can put the mutation "in flight" and prove the CTA still
+  // isn't disabled (a `disabled={graduate.isPending}` would bite here).
+  graduatePending: { value: false },
   enterCap2Mutate: vi.fn(),
+  messageInfo: vi.fn(),
+  navigateMock: vi.fn(),
 }))
 
 vi.mock("./hooks", () => ({
   useCap1Progress: (...a: unknown[]) => useCap1ProgressMock(...a),
-  useGraduateCap1: () => ({ mutate: graduateMutate, isPending: false }),
+  useGraduateCap1: () => ({ mutate: graduateMutate, isPending: graduatePending.value }),
 }))
 
-// Cấp 2 is live (Task FE4) — concrete-file import (NOT the `@/features/cap2`
-// barrel), same anti-cycle rationale `cap0/GraduationModal.tsx` already
-// documents for its own `@/features/cap1/hooks` import.
+// ★ Cấp 2-8 TẠM TẮT: `GraduationModalCap1` không còn gọi `useEnterCap2` nữa.
+// Spy vẫn giữ ở đây để test canh được rằng KHÔNG có `POST /cap2/enter` nào bị
+// bắn ra (nếu ai đó nối lại dây, `vi.mock` này vẫn hoạt động và test sẽ đỏ).
 vi.mock("@/features/cap2/hooks", () => ({
   useEnterCap2: () => ({ mutate: enterCap2Mutate, isPending: false }),
 }))
+
+// ★ "does not navigate" — mock `useNavigate` để chứng minh nút CTA không điều
+// hướng đi đâu (kể cả khi sau này có ai thêm `navigate(...)` vào onClick).
+vi.mock("react-router", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-router")>()
+  return { ...actual, useNavigate: () => navigateMock }
+})
+
+// Chỉ stub `Message` (toast "sắp ra mắt") — giữ nguyên Modal thật.
+vi.mock("@arco-design/web-react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@arco-design/web-react")>()
+  return { ...actual, Message: { ...actual.Message, info: messageInfo } }
+})
 
 import { GraduationModalCap1, isGraduationReadyCap1 } from "./GraduationModalCap1"
 
@@ -88,7 +113,10 @@ describe("GraduationModalCap1", () => {
     graduateMutate.mockImplementation((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
       opts?.onSuccess?.()
     })
+    graduatePending.value = false
     enterCap2Mutate.mockReset()
+    messageInfo.mockReset()
+    navigateMock.mockReset()
   })
 
   it("does not render when 6/6 isn't met", () => {
@@ -123,22 +151,65 @@ describe("GraduationModalCap1", () => {
     expect(screen.getByText(/Bạn sẽ có thêm: chuỗi lệnh kỷ luật/)).toBeInTheDocument()
 
     // Button
-    expect(screen.getByText("Vào Cấp 2 «Kỷ luật» →")).toBeInTheDocument()
+    expect(screen.getByTestId("cap1-grad-cta")).toHaveTextContent("Vào Cấp 2 «Kỷ luật» →")
 
     const svg = document.querySelector(".cap0-grad-badge-wrap svg")
     expect(svg).not.toBeNull()
     expect(svg?.getAttribute("width")).toBe("120")
   })
 
-  it('clicking "Vào Cấp 2" calls useGraduateCap1().mutate, then really enters Cấp 2 (POST /cap2/enter) — Cấp 2 is live', () => {
+  // ── ★★ CẤP 2 TẠM TẮT ★★ ───────────────────────────────────────────────────
+  // Modal này `closable={false}` và chỉ tự đóng khi `graduated_at` có giá trị,
+  // nên một nút `disabled` sẽ NHỐT VĨNH VIỄN mọi user đã xong 6/6 (lỗi đã phải
+  // sửa 2 lần trên codebase này). Nút PHẢI bấm được, PHẢI ghi tốt nghiệp, và
+  // chỉ nói thẳng "sắp ra mắt".
+  it("★ the CTA says «sắp ra mắt» right on the button", () => {
     useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap1 />)
-    fireEvent.click(screen.getByText("Vào Cấp 2 «Kỷ luật» →"))
+    expect(screen.getByTestId("cap1-grad-cta")).toHaveTextContent(/sắp ra mắt/)
+  })
+
+  it("★ the CTA is NOT disabled — a disabled button would trap every 6/6 user in a closable={false} modal", () => {
+    useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
+    render(<GraduationModalCap1 />)
+    const cta = screen.getByTestId("cap1-grad-cta")
+    expect(cta).toBeEnabled()
+    expect(cta).not.toHaveAttribute("disabled")
+  })
+
+  it("★ the CTA stays clickable even while the graduation mutation is in flight", () => {
+    graduatePending.value = true
+    useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
+    render(<GraduationModalCap1 />)
+    const cta = screen.getByTestId("cap1-grad-cta")
+    expect(cta).toBeEnabled()
+    fireEvent.click(cta)
+    expect(graduateMutate).toHaveBeenCalledTimes(1)
+  })
+
+  it("★ clicking it STILL records the graduation, toasts «sắp ra mắt», enters NO Cấp 2 and navigates nowhere", () => {
+    useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
+    render(<GraduationModalCap1 />)
+    fireEvent.click(screen.getByTestId("cap1-grad-cta"))
     expect(graduateMutate).toHaveBeenCalledWith(
       undefined,
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     )
-    expect(enterCap2Mutate).toHaveBeenCalledTimes(1)
+    expect(messageInfo).toHaveBeenCalledWith(expect.stringContaining("sắp ra mắt"))
+    expect(enterCap2Mutate).not.toHaveBeenCalled()
+    expect(navigateMock).not.toHaveBeenCalled()
+  })
+
+  it("★ does not toast when the graduation mutation FAILS (no false «đã ghi nhận» signal)", () => {
+    useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
+    graduateMutate.mockImplementationOnce(
+      (_vars?: unknown, opts?: { onError?: (e: unknown) => void }) => {
+        opts?.onError?.(new Error("network"))
+      },
+    )
+    render(<GraduationModalCap1 />)
+    fireEvent.click(screen.getByTestId("cap1-grad-cta"))
+    expect(messageInfo).not.toHaveBeenCalled()
   })
 
   it("closes itself once graduated_at comes back (progress refetch)", () => {

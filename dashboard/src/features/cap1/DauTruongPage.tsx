@@ -37,6 +37,31 @@ import { Cap7TradingPage } from "@/features/cap7/Cap7TradingPage"
 import { useCap8Progress, useEnterCap8 } from "@/features/cap8/hooks"
 import { Cap8TradingPage } from "@/features/cap8/Cap8TradingPage"
 
+/**
+ * ★★ CÔNG TẮC TẠM TẮT CẤP 2-8 — MỘT CHỖ DUY NHẤT, ĐỔI `false` → `true` LÀ BẬT
+ * LẠI TOÀN BỘ ★★
+ *
+ * Founder quyết định sản phẩm ra mắt với **Cấp 0 + Cấp 1 thôi**; Cấp 2-8 đã
+ * build xong và **KHÔNG bị xoá** — chỉ tạm tắt. Cờ này là chỗ duy nhất quyết
+ * định điều đó:
+ *
+ *  - `false` (hiện tại): routing DỪNG ở `Cap1TradingPage`. Vì mọi `shouldQuery`
+ *    của cấp trên đều móc xích vào `progressPastCap1` bên dưới, KHÔNG có
+ *    `GET /capN/progress` lẫn `POST /capN/enter` nào (N = 2…8) được bắn ra ở
+ *    bất kỳ trạng thái nào — các `useEffect` `enterCapN` đều return sớm.
+ *  - `true`: nguyên chuỗi Cấp 2 → Cấp 8 bên dưới sống lại y như trước, không
+ *    phải sửa gì thêm ở file này.
+ *
+ * **Bật lại cần đúng 2 việc:** (1) đổi cờ này thành `true`; (2) gỡ dòng "sắp ra
+ * mắt" + nối lại `useEnterCap2` trong `GraduationModalCap1.tsx` (file đó ghi rõ
+ * cách). Test cho cả chuỗi Cấp 2-8 vẫn còn nguyên trong `DauTruongPage.test.tsx`
+ * dưới `describe.runIf(CAP_2_PLUS_ENABLED)` — chúng tự chạy lại khi cờ bật.
+ *
+ * An toàn khi bật/tắt: trên production chưa ai qua khỏi Cấp 0 (`cap1_progress`
+ * rỗng), nên không có user nào bị kẹt giữa chừng.
+ */
+export const CAP_2_PLUS_ENABLED = false
+
 function FullPageSpinner() {
   return (
     <div className="flex h-svh items-center justify-center bg-[var(--color-bg-1)]">
@@ -56,8 +81,10 @@ function FullPageSpinner() {
  *    this delivery: fall back to `Cap0TradingPage` (guests) or a spinner
  *    (loading) — ZERO behaviour change for anyone not yet Cấp-1-eligible.
  *  - Cấp 0 not graduated → `Cap0TradingPage` (unchanged).
- *  - Cấp 0 graduated, Cấp 1 not entered/not graduated → `Cap1TradingPage`,
- *    firing the idempotent `POST /cap1/enter` on first arrival.
+ *  - Cấp 0 graduated → `Cap1TradingPage`, firing the idempotent
+ *    `POST /cap1/enter` on first arrival. **★ Với `CAP_2_PLUS_ENABLED = false`
+ *    đây là nhánh CUỐI CÙNG** — kể cả khi đã tốt nghiệp Cấp 1. Mọi luật Cấp 2-8
+ *    ghi bên dưới chỉ có hiệu lực khi cờ đó được bật lại.
  *  - Cấp 1 graduated, Cấp 2 not entered/not graduated → `Cap2TradingPage`
  *    (Task FE4), firing the idempotent `POST /cap2/enter` on first arrival —
  *    same pattern one level up.
@@ -110,9 +137,14 @@ export function DauTruongPage() {
 
   const cap1Graduated = !!cap1Progress?.graduated_at
 
+  // ★ CÔNG TẮC (xem `CAP_2_PLUS_ENABLED` ở đầu file): điều kiện DUY NHẤT để đi
+  // tiếp lên Cấp 2. Mọi `shouldQueryCapN` (N ≥ 2) và mọi nhánh render bên dưới
+  // đều móc xích vào nó, nên tắt ở đây là tắt sạch cả 7 cấp.
+  const progressPastCap1 = CAP_2_PLUS_ENABLED && cap1Graduated
+
   // Only query Cấp 2 progress once Cấp 1 is confirmed graduated — mirrors
   // the Cấp 0 → Cấp 1 gating above, one level up.
-  const shouldQueryCap2 = shouldQueryCap1 && cap1Graduated
+  const shouldQueryCap2 = shouldQueryCap1 && progressPastCap1
   const { data: cap2Progress, isFetched: cap2Fetched } = useCap2Progress(shouldQueryCap2)
   const enterCap2 = useEnterCap2()
   const enterCap2AttemptedRef = useRef(false)
@@ -239,7 +271,10 @@ export function DauTruongPage() {
   if (!cap0Fetched) return <FullPageSpinner />
   if (!cap0Graduated) return <Cap0TradingPage />
   if (!cap1Fetched) return <FullPageSpinner />
-  if (!cap1Graduated) return <Cap1TradingPage />
+  // ★ CÔNG TẮC: khi Cấp 2-8 tắt, `progressPastCap1` luôn `false` → đây là
+  // nhánh TERMINAL. Một user đã tốt nghiệp Cấp 1 vẫn ở lại `Cap1TradingPage`
+  // (KHÔNG spinner, KHÔNG tụt xuống Cấp 0) cho tới khi cờ được bật lại.
+  if (!progressPastCap1) return <Cap1TradingPage />
   if (!cap2Fetched) return <FullPageSpinner />
   if (!cap2Graduated) return <Cap2TradingPage />
   if (!cap3Fetched) return <FullPageSpinner />

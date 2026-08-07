@@ -115,6 +115,10 @@ vi.mock("./hooks", () => ({
   usePlacement: () => ({ mutate: placementMutate }),
   useCompleteTask: () => ({ mutate: completeTaskMutate }),
   useGraduate: () => ({ mutate: graduateMutate, isPending: false }),
+  // `DebriefModal` (mounted via `Gbar`) reads the Cấp 0 kế hoạch row for its
+  // `Lý do mua`/`Thời gian giữ` rows — a stub is enough here (the Kết sổ's own
+  // behaviour is covered in `debrief.test.tsx`).
+  useCap0KehoachLatest: () => ({ data: null }),
 }))
 
 // `Gbar` reads FILLED order history (`useOrders`) to re-open the Kết sổ for a
@@ -237,15 +241,20 @@ describe("Cap0TradingPage", () => {
     expect(screen.queryByText("SÂN TẬP · T+0")).not.toBeInTheDocument()
   })
 
-  it("shows PlacementModal when the user has no progress yet (first visit)", () => {
+  it("shows PlacementModal when the user has no progress yet (first visit) — 3 lựa chọn §3 v3.0", () => {
     useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
     renderCap0(<Cap0TradingPage />)
     expect(screen.getByText("Chào mừng đến Demo Trading của IQX.")).toBeInTheDocument()
-    expect(screen.getByText("Bạn đã từng mua cổ phiếu chưa?")).toBeInTheDocument()
-    expect(screen.getByText("Chưa từng")).toBeInTheDocument()
-    expect(screen.getByText("Bắt đầu từ Cấp 0 «Nhập môn»")).toBeInTheDocument()
-    expect(screen.getByText("Đã từng")).toBeInTheDocument()
-    expect(screen.getByText("Làm bài xếp lớp 5 phút")).toBeInTheDocument()
+    expect(
+      screen.getByText("Bạn đã từng mua bán cổ phiếu thật bao giờ chưa?"),
+    ).toBeInTheDocument()
+    expect(screen.getByTestId("cap0-placement-never")).toHaveTextContent("Chưa bao giờ")
+    expect(screen.getByTestId("cap0-placement-unsure")).toHaveTextContent(
+      "Có, nhưng chưa tự tin",
+    )
+    expect(screen.getByTestId("cap0-placement-regular")).toHaveTextContent(
+      "Có, giao dịch thường xuyên",
+    )
   })
 
   it("does NOT show PlacementModal once the user already has Cấp 0 progress", () => {
@@ -260,34 +269,49 @@ describe("Cap0TradingPage", () => {
     expect(screen.queryByText("Chào mừng đến Demo Trading của IQX.")).not.toBeInTheDocument()
   })
 
-  it('clicking "Chưa từng" calls placement(false) + enterCap0() and stays in Cấp 0', () => {
+  it('clicking "Chưa bao giờ" calls placement(false) + enterCap0() and stays in Cấp 0', () => {
     useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
     renderCap0(<Cap0TradingPage />)
-    fireEvent.click(screen.getByText("Chưa từng"))
+    fireEvent.click(screen.getByTestId("cap0-placement-never"))
     expect(placementMutate).toHaveBeenCalledWith(false)
     expect(enterMutate).toHaveBeenCalledTimes(1)
     expect(enterMutate).toHaveBeenCalledWith(
       undefined,
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     )
+    // Người mới hoàn toàn: KHÔNG toast về trần Cấp 1 — họ vốn thuộc Cấp 0.
+    expect(messageInfo).not.toHaveBeenCalled()
   })
 
-  it('clicking "Đã từng" calls placement(true) but does NOT enter Cấp 0, shows a toast', () => {
-    useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
-    renderCap0(<Cap0TradingPage />)
-    fireEvent.click(screen.getByText("Đã từng"))
-    expect(placementMutate).toHaveBeenCalledWith(
-      true,
-      expect.objectContaining({ onSuccess: expect.any(Function) }),
-    )
-    expect(enterMutate).not.toHaveBeenCalled()
-    expect(messageInfo).toHaveBeenCalledWith(expect.stringContaining("xếp lớp"))
-  })
+  // ★ Hai nhánh "đã từng giao dịch" — spec §3 muốn xếp thẳng lên Cấp 1/Cấp 2,
+  // nhưng backend chưa có đường vào Cấp 1 (POST /cap1/enter đòi Cấp 0 đã tốt
+  // nghiệp), nên FE kẹp trần: vẫn VÀO Cấp 0 (có tài khoản + progress row để
+  // làm được nhiệm vụ) và nói thẳng trần hiện tại là Cấp 1. Trước đây nhánh
+  // này KHÔNG gọi enterCap0 → user rơi vào ngõ cụt không có progress row.
+  for (const [testId, label] of [
+    ["cap0-placement-unsure", "Có, nhưng chưa tự tin"],
+    ["cap0-placement-regular", "Có, giao dịch thường xuyên"],
+  ] as const) {
+    it(`clicking "${label}" calls placement(true), DOES enter Cấp 0, and toasts the honest Cấp 1 ceiling`, () => {
+      useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
+      renderCap0(<Cap0TradingPage />)
+      fireEvent.click(screen.getByTestId(testId))
+      expect(placementMutate).toHaveBeenCalledWith(true)
+      expect(enterMutate).toHaveBeenCalledTimes(1)
+      expect(messageInfo).toHaveBeenCalledTimes(1)
+      const toast = messageInfo.mock.calls[0][0] as string
+      expect(toast).toMatch(/Cấp 1/)
+      // ★ Không hứa một Cấp 2 chưa mở.
+      expect(toast).not.toMatch(/Cấp\s*[2-8]/)
+      // ★ Bài quiz 5 phút đã bị bỏ khỏi v3.0 — đừng hứa lại nó.
+      expect(toast).not.toMatch(/xếp lớp/i)
+    })
+  }
 
   it('marks placement as locally "seen" after answering, so a re-render (e.g. progress still null while /enter is in flight) does not re-show it', () => {
     useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
     const { rerender } = renderCap0(<Cap0TradingPage />)
-    fireEvent.click(screen.getByText("Chưa từng"))
+    fireEvent.click(screen.getByTestId("cap0-placement-never"))
     // Re-render with the SAME (still-null) progress, simulating the window
     // before useEnterCap0's mutation resolves and invalidates the query.
     rerender(
@@ -298,34 +322,27 @@ describe("Cap0TradingPage", () => {
     expect(window.localStorage.getItem("iqx_cap0_placement_seen")).toBe("1")
   })
 
-  it('does NOT mark placement "seen" when the "Chưa từng" mutation FAILS, leaving the modal retryable', () => {
-    useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
-    // Simulate a network failure: `enterCap0.mutate` never calls `onSuccess`.
-    enterMutate.mockImplementationOnce(
-      (_vars?: unknown, opts?: { onError?: (e: unknown) => void }) => {
-        opts?.onError?.(new Error("network"))
-      },
-    )
-    renderCap0(<Cap0TradingPage />)
-    fireEvent.click(screen.getByText("Chưa từng"))
-    expect(window.localStorage.getItem("iqx_cap0_placement_seen")).toBeNull()
-    // Modal is still up — the user can retry.
-    expect(screen.getByText("Chào mừng đến Demo Trading của IQX.")).toBeInTheDocument()
-  })
-
-  it('does NOT mark placement "seen" (and does NOT toast) when the "Đã từng" mutation FAILS', () => {
-    useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
-    placementMutate.mockImplementationOnce(
-      (_vars?: unknown, opts?: { onError?: (e: unknown) => void }) => {
-        opts?.onError?.(new Error("network"))
-      },
-    )
-    renderCap0(<Cap0TradingPage />)
-    fireEvent.click(screen.getByText("Đã từng"))
-    expect(window.localStorage.getItem("iqx_cap0_placement_seen")).toBeNull()
-    expect(messageInfo).not.toHaveBeenCalled()
-    expect(screen.getByText("Chào mừng đến Demo Trading của IQX.")).toBeInTheDocument()
-  })
+  for (const testId of [
+    "cap0-placement-never",
+    "cap0-placement-unsure",
+    "cap0-placement-regular",
+  ] as const) {
+    it(`does NOT mark placement "seen" when the ${testId} mutation FAILS, leaving the modal retryable`, () => {
+      useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
+      // Simulate a network failure: `enterCap0.mutate` never calls `onSuccess`.
+      enterMutate.mockImplementationOnce(
+        (_vars?: unknown, opts?: { onError?: (e: unknown) => void }) => {
+          opts?.onError?.(new Error("network"))
+        },
+      )
+      renderCap0(<Cap0TradingPage />)
+      fireEvent.click(screen.getByTestId(testId))
+      expect(window.localStorage.getItem("iqx_cap0_placement_seen")).toBeNull()
+      expect(messageInfo).not.toHaveBeenCalled()
+      // Modal is still up — the user can retry.
+      expect(screen.getByText("Chào mừng đến Demo Trading của IQX.")).toBeInTheDocument()
+    })
+  }
 
   it("mounts the real JourneyBar (progress x/5 + next-task copy) in the top bar", () => {
     useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })

@@ -131,7 +131,7 @@ vi.mock("@/features/cap8/Cap8TradingPage", () => ({
   Cap8TradingPage: () => <div data-testid="cap8-page" />,
 }))
 
-import { DauTruongPage } from "./DauTruongPage"
+import { CAP_2_PLUS_ENABLED, DauTruongPage } from "./DauTruongPage"
 
 function fakeCap1Progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
   return {
@@ -293,6 +293,33 @@ function fakeCap8Progress(overrides: Record<string, unknown> = {}) {
   }
 }
 
+/**
+ * Every level ABOVE Cấp 1 — the `useCapNProgress` query hook and the
+ * `enterCapN` mutation for N = 2…8. The temporary switch must silence ALL of
+ * them, so the assertions below loop over this table instead of naming eight
+ * levels by hand (a new level added to `DauTruongPage` only has to be added
+ * here once).
+ */
+const CAP_2_PLUS_QUERIES = () => [
+  useCap2ProgressMock,
+  useCap3ProgressMock,
+  useCap4ProgressMock,
+  useCap5ProgressMock,
+  useCap6ProgressMock,
+  useCap7ProgressMock,
+  useCap8ProgressMock,
+]
+
+const CAP_2_PLUS_ENTERS = () => [
+  enterCap2Mutate,
+  enterCap3Mutate,
+  enterCap4Mutate,
+  enterCap5Mutate,
+  enterCap6Mutate,
+  enterCap7Mutate,
+  enterCap8Mutate,
+]
+
 describe("DauTruongPage — progression routing (Task FE3 + FE4 + Cấp 3/4/5/6/7/8 FE3)", () => {
   beforeEach(() => {
     useAuthMock.mockReset()
@@ -395,6 +422,133 @@ describe("DauTruongPage — progression routing (Task FE3 + FE4 + Cấp 3/4/5/6/
     expect(enterCap1Mutate).not.toHaveBeenCalled()
   })
 
+  // ── ★★ CÔNG TẮC TẠM TẮT CẤP 2-8 (`CAP_2_PLUS_ENABLED`) ★★ ─────────────────
+  // Sản phẩm tạm chỉ mở Cấp 0 + Cấp 1. Code Cấp 2-8 VẪN CÒN NGUYÊN, chỉ bị một
+  // công tắc duy nhất trong `DauTruongPage.tsx` chặn lại. Các test dưới đây
+  // canh chính cái công tắc đó: routing DỪNG ở `Cap1TradingPage`, và KHÔNG một
+  // request `/cap2..8/*` nào được bắn ra ở BẤT KỲ trạng thái nào.
+  function cap1GraduatedMocks() {
+    useAuthMock.mockReturnValue({ isAuthenticated: true, isLoading: false })
+    useCap0ProgressMock.mockReturnValue({
+      data: { graduated_at: "2026-07-21T00:00:00Z" },
+      isFetched: true,
+    })
+    useCap1ProgressMock.mockReturnValue({
+      data: fakeCap1Progress({ graduated_at: "2026-07-25T00:00:00Z" }),
+      isFetched: true,
+    })
+  }
+
+  it("★ keeps a cap1-GRADUATED user on Cap1TradingPage (never Cấp 2) while Cấp 2-8 are off", () => {
+    cap1GraduatedMocks()
+    useCap2ProgressMock.mockReturnValue({ data: null, isFetched: true })
+    render(<DauTruongPage />)
+    expect(screen.getByTestId("cap1-page")).toBeInTheDocument()
+    expect(screen.queryByTestId("cap2-page")).not.toBeInTheDocument()
+  })
+
+  it("★ fires NO /cap2..8 request at all for a cap1-graduated user (no enter, no progress query)", () => {
+    cap1GraduatedMocks()
+    render(<DauTruongPage />)
+    for (const useProgress of CAP_2_PLUS_QUERIES()) {
+      expect(useProgress).toHaveBeenCalled()
+      for (const call of useProgress.mock.calls) expect(call[0]).toBe(false)
+    }
+    for (const enterMutate of CAP_2_PLUS_ENTERS()) {
+      expect(enterMutate).not.toHaveBeenCalled()
+    }
+  })
+
+  it("★ fires NO /cap2..8 request in ANY auth/progress state", () => {
+    const states: Array<() => void> = [
+      // guest
+      () => {
+        useAuthMock.mockReturnValue({ isAuthenticated: false, isLoading: false })
+        useCap0ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
+        useCap1ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
+      },
+      // auth still loading
+      () => {
+        useAuthMock.mockReturnValue({ isAuthenticated: false, isLoading: true })
+        useCap0ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
+        useCap1ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
+      },
+      // Cấp 0 chưa tốt nghiệp
+      () => {
+        useAuthMock.mockReturnValue({ isAuthenticated: true, isLoading: false })
+        useCap0ProgressMock.mockReturnValue({ data: { graduated_at: null }, isFetched: true })
+        useCap1ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
+      },
+      // Cấp 1 đang học
+      () => {
+        useAuthMock.mockReturnValue({ isAuthenticated: true, isLoading: false })
+        useCap0ProgressMock.mockReturnValue({
+          data: { graduated_at: "2026-07-21T00:00:00Z" },
+          isFetched: true,
+        })
+        useCap1ProgressMock.mockReturnValue({ data: fakeCap1Progress(), isFetched: true })
+      },
+      // Cấp 1 đã tốt nghiệp
+      cap1GraduatedMocks,
+    ]
+
+    for (const setState of states) {
+      for (const useProgress of CAP_2_PLUS_QUERIES()) useProgress.mockClear()
+      for (const enterMutate of CAP_2_PLUS_ENTERS()) enterMutate.mockClear()
+      setState()
+      const { unmount } = render(<DauTruongPage />)
+      for (const useProgress of CAP_2_PLUS_QUERIES()) {
+        for (const call of useProgress.mock.calls) expect(call[0]).toBe(false)
+      }
+      for (const enterMutate of CAP_2_PLUS_ENTERS()) {
+        expect(enterMutate).not.toHaveBeenCalled()
+      }
+      unmount()
+    }
+  })
+
+  it("★ defensive: even with Cấp 2-8 progress rows ALREADY graduated, the user still lands on Cap1TradingPage", () => {
+    cap1GraduatedMocks()
+    useCap2ProgressMock.mockReturnValue({
+      data: fakeCap2Progress({ graduated_at: "2026-07-28T00:00:00Z" }),
+      isFetched: true,
+    })
+    useCap3ProgressMock.mockReturnValue({
+      data: fakeCap3Progress({ graduated_at: "2026-07-30T00:00:00Z" }),
+      isFetched: true,
+    })
+    useCap4ProgressMock.mockReturnValue({
+      data: fakeCap4Progress({ graduated_at: "2026-08-20T00:00:00Z" }),
+      isFetched: true,
+    })
+    useCap5ProgressMock.mockReturnValue({
+      data: fakeCap5Progress({ graduated_at: "2026-09-10T00:00:00Z" }),
+      isFetched: true,
+    })
+    useCap6ProgressMock.mockReturnValue({
+      data: fakeCap6Progress({ graduated_at: "2026-10-01T00:00:00Z" }),
+      isFetched: true,
+    })
+    useCap7ProgressMock.mockReturnValue({
+      data: fakeCap7Progress({ graduated_at: "2026-11-01T00:00:00Z" }),
+      isFetched: true,
+    })
+    useCap8ProgressMock.mockReturnValue({
+      data: fakeCap8Progress({ graduated_at: "2026-12-01T00:00:00Z" }),
+      isFetched: true,
+    })
+    render(<DauTruongPage />)
+    expect(screen.getByTestId("cap1-page")).toBeInTheDocument()
+    for (const id of ["cap2", "cap3", "cap4", "cap5", "cap6", "cap7", "cap8"]) {
+      expect(screen.queryByTestId(`${id}-page`)).not.toBeInTheDocument()
+    }
+  })
+
+  // ★★ Toàn bộ chuỗi Cấp 2 → Cấp 8 bên dưới là hành vi ĐÚNG khi công tắc bật
+  // lại. Giữ nguyên, KHÔNG xoá: `describe.runIf` tự động cho chúng chạy trở lại
+  // ngay khi `CAP_2_PLUS_ENABLED` đổi thành `true` — đó chính là bước "bật lại
+  // Cấp 2-8" và test đã sẵn sàng canh nó.
+  describe.runIf(CAP_2_PLUS_ENABLED)("chuỗi Cấp 2 → Cấp 8 (chỉ chạy khi CAP_2_PLUS_ENABLED)", () => {
   it("shows a spinner once Cấp 1 is graduated but Cấp 2 progress hasn't resolved yet", () => {
     useAuthMock.mockReturnValue({ isAuthenticated: true, isLoading: false })
     useCap0ProgressMock.mockReturnValue({
@@ -740,5 +894,6 @@ describe("DauTruongPage — progression routing (Task FE3 + FE4 + Cấp 3/4/5/6/
     render(<DauTruongPage />)
     expect(screen.getByTestId("cap2-page")).toBeInTheDocument()
     expect(enterCap3Mutate).not.toHaveBeenCalled()
+  })
   })
 })
