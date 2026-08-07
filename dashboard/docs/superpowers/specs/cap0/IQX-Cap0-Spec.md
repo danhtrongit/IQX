@@ -56,7 +56,16 @@ Demo Trading là hành trình nhiều cấp, lên cấp bằng **hành vi** (kh�
 | **Sân tập · T+0** | Cấp 0 | Cổ phiếu về ngay, bán lại được liền — để tập thao tác không chờ đợi. Tiền ảo. |
 | **Thực chiến · T+2,5** | Cấp 1 trở đi | Luật thật 100%: T+2,5, biên độ, phí, thuế. Hồ sơ nhà đầu tư bắt đầu tính. |
 
-**Badge chế độ** hiển thị góc màn hình (cạnh tên user): `SÂN TẬP · T+0` (xám) hoặc `THỰC CHIẾN` (đổi khi tốt nghiệp Cấp 0). Thêm cột `mode` (`san_tap`/`thuc_chien`) vào bảng lệnh chung. Lệnh Cấp 0 luôn `san_tap`.
+**Badge chế độ** hiển thị góc màn hình (cạnh tên user): `SÂN TẬP · T+0` (xám) hoặc `THỰC CHIẾN` (đổi khi tốt nghiệp Cấp 0). Thêm cột `mode` (`san_tap`/`thuc_chien`) vào bảng lệnh chung.
+
+> ⚠️ **ĐÍNH CHÍNH (08/2026) — bản trước ghi "Lệnh Cấp 0 luôn `san_tap`". Câu đó SAI.**
+> `mode` do **gói thuê bao** quyết định, không phải do cấp: backend đặt
+> `mode = "thuc_chien" if is_premium else "san_tap"`. Cấp 0 miễn phí và mở cho
+> **mọi** user, kể cả người đang có Premium — nên lệnh Cấp 0 của một subscriber
+> mang `thuc_chien`. Tin vào câu cũ mà đi lọc `mode` sẽ **giết tính năng với
+> đúng nhóm khách trả tiền** (đã xảy ra một lần: chip lý do không ghi được và
+> Kết sổ hiện `Lý do mua —` vĩnh viễn). **KHÔNG lọc theo `mode` ở bất kỳ đâu
+> trong luồng Cấp 0.**
 
 ---
 
@@ -315,11 +324,11 @@ graduated_at
 time_to_graduate_hours       -- (graduated_at - entered_at) / 3600
 ```
 
-**Cột `mode`** thêm vào bảng lệnh chung: `san_tap` / `thuc_chien`. Lệnh Cấp 0 luôn `san_tap`.
+**Cột `mode`** thêm vào bảng lệnh chung: `san_tap` / `thuc_chien`. **KHÔNG phải lệnh Cấp 0 nào cũng `san_tap`** — xem đính chính ở §2: `mode` do gói thuê bao quyết định, nên user Premium ở Cấp 0 sinh lệnh `thuc_chien`. Ghi lại `mode` để tham chiếu, nhưng **không được lọc theo nó**.
 
-**Bảng `order_kehoach`** (mỗi lệnh Cấp 0, tối giản):
+**Bảng riêng của Cấp 0** (mỗi lệnh Cấp 0, tối giản) — **tách khỏi `order_kehoach` của Cấp 1**, vì bảng đó có `lyDo`/`trangThai_luc_dat`/`vung_mua` NOT NULL theo từ vựng phân tích của Cấp 1, `order_id` UNIQUE (một dòng Cấp 0 sẽ khoá vĩnh viễn kế hoạch Cấp 1 của chính lệnh đó), và nhiệm vụ ③ Cấp 1 đếm DISTINCT `lyDo`:
 ```
-order_id · mode='san_tap'
+order_id · mode (ghi lại, KHÔNG lọc)
 ly_do_doi_thuong             -- 1 in 5 chip đời thường
 ```
 (KHÔNG có cột cắt lỗ/chốt lời/lý do phân tích — thuộc Cấp 1-2.)
