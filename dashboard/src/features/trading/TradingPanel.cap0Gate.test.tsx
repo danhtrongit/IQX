@@ -134,6 +134,11 @@ describe("GatedOrderEntry — Cấp 0 ungate", () => {
     // inside the real `Cap0Provider` it renders, and (with no
     // `task_1_done_at` in the mocked progress) the reason chip is required.
     expect(screen.getByText("KẾ HOẠCH")).toBeInTheDocument()
+    // Mockup `iqx-cap0-datlenh.html` `.op-fee` spells the fee row out for a
+    // beginner instead of abbreviating it. Cấp 0-only — the shared terminal
+    // keeps its compact "Phí GD (0.15%)" (asserted in the next test).
+    expect(screen.getByText("Phí giao dịch (0.15%)")).toBeInTheDocument()
+    expect(screen.queryByText("Phí GD (0.15%)")).not.toBeInTheDocument()
     fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
     await waitFor(() => expect(placeOrderMock).not.toHaveBeenCalled())
   }, COLD_IMPORT_TIMEOUT)
@@ -152,8 +157,11 @@ describe("GatedOrderEntry — Cấp 0 ungate", () => {
     )
     expect(screen.getByText("ĐẶT LỆNH MUA")).toBeInTheDocument()
     // (a) No Cap0Provider → `isCap0Active` is false → the Kế hoạch block must
-    // NOT render on /bieu-do & /co-phieu.
+    // NOT render on /bieu-do & /co-phieu, and the fee row keeps its compact
+    // shared-terminal label.
     expect(screen.queryByText("KẾ HOẠCH")).not.toBeInTheDocument()
+    expect(screen.getByText("Phí GD (0.15%)")).toBeInTheDocument()
+    expect(screen.queryByText("Phí giao dịch (0.15%)")).not.toBeInTheDocument()
     // (b) No reason chip was picked (there's no chip to pick), yet the buy
     // must reach `placeOrder.mutateAsync` — the reason-gate must not fire.
     fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))

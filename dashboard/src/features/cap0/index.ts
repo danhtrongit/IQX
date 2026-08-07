@@ -37,6 +37,8 @@ export {
   useEnterCap0,
   usePlacement,
   useCompleteTask,
+  useRecordCap0Kehoach,
+  useCap0KehoachLatest,
   useGraduate,
 } from "./hooks"
 export { cap0Api } from "./api"
@@ -46,6 +48,7 @@ export {
   tradingModeFor,
   type BadgeOptions,
   type Cap0Gate,
+  type Cap0Kehoach,
   type Cap0Level,
   type Cap0Progress,
   type PlacementResult,

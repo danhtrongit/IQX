@@ -173,19 +173,28 @@ describe("GraduationModal", () => {
     expect(screen.queryByText(/cổng hành vi/)).not.toBeInTheDocument()
     expect(screen.queryByText(/6\/6/)).not.toBeInTheDocument()
 
-    // Khối 1 — Ghi nhận
+    // Khối 1 — Ghi nhận (verbatim spec v3.0 §9)
     expect(
       screen.getByText(/Bạn đã đi trọn Cấp 0 «Nhập môn»/),
     ).toBeInTheDocument()
+    expect(screen.getByText("đi trọn một vòng đời lệnh hoàn chỉnh")).toBeInTheDocument()
     expect(
-      screen.getByText(/Phần lớn người mua cổ phiếu ngoài kia chưa từng làm điều cuối cùng\./),
+      screen.getByText(/\(mua → nắm giữ → theo dõi → bán → kết sổ\)/),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/Phần lớn người mua cổ phiếu ngoài kia còn không biết mình đang nắm gì\./),
     ).toBeInTheDocument()
 
-    // Khối 2 — Định vị trung thực
+    // Khối 2 — Định vị trung thực (verbatim spec v3.0 §9)
     expect(screen.getByText(/Nói thẳng: bạn đã biết/)).toBeInTheDocument()
     expect(screen.getByText("CÁCH CHƠI")).toBeInTheDocument()
     expect(screen.getByText("CHƠI GIỎI")).toBeInTheDocument()
-    expect(screen.getByText(/'chọn mã nào'/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/dạy bạn chọn lý do mua có cơ sở cho từng lệnh, từ chính dữ liệu 6 lớp phân tích/),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/Cấp 2 dạy đặt cắt lỗ\/chốt lời và kỷ luật thực hiện\./),
+    ).toBeInTheDocument()
 
     // Khối 3 — Chuyển chế độ (viền xanh)
     expect(screen.getByText("Từ giờ: chế độ THỰC CHIẾN.")).toBeInTheDocument()
@@ -193,6 +202,23 @@ describe("GraduationModal", () => {
 
     // Button
     expect(screen.getByText("Vào Cấp 1 «Học việc» →")).toBeInTheDocument()
+  })
+
+  // ★ The LAST surviving cắt-lỗ claim in Cấp 0. v2.2's Khối 1 congratulated the
+  // user for having "đi trọn 2 vòng lệnh có kế hoạch, tự tay đặt ngưỡng cắt lỗ
+  // của mình" — under v3.0 BOTH halves are false: Cấp 0 asks for exactly one
+  // round trip and has no cắt lỗ field at all. Congratulating someone for work
+  // the product never let them do is the worst place to be wrong.
+  it("★ never credits the user with a 2nd vòng lệnh or a cắt lỗ they were never asked to set", () => {
+    useCap0ProgressMock.mockReturnValue({ data: readyProgress() })
+    renderModal()
+
+    expect(screen.queryByText(/2 vòng lệnh/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/tự tay đặt ngưỡng cắt lỗ/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/chưa từng làm điều cuối cùng/)).not.toBeInTheDocument()
+    // Khối 2's old "lập kế hoạch thật sự" / "'chọn mã nào'" wording is replaced
+    // by §9's own — the level teaches choosing a lý do, not writing a plan.
+    expect(screen.queryByText(/'chọn mã nào'/)).not.toBeInTheDocument()
   })
 
   it("renders the 120px glowing badge (spec §12 n=0, fill=1 — \"vừa đúc xong\")", () => {

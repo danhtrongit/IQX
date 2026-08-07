@@ -137,14 +137,77 @@ describe("JourneyPanel", () => {
     expect(screen.queryByText("SÂN TẬP · T+0")).not.toBeInTheDocument()
   })
 
-  it('shows the checklist header "TRƯỚC KHI LÊN CẤP 1 · 0/5" with fresh progress', () => {
+  // Mockup `iqx-cap0-hanhtrinh.html` `.ck-head`: title left, counter right —
+  // two elements, not one "… · x/5" string (spec §7 gives the wording, the
+  // mockup gives the layout).
+  it('shows the checklist header as title + counter — "TRƯỚC KHI LÊN CẤP 1" and "0/5"', () => {
     useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
     render(
       <SidebarProvider>
         <JourneyPanel />
       </SidebarProvider>,
     )
-    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 1 · 0/5")).toBeInTheDocument()
+    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 1")).toBeInTheDocument()
+    expect(screen.getByText("0/5")).toBeInTheDocument()
+    expect(screen.queryByText("TRƯỚC KHI LÊN CẤP 1 · 0/5")).not.toBeInTheDocument()
+  })
+
+  // Mockup `.lvcard .info`: the mode pill sits INSIDE the info column under the
+  // level name, not as a third flex child next to the badge.
+  it("puts the mode pill inside the level-card info column, under the name", () => {
+    useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
+    const { container } = render(
+      <SidebarProvider>
+        <JourneyPanel />
+      </SidebarProvider>,
+    )
+    const body = container.querySelector(".cap0-level-card-body")
+    expect(body).not.toBeNull()
+    expect(within(body as HTMLElement).getByText("SÂN TẬP · T+0")).toBeInTheDocument()
+  })
+
+  // Mockup `.task .st`: ✅ done · 🎯 đang làm · 🔒 chưa mở.
+  it("uses the mockup's emoji status glyphs — ✅ / 🎯 / 🔒", () => {
+    useCap0ProgressMock.mockReturnValue({
+      data: makeProgress({ task_1_done_at: "2026-07-21T01:00:00Z" }),
+    })
+    render(
+      <SidebarProvider>
+        <JourneyPanel />
+      </SidebarProvider>,
+    )
+    expect(within(screen.getByTestId("cap0-task-1")).getByText("✅")).toBeInTheDocument()
+    expect(within(screen.getByTestId("cap0-task-2")).getByText("🎯")).toBeInTheDocument()
+    // The old numeric circle is gone — the ordinal now lives in the task name.
+    expect(within(screen.getByTestId("cap0-task-1")).queryByText("✓")).not.toBeInTheDocument()
+    expect(within(screen.getByTestId("cap0-task-2")).getByText("②")).toBeInTheDocument()
+  })
+
+  it("shows 🔒 on a task that is not open yet", () => {
+    useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
+    render(
+      <SidebarProvider>
+        <JourneyPanel />
+      </SidebarProvider>,
+    )
+    expect(within(screen.getByTestId("cap0-task-5")).getByText("🔒")).toBeInTheDocument()
+  })
+
+  // Mockup keeps `.ds` on the done rows too — a checklist you can still read
+  // after ticking it beats one that empties itself.
+  it("keeps the task description visible once a task is done", () => {
+    useCap0ProgressMock.mockReturnValue({
+      data: makeProgress({ task_1_done_at: "2026-07-21T01:00:00Z" }),
+    })
+    render(
+      <SidebarProvider>
+        <JourneyPanel />
+      </SidebarProvider>,
+    )
+    const task1 = screen.getByTestId("cap0-task-1")
+    expect(within(task1).getByText(/Mua công ty bạn biết/)).toBeInTheDocument()
+    // ...but "Làm ngay →" is still only on the open ones.
+    expect(within(task1).queryByText("Làm ngay →")).not.toBeInTheDocument()
   })
 
   it("renders all 5 task names verbatim (spec v3.0 §7)", () => {
@@ -191,11 +254,12 @@ describe("JourneyPanel", () => {
         <JourneyPanel />
       </SidebarProvider>,
     )
-    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 1 · 1/5")).toBeInTheDocument()
+    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 1")).toBeInTheDocument()
+    expect(screen.getByText("1/5")).toBeInTheDocument()
 
     const task1 = screen.getByTestId("cap0-task-1")
     expect(task1.className).toContain("cap0-checklist-item--done")
-    expect(within(task1).getByText("✓")).toBeInTheDocument()
+    expect(within(task1).getByText("✅")).toBeInTheDocument()
     expect(within(task1).queryByText("Làm ngay →")).not.toBeInTheDocument()
 
     // ②③④ (Chặng 2 tours) — independent of each other, any order (T2).
@@ -224,7 +288,7 @@ describe("JourneyPanel", () => {
     )
     const task2 = screen.getByTestId("cap0-task-2")
     expect(task2.className).toContain("cap0-checklist-item--done")
-    expect(within(task2).getByText("✓")).toBeInTheDocument()
+    expect(within(task2).getByText("✅")).toBeInTheDocument()
     expect(within(task2).queryByText("Làm ngay →")).not.toBeInTheDocument()
 
     // ③④ stay active (not blocked by ② being done, not yet done themselves).
@@ -312,7 +376,7 @@ describe("JourneyPanel", () => {
     const task5 = screen.getByTestId("cap0-task-5")
     expect(task5.className).toContain("cap0-checklist-item--done")
     expect(within(task5).getByText("Bán một lệnh — kết sổ đầu tiên")).toBeInTheDocument()
-    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 1 · 2/5")).toBeInTheDocument()
+    expect(screen.getByText("2/5")).toBeInTheDocument()
   })
 })
 
@@ -418,7 +482,7 @@ describe("RightSidebar — journey panel wired in without breaking the existing 
         <RightSidebar />
       </SidebarProvider>,
     )
-    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 1 · 0/5")).toBeInTheDocument()
+    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 1")).toBeInTheDocument()
     expect(screen.queryByTestId("news-panel")).not.toBeInTheDocument()
     expect(screen.queryByTestId("trading-panel")).not.toBeInTheDocument()
     expect(screen.queryByTestId("watchlist-panel")).not.toBeInTheDocument()

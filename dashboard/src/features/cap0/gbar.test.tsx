@@ -138,6 +138,10 @@ function routeGet(
       const u = String(url)
       if (u.startsWith("virtual-trading/orders")) return Promise.resolve({ orders })
       if (u.startsWith("virtual-trading/portfolio")) return Promise.resolve({ positions })
+      // `DebriefModal` reads the Cấp 0 Kế hoạch chip (`Lý do mua` / `Thời gian
+      // giữ`). These Gbar tests are about WHICH Kết sổ opens, not its rows, so
+      // answer the honest "no row recorded" — the modal renders "—" for both.
+      if (u.startsWith("cap0/kehoach")) return Promise.resolve(null)
       return Promise.resolve(progress)
     },
   }))
@@ -356,7 +360,7 @@ describe("Gbar — buy → sell opens the Kết sổ debrief (spec §5/§6, nhi�
     fireEvent.click(screen.getByText("sell-vnm")) // SELL VNM @ 63,000
 
     expect(screen.getByText("KẾT SỔ LỆNH · #1 · SÂN TẬP")).toBeInTheDocument()
-    expect(screen.getByText("+120,000 ₫ · MUA 100 VNM → BÁN")).toBeInTheDocument()
+    expect(screen.getByText("+120,000đ · MUA 100 VNM → BÁN")).toBeInTheDocument()
     expect(screen.getAllByText("61,800").length).toBeGreaterThanOrEqual(2)
     expect(screen.getByText(/63,000/)).toBeInTheDocument()
   })
@@ -461,7 +465,7 @@ describe("Gbar — retroactive Kết sổ from order history (nhiệm vụ ⑤ r
       expect(screen.getByText("KẾT SỔ LỆNH · #1 · SÂN TẬP")).toBeInTheDocument(),
     )
     // Reconciled against server data: buy 61,800 → sell 63,000, 100 VNM.
-    expect(screen.getByText("+120,000 ₫ · MUA 100 VNM → BÁN")).toBeInTheDocument()
+    expect(screen.getByText("+120,000đ · MUA 100 VNM → BÁN")).toBeInTheDocument()
     expect(screen.getByText(/63,000/)).toBeInTheDocument()
   })
 
@@ -537,7 +541,7 @@ describe("Gbar — retroactive Kết sổ from order history (nhiệm vụ ⑤ r
       expect(screen.getByText("KẾT SỔ LỆNH · #2 · SÂN TẬP")).toBeInTheDocument(),
     )
     // The MOST RECENT round trip: 65,000 → 70,000, not 61,800 → 63,000.
-    expect(screen.getByText("+500,000 ₫ · MUA 100 VNM → BÁN")).toBeInTheDocument()
+    expect(screen.getByText("+500,000đ · MUA 100 VNM → BÁN")).toBeInTheDocument()
   })
 })
 
@@ -560,7 +564,7 @@ describe("Gbar — live sell path is unchanged; retro must not double-open or do
     fireEvent.click(screen.getByText("sell-vnm"))
 
     expect(screen.getByText("KẾT SỔ LỆNH · #1 · SÂN TẬP")).toBeInTheDocument()
-    expect(screen.getByText("+120,000 ₫ · MUA 100 VNM → BÁN")).toBeInTheDocument()
+    expect(screen.getByText("+120,000đ · MUA 100 VNM → BÁN")).toBeInTheDocument()
   })
 
   it("when the order history refetches AFTER a live sell, the retro path does not replace the live Kết sổ (no double-open for the same sell)", async () => {

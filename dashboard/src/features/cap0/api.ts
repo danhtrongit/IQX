@@ -1,5 +1,5 @@
 import { api, unwrap } from "@/shared/http/client"
-import type { Cap0Gate, Cap0Progress, PlacementResult } from "./types"
+import type { Cap0Gate, Cap0Kehoach, Cap0Progress, PlacementResult } from "./types"
 
 /**
  * Cấp 0 onboarding API — BE1 endpoints under `/cap0/*` (all FREE, auth-only).
@@ -33,6 +33,32 @@ export const cap0Api = {
       .patch("cap0/task", { json: { task_no: taskNo, ...(gate ? { gate } : {}) } })
       .json<unknown>()
     return unwrap(res as never) as Cap0Progress
+  },
+
+  /**
+   * POST /cap0/kehoach { order_id, ly_do_doi_thuong } — persist the Kế hoạch
+   * chip for a Sân tập BUY (spec §10). The endpoint accepts EITHER the slug
+   * (`thu_cho_biet`) or the verbatim §4 label (`Thử cho biết`), so
+   * `PlanBlock`'s own chip strings go up unmapped. Repeat calls for the same
+   * order UPSERT (never 409), so a retry can't dead-end the user.
+   */
+  recordKehoach: async (orderId: string, lyDoDoiThuong: string): Promise<Cap0Kehoach> => {
+    const res = await api
+      .post("cap0/kehoach", { json: { order_id: orderId, ly_do_doi_thuong: lyDoDoiThuong } })
+      .json<unknown>()
+    return unwrap(res as never) as Cap0Kehoach
+  },
+
+  /**
+   * GET /cap0/kehoach/latest?symbol= → the chip of the most recent FILLED Sân
+   * tập BUY of that symbol, or **null** when there is none. Never a fabricated
+   * row — the Kết sổ leaves those cells blank rather than inventing a reason.
+   */
+  kehoachLatest: async (symbol: string): Promise<Cap0Kehoach | null> => {
+    const res = await api
+      .get("cap0/kehoach/latest", { searchParams: { symbol } })
+      .json<unknown>()
+    return (unwrap(res as never) ?? null) as Cap0Kehoach | null
   },
 
   /** POST /cap0/graduate — only succeeds when 5/5 tasks + the debrief gate are met. */

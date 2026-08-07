@@ -38,6 +38,38 @@ export interface Cap0Progress {
 /** Behaviour gates the PATCH /cap0/task endpoint can flip (v3.0: two, one real). */
 export type Cap0Gate = "star" | "debrief"
 
+/**
+ * One `cap0_order_kehoach` row (spec §10) — the Kế hoạch chip a user picked
+ * for a Sân tập BUY, plus everything the Kết sổ derives from that order.
+ * Mirrors the backend `Cap0KehoachOut` schema 1:1.
+ *
+ * It is its OWN table, deliberately NOT Cấp 1's `order_kehoach` — the two
+ * vocabularies are disjoint and a Cấp 0 row in Cấp 1's table would
+ * permanently 409 that order's Form Kế hoạch (see `Cap0Service.record_kehoach`).
+ */
+export interface Cap0Kehoach {
+  id: string
+  order_id: string
+  symbol: string
+  mode: string
+  /** Slug — `cong_ty_toi_biet` … `thu_cho_biet`. */
+  ly_do_doi_thuong: string
+  /** Verbatim spec §4 chip label — render as-is on the Kết sổ `Lý do mua` row. */
+  ly_do_label: string
+  /** BUY order `created_at`. */
+  mua_luc: string
+  /** BUY order `trading_date`. */
+  ngay_mua: string
+  gia_vao: number | null
+  /**
+   * `Thời gian giữ`, in trading sessions. **0 is the common Cấp 0 case** — Sân
+   * tập is T+0, so most round trips open and close in the same phiên. The
+   * backend deliberately does NOT floor it to 1 (that would be a fabricated
+   * number), so the Kết sổ must word 0 honestly instead of printing "0 phiên".
+   */
+  so_phien_giu: number
+}
+
 /** Response of POST /cap0/placement — never traded → 0, experienced → 2. */
 export interface PlacementResult {
   placed_level: number

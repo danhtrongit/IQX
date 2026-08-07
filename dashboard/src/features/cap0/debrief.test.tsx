@@ -4,14 +4,19 @@ import { describe, expect, it, vi, beforeEach } from "vitest"
 import type { Cap0Progress } from "./types"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
-const { completeTaskMutate } = vi.hoisted(() => ({
+const { completeTaskMutate, kehoachLatestMock } = vi.hoisted(() => ({
   completeTaskMutate: vi.fn(),
+  // `GET /cap0/kehoach/latest?symbol=` — feeds the §5 `Lý do mua` and
+  // `Thời gian giữ` rows. Defaults to "no row yet" so the many pre-existing
+  // tests below exercise the honest-unknown rendering without opting in.
+  kehoachLatestMock: vi.fn(() => ({ data: null })),
 }))
-// `DebriefModal` only needs `useCompleteTask` — mock `./hooks` directly (same
-// pattern as `Cap0TradingPage.test.tsx`) so no QueryClient/http-client setup
-// is needed for this file.
+// `DebriefModal` needs `useCompleteTask` + `useCap0KehoachLatest` — mock
+// `./hooks` directly (same pattern as `Cap0TradingPage.test.tsx`) so no
+// QueryClient/http-client setup is needed for this file.
 vi.mock("./hooks", () => ({
   useCompleteTask: () => ({ mutate: completeTaskMutate }),
+  useCap0KehoachLatest: (...a: unknown[]) => kehoachLatestMock(...a),
 }))
 
 import { coachTemplate } from "./coachTemplate"
@@ -162,6 +167,8 @@ describe("DebriefModal", () => {
 
   beforeEach(() => {
     completeTaskMutate.mockReset()
+    kehoachLatestMock.mockReset()
+    kehoachLatestMock.mockReturnValue({ data: null })
   })
 
   it("renders nothing when data is null", () => {
@@ -175,9 +182,14 @@ describe("DebriefModal", () => {
     expect(screen.getByText("KẾT SỔ LỆNH · #1 · SÂN TẬP")).toBeInTheDocument()
     expect(screen.getByText(/MUA 100 VNM → BÁN/)).toBeInTheDocument()
 
-    // Kế hoạch / Thực tế table
+    // Kế hoạch / Thực tế table — short row labels, matching Cấp 1's Kết sổ
+    // and both mockups (`iqx-cap0-ketso.html` / `iqx-cap1-ketso.html`).
+    expect(screen.getByText("Đối chiếu")).toBeInTheDocument()
     expect(screen.getByText("Giá vào")).toBeInTheDocument()
-    expect(screen.getByText("Giá ra · thuế bán 0,1%")).toBeInTheDocument()
+    expect(screen.getByText("Giá ra · thuế")).toBeInTheDocument()
+    expect(screen.queryByText("Giá ra · thuế bán 0,1%")).not.toBeInTheDocument()
+    expect(screen.getByText("Lý do mua")).toBeInTheDocument()
+    expect(screen.getByText("Thời gian giữ")).toBeInTheDocument()
 
     // Coach block (template A — lệnh lãi)
     expect(screen.getByText("NHÌN LẠI")).toBeInTheDocument()
@@ -241,9 +253,9 @@ describe("DebriefModal", () => {
       exitPrice: 58900,
     }
     render(<DebriefModal data={lossData} onClose={vi.fn()} />)
-    // (58,900 − 62,000) × 100 = −310,000 ₫ — must use "−" (U+2212), never a
+    // (58,900 − 62,000) × 100 = −310,000đ — must use "−" (U+2212), never a
     // plain ASCII hyphen ("-", U+002D), which `toLocaleString` would emit.
-    expect(screen.getByText("−310,000 ₫ · MUA 100 VNM → BÁN")).toBeInTheDocument()
+    expect(screen.getByText("−310,000đ · MUA 100 VNM → BÁN")).toBeInTheDocument()
     expect(screen.queryByText(/-310,000/)).not.toBeInTheDocument()
   })
 
@@ -261,6 +273,69 @@ describe("DebriefModal", () => {
     // The old "không ghi nhận" honesty fallback existed only because sl/tp
     // could be unknown; with no sl/tp at all there is nothing to disclaim.
     expect(screen.queryByText("không ghi nhận")).not.toBeInTheDocument()
+  })
+
+  // ── §5 bảng đối chiếu: Lý do mua + Thời gian giữ (từ `cap0_order_kehoach`) ──
+  // Task 1 shipped `GET /cap0/kehoach/latest?symbol=`; these two rows are the
+  // only thing in the Kết sổ that is NOT derivable from the sell fill itself.
+  it("reads the chip + hold time from GET /cap0/kehoach/latest, keyed on the SOLD symbol", () => {
+    kehoachLatestMock.mockReturnValue({
+      data: { ly_do_label: "Công ty tôi biết", so_phien_giu: 4, gia_vao: 61800 },
+    })
+    render(<DebriefModal data={winData} onClose={vi.fn()} />)
+
+    expect(kehoachLatestMock).toHaveBeenCalledWith("VNM")
+    expect(screen.getByText("Công ty tôi biết")).toBeInTheDocument()
+    expect(screen.getByText("4 phiên")).toBeInTheDocument()
+    // Mockup: `Lý do mua` spans Kế hoạch + Thực tế rather than showing "—"
+    // under Thực tế (there is no "thực tế" version of a reason).
+    expect(screen.getByText("Công ty tôi biết").getAttribute("colspan")).toBe("2")
+  })
+
+  it('appends "· Giữ {n} phiên" to the sub-line when the position was actually held', () => {
+    kehoachLatestMock.mockReturnValue({
+      data: { ly_do_label: "Giá đang tăng", so_phien_giu: 4, gia_vao: 61800 },
+    })
+    render(<DebriefModal data={winData} onClose={vi.fn()} />)
+    expect(screen.getByText(/MUA 100 VNM → BÁN · Giữ 4 phiên/)).toBeInTheDocument()
+  })
+
+  // ★ Cấp 0 is Sân tập / T+0, so `so_phien_giu` is 0 for the COMMON case (buy
+  // and sell in the same session). Task 1 deliberately did not floor it to 1 —
+  // that would be a fabricated number — so the FE must not print the nonsense
+  // "Giữ 0 phiên"/"0 phiên" either. It says what actually happened instead.
+  it("★ never prints «Giữ 0 phiên» for a same-session round trip — it says «Trong cùng phiên»", () => {
+    kehoachLatestMock.mockReturnValue({
+      data: { ly_do_label: "Thử cho biết", so_phien_giu: 0, gia_vao: 61800 },
+    })
+    render(<DebriefModal data={winData} onClose={vi.fn()} />)
+
+    expect(screen.queryByText(/Giữ 0 phiên/)).not.toBeInTheDocument()
+    expect(screen.queryByText("0 phiên")).not.toBeInTheDocument()
+    expect(screen.getByText(/MUA 100 VNM → BÁN · Trong cùng phiên/)).toBeInTheDocument()
+    // The `Thời gian giữ` row says the same thing, not a number.
+    expect(screen.getByText("Trong cùng phiên")).toBeInTheDocument()
+  })
+
+  // ★ `latest` returns `null` when nothing was recorded (buy made before this
+  // shipped, or the non-fatal POST failed). Show "—", never a made-up chip or
+  // a hold time of 0/1 phiên.
+  it("★ shows «—» for both rows when there is no kehoach row — and no sub-line suffix", () => {
+    kehoachLatestMock.mockReturnValue({ data: null })
+    render(<DebriefModal data={winData} onClose={vi.fn()} />)
+
+    expect(screen.getByText(/MUA 100 VNM → BÁN$/)).toBeInTheDocument()
+    expect(screen.queryByText(/Giữ/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/phiên/)).not.toBeInTheDocument()
+    expect(screen.queryByText("Trong cùng phiên")).not.toBeInTheDocument()
+    // Lý do mua + Giá ra (Kế hoạch) + Thời gian giữ (Kế hoạch) + Thời gian giữ
+    // (Thực tế) — every unknown reads as the table's own em-dash.
+    expect(screen.getAllByText("—").length).toBeGreaterThanOrEqual(3)
+  })
+
+  it("does not query for a kehoach row while the modal is closed", () => {
+    render(<DebriefModal data={null} onClose={vi.fn()} />)
+    expect(kehoachLatestMock).toHaveBeenCalledWith(null)
   })
 
   it("still completes nhiệm vụ ⑤ when a retroactive Kết sổ is closed", () => {

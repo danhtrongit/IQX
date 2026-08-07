@@ -23,6 +23,7 @@
   --bg1: #171923; /* nền chính */
   --bg2: #1f2230; /* nền card */
   --bg3: #282c3d; /* nền input */
+  --bg4: #323649; /* nền nút trung tính (mockup `.ks-btn`) */
   --bd: #39405a; /* border */
 
   /* chữ */
@@ -279,16 +280,26 @@
   box-shadow: 0 0 6px rgba(79, 143, 247, 0.7);
 }
 
-/* ── Journey tab / checklist (spec §7 tab Hành trình) ───────────────────────── */
+/* ── Journey tab / checklist (spec §7 tab Hành trình · mockup
+   `iqx-cap0-hanhtrinh.html`) ────────────────────────────────────────────────
+   Shared with `features/cap1/JourneyPanelCap1.tsx`, which renders against the
+   SAME `.cap0-level-card-*` / `.cap0-checklist-*` / `.cap0-journey-*` classes
+   (its own mockup asks for the same treatment) — keep every rule here generic
+   to both levels, nothing Cấp-0-specific. */
 .cap0-level-card {
-  background: var(--bg2);
-  border: 1px solid var(--brand-bd);
-  border-radius: 11px;
-  padding: 14px 13px;
-  margin-bottom: 12px;
+  background: linear-gradient(135deg, rgba(138, 144, 165, 0.16), transparent);
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
   display: flex;
-  gap: 13px;
+  gap: 14px;
   align-items: center;
+}
+
+/* Mockup `.lvcard .info .mode` — pill nằm trong cột info, dưới tên cấp. */
+.cap0-level-card-mode {
+  margin-top: 6px;
 }
 
 .cap0-level-card-body {
@@ -317,13 +328,27 @@
   line-height: 1.4;
 }
 
+/* Mockup `.ck-head` — tiêu đề trái, bộ đếm phải. Cấp 1 vẫn dựng header này
+   thành MỘT chuỗi (spec §8 cho nguyên văn "… · x/6"); `space-between` với một
+   con duy nhất vẫn ra đúng chỗ, nên luật này an toàn cho cả hai. */
 .cap0-journey-checklist-header {
-  font-size: 9.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 1.3px;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: var(--brand);
-  margin-bottom: 7px;
+  color: var(--t3);
+  margin-bottom: 10px;
+}
+
+.cap0-journey-checklist-count {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--t2);
 }
 
 .cap0-stage-label {
@@ -339,36 +364,46 @@
   color: rgba(53, 208, 127, 0.75);
 }
 
+/* Mockup `.task` — MỌI trạng thái đều là một thẻ có viền + nền, không chỉ ô
+   đang làm (Cấp 1's `.cap1-checklist-item--open` giờ trùng luật này). */
 .cap0-checklist-item {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: flex-start;
-  font-size: 11.5px;
-  color: var(--t3);
-  padding: 6px 8px;
+  font-size: 12.5px;
+  color: var(--t2);
+  background: var(--bg2);
+  border: 1px solid var(--bd);
+  padding: 11px 12px;
   border-radius: 8px;
-  margin-bottom: 2px;
+  margin-bottom: 7px;
 }
 
-.cap0-checklist-num {
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
-  font-size: 8.5px;
-  font-weight: 700;
-  background: var(--bg3);
-  border: 1px solid var(--bd);
+/* Mockup `.task .st` — emoji trạng thái ✅/🎯/🔒 (thay vòng tròn số cũ). */
+.cap0-checklist-glyph {
   flex-shrink: 0;
-  margin-top: 1px;
+  width: 20px;
+  font-size: 15px;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .cap0-checklist-body {
   flex: 1;
   min-width: 0;
+}
+
+.cap0-checklist-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--t1);
+}
+
+/* Số thứ tự ①..⑤ nằm ngay trước tên nhiệm vụ (mockup `.task .nm`). */
+.cap0-checklist-no {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color: var(--t3);
+  margin-right: 5px;
 }
 
 .cap0-checklist-item--done {
@@ -379,23 +414,14 @@
   text-decoration: line-through;
 }
 
-.cap0-checklist-item--done .cap0-checklist-num {
-  background: rgba(53, 208, 127, 0.15);
-  border-color: rgba(53, 208, 127, 0.45);
-  color: var(--up);
-}
-
 .cap0-checklist-item--active {
   background: var(--brand-soft);
-  border: 1px solid var(--brand-bd);
-  color: #fff;
-  font-weight: 600;
+  border-color: var(--brand);
+  color: var(--t1);
 }
 
-.cap0-checklist-item--active .cap0-checklist-num {
-  background: var(--brand);
-  border-color: var(--brand);
-  color: #fff;
+.cap0-checklist-item--active .cap0-checklist-no {
+  color: inherit;
 }
 
 .cap0-checklist-item--locked {
@@ -403,48 +429,120 @@
 }
 
 .cap0-checklist-desc {
-  font-size: 10px;
-  color: var(--t2);
+  font-size: 10.5px;
+  color: var(--t3);
   font-weight: 400;
-  margin-top: 3px;
+  margin-top: 2px;
   line-height: 1.45;
 }
 
 .cap0-checklist-golink {
-  display: block;
-  margin-top: 6px;
+  display: inline-block;
+  margin-top: 8px;
   background: var(--brand);
-  color: #fff;
+  color: #0e1420;
   border: none;
-  border-radius: 7px;
+  border-radius: 6px;
   padding: 6px 12px;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
 }
 
+/* Mockup `.goal` — ô đích viền ĐỨT NÉT, căn giữa, không nền. */
 .cap0-journey-goal {
-  margin-top: 11px;
-  padding: 10px 11px;
-  background: var(--bg2);
-  border: 1px solid var(--bd);
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: none;
+  border: 1px dashed var(--bd);
   border-radius: 9px;
-  font-size: 10.5px;
-  color: var(--t3);
-  line-height: 1.5;
+  font-size: 11px;
+  color: var(--t2);
+  line-height: 1.6;
+  text-align: center;
 }
 
 .cap0-journey-goal strong {
   color: var(--t1);
 }
 
-/* ── Kết sổ / Debrief modal (spec §5) ───────────────────────────────────────── */
-.cap0-debrief-tag {
+/* ── Khối "Kế hoạch" trong panel đặt lệnh (spec §4 · mockup
+   `iqx-cap0-datlenh.html` `.plan`) ──────────────────────────────────────────
+   Rendered by `PlanBlock` INSIDE the shared `TradingPanel`, which in Cấp 0 is
+   always under `Cap0TradingPage`'s `.cap0` wrapper — but each rule keeps a
+   literal fallback (same convention as `.cap0-mode`) so the card stays legible
+   if it is ever mounted outside that scope. */
+.cap0-plan {
+  margin-top: 8px;
+  padding: 12px;
+  background: linear-gradient(180deg, var(--brand-soft, rgba(79, 143, 247, 0.16)), transparent);
+  border: 1px solid var(--brand-bd, rgba(79, 143, 247, 0.4));
+  border-radius: 10px;
+}
+
+.cap0-plan-tag {
   font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 1.5px;
-  color: var(--brand);
+  letter-spacing: 1.2px;
+  color: var(--brand, #4f8ff7);
+}
+
+.cap0-plan-q {
+  margin-top: 4px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--t1, inherit);
+}
+
+.cap0-plan-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.cap0-chip {
+  padding: 7px 13px;
+  background: var(--bg3, rgba(138, 144, 165, 0.12));
+  border: 1px solid var(--bd, rgba(138, 144, 165, 0.4));
+  border-radius: 20px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--t2, inherit);
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.cap0-chip:hover {
+  border-color: var(--brand, #4f8ff7);
+  color: var(--t1, inherit);
+}
+
+.cap0-chip--on {
+  background: var(--brand-soft, rgba(79, 143, 247, 0.16));
+  border-color: var(--brand, #4f8ff7);
+  color: var(--brand, #4f8ff7);
+  font-weight: 600;
+}
+
+/* ── Kết sổ / Debrief modal (spec §5 · mockup `iqx-cap0-ketso.html`) ──────────
+   Header block is centred and separated from the body by a rule (mockup
+   `.ks-head`); the đối chiếu table is a bordered grid card (`.cmp`) rather
+   than the old borderless list. */
+.cap0-debrief-head {
+  text-align: center;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--bd);
+}
+
+.cap0-debrief-tag {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--t3);
 }
 
 .cap0-debrief-pnl {
@@ -458,68 +556,113 @@
   margin-top: 7px;
   font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
   font-size: 11px;
+  color: var(--t2);
+}
+
+/* Nhãn khối "Đối chiếu" (mockup `.ks-section-label`). */
+.cap0-debrief-section-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
   color: var(--t3);
+  margin-bottom: 8px;
 }
 
 .cap0-debrief-table {
   width: 100%;
-  margin-top: 16px;
+  table-layout: fixed;
   border-collapse: collapse;
+  border: 1px solid var(--bd);
+  border-radius: 8px;
+  overflow: hidden;
   font-size: 11.5px;
 }
 
-.cap0-debrief-table th {
-  padding-bottom: 6px;
+.cap0-debrief-table th,
+.cap0-debrief-table td {
+  padding: 8px 10px;
   text-align: left;
+  border-bottom: 1px solid var(--bd);
+  border-right: 1px solid var(--bd);
+  word-break: break-word;
+}
+
+.cap0-debrief-table th:last-child,
+.cap0-debrief-table td:last-child {
+  border-right: none;
+}
+
+.cap0-debrief-table tr:last-child td {
+  border-bottom: none;
+}
+
+.cap0-debrief-table th {
+  background: var(--bg3);
+  font-size: 9px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
   color: var(--t3);
 }
 
 .cap0-debrief-table td {
-  padding: 7px 0;
-  border-top: 1px solid var(--bd);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-weight: 600;
   color: var(--t1);
 }
 
+/* Cột nhãn (mockup `.cmp-row .lbl`) — chữ thường, không mono. */
 .cap0-debrief-table td:first-child {
-  color: var(--t3);
+  font-family: inherit;
+  font-weight: 400;
+  color: var(--t2);
 }
 
 .cap0-debrief-coach {
-  margin-top: 16px;
-  padding: 11px 13px;
+  margin-top: 14px;
+  padding: 12px 14px;
   background: var(--brand-soft);
-  border-left: 2px solid var(--brand);
-  border-radius: 8px;
+  border-left: 3px solid var(--brand);
+  border-radius: 0 8px 8px 0;
 }
 
 .cap0-debrief-coach-tag {
   font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 1px;
   color: var(--brand);
 }
 
 .cap0-debrief-coach-body {
   margin-top: 6px;
-  font-size: 11.5px;
-  line-height: 1.55;
+  font-size: 12px;
+  line-height: 1.6;
   color: var(--t2);
 }
 
+.cap0-debrief-coach-body strong {
+  color: var(--t1);
+}
+
+/* Mockup `.ks-btn`: nút trung tính (bg4), không phải nút brand — Kết sổ chỉ có
+   MỘT hành động nên nó không cần cạnh tranh sự chú ý với con số lãi/lỗ. */
 .cap0-debrief-close {
   display: block;
   width: 100%;
   margin-top: 16px;
-  padding: 11px 12px;
-  background: var(--brand);
-  color: #fff;
+  padding: 13px 12px;
+  background: var(--bg4);
+  color: var(--t1);
   border: none;
-  border-radius: 9px;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.cap0-debrief-close:hover {
+  filter: brightness(1.12);
 }
 
 /* ── Graduation modal (spec §9) ──────────────────────────────────────────────

@@ -32,10 +32,8 @@ describe("PlanBlock", () => {
 
   it("highlights the currently-selected reason chip", () => {
     render(<PlanBlock symbol="VNM" reason="Giá đang tăng" onReason={vi.fn()} />)
-    expect(screen.getByText("Giá đang tăng").className).toContain("border-[rgb(var(--primary-6))]")
-    expect(screen.getByText("Thử cho biết").className).not.toContain(
-      "border-[rgb(var(--primary-6))]",
-    )
+    expect(screen.getByText("Giá đang tăng").className).toContain("cap0-chip--on")
+    expect(screen.getByText("Thử cho biết").className).not.toContain("cap0-chip--on")
   })
 
   // ★ Spec v3.0 §4: "Khối Kế hoạch chỉ có chip lý do đời thường — KHÔNG cắt

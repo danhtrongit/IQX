@@ -3,7 +3,7 @@ import { useAuth } from "@/features/auth"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { cap0Api } from "./api"
 import { cap0Keys } from "./keys"
-import type { Cap0Gate, Cap0Progress, PlacementResult } from "./types"
+import type { Cap0Gate, Cap0Kehoach, Cap0Progress, PlacementResult } from "./types"
 
 /**
  * Current user's Cấp 0 progress. `staleTime: 0` so it always refetches after a
@@ -85,6 +85,43 @@ export function useCompleteTask() {
         setActivePanel("journey")
       }
     },
+  })
+}
+
+/**
+ * POST /cap0/kehoach — persist the Kế hoạch chip for a just-filled Sân tập BUY.
+ *
+ * ★★ The ONLY caller (`TradingPanel`'s BUY flow) must go through
+ * `ghiKehoachKhongChiMang`: this POST runs AFTER the order already filled, and
+ * an exception escaping into `handleSubmit`'s `catch` would swallow the whole
+ * `onOrderFilled` bus chain below it — i.e. no cấp's Kết sổ opens on the later
+ * sell, and Cấp 0 becomes ungraduatable again (the bug fixed in `7a057a3`).
+ *
+ * Deliberately does NOT invalidate `cap0Keys.all`: this writes no progress and
+ * the Kết sổ's own `useCap0KehoachLatest` is keyed per symbol and mounts later.
+ */
+export function useRecordCap0Kehoach() {
+  return useMutation<Cap0Kehoach, unknown, { orderId: string; lyDoDoiThuong: string }>({
+    mutationFn: ({ orderId, lyDoDoiThuong }) => cap0Api.recordKehoach(orderId, lyDoDoiThuong),
+  })
+}
+
+/**
+ * GET /cap0/kehoach/latest?symbol= — the `Lý do mua` + `Thời gian giữ` rows of
+ * the Kết sổ (spec §5). `null` symbol (modal closed) disables the query, so a
+ * mounted-but-idle `DebriefModal` never issues a request.
+ *
+ * `data` is `null` (not `undefined`) when the server has no row — the Kết sổ
+ * renders "—" for that, never an invented chip.
+ */
+export function useCap0KehoachLatest(symbol: string | null | undefined) {
+  const { isAuthenticated } = useAuth()
+  return useQuery<Cap0Kehoach | null>({
+    queryKey: cap0Keys.kehoachLatest(symbol ?? ""),
+    queryFn: () => cap0Api.kehoachLatest(symbol as string),
+    enabled: isAuthenticated && !!symbol,
+    staleTime: 0,
+    retry: false,
   })
 }
 

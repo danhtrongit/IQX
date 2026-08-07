@@ -35,11 +35,17 @@ export function isGraduationReady(progress: Cap0Progress | null | undefined): bo
 // Verbatim spec §9 copy, `**bold**` markers kept for the inline-bold renderer
 // below (same convention as `coachTemplate.ts` — the outer *"…"* italic-quote
 // wrapper is markdown emphasis, not literal quote characters to render).
+// ★ Khối 1 v2.2 congratulated the user for "đi trọn 2 vòng lệnh có kế hoạch,
+// tự tay đặt ngưỡng cắt lỗ của mình". Under v3.0 BOTH halves are false — Cấp 0
+// asks for exactly ONE round trip (nhiệm vụ ⑤) and has no ô cắt lỗ at all
+// (preamble, §0, §8, §13) — which made it the last surviving cắt-lỗ claim in
+// the level, and the worst possible place to be wrong: a graduation screen
+// crediting the user with work the product never let them do.
 const BLOCK_1 =
-  "Bạn đã đi trọn Cấp 0 «Nhập môn»: hiểu bảng điện, đọc được bản tin, biết 6 người chơi trên thị trường — và quan trọng nhất: đi trọn 2 vòng lệnh có kế hoạch, tự tay đặt ngưỡng cắt lỗ của mình. **Phần lớn người mua cổ phiếu ngoài kia chưa từng làm điều cuối cùng.**"
+  "Bạn đã đi trọn Cấp 0 «Nhập môn»: hiểu bảng điện, đọc được bản tin, biết 6 người chơi trên thị trường — và quan trọng nhất: **đi trọn một vòng đời lệnh hoàn chỉnh** (mua → nắm giữ → theo dõi → bán → kết sổ). Phần lớn người mua cổ phiếu ngoài kia còn không biết mình đang nắm gì."
 
 const BLOCK_2 =
-  "Nói thẳng: bạn đã biết **CÁCH CHƠI**, chưa biết **CHƠI GIỎI** — và đó là chủ đích. Cấp 1 «Học việc» dạy bạn lập kế hoạch thật sự cho từng lệnh. Câu hỏi 'chọn mã nào' sẽ được trả lời dần từ chính dữ liệu 6 lớp bạn vừa làm quen."
+  "Nói thẳng: bạn đã biết **CÁCH CHƠI**, chưa biết **CHƠI GIỎI** — và đó là chủ đích. Cấp 1 «Học việc» dạy bạn chọn lý do mua có cơ sở cho từng lệnh, từ chính dữ liệu 6 lớp phân tích. Cấp 2 dạy đặt cắt lỗ/chốt lời và kỷ luật thực hiện."
 
 const BLOCK_3_PREMIUM =
   "**Từ giờ: chế độ THỰC CHIẾN.** Luật thật 100% — mua xong chờ T+2,5 ngày cổ phiếu mới về, biên độ, phí, thuế đầy đủ. Vì hồ sơ nhà đầu tư của bạn bắt đầu được tính từ đây."

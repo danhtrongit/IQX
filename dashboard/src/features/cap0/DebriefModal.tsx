@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Modal } from "@arco-design/web-react"
 import { cn } from "@/shared/lib/cn"
-import { useCompleteTask } from "./hooks"
+import { useCap0KehoachLatest, useCompleteTask } from "./hooks"
 import { coachTemplate } from "./coachTemplate"
 import "./cap0.css"
 
@@ -49,7 +49,25 @@ function fmtPct(pct: number): string {
 function fmtVndSigned(n: number): string {
   const rounded = Math.round(n)
   const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : ""
-  return `${sign}${fmtVnd(Math.abs(rounded))} ₫`
+  return `${sign}${fmtVnd(Math.abs(rounded))}đ`
+}
+
+/** The table's own "we don't know / not applicable" glyph (spec §5's own `—`). */
+const UNKNOWN = "—"
+
+/**
+ * `Thời gian giữ` in words (spec §5's `(số phiên)` column).
+ *
+ * ★ **0 is the COMMON case in Cấp 0**, not an edge case: Sân tập is T+0, so a
+ * user who buys and sells in one sitting genuinely held the position for zero
+ * completed phiên. Task 1's backend deliberately does not floor `so_phien_giu`
+ * to 1 — that would be a fabricated number — so this must not print the
+ * nonsense "0 phiên"/"Giữ 0 phiên" either. It says what actually happened.
+ * `null`/`undefined` (no `cap0_order_kehoach` row) stays honestly unknown.
+ */
+function holdTimeText(soPhienGiu: number | null | undefined): string | null {
+  if (soPhienGiu == null) return null
+  return soPhienGiu > 0 ? `${soPhienGiu} phiên` : "Trong cùng phiên"
 }
 
 /** Splits on the spec's own `**bold**` markers and renders them as `<strong>`. */
@@ -70,6 +88,10 @@ const COUNT_UP_STEP_MS = 40
  */
 export function DebriefModal({ data, onClose }: DebriefModalProps) {
   const completeTask = useCompleteTask()
+  // §5's `Lý do mua` + `Thời gian giữ` are the only two rows NOT derivable from
+  // the sell fill itself — they come from the `cap0_order_kehoach` row written
+  // at BUY time (`TradingPanel`). `null` symbol (modal closed) disables it.
+  const { data: kehoach } = useCap0KehoachLatest(data?.symbol ?? null)
   const [displayPct, setDisplayPct] = useState(0)
 
   const entryPrice = data?.entryPrice ?? 0
@@ -107,6 +129,12 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
   // 1 of exactly 2 templates, by lãi/lỗ alone (spec v3.0 §5) — there is no
   // cắt lỗ/chốt lời in Cấp 0 for the coach to have an opinion about.
   const coach = coachTemplate({ pnlPositive }, n)
+  const holdText = holdTimeText(kehoach?.so_phien_giu)
+  // Mockup sub-line: `+198.000đ · MUA 100 VNM → BÁN · Giữ 4 phiên`. The suffix
+  // is dropped entirely when nothing was recorded — better a shorter true line
+  // than a padded one.
+  const holdSuffix =
+    holdText == null ? "" : ` · ${(kehoach?.so_phien_giu ?? 0) > 0 ? `Giữ ${holdText}` : holdText}`
 
   const handleClose = () => {
     completeTask.mutate({ taskNo: 5, gate: "debrief" })
@@ -131,20 +159,24 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
         borderRadius: 16,
       }}
     >
-      <div className="cap0-debrief-tag">{`KẾT SỔ LỆNH · #${n} · SÂN TẬP`}</div>
+      <div className="cap0-debrief-head">
+        <div className="cap0-debrief-tag">{`KẾT SỔ LỆNH · #${n} · SÂN TẬP`}</div>
 
-      <div
-        className={cn(
-          "cap0-display cap0-debrief-pnl tabular-nums",
-          pnlPositive ? "text-up" : "text-down",
-        )}
-      >
-        {fmtPct(displayPct)}
+        <div
+          className={cn(
+            "cap0-display cap0-debrief-pnl tabular-nums",
+            pnlPositive ? "text-up" : "text-down",
+          )}
+        >
+          {fmtPct(displayPct)}
+        </div>
+
+        <div className="cap0-debrief-sub">
+          {`${fmtVndSigned(pnlVnd)} · MUA ${quantity} ${symbol} → BÁN${holdSuffix}`}
+        </div>
       </div>
 
-      <div className="cap0-debrief-sub">
-        {`${fmtVndSigned(pnlVnd)} · MUA ${quantity} ${symbol} → BÁN`}
-      </div>
+      <div className="cap0-debrief-section-label">Đối chiếu</div>
 
       <table className="cap0-debrief-table">
         <thead>
@@ -155,6 +187,14 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
           </tr>
         </thead>
         <tbody>
+          {/* `Lý do mua` spans Kế hoạch + Thực tế (mockup) — a reason has no
+              "thực tế" counterpart, so a second cell could only ever hold a
+              filler "—". `ly_do_label` is the verbatim §4 chip the user picked
+              at BUY time; `—` when nothing was recorded, never a guess. */}
+          <tr>
+            <td>Lý do mua</td>
+            <td colSpan={2}>{kehoach?.ly_do_label ?? UNKNOWN}</td>
+          </tr>
           <tr>
             <td>Giá vào</td>
             <td>{fmtVnd(entryPrice)}</td>
@@ -163,13 +203,21 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
           {/* v2.2's "Cắt lỗ" / "Chốt lời" rows are DELETED here, not blanked:
               spec v3.0 §5's table is Lý do mua / Giá vào / Giá ra · thuế /
               Thời gian giữ. With no thresholds in Cấp 0 there is no verdict to
-              state and no honest "không ghi nhận" fallback to need. */}
+              state and no honest "không ghi nhận" fallback to need.
+              The label is the SHORT form both mockups use (and the one Cấp 1's
+              Kết sổ already ships) — the 0,1% rate is still stated verbatim in
+              the coach paragraph below. */}
           <tr>
-            <td>Giá ra · thuế bán 0,1%</td>
-            <td>—</td>
+            <td>Giá ra · thuế</td>
+            <td>{UNKNOWN}</td>
             <td>
               {fmtVnd(exitPrice)} · <span className="text-down">{fmtVnd(tax)}</span>
             </td>
+          </tr>
+          <tr>
+            <td>Thời gian giữ</td>
+            <td>{UNKNOWN}</td>
+            <td>{holdText ?? UNKNOWN}</td>
           </tr>
         </tbody>
       </table>

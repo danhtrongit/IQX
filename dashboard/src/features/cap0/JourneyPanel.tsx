@@ -48,7 +48,22 @@ const STAGES: { label: string; tasks: number[] }[] = [
 /** Spec v3.0 §4 "3 CHẶNG · 5 NHIỆM VỤ" — the denominator of every counter here. */
 const TOTAL_TASKS = 5
 
+/** Circled numerals ①..⑤ — shown inline before each task name (mockup `.task .nm`). */
+const NUMERALS = "①②③④⑤"
+
 type TaskState = "done" | "active" | "locked"
+
+/**
+ * Mockup `iqx-cap0-hanhtrinh.html` `.task .st`. Cấp 0 has THREE states, not
+ * Cấp 1's four: several Cấp 0 tasks are genuinely available at once (②③④ are
+ * independent tours and ⑤ opens alongside them), so there is no single "đang
+ * tới lượt" row to distinguish with Cấp 1's extra 🔲 — every open task is 🎯.
+ */
+const STATE_GLYPH: Record<TaskState, string> = {
+  done: "✅",
+  active: "🎯",
+  locked: "🔒",
+}
 
 /**
  * State of one checklist task (spec §7 "Trạng thái mỗi mục checklist").
@@ -99,16 +114,20 @@ function ChecklistItem({
         state === "locked" && "cap0-checklist-item--locked",
       )}
     >
-      <span className="cap0-checklist-num">{state === "done" ? "✓" : no}</span>
+      <span className="cap0-checklist-glyph">{STATE_GLYPH[state]}</span>
       <div className="cap0-checklist-body">
-        <span className="cap0-checklist-name">{TASK_NAMES[no]}</span>
-        {state === "active" && desc && (
-          <div className="cap0-checklist-desc">
-            {desc}
-            <button type="button" className="cap0-checklist-golink" onClick={onGo}>
-              Làm ngay →
-            </button>
-          </div>
+        <span className="cap0-checklist-name">
+          <span className="cap0-checklist-no">{NUMERALS[no - 1]}</span>
+          <span>{TASK_NAMES[no]}</span>
+        </span>
+        {/* Mockup keeps `.ds` on DONE rows too (only 🔒 locked rows are bare) —
+            a ticked checklist you can still read beats one that empties itself
+            exactly when the user wants to check what they just did. */}
+        {state !== "locked" && desc && <div className="cap0-checklist-desc">{desc}</div>}
+        {state === "active" && (
+          <button type="button" className="cap0-checklist-golink" onClick={onGo}>
+            Làm ngay →
+          </button>
         )}
       </div>
     </div>
@@ -163,12 +182,20 @@ export function JourneyPanel() {
             <div className="cap0-level-card-lesson">
               "Hiểu sân chơi, và đi trọn vòng đời một lệnh."
             </div>
+            {/* Mockup `.lvcard .info .mode` — the pill belongs to the info
+                column, under the name, not beside the badge. */}
+            <div className="cap0-level-card-mode">
+              <ModeBadge mode={tradingModeFor(progress, isPremium)} />
+            </div>
           </div>
-          <ModeBadge mode={tradingModeFor(progress, isPremium)} />
         </div>
 
+        {/* Mockup `.ck-head`: tiêu đề trái, bộ đếm phải. */}
         <div className="cap0-journey-checklist-header">
-          TRƯỚC KHI LÊN CẤP 1 · {tasksDone}/{TOTAL_TASKS}
+          <span className="cap0-journey-checklist-title">TRƯỚC KHI LÊN CẤP 1</span>
+          <span className="cap0-journey-checklist-count cap0-display">
+            {tasksDone}/{TOTAL_TASKS}
+          </span>
         </div>
 
         {STAGES.map((stage) => (

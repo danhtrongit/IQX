@@ -26,7 +26,13 @@ import { usePrice, type PriceBoardData } from "@/features/market-data"
 import { useSymbol } from "@/shared/contexts/symbol-context"
 import { useAuth } from "@/features/auth"
 import { usePremiumStatus } from "@/features/premium"
-import { PlanBlock, useCap0Events, useCap0Progress, cap0Visibility } from "@/features/cap0"
+import {
+  PlanBlock,
+  useCap0Events,
+  useCap0Progress,
+  useRecordCap0Kehoach,
+  cap0Visibility,
+} from "@/features/cap0"
 import {
   AiThanhTra,
   PlanFormCap1,
@@ -286,6 +292,10 @@ function OrderEntry({
   // when actually inside Cấp 0 (the `enabled` param), so this has zero
   // effect — no extra request, no hiding — outside a `Cap0Provider`.
   const { data: cap0Progress } = useCap0Progress(isCap0Active)
+  // `POST /cap0/kehoach` — persists the Kế hoạch chip for a Sân tập BUY (spec
+  // §10). Only ever CALLED inside Cấp 0 (guarded at the call site below), so
+  // this is inert on /bieu-do & /co-phieu.
+  const recordCap0Kehoach = useRecordCap0Kehoach()
   const cap1Events = useCap1Events()
   // `isCap1Active` mirrors `isCap0Active` above — false outside a
   // `Cap1Provider`, so the Form Kế hoạch + AI Thanh tra + hard gate below
@@ -696,6 +706,24 @@ function OrderEntry({
         quantity: order.quantity,
         price: order.price,
       })
+      // Cấp 0 (spec §10 "Bảng `cap0_order_kehoach`") — persist the chip the
+      // user picked in the khối Kế hoạch so the Kết sổ's `Lý do mua` row
+      // survives a reload (bus-only would be lost, the exact class of bug that
+      // made Cấp 0 ungraduatable). Cấp 0-only and BUY-only; skipped when no
+      // chip was picked (nothing to record) — the endpoint UPSERTs, so a
+      // retried buy on the same order can never 409.
+      //
+      // ★★ KHÔNG CHÍ MẠNG, and placed AFTER `onOrderFilled` above. The order
+      // has already filled by the time this runs: an exception escaping here
+      // would reach `handleSubmit`'s `catch`, report a successful order as a
+      // failure, skip the form reset, and — worst — swallow the whole
+      // `onOrderFilled` chain below, so no cấp's Kết sổ would ever open again
+      // (`7a057a3`). Losing one bookkeeping row is the small, honest loss.
+      if (side === "buy" && isCap0Active && !isCap1Active && reason) {
+        await ghiKehoachKhongChiMang(() =>
+          recordCap0Kehoach.mutateAsync({ orderId: order.id, lyDoDoiThuong: reason }),
+        )
+      }
       // Cấp 1 (spec §4 "Ghi hồ sơ khi đặt lệnh") — a BUY fill inside Cấp 1
       // (only reachable once `cap1SubmitDisabled` is false, i.e. lý do +
       // vùng mua are both set) records the Form Kế hoạch. `trangThai_luc_dat`
@@ -1184,7 +1212,13 @@ function OrderEntry({
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-[var(--color-text-3)]">Phí GD (0.15%)</span>
+            {/* Mockup `iqx-cap0-datlenh.html` `.op-fee` spells this out for a
+                beginner; the shared terminal keeps the compact label so
+                /bieu-do & /co-phieu are untouched. (Số en-US per project
+                convention — the mockup's "0,15%" is vi-VN.) */}
+            <span className="text-[var(--color-text-3)]">
+              {isCap0Active ? "Phí giao dịch (0.15%)" : "Phí GD (0.15%)"}
+            </span>
             <span className="font-medium tabular-nums text-[var(--color-text-1)]">
               {fee > 0 ? fmtVnd(fee) : "—"}
             </span>

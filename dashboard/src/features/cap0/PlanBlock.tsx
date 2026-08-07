@@ -1,4 +1,5 @@
 import { cn } from "@/shared/lib/cn"
+import "./cap0.css"
 
 /**
  * "Kế hoạch" block (spec v3.0 §4 THÊM MỚI) — inserted into `OrderEntry`
@@ -28,31 +29,32 @@ export interface PlanBlockProps {
   onReason: (reason: string) => void
 }
 
+/**
+ * Styling follows `iqx-cap0-datlenh.html`'s `.plan` card (brand-tinted
+ * gradient + brand border, pill chips). It renders only inside Cấp 0, i.e.
+ * always under `Cap0TradingPage`'s `.cap0` wrapper, so the cap0 design tokens
+ * resolve — each rule still carries a literal fallback (same convention as
+ * `.cap0-mode`) so the block degrades to a readable card if it is ever mounted
+ * outside that scope.
+ */
 export function PlanBlock({ symbol, reason, onReason }: PlanBlockProps) {
   return (
-    <div className="mt-2 space-y-2 rounded-md border border-[var(--color-border-2)] bg-[var(--color-fill-2)] p-2.5">
-      <div className="text-[9px] font-bold uppercase tracking-wider text-[rgb(var(--primary-6))]">
-        {"KẾ HOẠCH"}
-      </div>
+    <div className="cap0-plan">
+      <div className="cap0-plan-tag">{"KẾ HOẠCH"}</div>
 
-      <div className="text-xs font-semibold text-[var(--color-text-1)]">
+      <div className="cap0-plan-q">
         {"Vì sao bạn chọn "}
         {symbol}
         {"?"}
       </div>
 
-      <div className="flex flex-wrap gap-1.5">
+      <div className="cap0-plan-chips">
         {REASON_CHIPS.map((chip) => (
           <button
             key={chip}
             type="button"
             onClick={() => onReason(chip)}
-            className={cn(
-              "rounded-full border px-2.5 py-1 text-[10.5px] transition-colors",
-              reason === chip
-                ? "border-[rgb(var(--primary-6))] bg-[rgb(var(--primary-6))]/15 font-semibold text-[rgb(var(--primary-6))]"
-                : "border-[var(--color-border-2)] bg-[var(--color-bg-2)] text-[var(--color-text-3)]",
-            )}
+            className={cn("cap0-chip", reason === chip && "cap0-chip--on")}
           >
             {chip}
           </button>
