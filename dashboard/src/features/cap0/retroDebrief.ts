@@ -1,13 +1,13 @@
 import type { DebriefData } from "./DebriefModal"
 
 /**
- * Retroactive Kết sổ (nhiệm vụ ⑥) recovery — derives a `DebriefData` from
+ * Retroactive Kết sổ (nhiệm vụ ⑤) recovery — derives a `DebriefData` from
  * SERVER order history instead of the session-local refs in `Gbar`.
  *
  * ## Why this exists
  *
- * Nhiệm vụ ⑥ has exactly one completion path: reading the Kết sổ and pressing
- * "Đóng kết sổ ✓" (`DebriefModal` → `completeTask(6, "debrief")`). That modal
+ * Nhiệm vụ ⑤ has exactly one completion path: reading the Kết sổ and pressing
+ * "Đóng kết sổ ✓" (`DebriefModal` → `completeTask(5, "debrief")`). That modal
  * used to be reachable ONLY from `Gbar`'s live `onOrderFilled` sell branch,
  * which is driven by the Cấp 0 event bus — and that bus only exists inside
  * `Cap0Provider` (mounted by `Cap0TradingPage` alone). Two ways a user got
@@ -20,12 +20,18 @@ import type { DebriefData } from "./DebriefModal"
  *     pressing "Đóng kết sổ ✓". `Gbar`'s `lastBuyBySymbolRef` /
  *     `debriefCountRef` are session-local refs — a reload loses them.
  *
- * Either way `task_6_done_at` stays NULL forever, and since
- * `Cap0Service.graduate` requires all 6 tasks + both gates, the graduation
- * modal (`isGraduationReady`) never opens. This function lets `Gbar` re-open
- * the Kết sổ for a round trip that ALREADY closed, so the user can still read
- * it and complete ⑥ themselves. Nhiệm vụ ⑥ is still earned by reading the Kết
- * sổ — nothing is auto-completed behind the user's back.
+ * Either way `task_5_done_at` stays NULL forever, and since
+ * `Cap0Service.graduate` requires all 5 tasks + the debrief gate, the
+ * graduation modal (`isGraduationReady`) never opens. This function lets
+ * `Gbar` re-open the Kết sổ for a round trip that ALREADY closed, so the user
+ * can still read it and complete ⑤ themselves. Nhiệm vụ ⑤ is still earned by
+ * reading the Kết sổ — nothing is auto-completed behind the user's back.
+ *
+ * (This was ⑥ under spec v2.2; v3.0 deleted the old ⑤ — "lệnh thứ hai + tự gõ
+ * ngưỡng cắt lỗ" — and promoted this one into its place. The BE migration
+ * copies column 6's data into column 5, so the guard in `Gbar` reads the new
+ * `task_5_done_at` and gets exactly the value it used to read from column 6 —
+ * never the stale SL-keydown timestamp column 5 held under v2.2.)
  *
  * ## Single-lot approximation (carried over from the backend, verbatim caveat)
  *
@@ -41,12 +47,11 @@ import type { DebriefData } from "./DebriefModal"
  *
  * ## What it deliberately does NOT do
  *
- * `sl`/`tp` are left ABSENT (not `0`, not guessed). The trading backend never
- * persists the Kế hoạch cắt lỗ/chốt lời — the live path only has them because
- * `TradingPanel` carries them on the bus at buy time (see
- * `Cap0OrderEvent.sl`). For a round trip reconstructed from history they are
- * genuinely unknown, and `DebriefModal` renders that honestly ("không ghi
- * nhận") rather than implying the user missed a stop they never set.
+ * It carries no cắt lỗ/chốt lời — because under v3.0 neither exists anywhere
+ * in Cấp 0 (spec preamble, §0, §8, §13), so the LIVE path has none to pass
+ * either and the two paths produce identical `DebriefData`. (Under v2.2 this
+ * was an asymmetry: the live path ferried the user's typed sl/tp over the
+ * event bus, and this reconstruction had to render "không ghi nhận" for them.)
  *
  * Returns `null` — no modal at all — whenever there is nothing truthful to
  * show: no filled sell, or a filled sell with no matching filled buy (which

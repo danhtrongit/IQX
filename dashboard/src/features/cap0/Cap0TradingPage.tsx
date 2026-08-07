@@ -236,7 +236,7 @@ function Cap0Terminal() {
       <MarketBar />
 
       {/* Top bar (spec §7 journey bar sticky trên đầu): `<JourneyBar/>`
-          (progress "x/6" + next task + dots, click → tab Hành trình) + the
+          (progress "x/5" + next task + dots, click → tab Hành trình) + the
           mode badge at its right edge. */}
       <div className="cap0-topbar">
         <JourneyBar />
@@ -264,7 +264,7 @@ function Cap0Terminal() {
       />
 
       {/* Màn tốt nghiệp (spec §9) — self-contained: opens itself once
-          progress shows 6/6 + both behaviour gates (see `isGraduationReady`),
+          progress shows 5/5 + the debrief gate (see `isGraduationReady`),
           closes itself once `graduated_at` comes back from the mutation. */}
       <GraduationModal />
 

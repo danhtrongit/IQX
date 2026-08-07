@@ -4,12 +4,15 @@ import { cn } from "@/shared/lib/cn"
 import { useCap0Progress } from "./hooks"
 import { countTasksDone } from "./types"
 
+/** Spec v3.0 §4 "3 CHẶNG · 5 NHIỆM VỤ" — the bar's counter and dot count. */
+const TOTAL_TASKS = 5
+
 /**
- * Journey-bar centre copy per progress (spec §7 "Copy journey bar theo tiến
- * độ" — 0/6, 1/6 and 6/6 are verbatim; the tasks-2..5 branch isn't spec'd
- * verbatim (Chặng 2's tour is out of scope this delivery — see
- * `JourneyPanel`'s `taskState`), so it falls back to naming the next real
- * (reachable) task.
+ * Journey-bar centre copy per progress (spec v3.0 §7 "Copy journey bar theo
+ * tiến độ" — 0/5, 1/5 and 5/5 are verbatim). The middle branch (2..4 done)
+ * isn't spec'd verbatim, so it names the next real task; under v3.0 that is
+ * always ⑤ «Bán một lệnh — kết sổ đầu tiên», since ②③④ are the Chặng 2 tours
+ * and ⑤ is the only thing left after them.
  */
 function nextTaskCopy(tasksDone: number) {
   if (tasksDone <= 0) {
@@ -19,18 +22,15 @@ function nextTaskCopy(tasksDone: number) {
       </>
     )
   }
-  if (tasksDone >= 6) {
+  if (tasksDone >= TOTAL_TASKS) {
     return "🎓 Hoàn thành Cấp 0!"
   }
   if (tasksDone === 1) {
     return "✓ Chặng 1 hoàn thành! Tiếp: Chặng 2 — tour sản phẩm IQX"
   }
-  const nextNo = tasksDone < 5 ? 5 : 6
-  const nextName =
-    nextNo === 5 ? "Lệnh thứ hai — tự đặt ngưỡng cắt lỗ" : "Bán một lệnh — kết sổ đầu tiên"
   return (
     <>
-      Tiếp: <b>{nextName}</b>
+      Tiếp: <b>Bán một lệnh — kết sổ đầu tiên</b>
     </>
   )
 }
@@ -52,10 +52,10 @@ export function JourneyBar() {
       title="Bấm để mở Hành trình"
       onClick={() => setActivePanel("journey")}
     >
-      <span className="cap0-jbar-day">CẤP 0 · {tasksDone}/6</span>
+      <span className="cap0-jbar-day">CẤP 0 · {tasksDone}/{TOTAL_TASKS}</span>
       <span className="cap0-jbar-task">{nextTaskCopy(tasksDone)}</span>
       <div className="cap0-jbar-dots">
-        {Array.from({ length: 6 }, (_, i) => (
+        {Array.from({ length: TOTAL_TASKS }, (_, i) => (
           <span
             key={i}
             className={cn(

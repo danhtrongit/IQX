@@ -23,22 +23,20 @@ import { useCap0Progress } from "./hooks"
  * nothing — this is how the same components keep working when Cấp 0 is off.
  */
 
-/** A filled order the trading UI reports to Cấp 0. */
+/**
+ * A filled order the trading UI reports to Cấp 0.
+ *
+ * v2.2 also carried `sl`/`tp` — the Kế hoạch cắt lỗ/chốt lời shown or typed at
+ * BUY time, ferried over this bus because the trading backend never persists
+ * them. Spec v3.0 removes cắt lỗ/chốt lời from Cấp 0 entirely (preamble, §0,
+ * §8, §13), so there is nothing left to carry.
+ */
 export interface Cap0OrderEvent {
   symbol: string
   side: "buy" | "sell"
   quantity: number
   /** Filled price (VND). */
   price: number
-  /**
-   * Kế hoạch cắt lỗ/chốt lời shown (nhiệm vụ ①, preset) or typed (nhiệm vụ
-   * ⑤, manual) at BUY time — `undefined` on sell events and outside Cấp 0.
-   * Cấp 0 needs these later (§5 Kết sổ) but the trading backend never
-   * persists them (spec: "chỉ để hiển thị"), so the FE carries them on the
-   * bus at buy-time for whoever handles the later sell (`Gbar`).
-   */
-  sl?: number
-  tp?: number
 }
 
 /** Handlers the Cấp 0 journey registers to react to trading-UI events. */
@@ -49,15 +47,6 @@ export interface Cap0EventHandlers {
   onStarToggled?: (symbol: string, watched: boolean) => void
   /** A guarded action was attempted without its precondition (spec §6 "Làm SAI") — flash the gbar red + `gshake` for ~1.6s. */
   onGbarWarn?: () => void
-  /**
-   * Nhiệm vụ ⑤'s `keydown` into the (now-manual) ô cắt lỗ (spec §4 Chặng 3
-   * "cổng chất lượng 1"). Notified INSTANTLY off the DOM event itself — not
-   * derived from the `task5_sl_typed` PATCH's round trip — so the gbar's
-   * "Bước 1/2 → 2/2" text (spec §6) advances the moment the user types,
-   * exactly mirroring how nhiệm vụ ①'s `onReasonPicked`/`onStarToggled`
-   * update the bar before any server confirmation.
-   */
-  onSlTyped?: () => void
   /**
    * Journey's "Làm ngay →" for a Chặng 2 task (②/③/④) — launches that task's
    * product tour instead of switching to the trading panel (T2,
@@ -91,7 +80,7 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
   const { data: progress } = useCap0Progress()
 
   // MERGE (not replace) — there are now TWO independent registrants: `Gbar`
-  // (task ①/⑤/⑥ events) and `Cap0TradingPage`'s tour host (`onLaunchTour`,
+  // (task ①/⑤ events) and `Cap0TradingPage`'s tour host (`onLaunchTour`,
   // T2). A plain `handlersRef.current = handlers` would let whichever one's
   // effect runs/re-runs LAST wipe out the other's handlers entirely (both
   // call this on mount, and `Gbar`'s also re-fires on `task1Done` changes).
@@ -118,10 +107,6 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
     handlersRef.current.onGbarWarn?.()
   }, [])
 
-  const onSlTyped = useCallback(() => {
-    handlersRef.current.onSlTyped?.()
-  }, [])
-
   const onLaunchTour = useCallback((taskNo: number) => {
     handlersRef.current.onLaunchTour?.(taskNo)
   }, [])
@@ -137,7 +122,6 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
       onOrderFilled,
       onStarToggled,
       onGbarWarn,
-      onSlTyped,
       onLaunchTour,
       registerHandlers,
       isCap0Active: true,
@@ -148,7 +132,6 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
       onOrderFilled,
       onStarToggled,
       onGbarWarn,
-      onSlTyped,
       onLaunchTour,
       registerHandlers,
       requireReasonBeforeOrder,

@@ -18,20 +18,25 @@ export interface Cap0Progress {
   task_2_done_at: string | null
   task_3_done_at: string | null
   task_4_done_at: string | null
+  /** Nhiệm vụ ⑤ «Bán một lệnh — kết sổ đầu tiên». */
   task_5_done_at: string | null
-  task_6_done_at: string | null
-  /** Task ① gate — ★ watchlist click happened. */
+  /**
+   * Task ① recorded fact — ★ watchlist click happened. NOT a graduation gate
+   * (spec v3.0 §9: Cấp 0 has exactly ONE behaviour gate, `task5_debrief_done`).
+   */
   task1_star_clicked: boolean
-  /** Task ⑤ gate 1 — a `keydown` typed the stop-loss threshold. */
-  task5_sl_typed: boolean
-  /** Task ⑥ gate 2 — the debrief ("Kết sổ") screen was closed. */
-  task6_debrief_done: boolean
+  /**
+   * The ONE behaviour gate of Cấp 0 (spec v3.0 §4 ⑤ / §9) — the Kết sổ screen
+   * was closed. v2.2's second gate (`task5_sl_typed`, a keydown into the ô cắt
+   * lỗ) is gone with cắt lỗ/chốt lời itself.
+   */
+  task5_debrief_done: boolean
   graduated_at: string | null
   time_to_graduate_hours: number | null
 }
 
-/** Behaviour gates the PATCH /cap0/task endpoint can flip. */
-export type Cap0Gate = "star" | "sl_typed" | "debrief"
+/** Behaviour gates the PATCH /cap0/task endpoint can flip (v3.0: two, one real). */
+export type Cap0Gate = "star" | "debrief"
 
 /** Response of POST /cap0/placement — never traded → 0, experienced → 2. */
 export interface PlacementResult {
@@ -67,7 +72,16 @@ export interface BadgeOptions {
   showNum?: boolean
 }
 
-/** How many of the 6 Cấp 0 tasks are complete. */
+/**
+ * How many of the FIVE Cấp 0 tasks are complete (spec v3.0 §4 "3 CHẶNG · 5
+ * NHIỆM VỤ").
+ *
+ * v2.2 had six: the old ⑤ was "lệnh thứ hai + tự gõ ngưỡng cắt lỗ", which v3.0
+ * deletes outright, promoting the old ⑥ (bán + Kết sổ) to ⑤. The BE migration
+ * copies `task_6_done_at` INTO `task_5_done_at` and drops column 6, so this
+ * function reads five columns and column 5 means "bán + kết sổ" — never the
+ * stale SL-keydown timestamp column 5 used to hold.
+ */
 export function countTasksDone(progress: Cap0Progress | null | undefined): number {
   if (!progress) return 0
   return (
@@ -77,7 +91,6 @@ export function countTasksDone(progress: Cap0Progress | null | undefined): numbe
       progress.task_3_done_at,
       progress.task_4_done_at,
       progress.task_5_done_at,
-      progress.task_6_done_at,
     ].filter((t) => t != null).length
   )
 }

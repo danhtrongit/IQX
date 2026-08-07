@@ -27,7 +27,7 @@ import { useCompleteTask } from "./hooks"
 function Harness() {
   const completeTask = useCompleteTask()
   return (
-    <button onClick={() => completeTask.mutate({ taskNo: 6, gate: "debrief" })}>complete</button>
+    <button onClick={() => completeTask.mutate({ taskNo: 5, gate: "debrief" })}>complete</button>
   )
 }
 
@@ -60,11 +60,9 @@ function makeTaskResponse() {
         task_2_done_at: null,
         task_3_done_at: null,
         task_4_done_at: null,
-        task_5_done_at: null,
-        task_6_done_at: "t",
+        task_5_done_at: "t",
         task1_star_clicked: true,
-        task5_sl_typed: false,
-        task6_debrief_done: true,
+        task5_debrief_done: true,
         graduated_at: null,
         time_to_graduate_hours: null,
       }),
@@ -95,14 +93,14 @@ describe("useCompleteTask", () => {
     fireEvent.click(screen.getByText("complete"))
 
     await waitFor(() => expect(screen.getByTestId("panel-spy")).toHaveTextContent("journey"))
-    expect(patch).toHaveBeenCalledWith("cap0/task", { json: { task_no: 6, gate: "debrief" } })
+    expect(patch).toHaveBeenCalledWith("cap0/task", { json: { task_no: 5, gate: "debrief" } })
   })
 
   // Regression for the cross-terminal leak: `Cap0TradingPage` sets
   // `activePanel="journey"` on mount and RESTORES the previous panel on
   // unmount — but `useMutation`'s config-level `onSuccess` fires even after
   // the calling component has unmounted. If the user fires a task PATCH
-  // (e.g. typing SL for nhiệm vụ ⑤) then immediately navigates away from
+  // (e.g. closing the Kết sổ for nhiệm vụ ⑤) then immediately navigates away from
   // `/dau-truong` before it resolves, the in-flight `onSuccess` must NOT
   // clobber the sidebar back to "journey" — otherwise the Cấp 0 panel leaks
   // into the shared `/bieu-do` & `/co-phieu` terminals (the `SidebarProvider`
@@ -118,7 +116,7 @@ describe("useCompleteTask", () => {
 
     fireEvent.click(screen.getByText("complete"))
 
-    await waitFor(() => expect(patch).toHaveBeenCalledWith("cap0/task", { json: { task_no: 6, gate: "debrief" } }))
+    await waitFor(() => expect(patch).toHaveBeenCalledWith("cap0/task", { json: { task_no: 5, gate: "debrief" } }))
     // Give the mutation's onSuccess a tick to run, then assert the panel was
     // left alone — still "trading", never clobbered to "journey".
     await new Promise((resolve) => setTimeout(resolve, 0))

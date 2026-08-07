@@ -22,7 +22,7 @@ vi.mock("@/features/auth", () => ({ useAuth: () => ({ isAuthenticated: true }) }
 import { Badge, badge, LEVELS } from "./Badge"
 import { ModeBadge } from "./ModeBadge"
 import { useCap0Progress } from "./hooks"
-import type { Cap0Progress } from "./types"
+import { countTasksDone, type Cap0Progress } from "./types"
 
 // ── LEVELS (spec §12) ─────────────────────────────────────────────────────────
 describe("LEVELS", () => {
@@ -161,13 +161,40 @@ const fakeProgress: Cap0Progress = {
   task_3_done_at: null,
   task_4_done_at: null,
   task_5_done_at: null,
-  task_6_done_at: null,
   task1_star_clicked: false,
-  task5_sl_typed: false,
-  task6_debrief_done: false,
+  task5_debrief_done: false,
   graduated_at: null,
   time_to_graduate_hours: null,
 }
+
+// ── countTasksDone (spec v3.0 §4 — 5 nhiệm vụ, không phải 6) ──────────────────
+describe("countTasksDone", () => {
+  it("counts over exactly FIVE task columns (v3.0 cut nhiệm vụ ⑤ «lệnh thứ hai + cắt lỗ»)", () => {
+    const all: Cap0Progress = {
+      ...fakeProgress,
+      task_1_done_at: "t",
+      task_2_done_at: "t",
+      task_3_done_at: "t",
+      task_4_done_at: "t",
+      task_5_done_at: "t",
+    }
+    expect(countTasksDone(all)).toBe(5)
+  })
+
+  it("counts partial progress and treats null/undefined as 0", () => {
+    expect(countTasksDone({ ...fakeProgress, task_1_done_at: "t" })).toBe(1)
+    expect(countTasksDone(null)).toBe(0)
+    expect(countTasksDone(undefined)).toBe(0)
+  })
+
+  // ★ The trap the plan names explicitly: a stray `task_6_done_at` left over
+  // from the v2.2 wire shape must NEVER be counted — the migration copies col 6
+  // into col 5, so counting both would read 6/5 for a mid-flight user.
+  it("★ ignores a leftover task_6_done_at from the old 6-task wire shape", () => {
+    const stale = { ...fakeProgress, task_1_done_at: "t", task_6_done_at: "t" } as Cap0Progress
+    expect(countTasksDone(stale)).toBe(1)
+  })
+})
 
 function wrapper() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })

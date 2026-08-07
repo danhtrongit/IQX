@@ -35,7 +35,7 @@ export const cap0Api = {
     return unwrap(res as never) as Cap0Progress
   },
 
-  /** POST /cap0/graduate — only succeeds when 6/6 tasks + both gates are met. */
+  /** POST /cap0/graduate — only succeeds when 5/5 tasks + the debrief gate are met. */
   graduate: async (): Promise<Cap0Progress> => {
     const res = await api.post("cap0/graduate").json<unknown>()
     return unwrap(res as never) as Cap0Progress

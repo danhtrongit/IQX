@@ -118,7 +118,7 @@ vi.mock("./hooks", () => ({
 }))
 
 // `Gbar` reads FILLED order history (`useOrders`) to re-open the Kết sổ for a
-// round trip that closed off-route or before a reload (nhiệm vụ ⑥ recovery —
+// round trip that closed off-route or before a reload (nhiệm vụ ⑤ recovery —
 // see `retroDebrief.ts`). The real hook calls `useAuth`, which throws outside
 // an `AuthProvider` this file deliberately doesn't mount (it mocks `./hooks`
 // for the same reason). Empty history = the retro path finds nothing, so the
@@ -126,6 +126,9 @@ vi.mock("./hooks", () => ({
 // is covered in `gbar.test.tsx`.
 vi.mock("@/features/trading/hooks", () => ({
   useOrders: () => ({ data: [] }),
+  // `Gbar` also reads the portfolio now — spec v3.0 §6 gates nhiệm vụ ⑤'s
+  // reminder on "có lệnh mở nhưng chưa bán".
+  usePortfolio: () => ({ data: { positions: [] } }),
 }))
 
 // `GraduationModal` (mounted unconditionally inside `Cap0TradingPage`) now
@@ -157,10 +160,8 @@ const fakeProgress: Cap0Progress = {
   task_3_done_at: null,
   task_4_done_at: null,
   task_5_done_at: null,
-  task_6_done_at: null,
   task1_star_clicked: false,
-  task5_sl_typed: false,
-  task6_debrief_done: false,
+  task5_debrief_done: false,
   graduated_at: null,
   time_to_graduate_hours: null,
 }
@@ -326,10 +327,10 @@ describe("Cap0TradingPage", () => {
     expect(screen.getByText("Chào mừng đến Demo Trading của IQX.")).toBeInTheDocument()
   })
 
-  it("mounts the real JourneyBar (progress x/6 + next-task copy) in the top bar", () => {
+  it("mounts the real JourneyBar (progress x/5 + next-task copy) in the top bar", () => {
     useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
     renderCap0(<Cap0TradingPage />)
-    expect(screen.getByText("CẤP 0 · 0/6")).toBeInTheDocument()
+    expect(screen.getByText("CẤP 0 · 0/5")).toBeInTheDocument()
     expect(screen.getByTitle("Bấm để mở Hành trình")).toBeInTheDocument()
   })
 

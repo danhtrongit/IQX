@@ -38,6 +38,9 @@ vi.mock("@arco-design/web-react", async (importOriginal) => {
 import { Cap0Provider, useCap0Events } from "./Cap0Context"
 import { Gbar } from "./Gbar"
 
+/** Verbatim spec v3.0 §6, nhiệm vụ ⑤. */
+const TASK5_MSG = "Chọn lệnh trong Nắm giữ và bấm Bán để khép vòng đời lệnh đầu tiên"
+
 function makeProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
   return {
     id: "11111111-1111-1111-1111-111111111111",
@@ -49,14 +52,22 @@ function makeProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
     task_3_done_at: null,
     task_4_done_at: null,
     task_5_done_at: null,
-    task_6_done_at: null,
     task1_star_clicked: false,
-    task5_sl_typed: false,
-    task6_debrief_done: false,
+    task5_debrief_done: false,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
   }
+}
+
+/** One raw `virtual-trading/portfolio` position row (as the API returns it). */
+const RAW_POSITION = {
+  symbol: "VNM",
+  quantity_total: 100,
+  avg_cost_vnd: 61800,
+  current_price_vnd: 62000,
+  market_value_vnd: 6_200_000,
+  unrealized_pnl_vnd: 20_000,
 }
 
 /** Simulates the calls `PlanBlock`/`OrderEntry`/`StockHeader` make into the bus. */
@@ -88,35 +99,12 @@ function EventTrigger() {
       </button>
       <button onClick={() => events.onStarToggled?.("VNM", true)}>star-toggle</button>
       <button onClick={() => events.onGbarWarn?.()}>warn</button>
-      {/* Buy events carrying Kế hoạch sl/tp (nhiệm vụ ①'s preset, or nhiệm vụ
-          ⑤'s manually-typed values) — used by the buy→sell debrief tests. */}
       <button
         onClick={() =>
-          events.onOrderFilled?.({
-            symbol: "VNM",
-            side: "buy",
-            quantity: 100,
-            price: 61800,
-            sl: 58710,
-            tp: 67980,
-          })
+          events.onOrderFilled?.({ symbol: "HPG", side: "buy", quantity: 200, price: 30000 })
         }
       >
-        buy-vnm-with-plan
-      </button>
-      <button
-        onClick={() =>
-          events.onOrderFilled?.({
-            symbol: "HPG",
-            side: "buy",
-            quantity: 200,
-            price: 30000,
-            sl: 28500,
-            tp: 33000,
-          })
-        }
-      >
-        buy-hpg-with-plan
+        buy-hpg
       </button>
       <button
         onClick={() =>
@@ -125,7 +113,6 @@ function EventTrigger() {
       >
         sell-vnm
       </button>
-      <button onClick={() => events.onSlTyped?.()}>sl-typed</button>
     </div>
   )
 }
@@ -135,8 +122,32 @@ function PanelSpy() {
   return <div data-testid="panel-spy">{activePanel}</div>
 }
 
-function renderGbar(progress: Cap0Progress | null) {
-  get.mockReturnValue({ json: () => Promise.resolve(progress) })
+/**
+ * Routes the mocked `api.get` by URL. `Gbar` reads THREE server things now:
+ * `cap0/progress`, `virtual-trading/orders` (retro Kết sổ) and
+ * `virtual-trading/portfolio` (spec §6's "có lệnh mở nhưng chưa bán" condition
+ * for the nhiệm vụ ⑤ bar).
+ */
+function routeGet(
+  progress: Cap0Progress | null,
+  orders: Record<string, unknown>[] = [],
+  positions: Record<string, unknown>[] = [],
+) {
+  get.mockImplementation((url: string) => ({
+    json: () => {
+      const u = String(url)
+      if (u.startsWith("virtual-trading/orders")) return Promise.resolve({ orders })
+      if (u.startsWith("virtual-trading/portfolio")) return Promise.resolve({ positions })
+      return Promise.resolve(progress)
+    },
+  }))
+}
+
+function renderGbar(
+  progress: Cap0Progress | null,
+  { positions = [] as Record<string, unknown>[] } = {},
+) {
+  routeGet(progress, [], positions)
   patch.mockReturnValue({ json: () => Promise.resolve(makeProgress({ task_1_done_at: "t" })) })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
@@ -233,20 +244,6 @@ describe("Gbar", () => {
     )
   })
 
-  it("shows nhiệm vụ ⑤'s «Bước 1/2» (not nhiệm vụ ①'s bar) once task ① is already done server-side (fresh mount)", async () => {
-    renderGbar(makeProgress({ task_1_done_at: "2026-07-20T00:00:00Z" }))
-    // Nhiệm vụ ① is done — its own 3-step bar is gone...
-    await waitFor(() => expect(screen.queryByText(/Bước \d\/3/)).not.toBeInTheDocument())
-    // ...but nhiệm vụ ⑤ (spec §4 Chặng 3 / §6) is now active and takes over
-    // the SAME `.gbar` slot.
-    expect(
-      screen.getByText(
-        "Bước 1/2 — Tự gõ ngưỡng cắt lỗ vào ô (nhập bằng bàn phím, đây là lời hứa của bạn)",
-      ),
-    ).toBeInTheDocument()
-    expect(screen.getByText("CẦN LÀM")).toBeInTheDocument()
-  })
-
   it("wrong action (buy without a reason) flashes warn (red + ⚠ prefix), then reverts to amber after ~1.6s but stays", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     renderGbar(makeProgress())
@@ -274,7 +271,11 @@ describe("Gbar", () => {
   })
 })
 
-describe("Gbar — nhiệm vụ ⑤ 2-step (spec §4 Chặng 3 / §6)", () => {
+// ── Nhiệm vụ ⑤ «Bán một lệnh — Kết sổ đầu tiên» (spec v3.0 §6) ───────────────
+// v2.2 showed a 2-step SL bar here ("Bước 1/2 — Tự gõ ngưỡng cắt lỗ…"). v3.0
+// deletes cắt lỗ/chốt lời from Cấp 0 outright, and the SELL task — which under
+// v2.2 had NO bar of its own at all — gets §6's one standing reminder instead.
+describe("Gbar — nhiệm vụ ⑤ reminder (spec v3.0 §6)", () => {
   beforeEach(() => {
     get.mockReset()
     post.mockReset()
@@ -284,62 +285,58 @@ describe("Gbar — nhiệm vụ ⑤ 2-step (spec §4 Chặng 3 / §6)", () => {
     vi.useRealTimers()
   })
 
-  it("shows «Bước 1/2» once task ① is done, before the SL field is typed", async () => {
-    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
-    await waitFor(() =>
-      expect(
-        screen.getByText(
-          "Bước 1/2 — Tự gõ ngưỡng cắt lỗ vào ô (nhập bằng bàn phím, đây là lời hứa của bạn)",
-        ),
-      ).toBeInTheDocument(),
-    )
+  it("★ shows §6's verbatim sell reminder once ① is done and a position is open", async () => {
+    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }), {
+      positions: [RAW_POSITION],
+    })
+    await waitFor(() => expect(screen.getByText(TASK5_MSG)).toBeInTheDocument())
+    expect(screen.getByText("CẦN LÀM")).toBeInTheDocument()
+    // Nhiệm vụ ①'s own 3-step bar is gone...
+    expect(screen.queryByText(/Bước \d\/3/)).not.toBeInTheDocument()
+    // ...and so is every trace of the deleted SL flow.
+    expect(screen.queryByText(/Bước \d\/2/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/cắt lỗ/i)).not.toBeInTheDocument()
   })
 
-  it("the SL-typed bus event (`onSlTyped`) advances «Bước 1/2 → 2/2» instantly (no PATCH round trip needed)", async () => {
-    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
-    await waitFor(() => expect(screen.getByText(/Bước 1\/2/)).toBeInTheDocument())
-
-    fireEvent.click(screen.getByText("sl-typed"))
-
-    expect(
-      screen.getByText("Bước 2/2 — Bấm ĐẶT LỆNH MUA để hoàn tất lệnh thứ hai"),
-    ).toBeInTheDocument()
-  })
-
-  it("a subsequent BUY (nhiệm vụ ⑤'s second order) completes the task and hides the bar", async () => {
-    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
-    await waitFor(() => expect(screen.getByText(/Bước 1\/2/)).toBeInTheDocument())
-
-    fireEvent.click(screen.getByText("sl-typed"))
-    expect(screen.getByText(/Bước 2\/2/)).toBeInTheDocument()
-
-    fireEvent.click(screen.getByText("buy-vnm-with-plan"))
-
-    expect(screen.queryByText(/Bước/)).not.toBeInTheDocument()
-  })
-
-  it("a BUY completes the task even if the SL field was never typed (order-placed is the sole hide signal)", async () => {
-    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
-    await waitFor(() => expect(screen.getByText(/Bước 1\/2/)).toBeInTheDocument())
-
-    fireEvent.click(screen.getByText("buy-vnm-with-plan"))
-
-    expect(screen.queryByText(/Bước/)).not.toBeInTheDocument()
-  })
-
-  it("a BUY before task ① is done does NOT trip nhiệm vụ ⑤'s bar (it's task ①'s own order, tracked separately)", async () => {
-    renderGbar(makeProgress())
+  it("★ does NOT show it while nhiệm vụ ① is still open — ① owns the bar first", async () => {
+    renderGbar(makeProgress(), { positions: [RAW_POSITION] })
     await waitFor(() => expect(screen.getByText(/Bước 1\/3/)).toBeInTheDocument())
+    expect(screen.queryByText(TASK5_MSG)).not.toBeInTheDocument()
+  })
 
-    fireEvent.click(screen.getByText("pick-reason"))
-    fireEvent.click(screen.getByText("fill-order"))
+  it("★ does NOT show it when there is no open position — §6's condition is «có lệnh mở nhưng chưa bán»", async () => {
+    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }), { positions: [] })
+    await waitFor(() => expect(get).toHaveBeenCalled())
+    await new Promise((r) => setTimeout(r, 50))
+    expect(screen.queryByText(TASK5_MSG)).not.toBeInTheDocument()
+    expect(document.querySelector(".cap0-gbar")).toBeNull()
+  })
 
-    // Still task ①'s 3-step bar (step 3/3) — nhiệm vụ ⑤ hasn't started yet.
-    expect(screen.getByText(/Bước 3\/3/)).toBeInTheDocument()
+  it("★ does NOT show it once ⑤ is already done, even with a fresh position open", async () => {
+    renderGbar(
+      makeProgress({
+        task_1_done_at: "t",
+        task_5_done_at: "2026-07-22T00:00:00Z",
+        task5_debrief_done: true,
+      }),
+      { positions: [RAW_POSITION] },
+    )
+    await waitFor(() => expect(get).toHaveBeenCalled())
+    await new Promise((r) => setTimeout(r, 50))
+    expect(screen.queryByText(TASK5_MSG)).not.toBeInTheDocument()
+  })
+
+  it("ignores a zero-quantity position row (a fully-closed holding is not an open position)", async () => {
+    renderGbar(makeProgress({ task_1_done_at: "t" }), {
+      positions: [{ ...RAW_POSITION, quantity_total: 0 }],
+    })
+    await waitFor(() => expect(get).toHaveBeenCalled())
+    await new Promise((r) => setTimeout(r, 50))
+    expect(screen.queryByText(TASK5_MSG)).not.toBeInTheDocument()
   })
 })
 
-describe("Gbar — buy → sell opens the Kết sổ debrief (spec §5/§6, nhiệm vụ ⑥)", () => {
+describe("Gbar — buy → sell opens the Kết sổ debrief (spec §5/§6, nhiệm vụ ⑤)", () => {
   beforeEach(() => {
     get.mockReset()
     post.mockReset()
@@ -349,49 +346,45 @@ describe("Gbar — buy → sell opens the Kết sổ debrief (spec §5/§6, nhi�
     vi.useRealTimers()
   })
 
-  it("a BUY then a SELL opens DebriefModal with the entry price / SL / TP / order #n captured from the buy", async () => {
-    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
-    await waitFor(() => expect(screen.getByText(/Bước 1\/2/)).toBeInTheDocument())
+  it("a BUY then a SELL opens DebriefModal with the entry price / order #n captured from the buy", async () => {
+    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }), {
+      positions: [RAW_POSITION],
+    })
+    await waitFor(() => expect(screen.getByText(TASK5_MSG)).toBeInTheDocument())
 
-    fireEvent.click(screen.getByText("buy-vnm-with-plan"))
-    fireEvent.click(screen.getByText("sell-vnm"))
+    fireEvent.click(screen.getByText("fill-order")) // BUY VNM @ 61,800
+    fireEvent.click(screen.getByText("sell-vnm")) // SELL VNM @ 63,000
 
-    // Header "#1" (first debrief this session) + Kế hoạch/Thực tế reconciled
-    // against the BUY's captured price (61,800) / sl (58,710 · −5.0%) / tp
-    // (67,980 · +10.0%), against the SELL's exit price (63,000).
     expect(screen.getByText("KẾT SỔ LỆNH · #1 · SÂN TẬP")).toBeInTheDocument()
     expect(screen.getByText("+120,000 ₫ · MUA 100 VNM → BÁN")).toBeInTheDocument()
     expect(screen.getAllByText("61,800").length).toBeGreaterThanOrEqual(2)
-    expect(screen.getByText("58,710 · −5.0%")).toBeInTheDocument()
-    expect(screen.getByText("67,980 · +10.0%")).toBeInTheDocument()
     expect(screen.getByText(/63,000/)).toBeInTheDocument()
   })
 
-  it("buy A, buy B, then sell A → the debrief reconciles against A's captured plan, not B's", async () => {
-    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
-    await waitFor(() => expect(screen.getByText(/Bước 1\/2/)).toBeInTheDocument())
+  it("buy A, buy B, then sell A → the debrief uses A's captured entry price, not B's", async () => {
+    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }), {
+      positions: [RAW_POSITION],
+    })
+    await waitFor(() => expect(screen.getByText(TASK5_MSG)).toBeInTheDocument())
 
-    fireEvent.click(screen.getByText("buy-vnm-with-plan")) // A — VNM, sl 58,710 / tp 67,980
-    fireEvent.click(screen.getByText("buy-hpg-with-plan")) // B — HPG, sl 28,500 / tp 33,000
+    fireEvent.click(screen.getByText("fill-order")) // A — VNM @ 61,800
+    fireEvent.click(screen.getByText("buy-hpg")) // B — HPG @ 30,000
     fireEvent.click(screen.getByText("sell-vnm")) // sell A (VNM)
 
     expect(screen.getByText(/MUA 100 VNM → BÁN/)).toBeInTheDocument()
-    expect(screen.getByText("58,710 · −5.0%")).toBeInTheDocument()
-    expect(screen.getByText("67,980 · +10.0%")).toBeInTheDocument()
+    expect(screen.getAllByText("61,800").length).toBeGreaterThanOrEqual(2)
     // B's (HPG's) figures must NOT leak into A's debrief.
-    expect(screen.queryByText(/28,500/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/33,000/)).not.toBeInTheDocument()
     expect(screen.queryByText(/30,000/)).not.toBeInTheDocument()
   })
 })
 
-// ── Retroactive Kết sổ (nhiệm vụ ⑥ was unreachable — the graduation blocker) ──
+// ── Retroactive Kết sổ (nhiệm vụ ⑤ was unreachable — the graduation blocker) ──
 // The live `onOrderFilled` sell branch above only fires inside `Cap0Provider`
 // (i.e. on `/dau-truong`), and `debriefCountRef`/`lastBuyBySymbolRef` are
 // session-local refs. A user who sold from `/bieu-do` or `/co-phieu`, or who
-// reloaded before pressing "Đóng kết sổ ✓", could never reach nhiệm vụ ⑥ —
-// and since `Cap0Service.graduate` demands 6/6 + both gates, could never
-// graduate. `Gbar` now also reconstructs the Kết sổ from SERVER order history.
+// reloaded before pressing "Đóng kết sổ ✓", could never reach the Kết sổ — and
+// since `Cap0Service.graduate` demands 5/5 + the debrief gate, could never
+// graduate. `Gbar` also reconstructs the Kết sổ from SERVER order history.
 
 /** A `VirtualOrder` row as `GET /virtual-trading/orders` returns it. */
 function rawOrder(o: Record<string, unknown> = {}) {
@@ -415,23 +408,15 @@ const RAW_SELL = rawOrder({
   created_at: "2026-07-21T06:00:00Z",
 })
 
-/**
- * Routes the mocked `api.get` by URL: `cap0/progress` → progress,
- * `virtual-trading/orders` → the given filled-order history.
- */
 function renderGbarWithHistory(
   progress: Cap0Progress | null,
   orders: Record<string, unknown>[],
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+  positions: Record<string, unknown>[] = [],
 ) {
-  get.mockImplementation((url: string) => ({
-    json: () =>
-      Promise.resolve(
-        String(url).startsWith("virtual-trading/orders") ? { orders } : progress,
-      ),
-  }))
+  routeGet(progress, orders, positions)
   patch.mockReturnValue({
-    json: () => Promise.resolve({ ...progress, task_6_done_at: "t", task6_debrief_done: true }),
+    json: () => Promise.resolve({ ...progress, task_5_done_at: "t", task5_debrief_done: true }),
   })
   const utils = render(
     <QueryClientProvider client={client}>
@@ -446,22 +431,20 @@ function renderGbarWithHistory(
   return { ...utils, client }
 }
 
-/** Task ① done (so nhiệm vụ ⑤/⑥ are the live stage), nhiệm vụ ⑥ still open. */
-function task6Pending(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
+/** Task ① done (so nhiệm vụ ⑤ is the live stage), nhiệm vụ ⑤ still open. */
+function task5Pending(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
   return makeProgress({
     task_1_done_at: "t",
     task_2_done_at: "t",
     task_3_done_at: "t",
     task_4_done_at: "t",
-    task_5_done_at: "t",
-    task_6_done_at: null,
-    task5_sl_typed: true,
-    task6_debrief_done: false,
+    task_5_done_at: null,
+    task5_debrief_done: false,
     ...overrides,
   })
 }
 
-describe("Gbar — retroactive Kết sổ from order history (nhiệm vụ ⑥ recovery)", () => {
+describe("Gbar — retroactive Kết sổ from order history (nhiệm vụ ⑤ recovery)", () => {
   beforeEach(() => {
     get.mockReset()
     post.mockReset()
@@ -471,8 +454,8 @@ describe("Gbar — retroactive Kết sổ from order history (nhiệm vụ ⑥ r
     vi.useRealTimers()
   })
 
-  it("opens the Kết sổ on mount for a user whose round trip ALREADY closed and who never finished ⑥", async () => {
-    renderGbarWithHistory(task6Pending(), [RAW_SELL, RAW_BUY])
+  it("opens the Kết sổ on mount for a user whose round trip ALREADY closed and who never finished ⑤", async () => {
+    renderGbarWithHistory(task5Pending(), [RAW_SELL, RAW_BUY])
 
     await waitFor(() =>
       expect(screen.getByText("KẾT SỔ LỆNH · #1 · SÂN TẬP")).toBeInTheDocument(),
@@ -482,34 +465,38 @@ describe("Gbar — retroactive Kết sổ from order history (nhiệm vụ ⑥ r
     expect(screen.getByText(/63,000/)).toBeInTheDocument()
   })
 
-  it("closing it PATCHes /cap0/task task 6 + the debrief gate — the graduation blocker clears", async () => {
-    renderGbarWithHistory(task6Pending(), [RAW_SELL, RAW_BUY])
+  it("★ closing it PATCHes /cap0/task task 5 + the debrief gate — the graduation blocker clears", async () => {
+    renderGbarWithHistory(task5Pending(), [RAW_SELL, RAW_BUY])
     await waitFor(() => expect(screen.getByText("Đóng kết sổ ✓")).toBeInTheDocument())
 
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
 
     await waitFor(() =>
       expect(patch).toHaveBeenCalledWith("cap0/task", {
-        json: { task_no: 6, gate: "debrief" },
+        json: { task_no: 5, gate: "debrief" },
       }),
     )
     expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
   })
 
-  it("does NOT invent an SL/TP it never had — both Thực tế cells read «không ghi nhận»", async () => {
-    renderGbarWithHistory(task6Pending(), [RAW_SELL, RAW_BUY])
+  // ★★ THE regression this whole recovery path exists for. `task_5_done_at`
+  // now carries what column 6 used to (the BE migration copies it across), so
+  // the guard must read it — but it must NOT be confused with v2.2's column 5,
+  // which held an SL-keydown timestamp. A mid-flight production user has that
+  // stale timestamp; if the guard treated it as "⑤ done", the retro Kết sổ
+  // would be suppressed, the gate would stay false, and `graduate()` would 409
+  // forever with no way out.
+  it("★ still opens for a user whose ⑤ is unfinished even though earlier tasks are done", async () => {
+    renderGbarWithHistory(
+      task5Pending({ task_1_done_at: "2026-07-21T00:00:00Z" }),
+      [RAW_SELL, RAW_BUY],
+    )
     await waitFor(() => expect(screen.getByText(/KẾT SỔ LỆNH/)).toBeInTheDocument())
-
-    expect(screen.getAllByText("không ghi nhận")).toHaveLength(2)
-    // Never "0" and never a fabricated threshold verdict.
-    expect(screen.queryByText("không chạm")).not.toBeInTheDocument()
-    expect(screen.queryByText("chưa tới — bán tay")).not.toBeInTheDocument()
-    expect(screen.queryByText(/^0 · /)).not.toBeInTheDocument()
   })
 
-  it("does NOT open for a user who has ALREADY done nhiệm vụ ⑥", async () => {
+  it("does NOT open for a user who has ALREADY done nhiệm vụ ⑤", async () => {
     renderGbarWithHistory(
-      task6Pending({ task_6_done_at: "2026-07-22T00:00:00Z", task6_debrief_done: true }),
+      task5Pending({ task_5_done_at: "2026-07-22T00:00:00Z", task5_debrief_done: true }),
       [RAW_SELL, RAW_BUY],
     )
     // Wait for progress to actually land before asserting the absence.
@@ -519,14 +506,14 @@ describe("Gbar — retroactive Kết sổ from order history (nhiệm vụ ⑥ r
   })
 
   it("does NOT open when the user has never sold (no closed round trip)", async () => {
-    renderGbarWithHistory(task6Pending(), [RAW_BUY])
+    renderGbarWithHistory(task5Pending(), [RAW_BUY])
     await waitFor(() => expect(get).toHaveBeenCalled())
     await new Promise((r) => setTimeout(r, 50))
     expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
   })
 
   it("does NOT open when order history is empty", async () => {
-    renderGbarWithHistory(task6Pending(), [])
+    renderGbarWithHistory(task5Pending(), [])
     await waitFor(() => expect(get).toHaveBeenCalled())
     await new Promise((r) => setTimeout(r, 50))
     expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
@@ -540,7 +527,7 @@ describe("Gbar — retroactive Kết sổ from order history (nhiệm vụ ⑥ r
   })
 
   it("numbers the retro Kết sổ #2 when TWO round trips already closed", async () => {
-    renderGbarWithHistory(task6Pending(), [
+    renderGbarWithHistory(task5Pending(), [
       rawOrder({ id: "s2", side: "sell", filled_price_vnd: 70000, created_at: "2026-07-24T06:00:00Z" }),
       rawOrder({ id: "b2", side: "buy", filled_price_vnd: 65000, created_at: "2026-07-24T02:00:00Z" }),
       RAW_SELL,
@@ -564,59 +551,52 @@ describe("Gbar — live sell path is unchanged; retro must not double-open or do
     vi.useRealTimers()
   })
 
-  it("a live sell still opens the Kết sổ IMMEDIATELY with its real sl/tp off the bus", async () => {
+  it("a live sell still opens the Kết sổ IMMEDIATELY with its real entry price off the bus", async () => {
     // Empty history — nothing for the retro path to find; only the bus fires.
-    renderGbarWithHistory(task6Pending(), [])
-    await waitFor(() => expect(screen.getByText(/Bước 1\/2|Bước 2\/2/)).toBeInTheDocument())
+    renderGbarWithHistory(task5Pending(), [], undefined, [RAW_POSITION])
+    await waitFor(() => expect(screen.getByText(TASK5_MSG)).toBeInTheDocument())
 
-    fireEvent.click(screen.getByText("buy-vnm-with-plan"))
+    fireEvent.click(screen.getByText("fill-order"))
     fireEvent.click(screen.getByText("sell-vnm"))
 
     expect(screen.getByText("KẾT SỔ LỆNH · #1 · SÂN TẬP")).toBeInTheDocument()
-    // Real Kế hoạch values from the buy event — NOT "không ghi nhận".
-    expect(screen.getByText("58,710 · −5.0%")).toBeInTheDocument()
-    expect(screen.getByText("67,980 · +10.0%")).toBeInTheDocument()
-    expect(screen.queryByText("không ghi nhận")).not.toBeInTheDocument()
+    expect(screen.getByText("+120,000 ₫ · MUA 100 VNM → BÁN")).toBeInTheDocument()
   })
 
   it("when the order history refetches AFTER a live sell, the retro path does not replace the live Kết sổ (no double-open for the same sell)", async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-    renderGbarWithHistory(task6Pending(), [], client)
-    await waitFor(() => expect(screen.getByText(/Bước 1\/2|Bước 2\/2/)).toBeInTheDocument())
+    renderGbarWithHistory(task5Pending(), [], client, [RAW_POSITION])
+    await waitFor(() => expect(screen.getByText(TASK5_MSG)).toBeInTheDocument())
 
-    fireEvent.click(screen.getByText("buy-vnm-with-plan"))
+    fireEvent.click(screen.getByText("fill-order"))
     fireEvent.click(screen.getByText("sell-vnm"))
-    expect(screen.getByText("58,710 · −5.0%")).toBeInTheDocument()
+    expect(screen.getByText("KẾT SỔ LỆNH · #1 · SÂN TẬP")).toBeInTheDocument()
 
     // Simulate what `usePlaceOrder`'s `onSuccess` does in the real app: the
     // just-filled round trip now appears in server history and every trading
     // query is invalidated.
-    get.mockImplementation((url: string) => ({
-      json: () =>
-        Promise.resolve(
-          String(url).startsWith("virtual-trading/orders")
-            ? { orders: [RAW_SELL, RAW_BUY] }
-            : task6Pending(),
-        ),
-    }))
+    routeGet(task5Pending(), [RAW_SELL, RAW_BUY], [RAW_POSITION])
     await act(async () => {
       await client.invalidateQueries({ queryKey: ["trading"] })
     })
 
-    // Still the LIVE debrief, with its real Kế hoạch intact.
+    // Still exactly ONE Kết sổ, still #1.
     expect(screen.getByText("KẾT SỔ LỆNH · #1 · SÂN TẬP")).toBeInTheDocument()
-    expect(screen.getByText("58,710 · −5.0%")).toBeInTheDocument()
-    expect(screen.queryByText("không ghi nhận")).not.toBeInTheDocument()
     expect(screen.getAllByText(/KẾT SỔ LỆNH/)).toHaveLength(1)
   })
 
   it("#N does not double-count: after a retroactive #2, the next LIVE sell is #3", async () => {
-    renderGbarWithHistory(task6Pending(), [
-      rawOrder({ id: "s2", side: "sell", filled_price_vnd: 70000, created_at: "2026-07-24T06:00:00Z" }),
-      rawOrder({ id: "b2", side: "buy", filled_price_vnd: 65000, created_at: "2026-07-24T02:00:00Z" }),
-      RAW_SELL,
-      RAW_BUY,
-    ])
+    renderGbarWithHistory(
+      task5Pending(),
+      [
+        rawOrder({ id: "s2", side: "sell", filled_price_vnd: 70000, created_at: "2026-07-24T06:00:00Z" }),
+        rawOrder({ id: "b2", side: "buy", filled_price_vnd: 65000, created_at: "2026-07-24T02:00:00Z" }),
+        RAW_SELL,
+        RAW_BUY,
+      ],
+      undefined,
+      [RAW_POSITION],
+    )
     await waitFor(() =>
       expect(screen.getByText("KẾT SỔ LỆNH · #2 · SÂN TẬP")).toBeInTheDocument(),
     )
@@ -625,7 +605,7 @@ describe("Gbar — live sell path is unchanged; retro must not double-open or do
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
     expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByText("buy-vnm-with-plan"))
+    fireEvent.click(screen.getByText("fill-order"))
     fireEvent.click(screen.getByText("sell-vnm"))
 
     // Continues the server-derived numbering — not back to #1.
@@ -649,7 +629,14 @@ describe("Gbar — spec §8 unlock toast", () => {
     // `progress` transition (false → true) the real app produces when
     // `completeTask`'s mutation invalidates + refetches `useCap0Progress`.
     let serverProgress = makeProgress()
-    get.mockImplementation(() => ({ json: () => Promise.resolve(serverProgress) }))
+    get.mockImplementation((url: string) => ({
+      json: () => {
+        const u = String(url)
+        if (u.startsWith("virtual-trading/orders")) return Promise.resolve({ orders: [] })
+        if (u.startsWith("virtual-trading/portfolio")) return Promise.resolve({ positions: [] })
+        return Promise.resolve(serverProgress)
+      },
+    }))
     patch.mockImplementation(() => {
       serverProgress = makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" })
       return { json: () => Promise.resolve(serverProgress) }
@@ -674,16 +661,14 @@ describe("Gbar — spec §8 unlock toast", () => {
     await waitFor(() =>
       expect(messageInfo).toHaveBeenCalledWith("Bạn vừa mở khóa: Ô Giá & loại lệnh (LO/MP)."),
     )
-    // Not the OTHER pairs — those unlock on different conditions (task ②,
-    // graduation) that this scenario never reaches.
+    // ★ The sổ lệnh NEVER unlocks inside Cấp 0 under v3.0 (§8: it opens at Cấp
+    // 2), so that toast must not exist at all any more.
     expect(messageInfo).not.toHaveBeenCalledWith("Bạn vừa mở khóa: Sổ lệnh bid/ask.")
     expect(messageInfo).not.toHaveBeenCalledWith("Bạn vừa mở khóa: Tin tức & AI Mẫu nến.")
   })
 
   it("does NOT toast on a fresh mount where task ① is already done (no spurious loading→resolved transition)", async () => {
-    get.mockReturnValue({
-      json: () => Promise.resolve(makeProgress({ task_1_done_at: "2026-07-20T00:00:00Z" })),
-    })
+    routeGet(makeProgress({ task_1_done_at: "2026-07-20T00:00:00Z" }), [], [RAW_POSITION])
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
     render(
       <QueryClientProvider client={client}>
@@ -695,7 +680,7 @@ describe("Gbar — spec §8 unlock toast", () => {
       </QueryClientProvider>,
     )
 
-    await waitFor(() => expect(screen.getByText(/Bước 1\/2/)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText(TASK5_MSG)).toBeInTheDocument())
     expect(messageInfo).not.toHaveBeenCalled()
   })
 })

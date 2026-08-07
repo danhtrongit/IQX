@@ -7,7 +7,7 @@ import { cn } from "@/shared/lib/cn"
 // through it from inside cap0 would close a real module cycle (same rationale
 // `GraduationModal.tsx` documents for `@/features/cap1/hooks`).
 // `features/trading/hooks` has no cap0 dependency, so this is safe.
-import { useOrders } from "@/features/trading/hooks"
+import { useOrders, usePortfolio } from "@/features/trading/hooks"
 import { useCap0Events, type Cap0OrderEvent } from "./Cap0Context"
 import { useCap0Progress, useCompleteTask } from "./hooks"
 import { cap0Visibility, type Cap0Visibility } from "./cap0Visibility"
@@ -15,25 +15,26 @@ import { DebriefModal, type DebriefData } from "./DebriefModal"
 import { findRetroDebrief } from "./retroDebrief"
 import {
   GBAR_TAG,
+  TASK5_GBAR_MESSAGE,
   gbarReducer,
   gbarText,
   initialGbarState,
-  initialTask5State,
-  task5Reducer,
-  task5Text,
 } from "./gbarMachine"
 import "./cap0.css"
 
 const WARN_MS = 1600
 
-/** spec §8 "hiển thị 1 toast nhẹ" when a hidden component unlocks — Ô Giá and
+/**
+ * spec §8 "hiển thị 1 toast nhẹ" when a hidden component unlocks — Ô Giá and
  * the MP/LO dropdown unlock together (both keyed off task ① done), as do the
  * Tin tức / AI Mẫu nến tabs (both keyed off graduation), so each PAIR gets
- * one combined toast rather than two near-simultaneous ones. */
+ * one combined toast rather than two near-simultaneous ones.
+ *
+ * The sổ lệnh bid/ask has NO branch here on purpose: v3.0 §8 opens it at Cấp 2
+ * ("không hiện ở Cấp 0 và Cấp 1"), so `cap0Visibility().orderBook` is a
+ * constant `false` and nothing inside Cấp 0 can ever announce it.
+ */
 function announceUnlocks(prev: Cap0Visibility, next: Cap0Visibility): void {
-  if (!prev.orderBook && next.orderBook) {
-    Message.info("Bạn vừa mở khóa: Sổ lệnh bid/ask.")
-  }
   if (!prev.priceField && next.priceField) {
     Message.info("Bạn vừa mở khóa: Ô Giá & loại lệnh (LO/MP).")
   }
@@ -71,58 +72,65 @@ export function Gbar() {
   const warnTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const completedRef = useRef(false)
 
-  // Nhiệm vụ ⑥ (spec §5/§4 "bán khớp → mở màn Kết sổ") — `lastBuyBySymbolRef`
-  // remembers each symbol's most recent BUY fill price/sl/tp (the Kế hoạch
-  // data the debrief later reconciles against; the trading backend never
-  // persists SL/TP, so the FE must) keyed by symbol — NOT a single slot —
-  // so buying two different symbols before selling one of them still
-  // reconciles the SOLD symbol's own entry/SL/TP, not whichever was bought
-  // most recently overall. `debriefCountRef` is the "#{n}" in "KẾT SỔ LỆNH
-  // · #{n}" — this component is mounted once for the whole Cấp 0 session
-  // (sibling of `CenterPanel`/`RightSidebar` in `Cap0TradingPage`, NOT inside
-  // the sidebar's panel switch), so both refs survive the user switching
-  // between the Hành trình/Đặt lệnh/Danh mục tabs in between.
-  const lastBuyBySymbolRef = useRef<Map<string, { price: number; sl?: number; tp?: number }>>(
-    new Map(),
-  )
+  // Nhiệm vụ ⑤ (spec §5/§4 "bán khớp → mở màn Kết sổ") — `lastBuyBySymbolRef`
+  // remembers each symbol's most recent BUY fill price (the "giá vào" the
+  // debrief reports) keyed by symbol — NOT a single slot — so buying two
+  // different symbols before selling one of them still reports the SOLD
+  // symbol's own entry price, not whichever was bought most recently overall.
+  // `debriefCountRef` is the "#{n}" in "KẾT SỔ LỆNH · #{n}" — this component
+  // is mounted once for the whole Cấp 0 session (sibling of `CenterPanel`/
+  // `RightSidebar` in `Cap0TradingPage`, NOT inside the sidebar's panel
+  // switch), so both refs survive the user switching between the Hành trình/
+  // Đặt lệnh/Danh mục tabs in between.
+  const lastBuyBySymbolRef = useRef<Map<string, number>>(new Map())
   const debriefCountRef = useRef(0)
   const [debrief, setDebrief] = useState<DebriefData | null>(null)
   const prevVisibilityRef = useRef<Cap0Visibility | null>(null)
-  // Nhiệm vụ ⑤'s 2-step gbar (spec §4 Chặng 3 / §6) — see `gbarMachine.ts`'s
-  // `Task5State` docstring for why this stays entirely local rather than
-  // reading `progress.task5_sl_typed`/`task_5_done_at`.
-  const [task5State, dispatchTask5] = useReducer(task5Reducer, initialTask5State)
 
   const task1Done = !!progress?.task_1_done_at
-  // Nhiệm vụ ⑥ RECOVERY (production bug: Cấp 0 was ungraduatable). The live
-  // sell branch below is the ONLY way task ⑥ ever completed, and it depends on
+  // Nhiệm vụ ⑤ RECOVERY (production bug: Cấp 0 was ungraduatable). The live
+  // sell branch below is the ONLY way task ⑤ ever completed, and it depends on
   // two things a real user routinely doesn't have:
   //   • the Cấp 0 event bus, which exists only inside `Cap0Provider` — so a
   //     sell placed from `/bieu-do` or `/co-phieu` (the SAME `TradingPanel`,
   //     but with the no-op bus) fired into the void; and
   //   • `lastBuyBySymbolRef`/`debriefCountRef`, session-local refs a page
   //     reload wipes.
-  // Since `Cap0Service.graduate` requires 6/6 tasks + both gates, missing ⑥
-  // meant `isGraduationReady` never opened the graduation modal and the user
+  // Since `Cap0Service.graduate` requires 5/5 tasks + the debrief gate, missing
+  // ⑤ meant `isGraduationReady` never opened the graduation modal and the user
   // was stuck in Cấp 0 forever. So: when the user IS on `/dau-truong` with a
-  // round trip that ALREADY closed but ⑥ still unfinished, re-open the Kết sổ
-  // from SERVER order history so they can read it and complete ⑥ themselves.
-  // Deliberately NOT auto-completed server-side — ⑥ teaches reading the Kết sổ.
-  const task6Done = !!progress?.task_6_done_at
+  // round trip that ALREADY closed but ⑤ still unfinished, re-open the Kết sổ
+  // from SERVER order history so they can read it and complete ⑤ themselves.
+  // Deliberately NOT auto-completed server-side — ⑤ teaches reading the Kết sổ.
+  //
+  // ★ `task_5_done_at` here is the column the BE migration COPIED column 6's
+  // data into — i.e. exactly the "đã đóng Kết sổ" fact this guard used to read
+  // from `task_6_done_at`, and never v2.2's column-5 SL-keydown timestamp. Get
+  // that wrong and a mid-flight production user reads 5/5 with the gate still
+  // false, this guard suppresses their only route to the Kết sổ, and
+  // `graduate()` 409s forever behind a `closable={false}` modal.
+  const task5Done = !!progress?.task_5_done_at
   // Only fetch history when it could actually be needed (`enabled`) — a user
-  // who already did ⑥ makes no extra request. Shares the query cache with
+  // who already did ⑤ makes no extra request. Shares the query cache with
   // `WatchlistPanel`'s own `useOrders("filled")`.
-  const { data: filledOrders } = useOrders("filled", !!progress && !task6Done)
+  const { data: filledOrders } = useOrders("filled", !!progress && !task5Done)
   const retroOpenedRef = useRef(false)
+  // Spec §6's own condition for the nhiệm vụ ⑤ bar: "khi có lệnh mở nhưng chưa
+  // bán". Read from the live portfolio rather than from a progress flag so it
+  // survives a reload (a session-local "I saw a buy" flag would not) and so a
+  // user who already sold elsewhere is not told to sell again. Shares the query
+  // cache with `TradingPanel`/`AccountStrip`'s own `usePortfolio()`.
+  const { data: portfolio } = usePortfolio()
+  const hasOpenPosition = (portfolio?.positions ?? []).some((p) => p.quantity > 0)
 
   useEffect(() => {
     // One-shot per session, and never in competition with the live path:
     if (retroOpenedRef.current) return
-    if (!progress || task6Done) return // not in Cấp 0, or ⑥ already earned
+    if (!progress || task5Done) return // not in Cấp 0, or ⑤ already earned
     if (filledOrders === undefined) return // history still loading
     // A live debrief already opened this session (`debriefCountRef` > 0) or one
-    // is on screen → the live path owns this, with its real sl/tp. This is
-    // what stops the SAME sell producing a second, plan-less Kết sổ once
+    // is on screen → the live path owns this, with its own bus-captured entry
+    // price. This is what stops the SAME sell producing a second Kết sổ once
     // `usePlaceOrder`'s invalidation refetches the history.
     if (debriefCountRef.current > 0 || debrief !== null) return
 
@@ -142,7 +150,7 @@ export function Gbar() {
     // to stop it re-appearing between "Đóng kết sổ ✓" and the PATCH landing.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDebrief(retro)
-  }, [progress, task6Done, filledOrders, debrief])
+  }, [progress, task5Done, filledOrders, debrief])
 
   useEffect(() => {
     registerHandlers({
@@ -154,30 +162,17 @@ export function Gbar() {
         if (order.side === "buy") {
           // Keyed by symbol (not a single last-buy slot) — see
           // `lastBuyBySymbolRef`'s docstring above.
-          lastBuyBySymbolRef.current.set(order.symbol.toUpperCase(), {
-            price: order.price,
-            sl: order.sl,
-            tp: order.tp,
-          })
-          if (task1Done) {
-            // Nhiệm vụ ① already done → this is nhiệm vụ ⑤'s second buy,
-            // completing its 2-step gbar (spec §6). Nothing below applies to
-            // it (that's task ①-only: VNM-symbol check, its own toast/flag).
-            dispatchTask5({ type: "ORDER_PLACED" })
-            return
-          }
+          lastBuyBySymbolRef.current.set(order.symbol.toUpperCase(), order.price)
         }
         if (order.side === "sell") {
           debriefCountRef.current += 1
-          const buy = lastBuyBySymbolRef.current.get(order.symbol.toUpperCase())
+          const entry = lastBuyBySymbolRef.current.get(order.symbol.toUpperCase())
           setDebrief({
             n: debriefCountRef.current,
             symbol: order.symbol,
             quantity: order.quantity,
-            entryPrice: buy?.price ?? order.price,
+            entryPrice: entry ?? order.price,
             exitPrice: order.price,
-            sl: buy?.sl,
-            tp: buy?.tp,
           })
           return
         }
@@ -199,10 +194,6 @@ export function Gbar() {
         dispatch({ type: "WARN" })
         if (warnTimerRef.current) clearTimeout(warnTimerRef.current)
         warnTimerRef.current = setTimeout(() => dispatch({ type: "WARN_TIMEOUT" }), WARN_MS)
-      },
-      onSlTyped: () => {
-        if (!task1Done) return
-        dispatchTask5({ type: "SL_TYPED" })
       },
     })
   }, [registerHandlers, task1Done])
@@ -248,12 +239,13 @@ export function Gbar() {
   }, [state.reasonPicked, state.orderFilled, state.starToggled, task1Done])
 
   const closeDebrief = () => setDebrief(null)
-  // Task ① steps show until task ① is done; task ⑤'s 2-step steps show only
-  // once task ① IS done (⑤ unlocked) and task5's local reducer isn't yet
-  // "done" (`task5Text` returns `null` once `orderPlaced`) — the two bars
-  // are mutually exclusive by construction, so this is a plain fallback, not
-  // a priority pick.
-  const text = task1Done ? task5Text(task5State) : gbarText(state)
+  // Task ①'s 3-step bar shows until task ① is done. After that the SAME slot
+  // carries nhiệm vụ ⑤'s standing reminder, under spec §6's own condition:
+  // "khi có lệnh mở nhưng chưa bán". The two are mutually exclusive by
+  // construction (`task1Done` picks exactly one side), so this is a plain
+  // fallback, not a priority pick.
+  const showTask5Reminder = task1Done && !task5Done && hasOpenPosition
+  const text = task1Done ? (showTask5Reminder ? TASK5_GBAR_MESSAGE : null) : gbarText(state)
 
   return (
     <>

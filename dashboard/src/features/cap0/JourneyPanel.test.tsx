@@ -61,10 +61,8 @@ function makeProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
     task_3_done_at: null,
     task_4_done_at: null,
     task_5_done_at: null,
-    task_6_done_at: null,
     task1_star_clicked: false,
-    task5_sl_typed: false,
-    task6_debrief_done: false,
+    task5_debrief_done: false,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
@@ -139,17 +137,17 @@ describe("JourneyPanel", () => {
     expect(screen.queryByText("SÂN TẬP · T+0")).not.toBeInTheDocument()
   })
 
-  it('shows the checklist header "TRƯỚC KHI LÊN CẤP 1 · 0/6" with fresh progress', () => {
+  it('shows the checklist header "TRƯỚC KHI LÊN CẤP 1 · 0/5" with fresh progress', () => {
     useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
     render(
       <SidebarProvider>
         <JourneyPanel />
       </SidebarProvider>,
     )
-    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 1 · 0/6")).toBeInTheDocument()
+    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 1 · 0/5")).toBeInTheDocument()
   })
 
-  it("renders all 6 task names verbatim", () => {
+  it("renders all 5 task names verbatim (spec v3.0 §7)", () => {
     useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
     render(
       <SidebarProvider>
@@ -160,11 +158,14 @@ describe("JourneyPanel", () => {
     expect(screen.getByText("Tour bảng điện — 8 điểm")).toBeInTheDocument()
     expect(screen.getByText("Tour bản tin thị trường")).toBeInTheDocument()
     expect(screen.getByText('Tour "6 người chơi" trên mã của bạn')).toBeInTheDocument()
-    expect(screen.getByText("Lệnh thứ hai — tự đặt ngưỡng cắt lỗ")).toBeInTheDocument()
     expect(screen.getByText("Bán một lệnh — kết sổ đầu tiên")).toBeInTheDocument()
+    // ★ v3.0 deleted the old ⑤ outright — it must not appear anywhere.
+    expect(screen.queryByText("Lệnh thứ hai — tự đặt ngưỡng cắt lỗ")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap0-task-6")).not.toBeInTheDocument()
+    expect(screen.queryByText(/cắt lỗ/i)).not.toBeInTheDocument()
   })
 
-  it("① is active (description + «Làm ngay →») at 0/6; ②③④ are locked with no «Làm ngay» button", () => {
+  it("① is active (description + «Làm ngay →») at 0/5; ②③④ are locked with no «Làm ngay» button", () => {
     useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
     render(
       <SidebarProvider>
@@ -177,11 +178,11 @@ describe("JourneyPanel", () => {
       expect(item.className).toContain("cap0-checklist-item--locked")
       expect(within(item).queryByText("Làm ngay →")).not.toBeInTheDocument()
     }
-    // ⑤/⑥ aren't reachable yet either (① not done) — only ① has a button.
+    // ⑤ isn't reachable yet either (① not done) — only ① has a button.
     expect(screen.getAllByText("Làm ngay →")).toHaveLength(1)
   })
 
-  it("once ① is done: header 1/6, ① done (✓, no button), ②③④ become active (independent, T2), ⑤ becomes active too", () => {
+  it("once ① is done: header 1/5, ① done (✓, no button), ②③④ become active (independent, T2), ⑤ becomes active too", () => {
     useCap0ProgressMock.mockReturnValue({
       data: makeProgress({ task_1_done_at: "2026-07-21T01:00:00Z" }),
     })
@@ -190,7 +191,7 @@ describe("JourneyPanel", () => {
         <JourneyPanel />
       </SidebarProvider>,
     )
-    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 1 · 1/6")).toBeInTheDocument()
+    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 1 · 1/5")).toBeInTheDocument()
 
     const task1 = screen.getByTestId("cap0-task-1")
     expect(task1.className).toContain("cap0-checklist-item--done")
@@ -265,15 +266,53 @@ describe("JourneyPanel", () => {
     expect(screen.getByTestId("panel-spy")).toHaveTextContent("trading")
   })
 
-  it("shows the graduation goal box copy", () => {
+  it("shows the graduation goal box copy — «Xong cả 5», not 6", () => {
     useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
     render(
       <SidebarProvider>
         <JourneyPanel />
       </SidebarProvider>,
     )
+    expect(screen.getByText(/Xong cả 5/)).toBeInTheDocument()
+    expect(screen.queryByText(/Xong cả 6/)).not.toBeInTheDocument()
     expect(screen.getByText(/tốt nghiệp/)).toBeInTheDocument()
     expect(screen.getByText(/Thực chiến/)).toBeInTheDocument()
+  })
+
+  // ★ Chặng 3 now holds exactly ⑤. The progress ring (spec §12 / decision 4)
+  // must be over /5 too — at 1 task done it is 20%, not 16.7%.
+  it("★ the journey badge's progress ring is over 5, not 6", () => {
+    useCap0ProgressMock.mockReturnValue({
+      data: makeProgress({ task_1_done_at: "2026-07-21T01:00:00Z" }),
+    })
+    const { container } = render(
+      <SidebarProvider>
+        <JourneyPanel />
+      </SidebarProvider>,
+    )
+    // `badge()`'s ring is a dash-offset of `circumference * (1 - ring)`.
+    // r = size*0.34*1.5 = 64*0.34*1.5 = 32.64 → circumference 205.0796...
+    const ringCircle = container.querySelectorAll("circle")[1]
+    const circumference = 2 * Math.PI * (64 * 0.34 * 1.5)
+    expect(Number(ringCircle.getAttribute("stroke-dashoffset"))).toBeCloseTo(
+      circumference * (1 - 1 / 5),
+      1,
+    )
+  })
+
+  it("★ ⑤ is done once task_5_done_at is set — it is driven by the sell + Kết sổ, nothing else", () => {
+    useCap0ProgressMock.mockReturnValue({
+      data: makeProgress({ task_1_done_at: "t", task_5_done_at: "t" }),
+    })
+    render(
+      <SidebarProvider>
+        <JourneyPanel />
+      </SidebarProvider>,
+    )
+    const task5 = screen.getByTestId("cap0-task-5")
+    expect(task5.className).toContain("cap0-checklist-item--done")
+    expect(within(task5).getByText("Bán một lệnh — kết sổ đầu tiên")).toBeInTheDocument()
+    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 1 · 2/5")).toBeInTheDocument()
   })
 })
 
@@ -282,18 +321,18 @@ describe("JourneyBar", () => {
     useCap0ProgressMock.mockReset()
   })
 
-  it("shows «CẤP 0 · 0/6» + the 0/6 copy on fresh progress", () => {
+  it("shows «CẤP 0 · 0/5» + the 0/5 copy on fresh progress", () => {
     useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
     render(
       <SidebarProvider>
         <JourneyBar />
       </SidebarProvider>,
     )
-    expect(screen.getByText("CẤP 0 · 0/6")).toBeInTheDocument()
+    expect(screen.getByText("CẤP 0 · 0/5")).toBeInTheDocument()
     expect(screen.getByText("Lệnh đầu tiên của bạn")).toBeInTheDocument()
   })
 
-  it("shows the 1/6 copy once ① is done", () => {
+  it("shows the 1/5 copy once ① is done", () => {
     useCap0ProgressMock.mockReturnValue({
       data: makeProgress({ task_1_done_at: "2026-07-21T01:00:00Z" }),
     })
@@ -302,13 +341,13 @@ describe("JourneyBar", () => {
         <JourneyBar />
       </SidebarProvider>,
     )
-    expect(screen.getByText("CẤP 0 · 1/6")).toBeInTheDocument()
+    expect(screen.getByText("CẤP 0 · 1/5")).toBeInTheDocument()
     expect(
       screen.getByText("✓ Chặng 1 hoàn thành! Tiếp: Chặng 2 — tour sản phẩm IQX"),
     ).toBeInTheDocument()
   })
 
-  it("shows the 6/6 graduation copy when all 6 tasks are done", () => {
+  it("shows the 5/5 graduation copy when all 5 tasks are done", () => {
     useCap0ProgressMock.mockReturnValue({
       data: makeProgress({
         task_1_done_at: "t",
@@ -316,7 +355,6 @@ describe("JourneyBar", () => {
         task_3_done_at: "t",
         task_4_done_at: "t",
         task_5_done_at: "t",
-        task_6_done_at: "t",
       }),
     })
     render(
@@ -324,8 +362,24 @@ describe("JourneyBar", () => {
         <JourneyBar />
       </SidebarProvider>,
     )
-    expect(screen.getByText("CẤP 0 · 6/6")).toBeInTheDocument()
+    expect(screen.getByText("CẤP 0 · 5/5")).toBeInTheDocument()
     expect(screen.getByText("🎓 Hoàn thành Cấp 0!")).toBeInTheDocument()
+  })
+
+  // ★ Mid-run the bar names the next REACHABLE task. Under v3.0 that is always
+  // ⑤ «Bán một lệnh», never the deleted "Lệnh thứ hai — tự đặt ngưỡng cắt lỗ".
+  it("★ names ⑤ «Bán một lệnh — kết sổ đầu tiên» as the next task mid-run", () => {
+    useCap0ProgressMock.mockReturnValue({
+      data: makeProgress({ task_1_done_at: "t", task_2_done_at: "t", task_3_done_at: "t" }),
+    })
+    render(
+      <SidebarProvider>
+        <JourneyBar />
+      </SidebarProvider>,
+    )
+    expect(screen.getByText("CẤP 0 · 3/5")).toBeInTheDocument()
+    expect(screen.getByText("Bán một lệnh — kết sổ đầu tiên")).toBeInTheDocument()
+    expect(screen.queryByText(/cắt lỗ/i)).not.toBeInTheDocument()
   })
 
   it('clicking the bar calls setActivePanel("journey")', () => {
@@ -341,14 +395,14 @@ describe("JourneyBar", () => {
     expect(screen.getByTestId("panel-spy")).toHaveTextContent("journey")
   })
 
-  it("renders 6 progress dots", () => {
+  it("renders 5 progress dots", () => {
     useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
     const { container } = render(
       <SidebarProvider>
         <JourneyBar />
       </SidebarProvider>,
     )
-    expect(container.querySelectorAll(".cap0-jd")).toHaveLength(6)
+    expect(container.querySelectorAll(".cap0-jd")).toHaveLength(5)
   })
 })
 
@@ -364,7 +418,7 @@ describe("RightSidebar — journey panel wired in without breaking the existing 
         <RightSidebar />
       </SidebarProvider>,
     )
-    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 1 · 0/6")).toBeInTheDocument()
+    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 1 · 0/5")).toBeInTheDocument()
     expect(screen.queryByTestId("news-panel")).not.toBeInTheDocument()
     expect(screen.queryByTestId("trading-panel")).not.toBeInTheDocument()
     expect(screen.queryByTestId("watchlist-panel")).not.toBeInTheDocument()

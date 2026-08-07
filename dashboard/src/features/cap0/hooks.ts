@@ -56,8 +56,8 @@ export function usePlacement() {
  * Centralizes spec §7's "auto-chuyển tab Hành trình khi hoàn thành nhiệm vụ"
  * (moment thưởng, KHÔNG confetti) here in the hook's `onSuccess` — rather
  * than in each of the (currently 3, likely more later) call sites
- * (`Gbar`/nhiệm vụ ①, `TradingPanel`'s SL keydown/nhiệm vụ ⑤,
- * `DebriefModal`/nhiệm vụ ⑥) — so every current AND future caller gets the
+ * (`Gbar`/nhiệm vụ ①, the Chặng 2 tours/nhiệm vụ ②③④,
+ * `DebriefModal`/nhiệm vụ ⑤) — so every current AND future caller gets the
  * auto-tab for free without having to remember to wire it. `useSidebar()`
  * outside a `SidebarProvider` returns the app's no-op default context, so
  * this is safe to call from anywhere `useCompleteTask` is used.
@@ -66,7 +66,7 @@ export function usePlacement() {
  * component has unmounted (TanStack Query keeps the mutation observer alive
  * until the promise settles). `Cap0TradingPage` restores the sidebar's
  * pre-Cấp-0 panel on unmount (see its own comment) — but if a task PATCH is
- * still in flight at that moment (e.g. user types SL for nhiệm vụ ⑤, then
+ * still in flight at that moment (e.g. user closes the Kết sổ for nhiệm vụ ⑤, then
  * immediately clicks the ticker to navigate to `/co-phieu/:symbol`), this
  * `onSuccess` resolves AFTER that restore and would otherwise clobber the
  * panel back to "journey", leaking the Cấp 0 sidebar into the shared

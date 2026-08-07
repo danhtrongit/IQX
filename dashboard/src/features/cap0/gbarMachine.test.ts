@@ -1,19 +1,14 @@
 import { describe, expect, it } from "vitest"
 import {
   GBAR_TAG,
+  TASK5_GBAR_MESSAGE,
   gbarReducer,
   gbarStep,
   gbarStepMessage,
   gbarText,
   gbarVisible,
   initialGbarState,
-  initialTask5State,
-  task5Reducer,
-  task5Step,
-  task5StepMessage,
-  task5Text,
   type GbarState,
-  type Task5State,
 } from "./gbarMachine"
 
 function apply(state: GbarState, ...actions: Parameters<typeof gbarReducer>[1][]): GbarState {
@@ -118,44 +113,21 @@ describe("gbarMachine", () => {
   })
 })
 
-function applyTask5(state: Task5State, ...actions: Parameters<typeof task5Reducer>[1][]): Task5State {
-  return actions.reduce(task5Reducer, state)
-}
-
-describe("task5 gbar machine (nhiệm vụ ⑤, spec §4 Chặng 3 / §6)", () => {
-  it("starts at step 1 (chưa gõ ngưỡng)", () => {
-    expect(task5Step(initialTask5State)).toBe(1)
-    expect(task5Text(initialTask5State)).toBe(task5StepMessage(1))
-  })
-
-  it("step messages are verbatim spec §4 Chặng 3 lines ~140-142", () => {
-    expect(task5StepMessage(1)).toBe(
-      "Bước 1/2 — Tự gõ ngưỡng cắt lỗ vào ô (nhập bằng bàn phím, đây là lời hứa của bạn)",
+// ── Nhiệm vụ ⑤ (Bán — Kết sổ) ────────────────────────────────────────────────
+// v3.0 replaced the old 2-step SL machine with a SINGLE standing reminder: ⑤ is
+// now "bán một lệnh", nothing to sequence. So the whole `Task5State` reducer is
+// gone and only its message survives.
+describe("nhiệm vụ ⑤ gbar message (spec §6)", () => {
+  it("★ is verbatim spec §6's nhiệm vụ ⑤ line", () => {
+    expect(TASK5_GBAR_MESSAGE).toBe(
+      "Chọn lệnh trong Nắm giữ và bấm Bán để khép vòng đời lệnh đầu tiên",
     )
-    expect(task5StepMessage(2)).toBe("Bước 2/2 — Bấm ĐẶT LỆNH MUA để hoàn tất lệnh thứ hai")
   })
 
-  it("SL_TYPED advances step 1 → 2", () => {
-    const s = applyTask5(initialTask5State, { type: "SL_TYPED" })
-    expect(task5Step(s)).toBe(2)
-    expect(task5Text(s)).toBe("Bước 2/2 — Bấm ĐẶT LỆNH MUA để hoàn tất lệnh thứ hai")
-  })
-
-  it("ORDER_PLACED alone (SL never typed) still completes the task (hides the bar)", () => {
-    const s = applyTask5(initialTask5State, { type: "ORDER_PLACED" })
-    expect(task5Step(s)).toBeNull()
-    expect(task5Text(s)).toBeNull()
-  })
-
-  it("SL_TYPED then ORDER_PLACED completes the task (hides the bar)", () => {
-    const s = applyTask5(initialTask5State, { type: "SL_TYPED" }, { type: "ORDER_PLACED" })
-    expect(task5Step(s)).toBeNull()
-    expect(task5Text(s)).toBeNull()
-  })
-
-  it("repeated identical flag actions are idempotent (no unnecessary object churn)", () => {
-    const once = task5Reducer(initialTask5State, { type: "SL_TYPED" })
-    const twice = task5Reducer(once, { type: "SL_TYPED" })
-    expect(twice).toBe(once)
+  it("★ names no cắt lỗ / chốt lời — Cấp 0 has neither under v3.0", () => {
+    expect(TASK5_GBAR_MESSAGE).not.toContain("cắt lỗ")
+    expect(TASK5_GBAR_MESSAGE).not.toContain("chốt lời")
+    expect(TASK5_GBAR_MESSAGE).not.toContain("Bước 1/2")
+    expect(TASK5_GBAR_MESSAGE).not.toContain("lệnh thứ hai")
   })
 })

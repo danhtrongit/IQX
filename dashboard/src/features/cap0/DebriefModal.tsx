@@ -6,10 +6,13 @@ import { coachTemplate } from "./coachTemplate"
 import "./cap0.css"
 
 /**
- * Everything the debrief needs about the just-closed order (spec §5). `sl`/
- * `tp` are the Kế hoạch values shown/typed at BUY time — `undefined` when
- * unknown (defensive: e.g. a sell with no captured prior buy in this
- * session), rendered as "—" rather than a crash.
+ * Everything the debrief needs about the just-closed order (spec v3.0 §5).
+ *
+ * v2.2 also carried `sl`/`tp` — the Kế hoạch cắt lỗ/chốt lời shown or typed at
+ * BUY time, which the trading backend never persists, so the FE ferried them
+ * over the Cấp 0 event bus. v3.0 removes cắt lỗ/chốt lời from Cấp 0 entirely,
+ * so there is nothing to ferry and nothing to reconcile: the Kết sổ compares
+ * lý do + giá vào + giá ra + thời gian giữ (§5's own table).
  */
 export interface DebriefData {
   /** Kết sổ # (spec "KẾT SỔ LỆNH · #{n}") — 1-based, per Cấp 0 session. */
@@ -18,8 +21,6 @@ export interface DebriefData {
   quantity: number
   entryPrice: number
   exitPrice: number
-  sl?: number
-  tp?: number
 }
 
 export interface DebriefModalProps {
@@ -60,10 +61,11 @@ const COUNT_UP_MS = 1000
 const COUNT_UP_STEP_MS = 40
 
 /**
- * Màn Kết sổ Cấp 0 (spec §5) — opened by `Gbar` when a SELL order fills
- * (nhiệm vụ ⑥). Header + big count-up P&L + Kế hoạch/Thực tế table (giá
- * vào/cắt lỗ/chốt lời/giá ra + thuế bán 0,1%) + 1-of-4 rule-based coach block
- * + "Đóng kết sổ ✓" (cổng chất lượng 2 → `completeTask(6, "debrief")`).
+ * Màn Kết sổ Cấp 0 (spec v3.0 §5) — opened by `Gbar` when a SELL order fills
+ * (nhiệm vụ ⑤). Header + big count-up P&L + Kế hoạch/Thực tế table (giá vào /
+ * giá ra + thuế bán 0,1%) + 1-of-2 rule-based coach block + "Đóng kết sổ ✓" —
+ * which fires `completeTask(5, "debrief")`, **the single behaviour gate of the
+ * whole level** (§9: "5/5 nhiệm vụ + 1 cổng hành vi (⑤ đóng màn kết sổ)").
  * KHÔNG hỏi cảm xúc (spec, explicit).
  */
 export function DebriefModal({ data, onClose }: DebriefModalProps) {
@@ -99,20 +101,15 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
 
   if (!data) return null
 
-  const { n, symbol, sl, tp } = data
+  const { n, symbol } = data
   const pnlPositive = pnlVnd > 0
-  const hitSL = sl != null && exitPrice <= sl
-  const hitTP = tp != null && exitPrice >= tp
   const tax = Math.round(exitPrice * quantity * 0.001)
-  // `slKnown: sl != null` — with no recorded cắt lỗ, template D ("Bán khi chưa
-  // chạm cắt lỗ") would accuse the user about a threshold we have no data for.
-  // See `coachTemplate`'s `slKnown` docstring and `retroDebrief.ts`.
-  const coach = coachTemplate({ pnlPositive, hitSL, hitTP, slKnown: sl != null }, n)
-  const slPct = sl != null && entryPrice > 0 ? ((sl - entryPrice) / entryPrice) * 100 : null
-  const tpPct = tp != null && entryPrice > 0 ? ((tp - entryPrice) / entryPrice) * 100 : null
+  // 1 of exactly 2 templates, by lãi/lỗ alone (spec v3.0 §5) — there is no
+  // cắt lỗ/chốt lời in Cấp 0 for the coach to have an opinion about.
+  const coach = coachTemplate({ pnlPositive }, n)
 
   const handleClose = () => {
-    completeTask.mutate({ taskNo: 6, gate: "debrief" })
+    completeTask.mutate({ taskNo: 5, gate: "debrief" })
     onClose()
   }
 
@@ -163,24 +160,10 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
             <td>{fmtVnd(entryPrice)}</td>
             <td>{fmtVnd(entryPrice)}</td>
           </tr>
-          {/* "Thực tế" only ever states a verdict about a threshold we ACTUALLY
-              have. With no Kế hoạch recorded, "không chạm" / "chưa tới — bán
-              tay" would assert that a stop/target existed and the user missed
-              it — false for a Kết sổ rebuilt from order history, where sl/tp
-              are genuinely unknown (the trading backend never persists them).
-              See `retroDebrief.ts`. */}
-          <tr>
-            <td>Cắt lỗ</td>
-            <td>{sl != null ? `${fmtVnd(sl)} · ${fmtPct(slPct ?? 0)}` : "—"}</td>
-            <td>{sl != null ? (hitSL ? "chạm" : "không chạm") : "không ghi nhận"}</td>
-          </tr>
-          <tr>
-            <td>Chốt lời</td>
-            <td>{tp != null ? `${fmtVnd(tp)} · ${fmtPct(tpPct ?? 0)}` : "—"}</td>
-            <td>
-              {tp != null ? (hitTP ? "chạm mục tiêu ✓" : "chưa tới — bán tay") : "không ghi nhận"}
-            </td>
-          </tr>
+          {/* v2.2's "Cắt lỗ" / "Chốt lời" rows are DELETED here, not blanked:
+              spec v3.0 §5's table is Lý do mua / Giá vào / Giá ra · thuế /
+              Thời gian giữ. With no thresholds in Cấp 0 there is no verdict to
+              state and no honest "không ghi nhận" fallback to need. */}
           <tr>
             <td>Giá ra · thuế bán 0,1%</td>
             <td>—</td>

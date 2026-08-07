@@ -9,40 +9,44 @@ import { useCap0Progress } from "./hooks"
 import { countTasksDone, tradingModeFor, type Cap0Progress } from "./types"
 
 /**
- * The 6 Cấp 0 tasks — names verbatim spec §7. Task numbers are the spec's
- * circled numerals ①..⑥, kept here as plain `no` (1..6) to key off
+ * The 5 Cấp 0 tasks — names verbatim spec v3.0 §7. Task numbers are the spec's
+ * circled numerals ①..⑤, kept here as plain `no` (1..5) to key off
  * `Cap0Progress.task_N_done_at`.
+ *
+ * v2.2 had six: its ⑤ was "Lệnh thứ hai — tự đặt ngưỡng cắt lỗ", which v3.0
+ * deletes with cắt lỗ/chốt lời themselves; its ⑥ (bán + Kết sổ) is now ⑤.
  */
 const TASK_NAMES: Record<number, string> = {
   1: "Lệnh đầu tiên + Nắm giữ + Theo dõi",
   2: "Tour bảng điện — 8 điểm",
   3: "Tour bản tin thị trường",
   4: 'Tour "6 người chơi" trên mã của bạn',
-  5: "Lệnh thứ hai — tự đặt ngưỡng cắt lỗ",
-  6: "Bán một lệnh — kết sổ đầu tiên",
+  5: "Bán một lệnh — kết sổ đầu tiên",
 }
 
 /**
  * Descriptions shown under an ACTIVE task (spec §7 "có dòng mô tả"). Only
- * task ① has a verbatim description in the mockup (`#hd1`) — ②③④/⑤/⑥
+ * task ① has a verbatim description in the mockup (`#hd1`) — ②③④/⑤
  * descriptions here are reasonable paraphrases of their spec behaviour (not a
  * verbatim requirement per the task brief, which only calls out level card /
- * checklist headers / 6 task names / journey-bar copy as verbatim).
+ * checklist headers / 5 task names / journey-bar copy as verbatim).
  */
 const TASK_DESCRIPTIONS: Partial<Record<number, string>> = {
   1: "Mua công ty bạn biết · chọn lý do trong Kế hoạch · xem tiền nằm đâu · gắn sao ★. Làm thiếu bước nào, hệ thống sẽ nhắc.",
   2: "Tour ngắn ~2-3 phút, 8 điểm: nhận mặt các khu vực trên sân chơi bạn vừa dùng ở nhiệm vụ ①.",
   3: "Tour giới thiệu bản tin thị trường IQX — nơi tổng hợp diễn biến phiên.",
   4: 'Tour "6 người chơi" — ai đang mua/bán ảnh hưởng tới giá mã bạn chọn.',
-  5: "Đặt lệnh mua thứ hai. Lần này tự gõ ngưỡng cắt lỗ vào ô — không dùng preset có sẵn.",
-  6: "Bán một lệnh đang có để khép vòng đời lệnh đầu tiên. Xong sẽ mở màn Kết sổ.",
+  5: "Bán một lệnh đang có để khép vòng đời lệnh đầu tiên. Xong sẽ mở màn Kết sổ.",
 }
 
 const STAGES: { label: string; tasks: number[] }[] = [
   { label: "CHẶNG 1 — VÀO SÂN", tasks: [1] },
   { label: "CHẶNG 2 — HIỂU SÂN CHƠI · TOUR SẢN PHẨM IQX", tasks: [2, 3, 4] },
-  { label: "CHẶNG 3 — KHÉP VÒNG", tasks: [5, 6] },
+  { label: "CHẶNG 3 — KHÉP VÒNG", tasks: [5] },
 ]
+
+/** Spec v3.0 §4 "3 CHẶNG · 5 NHIỆM VỤ" — the denominator of every counter here. */
+const TOTAL_TASKS = 5
 
 type TaskState = "done" | "active" | "locked"
 
@@ -55,10 +59,12 @@ type TaskState = "done" | "active" | "locked"
  *   `task_N_done_at` is set, else active once ① is done. INDEPENDENT of each
  *   other within Chặng 2 (any order — do NOT hard-sequence ②→③→④; a user can
  *   run them in whatever order they click "Làm ngay →").
- * - ⑤: spec §4 Chặng 3 "Điều kiện mở: xong ①" — active once ① is done (does
- *   NOT wait on ②③④ — Chặng 2 and Chặng 3 gate off the SAME ① flag).
- * - ⑥: opens once ⑤ is done (this panel only has `useCap0Progress`, not live
- *   position data — a reasonable approximation of spec's "có ≥1 lệnh đang mở").
+ * - ⑤: spec §4 Chặng 3 "Điều kiện mở: có ≥1 lệnh đang mở (sau khi xong ①)" —
+ *   active once ① is done (does NOT wait on ②③④ — Chặng 2 and Chặng 3 gate off
+ *   the SAME ① flag). This panel only has `useCap0Progress`, not live position
+ *   data, so "xong ①" is the approximation of "có lệnh đang mở"; the gbar,
+ *   which does read the portfolio, applies the real condition.
+ *   `task_5_done_at` is set by the Kết sổ gate and nothing else.
  */
 function taskState(no: number, progress: Cap0Progress | null | undefined): TaskState {
   if (no === 2 || no === 3 || no === 4) {
@@ -68,13 +74,9 @@ function taskState(no: number, progress: Cap0Progress | null | undefined): TaskS
     return progress?.task_1_done_at ? "active" : "locked"
   }
   if (no === 1) return progress?.task_1_done_at ? "done" : "active"
-  if (no === 5) {
-    if (progress?.task_5_done_at) return "done"
-    return progress?.task_1_done_at ? "active" : "locked"
-  }
-  // no === 6
-  if (progress?.task_6_done_at) return "done"
-  return progress?.task_5_done_at ? "active" : "locked"
+  // no === 5
+  if (progress?.task_5_done_at) return "done"
+  return progress?.task_1_done_at ? "active" : "locked"
 }
 
 function ChecklistItem({
@@ -115,7 +117,7 @@ function ChecklistItem({
 
 /**
  * 🎯 Tab "Hành trình" (spec §7) — first sidebar-right panel while in Cấp 0.
- * Level card + `TRƯỚC KHI LÊN CẤP 1 · x/6` header + 3-stage/6-task checklist +
+ * Level card + `TRƯỚC KHI LÊN CẤP 1 · x/5` header + 3-stage/5-task checklist +
  * graduation goal box. Driven by `useCap0Progress` + `usePremiumStatus` (the
  * level card's `ModeBadge` needs both — see `tradingModeFor`'s doc) — no props.
  *
@@ -139,7 +141,7 @@ export function JourneyPanel() {
 
   // ②③④ (Chặng 2) launch their product tour instead of switching to the
   // trading panel (T2) — `Cap0TradingPage` registers the real dispatch via
-  // the Cap0 event bus; ①⑤⑥ still just switch to the "Đặt lệnh" tab.
+  // the Cap0 event bus; ①⑤ still just switch to the "Đặt lệnh" tab.
   const handleGo = (no: number) => {
     if (no === 2 || no === 3 || no === 4) {
       onLaunchTour?.(no)
@@ -154,7 +156,7 @@ export function JourneyPanel() {
     <div className="cap0 flex h-full min-h-0 flex-col bg-[var(--bg1)] text-[var(--t1)]">
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         <div className="cap0-level-card">
-          <Badge n={level.n} color={level.color} fill={level.fill} size={64} ring={tasksDone / 6} glow />
+          <Badge n={level.n} color={level.color} fill={level.fill} size={64} ring={tasksDone / TOTAL_TASKS} glow />
           <div className="cap0-level-card-body">
             <div className="cap0-level-card-tag">CẤP 0</div>
             <div className="cap0-level-card-name cap0-display">NHẬP MÔN</div>
@@ -166,7 +168,7 @@ export function JourneyPanel() {
         </div>
 
         <div className="cap0-journey-checklist-header">
-          TRƯỚC KHI LÊN CẤP 1 · {tasksDone}/6
+          TRƯỚC KHI LÊN CẤP 1 · {tasksDone}/{TOTAL_TASKS}
         </div>
 
         {STAGES.map((stage) => (
@@ -191,7 +193,7 @@ export function JourneyPanel() {
         ))}
 
         <div className="cap0-journey-goal">
-          Xong cả 6 → tốt nghiệp <strong>Cấp 0 «Nhập môn»</strong>, chuyển chế độ{" "}
+          Xong cả {TOTAL_TASKS} → tốt nghiệp <strong>Cấp 0 «Nhập môn»</strong>, chuyển chế độ{" "}
           <strong>Thực chiến</strong> (T+2,5 · biên độ · hồ sơ bắt đầu tính).
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router"
 import {
   Button,
@@ -26,7 +26,7 @@ import { usePrice, type PriceBoardData } from "@/features/market-data"
 import { useSymbol } from "@/shared/contexts/symbol-context"
 import { useAuth } from "@/features/auth"
 import { usePremiumStatus } from "@/features/premium"
-import { PlanBlock, useCap0Events, useCap0Progress, useCompleteTask, cap0Visibility } from "@/features/cap0"
+import { PlanBlock, useCap0Events, useCap0Progress, cap0Visibility } from "@/features/cap0"
 import {
   AiThanhTra,
   PlanFormCap1,
@@ -120,11 +120,6 @@ function fmtCompact(v: number): string {
   if (v >= 1e6) return (v / 1e6).toFixed(1) + "M"
   if (v >= 1e3) return (v / 1e3).toFixed(1) + "K"
   return String(v)
-}
-
-/** Kế hoạch preset SL/TP (spec §4 "−5%/+10% điền sẵn") — nearest 100 VND tick. */
-function roundToStep(n: number, step = 100): number {
-  return Math.round(n / step) * step
 }
 
 /**
@@ -291,7 +286,6 @@ function OrderEntry({
   // when actually inside Cấp 0 (the `enabled` param), so this has zero
   // effect — no extra request, no hiding — outside a `Cap0Provider`.
   const { data: cap0Progress } = useCap0Progress(isCap0Active)
-  const completeTask5 = useCompleteTask()
   const cap1Events = useCap1Events()
   // `isCap1Active` mirrors `isCap0Active` above — false outside a
   // `Cap1Provider`, so the Form Kế hoạch + AI Thanh tra + hard gate below
@@ -299,9 +293,9 @@ function OrderEntry({
   const { isCap1Active } = cap1Events
   const recordKehoach = useRecordKehoach()
   const [cap1LyDo, setCap1LyDo] = useState<LyDo | null>(null)
-  // "Vùng mua" default = giá hiện tại (spec §4) — same "computed, not
-  // stored" convention as `presetSl`/`presetTp` below: only an explicit user
-  // edit is kept in state, the effective value is computed each render.
+  // "Vùng mua" default = giá hiện tại (spec §4) — "computed, not stored":
+  // only an explicit user edit is kept in state, the effective value is
+  // computed each render.
   // `undefined` = "untouched, follow the current-price default"; `null` =
   // "user explicitly cleared the field" (must NOT silently fall back to the
   // default — the hard gate needs to see this as genuinely missing).
@@ -447,49 +441,19 @@ function OrderEntry({
   const [price, setPrice] = useState<number | undefined>(undefined)
   const [volume, setVolume] = useState<number>(100)
   const [reason, setReason] = useState<string | null>(null)
-  // Nhiệm vụ ⑤ (spec §4 Chặng 3) — manual, user-typed SL/TP once task ① is
-  // done (replaces the nhiệm vụ ① preset). Kept separate from `presetSl`/
-  // `presetTp` below so switching modes never shows a stale preset value.
-  const [slManual, setSlManual] = useState<number | null>(null)
-  const [tpManual, setTpManual] = useState<number | null>(null)
-  // Cổng chất lượng 1 fires on the FIRST keydown only (not on every
-  // keystroke while typing a multi-digit number) — reset per mount, which is
-  // fine: `task5_sl_typed` server-side is the authoritative "already gated"
-  // guard below, this ref just avoids redundant mutations within one mount.
-  const slGateFiredRef = useRef(false)
 
   const task1Done = !!cap0Progress?.task_1_done_at
   const cap0Vis = cap0Visibility(cap0Progress)
   // Ô Giá + dropdown loại lệnh ẩn cho đến nhiệm vụ ⑤ (spec §8) — ONLY inside
   // Cấp 0; outside it (`isCap0Active` false) this is always visible, exactly
-  // as today.
+  // as today. UNCHANGED by spec v3.0.
   const hidePriceAndType = isCap0Active && !cap0Vis.priceField
-
-  const handleSlKeydown = () => {
-    if (!isCap0Active || !task1Done) return
-    // Notify the gbar INSTANTLY (spec §6 "Bước 1/2 → 2/2") off the raw
-    // keydown — not gated by `task5_sl_typed`/`slGateFiredRef` below, which
-    // exist only to avoid a REDUNDANT PATCH, not to throttle the local UI
-    // update (a user retyping after those flags are already true should
-    // still see the gbar reflect "đã gõ").
-    cap0Events.onSlTyped?.()
-    if (cap0Progress?.task5_sl_typed || slGateFiredRef.current) return
-    slGateFiredRef.current = true
-    completeTask5.mutate({ taskNo: 5, gate: "sl_typed" })
-  }
 
   const currentPrice = data?.closePrice ? data.closePrice * 1000 : 0
   const numPrice = price ?? currentPrice
   const numVolume = volume || 0
   const orderValue = numPrice * numVolume
   const fee = Math.round(orderValue * 0.0015)
-
-  // Kế hoạch preset SL/TP (spec §4, THÊM MỚI) — display-only, never sent to
-  // the order backend (spec: "KHÔNG ghi vào backend đặt lệnh của web hiện tại").
-  // Only shown pre-⑤ (nhiệm vụ ⑤ switches `PlanBlock` to manual, user-typed
-  // values below).
-  const presetSl = currentPrice > 0 ? roundToStep(currentPrice * 0.95) : null
-  const presetTp = currentPrice > 0 ? roundToStep(currentPrice * 1.1) : null
 
   // Cấp 1 Form Kế hoạch (spec §4) — "Vùng mua" defaults to giá hiện tại until
   // the user types their own value (or explicitly clears it — `null` is a
@@ -722,17 +686,15 @@ function OrderEntry({
       // lowercase `"buy" | "sell"` union, so build the event from the local
       // `side` state (what was actually requested) instead of re-narrowing
       // the response field.
-      // BUY fills also carry the Kế hoạch SL/TP shown/typed at order time
-      // (preset pre-⑤, manually-typed from ⑤ on) — the trading backend never
-      // persists these, so nhiệm vụ ⑥'s later debrief needs them off the bus.
-      const effectiveSl = task1Done ? (slManual ?? undefined) : (presetSl ?? undefined)
-      const effectiveTp = task1Done ? (tpManual ?? undefined) : (presetTp ?? undefined)
+      // v2.2 also attached the Kế hoạch SL/TP to BUY fills here, because the
+      // trading backend never persists them and the later Kết sổ needed them.
+      // v3.0 removes cắt lỗ/chốt lời from Cấp 0 entirely, so there is nothing
+      // to attach (see `Cap0OrderEvent`).
       cap0Events.onOrderFilled?.({
         symbol,
         side,
         quantity: order.quantity,
         price: order.price,
-        ...(side === "buy" ? { sl: effectiveSl, tp: effectiveTp } : {}),
       })
       // Cấp 1 (spec §4 "Ghi hồ sơ khi đặt lệnh") — a BUY fill inside Cấp 1
       // (only reachable once `cap1SubmitDisabled` is false, i.e. lý do +
@@ -1237,14 +1199,14 @@ function OrderEntry({
         </div>
       </div>
 
-      {/* Kế hoạch (spec §4 THÊM MỚI) — buy-side only AND Cấp 0-only:
-          the reason chips + SL/TP preset are a Cấp 0 onboarding aid and must
-          have zero effect on normal trading outside Cấp 0 (`isCap0Active`
-          false on /bieu-do & /co-phieu → this never renders there).
-          Nhiệm vụ ⑤ (spec §4 Chặng 3): once task ① is done, switches to
-          `presetMode="manual"` — SL/TP are no longer pre-filled, the user
-          types them, and the FIRST `keydown` into the SL field (not a click
-          on any auto-fill button — cổng chất lượng 1) marks the gate. */}
+      {/* Kế hoạch (spec v3.0 §4 THÊM MỚI) — buy-side only AND Cấp 0-only: the
+          reason chips are a Cấp 0 onboarding aid and must have zero effect on
+          normal trading outside Cấp 0 (`isCap0Active` false on /bieu-do &
+          /co-phieu → this never renders there). v3.0 removed the block's
+          cắt lỗ/chốt lời half entirely — both the pre-① read-only preset and
+          the post-① typed inputs (and the "cổng chất lượng 1" keydown gate
+          they carried), since Cấp 0 has neither concept any more (§4, §8,
+          §13). The block's content no longer varies with task ①. */}
       {/* Kế hoạch + nút Đặt lệnh — merged under one `data-tour-id` (Bảng
           điện tour point ⑦, spec `IQX-Tour-BangDien.md`): real adjacent
           blocks (Kế hoạch renders only buy-side/Cấp 0; the Submit button
@@ -1256,31 +1218,14 @@ function OrderEntry({
             belt-and-suspenders since the two providers shouldn't both wrap
             the page at once, but keeps this branch inert either way. */}
         {side === "buy" && isCap0Active && !isCap1Active && (
-          <Tooltip
-            content={
-              task1Done
-                ? "Lần này bạn tự quyết: nếu sai, bạn chấp nhận dừng ở giá nào? Gõ con số của bạn — nó là lời hứa với chính mình, không phải ô phải điền cho qua."
-                : ""
-            }
-            disabled={!task1Done}
-          >
-            <div>
-              <PlanBlock
-                symbol={symbol}
-                presetMode={task1Done ? "manual" : "filled"}
-                reason={reason}
-                onReason={(r) => {
-                  setReason(r)
-                  cap0Events.onReasonPicked?.(r)
-                }}
-                sl={task1Done ? slManual : presetSl}
-                tp={task1Done ? tpManual : presetTp}
-                onSlChange={task1Done ? setSlManual : undefined}
-                onTpChange={task1Done ? setTpManual : undefined}
-                onSlKeydown={task1Done ? handleSlKeydown : undefined}
-              />
-            </div>
-          </Tooltip>
+          <PlanBlock
+            symbol={symbol}
+            reason={reason}
+            onReason={(r) => {
+              setReason(r)
+              cap0Events.onReasonPicked?.(r)
+            }}
+          />
         )}
 
         {/* Cấp 1 Form Kế hoạch 2 trường + AI Thanh tra (spec §4/§5, THÊM MỚI)
@@ -1845,18 +1790,18 @@ export function TradingPanel({ hideHeader = false }: { hideHeader?: boolean } = 
   const { isCap0Active } = useCap0Events()
   const { isCap1Active } = useCap1Events()
   const { isCap2Active } = useCap2Events()
-  // Hide-by-level (spec §8) — sổ lệnh bid/ask ẩn cho đến nhiệm vụ ② (tour
-  // bảng điện, not built this delivery — Chặng 2 is 3 locked slots, so this
-  // stays hidden for this delivery's whole Cấp 0 run, as intended).
+  // Hide-by-level — sổ lệnh bid/ask is hidden for the WHOLE of Cấp 0 and Cấp
+  // 1 and opens at Cấp 2. Cấp 0 spec v3.0 §8 and Cấp 1 spec §0 say the same
+  // thing from their own side ("Lên Cấp 2 (không hiện ở Cấp 0 và Cấp 1)" /
+  // "Sổ lệnh bid/ask vẫn ẨN (chỉ mở ở Cấp 2)"); v2.2 wrongly unlocked it on
+  // Cấp 0's nhiệm vụ ② (tour bảng điện), so `cap0Visibility().orderBook` is
+  // now a constant `false` and the Cấp 0 clause below reduces to `isCap0Active`.
+  // Cấp 2 spec §C9: "Sổ lệnh bid/ask MỞ ở Cấp 2" — `isCap2Active` short-
+  // circuits BOTH level-hides back to visible (a Cấp 2 session also has
+  // `isCap1Active` true, since Cấp 2 reuses Cấp 1's Form Kế hoạch — without
+  // this short-circuit the `|| isCap1Active` clause would still hide it).
   // `useCap0Progress(isCap0Active)` only queries inside Cấp 0.
   const { data: cap0Progress } = useCap0Progress(isCap0Active)
-  // Cấp 1 spec §0: "Sổ lệnh bid/ask vẫn ẨN (chỉ mở ở Cấp 2)" — stays hidden
-  // for the whole Cấp 1 run too (unconditionally, no task gates it yet).
-  // Cấp 2 spec §C9: "Sổ lệnh bid/ask MỞ ở Cấp 2" — `isCap2Active` short-
-  // circuits both the Cấp 0 task-gate AND the Cấp 1 unconditional-hide back
-  // to visible (a Cấp 2 session also has `isCap1Active` true, since Cấp 2
-  // reuses Cấp 1's Form Kế hoạch — without this short-circuit the `|| isCap1Active`
-  // clause above would still hide it).
   const hideOrderBook =
     !isCap2Active && ((isCap0Active && !cap0Visibility(cap0Progress).orderBook) || isCap1Active)
 

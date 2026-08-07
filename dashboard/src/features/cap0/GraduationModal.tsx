@@ -13,15 +13,23 @@ import { useEnterCap1 } from "@/features/cap1/hooks"
 import "./cap0.css"
 
 /**
- * Điều kiện mở màn tốt nghiệp (spec §9): 6/6 nhiệm vụ + 2 cổng hành vi (⑤
- * keydown ô cắt lỗ, ⑥ đóng màn kết sổ). Once `graduated_at` is set
- * server-side (the mutation below succeeded), the modal never re-opens even
- * though the 6/6+2-gate condition still technically holds — graduating is a
- * one-way trip.
+ * Điều kiện mở màn tốt nghiệp (spec v3.0 §9): **5/5 nhiệm vụ + 1 cổng hành vi**
+ * (⑤ đóng màn kết sổ). Once `graduated_at` is set server-side (the mutation
+ * below succeeded), the modal never re-opens even though the condition still
+ * technically holds — graduating is a one-way trip.
+ *
+ * v2.2 demanded 6/6 + a second gate (`task5_sl_typed`, a keydown into the ô
+ * cắt lỗ). v3.0 removes cắt lỗ/chốt lời from Cấp 0, and with it that gate:
+ * "Chỉ MỘT cổng hành vi ở Cấp 0" — closing the Kết sổ. `task1_star_clicked`
+ * stays a recorded fact and is deliberately NOT read here.
+ *
+ * This must stay in lockstep with `Cap0Service.graduate`'s own check: if this
+ * opens the modal while the backend still refuses, the CTA 409s forever with
+ * no way out (the modal is `closable={false}`).
  */
 export function isGraduationReady(progress: Cap0Progress | null | undefined): boolean {
   if (!progress || progress.graduated_at) return false
-  return countTasksDone(progress) >= 6 && progress.task5_sl_typed && progress.task6_debrief_done
+  return countTasksDone(progress) >= 5 && progress.task5_debrief_done
 }
 
 // Verbatim spec §9 copy, `**bold**` markers kept for the inline-bold renderer
@@ -135,7 +143,9 @@ export function GraduationModal() {
       <div className="cap0-grad-header">
         <div className="cap0-grad-tag">HOÀN THÀNH</div>
         <h2 className="cap0-display cap0-grad-title">CẤP 0 · NHẬP MÔN</h2>
-        <div className="cap0-grad-sub">6/6 nhiệm vụ · 2/2 cổng hành vi</div>
+        {/* Spec v3.0 §9 "Dòng phụ nhỏ: `5/5 nhiệm vụ`" — the "· 2/2 cổng hành
+            vi" half counted a second gate that no longer exists. */}
+        <div className="cap0-grad-sub">5/5 nhiệm vụ</div>
         <div className="cap0-grad-badge-wrap">
           <Badge n={level.n} color={level.color} fill={1} size={120} glow />
         </div>

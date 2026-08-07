@@ -69,14 +69,19 @@ describe("findRetroDebrief — a closed round trip", () => {
     })
   })
 
-  it("NEVER carries sl/tp — the trading backend does not persist them, so a retroactive debrief genuinely does not know them", () => {
+  // ★ v3.0 removed cắt lỗ/chốt lời from Cấp 0 entirely, so a Kết sổ carries no
+  // threshold fields at all — live or reconstructed. This used to be a
+  // "reconstruction can't know them" caveat; now it is a level-wide invariant.
+  it("★ carries NO sl/tp keys — Cấp 0 has no cắt lỗ/chốt lời to carry", () => {
     const result = findRetroDebrief([SELL, BUY])
     expect(result).not.toBeNull()
-    // Not `0`, not the entry price, not any invented number: absent entirely.
-    expect(result?.sl).toBeUndefined()
-    expect(result?.tp).toBeUndefined()
-    expect("sl" in result!).toBe(false)
-    expect("tp" in result!).toBe(false)
+    expect(Object.keys(result!).sort()).toEqual([
+      "entryPrice",
+      "exitPrice",
+      "n",
+      "quantity",
+      "symbol",
+    ])
   })
 
   it("uses the MOST RECENT filled sell, and numbers it #N by how many filled sells exist", () => {

@@ -1,20 +1,17 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import React from "react"
 import { describe, expect, it, vi, beforeEach } from "vitest"
 
 /**
- * Progressive hide-by-level (spec §8) inside `TradingPanel`/`OrderEntry`:
- *  - Sổ lệnh bid/ask ẩn cho đến nhiệm vụ ② (nhiệm vụ ② is completed via the
- *    Bảng điện tour — `bangDienTour`/`TourOverlay` — this delivery; these
- *    tests only exercise `cap0Visibility`'s reaction to `task_2_done_at`
- *    directly, not the tour itself).
+ * Progressive hide-by-level (spec v3.0 §8) inside `TradingPanel`/`OrderEntry`:
+ *  - Sổ lệnh bid/ask ẩn SUỐT Cấp 0 và Cấp 1 — §8: "Lên Cấp 2 (không hiện ở
+ *    Cấp 0 và Cấp 1)". v2.2 opened it on nhiệm vụ ② (tour bảng điện), a whole
+ *    level early.
  *  - Ô Giá + dropdown loại lệnh (MP/LO) ẩn cho đến nhiệm vụ ⑤ (tức là xong
- *    nhiệm vụ ①).
- *  - Cổng chất lượng 1 (nhiệm vụ ⑤): `keydown` vào ô cắt lỗ (manual mode) →
- *    `completeTask(5, "sl_typed")`; clicking the InputNumber's own auto
- *    step button (mode="button" +/- stepper — the "auto −5%/−7%"-style
- *    control the spec warns about) must NOT count.
+ *    nhiệm vụ ①) — UNCHANGED by v3.0.
+ *  - Khối Kế hoạch has NO cắt lỗ/chốt lời in any mode, and there is no
+ *    "cổng chất lượng 1" any more: v3.0 removes both the field and the gate.
  *  - A NON-Cap0 regression check: outside any `Cap0Provider` (today's
  *    /bieu-do & /co-phieu), nothing from §8 is hidden.
  *
@@ -101,10 +98,8 @@ function makeProgress(overrides: Record<string, unknown> = {}) {
     task_3_done_at: null,
     task_4_done_at: null,
     task_5_done_at: null,
-    task_6_done_at: null,
     task1_star_clicked: false,
-    task5_sl_typed: false,
-    task6_debrief_done: false,
+    task5_debrief_done: false,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
@@ -134,27 +129,6 @@ function renderOutsideCap0() {
   )
 }
 
-/** Locate the manual-mode SL `InputNumber`'s own `<input>` via its label —
- *  robust regardless of how many OTHER spinbuttons (Giá/Khối lượng/Chốt lời)
- *  are on the page. */
-function getSlInput(): HTMLElement {
-  const label = screen.getByText("Cắt lỗ", { selector: "label" })
-  const container = label.closest("div") as HTMLElement
-  return within(container).getByRole("spinbutton")
-}
-
-/** Locate the SL InputNumber's own step-button (mode="button" +/- stepper) —
- *  clicking it changes the value via `onChange`/`onMouseDown`, NEVER fires a
- *  `keydown` on the input, which is exactly the "auto button" the spec's
- *  cổng chất lượng 1 must reject. */
-function getSlStepButton(): HTMLElement {
-  const slInput = getSlInput()
-  const group = slInput.closest(".arco-input-group") as HTMLElement
-  const btn = group.querySelector(".arco-input-number-step-button") as HTMLElement
-  if (!btn) throw new Error("SL step button not found")
-  return btn
-}
-
 describe("TradingPanel — hide-by-level (spec §8)", () => {
   beforeEach(() => {
     get.mockReset()
@@ -172,7 +146,7 @@ describe("TradingPanel — hide-by-level (spec §8)", () => {
     expect(screen.queryByText("Lệnh thị trường (MP)")).not.toBeInTheDocument()
   })
 
-  it("reveals Ô Giá + dropdown loại lệnh once task ① is done (nhiệm vụ ⑤ mở) — sổ lệnh stays hidden (task ② not done in this fixture)", async () => {
+  it("reveals Ô Giá + dropdown loại lệnh once task ① is done (nhiệm vụ ⑤ mở) — UNCHANGED by v3.0", async () => {
     renderInCap0(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
     await waitFor(() => expect(screen.getByText("Giá")).toBeInTheDocument())
 
@@ -180,9 +154,28 @@ describe("TradingPanel — hide-by-level (spec §8)", () => {
     expect(screen.queryByText(/Spread:/)).not.toBeInTheDocument()
   })
 
-  it("reveals sổ lệnh bid/ask once task ② is done", async () => {
+  // ★ v3.0 §8: sổ lệnh bid/ask opens at Cấp 2, "không hiện ở Cấp 0 và Cấp 1".
+  // v2.2 unlocked it on `task_2_done_at` (tour bảng điện) — one level early.
+  it("★ keeps sổ lệnh bid/ask hidden after task ② — it opens at Cấp 2, not here", async () => {
     renderInCap0(makeProgress({ task_2_done_at: "2026-07-21T00:00:00Z" }))
-    await waitFor(() => expect(screen.getByText(/Spread:/)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText("KẾ HOẠCH")).toBeInTheDocument())
+    expect(screen.queryByText(/Spread:/)).not.toBeInTheDocument()
+  })
+
+  it("★ keeps it hidden through a FULL 5/5 Cấp 0 run, graduation included", async () => {
+    renderInCap0(
+      makeProgress({
+        task_1_done_at: "t",
+        task_2_done_at: "t",
+        task_3_done_at: "t",
+        task_4_done_at: "t",
+        task_5_done_at: "t",
+        task5_debrief_done: true,
+        graduated_at: "2026-07-22T00:00:00Z",
+      }),
+    )
+    await waitFor(() => expect(screen.getByText("Giá", { selector: "label" })).toBeInTheDocument())
+    expect(screen.queryByText(/Spread:/)).not.toBeInTheDocument()
   })
 
   it("NON-Cap0 regression: outside Cap0Provider, sổ lệnh + Ô Giá + dropdown are all present exactly as today", async () => {
@@ -197,56 +190,44 @@ describe("TradingPanel — hide-by-level (spec §8)", () => {
   })
 })
 
-describe("Nhiệm vụ ⑤ — cổng chất lượng 1 (keydown vào ô cắt lỗ)", () => {
+// ── Khối Kế hoạch: chips only, in EVERY state of Cấp 0 (spec v3.0 §4) ────────
+// v2.2 rendered a read-only −5%/+10% cắt lỗ/chốt lời preset before nhiệm vụ ①
+// and swapped it for user-typed inputs after ① (whose first `keydown` was the
+// "cổng chất lượng 1" gate). v3.0 deletes both modes and the gate with them.
+describe("Khối Kế hoạch — KHÔNG cắt lỗ/chốt lời ở bất kỳ trạng thái nào", () => {
   beforeEach(() => {
     get.mockReset()
     post.mockReset()
     patch.mockReset()
   })
 
-  it('a keydown into the manual SL input calls completeTask(5, "sl_typed")', async () => {
-    renderInCap0(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
-    await waitFor(() => expect(screen.getByText("Giá", { selector: "label" })).toBeInTheDocument())
-    // Confirm manual mode actually switched in (label, not the filled-mode div).
-    expect(screen.getByText("Cắt lỗ", { selector: "label" })).toBeInTheDocument()
+  it.each([
+    ["before nhiệm vụ ① (was the «filled» preset)", {}],
+    ["after nhiệm vụ ① (was the «manual» typed input)", { task_1_done_at: "2026-07-21T00:00:00Z" }],
+  ])("★ shows only the 5 chips — %s", async (_label, overrides) => {
+    renderInCap0(makeProgress(overrides))
+    await waitFor(() => expect(screen.getByText("KẾ HOẠCH")).toBeInTheDocument())
 
-    fireEvent.keyDown(getSlInput(), { key: "5", code: "Digit5" })
-
-    await waitFor(() =>
-      expect(patch).toHaveBeenCalledWith("cap0/task", { json: { task_no: 5, gate: "sl_typed" } }),
-    )
+    expect(screen.getByText("Vì sao bạn chọn VNM?")).toBeInTheDocument()
+    expect(screen.getByText("Công ty tôi biết")).toBeInTheDocument()
+    // Not the labels, not the preset values, not the tooltip copy.
+    expect(screen.queryByText(/Cắt lỗ/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Chốt lời/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/đề xuất/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/lời hứa với chính mình/)).not.toBeInTheDocument()
   })
 
-  it("clicking the InputNumber's own auto step button does NOT count (no keydown fired)", async () => {
+  it("★ never PATCHes a task-5 gate from the order panel — ⑤ is earned by closing the Kết sổ", async () => {
     renderInCap0(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
-    await waitFor(() => expect(screen.getByText("Giá", { selector: "label" })).toBeInTheDocument())
-    // Confirm manual mode actually switched in (label, not the filled-mode div).
-    expect(screen.getByText("Cắt lỗ", { selector: "label" })).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByText("KẾ HOẠCH")).toBeInTheDocument())
 
-    fireEvent.mouseDown(getSlStepButton())
-
-    // Give any (incorrect) async gate a tick to fire, then assert it didn't.
-    await new Promise((r) => setTimeout(r, 50))
-    expect(patch).not.toHaveBeenCalledWith(
-      "cap0/task",
-      expect.objectContaining({ json: expect.objectContaining({ task_no: 5 }) }),
-    )
-  })
-
-  it("does not re-fire the gate once task5_sl_typed is already true server-side", async () => {
-    renderInCap0(
-      makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z", task5_sl_typed: true }),
-    )
-    await waitFor(() => expect(screen.getByText("Giá", { selector: "label" })).toBeInTheDocument())
-    // Confirm manual mode actually switched in (label, not the filled-mode div).
-    expect(screen.getByText("Cắt lỗ", { selector: "label" })).toBeInTheDocument()
-
-    fireEvent.keyDown(getSlInput(), { key: "5", code: "Digit5" })
+    // Type into every spinbutton the panel still has (Giá, Khối lượng) — none
+    // of them may trip a Cấp 0 gate.
+    for (const input of screen.getAllByRole("spinbutton")) {
+      fireEvent.keyDown(input, { key: "5", code: "Digit5" })
+    }
 
     await new Promise((r) => setTimeout(r, 50))
-    expect(patch).not.toHaveBeenCalledWith(
-      "cap0/task",
-      expect.objectContaining({ json: expect.objectContaining({ task_no: 5 }) }),
-    )
+    expect(patch).not.toHaveBeenCalled()
   })
 })

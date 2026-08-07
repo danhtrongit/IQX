@@ -88,17 +88,15 @@ function makeProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
     task_3_done_at: null,
     task_4_done_at: null,
     task_5_done_at: null,
-    task_6_done_at: null,
     task1_star_clicked: false,
-    task5_sl_typed: false,
-    task6_debrief_done: false,
+    task5_debrief_done: false,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
   }
 }
 
-/** All 6 tasks done + both behaviour gates — the spec §9 open condition. */
+/** All 5 tasks done + THE behaviour gate — the spec v3.0 §9 open condition. */
 function readyProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
   return makeProgress({
     task_1_done_at: "t",
@@ -106,9 +104,7 @@ function readyProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
     task_3_done_at: "t",
     task_4_done_at: "t",
     task_5_done_at: "t",
-    task_6_done_at: "t",
-    task5_sl_typed: true,
-    task6_debrief_done: true,
+    task5_debrief_done: true,
     ...overrides,
   })
 }
@@ -120,23 +116,21 @@ describe("isGraduationReady", () => {
     expect(isGraduationReady(undefined)).toBe(false)
   })
 
-  it("is false when tasks aren't all 6 done yet, even with both gates true", () => {
+  it("is false when tasks aren't all 5 done yet, even with the gate true", () => {
     expect(
-      isGraduationReady(
-        makeProgress({ task5_sl_typed: true, task6_debrief_done: true, task_6_done_at: null }),
-      ),
+      isGraduationReady(makeProgress({ task5_debrief_done: true, task_5_done_at: null })),
     ).toBe(false)
   })
 
-  it("is false when 6/6 but task5_sl_typed is missing", () => {
-    expect(isGraduationReady(readyProgress({ task5_sl_typed: false }))).toBe(false)
+  it("★ is false when 5/5 but task5_debrief_done is missing — the ONE gate of Cấp 0", () => {
+    expect(isGraduationReady(readyProgress({ task5_debrief_done: false }))).toBe(false)
   })
 
-  it("is false when 6/6 but task6_debrief_done is missing", () => {
-    expect(isGraduationReady(readyProgress({ task6_debrief_done: false }))).toBe(false)
+  it("★ does NOT require task1_star_clicked — a recorded fact, never a gate (spec v3.0 §9)", () => {
+    expect(isGraduationReady(readyProgress({ task1_star_clicked: false }))).toBe(true)
   })
 
-  it("is true once 6/6 + both gates are met", () => {
+  it("is true once 5/5 + the debrief gate are met", () => {
     expect(isGraduationReady(readyProgress())).toBe(true)
   })
 
@@ -160,7 +154,7 @@ describe("GraduationModal", () => {
     navigateMock.mockReset()
   })
 
-  it("does not render when the 6/6+2-gate condition isn't met", () => {
+  it("does not render when the 5/5 + 1-gate condition isn't met", () => {
     useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
     renderModal()
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
@@ -173,7 +167,11 @@ describe("GraduationModal", () => {
     // Header
     expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
     expect(screen.getByText("CẤP 0 · NHẬP MÔN")).toBeInTheDocument()
-    expect(screen.getByText("6/6 nhiệm vụ · 2/2 cổng hành vi")).toBeInTheDocument()
+    // ★ Spec v3.0 §9's sub-line is just "5/5 nhiệm vụ" — the "2/2 cổng hành
+    // vi" half is gone with the second gate it counted.
+    expect(screen.getByText("5/5 nhiệm vụ")).toBeInTheDocument()
+    expect(screen.queryByText(/cổng hành vi/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/6\/6/)).not.toBeInTheDocument()
 
     // Khối 1 — Ghi nhận
     expect(
