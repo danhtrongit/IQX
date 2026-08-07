@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IQX — Hành trình Cấp 1</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --bg2:#1f2230; --bg3:#282c3d; --bg4:#323649; --bd:#39405a; --t1:#f0f2f7; --t2:#b8bdcc; --t3:#8a90a5; --lvl:#c97b4a; --lvl-soft:rgba(201,123,74,.16); --lvl-bd:rgba(201,123,74,.4); --up:#35d07f; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#12141c; color:var(--t1); font-family:'Inter',sans-serif; font-size:13px; line-height:1.55; padding:24px; display:flex; justify-content:center; }
+.col { width:380px; }
+.jbar { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--bg2); border:1px solid var(--bd); border-radius:10px; margin-bottom:12px; cursor:pointer; }
+.jbar .lv { font-family:'JetBrains Mono'; font-size:10px; font-weight:700; color:var(--lvl); white-space:nowrap; }
+.jbar .nx { flex:1; font-size:11px; color:var(--t2); }
+.jbar .dots { display:flex; gap:4px; }
+.jbar .dot { width:7px; height:7px; border-radius:50%; background:var(--bg4); }
+.jbar .dot.done { background:var(--up); }
+.jbar .dot.now { background:var(--lvl); box-shadow:0 0 6px var(--lvl); }
+.lvcard { background:linear-gradient(135deg,var(--lvl-soft),transparent); border:1px solid var(--bd); border-radius:12px; padding:16px; margin-bottom:14px; display:flex; gap:14px; align-items:center; }
+.lvcard .info .tag { font-family:'JetBrains Mono'; font-size:10px; color:var(--lvl); font-weight:700; letter-spacing:1px; }
+.lvcard .info .nm { font-family:'Space Grotesk'; font-size:20px; font-weight:800; margin:2px 0; }
+.lvcard .info .lesson { font-size:11px; color:var(--t2); font-style:italic; }
+.lvcard .info .mode { display:inline-block; margin-top:6px; font-family:'JetBrains Mono'; font-size:9px; font-weight:700; letter-spacing:.5px; color:var(--up); background:rgba(53,208,127,.14); border:1px solid rgba(53,208,127,.4); padding:2px 7px; border-radius:5px; }
+.ck-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.ck-head .t { font-family:'JetBrains Mono'; font-size:10px; letter-spacing:.6px; color:var(--t3); text-transform:uppercase; }
+.ck-head .c { font-family:'Space Grotesk'; font-size:14px; font-weight:700; color:var(--lvl); }
+.task { display:flex; align-items:flex-start; gap:10px; padding:11px 12px; border:1px solid var(--bd); border-radius:8px; margin-bottom:7px; background:var(--bg2); }
+.task.active { border-color:var(--lvl); background:var(--lvl-soft); }
+.task.done { opacity:.55; }
+.task .st { flex-shrink:0; font-size:15px; width:20px; text-align:center; }
+.task .body { flex:1; }
+.task .nm { font-size:12.5px; font-weight:600; }
+.task.done .nm { text-decoration:line-through; }
+.task .ds { font-size:10.5px; color:var(--t3); margin-top:2px; }
+.task .prog { font-family:'JetBrains Mono'; font-size:10px; color:var(--t3); margin-top:4px; }
+.task .btn { margin-top:8px; display:inline-block; font-size:11px; font-weight:700; color:#0e1420; background:var(--lvl); padding:6px 12px; border-radius:6px; cursor:pointer; font-family:'Space Grotesk'; }
+.coverage { display:flex; gap:8px; font-size:15px; margin-top:5px; }
+.coverage .off { opacity:.25; }
+.tools { display:flex; gap:8px; margin:14px 0; }
+.tool { flex:1; text-align:center; padding:10px; background:var(--bg2); border:1px solid var(--bd); border-radius:8px; font-size:11px; font-weight:600; color:var(--t2); cursor:pointer; }
+.goal { margin-top:14px; padding:12px 14px; border:1px dashed var(--bd); border-radius:9px; font-size:11px; color:var(--t2); line-height:1.6; text-align:center; }
+.goal b { color:var(--t1); }
+</style>
+</head>
+<body>
+<div class="col">
+  <div class="jbar">
+    <span class="lv">CẤP 1 · 3/6</span>
+    <span class="nx">Tiếp: đủ 5 lý do mua (đang 3/5)</span>
+    <span class="dots"><i class="dot done"></i><i class="dot done"></i><i class="dot done"></i><i class="dot now"></i><i class="dot"></i><i class="dot"></i></span>
+  </div>
+
+  <div class="lvcard">
+    <div class="badge">
+      <svg width="66" height="66" viewBox="0 0 66 66"><polygon points="33,10 53,22 53,44 33,56 13,44 13,22" fill="rgba(201,123,74,.14)" stroke="#c97b4a" stroke-width="2.2"/><text x="33" y="34" text-anchor="middle" dominant-baseline="central" font-family="Space Grotesk" font-weight="700" font-size="17" fill="#c97b4a">1</text></svg>
+    </div>
+    <div class="info">
+      <div class="tag">CẤP 1</div>
+      <div class="nm">HỌC VIỆC</div>
+      <span class="mode">● THỰC CHIẾN</span>
+    </div>
+  </div>
+
+  <div class="ck-head">
+    <span class="t">Trước khi lên Cấp 2</span>
+    <span class="c">3/6</span>
+  </div>
+
+  <div class="task done"><span class="st">✅</span><div class="body"><div class="nm">① Lệnh đầu có kế hoạch</div></div></div>
+  <div class="task done"><span class="st">✅</span><div class="body"><div class="nm">② Kết sổ đầu tiên</div></div></div>
+
+  <div class="task active">
+    <span class="st">🎯</span>
+    <div class="body">
+      <div class="nm">③ Làm quen 5 lý do mua</div>
+      <div class="ds">Thử chọn đủ cả 5 lý do qua các lệnh.</div>
+      <div class="coverage"><span>🎯</span><span>💰</span><span class="off">👤</span><span>📰</span><span class="off">💎</span></div>
+      <div class="prog">Đã dùng 3/5 lý do</div>
+    </div>
+  </div>
+
+  <div class="task done"><span class="st">✅</span><div class="body"><div class="nm">④ 3 lệnh có lý do ✅ Ủng hộ</div><div class="prog">3/3</div></div></div>
+
+  <div class="task"><span class="st">🔲</span><div class="body"><div class="nm">⑤ Xem lại danh mục</div><div class="ds">Mở Phân tích danh mục 3 lần khác ngày.</div><div class="prog">2/3 lần</div></div></div>
+
+  <div class="task"><span class="st">🔲</span><div class="body"><div class="nm">⑥ 10 lệnh Thực chiến</div><div class="prog">7/10 lệnh</div></div></div>
+
+  <div class="tools">
+    <div class="tool">📓 Kết sổ</div>
+    <div class="tool">📊 Phân tích danh mục</div>
+  </div>
+
+  <div class="goal">Xong 6/6 → tốt nghiệp <b>Cấp 1</b>, lên <b>Cấp 2 «Kỷ luật»</b> (thêm cắt lỗ / chốt lời).</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IQX — Cấp 1 · Panel đặt lệnh</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg1:#171923; --bg2:#1f2230; --bg3:#282c3d; --bg4:#323649;
+  --bd:#39405a;
+  --t1:#f0f2f7; --t2:#b8bdcc; --t3:#8a90a5;
+  --brand:#4f8ff7; --brand-soft:rgba(79,143,247,.16); --brand-bd:rgba(79,143,247,.4);
+  --copper:#c97b4a; --copper-soft:rgba(201,123,74,.14); --copper-bd:rgba(201,123,74,.4);
+  --up:#35d07f; --down:#ff6b6b; --warn:#ffc53d; --ok:#5ad0b0;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#12141c; color:var(--t1); font-family:'Inter',sans-serif; font-size:13px; line-height:1.55; padding:24px; display:flex; justify-content:center; }
+.num { font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; }
+button{font-family:inherit;cursor:pointer}
+
+.col { width:360px; }
+
+.order-panel { background:var(--bg2); border:1px solid var(--bd); border-radius:12px; padding:16px; }
+.op-mode { display:flex; align-items:center; gap:6px; padding:5px 10px; background:var(--copper-soft); border:1px solid var(--copper-bd); border-radius:6px; font-family:'JetBrains Mono'; font-size:10px; font-weight:700; letter-spacing:.8px; color:var(--copper); width:fit-content; margin-bottom:12px; }
+.op-mode::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+.op-tabs { display:flex; gap:0; background:var(--bg3); border-radius:8px; padding:3px; margin-bottom:14px; }
+.op-tab { flex:1; padding:9px; text-align:center; font-size:13px; font-weight:700; color:var(--t2); border-radius:6px; }
+.op-tab.on.buy { background:rgba(53,208,127,.16); color:var(--up); }
+
+.op-ticker { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+.op-ticker .code { font-family:'Space Grotesk'; font-size:22px; font-weight:700; }
+.op-ticker .price { font-family:'JetBrains Mono'; font-size:15px; font-weight:600; color:var(--up); }
+
+.op-refs { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:var(--bd); border-radius:6px; overflow:hidden; margin-bottom:14px; border:1px solid var(--bd); }
+.op-ref { background:var(--bg3); padding:6px 8px; text-align:center; }
+.op-ref .l { font-size:9px; color:var(--t3); letter-spacing:.5px; text-transform:uppercase; margin-bottom:2px; }
+.op-ref .v { font-family:'JetBrains Mono'; font-size:12px; font-weight:600; }
+.op-ref .v.ceil { color:#d48aff; } .op-ref .v.floor { color:#4dc3ff; } .op-ref .v.tc { color:var(--warn); }
+
+.op-field { margin-bottom:10px; }
+.op-field label { display:block; font-size:11px; color:var(--t2); margin-bottom:4px; text-transform:uppercase; letter-spacing:.3px; font-weight:600; }
+.op-field input, .op-field select { width:100%; background:var(--bg3); border:1px solid var(--bd); border-radius:6px; padding:9px 10px; color:var(--t1); font-family:'JetBrains Mono'; font-size:14px; font-weight:600; }
+.op-field input:focus, .op-field select:focus { outline:none; border-color:var(--brand); }
+.op-two { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+
+.op-fee { display:flex; justify-content:space-between; padding:8px 10px; background:var(--bg3); border-radius:6px; font-size:11px; color:var(--t2); margin-bottom:12px; }
+.op-fee .v { color:var(--t1); font-family:'JetBrains Mono'; font-weight:600; }
+
+.plan { background:linear-gradient(180deg,var(--copper-soft),transparent); border:1px solid var(--copper-bd); border-radius:10px; padding:12px; margin-bottom:12px; }
+.plan-head { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+.plan-tag { font-family:'JetBrains Mono'; font-size:10px; letter-spacing:1.2px; font-weight:700; color:var(--copper); }
+
+.field-label { font-size:10.5px; color:var(--t2); text-transform:uppercase; letter-spacing:.4px; display:block; margin-bottom:6px; }
+.reason-list { display:flex; flex-direction:column; gap:5px; margin-bottom:12px; }
+.reason { display:flex; align-items:center; gap:9px; padding:9px 11px; background:var(--bg3); border:1px solid var(--bd); border-radius:7px; transition:.15s; }
+.reason:hover { border-color:var(--copper); background:var(--bg4); }
+.reason.selected { border-color:var(--copper); background:var(--copper-soft); }
+.reason .ic { font-size:16px; }
+.reason .nm { font-weight:600; font-size:12.5px; flex:1; }
+.reason .desc { font-size:10.5px; color:var(--t3); }
+
+.plan-field-full label { display:block; font-size:10px; color:var(--t3); margin-bottom:3px; text-transform:uppercase; letter-spacing:.4px; }
+.plan-field-full input { width:100%; background:var(--bg2); border:1px solid var(--bd); border-radius:6px; padding:8px 9px; color:var(--t1); font-family:'JetBrains Mono'; font-size:13.5px; font-weight:600; }
+.plan-field-full input:focus { outline:none; border-color:var(--copper); }
+
+.tt { margin-top:10px; padding:11px 13px; background:var(--bg3); border:1px solid var(--bd); border-radius:8px; }
+.tt-head { display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:700; margin-bottom:8px; }
+.tt-head .src { font-weight:400; color:var(--t3); font-size:10px; }
+.tt-rows { font-size:11px; color:var(--t2); line-height:1.7; }
+.tt-rows .num { color:var(--up); }
+.tt-verdict { margin-top:9px; padding:7px 10px; border-radius:6px; font-size:11.5px; font-weight:600; display:flex; align-items:center; gap:7px; }
+.tt-verdict.ok { background:rgba(53,208,127,.12); border:1px solid rgba(53,208,127,.35); color:var(--up); }
+.tt-detail { margin-top:8px; font-size:11px; color:var(--brand); font-weight:600; cursor:pointer; }
+
+.op-btn { width:100%; padding:14px; border:none; border-radius:8px; font-weight:700; font-size:14px; font-family:'Space Grotesk'; letter-spacing:.5px; background:var(--up); color:#0e1a13; }
+.op-btn:hover { filter:brightness(1.05); }
+</style>
+</head>
+<body>
+
+<div class="col">
+  <div class="order-panel">
+    <span class="op-mode">THỰC CHIẾN</span>
+
+    <div class="op-tabs">
+      <div class="op-tab on buy">MUA</div>
+      <div class="op-tab">BÁN</div>
+    </div>
+
+    <div class="op-ticker">
+      <div class="code">VNM</div>
+      <div class="price">62.400 <span style="color:var(--up); font-size:11px">+0,6%</span></div>
+    </div>
+
+    <div class="op-refs">
+      <div class="op-ref"><div class="l">Trần</div><div class="v ceil">66.400</div></div>
+      <div class="op-ref"><div class="l">TC</div><div class="v tc">62.000</div></div>
+      <div class="op-ref"><div class="l">Sàn</div><div class="v floor">57.600</div></div>
+    </div>
+
+    <div class="op-field">
+      <label>Loại lệnh</label>
+      <select><option>LO — Giới hạn</option><option>MP — Thị trường</option></select>
+    </div>
+    <div class="op-two">
+      <div class="op-field">
+        <label>Giá</label>
+        <input type="text" value="62.400" class="num">
+      </div>
+      <div class="op-field">
+        <label>Khối lượng</label>
+        <input type="text" value="1.000" class="num">
+      </div>
+    </div>
+
+    <div class="op-fee">
+      <span>Phí giao dịch (0,15%)</span>
+      <span class="v">93.600đ</span>
+    </div>
+
+    <div class="plan">
+      <div class="plan-head"><span class="plan-tag">KẾ HOẠCH</span></div>
+
+      <span class="field-label">1. Lý do mua — chọn 1 trong 6 lớp</span>
+      <div class="reason-list" id="reasonList">
+        <div class="reason" data-r="ky_thuat"><span class="ic">🎯</span><span class="nm">Kỹ thuật</span><span class="desc">xu hướng giá</span></div>
+        <div class="reason selected" data-r="dong_tien"><span class="ic">💰</span><span class="nm">Dòng tiền</span><span class="desc">khối ngoại + tự doanh</span></div>
+        <div class="reason" data-r="noi_bo"><span class="ic">👤</span><span class="nm">Nội bộ</span><span class="desc">lãnh đạo mua</span></div>
+        <div class="reason" data-r="tin_tuc"><span class="ic">📰</span><span class="nm">Tin tức</span><span class="desc">tin doanh nghiệp</span></div>
+        <div class="reason" data-r="dinh_gia"><span class="ic">💎</span><span class="nm">Định giá</span><span class="desc">từ BCTC</span></div>
+      </div>
+
+      <div class="tt" id="tt">
+        <div class="tt-head">🔍 AI Thanh tra · Dòng tiền <span class="src">— L3</span></div>
+        <div class="tt-rows">
+          Mua ròng <span class="num">4/5</span> phiên · Tổng ròng 5 phiên <span class="num">+180 tỷ</span><br>
+          Xu hướng: mua ròng đều 20 phiên qua
+        </div>
+        <div class="tt-verdict ok">✅ ỦNG HỘ — dòng tiền nước ngoài tích cực</div>
+        <div class="tt-detail">Đọc chi tiết lớp này →</div>
+      </div>
+
+      <div class="plan-field-full" style="margin-top:12px;">
+        <label>2. Vùng mua (giá cụ thể)</label>
+        <input type="text" value="62.400" class="num">
+      </div>
+    </div>
+
+    <button class="op-btn">ĐẶT LỆNH MUA</button>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.reason').forEach(el=>{
+  el.onclick = () => {
+    document.querySelectorAll('.reason').forEach(x=>x.classList.remove('selected'));
+    el.classList.add('selected');
+  };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IQX — Kết sổ Cấp 1</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --bg2:#1f2230; --bg3:#282c3d; --bg4:#323649; --bd:#39405a; --t1:#f0f2f7; --t2:#b8bdcc; --t3:#8a90a5; --copper:#c97b4a; --copper-soft:rgba(201,123,74,.14); --up:#35d07f; --down:#ff6b6b; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#12141c; color:var(--t1); font-family:'Inter',sans-serif; font-size:13px; line-height:1.55; padding:24px; display:flex; justify-content:center; }
+.up{color:var(--up)} .down{color:var(--down)}
+.col { width:360px; }
+.ketso { background:var(--bg2); border:1px solid var(--bd); border-radius:12px; overflow:hidden; }
+.ks-head { padding:18px 16px; text-align:center; border-bottom:1px solid var(--bd); }
+.ks-tagline { font-family:'JetBrains Mono'; font-size:9px; letter-spacing:1px; color:var(--t3); margin-bottom:8px; }
+.ks-pnl { font-family:'Space Grotesk'; font-size:40px; font-weight:800; line-height:1; }
+.ks-pnl-sub { font-family:'JetBrains Mono'; font-size:11px; color:var(--t2); margin-top:7px; }
+.ks-body { padding:16px; }
+.ks-section-label { font-size:9px; text-transform:uppercase; letter-spacing:.6px; color:var(--t3); margin-bottom:8px; }
+.cmp { border:1px solid var(--bd); border-radius:8px; overflow:hidden; margin-bottom:14px; }
+.cmp-row { display:grid; grid-template-columns:1fr 1fr 1fr; font-size:11.5px; border-bottom:1px solid var(--bd); }
+.cmp-row:last-child { border-bottom:none; }
+.cmp-row.head { background:var(--bg3); font-weight:600; color:var(--t3); font-size:9px; text-transform:uppercase; letter-spacing:.4px; }
+.cmp-row > div { padding:8px 10px; }
+.cmp-row > div:not(:last-child) { border-right:1px solid var(--bd); }
+.cmp-row .lbl { color:var(--t2); }
+.cmp-val { font-family:'JetBrains Mono'; font-weight:600; }
+.coach { border-left:3px solid var(--copper); background:var(--copper-soft); border-radius:0 8px 8px 0; padding:12px 14px; margin-bottom:16px; }
+.coach-tag { font-family:'JetBrains Mono'; font-size:9px; letter-spacing:1px; color:var(--copper); font-weight:700; margin-bottom:6px; }
+.coach-txt { font-size:12px; color:var(--t2); line-height:1.6; }
+.coach-txt b { color:var(--t1); }
+.ks-btn { width:100%; padding:13px; border:none; border-radius:8px; font-weight:700; font-size:13px; font-family:'Space Grotesk'; background:var(--bg4); color:var(--t1); cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="col">
+  <div class="ketso">
+    <div class="ks-head">
+      <div class="ks-tagline">KẾT SỔ LỆNH · #7 · THỰC CHIẾN</div>
+      <div class="ks-pnl up">+9,7%</div>
+      <div class="ks-pnl-sub">+607.500đ · MUA 1.000 VNM → BÁN · Giữ 8 phiên</div>
+    </div>
+    <div class="ks-body">
+      <div class="ks-section-label">Đối chiếu kế hoạch với thực tế</div>
+      <div class="cmp">
+        <div class="cmp-row head"><div></div><div>Kế hoạch</div><div>Thực tế</div></div>
+        <div class="cmp-row"><div class="lbl">Lý do</div><div class="cmp-val" style="grid-column:span 2">💰 Dòng tiền</div></div>
+        <div class="cmp-row"><div class="lbl">Trạng thái lớp lúc đặt</div><div class="cmp-val" style="grid-column:span 2"><span class="up">✅ Ủng hộ</span></div></div>
+        <div class="cmp-row"><div class="lbl">Vùng mua</div><div class="cmp-val">62.400</div><div class="cmp-val">62.400</div></div>
+        <div class="cmp-row"><div class="lbl">Giá ra · thuế</div><div class="cmp-val">—</div><div class="cmp-val">68.500 · <span class="down">68.500đ</span></div></div>
+        <div class="cmp-row"><div class="lbl">Thời gian giữ</div><div class="cmp-val">—</div><div class="cmp-val">8 phiên</div></div>
+      </div>
+      <div class="coach">
+        <div class="coach-tag">NHÌN LẠI</div>
+        <div class="coach-txt">Lệnh lãi 9,7%. Bạn chọn lý do 💰 Dòng tiền lúc lớp đó <b>✅ Ủng hộ</b> — chọn lý do có cơ sở đã cho kết quả tốt. Ghi lại như một mẫu chuẩn để nhớ.</div>
+      </div>
+      <button class="ks-btn">Đóng kết sổ ✓</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

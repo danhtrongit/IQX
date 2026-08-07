@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IQX — Phân tích danh mục Cấp 1</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --bg2:#1f2230; --bg3:#282c3d; --bg4:#323649; --bd:#39405a; --t1:#f0f2f7; --t2:#b8bdcc; --t3:#8a90a5; --brand:#4f8ff7; --brand-soft:rgba(79,143,247,.16); --brand-bd:rgba(79,143,247,.4); --up:#35d07f; --down:#ff6b6b; --warn:#ffc53d; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#12141c; color:var(--t1); font-family:'Inter',sans-serif; font-size:13px; line-height:1.55; padding:24px; display:flex; justify-content:center; }
+.num { font-family:'JetBrains Mono'; font-variant-numeric:tabular-nums; }
+.up{color:var(--up)} .down{color:var(--down)}
+.col { width:410px; }
+.hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.hdr .back { background:var(--bg3); border:1px solid var(--bd); color:var(--t2); font-size:11px; padding:6px 11px; border-radius:6px; cursor:pointer; }
+.hdr .title { font-family:'Space Grotesk'; font-size:16px; font-weight:700; }
+.pa { background:var(--bg2); border:1px solid var(--bd); border-radius:12px; padding:16px; }
+.blk { margin-bottom:16px; }
+.blk:last-child { margin-bottom:0; }
+.blk-title { font-size:10px; text-transform:uppercase; letter-spacing:.6px; color:var(--t3); margin-bottom:9px; }
+.profile { background:linear-gradient(135deg,var(--bg3),var(--bg2)); border:1px solid var(--bd); border-radius:10px; padding:14px; }
+.profile-name { font-size:11px; color:var(--t3); margin-bottom:10px; }
+.stats { display:flex; gap:12px; }
+.stat-main { flex:1.3; }
+.stat-main .v { font-family:'Space Grotesk'; font-size:30px; font-weight:800; }
+.stat-main .l { font-size:10px; color:var(--t3); }
+.stat-main .sub { font-size:10px; color:var(--t2); margin-top:2px; }
+.stat-mini { flex:1; }
+.stat-mini .v { font-family:'Space Grotesk'; font-size:17px; font-weight:700; }
+.stat-mini .l { font-size:9px; color:var(--t3); }
+.stat-mini .sub { font-size:9px; color:var(--t3); }
+.rtable { border:1px solid var(--bd); border-radius:8px; overflow:hidden; }
+.rt-row { display:grid; grid-template-columns:1.6fr .6fr .8fr .8fr; font-size:11px; border-bottom:1px solid var(--bd); }
+.rt-row:last-child { border-bottom:none; }
+.rt-row.head { background:var(--bg3); font-size:9px; text-transform:uppercase; color:var(--t3); letter-spacing:.4px; }
+.rt-row > div { padding:7px 9px; }
+.rt-nm { display:flex; align-items:center; gap:6px; }
+.rt-n, .rt-wr, .rt-pnl { text-align:right; font-family:'JetBrains Mono'; font-weight:600; }
+.mini { background:var(--bg3); border:1px solid var(--bd); border-radius:8px; padding:12px; }
+.coverage { display:flex; gap:10px; font-size:20px; margin:2px 0 8px; }
+.drow { display:flex; justify-content:space-between; font-size:11px; padding:4px 0; }
+.drow .v { font-family:'JetBrains Mono'; font-weight:600; }
+.prog { background:var(--bg3); border:1px solid var(--bd); border-radius:8px; padding:12px; }
+.prog-row { display:flex; align-items:center; gap:8px; font-size:11px; padding:4px 0; }
+.prog-row .st { width:18px; }
+.prog-row .nm { flex:1; color:var(--t2); }
+.prog-row .v { font-family:'JetBrains Mono'; font-size:10px; color:var(--t3); }
+.prog-row.done .nm { color:var(--t1); }
+.prog-foot { text-align:center; font-size:11px; color:var(--t2); padding:8px 0 2px; }
+.prog-foot b { color:var(--t1); }
+.pat { display:flex; gap:9px; padding:10px; border-radius:8px; margin-bottom:7px; }
+.pat:last-child { margin-bottom:0; }
+.pat.good { background:rgba(53,208,127,.08); border:1px solid rgba(53,208,127,.25); }
+.pat.info { background:var(--brand-soft); border:1px solid var(--brand-bd); }
+.pat .ic { font-size:16px; }
+.pat .tx { font-size:11px; color:var(--t2); line-height:1.5; }
+.pat .tx b { color:var(--t1); }
+</style>
+</head>
+<body>
+<div class="col">
+  <div class="hdr">
+    <button class="back">← Quay lại Nắm giữ</button>
+    <div class="title">Phân tích danh mục</div>
+  </div>
+  <div class="pa">
+
+    <div class="blk">
+      <div class="blk-title">① Hồ sơ tổng quan</div>
+      <div class="profile">
+        <div class="profile-name">Cấp 1 «Học việc» · 10 lệnh · từ 15/03/2026</div>
+        <div class="stats">
+          <div class="stat-main"><div class="l">Tỷ lệ thắng</div><div class="v up">62%</div><div class="sub">6 lãi / 4 lỗ</div></div>
+          <div class="stat-mini"><div class="l">Độ phủ lý do</div><div class="v up">3/5</div><div class="sub">đã dùng</div></div>
+          <div class="stat-mini"><div class="l">Cách chọn ưa thích</div><div class="v" style="font-size:13px">💰 Dòng tiền</div><div class="sub">4 lần</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blk-title">② Thắng / thua theo 5 lý do</div>
+      <div class="rtable">
+        <div class="rt-row head"><div>Lý do</div><div class="rt-n">Lệnh</div><div class="rt-wr">Thắng</div><div class="rt-pnl">Lãi/lỗ</div></div>
+        <div class="rt-row"><div class="rt-nm">💰 Dòng tiền</div><div class="rt-n">4</div><div class="rt-wr up">75%</div><div class="rt-pnl up">+3,4tr</div></div>
+                <div class="rt-row"><div class="rt-nm">🎯 Kỹ thuật</div><div class="rt-n">2</div><div class="rt-wr" style="color:var(--t3)">—</div><div class="rt-pnl down">−0,6tr</div></div>
+        <div class="rt-row"><div class="rt-nm">📰 Tin tức</div><div class="rt-n">1</div><div class="rt-wr" style="color:var(--t3)">—</div><div class="rt-pnl down">−0,4tr</div></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blk-title">③ Độ phủ 5 lý do + Chọn lý do có cơ sở</div>
+      <div class="mini">
+        <div class="coverage"><span>🎯</span><span>💰</span><span style="opacity:.25">👤</span><span>📰</span><span style="opacity:.25">💎</span></div>
+        <div class="drow"><span>Đã dùng</span><span class="v up">3/5</span></div>
+        <div class="drow"><span>Lệnh có lý do ✅ Ủng hộ lúc đặt</span><span class="v up">3/10</span></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blk-title">④ Tiến trình 6 nhiệm vụ</div>
+      <div class="prog">
+        <div class="prog-row done"><span class="st">✅</span><span class="nm">① Lệnh đầu có kế hoạch</span></div>
+        <div class="prog-row done"><span class="st">✅</span><span class="nm">② Kết sổ đầu tiên</span></div>
+        <div class="prog-row"><span class="st">🔲</span><span class="nm">③ Đủ 5 lý do</span><span class="v">3/5</span></div>
+        <div class="prog-row done"><span class="st">✅</span><span class="nm">④ 3 lệnh lý do ✅</span><span class="v">3/3</span></div>
+        <div class="prog-row"><span class="st">🔲</span><span class="nm">⑤ Xem lại danh mục</span><span class="v">2/3</span></div>
+        <div class="prog-row"><span class="st">🔲</span><span class="nm">⑥ 10 lệnh Thực chiến</span><span class="v">7/10</span></div>
+        <div class="prog-foot">Còn <b>2 lý do · 1 lần xem lại · 3 lệnh</b> nữa để lên Cấp 2.</div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blk-title">🔍 Mẫu hệ thống phát hiện (về lý do)</div>
+      <div class="pat good"><span class="ic">🎯</span><span class="tx"><b>Vũ khí riêng</b> — Bạn thắng nhiều nhất khi mua vì 💰 Dòng tiền: 3/4 lệnh lãi (75%). Cách chọn phù hợp với bạn nhất.</span></div>
+      <div class="pat info"><span class="ic">✅</span><span class="tx"><b>Cơ sở đáng giá</b> — Lệnh chọn lý do ✅ Ủng hộ có tỷ lệ thắng cao hơn lệnh lý do khác. Chọn lý do có dữ liệu ủng hộ đang cho kết quả tốt hơn.</span></div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

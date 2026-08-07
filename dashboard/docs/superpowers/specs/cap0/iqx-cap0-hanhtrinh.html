@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IQX — Hành trình Cấp 0</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --bg2:#1f2230; --bg3:#282c3d; --bg4:#323649; --bd:#39405a; --t1:#f0f2f7; --t2:#b8bdcc; --t3:#8a90a5; --brand:#4f8ff7; --brand-soft:rgba(79,143,247,.16); --brand-bd:rgba(79,143,247,.4); --lvl:#8a90a5; --lvl-soft:rgba(138,144,165,.16); --up:#35d07f; --warn:#ffc53d; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#12141c; color:var(--t1); font-family:'Inter',sans-serif; font-size:13px; line-height:1.55; padding:24px; display:flex; justify-content:center; }
+.col { width:380px; }
+/* Journey bar sticky */
+.jbar { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--bg2); border:1px solid var(--bd); border-radius:10px; margin-bottom:12px; cursor:pointer; }
+.jbar .lv { font-family:'JetBrains Mono'; font-size:10px; font-weight:700; color:var(--lvl); white-space:nowrap; }
+.jbar .nx { flex:1; font-size:11px; color:var(--t2); }
+.jbar .dots { display:flex; gap:4px; }
+.jbar .dot { width:7px; height:7px; border-radius:50%; background:var(--bg4); }
+.jbar .dot.done { background:var(--up); }
+.jbar .dot.now { background:var(--brand); box-shadow:0 0 6px var(--brand); }
+/* Thẻ cấp */
+.lvcard { background:linear-gradient(135deg,var(--lvl-soft),transparent); border:1px solid var(--bd); border-radius:12px; padding:16px; margin-bottom:14px; display:flex; gap:14px; align-items:center; }
+.lvcard .badge { flex-shrink:0; }
+.lvcard .info .tag { font-family:'JetBrains Mono'; font-size:10px; color:var(--lvl); font-weight:700; letter-spacing:1px; }
+.lvcard .info .nm { font-family:'Space Grotesk'; font-size:20px; font-weight:800; margin:2px 0; }
+.lvcard .info .lesson { font-size:11px; color:var(--t2); font-style:italic; }
+.lvcard .info .mode { display:inline-block; margin-top:6px; font-family:'JetBrains Mono'; font-size:9px; font-weight:700; letter-spacing:.5px; color:var(--lvl); background:var(--lvl-soft); border:1px solid rgba(138,144,165,.4); padding:2px 7px; border-radius:5px; }
+/* Checklist */
+.ck-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.ck-head .t { font-family:'JetBrains Mono'; font-size:10px; letter-spacing:.6px; color:var(--t3); text-transform:uppercase; }
+.ck-head .c { font-family:'Space Grotesk'; font-size:14px; font-weight:700; color:var(--lvl); }
+.stage { font-family:'JetBrains Mono'; font-size:9px; letter-spacing:.5px; text-transform:uppercase; color:var(--t3); margin:12px 0 6px; }
+.stage.done { color:rgba(53,208,127,.75); }
+.task { display:flex; align-items:flex-start; gap:10px; padding:11px 12px; border:1px solid var(--bd); border-radius:8px; margin-bottom:7px; background:var(--bg2); }
+.task.active { border-color:var(--brand); background:var(--brand-soft); }
+.task.done { opacity:.55; }
+.task.locked { opacity:.45; }
+.task .st { flex-shrink:0; font-size:15px; width:20px; text-align:center; }
+.task .body { flex:1; }
+.task .nm { font-size:12.5px; font-weight:600; }
+.task.done .nm { text-decoration:line-through; }
+.task .ds { font-size:10.5px; color:var(--t3); margin-top:2px; }
+.task .btn { margin-top:8px; display:inline-block; font-size:11px; font-weight:700; color:#0e1420; background:var(--brand); padding:6px 12px; border-radius:6px; cursor:pointer; font-family:'Space Grotesk'; }
+/* Đích */
+.goal { margin-top:14px; padding:12px 14px; border:1px dashed var(--bd); border-radius:9px; font-size:11px; color:var(--t2); line-height:1.6; text-align:center; }
+.goal b { color:var(--t1); }
+</style>
+</head>
+<body>
+<div class="col">
+  <div class="jbar">
+    <span class="lv">CẤP 0 · 3/7</span>
+    <span class="nx">Chặng 2 «Hiểu sân chơi» — Tour bảng điện</span>
+    <span class="dots"><i class="dot done"></i><i class="dot done"></i><i class="dot now"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i></span>
+  </div>
+
+  <div class="lvcard">
+    <div class="badge">
+      <svg width="66" height="66" viewBox="0 0 66 66"><polygon points="33,10 53,22 53,44 33,56 13,44 13,22" fill="rgba(138,144,165,.1)" stroke="#8a90a5" stroke-width="2"/><text x="33" y="34" text-anchor="middle" dominant-baseline="central" font-family="Space Grotesk" font-weight="700" font-size="17" fill="#8a90a5" opacity=".6">0</text></svg>
+    </div>
+    <div class="info">
+      <div class="tag">CẤP 0</div>
+      <div class="nm">NHẬP MÔN</div>
+      <span class="mode">● SÂN TẬP · T+0</span>
+    </div>
+  </div>
+
+  <div class="ck-head">
+    <span class="t">Trước khi lên Cấp 1</span>
+    <span class="c">3/7</span>
+  </div>
+
+  <div class="stage done">Chặng 1 — Vào sân</div>
+  <div class="task done">
+    <span class="st">✅</span>
+    <div class="body">
+      <div class="nm">① Đặt lệnh mua đầu tiên</div>
+      <div class="ds">Mua thử một mã bằng vốn Sân tập.</div>
+    </div>
+  </div>
+  <div class="task done">
+    <span class="st">✅</span>
+    <div class="body">
+      <div class="nm">② Xem tab Nắm giữ</div>
+      <div class="ds">Mở tab Nắm giữ, xem mã vừa mua trong danh mục.</div>
+    </div>
+  </div>
+  <div class="task done">
+    <span class="st">✅</span>
+    <div class="body">
+      <div class="nm">③ Xem tab Theo dõi</div>
+      <div class="ds">Mở tab Theo dõi, làm quen nơi quan sát mã.</div>
+    </div>
+  </div>
+
+  <div class="stage">Chặng 2 — Hiểu sân chơi · Tour sản phẩm IQX</div>
+  <div class="task active">
+    <span class="st">🎯</span>
+    <div class="body">
+      <div class="nm">④ Tour bảng điện</div>
+      <div class="ds">Làm quen bảng giá, các cột, màu sắc.</div>
+      <span class="btn">Làm ngay →</span>
+    </div>
+  </div>
+  <div class="task locked">
+    <span class="st">🔒</span>
+    <div class="body"><div class="nm">⑤ Tour bản tin thị trường</div></div>
+  </div>
+  <div class="task locked">
+    <span class="st">🔒</span>
+    <div class="body"><div class="nm">⑥ Tour "6 người chơi" trên mã của bạn</div></div>
+  </div>
+
+  <div class="stage">Chặng 3 — Khép vòng</div>
+  <div class="task locked">
+    <span class="st">🔒</span>
+    <div class="body"><div class="nm">⑦ Bán một lệnh — kết sổ đầu tiên</div></div>
+  </div>
+
+  <div class="goal">Xong cả 7 → tốt nghiệp <b>Cấp 0 «Nhập môn»</b>, chuyển chế độ <b>Thực chiến</b> (T+2,5 · biên độ · hồ sơ bắt đầu tính).</div>
+</div>
+</body>
+</html>
