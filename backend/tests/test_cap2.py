@@ -22,10 +22,10 @@ from app.services.cap2.service import Cap2Service
 async def _graduate_cap0(db_session, user_id) -> None:
     cap0 = Cap0Service(db_session)
     await cap0.enter(user_id)
-    for n in (1, 2, 3, 4, 5, 6):
+    # Cấp 0 v3.0: 5 nhiệm vụ, 1 cổng hành vi (đóng Kết sổ ở ⑤).
+    for n in (1, 2, 3, 4):
         await cap0.complete_task(user_id, n)
-    await cap0.complete_task(user_id, 5, gate="sl_typed")
-    await cap0.complete_task(user_id, 6, gate="debrief")
+    await cap0.complete_task(user_id, 5, gate="debrief")
     await cap0.complete_task(user_id, 1, gate="star")
     await cap0.graduate(user_id)
 

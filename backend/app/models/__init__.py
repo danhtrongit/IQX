@@ -20,7 +20,7 @@ except ImportError:
 
 from app.models.admin_audit import AdminAuditLog  # noqa: F401
 from app.models.alert import AlertEvent, AlertSignal, UserAlertRule  # noqa: F401
-from app.models.cap0 import Cap0Progress, UserPlacement  # noqa: F401
+from app.models.cap0 import Cap0OrderKehoach, Cap0Progress, UserPlacement  # noqa: F401
 from app.models.cap1 import Cap1Progress, OrderKehoach, OrderKetso  # noqa: F401
 from app.models.cap2 import Cap2Progress  # noqa: F401
 from app.models.cap3 import Cap3Progress  # noqa: F401
