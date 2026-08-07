@@ -177,9 +177,20 @@ describe("GraduationModalCap1", () => {
     expect(cta).not.toHaveAttribute("disabled")
   })
 
-  it("★ the CTA stays clickable even while the graduation mutation is in flight", () => {
+  it("★ chặn double-submit: nút khoá TRONG LÚC mutation đang bay, và chỉ trong lúc đó", () => {
+    // `isPending` của TanStack về `false` cả khi mutation lỗi, nên guard này
+    // KHÔNG thể nhốt user trong modal `closable={false}` — nó chỉ chặn cú
+    // click thứ hai lúc request chưa về. Bỏ nó đi thì double-click bắn hai
+    // lần `POST /cap1/graduate`. Cấp 6/7 giữ guard này, Cấp 1 phải giống.
     graduatePending.value = true
     useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
+    const { unmount } = render(<GraduationModalCap1 />)
+    fireEvent.click(screen.getByTestId("cap1-grad-cta"))
+    expect(graduateMutate).not.toHaveBeenCalled()
+    unmount()
+
+    // Mutation xong (kể cả khi hỏng) → nút mở lại, user không bị kẹt.
+    graduatePending.value = false
     render(<GraduationModalCap1 />)
     const cta = screen.getByTestId("cap1-grad-cta")
     expect(cta).toBeEnabled()

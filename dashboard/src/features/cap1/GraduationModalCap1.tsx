@@ -108,14 +108,19 @@ export function GraduationModalCap1() {
       <div className="cap0-grad-block">{renderInlineBold(BLOCK_2)}</div>
       <div className="cap0-grad-block cap1-grad-block--cap2">{renderInlineBold(BLOCK_3)}</div>
 
-      {/* ★ KHÔNG bao giờ `disabled` (xem doc-comment ở trên) — `graduate
-          .isPending` cũng không, vì mutation hỏng sẽ khoá nút vĩnh viễn trong
-          một modal `closable={false}`. */}
+      {/* ★ KHÔNG bao giờ `disabled` như một trạng thái "sắp ra mắt" (xem
+          doc-comment ở trên): modal này `closable={false}` và chỉ unmount khi
+          có `graduated_at`, nên một nút tắt cứng sẽ NHỐT VĨNH VIỄN mọi user
+          đã xong 6/6. Nhưng `graduate.isPending` thì VẪN chặn: TanStack đưa
+          nó về `false` cả khi mutation lỗi, nên nó chỉ khoá trong lúc request
+          đang bay — đúng như Cấp 6/7 — và nếu không có nó thì double-click
+          bắn hai lần `POST /cap1/graduate`. */}
       <button
         type="button"
         className="cap0-grad-cta cap1-grad-cta--cap2"
         data-testid="cap1-grad-cta"
         onClick={handleGraduate}
+        disabled={graduate.isPending}
       >
         Vào Cấp 2 «Kỷ luật» →
         {/* Dòng "sắp ra mắt" — style inline vì `cap1.css` đang do task khác sở
