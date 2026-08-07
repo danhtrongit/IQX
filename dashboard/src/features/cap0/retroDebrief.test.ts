@@ -5,8 +5,10 @@ import { findRetroDebrief, type RetroDebriefOrder } from "./retroDebrief"
  * Fixture builder for a `VTOrder`-shaped row (only the fields
  * `findRetroDebrief` actually reads — see `RetroDebriefOrder`).
  */
+let nextId = 0
 function ord(o: Partial<RetroDebriefOrder> = {}): RetroDebriefOrder {
   return {
+    id: `order-${++nextId}`,
     symbol: "VNM",
     side: "BUY",
     quantity: 100,
@@ -17,8 +19,8 @@ function ord(o: Partial<RetroDebriefOrder> = {}): RetroDebriefOrder {
   }
 }
 
-const BUY = ord({ side: "BUY", price: 61800, createdAt: "2026-07-21T02:00:00Z" })
-const SELL = ord({ side: "SELL", price: 63000, createdAt: "2026-07-21T06:00:00Z" })
+const BUY = ord({ id: "buy-1", side: "BUY", price: 61800, createdAt: "2026-07-21T02:00:00Z" })
+const SELL = ord({ id: "sell-1", side: "SELL", price: 63000, createdAt: "2026-07-21T06:00:00Z" })
 
 describe("findRetroDebrief — no closed round trip → null", () => {
   it("returns null for undefined / null / empty history", () => {
@@ -66,7 +68,26 @@ describe("findRetroDebrief — a closed round trip", () => {
       quantity: 100,
       entryPrice: 61800,
       exitPrice: 63000,
+      buyOrderId: "buy-1",
     })
+  })
+
+  // ★ The Kết sổ's `Lý do mua` / `Thời gian giữ` rows are read back per ORDER
+  // (`GET /cap0/kehoach?order_id=`). Carrying the matched BUY's id is what lets
+  // this reconstruction ask about the SAME round trip it just displayed — the
+  // symbol-keyed read it replaced would answer with whatever VNM buy happened
+  // most recently, which after a re-entry is a different, still-open order.
+  it("★ carries the id of the BUY it matched — the key the chip is filed under", () => {
+    const orders: RetroDebriefOrder[] = [
+      // Mon: buy (chip A) → Tue: sell → Wed: buy VNM again (chip B, still open).
+      ord({ id: "mon-buy", side: "BUY", price: 61800, createdAt: "2026-07-20T02:00:00Z" }),
+      ord({ id: "tue-sell", side: "SELL", price: 63000, createdAt: "2026-07-21T06:00:00Z" }),
+      ord({ id: "wed-buy", side: "BUY", price: 64000, createdAt: "2026-07-22T02:00:00Z" }),
+    ]
+    const result = findRetroDebrief(orders)
+    expect(result?.buyOrderId).toBe("mon-buy")
+    // …the same order the `Giá vào` beside it comes from.
+    expect(result?.entryPrice).toBe(61800)
   })
 
   // ★ v3.0 removed cắt lỗ/chốt lời from Cấp 0 entirely, so a Kết sổ carries no
@@ -76,6 +97,7 @@ describe("findRetroDebrief — a closed round trip", () => {
     const result = findRetroDebrief([SELL, BUY])
     expect(result).not.toBeNull()
     expect(Object.keys(result!).sort()).toEqual([
+      "buyOrderId",
       "entryPrice",
       "exitPrice",
       "n",
@@ -87,7 +109,7 @@ describe("findRetroDebrief — a closed round trip", () => {
   it("uses the MOST RECENT filled sell, and numbers it #N by how many filled sells exist", () => {
     const orders: RetroDebriefOrder[] = [
       ord({ side: "SELL", price: 70000, createdAt: "2026-07-24T06:00:00Z" }), // 2nd sell
-      ord({ side: "BUY", price: 65000, createdAt: "2026-07-24T02:00:00Z" }), // its buy
+      ord({ id: "buy-2", side: "BUY", price: 65000, createdAt: "2026-07-24T02:00:00Z" }), // its buy
       ord({ side: "SELL", price: 63000, createdAt: "2026-07-21T06:00:00Z" }), // 1st sell
       ord({ side: "BUY", price: 61800, createdAt: "2026-07-21T02:00:00Z" }),
     ]
@@ -97,6 +119,7 @@ describe("findRetroDebrief — a closed round trip", () => {
       quantity: 100,
       entryPrice: 65000,
       exitPrice: 70000,
+      buyOrderId: "buy-2",
     })
   })
 
@@ -132,7 +155,7 @@ describe("findRetroDebrief — a closed round trip", () => {
     const orders: RetroDebriefOrder[] = [
       ord({ side: "BUY", price: 61800, createdAt: "2026-07-21T02:00:00Z" }),
       ord({ side: "SELL", price: 63000, createdAt: "2026-07-21T06:00:00Z" }),
-      ord({ side: "BUY", price: 65000, createdAt: "2026-07-24T02:00:00Z" }),
+      ord({ id: "buy-late", side: "BUY", price: 65000, createdAt: "2026-07-24T02:00:00Z" }),
       ord({ side: "SELL", price: 70000, createdAt: "2026-07-24T06:00:00Z" }),
     ]
     expect(findRetroDebrief(orders)).toEqual({
@@ -141,6 +164,7 @@ describe("findRetroDebrief — a closed round trip", () => {
       quantity: 100,
       entryPrice: 65000,
       exitPrice: 70000,
+      buyOrderId: "buy-late",
     })
   })
 

@@ -22,7 +22,7 @@ vi.mock("@/shared/http/client", () => ({
 }))
 vi.mock("@/features/auth", () => ({ useAuth: () => ({ isAuthenticated: true }) }))
 
-import { useCompleteTask } from "./hooks"
+import { useCap0Kehoach, useCompleteTask } from "./hooks"
 
 function Harness() {
   const completeTask = useCompleteTask()
@@ -121,5 +121,54 @@ describe("useCompleteTask", () => {
     // left alone — still "trading", never clobbered to "journey".
     await new Promise((resolve) => setTimeout(resolve, 0))
     expect(screen.getByTestId("panel-spy")).toHaveTextContent("trading")
+  })
+})
+
+// ── useCap0Kehoach — the REAL `enabled` guard ───────────────────────────────
+/**
+ * ★ This is the file that can actually test the guard. `debrief.test.tsx` mocks
+ * `./hooks` wholesale, so its "does not query while the modal is closed" test
+ * only ever observed what `DebriefModal` passed DOWN — it would have passed
+ * unchanged if the hook fetched unconditionally. Here the hook is real and only
+ * the ky client is mocked, so "no request" means no request.
+ */
+describe("useCap0Kehoach — the enabled guard", () => {
+  function KehoachHarness({ orderId }: { orderId: string | null }) {
+    const { data } = useCap0Kehoach(orderId)
+    return <div data-testid="chip">{data?.ly_do_label ?? "none"}</div>
+  }
+
+  function renderKehoach(orderId: string | null) {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    return render(
+      <QueryClientProvider client={client}>
+        <KehoachHarness orderId={orderId} />
+      </QueryClientProvider>,
+    )
+  }
+
+  beforeEach(() => {
+    get.mockReset()
+    get.mockReturnValue({
+      json: () => Promise.resolve({ ly_do_label: "Thử cho biết", so_phien_giu: 0 }),
+    })
+  })
+
+  it("★ issues NO request at all when there is no order key (modal closed)", async () => {
+    renderKehoach(null)
+    // Give TanStack Query every chance to fire.
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(get).not.toHaveBeenCalled()
+    expect(screen.getByTestId("chip")).toHaveTextContent("none")
+  })
+
+  it("fetches `GET /cap0/kehoach?order_id=` once an order key is supplied", async () => {
+    renderKehoach("buy-order-1")
+    await waitFor(() =>
+      expect(get).toHaveBeenCalledWith("cap0/kehoach", {
+        searchParams: { order_id: "buy-order-1" },
+      }),
+    )
+    await waitFor(() => expect(screen.getByTestId("chip")).toHaveTextContent("Thử cho biết"))
   })
 })

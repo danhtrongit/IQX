@@ -11,7 +11,7 @@ The brief's illustrative tests use a ``user`` fixture; this repo names it
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, date, datetime
 
 import pytest
 
@@ -34,9 +34,16 @@ async def _make_order(
     trading_date: date | None = None,
     mode: str = "san_tap",
     status: OrderStatus = OrderStatus.FILLED,
+    created_at: datetime | None = None,
 ) -> VirtualOrder:
     """Directly create a filled VirtualOrder (bypasses the matching engine —
-    the Cấp 0 service only reads order data, so this is sufficient setup)."""
+    the Cấp 0 service only reads order data, so this is sufficient setup).
+
+    ``created_at`` is settable because the round-trip matching below orders on
+    it: SQLite's ``CURRENT_TIMESTAMP`` has one-second resolution, so rows
+    inserted in the same test would otherwise share a timestamp and the
+    buy→sell chronology under test would be decided by nothing at all.
+    """
     trading_date = trading_date or date(2026, 1, 5)
     gross = price * qty
     net = -gross if side == OrderSide.BUY else gross
@@ -55,6 +62,7 @@ async def _make_order(
         tax_vnd=0,
         net_amount_vnd=net if status == OrderStatus.FILLED else None,
         trading_date=trading_date,
+        **({"created_at": created_at} if created_at is not None else {}),
     )
     db_session.add(order)
     await db_session.flush()
@@ -244,10 +252,6 @@ async def test_record_kehoach_validates_order_and_chip(db_session, test_user):
     with pytest.raises(BadRequestError):
         await svc.record_kehoach(test_user.id, sell.id, ly_do_doi_thuong="thu_cho_biet")
 
-    live = await _make_order(db_session, account.id, test_user.id, mode="thuc_chien")
-    with pytest.raises(BadRequestError):
-        await svc.record_kehoach(test_user.id, live.id, ly_do_doi_thuong="thu_cho_biet")
-
     buy = await _make_order(db_session, account.id, test_user.id)
     with pytest.raises(BadRequestError):
         await svc.record_kehoach(test_user.id, buy.id, ly_do_doi_thuong="ky_thuat")
@@ -259,6 +263,37 @@ async def test_record_kehoach_validates_order_and_chip(db_session, test_user):
 
     with pytest.raises(NotFoundError):
         await svc.record_kehoach(test_user.id, _uuid.uuid4(), ly_do_doi_thuong="thu_cho_biet")
+
+
+@pytest.mark.asyncio
+async def test_cap0_kehoach_works_for_a_premium_subscriber_whose_orders_are_thuc_chien(
+    db_session, test_user
+):
+    """★ Cấp 0 is FREE and open to EVERYONE — including users who already pay.
+
+    ``VirtualTradingService.place_order`` decides ``mode`` from the SUBSCRIPTION
+    (``"thuc_chien" if is_premium else "san_tap"``), not from the level, and the
+    place-order endpoint passes ``is_premium_active(user)`` with no level
+    awareness. So an existing premium subscriber who enters Cấp 0 and buys VNM
+    gets a ``thuc_chien`` order — and gating the Cấp 0 chip on ``mode`` broke
+    both the write (400, swallowed by the FE's non-fatal wrapper) and the read
+    (row filtered out) for that whole cohort: their Kết sổ showed
+    ``Lý do mua —`` / ``Thời gian giữ —`` forever.
+
+    ``mode`` is still REPORTED on the view — it is a fact about the order — it
+    just must never decide whether the user's own chip is visible to them.
+    """
+    svc, account = await _entered_with_account(db_session, test_user.id)
+    order = await _make_order(db_session, account.id, test_user.id, mode="thuc_chien")
+
+    kh = await svc.record_kehoach(test_user.id, order.id, ly_do_doi_thuong="thu_cho_biet")
+    assert kh.order_id == order.id
+    assert kh.ly_do_doi_thuong is LyDoDoiThuong.THU_CHO_BIET
+
+    view = await svc.get_kehoach_view(test_user.id, order.id)
+    assert view is not None
+    assert view.ly_do_label == "Thử cho biết"
+    assert view.mode == "thuc_chien"
 
 
 @pytest.mark.asyncio
@@ -314,45 +349,167 @@ async def test_cap0_chip_cannot_collide_with_or_clobber_cap1_kehoach(db_session,
 
 
 @pytest.mark.asyncio
-async def test_latest_kehoach_view_derives_hold_time_from_the_order(db_session, test_user):
+async def test_kehoach_view_derives_hold_time_from_the_order(db_session, test_user):
     """``Thời gian giữ`` is DERIVED from ``virtual_orders``, never stored twice."""
     svc, account = await _entered_with_account(db_session, test_user.id)
 
-    old = await _make_order(
-        db_session, account.id, test_user.id, trading_date=date(2026, 1, 5)
+    buy = await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        trading_date=date(2026, 1, 12),
+        created_at=datetime(2026, 1, 12, 2, 0, tzinfo=UTC),
     )
-    await svc.record_kehoach(test_user.id, old.id, ly_do_doi_thuong="thu_cho_biet")
-    new = await _make_order(
-        db_session, account.id, test_user.id, trading_date=date(2026, 1, 12)
+    await svc.record_kehoach(test_user.id, buy.id, ly_do_doi_thuong="gia_dang_tang")
+    await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        side=OrderSide.SELL,
+        trading_date=date(2026, 1, 14),
+        created_at=datetime(2026, 1, 14, 6, 0, tzinfo=UTC),
     )
-    await svc.record_kehoach(test_user.id, new.id, ly_do_doi_thuong="gia_dang_tang")
 
-    # Most recent recorded BUY for the symbol wins.
-    view = await svc.get_latest_kehoach_view(
-        test_user.id, "VNM", den_ngay=date(2026, 1, 14)
-    )
+    view = await svc.get_kehoach_view(test_user.id, buy.id)
     assert view is not None
     assert view.ly_do_doi_thuong is LyDoDoiThuong.GIA_DANG_TANG
     assert view.ly_do_label == "Giá đang tăng"
     assert view.symbol == "VNM"
-    assert view.mua_luc == new.created_at
+    assert view.mua_luc == buy.created_at
     assert view.gia_vao == 61_800
     # 12→14 Jan 2026 = Mon→Wed ⇒ 2 phiên.
     assert view.so_phien_giu == 2
 
-    # Same-session round trip is 0 phiên, not a fabricated 1.
-    same_day = await svc.get_latest_kehoach_view(
-        test_user.id, "VNM", den_ngay=date(2026, 1, 12)
-    )
-    assert same_day is not None
-    assert same_day.so_phien_giu == 0
+    # Unknown order → None (never a fabricated row).
+    import uuid as _uuid
 
-    # Unknown symbol → None (never a fabricated row).
-    assert await svc.get_latest_kehoach_view(test_user.id, "FPT") is None
+    assert await svc.get_kehoach_view(test_user.id, _uuid.uuid4()) is None
 
 
 @pytest.mark.asyncio
-async def test_latest_kehoach_view_is_scoped_to_the_user(db_session, test_user):
+async def test_kehoach_view_measures_hold_time_to_the_sell_never_to_today(db_session, test_user):
+    """★ Failure A of the retro Kết sổ path: a same-session round trip read DAYS
+    later must still say 0 phiên ("Trong cùng phiên"), not "3 phiên".
+
+    The Kết sổ can be re-opened long after the round trip closed
+    (``findRetroDebrief`` exists precisely for that), so measuring the hold time
+    to "today" invents days the user never held anything.
+    """
+    svc, account = await _entered_with_account(db_session, test_user.id)
+
+    monday = date(2026, 1, 5)
+    buy = await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        trading_date=monday,
+        created_at=datetime(2026, 1, 5, 2, 0, tzinfo=UTC),
+    )
+    await svc.record_kehoach(test_user.id, buy.id, ly_do_doi_thuong="thu_cho_biet")
+    await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        side=OrderSide.SELL,
+        trading_date=monday,
+        created_at=datetime(2026, 1, 5, 6, 0, tzinfo=UTC),
+    )
+
+    # Read "on Thursday" — i.e. with `now()` far past the round trip. The answer
+    # is a property of the two orders, so it cannot move with the calendar.
+    view = await svc.get_kehoach_view(test_user.id, buy.id)
+    assert view is not None
+    assert view.so_phien_giu == 0
+
+
+@pytest.mark.asyncio
+async def test_kehoach_view_is_keyed_on_the_order_not_on_the_symbol(db_session, test_user):
+    """★ Failure B: buy Mon (chip A) → sell Tue → buy VNM again Wed.
+
+    A symbol-keyed read returns WEDNESDAY's still-open buy, so ``Lý do mua`` and
+    ``Thời gian giữ`` would describe a different order than the ``Giá vào`` /
+    ``Giá ra`` printed beside them in the same table. Keyed on the order, the
+    Monday round trip reports Monday's chip and Mon→Tue = 1 phiên.
+    """
+    svc, account = await _entered_with_account(db_session, test_user.id)
+
+    mon_buy = await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        price=61_800,
+        trading_date=date(2026, 1, 5),
+        created_at=datetime(2026, 1, 5, 2, 0, tzinfo=UTC),
+    )
+    await svc.record_kehoach(test_user.id, mon_buy.id, ly_do_doi_thuong="cong_ty_toi_biet")
+    await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        side=OrderSide.SELL,
+        price=63_000,
+        trading_date=date(2026, 1, 6),
+        created_at=datetime(2026, 1, 6, 6, 0, tzinfo=UTC),
+    )
+    wed_buy = await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        price=64_000,
+        trading_date=date(2026, 1, 7),
+        created_at=datetime(2026, 1, 7, 2, 0, tzinfo=UTC),
+    )
+    await svc.record_kehoach(test_user.id, wed_buy.id, ly_do_doi_thuong="thay_tren_mang")
+    # …and Wednesday's position is closed on Thursday. The Monday round trip is
+    # closed by the FIRST sell at/after it, never by whichever sell came last.
+    await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        side=OrderSide.SELL,
+        price=65_000,
+        trading_date=date(2026, 1, 8),
+        created_at=datetime(2026, 1, 8, 6, 0, tzinfo=UTC),
+    )
+
+    view = await svc.get_kehoach_view(test_user.id, mon_buy.id)
+    assert view is not None
+    assert view.ly_do_doi_thuong is LyDoDoiThuong.CONG_TY_TOI_BIET
+    assert view.gia_vao == 61_800
+    # Mon → Tue = 1 phiên. Wednesday's re-entry must not touch this answer.
+    assert view.so_phien_giu == 1
+
+    # The Wednesday round trip is its own: chip B, Wed → Thu = 1 phiên.
+    wed_view = await svc.get_kehoach_view(test_user.id, wed_buy.id)
+    assert wed_view is not None
+    assert wed_view.ly_do_doi_thuong is LyDoDoiThuong.THAY_TREN_MANG
+    assert wed_view.gia_vao == 64_000
+    assert wed_view.so_phien_giu == 1
+
+
+@pytest.mark.asyncio
+async def test_kehoach_view_reports_unknown_hold_time_while_the_position_is_still_open(
+    db_session, test_user
+):
+    """No matching sell ⇒ the round trip has no length yet. ``None`` (the FE's
+    "—"), never a number counted to ``now()``."""
+    svc, account = await _entered_with_account(db_session, test_user.id)
+    buy = await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        trading_date=date(2026, 1, 5),
+        created_at=datetime(2026, 1, 5, 2, 0, tzinfo=UTC),
+    )
+    await svc.record_kehoach(test_user.id, buy.id, ly_do_doi_thuong="thu_cho_biet")
+
+    view = await svc.get_kehoach_view(test_user.id, buy.id)
+    assert view is not None
+    assert view.so_phien_giu is None
+
+
+@pytest.mark.asyncio
+async def test_kehoach_view_is_scoped_to_the_user(db_session, test_user):
     svc, account = await _entered_with_account(db_session, test_user.id)
     order = await _make_order(db_session, account.id, test_user.id)
     await svc.record_kehoach(test_user.id, order.id, ly_do_doi_thuong="thu_cho_biet")
@@ -370,7 +527,7 @@ async def test_latest_kehoach_view_is_scoped_to_the_user(db_session, test_user):
     db_session.add(other)
     await db_session.flush()
 
-    assert await svc.get_latest_kehoach_view(other.id, "VNM") is None
+    assert await svc.get_kehoach_view(other.id, order.id) is None
 
 
 # ── API wiring ───────────────────────────────────────
@@ -461,7 +618,21 @@ async def test_kehoach_endpoints_wired(client, db_session, test_user):
 
     account = await VirtualTradingRepository(db_session).get_account_by_user_id(test_user.id)
     assert account is not None
-    order = await _make_order(db_session, account.id, test_user.id)
+    order = await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        trading_date=date(2026, 1, 5),
+        created_at=datetime(2026, 1, 5, 2, 0, tzinfo=UTC),
+    )
+    await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        side=OrderSide.SELL,
+        trading_date=date(2026, 1, 6),
+        created_at=datetime(2026, 1, 6, 6, 0, tzinfo=UTC),
+    )
     await db_session.commit()
 
     r = await client.post(
@@ -474,22 +645,41 @@ async def test_kehoach_endpoints_wired(client, db_session, test_user):
     assert r.json()["ly_do_label"] == "Công ty tôi biết"
     assert r.json()["mode"] == "san_tap"
 
-    r = await client.get("/api/v1/cap0/kehoach/latest", headers=headers, params={"symbol": "vnm"})
+    # ★ The Kết sổ read is keyed on the BUY ORDER, not on the symbol.
+    r = await client.get(
+        "/api/v1/cap0/kehoach", headers=headers, params={"order_id": str(order.id)}
+    )
     assert r.status_code == 200, r.text
     body = r.json()
     assert body is not None
     assert body["ly_do_doi_thuong"] == "cong_ty_toi_biet"
     assert body["gia_vao"] == 61_800
-    assert body["so_phien_giu"] >= 0
+    # Mon buy → Tue sell = 1 phiên, measured to the SELL and stable forever.
+    assert body["so_phien_giu"] == 1
 
-    r = await client.get("/api/v1/cap0/kehoach/latest", headers=headers, params={"symbol": "FPT"})
+    # An order with no chip recorded → null, never a fabricated row.
+    other = await _make_order(db_session, account.id, test_user.id, symbol="FPT")
+    await db_session.commit()
+    r = await client.get(
+        "/api/v1/cap0/kehoach", headers=headers, params={"order_id": str(other.id)}
+    )
     assert r.status_code == 200
     assert r.json() is None
+
+    # The symbol-keyed read is GONE — it could not name the round trip it
+    # described (see `test_kehoach_view_is_keyed_on_the_order_not_on_the_symbol`).
+    r = await client.get(
+        "/api/v1/cap0/kehoach/latest", headers=headers, params={"symbol": "vnm"}
+    )
+    assert r.status_code == 404
 
     r = await client.post(
         "/api/v1/cap0/kehoach",
         json={"order_id": str(order.id), "ly_do_doi_thuong": "cong_ty_toi_biet"},
     )
+    assert r.status_code == 401
+
+    r = await client.get("/api/v1/cap0/kehoach", params={"order_id": str(order.id)})
     assert r.status_code == 401
 
 

@@ -45,7 +45,7 @@ class TaskRequest(BaseModel):
 
 
 class Cap0KehoachRequest(BaseModel):
-    """Record the khối "Kế hoạch" chip for a Sân tập BUY order."""
+    """Record the khối "Kế hoạch" chip for a Cấp 0 BUY order."""
 
     order_id: uuid.UUID
     #: Either the slug (``thu_cho_biet``) or the verbatim §4 label (``Thử cho biết``).
@@ -67,5 +67,7 @@ class Cap0KehoachOut(BaseModel):
     mua_luc: datetime
     ngay_mua: date
     gia_vao: int | None = None
-    #: `Thời gian giữ`, in trading sessions. 0 = mua/bán trong cùng phiên.
-    so_phien_giu: int
+    #: `Thời gian giữ`, in trading sessions, measured buy → matching SELL.
+    #: 0 = mua/bán trong cùng phiên (the common Cấp 0 case). ``null`` = vị thế
+    #: chưa đóng, so the round trip has no length yet — the Kết sổ prints "—".
+    so_phien_giu: int | None = None

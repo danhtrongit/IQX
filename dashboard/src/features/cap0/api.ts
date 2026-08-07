@@ -37,7 +37,7 @@ export const cap0Api = {
 
   /**
    * POST /cap0/kehoach { order_id, ly_do_doi_thuong } — persist the Kế hoạch
-   * chip for a Sân tập BUY (spec §10). The endpoint accepts EITHER the slug
+   * chip for a Cấp 0 BUY (spec §10). The endpoint accepts EITHER the slug
    * (`thu_cho_biet`) or the verbatim §4 label (`Thử cho biết`), so
    * `PlanBlock`'s own chip strings go up unmapped. Repeat calls for the same
    * order UPSERT (never 409), so a retry can't dead-end the user.
@@ -50,13 +50,18 @@ export const cap0Api = {
   },
 
   /**
-   * GET /cap0/kehoach/latest?symbol= → the chip of the most recent FILLED Sân
-   * tập BUY of that symbol, or **null** when there is none. Never a fabricated
-   * row — the Kết sổ leaves those cells blank rather than inventing a reason.
+   * GET /cap0/kehoach?order_id= → the chip recorded for THAT BUY order, or
+   * **null** when there is none. Never a fabricated row — the Kết sổ leaves
+   * those cells blank rather than inventing a reason.
+   *
+   * ★ Keyed on the order, not the symbol. `…/latest?symbol=` used to answer
+   * with the mã's most recent buy, which after a re-entry is a different,
+   * still-open order — so the Kết sổ printed one round trip's `Lý do mua` next
+   * to another's `Giá vào`.
    */
-  kehoachLatest: async (symbol: string): Promise<Cap0Kehoach | null> => {
+  kehoachByOrder: async (orderId: string): Promise<Cap0Kehoach | null> => {
     const res = await api
-      .get("cap0/kehoach/latest", { searchParams: { symbol } })
+      .get("cap0/kehoach", { searchParams: { order_id: orderId } })
       .json<unknown>()
     return (unwrap(res as never) ?? null) as Cap0Kehoach | null
   },

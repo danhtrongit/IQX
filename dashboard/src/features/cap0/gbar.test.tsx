@@ -78,21 +78,39 @@ function EventTrigger() {
       <button onClick={() => events.onReasonPicked?.("Công ty tôi biết")}>pick-reason</button>
       <button
         onClick={() =>
-          events.onOrderFilled?.({ symbol: "VNM", side: "buy", quantity: 100, price: 61800 })
+          events.onOrderFilled?.({
+            orderId: "buy-vnm-1",
+            symbol: "VNM",
+            side: "buy",
+            quantity: 100,
+            price: 61800,
+          })
         }
       >
         fill-order
       </button>
       <button
         onClick={() =>
-          events.onOrderFilled?.({ symbol: "VNM", side: "sell", quantity: 100, price: 61800 })
+          events.onOrderFilled?.({
+            orderId: "sell-vnm-flat",
+            symbol: "VNM",
+            side: "sell",
+            quantity: 100,
+            price: 61800,
+          })
         }
       >
         fill-order-sell
       </button>
       <button
         onClick={() =>
-          events.onOrderFilled?.({ symbol: "HPG", side: "buy", quantity: 100, price: 30000 })
+          events.onOrderFilled?.({
+            orderId: "buy-hpg-100",
+            symbol: "HPG",
+            side: "buy",
+            quantity: 100,
+            price: 30000,
+          })
         }
       >
         fill-order-other-symbol
@@ -101,14 +119,26 @@ function EventTrigger() {
       <button onClick={() => events.onGbarWarn?.()}>warn</button>
       <button
         onClick={() =>
-          events.onOrderFilled?.({ symbol: "HPG", side: "buy", quantity: 200, price: 30000 })
+          events.onOrderFilled?.({
+            orderId: "buy-hpg-200",
+            symbol: "HPG",
+            side: "buy",
+            quantity: 200,
+            price: 30000,
+          })
         }
       >
         buy-hpg
       </button>
       <button
         onClick={() =>
-          events.onOrderFilled?.({ symbol: "VNM", side: "sell", quantity: 100, price: 63000 })
+          events.onOrderFilled?.({
+            orderId: "sell-vnm-1",
+            symbol: "VNM",
+            side: "sell",
+            quantity: 100,
+            price: 63000,
+          })
         }
       >
         sell-vnm
@@ -365,6 +395,29 @@ describe("Gbar — buy → sell opens the Kết sổ debrief (spec §5/§6, nhi�
     expect(screen.getByText(/63,000/)).toBeInTheDocument()
   })
 
+  // ★ The Kết sổ's `Lý do mua` / `Thời gian giữ` are read per ORDER, so the live
+  // path has to carry the BUY's own id across to the sell — the same key the
+  // chip was filed under at fill time. Keyed on the symbol instead, a user who
+  // re-entered VNM after this round trip would be shown the NEW order's chip.
+  it("★ asks for the kehoach row of the BUY that opened the round trip, not of the mã", async () => {
+    renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }), {
+      positions: [RAW_POSITION],
+    })
+    await waitFor(() => expect(screen.getByText(TASK5_MSG)).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText("fill-order")) // BUY VNM (id buy-vnm-1)
+    fireEvent.click(screen.getByText("sell-vnm")) // SELL VNM
+
+    await waitFor(() =>
+      expect(get).toHaveBeenCalledWith("cap0/kehoach", {
+        searchParams: { order_id: "buy-vnm-1" },
+      }),
+    )
+    expect(get).not.toHaveBeenCalledWith("cap0/kehoach", {
+      searchParams: { order_id: "sell-vnm-1" },
+    })
+  })
+
   it("buy A, buy B, then sell A → the debrief uses A's captured entry price, not B's", async () => {
     renderGbar(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }), {
       positions: [RAW_POSITION],
@@ -467,6 +520,27 @@ describe("Gbar — retroactive Kết sổ from order history (nhiệm vụ ⑤ r
     // Reconciled against server data: buy 61,800 → sell 63,000, 100 VNM.
     expect(screen.getByText("+120,000đ · MUA 100 VNM → BÁN")).toBeInTheDocument()
     expect(screen.getByText(/63,000/)).toBeInTheDocument()
+  })
+
+  // ★★ Failure B of the review, end to end through the FE: buy VNM (chip A) →
+  // sell → buy VNM AGAIN (chip B, still open) → reload. The reconstruction
+  // reports the FIRST round trip (entry 61,800), so the chip it asks for must be
+  // that buy's — asking by symbol would answer with the still-open re-entry and
+  // put another order's `Lý do mua`/`Thời gian giữ` beside these prices.
+  it("★ asks for the reconstructed BUY's kehoach row, not the mã's most recent buy", async () => {
+    const REENTRY = rawOrder({
+      id: "b2",
+      side: "buy",
+      filled_price_vnd: 64000,
+      created_at: "2026-07-22T02:00:00Z",
+    })
+    renderGbarWithHistory(task5Pending(), [REENTRY, RAW_SELL, RAW_BUY])
+
+    await waitFor(() => expect(screen.getByText(/KẾT SỔ LỆNH/)).toBeInTheDocument())
+    await waitFor(() =>
+      expect(get).toHaveBeenCalledWith("cap0/kehoach", { searchParams: { order_id: "b1" } }),
+    )
+    expect(get).not.toHaveBeenCalledWith("cap0/kehoach", { searchParams: { order_id: "b2" } })
   })
 
   it("★ closing it PATCHes /cap0/task task 5 + the debrief gate — the graduation blocker clears", async () => {

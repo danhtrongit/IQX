@@ -89,7 +89,9 @@ export function useCompleteTask() {
 }
 
 /**
- * POST /cap0/kehoach — persist the Kế hoạch chip for a just-filled Sân tập BUY.
+ * POST /cap0/kehoach — persist the Kế hoạch chip for a just-filled Cấp 0 BUY
+ * (of ANY `mode`: Cấp 0 is free and open to premium subscribers too, whose
+ * orders are tagged `thuc_chien` — see `TradingMode`).
  *
  * ★★ The ONLY caller (`TradingPanel`'s BUY flow) must go through
  * `ghiKehoachKhongChiMang`: this POST runs AFTER the order already filled, and
@@ -98,7 +100,7 @@ export function useCompleteTask() {
  * sell, and Cấp 0 becomes ungraduatable again (the bug fixed in `7a057a3`).
  *
  * Deliberately does NOT invalidate `cap0Keys.all`: this writes no progress and
- * the Kết sổ's own `useCap0KehoachLatest` is keyed per symbol and mounts later.
+ * the Kết sổ's own `useCap0Kehoach` is keyed per order and mounts later.
  */
 export function useRecordCap0Kehoach() {
   return useMutation<Cap0Kehoach, unknown, { orderId: string; lyDoDoiThuong: string }>({
@@ -107,19 +109,23 @@ export function useRecordCap0Kehoach() {
 }
 
 /**
- * GET /cap0/kehoach/latest?symbol= — the `Lý do mua` + `Thời gian giữ` rows of
- * the Kết sổ (spec §5). `null` symbol (modal closed) disables the query, so a
- * mounted-but-idle `DebriefModal` never issues a request.
+ * GET /cap0/kehoach?order_id= — the `Lý do mua` + `Thời gian giữ` rows of the
+ * Kết sổ (spec §5), read for the BUY order that opened the round trip being
+ * shown. `null` order id (modal closed, or a live sell whose buy this session
+ * never saw) disables the query, so a mounted-but-idle `DebriefModal` never
+ * issues a request. That guard is pinned in `hooks.test.tsx`, where the hook is
+ * REAL — `debrief.test.tsx` mocks this module out entirely and structurally
+ * cannot test it.
  *
  * `data` is `null` (not `undefined`) when the server has no row — the Kết sổ
  * renders "—" for that, never an invented chip.
  */
-export function useCap0KehoachLatest(symbol: string | null | undefined) {
+export function useCap0Kehoach(orderId: string | null | undefined) {
   const { isAuthenticated } = useAuth()
   return useQuery<Cap0Kehoach | null>({
-    queryKey: cap0Keys.kehoachLatest(symbol ?? ""),
-    queryFn: () => cap0Api.kehoachLatest(symbol as string),
-    enabled: isAuthenticated && !!symbol,
+    queryKey: cap0Keys.kehoach(orderId ?? ""),
+    queryFn: () => cap0Api.kehoachByOrder(orderId as string),
+    enabled: isAuthenticated && !!orderId,
     staleTime: 0,
     retry: false,
   })

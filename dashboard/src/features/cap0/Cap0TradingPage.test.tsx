@@ -118,7 +118,7 @@ vi.mock("./hooks", () => ({
   // `DebriefModal` (mounted via `Gbar`) reads the Cấp 0 kế hoạch row for its
   // `Lý do mua`/`Thời gian giữ` rows — a stub is enough here (the Kết sổ's own
   // behaviour is covered in `debrief.test.tsx`).
-  useCap0KehoachLatest: () => ({ data: null }),
+  useCap0Kehoach: () => ({ data: null }),
 }))
 
 // `Gbar` reads FILLED order history (`useOrders`) to re-open the Kết sổ for a

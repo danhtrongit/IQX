@@ -73,16 +73,19 @@ export function Gbar() {
   const completedRef = useRef(false)
 
   // Nhiệm vụ ⑤ (spec §5/§4 "bán khớp → mở màn Kết sổ") — `lastBuyBySymbolRef`
-  // remembers each symbol's most recent BUY fill price (the "giá vào" the
-  // debrief reports) keyed by symbol — NOT a single slot — so buying two
-  // different symbols before selling one of them still reports the SOLD
-  // symbol's own entry price, not whichever was bought most recently overall.
+  // remembers each symbol's most recent BUY fill (the "giá vào" the debrief
+  // reports, plus that buy's ORDER ID) keyed by symbol — NOT a single slot — so
+  // buying two different symbols before selling one of them still reports the
+  // SOLD symbol's own entry, not whichever was bought most recently overall.
+  // The order id is what lets the Kết sổ read the `Lý do mua` / `Thời gian giữ`
+  // rows of THIS round trip's buy (`GET /cap0/kehoach?order_id=`) instead of
+  // "the latest buy of this mã", which after a re-entry is a different order.
   // `debriefCountRef` is the "#{n}" in "KẾT SỔ LỆNH · #{n}" — this component
   // is mounted once for the whole Cấp 0 session (sibling of `CenterPanel`/
   // `RightSidebar` in `Cap0TradingPage`, NOT inside the sidebar's panel
   // switch), so both refs survive the user switching between the Hành trình/
   // Đặt lệnh/Danh mục tabs in between.
-  const lastBuyBySymbolRef = useRef<Map<string, number>>(new Map())
+  const lastBuyBySymbolRef = useRef<Map<string, { orderId: string; price: number }>>(new Map())
   const debriefCountRef = useRef(0)
   const [debrief, setDebrief] = useState<DebriefData | null>(null)
   const prevVisibilityRef = useRef<Cap0Visibility | null>(null)
@@ -162,7 +165,10 @@ export function Gbar() {
         if (order.side === "buy") {
           // Keyed by symbol (not a single last-buy slot) — see
           // `lastBuyBySymbolRef`'s docstring above.
-          lastBuyBySymbolRef.current.set(order.symbol.toUpperCase(), order.price)
+          lastBuyBySymbolRef.current.set(order.symbol.toUpperCase(), {
+            orderId: order.orderId,
+            price: order.price,
+          })
         }
         if (order.side === "sell") {
           debriefCountRef.current += 1
@@ -171,8 +177,12 @@ export function Gbar() {
             n: debriefCountRef.current,
             symbol: order.symbol,
             quantity: order.quantity,
-            entryPrice: entry ?? order.price,
+            entryPrice: entry?.price ?? order.price,
             exitPrice: order.price,
+            // `null` when this session never saw the buy (e.g. it happened
+            // before a reload) — the Kết sổ then shows "—" for both kehoach
+            // rows rather than asking about some other order of the same mã.
+            buyOrderId: entry?.orderId ?? null,
           })
           return
         }

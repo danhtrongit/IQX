@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Modal } from "@arco-design/web-react"
 import { cn } from "@/shared/lib/cn"
-import { useCap0KehoachLatest, useCompleteTask } from "./hooks"
+import { useCap0Kehoach, useCompleteTask } from "./hooks"
 import { coachTemplate } from "./coachTemplate"
 import "./cap0.css"
 
@@ -21,6 +21,18 @@ export interface DebriefData {
   quantity: number
   entryPrice: number
   exitPrice: number
+  /**
+   * `virtual_orders.id` of the BUY that opened this round trip — the order
+   * `entryPrice` came from, and the key the `Lý do mua` / `Thời gian giữ` rows
+   * are read under (`GET /cap0/kehoach?order_id=`).
+   *
+   * ★ NOT the sell order (Cấp 1's `KetsoDataCap1.orderId` is its sell, because
+   * `POST /cap1/ketso` keys on that; the Cấp 0 chip is filed at BUY time).
+   * `null` when the buy is unknown — a live sell whose buy happened in an
+   * earlier session, before `Gbar`'s per-symbol map was populated. Both rows
+   * then read "—", which is the truth: nothing here can name that order.
+   */
+  buyOrderId: string | null
 }
 
 export interface DebriefModalProps {
@@ -90,8 +102,13 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
   const completeTask = useCompleteTask()
   // §5's `Lý do mua` + `Thời gian giữ` are the only two rows NOT derivable from
   // the sell fill itself — they come from the `cap0_order_kehoach` row written
-  // at BUY time (`TradingPanel`). `null` symbol (modal closed) disables it.
-  const { data: kehoach } = useCap0KehoachLatest(data?.symbol ?? null)
+  // at BUY time (`TradingPanel`), read back for THAT buy order. `null` (modal
+  // closed, or an unknown buy) disables it.
+  //
+  // ★ Keyed on the order, not on `data.symbol`: the symbol-keyed read answered
+  // with the mã's most recent buy, so a user who re-entered VNM after this round
+  // trip saw the NEW order's chip and hold time next to THIS one's prices.
+  const { data: kehoach } = useCap0Kehoach(data?.buyOrderId ?? null)
   const [displayPct, setDisplayPct] = useState(0)
 
   const entryPrice = data?.entryPrice ?? 0

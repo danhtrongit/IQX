@@ -5,6 +5,8 @@ Cap 0 is FREE: all endpoints use ``CurrentUser`` (authenticated), NOT ``PremiumU
 
 from __future__ import annotations
 
+import uuid
+
 from fastapi import APIRouter, Query
 
 from app.api.deps import CurrentUser, DBSession
@@ -62,7 +64,11 @@ async def complete_task(
 async def record_kehoach(
     body: Cap0KehoachRequest, user: CurrentUser, db: DBSession
 ) -> Cap0KehoachOut:
-    """Ghi chip lý do đời thường của khối "Kế hoạch" cho 1 lệnh MUA Sân tập.
+    """Ghi chip lý do đời thường của khối "Kế hoạch" cho 1 lệnh MUA của Cấp 0.
+
+    KHÔNG lọc theo ``mode``: ``mode`` phản ánh GÓI THUÊ BAO chứ không phải cấp,
+    mà Cấp 0 miễn phí và mở cho cả người đang trả tiền (xem
+    ``Cap0Service.record_kehoach``).
 
     Gọi lại cho cùng một lệnh sẽ ghi đè chip (không 409).
     """
@@ -76,18 +82,23 @@ async def record_kehoach(
     return Cap0KehoachOut.model_validate(view)
 
 
-@router.get("/kehoach/latest", response_model=Cap0KehoachOut | None)
-async def latest_kehoach(
+@router.get("/kehoach", response_model=Cap0KehoachOut | None)
+async def get_kehoach(
     user: CurrentUser,
     db: DBSession,
-    symbol: str = Query(min_length=1, max_length=10),
+    order_id: uuid.UUID = Query(),
 ) -> Cap0KehoachOut | None:
-    """Chip lý do + dữ liệu suy ra từ lệnh mua gần nhất của mã (cho màn Kết sổ §5).
+    """Chip lý do + dữ liệu suy ra từ CHÍNH lệnh mua đó (cho màn Kết sổ §5).
 
-    Trả ``null`` nếu chưa có — màn Kết sổ để trống chứ không bịa số.
+    ★ Khoá theo LỆNH, không theo mã. Bản đọc theo mã cũ (``/kehoach/latest``)
+    luôn trả lệnh mua mới nhất của mã — có thể là một vị thế khác đang mở — nên
+    ``Lý do mua``/``Thời gian giữ`` nói về một lệnh khác với ``Giá vào``/``Giá
+    ra`` in ngay cạnh nó.
+
+    Trả ``null`` nếu lệnh chưa ghi chip — màn Kết sổ để trống chứ không bịa số.
     """
     svc = Cap0Service(db)
-    view = await svc.get_latest_kehoach_view(user.id, symbol)
+    view = await svc.get_kehoach_view(user.id, order_id)
     return Cap0KehoachOut.model_validate(view) if view is not None else None
 
 

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass
-from datetime import UTC, date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -30,10 +30,11 @@ from app.models.virtual_trading import OrderSide, OrderStatus, VirtualOrder
 from app.repositories.virtual_trading import VirtualTradingRepository
 from app.services.virtual_trading.settlement import is_trading_day
 
-_VN_TZ = timezone(timedelta(hours=7))
-
 _CAP0_INITIAL_CASH_VND = 250_000_000
-_CAP0_ORDER_MODE = "san_tap"
+#: No ``_CAP0_ORDER_MODE`` constant on purpose: nothing here may branch on
+#: ``virtual_orders.mode``. That column reflects the user's SUBSCRIPTION, not
+#: their level (see :meth:`Cap0Service.record_kehoach`), so a mode test here is
+#: a premium test in disguise — and Cấp 0 is free for everyone.
 _TASK_NOS = (1, 2, 3, 4, 5)
 _GATE_ATTR = {
     "star": "task1_star_clicked",
@@ -63,7 +64,10 @@ class Cap0KehoachView:
     mua_luc: datetime
     ngay_mua: date
     gia_vao: int | None
-    so_phien_giu: int
+    #: ``None`` while the position is still open — a round trip that has not
+    #: closed has no length yet, and "so far, counted to today" is a different
+    #: number wearing the same label. The Kết sổ renders it as "—".
+    so_phien_giu: int | None
 
 
 class Cap0Service:
@@ -220,6 +224,33 @@ class Cap0Service:
                 count += 1
         return count
 
+    async def _find_matching_sell(self, buy_order: VirtualOrder) -> VirtualOrder | None:
+        """The FILLED sell that closes ``buy_order`` — earliest one for the same
+        account+symbol at/after it. Mirror image of ``Cap1Service._find_matching_buy``
+        and it inherits that method's own caveat verbatim: the account model is
+        average-cost, not lot-tracked (see ``VirtualPosition``), so this is a
+        pragmatic single-lot approximation, good enough for the "1 lệnh = 1 round
+        trip" flow Cấp 0 teaches.
+
+        Exists so ``Thời gian giữ`` can be measured to the SELL. Measuring it to
+        ``now()`` instead made the number drift with the calendar: the Kết sổ is
+        re-openable days later (``findRetroDebrief`` exists for exactly that), so
+        a same-session round trip re-read on Thursday reported "3 phiên".
+        """
+        result = await self._session.execute(
+            select(VirtualOrder)
+            .where(
+                VirtualOrder.account_id == buy_order.account_id,
+                VirtualOrder.symbol == buy_order.symbol,
+                VirtualOrder.side == OrderSide.SELL,
+                VirtualOrder.status == OrderStatus.FILLED,
+                VirtualOrder.created_at >= buy_order.created_at,
+            )
+            .order_by(VirtualOrder.created_at.asc())
+            .limit(1)
+        )
+        return result.scalars().first()
+
     async def _get_kehoach_by_order(self, order_id: uuid.UUID) -> Cap0OrderKehoach | None:
         result = await self._session.execute(
             select(Cap0OrderKehoach).where(Cap0OrderKehoach.order_id == order_id)
@@ -229,7 +260,23 @@ class Cap0Service:
     async def record_kehoach(
         self, user_id: uuid.UUID, order_id: uuid.UUID, *, ly_do_doi_thuong: str
     ) -> Cap0OrderKehoach:
-        """Persist the khối "Kế hoạch" chip for a Sân tập BUY order.
+        """Persist the khối "Kế hoạch" chip for a Cấp 0 BUY order.
+
+        ★★ **Deliberately NOT gated on ``order.mode``.** Spec §10 tags the row
+        ``mode='san_tap'`` and this model's docstring used to repeat the claim
+        "lệnh Cấp 0 luôn san_tap" — the claim is simply false. ``mode`` is
+        decided by SUBSCRIPTION, not by level:
+        ``VirtualTradingService.place_order`` sets ``"thuc_chien" if is_premium
+        else "san_tap"`` and the place-order endpoint hands it
+        ``is_premium_active(user)`` with no level awareness. Cấp 0 is free and
+        open to everyone, **including users who already pay** — so a premium
+        subscriber's Cấp 0 buy is a ``thuc_chien`` order. Gating on ``mode``
+        400'd their write (swallowed by the FE's non-fatal wrapper) and filtered
+        their read, so their Kết sổ showed ``Lý do mua —`` forever.
+        ``Cap1Service.record_kehoach`` does not filter on ``mode`` either; this
+        matches it. The actual mode is still REPORTED on the read model — it is a
+        true fact about the order — it just never decides whether the user's own
+        chip is visible to them.
 
         **Why a separate ``cap0_order_kehoach`` table instead of reusing Cấp 1's
         ``order_kehoach`` row** (spec §10 sketches the same table name; four
@@ -258,9 +305,8 @@ class Cap0Service:
         test_cap0_chip_cannot_collide_with_or_clobber_cap1_kehoach`` pins that.
 
         ``mode`` and the buy timestamp are not stored — they are read back off
-        ``virtual_orders`` by :meth:`get_latest_kehoach_view` (spec §10 tags the
-        row ``mode='san_tap'``; that fact already lives on the order, and this
-        method refuses any order that is not ``san_tap``).
+        ``virtual_orders`` by :meth:`get_kehoach_view`, so they can never drift
+        out of agreement with the order they describe.
 
         Repeat calls for the same order UPSERT the chip rather than 409-ing: the
         FE records at fill time and a retry must never dead-end the user.
@@ -276,8 +322,6 @@ class Cap0Service:
             raise NotFoundError("lệnh")
         if order.side != OrderSide.BUY:
             raise BadRequestError("Kế hoạch Cấp 0 chỉ ghi cho lệnh MUA")
-        if order.mode != _CAP0_ORDER_MODE:
-            raise BadRequestError("Kế hoạch Cấp 0 chỉ ghi cho lệnh Sân tập")
 
         kehoach = await self._get_kehoach_by_order(order_id)
         if kehoach is None:
@@ -290,7 +334,7 @@ class Cap0Service:
         return kehoach
 
     def _build_view(
-        self, kehoach: Cap0OrderKehoach, order: VirtualOrder, den_ngay: date
+        self, kehoach: Cap0OrderKehoach, order: VirtualOrder, den_ngay: date | None
     ) -> Cap0KehoachView:
         return Cap0KehoachView(
             id=kehoach.id,
@@ -302,15 +346,32 @@ class Cap0Service:
             mua_luc=order.created_at,
             ngay_mua=order.trading_date,
             gia_vao=order.filled_price_vnd,
-            so_phien_giu=self._count_trading_sessions(order.trading_date, den_ngay),
+            so_phien_giu=(
+                None
+                if den_ngay is None
+                else self._count_trading_sessions(order.trading_date, den_ngay)
+            ),
         )
 
     async def get_kehoach_view(
-        self, user_id: uuid.UUID, order_id: uuid.UUID, *, den_ngay: date | None = None
+        self, user_id: uuid.UUID, order_id: uuid.UUID
     ) -> Cap0KehoachView | None:
-        """Read model for ONE order's recorded chip. ``None`` when the order has
-        no chip, is not the caller's, or is not a Sân tập buy."""
-        den_ngay = den_ngay or datetime.now(_VN_TZ).date()
+        """Read model for ONE buy order's recorded chip — the Kết sổ's ``Lý do
+        mua`` + ``Thời gian giữ`` rows (§5). ``None`` when that order has no
+        chip or is not the caller's; the Kết sổ then shows "—" rather than a
+        fabricated row.
+
+        **Keyed on the ORDER, deliberately.** A symbol-keyed "most recent buy"
+        read cannot name the round trip it is describing: buy VNM Mon (chip A) →
+        sell Tue → buy VNM again Wed, and it answers with Wednesday's still-open
+        order, so ``Lý do mua``/``Thời gian giữ`` describe a different order than
+        the ``Giá vào``/``Giá ra`` printed beside them.
+
+        ``so_phien_giu`` is DERIVED: from this buy's ``trading_date`` to the
+        matching SELL's (:meth:`_find_matching_sell`) — never to ``now()``,
+        which drifted with the calendar every day the Kết sổ went unread — and
+        ``None`` while the position is still open.
+        """
         result = await self._session.execute(
             select(Cap0OrderKehoach, VirtualOrder)
             .join(VirtualOrder, VirtualOrder.id == Cap0OrderKehoach.order_id)
@@ -323,38 +384,5 @@ class Cap0Service:
         if row is None:
             return None
         kehoach, order = row
-        return self._build_view(kehoach, order, den_ngay)
-
-    async def get_latest_kehoach_view(
-        self, user_id: uuid.UUID, symbol: str, *, den_ngay: date | None = None
-    ) -> Cap0KehoachView | None:
-        """Most recent recorded Cấp 0 chip for a FILLED Sân tập BUY of ``symbol``.
-
-        Returns ``None`` when there is none — the Kết sổ shows nothing rather
-        than a fabricated row.
-
-        ``so_phien_giu`` ("Thời gian giữ") is DERIVED from the buy order's
-        ``trading_date`` through ``den_ngay`` (default: today in VN time). The
-        Kết sổ opens the instant the sell fills, so "today" is the sell session
-        in every real flow; ``den_ngay`` exists so tests — and any future
-        back-dated read — can be exact.
-        """
-        den_ngay = den_ngay or datetime.now(_VN_TZ).date()
-        result = await self._session.execute(
-            select(Cap0OrderKehoach, VirtualOrder)
-            .join(VirtualOrder, VirtualOrder.id == Cap0OrderKehoach.order_id)
-            .where(
-                VirtualOrder.user_id == user_id,
-                VirtualOrder.symbol == symbol.strip().upper(),
-                VirtualOrder.side == OrderSide.BUY,
-                VirtualOrder.status == OrderStatus.FILLED,
-                VirtualOrder.mode == _CAP0_ORDER_MODE,
-            )
-            .order_by(VirtualOrder.trading_date.desc(), VirtualOrder.created_at.desc())
-            .limit(1)
-        )
-        row = result.first()
-        if row is None:
-            return None
-        kehoach, order = row
-        return self._build_view(kehoach, order, den_ngay)
+        sell = await self._find_matching_sell(order)
+        return self._build_view(kehoach, order, sell.trading_date if sell else None)

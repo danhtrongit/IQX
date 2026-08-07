@@ -98,12 +98,21 @@ class Cap0Progress(UUIDMixin, TimestampMixin, Base):
 
 
 class Cap0OrderKehoach(UUIDMixin, TimestampMixin, Base):
-    """Khối "Kế hoạch" Cấp 0 recorded at BUY time — one row per Sân tập buy order.
+    """Khối "Kế hoạch" Cấp 0 recorded at BUY time — one row per Cấp 0 buy order.
 
     Spec §10 sketches this as ``order_kehoach (order_id · mode='san_tap' ·
     ly_do_doi_thuong)``. It gets its **own physical table** rather than reusing
     Cấp 1's ``order_kehoach`` — see ``app.services.cap0.service.Cap0Service.
     record_kehoach`` for the four reasons why sharing that row would be unsafe.
+
+    ★★ **A Cấp 0 order is NOT always ``san_tap``.** The spec's ``mode='san_tap'``
+    tag (and an earlier version of this docstring) asserted it is; the code never
+    enforced it and the claim is false. ``virtual_orders.mode`` is set from the
+    user's SUBSCRIPTION (``"thuc_chien" if is_premium else "san_tap"`` in
+    ``VirtualTradingService.place_order``), and Cấp 0 is free and open to
+    everyone — an existing premium subscriber walking through Cấp 0 produces
+    ``thuc_chien`` rows. Nothing in Cấp 0 may filter on ``mode``: doing so hid
+    this table from that entire cohort.
 
     ``mode`` and the buy timestamp are deliberately NOT duplicated here: both are
     already on ``virtual_orders`` (``mode`` / ``created_at`` / ``trading_date``)

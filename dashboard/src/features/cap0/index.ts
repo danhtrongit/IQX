@@ -38,7 +38,7 @@ export {
   usePlacement,
   useCompleteTask,
   useRecordCap0Kehoach,
-  useCap0KehoachLatest,
+  useCap0Kehoach,
   useGraduate,
 } from "./hooks"
 export { cap0Api } from "./api"

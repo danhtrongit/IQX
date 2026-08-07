@@ -40,7 +40,9 @@ export type Cap0Gate = "star" | "debrief"
 
 /**
  * One `cap0_order_kehoach` row (spec §10) — the Kế hoạch chip a user picked
- * for a Sân tập BUY, plus everything the Kết sổ derives from that order.
+ * for a Cấp 0 BUY, plus everything the Kết sổ derives from that order. (Not
+ * necessarily a *Sân tập* buy — see `TradingMode`: an existing premium
+ * subscriber's Cấp 0 orders are `thuc_chien`, and nothing here filters on it.)
  * Mirrors the backend `Cap0KehoachOut` schema 1:1.
  *
  * It is its OWN table, deliberately NOT Cấp 1's `order_kehoach` — the two
@@ -62,12 +64,18 @@ export interface Cap0Kehoach {
   ngay_mua: string
   gia_vao: number | null
   /**
-   * `Thời gian giữ`, in trading sessions. **0 is the common Cấp 0 case** — Sân
-   * tập is T+0, so most round trips open and close in the same phiên. The
-   * backend deliberately does NOT floor it to 1 (that would be a fabricated
-   * number), so the Kết sổ must word 0 honestly instead of printing "0 phiên".
+   * `Thời gian giữ`, in trading sessions, measured from this buy to the SELL
+   * that closed it — never to "today", which drifted upward every day a Kết sổ
+   * went unread (the retro path re-opens round trips that closed long ago).
+   *
+   * **0 is the common Cấp 0 case** — Sân tập is T+0, so most round trips open
+   * and close in the same phiên. The backend deliberately does NOT floor it to
+   * 1 (that would be a fabricated number), so the Kết sổ must word 0 honestly
+   * instead of printing "0 phiên".
+   *
+   * `null` = the position is still open, so the round trip has no length yet.
    */
-  so_phien_giu: number
+  so_phien_giu: number | null
 }
 
 /** Response of POST /cap0/placement — never traded → 0, experienced → 2. */
@@ -75,7 +83,16 @@ export interface PlacementResult {
   placed_level: number
 }
 
-/** Order mode — Cấp 0 orders are always `san_tap`; `thuc_chien` is live. */
+/**
+ * Order mode — `san_tap` is the free T+0 practice engine, `thuc_chien` the paid
+ * T+2,5 one.
+ *
+ * ★ It is decided by the user's SUBSCRIPTION, not by their level: Cấp 0 is free
+ * and open to everyone, so an existing premium subscriber walking through Cấp 0
+ * places `thuc_chien` orders. Nothing may treat "Cấp 0" and "san_tap" as
+ * synonyms (the backend used to, and hid the Kế hoạch chip from that whole
+ * cohort).
+ */
 export type TradingMode = "san_tap" | "thuc_chien"
 
 /** One evolving-hexagon level (spec §12 `LEVELS`). */

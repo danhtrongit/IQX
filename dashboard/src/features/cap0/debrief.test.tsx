@@ -4,19 +4,21 @@ import { describe, expect, it, vi, beforeEach } from "vitest"
 import type { Cap0Progress } from "./types"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
-const { completeTaskMutate, kehoachLatestMock } = vi.hoisted(() => ({
+const { completeTaskMutate, kehoachMock } = vi.hoisted(() => ({
   completeTaskMutate: vi.fn(),
-  // `GET /cap0/kehoach/latest?symbol=` — feeds the §5 `Lý do mua` and
+  // `GET /cap0/kehoach?order_id=` — feeds the §5 `Lý do mua` and
   // `Thời gian giữ` rows. Defaults to "no row yet" so the many pre-existing
   // tests below exercise the honest-unknown rendering without opting in.
-  kehoachLatestMock: vi.fn(() => ({ data: null })),
+  kehoachMock: vi.fn(() => ({ data: null })),
 }))
-// `DebriefModal` needs `useCompleteTask` + `useCap0KehoachLatest` — mock
+// `DebriefModal` needs `useCompleteTask` + `useCap0Kehoach` — mock
 // `./hooks` directly (same pattern as `Cap0TradingPage.test.tsx`) so no
 // QueryClient/http-client setup is needed for this file.
+// ★ The hook's own `enabled` guard is NOT exercised here (it is mocked away);
+// `hooks.test.tsx` renders the REAL hook against a mocked ky client for that.
 vi.mock("./hooks", () => ({
   useCompleteTask: () => ({ mutate: completeTaskMutate }),
-  useCap0KehoachLatest: (...a: unknown[]) => kehoachLatestMock(...a),
+  useCap0Kehoach: (...a: unknown[]) => kehoachMock(...a),
 }))
 
 import { coachTemplate } from "./coachTemplate"
@@ -163,12 +165,13 @@ describe("DebriefModal", () => {
     quantity: 100,
     entryPrice: 61800,
     exitPrice: 63000,
+    buyOrderId: "buy-order-1",
   }
 
   beforeEach(() => {
     completeTaskMutate.mockReset()
-    kehoachLatestMock.mockReset()
-    kehoachLatestMock.mockReturnValue({ data: null })
+    kehoachMock.mockReset()
+    kehoachMock.mockReturnValue({ data: null })
   })
 
   it("renders nothing when data is null", () => {
@@ -237,6 +240,7 @@ describe("DebriefModal", () => {
       quantity: 100,
       entryPrice: 62000,
       exitPrice: 58900,
+      buyOrderId: "buy-order-2",
     }
     render(<DebriefModal data={lossData} onClose={vi.fn()} />)
     expect(screen.getByText(/Lệnh 2 lỗ nhẹ/)).toBeInTheDocument()
@@ -251,6 +255,7 @@ describe("DebriefModal", () => {
       quantity: 100,
       entryPrice: 62000,
       exitPrice: 58900,
+      buyOrderId: "buy-order-2",
     }
     render(<DebriefModal data={lossData} onClose={vi.fn()} />)
     // (58,900 − 62,000) × 100 = −310,000đ — must use "−" (U+2212), never a
@@ -266,6 +271,7 @@ describe("DebriefModal", () => {
       quantity: 100,
       entryPrice: 62000,
       exitPrice: 58900,
+      buyOrderId: "buy-order-2",
     }
     render(<DebriefModal data={retroData} onClose={vi.fn()} />)
     expect(screen.getByText("KẾT SỔ LỆNH · #2 · SÂN TẬP")).toBeInTheDocument()
@@ -276,15 +282,21 @@ describe("DebriefModal", () => {
   })
 
   // ── §5 bảng đối chiếu: Lý do mua + Thời gian giữ (từ `cap0_order_kehoach`) ──
-  // Task 1 shipped `GET /cap0/kehoach/latest?symbol=`; these two rows are the
-  // only thing in the Kết sổ that is NOT derivable from the sell fill itself.
-  it("reads the chip + hold time from GET /cap0/kehoach/latest, keyed on the SOLD symbol", () => {
-    kehoachLatestMock.mockReturnValue({
+  // These two rows are the only thing in the Kết sổ that is NOT derivable from
+  // the sell fill itself.
+  //
+  // ★★ Keyed on the BUY ORDER, never on the symbol. The symbol-keyed read this
+  // replaced returned the user's most recent VNM buy, which after a re-entry is
+  // a DIFFERENT, still-open order — so `Lý do mua`/`Thời gian giữ` described one
+  // round trip while `Giá vào`/`Giá ra` beside them described another.
+  it("★ reads the chip + hold time keyed on the BUY ORDER of the round trip on screen", () => {
+    kehoachMock.mockReturnValue({
       data: { ly_do_label: "Công ty tôi biết", so_phien_giu: 4, gia_vao: 61800 },
     })
     render(<DebriefModal data={winData} onClose={vi.fn()} />)
 
-    expect(kehoachLatestMock).toHaveBeenCalledWith("VNM")
+    expect(kehoachMock).toHaveBeenCalledWith("buy-order-1")
+    expect(kehoachMock).not.toHaveBeenCalledWith("VNM")
     expect(screen.getByText("Công ty tôi biết")).toBeInTheDocument()
     expect(screen.getByText("4 phiên")).toBeInTheDocument()
     // Mockup: `Lý do mua` spans Kế hoạch + Thực tế rather than showing "—"
@@ -293,7 +305,7 @@ describe("DebriefModal", () => {
   })
 
   it('appends "· Giữ {n} phiên" to the sub-line when the position was actually held', () => {
-    kehoachLatestMock.mockReturnValue({
+    kehoachMock.mockReturnValue({
       data: { ly_do_label: "Giá đang tăng", so_phien_giu: 4, gia_vao: 61800 },
     })
     render(<DebriefModal data={winData} onClose={vi.fn()} />)
@@ -305,7 +317,7 @@ describe("DebriefModal", () => {
   // that would be a fabricated number — so the FE must not print the nonsense
   // "Giữ 0 phiên"/"0 phiên" either. It says what actually happened instead.
   it("★ never prints «Giữ 0 phiên» for a same-session round trip — it says «Trong cùng phiên»", () => {
-    kehoachLatestMock.mockReturnValue({
+    kehoachMock.mockReturnValue({
       data: { ly_do_label: "Thử cho biết", so_phien_giu: 0, gia_vao: 61800 },
     })
     render(<DebriefModal data={winData} onClose={vi.fn()} />)
@@ -317,11 +329,11 @@ describe("DebriefModal", () => {
     expect(screen.getByText("Trong cùng phiên")).toBeInTheDocument()
   })
 
-  // ★ `latest` returns `null` when nothing was recorded (buy made before this
+  // ★ The read returns `null` when nothing was recorded (buy made before this
   // shipped, or the non-fatal POST failed). Show "—", never a made-up chip or
   // a hold time of 0/1 phiên.
   it("★ shows «—» for both rows when there is no kehoach row — and no sub-line suffix", () => {
-    kehoachLatestMock.mockReturnValue({ data: null })
+    kehoachMock.mockReturnValue({ data: null })
     render(<DebriefModal data={winData} onClose={vi.fn()} />)
 
     expect(screen.getByText(/MUA 100 VNM → BÁN$/)).toBeInTheDocument()
@@ -333,16 +345,46 @@ describe("DebriefModal", () => {
     expect(screen.getAllByText("—").length).toBeGreaterThanOrEqual(3)
   })
 
-  it("does not query for a kehoach row while the modal is closed", () => {
+  // ★ The backend now answers `so_phien_giu: null` when the round trip has no
+  // matching sell — a length it does not know, rather than one counted to
+  // today. The chip is still real and must still show; only the hold time is "—".
+  it("★ shows the chip but «—» for a hold time the server reports as unknown", () => {
+    kehoachMock.mockReturnValue({
+      data: { ly_do_label: "Thấy trên mạng", so_phien_giu: null, gia_vao: 61800 },
+    })
+    render(<DebriefModal data={winData} onClose={vi.fn()} />)
+
+    expect(screen.getByText("Thấy trên mạng")).toBeInTheDocument()
+    expect(screen.getByText(/MUA 100 VNM → BÁN$/)).toBeInTheDocument()
+    expect(screen.queryByText(/phiên/)).not.toBeInTheDocument()
+    expect(screen.queryByText("Trong cùng phiên")).not.toBeInTheDocument()
+  })
+
+  // NOTE (was: "does not query for a kehoach row while the modal is closed").
+  // `useCap0Kehoach` is mocked away in this file, so its real
+  // `enabled: isAuthenticated && !!orderId` guard cannot be exercised here —
+  // the old name promised a guarantee this file structurally cannot make, and
+  // the assertion would have passed unchanged had the hook fetched
+  // unconditionally. The real guard is pinned in `hooks.test.tsx`
+  // ("useCap0Kehoach — the enabled guard"); what is checked HERE is only the
+  // modal's own half of the contract: a closed modal passes no order key down.
+  it("passes a null order key to the kehoach hook while the modal is closed", () => {
     render(<DebriefModal data={null} onClose={vi.fn()} />)
-    expect(kehoachLatestMock).toHaveBeenCalledWith(null)
+    expect(kehoachMock).toHaveBeenCalledWith(null)
   })
 
   it("still completes nhiệm vụ ⑤ when a retroactive Kết sổ is closed", () => {
     const onClose = vi.fn()
     render(
       <DebriefModal
-        data={{ n: 2, symbol: "VNM", quantity: 100, entryPrice: 62000, exitPrice: 58900 }}
+        data={{
+          n: 2,
+          symbol: "VNM",
+          quantity: 100,
+          entryPrice: 62000,
+          exitPrice: 58900,
+          buyOrderId: "buy-order-2",
+        }}
         onClose={onClose}
       />,
     )

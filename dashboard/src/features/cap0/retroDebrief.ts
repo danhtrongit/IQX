@@ -60,6 +60,8 @@ import type { DebriefData } from "./DebriefModal"
 
 /** The `VTOrder` fields this reconstruction reads (structural subset). */
 export interface RetroDebriefOrder {
+  /** `virtual_orders.id` — carried through as `DebriefData.buyOrderId`. */
+  id: string
   symbol: string
   side: "BUY" | "SELL"
   quantity: number
@@ -126,6 +128,12 @@ export function findRetroDebrief(
     quantity: sell.quantity,
     entryPrice: buy.price,
     exitPrice: sell.price,
+    // ★ The id of the buy MATCHED above — the same order `entryPrice` came
+    // from, so the Kết sổ's `Lý do mua`/`Thời gian giữ` describe the round trip
+    // it is actually printing. This is precisely what the symbol-keyed read it
+    // replaced could not do: buy VNM Mon (chip A) → sell Tue → buy VNM again
+    // Wed, and "the latest VNM buy" is Wednesday's still-open order.
+    buyOrderId: buy.id,
     // sl/tp intentionally omitted — see the module docstring.
   }
 }

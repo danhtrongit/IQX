@@ -32,6 +32,17 @@ import { useCap0Progress } from "./hooks"
  * §8, §13), so there is nothing left to carry.
  */
 export interface Cap0OrderEvent {
+  /**
+   * `virtual_orders.id` of the order that just filled.
+   *
+   * ★ Load-bearing for the Kết sổ, not bookkeeping. `Gbar` keeps each symbol's
+   * most recent BUY id and hands it to `DebriefData.buyOrderId`, which is the
+   * key `GET /cap0/kehoach?order_id=` reads the `Lý do mua` / `Thời gian giữ`
+   * rows under. Without it the Kết sổ can only ask "the latest buy of this mã",
+   * which after a re-entry is a different, still-open order. (Cấp 1's
+   * `KetsoDataCap1` carries an order id for the same reason.)
+   */
+  orderId: string
   symbol: string
   side: "buy" | "sell"
   quantity: number

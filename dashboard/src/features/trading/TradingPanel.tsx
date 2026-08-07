@@ -292,9 +292,9 @@ function OrderEntry({
   // when actually inside Cấp 0 (the `enabled` param), so this has zero
   // effect — no extra request, no hiding — outside a `Cap0Provider`.
   const { data: cap0Progress } = useCap0Progress(isCap0Active)
-  // `POST /cap0/kehoach` — persists the Kế hoạch chip for a Sân tập BUY (spec
-  // §10). Only ever CALLED inside Cấp 0 (guarded at the call site below), so
-  // this is inert on /bieu-do & /co-phieu.
+  // `POST /cap0/kehoach` — persists the Kế hoạch chip for a Cấp 0 BUY (spec
+  // §10), whatever `mode` the order carries. Only ever CALLED inside Cấp 0
+  // (guarded at the call site below), so this is inert on /bieu-do & /co-phieu.
   const recordCap0Kehoach = useRecordCap0Kehoach()
   const cap1Events = useCap1Events()
   // `isCap1Active` mirrors `isCap0Active` above — false outside a
@@ -450,7 +450,16 @@ function OrderEntry({
   const [method, setMethod] = useState<"market" | "limit">("market")
   const [price, setPrice] = useState<number | undefined>(undefined)
   const [volume, setVolume] = useState<number>(100)
-  const [reason, setReason] = useState<string | null>(null)
+  // Cấp 0 khối "Kế hoạch" — chip lý do đời thường.
+  //
+  // ★ GẮN THEO MÃ + XOÁ SAU KHI KHỚP (cùng luật `useLuaChonTheoMa` mà Cấp 6/7/8
+  // dùng ở trên). Chip này KHÔNG còn là trạng thái tạm của một lần bấm: nó được
+  // GHI vào `cap0_order_kehoach` và in ra ở dòng «Lý do mua» của màn Kết sổ. Một
+  // chip còn sót lại sau lệnh trước là một lời khai user chưa từng nói ra về
+  // lệnh này — và `requireReasonBeforeOrder` tắt hẳn sau nhiệm vụ ①, nên không
+  // có gì hỏi lại họ. Đổi mã cũng vậy: "Vì sao bạn chọn VNM?" không trả lời hộ
+  // được câu "Vì sao bạn chọn HPG?".
+  const [reason, setReason, resetReason] = useLuaChonTheoMa<string>(symbol)
 
   const task1Done = !!cap0Progress?.task_1_done_at
   const cap0Vis = cap0Visibility(cap0Progress)
@@ -701,6 +710,10 @@ function OrderEntry({
       // v3.0 removes cắt lỗ/chốt lời from Cấp 0 entirely, so there is nothing
       // to attach (see `Cap0OrderEvent`).
       cap0Events.onOrderFilled?.({
+        // ★ `Gbar` files this against the symbol and hands it to the Kết sổ as
+        // `buyOrderId` — the key `GET /cap0/kehoach?order_id=` reads the chip
+        // back under, i.e. the same order the chip was POSTed for just below.
+        orderId: order.id,
         symbol,
         side,
         quantity: order.quantity,
@@ -724,6 +737,10 @@ function OrderEntry({
           recordCap0Kehoach.mutateAsync({ orderId: order.id, lyDoDoiThuong: reason }),
         )
       }
+      // Chip đã dùng xong cho ĐÚNG lệnh vừa khớp: lệnh sau phải tự chọn lại.
+      // Nằm NGOÀI khối reset của Cấp 1 bên dưới (khối đó chỉ chạy trong
+      // `isCap1Active`, nên chip Cấp 0 chưa bao giờ được dọn).
+      if (side === "buy") resetReason()
       // Cấp 1 (spec §4 "Ghi hồ sơ khi đặt lệnh") — a BUY fill inside Cấp 1
       // (only reachable once `cap1SubmitDisabled` is false, i.e. lý do +
       // vùng mua are both set) records the Form Kế hoạch. `trangThai_luc_dat`

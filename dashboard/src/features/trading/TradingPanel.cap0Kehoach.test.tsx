@@ -21,8 +21,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
  * hook double.
  */
 
+// The terminal's symbol lives outside the panel and can change WITHOUT
+// unmounting it, so the chip-scoping describe below drives it through this ref
+// + a `rerender()` (the panel re-reads it every render, same as the real
+// `SymbolProvider`).
+const { symbolRef } = vi.hoisted(() => ({ symbolRef: { current: "VNM" } }))
 vi.mock("@/shared/contexts/symbol-context", () => ({
-  useSymbol: () => ({ symbol: "VNM", setSymbol: vi.fn() }),
+  useSymbol: () => ({ symbol: symbolRef.current, setSymbol: vi.fn() }),
 }))
 const priceData = {
   symbol: "VNM",
@@ -111,15 +116,21 @@ function BusSpy({ onFill }: { onFill: (e: Cap0OrderEvent) => void }) {
 
 function renderInCap0(onFill = vi.fn()) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  render(
+  // A FRESH element each time: React bails out of re-rendering a referentially
+  // identical one, so reusing a single `tree` would silently never re-read the
+  // symbol.
+  const tree = () => (
     <QueryClientProvider client={client}>
       <Cap0Provider>
         <TradingPanel />
         <BusSpy onFill={onFill} />
       </Cap0Provider>
-    </QueryClientProvider>,
+    </QueryClientProvider>
   )
-  return { onFill }
+  const view = render(tree())
+  // Re-renders the same tree — the panel is never unmounted, exactly as when
+  // the shared terminal switches mã underneath it.
+  return { onFill, rerender: () => view.rerender(tree()) }
 }
 
 /** Picks a chip then submits the BUY — the whole nhiệm vụ ① happy path. */
@@ -195,8 +206,106 @@ describe("TradingPanel — POST /cap0/kehoach at BUY time", () => {
   })
 })
 
+/**
+ * ★★ MỘT CHIP CHỈ NÓI VỀ ĐÚNG MỘT LỆNH — và về đúng mã nó được chọn cho.
+ *
+ * `reason` used to be plain unscoped `useState`, and the post-fill reset block
+ * lives inside the `isCap1Active` branch, so nothing ever cleared it. Once
+ * nhiệm vụ ① is done `requireReasonBeforeOrder` goes false, so nothing
+ * re-prompts either: the next BUY silently wrote a `cap0_order_kehoach` row
+ * carrying a chip the user picked for a DIFFERENT order — and the chip is now
+ * persisted, not transient. Same rule every other cấp already follows in this
+ * file via `useLuaChonTheoMa`.
+ */
+describe("TradingPanel — the Cấp 0 chip is bound to ONE order and ONE mã", () => {
+  const TASK1_DONE_PROGRESS = {
+    id: "p1",
+    user_id: "u1",
+    entered_at: "2026-07-21T00:00:00Z",
+    virtual_balance_init: 250_000_000,
+    // ★ Task ① done → `requireReasonBeforeOrder` false → a chip-less second BUY
+    // is NOT blocked. That is exactly why a leftover chip is dangerous here.
+    task_1_done_at: "2026-07-21T01:00:00Z",
+    task_2_done_at: null,
+    task_3_done_at: null,
+    task_4_done_at: null,
+    task_5_done_at: null,
+    task1_star_clicked: true,
+    task5_debrief_done: false,
+    graduated_at: null,
+    time_to_graduate_hours: null,
+  }
+
+  beforeEach(() => {
+    symbolRef.current = "VNM"
+    placeOrderMock.mockClear()
+    get.mockReset()
+    post.mockReset()
+    messageError.mockReset()
+    messageSuccess.mockReset()
+    get.mockImplementation((url: string) => ({
+      json: () =>
+        Promise.resolve(String(url).startsWith("cap0/progress") ? TASK1_DONE_PROGRESS : null),
+    }))
+    post.mockReturnValue({ json: () => Promise.resolve({}) })
+  })
+
+  it("★ does not re-file a spent chip against the NEXT order", async () => {
+    renderInCap0()
+    await waitFor(() => expect(screen.getByText("Thử cho biết")).toBeInTheDocument())
+
+    buyWithReason("Thử cho biết")
+    await waitFor(() =>
+      expect(post).toHaveBeenCalledWith("cap0/kehoach", {
+        json: {
+          order_id: "0e1b7c4a-1111-2222-3333-444455556666",
+          ly_do_doi_thuong: "Thử cho biết",
+        },
+      }),
+    )
+
+    // Second BUY, chips untouched — the user made no new declaration.
+    post.mockClear()
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+    await waitFor(() => expect(placeOrderMock).toHaveBeenCalledTimes(2))
+    expect(post).not.toHaveBeenCalledWith("cap0/kehoach", expect.anything())
+  })
+
+  it("★ clears the chip's selected state on screen once the order fills", async () => {
+    renderInCap0()
+    await waitFor(() => expect(screen.getByText("Thử cho biết")).toBeInTheDocument())
+
+    buyWithReason("Thử cho biết")
+    await waitFor(() => expect(placeOrderMock).toHaveBeenCalledTimes(1))
+    // The chip must not still read as "chosen" for the next, undeclared order.
+    await waitFor(() =>
+      expect(screen.getByText("Thử cho biết").className).not.toContain("cap0-chip--on"),
+    )
+  })
+
+  it("★ a chip picked for one mã never follows the user to another mã", async () => {
+    const { rerender } = renderInCap0()
+    await waitFor(() => expect(screen.getByText("Giá đang tăng")).toBeInTheDocument())
+    fireEvent.click(screen.getByText("Giá đang tăng"))
+    expect(screen.getByText("Giá đang tăng").className).toContain("cap0-chip--on")
+
+    // Terminal switches mã underneath the panel (no unmount).
+    symbolRef.current = "HPG"
+    rerender()
+    // (`.cap0-plan-q` splits the symbol into its own text node, so read the
+    // rendered question off the element rather than through a text matcher.)
+    expect(document.querySelector(".cap0-plan-q")?.textContent).toBe("Vì sao bạn chọn HPG?")
+    expect(screen.getByText("Giá đang tăng").className).not.toContain("cap0-chip--on")
+
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+    await waitFor(() => expect(placeOrderMock).toHaveBeenCalledTimes(1))
+    expect(post).not.toHaveBeenCalledWith("cap0/kehoach", expect.anything())
+  })
+})
+
 describe("TradingPanel — POST /cap0/kehoach never leaks outside Cấp 0", () => {
   beforeEach(() => {
+    symbolRef.current = "VNM"
     placeOrderMock.mockClear()
     get.mockReset()
     post.mockReset()

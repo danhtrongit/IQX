@@ -5,6 +5,10 @@
 export const cap0Keys = {
   all: ["cap0"] as const,
   progress: () => ["cap0", "progress"] as const,
-  /** `GET /cap0/kehoach/latest?symbol=` — per-symbol, so two symbols never share a row. */
-  kehoachLatest: (symbol: string) => ["cap0", "kehoach", "latest", symbol] as const,
+  /**
+   * `GET /cap0/kehoach?order_id=` — per BUY ORDER, so two round trips of the
+   * SAME mã never share a cache entry (the old per-symbol key made a re-entry
+   * serve the previous round trip's Kết sổ rows, and vice versa).
+   */
+  kehoach: (orderId: string) => ["cap0", "kehoach", orderId] as const,
 } as const
