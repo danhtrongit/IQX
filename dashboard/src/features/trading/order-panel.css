@@ -272,8 +272,11 @@
   margin-bottom: 10px;
 }
 
-.op-field-label,
-.op-field label {
+/* ★ Mockup viết luật này là `.op-field label`. KHÔNG bê nguyên được: Arco dựng
+   mỗi nút radio "% số dư" bằng một `<label class="arco-radio-button">`, nên
+   `.op-field label` biến cả bốn nút thành block chữ hoa 11px xếp dọc. Nhắm
+   bằng class riêng là hết đường đụng vào label của bên thứ ba. */
+.op-field-label {
   display: block;
   font-size: 11px;
   font-weight: 600;
@@ -296,77 +299,101 @@
 }
 
 /* Arco `InputNumber` / `Select`: giữ nguyên component (role spinbutton, phím
-   mũi tên, min/step, `loading`…), chỉ mặc lại vỏ. `.op-field` phía trước nâng
-   specificity lên 0,2,0 nên không cần `!important` để thắng `.arco-*`. */
-.op-field .arco-input-number,
-.op-field .arco-select-view {
-  background: var(--bg3, #282c3d);
+   mũi tên, min/step…), chỉ mặc lại vỏ.
+
+   ★ Hộp CÓ VIỀN của `InputNumber` là `.arco-input-inner-wrapper`, KHÔNG phải
+   `.arco-input-number` — cái sau chỉ là `.arco-input-group-wrapper` bọc ngoài
+   và không vẽ gì. Ô nhập thật bên trong là `.arco-input`. Trạng thái focus là
+   `.arco-input-inner-wrapper-focus` (Arco khai ở 0,2,0 nên ở đây phải chồng 2
+   class + `.op-panel` mới chắc chắn thắng, không phụ thuộc thứ tự bundle). */
+.op-panel .op-field .arco-input-inner-wrapper,
+.op-panel .op-field .arco-select-view {
+  background-color: var(--bg3, #282c3d);
   border: 1px solid var(--bd, #39405a);
   border-radius: 6px;
+  padding: 0 10px;
   color: var(--t1, inherit);
 }
 
-.op-field .arco-input-number:hover,
-.op-field .arco-select:hover .arco-select-view {
-  background: var(--bg3, #282c3d);
+.op-panel .op-field .arco-input-inner-wrapper:hover,
+.op-panel .op-field .arco-select:hover .arco-select-view {
+  background-color: var(--bg3, #282c3d);
   border-color: var(--bd, #39405a);
 }
 
-.op-field .arco-input-number-focus,
-.op-field .arco-select-focused .arco-select-view {
-  background: var(--bg3, #282c3d);
+.op-panel .op-field .arco-input-inner-wrapper.arco-input-inner-wrapper-focus,
+.op-panel .op-field .arco-select-focused .arco-select-view {
+  background-color: var(--bg3, #282c3d);
   border-color: var(--brand, #4f8ff7);
   box-shadow: none;
 }
 
-.op-field .arco-input-number-input,
-.op-field .arco-select-view-value,
-.op-field .arco-select-view-input {
-  padding: 9px 10px;
+/* Mockup: `padding:9px 10px` + chữ 14px ⇒ hộp cao ~40px. Padding dọc đặt bằng
+   chiều cao ô nhập (Arco tính chiều cao từ `.arco-input`, không từ padding của
+   wrapper), nên 38px + 2px viền = đúng 40px. */
+.op-panel .op-field .arco-input {
+  height: 38px;
+  background-color: transparent;
   font-family: var(--cap0-font-mono, ui-monospace, monospace);
   font-variant-numeric: tabular-nums;
   font-size: 14px;
   font-weight: 600;
   color: var(--t1, inherit);
-  background: transparent;
 }
 
-.op-field .arco-select-view-value {
-  /* Tên loại lệnh là CHỮ, không phải số — mono ở đây đọc như mã máy. */
-  font-family: inherit;
-  font-variant-numeric: normal;
+.op-panel .op-field .arco-select-view {
+  display: flex;
+  align-items: center;
+  height: 40px;
+}
+
+/* Tên loại lệnh là CHỮ, không phải số — mono ở đây đọc như mã máy. */
+.op-panel .op-field .arco-select-view-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--t1, inherit);
 }
 
 /* Mũi tên tăng/giảm của `mode="embed"` — chỉ hiện khi hover, nên chúng chỉ cần
    không chửi nền tối. */
-.op-field .arco-input-number-step-button {
-  background: var(--bg4, #323649);
+.op-panel .op-field .arco-input-number-step-button {
+  background-color: var(--bg4, #323649);
   border-color: var(--bd, #39405a);
   color: var(--t2, inherit);
 }
 
-.op-field .arco-input-number-step-button:hover {
-  background: var(--bd, #39405a);
+.op-panel .op-field .arco-input-number-step-button:hover {
+  background-color: var(--bd, #39405a);
   color: var(--t1, inherit);
 }
 
-.op-field .arco-select-arrow-icon,
-.op-field .arco-input-number-step-button svg {
+.op-panel .op-field .arco-select-arrow-icon {
   color: var(--t3, #8a90a5);
 }
 
 /* Nút % số dư — Cấp 0 ẩn hẳn (spec v3.0 §8), Cấp 1 vẫn có. Mockup không vẽ,
-   nên chúng chỉ cần thôi sáng chói giữa thẻ tối. */
-.op-pct.arco-radio-group-button {
-  background: var(--bg3, #282c3d);
+   nên chúng chỉ cần thôi sáng chói giữa thẻ tối. Class nhóm là
+   `.arco-radio-group-type-button`. */
+.op-panel .op-pct.arco-radio-group-type-button {
+  background-color: var(--bg3, #282c3d);
 }
 
-.op-pct .arco-radio-button {
+.op-panel .op-pct .arco-radio-button {
   color: var(--t2, inherit);
 }
 
-.op-pct .arco-radio-button.arco-radio-checked {
-  background: var(--bg4, #323649);
+/* Arco tô nền từng nút bằng `::after` — một lớp phủ tràn -3px màu
+   `--color-fill-2` (gần TRẮNG ở theme sáng). Không dập thì nó phủ trắng đè lên
+   nền tối của cả nhóm. */
+.op-panel .op-pct .arco-radio-button::after {
+  background-color: transparent;
+}
+
+.op-panel .op-pct .arco-radio-button.arco-radio-checked::after {
+  background-color: var(--bg4, #323649);
+}
+
+.op-panel .op-pct .arco-radio-button.arco-radio-checked {
   color: var(--t1, inherit);
 }
 
@@ -410,39 +437,42 @@
   border-color: var(--bd, #39405a);
 }
 
-/* ── Nút đặt lệnh (mockup `.op-btn`) ──────────────────────────────────────── */
-.op-panel .op-btn,
-.op-panel .op-btn:hover,
-.op-panel .op-btn:focus {
+/* ── Nút đặt lệnh (mockup `.op-btn`) ──────────────────────────────────────────
+   ★ `!important` ở đây là CÓ CHỦ ĐÍCH, không phải lười: luật nút của Arco leo
+   tới 0,4,0 bằng chuỗi `:not()`
+   (`.arco-btn-secondary:not(.arco-btn-disabled):not(.arco-btn-loading):hover`),
+   nên không có cách nào thắng bằng specificity mà vẫn đọc được. Đây cũng đúng
+   cách bản cũ đã làm — nó dùng `!bg-up`/`!border-up` của Tailwind, tức cùng
+   một `!important`. */
+.op-panel .op-btn {
   display: block;
   width: 100%;
-  height: auto;
-  padding: 14px;
-  border: none;
-  border-radius: 8px;
+  height: auto !important;
+  padding: 14px !important;
+  border: none !important;
+  border-radius: 8px !important;
   font-family: var(--cap0-font-display, system-ui, sans-serif);
-  font-size: 14px;
+  font-size: 14px !important;
   font-weight: 700;
   letter-spacing: 0.5px;
-  background: var(--up, #35d07f);
-  color: #0e1a13;
+  background-color: var(--up, #35d07f) !important;
+  color: #0e1a13 !important;
 }
 
 .op-panel .op-btn:hover {
   filter: brightness(1.05);
 }
 
-.op-panel .op-btn--sell,
-.op-panel .op-btn--sell:hover,
-.op-panel .op-btn--sell:focus {
-  background: var(--down, #ff6b6b);
-  color: #2a0f0f;
+.op-panel .op-btn.op-btn--sell {
+  background-color: var(--down, #ff6b6b) !important;
+  color: #2a0f0f !important;
 }
 
-.op-panel .op-btn.arco-btn-disabled,
-.op-panel .op-btn.arco-btn-disabled:hover {
-  background: var(--bg4, #323649);
-  color: var(--t3, #8a90a5);
+/* Cổng cứng của Cấp 1 khoá nút này tới khi đủ lý do + vùng mua — trạng thái
+   khoá phải NHÌN RA được là khoá, nếu không user bấm mãi không hiểu vì sao. */
+.op-panel .op-btn.arco-btn-disabled {
+  background-color: var(--bg4, #323649) !important;
+  color: var(--t3, #8a90a5) !important;
   filter: none;
   cursor: not-allowed;
 }

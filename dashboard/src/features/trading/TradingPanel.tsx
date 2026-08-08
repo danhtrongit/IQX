@@ -1212,7 +1212,7 @@ function OrderEntry({
           >
             <div className={skin ? "op-field" : "space-y-1"}>
               <label
-                className={skin ? undefined : "text-xs font-medium text-[var(--color-text-3)]"}
+                className={skin ? "op-field-label" : "text-xs font-medium text-[var(--color-text-3)]"}
               >
                 Giá
               </label>
@@ -1242,7 +1242,7 @@ function OrderEntry({
         <div className={skin ? "op-field" : "space-y-1"}>
           <div className={skin ? "op-field-row" : "flex items-center justify-between"}>
             <label
-              className={skin ? undefined : "text-xs font-medium text-[var(--color-text-3)]"}
+              className={skin ? "op-field-label" : "text-xs font-medium text-[var(--color-text-3)]"}
             >
               Khối lượng
             </label>
