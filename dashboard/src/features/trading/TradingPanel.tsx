@@ -274,11 +274,17 @@ function OrderEntry({
   data,
   balance,
   positionQty,
+  side,
 }: {
   symbol: string
   data: PriceBoardData | null
   balance: number
   positionQty: number
+  /** ★ `side` được NÂNG lên `GatedOrderEntry` vì tabs MUA/BÁN giờ nằm trên
+      cổng Premium (mockup xếp tabs trước ticker, mà ticker phải hiện cả khi
+      form bị chặn). Mọi chỗ ĐỌC `side` bên dưới giữ nguyên; chỉ tabs mới ghi
+      nó, và tabs không còn ở đây. */
+  side: "buy" | "sell"
 }) {
   const navigate = useNavigate()
   const placeOrder = usePlaceOrder()
@@ -446,7 +452,6 @@ function OrderEntry({
     value: HanhViCanhBao
     canhBaoDaHien: LoaiCanhBao[]
   } | null>(null)
-  const [side, setSide] = useState<"buy" | "sell">("buy")
   const [method, setMethod] = useState<"market" | "limit">("market")
   const [price, setPrice] = useState<number | undefined>(undefined)
   const [volume, setVolume] = useState<number>(100)
@@ -1133,20 +1138,10 @@ function OrderEntry({
 
   return (
     <div className="space-y-2 px-2 pb-3">
-      {/* Buy / Sell — wrapped for the Bảng điện tour's point ⑤ (MUA/BÁN +
-          Số dư, spec `IQX-Tour-BangDien.md`); Số dư itself lives in
-          `AccountStrip` just above (not a DOM sibling here without a
-          bigger restructure) and is covered in that step's copy instead. */}
-      <div data-tour-id="cap0-tour-buysell-balance">
-        <Tabs
-          activeTab={side}
-          onChange={(v) => setSide(v as "buy" | "sell")}
-          className="mt-2 [&_.arco-tabs-content]:hidden"
-        >
-          <Tabs.TabPane key="buy" title={<span className="font-semibold">MUA</span>} />
-          <Tabs.TabPane key="sell" title={<span className="font-semibold">BÁN</span>} />
-        </Tabs>
-      </div>
+      {/* ★ Tabs MUA/BÁN + `StockHeader` + `AccountStrip` đã dời LÊN
+          `GatedOrderEntry` (xem chú thích ở đó): chúng phải hiện KỂ CẢ khi
+          cổng Premium chặn form, nếu không user không Premium trên /bieu-do
+          và /co-phieu sẽ mất luôn giá và số dư. */}
 
       {/* Order method + Price — hidden until nhiệm vụ ⑤ while in Cấp 0
           (spec §8; `hidePriceAndType` is always false outside Cấp 0, so this
@@ -1799,15 +1794,52 @@ function GatedOrderEntry(props: {
   data: PriceBoardData | null
   balance: number
   positionQty: number
+  priceLoading: boolean
+  hideHeader: boolean
 }) {
   const { isPremium, isLoading } = usePremiumStatus()
   const { isCap0Active } = useCap0Events()
   const navigate = useNavigate()
+  const [side, setSide] = useState<"buy" | "sell">("buy")
+
+  /**
+   * ★ Vỏ thẻ theo mockup `iqx-cap0-datlenh.html` / `iqx-cap1-datlenh.html`:
+   * MUA/BÁN → ticker + Trần/TC/Sàn → Số dư, rồi mới tới phần form. Trước đây
+   * `StockHeader`/`AccountStrip` là hai khối rời NẰM TRÊN tabs ở `TradingPanel`,
+   * nên panel đọc ngược mockup.
+   *
+   * Cụm này render TRƯỚC mọi nhánh cổng bên dưới — đó là điểm mấu chốt: nếu
+   * đặt nó trong `OrderEntry` thì user không Premium ngoài Cấp 0 (thấy lời mời
+   * nâng cấp thay cho form) sẽ mất luôn giá và số dư trên /bieu-do, /co-phieu.
+   *
+   * `data-tour-id` giữ nguyên cho tour Bảng điện điểm ⑤ (MUA/BÁN + Số dư) —
+   * và giờ hai thứ đó cuối cùng cũng là DOM sibling thật, đúng như bước tour
+   * đó luôn muốn.
+   */
+  const cardHead = (
+    <div data-tour-id="cap0-tour-buysell-balance">
+      <Tabs
+        activeTab={side}
+        onChange={(v) => setSide(v as "buy" | "sell")}
+        className="mt-2 [&_.arco-tabs-content]:hidden"
+      >
+        <Tabs.TabPane key="buy" title={<span className="font-semibold">MUA</span>} />
+        <Tabs.TabPane key="sell" title={<span className="font-semibold">BÁN</span>} />
+      </Tabs>
+      {!props.hideHeader && (
+        <StockHeader symbol={props.symbol} data={props.data} isLoading={props.priceLoading} />
+      )}
+      <AccountStrip positionQty={props.positionQty} symbol={props.symbol} />
+    </div>
+  )
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-4">
-        <Spin />
+      <div className="space-y-2 px-2 pb-3">
+        {cardHead}
+        <div className="flex justify-center py-4">
+          <Spin />
+        </div>
       </div>
     )
   }
@@ -1818,18 +1850,26 @@ function GatedOrderEntry(props: {
   // provider there) keep the premium gate exactly as before.
   if (!isPremium && !isCap0Active) {
     return (
-      <div className="space-y-2 px-2 py-4 text-center">
-        <p className="text-xs text-[var(--color-text-3)]">
-          Đặt lệnh Đấu trường ảo yêu cầu gói Premium.
-        </p>
-        <Button type="primary" size="small" icon={<IconThunderbolt />} onClick={() => navigate("/nang-cap")}>
-          Nâng cấp Premium
-        </Button>
+      <div className="space-y-2 px-2 pb-3">
+        {cardHead}
+        <div className="space-y-2 px-2 py-4 text-center">
+          <p className="text-xs text-[var(--color-text-3)]">
+            Đặt lệnh Đấu trường ảo yêu cầu gói Premium.
+          </p>
+          <Button type="primary" size="small" icon={<IconThunderbolt />} onClick={() => navigate("/nang-cap")}>
+            Nâng cấp Premium
+          </Button>
+        </div>
       </div>
     )
   }
 
-  return <OrderEntry {...props} />
+  return (
+    <div className="space-y-2 px-2 pb-3">
+      {cardHead}
+      <OrderEntry {...props} side={side} />
+    </div>
+  )
 }
 
 /* ── Main panel ── */
@@ -1865,17 +1905,19 @@ export function TradingPanel({ hideHeader = false }: { hideHeader?: boolean } = 
 
   return (
     <aside className="flex h-full w-full shrink-0 flex-col bg-[var(--color-bg-2)]">
-      {!hideHeader && <StockHeader symbol={symbol} data={data} isLoading={isLoading} />}
-
+      {/* ★ `StockHeader` và `AccountStrip` KHÔNG còn đứng riêng ở đây nữa —
+          chúng đã dời vào trong `OrderEntry`, ngay sau tabs MUA/BÁN, để cả
+          panel là MỘT thẻ đúng thứ tự mockup. Sổ lệnh bid/ask vẫn ở trên cùng
+          (mockup Cấp 0/1 không vẽ nó vì nó bị ẩn tới tận Cấp 2). */}
       <div className="min-h-0 flex-1 overflow-y-auto">
         {data && !hideOrderBook && <OrderBookView data={data} />}
-        <Divider className="my-1" />
-        <AccountStrip positionQty={positionQty} symbol={symbol} />
         <GatedOrderEntry
           symbol={symbol}
           data={data}
           balance={account?.balance ?? 0}
           positionQty={positionQty}
+          priceLoading={isLoading}
+          hideHeader={hideHeader}
         />
       </div>
     </aside>
