@@ -108,6 +108,32 @@ import {
   useSymbolInfo,
 } from "@/features/watchlist"
 import { useAccount, usePortfolio, usePlaceOrder, useActivateAccount } from "./hooks"
+import "./order-panel.css"
+
+/**
+ * Panel này có mặc áo của mockup `iqx-cap0-datlenh.html` /
+ * `iqx-cap1-datlenh.html` hay không.
+ *
+ * ★ CHỈ Cấp 0 và Cấp 1. /bieu-do và /co-phieu đi theo theme sáng/tối của app
+ * và có chrome riêng — thẻ tối cứng này đặt vào đó là chửi nhau.
+ *
+ * ★★ `!isCap2Active` KHÔNG thừa. Phiên Cấp 2→8 đều có `isCap1Active === true`
+ * (Cấp 2 giữ nguyên Form Kế hoạch của Cấp 1, và mỗi cấp trên giữ lại khối của
+ * cấp dưới), nên nếu chỉ hỏi `isCap0Active || isCap1Active` thì áo này lan tới
+ * tận Cấp 8 — nơi panel còn có SL/TP, Quản lý vốn, Đọc 5 lớp, Đối chiếu, Đọc
+ * sổ lệnh, Kiểm tra danh mục. Mockup Cấp 0/1 không vẽ khối nào trong số đó, nên
+ * kết quả sẽ là nửa thẻ áo mới, nửa thẻ áo Arco cũ. `isCap2Active` là mốc thấp
+ * nhất phân biệt được "Cấp 1 thật" với "Cấp 2 trở lên".
+ */
+function useMockupPanelSkin(): "cap0" | "cap1" | null {
+  const { isCap0Active } = useCap0Events()
+  const { isCap1Active } = useCap1Events()
+  const { isCap2Active } = useCap2Events()
+  if (isCap0Active) return "cap0"
+  // Mockup Cấp 1 đổi accent brand → đồng (`--copper`) ở thẻ KẾ HOẠCH.
+  if (isCap1Active && !isCap2Active) return "cap1"
+  return null
+}
 
 /* ── formatting helpers ── */
 function fmtPrice(price: number): string {
@@ -294,6 +320,7 @@ function OrderEntry({
   // Kế hoạch block + its reason-gate below are scoped to it too, so neither
   // has any effect on normal trading outside Cấp 0.
   const { isCap0Active } = cap0Events
+  const skin = useMockupPanelSkin()
   // Hide-by-level (spec §8) — `useCap0Progress(isCap0Active)` only queries
   // when actually inside Cấp 0 (the `enabled` param), so this has zero
   // effect — no extra request, no hiding — outside a `Cap0Provider`.
@@ -1137,7 +1164,9 @@ function OrderEntry({
   }
 
   return (
-    <div className="space-y-2 px-2 pb-3">
+    // Có skin thì thẻ ngoài (`.op-panel`) đã lo padding + nhịp dọc, phần thân
+    // chỉ cần trong suốt; không có skin thì giữ nguyên lớp cũ.
+    <div className={skin ? undefined : "space-y-2 px-2 pb-3"}>
       {/* ★ Tabs MUA/BÁN + `StockHeader` + `AccountStrip` đã dời LÊN
           `GatedOrderEntry` (xem chú thích ở đó): chúng phải hiện KỂ CẢ khi
           cổng Premium chặn form, nếu không user không Premium trên /bieu-do
@@ -1834,6 +1863,12 @@ function GatedOrderEntry(props: {
   const { isCap0Active } = useCap0Events()
   const navigate = useNavigate()
   const [side, setSide] = useState<"buy" | "sell">("buy")
+  const skin = useMockupPanelSkin()
+
+  /** Vỏ thẻ — mockup `.order-panel` khi có skin, còn lại giữ nguyên như cũ. */
+  const shell = skin
+    ? cn("op-panel", skin === "cap1" && "op-panel--cap1")
+    : "space-y-2 px-2 pb-3"
 
   /**
    * ★ Vỏ thẻ theo mockup `iqx-cap0-datlenh.html` / `iqx-cap1-datlenh.html`:
@@ -1849,16 +1884,48 @@ function GatedOrderEntry(props: {
    * và giờ hai thứ đó cuối cùng cũng là DOM sibling thật, đúng như bước tour
    * đó luôn muốn.
    */
+  /**
+   * Tabs MUA/BÁN. Có skin thì đây là segmented control của mockup (`.op-tabs`)
+   * — Arco `Tabs` dựng header + ink bar + content pane, muốn ra hình này phải
+   * gỡ gần hết nên thay hẳn bằng 2 `<button>` thật. Button gốc giữ nguyên focus
+   * bằng Tab và kích hoạt bằng Enter/Space, thêm `role="tab"`/`aria-selected`
+   * để screen reader vẫn đọc ra đây là một cặp tab.
+   *
+   * KHÔNG có skin thì Arco `Tabs` y nguyên — /bieu-do, /co-phieu và Cấp 2→8
+   * không đổi một pixel nào.
+   */
+  const tabs = skin ? (
+    <div className="op-tabs" role="tablist" aria-label="Chiều lệnh">
+      {(["buy", "sell"] as const).map((v) => (
+        <button
+          key={v}
+          type="button"
+          role="tab"
+          aria-selected={side === v}
+          onClick={() => setSide(v)}
+          className={cn(
+            "op-tab",
+            side === v && (v === "buy" ? "op-tab--on-buy" : "op-tab--on-sell"),
+          )}
+        >
+          {v === "buy" ? "MUA" : "BÁN"}
+        </button>
+      ))}
+    </div>
+  ) : (
+    <Tabs
+      activeTab={side}
+      onChange={(v) => setSide(v as "buy" | "sell")}
+      className="mt-2 [&_.arco-tabs-content]:hidden"
+    >
+      <Tabs.TabPane key="buy" title={<span className="font-semibold">MUA</span>} />
+      <Tabs.TabPane key="sell" title={<span className="font-semibold">BÁN</span>} />
+    </Tabs>
+  )
+
   const cardHead = (
     <div data-tour-id="cap0-tour-buysell-balance">
-      <Tabs
-        activeTab={side}
-        onChange={(v) => setSide(v as "buy" | "sell")}
-        className="mt-2 [&_.arco-tabs-content]:hidden"
-      >
-        <Tabs.TabPane key="buy" title={<span className="font-semibold">MUA</span>} />
-        <Tabs.TabPane key="sell" title={<span className="font-semibold">BÁN</span>} />
-      </Tabs>
+      {tabs}
       {!props.hideHeader && (
         <StockHeader symbol={props.symbol} data={props.data} isLoading={props.priceLoading} />
       )}
@@ -1868,7 +1935,7 @@ function GatedOrderEntry(props: {
 
   if (isLoading) {
     return (
-      <div className="space-y-2 px-2 pb-3">
+      <div className={shell}>
         {cardHead}
         <div className="flex justify-center py-4">
           <Spin />
@@ -1883,7 +1950,7 @@ function GatedOrderEntry(props: {
   // provider there) keep the premium gate exactly as before.
   if (!isPremium && !isCap0Active) {
     return (
-      <div className="space-y-2 px-2 pb-3">
+      <div className={shell}>
         {cardHead}
         <div className="space-y-2 px-2 py-4 text-center">
           <p className="text-xs text-[var(--color-text-3)]">
@@ -1898,7 +1965,7 @@ function GatedOrderEntry(props: {
   }
 
   return (
-    <div className="space-y-2 px-2 pb-3">
+    <div className={shell}>
       {cardHead}
       <OrderEntry {...props} side={side} />
     </div>
@@ -1914,6 +1981,7 @@ export function TradingPanel({ hideHeader = false }: { hideHeader?: boolean } = 
   const { isCap0Active } = useCap0Events()
   const { isCap1Active } = useCap1Events()
   const { isCap2Active } = useCap2Events()
+  const skin = useMockupPanelSkin()
   // Hide-by-level — sổ lệnh bid/ask is hidden for the WHOLE of Cấp 0 and Cấp
   // 1 and opens at Cấp 2. Cấp 0 spec v3.0 §8 and Cấp 1 spec §0 say the same
   // thing from their own side ("Lên Cấp 2 (không hiện ở Cấp 0 và Cấp 1)" /
@@ -1937,7 +2005,16 @@ export function TradingPanel({ hideHeader = false }: { hideHeader?: boolean } = 
   }, [portfolio, symbol])
 
   return (
-    <aside className="flex h-full w-full shrink-0 flex-col bg-[var(--color-bg-2)]">
+    <aside
+      className={cn(
+        "flex h-full w-full shrink-0 flex-col",
+        // ★ Ngoài Cấp 0/1 giữ nền Arco như cũ. TRONG Cấp 0/1 phải bỏ nó đi:
+        // `--color-bg-2` đi theo theme sáng/tối của app, nên ở chế độ sáng
+        // panel là một mảng TRẮNG nằm giữa trang tối — đây là lý do panel
+        // "không giống mockup" rõ nhất, trước cả chuyện bo góc hay font.
+        skin ? "op-shell" : "bg-[var(--color-bg-2)]",
+      )}
+    >
       {/* ★ `StockHeader` và `AccountStrip` KHÔNG còn đứng riêng ở đây nữa —
           chúng đã dời vào trong `OrderEntry`, ngay sau tabs MUA/BÁN, để cả
           panel là MỘT thẻ đúng thứ tự mockup. Sổ lệnh bid/ask vẫn ở trên cùng

@@ -1,0 +1,450 @@
+/* ============================================================
+   IQX · Panel đặt lệnh — áo của mockup
+   `docs/superpowers/specs/cap0/iqx-cap0-datlenh.html`
+   `docs/superpowers/specs/cap1/iqx-cap1-datlenh.html`
+   ------------------------------------------------------------
+   CHỈ dùng ở Cấp 0 và Cấp 1 (`TradingPanel` gắn `.op-panel` khi
+   `isCap0Active || (isCap1Active && !isCap2Active)`). /bieu-do và
+   /co-phieu có bộ chrome sáng của riêng chúng — thẻ tối này đặt
+   cạnh đó sẽ chửi nhau, nên không class nào ở đây được gắn ngoài
+   hai cấp ấy.
+
+   TOKEN: lấy nguyên bộ của `features/cap0/cap0.css` (spec §11) —
+   panel luôn nằm dưới wrapper `.cap0` của `CapNTradingPage`. Mỗi
+   luật vẫn kèm literal fallback (đúng lệ `.cap0-mode`/`.cap0-plan`)
+   để thẻ còn đọc được nếu có ngày nó bị mount ngoài phạm vi đó.
+
+   FONT: mockup gọi 'JetBrains Mono' + 'Space Grotesk' + 'Inter' qua
+   `fonts.googleapis.com`. App CHỈ nạp Space Grotesk (import ở
+   cap0.css) và CSP prod có thể chặn cả cái đó — nên số dùng
+   `--cap0-font-mono` (chuỗi mono hệ thống, KHÔNG thêm import mạng
+   nào) và chữ hiển thị dùng `--cap0-font-display` vốn đã có sẵn
+   fallback. `font-variant-numeric: tabular-nums` mới là thứ giữ
+   cột số thẳng hàng, và nó không phụ thuộc webfont.
+   ============================================================ */
+
+/* ── Vỏ ngoài: thẻ nổi trên nền trang, thay nền Arco sáng ────────────────────
+   `aside` của `TradingPanel` mặc định ăn `--color-bg-2` (token Arco, đi theo
+   light/dark của app) — tức là ở chế độ sáng nó là một mảng TRẮNG nằm giữa
+   trang Cấp 0 tối thui. Đây mới là lý do panel "không giống mockup" nhất. */
+.op-shell {
+  background: var(--bg1, #171923);
+  padding: 10px;
+}
+
+.op-panel {
+  background: var(--bg2, #1f2230);
+  border: 1px solid var(--bd, #39405a);
+  border-radius: 12px;
+  padding: 16px;
+  color: var(--t1, inherit);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* ── Tabs MUA/BÁN (mockup `.op-tabs`) — segmented control, KHÔNG phải tab Arco.
+   Arco `Tabs` dựng header + ink bar + content pane; muốn ra hình này phải gỡ
+   gần hết, nên ở hai cấp này nó được thay bằng 2 `<button>` thật (giữ
+   `role="tab"`, focus + Enter/Space của button gốc). Ngoài Cấp 0/1 tab Arco
+   nguyên vẹn. ─────────────────────────────────────────────────────────────── */
+.op-tabs {
+  display: flex;
+  gap: 0;
+  padding: 3px;
+  background: var(--bg3, #282c3d);
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+
+.op-tab {
+  flex: 1;
+  padding: 9px;
+  text-align: center;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--t2, inherit);
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.op-tab:hover {
+  color: var(--t1, inherit);
+}
+
+.op-tab--on-buy {
+  background: rgba(53, 208, 127, 0.16);
+  color: var(--up, #35d07f);
+}
+
+/* Mockup chỉ vẽ trạng thái MUA đang bật; BÁN lấy đối xứng qua `--down`. */
+.op-tab--on-sell {
+  background: rgba(255, 107, 107, 0.16);
+  color: var(--down, #ff6b6b);
+}
+
+/* ── Ticker (mockup `.op-ticker` + `.op-sub`) ─────────────────────────────── */
+.op-ticker {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.op-ticker-id {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.op-ticker-code {
+  font-family: var(--cap0-font-display, system-ui, sans-serif);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--t1, inherit);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.op-ticker-code:hover {
+  color: var(--brand, #4f8ff7);
+}
+
+.op-ticker-star {
+  display: inline-flex;
+  align-items: center;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--t3, #8a90a5);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.op-ticker-star--on {
+  color: var(--warn, #ffc53d);
+}
+
+.op-ticker-price {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  flex-shrink: 0;
+  font-family: var(--cap0-font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.op-ticker-chg {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.op-sub {
+  font-size: 11px;
+  color: var(--t3, #8a90a5);
+  margin-bottom: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Trần / TC / Sàn (mockup `.op-refs`) ─────────────────────────────────────
+   Lưới hairline: `gap: 1px` trên nền `--bd` — khe hở CHÍNH LÀ đường kẻ. Muốn
+   thấy được khe thì các ô con phải có nền đục (`--bg3`); ô trong suốt là lưới
+   biến mất.
+
+   Ở Cấp 1 hàng KL/NN/GTGD vẫn hiện (chúng chỉ bị ẩn ở Cấp 0), nên lưới tự
+   xuống thành 2 hàng 3 cột — vẫn đúng hình, chỉ cao gấp đôi. */
+.op-refs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px;
+  background: var(--bd, #39405a);
+  border: 1px solid var(--bd, #39405a);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.op-ref {
+  background: var(--bg3, #282c3d);
+  padding: 6px 8px;
+  text-align: center;
+}
+
+.op-ref-l {
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--t3, #8a90a5);
+  margin-bottom: 2px;
+}
+
+.op-ref-v {
+  font-family: var(--cap0-font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--t1, inherit);
+}
+
+.op-ref-v--ceil {
+  color: var(--ceil, #d48aff);
+}
+
+.op-ref-v--tc {
+  color: var(--warn, #ffc53d);
+}
+
+.op-ref-v--floor {
+  color: var(--floor, #4dc3ff);
+}
+
+.op-ref-v--up {
+  color: var(--up, #35d07f);
+}
+
+.op-ref-v--down {
+  color: var(--down, #ff6b6b);
+}
+
+/* ── Số dư (mockup `.op-balance`) ────────────────────────────────────────── */
+.op-balance {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  background: var(--bg3, #282c3d);
+  border-radius: 7px;
+  margin-bottom: 14px;
+}
+
+.op-balance-l {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--t2, inherit);
+}
+
+.op-balance-v {
+  font-family: var(--cap0-font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--t1, inherit);
+}
+
+/* Dòng phụ của Số dư (lãi/lỗ + WR + "đang giữ") — Cấp 0 ẩn hẳn, Cấp 1 vẫn có
+   nên nó cần một chỗ đứng tử tế trong thẻ thay vì trôi tự do. */
+.op-balance-extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: -8px 0 14px;
+  padding: 0 11px;
+  font-size: 10px;
+  color: var(--t3, #8a90a5);
+}
+
+/* ── Ô nhập (mockup `.op-field`) ──────────────────────────────────────────── */
+.op-field {
+  margin-bottom: 10px;
+}
+
+.op-field-label,
+.op-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--t2, inherit);
+  margin-bottom: 4px;
+}
+
+.op-field-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.op-field-max {
+  font-size: 10px;
+  color: var(--t3, #8a90a5);
+}
+
+/* Arco `InputNumber` / `Select`: giữ nguyên component (role spinbutton, phím
+   mũi tên, min/step, `loading`…), chỉ mặc lại vỏ. `.op-field` phía trước nâng
+   specificity lên 0,2,0 nên không cần `!important` để thắng `.arco-*`. */
+.op-field .arco-input-number,
+.op-field .arco-select-view {
+  background: var(--bg3, #282c3d);
+  border: 1px solid var(--bd, #39405a);
+  border-radius: 6px;
+  color: var(--t1, inherit);
+}
+
+.op-field .arco-input-number:hover,
+.op-field .arco-select:hover .arco-select-view {
+  background: var(--bg3, #282c3d);
+  border-color: var(--bd, #39405a);
+}
+
+.op-field .arco-input-number-focus,
+.op-field .arco-select-focused .arco-select-view {
+  background: var(--bg3, #282c3d);
+  border-color: var(--brand, #4f8ff7);
+  box-shadow: none;
+}
+
+.op-field .arco-input-number-input,
+.op-field .arco-select-view-value,
+.op-field .arco-select-view-input {
+  padding: 9px 10px;
+  font-family: var(--cap0-font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--t1, inherit);
+  background: transparent;
+}
+
+.op-field .arco-select-view-value {
+  /* Tên loại lệnh là CHỮ, không phải số — mono ở đây đọc như mã máy. */
+  font-family: inherit;
+  font-variant-numeric: normal;
+}
+
+/* Mũi tên tăng/giảm của `mode="embed"` — chỉ hiện khi hover, nên chúng chỉ cần
+   không chửi nền tối. */
+.op-field .arco-input-number-step-button {
+  background: var(--bg4, #323649);
+  border-color: var(--bd, #39405a);
+  color: var(--t2, inherit);
+}
+
+.op-field .arco-input-number-step-button:hover {
+  background: var(--bd, #39405a);
+  color: var(--t1, inherit);
+}
+
+.op-field .arco-select-arrow-icon,
+.op-field .arco-input-number-step-button svg {
+  color: var(--t3, #8a90a5);
+}
+
+/* ── Phí giao dịch (mockup `.op-fee`) ─────────────────────────────────────── */
+.op-fee {
+  padding: 8px 10px;
+  background: var(--bg3, #282c3d);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--t2, inherit);
+  margin-bottom: 12px;
+}
+
+.op-fee-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.op-fee-row + .op-fee-row {
+  margin-top: 4px;
+}
+
+.op-fee-v {
+  font-family: var(--cap0-font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--t1, inherit);
+}
+
+/* Dòng "Tổng" của Cấp 1 (Cấp 0 ẩn) — mockup không vẽ, nhưng nó vẫn phải nằm
+   gọn trong cùng hộp thay vì lòi ra ngoài với áo Arco. */
+.op-fee-total {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--t1, inherit);
+}
+
+.op-fee .arco-divider-horizontal {
+  margin: 6px 0;
+  border-color: var(--bd, #39405a);
+}
+
+/* ── Nút đặt lệnh (mockup `.op-btn`) ──────────────────────────────────────── */
+.op-panel .op-btn,
+.op-panel .op-btn:hover,
+.op-panel .op-btn:focus {
+  display: block;
+  width: 100%;
+  height: auto;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--cap0-font-display, system-ui, sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: var(--up, #35d07f);
+  color: #0e1a13;
+}
+
+.op-panel .op-btn:hover {
+  filter: brightness(1.05);
+}
+
+.op-panel .op-btn--sell,
+.op-panel .op-btn--sell:hover,
+.op-panel .op-btn--sell:focus {
+  background: var(--down, #ff6b6b);
+  color: #2a0f0f;
+}
+
+.op-panel .op-btn.arco-btn-disabled,
+.op-panel .op-btn.arco-btn-disabled:hover {
+  background: var(--bg4, #323649);
+  color: var(--t3, #8a90a5);
+  filter: none;
+  cursor: not-allowed;
+}
+
+/* ── Thẻ KẾ HOẠCH ─────────────────────────────────────────────────────────────
+   `.cap0-plan`/`.cap0-chip` (cap0.css) ĐÃ dựng đúng `.plan`/`.chip` của mockup;
+   ở đây chỉ chỉnh lề cho khớp nhịp 12px của thẻ — `margin-top: 8px` của nó là
+   nhịp cũ, cộng với `margin-bottom: 12px` của `.op-fee` thành 20px. */
+.op-panel .cap0-plan {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+/* ── Accent đồng của Cấp 1 (mockup Cấp 1 đổi `--brand` → `--copper` cho pill
+   chế độ và thẻ KẾ HOẠCH) ─────────────────────────────────────────────────── */
+.op-panel--cap1 .cap0-plan {
+  background: linear-gradient(180deg, var(--copper-soft, rgba(201, 123, 74, 0.14)), transparent);
+  border-color: var(--copper-bd, rgba(201, 123, 74, 0.4));
+}
+
+.op-panel--cap1 .cap0-plan-tag {
+  color: var(--copper, #c97b4a);
+}
+
+.op-panel--cap1 .op-field .arco-input-number-focus,
+.op-panel--cap1 .op-field .arco-select-focused .arco-select-view {
+  border-color: var(--copper, #c97b4a);
+}
