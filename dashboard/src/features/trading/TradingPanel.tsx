@@ -1206,23 +1206,34 @@ function OrderEntry({
             }}
             className="w-full"
           />
-          <Radio.Group
-            type="button"
-            size="mini"
-            className="w-full pt-1"
-            onChange={(v) => handlePct(v)}
-            options={[10, 25, 50, 100].map((p) => ({ label: `${p}%`, value: p }))}
-          />
+          {/* ★ ẨN THEO CẤP (spec v3.0 §8) — mockup `iqx-cap0-datlenh.html` chỉ
+              vẽ ô Khối lượng. Cấp 0 mua đúng 100 CP VNM theo kịch bản, nên nút
+              "% số dư" vừa thừa vừa dễ làm user đặt sai khối lượng. Giữ nguyên
+              từ Cấp 1 và trên /bieu-do, /co-phieu — ở đó đây là công cụ thật. */}
+          {!isCap0Active && (
+            <Radio.Group
+              type="button"
+              size="mini"
+              className="w-full pt-1"
+              onChange={(v) => handlePct(v)}
+              options={[10, 25, 50, 100].map((p) => ({ label: `${p}%`, value: p }))}
+            />
+          )}
         </div>
 
         {/* Summary */}
         <div className="mt-2 space-y-1 rounded-md bg-[var(--color-fill-2)] p-2 text-xs">
-          <div className="flex justify-between">
-            <span className="text-[var(--color-text-3)]">Giá trị</span>
-            <span className="font-medium tabular-nums text-[var(--color-text-1)]">
-              {orderValue > 0 ? fmtVnd(orderValue) : "—"}
-            </span>
-          </div>
+          {/* ★ ẨN THEO CẤP — mockup Cấp 0 chỉ vẽ dòng phí. "Giá trị" và "Tổng"
+              là cùng một con số nhìn từ hai phía, thừa với người đang mua lệnh
+              đầu tiên. */}
+          {!isCap0Active && (
+            <div className="flex justify-between">
+              <span className="text-[var(--color-text-3)]">Giá trị</span>
+              <span className="font-medium tabular-nums text-[var(--color-text-1)]">
+                {orderValue > 0 ? fmtVnd(orderValue) : "—"}
+              </span>
+            </div>
+          )}
           <div className="flex justify-between">
             {/* Mockup `iqx-cap0-datlenh.html` `.op-fee` spells this out for a
                 beginner; the shared terminal keeps the compact label so
@@ -1235,13 +1246,17 @@ function OrderEntry({
               {fee > 0 ? fmtVnd(fee) : "—"}
             </span>
           </div>
-          <Divider className="my-1" />
-          <div className="flex justify-between text-sm font-semibold">
-            <span>Tổng</span>
-            <span className="tabular-nums text-[rgb(var(--primary-6))]">
-              {orderValue > 0 ? fmtVnd(orderValue + fee) : "—"}
-            </span>
-          </div>
+          {!isCap0Active && (
+            <>
+              <Divider className="my-1" />
+              <div className="flex justify-between text-sm font-semibold">
+                <span>Tổng</span>
+                <span className="tabular-nums text-[rgb(var(--primary-6))]">
+                  {orderValue > 0 ? fmtVnd(orderValue + fee) : "—"}
+                </span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -1559,6 +1574,9 @@ function AccountStrip({
   const { data: account, isLoading, isError } = useAccount()
   const activate = useActivateAccount()
   const navigate = useNavigate()
+  // `isCap0Active` chỉ true bên trong `Cap0Provider` (tức `Cap0TradingPage`),
+  // nên /bieu-do, /co-phieu và Cấp 1+ không đổi gì.
+  const { isCap0Active } = useCap0Events()
 
   const handleActivate = async () => {
     try {
@@ -1606,30 +1624,37 @@ function AccountStrip({
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-1.5 text-[10px] text-[var(--color-text-3)]">
           <IconWallet />
-          Số dư
+          {isCap0Active ? "Số dư Sân tập" : "Số dư"}
         </span>
         <span className="text-xs font-bold tabular-nums text-[var(--color-text-1)]">
           {fmtVnd(account.balance)}đ
         </span>
       </div>
-      <div className="flex gap-2">
-        <span
-          className={cn(
-            "flex items-center gap-1 text-[10px] font-medium",
-            account.pnl >= 0 ? "text-up" : "text-down",
-          )}
-        >
-          {account.pnl >= 0 ? <IconArrowRise /> : <IconArrowFall />}
-          {account.pnl >= 0 ? "+" : ""}
-          {fmtVnd(account.pnl)}đ ({account.pnlPercent >= 0 ? "+" : ""}
-          {account.pnlPercent}%)
-        </span>
-        <span className="flex items-center gap-1 text-[10px] text-[var(--color-text-3)]">
-          <IconTrophy />
-          WR: {account.winRate}%
-        </span>
-      </div>
-      {positionQty > 0 && (
+      {/* ★ ẨN THEO CẤP (spec v3.0 §8) — mockup `iqx-cap0-datlenh.html` chỉ vẽ
+          Số dư. Lãi/lỗ luỹ kế + tỷ lệ thắng là ngôn ngữ của người đã giao dịch
+          một thời gian; ở Cấp 0 user còn chưa đóng nổi một vòng lệnh nên hai
+          con số đó chỉ gây nhiễu. Từ Cấp 1 trở lên và trên /bieu-do, /co-phieu
+          giữ nguyên như cũ. */}
+      {!isCap0Active && (
+        <div className="flex gap-2">
+          <span
+            className={cn(
+              "flex items-center gap-1 text-[10px] font-medium",
+              account.pnl >= 0 ? "text-up" : "text-down",
+            )}
+          >
+            {account.pnl >= 0 ? <IconArrowRise /> : <IconArrowFall />}
+            {account.pnl >= 0 ? "+" : ""}
+            {fmtVnd(account.pnl)}đ ({account.pnlPercent >= 0 ? "+" : ""}
+            {account.pnlPercent}%)
+          </span>
+          <span className="flex items-center gap-1 text-[10px] text-[var(--color-text-3)]">
+            <IconTrophy />
+            WR: {account.winRate}%
+          </span>
+        </div>
+      )}
+      {!isCap0Active && positionQty > 0 && (
         <div className="flex items-center justify-between rounded bg-[var(--color-fill-2)] px-1.5 py-0.5 text-[10px]">
           <span className="text-[var(--color-text-3)]">Đang giữ {symbol}</span>
           <span className="font-semibold text-[var(--color-text-1)]">
@@ -1757,13 +1782,21 @@ function StockHeader({
         <Stat label="Trần" value={fmtPrice(data.ceilingPrice)} className="text-ceiling" />
         <Stat label="TC" value={fmtPrice(data.referencePrice)} className="text-reference" />
         <Stat label="Sàn" value={fmtPrice(data.floorPrice)} className="text-floor" />
-        <Stat label="KL" value={fmtCompact(data.totalVolume)} />
-        <Stat
-          label="NN"
-          value={`${data.foreignBuy - data.foreignSell >= 0 ? "+" : ""}${fmtCompact(data.foreignBuy - data.foreignSell)}`}
-          className={data.foreignBuy - data.foreignSell >= 0 ? "text-up" : "text-down"}
-        />
-        <Stat label="GTGD" value={fmtCompact(data.totalValue)} />
+        {/* ★ ẨN THEO CẤP (spec v3.0 §8) — mockup `iqx-cap0-datlenh.html` chỉ vẽ
+            hàng Trần/TC/Sàn. KL / NN (khối ngoại) / GTGD là ba khái niệm Cấp 0
+            chưa dạy; NN đến tận Cấp 4 mới có nghĩa. Giữ nguyên `data-tour-id`
+            ở lưới bên ngoài để bước tour Bảng điện vẫn có target. */}
+        {!cap0Events.isCap0Active && (
+          <>
+            <Stat label="KL" value={fmtCompact(data.totalVolume)} />
+            <Stat
+              label="NN"
+              value={`${data.foreignBuy - data.foreignSell >= 0 ? "+" : ""}${fmtCompact(data.foreignBuy - data.foreignSell)}`}
+              className={data.foreignBuy - data.foreignSell >= 0 ? "text-up" : "text-down"}
+            />
+            <Stat label="GTGD" value={fmtCompact(data.totalValue)} />
+          </>
+        )}
       </div>
     </div>
   )

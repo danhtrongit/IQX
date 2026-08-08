@@ -231,3 +231,53 @@ describe("Khối Kế hoạch — KHÔNG cắt lỗ/chốt lời ở bất kỳ 
     expect(patch).not.toHaveBeenCalled()
   })
 })
+
+/**
+ * ★ Panel Cấp 0 chỉ hiện đúng những gì mockup `iqx-cap0-datlenh.html` vẽ.
+ *
+ * Mockup vẽ: badge chế độ · MUA/BÁN · ticker · Trần/TC/Sàn · Số dư · Khối
+ * lượng · Phí giao dịch · Kế hoạch · nút. KHÔNG vẽ: KL/NN/GTGD, lãi/lỗ luỹ
+ * kế + WR, dòng "Đang giữ", nút % số dư, dòng Giá trị/Tổng.
+ *
+ * Năm thứ đó bị ẩn CHỈ ở Cấp 0 — chúng là công cụ thật của người đang giao
+ * dịch, nên /bieu-do, /co-phieu và Cấp 1+ phải giữ nguyên. Test thứ hai canh
+ * đúng điều đó; thiếu nó thì một lần "dọn cho gọn" sẽ lấy mất nút % số dư của
+ * mọi người dùng thật mà không ai biết.
+ */
+describe("Panel Cấp 0 — ẩn đúng những gì mockup không vẽ (spec §8)", () => {
+  // `WR: {n}%` bị React tách thành nhiều text node nên phải dùng regex; các
+  // nhãn còn lại là chuỗi liền.
+  const KHONG_VE = ["KL", "NN", "GTGD", "Giá trị", "Tổng"]
+  const WR = /WR:/
+
+  it("★ ẩn KL/NN/GTGD, lãi-lỗ+WR, Đang giữ, nút % số dư và Giá trị/Tổng khi ở Cấp 0", async () => {
+    renderInCap0(makeProgress({ task_1_done_at: null }))
+    await waitFor(() => expect(screen.getByText("KẾ HOẠCH")).toBeInTheDocument())
+
+    for (const nhan of KHONG_VE) {
+      expect(screen.queryByText(nhan)).not.toBeInTheDocument()
+    }
+    expect(screen.queryByText(WR)).not.toBeInTheDocument()
+    // Nút % số dư (10/25/50/100) — mockup chỉ có ô Khối lượng.
+    for (const pct of ["10%", "25%", "50%", "100%"]) {
+      expect(screen.queryByText(pct)).not.toBeInTheDocument()
+    }
+    // ...nhưng những gì mockup CÓ vẽ thì vẫn phải còn.
+    expect(screen.getByText("Trần")).toBeInTheDocument()
+    expect(screen.getByText("Sàn")).toBeInTheDocument()
+    expect(screen.getByText("Số dư Sân tập")).toBeInTheDocument()
+    expect(screen.getByText(/Phí giao dịch/)).toBeInTheDocument()
+  })
+
+  it("★ NGOÀI Cấp 0 (/bieu-do, /co-phieu) giữ NGUYÊN cả năm — chúng là công cụ thật", async () => {
+    renderOutsideCap0()
+    await waitFor(() => expect(screen.getByText("Trần")).toBeInTheDocument())
+
+    for (const nhan of KHONG_VE) {
+      expect(screen.getAllByText(nhan).length).toBeGreaterThan(0)
+    }
+    expect(screen.getAllByText(WR).length).toBeGreaterThan(0)
+    expect(screen.getByText("10%")).toBeInTheDocument()
+    expect(screen.getByText("Số dư")).toBeInTheDocument()
+  })
+})
