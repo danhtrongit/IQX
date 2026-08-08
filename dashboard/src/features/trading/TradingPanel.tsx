@@ -210,6 +210,22 @@ function priceColorClass(price: number, ref: number, ceil: number, floor: number
   return "text-reference"
 }
 
+/**
+ * Bản `.op-tone-*` của `priceColorClass` cho panel có skin.
+ *
+ * Cùng luật màu, khác NGUỒN màu: `.text-up`/`.text-ceiling` đọc token Arco vốn
+ * lật theo theme sáng/tối của app, còn thẻ mockup thì luôn tối và chỉ định
+ * thẳng bộ `.cap0` (`--up`, `--warn`, `--ceil`, `--floor`).
+ */
+function priceToneClass(price: number, ref: number, ceil: number, floor: number): string {
+  if (!price || !ref) return "op-tone-flat"
+  if (price >= ceil) return "op-tone-ceil"
+  if (price <= floor) return "op-tone-floor"
+  if (price > ref) return "op-tone-up"
+  if (price < ref) return "op-tone-down"
+  return "op-tone-ref"
+}
+
 /* ── Order book (depth) ── */
 function OrderBookView({ data }: { data: PriceBoardData }) {
   const bids = data.bid || []
@@ -1606,6 +1622,7 @@ function AccountStrip({
   // `isCap0Active` chỉ true bên trong `Cap0Provider` (tức `Cap0TradingPage`),
   // nên /bieu-do, /co-phieu và Cấp 1+ không đổi gì.
   const { isCap0Active } = useCap0Events()
+  const skin = useMockupPanelSkin()
 
   const handleActivate = async () => {
     try {
@@ -1645,6 +1662,47 @@ function AccountStrip({
           Kích hoạt Đấu trường ảo
         </Button>
       </div>
+    )
+  }
+
+  // Mockup `.op-balance`: một dải nền `--bg3` bo 7px, nhãn trái / số phải.
+  // Ở Cấp 0 nó là DÒNG DUY NHẤT (lãi/lỗ + WR + "đang giữ" đều ẩn theo cấp);
+  // Cấp 1 vẫn có chúng nên chúng đi vào `.op-balance-extra` ngay dưới dải.
+  if (skin) {
+    return (
+      <>
+        <div className="op-balance">
+          <span className="op-balance-l">
+            <IconWallet />
+            {isCap0Active ? "Số dư Sân tập" : "Số dư"}
+          </span>
+          <span className="op-balance-v">{fmtVnd(account.balance)}đ</span>
+        </div>
+        {!isCap0Active && (
+          <div className="op-balance-extra">
+            <span
+              className={cn(
+                "flex items-center gap-1 font-medium",
+                account.pnl >= 0 ? "op-tone-up" : "op-tone-down",
+              )}
+            >
+              {account.pnl >= 0 ? <IconArrowRise /> : <IconArrowFall />}
+              {account.pnl >= 0 ? "+" : ""}
+              {fmtVnd(account.pnl)}đ ({account.pnlPercent >= 0 ? "+" : ""}
+              {account.pnlPercent}%)
+            </span>
+            <span className="flex items-center gap-1">
+              <IconTrophy />
+              WR: {account.winRate}%
+            </span>
+            {positionQty > 0 && (
+              <span>
+                Đang giữ {symbol}: {positionQty.toLocaleString("en-US")} CP
+              </span>
+            )}
+          </div>
+        )}
+      </>
     )
   }
 
@@ -1710,6 +1768,7 @@ function StockHeader({
   const { isWatched, toggle, isPending } = useWatchlistToggle()
   const { data: info } = useSymbolInfo(symbol)
   const cap0Events = useCap0Events()
+  const skin = useMockupPanelSkin()
 
   const handleToggle = async () => {
     if (!isAuthenticated) {
@@ -1739,6 +1798,98 @@ function StockHeader({
   }
 
   const watched = isWatched(data.symbol)
+  const netForeign = data.foreignBuy - data.foreignSell
+
+  /**
+   * Cụm ticker + Trần/TC/Sàn theo mockup (`.op-ticker` · `.op-sub` · `.op-refs`).
+   *
+   * Khác bản thường ở BỐ CỤC chứ không chỉ ở màu: mockup xếp mã ★ bên trái và
+   * giá bên phải TRÊN CÙNG một dòng (baseline chung), rồi tên công ty · sàn
+   * xuống dòng dưới. Bản thường xếp thành ba tầng (mã | sàn / tên / giá).
+   *
+   * `data-tour-id` giữ y nguyên cả hai — tour Bảng điện nhắm vào chúng.
+   */
+  if (skin) {
+    const refs: { label: string; value: string; tone?: string }[] = [
+      { label: "Trần", value: fmtPrice(data.ceilingPrice), tone: "op-tone-ceil" },
+      { label: "TC", value: fmtPrice(data.referencePrice), tone: "op-tone-ref" },
+      { label: "Sàn", value: fmtPrice(data.floorPrice), tone: "op-tone-floor" },
+    ]
+    // ★ ẨN THEO CẤP không đổi: ba ô này vẫn chỉ ẩn ở Cấp 0 (spec v3.0 §8), ở
+    // Cấp 1 chúng vẫn hiện — lưới 3 cột tự xuống hàng thứ hai, vẫn đúng hình.
+    if (!cap0Events.isCap0Active) {
+      refs.push(
+        { label: "KL", value: fmtCompact(data.totalVolume) },
+        {
+          label: "NN",
+          value: `${netForeign >= 0 ? "+" : ""}${fmtCompact(netForeign)}`,
+          tone: netForeign >= 0 ? "op-tone-up" : "op-tone-down",
+        },
+        { label: "GTGD", value: fmtCompact(data.totalValue) },
+      )
+    }
+
+    return (
+      <div data-tour-id="cap0-tour-stock-header">
+        <div className="op-ticker">
+          <div className="op-ticker-id">
+            <StockLogo symbol={data.symbol} size={22} />
+            <button
+              type="button"
+              className="op-ticker-code"
+              onClick={() => navigate(`/co-phieu/${data.symbol}`)}
+            >
+              {data.symbol}
+            </button>
+            <button
+              type="button"
+              onClick={handleToggle}
+              disabled={isPending}
+              className={cn("op-ticker-star", watched && "op-ticker-star--on")}
+              aria-label={watched ? "Bỏ theo dõi" : "Theo dõi"}
+            >
+              {watched ? <IconStarFill /> : <IconStar />}
+            </button>
+          </div>
+          <div
+            className={cn(
+              "op-ticker-price",
+              priceToneClass(
+                data.closePrice,
+                data.referencePrice,
+                data.ceilingPrice,
+                data.floorPrice,
+              ),
+            )}
+          >
+            {fmtPrice(data.closePrice)}
+            <span
+              className={cn(
+                "op-ticker-chg",
+                data.priceChange >= 0 ? "op-tone-up" : "op-tone-down",
+              )}
+            >
+              {data.percentChange >= 0 ? "+" : ""}
+              {data.percentChange?.toFixed(2)}%
+            </span>
+          </div>
+        </div>
+
+        <div className="op-sub">
+          {[info?.shortName, data.exchange].filter(Boolean).join(" · ")}
+        </div>
+
+        <div data-tour-id="cap0-tour-price-bands" className="op-refs">
+          {refs.map((r) => (
+            <div key={r.label} className="op-ref">
+              <div className="op-ref-l">{r.label}</div>
+              <div className={cn("op-ref-v", r.tone)}>{r.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div

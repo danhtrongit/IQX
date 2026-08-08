@@ -199,24 +199,32 @@
   color: var(--t1, inherit);
 }
 
-.op-ref-v--ceil {
-  color: var(--ceil, #d48aff);
-}
-
-.op-ref-v--tc {
-  color: var(--warn, #ffc53d);
-}
-
-.op-ref-v--floor {
-  color: var(--floor, #4dc3ff);
-}
-
-.op-ref-v--up {
+/* ── Bảng màu giá, dùng chung cho ticker và ô Trần/TC/Sàn ────────────────────
+   KHÔNG dùng `.text-up`/`.text-ceiling` của app: chúng đọc token Arco, vốn đổi
+   theo theme sáng/tối — còn thẻ này luôn tối. Mockup chỉ định thẳng `--up`,
+   `--warn`, `#d48aff`, `#4dc3ff`, tức là bộ `.cap0`. */
+.op-tone-up {
   color: var(--up, #35d07f);
 }
 
-.op-ref-v--down {
+.op-tone-down {
   color: var(--down, #ff6b6b);
+}
+
+.op-tone-ref {
+  color: var(--warn, #ffc53d);
+}
+
+.op-tone-ceil {
+  color: var(--ceil, #d48aff);
+}
+
+.op-tone-floor {
+  color: var(--floor, #4dc3ff);
+}
+
+.op-tone-flat {
+  color: var(--t1, inherit);
 }
 
 /* ── Số dư (mockup `.op-balance`) ────────────────────────────────────────── */
