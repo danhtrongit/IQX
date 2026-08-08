@@ -1194,10 +1194,12 @@ function OrderEntry({
       {!hidePriceAndType && (
         <>
           {/* Order method */}
-          <Select value={method} onChange={(v) => setMethod(v)} size="small">
-            <Select.Option value="market">Lệnh thị trường (MP)</Select.Option>
-            <Select.Option value="limit">Lệnh giới hạn (LO)</Select.Option>
-          </Select>
+          <div className={skin ? "op-field" : undefined}>
+            <Select value={method} onChange={(v) => setMethod(v)} size="small">
+              <Select.Option value="market">Lệnh thị trường (MP)</Select.Option>
+              <Select.Option value="limit">Lệnh giới hạn (LO)</Select.Option>
+            </Select>
+          </div>
 
           {/* Price */}
           <Tooltip
@@ -1208,10 +1210,18 @@ function OrderEntry({
               }
             disabled={!(isCap0Active && task1Done)}
           >
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-[var(--color-text-3)]">Giá</label>
+            <div className={skin ? "op-field" : "space-y-1"}>
+              <label
+                className={skin ? undefined : "text-xs font-medium text-[var(--color-text-3)]"}
+              >
+                Giá
+              </label>
+              {/* `mode="button"` kẹp ô nhập giữa hai nút +/− to đùng; mockup vẽ
+                  một ô trơn, nên trong skin dùng `mode="embed"` (mũi tên chỉ
+                  hiện khi hover). Vẫn là `InputNumber` — `role="spinbutton"`,
+                  phím mũi tên, `min`/`step` giữ nguyên. */}
               <InputNumber
-                mode="button"
+                mode={skin ? "embed" : "button"}
                 step={100}
                 min={0}
                 value={numPrice}
@@ -1229,17 +1239,21 @@ function OrderEntry({
           just wrapped so the spotlight covers both blocks. */}
       <div data-tour-id="cap0-tour-volume-fee">
         {/* Volume */}
-        <div className="space-y-1">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-medium text-[var(--color-text-3)]">Khối lượng</label>
+        <div className={skin ? "op-field" : "space-y-1"}>
+          <div className={skin ? "op-field-row" : "flex items-center justify-between"}>
+            <label
+              className={skin ? undefined : "text-xs font-medium text-[var(--color-text-3)]"}
+            >
+              Khối lượng
+            </label>
             {side === "sell" && positionQty > 0 && (
-              <span className="text-xs text-[var(--color-text-3)]">
+              <span className={skin ? "op-field-max" : "text-xs text-[var(--color-text-3)]"}>
                 Tối đa: {positionQty.toLocaleString("en-US")}
               </span>
             )}
           </div>
           <InputNumber
-            mode="button"
+            mode={skin ? "embed" : "button"}
             step={100}
             min={0}
             value={volume}
@@ -1259,7 +1273,7 @@ function OrderEntry({
             <Radio.Group
               type="button"
               size="mini"
-              className="w-full pt-1"
+              className={cn("w-full pt-1", skin && "op-pct")}
               onChange={(v) => handlePct(v)}
               options={[10, 25, 50, 100].map((p) => ({ label: `${p}%`, value: p }))}
             />
@@ -1267,36 +1281,56 @@ function OrderEntry({
         </div>
 
         {/* Summary */}
-        <div className="mt-2 space-y-1 rounded-md bg-[var(--color-fill-2)] p-2 text-xs">
+        <div
+          className={
+            skin ? "op-fee" : "mt-2 space-y-1 rounded-md bg-[var(--color-fill-2)] p-2 text-xs"
+          }
+        >
           {/* ★ ẨN THEO CẤP — mockup Cấp 0 chỉ vẽ dòng phí. "Giá trị" và "Tổng"
               là cùng một con số nhìn từ hai phía, thừa với người đang mua lệnh
               đầu tiên. */}
           {!isCap0Active && (
-            <div className="flex justify-between">
-              <span className="text-[var(--color-text-3)]">Giá trị</span>
-              <span className="font-medium tabular-nums text-[var(--color-text-1)]">
+            <div className={skin ? "op-fee-row" : "flex justify-between"}>
+              <span className={skin ? undefined : "text-[var(--color-text-3)]"}>Giá trị</span>
+              <span
+                className={
+                  skin ? "op-fee-v" : "font-medium tabular-nums text-[var(--color-text-1)]"
+                }
+              >
                 {orderValue > 0 ? fmtVnd(orderValue) : "—"}
               </span>
             </div>
           )}
-          <div className="flex justify-between">
+          <div className={skin ? "op-fee-row" : "flex justify-between"}>
             {/* Mockup `iqx-cap0-datlenh.html` `.op-fee` spells this out for a
                 beginner; the shared terminal keeps the compact label so
                 /bieu-do & /co-phieu are untouched. (Số en-US per project
                 convention — the mockup's "0,15%" is vi-VN.) */}
-            <span className="text-[var(--color-text-3)]">
+            <span className={skin ? undefined : "text-[var(--color-text-3)]"}>
               {isCap0Active ? "Phí giao dịch (0.15%)" : "Phí GD (0.15%)"}
             </span>
-            <span className="font-medium tabular-nums text-[var(--color-text-1)]">
+            <span
+              className={
+                skin ? "op-fee-v" : "font-medium tabular-nums text-[var(--color-text-1)]"
+              }
+            >
               {fee > 0 ? fmtVnd(fee) : "—"}
             </span>
           </div>
           {!isCap0Active && (
             <>
               <Divider className="my-1" />
-              <div className="flex justify-between text-sm font-semibold">
+              <div
+                className={
+                  skin ? "op-fee-row op-fee-total" : "flex justify-between text-sm font-semibold"
+                }
+              >
                 <span>Tổng</span>
-                <span className="tabular-nums text-[rgb(var(--primary-6))]">
+                <span
+                  className={
+                    skin ? "op-fee-v" : "tabular-nums text-[rgb(var(--primary-6))]"
+                  }
+                >
                   {orderValue > 0 ? fmtVnd(orderValue + fee) : "—"}
                 </span>
               </div>
@@ -1584,12 +1618,20 @@ function OrderEntry({
                 cap6SubmitDisabled
               }
               onClick={handleSubmit}
-              className={cn(
-                "mt-2 font-bold text-white",
-                side === "buy"
-                  ? "!border-up !bg-up hover:!opacity-90"
-                  : "!border-down !bg-down hover:!opacity-90",
-              )}
+              className={
+                // Giữ `Button` của Arco (còn `loading`, `disabled` và cái
+                // `Tooltip` bọc ngoài phụ thuộc vào nó) — chỉ mặc lại vỏ. Luật
+                // CSS neo dưới `.op-panel` nên đủ specificity thắng `.arco-btn`
+                // mà không cần `!important`.
+                skin
+                  ? cn("op-btn", side === "sell" && "op-btn--sell")
+                  : cn(
+                      "mt-2 font-bold text-white",
+                      side === "buy"
+                        ? "!border-up !bg-up hover:!opacity-90"
+                        : "!border-down !bg-down hover:!opacity-90",
+                    )
+              }
             >
               {side === "buy" ? "ĐẶT LỆNH MUA" : "ĐẶT LỆNH BÁN"}
             </Button>

@@ -355,6 +355,21 @@
   color: var(--t3, #8a90a5);
 }
 
+/* Nút % số dư — Cấp 0 ẩn hẳn (spec v3.0 §8), Cấp 1 vẫn có. Mockup không vẽ,
+   nên chúng chỉ cần thôi sáng chói giữa thẻ tối. */
+.op-pct.arco-radio-group-button {
+  background: var(--bg3, #282c3d);
+}
+
+.op-pct .arco-radio-button {
+  color: var(--t2, inherit);
+}
+
+.op-pct .arco-radio-button.arco-radio-checked {
+  background: var(--bg4, #323649);
+  color: var(--t1, inherit);
+}
+
 /* ── Phí giao dịch (mockup `.op-fee`) ─────────────────────────────────────── */
 .op-fee {
   padding: 8px 10px;
