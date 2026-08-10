@@ -371,6 +371,146 @@
   color: var(--t2);
 }
 
+/* ── Ô "NHIỆM VỤ ĐANG LÀM" (`JourneyFocus`) ─────────────────────────────────
+   Khối chi phối của tab Hành trình: đúng MỘT nhiệm vụ, có mô tả + tiến độ +
+   nút to. Dùng CHUNG cho Cấp 0 và Cấp 1 — nên mọi luật ở đây phải trung tính
+   với cấp: màu nhấn là `--brand` (đúng thứ `.cap0-checklist-item--active` vẫn
+   dùng cho cả hai cấp), KHÔNG phải màu riêng của cấp. Màu của cấp chỉ xuất
+   hiện ở bộ đếm `.ck-head .c`, do component truyền vào.
+   Cấp 2-8 không render khối này (chúng vẫn dùng checklist mở sẵn), và mọi luật
+   dưới đây đều là class MỚI nên không cấp nào bị đổi hình. */
+.cap0-focus {
+  padding: 14px 15px;
+  margin-bottom: 14px;
+  border: 1px solid var(--brand);
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--brand-soft), transparent);
+}
+
+.cap0-focus-tag {
+  font-family: var(--cap0-font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--brand);
+}
+
+.cap0-focus-stage {
+  margin-top: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+
+.cap0-focus-name {
+  margin-top: 7px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--t1);
+}
+
+.cap0-focus-no {
+  font-family: var(--cap0-font-mono);
+  color: var(--brand);
+  margin-right: 6px;
+}
+
+.cap0-focus-desc {
+  margin-top: 7px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--t2);
+}
+
+.cap0-focus-progress {
+  margin-top: 8px;
+  font-family: var(--cap0-font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--t2);
+}
+
+.cap0-focus-cta {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 9px 16px;
+  background: var(--brand);
+  color: #0e1420;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cap0-focus-cta:hover {
+  filter: brightness(1.08);
+}
+
+/* Xong hết nhiệm vụ: ô KHÔNG rỗng đi mà chuyển sang lời sẵn sàng tốt nghiệp. */
+.cap0-focus--ready {
+  border-color: rgba(53, 208, 127, 0.5);
+  background: linear-gradient(180deg, rgba(53, 208, 127, 0.12), transparent);
+}
+
+.cap0-focus--ready .cap0-focus-tag {
+  color: var(--up);
+}
+
+/* ── Checklist HẠ CẤP (phần còn lại của cung đường) ──────────────────────────
+   Mockup vẽ checklist mở sẵn; bản dẫn-từng-nhiệm-vụ-một giữ nguyên nó nhưng
+   thu gọn + làm mờ, để ô tập trung ở trên là thứ mắt chạm đầu tiên. Mọi luật
+   được bọc trong `.cap0-journey-rest` nên KHÔNG chạm tới checklist mở sẵn của
+   Cấp 2-8, vốn dùng chung đúng các class `.cap0-checklist-*` này. */
+.cap0-journey-rest {
+  opacity: 0.85;
+}
+
+.cap0-journey-rest .cap0-checklist-item {
+  align-items: center;
+  padding: 8px 11px;
+  margin-bottom: 5px;
+}
+
+.cap0-journey-rest .cap0-checklist-name {
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+/* Dòng của nhiệm vụ đang được ô tập trung dẫn — chỉ một vạch nhấn, KHÔNG tô
+   nền như `.cap0-checklist-item--active`: nếu nó cũng đậm thì lại thành hai
+   khối tranh nhau, đúng thứ bản này đi sửa. */
+.cap0-checklist-item--current {
+  border-color: var(--brand-bd);
+  box-shadow: inset 2px 0 0 var(--brand);
+}
+
+.cap0-checklist-item--current .cap0-checklist-name {
+  color: var(--t1);
+}
+
+/* Lối tắt của nhiệm vụ đang mở nhưng không được tập trung — chữ, không phải
+   viên nút: nó phải BẤM ĐƯỢC mà không cạnh tranh với nút to của ô tập trung. */
+.cap0-checklist-golink--quiet {
+  flex-shrink: 0;
+  align-self: center;
+  margin-top: 0;
+  padding: 0;
+  background: none;
+  color: var(--brand);
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cap0-checklist-golink--quiet:hover {
+  text-decoration: underline;
+}
+
 .cap0-stage-label {
   font-size: 9px;
   font-weight: 700;
