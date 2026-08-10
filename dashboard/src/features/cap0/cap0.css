@@ -481,36 +481,6 @@
   font-weight: 500;
 }
 
-/* Dòng của nhiệm vụ đang được ô tập trung dẫn — chỉ một vạch nhấn, KHÔNG tô
-   nền như `.cap0-checklist-item--active`: nếu nó cũng đậm thì lại thành hai
-   khối tranh nhau, đúng thứ bản này đi sửa. */
-.cap0-checklist-item--current {
-  border-color: var(--brand-bd);
-  box-shadow: inset 2px 0 0 var(--brand);
-}
-
-.cap0-checklist-item--current .cap0-checklist-name {
-  color: var(--t1);
-}
-
-/* Lối tắt của nhiệm vụ đang mở nhưng không được tập trung — chữ, không phải
-   viên nút: nó phải BẤM ĐƯỢC mà không cạnh tranh với nút to của ô tập trung. */
-.cap0-checklist-golink--quiet {
-  flex-shrink: 0;
-  align-self: center;
-  margin-top: 0;
-  padding: 0;
-  background: none;
-  color: var(--brand);
-  font-size: 10.5px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.cap0-checklist-golink--quiet:hover {
-  text-decoration: underline;
-}
-
 .cap0-stage-label {
   font-size: 9px;
   font-weight: 700;
@@ -588,6 +558,21 @@
   opacity: 0.45;
 }
 
+/* Dòng của nhiệm vụ đang được ô tập trung dẫn — chỉ một vạch nhấn, KHÔNG tô
+   nền như `.cap0-checklist-item--active`: nếu nó cũng đậm thì lại thành hai
+   khối tranh nhau, đúng thứ bản này đi sửa.
+   ★ PHẢI đứng SAU `.cap0-checklist-item` (cùng specificity 0,1,0): luật gốc
+   khai `border` viết tắt, trong đó có `border-color` — đứng trước là vạch nhấn
+   mất màu. `cap0Css.test.ts` chốt đúng thứ tự này. */
+.cap0-checklist-item--current {
+  border-color: var(--brand-bd);
+  box-shadow: inset 2px 0 0 var(--brand);
+}
+
+.cap0-checklist-item--current .cap0-checklist-name {
+  color: var(--t1);
+}
+
 .cap0-checklist-desc {
   font-size: 10.5px;
   color: var(--t3);
@@ -607,6 +592,27 @@
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
+}
+
+/* Lối tắt của nhiệm vụ đang mở nhưng chưa tới lượt — CHỮ, không phải viên nút:
+   nó phải bấm được mà không tranh chú ý với nút to của ô tập trung.
+   ★ PHẢI đứng SAU luật gốc ngay trên (cùng specificity 0,1,0) — đứng trước là
+   thua sạch `background`/`color`/`padding` và lối tắt lại hiện ra thành viên
+   nút brand thứ hai. `cap0Css.test.ts` chốt đúng thứ tự này. */
+.cap0-checklist-golink--quiet {
+  flex-shrink: 0;
+  align-self: center;
+  margin-top: 0;
+  padding: 0;
+  background: none;
+  color: var(--brand);
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cap0-checklist-golink--quiet:hover {
+  text-decoration: underline;
 }
 
 /* Mockup `.goal` — ô đích viền ĐỨT NÉT, căn giữa, không nền. */

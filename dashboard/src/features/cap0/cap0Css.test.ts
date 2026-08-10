@@ -21,6 +21,45 @@ function rule(selector: string): string {
   return m![1]
 }
 
+/**
+ * Vị trí (index) của luật có selector CHÍNH XÁC là `selector`, neo ở ĐẦU DÒNG —
+ * nếu không, `.cap0-checklist-item` sẽ khớp nhầm vào `.cap0-journey-rest
+ * .cap0-checklist-item` (luật con, specificity khác hẳn) và phép so thứ tự
+ * dưới đây thành vô nghĩa.
+ */
+function ruleIndex(selector: string): number {
+  const re = new RegExp(`^${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\{`, "m")
+  const m = re.exec(CSS)
+  expect(m, `không tìm thấy luật cho \`${selector}\``).not.toBeNull()
+  return m!.index
+}
+
+describe("cap0.css — biến thể phải THẮNG luật gốc (cùng specificity → thứ tự quyết định)", () => {
+  /**
+   * ★ `.cap0-checklist-golink--quiet` (lối tắt của nhiệm vụ đã mở nhưng chưa
+   * tới lượt) và `.cap0-checklist-golink` (viên nút brand) có CÙNG specificity
+   * (0,1,0). Đứng trước luật gốc là biến thể thua sạch: `background`, `color`,
+   * `padding`, `margin-top`, `font-size` đều bị luật gốc đè, và "lối tắt chữ"
+   * lại hiện ra thành một viên nút xanh đầy đặn thứ hai tranh chú ý với nút
+   * của ô tập trung — đúng thứ bản dẫn-từng-nhiệm-vụ-một đi sửa.
+   *
+   * jsdom KHÔNG bắt được lỗi này (vitest stub CSS), nên luật thứ tự phải được
+   * chốt ở đây.
+   */
+  it("★ .cap0-checklist-golink--quiet comes after the base .cap0-checklist-golink", () => {
+    expect(ruleIndex(".cap0-checklist-golink--quiet")).toBeGreaterThan(
+      ruleIndex(".cap0-checklist-golink"),
+    )
+  })
+
+  /** Cùng lý do: `--current` phải đứng sau `.cap0-checklist-item`. */
+  it("★ .cap0-checklist-item--current comes after the base .cap0-checklist-item", () => {
+    expect(ruleIndex(".cap0-checklist-item--current")).toBeGreaterThan(
+      ruleIndex(".cap0-checklist-item"),
+    )
+  })
+})
+
 describe("cap0.css — .cap0-debrief-table (thẻ đối chiếu bo tròn của mockup)", () => {
   /**
    * `border-radius` bị BỎ QUA khi `border-collapse: collapse` (CSS 2.1 §17.6.2:
