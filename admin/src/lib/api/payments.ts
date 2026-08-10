@@ -110,6 +110,26 @@ function adaptDetail(raw: BackendDetail): PaymentDetail {
   }
 }
 
+/** Kết quả `/reconcile`: `reconciled` = tìm thấy IPN hợp lệ, `no_match` = SePay chưa từng gửi webhook. */
+export interface ReconcileResult {
+  status: string
+  orderId: string | null
+}
+
+export interface GrantResult {
+  id: string
+  invoiceNumber: string
+  status: string
+  grantType: string | null
+}
+
+interface BackendGrantResponse {
+  id: string
+  invoice_number: string
+  status: string
+  grant_type: string | null
+}
+
 export const paymentsApi = {
   list: async (params: { page: number; pageSize: number; status?: string; grantType?: string; userId?: string; planId?: string; dateFrom?: string; dateTo?: string; search?: string }): Promise<PaginatedResult<PaymentRow>> => {
     const qs = new URLSearchParams({ page: String(params.page), page_size: String(params.pageSize) })
@@ -124,5 +144,16 @@ export const paymentsApi = {
   },
   get: async (id: string): Promise<PaymentDetail> => adaptDetail(await api.get(`admin/payments/${id}`).json<BackendDetail>()),
   refund: async (id: string, reason: string): Promise<PaymentDetail> => adaptDetail(await api.post(`admin/payments/${id}/refund`, { json: { reason } }).json<BackendDetail>()),
-  reconcile: (id: string, note?: string): Promise<Record<string, string>> => api.post(`admin/payments/${id}/reconcile`, { json: { note } }).json<Record<string, string>>(),
+  /** Đối chiếu với bản ghi IPN của SePay. Chỉ chạy được khi webhook đã từng tới. */
+  reconcile: async (id: string, note?: string): Promise<ReconcileResult> => {
+    const raw = await api.post(`admin/payments/${id}/reconcile`, { json: { note } }).json<{ status: string; order_id?: string }>()
+    return { status: raw.status, orderId: raw.order_id ?? null }
+  },
+  /** Xác nhận thủ công đơn PENDING khi SePay không gửi IPN. `note` bắt buộc. */
+  markPaid: async (id: string, note: string): Promise<PaymentDetail> => adaptDetail(await api.post(`admin/payments/${id}/mark-paid`, { json: { note } }).json<BackendDetail>()),
+  /** Cấp Premium mà KHÔNG có bằng chứng thanh toán — tạo một đơn mới 0đ. */
+  grantPremium: async (userId: string, planId: string, note: string): Promise<GrantResult> => {
+    const raw = await api.post(`premium/admin/users/${userId}/grant`, { json: { plan_id: planId, note } }).json<BackendGrantResponse>()
+    return { id: String(raw.id), invoiceNumber: raw.invoice_number, status: raw.status, grantType: raw.grant_type }
+  },
 }

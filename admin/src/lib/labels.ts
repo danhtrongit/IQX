@@ -10,7 +10,7 @@ export function tagTypeForStatus(status: string | boolean | null | undefined) {
   if (status === false) return "default"
   const value = String(status ?? "")
   if (["active", "paid", "success", "reconciled", "filled", "settled", "published", "running"].includes(value)) return "success"
-  if (["pending", "trial", "admin_grant", "ignored", "partial_filled", "partially_filled", "draft"].includes(value)) return "warning"
+  if (["pending", "trial", "admin_grant", "admin_confirmed", "ignored", "partial_filled", "partially_filled", "draft"].includes(value)) return "warning"
   if (["failed", "cancelled", "canceled", "expired", "suspended", "deleted", "refunded", "rejected", "frozen", "stopped"].includes(value)) return "error"
   return "info"
 }
@@ -70,6 +70,7 @@ export const statusLabels: Record<string, string> = {
   rejected: "Từ chối",
   trial: "Dùng thử",
   admin_grant: "Cấp thủ công",
+  admin_confirmed: "Admin xác nhận",
   ignored: "Đã bỏ qua",
   published: "Đã xuất bản",
   draft: "Bản nháp",
@@ -88,6 +89,9 @@ export const roleLabels: Record<string, string> = {
 
 export const grantTypeLabels: Record<string, string> = {
   payment: "Thanh toán",
+  // Admin tự kiểm tra tiền về rồi xác nhận đơn có thật — khác hẳn "Cấp thủ công"
+  // vốn là cấp Premium mà không hề có thanh toán nào.
+  admin_confirmed: "Admin xác nhận",
   admin_grant: "Cấp thủ công",
 }
 

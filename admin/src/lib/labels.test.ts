@@ -20,6 +20,10 @@ describe("Vietnamese admin labels", () => {
   it("translates admin enum labels", () => {
     expect(labelForRole("admin")).toBe("Quản trị viên")
     expect(labelForGrantType("admin_grant")).toBe("Cấp thủ công")
+    // "Admin tự xác nhận đơn có thật" phải đọc khác hẳn "cấp không cần thanh toán"
+    expect(labelForGrantType("admin_confirmed")).toBe("Admin xác nhận")
+    expect(labelForGrantType("payment")).toBe("Thanh toán")
+    expect(labelForGrantType("admin_confirmed")).not.toBe(labelForGrantType("payment"))
     expect(labelForCourseLevel("beginner")).toBe("Cơ bản")
     expect(labelForContentType("video")).toBe("Video")
     expect(labelForVtSide("buy")).toBe("Mua")
