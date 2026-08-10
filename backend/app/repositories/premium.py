@@ -191,30 +191,48 @@ class PremiumPaymentOrderRepository:
     async def claim_pending_order(
         self,
         invoice_number: str,
-        sepay_transaction_id: str,
-        raw_ipn: str,
         paid_at: datetime,
+        sepay_transaction_id: str | None = None,
+        raw_ipn: str | None = None,
+        grant_type: str = "payment",
+        granted_by_user_id: uuid.UUID | None = None,
+        grant_note: str | None = None,
     ) -> int:
         """Atomically claim a PENDING order by setting it to PAID.
 
         Uses a conditional UPDATE to prevent race conditions: only one
         concurrent request can successfully transition PENDING -> PAID.
 
+        The optional arguments let a *manual* admin confirmation reuse this
+        exact claim (see ``PremiumService.admin_confirm_pending_payment``)
+        while staying honest about provenance: it passes no
+        ``sepay_transaction_id`` / ``raw_ipn`` (there is no SePay evidence)
+        and a different ``grant_type``. Columns whose argument is ``None``
+        are left untouched rather than overwritten with NULL.
+
         Returns the number of rows updated (0 or 1).
         """
+        values: dict[str, object] = {
+            "status": PaymentOrderStatus.PAID,
+            "paid_at": paid_at,
+            "grant_type": grant_type,
+        }
+        if sepay_transaction_id is not None:
+            values["sepay_transaction_id"] = sepay_transaction_id
+        if raw_ipn is not None:
+            values["raw_ipn"] = raw_ipn
+        if granted_by_user_id is not None:
+            values["granted_by_user_id"] = granted_by_user_id
+        if grant_note is not None:
+            values["grant_note"] = grant_note
+
         result = await self._session.execute(
             update(PremiumPaymentOrder)
             .where(
                 PremiumPaymentOrder.invoice_number == invoice_number,
                 PremiumPaymentOrder.status == PaymentOrderStatus.PENDING,
             )
-            .values(
-                status=PaymentOrderStatus.PAID,
-                sepay_transaction_id=sepay_transaction_id,
-                raw_ipn=raw_ipn,
-                paid_at=paid_at,
-                grant_type="payment",
-            )
+            .values(**values)
         )
         return int(result.rowcount)  # type: ignore[attr-defined]
 

@@ -368,3 +368,263 @@ async def test_non_admin_blocked(db_session, client):
     headers = {"Authorization": f"Bearer {token}"}
     resp = await client.get("/api/v1/admin/payments", headers=headers)
     assert resp.status_code == 403
+
+
+# ── mark-paid (manual confirmation, no IPN evidence) ──────────────────────────
+
+
+async def test_mark_paid_activates_subscription(db_session, client):
+    """A PENDING order confirmed by hand becomes PAID and grants Premium."""
+    plan = await _seed_plan(db_session)
+    user = await _seed_user(db_session)
+    order = await _seed_order(db_session, user, plan)
+
+    headers = await _admin_headers(db_session)
+    resp = await client.post(
+        f"/api/v1/admin/payments/{order.id}/mark-paid",
+        json={"note": "CK 09/08 ref FT2508123456, đã đối chiếu sao kê VCB"},
+        headers=headers,
+    )
+    assert resp.status_code == 200, resp.text
+    data = resp.json()
+    assert data["status"] == "paid"
+    assert data["paid_at"] is not None
+    assert data["grant_note"] == "CK 09/08 ref FT2508123456, đã đối chiếu sao kê VCB"
+
+    # Subscription created and active
+    sub = (
+        await db_session.execute(
+            select(PremiumSubscription).where(PremiumSubscription.user_id == user.id)
+        )
+    ).scalar_one()
+    assert sub.status == SubscriptionStatus.ACTIVE
+    end = sub.current_period_end
+    if end.tzinfo is None:
+        end = end.replace(tzinfo=UTC)
+    assert end > datetime.now(UTC) + timedelta(days=29)
+
+    # User promoted to PREMIUM
+    await db_session.refresh(user)
+    assert user.role == UserRole.PREMIUM
+
+
+async def test_mark_paid_extends_existing_subscription(db_session, client):
+    """Extension stacks on top of the remaining period, like an IPN would."""
+    plan = await _seed_plan(db_session)
+    user = await _seed_user(db_session, UserRole.PREMIUM)
+    sub = await _seed_sub(db_session, user, plan, days_ahead=10)
+    before_end = sub.current_period_end
+    if before_end.tzinfo is None:
+        before_end = before_end.replace(tzinfo=UTC)
+    order = await _seed_order(db_session, user, plan)
+
+    headers = await _admin_headers(db_session)
+    resp = await client.post(
+        f"/api/v1/admin/payments/{order.id}/mark-paid",
+        json={"note": "Chuyển khoản tay, ảnh chụp bill #221"},
+        headers=headers,
+    )
+    assert resp.status_code == 200, resp.text
+
+    await db_session.refresh(sub)
+    after_end = sub.current_period_end
+    if after_end.tzinfo is None:
+        after_end = after_end.replace(tzinfo=UTC)
+    assert after_end - before_end == timedelta(days=plan.duration_days)
+
+
+async def test_mark_paid_is_distinguishable_from_webhook_confirmation(db_session, client):
+    """An admin assertion must never look like SePay evidence."""
+    plan = await _seed_plan(db_session)
+    user = await _seed_user(db_session)
+    order = await _seed_order(db_session, user, plan)
+
+    headers = await _admin_headers(db_session)
+    resp = await client.post(
+        f"/api/v1/admin/payments/{order.id}/mark-paid",
+        json={"note": "Đã nhận tiền, ref 123"},
+        headers=headers,
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["grant_type"] == "admin_confirmed"
+
+    await db_session.refresh(order)
+    assert order.grant_type == "admin_confirmed"
+    assert order.grant_type != "payment"
+    # No fabricated SePay evidence
+    assert order.sepay_transaction_id is None
+    assert order.raw_ipn is None
+    # Attributable to the acting admin
+    assert order.granted_by_user_id is not None
+    assert order.grant_note == "Đã nhận tiền, ref 123"
+
+
+async def test_mark_paid_writes_audit_row(db_session, client):
+    plan = await _seed_plan(db_session)
+    user = await _seed_user(db_session)
+    order = await _seed_order(db_session, user, plan)
+
+    headers = await _admin_headers(db_session)
+    resp = await client.post(
+        f"/api/v1/admin/payments/{order.id}/mark-paid",
+        json={"note": "Sao kê ACB 09/08 20:14"},
+        headers=headers,
+    )
+    assert resp.status_code == 200, resp.text
+
+    rows = (
+        await db_session.execute(
+            select(AdminAuditLog).where(AdminAuditLog.action == "premium.order.mark_paid")
+        )
+    ).scalars().all()
+    assert len(rows) == 1
+    row = rows[0]
+    assert row.target_entity == "payment_order"
+    assert row.target_id == str(order.id)
+    assert row.note == "Sao kê ACB 09/08 20:14"
+    assert row.admin_user_id is not None
+    assert row.payload_before == {"status": "pending"}
+    assert row.payload_after["status"] == "paid"
+    assert row.payload_after["grant_type"] == "admin_confirmed"
+
+
+async def test_mark_paid_rejects_paid_order(db_session, client):
+    plan = await _seed_plan(db_session)
+    user = await _seed_user(db_session)
+    order = await _seed_order(db_session, user, plan, PaymentOrderStatus.PAID, datetime.now(UTC))
+
+    headers = await _admin_headers(db_session)
+    resp = await client.post(
+        f"/api/v1/admin/payments/{order.id}/mark-paid",
+        json={"note": "nhầm đơn"},
+        headers=headers,
+    )
+    assert resp.status_code == 400
+    assert "pending" in resp.json()["detail"].lower()
+
+
+async def test_mark_paid_rejects_refunded_order(db_session, client):
+    plan = await _seed_plan(db_session)
+    user = await _seed_user(db_session)
+    order = await _seed_order(db_session, user, plan, PaymentOrderStatus.REFUNDED)
+
+    headers = await _admin_headers(db_session)
+    resp = await client.post(
+        f"/api/v1/admin/payments/{order.id}/mark-paid",
+        json={"note": "thử lại"},
+        headers=headers,
+    )
+    assert resp.status_code == 400
+
+
+async def test_mark_paid_requires_note(db_session, client):
+    plan = await _seed_plan(db_session)
+    user = await _seed_user(db_session)
+    order = await _seed_order(db_session, user, plan)
+
+    headers = await _admin_headers(db_session)
+
+    missing = await client.post(
+        f"/api/v1/admin/payments/{order.id}/mark-paid", json={}, headers=headers
+    )
+    assert missing.status_code == 422
+
+    blank = await client.post(
+        f"/api/v1/admin/payments/{order.id}/mark-paid",
+        json={"note": "   "},
+        headers=headers,
+    )
+    assert blank.status_code == 422
+
+    # Order untouched by the rejected attempts
+    await db_session.refresh(order)
+    assert order.status == PaymentOrderStatus.PENDING
+
+
+async def test_mark_paid_double_submit_is_safe(db_session, client):
+    """Second submit is refused and must not extend the period twice."""
+    plan = await _seed_plan(db_session)
+    user = await _seed_user(db_session)
+    order = await _seed_order(db_session, user, plan)
+
+    headers = await _admin_headers(db_session)
+    first = await client.post(
+        f"/api/v1/admin/payments/{order.id}/mark-paid",
+        json={"note": "ref A1"},
+        headers=headers,
+    )
+    assert first.status_code == 200, first.text
+
+    sub = (
+        await db_session.execute(
+            select(PremiumSubscription).where(PremiumSubscription.user_id == user.id)
+        )
+    ).scalar_one()
+    end_after_first = sub.current_period_end
+
+    second = await client.post(
+        f"/api/v1/admin/payments/{order.id}/mark-paid",
+        json={"note": "ref A1"},
+        headers=headers,
+    )
+    assert second.status_code == 400
+
+    await db_session.refresh(sub)
+    assert sub.current_period_end == end_after_first
+
+    audit_rows = (
+        await db_session.execute(
+            select(AdminAuditLog).where(AdminAuditLog.action == "premium.order.mark_paid")
+        )
+    ).scalars().all()
+    assert len(audit_rows) == 1
+
+
+async def test_mark_paid_order_not_found(db_session, client):
+    headers = await _admin_headers(db_session)
+    resp = await client.post(
+        f"/api/v1/admin/payments/{uuid.uuid4()}/mark-paid",
+        json={"note": "x"},
+        headers=headers,
+    )
+    assert resp.status_code == 404
+
+
+async def test_mark_paid_requires_admin(db_session, client):
+    plan = await _seed_plan(db_session)
+    user = await _seed_user(db_session)
+    order = await _seed_order(db_session, user, plan)
+
+    token = create_access_token(subject=user.id, extra_claims={"role": user.role.value})
+    resp = await client.post(
+        f"/api/v1/admin/payments/{order.id}/mark-paid",
+        json={"note": "tôi tự duyệt"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 403
+
+    await db_session.refresh(order)
+    assert order.status == PaymentOrderStatus.PENDING
+
+
+async def test_mark_paid_filterable_by_grant_type(db_session, client):
+    """`admin_confirmed` orders are greppable via the existing grant_type filter."""
+    plan = await _seed_plan(db_session)
+    user = await _seed_user(db_session)
+    order = await _seed_order(db_session, user, plan)
+    await _seed_order(db_session, user, plan, PaymentOrderStatus.PAID, datetime.now(UTC))
+
+    headers = await _admin_headers(db_session)
+    resp = await client.post(
+        f"/api/v1/admin/payments/{order.id}/mark-paid",
+        json={"note": "ref B2"},
+        headers=headers,
+    )
+    assert resp.status_code == 200, resp.text
+
+    listed = await client.get(
+        "/api/v1/admin/payments?grant_type=admin_confirmed", headers=headers
+    )
+    assert listed.status_code == 200
+    items = listed.json()["items"]
+    assert [i["id"] for i in items] == [str(order.id)]

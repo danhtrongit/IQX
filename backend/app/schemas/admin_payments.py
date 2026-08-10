@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 
 class PaymentOrderListParams(BaseModel):
@@ -75,3 +75,26 @@ class RefundRequest(BaseModel):
 
 class ReconcileRequest(BaseModel):
     note: str | None = None
+
+
+class MarkPaidRequest(BaseModel):
+    """Manual confirmation of a PENDING order (no SePay IPN evidence).
+
+    ``note`` is mandatory: it is the only record of *what* the admin actually
+    verified (bank reference, statement line, screenshot id...).
+    """
+
+    note: str = Field(
+        ...,
+        min_length=1,
+        max_length=1000,
+        description="Bằng chứng admin đã đối chiếu (mã giao dịch ngân hàng, sao kê, ảnh bill...)",
+    )
+
+    @field_validator("note")
+    @classmethod
+    def _note_not_blank(cls, v: str) -> str:
+        stripped = v.strip()
+        if not stripped:
+            raise ValueError("Ghi chú xác nhận không được để trống")
+        return stripped

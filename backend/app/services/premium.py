@@ -42,6 +42,13 @@ from app.schemas.premium import (
 
 logger = logging.getLogger(__name__)
 
+# ── grant_type values on PremiumPaymentOrder ─────────
+# Kept distinct on purpose so an auditor can always tell *why* an order is
+# paid: SePay told us, an admin asserted it, or we comped the user.
+GRANT_TYPE_PAYMENT = "payment"  # confirmed by a SePay IPN webhook
+GRANT_TYPE_ADMIN_CONFIRMED = "admin_confirmed"  # admin verified the money by hand
+GRANT_TYPE_ADMIN_GRANT = "admin_grant"  # comped, no payment expected at all
+
 
 def _ensure_aware(dt: datetime) -> datetime:
     """Ensure a datetime is timezone-aware (handles SQLite naive datetimes)."""
@@ -374,6 +381,74 @@ class PremiumService:
 
         logger.info("IPN: premium activated for user=%s, invoice=%s", local_order.user_id, invoice_number)
         return {"success": "true", "message": "processed"}
+
+    # ══════════════════════════════════════════════════
+    # Admin manual confirmation of a real (unpaid-looking) order
+    # ══════════════════════════════════════════════════
+
+    async def admin_confirm_pending_payment(
+        self,
+        order: PremiumPaymentOrder,
+        admin_id: uuid.UUID,
+        note: str,
+    ) -> bool:
+        """Settle a PENDING order an admin verified by hand (no IPN received).
+
+        Needed because a SePay webhook can silently never arrive: the customer
+        pays, the order stays PENDING forever, and ``reconcile()`` cannot help
+        because it requires a ``sepay_ipn_logs`` row as evidence.
+
+        Deliberately reuses the *same* activation path as ``process_ipn``:
+        the atomic ``claim_pending_order`` PENDING -> PAID claim followed by
+        ``_extend_subscription``. The resulting subscription/role state is
+        therefore identical to a webhook confirmation — there is no second
+        activation implementation that can drift.
+
+        What *is* different, on purpose: ``grant_type`` is
+        ``admin_confirmed`` (not ``payment``), ``granted_by_user_id`` names
+        the admin, ``grant_note`` carries their evidence, and no
+        ``sepay_transaction_id`` / ``raw_ipn`` is fabricated. An auditor can
+        always separate "SePay told us the money arrived" from "an admin
+        asserted it".
+
+        Returns:
+            True if this call claimed the order, False if a concurrent
+            request got there first (in which case nothing was applied and
+            the caller must not report success).
+        """
+        now = datetime.now(UTC)
+
+        rows_updated = await self._order_repo.claim_pending_order(
+            invoice_number=order.invoice_number,
+            paid_at=now,
+            grant_type=GRANT_TYPE_ADMIN_CONFIRMED,
+            granted_by_user_id=admin_id,
+            grant_note=note,
+        )
+        if rows_updated == 0:
+            logger.info(
+                "Admin confirm: order %s already claimed by a concurrent request",
+                order.invoice_number,
+            )
+            return False
+
+        plan = await self._plan_repo.get_by_id(order.plan_id)
+        if plan:
+            await self._extend_subscription(user_id=order.user_id, plan=plan)
+        else:  # pragma: no cover — plan_id is NOT NULL with a RESTRICT FK
+            logger.error(
+                "Admin confirm: order %s has no plan %s; subscription not extended",
+                order.invoice_number,
+                order.plan_id,
+            )
+
+        logger.info(
+            "Admin %s manually confirmed payment for order %s (user=%s)",
+            admin_id,
+            order.invoice_number,
+            order.user_id,
+        )
+        return True
 
     # ══════════════════════════════════════════════════
     # Admin manual grant

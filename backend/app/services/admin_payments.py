@@ -284,6 +284,64 @@ class AdminPaymentService:
 
         return await self.get(order_id)
 
+    # ── mark paid (manual confirmation, no IPN evidence) ─────────────────────
+
+    async def mark_paid(
+        self,
+        order_id: uuid.UUID,
+        ctx: AuditContext,
+        note: str,
+    ) -> AdminPaymentOrderDetail:
+        """Confirm a PENDING order by hand when no IPN ever arrived.
+
+        ``reconcile()`` can only settle an order that has a valid
+        ``sepay_ipn_logs`` row. When SePay's webhook never reaches us at all
+        the customer's money is real but the evidence table is empty, and the
+        order would stay PENDING forever. This is the escape hatch: an admin
+        who has verified the transfer out-of-band settles *this* order (rather
+        than comping the user with a brand-new grant order).
+
+        Activation runs through ``PremiumService.admin_confirm_pending_payment``,
+        which reuses the same atomic claim + ``_extend_subscription`` the IPN
+        handler uses, so the subscription outcome is identical to a webhook
+        confirmation while the order itself stays labelled
+        ``grant_type='admin_confirmed'``.
+        """
+        order = await self._get_order_or_404(order_id)
+
+        if order.status != PaymentOrderStatus.PENDING:
+            raise BadRequestError(
+                "Chỉ có thể xác nhận thanh toán cho đơn hàng ở trạng thái PENDING "
+                f"(hiện tại: {order.status})"
+            )
+
+        from app.services.premium import GRANT_TYPE_ADMIN_CONFIRMED, PremiumService
+
+        claimed = await PremiumService(self._session).admin_confirm_pending_payment(
+            order=order,
+            admin_id=ctx.admin_id,
+            note=note,
+        )
+        if not claimed:
+            # Lost the atomic claim to a concurrent request (double-submit or
+            # a late IPN). Nothing was applied here — refuse loudly instead of
+            # reporting a success we did not cause.
+            raise BadRequestError(
+                "Đơn hàng vừa được xác nhận bởi một yêu cầu khác. Tải lại để xem trạng thái mới nhất."
+            )
+
+        await AdminAuditService(self._session).record(
+            ctx,
+            action="premium.order.mark_paid",
+            target_entity="payment_order",
+            target_id=str(order.id),
+            before={"status": "pending"},
+            after={"status": "paid", "grant_type": GRANT_TYPE_ADMIN_CONFIRMED},
+            note=note,
+        )
+
+        return await self.get(order_id)
+
     # ── reconcile ────────────────────────────────────────────────────────────
 
     async def reconcile(

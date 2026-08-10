@@ -12,6 +12,7 @@ from app.api.deps_audit import AuditCtx
 from app.schemas.admin_payments import (
     AdminPaymentOrderBrief,
     AdminPaymentOrderDetail,
+    MarkPaidRequest,
     ReconcileRequest,
     RefundRequest,
 )
@@ -68,6 +69,24 @@ async def refund_payment(
     """Hoàn tiền đơn hàng PAID (admin)."""
     svc = AdminPaymentService(db)
     return await svc.refund(order_id, audit, body.reason)
+
+
+@router.post("/{order_id}/mark-paid", response_model=AdminPaymentOrderDetail)
+async def mark_payment_paid(
+    order_id: uuid.UUID,
+    body: MarkPaidRequest,
+    admin: AdminUser,
+    audit: AuditCtx,
+    db: DBSession,
+):
+    """Xác nhận thủ công đơn hàng PENDING đã thanh toán (admin).
+
+    Dùng khi SePay không gửi IPN nên `/reconcile` không có bằng chứng để đối
+    chiếu, nhưng admin đã tự kiểm tra được tiền về. Đơn được đánh dấu
+    `grant_type='admin_confirmed'` để phân biệt với đơn do webhook xác nhận.
+    """
+    svc = AdminPaymentService(db)
+    return await svc.mark_paid(order_id, audit, body.note)
 
 
 @router.post("/{order_id}/reconcile")
