@@ -76,6 +76,12 @@ function renderPanel() {
   )
 }
 
+/** `renderPanel` + đặt sẵn progress — dùng khi test chỉ quan tâm tiến độ. */
+function renderPanel2(progress: Partial<Cap1Progress> = {}) {
+  useCap1ProgressMock.mockReturnValue({ data: makeProgress(progress) })
+  return renderPanel()
+}
+
 describe("JourneyPanelCap1", () => {
   beforeEach(() => {
     useCap1ProgressMock.mockReset()
@@ -150,17 +156,20 @@ describe("JourneyPanelCap1", () => {
 
   it("renders all 6 task names verbatim", () => {
     useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
-    renderPanel()
-    expect(screen.getByText("Lệnh Thực chiến đầu tiên có kế hoạch")).toBeInTheDocument()
-    expect(screen.getByText("Bán lệnh đầu — Kết sổ đầu")).toBeInTheDocument()
-    expect(screen.getByText("Làm quen 5 lý do — chọn đủ 5 lý do mua")).toBeInTheDocument()
+    const { container } = renderPanel()
+    // Trong checklist đầy đủ (đã hạ cấp) — nhiệm vụ đang làm còn xuất hiện lần
+    // nữa trên ô tập trung, nên phải khoanh vùng thay vì `screen.getByText`.
+    const rest = within(container.querySelector(".cap0-journey-rest") as HTMLElement)
+    expect(rest.getByText("Lệnh Thực chiến đầu tiên có kế hoạch")).toBeInTheDocument()
+    expect(rest.getByText("Bán lệnh đầu — Kết sổ đầu")).toBeInTheDocument()
+    expect(rest.getByText("Làm quen 5 lý do — chọn đủ 5 lý do mua")).toBeInTheDocument()
     expect(
-      screen.getByText("Chọn lý do có cơ sở — 3 lệnh có lý do được ✅ Ủng hộ"),
+      rest.getByText("Chọn lý do có cơ sở — 3 lệnh có lý do được ✅ Ủng hộ"),
     ).toBeInTheDocument()
     expect(
-      screen.getByText("Xem lại danh mục — mở trang Phân tích danh mục 3 lần"),
+      rest.getByText("Xem lại danh mục — mở trang Phân tích danh mục 3 lần"),
     ).toBeInTheDocument()
-    expect(screen.getByText("Tổng số lệnh Thực chiến — 10 lệnh")).toBeInTheDocument()
+    expect(rest.getByText("Tổng số lệnh Thực chiến — 10 lệnh")).toBeInTheDocument()
   })
 
   it("shows the ordinal ①..⑥ next to each (full, unshortened) task name", () => {
@@ -171,16 +180,17 @@ describe("JourneyPanelCap1", () => {
     expect(task2.getByText("Bán lệnh đầu — Kết sổ đầu")).toBeInTheDocument()
   })
 
-  it("at 0/6: ① is the 🎯 active task, ⑥ is 🔲 open, ②③④⑤ are 🔒 locked", () => {
+  it("at 0/6: ① is the 🎯 task being led, ⑥ is 🔲 open, ②③④⑤ are 🔒 locked", () => {
     useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
     renderPanel()
     const task1 = screen.getByTestId("cap1-task-1")
-    expect(task1.className).toContain("cap0-checklist-item--active")
+    // Dòng của nhiệm vụ đang được ô tập trung dẫn — vạch nhấn, không tô nền.
+    expect(task1.className).toContain("cap0-checklist-item--current")
     expect(within(task1).getByText("🎯")).toBeInTheDocument()
 
     const task6 = screen.getByTestId("cap1-task-6")
     expect(task6.className).toContain("cap1-checklist-item--open")
-    expect(task6.className).not.toContain("cap0-checklist-item--active")
+    expect(task6.className).not.toContain("cap0-checklist-item--current")
     expect(within(task6).getByText("🔲")).toBeInTheDocument()
 
     for (const no of [2, 3, 4, 5]) {
@@ -190,7 +200,7 @@ describe("JourneyPanelCap1", () => {
     }
   })
 
-  it("once ① is done it shows ✅, ② becomes the single 🎯 active task and ③④⑤⑥ are 🔲 open", () => {
+  it("once ① is done it shows ✅, ② becomes the single 🎯 task being led and ③④⑤⑥ are 🔲 open", () => {
     useCap1ProgressMock.mockReturnValue({
       data: makeProgress({ task_1_done_at: "2026-07-21T01:00:00Z" }),
     })
@@ -199,11 +209,11 @@ describe("JourneyPanelCap1", () => {
     expect(task1.className).toContain("cap0-checklist-item--done")
     expect(within(task1).getByText("✅")).toBeInTheDocument()
 
-    expect(screen.getByTestId("cap1-task-2").className).toContain("cap0-checklist-item--active")
+    expect(screen.getByTestId("cap1-task-2").className).toContain("cap0-checklist-item--current")
     for (const no of [3, 4, 5, 6]) {
       const task = screen.getByTestId(`cap1-task-${no}`)
       expect(task.className).toContain("cap1-checklist-item--open")
-      expect(task.className).not.toContain("cap0-checklist-item--active")
+      expect(task.className).not.toContain("cap0-checklist-item--current")
     }
     // Exactly ONE 🎯 in the whole checklist.
     expect(screen.getAllByText("🎯").filter((el) => el.className.includes("checklist"))).toHaveLength(
@@ -220,7 +230,10 @@ describe("JourneyPanelCap1", () => {
     expect(within(screen.getByTestId("cap1-task-3")).getByText("Làm ngay →")).toBeInTheDocument()
   })
 
-  it("③ shows the 5 lý do emoji strip — unused lý do dimmed (.off) — plus «Đã dùng n/5 lý do»", () => {
+  // Dải 5 lý do đã dọn lên ô tập trung (nó chỉ có nghĩa khi ③ tới lượt) — luật
+  // của dải nằm ở test "③ đưa dải 5 lý do…" dưới. Dòng ③ trong checklist thu
+  // gọn thì vẫn phải giữ CON SỐ, vì Cấp 1 là cấp đếm.
+  it("③'s row keeps its «Đã dùng n/5 lý do» counter while another task is being led", () => {
     useCap1ProgressMock.mockReturnValue({
       data: makeProgress({ task_1_done_at: "t", so_ly_do_da_dung: 2 }),
     })
@@ -230,18 +243,9 @@ describe("JourneyPanelCap1", () => {
     })
     renderPanel()
     const task3 = within(screen.getByTestId("cap1-task-3"))
-    // Đã dùng → sáng; chưa dùng → mờ (class `.off` như mockup)
-    expect(task3.getByTestId("cap1-coverage-ky_thuat").className).not.toContain("cap1-coverage-off")
-    expect(task3.getByTestId("cap1-coverage-dong_tien").className).not.toContain(
-      "cap1-coverage-off",
-    )
-    for (const value of ["noi_bo", "tin_tuc", "dinh_gia"]) {
-      expect(task3.getByTestId(`cap1-coverage-${value}`).className).toContain("cap1-coverage-off")
-    }
-    // Emoji only — the old "✓/✗" pairs are gone.
-    expect(task3.getByTestId("cap1-coverage-noi_bo")).toHaveTextContent("👤")
-    expect(task3.queryByText(/✗/)).not.toBeInTheDocument()
     expect(task3.getByText("Đã dùng 2/5 lý do")).toBeInTheDocument()
+    // ...nhưng dải emoji thì không nhân đôi xuống đây.
+    expect(task3.queryByTestId("cap1-coverage-dong_tien")).not.toBeInTheDocument()
   })
 
   it("③'s «Đã dùng» never under-reports the server count when the local trade log is empty", () => {
@@ -347,6 +351,151 @@ describe("JourneyPanelCap1", () => {
     expect(goal).toHaveTextContent("Xong 6/6 → tốt nghiệp Cấp 1 «Học việc», lên Cấp 2 «Kỷ luật»")
     expect(goal).toHaveTextContent("Cấp 2 thêm cắt lỗ/chốt lời + sổ lệnh")
     expect(goal).not.toHaveTextContent(/chưa ra mắt/)
+  })
+
+  // ── ★ Hành trình dẫn TỪNG NHIỆM VỤ MỘT ────────────────────────────────────
+  // Cùng một cách dẫn với Cấp 0 (`cap0/JourneyFocus.tsx` dùng chung): ô "NHIỆM
+  // VỤ ĐANG LÀM" nổi hẳn lên, checklist 6 dòng vẫn ở dưới nhưng thu gọn.
+  describe("dẫn từng nhiệm vụ một", () => {
+    it("ô tập trung mang ĐÚNG nhiệm vụ active (① ở 0/6) — mô tả nguyên văn spec §2 + «Làm ngay →»", () => {
+      useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
+      renderPanel()
+      const focus = within(screen.getByTestId("cap1-focus"))
+      expect(focus.getByText("①")).toBeInTheDocument()
+      expect(focus.getByText("Lệnh Thực chiến đầu tiên có kế hoạch")).toBeInTheDocument()
+      expect(
+        focus.getByText(
+          "Cấp 1 khác Cấp 0 — mọi lệnh phải có kế hoạch: chọn lý do mua (1 trong 5 lý do) + vùng mua. Thiếu 1 trong 2 không đặt được lệnh.",
+        ),
+      ).toBeInTheDocument()
+      expect(focus.getByText("Làm ngay →")).toBeInTheDocument()
+      // Đúng MỘT nhiệm vụ trong ô.
+      expect(focus.queryByText("Bán lệnh đầu — Kết sổ đầu")).not.toBeInTheDocument()
+    })
+
+    it("ô tập trung chuyển sang ② ngay khi ① xong — ① không còn được tập trung", () => {
+      useCap1ProgressMock.mockReturnValue({ data: makeProgress({ task_1_done_at: "t" }) })
+      renderPanel()
+      const focus = within(screen.getByTestId("cap1-focus"))
+      expect(focus.getByText("②")).toBeInTheDocument()
+      expect(focus.getByText("Bán lệnh đầu — Kết sổ đầu")).toBeInTheDocument()
+      expect(focus.queryByText("Lệnh Thực chiến đầu tiên có kế hoạch")).not.toBeInTheDocument()
+    })
+
+    it("checklist bên dưới vẫn đủ 6 nhiệm vụ nhưng THU GỌN (mô tả chỉ sống trên ô tập trung)", () => {
+      const { container } = renderPanel2({ task_1_done_at: "t" })
+      const rest = container.querySelector(".cap0-journey-rest") as HTMLElement
+      expect(rest).not.toBeNull()
+      for (const no of [1, 2, 3, 4, 5, 6]) {
+        expect(within(rest).getByTestId(`cap1-task-${no}`)).toBeInTheDocument()
+      }
+      expect(within(rest).queryByText(/Bán một lệnh đang mở/)).not.toBeInTheDocument()
+    })
+
+    // ★ Dòng 🎯 trong checklist và ô tập trung phải là CÙNG một nhiệm vụ —
+    // hai chỗ suy ra từ cùng `taskStates`, và test này giữ chúng dính nhau.
+    it("dòng --current 🎯 là ĐÚNG nhiệm vụ mà ô tập trung đang dẫn — đúng MỘT dòng", () => {
+      useCap1ProgressMock.mockReturnValue({ data: makeProgress({ task_1_done_at: "t" }) })
+      const { container } = renderPanel()
+      const current = container.querySelector(".cap0-checklist-item--current") as HTMLElement
+      expect(current).not.toBeNull()
+      expect(current.dataset.testid).toBe("cap1-task-2")
+      expect(container.querySelectorAll(".cap0-checklist-item--current")).toHaveLength(1)
+      expect(screen.getAllByText("🎯")).toHaveLength(1)
+
+      const focusName = (
+        screen.getByTestId("cap1-focus").querySelector(".cap0-focus-name") as HTMLElement
+      ).textContent as string
+      expect(focusName).toContain(current.textContent?.replace(/[✅🎯🔲🔒]/g, "").trim() ?? "")
+    })
+
+    it("③ đưa dải 5 lý do + «Đã dùng n/5 lý do» lên ô tập trung khi tới lượt nó", () => {
+      useCap1ProgressMock.mockReturnValue({
+        data: makeProgress({ task_1_done_at: "t", task_2_done_at: "t", so_ly_do_da_dung: 2 }),
+      })
+      useCap1TradeLogMock.mockReturnValue({
+        trades: [trade({ lyDo: "dong_tien" }), trade({ lyDo: "ky_thuat" })],
+        record: vi.fn(),
+      })
+      renderPanel()
+      const focus = within(screen.getByTestId("cap1-focus"))
+      expect(focus.getByText("Làm quen 5 lý do — chọn đủ 5 lý do mua")).toBeInTheDocument()
+      // Đã dùng → sáng; chưa dùng → mờ (class `.off` như mockup).
+      for (const value of ["dong_tien", "ky_thuat"]) {
+        expect(focus.getByTestId(`cap1-coverage-${value}`).className).not.toContain(
+          "cap1-coverage-off",
+        )
+      }
+      for (const value of ["noi_bo", "tin_tuc", "dinh_gia"]) {
+        expect(focus.getByTestId(`cap1-coverage-${value}`).className).toContain("cap1-coverage-off")
+      }
+      // Emoji only — the old "✓/✗" pairs are gone.
+      expect(focus.getByTestId("cap1-coverage-noi_bo")).toHaveTextContent("👤")
+      expect(focus.queryByText(/✗/)).not.toBeInTheDocument()
+      expect(focus.getByText("Đã dùng 2/5 lý do")).toBeInTheDocument()
+    })
+
+    it("nhiệm vụ CHƯA MỞ không bấm được ở đâu cả — ở 0/6 chỉ ① (ô tập trung) và ⑥ (lối tắt) có nút", () => {
+      useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
+      renderPanel()
+      for (const no of [2, 3, 4, 5]) {
+        const row = screen.getByTestId(`cap1-task-${no}`)
+        expect(row.className).toContain("cap0-checklist-item--locked")
+        expect(within(row).queryByText("Làm ngay →")).not.toBeInTheDocument()
+      }
+      // ⑥ mở ngay từ đầu (spec §2 "Điều kiện mở: vào Cấp 1") → vẫn phải bấm được.
+      expect(within(screen.getByTestId("cap1-task-6")).getByText("Làm ngay →")).toBeInTheDocument()
+      expect(screen.getAllByText("Làm ngay →")).toHaveLength(2)
+    })
+
+    it("bấm «Làm ngay →» trên ô tập trung của ⑤ mở trang Phân tích danh mục", () => {
+      useCap1ProgressMock.mockReturnValue({
+        data: makeProgress({
+          task_1_done_at: "t",
+          task_2_done_at: "t",
+          task_3_done_at: "t",
+          task_4_done_at: "t",
+        }),
+      })
+      function PanelSpy() {
+        const { activePanel } = useSidebar()
+        return <div data-testid="panel-spy">{activePanel}</div>
+      }
+      render(
+        <SidebarProvider>
+          <JourneyPanelCap1 />
+          <PanelSpy />
+        </SidebarProvider>,
+      )
+      const focus = within(screen.getByTestId("cap1-focus"))
+      expect(focus.getByText("Xem lại danh mục — mở trang Phân tích danh mục 3 lần")).toBeInTheDocument()
+      fireEvent.click(focus.getByText("Làm ngay →"))
+      expect(screen.getByTestId("panel-spy")).toHaveTextContent("cap1-analysis")
+    })
+
+    it("★ xong cả 6 → ô tập trung là trạng thái SẴN SÀNG TỐT NGHIỆP, không phải ô rỗng", () => {
+      useCap1ProgressMock.mockReturnValue({
+        data: makeProgress({
+          task_1_done_at: "t",
+          task_2_done_at: "t",
+          task_3_done_at: "t",
+          task_4_done_at: "t",
+          task_5_done_at: "t",
+          task_6_done_at: "t",
+        }),
+      })
+      renderPanel()
+      const focusEl = screen.getByTestId("cap1-focus")
+      expect(focusEl.className).toContain("cap0-focus--ready")
+      expect(within(focusEl).getByText(/Sẵn sàng tốt nghiệp Cấp 1/)).toBeInTheDocument()
+      expect(screen.queryByText("Làm ngay →")).not.toBeInTheDocument()
+      expect(screen.getByText("6/6")).toBeInTheDocument()
+      for (const no of [1, 2, 3, 4, 5, 6]) {
+        expect(screen.getByTestId(`cap1-task-${no}`).className).toContain(
+          "cap0-checklist-item--done",
+        )
+      }
+    })
   })
 
   it("does NOT render any medal cabinet / Tủ huân chương (spec §8 — Cấp 1 has none)", () => {

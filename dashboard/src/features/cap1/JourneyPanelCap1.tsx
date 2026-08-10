@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
 import "@/features/cap0/cap0.css"
 import "./cap1.css"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { Badge, LEVELS } from "@/features/cap0/Badge"
+import { JourneyFocus } from "@/features/cap0/JourneyFocus"
 import { ModeBadge } from "@/features/cap0/ModeBadge"
 import { CAP_2_PLUS_ENABLED } from "./capFlags"
 import { useCap1Events } from "./Cap1Context"
@@ -21,8 +21,26 @@ const TASK_NAMES: Record<number, string> = {
   6: "Tổng số lệnh Thực chiến — 10 lệnh",
 }
 
+/**
+ * Mô tả hiện trên ô "NHIỆM VỤ ĐANG LÀM" (`JourneyFocus`) — mỗi lúc đúng một
+ * cái, của nhiệm vụ đang tới lượt.
+ *
+ * ① là copy NGUYÊN VĂN spec §2 ("Copy (khi active)"). Năm cái còn lại spec
+ * không cho câu chữ, nên chúng chỉ diễn đạt lại đúng gạch đầu dòng "Yêu cầu"
+ * của chính spec — không hứa thêm gì mà sản phẩm không làm.
+ */
+const TASK_DESCRIPTIONS: Record<number, string> = {
+  1: "Cấp 1 khác Cấp 0 — mọi lệnh phải có kế hoạch: chọn lý do mua (1 trong 5 lý do) + vùng mua. Thiếu 1 trong 2 không đặt được lệnh.",
+  2: "Bán một lệnh đang mở, rồi đóng màn Kết sổ Cấp 1 — cột mốc cảm xúc thứ hai của bạn.",
+  3: "Thử chọn đủ cả 5 lý do mua qua các lệnh, mỗi loại ít nhất 1 lần. Không cần khớp dữ liệu — mục tiêu là làm quen cả 5 góc nhìn.",
+  4: "Cần 3 lệnh có lý do mua được AI Thanh tra chấm ✅ Ủng hộ ngay lúc đặt — chọn lý do đang được dữ liệu hậu thuẫn.",
+  5: "Mở trang Phân tích danh mục 3 lần khác ngày — nhìn lại tổng thể danh mục, không chỉ nhìn từng lệnh.",
+  6: "Tổng 10 lệnh Thực chiến, tính cả lệnh đang mở lẫn lệnh đã đóng.",
+}
+
 const TASK_NOS = [1, 2, 3, 4, 5, 6] as const
 const NUMERALS = "①②③④⑤⑥"
+const TOTAL_TASKS = 6
 
 const TASK3_TARGET = 5
 const TASK4_TARGET = 3
@@ -91,17 +109,20 @@ export function taskStates(progress: Cap1Progress | null | undefined): Record<nu
   ) as Record<number, TaskState>
 }
 
+/**
+ * Một dòng checklist THU GỌN. Mô tả + dải độ phủ + nút to đã dọn lên ô tập
+ * trung; dòng ở đây giữ tên, và giữ con số tiến độ (`progressText`) vì Cấp 1 là
+ * cấp ĐẾM — trừ chính dòng đang được tập trung, vốn đã có con số đó ngay trên
+ * đầu và không cần nhắc lại hai lần.
+ */
 function ChecklistItem({
   no,
   state,
-  extra,
   progressText,
   onGo,
 }: {
   no: number
   state: TaskState
-  /** Khối phụ vẽ trên dòng tiến độ (dải emoji độ phủ của ③). */
-  extra?: ReactNode
   progressText?: string
   onGo: () => void
 }) {
@@ -111,7 +132,9 @@ function ChecklistItem({
       className={
         "cap0-checklist-item" +
         (state === "done" ? " cap0-checklist-item--done" : "") +
-        (state === "active" ? " cap0-checklist-item--active" : "") +
+        // `active` = nhiệm vụ đang nằm trên ô tập trung. Chỉ một vạch nhấn,
+        // KHÔNG tô nền như trước: hai khối cùng đậm là hai khối tranh nhau.
+        (state === "active" ? " cap0-checklist-item--current" : "") +
         (state === "open" ? " cap1-checklist-item--open" : "") +
         (state === "locked" ? " cap0-checklist-item--locked" : "")
       }
@@ -123,14 +146,22 @@ function ChecklistItem({
           {/* Nhãn nhiệm vụ giữ NGUYÊN VĂN tiêu đề spec §2 (quyết định 2) */}
           <span>{TASK_NAMES[no]}</span>
         </span>
-        {extra}
-        {progressText && <div className="cap0-checklist-desc">{progressText}</div>}
-        {(state === "active" || state === "open") && no !== 1 && (
-          <button type="button" className="cap0-checklist-golink" onClick={onGo}>
-            Làm ngay →
-          </button>
+        {state !== "active" && progressText && (
+          <div className="cap0-checklist-desc">{progressText}</div>
         )}
       </div>
+      {/* ★ Lối tắt của nhiệm vụ ĐÃ MỞ nhưng chưa tới lượt (⑥ mở ngay từ lúc vào
+          Cấp 1, ③④⑤ mở cùng lúc sau ①). Dẫn từng nhiệm vụ một không được KHOÁ
+          thứ user có quyền làm ngay bây giờ. */}
+      {state === "open" && (
+        <button
+          type="button"
+          className="cap0-checklist-golink cap0-checklist-golink--quiet"
+          onClick={onGo}
+        >
+          Làm ngay →
+        </button>
+      )}
     </div>
   )
 }
@@ -164,6 +195,12 @@ export function JourneyPanelCap1() {
   const soLenh = progress?.so_lenh_thuc_chien ?? 0
   const coverage = reasonCoverage(trades)
   const states = taskStates(progress)
+  /**
+   * Nhiệm vụ được đưa lên ô tập trung = nhiệm vụ `active` — `taskStates` vốn đã
+   * chỉ đặt ĐÚNG MỘT cái (nhiệm vụ mở, chưa xong, số nhỏ nhất). `null` = xong
+   * cả 6 → ô đổi sang lời sẵn sàng tốt nghiệp. Không có luật mở khoá nào mới.
+   */
+  const focus = TASK_NOS.find((no) => states[no] === "active") ?? null
   // Dải emoji lấy từ sổ lệnh cục bộ (chỉ nó biết ĐÃ DÙNG lý do NÀO), còn con
   // số lấy max với `so_ly_do_da_dung` của server — sổ cục bộ có thể trống trên
   // máy khác nên chỉ được phép báo THIẾU hơn, không được báo thấp hơn sự thật
@@ -171,6 +208,34 @@ export function JourneyPanelCap1() {
   const daDungLyDo = Math.max(
     progress?.so_ly_do_da_dung ?? 0,
     Object.values(coverage).filter(Boolean).length,
+  )
+
+  /** Con số tiến độ của 4 nhiệm vụ ĐẾM (spec §8). Một nguồn duy nhất cho cả ô
+   *  tập trung lẫn dòng checklist — không được phép hai chỗ đếm hai kiểu. */
+  const PROGRESS_TEXT: Record<number, string | undefined> = {
+    3: `Đã dùng ${Math.min(daDungLyDo, TASK3_TARGET)}/${TASK3_TARGET} lý do`,
+    4: `Lý do có cơ sở (✅): ${Math.min(soUngHo, TASK4_TARGET)}/${TASK4_TARGET}`,
+    5: `Đã xem lại danh mục ${Math.min(soXem, TASK5_TARGET)}/${TASK5_TARGET} lần`,
+    6: `Lệnh Thực chiến ${Math.min(soLenh, TASK6_TARGET)}/${TASK6_TARGET}`,
+  }
+
+  /** Chỗ đi tới của mỗi nhiệm vụ: ⑤ là trang Phân tích danh mục, còn lại là
+   *  tab Đặt lệnh. */
+  const goTo = (no: number) => (no === 5 ? openPortfolioAnalysis() : goToTrading())
+
+  /** Dải 5 lý do (mockup `.cov`) — đi kèm nhiệm vụ ③ trên ô tập trung. */
+  const coverageStrip = (
+    <div className="cap1-coverage">
+      {LY_DO_OPTIONS.map((o) => (
+        <span
+          key={o.value}
+          data-testid={`cap1-coverage-${o.value}`}
+          className={coverage[o.value] ? "" : "cap1-coverage-off"}
+        >
+          {o.icon}
+        </span>
+      ))}
+    </div>
   )
 
   return (
@@ -194,6 +259,31 @@ export function JourneyPanelCap1() {
           </div>
         </div>
 
+        {/* ★ Ô "NHIỆM VỤ ĐANG LÀM" — dùng chung `cap0/JourneyFocus.tsx` với Cấp
+            0 (một khối, một bộ CSS: hai cấp không thể lệch nhau). Cấp 1 không
+            chia chặng nên không truyền `stage`. Con số tiến độ + dải độ phủ 5
+            lý do đi theo nhiệm vụ đang được dẫn. */}
+        {focus == null ? (
+          <JourneyFocus
+            testId="cap1-focus"
+            ready
+            tag={`ĐÃ XONG CẢ ${TOTAL_TASKS} NHIỆM VỤ`}
+            name="Sẵn sàng tốt nghiệp Cấp 1"
+            desc="Bạn đã làm quen cả 5 lý do mua, chọn được lý do có dữ liệu ủng hộ, và nhìn lại danh mục của chính mình. Màn tốt nghiệp Cấp 1 «Học việc» mở ra ngay tại đây."
+          />
+        ) : (
+          <JourneyFocus
+            testId="cap1-focus"
+            tag="NHIỆM VỤ ĐANG LÀM"
+            numeral={NUMERALS[focus - 1]}
+            name={TASK_NAMES[focus]}
+            desc={TASK_DESCRIPTIONS[focus]}
+            extra={focus === 3 ? coverageStrip : undefined}
+            progressText={PROGRESS_TEXT[focus]}
+            onGo={() => goTo(focus)}
+          />
+        )}
+
         {/* Mockup `.ck-head` (dòng 25-27): `.t` tiêu đề xám bên trái + `.c` bộ
             đếm 14px mang MÀU CỦA CẤP bên phải — hai phần tử, không phải một
             chuỗi "… · x/6". Màu lấy từ `LEVELS[1].color` (đồng `#c97b4a`) thay
@@ -206,45 +296,19 @@ export function JourneyPanelCap1() {
           </span>
         </div>
 
-        <ChecklistItem no={1} state={states[1]} onGo={goToTrading} />
-        <ChecklistItem no={2} state={states[2]} onGo={goToTrading} />
-        <ChecklistItem
-          no={3}
-          state={states[3]}
-          extra={
-            <div className="cap1-coverage">
-              {LY_DO_OPTIONS.map((o) => (
-                <span
-                  key={o.value}
-                  data-testid={`cap1-coverage-${o.value}`}
-                  className={coverage[o.value] ? "" : "cap1-coverage-off"}
-                >
-                  {o.icon}
-                </span>
-              ))}
-            </div>
-          }
-          progressText={`Đã dùng ${Math.min(daDungLyDo, TASK3_TARGET)}/${TASK3_TARGET} lý do`}
-          onGo={goToTrading}
-        />
-        <ChecklistItem
-          no={4}
-          state={states[4]}
-          progressText={`Lý do có cơ sở (✅): ${Math.min(soUngHo, TASK4_TARGET)}/${TASK4_TARGET}`}
-          onGo={goToTrading}
-        />
-        <ChecklistItem
-          no={5}
-          state={states[5]}
-          progressText={`Đã xem lại danh mục ${Math.min(soXem, TASK5_TARGET)}/${TASK5_TARGET} lần`}
-          onGo={openPortfolioAnalysis}
-        />
-        <ChecklistItem
-          no={6}
-          state={states[6]}
-          progressText={`Lệnh Thực chiến ${Math.min(soLenh, TASK6_TARGET)}/${TASK6_TARGET}`}
-          onGo={goToTrading}
-        />
+        {/* Checklist ĐẦY ĐỦ 6 nhiệm vụ của mockup, hạ cấp: vẫn thấy cả cung
+            đường + con số tiến độ, nhưng thu gọn và mờ hơn ô tập trung. */}
+        <div className="cap0-journey-rest">
+          {TASK_NOS.map((no) => (
+            <ChecklistItem
+              key={no}
+              no={no}
+              state={states[no]}
+              progressText={PROGRESS_TEXT[no]}
+              onGo={() => goTo(no)}
+            />
+          ))}
+        </div>
 
         {/* Hàng 2 công cụ (mockup). 📓 Kết sổ KHÔNG bấm được: nó tự mở khi bán
             lệnh (spec §6) và Cấp 1 không có màn lịch sử kết sổ để mở tay — làm
