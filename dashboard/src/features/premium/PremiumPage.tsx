@@ -87,10 +87,12 @@ export default function PremiumPage() {
       setShowAuthModal(true)
       return
     }
-    if (isPremium) {
-      Message.info("Bạn đã là thành viên Premium!")
-      return
-    }
+    // ★ KHÔNG chặn user đã Premium: mua tiếp = GIA HẠN. Backend cộng dồn đúng —
+    // `atomic_extend_period` (repositories/premium.py:112) lấy row lock rồi
+    // stack thêm `duration_days` LÊN TRÊN `current_period_end` nếu gói còn hạn,
+    // chỉ tính từ hôm nay khi đã hết hạn. Trước đây chỗ này chặn ở FE nên user
+    // đang dùng Premium không thể trả tiền tiếp — mất doanh thu, và họ không có
+    // cách nào gia hạn ngoài chờ hết hạn.
     try {
       const { checkoutUrl, fields } = await checkout.mutateAsync(planKey)
       // POST the SePay form (browser navigation away from the SPA).
@@ -275,17 +277,23 @@ export default function PremiumPage() {
                       size="large"
                       className="my-3 font-bold"
                       loading={isCheckingOut}
-                      disabled={isPremium}
                       onClick={() => handleSelectPlan(plan.plan)}
                     >
                       {isCheckingOut
                         ? "Đang chuyển tới SePay..."
                         : isPremium
-                          ? "Bạn đã là Premium"
+                          ? "Gia hạn thêm"
                           : isPopular
                             ? "Chọn gói phổ biến nhất"
                             : "Chọn gói này"}
                     </Button>
+                    {/* Nói thẳng ngày được cộng vào đâu — user đang có gói cần
+                        biết mình mua thêm chứ không mua lại từ đầu. */}
+                    {isPremium && (
+                      <div className="-mt-2 mb-2 text-center text-xs text-[var(--color-text-3)]">
+                        Cộng thêm {plan.months} tháng vào hạn hiện tại của bạn
+                      </div>
+                    )}
 
                     {/* Features */}
                     <Space direction="vertical" size="small" style={{ width: "100%" }}>
