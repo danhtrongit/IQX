@@ -395,15 +395,6 @@
   color: var(--brand);
 }
 
-.cap0-focus-stage {
-  margin-top: 3px;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--t3);
-}
-
 .cap0-focus-name {
   margin-top: 7px;
   font-size: 16px;
@@ -479,19 +470,6 @@
 .cap0-journey-rest .cap0-checklist-name {
   font-size: 11.5px;
   font-weight: 500;
-}
-
-.cap0-stage-label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1.1px;
-  text-transform: uppercase;
-  color: var(--t3);
-  margin: 11px 0 5px;
-}
-
-.cap0-stage-label--done {
-  color: rgba(53, 208, 127, 0.75);
 }
 
 /* Mockup `.task` — MỌI trạng thái đều là một thẻ có viền + nền, không chỉ ô
