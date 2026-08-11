@@ -30,7 +30,9 @@ const { useCap0ProgressMock, usePremiumStatusMock, enterMutate, placementMutate,
   }),
   // `Gbar` (now mounted below the journey bar) calls `useCompleteTask` — a
   // no-op spy is enough here since this file only exercises the Cấp 0 shell,
-  // not nhiệm vụ ①'s own behaviour (see `gbar.test.tsx`).
+  // not nhiệm vụ ①'s own behaviour (see `gbar.test.tsx`). It doubles as the
+  // regression sensor for the removed tour host: NOTHING on this page may
+  // PATCH a task by itself any more.
   completeTaskMutate: vi.fn(),
   // `GraduationModal` (now mounted unconditionally alongside PlacementModal)
   // calls `useGraduate` itself — a no-op spy is enough here since this file
@@ -56,37 +58,20 @@ vi.mock("react-router", async (importOriginal) => {
 // Cap0 shell (chrome + placement modal + mode badge + wiring), not the real
 // terminal. `RightToolbar`'s stub still forwards `onActionClick` so the "AI
 // Phân tích" wiring (FE2 review Important #2) can be exercised without
-// rendering the real toolbar's icons/panels. `RightSidebar`'s stub also
-// exposes a button wired to the REAL Cap0 event bus's `onLaunchTour` (T2 —
-// `Cap0Context` is NOT mocked in this file) so tests can simulate Journey's
-// "Làm ngay →" for task ② without needing the real `JourneyPanel`/sidebar
-// panel-switching machinery.
+// rendering the real toolbar's icons/panels.
+//
+// ★ `RightSidebar`'s stub used to expose three buttons wired to the REAL Cap0
+// event bus's `onLaunchTour`, so tests could simulate Journey's "Làm ngay →"
+// launching a Chặng 2 tour. That channel is gone with the tours themselves.
 vi.mock("@/features/dashboard", () => ({
   CenterPanel: () => <div data-testid="center-panel" />,
-  RightSidebar: () => <RightSidebarStub />,
+  RightSidebar: () => <div data-testid="right-sidebar" />,
   RightToolbar: ({ onActionClick }: { onActionClick?: (id: string) => void }) => (
     <button data-testid="right-toolbar" onClick={() => onActionClick?.("ai-insight")}>
       AI Phân tích
     </button>
   ),
 }))
-
-function RightSidebarStub() {
-  const { onLaunchTour } = useCap0Events()
-  return (
-    <div data-testid="right-sidebar">
-      <button data-testid="launch-bangdien-tour" onClick={() => onLaunchTour?.(2)}>
-        launch bảng điện
-      </button>
-      <button data-testid="launch-bantin-tour" onClick={() => onLaunchTour?.(3)}>
-        launch bản tin
-      </button>
-      <button data-testid="launch-6nguoichoi-tour" onClick={() => onLaunchTour?.(4)}>
-        launch 6 người chơi
-      </button>
-    </div>
-  )
-}
 
 // App chrome (Header/MarketBar/Footer/TrialBanner) is the EXISTING, untouched
 // `DashboardPage` chrome — stub it here too (each depends on its own
@@ -122,15 +107,15 @@ vi.mock("./hooks", () => ({
 }))
 
 // `Gbar` reads FILLED order history (`useOrders`) to re-open the Kết sổ for a
-// round trip that closed off-route or before a reload (nhiệm vụ ⑤ recovery —
-// see `retroDebrief.ts`). The real hook calls `useAuth`, which throws outside
+// round trip that closed off-route or before a reload (nhiệm vụ ④ recovery —
+// see `retroDebrief.ts`, nhiệm vụ ④). The real hook calls `useAuth`, which throws outside
 // an `AuthProvider` this file deliberately doesn't mount (it mocks `./hooks`
 // for the same reason). Empty history = the retro path finds nothing, so the
 // Cấp 0 shell assertions below are unaffected; the recovery behaviour itself
 // is covered in `gbar.test.tsx`.
 vi.mock("@/features/trading/hooks", () => ({
   useOrders: () => ({ data: [] }),
-  // `Gbar` also reads the portfolio now — spec v3.0 §6 gates nhiệm vụ ⑤'s
+  // `Gbar` also reads the portfolio now — spec §6 gates nhiệm vụ ④'s
   // reminder on "có lệnh mở nhưng chưa bán".
   usePortfolio: () => ({ data: { positions: [] } }),
 }))
@@ -152,7 +137,6 @@ vi.mock("@arco-design/web-react", async (importOriginal) => {
 })
 
 import { Cap0TradingPage } from "./Cap0TradingPage"
-import { useCap0Events } from "./Cap0Context"
 
 const fakeProgress: Cap0Progress = {
   id: "11111111-1111-1111-1111-111111111111",
@@ -163,9 +147,7 @@ const fakeProgress: Cap0Progress = {
   task_2_done_at: null,
   task_3_done_at: null,
   task_4_done_at: null,
-  task_5_done_at: null,
-  task1_star_clicked: false,
-  task5_debrief_done: false,
+  task4_debrief_done: false,
   graduated_at: null,
   time_to_graduate_hours: null,
 }
@@ -344,10 +326,10 @@ describe("Cap0TradingPage", () => {
     })
   }
 
-  it("mounts the real JourneyBar (progress x/5 + next-task copy) in the top bar", () => {
+  it("mounts the real JourneyBar (progress x/4 + next-task copy) in the top bar", () => {
     useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
     renderCap0(<Cap0TradingPage />)
-    expect(screen.getByText("CẤP 0 · 0/5")).toBeInTheDocument()
+    expect(screen.getByText("CẤP 0 · 0/4")).toBeInTheDocument()
     expect(screen.getByTitle("Bấm để mở Hành trình")).toBeInTheDocument()
   })
 
@@ -414,7 +396,15 @@ describe("Cap0TradingPage", () => {
   })
 })
 
-describe("Cap0TradingPage — Chặng 2 tour host (T2, Journey→tour wiring)", () => {
+// ── ★★ CHẶNG 2 (ba tour sản phẩm) ĐÃ BỊ BỎ KHỎI CẤP 0 ───────────────────────
+// Trang này từng là tour host: `useTour`/`TourOverlay` của bangDien/banTin/
+// sauNguoiChoi sống ngay ở đây, và mỗi tour xong thì bắn
+// `completeTask({taskNo: 2|3|4})`. Dưới cách đánh số mới, ② là "Xem tab Nắm
+// giữ" và ③ là "Xem tab Theo dõi" — nên một cú PATCH từ tour sẽ đánh dấu SAI
+// những nhiệm vụ người dùng chưa hề làm, và ④ (cổng Kết sổ) còn tệ hơn: nó mở
+// thẳng màn tốt nghiệp. Engine tour (`features/tour/`) vẫn còn cho cấp khác
+// dùng; chỉ dây nối vào Cấp 0 bị cắt.
+describe("Cap0TradingPage — không còn tour nào của Cấp 0", () => {
   beforeEach(() => {
     useCap0ProgressMock.mockReset()
     usePremiumStatusMock.mockReset()
@@ -422,52 +412,21 @@ describe("Cap0TradingPage — Chặng 2 tour host (T2, Journey→tour wiring)", 
     completeTaskMutate.mockReset()
   })
 
-  it('an "onLaunchTour(2)" request (Journey\'s "Làm ngay →" on task ②) starts the Bảng điện tour overlay', () => {
+  it("★ mounts NO tour overlay at all", () => {
     useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
     renderCap0(<Cap0TradingPage />)
-    expect(screen.queryByText("ĐIỂM 1/8")).not.toBeInTheDocument()
-    fireEvent.click(screen.getByTestId("launch-bangdien-tour"))
-    expect(screen.getByText("ĐIỂM 1/8")).toBeInTheDocument()
+    // `TourOverlay`'s own chrome: "ĐIỂM n/N" + the skip button.
+    expect(screen.queryByText(/ĐIỂM \d+\/\d+/)).not.toBeInTheDocument()
+    expect(screen.queryByText("Bỏ qua tour")).not.toBeInTheDocument()
   })
 
-  it('completing the Bảng điện tour via "Bỏ qua tour" (skip = complete) calls useCompleteTask with taskNo 2', () => {
+  // ★★ The one that actually protects the new task model: even mounted and
+  // settled, nothing on this page fires a task PATCH on its own.
+  it("★★ never PATCHes task 2 / 3 / 4 by itself — those are earned by the user, not by a tour", async () => {
     useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
     renderCap0(<Cap0TradingPage />)
-    fireEvent.click(screen.getByTestId("launch-bangdien-tour"))
-    fireEvent.click(screen.getByText("Bỏ qua tour"))
-    expect(completeTaskMutate).toHaveBeenCalledWith({ taskNo: 2 })
-  })
-
-  it('an "onLaunchTour(4)" request (Journey\'s "Làm ngay →" on task ④) starts the 6-người-chơi tour overlay (6 concept-card steps)', () => {
-    useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
-    renderCap0(<Cap0TradingPage />)
-    expect(screen.queryByText("ĐIỂM 1/6")).not.toBeInTheDocument()
-    fireEvent.click(screen.getByTestId("launch-6nguoichoi-tour"))
-    expect(screen.getByText("ĐIỂM 1/6")).toBeInTheDocument()
-  })
-
-  it('completing the 6-người-chơi tour via "Bỏ qua tour" (skip = complete) calls useCompleteTask with taskNo 4', () => {
-    useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
-    renderCap0(<Cap0TradingPage />)
-    fireEvent.click(screen.getByTestId("launch-6nguoichoi-tour"))
-    fireEvent.click(screen.getByText("Bỏ qua tour"))
-    expect(completeTaskMutate).toHaveBeenCalledWith({ taskNo: 4 })
-  })
-
-  it('an "onLaunchTour(3)" request (Journey\'s "Làm ngay →" on task ③) starts the Bản tin tour overlay (concept-card steps)', () => {
-    useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
-    renderCap0(<Cap0TradingPage />)
-    expect(screen.queryByText("ĐIỂM 1/5")).not.toBeInTheDocument()
-    fireEvent.click(screen.getByTestId("launch-bantin-tour"))
-    expect(screen.getByText("ĐIỂM 1/5")).toBeInTheDocument()
-  })
-
-  it('completing the Bản tin tour via "Bỏ qua tour" (skip = complete) calls useCompleteTask with taskNo 3', () => {
-    useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
-    renderCap0(<Cap0TradingPage />)
-    fireEvent.click(screen.getByTestId("launch-bantin-tour"))
-    fireEvent.click(screen.getByText("Bỏ qua tour"))
-    expect(completeTaskMutate).toHaveBeenCalledWith({ taskNo: 3 })
+    await new Promise((r) => setTimeout(r, 50))
+    expect(completeTaskMutate).not.toHaveBeenCalled()
   })
 })
 

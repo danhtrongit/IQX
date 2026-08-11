@@ -13,15 +13,14 @@ import { useEnterCap1 } from "@/features/cap1/hooks"
 import "./cap0.css"
 
 /**
- * Điều kiện mở màn tốt nghiệp (spec v3.0 §9): **5/5 nhiệm vụ + 1 cổng hành vi**
- * (⑤ đóng màn kết sổ). Once `graduated_at` is set server-side (the mutation
- * below succeeded), the modal never re-opens even though the condition still
+ * Điều kiện mở màn tốt nghiệp: **4/4 nhiệm vụ + 1 cổng hành vi** (④ đóng màn
+ * kết sổ). Once `graduated_at` is set server-side (the mutation below
+ * succeeded), the modal never re-opens even though the condition still
  * technically holds — graduating is a one-way trip.
  *
- * v2.2 demanded 6/6 + a second gate (`task5_sl_typed`, a keydown into the ô
- * cắt lỗ). v3.0 removes cắt lỗ/chốt lời from Cấp 0, and with it that gate:
- * "Chỉ MỘT cổng hành vi ở Cấp 0" — closing the Kết sổ. `task1_star_clicked`
- * stays a recorded fact and is deliberately NOT read here.
+ * ★ Ba tour sản phẩm của Chặng 2 đã bị bỏ khỏi Cấp 0, nên mẫu số là 4 chứ không
+ * còn 5, và cổng hành vi duy nhất đổi tên theo nhiệm vụ nó thuộc về:
+ * `task5_debrief_done` → `task4_debrief_done`.
  *
  * This must stay in lockstep with `Cap0Service.graduate`'s own check: if this
  * opens the modal while the backend still refuses, the CTA 409s forever with
@@ -29,20 +28,20 @@ import "./cap0.css"
  */
 export function isGraduationReady(progress: Cap0Progress | null | undefined): boolean {
   if (!progress || progress.graduated_at) return false
-  return countTasksDone(progress) >= 5 && progress.task5_debrief_done
+  return countTasksDone(progress) >= 4 && progress.task4_debrief_done
 }
 
 // Verbatim spec §9 copy, `**bold**` markers kept for the inline-bold renderer
 // below (same convention as `coachTemplate.ts` — the outer *"…"* italic-quote
 // wrapper is markdown emphasis, not literal quote characters to render).
-// ★ Khối 1 v2.2 congratulated the user for "đi trọn 2 vòng lệnh có kế hoạch,
-// tự tay đặt ngưỡng cắt lỗ của mình". Under v3.0 BOTH halves are false — Cấp 0
-// asks for exactly ONE round trip (nhiệm vụ ⑤) and has no ô cắt lỗ at all
-// (preamble, §0, §8, §13) — which made it the last surviving cắt-lỗ claim in
-// the level, and the worst possible place to be wrong: a graduation screen
-// crediting the user with work the product never let them do.
+// ★★ Khối 1 chỉ được kể những việc Cấp 0 THẬT SỰ bắt người dùng làm. Nó từng
+// mở đầu bằng "hiểu bảng điện, đọc được bản tin, biết 6 người chơi trên thị
+// trường" — ba tour sản phẩm của Chặng 2, nay đã bị bỏ khỏi Cấp 0, nên câu đó
+// khen người dùng vì việc sản phẩm không còn cho họ làm. (Đúng cái lỗi bản v2.2
+// mắc phải với cắt lỗ/chốt lời, ở đúng chỗ tệ nhất để sai: màn tốt nghiệp.)
+// Còn lại đúng một điều để ghi nhận, và nó là điều thật: trọn vòng đời một lệnh.
 const BLOCK_1 =
-  "Bạn đã đi trọn Cấp 0 «Nhập môn»: hiểu bảng điện, đọc được bản tin, biết 6 người chơi trên thị trường — và quan trọng nhất: **đi trọn một vòng đời lệnh hoàn chỉnh** (mua → nắm giữ → theo dõi → bán → kết sổ). Phần lớn người mua cổ phiếu ngoài kia còn không biết mình đang nắm gì."
+  "Bạn đã đi trọn Cấp 0 «Nhập môn»: **đi trọn một vòng đời lệnh hoàn chỉnh** (mua → nắm giữ → theo dõi → bán → kết sổ). Phần lớn người mua cổ phiếu ngoài kia còn không biết mình đang nắm gì."
 
 const BLOCK_2 =
   "Nói thẳng: bạn đã biết **CÁCH CHƠI**, chưa biết **CHƠI GIỎI** — và đó là chủ đích. Cấp 1 «Học việc» dạy bạn chọn lý do mua có cơ sở cho từng lệnh, từ chính dữ liệu 6 lớp phân tích. Cấp 2 dạy đặt cắt lỗ/chốt lời và kỷ luật thực hiện."
@@ -149,9 +148,9 @@ export function GraduationModal() {
       <div className="cap0-grad-header">
         <div className="cap0-grad-tag">HOÀN THÀNH</div>
         <h2 className="cap0-display cap0-grad-title">CẤP 0 · NHẬP MÔN</h2>
-        {/* Spec v3.0 §9 "Dòng phụ nhỏ: `5/5 nhiệm vụ`" — the "· 2/2 cổng hành
-            vi" half counted a second gate that no longer exists. */}
-        <div className="cap0-grad-sub">5/5 nhiệm vụ</div>
+        {/* Dòng phụ nhỏ — mẫu số phải khớp `TOTAL_TASKS`: 4 kể từ khi Chặng 2
+            (ba tour sản phẩm) bị bỏ khỏi Cấp 0. */}
+        <div className="cap0-grad-sub">4/4 nhiệm vụ</div>
         <div className="cap0-grad-badge-wrap">
           <Badge n={level.n} color={level.color} fill={1} size={120} glow />
         </div>

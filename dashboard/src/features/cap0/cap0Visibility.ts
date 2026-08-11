@@ -13,7 +13,7 @@ import type { Cap0Progress } from "./types"
  *  - Sổ lệnh bid/ask            → **lên Cấp 2** ("không hiện ở Cấp 0 và Cấp
  *    1"). There is therefore NO Cấp 0 condition that opens it, and this flag is
  *    a constant `false` — see `orderBook` below.
- *  - Ô Giá / dropdown MP/LO     → nhiệm vụ ⑤ mở, tức là xong nhiệm vụ ①.
+ *  - Ô Giá / dropdown MP/LO     → xong nhiệm vụ ① (lệnh mua đầu tiên).
  *  - Tab "Tin tức" / "AI Mẫu nến" → lên Cấp 1 (tốt nghiệp Cấp 0).
  *
  * `graduated` short-circuits the LEVEL-scoped flags to visible — once the user

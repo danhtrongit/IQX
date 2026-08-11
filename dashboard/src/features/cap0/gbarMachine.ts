@@ -1,15 +1,18 @@
 /**
  * Cấp 0 gbar state machine (spec §6) — a pure, framework-free reducer that
  * `Gbar.tsx` drives from the Cấp 0 event-bus callbacks (see
- * `Cap0Context.tsx`'s `onReasonPicked` / `onOrderFilled` / `onStarToggled` /
- * `onGbarWarn`).
+ * `Cap0Context.tsx`'s `onReasonPicked` / `onOrderFilled` / `onGbarWarn`).
  *
- * Nhiệm vụ ① is tracked as THREE INDEPENDENT FLAGS rather than a strict
- * 1→2→3 sequence: the ★ button is existing, untouched production behaviour
- * (spec §4 "Ngôi sao ★ ... đã chạy production — KHÔNG sửa"), so it is never
- * blocked and a user COULD star VNM before buying. `gbarStep` always derives
- * the step to show from "which flag is still missing", so it self-corrects
- * regardless of the order the 3 actions happen in.
+ * Nhiệm vụ ① is tracked as TWO INDEPENDENT FLAGS rather than a strict 1→2
+ * sequence: `gbarStep` always derives the step to show from "which flag is
+ * still missing", so it self-corrects regardless of the order the actions
+ * happen in.
+ *
+ * ★ There used to be a THIRD flag, `starToggled` (gắn ★ cạnh VNM), because ①
+ * bundled "Lệnh đầu tiên + Nắm giữ + Theo dõi" into one nhiệm vụ. Those two
+ * visits are now nhiệm vụ ② and ③ of their own, so ① is chip lý do + mua and
+ * nothing else. The ★ button itself is untouched production behaviour — it
+ * simply no longer gates anything in Cấp 0.
  *
  * `tone` is the separate transient "wrong action" indicator (spec §6):
  * "Làm SAI (bấm nút khi chưa đủ điều kiện): thanh chuyển đỏ + rung 0,3s +
@@ -18,13 +21,12 @@
  * a `setTimeout` in `Gbar.tsx` (kept out of this pure module on purpose).
  */
 
-export type GbarStep = 1 | 2 | 3
+export type GbarStep = 1 | 2
 export type GbarTone = "amber" | "warn"
 
 export interface GbarState {
   reasonPicked: boolean
   orderFilled: boolean
-  starToggled: boolean
   tone: GbarTone
   /** Nhiệm vụ ① fully done (server-confirmed via `task_1_done_at`) — hides the bar for good. */
   done: boolean
@@ -33,7 +35,6 @@ export interface GbarState {
 export const initialGbarState: GbarState = {
   reasonPicked: false,
   orderFilled: false,
-  starToggled: false,
   tone: "amber",
   done: false,
 }
@@ -41,7 +42,6 @@ export const initialGbarState: GbarState = {
 export type GbarAction =
   | { type: "REASON_PICKED" }
   | { type: "ORDER_FILLED" }
-  | { type: "STAR_TOGGLED" }
   | { type: "WARN" }
   | { type: "WARN_TIMEOUT" }
   | { type: "TASK_DONE" }
@@ -52,8 +52,6 @@ export function gbarReducer(state: GbarState, action: GbarAction): GbarState {
       return state.reasonPicked ? state : { ...state, reasonPicked: true }
     case "ORDER_FILLED":
       return state.orderFilled ? state : { ...state, orderFilled: true }
-    case "STAR_TOGGLED":
-      return state.starToggled ? state : { ...state, starToggled: true }
     case "WARN":
       return state.tone === "warn" ? state : { ...state, tone: "warn" }
     case "WARN_TIMEOUT":
@@ -65,23 +63,21 @@ export function gbarReducer(state: GbarState, action: GbarAction): GbarState {
   }
 }
 
-/** Which of the 3 steps is still outstanding — `null` once all 3 flags are set (or `done`). */
+/** Which of the 2 steps is still outstanding — `null` once both flags are set (or `done`). */
 export function gbarStep(state: GbarState): GbarStep | null {
   if (state.done) return null
   if (!state.reasonPicked) return 1
   if (!state.orderFilled) return 2
-  if (!state.starToggled) return 3
   return null
 }
 
 /** Tag shown at the head of the bar (spec §6 "Tag đầu thanh `CẦN LÀM`"). */
 export const GBAR_TAG = "CẦN LÀM"
 
-/** Step message, verbatim spec §6. */
+/** Step message. */
 export function gbarStepMessage(step: GbarStep): string {
-  if (step === 1) return "Bước 1/3 — Chọn 1 lý do trong khối KẾ HOẠCH (panel Đặt lệnh) trước khi mua"
-  if (step === 2) return "Bước 2/3 — Bấm ĐẶT LỆNH MUA để mua 100 VNM"
-  return "Bước 3/3 — Mở 👁 Danh mục xem tab Nắm giữ, rồi quay lại Đặt lệnh gắn ★ cạnh VNM"
+  if (step === 1) return "Bước 1/2 — Chọn 1 lý do trong khối KẾ HOẠCH (panel Đặt lệnh) trước khi mua"
+  return "Bước 2/2 — Bấm ĐẶT LỆNH MUA để mua 100 VNM"
 }
 
 /**
@@ -101,16 +97,18 @@ export function gbarVisible(state: GbarState): boolean {
 }
 
 /**
- * Nhiệm vụ ⑤ «Bán một lệnh — Kết sổ đầu tiên» — verbatim spec v3.0 §6:
- * "Nội dung nhiệm vụ ⑤ (Bán — Kết sổ): khi có lệnh mở nhưng chưa bán →
- * `Chọn lệnh trong Nắm giữ và bấm Bán để khép vòng đời lệnh đầu tiên`."
+ * Nhiệm vụ ④ «Bán một lệnh, kết sổ đầu tiên» — verbatim spec v3.0 §6:
+ * "khi có lệnh mở nhưng chưa bán → `Chọn lệnh trong Nắm giữ và bấm Bán để khép
+ * vòng đời lệnh đầu tiên`."
  *
- * A plain constant, not a reducer: unlike nhiệm vụ ①'s three-flag sequence,
- * ⑤ is one action with nothing to sequence. v2.2's `Task5State` (SL keydown →
- * second buy) is deleted along with cắt lỗ/chốt lời themselves.
+ * A plain constant, not a reducer: unlike nhiệm vụ ①'s flags, ④ is one action
+ * with nothing to sequence.
+ *
+ * ★ Đây là nhiệm vụ ⑤ cũ, lùi về ④ khi Chặng 2 (ba tour sản phẩm) bị bỏ. Nội
+ * dung thanh không đổi một chữ — chỉ số hiệu nhiệm vụ nó phục vụ đổi.
  *
  * `Gbar` decides WHEN to show it — spec §6's own condition, "có lệnh mở nhưng
  * chưa bán", read from live portfolio data rather than from progress flags.
  */
-export const TASK5_GBAR_MESSAGE =
+export const TASK4_GBAR_MESSAGE =
   "Chọn lệnh trong Nắm giữ và bấm Bán để khép vòng đời lệnh đầu tiên"

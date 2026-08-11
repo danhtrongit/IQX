@@ -1,6 +1,7 @@
 import { Button } from "@arco-design/web-react"
 import { IconClose } from "@arco-design/web-react/icon"
 import { useSidebar, type SidebarPanel } from "@/shared/contexts/sidebar-context"
+import { useSymbol } from "@/shared/contexts/symbol-context"
 import { NewsFeedPanel } from "@/features/news"
 import { TradingPanel } from "@/features/trading"
 import { WatchlistPanel } from "@/features/watchlist"
@@ -99,6 +100,29 @@ export function RightSidebar() {
   const { isCap7Active } = useCap7Events()
   const { isCap8Active } = useCap8Events()
 
+  // ★ Bấm vào một mã trong Danh mục (Nắm giữ / Theo dõi) KHÔNG được rời khỏi
+  // `/dau-truong`. `WatchlistPanel`'s default row action navigates to
+  // `/co-phieu/:symbol` — correct on /bieu-do & /co-phieu, but inside a level
+  // shell it dumped the user out of the terminal in the middle of a nhiệm vụ
+  // (and, on Cấp 0, out of `Cap0Provider`, so their next order fired into the
+  // no-op bus). Every level page wraps this sidebar in its own `SymbolProvider`,
+  // so the honest answer is: switch the terminal's symbol, stay put.
+  //
+  // `undefined` outside the level shells keeps today's navigation EXACTLY as it
+  // is on the two shared routes — the prop is the only channel involved, so a
+  // route with no level provider cannot be affected.
+  const { setSymbol } = useSymbol()
+  const isLevelActive =
+    isCap0Active ||
+    isCap1Active ||
+    isCap2Active ||
+    isCap3Active ||
+    isCap4Active ||
+    isCap5Active ||
+    isCap6Active ||
+    isCap7Active ||
+    isCap8Active
+
   const getPanelContent = () => {
     switch (activePanel) {
       case "news":
@@ -120,7 +144,7 @@ export function RightSidebar() {
       case "trading":
         return <TradingPanel />
       case "watchlist":
-        return <WatchlistPanel />
+        return <WatchlistPanel onRowSelect={isLevelActive ? setSymbol : undefined} />
       case "journey":
         if (isCap8Active) return <JourneyPanelCap8 />
         if (isCap7Active) return <JourneyPanelCap7 />

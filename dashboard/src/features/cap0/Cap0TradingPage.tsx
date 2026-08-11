@@ -7,18 +7,14 @@ import { usePremiumStatus } from "@/features/premium"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
 import { CenterPanel, RightSidebar, RightToolbar } from "@/features/dashboard"
 import { IconBrainCircuit } from "@/shared/icons"
-import { useTour, TourOverlay } from "@/features/tour"
-import { Cap0Provider, useCap0Events } from "./Cap0Context"
+import { Cap0Provider } from "./Cap0Context"
 import { ModeBadge } from "./ModeBadge"
 import { JourneyBar } from "./JourneyBar"
 import { Gbar } from "./Gbar"
 import { GraduationModal } from "./GraduationModal"
-import { useCap0Progress, useCompleteTask, useEnterCap0, usePlacement } from "./hooks"
+import { useCap0Progress, useEnterCap0, usePlacement } from "./hooks"
 import { PlacementModal, type PlacementAnswer } from "./PlacementModal"
 import { tradingModeFor } from "./types"
-import { bangDienTour, bangDienTourStepPanels } from "./tours/bangDienTour"
-import { banTinTour } from "./tours/banTinTour"
-import { sauNguoiChoiTour } from "./tours/sauNguoiChoiTour"
 import "./cap0.css"
 
 const SEO_TITLE = "IQX Demo Trading · Cấp 0 «Nhập môn»"
@@ -123,50 +119,14 @@ function Cap0Terminal() {
     return () => setActivePanel(prevPanelRef.current)
   }, [])
 
-  // Chặng 2 tour host (T2/T3/T4, `docs/superpowers/plans/2026-07-27-cap0-tours.md`):
-  // this is where the `useTour`/`TourOverlay` instances for ALL THREE Chặng 2
-  // tours actually live — Journey's "Làm ngay →" for tasks ②③④ just calls
-  // `onLaunchTour(no)` on the Cap0 event bus (see `JourneyPanel`), and THIS is
-  // the one place that registers a handler for it. `registerHandlers` MERGES
-  // (doesn't replace) with `Gbar`'s own registration — see `Cap0Context.tsx`'s
-  // comment.
-  //
-  // ③ (Bản tin) and ④ (6 người chơi) are both pure `centered: true` concept
-  // tours (no `data-tour-id` targets to switch sidebar panels for — see each
-  // config's own file header for why), so unlike ② they need no
-  // `onStepView` panel-switching at all.
-  const { registerHandlers } = useCap0Events()
-  const completeTask = useCompleteTask()
-
-  const bangDienTourController = useTour(bangDienTour, {
-    onComplete: () => completeTask.mutate({ taskNo: 2 }),
-    // `RightSidebar` only ever renders ONE panel at a time — switch to
-    // whichever panel each step's target actually lives in (see
-    // `bangDienTourStepPanels`'s docstring); `undefined` = no switch needed.
-    onStepView: (i) => {
-      const panel = bangDienTourStepPanels[i]
-      if (panel) setActivePanel(panel)
-    },
-  })
-
-  const banTinTourController = useTour(banTinTour, {
-    onComplete: () => completeTask.mutate({ taskNo: 3 }),
-  })
-
-  const sauNguoiChoiTourController = useTour(sauNguoiChoiTour, {
-    onComplete: () => completeTask.mutate({ taskNo: 4 }),
-  })
-
-  useEffect(() => {
-    registerHandlers({
-      onLaunchTour: (taskNo) => {
-        if (taskNo === 2) bangDienTourController.start()
-        else if (taskNo === 3) banTinTourController.start()
-        else if (taskNo === 4) sauNguoiChoiTourController.start()
-      },
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [registerHandlers])
+  // ★ KHÔNG có tour host ở đây nữa. Cấp 0 từng gánh ba tour sản phẩm (bảng
+  // điện / bản tin / "6 người chơi") làm nhiệm vụ ②③④ của "CHẶNG 2 — HIỂU SÂN
+  // CHƠI", với `useTour`/`TourOverlay` của cả ba sống ngay trong trang này.
+  // Cả chặng đó đã bị bỏ khỏi Cấp 0: ②③ giờ là "Xem tab Nắm giữ"/"Xem tab Theo
+  // dõi", nên một `completeTask({taskNo: 2|3|4})` bắn ra từ tour kết thúc sẽ
+  // đánh dấu SAI những nhiệm vụ đó là đã xong. Engine tour (`features/tour/`)
+  // và các file config vẫn còn nguyên trên đĩa cho những cấp khác dùng — chỉ
+  // dây nối vào Cấp 0 là bị cắt.
 
   // Guard (§3): show only once — needs BOTH the server truth (no progress row
   // yet, i.e. never entered Cấp 0) AND the local "already answered" flag
@@ -242,7 +202,7 @@ function Cap0Terminal() {
       <MarketBar />
 
       {/* Top bar (spec §7 journey bar sticky trên đầu): `<JourneyBar/>`
-          (progress "x/5" + next task + dots, click → tab Hành trình) + the
+          (progress "x/4" + next task + dots, click → tab Hành trình) + the
           mode badge at its right edge. */}
       <div className="cap0-topbar">
         <JourneyBar />
@@ -266,16 +226,9 @@ function Cap0Terminal() {
       <PlacementModal visible={showPlacement} onChoose={handlePlacement} />
 
       {/* Màn tốt nghiệp (spec §9) — self-contained: opens itself once
-          progress shows 5/5 + the debrief gate (see `isGraduationReady`),
+          progress shows 4/4 + the debrief gate (see `isGraduationReady`),
           closes itself once `graduated_at` comes back from the mutation. */}
       <GraduationModal />
-
-      {/* Chặng 2 tours (T2 ②, T4 ③, T3 ④) — each renders nothing until its
-          own controller's `.start()` is called (Journey "Làm ngay →" on the
-          matching task, via the Cap0 event bus). */}
-      <TourOverlay config={bangDienTour} controller={bangDienTourController} />
-      <TourOverlay config={banTinTour} controller={banTinTourController} />
-      <TourOverlay config={sauNguoiChoiTour} controller={sauNguoiChoiTourController} />
 
       {/* AI Insight symbol picker — identical to DashboardPage's */}
       <Modal

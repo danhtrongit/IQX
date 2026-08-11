@@ -35,9 +35,7 @@ function makeProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
     task_2_done_at: null,
     task_3_done_at: null,
     task_4_done_at: null,
-    task_5_done_at: null,
-    task1_star_clicked: false,
-    task5_debrief_done: false,
+    task4_debrief_done: false,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
@@ -100,7 +98,7 @@ describe("cap0Visibility", () => {
     })
   })
 
-  it("reveals Ô Giá + dropdown loại lệnh once task ① is done (nhiệm vụ ⑤ mở)", () => {
+  it("reveals Ô Giá + dropdown loại lệnh once task ① is done", () => {
     const vis = cap0Visibility(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
     expect(vis.priceField).toBe(true)
     expect(vis.orderTypeDropdown).toBe(true)
@@ -126,7 +124,6 @@ describe("cap0Visibility", () => {
           task_2_done_at: "t",
           task_3_done_at: "t",
           task_4_done_at: "t",
-          task_5_done_at: "t",
           graduated_at: "2026-07-21T00:00:00Z",
         }),
       ).orderBook,
@@ -228,7 +225,7 @@ describe("DebriefModal", () => {
 
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
 
-    expect(completeTaskMutate).toHaveBeenCalledWith({ taskNo: 5, gate: "debrief" })
+    expect(completeTaskMutate).toHaveBeenCalledWith({ taskNo: 4, gate: "debrief" })
     expect(completeTaskMutate).not.toHaveBeenCalledWith({ taskNo: 6, gate: "debrief" })
     expect(onClose).toHaveBeenCalledTimes(1)
   })
@@ -373,7 +370,7 @@ describe("DebriefModal", () => {
     expect(kehoachMock).toHaveBeenCalledWith(null)
   })
 
-  it("still completes nhiệm vụ ⑤ when a retroactive Kết sổ is closed", () => {
+  it("still completes nhiệm vụ ④ when a retroactive Kết sổ is closed", () => {
     const onClose = vi.fn()
     render(
       <DebriefModal
@@ -389,7 +386,7 @@ describe("DebriefModal", () => {
       />,
     )
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
-    expect(completeTaskMutate).toHaveBeenCalledWith({ taskNo: 5, gate: "debrief" })
+    expect(completeTaskMutate).toHaveBeenCalledWith({ taskNo: 4, gate: "debrief" })
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 })

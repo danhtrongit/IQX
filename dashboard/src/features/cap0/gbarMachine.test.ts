@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import {
   GBAR_TAG,
-  TASK5_GBAR_MESSAGE,
+  TASK4_GBAR_MESSAGE,
   gbarReducer,
   gbarStep,
   gbarStepMessage,
@@ -26,14 +26,17 @@ describe("gbarMachine", () => {
     expect(GBAR_TAG).toBe("CẦN LÀM")
   })
 
-  it("step messages are verbatim spec §6", () => {
+  // ★ Nhiệm vụ ① là TWO steps, không còn ba: bước ★ ("Mở 👁 Danh mục xem tab
+  // Nắm giữ, rồi quay lại Đặt lệnh gắn ★ cạnh VNM") đã tách ra thành nhiệm vụ
+  // ② và ③ riêng. ① giờ là chip lý do + mua, hết.
+  it("★ has exactly TWO steps — the ★ / Nắm giữ step is now nhiệm vụ ②③ of its own", () => {
     expect(gbarStepMessage(1)).toBe(
-      "Bước 1/3 — Chọn 1 lý do trong khối KẾ HOẠCH (panel Đặt lệnh) trước khi mua",
+      "Bước 1/2 — Chọn 1 lý do trong khối KẾ HOẠCH (panel Đặt lệnh) trước khi mua",
     )
-    expect(gbarStepMessage(2)).toBe("Bước 2/3 — Bấm ĐẶT LỆNH MUA để mua 100 VNM")
-    expect(gbarStepMessage(3)).toBe(
-      "Bước 3/3 — Mở 👁 Danh mục xem tab Nắm giữ, rồi quay lại Đặt lệnh gắn ★ cạnh VNM",
-    )
+    expect(gbarStepMessage(2)).toBe("Bước 2/2 — Bấm ĐẶT LỆNH MUA để mua 100 VNM")
+    expect(gbarStepMessage(1)).not.toContain("/3")
+    expect(gbarStepMessage(2)).not.toContain("/3")
+    expect(gbarStepMessage(2)).not.toContain("★")
   })
 
   it("REASON_PICKED advances step 1 → 2", () => {
@@ -48,18 +51,8 @@ describe("gbarMachine", () => {
     expect(gbarStep(s)).toBe(1)
   })
 
-  it("REASON_PICKED then ORDER_FILLED advances step 2 → 3", () => {
+  it("both flags set → gbarStep is null (task done) and bar is hidden", () => {
     const s = apply(initialGbarState, { type: "REASON_PICKED" }, { type: "ORDER_FILLED" })
-    expect(gbarStep(s)).toBe(3)
-  })
-
-  it("all 3 flags set → gbarStep is null (task done) and bar is hidden", () => {
-    const s = apply(
-      initialGbarState,
-      { type: "REASON_PICKED" },
-      { type: "ORDER_FILLED" },
-      { type: "STAR_TOGGLED" },
-    )
     expect(gbarStep(s)).toBeNull()
     expect(gbarVisible(s)).toBe(false)
     expect(gbarText(s)).toBeNull()
@@ -71,16 +64,11 @@ describe("gbarMachine", () => {
     expect(gbarText(s)).toBeNull()
   })
 
-  it("out-of-order: STAR_TOGGLED before reason/order still resolves to step 1 (next missing gap)", () => {
-    const s = apply(initialGbarState, { type: "STAR_TOGGLED" })
-    expect(gbarStep(s)).toBe(1)
-  })
-
   it("WARN flips tone to warn and prefixes the current step's message with «⚠ »", () => {
     const s = apply(initialGbarState, { type: "WARN" })
     expect(s.tone).toBe("warn")
     expect(gbarText(s)).toBe(
-      "⚠ Bước 1/3 — Chọn 1 lý do trong khối KẾ HOẠCH (panel Đặt lệnh) trước khi mua",
+      "⚠ Bước 1/2 — Chọn 1 lý do trong khối KẾ HOẠCH (panel Đặt lệnh) trước khi mua",
     )
   })
 
@@ -113,21 +101,20 @@ describe("gbarMachine", () => {
   })
 })
 
-// ── Nhiệm vụ ⑤ (Bán — Kết sổ) ────────────────────────────────────────────────
-// v3.0 replaced the old 2-step SL machine with a SINGLE standing reminder: ⑤ is
-// now "bán một lệnh", nothing to sequence. So the whole `Task5State` reducer is
-// gone and only its message survives.
-describe("nhiệm vụ ⑤ gbar message (spec §6)", () => {
-  it("★ is verbatim spec §6's nhiệm vụ ⑤ line", () => {
-    expect(TASK5_GBAR_MESSAGE).toBe(
+// ── Nhiệm vụ ④ (Bán — Kết sổ) ────────────────────────────────────────────────
+// Một lời nhắc đứng yên, không có gì để tuần tự. Nhiệm vụ này từng là ⑥ rồi ⑤;
+// nó lùi về ④ khi Chặng 2 (ba tour sản phẩm) bị bỏ khỏi Cấp 0.
+describe("nhiệm vụ ④ gbar message (spec §6)", () => {
+  it("★ is verbatim spec §6's bán/Kết sổ line", () => {
+    expect(TASK4_GBAR_MESSAGE).toBe(
       "Chọn lệnh trong Nắm giữ và bấm Bán để khép vòng đời lệnh đầu tiên",
     )
   })
 
-  it("★ names no cắt lỗ / chốt lời — Cấp 0 has neither under v3.0", () => {
-    expect(TASK5_GBAR_MESSAGE).not.toContain("cắt lỗ")
-    expect(TASK5_GBAR_MESSAGE).not.toContain("chốt lời")
-    expect(TASK5_GBAR_MESSAGE).not.toContain("Bước 1/2")
-    expect(TASK5_GBAR_MESSAGE).not.toContain("lệnh thứ hai")
+  it("★ names no cắt lỗ / chốt lời — Cấp 0 has neither", () => {
+    expect(TASK4_GBAR_MESSAGE).not.toContain("cắt lỗ")
+    expect(TASK4_GBAR_MESSAGE).not.toContain("chốt lời")
+    expect(TASK4_GBAR_MESSAGE).not.toContain("Bước")
+    expect(TASK4_GBAR_MESSAGE).not.toContain("lệnh thứ hai")
   })
 })

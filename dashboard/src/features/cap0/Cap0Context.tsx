@@ -11,11 +11,12 @@ import { useCap0Progress } from "./hooks"
 /**
  * Cấp 0 event bus.
  *
- * This is the seam that lets the EXISTING, untouched TradingPanel / StockHeader
- * notify Cấp 0 of user actions WITHOUT Cấp 0 knowing their internals (and
- * without them knowing Cấp 0's). The notifier side calls `onReasonPicked` /
- * `onOrderFilled` / `onStarToggled` / `onGbarWarn`; the Cấp 0 journey logic
- * (`Gbar.tsx`) supplies the actual handlers via `registerHandlers`.
+ * This is the seam that lets the EXISTING, untouched TradingPanel /
+ * WatchlistPanel notify Cấp 0 of user actions WITHOUT Cấp 0 knowing their
+ * internals (and without them knowing Cấp 0's). The notifier side calls
+ * `onReasonPicked` / `onOrderFilled` / `onStarToggled` / `onPortfolioTabOpen` /
+ * `onGbarWarn`; the Cấp 0 journey logic (`Gbar.tsx`) supplies the actual
+ * handlers via `registerHandlers`.
  *
  * Outside a `Cap0Provider` the hook is a safe no-op: the notify functions are
  * `undefined` (so callers guard with `?.`), `isCap0Active`/
@@ -50,22 +51,36 @@ export interface Cap0OrderEvent {
   price: number
 }
 
+/**
+ * Tab đang hiện trong panel "Danh mục" (`WatchlistPanel`'s own `WatchlistTab`).
+ * Khai báo lại ở đây thay vì import từ `@/features/watchlist` để bus không phụ
+ * thuộc ngược vào component nó phục vụ.
+ */
+export type Cap0PortfolioTab = "watchlist" | "holdings" | "history"
+
 /** Handlers the Cấp 0 journey registers to react to trading-UI events. */
 export interface Cap0EventHandlers {
   /** A Kế hoạch reason chip was picked (spec §4 THÊM MỚI — new UI, no web-existing equivalent). */
   onReasonPicked?: (reason: string) => void
   onOrderFilled?: (order: Cap0OrderEvent) => void
+  /**
+   * The ★ watchlist button was toggled. Still notified by `TradingPanel`, but
+   * Cấp 0 no longer registers a handler for it: nhiệm vụ ① used to demand the
+   * ★ as its third step; nhiệm vụ ③ «Xem tab Theo dõi» is about OPENING that
+   * tab, not about starring anything.
+   */
   onStarToggled?: (symbol: string, watched: boolean) => void
+  /**
+   * Panel "Danh mục" switched to (or mounted on) a tab — the completion event
+   * for nhiệm vụ ② «Xem tab Nắm giữ» (`holdings`) and ③ «Xem tab Theo dõi»
+   * (`watchlist`). `WatchlistPanel` fires it for whichever tab is showing,
+   * including on mount (the tab is remembered in localStorage, so a returning
+   * user can land on Nắm giữ without ever clicking it); `Gbar` owns all the
+   * "should this actually PATCH?" rules.
+   */
+  onPortfolioTabOpen?: (tab: Cap0PortfolioTab) => void
   /** A guarded action was attempted without its precondition (spec §6 "Làm SAI") — flash the gbar red + `gshake` for ~1.6s. */
   onGbarWarn?: () => void
-  /**
-   * Journey's "Làm ngay →" for a Chặng 2 task (②/③/④) — launches that task's
-   * product tour instead of switching to the trading panel (T2,
-   * `docs/superpowers/plans/2026-07-27-cap0-tours.md`). `Cap0TradingPage`
-   * (the tour host — it owns the `useTour`/`TourOverlay` instances) registers
-   * the real dispatch; `JourneyPanel` just calls `onLaunchTour(no)`.
-   */
-  onLaunchTour?: (taskNo: number) => void
 }
 
 /** The bus value: notify fns (undefined when no handlers) + `registerHandlers`. */
@@ -90,14 +105,13 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
   const handlersRef = useRef<Cap0EventHandlers>({})
   const { data: progress } = useCap0Progress()
 
-  // MERGE (not replace) — there are now TWO independent registrants: `Gbar`
-  // (task ①/⑤ events) and `Cap0TradingPage`'s tour host (`onLaunchTour`,
-  // T2). A plain `handlersRef.current = handlers` would let whichever one's
-  // effect runs/re-runs LAST wipe out the other's handlers entirely (both
-  // call this on mount, and `Gbar`'s also re-fires on `task1Done` changes).
-  // Merging keeps every previously-registered key intact unless the SAME
-  // caller re-registers it (which just refreshes that key's closure, as
-  // `Gbar` already relies on for its `task1Done`-dependent handlers).
+  // MERGE (not replace). Today `Gbar` is the only registrant, but its own
+  // effect re-fires whenever `task1Done`/`task2Done`/`task3Done` change, and a
+  // plain `handlersRef.current = handlers` would silently make any future
+  // second registrant clobber it (that is exactly what happened while
+  // `Cap0TradingPage` also registered a tour-launch handler). Merging keeps
+  // every previously-registered key intact unless the SAME caller re-registers
+  // it — which just refreshes that key's closure, as `Gbar` relies on.
   const registerHandlers = useCallback((handlers: Cap0EventHandlers) => {
     handlersRef.current = { ...handlersRef.current, ...handlers }
   }, [])
@@ -118,8 +132,8 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
     handlersRef.current.onGbarWarn?.()
   }, [])
 
-  const onLaunchTour = useCallback((taskNo: number) => {
-    handlersRef.current.onLaunchTour?.(taskNo)
+  const onPortfolioTabOpen = useCallback((tab: Cap0PortfolioTab) => {
+    handlersRef.current.onPortfolioTabOpen?.(tab)
   }, [])
 
   // Fail-closed while progress is still loading (`progress` undefined →
@@ -133,7 +147,7 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
       onOrderFilled,
       onStarToggled,
       onGbarWarn,
-      onLaunchTour,
+      onPortfolioTabOpen,
       registerHandlers,
       isCap0Active: true,
       requireReasonBeforeOrder,
@@ -143,7 +157,7 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
       onOrderFilled,
       onStarToggled,
       onGbarWarn,
-      onLaunchTour,
+      onPortfolioTabOpen,
       registerHandlers,
       requireReasonBeforeOrder,
     ],

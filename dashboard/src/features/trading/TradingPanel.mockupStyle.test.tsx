@@ -97,9 +97,7 @@ const cap0Progress = {
   task_2_done_at: null,
   task_3_done_at: null,
   task_4_done_at: null,
-  task_5_done_at: null,
-  task1_star_clicked: false,
-  task5_debrief_done: false,
+  task4_debrief_done: false,
   graduated_at: null,
   time_to_graduate_hours: null,
 }

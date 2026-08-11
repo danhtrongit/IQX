@@ -10,10 +10,9 @@ import { useCap0Progress } from "./hooks"
 import {
   focusTaskNo,
   NUMERALS,
-  STAGES,
-  stageLabelOf,
   TASK_DESCRIPTIONS,
   TASK_NAMES,
+  TASK_NOS,
   TOTAL_TASKS,
   taskState,
 } from "./journeyTasks"
@@ -81,9 +80,9 @@ function ChecklistItem({
         </span>
       </div>
       {/* ★ Lối tắt cho nhiệm vụ ĐANG MỞ mà không được tập trung. Bỏ nó đi là
-          khoá mất thứ user có quyền làm ngay bây giờ (②③④ độc lập, ⑤ mở cùng
-          lúc) — "một nhiệm vụ một lúc" chỉ được phép là cách DẪN. Dòng đang
-          được tập trung không cần: nút to nằm sẵn trong ô trên. */}
+          khoá mất thứ user có quyền làm ngay bây giờ (②③④ mở cùng lúc, độc lập
+          với nhau) — "một nhiệm vụ một lúc" chỉ được phép là cách DẪN. Dòng
+          đang được tập trung không cần: nút to nằm sẵn trong ô trên. */}
       {state === "open" && (
         <button
           type="button"
@@ -98,15 +97,19 @@ function ChecklistItem({
 }
 
 /**
- * 🎯 Tab "Hành trình" (spec §7) — first sidebar-right panel while in Cấp 0.
- * Level card + ô "NHIỆM VỤ ĐANG LÀM" (khối chi phối: mô tả + "Làm ngay →") +
- * `TRƯỚC KHI LÊN CẤP 1 · x/5` header + checklist 3 chặng/5 nhiệm vụ THU GỌN +
- * graduation goal box. Driven by `useCap0Progress` + `usePremiumStatus` (the
- * level card's `ModeBadge` needs both — see `tradingModeFor`'s doc) — no props.
+ * 🎯 Tab "Hành trình" — first sidebar-right panel while in Cấp 0. Level card +
+ * ô "NHIỆM VỤ ĐANG LÀM" (khối chi phối: mô tả + "Làm ngay →") +
+ * `TRƯỚC KHI LÊN CẤP 1 · x/4` header + checklist 4 nhiệm vụ THU GỌN. Driven by
+ * `useCap0Progress` + `usePremiumStatus` (the level card's `ModeBadge` needs
+ * both — see `tradingModeFor`'s doc) — no props.
  *
  * ★ Mockup `iqx-cap0-hanhtrinh.html` vẽ cả checklist mở sẵn; bản này KHÔNG xoá
  * checklist đó, nó hạ cấp: nhiệm vụ đang làm được nâng thành khối riêng ở trên,
  * phần còn lại vẫn hiện đủ nhưng thu gọn và mờ đi.
+ *
+ * ★★ Mockup mới là một DANH SÁCH PHẲNG 4 dòng: không nhãn chặng (CHẶNG 1/2/3
+ * biến mất cùng ba tour sản phẩm) và không ô "Xong cả n → tốt nghiệp" ở cuối.
+ * Đừng thêm lại — cả hai đều đã bị bỏ có chủ đích.
  *
  * `RightSidebar` normally only ever resolves to this panel while
  * `isCap0Active` (either `activePanel === "journey"` set by
@@ -119,7 +122,7 @@ function ChecklistItem({
  * fires `GET /cap0/progress` when rendered outside a real `Cap0Provider`.
  */
 export function JourneyPanel() {
-  const { isCap0Active, onLaunchTour } = useCap0Events()
+  const { isCap0Active } = useCap0Events()
   const { data: progress } = useCap0Progress(isCap0Active)
   const { isPremium } = usePremiumStatus()
   const { setActivePanel } = useSidebar()
@@ -127,18 +130,17 @@ export function JourneyPanel() {
   const level = LEVELS[0]
   const focus = focusTaskNo(progress)
 
-  // ②③④ (Chặng 2) launch their product tour instead of switching to the
-  // trading panel (T2) — `Cap0TradingPage` registers the real dispatch via
-  // the Cap0 event bus; ①⑤ still just switch to the "Đặt lệnh" tab.
+  // ②③ ARE the two tabs of the "Danh mục" panel — send the user straight
+  // there, since that is where the nhiệm vụ is actually performed (opening the
+  // tab is what completes it, see `Gbar`'s `onPortfolioTabOpen` handler). ①④
+  // are order actions → the "Đặt lệnh" panel.
+  //
+  // ★ Không còn nhánh `onLaunchTour` nào: ba tour sản phẩm của Chặng 2 đã bị bỏ
+  // khỏi Cấp 0, và dưới cách đánh số mới một cú `completeTask(2|3|4)` từ tour
+  // sẽ đánh dấu nhầm "Xem tab Nắm giữ/Theo dõi" là đã xong.
   const handleGo = (no: number) => {
-    if (no === 2 || no === 3 || no === 4) {
-      onLaunchTour?.(no)
-      return
-    }
-    setActivePanel("trading")
+    setActivePanel(no === 2 || no === 3 ? "watchlist" : "trading")
   }
-
-  const stageDone = (tasks: number[]) => tasks.every((no) => taskState(no, progress) === "done")
 
   return (
     <div className="cap0 flex h-full min-h-0 flex-col bg-[var(--bg1)] text-[var(--t1)]">
@@ -175,7 +177,6 @@ export function JourneyPanel() {
           <JourneyFocus
             testId="cap0-focus"
             tag="NHIỆM VỤ ĐANG LÀM"
-            stage={stageLabelOf(focus)}
             numeral={NUMERALS[focus - 1]}
             name={TASK_NAMES[focus]}
             desc={TASK_DESCRIPTIONS[focus]}
@@ -195,34 +196,18 @@ export function JourneyPanel() {
           </span>
         </div>
 
-        {/* Checklist ĐẦY ĐỦ của mockup, hạ cấp: vẫn đủ 3 chặng · 5 nhiệm vụ để
-            thấy cung đường, nhưng thu gọn còn tên + mờ hơn ô tập trung. */}
+        {/* Checklist ĐẦY ĐỦ của mockup, hạ cấp: vẫn đủ 4 nhiệm vụ để thấy cung
+            đường, nhưng thu gọn còn tên + mờ hơn ô tập trung. Danh sách PHẲNG —
+            mockup mới không còn nhãn chặng nào. */}
         <div className="cap0-journey-rest">
-          {STAGES.map((stage) => (
-            <div key={stage.label}>
-              <div
-                className={cn(
-                  "cap0-stage-label",
-                  stageDone(stage.tasks) && "cap0-stage-label--done",
-                )}
-              >
-                {stage.label}
-              </div>
-              {stage.tasks.map((no) => (
-                <ChecklistItem
-                  key={no}
-                  no={no}
-                  state={rowState(no, progress, focus)}
-                  onGo={() => handleGo(no)}
-                />
-              ))}
-            </div>
+          {TASK_NOS.map((no) => (
+            <ChecklistItem
+              key={no}
+              no={no}
+              state={rowState(no, progress, focus)}
+              onGo={() => handleGo(no)}
+            />
           ))}
-        </div>
-
-        <div className="cap0-journey-goal">
-          Xong cả {TOTAL_TASKS} → tốt nghiệp <strong>Cấp 0 «Nhập môn»</strong>, chuyển chế độ{" "}
-          <strong>Thực chiến</strong> (T+2,5 · biên độ · hồ sơ bắt đầu tính).
         </div>
       </div>
     </div>

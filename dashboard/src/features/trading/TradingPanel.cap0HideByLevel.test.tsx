@@ -8,8 +8,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest"
  *  - Sổ lệnh bid/ask ẩn SUỐT Cấp 0 và Cấp 1 — §8: "Lên Cấp 2 (không hiện ở
  *    Cấp 0 và Cấp 1)". v2.2 opened it on nhiệm vụ ② (tour bảng điện), a whole
  *    level early.
- *  - Ô Giá + dropdown loại lệnh (MP/LO) ẩn cho đến nhiệm vụ ⑤ (tức là xong
- *    nhiệm vụ ①) — UNCHANGED by v3.0.
+ *  - Ô Giá + dropdown loại lệnh (MP/LO) ẩn cho đến khi xong nhiệm vụ ①.
  *  - Khối Kế hoạch has NO cắt lỗ/chốt lời in any mode, and there is no
  *    "cổng chất lượng 1" any more: v3.0 removes both the field and the gate.
  *  - A NON-Cap0 regression check: outside any `Cap0Provider` (today's
@@ -97,9 +96,7 @@ function makeProgress(overrides: Record<string, unknown> = {}) {
     task_2_done_at: null,
     task_3_done_at: null,
     task_4_done_at: null,
-    task_5_done_at: null,
-    task1_star_clicked: false,
-    task5_debrief_done: false,
+    task4_debrief_done: false,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
@@ -146,7 +143,7 @@ describe("TradingPanel — hide-by-level (spec §8)", () => {
     expect(screen.queryByText("Lệnh thị trường (MP)")).not.toBeInTheDocument()
   })
 
-  it("reveals Ô Giá + dropdown loại lệnh once task ① is done (nhiệm vụ ⑤ mở) — UNCHANGED by v3.0", async () => {
+  it("reveals Ô Giá + dropdown loại lệnh once task ① is done — UNCHANGED", async () => {
     renderInCap0(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
     await waitFor(() => expect(screen.getByText("Giá")).toBeInTheDocument())
 
@@ -169,8 +166,7 @@ describe("TradingPanel — hide-by-level (spec §8)", () => {
         task_2_done_at: "t",
         task_3_done_at: "t",
         task_4_done_at: "t",
-        task_5_done_at: "t",
-        task5_debrief_done: true,
+        task4_debrief_done: true,
         graduated_at: "2026-07-22T00:00:00Z",
       }),
     )
@@ -217,7 +213,7 @@ describe("Khối Kế hoạch — KHÔNG cắt lỗ/chốt lời ở bất kỳ 
     expect(screen.queryByText(/lời hứa với chính mình/)).not.toBeInTheDocument()
   })
 
-  it("★ never PATCHes a task-5 gate from the order panel — ⑤ is earned by closing the Kết sổ", async () => {
+  it("★ never PATCHes a task gate from the order panel — ④ is earned by closing the Kết sổ", async () => {
     renderInCap0(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
     await waitFor(() => expect(screen.getByText("KẾ HOẠCH")).toBeInTheDocument())
 

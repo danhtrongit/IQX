@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router"
 import {
   Button,
@@ -27,6 +27,13 @@ import { useAuth } from "@/features/auth"
 import { getErrorMessage } from "@/shared/http/client"
 import { cn } from "@/shared/lib/cn"
 import { StockLogo } from "@/features/navigation/StockLogo"
+// Concrete-file import, NOT the `@/features/cap0` barrel: that barrel
+// re-exports `Cap0TradingPage`, which pulls in `@/features/dashboard` →
+// `RightSidebar` → this file. `Cap0Context` itself has no such dependency.
+// Outside a `Cap0Provider` the hook returns the no-op bus, so on /bieu-do and
+// /co-phieu this is inert — which is the whole point of routing the Cấp 0
+// nhiệm vụ through it instead of calling a Cấp 0 hook from here.
+import { useCap0Events } from "@/features/cap0/Cap0Context"
 import { IconActivity, IconBriefcase, IconWallet } from "./icons"
 import {
   useAddToWatchlist,
@@ -57,6 +64,13 @@ function getInitialTab(): WatchlistTab {
 
 /* ─────────────────────────── Tab: Theo dõi ─────────────────────────── */
 
+/**
+ * `onRowSelect` = "the host handles a row click itself". Without it a click
+ * NAVIGATES to `/co-phieu/:symbol`, which is right on /bieu-do & /co-phieu but
+ * was wrong inside `/dau-truong`: it threw the user out of the level terminal
+ * mid-nhiệm-vụ. `RightSidebar` now passes a handler that just switches the
+ * terminal's symbol whenever a level shell is mounted.
+ */
 function WatchlistTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void } = {}) {
   const navigate = useNavigate()
   const open = (s: string) => (onRowSelect ? onRowSelect(s) : navigate(`/co-phieu/${s}`))
@@ -629,11 +643,27 @@ function HistoryTab() {
 export function WatchlistPanel({ onRowSelect }: { onRowSelect?: (symbol: string) => void } = {}) {
   const { isAuthenticated, setShowAuthModal } = useAuth()
   const [activeTab, setActiveTab] = useState<WatchlistTab>(getInitialTab)
+  const { onPortfolioTabOpen } = useCap0Events()
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab as WatchlistTab)
     window.localStorage.setItem(TAB_STORAGE_KEY, tab)
   }
+
+  // Cấp 0 nhiệm vụ ② «Xem tab Nắm giữ» / ③ «Xem tab Theo dõi» — the completion
+  // event is simply "this tab is now the one showing". Fired from an effect on
+  // `activeTab` rather than from `handleTabChange` so it ALSO covers the mount
+  // case: the active tab is remembered in localStorage, so a returning user can
+  // land on Nắm giữ without ever clicking it, and a click-only event would
+  // leave ② permanently unfinishable for them.
+  //
+  // Outside `Cap0Provider` (i.e. /bieu-do, /co-phieu, and every level above
+  // Cấp 0) `onPortfolioTabOpen` is `undefined` and this is a no-op. Every rule
+  // about WHETHER to record the nhiệm vụ (① must be done first, don't re-PATCH
+  // one already done) lives in `Gbar`'s handler — this side only reports.
+  useEffect(() => {
+    onPortfolioTabOpen?.(activeTab)
+  }, [activeTab, onPortfolioTabOpen])
 
   if (!isAuthenticated) {
     return (

@@ -92,11 +92,14 @@ const COUNT_UP_STEP_MS = 40
 
 /**
  * Màn Kết sổ Cấp 0 (spec v3.0 §5) — opened by `Gbar` when a SELL order fills
- * (nhiệm vụ ⑤). Header + big count-up P&L + Kế hoạch/Thực tế table (giá vào /
+ * (nhiệm vụ ④). Header + big count-up P&L + Kế hoạch/Thực tế table (giá vào /
  * giá ra + thuế bán 0,1%) + 1-of-2 rule-based coach block + "Đóng kết sổ ✓" —
- * which fires `completeTask(5, "debrief")`, **the single behaviour gate of the
- * whole level** (§9: "5/5 nhiệm vụ + 1 cổng hành vi (⑤ đóng màn kết sổ)").
+ * which fires `completeTask(4, "debrief")`, **the single behaviour gate of the
+ * whole level** ("4/4 nhiệm vụ + 1 cổng hành vi (④ đóng màn kết sổ)").
  * KHÔNG hỏi cảm xúc (spec, explicit).
+ *
+ * ★ Đây là nhiệm vụ ⑤ cũ; nó lùi về ④ khi Chặng 2 (ba tour sản phẩm) bị bỏ khỏi
+ * Cấp 0. Gửi `taskNo: 5` bây giờ là gửi một nhiệm vụ không tồn tại.
  */
 export function DebriefModal({ data, onClose }: DebriefModalProps) {
   const completeTask = useCompleteTask()
@@ -154,7 +157,7 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
     holdText == null ? "" : ` · ${(kehoach?.so_phien_giu ?? 0) > 0 ? `Giữ ${holdText}` : holdText}`
 
   const handleClose = () => {
-    completeTask.mutate({ taskNo: 5, gate: "debrief" })
+    completeTask.mutate({ taskNo: 4, gate: "debrief" })
     onClose()
   }
 

@@ -14,29 +14,35 @@ export interface Cap0Progress {
   entered_at: string
   /** Seeded practice cash (VND) — default 250.000.000. */
   virtual_balance_init: number
+  /** Nhiệm vụ ① «Đặt lệnh mua đầu tiên». */
   task_1_done_at: string | null
+  /** Nhiệm vụ ② «Xem tab Nắm giữ». */
   task_2_done_at: string | null
+  /** Nhiệm vụ ③ «Xem tab Theo dõi». */
   task_3_done_at: string | null
+  /** Nhiệm vụ ④ «Bán một lệnh, kết sổ đầu tiên». */
   task_4_done_at: string | null
-  /** Nhiệm vụ ⑤ «Bán một lệnh — kết sổ đầu tiên». */
-  task_5_done_at: string | null
   /**
-   * Task ① recorded fact — ★ watchlist click happened. NOT a graduation gate
-   * (spec v3.0 §9: Cấp 0 has exactly ONE behaviour gate, `task5_debrief_done`).
+   * The ONE behaviour gate of Cấp 0 (§9) — the Kết sổ screen was closed.
+   *
+   * ★ Renamed from `task5_debrief_done` when Cấp 0 went from 5 nhiệm vụ to 4:
+   * the old Chặng 2 (ba tour sản phẩm ②③④) is gone, so «Bán + Kết sổ» moved
+   * from ⑤ to ④ and its gate moved with it. `task1_star_clicked` — a recorded
+   * fact that was never a gate — is gone too, because ① no longer asks for the
+   * ★ at all (it is now chip lý do + mua, nothing else).
    */
-  task1_star_clicked: boolean
-  /**
-   * The ONE behaviour gate of Cấp 0 (spec v3.0 §4 ⑤ / §9) — the Kết sổ screen
-   * was closed. v2.2's second gate (`task5_sl_typed`, a keydown into the ô cắt
-   * lỗ) is gone with cắt lỗ/chốt lời itself.
-   */
-  task5_debrief_done: boolean
+  task4_debrief_done: boolean
   graduated_at: string | null
   time_to_graduate_hours: number | null
 }
 
-/** Behaviour gates the PATCH /cap0/task endpoint can flip (v3.0: two, one real). */
-export type Cap0Gate = "star" | "debrief"
+/**
+ * Behaviour gates the PATCH /cap0/task endpoint can flip — exactly ONE.
+ *
+ * ②③ are bare PATCHes (no gate) and ① is one too now that the ★ step is gone;
+ * only ④ carries `gate: "debrief"`.
+ */
+export type Cap0Gate = "debrief"
 
 /**
  * One `cap0_order_kehoach` row (spec §10) — the Kế hoạch chip a user picked
@@ -122,14 +128,16 @@ export interface BadgeOptions {
 }
 
 /**
- * How many of the FIVE Cấp 0 tasks are complete (spec v3.0 §4 "3 CHẶNG · 5
- * NHIỆM VỤ").
+ * How many of the FOUR Cấp 0 tasks are complete (mockup
+ * `docs/superpowers/specs/cap0/iqx-cap0-hanhtrinh.html` — a flat 4-item list,
+ * no chặng).
  *
- * v2.2 had six: the old ⑤ was "lệnh thứ hai + tự gõ ngưỡng cắt lỗ", which v3.0
- * deletes outright, promoting the old ⑥ (bán + Kết sổ) to ⑤. The BE migration
- * copies `task_6_done_at` INTO `task_5_done_at` and drops column 6, so this
- * function reads five columns and column 5 means "bán + kết sổ" — never the
- * stale SL-keydown timestamp column 5 used to hold.
+ * ★ It was FIVE until Chặng 2 («HIỂU SÂN CHƠI · TOUR SẢN PHẨM IQX» — the three
+ * product tours ②③④) was cut from Cấp 0 entirely. ② and ③ are now the two tab
+ * visits the old ① bundled in ("Lệnh đầu tiên + Nắm giữ + Theo dõi"), and «Bán
+ * + Kết sổ» moved from ⑤ to ④. The BE migration copies `task_6_done_at` →
+ * `task_5_done_at` → `task_4_done_at` across the two reshuffles, so column 4
+ * means "bán + kết sổ" and a leftover `task_5_done_at` must never be counted.
  */
 export function countTasksDone(progress: Cap0Progress | null | undefined): number {
   if (!progress) return 0
@@ -139,7 +147,6 @@ export function countTasksDone(progress: Cap0Progress | null | undefined): numbe
       progress.task_2_done_at,
       progress.task_3_done_at,
       progress.task_4_done_at,
-      progress.task_5_done_at,
     ].filter((t) => t != null).length
   )
 }

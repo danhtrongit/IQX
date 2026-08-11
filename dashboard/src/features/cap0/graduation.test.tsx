@@ -87,24 +87,21 @@ function makeProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
     task_2_done_at: null,
     task_3_done_at: null,
     task_4_done_at: null,
-    task_5_done_at: null,
-    task1_star_clicked: false,
-    task5_debrief_done: false,
+    task4_debrief_done: false,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
   }
 }
 
-/** All 5 tasks done + THE behaviour gate — the spec v3.0 §9 open condition. */
+/** All 4 tasks done + THE behaviour gate — the §9 open condition. */
 function readyProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
   return makeProgress({
     task_1_done_at: "t",
     task_2_done_at: "t",
     task_3_done_at: "t",
     task_4_done_at: "t",
-    task_5_done_at: "t",
-    task5_debrief_done: true,
+    task4_debrief_done: true,
     ...overrides,
   })
 }
@@ -116,21 +113,26 @@ describe("isGraduationReady", () => {
     expect(isGraduationReady(undefined)).toBe(false)
   })
 
-  it("is false when tasks aren't all 5 done yet, even with the gate true", () => {
+  it("is false when tasks aren't all 4 done yet, even with the gate true", () => {
     expect(
-      isGraduationReady(makeProgress({ task5_debrief_done: true, task_5_done_at: null })),
+      isGraduationReady(makeProgress({ task4_debrief_done: true, task_4_done_at: null })),
     ).toBe(false)
   })
 
-  it("★ is false when 5/5 but task5_debrief_done is missing — the ONE gate of Cấp 0", () => {
-    expect(isGraduationReady(readyProgress({ task5_debrief_done: false }))).toBe(false)
+  it("★ is false when 4/4 but task4_debrief_done is missing — the ONE gate of Cấp 0", () => {
+    expect(isGraduationReady(readyProgress({ task4_debrief_done: false }))).toBe(false)
   })
 
-  it("★ does NOT require task1_star_clicked — a recorded fact, never a gate (spec v3.0 §9)", () => {
-    expect(isGraduationReady(readyProgress({ task1_star_clicked: false }))).toBe(true)
+  // ★ Mẫu số là 4. Một progress row chỉ có ①②③ (3/4) + cổng hành vi KHÔNG được
+  // mở màn tốt nghiệp — nếu nó mở, `Cap0Service.graduate` sẽ 409 sau lưng một
+  // modal `closable={false}` và user kẹt vĩnh viễn.
+  it("★ is false at 3/4 + gate — the denominator is FOUR, and ④ is the Kết sổ itself", () => {
+    expect(
+      isGraduationReady(readyProgress({ task_4_done_at: null, task4_debrief_done: true })),
+    ).toBe(false)
   })
 
-  it("is true once 5/5 + the debrief gate are met", () => {
+  it("is true once 4/4 + the debrief gate are met", () => {
     expect(isGraduationReady(readyProgress())).toBe(true)
   })
 
@@ -154,7 +156,7 @@ describe("GraduationModal", () => {
     navigateMock.mockReset()
   })
 
-  it("does not render when the 5/5 + 1-gate condition isn't met", () => {
+  it("does not render when the 4/4 + 1-gate condition isn't met", () => {
     useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
     renderModal()
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
@@ -167,10 +169,10 @@ describe("GraduationModal", () => {
     // Header
     expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
     expect(screen.getByText("CẤP 0 · NHẬP MÔN")).toBeInTheDocument()
-    // ★ Spec v3.0 §9's sub-line is just "5/5 nhiệm vụ" — the "2/2 cổng hành
-    // vi" half is gone with the second gate it counted.
-    expect(screen.getByText("5/5 nhiệm vụ")).toBeInTheDocument()
+    // ★ Mẫu số phải theo `TOTAL_TASKS`: 4 kể từ khi Chặng 2 bị bỏ.
+    expect(screen.getByText("4/4 nhiệm vụ")).toBeInTheDocument()
     expect(screen.queryByText(/cổng hành vi/)).not.toBeInTheDocument()
+    expect(screen.queryByText("5/5 nhiệm vụ")).not.toBeInTheDocument()
     expect(screen.queryByText(/6\/6/)).not.toBeInTheDocument()
 
     // Khối 1 — Ghi nhận (verbatim spec v3.0 §9)
@@ -209,13 +211,18 @@ describe("GraduationModal", () => {
   // của mình" — under v3.0 BOTH halves are false: Cấp 0 asks for exactly one
   // round trip and has no cắt lỗ field at all. Congratulating someone for work
   // the product never let them do is the worst place to be wrong.
-  it("★ never credits the user with a 2nd vòng lệnh or a cắt lỗ they were never asked to set", () => {
+  it("★ never credits the user with a 2nd vòng lệnh, a cắt lỗ, or the three tours Cấp 0 no longer runs", () => {
     useCap0ProgressMock.mockReturnValue({ data: readyProgress() })
     renderModal()
 
     expect(screen.queryByText(/2 vòng lệnh/)).not.toBeInTheDocument()
     expect(screen.queryByText(/tự tay đặt ngưỡng cắt lỗ/)).not.toBeInTheDocument()
     expect(screen.queryByText(/chưa từng làm điều cuối cùng/)).not.toBeInTheDocument()
+    // ★★ Ba tour của Chặng 2 đã bị bỏ khỏi Cấp 0 — màn tốt nghiệp không được
+    // khen người dùng vì việc sản phẩm không còn cho họ làm.
+    expect(screen.queryByText(/hiểu bảng điện/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/đọc được bản tin/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/biết 6 người chơi/)).not.toBeInTheDocument()
     // Khối 2's old "lập kế hoạch thật sự" / "'chọn mã nào'" wording is replaced
     // by §9's own — the level teaches choosing a lý do, not writing a plan.
     expect(screen.queryByText(/'chọn mã nào'/)).not.toBeInTheDocument()

@@ -1,13 +1,13 @@
 import type { DebriefData } from "./DebriefModal"
 
 /**
- * Retroactive Kết sổ (nhiệm vụ ⑤) recovery — derives a `DebriefData` from
+ * Retroactive Kết sổ (nhiệm vụ ④) recovery — derives a `DebriefData` from
  * SERVER order history instead of the session-local refs in `Gbar`.
  *
  * ## Why this exists
  *
- * Nhiệm vụ ⑤ has exactly one completion path: reading the Kết sổ and pressing
- * "Đóng kết sổ ✓" (`DebriefModal` → `completeTask(5, "debrief")`). That modal
+ * Nhiệm vụ ④ has exactly one completion path: reading the Kết sổ and pressing
+ * "Đóng kết sổ ✓" (`DebriefModal` → `completeTask(4, "debrief")`). That modal
  * used to be reachable ONLY from `Gbar`'s live `onOrderFilled` sell branch,
  * which is driven by the Cấp 0 event bus — and that bus only exists inside
  * `Cap0Provider` (mounted by `Cap0TradingPage` alone). Two ways a user got
@@ -20,18 +20,19 @@ import type { DebriefData } from "./DebriefModal"
  *     pressing "Đóng kết sổ ✓". `Gbar`'s `lastBuyBySymbolRef` /
  *     `debriefCountRef` are session-local refs — a reload loses them.
  *
- * Either way `task_5_done_at` stays NULL forever, and since
- * `Cap0Service.graduate` requires all 5 tasks + the debrief gate, the
+ * Either way `task_4_done_at` stays NULL forever, and since
+ * `Cap0Service.graduate` requires all 4 tasks + the debrief gate, the
  * graduation modal (`isGraduationReady`) never opens. This function lets
  * `Gbar` re-open the Kết sổ for a round trip that ALREADY closed, so the user
- * can still read it and complete ⑤ themselves. Nhiệm vụ ⑤ is still earned by
+ * can still read it and complete ④ themselves. Nhiệm vụ ④ is still earned by
  * reading the Kết sổ — nothing is auto-completed behind the user's back.
  *
- * (This was ⑥ under spec v2.2; v3.0 deleted the old ⑤ — "lệnh thứ hai + tự gõ
- * ngưỡng cắt lỗ" — and promoted this one into its place. The BE migration
- * copies column 6's data into column 5, so the guard in `Gbar` reads the new
- * `task_5_done_at` and gets exactly the value it used to read from column 6 —
- * never the stale SL-keydown timestamp column 5 held under v2.2.)
+ * (This nhiệm vụ has moved twice: ⑥ under spec v2.2, ⑤ once v3.0 deleted "lệnh
+ * thứ hai + tự gõ ngưỡng cắt lỗ", and ④ now that Chặng 2's three product tours
+ * are gone from Cấp 0. The BE migration carries the data down each time, so
+ * `Gbar`'s guard on `task_4_done_at` gets exactly the "đã đóng Kết sổ" fact it
+ * has always read — never a stale value from a column that meant something
+ * else.)
  *
  * ## Single-lot approximation (carried over from the backend, verbatim caveat)
  *
