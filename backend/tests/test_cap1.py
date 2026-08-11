@@ -22,11 +22,11 @@ async def _graduate_cap0(db_session, user_id) -> None:
     """Fast-track a user through Cấp 0 graduation (setup helper, not under test)."""
     cap0 = Cap0Service(db_session)
     await cap0.enter(user_id)
-    # Cấp 0 v3.0: 5 nhiệm vụ, 1 cổng hành vi (đóng Kết sổ ở ⑤).
-    for n in (1, 2, 3, 4):
+    # Cấp 0: 4 nhiệm vụ, 1 cổng hành vi (đóng Kết sổ ở ④). ② và ③ chỉ tính
+    # sau ①, nên vòng lặp phải chạy đúng thứ tự ①②③.
+    for n in (1, 2, 3):
         await cap0.complete_task(user_id, n)
-    await cap0.complete_task(user_id, 5, gate="debrief")
-    await cap0.complete_task(user_id, 1, gate="star")
+    await cap0.complete_task(user_id, 4, gate="debrief")
     await cap0.graduate(user_id)
 
 
@@ -85,11 +85,11 @@ async def test_enter_requires_cap0_graduated(db_session, test_user):
         await svc.enter(test_user.id)
 
     # Graduate Cấp 0 → enter Cấp 1 succeeds.
-    # Cấp 0 v3.0: 5 nhiệm vụ, 1 cổng hành vi (đóng Kết sổ ở ⑤).
-    for n in (1, 2, 3, 4):
+    # Cấp 0: 4 nhiệm vụ, 1 cổng hành vi (đóng Kết sổ ở ④). ② và ③ chỉ tính
+    # sau ①, nên vòng lặp phải chạy đúng thứ tự ①②③.
+    for n in (1, 2, 3):
         await cap0.complete_task(test_user.id, n)
-    await cap0.complete_task(test_user.id, 5, gate="debrief")
-    await cap0.complete_task(test_user.id, 1, gate="star")
+    await cap0.complete_task(test_user.id, 4, gate="debrief")
     await cap0.graduate(test_user.id)
 
     progress = await svc.enter(test_user.id)

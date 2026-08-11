@@ -1,14 +1,22 @@
 """Cấp 0 (Level 0) onboarding models — progress, placement, kế hoạch (chip lý do).
 
 Cap 0 is a FREE gamified onboarding flow: a user "enters", gets a 250tr VND
-virtual account seeded, works through **5 tasks** (spec v3.0 §4) and graduates
-once all five are done plus the **single** behaviour gate — closing the màn Kết
-sổ at nhiệm vụ ⑤ (§9).
+virtual account seeded, works through **4 tasks** and graduates once all four are
+done plus the **single** behaviour gate — closing the màn Kết sổ at nhiệm vụ ④.
+
+    ① Đặt lệnh mua đầu tiên   ② Xem tab Nắm giữ
+    ③ Xem tab Theo dõi        ④ Bán một lệnh — kết sổ đầu tiên
+
+The three product tours (bảng điện / bản tin / "6 người chơi") that used to
+occupy ②③④ are **not part of Cấp 0 any more**, and there is no chặng/stage
+grouping: four flat nhiệm vụ, one gate. The ★ (bấm sao theo dõi) is likewise no
+longer any task's requirement — the new ③ is earned by OPENING the Theo dõi tab —
+so ``task1_star_clicked`` is gone rather than kept as a fact nothing reads.
 
 Cấp 0 teaches pure mechanics. It has **NO cắt lỗ/chốt lời and no lý do phân
 tích** (v3.0 states this in its preamble, §0, §8 and §13) — hence no
-``sl_typed`` gate, no 6th task, and a chip vocabulary (``LyDoDoiThuong``) that
-is deliberately disjoint from Cấp 1's analytical ``app.models.cap1.LyDo``.
+``sl_typed`` gate and a chip vocabulary (``LyDoDoiThuong``) that is deliberately
+disjoint from Cấp 1's analytical ``app.models.cap1.LyDo``.
 """
 
 from __future__ import annotations
@@ -74,22 +82,16 @@ class Cap0Progress(UUIDMixin, TimestampMixin, Base):
         BigInteger, nullable=False, default=250_000_000, server_default="250000000"
     )
 
-    # Task completion timestamps (nullable until done) — spec v3.0 §10:
-    #   ① lệnh đầu + Nắm giữ + Theo dõi   ② tour bảng điện
-    #   ③ tour bản tin                    ④ tour "6 người chơi"
-    #   ⑤ bán + kết sổ
+    # Task completion timestamps (nullable until done):
+    #   ① đặt lệnh mua đầu tiên   ② xem tab Nắm giữ
+    #   ③ xem tab Theo dõi        ④ bán một lệnh — kết sổ đầu tiên
     task_1_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     task_2_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     task_3_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     task_4_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    task_5_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    # Recorded fact — ① đã bấm ★. NOT a graduation gate (§9 lists exactly one).
-    task1_star_clicked: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=False, server_default="false"
-    )
-    # THE single behaviour gate — màn Kết sổ đã đóng ở nhiệm vụ ⑤ (§4 Chặng 3/§9).
-    task5_debrief_done: Mapped[bool] = mapped_column(
+    # THE single behaviour gate — màn Kết sổ đã đóng ở nhiệm vụ ④ (§9).
+    task4_debrief_done: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="false"
     )
 

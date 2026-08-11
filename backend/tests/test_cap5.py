@@ -301,11 +301,11 @@ def _series_around(decision, close_on_due: float) -> dict[date, float]:
 async def _graduate_cap0(db_session, user_id) -> None:
     cap0 = Cap0Service(db_session)
     await cap0.enter(user_id)
-    # Cấp 0 v3.0: 5 nhiệm vụ, 1 cổng hành vi (đóng Kết sổ ở ⑤).
-    for n in (1, 2, 3, 4):
+    # Cấp 0: 4 nhiệm vụ, 1 cổng hành vi (đóng Kết sổ ở ④). ② và ③ chỉ tính
+    # sau ①, nên vòng lặp phải chạy đúng thứ tự ①②③.
+    for n in (1, 2, 3):
         await cap0.complete_task(user_id, n)
-    await cap0.complete_task(user_id, 5, gate="debrief")
-    await cap0.complete_task(user_id, 1, gate="star")
+    await cap0.complete_task(user_id, 4, gate="debrief")
     await cap0.graduate(user_id)
 
 

@@ -5,8 +5,12 @@ and ``user_placement`` rows and reuses the virtual-trading repo to seed a 250tr
 practice account on entry. It does NOT touch the virtual-trading engine
 (matching/settlement).
 
-Spec v3.0: **5 nhiệm vụ**, **1 cổng hành vi** (đóng màn Kết sổ ở ⑤). No cắt
-lỗ/chốt lời anywhere.
+**4 nhiệm vụ**, **1 cổng hành vi** (đóng màn Kết sổ ở ④):
+
+    ① Đặt lệnh mua đầu tiên   ② Xem tab Nắm giữ
+    ③ Xem tab Theo dõi        ④ Bán một lệnh — kết sổ đầu tiên
+
+No tours, no chặng grouping, no cắt lỗ/chốt lời anywhere.
 """
 
 from __future__ import annotations
@@ -35,15 +39,25 @@ _CAP0_INITIAL_CASH_VND = 250_000_000
 #: ``virtual_orders.mode``. That column reflects the user's SUBSCRIPTION, not
 #: their level (see :meth:`Cap0Service.record_kehoach`), so a mode test here is
 #: a premium test in disguise — and Cấp 0 is free for everyone.
-_TASK_NOS = (1, 2, 3, 4, 5)
+_TASK_NOS = (1, 2, 3, 4)
 _GATE_ATTR = {
-    "star": "task1_star_clicked",
-    "debrief": "task5_debrief_done",
+    "debrief": "task4_debrief_done",
 }
-#: ⑤ «Bán một lệnh — Kết sổ đầu tiên» is earned ONLY by closing the Kết sổ
-#: (spec §4 Chặng 3: "cổng hành vi (duy nhất của Cấp 0)"), so the task number and
-#: its gate are written together or not at all.
-_TASK_REQUIRED_GATE = {5: "debrief"}
+#: ④ «Bán một lệnh — kết sổ đầu tiên» is earned ONLY by closing the Kết sổ
+#: ("cổng hành vi duy nhất của Cấp 0"), so the task number and its gate are
+#: written together or not at all — a bare ``{task_no: 4}`` is refused.
+_TASK_REQUIRED_GATE = {4: "debrief"}
+#: ★ ORDERING RULE: ② «Xem tab Nắm giữ» and ③ «Xem tab Theo dõi» cannot be
+#: completed before ① «Đặt lệnh mua đầu tiên».
+#:
+#: Both are meaningless before the first buy — an empty Nắm giữ tab shows the
+#: user nothing to learn from, so crediting the task there would hand out a
+#: nhiệm vụ for a screen that taught nothing. The FE fires ②/③ from tab-OPEN
+#: events, and tab opens REPEAT, so refusing an early fire costs the user
+#: nothing: the next time they open that tab after buying, the same call lands.
+#: This also keeps every row consistent with what the migration produces —
+#: ②③ are derived from ①, so no row can exist with ② done and ① not.
+_TASKS_AFTER_FIRST_BUY = (2, 3)
 
 #: Reverse lookup so the FE may post either the slug or the verbatim §4 chip
 #: label. Keyed on the exact spec strings — anything else is rejected.
@@ -130,14 +144,17 @@ class Cap0Service:
     async def complete_task(
         self, user_id: uuid.UUID, task_no: int, gate: str | None = None
     ) -> Cap0Progress:
-        """Mark task ``task_no`` (1-5) done (idempotent) and optionally set a gate.
+        """Mark task ``task_no`` (1-4) done (idempotent) and optionally set the gate.
 
-        Nhiệm vụ ⑤ requires ``gate="debrief"``: it is the one task whose
-        completion IS a behaviour gate, so a bare ``{task_no: 5}`` must not be
-        able to mark it done behind the gate's back.
+        Nhiệm vụ ④ requires ``gate="debrief"``: it is the one task whose
+        completion IS a behaviour gate, so a bare ``{task_no: 4}`` must not be
+        able to mark it done behind the gate's back. ①②③ are bare PATCHes.
+
+        ②③ are additionally refused until ① is done — see
+        ``_TASKS_AFTER_FIRST_BUY`` for why that rejection is safe to retry.
         """
         if task_no not in _TASK_NOS:
-            raise BadRequestError("task_no không hợp lệ (Cấp 0 có 5 nhiệm vụ)")
+            raise BadRequestError("task_no không hợp lệ (Cấp 0 có 4 nhiệm vụ)")
         if gate is not None and gate not in _GATE_ATTR:
             raise BadRequestError("gate không hợp lệ")
 
@@ -152,6 +169,12 @@ class Cap0Service:
         if progress is None:
             raise NotFoundError("tiến trình Cấp 0")
 
+        if task_no in _TASKS_AFTER_FIRST_BUY and progress.task_1_done_at is None:
+            raise BadRequestError(
+                f"Nhiệm vụ {task_no} chỉ tính sau khi hoàn thành nhiệm vụ ① "
+                "(đặt lệnh mua đầu tiên)"
+            )
+
         done_attr = f"task_{task_no}_done_at"
         if getattr(progress, done_attr) is None:
             setattr(progress, done_attr, datetime.now(UTC))
@@ -164,7 +187,7 @@ class Cap0Service:
         return progress
 
     async def graduate(self, user_id: uuid.UUID) -> Cap0Progress:
-        """Graduate Cấp 0 — 5/5 nhiệm vụ + the single behaviour gate (§9)."""
+        """Graduate Cấp 0 — 4/4 nhiệm vụ + the single behaviour gate (§9)."""
         progress = await self._get_progress_row(user_id)
         if progress is None:
             raise NotFoundError("tiến trình Cấp 0")
@@ -172,7 +195,7 @@ class Cap0Service:
         all_tasks_done = all(
             getattr(progress, f"task_{n}_done_at") is not None for n in _TASK_NOS
         )
-        gates_ok = progress.task5_debrief_done
+        gates_ok = progress.task4_debrief_done
         if not (all_tasks_done and gates_ok):
             raise ConflictError("Chưa hoàn thành đủ nhiệm vụ và cổng Cấp 0")
 

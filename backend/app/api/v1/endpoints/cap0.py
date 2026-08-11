@@ -52,9 +52,16 @@ async def placement(
 async def complete_task(
     body: TaskRequest, user: CurrentUser, db: DBSession
 ) -> Cap0ProgressOut:
-    """Đánh dấu nhiệm vụ 1-5 hoàn thành (idempotent) + set cổng (star/debrief) nếu có.
+    """Đánh dấu nhiệm vụ 1-4 hoàn thành (idempotent) + set cổng ``debrief`` nếu có.
 
-    Nhiệm vụ ⑤ bắt buộc kèm ``gate="debrief"`` — chỉ đóng màn Kết sổ mới tính đạt.
+    ① Đặt lệnh mua đầu tiên · ② Xem tab Nắm giữ · ③ Xem tab Theo dõi ·
+    ④ Bán một lệnh — kết sổ đầu tiên.
+
+    - ①②③ gọi trần (không kèm ``gate``).
+    - ④ bắt buộc kèm ``gate="debrief"`` — chỉ đóng màn Kết sổ mới tính đạt.
+    - ② và ③ bị từ chối (400) khi ① chưa xong: xem tab Nắm giữ/Theo dõi trước
+      lệnh mua đầu tiên thì không dạy được gì. FE bắn ②③ từ sự kiện mở tab (lặp
+      lại nhiều lần) nên lần mở tab sau khi mua sẽ tự động ghi nhận.
     """
     svc = Cap0Service(db)
     return await svc.complete_task(user.id, body.task_no, body.gate)
@@ -104,6 +111,6 @@ async def get_kehoach(
 
 @router.post("/graduate", response_model=Cap0ProgressOut)
 async def graduate(user: CurrentUser, db: DBSession) -> Cap0ProgressOut:
-    """Tốt nghiệp Cấp 0 — chỉ khi đủ 5 nhiệm vụ + cổng hành vi duy nhất (debrief)."""
+    """Tốt nghiệp Cấp 0 — chỉ khi đủ 4 nhiệm vụ + cổng hành vi duy nhất (debrief)."""
     svc = Cap0Service(db)
     return await svc.graduate(user.id)
