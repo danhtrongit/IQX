@@ -54,13 +54,12 @@ export function usePlacement() {
  * PATCH /cap0/task — mark a task done (with an optional behaviour gate).
  *
  * Centralizes spec §7's "auto-chuyển tab Hành trình khi hoàn thành nhiệm vụ"
- * (moment thưởng, KHÔNG confetti) here in the hook's `onSuccess` — rather
- * than in each of the (currently 3, likely more later) call sites
- * (`Gbar`/nhiệm vụ ①②③, `DebriefModal`/nhiệm vụ ④) — so every current AND
- * future caller gets the
- * auto-tab for free without having to remember to wire it. `useSidebar()`
- * outside a `SidebarProvider` returns the app's no-op default context, so
- * this is safe to call from anywhere `useCompleteTask` is used.
+ * (moment thưởng, KHÔNG confetti) here in the hook's `onSuccess` — rather than
+ * in each call site (`Gbar`/nhiệm vụ ①②③, `DebriefModal`/nhiệm vụ ④) — so
+ * every current AND future caller gets the auto-tab for free without having to
+ * remember to wire it. `useSidebar()` outside a `SidebarProvider` returns the
+ * app's no-op default context, so this is safe to call from anywhere
+ * `useCompleteTask` is used.
  *
  * A config-level `onSuccess` on `useMutation` fires even after the calling
  * component has unmounted (TanStack Query keeps the mutation observer alive
@@ -73,14 +72,26 @@ export function usePlacement() {
  * `/bieu-do` & `/co-phieu` terminals. Guard with the same route check
  * `Cap0TradingPage` is only ever mounted under: only auto-tab when the user
  * is still actually on `/dau-truong`.
+ *
+ * ★ `keepPanel` opts a call OUT of the auto-tab, and nhiệm vụ ②③ need it. Those
+ * two complete the instant the user opens the Nắm giữ / Theo dõi tab — so the
+ * "moment thưởng" would fire while the user is standing exactly where the
+ * nhiệm vụ told them to stand ("Mở tab Nắm giữ, xem mã vừa mua trong danh
+ * mục") and yank the panel away before they can look at anything. A reward
+ * that cancels the lesson is worth nothing.
  */
 export function useCompleteTask() {
   const invalidate = useInvalidateCap0()
   const { setActivePanel } = useSidebar()
-  return useMutation<Cap0Progress, unknown, { taskNo: number; gate?: Cap0Gate }>({
+  return useMutation<
+    Cap0Progress,
+    unknown,
+    { taskNo: number; gate?: Cap0Gate; keepPanel?: boolean }
+  >({
     mutationFn: ({ taskNo, gate }) => cap0Api.completeTask(taskNo, gate),
-    onSuccess: () => {
+    onSuccess: (_data, { keepPanel }) => {
       invalidate()
+      if (keepPanel) return
       if (window.location.pathname === "/dau-truong") {
         setActivePanel("journey")
       }

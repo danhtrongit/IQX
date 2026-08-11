@@ -220,7 +220,10 @@ export function Gbar() {
         if (taskNo === 2 ? task2Done : task3Done) return
         if (firedTabTasksRef.current.has(taskNo)) return
         firedTabTasksRef.current.add(taskNo)
-        completeTask.mutate({ taskNo })
+        // `keepPanel` — the user is standing on the exact tab the nhiệm vụ
+        // told them to open; the usual "auto quay về tab Hành trình" reward
+        // would yank it away before they can look at anything.
+        completeTask.mutate({ taskNo, keepPanel: true })
       },
       onGbarWarn: () => {
         if (task1Done) return

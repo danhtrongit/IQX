@@ -794,6 +794,39 @@ describe("Gbar — nhiệm vụ ②③ hoàn thành bằng việc mở tab trong
     )
   })
 
+  // ★★ Nhiệm vụ ② nói "Mở tab Nắm giữ, XEM mã vừa mua trong danh mục". Nếu
+  // "moment thưởng" mặc định (auto quay về tab Hành trình) chạy ở đây, panel bị
+  // giật đi ngay khoảnh khắc người dùng vừa tới đúng chỗ được bảo tới — phần
+  // thưởng huỷ mất chính bài học.
+  it("★★ KHÔNG giật người dùng về tab Hành trình — họ đang đứng đúng chỗ nhiệm vụ bảo đứng", async () => {
+    window.history.pushState({}, "", "/dau-truong")
+    routeGet(makeProgress({ task_1_done_at: "t" }), [], [RAW_POSITION])
+    patch.mockReturnValue({
+      json: () => Promise.resolve(makeProgress({ task_1_done_at: "t", task_2_done_at: "t" })),
+    })
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    render(
+      <QueryClientProvider client={client}>
+        <SidebarProvider defaultPanel="watchlist">
+          <Cap0Provider>
+            <Gbar />
+            <EventTrigger />
+          </Cap0Provider>
+          <PanelSpy />
+        </SidebarProvider>
+      </QueryClientProvider>,
+    )
+    await waitFor(() => expect(screen.getByText(TASK4_MSG)).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText("open-holdings-tab"))
+
+    await waitFor(() =>
+      expect(patch).toHaveBeenCalledWith("cap0/task", { json: { task_no: 2 } }),
+    )
+    await new Promise((r) => setTimeout(r, 20))
+    expect(screen.getByTestId("panel-spy")).toHaveTextContent("watchlist")
+  })
+
   it("★ mở tab Theo dõi sau khi xong ① → PATCH task 3, không kèm gate", async () => {
     renderGbar(makeProgress({ task_1_done_at: "t" }), { positions: [RAW_POSITION] })
     await waitFor(() => expect(screen.getByText(TASK4_MSG)).toBeInTheDocument())
