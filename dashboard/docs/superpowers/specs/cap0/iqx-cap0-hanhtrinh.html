@@ -29,8 +29,6 @@ body { background:#12141c; color:var(--t1); font-family:'Inter',sans-serif; font
 .ck-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
 .ck-head .t { font-family:'JetBrains Mono'; font-size:10px; letter-spacing:.6px; color:var(--t3); text-transform:uppercase; }
 .ck-head .c { font-family:'Space Grotesk'; font-size:14px; font-weight:700; color:var(--lvl); }
-.stage { font-family:'JetBrains Mono'; font-size:9px; letter-spacing:.5px; text-transform:uppercase; color:var(--t3); margin:12px 0 6px; }
-.stage.done { color:rgba(53,208,127,.75); }
 .task { display:flex; align-items:flex-start; gap:10px; padding:11px 12px; border:1px solid var(--bd); border-radius:8px; margin-bottom:7px; background:var(--bg2); }
 .task.active { border-color:var(--brand); background:var(--brand-soft); }
 .task.done { opacity:.55; }
@@ -38,20 +36,15 @@ body { background:#12141c; color:var(--t1); font-family:'Inter',sans-serif; font
 .task .st { flex-shrink:0; font-size:15px; width:20px; text-align:center; }
 .task .body { flex:1; }
 .task .nm { font-size:12.5px; font-weight:600; }
-.task.done .nm { text-decoration:line-through; }
-.task .ds { font-size:10.5px; color:var(--t3); margin-top:2px; }
 .task .btn { margin-top:8px; display:inline-block; font-size:11px; font-weight:700; color:#0e1420; background:var(--brand); padding:6px 12px; border-radius:6px; cursor:pointer; font-family:'Space Grotesk'; }
-/* Đích */
-.goal { margin-top:14px; padding:12px 14px; border:1px dashed var(--bd); border-radius:9px; font-size:11px; color:var(--t2); line-height:1.6; text-align:center; }
-.goal b { color:var(--t1); }
 </style>
 </head>
 <body>
 <div class="col">
   <div class="jbar">
-    <span class="lv">CẤP 0 · 3/7</span>
-    <span class="nx">Chặng 2 «Hiểu sân chơi» — Tour bảng điện</span>
-    <span class="dots"><i class="dot done"></i><i class="dot done"></i><i class="dot now"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i></span>
+    <span class="lv">CẤP 0 · 3/4</span>
+    <span class="nx">Tiếp: Bán một lệnh, kết sổ đầu tiên</span>
+    <span class="dots"><i class="dot done"></i><i class="dot done"></i><i class="dot done"></i><i class="dot now"></i></span>
   </div>
 
   <div class="lvcard">
@@ -67,57 +60,28 @@ body { background:#12141c; color:var(--t1); font-family:'Inter',sans-serif; font
 
   <div class="ck-head">
     <span class="t">Trước khi lên Cấp 1</span>
-    <span class="c">3/7</span>
+    <span class="c">3/4</span>
   </div>
 
-  <div class="stage done">Chặng 1 — Vào sân</div>
   <div class="task done">
     <span class="st">✅</span>
-    <div class="body">
-      <div class="nm">① Đặt lệnh mua đầu tiên</div>
-      <div class="ds">Mua thử một mã bằng vốn Sân tập.</div>
-    </div>
+    <div class="body"><div class="nm">① Đặt lệnh mua đầu tiên</div></div>
   </div>
   <div class="task done">
     <span class="st">✅</span>
-    <div class="body">
-      <div class="nm">② Xem tab Nắm giữ</div>
-      <div class="ds">Mở tab Nắm giữ, xem mã vừa mua trong danh mục.</div>
-    </div>
+    <div class="body"><div class="nm">② Xem tab Nắm giữ</div></div>
   </div>
   <div class="task done">
     <span class="st">✅</span>
-    <div class="body">
-      <div class="nm">③ Xem tab Theo dõi</div>
-      <div class="ds">Mở tab Theo dõi, làm quen nơi quan sát mã.</div>
-    </div>
+    <div class="body"><div class="nm">③ Xem tab Theo dõi</div></div>
   </div>
-
-  <div class="stage">Chặng 2 — Hiểu sân chơi · Tour sản phẩm IQX</div>
   <div class="task active">
     <span class="st">🎯</span>
     <div class="body">
-      <div class="nm">④ Tour bảng điện</div>
-      <div class="ds">Làm quen bảng giá, các cột, màu sắc.</div>
+      <div class="nm">④ Bán một lệnh, kết sổ đầu tiên</div>
       <span class="btn">Làm ngay →</span>
     </div>
   </div>
-  <div class="task locked">
-    <span class="st">🔒</span>
-    <div class="body"><div class="nm">⑤ Tour bản tin thị trường</div></div>
-  </div>
-  <div class="task locked">
-    <span class="st">🔒</span>
-    <div class="body"><div class="nm">⑥ Tour "6 người chơi" trên mã của bạn</div></div>
-  </div>
-
-  <div class="stage">Chặng 3 — Khép vòng</div>
-  <div class="task locked">
-    <span class="st">🔒</span>
-    <div class="body"><div class="nm">⑦ Bán một lệnh — kết sổ đầu tiên</div></div>
-  </div>
-
-  <div class="goal">Xong cả 7 → tốt nghiệp <b>Cấp 0 «Nhập môn»</b>, chuyển chế độ <b>Thực chiến</b> (T+2,5 · biên độ · hồ sơ bắt đầu tính).</div>
 </div>
 </body>
 </html>
