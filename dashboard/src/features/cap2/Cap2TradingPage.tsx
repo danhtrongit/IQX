@@ -337,7 +337,7 @@ function Cap2Terminal() {
       </div>
 
       <div className="flex flex-1 min-h-0 pb-[52px] md:pb-0">
-        <CenterPanel />
+        <CenterPanel symbolChange="select" />
         <RightSidebar />
         <RightToolbar onActionClick={handleActionClick} />
       </div>
