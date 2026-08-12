@@ -3,7 +3,12 @@ import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const { recordKetsoMutate, markTaskMutate, cap1Active } = vi.hoisted(() => ({
-  recordKetsoMutate: vi.fn(),
+  // Mock trung thực với TanStack: sau khi "request" xong thì gọi `onSettled`
+  // (đồng bộ, coi như settle tức thì) — cú ping recompute của `handleClose`
+  // nằm trong callback đó, mock mà nuốt nó thì test không thấy ping nào cả.
+  recordKetsoMutate: vi.fn((_input: unknown, opts?: { onSettled?: () => void }) => {
+    opts?.onSettled?.()
+  }),
   markTaskMutate: vi.fn(),
   // Mutable: cái cổng `isCap1Active` phải kiểm được ở CẢ hai trạng thái.
   cap1Active: { value: true },
@@ -60,6 +65,9 @@ const cleanWin: KetsoDataCap1 = {
 
 beforeEach(() => {
   recordKetsoMutate.mockReset()
+  recordKetsoMutate.mockImplementation((_input: unknown, opts?: { onSettled?: () => void }) => {
+    opts?.onSettled?.()
+  })
   markTaskMutate.mockReset()
   cap1Active.value = true
 })
@@ -150,7 +158,10 @@ describe("KetsoModalCap1", () => {
     render(<KetsoModalCap1 data={bigLoss} progress={progress()} trades={[]} onClose={onClose} />)
     fireEvent.click(screen.getByText("😰 Sợ"))
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
-    expect(recordKetsoMutate).toHaveBeenCalledWith({ order_id: "order-7", cam_xuc: "so" })
+    expect(recordKetsoMutate).toHaveBeenCalledWith(
+      { order_id: "order-7", cam_xuc: "so" },
+      expect.objectContaining({ onSettled: expect.any(Function) }),
+    )
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
@@ -158,7 +169,10 @@ describe("KetsoModalCap1", () => {
     const onClose = vi.fn()
     render(<KetsoModalCap1 data={cleanWin} progress={progress()} trades={[]} onClose={onClose} />)
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
-    expect(recordKetsoMutate).toHaveBeenCalledWith({ order_id: "order-7", cam_xuc: null })
+    expect(recordKetsoMutate).toHaveBeenCalledWith(
+      { order_id: "order-7", cam_xuc: null },
+      expect.objectContaining({ onSettled: expect.any(Function) }),
+    )
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
@@ -181,11 +195,30 @@ describe("KetsoModalCap1", () => {
 
   it("★ the recompute comes AFTER the Kết sổ itself is posted", () => {
     const order: string[] = []
-    recordKetsoMutate.mockImplementation(() => order.push("ketso"))
+    recordKetsoMutate.mockImplementation((_input: unknown, opts?: { onSettled?: () => void }) => {
+      order.push("ketso")
+      opts?.onSettled?.()
+    })
     markTaskMutate.mockImplementation(() => order.push("recompute"))
     render(<KetsoModalCap1 data={cleanWin} progress={progress()} trades={[]} onClose={vi.fn()} />)
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
     expect(order).toEqual(["ketso", "recompute"])
+  })
+
+  // ★ `onSettled`, KHÔNG phải `onSuccess`: recompute là phép tính THUẦN, phải
+  // chạy cả khi POST ketso hỏng — 409 "Lệnh này đã kết sổ" là ca hoàn toàn bình
+  // thường (từ Cấp 5 trang tự kết sổ trước khi modal mở). Đổi sang `onSuccess`
+  // là lặng lẽ bỏ recompute đúng những ca đó.
+  it("★ still recomputes when the Kết sổ POST itself fails", () => {
+    recordKetsoMutate.mockImplementation(
+      (_input: unknown, opts?: { onError?: (e: unknown) => void; onSettled?: () => void }) => {
+        opts?.onError?.(new Error("409 đã kết sổ"))
+        opts?.onSettled?.()
+      },
+    )
+    render(<KetsoModalCap1 data={cleanWin} progress={progress()} trades={[]} onClose={vi.fn()} />)
+    fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
+    expect(markTaskMutate).toHaveBeenCalledTimes(1)
   })
 
   it("★ opening and closing does NOT recompute before the user actually closes", () => {
