@@ -14,7 +14,11 @@ const {
   navigateMock,
 } = vi.hoisted(() => ({
   useCap1ProgressMock: vi.fn(),
-  recordKetsoMutate: vi.fn(),
+  // Mô phỏng trung thực TanStack: settle xong gọi `onSettled` — cú ping
+  // recompute của KetsoModalCap1 nằm trong callback đó.
+  recordKetsoMutate: vi.fn((_input: unknown, opts?: { onSettled?: () => void }) => {
+    opts?.onSettled?.()
+  }),
   markTaskMutate: vi.fn(),
   graduateMutate: vi.fn(),
   navigateMock: vi.fn(),
@@ -139,6 +143,9 @@ describe("Cap1TradingPage", () => {
     useCap1ProgressMock.mockReset()
     useCap1ProgressMock.mockReturnValue({ data: fakeProgress() })
     recordKetsoMutate.mockReset()
+    recordKetsoMutate.mockImplementation((_input: unknown, opts?: { onSettled?: () => void }) => {
+      opts?.onSettled?.()
+    })
     markTaskMutate.mockReset()
     graduateMutate.mockReset()
     navigateMock.mockReset()
@@ -211,6 +218,7 @@ describe("Cap1TradingPage", () => {
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
     expect(recordKetsoMutate).toHaveBeenCalledWith(
       expect.objectContaining({ order_id: "sell-1" }),
+      expect.objectContaining({ onSettled: expect.any(Function) }),
     )
   })
 
