@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
 import { Modal } from "@arco-design/web-react"
 import { cn } from "@/shared/lib/cn"
-import { useRecordKetso } from "./hooks"
+import { useCap1Events } from "./Cap1Context"
+import { useCompleteCap1Task, useRecordKetso } from "./hooks"
 import { coachTemplateCap1 } from "./coachTemplateCap1"
 import { LY_DO_OPTIONS, type CamXuc, type Cap1Progress, type LyDo, type TrangThaiLucDat } from "./types"
 import type { Cap1TradeRecord } from "./tradeLog"
@@ -123,8 +124,16 @@ export function isLenhCoChuyen(params: { pnlPct: number; soPhienGiu: number }): 
   return params.pnlPct < -7 || params.soPhienGiu > 10 || params.soPhienGiu < 1
 }
 
-/** Tổng số lệnh Thực chiến cần để xét tốt nghiệp Cấp 1 (nhiệm vụ ⑥). */
+/** Tổng số lệnh Thực chiến cần để xét tốt nghiệp Cấp 1 (nhiệm vụ ⑤). */
 const TARGET_ORDERS = 10
+
+/**
+ * Nhiệm vụ gửi kèm cú ping tính lại sau khi kết sổ (xem `handleClose`).
+ * `PATCH /cap1/task` giờ là recompute THUẦN — mọi `task_no` 1-5 đều chạy cùng
+ * một phép tính — nhưng gửi đúng cái đang lệch (⑤ «10 lệnh Thực chiến») thì log
+ * server đọc mới có nghĩa.
+ */
+const NHIEM_VU_CAN_TINH_LAI = 5
 /** Số lệnh cùng một lý do cần có trước khi dòng 3 nêu thống kê riêng. */
 const MIN_TRADES_FOR_STAT = 2
 
@@ -139,6 +148,8 @@ export function KetsoModalCap1({
   onRecorded,
 }: KetsoModalCap1Props) {
   const recordKetso = useRecordKetso()
+  const markTask = useCompleteCap1Task()
+  const { isCap1Active } = useCap1Events()
   const [emotion, setEmotion] = useState<CamXuc | null>(null)
   const [displayPct, setDisplayPct] = useState(0)
 
@@ -205,7 +216,24 @@ export function KetsoModalCap1({
       : `Còn ${MIN_TRADES_FOR_STAT - sameLyDo.length} lệnh nữa để hệ thống tìm mẫu riêng của bạn.`
 
   const handleClose = () => {
-    recordKetso.mutate({ order_id: orderId, cam_xuc: emotion })
+    // ★★ Kích hoạt lại phép tính của server SAU KHI kết sổ ★★
+    // `Cap1Service.record_ketso` KHÔNG gọi `_recompute_counters` (chỉ
+    // `record_kehoach` và `mark_task` gọi), trong khi `so_lenh_thuc_chien` đếm
+    // MỌI lệnh Thực chiến đã khớp — kể cả lệnh BÁN vừa rồi. Thiếu cú ping này
+    // thì nhiệm vụ ⑤ «10 lệnh Thực chiến» trễ đúng một lệnh bán: người bán lệnh
+    // thứ 10 vẫn thấy 9/10 và màn tốt nghiệp chỉ mở ra khi họ tình cờ đặt thêm
+    // một lệnh MUA nữa.
+    //
+    // Ping nằm trong `onSettled` chứ KHÔNG bắn song song: nhiệm vụ ② («Kết sổ
+    // đầu tiên») suy từ chính dòng ketso, nên recompute chạy TRƯỚC khi POST
+    // ketso kịp ghi là đếm hụt nó — hai mutate cạnh nhau không có thứ tự đảm
+    // bảo (test đã bắt được đúng ca đảo). `onSettled` (không phải `onSuccess`)
+    // để cú ping vẫn chạy kể cả khi POST ketso hỏng — recompute thuần, vô hại.
+    // Vẫn là fire-and-forget với modal: `mutate` không chặn việc đóng.
+    recordKetso.mutate(
+      { order_id: orderId, cam_xuc: emotion },
+      { onSettled: () => { if (isCap1Active) markTask.mutate(NHIEM_VU_CAN_TINH_LAI) } },
+    )
     onRecorded?.({
       orderId,
       lyDo,

@@ -9,11 +9,13 @@ import type { Cap1Progress } from "./types"
 const {
   useCap1ProgressMock,
   recordKetsoMutate,
+  markTaskMutate,
   graduateMutate,
   navigateMock,
 } = vi.hoisted(() => ({
   useCap1ProgressMock: vi.fn(),
   recordKetsoMutate: vi.fn(),
+  markTaskMutate: vi.fn(),
   graduateMutate: vi.fn(),
   navigateMock: vi.fn(),
 }))
@@ -95,6 +97,7 @@ vi.mock("./hooks", () => ({
   useCap1Progress: (...a: unknown[]) => useCap1ProgressMock(...a),
   useGraduateCap1: () => ({ mutate: graduateMutate, isPending: false }),
   useRecordKetso: () => ({ mutate: recordKetsoMutate, isPending: false }),
+  useCompleteCap1Task: () => ({ mutate: markTaskMutate, isPending: false }),
 }))
 
 // Cấp 2 is live (Task FE4) — `GraduationModalCap1` now fires `useEnterCap2`
@@ -136,6 +139,7 @@ describe("Cap1TradingPage", () => {
     useCap1ProgressMock.mockReset()
     useCap1ProgressMock.mockReturnValue({ data: fakeProgress() })
     recordKetsoMutate.mockReset()
+    markTaskMutate.mockReset()
     graduateMutate.mockReset()
     navigateMock.mockReset()
     window.localStorage.clear()
@@ -208,6 +212,20 @@ describe("Cap1TradingPage", () => {
     expect(recordKetsoMutate).toHaveBeenCalledWith(
       expect.objectContaining({ order_id: "sell-1" }),
     )
+  })
+
+  // ★★ Bản dựng THẬT (Cap1Provider thật → `isCap1Active` thật) — chứng minh cú
+  // ping recompute không bị chính cái cổng `isCap1Active` của nó chặn mất trong
+  // cây component thật, và chỉ bắn ĐÚNG MỘT lần cho mỗi lần kết sổ.
+  // Không có nó thì nhiệm vụ ⑤ «10 lệnh Thực chiến» trễ một lệnh bán
+  // (`record_ketso` phía server không recompute bộ đếm).
+  it("★ closing Kết sổ also fires exactly one recompute PATCH /cap1/task", () => {
+    renderCap1(<Cap1TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-buy"))
+    fireEvent.click(screen.getByTestId("fire-sell"))
+    expect(markTaskMutate).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
+    expect(markTaskMutate).toHaveBeenCalledTimes(1)
   })
 
   it("mounts GraduationModalCap1 (hidden until 5/5 nhiệm vụ)", () => {

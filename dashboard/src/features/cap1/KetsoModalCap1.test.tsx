@@ -2,12 +2,21 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const { recordKetsoMutate } = vi.hoisted(() => ({ recordKetsoMutate: vi.fn() }))
-// `KetsoModalCap1` only needs `useRecordKetso` — mock `./hooks` directly (same
-// pattern as `cap0/debrief.test.tsx`) so no QueryClient/http-client setup is
-// needed for this file.
+const { recordKetsoMutate, markTaskMutate, cap1Active } = vi.hoisted(() => ({
+  recordKetsoMutate: vi.fn(),
+  markTaskMutate: vi.fn(),
+  // Mutable: cái cổng `isCap1Active` phải kiểm được ở CẢ hai trạng thái.
+  cap1Active: { value: true },
+}))
+// `KetsoModalCap1` needs `useRecordKetso` + `useCompleteCap1Task` — mock
+// `./hooks` directly (same pattern as `cap0/debrief.test.tsx`) so no
+// QueryClient/http-client setup is needed for this file.
 vi.mock("./hooks", () => ({
   useRecordKetso: () => ({ mutate: recordKetsoMutate }),
+  useCompleteCap1Task: () => ({ mutate: markTaskMutate }),
+}))
+vi.mock("./Cap1Context", () => ({
+  useCap1Events: () => ({ isCap1Active: cap1Active.value }),
 }))
 
 import { KetsoModalCap1, type KetsoDataCap1 } from "./KetsoModalCap1"
@@ -51,6 +60,8 @@ const cleanWin: KetsoDataCap1 = {
 
 beforeEach(() => {
   recordKetsoMutate.mockReset()
+  markTaskMutate.mockReset()
+  cap1Active.value = true
 })
 
 describe("KetsoModalCap1", () => {
@@ -149,6 +160,46 @@ describe("KetsoModalCap1", () => {
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
     expect(recordKetsoMutate).toHaveBeenCalledWith({ order_id: "order-7", cam_xuc: null })
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  // ── ★★ Chốt sổ xong PHẢI kích hoạt lại phép tính của server ★★ ─────────────
+  // `Cap1Service.record_ketso` KHÔNG gọi `_recompute_counters` (chỉ
+  // `record_kehoach` và `mark_task` gọi), trong khi `so_lenh_thuc_chien` đếm cả
+  // lệnh BÁN đã khớp. Không có cú ping này thì nhiệm vụ ⑤ «10 lệnh Thực chiến»
+  // trễ MỘT lệnh bán: người bán lệnh thứ 10 vẫn thấy 9/10 và màn tốt nghiệp
+  // không mở ra cho tới khi họ tình cờ đặt thêm một lệnh MUA nữa.
+  // `PATCH /cap1/task` giờ là recompute thuần (task_no 1-5 đều được) — đúng
+  // cách `KetsoModalCap6` đã dùng cho nhiệm vụ ② của nó.
+  it("★ closing the Kết sổ fires exactly ONE recompute PATCH /cap1/task", () => {
+    render(<KetsoModalCap1 data={cleanWin} progress={progress()} trades={[]} onClose={vi.fn()} />)
+    fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
+    expect(markTaskMutate).toHaveBeenCalledTimes(1)
+    // ⑤ là nhiệm vụ cần tính lại — con số nào cũng chạy, nhưng gửi đúng cái
+    // đang lệch thì log server đọc mới có nghĩa.
+    expect(markTaskMutate).toHaveBeenCalledWith(5)
+  })
+
+  it("★ the recompute comes AFTER the Kết sổ itself is posted", () => {
+    const order: string[] = []
+    recordKetsoMutate.mockImplementation(() => order.push("ketso"))
+    markTaskMutate.mockImplementation(() => order.push("recompute"))
+    render(<KetsoModalCap1 data={cleanWin} progress={progress()} trades={[]} onClose={vi.fn()} />)
+    fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
+    expect(order).toEqual(["ketso", "recompute"])
+  })
+
+  it("★ opening and closing does NOT recompute before the user actually closes", () => {
+    render(<KetsoModalCap1 data={cleanWin} progress={progress()} trades={[]} onClose={vi.fn()} />)
+    expect(markTaskMutate).not.toHaveBeenCalled()
+  })
+
+  it("★ does not recompute outside Cấp 1 (isCap1Active false)", () => {
+    cap1Active.value = false
+    render(<KetsoModalCap1 data={cleanWin} progress={progress()} trades={[]} onClose={vi.fn()} />)
+    fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
+    expect(markTaskMutate).not.toHaveBeenCalled()
+    // ...nhưng bản thân Kết sổ vẫn được ghi, và modal vẫn đóng được.
+    expect(recordKetsoMutate).toHaveBeenCalledTimes(1)
   })
 
   // ── Coach template selection (spec §6 A-F) ────────────────────────────────
