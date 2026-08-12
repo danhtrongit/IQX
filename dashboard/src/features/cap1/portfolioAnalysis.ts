@@ -156,15 +156,16 @@ function computeKhoi3(
   }
 }
 
-const TASK4_THRESHOLD = 3
-const TASK5_THRESHOLD = 3
-const TASK6_THRESHOLD = 10
 const TASK3_THRESHOLD = 5
+const TASK4_THRESHOLD = 3
+const TASK5_THRESHOLD = 10
+
+/** Tổng số nhiệm vụ Cấp 1 sau khi «Xem lại danh mục» bị bỏ (6 → 5). */
+export const CAP1_TOTAL_TASKS = 5
 
 function khoi4Tasks(progress: Cap1Progress | null): Khoi4Task[] {
   const soLyDo = progress?.so_ly_do_da_dung ?? 0
   const soUngHo = progress?.so_lenh_ly_do_ung_ho ?? 0
-  const soXem = progress?.so_lan_xem_danh_muc ?? 0
   const soLenh = progress?.so_lenh_thuc_chien ?? 0
   return [
     { no: 1, label: "Lệnh đầu có kế hoạch", done: progress?.task_1_done_at != null, progressText: "" },
@@ -183,15 +184,9 @@ function khoi4Tasks(progress: Cap1Progress | null): Khoi4Task[] {
     },
     {
       no: 5,
-      label: "Xem lại danh mục",
-      done: progress?.task_5_done_at != null,
-      progressText: `${Math.min(soXem, TASK5_THRESHOLD)}/${TASK5_THRESHOLD}`,
-    },
-    {
-      no: 6,
       label: "10 lệnh",
-      done: progress?.task_6_done_at != null,
-      progressText: `${Math.min(soLenh, TASK6_THRESHOLD)}/${TASK6_THRESHOLD}`,
+      done: progress?.task_5_done_at != null,
+      progressText: `${Math.min(soLenh, TASK5_THRESHOLD)}/${TASK5_THRESHOLD}`,
     },
   ]
 }
@@ -199,7 +194,7 @@ function khoi4Tasks(progress: Cap1Progress | null): Khoi4Task[] {
 function computeKhoi4(progress: Cap1Progress | null): Cap1PortfolioAnalysisResult["khoi4"] {
   const tasks = khoi4Tasks(progress)
   const tasksDone = tasks.filter((t) => t.done).length
-  return { tasksDone, tasks, readyToGraduate: tasksDone === 6 }
+  return { tasksDone, tasks, readyToGraduate: tasksDone === CAP1_TOTAL_TASKS }
 }
 
 interface ReasonStat {

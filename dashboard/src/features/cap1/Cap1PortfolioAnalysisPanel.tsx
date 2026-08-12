@@ -1,37 +1,25 @@
-import { useEffect } from "react"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { useCap1Events } from "./Cap1Context"
-import { useCap1Progress, useCompleteCap1Task } from "./hooks"
+import { useCap1Progress } from "./hooks"
 import { useCap1TradeLog } from "./tradeLog"
 import { Cap1PortfolioAnalysis } from "./Cap1PortfolioAnalysis"
-
-const NHIEM_VU_5 = 5
 
 /**
  * "Phân tích danh mục" right-sidebar panel (spec §7) — the `RightSidebar`
  * "cap1-analysis" panel case. Self-contained (mirrors `JourneyPanelCap1`):
- * feeds `Cap1PortfolioAnalysis` from `useCap1Progress` + `useCap1TradeLog`,
- * and drives nhiệm vụ ⑤ ("mở trang Phân tích danh mục 3 lần khác ngày") by
- * firing `PATCH /cap1/task {task_no: 5}` on EVERY mount — the backend itself
- * dedupes by distinct calendar day (`Cap1Service.record_portfolio_view`), so
- * the FE needs no local "already counted today" tracking; simply notifying
- * every time this panel opens is correct and idempotent.
+ * feeds `Cap1PortfolioAnalysis` from `useCap1Progress` + `useCap1TradeLog`.
+ *
+ * ★ KHÔNG có side effect nào lúc mount (giống Cấp 2/3/4/5). Bản trước bắn
+ * `PATCH /cap1/task {task_no: 5}` mỗi lần mở để đếm "xem lại danh mục 3 lần
+ * khác ngày" — nhiệm vụ đó đã bị bỏ khỏi hành trình, và ⑤ bây giờ là «10 lệnh
+ * Thực chiến» (server tự suy ra từ `so_lenh_thuc_chien`). Gọi lại chỉ là một
+ * lần tính lại vô nghĩa, nên đừng dựng lại.
  */
 export function Cap1PortfolioAnalysisPanel() {
   const { isCap1Active } = useCap1Events()
   const { data: progress } = useCap1Progress(isCap1Active)
   const { trades } = useCap1TradeLog()
-  const markTask = useCompleteCap1Task()
   const { setActivePanel } = useSidebar()
-
-  useEffect(() => {
-    if (!isCap1Active) return
-    markTask.mutate(NHIEM_VU_5)
-    // Only re-fire if the panel is re-mounted (isCap1Active flips) — NOT on
-    // every `markTask` identity change (a fresh mutation object each render
-    // would otherwise refire this on every re-render).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCap1Active])
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-[var(--color-bg-1)]">

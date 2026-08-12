@@ -44,7 +44,7 @@ export const cap1Api = {
     return unwrap(res as never) as OrderKetso
   },
 
-  /** POST /cap1/graduate — only succeeds when 6/6 nhiệm vụ are done. */
+  /** POST /cap1/graduate — only succeeds when 5/5 nhiệm vụ are done. */
   graduate: async (): Promise<Cap1Progress> => {
     const res = await api.post("cap1/graduate").json<unknown>()
     return unwrap(res as never) as Cap1Progress

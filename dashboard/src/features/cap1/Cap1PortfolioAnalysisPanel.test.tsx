@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 import type { Cap1Progress } from "./types"
 
+// ★ `markTaskMutate` cố tình GIỮ LẠI dù panel không còn gọi: nó là cái bẫy để
+// test bên dưới chứng minh KHÔNG có `PATCH /cap1/task` nào bị bắn lúc mount.
 const { useCap1ProgressMock, useCap1EventsMock, useCap1TradeLogMock, markTaskMutate } = vi.hoisted(
   () => ({
     useCap1ProgressMock: vi.fn(),
@@ -40,10 +42,8 @@ function makeProgress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
     task_3_done_at: null,
     task_4_done_at: null,
     task_5_done_at: null,
-    task_6_done_at: null,
     so_ly_do_da_dung: 0,
     so_lenh_ly_do_ung_ho: 0,
-    so_lan_xem_danh_muc: 0,
     so_lenh_thuc_chien: 0,
     graduated_at: null,
     time_to_graduate_hours: null,
@@ -71,19 +71,29 @@ describe("Cap1PortfolioAnalysisPanel", () => {
     expect(screen.getByTestId("cap1-portfolio-analysis")).toBeInTheDocument()
   })
 
-  it("bumps nhiệm vụ ⑤ (PATCH /cap1/task {task_no: 5}) once on mount", () => {
+  // ★★ Nhiệm vụ «Xem lại danh mục — mở Phân tích danh mục 3 lần khác ngày» đã
+  // bị bỏ khỏi hành trình Cấp 1, và ⑤ bây giờ là «10 lệnh Thực chiến» mà server
+  // tự suy ra từ `so_lenh_thuc_chien`. Mở panel này KHÔNG được bắn
+  // `PATCH /cap1/task` nữa — dưới mô hình mới nó chỉ là một lần tính lại vô
+  // nghĩa (và với `task_no: 5` thì còn là gửi sai ý nghĩa nhiệm vụ).
+  it("★ fires NO PATCH /cap1/task on mount", () => {
     render(
       <SidebarProvider>
         <Cap1PortfolioAnalysisPanel />
       </SidebarProvider>,
     )
-    expect(markTaskMutate).toHaveBeenCalledTimes(1)
-    expect(markTaskMutate).toHaveBeenCalledWith(5)
+    expect(markTaskMutate).not.toHaveBeenCalled()
   })
 
-  it("does NOT bump nhiệm vụ ⑤ when isCap1Active is false (defensive — should be unreachable outside Cấp 1)", () => {
+  it("★ still fires nothing on a re-render / when isCap1Active flips on", () => {
     useCap1EventsMock.mockReturnValue({ isCap1Active: false })
-    render(
+    const { rerender } = render(
+      <SidebarProvider>
+        <Cap1PortfolioAnalysisPanel />
+      </SidebarProvider>,
+    )
+    useCap1EventsMock.mockReturnValue({ isCap1Active: true })
+    rerender(
       <SidebarProvider>
         <Cap1PortfolioAnalysisPanel />
       </SidebarProvider>,

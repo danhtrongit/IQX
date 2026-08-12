@@ -20,15 +20,13 @@ export interface Cap1Progress {
   task_2_done_at: string | null
   task_3_done_at: string | null
   task_4_done_at: string | null
+  /** ⑤ «10 lệnh Thực chiến» — auto-derived from `so_lenh_thuc_chien >= 10`. */
   task_5_done_at: string | null
-  task_6_done_at: string | null
   /** ③ làm quen 5 lý do — 0..5 distinct `lyDo` used so far. */
   so_ly_do_da_dung: number
   /** ④ chọn lý do có cơ sở — count of orders whose `trangThai_luc_dat` was `ung_ho`. */
   so_lenh_ly_do_ung_ho: number
-  /** ⑤ xem lại danh mục — distinct-day opens of Phân tích danh mục. */
-  so_lan_xem_danh_muc: number
-  /** ⑥ tổng số lệnh Thực chiến. */
+  /** ⑤ tổng số lệnh Thực chiến. */
   so_lenh_thuc_chien: number
   graduated_at: string | null
   time_to_graduate_hours: number | null
@@ -110,9 +108,15 @@ export function isKehoachValid(lyDo: LyDo | null, vungMua: number | null): boole
 }
 
 /**
- * How many of the 6 Cấp 1 tasks are complete (mirrors `cap0/types.ts`'s
+ * How many of the 5 Cấp 1 tasks are complete (mirrors `cap0/types.ts`'s
  * `countTasksDone`) — used by `JourneyPanelCap1` (ring progress + checklist
- * header "x/6") and `GraduationModalCap1` (`isGraduationReadyCap1`).
+ * header "x/5") and `GraduationModalCap1` (`isGraduationReadyCap1`).
+ *
+ * ★ Hành trình Cấp 1 rút từ 6 xuống 5 nhiệm vụ (mockup
+ * `iqx-cap1-hanhtrinh.html`): «Xem lại danh mục — mở Phân tích danh mục 3 lần
+ * khác ngày» bị bỏ hẳn, «10 lệnh Thực chiến» dời từ ⑥ về ⑤. Một wire shape cũ
+ * còn sót `task_6_done_at` KHÔNG được cộng vào đây — nó đã không còn là nhiệm
+ * vụ (đúng bài học `cap0/types.ts` đã ghi cho lần rút nhiệm vụ của Cấp 0).
  */
 export function countCap1TasksDone(progress: Cap1Progress | null | undefined): number {
   if (!progress) return 0
@@ -123,7 +127,6 @@ export function countCap1TasksDone(progress: Cap1Progress | null | undefined): n
       progress.task_3_done_at,
       progress.task_4_done_at,
       progress.task_5_done_at,
-      progress.task_6_done_at,
     ].filter((t) => t != null).length
   )
 }

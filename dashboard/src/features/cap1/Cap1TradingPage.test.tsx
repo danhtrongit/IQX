@@ -118,10 +118,8 @@ function fakeProgress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
     task_3_done_at: null,
     task_4_done_at: null,
     task_5_done_at: null,
-    task_6_done_at: null,
     so_ly_do_da_dung: 0,
     so_lenh_ly_do_ung_ho: 0,
-    so_lan_xem_danh_muc: 0,
     so_lenh_thuc_chien: 0,
     graduated_at: null,
     time_to_graduate_hours: null,
@@ -212,7 +210,7 @@ describe("Cap1TradingPage", () => {
     )
   })
 
-  it("mounts GraduationModalCap1 (hidden until 6/6 nhiệm vụ)", () => {
+  it("mounts GraduationModalCap1 (hidden until 5/5 nhiệm vụ)", () => {
     renderCap1(<Cap1TradingPage />)
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
 
@@ -223,7 +221,6 @@ describe("Cap1TradingPage", () => {
         task_3_done_at: "t",
         task_4_done_at: "t",
         task_5_done_at: "t",
-        task_6_done_at: "t",
         so_lenh_thuc_chien: 10,
       }),
     })

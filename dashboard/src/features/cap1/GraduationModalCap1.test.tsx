@@ -71,10 +71,8 @@ function makeProgress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
     task_3_done_at: null,
     task_4_done_at: null,
     task_5_done_at: null,
-    task_6_done_at: null,
     so_ly_do_da_dung: 0,
     so_lenh_ly_do_ung_ho: 0,
-    so_lan_xem_danh_muc: 0,
     so_lenh_thuc_chien: 0,
     graduated_at: null,
     time_to_graduate_hours: null,
@@ -89,7 +87,6 @@ function readyProgress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
     task_3_done_at: "t",
     task_4_done_at: "t",
     task_5_done_at: "t",
-    task_6_done_at: "t",
     so_lenh_thuc_chien: 10,
     ...overrides,
   })
@@ -101,12 +98,23 @@ describe("isGraduationReadyCap1", () => {
     expect(isGraduationReadyCap1(undefined)).toBe(false)
   })
 
-  it("is false when fewer than 6/6 tasks are done", () => {
-    expect(isGraduationReadyCap1(readyProgress({ task_6_done_at: null }))).toBe(false)
+  it("is false when fewer than 5/5 tasks are done", () => {
+    expect(isGraduationReadyCap1(readyProgress({ task_5_done_at: null }))).toBe(false)
+    expect(isGraduationReadyCap1(readyProgress({ task_4_done_at: null }))).toBe(false)
   })
 
-  it("is true once 6/6 tasks are done", () => {
+  it("is true once 5/5 tasks are done", () => {
     expect(isGraduationReadyCap1(readyProgress())).toBe(true)
+  })
+
+  // ★ Cùng cái bẫy `cap0/types.ts` đã ghi: một wire shape cũ còn sót
+  // `task_6_done_at` không được tính là nhiệm vụ thứ 6 — hành trình chỉ còn 5.
+  it("★ ignores a leftover task_6_done_at from the old 6-nhiệm-vụ wire shape", () => {
+    const stale = {
+      ...readyProgress({ task_5_done_at: null }),
+      task_6_done_at: "t",
+    } as unknown as Cap1Progress
+    expect(isGraduationReadyCap1(stale)).toBe(false)
   })
 
   it("is false once already graduated — a one-way trip, doesn't re-open", () => {
@@ -130,7 +138,7 @@ describe("GraduationModalCap1", () => {
     flags.CAP_2_PLUS_ENABLED = false
   })
 
-  it("does not render when 6/6 isn't met", () => {
+  it("does not render when 5/5 isn't met", () => {
     useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
     render(<GraduationModalCap1 />)
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
@@ -143,11 +151,17 @@ describe("GraduationModalCap1", () => {
     // Header
     expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
     expect(screen.getByText("CẤP 1 · HỌC VIỆC")).toBeInTheDocument()
-    expect(screen.getByText("6/6 nhiệm vụ · 10 lệnh Thực chiến")).toBeInTheDocument()
+    expect(screen.getByText("5/5 nhiệm vụ · 10 lệnh Thực chiến")).toBeInTheDocument()
 
     // Khối 1 — Ghi nhận
     expect(screen.getByText(/Bạn đã đi qua 10 lệnh Thực chiến đầu tiên/)).toBeInTheDocument()
     expect(screen.getByText("Bạn không còn vào lệnh cảm tính.")).toBeInTheDocument()
+
+    // ★ Khối 1 không được ghi công nhiệm vụ đã bị bỏ («Xem lại danh mục» —
+    // đúng lỗi màn tốt nghiệp Cấp 0 từng mắc).
+    expect(screen.getByTestId("cap1-grad-khoi1").textContent).not.toMatch(
+      /[Xx]em lại danh mục|nhìn lại danh mục/,
+    )
 
     // Khối 2 — Định vị
     expect(screen.getByText(/Nhưng biết mua thôi chưa đủ/)).toBeInTheDocument()
@@ -198,7 +212,7 @@ describe("GraduationModalCap1", () => {
 
   // ── ★★ CẤP 2 TẠM TẮT ★★ ───────────────────────────────────────────────────
   // Modal này `closable={false}` và chỉ tự đóng khi `graduated_at` có giá trị,
-  // nên một nút `disabled` sẽ NHỐT VĨNH VIỄN mọi user đã xong 6/6 (lỗi đã phải
+  // nên một nút `disabled` sẽ NHỐT VĨNH VIỄN mọi user đã xong 5/5 (lỗi đã phải
   // sửa 2 lần trên codebase này). Nút PHẢI bấm được, PHẢI ghi tốt nghiệp, và
   // chỉ nói thẳng "sắp ra mắt".
   it("★ the CTA says «sắp ra mắt» right on the button", () => {
@@ -207,7 +221,7 @@ describe("GraduationModalCap1", () => {
     expect(screen.getByTestId("cap1-grad-cta")).toHaveTextContent(/sắp ra mắt/)
   })
 
-  it("★ the CTA is NOT disabled — a disabled button would trap every 6/6 user in a closable={false} modal", () => {
+  it("★ the CTA is NOT disabled — a disabled button would trap every 5/5 user in a closable={false} modal", () => {
     useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap1 />)
     const cta = screen.getByTestId("cap1-grad-cta")

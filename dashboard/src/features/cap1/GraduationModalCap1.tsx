@@ -21,13 +21,13 @@ import { countCap1TasksDone, type Cap1Progress } from "./types"
 //      thay cho toast `Message.info("… sắp ra mắt …")` bên dưới.
 
 /**
- * Điều kiện mở màn tốt nghiệp Cấp 1 (spec §3): 6/6 nhiệm vụ, chưa từng tốt
+ * Điều kiện mở màn tốt nghiệp Cấp 1 (spec §3): 5/5 nhiệm vụ, chưa từng tốt
  * nghiệp (một chiều — không mở lại một khi `graduated_at` đã có, mirrors
  * `cap0/GraduationModal.tsx#isGraduationReady`).
  */
 export function isGraduationReadyCap1(progress: Cap1Progress | null | undefined): boolean {
   if (!progress || progress.graduated_at) return false
-  return countCap1TasksDone(progress) >= 6
+  return countCap1TasksDone(progress) >= 5
 }
 
 // Verbatim spec §3 copy — `**bold**` markers kept for the inline-bold renderer
@@ -71,7 +71,7 @@ function renderInlineBold(text: string) {
  * ★ **CẤP 2 TẠM TẮT → nút KHÔNG điều hướng đi đâu**, và nói thẳng "sắp ra mắt"
  * ngay trên nút. Nhưng nút vẫn PHẢI bấm được và vẫn ghi tốt nghiệp về server:
  * modal này `closable={false}` + `visible = isGraduationReadyCap1(...)`, nên
- * một nút `disabled` sẽ **nhốt VĨNH VIỄN** mọi user đã xong 6/6 trong một màn
+ * một nút `disabled` sẽ **nhốt VĨNH VIỄN** mọi user đã xong 5/5 trong một màn
  * không có lối ra — đúng lỗi đã phải sửa hai lần trên codebase này. Đây chính
  * là pattern trung thực mà `GraduationModalCap6`/`GraduationModalCap7` đã dùng
  * trước khi cấp kế tiếp lên sóng. Không cần gọi navigation: modal này chỉ hiện
@@ -115,13 +115,19 @@ export function GraduationModalCap1() {
       <div className="cap0-grad-header">
         <div className="cap0-grad-tag">HOÀN THÀNH</div>
         <h2 className="cap0-display cap0-grad-title">CẤP 1 · HỌC VIỆC</h2>
-        <div className="cap0-grad-sub">6/6 nhiệm vụ · 10 lệnh Thực chiến</div>
+        <div className="cap0-grad-sub">5/5 nhiệm vụ · 10 lệnh Thực chiến</div>
         <div className="cap0-grad-badge-wrap">
           <Badge n={level.n} color={level.color} fill={1} size={120} glow />
         </div>
       </div>
 
-      <div className="cap0-grad-block">{renderInlineBold(BLOCK_1)}</div>
+      {/* Khối 1 — Ghi nhận. NGUYÊN VĂN spec §3, và may thay nó chỉ ghi công
+          ①③④⑤ (kế hoạch · 5 lý do · 3 lệnh ✅ · 10 lệnh) — KHÔNG có câu nào
+          khen "xem lại danh mục", nhiệm vụ vừa bị bỏ. Nếu sau này sửa câu này,
+          giữ nguyên luật đó: màn tốt nghiệp không được ghi công việc không làm. */}
+      <div className="cap0-grad-block" data-testid="cap1-grad-khoi1">
+        {renderInlineBold(BLOCK_1)}
+      </div>
       <div className="cap0-grad-block">{renderInlineBold(BLOCK_2)}</div>
       <div className="cap0-grad-block cap1-grad-block--cap2" data-testid="cap1-grad-khoi3">
         {renderInlineBold(CAP_2_PLUS_ENABLED ? BLOCK_3 : BLOCK_3_CAP2_CHUA_MO)}
@@ -130,7 +136,7 @@ export function GraduationModalCap1() {
       {/* ★ KHÔNG bao giờ `disabled` như một trạng thái "sắp ra mắt" (xem
           doc-comment ở trên): modal này `closable={false}` và chỉ unmount khi
           có `graduated_at`, nên một nút tắt cứng sẽ NHỐT VĨNH VIỄN mọi user
-          đã xong 6/6. Nhưng `graduate.isPending` thì VẪN chặn: TanStack đưa
+          đã xong 5/5. Nhưng `graduate.isPending` thì VẪN chặn: TanStack đưa
           nó về `false` cả khi mutation lỗi, nên nó chỉ khoá trong lúc request
           đang bay — đúng như Cấp 6/7 — và nếu không có nó thì double-click
           bắn hai lần `POST /cap1/graduate`. */}

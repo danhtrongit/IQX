@@ -25,7 +25,7 @@
  *     `data-testid="cap1-journey-goal"`) quay về câu "… lên Cấp 2 «Kỷ luật» …
  *     Cấp 2 thêm cắt lỗ/chốt lời + sổ lệnh".** Đây là trạng thái CUỐI mà một
  *     người đã tốt nghiệp Cấp 1 nhìn thấy (modal tốt nghiệp unmount xong là về
- *     đúng màn này với checklist 6/6) — nên khi cờ còn `false` nó KHÔNG được
+ *     đúng màn này với checklist 5/5) — nên khi cờ còn `false` nó KHÔNG được
  *     hứa một cấp chưa tồn tại.
  *
  * Test cho cả chuỗi Cấp 2-8 vẫn còn nguyên trong `DauTruongPage.test.tsx` dưới

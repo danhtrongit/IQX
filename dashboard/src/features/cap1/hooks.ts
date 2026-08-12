@@ -39,7 +39,16 @@ export function useEnterCap1() {
   })
 }
 
-/** PATCH /cap1/task — nhiệm vụ ⑤'s view-log (idempotent recompute). */
+/**
+ * PATCH /cap1/task {task_no: 1..5} — idempotent server-side recompute of one
+ * nhiệm vụ.
+ *
+ * ★ Không còn caller nào trong Cấp 1: cả 5 nhiệm vụ đều do server tự suy ra từ
+ * hành vi đặt/bán lệnh (`Cap1PortfolioAnalysisPanel` từng bắn `task_no: 5` cho
+ * nhiệm vụ «Xem lại danh mục» nay đã bỏ). Hook vẫn ở đây vì endpoint còn sống
+ * và Cấp 2-8 đều giữ một hook y hệt — đừng nối nó lại vào panel nào nếu không
+ * có nhiệm vụ nào thật sự cần user bấm.
+ */
 export function useCompleteCap1Task() {
   const invalidate = useInvalidateCap1()
   return useMutation<Cap1Progress, unknown, number>({
@@ -66,7 +75,7 @@ export function useRecordKetso() {
   })
 }
 
-/** POST /cap1/graduate — graduate to Cấp 2 (only when 6/6 nhiệm vụ done). */
+/** POST /cap1/graduate — graduate to Cấp 2 (only when 5/5 nhiệm vụ done). */
 export function useGraduateCap1() {
   const invalidate = useInvalidateCap1()
   return useMutation<Cap1Progress, unknown, void>({

@@ -24,14 +24,18 @@
   background: var(--bg2);
 }
 
-.cap1-checklist-no {
-  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
-  color: var(--t3);
-  margin-right: 5px;
-}
+/* ★ Dòng ĐÃ XONG của Cấp 1 chỉ mờ đi (`opacity`), KHÔNG gạch ngang tên nhiệm
+   vụ — mockup `iqx-cap1-hanhtrinh.html` chỉ có `.task.done { opacity:.55 }`.
+   Luật gạch ngang nằm ở `.cap0-checklist-item--done .cap0-checklist-name`
+   trong `cap0.css` dùng CHUNG, nên phải gỡ ở đây bằng một móc riêng của Cấp 1
+   thay vì sửa file chung.
 
-.cap1-checklist-item--active .cap1-checklist-no {
-  color: inherit;
+   GHI CHÚ cho người sờ tới `cap0.css`: mockup HIỆN TẠI của Cấp 0
+   (`iqx-cap0-hanhtrinh.html`) cũng chỉ có `opacity:.55`, không gạch ngang —
+   nghĩa là luật kia đang sai với CẢ HAI cấp. Khi chủ sở hữu Cấp 0 gỡ nó ở file
+   chung, khối này thành no-op và xoá được. */
+.cap1-checklist-item.cap0-checklist-item--done .cap0-checklist-name {
+  text-decoration: none;
 }
 
 .cap1-coverage {

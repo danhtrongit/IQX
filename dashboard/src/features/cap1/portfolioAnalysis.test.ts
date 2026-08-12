@@ -26,10 +26,8 @@ function progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
     task_3_done_at: null,
     task_4_done_at: null,
     task_5_done_at: null,
-    task_6_done_at: null,
     so_ly_do_da_dung: 2,
     so_lenh_ly_do_ung_ho: 1,
-    so_lan_xem_danh_muc: 0,
     so_lenh_thuc_chien: 2,
     graduated_at: null,
     time_to_graduate_hours: null,
@@ -165,27 +163,29 @@ describe("computeCap1PortfolioAnalysis — Khối 3 độ phủ + lý do có cơ
   })
 })
 
-describe("computeCap1PortfolioAnalysis — Khối 4 tiến trình 6 nhiệm vụ", () => {
-  it("counts tasks done from progress and flags ready-to-graduate at 6/6", () => {
+describe("computeCap1PortfolioAnalysis — Khối 4 tiến trình 5 nhiệm vụ", () => {
+  it("counts tasks done from progress and flags ready-to-graduate at 5/5", () => {
     const result = computeCap1PortfolioAnalysis([], progress())
     expect(result.khoi4.tasksDone).toBe(2)
     expect(result.khoi4.readyToGraduate).toBe(false)
-    expect(result.khoi4.tasks).toHaveLength(6)
+    expect(result.khoi4.tasks).toHaveLength(5)
     expect(result.khoi4.tasks[0]).toMatchObject({ no: 1, done: true })
     expect(result.khoi4.tasks[2]).toMatchObject({ no: 3, done: false })
+    // ★ ⑤ là «10 lệnh Thực chiến» (nhiệm vụ ⑥ cũ) — «Xem lại danh mục» đã bị bỏ.
+    expect(result.khoi4.tasks[4]).toMatchObject({ no: 5, label: "10 lệnh", progressText: "2/10" })
+    expect(result.khoi4.tasks.map((t) => t.label)).not.toContain("Xem lại danh mục")
   })
 
-  it("ready to graduate once 6/6 tasks are done", () => {
+  it("ready to graduate once 5/5 tasks are done", () => {
     const p = progress({
       task_1_done_at: "x",
       task_2_done_at: "x",
       task_3_done_at: "x",
       task_4_done_at: "x",
       task_5_done_at: "x",
-      task_6_done_at: "x",
     })
     const result = computeCap1PortfolioAnalysis([], p)
-    expect(result.khoi4.tasksDone).toBe(6)
+    expect(result.khoi4.tasksDone).toBe(5)
     expect(result.khoi4.readyToGraduate).toBe(true)
   })
 })

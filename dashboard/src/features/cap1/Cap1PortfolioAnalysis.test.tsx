@@ -16,10 +16,8 @@ function progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
     task_3_done_at: null,
     task_4_done_at: "2026-04-01T00:00:00Z",
     task_5_done_at: null,
-    task_6_done_at: null,
     so_ly_do_da_dung: 3,
     so_lenh_ly_do_ung_ho: 3,
-    so_lan_xem_danh_muc: 2,
     so_lenh_thuc_chien: 10,
     graduated_at: null,
     time_to_graduate_hours: null,
@@ -46,7 +44,7 @@ describe("Cap1PortfolioAnalysis (spec §7 — 4 khối)", () => {
     expect(screen.getByText("① Hồ sơ tổng quan")).toBeInTheDocument()
     expect(screen.getByText("② Thắng / thua theo 5 lý do")).toBeInTheDocument()
     expect(screen.getByText("③ Độ phủ 5 lý do + Chọn lý do có cơ sở")).toBeInTheDocument()
-    expect(screen.getByText("④ Tiến trình 6 nhiệm vụ")).toBeInTheDocument()
+    expect(screen.getByText("④ Tiến trình 5 nhiệm vụ")).toBeInTheDocument()
     expect(screen.getByText("🔍 Mẫu hệ thống phát hiện (về lý do)")).toBeInTheDocument()
   })
 
@@ -70,11 +68,32 @@ describe("Cap1PortfolioAnalysis (spec §7 — 4 khối)", () => {
     expect(screen.getByText(/3 lãi \/ 2 lỗ/)).toBeInTheDocument()
   })
 
-  it("renders Khối 4 tiến trình 6 nhiệm vụ with the done/pending state from progress", () => {
+  it("renders Khối 4 tiến trình 5 nhiệm vụ with the done/pending state from progress", () => {
     render(<Cap1PortfolioAnalysis progress={progress()} trades={[]} />)
-    expect(screen.getByText("④ Tiến trình 6 nhiệm vụ")).toBeInTheDocument()
+    expect(screen.getByText("④ Tiến trình 5 nhiệm vụ")).toBeInTheDocument()
     expect(screen.getByText(/Lệnh đầu có kế hoạch/)).toBeInTheDocument()
     expect(screen.getByText(/10 lệnh/)).toBeInTheDocument()
+    // 5 dòng — nhiệm vụ «Xem lại danh mục» đã bị bỏ khỏi khối này.
+    expect(screen.getByTestId("cap1-pa-task-5")).toBeInTheDocument()
+    expect(screen.queryByTestId("cap1-pa-task-6")).not.toBeInTheDocument()
+    expect(screen.queryByText(/Xem lại danh mục/)).not.toBeInTheDocument()
+    expect(screen.getByText("3/5")).toBeInTheDocument()
+  })
+
+  // ★ Dòng tổng kết cuối Khối 4 (spec §7 "Còn 2 lý do · 1 lần xem lại · 3 lệnh
+  // nữa…") không được đòi user cái "lần xem lại" mà hành trình không còn tính.
+  it("★ the Khối 4 foot line no longer asks for «lần xem lại»", () => {
+    // spec §7 nêu ví dụ "Còn 2 lý do · 1 lần xem lại · 3 lệnh nữa để lên Cấp 2."
+    // — cùng dữ liệu đó, vế "1 lần xem lại" phải biến mất.
+    render(
+      <Cap1PortfolioAnalysis
+        progress={progress({ so_ly_do_da_dung: 3, so_lenh_thuc_chien: 7 })}
+        trades={[]}
+      />,
+    )
+    const foot = screen.getByText(/^Còn .* để lên Cấp 2\.$/)
+    expect(foot).toHaveTextContent("Còn 2 lý do · 3 lệnh nữa để lên Cấp 2.")
+    expect(foot).not.toHaveTextContent(/xem lại/)
   })
 
   it("<5 lệnh: hides Khối 2 and shows the fallback note", () => {
@@ -147,14 +166,13 @@ describe("Cap1PortfolioAnalysis (spec §7 — 4 khối)", () => {
     expect(screen.getByText(/lệnh nữa để hệ thống tìm mẫu riêng của bạn/)).toBeInTheDocument()
   })
 
-  it("shows the graduation CTA once 6/6 nhiệm vụ are done", () => {
+  it("shows the graduation CTA once 5/5 nhiệm vụ are done", () => {
     const p = progress({
       task_1_done_at: "x",
       task_2_done_at: "x",
       task_3_done_at: "x",
       task_4_done_at: "x",
       task_5_done_at: "x",
-      task_6_done_at: "x",
     })
     render(<Cap1PortfolioAnalysis progress={p} trades={[]} />)
     expect(screen.getByText(/ĐỦ điều kiện lên Cấp 2/)).toBeInTheDocument()

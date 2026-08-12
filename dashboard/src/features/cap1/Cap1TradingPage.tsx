@@ -186,7 +186,7 @@ function Cap1Terminal() {
       />
 
       {/* Màn tốt nghiệp Cấp 1 (spec §3) — self-contained: opens itself once
-          progress shows 6/6, closes itself once `graduated_at` comes back. */}
+          progress shows 5/5, closes itself once `graduated_at` comes back. */}
       <GraduationModalCap1 />
 
       {/* AI Insight symbol picker — identical to Cap0TradingPage's. */}

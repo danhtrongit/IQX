@@ -1,5 +1,6 @@
 import { cn } from "@/shared/lib/cn"
 import {
+  CAP1_TOTAL_TASKS,
   computeCap1PortfolioAnalysis,
   type Khoi4Task,
   type MauPhatHien,
@@ -52,7 +53,7 @@ const KHOI_TITLE = {
   khoi1: "① Hồ sơ tổng quan",
   khoi2: "② Thắng / thua theo 5 lý do",
   khoi3: "③ Độ phủ 5 lý do + Chọn lý do có cơ sở",
-  khoi4: "④ Tiến trình 6 nhiệm vụ",
+  khoi4: "④ Tiến trình 5 nhiệm vụ",
   mau: "🔍 Mẫu hệ thống phát hiện (về lý do)",
 } as const
 
@@ -208,11 +209,14 @@ function Khoi3({
 }
 
 /**
- * spec §7 Khối 4 bottom line ("Còn 2 lý do · 1 lần xem lại · 3 lệnh nữa để
- * lên Cấp 2.") — only mentions the 3 COUNT-based nhiệm vụ (③⑤⑥), plus ①②
- * by name if either isn't done yet. Deliberately worded differently from
- * each task's own `progressText` (e.g. "3 lệnh nữa" not "10 lệnh") so this
- * summary line never duplicates a task row's exact text.
+ * spec §7 Khối 4 bottom line ("Còn 2 lý do · 3 lệnh nữa để lên Cấp 2.") — only
+ * mentions the 2 COUNT-based nhiệm vụ còn lại (③⑤), plus ①② by name if either
+ * isn't done yet. Deliberately worded differently from each task's own
+ * `progressText` (e.g. "3 lệnh nữa" not "10 lệnh") so this summary line never
+ * duplicates a task row's exact text.
+ *
+ * ★ Vế "· 1 lần xem lại" đã đi cùng nhiệm vụ «Xem lại danh mục» bị bỏ — dòng
+ * này không được đòi user một việc hành trình không còn tính nữa.
  */
 function khoi4SummaryLine(tasks: Khoi4Task[], progress: Cap1Progress | null): string | null {
   const done = (no: number) => tasks.find((t) => t.no === no)?.done ?? false
@@ -220,11 +224,9 @@ function khoi4SummaryLine(tasks: Khoi4Task[], progress: Cap1Progress | null): st
   if (!done(1)) parts.push("① lệnh đầu có kế hoạch")
   if (!done(2)) parts.push("② kết sổ đầu tiên")
   const soLyDoRemain = Math.max(0, 5 - (progress?.so_ly_do_da_dung ?? 0))
-  const soXemRemain = Math.max(0, 3 - (progress?.so_lan_xem_danh_muc ?? 0))
   const soLenhRemain = Math.max(0, 10 - (progress?.so_lenh_thuc_chien ?? 0))
   if (!done(3) && soLyDoRemain > 0) parts.push(`${soLyDoRemain} lý do`)
-  if (!done(5) && soXemRemain > 0) parts.push(`${soXemRemain} lần xem lại`)
-  if (!done(6) && soLenhRemain > 0) parts.push(`${soLenhRemain} lệnh nữa`)
+  if (!done(5) && soLenhRemain > 0) parts.push(`${soLenhRemain} lệnh nữa`)
   return parts.length > 0 ? `Còn ${parts.join(" · ")} để lên Cấp 2.` : null
 }
 
@@ -243,11 +245,11 @@ function Khoi4({
   return (
     <div className={CARD}>
       <div className={SECTION_HEADER}>{KHOI_TITLE.khoi4}</div>
-      <p className="text-[9.5px] text-[var(--color-text-3)]">{`${tasksDone}/6`}</p>
+      <p className="text-[9.5px] text-[var(--color-text-3)]">{`${tasksDone}/${CAP1_TOTAL_TASKS}`}</p>
       <ul className="space-y-1 text-xs text-[var(--color-text-1)]">
         {tasks.map((task) => (
           <li key={task.no} data-testid={`cap1-pa-task-${task.no}`}>
-            {task.done ? "✅" : "🔲"} {`①②③④⑤⑥`[task.no - 1]} {task.label}
+            {task.done ? "✅" : "🔲"} {`①②③④⑤`[task.no - 1]} {task.label}
             {task.progressText ? ` (${task.progressText})` : null}
           </li>
         ))}
