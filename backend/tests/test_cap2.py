@@ -88,9 +88,7 @@ async def _graduate_cap1(db_session, user_id) -> None:
         qty=100, price=21_000, trading_date=date(2026, 1, 8),
     )
     await cap1.record_ketso(user_id, sell.id)
-    await cap1.record_portfolio_view(user_id, as_of=date(2026, 1, 10))
-    await cap1.record_portfolio_view(user_id, as_of=date(2026, 1, 11))
-    await cap1.record_portfolio_view(user_id, as_of=date(2026, 1, 12))
+    # ⑤ «10 lệnh Thực chiến» is already satisfied by the 10 buys above.
     await cap1.graduate(user_id)
 
 
@@ -162,9 +160,7 @@ async def test_enter_requires_cap1_graduated(db_session, test_user):
         qty=100, price=21_000, trading_date=date(2026, 1, 8),
     )
     await cap1.record_ketso(test_user.id, sell.id)
-    await cap1.record_portfolio_view(test_user.id, as_of=date(2026, 1, 10))
-    await cap1.record_portfolio_view(test_user.id, as_of=date(2026, 1, 11))
-    await cap1.record_portfolio_view(test_user.id, as_of=date(2026, 1, 12))
+    # ⑤ «10 lệnh Thực chiến» is already satisfied by the 10 buys above.
     await cap1.graduate(test_user.id)
 
     progress = await svc.enter(test_user.id)

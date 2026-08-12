@@ -18,7 +18,12 @@ CamXucLiteral = Literal["binh_tinh", "so", "hoi_tiec", "khong_ro"]
 
 
 class Cap1ProgressOut(BaseModel):
-    """Cấp 1 progress state for the current user."""
+    """Cấp 1 progress state for the current user — **5 nhiệm vụ**.
+
+    ⑤ is «10 lệnh Thực chiến» (``so_lenh_thuc_chien``). The removed ⑤
+    («Xem lại danh mục») took ``task_6_done_at`` and ``so_lan_xem_danh_muc``
+    off the wire with it — see ``app.models.cap1.Cap1Progress``.
+    """
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -31,10 +36,8 @@ class Cap1ProgressOut(BaseModel):
     task_3_done_at: datetime | None = None
     task_4_done_at: datetime | None = None
     task_5_done_at: datetime | None = None
-    task_6_done_at: datetime | None = None
     so_ly_do_da_dung: int
     so_lenh_ly_do_ung_ho: int
-    so_lan_xem_danh_muc: int
     so_lenh_thuc_chien: int
     graduated_at: datetime | None = None
     time_to_graduate_hours: float | None = None

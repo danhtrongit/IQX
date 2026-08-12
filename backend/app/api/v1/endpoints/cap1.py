@@ -37,10 +37,11 @@ async def enter(user: CurrentUser, db: DBSession) -> Cap1ProgressOut:
 
 @router.patch("/task", response_model=Cap1ProgressOut)
 async def mark_task(body: TaskRequest, user: CurrentUser, db: DBSession) -> Cap1ProgressOut:
-    """Nhiệm vụ ⑤: ghi nhận 1 lần mở Phân tích danh mục (khác ngày mới tính).
+    """Kích hoạt tính lại tiến trình (idempotent, không tự đặt nhiệm vụ nào).
 
-    Các nhiệm vụ khác được suy ra từ order_kehoach/order_ketso — gọi endpoint
-    này với task_no khác chỉ kích hoạt tính lại (idempotent, không tự đặt).
+    Cả 5 nhiệm vụ đều được SUY RA từ order_kehoach/order_ketso/virtual_orders,
+    nên endpoint này không ghi nhận gì trực tiếp — nó chỉ chạy lại phép đếm.
+    ``task_no`` chỉ để hợp lệ hoá (1-5); mọi giá trị hợp lệ cho cùng kết quả.
     """
     svc = Cap1Service(db)
     return await svc.mark_task(user.id, body.task_no)
@@ -72,6 +73,6 @@ async def record_ketso(body: KetsoRequest, user: CurrentUser, db: DBSession) -> 
 
 @router.post("/graduate", response_model=Cap1ProgressOut)
 async def graduate(user: CurrentUser, db: DBSession) -> Cap1ProgressOut:
-    """Tốt nghiệp Cấp 1 — chỉ khi đủ 6/6 nhiệm vụ."""
+    """Tốt nghiệp Cấp 1 — chỉ khi đủ 5/5 nhiệm vụ."""
     svc = Cap1Service(db)
     return await svc.graduate(user.id)

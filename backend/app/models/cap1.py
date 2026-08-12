@@ -36,13 +36,12 @@ from __future__ import annotations
 
 import enum
 import uuid
-from datetime import date, datetime
+from datetime import datetime
 
 from sqlalchemy import (
     JSON,
     BigInteger,
     Boolean,
-    Date,
     DateTime,
     Enum,
     Float,
@@ -129,7 +128,16 @@ class CachKhoiLuong(enum.StrEnum):
 
 
 class Cap1Progress(UUIDMixin, TimestampMixin, Base):
-    """Per-user Cấp 1 onboarding progress. One row per user."""
+    """Per-user Cấp 1 onboarding progress. One row per user.
+
+    **5 nhiệm vụ**, all derived from source rows — see
+    ``app.services.cap1.service`` for the mapping. The level used to carry a
+    6th ("mở Phân tích danh mục 3 lần khác ngày", numbered ⑤) whose only
+    currency was a click; it was cut, and the old ⑥ «10 lệnh Thực chiến» took
+    the ⑤ slot (revision ``4d8e6b2a1c93``). Phân tích danh mục survives as a
+    TOOL of the level, just not as a scored task — which is why there is no
+    view counter or view-log column here any more.
+    """
 
     __tablename__ = "cap1_progress"
     __table_args__ = (UniqueConstraint("user_id", name="uq_cap1_progress_user_id"),)
@@ -148,17 +156,11 @@ class Cap1Progress(UUIDMixin, TimestampMixin, Base):
     task_3_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     task_4_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     task_5_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    task_6_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Recomputed counters (source of truth = order_kehoach/order_ketso/virtual_orders)
     so_ly_do_da_dung: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     so_lenh_ly_do_ung_ho: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
-    so_lan_xem_danh_muc: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     so_lenh_thuc_chien: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
-
-    # Bookkeeping only (not a spec field): last calendar day nhiệm vụ ⑤ was
-    # bumped, so repeated same-day views don't double-count.
-    last_danh_muc_view_date: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     graduated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     time_to_graduate_hours: Mapped[float | None] = mapped_column(Float, nullable=True)

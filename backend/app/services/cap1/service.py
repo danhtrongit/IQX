@@ -5,23 +5,26 @@ Cấp 1 is FREE and Thực chiến-only. This service owns ``cap1_progress``,
 (read-only here) for order/trade data — it does NOT touch the virtual-trading
 matching/settlement engine.
 
-Task counters (spec §2/§9) are **recomputed from source data** wherever a
-persistent per-lot log isn't part of the verbatim §9 schema:
+**5 nhiệm vụ.** All of them are **recomputed from source data** — there is no
+task in this level whose completion is asserted by the client:
   ① lệnh đầu có kế hoạch      — first ``order_kehoach`` row
   ② bán + Kết sổ đầu          — first ``order_ketso`` row
   ③ đủ 5 lý do (không cần khớp) — DISTINCT ``lyDo`` across the user's order_kehoach
   ④ ≥3 lệnh lý do ✅ Ủng hộ    — COUNT ``trangThai_luc_dat = 'ung_ho'``
-  ⑤ mở Phân tích danh mục 3 lần khác ngày — bumped by ``record_portfolio_view``
-    (no dedicated view-log table in §9, so the distinct-day dedupe is tracked
-    via ``Cap1Progress.last_danh_muc_view_date`` — an implementation detail,
-    not one of the spec's reported counters)
-  ⑥ 10 lệnh Thực chiến        — COUNT ``virtual_orders`` where mode='thuc_chien'
+  ⑤ 10 lệnh Thực chiến        — COUNT ``virtual_orders`` where mode='thuc_chien'
+
+⑤ used to be «mở Phân tích danh mục 3 lần khác ngày» — a task whose entire
+currency was a click, self-reported by the FE through ``PATCH /cap1/task`` and
+deduped per calendar day on a bookkeeping column. It was cut, and the old ⑥
+took its number (revision ``4d8e6b2a1c93``). Phân tích danh mục is still a tool
+of this level; it is simply no longer scored, so opening it writes nothing.
+That is what makes ``PATCH /cap1/task`` a pure recompute for every task_no now.
 """
 
 from __future__ import annotations
 
 import uuid
-from datetime import UTC, date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -40,13 +43,10 @@ from app.models.virtual_trading import OrderSide, OrderStatus, VirtualOrder
 from app.repositories.virtual_trading import VirtualTradingRepository
 from app.services.virtual_trading.settlement import is_trading_day
 
-_VN_TZ = timezone(timedelta(hours=7))
-
-_TASK_NOS = (1, 2, 3, 4, 5, 6)
+_TASK_NOS = (1, 2, 3, 4, 5)
 _TASK3_THRESHOLD = 5  # đủ 5/5 lý do
 _TASK4_THRESHOLD = 3  # ≥3 lệnh ✅ Ủng hộ
-_TASK5_THRESHOLD = 3  # ≥3 lần xem khác ngày
-_TASK6_THRESHOLD = 10  # ≥10 lệnh Thực chiến
+_TASK5_THRESHOLD = 10  # ≥10 lệnh Thực chiến
 
 
 class Cap1Service:
@@ -170,7 +170,7 @@ class Cap1Service:
         return kehoach
 
     async def _recompute_counters(self, user_id: uuid.UUID, progress: Cap1Progress) -> None:
-        """Recompute ③④⑥ from source rows (order_kehoach/virtual_orders)."""
+        """Recompute ③④⑤ from source rows (order_kehoach/virtual_orders)."""
         # ③ distinct lyDo used across the user's order_kehoach
         result = await self._session.execute(
             select(func.count(func.distinct(OrderKehoach.lyDo)))
@@ -192,7 +192,7 @@ class Cap1Service:
         )
         so_lenh_ly_do_ung_ho = int(result.scalar_one() or 0)
 
-        # ⑥ tổng lệnh Thực chiến đã khớp
+        # ⑤ tổng lệnh Thực chiến đã khớp
         result = await self._session.execute(
             select(func.count())
             .select_from(VirtualOrder)
@@ -213,8 +213,8 @@ class Cap1Service:
             progress.task_3_done_at = now
         if so_lenh_ly_do_ung_ho >= _TASK4_THRESHOLD and progress.task_4_done_at is None:
             progress.task_4_done_at = now
-        if so_lenh_thuc_chien >= _TASK6_THRESHOLD and progress.task_6_done_at is None:
-            progress.task_6_done_at = now
+        if so_lenh_thuc_chien >= _TASK5_THRESHOLD and progress.task_5_done_at is None:
+            progress.task_5_done_at = now
 
         await self._session.flush()
         await self._session.refresh(progress)
@@ -351,38 +351,12 @@ class Cap1Service:
 
         return ketso
 
-    # ── Nhiệm vụ ⑤ — Phân tích danh mục view log ─────
-
-    async def record_portfolio_view(
-        self, user_id: uuid.UUID, as_of: date | None = None
-    ) -> Cap1Progress:
-        """Bump nhiệm vụ ⑤'s counter — only once per distinct calendar day."""
-        progress = await self._get_progress_row(user_id)
-        if progress is None:
-            raise NotFoundError("tiến trình Cấp 1")
-
-        today = as_of or datetime.now(_VN_TZ).date()
-        if progress.last_danh_muc_view_date != today:
-            progress.last_danh_muc_view_date = today
-            progress.so_lan_xem_danh_muc += 1
-            if (
-                progress.so_lan_xem_danh_muc >= _TASK5_THRESHOLD
-                and progress.task_5_done_at is None
-            ):
-                progress.task_5_done_at = datetime.now(UTC)
-            await self._session.flush()
-            await self._session.refresh(progress)
-
-        return progress
-
     async def mark_task(self, user_id: uuid.UUID, task_no: int) -> Cap1Progress:
-        """PATCH /cap1/task — task 5 bumps the view log; other tasks are
-        derived from source data, so this just triggers a recompute pass."""
+        """PATCH /cap1/task — every nhiệm vụ is derived from source data, so
+        this only triggers a recompute pass. It never marks anything on the
+        client's say-so; ``task_no`` is validated and then discarded."""
         if task_no not in _TASK_NOS:
             raise BadRequestError("task_no không hợp lệ")
-
-        if task_no == 5:
-            return await self.record_portfolio_view(user_id)
 
         progress = await self._get_progress_row(user_id)
         if progress is None:
@@ -393,7 +367,7 @@ class Cap1Service:
     # ── Graduation ────────────────────────────────────
 
     async def graduate(self, user_id: uuid.UUID) -> Cap1Progress:
-        """Graduate Cấp 1 — only when all 6 nhiệm vụ are done."""
+        """Graduate Cấp 1 — only when all 5 nhiệm vụ are done."""
         progress = await self._get_progress_row(user_id)
         if progress is None:
             raise NotFoundError("tiến trình Cấp 1")
@@ -402,7 +376,7 @@ class Cap1Service:
             getattr(progress, f"task_{n}_done_at") is not None for n in _TASK_NOS
         )
         if not all_tasks_done:
-            raise ConflictError("Chưa hoàn thành đủ 6 nhiệm vụ Cấp 1")
+            raise ConflictError("Chưa hoàn thành đủ 5 nhiệm vụ Cấp 1")
 
         if progress.graduated_at is None:
             now = datetime.now(UTC)

@@ -351,8 +351,7 @@ async def test_enter_requires_cap4_graduated(db_session, test_user):
         trading_date=date(2026, 1, 8),
     )
     await cap1.record_ketso(test_user.id, sell.id)
-    for d in (10, 11, 12):
-        await cap1.record_portfolio_view(test_user.id, as_of=date(2026, 1, d))
+    # ⑤ «10 lệnh Thực chiến» is already satisfied by the 10 buys above.
     await cap1.graduate(test_user.id)
 
     # Cấp 2 — 20 round trips, 5 of them a clean cắt lỗ
