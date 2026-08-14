@@ -354,10 +354,11 @@ async def test_enter_requires_cap4_graduated(db_session, test_user):
     # ⑤ «10 lệnh Thực chiến» is already satisfied by the 10 buys above.
     await cap1.graduate(test_user.id)
 
-    # Cấp 2 — 20 round trips, 5 of them a clean cắt lỗ
+    # Cấp 2 — 2 nhiệm vụ song song: ① 10 lệnh có đặt cắt lỗ + chốt lời, ② 2 lần
+    # thực hiện đúng khi giá chạm mốc (lệnh 0 chốt lời đúng, lệnh 1 cắt lỗ đúng).
     await cap2.enter(test_user.id)
     day0 = date(2026, 2, 1)
-    for i in range(20):
+    for i in range(10):
         td = day0 + timedelta(days=i)
         buy = await _make_order(
             db_session, account.id, test_user.id, symbol=f"P{i}", trading_date=td
@@ -378,11 +379,11 @@ async def test_enter_requires_cap4_graduated(db_session, test_user):
             test_user.id,
             symbol=f"P{i}",
             side=OrderSide.SELL,
-            price=25_500 if i < 5 else 20_000,
+            price=25_500 if i == 0 else 20_000,
             trading_date=td,
         )
         await cap1.record_ketso(test_user.id, s.id)
-        await cap2.record_ketso(test_user.id, s.id, cham_sl_cat_dung_phien_ke=i < 5)
+        await cap2.record_ketso(test_user.id, s.id, cham_sl_cat_dung_phien_ke=(i == 1))
     await cap2.graduate(test_user.id)
 
     # Cấp 3

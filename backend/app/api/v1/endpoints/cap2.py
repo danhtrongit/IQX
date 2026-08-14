@@ -1,7 +1,15 @@
 """Cấp 2 «Kỷ luật» API — progress, enter, task, kế hoạch, kết sổ, điểm kỷ
 luật, graduate.
 
+Cấp 2 is **2 nhiệm vụ làm song song**: ① «10 lệnh Thực chiến có đặt cắt lỗ /
+chốt lời» and ② «Thực hiện đúng khi giá chạm mốc — 2 lần». Tốt nghiệp là 2/2.
+
 Cap 2 is FREE: all endpoints use ``CurrentUser`` (authenticated), NOT ``PremiumUser``.
+
+``GET /cap2/diem-ky-luat`` is no longer part of Cấp 2's own journey (the
+mockups drop điểm kỷ luật from Hành trình and Phân tích danh mục) but is kept
+mounted: Cấp 3 depends on the same computation server-side, and the Cấp 6/7
+trading pages still read this endpoint.
 """
 
 from __future__ import annotations
@@ -41,8 +49,8 @@ async def enter(user: CurrentUser, db: DBSession) -> Cap2ProgressOut:
 
 @router.patch("/task", response_model=Cap2ProgressOut)
 async def mark_task(body: TaskRequest, user: CurrentUser, db: DBSession) -> Cap2ProgressOut:
-    """Cả 5 nhiệm vụ đều được suy ra từ order_ketso — gọi endpoint này chỉ
-    kích hoạt tính lại (idempotent, không tự đặt)."""
+    """Cả 2 nhiệm vụ đều được suy ra từ kế hoạch/kết sổ — gọi endpoint này
+    chỉ kích hoạt tính lại (idempotent, không tự đặt)."""
     svc = Cap2Service(db)
     return await svc.mark_task(user.id, body.task_no)
 
@@ -65,7 +73,7 @@ async def record_kehoach(
 @router.post("/ketso", response_model=OrderKetsoOut)
 async def record_ketso(body: KetsoRequest, user: CurrentUser, db: DBSession) -> OrderKetsoOut:
     """Ghi 4 hành vi vi phạm kỷ luật (+ 3 đo lường) cho 1 lệnh đã kết sổ Cấp 1,
-    rồi tính lại chuỗi lệnh kỷ luật + 5 nhiệm vụ."""
+    rồi tính lại 2 nhiệm vụ."""
     svc = Cap2Service(db)
     return await svc.record_ketso(
         user.id,
@@ -94,6 +102,6 @@ async def get_diem_ky_luat(
 
 @router.post("/graduate", response_model=Cap2ProgressOut)
 async def graduate(user: CurrentUser, db: DBSession) -> Cap2ProgressOut:
-    """Tốt nghiệp Cấp 2 — chỉ khi đủ 5/5 nhiệm vụ."""
+    """Tốt nghiệp Cấp 2 — chỉ khi đủ 2/2 nhiệm vụ."""
     svc = Cap2Service(db)
     return await svc.graduate(user.id)

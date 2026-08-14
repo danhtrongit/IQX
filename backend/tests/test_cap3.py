@@ -153,20 +153,17 @@ async def _graduate_cap2(db_session, user_id) -> None:
     account = await vt_repo.get_account_by_user_id(user_id)
 
     day0 = date(2026, 2, 1)
-    # 5 clean round trips w/ cắt lỗ đúng + chốt lời đúng, satisfying ①②③④,
-    # then pad to 20 total with 0 further violations for ⑤ (mirrors
-    # test_cap2.py's test_graduate_requires_5_of_5 recipe exactly).
-    for i in range(5):
+    # Cấp 2 = 2 nhiệm vụ song song: ① 10 lệnh có đặt cắt lỗ + chốt lời, ② 2 lần
+    # thực hiện đúng khi giá chạm mốc. 10 round trips cover ①; the first two
+    # carry one chốt lời đúng and one cắt lỗ đúng, which covers ②.
+    for i in range(10):
         await _round_trip_cap2(
             db_session, cap1, cap2, account.id, user_id,
             symbol=f"P{i}", trading_date=day0 + timedelta(days=i),
-            buy_price=20_000, sell_price=25_500, chot_loi=25_000,
-            cham_sl_cat_dung_phien_ke=True,
-        )
-    for i in range(15):
-        await _round_trip_cap2(
-            db_session, cap1, cap2, account.id, user_id,
-            symbol=f"P{5 + i}", trading_date=day0 + timedelta(days=5 + i),
+            buy_price=20_000,
+            sell_price=25_500 if i == 0 else 20_000,
+            chot_loi=25_000,
+            cham_sl_cat_dung_phien_ke=(i == 1),
         )
     await cap2.graduate(user_id)
 

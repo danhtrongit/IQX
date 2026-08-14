@@ -1,5 +1,9 @@
 """Tests for the Cấp 2 «Kỷ luật» backend — progression, cắt lỗ/chốt lời, đo
-lường 4 vi phạm kỷ luật, chuỗi lệnh kỷ luật, điểm kỷ luật, 5 nhiệm vụ, graduation.
+lường 4 vi phạm kỷ luật, điểm kỷ luật, **2 nhiệm vụ song song**, graduation.
+
+The two nhiệm vụ are independent by design: ① «10 lệnh Thực chiến có đặt cắt
+lỗ / chốt lời» and ② «Thực hiện đúng khi giá chạm mốc — 2 lần». Either can
+finish first, and both directions are pinned by a test.
 
 Mirrors ``tests/test_cap1.py``'s style. Uses the ``test_user``/``db_session``
 fixtures from ``tests/conftest.py``.
@@ -106,21 +110,26 @@ async def _round_trip(
     phuong_phap_sl_tp: str = "bien_do_dao_dong",
     cat_lo: int = 18_000,
     chot_loi: int = 25_000,
+    with_sl_tp: bool = True,
     **vi_pham_flags,
 ):
     """Full Cấp 2 round trip: buy w/ kế hoạch (Cấp1 + Cấp2 SL/TP) → sell w/
-    kết sổ (Cấp1 pnl + Cấp2 vi phạm flags). Returns the (kehoach, ketso) rows."""
+    kết sổ (Cấp1 pnl + Cấp2 vi phạm flags). Returns the (kehoach, ketso) rows.
+
+    ``with_sl_tp=False`` stops after Cấp 1's kế hoạch — a plan with no cắt lỗ /
+    chốt lời, which is what nhiệm vụ ① must refuse to count."""
     buy = await _make_order(
         db_session, account_id, user_id, symbol=symbol, side=OrderSide.BUY,
         price=buy_price, trading_date=trading_date,
     )
-    await cap1.record_kehoach(
+    kehoach = await cap1.record_kehoach(
         user_id, buy.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho", vung_mua=buy_price,
     )
-    kehoach = await cap2.record_kehoach(
-        user_id, buy.id,
-        phuong_phap_sl_tp=phuong_phap_sl_tp, cat_lo=cat_lo, chot_loi=chot_loi,
-    )
+    if with_sl_tp:
+        kehoach = await cap2.record_kehoach(
+            user_id, buy.id,
+            phuong_phap_sl_tp=phuong_phap_sl_tp, cat_lo=cat_lo, chot_loi=chot_loi,
+        )
     sell = await _make_order(
         db_session, account_id, user_id, symbol=symbol, side=OrderSide.SELL,
         price=sell_price, trading_date=trading_date,
@@ -166,7 +175,8 @@ async def test_enter_requires_cap1_graduated(db_session, test_user):
     progress = await svc.enter(test_user.id)
     assert progress.user_id == test_user.id
     assert progress.graduated_at is None
-    assert progress.chuoi_current == 0
+    assert progress.so_lenh_co_cl_tp == 0
+    assert progress.so_lan_thuc_hien_dung == 0
 
     # idempotent
     progress2 = await svc.enter(test_user.id)
@@ -286,7 +296,8 @@ async def test_record_ketso_requires_existing_cap1_row_and_persists_flags(db_ses
 
 
 @pytest.mark.asyncio
-async def test_chuoi_increments_then_resets_on_violation(db_session, test_user):
+async def test_counter_1_counts_only_buys_carrying_both_marks(db_session, test_user):
+    """① đếm lệnh MUA Thực chiến đã khớp có ĐỦ CẢ cắt lỗ VÀ chốt lời."""
     await _graduate_cap1(db_session, test_user.id)
     cap1 = Cap1Service(db_session)
     cap2 = Cap2Service(db_session)
@@ -295,36 +306,33 @@ async def test_chuoi_increments_then_resets_on_violation(db_session, test_user):
     account = await vt_repo.get_account_by_user_id(test_user.id)
 
     for i in range(3):
-        _, ketso = await _round_trip(
+        await _round_trip(
             db_session, cap1, cap2, account.id, test_user.id,
             symbol=f"C{i}", trading_date=date(2026, 2, 1 + i),
         )
     progress = await cap2.get_progress(test_user.id)
-    assert progress.chuoi_current == 3
-    assert progress.chuoi_record == 3
-    assert progress.last_chuoi_reset_at is None
+    assert progress.so_lenh_co_cl_tp == 3
 
-    # A violating round trip resets the streak.
-    await _round_trip(
-        db_session, cap1, cap2, account.id, test_user.id,
-        symbol="CV", trading_date=date(2026, 2, 5), cham_sl_khong_cat=True,
-    )
+    # Two more round trips whose kế hoạch never got the Cấp 2 SL/TP block —
+    # a Cấp 1-shaped plan does not count toward ①.
+    for i in range(2):
+        await _round_trip(
+            db_session, cap1, cap2, account.id, test_user.id,
+            symbol=f"N{i}", trading_date=date(2026, 2, 10 + i), with_sl_tp=False,
+        )
     progress = await cap2.get_progress(test_user.id)
-    assert progress.chuoi_current == 0
-    assert progress.chuoi_record == 3  # record preserved
-    assert progress.last_chuoi_reset_at is not None
-
-    # Streak builds again from 0 after the reset.
-    await _round_trip(
-        db_session, cap1, cap2, account.id, test_user.id,
-        symbol="C4", trading_date=date(2026, 2, 6),
-    )
-    progress = await cap2.get_progress(test_user.id)
-    assert progress.chuoi_current == 1
+    assert progress.so_lenh_co_cl_tp == 3
+    assert progress.task_1_done_at is None
 
 
 @pytest.mark.asyncio
-async def test_task1_done_at_5_streak_and_persists_after_later_reset(db_session, test_user):
+async def test_counter_1_refuses_a_half_filled_plan(db_session, test_user):
+    """★ ① wants BOTH marks — a plan with only cắt lỗ is not «có đặt CL/CL».
+
+    ``record_kehoach`` always writes the pair, so a half-filled row can only be
+    produced below the service (a stray backfill, a future level writing one
+    leg). Asserted at the row level precisely because the API cannot express it.
+    """
     await _graduate_cap1(db_session, test_user.id)
     cap1 = Cap1Service(db_session)
     cap2 = Cap2Service(db_session)
@@ -332,34 +340,109 @@ async def test_task1_done_at_5_streak_and_persists_after_later_reset(db_session,
     vt_repo = VirtualTradingRepository(db_session)
     account = await vt_repo.get_account_by_user_id(test_user.id)
 
-    for i in range(4):
+    buy = await _make_order(db_session, account.id, test_user.id, symbol="HALF")
+    kehoach = await cap1.record_kehoach(
+        test_user.id, buy.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho",
+        vung_mua=20_000,
+    )
+    kehoach.cat_lo = 18_000  # …and chot_loi stays NULL.
+    await db_session.flush()
+
+    progress = await cap2.mark_task(test_user.id, 1)
+    assert progress.so_lenh_co_cl_tp == 0
+
+    # The mirror case — chốt lời alone — is equally not enough.
+    kehoach.cat_lo = None
+    kehoach.chot_loi = 25_000
+    await db_session.flush()
+    progress = await cap2.mark_task(test_user.id, 1)
+    assert progress.so_lenh_co_cl_tp == 0
+
+
+@pytest.mark.asyncio
+async def test_counter_1_moves_on_kehoach_alone_no_sell_needed(db_session, test_user):
+    """★ ① is about PLACING the marks — it must not wait for a Kết sổ.
+
+    Ten buys that carry cắt lỗ + chốt lời and have never been sold complete ①
+    on the spot; recomputing only on ``record_ketso`` would hold the journey at
+    0/10 for a user who did everything the task asks.
+    """
+    await _graduate_cap1(db_session, test_user.id)
+    cap1 = Cap1Service(db_session)
+    cap2 = Cap2Service(db_session)
+    await cap2.enter(test_user.id)
+    vt_repo = VirtualTradingRepository(db_session)
+    account = await vt_repo.get_account_by_user_id(test_user.id)
+
+    for i in range(10):
+        buy = await _make_order(
+            db_session, account.id, test_user.id, symbol=f"K{i}",
+            trading_date=date(2026, 3, 1),
+        )
+        await cap1.record_kehoach(
+            test_user.id, buy.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho",
+            vung_mua=20_000,
+        )
+        await cap2.record_kehoach(
+            test_user.id, buy.id, phuong_phap_sl_tp="bien_do_dao_dong",
+            cat_lo=18_000, chot_loi=25_000,
+        )
+
+    progress = await cap2.get_progress(test_user.id)
+    assert progress.so_lenh_co_cl_tp == 10
+    assert progress.task_1_done_at is not None
+    # …and ② is untouched: nothing has been sold, so nothing was executed.
+    assert progress.so_lan_thuc_hien_dung == 0
+    assert progress.task_2_done_at is None
+
+
+@pytest.mark.asyncio
+async def test_task1_stamps_at_10_and_not_at_9(db_session, test_user):
+    await _graduate_cap1(db_session, test_user.id)
+    cap1 = Cap1Service(db_session)
+    cap2 = Cap2Service(db_session)
+    await cap2.enter(test_user.id)
+    vt_repo = VirtualTradingRepository(db_session)
+    account = await vt_repo.get_account_by_user_id(test_user.id)
+
+    day0 = date(2026, 4, 1)
+    for i in range(9):
         await _round_trip(
             db_session, cap1, cap2, account.id, test_user.id,
-            symbol=f"T{i}", trading_date=date(2026, 3, 1 + i),
+            symbol=f"T{i}", trading_date=day0 + timedelta(days=i),
         )
     progress = await cap2.get_progress(test_user.id)
-    assert progress.task_1_done_at is None  # only 4/5 so far
+    assert progress.so_lenh_co_cl_tp == 9
+    assert progress.task_1_done_at is None
 
     await _round_trip(
         db_session, cap1, cap2, account.id, test_user.id,
-        symbol="T4", trading_date=date(2026, 3, 5),
+        symbol="T9", trading_date=day0 + timedelta(days=9),
     )
     progress = await cap2.get_progress(test_user.id)
+    assert progress.so_lenh_co_cl_tp == 10
     assert progress.task_1_done_at is not None
     first_done_at = progress.task_1_done_at
 
-    # A later violation resets chuỗi but must NOT un-stamp task ①.
+    # Stamped once, never re-stamped.
     await _round_trip(
         db_session, cap1, cap2, account.id, test_user.id,
-        symbol="T5", trading_date=date(2026, 3, 6), ban_som_khi_lo_nhe=True,
+        symbol="T10", trading_date=day0 + timedelta(days=10),
     )
     progress = await cap2.get_progress(test_user.id)
     assert progress.task_1_done_at == first_done_at
-    assert progress.chuoi_current == 0
+    assert progress.so_lenh_co_cl_tp == 11
 
 
 @pytest.mark.asyncio
-async def test_task3_not_done_until_task1_done_even_with_zero_nhoi(db_session, test_user):
+async def test_task2_counts_a_cat_lo_and_a_chot_loi_and_finishes_before_task1(
+    db_session, test_user
+):
+    """★ ② is 2 lần — cắt lỗ hoặc chốt lời đều tính — and runs in PARALLEL.
+
+    Two executions arrive after only two lệnh, so ② must complete while ① is
+    still at 2/10. Any gating of ② behind ① fails here.
+    """
     await _graduate_cap1(db_session, test_user.id)
     cap1 = Cap1Service(db_session)
     cap2 = Cap2Service(db_session)
@@ -367,99 +450,44 @@ async def test_task3_not_done_until_task1_done_even_with_zero_nhoi(db_session, t
     vt_repo = VirtualTradingRepository(db_session)
     account = await vt_repo.get_account_by_user_id(test_user.id)
 
-    # 2 clean round trips — 0 nhồi so far, but ① (streak 5) not yet done.
-    for i in range(2):
-        await _round_trip(
-            db_session, cap1, cap2, account.id, test_user.id,
-            symbol=f"N{i}", trading_date=date(2026, 4, 1 + i),
-        )
-    progress = await cap2.get_progress(test_user.id)
-    assert progress.task_1_done_at is None
-    assert progress.task_3_done_at is None  # gated behind ①
-
-
-@pytest.mark.asyncio
-async def test_task2_needs_5_cham_sl_cat_dung_in_last_15(db_session, test_user):
-    await _graduate_cap1(db_session, test_user.id)
-    cap1 = Cap1Service(db_session)
-    cap2 = Cap2Service(db_session)
-    await cap2.enter(test_user.id)
-    vt_repo = VirtualTradingRepository(db_session)
-    account = await vt_repo.get_account_by_user_id(test_user.id)
-
-    # First reach ① (5 clean round trips).
-    for i in range(5):
-        await _round_trip(
-            db_session, cap1, cap2, account.id, test_user.id,
-            symbol=f"S{i}", trading_date=date(2026, 5, 1 + i),
-        )
-    progress = await cap2.get_progress(test_user.id)
-    assert progress.task_1_done_at is not None
-    assert progress.task_2_done_at is None
-
-    # 4 more with cham_SL_cat_dung_phien_ke=True — still short of 5.
-    for i in range(4):
-        await _round_trip(
-            db_session, cap1, cap2, account.id, test_user.id,
-            symbol=f"S{5 + i}", trading_date=date(2026, 5, 6 + i),
-            cham_sl_cat_dung_phien_ke=True,
-        )
-    progress = await cap2.get_progress(test_user.id)
-    assert progress.task_2_done_at is None
-
-    # 5th cắt lỗ đúng phiên → task ② done.
+    # ① Giá chạm cắt lỗ → cắt đúng phiên kế.
     await _round_trip(
         db_session, cap1, cap2, account.id, test_user.id,
-        symbol="S9", trading_date=date(2026, 5, 10),
-        cham_sl_cat_dung_phien_ke=True,
+        symbol="SL", trading_date=date(2026, 5, 1),
+        buy_price=20_000, sell_price=18_000,
+        cham_sl_cuoi_phien=True, cham_sl_cat_dung_phien_ke=True,
     )
     progress = await cap2.get_progress(test_user.id)
-    assert progress.task_2_done_at is not None
+    assert progress.so_lan_cat_lo_dung == 1
+    assert progress.so_lan_chot_loi_dung == 0
+    assert progress.so_lan_thuc_hien_dung == 1
+    assert progress.task_2_done_at is None
 
-
-@pytest.mark.asyncio
-async def test_task4_needs_3_chot_loi_dung_in_last_15(db_session, test_user):
-    await _graduate_cap1(db_session, test_user.id)
-    cap1 = Cap1Service(db_session)
-    cap2 = Cap2Service(db_session)
-    await cap2.enter(test_user.id)
-    vt_repo = VirtualTradingRepository(db_session)
-    account = await vt_repo.get_account_by_user_id(test_user.id)
-
-    for i in range(5):
-        await _round_trip(
-            db_session, cap1, cap2, account.id, test_user.id,
-            symbol=f"P{i}", trading_date=date(2026, 6, 1 + i),
-        )
-    progress = await cap2.get_progress(test_user.id)
-    assert progress.task_1_done_at is not None
-    assert progress.task_4_done_at is None
-
-    # 2 lệnh chạm chốt lời và bán đúng phiên (gia_ra >= chot_loi, không hụt).
-    for i in range(2):
-        await _round_trip(
-            db_session, cap1, cap2, account.id, test_user.id,
-            symbol=f"P{5 + i}", trading_date=date(2026, 6, 6 + i),
-            buy_price=20_000, sell_price=25_500, chot_loi=25_000,
-        )
-    progress = await cap2.get_progress(test_user.id)
-    assert progress.task_4_done_at is None  # only 2/3
-
-    # 3rd one → task ④ done.
+    # ② Giá chạm chốt lời → bán theo kế hoạch (không giữ tiếp làm hụt).
     await _round_trip(
         db_session, cap1, cap2, account.id, test_user.id,
-        symbol="P9", trading_date=date(2026, 6, 10),
+        symbol="TP", trading_date=date(2026, 5, 2),
         buy_price=20_000, sell_price=25_500, chot_loi=25_000,
     )
     progress = await cap2.get_progress(test_user.id)
-    assert progress.task_4_done_at is not None
+    assert progress.so_lan_cat_lo_dung == 1
+    assert progress.so_lan_chot_loi_dung == 1
+    assert progress.so_lan_thuc_hien_dung == 2
+    assert progress.task_2_done_at is not None
+
+    # …and ① is nowhere near done — the two tasks are independent.
+    assert progress.so_lenh_co_cl_tp == 2
+    assert progress.task_1_done_at is None
 
 
 @pytest.mark.asyncio
-async def test_task4_not_counted_when_held_past_target(db_session, test_user):
-    """cham_TP_giu_lam_hut=True means the target WAS touched but the user held
-    on and gave the gain back — must NOT count as chốt lời đúng even if the
-    eventual gia_ra still cleared the target."""
+async def test_task2_ignores_a_touched_mark_the_user_did_not_act_on(db_session, test_user):
+    """Chạm mốc nhưng KHÔNG làm theo kế hoạch → không tính lần nào.
+
+    ``cham_SL_khong_cat`` (giữ tiếp khi chạm cắt lỗ) and
+    ``cham_TP_giu_lam_hut`` (giữ tiếp khi chạm chốt lời, rồi hụt) are exactly
+    the two "chạm mốc nhưng không thực hiện" shapes.
+    """
     await _graduate_cap1(db_session, test_user.id)
     cap1 = Cap1Service(db_session)
     cap2 = Cap2Service(db_session)
@@ -467,24 +495,50 @@ async def test_task4_not_counted_when_held_past_target(db_session, test_user):
     vt_repo = VirtualTradingRepository(db_session)
     account = await vt_repo.get_account_by_user_id(test_user.id)
 
-    for i in range(5):
-        await _round_trip(
-            db_session, cap1, cap2, account.id, test_user.id,
-            symbol=f"H{i}", trading_date=date(2026, 7, 1 + i),
-        )
+    await _round_trip(
+        db_session, cap1, cap2, account.id, test_user.id,
+        symbol="X1", trading_date=date(2026, 6, 1),
+        buy_price=20_000, sell_price=17_000,
+        cham_sl_cuoi_phien=True, cham_sl_khong_cat=True, giu_cham_sl_bao_nhieu_phien=3,
+    )
+    # Chạm chốt lời, giữ tiếp, cuối cùng vẫn bán trên mốc — vẫn là hụt.
+    await _round_trip(
+        db_session, cap1, cap2, account.id, test_user.id,
+        symbol="X2", trading_date=date(2026, 6, 2),
+        buy_price=20_000, sell_price=25_500, chot_loi=25_000,
+        cham_tp_giu_lam_hut=True,
+    )
+    progress = await cap2.get_progress(test_user.id)
+    assert progress.so_lan_cat_lo_dung == 0
+    assert progress.so_lan_chot_loi_dung == 0
+    assert progress.so_lan_thuc_hien_dung == 0
+    assert progress.task_2_done_at is None
+
+
+@pytest.mark.asyncio
+async def test_task2_ignores_a_sale_that_never_reached_the_mark(db_session, test_user):
+    """Bán khi giá CHƯA chạm chốt lời không phải "thực hiện đúng khi chạm mốc"."""
+    await _graduate_cap1(db_session, test_user.id)
+    cap1 = Cap1Service(db_session)
+    cap2 = Cap2Service(db_session)
+    await cap2.enter(test_user.id)
+    vt_repo = VirtualTradingRepository(db_session)
+    account = await vt_repo.get_account_by_user_id(test_user.id)
+
     for i in range(3):
         await _round_trip(
             db_session, cap1, cap2, account.id, test_user.id,
-            symbol=f"H{5 + i}", trading_date=date(2026, 7, 6 + i),
-            buy_price=20_000, sell_price=25_500, chot_loi=25_000,
-            cham_tp_giu_lam_hut=True,
+            symbol=f"U{i}", trading_date=date(2026, 6, 10 + i),
+            buy_price=20_000, sell_price=24_900, chot_loi=25_000,
         )
     progress = await cap2.get_progress(test_user.id)
-    assert progress.task_4_done_at is None
+    assert progress.so_lan_thuc_hien_dung == 0
+    assert progress.task_2_done_at is None
 
 
 @pytest.mark.asyncio
-async def test_task5_needs_20_orders(db_session, test_user):
+async def test_task1_can_finish_first_with_task2_still_open(db_session, test_user):
+    """The mirror image of the parallel test: ① done at 10 lệnh while ② is 0/2."""
     await _graduate_cap1(db_session, test_user.id)
     cap1 = Cap1Service(db_session)
     cap2 = Cap2Service(db_session)
@@ -492,56 +546,31 @@ async def test_task5_needs_20_orders(db_session, test_user):
     vt_repo = VirtualTradingRepository(db_session)
     account = await vt_repo.get_account_by_user_id(test_user.id)
 
-    day0 = date(2026, 8, 1)
-    # 19 clean round trips: task ⑤ unlock condition (>=20 orders) not yet met,
-    # even though 0 vi phạm easily satisfies the <=2 threshold.
-    for i in range(19):
+    day0 = date(2026, 7, 1)
+    for i in range(10):
         await _round_trip(
             db_session, cap1, cap2, account.id, test_user.id,
-            symbol=f"W{i}", trading_date=day0 + timedelta(days=i),
+            symbol=f"O{i}", trading_date=day0 + timedelta(days=i),
+            buy_price=20_000, sell_price=21_000, chot_loi=25_000,
         )
     progress = await cap2.get_progress(test_user.id)
-    assert progress.task_5_done_at is None
-
-    # 20th round trip → window now has exactly 20 → task ⑤ done (0 vi phạm).
-    await _round_trip(
-        db_session, cap1, cap2, account.id, test_user.id,
-        symbol="W19", trading_date=day0 + timedelta(days=19),
-    )
-    progress = await cap2.get_progress(test_user.id)
-    assert progress.task_5_done_at is not None
+    assert progress.task_1_done_at is not None
+    assert progress.so_lan_thuc_hien_dung == 0
+    assert progress.task_2_done_at is None
 
 
 @pytest.mark.asyncio
-async def test_task5_threshold_exact(db_session, test_user):
-    """Directly engineer a 20-order window with exactly 3 vs exactly 2 vi phạm."""
+async def test_mark_task_rejects_the_removed_task_numbers(db_session, test_user):
     await _graduate_cap1(db_session, test_user.id)
-    cap1 = Cap1Service(db_session)
     cap2 = Cap2Service(db_session)
     await cap2.enter(test_user.id)
-    vt_repo = VirtualTradingRepository(db_session)
-    account = await vt_repo.get_account_by_user_id(test_user.id)
 
-    day0 = date(2026, 9, 1)
+    for bad in (0, 3, 4, 5):
+        with pytest.raises(BadRequestError):
+            await cap2.mark_task(test_user.id, bad)
 
-    # 20 round trips: rows 0,1,2 violate (nhồi lệnh), rest clean → 3 vi phạm/20.
-    for i in range(20):
-        flags = {"nhoi_lenh_khi_lo": True} if i < 3 else {}
-        await _round_trip(
-            db_session, cap1, cap2, account.id, test_user.id,
-            symbol=f"E{i}", trading_date=day0 + timedelta(days=i), **flags,
-        )
-    progress = await cap2.get_progress(test_user.id)
-    assert progress.task_5_done_at is None  # 3 > 2
-
-    # One more clean round trip shifts the window — oldest violating row (i=0)
-    # falls out of the last-20 window, leaving only 2 vi phạm → task ⑤ done.
-    await _round_trip(
-        db_session, cap1, cap2, account.id, test_user.id,
-        symbol="E20", trading_date=day0 + timedelta(days=20),
-    )
-    progress = await cap2.get_progress(test_user.id)
-    assert progress.task_5_done_at is not None
+    progress = await cap2.mark_task(test_user.id, 1)
+    assert progress.task_1_done_at is None
 
 
 @pytest.mark.asyncio
@@ -647,7 +676,7 @@ async def test_diem_ky_luat_full_formula_with_test_situations(db_session, test_u
 
 
 @pytest.mark.asyncio
-async def test_graduate_requires_5_of_5(db_session, test_user):
+async def test_graduate_requires_2_of_2(db_session, test_user):
     await _graduate_cap1(db_session, test_user.id)
     cap1 = Cap1Service(db_session)
     cap2 = Cap2Service(db_session)
@@ -659,30 +688,34 @@ async def test_graduate_requires_5_of_5(db_session, test_user):
         await cap2.graduate(test_user.id)
 
     day0 = date(2026, 11, 1)
-    from datetime import timedelta
 
-    # 5 clean round trips w/ cắt lỗ đúng + chốt lời đúng flags, satisfying
-    # ①②③④ together, then pad to 20 total with 0 further violations for ⑤.
-    for i in range(5):
+    # ② first (2 lần thực hiện đúng) — still short of ①'s 10 lệnh.
+    await _round_trip(
+        db_session, cap1, cap2, account.id, test_user.id,
+        symbol="F0", trading_date=day0,
+        buy_price=20_000, sell_price=18_000,
+        cham_sl_cuoi_phien=True, cham_sl_cat_dung_phien_ke=True,
+    )
+    await _round_trip(
+        db_session, cap1, cap2, account.id, test_user.id,
+        symbol="F1", trading_date=day0 + timedelta(days=1),
+        buy_price=20_000, sell_price=25_500, chot_loi=25_000,
+    )
+    progress = await cap2.get_progress(test_user.id)
+    assert progress.task_2_done_at is not None
+    assert progress.task_1_done_at is None
+    with pytest.raises(ConflictError):
+        await cap2.graduate(test_user.id)
+
+    # …then ① (10 lệnh có cắt lỗ + chốt lời).
+    for i in range(8):
         await _round_trip(
             db_session, cap1, cap2, account.id, test_user.id,
-            symbol=f"F{i}", trading_date=day0 + timedelta(days=i),
-            buy_price=20_000, sell_price=25_500, chot_loi=25_000,
-            cham_sl_cat_dung_phien_ke=True,
+            symbol=f"F{2 + i}", trading_date=day0 + timedelta(days=2 + i),
         )
     progress = await cap2.get_progress(test_user.id)
+    assert progress.so_lenh_co_cl_tp == 10
     assert progress.task_1_done_at is not None
-    assert progress.task_2_done_at is not None  # 5/5 cắt lỗ đúng
-    assert progress.task_3_done_at is not None  # 0 nhồi
-    assert progress.task_4_done_at is not None  # 5/5 chốt lời đúng
-
-    for i in range(15):
-        await _round_trip(
-            db_session, cap1, cap2, account.id, test_user.id,
-            symbol=f"F{5 + i}", trading_date=day0 + timedelta(days=5 + i),
-        )
-    progress = await cap2.get_progress(test_user.id)
-    assert progress.task_5_done_at is not None
 
     progress = await cap2.graduate(test_user.id)
     assert progress.graduated_at is not None
@@ -709,7 +742,12 @@ async def test_cap2_endpoints_wired_and_free(client, db_session, test_user):
     r = await client.post("/api/v1/cap2/enter", headers=headers)
     assert r.status_code == 200
     body = r.json()
-    assert body["chuoi_current"] == 0
+    assert body["so_lenh_co_cl_tp"] == 0
+    assert body["so_lan_thuc_hien_dung"] == 0
+    # The chuỗi / 5-nhiệm-vụ apparatus is off the wire entirely.
+    for gone in ("chuoi_current", "chuoi_record", "last_chuoi_reset_at",
+                 "task_3_done_at", "task_4_done_at", "task_5_done_at"):
+        assert gone not in body
 
     r = await client.post("/api/v1/cap2/graduate", headers=headers)
     assert r.status_code == 409
@@ -769,3 +807,199 @@ async def test_cap2_endpoints_wired_and_free(client, db_session, test_user):
     # Unauthenticated is rejected
     r = await client.get("/api/v1/cap2/progress")
     assert r.status_code == 401
+
+
+# ── Migration: 5 nhiệm vụ + kỷ luật apparatus → 2 nhiệm vụ ───
+
+
+#: The shape production is on today, at revision ``f809de621bd0``. Written out
+#: by hand so this test pins the migration against the columns that actually
+#: exist in prod, not against whatever the ORM says after the change.
+_PROD_CAP2_PROGRESS_DDL = """
+CREATE TABLE cap2_progress (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    entered_at TIMESTAMP NOT NULL,
+    task_1_done_at TIMESTAMP,
+    task_2_done_at TIMESTAMP,
+    task_3_done_at TIMESTAMP,
+    task_4_done_at TIMESTAMP,
+    task_5_done_at TIMESTAMP,
+    chuoi_current INTEGER NOT NULL DEFAULT 0,
+    chuoi_record INTEGER NOT NULL DEFAULT 0,
+    last_chuoi_reset_at TIMESTAMP,
+    graduated_at TIMESTAMP,
+    time_to_graduate_hours FLOAT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+)
+"""
+
+
+def _load_cap2_2tasks_migration():
+    """Import the revision module by path — ``alembic/versions`` is not a package."""
+    import importlib.util
+    from pathlib import Path
+
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "alembic"
+        / "versions"
+        / "8f1a5c7d2e64_cap2_two_tasks_drop_discipline_metrics.py"
+    )
+    spec = importlib.util.spec_from_file_location("_cap2_2tasks_migration", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _run_cap2_migration(conn, direction: str) -> None:
+    """Run the real ``upgrade()``/``downgrade()`` body against ``conn``."""
+    from alembic.migration import MigrationContext
+    from alembic.operations import Operations
+
+    module = _load_cap2_2tasks_migration()
+    with Operations.context(MigrationContext.configure(conn)):
+        getattr(module, direction)()
+
+
+def _cap2_columns(conn) -> list[str]:
+    return [r[1] for r in conn.exec_driver_sql("PRAGMA table_info(cap2_progress)").fetchall()]
+
+
+def _cap2_rows(conn) -> dict[str, dict]:
+    cols = _cap2_columns(conn)
+    out = {}
+    for row in conn.exec_driver_sql(
+        f"SELECT {', '.join(cols)} FROM cap2_progress"
+    ).fetchall():
+        record = dict(zip(cols, row, strict=True))
+        out[record["id"]] = record
+    return out
+
+
+def _seed_old_shape_cap2_row(conn) -> None:
+    """One old-shape row, mid-flight under the 5-task model.
+
+    Every task column carries a DIFFERENT timestamp so the assertions can tell
+    "① and ② survived in place" apart from "something got shuffled".
+    """
+    conn.exec_driver_sql(_PROD_CAP2_PROGRESS_DDL)
+    conn.exec_driver_sql(
+        """
+        INSERT INTO cap2_progress (
+            id, user_id, entered_at,
+            task_1_done_at, task_2_done_at, task_3_done_at, task_4_done_at,
+            task_5_done_at, chuoi_current, chuoi_record, last_chuoi_reset_at,
+            graduated_at
+        ) VALUES (
+            'kyluat1', 'u-kyluat1', '2026-01-01 00:00:00',
+            '2026-01-01 01:00:00',  -- ① cũ: chuỗi 5 lệnh không vi phạm
+            '2026-01-01 02:00:00',  -- ② cũ: 5 lần cắt lỗ đúng phiên / 15
+            '2026-01-01 03:00:00',  -- ③ cũ: 0 nhồi lệnh   (bị xoá)
+            '2026-01-01 04:00:00',  -- ④ cũ: 3 chốt lời đúng / 15  (bị xoá)
+            NULL,                   -- ⑤ cũ: ≤2 vi phạm / 20       (bị xoá)
+            4, 7, '2026-01-01 05:00:00',
+            NULL
+        )
+        """
+    )
+    # A second, untouched row — entered Cấp 2 and did nothing.
+    conn.exec_driver_sql(
+        """
+        INSERT INTO cap2_progress (id, user_id, entered_at)
+        VALUES ('kyluat2', 'u-kyluat2', '2026-02-01 00:00:00')
+        """
+    )
+
+
+def test_cap2_migration_keeps_tasks_1_2_and_drops_the_discipline_apparatus():
+    """★ ① and ② stay in their own slots; ③④⑤ and the kỷ luật metrics go."""
+    import sqlalchemy as sa
+
+    engine = sa.create_engine("sqlite://")
+    with engine.begin() as conn:
+        _seed_old_shape_cap2_row(conn)
+        _run_cap2_migration(conn, "upgrade")
+
+        cols = _cap2_columns(conn)
+        for gone in (
+            "task_3_done_at",
+            "task_4_done_at",
+            "task_5_done_at",
+            "chuoi_current",
+            "chuoi_record",
+            "last_chuoi_reset_at",
+        ):
+            assert gone not in cols
+        for added in (
+            "so_lenh_co_cl_tp",
+            "so_lan_cat_lo_dung",
+            "so_lan_chot_loi_dung",
+            "so_lan_thuc_hien_dung",
+        ):
+            assert added in cols
+
+        row = _cap2_rows(conn)["kyluat1"]
+        assert row["task_1_done_at"] == "2026-01-01 01:00:00"
+        assert row["task_2_done_at"] == "2026-01-01 02:00:00"
+        # The new counters start at 0 — they are re-derived from
+        # order_kehoach/order_ketso on the next recompute, not guessed here.
+        assert row["so_lenh_co_cl_tp"] == 0
+        assert row["so_lan_cat_lo_dung"] == 0
+        assert row["so_lan_chot_loi_dung"] == 0
+        assert row["so_lan_thuc_hien_dung"] == 0
+        # Graduation is a user action — the migration never stamps it.
+        assert row["graduated_at"] is None
+
+        untouched = _cap2_rows(conn)["kyluat2"]
+        assert untouched["task_1_done_at"] is None
+        assert untouched["task_2_done_at"] is None
+        assert untouched["so_lenh_co_cl_tp"] == 0
+        assert untouched["entered_at"] == "2026-02-01 00:00:00"
+
+
+def test_cap2_migration_round_trips_up_down_up():
+    """upgrade → downgrade → upgrade lands on the same 2-task state.
+
+    The downgrade is LOSSY by construction — see the revision's docstring.
+    """
+    import sqlalchemy as sa
+
+    engine = sa.create_engine("sqlite://")
+    with engine.begin() as conn:
+        _seed_old_shape_cap2_row(conn)
+        _run_cap2_migration(conn, "upgrade")
+        after_first = _cap2_rows(conn)
+
+        _run_cap2_migration(conn, "downgrade")
+        cols = _cap2_columns(conn)
+        for back in (
+            "task_3_done_at",
+            "task_4_done_at",
+            "task_5_done_at",
+            "chuoi_current",
+            "chuoi_record",
+            "last_chuoi_reset_at",
+        ):
+            assert back in cols
+        for gone in ("so_lenh_co_cl_tp", "so_lan_thuc_hien_dung"):
+            assert gone not in cols
+
+        down = _cap2_rows(conn)["kyluat1"]
+        # ① and ② come back untouched…
+        assert down["task_1_done_at"] == "2026-01-01 01:00:00"
+        assert down["task_2_done_at"] == "2026-01-01 02:00:00"
+        # …but ③④⑤ and the chuỗi state are unrecoverable — they come back at
+        # their defaults rather than pretending to remember.
+        assert down["task_3_done_at"] is None
+        assert down["task_4_done_at"] is None
+        assert down["task_5_done_at"] is None
+        assert down["chuoi_current"] == 0
+        assert down["chuoi_record"] == 0
+        assert down["last_chuoi_reset_at"] is None
+        assert down["graduated_at"] is None
+
+        _run_cap2_migration(conn, "upgrade")
+        assert _cap2_rows(conn) == after_first

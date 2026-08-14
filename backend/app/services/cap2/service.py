@@ -5,31 +5,50 @@ Cấp 2 is FREE and Thực chiến-only, built on a graduated Cấp 1. It owns
 in place (new columns, same physical tables — see ``app.models.cap1``). It
 reuses ``VirtualTradingRepository`` (read-only here) for order data.
 
-**Everything derived (chuỗi lệnh kỷ luật, chuỗi record, 5 nhiệm vụ) is
-recomputed server-side from the persisted ``order_ketso`` rows each time a
-new Kết sổ vi phạm-flag set is recorded — never trusted from client-supplied
-counters.** The 4 vi phạm booleans themselves (``cham_SL_khong_cat``,
-``cham_TP_giu_lam_hut``, ``ban_som_khi_lo_nhe``, ``nhoi_lenh_khi_lo``) ARE
-accepted from the caller (like ``cam_xuc`` in Cấp 1 — observed facts about
-this one order, not aggregate state) and persisted as the source of truth;
-every aggregate (streak, task completion, score) is walked fresh from that
-history on every recompute.
+**2 nhiệm vụ, làm song song** (mockup ``iqx-cap2-hanhtrinh.html``):
 
-Design notes (documented here since the spec leaves them implicit):
-  - The sliding windows (§2's "15 lệnh gần nhất" / "20 lệnh gần nhất") are
-    scoped to ``order_ketso`` rows closed AT OR AFTER ``Cap2Progress.entered_at``
-    — Cấp 1 history (before Cấp 2 existed, when no violation data was even
-    collected) never counts toward Cấp 2's windows.
-  - Nhiệm vụ ②③④ are only evaluated once nhiệm vụ ① (chuỗi ≥5) is done, per
-    spec §2's "Điều kiện mở: sau ①" — this also sidesteps degenerate
-    "0 orders so far" false-positives for ③ (0 nhồi lệnh) and ④.
-  - "Chốt lời đúng, không hụt" (nhiệm vụ ④ + điểm kỷ luật's component D) has
-    no dedicated persisted flag in §13's exact 7-column list — it is derived
-    as: the round trip's matched ``OrderKehoach.chot_loi`` is set, the sell's
-    ``gia_ra`` reached/exceeded it, AND ``cham_TP_giu_lam_hut`` is false.
-  - Once a nhiệm vụ's ``task_N_done_at`` is stamped it is NEVER un-stamped,
-    even if a later sliding-window recompute would no longer satisfy the
-    threshold (matches Cấp 1's "stamp when first met" pattern).
+  ① «10 lệnh Thực chiến có đặt cắt lỗ / chốt lời» — ``so_lenh_co_cl_tp`` ≥ 10
+  ② «Thực hiện đúng khi giá chạm mốc», 2 lần      — ``so_lan_thuc_hien_dung`` ≥ 2
+
+**Both counters are recomputed server-side from the persisted
+``order_kehoach``/``order_ketso`` rows on every write — never trusted from
+client-supplied counters.** The 4 vi phạm booleans themselves
+(``cham_SL_khong_cat``, ``cham_TP_giu_lam_hut``, ``ban_som_khi_lo_nhe``,
+``nhoi_lenh_khi_lo``) ARE accepted from the caller (like ``cam_xuc`` in Cấp 1 —
+observed facts about this one order, not aggregate state) and persisted as the
+source of truth; every aggregate is walked fresh from that history.
+
+Design notes (documented here since the mockup leaves them implicit):
+  - **① recomputes on ``record_kehoach`` too, not just ``record_ketso``.** ① is
+    about PLACING the marks; a user with 10 open positions that all carry cắt
+    lỗ + chốt lời has done the task, and waiting for a Kết sổ would freeze the
+    journey at 0/10.
+  - ① counts FILLED Thực chiến **BUY** orders whose kế hoạch has BOTH
+    ``cat_lo`` and ``chot_loi``. No date window is needed: those two columns
+    can only ever be written by ``Cap2Service.record_kehoach``, which requires
+    a ``cap2_progress`` row — so a Cấp 1-era plan can never carry them.
+  - ② counts, per round trip, AT MOST ONE "thực hiện đúng khi giá chạm mốc",
+    over ``order_ketso`` rows closed AT OR AFTER ``Cap2Progress.entered_at``:
+      · **cắt lỗ** — ``cham_SL_cat_dung_phien_ke`` is True (spec §9: giá chạm
+        cắt lỗ cuối phiên → bán ATO phiên kế. This is the spec's own definition
+        of "cắt lỗ đúng phiên" and the mockups do not redefine it).
+      · **chốt lời** — otherwise, the matched ``OrderKehoach.chot_loi`` is set,
+        the sell's ``gia_ra`` reached/exceeded it, AND ``cham_TP_giu_lam_hut``
+        is False (spec's "chốt lời đúng, không hụt" — §13 has no dedicated
+        column for it).
+    The SL leg wins when both would match, which keeps the invariant
+    ``so_lan_thuc_hien_dung == so_lan_cat_lo_dung + so_lan_chot_loi_dung`` that
+    «Phân tích danh mục» block ④ renders as 🛑 / 🎯 / ✅.
+  - **Neither nhiệm vụ gates the other** — ② is reachable on the 2nd lệnh while
+    ① is still 2/10, which is the whole point of "làm song song".
+  - Once a nhiệm vụ's ``task_N_done_at`` is stamped it is NEVER un-stamped
+    (matches Cấp 1's "stamp when first met" pattern). Both counters are
+    monotonic anyway, so this only matters for hand-edited data.
+
+``diem_ky_luat`` (the 0-100 daily score) is NOT part of Cấp 2's journey any
+more — the mockups drop it from both Hành trình and Phân tích danh mục. It
+stays here as a pure read-only computation because **Cấp 3 consumes it** for
+``Cap3Progress.diem_ky_luat_tb_cap3``.
 """
 
 from __future__ import annotations
@@ -37,7 +56,7 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, date, datetime, timedelta, timezone
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
@@ -48,15 +67,9 @@ from app.repositories.virtual_trading import VirtualTradingRepository
 
 _VN_TZ = timezone(timedelta(hours=7))
 
-_TASK_NOS = (1, 2, 3, 4, 5)
-_TASK1_CHUOI_THRESHOLD = 5  # ① chuỗi 5 lệnh liên tiếp không vi phạm
-_TASK2_WINDOW = 15
-_TASK2_THRESHOLD = 5  # ② ≥5 lần cắt lỗ đúng phiên / 15 lệnh gần nhất
-_TASK3_WINDOW = 15  # ③ 0 nhồi lệnh / 15 lệnh gần nhất
-_TASK4_WINDOW = 15
-_TASK4_THRESHOLD = 3  # ④ ≥3 chốt lời đúng / 15 lệnh gần nhất
-_TASK5_WINDOW = 20
-_TASK5_MAX_VI_PHAM = 2  # ⑤ ≤2 vi phạm / 20 lệnh gần nhất
+_TASK_NOS = (1, 2)
+_TASK1_TARGET_LENH = 10  # ① 10 lệnh Thực chiến có đặt cắt lỗ / chốt lời
+_TASK2_TARGET_LAN = 2  # ② 2 lần thực hiện đúng khi giá chạm mốc
 
 # Điểm kỷ luật formula (spec §7) — raw point values before normalization.
 _DIEM_KE_HOACH_MAX = 40
@@ -69,16 +82,6 @@ _DIEM_CHOT_LOI_MAX = 30
 _DIEM_RAW_MAX = (
     _DIEM_KE_HOACH_MAX + _DIEM_CAT_LO_MAX + _DIEM_KHONG_NHOI_MAX + _DIEM_CHOT_LOI_MAX
 )
-
-
-def _is_vi_pham(row: OrderKetso) -> bool:
-    """1 trong 4 hành vi vi phạm kỷ luật đo được (spec §1)."""
-    return bool(
-        row.cham_SL_khong_cat
-        or row.cham_TP_giu_lam_hut
-        or row.ban_som_khi_lo_nhe
-        or row.nhoi_lenh_khi_lo
-    )
 
 
 def _is_chot_loi_dung(ketso: OrderKetso, kehoach: OrderKehoach | None) -> bool:
@@ -175,6 +178,10 @@ class Cap2Service:
         kehoach.chot_loi = int(chot_loi)
         await self._session.flush()
         await self._session.refresh(kehoach)
+
+        # ① counts lệnh that CARRY the marks — this write is the event that
+        # moves it, so recompute here and not only on Kết sổ.
+        await self._recompute_progress(user_id, progress)
         return kehoach
 
     # ── Kết sổ — 7 discipline flags (spec §8/§9/§13) ──
@@ -200,7 +207,7 @@ class Cap2Service:
     ) -> OrderKetso:
         """Persist the 4 vi phạm (+ 3 measurement) flags onto the EXISTING
         ``order_ketso`` row created by Cấp 1's ``/cap1/ketso`` (which already
-        computed gia_ra/pnl/closed_at), then recompute chuỗi + 5 nhiệm vụ.
+        computed gia_ra/pnl/closed_at), then recompute the 2 nhiệm vụ.
 
         NOTE: params are lowercase (not the spec-verbatim mixed case used on
         the wire schema / ORM columns) purely to keep this a normal Python
@@ -233,7 +240,7 @@ class Cap2Service:
         await self._recompute_progress(user_id, progress)
         return ketso
 
-    # ── Recompute chuỗi + 5 nhiệm vụ from order_ketso history ────────
+    # ── Recompute the 2 nhiệm vụ from kế hoạch + kết sổ history ──────
 
     async def _cap2_ketso_rows(
         self, user_id: uuid.UUID, progress: Cap2Progress
@@ -271,65 +278,79 @@ class Cap2Service:
             return None
         return await self._get_kehoach_by_order(buy_order.id)
 
+    async def _so_lenh_co_cl_tp(self, user_id: uuid.UUID) -> int:
+        """① — filled Thực chiến BUY orders whose kế hoạch carries BOTH marks.
+
+        No date window: ``cat_lo``/``chot_loi`` are only ever written by
+        ``record_kehoach`` above, which requires a ``cap2_progress`` row, so a
+        Cấp 1-era plan can never satisfy this.
+        """
+        result = await self._session.execute(
+            select(func.count(OrderKehoach.id))
+            .join(VirtualOrder, VirtualOrder.id == OrderKehoach.order_id)
+            .where(
+                VirtualOrder.user_id == user_id,
+                VirtualOrder.mode == "thuc_chien",
+                VirtualOrder.side == OrderSide.BUY,
+                VirtualOrder.status == OrderStatus.FILLED,
+                OrderKehoach.cat_lo.is_not(None),
+                OrderKehoach.chot_loi.is_not(None),
+            )
+        )
+        return int(result.scalar_one() or 0)
+
+    async def _dem_thuc_hien_dung(self, rows: list[OrderKetso]) -> tuple[int, int]:
+        """② — (số lần cắt lỗ đúng, số lần chốt lời đúng) over Cấp 2-era rows.
+
+        At most ONE execution per round trip; the cắt lỗ leg wins a tie so the
+        two legs always sum to the total shown on the journey.
+        """
+        so_cat_lo_dung = 0
+        so_chot_loi_dung = 0
+        for row in rows:
+            if row.cham_SL_cat_dung_phien_ke:
+                so_cat_lo_dung += 1
+                continue
+            sell_order = await self._vt_repo.get_order_by_id(row.order_id)
+            kehoach = (
+                await self._find_matching_kehoach(sell_order)
+                if sell_order is not None
+                else None
+            )
+            if _is_chot_loi_dung(row, kehoach):
+                so_chot_loi_dung += 1
+        return so_cat_lo_dung, so_chot_loi_dung
+
     async def _recompute_progress(self, user_id: uuid.UUID, progress: Cap2Progress) -> None:
+        now = datetime.now(UTC)
         rows = await self._cap2_ketso_rows(user_id, progress)
 
-        chuoi = 0
-        record = progress.chuoi_record or 0
-        last_reset: datetime | None = progress.last_chuoi_reset_at
-        for row in rows:
-            if _is_vi_pham(row):
-                chuoi = 0
-                last_reset = row.closed_at
-            else:
-                chuoi += 1
-                record = max(record, chuoi)
-            if chuoi >= _TASK1_CHUOI_THRESHOLD and progress.task_1_done_at is None:
-                progress.task_1_done_at = row.closed_at
+        # ① — 10 lệnh Thực chiến có đặt cắt lỗ / chốt lời.
+        progress.so_lenh_co_cl_tp = await self._so_lenh_co_cl_tp(user_id)
 
-        progress.chuoi_current = chuoi
-        progress.chuoi_record = record
-        progress.last_chuoi_reset_at = last_reset
+        # ② — thực hiện đúng khi giá chạm mốc (cắt lỗ HOẶC chốt lời đều tính).
+        so_cat_lo_dung, so_chot_loi_dung = await self._dem_thuc_hien_dung(rows)
+        progress.so_lan_cat_lo_dung = so_cat_lo_dung
+        progress.so_lan_chot_loi_dung = so_chot_loi_dung
+        progress.so_lan_thuc_hien_dung = so_cat_lo_dung + so_chot_loi_dung
 
-        # ②③④ only evaluated once ① is done (spec §2 "Điều kiện mở: sau ①").
-        if progress.task_1_done_at is not None:
-            window_15 = rows[-_TASK2_WINDOW:]
-
-            so_cat_lo_dung = sum(1 for r in window_15 if r.cham_SL_cat_dung_phien_ke)
-            if so_cat_lo_dung >= _TASK2_THRESHOLD and progress.task_2_done_at is None:
-                progress.task_2_done_at = datetime.now(UTC)
-
-            window_3 = rows[-_TASK3_WINDOW:]
-            so_nhoi = sum(1 for r in window_3 if r.nhoi_lenh_khi_lo)
-            if so_nhoi == 0 and progress.task_3_done_at is None:
-                progress.task_3_done_at = datetime.now(UTC)
-
-            window_4 = rows[-_TASK4_WINDOW:]
-            so_chot_loi_dung = 0
-            for r in window_4:
-                sell_order = await self._vt_repo.get_order_by_id(r.order_id)
-                kehoach = (
-                    await self._find_matching_kehoach(sell_order)
-                    if sell_order is not None
-                    else None
-                )
-                if _is_chot_loi_dung(r, kehoach):
-                    so_chot_loi_dung += 1
-            if so_chot_loi_dung >= _TASK4_THRESHOLD and progress.task_4_done_at is None:
-                progress.task_4_done_at = datetime.now(UTC)
-
-        # ⑤ only evaluated once ≥20 Cấp 2 round trips exist.
-        if len(rows) >= _TASK5_WINDOW:
-            window_20 = rows[-_TASK5_WINDOW:]
-            so_vi_pham = sum(1 for r in window_20 if _is_vi_pham(r))
-            if so_vi_pham <= _TASK5_MAX_VI_PHAM and progress.task_5_done_at is None:
-                progress.task_5_done_at = datetime.now(UTC)
+        # The two nhiệm vụ are INDEPENDENT — neither gates the other.
+        if (
+            progress.so_lenh_co_cl_tp >= _TASK1_TARGET_LENH
+            and progress.task_1_done_at is None
+        ):
+            progress.task_1_done_at = now
+        if (
+            progress.so_lan_thuc_hien_dung >= _TASK2_TARGET_LAN
+            and progress.task_2_done_at is None
+        ):
+            progress.task_2_done_at = now
 
         await self._session.flush()
         await self._session.refresh(progress)
 
     async def mark_task(self, user_id: uuid.UUID, task_no: int) -> Cap2Progress:
-        """PATCH /cap2/task — all 5 nhiệm vụ are derived from order_ketso
+        """PATCH /cap2/task — both nhiệm vụ are derived from kế hoạch/kết sổ
         history, so this just triggers a recompute pass (idempotent)."""
         if task_no not in _TASK_NOS:
             raise BadRequestError("task_no không hợp lệ")
@@ -480,7 +501,7 @@ class Cap2Service:
     # ── Graduation ────────────────────────────────────
 
     async def graduate(self, user_id: uuid.UUID) -> Cap2Progress:
-        """Graduate Cấp 2 — only when all 5 nhiệm vụ are done."""
+        """Graduate Cấp 2 — only when both nhiệm vụ are done (2/2)."""
         progress = await self._get_progress_row(user_id)
         if progress is None:
             raise NotFoundError("tiến trình Cấp 2")
@@ -489,7 +510,7 @@ class Cap2Service:
             getattr(progress, f"task_{n}_done_at") is not None for n in _TASK_NOS
         )
         if not all_tasks_done:
-            raise ConflictError("Chưa hoàn thành đủ 5 nhiệm vụ Cấp 2")
+            raise ConflictError("Chưa hoàn thành đủ 2 nhiệm vụ Cấp 2")
 
         if progress.graduated_at is None:
             now = datetime.now(UTC)

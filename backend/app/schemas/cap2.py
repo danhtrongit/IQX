@@ -17,7 +17,13 @@ XepLoaiLiteral = Literal["xanh", "vang", "do"]
 
 
 class Cap2ProgressOut(BaseModel):
-    """Cấp 2 progress state for the current user."""
+    """Cấp 2 progress state for the current user — 2 nhiệm vụ làm song song.
+
+    ``so_lenh_co_cl_tp`` drives ① («n/10 lệnh») and ``so_lan_thuc_hien_dung``
+    drives ② («n/2 lần»). ``so_lan_cat_lo_dung`` + ``so_lan_chot_loi_dung`` are
+    the 🛑/🎯 split that «Phân tích danh mục» block ④ renders; they always sum
+    to ``so_lan_thuc_hien_dung``.
+    """
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -26,12 +32,10 @@ class Cap2ProgressOut(BaseModel):
     entered_at: datetime
     task_1_done_at: datetime | None = None
     task_2_done_at: datetime | None = None
-    task_3_done_at: datetime | None = None
-    task_4_done_at: datetime | None = None
-    task_5_done_at: datetime | None = None
-    chuoi_current: int
-    chuoi_record: int
-    last_chuoi_reset_at: datetime | None = None
+    so_lenh_co_cl_tp: int
+    so_lan_cat_lo_dung: int
+    so_lan_chot_loi_dung: int
+    so_lan_thuc_hien_dung: int
     graduated_at: datetime | None = None
     time_to_graduate_hours: float | None = None
 
