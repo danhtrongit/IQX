@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IQX — Hành trình Cấp 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --bg2:#1f2230; --bg3:#282c3d; --bg4:#323649; --bd:#39405a; --t1:#f0f2f7; --t2:#f0f2f7; --t3:#f0f2f7; --lvl:#7dd3c0; --lvl-soft:rgba(125,211,192,.16); --lvl-bd:rgba(125,211,192,.4); --up:#35d07f; --warn:#ffc53d; --down:#ff6b6b; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#12141c; color:var(--t1); font-family:'Inter',sans-serif; font-size:13px; line-height:1.55; padding:24px; display:flex; justify-content:center; }
+.col { width:380px; }
+.jbar { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--bg2); border:1px solid var(--bd); border-radius:10px; margin-bottom:12px; cursor:pointer; }
+.jbar .lv { font-family:'JetBrains Mono'; font-size:10px; font-weight:700; color:var(--lvl); white-space:nowrap; }
+.jbar .nx { flex:1; font-size:11px; color:var(--t2); }
+.jbar .dots { display:flex; gap:4px; }
+.jbar .dot { width:7px; height:7px; border-radius:50%; background:var(--bg4); }
+.jbar .dot.done { background:var(--up); }
+.jbar .dot.now { background:var(--lvl); box-shadow:0 0 6px var(--lvl); }
+.lvcard { background:linear-gradient(135deg,var(--lvl-soft),transparent); border:1px solid var(--bd); border-radius:12px; padding:16px; margin-bottom:14px; display:flex; gap:14px; align-items:center; }
+.lvcard .info .tag { font-family:'JetBrains Mono'; font-size:10px; color:var(--lvl); font-weight:700; letter-spacing:1px; }
+.lvcard .info .nm { font-family:'Space Grotesk'; font-size:20px; font-weight:800; margin:2px 0; }
+.lvcard .info .lesson { font-size:11px; color:var(--t2); font-style:italic; }
+.lvcard .info .mode { display:inline-block; margin-top:6px; font-family:'JetBrains Mono'; font-size:9px; font-weight:700; letter-spacing:.5px; color:var(--up); background:rgba(53,208,127,.14); border:1px solid rgba(53,208,127,.4); padding:2px 7px; border-radius:5px; }
+.ck-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.ck-head .t { font-family:'JetBrains Mono'; font-size:10px; letter-spacing:.6px; color:var(--t3); text-transform:uppercase; }
+.ck-head .c { font-family:'Space Grotesk'; font-size:14px; font-weight:700; color:var(--lvl); }
+.task { display:flex; align-items:flex-start; gap:10px; padding:11px 12px; border:1px solid var(--bd); border-radius:8px; margin-bottom:7px; background:var(--bg2); }
+.task.active { border-color:var(--lvl); background:var(--lvl-soft); }
+.task.done { opacity:.55; }
+.task .st { flex-shrink:0; font-size:15px; width:20px; text-align:center; }
+.task .body { flex:1; }
+.task .nm { font-size:12.5px; font-weight:600; }
+.task .ds { font-size:10.5px; color:var(--t3); margin-top:2px; }
+.task .prog { font-family:'JetBrains Mono'; font-size:10px; color:var(--t3); margin-top:4px; }
+.tools { display:flex; gap:8px; margin:14px 0; }
+.tool { flex:1; text-align:center; padding:10px; background:var(--bg2); border:1px solid var(--bd); border-radius:8px; font-size:11px; font-weight:600; color:var(--t2); cursor:pointer; }
+.goal { margin-top:14px; padding:12px 14px; border:1px dashed var(--bd); border-radius:9px; font-size:11px; color:var(--t2); line-height:1.6; text-align:center; }
+.goal b { color:var(--t1); }
+</style>
+</head>
+<body>
+<div class="col">
+  <div class="jbar">
+    <span class="lv">CẤP 2 · 0/2</span>
+    <span class="nx">Hai nhiệm vụ làm song song — chưa xong cái nào</span>
+    <span class="dots"><i class="dot now"></i><i class="dot now"></i></span>
+  </div>
+
+  <div class="lvcard">
+    <div class="badge">
+      <svg width="66" height="66" viewBox="0 0 66 66"><polygon points="33,10 53,22 53,44 33,56 13,44 13,22" fill="rgba(125,211,192,.16)" stroke="#7dd3c0" stroke-width="2.4"/><text x="33" y="34" text-anchor="middle" dominant-baseline="central" font-family="Space Grotesk" font-weight="700" font-size="17" fill="#7dd3c0">2</text></svg>
+    </div>
+    <div class="info">
+      <div class="tag">CẤP 2</div>
+      <div class="nm">KỶ LUẬT</div>
+      <span class="mode">● THỰC CHIẾN</span>
+    </div>
+  </div>
+
+  <div class="ck-head">
+    <span class="t">Trước khi lên Cấp 3</span>
+    <span class="c">0/2</span>
+  </div>
+
+  <div class="task active">
+    <span class="st">🎯</span>
+    <div class="body"><div class="nm">10 lệnh Thực chiến có đặt cắt lỗ / chốt lời</div><div class="prog">6/10 lệnh</div></div>
+  </div>
+  <div class="task active">
+    <span class="st">🎯</span>
+    <div class="body">
+      <div class="nm">Thực hiện đúng khi giá chạm mốc</div>
+      <div class="ds">Giá chạm cắt lỗ thì cắt, chạm chốt lời thì bán theo kế hoạch — 2 lần (cắt lỗ hoặc chốt lời đều tính). Làm song song với nhiệm vụ trên, không cần xong 10 lệnh trước.</div>
+      <div class="prog">1/2 lần</div>
+    </div>
+  </div>
+
+  <div class="tools">
+    <div class="tool">📓 Kết sổ</div>
+    <div class="tool">📊 Phân tích danh mục</div>
+  </div>
+
+  <div class="goal">Xong 2/2 → tốt nghiệp <b>Cấp 2</b>, lên <b>Cấp 3 «Bản lĩnh»</b> (quản lý vốn: khẩu vị · tự tin · khối lượng).</div>
+</div>
+</body>
+</html>
