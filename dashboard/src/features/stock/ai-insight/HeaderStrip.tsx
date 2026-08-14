@@ -25,7 +25,7 @@ export function HeaderStrip({ header }: HeaderStripProps) {
   const pctClass = changePercent > 0 ? 'val pos' : changePercent < 0 ? 'val neg' : 'val'
 
   return (
-    <div className="header-strip">
+    <div className="header-strip" data-tour-id="tour-aiinsight-header">
       {/* Left — Ticker block */}
       <div className="ticker-block">
         <div className="ticker-symbol serif">{symbol}</div>

@@ -52,7 +52,7 @@ export function BriefingCard({ data }: { data: BriefingCardType }) {
         <span className="briefing-meta">Cập nhật {formatTime(data.updatedAt)}</span>
       </div>
 
-      <div className="briefing-trend-row">
+      <div className="briefing-trend-row" data-tour-id="tour-aiinsight-trend-row">
         <div className="field">
           <span className="label">Xu hướng</span>
           <span className="value">{data.trend}</span>
@@ -73,12 +73,12 @@ export function BriefingCard({ data }: { data: BriefingCardType }) {
       </div>
 
       {/* Khối 2 — Narrative */}
-      <p className="narrative serif">
+      <p className="narrative serif" data-tour-id="tour-aiinsight-narrative">
         <NarrativeText fragments={data.narrative} />
       </p>
 
       {/* Khối 3 — Diff block */}
-      <div className="diff-block">
+      <div className="diff-block" data-tour-id="tour-aiinsight-diff">
         <span
           className={`diff-marker${data.diff.isFirstAnalysis ? ' diff-marker-muted' : ''}`}
           style={data.diff.isFirstAnalysis ? { color: 'var(--text-2)' } : undefined}
@@ -95,7 +95,7 @@ export function BriefingCard({ data }: { data: BriefingCardType }) {
       </div>
 
       {/* Khối 4 — Observations */}
-      <div className="observations">
+      <div className="observations" data-tour-id="tour-aiinsight-observations">
         <div className="obs-eyebrow">QUAN SÁT THEO 5 GÓC</div>
         <div className="obs-list">
           <div className="obs-row">
@@ -132,7 +132,7 @@ export function BriefingCard({ data }: { data: BriefingCardType }) {
       </div>
 
       {/* Khối 5 — Watch levels */}
-      <div className="watch-levels">
+      <div className="watch-levels" data-tour-id="tour-aiinsight-watch-levels">
         <div className="watch-eyebrow">MỐC THEO DÕI</div>
         <div className="watch-list">
           {data.watchLevels.map((level, i) => (
@@ -145,7 +145,7 @@ export function BriefingCard({ data }: { data: BriefingCardType }) {
       </div>
 
       {/* Khối 6 — Verdict */}
-      <div className="verdict">
+      <div className="verdict" data-tour-id="tour-aiinsight-verdict">
         <span className="verdict-label">GỢI Ý HÔM NAY</span>
         <span className={`verdict-word serif ${vClass}`}>{data.recommendation}</span>
       </div>

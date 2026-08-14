@@ -1,5 +1,8 @@
 import { useEffect } from 'react'
 import { Spin } from '@arco-design/web-react'
+import { usePremiumStatus } from '@/features/premium'
+import { TourLaunchButton, TourOverlay, useFeatureTour } from '@/features/tour'
+import { phanTichCoPhieuTour } from '@/features/tour/configs/phanTichCoPhieuTour'
 import './aiInsight.css'
 import type { AIInsightResponse } from '../types'
 import { useStockAiInsight } from '../hooks'
@@ -52,6 +55,17 @@ export function AiInsightBriefing({
   const { insight: fetched, analyze, isPending, isError } = useStockAiInsight(symbol)
   const insight = injected ?? fetched
 
+  // On-demand product tour (increment 2b, docs/superpowers/plans/
+  // 2026-07-27-feature-tours.md's Global Constraints). PREMIUM feature — see
+  // phanTichCoPhieuTour.ts's file header: `AiInsightBriefing` is always
+  // rendered (blurred) behind `PremiumGate` for free users at both real call
+  // sites, so the launch button gates on its own explicit `usePremiumStatus()`
+  // check rather than the ambient gate. Hidden entirely on the public
+  // landing-page teaser (`injected`/`teaser`), which only shows briefing + L1.
+  const { isPremium } = usePremiumStatus()
+  const tour = useFeatureTour(phanTichCoPhieuTour, { storageKey: 'iqx_tour_phantichcophieu' })
+  const showTourButton = !injected && !teaser && isPremium
+
   // Call analyze() exactly once on first mount — but never when data is injected.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (!injected) analyze() }, [])
@@ -98,11 +112,17 @@ export function AiInsightBriefing({
       style={{ maxWidth: 920, margin: '0 auto', padding: '0 0 40px' }}
     >
       <Masthead updatedAt={insight.updatedAt} />
+      {showTourButton && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '4px 0 8px' }}>
+          <TourLaunchButton onClick={tour.start} />
+        </div>
+      )}
       <HeaderStrip header={insight.header} />
       <BriefingCard data={insight.briefing} />
 
       {/* Divider */}
       <div
+        data-tour-id="tour-aiinsight-divider"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -163,6 +183,8 @@ export function AiInsightBriefing({
           />
         )
       })}
+
+      <TourOverlay config={phanTichCoPhieuTour} controller={tour.controller} />
     </div>
   )
 }

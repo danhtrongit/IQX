@@ -67,6 +67,29 @@ describe("HeroCard", () => {
     )
     expect(getByTestId("scorecard-slot")).not.toBeNull()
   })
+
+  // Tour wiring (increment 2b, docs/superpowers/plans/2026-07-27-feature-tours.md's
+  // Global Constraints) — see phanTichBctcTour.ts's file header: the hero splits
+  // into two adjacent, non-overlapping data-tour-id wrappers so the "kết luận
+  // nhanh" step and the "thẻ điểm sức khỏe" step don't spotlight the same region.
+  it("wraps ticker+price+verdict in data-tour-id=tour-bctc-hero-top", () => {
+    const { container } = render(<HeroCard {...base} />)
+    const el = container.querySelector('[data-tour-id="tour-bctc-hero-top"]')
+    expect(el).not.toBeNull()
+    expect(el?.textContent).toContain("FPT")
+    expect(el?.textContent).toContain(base.verdictOneliner)
+  })
+
+  it("wraps the scorecard slot in data-tour-id=tour-bctc-scorecard", () => {
+    const { container, getByTestId } = render(
+      <HeroCard {...base}>
+        <div data-testid="scorecard-slot">radar</div>
+      </HeroCard>,
+    )
+    const el = container.querySelector('[data-tour-id="tour-bctc-scorecard"]')
+    expect(el).not.toBeNull()
+    expect(el?.contains(getByTestId("scorecard-slot"))).toBe(true)
+  })
 })
 
 describe("AiMemo", () => {

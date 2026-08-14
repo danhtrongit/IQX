@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { AIInsightResponse } from '../types'
 
@@ -121,14 +121,27 @@ vi.mock('./LayerCharts', () => ({
   ),
 }))
 
+// Premium gating (increment 2b tour wiring, see phanTichCoPhieuTour.ts's file
+// header): `usePremiumStatus` is real react-query underneath (needs a
+// QueryClientProvider this test tree doesn't set up), so it must be mocked —
+// same discipline as `backtest/BacktestLab.test.tsx`. Default true; the
+// dedicated gating tests below override per-case.
+vi.mock('@/features/premium', () => ({
+  usePremiumStatus: vi.fn(),
+}))
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 import { useStockAiInsight } from '../hooks'
+import { usePremiumStatus } from '@/features/premium'
+import { phanTichCoPhieuTour } from '@/features/tour/configs/phanTichCoPhieuTour'
 const mockUseStockAiInsight = useStockAiInsight as ReturnType<typeof vi.fn>
+const mockUsePremiumStatus = usePremiumStatus as ReturnType<typeof vi.fn>
 
 describe('AiInsightBriefing', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockUsePremiumStatus.mockReturnValue({ isPremium: true, isLoading: false })
   })
 
   describe('with full insight (not pending)', () => {
@@ -228,6 +241,55 @@ describe('AiInsightBriefing', () => {
       const { AiInsightBriefing } = await import('./AiInsightBriefing')
       render(<AiInsightBriefing symbol="VCB" />)
       expect(screen.getByRole('alert')).toBeInTheDocument()
+    })
+  })
+
+  // Tour wiring (increment 2b, docs/superpowers/plans/2026-07-27-feature-tours.md's
+  // Global Constraints) — see phanTichCoPhieuTour.ts's file header for the
+  // premium-gating + dropped-autofill-step rationale.
+  describe('AI Phân tích cổ phiếu tour wiring', () => {
+    beforeEach(() => {
+      mockUseStockAiInsight.mockReturnValue({
+        insight: fixture,
+        analyze: vi.fn(),
+        isPending: false,
+        isError: false,
+        error: null,
+      })
+    })
+
+    it('hides the launch button for non-premium users', async () => {
+      mockUsePremiumStatus.mockReturnValue({ isPremium: false, isLoading: false })
+      const { AiInsightBriefing } = await import('./AiInsightBriefing')
+      render(<AiInsightBriefing symbol="VCB" />)
+      expect(screen.queryByText('Xem hướng dẫn')).not.toBeInTheDocument()
+    })
+
+    it('shows the launch button for premium users and starts the tour on click', async () => {
+      mockUsePremiumStatus.mockReturnValue({ isPremium: true, isLoading: false })
+      const { AiInsightBriefing } = await import('./AiInsightBriefing')
+      render(<AiInsightBriefing symbol="VCB" />)
+      expect(screen.getByText('Xem hướng dẫn')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByText('Xem hướng dẫn'))
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+      expect(screen.getByText(phanTichCoPhieuTour.steps[0].title)).toBeInTheDocument()
+      expect(screen.getByText(`ĐIỂM 1/${phanTichCoPhieuTour.steps.length}`)).toBeInTheDocument()
+    })
+
+    it('hides the launch button on the public landing-page teaser (injected + teaser)', async () => {
+      mockUsePremiumStatus.mockReturnValue({ isPremium: true, isLoading: false })
+      const { AiInsightBriefing } = await import('./AiInsightBriefing')
+      render(<AiInsightBriefing symbol="VCB" injected={fixture} teaser />)
+      expect(screen.queryByText('Xem hướng dẫn')).not.toBeInTheDocument()
+    })
+
+    it('grounds every tour step targetId in the DOM when the full insight is loaded', async () => {
+      const { AiInsightBriefing } = await import('./AiInsightBriefing')
+      const { container } = render(<AiInsightBriefing symbol="VCB" />)
+      for (const step of phanTichCoPhieuTour.steps) {
+        expect(container.querySelector(`[data-tour-id="${step.targetId}"]`)).not.toBeNull()
+      }
     })
   })
 })

@@ -20,7 +20,7 @@ export function LayerCard({ data, chart }: LayerCardProps) {
   const statusColor = STATUS_LEVEL_COLORS[data.statusLevel] ?? 'var(--text-1)'
 
   return (
-    <section className="layer">
+    <section className="layer" data-tour-id={`tour-aiinsight-layer-${data.layerNum.toLowerCase()}`}>
       {/* Header */}
       <div className="layer-head">
         <div className="layer-title">
