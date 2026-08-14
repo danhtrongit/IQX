@@ -42,9 +42,10 @@ function progress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
     entered_at: "2026-01-01T00:00:00Z",
     task_1_done_at: null,
     task_2_done_at: null,
-    task_3_done_at: null,
-    task_4_done_at: null,
-    task_5_done_at: null,
+    so_lenh_co_cl_tp: 0,
+    so_lan_cat_lo_dung: 0,
+    so_lan_chot_loi_dung: 0,
+    so_lan_thuc_hien_dung: 0,
     chuoi_current: 0,
     chuoi_record: 0,
     last_chuoi_reset_at: null,
@@ -147,14 +148,19 @@ describe("computeCap2PortfolioAnalysis — Khối 4 cửa sổ 20 lệnh", () =>
     expect(result.khoi4.violationsInWindow).toBe(2)
   })
 
-  it("readyToGraduate reflects the server's task_5_done_at (authoritative), not the client log", () => {
+  it("readyToGraduate reflects the server's 2/2 nhiệm vụ (authoritative), not the client log", () => {
     const trades = [trade({ orderId: "1" })] // far fewer than 20 in the client log
-    const result = computeCap2PortfolioAnalysis(trades, [], progress({ task_5_done_at: "2026-07-01T00:00:00Z" }), NOW)
+    const result = computeCap2PortfolioAnalysis(
+      trades,
+      [],
+      progress({ task_1_done_at: "2026-07-01T00:00:00Z", task_2_done_at: "2026-07-01T00:00:00Z" }),
+      NOW,
+    )
     expect(result.khoi4.readyToGraduate).toBe(true)
     expect(result.khoi4.note).toContain("Đủ điều kiện lên Cấp 3")
   })
 
-  it("readyToGraduate is false when task_5 isn't done yet", () => {
+  it("readyToGraduate is false while the 2 nhiệm vụ aren't both done", () => {
     const result = computeCap2PortfolioAnalysis([], [], progress(), NOW)
     expect(result.khoi4.readyToGraduate).toBe(false)
   })

@@ -1,0 +1,107 @@
+/**
+ * Cấp 2 «Kỷ luật» — tab Hành trình (mockup `iqx-cap2-hanhtrinh.html`).
+ *
+ * Khung chung (`.cap0-level-card-*`, `.cap0-checklist-*`, `.cap0-journey-*`,
+ * `.cap0-focus-*`) dùng lại của Cấp 0/1 — file này chỉ thêm hai thứ mockup Cấp 2
+ * có mà khung chung chưa có: thanh `.jbar` NẰM TRONG panel, và hàng 2 công cụ.
+ *
+ * ★ KHÔNG chép `:root` của mockup vào đây. Hai file mockup mới đặt
+ * `--t2`/`--t3` thành `#f0f2f7` (bằng `--t1`) — mang vào app sẽ làm TRẮNG XOÁ
+ * mọi chữ phụ ở MỌI cấp, không riêng Cấp 2.
+ */
+
+/* ── Thanh hành trình (mockup `.jbar`) ───────────────────────────────────────
+   Khác `.cap0-jbar`: bản của Cấp 0 sống trong `.cap0-topbar` sticky (nên
+   `flex: 1`, không viền). Bản này là một ô có viền nằm ở ĐẦU panel Hành trình,
+   đúng như mockup vẽ, và KHÔNG bấm được — người đọc nó đã đang đứng trong tab
+   Hành trình rồi. */
+.cap2-jbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--bg2);
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.cap2-jbar-lv {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #7dd3c0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cap2-jbar-next {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--t2);
+}
+
+.cap2-jbar-dots {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.cap2-jd {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--bg4, var(--bg3));
+  border: 1px solid var(--bd);
+  display: inline-block;
+}
+
+.cap2-jd--done {
+  background: rgba(53, 208, 127, 0.6);
+  border-color: rgba(53, 208, 127, 0.6);
+}
+
+/* Mọi nhiệm vụ chưa xong đều là "đang tới lượt" — hai nhiệm vụ chạy SONG SONG,
+   không có cái nào phải chờ cái nào. */
+.cap2-jd--now {
+  background: #7dd3c0;
+  border-color: #7dd3c0;
+  box-shadow: 0 0 6px rgba(125, 211, 192, 0.7);
+}
+
+/* ── Hàng 2 công cụ (mockup `.tools`) ─────────────────────────────────────── */
+.cap2-tools {
+  display: flex;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.cap2-tool {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  background: var(--bg2);
+  border: 1px solid var(--bd);
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--t2);
+}
+
+button.cap2-tool {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+button.cap2-tool:hover {
+  border-color: rgba(125, 211, 192, 0.55);
+  color: var(--t1);
+}
+
+/* 📓 Kết sổ KHÔNG bấm được: nó tự mở khi bán lệnh, và Cấp 2 không có màn lịch
+   sử kết sổ để mở tay — làm nó thành nút sẽ là một nút chết. */
+.cap2-tool--static {
+  cursor: default;
+  opacity: 0.7;
+}

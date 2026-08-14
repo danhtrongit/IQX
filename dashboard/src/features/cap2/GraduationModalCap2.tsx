@@ -3,7 +3,7 @@ import { Badge, LEVELS } from "@/features/cap0/Badge"
 import "@/features/cap0/cap0.css"
 import "./cap2-graduation.css"
 import { useCap2Progress, useGraduateCap2 } from "./hooks"
-import { countCap2TasksDone, type Cap2Progress } from "./types"
+import { CAP2_TOTAL_TASKS, countCap2TasksDone, type Cap2Progress } from "./types"
 // Cấp 3 sống khi `CAP_MAX_ENABLED >= 3` — concrete-file import (NOT the
 // `@/features/cap3` barrel), same anti-cycle rationale
 // `cap1/GraduationModalCap1.tsx` documents for its own `@/features/cap2/hooks`
@@ -29,21 +29,26 @@ function isCap3Open(): boolean {
 }
 
 /**
- * Điều kiện mở màn tốt nghiệp Cấp 2 (spec §3): 5/5 nhiệm vụ, chưa từng tốt
- * nghiệp (một chiều — không mở lại một khi `graduated_at` đã có, mirrors
- * `cap1/GraduationModalCap1.tsx#isGraduationReadyCap1`). Vì nhiệm vụ ⑤ bao
- * hàm mọi hành vi cần đo (cửa sổ 20 lệnh ≤2 vi phạm), xong ⑤ = xong Cấp 2.
+ * Điều kiện mở màn tốt nghiệp Cấp 2: **2/2 nhiệm vụ**, chưa từng tốt nghiệp
+ * (một chiều — không mở lại một khi `graduated_at` đã có, mirrors
+ * `cap1/GraduationModalCap1.tsx#isGraduationReadyCap1`). Hai nhiệm vụ chạy song
+ * song nên không có cái nào "bao hàm" cái nào — phải đủ cả hai.
  */
 export function isGraduationReadyCap2(progress: Cap2Progress | null | undefined): boolean {
   if (!progress || progress.graduated_at) return false
-  return countCap2TasksDone(progress) >= 5
+  return countCap2TasksDone(progress) >= CAP2_TOTAL_TASKS
 }
 
-// Verbatim spec §13 copy — `**bold**` markers kept for the inline-bold
-// renderer below (same convention as `cap0/GraduationModal.tsx`/
-// `cap1/GraduationModalCap1.tsx`).
+/**
+ * Khối 1 — Ghi nhận. ★ **KHÔNG dùng nguyên văn spec §13 nữa.** Câu cũ khen "20
+ * lệnh Thực chiến với ≤2 vi phạm kỷ luật" và trích một con số 24% — cả hai đều
+ * thuộc mô hình 5 nhiệm vụ đã bỏ, nên giữ lại là ghi công một việc user KHÔNG
+ * làm (đúng lỗi màn tốt nghiệp Cấp 0 từng mắc và Cấp 1 đã phải canh bằng test).
+ * Bản này chỉ nói đúng hai việc hành trình thật sự đo — và giữ đúng mức khiêm
+ * tốn mà mockup Phân tích danh mục đặt ra ("Cấp 2 chỉ giúp bạn làm quen cơ chế").
+ */
 const BLOCK_1 =
-  "Bạn đã đi qua 20 lệnh Thực chiến với ≤2 vi phạm kỷ luật — điều rất khó với người mới. **Kế hoạch của bạn KHÔNG chỉ là kế hoạch — nó là hành động.** Trong 30 ngày qua trên IQX, chỉ 24% user Cấp 1 vượt được Cấp 2 trong 3 tháng đầu — bạn thuộc nhóm hiếm."
+  "Bạn đã đặt cắt lỗ và chốt lời cho 10 lệnh Thực chiến, và 2 lần giá chạm mốc bạn đã làm đúng điều mình đã cam kết. **Cắt lỗ và chốt lời không còn là hai chữ trong sách — bạn đã dùng cả hai bằng tay mình.**"
 
 const BLOCK_2 =
   "Nhưng có kỷ luật vẫn chưa đủ. Cấp 3 «Bản lĩnh» dạy điều nghịch lý: **kết quả tốt không đồng nghĩa quyết định tốt.** Có lệnh bạn làm đúng mọi thứ nhưng vẫn lỗ (thị trường không thuận). Có lệnh bạn làm sai nhưng vẫn lãi (may mắn). Cấp 3 tách được 2 chuyện này — và bạn sẽ học cách điều chỉnh khối lượng mua theo khẩu vị rủi ro riêng."
@@ -140,13 +145,15 @@ export function GraduationModalCap2() {
       <div className="cap0-grad-header">
         <div className="cap0-grad-tag">HOÀN THÀNH</div>
         <h2 className="cap0-display cap0-grad-title">CẤP 2 · KỶ LUẬT</h2>
-        <div className="cap0-grad-sub">5/5 nhiệm vụ · Cửa sổ 20 lệnh với ≤2 vi phạm</div>
+        <div className="cap0-grad-sub">2/2 nhiệm vụ · 10 lệnh có cắt lỗ/chốt lời · 2 lần thực hiện đúng</div>
         <div className="cap0-grad-badge-wrap">
           <Badge n={level.n} color={level.color} fill={2} size={120} glow />
         </div>
       </div>
 
-      <div className="cap0-grad-block">{renderInlineBold(BLOCK_1)}</div>
+      <div className="cap0-grad-block" data-testid="cap2-grad-khoi1">
+        {renderInlineBold(BLOCK_1)}
+      </div>
       <div className="cap0-grad-block">{renderInlineBold(BLOCK_2)}</div>
       <div className="cap0-grad-block cap2-grad-block--cap3" data-testid="cap2-grad-khoi3">
         {renderInlineBold(isCap3Open() ? BLOCK_3 : BLOCK_3_CAP3_CHUA_MO)}

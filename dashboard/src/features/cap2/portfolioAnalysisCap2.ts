@@ -6,7 +6,7 @@ import {
 } from "@/features/cap1/portfolioAnalysis"
 import type { Cap1TradeRecord } from "@/features/cap1/tradeLog"
 import { LY_DO_OPTIONS, type LyDo } from "@/features/cap1/types"
-import type { Cap2Progress, XepLoai } from "./types"
+import { CAP2_TOTAL_TASKS, countCap2TasksDone, type Cap2Progress, type XepLoai } from "./types"
 
 /**
  * Cấp 2 Phân tích danh mục (spec `IQX-Cap2-Spec.md` §12) — pure compute.
@@ -187,8 +187,8 @@ export interface Cap2Khoi4 {
   hasFullWindow: boolean
   violationsInWindow: number
   cells: Khoi4Cell[]
-  /** Server-authoritative (nhiệm vụ ⑤ = `progress.task_5_done_at`) — NOT
-   * re-derived from the (best-effort, possibly-incomplete) client trade log. */
+  /** Server-authoritative (2/2 nhiệm vụ trong `progress`) — NOT re-derived from
+   * the (best-effort, possibly-incomplete) client trade log. */
   readyToGraduate: boolean
   note: string
 }
@@ -202,7 +202,7 @@ function computeKhoi4(trades: Cap2TradeRecord[], progress: Cap2Progress | null):
   const cells: Khoi4Cell[] = windowTrades.map((t) => ({ orderId: t.orderId, viPham: isViPham(t) }))
   const violationsInWindow = cells.filter((c) => c.viPham).length
   const hasFullWindow = sorted.length >= KHOI4_WINDOW_SIZE
-  const readyToGraduate = progress?.task_5_done_at != null
+  const readyToGraduate = countCap2TasksDone(progress) >= CAP2_TOTAL_TASKS
 
   const note = readyToGraduate
     ? "Đủ điều kiện lên Cấp 3 «Bản lĩnh» (theo hồ sơ máy chủ)."

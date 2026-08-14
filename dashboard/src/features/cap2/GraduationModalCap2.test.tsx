@@ -57,12 +57,10 @@ function makeProgress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
     entered_at: "2026-07-21T00:00:00Z",
     task_1_done_at: null,
     task_2_done_at: null,
-    task_3_done_at: null,
-    task_4_done_at: null,
-    task_5_done_at: null,
-    chuoi_current: 0,
-    chuoi_record: 0,
-    last_chuoi_reset_at: null,
+    so_lenh_co_cl_tp: 0,
+    so_lan_cat_lo_dung: 0,
+    so_lan_chot_loi_dung: 0,
+    so_lan_thuc_hien_dung: 0,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
@@ -73,11 +71,10 @@ function readyProgress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
   return makeProgress({
     task_1_done_at: "t",
     task_2_done_at: "t",
-    task_3_done_at: "t",
-    task_4_done_at: "t",
-    task_5_done_at: "t",
-    chuoi_current: 20,
-    chuoi_record: 20,
+    so_lenh_co_cl_tp: 10,
+    so_lan_cat_lo_dung: 1,
+    so_lan_chot_loi_dung: 1,
+    so_lan_thuc_hien_dung: 2,
     ...overrides,
   })
 }
@@ -88,12 +85,25 @@ describe("isGraduationReadyCap2", () => {
     expect(isGraduationReadyCap2(undefined)).toBe(false)
   })
 
-  it("is false when fewer than 5/5 nhiệm vụ are done", () => {
-    expect(isGraduationReadyCap2(readyProgress({ task_5_done_at: null }))).toBe(false)
+  it("is false when fewer than 2/2 nhiệm vụ are done", () => {
+    expect(isGraduationReadyCap2(readyProgress({ task_2_done_at: null }))).toBe(false)
+    expect(isGraduationReadyCap2(readyProgress({ task_1_done_at: null }))).toBe(false)
   })
 
-  it("is true once 5/5 nhiệm vụ are done", () => {
+  it("is true once 2/2 nhiệm vụ are done", () => {
     expect(isGraduationReadyCap2(readyProgress())).toBe(true)
+  })
+
+  // ★ Cùng cái bẫy `cap0/types.ts`/`cap1/types.ts` đã ghi: một wire shape cũ còn
+  // sót `task_3/4/5_done_at` KHÔNG được tính thành nhiệm vụ thứ 3/4/5.
+  it("★ ignores leftover task_3/4/5_done_at from the old 5-nhiệm-vụ wire shape", () => {
+    const stale = {
+      ...readyProgress({ task_2_done_at: null }),
+      task_3_done_at: "t",
+      task_4_done_at: "t",
+      task_5_done_at: "t",
+    } as unknown as Cap2Progress
+    expect(isGraduationReadyCap2(stale)).toBe(false)
   })
 
   it("is false once already graduated — a one-way trip, doesn't re-open", () => {
@@ -117,27 +127,26 @@ describe("GraduationModalCap2", () => {
     flags.CAP_MAX_ENABLED = 2
   })
 
-  it("does not render when 5/5 isn't met", () => {
+  it("does not render when 2/2 isn't met", () => {
     useCap2ProgressMock.mockReturnValue({ data: makeProgress() })
     render(<GraduationModalCap2 />)
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
   })
 
-  it("renders the header + 3 khối VERBATIM (spec §13) + 120px glowing badge once ready", () => {
+  it("renders the header + 3 khối + 120px glowing badge once ready", () => {
     useCap2ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap2 />)
 
     // Header
     expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
     expect(screen.getByText("CẤP 2 · KỶ LUẬT")).toBeInTheDocument()
-    expect(screen.getByText("5/5 nhiệm vụ · Cửa sổ 20 lệnh với ≤2 vi phạm")).toBeInTheDocument()
+    expect(
+      screen.getByText("2/2 nhiệm vụ · 10 lệnh có cắt lỗ/chốt lời · 2 lần thực hiện đúng"),
+    ).toBeInTheDocument()
 
     // Khối 1 — Ghi nhận
     expect(
-      screen.getByText(/Bạn đã đi qua 20 lệnh Thực chiến với ≤2 vi phạm kỷ luật/),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText("Kế hoạch của bạn KHÔNG chỉ là kế hoạch — nó là hành động."),
+      screen.getByText(/Bạn đã đặt cắt lỗ và chốt lời cho 10 lệnh Thực chiến/),
     ).toBeInTheDocument()
 
     // Khối 2 — Định vị
@@ -272,6 +281,18 @@ describe("GraduationModalCap2", () => {
     render(<GraduationModalCap2 />)
     fireEvent.click(screen.getByTestId("cap2-grad-cta"))
     expect(enterCap3Mutate).not.toHaveBeenCalled()
+  })
+
+  // ★★ Màn tốt nghiệp KHÔNG được ghi công việc user không làm — đúng lỗi màn
+  // tốt nghiệp Cấp 0 từng mắc. Mô hình 2 nhiệm vụ không còn đo vi phạm, không
+  // còn cửa sổ 20 lệnh, không còn chuỗi kỷ luật.
+  it("★ Khối 1 credits ONLY the two nhiệm vụ that actually exist", () => {
+    useCap2ProgressMock.mockReturnValue({ data: readyProgress() })
+    render(<GraduationModalCap2 />)
+    const khoi1 = screen.getByTestId("cap2-grad-khoi1")
+    expect(khoi1.textContent).not.toMatch(/20 lệnh|vi phạm|chuỗi|24%/i)
+    expect(khoi1).toHaveTextContent(/10 lệnh Thực chiến/)
+    expect(khoi1).toHaveTextContent(/2 lần giá chạm mốc/)
   })
 
   it("closes itself once graduated_at comes back (progress refetch)", () => {
