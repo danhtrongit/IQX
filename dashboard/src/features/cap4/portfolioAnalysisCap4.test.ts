@@ -292,14 +292,16 @@ describe("computeCap4PortfolioAnalysis — DELEGATE Cấp 1/2/3, chỉ THÊM ⑩
       cap4Progress(),
       NOW,
     )
-    // Cấp 1 (khối 1/2 + mẫu) + Cấp 2 (khối 3-7) + Cấp 3 (⑦/⑧ + khẩu vị)
+    // Cấp 1/2 (khối ①②③④ sau khi Cấp 2 rút về mô hình 2 nhiệm vụ) + Cấp 3
+    // (⑦/⑧ + khẩu vị). Khối 5/6/7 cũ của Cấp 2 đã bỏ hẳn, không phải "mất".
     expect(res.khoi1).toBeTruthy()
     expect(res.khoi2).toBeTruthy()
     expect(res.khoi3).toBeTruthy()
     expect(res.khoi4).toBeTruthy()
-    expect(res.khoi5).toBeTruthy()
-    expect(res.khoi6).toBeTruthy()
-    expect(res.khoi7).toBeTruthy()
+    const stale = res as unknown as Record<string, unknown>
+    expect(stale.khoi5).toBeUndefined()
+    expect(stale.khoi6).toBeUndefined()
+    expect(stale.khoi7).toBeUndefined()
     expect(res.khoi7TuTin).toBeTruthy()
     expect(res.khoi8KhoiLuong).toBeTruthy()
     expect(res.khauVi).toBe("can_bang")

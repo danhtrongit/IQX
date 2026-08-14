@@ -344,14 +344,15 @@ describe("computeCap5PortfolioAnalysis — cộng dồn: giữ MỌI khối Cấ
     // khối Cấp 3
     expect(res.khoi7TuTin).toBeDefined()
     expect(res.khoi8KhoiLuong).toBeDefined()
-    // khối Cấp 2 / Cấp 1
+    // khối Cấp 2 / Cấp 1 — chỉ còn ①②③④ (Cấp 2 rút về mô hình 2 nhiệm vụ)
     expect(res.khoi1).toBeDefined()
     expect(res.khoi2).toBeDefined()
     expect(res.khoi3).toBeDefined()
     expect(res.khoi4).toBeDefined()
-    expect(res.khoi5).toBeDefined()
-    expect(res.khoi6).toBeDefined()
-    expect(res.khoi7).toBeDefined()
+    const stale = res as unknown as Record<string, unknown>
+    expect(stale.khoi5).toBeUndefined()
+    expect(stale.khoi6).toBeUndefined()
+    expect(stale.khoi7).toBeUndefined()
   })
 
   it("thêm khối ⑫ + 3 số server của Cấp 5", () => {

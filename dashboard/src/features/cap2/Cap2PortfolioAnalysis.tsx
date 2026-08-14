@@ -2,10 +2,8 @@ import { cn } from "@/shared/lib/cn"
 import { LY_DO_OPTIONS, type LyDo } from "@/features/cap1/types"
 import {
   computeCap2PortfolioAnalysis,
-  VI_PHAM_LOAI_LABELS,
   type Cap2DailyScoreRecord,
   type Cap2TradeRecord,
-  type ReflectionPatternId,
 } from "./portfolioAnalysisCap2"
 import type { Cap2Progress } from "./types"
 import "./cap2-analysis.css"
@@ -13,9 +11,10 @@ import "./cap2-analysis.css"
 export interface Cap2PortfolioAnalysisProps {
   progress: Cap2Progress | null
   trades: Cap2TradeRecord[]
+  /** ★ Không còn khối nào của Cấp 2 đọc nhật ký điểm kỷ luật — xem docstring
+   *  của `computeCap2PortfolioAnalysis`. Prop giữ lại vì Cấp 3-8 truyền qua. */
   dailyScores: Cap2DailyScoreRecord[]
-  /** Reference "now" for the date-windowed blocks (Khối 3/6/7 + mẫu 9-11).
-   * Defaults to the real current time; tests pass a fixed instant. */
+  /** Reference "now" — giữ cho tương thích chữ ký; không khối nào còn dùng. */
   now?: Date
 }
 
@@ -37,82 +36,132 @@ function fmtVndSigned(n: number): string {
   return `${sign}${Math.abs(rounded).toLocaleString("en-US")} ₫`
 }
 
+/** Splits on `**bold**` markers and renders them as `<strong>` — cùng quy ước
+ *  `GraduationModalCap2`/`cap0/GraduationModal.tsx` đang dùng. */
+function renderInlineBold(text: string) {
+  return text.split("**").map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : part))
+}
+
 const SECTION_HEADER =
   "text-[10px] font-bold uppercase tracking-wider text-[rgb(var(--primary-6))]"
 const CARD =
   "space-y-2 rounded-md border border-[var(--color-border-2)] bg-[var(--color-bg-2)] p-3"
 
-const PATTERN_LABEL: Record<ReflectionPatternId, string> = {
-  loss_aversion: "Sợ mất lãi (loss aversion)",
-  chi_so_hoa: "Chỉ số hóa",
-  fomo: "FOMO",
-  tin_tuc: "Phản ứng theo tin",
-  khong_tin_phan_tich: "Không tin phân tích",
-  cam_xuc_manh: "Cảm xúc mạnh",
-}
+/**
+ * Tiêu đề 4 khối — nguyên văn mockup `iqx-cap2-phantich-danhmuc.html` (số
+ * khoanh tròn ①..④), kèm hai loại nhãn phụ mockup vẽ: "(giữ từ Cấp 1)" và
+ * "mới ở Cấp 2".
+ */
+const KHOI_TITLE = {
+  khoi1: "① Hồ sơ tổng quan",
+  khoi2: "② Thắng / thua theo 5 lý do",
+  khoi3: "③ Độ phủ 5 lý do",
+  khoi4: "④ Bạn đã dùng cơ chế cắt lỗ / chốt lời thế nào",
+} as const
+
+const KEEP_FLAG = "text-[9px] font-normal normal-case tracking-normal text-[var(--color-text-3)]"
+const ADD_FLAG =
+  "rounded-full bg-[rgba(125,211,192,0.16)] px-[7px] py-[2px] text-[9px] font-bold normal-case tracking-normal text-[#7dd3c0]"
 
 /**
- * Trang Phân tích danh mục Cấp 2 (spec `IQX-Cap2-Spec.md` §12).
+ * Trang Phân tích danh mục Cấp 2 — 4 khối của mockup
+ * `iqx-cap2-phantich-danhmuc.html`.
  *
- * **Does NOT reuse `Cap1PortfolioAnalysis` (documented choice):** its
- * internal Khối1-4 renderers are module-private (not exported), and per §12
- * Khối 1's label, Khối 3's content (5-lý-do coverage → 4-loại vi phạm) and
- * Khối 4's content (6-nhiệm-vụ checklist → cửa sổ 20 lệnh) all need to
- * DIFFER for Cấp 2 anyway. Instead this component renders its own JSX for
- * all 7 khối, sourcing Khối 1/2's DATA (not markup) from
- * `computeCap2PortfolioAnalysis`, which itself delegates that compute to
- * `computeCap1PortfolioAnalysis` — the delegation happens at the compute
- * layer, matching Cấp 1's exact numbers/thresholds without re-implementing
- * them.
+ * **Does NOT reuse `Cap1PortfolioAnalysis` (documented choice):** its internal
+ * khối renderers are module-private (not exported), and khối ① của Cấp 2 thêm
+ * hai ô thống kê riêng còn khối ③ rút gọn so với Cấp 1. Component này vẽ JSX
+ * riêng cho cả 4 khối, nhưng lấy DỮ LIỆU (không phải markup) từ
+ * `computeCap2PortfolioAnalysis`, vốn uỷ quyền ①②③ xuống
+ * `computeCap1PortfolioAnalysis` — trùng khớp con số của Cấp 1 mà không viết
+ * lại phép tính.
  *
- * Fully presentational (mirrors `Cap1PortfolioAnalysis`'s convention): the
- * real container wires `trades`/`dailyScores` from whatever Cấp-2 history
- * mechanism exists (out of this task's scope — see `portfolioAnalysisCap2.ts`'s
- * docstring) and passes them in as props.
+ * ★ **KHÔNG chép `:root` của mockup.** Hai file mockup mới đặt `--t2`/`--t3`
+ * bằng `--t1` (`#f0f2f7`); mang vào app sẽ làm trắng xoá mọi chữ phụ ở MỌI cấp.
+ *
+ * Fully presentational (mirrors `Cap1PortfolioAnalysis`): container thật
+ * (`Cap2PortfolioAnalysisPanel`) nối `progress`/`trades` vào và truyền xuống.
  */
-export function Cap2PortfolioAnalysis({ progress, trades, dailyScores, now }: Cap2PortfolioAnalysisProps) {
+export function Cap2PortfolioAnalysis({
+  progress,
+  trades,
+  dailyScores,
+  now,
+}: Cap2PortfolioAnalysisProps) {
   const result = computeCap2PortfolioAnalysis(trades, dailyScores, progress, now)
+  const { khoi1, khoi3, khoi4 } = result
 
   return (
     <div className="space-y-3">
-      {/* Khối 1 — hồ sơ tổng quan (label Cấp 2, spec §12) */}
+      {/* ① Hồ sơ tổng quan — Cấp 1 + 2 ô thống kê riêng của Cấp 2 */}
       <div className={CARD} data-testid="cap2-pa-khoi1">
-        <div className={SECTION_HEADER}>{"HỒ SƠ NHÀ ĐẦU TƯ CỦA BẠN · Cấp 2 «Kỷ luật»"}</div>
-        <p className="text-xs text-[var(--color-text-2)]">
-          {`${result.khoi1.totalTrades} lệnh Thực chiến`}
+        <div className={SECTION_HEADER}>{KHOI_TITLE.khoi1}</div>
+        <p className="text-[10.5px] text-[var(--color-text-3)]">
+          {"Cấp 2 «Kỷ luật»"}
+          {` · ${khoi1.totalTrades} lệnh`}
           {progress ? ` · từ ${fmtDate(progress.entered_at)}` : null}
         </p>
-        {result.khoi1.totalTrades > 0 ? (
-          <>
-            <p className="text-xs text-[var(--color-text-1)]">
-              {`Tỷ lệ thắng: ${result.khoi1.winRate}% · ${result.khoi1.wins} lãi / ${result.khoi1.losses} lỗ`}
-            </p>
-            {result.khoi1.preferredLyDo && (
-              <p className="text-xs text-[var(--color-text-1)]">
-                {`Cách chọn ưa thích: ${lyDoIcon(result.khoi1.preferredLyDo)} ${lyDoLabel(result.khoi1.preferredLyDo)} (${result.khoi1.preferredLyDoCount} lần dùng)`}
-              </p>
-            )}
-          </>
-        ) : (
-          <p className="text-xs text-[var(--color-text-3)]">{"Chưa có lệnh Thực chiến nào đã đóng."}</p>
+
+        <div className="cap2-pa-stats">
+          <div className="cap2-pa-stat cap2-pa-stat--main">
+            <span className="cap2-pa-stat-label">Tỷ lệ thắng</span>
+            <span
+              className={cn(
+                "cap2-pa-stat-value cap2-pa-stat-value--main",
+                khoi1.winRate != null && khoi1.winRate >= 50 && "text-up",
+              )}
+              data-testid="cap2-pa-winrate"
+            >
+              {khoi1.winRate != null ? `${khoi1.winRate}%` : "—"}
+            </span>
+            <span className="cap2-pa-stat-sub">
+              {khoi1.totalTrades > 0
+                ? `${khoi1.wins} lãi / ${khoi1.losses} lỗ`
+                : "chưa có lệnh đã đóng"}
+            </span>
+          </div>
+
+          <div className="cap2-pa-stat">
+            <span className="cap2-pa-stat-label">Đã đặt CL/CL</span>
+            <span className="cap2-pa-stat-value cap2-pa-stat-value--teal" data-testid="cap2-pa-slp-orders">
+              {`${khoi4.soLenhCoSlTp}/${khoi4.soLenhCoSlTpTarget}`}
+            </span>
+            <span className="cap2-pa-stat-sub">mọi lệnh</span>
+          </div>
+
+          <div className="cap2-pa-stat">
+            <span className="cap2-pa-stat-label">Thực hiện đúng</span>
+            <span className="cap2-pa-stat-value cap2-pa-stat-value--teal" data-testid="cap2-pa-exec-total">
+              {khoi4.tongDung}
+            </span>
+            <span className="cap2-pa-stat-sub">khi giá chạm mốc</span>
+          </div>
+        </div>
+
+        {khoi1.preferredLyDo && (
+          <p className="text-xs text-[var(--color-text-1)]">
+            {`Cách chọn ưa thích: ${lyDoIcon(khoi1.preferredLyDo)} ${lyDoLabel(khoi1.preferredLyDo)} (${khoi1.preferredLyDoCount} lần dùng)`}
+          </p>
         )}
       </div>
 
-      {/* Khối 2 — bảng thắng/thua theo 5 lý do (delegated, unchanged) */}
+      {/* ② Bảng thắng/thua theo 5 lý do (uỷ quyền Cấp 1, không đổi) */}
       {result.hideKhoi2 ? (
         <div className={CARD} data-testid="cap2-pa-khoi2-hidden">
           <p className="text-xs text-[var(--color-text-3)]">{result.khoi2HiddenNote}</p>
         </div>
       ) : (
         <div className={CARD} data-testid="cap2-pa-khoi2">
-          <div className={SECTION_HEADER}>{"BẢNG THẮNG/THUA THEO 5 LÝ DO"}</div>
+          <div className={cn(SECTION_HEADER, "flex items-center gap-2")}>
+            <span>{KHOI_TITLE.khoi2}</span>
+            <span className={KEEP_FLAG}>(giữ từ Cấp 1)</span>
+          </div>
           <table className="w-full text-xs">
             <thead>
               <tr className="text-left text-[var(--color-text-3)]">
                 <th className="py-1 font-medium">Lý do</th>
-                <th className="py-1 font-medium">Số lệnh</th>
-                <th className="py-1 font-medium">Tỷ lệ thắng</th>
-                <th className="py-1 font-medium">Tổng lãi/lỗ</th>
+                <th className="py-1 font-medium">Lệnh</th>
+                <th className="py-1 font-medium">Thắng</th>
+                <th className="py-1 font-medium">Lãi/lỗ</th>
               </tr>
             </thead>
             <tbody>
@@ -139,166 +188,94 @@ export function Cap2PortfolioAnalysis({ progress, trades, dailyScores, now }: Ca
         </div>
       )}
 
-      {/* Khối 3 — vi phạm theo 4 loại (§12 adjustment) */}
+      {/* ③ Độ phủ 5 lý do (uỷ quyền Cấp 1) */}
       <div className={CARD} data-testid="cap2-pa-khoi3">
-        <div className={SECTION_HEADER}>{`DANH SÁCH VI PHẠM · ${result.khoi3.windowDays} NGÀY QUA`}</div>
-        {result.khoi3.note ? (
-          <p className="text-xs text-[var(--color-text-3)]">{result.khoi3.note}</p>
-        ) : (
-          <ul className="space-y-1 text-xs text-[var(--color-text-1)]">
-            {result.khoi3.rows.map((row) => (
-              <li key={row.loai} className="flex items-center justify-between">
-                <span>{VI_PHAM_LOAI_LABELS[row.loai]}</span>
-                <span className="tabular-nums text-[var(--color-text-2)]">
-                  {`${row.count} lần${row.pct != null ? ` (${row.pct}%)` : ""}`}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* Khối 4 — cửa sổ 20 lệnh + điều kiện lên Cấp 3 (§12 adjustment) */}
-      <div className={CARD} data-testid="cap2-pa-khoi4">
-        <div className={SECTION_HEADER}>{"CỬA SỔ 20 LỆNH GẦN NHẤT"}</div>
-        <div className="cap2-pa-khoi4-grid">
-          {result.khoi4.cells.map((cell, i) => (
+        <div className={cn(SECTION_HEADER, "flex items-center gap-2")}>
+          <span>{KHOI_TITLE.khoi3}</span>
+          <span className={KEEP_FLAG}>(giữ từ Cấp 1)</span>
+        </div>
+        <div className="cap2-pa-coverage">
+          {LY_DO_OPTIONS.map((opt) => (
             <span
-              key={`${cell.orderId}-${i}`}
-              className={cn("cap2-pa-khoi4-cell", cell.viPham && "cap2-pa-khoi4-cell--vipham")}
-              title={cell.orderId}
-            />
-          ))}
-        </div>
-        <p
-          className={cn(
-            "text-xs",
-            result.khoi4.readyToGraduate ? "font-semibold text-up" : "text-[var(--color-text-2)]",
-          )}
-        >
-          {result.khoi4.readyToGraduate ? `🎉 ${result.khoi4.note}` : result.khoi4.note}
-        </p>
-      </div>
-
-      {/* Khối 5 — điểm kỷ luật 30 ngày */}
-      <div className={CARD} data-testid="cap2-pa-khoi5">
-        <div className={SECTION_HEADER}>{"ĐIỂM KỶ LUẬT · 30 NGÀY"}</div>
-        {result.khoi5.series.length > 0 && (
-          <div className="cap2-pa-khoi5-chart">
-            {result.khoi5.series.map((d, i) => (
-              <span
-                key={`${d.ngay}-${i}`}
-                className={cn("cap2-pa-khoi5-bar", `cap2-pa-khoi5-bar--${d.xepLoai}`)}
-                style={{ height: `${Math.max(4, d.diem)}%` }}
-                title={`${d.ngay}: ${d.diem}`}
-              />
-            ))}
-          </div>
-        )}
-        <div className="cap2-pa-khoi5-avg-row">
-          <div className="cap2-pa-khoi5-avg">
-            <span className="cap2-pa-khoi5-avg-label">TB 7 ngày</span>
-            <span className="cap2-pa-khoi5-avg-value" data-testid="cap2-pa-khoi5-avg7">
-              {result.khoi5.avg7 ?? "—"}
-            </span>
-          </div>
-          <div className="cap2-pa-khoi5-avg">
-            <span className="cap2-pa-khoi5-avg-label">TB 30 ngày</span>
-            <span className="cap2-pa-khoi5-avg-value" data-testid="cap2-pa-khoi5-avg30">
-              {result.khoi5.avg30 ?? "—"}
-            </span>
-          </div>
-        </div>
-        <div className="cap2-pa-khoi5-dist">
-          <span>
-            <span className="cap2-pa-khoi5-dist-dot cap2-pa-khoi5-dist-dot--xanh" />
-            Xanh <b>{result.khoi5.distribution.xanh}</b>
-          </span>
-          <span>
-            <span className="cap2-pa-khoi5-dist-dot cap2-pa-khoi5-dist-dot--vang" />
-            Vàng <b>{result.khoi5.distribution.vang}</b>
-          </span>
-          <span>
-            <span className="cap2-pa-khoi5-dist-dot cap2-pa-khoi5-dist-dot--do" />
-            Đỏ <b>{result.khoi5.distribution.do}</b>
-          </span>
-        </div>
-        {result.khoi5.insufficientNote && (
-          <p className="text-xs text-[var(--color-text-3)]">{result.khoi5.insufficientNote}</p>
-        )}
-      </div>
-
-      {/* Khối 6 — phân loại vi phạm theo tuần */}
-      <div className={CARD} data-testid="cap2-pa-khoi6">
-        <div className={SECTION_HEADER}>{"PHÂN LOẠI VI PHẠM THEO TUẦN"}</div>
-        <table className="cap2-pa-khoi6-table">
-          <thead>
-            <tr>
-              <th>Tuần</th>
-              <th>Cắt lỗ chậm</th>
-              <th>Chốt lời hụt</th>
-              <th>Bán sớm</th>
-              <th>Nhồi lệnh</th>
-            </tr>
-          </thead>
-          <tbody>
-            {result.khoi6.weeks.map((week) => (
-              <tr key={week.weekIndex}>
-                <td>{`Tuần ${week.weekIndex + 1}`}</td>
-                <td>{week.counts.cat_lo_cham}</td>
-                <td>{week.counts.chot_loi_hut}</td>
-                <td>{week.counts.ban_som_khi_lo}</td>
-                <td>{week.counts.nhoi_lenh}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <p className="text-xs text-[var(--color-text-2)]">{result.khoi6.trendNote}</p>
-      </div>
-
-      {/* Khối 7 — phát hiện từ ghi chú */}
-      <div className={CARD} data-testid="cap2-pa-khoi7">
-        <div className={SECTION_HEADER}>{"REFLECTION INSIGHTS · 4 TUẦN GẦN NHẤT"}</div>
-        {result.khoi7.insufficientNote ? (
-          <p className="text-xs text-[var(--color-text-3)]">{result.khoi7.insufficientNote}</p>
-        ) : result.khoi7.insights.length > 0 ? (
-          result.khoi7.insights.map((insight) => (
-            <div key={insight.patternId} className="cap2-pa-khoi7-insight">
-              <div className="text-[11px] font-semibold text-[var(--color-text-1)]">
-                {PATTERN_LABEL[insight.patternId]}
-              </div>
-              <p>{insight.text}</p>
-            </div>
-          ))
-        ) : (
-          <p className="text-xs text-[var(--color-text-3)]">
-            {"Không phát hiện mẫu nội tâm rõ rệt trong các ghi chú."}
-          </p>
-        )}
-      </div>
-
-      {/* Mẫu tự phát hiện — mẫu 1-3 (Cấp 1) + mẫu 9-12 (Cấp 2), tối đa 3 */}
-      {result.mauPhatHien.length > 0 ? (
-        <div className={CARD} data-testid="cap2-pa-mau">
-          <div className={SECTION_HEADER}>{"MẪU TỰ PHÁT HIỆN"}</div>
-          {result.mauPhatHien.map((mau) => (
-            <p
-              key={mau.id}
-              className="text-xs text-[var(--color-text-1)]"
-              data-testid={`cap2-pa-mau-${mau.id}`}
+              key={opt.value}
+              data-testid={`cap2-pa-coverage-${opt.value}`}
+              className={khoi3.coverage[opt.value] ? "" : "cap2-pa-coverage-off"}
             >
-              {mau.text}
-            </p>
+              {opt.icon}
+            </span>
           ))}
         </div>
-      ) : (
-        result.mauInsufficientNote && (
-          <div className={CARD} data-testid="cap2-pa-mau-empty">
-            <div className={SECTION_HEADER}>{"MẪU TỰ PHÁT HIỆN"}</div>
-            <p className="text-xs text-[var(--color-text-3)]">{result.mauInsufficientNote}</p>
+        <div className="flex items-center justify-between text-xs text-[var(--color-text-2)]">
+          <span>Đã dùng</span>
+          <span
+            className={cn("tabular-nums font-semibold", khoi3.usedCount >= 4 && "text-up")}
+            data-testid="cap2-pa-coverage-count"
+          >
+            {`${khoi3.usedCount}/${LY_DO_OPTIONS.length}`}
+          </span>
+        </div>
+      </div>
+
+      {/* ④ Bạn đã dùng cơ chế cắt lỗ / chốt lời thế nào — MỚI ở Cấp 2 */}
+      <div className={CARD} data-testid="cap2-pa-khoi4">
+        <div className={cn(SECTION_HEADER, "flex flex-wrap items-center gap-2")}>
+          <span>{KHOI_TITLE.khoi4}</span>
+          <span className={ADD_FLAG}>mới ở Cấp 2</span>
+        </div>
+
+        <div className="cap2-pa-exec">
+          <div className="cap2-pa-exec-box">
+            <div className="cap2-pa-exec-ic">🛑</div>
+            <div className="cap2-pa-exec-value" data-testid="cap2-pa-exec-catlo">
+              {khoi4.catLoDung}
+            </div>
+            <div className="cap2-pa-exec-label">
+              lần cắt lỗ
+              <br />
+              khi giá chạm
+            </div>
           </div>
-        )
-      )}
+          <div className="cap2-pa-exec-box">
+            <div className="cap2-pa-exec-ic">🎯</div>
+            <div className="cap2-pa-exec-value" data-testid="cap2-pa-exec-chotloi">
+              {khoi4.chotLoiDung}
+            </div>
+            <div className="cap2-pa-exec-label">
+              lần chốt lời
+              <br />
+              khi giá chạm
+            </div>
+          </div>
+          <div className="cap2-pa-exec-box">
+            <div className="cap2-pa-exec-ic">✅</div>
+            <div className="cap2-pa-exec-value" data-testid="cap2-pa-exec-tong">
+              {khoi4.tongDung}
+            </div>
+            <div className="cap2-pa-exec-label">
+              tổng lần
+              <br />
+              thực hiện đúng
+            </div>
+          </div>
+        </div>
+
+        {khoi4.patternNote && (
+          <div className="cap2-pa-pat cap2-pa-pat--good" data-testid="cap2-pa-pat-good">
+            <span className="cap2-pa-pat-ic">🎓</span>
+            <span className="cap2-pa-pat-text">{khoi4.patternNote}</span>
+          </div>
+        )}
+        {khoi4.emptyNote && (
+          <div className="cap2-pa-pat cap2-pa-pat--empty" data-testid="cap2-pa-pat-empty">
+            <span className="cap2-pa-pat-ic">⏳</span>
+            <span className="cap2-pa-pat-text">{khoi4.emptyNote}</span>
+          </div>
+        )}
+        <div className="cap2-pa-pat cap2-pa-pat--info" data-testid="cap2-pa-pat-info">
+          <span className="cap2-pa-pat-ic">💡</span>
+          <span className="cap2-pa-pat-text">{renderInlineBold(khoi4.scopeNote)}</span>
+        </div>
+      </div>
     </div>
   )
 }

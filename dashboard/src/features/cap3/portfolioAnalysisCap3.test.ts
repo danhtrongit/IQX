@@ -251,7 +251,7 @@ describe("computeCap3Khoi8KhoiLuong — ⑧ khối lượng có đi theo tự ti
 describe("computeCap3PortfolioAnalysis — delegation to Cấp 2 (cộng dồn)", () => {
   const now = new Date("2026-07-15T00:00:00Z")
 
-  it("keeps every Cấp 1-2 khối (1-7 + mẫu) by delegating to computeCap2PortfolioAnalysis", () => {
+  it("keeps every Cấp 1-2 khối (①②③④) by delegating to computeCap2PortfolioAnalysis", () => {
     const trades = [
       ...tradesFor(3, 4, 3, { closedAt: "2026-07-01T00:00:00Z" }),
       ...tradesFor(1, 4, 1, { closedAt: "2026-07-02T00:00:00Z" }),
@@ -266,13 +266,15 @@ describe("computeCap3PortfolioAnalysis — delegation to Cấp 2 (cộng dồn)"
     // Khối 1/2 delegated from Cấp 1 through Cấp 2.
     expect(result.khoi1.totalTrades).toBe(8)
     expect(result.khoi2).toHaveLength(5)
-    // Cấp 2's own khối 3-7 all present and unchanged in shape.
-    expect(result.khoi3.windowDays).toBe(30)
-    expect(result.khoi4.readyToGraduate).toBe(true)
-    expect(result.khoi5.series).toHaveLength(1)
-    expect(result.khoi6.weeks).toHaveLength(4)
-    expect(result.khoi7.totalNotes).toBe(0)
-    expect(Array.isArray(result.mauPhatHien)).toBe(true)
+    // ③ độ phủ 5 lý do + ④ cơ chế cắt lỗ/chốt lời — 4 khối của mô hình 2 nhiệm
+    // vụ, không còn khối vi phạm/điểm kỷ luật/ghi chú nào để giữ.
+    expect(result.khoi3.usedCount).toBeGreaterThan(0)
+    expect(result.khoi4.tongDung).toBe(0)
+    expect(result.khoi4.scopeNote).toContain("làm quen cơ chế")
+    const stale = result as unknown as Record<string, unknown>
+    expect(stale.khoi5).toBeUndefined()
+    expect(stale.khoi6).toBeUndefined()
+    expect(stale.mauPhatHien).toBeUndefined()
   })
 
   it("adds khối ⑦ + ⑧ under distinct keys (no clash with Cấp 2's khoi7 ghi chú)", () => {
@@ -285,8 +287,9 @@ describe("computeCap3PortfolioAnalysis — delegation to Cấp 2 (cộng dồn)"
     )
     expect(result.khoi7TuTin.rows).toHaveLength(3)
     expect(result.khoi8KhoiLuong.rows).toHaveLength(3)
-    // Cấp 2's khối 7 (phát hiện từ ghi chú) is a DIFFERENT block, still there.
-    expect(result.khoi7).not.toBe(result.khoi7TuTin)
+    // Cấp 2's old «khoi7 ghi chú» is gone with the 5-nhiệm-vụ model, so ⑦/⑧
+    // keep their distinct keys with nothing left to clash against.
+    expect((result as unknown as Record<string, unknown>).khoi7).toBeUndefined()
     expect(result.khoi7TuTin.phatHien).toMatch(/đáng tin/)
   })
 
@@ -308,7 +311,7 @@ describe("computeCap3PortfolioAnalysis — delegation to Cấp 2 (cộng dồn)"
     expect(result.khauViPct).toBeNull()
   })
 
-  it("⑦/⑧ dùng TOÀN BỘ nhật ký Cấp 3, không cắt cửa sổ 30 ngày như khối 3", () => {
+  it("⑦/⑧ dùng TOÀN BỘ nhật ký Cấp 3 (không cửa sổ thời gian)", () => {
     const old = tradesFor(3, 3, 3, { closedAt: "2026-04-01T00:00:00Z" })
     const recent = tradesFor(1, 3, 0, { closedAt: "2026-07-14T00:00:00Z" })
     const result = computeCap3PortfolioAnalysis(
@@ -318,8 +321,9 @@ describe("computeCap3PortfolioAnalysis — delegation to Cấp 2 (cộng dồn)"
       cap3Progress(),
       now,
     )
-    // Khối 3 (Cấp 2, cửa sổ 30 ngày) only sees the recent 3.
-    expect(result.khoi3.totalTrades).toBe(3)
+    // Khối ① (uỷ quyền Cấp 1 qua Cấp 2) đếm cả 6 — mô hình 2 nhiệm vụ không
+    // còn khối nào cắt theo cửa sổ 30 ngày.
+    expect(result.khoi1.totalTrades).toBe(6)
     // Khối ⑦ sees all 6 (the Cấp 3 log only starts at Cấp 3 anyway).
     expect(result.khoi7TuTin.totalTrades).toBe(6)
   })

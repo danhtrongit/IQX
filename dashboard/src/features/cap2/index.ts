@@ -31,6 +31,7 @@ export {
 export {
   isSlTpValid,
   countCap2TasksDone,
+  CAP2_TOTAL_TASKS,
   type Cap2Progress,
   type DiemKyLuat,
   type DiemKyLuatThanhPhan,
@@ -85,26 +86,13 @@ export {
 } from "./KetsoModalCap2"
 export {
   computeCap2PortfolioAnalysis,
-  computeKhoi5Cap2,
-  computeKhoi6Cap2,
-  computeKhoi7Cap2,
+  computeSlTpUsageCap2,
+  SL_TP_ORDERS_TARGET,
   VI_PHAM_LOAI_LABELS,
   type Cap2TradeRecord,
   type Cap2DailyScoreRecord,
   type ViPhamLoai,
-  type Khoi3ViPhamRow,
-  type Cap2Khoi3,
-  type Khoi4Cell,
-  type Cap2Khoi4,
-  type Cap2Khoi5,
-  type Khoi6WeekRow,
-  type Khoi6Trend,
-  type Cap2Khoi6,
-  type ReflectionPatternId,
-  type Khoi7Insight,
-  type Cap2Khoi7,
-  type MauPhatHienCap2Id,
-  type MauPhatHienCap2,
+  type Cap2SlTpUsage,
   type Cap2PortfolioAnalysisResult,
 } from "./portfolioAnalysisCap2"
 export {

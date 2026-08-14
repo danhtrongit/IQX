@@ -12,13 +12,17 @@ import type { CachKhoiLuong, Cap3Progress, KhauViLoai, MucTuTin } from "./types"
 /**
  * Cấp 3 Phân tích danh mục (spec `IQX-Cap3-Spec.md` §8) — pure compute.
  *
- * **Delegation, not duplication:** MỌI khối Cấp 1-2 (khối 1 hồ sơ, khối 2 bảng
- * 5 lý do, khối 3 vi phạm 30 ngày, khối 4 cửa sổ 20 lệnh, khối 5 điểm kỷ luật,
- * khối 6 vi phạm theo tuần, khối 7 phát hiện từ ghi chú, mẫu 1-3 + 9-12) đều
- * do `computeCap2PortfolioAnalysis` tính — module này KHÔNG viết lại phép tính
- * nào của Cấp 1/Cấp 2 (và Cấp 2 lại delegate khối 1/2/mẫu 1-3 xuống
+ * **Delegation, not duplication:** MỌI khối Cấp 1-2 (① hồ sơ, ② bảng 5 lý do,
+ * ③ độ phủ 5 lý do, ④ cơ chế cắt lỗ/chốt lời) đều do
+ * `computeCap2PortfolioAnalysis` tính — module này KHÔNG viết lại phép tính nào
+ * của Cấp 1/Cấp 2 (và Cấp 2 lại delegate ①②③ xuống
  * `computeCap1PortfolioAnalysis`). `Cap3TradeRecord extends Cap2TradeRecord`
  * nên mảng lệnh được truyền THẲNG xuống, không map/copy.
+ *
+ * ★ Cấp 2 đã rút về mô hình 2 nhiệm vụ: các khối «vi phạm 30 ngày», «cửa sổ 20
+ * lệnh», «điểm kỷ luật 30 ngày», «vi phạm theo tuần», «phát hiện từ ghi chú» và
+ * «mẫu 9-12» KHÔNG còn tồn tại. Khi mở lại Cấp 3, phần Phân tích danh mục ở đây
+ * phải được đặc tả lại trên nền 4 khối mới chứ không trông chờ chúng quay về.
  *
  * Cấp 3 chỉ THÊM 2 khối mới:
  *   - **⑦ Thắng/thua theo mức tự tin** — 3 hàng (số lệnh · tỷ lệ thắng ·
@@ -28,10 +32,9 @@ import type { CachKhoiLuong, Cap3Progress, KhauViLoai, MucTuTin } from "./types"
  * và surface `khauVi` cho khối ① (spec §8: "thêm hiển thị khẩu vị đang dùng").
  *
  * **CẢNH BÁO đánh số:** spec §8 đánh lại số các khối cho Cấp 3 (⑦ = tự tin,
- * ⑧ = khối lượng), trong khi `Cap2PortfolioAnalysisResult` ĐÃ có `khoi7`
- * (phát hiện từ ghi chú — khối ⑥ trong cách đánh số của Cấp 3). Để không phá
- * hợp đồng của Cấp 2 và không gây nhầm, 2 khối mới mang key riêng
- * `khoi7TuTin` / `khoi8KhoiLuong`; `khoi7` giữ nguyên nghĩa Cấp 2.
+ * ⑧ = khối lượng). Hai khối mới giữ key riêng `khoi7TuTin` / `khoi8KhoiLuong`
+ * — trước đây để tránh đụng `khoi7` (phát hiện từ ghi chú) của Cấp 2; khối đó
+ * nay đã bỏ, nhưng key riêng vẫn đúng và đọc rõ nghĩa hơn nên giữ nguyên.
  *
  * **Honesty over fake data (task brief):** nguồn dữ liệu duy nhất của ⑦/⑧ là
  * `muc_tu_tin` / `cach_khoi_luong` / `khoi_luong` / `pct_von` của từng lệnh đã
@@ -308,7 +311,7 @@ export interface Cap3PortfolioAnalysisResult extends Cap2PortfolioAnalysisResult
   khauVi: KhauViLoai | null
   /** % trần vốn/lệnh của khẩu vị đó — `null` khi chưa đặt. */
   khauViPct: number | null
-  /** ⑦ Thắng/thua theo mức tự tin (khác `khoi7` của Cấp 2 — xem docstring). */
+  /** ⑦ Thắng/thua theo mức tự tin — xem CẢNH BÁO đánh số ở docstring module. */
   khoi7TuTin: Cap3Khoi7TuTin
   /** ⑧ Khối lượng có đi theo tự tin không. */
   khoi8KhoiLuong: Cap3Khoi8KhoiLuong

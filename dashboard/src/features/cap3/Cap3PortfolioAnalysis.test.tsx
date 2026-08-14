@@ -111,9 +111,11 @@ describe("Cap3PortfolioAnalysis — giữ mọi khối Cấp 1-2 (cộng dồn)"
     expect(screen.getByTestId("cap2-pa-khoi2")).toBeInTheDocument()
     expect(screen.getByTestId("cap2-pa-khoi3")).toBeInTheDocument()
     expect(screen.getByTestId("cap2-pa-khoi4")).toBeInTheDocument()
-    expect(screen.getByTestId("cap2-pa-khoi5")).toBeInTheDocument()
-    expect(screen.getByTestId("cap2-pa-khoi6")).toBeInTheDocument()
-    expect(screen.getByTestId("cap2-pa-khoi7")).toBeInTheDocument()
+    // ★ Cấp 2 mô hình 2 nhiệm vụ chỉ còn 4 khối — «Điểm kỷ luật 30 ngày»,
+    // «Phân loại vi phạm theo tuần» và «Phát hiện từ ghi chú» đã bỏ hẳn.
+    expect(screen.queryByTestId("cap2-pa-khoi5")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap2-pa-khoi6")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap2-pa-khoi7")).not.toBeInTheDocument()
   })
 
   it("khối ① Cấp 3 hiện khẩu vị rủi ro đang dùng (spec §8)", () => {

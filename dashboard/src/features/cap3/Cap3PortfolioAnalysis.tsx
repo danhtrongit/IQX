@@ -15,10 +15,9 @@ import type { Cap3Progress, KhauViLoai } from "./types"
  * Trang Phân tích danh mục Cấp 3 (spec `IQX-Cap3-Spec.md` §8).
  *
  * **TÁI SỬ DỤNG Ở TẦNG COMPONENT (documented choice):** mọi khối Cấp 1-2 được
- * render bằng CHÍNH `Cap2PortfolioAnalysis` (khối 1 hồ sơ, khối 2 bảng 5 lý do,
- * khối 3 vi phạm, khối 4 cửa sổ 20 lệnh, khối 5 điểm kỷ luật, khối 6 vi phạm
- * theo tuần, khối 7 phát hiện từ ghi chú, mẫu tự phát hiện) — KHÔNG mirror lại
- * markup như Cấp 2 phải làm với Cấp 1. Lý do khác nhau: `Cap2PortfolioAnalysis`
+ * render bằng CHÍNH `Cap2PortfolioAnalysis` (① hồ sơ, ② bảng 5 lý do, ③ độ phủ
+ * 5 lý do, ④ cơ chế cắt lỗ/chốt lời — 4 khối của mô hình 2 nhiệm vụ) — KHÔNG
+ * mirror lại markup như Cấp 2 phải làm với Cấp 1. Lý do khác nhau: `Cap2PortfolioAnalysis`
  * là component THUẦN TRÌNH BÀY nhận `trades`/`dailyScores`/`progress` qua props
  * và không bọc modal/không sở hữu state, còn `Cap3TradeRecord extends
  * Cap2TradeRecord` nên mảng lệnh truyền thẳng vào được; hơn nữa spec §8 nói rõ
