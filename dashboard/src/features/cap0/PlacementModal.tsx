@@ -30,7 +30,7 @@ interface PlacementModalProps {
  * **v3.0 thay 2 nút cũ bằng 3 lựa chọn**, và bài xếp lớp 5 phút đã bị bỏ hẳn.
  *
  * ★ **Trần xếp lớp bị kẹp xuống Cấp 1** trong lúc Cấp 2-8 tạm tắt (xem
- * `CAP_2_PLUS_ENABLED` trong `features/cap1/DauTruongPage.tsx`). Spec §3 viết
+ * `CAP_MAX_ENABLED` trong `features/cap1/capFlags.ts`). Spec §3 viết
  * nhánh thứ ba là "→ Cấp 2 «Kỷ luật»", nhưng Cấp 2 chưa mở, nên copy ở đây
  * **không được nhắc tới Cấp 2**: nói đúng nơi user thực sự tới. Khi bật lại Cấp
  * 2, đổi dòng phụ của nhánh `regular` về đúng câu spec.

@@ -2,23 +2,33 @@ import { Message, Modal } from "@arco-design/web-react"
 import { Badge, LEVELS } from "@/features/cap0/Badge"
 import "@/features/cap0/cap0.css"
 import "./cap1.css"
-import { CAP_2_PLUS_ENABLED } from "./capFlags"
+import { CAP_MAX_ENABLED } from "./capFlags"
 import { useCap1Progress, useGraduateCap1 } from "./hooks"
 import { countCap1TasksDone, type Cap1Progress } from "./types"
-// ★ CẤP 2 TẠM TẮT (xem docstring của `CAP_2_PLUS_ENABLED` trong `./capFlags` —
-// cờ sống ở file riêng chứ không ở `DauTruongPage.tsx`, vì file này không thể
-// import file đó: vòng `DauTruongPage → Cap1TradingPage → GraduationModalCap1`).
+// Cấp 2 sống khi `CAP_MAX_ENABLED >= 2` (xem docstring của trần trong
+// `./capFlags` — nó ở file riêng chứ không ở `DauTruongPage.tsx`, vì file này
+// không thể import file đó: vòng `DauTruongPage → Cap1TradingPage →
+// GraduationModalCap1`).
 //
-// Câu chữ đã GẮN THEO CỜ (Khối 3 + dòng "sắp ra mắt" dưới CTA) nên bật lại cờ
-// là chúng tự đúng. Thứ DUY NHẤT còn phải nối tay là cái import đã gỡ hẳn:
-//   1. `import { useEnterCap2 } from "@/features/cap2/hooks"` — concrete-file
-//      import (KHÔNG dùng barrel `@/features/cap2`), theo đúng anti-cycle
-//      rationale mà `cap0/GraduationModal.tsx` đã ghi cho import
-//      `@/features/cap1/hooks` của nó (barrel đó re-export `Cap2TradingPage`,
-//      vốn import `CenterPanel`/`RightSidebar`/`RightToolbar` từ
-//      `@/features/dashboard`);
-//   2. `const enterCap2 = useEnterCap2()` + `onSuccess: () => enterCap2.mutate()`
-//      thay cho toast `Message.info("… sắp ra mắt …")` bên dưới.
+// ★ Import CỤ THỂ (`@/features/cap2/hooks`), KHÔNG dùng barrel `@/features/cap2`
+// — theo đúng anti-cycle rationale mà `cap0/GraduationModal.tsx` đã ghi cho
+// import `@/features/cap1/hooks` của nó: barrel đó re-export `Cap2TradingPage`,
+// vốn import `CenterPanel`/`RightSidebar`/`RightToolbar` từ
+// `@/features/dashboard`.
+import { useEnterCap2 } from "@/features/cap2/hooks"
+
+/**
+ * Cấp 2 đã mở chưa — quyết định Khối 3, dòng dưới CTA, và việc bấm nút có vào
+ * thẳng Cấp 2 hay chỉ ghi nhận tốt nghiệp.
+ *
+ * ★ HÀM chứ không phải `const` module-scope: trần phải được đọc ở thời điểm
+ * RENDER/CLICK. Một `const` sẽ chốt giá trị ngay lúc import, và test (vốn mock
+ * `./capFlags` bằng getter để thử cả hai phía của trần) sẽ chỉ thấy giá trị đầu
+ * tiên — nghĩa là một nửa số test xanh giả.
+ */
+function isCap2Open(): boolean {
+  return CAP_MAX_ENABLED >= 2
+}
 
 /**
  * Điều kiện mở màn tốt nghiệp Cấp 1 (spec §3): 5/5 nhiệm vụ, chưa từng tốt
@@ -42,13 +52,13 @@ const BLOCK_3 =
   "**Từ giờ: Cấp 2 «Kỷ luật».** Form Kế hoạch thêm 2 phần: Cắt lỗ và Chốt lời — với 2 cách đặt có cơ sở. Bạn sẽ có thêm: chuỗi lệnh kỷ luật · điểm kỷ luật hằng ngày · cảnh báo khi giá chạm cắt lỗ."
 
 /**
- * Khối 3 khi `CAP_2_PLUS_ENABLED = false`. Nguyên văn spec §3 ở trên nói thì
- * HIỆN TẠI ("Từ giờ: Cấp 2 «Kỷ luật».", "Bạn sẽ có thêm: …") — đọc như thể Cấp
- * 2 vừa mở ra ngay sau nút bấm, trong khi dòng ngay dưới CTA nói "Cấp 2 sắp ra
- * mắt". Một màn hình không được tự mâu thuẫn với chính nó.
+ * Khối 3 khi Cấp 2 CHƯA mở (`CAP_MAX_ENABLED < 2`). Nguyên văn spec §3 ở trên
+ * nói thì HIỆN TẠI ("Từ giờ: Cấp 2 «Kỷ luật».", "Bạn sẽ có thêm: …") — đọc như
+ * thể Cấp 2 vừa mở ra ngay sau nút bấm, trong khi dòng ngay dưới CTA nói "Cấp 2
+ * sắp ra mắt". Một màn hình không được tự mâu thuẫn với chính nó.
  *
  * Bản này giữ NGUYÊN nội dung Cấp 2 sẽ mang lại (user vẫn cần biết mình đang
- * chờ gì) nhưng ở thì TƯƠNG LAI và nói thẳng cấp đó chưa mở. Cờ bật lại → câu
+ * chờ gì) nhưng ở thì TƯƠNG LAI và nói thẳng cấp đó chưa mở. Nâng trần → câu
  * nguyên văn spec quay về, không phải sửa dòng nào.
  */
 const BLOCK_3_CAP2_CHUA_MO =
@@ -68,27 +78,36 @@ function renderInlineBold(text: string) {
  * khối VERBATIM (Ghi nhận / Định vị / Chuyển cấp viền ngọc lam `#7dd3c0`) +
  * CTA.
  *
- * ★ **CẤP 2 TẠM TẮT → nút KHÔNG điều hướng đi đâu**, và nói thẳng "sắp ra mắt"
- * ngay trên nút. Nhưng nút vẫn PHẢI bấm được và vẫn ghi tốt nghiệp về server:
- * modal này `closable={false}` + `visible = isGraduationReadyCap1(...)`, nên
- * một nút `disabled` sẽ **nhốt VĨNH VIỄN** mọi user đã xong 5/5 trong một màn
- * không có lối ra — đúng lỗi đã phải sửa hai lần trên codebase này. Đây chính
- * là pattern trung thực mà `GraduationModalCap6`/`GraduationModalCap7` đã dùng
- * trước khi cấp kế tiếp lên sóng. Không cần gọi navigation: modal này chỉ hiện
- * khi user đã đứng sẵn trên `/dau-truong`.
+ * ★ **Cấp 2 ĐANG MỞ** (`CAP_MAX_ENABLED >= 2`): ghi tốt nghiệp về server rồi
+ * bắn luôn `POST /cap2/enter` (idempotent) ngay tại đây — không chỉ dựa vào
+ * effect riêng của `DauTruongPage` — để Cấp 2 progress sẵn sàng đúng lúc
+ * `DauTruongPage` đổi vỏ Cấp 1 này sang `Cap2TradingPage`, vốn được lái bởi
+ * CHÍNH `useCap1Progress` mà `graduated_at` vừa invalidate. Không cần gọi
+ * navigation: modal này chỉ hiện khi user đã đứng sẵn trên `/dau-truong`.
+ *
+ * ★ **Khi trần hạ xuống dưới 2** thì nút KHÔNG điều hướng đi đâu và nói thẳng
+ * "sắp ra mắt" ngay trên nút — nhưng vẫn PHẢI bấm được và vẫn ghi tốt nghiệp về
+ * server: modal này `closable={false}` + `visible = isGraduationReadyCap1(...)`,
+ * nên một nút `disabled` sẽ **nhốt VĨNH VIỄN** mọi user đã xong 5/5 trong một
+ * màn không có lối ra — đúng lỗi đã phải sửa hai lần trên codebase này.
  */
 export function GraduationModalCap1() {
   const { data: progress } = useCap1Progress()
   const graduate = useGraduateCap1()
+  const enterCap2 = useEnterCap2()
   const level = LEVELS[1]
   const visible = isGraduationReadyCap1(progress)
 
   const handleGraduate = () => {
     graduate.mutate(undefined, {
-      // Chỉ báo sau khi server đã GHI NHẬN tốt nghiệp — hỏng mạng thì không
-      // toast gì cả, để user bấm lại (modal vẫn còn đó vì `graduated_at` chưa
-      // về).
+      // Chỉ chạy sau khi server đã GHI NHẬN tốt nghiệp — hỏng mạng thì không
+      // vào Cấp 2 lẫn không toast gì cả, để user bấm lại (modal vẫn còn đó vì
+      // `graduated_at` chưa về).
       onSuccess: () => {
+        if (isCap2Open()) {
+          enterCap2.mutate()
+          return
+        }
         Message.info("Cấp 2 «Kỷ luật» sắp ra mắt — đã ghi nhận tốt nghiệp Cấp 1")
       },
     })
@@ -130,7 +149,7 @@ export function GraduationModalCap1() {
       </div>
       <div className="cap0-grad-block">{renderInlineBold(BLOCK_2)}</div>
       <div className="cap0-grad-block cap1-grad-block--cap2" data-testid="cap1-grad-khoi3">
-        {renderInlineBold(CAP_2_PLUS_ENABLED ? BLOCK_3 : BLOCK_3_CAP2_CHUA_MO)}
+        {renderInlineBold(isCap2Open() ? BLOCK_3 : BLOCK_3_CAP2_CHUA_MO)}
       </div>
 
       {/* ★ KHÔNG bao giờ `disabled` như một trạng thái "sắp ra mắt" (xem
@@ -149,9 +168,9 @@ export function GraduationModalCap1() {
       >
         Vào Cấp 2 «Kỷ luật» →
         {/* Dòng "sắp ra mắt" — style inline vì `cap1.css` đang do task khác sở
-            hữu. Giống `.cap7-grad-cta-soon`. Gắn theo cờ (không hard-code) nên
-            bật lại Cấp 2 là nó tự biến mất cùng lúc với Khối 3 ở trên. */}
-        {!CAP_2_PLUS_ENABLED && (
+            hữu. Giống `.cap7-grad-cta-soon`. Gắn theo trần (không hard-code)
+            nên khi Cấp 2 mở nó tự biến mất cùng lúc với Khối 3 ở trên. */}
+        {!isCap2Open() && (
           <span
             className="cap1-grad-cta-soon"
             style={{

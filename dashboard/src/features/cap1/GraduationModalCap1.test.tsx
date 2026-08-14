@@ -12,8 +12,8 @@ const {
   navigateMock,
   flags,
 } = vi.hoisted(() => ({
-  // Mutable so Khối 3 + dòng CTA can be asserted in BOTH states of the công tắc.
-  flags: { CAP_2_PLUS_ENABLED: false },
+  // Mutable so Khối 3 + dòng CTA can be asserted on BOTH sides of the trần cấp.
+  flags: { CAP_MAX_ENABLED: 2 },
   useCap1ProgressMock: vi.fn(),
   graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
     opts?.onSuccess?.()
@@ -33,14 +33,13 @@ vi.mock("./hooks", () => ({
 
 // Getter (not a plain value): the modal must read the flag at RENDER time.
 vi.mock("./capFlags", () => ({
-  get CAP_2_PLUS_ENABLED() {
-    return flags.CAP_2_PLUS_ENABLED
+  get CAP_MAX_ENABLED() {
+    return flags.CAP_MAX_ENABLED
   },
 }))
 
-// ★ Cấp 2-8 TẠM TẮT: `GraduationModalCap1` không còn gọi `useEnterCap2` nữa.
-// Spy vẫn giữ ở đây để test canh được rằng KHÔNG có `POST /cap2/enter` nào bị
-// bắn ra (nếu ai đó nối lại dây, `vi.mock` này vẫn hoạt động và test sẽ đỏ).
+// `useEnterCap2` được nối lại khi trần ≥ 2 — spy này canh CẢ hai chiều: có
+// `POST /cap2/enter` khi Cấp 2 mở, và tuyệt đối KHÔNG có khi trần hạ xuống 1.
 vi.mock("@/features/cap2/hooks", () => ({
   useEnterCap2: () => ({ mutate: enterCap2Mutate, isPending: false }),
 }))
@@ -135,7 +134,8 @@ describe("GraduationModalCap1", () => {
     enterCap2Mutate.mockReset()
     messageInfo.mockReset()
     navigateMock.mockReset()
-    flags.CAP_2_PLUS_ENABLED = false
+    // Mặc định = trần THẬT của sản phẩm hiện tại (Cấp 2 đang mở).
+    flags.CAP_MAX_ENABLED = 2
   })
 
   it("does not render when 5/5 isn't met", () => {
@@ -182,10 +182,10 @@ describe("GraduationModalCap1", () => {
   // ── ★★ Khối 3 phải TRUNG THỰC khi Cấp 2 chưa mở ★★ ────────────────────────
   // Nguyên văn spec §3 nói ở thì HIỆN TẠI ("Từ giờ: Cấp 2 «Kỷ luật».", "Bạn sẽ
   // có thêm: …") trong khi dòng dưới CTA nói "Cấp 2 sắp ra mắt" — cùng một màn
-  // hình tự mâu thuẫn. Khi `CAP_2_PLUS_ENABLED = false`, Khối 3 phải nói đúng
-  // sự thật; khi bật lại, nguyên văn spec quay về mà không phải sửa dòng nào.
-  it("★ Khối 3 does not claim Cấp 2 has started while CAP_2_PLUS_ENABLED is false", () => {
-    flags.CAP_2_PLUS_ENABLED = false
+  // hình tự mâu thuẫn. Khi trần cấp còn dưới 2, Khối 3 phải nói đúng sự thật;
+  // khi trần lên 2, nguyên văn spec quay về mà không phải sửa dòng nào.
+  it("★ Khối 3 does not claim Cấp 2 has started while the trần is below 2", () => {
+    flags.CAP_MAX_ENABLED = 1
     useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap1 />)
     const khoi3 = screen.getByTestId("cap1-grad-khoi3")
@@ -196,8 +196,8 @@ describe("GraduationModalCap1", () => {
     expect(khoi3).toHaveTextContent(/Khi Cấp 2 mở/)
   })
 
-  it("★ Khối 3 restores the verbatim spec §3 wording the moment the flag flips back on", () => {
-    flags.CAP_2_PLUS_ENABLED = true
+  it("★ Khối 3 restores the verbatim spec §3 wording the moment the trần reaches 2", () => {
+    flags.CAP_MAX_ENABLED = 2
     useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap1 />)
     const khoi3 = screen.getByTestId("cap1-grad-khoi3")
@@ -210,18 +210,20 @@ describe("GraduationModalCap1", () => {
     expect(screen.getByTestId("cap1-grad-cta")).not.toHaveTextContent(/sắp ra mắt/)
   })
 
-  // ── ★★ CẤP 2 TẠM TẮT ★★ ───────────────────────────────────────────────────
+  // ── ★★ Khi trần cấp còn dưới 2 (Cấp 2 chưa mở) ★★ ─────────────────────────
   // Modal này `closable={false}` và chỉ tự đóng khi `graduated_at` có giá trị,
   // nên một nút `disabled` sẽ NHỐT VĨNH VIỄN mọi user đã xong 5/5 (lỗi đã phải
   // sửa 2 lần trên codebase này). Nút PHẢI bấm được, PHẢI ghi tốt nghiệp, và
   // chỉ nói thẳng "sắp ra mắt".
-  it("★ the CTA says «sắp ra mắt» right on the button", () => {
+  it("★ the CTA says «sắp ra mắt» right on the button while the trần is below 2", () => {
+    flags.CAP_MAX_ENABLED = 1
     useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap1 />)
     expect(screen.getByTestId("cap1-grad-cta")).toHaveTextContent(/sắp ra mắt/)
   })
 
   it("★ the CTA is NOT disabled — a disabled button would trap every 5/5 user in a closable={false} modal", () => {
+    flags.CAP_MAX_ENABLED = 1
     useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap1 />)
     const cta = screen.getByTestId("cap1-grad-cta")
@@ -251,6 +253,7 @@ describe("GraduationModalCap1", () => {
   })
 
   it("★ clicking it STILL records the graduation, toasts «sắp ra mắt», enters NO Cấp 2 and navigates nowhere", () => {
+    flags.CAP_MAX_ENABLED = 1
     useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap1 />)
     fireEvent.click(screen.getByTestId("cap1-grad-cta"))
@@ -263,7 +266,36 @@ describe("GraduationModalCap1", () => {
     expect(navigateMock).not.toHaveBeenCalled()
   })
 
+  // ── ★★ Cấp 2 ĐANG MỞ (trần = 2) — trạng thái thật của sản phẩm ★★ ─────────
+  it("★ clicking it graduates Cấp 1 and REALLY enters Cấp 2, with no «sắp ra mắt» toast", () => {
+    useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
+    render(<GraduationModalCap1 />)
+    fireEvent.click(screen.getByTestId("cap1-grad-cta"))
+    expect(graduateMutate).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    )
+    expect(enterCap2Mutate).toHaveBeenCalledTimes(1)
+    expect(messageInfo).not.toHaveBeenCalled()
+    // `DauTruongPage` tự đổi vỏ sang Cap2TradingPage từ chính query vừa được
+    // invalidate — không có (và không được có) lệnh điều hướng nào ở đây.
+    expect(navigateMock).not.toHaveBeenCalled()
+  })
+
+  it("★ does not enter Cấp 2 when the graduation mutation FAILS", () => {
+    useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
+    graduateMutate.mockImplementationOnce(
+      (_vars?: unknown, opts?: { onError?: (e: unknown) => void }) => {
+        opts?.onError?.(new Error("network"))
+      },
+    )
+    render(<GraduationModalCap1 />)
+    fireEvent.click(screen.getByTestId("cap1-grad-cta"))
+    expect(enterCap2Mutate).not.toHaveBeenCalled()
+  })
+
   it("★ does not toast when the graduation mutation FAILS (no false «đã ghi nhận» signal)", () => {
+    flags.CAP_MAX_ENABLED = 1
     useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
     graduateMutate.mockImplementationOnce(
       (_vars?: unknown, opts?: { onError?: (e: unknown) => void }) => {

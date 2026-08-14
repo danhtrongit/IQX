@@ -37,13 +37,24 @@ import { Cap7TradingPage } from "@/features/cap7/Cap7TradingPage"
 import { useCap8Progress, useEnterCap8 } from "@/features/cap8/hooks"
 import { Cap8TradingPage } from "@/features/cap8/Cap8TradingPage"
 
-// ★★ CÔNG TẮC TẠM TẮT CẤP 2-8 ★★ — nguồn sự thật (kèm checklist bật lại đầy đủ)
-// nằm ở `./capFlags`, KHÔNG ở file này: `GraduationModalCap1`/`JourneyPanelCap1`
-// cũng phải đọc cờ để nói đúng sự thật, mà chúng không thể import file này (vòng
-// `DauTruongPage → Cap1TradingPage → GraduationModalCap1`). Re-export để mọi
-// import cũ `from "./DauTruongPage"` vẫn chạy y như trước.
-import { CAP_2_PLUS_ENABLED } from "./capFlags"
-export { CAP_2_PLUS_ENABLED } from "./capFlags"
+// ★★ TRẦN CẤP ★★ — nguồn sự thật (kèm hướng dẫn nâng trần đầy đủ) nằm ở
+// `./capFlags`, KHÔNG ở file này: `GraduationModalCap1`/`JourneyPanelCap1`/
+// `GraduationModalCap2` cũng phải đọc nó để nói đúng sự thật, mà chúng không
+// thể import file này (vòng `DauTruongPage → Cap1TradingPage →
+// GraduationModalCap1`). Re-export để mọi import cũ `from "./DauTruongPage"`
+// vẫn chạy y như trước.
+import { CAP_MAX_ENABLED } from "./capFlags"
+export { CAP_MAX_ENABLED } from "./capFlags"
+
+/**
+ * Cấp N đang mở? Một phép duy nhất cho CẢ hai việc: bật/tắt `useCapNProgress`
+ * (và do đó cả `POST /capN/enter`, vì mọi effect `enterCapN` đều gác trên
+ * `shouldQueryCapN`) LẪN nhánh render. Hai chỗ dùng chung một phép nên không
+ * thể lệch nhau — nâng trần là cả hai đi cùng.
+ */
+function capOpen(n: number): boolean {
+  return CAP_MAX_ENABLED >= n
+}
 
 function FullPageSpinner() {
   return (
@@ -65,9 +76,14 @@ function FullPageSpinner() {
  *    (loading) — ZERO behaviour change for anyone not yet Cấp-1-eligible.
  *  - Cấp 0 not graduated → `Cap0TradingPage` (unchanged).
  *  - Cấp 0 graduated → `Cap1TradingPage`, firing the idempotent
- *    `POST /cap1/enter` on first arrival. **★ Với `CAP_2_PLUS_ENABLED = false`
- *    đây là nhánh CUỐI CÙNG** — kể cả khi đã tốt nghiệp Cấp 1. Mọi luật Cấp 2-8
- *    ghi bên dưới chỉ có hiệu lực khi cờ đó được bật lại.
+ *    `POST /cap1/enter` on first arrival.
+ *
+ * **★ TRẦN CẤP (`CAP_MAX_ENABLED`) cắt ngang mọi luật bên dưới.** Mỗi luật
+ * "Cấp N-1 graduated → `CapNTradingPage`" chỉ có hiệu lực khi
+ * `CAP_MAX_ENABLED >= N`. Cấp đúng bằng trần là nhánh TERMINAL: một user đã tốt
+ * nghiệp cấp đó vẫn Ở LẠI shell của chính cấp đó (KHÔNG spinner, KHÔNG tụt
+ * xuống cấp dưới) cho tới khi trần được nâng. Hiện `CAP_MAX_ENABLED = 2` → Cấp 2
+ * là terminal, Cấp 3-8 hoàn toàn im lặng (không progress query, không enter).
  *  - Cấp 1 graduated, Cấp 2 not entered/not graduated → `Cap2TradingPage`
  *    (Task FE4), firing the idempotent `POST /cap2/enter` on first arrival —
  *    same pattern one level up.
@@ -120,10 +136,10 @@ export function DauTruongPage() {
 
   const cap1Graduated = !!cap1Progress?.graduated_at
 
-  // ★ CÔNG TẮC (xem `CAP_2_PLUS_ENABLED` ở đầu file): điều kiện DUY NHẤT để đi
-  // tiếp lên Cấp 2. Mọi `shouldQueryCapN` (N ≥ 2) và mọi nhánh render bên dưới
-  // đều móc xích vào nó, nên tắt ở đây là tắt sạch cả 7 cấp.
-  const progressPastCap1 = CAP_2_PLUS_ENABLED && cap1Graduated
+  // ★ TRẦN CẤP (xem `CAP_MAX_ENABLED` ở đầu file): điều kiện để đi tiếp lên Cấp
+  // 2. Mỗi cấp có `capOpen(N)` của riêng nó bên dưới, nên hạ trần xuống 1 là
+  // tắt sạch Cấp 2-8, để trần 2 là chỉ Cấp 2 sống.
+  const progressPastCap1 = capOpen(2) && cap1Graduated
 
   // Only query Cấp 2 progress once Cấp 1 is confirmed graduated — mirrors
   // the Cấp 0 → Cấp 1 gating above, one level up.
@@ -145,7 +161,7 @@ export function DauTruongPage() {
 
   // Only query Cấp 3 progress once Cấp 2 is confirmed graduated — mirrors the
   // Cấp 1 → Cấp 2 gating above, one level up.
-  const shouldQueryCap3 = shouldQueryCap2 && cap2Graduated
+  const shouldQueryCap3 = shouldQueryCap2 && cap2Graduated && capOpen(3)
   const { data: cap3Progress, isFetched: cap3Fetched } = useCap3Progress(shouldQueryCap3)
   const enterCap3 = useEnterCap3()
   const enterCap3AttemptedRef = useRef(false)
@@ -163,7 +179,7 @@ export function DauTruongPage() {
 
   // Only query Cấp 4 progress once Cấp 3 is confirmed graduated — mirrors the
   // Cấp 2 → Cấp 3 gating above, one level up.
-  const shouldQueryCap4 = shouldQueryCap3 && cap3Graduated
+  const shouldQueryCap4 = shouldQueryCap3 && cap3Graduated && capOpen(4)
   const { data: cap4Progress, isFetched: cap4Fetched } = useCap4Progress(shouldQueryCap4)
   const enterCap4 = useEnterCap4()
   const enterCap4AttemptedRef = useRef(false)
@@ -181,7 +197,7 @@ export function DauTruongPage() {
 
   // Only query Cấp 5 progress once Cấp 4 is confirmed graduated — mirrors the
   // Cấp 3 → Cấp 4 gating above, one level up.
-  const shouldQueryCap5 = shouldQueryCap4 && cap4Graduated
+  const shouldQueryCap5 = shouldQueryCap4 && cap4Graduated && capOpen(5)
   const { data: cap5Progress, isFetched: cap5Fetched } = useCap5Progress(shouldQueryCap5)
   const enterCap5 = useEnterCap5()
   const enterCap5AttemptedRef = useRef(false)
@@ -199,7 +215,7 @@ export function DauTruongPage() {
 
   // Only query Cấp 6 progress once Cấp 5 is confirmed graduated — mirrors the
   // Cấp 4 → Cấp 5 gating above, one level up.
-  const shouldQueryCap6 = shouldQueryCap5 && cap5Graduated
+  const shouldQueryCap6 = shouldQueryCap5 && cap5Graduated && capOpen(6)
   const { data: cap6Progress, isFetched: cap6Fetched } = useCap6Progress(shouldQueryCap6)
   const enterCap6 = useEnterCap6()
   const enterCap6AttemptedRef = useRef(false)
@@ -217,7 +233,7 @@ export function DauTruongPage() {
 
   // Only query Cấp 7 progress once Cấp 6 is confirmed graduated — mirrors the
   // Cấp 5 → Cấp 6 gating above, one level up.
-  const shouldQueryCap7 = shouldQueryCap6 && cap6Graduated
+  const shouldQueryCap7 = shouldQueryCap6 && cap6Graduated && capOpen(7)
   const { data: cap7Progress, isFetched: cap7Fetched } = useCap7Progress(shouldQueryCap7)
   const enterCap7 = useEnterCap7()
   const enterCap7AttemptedRef = useRef(false)
@@ -235,7 +251,7 @@ export function DauTruongPage() {
 
   // Only query Cấp 8 progress once Cấp 7 is confirmed graduated — mirrors the
   // Cấp 6 → Cấp 7 gating above, one level up (and the last time).
-  const shouldQueryCap8 = shouldQueryCap7 && cap7Graduated
+  const shouldQueryCap8 = shouldQueryCap7 && cap7Graduated && capOpen(8)
   const { data: cap8Progress, isFetched: cap8Fetched } = useCap8Progress(shouldQueryCap8)
   const enterCap8 = useEnterCap8()
   const enterCap8AttemptedRef = useRef(false)
@@ -254,22 +270,22 @@ export function DauTruongPage() {
   if (!cap0Fetched) return <FullPageSpinner />
   if (!cap0Graduated) return <Cap0TradingPage />
   if (!cap1Fetched) return <FullPageSpinner />
-  // ★ CÔNG TẮC: khi Cấp 2-8 tắt, `progressPastCap1` luôn `false` → đây là
-  // nhánh TERMINAL. Một user đã tốt nghiệp Cấp 1 vẫn ở lại `Cap1TradingPage`
-  // (KHÔNG spinner, KHÔNG tụt xuống Cấp 0) cho tới khi cờ được bật lại.
+  // ★ TRẦN CẤP: `!capOpen(N+1)` biến cấp N thành nhánh TERMINAL — user đã tốt
+  // nghiệp cấp trần vẫn ở lại đúng shell đó (KHÔNG spinner, KHÔNG tụt cấp) cho
+  // tới khi trần được nâng. Với trần = 2, dòng Cấp 2 bên dưới là điểm dừng.
   if (!progressPastCap1) return <Cap1TradingPage />
   if (!cap2Fetched) return <FullPageSpinner />
-  if (!cap2Graduated) return <Cap2TradingPage />
+  if (!capOpen(3) || !cap2Graduated) return <Cap2TradingPage />
   if (!cap3Fetched) return <FullPageSpinner />
-  if (!cap3Graduated) return <Cap3TradingPage />
+  if (!capOpen(4) || !cap3Graduated) return <Cap3TradingPage />
   if (!cap4Fetched) return <FullPageSpinner />
-  if (!cap4Graduated) return <Cap4TradingPage />
+  if (!capOpen(5) || !cap4Graduated) return <Cap4TradingPage />
   if (!cap5Fetched) return <FullPageSpinner />
-  if (!cap5Graduated) return <Cap5TradingPage />
+  if (!capOpen(6) || !cap5Graduated) return <Cap5TradingPage />
   if (!cap6Fetched) return <FullPageSpinner />
-  if (!cap6Graduated) return <Cap6TradingPage />
+  if (!capOpen(7) || !cap6Graduated) return <Cap6TradingPage />
   if (!cap7Fetched) return <FullPageSpinner />
-  if (!cap7Graduated) return <Cap7TradingPage />
+  if (!capOpen(8) || !cap7Graduated) return <Cap7TradingPage />
   if (!cap8Fetched) return <FullPageSpinner />
   // ★ TERMINAL: no `if (!cap8Graduated)` — Cấp 8 is the last level, so a
   // cap8-graduated user lands here too (see the doc-comment above).

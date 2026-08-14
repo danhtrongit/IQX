@@ -4,7 +4,7 @@ import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { Badge, LEVELS } from "@/features/cap0/Badge"
 import { JourneyFocus } from "@/features/cap0/JourneyFocus"
 import { ModeBadge } from "@/features/cap0/ModeBadge"
-import { CAP_2_PLUS_ENABLED } from "./capFlags"
+import { CAP_MAX_ENABLED } from "./capFlags"
 import { useCap1Events } from "./Cap1Context"
 import { useCap1Progress } from "./hooks"
 import { useCap1TradeLog } from "./tradeLog"
@@ -334,11 +334,11 @@ export function JourneyPanelCap1() {
 
         {/* ★★ TRẠNG THÁI CUỐI của một người đã tốt nghiệp Cấp 1 ★★ — modal tốt
             nghiệp unmount xong là về đúng màn này, checklist 5/5, và ô này là
-            câu cuối cùng họ đọc. Khi `CAP_2_PLUS_ENABLED = false` nó KHÔNG được
-            hứa một cấp chưa tồn tại; khi cờ bật lại, câu nguyên bản tự quay về.
-            (Checklist bật lại nằm trong docstring của cờ ở `./capFlags`.) */}
+            câu cuối cùng họ đọc. Khi trần cấp còn dưới 2 nó KHÔNG được hứa một
+            cấp chưa tồn tại; khi trần được nâng, câu nguyên bản tự quay về.
+            (Hướng dẫn nâng trần nằm trong docstring ở `./capFlags`.) */}
         <div className="cap0-journey-goal" data-testid="cap1-journey-goal">
-          {CAP_2_PLUS_ENABLED ? (
+          {CAP_MAX_ENABLED >= 2 ? (
             <>
               Xong 5/5 → tốt nghiệp <strong>Cấp 1 «Học việc»</strong>, lên{" "}
               <strong>Cấp 2 «Kỷ luật»</strong> (viên lục giác ngọc lam). Cấp 2 thêm cắt

@@ -10,15 +10,15 @@ const { useCap1ProgressMock, useCap1EventsMock, useCap1TradeLogMock, flags } = v
   useCap1ProgressMock: vi.fn(),
   useCap1EventsMock: vi.fn(() => ({ isCap1Active: true })),
   useCap1TradeLogMock: vi.fn(() => ({ trades: [], record: vi.fn() })),
-  // Mutable so the goal box can be asserted in BOTH states of the công tắc.
-  flags: { CAP_2_PLUS_ENABLED: false },
+  // Mutable so the goal box can be asserted on BOTH sides of the trần cấp.
+  flags: { CAP_MAX_ENABLED: 2 },
 }))
 
 // Getter (not a plain value): the panel must read the flag at RENDER time, so
 // flipping `flags` between tests actually flips the copy.
 vi.mock("./capFlags", () => ({
-  get CAP_2_PLUS_ENABLED() {
-    return flags.CAP_2_PLUS_ENABLED
+  get CAP_MAX_ENABLED() {
+    return flags.CAP_MAX_ENABLED
   },
 }))
 
@@ -87,7 +87,8 @@ describe("JourneyPanelCap1", () => {
     useCap1EventsMock.mockReturnValue({ isCap1Active: true })
     useCap1TradeLogMock.mockReset()
     useCap1TradeLogMock.mockReturnValue({ trades: [], record: vi.fn() })
-    flags.CAP_2_PLUS_ENABLED = false
+    // Mặc định = trần THẬT của sản phẩm hiện tại (Cấp 2 đang mở).
+    flags.CAP_MAX_ENABLED = 2
   })
 
   it("renders the level card — CẤP 1 / HỌC VIỆC / italic bài học / badge THỰC CHIẾN", () => {
@@ -339,10 +340,10 @@ describe("JourneyPanelCap1", () => {
 
   // ── ★★ Ô mục tiêu: TRẠNG THÁI CUỐI của một người đã tốt nghiệp Cấp 1 ★★ ────
   // Modal tốt nghiệp unmount xong là về đúng màn này, checklist 5/5, và ô mục
-  // tiêu là câu cuối cùng họ đọc. Khi `CAP_2_PLUS_ENABLED = false` nó KHÔNG được
-  // hứa một cấp chưa tồn tại.
-  it("★ goal box never promises Cấp 2 while CAP_2_PLUS_ENABLED is false", () => {
-    flags.CAP_2_PLUS_ENABLED = false
+  // tiêu là câu cuối cùng họ đọc. Khi trần cấp còn dưới 2 nó KHÔNG được hứa một
+  // cấp chưa tồn tại.
+  it("★ goal box never promises Cấp 2 while the trần is below 2", () => {
+    flags.CAP_MAX_ENABLED = 1
     useCap1ProgressMock.mockReturnValue({
       data: makeProgress({
         task_1_done_at: "t",
@@ -363,8 +364,8 @@ describe("JourneyPanelCap1", () => {
     expect(goal).toHaveTextContent(/chưa (ra mắt|mở)/)
   })
 
-  it("★ goal box restores the Cấp 2 wording the moment CAP_2_PLUS_ENABLED flips back on", () => {
-    flags.CAP_2_PLUS_ENABLED = true
+  it("★ goal box restores the Cấp 2 wording the moment the trần reaches 2", () => {
+    flags.CAP_MAX_ENABLED = 2
     useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
     renderPanel()
     const goal = screen.getByTestId("cap1-journey-goal")
