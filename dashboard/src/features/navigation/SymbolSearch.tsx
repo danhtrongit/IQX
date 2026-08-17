@@ -8,12 +8,34 @@ import { IconTrendingUp } from "./icons"
 
 const { Option } = Select
 
+export interface SymbolSearchProps {
+  /**
+   * ★★ Host chọn cái gì xảy ra khi người dùng chốt một mã.
+   *
+   * `undefined` (mặc định) = hành vi cũ: điều hướng sang `/co-phieu/:symbol`.
+   * Đó là hành vi đúng trên /bieu-do và /co-phieu và KHÔNG được đổi.
+   *
+   * Có handler = đổi mã TẠI CHỖ. Chín trang cấp (`Cap0TradingPage`…
+   * `Cap8TradingPage`) đều truyền `setSymbol` của `SymbolProvider` riêng của
+   * chúng: `Header` nằm TRONG provider đó, nên đổi mã là một cú `setSymbol`
+   * chứ không phải một cú rời trang. Trước bản vá này, gõ "ACB" vào ô tìm
+   * kiếm của terminal là ném thẳng user khỏi `/dau-truong` — mất hành trình,
+   * mất form kế hoạch đang gõ dở, panel đặt lệnh "về như cũ".
+   *
+   * Cùng khuôn với `CenterPanel.symbolChange` và `WatchlistPanel.onRowSelect`:
+   * prop là kênh DUY NHẤT, nên một route không truyền gì thì không thể bị ảnh
+   * hưởng.
+   */
+  onSymbolSelect?: (symbol: string) => void
+}
+
 /**
  * Global symbol typeahead. Arco `Select` in `showSearch` mode with server-side
  * filtering (`filterOption={false}`) backed by `useSymbolSearch`. Selecting a
- * row (or pressing Enter on free text) navigates to `/co-phieu/:symbol`.
+ * row (or pressing Enter on free text) navigates to `/co-phieu/:symbol` —
+ * unless the host supplied `onSymbolSelect` (see above).
  */
-export function SymbolSearch() {
+export function SymbolSearch({ onSymbolSelect }: SymbolSearchProps = {}) {
   const navigate = useNavigate()
   const [query, setQuery] = useState("")
   const { results, isFetching } = useSymbolSearch(query)
@@ -22,6 +44,10 @@ export function SymbolSearch() {
     const s = symbol.trim().toUpperCase()
     if (!s) return
     setQuery("")
+    if (onSymbolSelect) {
+      onSymbolSelect(s)
+      return
+    }
     navigate(`/co-phieu/${s}`)
   }
 

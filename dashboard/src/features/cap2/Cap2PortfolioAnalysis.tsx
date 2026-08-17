@@ -8,6 +8,24 @@ import {
 import type { Cap2Progress } from "./types"
 import "./cap2-analysis.css"
 
+/**
+ * Ngữ cảnh khi 4 khối này được RENDER LẠI bên trong trang Phân tích của một cấp
+ * CAO HƠN (Cấp 3-8 cộng dồn bằng chính component này). Bỏ trống = trang Phân
+ * tích của chính Cấp 2.
+ *
+ * ★ Vì sao cần: cấp cao hơn truyền `trades` = nhật ký lệnh CỦA CHÍNH NÓ nhưng
+ * `progress` = hồ sơ Cấp 2 (khối ④ đọc 3 con số server chỉ Cấp 2 có). Nếu khối
+ * ① vẫn tự xưng "Cấp 2 «Kỷ luật» · N lệnh · từ {ngày vào Cấp 2}" thì N là lệnh
+ * của cấp trên còn ngày là của Cấp 2 — hai nửa của hai cấp khác nhau trong cùng
+ * một câu, lại đứng ngay dưới thẻ hồ sơ riêng của cấp đó.
+ */
+export interface Cap2AnalysisHost {
+  /** Nhãn cấp đang chứa các khối này, vd. `Cấp 3 «Bản lĩnh»`. */
+  levelLabel: string
+  /** `entered_at` của cấp đó (ISO) — nguồn của `trades`. */
+  sinceIso: string | null
+}
+
 export interface Cap2PortfolioAnalysisProps {
   progress: Cap2Progress | null
   trades: Cap2TradeRecord[]
@@ -16,6 +34,8 @@ export interface Cap2PortfolioAnalysisProps {
   dailyScores: Cap2DailyScoreRecord[]
   /** Reference "now" — giữ cho tương thích chữ ký; không khối nào còn dùng. */
   now?: Date
+  /** Xem `Cap2AnalysisHost`. Bỏ trống = đang ở trang Phân tích của Cấp 2. */
+  host?: Cap2AnalysisHost
 }
 
 function lyDoIcon(lyDo: LyDo): string {
@@ -60,6 +80,14 @@ const KHOI_TITLE = {
 } as const
 
 const KEEP_FLAG = "text-[9px] font-normal normal-case tracking-normal text-[var(--color-text-3)]"
+
+/**
+ * Câu `.pat.info` thay thế khi khối ④ đứng trong trang Phân tích của cấp CAO
+ * HƠN. Câu gốc (`SCOPE_NOTE`, `portfolioAnalysisCap2.ts`) hứa "rèn kỷ luật sâu
+ * hơn … sẽ đến ở các cấp sau" — người đọc ĐANG ở các cấp sau đó.
+ */
+const HOST_SCOPE_NOTE =
+  "Ba con số này **cộng dồn từ Cấp 2** — chúng cho thấy cơ chế cắt lỗ / chốt lời đã thành thói quen tới đâu, chứ không phải nhiệm vụ phải làm lại."
 const ADD_FLAG =
   "rounded-full bg-[rgba(125,211,192,0.16)] px-[7px] py-[2px] text-[9px] font-bold normal-case tracking-normal text-[#7dd3c0]"
 
@@ -86,19 +114,22 @@ export function Cap2PortfolioAnalysis({
   trades,
   dailyScores,
   now,
+  host,
 }: Cap2PortfolioAnalysisProps) {
   const result = computeCap2PortfolioAnalysis(trades, dailyScores, progress, now)
   const { khoi1, khoi3, khoi4 } = result
+  const levelLabel = host?.levelLabel ?? "Cấp 2 «Kỷ luật»"
+  const sinceIso = host ? host.sinceIso : (progress?.entered_at ?? null)
 
   return (
     <div className="space-y-3">
       {/* ① Hồ sơ tổng quan — Cấp 1 + 2 ô thống kê riêng của Cấp 2 */}
       <div className={CARD} data-testid="cap2-pa-khoi1">
         <div className={SECTION_HEADER}>{KHOI_TITLE.khoi1}</div>
-        <p className="text-[10.5px] text-[var(--color-text-3)]">
-          {"Cấp 2 «Kỷ luật»"}
+        <p className="text-[10.5px] text-[var(--color-text-3)]" data-testid="cap2-pa-khoi1-scope">
+          {levelLabel}
           {` · ${khoi1.totalTrades} lệnh`}
-          {progress ? ` · từ ${fmtDate(progress.entered_at)}` : null}
+          {sinceIso ? ` · từ ${fmtDate(sinceIso)}` : null}
         </p>
 
         <div className="cap2-pa-stats">
@@ -120,13 +151,21 @@ export function Cap2PortfolioAnalysis({
             </span>
           </div>
 
-          <div className="cap2-pa-stat">
-            <span className="cap2-pa-stat-label">Đã đặt CL/CL</span>
-            <span className="cap2-pa-stat-value cap2-pa-stat-value--teal" data-testid="cap2-pa-slp-orders">
-              {`${khoi4.soLenhCoSlTp}/${khoi4.soLenhCoSlTpTarget}`}
-            </span>
-            <span className="cap2-pa-stat-sub">mọi lệnh</span>
-          </div>
+          {/* Ô tiến độ "n/10 lệnh có CL/CL" là MỐC TỐT NGHIỆP CẤP 2. Ai đang ở
+              cấp cao hơn thì đã ≥10 từ lâu → ô ghim cứng "10/10" vĩnh viễn, nên
+              chỉ hiện ở trang Phân tích của chính Cấp 2. */}
+          {!host && (
+            <div className="cap2-pa-stat">
+              <span className="cap2-pa-stat-label">Đã đặt CL/CL</span>
+              <span
+                className="cap2-pa-stat-value cap2-pa-stat-value--teal"
+                data-testid="cap2-pa-slp-orders"
+              >
+                {`${khoi4.soLenhCoSlTp}/${khoi4.soLenhCoSlTpTarget}`}
+              </span>
+              <span className="cap2-pa-stat-sub">mọi lệnh</span>
+            </div>
+          )}
 
           <div className="cap2-pa-stat">
             <span className="cap2-pa-stat-label">Thực hiện đúng</span>
@@ -220,7 +259,11 @@ export function Cap2PortfolioAnalysis({
       <div className={CARD} data-testid="cap2-pa-khoi4">
         <div className={cn(SECTION_HEADER, "flex flex-wrap items-center gap-2")}>
           <span>{KHOI_TITLE.khoi4}</span>
-          <span className={ADD_FLAG}>mới ở Cấp 2</span>
+          {host ? (
+            <span className={KEEP_FLAG}>(giữ từ Cấp 2)</span>
+          ) : (
+            <span className={ADD_FLAG}>mới ở Cấp 2</span>
+          )}
         </div>
 
         <div className="cap2-pa-exec">
@@ -273,7 +316,9 @@ export function Cap2PortfolioAnalysis({
         )}
         <div className="cap2-pa-pat cap2-pa-pat--info" data-testid="cap2-pa-pat-info">
           <span className="cap2-pa-pat-ic">💡</span>
-          <span className="cap2-pa-pat-text">{renderInlineBold(khoi4.scopeNote)}</span>
+          <span className="cap2-pa-pat-text">
+            {renderInlineBold(host ? HOST_SCOPE_NOTE : khoi4.scopeNote)}
+          </span>
         </div>
       </div>
     </div>

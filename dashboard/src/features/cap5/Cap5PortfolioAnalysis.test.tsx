@@ -258,8 +258,8 @@ describe("Cap5PortfolioAnalysis — giữ MỌI khối Cấp 1-4 (cộng dồn)"
     expect(screen.queryByTestId("cap2-pa-khoi7")).not.toBeInTheDocument()
     // Cấp 3
     expect(screen.getByTestId("cap3-pa-khoi1")).toBeInTheDocument()
-    expect(screen.getByTestId("cap3-pa-khoi7")).toBeInTheDocument()
-    expect(screen.getByTestId("cap3-pa-khoi8")).toBeInTheDocument()
+    expect(screen.getByTestId("cap3-pa-khoi5")).toBeInTheDocument()
+    expect(screen.getByTestId("cap3-pa-khoi6")).toBeInTheDocument()
     // Cấp 4
     expect(screen.getByTestId("cap4-pa-khoi1")).toBeInTheDocument()
     expect(screen.getByTestId("cap4-pa-khoi9")).toBeInTheDocument()

@@ -230,8 +230,8 @@ describe("Cap4PortfolioAnalysis — giữ mọi khối Cấp 1-3 (cộng dồn)"
     expect(screen.queryByTestId("cap2-pa-khoi6")).not.toBeInTheDocument()
     expect(screen.queryByTestId("cap2-pa-khoi7")).not.toBeInTheDocument()
     expect(screen.getByTestId("cap3-pa-khoi1")).toBeInTheDocument()
-    expect(screen.getByTestId("cap3-pa-khoi7")).toBeInTheDocument()
-    expect(screen.getByTestId("cap3-pa-khoi8")).toBeInTheDocument()
+    expect(screen.getByTestId("cap3-pa-khoi5")).toBeInTheDocument()
+    expect(screen.getByTestId("cap3-pa-khoi6")).toBeInTheDocument()
   })
 
   it("khối ① Cấp 4 nêu số lệnh đọc đủ 5 lớp + vũ khí/điểm mù (số của server)", () => {

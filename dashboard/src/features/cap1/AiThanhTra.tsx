@@ -66,6 +66,16 @@ export interface AiThanhTraProps {
   onVerdict?: (verdict: Verdict, snapshot: Record<string, unknown>) => void
   /** "Đọc chi tiết lớp này →" clicked — caller records `co_bam_doc_chi_tiet=true`. */
   onDocChiTiet?: () => void
+  /**
+   * ★★ NƠI mở phần chi tiết. Component này chỉ tồn tại BÊN TRONG một shell cấp
+   * (nó cần một lý do đã chọn ở Form Kế hoạch), nên `navigate('/co-phieu/:sym')`
+   * mặc định cũ là một cú ném user ra khỏi `/dau-truong` 100% số lần bấm — kéo
+   * theo cả form kế hoạch đang gõ dở (state của `TradingPanel`).
+   *
+   * Có handler = host tự mở chi tiết tại chỗ. `undefined` = giữ nguyên hành vi
+   * điều hướng cũ cho bất kỳ callsite nào khác.
+   */
+  onOpenDetail?: (symbol: string) => void
   /** ❌ case, "Chọn lý do khác" — caller resets the picked lý do. */
   onChonLyDoKhac?: () => void
 }
@@ -77,6 +87,7 @@ export function AiThanhTra({
   onVerdict,
   onDocChiTiet,
   onChonLyDoKhac,
+  onOpenDetail,
 }: AiThanhTraProps) {
   const navigate = useNavigate()
   const option = LY_DO_OPTIONS.find((o) => o.value === lyDo)
@@ -216,7 +227,12 @@ export function AiThanhTra({
               type="button"
               className="text-[10.5px] font-medium text-[rgb(var(--primary-6))] hover:underline"
               onClick={() => {
+                // Sự kiện nhiệm vụ bắn TRƯỚC, luôn luôn — Cấp 1 đếm cú bấm này.
                 onDocChiTiet?.()
+                if (onOpenDetail) {
+                  onOpenDetail(symbol)
+                  return
+                }
                 navigate(`/co-phieu/${symbol}`)
               }}
             >

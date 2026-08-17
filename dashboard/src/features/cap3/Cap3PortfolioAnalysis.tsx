@@ -1,5 +1,8 @@
 import { cn } from "@/shared/lib/cn"
-import { Cap2PortfolioAnalysis } from "@/features/cap2/Cap2PortfolioAnalysis"
+import {
+  Cap2PortfolioAnalysis,
+  type Cap2AnalysisHost,
+} from "@/features/cap2/Cap2PortfolioAnalysis"
 import type { Cap2DailyScoreRecord } from "@/features/cap2/portfolioAnalysisCap2"
 import type { Cap2Progress } from "@/features/cap2/types"
 import { KHAU_VI_PCT } from "./khoiLuong"
@@ -24,10 +27,23 @@ import type { Cap3Progress, KhauViLoai } from "./types"
  * các khối Cấp 1-2 "GIỮ NGUYÊN" (khác §12 của Cấp 2, nơi khối 1/3/4 buộc phải
  * đổi nội dung nên không thể dùng lại markup Cấp 1).
  *
- * Hệ quả: KHÔNG sửa được markup khối ① của Cấp 2 (ngoài quyền sở hữu file), nên
- * yêu cầu "khối ① thêm hiển thị khẩu vị rủi ro" được đáp ứng bằng một thẻ đầu
- * trang RIÊNG của Cấp 3 (`cap3-pa-khoi1`) đặt NGAY TRÊN các khối kế thừa —
- * cùng thông tin, không phải sửa file Cấp 2.
+ * Yêu cầu "khối ① thêm hiển thị khẩu vị rủi ro" được đáp ứng bằng một thẻ đầu
+ * trang RIÊNG của Cấp 3 (`cap3-pa-khoi1`) đặt NGAY TRÊN các khối kế thừa.
+ *
+ * ★ **`host` (xem `Cap2AnalysisHost`)** — các khối kế thừa nhận `trades` là nhật
+ * ký CỦA CẤP 3 nhưng `progress` là hồ sơ Cấp 2, nên nếu không nói rõ ngữ cảnh
+ * chúng sẽ tự xưng "Cấp 2 «Kỷ luật» · N lệnh · từ {ngày vào Cấp 2}" — N của cấp
+ * này, ngày của cấp kia, lại đứng ngay dưới thẻ `cap3-pa-khoi1`. `host` cũng tắt
+ * ô tiến độ "n/10 lệnh có CL/CL" (mốc TỐT NGHIỆP CẤP 2, ở đây luôn 10/10) và
+ * đổi câu "… sẽ đến ở các cấp sau" (người đọc đang ở cấp sau).
+ *
+ * ★ **ĐÁNH SỐ KHỐI** — mockup `iqx-cap3-phantich-danhmuc.html` đánh hai khối mới
+ * là ⑦⑧ vì lúc vẽ Cấp 2 có 6 khối; Cấp 2 viết lại chỉ còn ①..④ (đã bỏ «Điểm kỷ
+ * luật 30 ngày»/«Vi phạm theo tuần»/«Phát hiện từ ghi chú»), nên UI hiển thị ⑤⑥
+ * cho liền mạch. Tầng compute GIỮ tên theo spec (`computeCap3Khoi7TuTin`,
+ * `khoi7TuTin`/`khoi8KhoiLuong`) vì đó là ID khối trong `IQX-Cap3-Spec.md` §8 và
+ * Cấp 4-8 đọc lại các tên đó — đổi tên sẽ lan qua 5 cấp đang tắt mà không đổi
+ * được gì cho người dùng. Ánh xạ: ⑦ (spec) = ⑤ (UI), ⑧ (spec) = ⑥ (UI).
  *
  * Ở tầng compute, component này chỉ gọi 2 hàm khối mới
  * (`computeCap3Khoi7TuTin` / `computeCap3Khoi8KhoiLuong`) thay vì
@@ -47,6 +63,13 @@ export interface Cap3PortfolioAnalysisProps {
   dailyScores: Cap2DailyScoreRecord[]
   /** "Now" tham chiếu cho các khối có cửa sổ thời gian (khối 3/6/7 của Cấp 2). */
   now?: Date
+  /**
+   * Ngữ cảnh cấp cho các khối KẾ THỪA của Cấp 2 (xem `Cap2AnalysisHost`). Mặc
+   * định là chính Cấp 3. Cấp 4-8 render lại component này với nhật ký lệnh của
+   * CHÍNH NÓ nên phải truyền `host` của cấp mình, nếu không khối ① sẽ tự xưng
+   * "Cấp 3 «Bản lĩnh»" trong trang của cấp cao hơn.
+   */
+  host?: Cap2AnalysisHost
 }
 
 const KHAU_VI_LABEL: Record<KhauViLoai, string> = {
@@ -95,6 +118,7 @@ export function Cap3PortfolioAnalysis({
   trades,
   dailyScores,
   now,
+  host,
 }: Cap3PortfolioAnalysisProps) {
   const khoi7 = computeCap3Khoi7TuTin(trades)
   const khoi8 = computeCap3Khoi8KhoiLuong(trades)
@@ -122,18 +146,28 @@ export function Cap3PortfolioAnalysis({
         )}
       </div>
 
-      {/* Mọi khối Cấp 1-2 — render lại nguyên bằng component của Cấp 2 */}
+      {/* Mọi khối Cấp 1-2 — render lại nguyên bằng component của Cấp 2.
+          `host` nói cho nó biết nó đang đứng trong trang của Cấp 3: `trades` là
+          nhật ký Cấp 3 nên khối ① phải mang nhãn + ngày của Cấp 3, ô tiến độ
+          "n/10 lệnh có CL/CL" (mốc tốt nghiệp Cấp 2) phải tắt, và câu "sẽ đến ở
+          các cấp sau" phải đổi. */}
       <Cap2PortfolioAnalysis
         progress={cap2Progress}
         trades={trades}
         dailyScores={dailyScores}
         now={now}
+        host={
+          host ?? {
+            levelLabel: "Cấp 3 «Bản lĩnh»",
+            sinceIso: cap3Progress?.entered_at ?? null,
+          }
+        }
       />
 
-      {/* ⑦ Thắng/thua theo mức tự tin (spec §8) */}
-      <div className={CARD} data-testid="cap3-pa-khoi7">
+      {/* ⑤ Thắng/thua theo mức tự tin (spec §8 — mockup đánh ⑦, xem docstring) */}
+      <div className={CARD} data-testid="cap3-pa-khoi5">
         <div className="flex items-center gap-2">
-          <span className={SECTION_HEADER}>{"⑦ THẮNG/THUA THEO MỨC TỰ TIN"}</span>
+          <span className={SECTION_HEADER}>{"⑤ THẮNG/THUA THEO MỨC TỰ TIN"}</span>
           <span className={BADGE_NEW}>mới ở Cấp 3</span>
         </div>
         <table className="w-full text-xs">
@@ -150,7 +184,7 @@ export function Cap3PortfolioAnalysis({
               <tr
                 key={row.mucTuTin}
                 className="border-t border-[var(--color-border-2)]"
-                data-testid={`cap3-pa-khoi7-row-${row.mucTuTin}`}
+                data-testid={`cap3-pa-khoi5-row-${row.mucTuTin}`}
               >
                 <td className={TD}>{row.label}</td>
                 <td className={cn(TD, "tabular-nums")}>
@@ -177,22 +211,22 @@ export function Cap3PortfolioAnalysis({
         {khoi7.phatHien && (
           <p
             className="text-xs text-[var(--color-text-1)]"
-            data-testid="cap3-pa-khoi7-phathien"
+            data-testid="cap3-pa-khoi5-phathien"
           >
             {`🎯 ${khoi7.phatHien}`}
           </p>
         )}
         {khoi7.insufficientNote && (
-          <p className="text-xs text-[var(--color-text-3)]" data-testid="cap3-pa-khoi7-note">
+          <p className="text-xs text-[var(--color-text-3)]" data-testid="cap3-pa-khoi5-note">
             {khoi7.insufficientNote}
           </p>
         )}
       </div>
 
-      {/* ⑧ Khối lượng có đi theo tự tin không (spec §8) */}
-      <div className={CARD} data-testid="cap3-pa-khoi8">
+      {/* ⑥ Khối lượng có đi theo tự tin không (spec §8 — mockup đánh ⑧) */}
+      <div className={CARD} data-testid="cap3-pa-khoi6">
         <div className="flex items-center gap-2">
-          <span className={SECTION_HEADER}>{"⑧ KHỐI LƯỢNG CÓ ĐI THEO TỰ TIN KHÔNG?"}</span>
+          <span className={SECTION_HEADER}>{"⑥ KHỐI LƯỢNG CÓ ĐI THEO TỰ TIN KHÔNG?"}</span>
           <span className={BADGE_NEW}>mới ở Cấp 3</span>
         </div>
         <table className="w-full text-xs">
@@ -210,7 +244,7 @@ export function Cap3PortfolioAnalysis({
               <tr
                 key={row.mucTuTin}
                 className="border-t border-[var(--color-border-2)]"
-                data-testid={`cap3-pa-khoi8-row-${row.mucTuTin}`}
+                data-testid={`cap3-pa-khoi6-row-${row.mucTuTin}`}
               >
                 <td className={TD}>{row.label}</td>
                 <td className={cn(TD, "tabular-nums")}>
@@ -231,13 +265,13 @@ export function Cap3PortfolioAnalysis({
         {khoi8.phatHien && (
           <p
             className="text-xs text-[var(--color-text-1)]"
-            data-testid="cap3-pa-khoi8-phathien"
+            data-testid="cap3-pa-khoi6-phathien"
           >
             {`📊 ${khoi8.phatHien}`}
           </p>
         )}
         {khoi8.insufficientNote && (
-          <p className="text-xs text-[var(--color-text-3)]" data-testid="cap3-pa-khoi8-note">
+          <p className="text-xs text-[var(--color-text-3)]" data-testid="cap3-pa-khoi6-note">
             {khoi8.insufficientNote}
           </p>
         )}

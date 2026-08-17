@@ -51,7 +51,16 @@ function getTierLabel(role: string): string {
   }
 }
 
-export function Header() {
+export interface HeaderProps {
+  /**
+   * ★★ Chuyển thẳng xuống `SymbolSearch` — xem doc ở đó. `Header` chỉ là ống
+   * dẫn: nó không tự quyết định gì, nên /bieu-do & /co-phieu (không truyền
+   * gì) giữ nguyên `navigate('/co-phieu/:sym')`.
+   */
+  onSymbolSelect?: (symbol: string) => void
+}
+
+export function Header({ onSymbolSelect }: HeaderProps = {}) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const { theme, toggleTheme } = useTheme()
@@ -130,7 +139,7 @@ export function Header() {
       <div className="flex-1" />
 
       {/* Global search */}
-      <SymbolSearch />
+      <SymbolSearch onSymbolSelect={onSymbolSelect} />
 
       <Divider type="vertical" className="!mx-1 !h-5" />
 

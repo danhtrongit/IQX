@@ -125,6 +125,27 @@ import "./order-panel.css"
  * kết quả sẽ là nửa thẻ áo mới, nửa thẻ áo Arco cũ. `isCap2Active` là mốc thấp
  * nhất phân biệt được "Cấp 1 thật" với "Cấp 2 trở lên".
  */
+/**
+ * ★★ Nút mã cổ phiếu ở đầu panel Đặt lệnh dẫn đi đâu.
+ *
+ * `"navigate"` (mặc định) = hành vi cũ `/co-phieu/:sym` — đúng trên /bieu-do
+ * và /co-phieu. `"none"` = mã chỉ là nhãn: bên trong một shell cấp, cú bấm đó
+ * ném user ra khỏi `/dau-truong` NGAY GIỮA lúc điền form kế hoạch (form nằm
+ * trong state của panel → mất trắng). `RightSidebar` là chỗ duy nhất biết có
+ * shell cấp nào đang mount, nên nó là chỗ duy nhất truyền `"none"`.
+ */
+type SymbolLink = "navigate" | "none"
+
+/**
+ * ★★ Điều gì xảy ra khi BE từ chối một thao tác vì thiếu Premium.
+ *
+ * `undefined` (mặc định) = hành vi cũ: `navigate('/nang-cap')`. Đó là điều
+ * hướng TỰ ĐỘNG — user bấm MUA hoặc «Kích hoạt Đấu trường ảo», không bấm gì
+ * liên quan nâng cấp, mà vẫn bị chuyển trang. Trong shell cấp thì đó là mất
+ * hành trình; `RightSidebar` truyền handler để giữ user tại chỗ.
+ */
+type OnPremiumRequired = (() => void) | undefined
+
 function useMockupPanelSkin(): "cap0" | "cap1" | null {
   const { isCap0Active } = useCap0Events()
   const { isCap1Active } = useCap1Events()
@@ -317,6 +338,7 @@ function OrderEntry({
   balance,
   positionQty,
   side,
+  onPremiumRequired,
 }: {
   symbol: string
   data: PriceBoardData | null
@@ -327,6 +349,7 @@ function OrderEntry({
       form bị chặn). Mọi chỗ ĐỌC `side` bên dưới giữ nguyên; chỉ tabs mới ghi
       nó, và tabs không còn ở đây. */
   side: "buy" | "sell"
+  onPremiumRequired: OnPremiumRequired
 }) {
   const navigate = useNavigate()
   const placeOrder = usePlaceOrder()
@@ -1172,7 +1195,11 @@ function OrderEntry({
           content: msg,
           duration: 6000,
         })
-        navigate("/nang-cap")
+        // ★★ KHÔNG tự điều hướng khi host đã nhận trách nhiệm: trong shell cấp,
+        // một cú `navigate('/nang-cap')` ở đây là mất hành trình vì một lỗi
+        // user không hề yêu cầu.
+        if (onPremiumRequired) onPremiumRequired()
+        else navigate("/nang-cap")
       } else {
         Message.error(msg)
       }
@@ -1654,9 +1681,11 @@ function OrderEntry({
 function AccountStrip({
   positionQty,
   symbol,
+  onPremiumRequired,
 }: {
   positionQty: number
   symbol: string
+  onPremiumRequired: OnPremiumRequired
 }) {
   const { data: account, isLoading, isError } = useAccount()
   const activate = useActivateAccount()
@@ -1674,7 +1703,10 @@ function AccountStrip({
       const msg = await getErrorMessage(err, "Kích hoạt thất bại")
       if (/premium|gói premium/i.test(msg)) {
         Message.error(msg)
-        navigate("/nang-cap")
+        // ★★ Cùng lý do với `OrderEntry`: rất dễ chạm ở Cấp 0/1 vì nhiệm vụ
+        // bảo user bấm ĐÚNG nút này — thấy lỗi thì được, bị đá khỏi cấp thì không.
+        if (onPremiumRequired) onPremiumRequired()
+        else navigate("/nang-cap")
       } else {
         Message.error(msg)
       }
@@ -1800,10 +1832,12 @@ function StockHeader({
   symbol,
   data,
   isLoading,
+  symbolLink,
 }: {
   symbol: string
   data: PriceBoardData | null
   isLoading: boolean
+  symbolLink: SymbolLink
 }) {
   const navigate = useNavigate()
   const { isAuthenticated, setShowAuthModal } = useAuth()
@@ -1876,13 +1910,19 @@ function StockHeader({
         <div className="op-ticker">
           <div className="op-ticker-id">
             <StockLogo symbol={data.symbol} size={22} />
-            <button
-              type="button"
-              className="op-ticker-code"
-              onClick={() => navigate(`/co-phieu/${data.symbol}`)}
-            >
-              {data.symbol}
-            </button>
+            {symbolLink === "none" ? (
+              // Trong shell cấp: mã là NHÃN, không phải lối ra. Không còn
+              // `<button>` nghĩa là không còn cả bàn phím lẫn chuột dẫn ra.
+              <span className="op-ticker-code">{data.symbol}</span>
+            ) : (
+              <button
+                type="button"
+                className="op-ticker-code"
+                onClick={() => navigate(`/co-phieu/${data.symbol}`)}
+              >
+                {data.symbol}
+              </button>
+            )}
             <button
               type="button"
               onClick={handleToggle}
@@ -1941,13 +1981,20 @@ function StockHeader({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <StockLogo symbol={data.symbol} size={28} />
-          <button
-            type="button"
-            className="text-sm font-bold text-[var(--color-text-1)] hover:text-[rgb(var(--primary-6))]"
-            onClick={() => navigate(`/co-phieu/${data.symbol}`)}
-          >
-            {data.symbol}
-          </button>
+          {/* ★ Nhánh KHÔNG skin — chính là nhánh Cấp 2→8 render (skin chỉ bật
+              ở Cấp 0 và Cấp 1-không-Cấp-2). Phải vá CÙNG LÚC với nhánh skin ở
+              trên, nếu không tắt skin là lỗ hổng mở lại nguyên vẹn. */}
+          {symbolLink === "none" ? (
+            <span className="text-sm font-bold text-[var(--color-text-1)]">{data.symbol}</span>
+          ) : (
+            <button
+              type="button"
+              className="text-sm font-bold text-[var(--color-text-1)] hover:text-[rgb(var(--primary-6))]"
+              onClick={() => navigate(`/co-phieu/${data.symbol}`)}
+            >
+              {data.symbol}
+            </button>
+          )}
           <button
             type="button"
             onClick={handleToggle}
@@ -2051,6 +2098,8 @@ function GatedOrderEntry(props: {
   positionQty: number
   priceLoading: boolean
   hideHeader: boolean
+  symbolLink: SymbolLink
+  onPremiumRequired: OnPremiumRequired
 }) {
   const { isPremium, isLoading } = usePremiumStatus()
   const { isCap0Active } = useCap0Events()
@@ -2120,9 +2169,18 @@ function GatedOrderEntry(props: {
     <div data-tour-id="cap0-tour-buysell-balance">
       {tabs}
       {!props.hideHeader && (
-        <StockHeader symbol={props.symbol} data={props.data} isLoading={props.priceLoading} />
+        <StockHeader
+          symbol={props.symbol}
+          data={props.data}
+          isLoading={props.priceLoading}
+          symbolLink={props.symbolLink}
+        />
       )}
-      <AccountStrip positionQty={props.positionQty} symbol={props.symbol} />
+      <AccountStrip
+        positionQty={props.positionQty}
+        symbol={props.symbol}
+        onPremiumRequired={props.onPremiumRequired}
+      />
     </div>
   )
 
@@ -2166,7 +2224,19 @@ function GatedOrderEntry(props: {
 }
 
 /* ── Main panel ── */
-export function TradingPanel({ hideHeader = false }: { hideHeader?: boolean } = {}) {
+export interface TradingPanelProps {
+  hideHeader?: boolean
+  /** Xem `SymbolLink`. Mặc định `"navigate"` = /bieu-do & /co-phieu như cũ. */
+  symbolLink?: SymbolLink
+  /** Xem `OnPremiumRequired`. Bỏ trống = /bieu-do & /co-phieu như cũ. */
+  onPremiumRequired?: () => void
+}
+
+export function TradingPanel({
+  hideHeader = false,
+  symbolLink = "navigate",
+  onPremiumRequired,
+}: TradingPanelProps = {}) {
   const { symbol } = useSymbol()
   const { data, isLoading } = usePrice(symbol)
   const { data: account } = useAccount()
@@ -2221,6 +2291,8 @@ export function TradingPanel({ hideHeader = false }: { hideHeader?: boolean } = 
           positionQty={positionQty}
           priceLoading={isLoading}
           hideHeader={hideHeader}
+          symbolLink={symbolLink}
+          onPremiumRequired={onPremiumRequired}
         />
       </div>
     </aside>

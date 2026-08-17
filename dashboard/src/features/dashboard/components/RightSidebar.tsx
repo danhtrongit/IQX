@@ -1,4 +1,4 @@
-import { Button } from "@arco-design/web-react"
+import { Button, Message } from "@arco-design/web-react"
 import { IconClose } from "@arco-design/web-react/icon"
 import { useSidebar, type SidebarPanel } from "@/shared/contexts/sidebar-context"
 import { useSymbol } from "@/shared/contexts/symbol-context"
@@ -142,7 +142,30 @@ export function RightSidebar() {
           </PremiumGate>
         )
       case "trading":
-        return <TradingPanel />
+        // ★★ Hai lối thoát nằm NGAY TRONG panel đặt lệnh, vá tại đúng một chỗ
+        // và phủ cả chín cấp (kể cả các cấp đang tắt sau trần — mở cấp sau
+        // không phải nhớ lại):
+        //  · nút mã cổ phiếu ở đầu panel `navigate('/co-phieu/:sym')` — bấm
+        //    lúc đang điền form kế hoạch là mất trắng form + rời cấp;
+        //  · lỗi Premium từ BE (đặt lệnh / kích hoạt Đấu trường ảo) TỰ ĐỘNG
+        //    `navigate('/nang-cap')` — user không bấm gì liên quan nâng cấp.
+        // Ngoài shell cấp, `"navigate"` + `undefined` là ĐÚNG hành vi cũ của
+        // /bieu-do & /co-phieu.
+        return (
+          <TradingPanel
+            symbolLink={isLevelActive ? "none" : "navigate"}
+            onPremiumRequired={
+              isLevelActive
+                ? () =>
+                    Message.info({
+                      content:
+                        "Bạn có thể nâng cấp Premium ở nút «Nâng cấp Premium» trên thanh tiêu đề — hành trình của bạn vẫn giữ nguyên.",
+                      duration: 6000,
+                    })
+                : undefined
+            }
+          />
+        )
       case "watchlist":
         return <WatchlistPanel onRowSelect={isLevelActive ? setSymbol : undefined} />
       case "journey":

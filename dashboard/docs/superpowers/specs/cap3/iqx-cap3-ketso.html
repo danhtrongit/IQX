@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IQX — Kết sổ Cấp 3</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --bg2:#1f2230; --bg3:#282c3d; --bg4:#323649; --bd:#39405a; --t1:#f0f2f7; --t2:#b8bdcc; --t3:#8a90a5; --brand:#4f8ff7; --brand-soft:rgba(79,143,247,.16); --brand-bd:rgba(79,143,247,.4); --up:#35d07f; --down:#ff6b6b; --warn:#ffc53d; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#12141c; color:var(--t1); font-family:'Inter',sans-serif; font-size:13px; line-height:1.55; padding:24px; display:flex; justify-content:center; }
+.up{color:var(--up)} .down{color:var(--down)}
+.col { width:360px; }
+.ketso { background:var(--bg2); border:1px solid var(--bd); border-radius:12px; overflow:hidden; }
+.ks-head { padding:18px 16px; text-align:center; border-bottom:1px solid var(--bd); }
+.ks-tagline { font-family:'JetBrains Mono'; font-size:9px; letter-spacing:1px; color:var(--t3); margin-bottom:8px; }
+.ks-pnl { font-family:'Space Grotesk'; font-size:40px; font-weight:800; line-height:1; }
+.ks-pnl-sub { font-family:'JetBrains Mono'; font-size:11px; color:var(--t2); margin-top:7px; }
+.ks-body { padding:16px; }
+.ks-section-label { font-size:9px; text-transform:uppercase; letter-spacing:.6px; color:var(--t3); margin-bottom:8px; display:flex; align-items:center; gap:7px; }
+.add-flag { font-size:9px; padding:2px 7px; border-radius:10px; background:var(--brand-soft); color:var(--brand); font-weight:700; letter-spacing:0; text-transform:none; }
+.cmp { border:1px solid var(--bd); border-radius:8px; overflow:hidden; margin-bottom:14px; }
+.cmp-row { display:grid; grid-template-columns:1fr 1fr 1fr; font-size:11.5px; border-bottom:1px solid var(--bd); }
+.cmp-row:last-child { border-bottom:none; }
+.cmp-row.head { background:var(--bg3); font-weight:600; color:var(--t3); font-size:9px; text-transform:uppercase; letter-spacing:.4px; }
+.cmp-row > div { padding:8px 10px; }
+.cmp-row > div:not(:last-child) { border-right:1px solid var(--bd); }
+.cmp-row .lbl { color:var(--t2); }
+.cmp-val { font-family:'JetBrains Mono'; font-weight:600; }
+.cmp-row.hl { background:var(--brand-soft); }
+.emo { border:1px solid var(--bd); border-radius:8px; padding:12px; margin-bottom:14px; background:var(--bg3); }
+.emo-q { font-size:11.5px; font-weight:600; margin-bottom:10px; }
+.emo-opts { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.emo-opt { padding:8px; text-align:center; font-size:11.5px; background:var(--bg2); border:1px solid var(--bd); border-radius:6px; cursor:pointer; }
+.emo-opt.on { border-color:var(--brand); color:var(--brand); }
+.coach { border-left:3px solid var(--brand); background:var(--brand-soft); border-radius:0 8px 8px 0; padding:12px 14px; margin-bottom:16px; }
+.coach-tag { font-family:'JetBrains Mono'; font-size:9px; letter-spacing:1px; color:var(--brand); font-weight:700; margin-bottom:6px; }
+.coach-txt { font-size:12px; color:var(--t2); line-height:1.6; }
+.coach-txt b { color:var(--t1); }
+.ks-btn { width:100%; padding:13px; border:none; border-radius:8px; font-weight:700; font-size:13px; font-family:'Space Grotesk'; background:var(--bg4); color:var(--t1); cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="col">
+  <div class="ketso">
+    <div class="ks-head">
+      <div class="ks-tagline">KẾT SỔ LỆNH · #34 · THỰC CHIẾN</div>
+      <div class="ks-pnl up">+6,1%</div>
+      <div class="ks-pnl-sub">+122.000đ · MUA 200 VNM → BÁN · Giữ 6 phiên</div>
+    </div>
+    <div class="ks-body">
+
+      <div class="ks-section-label">Đối chiếu kế hoạch với thực tế</div>
+      <div class="cmp">
+        <div class="cmp-row head"><div></div><div>Kế hoạch</div><div>Thực tế</div></div>
+        <div class="cmp-row"><div class="lbl">Lý do</div><div class="cmp-val" style="grid-column:span 2">💰 Dòng tiền · ✅ Ủng hộ</div></div>
+        <div class="cmp-row"><div class="lbl">Vùng mua</div><div class="cmp-val">62.400</div><div class="cmp-val">62.400</div></div>
+        <div class="cmp-row"><div class="lbl">Cắt lỗ</div><div class="cmp-val down">60.700</div><div class="cmp-val">không chạm</div></div>
+        <div class="cmp-row"><div class="lbl">Chốt lời</div><div class="cmp-val up">65.800</div><div class="cmp-val">bán 66.200</div></div>
+      </div>
+
+      <div class="ks-section-label">Quản lý vốn <span class="add-flag">mới ở Cấp 3</span></div>
+      <div class="cmp">
+        <div class="cmp-row"><div class="lbl">Khẩu vị rủi ro</div><div class="cmp-val" style="grid-column:span 2">Cân bằng (trần 20%)</div></div>
+        <div class="cmp-row hl"><div class="lbl">Mức tự tin</div><div class="cmp-val" style="grid-column:span 2">⭐⭐ Vừa (75%)</div></div>
+        <div class="cmp-row"><div class="lbl">Cách tính KL</div><div class="cmp-val" style="grid-column:span 2">Khẩu vị × tự tin</div></div>
+        <div class="cmp-row"><div class="lbl">Khối lượng</div><div class="cmp-val" style="grid-column:span 2">200 cp · 15% vốn (15tr)</div></div>
+      </div>
+
+      <div class="coach">
+        <div class="coach-tag">NHÌN LẠI · TỰ TIN VS KẾT QUẢ</div>
+        <div class="coach-txt">Lệnh lãi 6,1%. Bạn chấm tự tin <b>⭐⭐ Vừa</b> và mua 15% vốn — lệnh thắng, khối lượng vừa phải nên lãi cũng vừa phải. Nếu tự tin cao hơn bạn đã mua nhiều hơn và lãi lớn hơn. <b>Điều đáng ghi nhận: bạn để mức tự tin dẫn dắt khối lượng, không mua theo cảm hứng.</b></div>
+      </div>
+
+      <button class="ks-btn">Đóng kết sổ ✓</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

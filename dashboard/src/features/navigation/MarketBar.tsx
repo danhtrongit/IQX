@@ -131,7 +131,18 @@ const MarketTicker = memo(function MarketTicker({ indices }: { indices: IndexDat
   )
 })
 
-export function MarketBar() {
+export interface MarketBarProps {
+  /**
+   * ★★ Cùng khuôn `SymbolSearch.onSymbolSelect`: `undefined` giữ nguyên
+   * `navigate('/co-phieu/:sym')` cho /bieu-do & /co-phieu; chín trang cấp
+   * truyền `setSymbol` nên bấm vào cụm giá ở đầu thanh chỉ chuyển mã của
+   * terminal (thường là no-op, vì nó ĐANG là mã hiện tại — đúng ý: cụm giá là
+   * chrome, không phải một lối rời trang).
+   */
+  onSymbolClick?: (symbol: string) => void
+}
+
+export function MarketBar({ onSymbolClick }: MarketBarProps = {}) {
   const navigate = useNavigate()
   const { symbol } = useSymbol()
   const { indices } = useIndices()
@@ -160,7 +171,11 @@ export function MarketBar() {
       {stockData && (
         <button
           type="button"
-          onClick={() => navigate(`/co-phieu/${stockData.symbol}`)}
+          onClick={() =>
+            onSymbolClick
+              ? onSymbolClick(stockData.symbol)
+              : navigate(`/co-phieu/${stockData.symbol}`)
+          }
           className="flex shrink-0 items-center gap-2"
         >
           <StockLogo symbol={stockData.symbol} size={20} />

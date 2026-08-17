@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IQX — Hành trình Cấp 3</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --bg2:#1f2230; --bg3:#282c3d; --bg4:#323649; --bd:#39405a; --t1:#f0f2f7; --t2:#b8bdcc; --t3:#8a90a5; --lvl:#4f8ff7; --lvl-soft:rgba(79,143,247,.16); --lvl-bd:rgba(79,143,247,.4); --up:#35d07f; --warn:#ffc53d; --down:#ff6b6b; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#12141c; color:var(--t1); font-family:'Inter',sans-serif; font-size:13px; line-height:1.55; padding:24px; display:flex; justify-content:center; }
+.col { width:380px; }
+.jbar { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--bg2); border:1px solid var(--bd); border-radius:10px; margin-bottom:12px; cursor:pointer; }
+.jbar .lv { font-family:'JetBrains Mono'; font-size:10px; font-weight:700; color:var(--lvl); white-space:nowrap; }
+.jbar .nx { flex:1; font-size:11px; color:var(--t2); }
+.jbar .dots { display:flex; gap:4px; }
+.jbar .dot { width:7px; height:7px; border-radius:50%; background:var(--bg4); }
+.jbar .dot.done { background:var(--up); }
+.jbar .dot.now { background:var(--lvl); box-shadow:0 0 6px var(--lvl); }
+.lvcard { background:linear-gradient(135deg,var(--lvl-soft),transparent); border:1px solid var(--bd); border-radius:12px; padding:16px; margin-bottom:14px; display:flex; gap:14px; align-items:center; }
+.lvcard .info .tag { font-family:'JetBrains Mono'; font-size:10px; color:var(--lvl); font-weight:700; letter-spacing:1px; }
+.lvcard .info .nm { font-family:'Space Grotesk'; font-size:20px; font-weight:800; margin:2px 0; }
+.lvcard .info .lesson { font-size:11px; color:var(--t2); font-style:italic; }
+.lvcard .info .mode { display:inline-block; margin-top:6px; font-family:'JetBrains Mono'; font-size:9px; font-weight:700; letter-spacing:.5px; color:var(--lvl); background:var(--lvl-soft); border:1px solid var(--lvl-bd); padding:2px 7px; border-radius:5px; }
+.ck-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.ck-head .t { font-family:'JetBrains Mono'; font-size:10px; letter-spacing:.6px; color:var(--t3); text-transform:uppercase; }
+.ck-head .c { font-family:'Space Grotesk'; font-size:14px; font-weight:700; color:var(--lvl); }
+.task { display:flex; align-items:flex-start; gap:10px; padding:11px 12px; border:1px solid var(--bd); border-radius:8px; margin-bottom:7px; background:var(--bg2); }
+.task.done { opacity:.55; }
+.task .st { flex-shrink:0; font-size:15px; width:20px; text-align:center; }
+.task .body { flex:1; }
+.task .nm { font-size:12.5px; font-weight:600; }
+.task.done .nm { text-decoration:line-through; }
+/* Thách thức bản lĩnh */
+.challenge { border:1px solid var(--lvl-bd); background:var(--lvl-soft); border-radius:10px; padding:14px; margin-bottom:7px; }
+.challenge .ct { font-size:12.5px; font-weight:700; color:var(--lvl); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.cond { margin-bottom:9px; }
+.cond-row { display:flex; align-items:center; gap:8px; font-size:11.5px; margin-bottom:4px; }
+.cond-row .ic { width:16px; }
+.cond-row .lb { flex:1; color:var(--t2); }
+.cond-row .val { font-family:'JetBrains Mono'; font-weight:600; }
+.bar { height:5px; background:var(--bg4); border-radius:3px; overflow:hidden; margin-left:24px; }
+.bar > i { display:block; height:100%; border-radius:3px; }
+.explain-box { margin-top:10px; font-size:10px; color:var(--t3); line-height:1.5; border-top:1px solid var(--bd); padding-top:8px; }
+.tools { display:flex; gap:8px; margin:14px 0; }
+.tool { flex:1; text-align:center; padding:10px; background:var(--bg2); border:1px solid var(--bd); border-radius:8px; font-size:11px; font-weight:600; color:var(--t2); cursor:pointer; }
+.goal { margin-top:14px; padding:12px 14px; border:1px dashed var(--bd); border-radius:9px; font-size:11px; color:var(--t2); line-height:1.6; text-align:center; }
+.goal b { color:var(--t1); }
+</style>
+</head>
+<body>
+<div class="col">
+  <div class="jbar">
+    <span class="lv">CẤP 3 · 2/3</span>
+    <span class="nx">Thách thức Bản lĩnh — lãi có kỷ luật</span>
+    <span class="dots"><i class="dot done"></i><i class="dot done"></i><i class="dot now"></i></span>
+  </div>
+
+  <div class="lvcard">
+    <div class="badge">
+      <svg width="66" height="66" viewBox="0 0 66 66"><polygon points="33,10 53,22 53,44 33,56 13,44 13,22" fill="rgba(79,143,247,.16)" stroke="#4f8ff7" stroke-width="2.6"/><text x="33" y="34" text-anchor="middle" dominant-baseline="central" font-family="Space Grotesk" font-weight="700" font-size="17" fill="#fff">3</text></svg>
+    </div>
+    <div class="info">
+      <div class="tag">CẤP 3</div>
+      <div class="nm">BẢN LĨNH</div>
+      <span class="mode">● Khẩu vị: Cân bằng · trần 20%</span>
+    </div>
+  </div>
+
+  <div class="ck-head">
+    <span class="t">Trước khi lên Cấp 4</span>
+    <span class="c">2/3</span>
+  </div>
+
+  <div class="task done"><span class="st">✅</span><div class="body"><div class="nm">① Lệnh đầu đủ khẩu vị + mức tự tin</div></div></div>
+  <div class="task done"><span class="st">✅</span><div class="body"><div class="nm">② Kết sổ lệnh đầu Cấp 3</div></div></div>
+
+  <div class="challenge">
+    <div class="ct">🎯 ③ Thách thức Bản lĩnh — lãi có kỷ luật</div>
+    <div class="cond">
+      <div class="cond-row"><span class="ic">🔲</span><span class="lb">Lãi +5% trên vốn</span><span class="val up">+3,2%</span></div>
+      <div class="bar"><i style="width:64%;background:var(--up)"></i></div>
+    </div>
+    <div class="cond">
+      <div class="cond-row"><span class="ic">🔲</span><span class="lb">Đủ 15 lệnh</span><span class="val">11/15</span></div>
+      <div class="bar"><i style="width:73%;background:var(--lvl)"></i></div>
+    </div>
+    <div class="cond">
+      <div class="cond-row"><span class="ic">🔲</span><span class="lb">Điểm kỷ luật ≥80%</span><span class="val warn">76%</span></div>
+      <div class="bar"><i style="width:95%;background:var(--warn)"></i></div>
+    </div>
+    <div class="explain-box">💡 <b>Điểm kỷ luật</b> đo bạn có làm đúng cam kết không: cắt lỗ khi giá chạm, không gồng lỗ, không nhồi lệnh, không tham chốt lời hụt. Làm đúng thì điểm cao.<br><br>Đây là cấp «Bản lĩnh»: không chỉ lãi, mà lãi <b>có kỷ luật</b>. Lãi do đánh liều ăn may sẽ không qua vì điểm kỷ luật thấp.</div>
+  </div>
+
+  <div class="tools">
+    <div class="tool">📓 Kết sổ</div>
+    <div class="tool">📊 Phân tích danh mục</div>
+  </div>
+
+  <div class="goal">Đạt cả 3 điều kiện → tốt nghiệp <b>Cấp 3</b>, lên <b>Cấp 4 «Thuần thục»</b> (tách quyết định khỏi kết quả).</div>
+</div>
+</body>
+</html>

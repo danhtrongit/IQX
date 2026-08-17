@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IQX — Phân tích danh mục Cấp 3</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --bg2:#1f2230; --bg3:#282c3d; --bg4:#323649; --bd:#39405a; --t1:#f0f2f7; --t2:#b8bdcc; --t3:#8a90a5; --brand:#4f8ff7; --brand-soft:rgba(79,143,247,.16); --brand-bd:rgba(79,143,247,.4); --teal:#7dd3c0; --up:#35d07f; --down:#ff6b6b; --warn:#ffc53d; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#12141c; color:var(--t1); font-family:'Inter',sans-serif; font-size:13px; line-height:1.55; padding:24px; display:flex; justify-content:center; }
+.num { font-family:'JetBrains Mono'; font-variant-numeric:tabular-nums; }
+.up{color:var(--up)} .down{color:var(--down)} .warn{color:var(--warn)}
+.col { width:410px; }
+.hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.hdr .back { background:var(--bg3); border:1px solid var(--bd); color:var(--t2); font-size:11px; padding:6px 11px; border-radius:6px; cursor:pointer; }
+.hdr .title { font-family:'Space Grotesk'; font-size:16px; font-weight:700; }
+.pa { background:var(--bg2); border:1px solid var(--bd); border-radius:12px; padding:16px; }
+.blk { margin-bottom:16px; }
+.blk:last-child { margin-bottom:0; }
+.blk-title { font-size:10px; text-transform:uppercase; letter-spacing:.6px; color:var(--t3); margin-bottom:9px; display:flex; align-items:center; gap:7px; }
+.add-flag { font-size:9px; padding:2px 7px; border-radius:10px; background:var(--brand-soft); color:var(--brand); font-weight:700; letter-spacing:0; text-transform:none; }
+.keep-flag { font-size:9px; color:var(--t3); font-weight:400; letter-spacing:0; text-transform:none; }
+.profile { background:linear-gradient(135deg,var(--bg3),var(--bg2)); border:1px solid var(--bd); border-radius:10px; padding:14px; }
+.profile-name { font-size:11px; color:var(--t3); margin-bottom:10px; }
+.stats { display:flex; gap:12px; }
+.stat-main { flex:1.4; }
+.stat-main .v { font-family:'Space Grotesk'; font-size:28px; font-weight:800; }
+.stat-main .l { font-size:10px; color:var(--t3); }
+.stat-main .sub { font-size:10px; color:var(--t2); margin-top:2px; }
+.stat-mini { flex:1; }
+.stat-mini .v { font-family:'Space Grotesk'; font-size:16px; font-weight:700; }
+.stat-mini .l { font-size:9px; color:var(--t3); }
+.stat-mini .sub { font-size:9px; color:var(--t3); }
+.collapsed { background:var(--bg3); border:1px solid var(--bd); border-radius:8px; padding:10px 12px; display:flex; align-items:center; justify-content:space-between; font-size:11px; color:var(--t2); }
+.collapsed .chev { color:var(--t3); }
+/* Khối tự tin - mới */
+.conf-table { border:1px solid var(--brand-bd); border-radius:8px; overflow:hidden; }
+.ct-row { display:grid; grid-template-columns:1.3fr .7fr .9fr .9fr; font-size:11px; border-bottom:1px solid var(--bd); }
+.ct-row:last-child { border-bottom:none; }
+.ct-row.head { background:var(--bg3); font-size:9px; text-transform:uppercase; color:var(--t3); letter-spacing:.4px; }
+.ct-row > div { padding:8px 9px; }
+.ct-nm { font-weight:600; }
+.ct-n, .ct-wr, .ct-pnl { text-align:right; font-family:'JetBrains Mono'; font-weight:600; }
+.pat { display:flex; gap:9px; padding:11px; border-radius:8px; margin-top:9px; }
+.pat.info { background:var(--brand-soft); border:1px solid var(--brand-bd); }
+.pat.good { background:rgba(53,208,127,.08); border:1px solid rgba(53,208,127,.25); }
+.pat .ic { font-size:16px; }
+.pat .tx { font-size:11px; color:var(--t2); line-height:1.5; }
+.pat .tx b { color:var(--t1); }
+.bridge { margin-top:9px; padding:11px; border-radius:8px; background:rgba(167,139,250,.1); border:1px solid rgba(167,139,250,.3); font-size:11px; color:var(--t2); line-height:1.55; }
+.bridge b { color:#c4b5fd; }
+</style>
+</head>
+<body>
+<div class="col">
+  <div class="hdr">
+    <button class="back">← Quay lại Nắm giữ</button>
+    <div class="title">Phân tích danh mục</div>
+  </div>
+  <div class="pa">
+
+    <div class="blk">
+      <div class="blk-title">① Hồ sơ tổng quan <span class="add-flag">+ khẩu vị</span></div>
+      <div class="profile">
+        <div class="profile-name">Cấp 3 «Bản lĩnh» · 34 lệnh · từ 15/03/2026</div>
+        <div class="stats">
+          <div class="stat-main"><div class="l">Điểm kỷ luật</div><div class="v" style="color:var(--teal)">85%</div><div class="sub">Khẩu vị: Cân bằng (20%)</div></div>
+          <div class="stat-mini"><div class="l">Tỷ lệ thắng</div><div class="v up">64%</div><div class="sub">22 / 12</div></div>
+          <div class="stat-mini"><div class="l">Chuỗi kỷ luật</div><div class="v" style="color:var(--teal)">9</div><div class="sub">lệnh sạch</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Các khối kế thừa Cấp 2 - thu gọn -->
+    <div class="blk">
+      <div class="blk-title">Các khối từ Cấp 1-2 <span class="keep-flag">(giữ nguyên, bấm để mở)</span></div>
+      <div class="collapsed" style="margin-bottom:7px;"><span>② Thắng/thua theo 6 lý do</span><span class="chev">▸</span></div>
+      <div class="collapsed" style="margin-bottom:7px;"><span>③ Độ phủ 6 lý do + Cơ sở</span><span class="chev">▸</span></div>
+      <div class="collapsed" style="margin-bottom:7px;"><span>④ Điểm kỷ luật 30 ngày</span><span class="chev">▸</span></div>
+      <div class="collapsed" style="margin-bottom:7px;"><span>⑤ Phân loại vi phạm theo tuần</span><span class="chev">▸</span></div>
+      <div class="collapsed"><span>⑥ Phát hiện từ ghi chú</span><span class="chev">▸</span></div>
+    </div>
+
+    <!-- KHỐI MỚI: phân tích theo mức tự tin -->
+    <div class="blk">
+      <div class="blk-title">⑦ Thắng/thua theo mức tự tin <span class="add-flag">mới ở Cấp 3</span></div>
+      <div class="conf-table">
+        <div class="ct-row head"><div>Mức tự tin</div><div class="ct-n">Lệnh</div><div class="ct-wr">Thắng</div><div class="ct-pnl">Lãi/lỗ TB</div></div>
+        <div class="ct-row"><div class="ct-nm">⭐⭐⭐ Cao</div><div class="ct-n">11</div><div class="ct-wr up">82%</div><div class="ct-pnl up">+5,8%</div></div>
+        <div class="ct-row"><div class="ct-nm">⭐⭐ Vừa</div><div class="ct-n">15</div><div class="ct-wr">60%</div><div class="ct-pnl up">+2,1%</div></div>
+        <div class="ct-row"><div class="ct-nm">⭐ Thấp</div><div class="ct-n">8</div><div class="ct-wr down">38%</div><div class="ct-pnl down">−1,4%</div></div>
+      </div>
+      <div class="pat good"><span class="ic">🎯</span><span class="tx"><b>Tự tin của bạn đáng tin</b> — lệnh bạn chấm ⭐⭐⭐ Cao thắng 82%, cao hơn hẳn lệnh ⭐ Thấp (38%). Trực giác đã qua rèn luyện của bạn có cơ sở.</span></div>
+    </div>
+
+    <!-- KHỐI MỚI: khối lượng theo tự tin -->
+    <div class="blk">
+      <div class="blk-title">⑧ Khối lượng có đi theo tự tin không? <span class="add-flag">mới ở Cấp 3</span></div>
+      <div class="conf-table">
+        <div class="ct-row head"><div>Mức tự tin</div><div class="ct-n">KL TB</div><div class="ct-wr">% vốn TB</div><div class="ct-pnl">Cách hay dùng</div></div>
+        <div class="ct-row"><div class="ct-nm">⭐⭐⭐ Cao</div><div class="ct-n">1.100</div><div class="ct-wr">19%</div><div class="ct-pnl" style="font-family:inherit;font-weight:400;color:var(--t2)">Khẩu vị×tự tin</div></div>
+        <div class="ct-row"><div class="ct-nm">⭐⭐ Vừa</div><div class="ct-n">640</div><div class="ct-wr">15%</div><div class="ct-pnl" style="font-family:inherit;font-weight:400;color:var(--t2)">Khẩu vị×tự tin</div></div>
+        <div class="ct-row"><div class="ct-nm">⭐ Thấp</div><div class="ct-n">410</div><div class="ct-wr">10%</div><div class="ct-pnl" style="font-family:inherit;font-weight:400;color:var(--t2)">Khẩu vị×tự tin</div></div>
+      </div>
+      <div class="pat info"><span class="ic">📊</span><span class="tx"><b>Bạn đang quản lý vốn đúng hướng</b> — tự tin càng cao, khối lượng càng lớn (1.100 vs 410 cp). Bạn thưởng cho lệnh chắc chắn, phòng thủ ở lệnh mơ hồ.</span></div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

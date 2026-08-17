@@ -97,6 +97,7 @@ export {
 } from "./portfolioAnalysisCap2"
 export {
   Cap2PortfolioAnalysis,
+  type Cap2AnalysisHost,
   type Cap2PortfolioAnalysisProps,
 } from "./Cap2PortfolioAnalysis"
 export { Cap2PortfolioAnalysisPanel } from "./Cap2PortfolioAnalysisPanel"
