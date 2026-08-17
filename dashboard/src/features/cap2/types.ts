@@ -41,14 +41,17 @@ export interface Cap2Progress {
   // ── ★★ DI SẢN: mô hình 5 nhiệm vụ + chuỗi lệnh kỷ luật ★★ ─────────────────
   /**
    * ★ Backend **KHÔNG còn trả** ba trường này (cột đã bị drop cùng mô hình 2
-   * nhiệm vụ) — nên trên thực tế chúng LUÔN `undefined`. Chúng còn khai báo ở
-   * đây chỉ vì hai chỗ đọc chúng đều là code CHẾT sau trần cấp:
-   *   · `ChuoiWidget.tsx` — đã rời tab Hành trình, giữ file theo yêu cầu;
-   *   · `capN/KetsoModalCapN.tsx` (N = 3…8) — Kết sổ của các cấp đang tắt sau
-   *     `CAP_MAX_ENABLED`, dòng "chuỗi kỷ luật" ở đó sẽ đọc ra 0.
+   * nhiệm vụ) — nên trên thực tế chúng LUÔN `undefined`.
    *
-   * ⚠ **KHÔNG thêm chỗ đọc mới, và khi mở lại Cấp 3 thì khối chuỗi trong Kết sổ
-   * Cấp 3-8 phải được đặc tả lại** — Cấp 2 không còn đo chuỗi nữa, nên không có
+   * Kết sổ Cấp 3-8 ĐÃ GỠ hẳn dòng "tác động lên chuỗi kỷ luật" khi mở Cấp 3
+   * (nó in ra một con số bịa: `?? 0` rồi `+1`). Hai chỗ còn đọc:
+   *   · `ChuoiWidget.tsx` — đã rời tab Hành trình, giữ file theo yêu cầu;
+   *   · `KetsoModalCap2.tsx` — ⚠ **VẪN ĐANG RENDER TRÊN CẤP 2 LIVE**, nên mọi
+   *     user Cấp 2 hôm nay đọc "tăng lên 1 lệnh liên tiếp không vi phạm". Cần
+   *     gỡ y như đã gỡ ở Cấp 3-8 (kèm `.cap2-ketso-chuoi-impact` trong
+   *     `cap2-ketso.css` và 3 fixture `chuoi_*` trong `KetsoModalCap2.test.tsx`).
+   *
+   * ⚠ **KHÔNG thêm chỗ đọc mới** — Cấp 2 không còn đo chuỗi nữa, nên không có
    * nguồn nào cấp số cho nó.
    */
   chuoi_current?: number
