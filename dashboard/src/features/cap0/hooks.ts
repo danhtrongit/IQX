@@ -1,6 +1,13 @@
+import { useEffect, useRef } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/features/auth"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
+// ★ Vòng import hai chiều CÓ CHỦ ĐÍCH: `Cap0Context` import `useCap0Progress`
+// từ chính file này. Cả hai phía chỉ dùng binding của nhau BÊN TRONG thân hàm
+// (không có gì chạy lúc module được evaluate), nên ESM giải quyết được. Đổi lại
+// là `useCompleteTask` hỏi đúng nguồn sự thật "có đang ở trong Cấp 0 không"
+// thay vì đoán qua `window.location`.
+import { useCap0Events } from "./Cap0Context"
 import { cap0Api } from "./api"
 import { cap0Keys } from "./keys"
 import type { Cap0Gate, Cap0Kehoach, Cap0Progress, PlacementResult } from "./types"
@@ -69,9 +76,20 @@ export function usePlacement() {
  * immediately clicks the ticker to navigate to `/co-phieu/:symbol`), this
  * `onSuccess` resolves AFTER that restore and would otherwise clobber the
  * panel back to "journey", leaking the Cấp 0 sidebar into the shared
- * `/bieu-do` & `/co-phieu` terminals. Guard with the same route check
- * `Cap0TradingPage` is only ever mounted under: only auto-tab when the user
- * is still actually on `/dau-truong`.
+ * `/bieu-do` & `/co-phieu` terminals.
+ *
+ * ★★ HAI ĐIỀU KIỆN THẬT — VÀ KHÔNG CÁI NÀO ĐỌC URL. Chỗ này từng hỏi
+ * `window.location.pathname === "/dau-truong"`. Đó là một lời nói dối tiện tay:
+ * đổi route của trang cấp (hoặc thêm một sub-path) là điều kiện lặng lẽ thành
+ * false — phần thưởng hoàn thành nhiệm vụ thôi kéo tab Hành trình lên, hành
+ * trình "biến mất" khỏi tầm mắt user dù họ vẫn đứng nguyên trong cấp; và
+ * ngược lại, một trang khác dùng đúng path đó là panel Cấp 0 rò ra ngoài.
+ *
+ *  · `isCap0Active` — chỉ true bên trong `Cap0Provider`, đúng cơ chế
+ *    `RightSidebar`/`RightToolbar` đã dùng. Trả lời "có phải Cấp 0 không".
+ *  · `stillMounted` — trả lời "shell còn sống lúc PATCH về không". Cần RIÊNG,
+ *    vì `isCap0Active` đóng băng trong closure ở lần render cuối: sau khi shell
+ *    tháo nó vẫn là `true`, nên một mình nó không chặn được cuộc đua ở trên.
  *
  * ★ `keepPanel` opts a call OUT of the auto-tab, and nhiệm vụ ②③ need it. Those
  * two complete the instant the user opens the Nắm giữ / Theo dõi tab — so the
@@ -83,6 +101,14 @@ export function usePlacement() {
 export function useCompleteTask() {
   const invalidate = useInvalidateCap0()
   const { setActivePanel } = useSidebar()
+  const { isCap0Active } = useCap0Events()
+  const stillMounted = useRef(true)
+  useEffect(() => {
+    stillMounted.current = true
+    return () => {
+      stillMounted.current = false
+    }
+  }, [])
   return useMutation<
     Cap0Progress,
     unknown,
@@ -92,9 +118,8 @@ export function useCompleteTask() {
     onSuccess: (_data, { keepPanel }) => {
       invalidate()
       if (keepPanel) return
-      if (window.location.pathname === "/dau-truong") {
-        setActivePanel("journey")
-      }
+      if (!isCap0Active || !stillMounted.current) return
+      setActivePanel("journey")
     },
   })
 }

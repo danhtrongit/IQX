@@ -13,10 +13,16 @@ import { describe, expect, it } from "vitest"
  * provider + query + TradingView), và nó là thứ giữ lời hứa "mở cấp sau không
  * phải nhớ lại": thêm `Cap9TradingPage` mà quên hai prop là đỏ ngay.
  *
- * ★ `Cap3TradingPage` nằm trong danh sách BIẾT NHƯNG CHƯA VÁ, không phải vì nó
- * đúng: đợt sửa này bị cấm chạm vào `features/cap3/**` (một agent khác đang
- * sửa file đó trong cùng cây làm việc). Nó được liệt kê tách ra bên dưới để
- * lỗ hổng không biến mất khỏi tầm mắt, kèm đúng ba thứ cần thêm.
+ * ★★ `Cap3TradingPage` nằm trong danh sách BIẾT NHƯNG CHƯA VÁ, không phải vì
+ * nó đúng: đợt sửa này bị cấm chạm vào `features/cap3/**` (một agent khác đang
+ * sửa cây đó cùng lúc). Và trần cấp vừa được nâng lên 3 GIỮA đợt sửa này, nên
+ * lỗ hổng đó giờ là lỗ hổng THẬT với người dùng thật, không còn nằm sau trần.
+ *
+ * Ba thứ `Cap3TradingPage` còn thiếu, y hệt tám file kia:
+ *   1. `<Header onSymbolSelect={setSymbol} />`
+ *   2. `<MarketBar onSymbolClick={setSymbol} />`
+ *   3. modal «AI Phân tích» → `<AiInsightSymbolModal visible onClose />`
+ *      (bỏ `submitAiInsightSymbol`/`useNavigate`, thêm `useSymbol`)
  */
 
 const ROOT = `${process.cwd()}/src/features`

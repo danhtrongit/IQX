@@ -22,12 +22,21 @@ vi.mock("@/shared/http/client", () => ({
 }))
 vi.mock("@/features/auth", () => ({ useAuth: () => ({ isAuthenticated: true }) }))
 
+import { readFileSync } from "node:fs"
 import { useCap0Kehoach, useCompleteTask } from "./hooks"
+import { Cap0Provider } from "./Cap0Context"
 
 function Harness() {
   const completeTask = useCompleteTask()
   return (
-    <button onClick={() => completeTask.mutate({ taskNo: 4, gate: "debrief" })}>complete</button>
+    <>
+      <button onClick={() => completeTask.mutate({ taskNo: 4, gate: "debrief" })}>complete</button>
+      <button
+        onClick={() => completeTask.mutate({ taskNo: 4, gate: "debrief", keepPanel: true })}
+      >
+        complete-keep
+      </button>
+    </>
   )
 }
 
@@ -36,16 +45,27 @@ function PanelSpy() {
   return <div data-testid="panel-spy">{activePanel}</div>
 }
 
-function renderHarness() {
+/**
+ * `inCap0` chọn có bọc `Cap0Provider` hay không — ĐÓ là tín hiệu quyết định,
+ * không phải `window.location.pathname`. `mounted` mô phỏng shell Cấp 0 bị
+ * tháo giữa lúc PATCH còn bay.
+ */
+function renderHarness({ inCap0 = true, mounted = true } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  return render(
+  const tree = (m: boolean) => (
     <QueryClientProvider client={client}>
       <SidebarProvider defaultPanel="trading">
-        <Harness />
+        {inCap0 ? (
+          <Cap0Provider>{m && <Harness />}</Cap0Provider>
+        ) : (
+          m && <Harness />
+        )}
         <PanelSpy />
       </SidebarProvider>
-    </QueryClientProvider>,
+    </QueryClientProvider>
   )
+  const utils = render(tree(mounted))
+  return { ...utils, unmountHarness: () => utils.rerender(tree(false)) }
 }
 
 function makeTaskResponse() {
@@ -68,11 +88,31 @@ function makeTaskResponse() {
 }
 
 // ── useCompleteTask auto-tab (spec §7) ──────────────────────────────────────
+/**
+ * ★★ TÍN HIỆU LÀ PROVIDER, KHÔNG PHẢI ĐƯỜNG DẪN.
+ *
+ * `onSuccess` từng hỏi `window.location.pathname === "/dau-truong"`. Đó là
+ * đúng cái anti-pattern đợt này đi gỡ: đổi route của trang cấp (hoặc thêm một
+ * sub-path) là điều kiện lặng lẽ thành false — phần thưởng hoàn thành nhiệm vụ
+ * không còn kéo tab Hành trình lên, hành trình "biến mất" khỏi tầm mắt user dù
+ * họ vẫn đang ở trong cấp; và ngược lại, một trang khác dùng đúng path này thì
+ * panel Cấp 0 rò ra ngoài.
+ *
+ * Hai điều kiện THẬT, cả hai đều không liên quan URL:
+ *  · đang ở trong `Cap0Provider` (`isCap0Active` — cùng cơ chế `RightSidebar`/
+ *    `RightToolbar` dùng); VÀ
+ *  · component gọi mutation CÒN mount khi PATCH trả về — vì `onSuccess` mức
+ *    config vẫn chạy sau khi component đã tháo, và `Cap0TradingPage` khôi phục
+ *    panel cũ lúc unmount, nên một `onSuccess` đến muộn sẽ ghi đè lại "journey"
+ *    và rò panel Cấp 0 sang /bieu-do & /co-phieu (`SidebarProvider` là singleton
+ *    ở app root).
+ */
 describe("useCompleteTask", () => {
   const originalPathname = window.location.pathname
 
   beforeEach(() => {
     get.mockReset()
+    get.mockReturnValue({ json: () => Promise.resolve(null) })
     post.mockReset()
     patch.mockReset()
   })
@@ -81,8 +121,10 @@ describe("useCompleteTask", () => {
     window.history.pushState({}, "", originalPathname)
   })
 
-  it('switches the sidebar to "journey" once any task completes while still on /dau-truong (moment thưởng, KHÔNG confetti)', async () => {
-    window.history.pushState({}, "", "/dau-truong")
+  it('★★ trong Cấp 0: chuyển sidebar sang "journey" — KỂ CẢ khi đường dẫn không phải /dau-truong', async () => {
+    // Đường dẫn cố tình SAI: nếu bài này xanh thì quyết định thật sự không còn
+    // đến từ URL nữa.
+    window.history.pushState({}, "", "/mot-duong-dan-khac")
     patch.mockReturnValue(makeTaskResponse())
 
     renderHarness()
@@ -94,31 +136,58 @@ describe("useCompleteTask", () => {
     expect(patch).toHaveBeenCalledWith("cap0/task", { json: { task_no: 4, gate: "debrief" } })
   })
 
-  // Regression for the cross-terminal leak: `Cap0TradingPage` sets
-  // `activePanel="journey"` on mount and RESTORES the previous panel on
-  // unmount — but `useMutation`'s config-level `onSuccess` fires even after
-  // the calling component has unmounted. If the user fires a task PATCH
-  // (e.g. closing the Kết sổ for nhiệm vụ ④) then immediately navigates away from
-  // `/dau-truong` before it resolves, the in-flight `onSuccess` must NOT
-  // clobber the sidebar back to "journey" — otherwise the Cấp 0 panel leaks
-  // into the shared `/bieu-do` & `/co-phieu` terminals (the `SidebarProvider`
-  // is a single app-root singleton). Simulate exactly that: pathname is no
-  // longer "/dau-truong" (as if `Cap0TradingPage` already unmounted and
-  // restored the prior panel) by the time the PATCH resolves.
-  it('does NOT switch the sidebar to "journey" when the task PATCH resolves after the user has left /dau-truong', async () => {
-    window.history.pushState({}, "", "/co-phieu/VCB")
+  it('★★ NGOÀI Cap0Provider: không đụng vào sidebar (không rò panel Cấp 0)', async () => {
+    window.history.pushState({}, "", "/dau-truong")
+    patch.mockReturnValue(makeTaskResponse())
+
+    renderHarness({ inCap0: false })
+    fireEvent.click(screen.getByText("complete"))
+
+    await waitFor(() =>
+      expect(patch).toHaveBeenCalledWith("cap0/task", { json: { task_no: 4, gate: "debrief" } }),
+    )
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(screen.getByTestId("panel-spy")).toHaveTextContent("trading")
+  })
+
+  it('★★ PATCH trả về SAU khi shell đã tháo: không ghi đè panel đã khôi phục', async () => {
+    window.history.pushState({}, "", "/dau-truong")
+    let resolvePatch: (v: unknown) => void = () => {}
+    patch.mockReturnValue({
+      json: () => new Promise((r) => { resolvePatch = r }),
+    })
+
+    const { unmountHarness } = renderHarness()
+    fireEvent.click(screen.getByText("complete"))
+    await waitFor(() => expect(patch).toHaveBeenCalled())
+
+    // Shell Cấp 0 tháo (user rời trang) TRƯỚC khi PATCH trả về.
+    unmountHarness()
+    resolvePatch(await makeTaskResponse().json())
+
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(screen.getByTestId("panel-spy")).toHaveTextContent("trading")
+  })
+
+  it("keepPanel: không tự chuyển tab (nhiệm vụ ②③ đứng yên tại chỗ)", async () => {
+    window.history.pushState({}, "", "/dau-truong")
     patch.mockReturnValue(makeTaskResponse())
 
     renderHarness()
-    expect(screen.getByTestId("panel-spy")).toHaveTextContent("trading")
+    fireEvent.click(screen.getByText("complete-keep"))
 
-    fireEvent.click(screen.getByText("complete"))
-
-    await waitFor(() => expect(patch).toHaveBeenCalledWith("cap0/task", { json: { task_no: 4, gate: "debrief" } }))
-    // Give the mutation's onSuccess a tick to run, then assert the panel was
-    // left alone — still "trading", never clobbered to "journey".
+    await waitFor(() => expect(patch).toHaveBeenCalled())
     await new Promise((resolve) => setTimeout(resolve, 0))
     expect(screen.getByTestId("panel-spy")).toHaveTextContent("trading")
+  })
+
+  it("★★ mã nguồn của hook KHÔNG còn dò window.location (bỏ qua phần chú thích)", () => {
+    const src = readFileSync(`${process.cwd()}/src/features/cap0/hooks.ts`, "utf8")
+    const code = src
+      .split("\n")
+      .filter((line) => !/^\s*(\/\/|\*|\/\*)/.test(line))
+      .join("\n")
+    expect(code).not.toMatch(/window\.location/)
   })
 })
 
