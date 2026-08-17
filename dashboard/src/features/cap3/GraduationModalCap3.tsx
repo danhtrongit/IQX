@@ -131,10 +131,17 @@ export function GraduationModalCap3() {
 
   // Dòng phụ spec §3 `Lãi +X% · 15+ lệnh · kỷ luật XX%` — số THẬT của user
   // (§C12c: không hiện template rỗng, luôn cho thấy con số đến từ đâu).
+  // ★ `diem_ky_luat_tb_cap3` có thể là `null` = chưa biết (xem `types.ts`).
+  // Về lý thì không xảy ra ở đây (tốt nghiệp đòi điểm ≥ 80, mà "chưa biết"
+  // không bao giờ đạt), nhưng vẫn KHÔNG được in "kỷ luật 0%" nếu nó xảy ra.
+  const kyLuatText =
+    progress?.diem_ky_luat_tb_cap3 == null
+      ? "—"
+      : `${Math.round(progress.diem_ky_luat_tb_cap3)}%`
   const sub = progress
     ? `Lãi ${fmtPctSigned(progress.lai_pct_cap3)} · ${Math.round(
         progress.so_lenh_cap3,
-      ).toLocaleString("en-US")} lệnh · kỷ luật ${Math.round(progress.diem_ky_luat_tb_cap3)}%`
+      ).toLocaleString("en-US")} lệnh · kỷ luật ${kyLuatText}`
     : ""
 
   return (

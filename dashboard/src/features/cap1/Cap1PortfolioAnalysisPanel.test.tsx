@@ -9,8 +9,8 @@ import type { Cap1Progress } from "./types"
 const { useCap1ProgressMock, useCap1EventsMock, useCap1TradeLogMock, markTaskMutate } = vi.hoisted(
   () => ({
     useCap1ProgressMock: vi.fn(),
-    useCap1EventsMock: vi.fn(() => ({ isCap1Active: true })),
-    useCap1TradeLogMock: vi.fn(() => ({ trades: [], record: vi.fn() })),
+    useCap1EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap1Active: true })),
+    useCap1TradeLogMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ trades: [], record: vi.fn() })),
     markTaskMutate: vi.fn(),
   }),
 )

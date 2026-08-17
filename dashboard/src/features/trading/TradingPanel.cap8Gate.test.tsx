@@ -124,7 +124,7 @@ vi.mock("@/shared/http/client", () => ({
 
 /* ── Cấp 1 ── */
 const recordKehoachMock = vi.fn()
-const recordKehoachAsyncMock = vi.fn(() => Promise.resolve({ id: "kh1" }))
+const recordKehoachAsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "kh1" }))
 const onOrderFilledCap1Mock = vi.fn()
 
 vi.mock("@/features/cap1", async (importOriginal) => {
@@ -156,7 +156,7 @@ vi.mock("@/features/cap1", async (importOriginal) => {
 })
 
 /* ── Cấp 2 ── */
-const recordKehoachCap2AsyncMock = vi.fn(() => Promise.resolve({ id: "khc2-1" }))
+const recordKehoachCap2AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc2-1" }))
 
 vi.mock("@/features/cap2", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/features/cap2")>()
@@ -184,7 +184,7 @@ vi.mock("@/features/cap2", async (importOriginal) => {
 })
 
 /* ── Cấp 3 ── */
-const recordKehoachCap3AsyncMock = vi.fn(() => Promise.resolve({ id: "khc3-1" }))
+const recordKehoachCap3AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc3-1" }))
 
 vi.mock("@/features/cap3", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/features/cap3")>()
@@ -225,7 +225,7 @@ vi.mock("@/features/cap3", async (importOriginal) => {
 })
 
 /* ── Cấp 4 ── */
-const recordKehoachCap4AsyncMock = vi.fn(() => Promise.resolve({ id: "khc4-1" }))
+const recordKehoachCap4AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc4-1" }))
 const LOPS = ["ky_thuat", "dong_tien", "noi_bo", "tin_tuc", "dinh_gia"] as const
 
 vi.mock("@/features/cap4", async (importOriginal) => {
@@ -309,7 +309,7 @@ vi.mock("@/features/cap5", async (importOriginal) => {
 })
 
 /* ── Cấp 6 ── */
-const recordKehoachCap6AsyncMock = vi.fn(() => Promise.resolve({ id: "khc6-1" }))
+const recordKehoachCap6AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc6-1" }))
 const onOrderFilledCap6Mock = vi.fn()
 
 vi.mock("@/features/cap6", async (importOriginal) => {
@@ -348,7 +348,7 @@ vi.mock("@/features/cap6", async (importOriginal) => {
 })
 
 /* ── Cấp 7 ── */
-const recordKehoachCap7AsyncMock = vi.fn(() => Promise.resolve({ id: "khc7-1" }))
+const recordKehoachCap7AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc7-1" }))
 const onOrderFilledCap7Mock = vi.fn()
 
 const QUY_TAC_CAP7: PhienCap7["quy_tac"] = {
@@ -404,7 +404,7 @@ vi.mock("@/features/cap7", async (importOriginal) => {
    `hanhViCanhBaoToSend` + `giamKhoiLuong` stay REAL (they decide the value the
    panel commits and the volume it writes back — the things under test); only the
    bus, the check query, the mutation and the block's rendering are stubbed. */
-const recordKehoachCap8AsyncMock = vi.fn(() => Promise.resolve({ id: "khc8-1" }))
+const recordKehoachCap8AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc8-1" }))
 const onOrderFilledCap8Mock = vi.fn()
 let isCap8ActiveFlag = true
 let kiemTraProps: {

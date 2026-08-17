@@ -192,7 +192,9 @@ const cap2Situation: CoachSituationCap2 = {
   phuongPhapSlTp: "ho_tro_khang_cu",
   catLo: 28_500,
   chotLoi: 32_500,
-  flags: { order_id: "o1" },
+  // `CoachFlagsCap2` chỉ gồm 6 cờ vi phạm — KHÔNG có `order_id` (nó thuộc
+  // `KetsoInputCap2`, không phải đầu vào của coach).
+  flags: {},
   giaSauKhiCat: null,
 }
 const cap3Situation: CoachSituationCap3 = {

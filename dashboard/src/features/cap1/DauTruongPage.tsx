@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import { Spin } from "@arco-design/web-react"
+import { Button, Spin } from "@arco-design/web-react"
 import { useAuth } from "@/features/auth"
 import { Cap0TradingPage, useCap0Progress } from "@/features/cap0"
 import { useCap1Progress, useEnterCap1 } from "./hooks"
@@ -56,6 +56,48 @@ function capOpen(n: number): boolean {
   return CAP_MAX_ENABLED >= n
 }
 
+/**
+ * ★★ MÀN "HẾT PHIÊN" — thay cho việc lặng lẽ tụt về shell Cấp 0.
+ *
+ * Khi refresh token hết hạn, `shared/http/client.ts` xoá token và bắn
+ * `auth:logout`; handler trong `features/auth/auth-context.tsx` chỉ
+ * `setUser(null)` — KHÔNG mở modal đăng nhập, KHÔNG hiện thông báo nào. Nếu
+ * `/dau-truong` chỉ trả `<Cap0TradingPage />` cho trạng thái đó, một người
+ * đang ở Cấp 3 thấy màn hình đổi ngay sang badge «CẤP 0 · NHẬP MÔN», hành
+ * trình về 0/4, panel Đặt lệnh thành Sân tập — không một dòng chữ nào giải
+ * thích, và họ tin rằng mình vừa mất sạch tiến trình nhiều cấp (server vẫn giữ
+ * nguyên).
+ *
+ * Màn này chỉ hiện cho người ĐÃ đăng nhập trong phiên làm việc này rồi mất
+ * quyền; khách chưa từng đăng nhập vẫn vào thẳng Cấp 0 y như trước.
+ */
+function SessionExpired() {
+  const { setShowAuthModal, setAuthModalTab } = useAuth()
+  return (
+    <div
+      data-testid="dau-truong-session-expired"
+      className="flex h-svh flex-col items-center justify-center gap-3 bg-[var(--color-bg-1)] p-6 text-center"
+    >
+      <p className="text-base font-semibold text-[var(--color-text-1)]">
+        Phiên đăng nhập đã hết hạn
+      </p>
+      <p className="max-w-sm text-sm text-[var(--color-text-3)]">
+        Toàn bộ tiến trình các cấp của bạn vẫn được giữ nguyên trên máy chủ. Đăng nhập lại để
+        quay về đúng cấp đang học.
+      </p>
+      <Button
+        type="primary"
+        onClick={() => {
+          setAuthModalTab("login")
+          setShowAuthModal(true)
+        }}
+      >
+        Đăng nhập lại
+      </Button>
+    </div>
+  )
+}
+
 function FullPageSpinner() {
   return (
     <div className="flex h-svh items-center justify-center bg-[var(--color-bg-1)]">
@@ -71,9 +113,13 @@ function FullPageSpinner() {
  * reuses the exact same pattern (just add another `if`).
  *
  * Rules (plan §"Progression routing"):
- *  - not authenticated, or still resolving auth/progress → same as before
- *    this delivery: fall back to `Cap0TradingPage` (guests) or a spinner
- *    (loading) — ZERO behaviour change for anyone not yet Cấp-1-eligible.
+ *  - still resolving auth → spinner.
+ *  - never authenticated in this mount (khách vãng lai) → `Cap0TradingPage`,
+ *    ZERO behaviour change for anyone not yet Cấp-1-eligible.
+ *  - ★ authenticated, then LOST auth mid-session (refresh token hết hạn →
+ *    `auth:logout`) → `SessionExpired`, KHÔNG phải `Cap0TradingPage`. Xem
+ *    docstring của `SessionExpired`: tụt lặng lẽ về shell Cấp 0 đọc y hệt như
+ *    "tiến trình của bạn vừa bị xoá".
  *  - Cấp 0 not graduated → `Cap0TradingPage` (unchanged).
  *  - Cấp 0 graduated → `Cap1TradingPage`, firing the idempotent
  *    `POST /cap1/enter` on first arrival.
@@ -82,8 +128,10 @@ function FullPageSpinner() {
  * "Cấp N-1 graduated → `CapNTradingPage`" chỉ có hiệu lực khi
  * `CAP_MAX_ENABLED >= N`. Cấp đúng bằng trần là nhánh TERMINAL: một user đã tốt
  * nghiệp cấp đó vẫn Ở LẠI shell của chính cấp đó (KHÔNG spinner, KHÔNG tụt
- * xuống cấp dưới) cho tới khi trần được nâng. Hiện `CAP_MAX_ENABLED = 2` → Cấp 2
- * là terminal, Cấp 3-8 hoàn toàn im lặng (không progress query, không enter).
+ * xuống cấp dưới) cho tới khi trần được nâng. Hiện `CAP_MAX_ENABLED = 3` → Cấp 3
+ * là terminal, Cấp 4-8 hoàn toàn im lặng (không progress query, không enter).
+ * ★ Con số này ĐỔI theo `capFlags.ts` — đọc thẳng ở đó, đừng tin dòng này nếu
+ * hai bên lệch nhau.
  *  - Cấp 1 graduated, Cấp 2 not entered/not graduated → `Cap2TradingPage`
  *    (Task FE4), firing the idempotent `POST /cap2/enter` on first arrival —
  *    same pattern one level up.
@@ -115,6 +163,9 @@ function FullPageSpinner() {
  */
 export function DauTruongPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth()
+  /** Đã từng đăng nhập trong lần mount này? — phân biệt "hết phiên" với "khách". */
+  const wasAuthenticatedRef = useRef(false)
+  if (isAuthenticated) wasAuthenticatedRef.current = true
   const { data: cap0Progress, isFetched: cap0Fetched } = useCap0Progress(isAuthenticated)
   const cap0Graduated = !!cap0Progress?.graduated_at
 
@@ -266,13 +317,18 @@ export function DauTruongPage() {
   }, [shouldQueryCap8, cap8Fetched, cap8Progress])
 
   if (authLoading) return <FullPageSpinner />
-  if (!isAuthenticated) return <Cap0TradingPage />
+  // ★★ Mất quyền GIỮA phiên (refresh token hết hạn) ≠ khách vãng lai: người đã
+  // đăng nhập trong phiên này phải được nói rõ chuyện gì vừa xảy ra và được
+  // đưa lối đăng nhập lại, thay vì thấy shell của mình lặng lẽ đổi thành Cấp 0.
+  if (!isAuthenticated) return wasAuthenticatedRef.current ? <SessionExpired /> : <Cap0TradingPage />
   if (!cap0Fetched) return <FullPageSpinner />
   if (!cap0Graduated) return <Cap0TradingPage />
   if (!cap1Fetched) return <FullPageSpinner />
   // ★ TRẦN CẤP: `!capOpen(N+1)` biến cấp N thành nhánh TERMINAL — user đã tốt
   // nghiệp cấp trần vẫn ở lại đúng shell đó (KHÔNG spinner, KHÔNG tụt cấp) cho
-  // tới khi trần được nâng. Với trần = 2, dòng Cấp 2 bên dưới là điểm dừng.
+  // tới khi trần được nâng. Với trần hiện tại (3), dòng Cấp 3 bên dưới là điểm
+  // dừng — và tab Hành trình của cấp đó phải nói "ĐÃ tốt nghiệp" chứ không
+  // tiếp tục ra lệnh làm lại nhiệm vụ (xem `JourneyPanelCap3`).
   if (!progressPastCap1) return <Cap1TradingPage />
   if (!cap2Fetched) return <FullPageSpinner />
   if (!capOpen(3) || !cap2Graduated) return <Cap2TradingPage />

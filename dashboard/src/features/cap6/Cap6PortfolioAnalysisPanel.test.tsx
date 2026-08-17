@@ -14,14 +14,14 @@ const {
   useCap2TradeLogMock,
   analysisPropsSpy,
 } = vi.hoisted(() => ({
-  useCap6EventsMock: vi.fn(() => ({ isCap6Active: true })),
-  useCap6ProgressMock: vi.fn(() => ({ data: null })),
-  useCap6TradeLogMock: vi.fn(() => ({ trades: [], record: vi.fn() })),
-  useCap5ProgressMock: vi.fn(() => ({ data: null })),
-  useCap4ProgressMock: vi.fn(() => ({ data: null })),
-  useCap3ProgressMock: vi.fn(() => ({ data: null })),
-  useCap2ProgressMock: vi.fn(() => ({ data: null })),
-  useCap2TradeLogMock: vi.fn(() => ({ trades: [], scores: [] })),
+  useCap6EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap6Active: true })),
+  useCap6ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
+  useCap6TradeLogMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ trades: [], record: vi.fn() })),
+  useCap5ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
+  useCap4ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
+  useCap3ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
+  useCap2ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
+  useCap2TradeLogMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ trades: [], scores: [] })),
   analysisPropsSpy: vi.fn(),
 }))
 

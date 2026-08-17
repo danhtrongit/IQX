@@ -11,8 +11,8 @@ const { useCap3ProgressMock, useThachThucMock, useCap3EventsMock, useDiemKyLuatM
     flags: { CAP_MAX_ENABLED: 3 },
     useCap3ProgressMock: vi.fn(),
     useThachThucMock: vi.fn(),
-    useCap3EventsMock: vi.fn(() => ({ isCap3Active: true })),
-    useDiemKyLuatMock: vi.fn(() => ({ data: undefined, isLoading: true })),
+    useCap3EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap3Active: true })),
+    useDiemKyLuatMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: undefined, isLoading: true })),
   }))
 
 vi.mock("./hooks", () => ({
@@ -205,6 +205,48 @@ describe("JourneyPanelCap3", () => {
     expect(within(focus).queryByText("Làm ngay →")).not.toBeInTheDocument()
   })
 
+  /**
+   * ★★ TRẠNG THÁI CUỐI của cả chương trình khi Cấp 3 đang là TRẦN. Modal tốt
+   * nghiệp `closable={false}` chỉ unmount khi `graduated_at` về, và
+   * `DauTruongPage` giữ người đã tốt nghiệp cấp trần Ở LẠI shell đó — nên đây
+   * là màn hình họ nhìn mãi mãi. Trước bản vá nó vẫn đọc "Sẵn sàng tốt nghiệp
+   * Cấp 3 … Màn tốt nghiệp Cấp 3 «Bản lĩnh» mở ra ngay tại đây" (không bao giờ
+   * mở lại) + ô mục tiêu vẫn ra lệnh "Đạt cả 3 điều kiện → tốt nghiệp Cấp 3":
+   * không chỗ nào nói "bạn ĐÃ tốt nghiệp", và người dùng được bảo đi làm lại
+   * đúng việc vừa xong.
+   */
+  it("★★ đã tốt nghiệp Cấp 3 → ô tập trung nói ĐÃ tốt nghiệp, KHÔNG hứa mở lại màn tốt nghiệp", () => {
+    useCap3ProgressMock.mockReturnValue({
+      data: makeProgress({
+        task_1_done_at: "t",
+        task_2_done_at: "t",
+        task_3_done_at: "t",
+        graduated_at: "2026-08-17T02:00:00Z",
+      }),
+    })
+    renderPanel()
+    const focus = screen.getByTestId("cap3-focus")
+    expect(focus.className).toContain("cap0-focus--ready")
+    expect(within(focus).getByText(/Đã tốt nghiệp Cấp 3/)).toBeInTheDocument()
+    expect(within(focus).queryByText(/Sẵn sàng tốt nghiệp/)).not.toBeInTheDocument()
+    expect(focus).not.toHaveTextContent(/mở ra ngay tại đây/)
+  })
+
+  it("★★ đã tốt nghiệp Cấp 3 + trần còn 3 → ô mục tiêu KHÔNG ra lệnh làm lại 3 điều kiện", () => {
+    useCap3ProgressMock.mockReturnValue({
+      data: makeProgress({
+        task_1_done_at: "t",
+        task_2_done_at: "t",
+        task_3_done_at: "t",
+        graduated_at: "2026-08-17T02:00:00Z",
+      }),
+    })
+    renderPanel()
+    const goal = screen.getByTestId("cap3-journey-goal")
+    expect(goal).not.toHaveTextContent(/Đạt cả 3 điều kiện/)
+    expect(goal).toHaveTextContent(/Cấp 4 «Thuần thục» chưa ra mắt/)
+  })
+
   it("② is locked until ① is done", () => {
     renderPanel()
     expect(screen.getByTestId("cap3-task-2").className).toContain("cap0-checklist-item--locked")
@@ -345,6 +387,32 @@ describe("JourneyPanelCap3", () => {
     )
     fireEvent.click(screen.getByText("Làm ngay →"))
     expect(screen.getByTestId("panel-spy")).toHaveTextContent("trading")
+  })
+
+  /**
+   * ★★ "Chưa biết" ≠ 0. Backend trả `gia_tri_hien_tai: null` khi chưa có ngày
+   * nào ở Cấp 3 chấm được điểm. Trước bản vá FE in "0% / 80%" với thanh rỗng —
+   * ngay dưới thẻ «Điểm kỷ luật» đang nói trung thực "chưa có dữ liệu". Cùng
+   * một chỉ số, cùng một màn hình, hai câu trả lời trái ngược.
+   */
+  it("★★ điểm kỷ luật chưa biết (null) hiện «—», KHÔNG hiện 0%", () => {
+    useThachThucMock.mockReturnValue({
+      data: makeThachThuc({
+        diem_ky_luat: {
+          ten: "Điểm kỷ luật ≥ 80%",
+          gia_tri_hien_tai: null,
+          muc_tieu: 80,
+          dat: false,
+          giai_thich:
+            "Điểm kỷ luật đo bạn có làm đúng cam kết không. Chưa có ngày nào ở Cấp 3 có tình huống kỷ luật để chấm, nên chưa có điểm trung bình.",
+        },
+      }),
+    })
+    renderPanel()
+    const cond = screen.getByTestId("cap3-thachthuc-diem_ky_luat")
+    expect(cond).toHaveTextContent("— / 80%")
+    expect(cond).not.toHaveTextContent("0% / 80%")
+    expect(cond).toHaveTextContent(/Chưa có ngày nào/)
   })
 
   // ★★ Ô mục tiêu là MÀN CUỐI mà người tốt nghiệp cấp trần nhìn thấy (modal tốt

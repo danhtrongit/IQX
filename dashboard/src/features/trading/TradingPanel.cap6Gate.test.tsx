@@ -98,7 +98,7 @@ vi.mock("@/shared/http/client", () => ({
 
 /* ── Cấp 1 ── */
 const recordKehoachMock = vi.fn()
-const recordKehoachAsyncMock = vi.fn(() => Promise.resolve({ id: "kh1" }))
+const recordKehoachAsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "kh1" }))
 const onOrderFilledCap1Mock = vi.fn()
 let planFormProps: { hideLyDo?: boolean } = {}
 
@@ -144,7 +144,7 @@ vi.mock("@/features/cap1", async (importOriginal) => {
 })
 
 /* ── Cấp 2 ── */
-const recordKehoachCap2AsyncMock = vi.fn(() => Promise.resolve({ id: "khc2-1" }))
+const recordKehoachCap2AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc2-1" }))
 const onOrderFilledCap2Mock = vi.fn()
 
 vi.mock("@/features/cap2", async (importOriginal) => {
@@ -173,7 +173,7 @@ vi.mock("@/features/cap2", async (importOriginal) => {
 })
 
 /* ── Cấp 3 ── */
-const recordKehoachCap3AsyncMock = vi.fn(() => Promise.resolve({ id: "khc3-1" }))
+const recordKehoachCap3AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc3-1" }))
 const onOrderFilledCap3Mock = vi.fn()
 
 vi.mock("@/features/cap3", async (importOriginal) => {
@@ -217,7 +217,7 @@ vi.mock("@/features/cap3", async (importOriginal) => {
 })
 
 /* ── Cấp 4 ── */
-const recordKehoachCap4AsyncMock = vi.fn(() => Promise.resolve({ id: "khc4-1" }))
+const recordKehoachCap4AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc4-1" }))
 const onOrderFilledCap4Mock = vi.fn()
 
 const AI_5_LOP = {
@@ -307,7 +307,7 @@ vi.mock("@/features/cap5", async (importOriginal) => {
 /* ── Cấp 6 ──
    `coMauThuan` + `isDoiChieuValid` stay REAL (the panel's gate is the thing
    under test); only the bus, the mutation and the block itself are stubbed. */
-const recordKehoachCap6AsyncMock = vi.fn(() => Promise.resolve({ id: "khc6-1" }))
+const recordKehoachCap6AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc6-1" }))
 const onOrderFilledCap6Mock = vi.fn()
 let isCap6ActiveFlag = true
 let doiChieuProps: { doc5Lop?: Record<string, string>; symbol?: string } = {}

@@ -9,7 +9,7 @@ const { useCap2ProgressMock, useCap2EventsMock, flags } = vi.hoisted(() => ({
   // Mutable so the goal box can be asserted on BOTH sides of the trần cấp.
   flags: { CAP_MAX_ENABLED: 2 },
   useCap2ProgressMock: vi.fn(),
-  useCap2EventsMock: vi.fn(() => ({ isCap2Active: true })),
+  useCap2EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap2Active: true })),
 }))
 
 vi.mock("./hooks", () => ({

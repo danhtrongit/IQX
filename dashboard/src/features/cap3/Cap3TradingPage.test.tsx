@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import React from "react"
 import { MemoryRouter } from "react-router"
 import { beforeEach, describe, expect, it, vi } from "vitest"
@@ -178,15 +178,47 @@ function RightSidebarStub() {
   )
 }
 
+// ★★ Header/MarketBar stubs EXPOSE the escape-hatch props: the real
+// `SymbolSearch`/`MarketBar` fall back to `navigate('/co-phieu/:sym')` when
+// they are not given a handler, which is exactly the bug this file guards.
 vi.mock("@/features/navigation", () => ({
   TrialBanner: () => <div data-testid="trial-banner" />,
-  Header: () => <div data-testid="header" />,
-  MarketBar: () => <div data-testid="market-bar" />,
+  Header: ({ onSymbolSelect }: { onSymbolSelect?: (s: string) => void }) => (
+    <button data-testid="header" onClick={() => onSymbolSelect?.("ACB")}>
+      header
+    </button>
+  ),
+  MarketBar: ({ onSymbolClick }: { onSymbolClick?: (s: string) => void }) => (
+    <button data-testid="market-bar" onClick={() => onSymbolClick?.("HPG")}>
+      market-bar
+    </button>
+  ),
   Footer: () => <div data-testid="footer" />,
 }))
 
+// `AiInsightSymbolModal` loads the briefing with `lazy()` — stub the chunk so
+// the test can PROVE the reading actually renders inside the shell (a name
+// change or a chunk-load failure must not pass as "didn't navigate").
+vi.mock("@/features/stock/ai-insight", () => ({
+  AiInsightBriefing: ({ symbol }: { symbol: string }) => (
+    <div data-testid="ai-briefing">{symbol}</div>
+  ),
+}))
+
+// `AiInsightSymbolModal` bọc briefing trong `PremiumGate` (endpoint là
+// premium-only) — cho user premium ở bài này để đo đúng thứ đang canh: bản đọc
+// dựng trong shell chứ không phải một trang khác.
+vi.mock("@/features/premium/hooks", () => ({
+  usePremiumStatus: () => ({ isPremium: true, isLoading: false }),
+}))
+
 vi.mock("@/features/auth", () => ({
-  useAuth: () => ({ isAuthenticated: true, user: { id: "u1" } }),
+  useAuth: () => ({
+    isAuthenticated: true,
+    user: { id: "u1" },
+    setShowAuthModal: () => {},
+    setAuthModalTab: () => {},
+  }),
 }))
 
 vi.mock("@/features/cap1/hooks", () => ({
@@ -485,7 +517,28 @@ describe("Cap3TradingPage", () => {
     expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
   })
 
-  it('clicking "AI Phân tích" opens the AI Insight symbol-picker modal, and submitting navigates', () => {
+  /**
+   * ★★ BA LỐI THOÁT của Cấp 3 — cấp shell DUY NHẤT từng bị bỏ sót khi trần cấp
+   * lên 3. Kịch bản thật: user đang điền khối Quản lý vốn (khẩu vị + tự tin +
+   * khối lượng) rồi gõ một mã vào ô tìm kiếm trên Header → bị ném sang
+   * `/co-phieu/:sym`, mất trắng form + tab Hành trình + badge cấp, không có nút
+   * quay lại.
+   */
+  it("★★ gõ mã ở ô tìm kiếm trên Header đổi mã TẠI CHỖ — không rời shell Cấp 3", () => {
+    renderCap3(<Cap3TradingPage />)
+    fireEvent.click(screen.getByTestId("header"))
+    expect(navigateMock).not.toHaveBeenCalled()
+    expect(screen.getByText("CẤP 3 · BẢN LĨNH")).toBeInTheDocument()
+  })
+
+  it("★★ bấm cụm giá trên MarketBar đổi mã TẠI CHỖ — không rời shell Cấp 3", () => {
+    renderCap3(<Cap3TradingPage />)
+    fireEvent.click(screen.getByTestId("market-bar"))
+    expect(navigateMock).not.toHaveBeenCalled()
+    expect(screen.getByText("CẤP 3 · BẢN LĨNH")).toBeInTheDocument()
+  })
+
+  it('★★ "AI Phân tích" → nhập mã → bản đọc AI dựng NGAY TRONG shell Cấp 3, KHÔNG điều hướng', async () => {
     renderCap3(<Cap3TradingPage />)
     expect(screen.queryByText("Phân tích AI cho 1 mã cổ phiếu")).not.toBeInTheDocument()
     fireEvent.click(screen.getByTestId("right-toolbar"))
@@ -494,6 +547,10 @@ describe("Cap3TradingPage", () => {
     const input = screen.getByPlaceholderText("VD: VCB")
     fireEvent.change(input, { target: { value: "VCB" } })
     fireEvent.click(screen.getByText("Phân tích"))
-    expect(navigateMock).toHaveBeenCalledWith("/co-phieu/VCB")
+
+    // Không chỉ "không navigate": briefing phải THẬT SỰ hiện ra trong shell.
+    await waitFor(() => expect(screen.getByTestId("ai-briefing")).toHaveTextContent("VCB"))
+    expect(navigateMock).not.toHaveBeenCalled()
+    expect(screen.getByText("CẤP 3 · BẢN LĨNH")).toBeInTheDocument()
   })
 })

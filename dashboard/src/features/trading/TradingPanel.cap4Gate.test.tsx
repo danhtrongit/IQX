@@ -104,7 +104,7 @@ vi.mock("@/shared/http/client", () => ({
 
 /* ── Cấp 1 ── */
 const recordKehoachMock = vi.fn()
-const recordKehoachAsyncMock = vi.fn(() => Promise.resolve({ id: "kh1" }))
+const recordKehoachAsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "kh1" }))
 const onOrderFilledCap1Mock = vi.fn()
 let planFormProps: { hideLyDo?: boolean } = {}
 
@@ -155,7 +155,7 @@ vi.mock("@/features/cap1", async (importOriginal) => {
 })
 
 /* ── Cấp 2 ── */
-const recordKehoachCap2AsyncMock = vi.fn(() => Promise.resolve({ id: "khc2-1" }))
+const recordKehoachCap2AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc2-1" }))
 const onOrderFilledCap2Mock = vi.fn()
 
 vi.mock("@/features/cap2", async (importOriginal) => {
@@ -184,7 +184,7 @@ vi.mock("@/features/cap2", async (importOriginal) => {
 })
 
 /* ── Cấp 3 ── */
-const recordKehoachCap3AsyncMock = vi.fn(() => Promise.resolve({ id: "khc3-1" }))
+const recordKehoachCap3AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc3-1" }))
 const onOrderFilledCap3Mock = vi.fn()
 
 vi.mock("@/features/cap3", async (importOriginal) => {
@@ -228,7 +228,7 @@ vi.mock("@/features/cap3", async (importOriginal) => {
 })
 
 /* ── Cấp 4 ── */
-const recordKehoachCap4AsyncMock = vi.fn(() => Promise.resolve({ id: "khc4-1" }))
+const recordKehoachCap4AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc4-1" }))
 const onOrderFilledCap4Mock = vi.fn()
 let isCap4ActiveFlag = true
 

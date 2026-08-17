@@ -111,7 +111,7 @@ const fixture: AIInsightResponse = {
 
 vi.mock('../hooks', () => ({
   useStockAiInsight: vi.fn(),
-  isIndexSymbol: vi.fn(() => false),
+  isIndexSymbol: vi.fn<(...a: unknown[]) => unknown>(() => false),
 }))
 
 // Mock the chart sub-components to avoid canvas / recharts DOM complexity in unit tests

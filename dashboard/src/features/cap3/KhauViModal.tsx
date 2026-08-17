@@ -6,8 +6,11 @@ import { KHAU_VI_PCT } from "./khoiLuong"
 import { cn } from "@/shared/lib/cn"
 import type { KhauViLoai } from "./types"
 
-/** spec §4/§C12b — vốn ban đầu demo, dùng làm fallback trước khi
- * `Cap3Progress.von_ban_dau` (giá trị thật, phân giải server-side) tải về. */
+/** ★ FALLBACK cuối cùng, gần như không bao giờ dùng tới: `Cap3Progress.
+ * von_ban_dau` là vốn THẬT của tài khoản ảo (server đồng bộ từ
+ * `VirtualTradingAccount.initial_cash_vnd` — xem `Cap3Service._sync_von_ban_dau`),
+ * và component này đã `return null` khi chưa có progress. Con số 100tr dưới đây
+ * chỉ là ví dụ của spec §4/§C12b, KHÔNG phải vốn user thực sự có. */
 const VON_BAN_DAU_MAC_DINH = 100_000_000
 
 function fmtVnd(n: number): string {
@@ -29,8 +32,7 @@ const MUC_LIST: MucSpec[] = [
 
 export interface KhauViModalProps {
   /** Vốn dùng để tính hệ quả minh hoạ — mặc định lấy từ
-   * `Cap3Progress.von_ban_dau`, fallback `VON_BAN_DAU_MAC_DINH` khi progress
-   * chưa tải xong. */
+   * `Cap3Progress.von_ban_dau` (vốn THẬT của tài khoản ảo). */
   vonBanDau?: number
   /** Mở lại để ĐỔI khẩu vị sau này (spec §5.2 "không khoá vĩnh viễn") — khi
    * `true`, hiện dù `khau_vi_da_dat` đã true, và có nút đóng/hủy. Khi

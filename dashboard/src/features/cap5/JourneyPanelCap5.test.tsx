@@ -8,7 +8,7 @@ import type { Cap5Progress, ThachThucCap5 } from "./types"
 const { useCap5ProgressMock, useThachThucCap5Mock, useCap5EventsMock } = vi.hoisted(() => ({
   useCap5ProgressMock: vi.fn(),
   useThachThucCap5Mock: vi.fn(),
-  useCap5EventsMock: vi.fn(() => ({ isCap5Active: true })),
+  useCap5EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap5Active: true })),
 }))
 
 vi.mock("./hooks", () => ({

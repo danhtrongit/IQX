@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, within } from "@testing-library/react"
+import { render, screen, fireEvent, within, waitFor } from "@testing-library/react"
 import React from "react"
 import { MemoryRouter } from "react-router"
 import { beforeEach, describe, expect, it, vi } from "vitest"
@@ -16,7 +16,7 @@ const { useCap0ProgressMock, usePremiumStatusMock, enterMutate, placementMutate,
   // Default to a free user (the common case) so pre-existing "SÂN TẬP"
   // assertions keep passing without every test needing to opt in; the
   // premium-graduate case is exercised explicitly below.
-  usePremiumStatusMock: vi.fn(() => ({ isPremium: false, isLoading: false })),
+  usePremiumStatusMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isPremium: false, isLoading: false })),
   // Mirror react-query's real `mutate(variables, options)` shape: by default,
   // synchronously invoke the caller's `onSuccess` (the "happy path" a normal
   // mutation resolves to) so existing synchronous assertions keep working.
@@ -79,6 +79,20 @@ vi.mock("@/features/dashboard", () => ({
 // behaviour is covered by `features/navigation`'s own tests, e.g.
 // `Header.test.tsx`). This test only asserts Cap0TradingPage actually RENDERS
 // it (FE2 review Important #1 — chrome must surround the terminal).
+// ★★ `AiInsightSymbolModal` nạp briefing bằng `lazy()` và bọc nó trong
+// `PremiumGate` (endpoint AI Insight là premium-only). Stub cả hai để bài dưới
+// CHỨNG MINH bản đọc thật sự dựng ra trong shell cấp — "không navigate" một
+// mình không đủ: một chunk lỗi/đổi tên vẫn thoả điều kiện đó.
+vi.mock("@/features/stock/ai-insight", () => ({
+  AiInsightBriefing: ({ symbol }: { symbol: string }) => (
+    <div data-testid="ai-briefing">{symbol}</div>
+  ),
+}))
+
+vi.mock("@/features/premium/hooks", () => ({
+  usePremiumStatus: () => ({ isPremium: true, isLoading: false }),
+}))
+
 vi.mock("@/features/navigation", () => ({
   TrialBanner: () => <div data-testid="trial-banner" />,
   Header: () => <div data-testid="header" />,
@@ -313,8 +327,11 @@ describe("Cap0TradingPage", () => {
       useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
       // Simulate a network failure: `enterCap0.mutate` never calls `onSuccess`.
       enterMutate.mockImplementationOnce(
-        (_vars?: unknown, opts?: { onError?: (e: unknown) => void }) => {
-          opts?.onError?.(new Error("network"))
+        () => {
+          /* ★ Hỏng THẬT = react-query không gọi `onSuccess`. Component chỉ
+             truyền `{ onSuccess }` cho `mutate`, nên KHÔNG có `onError` nào để
+             gọi — bản trước gọi `opts.onError` vào khoảng không và chỉ chứng
+             minh chính cái mock của nó. */
         },
       )
       renderCap0(<Cap0TradingPage />)
@@ -385,7 +402,7 @@ describe("Cap0TradingPage", () => {
     expect(screen.getByText("Phân tích AI cho 1 mã cổ phiếu")).toBeInTheDocument()
   })
 
-  it('submitting a valid symbol from the AI Insight picker mở bản đọc AI NGAY TRONG trang cấp — KHÔNG điều hướng', () => {
+  it('submitting a valid symbol from the AI Insight picker mở bản đọc AI NGAY TRONG trang cấp — KHÔNG điều hướng', async () => {
     useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
     renderCap0(<Cap0TradingPage />)
     fireEvent.click(screen.getByTestId("right-toolbar"))
@@ -394,6 +411,8 @@ describe("Cap0TradingPage", () => {
     fireEvent.click(screen.getByText("Phân tích"))
     // ★★ KHÔNG còn rời trang cấp: bản đọc 6 lớp mở NGAY TRONG shell (ô nhập mã
     // nhường chỗ cho briefing). Xem `features/dau-truong/AiInsightModal`.
+    // Phải canh chính briefing hiện ra, không chỉ "không navigate".
+    await waitFor(() => expect(screen.getByTestId("ai-briefing")).toHaveTextContent("VCB"))
     expect(navigateMock).not.toHaveBeenCalled()
     expect(screen.queryByText("Phân tích AI cho 1 mã cổ phiếu")).not.toBeInTheDocument()
   })

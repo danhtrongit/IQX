@@ -413,13 +413,15 @@ async def test_enter_requires_cap4_graduated(db_session, test_user):
             khoi_luong=100,
             pct_von=20.0,
         )
+        # ★ 30,000: lãi % Cấp 3 chia cho vốn THẬT của tài khoản ảo (250tr),
+        # xem `Cap3Service._sync_von_ban_dau`.
         s = await _make_order(
             db_session,
             account.id,
             test_user.id,
             symbol=f"Z{i}",
             side=OrderSide.SELL,
-            price=25_500,
+            price=30_000,
             trading_date=today,
         )
         await cap1.record_ketso(test_user.id, s.id)

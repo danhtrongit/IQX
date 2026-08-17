@@ -13,13 +13,13 @@ const {
   useCap2TradeLogMock,
   analysisPropsSpy,
 } = vi.hoisted(() => ({
-  useCap5EventsMock: vi.fn(() => ({ isCap5Active: true })),
-  useCap5ProgressMock: vi.fn(() => ({ data: null })),
-  useCap5TradeLogMock: vi.fn(() => ({ trades: [], record: vi.fn() })),
-  useCap4ProgressMock: vi.fn(() => ({ data: null })),
-  useCap3ProgressMock: vi.fn(() => ({ data: null })),
-  useCap2ProgressMock: vi.fn(() => ({ data: null })),
-  useCap2TradeLogMock: vi.fn(() => ({ trades: [], scores: [] })),
+  useCap5EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap5Active: true })),
+  useCap5ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
+  useCap5TradeLogMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ trades: [], record: vi.fn() })),
+  useCap4ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
+  useCap3ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
+  useCap2ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
+  useCap2TradeLogMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ trades: [], scores: [] })),
   analysisPropsSpy: vi.fn(),
 }))
 

@@ -23,16 +23,20 @@ Design notes (documented here since the spec leaves them implicit):
     from the exact same set of Cấp-3-period ``order_ketso`` rows (closed at
     or after ``Cap3Progress.entered_at``) so both numbers in nhiệm vụ ③
     describe the identical set of trades.
-  - **lãi % base = ``Cap3Progress.von_ban_dau``** (spec's fixed 100,000,000đ,
-    §4/§C12b) — ``lai_pct_cap3 = Σ order_ketso.pnl_vnd (Cấp-3 period) /
-    von_ban_dau × 100``. This matches the spec's worked example verbatim
-    ("vốn 100tr = +5 triệu").
+  - **lãi % base = ``Cap3Progress.von_ban_dau``**, which is kept equal to the
+    user's OWN ``VirtualTradingAccount.initial_cash_vnd`` (see
+    ``_sync_von_ban_dau``) — ``lai_pct_cap3 = Σ order_ketso.pnl_vnd (Cấp-3
+    period) / von_ban_dau × 100``. The spec's 100,000,000đ (§4/§C12b) is the
+    figure of its worked example, not the capital this product actually opens
+    accounts with (1,000,000,000đ); using the constant made every Cấp 3 "%
+    vốn" disagree with the balance strip in the same panel by 10×.
   - **diem_ky_luat_tb_cap3** = the mean of ``Cap2Service.diem_ky_luat``'s
     daily score (§C12c) over every calendar day (VN local date) that has
     Thực chiến order activity on/after the day Cấp 3 was entered. Days with
-    no orders at all are skipped (``diem`` is ``None``, not zero) — a
-    Cấp-3 period with no trading days yet averages to 0.0 (never trivially
-    passes the ≥80 threshold with no data).
+    no scorable tình huống are skipped (``diem`` is ``None``, not zero), and
+    when NOTHING is scorable yet the mean itself is ``None`` = **chưa biết**
+    — never 0.0, which would read as "worst possible discipline" for a user
+    who simply has not traded. ``None`` never satisfies the ≥80 gate.
   - **Nhiệm vụ ① is NOT gated** — it fires the first time any Cấp-3-period
     ``order_kehoach`` row has all 3 of khẩu vị + mức tự tin + cách khối
     lượng filled in (checked directly from the persisted columns, not just
@@ -260,9 +264,16 @@ class Cap3Service:
         )
         return list(result.scalars().all())
 
-    async def _diem_ky_luat_tb(self, user_id: uuid.UUID, progress: Cap3Progress) -> float:
+    async def _diem_ky_luat_tb(self, user_id: uuid.UUID, progress: Cap3Progress) -> float | None:
         """Mean of Cấp 2's daily điểm kỷ luật (§C12c) over every calendar day
-        with Thực chiến order activity on/after entering Cấp 3."""
+        with Thực chiến order activity on/after entering Cấp 3.
+
+        ★ Returns ``None`` for **CHƯA BIẾT** — no trading day yet, or days but
+        no day with a scorable tình huống. It must NOT be 0.0: 0 is a real,
+        terrible score, and printing it for a user who has simply not traded
+        yet contradicts the «Điểm kỷ luật» card sitting right above the widget
+        (which correctly says "chưa có dữ liệu" for the same state).
+        """
         result = await self._session.execute(
             select(VirtualOrder.trading_date)
             .distinct()
@@ -274,16 +285,36 @@ class Cap3Service:
         )
         days = sorted(row[0] for row in result.all())
         if not days:
-            return 0.0
+            return None
 
         scores: list[float] = []
         for day in days:
             diem_result = await self._cap2_svc.diem_ky_luat(user_id, day)
             if diem_result["diem"] is not None:
                 scores.append(diem_result["diem"])
-        return sum(scores) / len(scores) if scores else 0.0
+        return sum(scores) / len(scores) if scores else None
+
+    async def _sync_von_ban_dau(self, user_id: uuid.UUID, progress: Cap3Progress) -> None:
+        """Keep ``von_ban_dau`` = the user's REAL virtual-account capital.
+
+        Every "% vốn" Cấp 3 shows (khối lượng gợi ý, ``pct_von`` per order,
+        ``lai_pct_cap3``, the graduation headline) divides by this number, while
+        ``AccountStrip`` right above the panel divides by
+        ``VirtualTradingAccount.initial_cash_vnd``. Two different denominators
+        for the same money is two different truths on one screen.
+
+        Re-synced on every recompute (not only at ``enter``) so rows created
+        while the spec constant was hard-coded heal themselves. A user with no
+        virtual account yet keeps ``VON_BAN_DAU_MAC_DINH``.
+        """
+        account = await self._vt_repo.get_account_by_user_id(user_id)
+        if account is None or account.initial_cash_vnd <= 0:
+            return
+        if progress.von_ban_dau != account.initial_cash_vnd:
+            progress.von_ban_dau = account.initial_cash_vnd
 
     async def _recompute_progress(self, user_id: uuid.UUID, progress: Cap3Progress) -> None:
+        await self._sync_von_ban_dau(user_id, progress)
         ketso_rows = await self._cap3_ketso_rows(user_id, progress)
 
         so_lenh_cap3 = len(ketso_rows)
@@ -318,6 +349,9 @@ class Cap3Service:
             progress.task_3_done_at is None
             and lai_pct_cap3 >= _TASK3_LAI_PCT_MIN
             and so_lenh_cap3 >= _TASK3_SO_LENH_MIN
+            # ★ "Chưa biết" (None) KHÔNG bao giờ đạt — an unknown score must
+            # never pass a ≥80 gate by accident.
+            and diem_ky_luat_tb is not None
             and diem_ky_luat_tb >= _TASK3_DIEM_MIN
         ):
             progress.task_3_done_at = now
@@ -348,7 +382,18 @@ class Cap3Service:
 
         lai_dat = progress.lai_pct_cap3 >= _TASK3_LAI_PCT_MIN
         so_lenh_dat = progress.so_lenh_cap3 >= _TASK3_SO_LENH_MIN
-        diem_dat = progress.diem_ky_luat_tb_cap3 >= _TASK3_DIEM_MIN
+        diem_tb = progress.diem_ky_luat_tb_cap3
+        diem_dat = diem_tb is not None and diem_tb >= _TASK3_DIEM_MIN
+        # ★ "Chưa biết" nói ĐÚNG là chưa biết — không in "Trung bình giai đoạn
+        # Cấp 3: 0.0%" cho một người chưa đặt lệnh nào.
+        diem_giai_thich = (
+            f"{_DIEM_KY_LUAT_GIAI_THICH} Trung bình giai đoạn Cấp 3: {diem_tb:.1f}%."
+            if diem_tb is not None
+            else (
+                f"{_DIEM_KY_LUAT_GIAI_THICH} Chưa có ngày nào ở Cấp 3 có tình huống "
+                "kỷ luật để chấm, nên chưa có điểm trung bình."
+            )
+        )
 
         return {
             "dat_ca_3": lai_dat and so_lenh_dat and diem_dat,
@@ -375,13 +420,12 @@ class Cap3Service:
             },
             "diem_ky_luat": {
                 "ten": "Điểm kỷ luật ≥ 80%",
-                "gia_tri_hien_tai": progress.diem_ky_luat_tb_cap3,
+                # ``None`` = chưa biết (xem `_diem_ky_luat_tb`) — FE hiện "—",
+                # KHÔNG hiện 0%.
+                "gia_tri_hien_tai": diem_tb,
                 "muc_tieu": _TASK3_DIEM_MIN,
                 "dat": diem_dat,
-                "giai_thich": (
-                    f"{_DIEM_KY_LUAT_GIAI_THICH} Trung bình giai đoạn Cấp 3: "
-                    f"{progress.diem_ky_luat_tb_cap3:.1f}%."
-                ),
+                "giai_thich": diem_giai_thich,
             },
         }
 

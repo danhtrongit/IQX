@@ -1,5 +1,6 @@
 import { Suspense, lazy, useState } from "react"
 import { Button, Input, Modal, Spin } from "@arco-design/web-react"
+import { PremiumGate } from "@/features/premium/components/PremiumGate"
 import { IconBrainCircuit } from "@/shared/icons"
 
 /**
@@ -53,6 +54,15 @@ function BriefingFallback() {
 /**
  * Modal đọc AI Insight cho MỘT mã đã biết trước (không có bước nhập mã) —
  * dùng cho «Đọc chi tiết lớp này →» trong panel Đặt lệnh.
+ *
+ * ★★ **`PremiumGate` là BẮT BUỘC ở đây, y như `features/stock/StockPage.tsx`
+ * vẫn bọc đúng component này.** `POST /ai-analysis/insight/analyze` là
+ * premium-only (`PremiumUser` dependency), trong khi user KHÔNG premium chắc
+ * chắn có mặt trong chương trình cấp (Cấp 0 «Sân tập» mở cổng đặt lệnh cho mọi
+ * user). Không có cổng này, họ bấm «AI Phân tích» → 403 → `AiInsightBriefing`
+ * hiện một `role="alert"` đỏ "vui lòng thử lại sau": sai bản chất (đây là tường
+ * quyền, không phải lỗi tạm thời), không nói vì sao, và bấm lại bao nhiêu lần
+ * cũng vậy.
  */
 export function AiInsightDetailModal({
   visible,
@@ -76,9 +86,15 @@ export function AiInsightDetailModal({
         {/* `visible` gác việc mount: đóng modal là unmount hẳn, nên lần mở sau
             chạy lại `analyze()` với dữ liệu mới thay vì giữ một bản đã cũ. */}
         {visible && (
-          <Suspense fallback={<BriefingFallback />}>
-            <AiInsightBriefing symbol={symbol} />
-          </Suspense>
+          <PremiumGate
+            featureName="AI Insight"
+            description="Phân tích AI đa lớp cho mã đang xem (Xu hướng, Thanh khoản, Dòng tiền, Nội bộ, Tin tức)."
+            onAuthRequested={onClose}
+          >
+            <Suspense fallback={<BriefingFallback />}>
+              <AiInsightBriefing symbol={symbol} />
+            </Suspense>
+          </PremiumGate>
         )}
       </div>
     </Modal>

@@ -204,9 +204,13 @@ async def _graduate_cap3(db_session, user_id) -> None:
             user_id, buy.id, khau_vi="can_bang", muc_tu_tin=3,
             cach_khoi_luong="linh_hoat", khoi_luong=100, pct_von=20.0,
         )
+        # ★ 30,000 (không phải 25,500): lãi % của Cấp 3 chia cho vốn THẬT của
+        # tài khoản ảo (250,000,000đ), không phải hằng số 100tr của ví dụ trong
+        # spec — xem `Cap3Service._sync_von_ban_dau`. 15 × 100cp × 10,000đ =
+        # 15,000,000đ = 6% > mốc +5% của Thách thức Bản lĩnh.
         sell = await _make_order(
             db_session, account.id, user_id, symbol=f"Z{i}", side=OrderSide.SELL,
-            price=25_500, trading_date=today,
+            price=30_000, trading_date=today,
         )
         await cap1.record_ketso(user_id, sell.id)
         await cap2.record_ketso(user_id, sell.id, cham_sl_cat_dung_phien_ke=True)
@@ -312,7 +316,8 @@ async def test_enter_requires_cap3_graduated(db_session, test_user):
         )
         sell = await _make_order(
             db_session, account.id, test_user.id, symbol=f"Z{i}",
-            side=OrderSide.SELL, price=25_500, trading_date=today,
+            # ★ 30,000 — xem chú thích ở `_graduate_cap3` (vốn thật 250tr).
+            side=OrderSide.SELL, price=30_000, trading_date=today,
         )
         await cap1.record_ketso(test_user.id, sell.id)
         await cap2.record_ketso(test_user.id, sell.id, cham_sl_cat_dung_phien_ke=True)

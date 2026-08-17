@@ -1,5 +1,6 @@
 import { cn } from "@/shared/lib/cn"
 import { useCap2Progress } from "./hooks"
+import type { Cap2ChuoiLegacy } from "./types"
 import "./cap2-discipline.css"
 
 /**
@@ -27,7 +28,13 @@ const LOW_ACTIVITY_ORDERS_PER_WEEK = 1
 const CHUOI_HOT = 5
 
 export function ChuoiWidget({ ordersLastWeek }: ChuoiWidgetProps) {
-  const { data: progress } = useCap2Progress()
+  const { data } = useCap2Progress()
+  // ★★ DI SẢN — xem `Cap2ChuoiLegacy` trong `types.ts`: server KHÔNG còn trả ba
+  // trường này (migration `8f1a5c7d2e64` đã DROP cột), nên widget này luôn hiện
+  // 0. File được giữ lại nhưng KHÔNG được mount ở đâu; ép kiểu tại chỗ để
+  // `Cap2Progress` không phải khai một trường mà wire không có — nhờ vậy
+  // `tsc -b` bắt được mọi chỗ đọc MỚI.
+  const progress = data as (typeof data & Cap2ChuoiLegacy) | undefined
   const current = progress?.chuoi_current ?? 0
   const record = progress?.chuoi_record ?? 0
   const justReset = current === 0 && progress?.last_chuoi_reset_at != null

@@ -22,7 +22,6 @@ vi.mock("./hooks", () => ({
 import { KetsoModalCap2, type KetsoDataCap2 } from "./KetsoModalCap2"
 import type { Cap1Progress } from "@/features/cap1/types"
 import type { Cap1TradeRecord } from "@/features/cap1/tradeLog"
-import type { Cap2Progress } from "./types"
 
 function cap1Progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
   return {
@@ -44,25 +43,6 @@ function cap1Progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
   }
 }
 
-function cap2Progress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
-  return {
-    id: "c2p1",
-    user_id: "u1",
-    entered_at: "2026-01-06T00:00:00Z",
-    task_1_done_at: null,
-    task_2_done_at: null,
-    so_lenh_co_cl_tp: 0,
-    so_lan_cat_lo_dung: 0,
-    so_lan_chot_loi_dung: 0,
-    so_lan_thuc_hien_dung: 0,
-    chuoi_current: 4,
-    chuoi_record: 6,
-    last_chuoi_reset_at: null,
-    graduated_at: null,
-    time_to_graduate_hours: null,
-    ...overrides,
-  }
-}
 
 // Cắt lỗ cam kết tại 60.400 chạm và cắt ĐÚNG phiên; chốt lời cam kết 65.800
 // KHÔNG bị vi phạm gì — a fully clean, "cách đặt tốt" order.
@@ -96,7 +76,6 @@ describe("KetsoModalCap2", () => {
         data={null}
         progress={null}
         trades={[]}
-        cap2Progress={null}
         onClose={vi.fn()}
       />,
     )
@@ -109,7 +88,6 @@ describe("KetsoModalCap2", () => {
         data={cleanData}
         progress={cap1Progress()}
         trades={[]}
-        cap2Progress={cap2Progress()}
         onClose={vi.fn()}
       />,
     )
@@ -131,7 +109,6 @@ describe("KetsoModalCap2", () => {
         data={cleanData}
         progress={cap1Progress()}
         trades={[]}
-        cap2Progress={cap2Progress()}
         onClose={vi.fn()}
       />,
     )
@@ -145,7 +122,6 @@ describe("KetsoModalCap2", () => {
         data={bigLoss}
         progress={cap1Progress()}
         trades={[]}
-        cap2Progress={cap2Progress()}
         onClose={vi.fn()}
       />,
     )
@@ -159,7 +135,6 @@ describe("KetsoModalCap2", () => {
         data={cleanData}
         progress={cap1Progress()}
         trades={[]}
-        cap2Progress={cap2Progress()}
         onClose={vi.fn()}
       />,
     )
@@ -182,7 +157,6 @@ describe("KetsoModalCap2", () => {
         data={data}
         progress={cap1Progress()}
         trades={[]}
-        cap2Progress={cap2Progress()}
         onClose={vi.fn()}
       />,
     )
@@ -201,7 +175,6 @@ describe("KetsoModalCap2", () => {
         data={data}
         progress={cap1Progress()}
         trades={[]}
-        cap2Progress={cap2Progress()}
         onClose={vi.fn()}
       />,
     )
@@ -221,7 +194,6 @@ describe("KetsoModalCap2", () => {
         data={data}
         progress={cap1Progress()}
         trades={[]}
-        cap2Progress={cap2Progress()}
         onClose={vi.fn()}
       />,
     )
@@ -229,21 +201,30 @@ describe("KetsoModalCap2", () => {
     expect(within(block).getByText(/hụt/i)).toBeInTheDocument()
   })
 
-  it('shows "giữ chuỗi" impact line when the order has no vi phạm', () => {
+  /**
+   * ★★ "Chuỗi kỷ luật" KHÔNG còn là khái niệm của sản phẩm: Cấp 2 đã gỡ nó khỏi
+   * Hành trình lẫn Phân tích danh mục, và migration `8f1a5c7d2e64` đã DROP
+   * `chuoi_current`/`chuoi_record`/`last_chuoi_reset_at` khỏi `cap2_progress`
+   * (`grep -rn "chuoi" backend/app/` rỗng). Fixture cũ bơm `chuoi_current: 4`
+   * rồi bài test khẳng định user đọc "tăng lên 5 lệnh liên tiếp" — một con số
+   * API KHÔNG THỂ trả về; ngoài đời `?? 0` luôn thắng nên MỌI user Cấp 2 đọc
+   * "1 lệnh liên tiếp" ở mọi lệnh, mãi mãi. Kết sổ Cấp 3-8 đã gỡ dòng này
+   * (commit b30625d); Cấp 2 — cấp đang LIVE — phải im lặng y như vậy.
+   */
+  it("★★ KHÔNG còn dòng tác động chuỗi kỷ luật (số bịa) ở lệnh sạch", () => {
     render(
       <KetsoModalCap2
         data={cleanData}
         progress={cap1Progress()}
         trades={[]}
-        cap2Progress={cap2Progress({ chuoi_current: 4 })}
         onClose={vi.fn()}
       />,
     )
-    expect(screen.getByText(/giữ chuỗi/i)).toBeInTheDocument()
-    expect(screen.getByText(/5 lệnh liên tiếp/)).toBeInTheDocument()
+    expect(screen.queryByText(/chuỗi kỷ luật/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/lệnh liên tiếp/i)).not.toBeInTheDocument()
   })
 
-  it('shows "làm đứt chuỗi" impact line when the order has a vi phạm', () => {
+  it("★★ lệnh có vi phạm cũng không có dòng chuỗi kỷ luật", () => {
     const data: KetsoDataCap2 = {
       ...cleanData,
       flags: { order_id: "order-8", cham_SL_khong_cat: true },
@@ -253,11 +234,10 @@ describe("KetsoModalCap2", () => {
         data={data}
         progress={cap1Progress()}
         trades={[]}
-        cap2Progress={cap2Progress({ chuoi_current: 4 })}
         onClose={vi.fn()}
       />,
     )
-    expect(screen.getByText(/làm đứt chuỗi/i)).toBeInTheDocument()
+    expect(screen.queryByText(/chuỗi/i)).not.toBeInTheDocument()
   })
 
   it("renders BOTH the Cấp 1 grid coach text and the Cấp 2 discipline coach text", () => {
@@ -270,7 +250,6 @@ describe("KetsoModalCap2", () => {
         data={data}
         progress={cap1Progress()}
         trades={[]}
-        cap2Progress={cap2Progress()}
         onClose={vi.fn()}
       />,
     )
@@ -293,7 +272,6 @@ describe("KetsoModalCap2", () => {
         data={data}
         progress={cap1Progress()}
         trades={[]}
-        cap2Progress={cap2Progress()}
         onClose={onClose}
       />,
     )
@@ -313,7 +291,6 @@ describe("KetsoModalCap2", () => {
         data={cleanData}
         progress={cap1Progress()}
         trades={[]}
-        cap2Progress={cap2Progress()}
         onClose={vi.fn()}
         onRecorded={onRecorded}
       />,

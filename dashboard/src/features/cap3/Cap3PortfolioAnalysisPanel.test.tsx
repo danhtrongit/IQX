@@ -11,11 +11,11 @@ const {
   useCap2TradeLogMock,
   analysisPropsSpy,
 } = vi.hoisted(() => ({
-  useCap3EventsMock: vi.fn(() => ({ isCap3Active: true })),
-  useCap3ProgressMock: vi.fn(() => ({ data: null })),
-  useCap3TradeLogMock: vi.fn(() => ({ trades: [], record: vi.fn() })),
-  useCap2ProgressMock: vi.fn(() => ({ data: null })),
-  useCap2TradeLogMock: vi.fn(() => ({ trades: [], scores: [] })),
+  useCap3EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap3Active: true })),
+  useCap3ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
+  useCap3TradeLogMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ trades: [], record: vi.fn() })),
+  useCap2ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
+  useCap2TradeLogMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ trades: [], scores: [] })),
   analysisPropsSpy: vi.fn(),
 }))
 

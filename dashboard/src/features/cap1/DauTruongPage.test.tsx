@@ -1,8 +1,9 @@
-import { render, screen } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Cap1Progress } from "./types"
 import type { Cap2Progress } from "@/features/cap2/types"
+import type { Cap3Progress } from "@/features/cap3/types"
 
 const {
   useAuthMock,
@@ -155,13 +156,24 @@ function fakeCap1Progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
 }
 
 /**
- * ★ Gõ kiểu `Cap2Progress` chứ KHÔNG phải `Record<string, unknown>`: bản trước
- * lệch kép so với wire thật (còn `task_3/4_done_at` + 3 cột `chuoi_*` đã bị
- * DROP, thiếu cả 4 counter của mô hình 2 nhiệm vụ) mà không có gì đỏ lên. Kiểu
- * thật làm vitest bắt ngay lần lệch sau — `tsc -b` không check file test.
+ * ★★ FIXTURE PHẢI GÕ ĐÚNG KIỂU WIRE, VÀ PHẢI CÓ THỨ THẬT SỰ CHECK NÓ.
+ *
+ * Bản trước gõ `Record<string, unknown>` và lệch kép so với wire (còn
+ * `task_3/4_done_at` + 3 cột `chuoi_*` đã bị DROP, thiếu cả 4 counter của mô
+ * hình 2 nhiệm vụ) mà KHÔNG gì đỏ lên. Một bản sau đó gõ kiểu thật nhưng dán
+ * kèm lời hứa "vitest bắt ngay lần lệch sau" — sai: `tsconfig.app.json`
+ * exclude `*.test.tsx`, và vitest transpile bằng esbuild không hề check kiểu.
+ *
+ * Nay lời hứa đó có thật: `tsconfig.test.json` (được `tsc -b` chạy qua
+ * `tsconfig.json#references`) typecheck toàn bộ file test.
+ *
+ * ★ `base` được KHAI BÁO KIỂU RỜI, không phải `return { ...fields, ...overrides }`:
+ * spread trong object literal TẮT excess-property check của TypeScript, nên
+ * một trường ĐÃ BỊ BỎ khỏi wire (đúng ca `chuoi_current`) vẫn lọt. Gán vào một
+ * biến có kiểu tường minh là chỗ duy nhất bắt được nó.
  */
 function fakeCap2Progress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
-  return {
+  const base: Cap2Progress = {
     id: "p2",
     user_id: "u1",
     entered_at: "2026-07-26T00:00:00Z",
@@ -173,28 +185,30 @@ function fakeCap2Progress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
     so_lan_thuc_hien_dung: 0,
     graduated_at: null,
     time_to_graduate_hours: null,
-    ...overrides,
   }
+  return { ...base, ...overrides }
 }
 
-function fakeCap3Progress(overrides: Record<string, unknown> = {}) {
-  return {
+/** Xem `fakeCap2Progress` — cùng lý do gõ kiểu thật + `base` khai báo rời. */
+function fakeCap3Progress(overrides: Partial<Cap3Progress> = {}): Cap3Progress {
+  const base: Cap3Progress = {
     id: "p3",
     user_id: "u1",
     entered_at: "2026-07-29T00:00:00Z",
     khau_vi_da_dat: true,
     khau_vi: "can_bang",
-    von_ban_dau: 100_000_000,
+    von_ban_dau: 250_000_000,
     task_1_done_at: null,
     task_2_done_at: null,
     task_3_done_at: null,
     so_lenh_cap3: 0,
     lai_pct_cap3: 0,
-    diem_ky_luat_tb_cap3: 0,
+    // ★ `null` = chưa biết, KHÔNG phải 0 — xem `cap3/types.ts`.
+    diem_ky_luat_tb_cap3: null,
     graduated_at: null,
     time_to_graduate_hours: null,
-    ...overrides,
   }
+  return { ...base, ...overrides }
 }
 
 function fakeCap4Progress(overrides: Record<string, unknown> = {}) {
@@ -375,6 +389,63 @@ describe("DauTruongPage — progression routing (Task FE3 + FE4 + Cấp 3/4/5/6/
     useCap1ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
     render(<DauTruongPage />)
     expect(screen.getByTestId("cap0-page")).toBeInTheDocument()
+  })
+
+  /**
+   * ★★ HẾT PHIÊN GIỮA CHỪNG — không được lặng lẽ tụt về shell Cấp 0.
+   *
+   * `shared/http/client.ts` xoá token và bắn `auth:logout` khi refresh hỏng;
+   * handler trong `auth-context.tsx` chỉ `setUser(null)` — không modal, không
+   * thông báo. Với `if (!isAuthenticated) return <Cap0TradingPage />`, người
+   * đang ở Cấp 3 thấy màn hình đổi ngay sang badge «CẤP 0 · NHẬP MÔN», thanh
+   * hành trình về 0/4, panel Đặt lệnh thành Sân tập — và tin rằng mình vừa bị
+   * xoá sạch tiến trình 3 cấp (server vẫn giữ nguyên), không có gì chỉ họ cách
+   * đăng nhập lại.
+   */
+  it("★★ phiên hết hạn giữa chừng → màn báo hết phiên + lối đăng nhập lại, KHÔNG tụt về Cấp 0", () => {
+    const setShowAuthModal = vi.fn()
+    const setAuthModalTab = vi.fn()
+    useAuthMock.mockReturnValue({
+      isAuthenticated: true,
+      isLoading: false,
+      setShowAuthModal,
+      setAuthModalTab,
+    })
+    useCap0ProgressMock.mockReturnValue({ data: { graduated_at: "2026-07-20T00:00:00Z" }, isFetched: true })
+    useCap1ProgressMock.mockReturnValue({
+      data: fakeCap1Progress({ graduated_at: "2026-07-25T00:00:00Z" }),
+      isFetched: true,
+    })
+    const { rerender } = render(<DauTruongPage />)
+    expect(screen.queryByTestId("cap0-page")).not.toBeInTheDocument()
+
+    // Token hết hạn: `auth:logout` → `isAuthenticated` thành false.
+    useAuthMock.mockReturnValue({
+      isAuthenticated: false,
+      isLoading: false,
+      setShowAuthModal,
+      setAuthModalTab,
+    })
+    rerender(<DauTruongPage />)
+
+    expect(screen.queryByTestId("cap0-page")).not.toBeInTheDocument()
+    const box = screen.getByTestId("dau-truong-session-expired")
+    expect(box).toHaveTextContent(/Phiên đăng nhập đã hết hạn/)
+    // Phải nói rõ tiến trình KHÔNG mất.
+    expect(box).toHaveTextContent(/vẫn được giữ nguyên/)
+
+    fireEvent.click(screen.getByText("Đăng nhập lại"))
+    expect(setAuthModalTab).toHaveBeenCalledWith("login")
+    expect(setShowAuthModal).toHaveBeenCalledWith(true)
+  })
+
+  it("khách chưa từng đăng nhập vẫn thấy Cấp 0 (không phải màn hết phiên)", () => {
+    useAuthMock.mockReturnValue({ isAuthenticated: false, isLoading: false })
+    useCap0ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
+    useCap1ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
+    render(<DauTruongPage />)
+    expect(screen.getByTestId("cap0-page")).toBeInTheDocument()
+    expect(screen.queryByTestId("dau-truong-session-expired")).not.toBeInTheDocument()
   })
 
   it("shows a spinner while Cấp 0 progress is still loading (authenticated)", () => {

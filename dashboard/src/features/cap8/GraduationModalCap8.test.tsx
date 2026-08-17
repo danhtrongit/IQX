@@ -359,8 +359,11 @@ describe("GraduationModalCap8 — màn cuối của chương trình 0-8 (spec §
 
   it("does NOT switch panels when the graduation POST fails (no false payoff)", () => {
     graduateMutate.mockImplementationOnce(
-      (_vars?: unknown, opts?: { onError?: (e: unknown) => void }) => {
-        opts?.onError?.(new Error("500"))
+      () => {
+        /* ★ Hỏng THẬT = react-query không gọi `onSuccess`. Component chỉ
+           truyền `{ onSuccess }` cho `mutate`, nên KHÔNG có `onError` nào để
+           gọi — bản trước gọi `opts.onError` vào khoảng không và chỉ chứng
+           minh chính cái mock của nó. */
       },
     )
     function PanelSpy() {

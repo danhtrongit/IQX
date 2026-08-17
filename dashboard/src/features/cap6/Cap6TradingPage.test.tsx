@@ -273,6 +273,20 @@ function RightSidebarStub() {
   )
 }
 
+// ★★ `AiInsightSymbolModal` nạp briefing bằng `lazy()` và bọc nó trong
+// `PremiumGate` (endpoint AI Insight là premium-only). Stub cả hai để bài dưới
+// CHỨNG MINH bản đọc thật sự dựng ra trong shell cấp — "không navigate" một
+// mình không đủ: một chunk lỗi/đổi tên vẫn thoả điều kiện đó.
+vi.mock("@/features/stock/ai-insight", () => ({
+  AiInsightBriefing: ({ symbol }: { symbol: string }) => (
+    <div data-testid="ai-briefing">{symbol}</div>
+  ),
+}))
+
+vi.mock("@/features/premium/hooks", () => ({
+  usePremiumStatus: () => ({ isPremium: true, isLoading: false }),
+}))
+
 vi.mock("@/features/navigation", () => ({
   TrialBanner: () => <div data-testid="trial-banner" />,
   Header: () => <div data-testid="header" />,
@@ -776,7 +790,7 @@ describe("Cap6TradingPage", () => {
     expect(screen.getByTestId("cap6-grad-khoi3")).toHaveTextContent("Cấp 7 «Đọc sổ lệnh»")
   })
 
-  it('clicking "AI Phân tích" opens the AI Insight symbol-picker modal, and submitting mở bản đọc AI NGAY TRONG trang cấp — KHÔNG điều hướng', () => {
+  it('clicking "AI Phân tích" opens the AI Insight symbol-picker modal, and submitting mở bản đọc AI NGAY TRONG trang cấp — KHÔNG điều hướng', async () => {
     renderCap6(<Cap6TradingPage />)
     expect(screen.queryByText("Phân tích AI cho 1 mã cổ phiếu")).not.toBeInTheDocument()
     fireEvent.click(screen.getByTestId("right-toolbar"))
@@ -787,6 +801,8 @@ describe("Cap6TradingPage", () => {
     fireEvent.click(screen.getByText("Phân tích"))
     // ★★ KHÔNG còn rời trang cấp: bản đọc 6 lớp mở NGAY TRONG shell (ô nhập mã
     // nhường chỗ cho briefing). Xem `features/dau-truong/AiInsightModal`.
+    // Phải canh chính briefing hiện ra, không chỉ "không navigate".
+    await waitFor(() => expect(screen.getByTestId("ai-briefing")).toHaveTextContent("VCB"))
     expect(navigateMock).not.toHaveBeenCalled()
     expect(screen.queryByText("Phân tích AI cho 1 mã cổ phiếu")).not.toBeInTheDocument()
   })

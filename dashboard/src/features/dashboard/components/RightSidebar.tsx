@@ -158,8 +158,13 @@ export function RightSidebar() {
               isLevelActive
                 ? () =>
                     Message.info({
+                      // ★ KHÔNG chỉ tới nút «Nâng cấp Premium» của header: nó
+                      // là `!hidden sm:!inline-flex` (Header.tsx) nên biến mất
+                      // hoàn toàn dưới 640px, và trên điện thoại lối duy nhất
+                      // là mục «Nâng cấp» trong menu ảnh đại diện. Câu này phải
+                      // đúng ở CẢ hai bề rộng.
                       content:
-                        "Bạn có thể nâng cấp Premium ở nút «Nâng cấp Premium» trên thanh tiêu đề — hành trình của bạn vẫn giữ nguyên.",
+                        "Tính năng này cần Premium. Mở menu ảnh đại diện ở góc phải → «Nâng cấp» (trên máy tính có sẵn nút «Nâng cấp Premium» ngay trên thanh tiêu đề). Hành trình của bạn vẫn giữ nguyên.",
                       duration: 6000,
                     })
                 : undefined

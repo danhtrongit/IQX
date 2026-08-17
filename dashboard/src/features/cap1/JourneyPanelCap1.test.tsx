@@ -8,8 +8,8 @@ import type { Cap1TradeRecord } from "./tradeLog"
 // ── Mocks ────────────────────────────────────────────────────────────────────
 const { useCap1ProgressMock, useCap1EventsMock, useCap1TradeLogMock, flags } = vi.hoisted(() => ({
   useCap1ProgressMock: vi.fn(),
-  useCap1EventsMock: vi.fn(() => ({ isCap1Active: true })),
-  useCap1TradeLogMock: vi.fn(() => ({ trades: [], record: vi.fn() })),
+  useCap1EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap1Active: true })),
+  useCap1TradeLogMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ trades: [], record: vi.fn() })),
   // Mutable so the goal box can be asserted on BOTH sides of the trần cấp.
   flags: { CAP_MAX_ENABLED: 2 },
 }))

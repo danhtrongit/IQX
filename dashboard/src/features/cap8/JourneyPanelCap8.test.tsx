@@ -8,7 +8,7 @@ import type { Cap8Progress, DanhMucCap8, ThachThucCap8 } from "./types"
 const { useCap8ProgressMock, useThachThucCap8Mock, useCap8EventsMock } = vi.hoisted(() => ({
   useCap8ProgressMock: vi.fn(),
   useThachThucCap8Mock: vi.fn(),
-  useCap8EventsMock: vi.fn(() => ({ isCap8Active: true })),
+  useCap8EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap8Active: true })),
 }))
 
 vi.mock("./hooks", () => ({

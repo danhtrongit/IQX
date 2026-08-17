@@ -17,7 +17,7 @@ const {
   // Defaults to a premium user so the many pre-existing tests below (all
   // written before the premium-honest fix) keep exercising the ORIGINAL
   // spec §9 verbatim copy without every one of them needing to opt in.
-  usePremiumStatusMock: vi.fn(() => ({ isPremium: true, isLoading: false })),
+  usePremiumStatusMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isPremium: true, isLoading: false })),
   // Mirror react-query's real `mutate(variables, options)` shape — by
   // default synchronously invoke `onSuccess` (the happy path).
   graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {

@@ -13,21 +13,16 @@ import { describe, expect, it } from "vitest"
  * provider + query + TradingView), và nó là thứ giữ lời hứa "mở cấp sau không
  * phải nhớ lại": thêm `Cap9TradingPage` mà quên hai prop là đỏ ngay.
  *
- * ★★ `Cap3TradingPage` nằm trong danh sách BIẾT NHƯNG CHƯA VÁ, không phải vì
- * nó đúng: đợt sửa này bị cấm chạm vào `features/cap3/**` (một agent khác đang
- * sửa cây đó cùng lúc). Và trần cấp vừa được nâng lên 3 GIỮA đợt sửa này, nên
- * lỗ hổng đó giờ là lỗ hổng THẬT với người dùng thật, không còn nằm sau trần.
- *
- * Ba thứ `Cap3TradingPage` còn thiếu, y hệt tám file kia:
- *   1. `<Header onSymbolSelect={setSymbol} />`
- *   2. `<MarketBar onSymbolClick={setSymbol} />`
- *   3. modal «AI Phân tích» → `<AiInsightSymbolModal visible onClose />`
- *      (bỏ `submitAiInsightSymbol`/`useNavigate`, thêm `useSymbol`)
+ * ★★ **KHÔNG có danh sách miễn trừ.** Bản trước có `KNOWN_UNPATCHED = new
+ * Set([3])` loại Cấp 3 khỏi cả năm bài, kèm một bài khẳng định NGƯỢC
+ * (`expect(stillBroken).toBe(true)`) — nên suite xanh CHÍNH VÌ lỗ hổng còn đó,
+ * và người vá đúng sẽ làm CI đỏ. Một bài canh không bao giờ được thưởng cho
+ * việc lỗi vẫn còn: nếu một cấp chưa vá được, để bài ĐỎ.
  */
 
 const ROOT = `${process.cwd()}/src/features`
 
-/** Chín shell cấp, theo đúng thứ tự cấp. */
+/** Chín shell cấp, theo đúng thứ tự cấp — TẤT CẢ đều bị canh, không trừ cấp nào. */
 const CAP_PAGES = [
   { cap: 0, path: `${ROOT}/cap0/Cap0TradingPage.tsx` },
   { cap: 1, path: `${ROOT}/cap1/Cap1TradingPage.tsx` },
@@ -40,16 +35,11 @@ const CAP_PAGES = [
   { cap: 8, path: `${ROOT}/cap8/Cap8TradingPage.tsx` },
 ]
 
-/** Xem docstring: cấm chạm trong đợt này, KHÔNG phải đã đúng. */
-const KNOWN_UNPATCHED = new Set([3])
-
-const PATCHED = CAP_PAGES.filter((p) => !KNOWN_UNPATCHED.has(p.cap))
-
 function read(path: string): string {
   return readFileSync(path, "utf8")
 }
 
-describe.each(PATCHED)("Cấp $cap — trang cấp không còn lối ném user ra ngoài", ({ path }) => {
+describe.each(CAP_PAGES)("Cấp $cap — trang cấp không còn lối ném user ra ngoài", ({ path }) => {
   it("★★ không còn navigate('/co-phieu/…') ở bất kỳ đâu trong trang", () => {
     expect(read(path)).not.toMatch(/navigate\(\s*[`'"]\/co-phieu/)
   })
@@ -68,18 +58,5 @@ describe.each(PATCHED)("Cấp $cap — trang cấp không còn lối ném user r
 
   it("KHÔNG dò đường dẫn để đổi hành vi", () => {
     expect(read(path)).not.toMatch(/useLocation|window\.location\.pathname/)
-  })
-})
-
-describe("Cấp 3 — lỗ hổng đã biết, chưa vá (ngoài quyền sửa của đợt này)", () => {
-  const cap3 = CAP_PAGES.find((p) => p.cap === 3)!
-
-  it("vẫn còn navigate('/co-phieu/…') — nếu bài này ĐỎ nghĩa là ai đó đã vá, hãy xoá cấp 3 khỏi KNOWN_UNPATCHED", () => {
-    const src = read(cap3.path)
-    const stillBroken =
-      /navigate\(\s*[`'"]\/co-phieu/.test(src) ||
-      !/<Header\s+onSymbolSelect=/.test(src) ||
-      !/<MarketBar\s+onSymbolClick=/.test(src)
-    expect(stillBroken).toBe(true)
   })
 })

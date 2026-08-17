@@ -136,19 +136,29 @@ function fmtPctSigned(pct: number): string {
 /**
  * "Đang / mục tiêu" của 1 điều kiện — LUÔN hiện cả giá trị hiện tại VÀ mốc cần
  * đạt (§C12c: không hiện con số trơ, người đọc phải thấy còn thiếu bao nhiêu).
+ *
+ * ★★ `gia_tri_hien_tai == null` = **CHƯA BIẾT**, hiện "—" chứ KHÔNG hiện 0.
+ * Đây đúng cách `cap2/DiemKyLuat.tsx` từ chối in 0 khi `diem == null`: thẻ
+ * «Điểm kỷ luật» ngay trên widget này nói "chưa có dữ liệu", nên widget không
+ * được chấm 0 điểm cho cùng chỉ số đó trên cùng màn hình.
  */
 function fmtCondValue(dieuKien: ThachThucDieuKienCap3, kind: CondKind): string {
   const { gia_tri_hien_tai: now, muc_tieu: target } = dieuKien
-  if (kind === "pct") return `${fmtPctSigned(now)} / ${fmtPctSigned(target)}`
-  if (kind === "count") {
-    return `${Math.round(now).toLocaleString("en-US")}/${Math.round(target).toLocaleString("en-US")}`
+  if (kind === "pct") {
+    return `${now == null ? "—" : fmtPctSigned(now)} / ${fmtPctSigned(target)}`
   }
-  return `${Math.round(now)}% / ${Math.round(target)}%`
+  if (kind === "count") {
+    return `${now == null ? "—" : Math.round(now).toLocaleString("en-US")}/${Math.round(
+      target,
+    ).toLocaleString("en-US")}`
+  }
+  return `${now == null ? "—" : `${Math.round(now)}%`} / ${Math.round(target)}%`
 }
 
-/** % chiều rộng thanh tiến độ — kẹp 0..100, lỗ (âm) = 0. */
+/** % chiều rộng thanh tiến độ — kẹp 0..100, lỗ (âm) = 0, chưa biết = 0. */
 function progressPct(dieuKien: ThachThucDieuKienCap3): number {
   const { gia_tri_hien_tai: now, muc_tieu: target } = dieuKien
+  if (now == null) return 0
   if (target <= 0) return dieuKien.dat ? 100 : 0
   return Math.max(0, Math.min(100, (now / target) * 100))
 }
@@ -263,12 +273,26 @@ export function JourneyPanelCap3() {
    * ô đổi sang lời sẵn sàng tốt nghiệp thay vì biến mất.
    */
   const focus = TASK_NOS.find((no) => states[no] === "active") ?? null
-  /** Tiến độ ③ — một nguồn duy nhất cho cả ô tập trung lẫn dòng checklist. */
-  const soLenhText = thachThuc
-    ? `${Math.round(thachThuc.so_lenh.gia_tri_hien_tai).toLocaleString("en-US")}/${Math.round(
-        thachThuc.so_lenh.muc_tieu,
-      ).toLocaleString("en-US")} lệnh`
-    : undefined
+  /**
+   * ★★ ĐÃ TỐT NGHIỆP — trạng thái khác hẳn "sẵn sàng tốt nghiệp".
+   *
+   * `GraduationModalCap3` chỉ mở khi CHƯA có `graduated_at` (xem
+   * `isGraduationReadyCap3`), và khi Cấp 3 đang là TRẦN thì `DauTruongPage`
+   * giữ người đã tốt nghiệp Ở LẠI shell Cấp 3 vĩnh viễn. Nên nếu ô này vẫn nói
+   * "Sẵn sàng tốt nghiệp … màn tốt nghiệp mở ra ngay tại đây", nó hứa một thứ
+   * không bao giờ mở lại, và không chỗ nào trên màn hình nói họ ĐÃ xong.
+   */
+  const graduated = progress?.graduated_at != null
+  /** Tiến độ ③ — một nguồn duy nhất cho cả ô tập trung lẫn dòng checklist.
+   *  Số lệnh luôn đếm được (0 là 0 thật), nhưng kiểu chung cho phép `null` —
+   *  giữ đúng quy ước "chưa biết thì im lặng". */
+  const soLenhHienTai = thachThuc?.so_lenh.gia_tri_hien_tai
+  const soLenhText =
+    thachThuc && soLenhHienTai != null
+      ? `${Math.round(soLenhHienTai).toLocaleString("en-US")}/${Math.round(
+          thachThuc.so_lenh.muc_tieu,
+        ).toLocaleString("en-US")} lệnh`
+      : undefined
 
   return (
     <div className="cap0 flex h-full min-h-0 flex-col bg-[var(--bg1)] text-[var(--t1)]">
@@ -303,7 +327,19 @@ export function JourneyPanelCap3() {
         {/* ★ Ô "NHIỆM VỤ ĐANG LÀM" — dùng chung `cap0/JourneyFocus.tsx` với Cấp
             0/1/2 (một khối, một bộ CSS: các cấp không thể lệch nhau). Cấp 3 là
             cấp cuối cùng còn dựng checklist phẳng kiểu cũ, nay đã hội tụ. */}
-        {focus == null ? (
+        {graduated ? (
+          <JourneyFocus
+            testId="cap3-focus"
+            ready
+            tag="HOÀN THÀNH"
+            name="Đã tốt nghiệp Cấp 3 «Bản lĩnh»"
+            desc={
+              CAP_MAX_ENABLED >= 4
+                ? "Bạn đã đặt lệnh theo khẩu vị + mức tự tin của chính mình, kết sổ với khối lượng đã ghi hồ sơ, và vượt Thách thức Bản lĩnh: lãi có kỷ luật. Cấp 4 «Thuần thục» đang chờ bạn."
+                : "Bạn đã đặt lệnh theo khẩu vị + mức tự tin của chính mình, kết sổ với khối lượng đã ghi hồ sơ, và vượt Thách thức Bản lĩnh: lãi có kỷ luật. Đây là chặng cuối của chương trình hiện tại — tài khoản vẫn giữ nguyên để bạn tiếp tục giao dịch."
+            }
+          />
+        ) : focus == null ? (
           <JourneyFocus
             testId="cap3-focus"
             ready
@@ -365,9 +401,25 @@ export function JourneyPanelCap3() {
             nghiệp unmount xong là về đúng màn này, checklist 3/3, và ô này là
             câu cuối cùng họ đọc. Khi trần cấp còn dưới 4 nó KHÔNG được hứa một
             cấp chưa tồn tại; khi trần được nâng, câu của mockup tự quay về.
-            (Cùng luật `cap1`/`cap2` đang giữ — xem docstring ở `cap1/capFlags.ts`.) */}
+            (Cùng luật `cap1`/`cap2` đang giữ — xem docstring ở `cap1/capFlags.ts`.)
+
+            ★ Và khi ĐÃ tốt nghiệp, nó không được ra lệnh làm lại chính việc vừa
+            xong ("Đạt cả 3 điều kiện … → tốt nghiệp Cấp 3"). */}
         <div className="cap0-journey-goal" data-testid="cap3-journey-goal">
-          {CAP_MAX_ENABLED >= 4 ? (
+          {graduated ? (
+            CAP_MAX_ENABLED >= 4 ? (
+              <>
+                Bạn đã tốt nghiệp <strong>Cấp 3 «Bản lĩnh»</strong>. Chặng tiếp theo:{" "}
+                <strong>Cấp 4 «Thuần thục»</strong> (tách quyết định khỏi kết quả).
+              </>
+            ) : (
+              <>
+                Bạn đã tốt nghiệp <strong>Cấp 3 «Bản lĩnh»</strong> — chặng cuối của
+                chương trình hiện tại. <strong>Cấp 4 «Thuần thục» chưa ra mắt</strong>;
+                khi mở, nó sẽ dạy tách quyết định khỏi kết quả.
+              </>
+            )
+          ) : CAP_MAX_ENABLED >= 4 ? (
             <>
               Đạt cả 3 điều kiện của Thách thức Bản lĩnh → tốt nghiệp Cấp 3, lên{" "}
               <strong>Cấp 4 «Thuần thục»</strong> (tách quyết định khỏi kết quả).

@@ -18,7 +18,7 @@ import type { LyDo, TrangThaiLucDat } from "@/features/cap1/types"
 import { Cap2Provider, useCap2Events, type Cap2OrderEvent } from "./Cap2Context"
 import { GraduationModalCap2 } from "./GraduationModalCap2"
 import { KetsoModalCap2, type KetsoDataCap2 } from "./KetsoModalCap2"
-import { useCap2Progress, useDiemKyLuat } from "./hooks"
+import { useDiemKyLuat } from "./hooks"
 import { useCap2TradeLog } from "./tradeLogCap2"
 import type { KetsoInputCap2, PhuongPhapSlTp } from "./types"
 import "@/features/cap0/cap0.css"
@@ -157,7 +157,6 @@ function Cap2Terminal() {
   const { isCap1Active, registerHandlers: registerCap1Handlers } = useCap1Events()
   const { isCap2Active, registerHandlers: registerCap2Handlers } = useCap2Events()
   const { data: cap1Progress } = useCap1Progress(isCap1Active)
-  const { data: cap2Progress } = useCap2Progress(isCap2Active)
   const { data: diemKyLuat } = useDiemKyLuat(undefined, isCap2Active)
   const { activePanel, setActivePanel } = useSidebar()
   const { trades: cap1Trades, record: recordCap1Trade } = useCap1TradeLog()
@@ -331,7 +330,6 @@ function Cap2Terminal() {
         data={ketso}
         progress={cap1Progress ?? null}
         trades={cap1Trades}
-        cap2Progress={cap2Progress ?? null}
         onClose={() => setKetso(null)}
         onRecorded={handleKetsoRecorded}
       />

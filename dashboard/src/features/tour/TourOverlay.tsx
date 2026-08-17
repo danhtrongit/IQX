@@ -162,10 +162,14 @@ export function TourOverlay({ config, controller }: TourOverlayProps) {
     const measure = (target: HTMLElement | null) => setHole(target ? toHole(target.getBoundingClientRect()) : null)
     measure(el)
 
-    let settleTimer: ReturnType<typeof window.setTimeout> | undefined
-    let busyTimer: ReturnType<typeof window.setTimeout>
+    // `number`, KHÔNG phải `ReturnType<typeof window.setTimeout>`: khi
+    // `@types/node` có mặt trong program (project typecheck file test),
+    // overload Node của `setTimeout` thắng và kiểu suy ra thành `Timeout`
+    // trong khi giá trị thật ở trình duyệt là `number`.
+    let settleTimer: number | undefined
+    let busyTimer: number | undefined
     let pollRafId: number | undefined
-    let pollSettleTimer: ReturnType<typeof window.setTimeout> | undefined
+    let pollSettleTimer: number | undefined
 
     const stopPolling = () => {
       if (pollRafId !== undefined && typeof window.cancelAnimationFrame === "function") {

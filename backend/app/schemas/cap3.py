@@ -30,7 +30,9 @@ class Cap3ProgressOut(BaseModel):
     task_3_done_at: datetime | None = None
     so_lenh_cap3: int
     lai_pct_cap3: float
-    diem_ky_luat_tb_cap3: float
+    #: ``None`` = chưa biết (chưa có ngày nào ở Cấp 3 có tình huống để chấm)
+    #: — KHÔNG phải 0. Xem ``Cap3Service._diem_ky_luat_tb``.
+    diem_ky_luat_tb_cap3: float | None = None
     graduated_at: datetime | None = None
     time_to_graduate_hours: float | None = None
 
@@ -72,7 +74,9 @@ class ThachThucDieuKien(BaseModel):
     (§C12c: always shown with its current value + a short explanation)."""
 
     ten: str
-    gia_tri_hien_tai: float
+    #: ``None`` = **chưa biết** (chỉ có ở điều kiện điểm kỷ luật khi chưa có
+    #: ngày nào chấm được) — FE hiện "—", không hiện 0.
+    gia_tri_hien_tai: float | None
     muc_tieu: float
     dat: bool
     giai_thich: str

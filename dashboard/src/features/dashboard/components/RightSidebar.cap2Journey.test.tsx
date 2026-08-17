@@ -16,10 +16,10 @@ import { SidebarProvider } from "@/shared/contexts/sidebar-context"
 
 const { useCap0EventsMock, useCap0ProgressMock, useCap1EventsMock, useCap2EventsMock } = vi.hoisted(
   () => ({
-    useCap0EventsMock: vi.fn(() => ({ isCap0Active: false })),
-    useCap0ProgressMock: vi.fn(() => ({ data: null })),
-    useCap1EventsMock: vi.fn(() => ({ isCap1Active: false })),
-    useCap2EventsMock: vi.fn(() => ({ isCap2Active: false })),
+    useCap0EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap0Active: false })),
+    useCap0ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
+    useCap1EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap1Active: false })),
+    useCap2EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap2Active: false })),
   }),
 )
 

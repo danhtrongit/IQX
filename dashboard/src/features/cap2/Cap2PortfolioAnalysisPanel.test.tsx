@@ -4,9 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 
 const { useCap2EventsMock, useCap2ProgressMock, useCap2TradeLogMock } = vi.hoisted(() => ({
-  useCap2EventsMock: vi.fn(() => ({ isCap2Active: true })),
-  useCap2ProgressMock: vi.fn(() => ({ data: null })),
-  useCap2TradeLogMock: vi.fn(() => ({ trades: [], scores: [] })),
+  useCap2EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap2Active: true })),
+  useCap2ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
+  useCap2TradeLogMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ trades: [], scores: [] })),
 }))
 
 vi.mock("./Cap2Context", () => ({ useCap2Events: () => useCap2EventsMock() }))

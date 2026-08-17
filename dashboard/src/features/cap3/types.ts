@@ -30,7 +30,9 @@ export interface Cap3Progress {
   task_3_done_at: string | null
   so_lenh_cap3: number
   lai_pct_cap3: number
-  diem_ky_luat_tb_cap3: number
+  /** ★ `null` = **CHƯA BIẾT** (chưa ngày nào ở Cấp 3 có tình huống để chấm) —
+   *  KHÔNG phải 0. Xem `Cap3Service._diem_ky_luat_tb` phía backend. */
+  diem_ky_luat_tb_cap3: number | null
   graduated_at: string | null
   time_to_graduate_hours: number | null
 }
@@ -72,7 +74,9 @@ export interface OrderKehoachCap3 {
  * (§C12c: always shown with its current value + a short explanation). */
 export interface ThachThucDieuKienCap3 {
   ten: string
-  gia_tri_hien_tai: number
+  /** ★ `null` = **chưa biết** (chỉ xảy ra với điều kiện điểm kỷ luật) — hiện
+   *  "—", KHÔNG hiện 0. */
+  gia_tri_hien_tai: number | null
   muc_tieu: number
   dat: boolean
   giai_thich: string

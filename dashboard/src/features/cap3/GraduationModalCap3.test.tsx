@@ -239,13 +239,40 @@ describe("GraduationModalCap3", () => {
   it("★ does not toast when the graduation mutation FAILS (no false «đã ghi nhận» signal)", () => {
     useCap3ProgressMock.mockReturnValue({ data: readyProgress() })
     graduateMutate.mockImplementationOnce(
-      (_vars?: unknown, opts?: { onError?: (e: unknown) => void }) => {
-        opts?.onError?.(new Error("network"))
+      () => {
+        /* ★ Hỏng THẬT = react-query không gọi `onSuccess`. Component chỉ
+           truyền `{ onSuccess }` cho `mutate`, nên KHÔNG có `onError` nào để
+           gọi — bản trước gọi `opts.onError` vào khoảng không và chỉ chứng
+           minh chính cái mock của nó. */
       },
     )
     render(<GraduationModalCap3 />)
     fireEvent.click(screen.getByTestId("cap3-grad-cta"))
     expect(messageInfo).not.toHaveBeenCalled()
+  })
+
+  /**
+   * ★★ HỎNG MẠNG XONG PHẢI BẤM LẠI ĐƯỢC — lớp lỗi repo này đã phải sửa HAI lần.
+   *
+   * Modal `closable={false}` và chỉ unmount khi `graduated_at` về. Nếu CTA kẹt
+   * `disabled` sau một lần bấm hỏng, user đã đủ 3/3 bị NHỐT VĨNH VIỄN trong
+   * một màn hình không có nút đóng. Bài này canh đúng trạng thái SAU khi hỏng,
+   * chứ không chỉ "không toast".
+   */
+  it("★★ graduate hỏng → modal vẫn mở và CTA vẫn bấm lại được (không nhốt user)", () => {
+    useCap3ProgressMock.mockReturnValue({ data: readyProgress() })
+    render(<GraduationModalCap3 />)
+
+    const cta = screen.getByTestId("cap3-grad-cta")
+    fireEvent.click(cta)
+    expect(graduateMutate).toHaveBeenCalledTimes(1)
+
+    // `graduated_at` chưa về (mutation lỗi) → modal KHÔNG được tự đóng…
+    expect(screen.getByTestId("cap3-grad-cta")).toBeInTheDocument()
+    // …và `isPending` đã về false nên nút phải bấm lại được.
+    expect(screen.getByTestId("cap3-grad-cta")).not.toBeDisabled()
+    fireEvent.click(screen.getByTestId("cap3-grad-cta"))
+    expect(graduateMutate).toHaveBeenCalledTimes(2)
   })
 
   // ── ★★ Cấp 4 ĐANG MỞ (trần ≥ 4) ★★ ────────────────────────────────────────
@@ -266,8 +293,11 @@ describe("GraduationModalCap3", () => {
     flags.CAP_MAX_ENABLED = 4
     useCap3ProgressMock.mockReturnValue({ data: readyProgress() })
     graduateMutate.mockImplementationOnce(
-      (_vars?: unknown, opts?: { onError?: (e: unknown) => void }) => {
-        opts?.onError?.(new Error("network"))
+      () => {
+        /* ★ Hỏng THẬT = react-query không gọi `onSuccess`. Component chỉ
+           truyền `{ onSuccess }` cho `mutate`, nên KHÔNG có `onError` nào để
+           gọi — bản trước gọi `opts.onError` vào khoảng không và chỉ chứng
+           minh chính cái mock của nó. */
       },
     )
     render(<GraduationModalCap3 />)

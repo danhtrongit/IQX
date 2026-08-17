@@ -77,6 +77,35 @@ describe("Cap2PortfolioAnalysis — ① Hồ sơ tổng quan", () => {
     expect(within(khoi1).getByText("khi giá chạm mốc")).toBeInTheDocument()
   })
 
+  /**
+   * ★★ Ở trang của cấp CAO HƠN (`host`), `so_lan_thuc_hien_dung` vẫn là con số
+   * cộng dồn TỪ CẤP 2 (server chỉ chặn cận dưới `closed_at >= cap2.entered_at`)
+   * — trong khi tiêu đề ngay trên nó ghi nhãn + ngày của cấp đang xem. Không
+   * nói rõ phạm vi thì user Cấp 3 chưa đóng lệnh nào đọc thành "đã làm đúng 7
+   * lần trong Cấp 3".
+   */
+  it("★★ ở trang cấp cao hơn, ô «Thực hiện đúng» nói rõ là số CỘNG DỒN từ Cấp 2", () => {
+    render(
+      <Cap2PortfolioAnalysis
+        trades={[]}
+        dailyScores={[]}
+        progress={progress({ so_lan_thuc_hien_dung: 7 })}
+        now={NOW}
+        host={{ levelLabel: "Cấp 3 «Bản lĩnh»", sinceIso: "2026-08-17T00:00:00Z" }}
+      />,
+    )
+    expect(screen.getByTestId("cap2-pa-exec-total")).toHaveTextContent("7")
+    expect(screen.getByTestId("cap2-pa-exec-total-scope")).toHaveTextContent(
+      "cộng dồn từ Cấp 2",
+    )
+  })
+
+  it("ở trang Phân tích của chính Cấp 2 thì KHÔNG có chú thích cộng dồn (thừa)", () => {
+    renderPa(progress({ so_lan_thuc_hien_dung: 2 }))
+    expect(screen.getByTestId("cap2-pa-exec-total-scope")).toHaveTextContent("khi giá chạm mốc")
+    expect(screen.getByTestId("cap2-pa-exec-total-scope")).not.toHaveTextContent("cộng dồn")
+  })
+
   it("★ ① carries NO discipline score and NO chuỗi — those left Cấp 2 for good", () => {
     renderPa(progress({ so_lenh_co_cl_tp: 10, so_lan_thuc_hien_dung: 2 }))
     const khoi1 = screen.getByTestId("cap2-pa-khoi1")

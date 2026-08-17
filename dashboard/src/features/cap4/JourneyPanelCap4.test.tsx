@@ -10,7 +10,7 @@ const { useCap4ProgressMock, useThachThucCap4Mock, useVuKhiDiemMuMock, useCap4Ev
     useCap4ProgressMock: vi.fn(),
     useThachThucCap4Mock: vi.fn(),
     useVuKhiDiemMuMock: vi.fn(),
-    useCap4EventsMock: vi.fn(() => ({ isCap4Active: true })),
+    useCap4EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap4Active: true })),
   }))
 
 vi.mock("./hooks", () => ({

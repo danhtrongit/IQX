@@ -96,7 +96,7 @@ vi.mock("@/shared/http/client", () => ({
 }))
 
 const recordKehoachMock = vi.fn()
-const recordKehoachAsyncMock = vi.fn(() => Promise.resolve({ id: "kh1" }))
+const recordKehoachAsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "kh1" }))
 let isCap1ActiveFlag = true
 
 vi.mock("@/features/cap1", async (importOriginal) => {
@@ -140,7 +140,7 @@ vi.mock("@/features/cap1", async (importOriginal) => {
 })
 
 const recordKehoachCap2Mock = vi.fn()
-const recordKehoachCap2AsyncMock = vi.fn(() => Promise.resolve({ id: "khc2-1" }))
+const recordKehoachCap2AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc2-1" }))
 const onSlTpPickedMock = vi.fn()
 const onOrderFilledCap2Mock = vi.fn()
 let isCap2ActiveFlag = true

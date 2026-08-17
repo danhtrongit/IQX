@@ -33,12 +33,16 @@ below, NOT added to the shared ``users`` table. Rationale:
     "Khẩu vị rủi ro lúc đặt" shown in Kết sổ) — it is expected to usually
     match ``Cap3Progress.khau_vi`` but is intentionally independent so a
     later profile change doesn't rewrite history.
-  - ``von_ban_dau`` is a fixed spec constant (100,000,000đ, §4/§C12b) that
-    never changes (no nạp thêm / reset) — it is recorded here (not
-    hardcoded inline at every call site) purely so the P&L-base is an
-    explicit, inspectable, per-user value rather than a scattered magic
-    number, and so a future level could in principle vary it per user
-    without a schema change.
+  - ``von_ban_dau`` is the P&L base every "% vốn" of Cấp 3 is measured on.
+    ★ It is resolved from **the user's OWN virtual-trading account**
+    (``VirtualTradingAccount.initial_cash_vnd``) when entering Cấp 3, and
+    re-synced on every recompute; ``VON_BAN_DAU_MAC_DINH`` below is only the
+    fallback for a user who has no virtual account yet. The spec's
+    100,000,000đ (§4/§C12b) is a worked-example figure, NOT the number this
+    product actually opens accounts with — ``create_default_config`` opens
+    them at 1,000,000,000đ. Hard-coding the spec constant made Cấp 3 report a
+    return ten times the one ``AccountStrip`` shows for the same trade, and
+    suggest a khối lượng worth 2% of the money the user actually has.
 """
 
 from __future__ import annotations
@@ -52,7 +56,9 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.core.database import Base, TimestampMixin, UUIDMixin
 from app.models.cap1 import KhauViRuiRo
 
-VON_BAN_DAU_MAC_DINH = 100_000_000  # spec §4/§C12b — vốn ban đầu demo, không nạp thêm/reset
+# FALLBACK ONLY — dùng khi user chưa có tài khoản ảo nào. Vốn thật lấy từ
+# ``VirtualTradingAccount.initial_cash_vnd`` (xem docstring module).
+VON_BAN_DAU_MAC_DINH = 100_000_000  # spec §4/§C12b — con số của ví dụ trong spec
 
 
 class Cap3Progress(UUIDMixin, TimestampMixin, Base):
@@ -91,7 +97,13 @@ class Cap3Progress(UUIDMixin, TimestampMixin, Base):
     # order_ketso rows closed since entered_at + Cấp 2's daily điểm kỷ luật.
     so_lenh_cap3: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     lai_pct_cap3: Mapped[float] = mapped_column(Float, nullable=False, default=0.0, server_default="0")
-    diem_ky_luat_tb_cap3: Mapped[float] = mapped_column(Float, nullable=False, default=0.0, server_default="0")
+    #: ★ ``None`` = **CHƯA BIẾT**, KHÔNG phải 0. Cột này từng là ``NOT NULL
+    #: DEFAULT 0``, nên một user vừa vào Cấp 3 (chưa có ngày giao dịch nào, hoặc
+    #: có ngày nhưng chưa ngày nào có tình huống kỷ luật để chấm) bị chấm 0% —
+    #: ngay dưới thẻ «Điểm kỷ luật» đang nói trung thực "chưa có dữ liệu". Cấp 2
+    #: đã phân biệt đúng hai trạng thái này (``diem`` là ``float | None``);
+    #: trung bình của nó phải giữ nguyên tính chất đó.
+    diem_ky_luat_tb_cap3: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
 
     graduated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     time_to_graduate_hours: Mapped[float | None] = mapped_column(Float, nullable=True)

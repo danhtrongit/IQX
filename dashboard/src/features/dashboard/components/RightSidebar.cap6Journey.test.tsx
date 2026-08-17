@@ -22,14 +22,14 @@ const {
   useCap5EventsMock,
   useCap6EventsMock,
 } = vi.hoisted(() => ({
-  useCap0EventsMock: vi.fn(() => ({ isCap0Active: false })),
-  useCap0ProgressMock: vi.fn(() => ({ data: null })),
-  useCap1EventsMock: vi.fn(() => ({ isCap1Active: false })),
-  useCap2EventsMock: vi.fn(() => ({ isCap2Active: false })),
-  useCap3EventsMock: vi.fn(() => ({ isCap3Active: false })),
-  useCap4EventsMock: vi.fn(() => ({ isCap4Active: false })),
-  useCap5EventsMock: vi.fn(() => ({ isCap5Active: false })),
-  useCap6EventsMock: vi.fn(() => ({ isCap6Active: false })),
+  useCap0EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap0Active: false })),
+  useCap0ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
+  useCap1EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap1Active: false })),
+  useCap2EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap2Active: false })),
+  useCap3EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap3Active: false })),
+  useCap4EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap4Active: false })),
+  useCap5EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap5Active: false })),
+  useCap6EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap6Active: false })),
 }))
 
 vi.mock("@/features/cap0/Cap0Context", () => ({ useCap0Events: () => useCap0EventsMock() }))

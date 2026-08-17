@@ -9,7 +9,7 @@ const { completeTaskMutate, kehoachMock } = vi.hoisted(() => ({
   // `GET /cap0/kehoach?order_id=` — feeds the §5 `Lý do mua` and
   // `Thời gian giữ` rows. Defaults to "no row yet" so the many pre-existing
   // tests below exercise the honest-unknown rendering without opting in.
-  kehoachMock: vi.fn(() => ({ data: null })),
+  kehoachMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
 }))
 // `DebriefModal` needs `useCompleteTask` + `useCap0Kehoach` — mock
 // `./hooks` directly (same pattern as `Cap0TradingPage.test.tsx`) so no

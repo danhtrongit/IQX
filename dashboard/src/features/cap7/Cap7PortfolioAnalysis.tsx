@@ -1,4 +1,5 @@
 import type { Cap2DailyScoreRecord } from "@/features/cap2/portfolioAnalysisCap2"
+import type { Cap2AnalysisHost } from "@/features/cap2/Cap2PortfolioAnalysis"
 import type { Cap2Progress } from "@/features/cap2/types"
 import type { Cap3Progress } from "@/features/cap3/types"
 import type { Cap4Progress } from "@/features/cap4/types"
@@ -68,6 +69,13 @@ export interface Cap7PortfolioAnalysisProps {
   dailyScores: Cap2DailyScoreRecord[]
   /** "Now" tham chiếu cho các khối có cửa sổ thời gian (khối ③/⑥/⑦ của Cấp 2). */
   now?: Date
+  /**
+   * ★ Ngữ cảnh cấp cho MỌI khối kế thừa (xem `Cap2AnalysisHost`). Mặc định là
+   * chính cấp này. Cấp cao hơn render lại component này với nhật ký lệnh của
+   * CHÍNH NÓ, nên PHẢI truyền `host` của cấp mình — nếu không khối ① sẽ ghép
+   * "số lệnh của cấp trên" với "nhãn + ngày vào cấp dưới" trong cùng một câu.
+   */
+  host?: Cap2AnalysisHost
 }
 
 const SECTION_HEADER =
@@ -116,6 +124,7 @@ export function Cap7PortfolioAnalysis({
   trades,
   dailyScores,
   now,
+  host,
 }: Cap7PortfolioAnalysisProps) {
   const thachThucQuery = useThachThucCap7()
   const tt = thachThucQuery.data ?? null
@@ -173,6 +182,12 @@ export function Cap7PortfolioAnalysis({
         trades={trades}
         dailyScores={dailyScores}
         now={now}
+        host={
+          host ?? {
+            levelLabel: "Cấp 7 «Đọc sổ lệnh»",
+            sinceIso: cap7Progress?.entered_at ?? null,
+          }
+        }
       />
 
       {/* ⑯ Đọc lực có đúng không — TỶ LỆ TỪ SERVER, xu hướng từ nhật ký (spec §7) */}

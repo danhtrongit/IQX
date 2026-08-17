@@ -37,27 +37,28 @@ export interface Cap2Progress {
   so_lan_thuc_hien_dung: number
   graduated_at: string | null
   time_to_graduate_hours: number | null
+}
 
-  // ── ★★ DI SẢN: mô hình 5 nhiệm vụ + chuỗi lệnh kỷ luật ★★ ─────────────────
-  /**
-   * ★ Backend **KHÔNG còn trả** ba trường này (cột đã bị drop cùng mô hình 2
-   * nhiệm vụ) — nên trên thực tế chúng LUÔN `undefined`.
-   *
-   * Kết sổ Cấp 3-8 ĐÃ GỠ hẳn dòng "tác động lên chuỗi kỷ luật" khi mở Cấp 3
-   * (nó in ra một con số bịa: `?? 0` rồi `+1`). Hai chỗ còn đọc:
-   *   · `ChuoiWidget.tsx` — đã rời tab Hành trình, giữ file theo yêu cầu;
-   *   · `KetsoModalCap2.tsx` — ⚠ **VẪN ĐANG RENDER TRÊN CẤP 2 LIVE**, nên mọi
-   *     user Cấp 2 hôm nay đọc "tăng lên 1 lệnh liên tiếp không vi phạm". Cần
-   *     gỡ y như đã gỡ ở Cấp 3-8 (kèm `.cap2-ketso-chuoi-impact` trong
-   *     `cap2-ketso.css` và 3 fixture `chuoi_*` trong `KetsoModalCap2.test.tsx`).
-   *
-   * ⚠ **KHÔNG thêm chỗ đọc mới** — Cấp 2 không còn đo chuỗi nữa, nên không có
-   * nguồn nào cấp số cho nó.
-   */
+/**
+ * ── ★★ DI SẢN: "chuỗi lệnh kỷ luật" — KHÁI NIỆM ĐÃ BỊ GỠ KHỎI SẢN PHẨM ★★ ───
+ *
+ * Migration `8f1a5c7d2e64` DROP cả `chuoi_current`/`chuoi_record`/
+ * `last_chuoi_reset_at` khỏi `cap2_progress`; `grep -rn "chuoi" backend/app/`
+ * hôm nay trả về RỖNG. Nghĩa là payload `GET /cap2/progress` **không bao giờ
+ * còn** chứa ba trường này.
+ *
+ * ★★ Vì thế chúng KHÔNG nằm trong `Cap2Progress` nữa. Trước đây chúng ở đó
+ * dưới dạng optional, nên `KetsoModalCap2` đọc `cap2Progress?.chuoi_current ??
+ * 0` mà `tsc -b` không kêu một tiếng — và MỌI user Cấp 2 đọc "tăng lên 1 lệnh
+ * liên tiếp không vi phạm" ở mọi lệnh, mãi mãi. Để chúng ngoài kiểu wire biến
+ * đúng lỗi đó thành lỗi biên dịch.
+ *
+ * Kiểu này chỉ còn để `ChuoiWidget.tsx` (di sản, KHÔNG được mount ở đâu) biên
+ * dịch được. ⚠ **KHÔNG thêm chỗ đọc mới** — không nguồn nào cấp số cho nó.
+ */
+export interface Cap2ChuoiLegacy {
   chuoi_current?: number
-  /** Xem `chuoi_current`. */
   chuoi_record?: number
-  /** Xem `chuoi_current`. */
   last_chuoi_reset_at?: string | null
 }
 

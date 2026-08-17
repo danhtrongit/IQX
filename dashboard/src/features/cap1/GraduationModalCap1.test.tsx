@@ -285,8 +285,11 @@ describe("GraduationModalCap1", () => {
   it("★ does not enter Cấp 2 when the graduation mutation FAILS", () => {
     useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
     graduateMutate.mockImplementationOnce(
-      (_vars?: unknown, opts?: { onError?: (e: unknown) => void }) => {
-        opts?.onError?.(new Error("network"))
+      () => {
+        /* ★ Hỏng THẬT = react-query không gọi `onSuccess`. Component chỉ
+           truyền `{ onSuccess }` cho `mutate`, nên KHÔNG có `onError` nào để
+           gọi — bản trước gọi `opts.onError` vào khoảng không và chỉ chứng
+           minh chính cái mock của nó. */
       },
     )
     render(<GraduationModalCap1 />)
@@ -298,8 +301,11 @@ describe("GraduationModalCap1", () => {
     flags.CAP_MAX_ENABLED = 1
     useCap1ProgressMock.mockReturnValue({ data: readyProgress() })
     graduateMutate.mockImplementationOnce(
-      (_vars?: unknown, opts?: { onError?: (e: unknown) => void }) => {
-        opts?.onError?.(new Error("network"))
+      () => {
+        /* ★ Hỏng THẬT = react-query không gọi `onSuccess`. Component chỉ
+           truyền `{ onSuccess }` cho `mutate`, nên KHÔNG có `onError` nào để
+           gọi — bản trước gọi `opts.onError` vào khoảng không và chỉ chứng
+           minh chính cái mock của nó. */
       },
     )
     render(<GraduationModalCap1 />)

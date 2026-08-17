@@ -1,0 +1,36 @@
+{
+  /*
+   * ★★ FILE TEST CŨNG PHẢI ĐƯỢC TYPECHECK.
+   *
+   * `tsconfig.app.json` cố ý `exclude` mọi `*.test.ts(x)`, và `vitest` transpile
+   * bằng esbuild (xoá type, KHÔNG check) với `test.typecheck` không bật. Kết
+   * quả: fixture trong test có thể lệch khỏi kiểu wire thật mà KHÔNG gì đỏ lên
+   * — đúng lớp lỗi repo này đã dính: `KetsoModalCap2.test.tsx` bơm
+   * `chuoi_current: 4`, một trường backend đã DROP, rồi khẳng định user đọc
+   * "tăng lên 5 lệnh liên tiếp" trong khi thực tế mọi user đọc "1".
+   *
+   * Project này đưa test vào đúng `tsc -b` mà repo đã dùng làm cổng thật, nên
+   * lần sau một trường bị đổi/bỏ là fixture đỏ ngay lúc typecheck.
+   */
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.test.tsbuildinfo",
+    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"],
+    "composite": true,
+    /* Test giả lập nhiều hình dạng props/mocks — biến phụ chưa dùng trong một
+       fixture không phải lỗi đáng chặn merge. */
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  /* `exclude` PHẢI khai lại: nó KHÔNG được merge mà kế thừa nguyên khối từ
+     `tsconfig.app.json` (nơi loại trừ đúng các file test), nên nếu để trống thì
+     `include` dưới đây bị trừ sạch và project này check 0 file — xanh giả.
+
+     `include` là CẢ `src` (không chỉ file test): project này `composite`, mà
+     composite bắt buộc mọi file trong program phải được liệt kê — file test
+     import thẳng vào mã ứng dụng nên mã ứng dụng phải nằm trong danh sách. Mã
+     ứng dụng vẫn được `tsconfig.app.json` check nghiêm ngặt song song, nên nới
+     `noUnusedLocals` ở đây không làm mất gì. */
+  "exclude": ["node_modules", "dist"],
+  "include": ["src"]
+}

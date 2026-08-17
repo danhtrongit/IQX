@@ -6,9 +6,14 @@ const { useCap2Progress } = vi.hoisted(() => ({ useCap2Progress: vi.fn() }))
 vi.mock("./hooks", () => ({ useCap2Progress }))
 
 import { ChuoiWidget } from "./ChuoiWidget"
-import type { Cap2Progress } from "./types"
+import type { Cap2ChuoiLegacy, Cap2Progress } from "./types"
 
-function progress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
+// ★ `Cap2ChuoiLegacy` — ba trường `chuoi_*` KHÔNG còn trên wire (xem
+// `types.ts`); widget này là di sản không được mount ở đâu, nên fixture phải
+// nói rõ nó đang bơm một hình dạng LEGACY chứ không phải `Cap2Progress` thật.
+function progress(
+  overrides: Partial<Cap2Progress & Cap2ChuoiLegacy> = {},
+): Cap2Progress & Cap2ChuoiLegacy {
   return {
     id: "p2",
     user_id: "u1",

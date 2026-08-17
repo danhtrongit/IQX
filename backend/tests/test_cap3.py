@@ -12,6 +12,11 @@ in these tests therefore use ``date.today()`` (not arbitrary historical
 dates) so they fall inside that window. Cấp 0/1/2 setup dates are unrelated
 to this window and use fixed historical dates like ``test_cap1.py``/
 ``test_cap2.py`` do.
+
+NOTE on vốn: the lãi % denominator is the user's REAL virtual account
+(``Cap0Service.enter`` opens it at 250,000,000đ), not the spec's
+100,000,000đ worked-example constant — see ``Cap3Service._sync_von_ban_dau``.
+Sell prices below are chosen against that denominator.
 """
 
 from __future__ import annotations
@@ -462,7 +467,8 @@ async def test_task3_fails_when_only_lai_pct_short(db_session, test_user):
     progress = await cap3.get_progress(test_user.id)
     assert progress.so_lenh_cap3 == 15
     assert progress.diem_ky_luat_tb_cap3 == pytest.approx(100.0)
-    assert progress.lai_pct_cap3 == pytest.approx(0.45)
+    # 15 × 100cp × 300đ = 450,000đ trên vốn tài khoản thật 250,000,000đ.
+    assert progress.lai_pct_cap3 == pytest.approx(0.18)
     assert progress.lai_pct_cap3 < 5.0
     assert progress.task_3_done_at is None
 
@@ -476,13 +482,14 @@ async def test_task3_fails_when_only_so_lenh_short(db_session, test_user):
         await _round_trip_cap3(
             db_session, cap1, cap2, cap3, account.id, test_user.id,
             symbol=f"B{i}", trading_date=today,
-            buy_price=20_000, sell_price=40_000, chot_loi=35_000,
+            buy_price=20_000, sell_price=60_000, chot_loi=55_000,
             cham_sl_cat_dung_phien_ke=True,
         )
     progress = await cap3.get_progress(test_user.id)
     assert progress.so_lenh_cap3 == 5
     assert progress.so_lenh_cap3 < 15
-    assert progress.lai_pct_cap3 == pytest.approx(10.0)
+    # 5 × 100cp × 40,000đ = 20,000,000đ trên vốn 250,000,000đ.
+    assert progress.lai_pct_cap3 == pytest.approx(8.0)
     assert progress.diem_ky_luat_tb_cap3 == pytest.approx(100.0)
     assert progress.task_3_done_at is None
 
@@ -496,12 +503,13 @@ async def test_task3_fails_when_only_diem_short(db_session, test_user):
         await _round_trip_cap3(
             db_session, cap1, cap2, cap3, account.id, test_user.id,
             symbol=f"C{i}", trading_date=today,
-            buy_price=20_000, sell_price=25_500, chot_loi=30_000,  # target never reached
+            buy_price=20_000, sell_price=30_000, chot_loi=35_000,  # target never reached
             cham_sl_cat_dung_phien_ke=False,  # never cắt lỗ đúng phiên
         )
     progress = await cap3.get_progress(test_user.id)
     assert progress.so_lenh_cap3 == 15
-    assert progress.lai_pct_cap3 == pytest.approx(8.25)
+    # 15 × 100cp × 10,000đ = 15,000,000đ trên vốn 250,000,000đ.
+    assert progress.lai_pct_cap3 == pytest.approx(6.0)
     assert progress.lai_pct_cap3 >= 5.0
     assert progress.diem_ky_luat_tb_cap3 < 80.0
     assert progress.task_3_done_at is None
@@ -515,12 +523,12 @@ async def test_task3_done_when_all_three_met(db_session, test_user):
         await _round_trip_cap3(
             db_session, cap1, cap2, cap3, account.id, test_user.id,
             symbol=f"D{i}", trading_date=today,
-            buy_price=20_000, sell_price=25_500, chot_loi=25_000,
+            buy_price=20_000, sell_price=30_000, chot_loi=25_000,
             cham_sl_cat_dung_phien_ke=True,
         )
     progress = await cap3.get_progress(test_user.id)
     assert progress.so_lenh_cap3 == 15
-    assert progress.lai_pct_cap3 == pytest.approx(8.25)
+    assert progress.lai_pct_cap3 == pytest.approx(6.0)
     assert progress.diem_ky_luat_tb_cap3 == pytest.approx(100.0)
     assert progress.task_3_done_at is not None
 
@@ -540,7 +548,7 @@ async def test_thach_thuc_shape_and_values(db_session, test_user):
         await _round_trip_cap3(
             db_session, cap1, cap2, cap3, account.id, test_user.id,
             symbol=f"E{i}", trading_date=today,
-            buy_price=20_000, sell_price=25_500, chot_loi=30_000,
+            buy_price=20_000, sell_price=30_000, chot_loi=35_000,
             cham_sl_cat_dung_phien_ke=False,
         )
     result = await cap3.thach_thuc(test_user.id)
@@ -550,7 +558,7 @@ async def test_thach_thuc_shape_and_values(db_session, test_user):
     assert result["so_lenh"]["gia_tri_hien_tai"] == 15
     assert result["so_lenh"]["muc_tieu"] == 15
     assert result["lai_pct"]["dat"] is True
-    assert result["lai_pct"]["gia_tri_hien_tai"] == pytest.approx(8.25)
+    assert result["lai_pct"]["gia_tri_hien_tai"] == pytest.approx(6.0)
     assert result["diem_ky_luat"]["dat"] is False
     assert result["diem_ky_luat"]["gia_tri_hien_tai"] < 80.0
     assert "kỷ luật" in result["diem_ky_luat"]["giai_thich"]
@@ -570,7 +578,7 @@ async def test_graduate_requires_3_of_3(db_session, test_user):
         await _round_trip_cap3(
             db_session, cap1, cap2, cap3, account.id, test_user.id,
             symbol=f"F{i}", trading_date=today,
-            buy_price=20_000, sell_price=25_500, chot_loi=25_000,
+            buy_price=20_000, sell_price=30_000, chot_loi=25_000,
             cham_sl_cat_dung_phien_ke=True,
         )
     progress = await cap3.get_progress(test_user.id)
@@ -667,3 +675,110 @@ async def test_cap3_endpoints_wired_and_free(client, db_session, test_user):
     # Unauthenticated is rejected
     r = await client.get("/api/v1/cap3/progress")
     assert r.status_code == 401
+
+
+# ══════════════════════════════════════════════════════
+# ★★ "Chưa biết" KHÔNG được chấm 0 — điểm kỷ luật trung bình
+# ══════════════════════════════════════════════════════
+
+
+@pytest.mark.asyncio
+async def test_diem_ky_luat_tb_is_none_when_no_trading_day_yet(db_session, test_user):
+    """User vừa lên Cấp 3, chưa đặt lệnh nào.
+
+    Trước bản vá ``_diem_ky_luat_tb`` trả 0.0 cho trạng thái "chưa biết", nên
+    tab Hành trình hiện "🔲 Điểm kỷ luật ≥ 80% — 0% / 80%" + "Trung bình giai
+    đoạn Cấp 3: 0.0%" NGAY DƯỚI thẻ «Điểm kỷ luật» đang nói trung thực "chưa
+    có dữ liệu". Cùng một chỉ số, cùng một màn hình, hai câu trả lời trái
+    ngược — người mới vào cấp đọc thành "mình đang kém kỷ luật nhất có thể".
+    """
+    _cap1, _cap2, cap3, _account = await _enter_cap3(db_session, test_user.id)
+
+    progress = await cap3.get_progress(test_user.id)
+    assert progress.diem_ky_luat_tb_cap3 is None
+
+    result = await cap3.thach_thuc(test_user.id)
+    assert result["diem_ky_luat"]["gia_tri_hien_tai"] is None
+    assert result["diem_ky_luat"]["dat"] is False
+    # Câu giải thích phải nói "chưa có", KHÔNG được in ra một con số 0.
+    assert "0.0%" not in result["diem_ky_luat"]["giai_thich"]
+    assert "chưa" in result["diem_ky_luat"]["giai_thich"].lower()
+
+
+@pytest.mark.asyncio
+async def test_diem_ky_luat_tb_is_none_when_days_exist_but_no_score(db_session, test_user):
+    """Có ngày giao dịch nhưng KHÔNG ngày nào có tình huống để chấm.
+
+    ``Cap2Service.diem_ky_luat`` trả ``diem = None`` cho ngày không có tình
+    huống kỷ luật nào; nếu MỌI ngày như vậy thì trung bình vẫn là "chưa biết",
+    không phải 0.
+    """
+    _cap1, _cap2, cap3, account = await _enter_cap3(db_session, test_user.id)
+    # Một lệnh MUA đã khớp trong giai đoạn Cấp 3 → có ngày giao dịch, nhưng
+    # chưa đóng lệnh nào nên không có tình huống chạm mốc để chấm điểm.
+    await _make_order(
+        db_session, account.id, test_user.id, symbol="ZZZ", trading_date=date.today(),
+    )
+
+    progress = await cap3.get_progress(test_user.id)
+    assert progress.diem_ky_luat_tb_cap3 is None
+
+    result = await cap3.thach_thuc(test_user.id)
+    assert result["diem_ky_luat"]["gia_tri_hien_tai"] is None
+    assert result["diem_ky_luat"]["dat"] is False
+
+
+@pytest.mark.asyncio
+async def test_task3_not_done_while_diem_unknown(db_session, test_user):
+    """"Chưa biết" không bao giờ được coi là ĐẠT — điều kiện ③ vẫn khoá."""
+    _cap1, _cap2, cap3, _account = await _enter_cap3(db_session, test_user.id)
+    progress = await cap3.get_progress(test_user.id)
+    assert progress.diem_ky_luat_tb_cap3 is None
+    assert progress.task_3_done_at is None
+
+
+# ══════════════════════════════════════════════════════
+# ★★ "% vốn" của Cấp 3 phải đo trên ĐÚNG tài khoản user giao dịch
+# ══════════════════════════════════════════════════════
+
+
+@pytest.mark.asyncio
+async def test_von_ban_dau_follows_the_real_virtual_account(db_session, test_user):
+    """``Cap3Progress.von_ban_dau`` = vốn THẬT của tài khoản ảo, không phải hằng số.
+
+    Tài khoản ảo user thực sự giao dịch được mở ở ``Cap0Service.enter``
+    (250,000,000đ), trong khi Cấp 3 từng chốt cứng ``VON_BAN_DAU_MAC_DINH`` =
+    100,000,000. Hệ quả: cùng một panel Đặt lệnh, dải số dư chia cho vốn thật
+    còn khối Quản lý vốn / tab Hành trình / màn tốt nghiệp chia cho 100tr —
+    hai tỷ suất sinh lời khác nhau cho CÙNG một số tiền, và khối lượng gợi ý
+    tính trên một số vốn không phải của họ.
+    """
+    from app.models.cap3 import VON_BAN_DAU_MAC_DINH
+
+    _cap1, _cap2, cap3, account = await _enter_cap3(db_session, test_user.id)
+
+    progress = await cap3.get_progress(test_user.id)
+    assert progress.von_ban_dau == account.initial_cash_vnd
+    assert account.initial_cash_vnd != VON_BAN_DAU_MAC_DINH  # nếu bằng thì bài này vô nghĩa
+
+
+@pytest.mark.asyncio
+async def test_lai_pct_cap3_is_measured_on_the_real_account_capital(db_session, test_user):
+    """Lãi % của Cấp 3 và % của dải số dư phải cùng một mẫu số."""
+    cap1, cap2, cap3, account = await _enter_cap3(db_session, test_user.id)
+    today = date.today()
+    await _round_trip_cap3(
+        db_session, cap1, cap2, cap3, account.id, test_user.id,
+        symbol="LAI", trading_date=today,
+        buy_price=20_000, sell_price=40_000, chot_loi=35_000,
+        cham_sl_cat_dung_phien_ke=True,
+    )
+    progress = await cap3.get_progress(test_user.id)
+    assert progress.so_lenh_cap3 == 1
+
+    # Mẫu số là vốn tài khoản thật, không phải hằng số của spec.
+    ketso_rows = await cap3._cap3_ketso_rows(test_user.id, progress)
+    tong_pnl = sum(r.pnl_vnd for r in ketso_rows)
+    assert progress.lai_pct_cap3 == pytest.approx(
+        tong_pnl / account.initial_cash_vnd * 100.0
+    )

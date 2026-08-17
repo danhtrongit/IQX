@@ -13,7 +13,7 @@ import { LY_DO_OPTIONS, type CamXuc, type Cap1Progress, type LyDo, type TrangTha
 import type { Cap1TradeRecord } from "@/features/cap1/tradeLog"
 import { useRecordKetsoCap2 } from "./hooks"
 import { composeCoachCap2, type CoachSituationCap2 } from "./coachTemplateCap2"
-import type { Cap2Progress, KetsoInputCap2, PhuongPhapSlTp } from "./types"
+import type { KetsoInputCap2, PhuongPhapSlTp } from "./types"
 // Kết sổ Cấp 2 = Kết sổ Cấp 1's content (đối chiếu table, khối cảm xúc, coach
 // "NHÌN LẠI", 3-dòng HỒ SƠ CỦA BẠN, count-up) + the SL/TP discipline layer
 // (spec §5.6/§6/§7). Reuses the SAME dark-editorial shell CSS Cấp 1 built on
@@ -74,12 +74,6 @@ export interface KetsoModalCap2Props {
   progress: Cap1Progress | null
   /** Closed-trade history, for the (unchanged) per-lý-do stat line. */
   trades: Cap1TradeRecord[]
-  /**
-   * Cấp 2 progress row, for the "impact on chuỗi" line — pass the value from
-   * BEFORE this Kết sổ is recorded (the server recomputes `chuoi_current`
-   * from `order_ketso` after the `/cap2/ketso` POST this modal makes).
-   */
-  cap2Progress: Cap2Progress | null
   onClose: () => void
   /** Called once with this order's record so the caller can append it to the
    * (Cấp 1) trade log — same contract as `KetsoModalCap1Props.onRecorded`. */
@@ -127,20 +121,6 @@ function fmtVndSigned(n: number): string {
   return `${sign}${fmtVnd(Math.abs(rounded))} ₫`
 }
 
-/**
- * spec §1 — an order "vi phạm" when any of the 4 measured behaviours is
- * true. Drives both the chuỗi giữ/đứt line and (indirectly, via
- * `composeCoachCap2`) which coach nhắc is picked.
- */
-function hasViPham(flags: KetsoInputCap2): boolean {
-  return Boolean(
-    flags.cham_SL_khong_cat ||
-      flags.cham_TP_giu_lam_hut ||
-      flags.ban_som_khi_lo_nhe ||
-      flags.nhoi_lenh_khi_lo,
-  )
-}
-
 /** "Thực tế" description for the cắt lỗ row of CAM KẾT vs THỰC TẾ. */
 function describeSlThucTe(flags: KetsoInputCap2, exitPrice: number, catLo: number): string {
   const touched = Boolean(
@@ -174,7 +154,6 @@ export function KetsoModalCap2({
   data,
   progress,
   trades,
-  cap2Progress,
   onClose,
   onRecorded,
 }: KetsoModalCap2Props) {
@@ -243,15 +222,8 @@ export function KetsoModalCap2({
   }
   const coach = composeCoachCap2(cap1Situation, cap1Params, cap2Situation)
 
-  const viPham = hasViPham(flags)
   const slThucTe = describeSlThucTe(flags, exitPrice, catLo)
   const tpThucTe = describeTpThucTe(flags, exitPrice, chotLoi)
-
-  // ── Tác động lên chuỗi kỷ luật (spec §6) ───────────────────────────────
-  const chuoiTruocDo = cap2Progress?.chuoi_current ?? 0
-  const chuoiImpactText = viPham
-    ? `Lệnh này làm đứt chuỗi kỷ luật — chuỗi về 0 (trước đó: ${chuoiTruocDo} lệnh liên tiếp).`
-    : `Lệnh này giữ chuỗi kỷ luật — tăng lên ${chuoiTruocDo + 1} lệnh liên tiếp không vi phạm.`
 
   // ── 3 dòng "HỒ SƠ CỦA BẠN" (unchanged from Cấp 1, spec §6) ─────────────
   const soLenh = progress?.so_lenh_thuc_chien ?? 0
@@ -393,15 +365,6 @@ export function KetsoModalCap2({
             </tr>
           </tbody>
         </table>
-
-        <div
-          className={cn(
-            "cap2-ketso-chuoi-impact",
-            viPham && "cap2-ketso-chuoi-impact--broken",
-          )}
-        >
-          {chuoiImpactText}
-        </div>
       </div>
 
       {coChuyen && (

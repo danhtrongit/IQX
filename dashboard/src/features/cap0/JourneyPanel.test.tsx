@@ -14,7 +14,7 @@ const { useCap0ProgressMock, usePremiumStatusMock } = vi.hoisted(() => ({
   // to a free user so the many pre-existing "SÂN TẬP" tests below keep
   // passing without opting in; the premium-graduate case is exercised
   // explicitly.
-  usePremiumStatusMock: vi.fn(() => ({ isPremium: false, isLoading: false })),
+  usePremiumStatusMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isPremium: false, isLoading: false })),
 }))
 
 vi.mock("./hooks", () => ({

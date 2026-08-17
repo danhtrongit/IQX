@@ -118,7 +118,7 @@ vi.mock("@/shared/http/client", () => ({
 }))
 
 /* ── Cấp 1 ── */
-const recordKehoachAsyncMock = vi.fn(() => Promise.resolve({ id: "kh1" }))
+const recordKehoachAsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "kh1" }))
 vi.mock("@/features/cap1", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/features/cap1")>()
   return {
@@ -153,7 +153,7 @@ vi.mock("@/features/cap2", async (importOriginal) => {
     }),
     useRecordKehoachCap2: () => ({
       mutate: vi.fn(),
-      mutateAsync: vi.fn(() => Promise.resolve({ id: "khc2-1" })),
+      mutateAsync: vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc2-1" })),
       isPending: false,
     }),
     SlTpBlock: (props: { onSelect: (m: string, catLo: number, chotLoi: number) => void }) => (
@@ -180,7 +180,7 @@ vi.mock("@/features/cap3", async (importOriginal) => {
     useCap3Progress: () => ({ data: { khau_vi: "can_bang", von_ban_dau: 1_000_000_000 } }),
     useRecordKehoachCap3: () => ({
       mutate: vi.fn(),
-      mutateAsync: vi.fn(() => Promise.resolve({ id: "khc3-1" })),
+      mutateAsync: vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc3-1" })),
       isPending: false,
     }),
     QuanLyVonBlock: (props: {
@@ -219,7 +219,7 @@ vi.mock("@/features/cap4", async (importOriginal) => {
     }),
     useRecordKehoachCap4: () => ({
       mutate: vi.fn(),
-      mutateAsync: vi.fn(() => Promise.resolve({ id: "khc4-1" })),
+      mutateAsync: vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc4-1" })),
       isPending: false,
     }),
     // Chấm CÓ MÂU THUẪN — điều kiện duy nhất làm bước Đối chiếu của Cấp 6 tồn tại.
@@ -269,7 +269,7 @@ vi.mock("@/features/cap5", async (importOriginal) => {
 })
 
 /* ── Cấp 6 ── */
-const recordKehoachCap6AsyncMock = vi.fn(() => Promise.resolve({ id: "khc6-1" }))
+const recordKehoachCap6AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc6-1" }))
 vi.mock("@/features/cap6", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/features/cap6")>()
   return {
@@ -311,7 +311,7 @@ vi.mock("@/features/cap6", async (importOriginal) => {
 })
 
 /* ── Cấp 7 ── */
-const recordKehoachCap7AsyncMock = vi.fn(() => Promise.resolve({ id: "khc7-1" }))
+const recordKehoachCap7AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc7-1" }))
 const QUY_TAC_CAP7: PhienCap7["quy_tac"] = {
   nguong_cau_ap_dao: 1.5,
   nguong_cung_ap_dao: 1 / 1.5,
@@ -372,7 +372,7 @@ vi.mock("@/features/cap7", async (importOriginal) => {
 })
 
 /* ── Cấp 8 ── */
-const recordKehoachCap8AsyncMock = vi.fn(() => Promise.resolve({ id: "khc8-1" }))
+const recordKehoachCap8AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc8-1" }))
 const CO_CANH_BAO = {
   symbol: "VCB",
   khoi_luong: 100,

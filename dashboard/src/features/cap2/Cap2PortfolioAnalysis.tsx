@@ -167,12 +167,21 @@ export function Cap2PortfolioAnalysis({
             </div>
           )}
 
+          {/* ★ `khoi4.tongDung` đọc `Cap2Progress.so_lan_thuc_hien_dung`, mà
+              server (`_cap2_ketso_rows`) chỉ chặn cận DƯỚI `closed_at >=
+              cap2.entered_at` — không có cận trên. Nên ở trang của cấp cao hơn
+              nó là con số CỘNG DỒN TỪ CẤP 2, đứng ngay dưới một tiêu đề ghi
+              nhãn + ngày của cấp đang xem. Dòng phụ phải nói đúng phạm vi đó,
+              nếu không user Cấp 3 chưa đóng lệnh nào vẫn đọc thành "đã làm đúng
+              7 lần trong Cấp 3". */}
           <div className="cap2-pa-stat">
             <span className="cap2-pa-stat-label">Thực hiện đúng</span>
             <span className="cap2-pa-stat-value cap2-pa-stat-value--teal" data-testid="cap2-pa-exec-total">
               {khoi4.tongDung}
             </span>
-            <span className="cap2-pa-stat-sub">khi giá chạm mốc</span>
+            <span className="cap2-pa-stat-sub" data-testid="cap2-pa-exec-total-scope">
+              {host ? "khi giá chạm mốc · cộng dồn từ Cấp 2" : "khi giá chạm mốc"}
+            </span>
           </div>
         </div>
 
