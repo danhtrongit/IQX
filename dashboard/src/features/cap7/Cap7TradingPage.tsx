@@ -18,7 +18,7 @@ import { useCap1TradeLog } from "@/features/cap1/tradeLog"
 import { countTradingSessions } from "@/features/cap1/KetsoModalCap1"
 import type { LyDo, TrangThaiLucDat } from "@/features/cap1/types"
 import { Cap2Provider, useCap2Events, type Cap2OrderEvent } from "@/features/cap2/Cap2Context"
-import { useCap2Progress, useDiemKyLuat } from "@/features/cap2/hooks"
+import { useDiemKyLuat } from "@/features/cap2/hooks"
 import { useCap2TradeLog } from "@/features/cap2/tradeLogCap2"
 // Cấp 2's own (already-proven) client-side approximation of the 4 hành vi vi phạm
 // kỷ luật — REUSED as-is, not re-implemented (Cấp 7 changes nothing about how
@@ -257,7 +257,6 @@ function Cap7Terminal() {
   const { registerHandlers: registerCap6Handlers } = useCap6Events()
   const { isCap7Active, registerHandlers: registerCap7Handlers } = useCap7Events()
   const { data: cap1Progress } = useCap1Progress(isCap1Active)
-  const { data: cap2Progress } = useCap2Progress(isCap2Active)
   const { data: diemKyLuat } = useDiemKyLuat(undefined, isCap2Active)
   // `quy_tac` (số phiên chấm + dead band + tên band) — dùng CHUNG một query key
   // với `TradingPanel`, nên khối Kết sổ nói đúng bộ ngưỡng mà server đã dùng để
@@ -645,7 +644,6 @@ function Cap7Terminal() {
         data={ketso}
         progress={cap1Progress ?? null}
         trades={cap1Trades}
-        cap2Progress={cap2Progress ?? null}
         onClose={() => setKetso(null)}
         onRecorded={handleKetsoRecorded}
       />

@@ -73,9 +73,6 @@ function cap2Progress(): Cap2Progress {
     so_lan_cat_lo_dung: 0,
     so_lan_chot_loi_dung: 0,
     so_lan_thuc_hien_dung: 0,
-    chuoi_current: 4,
-    chuoi_record: 6,
-    last_chuoi_reset_at: null,
     graduated_at: "2026-05-02T00:00:00Z",
     time_to_graduate_hours: 12,
   }

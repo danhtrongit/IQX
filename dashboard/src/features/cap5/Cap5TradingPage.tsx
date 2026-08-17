@@ -18,7 +18,7 @@ import { useCap1TradeLog } from "@/features/cap1/tradeLog"
 import { countTradingSessions } from "@/features/cap1/KetsoModalCap1"
 import type { LyDo, TrangThaiLucDat } from "@/features/cap1/types"
 import { Cap2Provider, useCap2Events, type Cap2OrderEvent } from "@/features/cap2/Cap2Context"
-import { useCap2Progress, useDiemKyLuat } from "@/features/cap2/hooks"
+import { useDiemKyLuat } from "@/features/cap2/hooks"
 import { useCap2TradeLog } from "@/features/cap2/tradeLogCap2"
 // Cấp 2's own (already-proven) client-side approximation of the 4 hành vi vi phạm
 // kỷ luật — REUSED as-is, not re-implemented (Cấp 5 changes nothing about how
@@ -131,7 +131,6 @@ function Cap5Terminal() {
   const { registerHandlers: registerCap4Handlers } = useCap4Events()
   const { registerHandlers: registerCap5Handlers } = useCap5Events()
   const { data: cap1Progress } = useCap1Progress(isCap1Active)
-  const { data: cap2Progress } = useCap2Progress(isCap2Active)
   const { data: diemKyLuat } = useDiemKyLuat(undefined, isCap2Active)
   const { activePanel, setActivePanel } = useSidebar()
   const { trades: cap1Trades, record: recordCap1Trade } = useCap1TradeLog()
@@ -443,7 +442,6 @@ function Cap5Terminal() {
         data={ketso}
         progress={cap1Progress ?? null}
         trades={cap1Trades}
-        cap2Progress={cap2Progress ?? null}
         onClose={() => setKetso(null)}
         onRecorded={handleKetsoRecorded}
       />

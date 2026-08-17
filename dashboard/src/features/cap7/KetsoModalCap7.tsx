@@ -19,7 +19,7 @@ import {
 import type { Cap1TradeRecord } from "@/features/cap1/tradeLog"
 import { useRecordKetsoCap2 } from "@/features/cap2/hooks"
 import type { CoachSituationCap2 } from "@/features/cap2/coachTemplateCap2"
-import type { Cap2Progress, PhuongPhapSlTp } from "@/features/cap2/types"
+import type { PhuongPhapSlTp } from "@/features/cap2/types"
 import { MUC_TU_TIN_LABEL, type CoachSituationCap3 } from "@/features/cap3/coachTemplateCap3"
 import { KHAU_VI_PCT } from "@/features/cap3/khoiLuong"
 import { CACH_KHOI_LUONG_LABEL } from "@/features/cap3/portfolioAnalysisCap3"
@@ -246,8 +246,6 @@ export interface KetsoModalCap7Props {
   progress: Cap1Progress | null
   /** Nhật ký lệnh đã đóng (Cấp 1) — cho dòng thống kê theo lý do (giữ nguyên). */
   trades: Cap1TradeRecord[]
-  /** Hồ sơ Cấp 2 — cho dòng tác động chuỗi kỷ luật (giá trị TRƯỚC kết sổ này). */
-  cap2Progress: Cap2Progress | null
   onClose: () => void
   /**
    * Gọi 1 lần với bản ghi Cấp 7 của lệnh này. Modal ĐÃ tự ghi vào nhật ký Cấp 7
@@ -302,16 +300,6 @@ function fmtVndSigned(n: number): string {
   const rounded = Math.round(n)
   const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : ""
   return `${sign}${fmtVnd(Math.abs(rounded))} ₫`
-}
-
-/** spec §1 (Cấp 2) — lệnh "vi phạm" khi bất kỳ 1 trong 4 hành vi đo được là true. */
-function hasViPham(flags: KetsoDataCap7["flags"]): boolean {
-  return Boolean(
-    flags.cham_SL_khong_cat ||
-      flags.cham_TP_giu_lam_hut ||
-      flags.ban_som_khi_lo_nhe ||
-      flags.nhoi_lenh_khi_lo,
-  )
 }
 
 /** "Thực tế" của hàng cắt lỗ trong CAM KẾT vs THỰC TẾ (giữ nguyên Cấp 2-6). */
@@ -390,7 +378,6 @@ export function KetsoModalCap7({
   data,
   progress,
   trades,
-  cap2Progress,
   onClose,
   onRecorded,
 }: KetsoModalCap7Props) {
@@ -552,15 +539,8 @@ export function KetsoModalCap7({
     cap7Situation,
   )
 
-  const viPham = hasViPham(flags)
   const slThucTe = describeSlThucTe(flags, exitPrice, catLo)
   const tpThucTe = describeTpThucTe(flags, exitPrice, chotLoi)
-
-  // ── Tác động lên chuỗi kỷ luật (Cấp 2 §6, giữ nguyên) ──────────────────
-  const chuoiTruocDo = cap2Progress?.chuoi_current ?? 0
-  const chuoiImpactText = viPham
-    ? `Lệnh này làm đứt chuỗi kỷ luật — chuỗi về 0 (trước đó: ${chuoiTruocDo} lệnh liên tiếp).`
-    : `Lệnh này giữ chuỗi kỷ luật — tăng lên ${chuoiTruocDo + 1} lệnh liên tiếp không vi phạm.`
 
   // ── Khối Quản lý vốn (Cấp 3 §7, giữ nguyên) ────────────────────────────
   const tienThucTe = khoiLuong * entryPrice
@@ -812,12 +792,6 @@ export function KetsoModalCap7({
             </tr>
           </tbody>
         </table>
-
-        <div
-          className={cn("cap2-ketso-chuoi-impact", viPham && "cap2-ketso-chuoi-impact--broken")}
-        >
-          {chuoiImpactText}
-        </div>
       </div>
 
       {/* ── QUẢN LÝ VỐN (giữ nguyên Cấp 3) ────────────────────────────────── */}

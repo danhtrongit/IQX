@@ -72,7 +72,6 @@ import type { DocLucKetsoCap7 } from "@/features/cap7/KetsoModalCap7"
 import { readCap7TradeLog, type Cap7TradeRecord } from "@/features/cap7/tradeLogCap7"
 import type { DoiChieuKetsoCap6 } from "@/features/cap6/KetsoModalCap6"
 import type { Cap1Progress } from "@/features/cap1/types"
-import type { Cap2Progress } from "@/features/cap2/types"
 import type { VerdictGoiY } from "@/features/cap5/types"
 
 const CAM_TU = ["sai lầm", "vi phạm", "bị phạt", "không nên", "lẽ ra"]
@@ -93,25 +92,6 @@ function cap1Progress(): Cap1Progress {
     so_lenh_thuc_chien: 120,
     graduated_at: "2026-01-05T00:00:00Z",
     time_to_graduate_hours: 40,
-  }
-}
-
-function cap2Progress(): Cap2Progress {
-  return {
-    id: "c2p1",
-    user_id: "u1",
-    entered_at: "2026-01-06T00:00:00Z",
-    task_1_done_at: null,
-    task_2_done_at: null,
-    so_lenh_co_cl_tp: 0,
-    so_lan_cat_lo_dung: 0,
-    so_lan_chot_loi_dung: 0,
-    so_lan_thuc_hien_dung: 0,
-    chuoi_current: 8,
-    chuoi_record: 9,
-    last_chuoi_reset_at: null,
-    graduated_at: "2026-02-01T00:00:00Z",
-    time_to_graduate_hours: 20,
   }
 }
 
@@ -224,7 +204,6 @@ function renderModal(
       data={{ ...data, ...overrides }}
       progress={cap1Progress()}
       trades={[]}
-      cap2Progress={cap2Progress()}
       onClose={props.onClose ?? vi.fn()}
       onRecorded={props.onRecorded}
     />,

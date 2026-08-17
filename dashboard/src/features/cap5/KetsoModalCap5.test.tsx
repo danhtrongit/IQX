@@ -51,7 +51,6 @@ import { KetsoModalCap5, type KetsoDataCap5 } from "./KetsoModalCap5"
 import { readCap5TradeLog, type Cap5TradeRecord } from "./tradeLogCap5"
 import type { VerdictGoiY } from "./types"
 import type { Cap1Progress } from "@/features/cap1/types"
-import type { Cap2Progress } from "@/features/cap2/types"
 
 function cap1Progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
   return {
@@ -69,26 +68,6 @@ function cap1Progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
     so_lenh_thuc_chien: 61,
     graduated_at: "2026-01-05T00:00:00Z",
     time_to_graduate_hours: 40,
-    ...overrides,
-  }
-}
-
-function cap2Progress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
-  return {
-    id: "c2p1",
-    user_id: "u1",
-    entered_at: "2026-01-06T00:00:00Z",
-    task_1_done_at: null,
-    task_2_done_at: null,
-    so_lenh_co_cl_tp: 0,
-    so_lan_cat_lo_dung: 0,
-    so_lan_chot_loi_dung: 0,
-    so_lan_thuc_hien_dung: 0,
-    chuoi_current: 8,
-    chuoi_record: 9,
-    last_chuoi_reset_at: null,
-    graduated_at: "2026-02-01T00:00:00Z",
-    time_to_graduate_hours: 20,
     ...overrides,
   }
 }
@@ -177,7 +156,6 @@ function renderModal(
       data={{ ...data, ...overrides }}
       progress={cap1Progress()}
       trades={[]}
-      cap2Progress={cap2Progress()}
       onClose={props.onClose ?? vi.fn()}
       onRecorded={props.onRecorded}
     />,
@@ -220,7 +198,6 @@ describe("KetsoModalCap5 — giữ nguyên mọi khối Cấp 1/2/3/4 (cộng d�
         data={null}
         progress={null}
         trades={[]}
-        cap2Progress={null}
         onClose={vi.fn()}
       />,
     )
