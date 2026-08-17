@@ -24,6 +24,7 @@ import {
 } from "@arco-design/web-react/icon"
 import { usePrice, type PriceBoardData } from "@/features/market-data"
 import { useSymbol } from "@/shared/contexts/symbol-context"
+import { AiInsightDetailModal } from "@/features/dau-truong"
 import { useAuth } from "@/features/auth"
 import { usePremiumStatus } from "@/features/premium"
 import {
@@ -387,6 +388,10 @@ function OrderEntry({
   const [cap1Verdict, setCap1Verdict] = useState<Verdict | null>(null)
   const [cap1Snapshot, setCap1Snapshot] = useState<Record<string, unknown> | null>(null)
   const [cap1DocChiTiet, setCap1DocChiTiet] = useState(false)
+  // ★★ Modal đọc chi tiết 6 lớp, mở TRONG panel (xem `onOpenDetail` bên dưới).
+  // GẮN THEO MÃ: đổi mã giữa chừng thì nó tự đóng, thay vì đứng đó đọc bản
+  // phân tích của một mã user không còn xem nữa.
+  const [chiTietMo, setChiTietMo, dongChiTiet] = useLuaChonTheoMa<true>(symbol)
   const cap2Events = useCap2Events()
   // `isCap2Active` mirrors `isCap1Active` above — false outside a
   // `Cap2Provider`, so `SlTpBlock` + its hard gate below have zero effect on
@@ -1531,6 +1536,13 @@ function OrderEntry({
                   setCap1Verdict(null)
                   setCap1Snapshot(null)
                 }}
+                // ★★ «Đọc chi tiết lớp này →» mở NGAY TRONG panel thay vì
+                // `navigate('/co-phieu/:sym')`. `AiThanhTra` chỉ tồn tại bên
+                // trong shell cấp, nên cú bấm cũ là 100% một cú ném-ra — và
+                // form kế hoạch đang gõ dở (state của chính panel này) mất
+                // trắng theo. Dùng lại đúng payload 6 lớp mà `AiThanhTra` vừa
+                // fetch, không dựng nguồn dữ liệu mới.
+                onOpenDetail={() => setChiTietMo(true)}
               />
             )}
           </>
@@ -1673,6 +1685,15 @@ function OrderEntry({
           và KHÔNG chạm vào bất kỳ khối/cổng nào ở trên: nó là lối ghi lại một
           quyết định KHÔNG MUA, không phải một bước của luồng mua. */}
       {side === "buy" && isCap5Active && <DungNgoaiButton symbol={symbol} />}
+
+      {/* ★★ Đích của «Đọc chi tiết lớp này →»: bản đọc 6 lớp mở NGAY TRONG
+          terminal. Trước đây nút đó `navigate('/co-phieu/:sym')` — rời cấp và
+          xoá sạch form kế hoạch đang gõ dở ở ngay phía trên. */}
+      <AiInsightDetailModal
+        visible={chiTietMo === true}
+        symbol={symbol}
+        onClose={dongChiTiet}
+      />
     </div>
   )
 }

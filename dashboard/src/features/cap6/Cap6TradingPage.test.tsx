@@ -776,7 +776,7 @@ describe("Cap6TradingPage", () => {
     expect(screen.getByTestId("cap6-grad-khoi3")).toHaveTextContent("Cấp 7 «Đọc sổ lệnh»")
   })
 
-  it('clicking "AI Phân tích" opens the AI Insight symbol-picker modal, and submitting navigates', () => {
+  it('clicking "AI Phân tích" opens the AI Insight symbol-picker modal, and submitting mở bản đọc AI NGAY TRONG trang cấp — KHÔNG điều hướng', () => {
     renderCap6(<Cap6TradingPage />)
     expect(screen.queryByText("Phân tích AI cho 1 mã cổ phiếu")).not.toBeInTheDocument()
     fireEvent.click(screen.getByTestId("right-toolbar"))
@@ -785,6 +785,9 @@ describe("Cap6TradingPage", () => {
     const input = screen.getByPlaceholderText("VD: VCB")
     fireEvent.change(input, { target: { value: "VCB" } })
     fireEvent.click(screen.getByText("Phân tích"))
-    expect(navigateMock).toHaveBeenCalledWith("/co-phieu/VCB")
+    // ★★ KHÔNG còn rời trang cấp: bản đọc 6 lớp mở NGAY TRONG shell (ô nhập mã
+    // nhường chỗ cho briefing). Xem `features/dau-truong/AiInsightModal`.
+    expect(navigateMock).not.toHaveBeenCalled()
+    expect(screen.queryByText("Phân tích AI cho 1 mã cổ phiếu")).not.toBeInTheDocument()
   })
 })

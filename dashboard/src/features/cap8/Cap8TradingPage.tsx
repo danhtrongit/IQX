@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from "react"
-import { useNavigate } from "react-router"
 import { Message, Modal, Input, Button } from "@arco-design/web-react"
 import { SymbolProvider, useSymbol } from "@/shared/contexts/symbol-context"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
+import { AiInsightSymbolModal } from "@/features/dau-truong"
 import { CenterPanel, RightSidebar, RightToolbar } from "@/features/dashboard"
-import { IconBrainCircuit } from "@/shared/icons"
 import { ModeBadge } from "@/features/cap0/ModeBadge"
 // Concrete-file imports (NOT the `@/features/cap1` … `@/features/cap7` barrels) —
 // those barrels re-export their `Cap*TradingPage`, which themselves import
@@ -355,7 +354,6 @@ function ChonMaKhacBody({
 }
 
 function Cap8Terminal() {
-  const navigate = useNavigate()
   const { isCap1Active, registerHandlers: registerCap1Handlers } = useCap1Events()
   const { isCap2Active, registerHandlers: registerCap2Handlers } = useCap2Events()
   const { registerHandlers: registerCap3Handlers } = useCap3Events()
@@ -724,24 +722,14 @@ function Cap8Terminal() {
     recordCap6Trade(rec)
   }
 
-  // AI Insight symbol picker — identical to `Cap7TradingPage`'s.
+  // Nút «AI Phân tích» của RightToolbar — modal tự lo phần nhập mã và bản
+  // đọc 6 lớp, mở ngay trong shell cấp.
   const [aiInsightOpen, setAiInsightOpen] = useState(false)
-  const [aiInsightSymbol, setAiInsightSymbol] = useState("")
 
   const handleActionClick = (id: string) => {
     if (id === "ai-insight") {
-      setAiInsightSymbol("")
       setAiInsightOpen(true)
     }
-  }
-
-  const trimmedAiInsight = aiInsightSymbol.trim().toUpperCase()
-  const aiInsightValid = isTradeableSymbol(trimmedAiInsight)
-
-  const submitAiInsightSymbol = () => {
-    if (!aiInsightValid) return
-    setAiInsightOpen(false)
-    navigate(`/co-phieu/${trimmedAiInsight}`)
   }
 
   /**
@@ -786,8 +774,8 @@ function Cap8Terminal() {
   return (
     <div className="cap0 flex h-svh flex-col overflow-hidden bg-[var(--bg1)]">
       <TrialBanner />
-      <Header />
-      <MarketBar />
+      <Header onSymbolSelect={setSymbol} />
+      <MarketBar onSymbolClick={setSymbol} />
 
       {/* Top bar (mirrors Cấp 7's — spec §1 badge góc). */}
       <div className="cap0-topbar">
@@ -845,43 +833,14 @@ function Cap8Terminal() {
         {chonMaOpen && <ChonMaKhacBody onPick={pickChonMa} onCancel={cancelChonMa} />}
       </Modal>
 
-      {/* AI Insight symbol picker — identical to Cap7TradingPage's. */}
-      <Modal
+      {/* ★★ AI Insight mở NGAY TRONG shell cấp (xem `AiInsightModal`).
+          Trước đây nút này đổi hẳn route sang trang cổ phiếu: user bấm một nút
+          của chính terminal, nhập một mã, rồi bị chuyển trang — mất hành trình,
+          mất form kế hoạch đang gõ dở, không có đường quay lại. */}
+      <AiInsightSymbolModal
         visible={aiInsightOpen}
-        onCancel={() => setAiInsightOpen(false)}
-        footer={null}
-        title={null}
-        style={{ width: 420 }}
-        autoFocus={false}
-      >
-        <div className="flex items-center gap-2 mb-4">
-          <div className="size-9 rounded-xl bg-[var(--color-primary-light-1)] flex items-center justify-center">
-            <IconBrainCircuit className="text-[rgb(var(--primary-6))] text-lg" />
-          </div>
-          <div>
-            <div className="text-base font-semibold text-[var(--color-text-1)]">
-              Phân tích AI cho 1 mã cổ phiếu
-            </div>
-            <div className="text-xs text-[var(--color-text-3)]">
-              AI Insight cần 1 mã cụ thể. Nhập mã (vd. VCB, HPG, FPT) để chạy phân tích 6 lớp.
-            </div>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Input
-            value={aiInsightSymbol}
-            onChange={(v) => setAiInsightSymbol(v.toUpperCase())}
-            onPressEnter={submitAiInsightSymbol}
-            placeholder="VD: VCB"
-            maxLength={10}
-            autoFocus
-            className="flex-1 font-mono uppercase tracking-wide"
-          />
-          <Button type="primary" onClick={submitAiInsightSymbol} disabled={!aiInsightValid}>
-            Phân tích
-          </Button>
-        </div>
-      </Modal>
+        onClose={() => setAiInsightOpen(false)}
+      />
     </div>
   )
 }

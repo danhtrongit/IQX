@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react"
-import { useNavigate } from "react-router"
-import { Modal, Input, Button } from "@arco-design/web-react"
-import { SymbolProvider } from "@/shared/contexts/symbol-context"
+import { SymbolProvider, useSymbol } from "@/shared/contexts/symbol-context"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
+import { AiInsightSymbolModal } from "@/features/dau-truong"
 import { CenterPanel, RightSidebar, RightToolbar } from "@/features/dashboard"
-import { IconBrainCircuit } from "@/shared/icons"
 import { ModeBadge } from "@/features/cap0/ModeBadge"
 // Concrete-file imports (NOT the `@/features/cap1` barrel) — that barrel
 // re-exports `Cap1TradingPage`, which itself imports `CenterPanel`/
@@ -27,15 +25,6 @@ import "@/features/cap0/cap0.css"
 import "@/features/cap1/cap1.css"
 
 const SEO_TITLE = "IQX Demo Trading · Cấp 2 «Kỷ luật»"
-
-// Indices (whole-market gauges) — AI Insight needs a specific listed stock.
-// Duplicated from `Cap1TradingPage`/`Cap0TradingPage` (not imported across
-// features) — same rationale as those: a tiny, self-contained guard.
-const INDEX_CODES = new Set(["VNINDEX", "VN30", "HNX", "HNXINDEX", "UPCOM", "UPCOMINDEX", "HNX30"])
-
-function isIndexSymbol(s: string): boolean {
-  return INDEX_CODES.has(s.toUpperCase())
-}
 
 /** `YYYY-MM-DD` for "today", browser-local time — mirrors `Cap1TradingPage`'s
  * own `todayYmd` (the client's only proxy for a fill's `trading_date`). */
@@ -162,7 +151,9 @@ interface LastBuyCap2 {
 }
 
 function Cap2Terminal() {
-  const navigate = useNavigate()
+  // ★★ Ô tìm kiếm mã của Header và cụm giá của MarketBar đổi mã TẠI CHỖ
+  // thay vì điều hướng: cả hai nằm TRONG `SymbolProvider` của trang này.
+  const { setSymbol } = useSymbol()
   const { isCap1Active, registerHandlers: registerCap1Handlers } = useCap1Events()
   const { isCap2Active, registerHandlers: registerCap2Handlers } = useCap2Events()
   const { data: cap1Progress } = useCap1Progress(isCap1Active)
@@ -303,32 +294,21 @@ function Cap2Terminal() {
     })
   }
 
-  // AI Insight symbol picker — identical to `Cap1TradingPage`'s/`Cap0TradingPage`'s.
+  // Nút «AI Phân tích» của RightToolbar — modal tự lo phần nhập mã và bản
+  // đọc 6 lớp, mở ngay trong shell cấp.
   const [aiInsightOpen, setAiInsightOpen] = useState(false)
-  const [aiInsightSymbol, setAiInsightSymbol] = useState("")
 
   const handleActionClick = (id: string) => {
     if (id === "ai-insight") {
-      setAiInsightSymbol("")
       setAiInsightOpen(true)
     }
-  }
-
-  const trimmedAiInsight = aiInsightSymbol.trim().toUpperCase()
-  const aiInsightValid =
-    /^[A-Z0-9]{2,10}$/.test(trimmedAiInsight) && !isIndexSymbol(trimmedAiInsight)
-
-  const submitAiInsightSymbol = () => {
-    if (!aiInsightValid) return
-    setAiInsightOpen(false)
-    navigate(`/co-phieu/${trimmedAiInsight}`)
   }
 
   return (
     <div className="cap0 flex h-svh flex-col overflow-hidden bg-[var(--bg1)]">
       <TrialBanner />
-      <Header />
-      <MarketBar />
+      <Header onSymbolSelect={setSymbol} />
+      <MarketBar onSymbolClick={setSymbol} />
 
       {/* Top bar (mirrors Cấp 1's — spec §11 badge góc). */}
       <div className="cap0-topbar">
@@ -360,48 +340,14 @@ function Cap2Terminal() {
           progress shows 5/5, closes itself once `graduated_at` comes back. */}
       <GraduationModalCap2 />
 
-      {/* AI Insight symbol picker — identical to Cap1TradingPage's/Cap0TradingPage's. */}
-      <Modal
+      {/* ★★ AI Insight mở NGAY TRONG shell cấp (xem `AiInsightModal`).
+          Trước đây nút này đổi hẳn route sang trang cổ phiếu: user bấm một nút
+          của chính terminal, nhập một mã, rồi bị chuyển trang — mất hành trình,
+          mất form kế hoạch đang gõ dở, không có đường quay lại. */}
+      <AiInsightSymbolModal
         visible={aiInsightOpen}
-        onCancel={() => setAiInsightOpen(false)}
-        footer={null}
-        title={null}
-        style={{ width: 420 }}
-        autoFocus={false}
-      >
-        <div className="flex items-center gap-2 mb-4">
-          <div className="size-9 rounded-xl bg-[var(--color-primary-light-1)] flex items-center justify-center">
-            <IconBrainCircuit className="text-[rgb(var(--primary-6))] text-lg" />
-          </div>
-          <div>
-            <div className="text-base font-semibold text-[var(--color-text-1)]">
-              Phân tích AI cho 1 mã cổ phiếu
-            </div>
-            <div className="text-xs text-[var(--color-text-3)]">
-              AI Insight cần 1 mã cụ thể. Nhập mã (vd. VCB, HPG, FPT) để chạy phân
-              tích 6 lớp.
-            </div>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Input
-            value={aiInsightSymbol}
-            onChange={(v) => setAiInsightSymbol(v.toUpperCase())}
-            onPressEnter={submitAiInsightSymbol}
-            placeholder="VD: VCB"
-            maxLength={10}
-            autoFocus
-            className="flex-1 font-mono uppercase tracking-wide"
-          />
-          <Button
-            type="primary"
-            onClick={submitAiInsightSymbol}
-            disabled={!aiInsightValid}
-          >
-            Phân tích
-          </Button>
-        </div>
-      </Modal>
+        onClose={() => setAiInsightOpen(false)}
+      />
     </div>
   )
 }
