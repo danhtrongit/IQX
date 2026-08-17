@@ -5,14 +5,15 @@ import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 import type { Cap3Progress, ThachThucCap3 } from "./types"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
-const { useCap3ProgressMock, useThachThucMock, useCap3EventsMock, useDiemKyLuatMock } = vi.hoisted(
-  () => ({
+const { useCap3ProgressMock, useThachThucMock, useCap3EventsMock, useDiemKyLuatMock, flags } =
+  vi.hoisted(() => ({
+    // Mutable — ô mục tiêu phải được kiểm ở CẢ hai phía của trần cấp.
+    flags: { CAP_MAX_ENABLED: 3 },
     useCap3ProgressMock: vi.fn(),
     useThachThucMock: vi.fn(),
     useCap3EventsMock: vi.fn(() => ({ isCap3Active: true })),
     useDiemKyLuatMock: vi.fn(() => ({ data: undefined, isLoading: true })),
-  }),
-)
+  }))
 
 vi.mock("./hooks", () => ({
   useCap3Progress: (...a: unknown[]) => useCap3ProgressMock(...a),
@@ -25,6 +26,13 @@ vi.mock("./Cap3Context", () => ({
 // Cấp 2 lẫn Cấp 3) — `DiemKyLuatCard` tự fetch, nên mock đúng hook của nó.
 vi.mock("@/features/cap2/hooks", () => ({
   useDiemKyLuat: (...a: unknown[]) => useDiemKyLuatMock(...a),
+}))
+// Getter (không phải giá trị phẳng): ô mục tiêu phải đọc trần ở thời điểm
+// RENDER, nếu không một nửa số test hai chiều sẽ xanh giả.
+vi.mock("@/features/cap1/capFlags", () => ({
+  get CAP_MAX_ENABLED() {
+    return flags.CAP_MAX_ENABLED
+  },
 }))
 
 import { JourneyPanelCap3 } from "./JourneyPanelCap3"
@@ -89,6 +97,7 @@ function renderPanel() {
 
 describe("JourneyPanelCap3", () => {
   beforeEach(() => {
+    flags.CAP_MAX_ENABLED = 3
     useCap3ProgressMock.mockReset()
     useCap3ProgressMock.mockReturnValue({ data: makeProgress() })
     useThachThucMock.mockReset()
@@ -129,25 +138,71 @@ describe("JourneyPanelCap3", () => {
     expect(screen.getByTestId("cap3-journey-khauvi")).toHaveTextContent("Chưa đặt khẩu vị")
   })
 
-  it('shows the checklist header "TRƯỚC KHI LÊN CẤP 4 · 0/3" with fresh progress', () => {
+  it('shows the checklist header "TRƯỚC KHI LÊN CẤP 4" + bộ đếm 0/3 with fresh progress', () => {
     renderPanel()
-    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 4 · 0/3")).toBeInTheDocument()
+    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 4")).toBeInTheDocument()
+    expect(screen.getByText("0/3")).toBeInTheDocument()
   })
 
   it("renders all 3 nhiệm vụ names verbatim (spec §2)", () => {
     renderPanel()
-    expect(screen.getByText("Lệnh đầu tiên đủ khẩu vị + mức tự tin")).toBeInTheDocument()
-    expect(screen.getByText("Kết sổ lệnh đầu Cấp 3")).toBeInTheDocument()
-    expect(screen.getByText(/Thách thức Bản lĩnh — lãi có kỷ luật/)).toBeInTheDocument()
+    // Nhiệm vụ đang được tập trung xuất hiện 2 lần (ô tập trung + dòng thu gọn)
+    // nên bám theo đúng dòng checklist của từng nhiệm vụ.
+    expect(within(screen.getByTestId("cap3-task-1")).getByText(
+      "Lệnh đầu tiên đủ khẩu vị + mức tự tin",
+    )).toBeInTheDocument()
+    expect(
+      within(screen.getByTestId("cap3-task-2")).getByText("Kết sổ lệnh đầu Cấp 3"),
+    ).toBeInTheDocument()
+    expect(
+      within(screen.getByTestId("cap3-task-3")).getByText(
+        "Thách thức Bản lĩnh — lãi có kỷ luật",
+      ),
+    ).toBeInTheDocument()
   })
 
-  it("① is active from the moment the user enters Cấp 3, with its spec copy + Làm ngay", () => {
+  it("① is active from the moment the user enters Cấp 3, và được NÂNG lên ô tập trung", () => {
     renderPanel()
     expect(screen.getByTestId("cap3-task-1").className).toContain("cap0-checklist-item--active")
+    const focus = within(screen.getByTestId("cap3-focus"))
+    expect(focus.getByText("NHIỆM VỤ ĐANG LÀM")).toBeInTheDocument()
+    expect(focus.getByText("Lệnh đầu tiên đủ khẩu vị + mức tự tin")).toBeInTheDocument()
+    expect(focus.getByText(/Cấp 3 thêm quản lý vốn/)).toBeInTheDocument()
+    expect(focus.getByText("Làm ngay →")).toBeInTheDocument()
+    // Dòng checklist đã THU GỌN: mô tả dài + nút to chỉ còn ở ô tập trung.
     expect(
-      within(screen.getByTestId("cap3-task-1")).getByText(/Cấp 3 thêm quản lý vốn/),
-    ).toBeInTheDocument()
-    expect(within(screen.getByTestId("cap3-task-1")).getByText("Làm ngay →")).toBeInTheDocument()
+      within(screen.getByTestId("cap3-task-1")).queryByText("Làm ngay →"),
+    ).not.toBeInTheDocument()
+  })
+
+  it("★ ô tập trung chuyển sang ② ngay khi ① xong (dẫn từng nhiệm vụ một)", () => {
+    useCap3ProgressMock.mockReturnValue({ data: makeProgress({ task_1_done_at: "t" }) })
+    renderPanel()
+    const focus = within(screen.getByTestId("cap3-focus"))
+    expect(focus.getByText("Kết sổ lệnh đầu Cấp 3")).toBeInTheDocument()
+    expect(focus.getByText(/Bán 1 lệnh đang mở/)).toBeInTheDocument()
+  })
+
+  it("★ ①② xong → ô tập trung là ③ Thách thức, kèm tiến độ số lệnh", () => {
+    useCap3ProgressMock.mockReturnValue({
+      data: makeProgress({ task_1_done_at: "t", task_2_done_at: "t" }),
+    })
+    renderPanel()
+    const focus = within(screen.getByTestId("cap3-focus"))
+    expect(focus.getByText(/Thách thức Bản lĩnh/)).toBeInTheDocument()
+    expect(focus.getByText("11/15 lệnh")).toBeInTheDocument()
+  })
+
+  it("★ xong cả 3 → ô tập trung đổi sang trạng thái sẵn sàng tốt nghiệp", () => {
+    useCap3ProgressMock.mockReturnValue({
+      data: makeProgress({ task_1_done_at: "t", task_2_done_at: "t", task_3_done_at: "t" }),
+    })
+    renderPanel()
+    const focus = screen.getByTestId("cap3-focus")
+    expect(focus.className).toContain("cap0-focus--ready")
+    expect(within(focus).getByText("Sẵn sàng tốt nghiệp Cấp 3")).toBeInTheDocument()
+    expect(within(focus).getByText("ĐÃ XONG CẢ 3 NHIỆM VỤ")).toBeInTheDocument()
+    expect(within(focus).queryByText("Làm ngay →")).not.toBeInTheDocument()
   })
 
   it("② is locked until ① is done", () => {
@@ -171,7 +226,7 @@ describe("JourneyPanelCap3", () => {
         "cap0-checklist-item--done",
       )
     }
-    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 4 · 3/3")).toBeInTheDocument()
+    expect(screen.getByText("3/3")).toBeInTheDocument()
   })
 
   it("renders the Thách thức Bản lĩnh widget with ALL THREE conditions (§C12c)", () => {
@@ -292,10 +347,23 @@ describe("JourneyPanelCap3", () => {
     expect(screen.getByTestId("panel-spy")).toHaveTextContent("trading")
   })
 
-  it("shows the graduation goal box pointing at Cấp 4 «Thuần thục»", () => {
+  // ★★ Ô mục tiêu là MÀN CUỐI mà người tốt nghiệp cấp trần nhìn thấy (modal tốt
+  // nghiệp unmount xong là về đúng đây) — nó không được hứa một cấp chưa tồn tại.
+  it("★ ô mục tiêu KHÔNG hứa Cấp 4 khi trần còn ở 3", () => {
     renderPanel()
-    expect(screen.getByText(/tốt nghiệp Cấp 3/)).toBeInTheDocument()
-    expect(screen.getByText(/Cấp 4 «Thuần thục»/)).toBeInTheDocument()
+    const goal = screen.getByTestId("cap3-journey-goal")
+    expect(goal).toHaveTextContent(/Cấp 4 «Thuần thục» chưa ra mắt/)
+    expect(goal).toHaveTextContent(/chặng cuối của chương trình hiện tại/)
+    expect(goal).not.toHaveTextContent(/lên Cấp 4/)
+  })
+
+  it("★ ô mục tiêu trỏ thẳng sang Cấp 4 ngay khi trần được nâng lên 4", () => {
+    flags.CAP_MAX_ENABLED = 4
+    renderPanel()
+    const goal = screen.getByTestId("cap3-journey-goal")
+    expect(goal).toHaveTextContent(/tốt nghiệp Cấp 3, lên/)
+    expect(goal).toHaveTextContent(/Cấp 4 «Thuần thục»/)
+    expect(goal).not.toHaveTextContent(/chưa ra mắt/)
   })
 
   it("does NOT render any medal cabinet / Tủ huân chương (spec §11 — no cấp has one)", () => {

@@ -8,6 +8,9 @@ import { ModeBadge } from "@/features/cap0/ModeBadge"
 // KHÔNG qua barrel `@/features/cap2` — barrel đó re-export `Cap2TradingPage`,
 // vốn import `@/features/dashboard` → dễ tạo vòng module).
 import { DiemKyLuatCard } from "@/features/cap2/DiemKyLuat"
+import { JourneyFocus } from "@/features/cap0/JourneyFocus"
+// Trần cấp — file riêng, KHÔNG import gì (xem docstring ở đó).
+import { CAP_MAX_ENABLED } from "@/features/cap1/capFlags"
 import { useCap3Events } from "./Cap3Context"
 import { useCap3Progress, useThachThuc } from "./hooks"
 import { KHAU_VI_PCT } from "./khoiLuong"
@@ -27,6 +30,21 @@ const TASK_1_COPY =
 
 /** Copy nhiệm vụ ② khi active (spec §2② "bán 1 lệnh → đóng màn Kết sổ"). */
 const TASK_2_COPY = "Bán 1 lệnh đang mở rồi đóng màn Kết sổ Cấp 3 để hoàn thành."
+
+/**
+ * Mô tả hiện trên ô "NHIỆM VỤ ĐANG LÀM" (`JourneyFocus`) — cùng quy ước Cấp
+ * 0/1/2. ①② dùng lại đúng copy spec §2 ở trên; ③ nói đúng điều kiện của chính
+ * nó (3 con số chi tiết đã nằm ngay dưới, trong widget Thách thức).
+ */
+const TASK_DESCRIPTIONS: Record<number, string> = {
+  1: TASK_1_COPY,
+  2: TASK_2_COPY,
+  3: "Đạt CẢ 3 điều kiện cùng lúc — lãi ≥ +5% trên vốn, đủ 15 lệnh Thực chiến, điểm kỷ luật ≥ 80%. Ba thanh tiến độ ngay dưới cho biết bạn đang thiếu bao nhiêu ở từng điều kiện.",
+}
+
+const TASK_NOS = [1, 2, 3] as const
+const NUMERALS = "①②③"
+const CAP3_TOTAL_TASKS = 3
 
 const KHAU_VI_LABEL: Record<KhauViLoai, string> = {
   than_trong: "Thận trọng",
@@ -55,14 +73,25 @@ export function taskStateCap3(no: number, progress: Cap3Progress | null | undefi
   return "active"
 }
 
+/**
+ * Một dòng checklist THU GỌN (mirrors `cap1`/`cap2`) — mô tả dài + nút to đã
+ * dọn lên ô tập trung `JourneyFocus`, dòng ở đây chỉ giữ tên + trạng thái.
+ *
+ * ★ Nhiệm vụ ĐANG MỞ nhưng chưa tới lượt tập trung vẫn phải bấm được (①③ mở
+ * cùng lúc ngay khi vào Cấp 3) — cùng lối tắt "Làm ngay →" mờ mà Cấp 1/2 dùng.
+ * Riêng ③ KHÔNG có lối tắt: nó không phải một việc bấm-là-làm mà là kết quả
+ * cộng dồn của những lệnh tiếp theo, và widget 3 điều kiện của nó nằm ngay dưới.
+ */
 function ChecklistItem({
   no,
   state,
+  focused,
   progressText,
   onGo,
 }: {
   no: number
   state: TaskState
+  focused: boolean
   progressText?: string
   onGo: () => void
 }) {
@@ -70,22 +99,26 @@ function ChecklistItem({
     <div
       data-testid={`cap3-task-${no}`}
       className={
-        "cap0-checklist-item" +
+        "cap0-checklist-item cap1-checklist-item" +
         (state === "done" ? " cap0-checklist-item--done" : "") +
         (state === "active" ? " cap0-checklist-item--active" : "") +
         (state === "locked" ? " cap0-checklist-item--locked" : "")
       }
     >
-      <span className="cap0-checklist-num">{state === "done" ? "✓" : "①②③"[no - 1]}</span>
+      <span className="cap0-checklist-num">{state === "done" ? "✓" : NUMERALS[no - 1]}</span>
       <div className="cap0-checklist-body">
         <span className="cap0-checklist-name">{TASK_NAMES[no]}</span>
         {progressText && <div className="cap0-checklist-desc">{progressText}</div>}
-        {state === "active" && (
-          <button type="button" className="cap0-checklist-golink" onClick={onGo}>
-            Làm ngay →
-          </button>
-        )}
       </div>
+      {state === "active" && !focused && no !== 3 && (
+        <button
+          type="button"
+          className="cap0-checklist-golink cap0-checklist-golink--quiet"
+          onClick={onGo}
+        >
+          Làm ngay →
+        </button>
+      )}
     </div>
   )
 }
@@ -185,11 +218,19 @@ function ThachThucWidget({ data }: { data: ThachThucCap3 | undefined }) {
 /**
  * Tab "Hành trình" Cấp 3 — panel đầu của sidebar-phải khi đang ở Cấp 3
  * (mockup `iqx-cap3-hanhtrinh.html`). Mirror `cap2/JourneyPanelCap2.tsx`: thẻ
- * cấp + checklist header + danh sách nhiệm vụ + hộp mục tiêu, ĐỔI phần giữa
- * thành widget Thách thức Bản lĩnh (nhiệm vụ ③, spec §2③) và thêm khẩu vị rủi
- * ro đang dùng vào thẻ cấp. Giữ thẻ Điểm kỷ luật của Cấp 2 (spec §9 áp cho cả
- * Cấp 3, và đó là 1 trong 3 điều kiện lên Cấp 4). KHÔNG có Tủ huân chương
- * (spec §11 — không cấp nào có).
+ * cấp + ô "NHIỆM VỤ ĐANG LÀM" + checklist thu gọn + hộp mục tiêu, THÊM widget
+ * Thách thức Bản lĩnh (nhiệm vụ ③, spec §2③) và khẩu vị rủi ro đang dùng trên
+ * thẻ cấp. KHÔNG có Tủ huân chương (spec §11 — không cấp nào có).
+ *
+ * ★ **Ô tập trung dùng chung `cap0/JourneyFocus.tsx`** như Cấp 0/1/2: đúng MỘT
+ * nhiệm vụ được nâng lên kèm mô tả + tiến độ + "Làm ngay →", checklist đầy đủ
+ * vẫn ở dưới nhưng thu gọn. Trước đây Cấp 3 là cấp DUY NHẤT còn dựng checklist
+ * phẳng riêng (mỗi dòng một nút "Làm ngay") — lệch quy ước của 3 cấp còn lại.
+ *
+ * ★ **Vì sao Cấp 3 GIỮ `DiemKyLuatCard` trong khi Cấp 2 vừa gỡ nó khỏi Hành
+ * trình của mình:** ở Cấp 2 điểm kỷ luật không còn là nhiệm vụ nào cả, còn ở
+ * Cấp 3 nó là 1 trong 3 điều kiện tốt nghiệp (`GET /cap3/thach-thuc` đọc chính
+ * nó — spec §2③/§9). Thẻ này là chỗ duy nhất cho biết điểm HÔM NAY đến từ đâu.
  *
  * Self-contained: gọi `useCap3Progress`/`useThachThuc` với `isCap3Active` nên
  * KHÔNG query gì khi ở ngoài `Cap3Provider` (`SidebarProvider` là singleton
@@ -211,6 +252,23 @@ export function JourneyPanelCap3() {
   const khauViText = khauVi
     ? `● Khẩu vị: ${KHAU_VI_LABEL[khauVi]} · trần ${KHAU_VI_PCT[khauVi]}% vốn/lệnh`
     : "● Chưa đặt khẩu vị rủi ro"
+
+  const states: Record<number, TaskState> = Object.fromEntries(
+    TASK_NOS.map((no) => [no, taskStateCap3(no, progress)]),
+  ) as Record<number, TaskState>
+  /**
+   * Nhiệm vụ được đưa lên ô tập trung = nhiệm vụ `active` có số nhỏ nhất. ① và
+   * ③ cùng mở từ lúc vào cấp, nên đây là thứ tự ƯU TIÊN chứ không phải điều
+   * kiện mở khoá (② mới thật sự bị khoá tới khi xong ①). `null` = xong cả 3 →
+   * ô đổi sang lời sẵn sàng tốt nghiệp thay vì biến mất.
+   */
+  const focus = TASK_NOS.find((no) => states[no] === "active") ?? null
+  /** Tiến độ ③ — một nguồn duy nhất cho cả ô tập trung lẫn dòng checklist. */
+  const soLenhText = thachThuc
+    ? `${Math.round(thachThuc.so_lenh.gia_tri_hien_tai).toLocaleString("en-US")}/${Math.round(
+        thachThuc.so_lenh.muc_tieu,
+      ).toLocaleString("en-US")} lệnh`
+    : undefined
 
   return (
     <div className="cap0 flex h-full min-h-0 flex-col bg-[var(--bg1)] text-[var(--t1)]">
@@ -242,24 +300,59 @@ export function JourneyPanelCap3() {
           <DiemKyLuatCard enabled={isCap3Active} />
         </div>
 
+        {/* ★ Ô "NHIỆM VỤ ĐANG LÀM" — dùng chung `cap0/JourneyFocus.tsx` với Cấp
+            0/1/2 (một khối, một bộ CSS: các cấp không thể lệch nhau). Cấp 3 là
+            cấp cuối cùng còn dựng checklist phẳng kiểu cũ, nay đã hội tụ. */}
+        {focus == null ? (
+          <JourneyFocus
+            testId="cap3-focus"
+            ready
+            tag={`ĐÃ XONG CẢ ${CAP3_TOTAL_TASKS} NHIỆM VỤ`}
+            name="Sẵn sàng tốt nghiệp Cấp 3"
+            desc="Bạn đã đặt lệnh theo khẩu vị + mức tự tin của chính mình, kết sổ với khối lượng đã ghi hồ sơ, và vượt Thách thức Bản lĩnh: lãi có kỷ luật. Màn tốt nghiệp Cấp 3 «Bản lĩnh» mở ra ngay tại đây."
+          />
+        ) : (
+          <JourneyFocus
+            testId="cap3-focus"
+            tag="NHIỆM VỤ ĐANG LÀM"
+            numeral={NUMERALS[focus - 1]}
+            name={TASK_NAMES[focus]}
+            desc={TASK_DESCRIPTIONS[focus]}
+            progressText={focus === 3 ? soLenhText : undefined}
+            /* Cả 3 nhiệm vụ đều làm ở tab Đặt lệnh. */
+            onGo={goToTrading}
+          />
+        )}
+
+        {/* Mockup `.ck-head`: tiêu đề xám bên trái + bộ đếm mang MÀU CỦA CẤP bên
+            phải — hai phần tử, không phải một chuỗi "… · x/3". */}
         <div className="cap0-journey-checklist-header mt-3">
-          TRƯỚC KHI LÊN CẤP 4 · {tasksDone}/3
+          <span className="cap0-journey-checklist-title">TRƯỚC KHI LÊN CẤP 4</span>
+          <span
+            className="cap0-journey-checklist-count cap0-display"
+            style={{ color: level.color }}
+          >
+            {tasksDone}/{CAP3_TOTAL_TASKS}
+          </span>
         </div>
 
-        <ChecklistItem
-          no={1}
-          state={taskStateCap3(1, progress)}
-          progressText={progress?.task_1_done_at ? undefined : TASK_1_COPY}
-          onGo={goToTrading}
-        />
-        <ChecklistItem
-          no={2}
-          state={taskStateCap3(2, progress)}
-          progressText={progress?.task_2_done_at ? undefined : TASK_2_COPY}
-          onGo={goToTrading}
-        />
+        <div className="cap0-journey-rest">
+          {TASK_NOS.map((no) => (
+            <ChecklistItem
+              key={no}
+              no={no}
+              state={states[no]}
+              focused={focus === no}
+              progressText={no === 3 ? soLenhText : undefined}
+              onGo={goToTrading}
+            />
+          ))}
+        </div>
 
-        {/* Nhiệm vụ ③ — widget riêng (3 điều kiện + giá trị hiện tại, §C12c). */}
+        {/* Nhiệm vụ ③ — widget riêng (3 điều kiện + giá trị hiện tại, §C12c).
+            Luôn hiện chứ không chỉ khi ③ được tập trung: ③ mở song song ngay từ
+            lệnh đầu, và ba con số này là thứ duy nhất cho biết còn thiếu bao
+            nhiêu để tốt nghiệp. */}
         <div className="mt-1">
           <ThachThucWidget data={thachThuc} />
         </div>
@@ -268,9 +361,25 @@ export function JourneyPanelCap3() {
           Xem Phân tích danh mục →
         </button>
 
-        <div className="cap0-journey-goal">
-          Đạt cả 3 điều kiện của Thách thức Bản lĩnh → tốt nghiệp Cấp 3, lên{" "}
-          <strong>Cấp 4 «Thuần thục»</strong> (tách quyết định khỏi kết quả).
+        {/* ★★ TRẠNG THÁI CUỐI của một người đã tốt nghiệp Cấp 3 ★★ — modal tốt
+            nghiệp unmount xong là về đúng màn này, checklist 3/3, và ô này là
+            câu cuối cùng họ đọc. Khi trần cấp còn dưới 4 nó KHÔNG được hứa một
+            cấp chưa tồn tại; khi trần được nâng, câu của mockup tự quay về.
+            (Cùng luật `cap1`/`cap2` đang giữ — xem docstring ở `cap1/capFlags.ts`.) */}
+        <div className="cap0-journey-goal" data-testid="cap3-journey-goal">
+          {CAP_MAX_ENABLED >= 4 ? (
+            <>
+              Đạt cả 3 điều kiện của Thách thức Bản lĩnh → tốt nghiệp Cấp 3, lên{" "}
+              <strong>Cấp 4 «Thuần thục»</strong> (tách quyết định khỏi kết quả).
+            </>
+          ) : (
+            <>
+              Đạt cả 3 điều kiện của Thách thức Bản lĩnh → tốt nghiệp{" "}
+              <strong>Cấp 3 «Bản lĩnh»</strong> — chặng cuối của chương trình hiện tại.{" "}
+              <strong>Cấp 4 «Thuần thục» chưa ra mắt</strong>; khi mở, nó sẽ dạy tách
+              quyết định khỏi kết quả.
+            </>
+          )}
         </div>
       </div>
     </div>
