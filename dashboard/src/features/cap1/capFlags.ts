@@ -21,6 +21,21 @@
  *     chỉ hứa Cấp 2 khi Cấp 2 thật sự mở. Đây là trạng thái CUỐI mà một người
  *     đã tốt nghiệp Cấp 1 nhìn thấy (modal tốt nghiệp unmount xong là về đúng
  *     màn này) — nó KHÔNG được hứa một cấp chưa tồn tại.
+ *  e. `GraduationModalCap3.tsx` — y hệt (b)(c), theo `CAP_MAX_ENABLED >= 4`.
+ *  f. `JourneyPanelCap2.tsx` (`cap2-journey-goal`) và `JourneyPanelCap3.tsx`
+ *     (`cap3-journey-goal`) — y hệt (d), theo `>= 3` và `>= 4`.
+ *
+ * ─── LUẬT TỔNG QUÁT (áp cho MỌI lần mở thêm cấp) ────────────────────────────
+ * Với mỗi cấp N đang là TRẦN, đúng hai màn phải gắn theo `CAP_MAX_ENABLED >=
+ * N+1`, và cả hai đều phải có test ở CẢ HAI phía của trần:
+ *   1. Màn tốt nghiệp Cấp N — Khối 3, dòng dưới CTA, và việc có gọi
+ *      `POST /cap{N+1}/enter` hay không. Gọi khi cấp đó chưa mở là tạo THẬT
+ *      một hàng progress trên server cho một cấp user không vào được.
+ *   2. Ô mục tiêu của Hành trình Cấp N — màn CUỐI người tốt nghiệp trần nhìn
+ *      thấy.
+ * Trần phải đọc trong HÀM (`function isCapXOpen()`), không phải `const`
+ * module-scope: `const` chốt giá trị lúc import nên test mock-getter chỉ thấy
+ * giá trị đầu tiên → một nửa số test xanh giả.
  *
  * ★ Luật bất di bất dịch cho mọi màn tốt nghiệp ở đúng cái trần: nút CTA vẫn
  * PHẢI bấm được và vẫn ghi tốt nghiệp về server. Modal tốt nghiệp
@@ -41,4 +56,4 @@
  * GraduationModalCap1` (và cả cây import Cấp 2-8 + `@/features/dashboard` đứng
  * sau nó). `DauTruongPage` re-export lại tên này nên mọi import cũ vẫn chạy.
  */
-export const CAP_MAX_ENABLED = 2
+export const CAP_MAX_ENABLED = 3

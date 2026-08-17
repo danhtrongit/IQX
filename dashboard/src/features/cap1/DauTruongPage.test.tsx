@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Cap1Progress } from "./types"
+import type { Cap2Progress } from "@/features/cap2/types"
 
 const {
   useAuthMock,
@@ -153,18 +154,23 @@ function fakeCap1Progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
   }
 }
 
-function fakeCap2Progress(overrides: Record<string, unknown> = {}) {
+/**
+ * ★ Gõ kiểu `Cap2Progress` chứ KHÔNG phải `Record<string, unknown>`: bản trước
+ * lệch kép so với wire thật (còn `task_3/4_done_at` + 3 cột `chuoi_*` đã bị
+ * DROP, thiếu cả 4 counter của mô hình 2 nhiệm vụ) mà không có gì đỏ lên. Kiểu
+ * thật làm vitest bắt ngay lần lệch sau — `tsc -b` không check file test.
+ */
+function fakeCap2Progress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
   return {
     id: "p2",
     user_id: "u1",
     entered_at: "2026-07-26T00:00:00Z",
     task_1_done_at: null,
     task_2_done_at: null,
-    task_3_done_at: null,
-    task_4_done_at: null,
-    chuoi_current: 0,
-    chuoi_record: 0,
-    last_chuoi_reset_at: null,
+    so_lenh_co_cl_tp: 0,
+    so_lan_cat_lo_dung: 0,
+    so_lan_chot_loi_dung: 0,
+    so_lan_thuc_hien_dung: 0,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
