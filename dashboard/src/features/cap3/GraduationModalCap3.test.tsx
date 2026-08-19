@@ -154,7 +154,10 @@ describe("GraduationModalCap3", () => {
     expect(screen.getByText(/Nhưng có một câu hỏi bạn chưa trả lời được/)).toBeInTheDocument()
     expect(screen.getByText("phán đoán đúng")).toBeInTheDocument()
     expect(screen.getByText("may mắn")).toBeInTheDocument()
-    expect(screen.getByText(/tách quyết định khỏi kết quả/)).toBeInTheDocument()
+    // ★ Khối 2 phải dẫn sang Cấp 4 CÓ THẬT (đọc trọn 5 lớp), không phải bản
+    // thang cấp cũ ("tách quyết định khỏi kết quả" — thứ Cấp 4 không dạy).
+    expect(screen.getByText("một lý do")).toBeInTheDocument()
+    expect(screen.getByText(/thị trường thì không bao giờ chỉ có một lớp/)).toBeInTheDocument()
   })
 
   it("Khối 3 carries the Cấp 4 tím border class (#a78bfa)", () => {
@@ -177,15 +180,20 @@ describe("GraduationModalCap3", () => {
     expect(khoi3).toHaveTextContent(/Khi Cấp 4 mở/)
   })
 
-  it("★ Khối 3 restores the verbatim spec §3 wording the moment the trần reaches 4", () => {
+  it("★ Khối 3 chuyển sang thì HIỆN TẠI ngay khi trần cấp chạm 4", () => {
     flags.CAP_MAX_ENABLED = 4
     useCap3ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap3 />)
     const khoi3 = screen.getByTestId("cap3-grad-khoi3")
     expect(within(khoi3).getByText("Từ giờ: Cấp 4 «Thuần thục».")).toBeInTheDocument()
-    expect(khoi3).toHaveTextContent(
-      /quyết định đúng-thắng, đúng-thua, sai-thắng, sai-thua/,
-    )
+    // ★★ Nội dung phải là Cấp 4 CÓ THẬT: đọc + tự chấm cả 5 lớp rồi nhận ra vũ
+    // khí/điểm mù. KHÔNG phải "4 ô đúng-thắng/…" (bản thang cấp cũ) — màn tốt
+    // nghiệp không được hứa một cấp sau khác với cấp sau có thật.
+    expect(khoi3).toHaveTextContent(/đọc trọn cả 5 lớp cho mỗi lệnh/)
+    expect(khoi3).toHaveTextContent(/kỹ thuật, dòng tiền, nội bộ, tin tức, định giá/)
+    expect(khoi3).toHaveTextContent(/vũ khí lẫn điểm mù/)
+    expect(khoi3).not.toHaveTextContent(/đúng-thắng/)
+    expect(khoi3).not.toHaveTextContent(/tách quyết định khỏi kết quả/)
     expect(khoi3).not.toHaveTextContent(/chưa ra mắt/)
     // ...và dòng "sắp ra mắt" dưới CTA tự biến mất cùng lúc.
     expect(screen.getByTestId("cap3-grad-cta")).not.toHaveTextContent(/sắp ra mắt/)

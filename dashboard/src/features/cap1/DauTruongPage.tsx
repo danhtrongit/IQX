@@ -128,8 +128,8 @@ function FullPageSpinner() {
  * "Cấp N-1 graduated → `CapNTradingPage`" chỉ có hiệu lực khi
  * `CAP_MAX_ENABLED >= N`. Cấp đúng bằng trần là nhánh TERMINAL: một user đã tốt
  * nghiệp cấp đó vẫn Ở LẠI shell của chính cấp đó (KHÔNG spinner, KHÔNG tụt
- * xuống cấp dưới) cho tới khi trần được nâng. Hiện `CAP_MAX_ENABLED = 3` → Cấp 3
- * là terminal, Cấp 4-8 hoàn toàn im lặng (không progress query, không enter).
+ * xuống cấp dưới) cho tới khi trần được nâng. Hiện `CAP_MAX_ENABLED = 4` → Cấp 4
+ * là terminal, Cấp 5-8 hoàn toàn im lặng (không progress query, không enter).
  * ★ Con số này ĐỔI theo `capFlags.ts` — đọc thẳng ở đó, đừng tin dòng này nếu
  * hai bên lệch nhau.
  *  - Cấp 1 graduated, Cấp 2 not entered/not graduated → `Cap2TradingPage`

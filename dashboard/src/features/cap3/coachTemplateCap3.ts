@@ -112,7 +112,10 @@ function templateCaoThang(pct: string, von: string): string {
 function templateCaoThua(pct: string, von: string): string {
   return (
     `Tự tin ${MUC_TU_TIN_LABEL[3]} nhưng thua (${pct}), với ${von}. Chưa vội kết luận — một quyết ` +
-    `định tốt vẫn có thể thua vì thị trường. Cấp 4 sẽ dạy tách quyết định khỏi kết quả.`
+    // ★ KHÔNG hứa sai cấp sau: Cấp 4 «Thuần thục» dạy đọc + tự chấm cả 5 lớp
+    // mỗi lệnh (không phải "tách quyết định khỏi kết quả" — đó là một bản thang
+    // cấp cũ). Xem `cap4/JourneyPanelCap4.tsx`.
+    `định tốt vẫn có thể thua vì thị trường. Cấp 4 sẽ dạy đọc trọn cả 5 lớp trước khi mua.`
   )
 }
 

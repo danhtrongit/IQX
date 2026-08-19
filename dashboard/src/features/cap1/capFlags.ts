@@ -24,6 +24,8 @@
  *  e. `GraduationModalCap3.tsx` — y hệt (b)(c), theo `CAP_MAX_ENABLED >= 4`.
  *  f. `JourneyPanelCap2.tsx` (`cap2-journey-goal`) và `JourneyPanelCap3.tsx`
  *     (`cap3-journey-goal`) — y hệt (d), theo `>= 3` và `>= 4`.
+ *  g. `GraduationModalCap4.tsx` — y hệt (b)(c)(e), theo `CAP_MAX_ENABLED >= 5`.
+ *  h. `JourneyPanelCap4.tsx` (`cap4-journey-goal`) — y hệt (d), theo `>= 5`.
  *
  * ─── LUẬT TỔNG QUÁT (áp cho MỌI lần mở thêm cấp) ────────────────────────────
  * Với mỗi cấp N đang là TRẦN, đúng hai màn phải gắn theo `CAP_MAX_ENABLED >=
@@ -43,6 +45,16 @@
  * kiểu "sắp ra mắt" sẽ NHỐT VĨNH VIỄN mọi user đã xong nhiệm vụ — đúng lỗi đã
  * phải sửa hai lần trên codebase này.
  *
+ * ─── ★ CÒN MỘT LUẬT NỮA: CẤP SAU PHẢI ĐÚNG CẤP SAU CÓ THẬT ──────────────────
+ * Khi nâng trần lên N, mọi câu hứa của Cấp N-1 về Cấp N đột nhiên HIỂN THỊ.
+ * Trước khi đổi con số, đọc lại Khối 2 + Khối 3 của `GraduationModalCap{N-1}`,
+ * ô mục tiêu `cap{N-1}-journey-goal` và coach template của Cấp N-1: chúng phải
+ * mô tả đúng thứ Cấp N THẬT SỰ dạy, không phải thứ spec `.md` (có thể đã lỗi
+ * thời) nói. Lần nâng 3 → 4 phát hiện Cấp 3 đang hứa Cấp 4 dạy "tách quyết
+ * định khỏi kết quả — 4 ô đúng-thắng/…", trong khi Cấp 4 «Thuần thục» thật dạy
+ * đọc + tự chấm cả 5 lớp; và Cấp 4 đang hứa Cấp 5 dạy cùng cái "4 ô" đó, trong
+ * khi Cấp 5 «Lão luyện» thật = CHỦ ĐỘNG SĂN MÃ.
+ *
  * ─── TEST ───────────────────────────────────────────────────────────────────
  * Chuỗi routing của từng cấp nằm trong `DauTruongPage.test.tsx` dưới
  * `describe.runIf(CAP_MAX_ENABLED >= N)` — chúng tự chạy lại khi trần được
@@ -56,4 +68,4 @@
  * GraduationModalCap1` (và cả cây import Cấp 2-8 + `@/features/dashboard` đứng
  * sau nó). `DauTruongPage` re-export lại tên này nên mọi import cũ vẫn chạy.
  */
-export const CAP_MAX_ENABLED = 3
+export const CAP_MAX_ENABLED = 4

@@ -405,31 +405,35 @@ export function JourneyPanelCap3() {
 
             ★ Và khi ĐÃ tốt nghiệp, nó không được ra lệnh làm lại chính việc vừa
             xong ("Đạt cả 3 điều kiện … → tốt nghiệp Cấp 3"). */}
+        {/* ★ "tách quyết định khỏi kết quả" KHÔNG phải Cấp 4. Cấp 4 «Thuần
+            thục» dạy đọc + tự chấm cả 5 lớp mỗi lệnh rồi nhận ra vũ khí/điểm
+            mù của mình — xem `cap4/JourneyPanelCap4.tsx`. Câu cũ là bản thang
+            cấp đã lỗi thời và trở nên HIỂN THỊ ngay khi trần được nâng lên 4. */}
         <div className="cap0-journey-goal" data-testid="cap3-journey-goal">
           {graduated ? (
             CAP_MAX_ENABLED >= 4 ? (
               <>
                 Bạn đã tốt nghiệp <strong>Cấp 3 «Bản lĩnh»</strong>. Chặng tiếp theo:{" "}
-                <strong>Cấp 4 «Thuần thục»</strong> (tách quyết định khỏi kết quả).
+                <strong>Cấp 4 «Thuần thục»</strong> (đọc trọn 5 lớp mỗi lệnh).
               </>
             ) : (
               <>
                 Bạn đã tốt nghiệp <strong>Cấp 3 «Bản lĩnh»</strong> — chặng cuối của
                 chương trình hiện tại. <strong>Cấp 4 «Thuần thục» chưa ra mắt</strong>;
-                khi mở, nó sẽ dạy tách quyết định khỏi kết quả.
+                khi mở, nó sẽ dạy đọc trọn 5 lớp mỗi lệnh.
               </>
             )
           ) : CAP_MAX_ENABLED >= 4 ? (
             <>
               Đạt cả 3 điều kiện của Thách thức Bản lĩnh → tốt nghiệp Cấp 3, lên{" "}
-              <strong>Cấp 4 «Thuần thục»</strong> (tách quyết định khỏi kết quả).
+              <strong>Cấp 4 «Thuần thục»</strong> (đọc trọn 5 lớp mỗi lệnh).
             </>
           ) : (
             <>
               Đạt cả 3 điều kiện của Thách thức Bản lĩnh → tốt nghiệp{" "}
               <strong>Cấp 3 «Bản lĩnh»</strong> — chặng cuối của chương trình hiện tại.{" "}
-              <strong>Cấp 4 «Thuần thục» chưa ra mắt</strong>; khi mở, nó sẽ dạy tách
-              quyết định khỏi kết quả.
+              <strong>Cấp 4 «Thuần thục» chưa ra mắt</strong>; khi mở, nó sẽ dạy đọc
+              trọn 5 lớp mỗi lệnh.
             </>
           )}
         </div>

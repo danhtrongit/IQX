@@ -46,11 +46,25 @@ export function isGraduationReadyCap3(progress: Cap3Progress | null | undefined)
 const BLOCK_1 =
   "Bạn đã đạt +5% với kỷ luật vững — và quan trọng hơn con số: bạn biết **mua bao nhiêu cho mỗi lệnh**. Tự tin cao thì mua nhiều, tự tin thấp thì phòng thủ. Bạn không còn mua theo cảm hứng hay tất tay một mã."
 
+/**
+ * ★★ KHỐI 2 + KHỐI 3 KHÔNG CÒN VERBATIM SPEC `.md` CẤP 3 ★★
+ *
+ * Spec §3 của Cấp 3 mô tả Cấp 4 là "tách quyết định khỏi kết quả — 4 ô
+ * đúng-thắng/đúng-thua/sai-thắng/sai-thua". Đó KHÔNG phải Cấp 4 có thật: Cấp 4
+ * «Thuần thục» dạy **đọc và tự chấm cả 5 lớp cho mỗi lệnh** (thay vì chọn 1 lý
+ * do) rồi nhận ra **vũ khí / điểm mù** của mình qua kết quả thật — xem
+ * `cap4/JourneyPanelCap4.tsx` + `app/services/cap4/service.py`. Nội dung "4 ô"
+ * thuộc một bản thang cấp cũ.
+ *
+ * Màn tốt nghiệp KHÔNG được hứa một cấp sau khác với cấp sau có thật (đúng lỗi
+ * repo này đã dính hai lần), và câu này trở nên HIỂN THỊ ngay khi trần cấp
+ * được nâng lên 4. Cần báo founder sửa lại spec `.md` Cấp 3 §3.
+ */
 const BLOCK_2 =
-  "Nhưng có một câu hỏi bạn chưa trả lời được: lệnh thắng của bạn là do **phán đoán đúng** hay do **may mắn**? Cấp 4 dạy điều khó nhất: tách quyết định khỏi kết quả. Một quyết định tốt vẫn có thể thua, một quyết định ẩu vẫn có thể thắng — và biết phân biệt hai điều đó mới là bản lĩnh thật."
+  "Nhưng có một câu hỏi bạn chưa trả lời được: lệnh thắng của bạn là do **phán đoán đúng** hay do **may mắn**? Tới giờ mỗi lệnh bạn chỉ chọn **một lý do** để mua — mà thị trường thì không bao giờ chỉ có một lớp. Đọc thiếu lớp nào, bạn không biết mình đang thiếu."
 
 const BLOCK_3 =
-  "**Từ giờ: Cấp 4 «Thuần thục».** Bạn sẽ học nhìn lại mỗi lệnh qua 4 ô: quyết định đúng-thắng, đúng-thua, sai-thắng, sai-thua — và hiểu vũ khí lẫn điểm mù của chính mình."
+  "**Từ giờ: Cấp 4 «Thuần thục».** Bạn sẽ đọc trọn cả 5 lớp cho mỗi lệnh — kỹ thuật, dòng tiền, nội bộ, tin tức, định giá — tự chấm từng lớp trước khi đặt, rồi nhìn ra **vũ khí lẫn điểm mù** của chính mình qua kết quả thật."
 
 /**
  * Khối 3 khi Cấp 4 CHƯA mở (`CAP_MAX_ENABLED < 4`) — ĐÚNG cái xử lý trung thực
@@ -64,7 +78,7 @@ const BLOCK_3 =
  * phải sửa dòng nào.
  */
 const BLOCK_3_CAP4_CHUA_MO =
-  "**Cấp 4 «Thuần thục» chưa ra mắt.** Cấp 3 là chặng cuối của chương trình hiện tại — bạn đã đi hết phần đang mở. Khi Cấp 4 mở, bạn sẽ học nhìn lại mỗi lệnh qua 4 ô: quyết định đúng-thắng, đúng-thua, sai-thắng, sai-thua — và hiểu vũ khí lẫn điểm mù của chính mình."
+  "**Cấp 4 «Thuần thục» chưa ra mắt.** Cấp 3 là chặng cuối của chương trình hiện tại — bạn đã đi hết phần đang mở. Khi Cấp 4 mở, bạn sẽ đọc trọn cả 5 lớp cho mỗi lệnh — kỹ thuật, dòng tiền, nội bộ, tin tức, định giá — tự chấm từng lớp trước khi đặt, rồi nhìn ra vũ khí lẫn điểm mù của chính mình qua kết quả thật."
 
 /** Splits on the spec's own `**bold**` markers and renders them as `<strong>`. */
 function renderInlineBold(text: string) {
