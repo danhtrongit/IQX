@@ -5,10 +5,21 @@ Cấp 4 builds on a graduated Cấp 3: FREE, Thực chiến-only mode. Like Cấ
 adds no new order-level tables of its own — the "đọc 5 lớp" block is recorded
 as new columns on Cấp 1's ``order_kehoach`` (``doc_5_lop`` / ``ai_5_lop`` /
 ``so_lop_dong_thuan`` / ``so_lop_khac_ai``, see the "Cấp 4 additions" column
-block on ``app.models.cap1.OrderKehoach``). This module only owns the new
-``cap4_progress`` table: 3 nhiệm vụ timestamps + the recomputed "Thách thức
-Thuần thục" metrics. See ``~/Downloads/DEMO TRADING/LEVEL 4/IQX-Cap4-Spec.md``
-§2/§7/§8 for the verbatim data model this mirrors.
+block on ``app.models.cap1.OrderKehoach``). This module only owns the
+``cap4_progress`` table: ONE nhiệm vụ timestamp + the recomputed reading
+metrics.
+
+★ **HÌNH DẠNG HIỆN TẠI — MỘT nhiệm vụ** (mockup ``iqx-cap4-hanhtrinh.html``,
+migration ``a3f7c1d9e2b8``): «Đọc và chấm đủ 5 lớp qua 20 lệnh», tức
+``so_lenh_doc_du_5lop >= 20``. Hai nhiệm vụ cũ ("Lệnh đầu tiên đọc đủ 5 lớp",
+"Kết sổ lệnh đầu Cấp 4") và khối "Thách thức Thuần thục" (3 điều kiện) đã bị
+GỠ cùng ba cột của chúng. **Spec ``IQX-Cap4-Spec.md`` §2/§3 mô tả bản 3 nhiệm
+vụ và KHÔNG còn là chuẩn nghiệm thu cho phần này** — mockup thắng về bố
+cục/nhãn (luật §9 của repo).
+
+★ **Vũ khí / điểm mù SỐNG TIẾP** (spec §7 khối ⑨ + Khối 1 màn tốt nghiệp):
+vẫn được tính và hiển thị ở Phân tích danh mục, chỉ KHÔNG còn là cổng tốt
+nghiệp. "Chưa đủ dữ liệu" phải im lặng (NULL), không được thành 0.
 
 **The 5 lớp reuse Cấp 1's keys.** Spec §5.1's five layers (L1 Kỹ thuật ·
 L3 Dòng tiền · L4 Nội bộ · L5 Tin tức · Định giá) are exactly Cấp 1's five
@@ -84,23 +95,20 @@ class Cap4Progress(UUIDMixin, TimestampMixin, Base):
     )
     entered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
-    # 3 nhiệm vụ completion timestamps (nullable until done, never un-set)
+    # Nhiệm vụ DUY NHẤT — «Đọc và chấm đủ 5 lớp qua 20 lệnh». Nullable cho tới
+    # khi đạt, và một khi đã đóng dấu thì KHÔNG bao giờ gỡ ra.
     task_1_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    task_2_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    task_3_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    # Recomputed metrics (spec §2③ "Thách thức Thuần thục") — source of truth =
-    # order_kehoach.doc_5_lop/so_lop_dong_thuan JOIN order_ketso outcomes.
+    # Số lệnh MUA đã đọc + tự chấm đủ cả 5 lớp — nguồn sự thật là
+    # order_kehoach.doc_5_lop, tính lại mỗi lần đọc/ghi. 0 ở đây là 0 THẬT
+    # ("chưa đọc lệnh nào"), không phải sentinel cho "chưa biết".
     so_lenh_doc_du_5lop: Mapped[int] = mapped_column(
         Integer, nullable=False, default=0, server_default="0"
     )
     # Lớp đọc chuẩn nhất / kém nhất — NULL until ≥3 closed lệnh for that lớp.
+    # NULL = "chưa đủ dữ liệu để kết luận", KHÔNG phải "không có lớp nào".
     vu_khi_lop: Mapped[str | None] = mapped_column(String(32), nullable=True)
     diem_mu_lop: Mapped[str | None] = mapped_column(String(32), nullable=True)
-    # % thắng thật của lệnh đồng thuận cao (≥3 lớp AI Ủng hộ) — nhiệm vụ ③ đk 3.
-    ty_le_thang_dong_thuan_cao: Mapped[float] = mapped_column(
-        Float, nullable=False, default=0.0, server_default="0"
-    )
 
     graduated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     time_to_graduate_hours: Mapped[float | None] = mapped_column(Float, nullable=True)

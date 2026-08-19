@@ -1,5 +1,8 @@
 """Cấp 4 «Thuần thục» API — progress, enter, task, kế hoạch (đọc 5 lớp),
-vũ khí & điểm mù, thách thức thuần thục, graduate.
+vũ khí & điểm mù, graduate.
+
+★ ``GET /cap4/thach-thuc`` đã bị GỠ cùng khối "Thách thức Thuần thục" (3 điều
+kiện): Cấp 4 chỉ còn MỘT nhiệm vụ — «Đọc và chấm đủ 5 lớp qua 20 lệnh».
 
 Cấp 4 is FREE: all endpoints use ``CurrentUser`` (authenticated), NOT ``PremiumUser``.
 """
@@ -14,7 +17,6 @@ from app.schemas.cap4 import (
     KehoachRequest,
     OrderKehoachOut,
     TaskRequest,
-    ThachThucOut,
     VuKhiDiemMuOut,
 )
 from app.services.cap4.service import Cap4Service
@@ -38,8 +40,8 @@ async def enter(user: CurrentUser, db: DBSession) -> Cap4ProgressOut:
 
 @router.patch("/task", response_model=Cap4ProgressOut)
 async def mark_task(body: TaskRequest, user: CurrentUser, db: DBSession) -> Cap4ProgressOut:
-    """Cả 3 nhiệm vụ đều được suy ra từ order_kehoach/order_ketso — gọi
-    endpoint này chỉ kích hoạt tính lại (idempotent, không tự đặt)."""
+    """Nhiệm vụ duy nhất được suy ra từ order_kehoach — gọi endpoint này chỉ
+    kích hoạt tính lại (idempotent, không tự đặt). ``task_no`` hợp lệ = 1."""
     svc = Cap4Service(db)
     return await svc.mark_task(user.id, body.task_no)
 
@@ -71,17 +73,8 @@ async def get_vu_khi_diem_mu(user: CurrentUser, db: DBSession) -> VuKhiDiemMuOut
     return VuKhiDiemMuOut(**result)
 
 
-@router.get("/thach-thuc", response_model=ThachThucOut)
-async def get_thach_thuc(user: CurrentUser, db: DBSession) -> ThachThucOut:
-    """3 điều kiện của Thách thức Thuần thục (nhiệm vụ ③) kèm giá trị hiện tại
-    + đạt/chưa đạt + giải thích (spec §2③/§C12c)."""
-    svc = Cap4Service(db)
-    result = await svc.thach_thuc(user.id)
-    return ThachThucOut(**result)
-
-
 @router.post("/graduate", response_model=Cap4ProgressOut)
 async def graduate(user: CurrentUser, db: DBSession) -> Cap4ProgressOut:
-    """Tốt nghiệp Cấp 4 — chỉ khi đủ 3/3 nhiệm vụ."""
+    """Tốt nghiệp Cấp 4 — chỉ khi xong nhiệm vụ duy nhất (20 lệnh đọc đủ 5 lớp)."""
     svc = Cap4Service(db)
     return await svc.graduate(user.id)

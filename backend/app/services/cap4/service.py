@@ -1,5 +1,15 @@
-"""Cấp 4 «Thuần thục» service — đọc + tự chấm cả 5 lớp, vũ khí / điểm mù,
-Thách thức Thuần thục.
+"""Cấp 4 «Thuần thục» service — đọc + tự chấm cả 5 lớp, vũ khí / điểm mù.
+
+★ **MỘT nhiệm vụ duy nhất** (mockup ``iqx-cap4-hanhtrinh.html``): «Đọc và chấm
+đủ 5 lớp qua 20 lệnh» ⇒ ``so_lenh_doc_du_5lop >= 20``. Đó là CỔNG DUY NHẤT để
+tốt nghiệp. Hai nhiệm vụ cũ ("Lệnh đầu tiên đọc đủ 5 lớp" · "Kết sổ lệnh đầu
+Cấp 4") và khối "Thách thức Thuần thục" (3 điều kiện: 20 lệnh + có vũ khí VÀ
+điểm mù + đồng thuận cao thắng ≥60%) đã bị GỠ. Spec ``IQX-Cap4-Spec.md`` §2/§3
+mô tả bản 3 nhiệm vụ và KHÔNG còn là chuẩn nghiệm thu cho phần này.
+
+★ **Vũ khí / điểm mù vẫn được tính** (spec §7 khối ⑨ + Khối 1 màn tốt nghiệp)
+nhưng KHÔNG còn chặn tốt nghiệp: một người đọc đủ 20 lệnh mà chưa lệnh nào đóng
+vẫn tốt nghiệp được, và hai nhãn kia trung thực nói "chưa đủ dữ liệu" (NULL).
 
 Cấp 4 is FREE and Thực chiến-only, built on a graduated Cấp 3. It owns
 ``cap4_progress`` and EXTENDS Cấp 1's ``order_kehoach`` rows in place (new
@@ -8,7 +18,7 @@ the same physical table — see ``app.models.cap1``). It reuses
 ``VirtualTradingRepository`` (read-only here) for order lookups.
 
 **Everything derived (so_lenh_doc_du_5lop, the per-lớp win rates behind
-vũ khí/điểm mù, ty_le_thang_dong_thuan_cao, the 3 nhiệm vụ) is recomputed
+vũ khí/điểm mù, the nhiệm vụ) is recomputed
 server-side from the persisted ``order_kehoach`` / ``order_ketso`` history on
 every read/write — never trusted from client-supplied counters.** Even
 ``so_lop_dong_thuan``/``so_lop_khac_ai``, which the FE also computes for its own
@@ -28,19 +38,18 @@ measured ONLY by real market outcomes (``order_ketso.pnl_pct``). The
 
 Design notes (documented here since the spec leaves them implicit):
   - **"lệnh đọc đủ 5 lớp" = a BUY plan whose ``doc_5_lop`` rates all 5 lớp.**
-    It is a reading-habit counter (nhiệm vụ ③ đk 1, spec §2③ "đọc + chấm đủ 5
-    lớp qua ≥ 20 lệnh"), so it counts placed orders — open OR closed. The two
-    outcome-based metrics below instead need a result, so they only look at
-    closed round trips.
+    It is a reading-habit counter (the level's only nhiệm vụ), so it counts
+    placed orders — open OR closed. Vũ khí/điểm mù instead need a result, so
+    they only look at closed round trips.
+  - **The nhiệm vụ is NOT gated behind anything** — it is the only one.
   - **Deliberately NOT filtered by ``entered_at``**, for the same two reasons
     Cấp 3 documents: (1) ``doc_5_lop`` can only ever be set by
     ``record_kehoach`` below, which requires a ``Cap4Progress`` row, so any row
     carrying it is inherently Cấp-4-era; (2) ``VirtualOrder.created_at`` comes
     from a low-precision ``server_default=func.now()`` while ``entered_at`` is
     a microsecond-precision Python timestamp, so same-second comparisons are
-    unreliable. Nhiệm vụ ② (Kết sổ đầu Cấp 4) is the one place a real window is
-    needed — it uses ``OrderKetso.closed_at >= entered_at``, exactly as Cấp 3
-    does, because ``order_ketso`` rows carry no Cấp-4-only marker.
+    unreliable. (The one place that DID need a real window — nhiệm vụ ② "Kết
+    sổ lệnh đầu Cấp 4" — is gone, so ``_so_lenh_ketso_cap4`` went with it.)
   - **Pairing a kế hoạch (BUY) with its outcome (``order_ketso``, keyed on the
     SELL).** ``order_ketso`` has no FK back to the buy, so the pairing reuses
     Cấp 1's own rule verbatim (``Cap1Service._find_matching_buy``: the most
@@ -57,17 +66,13 @@ Design notes (documented here since the spec leaves them implicit):
     below that). ``vu_khi_lop``/``diem_mu_lop`` on the progress row are the
     best / worst QUALIFYING lớp (ties broken by more evidence, then by the
     canonical lớp order) so the labels are deterministic.
-  - **ty_le_thang_dong_thuan_cao (nhiệm vụ ③ đk 3)**: win rate among closed
-    orders whose ``so_lop_dong_thuan >= 3`` ("lệnh đồng thuận cao"). With no
-    such orders it is 0.0, never a trivially-passing empty average.
-  - **Nhiệm vụ ① is NOT gated** — it fires the first time any ``order_kehoach``
-    row has all 5 lớp rated.
-  - **Nhiệm vụ ② is gated behind ①** (spec §2② "Điều kiện mở: xong ①, có ≥1
-    lệnh mở") — the first Cấp-4-era ``order_ketso`` row.
-  - **Nhiệm vụ ③ is NOT gated** (spec §2③ "Điều kiện mở: vào Cấp 4") — all
-    three legs are evaluated from the moment the user enters Cấp 4.
-  - Once a nhiệm vụ's ``task_N_done_at`` is stamped it is NEVER un-stamped,
-    matching Cấp 1/2/3's "stamp when first met" pattern.
+  - **``ty_le_thang_dong_thuan_cao`` is GONE** — it was ``NOT NULL DEFAULT 0``
+    and answered "0%" to "chưa có lệnh đồng thuận cao nào", i.e. printed a
+    number it did not have (luật 1 của repo). It only ever fed điều kiện 3 of
+    the removed Thách thức, so it left with it. ``order_kehoach
+    .so_lop_dong_thuan`` itself STAYS — Kết sổ/Phân tích danh mục still read it.
+  - Once ``task_1_done_at`` is stamped it is NEVER un-stamped, matching Cấp
+    1/2/3's "stamp when first met" pattern.
 """
 
 from __future__ import annotations
@@ -86,13 +91,13 @@ from app.models.cap4 import LOP_KEYS, LOP_LABELS, Cap4Progress, NhanDinhLop
 from app.models.virtual_trading import OrderSide, OrderStatus, VirtualOrder
 from app.repositories.virtual_trading import VirtualTradingRepository
 
-_TASK_NOS = (1, 2, 3)
+#: Cấp 4 chỉ còn MỘT nhiệm vụ.
+_TASK_NOS = (1,)
 
 _NHAN_DINH_VALUES = frozenset(m.value for m in NhanDinhLop)
 
-# Thách thức Thuần thục (spec §2③) — triple condition, ALL must hold at once.
-_TASK3_SO_LENH_MIN = 20
-_TASK3_TY_LE_THANG_MIN = 60.0
+#: Nhiệm vụ DUY NHẤT — «Đọc và chấm đủ 5 lớp qua 20 lệnh».
+_TASK1_SO_LENH_MIN = 20
 
 # Vũ khí / điểm mù (spec §7 khối ⑨ + §8).
 _VU_KHI_MIN_PCT = 70.0
@@ -317,21 +322,7 @@ class Cap4Service:
                 pairs.append((kehoach, ketso))
         return pairs
 
-    async def _so_lenh_ketso_cap4(self, user_id: uuid.UUID, progress: Cap4Progress) -> int:
-        """Cấp-4-era closed Thực chiến round trips (nhiệm vụ ② source) — mirrors
-        Cấp 3's window since ``order_ketso`` carries no Cấp-4-only marker."""
-        result = await self._session.execute(
-            select(OrderKetso.id)
-            .join(VirtualOrder, VirtualOrder.id == OrderKetso.order_id)
-            .where(
-                VirtualOrder.user_id == user_id,
-                VirtualOrder.mode == "thuc_chien",
-                OrderKetso.closed_at >= progress.entered_at,
-            )
-        )
-        return len(result.all())
-
-    # ── Metrics (vũ khí/điểm mù + đồng thuận cao) ─────
+    # ── Metrics (vũ khí / điểm mù) ────────────────────
 
     @staticmethod
     def _is_win(ketso: OrderKetso) -> bool:
@@ -392,17 +383,6 @@ class Cap4Service:
             key=lambda row: (row["win_rate"], -row["n_orders"], LOP_KEYS.index(row["lop"])),
         )
 
-        dong_thuan_cao = [
-            ketso
-            for kehoach, ketso in pairs
-            if kehoach.so_lop_dong_thuan is not None and kehoach.so_lop_dong_thuan >= 3
-        ]
-        n_dong_thuan_cao = len(dong_thuan_cao)
-        n_dong_thuan_cao_thang = sum(1 for ketso in dong_thuan_cao if self._is_win(ketso))
-        ty_le_thang_dong_thuan_cao = (
-            n_dong_thuan_cao_thang / n_dong_thuan_cao * 100.0 if n_dong_thuan_cao else 0.0
-        )
-
         # Sorted by REAL win rate desc (spec §7 khối ⑨); lớp with no closed
         # lệnh at all (win_rate None) go last.
         lop_sorted = sorted(
@@ -419,9 +399,6 @@ class Cap4Service:
             "lop": lop_sorted,
             "vu_khi_lop": vu_khi_candidates[0]["lop"] if vu_khi_candidates else None,
             "diem_mu_lop": diem_mu_candidates[0]["lop"] if diem_mu_candidates else None,
-            "ty_le_thang_dong_thuan_cao": ty_le_thang_dong_thuan_cao,
-            "n_dong_thuan_cao": n_dong_thuan_cao,
-            "n_dong_thuan_cao_thang": n_dong_thuan_cao_thang,
         }
 
     @staticmethod
@@ -457,54 +434,33 @@ class Cap4Service:
             "chưa thành vũ khí, cũng chưa phải điểm mù."
         )
 
-    # ── Recompute + 3 nhiệm vụ ────────────────────────
+    # ── Recompute + nhiệm vụ DUY NHẤT ─────────────────
 
     async def _recompute_progress(self, user_id: uuid.UUID, progress: Cap4Progress) -> dict:
         metrics = await self._compute_metrics(user_id)
 
         progress.so_lenh_doc_du_5lop = metrics["so_lenh_doc_du_5lop"]
+        # Có thể quay về None khi lịch sử chưa đủ 3 lệnh/lớp — "chưa biết" phải
+        # đi ngược lại được, không được đóng băng một nhãn cũ.
         progress.vu_khi_lop = metrics["vu_khi_lop"]
         progress.diem_mu_lop = metrics["diem_mu_lop"]
-        progress.ty_le_thang_dong_thuan_cao = metrics["ty_le_thang_dong_thuan_cao"]
 
-        now = datetime.now(UTC)
-
-        # ① first kế hoạch that rates all 5 lớp — not gated.
-        if progress.task_1_done_at is None and metrics["so_lenh_doc_du_5lop"] >= 1:
-            progress.task_1_done_at = now
-
-        # ② first Cấp 4 kết sổ — gated behind ① (spec §2②).
-        if (
-            progress.task_1_done_at is not None
-            and progress.task_2_done_at is None
-            and await self._so_lenh_ketso_cap4(user_id, progress) >= 1
-        ):
-            progress.task_2_done_at = now
-
-        # ③ Thách thức Thuần thục — triple condition, NOT gated (spec §2③).
-        if progress.task_3_done_at is None and self._task3_legs(progress)["dat_ca_3"]:
-            progress.task_3_done_at = now
+        # ① «Đọc và chấm đủ 5 lớp qua 20 lệnh» — cổng DUY NHẤT, không gate gì.
+        if progress.task_1_done_at is None and self._task1_dat(progress):
+            progress.task_1_done_at = datetime.now(UTC)
 
         await self._session.flush()
         await self._session.refresh(progress)
         return metrics
 
     @staticmethod
-    def _task3_legs(progress: Cap4Progress) -> dict:
-        """The 3 legs of nhiệm vụ ③ (spec §2③), read off the recomputed row."""
-        so_lenh_dat = progress.so_lenh_doc_du_5lop >= _TASK3_SO_LENH_MIN
-        vu_khi_diem_mu_dat = progress.vu_khi_lop is not None and progress.diem_mu_lop is not None
-        ty_le_dat = progress.ty_le_thang_dong_thuan_cao >= _TASK3_TY_LE_THANG_MIN
-        return {
-            "so_lenh_dat": so_lenh_dat,
-            "vu_khi_diem_mu_dat": vu_khi_diem_mu_dat,
-            "ty_le_dat": ty_le_dat,
-            "dat_ca_3": so_lenh_dat and vu_khi_diem_mu_dat and ty_le_dat,
-        }
+    def _task1_dat(progress: Cap4Progress) -> bool:
+        """Nhiệm vụ ① đạt chưa — đọc off the recomputed row."""
+        return progress.so_lenh_doc_du_5lop >= _TASK1_SO_LENH_MIN
 
     async def mark_task(self, user_id: uuid.UUID, task_no: int) -> Cap4Progress:
-        """PATCH /cap4/task — all 3 nhiệm vụ are derived from order history, so
-        this just triggers a recompute pass (idempotent)."""
+        """PATCH /cap4/task — nhiệm vụ duy nhất được suy ra từ lịch sử lệnh, nên
+        endpoint này chỉ kích hoạt tính lại (idempotent)."""
         if task_no not in _TASK_NOS:
             raise BadRequestError("task_no không hợp lệ")
         progress = await self._get_progress_row(user_id)
@@ -534,63 +490,15 @@ class Cap4Service:
             "giai_thich": _VU_KHI_GIAI_THICH,
         }
 
-    # ── Thách thức Thuần thục — GET /cap4/thach-thuc ───
-
-    async def thach_thuc(self, user_id: uuid.UUID) -> dict:
-        """3 sub-conditions of nhiệm vụ ③ + current values + giải thích each
-        (feeds §C12c display)."""
-        progress = await self._get_progress_row(user_id)
-        if progress is None:
-            raise NotFoundError("tiến trình Cấp 4")
-        metrics = await self._recompute_progress(user_id, progress)
-        legs = self._task3_legs(progress)
-
-        so_lop_da_biet = int(progress.vu_khi_lop is not None) + int(
-            progress.diem_mu_lop is not None
-        )
-        vu_khi_ten = LOP_LABELS.get(progress.vu_khi_lop or "", "chưa xác định")
-        diem_mu_ten = LOP_LABELS.get(progress.diem_mu_lop or "", "chưa xác định")
-
-        return {
-            "dat_ca_3": legs["dat_ca_3"],
-            "so_lenh_doc_du_5lop": {
-                "ten": f"Đọc + chấm đủ 5 lớp qua ≥ {_TASK3_SO_LENH_MIN} lệnh",
-                "gia_tri_hien_tai": float(progress.so_lenh_doc_du_5lop),
-                "muc_tieu": float(_TASK3_SO_LENH_MIN),
-                "dat": legs["so_lenh_dat"],
-                "giai_thich": (
-                    f"Đã có {progress.so_lenh_doc_du_5lop}/{_TASK3_SO_LENH_MIN} lệnh bạn "
-                    "đọc và tự chấm cả 5 lớp trước khi đặt — đây là thói quen đọc toàn cảnh, "
-                    "không phải điểm đúng/sai."
-                ),
-            },
-            "vu_khi_diem_mu": {
-                "ten": "Nhận ra vũ khí + điểm mù của mình",
-                "gia_tri_hien_tai": float(so_lop_da_biet),
-                "muc_tieu": 2.0,
-                "dat": legs["vu_khi_diem_mu_dat"],
-                "giai_thich": (
-                    f"Vũ khí: {vu_khi_ten} · Điểm mù: {diem_mu_ten}. {_VU_KHI_GIAI_THICH}"
-                ),
-            },
-            "ty_le_thang_dong_thuan_cao": {
-                "ten": f"Lệnh đồng thuận cao (≥3 lớp ủng hộ) thắng ≥ {_TASK3_TY_LE_THANG_MIN:.0f}%",
-                "gia_tri_hien_tai": progress.ty_le_thang_dong_thuan_cao,
-                "muc_tieu": _TASK3_TY_LE_THANG_MIN,
-                "dat": legs["ty_le_dat"],
-                "giai_thich": (
-                    f"Trong {metrics['n_dong_thuan_cao']} lệnh đã đóng có ít nhất 3 lớp được "
-                    f"đánh giá Ủng hộ, {metrics['n_dong_thuan_cao_thang']} lệnh thắng "
-                    f"({progress.ty_le_thang_dong_thuan_cao:.1f}%) — kiểm chứng xem đọc toàn "
-                    "cảnh có giúp chọn lệnh tốt hơn không."
-                ),
-            },
-        }
-
     # ── Graduation ────────────────────────────────────
 
     async def graduate(self, user_id: uuid.UUID) -> Cap4Progress:
-        """Graduate Cấp 4 — only when all 3 nhiệm vụ are done (thực chất ③)."""
+        """Graduate Cấp 4 — chỉ khi xong nhiệm vụ duy nhất (20 lệnh đọc đủ 5 lớp).
+
+        ★ Vũ khí/điểm mù KHÔNG còn là điều kiện: chúng cần lệnh ĐÃ ĐÓNG, nên
+        gắn chúng vào cổng tốt nghiệp sẽ nhốt một người đã đọc đủ 20 lệnh chỉ
+        vì thị trường chưa cho họ đủ kết quả.
+        """
         progress = await self._get_progress_row(user_id)
         if progress is None:
             raise NotFoundError("tiến trình Cấp 4")
@@ -600,7 +508,7 @@ class Cap4Service:
             getattr(progress, f"task_{n}_done_at") is not None for n in _TASK_NOS
         )
         if not all_tasks_done:
-            raise ConflictError("Chưa hoàn thành đủ 3 nhiệm vụ Cấp 4")
+            raise ConflictError("Chưa hoàn thành nhiệm vụ Cấp 4")
 
         if progress.graduated_at is None:
             now = datetime.now(UTC)

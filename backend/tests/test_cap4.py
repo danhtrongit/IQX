@@ -1,14 +1,19 @@
-"""Tests for the Cấp 4 «Thuần thục» backend — đọc + tự chấm 5 lớp, vũ khí /
-điểm mù (đo bằng KẾT QUẢ THẬT), tỷ lệ thắng lệnh đồng thuận cao, Thách thức
-Thuần thục (triple condition), graduation.
+"""Tests for the Cấp 4 «Thuần thục» backend — MỘT nhiệm vụ ("Đọc và chấm đủ 5
+lớp qua 20 lệnh"), vũ khí / điểm mù (đo bằng KẾT QUẢ THẬT), graduation.
 
 Mirrors ``tests/test_cap3.py``'s style. Uses the ``test_user``/``db_session``
 fixtures from ``tests/conftest.py``.
 
+★ HÌNH DẠNG MỚI (mockup ``iqx-cap4-hanhtrinh.html``): Cấp 4 có ĐÚNG MỘT nhiệm
+vụ — ``so_lenh_doc_du_5lop >= 20``. "Lệnh đầu tiên đọc đủ 5 lớp", "Kết sổ lệnh
+đầu Cấp 4" và khối "Thách thức Thuần thục" (3 điều kiện) đã bị GỠ cùng cột
+``task_2_done_at``/``task_3_done_at``/``ty_le_thang_dong_thuan_cao``. Vũ khí /
+điểm mù SỐNG TIẾP (spec §7 khối ⑨ + Khối 1 màn tốt nghiệp) nhưng KHÔNG còn là
+cổng tốt nghiệp.
+
 NOTE on dates: ``Cap4Progress.entered_at`` is real wall-clock time (not
-mocked) and Cấp 4's "kết sổ Cấp 4" window is ``OrderKetso.closed_at >=
-entered_at``, so Cấp-4-period round trips use ``date.today()``. Cấp 0/1/2/3
-setup dates mirror ``test_cap3.py``.
+mocked); Cấp-4-period round trips use ``date.today()``. Cấp 0/1/2/3 setup dates
+mirror ``test_cap3.py``.
 
 NOTE on the CRITICAL PRINCIPLE (spec §4/§9): nothing here rewards agreeing
 with AI or penalises differing from it — ``so_lop_khac_ai`` is a neutral
@@ -329,7 +334,7 @@ async def test_enter_requires_cap3_graduated(db_session, test_user):
     assert progress.so_lenh_doc_du_5lop == 0
     assert progress.vu_khi_lop is None
     assert progress.diem_mu_lop is None
-    assert progress.ty_le_thang_dong_thuan_cao == 0.0
+    assert progress.task_1_done_at is None
 
     # idempotent
     progress2 = await svc.enter(test_user.id)
@@ -609,240 +614,126 @@ async def test_vu_khi_diem_mu_ignores_open_and_unrated_orders(db_session, test_u
 
 
 # ══════════════════════════════════════════════════════
-# ty_le_thang_dong_thuan_cao
+# Nhiệm vụ DUY NHẤT — "Đọc và chấm đủ 5 lớp qua 20 lệnh"
 # ══════════════════════════════════════════════════════
 
 
-@pytest.mark.asyncio
-async def test_ty_le_thang_dong_thuan_cao(db_session, test_user):
-    """Win rate among closed orders with so_lop_dong_thuan >= 3 only."""
-    cap1, cap4, account = await _enter_cap4(db_session, test_user.id)
+async def _twenty_reads(db_session, cap1, cap4, account_id, user_id) -> None:
+    """20 lệnh đã đọc + chấm đủ 5 lớp — đúng cổng duy nhất của Cấp 4.
 
-    ai_cao = _doc(ky_thuat="ok", dong_tien="ok", noi_bo="ok")  # 3 lớp AI Ủng hộ
-    ai_thap = _doc(ky_thuat="ok")  # 1 lớp AI Ủng hộ
-
-    # đồng thuận cao: 4 lệnh, 3 thắng → 75%
-    for i in range(4):
+    Cố tình KHÔNG dựng vũ khí/điểm mù: chúng không còn là điều kiện tốt
+    nghiệp, và một helper dựng sẵn chúng sẽ che mất chính hồi quy đó.
+    """
+    for i in range(20):
         await _round_trip_cap4(
-            db_session, cap1, cap4, account.id, test_user.id,
-            symbol=f"H{i}", doc_5_lop=_doc(), ai_5_lop=ai_cao, win=i < 3,
-        )
-    # đồng thuận thấp: 4 lệnh, 0 thắng — must NOT drag the number down
-    for i in range(4):
-        await _round_trip_cap4(
-            db_session, cap1, cap4, account.id, test_user.id,
-            symbol=f"L{i}", doc_5_lop=_doc(), ai_5_lop=ai_thap, win=False,
+            db_session, cap1, cap4, account_id, user_id,
+            symbol=f"AA{i}", doc_5_lop=_doc(), win=i < 10,
         )
 
-    progress = await cap4.get_progress(test_user.id)
-    assert progress.ty_le_thang_dong_thuan_cao == pytest.approx(75.0)
-
 
 @pytest.mark.asyncio
-async def test_ty_le_thang_dong_thuan_cao_zero_without_data(db_session, test_user):
-    cap1, cap4, account = await _enter_cap4(db_session, test_user.id)
-    progress = await cap4.get_progress(test_user.id)
-    assert progress.ty_le_thang_dong_thuan_cao == 0.0
+async def test_nhiem_vu_needs_20_fully_rated_orders(db_session, test_user):
+    """★ Cổng DUY NHẤT của Cấp 4: 20 lệnh đọc + chấm đủ 5 lớp.
 
-
-# ══════════════════════════════════════════════════════
-# Nhiệm vụ ①②③
-# ══════════════════════════════════════════════════════
-
-
-@pytest.mark.asyncio
-async def test_task1_and_task2_progression(db_session, test_user):
+    Một lệnh chấm thiếu lớp không được tính; 19 lệnh chưa xong; lệnh thứ 20
+    mới đóng dấu.
+    """
     cap1, cap4, account = await _enter_cap4(db_session, test_user.id)
 
-    # A partially-rated order does NOT complete ①.
+    # Lệnh chấm thiếu 1 lớp → không tính.
     partial = {k: v for k, v in _doc().items() if k != "dinh_gia"}
     await _round_trip_cap4(
         db_session, cap1, cap4, account.id, test_user.id,
         symbol="Q0", doc_5_lop=partial, close=False,
     )
     progress = await cap4.get_progress(test_user.id)
+    assert progress.so_lenh_doc_du_5lop == 0
     assert progress.task_1_done_at is None
-    assert progress.task_2_done_at is None
 
-    # First fully-rated order → ① done, ② still pending (no kết sổ yet).
+    # 19 lệnh đủ 5 lớp → vẫn chưa xong (không có "gần đủ thì cho qua").
+    for i in range(19):
+        await _round_trip_cap4(
+            db_session, cap1, cap4, account.id, test_user.id,
+            symbol=f"R{i}", doc_5_lop=_doc(), close=False,
+        )
+    progress = await cap4.get_progress(test_user.id)
+    assert progress.so_lenh_doc_du_5lop == 19
+    assert progress.task_1_done_at is None
+
+    # Lệnh thứ 20 → đóng dấu.
     await _round_trip_cap4(
         db_session, cap1, cap4, account.id, test_user.id,
-        symbol="Q1", doc_5_lop=_doc(ky_thuat="ok"), close=False,
+        symbol="R19", doc_5_lop=_doc(), close=False,
     )
-    progress = await cap4.get_progress(test_user.id)
-    assert progress.task_1_done_at is not None
-    assert progress.task_2_done_at is None
-
-    # First Cấp 4 kết sổ → ② done.
-    await _round_trip_cap4(
-        db_session, cap1, cap4, account.id, test_user.id,
-        symbol="Q2", doc_5_lop=_doc(ky_thuat="ok"), win=True,
-    )
-    progress = await cap4.get_progress(test_user.id)
-    assert progress.task_2_done_at is not None
-
-
-async def _twenty_orders_all_legs(db_session, cap1, cap4, account_id, user_id) -> None:
-    """20 fully-rated Cấp 4 orders satisfying all 3 legs of nhiệm vụ ③:
-    so_lenh 20 · vũ khí ky_thuat (10/12 = 83%) · điểm mù tin_tuc (2/8 = 25%) ·
-    đồng thuận cao thắng 10/12 = 83%."""
-    ai_cao = _doc(ky_thuat="ok", dong_tien="ok", noi_bo="ok")
-    ai_thap = _doc(dinh_gia="ok")
-    for i in range(12):
-        await _round_trip_cap4(
-            db_session, cap1, cap4, account_id, user_id,
-            symbol=f"AA{i}", doc_5_lop=_doc(ky_thuat="ok"), ai_5_lop=ai_cao, win=i < 10,
-        )
-    for i in range(8):
-        await _round_trip_cap4(
-            db_session, cap1, cap4, account_id, user_id,
-            symbol=f"BB{i}", doc_5_lop=_doc(tin_tuc="ok"), ai_5_lop=ai_thap, win=i < 2,
-        )
-
-
-@pytest.mark.asyncio
-async def test_task3_done_when_all_three_met(db_session, test_user):
-    cap1, cap4, account = await _enter_cap4(db_session, test_user.id)
-    await _twenty_orders_all_legs(db_session, cap1, cap4, account.id, test_user.id)
-
     progress = await cap4.get_progress(test_user.id)
     assert progress.so_lenh_doc_du_5lop == 20
-    assert progress.vu_khi_lop == "ky_thuat"
-    assert progress.diem_mu_lop == "tin_tuc"
-    assert progress.ty_le_thang_dong_thuan_cao == pytest.approx(1000.0 / 12)
-    assert progress.task_3_done_at is not None
+    assert progress.task_1_done_at is not None
 
-
-@pytest.mark.asyncio
-async def test_task3_fails_when_only_so_lenh_short(db_session, test_user):
-    """Vũ khí + điểm mù found and đồng thuận cao ≥60%, but only 18 lệnh."""
-    cap1, cap4, account = await _enter_cap4(db_session, test_user.id)
-    ai_cao = _doc(ky_thuat="ok", dong_tien="ok", noi_bo="ok")
-    ai_thap = _doc(dinh_gia="ok")
-    for i in range(10):
-        await _round_trip_cap4(
-            db_session, cap1, cap4, account.id, test_user.id,
-            symbol=f"CC{i}", doc_5_lop=_doc(ky_thuat="ok"), ai_5_lop=ai_cao, win=i < 8,
-        )
-    for i in range(8):
-        await _round_trip_cap4(
-            db_session, cap1, cap4, account.id, test_user.id,
-            symbol=f"DD{i}", doc_5_lop=_doc(tin_tuc="ok"), ai_5_lop=ai_thap, win=i < 2,
-        )
-
+    # Đã đóng dấu thì KHÔNG bao giờ gỡ ra (quy ước Cấp 1/2/3).
+    stamped = progress.task_1_done_at
     progress = await cap4.get_progress(test_user.id)
-    assert progress.so_lenh_doc_du_5lop == 18
-    assert progress.vu_khi_lop == "ky_thuat"
-    assert progress.diem_mu_lop == "tin_tuc"
-    assert progress.ty_le_thang_dong_thuan_cao == pytest.approx(80.0)
-    assert progress.task_3_done_at is None
+    assert progress.task_1_done_at == stamped
 
 
 @pytest.mark.asyncio
-async def test_task3_fails_when_vu_khi_diem_mu_missing(db_session, test_user):
-    """20 lệnh + đồng thuận cao thắng 100%, but no lớp ever self-rated Ủng hộ
-    → hệ thống chưa đủ dữ liệu để chỉ ra vũ khí/điểm mù."""
+async def test_nhiem_vu_does_not_need_ket_so_or_vu_khi(db_session, test_user):
+    """★ HỒI QUY: hai nhiệm vụ cũ (Kết sổ lệnh đầu · Thách thức Thuần thục 3
+    điều kiện) đã bị GỠ — 20 lệnh MỞ, không lệnh nào đóng, không lớp nào tự
+    chấm Ủng hộ, vẫn đủ điều kiện tốt nghiệp."""
     cap1, cap4, account = await _enter_cap4(db_session, test_user.id)
-    ai_cao = _doc(ky_thuat="ok", dong_tien="ok", noi_bo="ok")
     for i in range(20):
         await _round_trip_cap4(
             db_session, cap1, cap4, account.id, test_user.id,
-            symbol=f"EE{i}", doc_5_lop=_doc(), ai_5_lop=ai_cao, win=True,
+            symbol=f"OP{i}", doc_5_lop=_doc(), close=False,
         )
 
     progress = await cap4.get_progress(test_user.id)
     assert progress.so_lenh_doc_du_5lop == 20
-    assert progress.ty_le_thang_dong_thuan_cao == pytest.approx(100.0)
+    assert progress.task_1_done_at is not None
+    # Chưa có lệnh đóng nào → chưa kết luận được vũ khí/điểm mù, và đó KHÔNG
+    # phải lý do chặn tốt nghiệp nữa.
     assert progress.vu_khi_lop is None
     assert progress.diem_mu_lop is None
-    assert progress.task_3_done_at is None
+
+    graduated = await cap4.graduate(test_user.id)
+    assert graduated.graduated_at is not None
 
 
 @pytest.mark.asyncio
-async def test_task3_fails_when_only_ty_le_thang_short(db_session, test_user):
-    """20 lệnh + vũ khí + điểm mù found, but đồng thuận cao only wins 33%."""
-    cap1, cap4, account = await _enter_cap4(db_session, test_user.id)
-    ai_trung_tinh = _doc()  # 0 lớp AI Ủng hộ
-    ai_cao = _doc(ky_thuat="ok", dong_tien="ok", noi_bo="ok")
+async def test_progress_row_has_no_removed_columns(db_session, test_user):
+    """Cột của 2 nhiệm vụ đã gỡ + tỷ lệ đồng thuận cao KHÔNG còn tồn tại.
 
-    for i in range(4):  # vũ khí ky_thuat — 4/4 thắng, đồng thuận thấp
-        await _round_trip_cap4(
-            db_session, cap1, cap4, account.id, test_user.id,
-            symbol=f"GG{i}", doc_5_lop=_doc(ky_thuat="ok"), ai_5_lop=ai_trung_tinh, win=True,
-        )
-    for i in range(4):  # điểm mù tin_tuc — 0/4 thắng, đồng thuận thấp
-        await _round_trip_cap4(
-            db_session, cap1, cap4, account.id, test_user.id,
-            symbol=f"HH{i}", doc_5_lop=_doc(tin_tuc="ok"), ai_5_lop=ai_trung_tinh, win=False,
-        )
-    for i in range(12):  # đồng thuận cao — chỉ 4/12 thắng = 33%
-        await _round_trip_cap4(
-            db_session, cap1, cap4, account.id, test_user.id,
-            symbol=f"II{i}", doc_5_lop=_doc(), ai_5_lop=ai_cao, win=i < 4,
-        )
-
+    ★ Luật 1: ``ty_le_thang_dong_thuan_cao`` là ``NOT NULL DEFAULT 0`` — "chưa
+    có lệnh đồng thuận cao nào" bị in ra thành 0%. Nó đi cùng khối Thách thức.
+    """
+    _cap1, cap4, _account = await _enter_cap4(db_session, test_user.id)
     progress = await cap4.get_progress(test_user.id)
-    assert progress.so_lenh_doc_du_5lop == 20
-    assert progress.vu_khi_lop == "ky_thuat"
-    assert progress.diem_mu_lop == "tin_tuc"
-    assert progress.ty_le_thang_dong_thuan_cao == pytest.approx(100.0 / 3)
-    assert progress.task_3_done_at is None
+    for gone in ("task_2_done_at", "task_3_done_at", "ty_le_thang_dong_thuan_cao"):
+        assert not hasattr(progress, gone), gone
 
 
 @pytest.mark.asyncio
 async def test_mark_task_recomputes_only(db_session, test_user):
     cap1, cap4, account = await _enter_cap4(db_session, test_user.id)
-    with pytest.raises(BadRequestError):
-        await cap4.mark_task(test_user.id, 9)
+    # Cấp 4 chỉ còn nhiệm vụ ① — ② và ③ không còn là task_no hợp lệ.
+    for bad in (0, 2, 3, 9):
+        with pytest.raises(BadRequestError):
+            await cap4.mark_task(test_user.id, bad)
 
     # No qualifying history → PATCH does not fabricate completion.
     progress = await cap4.mark_task(test_user.id, 1)
     assert progress.task_1_done_at is None
 
-    await _round_trip_cap4(
-        db_session, cap1, cap4, account.id, test_user.id,
-        symbol="M0", doc_5_lop=_doc(ky_thuat="ok"), close=False,
-    )
+    await _twenty_reads(db_session, cap1, cap4, account.id, test_user.id)
     progress = await cap4.mark_task(test_user.id, 1)
     assert progress.task_1_done_at is not None
 
 
-# ══════════════════════════════════════════════════════
-# GET /cap4/thach-thuc
-# ══════════════════════════════════════════════════════
-
-
 @pytest.mark.asyncio
-async def test_thach_thuc_requires_progress(db_session, test_user):
+async def test_thach_thuc_endpoint_is_gone(db_session, test_user):
+    """Khối "Thách thức Thuần thục" (3 điều kiện) đã bị gỡ khỏi service."""
     cap4 = Cap4Service(db_session)
-    with pytest.raises(NotFoundError):
-        await cap4.thach_thuc(test_user.id)
-
-
-@pytest.mark.asyncio
-async def test_thach_thuc_shape_and_values(db_session, test_user):
-    cap1, cap4, account = await _enter_cap4(db_session, test_user.id)
-    ai_cao = _doc(ky_thuat="ok", dong_tien="ok", noi_bo="ok")
-    for i in range(4):
-        await _round_trip_cap4(
-            db_session, cap1, cap4, account.id, test_user.id,
-            symbol=f"JJ{i}", doc_5_lop=_doc(ky_thuat="ok"), ai_5_lop=ai_cao, win=True,
-        )
-
-    result = await cap4.thach_thuc(test_user.id)
-    assert result["dat_ca_3"] is False
-    assert result["so_lenh_doc_du_5lop"]["gia_tri_hien_tai"] == 4
-    assert result["so_lenh_doc_du_5lop"]["muc_tieu"] == 20
-    assert result["so_lenh_doc_du_5lop"]["dat"] is False
-    assert result["vu_khi_diem_mu"]["gia_tri_hien_tai"] == 1  # vũ khí only
-    assert result["vu_khi_diem_mu"]["muc_tieu"] == 2
-    assert result["vu_khi_diem_mu"]["dat"] is False
-    assert result["ty_le_thang_dong_thuan_cao"]["gia_tri_hien_tai"] == pytest.approx(100.0)
-    assert result["ty_le_thang_dong_thuan_cao"]["muc_tieu"] == 60.0
-    assert result["ty_le_thang_dong_thuan_cao"]["dat"] is True
-    for key in ("so_lenh_doc_du_5lop", "vu_khi_diem_mu", "ty_le_thang_dong_thuan_cao"):
-        assert result[key]["ten"]
-        assert result[key]["giai_thich"]  # §C12c
+    assert not hasattr(cap4, "thach_thuc")
 
 
 # ══════════════════════════════════════════════════════
@@ -863,8 +754,14 @@ async def test_khac_ai_is_neutral(db_session, test_user):
             db_session, cap1, cap4, account.id, test_user.id,
             symbol=f"S{i}", doc_5_lop=same, ai_5_lop=same, win=True,
         )
-    baseline = await cap4.thach_thuc(test_user.id)
+    baseline = await cap4.vu_khi_diem_mu(test_user.id)
     baseline_progress = await cap4.get_progress(test_user.id)
+    # ★ Chụp GIÁ TRỊ, không giữ tham chiếu: `get_progress` trả về CÙNG một
+    # object ORM (identity map của session), nên so sánh object với chính nó
+    # sau khi recompute là một bài canh luôn xanh.
+    baseline_vu_khi = baseline_progress.vu_khi_lop
+    baseline_diem_mu = baseline_progress.diem_mu_lop
+    baseline_so_lenh = baseline_progress.so_lenh_doc_du_5lop
 
     other = await _make_order(db_session, account.id, test_user.id, symbol="XX")
     await cap1.record_kehoach(
@@ -877,18 +774,16 @@ async def test_khac_ai_is_neutral(db_session, test_user):
     )
     assert kehoach.so_lop_khac_ai == 4  # neutral count, recorded
 
-    # so_lop_khac_ai feeds NOTHING: điểm/nhãn/nhiệm vụ unchanged apart from the
-    # extra fully-rated order (which is a reading-habit count, not an AI score).
-    after = await cap4.thach_thuc(test_user.id)
+    # so_lop_khac_ai feeds NOTHING: nhãn/vũ khí/điểm mù không đổi, chỉ có số
+    # lệnh đọc đủ 5 lớp tăng (thói quen đọc, không phải điểm khớp AI).
+    after = await cap4.vu_khi_diem_mu(test_user.id)
     after_progress = await cap4.get_progress(test_user.id)
-    assert after["vu_khi_diem_mu"] == baseline["vu_khi_diem_mu"]
-    assert after["ty_le_thang_dong_thuan_cao"] == baseline["ty_le_thang_dong_thuan_cao"]
-    assert after_progress.vu_khi_lop == baseline_progress.vu_khi_lop
-    assert after_progress.diem_mu_lop == baseline_progress.diem_mu_lop
-    assert after_progress.ty_le_thang_dong_thuan_cao == pytest.approx(
-        baseline_progress.ty_le_thang_dong_thuan_cao
-    )
-    assert after["so_lenh_doc_du_5lop"]["gia_tri_hien_tai"] == 5
+    assert after["lop"] == baseline["lop"]
+    assert after["vu_khi_lop"] == baseline["vu_khi_lop"]
+    assert after["diem_mu_lop"] == baseline["diem_mu_lop"]
+    assert after_progress.vu_khi_lop == baseline_vu_khi
+    assert after_progress.diem_mu_lop == baseline_diem_mu
+    assert after_progress.so_lenh_doc_du_5lop == baseline_so_lenh + 1
 
 
 # ══════════════════════════════════════════════════════
@@ -897,17 +792,27 @@ async def test_khac_ai_is_neutral(db_session, test_user):
 
 
 @pytest.mark.asyncio
-async def test_graduate_requires_3_of_3(db_session, test_user):
+async def test_graduate_requires_the_single_task(db_session, test_user):
     cap1, cap4, account = await _enter_cap4(db_session, test_user.id)
 
     with pytest.raises(ConflictError):
         await cap4.graduate(test_user.id)
 
-    await _twenty_orders_all_legs(db_session, cap1, cap4, account.id, test_user.id)
+    # 19 lệnh — vẫn chưa được.
+    for i in range(19):
+        await _round_trip_cap4(
+            db_session, cap1, cap4, account.id, test_user.id,
+            symbol=f"T{i}", doc_5_lop=_doc(), close=False,
+        )
+    with pytest.raises(ConflictError):
+        await cap4.graduate(test_user.id)
+
+    await _round_trip_cap4(
+        db_session, cap1, cap4, account.id, test_user.id,
+        symbol="T19", doc_5_lop=_doc(), close=False,
+    )
     progress = await cap4.get_progress(test_user.id)
     assert progress.task_1_done_at is not None
-    assert progress.task_2_done_at is not None
-    assert progress.task_3_done_at is not None
 
     progress = await cap4.graduate(test_user.id)
     assert progress.graduated_at is not None
@@ -945,6 +850,10 @@ async def test_cap4_endpoints_wired_and_free(client, db_session, test_user):
     body = r.json()
     assert body["so_lenh_doc_du_5lop"] == 0
     assert body["vu_khi_lop"] is None
+    # Wire shape của Cấp 4 mới — 1 nhiệm vụ, không tỷ lệ đồng thuận cao.
+    assert "task_1_done_at" in body
+    for gone in ("task_2_done_at", "task_3_done_at", "ty_le_thang_dong_thuan_cao"):
+        assert gone not in body, gone
 
     r = await client.post("/api/v1/cap4/graduate", headers=headers)
     assert r.status_code == 409
@@ -981,7 +890,8 @@ async def test_cap4_endpoints_wired_and_free(client, db_session, test_user):
 
     r = await client.patch("/api/v1/cap4/task", headers=headers, json={"task_no": 1})
     assert r.status_code == 200, r.text
-    assert r.json()["task_1_done_at"] is not None
+    # 1 lệnh đọc đủ 5 lớp — CHƯA đủ 20, nên nhiệm vụ vẫn chưa xong.
+    assert r.json()["task_1_done_at"] is None
 
     r = await client.get("/api/v1/cap4/vu-khi-diem-mu", headers=headers)
     assert r.status_code == 200, r.text
@@ -991,13 +901,9 @@ async def test_cap4_endpoints_wired_and_free(client, db_session, test_user):
     assert vk_body["so_lenh_toi_thieu"] == 3
     assert vk_body["giai_thich"]
 
+    # Khối "Thách thức Thuần thục" đã bị gỡ cùng 2 nhiệm vụ kia.
     r = await client.get("/api/v1/cap4/thach-thuc", headers=headers)
-    assert r.status_code == 200, r.text
-    tt_body = r.json()
-    assert "dat_ca_3" in tt_body
-    assert "so_lenh_doc_du_5lop" in tt_body
-    assert "vu_khi_diem_mu" in tt_body
-    assert "ty_le_thang_dong_thuan_cao" in tt_body
+    assert r.status_code == 404
 
     # Invalid payload → 400 from the service's own validation.
     r = await client.post(
@@ -1010,3 +916,189 @@ async def test_cap4_endpoints_wired_and_free(client, db_session, test_user):
     # Unauthenticated is rejected
     r = await client.get("/api/v1/cap4/progress")
     assert r.status_code == 401
+
+
+# ── Migration: 3 nhiệm vụ + Thách thức Thuần thục → 1 nhiệm vụ ───
+
+
+#: The shape production is on today, at revision ``b76c7019f77b``. Written out
+#: by hand so this test pins the migration against the columns that actually
+#: exist in prod, not against whatever the ORM says after the change.
+_PROD_CAP4_PROGRESS_DDL = """
+CREATE TABLE cap4_progress (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    entered_at TIMESTAMP NOT NULL,
+    task_1_done_at TIMESTAMP,
+    task_2_done_at TIMESTAMP,
+    task_3_done_at TIMESTAMP,
+    so_lenh_doc_du_5lop INTEGER NOT NULL DEFAULT 0,
+    vu_khi_lop VARCHAR(32),
+    diem_mu_lop VARCHAR(32),
+    ty_le_thang_dong_thuan_cao FLOAT NOT NULL DEFAULT 0,
+    graduated_at TIMESTAMP,
+    time_to_graduate_hours FLOAT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+)
+"""
+
+
+def _load_cap4_1task_migration():
+    """Import the revision module by path — ``alembic/versions`` is not a package."""
+    import importlib.util
+    from pathlib import Path
+
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "alembic"
+        / "versions"
+        / "a3f7c1d9e2b8_cap4_one_task_doc_5_lop_20_lenh.py"
+    )
+    spec = importlib.util.spec_from_file_location("_cap4_1task_migration", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _run_cap4_migration(conn, direction: str) -> None:
+    """Run the real ``upgrade()``/``downgrade()`` body against ``conn``."""
+    from alembic.migration import MigrationContext
+    from alembic.operations import Operations
+
+    module = _load_cap4_1task_migration()
+    with Operations.context(MigrationContext.configure(conn)):
+        getattr(module, direction)()
+
+
+def _cap4_columns(conn) -> list[str]:
+    return [r[1] for r in conn.exec_driver_sql("PRAGMA table_info(cap4_progress)").fetchall()]
+
+
+def _cap4_rows(conn) -> dict[str, dict]:
+    cols = _cap4_columns(conn)
+    out = {}
+    for row in conn.exec_driver_sql(f"SELECT {', '.join(cols)} FROM cap4_progress").fetchall():
+        record = dict(zip(cols, row, strict=True))
+        out[record["id"]] = record
+    return out
+
+
+def _seed_old_shape_cap4_rows(conn) -> None:
+    """Old-shape rows under the 3-task model.
+
+    ★ PROD kỳ vọng 0 dòng ``cap4_progress`` (trần cấp đang là 3, không ai vào
+    được Cấp 4) — nhưng "kỳ vọng" không phải "chứng minh", nên ánh xạ vẫn phải
+    được kiểm trên dữ liệu kiểu-prod thật. Mỗi cột nhiệm vụ mang một mốc thời
+    gian KHÁC NHAU để phân biệt "ánh xạ đúng ô" với "bị xáo".
+    """
+    conn.exec_driver_sql(_PROD_CAP4_PROGRESS_DDL)
+    # ① Người đã xong cả 3 nhiệm vụ cũ và đã tốt nghiệp.
+    conn.exec_driver_sql(
+        """
+        INSERT INTO cap4_progress (
+            id, user_id, entered_at, task_1_done_at, task_2_done_at, task_3_done_at,
+            so_lenh_doc_du_5lop, vu_khi_lop, diem_mu_lop, ty_le_thang_dong_thuan_cao,
+            graduated_at
+        ) VALUES (
+            'tn1', 'u-tn1', '2026-01-01 00:00:00',
+            '2026-01-01 01:00:00',  -- ① cũ: lệnh ĐẦU TIÊN đọc đủ 5 lớp (1 lệnh!)
+            '2026-01-01 02:00:00',  -- ② cũ: kết sổ lệnh đầu Cấp 4   (bị xoá)
+            '2026-01-01 03:00:00',  -- ③ cũ: Thách thức Thuần thục ⇒ ĐÃ có ≥20 lệnh
+            24, 'ky_thuat', 'tin_tuc', 83.3,
+            '2026-01-01 04:00:00'
+        )
+        """
+    )
+    # ② Người mới đọc được 6 lệnh — ① cũ đã đóng dấu, ③ thì chưa.
+    conn.exec_driver_sql(
+        """
+        INSERT INTO cap4_progress (
+            id, user_id, entered_at, task_1_done_at, task_2_done_at, task_3_done_at,
+            so_lenh_doc_du_5lop, ty_le_thang_dong_thuan_cao
+        ) VALUES (
+            'dd1', 'u-dd1', '2026-02-01 00:00:00',
+            '2026-02-01 01:00:00', '2026-02-01 02:00:00', NULL,
+            6, 0
+        )
+        """
+    )
+    # ③ Người vừa vào cấp, chưa làm gì.
+    conn.exec_driver_sql(
+        """
+        INSERT INTO cap4_progress (id, user_id, entered_at, so_lenh_doc_du_5lop,
+                                   ty_le_thang_dong_thuan_cao)
+        VALUES ('tr1', 'u-tr1', '2026-03-01 00:00:00', 0, 0)
+        """
+    )
+
+
+def test_cap4_migration_maps_task3_into_the_single_task_slot():
+    """★ Ánh xạ: nhiệm vụ DUY NHẤT mới = ③ cũ (mốc duy nhất bảo chứng ≥20 lệnh).
+
+    ① cũ ("lệnh ĐẦU TIÊN đọc đủ 5 lớp") chỉ bảo chứng 1 lệnh — giữ nó lại trong
+    ô ① mới sẽ tặng không một dấu tick 20-lệnh cho người mới đọc 1 lệnh, và
+    ``graduate()`` mới chỉ nhìn đúng ô đó. Nên nó bị xoá.
+    """
+    import sqlalchemy as sa
+
+    engine = sa.create_engine("sqlite://")
+    with engine.begin() as conn:
+        _seed_old_shape_cap4_rows(conn)
+        _run_cap4_migration(conn, "upgrade")
+
+        cols = _cap4_columns(conn)
+        for gone in ("task_2_done_at", "task_3_done_at", "ty_le_thang_dong_thuan_cao"):
+            assert gone not in cols, gone
+        for kept in ("task_1_done_at", "so_lenh_doc_du_5lop", "vu_khi_lop", "diem_mu_lop"):
+            assert kept in cols, kept
+
+        rows = _cap4_rows(conn)
+        # Người đã xong ③ cũ → giữ nguyên mốc ③, KHÔNG phải mốc ① cũ.
+        assert rows["tn1"]["task_1_done_at"] == "2026-01-01 03:00:00"
+        assert rows["tn1"]["graduated_at"] == "2026-01-01 04:00:00"
+        assert rows["tn1"]["so_lenh_doc_du_5lop"] == 24
+        assert rows["tn1"]["vu_khi_lop"] == "ky_thuat"
+        # Người mới 6 lệnh: ① cũ bị gỡ — họ CHƯA đạt cổng 20 lệnh.
+        assert rows["dd1"]["task_1_done_at"] is None
+        assert rows["dd1"]["so_lenh_doc_du_5lop"] == 6
+        # Người chưa làm gì: không đổi.
+        assert rows["tr1"]["task_1_done_at"] is None
+        assert rows["tr1"]["entered_at"] == "2026-03-01 00:00:00"
+
+
+def test_cap4_migration_round_trips_up_down_up_twice():
+    """upgrade → downgrade → upgrade → downgrade → upgrade là bất động.
+
+    Downgrade LOSSY theo thiết kế — xem docstring của revision.
+    """
+    import sqlalchemy as sa
+
+    engine = sa.create_engine("sqlite://")
+    with engine.begin() as conn:
+        _seed_old_shape_cap4_rows(conn)
+        _run_cap4_migration(conn, "upgrade")
+        after_first = _cap4_rows(conn)
+
+        _run_cap4_migration(conn, "downgrade")
+        cols = _cap4_columns(conn)
+        for back in ("task_2_done_at", "task_3_done_at", "ty_le_thang_dong_thuan_cao"):
+            assert back in cols, back
+
+        down = _cap4_rows(conn)
+        # ③ cũ quay lại từ ô nhiệm vụ duy nhất…
+        assert down["tn1"]["task_3_done_at"] == "2026-01-01 03:00:00"
+        # …nhưng ① và ② cũ, cùng tỷ lệ đồng thuận cao, KHÔNG dựng lại được.
+        assert down["tn1"]["task_1_done_at"] is None
+        assert down["tn1"]["task_2_done_at"] is None
+        assert down["tn1"]["ty_le_thang_dong_thuan_cao"] == 0
+        assert down["dd1"]["task_3_done_at"] is None
+
+        _run_cap4_migration(conn, "upgrade")
+        assert _cap4_rows(conn) == after_first
+
+        # Vòng thứ hai — không được trôi thêm.
+        _run_cap4_migration(conn, "downgrade")
+        _run_cap4_migration(conn, "upgrade")
+        assert _cap4_rows(conn) == after_first

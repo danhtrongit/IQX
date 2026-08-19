@@ -1,5 +1,10 @@
 """Request/response schemas for the Cấp 4 «Thuần thục» API — đọc + tự chấm 5
-lớp, vũ khí / điểm mù, Thách thức Thuần thục (§5/§7/§8/§10)."""
+lớp, vũ khí / điểm mù.
+
+★ Cấp 4 có ĐÚNG MỘT nhiệm vụ («Đọc và chấm đủ 5 lớp qua 20 lệnh») — khối
+"Thách thức Thuần thục" (3 điều kiện) và hai nhiệm vụ cũ đã bị gỡ cùng
+``ThachThucOut``/``ThachThucDieuKien``. Xem ``app.models.cap4``.
+"""
 
 from __future__ import annotations
 
@@ -22,18 +27,21 @@ class Cap4ProgressOut(BaseModel):
     id: uuid.UUID
     user_id: uuid.UUID
     entered_at: datetime
+    #: Nhiệm vụ DUY NHẤT — «Đọc và chấm đủ 5 lớp qua 20 lệnh».
     task_1_done_at: datetime | None = None
-    task_2_done_at: datetime | None = None
-    task_3_done_at: datetime | None = None
     so_lenh_doc_du_5lop: int
+    #: NULL = chưa đủ dữ liệu để kết luận (≥3 lệnh đã đóng mỗi lớp) — KHÔNG
+    #: được hiển thị thành 0/"không có".
     vu_khi_lop: LopLiteral | None = None
     diem_mu_lop: LopLiteral | None = None
-    ty_le_thang_dong_thuan_cao: float
     graduated_at: datetime | None = None
     time_to_graduate_hours: float | None = None
 
 
 class TaskRequest(BaseModel):
+    """``PATCH /cap4/task`` — Cấp 4 chỉ còn nhiệm vụ ①, nên ``task_no`` hợp lệ
+    duy nhất là 1 (service ném ``BadRequestError`` cho mọi giá trị khác)."""
+
     task_no: int
 
 
@@ -104,24 +112,3 @@ class VuKhiDiemMuOut(BaseModel):
     nguong_vu_khi: float
     nguong_diem_mu: float
     giai_thich: str
-
-
-class ThachThucDieuKien(BaseModel):
-    """One of the 3 sub-conditions of nhiệm vụ ③ — Thách thức Thuần thục
-    (§C12c: always shown with its current value + a short explanation)."""
-
-    ten: str
-    gia_tri_hien_tai: float
-    muc_tieu: float
-    dat: bool
-    giai_thich: str
-
-
-class ThachThucOut(BaseModel):
-    """Response for ``GET /cap4/thach-thuc`` — the 3 sub-conditions of
-    nhiệm vụ ③ (spec §2③)."""
-
-    dat_ca_3: bool
-    so_lenh_doc_du_5lop: ThachThucDieuKien
-    vu_khi_diem_mu: ThachThucDieuKien
-    ty_le_thang_dong_thuan_cao: ThachThucDieuKien
