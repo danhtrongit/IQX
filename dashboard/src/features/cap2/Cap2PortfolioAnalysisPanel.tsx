@@ -23,7 +23,11 @@ export function Cap2PortfolioAnalysisPanel() {
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-[var(--color-bg-1)]">
-      <div className="flex shrink-0 items-center gap-2 border-b border-[var(--color-border-2)] p-3">
+      {/* Mockup `.hdr`: nút quay lại bên trái + tiêu đề màn bên phải. Nhãn nút
+          giữ "← Hành trình" (không phải "← Quay lại Nắm giữ" như mockup viết)
+          vì đó là nơi nút NÀY thật sự quay về — `RightSidebar` chỉ vẽ tên panel
+          ở nhánh `md:hidden`, nên trên desktop tiêu đề phải nằm ở đây. */}
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[var(--color-border-2)] p-3">
         <button
           type="button"
           onClick={() => setActivePanel("journey")}
@@ -31,6 +35,7 @@ export function Cap2PortfolioAnalysisPanel() {
         >
           ← Hành trình
         </button>
+        <span className="text-sm font-semibold text-[var(--color-text-1)]">Phân tích danh mục</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         <Cap2PortfolioAnalysis progress={progress ?? null} trades={trades} dailyScores={scores} />

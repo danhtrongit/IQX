@@ -324,9 +324,10 @@ describe("Cap2TradingPage", () => {
     // Reconciled against the tracked buy (kế hoạch's lý do label) + the SL/TP
     // commitment tracked from the Cấp 2 buy event.
     expect(screen.getByText("💰 Dòng tiền")).toBeInTheDocument()
-    const camket = screen.getByTestId("cap2-ketso-camket")
-    expect(camket).toHaveTextContent("58,000")
-    expect(camket).toHaveTextContent("65,000")
+    // Cắt lỗ/chốt lời cam kết nằm TRONG chính bảng đối chiếu (mockup 1 bảng).
+    const doiChieu = screen.getByRole("table")
+    expect(doiChieu).toHaveTextContent("58,000")
+    expect(doiChieu).toHaveTextContent("65,000")
   })
 
   it('a sell that never touched the SL/TP commitment does not open Kết sổ (no tracked buy for the symbol)', () => {

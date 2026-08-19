@@ -134,6 +134,22 @@ describe("Cap2PortfolioAnalysis — ② Thắng / thua theo 5 lý do", () => {
     expect(khoi2).toBeInTheDocument()
     expect(within(khoi2).getByText("(giữ từ Cấp 1)")).toBeInTheDocument()
   })
+
+  /**
+   * ★ MỘT ký hiệu tiền cho cả sản phẩm — bài canh này là bản sao của
+   * `cap1/Cap1PortfolioAnalysis.test.tsx` ("formats VND with the mockups' «đ»,
+   * never « ₫»"). Cấp 2 chép nhầm ` ₫` (glyph khác + dấu cách) vào cột Lãi/lỗ.
+   */
+  it("★ cột Lãi/lỗ dùng «đ» dính số, không bao giờ « ₫»", () => {
+    const { container } = renderPa(
+      progress(),
+      Array.from({ length: 5 }, (_, i) =>
+        trade({ orderId: String(i), lyDo: "dong_tien", pnlVnd: 250_000 }),
+      ),
+    )
+    expect(within(screen.getByTestId("cap2-pa-khoi2")).getByText("+1,250,000đ")).toBeInTheDocument()
+    expect(container.textContent).not.toContain("₫")
+  })
 })
 
 // ── ③ Độ phủ 5 lý do ───────────────────────────────────────────────────────

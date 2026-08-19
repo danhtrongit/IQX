@@ -125,11 +125,26 @@ describe("KetsoModalCap2", () => {
         onClose={vi.fn()}
       />,
     )
-    expect(screen.getByText(/TRƯỚC KHI BẤM BÁN/)).toBeInTheDocument()
-    expect(screen.getByText("😌 Bình tĩnh")).toBeInTheDocument()
+    // `toBeVisible` chứ không chỉ `toBeInTheDocument`: một cổng dựng lại bằng
+    // `hidden`/`display:none` vẫn để element trong DOM.
+    expect(screen.getByText(/TRƯỚC KHI BẤM BÁN/)).toBeVisible()
+    expect(screen.getByText("😌 Bình tĩnh")).toBeVisible()
+    fireEvent.click(screen.getByText("😔 Hối tiếc"))
+    fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
+    expect(recordKetsoCap1Mutate).toHaveBeenCalledWith({
+      order_id: "order-8",
+      cam_xuc: "hoi_tiec",
+    })
   })
 
-  it("renders the CAM KẾT vs THỰC TẾ block with cắt lỗ + chốt lời rows", () => {
+  /**
+   * ★ MOCKUP `iqx-cap2-ketso.html` vẽ ĐÚNG MỘT bảng đối chiếu 5 dòng — Lý do ·
+   * Vùng mua · Cắt lỗ · Chốt lời · Thời gian giữ — dưới nhãn "Đối chiếu kế
+   * hoạch với thực tế". Bản mirror của Cấp 2 làm rơi nhãn (Cấp 1 vẫn có) rồi
+   * tách cắt lỗ/chốt lời ra một thẻ "CAM KẾT vs THỰC TẾ" thứ hai, thành 2 bảng
+   * / 8 dòng. Founder nhìn sản phẩm thật thấy sai chính chỗ này.
+   */
+  it("★ mockup: ĐÚNG MỘT bảng đối chiếu 5 dòng, có nhãn khối", () => {
     render(
       <KetsoModalCap2
         data={cleanData}
@@ -138,13 +153,70 @@ describe("KetsoModalCap2", () => {
         onClose={vi.fn()}
       />,
     )
-    const block = screen.getByTestId("cap2-ketso-camket")
-    const scoped = within(block)
-    expect(scoped.getByText(/CAM KẾT.*THỰC TẾ/i)).toBeInTheDocument()
-    expect(scoped.getByText("Cắt lỗ")).toBeInTheDocument()
-    expect(scoped.getByText("60,400")).toBeInTheDocument()
-    expect(scoped.getByText("Chốt lời")).toBeInTheDocument()
-    expect(scoped.getByText("65,800")).toBeInTheDocument()
+    expect(screen.getByText("Đối chiếu kế hoạch với thực tế")).toBeInTheDocument()
+
+    const tables = screen.getAllByRole("table")
+    expect(tables).toHaveLength(1)
+    expect(screen.queryByTestId("cap2-ketso-camket")).not.toBeInTheDocument()
+    expect(screen.queryByText("CAM KẾT vs THỰC TẾ")).not.toBeInTheDocument()
+
+    const rows = within(tables[0]).getAllByRole("row")
+    const labels = rows.slice(1).map((r) => within(r).getAllByRole("cell")[0].textContent)
+    expect(labels).toEqual(["Lý do", "Vùng mua", "Cắt lỗ", "Chốt lời", "Thời gian giữ"])
+  })
+
+  it("★ mockup: cắt lỗ + chốt lời cam kết nằm TRONG bảng đối chiếu", () => {
+    render(
+      <KetsoModalCap2
+        data={cleanData}
+        progress={cap1Progress()}
+        trades={[]}
+        onClose={vi.fn()}
+      />,
+    )
+    const doiChieu = within(screen.getByRole("table"))
+    expect(doiChieu.getByText("Cắt lỗ")).toBeInTheDocument()
+    expect(doiChieu.getByText("60,400")).toBeInTheDocument()
+    expect(doiChieu.getByText("Chốt lời")).toBeInTheDocument()
+    expect(doiChieu.getByText("65,800")).toBeInTheDocument()
+  })
+
+  /**
+   * ★ MỘT ký hiệu tiền cho cả sản phẩm: mockup (và `cap0/DebriefModal`,
+   * `cap1/Cap1PortfolioAnalysis`) dùng `đ` dính liền số — không phải `₫` cách
+   * một dấu cách. Cấp 1 đã có bài canh này ở Phân tích danh mục; Cấp 2 chép
+   * nhầm ` ₫` vào dòng dưới P&L.
+   */
+  it("★ dòng dưới P&L dùng «đ» dính số, không bao giờ « ₫»", () => {
+    const { container } = render(
+      <KetsoModalCap2
+        data={cleanData}
+        progress={cap1Progress()}
+        trades={[]}
+        onClose={vi.fn()}
+      />,
+    )
+    expect(screen.getByText(/\+350,000đ/)).toBeInTheDocument()
+    expect(container.textContent).not.toContain("₫")
+  })
+
+  /**
+   * ★ Mockup Cấp 2 vẽ khối 4 nút cảm xúc cho một lệnh HOÀN TOÀN BÌNH THƯỜNG
+   * (−2,6% · giữ 3 phiên). Cổng `isLenhCoChuyen` của Cấp 1 (lỗ >−7% · giữ >10
+   * phiên · bán trong 1 phiên) giấu khối đó ⇒ mở kết sổ một lệnh thường không
+   * bao giờ thấy. Cấp 2 hỏi cảm xúc ở MỌI lệnh.
+   */
+  it("★ mockup: khối cảm xúc hiện ở lệnh thường (không cần «có chuyện»)", () => {
+    render(
+      <KetsoModalCap2
+        data={cleanData}
+        progress={cap1Progress()}
+        trades={[]}
+        onClose={vi.fn()}
+      />,
+    )
+    expect(screen.getByText(/TRƯỚC KHI BẤM BÁN/)).toBeInTheDocument()
+    expect(screen.getByText("😌 Bình tĩnh")).toBeInTheDocument()
   })
 
   it("cắt lỗ đúng phiên: shows a ✅ đúng-phiên description in THỰC TẾ", () => {
@@ -160,8 +232,7 @@ describe("KetsoModalCap2", () => {
         onClose={vi.fn()}
       />,
     )
-    const block = screen.getByTestId("cap2-ketso-camket")
-    expect(within(block).getByText(/cắt đúng phiên/i)).toBeInTheDocument()
+    expect(within(screen.getByRole("table")).getByText(/cắt đúng phiên/i)).toBeInTheDocument()
   })
 
   it("cắt lỗ chậm: shows a ⚠ cắt-trễ description with số phiên giữ", () => {
@@ -178,10 +249,9 @@ describe("KetsoModalCap2", () => {
         onClose={vi.fn()}
       />,
     )
-    const block = screen.getByTestId("cap2-ketso-camket")
-    const scoped = within(block)
-    expect(scoped.getByText(/cắt trễ/i)).toBeInTheDocument()
-    expect(scoped.getByText(/2 phiên/)).toBeInTheDocument()
+    // "2 phiên" một mình giờ mơ hồ (dòng "Thời gian giữ" cũng có) → khớp cả cụm.
+    const scoped = within(screen.getByRole("table"))
+    expect(scoped.getByText(/cắt trễ 2 phiên/i)).toBeInTheDocument()
   })
 
   it("chốt lời hụt: shows a ⚠ hụt-lời description in THỰC TẾ", () => {
@@ -197,8 +267,7 @@ describe("KetsoModalCap2", () => {
         onClose={vi.fn()}
       />,
     )
-    const block = screen.getByTestId("cap2-ketso-camket")
-    expect(within(block).getByText(/hụt/i)).toBeInTheDocument()
+    expect(within(screen.getByRole("table")).getByText(/hụt/i)).toBeInTheDocument()
   })
 
   /**
@@ -253,12 +322,15 @@ describe("KetsoModalCap2", () => {
         onClose={vi.fn()}
       />,
     )
-    // Cấp 1 layer ("NHÌN LẠI") — template A/B (lãi, this order is a loss here
-    // so it's C/D) verbatim phrase from `coachTemplateCap1`.
-    expect(screen.getByText("NHÌN LẠI")).toBeInTheDocument()
-    // Cấp 2 layer — new "KỶ LUẬT" tag + cắt-lỗ-chậm nhắc text.
-    expect(screen.getByText("KỶ LUẬT")).toBeInTheDocument()
-    expect(screen.getByText(/cắt chậm/i)).toBeInTheDocument()
+    // ★ Mockup có MỘT khối coach, thẻ "NHÌN LẠI · KỶ LUẬT", hai đoạn văn bên
+    // trong (đúng cùng lối Cấp 3 gộp thành "NHÌN LẠI · TỰ TIN VS KẾT QUẢ").
+    // Code cũ vẽ 2 khối rời, 2 vạch màu khác nhau.
+    expect(screen.getByText("NHÌN LẠI · KỶ LUẬT")).toBeInTheDocument()
+    expect(screen.queryByText("NHÌN LẠI")).not.toBeInTheDocument()
+    expect(screen.queryByText("KỶ LUẬT")).not.toBeInTheDocument()
+    const coach = screen.getByTestId("cap2-ketso-coach")
+    expect(coach.querySelectorAll("p")).toHaveLength(2)
+    expect(within(coach).getByText(/cắt chậm/i)).toBeInTheDocument()
   })
 
   it('"Đóng kết sổ ✓" posts BOTH Cấp 1\'s cam_xúc AND Cấp 2\'s discipline flags, then closes', () => {

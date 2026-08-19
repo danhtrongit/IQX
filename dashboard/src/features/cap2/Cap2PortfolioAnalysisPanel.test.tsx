@@ -39,6 +39,21 @@ describe("Cap2PortfolioAnalysisPanel", () => {
     expect(screen.getByTestId("cap2-portfolio-analysis-mock")).toBeInTheDocument()
   })
 
+  /**
+   * ★ Mockup `iqx-cap2-phantich-danhmuc.html` `.hdr` có HAI thứ: nút quay lại
+   * bên trái và tiêu đề "Phân tích danh mục" bên phải. `RightSidebar` chỉ vẽ
+   * tên panel trong nhánh `md:hidden` ⇒ trên desktop màn này không có tiêu đề
+   * nào cả.
+   */
+  it("★ mockup: header có tiêu đề «Phân tích danh mục» cạnh nút quay lại", () => {
+    render(
+      <SidebarProvider>
+        <Cap2PortfolioAnalysisPanel />
+      </SidebarProvider>,
+    )
+    expect(screen.getByText("Phân tích danh mục")).toBeInTheDocument()
+  })
+
   it('clicking "← Hành trình" switches the sidebar back to the journey panel', () => {
     function PanelSpy() {
       const { activePanel } = useSidebar()
