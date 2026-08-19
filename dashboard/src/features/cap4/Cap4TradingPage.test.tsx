@@ -367,12 +367,9 @@ function fakeCap4Progress(overrides: Partial<Cap4Progress> = {}): Cap4Progress {
     user_id: "u1",
     entered_at: "2026-02-11T00:00:00Z",
     task_1_done_at: null,
-    task_2_done_at: null,
-    task_3_done_at: null,
     so_lenh_doc_du_5lop: 4,
     vu_khi_lop: null,
     diem_mu_lop: null,
-    ty_le_thang_dong_thuan_cao: 0,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
@@ -573,12 +570,9 @@ describe("Cap4TradingPage", () => {
     useCap4ProgressMock.mockReturnValue({
       data: fakeCap4Progress({
         task_1_done_at: "t",
-        task_2_done_at: "t",
-        task_3_done_at: "t",
         so_lenh_doc_du_5lop: 22,
         vu_khi_lop: "dong_tien",
         diem_mu_lop: "tin_tuc",
-        ty_le_thang_dong_thuan_cao: 64,
       }),
     })
     renderCap4(<Cap4TradingPage />)

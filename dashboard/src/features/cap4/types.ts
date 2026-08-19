@@ -32,36 +32,54 @@ export type Lop5Partial = Partial<Record<Lop, NhanDinhLop>>
 /** spec §7 khối ⑨ — a lớp's label after enough evidence (≥3 closed lệnh). */
 export type NhanVuKhi = "vu_khi" | "diem_mu" | "chua_du_du_lieu"
 
-/** Progress row for the current user's Cấp 4 (one per user). */
+/**
+ * Số nhiệm vụ của Cấp 4 — MỘT. Mockup `iqx-cap4-hanhtrinh.html`: `.jbar`
+ * "CẤP 4 · 0/1" và `.ck-head` "Trước khi lên Cấp 5 · 0/1".
+ */
+export const CAP4_TOTAL_TASKS = 1
+
+/**
+ * Ngưỡng của nhiệm vụ duy nhất — «Đọc và chấm đủ 5 lớp qua 20 lệnh»
+ * (`Cap4Service._TASK1_SO_LENH_MIN`). FE chỉ dùng để VẼ tiến độ `n/20`; server
+ * mới là nơi quyết định `task_1_done_at`.
+ */
+export const CAP4_SO_LENH_TARGET = 20
+
+/**
+ * Progress row for the current user's Cấp 4 (one per user).
+ *
+ * ★ Hình dạng MỚI — 1 nhiệm vụ. `task_2_done_at`/`task_3_done_at`/
+ * `ty_le_thang_dong_thuan_cao` đã bị gỡ khỏi cả DB lẫn wire (migration
+ * `a3f7c1d9e2b8`); đừng dựng lại chúng ở FE.
+ */
 export interface Cap4Progress {
   id: string
   user_id: string
   entered_at: string
+  /** Nhiệm vụ DUY NHẤT — «Đọc và chấm đủ 5 lớp qua 20 lệnh». */
   task_1_done_at: string | null
-  task_2_done_at: string | null
-  task_3_done_at: string | null
-  /** ③ đk 1 — số lệnh đã đọc + tự chấm đủ cả 5 lớp. */
+  /** Số lệnh đã đọc + tự chấm đủ cả 5 lớp — tử số của `n/20`. */
   so_lenh_doc_du_5lop: number
-  /** ③ đk 2 — lớp bạn đọc chuẩn nhất (null khi chưa đủ dữ liệu). */
+  /**
+   * Lớp bạn đọc chuẩn nhất — `null` = CHƯA ĐỦ DỮ LIỆU để kết luận (cần ≥3 lệnh
+   * đã đóng cho lớp đó), KHÔNG phải "không có". Không còn là điều kiện tốt
+   * nghiệp; vẫn hiện ở Phân tích danh mục (khối ⑨) + màn tốt nghiệp.
+   */
   vu_khi_lop: Lop | null
-  /** ③ đk 2 — lớp cần cải thiện (null khi chưa đủ dữ liệu). */
+  /** Lớp cần cải thiện — cùng quy ước `null` như `vu_khi_lop`. */
   diem_mu_lop: Lop | null
-  /** ③ đk 3 — % thắng của lệnh có ≥3 lớp được đánh giá Ủng hộ. */
-  ty_le_thang_dong_thuan_cao: number
   graduated_at: string | null
   time_to_graduate_hours: number | null
 }
 
 /**
- * How many of the 3 Cấp 4 nhiệm vụ are complete (mirrors
- * `cap3/types.ts#countCap3TasksDone`) — used by FE3's `JourneyPanelCap4`
- * checklist + `GraduationModalCap4`'s open condition.
+ * How many of the Cấp 4 nhiệm vụ are complete — 0 hoặc 1 (mirrors
+ * `cap3/types.ts#countCap3TasksDone`). Dùng cho checklist `JourneyPanelCap4`
+ * + điều kiện mở `GraduationModalCap4`.
  */
 export function countCap4TasksDone(progress: Cap4Progress | null | undefined): number {
   if (!progress) return 0
-  return [progress.task_1_done_at, progress.task_2_done_at, progress.task_3_done_at].filter(
-    (t) => t != null,
-  ).length
+  return progress.task_1_done_at != null ? 1 : 0
 }
 
 /**
@@ -119,21 +137,4 @@ export interface VuKhiDiemMuCap4 {
   nguong_vu_khi: number
   nguong_diem_mu: number
   giai_thich: string
-}
-
-/** One of the 3 sub-conditions of nhiệm vụ ③ — Thách thức Thuần thục (§C12c). */
-export interface ThachThucDieuKienCap4 {
-  ten: string
-  gia_tri_hien_tai: number
-  muc_tieu: number
-  dat: boolean
-  giai_thich: string
-}
-
-/** Response for `GET /cap4/thach-thuc`. */
-export interface ThachThucCap4 {
-  dat_ca_3: boolean
-  so_lenh_doc_du_5lop: ThachThucDieuKienCap4
-  vu_khi_diem_mu: ThachThucDieuKienCap4
-  ty_le_thang_dong_thuan_cao: ThachThucDieuKienCap4
 }

@@ -3,7 +3,6 @@ import type {
   Cap4Progress,
   KehoachInputCap4,
   OrderKehoachCap4,
-  ThachThucCap4,
   VuKhiDiemMuCap4,
 } from "./types"
 
@@ -27,8 +26,8 @@ export const cap4Api = {
     return unwrap(res as never) as Cap4Progress
   },
 
-  /** PATCH /cap4/task { task_no } — idempotent recompute (all 3 nhiệm vụ are
-   * derived server-side from order_kehoach/order_ketso). */
+  /** PATCH /cap4/task { task_no } — idempotent recompute (nhiệm vụ duy nhất
+   * được suy ra server-side từ order_kehoach; `task_no` hợp lệ = 1). */
   markTask: async (taskNo: number): Promise<Cap4Progress> => {
     const res = await api.patch("cap4/task", { json: { task_no: taskNo } }).json<unknown>()
     return unwrap(res as never) as Cap4Progress
@@ -50,14 +49,7 @@ export const cap4Api = {
     return unwrap(res as never) as VuKhiDiemMuCap4
   },
 
-  /** GET /cap4/thach-thuc — the 3 sub-conditions of nhiệm vụ ③ (Thách thức
-   * Thuần thục) kèm giá trị hiện tại + đạt/chưa đạt + giải thích (§C12c). */
-  getThachThuc: async (): Promise<ThachThucCap4> => {
-    const res = await api.get("cap4/thach-thuc").json<unknown>()
-    return unwrap(res as never) as ThachThucCap4
-  },
-
-  /** POST /cap4/graduate — only succeeds when 3/3 nhiệm vụ are done. */
+  /** POST /cap4/graduate — chỉ thành công khi xong nhiệm vụ duy nhất (20 lệnh). */
   graduate: async (): Promise<Cap4Progress> => {
     const res = await api.post("cap4/graduate").json<unknown>()
     return unwrap(res as never) as Cap4Progress

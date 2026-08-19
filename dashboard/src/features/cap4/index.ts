@@ -11,7 +11,6 @@ export {
   useCompleteCap4Task,
   useRecordKehoachCap4,
   useVuKhiDiemMu,
-  useThachThucCap4,
   useGraduateCap4,
 } from "./hooks"
 export { cap4Api } from "./api"
@@ -74,7 +73,7 @@ export {
   type AiRatingSource,
   type LopDef,
 } from "./doc5Lop"
-export { countCap4TasksDone } from "./types"
+export { CAP4_SO_LENH_TARGET, CAP4_TOTAL_TASKS, countCap4TasksDone } from "./types"
 export type {
   Cap4Progress,
   KehoachInputCap4,
@@ -85,7 +84,5 @@ export type {
   NhanDinhLop,
   NhanVuKhi,
   OrderKehoachCap4,
-  ThachThucCap4,
-  ThachThucDieuKienCap4,
   VuKhiDiemMuCap4,
 } from "./types"

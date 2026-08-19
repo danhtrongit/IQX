@@ -138,12 +138,9 @@ function cap4Progress(): Cap4Progress {
     user_id: "u1",
     entered_at: "2026-05-02T00:00:00Z",
     task_1_done_at: null,
-    task_2_done_at: null,
-    task_3_done_at: null,
     so_lenh_doc_du_5lop: 12,
     vu_khi_lop: "dong_tien",
     diem_mu_lop: "tin_tuc",
-    ty_le_thang_dong_thuan_cao: 60,
     graduated_at: "2026-06-01T00:00:00Z",
     time_to_graduate_hours: 30,
   }

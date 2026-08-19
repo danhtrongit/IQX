@@ -6,7 +6,6 @@ import type {
   Cap4Progress,
   KehoachInputCap4,
   OrderKehoachCap4,
-  ThachThucCap4,
   VuKhiDiemMuCap4,
 } from "./types"
 
@@ -29,7 +28,7 @@ export function useCap4Progress(enabled = true) {
   })
 }
 
-/** Invalidate every Cấp 4 query (progress + vũ khí/điểm mù + thách thức). */
+/** Invalidate every Cấp 4 query (progress + vũ khí/điểm mù). */
 function useInvalidateCap4() {
   const queryClient = useQueryClient()
   return () => queryClient.invalidateQueries({ queryKey: cap4Keys.all })
@@ -44,7 +43,7 @@ export function useEnterCap4() {
   })
 }
 
-/** PATCH /cap4/task — idempotent recompute of the 3 nhiệm vụ. */
+/** PATCH /cap4/task — idempotent recompute của nhiệm vụ duy nhất. */
 export function useCompleteCap4Task() {
   const invalidate = useInvalidateCap4()
   return useMutation<Cap4Progress, unknown, number>({
@@ -73,18 +72,7 @@ export function useVuKhiDiemMu(enabled = true) {
   })
 }
 
-/** GET /cap4/thach-thuc — the 3 sub-conditions of nhiệm vụ ③ (§C12c). */
-export function useThachThucCap4(enabled = true) {
-  const { isAuthenticated } = useAuth()
-  return useQuery<ThachThucCap4>({
-    queryKey: cap4Keys.thachThuc(),
-    queryFn: cap4Api.getThachThuc,
-    enabled: isAuthenticated && enabled,
-    staleTime: 0,
-  })
-}
-
-/** POST /cap4/graduate — graduate to Cấp 5 (only when 3/3 nhiệm vụ done). */
+/** POST /cap4/graduate — chỉ khi xong nhiệm vụ duy nhất (20 lệnh đọc đủ 5 lớp). */
 export function useGraduateCap4() {
   const invalidate = useInvalidateCap4()
   return useMutation<Cap4Progress, unknown, void>({

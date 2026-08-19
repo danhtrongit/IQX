@@ -24,7 +24,6 @@ import {
   useCompleteCap4Task,
   useRecordKehoachCap4,
   useVuKhiDiemMu,
-  useThachThucCap4,
   useGraduateCap4,
 } from "./hooks"
 
@@ -136,17 +135,8 @@ describe("useVuKhiDiemMu", () => {
   })
 })
 
-describe("useThachThucCap4", () => {
-  it("GETs cap4/thach-thuc", async () => {
-    get.mockReturnValue(jsonRes({ dat_ca_3: false }))
-    function Harness() {
-      const { data, isSuccess } = useThachThucCap4()
-      return <div>{isSuccess ? String(data?.dat_ca_3) : "loading"}</div>
-    }
-    withClient(<Harness />)
-    await waitFor(() => expect(get).toHaveBeenCalledWith("cap4/thach-thuc"))
-  })
-})
+// `useThachThucCap4` / `GET /cap4/thach-thuc` đã bị GỠ cùng khối "Thách thức
+// Thuần thục" (Cấp 4 chỉ còn 1 nhiệm vụ) — không còn hook nào để canh ở đây.
 
 describe("useGraduateCap4", () => {
   it("POSTs cap4/graduate", async () => {

@@ -2,27 +2,31 @@ import { render, screen, fireEvent, within } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
-import type { Cap4Progress, LopWinRate, ThachThucCap4, VuKhiDiemMuCap4 } from "./types"
+import type { Cap4Progress } from "./types"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
-const { useCap4ProgressMock, useThachThucCap4Mock, useVuKhiDiemMuMock, useCap4EventsMock } =
-  vi.hoisted(() => ({
-    useCap4ProgressMock: vi.fn(),
-    useThachThucCap4Mock: vi.fn(),
-    useVuKhiDiemMuMock: vi.fn(),
-    useCap4EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap4Active: true })),
-  }))
+const { useCap4ProgressMock, useCap4EventsMock, flags } = vi.hoisted(() => ({
+  // Mutable so ô mục tiêu được kiểm ở CẢ HAI phía của trần cấp.
+  flags: { CAP_MAX_ENABLED: 4 },
+  useCap4ProgressMock: vi.fn(),
+  useCap4EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap4Active: true })),
+}))
 
 vi.mock("./hooks", () => ({
   useCap4Progress: (...a: unknown[]) => useCap4ProgressMock(...a),
-  useThachThucCap4: (...a: unknown[]) => useThachThucCap4Mock(...a),
-  useVuKhiDiemMu: (...a: unknown[]) => useVuKhiDiemMuMock(...a),
 }))
 vi.mock("./Cap4Context", () => ({
   useCap4Events: () => useCap4EventsMock(),
 }))
 
-import { JourneyPanelCap4 } from "./JourneyPanelCap4"
+// Getter (not a plain value): panel phải đọc trần lúc RENDER.
+vi.mock("@/features/cap1/capFlags", () => ({
+  get CAP_MAX_ENABLED() {
+    return flags.CAP_MAX_ENABLED
+  },
+}))
+
+import { JourneyPanelCap4, taskStateCap4 } from "./JourneyPanelCap4"
 
 function makeProgress(overrides: Partial<Cap4Progress> = {}): Cap4Progress {
   return {
@@ -30,82 +34,11 @@ function makeProgress(overrides: Partial<Cap4Progress> = {}): Cap4Progress {
     user_id: "u1",
     entered_at: "2026-07-30T00:00:00Z",
     task_1_done_at: null,
-    task_2_done_at: null,
-    task_3_done_at: null,
     so_lenh_doc_du_5lop: 14,
     vu_khi_lop: null,
     diem_mu_lop: null,
-    ty_le_thang_dong_thuan_cao: 57,
     graduated_at: null,
     time_to_graduate_hours: null,
-    ...overrides,
-  }
-}
-
-function makeThachThuc(overrides: Partial<ThachThucCap4> = {}): ThachThucCap4 {
-  return {
-    dat_ca_3: false,
-    so_lenh_doc_du_5lop: {
-      ten: "Đọc + chấm đủ 5 lớp qua ≥ 20 lệnh",
-      gia_tri_hien_tai: 14,
-      muc_tieu: 20,
-      dat: false,
-      giai_thich:
-        "Đã có 14/20 lệnh bạn đọc và tự chấm cả 5 lớp trước khi đặt — đây là thói quen đọc toàn cảnh, không phải điểm đúng/sai.",
-    },
-    vu_khi_diem_mu: {
-      ten: "Nhận ra vũ khí + điểm mù của mình",
-      gia_tri_hien_tai: 1,
-      muc_tieu: 2,
-      dat: false,
-      giai_thich:
-        "Vũ khí: 💰 Dòng tiền · Điểm mù: chưa xác định. Cần ít nhất 3 lệnh đã đóng mỗi lớp mới kết luận.",
-    },
-    ty_le_thang_dong_thuan_cao: {
-      ten: "Lệnh đồng thuận cao (≥3 lớp ủng hộ) thắng ≥ 60%",
-      gia_tri_hien_tai: 57,
-      muc_tieu: 60,
-      dat: false,
-      giai_thich:
-        "Trong 7 lệnh đã đóng có ít nhất 3 lớp được đánh giá Ủng hộ, 4 lệnh thắng (57.1%) — kiểm chứng xem đọc toàn cảnh có giúp chọn lệnh tốt hơn không.",
-    },
-    ...overrides,
-  }
-}
-
-function lopRow(overrides: Partial<LopWinRate> & Pick<LopWinRate, "lop">): LopWinRate {
-  return {
-    ten: "Dòng tiền",
-    n_orders: 9,
-    n_wins: 7,
-    win_rate: 77.8,
-    nhan: "vu_khi",
-    giai_thich: "Bạn đọc lớp này là Ủng hộ ở 9 lệnh đã đóng, 7 lệnh thắng (77.8%).",
-    ...overrides,
-  }
-}
-
-function makeVuKhi(overrides: Partial<VuKhiDiemMuCap4> = {}): VuKhiDiemMuCap4 {
-  return {
-    lop: [
-      lopRow({ lop: "dong_tien" }),
-      lopRow({
-        lop: "tin_tuc",
-        ten: "Tin tức",
-        n_orders: 6,
-        n_wins: 2,
-        win_rate: 33.3,
-        nhan: "diem_mu",
-        giai_thich: "Bạn đọc lớp này là Ủng hộ ở 6 lệnh đã đóng, 2 lệnh thắng (33.3%).",
-      }),
-    ],
-    vu_khi_lop: "dong_tien",
-    diem_mu_lop: "tin_tuc",
-    so_lenh_toi_thieu: 3,
-    nguong_vu_khi: 70,
-    nguong_diem_mu: 50,
-    giai_thich:
-      "Số liệu tính từ lệnh THẬT đã đóng: mỗi lớp cần ít nhất 3 lệnh; ≥70% thắng là vũ khí, <50% là điểm mù.",
     ...overrides,
   }
 }
@@ -118,14 +51,32 @@ function renderPanel() {
   )
 }
 
+function renderWithSpy() {
+  function PanelSpy() {
+    const { activePanel } = useSidebar()
+    return <div data-testid="panel-spy">{activePanel}</div>
+  }
+  return render(
+    <SidebarProvider>
+      <JourneyPanelCap4 />
+      <PanelSpy />
+    </SidebarProvider>,
+  )
+}
+
+describe("taskStateCap4", () => {
+  it("is active until task_1_done_at, done after", () => {
+    expect(taskStateCap4(1, makeProgress())).toBe("active")
+    expect(taskStateCap4(1, makeProgress({ task_1_done_at: "t" }))).toBe("done")
+    expect(taskStateCap4(1, null)).toBe("active")
+  })
+})
+
 describe("JourneyPanelCap4", () => {
   beforeEach(() => {
+    flags.CAP_MAX_ENABLED = 4
     useCap4ProgressMock.mockReset()
     useCap4ProgressMock.mockReturnValue({ data: makeProgress() })
-    useThachThucCap4Mock.mockReset()
-    useThachThucCap4Mock.mockReturnValue({ data: makeThachThuc() })
-    useVuKhiDiemMuMock.mockReset()
-    useVuKhiDiemMuMock.mockReturnValue({ data: makeVuKhi() })
     useCap4EventsMock.mockReset()
     useCap4EventsMock.mockReturnValue({ isCap4Active: true })
   })
@@ -142,193 +93,185 @@ describe("JourneyPanelCap4", () => {
     expect(screen.getByText("THỰC CHIẾN")).toBeInTheDocument()
   })
 
-  it("renders the Cấp 4 badge (tím #a78bfa, fill=4)", () => {
+  it("renders the Cấp 4 badge (tím #a78bfa)", () => {
     renderPanel()
     const svg = document.querySelector(".cap0-badge svg")
     expect(svg).not.toBeNull()
     expect(svg?.innerHTML).toContain("#a78bfa")
   })
 
-  it('shows the checklist header "TRƯỚC KHI LÊN CẤP 5 · 0/3" with fresh progress', () => {
+  // ── ★ MỘT nhiệm vụ ────────────────────────────────────────────────────────
+
+  it("★ has exactly ONE nhiệm vụ — checklist header đếm n/1 (mockup .ck-head)", () => {
     renderPanel()
-    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 5 · 0/3")).toBeInTheDocument()
+    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 5")).toBeInTheDocument()
+    expect(screen.getByText("0/1")).toBeInTheDocument()
+    expect(screen.getByTestId("cap4-task-1")).toBeInTheDocument()
+    expect(screen.queryByTestId("cap4-task-2")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap4-task-3")).not.toBeInTheDocument()
   })
 
-  it("renders all 3 nhiệm vụ names verbatim (spec §2)", () => {
-    renderPanel()
-    expect(screen.getByText("Lệnh đầu tiên đọc + chấm đủ 5 lớp")).toBeInTheDocument()
-    expect(screen.getByText("Kết sổ lệnh đầu Cấp 4")).toBeInTheDocument()
-    expect(screen.getByText(/Thách thức Thuần thục — đọc toàn cảnh/)).toBeInTheDocument()
-  })
-
-  it("① is active from the moment the user enters Cấp 4, with its spec copy + Làm ngay", () => {
-    renderPanel()
-    expect(screen.getByTestId("cap4-task-1").className).toContain("cap0-checklist-item--active")
-    expect(
-      within(screen.getByTestId("cap4-task-1")).getByText(/không chọn 1 lý do nữa/),
-    ).toBeInTheDocument()
-    expect(within(screen.getByTestId("cap4-task-1")).getByText("Làm ngay →")).toBeInTheDocument()
-  })
-
-  it("② is locked until ① is done", () => {
-    renderPanel()
-    expect(screen.getByTestId("cap4-task-2").className).toContain("cap0-checklist-item--locked")
-  })
-
-  it("② becomes active once ① is done", () => {
-    useCap4ProgressMock.mockReturnValue({ data: makeProgress({ task_1_done_at: "t" }) })
-    renderPanel()
-    expect(screen.getByTestId("cap4-task-2").className).toContain("cap0-checklist-item--active")
-  })
-
-  it("done nhiệm vụ show the done state and bump the header count", () => {
+  it("★ counts 1/1 once the nhiệm vụ is stamped", () => {
     useCap4ProgressMock.mockReturnValue({
-      data: makeProgress({ task_1_done_at: "t", task_2_done_at: "t", task_3_done_at: "t" }),
+      data: makeProgress({ task_1_done_at: "t", so_lenh_doc_du_5lop: 20 }),
     })
     renderPanel()
-    for (const no of [1, 2]) {
-      expect(screen.getByTestId(`cap4-task-${no}`).className).toContain(
-        "cap0-checklist-item--done",
-      )
-    }
-    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 5 · 3/3")).toBeInTheDocument()
+    expect(screen.getByText("1/1")).toBeInTheDocument()
   })
 
-  it("renders the Thách thức Thuần thục widget with ALL THREE conditions (§C12c)", () => {
+  it("★ khối Thách thức Thuần thục (3 điều kiện) đã bị GỠ khỏi Hành trình", () => {
     renderPanel()
-    expect(screen.getByTestId("cap4-thachthuc")).toBeInTheDocument()
-    expect(screen.getByTestId("cap4-thachthuc-so_lenh_doc_du_5lop")).toBeInTheDocument()
-    expect(screen.getByTestId("cap4-thachthuc-vu_khi_diem_mu")).toBeInTheDocument()
-    expect(screen.getByTestId("cap4-thachthuc-ty_le_thang_dong_thuan_cao")).toBeInTheDocument()
+    expect(screen.queryByTestId("cap4-thachthuc")).not.toBeInTheDocument()
+    expect(screen.queryByText(/Thách thức Thuần thục/)).not.toBeInTheDocument()
+    // Hộp Vũ khí & điểm mù cũng đi — nó thuộc Phân tích danh mục (khối ⑨).
+    expect(screen.queryByTestId("cap4-journey-vukhi")).not.toBeInTheDocument()
+    // Và Hành trình KHÔNG được gọi endpoint của khối đó nữa.
+    expect(screen.queryByText(/đồng thuận cao/i)).not.toBeInTheDocument()
   })
 
-  it("each thách-thức condition shows its CURRENT value vs its target", () => {
+  it("★ ô tập trung mang tên + mô tả VERBATIM của mockup, kèm tiến độ n/20 lệnh", () => {
     renderPanel()
-    const soLenh = screen.getByTestId("cap4-thachthuc-so_lenh_doc_du_5lop")
-    expect(soLenh).toHaveTextContent("Đọc + chấm đủ 5 lớp qua ≥ 20 lệnh")
-    expect(soLenh).toHaveTextContent("14/20")
-
-    const vuKhi = screen.getByTestId("cap4-thachthuc-vu_khi_diem_mu")
-    expect(vuKhi).toHaveTextContent("Nhận ra vũ khí + điểm mù của mình")
-    expect(vuKhi).toHaveTextContent("1/2")
-
-    const tyLe = screen.getByTestId("cap4-thachthuc-ty_le_thang_dong_thuan_cao")
-    expect(tyLe).toHaveTextContent("Lệnh đồng thuận cao (≥3 lớp ủng hộ) thắng ≥ 60%")
-    expect(tyLe).toHaveTextContent("57% / 60%")
-  })
-
-  it("each thách-thức condition shows its OWN giải thích from the backend (§C12c)", () => {
-    renderPanel()
-    expect(screen.getByTestId("cap4-thachthuc-so_lenh_doc_du_5lop")).toHaveTextContent(
-      /thói quen đọc toàn cảnh/,
+    const focus = screen.getByTestId("cap4-focus")
+    expect(focus).toHaveTextContent("NHIỆM VỤ ĐANG LÀM")
+    expect(focus).toHaveTextContent("Đọc và chấm đủ 5 lớp qua 20 lệnh")
+    expect(focus).toHaveTextContent(
+      "Mỗi lệnh tự đọc và chấm cả 5 lớp thay vì chỉ chọn 1 lý do.",
     )
-    expect(screen.getByTestId("cap4-thachthuc-vu_khi_diem_mu")).toHaveTextContent(
-      /Cần ít nhất 3 lệnh đã đóng mỗi lớp/,
-    )
-    expect(screen.getByTestId("cap4-thachthuc-ty_le_thang_dong_thuan_cao")).toHaveTextContent(
-      /kiểm chứng xem đọc toàn cảnh có giúp chọn lệnh tốt hơn không/,
-    )
+    expect(focus).toHaveTextContent("14/20 lệnh")
   })
 
-  it("marks a met condition as đạt and an unmet one as chưa đạt", () => {
-    const tt = makeThachThuc()
-    useThachThucCap4Mock.mockReturnValue({
-      data: {
-        ...tt,
-        so_lenh_doc_du_5lop: { ...tt.so_lenh_doc_du_5lop, gia_tri_hien_tai: 21, dat: true },
-      },
-    })
-    renderPanel()
-    expect(screen.getByTestId("cap4-thachthuc-so_lenh_doc_du_5lop")).toHaveAttribute(
-      "data-dat",
-      "true",
-    )
-    expect(screen.getByTestId("cap4-thachthuc-ty_le_thang_dong_thuan_cao")).toHaveAttribute(
-      "data-dat",
-      "false",
-    )
-  })
-
-  it("explains WHY the thách thức is strict — and that the goal is NOT matching AI (spec §2③)", () => {
-    renderPanel()
-    const widget = screen.getByTestId("cap4-thachthuc")
-    expect(widget).toHaveTextContent(/kết quả thật/i)
-    expect(widget).toHaveTextContent(/không phải.*khớp AI/i)
-  })
-
-  it("degrades gracefully while the thách thức data is still loading", () => {
-    useThachThucCap4Mock.mockReturnValue({ data: undefined })
-    renderPanel()
-    expect(screen.getByTestId("cap4-thachthuc")).toBeInTheDocument()
-    expect(screen.queryByTestId("cap4-thachthuc-so_lenh_doc_du_5lop")).not.toBeInTheDocument()
-  })
-
-  it("shows the current vũ khí + điểm mù lớp with the REAL win rate behind each (§C12c)", () => {
-    renderPanel()
-    const box = screen.getByTestId("cap4-journey-vukhi")
-    expect(within(box).getByTestId("cap4-journey-vukhi-lop")).toHaveTextContent("💰 Dòng tiền")
-    expect(within(box).getByTestId("cap4-journey-vukhi-lop")).toHaveTextContent("78%")
-    expect(within(box).getByTestId("cap4-journey-vukhi-lop")).toHaveTextContent("7/9 lệnh")
-    expect(within(box).getByTestId("cap4-journey-diemmu-lop")).toHaveTextContent("📰 Tin tức")
-    expect(within(box).getByTestId("cap4-journey-diemmu-lop")).toHaveTextContent("33%")
-    expect(within(box).getByTestId("cap4-journey-diemmu-lop")).toHaveTextContent("2/6 lệnh")
-    // Nguồn gốc con số (ngưỡng + số lệnh tối thiểu) — câu của server.
-    expect(box).toHaveTextContent(/Số liệu tính từ lệnh THẬT đã đóng/)
-  })
-
-  it("says chưa đủ dữ liệu for vũ khí/điểm mù when the system cannot conclude yet", () => {
-    useVuKhiDiemMuMock.mockReturnValue({
-      data: makeVuKhi({ vu_khi_lop: null, diem_mu_lop: null }),
-    })
-    renderPanel()
-    expect(screen.getByTestId("cap4-journey-vukhi-lop")).toHaveTextContent(/chưa đủ dữ liệu/)
-    expect(screen.getByTestId("cap4-journey-diemmu-lop")).toHaveTextContent(/chưa đủ dữ liệu/)
-  })
-
-  it("prefers the hồ sơ's own vũ khí/điểm mù when the server progress already concluded", () => {
+  it("caps the progress counter at the target instead of showing 21/20", () => {
     useCap4ProgressMock.mockReturnValue({
-      data: makeProgress({ vu_khi_lop: "ky_thuat", diem_mu_lop: "dinh_gia" }),
+      data: makeProgress({ so_lenh_doc_du_5lop: 24, task_1_done_at: "t" }),
     })
-    useVuKhiDiemMuMock.mockReturnValue({ data: undefined })
     renderPanel()
-    expect(screen.getByTestId("cap4-journey-vukhi-lop")).toHaveTextContent("Kỹ thuật")
-    expect(screen.getByTestId("cap4-journey-diemmu-lop")).toHaveTextContent("Định giá")
+    expect(screen.getByTestId("cap4-task-1")).toHaveTextContent("20/20 lệnh")
   })
 
-  it('clicking "Xem Phân tích danh mục →" switches the sidebar to the cap4-analysis panel', () => {
-    function PanelSpy() {
-      const { activePanel } = useSidebar()
-      return <div data-testid="panel-spy">{activePanel}</div>
+  it("★ says nothing rather than 0/20 while progress has not loaded (chưa biết ≠ 0)", () => {
+    useCap4ProgressMock.mockReturnValue({ data: undefined })
+    renderPanel()
+    expect(screen.queryByText(/\/20 lệnh/)).not.toBeInTheDocument()
+  })
+
+  // ── Dải 5 icon độ phủ (mockup .coverage / .off) ───────────────────────────
+
+  it("★ dải 5 icon độ phủ MỜ khi chưa lệnh nào đọc đủ 5 lớp (.off)", () => {
+    useCap4ProgressMock.mockReturnValue({ data: makeProgress({ so_lenh_doc_du_5lop: 0 }) })
+    renderPanel()
+    const strip = screen.getByTestId("cap4-coverage")
+    expect(within(strip).getAllByText(/./)).toHaveLength(5)
+    for (const lop of ["ky_thuat", "dong_tien", "noi_bo", "tin_tuc", "dinh_gia"]) {
+      expect(screen.getByTestId(`cap4-coverage-${lop}`)).toHaveClass("cap4-coverage-off")
     }
-    render(
-      <SidebarProvider>
-        <JourneyPanelCap4 />
-        <PanelSpy />
-      </SidebarProvider>,
-    )
-    fireEvent.click(screen.getByText("Xem Phân tích danh mục →"))
+  })
+
+  it("★ dải 5 icon SÁNG hết từ lệnh đầu tiên đọc đủ (một lệnh đã phủ cả 5 lớp)", () => {
+    useCap4ProgressMock.mockReturnValue({ data: makeProgress({ so_lenh_doc_du_5lop: 1 }) })
+    renderPanel()
+    for (const lop of ["ky_thuat", "dong_tien", "noi_bo", "tin_tuc", "dinh_gia"]) {
+      expect(screen.getByTestId(`cap4-coverage-${lop}`)).not.toHaveClass("cap4-coverage-off")
+    }
+  })
+
+  // ── explain-box + tools ──────────────────────────────────────────────────
+
+  it("★ explain-box nói luật đếm: chấm đủ 5 lớp, không cần đóng, không cần thắng", () => {
+    renderPanel()
+    const box = screen.getByTestId("cap4-journey-explain")
+    expect(box).toHaveTextContent(/đủ cả 5 lớp/)
+    expect(box).toHaveTextContent(/không tính/)
+    expect(box).toHaveTextContent(/[Kk]hông cần lệnh phải đóng/)
+    expect(box).toHaveTextContent(/không phải điểm đúng\/sai/)
+  })
+
+  it("renders the 2-tool row of the mockup (Kết sổ tĩnh + Phân tích danh mục bấm được)", () => {
+    renderWithSpy()
+    const tools = screen.getByTestId("cap4-tools")
+    expect(within(tools).getByText("📓 Kết sổ")).toBeInTheDocument()
+    fireEvent.click(within(tools).getByText("📊 Phân tích danh mục"))
     expect(screen.getByTestId("panel-spy")).toHaveTextContent("cap4-analysis")
   })
 
   it('"Làm ngay →" jumps to the đặt lệnh (trading) panel', () => {
-    function PanelSpy() {
-      const { activePanel } = useSidebar()
-      return <div data-testid="panel-spy">{activePanel}</div>
-    }
-    render(
-      <SidebarProvider>
-        <JourneyPanelCap4 />
-        <PanelSpy />
-      </SidebarProvider>,
-    )
+    renderWithSpy()
     fireEvent.click(screen.getByText("Làm ngay →"))
     expect(screen.getByTestId("panel-spy")).toHaveTextContent("trading")
   })
 
-  it("shows the graduation goal box pointing at Cấp 5 «Lão luyện»", () => {
+  // ── ★ Ô mục tiêu — gắn theo trần cấp, CẢ HAI phía ─────────────────────────
+
+  it("★ trần ≥ 5: ô mục tiêu hứa Cấp 5 «Lão luyện» (chủ động săn mã)", () => {
+    flags.CAP_MAX_ENABLED = 5
     renderPanel()
-    expect(screen.getByText(/tốt nghiệp Cấp 4/)).toBeInTheDocument()
-    expect(screen.getByText(/Cấp 5 «Lão luyện»/)).toBeInTheDocument()
+    const goal = screen.getByTestId("cap4-journey-goal")
+    expect(goal).toHaveTextContent("Xong → tốt nghiệp Cấp 4, lên Cấp 5 «Lão luyện» (chủ động săn mã).")
+    expect(goal).not.toHaveTextContent(/chưa ra mắt/)
+  })
+
+  it("★ trần = 4: ô mục tiêu KHÔNG hứa một cấp chưa tồn tại", () => {
+    flags.CAP_MAX_ENABLED = 4
+    renderPanel()
+    const goal = screen.getByTestId("cap4-journey-goal")
+    expect(goal).toHaveTextContent("Cấp 5 «Lão luyện» chưa ra mắt")
+    expect(goal).toHaveTextContent(/chặng cuối của chương trình hiện tại/)
+    expect(goal).toHaveTextContent(/chủ động săn mã/)
+  })
+
+  it("★★ ô mục tiêu KHÔNG được nói Cấp 5 dạy 4 ô / tách quyết định khỏi kết quả / mâu thuẫn giữa các lớp", () => {
+    // Cấp 5 thật = SĂN MÃ. Bốn nguồn (mockup Cấp 4, IQX-Cap5-Spec, mockup Cấp
+    // 5, IQX-NguyenTac-Chung) đều nói vậy; "4 ô" là bản Cấp 5 CŨ và "mâu thuẫn
+    // giữa các lớp" là Cấp 6. Canh cả hai phía của trần.
+    for (const tran of [4, 5]) {
+      flags.CAP_MAX_ENABLED = tran
+      const { unmount } = renderPanel()
+      const goal = screen.getByTestId("cap4-journey-goal")
+      expect(goal).not.toHaveTextContent(/tách quyết định khỏi kết quả/)
+      expect(goal).not.toHaveTextContent(/đúng-thắng/)
+      expect(goal).not.toHaveTextContent(/đứng ngoài/)
+      expect(goal).not.toHaveTextContent(/mâu thuẫn/)
+      unmount()
+    }
+  })
+
+  // ── Trạng thái sau khi tốt nghiệp ────────────────────────────────────────
+
+  it("★ đã tốt nghiệp: ô tập trung + ô mục tiêu KHÔNG bắt làm lại việc vừa xong", () => {
+    useCap4ProgressMock.mockReturnValue({
+      data: makeProgress({
+        task_1_done_at: "t",
+        so_lenh_doc_du_5lop: 20,
+        graduated_at: "2026-08-10T00:00:00Z",
+      }),
+    })
+    renderPanel()
+    expect(screen.getByTestId("cap4-focus")).toHaveTextContent("Đã tốt nghiệp Cấp 4 «Thuần thục»")
+    const goal = screen.getByTestId("cap4-journey-goal")
+    expect(goal).toHaveTextContent("Bạn đã tốt nghiệp")
+    expect(goal).not.toHaveTextContent(/Xong → tốt nghiệp/)
+  })
+
+  it("★ đã tốt nghiệp + trần = 4: vẫn không hứa Cấp 5 đã có", () => {
+    flags.CAP_MAX_ENABLED = 4
+    useCap4ProgressMock.mockReturnValue({
+      data: makeProgress({
+        task_1_done_at: "t",
+        so_lenh_doc_du_5lop: 20,
+        graduated_at: "2026-08-10T00:00:00Z",
+      }),
+    })
+    renderPanel()
+    expect(screen.getByTestId("cap4-journey-goal")).toHaveTextContent(
+      /Cấp 5 «Lão luyện» chưa ra mắt/,
+    )
+  })
+
+  it("xong nhiệm vụ nhưng chưa tốt nghiệp → ô tập trung nói sẵn sàng tốt nghiệp", () => {
+    useCap4ProgressMock.mockReturnValue({
+      data: makeProgress({ task_1_done_at: "t", so_lenh_doc_du_5lop: 20 }),
+    })
+    renderPanel()
+    expect(screen.getByTestId("cap4-focus")).toHaveTextContent("Sẵn sàng tốt nghiệp Cấp 4")
   })
 
   it("does NOT render any medal cabinet / Tủ huân chương (spec §11 — no cấp has one)", () => {
@@ -341,7 +284,5 @@ describe("JourneyPanelCap4", () => {
     useCap4EventsMock.mockReturnValue({ isCap4Active: false })
     renderPanel()
     expect(useCap4ProgressMock).toHaveBeenCalledWith(false)
-    expect(useThachThucCap4Mock).toHaveBeenCalledWith(false)
-    expect(useVuKhiDiemMuMock).toHaveBeenCalledWith(false)
   })
 })

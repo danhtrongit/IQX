@@ -2,294 +2,108 @@ import "@/features/cap0/cap0.css"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { Badge, LEVELS } from "@/features/cap0/Badge"
 import { ModeBadge } from "@/features/cap0/ModeBadge"
-import { lopLabelCap4 } from "./coachTemplateCap4"
+import { JourneyFocus } from "@/features/cap0/JourneyFocus"
+// Trần cấp — file riêng, KHÔNG import gì (xem docstring ở đó).
+import { CAP_MAX_ENABLED } from "@/features/cap1/capFlags"
 import { useCap4Events } from "./Cap4Context"
-import { useCap4Progress, useThachThucCap4, useVuKhiDiemMu } from "./hooks"
+import { LOP_DEFS } from "./doc5Lop"
+import { useCap4Progress } from "./hooks"
 import {
+  CAP4_SO_LENH_TARGET,
+  CAP4_TOTAL_TASKS,
   countCap4TasksDone,
   type Cap4Progress,
-  type Lop,
-  type LopWinRate,
-  type ThachThucCap4,
-  type ThachThucDieuKienCap4,
-  type VuKhiDiemMuCap4,
 } from "./types"
 import "./cap4-journey.css"
 
-/** 3 nhiệm vụ Cấp 4 — tên VERBATIM theo header spec §2. */
-const TASK_NAMES: Record<number, string> = {
-  1: "Lệnh đầu tiên đọc + chấm đủ 5 lớp",
-  2: "Kết sổ lệnh đầu Cấp 4",
-  3: "Thách thức Thuần thục — đọc toàn cảnh",
+/**
+ * Cấp 5 đã mở chưa — quyết định câu cuối của ô mục tiêu.
+ *
+ * ★ HÀM chứ không phải `const` module-scope: trần phải được đọc lúc RENDER.
+ * Một `const` chốt giá trị ngay lúc import và test (mock `capFlags` bằng
+ * getter để thử cả hai phía của trần) sẽ chỉ thấy giá trị đầu tiên → một nửa
+ * số test xanh giả. Cùng lý do `cap3/GraduationModalCap3.tsx#isCap4Open` ghi.
+ */
+function isCap5Open(): boolean {
+  return CAP_MAX_ENABLED >= 5
 }
 
-/** Copy nhiệm vụ ① khi active — VERBATIM spec §2①. */
-const TASK_1_COPY =
-  "Cấp 4 khác trước: không chọn 1 lý do nữa, mà đọc cả 5 lớp rồi tự chấm từng lớp. Chấm đủ 5 lớp mới đặt được lệnh — AI sẽ đối chiếu sau khi bạn chấm xong."
+/**
+ * Nhiệm vụ DUY NHẤT của Cấp 4 — tên VERBATIM theo mockup
+ * `iqx-cap4-hanhtrinh.html` (`.task .nm`).
+ */
+const TASK_NAME = "Đọc và chấm đủ 5 lớp qua 20 lệnh"
 
-/** Copy nhiệm vụ ② khi active (spec §2② "bán 1 lệnh → đóng màn Kết sổ Cấp 4"). */
-const TASK_2_COPY = "Bán 1 lệnh đang mở rồi đóng màn Kết sổ Cấp 4 để hoàn thành."
+/** Mockup `.task .ds` — một dòng, VERBATIM. */
+const TASK_DESC = "Mỗi lệnh tự đọc và chấm cả 5 lớp thay vì chỉ chọn 1 lý do."
 
 /** Bài học một câu — VERBATIM spec §1. */
 const BAI_HOC = '"Đọc trọn bức tranh, không chỉ một lý do — và biết mình đọc giỏi ở đâu."'
 
-type TaskState = "done" | "active" | "locked"
+type TaskState = "done" | "active"
 
-const TASK_DONE_AT: Record<number, (p: Cap4Progress) => string | null> = {
-  1: (p) => p.task_1_done_at,
-  2: (p) => p.task_2_done_at,
-  3: (p) => p.task_3_done_at,
+/**
+ * State của nhiệm vụ duy nhất. Không còn luật mở khoá nào: nó mở ngay khi vào
+ * Cấp 4 và chỉ có hai trạng thái.
+ */
+export function taskStateCap4(
+  no: number,
+  progress: Cap4Progress | null | undefined,
+): TaskState {
+  if (no !== 1) return "active"
+  return progress?.task_1_done_at ? "done" : "active"
 }
 
 /**
- * State của 1 nhiệm vụ trong checklist (spec §2 "Điều kiện mở"): ① và ③ mở ngay
- * khi vào Cấp 4; ② mở khi xong ① (điều kiện thật là "xong ① + có ≥1 lệnh mở" —
- * client không biết số lệnh đang mở, nên xấp xỉ bằng "xong ①", cùng kiểu xấp xỉ
- * đã ghi rõ ở `cap3/JourneyPanelCap3.tsx`).
+ * Dòng checklist THU GỌN (mirrors `cap1`/`cap2`/`cap3`) — mô tả dài + nút to
+ * đã dọn lên ô tập trung `JourneyFocus`, dòng ở đây chỉ giữ tên + tiến độ.
+ * Cấp 4 chỉ còn MỘT nhiệm vụ nên nó luôn là nhiệm vụ đang được tập trung ⇒
+ * không bao giờ có lối tắt "Làm ngay →" nhân bản ở đây.
  */
-export function taskStateCap4(no: number, progress: Cap4Progress | null | undefined): TaskState {
-  const doneAt = progress ? TASK_DONE_AT[no](progress) : null
-  if (doneAt) return "done"
-  if (no === 2) return progress?.task_1_done_at ? "active" : "locked"
-  return "active"
-}
-
 function ChecklistItem({
-  no,
   state,
   progressText,
-  onGo,
 }: {
-  no: number
   state: TaskState
   progressText?: string
-  onGo: () => void
 }) {
   return (
     <div
-      data-testid={`cap4-task-${no}`}
+      data-testid="cap4-task-1"
       className={
-        "cap0-checklist-item" +
-        (state === "done" ? " cap0-checklist-item--done" : "") +
-        (state === "active" ? " cap0-checklist-item--active" : "") +
-        (state === "locked" ? " cap0-checklist-item--locked" : "")
+        "cap0-checklist-item cap1-checklist-item" +
+        (state === "done" ? " cap0-checklist-item--done" : " cap0-checklist-item--active")
       }
     >
-      <span className="cap0-checklist-num">{state === "done" ? "✓" : "①②③"[no - 1]}</span>
+      <span className="cap0-checklist-num">{state === "done" ? "✓" : "①"}</span>
       <div className="cap0-checklist-body">
-        <span className="cap0-checklist-name">{TASK_NAMES[no]}</span>
+        <span className="cap0-checklist-name">{TASK_NAME}</span>
         {progressText && <div className="cap0-checklist-desc">{progressText}</div>}
-        {state === "active" && (
-          <button type="button" className="cap0-checklist-golink" onClick={onGo}>
-            Làm ngay →
-          </button>
-        )}
       </div>
-    </div>
-  )
-}
-
-/** Kiểu hiển thị giá trị của 1 điều kiện — quyết định cách format "đang / mục tiêu". */
-type CondKind = "count" | "score"
-
-/**
- * "Đang / mục tiêu" của 1 điều kiện — LUÔN hiện cả giá trị hiện tại VÀ mốc cần
- * đạt (§C12c: không hiện con số trơ, người đọc phải thấy còn thiếu bao nhiêu).
- * Số en-US (§E).
- */
-function fmtCondValue(dieuKien: ThachThucDieuKienCap4, kind: CondKind): string {
-  const { gia_tri_hien_tai: now, muc_tieu: target } = dieuKien
-  if (kind === "count") {
-    return `${Math.round(now).toLocaleString("en-US")}/${Math.round(target).toLocaleString("en-US")}`
-  }
-  return `${Math.round(now)}% / ${Math.round(target)}%`
-}
-
-/** % chiều rộng thanh tiến độ — kẹp 0..100. */
-function progressPct(dieuKien: ThachThucDieuKienCap4): number {
-  const { gia_tri_hien_tai: now, muc_tieu: target } = dieuKien
-  if (target <= 0) return dieuKien.dat ? 100 : 0
-  return Math.max(0, Math.min(100, (now / target) * 100))
-}
-
-function ThachThucCond({
-  testId,
-  dieuKien,
-  kind,
-}: {
-  testId: string
-  dieuKien: ThachThucDieuKienCap4
-  kind: CondKind
-}) {
-  return (
-    <div
-      className="cap4-thachthuc-cond"
-      data-testid={testId}
-      data-dat={dieuKien.dat ? "true" : "false"}
-    >
-      <div className="cap4-thachthuc-row">
-        <span className="cap4-thachthuc-ic">{dieuKien.dat ? "✅" : "🔲"}</span>
-        <span className="cap4-thachthuc-label">{dieuKien.ten}</span>
-        <span className="cap4-thachthuc-value">{fmtCondValue(dieuKien, kind)}</span>
-      </div>
-      <div className="cap4-thachthuc-bar">
-        <i style={{ width: `${progressPct(dieuKien)}%` }} />
-      </div>
-      {/* §C12c — mỗi chỉ số kèm ĐÚNG câu giải thích của backend (nguồn gốc con
-          số), không phải một câu FE tự viết. */}
-      <p className="cap4-thachthuc-giaithich">{dieuKien.giai_thich}</p>
-    </div>
-  )
-}
-
-/**
- * Widget "Thách thức Thuần thục" = nhiệm vụ ③ (spec §2③). Hiện CẢ 3 điều kiện
- * cùng lúc kèm giá trị hiện tại vs mục tiêu và giải thích riêng của từng điều
- * kiện (§C12c) — dữ liệu do `GET /cap4/thach-thuc` tính, FE chỉ trình bày.
- */
-function ThachThucWidget({ data }: { data: ThachThucCap4 | undefined }) {
-  return (
-    <div className="cap4-thachthuc" data-testid="cap4-thachthuc">
-      <div className="cap4-thachthuc-title">{`🎯 ③ ${TASK_NAMES[3]}`}</div>
-      {data ? (
-        <>
-          <ThachThucCond
-            testId="cap4-thachthuc-so_lenh_doc_du_5lop"
-            dieuKien={data.so_lenh_doc_du_5lop}
-            kind="count"
-          />
-          <ThachThucCond
-            testId="cap4-thachthuc-vu_khi_diem_mu"
-            dieuKien={data.vu_khi_diem_mu}
-            kind="count"
-          />
-          <ThachThucCond
-            testId="cap4-thachthuc-ty_le_thang_dong_thuan_cao"
-            dieuKien={data.ty_le_thang_dong_thuan_cao}
-            kind="score"
-          />
-        </>
-      ) : (
-        <div className="cap4-thachthuc-loading">Đang tính 3 điều kiện của bạn…</div>
-      )}
-      {/* Vì sao khắt khe + mục tiêu KHÔNG phải "khớp AI" — spec §2③ + §4.3 */}
-      <p className="cap4-thachthuc-why">
-        Đây là cấp «Thuần thục»: không chỉ đọc, mà đọc <strong>có hiệu quả đo được bằng kết quả
-        thật</strong>. Mục tiêu không phải là khớp AI bao nhiêu %, mà là đọc toàn cảnh thành thói
-        quen và kết quả thực tế tốt lên. Đạt CẢ 3 điều kiện cùng lúc mới xong nhiệm vụ này.
-      </p>
-    </div>
-  )
-}
-
-/** `78% thắng (7/9 lệnh)` — số THẬT phía sau kết luận vũ khí/điểm mù (§C12c). */
-function fmtWinRate(row: LopWinRate | null): string | null {
-  if (!row || row.win_rate == null) return null
-  return `${Math.round(row.win_rate)}% thắng (${Math.round(row.n_wins).toLocaleString(
-    "en-US",
-  )}/${Math.round(row.n_orders).toLocaleString("en-US")} lệnh)`
-}
-
-function VuKhiRow({
-  testId,
-  variant,
-  label,
-  lop,
-  row,
-  soLenhToiThieu,
-}: {
-  testId: string
-  variant: "vukhi" | "diemmu"
-  label: string
-  lop: Lop | null
-  row: LopWinRate | null
-  soLenhToiThieu: number
-}) {
-  const winRate = fmtWinRate(row)
-  return (
-    <div className={`cap4-vukhi-row cap4-vukhi-row--${variant}`} data-testid={testId}>
-      <span className="cap4-vukhi-row-label">{label}</span>
-      {lop ? (
-        <>
-          <span className="cap4-vukhi-row-value">{lopLabelCap4(lop)}</span>
-          {winRate && <span className="cap4-vukhi-row-count">{`— ${winRate}`}</span>}
-        </>
-      ) : (
-        <span className="cap4-vukhi-row-count">
-          {`chưa đủ dữ liệu (cần ≥ ${soLenhToiThieu} lệnh đã đóng cho mỗi lớp)`}
-        </span>
-      )}
-    </div>
-  )
-}
-
-/**
- * Hộp "Vũ khí & điểm mù" — điều kiện ② của nhiệm vụ ③, ở dạng người đọc hiểu
- * ngay: lớp nào là vũ khí, lớp nào là điểm mù, VÀ % thắng thật + số lệnh đã đóng
- * đứng sau mỗi kết luận (§C12c "mọi chỉ số kèm giải thích + nguồn gốc").
- *
- * Ưu tiên `Cap4Progress.vu_khi_lop`/`diem_mu_lop` (server đã chốt, cũng là con
- * số nuôi nhiệm vụ ③) rồi mới tới `GET /cap4/vu-khi-diem-mu` — cùng thứ tự
- * `Cap4PortfolioAnalysis` dùng, nên 2 màn không bao giờ nói khác nhau.
- */
-function VuKhiBox({
-  progress,
-  data,
-}: {
-  progress: Cap4Progress | null | undefined
-  data: VuKhiDiemMuCap4 | undefined
-}) {
-  const vuKhiLop = progress?.vu_khi_lop ?? data?.vu_khi_lop ?? null
-  const diemMuLop = progress?.diem_mu_lop ?? data?.diem_mu_lop ?? null
-  const rowOf = (lop: Lop | null) =>
-    (lop && data?.lop.find((r) => r.lop === lop)) || null
-  const soLenhToiThieu = data?.so_lenh_toi_thieu ?? 3
-
-  return (
-    <div className="cap4-vukhi" data-testid="cap4-journey-vukhi">
-      <div className="cap4-vukhi-title">Vũ khí &amp; điểm mù của bạn</div>
-      <VuKhiRow
-        testId="cap4-journey-vukhi-lop"
-        variant="vukhi"
-        label="🗡 Vũ khí:"
-        lop={vuKhiLop}
-        row={rowOf(vuKhiLop)}
-        soLenhToiThieu={soLenhToiThieu}
-      />
-      <VuKhiRow
-        testId="cap4-journey-diemmu-lop"
-        variant="diemmu"
-        label="🕳 Điểm mù:"
-        lop={diemMuLop}
-        row={rowOf(diemMuLop)}
-        soLenhToiThieu={soLenhToiThieu}
-      />
-      {/* §C12c — câu giải thích nguồn gốc/ngưỡng do CHÍNH server sinh. */}
-      {data?.giai_thich && <p className="cap4-vukhi-giaithich">{data.giai_thich}</p>}
     </div>
   )
 }
 
 /**
  * Tab "Hành trình" Cấp 4 — panel đầu của sidebar-phải khi đang ở Cấp 4
- * (mockup `iqx-cap4-hanhtrinh.html`). Mirror `cap3/JourneyPanelCap3.tsx`: thẻ
- * cấp + checklist header + danh sách nhiệm vụ + hộp mục tiêu, ĐỔI phần giữa
- * thành widget Thách thức Thuần thục (nhiệm vụ ③, spec §2③) + hộp Vũ khí/Điểm
- * mù. KHÔNG có thẻ Điểm kỷ luật (khác Cấp 3: điểm kỷ luật KHÔNG phải điều kiện
- * lên Cấp 5 và mockup Cấp 4 không có thẻ đó — cơ chế điểm kỷ luật vẫn chạy y
- * nguyên ở panel đặt lệnh/Kết sổ). KHÔNG có Tủ huân chương (spec §11 — không
- * cấp nào có).
+ * (mockup `iqx-cap4-hanhtrinh.html`).
  *
- * Self-contained: gọi `useCap4Progress`/`useThachThucCap4`/`useVuKhiDiemMu` với
- * `isCap4Active` nên KHÔNG query gì khi ở ngoài `Cap4Provider`
- * (`SidebarProvider` là singleton app-root, dùng chung với /bieu-do &
- * /co-phieu — cùng lý do đã ghi ở `JourneyPanelCap3`).
+ * ★ **MỘT nhiệm vụ.** Mockup mới: `.ck-head` "Trước khi lên Cấp 5 · 0/1", đúng
+ * một `.task.active` («Đọc và chấm đủ 5 lớp qua 20 lệnh», `14/20 lệnh`), dải 5
+ * icon độ phủ, rồi `.tools` + `.goal`. Khối `.challenge` (Thách thức Thuần
+ * thục — 3 điều kiện + thanh tiến độ) và hộp "Vũ khí & điểm mù" KHÔNG còn ở
+ * đây: khối ⑨ vũ khí/điểm mù vẫn sống nguyên vẹn trong **Phân tích danh mục**
+ * (`Cap4PortfolioAnalysis`), chỗ mockup đặt nó.
+ *
+ * ★ Dùng chung `cap0/JourneyFocus.tsx` như Cấp 0/1/2/3 — một khối, một bộ CSS.
+ *
+ * Self-contained: gọi `useCap4Progress` với `isCap4Active` nên KHÔNG query gì
+ * khi ở ngoài `Cap4Provider` (`SidebarProvider` là singleton app-root, dùng
+ * chung với /bieu-do & /co-phieu — cùng lý do đã ghi ở `JourneyPanelCap3`).
  */
 export function JourneyPanelCap4() {
   const { isCap4Active } = useCap4Events()
   const { data: progress } = useCap4Progress(isCap4Active)
-  const { data: thachThuc } = useThachThucCap4(isCap4Active)
-  const { data: vuKhi } = useVuKhiDiemMu(isCap4Active)
   const { setActivePanel } = useSidebar()
   const tasksDone = countCap4TasksDone(progress)
   const level = LEVELS[4]
@@ -297,13 +111,45 @@ export function JourneyPanelCap4() {
   const openPortfolioAnalysis = () => setActivePanel("cap4-analysis")
   const goToTrading = () => setActivePanel("trading")
 
-  // §C12c — chip bài học kèm con số thật (số lệnh đã đọc đủ 5 lớp), không phải
-  // một khẩu hiệu trơ.
-  const chipText = progress
-    ? `● Đọc trọn 5 lớp mỗi lệnh · ${Math.round(
-        progress.so_lenh_doc_du_5lop,
-      ).toLocaleString("en-US")} lệnh đã đọc đủ`
-    : "● Đọc trọn 5 lớp mỗi lệnh"
+  const graduated = progress?.graduated_at != null
+  const state = taskStateCap4(1, progress)
+
+  /**
+   * Mockup `.prog` "14/20 lệnh". Một nguồn duy nhất cho cả ô tập trung lẫn
+   * dòng checklist — hai chỗ không được phép đếm hai kiểu. `undefined` khi
+   * chưa tải xong progress: "chưa biết" thì im lặng, KHÔNG in "0/20".
+   */
+  const soLenhText = progress
+    ? `${Math.min(progress.so_lenh_doc_du_5lop, CAP4_SO_LENH_TARGET).toLocaleString(
+        "en-US",
+      )}/${CAP4_SO_LENH_TARGET.toLocaleString("en-US")} lệnh`
+    : undefined
+
+  /**
+   * Dải 5 icon độ phủ (mockup `.coverage`, class `.off` cho lớp chưa phủ).
+   *
+   * ★ Nguồn dữ liệu THẬT, không phải trang trí: một lệnh chỉ được đếm vào
+   * `so_lenh_doc_du_5lop` khi user chấm ĐỦ CẢ 5 lớp, nên "đã từng chấm lớp
+   * này" đúng bằng "đã có ≥1 lệnh đọc đủ". Vì thế 5 icon bật/tắt cùng nhau —
+   * mờ hết khi chưa lệnh nào đọc đủ, sáng hết từ lệnh đầu tiên. Đó chính là
+   * điều khác biệt Cấp 4 dạy (đọc TRỌN bức tranh, không nhặt vài lớp), và nó
+   * không bịa ra một độ phủ từng-lớp mà dữ liệu không hề có.
+   */
+  const daPhu = (progress?.so_lenh_doc_du_5lop ?? 0) >= 1
+  const coverageStrip = (
+    <div className="cap4-coverage" data-testid="cap4-coverage">
+      {LOP_DEFS.map((def) => (
+        <span
+          key={def.lop}
+          data-testid={`cap4-coverage-${def.lop}`}
+          className={daPhu ? "" : "cap4-coverage-off"}
+          title={def.label}
+        >
+          {def.icon}
+        </span>
+      ))}
+    </div>
+  )
 
   return (
     <div className="cap0 flex h-full min-h-0 flex-col bg-[var(--bg1)] text-[var(--t1)]">
@@ -314,53 +160,124 @@ export function JourneyPanelCap4() {
             color={level.color}
             fill={level.fill}
             size={64}
-            ring={tasksDone / 3}
+            ring={tasksDone / CAP4_TOTAL_TASKS}
             glow
           />
           <div className="cap0-level-card-body">
             <div className="cap0-level-card-tag">CẤP 4</div>
             <div className="cap0-level-card-name cap0-display">THUẦN THỤC</div>
             <div className="cap0-level-card-lesson">{BAI_HOC}</div>
-            <div className="cap4-journey-tag" data-testid="cap4-journey-tag">
-              {chipText}
+            <div className="cap0-level-card-mode">
+              {/* Mockup `.lvcard .info .mode`: "● Đọc trọn 5 lớp mỗi lệnh". */}
+              <ModeBadge mode="thuc_chien" />
             </div>
           </div>
-          <ModeBadge mode="thuc_chien" />
         </div>
 
+        {/* ★ Ô "NHIỆM VỤ ĐANG LÀM" — dùng chung với Cấp 0/1/2/3. */}
+        {graduated ? (
+          <JourneyFocus
+            testId="cap4-focus"
+            ready
+            tag="HOÀN THÀNH"
+            name="Đã tốt nghiệp Cấp 4 «Thuần thục»"
+            desc={
+              isCap5Open()
+                ? "Bạn đã đọc và tự chấm đủ 5 lớp qua 20 lệnh — đọc trọn bức tranh đã thành thói quen. Cấp 5 «Lão luyện» đang chờ bạn."
+                : "Bạn đã đọc và tự chấm đủ 5 lớp qua 20 lệnh — đọc trọn bức tranh đã thành thói quen. Đây là chặng cuối của chương trình hiện tại; tài khoản vẫn giữ nguyên để bạn tiếp tục giao dịch."
+            }
+          />
+        ) : state === "done" ? (
+          <JourneyFocus
+            testId="cap4-focus"
+            ready
+            tag={`ĐÃ XONG ${CAP4_TOTAL_TASKS}/${CAP4_TOTAL_TASKS} NHIỆM VỤ`}
+            name="Sẵn sàng tốt nghiệp Cấp 4"
+            desc="Bạn đã đọc và tự chấm đủ 5 lớp qua 20 lệnh. Màn tốt nghiệp Cấp 4 «Thuần thục» mở ra ngay tại đây."
+          />
+        ) : (
+          <JourneyFocus
+            testId="cap4-focus"
+            tag="NHIỆM VỤ ĐANG LÀM"
+            numeral="①"
+            name={TASK_NAME}
+            desc={TASK_DESC}
+            extra={coverageStrip}
+            progressText={soLenhText}
+            onGo={goToTrading}
+          />
+        )}
+
+        {/* Mockup `.ck-head`: tiêu đề xám bên trái + bộ đếm mang MÀU CỦA CẤP
+            bên phải — hai phần tử, không phải một chuỗi "… · x/1". */}
         <div className="cap0-journey-checklist-header mt-3">
-          TRƯỚC KHI LÊN CẤP 5 · {tasksDone}/3
+          <span className="cap0-journey-checklist-title">TRƯỚC KHI LÊN CẤP 5</span>
+          <span
+            className="cap0-journey-checklist-count cap0-display"
+            style={{ color: level.color }}
+          >
+            {tasksDone}/{CAP4_TOTAL_TASKS}
+          </span>
         </div>
 
-        <ChecklistItem
-          no={1}
-          state={taskStateCap4(1, progress)}
-          progressText={progress?.task_1_done_at ? undefined : TASK_1_COPY}
-          onGo={goToTrading}
-        />
-        <ChecklistItem
-          no={2}
-          state={taskStateCap4(2, progress)}
-          progressText={progress?.task_2_done_at ? undefined : TASK_2_COPY}
-          onGo={goToTrading}
-        />
-
-        {/* Nhiệm vụ ③ — widget riêng (3 điều kiện + giá trị hiện tại, §C12c). */}
-        <div className="mt-1">
-          <ThachThucWidget data={thachThuc} />
+        <div className="cap0-journey-rest">
+          <ChecklistItem state={state} progressText={soLenhText} />
         </div>
 
-        {/* Vũ khí / điểm mù đang có — nguồn gốc con số của điều kiện ② ở trên. */}
-        <VuKhiBox progress={progress} data={vuKhi} />
+        {/* §C12c — con số `n/20` đến từ đâu, và vì sao một lệnh có thể KHÔNG
+            được tính. Đây là chỗ duy nhất nói luật đếm bằng lời. */}
+        <div className="cap4-explain" data-testid="cap4-journey-explain">
+          <b>Lệnh nào được tính?</b> Một lệnh MUA chỉ vào bộ đếm khi bạn đã tự chấm{" "}
+          <b>đủ cả 5 lớp</b> trước lúc đặt — chấm thiếu một lớp thì lệnh đó không tính.
+          Không cần lệnh phải đóng, cũng không cần lệnh phải thắng: đây là thói quen{" "}
+          <b>đọc</b>, không phải điểm đúng/sai.
+        </div>
 
-        <button type="button" className="cap0-checklist-golink mt-2" onClick={openPortfolioAnalysis}>
-          Xem Phân tích danh mục →
-        </button>
+        {/* Mockup `.tools` — hai ô. "Kết sổ" là ô TĨNH (màn Kết sổ tự mở khi
+            bán xong, không phải một panel bấm vào được), đúng như Cấp 1. */}
+        <div className="cap4-tools" data-testid="cap4-tools">
+          <div className="cap4-tool cap4-tool--static">📓 Kết sổ</div>
+          <button type="button" className="cap4-tool" onClick={openPortfolioAnalysis}>
+            📊 Phân tích danh mục
+          </button>
+        </div>
 
-        <div className="cap0-journey-goal">
-          Đạt cả 3 điều kiện của Thách thức Thuần thục → tốt nghiệp Cấp 4, lên{" "}
-          <strong>Cấp 5 «Lão luyện»</strong> (tách quyết định khỏi kết quả — và đứng ngoài cũng là
-          một quyết định).
+        {/* ★★ TRẠNG THÁI CUỐI của một người đã tốt nghiệp Cấp 4 ★★ — modal tốt
+            nghiệp unmount xong là về đúng màn này, và ô này là câu cuối cùng họ
+            đọc. Khi trần cấp còn dưới 5 nó KHÔNG được hứa một cấp chưa tồn tại;
+            khi trần được nâng, câu của mockup tự quay về.
+
+            ★ Cấp 5 «Lão luyện» = CHỦ ĐỘNG SĂN MÃ (bộ lọc → watchlist → chờ mã
+            chín). Bản cũ ở đây hứa "tách quyết định khỏi kết quả — và đứng
+            ngoài cũng là một quyết định", tức bản Cấp 5 CŨ đã bị thay; nội dung
+            đó nay thuộc Cấp 6. Chính mockup Hành trình Cấp 4 viết "(chủ động
+            săn mã)". */}
+        <div className="cap0-journey-goal" data-testid="cap4-journey-goal">
+          {graduated ? (
+            isCap5Open() ? (
+              <>
+                Bạn đã tốt nghiệp <strong>Cấp 4 «Thuần thục»</strong>. Chặng tiếp theo:{" "}
+                <strong>Cấp 5 «Lão luyện»</strong> (chủ động săn mã).
+              </>
+            ) : (
+              <>
+                Bạn đã tốt nghiệp <strong>Cấp 4 «Thuần thục»</strong> — chặng cuối của
+                chương trình hiện tại. <strong>Cấp 5 «Lão luyện» chưa ra mắt</strong>; khi
+                mở, nó sẽ dạy chủ động săn mã.
+              </>
+            )
+          ) : isCap5Open() ? (
+            <>
+              Xong → tốt nghiệp <strong>Cấp 4</strong>, lên{" "}
+              <strong>Cấp 5 «Lão luyện»</strong> (chủ động săn mã).
+            </>
+          ) : (
+            <>
+              Xong → tốt nghiệp <strong>Cấp 4 «Thuần thục»</strong> — chặng cuối của
+              chương trình hiện tại. <strong>Cấp 5 «Lão luyện» chưa ra mắt</strong>; khi
+              mở, nó sẽ dạy chủ động săn mã.
+            </>
+          )}
         </div>
       </div>
     </div>

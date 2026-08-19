@@ -20,7 +20,7 @@ import type { Lop5Partial } from "./types"
  * GAP (giống hệt gap `cap1/tradeLog.ts` + `cap2/tradeLogCap2.ts` +
  * `cap3/tradeLogCap3.ts` đã ghi, một cấp lên): backend Cấp 4 KHÔNG có endpoint
  * liệt kê từng lệnh đã đóng kèm `doc_5_lop`/`ai_5_lop` — chỉ có state tổng hợp
- * (`GET /cap4/progress`, `GET /cap4/thach-thuc`) và MỘT khối đã được tính
+ * (`GET /cap4/progress`) và MỘT khối đã được tính
  * server-side (`GET /cap4/vu-khi-diem-mu`, khối ⑨). Module này là workaround
  * cho 2 khối CHƯA có endpoint (⑩ đồng thuận vs thắng · ⑪ góc nhìn riêng):
  * `KetsoModalCap4` ghi 1 `Cap4TradeRecord` mỗi lần đóng Kết sổ (nó đang giữ
