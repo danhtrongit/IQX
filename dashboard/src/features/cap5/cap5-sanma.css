@@ -1,0 +1,422 @@
+/**
+ * Cấp 5 «Lão luyện» — màn Săn mã + Watchlist nâng cấp
+ * (mockup `iqx-cap5-sanma.html`, `iqx-cap5-watchlist.html`).
+ *
+ * ★ Dùng token Arco `--color-*` (KHÔNG phải bộ token game-shell `.cap0`), vì cả
+ * hai màn render trong sidebar-panel thường — cùng tiền lệ `cap5-analysis.css`
+ * đã ghi. Vàng kim `#e0b64d` là màu Cấp 5; xanh/đỏ/vàng ngữ nghĩa giữ nguyên
+ * nghĩa chúng có ở mọi cấp.
+ */
+
+.cap5-sm {
+  --cap5-gold: #e0b64d;
+  --cap5-gold-soft: rgba(224, 182, 77, 0.16);
+  --cap5-gold-bd: rgba(224, 182, 77, 0.4);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.cap5-sm-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-text-1);
+}
+
+.cap5-sm-sub {
+  margin-top: 2px;
+  font-size: 10.5px;
+  color: var(--color-text-3);
+}
+
+/* ── Dòng ghi chú lọc sàn (spec §5.2) ─────────────────────────────────────── */
+
+.cap5-sm-note {
+  margin-top: 10px;
+  padding: 8px 10px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--color-text-3);
+  background: var(--color-fill-1);
+  border: 1px solid var(--color-border-2);
+  border-radius: 8px;
+}
+
+.cap5-sm-note b {
+  color: var(--color-text-2);
+}
+
+.cap5-sm-note-warn {
+  margin-top: 5px;
+  color: #d68f00;
+}
+
+/* ── Danh sách bộ lọc ─────────────────────────────────────────────────────── */
+
+.cap5-sm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.cap5-sm-fl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 12px;
+  text-align: left;
+  border: 1px solid var(--color-border-2);
+  border-radius: 10px;
+  background: var(--color-bg-2);
+  cursor: pointer;
+  transition: 0.13s;
+}
+
+.cap5-sm-fl:hover:not(:disabled) {
+  border-color: var(--cap5-gold);
+  background: var(--cap5-gold-soft);
+}
+
+.cap5-sm-fl:disabled,
+.cap5-sm-fl-locked {
+  cursor: default;
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.cap5-sm-fl-ic {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.cap5-sm-fl-body {
+  display: block;
+  flex: 1;
+  min-width: 0;
+}
+
+.cap5-sm-fl-nm {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-text-1);
+}
+
+.cap5-sm-fl-desc {
+  display: block;
+  margin-top: 1px;
+  font-size: 10px;
+  color: var(--color-text-3);
+}
+
+.cap5-sm-fl-cond {
+  display: block;
+  margin-top: 3px;
+  font-size: 9.5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--cap5-gold);
+}
+
+.cap5-sm-fl-arrow {
+  font-size: 13px;
+  color: var(--cap5-gold);
+}
+
+/* «Chưa đủ dữ liệu» — luật số 1: nói thẳng, không hiện «0 mã» */
+.cap5-sm-nodata {
+  display: block;
+  margin-top: 4px;
+  font-size: 9.5px;
+  color: #d68f00;
+}
+
+/* ── Popup kết quả (spec §5.4) ────────────────────────────────────────────── */
+
+.cap5-hm-def {
+  padding: 9px 11px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-text-2);
+  background: var(--cap5-gold-soft);
+  border: 1px solid var(--cap5-gold-bd);
+  border-radius: 8px;
+}
+
+.cap5-hm-meta {
+  margin-top: 8px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--color-text-3);
+}
+
+.cap5-hm-meta b {
+  color: var(--color-text-2);
+}
+
+.cap5-hm-results {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.cap5-hr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid var(--color-border-2);
+  border-radius: 7px;
+  background: var(--color-fill-1);
+}
+
+.cap5-hr-rank {
+  width: 16px;
+  font-size: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--color-text-3);
+}
+
+.cap5-hr-code {
+  width: 46px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-text-1);
+}
+
+.cap5-hr-sig {
+  flex: 1;
+  min-width: 0;
+  font-size: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--color-text-2);
+}
+
+.cap5-hr-add {
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--cap5-gold);
+  background: transparent;
+  border: 1px solid var(--cap5-gold-bd);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cap5-hr-add:hover:not(:disabled) {
+  background: var(--cap5-gold-soft);
+}
+
+.cap5-hr-add.added {
+  color: #35a06b;
+  border-color: rgba(53, 208, 127, 0.45);
+  cursor: default;
+}
+
+.cap5-hm-foot {
+  margin-top: 9px;
+  font-size: 10px;
+  text-align: center;
+  color: var(--color-text-3);
+}
+
+.cap5-hm-empty {
+  padding: 18px 10px;
+  font-size: 11px;
+  text-align: center;
+  color: var(--color-text-3);
+}
+
+/* ── Watchlist (spec §6) ──────────────────────────────────────────────────── */
+
+.cap5-wl-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.cap5-wl-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.cap5-wl-tab {
+  padding: 4px 10px;
+  font-size: 10.5px;
+  color: var(--color-text-2);
+  background: transparent;
+  border: 1px solid var(--color-border-2);
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.cap5-wl-tab.on {
+  font-weight: 600;
+  color: var(--cap5-gold);
+  border-color: var(--cap5-gold);
+  background: var(--cap5-gold-soft);
+}
+
+.cap5-wl-add {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--cap5-gold);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.cap5-wl-card {
+  margin-top: 8px;
+  padding: 10px 11px;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-2);
+  border-radius: 10px;
+}
+
+.cap5-wl-card.ready {
+  border-color: var(--cap5-gold-bd);
+}
+
+.cap5-wl-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cap5-wl-code {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-text-1);
+}
+
+.cap5-wl-price {
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.cap5-wl-status {
+  margin-left: auto;
+  padding: 2px 8px;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 10px;
+}
+
+.cap5-wl-status.ready {
+  color: var(--cap5-gold);
+  background: var(--cap5-gold-soft);
+}
+
+.cap5-wl-status.watch {
+  color: var(--color-text-3);
+  background: var(--color-fill-2);
+}
+
+.cap5-wl-status.unknown {
+  color: #d68f00;
+  background: rgba(255, 197, 61, 0.16);
+}
+
+.cap5-wl-mid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 7px;
+}
+
+.cap5-wl-cs-icons {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.cap5-wl-cs-score {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.cap5-wl-cs-score.hi {
+  color: var(--cap5-gold);
+}
+
+.cap5-wl-cs-score.lo {
+  color: var(--color-text-3);
+}
+
+.cap5-wl-trend {
+  margin-left: auto;
+  font-size: 9.5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--color-text-3);
+}
+
+.cap5-wl-trend.up {
+  color: #35a06b;
+}
+
+.cap5-wl-trend.down {
+  color: #d94f4f;
+}
+
+.cap5-wl-warn {
+  margin-top: 5px;
+  font-size: 9.5px;
+  color: #d68f00;
+}
+
+.cap5-wl-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid var(--color-border-2);
+}
+
+.cap5-wl-note {
+  flex: 1;
+  min-width: 0;
+  font-size: 10px;
+  color: var(--color-text-2);
+}
+
+.cap5-wl-act {
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cap5-wl-act.buy {
+  color: #14181f;
+  background: var(--cap5-gold);
+  border: 1px solid var(--cap5-gold);
+}
+
+.cap5-wl-act.view {
+  color: var(--cap5-gold);
+  background: transparent;
+  border: 1px solid var(--cap5-gold-bd);
+}
+
+.cap5-wl-hint {
+  margin-top: 6px;
+  padding-top: 6px;
+  font-size: 10px;
+  color: var(--color-text-3);
+  border-top: 1px dashed var(--color-border-2);
+}
+
+.cap5-wl-hint b {
+  color: var(--cap5-gold);
+}

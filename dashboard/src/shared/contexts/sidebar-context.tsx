@@ -26,6 +26,12 @@ export type SidebarPanel =
   // `JourneyPanelCap5`'s button while inside `Cap5Provider`; harmless
   // elsewhere (mirrors "cap4-analysis"'s own doc, one level up).
   | "cap5-analysis"
+  // Cấp 5 «Săn mã» (spec §5) và «Watchlist» (spec §6) — hai màn MỚI của Cấp 5,
+  // chỉ tới được từ `RightToolbar` khi `isCap5Active`; ngoài Cấp 5 chúng rơi về
+  // đúng nhánh phòng thủ như "cap5-analysis" (`SidebarProvider` là singleton
+  // app-root nên `activePanel` có thể còn sót giá trị cũ).
+  | "cap5-sanma"
+  | "cap5-watchlist"
   // Cấp 6 "Phân tích danh mục" (Cấp 6 spec §7) — only reachable from
   // `JourneyPanelCap6`'s button while inside `Cap6Provider`; harmless
   // elsewhere (mirrors "cap5-analysis"'s own doc, one level up).

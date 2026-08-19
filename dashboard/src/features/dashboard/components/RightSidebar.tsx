@@ -44,6 +44,7 @@ import { useCap4Events } from "@/features/cap4/Cap4Context"
 // `RightSidebar`/`RightToolbar` from `@/features/dashboard`.
 import { JourneyPanelCap5 } from "@/features/cap5/JourneyPanelCap5"
 import { Cap5PortfolioAnalysisPanel } from "@/features/cap5/Cap5PortfolioAnalysisPanel"
+import { SanMaPanel } from "@/features/cap5/SanMaPanel"
 import { useCap5Events } from "@/features/cap5/Cap5Context"
 // Same anti-cycle rationale, six levels up — `@/features/cap6`'s barrel
 // re-exports `Cap6TradingPage`, which itself imports `CenterPanel`/
@@ -198,6 +199,12 @@ export function RightSidebar() {
       case "cap5-analysis":
         // Only reachable from `JourneyPanelCap5`'s own button (inside Cấp 5).
         return isCap5Active ? <Cap5PortfolioAnalysisPanel /> : <JourneyPanel />
+      case "cap5-sanma":
+        // Màn Săn mã của Cấp 5 (spec §5) — chỉ tới được từ `RightToolbar` khi
+        // `isCap5Active`; phòng thủ y hệt "cap5-analysis" (mọi query bên trong
+        // panel cũng đã tự gate bằng `isCap5Active`, nên không request nào bắn
+        // ra ngoài Cấp 5 kể cả khi nhánh này lọt).
+        return isCap5Active ? <SanMaPanel /> : <JourneyPanel />
       case "cap6-analysis":
         // Only reachable from `JourneyPanelCap6`'s own button (inside Cấp 6).
         return isCap6Active ? <Cap6PortfolioAnalysisPanel /> : <JourneyPanel />
@@ -223,6 +230,8 @@ export function RightSidebar() {
     "cap3-analysis": "Phân tích danh mục",
     "cap4-analysis": "Phân tích danh mục",
     "cap5-analysis": "Phân tích danh mục",
+    "cap5-sanma": "Săn mã",
+    "cap5-watchlist": "Watchlist",
     "cap6-analysis": "Phân tích danh mục",
     "cap7-analysis": "Phân tích danh mục",
     "cap8-analysis": "Phân tích danh mục",
