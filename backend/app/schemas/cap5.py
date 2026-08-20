@@ -66,6 +66,13 @@ class Cap5ProgressOut(BaseModel):
     #: Tầng giữa của phễu ⑬. ★ NULL = CHƯA ĐO ĐƯỢC (mẻ chấm 5 lớp chưa có kết
     #: quả cho mã săn nào), tuyệt đối không phải "0 mã chín".
     so_ma_cho_du_lop: int | None = None
+    #: ★★ MẪU SỐ của ``so_ma_cho_du_lop``: số mã ĐÃ SĂN mà hệ thực sự chấm được
+    #: điểm đồng thuận. Nhỏ hơn ``so_ma_da_san`` ⇒ con số tầng giữa là CẬN DƯỚI
+    #: (mã chưa có bản phân tích 5 lớp, hoặc mã đã bị bỏ khỏi Watchlist sau khi
+    #: chín). FE PHẢI nói "ít nhất N" trong trường hợp đó, không được nói "N".
+    so_ma_da_cham_diem: int = 0
+    #: True ⇔ mọi mã đã săn đều chấm được ⇒ ``so_ma_cho_du_lop`` là con số ĐỦ.
+    so_ma_cho_du_lop_day_du: bool = False
     muc_tieu_so_ma_san: int
     muc_tieu_so_ma_mua: int
     #: Cờ tour Săn mã (§7) — KHÔNG phải nhiệm vụ, chỉ để tour tự bật một lần.
@@ -313,6 +320,10 @@ class Khoi13Out(BaseModel):
     so_ma_da_san: int
     #: ★ NULL = tầng giữa CHƯA ĐO ĐƯỢC, không phải "0 mã chín".
     so_ma_cho_du_lop: int | None = None
+    #: Mẫu số thật của tầng giữa (xem ``Cap5ProgressOut.so_ma_da_cham_diem``).
+    so_ma_da_cham_diem: int = 0
+    #: True ⇔ ``so_ma_cho_du_lop`` đã đếm hết mã săn; False ⇒ nó là CẬN DƯỚI.
+    so_ma_cho_du_lop_day_du: bool = False
     so_ma_vao_lenh: int
     giai_thich: str
     loi_ket: str

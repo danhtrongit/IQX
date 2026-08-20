@@ -463,28 +463,45 @@ class Cap5Service:
         await self._session.flush()
         await self._session.refresh(progress)
 
-        so_ma_cho_du_lop = self._so_ma_cho_du_lop(log_by_symbol, watchlist_rows)
-        return self._progress_out(progress, so_ma_cho_du_lop=so_ma_cho_du_lop)
+        so_ma_cho_du_lop, so_ma_da_cham_diem = self._tang_giua_phieu(
+            log_by_symbol, watchlist_rows
+        )
+        return self._progress_out(
+            progress,
+            so_ma_cho_du_lop=so_ma_cho_du_lop,
+            so_ma_da_cham_diem=so_ma_da_cham_diem,
+        )
 
     @staticmethod
-    def _so_ma_cho_du_lop(
+    def _tang_giua_phieu(
         log_by_symbol: dict[str, Cap5HuntLog], rows: Sequence[WatchlistItem]
-    ) -> int | None:
-        """Tầng giữa của phễu ⑬: số mã ĐÃ SĂN đang/vừa ở ≥4/5 lớp ủng hộ.
+    ) -> tuple[int | None, int]:
+        """Tầng giữa của phễu ⑬ **kèm mẫu số thật**: ``(so_ma, so_ma_da_cham)``.
 
-        ★ Trả ``None`` = "chưa đo được", KHÔNG phải 0: khi CHƯA có mã săn nào
-        được chấm điểm đồng thuận (mẻ chấm chưa chạy, hoặc mã chưa từng có bản
-        AI Insight) thì hệ không biết gì về tầng này. Vẽ tầng giữa = 0 sẽ nói
-        "không mã nào chín" — một kết luận chưa ai tính.
+        ``so_ma`` = số mã ĐÃ SĂN đang/vừa ở ≥4/5 lớp ủng hộ; ``so_ma_da_cham`` =
+        số mã đã săn mà hệ THỰC SỰ có điểm đồng thuận để đếm.
 
-        ★ Chỉ nhìn được 2 lần chấm gần nhất (``consensus_today`` +
-        ``consensus_prev``) vì lược sử điểm đồng thuận không được lưu — nên đây
-        là một CẬN DƯỚI của "từng lên ≥4 lớp", và mã đã bị xoá khỏi Watchlist
-        thì không còn đếm được. Cận dưới thật vẫn hơn một con số đẹp mà bịa.
+        ★ ``so_ma is None`` = "chưa đo được", KHÔNG phải 0: khi CHƯA có mã săn
+        nào được chấm (mẻ chấm chưa chạy, hoặc mã chưa từng có bản AI Insight)
+        thì hệ không biết gì về tầng này. Vẽ tầng giữa = 0 sẽ nói "không mã nào
+        chín" — một kết luận chưa ai tính.
+
+        ★★ **VÌ SAO PHẢI TRẢ CẢ MẪU SỐ.** Cờ "đã chấm" là ANY chứ không thể là
+        ALL: chấm được 1/10 mã cũng là một thông tin thật về mã đó. Nhưng nếu
+        chỉ đưa con số đếm lên wire thì "1 mã chấm được, 9 mã chưa" và "10 mã
+        chấm hết" trông y như nhau, và câu "N mã của bạn từng chín" thành một
+        khẳng định về 9 mã chưa ai tính. Có hai lý do độc lập khiến con số này
+        là CẬN DƯỚI, và mẫu số bắt được cả hai:
+          · lược sử điểm đồng thuận không được lưu ⇒ chỉ nhìn được 2 lần chấm
+            gần nhất (``consensus_today`` + ``consensus_prev``);
+          · mã đã bị xoá khỏi Watchlist (mua rồi xoá — phễu ngược) thì không còn
+            hàng nào để đọc điểm, dù nó ĐÃ từng chín.
+        Mẫu số đo trên ``so_ma_da_san`` (tổng đã săn) chứ không trên số hàng
+        Watchlist còn sống, nên nó bắt luôn cả trường hợp thứ hai.
         """
         if not log_by_symbol:
-            return None
-        da_cham = False
+            return None, 0
+        da_cham = 0
         dem = 0
         for row in rows:
             if row.symbol.upper() not in log_by_symbol:
@@ -492,13 +509,28 @@ class Cap5Service:
             diem = [d for d in (row.consensus_today, row.consensus_prev) if d is not None]
             if not diem:
                 continue
-            da_cham = True
+            da_cham += 1
             if max(diem) >= NGUONG_DANG_CHU_Y:
                 dem += 1
-        return dem if da_cham else None
+        return (dem if da_cham else None), da_cham
 
     @staticmethod
-    def _progress_out(progress: Cap5Progress, *, so_ma_cho_du_lop: int | None) -> dict:
+    def _tang_giua_day_du(progress: Cap5Progress, so_ma_da_cham_diem: int) -> bool:
+        """Con số tầng giữa có phải con số ĐỦ (≠ cận dưới) hay không.
+
+        Đủ ⇔ mọi mã đã săn đều chấm được điểm. Chưa săn gì ⇒ ``False`` (không có
+        gì để đo, và ``so_ma_cho_du_lop`` khi đó là ``None``).
+        """
+        return progress.so_ma_da_san > 0 and so_ma_da_cham_diem >= progress.so_ma_da_san
+
+    @classmethod
+    def _progress_out(
+        cls,
+        progress: Cap5Progress,
+        *,
+        so_ma_cho_du_lop: int | None,
+        so_ma_da_cham_diem: int,
+    ) -> dict:
         return {
             "id": progress.id,
             "user_id": progress.user_id,
@@ -508,6 +540,9 @@ class Cap5Service:
             "so_ma_da_san": progress.so_ma_da_san,
             "so_ma_mua_tu_watchlist": progress.so_ma_mua_tu_watchlist,
             "so_ma_cho_du_lop": so_ma_cho_du_lop,
+            # Mẫu số thật của tầng giữa — xem ``_tang_giua_phieu``.
+            "so_ma_da_cham_diem": so_ma_da_cham_diem,
+            "so_ma_cho_du_lop_day_du": cls._tang_giua_day_du(progress, so_ma_da_cham_diem),
             "muc_tieu_so_ma_san": MUC_TIEU_SO_MA_SAN,
             "muc_tieu_so_ma_mua": MUC_TIEU_SO_MA_MUA,
             "da_xem_tour_sanma": progress.da_xem_tour_sanma,
@@ -1042,6 +1077,8 @@ class Cap5Service:
 
         da_san = out["so_ma_da_san"]
         cho_du_lop = out["so_ma_cho_du_lop"]
+        da_cham = out["so_ma_da_cham_diem"]
+        day_du = out["so_ma_cho_du_lop_day_du"]
         vao_lenh = out["so_ma_mua_tu_watchlist"]
         if da_san == 0:
             phieu_copy = "Bạn chưa săn mã nào — mở màn Săn mã và thử một bộ lọc."
@@ -1049,21 +1086,34 @@ class Cap5Service:
             phieu_copy = (
                 f"Bạn săn {da_san} mã và vào lệnh {vao_lenh} mã. Tầng giữa (số mã chờ "
                 f"đến ≥{NGUONG_DANG_CHU_Y}/{TONG_SO_LOP} lớp) chưa đo được: hệ chưa "
-                "chấm được điểm đồng thuận cho mã nào bạn săn."
+                f"chấm được điểm đồng thuận cho mã nào bạn săn (0/{da_san} mã)."
             )
-        else:
+        elif day_du:
             phieu_copy = (
                 f"Bạn săn {da_san} mã, {cho_du_lop} mã lên được "
                 f"≥{NGUONG_DANG_CHU_Y}/{TONG_SO_LOP} lớp ủng hộ, và bạn vào lệnh "
                 f"{vao_lenh} mã — biết chờ và loại mã chưa chín chính là kỷ luật của "
                 "thợ săn."
             )
+        else:
+            # ★ Cận dưới — nói ngay mẫu số, đừng để con số nghe như đã đếm hết.
+            phieu_copy = (
+                f"Bạn săn {da_san} mã và vào lệnh {vao_lenh} mã. Hệ chỉ chấm được "
+                f"điểm đồng thuận cho {da_cham}/{da_san} mã bạn săn, và trong số đó "
+                f"{cho_du_lop} mã lên được ≥{NGUONG_DANG_CHU_Y}/{TONG_SO_LOP} lớp ủng "
+                f"hộ — nên {cho_du_lop} là CẬN DƯỚI: "
+                f"{da_san - da_cham} mã còn lại hệ chưa chấm được (chưa có bản phân "
+                "tích 5 lớp, hoặc bạn đã bỏ mã khỏi Watchlist)."
+            )
         return {
             "khoi_12": khoi_12,
             "khoi_13": {
                 "so_ma_da_san": da_san,
-                # ★ None = chưa đo được (xem ``_so_ma_cho_du_lop``).
+                # ★ None = chưa đo được (xem ``_tang_giua_phieu``).
                 "so_ma_cho_du_lop": cho_du_lop,
+                # Mẫu số thật + cờ "con số này đã đếm hết hay là cận dưới".
+                "so_ma_da_cham_diem": da_cham,
+                "so_ma_cho_du_lop_day_du": day_du,
                 "so_ma_vao_lenh": vao_lenh,
                 "giai_thich": _KHOI_13_GIAI_THICH,
                 "loi_ket": phieu_copy,

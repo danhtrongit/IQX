@@ -1666,9 +1666,75 @@ async def test_khoi_13_dem_dung_ba_tang_khi_da_cham_duoc(db_session, test_user):
     assert khoi_13["so_ma_cho_du_lop"] == 2
     assert khoi_13["so_ma_vao_lenh"] == 1
     assert "kỷ luật" in khoi_13["loi_ket"]
+    # Chấm ĐỦ cả 3 mã săn ⇒ con số tầng giữa là con số đủ, không phải cận dưới.
+    assert khoi_13["so_ma_da_cham_diem"] == 3
+    assert khoi_13["so_ma_cho_du_lop_day_du"] is True
 
     p = await cap5.get_progress(test_user.id)
     assert p["so_ma_cho_du_lop"] == 2
+    assert p["so_ma_da_cham_diem"] == 3
+    assert p["so_ma_cho_du_lop_day_du"] is True
+
+
+@pytest.mark.asyncio
+async def test_khoi_13_tang_giua_mang_mau_so_khi_chua_cham_het(db_session, test_user):
+    """★★ C1: chấm được 1/10 mã ⇒ TUYỆT ĐỐI không khai một con số như đã chấm hết.
+
+    Reviewer chạy thẳng ``_so_ma_cho_du_lop``: 1 mã chấm được (0 lớp ủng hộ), 9
+    mã chưa từng chấm ⇒ hàm cũ trả ``0``. Vì là ``0`` chứ không phải ``None``,
+    FE không vào nhánh "chưa đo được" và câu "0 mã của bạn từng chín" trở thành
+    một kết luận chưa ai tính. Mẫu số ("đã chấm / đã săn") PHẢI có trên wire.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    syms = await _hunt_n(db_session, cap5, test_user.id, 10)
+    # Đúng MỘT mã có bản phân tích, và nó KHÔNG chín (0 lớp ủng hộ).
+    await _seed_insight(db_session, syms[0], _AI_0_UNG_HO)
+    await cap5.get_progress(test_user.id)
+
+    out = await cap5.phan_tich(test_user.id)
+    khoi_13 = out["khoi_13"]
+    assert khoi_13["so_ma_da_san"] == 10
+    assert khoi_13["so_ma_da_cham_diem"] == 1
+    assert khoi_13["so_ma_cho_du_lop"] == 0
+    assert khoi_13["so_ma_cho_du_lop_day_du"] is False
+    # Câu chốt phải nói rõ mẫu số + rằng đây là cận dưới.
+    loi_ket = khoi_13["loi_ket"]
+    assert "1/10" in loi_ket
+    assert "cận dưới" in loi_ket.lower()
+
+    p = await cap5.get_progress(test_user.id)
+    assert (p["so_ma_da_cham_diem"], p["so_ma_cho_du_lop_day_du"]) == (1, False)
+
+
+@pytest.mark.asyncio
+async def test_khoi_13_phieu_nguoc_ma_da_xoa_khoi_watchlist_van_la_can_duoi(
+    db_session, test_user
+):
+    """★★ C1 (phễu ngược): mã đã chín → mua → XOÁ khỏi Watchlist.
+
+    Tầng giữa đọc ``watchlist_items`` còn sống nên nó tụt về 0 trong khi tầng
+    đáy vẫn 1 ⇒ phễu "🔍 3 · 👀 0 · ✅ 1". Con số 0 đó là CẬN DƯỚI, và wire phải
+    nói ra được điều đó (3 mã săn, chỉ 1 mã còn chấm được).
+    """
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id)
+    for sym in ("CHIN", "XANH", "TRONG"):
+        await _seed_symbol(db_session, sym)
+    await _seed_insight(db_session, "CHIN", _AI_4_UNG_HO)
+    await _seed_insight(db_session, "XANH", _AI_0_UNG_HO)
+    for sym in ("CHIN", "XANH", "TRONG"):
+        await _hunt(cap5, test_user.id, sym)
+    await _mua(db_session, account, test_user.id, "CHIN")
+    await cap5.remove_watchlist(test_user.id, "CHIN")
+
+    khoi_13 = (await cap5.phan_tich(test_user.id))["khoi_13"]
+    assert khoi_13["so_ma_da_san"] == 3
+    assert khoi_13["so_ma_vao_lenh"] == 1
+    # Mã đã chín nhưng đã bị xoá khỏi Watchlist ⇒ không đếm được nữa.
+    assert khoi_13["so_ma_cho_du_lop"] == 0
+    assert khoi_13["so_ma_da_cham_diem"] == 1
+    assert khoi_13["so_ma_cho_du_lop_day_du"] is False
+    assert "1/3" in khoi_13["loi_ket"]
+    assert "cận dưới" in khoi_13["loi_ket"].lower()
 
 
 @pytest.mark.asyncio
