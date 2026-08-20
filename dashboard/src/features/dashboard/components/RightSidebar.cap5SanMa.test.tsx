@@ -82,6 +82,9 @@ vi.mock("@/features/cap5/Cap5PortfolioAnalysisPanel", () => ({
 vi.mock("@/features/cap5/SanMaPanel", () => ({
   SanMaPanel: () => <div data-testid="cap5-sanma-panel" />,
 }))
+vi.mock("@/features/cap5/Cap5WatchlistPanel", () => ({
+  Cap5WatchlistPanel: () => <div data-testid="cap5-watchlist-panel" />,
+}))
 vi.mock("@/features/news", () => ({ NewsFeedPanel: () => <div data-testid="news-panel" /> }))
 vi.mock("@/features/trading", () => ({ TradingPanel: () => <div data-testid="trading-panel" /> }))
 vi.mock("@/features/watchlist", () => ({
@@ -96,7 +99,7 @@ vi.mock("@/features/premium", () => ({
 
 import { RightSidebar } from "./RightSidebar"
 
-function renderPanel(panel: "cap5-sanma" | "watchlist") {
+function renderPanel(panel: "cap5-sanma" | "cap5-watchlist" | "watchlist") {
   return render(
     <SidebarProvider defaultPanel={panel}>
       <RightSidebar />
@@ -141,5 +144,30 @@ describe("RightSidebar — panel «Danh mục» DÙNG CHUNG không bị Cấp 5 
     useCap5EventsMock.mockReturnValue({ isCap5Active: false })
     renderPanel("watchlist")
     expect(screen.getByTestId("watchlist-panel")).toBeInTheDocument()
+  })
+})
+
+describe("RightSidebar — panel «Watchlist» Cấp 5 gác theo cấp (spec §6)", () => {
+  it('"cap5-watchlist" → Cap5WatchlistPanel khi isCap5Active', () => {
+    useCap5EventsMock.mockReturnValue({ isCap5Active: true })
+    renderPanel("cap5-watchlist")
+    expect(screen.getByTestId("cap5-watchlist-panel")).toBeInTheDocument()
+  })
+
+  it('★ "cap5-watchlist" ngoài Cấp 5 KHÔNG render Watchlist Cấp 5 (phòng thủ)', () => {
+    useCap1EventsMock.mockReturnValue({ isCap1Active: false })
+    useCap2EventsMock.mockReturnValue({ isCap2Active: false })
+    useCap3EventsMock.mockReturnValue({ isCap3Active: false })
+    useCap4EventsMock.mockReturnValue({ isCap4Active: false })
+    useCap5EventsMock.mockReturnValue({ isCap5Active: false })
+    renderPanel("cap5-watchlist")
+    expect(screen.queryByTestId("cap5-watchlist-panel")).not.toBeInTheDocument()
+    expect(screen.getByTestId("journey-panel-cap0")).toBeInTheDocument()
+  })
+
+  it("★ Watchlist Cấp 5 và «Danh mục» dùng chung là HAI panel khác nhau", () => {
+    useCap5EventsMock.mockReturnValue({ isCap5Active: true })
+    renderPanel("cap5-watchlist")
+    expect(screen.queryByTestId("watchlist-panel")).not.toBeInTheDocument()
   })
 })

@@ -45,6 +45,7 @@ import { useCap4Events } from "@/features/cap4/Cap4Context"
 import { JourneyPanelCap5 } from "@/features/cap5/JourneyPanelCap5"
 import { Cap5PortfolioAnalysisPanel } from "@/features/cap5/Cap5PortfolioAnalysisPanel"
 import { SanMaPanel } from "@/features/cap5/SanMaPanel"
+import { Cap5WatchlistPanel } from "@/features/cap5/Cap5WatchlistPanel"
 import { useCap5Events } from "@/features/cap5/Cap5Context"
 // Same anti-cycle rationale, six levels up — `@/features/cap6`'s barrel
 // re-exports `Cap6TradingPage`, which itself imports `CenterPanel`/
@@ -205,6 +206,13 @@ export function RightSidebar() {
         // panel cũng đã tự gate bằng `isCap5Active`, nên không request nào bắn
         // ra ngoài Cấp 5 kể cả khi nhánh này lọt).
         return isCap5Active ? <SanMaPanel /> : <JourneyPanel />
+      case "cap5-watchlist":
+        // ★★ Watchlist Cấp 5 (spec §6) là panel RIÊNG — KHÔNG phải bản nâng của
+        // `"watchlist"` ("Danh mục") dùng chung ở trên. Panel dùng chung đó có
+        // nhiệm vụ ③ của Cấp 0 treo trên nó (`onPortfolioTabOpen`) và cũng chạy
+        // trên /bieu-do + /co-phieu, nên nó giữ NGUYÊN hình dạng cũ ở mọi cấp
+        // (xem `RightSidebar.cap5SanMa.test.tsx` — canh cả hai chiều).
+        return isCap5Active ? <Cap5WatchlistPanel /> : <JourneyPanel />
       case "cap6-analysis":
         // Only reachable from `JourneyPanelCap6`'s own button (inside Cấp 6).
         return isCap6Active ? <Cap6PortfolioAnalysisPanel /> : <JourneyPanel />
