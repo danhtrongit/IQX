@@ -367,6 +367,23 @@ def test_cap5_khong_con_api_4_o_dung_ngoai():
                  "list_dung_ngoai", "cham_dung_ngoai", "thach_thuc"):
         assert not hasattr(Cap5Service, name), f"Cap5Service vẫn còn {name}"
 
+    # ★★ POSITIVE CONTROL. 20 assert ở trên dùng CHUỖI LITERAL, nên nếu ai đó
+    # đổi tên (``Verdict`` → ``VerdictV2``) thì chúng xanh nguyên và bài test
+    # này im lặng mất tác dụng. Các tên dưới đây PHẢI tồn tại — chúng chứng minh
+    # ``hasattr`` đang soi đúng module, và ai rename chúng sẽ bị bắt ở đây.
+    for con in ("HuntFilter", "HUNT_FILTER_LABELS", "WatchlistStatus",
+                "Cap5Progress", "Cap5HuntLog"):
+        assert hasattr(models, con), f"models.cap5 thiếu {con}"
+    for con in ("Cap5ProgressOut", "HuntResultOut", "NguonSanOut",
+                "Cap5WatchlistItemOut", "Cap5PhanTichOut"):
+        assert hasattr(schemas, con), f"schemas.cap5 thiếu {con}"
+    for con in ("MUC_TIEU_SO_MA_SAN", "MUC_TIEU_SO_MA_MUA", "MAX_WATCHLIST_ITEMS",
+                "KHAU_VI_TRAN_PCT"):
+        assert hasattr(svc, con), f"service thiếu {con}"
+    for con in ("add_watchlist", "remove_watchlist", "nguon_san", "san_ma_index",
+                "san_ma_result", "phan_tich", "graduate"):
+        assert hasattr(Cap5Service, con), f"Cap5Service thiếu {con}"
+
     paths = {r.path for r in ep.router.routes}
     for gone in ("/cap5/ketso", "/cap5/dung-ngoai", "/cap5/dung-ngoai/cham",
                  "/cap5/thach-thuc", "/cap5/verdict/{order_id}"):
@@ -1188,6 +1205,69 @@ async def test_moi_ma_trong_ro_san_deu_them_duoc_vao_watchlist(db_session, test_
     assert ro == ["GOOD1", "GOOD2"]
     for sym in ro:
         await cap5.add_watchlist(test_user.id, sym, "kl")  # không được 400
+
+
+@pytest.mark.asyncio
+async def test_loc_san_bien_bang_nguong_la_DAT(db_session, test_user):
+    """★ Biên lọc sàn là ``>=``, và phải canh CẢ HAI phía.
+
+    Bộ test cũ chỉ có mã dưới ngưỡng, nên đổi ``>=`` thành ``>`` vẫn xanh —
+    trong khi mã đúng 3.000đ / đúng 1 tỷ GTGD là mã HỢP LỆ bị loại oan.
+    """
+    src = _FakeHuntSource(
+        bars={
+            # Đúng ngưỡng cả hai vế ⇒ ĐẠT.
+            "BIEN": _with_last(
+                _bars(close=float(MIN_GIA_VND), gtgd=float(MIN_GTGD_TB_VND)),
+                volume=300_000.0,
+            ),
+            # Dưới ngưỡng một chút ở mỗi vế ⇒ TRƯỢT.
+            "DUOIGIA": _with_last(
+                _bars(close=float(MIN_GIA_VND - 1), gtgd=float(MIN_GTGD_TB_VND)),
+                volume=300_000.0,
+            ),
+            "DUOITK": _with_last(
+                _bars(close=float(MIN_GIA_VND), gtgd=float(MIN_GTGD_TB_VND - 1)),
+                volume=300_000.0,
+            ),
+        }
+    )
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in ("BIEN", "DUOIGIA", "DUOITK"):
+        await _seed_symbol(db_session, sym)
+
+    result = await cap5.san_ma_result(test_user.id, "kl")
+    assert [i["symbol"] for i in result["items"]] == ["BIEN"]
+    assert result["so_ma_xet"] == 1
+    assert result["so_ma_truot_loc_san"] == 2
+
+
+@pytest.mark.asyncio
+async def test_moi_dong_ket_qua_mang_gia_pct_va_diem_xep_hang_thuc(db_session, test_user):
+    """★ Ba ô số của mỗi dòng kết quả chưa được assert ở đâu.
+
+    ``gia_vnd`` là ĐỒNG (không phải nghìn đồng): đột biến ``round(gia)`` →
+    ``round(gia/1000)`` biến "21.000đ" thành "21đ" mà suite vẫn xanh.
+    ``pct_thay_doi`` là % so với phiên trước, ``gia_tri_xep_hang`` là giá trị
+    đã dùng để xếp hạng (với ``kl`` là số lần vượt TB20).
+    """
+    src = _FakeHuntSource(
+        bars={"DO": _with_last(_bars(close=20_000.0), close=21_000.0, volume=300_000.0)}
+    )
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    await _seed_symbol(db_session, "DO")
+
+    item = (await cap5.san_ma_result(test_user.id, "kl"))["items"][0]
+    assert item["gia_vnd"] == 21_000
+    assert item["pct_thay_doi"] == 5.0
+    assert item["gia_tri_xep_hang"] == 3.0  # 300.000 / TB20 100.000
+    assert item["hang"] == 1
+    assert item["symbol"] == "DO"
+
+    # Bộ lọc ``dinh`` xếp theo % vượt đỉnh cũ ⇒ ô xếp hạng đổi nghĩa, đổi giá trị.
+    item_dinh = (await cap5.san_ma_result(test_user.id, "dinh"))["items"][0]
+    assert item_dinh["gia_vnd"] == 21_000
+    assert item_dinh["gia_tri_xep_hang"] == 5.0
 
 
 @pytest.mark.asyncio
