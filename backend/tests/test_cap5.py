@@ -889,6 +889,10 @@ async def test_0_ma_thoa_la_mot_cau_khac_han_chua_du_du_lieu(db_session, test_us
     assert result["so_ma_bo_qua_thieu_du_lieu"] == 0
     assert result["items"] == []
     assert result["ly_do_chua_kha_dung"] is None
+    # Xét được CẢ rổ ⇒ "0 mã thoả" là một câu đầy đủ, không cần cảnh báo.
+    assert result["so_ma_trong_ro"] == 2
+    assert result["ket_qua_day_du"] is True
+    assert result["canh_bao_thieu_du_lieu"] is None
 
 
 @pytest.mark.asyncio
@@ -914,6 +918,84 @@ async def test_ma_thieu_gtgd_bi_bo_qua_chu_khong_bi_doan(db_session, test_user):
     assert result["so_ma_bo_qua_thieu_du_lieu"] == 1
     assert result["so_ma_xet"] == 1
     assert [i["symbol"] for i in result["items"]] == ["GOOD"]
+
+
+@pytest.mark.asyncio
+async def test_ket_qua_khong_day_du_khi_mot_lo_ma_bi_bo_qua(db_session, test_user):
+    """★★ I4: nhánh "chưa lọc được" chỉ nổ khi TOÀN BỘ rổ bị bỏ qua.
+
+    Nguồn nến đọc theo LÔ 40 mã và bắt exception theo lô rồi ``continue``, nên
+    một cú 429 của VCI = 40 mã vắng mặt trong im lặng — dòng "N mã HOSE thoả
+    điều kiện" khi đó là câu nói về 366/406 mã. Backend phải khai tường minh
+    kết quả KHÔNG ĐẦY ĐỦ, đừng để FE tự suy từ 3 con số.
+    """
+    src = _FakeHuntSource(
+        bars={s: _with_last(_bars(), volume=300_000.0) for s in ("A1", "A2", "A3")}
+    )
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in ("A1", "A2", "A3", "MAT1", "MAT2"):
+        await _seed_symbol(db_session, sym)
+
+    result = await cap5.san_ma_result(test_user.id, "kl")
+    assert result["kha_dung"] is True
+    assert result["tong_so_ma"] == 3
+    assert result["so_ma_trong_ro"] == 5
+    assert result["so_ma_bo_qua_thieu_du_lieu"] == 2
+    assert result["ket_qua_day_du"] is False
+    canh_bao = result["canh_bao_thieu_du_lieu"]
+    assert canh_bao and "2/5" in canh_bao
+    assert "CÒN SÓT" in canh_bao
+
+
+@pytest.mark.asyncio
+async def test_ba_con_so_minh_bach_cong_lai_dung_bang_ro(db_session, test_user):
+    """★ Bất biến kế toán: xét + trượt lọc sàn + bỏ qua thiếu dữ liệu == cả rổ.
+
+    Thiếu con số "trượt lọc sàn", FE không cách nào phân biệt "mã bị lọc sàn
+    loại" (đã xét, không đạt) với "mã chưa xét được" — hai câu khác hẳn nhau.
+    """
+    src = _FakeHuntSource(
+        bars={
+            "OK": _with_last(_bars(), volume=300_000.0),
+            "PENNY": _with_last(_bars(close=2_000.0), close=2_000.0, volume=300_000.0),
+            "THIN": _with_last(_bars(gtgd=MIN_GTGD_TB_VND * 0.5), volume=300_000.0),
+            "NOGT": _with_last(_bars(gtgd=None), volume=300_000.0),
+        }
+    )
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in ("OK", "PENNY", "THIN", "NOGT", "MAT"):
+        await _seed_symbol(db_session, sym)
+
+    result = await cap5.san_ma_result(test_user.id, "kl")
+    assert result["so_ma_trong_ro"] == 5
+    assert result["so_ma_xet"] == 1
+    assert result["so_ma_truot_loc_san"] == 2  # PENNY + THIN
+    assert result["so_ma_bo_qua_thieu_du_lieu"] == 2  # NOGT + MAT
+    assert (
+        result["so_ma_xet"]
+        + result["so_ma_truot_loc_san"]
+        + result["so_ma_bo_qua_thieu_du_lieu"]
+        == result["so_ma_trong_ro"]
+    )
+
+
+@pytest.mark.asyncio
+async def test_chua_loc_duoc_van_biet_ro_bao_nhieu_ma(db_session, test_user):
+    """Nhánh "chưa lọc được" vẫn phải nói rổ có bao nhiêu mã (mẫu số luôn biết),
+    còn 4 con số kia là ``None`` — không phải 0."""
+    src = _FakeHuntSource(bars={})
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in ("X1", "X2"):
+        await _seed_symbol(db_session, sym)
+
+    result = await cap5.san_ma_result(test_user.id, "kl")
+    assert result["kha_dung"] is False
+    assert result["so_ma_trong_ro"] == 2
+    assert result["so_ma_xet"] is None
+    assert result["so_ma_truot_loc_san"] is None
+    assert result["so_ma_bo_qua_thieu_du_lieu"] is None
+    assert result["ket_qua_day_du"] is None
+    assert result["canh_bao_thieu_du_lieu"] is None
 
 
 @pytest.mark.asyncio

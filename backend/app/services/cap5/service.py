@@ -611,8 +611,15 @@ class Cap5Service:
             "kha_dung": kha_dung,
             "ly_do_chua_kha_dung": result.ly_do_thieu_du_lieu,
             "tong_so_ma": result.so_ma_thoa,
+            "so_ma_trong_ro": result.so_ma_trong_ro,
             "so_ma_xet": result.so_ma_xet,
+            "so_ma_truot_loc_san": result.so_ma_truot_loc_san,
             "so_ma_bo_qua_thieu_du_lieu": result.so_ma_bo_qua_thieu_du_lieu,
+            # ★ Cờ "kết quả không đầy đủ" — FE không phải tự suy từ 3 con số
+            # (và không được suy sai: nhánh "chưa lọc được" chỉ nổ khi TOÀN BỘ
+            # rổ bị bỏ qua, một lô 40 mã lỗi thì vẫn ra "N mã thoả").
+            "ket_qua_day_du": result.ket_qua_day_du,
+            "canh_bao_thieu_du_lieu": result.canh_bao_thieu_du_lieu,
             "hien_thi_toi_da": TOP_N,
             "loc_san": loc_san_tieu_chi(),
             "items": result.items,

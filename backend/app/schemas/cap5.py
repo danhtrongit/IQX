@@ -174,10 +174,22 @@ class HuntResultOut(BaseModel):
     kha_dung: bool
     ly_do_chua_kha_dung: str | None = None
     tong_so_ma: int | None = None
+    #: Số mã HOSE trong rổ của lần chạy này — LUÔN có, kể cả khi chưa lọc được.
+    #: Mẫu số của ba con số dưới: ``xet + truot_loc_san + bo_qua == trong_ro``.
+    so_ma_trong_ro: int
     #: Số mã đã QUA lọc sàn và được đem đi xét. NULL khi chưa lọc được.
     so_ma_xet: int | None = None
+    #: Số mã bị LỌC SÀN loại (giá/thanh khoản) — đã xét được và không đạt.
+    so_ma_truot_loc_san: int | None = None
     #: Số mã bị bỏ ra vì thiếu dữ liệu (không đủ nến / thiếu GTGD phiên).
     so_ma_bo_qua_thieu_du_lieu: int | None = None
+    #: ★★ True = xét được cả rổ; **False = KẾT QUẢ KHÔNG ĐẦY ĐỦ** (có mã bị bỏ
+    #: vì thiếu dữ liệu ⇒ danh sách có thể còn sót mã thoả); None = chưa lọc
+    #: được. FE PHẢI hiện ``canh_bao_thieu_du_lieu`` khi False: nhánh "chưa lọc
+    #: được" chỉ nổ khi TOÀN BỘ rổ bị bỏ qua, nên một lô 40 mã lỗi (429 của VCI)
+    #: vẫn cho ra dòng "N mã HOSE thoả điều kiện".
+    ket_qua_day_du: bool | None = None
+    canh_bao_thieu_du_lieu: str | None = None
     hien_thi_toi_da: int
     loc_san: list[LocSanDieuKienOut]
     items: list[HuntItemOut]

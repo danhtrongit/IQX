@@ -237,14 +237,36 @@ class HuntResult:
 
     ``so_ma_thoa is None`` ⇔ ``trang_thai == "chua_du_du_lieu"``. Bất biến này
     được test giữ: không bao giờ có "0 mã thoả" khi thật ra là chưa lọc.
+
+    ★★ **CỜ ``ket_qua_day_du`` LÀ LƯỚI THỨ HAI DƯỚI LUẬT 1.** Nhánh "chưa lọc
+    được" chỉ nổ khi ``so_ma_bo_qua == TOÀN BỘ`` rổ, nhưng nguồn nến đọc theo LÔ
+    40 mã (``hunt_data.VciHuntDataSource``) và một lô lỗi (VD 429 của VCI) là 40
+    mã vắng mặt trong im lặng. Khi đó "N mã HOSE thoả điều kiện" vẫn là câu nói
+    về 366/406 mã. Ba con số dưới đây cộng lại đúng bằng ``so_ma_trong_ro``, nên
+    FE (và test) kiểm được kết quả có đầy đủ hay không thay vì phải tự suy:
+
+      ``so_ma_xet`` + ``so_ma_truot_loc_san`` + ``so_ma_bo_qua_thieu_du_lieu``
+      == ``so_ma_trong_ro``
     """
 
     bo_loc: FilterSpec
     trang_thai: str
     ly_do_thieu_du_lieu: str | None
     so_ma_thoa: int | None
+    #: Số mã trong rổ HOSE đem vào lần chạy này — LUÔN biết, kể cả khi chưa lọc
+    #: được (nó là mẫu số của mọi con số còn lại).
+    so_ma_trong_ro: int
     so_ma_xet: int | None
+    #: Số mã bị lọc sàn loại (giá/thanh khoản) — KHÁC hẳn "bỏ qua vì thiếu dữ
+    #: liệu": mã này ta ĐÃ xét được và nó không đạt.
+    so_ma_truot_loc_san: int | None
     so_ma_bo_qua_thieu_du_lieu: int | None
+    #: ``True`` = mọi mã trong rổ đều xét được; ``False`` = có mã bị bỏ vì thiếu
+    #: dữ liệu ⇒ danh sách CÓ THỂ CÒN SÓT mã thoả; ``None`` = chưa lọc được.
+    ket_qua_day_du: bool | None
+    #: Câu tường minh đi kèm ``ket_qua_day_du is False`` (§C12c: không để FE tự
+    #: dựng câu về dữ liệu thiếu).
+    canh_bao_thieu_du_lieu: str | None
     items: list[dict]
 
 
@@ -394,16 +416,72 @@ class HuntEngine:
     # ── Điểm vào ──────────────────────────────────────
 
     @staticmethod
-    def _chua_du_du_lieu(spec: FilterSpec, ly_do: str) -> HuntResult:
+    def _chua_du_du_lieu(spec: FilterSpec, ly_do: str, *, so_ma_trong_ro: int) -> HuntResult:
         """Kết quả "chưa lọc được" — bất biến ``so_ma_thoa is None`` ở MỘT chỗ."""
         return HuntResult(
             bo_loc=spec,
             trang_thai="chua_du_du_lieu",
             ly_do_thieu_du_lieu=ly_do,
             so_ma_thoa=None,
+            so_ma_trong_ro=so_ma_trong_ro,
             so_ma_xet=None,
+            so_ma_truot_loc_san=None,
             so_ma_bo_qua_thieu_du_lieu=None,
+            ket_qua_day_du=None,
+            canh_bao_thieu_du_lieu=None,
             items=[],
+        )
+
+    @staticmethod
+    def _ket_qua(
+        spec: FilterSpec,
+        cham: list[tuple[float, str, str, float, float | None]],
+        *,
+        so_ma_trong_ro: int,
+        so_xet: int,
+        so_truot_loc_san: int,
+        so_bo_qua: int,
+    ) -> HuntResult:
+        """Dựng kết quả "đã lọc" — MỘT chỗ cho cả 5 bộ lọc.
+
+        ★ Trước đây hai nhánh (nến ngày / dòng tiền) tự dựng items + đếm riêng,
+        nên một đột biến ở nhánh dòng tiền (VD bỏ ``[:TOP_N]``) không bị nhánh
+        kia che. Gộp về đây để mọi bộ lọc dùng đúng một cách đếm.
+        """
+        cham.sort(key=lambda row: (-row[0], row[1]))
+        items = [
+            {
+                "hang": i + 1,
+                "symbol": symbol,
+                "gia_vnd": round(gia),
+                "pct_thay_doi": round(pct, 2) if pct is not None else None,
+                "tin_hieu": tin_hieu,
+                "gia_tri_xep_hang": round(diem, 4),
+            }
+            for i, (diem, symbol, tin_hieu, gia, pct) in enumerate(cham[:TOP_N])
+        ]
+        canh_bao = (
+            None
+            if so_bo_qua == 0
+            else (
+                f"Đã bỏ qua {so_bo_qua}/{so_ma_trong_ro} mã vì thiếu dữ liệu (không "
+                f"đủ {SO_NEN_CAN} phiên nến, hoặc nguồn không trả giá trị giao dịch "
+                "phiên). Danh sách này CÓ THỂ CÒN SÓT mã thoả điều kiện — con số "
+                "dưới đây là kết quả trên số mã xét được, không phải cả sàn."
+            )
+        )
+        return HuntResult(
+            bo_loc=spec,
+            trang_thai="ok",
+            ly_do_thieu_du_lieu=None,
+            so_ma_thoa=len(cham),
+            so_ma_trong_ro=so_ma_trong_ro,
+            so_ma_xet=so_xet,
+            so_ma_truot_loc_san=so_truot_loc_san,
+            so_ma_bo_qua_thieu_du_lieu=so_bo_qua,
+            ket_qua_day_du=so_bo_qua == 0,
+            canh_bao_thieu_du_lieu=canh_bao,
+            items=items,
         )
 
     async def run(self, bo_loc: str, universe: Sequence[str]) -> HuntResult:
@@ -443,6 +521,7 @@ class HuntEngine:
         cham: list[tuple[float, str, str, float, float | None]] = []
         so_bo_qua = 0
         so_xet = 0
+        so_truot_san = 0
         for symbol in universe:
             bars = bars_map.get(symbol)
             if not bars:
@@ -453,6 +532,7 @@ class HuntEngine:
                 so_bo_qua += 1
                 continue
             if not qua_san:
+                so_truot_san += 1
                 continue
             so_xet += 1
             hit = do(bars)
@@ -466,28 +546,16 @@ class HuntEngine:
         # ★ LUẬT 1: không mã nào có dữ liệu để XÉT ⇒ chưa lọc được. Nếu để rơi
         # xuống dưới, ``so_ma_thoa`` = 0 và popup sẽ nói "0 mã thoả điều kiện".
         if so_bo_qua == len(universe):
-            return self._chua_du_du_lieu(spec, _thieu_nen(len(universe)))
-
-        cham.sort(key=lambda row: (-row[0], row[1]))
-        items = [
-            {
-                "hang": i + 1,
-                "symbol": symbol,
-                "gia_vnd": round(gia),
-                "pct_thay_doi": round(pct, 2) if pct is not None else None,
-                "tin_hieu": tin_hieu,
-                "gia_tri_xep_hang": round(diem, 4),
-            }
-            for i, (diem, symbol, tin_hieu, gia, pct) in enumerate(cham[:TOP_N])
-        ]
-        return HuntResult(
-            bo_loc=spec,
-            trang_thai="ok",
-            ly_do_thieu_du_lieu=None,
-            so_ma_thoa=len(cham),
-            so_ma_xet=so_xet,
-            so_ma_bo_qua_thieu_du_lieu=so_bo_qua,
-            items=items,
+            return self._chua_du_du_lieu(
+                spec, _thieu_nen(len(universe)), so_ma_trong_ro=len(universe)
+            )
+        return self._ket_qua(
+            spec,
+            cham,
+            so_ma_trong_ro=len(universe),
+            so_xet=so_xet,
+            so_truot_loc_san=so_truot_san,
+            so_bo_qua=so_bo_qua,
         )
 
     async def _run_dong_tien(self, spec: FilterSpec, universe: Sequence[str]) -> HuntResult:
@@ -495,12 +563,15 @@ class HuntEngine:
         flows = await self._source.net_flow(universe, ben=ben, so_phien=SO_PHIEN_GOM)
         if flows is None:
             # ★ LUẬT 1: chưa lọc được ≠ không có mã nào thoả.
-            return self._chua_du_du_lieu(spec, _THIEU_NGUON_DONG_TIEN)
+            return self._chua_du_du_lieu(
+                spec, _THIEU_NGUON_DONG_TIEN, so_ma_trong_ro=len(universe)
+            )
 
         bars_map = await self._source.daily_bars(universe, so_nen=SO_NEN_CAN)
         cham: list[tuple[float, str, str, float, float | None]] = []
         so_bo_qua = 0
         so_xet = 0
+        so_truot_san = 0
         for symbol in universe:
             bars = bars_map.get(symbol)
             chuoi = flows.get(symbol)
@@ -512,6 +583,7 @@ class HuntEngine:
                 so_bo_qua += 1
                 continue
             if not qua_san:
+                so_truot_san += 1
                 continue
             so_xet += 1
             gan_nhat = list(chuoi)[-SO_PHIEN_GOM:]
@@ -526,26 +598,14 @@ class HuntEngine:
 
         # ★ LUẬT 1 — xem chú thích cùng chỗ trong ``_run_bars``.
         if so_bo_qua == len(universe):
-            return self._chua_du_du_lieu(spec, _thieu_nen(len(universe)))
-
-        cham.sort(key=lambda row: (-row[0], row[1]))
-        items = [
-            {
-                "hang": i + 1,
-                "symbol": symbol,
-                "gia_vnd": round(gia),
-                "pct_thay_doi": round(pct, 2) if pct is not None else None,
-                "tin_hieu": tin_hieu,
-                "gia_tri_xep_hang": round(diem, 4),
-            }
-            for i, (diem, symbol, tin_hieu, gia, pct) in enumerate(cham[:TOP_N])
-        ]
-        return HuntResult(
-            bo_loc=spec,
-            trang_thai="ok",
-            ly_do_thieu_du_lieu=None,
-            so_ma_thoa=len(cham),
-            so_ma_xet=so_xet,
-            so_ma_bo_qua_thieu_du_lieu=so_bo_qua,
-            items=items,
+            return self._chua_du_du_lieu(
+                spec, _thieu_nen(len(universe)), so_ma_trong_ro=len(universe)
+            )
+        return self._ket_qua(
+            spec,
+            cham,
+            so_ma_trong_ro=len(universe),
+            so_xet=so_xet,
+            so_truot_loc_san=so_truot_san,
+            so_bo_qua=so_bo_qua,
         )
