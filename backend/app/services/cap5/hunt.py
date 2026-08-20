@@ -213,6 +213,21 @@ _THIEU_NGUON_DONG_TIEN = (
 )
 
 
+def _thieu_chuoi_dong_tien(so_ma: int) -> str:
+    """Lý do khi nguồn dòng tiền CÓ trả lời nhưng không mã nào có đủ chuỗi phiên.
+
+    ★ Khác ``_THIEU_NGUON_DONG_TIEN`` (nguồn nói thẳng "không có dữ liệu") ở chỗ
+    nguồn đã trả một dict — nhưng rỗng, hoặc chuỗi ngắn hơn ``SO_PHIEN_GOM``.
+    Cả hai đều là "chưa lọc được", và KHÔNG được rơi xuống nhánh đếm để thành
+    "0 mã thoả".
+    """
+    return (
+        f"Nguồn dòng tiền không trả đủ chuỗi mua ròng {SO_PHIEN_GOM} phiên cho bất "
+        f"kỳ mã nào trong rổ {so_ma} mã HOSE — chưa lọc được, KHÔNG phải là không "
+        "có mã nào thoả."
+    )
+
+
 def _thieu_nen(so_ma: int) -> str:
     """Lý do khi KHÔNG mã nào trong rổ có đủ nến ngày để xét.
 
@@ -512,6 +527,11 @@ class HuntEngine:
             )
             if flows is None:
                 return False, _THIEU_NGUON_DONG_TIEN
+            # ★ Nguồn trả lời nhưng không mã nào có đủ chuỗi ⇒ vẫn là "chưa lọc
+            # được". Dùng ĐÚNG phép thử của ``_run_dong_tien`` để màn index và
+            # popup không nói hai câu khác nhau.
+            if not self._co_chuoi_dung_duoc(flows, universe):
+                return False, _thieu_chuoi_dong_tien(len(universe))
         return True, None
 
     async def _run_bars(self, spec: FilterSpec, universe: Sequence[str]) -> HuntResult:
@@ -558,6 +578,13 @@ class HuntEngine:
             so_bo_qua=so_bo_qua,
         )
 
+    @staticmethod
+    def _co_chuoi_dung_duoc(
+        flows: dict[str, list[float]], universe: Sequence[str]
+    ) -> bool:
+        """Có mã nào trong rổ có chuỗi mua ròng đủ ``SO_PHIEN_GOM`` phiên không."""
+        return any(len(flows.get(s) or ()) >= SO_PHIEN_GOM for s in universe)
+
     async def _run_dong_tien(self, spec: FilterSpec, universe: Sequence[str]) -> HuntResult:
         ben = FILTER_DONG_TIEN[spec.ma]
         flows = await self._source.net_flow(universe, ben=ben, so_phien=SO_PHIEN_GOM)
@@ -565,6 +592,13 @@ class HuntEngine:
             # ★ LUẬT 1: chưa lọc được ≠ không có mã nào thoả.
             return self._chua_du_du_lieu(
                 spec, _THIEU_NGUON_DONG_TIEN, so_ma_trong_ro=len(universe)
+            )
+        # ★ Dừng TRƯỚC khi quét nến cả sàn: nguồn dòng tiền không dùng được thì
+        # 406 mã nến cũng không giúp gì, và kết luận đã chắc chắn là "chưa lọc
+        # được". (Bất biến này được canh bằng ``bars_calls`` trong test.)
+        if not self._co_chuoi_dung_duoc(flows, universe):
+            return self._chua_du_du_lieu(
+                spec, _thieu_chuoi_dong_tien(len(universe)), so_ma_trong_ro=len(universe)
             )
 
         bars_map = await self._source.daily_bars(universe, so_nen=SO_NEN_CAN)

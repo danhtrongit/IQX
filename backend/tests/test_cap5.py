@@ -101,6 +101,13 @@ class _FakeHuntSource:
 
     ``flows=None`` mô phỏng ĐÚNG backend hôm nay: không có nguồn mua ròng theo
     từng phiên cho toàn sàn ⇒ ``net_flow`` trả ``None`` (chứ không phải ``{}``).
+
+
+    ★ ``bars_calls``/``flow_calls`` KHÔNG phải trang trí: chúng là cách duy nhất
+    canh hai bất biến đắt tiền — màn Săn mã KHÔNG quét sàn, và một lượt chạy bộ
+    lọc chỉ gọi nguồn MỘT lần cho CẢ RỔ (dời lời gọi vào vòng lặp per-symbol là
+    406 lượt HTTP mỗi cú bấm). Xem
+    ``test_man_san_ma_khong_quet_san_va_moi_luot_goi_nguon_dung_mot_lan``.
     """
 
     def __init__(
@@ -112,9 +119,13 @@ class _FakeHuntSource:
         self.flows = flows
         self.bars_calls = 0
         self.flow_calls = 0
+        #: Số MÃ mỗi lượt gọi hỏi — dùng để phân biệt "1 lượt cho cả rổ" với
+        #: "1 lượt mỗi mã" (cùng tổng số mã, khác hẳn số lượt HTTP).
+        self.bars_batch_sizes: list[int] = []
 
     async def daily_bars(self, symbols, *, so_nen):  # noqa: ANN001, ANN201
         self.bars_calls += 1
+        self.bars_batch_sizes.append(len(list(symbols)))
         wanted = {s.upper() for s in symbols}
         return {k: v for k, v in self.bars.items() if k in wanted}
 
@@ -1286,6 +1297,51 @@ async def test_dong_tien_van_ap_loc_san_bo_chuoi_ngan_va_tran_10(db_session, tes
     assert result["so_ma_truot_loc_san"] == 2
     assert result["so_ma_bo_qua_thieu_du_lieu"] == 1
     assert result["so_ma_trong_ro"] == 15
+
+
+@pytest.mark.asyncio
+async def test_man_san_ma_khong_quet_san_va_moi_luot_goi_nguon_dung_mot_lan(
+    db_session, test_user
+):
+    """★★ Hai bất biến ĐẮT TIỀN nhất của Cấp 5, trước đây không được canh dòng nào.
+
+      ① ``GET /cap5/san-ma`` (màn index) chỉ hỏi "bộ lọc này CÓ NGUỒN không" —
+         nó KHÔNG được quét nến cả sàn HOSE (~406 mã) chỉ để vẽ 5 cái thẻ.
+      ② Một lượt chạy bộ lọc gọi nguồn ĐÚNG MỘT LẦN cho CẢ RỔ. Dời lời gọi vào
+         vòng lặp per-symbol vẫn cho kết quả y hệt (nên mọi assert khác vẫn
+         xanh) nhưng biến một cú bấm thành 406 lượt HTTP.
+    """
+    ty = 1_000_000_000.0
+    ma = [f"C{i:02d}" for i in range(12)]
+    src = _FakeHuntSource(
+        bars={m: _with_last(_bars(), volume=300_000.0) for m in ma},
+        flows={"ngoai": {m: [ty] * 5 for m in ma}},
+    )
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in ma:
+        await _seed_symbol(db_session, sym)
+
+    # ① Màn index: 0 lượt quét nến; 2 lượt hỏi nguồn dòng tiền (phép thử rẻ).
+    await cap5.san_ma_index(test_user.id)
+    assert src.bars_calls == 0, "màn Săn mã quét cả sàn chỉ để vẽ 5 cái thẻ"
+    assert src.flow_calls == 2
+
+    # ② Bộ lọc nến ngày: đúng 1 lượt, và lượt đó hỏi CẢ 12 mã cùng lúc.
+    await cap5.san_ma_result(test_user.id, "kl")
+    assert src.bars_calls == 1
+    assert src.bars_batch_sizes == [12]
+    assert src.flow_calls == 2
+
+    # ③ Bộ lọc dòng tiền: đúng 1 net_flow + đúng 1 daily_bars.
+    await cap5.san_ma_result(test_user.id, "ngoai")
+    assert src.flow_calls == 3
+    assert src.bars_calls == 2
+    assert src.bars_batch_sizes == [12, 12]
+
+    # ④ Bộ lọc dòng tiền THIẾU nguồn thì dừng ngay, không quét nến vô ích.
+    await cap5.san_ma_result(test_user.id, "tudoanh")
+    assert src.flow_calls == 4
+    assert src.bars_calls == 2, "thiếu nguồn dòng tiền mà vẫn quét cả sàn"
 
 
 @pytest.mark.asyncio
