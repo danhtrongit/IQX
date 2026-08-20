@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { RE_FAKE_ZERO_MA, visibleText } from "@/__tests__/textGuards"
 import type { SanMaIndex } from "./sanMaTypes"
 
 /**
@@ -150,9 +151,20 @@ describe("SanMaPanel — LUẬT SỐ 1: bộ lọc thiếu dữ liệu", () => {
     expect(box).toHaveTextContent("chưa có dữ liệu tự doanh theo phiên")
   })
 
-  it("★ KHÔNG hiện «0 mã» ở bất kỳ đâu trên màn", () => {
-    const { container } = render(<SanMaPanel />)
-    expect(container.textContent).not.toMatch(/\b0 mã\b/)
+  it("★ KHÔNG hiện «0 mã» ở bất kỳ đâu trên màn (kể cả trong portal)", () => {
+    render(<SanMaPanel />)
+    // Neo dương tính: màn ĐÃ render thật (5 dòng bộ lọc + hộp thiếu dữ liệu).
+    expect(screen.getByTestId("cap5-sanma-nodata-tudoanh")).toBeInTheDocument()
+    expect(screen.getByTestId("cap5-sanma-filter-ngoai")).toBeInTheDocument()
+    // ★★ `visibleText()` = `document.body`: popup/tour của Arco vẽ ra PORTAL,
+    // `container.textContent` không thấy — mà bài này tự nhận "ở bất kỳ đâu".
+    // Và ranh giới ASCII sau chữ ã không bao giờ khớp (xem `textGuards.ts`).
+    expect(visibleText()).not.toMatch(RE_FAKE_ZERO_MA)
+
+    // Mở luôn popup của một bộ lọc CHẠY ĐƯỢC: đó là nơi "0 mã" dễ lọt nhất.
+    fireEvent.click(screen.getByTestId("cap5-sanma-filter-ngoai"))
+    expect(screen.getByText("💰 Khối ngoại gom")).toBeInTheDocument()
+    expect(visibleText()).not.toMatch(RE_FAKE_ZERO_MA)
   })
 
   it("★ bộ lọc thiếu dữ liệu KHÔNG bấm được → không mở popup rỗng", () => {
