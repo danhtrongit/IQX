@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react"
-import { Message } from "@arco-design/web-react"
 import { SymbolProvider, useSymbol } from "@/shared/contexts/symbol-context"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
@@ -35,8 +34,8 @@ import type { Lop5Partial } from "@/features/cap4/types"
 import { Cap5Provider, useCap5Events, type Cap5OrderEvent } from "./Cap5Context"
 import { GraduationModalCap5 } from "./GraduationModalCap5"
 import { KetsoModalCap5, type KetsoDataCap5 } from "./KetsoModalCap5"
+import { cap5Api } from "./api"
 import type { Cap5TradeRecord } from "./tradeLogCap5"
-import { VERDICT_LABEL } from "./types"
 import "@/features/cap0/cap0.css"
 import "@/features/cap1/cap1.css"
 
@@ -303,6 +302,42 @@ function Cap5Terminal() {
       // Đã kết sổ Cấp 1 trước đó (409) hoặc lỗi khác — modal vẫn mở (xem trên).
     }
 
+    /**
+     * NGUỒN SĂN của lệnh (spec §8) — `GET /cap5/nguon-san/{symbol}`.
+     *
+     * ★★ Ba trạng thái, KHÔNG hai (luật số 1):
+     *   · gọi được + `tu_san_ma` ⇒ bộ lọc + số phiên chờ thật;
+     *   · gọi được + KHÔNG từ săn ⇒ `huntFilter: null`, màn Kết sổ nói thẳng
+     *     "mã này không đến từ săn mã";
+     *   · gọi KHÔNG được ⇒ `huntNguonChuaBiet: true`. Gộp trạng thái này vào
+     *     `huntFilter: null` sẽ biến một cú lỗi mạng thành lời khẳng định
+     *     "bạn tự chọn mã này" — một điều ta không hề biết.
+     *
+     * `so_lop_luc_vao` server LUÔN trả `null` (điểm đồng thuận lúc ĐẶT LỆNH chưa
+     * từng được lưu) — chép nguyên, không thay bằng điểm hôm nay.
+     */
+    let nguonSan: Pick<
+      KetsoDataCap5,
+      "huntFilter" | "huntSoPhienCho" | "huntSoLopLucVao" | "huntNguonChuaBiet"
+    > = {
+      huntFilter: null,
+      huntSoPhienCho: null,
+      huntSoLopLucVao: null,
+      huntNguonChuaBiet: true,
+    }
+    try {
+      const ns = await cap5Api.getNguonSan(order.symbol)
+      nguonSan = {
+        huntFilter: ns.tu_san_ma ? ns.hunt_filter : null,
+        huntSoPhienCho: ns.so_phien_trong_watchlist,
+        huntSoLopLucVao: ns.so_lop_luc_vao,
+        huntNguonChuaBiet: false,
+      }
+    } catch {
+      // Giữ nguyên `huntNguonChuaBiet: true` — xem docstring trên. Lệnh đã bán
+      // thì màn Kết sổ VẪN phải mở; thiếu nguồn săn không được nuốt một lệnh.
+    }
+
     ketsoCountRef.current += 1
     const sellDate = todayYmd()
     const soPhienGiu = countTradingSessions(buy.buyDate, sellDate)
@@ -336,6 +371,7 @@ function Cap5Terminal() {
       pctVon: buy.pctVon,
       doc5Lop: buy.doc5Lop,
       ai5Lop: buy.ai5Lop,
+      ...nguonSan,
     })
   }
 
@@ -345,19 +381,6 @@ function Cap5Terminal() {
         // Cấp 5 KHÔNG thêm gì vào panel mua (spec §11) → chỉ nhánh BÁN có việc.
         if (order.side !== "sell") return
         void openKetsoCap5(order)
-      },
-      // Analytics spec §8 (`cap5_verdict_confirm` / `cap5_verdict_override`) —
-      // FE này chưa có pipeline analytics, nên event được dùng cho một **Ghi
-      // nhận nhỏ** (§9 chỉ cấm huy chương/confetti/âm thanh chói, toast Ghi nhận
-      // thì cho phép): nói THẲNG phân loại vừa chốt đi đâu, và nói rõ "thấy khác
-      // hệ" là một sự thật TRUNG TÍNH, không phải điểm trừ.
-      onVerdictSettled: (verdict, daSua) => {
-        Message.success(
-          `Đã ghi phân loại: ${VERDICT_LABEL[verdict]} — cập nhật «Tỷ lệ quyết định đúng» ở tab Hành trình.` +
-            (daSua
-              ? " Bạn thấy khác hệ: cả hai verdict đều được lưu — đây là dữ liệu trung tính, không phải điểm trừ."
-              : ""),
-        )
       },
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps

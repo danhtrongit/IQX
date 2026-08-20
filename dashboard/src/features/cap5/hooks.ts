@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/features/auth"
 import { cap5Api } from "./api"
 import { cap5Keys } from "./keys"
-import type { Cap5Progress } from "./types"
+import type { Cap5PhanTich, Cap5Progress } from "./types"
 
 /**
  * Current user's Cấp 5 progress. `staleTime: 0` so it always refetches after a
@@ -51,5 +51,31 @@ export function useGraduateCap5() {
   return useMutation<Cap5Progress, unknown, void>({
     mutationFn: cap5Api.graduate,
     onSuccess: invalidate,
+  })
+}
+
+/**
+ * POST /cap5/tour-sanma — ghi cờ "đã xem hết tour Săn mã" (spec §7).
+ *
+ * ★ KHÔNG phải cổng tốt nghiệp (2 nhiệm vụ Cấp 5 không gồm tour), nên gọi nó
+ * không mở được cấp — nó chỉ để tour tự bật đúng một lần.
+ */
+export function useMarkTourSanMa() {
+  const invalidate = useInvalidateCap5()
+  return useMutation<Cap5Progress, unknown, void>({
+    mutationFn: cap5Api.markTourSanMa,
+    onSuccess: invalidate,
+  })
+}
+
+/** GET /cap5/phan-tich — khối ⑫ + ⑬ (spec §9), tính server-side từ lệnh thật. */
+export function useCap5PhanTich(enabled = true) {
+  const { isAuthenticated } = useAuth()
+  return useQuery<Cap5PhanTich>({
+    queryKey: cap5Keys.phanTich(),
+    queryFn: cap5Api.getPhanTich,
+    enabled: isAuthenticated && enabled,
+    staleTime: 0,
+    retry: false,
   })
 }

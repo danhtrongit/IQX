@@ -106,6 +106,19 @@ export interface KetsoDataCap5 extends KetsoDataCap4 {
   huntSoPhienCho: number | null
   /** Số lớp ủng hộ (0-5) lúc vào lệnh. `null` = CHƯA BIẾT, không phải 0. */
   huntSoLopLucVao: number | null
+  /**
+   * `true` khi KHÔNG lấy được nguồn săn của lệnh (`GET /cap5/nguon-san/{symbol}`
+   * lỗi/timeout).
+   *
+   * ★★ Vì sao phải có trường này: không có nó, một cú lỗi mạng sẽ rơi vào nhánh
+   * `huntFilter == null` và màn Kết sổ tuyên bố "mã này KHÔNG đến từ săn mã" —
+   * một khẳng định về nguồn gốc lệnh mà lúc đó ta không hề biết. "Chưa lấy được"
+   * và "không đến từ săn mã" là hai câu khác hẳn nhau (luật số 1).
+   *
+   * Optional: Cấp 6/7/8 dựng object này chưa truyền nguồn săn ⇒ `undefined` ⇒
+   * hành vi cũ giữ nguyên.
+   */
+  huntNguonChuaBiet?: boolean
 }
 
 export interface KetsoModalCap5Props {
@@ -275,6 +288,7 @@ export function KetsoModalCap5({
     huntFilter,
     huntSoPhienCho,
     huntSoLopLucVao,
+    huntNguonChuaBiet,
   } = data
   const soPhienGiu = countTradingSessions(buyDate, sellDate)
   const soNgayLich = countCalendarDays(buyDate, sellDate)
@@ -300,15 +314,23 @@ export function KetsoModalCap5({
     pctVon,
   }
   const cap4Situation: CoachSituationCap4 = { doc5Lop, ai5Lop, pnlPositive, pnlPct }
-  // Đoạn coach Cấp 5 LUÔN có (kể cả mã không đến từ săn mã — mẫu `khong_san`
-  // nói thẳng điều đó). Nó chỉ đọc lại chính 3 trường nguồn săn của lệnh, không
-  // request gì, nên không có trạng thái "đang tải" nào phải xử lý.
-  const cap5Situation: CoachSituationCap5 = {
-    huntFilter,
-    huntSoPhienCho,
-    huntSoLopLucVao,
-    pnlPct,
-  }
+  // Đoạn coach Cấp 5 có ở mọi lệnh mà ta BIẾT nguồn săn — kể cả mã không đến từ
+  // săn mã (mẫu `khong_san` nói thẳng điều đó). Nó chỉ đọc lại chính 3 trường
+  // nguồn săn của lệnh, không request gì.
+  //
+  // ★ NGOẠI LỆ DUY NHẤT: `huntNguonChuaBiet` (không lấy được nguồn săn) ⇒ `null`
+  // ⇒ KHÔNG có đoạn coach. Mẫu `khong_san` mở đầu bằng "Mã này KHÔNG đến từ săn
+  // mã" — in nó ra khi ta chưa biết nguồn là bịa đặt về nguồn gốc lệnh. Thà
+  // thiếu một đoạn coach còn hơn nói một câu sai; dòng nguồn săn phía trên đã
+  // nói rõ là chưa lấy được.
+  const cap5Situation: CoachSituationCap5 | null = huntNguonChuaBiet
+    ? null
+    : {
+        huntFilter,
+        huntSoPhienCho,
+        huntSoLopLucVao,
+        pnlPct,
+      }
   const tenBoLoc = huntFilterTen(huntFilter)
   const coach = composeCoachCap5(
     cap1Situation,
@@ -619,7 +641,16 @@ export function KetsoModalCap5({
           ★ Mã KHÔNG đến từ săn mã thì NÓI THẲNG (nhánh dưới), tuyệt đối không
           nêu một bộ lọc. Hai vế phụ (số phiên chờ · số lớp lúc vào) chỉ xuất
           hiện khi ĐO ĐƯỢC: `null` là "chưa biết", không phải 0. */}
-      {tenBoLoc != null ? (
+      {huntNguonChuaBiet ? (
+        <div
+          className="cap5-hunt-origin cap5-hunt-origin--khong"
+          data-testid="cap5-ketso-hunt-origin"
+        >
+          🔍 <strong>Chưa lấy được nguồn săn của mã này</strong> — máy chủ không trả lời, nên chưa
+          rõ lệnh này đến từ bộ lọc săn nào hay bạn tự chọn mã. Không phải là "không đến từ săn
+          mã".
+        </div>
+      ) : tenBoLoc != null ? (
         <div className="cap5-hunt-origin" data-testid="cap5-ketso-hunt-origin">
           🔍 Mã này bạn <strong>săn từ bộ lọc «{tenBoLoc}»</strong>
           {huntSoPhienCho != null && (

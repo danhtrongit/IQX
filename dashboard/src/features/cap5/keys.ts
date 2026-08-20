@@ -8,4 +8,6 @@
 export const cap5Keys = {
   all: ["cap5"] as const,
   progress: () => ["cap5", "progress"] as const,
+  phanTich: () => ["cap5", "phan-tich"] as const,
+  nguonSan: (symbol: string) => ["cap5", "nguon-san", symbol] as const,
 } as const

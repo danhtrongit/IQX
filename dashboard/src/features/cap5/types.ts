@@ -167,3 +167,66 @@ export function taskStateCap5(
   const at = no === 1 ? progress?.task_1_done_at : progress?.task_2_done_at
   return at ? "done" : "active"
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NGUỒN SĂN của một lệnh — `GET /cap5/nguon-san/{symbol}` (spec §8)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * ★ `so_lop_luc_vao` LUÔN `null` kèm `ly_do_thieu_so_lop`: điểm đồng thuận tại
+ * thời điểm ĐẶT LỆNH chưa từng được lưu (BE nói rõ điều này trong schema). Dựng
+ * câu "vào lệnh khi lên 4/5 lớp" từ điểm HÔM NAY là gán một con số hiện tại cho
+ * một quyết định quá khứ — cấm.
+ */
+export interface NguonSan {
+  symbol: string
+  tu_san_ma: boolean
+  hunt_filter: HuntFilter | null
+  hunt_filter_ten: string | null
+  hunt_signal: string | null
+  first_hunted_at: string | null
+  so_phien_trong_watchlist: number | null
+  so_lop_luc_vao: number | null
+  giai_thich: string
+  ly_do_thieu_so_lop: string | null
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PHÂN TÍCH DANH MỤC — khối ⑫ + ⑬ do SERVER tính (`GET /cap5/phan-tich`, §9)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export interface Khoi12Item {
+  ma: HuntFilter
+  ten: string
+  so_lenh: number
+  so_lenh_thang: number
+  /** `null` ⇔ `du_mau === false` — chưa đủ lệnh đã đóng để kết luận (≠ 0%). */
+  ty_le_thang: number | null
+  du_mau: boolean
+  nhan: string | null
+  canh_bao: string | null
+  giai_thich: string
+}
+
+export interface Khoi12 {
+  items: Khoi12Item[]
+  best_filter: HuntFilter | null
+  so_lenh_toi_thieu: number
+  so_lenh_khong_tu_san: number
+  du_de_ket_luan: boolean
+  giai_thich: string
+}
+
+export interface Khoi13 {
+  so_ma_da_san: number
+  /** ★ `null` = tầng giữa CHƯA ĐO ĐƯỢC, không phải "0 mã chín". */
+  so_ma_cho_du_lop: number | null
+  so_ma_vao_lenh: number
+  giai_thich: string
+  copy: string
+}
+
+export interface Cap5PhanTich {
+  khoi_12: Khoi12
+  khoi_13: Khoi13
+}
