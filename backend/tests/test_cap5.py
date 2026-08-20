@@ -1706,3 +1706,131 @@ async def test_nguon_san_ma_tu_nhap_noi_thang_la_khong_qua_bo_loc(db_session, te
     assert out["hunt_filter_ten"] is None
     assert out["so_phien_trong_watchlist"] is None
     assert "không đến từ săn mã" in out["giai_thich"]
+
+
+# ══════════════════════════════════════════════════════
+# HTTP wiring
+# ══════════════════════════════════════════════════════
+
+
+@pytest.mark.asyncio
+async def test_cap5_endpoints_wired_and_free(client, db_session, test_user, monkeypatch):
+    """Router mount ở /api/v1/cap5, gác bằng ``CurrentUser`` (KHÔNG premium).
+
+    Cũng canh đường khởi tạo THẬT: endpoint dựng ``Cap5Service(db)`` (không tiêm
+    nguồn), nên ``VciHuntDataSource`` bị thay ở đây — nếu ai đó đổi tên/đường
+    dẫn nguồn dữ liệu mặc định, test này đỏ chứ không âm thầm gọi mạng.
+    """
+    from app.core.security import create_access_token
+
+    src = _FakeHuntSource(bars={"HTTP1": _with_last(_bars(), volume=300_000.0)})
+    monkeypatch.setattr(
+        "app.services.cap5.service.VciHuntDataSource", lambda *a, **kw: src
+    )
+
+    await _fast_track_cap4(db_session, test_user.id)
+    await _seed_symbol(db_session, "HTTP1")
+    await _seed_insight(db_session, "HTTP1", _AI_4_UNG_HO)
+    await db_session.commit()
+
+    token = create_access_token(
+        subject=test_user.id, extra_claims={"role": test_user.role.value}
+    )
+    headers = {"Authorization": f"Bearer {token}"}
+
+    r = await client.get("/api/v1/cap5/progress", headers=headers)
+    assert r.status_code == 200
+    assert r.json() is None
+
+    r = await client.post("/api/v1/cap5/enter", headers=headers)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["so_ma_da_san"] == 0
+    assert body["so_ma_cho_du_lop"] is None
+    assert body["muc_tieu_so_ma_san"] == 10
+    assert body["best_filter"] is None
+
+    r = await client.post("/api/v1/cap5/graduate", headers=headers)
+    assert r.status_code == 409
+
+    # Màn Săn mã — 2 bộ lọc dòng tiền nói thẳng là chưa đủ dữ liệu.
+    r = await client.get("/api/v1/cap5/san-ma", headers=headers)
+    assert r.status_code == 200, r.text
+    index = r.json()
+    bo_loc = _by_ma(index["bo_loc"])
+    assert bo_loc["ngoai"]["kha_dung"] is False
+    assert bo_loc["ngoai"]["ly_do_chua_kha_dung"]
+    assert bo_loc["kl"]["kha_dung"] is True
+    assert _by_ma(index["loc_san"])["canh_bao"]["ap_dung"] is False
+
+    r = await client.get("/api/v1/cap5/san-ma/kl", headers=headers)
+    assert r.status_code == 200, r.text
+    assert [i["symbol"] for i in r.json()["items"]] == ["HTTP1"]
+
+    r = await client.get("/api/v1/cap5/san-ma/ngoai", headers=headers)
+    assert r.status_code == 200, r.text
+    assert r.json()["tong_so_ma"] is None  # ★ KHÔNG phải 0
+
+    r = await client.get("/api/v1/cap5/san-ma/khong-co", headers=headers)
+    assert r.status_code == 404
+
+    # Watchlist
+    r = await client.post(
+        "/api/v1/cap5/watchlist",
+        headers=headers,
+        json={"symbol": "HTTP1", "hunt_filter": "kl", "hunt_signal": "bịa"},
+    )
+    assert r.status_code == 201, r.text
+    item = r.json()
+    assert item["hunt_signal"] == "KL 3,0× TB20 phiên"
+    assert item["consensus_today"] == 4
+    assert item["status"] == "notable"
+
+    r = await client.post(
+        "/api/v1/cap5/watchlist",
+        headers=headers,
+        json={"symbol": "HTTP1", "hunt_filter": "khong_co"},
+    )
+    assert r.status_code == 422, r.text  # literal bộ lọc chặn ở tầng schema
+
+    r = await client.get("/api/v1/cap5/watchlist", headers=headers)
+    assert r.status_code == 200, r.text
+    wl = r.json()
+    assert wl["so_luong"] == 1
+    assert wl["so_dang_chu_y"] == 1
+    assert wl["items"][0]["lop"]["dinh_gia"] is None
+
+    r = await client.get("/api/v1/cap5/nguon-san/HTTP1", headers=headers)
+    assert r.status_code == 200, r.text
+    assert r.json()["hunt_filter"] == "kl"
+    assert r.json()["so_lop_luc_vao"] is None
+
+    r = await client.get("/api/v1/cap5/phan-tich", headers=headers)
+    assert r.status_code == 200, r.text
+    pt = r.json()
+    assert pt["khoi_12"]["best_filter"] is None
+    assert pt["khoi_13"]["so_ma_da_san"] == 1
+
+    r = await client.post("/api/v1/cap5/tour-sanma", headers=headers)
+    assert r.status_code == 200, r.text
+    assert r.json()["da_xem_tour_sanma"] is True
+
+    r = await client.patch("/api/v1/cap5/task", headers=headers, json={"task_no": 1})
+    assert r.status_code == 200, r.text
+    assert r.json()["task_1_done_at"] is None
+    r = await client.patch("/api/v1/cap5/task", headers=headers, json={"task_no": 9})
+    assert r.status_code == 400, r.text
+
+    r = await client.delete("/api/v1/cap5/watchlist/HTTP1", headers=headers)
+    assert r.status_code == 204, r.text
+    r = await client.delete("/api/v1/cap5/watchlist/HTTP1", headers=headers)
+    assert r.status_code == 404
+
+    # Sổ săn mã KHÔNG bị xoá theo watchlist.
+    r = await client.get("/api/v1/cap5/progress", headers=headers)
+    assert r.json()["so_ma_da_san"] == 1
+
+    # Chưa đăng nhập thì bị chặn.
+    for path in ("/api/v1/cap5/progress", "/api/v1/cap5/san-ma", "/api/v1/cap5/watchlist"):
+        r = await client.get(path)
+        assert r.status_code == 401, path
