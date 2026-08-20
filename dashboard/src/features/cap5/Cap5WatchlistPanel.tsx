@@ -259,8 +259,17 @@ function WatchCard({
           "Quyết định mua vẫn là của bạn" (spec §4.3: không hứa hẹn giá). */}
       {notable && (
         <div className="cap5-wl-hint" data-testid={`cap5-wl-hint-${sym}`}>
-          💡 <b>{consensus.text} lớp đang ủng hộ</b> — đáng để bạn xem kỹ. Quyết định mua vẫn là của
-          bạn.
+          {/* ★ Câu nhắc của MÁY CHỦ thắng (`Cap5WatchlistItemOut.nhac`) — server
+              chỉ gửi nó cho mã ★ Đáng chú ý, nên nó luôn khớp trạng thái thật.
+              Vắng ⇒ câu mặc định của spec §6.1. */}
+          {item.nhac ? (
+            <>💡 {item.nhac}</>
+          ) : (
+            <>
+              💡 <b>{consensus.text} lớp đang ủng hộ</b> — đáng để bạn xem kỹ. Quyết định mua vẫn
+              là của bạn.
+            </>
+          )}
         </div>
       )}
     </div>

@@ -133,6 +133,22 @@ describe("Cap5WatchlistPanel — trạng thái (spec §6.1)", () => {
     expect(hint).toHaveTextContent("Quyết định mua vẫn là của bạn")
   })
 
+  // ★ Fixture dùng một câu KHÁC HẲN câu mặc định (chỉ đổi MỘT biến: trường
+  // `nhac`). Bản đầu của bài này lấy câu gần giống câu mặc định nên nó xanh cả
+  // khi code bỏ hẳn `item.nhac` — đã bắt được bằng đột biến rồi siết lại.
+  it("★ câu nhắc của MÁY CHỦ thắng câu mặc định", () => {
+    wlQuery.current = {
+      data: [item({ nhac: "MÁY CHỦ NÓI: mã này đã đủ lớp, tự bạn quyết." })],
+      isLoading: false,
+      isError: false,
+    }
+    render(<Cap5WatchlistPanel />)
+    const hint = screen.getByTestId("cap5-wl-hint-HPG")
+    expect(hint).toHaveTextContent("MÁY CHỦ NÓI: mã này đã đủ lớp, tự bạn quyết.")
+    // …và KHÔNG in kèm câu mặc định (một mã chỉ có một câu nhắc).
+    expect(hint).not.toHaveTextContent("đáng để bạn xem kỹ")
+  })
+
   it("<4 lớp (đã chấm đủ 5) → «Đang quan sát», KHÔNG có câu nhắc", () => {
     render(<Cap5WatchlistPanel />)
     expect(screen.getByTestId("cap5-wl-status-FPT")).toHaveTextContent("Đang quan sát")
