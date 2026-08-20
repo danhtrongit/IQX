@@ -1501,6 +1501,80 @@ async def test_lop_dinh_gia_luon_la_chua_biet(db_session, test_user):
 
 
 @pytest.mark.asyncio
+async def test_nhan_gach_ngang_cua_ban_fallback_la_chua_cham_khong_phai_0_lop(
+    db_session, test_user
+):
+    """★★ I-consensus-label: nhánh AI-JSON-fallback ghi ``statusLabel: "—"`` cho
+    CẢ 5 LỚP vào đúng bảng ``ai_insight_history`` mà điểm đồng thuận đọc.
+
+    Nguồn: ``app.services.ai.analysis_service`` — khi AI trả JSON hỏng, nó lưu
+    payload tối giản với mọi ``statusLabel`` là "—". Nếu ``_ung_ho`` quy nhãn lạ
+    về "không ủng hộ" thì mã đó hiện "0/5 lớp · Đang quan sát": một kết luận về
+    mã mà hệ chưa chấm được lớp nào. Đây là đột biến ``return None`` →
+    ``return False`` mà bộ test cũ để sống.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "DASH")
+    await _seed_insight(
+        db_session,
+        "DASH",
+        # Đúng hình dạng bản fallback (mọi lớp một dấu gạch ngang).
+        _insight(L1="—", L2="—", L3="—", L4="—", L5="—"),
+    )
+    await _hunt(cap5, test_user.id, "DASH")
+
+    item = (await cap5.watchlist(test_user.id))["items"][0]
+    assert item["consensus_today"] is None, "nhãn lạ bị quy thành 0 lớp ủng hộ"
+    assert item["consensus_da_cham"] is None
+    assert item["status"] is None, "«Đang quan sát» là kết luận, không phải chỗ chứa dữ liệu thiếu"
+    assert item["nhac"] is None
+    for row in item["lop_chi_tiet"]:
+        assert row["ung_ho"] is None, row["lop"]
+        assert row["muc"] is None, row["lop"]
+        assert row["nhan"] is None, row["lop"]
+
+    # Và KHÔNG được ghi 0 xuống DB.
+    db_row = (
+        await db_session.execute(
+            select(WatchlistItem).where(WatchlistItem.symbol == "DASH")
+        )
+    ).scalar_one()
+    assert (db_row.consensus_today, db_row.consensus_da_cham, db_row.status) == (
+        None,
+        None,
+        None,
+    )
+
+
+@pytest.mark.asyncio
+async def test_payload_mot_phan_chi_cham_lop_co_nhan_hop_le(db_session, test_user):
+    """★ Payload MỘT PHẦN: 1 lớp có nhãn hợp lệ, 1 lớp nhãn lạ, 2 lớp vắng hẳn.
+
+    Mẫu số phải là 1 (không phải 4, không phải 5), và trạng thái để trống vì
+    vẫn còn đường tới 4 lớp.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "PART")
+    await _seed_insight(
+        db_session,
+        "PART",
+        {"L1": {"statusLabel": "Rất mạnh"}, "L3": {"statusLabel": "—"}},
+    )
+    await _hunt(cap5, test_user.id, "PART")
+
+    item = (await cap5.watchlist(test_user.id))["items"][0]
+    assert item["consensus_today"] == 1
+    assert item["consensus_da_cham"] == 1
+    assert item["status"] is None
+    chi_tiet = {r["lop"]: r for r in item["lop_chi_tiet"]}
+    assert chi_tiet["ky_thuat"]["muc"] == "ok"
+    assert chi_tiet["dong_tien"]["ung_ho"] is None  # nhãn "—"
+    assert chi_tiet["noi_bo"]["ung_ho"] is None  # lớp vắng hẳn
+    assert chi_tiet["tin_tuc"]["ung_ho"] is None
+    assert chi_tiet["dinh_gia"]["ung_ho"] is None
+
+
+@pytest.mark.asyncio
 async def test_lop_trung_tinh_khong_bi_ve_thanh_nguoc_chieu(db_session, test_user):
     """Cụm 5 icon: "Trung tính" là ⚪, "Cảnh báo" mới là ⚠.
 
