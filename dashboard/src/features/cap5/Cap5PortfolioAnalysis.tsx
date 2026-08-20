@@ -5,18 +5,26 @@ import type { Cap2Progress } from "@/features/cap2/types"
 import type { Cap3Progress } from "@/features/cap3/types"
 import { Cap4PortfolioAnalysis } from "@/features/cap4/Cap4PortfolioAnalysis"
 import type { Cap4Progress } from "@/features/cap4/types"
-import { useDanhSachDungNgoai } from "./hooks"
 import {
-  computeCap5Khoi12MaTran,
+  computeCap5Khoi12BoLoc,
+  computeCap5Khoi13Pheu,
+  KHOI12_KEM_PCT,
   KHOI12_MIN_LENH,
-  type Khoi12Cell,
+  KHOI12_TOT_PCT,
+  type Khoi12FilterRow,
 } from "./portfolioAnalysisCap5"
 import type { Cap5TradeRecord } from "./tradeLogCap5"
-import { TARGET_TY_LE_QUYET_DINH_DUNG, type Cap5Progress } from "./types"
+import {
+  CAP5_SO_MA_MUA_TARGET,
+  CAP5_SO_MA_SAN_TARGET,
+  huntFilterTen,
+  type Cap5Progress,
+} from "./types"
 import "./cap5-analysis.css"
 
 /**
- * Trang Phân tích danh mục Cấp 5 (spec `IQX-Cap5-Spec.md` §6).
+ * Trang Phân tích danh mục Cấp 5 (spec `IQX-Cap5-Spec.md` §9, mockup
+ * `iqx-cap5-phantich-danhmuc.html`).
  *
  * **TÁI SỬ DỤNG Ở TẦNG COMPONENT (documented choice):** mọi khối Cấp 1-4 được
  * render bằng CHÍNH `Cap4PortfolioAnalysis` — KHÔNG mirror lại markup. Đã đọc
@@ -24,29 +32,25 @@ import "./cap5-analysis.css"
  * `trades`/`dailyScores`/`cap2-3-4Progress` qua props, không bọc modal, không sở
  * hữu state, và hook duy nhất nó dùng (`useVuKhiDiemMu` cho khối ⑨) là hook của
  * chính nó, tự fail-closed khi lỗi/đang tải. `Cap5TradeRecord extends
- * Cap4TradeRecord` nên mảng lệnh truyền THẲNG vào được. Spec §6 cũng nói rõ các
+ * Cap4TradeRecord` nên mảng lệnh truyền THẲNG vào được. Spec §9 cũng nói rõ các
  * khối Cấp 1-4 "GIỮ NGUYÊN". Đây đúng tiền lệ Cấp 3 → Cấp 2 và Cấp 4 → Cấp 3.
  *
  * Hệ quả (như Cấp 3/4 đã ghi): KHÔNG sửa được markup khối ① của cấp dưới (ngoài
  * quyền sở hữu file), nên phần "Cấp 5 thêm" cho khối ① là một thẻ đầu trang RIÊNG
  * (`cap5-pa-khoi1`) đặt NGAY TRÊN các khối kế thừa.
  *
- * ★ **KHỐI ⑬ ĐỌC TỪ SERVER, KHÔNG TÍNH LẠI Ở CLIENT.** `GET /cap5/dung-ngoai`
- * (hook `useDanhSachDungNgoai`) trả về CẢ số liệu né đúng/né hụt/trung tính/chưa
- * tới hạn, lý do hay dùng, ngưỡng chấm, `giai_thich` và cờ `du_de_phan_tich` —
- * authoritative, có backfill (job cuối phiên chấm mọi nước đủ 5 phiên) và đúng
- * bằng con số nuôi nhiệm vụ ③. Tính lại từ nhật ký localStorage sẽ sinh một con số
- * thứ hai, lệch, mâu thuẫn với màn Hành trình. Khi query lỗi/đang tải thì khối này
- * nói thẳng là chưa lấy được số — fail-closed, KHÔNG đắp tạm bằng phép tính
- * client. Cùng tiền lệ khối ⑨ của Cấp 4.
+ * ★★ **HAI KHỐI CŨ ĐÃ NGHỈ HƯU** (⑫ ma trận 4 ô đọc từ nhật ký, ⑬ nhật ký đứng
+ * ngoài đọc từ `GET /cap5/dung-ngoai`). Thay bằng ĐÚNG 2 khối của spec mới:
  *
- * ⑫ thì CHƯA có endpoint nào, nên nó tính từ nhật ký client (`tradeLogCap5.ts`) và
- * đánh dấu thiếu dữ liệu một cách trung thực (xem `portfolioAnalysisCap5.ts`). Vì
- * ma trận chỉ đếm được lệnh ghi TRÊN MÁY NÀY, khối ⑫ hiện THÊM tỷ lệ quyết định
- * đúng do server chốt (`cap5_progress.ty_le_quyet_dinh_dung`) và nói rõ hai con số
- * có thể lệch — thay vì lặng lẽ hiện con số thấp hơn.
+ *  - **⑫ Bộ lọc nào ra mã thắng nhiều nhất** — tính từ nhật ký client
+ *    (`tradeLogCap5.ts`, mỗi lệnh mang `huntFilter` của chính nó). Ngưỡng mẫu
+ *    `KHOI12_MIN_LENH` là CỨNG: dưới ngưỡng thì ô tỷ lệ để "—" chứ không suy ra
+ *    100% từ một lệnh thắng, và cả khối không rút ra kết luận nào.
+ *  - **⑬ Kỷ luật săn mã (phễu)** — đọc THẲNG 3 con số của `GET /cap5/progress`
+ *    (authoritative, có backfill, và đúng bằng con số nuôi 2 nhiệm vụ). Tầng
+ *    giữa NULL-able: chưa có mẻ chấm 5 lớp thì in "—", không phải 0.
  *
- * Ở tầng compute, component chỉ gọi `computeCap5Khoi12MaTran` thay vì
+ * Ở tầng compute, component chỉ gọi 2 hàm khối thay vì
  * `computeCap5PortfolioAnalysis`: `Cap4PortfolioAnalysis` đã tự tính các khối kế
  * thừa bên trong, nên gọi hàm tổng ở đây sẽ tính lại y hệt lần thứ hai mà không
  * dùng (cùng lập luận Cấp 3/4 đã ghi).
@@ -58,7 +62,7 @@ export interface Cap5PortfolioAnalysisProps {
   cap3Progress: Cap3Progress | null
   /** Hồ sơ Cấp 4 — số lệnh đọc đủ 5 lớp + vũ khí/điểm mù server đã chốt. */
   cap4Progress: Cap4Progress | null
-  /** Hồ sơ Cấp 5 — số lệnh phân loại + tỷ lệ quyết định đúng server đã chốt. */
+  /** Hồ sơ Cấp 5 — số mã đã săn / đã mua + `best_filter` server đã chốt. */
   cap5Progress: Cap5Progress | null
   /** Nhật ký lệnh đã đóng ở Cấp 5 (`useCap5TradeLog`). */
   trades: Cap5TradeRecord[]
@@ -89,32 +93,42 @@ function fmtInt(n: number): string {
   return Math.round(n).toLocaleString("en-US")
 }
 
-/** `+3.2%` / `−1.8%` — dấu trừ typographic "−" (U+2212), như Cấp 0-4. */
-function fmtPctSigned(pct: number): string {
-  const rounded = Math.round(pct * 10) / 10
-  const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : ""
-  return `${sign}${Math.abs(rounded).toFixed(1)}%`
+/** "—" cho MỌI giá trị chưa biết. Một chỗ duy nhất để không cấp nào in "0" thay. */
+function fmtNullableInt(n: number | null): string {
+  return n == null ? "—" : fmtInt(n)
 }
 
-/** `2026-08-05` → `05/08/2026`; trả lại nguyên văn nếu không parse được. */
-function fmtDate(iso: string): string {
-  const d = new Date(iso)
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString("vi-VN")
+/** Nhóm màu thanh của một bộ lọc — chỉ áp cho dòng ĐÃ đủ mẫu. */
+function barTone(row: Khoi12FilterRow): string {
+  if (!row.duMau || row.tyLeThang == null) return ""
+  if (row.tyLeThang >= KHOI12_TOT_PCT) return "cap5-pa-flt-bar--tot"
+  if (row.tyLeThang < KHOI12_KEM_PCT) return "cap5-pa-flt-bar--kem"
+  return "cap5-pa-flt-bar--vua"
 }
 
-/** "12 (48%)" hoặc "—" khi chưa có gì được đo (KHÔNG in "0 (0%)"). */
-function fmtCell(count: number, pct: number | null): string {
-  return pct == null ? "—" : `${fmtInt(count)} (${pct}%)`
-}
-
-/** 1 hàng verdict của ma trận 2×2 — view-model thuần, chỉ dùng trong file này. */
-interface Khoi12Row {
-  key: "dung" | "sai"
-  label: string
-  thang: Khoi12Cell
-  thua: Khoi12Cell
-  total: number
-  totalPct: number | null
+/** Một dòng bộ lọc (mockup `.flt-row`). */
+function FilterRow({ row }: { row: Khoi12FilterRow }) {
+  return (
+    <div
+      className={cn("cap5-pa-flt", !row.duMau && "cap5-pa-flt--chuadu")}
+      data-testid={`cap5-pa-khoi12-row-${row.filter}`}
+      data-dumau={row.duMau ? "true" : "false"}
+    >
+      <span className="cap5-pa-flt-nm">{row.label}</span>
+      <div className={cn("cap5-pa-flt-bar", barTone(row))}>
+        {/* Thanh chỉ vẽ khi có tỷ lệ THẬT — chưa đủ mẫu thì không có gì để vẽ. */}
+        <i style={{ width: `${row.tyLeThang ?? 0}%` }} />
+      </div>
+      <span className="cap5-pa-flt-pct" data-testid={`cap5-pa-khoi12-pct-${row.filter}`}>
+        {row.tyLeThang == null ? "—" : `${row.tyLeThang}%`}
+      </span>
+      <span className="cap5-pa-flt-n">
+        {row.duMau
+          ? `${fmtInt(row.soLenh)} lệnh`
+          : `${fmtInt(row.soLenh)}/${fmtInt(KHOI12_MIN_LENH)}`}
+      </span>
+    </div>
+  )
 }
 
 export function Cap5PortfolioAnalysis({
@@ -127,37 +141,13 @@ export function Cap5PortfolioAnalysis({
   now,
   host,
 }: Cap5PortfolioAnalysisProps) {
-  const khoi12 = computeCap5Khoi12MaTran(trades)
-  const dungNgoaiQuery = useDanhSachDungNgoai()
-  const dn = dungNgoaiQuery.data
-
-  const byO4 = new Map(khoi12.cells.map((c) => [c.o4, c]))
-  const rows: Khoi12Row[] = [
-    {
-      key: "dung",
-      label: "QĐ ĐÚNG",
-      thang: byO4.get("dung_thang")!,
-      thua: byO4.get("dung_thua")!,
-      total: khoi12.soQuyetDinhDung,
-      totalPct: khoi12.tyLeQuyetDinhDung,
-    },
-    {
-      key: "sai",
-      label: "QĐ SAI",
-      thang: byO4.get("sai_thang")!,
-      thua: byO4.get("sai_thua")!,
-      total: khoi12.soQuyetDinhSai,
-      totalPct: khoi12.tyLeQuyetDinhSai,
-    },
-  ]
-
-  /** Nước đứng ngoài ĐÃ được server chấm — mỗi dòng là dữ liệu thật, không suy ra. */
-  const daCham = dn?.items.filter((i) => i.ket_qua != null) ?? []
-  const chuaToiHan = dn?.items.filter((i) => i.ket_qua == null) ?? []
+  const khoi12 = computeCap5Khoi12BoLoc(trades)
+  const khoi13 = computeCap5Khoi13Pheu(cap5Progress ?? null)
+  const bestFilterTen = huntFilterTen(cap5Progress?.best_filter ?? null)
 
   return (
     <div className="space-y-3">
-      {/* Khối ① (phần Cấp 5 thêm) — số lệnh phân loại + tỷ lệ quyết định đúng */}
+      {/* Khối ① (phần Cấp 5 thêm) — số mã đã săn / đã mua + bộ lọc mạnh nhất */}
       <div className={CARD} data-testid="cap5-pa-khoi1">
         <div className="flex items-center gap-2">
           <span className={SECTION_HEADER}>
@@ -168,14 +158,17 @@ export function Cap5PortfolioAnalysis({
         {cap5Progress ? (
           <>
             <p className="text-xs text-[var(--color-text-1)]">
-              {`Đã phân loại 4 ô ở ${fmtInt(cap5Progress.so_lenh_phan_loai)} lệnh · ${fmtInt(
-                cap5Progress.so_lan_dung_ngoai_da_cham,
-              )} nước đứng ngoài đã được chấm.`}
+              {`Đã săn ${fmtInt(cap5Progress.so_ma_da_san)}/${fmtInt(
+                CAP5_SO_MA_SAN_TARGET,
+              )} mã vào Watchlist · đã mua ${fmtInt(
+                cap5Progress.so_ma_mua_tu_watchlist,
+              )}/${fmtInt(CAP5_SO_MA_MUA_TARGET)} mã từ Watchlist.`}
             </p>
-            <p className="text-xs text-[var(--color-text-1)]">
-              {`Tỷ lệ quyết định đúng (hệ thống chốt): ${Math.round(
-                cap5Progress.ty_le_quyet_dinh_dung,
-              )}% · mốc nhiệm vụ ③: ${TARGET_TY_LE_QUYET_DINH_DUNG}%.`}
+            {/* ★ `best_filter` chưa có KHÔNG được in thành một bộ lọc bất kỳ. */}
+            <p className={NOTE} data-testid="cap5-pa-khoi1-best">
+              {bestFilterTen
+                ? `Bộ lọc mạnh nhất của bạn (hệ thống chốt): «${bestFilterTen}».`
+                : "Bộ lọc mạnh nhất: chưa đủ dữ liệu để chốt — cần thêm lệnh đã đóng từ mã bạn săn."}
             </p>
           </>
         ) : (
@@ -201,220 +194,104 @@ export function Cap5PortfolioAnalysis({
         }
       />
 
-      {/* ⑫ Ma trận quyết định (spec §6) */}
+      {/* ⑫ Bộ lọc nào mang lại mã thắng nhiều nhất (spec §9) */}
       <div className={CARD} data-testid="cap5-pa-khoi12">
         <div className="flex items-center gap-2">
           <span className={SECTION_HEADER} data-testid="cap5-pa-khoi12-header">
-            {`⑫ MA TRẬN QUYẾT ĐỊNH — ${fmtInt(khoi12.soDaPhanLoai)} LỆNH`}
+            {"⑫ BỘ LỌC NÀO MANG LẠI MÃ THẮNG NHIỀU NHẤT"}
           </span>
           <span className={BADGE_NEW}>mới ở Cấp 5</span>
         </div>
+        <p className={HINT}>
+          {"Trong các mã bạn săn từ mỗi bộ lọc rồi thực sự vào lệnh, tỷ lệ thắng — đo bằng kết " +
+            "quả thật."}
+        </p>
 
-        <table className="cap5-pa-matrix" data-testid="cap5-pa-khoi12-table">
-          <thead>
-            <tr>
-              <th />
-              <th>Thắng</th>
-              <th>Thua</th>
-              <th>Tổng</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.key} data-testid={`cap5-pa-khoi12-row-${row.key}`}>
-                <th scope="row">{row.label}</th>
-                <td
-                  className={`cap5-pa-matrix-cell cap5-pa-matrix-cell--${row.thang.o4}`}
-                  data-testid={`cap5-pa-khoi12-cell-${row.thang.o4}`}
-                >
-                  {fmtCell(row.thang.count, row.thang.pct)}
-                </td>
-                <td
-                  className={`cap5-pa-matrix-cell cap5-pa-matrix-cell--${row.thua.o4}`}
-                  data-testid={`cap5-pa-khoi12-cell-${row.thua.o4}`}
-                >
-                  {fmtCell(row.thua.count, row.thua.pct)}
-                </td>
-                <td
-                  className="cap5-pa-matrix-total"
-                  data-testid={`cap5-pa-khoi12-total-${row.key}`}
-                >
-                  {fmtCell(row.total, row.totalPct)}
-                </td>
-              </tr>
+        {khoi12.rows.length > 0 && (
+          <div data-testid="cap5-pa-khoi12-rows">
+            {khoi12.rows.map((row) => (
+              <FilterRow key={row.filter} row={row} />
             ))}
-          </tbody>
-        </table>
-
-        {/* 2 con số của cả cấp, cạnh nhau — quy trình vs kết quả (spec §6). */}
-        <div className="flex gap-3">
-          <div className="flex-1 text-center">
-            <div
-              className="text-lg font-bold tabular-nums text-[#e0b64d]"
-              data-testid="cap5-pa-khoi12-tyle-dung"
-            >
-              {khoi12.tyLeQuyetDinhDung != null ? `${khoi12.tyLeQuyetDinhDung}%` : "—"}
-            </div>
-            <div className={HINT}>tỷ lệ quyết định đúng (quy trình)</div>
           </div>
-          <div className="flex-1 text-center">
-            <div
-              className="text-lg font-bold tabular-nums text-[var(--color-text-2)]"
-              data-testid="cap5-pa-khoi12-tyle-thang"
-            >
-              {khoi12.tyLeThang != null ? `${khoi12.tyLeThang}%` : "—"}
-            </div>
-            <div className={HINT}>tỷ lệ thắng (kết quả)</div>
-          </div>
-        </div>
-
-        {khoi12.phatHien && (
-          <p
-            className={cn("cap5-pa-phathien", khoi12.canhBao && "cap5-pa-phathien--canhbao")}
-            data-testid="cap5-pa-khoi12-phathien"
-          >
-            {khoi12.canhBao ? khoi12.phatHien : `🎯 ${khoi12.phatHien}`}
-          </p>
         )}
+
+        {/* Trạng thái rỗng TRUNG THỰC + số còn thiếu (không suy tỷ lệ từ 1-2 lệnh). */}
         {khoi12.insufficientNote && (
-          <p className={NOTE} data-testid="cap5-pa-khoi12-note">
+          <p className={NOTE} data-testid="cap5-pa-khoi12-chuadu">
             {khoi12.insufficientNote}
           </p>
         )}
-        {khoi12.insufficient && khoi12.soDaPhanLoai > 0 && (
-          <p className={HINT} data-testid="cap5-pa-khoi12-chuadu">
-            {`Số trong bảng là số thật nhưng chưa đủ để kết luận (cần ${KHOI12_MIN_LENH} lệnh đã phân loại).`}
+
+        {khoi12.phatHien && (
+          <div
+            className={cn("cap5-pa-pat", khoi12.canhBao && "cap5-pa-pat--canhbao")}
+            data-testid="cap5-pa-khoi12-phathien"
+          >
+            <span className="cap5-pa-pat-ic">{khoi12.canhBao ? "⚠" : "🎯"}</span>
+            <span>{khoi12.phatHien}</span>
+          </div>
+        )}
+
+        {khoi12.soLenhKhongSan > 0 && (
+          <p className={HINT} data-testid="cap5-pa-khoi12-khongsan">
+            {`${fmtInt(khoi12.soLenhKhongSan)} lệnh đã đóng KHÔNG đến từ săn mã (bạn tự chọn mã) ` +
+              "— chúng không thuộc bộ lọc nào nên không nằm trong bảng trên."}
           </p>
         )}
-        {khoi12.soChuaPhanLoai > 0 && (
-          <p className={HINT} data-testid="cap5-pa-khoi12-chuaphanloai">
-            {`Đã loại ${fmtInt(khoi12.soChuaPhanLoai)} lệnh khỏi ma trận vì lệnh đó chưa được phân loại 4 ô — không gộp vào ô nào.`}
-          </p>
-        )}
-        {cap5Progress && (
-          <p className={HINT} data-testid="cap5-pa-khoi12-server">
-            {`Hệ thống chốt tỷ lệ quyết định đúng ${Math.round(
-              cap5Progress.ty_le_quyet_dinh_dung,
-            )}% trên ${fmtInt(
-              cap5Progress.so_lenh_phan_loai,
-            )} lệnh — đó là con số nuôi nhiệm vụ ③. Ma trận trên chỉ đếm được lệnh ghi trên máy này, nên hai con số có thể lệch.`}
-          </p>
-        )}
+
         <p className={HINT} data-testid="cap5-pa-khoi12-giaithich">
           {khoi12.giaiThich}
         </p>
       </div>
 
-      {/* ⑬ Nhật ký đứng ngoài — DỮ LIỆU SERVER (spec §6) */}
+      {/* ⑬ Kỷ luật săn mã — phễu 3 tầng (spec §9) */}
       <div className={CARD} data-testid="cap5-pa-khoi13">
         <div className="flex items-center gap-2">
           <span className={SECTION_HEADER} data-testid="cap5-pa-khoi13-header">
-            {dn
-              ? `⑬ ĐỨNG NGOÀI CÓ CHỦ ĐÍCH — ${fmtInt(dn.so_lan)} LẦN`
-              : "⑬ ĐỨNG NGOÀI CÓ CHỦ ĐÍCH"}
+            {"⑬ KỶ LUẬT SĂN MÃ"}
           </span>
           <span className={BADGE_NEW}>mới ở Cấp 5</span>
         </div>
 
-        {dungNgoaiQuery.isPending ? (
-          <p className={NOTE} data-testid="cap5-pa-khoi13-note">
-            {"Đang tải nhật ký đứng ngoài…"}
-          </p>
-        ) : dungNgoaiQuery.isError || !dn ? (
-          <p className={NOTE} data-testid="cap5-pa-khoi13-note">
-            {"Chưa lấy được nhật ký đứng ngoài từ hệ thống. Khối này chỉ hiện số do hệ thống chấm từ giá thật — sẽ hiện lại khi tải được."}
-          </p>
-        ) : dn.so_lan === 0 ? (
-          <p className={NOTE} data-testid="cap5-pa-khoi13-note">
-            {'Bạn chưa ghi nước đứng ngoài nào. Dùng nút "🚫 Tôi đứng ngoài mã này hôm nay" ở panel đặt lệnh để ghi lại vì sao bạn KHÔNG mua.'}
-          </p>
-        ) : (
-          <>
-            {/* <3 lần đã chấm → CHỈ đếm, ẩn thống kê né đúng/hụt (spec §6). */}
-            {dn.du_de_phan_tich ? (
-              <div className="cap5-pa-dn-counts" data-testid="cap5-pa-khoi13-counts">
-                <span className="cap5-pa-dn-count cap5-pa-dn-count--ne_dung">
-                  {"Né đúng: "}
-                  <span className="cap5-pa-dn-count-value">{fmtInt(dn.so_ne_dung)}</span>
-                </span>
-                <span className="cap5-pa-dn-count cap5-pa-dn-count--ne_hut">
-                  {"Né hụt: "}
-                  <span className="cap5-pa-dn-count-value">{fmtInt(dn.so_ne_hut)}</span>
-                </span>
-                <span className="cap5-pa-dn-count">
-                  {"Trung tính: "}
-                  <span className="cap5-pa-dn-count-value">{fmtInt(dn.so_trung_tinh)}</span>
-                </span>
-                <span className="cap5-pa-dn-count">
-                  {"Chưa tới hạn: "}
-                  <span className="cap5-pa-dn-count-value">{fmtInt(dn.so_chua_toi_han)}</span>
-                </span>
-              </div>
-            ) : (
-              <p className={NOTE} data-testid="cap5-pa-khoi13-chuadu">
-                {`Đã ghi ${fmtInt(dn.so_lan)} lần đứng ngoài · ${fmtInt(
-                  dn.so_lan_da_cham,
-                )} đã tới hạn và được chấm. Cần thêm ${fmtInt(
-                  Math.max(0, dn.so_lan_toi_thieu_phan_tich - dn.so_lan_da_cham),
-                )} nước đứng ngoài đã tới hạn để có phân tích.`}
-              </p>
-            )}
+        <div className="cap5-pa-funnel" data-testid="cap5-pa-khoi13-funnel">
+          {khoi13.tang.map((t, i) => (
+            <div className="cap5-pa-fn-row" key={i} data-testid={`cap5-pa-khoi13-tang-${i + 1}`}>
+              <span className="cap5-pa-fn-ic">{t.ic}</span>
+              <span className="cap5-pa-fn-lb">{t.label}</span>
+              <span
+                className={cn("cap5-pa-fn-v", t.value == null && "cap5-pa-fn-v--chuabiet")}
+                data-chuabiet={t.value == null ? "true" : "false"}
+              >
+                {fmtNullableInt(t.value)}
+              </span>
+            </div>
+          ))}
+        </div>
 
-            {dn.du_de_phan_tich && dn.ly_do_hay_dung && (
-              <p className="text-xs text-[var(--color-text-1)]" data-testid="cap5-pa-khoi13-lydo">
-                {`Lý do hay dùng: «${dn.ly_do_hay_dung.ten}» (${fmtInt(
-                  dn.ly_do_hay_dung.so_lan,
-                )} lần)`}
-              </p>
-            )}
-
-            {/* Danh sách các lần ĐÃ CHẤM — dữ liệu thô của server, không phải thống
-                kê, nên vẫn hiện khi chưa đủ ngưỡng phân tích. */}
-            {daCham.length > 0 && (
-              <ul className="cap5-pa-dn-list" data-testid="cap5-pa-khoi13-list">
-                {daCham.map((item) => (
-                  <li
-                    key={item.id}
-                    className="cap5-pa-dn-item"
-                    data-testid={`cap5-pa-khoi13-item-${item.id}`}
-                    data-ket-qua={item.ket_qua ?? ""}
-                  >
-                    <span className="cap5-pa-dn-symbol">{item.symbol}</span>
-                    <span className="cap5-pa-dn-reason">{item.ly_do_ten}</span>
-                    <span className={`cap5-pa-dn-kq cap5-pa-dn-kq--${item.ket_qua}`}>
-                      {item.ket_qua_ten ?? item.ket_qua}
-                    </span>
-                    <span className="cap5-pa-dn-pct">
-                      {item.pct_thay_doi != null
-                        ? `${fmtPctSigned(item.pct_thay_doi)} sau ${fmtInt(dn.so_phien_cham)} phiên`
-                        : "chưa có giá đối chiếu"}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {chuaToiHan.length > 0 && (
-              <p className={HINT} data-testid="cap5-pa-khoi13-chuatoihan">
-                {`${fmtInt(chuaToiHan.length)} nước đứng ngoài chưa tới hạn chấm (${chuaToiHan
-                  .map((i) => `${i.symbol} — ${fmtDate(i.han_cham_date)}`)
-                  .join(" · ")}).`}
-              </p>
-            )}
-
-            <p className={HINT} data-testid="cap5-pa-khoi13-nguong">
-              {`Chấm sau ${fmtInt(dn.so_phien_cham)} phiên · né đúng khi giá ≤ +${
-                dn.nguong_ne_dung_pct
-              }% · né hụt khi giá ≥ +${dn.nguong_ne_hut_pct}% · giữa hai mức là trung tính (không tính đúng cũng không tính hụt).`}
-            </p>
-          </>
-        )}
-
-        {dn && (
-          <p className={HINT} data-testid="cap5-pa-khoi13-giaithich">
-            {dn.giai_thich}
+        {/* ★ Tầng giữa "—" phải được GIẢI THÍCH, nếu không nó trông như lỗi. */}
+        {khoi13.soMaChoDuLop == null && khoi13.soMaDaSan != null && (
+          <p className={NOTE} data-testid="cap5-pa-khoi13-chuadolop">
+            {"Tầng giữa chưa đo được: điểm đồng thuận 5 lớp của các mã trong Watchlist được chấm " +
+              "theo mẻ 1 lần/ngày sau phiên. Nó sẽ có số sau mẻ chấm gần nhất."}
           </p>
         )}
+
+        {khoi13.insufficientNote && (
+          <p className={NOTE} data-testid="cap5-pa-khoi13-chuadu">
+            {khoi13.insufficientNote}
+          </p>
+        )}
+
+        {khoi13.phatHien && (
+          <div className="cap5-pa-pat" data-testid="cap5-pa-khoi13-phathien">
+            <span className="cap5-pa-pat-ic">🧭</span>
+            <span>{khoi13.phatHien}</span>
+          </div>
+        )}
+
+        <p className={HINT} data-testid="cap5-pa-khoi13-giaithich">
+          {khoi13.giaiThich}
+        </p>
       </div>
     </div>
   )

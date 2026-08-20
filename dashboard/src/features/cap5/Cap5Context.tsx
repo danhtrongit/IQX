@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useRef, type ReactNode } from "react"
-import type { LyDoDungNgoai, Verdict } from "./types"
+import type { HuntFilter } from "./types"
 
 /**
  * Cấp 5 event bus — mirrors `cap4/Cap4Context.tsx`'s (proven) merge-semantics
@@ -7,9 +7,12 @@ import type { LyDoDungNgoai, Verdict } from "./types"
  *
  * The seam that lets the EXISTING `TradingPanel` notify Cấp 5 journey/progress
  * logic WITHOUT either side knowing the other's internals (and without knowing
- * Cấp 0-4's). Notifiers call `onDungNgoai` / `onVerdictSettled` /
- * `onOrderFilled`; FE2 (Kết sổ, Phân tích danh mục, Hành trình) registers the
- * actual handlers.
+ * Cấp 0-4's). Notifiers call `onKetsoClosed` / `onOrderFilled`; Kết sổ, Phân
+ * tích danh mục và Hành trình đăng ký handler thật.
+ *
+ * ★★ `onDungNgoai` + `onVerdictSettled` ĐÃ BỊ GỠ cùng Cấp 5 cũ (nhật ký đứng
+ * ngoài + phân loại 4 ô). Giữ lại một event không còn ai bắn sẽ là dây chết —
+ * và tệ hơn, là lời mời dựng lại một màn hình đã nghỉ hưu.
  *
  * Outside a `Cap5Provider` the hook is a safe no-op: notify fns are
  * `undefined` (callers guard with `?.`), `isCap5Active` is `false`, and
@@ -28,14 +31,12 @@ export interface Cap5OrderEvent {
 
 /** Handlers the Cấp 5 journey registers to react to trading-UI events. */
 export interface Cap5EventHandlers {
-  /** User logged a "tôi đứng ngoài mã này" decision (spec §5). */
-  onDungNgoai?: (symbol: string, reason: LyDoDungNgoai) => void
   /**
-   * The 4-ô classification was settled in Kết sổ (spec §4). `daSua` is true when
-   * the user overrode the hệ verdict — a NEUTRAL fact for analytics, never a
-   * penalty.
+   * Kết sổ Cấp 5 vừa được đóng cho một lệnh. `huntFilter` là NGUỒN SĂN THẬT của
+   * lệnh (`null` = mã không đến từ săn mã) — chỗ nhận tuyệt đối không được suy
+   * ra một bộ lọc mặc định từ `null`.
    */
-  onVerdictSettled?: (verdict: Verdict, daSua: boolean) => void
+  onKetsoClosed?: (symbol: string, huntFilter: HuntFilter | null) => void
   onOrderFilled?: (order: Cap5OrderEvent) => void
 }
 
@@ -43,9 +44,10 @@ export interface Cap5EventHandlers {
 export interface Cap5EventBus extends Cap5EventHandlers {
   registerHandlers: (handlers: Cap5EventHandlers) => void
   /**
-   * True only inside a `Cap5Provider`. Gates `TradingPanel`'s "Đứng ngoài"
-   * affordance. NOTE: Cấp 5 adds NOTHING to the buy panel's existing blocks or
-   * cổng cứng chain (spec §0) — it is purely additive.
+   * True only inside a `Cap5Provider`. Mọi sửa đổi Cấp 5 vào component DÙNG
+   * CHUNG phải gác trên cờ này, nếu không nó rò sang /bieu-do và /co-phieu.
+   * NOTE: Cấp 5 KHÔNG thêm gì vào panel đặt lệnh (spec §0 "GIỮ NGUYÊN — panel
+   * đặt lệnh = Cấp 4"); săn mã là MÀN RIÊNG.
    */
   isCap5Active: boolean
 }
@@ -64,12 +66,8 @@ export function Cap5Provider({ children }: { children: ReactNode }) {
     handlersRef.current = { ...handlersRef.current, ...handlers }
   }, [])
 
-  const onDungNgoai = useCallback((symbol: string, reason: LyDoDungNgoai) => {
-    handlersRef.current.onDungNgoai?.(symbol, reason)
-  }, [])
-
-  const onVerdictSettled = useCallback((verdict: Verdict, daSua: boolean) => {
-    handlersRef.current.onVerdictSettled?.(verdict, daSua)
+  const onKetsoClosed = useCallback((symbol: string, huntFilter: HuntFilter | null) => {
+    handlersRef.current.onKetsoClosed?.(symbol, huntFilter)
   }, [])
 
   const onOrderFilled = useCallback((order: Cap5OrderEvent) => {
@@ -78,13 +76,12 @@ export function Cap5Provider({ children }: { children: ReactNode }) {
 
   const value = useMemo<Cap5EventBus>(
     () => ({
-      onDungNgoai,
-      onVerdictSettled,
+      onKetsoClosed,
       onOrderFilled,
       registerHandlers,
       isCap5Active: true,
     }),
-    [onDungNgoai, onVerdictSettled, onOrderFilled, registerHandlers],
+    [onKetsoClosed, onOrderFilled, registerHandlers],
   )
 
   return <Cap5EventsContext.Provider value={value}>{children}</Cap5EventsContext.Provider>

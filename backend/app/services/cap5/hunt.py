@@ -1,0 +1,495 @@
+"""Cấp 5 «Săn mã» — máy chạy 5 bộ lọc dữ liệu thô + lọc sàn (spec §5).
+
+★★ **LUẬT SỐ 1 SỐNG Ở FILE NÀY.** Một bộ lọc chỉ được trả danh sách khi nó THẬT
+SỰ chạy được trên dữ liệu thật. Bộ lọc thiếu nguồn dữ liệu phải trả
+``trang_thai = "chua_du_du_lieu"`` kèm ``ly_do_thieu_du_lieu`` nói rõ thiếu gì —
+và ``so_ma_thoa = None`` (KHÔNG phải 0), ``items = []``. "Không có mã nào thoả"
+và "chưa lọc được" là hai câu khác hẳn nhau; gộp chúng vào một danh sách rỗng là
+đúng lớp lỗi đã dính 5 lần.
+
+Cùng lý do đó, mỗi tiêu chí của **lọc sàn** tự khai ``ap_dung``: tiêu chí nào
+không có dữ liệu (xem ``LOC_SAN_CANH_BAO`` bên dưới) thì báo là CHƯA áp dụng
+được, chứ không im lặng bỏ qua rồi để dòng minh bạch nói dối là đã lọc.
+
+═══════════════════════════════════════════════════════════════════
+BẢN KIỂM DỮ LIỆU (backend IQX, 08/2026) — nguồn của TỪNG bộ lọc
+═══════════════════════════════════════════════════════════════════
+
+Nến ngày (giá đóng cửa · khối lượng · giá trị khớp mỗi phiên) lấy hàng loạt qua
+``HuntDataSource.daily_bars`` — bản cài đặt thật đọc VCI gap-chart
+(``app.services.market_data.sources.vietcap.fetch_ohlcv``, trường
+``accumulatedValue`` = GTGD phiên, đơn vị triệu đồng). ⇒ đủ dữ liệu cho:
+
+  · 📊 ``kl``   — KL phiên ≥ 2× TB20  ....................... ✅ TÍNH ĐƯỢC
+  · 🎯 ``dinh`` — đóng cửa > đỉnh 20 phiên trước ............. ✅ TÍNH ĐƯỢC
+  · 📈 ``tang`` — tăng ≥3% & KL ≥1,5× TB20 .................. ✅ TÍNH ĐƯỢC
+  · lọc sàn: HOSE (``symbols.exchange``) · giá ≥3.000đ · GTGD TB ≥1 tỷ/phiên
+
+  · 💰 ``ngoai``    — mua ròng ≥3/5 phiên .................... ❌ THIẾU NGUỒN
+  · 🏦 ``tudoanh``  — mua ròng ≥3/5 phiên .................... ❌ THIẾU NGUỒN
+
+**Vì sao hai bộ lọc dòng tiền thiếu nguồn (đích danh):** điều kiện đòi chuỗi
+mua ròng THEO TỪNG PHIÊN cho TỪNG mã. Backend hiện chỉ có:
+  (a) ``vietcap.fetch_foreign_trade`` / ``fetch_proprietary_history`` — đúng dữ
+      liệu cần, nhưng **mỗi lần gọi chỉ được 1 mã** ⇒ quét sàn HOSE (~406 mã)
+      là 406 lượt HTTP cho một cú bấm bộ lọc;
+  (b) ``vietcap_market_overview.fetch_foreign_top`` /
+      ``fetch_proprietary_top`` — bulk nhưng chỉ trả **top N mã của cả kỳ**, đã
+      cộng gộp, không tách theo phiên ⇒ không đếm được "≥3/5 phiên", và mã nằm
+      ngoài top là "không biết" chứ không phải "bán ròng". Đếm trên đó là bịa số.
+Kết luận: cho tới khi có nguồn bulk theo phiên (hoặc bảng cache EOD nội bộ), hai
+bộ lọc này trả "chưa đủ dữ liệu" TƯỜNG MINH. ``HuntDataSource.net_flow`` là
+đúng cái khe cắm để lắp nguồn đó vào sau — máy lọc dưới đây đã biết chạy khi có.
+
+**Tiêu chí lọc sàn "loại mã diện cảnh báo/kiểm soát/hạn chế giao dịch" cũng
+THIẾU NGUỒN:** không có trường nào trong toàn backend mang trạng thái đó
+(``app.models.symbol.Symbol`` chỉ có ``exchange``/``asset_type``/``is_index``/
+``is_active``). Nó được liệt kê với ``ap_dung=False`` để FE nói thật rằng chưa
+lọc được, thay vì để dòng "Đã lọc: …" hứa hão.
+"""
+
+from __future__ import annotations
+
+import math
+from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Protocol
+
+from app.models.cap5 import HUNT_FILTER_LABELS, HuntFilter
+
+# ══════════════════════════════════════════════════════
+# Lọc sàn (spec §5.2) — áp cho MỌI bộ lọc
+# ══════════════════════════════════════════════════════
+
+SAN_HOSE = "HOSE"
+MIN_GTGD_TB_VND = 1_000_000_000  # 1 tỷ đồng/phiên
+MIN_GIA_VND = 3_000
+#: Số phiên lấy trung bình cho cả thanh khoản sàn lẫn TB20 khối lượng.
+SO_PHIEN_TB = 20
+#: Số nến cần để tính được TB20 + phiên hiện tại (và đỉnh 20 phiên TRƯỚC đó).
+SO_NEN_CAN = SO_PHIEN_TB + 1
+
+#: Tiêu chí lọc sàn CHƯA có nguồn dữ liệu trong backend — xem docstring module.
+LOC_SAN_CANH_BAO = "canh_bao"
+
+TOP_N = 10
+
+# ── Ngưỡng 5 bộ lọc (spec §5.3, verbatim) ─────────────
+NGUONG_GOM_PHIEN = 3  # mua ròng ≥3/5 phiên
+SO_PHIEN_GOM = 5
+NGUONG_KL_DOT_BIEN = 2.0  # KL ≥ 2× TB20
+NGUONG_TANG_PCT = 3.0  # tăng ≥3%
+NGUONG_TANG_KL = 1.5  # kèm KL ≥ 1,5× TB20
+
+
+@dataclass(frozen=True)
+class HuntBar:
+    """Một nến ngày đã chuẩn hoá.
+
+    ``gtgd_vnd`` (giá trị giao dịch phiên) là ``None`` khi nguồn không trả —
+    mã đó KHÔNG được đem đi lọc sàn thanh khoản bằng cách đoán ``close ×
+    volume`` (giá trị khớp lệnh thật khác tích đó vì giá khớp thay đổi trong
+    phiên); nó bị bỏ qua và đếm vào ``so_ma_bo_qua_thieu_du_lieu``.
+    """
+
+    ngay: str
+    close: float
+    volume: float
+    gtgd_vnd: float | None
+
+
+class HuntDataSource(Protocol):
+    """Nguồn dữ liệu thô cho máy săn mã.
+
+    Tách khỏi máy lọc để (1) test chạy không cần mạng, (2) khi có nguồn dòng
+    tiền theo phiên thì chỉ cần cài ``net_flow``, máy lọc không phải sửa.
+    """
+
+    async def daily_bars(
+        self, symbols: Sequence[str], *, so_nen: int
+    ) -> dict[str, list[HuntBar]]:
+        """Nến ngày gần nhất của từng mã, tăng dần theo thời gian.
+
+        Mã nào nguồn không trả thì VẮNG khỏi dict (không trả list rỗng giả).
+        """
+        ...
+
+    async def net_flow(
+        self, symbols: Sequence[str], *, ben: str, so_phien: int
+    ) -> dict[str, list[float]] | None:
+        """Giá trị mua ròng (VND) theo TỪNG phiên, tăng dần theo thời gian.
+
+        ``ben`` ∈ {'ngoai', 'tudoanh'}. **Trả ``None`` khi nguồn không có dữ
+        liệu đó** — máy lọc dịch thẳng thành "chưa đủ dữ liệu", không bao giờ
+        thành danh sách rỗng.
+        """
+        ...
+
+
+# ══════════════════════════════════════════════════════
+# Đặc tả 5 bộ lọc (spec §5.3 + mockup iqx-cap5-sanma.html)
+# ══════════════════════════════════════════════════════
+
+
+@dataclass(frozen=True)
+class FilterSpec:
+    ma: str
+    icon: str
+    ten: str
+    mo_ta: str
+    dieu_kien: str
+    xep_hang_theo: str
+    #: Nguồn dữ liệu — ghi thẳng vào response để không ai phải đoán (§C12c).
+    nguon_du_lieu: str
+
+
+FILTER_SPECS: dict[str, FilterSpec] = {
+    HuntFilter.NGOAI.value: FilterSpec(
+        ma=HuntFilter.NGOAI.value,
+        icon="💰",
+        ten=HUNT_FILTER_LABELS[HuntFilter.NGOAI.value],
+        mo_ta="Nước ngoài mua ròng nhiều tiền nhất",
+        dieu_kien=(
+            f"Khối ngoại mua ròng ≥{NGUONG_GOM_PHIEN}/{SO_PHIEN_GOM} phiên gần nhất "
+            f"VÀ tổng mua ròng {SO_PHIEN_GOM} phiên > 0"
+        ),
+        xep_hang_theo=f"Tổng giá trị mua ròng {SO_PHIEN_GOM} phiên",
+        nguon_du_lieu="Mua ròng khối ngoại theo từng phiên",
+    ),
+    HuntFilter.TU_DOANH.value: FilterSpec(
+        ma=HuntFilter.TU_DOANH.value,
+        icon="🏦",
+        ten=HUNT_FILTER_LABELS[HuntFilter.TU_DOANH.value],
+        mo_ta="Tự doanh CTCK mua ròng nhiều nhất",
+        dieu_kien=(
+            f"Tự doanh mua ròng ≥{NGUONG_GOM_PHIEN}/{SO_PHIEN_GOM} phiên gần nhất "
+            f"VÀ tổng mua ròng {SO_PHIEN_GOM} phiên > 0"
+        ),
+        xep_hang_theo=f"Tổng giá trị mua ròng {SO_PHIEN_GOM} phiên",
+        nguon_du_lieu="Mua ròng tự doanh theo từng phiên",
+    ),
+    HuntFilter.KL.value: FilterSpec(
+        ma=HuntFilter.KL.value,
+        icon="📊",
+        ten=HUNT_FILTER_LABELS[HuntFilter.KL.value],
+        mo_ta="Khối lượng bùng nổ so với thường ngày",
+        dieu_kien=(
+            f"Khối lượng phiên gần nhất ≥ {NGUONG_KL_DOT_BIEN:.0f}× trung bình "
+            f"{SO_PHIEN_TB} phiên"
+        ),
+        xep_hang_theo=f"Số lần vượt trung bình (KL ÷ TB{SO_PHIEN_TB})",
+        nguon_du_lieu=f"Nến ngày {SO_NEN_CAN} phiên (khối lượng)",
+    ),
+    HuntFilter.DINH.value: FilterSpec(
+        ma=HuntFilter.DINH.value,
+        icon="🎯",
+        ten=HUNT_FILTER_LABELS[HuntFilter.DINH.value],
+        mo_ta="Giá vừa vượt đỉnh cao nhất gần đây",
+        dieu_kien=f"Giá đóng cửa > đỉnh cao nhất {SO_PHIEN_TB} phiên trước đó",
+        xep_hang_theo="% vượt trên đỉnh cũ",
+        nguon_du_lieu=f"Nến ngày {SO_NEN_CAN} phiên (giá đóng cửa)",
+    ),
+    HuntFilter.TANG.value: FilterSpec(
+        ma=HuntFilter.TANG.value,
+        icon="📈",
+        ten=HUNT_FILTER_LABELS[HuntFilter.TANG.value],
+        mo_ta="Tăng giá mạnh kèm lực mua thật",
+        dieu_kien=(
+            f"Giá tăng ≥ {NGUONG_TANG_PCT:.0f}% trong phiên VÀ khối lượng ≥ "
+            f"{NGUONG_TANG_KL:g}× trung bình {SO_PHIEN_TB} phiên"
+        ),
+        xep_hang_theo="% tăng giá",
+        nguon_du_lieu=f"Nến ngày {SO_NEN_CAN} phiên (giá + khối lượng)",
+    ),
+}
+
+#: Bộ lọc dựa trên chuỗi mua ròng theo phiên (cần ``net_flow``).
+FILTER_DONG_TIEN = {HuntFilter.NGOAI.value: "ngoai", HuntFilter.TU_DOANH.value: "tudoanh"}
+
+_THIEU_NGUON_DONG_TIEN = (
+    "Chưa có nguồn dữ liệu mua ròng theo TỪNG phiên cho toàn sàn — backend hiện "
+    "chỉ lấy được chuỗi này cho từng mã một, hoặc bảng xếp hạng đã cộng gộp cả "
+    "kỳ (không tách phiên). Chưa lọc được, KHÔNG phải là không có mã nào thoả."
+)
+
+
+@dataclass(frozen=True)
+class HuntResult:
+    """Kết quả một lần chạy bộ lọc.
+
+    ``so_ma_thoa is None`` ⇔ ``trang_thai == "chua_du_du_lieu"``. Bất biến này
+    được test giữ: không bao giờ có "0 mã thoả" khi thật ra là chưa lọc.
+    """
+
+    bo_loc: FilterSpec
+    trang_thai: str
+    ly_do_thieu_du_lieu: str | None
+    so_ma_thoa: int | None
+    so_ma_xet: int | None
+    so_ma_bo_qua_thieu_du_lieu: int | None
+    items: list[dict]
+
+
+def loc_san_tieu_chi() -> list[dict]:
+    """4 tiêu chí lọc sàn + tiêu chí nào đang áp dụng được thật (spec §5.2)."""
+    return [
+        {
+            "ma": "san",
+            "ten": f"Chỉ mã {SAN_HOSE}",
+            "ap_dung": True,
+            "giai_thich": "Sàn niêm yết lấy từ dữ liệu mã nội bộ (symbols.exchange).",
+        },
+        {
+            "ma": "thanh_khoan",
+            "ten": "Giá trị giao dịch TB ≥ 1 tỷ đồng/phiên",
+            "ap_dung": True,
+            "giai_thich": (
+                f"Trung bình GTGD {SO_PHIEN_TB} phiên gần nhất, lấy từ giá trị khớp "
+                "lệnh mỗi phiên (không ước lượng bằng giá × khối lượng)."
+            ),
+        },
+        {
+            "ma": "gia",
+            "ten": f"Giá ≥ {MIN_GIA_VND:,}đ".replace(",", "."),
+            "ap_dung": True,
+            "giai_thich": "Giá đóng cửa phiên gần nhất.",
+        },
+        {
+            "ma": LOC_SAN_CANH_BAO,
+            "ten": "Loại mã diện cảnh báo / kiểm soát / hạn chế giao dịch",
+            "ap_dung": False,
+            "giai_thich": (
+                "CHƯA lọc được: backend không lưu trạng thái diện cảnh báo/kiểm "
+                "soát/hạn chế của mã. Danh sách dưới đây có thể còn sót mã thuộc "
+                "các diện này."
+            ),
+        },
+    ]
+
+
+def _pct(a: float, b: float) -> float:
+    """% của ``a`` so với ``b`` (b > 0 đã được gọi kiểm trước)."""
+    return (a - b) / b * 100.0
+
+
+def _fmt_lan(x: float) -> str:
+    return f"{x:.1f}×".replace(".", ",")
+
+
+def _fmt_pct(x: float) -> str:
+    return f"{x:+.1f}%".replace(".", ",")
+
+
+def _fmt_ty(vnd: float) -> str:
+    return f"{vnd / 1_000_000_000:+.1f} tỷ".replace(".", ",")
+
+
+def _finite(x: float | None) -> bool:
+    return x is not None and math.isfinite(x)
+
+
+class HuntEngine:
+    """Chạy lọc sàn + 1 bộ lọc trên một rổ mã, thuần tính toán (không I/O).
+
+    Rổ mã ``universe`` là danh sách mã HOSE đã lọc sẵn ở tầng service (từ bảng
+    ``symbols``) — tiêu chí "chỉ HOSE" của lọc sàn được áp ở đó, các tiêu chí
+    còn lại áp ở đây vì chúng cần nến ngày.
+    """
+
+    def __init__(self, source: HuntDataSource) -> None:
+        self._source = source
+
+    # ── Lọc sàn ───────────────────────────────────────
+
+    @staticmethod
+    def _qua_loc_san(bars: list[HuntBar]) -> bool | None:
+        """``True/False`` = qua/không qua lọc sàn; ``None`` = thiếu dữ liệu.
+
+        Thiếu dữ liệu KHÔNG được coi là trượt: mã đó bị bỏ ra khỏi rổ và được
+        ĐẾM RIÊNG để dòng minh bạch nói đúng đã xét bao nhiêu mã.
+        """
+        if len(bars) < SO_NEN_CAN:
+            return None
+        gia = bars[-1].close
+        if not _finite(gia) or gia <= 0:
+            return None
+        gtgd = [b.gtgd_vnd for b in bars[-SO_PHIEN_TB:]]
+        if any(v is None or not math.isfinite(v) for v in gtgd):
+            return None
+        tb_gtgd = sum(float(v) for v in gtgd) / len(gtgd)  # type: ignore[arg-type]
+        return gia >= MIN_GIA_VND and tb_gtgd >= MIN_GTGD_TB_VND
+
+    # ── 3 bộ lọc chạy trên nến ngày ───────────────────
+
+    @staticmethod
+    def _tb20_kl(bars: list[HuntBar]) -> float | None:
+        truoc = [b.volume for b in bars[-SO_NEN_CAN:-1]]
+        if len(truoc) < SO_PHIEN_TB or any(not _finite(v) for v in truoc):
+            return None
+        tb = sum(truoc) / len(truoc)
+        return tb if tb > 0 else None
+
+    @classmethod
+    def _do_kl(cls, bars: list[HuntBar]) -> tuple[float, str] | None:
+        tb = cls._tb20_kl(bars)
+        if tb is None:
+            return None
+        lan = bars[-1].volume / tb
+        if lan < NGUONG_KL_DOT_BIEN:
+            return None
+        return lan, f"KL {_fmt_lan(lan)} TB{SO_PHIEN_TB} phiên"
+
+    @staticmethod
+    def _do_dinh(bars: list[HuntBar]) -> tuple[float, str] | None:
+        truoc = [b.close for b in bars[-SO_NEN_CAN:-1]]
+        if len(truoc) < SO_PHIEN_TB or any(not _finite(v) for v in truoc):
+            return None
+        dinh_cu = max(truoc)
+        if dinh_cu <= 0:
+            return None
+        close = bars[-1].close
+        if close <= dinh_cu:
+            return None
+        vuot = _pct(close, dinh_cu)
+        return vuot, f"Vượt đỉnh {SO_PHIEN_TB} phiên {_fmt_pct(vuot)}"
+
+    @classmethod
+    def _do_tang(cls, bars: list[HuntBar]) -> tuple[float, str] | None:
+        tb = cls._tb20_kl(bars)
+        if tb is None:
+            return None
+        truoc_close = bars[-2].close
+        if not _finite(truoc_close) or truoc_close <= 0:
+            return None
+        tang = _pct(bars[-1].close, truoc_close)
+        lan = bars[-1].volume / tb
+        if tang < NGUONG_TANG_PCT or lan < NGUONG_TANG_KL:
+            return None
+        return tang, f"{_fmt_pct(tang)} · KL {_fmt_lan(lan)} TB{SO_PHIEN_TB} phiên"
+
+    _DO_BARS = {
+        HuntFilter.KL.value: "_do_kl",
+        HuntFilter.DINH.value: "_do_dinh",
+        HuntFilter.TANG.value: "_do_tang",
+    }
+
+    # ── Điểm vào ──────────────────────────────────────
+
+    async def run(self, bo_loc: str, universe: Sequence[str]) -> HuntResult:
+        spec = FILTER_SPECS[bo_loc]
+        if bo_loc in FILTER_DONG_TIEN:
+            return await self._run_dong_tien(spec, universe)
+        return await self._run_bars(spec, universe)
+
+    async def _run_bars(self, spec: FilterSpec, universe: Sequence[str]) -> HuntResult:
+        bars_map = await self._source.daily_bars(universe, so_nen=SO_NEN_CAN)
+        do = getattr(self, self._DO_BARS[spec.ma])
+
+        cham: list[tuple[float, str, str, float, float | None]] = []
+        so_bo_qua = 0
+        so_xet = 0
+        for symbol in universe:
+            bars = bars_map.get(symbol)
+            if not bars:
+                so_bo_qua += 1
+                continue
+            qua_san = self._qua_loc_san(bars)
+            if qua_san is None:
+                so_bo_qua += 1
+                continue
+            if not qua_san:
+                continue
+            so_xet += 1
+            hit = do(bars)
+            if hit is None:
+                continue
+            diem, tin_hieu = hit
+            truoc = bars[-2].close
+            pct_ngay = _pct(bars[-1].close, truoc) if truoc > 0 else None
+            cham.append((diem, symbol, tin_hieu, bars[-1].close, pct_ngay))
+
+        cham.sort(key=lambda row: (-row[0], row[1]))
+        items = [
+            {
+                "hang": i + 1,
+                "symbol": symbol,
+                "gia_vnd": round(gia),
+                "pct_thay_doi": round(pct, 2) if pct is not None else None,
+                "tin_hieu": tin_hieu,
+                "gia_tri_xep_hang": round(diem, 4),
+            }
+            for i, (diem, symbol, tin_hieu, gia, pct) in enumerate(cham[:TOP_N])
+        ]
+        return HuntResult(
+            bo_loc=spec,
+            trang_thai="ok",
+            ly_do_thieu_du_lieu=None,
+            so_ma_thoa=len(cham),
+            so_ma_xet=so_xet,
+            so_ma_bo_qua_thieu_du_lieu=so_bo_qua,
+            items=items,
+        )
+
+    async def _run_dong_tien(self, spec: FilterSpec, universe: Sequence[str]) -> HuntResult:
+        ben = FILTER_DONG_TIEN[spec.ma]
+        flows = await self._source.net_flow(universe, ben=ben, so_phien=SO_PHIEN_GOM)
+        if flows is None:
+            # ★ LUẬT 1: chưa lọc được ≠ không có mã nào thoả.
+            return HuntResult(
+                bo_loc=spec,
+                trang_thai="chua_du_du_lieu",
+                ly_do_thieu_du_lieu=_THIEU_NGUON_DONG_TIEN,
+                so_ma_thoa=None,
+                so_ma_xet=None,
+                so_ma_bo_qua_thieu_du_lieu=None,
+                items=[],
+            )
+
+        bars_map = await self._source.daily_bars(universe, so_nen=SO_NEN_CAN)
+        cham: list[tuple[float, str, str, float, float | None]] = []
+        so_bo_qua = 0
+        so_xet = 0
+        for symbol in universe:
+            bars = bars_map.get(symbol)
+            chuoi = flows.get(symbol)
+            if not bars or chuoi is None or len(chuoi) < SO_PHIEN_GOM:
+                so_bo_qua += 1
+                continue
+            qua_san = self._qua_loc_san(bars)
+            if qua_san is None:
+                so_bo_qua += 1
+                continue
+            if not qua_san:
+                continue
+            so_xet += 1
+            gan_nhat = list(chuoi)[-SO_PHIEN_GOM:]
+            so_phien_gom = sum(1 for v in gan_nhat if v > 0)
+            tong = sum(gan_nhat)
+            if so_phien_gom < NGUONG_GOM_PHIEN or tong <= 0:
+                continue
+            tin_hieu = f"{_fmt_ty(tong)} ròng · {so_phien_gom}/{SO_PHIEN_GOM} phiên"
+            truoc = bars[-2].close
+            pct_ngay = _pct(bars[-1].close, truoc) if truoc > 0 else None
+            cham.append((tong, symbol, tin_hieu, bars[-1].close, pct_ngay))
+
+        cham.sort(key=lambda row: (-row[0], row[1]))
+        items = [
+            {
+                "hang": i + 1,
+                "symbol": symbol,
+                "gia_vnd": round(gia),
+                "pct_thay_doi": round(pct, 2) if pct is not None else None,
+                "tin_hieu": tin_hieu,
+                "gia_tri_xep_hang": round(diem, 4),
+            }
+            for i, (diem, symbol, tin_hieu, gia, pct) in enumerate(cham[:TOP_N])
+        ]
+        return HuntResult(
+            bo_loc=spec,
+            trang_thai="ok",
+            ly_do_thieu_du_lieu=None,
+            so_ma_thoa=len(cham),
+            so_ma_xet=so_xet,
+            so_ma_bo_qua_thieu_du_lieu=so_bo_qua,
+            items=items,
+        )

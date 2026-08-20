@@ -53,7 +53,7 @@ nothing filters on them in SQL beyond a NULL check and one equality test, and a
 PG enum type would add ALTER TYPE migration churn for no query benefit.
 
 **Storage decision — ``luc_chi_so`` is ``Numeric(18, 6)`` with
-``asdecimal=False``**, mirroring ``app.models.cap5.StandbyDecision``'s prices: an
+``asdecimal=False``**: an
 explicit, platform-independent precision on the column, while plain ``float``
 keeps flowing through the service and pydantic layers instead of leaking
 ``Decimal`` into JSON. 6 decimal places is far more than a dư-mua/dư-bán ratio

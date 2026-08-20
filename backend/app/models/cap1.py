@@ -18,9 +18,11 @@ new table (``cap2_progress``) lives in ``app.models.cap2``. Cấp 3 «Bản lĩn
 and Cấp 4 «Thuần thục» follow the same pattern (``cap3_progress`` /
 ``cap4_progress`` in ``app.models.cap3``/``app.models.cap4``, plus the "Cấp 3
 additions" / "Cấp 4 additions" column blocks on ``OrderKehoach``). Cấp 5
-«Lão luyện» extends ``OrderKetso`` the same way (the "Cấp 5 additions" column
-block below — verdict hệ/user + provenance + 4 ô) and owns ``cap5_progress`` +
-``standby_decision`` in ``app.models.cap5``. Cấp 6 «Đối chiếu» extends
+«Lão luyện — Săn mã» extends ``OrderKehoach`` (the "Cấp 5 additions" column
+block below — ``from_watchlist``/``hunt_filter``: mã này đến từ săn mã hay user
+tự nhập) and owns ``cap5_progress`` + ``cap5_hunt_log`` in ``app.models.cap5``.
+(Cấp 5 CŨ — 4 ô + đứng ngoài — đã nghỉ hưu: 5 cột ``verdict_*``/``o_4``/
+``ly_do_sua`` trên ``OrderKetso`` bị bỏ ở revision ``b2e6f4a17c93``.) Cấp 6 «Đối chiếu» extends
 ``OrderKehoach`` again (the "Cấp 6 additions" column block — kiểu cổ phiếu +
 lớp mâu thuẫn + trọng số gợi ý + lớp quyết định) and owns ``cap6_progress`` in
 ``app.models.cap6``. Cấp 7 «Đọc sổ lệnh» extends ``OrderKehoach`` once more (the
@@ -242,6 +244,20 @@ class OrderKehoach(UUIDMixin, TimestampMixin, Base):
     # dùng để chấm đúng/sai; chất lượng đọc chỉ đo bằng kết quả thật).
     so_lop_khac_ai: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
+    # ── Cấp 5 additions (spec §10) — phân biệt mã ĐẾN TỪ SĂN với mã user tự
+    # nhập, để nhiệm vụ ② («Mua 5 mã từ Watchlist») và khối ⑫ («bộ lọc nào ra
+    # mã thắng nhiều nhất») đo đúng thứ chúng nói.
+    #   · ``from_watchlist`` — ★ **nullable ba trạng thái**, KHÔNG phải bool
+    #     NOT NULL: True = lệnh đặt từ mã đang trong Watchlist, False = server
+    #     đã kiểm và mã KHÔNG trong Watchlist, NULL = lệnh đặt trước Cấp 5 (hoặc
+    #     ngoài luồng Cấp 5) nên chưa ai kiểm. Gộp NULL vào False sẽ biến "chưa
+    #     biết" thành một câu khẳng định về mọi lệnh Cấp 1-4 cũ.
+    #   · ``hunt_filter`` — bộ lọc đã săn ra mã, chép từ ``cap5_hunt_log`` tại
+    #     thời điểm đặt lệnh (không đọc lại về sau: săn lại mã đó từ bộ lọc khác
+    #     KHÔNG được viết lại lịch sử của lệnh cũ). NULL khi không từ săn.
+    from_watchlist: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    hunt_filter: Mapped[str | None] = mapped_column(String(16), nullable=True)
+
     # ── Cấp 6 additions (spec §4/§9) — bước "Đối chiếu": CHỈ điền khi 5 lớp
     # user tự chấm mâu thuẫn (≥1 lớp 'ok' Ủng hộ VÀ ≥1 lớp 'bad' Ngược chiều).
     # Lệnh không mâu thuẫn — và mọi lệnh Cấp 1-5 — để NULL hết, nên tất cả các
@@ -375,19 +391,3 @@ class OrderKetso(UUIDMixin, TimestampMixin, Base):
         Boolean, nullable=False, default=False, server_default="false"
     )
 
-    # ── Cấp 5 additions (spec §4/§8) — "phân loại 4 ô": tách QUYẾT ĐỊNH khỏi
-    # KẾT QUẢ. ``verdict_he`` là gợi ý của hệ suy ra từ dữ liệu quy trình Cấp
-    # 1-4 đã ghi trên chính lệnh này; ``verdict_user`` là chốt của user (hybrid
-    # §C12c — user luôn sửa được, sửa thì bắt ghi ``ly_do_sua``);
-    # ``verdict_provenance`` là JSON các tín hiệu dẫn tới verdict hệ (FE hiện
-    # nguyên văn, KHÔNG bao giờ hiện verdict trơ); ``o_4`` = verdict cuối ×
-    # thắng/thua. Xem ``app.models.cap5`` (Verdict/O4) cho lý do dùng String +
-    # JSON thay vì PG enum. Tất cả nullable để lệnh Cấp 1-4 cũ vẫn hợp lệ.
-    #
-    # ★ ``pnl_pct`` KHÔNG bao giờ ảnh hưởng verdict — nó chỉ chọn CỘT của ma
-    # trận 4 ô (lệnh thua mà làm đúng quy trình là ``dung_thua``).
-    verdict_he: Mapped[str | None] = mapped_column(String(8), nullable=True)
-    verdict_user: Mapped[str | None] = mapped_column(String(8), nullable=True)
-    verdict_provenance: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    o_4: Mapped[str | None] = mapped_column(String(16), nullable=True)
-    ly_do_sua: Mapped[str | None] = mapped_column(Text, nullable=True)

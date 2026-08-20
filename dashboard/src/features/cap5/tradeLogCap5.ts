@@ -1,10 +1,10 @@
 import { useCallback, useState } from "react"
 import { useAuth } from "@/features/auth"
 import type { Cap4TradeRecord } from "@/features/cap4/tradeLogCap4"
-import type { O4, Verdict } from "./types"
+import type { HuntFilter } from "./types"
 
 /**
- * Client-side closed-trade log cho Phân tích danh mục Cấp 5 (spec §6 khối ⑫) —
+ * Client-side closed-trade log cho Phân tích danh mục Cấp 5 (spec §9 khối ⑫) —
  * mirror `cap4/tradeLogCap4.ts` một cấp lên, cùng cơ chế localStorage + de-dupe
  * theo `orderId`.
  *
@@ -14,44 +14,50 @@ import type { O4, Verdict } from "./types"
  * cùng một mảng xuống Cấp 4/3/2/1, không map/copy, và MỌI khối cũ (①-⑪) vẫn
  * tính được y như trước từ chính các bản ghi này.
  *
+ * ★★ **ĐÃ GỠ 3 trường của Cấp 5 cũ** (`o4` / `verdictHe` / `verdictUser`): bước
+ * phân loại 4 ô đã nghỉ hưu cùng toàn bộ Cấp 5 cũ. Thay bằng NGUỒN SĂN của lệnh
+ * — đúng thứ khối ⑫ mới ("bộ lọc nào ra mã thắng nhiều nhất") cần.
+ *
+ * ⚠ Bản ghi CŨ còn nằm trong `localStorage` của user đang chơi dở sẽ thiếu
+ * `huntFilter`. `JSON.parse` không kiểm kiểu, nên trường đó về `undefined` —
+ * `computeCap5Khoi12BoLoc` xử lý `undefined` **y hệt `null`** (= "không đến từ
+ * săn mã"), tức là bản ghi cũ bị loại khỏi khối ⑫ chứ KHÔNG bị gán bừa một bộ
+ * lọc. Đó là hành vi đúng: chúng thật sự không có nguồn săn nào.
+ *
  * **KHÔNG có score log riêng:** điểm kỷ luật hằng ngày vẫn là
  * `cap2/tradeLogCap2.ts`'s `useCap2TradeLog().scores` (key `iqx_cap2_scores_*`)
  * — Cấp 5 chỉ đọc lại, không nhân bản.
  *
- * GAP (giống hệt gap `cap1/tradeLog.ts` + `cap2/tradeLogCap2.ts` +
- * `cap3/tradeLogCap3.ts` + `cap4/tradeLogCap4.ts` đã ghi, một cấp lên): backend
- * Cấp 5 KHÔNG có endpoint liệt kê từng lệnh đã đóng kèm ô 4 của nó — chỉ có
- * state tổng hợp (`GET /cap5/progress`, `GET /cap5/thach-thuc`) và MỘT khối đã
- * được tính server-side (`GET /cap5/dung-ngoai`, khối ⑬). Module này là
- * workaround cho khối ⑫ (ma trận 4 ô) — `KetsoModalCap5` ghi 1 `Cap5TradeRecord`
- * mỗi lần đóng Kết sổ (nó đang giữ đúng verdict vừa chốt).
+ * GAP (giống hệt gap `cap1/tradeLog.ts` … `cap4/tradeLogCap4.ts` đã ghi, một
+ * cấp lên): backend Cấp 5 KHÔNG có endpoint liệt kê từng lệnh đã đóng kèm nguồn
+ * săn của nó — chỉ có state tổng hợp (`GET /cap5/progress`). Module này là
+ * workaround cho khối ⑫; khối ⑬ (phễu kỷ luật săn mã) thì CỐ TÌNH đọc 3 con số
+ * của `GET /cap5/progress` (authoritative + có backfill) chứ không tính lại từ
+ * nhật ký này.
  *
  * KNOWN LIMITATION (như Cấp 1/2/3/4): không backfill được lệnh đóng trước khi
- * tính năng này ship, và là per-browser (không sync giữa thiết bị) — fix đúng là
- * một task BE sau này (vd. `GET /cap5/ma-tran`). Vì thế khối ⑬ CỐ TÌNH đọc
- * endpoint server (authoritative + có backfill) chứ không tính lại từ nhật ký
- * này, và khối ⑫ nói thẳng "chưa đủ dữ liệu" thay vì bịa số.
+ * tính năng này ship, và là per-browser (không sync giữa thiết bị).
  */
 export interface Cap5TradeRecord extends Cap4TradeRecord {
   /**
-   * Ô cuối cùng của lệnh = verdict đã chốt × kết quả (`order_ketso.o_4`).
-   * `null` = lệnh CHƯA được phân loại 4 ô → khối ⑫ đếm riêng, KHÔNG gộp vào ô
-   * nào (gộp sẽ vu cho user một verdict mà họ chưa từng chốt).
-   */
-  o4: O4 | null
-  /** Verdict hệ GỢI Ý (`order_ketso.verdict_he`). `null` khi hệ chưa chấm được. */
-  verdictHe: Verdict | null
-  /**
-   * Verdict CUỐI do user chốt (`order_ketso.verdict_user`) — chính nó, không
-   * phải verdict hệ, quyết định ô 4. `null` khi user chưa chốt.
+   * Bộ lọc đã SĂN RA mã của lệnh này (`order_kehoach.hunt_filter`).
    *
-   * ★ 3 trường của Cấp 5 dùng **camelCase** (khác 4 trường snake_case Cấp 4
-   * thêm): chúng đi cặp với các trường camelCase của Cấp 1-3 trong cùng nhật ký
-   * (`mucTuTin`, `chamSlKhongCat`…) và tên wire tương ứng là `o_4` /
-   * `verdict_he` / `verdict_user` — ghi ra đây để đối chiếu với hàng DB không
-   * phải đoán.
+   * `null` = lệnh KHÔNG đến từ săn mã (user tự gõ mã) → khối ⑫ đếm riêng, KHÔNG
+   * gán vào bộ lọc nào. Gán bừa sẽ là bịa nguồn săn — đúng thứ Kết sổ §8 cấm.
    */
-  verdictUser: Verdict | null
+  huntFilter: HuntFilter | null
+  /**
+   * Số phiên mã nằm trong Watchlist trước khi vào lệnh (Kết sổ §8 "đưa vào
+   * Watchlist N phiên trước"). `null` khi không đo được — dòng nguồn săn khi đó
+   * bỏ hẳn vế này thay vì in "0 phiên trước".
+   */
+  huntSoPhienCho: number | null
+  /**
+   * Số lớp ủng hộ (0-5) lúc mã được vào lệnh (Kết sổ §8 "vào lệnh khi lên 4/5
+   * lớp ủng hộ"). `null` = CHƯA BIẾT (mẻ chấm 5 lớp chưa chạy cho mã này) —
+   * KHÔNG được hiểu là 0 lớp.
+   */
+  huntSoLopLucVao: number | null
 }
 
 function tradesStorageKey(userId: string): string {
