@@ -2220,3 +2220,56 @@ def test_migration_round_trip_len_xuong_len_hai_vong():
         assert _rows(conn, "order_ketso") == ks_lan_1
         assert _cols(conn, "cap5_progress") == _cols(conn, "cap5_progress")
         assert "cap5_hunt_log" in _tables(conn)
+
+
+@pytest.mark.asyncio
+async def test_consensus_prev_giu_diem_khac_gan_nhat_chu_khong_ghi_de_moi_ngay(
+    db_session, test_user
+):
+    """★ Ghim đúng nghĩa ``consensus_prev``: **điểm KHÁC gần nhất trước đó**.
+
+    Mockup §6.2 vẽ "2/5 → 4/5 (3 phiên)" — một BƯỚC CHUYỂN đã xảy ra N phiên
+    trước. Nếu mẻ chấm ghi đè ``consensus_prev`` mỗi ngày thì một mã đứng yên sẽ
+    mãi hiện "4/5 → 4/5" và bước chuyển biến mất khỏi thẻ. Đánh đổi (đã ghi
+    trong model): FE không biết bước chuyển xảy ra bao lâu rồi nên KHÔNG được in
+    "(N phiên)".
+
+    Test này canh cả hai chiều — nó đỏ dù ai đó đổi sang "ghi đè mỗi ngày" hay
+    "không bao giờ ghi".
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "STEP")
+    await _seed_insight(db_session, "STEP", _AI_3_UNG_HO, day=date(2026, 8, 17))
+    await _hunt(cap5, test_user.id, "STEP")
+
+    row = (
+        await db_session.execute(
+            select(WatchlistItem).where(WatchlistItem.symbol == "STEP")
+        )
+    ).scalar_one()
+
+    async def _cham_lai_ngay_moi() -> dict:
+        """Lùi mốc chấm về hôm qua để mẻ hôm nay chạy lại."""
+        row.consensus_at = datetime.now(UTC) - timedelta(days=1)
+        await db_session.flush()
+        return (await cap5.watchlist(test_user.id))["items"][0]
+
+    assert row.consensus_today == 3
+    assert row.consensus_prev is None
+
+    # Phiên sau: 3 → 4 (bước chuyển).
+    await _seed_insight(db_session, "STEP", _AI_4_UNG_HO, day=date(2026, 8, 18))
+    item = await _cham_lai_ngay_moi()
+    assert (item["consensus_prev"], item["consensus_today"]) == (3, 4)
+
+    # Hai phiên tiếp: vẫn 4/5 — bước chuyển 3 → 4 PHẢI còn trên thẻ.
+    for day in (date(2026, 8, 19), date(2026, 8, 20)):
+        await _seed_insight(db_session, "STEP", _AI_4_UNG_HO, day=day)
+        item = await _cham_lai_ngay_moi()
+        assert (item["consensus_prev"], item["consensus_today"]) == (3, 4), day
+
+    # Đổi lần nữa: 4 → 0, và điểm cũ 3 bị thay bằng 4.
+    await _seed_insight(db_session, "STEP", _AI_0_UNG_HO, day=date(2026, 8, 21))
+    item = await _cham_lai_ngay_moi()
+    assert (item["consensus_prev"], item["consensus_today"]) == (4, 0)
+    assert item["status"] == "watching"

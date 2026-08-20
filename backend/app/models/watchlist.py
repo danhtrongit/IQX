@@ -50,8 +50,15 @@ class WatchlistItem(UUIDMixin, TimestampMixin, Base):
     # Điểm đồng thuận 5 lớp — số lớp ỦNG HỘ (0-5), chạy 1 lần/ngày sau phiên
     # (spec §6.1/§10, KHÔNG tức thời). ★ NULL = hệ CHƯA chấm được mã này (không
     # có bản AI Insight cho phiên đó, hoặc payload thiếu lớp) — tuyệt đối không
-    # phải 0. ``consensus_prev`` là số lớp ủng hộ ở lần chấm TRƯỚC (nuôi dòng
-    # "2/5 → 4/5" của §6.2); NULL khi mới chấm lần đầu ⇒ FE không được vẽ mũi
+    # phải 0. ``consensus_prev`` nuôi dòng "2/5 → 4/5" của §6.2 và mang nghĩa
+    # CHÍNH XÁC là **điểm KHÁC gần nhất trước đó**, không phải "điểm của lần
+    # chấm liền trước": mẻ chấm chỉ ghi đè nó khi điểm thật sự đổi. Vì mockup vẽ
+    # "2/5 → 4/5 (3 phiên)" — tức một bước chuyển đã xảy ra N phiên trước — nên
+    # giữ điểm khác gần nhất mới nói được có chuyển động; nếu ghi đè mỗi ngày
+    # thì một mã đứng yên sẽ mãi hiện "4/5 → 4/5" và bước chuyển biến mất.
+    # ★ Đánh đổi phải biết: FE KHÔNG suy ra được bước chuyển xảy ra bao lâu rồi
+    # (số phiên không có trên wire), nên nó chỉ được in "cải thiện/yếu đi", tuyệt
+    # đối không kèm "(N phiên)". NULL khi chưa từng đổi điểm ⇒ FE không vẽ mũi
     # tên thay đổi.
     consensus_today: Mapped[int | None] = mapped_column(Integer, nullable=True)
     consensus_prev: Mapped[int | None] = mapped_column(Integer, nullable=True)
