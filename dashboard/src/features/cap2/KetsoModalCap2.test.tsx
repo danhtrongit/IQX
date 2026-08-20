@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { expectRendersNothing, visibleText } from "@/__tests__/textGuards"
 
 const { recordKetsoCap1Mutate, recordKetsoCap2Mutate } = vi.hoisted(() => ({
   recordKetsoCap1Mutate: vi.fn(),
@@ -71,7 +72,7 @@ beforeEach(() => {
 
 describe("KetsoModalCap2", () => {
   it("renders nothing when data is null", () => {
-    const { container } = render(
+    render(
       <KetsoModalCap2
         data={null}
         progress={null}
@@ -79,7 +80,10 @@ describe("KetsoModalCap2", () => {
         onClose={vi.fn()}
       />,
     )
-    expect(container).toBeEmptyDOMElement()
+    // ★★ KHÔNG dùng `expect(container).toBeEmptyDOMElement()`: component này chỉ
+    // gồm một Arco `Modal` → portal ở `document.body`, nên `container` rỗng BẤT
+    // KỂ nó trả `null` hay trả một modal đầy chữ (đã chứng minh bằng đột biến).
+    expectRendersNothing()
   })
 
   it("preserves Cấp 1's bảng đối chiếu Kế hoạch/Thực tế", async () => {
@@ -188,7 +192,7 @@ describe("KetsoModalCap2", () => {
    * nhầm ` ₫` vào dòng dưới P&L.
    */
   it("★ dòng dưới P&L dùng «đ» dính số, không bao giờ « ₫»", () => {
-    const { container } = render(
+    render(
       <KetsoModalCap2
         data={cleanData}
         progress={cap1Progress()}
@@ -196,8 +200,12 @@ describe("KetsoModalCap2", () => {
         onClose={vi.fn()}
       />,
     )
+    // Neo dương tính: dòng P&L THẬT có render (nếu không thì "không thấy ₫" chỉ
+    // nghĩa là không có gì trên màn).
     expect(screen.getByText(/\+350,000đ/)).toBeInTheDocument()
-    expect(container.textContent).not.toContain("₫")
+    // ★★ `container.textContent` là "" — Arco `Modal` vẽ ra portal ngoài
+    // container, nên bài này từng xanh dù nhồi "tổng 1,000 ₫" vào giữa modal.
+    expect(visibleText()).not.toContain("₫")
   })
 
   /**

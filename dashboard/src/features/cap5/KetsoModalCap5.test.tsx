@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { expectRendersNothing } from "@/__tests__/textGuards"
 
 /**
  * Kết sổ Cấp 5 = Kết sổ Cấp 4 NGUYÊN VẸN + **một dòng đọc** (nguồn săn, spec §8)
@@ -147,7 +148,7 @@ beforeEach(() => {
 
 describe("KetsoModalCap5 — giữ nguyên mọi khối Cấp 1/2/3/4 (cộng dồn)", () => {
   it("renders nothing when data is null", () => {
-    const { container } = render(
+    render(
       <KetsoModalCap5
         data={null}
         progress={null}
@@ -155,7 +156,10 @@ describe("KetsoModalCap5 — giữ nguyên mọi khối Cấp 1/2/3/4 (cộng d�
         onClose={vi.fn()}
       />,
     )
-    expect(container).toBeEmptyDOMElement()
+    // ★★ KHÔNG dùng `expect(container).toBeEmptyDOMElement()`: component này chỉ
+    // gồm một Arco `Modal` → portal ở `document.body`, nên `container` rỗng BẤT
+    // KỂ nó trả `null` hay trả một modal đầy chữ (đã chứng minh bằng đột biến).
+    expectRendersNothing()
   })
 
   it("giữ tag header + %lãi lỗ count-up + bảng đối chiếu của Cấp 1", async () => {

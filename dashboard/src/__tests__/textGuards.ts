@@ -1,3 +1,5 @@
+import { expect } from "vitest"
+
 /**
  * Bộ canh CHUỖI CẤM dùng chung — và bài học đắt nhất của repo này về regex.
  *
@@ -62,6 +64,30 @@ export const RE_LENH_GIA = /lệnh giả(?!\p{L})/iu
  * TÍNH bên cạnh, chứng minh màn thật sự đã render. Không có neo dương tính thì
  * "không tìm thấy chuỗi cấm" và "không render gì cả" là một.
  */
+/**
+ * "Component này KHÔNG vẽ gì cả" — bài canh đúng cho nhánh `if (!data) return null`.
+ *
+ * ★★ `expect(container).toBeEmptyDOMElement()` KHÔNG THỂ ĐỎ với một component
+ * chỉ gồm Arco `Modal`: modal đi ra PORTAL ở `document.body`, nên `container`
+ * rỗng bất kể component trả `null` hay trả một modal đầy chữ. Tám bài "renders
+ * nothing when data is null" (Cấp 0-7) đều đã bị chứng minh xanh giả bằng đột
+ * biến: thay `return null` bằng `<Modal visible>modal rỗng vẫn mở</Modal>` →
+ * 166/166 VẪN XANH. Nghĩa là một Kết sổ RỖNG bật lên với `data = null` sẽ ship
+ * mà không ai biết.
+ *
+ * Hàm này soi CẢ `document`: không mask/wrapper/dialog nào, và không một chữ nào.
+ */
+export function expectRendersNothing(): void {
+  const portals = document.querySelectorAll(
+    "[class*='arco-modal'], [class*='arco-drawer'], [role='dialog']",
+  )
+  expect(
+    Array.from(portals).map((el) => el.className),
+    "component phải KHÔNG vẽ gì — nhưng có portal modal/dialog trong document",
+  ).toEqual([])
+  expect(visibleText(), "component phải KHÔNG vẽ gì — nhưng có chữ trên màn").toBe("")
+}
+
 export function visibleText(root: HTMLElement = document.body): string {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
   const parts: string[] = []
