@@ -3,30 +3,33 @@ import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 /**
- * Kết sổ Cấp 7 = Kết sổ Cấp 6 nguyên vẹn (mọi khối Cấp 1-5 + khối Đối chiếu của
- * Cấp 6 + CỔNG phân loại 4 ô của Cấp 5) + khối "ĐỌC SỔ LỆNH — NHÌN LẠI" + lớp
- * coach thứ 7.
+ * Kết sổ Cấp 7 = Kết sổ Cấp 6 (mọi khối Cấp 1-4 + khối Đối chiếu của Cấp 6) +
+ * khối "ĐỌC SỔ LỆNH — NHÌN LẠI" + lớp coach thứ 7.
  *
- * `PhanLoai4O` KHÔNG bị mock — cổng Cấp 5 phải đúng với khối thật. Chỉ mock tầng
- * hook + `Message`.
+ * ★★ **CỔNG PHÂN LOẠI 4 Ô CỦA CẤP 5 ĐÃ NGHỈ HƯU** cùng Cấp 5 cũ: không còn
+ * `PhanLoai4O`, `GET /cap5/verdict`, `POST /cap5/ketso`, lối ra "chưa phân loại
+ * được", và nút `Đóng kết sổ ✓` KHÔNG còn bị khoá bởi verdict. Các `it` dưới
+ * canh CHÍNH sự vắng mặt đó — bài học Cấp 2 bỏ "chuỗi kỷ luật" mà dòng chuỗi
+ * sống sót ở Kết sổ Cấp 3-8 rồi in ra một con số bịa.
  */
 const {
   recordKetsoCap1Async,
   recordKetsoCap2Mutate,
-  recordKetsoCap5Async,
   markCap6Task,
   markCap7Task,
-  verdictQuery,
+  cap5HooksLoaded,
   kehoachCap7,
   kehoachCap6,
   messageError,
 } = vi.hoisted(() => ({
   recordKetsoCap1Async: vi.fn(),
   recordKetsoCap2Mutate: vi.fn(),
-  recordKetsoCap5Async: vi.fn(),
   markCap6Task: vi.fn(),
   markCap7Task: vi.fn(),
-  verdictQuery: { current: {} as Record<string, unknown> },
+  // `true` NGAY KHI `@/features/cap5/hooks` được nạp lần đầu — cách duy nhất
+  // khẳng định `useVerdictGoiY`/`useRecordKetsoCap5` đã bị gỡ HẲN khỏi cây import
+  // của Kết sổ Cấp 7 (một `not.toHaveBeenCalled()` sẽ đúng một cách rỗng).
+  cap5HooksLoaded: { value: false },
   // `GET /cap7/kehoach/{order_id}` + `GET /cap6/kehoach/{order_id}` — giá trị
   // trả về + ĐỐI SỐ mỗi lần gọi (cổng `enabled`: chỉ gọi khi user ở cấp đó).
   kehoachCap7: { current: {} as Record<string, unknown>, calls: [] as unknown[][] },
@@ -40,10 +43,10 @@ vi.mock("@/features/cap1/hooks", () => ({
 vi.mock("@/features/cap2/hooks", () => ({
   useRecordKetsoCap2: () => ({ mutate: recordKetsoCap2Mutate }),
 }))
-vi.mock("@/features/cap5/hooks", () => ({
-  useVerdictGoiY: () => verdictQuery.current,
-  useRecordKetsoCap5: () => ({ mutateAsync: recordKetsoCap5Async, isPending: false }),
-}))
+vi.mock("@/features/cap5/hooks", () => {
+  cap5HooksLoaded.value = true
+  return {}
+})
 vi.mock("@/features/cap6/hooks", () => ({
   useCompleteCap6Task: () => ({ mutate: markCap6Task }),
   useKehoachCap6: (...args: unknown[]) => {
@@ -80,7 +83,6 @@ import type { KehoachDetailCap7 } from "./types"
 import type { KehoachDetailCap6 } from "@/features/cap6/types"
 import type { DoiChieuKetsoCap6 } from "@/features/cap6/KetsoModalCap6"
 import type { Cap1Progress } from "@/features/cap1/types"
-import type { VerdictGoiY } from "@/features/cap5/types"
 
 const CAM_TU = ["sai lầm", "vi phạm", "bị phạt", "không nên", "lẽ ra"]
 
@@ -163,26 +165,6 @@ const data: KetsoDataCap7 = {
   ai5Lop: null,
   doiChieu,
   docLuc,
-}
-
-function goiY(overrides: Partial<VerdictGoiY> = {}): VerdictGoiY {
-  return {
-    order_id: "order-96",
-    verdict: "dung",
-    giai_thich: "Lệnh giữ đúng cắt lỗ và khối lượng đã cam kết.",
-    signals: [
-      {
-        ma: "co_so",
-        ten: "Cơ sở khi đặt lệnh",
-        dat: true,
-        giai_thich: "2/5 lớp bạn đọc là Ủng hộ lúc đặt",
-      },
-    ],
-    pnl_pct: 5.3,
-    thang: true,
-    o_4_du_kien: "dung_thang",
-    ...overrides,
-  }
 }
 
 function renderModal(
@@ -269,10 +251,6 @@ function closeButton(): HTMLElement {
   return screen.getByTestId("cap7-ketso-close")
 }
 
-function chotPhanLoai() {
-  fireEvent.click(screen.getByTestId("cap5-phanloai-dong-y"))
-}
-
 /** `true` khi `a` đứng TRƯỚC `b` trong cây DOM. */
 function precedes(a: Element, b: Element): boolean {
   return Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING)
@@ -282,21 +260,9 @@ beforeEach(() => {
   recordKetsoCap1Async.mockReset()
   recordKetsoCap1Async.mockResolvedValue({ id: "ks1" })
   recordKetsoCap2Mutate.mockReset()
-  recordKetsoCap5Async.mockReset()
-  recordKetsoCap5Async.mockResolvedValue({
-    id: "k5-1",
-    order_id: "order-96",
-    pnl_pct: 5.3,
-    verdict_he: "dung",
-    verdict_user: "dung",
-    verdict_provenance: null,
-    o_4: "dung_thang",
-    ly_do_sua: null,
-  })
   markCap6Task.mockReset()
   markCap7Task.mockReset()
   messageError.mockReset()
-  verdictQuery.current = { data: goiY(), isPending: false, isError: false }
   kehoachCap7.current = { data: undefined, isPending: false, isError: false }
   kehoachCap7.calls.length = 0
   kehoachCap6.current = { data: undefined, isPending: false, isError: false }
@@ -335,68 +301,59 @@ describe("KetsoModalCap7 — cộng dồn: giữ NGUYÊN mọi khối Cấp 1-6"
   /**
    * ★ REGRESSION (fix wave FE-2). Bản cũ tự nhận là kiểm "đủ 6 lớp coach Cấp 1-6"
    * nhưng chỉ hỏi coach 3-6 — coach 1 (Cấp 1) và coach 2 (Cấp 2) không có testid
-   * và không được assert, nên xoá cả hai lớp đó đi test vẫn xanh. Nay cả sáu đều
-   * được đếm, và cả sáu đều phải có NỘI DUNG (một div rỗng không phải một lớp coach).
+   * và không được assert, nên xoá cả hai lớp đó đi test vẫn xanh. Nay từng lớp
+   * đều được đếm, và đều phải có NỘI DUNG (một div rỗng không phải lớp coach).
+   *
+   * ★ Lớp coach 5 KHÔNG còn trong danh sách: nó là "quyết định vs kết quả" của
+   * phân loại 4 ô đã nghỉ hưu, và đoạn coach săn mã thay thế nó chưa có nguồn ở
+   * Cấp 7 nên phải VẮNG chứ không được render với dữ liệu bịa.
    */
-  it("giữ khối phân loại 4 ô + đủ 6 lớp coach Cấp 1-6 + HỒ SƠ", () => {
+  it("giữ đủ lớp coach Cấp 1-4 + Cấp 6 + HỒ SƠ, KHÔNG có lớp coach Cấp 5", () => {
     renderModal()
-    expect(screen.getByTestId("cap5-phanloai")).toBeInTheDocument()
-    chotPhanLoai()
-    for (const n of [1, 2, 3, 4, 5, 6]) {
+    for (const n of [1, 2, 3, 4, 6]) {
       const coach = screen.getByTestId(`cap${n}-ketso-coach`)
       expect(coach).toBeInTheDocument()
       expect((coach.textContent ?? "").trim().length).toBeGreaterThan(0)
     }
+    expect(screen.queryByTestId("cap5-ketso-coach")).not.toBeInTheDocument()
     expect(screen.getByTestId("cap7-ketso-profile")).toBeInTheDocument()
   })
 })
 
-describe("KetsoModalCap7 — CỔNG phân loại 4 ô của Cấp 5 KHÔNG bị nới", () => {
-  it("chưa chốt phân loại → nút đóng bị khoá + ghi chú vì sao", () => {
+describe("KetsoModalCap7 — cổng phân loại 4 ô của Cấp 5 ĐÃ NGHỈ HƯU", () => {
+  it("KHÔNG còn khối phân loại 4 ô, ghi chú cổng, hay lối ra 'chưa phân loại'", () => {
     renderModal()
-    expect(closeButton()).toBeDisabled()
-    expect(screen.getByTestId("cap7-ketso-gate-note")).toBeInTheDocument()
+    expect(screen.queryByTestId("cap5-phanloai")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap7-ketso-gate-note")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap7-ketso-escape")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap7-ketso-escape-note")).not.toBeInTheDocument()
   })
 
-  it("chốt phân loại → đóng thì POST cấp 1 → 2 → 5, recompute Cấp 6 + Cấp 7", async () => {
+  it("KHÔNG còn import `@/features/cap5/hooks` (verdict + POST /cap5/ketso đã gỡ)", () => {
+    renderModal()
+    expect(cap5HooksLoaded.value).toBe(false)
+  })
+
+  it("nút đóng KHÔNG bị khoá: bấm là POST cấp 1 → 2 + recompute Cấp 6 và Cấp 7", async () => {
     const onClose = vi.fn()
     renderModal({}, { onClose })
-    chotPhanLoai()
     expect(closeButton()).not.toBeDisabled()
     fireEvent.click(closeButton())
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
     expect(recordKetsoCap1Async).toHaveBeenCalledWith({ order_id: "order-96", cam_xuc: null })
     expect(recordKetsoCap2Mutate).toHaveBeenCalled()
-    expect(recordKetsoCap5Async).toHaveBeenCalledWith({
-      order_id: "order-96",
-      verdict_user: "dung",
-      ly_do_sua: null,
-    })
     expect(markCap6Task).toHaveBeenCalledWith(2)
     expect(markCap7Task).toHaveBeenCalledWith(2)
   })
 
-  it("POST /cap5/ketso lỗi → modal ở lại, KHÔNG ghi nhật ký, KHÔNG recompute", async () => {
-    const onClose = vi.fn()
-    recordKetsoCap5Async.mockRejectedValue(new Error("boom"))
-    renderModal({}, { onClose })
-    chotPhanLoai()
+  it("nhật ký KHÔNG còn 3 trường của 4 ô, nhưng khối Cấp 7 vẫn được ghi", async () => {
+    renderModal()
     fireEvent.click(closeButton())
-    await waitFor(() => expect(messageError).toHaveBeenCalled())
-    expect(onClose).not.toHaveBeenCalled()
-    expect(markCap7Task).not.toHaveBeenCalled()
-    expect(readCap7TradeLog("user-1")).toHaveLength(0)
-  })
-
-  it("verdict lỗi → LỐI RA của Cấp 5 vẫn còn, và khối Cấp 7 vẫn được ghi", async () => {
-    const onClose = vi.fn()
-    verdictQuery.current = { data: undefined, isPending: false, isError: true }
-    renderModal({}, { onClose })
-    fireEvent.click(screen.getByTestId("cap7-ketso-escape"))
-    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
-    expect(recordKetsoCap5Async).not.toHaveBeenCalled()
-    const [rec] = readCap7TradeLog("user-1")
-    expect(rec.o4).toBeNull()
+    await waitFor(() => expect(readCap7TradeLog("user-1")).toHaveLength(1))
+    const [rec] = readCap7TradeLog("user-1") as unknown as Record<string, unknown>[]
+    expect("o4" in rec).toBe(false)
+    expect("verdictHe" in rec).toBe(false)
+    expect("verdictUser" in rec).toBe(false)
     expect(rec.lucDocUser).toBe("manh")
     expect(rec.docLucDung).toBe(true)
   })
@@ -495,7 +452,7 @@ describe("KetsoModalCap7 — khối ĐỌC SỔ LỆNH — NHÌN LẠI (spec §6
     expect(screen.queryByTestId("cap7-ketso-docluc")).not.toBeInTheDocument()
     expect(screen.queryByTestId("cap7-ketso-coach")).not.toBeInTheDocument()
     expect(screen.getByTestId("cap6-ketso-doichieu")).toBeInTheDocument()
-    expect(screen.getByTestId("cap5-phanloai")).toBeInTheDocument()
+    expect(screen.getByTestId("cap4-ketso-doc5lop")).toBeInTheDocument()
   })
 })
 
@@ -611,7 +568,6 @@ describe("KetsoModalCap7 — đọc lại đọc lực ĐÃ CHẤM của chính 
     expect(screen.getByTestId("cap7-ketso-dienbien").textContent).toContain("chưa tới hạn chấm")
     expect(screen.queryByTestId("cap7-ketso-coach")).not.toBeInTheDocument()
     expect(messageError).not.toHaveBeenCalled()
-    chotPhanLoai()
     expect(closeButton()).not.toBeDisabled()
     fireEvent.click(closeButton())
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
@@ -659,7 +615,6 @@ describe("KetsoModalCap7 — đọc lại đọc lực ĐÃ CHẤM của chính 
       isError: false,
     }
     renderInCap7({ docLuc: docLucChuaCham }, { onRecorded })
-    chotPhanLoai()
     fireEvent.click(closeButton())
     await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1))
     const rec = onRecorded.mock.calls[0][0] as Cap7TradeRecord
@@ -675,7 +630,6 @@ describe("KetsoModalCap7 — đọc lại đọc lực ĐÃ CHẤM của chính 
       isError: false,
     }
     renderInCap7({ docLuc: docLucChuaCham }, { onRecorded })
-    chotPhanLoai()
     fireEvent.click(closeButton())
     await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1))
     const rec = onRecorded.mock.calls[0][0] as Cap7TradeRecord
@@ -771,7 +725,6 @@ describe("KetsoModalCap7 — nhật ký Cấp 7", () => {
       },
       { onRecorded },
     )
-    chotPhanLoai()
     fireEvent.click(closeButton())
     await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1))
     const rec = onRecorded.mock.calls[0][0] as Cap7TradeRecord
@@ -790,7 +743,6 @@ describe("KetsoModalCap7 — nhật ký Cấp 7", () => {
   it("lệnh không đọc lực → 7 trường Cấp 7 là null (KHÔNG quy về 'đọc sai')", async () => {
     const onRecorded = vi.fn()
     renderModal({ docLuc: null }, { onRecorded })
-    chotPhanLoai()
     fireEvent.click(closeButton())
     await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1))
     const rec = onRecorded.mock.calls[0][0] as Cap7TradeRecord
@@ -804,7 +756,6 @@ describe("KetsoModalCap7 — nhật ký Cấp 7", () => {
   it("chưa tới hạn chấm → docLucDung vào nhật ký là null, KHÔNG phải false", async () => {
     const onRecorded = vi.fn()
     renderModal({ docLuc: { ...docLuc, docLucDung: null, dienBienPct: null } }, { onRecorded })
-    chotPhanLoai()
     fireEvent.click(closeButton())
     await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1))
     const rec = onRecorded.mock.calls[0][0] as Cap7TradeRecord

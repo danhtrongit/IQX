@@ -23,7 +23,7 @@ import "./cap7-analysis.css"
  * mọi khối Cấp 1-6 (①-⑮) được render bằng CHÍNH `Cap6PortfolioAnalysis` — KHÔNG
  * mirror lại markup. Component đó compose sạch: nhận `trades`/`dailyScores`/
  * `cap2-6Progress` qua props, không bọc modal, không sở hữu state, và các hook nó
- * dùng (`useThachThucCap6`, và của cấp dưới `useDanhSachDungNgoai`/`useVuKhiDiemMu`)
+ * dùng (`useThachThucCap6`, và của cấp dưới `useVuKhiDiemMu`)
  * đều tự fail-closed. `Cap7TradeRecord extends Cap6TradeRecord` nên mảng lệnh
  * truyền THẲNG vào được. Spec §7 cũng nói rõ các khối Cấp 1-6 "kế thừa".
  *
