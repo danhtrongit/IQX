@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react"
+import { act, fireEvent, render, screen } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { SanMaIndex } from "./sanMaTypes"
@@ -8,11 +8,15 @@ import type { SanMaIndex } from "./sanMaTypes"
  * phải NÓI THẲNG "chưa đủ dữ liệu", tuyệt đối không được mở ra một popup rỗng
  * trông như "đã lọc xong, 0 mã".
  */
-const { indexQuery, setActivePanelMock, cap5Active } = vi.hoisted(() => ({
-  indexQuery: { current: {} as Record<string, unknown> },
-  setActivePanelMock: vi.fn(),
-  cap5Active: { current: true },
-}))
+const { indexQuery, setActivePanelMock, cap5Active, progressRef, markTourMutate } = vi.hoisted(
+  () => ({
+    indexQuery: { current: {} as Record<string, unknown> },
+    setActivePanelMock: vi.fn(),
+    cap5Active: { current: true },
+    progressRef: { current: null as Record<string, unknown> | null },
+    markTourMutate: vi.fn(),
+  }),
+)
 
 vi.mock("./sanMaHooks", () => ({
   useSanMaIndex: () => indexQuery.current,
@@ -25,6 +29,10 @@ vi.mock("./Cap5Context", () => ({
 }))
 vi.mock("@/shared/contexts/sidebar-context", () => ({
   useSidebar: () => ({ setActivePanel: setActivePanelMock }),
+}))
+vi.mock("./hooks", () => ({
+  useCap5Progress: () => ({ data: progressRef.current }),
+  useMarkTourSanMa: () => ({ mutate: markTourMutate, isPending: false }),
 }))
 
 import { SanMaPanel } from "./SanMaPanel"
@@ -47,6 +55,9 @@ const FULL_INDEX: SanMaIndex = {
 beforeEach(() => {
   vi.clearAllMocks()
   cap5Active.current = true
+  // Mặc định: server nói đã xem tour ⇒ tour KHÔNG tự bật, các bài khác không bị
+  // overlay che.
+  progressRef.current = { da_xem_tour_sanma: true }
   indexQuery.current = { data: FULL_INDEX, isLoading: false, isError: false }
 })
 
@@ -176,5 +187,69 @@ describe("SanMaPanel — ở TRONG shell cấp (luật số 5)", () => {
     render(<SanMaPanel />)
     fireEvent.click(screen.getByText("Xem Watchlist →"))
     expect(setActivePanelMock).toHaveBeenCalledWith("cap5-watchlist")
+  })
+})
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TOUR SĂN MÃ (spec §7 · `tour/configs/sanMaTour.ts`)
+   ══════════════════════════════════════════════════════════════════════════ */
+describe("SanMaPanel — tour Săn mã", () => {
+  it("có nút mở lại tour bất cứ lúc nào", () => {
+    render(<SanMaPanel />)
+    expect(screen.getByRole("button", { name: /Hướng dẫn/ })).toBeInTheDocument()
+  })
+
+  it("bấm nút → tour chạy từ bước 1", () => {
+    render(<SanMaPanel />)
+    fireEvent.click(screen.getByRole("button", { name: /Hướng dẫn/ }))
+    expect(screen.getByText("Săn mã — chủ động đi tìm cơ hội")).toBeInTheDocument()
+  })
+
+  it("★ server nói CHƯA xem → tour tự bật lần đầu vào màn", () => {
+    progressRef.current = { da_xem_tour_sanma: false }
+    render(<SanMaPanel />)
+    expect(screen.getByText("Săn mã — chủ động đi tìm cơ hội")).toBeInTheDocument()
+  })
+
+  it("★ server nói ĐÃ xem → KHÔNG tự bật", () => {
+    progressRef.current = { da_xem_tour_sanma: true }
+    render(<SanMaPanel />)
+    expect(screen.queryByText("Săn mã — chủ động đi tìm cơ hội")).not.toBeInTheDocument()
+  })
+
+  it("★ chưa biết cờ (chưa tải / wire cũ) → KHÔNG tự bật", () => {
+    progressRef.current = null
+    render(<SanMaPanel />)
+    expect(screen.queryByText("Săn mã — chủ động đi tìm cơ hội")).not.toBeInTheDocument()
+  })
+
+  it("★ «Bỏ qua» giữa chừng KHÔNG ghi cờ đã xem (spec §7)", () => {
+    render(<SanMaPanel />)
+    fireEvent.click(screen.getByRole("button", { name: /Hướng dẫn/ }))
+    fireEvent.click(screen.getByRole("button", { name: /Bỏ qua/ }))
+    expect(markTourMutate).not.toHaveBeenCalled()
+  })
+
+  // ★ `TourOverlay` chặn double-click bằng cờ `busy`, chỉ được xoá sau một
+  // `setTimeout` thật (`TRANSITION_MS`/`SCROLL_SETTLE_MS`) — nên phải chạy đồng
+  // hồ giả giữa hai lần bấm, nếu không tour đứng mãi ở bước 2 (đã kiểm chứng).
+  it("★ đi HẾT 7 bước → mới ghi cờ đã xem", () => {
+    vi.useFakeTimers()
+    try {
+      render(<SanMaPanel />)
+      fireEvent.click(screen.getByRole("button", { name: /Hướng dẫn/ }))
+      for (let i = 0; i < 6; i++) {
+        fireEvent.click(screen.getByRole("button", { name: /Tiếp theo/ }))
+        act(() => {
+          vi.advanceTimersByTime(2000)
+        })
+      }
+      expect(screen.getByText("Bạn đã sẵn sàng đi săn")).toBeInTheDocument()
+      expect(markTourMutate).not.toHaveBeenCalled()
+      fireEvent.click(screen.getByRole("button", { name: /Hoàn thành/ }))
+      expect(markTourMutate).toHaveBeenCalledTimes(1)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

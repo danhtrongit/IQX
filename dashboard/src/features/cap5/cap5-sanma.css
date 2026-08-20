@@ -16,6 +16,13 @@
   line-height: 1.55;
 }
 
+.cap5-sm-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .cap5-sm-title {
   font-size: 15px;
   font-weight: 800;
