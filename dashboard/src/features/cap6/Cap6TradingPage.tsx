@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react"
-import { Message } from "@arco-design/web-react"
 import { SymbolProvider, useSymbol } from "@/shared/contexts/symbol-context"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
@@ -32,9 +31,8 @@ import { Cap4Provider, useCap4Events, type Cap4OrderEvent } from "@/features/cap
 import { isDoc5LopComplete } from "@/features/cap4/doc5Lop"
 import { useCap4TradeLog } from "@/features/cap4/tradeLogCap4"
 import type { Lop5Partial } from "@/features/cap4/types"
-import { Cap5Provider, useCap5Events } from "@/features/cap5/Cap5Context"
+import { Cap5Provider } from "@/features/cap5/Cap5Context"
 import { useCap5TradeLog } from "@/features/cap5/tradeLogCap5"
-import { VERDICT_LABEL } from "@/features/cap5/types"
 import { cap6Api } from "./api"
 import { Cap6Provider, useCap6Events, type Cap6OrderEvent } from "./Cap6Context"
 import { GraduationModalCap6 } from "./GraduationModalCap6"
@@ -120,8 +118,9 @@ async function resolveDoiChieu(order: Cap6OrderEvent): Promise<DoiChieuKetsoCap6
  * SIX of `Cap1Provider` … `Cap6Provider` (spec's "cộng dồn" principle: panel Cấp
  * 6 = panel Cấp 5 GIỮ NGUYÊN 100% + bước "Đối chiếu" chỉ hiện khi 5 lớp mâu
  * thuẫn, so `TradingPanel`'s Cấp 1 vùng mua, Cấp 2 `SlTpBlock`, Cấp 3
- * `QuanLyVonBlock`, Cấp 4 `Doc5LopBlock` and Cấp 5 `DungNgoaiButton` must all stay
- * active alongside Cấp 6's `DoiChieuBlock`).
+ * `QuanLyVonBlock` and Cấp 4 `Doc5LopBlock` must all stay active alongside Cấp 6's
+ * `DoiChieuBlock`. Cấp 5 KHÔNG thêm gì vào panel đặt lệnh — nút «Đứng ngoài» đã
+ * nghỉ hưu cùng Cấp 5 cũ).
  */
 export function Cap6TradingPage() {
   useEffect(() => {
@@ -184,7 +183,6 @@ function Cap6Terminal() {
   const { isCap2Active, registerHandlers: registerCap2Handlers } = useCap2Events()
   const { registerHandlers: registerCap3Handlers } = useCap3Events()
   const { registerHandlers: registerCap4Handlers } = useCap4Events()
-  const { registerHandlers: registerCap5Handlers } = useCap5Events()
   const { registerHandlers: registerCap6Handlers } = useCap6Events()
   const { data: cap1Progress } = useCap1Progress(isCap1Active)
   const { data: diemKyLuat } = useDiemKyLuat(undefined, isCap2Active)
@@ -335,24 +333,11 @@ function Cap6Terminal() {
     })
   }, [registerCap4Handlers])
 
-  useEffect(() => {
-    registerCap5Handlers({
-      // Analytics Cấp 5 §8 (`cap5_verdict_confirm` / `cap5_verdict_override`) —
-      // `KetsoModalCap6` vẫn bắn event này khi user chốt phân loại 4 ô (khối Cấp
-      // 5 kế thừa nguyên vẹn), nên Ghi nhận nhỏ của Cấp 5 được giữ y nguyên.
-      // KHÔNG đăng ký `onOrderFilled` ở bus Cấp 5: lệnh bán do bus Cấp 6 xử lý,
-      // nếu đăng ký cả hai thì 2 màn Kết sổ cùng mở cho một lệnh.
-      onVerdictSettled: (verdict, daSua) => {
-        Message.success(
-          `Đã ghi phân loại: ${VERDICT_LABEL[verdict]} — cập nhật «Tỷ lệ quyết định đúng» ở Phân tích danh mục.` +
-            (daSua
-              ? " Bạn thấy khác hệ: cả hai verdict đều được lưu — đây là dữ liệu trung tính, không phải điểm trừ."
-              : ""),
-        )
-      },
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [registerCap5Handlers])
+  // ★ KHÔNG đăng ký handler nào ở bus Cấp 5.
+  //   · `onVerdictSettled` ĐÃ BỊ GỠ cùng phân loại 4 ô của Cấp 5 cũ (Kết sổ Cấp 6
+  //     không còn chốt verdict nên không còn gì để ghi nhận).
+  //   · `onOrderFilled` thì CỐ Ý không đăng ký: lệnh bán do bus Cấp 6 xử lý, đăng
+  //     ký cả hai sẽ mở 2 màn Kết sổ cho cùng một lệnh.
 
   /**
    * Reconciles a Cấp 6 SELL fill into Kết sổ Cấp 6 — and owns the ORDERING FIX

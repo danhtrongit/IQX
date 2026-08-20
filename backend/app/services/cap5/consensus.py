@@ -71,6 +71,21 @@ _NHAN_KHONG_UNG_HO: dict[str, frozenset[str]] = {
     "L5": frozenset({"Rất tiêu cực", "Tiêu cực", "Trung tính"}),
 }
 
+#: Trong "không ủng hộ", tách riêng nhãn NGƯỢC CHIỀU (bậc 1-2) khỏi nhãn TRUNG
+#: TÍNH (bậc 3). ★ Cần thiết cho cụm 5 icon của thẻ Watchlist (§6.2): vẽ ⚠ cho
+#: một lớp "Trung tính" là đổi một lớp không ý kiến thành một lớp phản đối.
+_NHAN_NGUOC_CHIEU: dict[str, frozenset[str]] = {
+    "L1": frozenset({"Rất yếu", "Yếu"}),
+    "L3": frozenset({"Cảnh báo mạnh", "Cảnh báo nhẹ"}),
+    "L4": frozenset({"Cảnh báo mạnh", "Cảnh báo nhẹ"}),
+    "L5": frozenset({"Rất tiêu cực", "Tiêu cực"}),
+}
+
+#: Ba mức hiển thị của một lớp (khớp ``NhanDinhLop`` của FE Cấp 4).
+MUC_UNG_HO = "ok"
+MUC_TRUNG_TINH = "neu"
+MUC_NGUOC_CHIEU = "bad"
+
 #: Ngưỡng "★ Đáng chú ý" (spec §6.1).
 NGUONG_DANG_CHU_Y = 4
 TONG_SO_LOP = len(LOP_KEYS)
@@ -101,6 +116,22 @@ def _ung_ho(layer_key: str, status_label: object) -> bool | None:
     if nhan in _NHAN_KHONG_UNG_HO.get(layer_key, frozenset()):
         return False
     return None
+
+
+def _muc(layer_key: str, status_label: object, ung_ho: bool | None) -> str | None:
+    """Mức hiển thị của một lớp: ``ok`` / ``neu`` / ``bad``; ``None`` = chưa chấm.
+
+    ★ ``ung_ho is False`` KHÔNG tự động là ``bad``: thang 5 bậc có một bậc giữa
+    ("Trung tính" / "Trung bình") nghĩa là lớp đó không nghiêng bên nào.
+    """
+    if ung_ho is None:
+        return None
+    if ung_ho:
+        return MUC_UNG_HO
+    nhan = status_label.strip() if isinstance(status_label, str) else ""
+    if nhan in _NHAN_NGUOC_CHIEU.get(layer_key, frozenset()):
+        return MUC_NGUOC_CHIEU
+    return MUC_TRUNG_TINH
 
 
 def _status(diem: int, so_lop_da_cham: int) -> str | None:
@@ -138,8 +169,10 @@ def cham_tu_payload(payload: object, *, session_date: date | None = None) -> Con
             {
                 "lop": lop,
                 "ten": LOP_LABELS[lop],
-                # None = chưa chấm được lớp này (FE hiện "⚪ chưa rõ", không phải ⚠).
+                # None = chưa chấm được lớp này (FE hiện "– chưa rõ", không phải ⚠).
                 "ung_ho": ket,
+                # 'ok' | 'neu' | 'bad' | None — xem ``_muc``.
+                "muc": _muc(layer_key or "", nhan_raw, ket),
                 "nhan": nhan_raw if isinstance(nhan_raw, str) and ket is not None else None,
                 "giai_thich": (
                     "Chưa có nguồn chấm lớp Định giá cho mã này."

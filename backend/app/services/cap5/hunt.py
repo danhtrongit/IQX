@@ -213,6 +213,24 @@ _THIEU_NGUON_DONG_TIEN = (
 )
 
 
+def _thieu_nen(so_ma: int) -> str:
+    """Lý do khi KHÔNG mã nào trong rổ có đủ nến ngày để xét.
+
+    ★ Đây là chỗ luật 1 dễ vỡ nhất mà không ai thấy: nguồn giá chết ⇒ mọi mã bị
+    bỏ qua ⇒ ``so_ma_thoa`` ra 0 và popup in "0 mã HOSE thoả điều kiện" y như
+    một phiên thị trường buồn. Hai câu đó khác nhau hoàn toàn.
+    """
+    if so_ma == 0:
+        return (
+            "Rổ mã HOSE đang rỗng — chưa lọc được, KHÔNG phải là không có mã nào thoả."
+        )
+    return (
+        f"Không lấy được nến ngày cho bất kỳ mã nào trong rổ {so_ma} mã HOSE "
+        f"(cần {SO_NEN_CAN} phiên/mã) — nguồn dữ liệu giá đang không trả về. "
+        "Chưa lọc được, KHÔNG phải là không có mã nào thoả."
+    )
+
+
 @dataclass(frozen=True)
 class HuntResult:
     """Kết quả một lần chạy bộ lọc.
@@ -375,11 +393,48 @@ class HuntEngine:
 
     # ── Điểm vào ──────────────────────────────────────
 
+    @staticmethod
+    def _chua_du_du_lieu(spec: FilterSpec, ly_do: str) -> HuntResult:
+        """Kết quả "chưa lọc được" — bất biến ``so_ma_thoa is None`` ở MỘT chỗ."""
+        return HuntResult(
+            bo_loc=spec,
+            trang_thai="chua_du_du_lieu",
+            ly_do_thieu_du_lieu=ly_do,
+            so_ma_thoa=None,
+            so_ma_xet=None,
+            so_ma_bo_qua_thieu_du_lieu=None,
+            items=[],
+        )
+
     async def run(self, bo_loc: str, universe: Sequence[str]) -> HuntResult:
         spec = FILTER_SPECS[bo_loc]
         if bo_loc in FILTER_DONG_TIEN:
             return await self._run_dong_tien(spec, universe)
         return await self._run_bars(spec, universe)
+
+    async def probe(self, bo_loc: str, universe: Sequence[str]) -> tuple[bool, str | None]:
+        """Bộ lọc này có nguồn dữ liệu để chạy không — KHÔNG quét sàn.
+
+        Dùng cho màn Săn mã (``GET /cap5/san-ma``) để user thấy ngay dòng "chưa
+        đủ dữ liệu" thay vì bấm vào rồi nhận popup rỗng. Với 2 bộ lọc dòng tiền
+        đây là câu trả lời CHẮC CHẮN (nguồn có hay không, không phụ thuộc mã).
+
+        ★ Với 3 bộ lọc nến ngày, probe chỉ nói "có nguồn về nguyên tắc": nó
+        KHÔNG gọi mạng, nên không thể biết trước nguồn giá có trả nến hay không.
+        Nếu lúc chạy thật không mã nào có nến, ``run`` trả ``chua_du_du_lieu`` —
+        NƠI DUY NHẤT nói sự thật cuối cùng là ``run``, và FE phải đọc
+        ``kha_dung`` của chính kết quả đó, không được cache lại từ màn index.
+        """
+        FILTER_SPECS[bo_loc]  # noqa: B018 — KeyError sớm cho mã bộ lọc lạ
+        if not universe:
+            return False, _thieu_nen(0)
+        if bo_loc in FILTER_DONG_TIEN:
+            flows = await self._source.net_flow(
+                universe, ben=FILTER_DONG_TIEN[bo_loc], so_phien=SO_PHIEN_GOM
+            )
+            if flows is None:
+                return False, _THIEU_NGUON_DONG_TIEN
+        return True, None
 
     async def _run_bars(self, spec: FilterSpec, universe: Sequence[str]) -> HuntResult:
         bars_map = await self._source.daily_bars(universe, so_nen=SO_NEN_CAN)
@@ -408,6 +463,11 @@ class HuntEngine:
             pct_ngay = _pct(bars[-1].close, truoc) if truoc > 0 else None
             cham.append((diem, symbol, tin_hieu, bars[-1].close, pct_ngay))
 
+        # ★ LUẬT 1: không mã nào có dữ liệu để XÉT ⇒ chưa lọc được. Nếu để rơi
+        # xuống dưới, ``so_ma_thoa`` = 0 và popup sẽ nói "0 mã thoả điều kiện".
+        if so_bo_qua == len(universe):
+            return self._chua_du_du_lieu(spec, _thieu_nen(len(universe)))
+
         cham.sort(key=lambda row: (-row[0], row[1]))
         items = [
             {
@@ -435,15 +495,7 @@ class HuntEngine:
         flows = await self._source.net_flow(universe, ben=ben, so_phien=SO_PHIEN_GOM)
         if flows is None:
             # ★ LUẬT 1: chưa lọc được ≠ không có mã nào thoả.
-            return HuntResult(
-                bo_loc=spec,
-                trang_thai="chua_du_du_lieu",
-                ly_do_thieu_du_lieu=_THIEU_NGUON_DONG_TIEN,
-                so_ma_thoa=None,
-                so_ma_xet=None,
-                so_ma_bo_qua_thieu_du_lieu=None,
-                items=[],
-            )
+            return self._chua_du_du_lieu(spec, _THIEU_NGUON_DONG_TIEN)
 
         bars_map = await self._source.daily_bars(universe, so_nen=SO_NEN_CAN)
         cham: list[tuple[float, str, str, float, float | None]] = []
@@ -471,6 +523,10 @@ class HuntEngine:
             truoc = bars[-2].close
             pct_ngay = _pct(bars[-1].close, truoc) if truoc > 0 else None
             cham.append((tong, symbol, tin_hieu, bars[-1].close, pct_ngay))
+
+        # ★ LUẬT 1 — xem chú thích cùng chỗ trong ``_run_bars``.
+        if so_bo_qua == len(universe):
+            return self._chua_du_du_lieu(spec, _thieu_nen(len(universe)))
 
         cham.sort(key=lambda row: (-row[0], row[1]))
         items = [
