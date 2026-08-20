@@ -1439,3 +1439,270 @@ async def test_cum_5_icon_hien_o_moi_lan_doc_khong_chi_lan_dau(db_session, test_
         assert item["lop"] is not None, f"lần đọc {lan + 1} mất cụm icon"
         assert item["lop"]["ky_thuat"] == "ok"
         assert item["consensus_today"] == 4
+
+
+# ══════════════════════════════════════════════════════
+# Phân tích danh mục — khối ⑫ + ⑬ (§9) · nguồn săn (§8)
+# ══════════════════════════════════════════════════════
+
+
+async def _lenh_da_dong(
+    db_session,
+    cap5,
+    cap1,
+    account,
+    user_id,
+    *,
+    symbol: str,
+    bo_loc: str | None = "kl",
+    win: bool = True,
+    phut: int = 5,
+):
+    """Một lượt đã đóng ĐÚNG đường Cấp 1: (săn →) mua → kế hoạch → bán → kết sổ.
+
+    ``bo_loc=None`` = mã user tự nhập (KHÔNG săn) — khối ⑫ phải đếm riêng.
+    """
+    await _seed_symbol(db_session, symbol)
+    if bo_loc is not None:
+        await _hunt(cap5, user_id, symbol, bo_loc=bo_loc)
+    buy = await _make_order(
+        db_session, account.id, user_id, symbol=symbol, price=20_000,
+        created_at=_sau(phut),
+    )
+    await cap1.record_kehoach(
+        user_id, buy.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho", vung_mua=20_000
+    )
+    sell = await _make_order(
+        db_session, account.id, user_id, symbol=symbol, side=OrderSide.SELL,
+        price=22_000 if win else 18_000, created_at=_sau(phut + 5),
+    )
+    await cap1.record_ketso(user_id, sell.id)
+    return sell
+
+
+@pytest.mark.asyncio
+async def test_khoi_12_an_ty_le_thang_khi_chua_du_3_lenh(db_session, test_user):
+    """★ §9: cần ≥3 lệnh/bộ lọc mới xếp hạng. Dưới ngưỡng ⇒ ``ty_le_thang=None``.
+
+    0% ở đây sẽ đọc như "bộ lọc này toàn thua", trong khi thật ra chưa đủ mẫu.
+    """
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id)
+    cap1 = Cap1Service(db_session)
+    for i in range(2):
+        await _lenh_da_dong(
+            db_session, cap5, cap1, account, test_user.id,
+            symbol=f"K{i}", bo_loc="kl", win=True, phut=5 + i * 20,
+        )
+
+    out = await cap5.phan_tich(test_user.id)
+    kl = _by_ma(out["khoi_12"]["items"])["kl"]
+    assert kl["so_lenh"] == 2
+    assert kl["so_lenh_thang"] == 2
+    assert kl["ty_le_thang"] is None
+    assert kl["du_mau"] is False
+    assert f"2/{MIN_LENH_KHOI_12}" in kl["giai_thich"]
+    assert out["khoi_12"]["best_filter"] is None
+    assert out["khoi_12"]["du_de_ket_luan"] is False
+
+    p = await cap5.get_progress(test_user.id)
+    assert p["best_filter"] is None
+    assert p["best_filter_ten"] is None
+
+
+@pytest.mark.asyncio
+async def test_khoi_12_xep_hang_va_chon_bo_loc_hop_nhat(db_session, test_user):
+    """§9: thanh ngang sắp giảm dần; cao nhất "hợp với bạn nhất", thấp nhất có
+    cảnh báo. Đo bằng KẾT QUẢ THẬT (lãi/lỗ của lệnh đã đóng)."""
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id)
+    cap1 = Cap1Service(db_session)
+    phut = 5
+    for i in range(3):  # kl: 3/3 thắng
+        await _lenh_da_dong(
+            db_session, cap5, cap1, account, test_user.id,
+            symbol=f"W{i}", bo_loc="kl", win=True, phut=phut,
+        )
+        phut += 20
+    for i in range(3):  # dinh: 1/3 thắng
+        await _lenh_da_dong(
+            db_session, cap5, cap1, account, test_user.id,
+            symbol=f"L{i}", bo_loc="dinh", win=(i == 0), phut=phut,
+        )
+        phut += 20
+
+    out = await cap5.phan_tich(test_user.id)
+    items = out["khoi_12"]["items"]
+    rows = _by_ma(items)
+    assert rows["kl"]["ty_le_thang"] == 100.0
+    assert rows["kl"]["nhan"] == "hợp với bạn nhất"
+    assert rows["kl"]["canh_bao"] is None
+    assert rows["dinh"]["ty_le_thang"] == 33.3
+    assert rows["dinh"]["nhan"] is None
+    assert rows["dinh"]["canh_bao"]
+    # Sắp giảm dần, bộ lọc chưa đủ mẫu xuống cuối (không đọc như hạng bét).
+    assert [i["ma"] for i in items[:2]] == ["kl", "dinh"]
+    assert all(not i["du_mau"] for i in items[2:])
+    assert out["khoi_12"]["best_filter"] == "kl"
+
+    p = await cap5.get_progress(test_user.id)
+    assert p["best_filter"] == "kl"
+    assert p["best_filter_ten"] == "Khối lượng đột biến"
+
+
+@pytest.mark.asyncio
+async def test_khoi_12_khong_gan_lenh_tu_nhap_vao_bo_loc_nao(db_session, test_user):
+    """Mã user tự nhập KHÔNG được gán vào bộ lọc nào — đếm riêng.
+
+    Gán bừa là bịa nguồn săn, đúng thứ dòng nguồn săn ở Kết sổ §8 cấm.
+    """
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id)
+    cap1 = Cap1Service(db_session)
+    await _lenh_da_dong(
+        db_session, cap5, cap1, account, test_user.id,
+        symbol="TAY1", bo_loc=None, win=True, phut=5,
+    )
+    await _lenh_da_dong(
+        db_session, cap5, cap1, account, test_user.id,
+        symbol="TAY2", bo_loc=None, win=False, phut=30,
+    )
+
+    out = await cap5.phan_tich(test_user.id)
+    assert out["khoi_12"]["so_lenh_khong_tu_san"] == 2
+    for row in out["khoi_12"]["items"]:
+        assert row["so_lenh"] == 0, row["ma"]
+        assert row["ty_le_thang"] is None, row["ma"]
+    assert out["khoi_12"]["best_filter"] is None
+
+
+@pytest.mark.asyncio
+async def test_lenh_cu_giu_from_watchlist_NULL_lenh_moi_duoc_kiem(db_session, test_user):
+    """★ ``order_kehoach.from_watchlist`` có BA trạng thái.
+
+    True = đến từ săn · False = đã kiểm và không phải · NULL = lệnh Cấp 1-4 cũ
+    chưa ai kiểm. Để NOT NULL DEFAULT false thì mọi lệnh lịch sử tự nhiên khẳng
+    định "không đến từ săn mã" — một câu bịa về hàng triệu dòng.
+    """
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id)
+    cap1 = Cap1Service(db_session)
+
+    # Lệnh đặt TRƯỚC khi vào Cấp 5.
+    await _seed_symbol(db_session, "CU")
+    cu = await _make_order(
+        db_session, account.id, test_user.id, symbol="CU",
+        created_at=datetime.now(UTC).replace(tzinfo=None) - timedelta(days=3),
+    )
+    await cap1.record_kehoach(
+        test_user.id, cu.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho", vung_mua=20_000
+    )
+    # Lệnh Cấp-5-era: một mã đã săn, một mã tự nhập.
+    await _seed_symbol(db_session, "SAN")
+    await _hunt(cap5, test_user.id, "SAN")
+    san = await _make_order(
+        db_session, account.id, test_user.id, symbol="SAN", created_at=_sau(10)
+    )
+    await cap1.record_kehoach(
+        test_user.id, san.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho", vung_mua=20_000
+    )
+    await _seed_symbol(db_session, "TAY")
+    tay = await _make_order(
+        db_session, account.id, test_user.id, symbol="TAY", created_at=_sau(11)
+    )
+    await cap1.record_kehoach(
+        test_user.id, tay.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho", vung_mua=20_000
+    )
+
+    await cap5.get_progress(test_user.id)
+    rows = {
+        r.order_id: r
+        for r in (
+            await db_session.execute(
+                select(OrderKehoach).where(
+                    OrderKehoach.order_id.in_([cu.id, san.id, tay.id])
+                )
+            )
+        ).scalars().all()
+    }
+    assert rows[cu.id].from_watchlist is None
+    assert rows[cu.id].hunt_filter is None
+    assert rows[san.id].from_watchlist is True
+    assert rows[san.id].hunt_filter == "kl"
+    assert rows[tay.id].from_watchlist is False
+    assert rows[tay.id].hunt_filter is None
+
+
+@pytest.mark.asyncio
+async def test_khoi_13_noi_that_khi_tang_giua_chua_do_duoc(db_session, test_user):
+    """★★ Phễu ⑬: tầng giữa CHƯA ĐO ĐƯỢC phải là ``None`` + câu nói rõ.
+
+    Vẽ tầng giữa = 0 là khẳng định "không mã nào chín" — trong khi mẻ chấm 5 lớp
+    chưa có kết quả cho mã nào (rất nhiều mã sẽ không bao giờ đủ 5 lớp).
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _hunt_n(db_session, cap5, test_user.id, 3)
+
+    out = await cap5.phan_tich(test_user.id)
+    khoi_13 = out["khoi_13"]
+    assert khoi_13["so_ma_da_san"] == 3
+    assert khoi_13["so_ma_cho_du_lop"] is None
+    assert khoi_13["so_ma_vao_lenh"] == 0
+    assert "chưa đo được" in khoi_13["loi_ket"]
+
+
+@pytest.mark.asyncio
+async def test_khoi_13_dem_dung_ba_tang_khi_da_cham_duoc(db_session, test_user):
+    """3 tầng phễu: săn → chờ đến ≥4/5 lớp → thực sự vào lệnh."""
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id)
+    for sym in ("CHIN1", "CHIN2", "XANH"):
+        await _seed_symbol(db_session, sym)
+    await _seed_insight(db_session, "CHIN1", _AI_4_UNG_HO)
+    await _seed_insight(db_session, "CHIN2", _AI_4_UNG_HO)
+    await _seed_insight(db_session, "XANH", _AI_0_UNG_HO)
+    for sym in ("CHIN1", "CHIN2", "XANH"):
+        await _hunt(cap5, test_user.id, sym)
+    await _mua(db_session, account, test_user.id, "CHIN1")
+
+    out = await cap5.phan_tich(test_user.id)
+    khoi_13 = out["khoi_13"]
+    assert khoi_13["so_ma_da_san"] == 3
+    assert khoi_13["so_ma_cho_du_lop"] == 2
+    assert khoi_13["so_ma_vao_lenh"] == 1
+    assert "kỷ luật" in khoi_13["loi_ket"]
+
+    p = await cap5.get_progress(test_user.id)
+    assert p["so_ma_cho_du_lop"] == 2
+
+
+@pytest.mark.asyncio
+async def test_nguon_san_dung_cho_dong_ket_so(db_session, test_user):
+    """§8 dòng nguồn săn: "săn từ bộ lọc [X] · đưa vào Watchlist N phiên trước".
+
+    ★ ``so_lop_luc_vao`` LUÔN ``None`` kèm lý do: điểm đồng thuận tại thời điểm
+    đặt lệnh chưa từng được lưu, nên không được lấy điểm HÔM NAY gán cho một
+    quyết định trong quá khứ.
+    """
+    src = _FakeHuntSource(bars={"SAN": _with_last(_bars(), volume=300_000.0)})
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    await _seed_symbol(db_session, "SAN")
+    await _hunt(cap5, test_user.id, "SAN", bo_loc="kl")
+
+    out = await cap5.nguon_san(test_user.id, "san")
+    assert out["symbol"] == "SAN"
+    assert out["tu_san_ma"] is True
+    assert out["hunt_filter"] == "kl"
+    assert out["hunt_filter_ten"] == "Khối lượng đột biến"
+    assert out["hunt_signal"] == "KL 3,0× TB20 phiên"
+    assert out["so_phien_trong_watchlist"] == 0
+    assert out["so_lop_luc_vao"] is None
+    assert out["ly_do_thieu_so_lop"]
+    assert "Khối lượng đột biến" in out["giai_thich"]
+
+
+@pytest.mark.asyncio
+async def test_nguon_san_ma_tu_nhap_noi_thang_la_khong_qua_bo_loc(db_session, test_user):
+    """Mã không đến từ săn: nói thẳng, KHÔNG đoán một bộ lọc."""
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    out = await cap5.nguon_san(test_user.id, "TAY")
+    assert out["tu_san_ma"] is False
+    assert out["hunt_filter"] is None
+    assert out["hunt_filter_ten"] is None
+    assert out["so_phien_trong_watchlist"] is None
+    assert "không đến từ săn mã" in out["giai_thich"]
