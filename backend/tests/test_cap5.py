@@ -1834,3 +1834,389 @@ async def test_cap5_endpoints_wired_and_free(client, db_session, test_user, monk
     for path in ("/api/v1/cap5/progress", "/api/v1/cap5/san-ma", "/api/v1/cap5/watchlist"):
         r = await client.get(path)
         assert r.status_code == 401, path
+
+
+# ══════════════════════════════════════════════════════
+# Migration b2e6f4a17c93 — «4 ô + đứng ngoài» → «Săn mã»
+# ══════════════════════════════════════════════════════
+
+#: Hình dạng PROD hôm nay (revision ``a3f7c1d9e2b8``), viết tay để test ghim
+#: migration vào các cột THẬT CÓ trên prod, không phải vào cái ORM nói sau khi
+#: đã đổi. Chỉ giữ những cột revision này chạm tới + đủ cột định danh để chứng
+#: minh dữ liệu còn sống.
+_PROD_DDL = [
+    """
+    CREATE TABLE users (
+        id VARCHAR(36) NOT NULL PRIMARY KEY,
+        email VARCHAR(255) NOT NULL
+    )
+    """,
+    """
+    CREATE TABLE cap5_progress (
+        id VARCHAR(36) NOT NULL PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL,
+        entered_at TIMESTAMP NOT NULL,
+        task_1_done_at TIMESTAMP,
+        task_2_done_at TIMESTAMP,
+        task_3_done_at TIMESTAMP,
+        so_lenh_phan_loai INTEGER NOT NULL DEFAULT 0,
+        so_lan_dung_ngoai_da_cham INTEGER NOT NULL DEFAULT 0,
+        ty_le_quyet_dinh_dung FLOAT NOT NULL DEFAULT 0,
+        graduated_at TIMESTAMP,
+        time_to_graduate_hours FLOAT,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    """,
+    "CREATE INDEX ix_cap5_progress_user_id ON cap5_progress (user_id)",
+    """
+    CREATE TABLE standby_decision (
+        id VARCHAR(36) NOT NULL PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL,
+        symbol VARCHAR(20) NOT NULL,
+        decided_at TIMESTAMP NOT NULL,
+        reason VARCHAR(32) NOT NULL,
+        gia_luc_dung_ngoai NUMERIC(18, 4) NOT NULL,
+        cham_at TIMESTAMP,
+        gia_sau_5_phien NUMERIC(18, 4),
+        ket_qua VARCHAR(16),
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    """,
+    "CREATE INDEX ix_standby_decision_user_id ON standby_decision (user_id)",
+    "CREATE INDEX ix_standby_decision_user_decided ON standby_decision (user_id, decided_at)",
+    """
+    CREATE TABLE order_ketso (
+        id VARCHAR(36) NOT NULL PRIMARY KEY,
+        order_id VARCHAR(36) NOT NULL,
+        pnl_pct FLOAT NOT NULL,
+        cham_SL_khong_cat BOOLEAN NOT NULL DEFAULT 0,
+        nhoi_lenh_khi_lo BOOLEAN NOT NULL DEFAULT 0,
+        verdict_he VARCHAR(8),
+        verdict_user VARCHAR(8),
+        verdict_provenance JSON,
+        o_4 VARCHAR(16),
+        ly_do_sua TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    """,
+    """
+    CREATE TABLE order_kehoach (
+        id VARCHAR(36) NOT NULL PRIMARY KEY,
+        order_id VARCHAR(36) NOT NULL,
+        vung_mua INTEGER NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    """,
+    """
+    CREATE TABLE watchlist_items (
+        id VARCHAR(36) NOT NULL PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL,
+        symbol VARCHAR(20) NOT NULL,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    """,
+]
+
+
+def _load_migration():
+    """Nạp module revision theo đường dẫn — ``alembic/versions`` không phải package."""
+    import importlib.util
+    from pathlib import Path
+
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "alembic"
+        / "versions"
+        / "b2e6f4a17c93_cap5_san_ma_nghi_huu_4_o_dung_ngoai.py"
+    )
+    spec = importlib.util.spec_from_file_location("_cap5_sanma_migration", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _run_migration(conn, direction: str) -> None:
+    """Chạy đúng thân ``upgrade()``/``downgrade()`` thật trên ``conn``."""
+    from alembic.migration import MigrationContext
+    from alembic.operations import Operations
+
+    module = _load_migration()
+    with Operations.context(MigrationContext.configure(conn)):
+        getattr(module, direction)()
+
+
+def _cols(conn, table: str) -> list[str]:
+    return [r[1] for r in conn.exec_driver_sql(f"PRAGMA table_info({table})").fetchall()]
+
+
+def _rows(conn, table: str) -> dict[str, dict]:
+    cols = _cols(conn, table)
+    out = {}
+    for row in conn.exec_driver_sql(f"SELECT {', '.join(cols)} FROM {table}").fetchall():
+        record = dict(zip(cols, row, strict=True))
+        out[record["id"]] = record
+    return out
+
+
+def _tables(conn) -> set[str]:
+    return {
+        r[0]
+        for r in conn.exec_driver_sql(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        ).fetchall()
+    }
+
+
+def _seed_prod_shape(conn) -> None:
+    """Dữ liệu KIỂU PROD dưới luật cũ.
+
+    ★ PROD kỳ vọng **0 dòng** ``cap5_progress`` và **0 dòng** ``standby_decision``
+    (trần cấp ``CAP_MAX_ENABLED`` mới lên 4, chưa ai vào được Cấp 5). Nhưng "kỳ
+    vọng" KHÔNG phải "chứng minh" — nên ánh xạ vẫn được kiểm trên hàng kiểu-prod
+    thật, mỗi ô nhiệm vụ mang một mốc KHÁC NHAU để phân biệt "ánh xạ đúng ô" với
+    "bị xáo".
+    """
+    for stmt in _PROD_DDL:
+        conn.exec_driver_sql(stmt)
+    conn.exec_driver_sql("INSERT INTO users (id, email) VALUES ('u-tn1', 'a@x.vn')")
+    # ① Người đã xong cả 3 nhiệm vụ CŨ và đã tốt nghiệp Cấp 5 cũ.
+    conn.exec_driver_sql(
+        """
+        INSERT INTO cap5_progress (
+            id, user_id, entered_at, task_1_done_at, task_2_done_at, task_3_done_at,
+            so_lenh_phan_loai, so_lan_dung_ngoai_da_cham, ty_le_quyet_dinh_dung,
+            graduated_at, time_to_graduate_hours
+        ) VALUES (
+            'tn1', 'u-tn1', '2026-01-01 00:00:00',
+            '2026-01-01 01:00:00',  -- ① cũ: lệnh đầu ĐÃ PHÂN LOẠI 4 ô
+            '2026-01-01 02:00:00',  -- ② cũ: nước ĐỨNG NGOÀI đầu tiên
+            '2026-01-01 03:00:00',  -- ③ cũ: Thách thức Lão luyện
+            24, 7, 79.2,
+            '2026-01-01 04:00:00', 4.0
+        )
+        """
+    )
+    # ② Người đang làm dở: ① cũ xong, ② ③ chưa.
+    conn.exec_driver_sql(
+        """
+        INSERT INTO cap5_progress (
+            id, user_id, entered_at, task_1_done_at, so_lenh_phan_loai,
+            so_lan_dung_ngoai_da_cham, ty_le_quyet_dinh_dung
+        ) VALUES ('dd1', 'u-tn1', '2026-02-01 00:00:00', '2026-02-01 01:00:00', 6, 0, 50.0)
+        """
+    )
+    # ③ Người vừa vào cấp.
+    conn.exec_driver_sql(
+        """
+        INSERT INTO cap5_progress (id, user_id, entered_at)
+        VALUES ('tr1', 'u-tn1', '2026-03-01 00:00:00')
+        """
+    )
+    conn.exec_driver_sql(
+        """
+        INSERT INTO standby_decision (
+            id, user_id, symbol, decided_at, reason, gia_luc_dung_ngoai,
+            cham_at, gia_sau_5_phien, ket_qua
+        ) VALUES (
+            'sb1', 'u-tn1', 'VCB', '2026-01-02 00:00:00', 'dinh_gia_dat', 90000,
+            '2026-01-09 00:00:00', 88000, 'ne_dung'
+        )
+        """
+    )
+    conn.exec_driver_sql(
+        """
+        INSERT INTO order_ketso (
+            id, order_id, pnl_pct, verdict_he, verdict_user, verdict_provenance,
+            o_4, ly_do_sua
+        ) VALUES (
+            'ks1', 'o1', 12.5, 'dung', 'sai', '{"verdict_he": "dung"}',
+            'sai_thang', 'Tôi vào theo tin đồn.'
+        )
+        """
+    )
+    conn.exec_driver_sql(
+        "INSERT INTO order_kehoach (id, order_id, vung_mua) VALUES ('kh1', 'o1', 20000)"
+    )
+    conn.exec_driver_sql(
+        """
+        INSERT INTO watchlist_items (id, user_id, symbol, sort_order)
+        VALUES ('wl1', 'u-tn1', 'VCB', 0)
+        """
+    )
+
+
+def test_migration_nghi_huu_4_o_dung_ngoai_va_tra_2_o_nhiem_vu_ve_NULL():
+    """★★ ÁNH XẠ: cả ``task_1_done_at`` lẫn ``task_2_done_at`` về NULL.
+
+    Nhiệm vụ cũ ① là "lệnh đầu tiên đã phân loại 4 ô", ② là "ghi nước đứng ngoài
+    đầu tiên" — KHÔNG cái nào bao hàm "săn 10 mã vào Watchlist" hay "mua 5 mã từ
+    Watchlist". Giữ mốc cũ trong ô mới là ghi công việc user chưa từng làm, và
+    ``graduate()`` mới chỉ nhìn đúng hai ô đó ⇒ tốt nghiệp gian lận.
+    """
+    import sqlalchemy as sa
+
+    engine = sa.create_engine("sqlite://")
+    with engine.begin() as conn:
+        _seed_prod_shape(conn)
+        _run_migration(conn, "upgrade")
+
+        # Bảng đứng ngoài + 5 cột 4 ô đã đi hẳn.
+        assert "standby_decision" not in _tables(conn)
+        assert "cap5_hunt_log" in _tables(conn)
+        for gone in ("verdict_he", "verdict_user", "verdict_provenance", "o_4", "ly_do_sua"):
+            assert gone not in _cols(conn, "order_ketso"), gone
+        assert _rows(conn, "order_ketso")["ks1"]["pnl_pct"] == 12.5
+
+        cap5_cols = _cols(conn, "cap5_progress")
+        for gone in ("task_3_done_at", "so_lenh_phan_loai",
+                     "so_lan_dung_ngoai_da_cham", "ty_le_quyet_dinh_dung"):
+            assert gone not in cap5_cols, gone
+        for moi in ("so_ma_da_san", "so_ma_mua_tu_watchlist",
+                    "da_xem_tour_sanma", "best_filter"):
+            assert moi in cap5_cols, moi
+
+        rows = _rows(conn, "cap5_progress")
+        # ★ Hai ô nhiệm vụ về NULL — KHÔNG ánh xạ mốc cũ vào nghĩa mới.
+        for key in ("tn1", "dd1", "tr1"):
+            assert rows[key]["task_1_done_at"] is None, key
+            assert rows[key]["task_2_done_at"] is None, key
+        # Mốc tốt nghiệp + entered_at thì GIỮ NGUYÊN (Cấp 6 gác trên đúng nó).
+        assert rows["tn1"]["graduated_at"] == "2026-01-01 04:00:00"
+        assert rows["tn1"]["entered_at"] == "2026-01-01 00:00:00"
+        assert rows["tn1"]["time_to_graduate_hours"] == 4.0
+        # Hai ô đếm mới: 0 là số THẬT (tính lại ở mọi lần đọc)…
+        assert rows["tn1"]["so_ma_da_san"] == 0
+        assert rows["tn1"]["so_ma_mua_tu_watchlist"] == 0
+        # ('false' là artifact của SQLite: nó lưu nguyên văn server_default cho
+        # hàng đã tồn tại vì không có literal boolean. Prod là Postgres ⇒ false.)
+        assert rows["tn1"]["da_xem_tour_sanma"] in (0, False, "false")
+        # …còn best_filter thì NULLABLE: "chưa đủ lệnh để kết luận" ≠ một bộ lọc.
+        assert rows["tn1"]["best_filter"] is None
+
+        # Watchlist + order_kehoach nhận cột mới, TẤT CẢ đều NULL cho hàng cũ.
+        wl = _rows(conn, "watchlist_items")["wl1"]
+        for col in ("hunt_filter", "hunt_signal", "hunt_at", "consensus_today",
+                    "consensus_prev", "consensus_da_cham", "consensus_at", "status"):
+            assert col in wl, col
+            assert wl[col] is None, col
+        kh = _rows(conn, "order_kehoach")["kh1"]
+        # ★ from_watchlist NULLABLE ba trạng thái: NULL = lệnh cũ chưa ai kiểm.
+        assert kh["from_watchlist"] is None
+        assert kh["hunt_filter"] is None
+        assert kh["vung_mua"] == 20000
+
+
+def test_migration_moi_cot_diem_ty_le_moi_deu_nullable():
+    """★ Luật repo: mọi cột ĐIỂM/TỶ LỆ mới phải nullable từ đầu.
+
+    Repo đã phải viết một migration riêng chỉ vì một cột điểm ``NOT NULL DEFAULT
+    0`` khiến user ngày đầu đọc "0%" như thể tệ nhất có thể. Test này đọc thẳng
+    ``PRAGMA table_info`` (cột 3 = notnull) nên không thể lách bằng docstring.
+    """
+    import sqlalchemy as sa
+
+    engine = sa.create_engine("sqlite://")
+    with engine.begin() as conn:
+        _seed_prod_shape(conn)
+        _run_migration(conn, "upgrade")
+
+        def notnull(table: str) -> dict[str, int]:
+            return {
+                r[1]: r[3]
+                for r in conn.exec_driver_sql(f"PRAGMA table_info({table})").fetchall()
+            }
+
+        wl = notnull("watchlist_items")
+        for col in ("consensus_today", "consensus_prev", "consensus_da_cham",
+                    "consensus_at", "status"):
+            assert wl[col] == 0, f"watchlist_items.{col} phải nullable"
+        assert notnull("cap5_progress")["best_filter"] == 0
+        assert notnull("order_kehoach")["from_watchlist"] == 0
+        # Hai ô ĐẾM thì NOT NULL DEFAULT 0 là ĐÚNG: 0 ở đó là số thật.
+        assert notnull("cap5_progress")["so_ma_da_san"] == 1
+        assert notnull("cap5_progress")["so_ma_mua_tu_watchlist"] == 1
+
+
+def test_migration_round_trip_len_xuong_len_HAI_VONG():
+    """upgrade → downgrade → upgrade → downgrade → upgrade là BẤT ĐỘNG.
+
+    Downgrade LOSSY theo thiết kế (xem docstring revision): dòng đứng ngoài và
+    dữ liệu 4 ô mất hẳn, các ô đếm quay về 0, hai ô nhiệm vụ về NULL. Nhờ mọi ô
+    hai chiều đều về NULL hoặc 0 xác định nên vòng thứ hai không trôi thêm.
+    """
+    import sqlalchemy as sa
+
+    engine = sa.create_engine("sqlite://")
+    with engine.begin() as conn:
+        _seed_prod_shape(conn)
+
+        _run_migration(conn, "upgrade")
+        # ★ Giả lập một user ĐÃ tiến bộ dưới luật MỚI (đúng thứ
+        # ``_recompute_progress`` ghi): săn 12 mã, mua 6 mã, hai ô nhiệm vụ mới
+        # được đóng dấu. Không có bước này thì dòng reset trong ``downgrade`` là
+        # no-op và test không nói được gì về nó.
+        conn.exec_driver_sql(
+            """
+            UPDATE cap5_progress
+               SET task_1_done_at = '2026-08-20 10:00:00',
+                   task_2_done_at = '2026-08-20 11:00:00',
+                   so_ma_da_san = 12,
+                   so_ma_mua_tu_watchlist = 6,
+                   best_filter = 'kl',
+                   da_xem_tour_sanma = 1
+             WHERE id = 'tn1'
+            """
+        )
+        sau_lan_1 = _rows(conn, "cap5_progress")
+        wl_lan_1 = _rows(conn, "watchlist_items")
+        ks_lan_1 = _rows(conn, "order_ketso")
+        assert sau_lan_1["tn1"]["task_1_done_at"] == "2026-08-20 10:00:00"
+
+        _run_migration(conn, "downgrade")
+        assert "standby_decision" in _tables(conn)
+        assert "cap5_hunt_log" not in _tables(conn)
+        down = _rows(conn, "cap5_progress")
+        for back in ("task_3_done_at", "so_lenh_phan_loai",
+                     "so_lan_dung_ngoai_da_cham", "ty_le_quyet_dinh_dung"):
+            assert back in _cols(conn, "cap5_progress"), back
+        # ★ Hai ô nhiệm vụ mang nghĩa MỚI ("săn 10 mã"/"mua 5 mã"); dưới luật
+        # cũ chúng nói chuyện khác hẳn ("đã phân loại 4 ô"/"đã ghi nước đứng
+        # ngoài"), nên downgrade phải TRẢ VỀ NULL chứ không giữ lại. Giữ lại là
+        # gán bừa — và service Cấp 5 CŨ sẽ tự đóng dấu lại từ dữ liệu thật.
+        assert down["tn1"]["task_1_done_at"] is None
+        assert down["tn1"]["task_2_done_at"] is None
+        # LOSSY, và nói thẳng là lossy: mốc + số cũ KHÔNG dựng lại được.
+        assert down["tn1"]["task_3_done_at"] is None
+        assert down["tn1"]["so_lenh_phan_loai"] == 0
+        assert down["tn1"]["ty_le_quyet_dinh_dung"] == 0
+        # Nhưng mốc tốt nghiệp thì sống qua cả hai chiều.
+        assert down["tn1"]["graduated_at"] == "2026-01-01 04:00:00"
+        assert _rows(conn, "standby_decision") == {}
+
+        _run_migration(conn, "upgrade")
+        # Vòng lên lại: hai ô nhiệm vụ mới KHÔNG tự sống lại (đúng — chúng phải
+        # được tính lại từ cap5_hunt_log), nên hàng này khác lần 1 đúng ở đó.
+        lan_2 = _rows(conn, "cap5_progress")
+        assert lan_2["tn1"]["task_1_done_at"] is None
+        assert lan_2["tn1"]["task_2_done_at"] is None
+        assert lan_2["tn1"]["so_ma_da_san"] == 0
+        assert lan_2["tn1"]["graduated_at"] == "2026-01-01 04:00:00"
+        assert _rows(conn, "watchlist_items") == wl_lan_1
+        assert _rows(conn, "order_ketso") == ks_lan_1
+        sau_lan_1 = lan_2
+
+        # ★ VÒNG THỨ HAI
+        _run_migration(conn, "downgrade")
+        _run_migration(conn, "upgrade")
+        assert _rows(conn, "cap5_progress") == sau_lan_1
+        assert _rows(conn, "watchlist_items") == wl_lan_1
+        assert _rows(conn, "order_ketso") == ks_lan_1
+        assert _cols(conn, "cap5_progress") == _cols(conn, "cap5_progress")
+        assert "cap5_hunt_log" in _tables(conn)
