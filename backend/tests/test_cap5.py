@@ -732,3 +732,380 @@ async def test_progress_va_watchlist_can_da_vao_cap(db_session, test_user):
     ):
         with pytest.raises(NotFoundError):
             await coro
+
+
+# ══════════════════════════════════════════════════════
+# ★★ MÀN SĂN MÃ (§5) — LUẬT 1: "chưa biết" ≠ 0
+# ══════════════════════════════════════════════════════
+
+
+def _by_ma(rows: list[dict]) -> dict[str, dict]:
+    return {r["ma"]: r for r in rows}
+
+
+@pytest.mark.asyncio
+async def test_san_ma_index_bao_dich_danh_2_bo_loc_dong_tien_thieu_nguon(
+    db_session, test_user
+):
+    """★★ ĐÍCH DANH: ``ngoai`` + ``tudoanh`` CHƯA CÓ NGUỒN ⇒ ``kha_dung=False``
+    kèm lý do; 3 bộ lọc nến ngày thì chạy được.
+
+    Backend chỉ lấy được chuỗi mua ròng theo phiên cho TỪNG MÃ MỘT (406 lượt HTTP
+    cho một cú bấm) hoặc bảng xếp hạng đã cộng gộp cả kỳ (không tách phiên).
+    Không được im lặng trả danh sách rỗng như thể đã lọc xong.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "AAA")
+
+    index = await cap5.san_ma_index(test_user.id)
+    bo_loc = _by_ma(index["bo_loc"])
+    assert set(bo_loc) == {"ngoai", "tudoanh", "kl", "dinh", "tang"}
+
+    for ma in ("ngoai", "tudoanh"):
+        assert bo_loc[ma]["kha_dung"] is False, ma
+        ly_do = bo_loc[ma]["ly_do_chua_kha_dung"]
+        assert ly_do and "từng phiên" in ly_do.lower(), ma
+        # Câu chốt bắt buộc: chưa lọc được KHÁC không có mã nào thoả.
+        assert "không phải là không có mã nào thoả" in ly_do.lower(), ma
+    for ma in ("kl", "dinh", "tang"):
+        assert bo_loc[ma]["kha_dung"] is True, ma
+        assert bo_loc[ma]["ly_do_chua_kha_dung"] is None, ma
+
+    assert index["so_ma_trong_ro"] == 1
+    assert index["hien_thi_toi_da"] == 10
+
+
+@pytest.mark.asyncio
+async def test_bo_loc_dong_tien_tra_chua_du_du_lieu_chu_khong_tra_0_ma(
+    db_session, test_user
+):
+    """★★ Đúng cái ô hay bị điền bừa: ``tong_so_ma`` phải là ``None``, KHÔNG PHẢI 0."""
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "AAA")
+
+    for ma in ("ngoai", "tudoanh"):
+        result = await cap5.san_ma_result(test_user.id, ma)
+        assert result["kha_dung"] is False, ma
+        assert result["tong_so_ma"] is None, ma
+        assert result["so_ma_xet"] is None, ma
+        assert result["so_ma_bo_qua_thieu_du_lieu"] is None, ma
+        assert result["items"] == [], ma
+        assert result["ly_do_chua_kha_dung"], ma
+
+
+@pytest.mark.asyncio
+async def test_loc_san_khai_that_tieu_chi_canh_bao_chua_ap_dung(db_session, test_user):
+    """Lọc sàn §5.2 có 4 tiêu chí; "diện cảnh báo/kiểm soát/hạn chế" THIẾU NGUỒN
+    trong backend nên phải tự khai ``ap_dung=False``.
+
+    Im lặng bỏ qua nó rồi để dòng "Đã lọc: …" liệt kê đủ 4 là hứa hão.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "AAA")
+    index = await cap5.san_ma_index(test_user.id)
+    loc_san = _by_ma(index["loc_san"])
+
+    assert set(loc_san) == {"san", "thanh_khoan", "gia", "canh_bao"}
+    assert loc_san["san"]["ap_dung"] is True
+    assert loc_san["thanh_khoan"]["ap_dung"] is True
+    assert loc_san["gia"]["ap_dung"] is True
+    assert loc_san["canh_bao"]["ap_dung"] is False
+    assert "CHƯA lọc được" in loc_san["canh_bao"]["giai_thich"]
+
+    # Cùng bộ tiêu chí phải đi kèm MỖI kết quả (popup nói đúng nó đã lọc gì).
+    result = await cap5.san_ma_result(test_user.id, "kl")
+    assert _by_ma(result["loc_san"])["canh_bao"]["ap_dung"] is False
+
+
+@pytest.mark.asyncio
+async def test_ro_ma_rong_thi_moi_bo_loc_bao_chua_du_du_lieu(db_session, test_user):
+    """Bảng ``symbols`` chưa nạp ⇒ không bộ lọc nào chạy được.
+
+    ★ Đây là bẫy im lặng: rổ rỗng ⇒ vòng lặp không chạy ⇒ ``0 mã thoả``.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    index = await cap5.san_ma_index(test_user.id)
+    assert index["so_ma_trong_ro"] == 0
+    for row in index["bo_loc"]:
+        assert row["kha_dung"] is False, row["ma"]
+        assert row["ly_do_chua_kha_dung"], row["ma"]
+
+    for ma in ("kl", "dinh", "tang"):
+        result = await cap5.san_ma_result(test_user.id, ma)
+        assert result["kha_dung"] is False, ma
+        assert result["tong_so_ma"] is None, ma
+
+
+@pytest.mark.asyncio
+async def test_khong_lay_duoc_nen_nao_la_chua_du_du_lieu_khong_phai_0_ma(
+    db_session, test_user
+):
+    """★★ LỖ LUẬT-1 KHÓ THẤY NHẤT: rổ có 3 mã nhưng nguồn giá không trả nến nào.
+
+    Nếu để rơi xuống nhánh thường, ``so_ma_thoa`` = 0 và popup in "0 mã HOSE thoả
+    điều kiện" y như một phiên thị trường buồn — trong khi thật ra CHƯA LỌC ĐƯỢC.
+    """
+    src = _FakeHuntSource(bars={})
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in ("AAA", "BBB", "CCC"):
+        await _seed_symbol(db_session, sym)
+
+    result = await cap5.san_ma_result(test_user.id, "kl")
+    assert result["kha_dung"] is False
+    assert result["tong_so_ma"] is None
+    assert result["items"] == []
+    ly_do = result["ly_do_chua_kha_dung"]
+    assert "3 mã HOSE" in ly_do
+    assert "không phải là không có mã nào thoả" in ly_do.lower()
+
+
+@pytest.mark.asyncio
+async def test_0_ma_thoa_la_mot_cau_khac_han_chua_du_du_lieu(db_session, test_user):
+    """Mặt còn lại của bất biến: nến ĐỦ, chỉ là hôm nay không mã nào thoả.
+
+    Đây mới là lúc được nói "0 mã": ``kha_dung=True`` + ``tong_so_ma=0``.
+    """
+    src = _FakeHuntSource(bars={"AAA": _bars(), "BBB": _bars()})
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in ("AAA", "BBB"):
+        await _seed_symbol(db_session, sym)
+
+    result = await cap5.san_ma_result(test_user.id, "kl")
+    assert result["kha_dung"] is True
+    assert result["tong_so_ma"] == 0
+    assert result["so_ma_xet"] == 2
+    assert result["so_ma_bo_qua_thieu_du_lieu"] == 0
+    assert result["items"] == []
+    assert result["ly_do_chua_kha_dung"] is None
+
+
+@pytest.mark.asyncio
+async def test_ma_thieu_gtgd_bi_bo_qua_chu_khong_bi_doan(db_session, test_user):
+    """Nguồn không trả GTGD phiên ⇒ mã bị BỎ RA và đếm riêng.
+
+    ★ Không được ước lượng thanh khoản bằng ``giá × khối lượng`` (giá khớp đổi
+    trong phiên nên tích đó không phải giá trị khớp thật), cũng không được coi
+    thiếu dữ liệu là "trượt lọc sàn".
+    """
+    src = _FakeHuntSource(
+        bars={
+            "GOOD": _with_last(_bars(), volume=300_000.0),
+            "NOGT": _with_last(_bars(gtgd=None), volume=300_000.0),
+        }
+    )
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in ("GOOD", "NOGT"):
+        await _seed_symbol(db_session, sym)
+
+    result = await cap5.san_ma_result(test_user.id, "kl")
+    assert result["kha_dung"] is True
+    assert result["so_ma_bo_qua_thieu_du_lieu"] == 1
+    assert result["so_ma_xet"] == 1
+    assert [i["symbol"] for i in result["items"]] == ["GOOD"]
+
+
+@pytest.mark.asyncio
+async def test_bo_loc_kl_dung_nguong_2_lan_tb20(db_session, test_user):
+    """§5.3 📊 ``kl``: KL phiên gần nhất ≥ 2× TB20. Đúng 2,0× là ĐẠT."""
+    src = _FakeHuntSource(
+        bars={
+            "EXACT": _with_last(_bars(), volume=200_000.0),  # 2,0×
+            "UNDER": _with_last(_bars(), volume=199_000.0),  # 1,99×
+            "BIG": _with_last(_bars(), volume=500_000.0),  # 5,0×
+        }
+    )
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in ("EXACT", "UNDER", "BIG"):
+        await _seed_symbol(db_session, sym)
+
+    result = await cap5.san_ma_result(test_user.id, "kl")
+    assert result["tong_so_ma"] == 2
+    # Xếp hạng theo SỐ LẦN vượt TB, giảm dần.
+    assert [i["symbol"] for i in result["items"]] == ["BIG", "EXACT"]
+    assert result["items"][0]["hang"] == 1
+    assert "5,0×" in result["items"][0]["tin_hieu"]
+
+
+@pytest.mark.asyncio
+async def test_bo_loc_dinh_phai_vuot_han_dinh_cu(db_session, test_user):
+    """§5.3 🎯 ``dinh``: đóng cửa > đỉnh 20 phiên TRƯỚC. Bằng đỉnh là CHƯA vượt."""
+    src = _FakeHuntSource(
+        bars={
+            "OVER": _with_last(_bars(), close=21_000.0),  # +5%
+            "EQUAL": _with_last(_bars(), close=20_000.0),  # bằng đỉnh cũ
+            "UNDER": _with_last(_bars(), close=19_000.0),
+        }
+    )
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in ("OVER", "EQUAL", "UNDER"):
+        await _seed_symbol(db_session, sym)
+
+    result = await cap5.san_ma_result(test_user.id, "dinh")
+    assert [i["symbol"] for i in result["items"]] == ["OVER"]
+    assert result["tong_so_ma"] == 1
+    assert "+5,0%" in result["items"][0]["tin_hieu"]
+
+
+@pytest.mark.asyncio
+async def test_bo_loc_tang_can_ca_hai_ve(db_session, test_user):
+    """§5.3 📈 ``tang``: tăng ≥3% VÀ KL ≥1,5× TB20 — thiếu một vế là trượt."""
+    src = _FakeHuntSource(
+        bars={
+            "BOTH": _with_last(_bars(), close=20_600.0, volume=150_000.0),  # +3,0% · 1,5×
+            "GIA": _with_last(_bars(), close=20_600.0, volume=140_000.0),  # đủ giá, thiếu KL
+            "KL": _with_last(_bars(), close=20_500.0, volume=300_000.0),  # đủ KL, thiếu giá
+        }
+    )
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in ("BOTH", "GIA", "KL"):
+        await _seed_symbol(db_session, sym)
+
+    result = await cap5.san_ma_result(test_user.id, "tang")
+    assert [i["symbol"] for i in result["items"]] == ["BOTH"]
+    tin_hieu = result["items"][0]["tin_hieu"]
+    assert "+3,0%" in tin_hieu and "1,5×" in tin_hieu
+
+
+@pytest.mark.asyncio
+async def test_loc_san_chan_gia_thap_va_thanh_khoan_mong(db_session, test_user):
+    """Lọc sàn §5.2 áp cho MỌI bộ lọc: giá ≥3.000đ · GTGD TB ≥1 tỷ/phiên."""
+    src = _FakeHuntSource(
+        bars={
+            "OK": _with_last(_bars(), volume=300_000.0),
+            "PENNY": _with_last(
+                _bars(close=float(MIN_GIA_VND - 1)), close=2_999.0, volume=300_000.0
+            ),
+            "THIN": _with_last(
+                _bars(gtgd=MIN_GTGD_TB_VND * 0.5), volume=300_000.0
+            ),
+        }
+    )
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in ("OK", "PENNY", "THIN"):
+        await _seed_symbol(db_session, sym)
+
+    result = await cap5.san_ma_result(test_user.id, "kl")
+    assert [i["symbol"] for i in result["items"]] == ["OK"]
+    # Bị lọc sàn KHÁC bị bỏ vì thiếu dữ liệu — hai con số phải tách nhau.
+    assert result["so_ma_xet"] == 1
+    assert result["so_ma_bo_qua_thieu_du_lieu"] == 0
+
+
+@pytest.mark.asyncio
+async def test_chi_lay_ma_hose_dang_hoat_dong(db_session, test_user):
+    """Rổ mã = HOSE · đang hoạt động · là cổ phiếu (không chỉ số)."""
+    src = _FakeHuntSource(
+        bars={
+            s: _with_last(_bars(), volume=300_000.0)
+            for s in ("HOSE1", "HNX1", "OFF1", "IDX1", "FUND")
+        }
+    )
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    await _seed_symbol(db_session, "HOSE1")
+    await _seed_symbol(db_session, "HNX1", exchange="HNX")
+    await _seed_symbol(db_session, "OFF1", is_active=False)
+    await _seed_symbol(db_session, "IDX1", is_index=True)
+    await _seed_symbol(db_session, "FUND", asset_type="fund")
+
+    index = await cap5.san_ma_index(test_user.id)
+    assert index["so_ma_trong_ro"] == 1
+    result = await cap5.san_ma_result(test_user.id, "kl")
+    assert [i["symbol"] for i in result["items"]] == ["HOSE1"]
+
+
+@pytest.mark.asyncio
+async def test_chi_hien_toi_da_10_ma_nhung_dem_du_tong(db_session, test_user):
+    """§5.4: tối đa 10 mã trong popup, còn dòng minh bạch nói TỔNG thật."""
+    bars = {
+        f"S{i:02d}": _with_last(_bars(), volume=200_000.0 + i * 10_000)
+        for i in range(12)
+    }
+    src = _FakeHuntSource(bars=bars)
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in bars:
+        await _seed_symbol(db_session, sym)
+
+    result = await cap5.san_ma_result(test_user.id, "kl")
+    assert result["tong_so_ma"] == 12
+    assert len(result["items"]) == 10
+    assert result["hien_thi_toi_da"] == 10
+    assert [i["hang"] for i in result["items"]] == list(range(1, 11))
+    # KL cao nhất đứng đầu
+    assert result["items"][0]["symbol"] == "S11"
+
+
+@pytest.mark.asyncio
+async def test_bo_loc_dong_tien_chay_ngay_khi_co_nguon(db_session, test_user):
+    """Máy lọc ĐÃ biết chạy 2 bộ lọc dòng tiền — chỉ đang thiếu nguồn bulk.
+
+    Cắm nguồn theo phiên vào là ``ngoai``/``tudoanh`` lọc đúng §5.3: mua ròng
+    ≥3/5 phiên VÀ tổng 5 phiên > 0, xếp theo tổng giá trị mua ròng.
+    """
+    ty = 1_000_000_000.0
+    src = _FakeHuntSource(
+        bars={s: _bars() for s in ("GOM", "NHIEU", "ITPHIEN", "AMTONG")},
+        flows={
+            "ngoai": {
+                "GOM": [ty, ty, ty, -0.5 * ty, -0.5 * ty],  # 3/5 phiên · +2,0 tỷ
+                "NHIEU": [2 * ty, ty, ty, ty, -ty],  # 4/5 phiên · +4,0 tỷ
+                "ITPHIEN": [5 * ty, 5 * ty, -ty, -ty, -ty],  # chỉ 2/5 phiên
+                "AMTONG": [ty, ty, ty, -9 * ty, 0.0],  # 3/5 phiên nhưng tổng âm
+            }
+        },
+    )
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in ("GOM", "NHIEU", "ITPHIEN", "AMTONG"):
+        await _seed_symbol(db_session, sym)
+
+    index = await cap5.san_ma_index(test_user.id)
+    assert _by_ma(index["bo_loc"])["ngoai"]["kha_dung"] is True
+
+    result = await cap5.san_ma_result(test_user.id, "ngoai")
+    assert result["kha_dung"] is True
+    assert result["tong_so_ma"] == 2
+    assert [i["symbol"] for i in result["items"]] == ["NHIEU", "GOM"]
+    assert result["items"][1]["tin_hieu"] == "+2,0 tỷ ròng · 3/5 phiên"
+
+    # Tự doanh vẫn thiếu nguồn (fake chỉ cắm 'ngoai') ⇒ vẫn phải nói thật.
+    tudoanh = await cap5.san_ma_result(test_user.id, "tudoanh")
+    assert tudoanh["kha_dung"] is False
+    assert tudoanh["tong_so_ma"] is None
+
+
+@pytest.mark.asyncio
+async def test_bo_loc_la_thi_404(db_session, test_user):
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    with pytest.raises(NotFoundError):
+        await cap5.san_ma_result(test_user.id, "bo_loc_khong_ton_tai")
+
+
+@pytest.mark.asyncio
+async def test_nguon_that_tra_none_chu_khong_tra_dict_rong():
+    """★★ ĐỘT BIẾN TỪNG THOÁT LƯỚI: ``VciHuntDataSource.net_flow`` phải trả
+    ``None``, KHÔNG phải ``{}``.
+
+    Mọi test khác tiêm nguồn giả, nên nếu chỉ có chúng thì một ngày nào đó ai đó
+    "dọn dẹp" ``return None`` thành ``return {}`` sẽ đi qua suite xanh mượt — và
+    máy lọc hiểu ``{}`` là "đã lọc, không mã nào thoả". Test này canh đúng hàm
+    thật (nó trả về ngay, không gọi mạng).
+    """
+    from app.services.cap5.hunt_data import VciHuntDataSource
+
+    src = VciHuntDataSource(use_cache=False, today=date(2026, 8, 19))
+    for ben in ("ngoai", "tudoanh"):
+        assert await src.net_flow(["AAA", "BBB"], ben=ben, so_phien=5) is None, ben
+
+
+@pytest.mark.asyncio
+async def test_nguon_tra_dict_rong_van_phai_ra_chua_du_du_lieu(db_session, test_user):
+    """Lưới thứ hai dưới ``None``: nguồn trả ``{}`` (hoặc thiếu mọi mã) thì máy
+    lọc vẫn phải nói "chưa đủ dữ liệu", không được ra "0 mã thoả"."""
+    src = _FakeHuntSource(bars={"AAA": _bars(), "BBB": _bars()}, flows={"ngoai": {}})
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in ("AAA", "BBB"):
+        await _seed_symbol(db_session, sym)
+
+    result = await cap5.san_ma_result(test_user.id, "ngoai")
+    assert result["kha_dung"] is False
+    assert result["tong_so_ma"] is None
+    assert result["items"] == []
