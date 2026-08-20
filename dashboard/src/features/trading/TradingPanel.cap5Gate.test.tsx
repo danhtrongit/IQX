@@ -4,10 +4,13 @@ import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 /**
- * Cấp 5 wiring inside `TradingPanel`/`OrderEntry` (Task FE1) — PURELY ADDITIVE
- * (spec §0: "Cấp 5 KHÔNG đổi gì trong panel mua"):
- *  - `DungNgoaiButton` renders ONLY inside a Cấp 5 session, buy-side, and adds
- *    NO gate of its own.
+ * Cấp 5 wiring inside `TradingPanel`/`OrderEntry` — Cấp 5 mới KHÔNG THÊM GÌ vào
+ * panel đặt lệnh (spec §0: "GIỮ NGUYÊN — panel đặt lệnh = Cấp 4"; săn mã là một
+ * MÀN RIÊNG):
+ *  - ★★ Nút «Đứng ngoài có chủ đích» ĐÃ NGHỈ HƯU cùng Cấp 5 cũ —
+ *    `DungNgoaiButton` không còn tồn tại. `describe` đầu tiên canh chính sự vắng
+ *    mặt đó, tra theo CHỮ hiện ra (không theo testid của một mock đã bị gỡ) nên
+ *    nó cắn với bất kỳ affordance "đứng ngoài" nào bị dựng lại.
  *  - Every Cấp 1/2/3/4 block + cổng cứng chain + Cấp 3's volume auto-fill
  *    behaves EXACTLY as `TradingPanel.cap4Gate.test.tsx` proves it does at Cấp
  *    4 — this file re-asserts them inside a Cấp 5 session so a regression here
@@ -281,14 +284,9 @@ vi.mock("@/features/cap5", async (importOriginal) => {
     ...actual,
     useCap5Events: () => ({
       isCap5Active: isCap5ActiveFlag,
-      onDungNgoai: vi.fn(),
-      onVerdictSettled: vi.fn(),
       onOrderFilled: onOrderFilledCap5Mock,
       registerHandlers: vi.fn(),
     }),
-    DungNgoaiButton: (props: { symbol: string }) => (
-      <div data-testid="dungngoai-mock">{`DUNG_NGOAI_${props.symbol}`}</div>
-    ),
   }
 })
 
@@ -334,22 +332,16 @@ beforeEach(() => {
   isCap5ActiveFlag = true
 })
 
-describe("TradingPanel — nút Đứng ngoài chỉ có trong Cấp 5 (spec §5)", () => {
-  it("hiện nút Đứng ngoài của mã đang xem trong một phiên Cấp 5", () => {
+describe("TradingPanel — «Đứng ngoài» đã nghỉ hưu cùng Cấp 5 cũ", () => {
+  it("phiên Cấp 5, tab MUA: KHÔNG còn affordance «đứng ngoài» nào", () => {
     renderPanel()
-    expect(screen.getByTestId("dungngoai-mock").textContent).toBe("DUNG_NGOAI_VNM")
+    expect(screen.queryByText(/đứng ngoài/i)).not.toBeInTheDocument()
   })
 
-  it("KHÔNG hiện ngoài Cấp 5 (Cấp 0-4 và giao dịch thường không đổi)", () => {
-    isCap5ActiveFlag = false
-    renderPanel()
-    expect(screen.queryByTestId("dungngoai-mock")).not.toBeInTheDocument()
-  })
-
-  it("KHÔNG hiện ở tab BÁN — đứng ngoài là quyết định KHÔNG MUA", () => {
+  it("tab BÁN cũng không (và không nơi nào khác trong panel)", () => {
     renderPanel()
     fireEvent.click(screen.getByText("BÁN"))
-    expect(screen.queryByTestId("dungngoai-mock")).not.toBeInTheDocument()
+    expect(screen.queryByText(/đứng ngoài/i)).not.toBeInTheDocument()
   })
 })
 

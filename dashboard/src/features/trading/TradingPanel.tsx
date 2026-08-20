@@ -72,7 +72,7 @@ import {
   type Lop,
   type Lop5Partial,
 } from "@/features/cap4"
-import { DungNgoaiButton, useCap5Events } from "@/features/cap5"
+import { useCap5Events } from "@/features/cap5"
 import {
   DoiChieuBlock,
   coMauThuan,
@@ -441,11 +441,14 @@ function OrderEntry({
   const [cap4Ai5Lop, setCap4Ai5Lop] = useState<Lop5Partial | null>(null)
   const cap5Events = useCap5Events()
   // `isCap5Active` mirrors `isCap4Active` above — false outside a
-  // `Cap5Provider`. Cấp 5 is PURELY ADDITIVE to this panel (spec §0): it adds
-  // NO state, NO khối, NO cổng cứng and changes NOTHING about Cấp 0-4's blocks,
-  // the cổng cứng chain or Cấp 3's volume auto-fill. The only thing it adds is
-  // the "Đứng ngoài có chủ đích" affordance below (a decision NOT to buy) plus
-  // its own copy of the order-filled event.
+  // `Cap5Provider`. Cấp 5 adds NOTHING AT ALL to this panel (spec §0 "GIỮ
+  // NGUYÊN — panel đặt lệnh = Cấp 4"): no state, no khối, no cổng cứng, and it
+  // changes nothing about Cấp 0-4's blocks, the cổng cứng chain or Cấp 3's
+  // volume auto-fill. Cấp 5 mới dạy SĂN MÃ trên một MÀN RIÊNG.
+  //
+  // ★★ Nút «Đứng ngoài có chủ đích» ĐÃ BỊ GỠ cùng Cấp 5 cũ: `DungNgoaiButton`
+  // không còn tồn tại (nhật ký đứng ngoài + 4 ô đã nghỉ hưu). Cờ này giờ chỉ
+  // còn một việc: nới điều kiện bắn event lệnh khớp cho bus Cấp 5 ở dưới.
   const { isCap5Active } = cap5Events
   const cap6Events = useCap6Events()
   // `isCap6Active` mirrors `isCap5Active` above — false outside a
@@ -1177,8 +1180,8 @@ function OrderEntry({
         cap2Events.onOrderFilled?.(sellEvent)
         cap3Events.onOrderFilled?.(sellEvent)
         cap4Events.onOrderFilled?.(sellEvent)
-        // Cấp 5's Kết sổ (phân loại 4 ô) mở từ event của CHÍNH nó — cùng cách
-        // Cấp 3/Cấp 4 đã sửa để không đi nhờ bus của cấp khác.
+        // Cấp 5's Kết sổ mở từ event của CHÍNH nó — cùng cách Cấp 3/Cấp 4 đã
+        // sửa để không đi nhờ bus của cấp khác.
         cap5Events.onOrderFilled?.(sellEvent)
         // Cấp 6's Kết sổ (đối chiếu nhìn lại) — cùng lý do, bus của chính nó.
         cap6Events.onOrderFilled?.(sellEvent)
@@ -1677,14 +1680,6 @@ function OrderEntry({
           </div>
         </Tooltip>
       </div>
-
-      {/* Cấp 5 "Đứng ngoài có chủ đích" (spec §5, THÊM MỚI) — buy-side only AND
-          Cấp 5-only (`isCap5Active` false outside a `Cap5Provider` → zero effect
-          on Cấp 0-4 or normal trading). Đặt NGAY DƯỚI nút đặt lệnh, NGOÀI khối
-          `cap0-tour-plan-submit` (không đổi vùng spotlight của tour Bảng điện)
-          và KHÔNG chạm vào bất kỳ khối/cổng nào ở trên: nó là lối ghi lại một
-          quyết định KHÔNG MUA, không phải một bước của luồng mua. */}
-      {side === "buy" && isCap5Active && <DungNgoaiButton symbol={symbol} />}
 
       {/* ★★ Đích của «Đọc chi tiết lớp này →»: bản đọc 6 lớp mở NGAY TRONG
           terminal. Trước đây nút đó `navigate('/co-phieu/:sym')` — rời cấp và

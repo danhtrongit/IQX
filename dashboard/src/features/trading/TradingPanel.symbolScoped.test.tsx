@@ -259,12 +259,9 @@ vi.mock("@/features/cap5", async (importOriginal) => {
     ...actual,
     useCap5Events: () => ({
       isCap5Active: true,
-      onDungNgoai: vi.fn(),
-      onVerdictSettled: vi.fn(),
       onOrderFilled: vi.fn(),
       registerHandlers: vi.fn(),
     }),
-    DungNgoaiButton: () => <div data-testid="dungngoai-mock" />,
   }
 })
 
