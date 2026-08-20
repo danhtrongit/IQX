@@ -15,8 +15,8 @@ import {
 } from "./portfolioAnalysisCap5"
 import type { Cap5TradeRecord } from "./tradeLogCap5"
 import {
-  CAP5_SO_MA_MUA_TARGET,
-  CAP5_SO_MA_SAN_TARGET,
+  mucTieuSoMaMua,
+  mucTieuSoMaSan,
   huntFilterTen,
   type Cap5Progress,
 } from "./types"
@@ -158,11 +158,14 @@ export function Cap5PortfolioAnalysis({
         {cap5Progress ? (
           <>
             <p className="text-xs text-[var(--color-text-1)]">
+              {/* ★ Mẫu số lấy từ SERVER (`muc_tieu_so_ma_*`) — cùng một nguồn
+                  với tab Hành trình. Hard-code hằng số ở đây từng làm hai màn
+                  nói hai mẫu số khác nhau khi BE đổi ngưỡng. */}
               {`Đã săn ${fmtInt(cap5Progress.so_ma_da_san)}/${fmtInt(
-                CAP5_SO_MA_SAN_TARGET,
+                mucTieuSoMaSan(cap5Progress),
               )} mã vào Watchlist · đã mua ${fmtInt(
                 cap5Progress.so_ma_mua_tu_watchlist,
-              )}/${fmtInt(CAP5_SO_MA_MUA_TARGET)} mã từ Watchlist.`}
+              )}/${fmtInt(mucTieuSoMaMua(cap5Progress))} mã từ Watchlist.`}
             </p>
             {/* ★ `best_filter` chưa có KHÔNG được in thành một bộ lọc bất kỳ. */}
             <p className={NOTE} data-testid="cap5-pa-khoi1-best">
