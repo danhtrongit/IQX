@@ -32,6 +32,7 @@ import dataclasses
 from datetime import UTC, date, datetime, timedelta
 
 import pytest
+from sqlalchemy import select
 
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
 from app.models.ai_insight_history import AIInsightHistory
@@ -512,3 +513,222 @@ async def test_enter_requires_cap4_graduated(db_session, test_user):
 async def test_get_progress_none_before_enter(db_session, test_user):
     cap5 = Cap5Service(db_session, hunt_source=_FakeHuntSource())
     assert await cap5.get_progress(test_user.id) is None
+
+
+# ══════════════════════════════════════════════════════
+# 2 nhiệm vụ SONG SONG (§2) + tốt nghiệp (§3)
+# ══════════════════════════════════════════════════════
+
+
+def _sau(phut: int = 5) -> datetime:
+    """Mốc ``created_at`` naive-UTC sau thời điểm săn — xem ``_make_order``."""
+    return datetime.now(UTC).replace(tzinfo=None) + timedelta(minutes=phut)
+
+
+async def _mua(db_session, account, user_id, symbol: str, **kwargs):
+    return await _make_order(
+        db_session, account.id, user_id, symbol=symbol,
+        created_at=kwargs.pop("created_at", _sau()), **kwargs,
+    )
+
+
+@pytest.mark.asyncio
+async def test_task_1_dong_dau_dung_o_10_ma_san(db_session, test_user):
+    """① đo ĐỘ RỘNG: đúng 10 mã phân biệt vào Watchlist mới đóng dấu."""
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+
+    await _hunt_n(db_session, cap5, test_user.id, MUC_TIEU_SO_MA_SAN - 1)
+    p = await cap5.get_progress(test_user.id)
+    assert p["so_ma_da_san"] == 9
+    assert p["task_1_done_at"] is None
+
+    await _seed_symbol(db_session, "LAST")
+    await _hunt(cap5, test_user.id, "LAST")
+    p = await cap5.get_progress(test_user.id)
+    assert p["so_ma_da_san"] == 10
+    assert p["task_1_done_at"] is not None
+
+
+@pytest.mark.asyncio
+async def test_task_2_xong_duoc_truoc_task_1(db_session, test_user):
+    """★ HAI NHIỆM VỤ ĐỘC LẬP: mua đủ 5 mã săn khi mới săn 5 mã ⇒ ② đóng dấu,
+    ① vẫn mở. ② KHÔNG bị gác sau ①."""
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id)
+
+    syms = await _hunt_n(db_session, cap5, test_user.id, MUC_TIEU_SO_MA_MUA)
+    for sym in syms:
+        await _mua(db_session, account, test_user.id, sym)
+
+    p = await cap5.get_progress(test_user.id)
+    assert p["so_ma_da_san"] == 5
+    assert p["so_ma_mua_tu_watchlist"] == 5
+    assert p["task_2_done_at"] is not None
+    assert p["task_1_done_at"] is None
+
+
+@pytest.mark.asyncio
+async def test_mua_truoc_khi_san_khong_tinh_la_mua_tu_watchlist(db_session, test_user):
+    """"Mua từ Watchlist" là một THỨ TỰ: săn trước, mua sau.
+
+    Mua rồi mới đưa mã vào Watchlist thì không phải "chờ mã chín rồi vào lệnh" —
+    tính nó vào ② là ghi công một hành vi user chưa làm.
+    """
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "EARLY")
+    await _mua(
+        db_session, account, test_user.id, "EARLY",
+        created_at=datetime.now(UTC).replace(tzinfo=None) - timedelta(hours=1),
+    )
+    await _hunt(cap5, test_user.id, "EARLY")
+
+    p = await cap5.get_progress(test_user.id)
+    assert p["so_ma_da_san"] == 1
+    assert p["so_ma_mua_tu_watchlist"] == 0
+
+
+@pytest.mark.asyncio
+async def test_san_lai_cung_ma_khong_lam_tang_so_ma_san(db_session, test_user):
+    """① đếm MÃ PHÂN BIỆT: săn lại AAA từ bộ lọc khác vẫn là 1 mã.
+
+    ``first_hunted_at`` giữ nguyên (mốc so với lệnh mua), ``hunt_filter`` cập
+    nhật sang bộ lọc mới nhất.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "AAA")
+    await _hunt(cap5, test_user.id, "AAA", bo_loc="kl")
+    log_1 = (
+        await db_session.execute(select(Cap5HuntLog).where(Cap5HuntLog.symbol == "AAA"))
+    ).scalar_one()
+    first = log_1.first_hunted_at
+
+    await _hunt(cap5, test_user.id, "AAA", bo_loc="dinh")
+    await db_session.refresh(log_1)
+
+    p = await cap5.get_progress(test_user.id)
+    assert p["so_ma_da_san"] == 1
+    assert log_1.first_hunted_at == first
+    assert log_1.hunt_filter == "dinh"
+    assert log_1.last_hunted_at >= first
+
+
+@pytest.mark.asyncio
+async def test_xoa_khoi_watchlist_khong_lam_tut_nhiem_vu(db_session, test_user):
+    """★ Sổ săn mã tồn tại RIÊNG khỏi Watchlist: bỏ theo dõi hết 10 mã thì
+    ``so_ma_da_san`` vẫn 10 và ``task_1_done_at`` không bị rút lại.
+
+    Không có sổ riêng, một cú xoá sẽ làm con số hiển thị mâu thuẫn với cái dấu
+    tick đã đóng.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    syms = await _hunt_n(db_session, cap5, test_user.id, 10)
+    p = await cap5.get_progress(test_user.id)
+    stamp = p["task_1_done_at"]
+    assert stamp is not None
+
+    for sym in syms:
+        await cap5.remove_watchlist(test_user.id, sym)
+
+    p = await cap5.get_progress(test_user.id)
+    assert p["so_ma_da_san"] == 10
+    assert p["task_1_done_at"] == stamp
+    wl = await cap5.watchlist(test_user.id)
+    assert wl["so_luong"] == 0
+
+
+@pytest.mark.asyncio
+async def test_lenh_chua_khop_va_lenh_san_tap_khong_tinh(db_session, test_user):
+    """② chỉ đếm lệnh MUA ĐÃ KHỚP ở chế độ Thực chiến (Cấp 5 là cấp Thực chiến).
+
+    Lệnh còn chờ khớp chưa phải một quyết định mua đã xảy ra; lệnh sân tập thì
+    không thuộc cấp này.
+    """
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id)
+    for sym in ("PEND", "SANT"):
+        await _seed_symbol(db_session, sym)
+        await _hunt(cap5, test_user.id, sym)
+    await _mua(db_session, account, test_user.id, "PEND", status=OrderStatus.PENDING)
+    await _mua(db_session, account, test_user.id, "SANT", mode="san_tap")
+
+    p = await cap5.get_progress(test_user.id)
+    assert p["so_ma_da_san"] == 2
+    assert p["so_ma_mua_tu_watchlist"] == 0
+
+
+@pytest.mark.asyncio
+async def test_mark_task_chi_tinh_lai_va_chi_nhan_1_hoac_2(db_session, test_user):
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    for bad in (0, 3, 5):
+        with pytest.raises(BadRequestError):
+            await cap5.mark_task(test_user.id, bad)
+
+    p = await cap5.mark_task(test_user.id, 1)
+    assert p["task_1_done_at"] is None  # gọi tay KHÔNG tự đóng dấu
+    assert p["so_ma_da_san"] == 0
+
+
+@pytest.mark.asyncio
+async def test_tour_sanma_ghi_co_nhung_khong_phai_cong_tot_nghiep(db_session, test_user):
+    """Cờ tour (§7) chỉ để tour tự bật một lần.
+
+    ★ Nếu tour là cổng thì nút "Bỏ qua" của engine tour (gọi thẳng
+    ``onComplete``) sẽ tặng không một nhiệm vụ.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    p = await cap5.mark_tour_sanma(test_user.id)
+    assert p["da_xem_tour_sanma"] is True
+    assert p["task_1_done_at"] is None
+    assert p["task_2_done_at"] is None
+    with pytest.raises(ConflictError):
+        await cap5.graduate(test_user.id)
+
+
+@pytest.mark.asyncio
+async def test_graduate_can_dung_2_of_2(db_session, test_user):
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id)
+
+    with pytest.raises(ConflictError):
+        await cap5.graduate(test_user.id)
+
+    syms = await _hunt_n(db_session, cap5, test_user.id, 10)
+    p = await cap5.get_progress(test_user.id)
+    assert p["task_1_done_at"] is not None
+    # ① xong, ② chưa ⇒ vẫn chưa tốt nghiệp.
+    with pytest.raises(ConflictError):
+        await cap5.graduate(test_user.id)
+
+    for sym in syms[:4]:
+        await _mua(db_session, account, test_user.id, sym)
+    with pytest.raises(ConflictError):
+        await cap5.graduate(test_user.id)
+
+    await _mua(db_session, account, test_user.id, syms[4])
+    p = await cap5.graduate(test_user.id)
+    assert p["graduated_at"] is not None
+    assert p["time_to_graduate_hours"] is not None
+    assert p["time_to_graduate_hours"] >= 0
+
+    # idempotent — mốc tốt nghiệp không bị ghi lại
+    again = await cap5.graduate(test_user.id)
+    assert again["graduated_at"] == p["graduated_at"]
+
+
+@pytest.mark.asyncio
+async def test_progress_va_watchlist_can_da_vao_cap(db_session, test_user):
+    """Mọi endpoint ghi/đọc của Cấp 5 đòi đã vào cấp (404 nếu chưa)."""
+    await _fast_track_cap4(db_session, test_user.id)
+    cap5 = Cap5Service(db_session, hunt_source=_FakeHuntSource())
+    await _seed_symbol(db_session, "AAA")
+    for coro in (
+        cap5.watchlist(test_user.id),
+        cap5.add_watchlist(test_user.id, "AAA", "kl"),
+        cap5.remove_watchlist(test_user.id, "AAA"),
+        cap5.san_ma_index(test_user.id),
+        cap5.san_ma_result(test_user.id, "kl"),
+        cap5.nguon_san(test_user.id, "AAA"),
+        cap5.phan_tich(test_user.id),
+        cap5.graduate(test_user.id),
+        cap5.mark_tour_sanma(test_user.id),
+        cap5.mark_task(test_user.id, 1),
+    ):
+        with pytest.raises(NotFoundError):
+            await coro
