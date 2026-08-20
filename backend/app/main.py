@@ -126,12 +126,16 @@ def create_app() -> FastAPI:
     # ── Exception handlers ───────────────────────────
     @app.exception_handler(AppException)
     async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
+        # exc.headers must be forwarded: UnauthorizedError sets
+        # ``WWW-Authenticate: Bearer`` there, and RFC 7235 requires that header
+        # on every 401. Dropping it silently broke spec-compliance for all 401s.
         return JSONResponse(
             status_code=exc.status_code,
             content={
                 "detail": exc.detail,
                 "code": exc.code,
             },
+            headers=exc.headers,
         )
 
     # ── Rate limiting ────────────────────────────────

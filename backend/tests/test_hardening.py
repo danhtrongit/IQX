@@ -185,3 +185,28 @@ async def test_jwt_placeholder_allowed_in_dev():
         s = get_settings()
         assert s.APP_ENV == "development"
         get_settings.cache_clear()
+
+
+# ── Exception handler must forward exc.headers ───────────────────────────
+# Regression guard: app_exception_handler used to build JSONResponse WITHOUT
+# passing exc.headers, so UnauthorizedError's `WWW-Authenticate: Bearer` was
+# silently dropped from every 401 (RFC 7235 requires it). Fixed 2026-08-18.
+
+
+@pytest.mark.asyncio
+async def test_401_includes_www_authenticate_header(client):
+    """UnauthorizedError sets WWW-Authenticate; the handler must forward it."""
+    resp = await client.get("/api/v1/users/me")
+    assert resp.status_code == 401
+    assert resp.headers.get("www-authenticate") == "Bearer"
+    # envelope must stay exactly {detail, code}
+    assert resp.json() == {"detail": "Yêu cầu xác thực", "code": "UNAUTHORIZED"}
+
+
+@pytest.mark.asyncio
+async def test_error_without_headers_still_works(client):
+    """Exceptions with headers=None must not break the handler."""
+    resp = await client.get("/api/v1/market-data/reference/symbols/KHONGTONTAI")
+    assert resp.status_code == 404
+    assert "www-authenticate" not in {k.lower() for k in resp.headers}
+    assert resp.headers.get("X-Request-ID")
