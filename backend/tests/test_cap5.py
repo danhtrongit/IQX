@@ -2243,6 +2243,36 @@ def test_migration_round_trip_len_xuong_len_hai_vong():
         sau_lan_1 = _rows(conn, "cap5_progress")
         wl_lan_1 = _rows(conn, "watchlist_items")
         ks_lan_1 = _rows(conn, "order_ketso")
+        # ★ Snapshot CỘT của mọi bảng migration này chạm tới. Không có nó thì
+        # một ``downgrade()`` để sót cột (hoặc ``upgrade()`` thêm cột hai lần)
+        # vẫn xanh — bài test mang tên "BẤT ĐỘNG" mà không kiểm cột nào cả.
+        _BANG_MIGRATION = (
+            "cap5_progress",
+            "cap5_hunt_log",
+            "watchlist_items",
+            "order_kehoach",
+            "order_ketso",
+        )
+        cols_lan_1 = {t: _cols(conn, t) for t in _BANG_MIGRATION}
+        # ★ Và cột phải khớp MODEL: ``_rows`` chỉ bắt được lệch cột ở bảng CÓ
+        # hàng, nên ``cap5_hunt_log`` (rỗng sau upgrade) cần lưới riêng này —
+        # bỏ một cột trong ``create_table`` sẽ đi qua mọi assert khác.
+        from app.models.cap5 import Cap5HuntLog as _HL
+        from app.models.cap5 import Cap5Progress as _CP
+        from app.models.watchlist import WatchlistItem as _WL
+
+        for table, model in (
+            ("cap5_hunt_log", _HL),
+            ("cap5_progress", _CP),
+            ("watchlist_items", _WL),
+        ):
+            assert set(cols_lan_1[table]) == {
+                c.name for c in model.__table__.columns
+            }, table
+        # (``order_kehoach`` chỉ được seed ở dạng tối giản trong DDL kiểu-prod
+        # của test này, nên chỉ kiểm 2 cột Cấp 5 mà migration thêm vào.)
+        for cot in ("from_watchlist", "hunt_filter"):
+            assert cot in cols_lan_1["order_kehoach"], cot
         assert sau_lan_1["tn1"]["task_1_done_at"] == "2026-08-20 10:00:00"
 
         _run_migration(conn, "downgrade")
@@ -2284,7 +2314,7 @@ def test_migration_round_trip_len_xuong_len_hai_vong():
         assert _rows(conn, "cap5_progress") == sau_lan_1
         assert _rows(conn, "watchlist_items") == wl_lan_1
         assert _rows(conn, "order_ketso") == ks_lan_1
-        assert _cols(conn, "cap5_progress") == _cols(conn, "cap5_progress")
+        assert {t: _cols(conn, t) for t in _BANG_MIGRATION} == cols_lan_1
         assert "cap5_hunt_log" in _tables(conn)
 
 
