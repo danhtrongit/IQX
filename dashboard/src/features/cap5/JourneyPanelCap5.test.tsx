@@ -1,22 +1,36 @@
-import { render, screen, fireEvent, within } from "@testing-library/react"
+import { render, screen, fireEvent } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
-import type { Cap5Progress, ThachThucCap5 } from "./types"
+import type { Cap5Progress } from "./types"
 
-// ── Mocks ────────────────────────────────────────────────────────────────────
-const { useCap5ProgressMock, useThachThucCap5Mock, useCap5EventsMock } = vi.hoisted(() => ({
+/**
+ * Tab Hành trình Cấp 5 «Lão luyện — Săn mã» (mockup `iqx-cap5-hanhtrinh.html`).
+ *
+ * ★★ Hình dạng LIVE: **2 nhiệm vụ SONG SONG** — «Săn 10 mã vào Watchlist»
+ * (`n/10 mã`) và «Mua 5 mã từ Watchlist» (`n/5 mã`), jbar `CẤP 5 · n/2` kèm dòng
+ * "Hai nhiệm vụ làm song song". Bài canh quan trọng nhất: nhiệm vụ ② KHÔNG bị
+ * gác sau ① — cả hai đều bấm được ngay khi vào cấp.
+ *
+ * ★ Cấp 5 CŨ (3 nhiệm vụ + «Tỷ lệ quyết định đúng» + «Thách thức Lão luyện» 3
+ * điều kiện) đã NGHỈ HƯU — có bài canh riêng để những khối đó không mọc lại.
+ */
+const { useCap5ProgressMock, useCap5EventsMock, capFlags } = vi.hoisted(() => ({
   useCap5ProgressMock: vi.fn(),
-  useThachThucCap5Mock: vi.fn(),
   useCap5EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap5Active: true })),
+  capFlags: { max: 5 },
 }))
 
 vi.mock("./hooks", () => ({
   useCap5Progress: (...a: unknown[]) => useCap5ProgressMock(...a),
-  useThachThucCap5: (...a: unknown[]) => useThachThucCap5Mock(...a),
 }))
-vi.mock("./Cap5Context", () => ({
-  useCap5Events: () => useCap5EventsMock(),
+vi.mock("./Cap5Context", () => ({ useCap5Events: () => useCap5EventsMock() }))
+// Trần cấp phải đọc được LÚC RENDER (cùng lý do `JourneyPanelCap4` ghi) — mock
+// bằng getter để đổi được giữa hai bài.
+vi.mock("@/features/cap1/capFlags", () => ({
+  get CAP_MAX_ENABLED() {
+    return capFlags.max
+  },
 }))
 
 import { JourneyPanelCap5 } from "./JourneyPanelCap5"
@@ -25,273 +39,232 @@ function makeProgress(overrides: Partial<Cap5Progress> = {}): Cap5Progress {
   return {
     id: "p5",
     user_id: "u1",
-    entered_at: "2026-07-31T00:00:00Z",
+    entered_at: "2026-08-20T00:00:00Z",
     task_1_done_at: null,
     task_2_done_at: null,
-    task_3_done_at: null,
-    so_lenh_phan_loai: 25,
-    so_lan_dung_ngoai_da_cham: 3,
-    ty_le_quyet_dinh_dung: 72,
+    so_ma_da_san: 6,
+    so_ma_mua_tu_watchlist: 3,
+    so_ma_cho_du_lop: null,
+    muc_tieu_so_ma_san: 10,
+    muc_tieu_so_ma_mua: 5,
+    da_xem_tour_sanma: false,
+    best_filter: null,
+    best_filter_ten: null,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
   }
 }
 
-function makeThachThuc(overrides: Partial<ThachThucCap5> = {}): ThachThucCap5 {
-  return {
-    dat_ca_3: false,
-    so_lenh_phan_loai: {
-      ten: "Phân loại 4 ô cho ≥ 20 lệnh",
-      gia_tri_hien_tai: 25,
-      muc_tieu: 20,
-      dat: true,
-      giai_thich:
-        "Đã có 25/20 lệnh bạn nhìn lại qua 4 ô — mỗi lệnh được xếp theo quyết định đúng/sai × thắng/thua.",
-    },
-    so_lan_dung_ngoai_da_cham: {
-      ten: "≥ 5 lần đứng ngoài đã tới hạn chấm",
-      gia_tri_hien_tai: 3,
-      muc_tieu: 5,
-      dat: false,
-      giai_thich:
-        "Đã chấm 3/5 nước đứng ngoài (trên tổng 4 lần đã ghi) — chỉ tính các lần đã đủ 5 phiên để biết né đúng hay hụt. Đứng ngoài nhiều hơn KHÔNG được thưởng thêm.",
-    },
-    ty_le_quyet_dinh_dung: {
-      ten: "Tỷ lệ quyết định đúng ≥ 70%",
-      gia_tri_hien_tai: 72,
-      muc_tieu: 70,
-      dat: true,
-      giai_thich:
-        "72% (18/25 lệnh) làm đúng quy trình — bất kể lãi/lỗ. Đây là thước đo CHẤT LƯỢNG QUYẾT ĐỊNH, không phải tỷ lệ thắng.",
-    },
-    ...overrides,
-  }
+/** Bọc panel trong `SidebarProvider` + phơi `activePanel` để canh lối đi. */
+function PanelHarness() {
+  const { activePanel } = useSidebar()
+  return (
+    <>
+      <span data-testid="active-panel">{activePanel}</span>
+      <JourneyPanelCap5 />
+    </>
+  )
 }
 
 function renderPanel() {
   return render(
-    <SidebarProvider>
-      <JourneyPanelCap5 />
+    <SidebarProvider defaultPanel="journey">
+      <PanelHarness />
     </SidebarProvider>,
   )
 }
 
-describe("JourneyPanelCap5", () => {
-  beforeEach(() => {
-    useCap5ProgressMock.mockReset()
-    useCap5ProgressMock.mockReturnValue({ data: makeProgress() })
-    useThachThucCap5Mock.mockReset()
-    useThachThucCap5Mock.mockReturnValue({ data: makeThachThuc() })
-    useCap5EventsMock.mockReset()
-    useCap5EventsMock.mockReturnValue({ isCap5Active: true })
+beforeEach(() => {
+  vi.clearAllMocks()
+  capFlags.max = 5
+  useCap5EventsMock.mockReturnValue({ isCap5Active: true })
+  useCap5ProgressMock.mockReturnValue({ data: makeProgress() })
+})
+
+describe("JourneyPanelCap5 — 2 nhiệm vụ song song (mockup)", () => {
+  it("jbar: «CẤP 5 · 0/2» + «Hai nhiệm vụ làm song song»", () => {
+    renderPanel()
+    const jbar = screen.getByTestId("cap5-jbar")
+    expect(jbar).toHaveTextContent("CẤP 5 · 0/2")
+    expect(jbar).toHaveTextContent("Hai nhiệm vụ làm song song")
   })
 
-  it("renders the level card — CẤP 5 / LÃO LUYỆN / italic bài học / badge THỰC CHIẾN", () => {
+  it("jbar đếm theo số nhiệm vụ ĐÃ xong", () => {
+    useCap5ProgressMock.mockReturnValue({
+      data: makeProgress({ task_2_done_at: "2026-08-21T00:00:00Z" }),
+    })
+    renderPanel()
+    expect(screen.getByTestId("cap5-jbar")).toHaveTextContent("CẤP 5 · 1/2")
+  })
+
+  it("thẻ cấp: CẤP 5 · LÃO LUYỆN + bài học + badge THỰC CHIẾN", () => {
     renderPanel()
     expect(screen.getByText("CẤP 5")).toBeInTheDocument()
     expect(screen.getByText("LÃO LUYỆN")).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        '"Kết quả tốt không chắc là quyết định đúng — và đứng ngoài cũng là một quyết định."',
-      ),
-    ).toBeInTheDocument()
-    expect(screen.getByText("THỰC CHIẾN")).toBeInTheDocument()
+    expect(screen.getByText(/chủ động đi săn/i)).toBeInTheDocument()
   })
 
-  it("renders the Cấp 5 badge (vàng kim #e0b64d, fill=5)", () => {
+  it("hai nhiệm vụ, đúng tên và tiến độ mockup", () => {
     renderPanel()
-    const svg = document.querySelector(".cap0-badge svg")
-    expect(svg).not.toBeNull()
-    expect(svg?.innerHTML).toContain("#e0b64d")
+    const t1 = screen.getByTestId("cap5-task-1")
+    const t2 = screen.getByTestId("cap5-task-2")
+    expect(t1).toHaveTextContent("Săn 10 mã vào Watchlist")
+    expect(t1).toHaveTextContent("6/10 mã")
+    expect(t2).toHaveTextContent("Mua 5 mã từ Watchlist")
+    expect(t2).toHaveTextContent("3/5 mã")
   })
 
-  it('shows the checklist header "TRƯỚC KHI LÊN CẤP 6 · 0/3" with fresh progress', () => {
+  it("«TRƯỚC KHI LÊN CẤP 6» + bộ đếm n/2", () => {
     renderPanel()
-    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 6 · 0/3")).toBeInTheDocument()
+    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 6")).toBeInTheDocument()
+    expect(screen.getByTestId("cap5-checklist-count")).toHaveTextContent("0/2")
   })
 
-  it("renders all 3 nhiệm vụ names verbatim (spec §2)", () => {
+  it("★ mục tiêu đọc từ SERVER, không hard-code", () => {
+    useCap5ProgressMock.mockReturnValue({
+      data: makeProgress({ muc_tieu_so_ma_san: 12, muc_tieu_so_ma_mua: 7 }),
+    })
     renderPanel()
-    expect(screen.getByText("Lệnh đầu Cấp 5 — phân loại 4 ô")).toBeInTheDocument()
-    expect(screen.getByText("Đứng ngoài đầu tiên")).toBeInTheDocument()
-    expect(screen.getByText(/Thách thức Lão luyện — chất lượng quyết định/)).toBeInTheDocument()
+    expect(screen.getByTestId("cap5-task-1")).toHaveTextContent("6/12 mã")
+    expect(screen.getByTestId("cap5-task-2")).toHaveTextContent("3/7 mã")
   })
 
-  it("① and ② are BOTH active from the moment the user enters Cấp 5 (spec §2 «Điều kiện mở: vào Cấp 5»)", () => {
+  it("tiến độ không vượt mẫu số (săn 14 mã vẫn hiện 10/10)", () => {
+    useCap5ProgressMock.mockReturnValue({ data: makeProgress({ so_ma_da_san: 14 }) })
+    renderPanel()
+    expect(screen.getByTestId("cap5-task-1")).toHaveTextContent("10/10 mã")
+  })
+
+  it("★ chưa tải được progress → KHÔNG in «0/10» như thể đã đếm", () => {
+    useCap5ProgressMock.mockReturnValue({ data: undefined })
+    renderPanel()
+    const t1 = screen.getByTestId("cap5-task-1")
+    expect(t1).not.toHaveTextContent("0/10")
+    expect(t1).toHaveTextContent("chưa lấy được số liệu")
+  })
+})
+
+describe("JourneyPanelCap5 — SONG SONG: ② không bị gác sau ①", () => {
+  it("★ cả hai nhiệm vụ đều ở trạng thái đang làm khi mới vào cấp", () => {
     renderPanel()
     expect(screen.getByTestId("cap5-task-1").className).toContain("cap0-checklist-item--active")
     expect(screen.getByTestId("cap5-task-2").className).toContain("cap0-checklist-item--active")
-    expect(
-      within(screen.getByTestId("cap5-task-1")).getByText(/verdict hệ gợi ý/),
-    ).toBeInTheDocument()
-    // Copy VERBATIM spec §2②.
-    expect(
-      within(screen.getByTestId("cap5-task-2")).getByText(
-        /Không phải lúc nào cũng phải mua\. Chọn một mã bạn đang xem nhưng quyết định KHÔNG mua/,
-      ),
-    ).toBeInTheDocument()
   })
 
-  it("done nhiệm vụ show the done state and bump the header count", () => {
+  it("★ cả hai nhiệm vụ đều BẤM ĐƯỢC (không nhiệm vụ nào bị khoá)", () => {
+    renderPanel()
+    expect(screen.getByTestId("cap5-task-1-go")).toBeEnabled()
+    expect(screen.getByTestId("cap5-task-2-go")).toBeEnabled()
+  })
+
+  it("★ ② xong TRƯỚC ① vẫn được đánh dấu xong", () => {
     useCap5ProgressMock.mockReturnValue({
-      data: makeProgress({ task_1_done_at: "t", task_2_done_at: "t", task_3_done_at: "t" }),
+      data: makeProgress({ task_2_done_at: "2026-08-21T00:00:00Z", so_ma_mua_tu_watchlist: 5 }),
     })
     renderPanel()
-    for (const no of [1, 2]) {
-      expect(screen.getByTestId(`cap5-task-${no}`).className).toContain(
-        "cap0-checklist-item--done",
-      )
-    }
-    expect(screen.getByText("TRƯỚC KHI LÊN CẤP 6 · 3/3")).toBeInTheDocument()
+    expect(screen.getByTestId("cap5-task-2").className).toContain("cap0-checklist-item--done")
+    expect(screen.getByTestId("cap5-task-1").className).toContain("cap0-checklist-item--active")
   })
 
-  // ── Widget nổi bật "Tỷ lệ quyết định đúng" (spec §7 mục 2 + §C12c) ─────────
-  it("renders the prominent Tỷ lệ quyết định đúng widget from the hồ sơ", () => {
+  it("ô tập trung nhắm nhiệm vụ CHƯA xong đầu tiên", () => {
     renderPanel()
-    const widget = screen.getByTestId("cap5-journey-tyle")
-    expect(within(widget).getByText("Tỷ lệ quyết định đúng")).toBeInTheDocument()
-    expect(screen.getByTestId("cap5-journey-tyle-value")).toHaveTextContent("72%")
+    expect(screen.getByTestId("cap5-focus")).toHaveTextContent("Săn 10 mã vào Watchlist")
   })
 
-  it("shows the COUNTS the tỷ lệ came from (§C12c — never a bare number)", () => {
-    renderPanel()
-    // Số lệnh đã phân loại — từ chính hồ sơ server.
-    expect(screen.getByTestId("cap5-journey-tyle-counts")).toHaveTextContent("25 lệnh")
-    // Câu giải thích của server kèm đúng/tổng.
-    expect(screen.getByTestId("cap5-journey-tyle-giaithich")).toHaveTextContent("18/25 lệnh")
-  })
-
-  it("says the tỷ lệ measures PROCESS, not win rate (§C12c)", () => {
-    renderPanel()
-    const widget = screen.getByTestId("cap5-journey-tyle")
-    expect(widget).toHaveTextContent(/quy trình/i)
-    expect(widget).toHaveTextContent(/không phải tỷ lệ thắng/i)
-  })
-
-  it("says so honestly when nothing has been classified yet instead of showing 0%", () => {
+  it("★ ① xong → ô tập trung chuyển sang ②, KHÔNG kẹt ở ①", () => {
     useCap5ProgressMock.mockReturnValue({
-      data: makeProgress({ so_lenh_phan_loai: 0, ty_le_quyet_dinh_dung: 0 }),
+      data: makeProgress({ task_1_done_at: "2026-08-21T00:00:00Z", so_ma_da_san: 10 }),
     })
     renderPanel()
-    expect(screen.queryByTestId("cap5-journey-tyle-value")).not.toBeInTheDocument()
-    expect(screen.getByTestId("cap5-journey-tyle-empty")).toHaveTextContent(
-      /Chưa có lệnh nào được phân loại/,
-    )
+    expect(screen.getByTestId("cap5-focus")).toHaveTextContent("Mua 5 mã từ Watchlist")
   })
 
-  // ── Widget "Thách thức Lão luyện" = nhiệm vụ ③ (spec §2③) ─────────────────
-  it("renders the Thách thức Lão luyện widget with ALL THREE conditions (§C12c)", () => {
+  it("xong 2/2 → ô tập trung nói sẵn sàng tốt nghiệp", () => {
+    useCap5ProgressMock.mockReturnValue({
+      data: makeProgress({
+        task_1_done_at: "2026-08-21T00:00:00Z",
+        task_2_done_at: "2026-08-21T00:00:00Z",
+      }),
+    })
     renderPanel()
-    expect(screen.getByTestId("cap5-thachthuc")).toBeInTheDocument()
-    expect(screen.getByTestId("cap5-thachthuc-so_lenh_phan_loai")).toBeInTheDocument()
-    expect(screen.getByTestId("cap5-thachthuc-so_lan_dung_ngoai_da_cham")).toBeInTheDocument()
-    expect(screen.getByTestId("cap5-thachthuc-ty_le_quyet_dinh_dung")).toBeInTheDocument()
+    expect(screen.getByTestId("cap5-focus")).toHaveTextContent("Sẵn sàng tốt nghiệp Cấp 5")
+    expect(screen.getByTestId("cap5-checklist-count")).toHaveTextContent("2/2")
   })
+})
 
-  it("each thách-thức condition shows its CURRENT value vs its target", () => {
+describe("JourneyPanelCap5 — lối đi TRONG shell cấp (luật số 5)", () => {
+  it("ô tập trung ① → mở màn Săn mã", () => {
     renderPanel()
-    const soLenh = screen.getByTestId("cap5-thachthuc-so_lenh_phan_loai")
-    expect(soLenh).toHaveTextContent("Phân loại 4 ô cho ≥ 20 lệnh")
-    expect(soLenh).toHaveTextContent("25/20")
-
-    const dungNgoai = screen.getByTestId("cap5-thachthuc-so_lan_dung_ngoai_da_cham")
-    expect(dungNgoai).toHaveTextContent("≥ 5 lần đứng ngoài đã tới hạn chấm")
-    expect(dungNgoai).toHaveTextContent("3/5")
-
-    const tyLe = screen.getByTestId("cap5-thachthuc-ty_le_quyet_dinh_dung")
-    expect(tyLe).toHaveTextContent("Tỷ lệ quyết định đúng ≥ 70%")
-    expect(tyLe).toHaveTextContent("72% / 70%")
+    fireEvent.click(screen.getByTestId("cap5-focus").querySelector("button")!)
+    expect(screen.getByTestId("active-panel")).toHaveTextContent("cap5-sanma")
   })
 
-  it("each thách-thức condition shows its OWN giải thích from the backend (§C12c)", () => {
+  it("nhiệm vụ ② → mở Watchlist", () => {
     renderPanel()
-    expect(screen.getByTestId("cap5-thachthuc-so_lenh_phan_loai")).toHaveTextContent(
-      /quyết định đúng\/sai × thắng\/thua/,
-    )
-    expect(screen.getByTestId("cap5-thachthuc-so_lan_dung_ngoai_da_cham")).toHaveTextContent(
-      /Đứng ngoài nhiều hơn KHÔNG được thưởng thêm/,
-    )
-    expect(screen.getByTestId("cap5-thachthuc-ty_le_quyet_dinh_dung")).toHaveTextContent(
-      /thước đo CHẤT LƯỢNG QUYẾT ĐỊNH, không phải tỷ lệ thắng/,
-    )
+    fireEvent.click(screen.getByTestId("cap5-task-2-go"))
+    expect(screen.getByTestId("active-panel")).toHaveTextContent("cap5-watchlist")
   })
 
-  it("marks a met condition as đạt and an unmet one as chưa đạt", () => {
+  it("hàng công cụ: 🔍 Săn mã · 👀 Watchlist", () => {
     renderPanel()
-    expect(screen.getByTestId("cap5-thachthuc-so_lenh_phan_loai")).toHaveAttribute(
-      "data-dat",
-      "true",
-    )
-    expect(screen.getByTestId("cap5-thachthuc-so_lan_dung_ngoai_da_cham")).toHaveAttribute(
-      "data-dat",
-      "false",
-    )
+    const tools = screen.getByTestId("cap5-tools")
+    expect(tools).toHaveTextContent("Săn mã")
+    expect(tools).toHaveTextContent("Watchlist")
+    fireEvent.click(screen.getByTestId("cap5-tool-sanma"))
+    expect(screen.getByTestId("active-panel")).toHaveTextContent("cap5-sanma")
   })
 
-  it("degrades gracefully while the thách thức data is still loading", () => {
-    useThachThucCap5Mock.mockReturnValue({ data: undefined })
+  it("★ Phân tích danh mục (khối ⑫/⑬ spec §9) phải tới được", () => {
     renderPanel()
-    expect(screen.getByTestId("cap5-thachthuc")).toBeInTheDocument()
-    expect(screen.queryByTestId("cap5-thachthuc-so_lenh_phan_loai")).not.toBeInTheDocument()
+    fireEvent.click(screen.getByTestId("cap5-tool-analysis"))
+    expect(screen.getByTestId("active-panel")).toHaveTextContent("cap5-analysis")
   })
+})
 
-  it("explains that all 3 conditions must hold at once and that đứng ngoài is not rewarded by volume", () => {
-    renderPanel()
-    const widget = screen.getByTestId("cap5-thachthuc")
-    expect(widget).toHaveTextContent(/CẢ 3 điều kiện/i)
-  })
-
-  it('clicking "Xem Phân tích danh mục →" switches the sidebar to the cap5-analysis panel', () => {
-    function PanelSpy() {
-      const { activePanel } = useSidebar()
-      return <div data-testid="panel-spy">{activePanel}</div>
-    }
-    render(
-      <SidebarProvider>
-        <JourneyPanelCap5 />
-        <PanelSpy />
-      </SidebarProvider>,
-    )
-    fireEvent.click(screen.getByText("Xem Phân tích danh mục →"))
-    expect(screen.getByTestId("panel-spy")).toHaveTextContent("cap5-analysis")
-  })
-
-  it('"Làm ngay →" jumps to the đặt lệnh (trading) panel', () => {
-    function PanelSpy() {
-      const { activePanel } = useSidebar()
-      return <div data-testid="panel-spy">{activePanel}</div>
-    }
-    render(
-      <SidebarProvider>
-        <JourneyPanelCap5 />
-        <PanelSpy />
-      </SidebarProvider>,
-    )
-    fireEvent.click(screen.getAllByText("Làm ngay →")[0])
-    expect(screen.getByTestId("panel-spy")).toHaveTextContent("trading")
-  })
-
-  it("shows the goal box: 3/3 closes the 0-5 foundational arc, next is Cấp 6 (now live)", () => {
+describe("JourneyPanelCap5 — ô mục tiêu gắn theo trần cấp", () => {
+  it("trần ≥6 → hứa Cấp 6 «xử lý khi 5 lớp mâu thuẫn»", () => {
+    capFlags.max = 6
     renderPanel()
     const goal = screen.getByTestId("cap5-journey-goal")
-    expect(goal).toHaveTextContent(/tốt nghiệp Cấp 5/)
-    expect(goal).toHaveTextContent(/mạch nền tảng/)
-    expect(goal).toHaveTextContent(/Cấp 6 «Đối chiếu»/)
-    // Cấp 6 đã có thật (Cấp 6 Task FE3) — không còn hứa "sắp ra mắt".
-    expect(goal.textContent).not.toMatch(/sắp ra mắt/)
+    expect(goal).toHaveTextContent("Xong 2/2")
+    expect(goal).toHaveTextContent("Cấp 6")
+    expect(goal).toHaveTextContent("mâu thuẫn")
   })
 
-  it("does NOT render any medal cabinet / Tủ huân chương (spec §9 — no cấp has one)", () => {
+  it("★ trần còn ở 5 → KHÔNG hứa một cấp chưa mở", () => {
+    capFlags.max = 5
     renderPanel()
-    expect(screen.queryByText(/[Hh]uân chương/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/[Tt]ủ huân/)).not.toBeInTheDocument()
+    const goal = screen.getByTestId("cap5-journey-goal")
+    expect(goal).toHaveTextContent("chưa ra mắt")
+  })
+})
+
+describe("JourneyPanelCap5 — Cấp 5 CŨ không mọc lại", () => {
+  it("★ không còn «Tỷ lệ quyết định đúng» / «Thách thức Lão luyện» / 4 ô / đứng ngoài", () => {
+    const { container } = renderPanel()
+    for (const tu of [
+      "Tỷ lệ quyết định đúng",
+      "Thách thức Lão luyện",
+      "4 ô",
+      "đứng ngoài",
+      "Đứng ngoài",
+      "phân loại",
+    ]) {
+      expect(container.textContent).not.toContain(tu)
+    }
   })
 
-  it("does not query Cấp 5 data outside a Cap5Provider (shared app-root sidebar)", () => {
+  it("★ đúng HAI nhiệm vụ, không có nhiệm vụ thứ ba", () => {
+    renderPanel()
+    expect(screen.queryByTestId("cap5-task-3")).not.toBeInTheDocument()
+  })
+})
+
+describe("JourneyPanelCap5 — gác theo cấp (luật số 4)", () => {
+  it("ngoài Cấp 5 KHÔNG query progress Cấp 5", () => {
     useCap5EventsMock.mockReturnValue({ isCap5Active: false })
     renderPanel()
     expect(useCap5ProgressMock).toHaveBeenCalledWith(false)
-    expect(useThachThucCap5Mock).toHaveBeenCalledWith(false)
   })
 })

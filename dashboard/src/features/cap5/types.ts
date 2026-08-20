@@ -99,8 +99,23 @@ export interface Cap5Progress {
    * nào ⇒ `null`, và phễu phải nói "chưa đo được", không được vẽ tầng giữa = 0.
    */
   so_ma_cho_du_lop: number | null
+  /**
+   * Mục tiêu của hai nhiệm vụ, do SERVER gửi (`muc_tieu_so_ma_san` /
+   * `muc_tieu_so_ma_mua`). Đọc từ server chứ không hard-code để một lần đổi
+   * ngưỡng ở BE không biến mẫu số trên màn thành lời nói dối; `CAP5_SO_MA_*_TARGET`
+   * chỉ là bản lùi khi wire cũ chưa có trường.
+   */
+  muc_tieu_so_ma_san?: number
+  muc_tieu_so_ma_mua?: number
+  /**
+   * Cờ tour Săn mã (spec §7) — **KHÔNG phải nhiệm vụ**: hình dạng LIVE của Hành
+   * trình chỉ có 2 nhiệm vụ đếm được. Cờ này chỉ để tour tự bật đúng một lần.
+   */
+  da_xem_tour_sanma?: boolean
   /** Bộ lọc ra nhiều mã thắng nhất (spec §10 `best_filter`). `null` = chưa đủ dữ liệu. */
   best_filter: HuntFilter | null
+  /** Tên bộ lọc đó do server gửi kèm. `null` khi `best_filter` là `null`. */
+  best_filter_ten?: string | null
   graduated_at: string | null
   time_to_graduate_hours: number | null
 }
@@ -125,4 +140,30 @@ export const CAP5_SO_MA_MUA_TARGET = 5
 export function countCap5TasksDone(progress: Cap5Progress | null | undefined): number {
   if (!progress) return 0
   return [progress.task_1_done_at, progress.task_2_done_at].filter((t) => t != null).length
+}
+
+/**
+ * Mục tiêu nhiệm vụ ① — SERVER là nguồn sự thật; hằng số chỉ là bản lùi.
+ * (Cùng lý do cho ②.)
+ */
+export function mucTieuSoMaSan(progress: Cap5Progress | null | undefined): number {
+  return progress?.muc_tieu_so_ma_san ?? CAP5_SO_MA_SAN_TARGET
+}
+
+export function mucTieuSoMaMua(progress: Cap5Progress | null | undefined): number {
+  return progress?.muc_tieu_so_ma_mua ?? CAP5_SO_MA_MUA_TARGET
+}
+
+/**
+ * Trạng thái một nhiệm vụ Cấp 5. CHỈ hai giá trị: hai nhiệm vụ chạy SONG SONG
+ * nên không có "locked" — ② không bị gác sau ① (mockup: cả hai `.task.active`).
+ */
+export type TaskStateCap5 = "done" | "active"
+
+export function taskStateCap5(
+  no: 1 | 2,
+  progress: Cap5Progress | null | undefined,
+): TaskStateCap5 {
+  const at = no === 1 ? progress?.task_1_done_at : progress?.task_2_done_at
+  return at ? "done" : "active"
 }

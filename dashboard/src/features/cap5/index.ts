@@ -44,7 +44,7 @@ export {
   type Cap5WatchlistItem,
   type Cap5WatchStatus,
 } from "./watchlistTypes"
-export { JourneyPanelCap5, taskStateCap5 } from "./JourneyPanelCap5"
+export { JourneyPanelCap5 } from "./JourneyPanelCap5"
 export { GraduationModalCap5, isGraduationReadyCap5 } from "./GraduationModalCap5"
 export { Cap5TradingPage } from "./Cap5TradingPage"
 export {
@@ -81,6 +81,9 @@ export {
 export {
   countCap5TasksDone,
   huntFilterTen,
+  mucTieuSoMaMua,
+  mucTieuSoMaSan,
+  taskStateCap5,
   CAP5_SO_MA_MUA_TARGET,
   CAP5_SO_MA_SAN_TARGET,
   CAP5_TOTAL_TASKS,
@@ -88,4 +91,4 @@ export {
   HUNT_FILTER_ORDER,
   HUNT_FILTER_TEN,
 } from "./types"
-export type { Cap5Progress, HuntFilter } from "./types"
+export type { Cap5Progress, HuntFilter, TaskStateCap5 } from "./types"
