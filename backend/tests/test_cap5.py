@@ -842,10 +842,19 @@ async def test_ro_ma_rong_thi_moi_bo_loc_bao_chua_du_du_lieu(db_session, test_us
         assert row["kha_dung"] is False, row["ma"]
         assert row["ly_do_chua_kha_dung"], row["ma"]
 
-    for ma in ("kl", "dinh", "tang"):
+    for ma in ("kl", "dinh", "tang", "ngoai", "tudoanh"):
         result = await cap5.san_ma_result(test_user.id, ma)
         assert result["kha_dung"] is False, ma
         assert result["tong_so_ma"] is None, ma
+        # ★ Mẫu số vẫn phải có mặt (0 mã trong rổ là con số THẬT) — thiếu nó thì
+        # ``HuntResultOut`` nổ ValidationError đúng lúc bảng mã chưa được nạp.
+        assert result["so_ma_trong_ro"] == 0, ma
+        assert result["ket_qua_day_du"] is None, ma
+        assert result["so_ma_truot_loc_san"] is None, ma
+        # Và response phải dựng được qua schema thật (không chỉ dict).
+        from app.schemas.cap5 import HuntResultOut
+
+        assert HuntResultOut(**result).so_ma_trong_ro == 0
 
 
 @pytest.mark.asyncio
