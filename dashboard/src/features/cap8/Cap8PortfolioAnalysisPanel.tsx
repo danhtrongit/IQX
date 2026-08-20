@@ -29,7 +29,7 @@ import { Cap8PortfolioAnalysis } from "./Cap8PortfolioAnalysis"
  * panel vô hại nếu `activePanel` tình cờ là "cap8-analysis" ở ngoài Cấp 8
  * (`SidebarProvider` là singleton app-root). Nhưng `Cap8PortfolioAnalysis` tự gọi
  * `useThachThucCap8()` KHÔNG gate, và các component Cấp 4/5/6/7 bên trong nó tự
- * gọi `useVuKhiDiemMu()` / `useDanhSachDungNgoai()` / `useThachThucCap6()` /
+ * gọi `useVuKhiDiemMu()` / `useThachThucCap6()` /
  * `useThachThucCap7()` cũng vậy — mỗi hook đó tự gate bằng `isAuthenticated` và
  * tự fail-closed, và panel này chỉ được mount từ bên trong Cấp 8, nên chuyện đó
  * vô hại. Hệ quả cho test: mọi test/mount của panel cần provider auth +

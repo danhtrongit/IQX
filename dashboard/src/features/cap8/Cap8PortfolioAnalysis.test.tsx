@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
  *
  * `Cap8PortfolioAnalysis` render `Cap7PortfolioAnalysis` bên trong (khối ①-⑰),
  * và chuỗi đó dùng `useThachThucCap7` (⑯⑰), `useThachThucCap6` (⑮),
- * `useDanhSachDungNgoai` (⑬) và `useVuKhiDiemMu` (⑨) — đều là auth-gated
+ * `useVuKhiDiemMu` (⑨) — auth-gated
  * TanStack query.
  */
 const { thachThuc } = vi.hoisted(() => ({
@@ -22,9 +22,6 @@ vi.mock("@/features/cap7/hooks", () => ({
 }))
 vi.mock("@/features/cap6/hooks", () => ({
   useThachThucCap6: () => ({ data: undefined, isPending: true, isError: false }),
-}))
-vi.mock("@/features/cap5/hooks", () => ({
-  useDanhSachDungNgoai: () => ({ data: undefined, isPending: true, isError: false }),
 }))
 vi.mock("@/features/cap4/hooks", () => ({
   useVuKhiDiemMu: () => ({ data: undefined, isPending: true, isError: false }),

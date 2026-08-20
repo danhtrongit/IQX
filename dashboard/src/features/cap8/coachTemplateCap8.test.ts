@@ -211,11 +211,13 @@ const cap4Situation: CoachSituationCap4 = {
   pnlPositive: true,
   pnlPct: 5.3,
 }
+// Cấp 5 mới = SĂN MÃ: mã do bộ lọc «Khối ngoại gom» săn ra, chờ 2 phiên trong
+// Watchlist, vào lệnh khi lên 4/5 lớp ủng hộ.
 const cap5Situation: CoachSituationCap5 = {
-  o4: "dung_thang",
-  verdict: "dung",
+  huntFilter: "ngoai",
+  huntSoPhienCho: 2,
+  huntSoLopLucVao: 4,
   pnlPct: 5.3,
-  signals: [],
 }
 const cap6Situation: CoachSituationCap6 = {
   khopGoiY: true,
