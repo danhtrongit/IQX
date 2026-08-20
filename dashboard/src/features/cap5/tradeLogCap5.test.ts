@@ -32,9 +32,9 @@ const trade1: Cap5TradeRecord = {
   ai_5_lop: { ky_thuat: "ok", dong_tien: "ok", noi_bo: "neu", tin_tuc: "bad", dinh_gia: "ok" },
   so_lop_dong_thuan: 4,
   so_lop_khac_ai: 1,
-  o4: "dung_thang",
-  verdictHe: "dung",
-  verdictUser: "dung",
+  huntFilter: "ngoai",
+  huntSoPhienCho: 2,
+  huntSoLopLucVao: 4,
 }
 
 const trade2: Cap5TradeRecord = {
@@ -57,9 +57,9 @@ const trade2: Cap5TradeRecord = {
   ai_5_lop: null,
   so_lop_dong_thuan: null,
   so_lop_khac_ai: null,
-  o4: null,
-  verdictHe: null,
-  verdictUser: null,
+  huntFilter: null,
+  huntSoPhienCho: null,
+  huntSoLopLucVao: null,
 }
 
 beforeEach(() => {
@@ -84,11 +84,11 @@ describe("readCap5TradeLog / appendCap5TradeRecord", () => {
 
   it("de-dupes by orderId — recording the same order twice replaces, not duplicates", () => {
     appendCap5TradeRecord("user-1", trade1)
-    appendCap5TradeRecord("user-1", { ...trade1, o4: "sai_thang", verdictUser: "sai" })
+    appendCap5TradeRecord("user-1", { ...trade1, huntFilter: "kl", huntSoPhienCho: 9 })
     const log = readCap5TradeLog("user-1")
     expect(log).toHaveLength(1)
-    expect(log[0].o4).toBe("sai_thang")
-    expect(log[0].verdictUser).toBe("sai")
+    expect(log[0].huntFilter).toBe("kl")
+    expect(log[0].huntSoPhienCho).toBe(9)
   })
 
   it("scopes the log per user — user-2 sees nothing from user-1", () => {
@@ -96,28 +96,25 @@ describe("readCap5TradeLog / appendCap5TradeRecord", () => {
     expect(readCap5TradeLog("user-2")).toEqual([])
   })
 
-  it("keeps the 4-ô fields verbatim (khối ⑫ đọc từ đây)", () => {
+  it("giữ NGUYÊN 3 trường nguồn săn (khối ⑫ đọc từ đây)", () => {
     appendCap5TradeRecord("user-1", trade1)
     const [rec] = readCap5TradeLog("user-1")
-    expect(rec.o4).toBe("dung_thang")
-    expect(rec.verdictHe).toBe("dung")
-    expect(rec.verdictUser).toBe("dung")
+    expect(rec.huntFilter).toBe("ngoai")
+    expect(rec.huntSoPhienCho).toBe(2)
+    expect(rec.huntSoLopLucVao).toBe(4)
   })
 
-  it("giữ verdict hệ RIÊNG với verdict user (user đảo verdict vẫn tra được gốc)", () => {
-    appendCap5TradeRecord("user-1", { ...trade1, verdictHe: "dung", verdictUser: "sai", o4: "sai_thang" })
-    const [rec] = readCap5TradeLog("user-1")
-    expect(rec.verdictHe).toBe("dung")
-    expect(rec.verdictUser).toBe("sai")
-    expect(rec.o4).toBe("sai_thang")
-  })
-
-  it("giữ null cho lệnh chưa phân loại (KHÔNG quy về một ô nào)", () => {
+  it("★ lệnh KHÔNG đến từ săn mã giữ `huntFilter: null` — khối ⑫ đếm riêng, không gán bừa", () => {
     appendCap5TradeRecord("user-1", trade2)
     const [rec] = readCap5TradeLog("user-1")
-    expect(rec.o4).toBeNull()
-    expect(rec.verdictHe).toBeNull()
-    expect(rec.verdictUser).toBeNull()
+    expect(rec.huntFilter).toBeNull()
+  })
+
+  it("★ `huntSoLopLucVao: null` là CHƯA BIẾT, không phải 0 lớp", () => {
+    appendCap5TradeRecord("user-1", { ...trade1, huntSoLopLucVao: null })
+    const [rec] = readCap5TradeLog("user-1")
+    expect(rec.huntSoLopLucVao).toBeNull()
+    expect(rec.huntSoLopLucVao).not.toBe(0)
   })
 
   it("keeps every inherited Cấp 1/2/3/4 field so các khối cũ vẫn tính được", () => {
