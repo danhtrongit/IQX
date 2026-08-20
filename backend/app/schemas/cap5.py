@@ -286,12 +286,28 @@ class NguonSanOut(BaseModel):
     """
 
     symbol: str
+    #: Lệnh mà câu trả lời này nói về. NULL = client không truyền ``order_id``
+    #: ⇒ dòng này chỉ nói về SỔ SĂN, xem ``canh_bao_thieu_order_id``.
+    order_id: uuid.UUID | None = None
+    #: ★★ Với ``order_id``: "LỆNH NÀY đến từ săn mã" (đã so mốc săn < mốc đặt
+    #: lệnh). Không có ``order_id``: chỉ là "mã này từng được săn" — KHÔNG được
+    #: đọc thành câu về một lệnh.
     tu_san_ma: bool
     hunt_filter: HuntFilterLiteral | None = None
     hunt_filter_ten: str | None = None
     hunt_signal: str | None = None
     first_hunted_at: datetime | None = None
+    #: Số phiên mã nằm trong Watchlist — tính tới LÚC ĐẶT LỆNH khi có
+    #: ``order_id``, tới hôm nay khi không có (xem ``moc_tinh_phien``).
     so_phien_trong_watchlist: int | None = None
+    moc_tinh_phien: Literal["luc_dat_lenh", "hom_nay"] = "hom_nay"
+    #: Có giá trị ⇔ thiếu ``order_id``: câu cảnh báo phải hiện, vì không có mốc
+    #: lệnh thì "săn sau khi mua" không phân biệt được với "mua từ săn".
+    canh_bao_thieu_order_id: str | None = None
+    #: Có giá trị khi user săn lại mã SAU khi đặt lệnh và lệnh không có dấu
+    #: ``order_kehoach.hunt_filter`` ⇒ bộ lọc trả về là bộ lọc MỚI NHẤT, không
+    #: chắc là bộ lọc lúc mua.
+    canh_bao_nguon_moi_hon: str | None = None
     so_lop_luc_vao: int | None = None
     giai_thich: str
     ly_do_thieu_so_lop: str | None = None

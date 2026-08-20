@@ -29,6 +29,7 @@ thoả". Repo đã dính lớp lỗi "chưa biết hiện thành 0" 5 lần.
 from __future__ import annotations
 
 import dataclasses
+import uuid
 from datetime import UTC, date, datetime, timedelta
 
 import pytest
@@ -1864,6 +1865,130 @@ async def test_nguon_san_dung_cho_dong_ket_so(db_session, test_user):
     assert out["so_lop_luc_vao"] is None
     assert out["ly_do_thieu_so_lop"]
     assert "Khối lượng đột biến" in out["giai_thich"]
+
+
+@pytest.mark.asyncio
+async def test_nguon_san_theo_order_id_dem_phien_toi_luc_dat_lenh(db_session, test_user):
+    """★★ I5: có ``order_id`` ⇒ đếm số phiên chờ TỚI LÚC ĐẶT LỆNH.
+
+    Đếm tới HÔM NAY là nói về một quãng thời gian sau khi quyết định đã xảy ra —
+    và với lệnh đóng từ tháng trước thì con số đó vô nghĩa.
+    """
+    src = _FakeHuntSource(bars={"SAN": _with_last(_bars(), volume=300_000.0)})
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    await _seed_symbol(db_session, "SAN")
+    await _hunt(cap5, test_user.id, "SAN")
+
+    log = (
+        await db_session.execute(
+            select(Cap5HuntLog).where(Cap5HuntLog.symbol == "SAN")
+        )
+    ).scalar_one()
+    log.first_hunted_at = datetime(2026, 6, 1, 3, 0, tzinfo=UTC)  # thứ Hai
+    log.last_hunted_at = log.first_hunted_at
+    await db_session.flush()
+    order = await _make_order(
+        db_session, account.id, test_user.id, symbol="SAN",
+        created_at=datetime(2026, 6, 5, 3, 0),  # thứ Sáu cùng tuần
+    )
+
+    out = await cap5.nguon_san(test_user.id, "san", order_id=order.id)
+    assert out["tu_san_ma"] is True
+    assert out["order_id"] == order.id
+    assert out["so_phien_trong_watchlist"] == 4
+    assert out["moc_tinh_phien"] == "luc_dat_lenh"
+    assert out["canh_bao_thieu_order_id"] is None
+    assert "trước khi đặt lệnh" in out["giai_thich"]
+
+    # Không truyền order_id: vẫn trả lời được, nhưng ĐẾM TỚI HÔM NAY và phải
+    # kèm cảnh báo — nó chỉ nói về sổ săn, không nói về lệnh nào.
+    khong_moc = await cap5.nguon_san(test_user.id, "san")
+    assert khong_moc["moc_tinh_phien"] == "hom_nay"
+    assert khong_moc["canh_bao_thieu_order_id"]
+    assert khong_moc["so_phien_trong_watchlist"] > 4
+
+
+@pytest.mark.asyncio
+async def test_nguon_san_khong_khai_san_sau_khi_mua(db_session, test_user):
+    """★★ I5 kịch bản A: tự gõ mã mua thứ Hai, thứ Sáu mới bấm "+ Watchlist".
+
+    Hàm cũ nhận ``symbol`` nên trả ``tu_san_ma=True`` ngay khi có hàng
+    ``cap5_hunt_log`` ⇒ Kết sổ khai "săn từ bộ lọc «Vượt đỉnh» · đưa vào
+    Watchlist 4 phiên trước" cho một lệnh KHÔNG hề đến từ săn mã.
+    """
+    src = _FakeHuntSource(bars={"VNM": _with_last(_bars(), close=21_000.0)})
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    await _seed_symbol(db_session, "VNM")
+    order = await _make_order(
+        db_session, account.id, test_user.id, symbol="VNM",
+        created_at=datetime.now(UTC).replace(tzinfo=None) - timedelta(days=4),
+    )
+    await _hunt(cap5, test_user.id, "VNM", bo_loc="dinh")
+
+    out = await cap5.nguon_san(test_user.id, "VNM", order_id=order.id)
+    assert out["tu_san_ma"] is False
+    assert out["hunt_filter"] is None
+    assert out["so_phien_trong_watchlist"] is None
+    assert "sau khi đã đặt lệnh" in out["giai_thich"]
+    # Và mốc săn vẫn được trả về (dữ kiện thật), chỉ là không gán cho lệnh này.
+    assert out["first_hunted_at"] is not None
+
+
+@pytest.mark.asyncio
+async def test_nguon_san_order_id_la_hoac_lech_ma(db_session, test_user):
+    """``order_id`` không tồn tại/của người khác ⇒ 404; lệnh khác mã ⇒ 400."""
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id)
+    for sym in ("AAA", "BBB"):
+        await _seed_symbol(db_session, sym)
+    order = await _mua(db_session, account, test_user.id, "AAA")
+
+    with pytest.raises(NotFoundError):
+        await cap5.nguon_san(test_user.id, "AAA", order_id=uuid.uuid4())
+    with pytest.raises(BadRequestError):
+        await cap5.nguon_san(test_user.id, "BBB", order_id=order.id)
+
+
+@pytest.mark.asyncio
+async def test_stamp_kehoach_khong_viet_lai_lich_su_khi_san_lai(db_session, test_user):
+    """★★ I5 kịch bản B: ``_stamp_kehoach`` ghi đè ở MỌI lần recompute.
+
+    User săn lại một mã cũ từ bộ lọc khác (chuyện bình thường) thì
+    ``log.hunt_filter`` đổi — và vì dấu được ghi lại mỗi lần đọc, tỷ lệ thắng
+    của các bộ lọc ở khối ⑫ bị gán HỒI TỐ cho những lệnh đã đóng từ lâu.
+    """
+    src = _FakeHuntSource(
+        bars={"HPG": _with_last(_bars(), close=21_000.0, volume=300_000.0)}
+    )
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    await _seed_symbol(db_session, "HPG")
+    await _hunt(cap5, test_user.id, "HPG", bo_loc="dinh")
+    order = await _mua(db_session, account, test_user.id, "HPG")
+    cap1 = Cap1Service(db_session)
+    await cap1.record_kehoach(
+        test_user.id, order.id, ly_do="ky_thuat",
+        trang_thai_luc_dat="ung_ho", vung_mua=20_000,
+    )
+    await cap5.get_progress(test_user.id)
+
+    row = (
+        await db_session.execute(
+            select(OrderKehoach).where(OrderKehoach.order_id == order.id)
+        )
+    ).scalar_one()
+    assert (row.from_watchlist, row.hunt_filter) == (True, "dinh")
+
+    # Săn lại HPG từ bộ lọc KHÁC rồi đọc lại nhiều lần.
+    await _hunt(cap5, test_user.id, "HPG", bo_loc="tang")
+    await cap5.get_progress(test_user.id)
+    await cap5.phan_tich(test_user.id)
+    await db_session.refresh(row)
+    assert row.hunt_filter == "dinh", "dấu bộ lọc của lệnh cũ bị viết lại hồi tố"
+    assert row.from_watchlist is True
+
+    # Nguồn săn của CHÍNH lệnh đó cũng phải nói bộ lọc lúc mua.
+    out = await cap5.nguon_san(test_user.id, "HPG", order_id=order.id)
+    assert out["hunt_filter"] == "dinh"
+    assert out["canh_bao_nguon_moi_hon"] is None
 
 
 @pytest.mark.asyncio

@@ -376,6 +376,13 @@ class Cap5Service:
             kehoach = by_order.get(order.id)
             if kehoach is None:
                 continue
+            # ★★ ĐÓNG DẤU MỘT LẦN. ``from_watchlist`` khác NULL nghĩa là lệnh
+            # này ĐÃ được kiểm — không được kiểm lại. Recompute lại mỗi lần đọc
+            # sẽ VIẾT LẠI LỊCH SỬ: user săn lại một mã cũ từ bộ lọc khác thì
+            # ``log.hunt_filter`` đổi, và tỷ lệ thắng của các bộ lọc ở khối ⑫ bị
+            # gán hồi tố cho những lệnh đã đóng từ lâu.
+            if kehoach.from_watchlist is not None:
+                continue
             log = self._hunt_for_order(log_by_symbol, order)
             from_watchlist = log is not None
             hunt_filter = log.hunt_filter if log is not None else None
@@ -901,18 +908,49 @@ class Cap5Service:
             "so_phien_hieu_luc": SO_PHIEN_HIEU_LUC,
         }
 
-    async def nguon_san(self, user_id: uuid.UUID, symbol: str) -> dict:
-        """``GET /cap5/nguon-san/{symbol}`` — dòng nguồn săn cho Kết sổ (§8).
+    async def nguon_san(
+        self, user_id: uuid.UUID, symbol: str, *, order_id: uuid.UUID | None = None
+    ) -> dict:
+        """``GET /cap5/nguon-san/{symbol}[?order_id=]`` — nguồn săn cho Kết sổ (§8).
 
-        Trả về đúng những gì hệ BIẾT: bộ lọc đã săn ra mã, tín hiệu lúc săn, số
-        phiên mã nằm trong Watchlist trước khi vào lệnh. ``so_lop_luc_vao`` LUÔN
-        là ``None`` kèm lý do: điểm đồng thuận tại thời điểm đặt lệnh chưa từng
-        được lưu (chỉ có điểm hôm nay + lần chấm trước), nên câu "vào lệnh khi
-        lên 4/5 lớp" của spec §8 KHÔNG được dựng từ điểm hiện tại — đó sẽ là gán
-        một con số của hôm nay cho một quyết định trong quá khứ.
+        ★★ **``order_id`` là thứ làm câu trả lời này ĐÚNG.** Sổ ``cap5_hunt_log``
+        nói "bạn đã từng săn mã này", KHÔNG nói "lệnh kia đến từ săn mã". Không
+        có mốc lệnh thì một mã user tự gõ mua thứ Hai, rồi thứ Sáu mới bấm
+        "+ Watchlist" từ bộ lọc «Vượt đỉnh», vẫn được Kết sổ khai là "săn từ bộ
+        lọc «Vượt đỉnh» · đưa vào Watchlist 4 phiên trước" — đúng thứ tự thời
+        gian bị đảo. Có ``order_id``, hàm so đúng mốc bằng ``_hunt_for_order``
+        (cùng luật nhiệm vụ ② dùng: săn TRƯỚC, mua SAU) và đếm số phiên chờ TỚI
+        LÚC ĐẶT LỆNH, không tới hôm nay.
+
+        Bộ lọc trả về ưu tiên **dấu đã đóng trên chính lệnh đó**
+        (``order_kehoach.hunt_filter``, chép một lần lúc đặt lệnh) chứ không đọc
+        lại ``cap5_hunt_log`` — săn lại mã đó từ bộ lọc khác không được sửa lịch
+        sử của lệnh cũ.
+
+        ``so_lop_luc_vao`` LUÔN ``None`` kèm lý do: điểm đồng thuận tại thời điểm
+        đặt lệnh chưa từng được lưu (chỉ có điểm hôm nay + lần chấm trước), nên
+        câu "vào lệnh khi lên 4/5 lớp" của spec §8 KHÔNG được dựng từ điểm hiện
+        tại — đó sẽ là gán một con số của hôm nay cho một quyết định quá khứ.
         """
         await self._require_progress(user_id)
         clean = (symbol or "").strip().upper()
+
+        order: VirtualOrder | None = None
+        if order_id is not None:
+            order = (
+                await self._session.execute(
+                    select(VirtualOrder).where(
+                        VirtualOrder.id == order_id, VirtualOrder.user_id == user_id
+                    )
+                )
+            ).scalar_one_or_none()
+            if order is None:
+                raise NotFoundError("lệnh")
+            if (order.symbol or "").upper() != clean:
+                raise BadRequestError(
+                    f"Lệnh này là mã {order.symbol}, không phải {clean}"
+                )
+
         log = (
             await self._session.execute(
                 select(Cap5HuntLog).where(
@@ -920,43 +958,110 @@ class Cap5Service:
                 )
             )
         ).scalar_one_or_none()
-        if log is None:
+
+        # Săn SAU khi mua thì lệnh này không đến từ săn mã — chỉ trả lời được
+        # khi biết mốc lệnh, nên nhánh dưới chỉ chạy khi có ``order``.
+        log_cho_lenh = (
+            self._hunt_for_order({log.symbol.upper(): log}, order)
+            if log is not None and order is not None
+            else log
+        )
+        moc = "luc_dat_lenh" if order is not None else "hom_nay"
+        canh_bao_thieu_order = (
+            None
+            if order is not None
+            else (
+                "Dòng này đọc từ SỔ SĂN của bạn, không gắn với lệnh nào: nó nói "
+                "\"bạn đã từng săn mã này\", KHÔNG nói \"lệnh đó đến từ săn mã\" "
+                "(một mã có thể được săn SAU khi đã mua). Truyền order_id để có "
+                "câu trả lời đúng cho một lệnh cụ thể."
+            )
+        )
+        chung = {
+            "symbol": clean,
+            "order_id": order_id,
+            "moc_tinh_phien": moc,
+            "canh_bao_thieu_order_id": canh_bao_thieu_order,
+            "canh_bao_nguon_moi_hon": None,
+            "so_lop_luc_vao": None,
+        }
+
+        if log_cho_lenh is None:
+            giai_thich = (
+                f"Mã {clean} không đến từ săn mã — bạn tự nhập mã này, "
+                "không qua bộ lọc nào."
+            )
+            if log is not None and order is not None:
+                # Có săn, nhưng SAU khi đặt lệnh — nói thẳng, đừng gộp vào
+                # "bạn tự nhập" một cách im lặng.
+                giai_thich = (
+                    f"Lệnh này KHÔNG đến từ săn mã: bạn săn {clean} sau khi đã "
+                    "đặt lệnh (mốc săn đầu tiên muộn hơn mốc đặt lệnh)."
+                )
             return {
-                "symbol": clean,
+                **chung,
                 "tu_san_ma": False,
                 "hunt_filter": None,
                 "hunt_filter_ten": None,
                 "hunt_signal": None,
-                "first_hunted_at": None,
+                "first_hunted_at": log.first_hunted_at if log is not None else None,
                 "so_phien_trong_watchlist": None,
-                "so_lop_luc_vao": None,
-                "giai_thich": (
-                    f"Mã {clean} không đến từ săn mã — bạn tự nhập mã này, "
-                    "không qua bộ lọc nào."
-                ),
+                "giai_thich": giai_thich,
                 "ly_do_thieu_so_lop": None,
             }
 
-        hunt_date = _vn_date(log.first_hunted_at)
+        hunt_date = _vn_date(log_cho_lenh.first_hunted_at)
+        den = _vn_date(order.created_at) if order is not None else _now_vn_date()
         so_phien = (
-            _count_trading_sessions(hunt_date, _now_vn_date()) if hunt_date is not None else None
+            _count_trading_sessions(hunt_date, den)
+            if hunt_date is not None and den is not None
+            else None
         )
-        ten = HUNT_FILTER_LABELS.get(log.hunt_filter, log.hunt_filter)
+
+        bo_loc = log_cho_lenh.hunt_filter
+        canh_bao_moi_hon = None
+        if order is not None:
+            kehoach = (
+                await self._session.execute(
+                    select(OrderKehoach).where(OrderKehoach.order_id == order.id)
+                )
+            ).scalar_one_or_none()
+            dau = (
+                kehoach.hunt_filter
+                if kehoach is not None and kehoach.from_watchlist and kehoach.hunt_filter
+                else None
+            )
+            if dau is not None:
+                bo_loc = dau
+            elif _as_utc(log_cho_lenh.last_hunted_at) > _as_utc(order.created_at):
+                # Không có dấu trên lệnh VÀ sổ săn đã được cập nhật sau lúc mua:
+                # bộ lọc dưới đây là bộ lọc MỚI NHẤT, không chắc là bộ lọc lúc mua.
+                canh_bao_moi_hon = (
+                    f"Bạn đã săn lại {clean} sau khi đặt lệnh này, nên "
+                    f"«{HUNT_FILTER_LABELS.get(bo_loc, bo_loc)}» là bộ lọc mới "
+                    "nhất — hệ không lưu bộ lọc tại đúng thời điểm mua cho lệnh này."
+                )
+
+        ten = HUNT_FILTER_LABELS.get(bo_loc, bo_loc)
         giai_thich = f"Mã này bạn săn từ bộ lọc {ten}"
-        if log.hunt_signal:
-            giai_thich += f" ({log.hunt_signal})"
+        if log_cho_lenh.hunt_signal:
+            giai_thich += f" ({log_cho_lenh.hunt_signal})"
         if so_phien is not None:
-            giai_thich += f" · đưa vào Watchlist {so_phien} phiên trước"
+            giai_thich += (
+                f" · đưa vào Watchlist {so_phien} phiên trước khi đặt lệnh"
+                if order is not None
+                else f" · đưa vào Watchlist {so_phien} phiên trước"
+            )
         giai_thich += "."
         return {
-            "symbol": clean,
+            **chung,
             "tu_san_ma": True,
-            "hunt_filter": log.hunt_filter,
+            "hunt_filter": bo_loc,
             "hunt_filter_ten": ten,
-            "hunt_signal": log.hunt_signal,
-            "first_hunted_at": log.first_hunted_at,
+            "hunt_signal": log_cho_lenh.hunt_signal,
+            "first_hunted_at": log_cho_lenh.first_hunted_at,
             "so_phien_trong_watchlist": so_phien,
-            "so_lop_luc_vao": None,
+            "canh_bao_nguon_moi_hon": canh_bao_moi_hon,
             "giai_thich": giai_thich,
             "ly_do_thieu_so_lop": (
                 "Hệ không lưu điểm đồng thuận tại thời điểm đặt lệnh (chỉ có điểm "

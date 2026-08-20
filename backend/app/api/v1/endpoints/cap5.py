@@ -13,7 +13,9 @@ bước phân loại 4 ô và không có nhật ký đứng ngoài (spec §11 đ
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+import uuid
+
+from fastapi import APIRouter, Query
 
 from app.api.deps import CurrentUser, DBSession
 from app.schemas.cap5 import (
@@ -137,10 +139,32 @@ async def remove_from_watchlist(symbol: str, user: CurrentUser, db: DBSession) -
 
 
 @router.get("/nguon-san/{symbol}", response_model=NguonSanOut)
-async def get_nguon_san(symbol: str, user: CurrentUser, db: DBSession) -> NguonSanOut:
-    """Dòng nguồn săn của một mã cho Kết sổ Cấp 5 (§8)."""
+async def get_nguon_san(
+    symbol: str,
+    user: CurrentUser,
+    db: DBSession,
+    order_id: uuid.UUID | None = Query(
+        default=None,
+        description=(
+            "Lệnh cần hỏi nguồn săn. ★ NÊN LUÔN TRUYỀN: không có nó, câu trả lời "
+            "chỉ nói 'mã này từng được săn' và không phân biệt được 'săn sau khi "
+            "mua' với 'mua từ Watchlist'."
+        ),
+    ),
+) -> NguonSanOut:
+    """Dòng nguồn săn của một lệnh cho Kết sổ (§8) — dùng chung cho Cấp 5-8.
+
+    ★ Có ``order_id``: server so mốc săn đầu tiên với mốc đặt lệnh (cùng luật
+    nhiệm vụ ②) và đếm số phiên chờ TỚI LÚC ĐẶT LỆNH; bộ lọc lấy từ dấu đã đóng
+    trên chính lệnh đó. Không có ``order_id``: vẫn 200 nhưng kèm
+    ``canh_bao_thieu_order_id`` — FE phải hiện nó, không được im lặng đọc
+    ``tu_san_ma`` thành một câu về lệnh.
+
+    404 khi ``order_id`` không tồn tại hoặc là lệnh của người khác; 400 khi lệnh
+    đó không phải mã trong đường dẫn.
+    """
     svc = Cap5Service(db)
-    return NguonSanOut(**await svc.nguon_san(user.id, symbol))
+    return NguonSanOut(**await svc.nguon_san(user.id, symbol, order_id=order_id))
 
 
 @router.get("/phan-tich", response_model=Cap5PhanTichOut)
