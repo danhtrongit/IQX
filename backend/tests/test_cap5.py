@@ -262,10 +262,21 @@ _AI_0_UNG_HO = _insight(
 )
 
 
+def _phien(n: int = 0) -> date:
+    """Ngày phiên cách hôm nay ``n`` ngày lịch.
+
+    ★ Mốc phải TƯƠNG ĐỐI, không được là ngày cố định: điểm đồng thuận chỉ nhận
+    bản phân tích trong cửa sổ ``SO_PHIEN_HIEU_LUC`` phiên gần nhất (xem
+    ``app.services.cap5.consensus``), nên một ``date(2026, 8, 19)`` cứng sẽ tự
+    rơi ra ngoài cửa sổ khi lịch chạy tiếp và làm cả cụm test đỏ vô cớ.
+    """
+    return date.today() - timedelta(days=n)
+
+
 async def _seed_insight(db_session, symbol: str, payload: dict, *, day: date | None = None):
     row = AIInsightHistory(
         symbol=symbol.upper(),
-        session_date=day or date(2026, 8, 19),
+        session_date=day or _phien(),
         payload=payload,
     )
     db_session.add(row)
@@ -1091,7 +1102,7 @@ async def test_nguon_that_tra_none_chu_khong_tra_dict_rong():
     """
     from app.services.cap5.hunt_data import VciHuntDataSource
 
-    src = VciHuntDataSource(use_cache=False, today=date(2026, 8, 19))
+    src = VciHuntDataSource(use_cache=False, today=_phien(2))
     for ben in ("ngoai", "tudoanh"):
         assert await src.net_flow(["AAA", "BBB"], ben=ben, so_phien=5) is None, ben
 
@@ -1374,7 +1385,7 @@ async def test_me_cham_chay_toi_da_1_lan_moi_ngay(db_session, test_user):
     """
     cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
     await _seed_symbol(db_session, "DAY")
-    await _seed_insight(db_session, "DAY", _AI_3_UNG_HO, day=date(2026, 8, 18))
+    await _seed_insight(db_session, "DAY", _AI_3_UNG_HO, day=_phien(3))
     await _hunt(cap5, test_user.id, "DAY")
 
     first = (await cap5.watchlist(test_user.id))["items"][0]
@@ -1382,7 +1393,7 @@ async def test_me_cham_chay_toi_da_1_lan_moi_ngay(db_session, test_user):
     cham_at = first["consensus_at"]
 
     # Bản mới hơn, cùng NGÀY đọc ⇒ không chấm lại.
-    await _seed_insight(db_session, "DAY", _AI_4_UNG_HO, day=date(2026, 8, 19))
+    await _seed_insight(db_session, "DAY", _AI_4_UNG_HO, day=_phien(2))
     again = (await cap5.watchlist(test_user.id))["items"][0]
     assert again["consensus_today"] == 3
     assert again["consensus_at"] == cham_at
@@ -1398,7 +1409,7 @@ async def test_consensus_prev_luu_lan_cham_truoc(db_session, test_user):
     """
     cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
     await _seed_symbol(db_session, "TREND")
-    await _seed_insight(db_session, "TREND", _AI_3_UNG_HO, day=date(2026, 8, 18))
+    await _seed_insight(db_session, "TREND", _AI_3_UNG_HO, day=_phien(3))
     await _hunt(cap5, test_user.id, "TREND")
 
     item = (await cap5.watchlist(test_user.id))["items"][0]
@@ -1413,12 +1424,105 @@ async def test_consensus_prev_luu_lan_cham_truoc(db_session, test_user):
     ).scalar_one()
     row.consensus_at = datetime.now(UTC) - timedelta(days=1)
     await db_session.flush()
-    await _seed_insight(db_session, "TREND", _AI_4_UNG_HO, day=date(2026, 8, 19))
+    await _seed_insight(db_session, "TREND", _AI_4_UNG_HO, day=_phien(2))
 
     item = (await cap5.watchlist(test_user.id))["items"][0]
     assert item["consensus_today"] == 4
     assert item["consensus_prev"] == 3
     assert item["status"] == "notable"
+
+
+@pytest.mark.asyncio
+async def test_ban_phan_tich_qua_cu_khong_duoc_dung_de_cham(db_session, test_user):
+    """★★ C3: bản AI Insight ngoài cửa sổ phiên KHÔNG được dùng để chấm 5 lớp.
+
+    ``ai_insight_history`` chỉ được ghi khi có người bấm "AI Phân tích" (không
+    cron), nên một mã có thể chỉ có bản phân tích 5,5 tháng tuổi. Chấm 4/5 lớp
+    từ nó rồi hiện "★ Đáng chú ý · Đặt lệnh →" là gán tình trạng của tháng Ba
+    cho phiên hôm nay — và chính ``consensus.py`` tự khai là "phiên gần nhất".
+    """
+    from app.services.cap5.consensus import SO_PHIEN_HIEU_LUC
+
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "OLD")
+    qua_cu = _phien(170)
+    await _seed_insight(db_session, "OLD", _AI_4_UNG_HO, day=qua_cu)
+    await _hunt(cap5, test_user.id, "OLD")
+
+    item = (await cap5.watchlist(test_user.id))["items"][0]
+    assert item["consensus_today"] is None
+    assert item["consensus_da_cham"] is None
+    assert item["status"] is None
+    assert item["nhac"] is None
+    assert item["consensus_session_date"] is None
+    # Nói RÕ vì sao chưa chấm: có bản phân tích, nhưng nó quá cũ.
+    assert item["consensus_session_date_qua_han"] == qua_cu
+    chi_tiet = {r["lop"]: r for r in item["lop_chi_tiet"]}
+    ly_do = chi_tiet["ky_thuat"]["giai_thich"]
+    assert str(SO_PHIEN_HIEU_LUC) in ly_do
+    assert qua_cu.strftime("%d/%m/%Y") in ly_do
+
+    # Và hàng DB cũng không được ghi điểm nào.
+    row = (
+        await db_session.execute(
+            select(WatchlistItem).where(WatchlistItem.symbol == "OLD")
+        )
+    ).scalar_one()
+    assert (row.consensus_today, row.consensus_da_cham, row.status) == (None, None, None)
+
+
+@pytest.mark.asyncio
+async def test_phien_cua_ban_phan_tich_len_wire(db_session, test_user):
+    """★ C3: ``session_date`` được tính rồi BỊ BỎ trên wire ⇒ không ký tự nào cho
+    biết điểm đồng thuận dựng từ dữ liệu phiên nào."""
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "FRESH")
+    hom_qua = _phien(1)
+    await _seed_insight(db_session, "FRESH", _AI_4_UNG_HO, day=hom_qua)
+    await _hunt(cap5, test_user.id, "FRESH")
+
+    wl = await cap5.watchlist(test_user.id)
+    item = wl["items"][0]
+    assert item["consensus_today"] == 4
+    assert item["consensus_session_date"] == hom_qua
+    assert item["consensus_session_date_qua_han"] is None
+    assert item["consensus_het_han"] is False
+    # FE cần biết cửa sổ hiệu lực để nói đúng câu "trong N phiên gần nhất".
+    from app.services.cap5.consensus import SO_PHIEN_HIEU_LUC
+
+    assert wl["so_phien_hieu_luc"] == SO_PHIEN_HIEU_LUC
+
+
+@pytest.mark.asyncio
+async def test_diem_da_luu_het_hieu_luc_thi_noi_ra_chu_khong_hoi_thuc(
+    db_session, test_user
+):
+    """★★ C3 (mặt còn lại): điểm ĐÃ LƯU không được tự già đi trong im lặng.
+
+    Mã được chấm 4/5 hôm nay, rồi nhiều tháng không ai chạy lại AI Phân tích:
+    con số 4/5 vẫn nằm trong DB. Thẻ không được tiếp tục nói "4/5 lớp ĐANG ủng
+    hộ" — câu nhắc phải chuyển sang "đây là số cũ".
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "AGED")
+    row_insight = await _seed_insight(db_session, "AGED", _AI_4_UNG_HO)
+    await _hunt(cap5, test_user.id, "AGED")
+
+    item = (await cap5.watchlist(test_user.id))["items"][0]
+    assert (item["consensus_today"], item["status"]) == (4, "notable")
+    assert item["consensus_het_han"] is False
+    assert "Quyết định mua vẫn là của bạn" in item["nhac"]
+
+    # Thời gian trôi: bản phân tích duy nhất rơi ra ngoài cửa sổ hiệu lực.
+    row_insight.session_date = _phien(170)
+    await db_session.flush()
+
+    item = (await cap5.watchlist(test_user.id))["items"][0]
+    assert item["consensus_today"] == 4  # số đã lưu KHÔNG bị xoá
+    assert item["consensus_het_han"] is True
+    assert item["consensus_session_date"] is None
+    assert "cũ" in item["nhac"]
+    assert "Quyết định mua vẫn là của bạn" not in item["nhac"]
 
 
 @pytest.mark.asyncio
@@ -2335,7 +2439,7 @@ async def test_consensus_prev_giu_diem_khac_gan_nhat_chu_khong_ghi_de_moi_ngay(
     """
     cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
     await _seed_symbol(db_session, "STEP")
-    await _seed_insight(db_session, "STEP", _AI_3_UNG_HO, day=date(2026, 8, 17))
+    await _seed_insight(db_session, "STEP", _AI_3_UNG_HO, day=_phien(4))
     await _hunt(cap5, test_user.id, "STEP")
 
     row = (
@@ -2354,18 +2458,18 @@ async def test_consensus_prev_giu_diem_khac_gan_nhat_chu_khong_ghi_de_moi_ngay(
     assert row.consensus_prev is None
 
     # Phiên sau: 3 → 4 (bước chuyển).
-    await _seed_insight(db_session, "STEP", _AI_4_UNG_HO, day=date(2026, 8, 18))
+    await _seed_insight(db_session, "STEP", _AI_4_UNG_HO, day=_phien(3))
     item = await _cham_lai_ngay_moi()
     assert (item["consensus_prev"], item["consensus_today"]) == (3, 4)
 
     # Hai phiên tiếp: vẫn 4/5 — bước chuyển 3 → 4 PHẢI còn trên thẻ.
-    for day in (date(2026, 8, 19), date(2026, 8, 20)):
+    for day in (_phien(2), _phien(1)):
         await _seed_insight(db_session, "STEP", _AI_4_UNG_HO, day=day)
         item = await _cham_lai_ngay_moi()
         assert (item["consensus_prev"], item["consensus_today"]) == (3, 4), day
 
     # Đổi lần nữa: 4 → 0, và điểm cũ 3 bị thay bằng 4.
-    await _seed_insight(db_session, "STEP", _AI_0_UNG_HO, day=date(2026, 8, 21))
+    await _seed_insight(db_session, "STEP", _AI_0_UNG_HO, day=_phien(0))
     item = await _cham_lai_ngay_moi()
     assert (item["consensus_prev"], item["consensus_today"]) == (4, 0)
     assert item["status"] == "watching"

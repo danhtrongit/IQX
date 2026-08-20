@@ -26,7 +26,7 @@ không nullable: 0 ở đó là con số THẬT (đếm hàng trong bảng do ta
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -236,6 +236,20 @@ class Cap5WatchlistItemOut(BaseModel):
     #: Số lớp hệ THỰC SỰ chấm được — mẫu số thật của ``consensus_today``.
     consensus_da_cham: int | None = None
     consensus_at: datetime | None = None
+    #: ★★ PHIÊN của bản phân tích 5 lớp đã dùng để chấm — bắt buộc phải hiện
+    #: cạnh con số: điểm đồng thuận đọc lại một bản AI Insight đã lưu, và bản đó
+    #: có thể là của vài phiên trước (bảng chỉ được ghi khi có người bấm "AI Phân
+    #: tích", không có cron). NULL = lần đọc này không nạp chi tiết (xem ``lop``).
+    consensus_session_date: date | None = None
+    #: Phiên của bản phân tích gần nhất bị TỪ CHỐI vì quá cũ (ngoài
+    #: ``so_phien_hieu_luc`` phiên). Có giá trị ⇒ "mã này CÓ bản phân tích nhưng
+    #: nó quá cũ", khác hẳn NULL = "chưa có bản nào".
+    consensus_session_date_qua_han: date | None = None
+    #: True = điểm đã lưu KHÔNG còn bản phân tích trong cửa sổ hiệu lực để xác
+    #: nhận ⇒ FE phải hiện nó như SỐ CŨ (không phải tình trạng hôm nay).
+    consensus_het_han: bool = False
+    #: Cửa sổ hiệu lực (số phiên) của một bản phân tích 5 lớp.
+    so_phien_hieu_luc: int
     status: WatchStatusLiteral | None = None
     tong_so_lop: int
     nguong_dang_chu_y: int
@@ -254,6 +268,8 @@ class Cap5WatchlistOut(BaseModel):
     so_luong: int
     so_dang_chu_y: int
     toi_da: int
+    #: Cửa sổ hiệu lực (số phiên) của bản phân tích 5 lớp dùng để chấm.
+    so_phien_hieu_luc: int
 
 
 # ══════════════════════════════════════════════════════

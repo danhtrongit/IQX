@@ -35,7 +35,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -91,6 +91,64 @@ MUC_NGUOC_CHIEU = "bad"
 NGUONG_DANG_CHU_Y = 4
 TONG_SO_LOP = len(LOP_KEYS)
 
+_VN_TZ = timezone(timedelta(hours=7))
+
+#: ★★ **CỬA SỔ HIỆU LỰC của một bản AI Insight khi dùng để chấm đồng thuận.**
+#:
+#: Bảng ``ai_insight_history`` chỉ được ghi khi CÓ NGƯỜI bấm "AI Phân tích" cho
+#: mã đó — không có cron nào rót đầy nó. Không chặn ngày (chỉ ``ORDER BY
+#: session_date DESC``) nghĩa là một bản phân tích 5,5 tháng tuổi vẫn chấm ra
+#: "4/5 lớp · ★ Đáng chú ý" cho phiên hôm nay, cạnh một nút "Đặt lệnh →". Cả 4
+#: lớp chấm được (xu hướng · dòng tiền · nội bộ · tin tức) đều là những thứ
+#: ĐỌC THEO PHIÊN, nên đó là gán tình trạng tháng Ba cho hôm nay.
+#:
+#: Chọn **5 phiên** (≈ một tuần giao dịch) chứ không phải "đúng phiên gần nhất":
+#: một bản đọc trong tuần vẫn còn mô tả bức tranh hiện tại, còn đòi đúng phiên
+#: hôm nay sẽ khiến gần như mọi mã trả về "chưa chấm được" (vì không có cron) —
+#: đúng nhưng vô dụng. Cửa sổ này đi kèm hai điều BẮT BUỘC: ``session_date``
+#: phải lên wire để user thấy dữ liệu của phiên nào, và điểm ĐÃ LƯU mà không
+#: còn bản phân tích trong cửa sổ thì phải bị đánh dấu là số cũ (xem
+#: ``Cap5Service._watchlist_out``).
+SO_PHIEN_HIEU_LUC = 5
+
+
+def hom_nay_vn() -> date:
+    return datetime.now(_VN_TZ).date()
+
+
+def ngay_som_nhat_con_hieu_luc(
+    today: date, *, so_phien: int = SO_PHIEN_HIEU_LUC
+) -> date:
+    """Ngày phiên SỚM NHẤT còn được dùng để chấm, tính từ ``today``.
+
+    Đếm lùi ``so_phien`` phiên (Mon-Fri) từ ``today``; bản phân tích của chính
+    ``today`` hiển nhiên còn hiệu lực.
+    """
+    d = today
+    con = so_phien
+    while con > 0:
+        d -= timedelta(days=1)
+        if d.weekday() < 5:
+            con -= 1
+    return d
+
+
+def _ly_do_chua_cham(session_date: date | None, qua_han: date | None) -> str:
+    """Câu nói RÕ vì sao một lớp chưa chấm được (thay câu "phiên gần nhất" cũ,
+    câu đó tự nói ngược khi dữ liệu thật ra là của 5 tháng trước)."""
+    if qua_han is not None:
+        return (
+            f"Bản phân tích 5 lớp gần nhất của mã này là phiên "
+            f"{qua_han.strftime('%d/%m/%Y')} — đã quá {SO_PHIEN_HIEU_LUC} phiên "
+            "nên không dùng để chấm cho hôm nay."
+        )
+    if session_date is not None:
+        return (
+            f"Bản phân tích phiên {session_date.strftime('%d/%m/%Y')} không có "
+            "nhãn hợp lệ cho lớp này."
+        )
+    return "Mã này chưa có bản phân tích 5 lớp nào để chấm."
+
 
 @dataclass(frozen=True)
 class ConsensusResult:
@@ -104,7 +162,12 @@ class ConsensusResult:
     so_lop_da_cham: int | None
     status: str | None
     lop: list[dict]
+    #: Phiên của bản phân tích ĐÃ DÙNG để chấm. ``None`` khi không chấm được.
     session_date: date | None
+    #: Phiên của bản phân tích gần nhất mà ta ĐÃ TỪ CHỐI vì quá cũ (ngoài
+    #: ``SO_PHIEN_HIEU_LUC`` phiên). ``None`` = không có bản nào, hoặc bản gần
+    #: nhất còn hiệu lực. Hai trạng thái này KHÁC nhau trên mặt thẻ.
+    session_date_qua_han: date | None = None
 
 
 def _ung_ho(layer_key: str, status_label: object) -> bool | None:
@@ -145,11 +208,17 @@ def _status(diem: int, so_lop_da_cham: int) -> str | None:
     return None
 
 
-def cham_tu_payload(payload: object, *, session_date: date | None = None) -> ConsensusResult:
+def cham_tu_payload(
+    payload: object,
+    *,
+    session_date: date | None = None,
+    session_date_qua_han: date | None = None,
+) -> ConsensusResult:
     """Quy một payload AI Insight (raw ``ai_json``) về điểm đồng thuận 5 lớp."""
     lop_rows: list[dict] = []
     diem = 0
     da_cham = 0
+    ly_do_thieu = _ly_do_chua_cham(session_date, session_date_qua_han)
 
     layers = payload if isinstance(payload, dict) else {}
     for lop in LOP_KEYS:
@@ -178,18 +247,19 @@ def cham_tu_payload(payload: object, *, session_date: date | None = None) -> Con
                 "giai_thich": (
                     "Chưa có nguồn chấm lớp Định giá cho mã này."
                     if layer_key is None
-                    else (
-                        "Chưa có bản phân tích 5 lớp cho phiên gần nhất."
-                        if ket is None
-                        else f"AI Insight {layer_key}: {nhan_raw}"
-                    )
+                    else (ly_do_thieu if ket is None else f"AI Insight {layer_key}: {nhan_raw}")
                 ),
             }
         )
 
     if da_cham == 0:
         return ConsensusResult(
-            diem=None, so_lop_da_cham=None, status=None, lop=lop_rows, session_date=None
+            diem=None,
+            so_lop_da_cham=None,
+            status=None,
+            lop=lop_rows,
+            session_date=None,
+            session_date_qua_han=session_date_qua_han,
         )
     return ConsensusResult(
         diem=diem,
@@ -197,6 +267,7 @@ def cham_tu_payload(payload: object, *, session_date: date | None = None) -> Con
         status=_status(diem, da_cham),
         lop=lop_rows,
         session_date=session_date,
+        session_date_qua_han=session_date_qua_han,
     )
 
 
@@ -206,15 +277,46 @@ class InsightConsensusSource:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def cham_nhieu(self, symbols: Sequence[str]) -> dict[str, ConsensusResult]:
+    @staticmethod
+    def _chua_cham(*, qua_han: date | None = None) -> ConsensusResult:
+        """Kết quả "chưa chấm được" — MỘT chỗ dựng, kèm lý do đúng sự thật."""
+        goc = cham_tu_payload(None, session_date_qua_han=qua_han)
+        return ConsensusResult(
+            diem=None,
+            so_lop_da_cham=None,
+            status=None,
+            lop=goc.lop,
+            session_date=None,
+            session_date_qua_han=qua_han,
+        )
+
+    def _cham_row(
+        self, row: AIInsightHistory | None, *, som_nhat: date
+    ) -> ConsensusResult:
+        """Chấm bản phân tích gần nhất của một mã, CHẶN theo cửa sổ phiên.
+
+        ★ Ba trạng thái, không được gộp: không có bản nào · có nhưng quá cũ ·
+        chấm được. Trạng thái giữa trước đây bị chấm như thể là dữ liệu hôm nay.
+        """
+        if row is None:
+            return self._chua_cham()
+        if row.session_date is None or row.session_date < som_nhat:
+            return self._chua_cham(qua_han=row.session_date)
+        return cham_tu_payload(row.payload, session_date=row.session_date)
+
+    async def cham_nhieu(
+        self, symbols: Sequence[str], *, today: date | None = None
+    ) -> dict[str, ConsensusResult]:
         """Chấm cả rổ mã trong MỘT truy vấn (Watchlist có tới 50 mã).
 
-        Mã chưa từng có bản Insight vẫn có mặt trong dict, ở dạng "chưa chấm
-        được" (``diem is None``) — vắng mặt sẽ khiến chỗ gọi phải tự đoán.
+        Mã chưa từng có bản Insight — hoặc chỉ có bản NGOÀI cửa sổ
+        ``SO_PHIEN_HIEU_LUC`` phiên — vẫn có mặt trong dict, ở dạng "chưa chấm
+        được" (``diem is None``): vắng mặt sẽ khiến chỗ gọi phải tự đoán.
         """
         ups = sorted({s.upper() for s in symbols})
         if not ups:
             return {}
+        som_nhat = ngay_som_nhat_con_hieu_luc(today or hom_nay_vn())
         rows = (
             await self._session.execute(
                 select(AIInsightHistory)
@@ -228,21 +330,10 @@ class InsightConsensusSource:
         for row in rows:
             moi_nhat.setdefault(row.symbol.upper(), row)
         return {
-            ma: (
-                cham_tu_payload(moi_nhat[ma].payload, session_date=moi_nhat[ma].session_date)
-                if ma in moi_nhat
-                else ConsensusResult(
-                    diem=None,
-                    so_lop_da_cham=None,
-                    status=None,
-                    lop=cham_tu_payload(None).lop,
-                    session_date=None,
-                )
-            )
-            for ma in ups
+            ma: self._cham_row(moi_nhat.get(ma), som_nhat=som_nhat) for ma in ups
         }
 
-    async def cham(self, symbol: str) -> ConsensusResult:
+    async def cham(self, symbol: str, *, today: date | None = None) -> ConsensusResult:
         row = (
             await self._session.execute(
                 select(AIInsightHistory)
@@ -251,12 +342,6 @@ class InsightConsensusSource:
                 .limit(1)
             )
         ).scalar_one_or_none()
-        if row is None:
-            return ConsensusResult(
-                diem=None,
-                so_lop_da_cham=None,
-                status=None,
-                lop=cham_tu_payload(None).lop,
-                session_date=None,
-            )
-        return cham_tu_payload(row.payload, session_date=row.session_date)
+        return self._cham_row(
+            row, som_nhat=ngay_som_nhat_con_hieu_luc(today or hom_nay_vn())
+        )

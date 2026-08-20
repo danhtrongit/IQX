@@ -112,6 +112,7 @@ from app.models.watchlist import WatchlistItem
 from app.services.cap1.service import Cap1Service
 from app.services.cap5.consensus import (
     NGUONG_DANG_CHU_Y,
+    SO_PHIEN_HIEU_LUC,
     TONG_SO_LOP,
     ConsensusResult,
     InsightConsensusSource,
@@ -168,6 +169,15 @@ _HUNT_FILTER_VALUES: tuple[str, ...] = tuple(m.value for m in HuntFilter)
 _NHAC_DANG_CHU_Y = (
     f"{NGUONG_DANG_CHU_Y}/{TONG_SO_LOP} lớp đang ủng hộ — đáng để bạn xem kỹ. "
     "Quyết định mua vẫn là của bạn."
+)
+
+#: ★ Câu thay thế khi điểm đã lưu KHÔNG còn bản phân tích trong cửa sổ phiên để
+#: xác nhận. Câu trên nói "ĐANG ủng hộ" — thì hiện tại — nên dùng nó cho một
+#: con số không ai xác nhận lại nhiều tháng là đúng lỗi C3.
+_NHAC_DIEM_CU = (
+    "Điểm này dựng từ bản phân tích 5 lớp đã cũ — chưa có bản mới nào trong "
+    f"{SO_PHIEN_HIEU_LUC} phiên gần nhất, nên đừng đọc nó như tình trạng hôm nay. "
+    "Mở AI Phân tích cho mã này để có bản mới."
 )
 
 _KHOI_13_GIAI_THICH = (
@@ -815,11 +825,23 @@ class Cap5Service:
             and ket.diem == row.consensus_today
             and ket.so_lop_da_cham == row.consensus_da_cham
         )
+        # ★ Mã CHƯA từng chấm được (không có bản phân tích, hoặc bản duy nhất đã
+        # quá cũ): vẫn vẽ 5 lớp trống kèm LÝ DO. Nó không mâu thuẫn với con số
+        # nào cả (chẳng có số nào), và đây là chỗ duy nhất user đọc được "vì sao
+        # mã này chưa có điểm".
+        chua_ai_cham = (
+            ket is not None and ket.diem is None and row.consensus_today is None
+        )
+        co_chi_tiet = khop or chua_ai_cham
         hunt_date = _vn_date(row.hunt_at)
         so_phien = (
             _count_trading_sessions(hunt_date, _now_vn_date()) if hunt_date is not None else None
         )
         diem = row.consensus_today
+        # ★★ C3: điểm ĐÃ LƯU mà hôm nay không còn bản phân tích nào trong cửa sổ
+        # hiệu lực để xác nhận ⇒ nó là SỐ CŨ. Không xoá (nó là lịch sử thật),
+        # nhưng phải đánh dấu — nếu không, thẻ cứ nói "4/5 lớp đang ủng hộ" mãi.
+        het_han = diem is not None and (ket is None or ket.diem is None)
         return {
             "symbol": row.symbol,
             "added_at": row.created_at,
@@ -832,17 +854,32 @@ class Cap5Service:
             "consensus_prev": row.consensus_prev,
             "consensus_da_cham": row.consensus_da_cham,
             "consensus_at": row.consensus_at,
+            # Phiên của bản phân tích đã dùng để chấm — cùng cổng ``khop`` với
+            # cụm icon: gán ngày của một lần chấm khác cho con số đang hiện là
+            # tự tạo một mâu thuẫn ngay trên mặt thẻ.
+            "consensus_session_date": ket.session_date if khop else None,
+            # Có bản phân tích nhưng ĐÃ QUÁ CŨ (bị từ chối) — khác hẳn "chưa có
+            # bản nào", và là câu trả lời cho "vì sao mã này không có điểm".
+            "consensus_session_date_qua_han": (
+                ket.session_date_qua_han if ket is not None else None
+            ),
+            "consensus_het_han": het_han,
+            "so_phien_hieu_luc": SO_PHIEN_HIEU_LUC,
             "status": row.status,
             "tong_so_lop": TONG_SO_LOP,
             "nguong_dang_chu_y": NGUONG_DANG_CHU_Y,
-            "nhac": _NHAC_DANG_CHU_Y if row.status == WatchlistStatus.NOTABLE.value else None,
+            "nhac": (
+                None
+                if row.status != WatchlistStatus.NOTABLE.value
+                else (_NHAC_DIEM_CU if het_han else _NHAC_DANG_CHU_Y)
+            ),
             # Chi tiết từng lớp chỉ được vẽ khi nó KHỚP con số đã lưu. Mẻ chấm
             # ghi 1 lần/ngày, nên giữa ngày có thể xuất hiện bản Insight mới cho
             # ra điểm khác — vẽ 4 icon ✅ cạnh con số "3/5" là một mâu thuẫn
             # ngay trên mặt thẻ. Lệch thì để trống (FE hiện "–"), mẻ hôm sau tự
             # đồng bộ lại.
-            "lop": {r["lop"]: r["muc"] for r in ket.lop} if khop else None,
-            "lop_chi_tiet": ket.lop if khop else None,
+            "lop": {r["lop"]: r["muc"] for r in ket.lop} if co_chi_tiet else None,
+            "lop_chi_tiet": ket.lop if co_chi_tiet else None,
         }
 
     async def watchlist(self, user_id: uuid.UUID) -> dict:
@@ -859,6 +896,9 @@ class Cap5Service:
             "so_luong": len(items),
             "so_dang_chu_y": so_dang_chu_y,
             "toi_da": MAX_WATCHLIST_ITEMS,
+            # Cửa sổ hiệu lực của bản phân tích 5 lớp — FE cần con số này để nói
+            # đúng câu "chưa có bản phân tích nào trong N phiên gần nhất".
+            "so_phien_hieu_luc": SO_PHIEN_HIEU_LUC,
         }
 
     async def nguon_san(self, user_id: uuid.UUID, symbol: str) -> dict:
