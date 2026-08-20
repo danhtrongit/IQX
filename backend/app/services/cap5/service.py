@@ -986,7 +986,16 @@ class Cap5Service:
             )
 
         du_mau = [r for r in rows if r["du_mau"]]
-        best = max(du_mau, key=lambda r: (r["ty_le_thang"], -_HUNT_FILTER_VALUES.index(r["ma"])), default=None) if du_mau else None
+        # Hoà tỷ lệ thắng ⇒ bộ lọc đứng trước trong bảng spec §5.3 thắng (chọn
+        # tất định, không phụ thuộc thứ tự dòng trong DB).
+        best = (
+            max(
+                du_mau,
+                key=lambda r: (r["ty_le_thang"], -_HUNT_FILTER_VALUES.index(r["ma"])),
+            )
+            if du_mau
+            else None
+        )
         worst = (
             min(
                 du_mau,

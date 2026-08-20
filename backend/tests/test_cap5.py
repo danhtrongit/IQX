@@ -36,11 +36,11 @@ from sqlalchemy import select
 
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
 from app.models.ai_insight_history import AIInsightHistory
-from app.models.cap1 import Cap1Progress, OrderKehoach, OrderKetso
+from app.models.cap1 import Cap1Progress, OrderKehoach
 from app.models.cap2 import Cap2Progress
 from app.models.cap3 import Cap3Progress
 from app.models.cap4 import Cap4Progress
-from app.models.cap5 import Cap5HuntLog, Cap5Progress
+from app.models.cap5 import Cap5HuntLog
 from app.models.symbol import Symbol
 from app.models.virtual_trading import OrderSide, OrderStatus, OrderType, VirtualOrder
 from app.models.watchlist import WatchlistItem
@@ -1117,7 +1117,7 @@ async def test_nguon_tra_dict_rong_van_phai_ra_chua_du_du_lieu(db_session, test_
 
 
 @pytest.mark.asyncio
-async def test_them_watchlist_ghi_nguon_san_va_TIN_HIEU_DO_SERVER_TINH(
+async def test_them_watchlist_ghi_nguon_san_va_tin_hieu_do_server_tinh(
     db_session, test_user
 ):
     """★ ``hunt_signal`` client gửi lên BỊ BỎ QUA — server tự tính từ dữ liệu thật.
@@ -1231,7 +1231,7 @@ async def test_bo_theo_doi_ma_khong_co_thi_404(db_session, test_user):
 
 
 @pytest.mark.asyncio
-async def test_chua_co_ban_insight_thi_KHONG_cham_diem_0_tren_5(db_session, test_user):
+async def test_chua_co_ban_insight_thi_khong_cham_diem_0_tren_5(db_session, test_user):
     """★★ Mã chưa từng có bản phân tích 5 lớp ⇒ mọi ô điểm đồng thuận để NULL.
 
     Ghi 0 ở đây là nói "không lớp nào ủng hộ" — một kết luận chưa ai tính.
@@ -1280,7 +1280,7 @@ async def test_dang_chu_y_khi_da_xac_nhan_4_lop_ung_ho(db_session, test_user):
 
 
 @pytest.mark.asyncio
-async def test_dang_quan_sat_chi_khi_CHAC_CHAN_khong_the_toi_4(db_session, test_user):
+async def test_dang_quan_sat_chi_khi_chac_chan_khong_the_toi_4(db_session, test_user):
     """"Đang quan sát" là một KẾT LUẬN ("<4 lớp ủng hộ"), không phải chỗ chứa
     dữ liệu thiếu.
 
@@ -1299,7 +1299,7 @@ async def test_dang_quan_sat_chi_khi_CHAC_CHAN_khong_the_toi_4(db_session, test_
 
 
 @pytest.mark.asyncio
-async def test_vung_giua_de_trang_thai_None_chu_khong_doan(db_session, test_user):
+async def test_vung_giua_de_trang_thai_none_chu_khong_doan(db_session, test_user):
     """3 lớp ủng hộ + 1 lớp CHƯA BIẾT ⇒ vẫn có thể chạm 4 ⇒ chưa kết luận.
 
     Gọi nó là "Đang quan sát" là khẳng định mã đã bị chấm và không đủ 4 lớp.
@@ -1574,7 +1574,7 @@ async def test_khoi_12_khong_gan_lenh_tu_nhap_vao_bo_loc_nao(db_session, test_us
 
 
 @pytest.mark.asyncio
-async def test_lenh_cu_giu_from_watchlist_NULL_lenh_moi_duoc_kiem(db_session, test_user):
+async def test_lenh_cu_giu_from_watchlist_null_lenh_moi_duoc_kiem(db_session, test_user):
     """★ ``order_kehoach.from_watchlist`` có BA trạng thái.
 
     True = đến từ săn · False = đã kiểm và không phải · NULL = lệnh Cấp 1-4 cũ
@@ -2052,7 +2052,7 @@ def _seed_prod_shape(conn) -> None:
     )
 
 
-def test_migration_nghi_huu_4_o_dung_ngoai_va_tra_2_o_nhiem_vu_ve_NULL():
+def test_migration_nghi_huu_4_o_dung_ngoai_va_tra_2_o_nhiem_vu_ve_null():
     """★★ ÁNH XẠ: cả ``task_1_done_at`` lẫn ``task_2_done_at`` về NULL.
 
     Nhiệm vụ cũ ① là "lệnh đầu tiên đã phân loại 4 ô", ② là "ghi nước đứng ngoài
@@ -2144,7 +2144,7 @@ def test_migration_moi_cot_diem_ty_le_moi_deu_nullable():
         assert notnull("cap5_progress")["so_ma_mua_tu_watchlist"] == 1
 
 
-def test_migration_round_trip_len_xuong_len_HAI_VONG():
+def test_migration_round_trip_len_xuong_len_hai_vong():
     """upgrade → downgrade → upgrade → downgrade → upgrade là BẤT ĐỘNG.
 
     Downgrade LOSSY theo thiết kế (xem docstring revision): dòng đứng ngoài và
