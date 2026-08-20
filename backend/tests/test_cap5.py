@@ -1084,7 +1084,14 @@ async def test_bo_loc_tang_can_ca_hai_ve(db_session, test_user):
 
 @pytest.mark.asyncio
 async def test_loc_san_chan_gia_thap_va_thanh_khoan_mong(db_session, test_user):
-    """Lọc sàn §5.2 áp cho MỌI bộ lọc: giá ≥3.000đ · GTGD TB ≥1 tỷ/phiên."""
+    """Lọc sàn §5.2 trên nhánh NẾN NGÀY (chạy ``kl``): giá ≥3.000đ · GTGD TB ≥1
+    tỷ/phiên.
+
+    ★ Nhánh DÒNG TIỀN là một vòng lặp KHÁC (``_run_dong_tien``) và có bài riêng:
+    ``test_dong_tien_van_ap_loc_san_bo_chuoi_ngan_va_tran_10``. Docstring này
+    từng khai "áp cho MỌI bộ lọc" trong khi chỉ chạy ``kl`` — xoá ``_qua_loc_san``
+    khỏi nhánh dòng tiền vẫn xanh.
+    """
     src = _FakeHuntSource(
         bars={
             "OK": _with_last(_bars(), volume=300_000.0),
@@ -1174,7 +1181,12 @@ async def test_moi_ma_trong_ro_san_deu_them_duoc_vao_watchlist(db_session, test_
 
 @pytest.mark.asyncio
 async def test_chi_hien_toi_da_10_ma_nhung_dem_du_tong(db_session, test_user):
-    """§5.4: tối đa 10 mã trong popup, còn dòng minh bạch nói TỔNG thật."""
+    """§5.4 trên nhánh nến ngày (``kl``): tối đa 10 mã trong popup, còn dòng minh
+    bạch nói TỔNG thật.
+
+    ★ Trần 10 của nhánh dòng tiền được canh ở
+    ``test_dong_tien_van_ap_loc_san_bo_chuoi_ngan_va_tran_10``.
+    """
     bars = {
         f"S{i:02d}": _with_last(_bars(), volume=200_000.0 + i * 10_000)
         for i in range(12)
@@ -1229,6 +1241,51 @@ async def test_bo_loc_dong_tien_chay_ngay_khi_co_nguon(db_session, test_user):
     tudoanh = await cap5.san_ma_result(test_user.id, "tudoanh")
     assert tudoanh["kha_dung"] is False
     assert tudoanh["tong_so_ma"] is None
+
+
+@pytest.mark.asyncio
+async def test_dong_tien_van_ap_loc_san_bo_chuoi_ngan_va_tran_10(db_session, test_user):
+    """★★ Nhánh DÒNG TIỀN là một vòng lặp riêng — ba thứ dễ mất mà vẫn xanh:
+
+      · ``_qua_loc_san`` (mọi fixture dòng tiền cũ đều qua lọc sàn ⇒ xoá lời gọi
+        là mã penny/thanh khoản mỏng lọt thẳng vào top 10);
+      · ``len(chuoi) < SO_PHIEN_GOM`` (chuỗi 3 phiên không đủ để nói "≥3/5
+        phiên" — phải BỎ QUA, không được đếm như đủ);
+      · ``[:TOP_N]`` (trần 10 mục của popup).
+    """
+    ty = 1_000_000_000.0
+    du = [ty] * 5
+    ma_thoa = [f"F{i:02d}" for i in range(12)]
+    bars = {m: _bars() for m in ma_thoa}
+    bars["PENNY"] = _with_last(_bars(close=2_000.0), close=2_000.0)
+    bars["THIN"] = _bars(gtgd=MIN_GTGD_TB_VND * 0.5)
+    bars["NGAN"] = _bars()
+    flows = {
+        "ngoai": {
+            **{m: du for m in ma_thoa},
+            "PENNY": du,
+            "THIN": du,
+            "NGAN": [ty, ty, ty],  # chỉ 3 phiên ⇒ chưa đủ để xét
+        }
+    }
+    src = _FakeHuntSource(bars=bars, flows=flows)
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for sym in [*ma_thoa, "PENNY", "THIN", "NGAN"]:
+        await _seed_symbol(db_session, sym)
+
+    result = await cap5.san_ma_result(test_user.id, "ngoai")
+    assert result["kha_dung"] is True
+    syms = [i["symbol"] for i in result["items"]]
+    assert "PENNY" not in syms and "THIN" not in syms, "lọc sàn không được áp"
+    assert "NGAN" not in syms
+    assert result["tong_so_ma"] == 12
+    assert len(result["items"]) == 10, "trần 10 mục của popup"
+    assert [i["hang"] for i in result["items"]] == list(range(1, 11))
+    # Kế toán: 12 mã xét được · 2 mã trượt lọc sàn · 1 mã thiếu chuỗi dòng tiền.
+    assert result["so_ma_xet"] == 12
+    assert result["so_ma_truot_loc_san"] == 2
+    assert result["so_ma_bo_qua_thieu_du_lieu"] == 1
+    assert result["so_ma_trong_ro"] == 15
 
 
 @pytest.mark.asyncio
