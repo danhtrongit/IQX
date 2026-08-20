@@ -391,23 +391,24 @@ class Cap5Service:
     async def _refresh_consensus(
         self, rows: Sequence[WatchlistItem]
     ) -> dict[str, ConsensusResult]:
-        """Chấm lại điểm đồng thuận cho các hàng CHƯA chấm trong ngày hôm nay.
+        """Chấm điểm đồng thuận cho cả rổ, nhưng chỉ GHI cho hàng chưa chấm hôm nay.
 
-        Trả về kết quả chi tiết theo mã cho những hàng chấm được (dùng để vẽ cụm
-        5 icon). Hàng đã chấm hôm nay KHÔNG chấm lại (spec §6.1: 1 lần/ngày,
-        không tức thời) và vì thế không có trong dict trả về — FE đọc các cột đã
-        lưu, còn cụm icon chỉ hiện khi vừa chấm xong hoặc khi ``lop`` được nạp
-        lại ở ``watchlist()``.
+        Trả về kết quả chi tiết theo mã (nuôi cụm 5 icon của §6.2). Việc GHI mới
+        là thứ bị giới hạn 1 lần/ngày (spec §6.1 — không tức thời): đọc lại một
+        payload Insight đã lưu thì không tốn gì và không gọi AI, nên cụm icon
+        không phải chờ mẻ hôm sau mới hiện.
+
+        ★ ``_watchlist_out`` vẫn chỉ vẽ cụm icon khi nó KHỚP với con số đã lưu —
+        xem chú thích ở đó.
         """
         today = _now_vn_date()
-        out: dict[str, ConsensusResult] = {}
+        out = await self._consensus.cham_nhieu([r.symbol for r in rows])
         dirty = False
         for row in rows:
             if _vn_date(row.consensus_at) == today:
                 continue
-            ket = await self._consensus.cham(row.symbol)
-            out[row.symbol.upper()] = ket
-            if ket.diem is None:
+            ket = out.get(row.symbol.upper())
+            if ket is None or ket.diem is None:
                 # ★ Chưa chấm được lớp nào ⇒ KHÔNG ghi gì (giữ NULL, giữ luôn
                 # điểm cũ nếu có). Ghi 0 ở đây là bịa "không lớp nào ủng hộ".
                 continue
@@ -773,6 +774,12 @@ class Cap5Service:
         await self._recompute_progress(user_id, progress)
 
     def _watchlist_out(self, row: WatchlistItem, ket: ConsensusResult | None) -> dict:
+        khop = (
+            ket is not None
+            and ket.diem is not None
+            and ket.diem == row.consensus_today
+            and ket.so_lop_da_cham == row.consensus_da_cham
+        )
         hunt_date = _vn_date(row.hunt_at)
         so_phien = (
             _count_trading_sessions(hunt_date, _now_vn_date()) if hunt_date is not None else None
@@ -794,11 +801,13 @@ class Cap5Service:
             "tong_so_lop": TONG_SO_LOP,
             "nguong_dang_chu_y": NGUONG_DANG_CHU_Y,
             "nhac": _NHAC_DANG_CHU_Y if row.status == WatchlistStatus.NOTABLE.value else None,
-            # Chi tiết từng lớp CHỈ có khi vừa chấm trong lần đọc này (mẻ chấm
-            # 1 lần/ngày không lưu chi tiết) ⇒ vắng nghĩa là "chưa nạp", không
-            # phải "5 lớp đều trống".
-            "lop": {r["lop"]: r["muc"] for r in ket.lop} if ket is not None else None,
-            "lop_chi_tiet": ket.lop if ket is not None else None,
+            # Chi tiết từng lớp chỉ được vẽ khi nó KHỚP con số đã lưu. Mẻ chấm
+            # ghi 1 lần/ngày, nên giữa ngày có thể xuất hiện bản Insight mới cho
+            # ra điểm khác — vẽ 4 icon ✅ cạnh con số "3/5" là một mâu thuẫn
+            # ngay trên mặt thẻ. Lệch thì để trống (FE hiện "–"), mẻ hôm sau tự
+            # đồng bộ lại.
+            "lop": {r["lop"]: r["muc"] for r in ket.lop} if khop else None,
+            "lop_chi_tiet": ket.lop if khop else None,
         }
 
     async def watchlist(self, user_id: uuid.UUID) -> dict:

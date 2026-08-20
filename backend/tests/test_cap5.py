@@ -1109,3 +1109,333 @@ async def test_nguon_tra_dict_rong_van_phai_ra_chua_du_du_lieu(db_session, test_
     assert result["kha_dung"] is False
     assert result["tong_so_ma"] is None
     assert result["items"] == []
+
+
+# ══════════════════════════════════════════════════════
+# Watchlist + điểm đồng thuận 5 lớp (§6)
+# ══════════════════════════════════════════════════════
+
+
+@pytest.mark.asyncio
+async def test_them_watchlist_ghi_nguon_san_va_TIN_HIEU_DO_SERVER_TINH(
+    db_session, test_user
+):
+    """★ ``hunt_signal`` client gửi lên BỊ BỎ QUA — server tự tính từ dữ liệu thật.
+
+    Tin một chuỗi số do client gửi là mở cửa cho dòng "+45,2 tỷ ròng" không ai
+    kiểm được.
+    """
+    src = _FakeHuntSource(bars={"AAA": _with_last(_bars(), volume=400_000.0)})
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    await _seed_symbol(db_session, "AAA")
+
+    item = await cap5.add_watchlist(
+        test_user.id, "aaa", "kl", hunt_signal="+999,9 tỷ ròng · 5/5 phiên"
+    )
+    assert item["symbol"] == "AAA"
+    assert item["hunt_filter"] == "kl"
+    assert item["hunt_signal"] == "KL 4,0× TB20 phiên"
+    assert "999" not in (item["hunt_signal"] or "")
+    assert item["hunt_at"] is not None
+    assert item["so_phien_tu_khi_san"] == 0
+
+    log = (
+        await db_session.execute(select(Cap5HuntLog).where(Cap5HuntLog.symbol == "AAA"))
+    ).scalar_one()
+    assert log.hunt_signal == "KL 4,0× TB20 phiên"
+
+
+@pytest.mark.asyncio
+async def test_tin_hieu_de_trong_khi_khong_xac_minh_duoc(db_session, test_user):
+    """Mã không (còn) thoả bộ lọc, hoặc bộ lọc thiếu nguồn ⇒ ``hunt_signal=None``.
+
+    Thà để trống còn hơn bịa một dòng số — nhưng mã VẪN được vào Watchlist và
+    VẪN tính vào "số mã đã săn" (user đã làm động tác săn thật).
+    """
+    src = _FakeHuntSource(bars={"FLAT": _bars()})  # KL 1,0× — không thoả 'kl'
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    await _seed_symbol(db_session, "FLAT")
+    await _seed_symbol(db_session, "NOSRC")
+
+    item = await cap5.add_watchlist(test_user.id, "FLAT", "kl", hunt_signal="bịa")
+    assert item["hunt_signal"] is None
+    assert item["hunt_filter"] == "kl"
+
+    # Bộ lọc dòng tiền thiếu nguồn: vẫn thêm được, tín hiệu để trống.
+    item2 = await cap5.add_watchlist(test_user.id, "NOSRC", "ngoai")
+    assert item2["hunt_signal"] is None
+    assert item2["hunt_filter"] == "ngoai"
+
+    p = await cap5.get_progress(test_user.id)
+    assert p["so_ma_da_san"] == 2
+
+
+@pytest.mark.asyncio
+async def test_them_watchlist_kiem_ma_va_bo_loc(db_session, test_user):
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "OK1")
+    await _seed_symbol(db_session, "IDX", is_index=True)
+    await _seed_symbol(db_session, "DEAD", is_active=False)
+
+    for symbol in ("", "   ", "KHONGCO", "IDX", "DEAD"):
+        with pytest.raises(BadRequestError):
+            await cap5.add_watchlist(test_user.id, symbol, "kl")
+    for bo_loc in ("", "khong_co_bo_loc_nay", "KL"):
+        with pytest.raises(BadRequestError):
+            await cap5.add_watchlist(test_user.id, "OK1", bo_loc)
+
+
+@pytest.mark.asyncio
+async def test_san_ma_da_theo_doi_tay_thi_cap_nhat_nguon_san(db_session, test_user):
+    """Mã đã nằm trong Watchlist (thêm tay từ Cấp 0) được CẬP NHẬT nguồn săn.
+
+    409 ở đây sẽ chặn user săn chính mã họ đang theo dõi — mà đó vẫn là săn.
+    """
+    src = _FakeHuntSource(bars={"OLD": _with_last(_bars(), close=21_000.0)})
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    await _seed_symbol(db_session, "OLD")
+    db_session.add(WatchlistItem(user_id=test_user.id, symbol="OLD", sort_order=0))
+    await db_session.flush()
+
+    item = await cap5.add_watchlist(test_user.id, "OLD", "dinh")
+    assert item["hunt_filter"] == "dinh"
+    assert item["hunt_signal"] == "Vượt đỉnh 20 phiên +5,0%"
+
+    wl = await cap5.watchlist(test_user.id)
+    assert wl["so_luong"] == 1  # KHÔNG tạo hàng thứ hai
+
+
+@pytest.mark.asyncio
+async def test_watchlist_ton_trong_tran_50_ma(db_session, test_user):
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    for i in range(MAX_WATCHLIST_ITEMS):
+        sym = f"F{i:03d}"
+        await _seed_symbol(db_session, sym)
+        db_session.add(WatchlistItem(user_id=test_user.id, symbol=sym, sort_order=i))
+    await db_session.flush()
+    await _seed_symbol(db_session, "OVER")
+
+    with pytest.raises(BadRequestError):
+        await cap5.add_watchlist(test_user.id, "OVER", "kl")
+
+    # Nhưng mã ĐÃ có trong danh sách vẫn săn lại được (không tạo hàng mới).
+    item = await cap5.add_watchlist(test_user.id, "F000", "kl")
+    assert item["symbol"] == "F000"
+
+
+@pytest.mark.asyncio
+async def test_bo_theo_doi_ma_khong_co_thi_404(db_session, test_user):
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    with pytest.raises(NotFoundError):
+        await cap5.remove_watchlist(test_user.id, "NOPE")
+
+
+@pytest.mark.asyncio
+async def test_chua_co_ban_insight_thi_KHONG_cham_diem_0_tren_5(db_session, test_user):
+    """★★ Mã chưa từng có bản phân tích 5 lớp ⇒ mọi ô điểm đồng thuận để NULL.
+
+    Ghi 0 ở đây là nói "không lớp nào ủng hộ" — một kết luận chưa ai tính.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "NEW")
+    await _hunt(cap5, test_user.id, "NEW")
+
+    wl = await cap5.watchlist(test_user.id)
+    item = wl["items"][0]
+    assert item["consensus_today"] is None
+    assert item["consensus_prev"] is None
+    assert item["consensus_da_cham"] is None
+    assert item["consensus_at"] is None
+    assert item["status"] is None
+    assert item["nhac"] is None
+    assert wl["so_dang_chu_y"] == 0
+
+    row = (
+        await db_session.execute(
+            select(WatchlistItem).where(WatchlistItem.symbol == "NEW")
+        )
+    ).scalar_one()
+    assert row.consensus_today is None
+    assert row.status is None
+
+
+@pytest.mark.asyncio
+async def test_dang_chu_y_khi_da_xac_nhan_4_lop_ung_ho(db_session, test_user):
+    """§6.1: ≥4/5 lớp ủng hộ ⇒ "★ Đáng chú ý" + câu nhắc "Quyết định mua vẫn là
+    của bạn"."""
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "HOT")
+    await _seed_insight(db_session, "HOT", _AI_4_UNG_HO)
+    await _hunt(cap5, test_user.id, "HOT")
+
+    wl = await cap5.watchlist(test_user.id)
+    item = wl["items"][0]
+    assert item["consensus_today"] == 4
+    assert item["consensus_da_cham"] == 4
+    assert item["status"] == "notable"
+    assert item["nhac"] and "Quyết định mua vẫn là của bạn" in item["nhac"]
+    assert wl["so_dang_chu_y"] == 1
+    assert item["tong_so_lop"] == 5
+    assert item["nguong_dang_chu_y"] == 4
+
+
+@pytest.mark.asyncio
+async def test_dang_quan_sat_chi_khi_CHAC_CHAN_khong_the_toi_4(db_session, test_user):
+    """"Đang quan sát" là một KẾT LUẬN ("<4 lớp ủng hộ"), không phải chỗ chứa
+    dữ liệu thiếu.
+
+    Lớp 💎 Định giá không có nguồn ⇒ luôn còn 1 lớp chưa biết. Chỉ khi
+    ``điểm + số lớp chưa biết < 4`` thì mới chắc chắn không tới được 4.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "COLD")
+    await _seed_insight(db_session, "COLD", _AI_0_UNG_HO)
+    await _hunt(cap5, test_user.id, "COLD")
+
+    item = (await cap5.watchlist(test_user.id))["items"][0]
+    assert item["consensus_today"] == 0
+    assert item["consensus_da_cham"] == 4
+    assert item["status"] == "watching"
+
+
+@pytest.mark.asyncio
+async def test_vung_giua_de_trang_thai_None_chu_khong_doan(db_session, test_user):
+    """3 lớp ủng hộ + 1 lớp CHƯA BIẾT ⇒ vẫn có thể chạm 4 ⇒ chưa kết luận.
+
+    Gọi nó là "Đang quan sát" là khẳng định mã đã bị chấm và không đủ 4 lớp.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "MID")
+    await _seed_insight(db_session, "MID", _AI_3_UNG_HO)
+    await _hunt(cap5, test_user.id, "MID")
+
+    item = (await cap5.watchlist(test_user.id))["items"][0]
+    assert item["consensus_today"] == 3
+    assert item["consensus_da_cham"] == 4
+    assert item["status"] is None
+    assert item["nhac"] is None
+
+
+@pytest.mark.asyncio
+async def test_lop_dinh_gia_luon_la_chua_biet(db_session, test_user):
+    """★★ AI Insight v2 KHÔNG có lớp Định giá (L2 là Thanh khoản).
+
+    Nên mọi mã chỉ chấm được tối đa 4/5 lớp, và ``consensus_da_cham`` phải đi
+    kèm để người đọc biết mẫu số thật. Ánh xạ L2 → định giá sẽ là bịa.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "VAL")
+    await _seed_insight(
+        db_session, "VAL", {**_AI_4_UNG_HO, "L2": {"statusLabel": "Rất mạnh"}}
+    )
+    await _hunt(cap5, test_user.id, "VAL")
+
+    item = (await cap5.watchlist(test_user.id))["items"][0]
+    assert item["consensus_today"] == 4  # KHÔNG phải 5
+    assert item["consensus_da_cham"] == 4
+    lop = item["lop"]
+    assert lop["dinh_gia"] is None
+    assert lop["ky_thuat"] == "ok"
+    chi_tiet = {r["lop"]: r for r in item["lop_chi_tiet"]}
+    assert chi_tiet["dinh_gia"]["ung_ho"] is None
+    assert "Chưa có nguồn chấm lớp Định giá" in chi_tiet["dinh_gia"]["giai_thich"]
+
+
+@pytest.mark.asyncio
+async def test_lop_trung_tinh_khong_bi_ve_thanh_nguoc_chieu(db_session, test_user):
+    """Cụm 5 icon: "Trung tính" là ⚪, "Cảnh báo" mới là ⚠.
+
+    Quy mọi lớp "không ủng hộ" về ⚠ là biến một lớp không ý kiến thành một lớp
+    phản đối.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "MIX")
+    await _seed_insight(
+        db_session,
+        "MIX",
+        _insight(L1="Mạnh", L3="Trung tính", L4="Cảnh báo mạnh", L5="Trung tính"),
+    )
+    await _hunt(cap5, test_user.id, "MIX")
+
+    lop = (await cap5.watchlist(test_user.id))["items"][0]["lop"]
+    assert lop["ky_thuat"] == "ok"
+    assert lop["dong_tien"] == "neu"
+    assert lop["noi_bo"] == "bad"
+    assert lop["tin_tuc"] == "neu"
+    assert lop["dinh_gia"] is None
+
+
+@pytest.mark.asyncio
+async def test_me_cham_chay_toi_da_1_lan_moi_ngay(db_session, test_user):
+    """§6.1/§10: chấm 5 lớp là mẻ 1 lần/ngày, KHÔNG tức thời.
+
+    Bản Insight mới xuất hiện trong cùng ngày cũng không làm điểm nhảy — nếu
+    không, chi phí và hành vi "hối thúc mua theo thời gian thực" cùng quay lại.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "DAY")
+    await _seed_insight(db_session, "DAY", _AI_3_UNG_HO, day=date(2026, 8, 18))
+    await _hunt(cap5, test_user.id, "DAY")
+
+    first = (await cap5.watchlist(test_user.id))["items"][0]
+    assert first["consensus_today"] == 3
+    cham_at = first["consensus_at"]
+
+    # Bản mới hơn, cùng NGÀY đọc ⇒ không chấm lại.
+    await _seed_insight(db_session, "DAY", _AI_4_UNG_HO, day=date(2026, 8, 19))
+    again = (await cap5.watchlist(test_user.id))["items"][0]
+    assert again["consensus_today"] == 3
+    assert again["consensus_at"] == cham_at
+    assert again["lop"] is None  # không chấm lại ⇒ không nạp chi tiết
+
+
+@pytest.mark.asyncio
+async def test_consensus_prev_luu_lan_cham_truoc(db_session, test_user):
+    """§6.2 "dòng thay đổi" cần điểm của lần chấm TRƯỚC.
+
+    ``consensus_prev`` chỉ có sau lần chấm thứ hai — lần đầu phải là ``None`` để
+    FE không vẽ mũi tên "cải thiện" từ hư không.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "TREND")
+    await _seed_insight(db_session, "TREND", _AI_3_UNG_HO, day=date(2026, 8, 18))
+    await _hunt(cap5, test_user.id, "TREND")
+
+    item = (await cap5.watchlist(test_user.id))["items"][0]
+    assert item["consensus_today"] == 3
+    assert item["consensus_prev"] is None
+
+    # Lùi mốc chấm về hôm qua rồi thêm bản Insight tốt hơn ⇒ mẻ hôm nay chạy.
+    row = (
+        await db_session.execute(
+            select(WatchlistItem).where(WatchlistItem.symbol == "TREND")
+        )
+    ).scalar_one()
+    row.consensus_at = datetime.now(UTC) - timedelta(days=1)
+    await db_session.flush()
+    await _seed_insight(db_session, "TREND", _AI_4_UNG_HO, day=date(2026, 8, 19))
+
+    item = (await cap5.watchlist(test_user.id))["items"][0]
+    assert item["consensus_today"] == 4
+    assert item["consensus_prev"] == 3
+    assert item["status"] == "notable"
+
+
+@pytest.mark.asyncio
+async def test_cum_5_icon_hien_o_moi_lan_doc_khong_chi_lan_dau(db_session, test_user):
+    """§6.2 đòi cụm 5 icon trên MỌI thẻ mã — không phải chỉ ở lần đọc đầu.
+
+    Mẻ chấm ghi 1 lần/ngày, nhưng đọc lại payload Insight đã lưu thì không tốn
+    gì; nếu cụm icon chỉ hiện ngay sau lúc ghi thì gần như không bao giờ user
+    thấy nó.
+    """
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "ICON")
+    await _seed_insight(db_session, "ICON", _AI_4_UNG_HO)
+    await _hunt(cap5, test_user.id, "ICON")
+
+    for lan in range(3):
+        item = (await cap5.watchlist(test_user.id))["items"][0]
+        assert item["lop"] is not None, f"lần đọc {lan + 1} mất cụm icon"
+        assert item["lop"]["ky_thuat"] == "ok"
+        assert item["consensus_today"] == 4

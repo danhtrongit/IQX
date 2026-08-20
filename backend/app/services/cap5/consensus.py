@@ -33,6 +33,7 @@ Hệ quả bắt buộc (luật 1):
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
 
@@ -204,6 +205,42 @@ class InsightConsensusSource:
 
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    async def cham_nhieu(self, symbols: Sequence[str]) -> dict[str, ConsensusResult]:
+        """Chấm cả rổ mã trong MỘT truy vấn (Watchlist có tới 50 mã).
+
+        Mã chưa từng có bản Insight vẫn có mặt trong dict, ở dạng "chưa chấm
+        được" (``diem is None``) — vắng mặt sẽ khiến chỗ gọi phải tự đoán.
+        """
+        ups = sorted({s.upper() for s in symbols})
+        if not ups:
+            return {}
+        rows = (
+            await self._session.execute(
+                select(AIInsightHistory)
+                .where(AIInsightHistory.symbol.in_(ups))
+                .order_by(
+                    AIInsightHistory.symbol.asc(), AIInsightHistory.session_date.desc()
+                )
+            )
+        ).scalars().all()
+        moi_nhat: dict[str, AIInsightHistory] = {}
+        for row in rows:
+            moi_nhat.setdefault(row.symbol.upper(), row)
+        return {
+            ma: (
+                cham_tu_payload(moi_nhat[ma].payload, session_date=moi_nhat[ma].session_date)
+                if ma in moi_nhat
+                else ConsensusResult(
+                    diem=None,
+                    so_lop_da_cham=None,
+                    status=None,
+                    lop=cham_tu_payload(None).lop,
+                    session_date=None,
+                )
+            )
+            for ma in ups
+        }
 
     async def cham(self, symbol: str) -> ConsensusResult:
         row = (
