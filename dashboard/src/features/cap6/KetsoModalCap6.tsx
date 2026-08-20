@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useState } from "react"
-import { Message, Modal } from "@arco-design/web-react"
-import { getErrorMessage } from "@/shared/http/client"
+import { useEffect, useState } from "react"
+import { Modal } from "@arco-design/web-react"
 import { cn } from "@/shared/lib/cn"
 import { useRecordKetso } from "@/features/cap1/hooks"
 import {
@@ -484,6 +483,14 @@ export function KetsoModalCap6({
    * 3 trường Cấp 6 đi thẳng từ khối Đối chiếu của lệnh; lệnh không có đối chiếu
    * ghi cả 3 là `null` — KHÔNG quy `khopGoiY` về `false` (đó sẽ là vu cho user
    * "lệch" một gợi ý chưa từng có).
+   *
+   * ★ 3 trường săn mã của Cấp 5 mới (`huntFilter`/`huntSoPhienCho`/
+   * `huntSoLopLucVao`) ghi `null` — và ở đây `null` là SỰ THẬT, không phải chỗ
+   * trống chờ điền: trang Cấp 6 KHÔNG có màn Săn mã, user tự chọn mã trong panel,
+   * nên lệnh Cấp 6 thật sự không đến từ bộ lọc nào. Khối ⑫ của Cấp 5 đọc `null`
+   * đúng như vậy (đếm riêng "không đến từ săn mã", KHÔNG gán bừa một bộ lọc).
+   * Nếu sau này Cấp 6 nối màn Săn mã thì phải truyền NGUỒN SĂN THẬT của lệnh vào
+   * đây thay vì `null`.
    */
   const buildRecord = (): Cap6TradeRecord => ({
     orderId,
@@ -507,6 +514,9 @@ export function KetsoModalCap6({
     // Chưa lộ AI → để NULL đúng như backend, KHÔNG quy về 0 (giữ nguyên Cấp 4/5).
     so_lop_dong_thuan: ai5Lop ? soDongThuan : null,
     so_lop_khac_ai: ai5Lop ? soKhacAi : null,
+    huntFilter: null,
+    huntSoPhienCho: null,
+    huntSoLopLucVao: null,
     kieuCoPhieu: doiChieu?.kieu ?? null,
     lopQuyetDinh: doiChieu?.lopQuyetDinh ?? null,
     khopGoiY: doiChieu?.khopGoiY ?? null,

@@ -6,19 +6,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
  * HARNESS (cùng lựa chọn đã ghi ở `Cap5PortfolioAnalysis.test.tsx`): mock đúng
  * tầng hook, KHÔNG dựng QueryClientProvider/AuthProvider.
  *
- * `Cap6PortfolioAnalysis` render `Cap5PortfolioAnalysis` bên trong (khối ①-⑬), và
- * component đó dùng `useDanhSachDungNgoai` (khối ⑬) còn `Cap4PortfolioAnalysis`
- * dùng `useVuKhiDiemMu` (khối ⑨) — cả hai là auth-gated TanStack query. Mock 3
- * module hook cho phép điều khiển mọi trạng thái query mà không có network.
+ * `Cap6PortfolioAnalysis` render `Cap5PortfolioAnalysis` bên trong (khối ①-⑬) và
+ * `Cap4PortfolioAnalysis` dùng `useVuKhiDiemMu` (khối ⑨) — auth-gated TanStack
+ * query. Mock 2 module hook cho phép điều khiển mọi trạng thái query mà không có
+ * network. (`@/features/cap5/hooks` KHÔNG còn phải mock: khối ⑬ giờ là phễu săn
+ * mã tính từ `Cap5Progress` truyền vào, không còn gọi `useDanhSachDungNgoai` của
+ * nhật ký đứng ngoài đã nghỉ hưu.)
  */
 const { thachThuc } = vi.hoisted(() => ({
   thachThuc: { current: {} as Record<string, unknown> },
 }))
 vi.mock("./hooks", () => ({
   useThachThucCap6: () => thachThuc.current,
-}))
-vi.mock("@/features/cap5/hooks", () => ({
-  useDanhSachDungNgoai: () => ({ data: undefined, isPending: true, isError: false }),
 }))
 vi.mock("@/features/cap4/hooks", () => ({
   useVuKhiDiemMu: () => ({ data: undefined, isPending: true, isError: false }),
@@ -60,9 +59,9 @@ function trade(overrides: Partial<Cap6TradeRecord> = {}): Cap6TradeRecord {
     ai_5_lop: null,
     so_lop_dong_thuan: null,
     so_lop_khac_ai: null,
-    o4: "dung_thang",
-    verdictHe: "dung",
-    verdictUser: "dung",
+    huntFilter: null,
+    huntSoPhienCho: null,
+    huntSoLopLucVao: null,
     kieuCoPhieu: "ngan_hang",
     lopQuyetDinh: "dinh_gia",
     khopGoiY: true,
@@ -130,10 +129,11 @@ function cap5Progress(): Cap5Progress {
     entered_at: "2026-06-02T00:00:00Z",
     task_1_done_at: null,
     task_2_done_at: null,
-    task_3_done_at: null,
-    so_lenh_phan_loai: 22,
-    so_lan_dung_ngoai_da_cham: 6,
-    ty_le_quyet_dinh_dung: 72,
+    so_ma_da_san: 10,
+    so_ma_mua_tu_watchlist: 5,
+    // `null` = mẻ chấm 5 lớp chưa chạy — KHÔNG phải 0 mã đủ lớp.
+    so_ma_cho_du_lop: null,
+    best_filter: null,
     graduated_at: "2026-07-01T00:00:00Z",
     time_to_graduate_hours: 40,
   }

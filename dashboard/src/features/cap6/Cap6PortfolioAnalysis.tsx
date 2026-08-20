@@ -23,8 +23,9 @@ import "./cap6-analysis.css"
  * **TÁI SỬ DỤNG Ở TẦNG COMPONENT (documented choice, đúng tiền lệ Cấp 5 → Cấp 4):**
  * mọi khối Cấp 1-5 (①-⑬) được render bằng CHÍNH `Cap5PortfolioAnalysis` — KHÔNG
  * mirror lại markup. Component đó compose sạch: nhận `trades`/`dailyScores`/
- * `cap2-5Progress` qua props, không bọc modal, không sở hữu state, và hook duy nhất
- * nó dùng (`useDanhSachDungNgoai` cho khối ⑬) là hook của chính nó, tự fail-closed.
+ * `cap2-5Progress` qua props, không bọc modal, không sở hữu state, và KHÔNG còn gọi
+ * hook query nào của riêng Cấp 5 (khối ⑬ giờ là phễu săn mã, tính từ
+ * `Cap5Progress` truyền vào).
  * `Cap6TradeRecord extends Cap5TradeRecord` nên mảng lệnh truyền THẲNG vào được.
  * Spec §7 cũng nói rõ các khối Cấp 1-5 "kế thừa".
  *

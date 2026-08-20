@@ -196,11 +196,13 @@ const cap4Situation: CoachSituationCap4 = {
   pnlPositive: true,
   pnlPct: 5.3,
 }
+// Cấp 5 mới = SĂN MÃ. Tình huống mẫu: mã do bộ lọc «Khối ngoại gom» săn ra,
+// chờ 2 phiên trong Watchlist, vào lệnh khi lên 4/5 lớp ủng hộ.
 const cap5Situation: CoachSituationCap5 = {
-  o4: "dung_thang",
-  verdict: "dung",
+  huntFilter: "ngoai",
+  huntSoPhienCho: 2,
+  huntSoLopLucVao: 4,
   pnlPct: 5.3,
-  signals: [],
 }
 
 describe("composeCoachCap6 — 6 lớp coach cạnh nhau", () => {
@@ -237,7 +239,7 @@ describe("composeCoachCap6 — 6 lớp coach cạnh nhau", () => {
     expect(composed.cap1Text.length).toBeGreaterThan(0)
   })
 
-  it("cap5Situation === null (chưa chốt phân loại) không chặn đoạn Cấp 6", () => {
+  it("cap5Situation === null (lệnh không có nguồn săn) không chặn đoạn Cấp 6", () => {
     const composed = composeCoachCap6(
       cap1Situation,
       cap1Params,
