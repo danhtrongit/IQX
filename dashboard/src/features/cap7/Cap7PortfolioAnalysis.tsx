@@ -57,7 +57,7 @@ export interface Cap7PortfolioAnalysisProps {
   cap3Progress: Cap3Progress | null
   /** Hồ sơ Cấp 4 — số lệnh đọc đủ 5 lớp + vũ khí/điểm mù server đã chốt. */
   cap4Progress: Cap4Progress | null
-  /** Hồ sơ Cấp 5 — số lệnh phân loại + tỷ lệ quyết định đúng server đã chốt. */
+  /** Hồ sơ Cấp 5 — 2 nhiệm vụ săn mã + phễu săn mã (khối ⑬) server đã chốt. */
   cap5Progress: Cap5Progress | null
   /** Hồ sơ Cấp 6 — số lệnh đối chiếu, số kiểu đã gặp, 2 tỷ lệ khớp/lệch. */
   cap6Progress: Cap6Progress | null

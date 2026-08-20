@@ -432,21 +432,21 @@ function Cap7Terminal() {
   }, [registerCap6Handlers])
 
   /**
-   * Reconciles a Cấp 7 SELL fill into Kết sổ Cấp 7 — and owns the ORDERING FIX
-   * inherited from Cấp 5/6 (do NOT reorder).
+   * Reconciles a Cấp 7 SELL fill into Kết sổ Cấp 7 — và kết sổ Cấp 1 NGAY
+   * khi lệnh bán khớp (do NOT reorder).
    *
-   * ★ **`POST /cap1/ketso` PHẢI xong TRƯỚC khi modal mở.** Backend Cấp 5 (khối
-   * phân loại 4 ô mà Cấp 6/7 kế thừa nguyên vẹn) đọc/ghi verdict trên CHÍNH hàng
-   * `order_ketso` mà `POST /cap1/ketso` tạo: cả `GET /cap5/verdict/{order_id}` và
-   * `POST /cap5/ketso` trả **404** khi hàng đó chưa tồn tại. Ở Cấp 1-4 hàng đó
-   * chỉ được tạo khi user ĐÓNG màn Kết sổ — quá muộn: cổng `Đóng kết sổ ✓`
-   * fail-closed sẽ không mở, mà modal `closable={false}` không có nút huỷ →
-   * **user kẹt trong màn không đóng được**. Vì vậy trang này kết sổ Cấp 1 NGAY
-   * khi lệnh bán khớp, rồi mới mở modal.
+   * ★★ **LÝ DO CŨ ĐÃ MẤT, THỨ TỰ THÌ CÒN.** Trước đây bước này bắt buộc vì backend
+   * Cấp 5 (phân loại 4 ô) đọc/ghi verdict trên CHÍNH hàng `order_ketso` mà
+   * `POST /cap1/ketso` tạo, và `GET /cap5/verdict` / `POST /cap5/ketso` trả 404 khi
+   * hàng đó chưa có → cổng fail-closed không mở → user kẹt trong modal
+   * `closable={false}`. Cả hai endpoint đó ĐÃ NGHỈ HƯU cùng Cấp 5 cũ, nên KHÔNG
+   * còn nguy cơ kẹt. Giữ call ở đây vì nó vẫn bảo đảm hàng `order_ketso` tồn tại
+   * TRƯỚC `PATCH /cap{6,7,8}/task` (nhiệm vụ của các cấp trên được suy ra
+   * server-side từ `order_kehoach` JOIN `order_ketso`), và vì nó idempotent.
    *
    * Lỗi của call này bị bỏ qua CÓ CHỦ ĐÍCH: 409 "Lệnh này đã kết sổ" là trạng
-   * thái bình thường, và nếu call thất bại thật thì modal vẫn phải mở — nó có lối
-   * ra riêng khi verdict không lấy được (xem `KetsoModalCap7#handleEscape`).
+   * thái bình thường, và nếu call thất bại thật thì modal vẫn phải mở — tuyệt đối
+   * không được im lặng bỏ một lệnh đã bán.
    */
   const openKetsoCap7 = async (order: Cap7OrderEvent) => {
     const key = order.symbol.toUpperCase()

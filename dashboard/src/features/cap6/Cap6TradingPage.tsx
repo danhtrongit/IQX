@@ -340,26 +340,27 @@ function Cap6Terminal() {
   //     ký cả hai sẽ mở 2 màn Kết sổ cho cùng một lệnh.
 
   /**
-   * Reconciles a Cấp 6 SELL fill into Kết sổ Cấp 6 — and owns the ORDERING FIX
-   * inherited from Cấp 5 (do NOT reorder).
+   * Reconciles a Cấp 6 SELL fill into Kết sổ Cấp 6 — và kết sổ Cấp 1 NGAY
+   * khi lệnh bán khớp (do NOT reorder).
    *
-   * ★ **`POST /cap1/ketso` PHẢI xong TRƯỚC khi modal mở.** Backend Cấp 5 (khối
-   * phân loại 4 ô mà Cấp 6 kế thừa nguyên vẹn) đọc/ghi verdict trên CHÍNH hàng
-   * `order_ketso` mà `POST /cap1/ketso` tạo: cả `GET /cap5/verdict/{order_id}` và
-   * `POST /cap5/ketso` trả **404** khi hàng đó chưa tồn tại. Ở Cấp 1-4 hàng đó
-   * chỉ được tạo khi user ĐÓNG màn Kết sổ — quá muộn: cổng `Đóng kết sổ ✓`
-   * fail-closed sẽ không mở, mà modal `closable={false}` không có nút huỷ →
-   * **user kẹt trong màn không đóng được**. Vì vậy trang này kết sổ Cấp 1 NGAY
-   * khi lệnh bán khớp, rồi mới mở modal.
+   * ★★ **LÝ DO CŨ ĐÃ MẤT, THỨ TỰ THÌ CÒN.** Trước đây bước này bắt buộc vì backend
+   * Cấp 5 (phân loại 4 ô) đọc/ghi verdict trên CHÍNH hàng `order_ketso` mà
+   * `POST /cap1/ketso` tạo, và `GET /cap5/verdict` / `POST /cap5/ketso` trả 404 khi
+   * hàng đó chưa có → cổng fail-closed không mở → user kẹt trong modal
+   * `closable={false}`. Cả hai endpoint đó ĐÃ NGHỈ HƯU cùng Cấp 5 cũ, nên KHÔNG
+   * còn nguy cơ kẹt. Giữ call ở đây vì nó vẫn bảo đảm hàng `order_ketso` tồn tại
+   * TRƯỚC `PATCH /cap{6,7,8}/task` (nhiệm vụ của các cấp trên được suy ra
+   * server-side từ `order_kehoach` JOIN `order_ketso`), và vì nó idempotent.
    *
    * Lỗi của call này bị bỏ qua CÓ CHỦ ĐÍCH: 409 "Lệnh này đã kết sổ" là trạng
-   * thái bình thường, và nếu call thất bại thật thì modal vẫn phải mở — nó có lối
-   * ra riêng khi verdict không lấy được (xem `KetsoModalCap6#handleEscape`).
+   * thái bình thường, và nếu call thất bại thật thì modal vẫn phải mở — tuyệt đối
+   * không được im lặng bỏ một lệnh đã bán.
    *
-   * ĐÁNH ĐỔI ĐÃ BIẾT (kế thừa Cấp 5): `cam_xuc` gửi ở đây là `null` vì khối cảm
-   * xúc Cấp 1 nằm TRONG modal (chưa mở). Task BE của Cấp 6 có mục "cho
-   * `/cap1/ketso` upsert `cam_xuc`" — khi mục đó xong, lần POST thứ hai của modal
-   * sẽ ghi được cảm xúc user chọn.
+   * ĐÁNH ĐỔI ĐÃ BIẾT: `cam_xuc` gửi ở đây là `null` vì khối cảm xúc Cấp 1 nằm
+   * TRONG modal (chưa mở), nên lần POST thứ hai của modal 409 và cảm xúc user
+   * chọn KHÔNG được lưu server-side. Fix đúng vẫn là task BE "cho `/cap1/ketso`
+   * upsert `cam_xuc`" — nay cổng Cấp 5 đã bỏ, một lựa chọn khác là bỏ hẳn call
+   * sớm này và để modal tự kết sổ.
    */
   const openKetsoCap6 = async (order: Cap6OrderEvent) => {
     const key = order.symbol.toUpperCase()
