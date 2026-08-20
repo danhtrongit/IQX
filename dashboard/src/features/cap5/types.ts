@@ -100,6 +100,18 @@ export interface Cap5Progress {
    */
   so_ma_cho_du_lop: number | null
   /**
+   * ★★ MẪU SỐ THẬT của `so_ma_cho_du_lop`: số mã ĐÃ SĂN mà hệ chấm được điểm
+   * đồng thuận. Nhỏ hơn `so_ma_da_san` ⇒ `so_ma_cho_du_lop` chỉ là CẬN DƯỚI (còn
+   * mã chưa có bản phân tích 5 lớp), nên màn PHẢI nói "ít nhất N", không được in
+   * N như một con số chắc chắn.
+   *
+   * `undefined` = wire chưa có trường ⇒ KHÔNG BIẾT mẫu số ⇒ vẫn phải nói "ít
+   * nhất". Tuyệt đối không quy về `so_ma_da_san` (thành ra khẳng định đã đo hết).
+   */
+  so_ma_da_cham_diem?: number
+  /** `true` ⇔ mọi mã đã săn đều chấm được ⇒ `so_ma_cho_du_lop` là con số ĐỦ. */
+  so_ma_cho_du_lop_day_du?: boolean
+  /**
    * Mục tiêu của hai nhiệm vụ, do SERVER gửi (`muc_tieu_so_ma_san` /
    * `muc_tieu_so_ma_mua`). Đọc từ server chứ không hard-code để một lần đổi
    * ngưỡng ở BE không biến mẫu số trên màn thành lời nói dối; `CAP5_SO_MA_*_TARGET`
@@ -221,9 +233,19 @@ export interface Khoi13 {
   so_ma_da_san: number
   /** ★ `null` = tầng giữa CHƯA ĐO ĐƯỢC, không phải "0 mã chín". */
   so_ma_cho_du_lop: number | null
+  /** Mẫu số thật của tầng giữa — xem `Cap5Progress#so_ma_da_cham_diem`. */
+  so_ma_da_cham_diem?: number
+  /** `true` ⇔ tầng giữa đã đếm hết mã săn; `false`/thiếu ⇒ nó là CẬN DƯỚI. */
+  so_ma_cho_du_lop_day_du?: boolean
   so_ma_vao_lenh: number
   giai_thich: string
-  copy: string
+  /**
+   * Câu kết của phễu do server viết (`Khoi13Out.loi_ket`).
+   *
+   * ★ Trước đây FE khai trường này là `copy` — một tên KHÔNG có trên wire, nên
+   * nó luôn `undefined`. Đổi đúng tên backend gửi.
+   */
+  loi_ket: string
 }
 
 export interface Cap5PhanTich {

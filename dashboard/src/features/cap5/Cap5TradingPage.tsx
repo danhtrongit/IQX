@@ -34,7 +34,7 @@ import type { Lop5Partial } from "@/features/cap4/types"
 import { Cap5Provider, useCap5Events, type Cap5OrderEvent } from "./Cap5Context"
 import { GraduationModalCap5 } from "./GraduationModalCap5"
 import { KetsoModalCap5, type KetsoDataCap5 } from "./KetsoModalCap5"
-import { cap5Api } from "./api"
+import { fetchNguonSanKetso } from "./nguonSanKetso"
 import type { Cap5TradeRecord } from "./tradeLogCap5"
 import "@/features/cap0/cap0.css"
 import "@/features/cap1/cap1.css"
@@ -316,27 +316,8 @@ function Cap5Terminal() {
      * `so_lop_luc_vao` server LUÔN trả `null` (điểm đồng thuận lúc ĐẶT LỆNH chưa
      * từng được lưu) — chép nguyên, không thay bằng điểm hôm nay.
      */
-    let nguonSan: Pick<
-      KetsoDataCap5,
-      "huntFilter" | "huntSoPhienCho" | "huntSoLopLucVao" | "huntNguonChuaBiet"
-    > = {
-      huntFilter: null,
-      huntSoPhienCho: null,
-      huntSoLopLucVao: null,
-      huntNguonChuaBiet: true,
-    }
-    try {
-      const ns = await cap5Api.getNguonSan(order.symbol)
-      nguonSan = {
-        huntFilter: ns.tu_san_ma ? ns.hunt_filter : null,
-        huntSoPhienCho: ns.so_phien_trong_watchlist,
-        huntSoLopLucVao: ns.so_lop_luc_vao,
-        huntNguonChuaBiet: false,
-      }
-    } catch {
-      // Giữ nguyên `huntNguonChuaBiet: true` — xem docstring trên. Lệnh đã bán
-      // thì màn Kết sổ VẪN phải mở; thiếu nguồn săn không được nuốt một lệnh.
-    }
+    // ★ Một implementation DUY NHẤT cho cả Cấp 5/6/7/8 — xem `nguonSanKetso.ts`.
+    const nguonSan = await fetchNguonSanKetso(order.symbol)
 
     ketsoCountRef.current += 1
     const sellDate = todayYmd()

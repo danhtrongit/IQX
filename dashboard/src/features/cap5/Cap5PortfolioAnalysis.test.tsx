@@ -19,9 +19,21 @@ vi.mock("@/features/cap4/hooks", () => ({
   useVuKhiDiemMu: () => ({ data: undefined, isPending: true, isError: false }),
 }))
 
+/**
+ * ★★ Khối ⑫ giờ đọc `GET /cap5/phan-tich` (hook `useCap5PhanTich`), KHÔNG đọc
+ * nhật ký `trades` per-browser nữa — xem docstring `portfolioAnalysisCap5.ts`.
+ * `phanTichQuery` cho test điều khiển đủ 3 trạng thái: đang tải / lỗi / có số.
+ */
+const { phanTichQuery } = vi.hoisted(() => ({
+  phanTichQuery: { current: {} as Record<string, unknown> },
+}))
+vi.mock("./hooks", () => ({
+  useCap5PhanTich: () => phanTichQuery.current,
+}))
+
 import { Cap5PortfolioAnalysis } from "./Cap5PortfolioAnalysis"
 import type { Cap5TradeRecord } from "./tradeLogCap5"
-import type { Cap5Progress, HuntFilter } from "./types"
+import type { Cap5PhanTich, Cap5Progress, HuntFilter, Khoi12 } from "./types"
 import type { Cap2DailyScoreRecord } from "@/features/cap2/portfolioAnalysisCap2"
 import type { Cap2Progress } from "@/features/cap2/types"
 import type { Cap3Progress } from "@/features/cap3/types"
@@ -151,6 +163,65 @@ function cap5Progress(overrides: Partial<Cap5Progress> = {}): Cap5Progress {
   }
 }
 
+const TEN_BO_LOC: Record<HuntFilter, string> = {
+  ngoai: "Khối ngoại gom",
+  tudoanh: "Tự doanh gom",
+  kl: "Khối lượng đột biến",
+  dinh: "Vượt đỉnh 20 phiên",
+  tang: "Tăng mạnh + KL cao",
+}
+
+/** Một dòng khối ⑫ đúng hình dạng WIRE (`Khoi12ItemOut`). */
+function k12Item(
+  ma: HuntFilter,
+  soLenh: number,
+  soThang: number,
+  overrides: Partial<Khoi12["items"][number]> = {},
+): Khoi12["items"][number] {
+  const duMau = soLenh >= 3
+  return {
+    ma,
+    ten: TEN_BO_LOC[ma],
+    so_lenh: soLenh,
+    so_lenh_thang: soThang,
+    ty_le_thang: duMau ? Math.round((soThang / soLenh) * 100) : null,
+    du_mau: duMau,
+    nhan: null,
+    canh_bao: null,
+    giai_thich: "",
+    ...overrides,
+  }
+}
+
+function phanTich(
+  items: Khoi12["items"],
+  overrides: Partial<Khoi12> = {},
+): Cap5PhanTich {
+  return {
+    khoi_12: {
+      items,
+      best_filter: null,
+      so_lenh_toi_thieu: 3,
+      so_lenh_khong_tu_san: 0,
+      du_de_ket_luan: items.some((i) => i.du_mau),
+      giai_thich: "Chỉ tính các lệnh ĐÃ ĐÓNG có nguồn săn.",
+      ...overrides,
+    },
+    khoi_13: {
+      so_ma_da_san: 0,
+      so_ma_cho_du_lop: null,
+      so_ma_vao_lenh: 0,
+      giai_thich: "",
+      loi_ket: "",
+    },
+  }
+}
+
+/** Mặc định mỗi bài: máy chủ ĐÃ trả khối ⑫ rỗng (chưa lệnh săn nào). */
+beforeEach(() => {
+  phanTichQuery.current = { data: phanTich([]), isPending: false, isError: false }
+})
+
 function renderPage(
   trades: Cap5TradeRecord[],
   dailyScores: Cap2DailyScoreRecord[] = [],
@@ -232,7 +303,7 @@ describe("Cap5PortfolioAnalysis — giữ MỌI khối Cấp 1-4 (cộng dồn)"
 /* ══════════════════════════════════════════════════════════════════════════
    KHỐI ⑫ — BỘ LỌC NÀO MANG LẠI MÃ THẮNG NHIỀU NHẤT (spec §9)
    ══════════════════════════════════════════════════════════════════════════ */
-describe("Cap5PortfolioAnalysis — ⑫ bộ lọc nào ra mã thắng nhiều nhất", () => {
+describe("Cap5PortfolioAnalysis — ⑫ bộ lọc nào ra mã thắng nhiều nhất (SERVER)", () => {
   it("có tiêu đề + nhãn «mới ở Cấp 5»", () => {
     renderPage([])
     expect(screen.getByTestId("cap5-pa-khoi12-header")).toHaveTextContent(
@@ -241,12 +312,65 @@ describe("Cap5PortfolioAnalysis — ⑫ bộ lọc nào ra mã thắng nhiều n
     expect(within(screen.getByTestId("cap5-pa-khoi12")).getByText("mới ở Cấp 5")).toBeInTheDocument()
   })
 
+  /**
+   * ★★★ B1 — MÂU THUẪN TRÊN CÙNG MỘT MÀN.
+   *
+   * Khối ① đọc server (`best_filter` = «Khối lượng đột biến»). Nếu khối ⑫ còn
+   * đọc nhật ký localStorage thì trên một thiết bị khác — nơi nhật ký RỖNG — nó
+   * nói "Chưa có lệnh nào đóng từ mã bạn săn được" cách khối ① đúng ba dòng.
+   * Bài này dựng chính xác kịch bản đó: `trades` RỖNG, server CÓ 6 lệnh «kl».
+   */
+  it("★★★ nhật ký client rỗng nhưng server có số ⇒ ⑫ nói theo SERVER (không mâu thuẫn khối ①)", () => {
+    phanTichQuery.current = {
+      data: phanTich([k12Item("kl", 6, 4)]),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([], [], cap5Progress({ best_filter: "kl", best_filter_ten: "Khối lượng đột biến" }))
+    expect(screen.getByTestId("cap5-pa-khoi1-best")).toHaveTextContent("«Khối lượng đột biến»")
+    expect(screen.getByTestId("cap5-pa-khoi12-pct-kl")).toHaveTextContent("67%")
+    expect(screen.queryByTestId("cap5-pa-khoi12-chuadu")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap5-pa-khoi12-chualayduoc")).not.toBeInTheDocument()
+  })
+
+  /**
+   * ★★★ Chiều ngược lại: nhật ký client ĐẦY nhưng server nói chưa có lệnh săn
+   * nào. Con số duy nhất được phép hiện là của server.
+   */
+  it("★★★ nhật ký client đầy nhưng server nói rỗng ⇒ ⑫ KHÔNG vẽ dòng nào", () => {
+    renderPage([...lenhSan("ngoai", 6, 5)])
+    expect(screen.queryByTestId("cap5-pa-khoi12-rows")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap5-pa-khoi12-pct-ngoai")).not.toBeInTheDocument()
+    expect(screen.getByTestId("cap5-pa-khoi12-chuadu")).toHaveTextContent(
+      "Chưa có lệnh nào đóng từ mã bạn săn được",
+    )
+  })
+
+  it("★ query LỖI ⇒ nói thẳng chưa lấy được, KHÔNG vu cho user là chưa đóng lệnh nào", () => {
+    phanTichQuery.current = { data: undefined, isPending: false, isError: true }
+    renderPage([...lenhSan("ngoai", 6, 5)])
+    const box = screen.getByTestId("cap5-pa-khoi12-chualayduoc")
+    expect(box).toHaveTextContent("Chưa lấy được số liệu bộ lọc từ máy chủ")
+    expect(box).toHaveAttribute("data-dangtai", "false")
+    expect(screen.queryByTestId("cap5-pa-khoi12-chuadu")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap5-pa-khoi12-rows")).not.toBeInTheDocument()
+  })
+
+  it("★ đang tải ⇒ câu chờ, không con số nào", () => {
+    phanTichQuery.current = { data: undefined, isPending: true, isError: false }
+    renderPage([])
+    const box = screen.getByTestId("cap5-pa-khoi12-chualayduoc")
+    expect(box).toHaveTextContent("Đang lấy số liệu bộ lọc")
+    expect(box).toHaveAttribute("data-dangtai", "true")
+  })
+
   it("một thanh cho mỗi bộ lọc, sắp giảm dần theo tỷ lệ thắng", () => {
-    renderPage([
-      ...lenhSan("ngoai", 4, 3), // 75%
-      ...lenhSan("dinh", 3, 2), // 67%
-      ...lenhSan("kl", 4, 1), // 25%
-    ])
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 4, 3), k12Item("dinh", 3, 2), k12Item("kl", 4, 1)]),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
     const rows = screen.getByTestId("cap5-pa-khoi12-rows")
     const order = [...rows.querySelectorAll("[data-testid^='cap5-pa-khoi12-row-']")].map((el) =>
       el.getAttribute("data-testid"),
@@ -261,14 +385,22 @@ describe("Cap5PortfolioAnalysis — ⑫ bộ lọc nào ra mã thắng nhiều n
   })
 
   it("bộ lọc cao nhất được gọi «hợp với bạn nhất»", () => {
-    renderPage([...lenhSan("ngoai", 4, 3), ...lenhSan("dinh", 3, 2)])
-    expect(screen.getByTestId("cap5-pa-khoi12-phathien")).toHaveTextContent(
-      "hợp với bạn nhất",
-    )
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 4, 3), k12Item("dinh", 3, 2)]),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
+    expect(screen.getByTestId("cap5-pa-khoi12-phathien")).toHaveTextContent("hợp với bạn nhất")
   })
 
   it("bộ lọc thấp nhất dưới ngưỡng kém → cảnh báo riêng cho bộ lọc đó", () => {
-    renderPage([...lenhSan("ngoai", 4, 3), ...lenhSan("kl", 4, 1)])
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 4, 3), k12Item("kl", 4, 1)]),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
     const pat = screen.getByTestId("cap5-pa-khoi12-phathien")
     expect(pat).toHaveTextContent("«Khối lượng đột biến» chỉ 25%")
     expect(pat).toHaveTextContent("sóng ngắn")
@@ -276,7 +408,12 @@ describe("Cap5PortfolioAnalysis — ⑫ bộ lọc nào ra mã thắng nhiều n
 
   /* ── LUẬT SỐ 1: dưới ngưỡng mẫu ─────────────────────────────────────────── */
   it("★ dưới 3 lệnh/bộ lọc → KHÔNG suy tỷ lệ, nói rõ còn thiếu bao nhiêu lệnh", () => {
-    renderPage([...lenhSan("ngoai", 2, 2)])
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 2, 2)]),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
     const note = screen.getByTestId("cap5-pa-khoi12-chuadu")
     expect(note).toHaveTextContent("Mới có 2 lệnh đã đóng từ săn mã")
     expect(note).toHaveTextContent("còn thiếu 1 lệnh")
@@ -285,8 +422,21 @@ describe("Cap5PortfolioAnalysis — ⑫ bộ lọc nào ra mã thắng nhiều n
     expect(screen.queryByTestId("cap5-pa-khoi12-phathien")).not.toBeInTheDocument()
   })
 
+  it("★ ngưỡng mẫu in ra là ngưỡng của SERVER, không phải hằng số FE", () => {
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 4, 4, { du_mau: false, ty_le_thang: null })], {
+        so_lenh_toi_thieu: 6,
+        du_de_ket_luan: false,
+      }),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
+    expect(screen.getByTestId("cap5-pa-khoi12-row-ngoai")).toHaveTextContent("4/6")
+  })
+
   it("★ chưa lệnh nào từ săn mã → nói thẳng, KHÔNG hiện 0%", () => {
-    renderPage([trade({ huntFilter: null })])
+    renderPage([])
     const note = screen.getByTestId("cap5-pa-khoi12-chuadu")
     expect(note).toHaveTextContent("Chưa có lệnh nào đóng từ mã bạn săn được")
     // ★ Không một thanh bộ lọc nào được vẽ ⇒ không có chỗ nào in «0%» như thể đã
@@ -298,7 +448,12 @@ describe("Cap5PortfolioAnalysis — ⑫ bộ lọc nào ra mã thắng nhiều n
   })
 
   it("★ lệnh KHÔNG đến từ săn mã được đếm RIÊNG, không gán vào bộ lọc nào", () => {
-    renderPage([...lenhSan("ngoai", 3, 2), trade({ huntFilter: null }), trade({ huntFilter: null })])
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 3, 2)], { so_lenh_khong_tu_san: 2 }),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
     expect(screen.getByTestId("cap5-pa-khoi12-khongsan")).toHaveTextContent(
       "2 lệnh đã đóng KHÔNG đến từ săn mã",
     )
@@ -307,9 +462,26 @@ describe("Cap5PortfolioAnalysis — ⑫ bộ lọc nào ra mã thắng nhiều n
   })
 
   it("★ đủ mẫu ở một bộ lọc KHÔNG làm bộ lọc chưa đủ mẫu bị suy ra tỷ lệ", () => {
-    renderPage([...lenhSan("ngoai", 3, 3), ...lenhSan("tudoanh", 1, 0)])
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 3, 3), k12Item("tudoanh", 1, 0)]),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
     expect(screen.getByTestId("cap5-pa-khoi12-pct-ngoai")).toHaveTextContent("100%")
     expect(screen.getByTestId("cap5-pa-khoi12-pct-tudoanh")).not.toHaveTextContent("%")
+  })
+
+  it("★ câu giải thích §C12c là câu của SERVER, nguyên văn", () => {
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 3, 3)], { giai_thich: "CÂU CỦA MÁY CHỦ VỀ CÁCH ĐẾM" }),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
+    expect(screen.getByTestId("cap5-pa-khoi12-giaithich")).toHaveTextContent(
+      "CÂU CỦA MÁY CHỦ VỀ CÁCH ĐẾM",
+    )
   })
 })
 
@@ -321,11 +493,51 @@ describe("Cap5PortfolioAnalysis — ⑬ kỷ luật săn mã (phễu)", () => {
     renderPage([])
     const funnel = screen.getByTestId("cap5-pa-khoi13-funnel")
     expect(funnel).toHaveTextContent("Mã đã săn (đưa vào Watchlist)")
-    expect(funnel).toHaveTextContent("Chờ đến khi ≥4/5 lớp ủng hộ")
+    // ★ Nhãn KHÔNG còn là "Chờ đến khi ≥4/5 lớp": hệ không lưu lược sử điểm đồng
+    // thuận nên nó chỉ biết mã ĐANG ở mức nào (xem `portfolioAnalysisCap5.ts`).
+    expect(funnel).toHaveTextContent("Đang ở ≥4/5 lớp ủng hộ")
+    expect(funnel).not.toHaveTextContent("Chờ đến khi")
     expect(funnel).toHaveTextContent("Thực sự vào lệnh")
     expect(screen.getByTestId("cap5-pa-khoi13-tang-1")).toHaveTextContent("34")
     expect(screen.getByTestId("cap5-pa-khoi13-tang-2")).toHaveTextContent("19")
     expect(screen.getByTestId("cap5-pa-khoi13-tang-3")).toHaveTextContent("14")
+  })
+
+  /**
+   * ★★★ B8 — CẬN DƯỚI KHÔNG ĐƯỢC IN NHƯ SỐ CHẮC CHẮN.
+   *
+   * Fixture mặc định (`so_ma_da_san: 34`, `so_ma_cho_du_lop: 19`) KHÔNG kèm mẫu
+   * số ⇒ hệ chỉ biết "ít nhất 19", nên phễu phải ghi «≥ 19» + một dòng nói rõ vì
+   * sao. In "19" trơn là khẳng định về những mã chưa ai chấm.
+   */
+  it("★★★ tầng giữa là cận dưới ⇒ in «≥ 19» + nói rõ mẫu số", () => {
+    renderPage([], [], cap5Progress({ so_ma_da_cham_diem: 22 }))
+    expect(screen.getByTestId("cap5-pa-khoi13-tang-2-v")).toHaveTextContent("≥ 19")
+    expect(screen.getByTestId("cap5-pa-khoi13-tang-2-v")).toHaveAttribute("data-canduoi", "true")
+    expect(screen.getByTestId("cap5-pa-khoi13-canduoi")).toHaveTextContent(
+      "hệ chỉ chấm được điểm đồng thuận cho 22/34 mã",
+    )
+  })
+
+  it("★ mẫu số thiếu hẳn trên wire ⇒ VẪN là cận dưới, nói thẳng là chưa biết mẫu số", () => {
+    renderPage([])
+    expect(screen.getByTestId("cap5-pa-khoi13-tang-2")).toHaveTextContent("≥ 19")
+    expect(screen.getByTestId("cap5-pa-khoi13-canduoi")).toHaveTextContent(
+      "chưa cho biết đã chấm được điểm cho bao nhiêu mã",
+    )
+  })
+
+  it("★ server khẳng định đã chấm hết ⇒ in số TRƠN, không có dòng cận dưới", () => {
+    renderPage(
+      [],
+      [],
+      cap5Progress({ so_ma_da_cham_diem: 34, so_ma_cho_du_lop_day_du: true }),
+    )
+    const v = screen.getByTestId("cap5-pa-khoi13-tang-2-v")
+    expect(v).toHaveTextContent("19")
+    expect(v.textContent).not.toContain("≥")
+    expect(v).toHaveAttribute("data-canduoi", "false")
+    expect(screen.queryByTestId("cap5-pa-khoi13-canduoi")).not.toBeInTheDocument()
   })
 
   it("phát hiện đúng câu mẫu spec khi user THẬT SỰ có sàng lọc", () => {

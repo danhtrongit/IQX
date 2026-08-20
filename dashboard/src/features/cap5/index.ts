@@ -67,17 +67,23 @@ export {
   type EmphasisPart,
 } from "./coachTemplateCap5"
 export {
-  computeCap5Khoi12BoLoc,
   computeCap5Khoi13Pheu,
   computeCap5PortfolioAnalysis,
+  nhanTangGiua,
+  tangGiuaCap5,
+  // ★ `computeCap5Khoi12BoLoc` ĐÃ GỠ: khối ⑫ chỉ đọc `GET /cap5/phan-tich`.
+  viewCap5Khoi12BoLoc,
   KHOI12_KEM_PCT,
   KHOI12_MIN_LENH,
   KHOI12_TOT_PCT,
   type Cap5Khoi12BoLoc,
   type Cap5Khoi13Pheu,
   type Cap5PortfolioAnalysisResult,
+  type Cap5TangGiua,
   type Khoi12FilterRow,
+  type Khoi12TrangThai,
   type Khoi13Tang,
+  type TangGiuaTrangThai,
 } from "./portfolioAnalysisCap5"
 export {
   appendCap5TradeRecord,

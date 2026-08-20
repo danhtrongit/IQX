@@ -35,7 +35,7 @@ import {
   LOP_KEYS,
   NHAN_DINH_LABEL,
 } from "@/features/cap4/doc5Lop"
-import { splitEmphasis } from "@/features/cap5/coachTemplateCap5"
+import { splitEmphasis, type CoachSituationCap5 } from "@/features/cap5/coachTemplateCap5"
 import { useCap6Events } from "@/features/cap6/Cap6Context"
 import { COACH_CAP6_LABEL, type CoachSituationCap6 } from "@/features/cap6/coachTemplateCap6"
 import { lopNguocChieu, lopUngHo } from "@/features/cap6/doiChieu"
@@ -69,6 +69,7 @@ import "@/features/cap1/cap1.css"
 import "@/features/cap2/cap2-ketso.css"
 import "@/features/cap3/cap3-ketso.css"
 import "@/features/cap4/cap4-ketso.css"
+import "@/features/cap5/cap5.css"
 import "@/features/cap6/cap6-ketso.css"
 import "./cap7-ketso.css"
 
@@ -96,11 +97,14 @@ import "./cap7-ketso.css"
  * lớp coach "QUYẾT ĐỊNH VS KẾT QUẢ", và 3 trường `o4`/`verdictHe`/`verdictUser`
  * của bản ghi. `Đóng kết sổ ✓` giờ mở ngay — Cấp 7 vốn là SOFT, không cổng cứng.
  *
- * ★ **ĐOẠN COACH SĂN MÃ CỦA CẤP 5 MỚI CHƯA CÓ Ở ĐÂY** (`cap5Situation` = `null`):
- * nó cần `huntFilter`/`huntSoPhienCho`/`huntSoLopLucVao` của chính lệnh, mà trang
- * Cấp 7 không đi qua màn Săn mã. Một `huntFilter: null` cứng KHÔNG phải "chưa
- * biết" — `coachTemplateCap5` đọc nó thành câu khẳng định "mã này KHÔNG đến từ
- * săn mã". Thà VẮNG đoạn coach còn hơn có một đoạn nói sai.
+ * ★★ **ĐOẠN COACH SĂN MÃ CỦA CẤP 5 CÓ Ở ĐÂY** — bản SỬA một khẳng định SAI.
+ * Docstring cũ nói "trang Cấp 7 không đi qua màn Săn mã": không đúng. Nguyên
+ * tắc cộng dồn giữ `Cap5Provider` ở Cấp 6/7/8 ⇒ `isCap5Active === true` ⇒ nút
+ * «Săn mã» + «Watchlist» vẫn mọc trên `RightToolbar`/`RightSidebar`, và backend
+ * vẫn đóng dấu `order_kehoach.hunt_filter`. Điền `huntFilter: null` cứng là để
+ * bản ghi FE nói ngược lại server về cùng một lệnh. Nguồn săn thật đọc từ
+ * `GET /cap5/nguon-san/{symbol}` (helper `cap5/nguonSanKetso.ts`); chỉ khi KHÔNG
+ * lấy được (`huntNguonChuaBiet`) mới vắng đoạn coach.
  *
  * ★★ **`docLucDung === null` KHÔNG PHẢI MỘT PHÁN QUYẾT** — nó là *chưa tới hạn
  * chấm* (hoặc chưa lấy được giá phiên đích). Dòng diễn biến nói đúng thế và
@@ -504,15 +508,25 @@ export function KetsoModalCap7({
         giaCo: docLuc.giaCo,
       }
     : null
+  // Đoạn coach Cấp 5 (săn mã) có ở mọi lệnh mà ta BIẾT nguồn săn — kể cả mã
+  // không đến từ săn mã (mẫu `khong_san` nói thẳng điều đó, và lúc đó ta ĐÃ hỏi
+  // server). NGOẠI LỆ DUY NHẤT: `huntNguonChuaBiet` ⇒ `null` ⇒ vắng đoạn coach,
+  // vì in "Mã này KHÔNG đến từ săn mã" khi chưa biết nguồn là bịa đặt.
+  const cap5Situation: CoachSituationCap5 | null = data.huntNguonChuaBiet
+    ? null
+    : {
+        huntFilter: data.huntFilter,
+        huntSoPhienCho: data.huntSoPhienCho,
+        huntSoLopLucVao: data.huntSoLopLucVao,
+        pnlPct,
+      }
   const coach = composeCoachCap7(
     cap1Situation,
     cap1Params,
     cap2Situation,
     cap3Situation,
     cap4Situation,
-    // Cấp 5 mới = SĂN MÃ, và trang Cấp 7 không có nguồn `huntFilter` của lệnh →
-    // KHÔNG có đoạn coach Cấp 5. Xem doc đầu file.
-    null,
+    cap5Situation,
     cap6Situation,
     cap7Situation,
   )
@@ -584,12 +598,12 @@ export function KetsoModalCap7({
     ai_5_lop: ai5Lop,
     so_lop_dong_thuan: ai5Lop ? soDongThuan : null,
     so_lop_khac_ai: ai5Lop ? soKhacAi : null,
-    // ★ 3 trường săn mã của Cấp 5 mới: `null` ở đây là SỰ THẬT, không phải chỗ
-    // trống chờ điền — trang Cấp 7 không có màn Săn mã nên lệnh Cấp 7 thật sự
-    // không đến từ bộ lọc nào (khối ⑫ đếm chúng riêng, KHÔNG gán bừa bộ lọc).
-    huntFilter: null,
-    huntSoPhienCho: null,
-    huntSoLopLucVao: null,
+    // ★★ Nguồn săn THẬT của lệnh (`data.hunt*`, do Cap7TradingPage đọc từ
+    // `GET /cap5/nguon-san/{symbol}`) — KHÔNG còn `null` cứng. Xem doc đầu file:
+    // "trang Cấp 7 không có màn Săn mã" là một khẳng định SAI.
+    huntFilter: data.huntFilter,
+    huntSoPhienCho: data.huntSoPhienCho,
+    huntSoLopLucVao: data.huntSoLopLucVao,
     kieuCoPhieu: doiChieu?.kieu ?? null,
     lopQuyetDinh: doiChieu?.lopQuyetDinh ?? null,
     khopGoiY: doiChieu?.khopGoiY ?? null,
@@ -1027,6 +1041,25 @@ export function KetsoModalCap7({
         <div className="cap4-ketso-coach-tag">NHÌN LẠI · GÓC NHÌN KHÁC AI</div>
         <p className="cap4-ketso-coach-body">{coach.cap4.text}</p>
       </div>
+
+      {/* Lớp coach 5 — Cấp 5 (SĂN MÃ). ★ Trước bản vá này khối này KHÔNG tồn tại
+          ở Cấp 6/7/8 vì `cap5Situation` bị truyền `null` cứng với lý do "cấp này
+          không có màn Săn mã" — một khẳng định SAI (nguyên tắc cộng dồn giữ
+          `Cap5Provider`, nút «Săn mã» vẫn có). Mẫu "vào lệnh khi mã chưa chín"
+          mang style cảnh báo: nó KHÔNG phải lời khen. */}
+      {coach.cap5 && (
+        <div
+          className={cn("cap5-ketso-coach", coach.cap5.canhBao && "cap5-coach--canhbao")}
+          data-testid="cap5-ketso-coach"
+        >
+          <div className="cap5-ketso-coach-tag">NHÌN LẠI · SĂN MÃ</div>
+          <p className="cap5-ketso-coach-body">
+            {splitEmphasis(coach.cap5.text, coach.cap5.nhanManh).map((part, i) =>
+              part.strong ? <strong key={i}>{part.text}</strong> : <span key={i}>{part.text}</span>,
+            )}
+          </p>
+        </div>
+      )}
 
       {/* Lớp coach 6 — Cấp 6 (đối chiếu vs kết quả), giữ nguyên. */}
       {coach.cap6 && (

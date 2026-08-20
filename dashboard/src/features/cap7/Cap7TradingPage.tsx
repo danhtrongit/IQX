@@ -32,6 +32,7 @@ import { isDoc5LopComplete } from "@/features/cap4/doc5Lop"
 import { useCap4TradeLog } from "@/features/cap4/tradeLogCap4"
 import type { Lop5Partial } from "@/features/cap4/types"
 import { Cap5Provider } from "@/features/cap5/Cap5Context"
+import { fetchNguonSanKetso } from "@/features/cap5/nguonSanKetso"
 import { useCap5TradeLog } from "@/features/cap5/tradeLogCap5"
 import { cap6Api } from "@/features/cap6/api"
 import { Cap6Provider, useCap6Events, type Cap6OrderEvent } from "@/features/cap6/Cap6Context"
@@ -485,6 +486,18 @@ function Cap7Terminal() {
     // chưa từng đi qua bước Đối chiếu → `null` → modal bỏ hẳn khối, im lặng.
     const doiChieu = (await doiChieuBySymbolRef.current.get(key)) ?? null
 
+    /**
+     * NGUỒN SĂN của lệnh (spec Cấp 5 §8) — `GET /cap5/nguon-san/{symbol}`.
+     *
+     * ★★ Nguyên tắc cộng dồn: trang này bọc `Cap5Provider`, nên nút «Săn mã» +
+     * «Watchlist» VẪN có ở cấp này và một lệnh ở đây HOÀN TOÀN có thể đến từ bộ
+     * lọc săn mã (backend đóng dấu `order_kehoach.hunt_filter`). Trước đây Kết sổ
+     * điền `huntFilter: null` cứng ⇒ màn khẳng định "mã này KHÔNG đến từ săn mã"
+     * cho mọi lệnh, ngược lại chính dữ liệu server. Ba trạng thái xem
+     * `cap5/nguonSanKetso.ts`.
+     */
+    const nguonSan = await fetchNguonSanKetso(order.symbol)
+
     ketsoCountRef.current += 1
     const sellDate = todayYmd()
     const soPhienGiu = countTradingSessions(buy.buyDate, sellDate)
@@ -518,6 +531,7 @@ function Cap7Terminal() {
       pctVon: buy.pctVon,
       doc5Lop: buy.doc5Lop,
       ai5Lop: buy.ai5Lop,
+      ...nguonSan,
       doiChieu,
       docLuc: buildDocLucCap7(buy, cap7Phien?.quy_tac),
     })

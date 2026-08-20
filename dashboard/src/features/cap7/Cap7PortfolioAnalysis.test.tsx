@@ -23,6 +23,12 @@ vi.mock("@/features/cap6/hooks", () => ({
 vi.mock("@/features/cap4/hooks", () => ({
   useVuKhiDiemMu: () => ({ data: undefined, isPending: true, isError: false }),
 }))
+vi.mock("@/features/cap5/hooks", () => ({
+  // ★ Khối ⑫ của Cấp 5 đọc `GET /cap5/phan-tich` (SERVER, không phải nhật ký
+  // localStorage) — mặc định "đang tải" để không bài nào ở cấp trên khẳng định
+  // một con số bộ lọc nào.
+  useCap5PhanTich: () => ({ data: undefined, isPending: true, isError: false }),
+}))
 
 import { Cap7PortfolioAnalysis } from "./Cap7PortfolioAnalysis"
 import type { Cap7TradeRecord } from "./tradeLogCap7"

@@ -5,12 +5,14 @@ import type { Cap2Progress } from "@/features/cap2/types"
 import type { Cap3Progress } from "@/features/cap3/types"
 import { Cap4PortfolioAnalysis } from "@/features/cap4/Cap4PortfolioAnalysis"
 import type { Cap4Progress } from "@/features/cap4/types"
+import { useCap5PhanTich } from "./hooks"
 import {
-  computeCap5Khoi12BoLoc,
   computeCap5Khoi13Pheu,
   KHOI12_KEM_PCT,
-  KHOI12_MIN_LENH,
   KHOI12_TOT_PCT,
+  nhanTangGiua,
+  viewCap5Khoi12BoLoc,
+  type Cap5Khoi12BoLoc,
   type Khoi12FilterRow,
 } from "./portfolioAnalysisCap5"
 import type { Cap5TradeRecord } from "./tradeLogCap5"
@@ -107,7 +109,7 @@ function barTone(row: Khoi12FilterRow): string {
 }
 
 /** Một dòng bộ lọc (mockup `.flt-row`). */
-function FilterRow({ row }: { row: Khoi12FilterRow }) {
+function FilterRow({ row, minLenh }: { row: Khoi12FilterRow; minLenh: number }) {
   return (
     <div
       className={cn("cap5-pa-flt", !row.duMau && "cap5-pa-flt--chuadu")}
@@ -123,9 +125,7 @@ function FilterRow({ row }: { row: Khoi12FilterRow }) {
         {row.tyLeThang == null ? "—" : `${row.tyLeThang}%`}
       </span>
       <span className="cap5-pa-flt-n">
-        {row.duMau
-          ? `${fmtInt(row.soLenh)} lệnh`
-          : `${fmtInt(row.soLenh)}/${fmtInt(KHOI12_MIN_LENH)}`}
+        {row.duMau ? `${fmtInt(row.soLenh)} lệnh` : `${fmtInt(row.soLenh)}/${fmtInt(minLenh)}`}
       </span>
     </div>
   )
@@ -141,7 +141,19 @@ export function Cap5PortfolioAnalysis({
   now,
   host,
 }: Cap5PortfolioAnalysisProps) {
-  const khoi12 = computeCap5Khoi12BoLoc(trades)
+  // ★★ KHỐI ⑫ ĐỌC SERVER (`GET /cap5/phan-tich`), KHÔNG đọc `trades`. `trades`
+  // vẫn được truyền xuống các khối kế thừa Cấp 1-4 (chúng đã ghi rõ gap
+  // per-browser của chính chúng), nhưng ⑫ nói về CÙNG bộ số với khối ① — và khối
+  // ① đọc server, nên ⑫ phải đọc server. Xem `portfolioAnalysisCap5.ts`.
+  const phanTichQuery = useCap5PhanTich()
+  const khoi12: Cap5Khoi12BoLoc = viewCap5Khoi12BoLoc(
+    phanTichQuery.data?.khoi_12,
+    phanTichQuery.isError
+      ? "loi"
+      : phanTichQuery.data == null
+        ? "dang_tai"
+        : "co_du_lieu",
+  )
   const khoi13 = computeCap5Khoi13Pheu(cap5Progress ?? null)
   const bestFilterTen = huntFilterTen(cap5Progress?.best_filter ?? null)
 
@@ -213,16 +225,28 @@ export function Cap5PortfolioAnalysis({
         {khoi12.rows.length > 0 && (
           <div data-testid="cap5-pa-khoi12-rows">
             {khoi12.rows.map((row) => (
-              <FilterRow key={row.filter} row={row} />
+              <FilterRow key={row.filter} row={row} minLenh={khoi12.minLenh} />
             ))}
           </div>
         )}
 
-        {/* Trạng thái rỗng TRUNG THỰC + số còn thiếu (không suy tỷ lệ từ 1-2 lệnh). */}
-        {khoi12.insufficientNote && (
-          <p className={NOTE} data-testid="cap5-pa-khoi12-chuadu">
+        {/* ★ HAI trạng thái rỗng KHÁC NHAU: "máy chủ chưa trả số" (fail-closed)
+            và "đã có số nhưng chưa đủ mẫu". Gộp chúng lại là nói với user rằng
+            họ chưa đóng lệnh nào — trong khi thật ra ta chưa hỏi được máy chủ. */}
+        {khoi12.chuaLayDuoc ? (
+          <p
+            className={NOTE}
+            data-testid="cap5-pa-khoi12-chualayduoc"
+            data-dangtai={khoi12.dangTai ? "true" : "false"}
+          >
             {khoi12.insufficientNote}
           </p>
+        ) : (
+          khoi12.insufficientNote && (
+            <p className={NOTE} data-testid="cap5-pa-khoi12-chuadu">
+              {khoi12.insufficientNote}
+            </p>
+          )
         )}
 
         {khoi12.phatHien && (
@@ -263,19 +287,36 @@ export function Cap5PortfolioAnalysis({
               <span className="cap5-pa-fn-lb">{t.label}</span>
               <span
                 className={cn("cap5-pa-fn-v", t.value == null && "cap5-pa-fn-v--chuabiet")}
+                data-testid={`cap5-pa-khoi13-tang-${i + 1}-v`}
                 data-chuabiet={t.value == null ? "true" : "false"}
+                data-canduoi={i === 1 && khoi13.tangGiua.trangThai === "can_duoi" ? "true" : "false"}
               >
-                {fmtNullableInt(t.value)}
+                {/* ★ Tầng giữa in "≥ N" khi con số chỉ là CẬN DƯỚI (hệ chưa chấm
+                    được hết số mã đã săn) — in "N" trơn là khẳng định về những mã
+                    chưa ai chấm. */}
+                {i === 1 ? nhanTangGiua(khoi13.tangGiua) : fmtNullableInt(t.value)}
               </span>
             </div>
           ))}
         </div>
 
         {/* ★ Tầng giữa "—" phải được GIẢI THÍCH, nếu không nó trông như lỗi. */}
-        {khoi13.soMaChoDuLop == null && khoi13.soMaDaSan != null && (
+        {khoi13.tangGiua.trangThai === "chua_do" && khoi13.soMaDaSan != null && (
           <p className={NOTE} data-testid="cap5-pa-khoi13-chuadolop">
             {"Tầng giữa chưa đo được: điểm đồng thuận 5 lớp của các mã trong Watchlist được chấm " +
               "theo mẻ 1 lần/ngày sau phiên. Nó sẽ có số sau mẻ chấm gần nhất."}
+          </p>
+        )}
+
+        {/* ★ …và một con số CẬN DƯỚI cũng phải nói rõ là cận dưới, kèm mẫu số. */}
+        {khoi13.tangGiua.trangThai === "can_duoi" && (
+          <p className={NOTE} data-testid="cap5-pa-khoi13-canduoi">
+            {khoi13.tangGiua.mauSo != null && khoi13.tangGiua.soMaDaSan != null
+              ? `Tầng giữa là con số ÍT NHẤT: hệ chỉ chấm được điểm đồng thuận cho ` +
+                `${fmtInt(khoi13.tangGiua.mauSo)}/${fmtInt(khoi13.tangGiua.soMaDaSan)} mã bạn đã ` +
+                "săn, nên số mã từng chín có thể cao hơn."
+              : "Tầng giữa là con số ÍT NHẤT: máy chủ chưa cho biết đã chấm được điểm cho bao " +
+                "nhiêu mã trong số bạn đã săn, nên số thật có thể cao hơn."}
           </p>
         )}
 

@@ -144,6 +144,12 @@ const data: KetsoDataCap6 = {
     dinh_gia: "bad",
   },
   ai5Lop: null,
+  // ★★ NGUỒN SĂN THẬT của lệnh (nguyên tắc cộng dồn: cấp này VẪN có màn Săn mã).
+  // Fixture mặc định là một lệnh ĐẾN TỪ săn mã — nếu `buildRecord` quay lại điền
+  // `null` cứng thì bài canh nguồn săn dưới đây ĐỎ.
+  huntFilter: "kl",
+  huntSoPhienCho: 3,
+  huntSoLopLucVao: null,
   doiChieu,
 }
 
@@ -278,11 +284,27 @@ describe("KetsoModalCap6 — cộng dồn: giữ NGUYÊN mọi khối Cấp 1-5"
     expect(screen.getByTestId("cap4-ketso-doc5lop")).toBeInTheDocument()
   })
 
-  it("giữ chồng coach Cấp 1-4 (Cấp 5 đã nghỉ hưu → KHÔNG có lớp coach 5)", () => {
+  /**
+   * ★★★ B3 — bài canh cũ khẳng định "KHÔNG có lớp coach 5" và ghim đúng cái lỗi:
+   * nó đúng cho lớp coach 5 CŨ ("quyết định vs kết quả" của 4 ô đã nghỉ hưu),
+   * nhưng Cấp 5 mới = SĂN MÃ và nguyên tắc cộng dồn giữ màn Săn mã ở Cấp 6/7/8.
+   * Lớp coach săn mã vì thế PHẢI có khi biết nguồn săn của lệnh.
+   */
+  it("giữ chồng coach Cấp 1-4 + lớp coach SĂN MÃ của Cấp 5 (cộng dồn)", () => {
     renderModal()
     expect(screen.getByTestId("cap3-ketso-coach")).toBeInTheDocument()
     expect(screen.getByTestId("cap4-ketso-coach")).toBeInTheDocument()
+    expect(screen.getByTestId("cap5-ketso-coach")).toBeInTheDocument()
+    // …và đúng là lớp SĂN MÃ, không phải lớp "quyết định vs kết quả" đã nghỉ hưu.
+    expect(screen.getByTestId("cap5-ketso-coach")).toHaveTextContent("SĂN MÃ")
+    expect(screen.getByTestId("cap5-ketso-coach").textContent).not.toContain("QUYẾT ĐỊNH VS")
+  })
+
+  it("★ chưa biết nguồn săn → lớp coach săn mã VẮNG (không đoán nguồn gốc lệnh)", () => {
+    renderModal({ huntNguonChuaBiet: true, huntFilter: null })
     expect(screen.queryByTestId("cap5-ketso-coach")).not.toBeInTheDocument()
+    // 4 lớp dưới vẫn đủ.
+    expect(screen.getByTestId("cap4-ketso-coach")).toBeInTheDocument()
   })
 
   it("giữ 3 dòng HỒ SƠ CỦA BẠN", () => {
@@ -623,5 +645,57 @@ describe("KetsoModalCap6 — nhật ký + recompute Cấp 6", () => {
     renderModal()
     fireEvent.click(closeButton())
     await waitFor(() => expect(markCap6Task).toHaveBeenCalledWith(2))
+  })
+})
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NGUỒN SĂN CỦA LỆNH (nguyên tắc cộng dồn: cấp này VẪN có màn Săn mã)
+   ══════════════════════════════════════════════════════════════════════════ */
+describe("KetsoModalCap6 — nguồn săn của lệnh KHÔNG được điền `null` cứng", () => {
+  /**
+   * ★★★ B3 — HAI NGUỒN NÓI KHÁC NHAU VỀ CÙNG MỘT LỆNH.
+   *
+   * `Cap6TradingPage` bọc `Cap5Provider` (cộng dồn) ⇒ `isCap5Active === true` ⇒
+   * `RightToolbar`/`RightSidebar` mọc đủ nút «Săn mã» + «Watchlist» ở Cấp 6/7/8,
+   * và backend đóng dấu `order_kehoach.hunt_filter` cho lệnh săn được. Bản ghi FE
+   * từng điền `huntFilter: null` CỨNG kèm docstring "trang Cấp 6 KHÔNG có màn
+   * Săn mã" — vừa sai, vừa biến `null` thành câu khẳng định "mã này KHÔNG đến từ
+   * săn mã" (`coachTemplateCap5`).
+   */
+  it("★★★ bản ghi mang NGUỒN SĂN THẬT của lệnh, không phải `null` cứng", async () => {
+    const onRecorded = vi.fn()
+    renderModal({ huntFilter: "kl", huntSoPhienCho: 3 }, { onRecorded })
+    fireEvent.click(closeButton())
+    await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1))
+    const rec = onRecorded.mock.calls[0][0] as Record<string, unknown>
+    expect(rec.huntFilter).toBe("kl")
+    expect(rec.huntSoPhienCho).toBe(3)
+    // `so_lop_luc_vao` server LUÔN null (không lưu điểm lúc đặt lệnh) — chép nguyên.
+    expect(rec.huntSoLopLucVao).toBeNull()
+  })
+
+  it("★ mã user tự gõ (server nói không từ săn mã) ⇒ `null` — và đó là sự thật", async () => {
+    const onRecorded = vi.fn()
+    renderModal({ huntFilter: null, huntSoPhienCho: null }, { onRecorded })
+    fireEvent.click(closeButton())
+    await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1))
+    const rec = onRecorded.mock.calls[0][0] as Record<string, unknown>
+    expect(rec.huntFilter).toBeNull()
+  })
+
+  it("★ đoạn coach săn mã CÓ mặt khi biết nguồn săn", () => {
+    renderModal({ huntFilter: "kl", huntSoPhienCho: 3 })
+    expect(document.body.textContent).toMatch(/Khối lượng đột biến/)
+  })
+
+  /**
+   * ★ NGOẠI LỆ: không lấy được nguồn săn (`GET /cap5/nguon-san` lỗi) ⇒ VẮNG đoạn
+   * coach. In "Mã này KHÔNG đến từ săn mã" khi chưa biết nguồn là bịa đặt về
+   * nguồn gốc lệnh — "chưa lấy được" ≠ "không đến từ săn mã" (luật số 1).
+   */
+  it("★ chưa biết nguồn săn ⇒ KHÔNG câu nào khẳng định về nguồn gốc lệnh", () => {
+    renderModal({ huntNguonChuaBiet: true, huntFilter: null })
+    expect(document.body.textContent).not.toMatch(/KHÔNG đến từ săn mã/i)
+    expect(document.body.textContent).not.toMatch(/không đến từ săn mã/i)
   })
 })

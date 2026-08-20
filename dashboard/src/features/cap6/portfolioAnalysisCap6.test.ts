@@ -407,6 +407,12 @@ describe("computeCap6PortfolioAnalysis — cộng dồn bằng DELEGATION", () =
     // Khối ⑫/⑬ của Cấp 5 (và qua chúng mọi khối ①-⑪) không bị tính lại khác đi.
     expect(result.khoi12BoLoc).toEqual(cap5Result.khoi12BoLoc)
     expect(result.khoi13Pheu).toEqual(cap5Result.khoi13Pheu)
+    // ★★ …và ⑫ ở đây là FAIL-CLOSED, không phải "0 lệnh săn": hàm tổng của Cấp 6
+    // không mang theo payload `GET /cap5/phan-tich`, mà ⑫ CHỈ được nói bằng số
+    // của máy chủ. Bài này ghim điều đó để không ai "sửa" nó bằng cách cho ⑫
+    // tính lại từ `trades` (nhật ký per-browser) — đúng lỗi B1 đã phải vá.
+    expect(result.khoi12BoLoc.chuaLayDuoc).toBe(true)
+    expect(result.khoi12BoLoc.rows).toEqual([])
     // Cấp 6 thêm.
     expect(result.khoi14LopTheoKieu.cells).toHaveLength(1)
     expect(result.khoi15DoiChieu.duCa2Nhom).toBe(true)

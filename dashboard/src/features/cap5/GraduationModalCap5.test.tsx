@@ -25,7 +25,10 @@ const { useCap5ProgressMock, graduateMutate, enterCap6Mutate, capFlags, pending 
       opts?.onSuccess?.()
     }),
     enterCap6Mutate: vi.fn(),
-    capFlags: { max: 6 },
+    // ★★ MẶC ĐỊNH = TRẦN THẬT (`CAP_MAX_ENABLED` đang là 5). Trước bản vá này
+    // mặc định là 6 — TRÊN trần thật — nên mọi bài chỉ chạy nhánh "Cấp 6 đã mở"
+    // và câu chữ user THẬT SỰ đọc (nhánh chưa mở) chưa từng bị canh.
+    capFlags: { max: 5 },
     pending: { current: false },
   }),
 )
@@ -68,7 +71,7 @@ function makeProgress(overrides: Partial<Cap5Progress> = {}): Cap5Progress {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  capFlags.max = 6
+  capFlags.max = 5
   pending.current = false
   useCap5ProgressMock.mockReturnValue({ data: makeProgress() })
 })
@@ -164,6 +167,41 @@ describe("GraduationModalCap5 — Khối 1 chỉ ghi công 2 nhiệm vụ THẬT
     expect(screen.getByTestId("cap5-grad-khoi3").textContent).toContain("đứng ngoài")
   })
 
+  /**
+   * ★★★ B7 — MÀN TỐT NGHIỆP KHÔNG GHI CÔNG VIỆC KHÔNG LÀM.
+   *
+   * Tỷ lệ sàng lọc 0% (mua hết số mã săn) nghĩa là user CHƯA loại mã nào. Câu
+   * "biết loại bỏ những mã chưa chín" khi đó là khen một việc chưa xảy ra.
+   */
+  it("★★★ sàng lọc 0% → KHÔNG khen «biết loại bỏ», nói thẳng chưa loại mã nào", () => {
+    useCap5ProgressMock.mockReturnValue({
+      data: makeProgress({ so_ma_da_san: 12, so_ma_mua_tu_watchlist: 12 }),
+    })
+    render(<GraduationModalCap5 />)
+    const k1 = screen.getByTestId("cap5-grad-khoi1")
+    expect(k1).toHaveTextContent("chưa loại mã nào")
+    expect(k1.textContent).not.toContain("biết loại bỏ")
+    expect(k1.textContent).not.toContain("bản lĩnh của thợ săn")
+    // …vẫn ghi công đúng hai nhiệm vụ ĐÃ làm.
+    expect(k1).toHaveTextContent("12 mã")
+    expect(k1).toHaveTextContent("hai nhiệm vụ của Cấp 5 đã xong")
+  })
+
+  it("★ mua NHIỀU HƠN số mã săn (wire lệch) cũng không được khen «biết lọc»", () => {
+    useCap5ProgressMock.mockReturnValue({
+      data: makeProgress({ so_ma_da_san: 5, so_ma_mua_tu_watchlist: 9 }),
+    })
+    render(<GraduationModalCap5 />)
+    expect(screen.getByTestId("cap5-grad-khoi1").textContent).not.toContain("biết loại bỏ")
+  })
+
+  it("có sàng lọc thật → MỚI khen «biết loại bỏ những mã chưa chín»", () => {
+    render(<GraduationModalCap5 />)
+    const k1 = screen.getByTestId("cap5-grad-khoi1")
+    expect(k1).toHaveTextContent("biết loại bỏ những mã chưa chín")
+    expect(k1.textContent).not.toContain("chưa loại mã nào")
+  })
+
   it("★ KHÔNG khen «lãi thật» — Cấp 5 không đo lãi (spec §2 bỏ ngưỡng lãi)", () => {
     render(<GraduationModalCap5 />)
     expect(screen.getByTestId("cap5-grad-khoi1")).toBeInTheDocument()
@@ -183,10 +221,53 @@ describe("GraduationModalCap5 — Khối 2 + Khối 3 hứa đúng Cấp 6 có t
   })
 
   it("Khối 3: Cấp 6 dạy lớp nào có quyền phủ quyết", () => {
+    capFlags.max = 6
     render(<GraduationModalCap5 />)
     const k3 = screen.getByTestId("cap5-grad-khoi3")
     expect(k3).toHaveTextContent("Cấp 6")
     expect(k3).toHaveTextContent("phủ quyết")
+  })
+
+  /**
+   * ★★★ B2 — MỘT MÀN KHÔNG ĐƯỢC TỰ MÂU THUẪN.
+   *
+   * Ở trần thật (5), dòng dưới CTA nói "Cấp 6 sắp ra mắt". Khối 3 vì thế KHÔNG
+   * được nói "**Cấp 6 đang chờ:**" ở thì hiện tại. Trước bản vá, `BLOCK_3` là
+   * một hằng số duy nhất không gắn cờ trần nên màn nói cả hai câu, cách nhau ba
+   * dòng — và CI không bắt được vì mặc định của file test này là `max = 6`.
+   */
+  it("★★★ trần còn ở 5 → Khối 3 nói Cấp 6 CHƯA ra mắt, không nói «đang chờ»", () => {
+    capFlags.max = 5
+    render(<GraduationModalCap5 />)
+    const k3 = screen.getByTestId("cap5-grad-khoi3")
+    expect(k3).toHaveTextContent("chưa ra mắt")
+    expect(k3.textContent).not.toContain("Cấp 6 đang chờ")
+    // …nhưng VẪN nói Cấp 6 sẽ dạy gì (user cần biết mình đang chờ điều gì).
+    expect(k3).toHaveTextContent("phủ quyết")
+    // …và không mâu thuẫn với dòng dưới CTA.
+    expect(screen.getByTestId("cap5-grad-cta")).toHaveTextContent("sắp ra mắt")
+  })
+
+  it("★ trần ≥6 → dòng «sắp ra mắt» biến mất và Khối 3 về câu nguyên văn spec", () => {
+    capFlags.max = 6
+    render(<GraduationModalCap5 />)
+    expect(screen.getByTestId("cap5-grad-khoi3")).toHaveTextContent("Cấp 6 đang chờ")
+    expect(screen.getByTestId("cap5-grad-cta").textContent).not.toContain("sắp ra mắt")
+  })
+
+  /**
+   * ★ Bài canh của LỚP lỗi: hai câu này loại trừ nhau tuyệt đối, ở CẢ HAI phía
+   * của trần. Nếu ai đó thêm một hằng số thứ ba hay quên gắn cờ, bài này đỏ.
+   */
+  it.each([5, 6])("★ trần = %i → màn KHÔNG bao giờ chứa cả «đang chờ» lẫn «sắp ra mắt»", (max) => {
+    capFlags.max = max
+    render(<GraduationModalCap5 />)
+    const text = document.body.textContent ?? ""
+    const daMo = text.includes("Cấp 6 đang chờ")
+    const chuaMo = text.includes("sắp ra mắt")
+    expect(screen.getByTestId("cap5-grad-khoi3")).toBeInTheDocument()
+    expect(daMo && chuaMo).toBe(false)
+    expect(daMo || chuaMo).toBe(true)
   })
 })
 
