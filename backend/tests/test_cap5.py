@@ -33,7 +33,7 @@ import uuid
 from datetime import UTC, date, datetime, timedelta
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
 from app.models.ai_insight_history import AIInsightHistory
@@ -134,10 +134,16 @@ class _FakeHuntSource:
 
 
 async def _seed_symbol(
-    db_session, symbol: str, *, exchange: str = "HOSE", asset_type: str = "stock",
+    db_session, symbol: str, *, exchange: str = "HOSE", asset_type: str | None = "stock",
     is_index: bool = False, is_active: bool = True,
 ) -> Symbol:
-    """Một hàng bảng ``symbols`` — nguồn rổ mã HOSE của lọc sàn (§5.2)."""
+    """Một hàng bảng ``symbols`` — nguồn rổ mã HOSE của lọc sàn (§5.2).
+
+    ★ ``asset_type=None`` phải được ghi thành NULL THẬT: cột nullable
+    (``app.models.symbol``) nhưng mapper có ``default="stock"``, nên chỉ truyền
+    ``None`` vào constructor thì SQLAlchemy điền "stock" và ta test nhầm đúng
+    trường hợp đang cần canh (rổ săn mã nhận NULL, cổng thêm mã từ chối NULL).
+    """
     row = Symbol(
         symbol=symbol.upper(),
         name=symbol,
@@ -148,6 +154,13 @@ async def _seed_symbol(
     )
     db_session.add(row)
     await db_session.flush()
+    if asset_type is None:
+        await db_session.execute(
+            update(Symbol).where(Symbol.id == row.id).values(asset_type=None)
+        )
+        await db_session.flush()
+        await db_session.refresh(row)
+        assert row.asset_type is None
     return row
 
 
@@ -1114,6 +1127,49 @@ async def test_chi_lay_ma_hose_dang_hoat_dong(db_session, test_user):
     assert index["so_ma_trong_ro"] == 1
     result = await cap5.san_ma_result(test_user.id, "kl")
     assert [i["symbol"] for i in result["items"]] == ["HOSE1"]
+
+
+@pytest.mark.asyncio
+async def test_ma_asset_type_null_khong_vao_ro_va_khong_them_duoc(db_session, test_user):
+    """★★ I-universe: rổ săn mã và cổng "+ Watchlist" phải NHẤT QUÁN.
+
+    ``_universe`` dùng ``coalesce(asset_type,'stock')`` nên NHẬN mã
+    ``asset_type IS NULL``, còn ``_validate_symbol`` (và ``POST /watchlist``)
+    TỪ CHỐI nó ⇒ mã hiện trong kết quả săn, bấm "+ Watchlist" thì 400. Chốt
+    theo phía từ chối: NULL là "chưa biết là loại gì", không phải "cổ phiếu".
+    """
+    src = _FakeHuntSource(
+        bars={s: _with_last(_bars(), volume=300_000.0) for s in ("CP", "NULLTYPE")}
+    )
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    await _seed_symbol(db_session, "CP")
+    await _seed_symbol(db_session, "NULLTYPE", asset_type=None)
+
+    index = await cap5.san_ma_index(test_user.id)
+    assert index["so_ma_trong_ro"] == 1
+    result = await cap5.san_ma_result(test_user.id, "kl")
+    assert [i["symbol"] for i in result["items"]] == ["CP"]
+    with pytest.raises(BadRequestError):
+        await cap5.add_watchlist(test_user.id, "NULLTYPE", "kl")
+
+
+@pytest.mark.asyncio
+async def test_moi_ma_trong_ro_san_deu_them_duoc_vao_watchlist(db_session, test_user):
+    """★ Bất biến giữa hai luật: MỌI mã ``_universe`` trả về phải qua được
+    ``_validate_symbol``. Đây là bài canh cho việc hai luật lệch nhau lần nữa."""
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "GOOD1")
+    await _seed_symbol(db_session, "GOOD2")
+    await _seed_symbol(db_session, "NULLT", asset_type=None)
+    await _seed_symbol(db_session, "FUND1", asset_type="fund")
+    await _seed_symbol(db_session, "IDX2", is_index=True)
+    await _seed_symbol(db_session, "OFF2", is_active=False)
+    await _seed_symbol(db_session, "HNX2", exchange="HNX")
+
+    ro = await cap5._universe()
+    assert ro == ["GOOD1", "GOOD2"]
+    for sym in ro:
+        await cap5.add_watchlist(test_user.id, sym, "kl")  # không được 400
 
 
 @pytest.mark.asyncio

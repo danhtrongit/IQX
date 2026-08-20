@@ -68,3 +68,44 @@ class Symbol(UUIDMixin, TimestampMixin, Base):
 
     def __repr__(self) -> str:
         return f"<Symbol {self.symbol} ({self.exchange})>"
+
+
+#: Giá trị ``asset_type`` của một cổ phiếu thường.
+ASSET_TYPE_CO_PHIEU = "stock"
+
+
+def la_co_phieu(row: Symbol) -> bool:
+    """Mã này có phải cổ phiếu giao dịch được không (kiểm trên MỘT hàng đã đọc).
+
+    ★★ **NGUỒN DUY NHẤT của luật "là cổ phiếu"** — dùng cả ở ``POST /watchlist``
+    và ở Cấp 5 (``_validate_symbol`` + rổ săn mã). Trước đây luật này bị chép
+    tay ba chỗ với hai hành vi khác nhau cho ``asset_type IS NULL``: rổ săn mã
+    ``coalesce(asset_type,'stock')`` NHẬN mã NULL, còn hai chỗ kiểm lại TỪ CHỐI
+    nó ⇒ mã hiện trong kết quả săn, bấm "+ Watchlist" thì 400.
+
+    Chốt theo phía TỪ CHỐI: cột ``asset_type`` nullable, NULL nghĩa là "chưa
+    biết là loại gì" — coi nó là cổ phiếu là một phỏng đoán, và ``POST
+    /watchlist`` (đường thêm mã dùng chung, có trước Cấp 5) đã từ chối từ lâu.
+    Nới hai chỗ kia ra để khớp với rổ sẽ đổi hành vi của một endpoint dùng chung
+    vì tiện cho Cấp 5.
+    """
+    return (
+        row.is_active
+        and not row.is_index
+        and (row.asset_type or "").lower() == ASSET_TYPE_CO_PHIEU
+    )
+
+
+def dieu_kien_co_phieu() -> list:
+    """Cùng luật với ``la_co_phieu`` nhưng ở dạng mệnh đề SQL (cho truy vấn rổ).
+
+    ★ ``asset_type IS NULL`` KHÔNG khớp ``lower(asset_type) = 'stock'`` trong
+    SQL — đúng cái ta muốn: mã chưa biết loại thì không vào rổ.
+    """
+    from sqlalchemy import func
+
+    return [
+        Symbol.is_active.is_(True),
+        Symbol.is_index.is_(False),
+        func.lower(Symbol.asset_type) == ASSET_TYPE_CO_PHIEU,
+    ]

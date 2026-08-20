@@ -106,7 +106,7 @@ from app.models.cap5 import (
     HuntFilter,
     WatchlistStatus,
 )
-from app.models.symbol import Symbol
+from app.models.symbol import Symbol, dieu_kien_co_phieu, la_co_phieu
 from app.models.virtual_trading import OrderSide, OrderStatus, VirtualOrder
 from app.models.watchlist import WatchlistItem
 from app.services.cap1.service import Cap1Service
@@ -584,9 +584,11 @@ class Cap5Service:
             select(Symbol.symbol)
             .where(
                 func.upper(Symbol.exchange) == "HOSE",
-                Symbol.is_active.is_(True),
-                Symbol.is_index.is_(False),
-                func.lower(func.coalesce(Symbol.asset_type, "stock")) == "stock",
+                # ★ MỘT luật "là cổ phiếu" cho cả repo — xem
+                # ``app.models.symbol.la_co_phieu``. Rổ này phải khớp ĐÚNG luật
+                # mà ``_validate_symbol`` dùng, nếu không thì có mã hiện trong
+                # kết quả săn mà bấm "+ Watchlist" lại 400.
+                *dieu_kien_co_phieu(),
             )
             .order_by(Symbol.symbol.asc())
         )
@@ -682,8 +684,13 @@ class Cap5Service:
     # ══════════════════════════════════════════════════
 
     async def _validate_symbol(self, symbol: str) -> str:
-        """Cùng luật với ``POST /watchlist``: mã phải tồn tại, đang hoạt động,
-        là cổ phiếu (không phải chỉ số)."""
+        """Cùng luật với ``POST /watchlist`` VÀ với rổ săn mã (``_universe``):
+        mã phải tồn tại, đang hoạt động, là cổ phiếu (không phải chỉ số).
+
+        ★ Ba chỗ này phải dùng ĐÚNG một hàm (``la_co_phieu``): lệch nhau ở
+        ``asset_type IS NULL`` là mã hiện trong kết quả săn nhưng "+ Watchlist"
+        trả 400.
+        """
         clean = (symbol or "").strip().upper()
         if not clean:
             raise BadRequestError("Thiếu mã cổ phiếu")
@@ -692,7 +699,7 @@ class Cap5Service:
         ).scalar_one_or_none()
         if row is None or not row.is_active:
             raise BadRequestError(f"Mã {clean} không tồn tại")
-        if row.is_index or (row.asset_type or "").lower() != "stock":
+        if not la_co_phieu(row):
             raise BadRequestError(f"Mã {clean} không phải là cổ phiếu")
         return clean
 
