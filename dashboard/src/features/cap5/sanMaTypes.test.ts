@@ -136,3 +136,70 @@ describe("describeHuntTotal — dòng minh bạch", () => {
     )
   })
 })
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ĐỘ BAO PHỦ — "N mã thỏa điều kiện" trên bao nhiêu mã ĐÃ XÉT? (B4)
+   ══════════════════════════════════════════════════════════════════════════ */
+describe("describeHuntBaoPhu — một lô 429 không được biến thành «đã quét cả sàn»", () => {
+  function kq(overrides: Partial<HuntResult> = {}): HuntResult {
+    return {
+      ma: "ngoai",
+      kha_dung: true,
+      ly_do_chua_kha_dung: null,
+      tong_so_ma: 3,
+      hien_thi_toi_da: 10,
+      loc_san: [],
+      items: [],
+      ...overrides,
+    }
+  }
+
+  it("★★★ kết quả THIẾU → nói rõ đã xét bao nhiêu / bao nhiêu mã thiếu dữ liệu", () => {
+    const r = describeHuntBaoPhu(
+      kq({
+        so_ma_trong_ro: 406,
+        so_ma_xet: 366,
+        so_ma_truot_loc_san: 0,
+        so_ma_bo_qua_thieu_du_lieu: 40,
+        ket_qua_day_du: false,
+      }),
+    )
+    expect(r.trangThai).toBe("thieu")
+    expect(r.text).toContain("366/406")
+    expect(r.text).toContain("40 mã thiếu dữ liệu")
+    expect(r.text).toMatch(/còn sót/)
+  })
+
+  it("★ câu cảnh báo của SERVER được dùng NGUYÊN VĂN (§C12c)", () => {
+    const r = describeHuntBaoPhu(
+      kq({
+        so_ma_trong_ro: 406,
+        so_ma_xet: 366,
+        so_ma_bo_qua_thieu_du_lieu: 40,
+        ket_qua_day_du: false,
+        canh_bao_thieu_du_lieu: "CÂU CỦA MÁY CHỦ VỀ 40 MÃ THIẾU NẾN",
+      }),
+    )
+    expect(r.text).toBe("CÂU CỦA MÁY CHỦ VỀ 40 MÃ THIẾU NẾN")
+  })
+
+  it("kết quả ĐẦY ĐỦ → nói đã xét đủ, kèm mẫu số thật", () => {
+    const r = describeHuntBaoPhu(
+      kq({ so_ma_trong_ro: 406, so_ma_xet: 406, so_ma_bo_qua_thieu_du_lieu: 0, ket_qua_day_du: true }),
+    )
+    expect(r.trangThai).toBe("day_du")
+    expect(r.text).toContain("406")
+    expect(r.text).not.toMatch(/còn sót/)
+  })
+
+  it("★★ wire KHÔNG gửi cờ → «chưa biết», TUYỆT ĐỐI không mặc định là đã xét đủ", () => {
+    const r = describeHuntBaoPhu(kq())
+    expect(r.trangThai).toBe("chua_biet")
+    expect(r.text).toMatch(/chưa cho biết/)
+    expect(r.text).not.toMatch(/đã xét đủ/)
+  })
+
+  it("★ `ket_qua_day_du = null` cũng là «chưa biết», không phải «đủ»", () => {
+    expect(describeHuntBaoPhu(kq({ ket_qua_day_du: null })).trangThai).toBe("chua_biet")
+  })
+})

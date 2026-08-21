@@ -3,6 +3,7 @@ import { Message, Modal, Spin } from "@arco-design/web-react"
 import { getErrorMessage } from "@/shared/http/client"
 import { useAddToCap5Watchlist, useCap5Watchlist, useHuntResult } from "./sanMaHooks"
 import {
+  describeHuntBaoPhu,
   describeHuntTotal,
   huntFilterDef,
   splitLocSan,
@@ -121,6 +122,7 @@ function HuntResultBody({
 }) {
   const { apDung, chuaApDung } = splitLocSan(data.loc_san)
   const def = huntFilterDef(data.ma)
+  const baoPhu = describeHuntBaoPhu(data)
 
   return (
     <>
@@ -129,6 +131,18 @@ function HuntResultBody({
           {def
             ? describeHuntTotal(data, def)
             : `Đang hiện ${data.items.length.toLocaleString("en-US")} ${defTop}`}
+        </div>
+        {/* ★★ ĐỘ BAO PHỦ (spec §5.4): "N mã HOSE thỏa điều kiện" một mình là câu
+            nói về CẢ SÀN, trong khi nguồn nến đọc theo lô 40 mã và một lô lỗi là
+            40 mã vắng mặt trong im lặng. Ba con số của server nói thật chuyện đó
+            — và khi wire không gửi cờ thì dòng này nói "chưa biết", KHÔNG mặc
+            định là đã xét đủ. */}
+        <div
+          className={baoPhu.trangThai === "day_du" ? undefined : "cap5-sm-note-warn"}
+          data-testid="cap5-hunt-baophu"
+          data-trangthai={baoPhu.trangThai}
+        >
+          {baoPhu.text}
         </div>
         <div data-testid="cap5-hunt-locsan">
           {apDung.length > 0

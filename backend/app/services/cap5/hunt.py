@@ -372,7 +372,7 @@ class HuntEngine:
         if any(v is None or not math.isfinite(v) for v in gtgd):
             return None
         tb_gtgd = sum(float(v) for v in gtgd) / len(gtgd)  # type: ignore[arg-type]
-        return gia >= MIN_GIA_VND and tb_gtgd >= MIN_GTGD_TB_VND
+        return gia > MIN_GIA_VND and tb_gtgd > MIN_GTGD_TB_VND
 
     # ── 3 bộ lọc chạy trên nến ngày ───────────────────
 
