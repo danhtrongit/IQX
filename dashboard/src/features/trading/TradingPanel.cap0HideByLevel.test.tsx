@@ -140,14 +140,14 @@ describe("TradingPanel — hide-by-level (spec §8)", () => {
 
     expect(screen.queryByText(/Spread:/)).not.toBeInTheDocument()
     expect(screen.queryByText("Giá")).not.toBeInTheDocument()
-    expect(screen.queryByText("Lệnh thị trường (MP)")).not.toBeInTheDocument()
+    expect(screen.queryByText("MP — Thị trường")).not.toBeInTheDocument()
   })
 
   it("reveals Ô Giá + dropdown loại lệnh once task ① is done — UNCHANGED", async () => {
     renderInCap0(makeProgress({ task_1_done_at: "2026-07-21T00:00:00Z" }))
     await waitFor(() => expect(screen.getByText("Giá")).toBeInTheDocument())
 
-    expect(screen.getByText("Lệnh thị trường (MP)")).toBeInTheDocument()
+    expect(screen.getByText("MP — Thị trường")).toBeInTheDocument()
     expect(screen.queryByText(/Spread:/)).not.toBeInTheDocument()
   })
 
@@ -180,7 +180,7 @@ describe("TradingPanel — hide-by-level (spec §8)", () => {
     // "Giá" also appears as the order-book's column header, so scope to the
     // price field's own <label>.
     expect(screen.getByText("Giá", { selector: "label" })).toBeInTheDocument()
-    expect(screen.getByText("Lệnh thị trường (MP)")).toBeInTheDocument()
+    expect(screen.getByText("MP — Thị trường")).toBeInTheDocument()
     // No Cấp 0 Kế hoạch block either, outside Cấp 0.
     expect(screen.queryByText("KẾ HOẠCH")).not.toBeInTheDocument()
   })

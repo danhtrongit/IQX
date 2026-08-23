@@ -143,12 +143,21 @@ vi.mock("@/features/cap1", async (importOriginal) => {
       mutateAsync: recordKehoachAsyncMock,
       isPending: false,
     }),
-    PlanFormCap1: (props: { onLyDoChange: (l: string) => void; vungMua: number | null }) => (
+    // `sauLyDo` = slot mà `TradingPanel` truyền `AiThanhTra` xuống (mockup vẽ
+    // AI Thanh tra BÊN TRONG thẻ KẾ HOẠCH, giữa trường ① và ②). Mock PHẢI
+    // render nó ra: nuốt slot thì mọi assert về `ai-thanh-tra-mock` — cả
+    // chiều có lẫn chiều không — đều xanh vô điều kiện.
+    PlanFormCap1: (props: {
+      onLyDoChange: (l: string) => void
+      vungMua: number | null
+      sauLyDo?: React.ReactNode
+    }) => (
       <div data-testid="plan-form-cap1-mock">
         <button type="button" onClick={() => props.onLyDoChange("ky_thuat")}>
           PICK_LYDO
         </button>
         <input aria-label="vung-mua-mock" value={props.vungMua ?? ""} readOnly />
+        {props.sauLyDo}
       </div>
     ),
     AiThanhTra: () => <div data-testid="ai-thanh-tra-mock" />,

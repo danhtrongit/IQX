@@ -120,6 +120,7 @@ vi.mock("@/features/cap1", async (importOriginal) => {
       onLyDoChange: (l: string) => void
       vungMua: number | null
       onVungMuaChange: (v: number | null) => void
+      sauLyDo?: React.ReactNode
     }) => (
       <div data-testid="plan-form-cap1-mock">
         <button type="button" onClick={() => props.onLyDoChange("dong_tien")}>
@@ -133,6 +134,7 @@ vi.mock("@/features/cap1", async (importOriginal) => {
             props.onVungMuaChange(e.target.value === "" || Number.isNaN(n) ? null : n)
           }}
         />
+        {props.sauLyDo}
       </div>
     ),
     AiThanhTra: () => <div data-testid="ai-thanh-tra-mock" />,
