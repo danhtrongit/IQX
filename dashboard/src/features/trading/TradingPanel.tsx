@@ -52,12 +52,15 @@ import {
   type PhuongPhapSlTp,
 } from "@/features/cap2"
 import {
-  KhauViModal,
+  // ★ `KhauViModal` KHÔNG còn mount ở panel: màn bắt buộc lần đầu do trang Cấp
+  // 3 mount, còn đổi khẩu vị sau đó nằm ngay trong `QuanLyVonBlock` (mockup Cấp
+  // 3 vẽ 3 mức inline, không có link mở modal).
   QuanLyVonBlock,
   isKhoiLuongValid,
   useCap3Events,
   useCap3Progress,
   useRecordKehoachCap3,
+  useSetKhauVi,
   type CachKhoiLuong,
   type MucTuTin,
 } from "@/features/cap3"
@@ -422,6 +425,10 @@ function OrderEntry({
   const { isCap3Active } = cap3Events
   const { data: cap3Progress } = useCap3Progress(isCap3Active)
   const recordKehoachCap3 = useRecordKehoachCap3()
+  // Đổi khẩu vị NGAY TRONG khối Quản lý vốn (mockup Cấp 3 vẽ 3 mức inline).
+  // `useMutation` chỉ dựng object — gọi vô điều kiện ở đây không phát request
+  // nào ngoài Cấp 3, và `QuanLyVonBlock` (nơi bấm) chỉ render trong Cấp 3.
+  const setKhauVi = useSetKhauVi()
   // Cấp 3 khối "Quản lý vốn" (spec §6) — mức tự tin do user TỰ chấm (KHÔNG có
   // AI gợi ý, spec §6.2) + 1 trong 2 cách khối lượng.
   const [cap3MucTuTin, setCap3MucTuTin] = useState<MucTuTin | null>(null)
@@ -432,7 +439,6 @@ function OrderEntry({
   // (spec §6.3). Một lần user tự sửa thì thôi ghi đè — tới khi họ đổi mức tự
   // tin / cách khối lượng (một ý định mới) thì auto-fill lại.
   const [cap3VolumeTouched, setCap3VolumeTouched] = useState(false)
-  const [cap3KhauViOpen, setCap3KhauViOpen] = useState(false)
   const cap4Events = useCap4Events()
   // `isCap4Active` mirrors `isCap3Active` above — false outside a
   // `Cap4Provider`, so the khối "Đọc 5 lớp" + its hard gate + the HIDING of
@@ -1341,8 +1347,9 @@ function OrderEntry({
 
             Buy-side only AND Cấp 3-only (`isCap3Active` false ngoài
             `Cap3Provider` → /bieu-do, /co-phieu và Cấp 0-2 không đổi gì). Khẩu
-            vị phải đặt xong (`khau_vi`) mới tính được khối lượng; `KhauViModal`
-            ngay dưới lo phần đổi khẩu vị. */}
+            vị phải đặt xong (`khau_vi`) mới tính được khối lượng — màn bắt buộc
+            lần đầu do CHÍNH trang Cấp 3 mount (`KhauViModal`), còn việc đổi lại
+            sau đó nay nằm ngay trong khối (mockup vẽ 3 mức inline). */}
         {side === "buy" && isCap3Active && cap3Progress?.khau_vi && (
           <QuanLyVonBlock
             khauVi={cap3Progress.khau_vi}
@@ -1365,17 +1372,14 @@ function OrderEntry({
               // Tự điền ô Khối lượng — trừ khi user đã sửa tay (spec §6.3).
               if (!cap3VolumeTouched && kl > 0) setVolume(kl)
             }}
-            onDoiKhauVi={() => setCap3KhauViOpen(true)}
-          />
-        )}
-        {/* Chỉ instance ĐỔI khẩu vị (spec §5.2 "không khoá vĩnh viễn").
-            Instance bắt buộc lần đầu do trang Cấp 3 mount (xem `KhauViModal`'s
-            doc) — không nhân bản ở đây. */}
-        {side === "buy" && isCap3Active && cap3KhauViOpen && (
-          <KhauViModal
-            vonBanDau={cap3Progress?.von_ban_dau}
-            forceOpen
-            onClose={() => setCap3KhauViOpen(false)}
+            dangDoiKhauVi={setKhauVi.isPending}
+            onChonKhauVi={(k) => {
+              setKhauVi.mutate(k, { onSuccess: () => cap3Events.onKhauViPicked?.(k) })
+              // Trần vốn vừa đổi ⇒ khối lượng đề xuất là một con số khác. Cho
+              // auto-fill chạy lại, nếu không ô Khối lượng còn giữ con số tính
+              // theo khẩu vị CŨ ngay sau khi user vừa đổi khẩu vị.
+              setCap3VolumeTouched(false)
+            }}
           />
         )}
 
