@@ -42,7 +42,7 @@ from sqlalchemy import select
 
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
 from app.models.ai_insight_history import AIInsightHistory
-from app.models.cap1 import Cap1Progress, OrderKehoach
+from app.models.cap1 import Cap1Progress
 from app.models.cap2 import Cap2Progress
 from app.models.cap3 import Cap3Progress
 from app.models.cap4 import Cap4Progress
@@ -465,8 +465,8 @@ def test_phan_loai_lop_phu_quyet_phu_dung_5_lop():
     from app.models.cap4 import LOP_KEYS
     from app.models.cap6 import _assert_phan_loai_lop
 
-    assert LOP_PHU_QUYET == {"tin_tuc", "noi_bo"}
-    assert LOP_PHU_QUYET | LOP_DIEM_TRU == set(LOP_KEYS)
+    assert set(LOP_PHU_QUYET) == {"tin_tuc", "noi_bo"}
+    assert set(LOP_KEYS) == LOP_PHU_QUYET | LOP_DIEM_TRU
     assert not (LOP_PHU_QUYET & LOP_DIEM_TRU)
 
     import app.models.cap6 as m6
