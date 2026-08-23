@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import React, { useEffect, useState } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { visibleText } from "@/__tests__/textGuards"
@@ -14,10 +14,16 @@ import type { Lop } from "@/features/cap4/types"
  *      khối lượng — và câu cảnh báo của server in NGUYÊN VĂN.
  */
 
-const { mauThuanMock } = vi.hoisted(() => ({ mauThuanMock: vi.fn() }))
+const { mauThuanMock, progressMock, markTourMock } = vi.hoisted(() => ({
+  mauThuanMock: vi.fn(),
+  progressMock: vi.fn(),
+  markTourMock: vi.fn(),
+}))
 
 vi.mock("./hooks", () => ({
   useMauThuanCap6: (...args: unknown[]) => mauThuanMock(...args),
+  useCap6Progress: (...args: unknown[]) => progressMock(...args),
+  useMarkTourMauThuan: () => ({ mutate: markTourMock, isPending: false }),
 }))
 
 import { MauThuanBlock } from "./MauThuanBlock"
@@ -54,16 +60,11 @@ function loaded(data: MauThuanCap6) {
 }
 
 /** Bọc state của `nhanDinh` như `TradingPanel` làm (component là controlled). */
-function Harness({ symbol = "GEX", onOpenTour }: { symbol?: string; onOpenTour?: () => void }) {
+function Harness({ symbol = "GEX" }: { symbol?: string } = {}) {
   const [level, setLevel] = useState<ConflictLevel | null>(null)
   return (
     <Cap6Provider>
-      <MauThuanBlock
-        symbol={symbol}
-        nhanDinh={level}
-        onNhanDinh={setLevel}
-        onOpenTour={onOpenTour}
-      />
+      <MauThuanBlock symbol={symbol} nhanDinh={level} onNhanDinh={setLevel} />
     </Cap6Provider>
   )
 }
@@ -107,6 +108,10 @@ function Registrar({
 
 beforeEach(() => {
   mauThuanMock.mockReset()
+  progressMock.mockReset()
+  markTourMock.mockReset()
+  // Mặc định: server nói ĐÃ xem tour → không tự bật (từng bài tour tự đặt lại).
+  progressMock.mockReturnValue({ data: { da_xem_tour_mauthuan: true } })
 })
 
 describe("MauThuanBlock — toàn cảnh 5 lớp", () => {
@@ -350,14 +355,72 @@ describe("MauThuanBlock — bus analytics + nút mở lại tour", () => {
     expect(rated).toEqual([["GEX", "ngai"]])
   })
 
-  it("nút '?' mở lại tour; không truyền handler thì không có nút", () => {
+  it("nút '?' mở lại tour «Xử lý mâu thuẫn» bất cứ lúc nào", () => {
     mauThuanMock.mockReturnValue(loaded(GEX))
-    const onOpenTour = vi.fn()
-    const { unmount } = render(<Harness onOpenTour={onOpenTour} />)
-    fireEvent.click(screen.getByRole("button", { name: /Hướng dẫn/ }))
-    expect(onOpenTour).toHaveBeenCalledTimes(1)
-    unmount()
     render(<Harness />)
-    expect(screen.queryByRole("button", { name: /Hướng dẫn/ })).toBeNull()
+    fireEvent.click(screen.getByRole("button", { name: /Hướng dẫn/ }))
+    expect(screen.getByText("Khi các lớp không cùng chiều")).toBeInTheDocument()
+  })
+})
+
+describe("MauThuanBlock — tour tự bật đúng một lần (spec §10)", () => {
+  it("server nói da_xem_tour_mauthuan === false + CÓ bảng → tự bật", () => {
+    mauThuanMock.mockReturnValue(loaded(GEX))
+    progressMock.mockReturnValue({ data: { da_xem_tour_mauthuan: false } })
+    render(<Harness />)
+    expect(screen.getByText("Khi các lớp không cùng chiều")).toBeInTheDocument()
+  })
+
+  it("★ chưa biết (undefined) → KHÔNG tự bật", () => {
+    mauThuanMock.mockReturnValue(loaded(GEX))
+    progressMock.mockReturnValue({ data: undefined })
+    render(<Harness />)
+    // Neo dương tính: bảng mâu thuẫn THẬT SỰ đã render.
+    expect(screen.getByTestId("cap6-bang-mau-thuan")).toBeInTheDocument()
+    expect(screen.queryByText("Khi các lớp không cùng chiều")).toBeNull()
+  })
+
+  it("đã xem rồi → KHÔNG tự bật", () => {
+    mauThuanMock.mockReturnValue(loaded(GEX))
+    progressMock.mockReturnValue({ data: { da_xem_tour_mauthuan: true } })
+    render(<Harness />)
+    expect(screen.getByTestId("cap6-bang-mau-thuan")).toBeInTheDocument()
+    expect(screen.queryByText("Khi các lớp không cùng chiều")).toBeNull()
+  })
+
+  it("chưa xem nhưng mã KHÔNG có mâu thuẫn → KHÔNG tự bật (bước 2/3 trỏ vào chỗ trống)", () => {
+    mauThuanMock.mockReturnValue(loaded({ ...GEX, co_mau_thuan: false, nguoc: [] }))
+    progressMock.mockReturnValue({ data: { da_xem_tour_mauthuan: false } })
+    render(<Harness />)
+    expect(screen.getByTestId("cap6-khong-mau-thuan")).toBeInTheDocument()
+    expect(screen.queryByText("Khi các lớp không cùng chiều")).toBeNull()
+  })
+
+  it("★ «Bỏ qua» giữa tour KHÔNG ghi là đã xem", () => {
+    mauThuanMock.mockReturnValue(loaded(GEX))
+    progressMock.mockReturnValue({ data: { da_xem_tour_mauthuan: false } })
+    render(<Harness />)
+    fireEvent.click(screen.getByRole("button", { name: /Bỏ qua/ }))
+    expect(markTourMock).not.toHaveBeenCalled()
+  })
+
+  it("đi HẾT 7 bước → POST /cap6/tour-mauthuan đúng một lần", async () => {
+    mauThuanMock.mockReturnValue(loaded(GEX))
+    progressMock.mockReturnValue({ data: { da_xem_tour_mauthuan: false } })
+    render(<Harness />)
+    // ★ `busy` của engine chặn double-click giữa lúc chuyển bước (~250ms), nên
+    // phải CHỜ nút "Tiếp theo" nhận click lại — bấm liên tiếp đồng bộ chỉ ăn
+    // đúng một bước và bài kiểm sẽ chỉ chứng minh được... một bước.
+    for (let i = 0; i < 6; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await waitFor(() => {
+        fireEvent.click(screen.getByRole("button", { name: "Tiếp theo →" }))
+        expect(document.querySelector(".iqx-tour-counter")?.textContent).toContain(
+          `${i + 2}/7`,
+        )
+      })
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Hoàn thành ✓" }))
+    expect(markTourMock).toHaveBeenCalledTimes(1)
   })
 })

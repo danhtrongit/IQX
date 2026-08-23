@@ -1600,6 +1600,10 @@ function OrderEntry({
                 Cấp 3-only. Khẩu vị phải đặt xong (`khau_vi`) mới tính được khối
                 lượng; `KhauViModal` bên dưới lo phần đó. */}
             {isCap3Active && cap3Progress?.khau_vi && (
+              // ★ `data-tour-id` cho bước 5 của tour «Xử lý mâu thuẫn» (Cấp 6):
+              // "để khối lượng phản ánh nhận định". Chỉ là một thuộc tính neo —
+              // khối Quản lý vốn của Cấp 3 KHÔNG đổi gì.
+              <div data-tour-id="tour-cap6-khoiluong">
               <QuanLyVonBlock
                 khauVi={cap3Progress.khau_vi}
                 vonBanDau={cap3Progress.von_ban_dau}
@@ -1623,6 +1627,7 @@ function OrderEntry({
                 }}
                 onDoiKhauVi={() => setCap3KhauViOpen(true)}
               />
+              </div>
             )}
             {/* Chỉ instance ĐỔI khẩu vị (spec §5.2 "không khoá vĩnh viễn").
                 Instance bắt buộc lần đầu do trang Cấp 3 mount (xem

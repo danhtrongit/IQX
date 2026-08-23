@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { LOP_DEFS } from "@/features/cap4/doc5Lop"
 import type { Lop } from "@/features/cap4/types"
-import { TourLaunchButton } from "@/features/tour"
+import { TourLaunchButton, TourOverlay, useTour } from "@/features/tour"
+import { mauThuanTour } from "@/features/tour/configs/mauThuanTour"
 import { cn } from "@/shared/lib/cn"
 import { useCap6Events } from "./Cap6Context"
-import { useMauThuanCap6 } from "./hooks"
+import { useCap6Progress, useMarkTourMauThuan, useMauThuanCap6 } from "./hooks"
 import type { ConflictLevel, MauThuanCap6 } from "./mauThuanTypes"
 import {
   CAU_CHOT_MAU_THUAN,
@@ -45,8 +46,6 @@ export interface MauThuanBlockProps {
   /** Mức nhận định user đã chọn (state do `TradingPanel` giữ để gửi kèm lệnh). */
   nhanDinh: ConflictLevel | null
   onNhanDinh: (level: ConflictLevel) => void
-  /** Mở lại tour «Xử lý mâu thuẫn» từ nút "?" (spec §10 ghi chú kỹ thuật). */
-  onOpenTour?: () => void
 }
 
 const LOP_BY_KEY = Object.fromEntries(LOP_DEFS.map((d) => [d.lop, d])) as Record<
@@ -96,17 +95,59 @@ function bacOf(mauThuan: MauThuanCap6): Map<Lop, string | number | null> {
   return map
 }
 
-export function MauThuanBlock({
-  symbol,
-  nhanDinh,
-  onNhanDinh,
-  onOpenTour,
-}: MauThuanBlockProps) {
+export function MauThuanBlock({ symbol, nhanDinh, onNhanDinh }: MauThuanBlockProps) {
   const cap6Events = useCap6Events()
+  const { isCap6Active } = cap6Events
   const { data: mauThuan, isLoading, isError } = useMauThuanCap6(symbol)
   const [chiTiet, setChiTiet] = useState(false)
 
   const coBang = coBangMauThuan(mauThuan)
+
+  /* ── TOUR «XỬ LÝ MÂU THUẪN» (spec §10 · `configs/mauThuanTour.ts`) ──────────
+   *
+   * ★★ "Bỏ qua" giữa chừng KHÔNG tính là đã xem. Engine `useTour` cố tình cho
+   * `skip()` gọi luôn `onComplete` ("skip = complete"), nên phải tự phân biệt:
+   * `onSkip` bật `skippedRef` TRƯỚC khi `onComplete` chạy, và chỉ khi cờ đó tắt
+   * mới `POST /cap6/tour-mauthuan`. Cùng cách `SanMaPanel` đã làm ở Cấp 5.
+   *
+   * ★ Cờ `da_xem_tour_mauthuan` sống trên SERVER (không localStorage) nên nó
+   * theo user qua mọi máy — vì thế dùng `useTour` trực tiếp chứ không
+   * `useFeatureTour` (bản đó neo `seen` vào localStorage).
+   */
+  const { data: progress } = useCap6Progress(isCap6Active)
+  const markTour = useMarkTourMauThuan()
+  const skippedRef = useRef(false)
+  const autoStartedRef = useRef(false)
+  const tour = useTour(mauThuanTour, {
+    onStart: () => {
+      skippedRef.current = false
+    },
+    onSkip: () => {
+      skippedRef.current = true
+    },
+    onComplete: () => {
+      if (!skippedRef.current) markTour.mutate()
+    },
+  })
+
+  /**
+   * Tự bật ĐÚNG MỘT LẦN, lần đầu user gặp một lệnh CÓ mâu thuẫn (spec §10).
+   *
+   * ★ Chỉ bật khi server nói THẲNG `da_xem_tour_mauthuan === false`. `undefined`
+   * (wire cũ / chưa tải xong) là "chưa biết" ⇒ KHÔNG tự bật: thà không mở còn
+   * hơn nhảy tour vào mặt một người đã xem rồi. Nút "?" vẫn mở lại được.
+   *
+   * ★ Và chỉ khi ĐÃ CÓ bảng mâu thuẫn trên màn: bước 2/3 của tour trỏ vào bảng
+   * và tag PHỦ QUYẾT, mở tour trên một mã không mâu thuẫn là trỏ vào chỗ trống.
+   */
+  useEffect(() => {
+    if (!coBang) return
+    if (autoStartedRef.current) return
+    if (progress?.da_xem_tour_mauthuan !== false) return
+    autoStartedRef.current = true
+    tour.start()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coBang, progress?.da_xem_tour_mauthuan])
 
   /**
    * Analytics `cap6_conflict_shown(symbol, veto_layers)` (spec §11) — bắn ĐÚNG
@@ -213,9 +254,8 @@ export function MauThuanBlock({
           <div className="op-cf" data-testid="cap6-bang-mau-thuan" data-tour-id="tour-cap6-bang">
             <div className="op-cf-head">
               <span>{"⚔ Các lớp đang mâu thuẫn"}</span>
-              {onOpenTour && (
-                <TourLaunchButton onClick={onOpenTour} label="Hướng dẫn" />
-              )}
+              {/* Nút "?" mở lại tour bất cứ lúc nào (spec §10 ghi chú kỹ thuật). */}
+              <TourLaunchButton onClick={tour.start} label="Hướng dẫn" />
             </div>
 
             <div className="op-cf-side">
@@ -300,6 +340,8 @@ export function MauThuanBlock({
           </div>
         </>
       )}
+
+      <TourOverlay config={mauThuanTour} controller={tour} />
     </div>
   )
 }
