@@ -372,7 +372,11 @@ class HuntEngine:
         if any(v is None or not math.isfinite(v) for v in gtgd):
             return None
         tb_gtgd = sum(float(v) for v in gtgd) / len(gtgd)  # type: ignore[arg-type]
-        return gia > MIN_GIA_VND and tb_gtgd > MIN_GTGD_TB_VND
+        # ★ Biên là ``>=``, KHỚP VỚI NHÃN người dùng đọc ở `:308`
+        # ("Giá ≥ 3.000đ" / "GTGD TB20 ≥ 1 tỷ"). Trước đây code dùng `>` nên mã
+        # đúng 3.000đ hoặc đúng 1 tỷ bị loại oan trong khi nhãn nói nó ĐẠT —
+        # màn hình và bộ lọc nói hai điều khác nhau về cùng một mã.
+        return gia >= MIN_GIA_VND and tb_gtgd >= MIN_GTGD_TB_VND
 
     # ── 3 bộ lọc chạy trên nến ngày ───────────────────
 

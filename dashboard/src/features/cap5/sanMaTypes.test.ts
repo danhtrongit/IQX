@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   HUNT_FILTERS,
   HUNT_MAX_RESULTS,
+  describeHuntBaoPhu,
   describeHuntTotal,
   huntFilterAvailability,
   huntFilterDef,
