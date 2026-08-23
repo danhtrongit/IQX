@@ -599,3 +599,21 @@
 .op-way-pick:hover {
   filter: brightness(1.1);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SỔ LỆNH bid/ask — thẻ riêng, cùng ngôn ngữ với `.op-panel`
+   ------------------------------------------------------------------------
+   Sổ lệnh ẩn suốt Cấp 0-1 và mở từ Cấp 2 (spec Cấp 1 §checklist: "sổ lệnh vẫn
+   ẨN (chỉ mở Cấp 2)"), nên KHÔNG mockup nào vẽ nó — khung hình mockup dừng ở
+   Cấp 0/1/2 panel. Trước đây nó render trần trên nền `--bg1` của `.op-shell`;
+   khi panel Cấp 2+ được khoác áo mockup thì nó thành mảng trôi lơ lửng phía
+   trên một thẻ bo góc. Cho nó cùng nền/viền/bo góc để cả cột là một hệ.
+   ══════════════════════════════════════════════════════════════════════════ */
+.op-book {
+  margin-bottom: 10px;
+  padding: 8px 4px;
+  border: 1px solid var(--bd, #39405a);
+  border-radius: 12px;
+  background: var(--bg2, #1f2230);
+  color: var(--t1, inherit);
+}

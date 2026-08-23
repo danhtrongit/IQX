@@ -2307,7 +2307,19 @@ export function TradingPanel({
           panel là MỘT thẻ đúng thứ tự mockup. Sổ lệnh bid/ask vẫn ở trên cùng
           (mockup Cấp 0/1 không vẽ nó vì nó bị ẩn tới tận Cấp 2). */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {data && !hideOrderBook && <OrderBookView data={data} />}
+        {/* ★ Trong shell cấp, sổ lệnh phải là MỘT THẺ như panel bên dưới.
+            Trước đây nó render trần trên nền `--bg1` của `.op-shell`, nên khi
+            panel Cấp 2+ được khoác áo mockup (thẻ bo góc có viền) thì sổ lệnh
+            thành một mảng trôi lơ lửng ngay phía trên — đúng lỗi user báo.
+            Mockup không vẽ sổ lệnh (nó bị ẩn tới tận Cấp 2, sau khung hình
+            mockup), nhưng spec Cấp 1 §checklist nói rõ "sổ lệnh vẫn ẨN (chỉ mở
+            Cấp 2)" — nên nó PHẢI có mặt từ Cấp 2; việc cần làm là cho nó mặc
+            cùng áo, không phải giấu đi. */}
+        {data && !hideOrderBook && (
+          <div className={skin ? "op-book" : undefined}>
+            <OrderBookView data={data} />
+          </div>
+        )}
         <GatedOrderEntry
           symbol={symbol}
           data={data}
