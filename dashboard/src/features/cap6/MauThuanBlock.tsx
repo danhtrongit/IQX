@@ -61,7 +61,17 @@ function lopLabel(lop: Lop): string {
   return LOP_BY_KEY[lop]?.label ?? lop
 }
 
-type Phe = "ung_ho" | "nguoc" | "trung_tinh"
+/**
+ * `"chua_ket_luan"` = lớp KHÔNG nằm trong bất kỳ mảng nào server gửi.
+ *
+ * ★★ **CHỈ 4/5 LỚP CÓ DỮ LIỆU.** AI Insight thật có L1 xu hướng · L2 thanh khoản
+ * · L3 dòng tiền · L4 nội bộ · L5 tin tức — **không có lớp 💎 Định giá** (nó nằm
+ * ở tuyến BCTC/premium). `backend/app/services/cap5/consensus.py` ghi thẳng rằng
+ * ánh xạ L2 → `dinh_gia` "sẽ là bịa", nên Cấp 5 map nó thành `None` với trạng
+ * thái riêng `chua_ket_luan`. Cấp 6 làm y vậy: ô 💎 hiện "chưa có kết luận", KHÔNG
+ * bị vẽ thành trung tính, và KHÔNG cộng vào bất kỳ mẫu số nào.
+ */
+type Phe = "ung_ho" | "nguoc" | "trung_tinh" | "chua_ket_luan"
 
 /** Phe của từng lớp, theo đúng ba mảng server gửi (không suy diễn thêm). */
 function pheOf(mauThuan: MauThuanCap6): Map<Lop, Phe> {
@@ -76,7 +86,12 @@ const PHE_MARK: Record<Phe, string> = {
   ung_ho: "✅",
   nguoc: "❌",
   trung_tinh: "⚪",
+  // Dấu riêng — KHÁC ⚪ của trung tính: "chưa có kết luận" không phải "trung tính".
+  chua_ket_luan: "–",
 }
+
+/** Nhãn của một lớp chưa có kết luận — dùng chung một câu, không bịa mức nào. */
+const NHAN_CHUA_KET_LUAN = "chưa có kết luận"
 
 /** Nhãn server đã gửi cho từng lớp — dùng để dựng hàng chi tiết. */
 function nhanOf(mauThuan: MauThuanCap6): Map<Lop, string> {
@@ -178,10 +193,17 @@ export function MauThuanBlock({ symbol, nhanDinh, onNhanDinh }: MauThuanBlockPro
     )
   }
 
-  const phe = pheOf(mauThuan)
+  const pheDaCham = pheOf(mauThuan)
   const nhan = nhanOf(mauThuan)
   const bac = bacOf(mauThuan)
-  const daBiet = LOP_DEFS.filter((d) => phe.has(d.lop))
+  /**
+   * ★ Vẽ CẢ NĂM lớp: lớp nào server không chấm được (thực tế: luôn là 💎 Định
+   * giá) hiện trạng thái "chưa có kết luận" riêng của nó. Bỏ hẳn nó khỏi danh
+   * sách sẽ khiến user tưởng mã này chỉ có 4 lớp; vẽ nó thành ⚪ trung tính là
+   * bịa một kết luận chưa ai đưa ra.
+   */
+  const phe = (lop: Lop): Phe => pheDaCham.get(lop) ?? "chua_ket_luan"
+  const soLopDaCham = pheDaCham.size
 
   return (
     <div className="op-cf-wrap" data-testid="cap6-mauthuan-block">
@@ -199,31 +221,40 @@ export function MauThuanBlock({ symbol, nhanDinh, onNhanDinh }: MauThuanBlockPro
         data-tour-id="tour-cap6-toancanh"
       >
         <span className="op-ls-icons" data-testid="cap6-toancanh-icons">
-          {daBiet.map((d) => `${d.icon}${PHE_MARK[phe.get(d.lop) as Phe]}`).join(" ")}
+          {LOP_DEFS.map((d) => `${d.icon}${PHE_MARK[phe(d.lop)]}`).join(" ")}
         </span>
         <span className="op-ls-score" data-testid="cap6-toancanh-score">
           {`${mauThuan.ung_ho.length} ủng hộ · ${mauThuan.nguoc.length} ngược · ${mauThuan.trung_tinh.length} trung tính`}
+          {/* ★ Mẫu số là số lớp CHẤM ĐƯỢC, không phải 5: 💎 Định giá không có
+              nguồn dữ liệu nên tối đa chỉ 4 lớp có kết luận. */}
+          {soLopDaCham < LOP_DEFS.length &&
+            ` · ${LOP_DEFS.length - soLopDaCham} lớp chưa có kết luận`}
         </span>
         <span className="op-ls-toggle">{chiTiet ? "thu gọn ▴" : "chi tiết ▾"}</span>
       </button>
 
       {chiTiet && (
         <div className="op-ls-detail" data-testid="cap6-toancanh-detail">
-          {daBiet.map((d) => {
-            const p = phe.get(d.lop) as Phe
+          {LOP_DEFS.map((d) => {
+            const p = phe(d.lop)
             return (
-              <div className="op-ld-row" key={d.lop} data-testid={`cap6-ld-${d.lop}`}>
+              <div
+                className="op-ld-row"
+                key={d.lop}
+                data-testid={`cap6-ld-${d.lop}`}
+                data-phe={p}
+              >
                 <span className="op-ld-nm">
                   {`${d.icon} ${d.label} `}
                   <b
                     className={cn(
                       p === "ung_ho" && "op-tone-up",
                       p === "nguoc" && "op-tone-down",
-                      p === "trung_tinh" && "op-ld-neu",
+                      (p === "trung_tinh" || p === "chua_ket_luan") && "op-ld-neu",
                     )}
                     data-bac={bac.get(d.lop) == null ? undefined : String(bac.get(d.lop))}
                   >
-                    {nhan.get(d.lop)}
+                    {p === "chua_ket_luan" ? NHAN_CHUA_KET_LUAN : nhan.get(d.lop)}
                   </b>
                 </span>
                 <span className="op-ld-src">{d.source}</span>

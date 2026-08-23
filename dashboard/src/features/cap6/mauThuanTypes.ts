@@ -46,7 +46,16 @@ export interface LopNguocCap6 extends LopUngHoCap6 {
   la_phu_quyet: boolean
 }
 
-/** Một lớp trung tính — không thuộc phe nào (spec §5.2 dòng tóm tắt). */
+/**
+ * Một lớp trung tính — không thuộc phe nào (spec §5.2 dòng tóm tắt).
+ *
+ * ★★ **CHỈ 4/5 LỚP CÓ NGUỒN DỮ LIỆU.** AI Insight thật có L1 xu hướng · L2 thanh
+ * khoản · L3 dòng tiền · L4 nội bộ · L5 tin tức — **KHÔNG có lớp 💎 Định giá**
+ * (nó thuộc tuyến BCTC/premium). `backend/app/services/cap5/consensus.py` ghi
+ * thẳng rằng ánh xạ L2 → `dinh_gia` "sẽ là bịa". Vì vậy một lớp VẮNG MẶT khỏi cả
+ * ba mảng là chuyện BÌNH THƯỜNG, và ngưỡng `chua_du_du_lieu` của server là
+ * "KHÔNG lớp nào chấm được" — KHÔNG phải "< 5 lớp".
+ */
 export interface LopTrungTinhCap6 {
   lop: Lop
   nhan: string

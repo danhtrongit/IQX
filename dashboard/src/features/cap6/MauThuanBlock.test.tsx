@@ -59,6 +59,16 @@ function loaded(data: MauThuanCap6) {
   return { data, isLoading: false, isError: false }
 }
 
+/**
+ * ★★ THỰC TẾ CỦA HỆ: chỉ **4/5 lớp** có nguồn dữ liệu. AI Insight có L1 xu hướng
+ * · L2 thanh khoản · L3 dòng tiền · L4 nội bộ · L5 tin tức — **không có 💎 Định
+ * giá** (tuyến BCTC/premium). Nên payload thật KHÔNG có `dinh_gia` ở mảng nào.
+ */
+const GEX_4_LOP: MauThuanCap6 = {
+  ...GEX,
+  trung_tinh: [],
+}
+
 /** Bọc state của `nhanDinh` như `TradingPanel` làm (component là controlled). */
 function Harness({ symbol = "GEX" }: { symbol?: string } = {}) {
   const [level, setLevel] = useState<ConflictLevel | null>(null)
@@ -124,6 +134,40 @@ describe("MauThuanBlock — toàn cảnh 5 lớp", () => {
     expect(screen.getByTestId("cap6-toancanh-icons").textContent).toBe(
       "🎯✅ 💰✅ 👤❌ 📰❌ 💎⚪",
     )
+  })
+
+  it("★ 💎 Định giá KHÔNG có dữ liệu → dấu riêng, KHÔNG phải ⚪ trung tính", () => {
+    mauThuanMock.mockReturnValue(loaded(GEX_4_LOP))
+    render(<Harness />)
+    // Vẫn vẽ CẢ NĂM lớp (bỏ hẳn 💎 sẽ khiến user tưởng mã chỉ có 4 lớp)…
+    expect(screen.getByTestId("cap6-toancanh-icons").textContent).toBe(
+      "🎯✅ 💰✅ 👤❌ 📰❌ 💎–",
+    )
+    // …và mẫu số là số lớp CHẤM ĐƯỢC, không phải 5.
+    const score = screen.getByTestId("cap6-toancanh-score")
+    expect(score).toHaveTextContent("2 ủng hộ · 2 ngược · 0 trung tính")
+    expect(score).toHaveTextContent("1 lớp chưa có kết luận")
+    expect(score.textContent).not.toContain("5 lớp")
+  })
+
+  it("★ hàng chi tiết của 💎 nói «chưa có kết luận», không bịa một mức nào", () => {
+    mauThuanMock.mockReturnValue(loaded(GEX_4_LOP))
+    render(<Harness />)
+    fireEvent.click(screen.getByTestId("cap6-toancanh"))
+    const row = screen.getByTestId("cap6-ld-dinh_gia")
+    expect(row).toHaveAttribute("data-phe", "chua_ket_luan")
+    expect(row).toHaveTextContent("chưa có kết luận")
+    for (const tu of ["Trung tính", "Ủng hộ", "Rất tiêu cực", "Mạnh"]) {
+      expect(row.textContent).not.toContain(tu)
+    }
+  })
+
+  it("đủ cả 5 lớp thì KHÔNG có dòng «chưa có kết luận» nào", () => {
+    mauThuanMock.mockReturnValue(loaded(GEX))
+    render(<Harness />)
+    const score = screen.getByTestId("cap6-toancanh-score")
+    expect(score).toHaveTextContent("1 trung tính")
+    expect(score.textContent).not.toContain("chưa có kết luận")
   })
 
   it('mở/đóng "chi tiết" hiện nhãn từng lớp của server', () => {
