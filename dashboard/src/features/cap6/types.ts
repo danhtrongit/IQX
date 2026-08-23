@@ -28,17 +28,63 @@ export type KieuCoPhieu =
 export type { Lop, Lop5Partial }
 
 export interface Cap6Progress {
-  id: string
-  user_id: string
   entered_at: string
-  task_1_done_at: string | null
-  task_2_done_at: string | null
-  task_3_done_at: string | null
-  /** ③ đk 1 — số lệnh có mâu thuẫn đã qua bước Đối chiếu. */
-  so_lenh_doi_chieu: number
-  /** ③ đk 2 — số kiểu cổ phiếu khác nhau đã gặp. */
-  so_kieu_da_gap: number
   /**
+   * ★★ CẤP 6 «BẬC THẦY» — nhiệm vụ THUẦN HÀNH VI (spec đợt 7 §2/§11).
+   *
+   * Số lần gặp một lệnh CÓ mâu thuẫn mà nhận định user đọc KHỚP hành động
+   * (nghiêm trọng → mua nhỏ/không mua · nhẹ → vào bình thường). Server đếm.
+   */
+  so_lan_xu_ly_nhat_quan: number
+  /** Trong đó, số lần lệnh còn có lớp phủ quyết (Tin tức/Nội bộ) ở bậc rất xấu. */
+  so_lan_xu_ly_veto_nhat_quan: number
+  /**
+   * ★★ MỤC TIÊU ĐỌC SERVER, KHÔNG HARD-CODE 3/2.
+   *
+   * Đợt Cấp 5 đã dính đúng lỗi ngược lại: hàm trả hằng số mặc định trong khi
+   * server gửi mục tiêu thật, và test không bắt được vì fixture để trường đó
+   * `undefined` — bằng đúng giá trị default. Fixture của các bài Cấp 6 vì vậy
+   * BẮT BUỘC dùng số KHÁC default.
+   */
+  muc_tieu_nhat_quan: number
+  muc_tieu_veto: number
+  /**
+   * Σ(lãi/lỗ VND mọi lệnh đã đóng sau khi vào Cấp 6) ÷ Σ(vốn các lệnh đó).
+   *
+   * ★★ CHỈ để HIỂN THỊ ở Kết sổ/Phân tích danh mục (spec §11) — **KHÔNG phải cổng
+   * tốt nghiệp** và KHÔNG xuất hiện ở màn tốt nghiệp: spec §2 dành nguyên một
+   * đoạn giải thích vì sao lãi bị bỏ hoàn toàn khỏi cổng. `null` = chưa có lệnh
+   * đã đóng nào ⇒ có câu riêng, TUYỆT ĐỐI không vẽ thành 0%.
+   */
+  tong_lai_lenh_cap6_pct: number | null
+  /** Cờ tour «Xử lý mâu thuẫn» (spec §10) — công cụ học, KHÔNG phải cổng lên cấp. */
+  da_xem_tour_mauthuan: boolean
+  graduated_at: string | null
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // ★ DI SẢN «Đối chiếu» (bản Cấp 6 trước đợt 7). Wire mới KHÔNG gửi các trường
+  //   này nữa, nhưng Cấp 7/8 còn truyền `Cap6Progress` xuyên qua
+  //   `computeCap6PortfolioAnalysis`, nên chúng ở lại dưới dạng OPTIONAL cho tới
+  //   khi hai cấp đó được dựng lại trên Cấp 6 mới. Mọi chỗ đọc PHẢI chịu được
+  //   `undefined` (không `!`, không `?? 0` cho một tỷ lệ).
+  // ─────────────────────────────────────────────────────────────────────────
+  /** @deprecated di sản «Đối chiếu» */
+  id?: string
+  /** @deprecated di sản «Đối chiếu» */
+  user_id?: string
+  /** @deprecated di sản «Đối chiếu» */
+  task_1_done_at?: string | null
+  /** @deprecated di sản «Đối chiếu» */
+  task_2_done_at?: string | null
+  /** @deprecated di sản «Đối chiếu» */
+  task_3_done_at?: string | null
+  /** @deprecated di sản «Đối chiếu» — ③ đk 1. */
+  so_lenh_doi_chieu?: number
+  /** @deprecated di sản «Đối chiếu» — ③ đk 2. */
+  so_kieu_da_gap?: number
+  /**
+   * @deprecated di sản «Đối chiếu»
+   *
    * ③ đk 3 — % thắng của nhóm lệnh KHỚP trọng số gợi ý.
    *
    * ★★ **`null` ≠ `0`.** `null` = nhóm này CHƯA CÓ lệnh đã đóng nào, nên chưa có
@@ -48,16 +94,18 @@ export interface Cap6Progress {
    * trạng thái đó — **không `?? 0` ở bất kỳ đâu**: gộp lại là nói với người dùng
    * rằng họ thắng 0% ở một nhóm họ chưa từng có lệnh nào.
    */
-  ty_le_thang_khop: number | null
+  ty_le_thang_khop?: number | null
   /**
+   * @deprecated di sản «Đối chiếu»
+   *
    * % thắng của nhóm lệnh LỆCH trọng số gợi ý. ★ Con số này KHÔNG phải một lời
    * phán về người dùng (spec §5/§10): lệch gợi ý là một sự thật trung tính.
    *
    * ★★ Nullable với đúng nghĩa như `ty_le_thang_khop` ở trên.
    */
-  ty_le_thang_lech: number | null
-  graduated_at: string | null
-  time_to_graduate_hours: number | null
+  ty_le_thang_lech?: number | null
+  /** @deprecated di sản «Đối chiếu» */
+  time_to_graduate_hours?: number | null
 }
 
 /**
