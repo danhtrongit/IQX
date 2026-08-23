@@ -1,3 +1,4 @@
+import { useState } from "react"
 import type { Cap2DailyScoreRecord } from "@/features/cap2/portfolioAnalysisCap2"
 import type { Cap2AnalysisHost } from "@/features/cap2/Cap2PortfolioAnalysis"
 import type { Cap2Progress } from "@/features/cap2/types"
@@ -145,6 +146,12 @@ export function Cap6PortfolioAnalysis({
 }: Cap6PortfolioAnalysisProps) {
   const phanTichQuery = usePhanTichCap6()
   const pt = phanTichQuery.data
+  /**
+   * Chồng khối Cấp 1-5 THU GỌN mặc định — mockup `iqx-cap6-phantich-danhmuc.html`
+   * vẽ đúng một thanh `.collapsed` cho cả chồng đó, kèm nhãn "(giữ nguyên, bấm
+   * để mở)". "Thu gọn" KHÔNG phải "bỏ": mọi khối ①-⑬ vẫn ở nguyên đó.
+   */
+  const [moKeThua, setMoKeThua] = useState(false)
 
   return (
     <div className="space-y-3">
@@ -186,7 +193,27 @@ export function Cap6PortfolioAnalysis({
         )}
       </div>
 
-      {/* Mọi khối Cấp 1-5 — render lại nguyên bằng component của Cấp 5 */}
+      {/* Mọi khối Cấp 1-5 — render lại nguyên bằng component của Cấp 5, THU GỌN
+          sau một thanh bấm (mockup `.collapsed`). */}
+      <div className={CARD} data-testid="cap6-pa-kethua-card">
+        <div className="flex items-center gap-2">
+          <span className={SECTION_HEADER}>{"CÁC KHỐI TỪ CẤP 1-5"}</span>
+          <span className={NOTE}>{"(giữ nguyên, bấm để mở)"}</span>
+        </div>
+        <button
+          type="button"
+          className="cap6-pa-kethua"
+          aria-expanded={moKeThua}
+          data-testid="cap6-pa-kethua-toggle"
+          onClick={() => setMoKeThua((v) => !v)}
+        >
+          <span>{"Lý do · Kỷ luật · Vũ khí/điểm mù · Đồng thuận · Bộ lọc săn · Phễu kỷ luật"}</span>
+          <span className="cap6-pa-kethua-chev">{moKeThua ? "▾" : "▸"}</span>
+        </button>
+      </div>
+
+      {moKeThua && (
+      <div data-testid="cap6-pa-kethua">
       <Cap5PortfolioAnalysis
         cap2Progress={cap2Progress}
         cap3Progress={cap3Progress}
@@ -202,6 +229,8 @@ export function Cap6PortfolioAnalysis({
           }
         }
       />
+      </div>
+      )}
 
       {/* ⑭ Nhận định của bạn có khớp hành động không (spec §9) */}
       <div className={CARD} data-testid="cap6-pa-khoi14">

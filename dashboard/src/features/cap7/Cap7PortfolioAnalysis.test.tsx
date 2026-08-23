@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -284,7 +284,9 @@ describe("Cap7PortfolioAnalysis — cộng dồn bằng DELEGATION", () => {
     expect(screen.getByTestId("cap6-pa-khoi14")).toBeInTheDocument()
     expect(screen.getByTestId("cap6-pa-khoi15")).toBeInTheDocument()
     expect(screen.getByTestId("cap6-pa-khoi1")).toBeInTheDocument()
-    // …và các khối của Cấp 5/4 bên dưới nó vẫn còn nguyên.
+    // …và các khối của Cấp 5/4 bên dưới nó vẫn còn nguyên (Cấp 6 «Bậc thầy» gấp
+    // chồng Cấp 1-5 lại mặc định — mockup `.collapsed` — nên phải mở ra để kiểm).
+    fireEvent.click(screen.getByTestId("cap6-pa-kethua-toggle"))
     expect(screen.getByTestId("cap5-pa-khoi12")).toBeInTheDocument()
     expect(screen.getByTestId("cap5-pa-khoi13")).toBeInTheDocument()
   })

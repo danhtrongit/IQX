@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react"
+import { fireEvent, render, screen, within } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { visibleText } from "@/__tests__/textGuards"
@@ -396,13 +396,24 @@ describe("Cap6PortfolioAnalysis — khối ⑮ kết quả theo mức nhận đ�
   })
 })
 
-describe("Cap6PortfolioAnalysis — mọi khối Cấp 1-5 vẫn còn", () => {
-  it("render lại chuỗi khối của Cấp 5 (khối ⑫ trở xuống)", () => {
+describe("Cap6PortfolioAnalysis — chồng khối Cấp 1-5 THU GỌN nhưng CÒN NGUYÊN", () => {
+  it("mặc định gấp lại (mockup `.collapsed`), một cú bấm là mở đủ", () => {
+    renderPa()
+    expect(screen.queryByTestId("cap6-pa-kethua")).not.toBeInTheDocument()
+    expect(screen.getByTestId("cap6-pa-kethua-toggle")).toHaveTextContent(
+      "Lý do · Kỷ luật · Vũ khí/điểm mù · Đồng thuận · Bộ lọc săn · Phễu kỷ luật",
+    )
+    fireEvent.click(screen.getByTestId("cap6-pa-kethua-toggle"))
+    // Một khối bất kỳ của cấp dưới — chứng minh chuỗi kế thừa còn nguyên.
+    expect(screen.getByTestId("cap5-pa-khoi13")).toBeInTheDocument()
+    fireEvent.click(screen.getByTestId("cap6-pa-kethua-toggle"))
+    expect(screen.queryByTestId("cap5-pa-khoi13")).not.toBeInTheDocument()
+  })
+
+  it("★ ba khối của CHÍNH Cấp 6 nằm NGOÀI phần gấp", () => {
     renderPa()
     expect(screen.getByTestId("cap6-pa-khoi1")).toBeInTheDocument()
     expect(screen.getByTestId("cap6-pa-khoi14")).toBeInTheDocument()
     expect(screen.getByTestId("cap6-pa-khoi15")).toBeInTheDocument()
-    // Một khối bất kỳ của cấp dưới — chứng minh chuỗi kế thừa còn nguyên.
-    expect(screen.getByTestId("cap5-pa-khoi13")).toBeInTheDocument()
   })
 })
