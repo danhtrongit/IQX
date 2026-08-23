@@ -25,6 +25,20 @@ MỘT NHIỆM VỤ — THUẦN HÀNH VI, KHÔNG ĐO LÃI (spec §2/§3)
   · đọc **nghiêm trọng** nhưng mua LỚN → **KHÔNG tính** (bẫy "đắn đo trong đầu
     mà tay vẫn mua lớn")
 
+★★ **QUYẾT ĐỊNH CỦA FOUNDER (08/2026) — ĐỪNG "VÁ" CHỖ NÀY.**
+Một user luôn trả lời «nhẹ» rồi mua bình thường thì LUÔN nhất quán, nên tốt
+nghiệp được Cấp 6 sau 3 lệnh mà chưa từng đụng tới khái niệm phủ quyết. Điều đó
+đã được nêu ra và founder chọn GIỮ NGUYÊN.
+
+Lý do: trừ điểm ai đọc «nhẹ» trên một mã có phủ quyết chính là IQX khẳng định
+lớp phủ quyết PHẢI thắng — trái §4.1 ("IQX chỉ ra mâu thuẫn, KHÔNG phán
+mua/không mua"), trái §13, và trái chính câu §1 gọi bảng phân loại lớp là
+"KHUNG THAM KHẢO của IQX, không phải quy tắc bắt buộc". Spec §2 cũng chỉ định
+nghĩa đúng MỘT cái bẫy: đọc nghiêm trọng mà vẫn mua lớn.
+
+Cái giá đã biết và chấp nhận: cấp này dễ qua với người không thật sự học. Đổi ý
+thì sửa ``_nhat_quan_mua``/``_nhat_quan_skip``, KHÔNG phải sửa cổng.
+
 ★ ``ngai``/``chua_ro`` KHÔNG được đếm theo chiều nào — spec §11 liệt kê đúng
 hai mẫu ✓ ở trên, và bịa thêm một luật cho hai mức spec để ngỏ sẽ vừa nới cổng
 vừa nói với user một chuẩn mực founder chưa duyệt. Chúng vẫn hiện đầy đủ ở khối
