@@ -892,3 +892,146 @@
   color: var(--t2, #b8bdcc);
   line-height: 1.55;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SỔ LỆNH bid/ask — thẻ riêng, cùng ngôn ngữ với `.op-panel`
+   ------------------------------------------------------------------------
+   Sổ lệnh ẩn suốt Cấp 0-1 và mở từ Cấp 2 (spec Cấp 1 §checklist: "sổ lệnh vẫn
+   ẨN (chỉ mở Cấp 2)"), nên KHÔNG mockup nào vẽ nó — khung hình mockup dừng ở
+   Cấp 0/1/2 panel. Trước đây nó render trần trên nền `--bg1` của `.op-shell`;
+   khi panel Cấp 2+ được khoác áo mockup thì nó thành mảng trôi lơ lửng phía
+   trên một thẻ bo góc. Cho nó cùng nền/viền/bo góc để cả cột là một hệ.
+   ══════════════════════════════════════════════════════════════════════════ */
+.op-book {
+  margin-bottom: 10px;
+  padding: 8px 4px;
+  border: 1px solid var(--bd, #39405a);
+  border-radius: 12px;
+  background: var(--bg2, #1f2230);
+  color: var(--t1, inherit);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CẤP 3 — khối "Quản lý vốn": Khẩu vị · Tự tin · Khối lượng
+   Nguyên mẫu: `demo-trading/LEVEL 3/iqx-cap3-datlenh.html` (`.risk-box`,
+   `.conf-label`, `.conf-row`, `.conf`, `.qty-way`). Mockup đặt cụm này GIỮA ô
+   Khối lượng và dòng Phí giao dịch, NGOÀI thẻ `.plan` — nó nói về cách ra con
+   số trong ô Khối lượng ngay trên nó.
+
+   Hai thẻ "cách tính" dùng lại nguyên `.op-way*` của Cấp 2 (mockup cũng dùng
+   lại `.way`, chỉ thêm `.qty-way`) — không dựng hệ thứ hai.
+   ══════════════════════════════════════════════════════════════════════════ */
+.op-risk {
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid var(--brand-bd, rgba(79, 143, 247, 0.4));
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--brand-soft, rgba(79, 143, 247, 0.16)), transparent);
+}
+
+/* Mockup Cấp 1 trở lên đổi accent brand → đồng; `.op-risk` chỉ xuất hiện từ
+   Cấp 3 nên trên thực tế LUÔN chạy nhánh đồng — vẫn khai báo cả hai để khối
+   không phụ thuộc vào việc ai bọc nó. */
+.op-panel--cap1 .op-risk {
+  border-color: var(--copper-bd, rgba(201, 123, 74, 0.4));
+  background: linear-gradient(180deg, var(--copper-soft, rgba(201, 123, 74, 0.14)), transparent);
+}
+
+.op-conf-label {
+  margin: 14px 0 8px;
+  font-size: 10.5px;
+  color: var(--t2, #b8bdcc);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.op-conf-label--first {
+  margin-top: 0;
+}
+
+/* «· áp cho mọi lệnh» — mockup viết thường, không giãn chữ, cỡ nhỏ hơn nhãn. */
+.op-conf-note {
+  font-size: 9px;
+  color: var(--t3, #8a90a5);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.op-conf-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 7px;
+}
+
+.op-conf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 9px 6px;
+  border: 1px solid var(--bd, #39405a);
+  border-radius: 8px;
+  background: var(--bg2, #1f2230);
+  font: inherit;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.op-conf:hover:not(:disabled) {
+  border-color: var(--copper, #c97b4a);
+}
+
+.op-conf:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.op-conf--on {
+  border-color: var(--copper, #c97b4a);
+  background: var(--copper-soft, rgba(201, 123, 74, 0.14));
+}
+
+.op-conf-stars {
+  margin-bottom: 3px;
+  font-size: 13px;
+}
+
+.op-conf-l {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--t2, #b8bdcc);
+}
+
+.op-conf--on .op-conf-l,
+.op-conf--on .op-conf-pct {
+  color: var(--copper, #c97b4a);
+}
+
+.op-conf-pct {
+  margin-top: 2px;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 9px;
+  color: var(--t3, #8a90a5);
+}
+
+/* Thẻ "cách tính khối lượng": `.op-way` + con số to của mockup `.qty-way`. */
+.op-way--qty .op-way-big {
+  margin: 6px 0 2px;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--t1, inherit);
+}
+
+.op-way--qty.op-way--c1 .op-way-big {
+  color: var(--brand, #4f8ff7);
+}
+
+.op-way--qty.op-way--c2 .op-way-big {
+  color: var(--teal, #7dd3c0);
+}
+
+.op-way--qty .op-way-pct {
+  margin-bottom: 4px;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 10px;
+  color: var(--t3, #8a90a5);
+}

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IQX — Cấp 0 · Panel đặt lệnh</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg1:#171923; --bg2:#1f2230; --bg3:#282c3d; --bg4:#323649;
+  --bd:#39405a;
+  --t1:#f0f2f7; --t2:#b8bdcc; --t3:#8a90a5;
+  --brand:#4f8ff7; --brand-soft:rgba(79,143,247,.16); --brand-bd:rgba(79,143,247,.4);
+  --gray-badge:#8a90a5;
+  --up:#35d07f; --down:#ff6b6b; --warn:#ffc53d;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#12141c; color:var(--t1); font-family:'Inter',sans-serif; font-size:13px; line-height:1.55; padding:24px; display:flex; justify-content:center; }
+.num { font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; }
+button{font-family:inherit;cursor:pointer}
+
+.col { width:360px; }
+
+.order-panel { background:var(--bg2); border:1px solid var(--bd); border-radius:12px; padding:16px; }
+
+.op-mode { display:flex; align-items:center; gap:6px; padding:5px 10px; background:rgba(138,144,165,.16); border:1px solid rgba(138,144,165,.4); border-radius:6px; font-family:'JetBrains Mono'; font-size:10px; font-weight:700; letter-spacing:.8px; color:var(--gray-badge); width:fit-content; margin-bottom:12px; }
+.op-mode::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+.op-tabs { display:flex; gap:0; background:var(--bg3); border-radius:8px; padding:3px; margin-bottom:14px; }
+.op-tab { flex:1; padding:9px; text-align:center; font-size:13px; font-weight:700; color:var(--t2); border-radius:6px; }
+.op-tab.on.buy { background:rgba(53,208,127,.16); color:var(--up); }
+
+.op-ticker { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; }
+.op-ticker .code { font-family:'Space Grotesk'; font-size:22px; font-weight:700; }
+.op-ticker .star { color:var(--warn); font-size:16px; }
+.op-ticker .price { font-family:'JetBrains Mono'; font-size:15px; font-weight:600; color:var(--up); }
+.op-sub { font-size:11px; color:var(--t3); margin-bottom:10px; }
+
+.op-refs { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:var(--bd); border-radius:6px; overflow:hidden; margin-bottom:14px; border:1px solid var(--bd); }
+.op-ref { background:var(--bg3); padding:6px 8px; text-align:center; }
+.op-ref .l { font-size:9px; color:var(--t3); letter-spacing:.5px; text-transform:uppercase; margin-bottom:2px; }
+.op-ref .v { font-family:'JetBrains Mono'; font-size:12px; font-weight:600; }
+.op-ref .v.ceil { color:#d48aff; } .op-ref .v.floor { color:#4dc3ff; } .op-ref .v.tc { color:var(--warn); }
+
+.op-balance { display:flex; justify-content:space-between; align-items:center; padding:9px 11px; background:var(--bg3); border-radius:7px; margin-bottom:14px; }
+.op-balance .l { font-size:11px; color:var(--t2); }
+.op-balance .v { font-family:'JetBrains Mono'; font-size:14px; font-weight:700; }
+
+.op-field { margin-bottom:10px; }
+.op-field label { display:block; font-size:11px; color:var(--t2); margin-bottom:4px; text-transform:uppercase; letter-spacing:.3px; font-weight:600; }
+.op-field input { width:100%; background:var(--bg3); border:1px solid var(--bd); border-radius:6px; padding:9px 10px; color:var(--t1); font-family:'JetBrains Mono'; font-size:14px; font-weight:600; }
+.op-field input:focus { outline:none; border-color:var(--brand); }
+
+.op-fee { display:flex; justify-content:space-between; padding:8px 10px; background:var(--bg3); border-radius:6px; font-size:11px; color:var(--t2); margin-bottom:12px; }
+.op-fee .v { color:var(--t1); font-family:'JetBrains Mono'; font-weight:600; }
+
+.plan { background:linear-gradient(180deg,var(--brand-soft),transparent); border:1px solid var(--brand-bd); border-radius:10px; padding:12px; margin-bottom:12px; }
+.plan-head { display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+.plan-tag { font-family:'JetBrains Mono'; font-size:10px; letter-spacing:1.2px; font-weight:700; color:var(--brand); }
+.plan-q { font-size:13px; font-weight:600; margin-bottom:10px; }
+.chips { display:flex; flex-wrap:wrap; gap:7px; }
+.chip { padding:8px 13px; background:var(--bg3); border:1px solid var(--bd); border-radius:20px; font-size:12.5px; color:var(--t2); transition:.15s; }
+.chip:hover { border-color:var(--brand); color:var(--t1); }
+.chip.on { background:var(--brand-soft); border-color:var(--brand); color:var(--brand); font-weight:600; }
+
+.op-btn { width:100%; padding:14px; border:none; border-radius:8px; font-weight:700; font-size:14px; font-family:'Space Grotesk'; letter-spacing:.5px; background:var(--up); color:#0e1a13; }
+.op-btn:hover { filter:brightness(1.05); }
+</style>
+</head>
+<body>
+
+<div class="col">
+  <div class="order-panel">
+    <span class="op-mode">SÂN TẬP · T+0</span>
+
+    <div class="op-tabs">
+      <div class="op-tab on buy">MUA</div>
+      <div class="op-tab">BÁN</div>
+    </div>
+
+    <div class="op-ticker">
+      <div class="code">VNM <span class="star">★</span></div>
+      <div class="price">62.400 <span style="color:var(--up); font-size:11px">+0,6%</span></div>
+    </div>
+    <div class="op-sub">Công ty Cổ phần Sữa Việt Nam · HOSE</div>
+
+    <div class="op-refs">
+      <div class="op-ref"><div class="l">Trần</div><div class="v ceil">66.400</div></div>
+      <div class="op-ref"><div class="l">TC</div><div class="v tc">62.000</div></div>
+      <div class="op-ref"><div class="l">Sàn</div><div class="v floor">57.600</div></div>
+    </div>
+
+    <div class="op-balance">
+      <span class="l">Số dư Sân tập</span>
+      <span class="v">250.000.000đ</span>
+    </div>
+
+    <div class="op-field">
+      <label>Khối lượng</label>
+      <input type="text" value="100" class="num">
+    </div>
+
+    <div class="op-fee">
+      <span>Phí giao dịch (0,15%)</span>
+      <span class="v">9.360đ</span>
+    </div>
+
+    <div class="plan">
+      <div class="plan-head"><span class="plan-tag">KẾ HOẠCH</span></div>
+      <div class="plan-q">Vì sao bạn chọn VNM?</div>
+      <div class="chips">
+        <div class="chip on">Công ty tôi biết</div>
+        <div class="chip">Người quen giới thiệu</div>
+        <div class="chip">Thấy trên mạng</div>
+        <div class="chip">Giá đang tăng</div>
+        <div class="chip">Thử cho biết</div>
+      </div>
+    </div>
+
+    <button class="op-btn">ĐẶT LỆNH MUA</button>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.chip').forEach(el=>{
+  el.onclick = () => {
+    document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+    el.classList.add('on');
+  };
+});
+</script>
+</body>
+</html>

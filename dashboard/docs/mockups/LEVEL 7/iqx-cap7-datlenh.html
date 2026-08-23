@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IQX — Cấp 7 · Panel đặt lệnh</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg1:#171923; --bg2:#1f2230; --bg3:#282c3d; --bg4:#323649;
+  --bd:#39405a;
+  --t1:#f0f2f7; --t2:#b8bdcc; --t3:#8a90a5;
+  --brand:#4f8ff7; --brand-soft:rgba(79,143,247,.16); --brand-bd:rgba(79,143,247,.4);
+  --purple:#a78bfa; --purple-soft:rgba(167,139,250,.16); --purple-bd:rgba(167,139,250,.4);
+  --copper:#c97b4a; --copper-soft:rgba(201,123,74,.14); --copper-bd:rgba(201,123,74,.4);
+  --teal:#7dd3c0; --teal-soft:rgba(125,211,192,.14); --teal-bd:rgba(125,211,192,.4);
+  --up:#35d07f; --down:#ff6b6b; --warn:#ffc53d; --ok:#5ad0b0;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#12141c; color:var(--t1); font-family:'Inter',sans-serif; font-size:13px; line-height:1.55; padding:24px; display:flex; justify-content:center; }
+.num { font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; }
+button{font-family:inherit;cursor:pointer}
+
+.col { width:360px; }
+
+.order-panel { background:var(--bg2); border:1px solid var(--bd); border-radius:12px; padding:16px; }
+.op-mode { display:flex; align-items:center; gap:6px; padding:5px 10px; background:var(--copper-soft); border:1px solid var(--copper-bd); border-radius:6px; font-family:'JetBrains Mono'; font-size:10px; font-weight:700; letter-spacing:.8px; color:var(--copper); width:fit-content; margin-bottom:12px; }
+.op-mode::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+.op-tabs { display:flex; gap:0; background:var(--bg3); border-radius:8px; padding:3px; margin-bottom:14px; }
+.op-tab { flex:1; padding:9px; text-align:center; font-size:13px; font-weight:700; color:var(--t2); border-radius:6px; }
+.op-tab.on.buy { background:rgba(53,208,127,.16); color:var(--up); }
+
+.op-ticker { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+.op-ticker .code { font-family:'Space Grotesk'; font-size:22px; font-weight:700; }
+.op-ticker .price { font-family:'JetBrains Mono'; font-size:15px; font-weight:600; color:var(--up); }
+
+.op-refs { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:var(--bd); border-radius:6px; overflow:hidden; margin-bottom:14px; border:1px solid var(--bd); }
+.op-ref { background:var(--bg3); padding:6px 8px; text-align:center; }
+.op-ref .l { font-size:9px; color:var(--t3); letter-spacing:.5px; text-transform:uppercase; margin-bottom:2px; }
+.op-ref .v { font-family:'JetBrains Mono'; font-size:12px; font-weight:600; }
+.op-ref .v.ceil { color:#d48aff; } .op-ref .v.floor { color:#4dc3ff; } .op-ref .v.tc { color:var(--warn); }
+
+.op-field { margin-bottom:10px; }
+.op-field label { display:block; font-size:11px; color:var(--t2); margin-bottom:4px; text-transform:uppercase; letter-spacing:.3px; font-weight:600; }
+.op-field input, .op-field select { width:100%; background:var(--bg3); border:1px solid var(--bd); border-radius:6px; padding:9px 10px; color:var(--t1); font-family:'JetBrains Mono'; font-size:14px; font-weight:600; }
+.op-field input:focus, .op-field select:focus { outline:none; border-color:var(--brand); }
+.op-two { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+
+.op-fee { display:flex; justify-content:space-between; padding:8px 10px; background:var(--bg3); border-radius:6px; font-size:11px; color:var(--t2); margin-bottom:12px; }
+.op-fee .v { color:var(--t1); font-family:'JetBrains Mono'; font-weight:600; }
+
+.plan { background:linear-gradient(180deg,var(--copper-soft),transparent); border:1px solid var(--copper-bd); border-radius:10px; padding:12px; margin-bottom:12px; }
+.plan-head { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+.plan-tag { font-family:'JetBrains Mono'; font-size:10px; letter-spacing:1.2px; font-weight:700; color:var(--copper); }
+
+.field-label { font-size:10.5px; color:var(--t2); text-transform:uppercase; letter-spacing:.4px; display:block; margin-bottom:6px; }
+.reason-list { display:flex; flex-direction:column; gap:5px; margin-bottom:12px; }
+.reason { display:flex; align-items:center; gap:9px; padding:9px 11px; background:var(--bg3); border:1px solid var(--bd); border-radius:7px; transition:.15s; }
+.reason:hover { border-color:var(--copper); background:var(--bg4); }
+.reason.selected { border-color:var(--copper); background:var(--copper-soft); }
+.reason .ic { font-size:16px; }
+.reason .nm { font-weight:600; font-size:12.5px; flex:1; }
+.reason .desc { font-size:10.5px; color:var(--t3); }
+
+.plan-field-full label { display:block; font-size:10px; color:var(--t3); margin-bottom:3px; text-transform:uppercase; letter-spacing:.4px; }
+.plan-field-full input { width:100%; background:var(--bg2); border:1px solid var(--bd); border-radius:6px; padding:8px 9px; color:var(--t1); font-family:'JetBrains Mono'; font-size:13.5px; font-weight:600; }
+.plan-field-full input:focus { outline:none; border-color:var(--copper); }
+
+.tt { margin-top:10px; padding:11px 13px; background:var(--bg3); border:1px solid var(--bd); border-radius:8px; }
+.tt-head { display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:700; margin-bottom:8px; }
+.tt-head .src { font-weight:400; color:var(--t3); font-size:10px; }
+.tt-rows { font-size:11px; color:var(--t2); line-height:1.7; }
+.tt-rows .num { color:var(--up); }
+.tt-verdict { margin-top:9px; padding:7px 10px; border-radius:6px; font-size:11.5px; font-weight:600; display:flex; align-items:center; gap:7px; }
+.tt-verdict.ok { background:rgba(53,208,127,.12); border:1px solid rgba(53,208,127,.35); color:var(--up); }
+.tt-detail { margin-top:8px; font-size:11px; color:var(--brand); font-weight:600; cursor:pointer; }
+
+/* THÊM Ở CẤP 2: khối cắt lỗ/chốt lời — 2 thẻ chọn 1 */
+.sltp-label { font-size:10.5px; color:var(--t2); text-transform:uppercase; letter-spacing:.4px; display:flex; align-items:center; margin:14px 0 8px; }
+.sltp-label .req { margin-left:auto; font-size:9px; color:var(--warn); text-transform:none; letter-spacing:0; }
+.two-way { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.way { border:1px solid var(--bd); border-radius:8px; padding:10px; background:var(--bg2); transition:.15s; }
+.way.on { border-color:var(--teal); background:var(--teal-soft); }
+.way .wt { font-size:11px; font-weight:700; line-height:1.3; margin-bottom:9px; }
+.way.c1 .wt { color:var(--brand); }
+.way.c2 .wt { color:var(--teal); }
+.way .row { display:flex; justify-content:space-between; font-family:'JetBrains Mono'; font-size:10.5px; margin-bottom:4px; }
+.way .row .k { color:var(--t3); }
+.way .sl-v { color:var(--down); font-weight:600; }
+.way .tp-v { color:var(--up); font-weight:600; }
+.way .pick { width:100%; margin-top:9px; padding:8px; border:none; border-radius:6px; font-size:11px; font-weight:700; font-family:'Space Grotesk'; }
+.way.c1 .pick { background:var(--brand-soft); color:var(--brand); border:1px solid var(--brand-bd); }
+.way.c2 .pick { background:var(--teal-soft); color:var(--teal); border:1px solid var(--teal-bd); }
+.way.on .pick { background:var(--teal); color:#0e1a17; }
+
+/* THÊM Ở CẤP 3: mức tự tin */
+.conf-label { font-size:10.5px; color:var(--t2); text-transform:uppercase; letter-spacing:.4px; margin:14px 0 8px; }
+.conf-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; }
+.conf { padding:9px 6px; text-align:center; border:1px solid var(--bd); border-radius:8px; background:var(--bg2); cursor:pointer; transition:.15s; }
+.conf:hover { border-color:var(--brand); }
+.conf.on { border-color:var(--brand); background:var(--brand-soft); }
+.conf .stars { font-size:13px; margin-bottom:3px; }
+.conf .cl { font-size:10.5px; font-weight:600; color:var(--t2); }
+.conf.on .cl { color:var(--brand); }
+
+/* THÊM Ở CẤP 3: khối lượng 2 cách + badge khẩu vị */
+.appetite { display:flex; align-items:center; gap:6px; margin:14px 0 8px; font-size:10.5px; color:var(--t2); text-transform:uppercase; letter-spacing:.4px; }
+.appetite .tag { margin-left:auto; font-size:10px; padding:2px 8px; border-radius:10px; background:var(--brand-soft); color:var(--brand); font-weight:700; text-transform:none; letter-spacing:0; }
+.qty-way .wt { line-height:1.3; }
+.qty-way .big { font-family:'Space Grotesk'; font-size:19px; font-weight:800; margin:6px 0 2px; }
+.qty-way .pct { font-size:10px; color:var(--t3); font-family:'JetBrains Mono'; margin-bottom:2px; }
+.qty-way.c1 .big { color:var(--brand); }
+.qty-way.c1 .wt { color:var(--brand); }
+.qty-way.c1 .pick { background:var(--brand-soft); color:var(--brand); border:1px solid var(--brand-bd); }
+.qty-way.c1.on .pick { background:var(--brand); color:#0e1420; }
+.qty-final { display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding:9px 11px; background:var(--bg3); border:1px solid var(--bd); border-radius:7px; }
+.qty-final .l { font-size:11px; color:var(--t2); }
+.qty-final .v { font-family:'JetBrains Mono'; font-size:15px; font-weight:700; color:var(--t1); }
+
+/* Cấp 3: hộp khẩu vị/tự tin/khối lượng dưới loại lệnh */
+.risk-box { border:1px solid var(--brand-bd); background:linear-gradient(180deg,var(--brand-soft),transparent); border-radius:10px; padding:12px; margin-bottom:12px; }
+.pct-mini { font-size:9px; color:var(--t3); font-family:'JetBrains Mono'; margin-top:2px; }
+.conf.on .pct-mini { color:var(--brand); }
+.way .pick:hover { filter:brightness(1.1); }
+
+.op-btn { width:100%; margin-top:12px; padding:14px; border:none; border-radius:8px; font-weight:700; font-size:14px; font-family:'Space Grotesk'; letter-spacing:.5px; background:var(--up); color:#0e1a13; }
+.op-btn:hover { filter:brightness(1.05); }
+.op-actions { display:flex; gap:9px; margin-top:12px; }
+.op-actions .op-btn { margin-top:0; }
+.op-btn.buy { flex:1.4; }
+.op-btn.skip { flex:1; background:var(--bg4); color:var(--t2); border:1px solid var(--bd); cursor:pointer; }
+.op-btn.skip:hover { border-color:var(--warn); color:var(--warn); filter:none; }
+.op-btn.skip.on { border-color:var(--warn); background:rgba(255,197,61,.12); color:var(--warn); }
+.skip-note { display:none; margin-top:10px; padding:11px; border-radius:8px; background:rgba(255,197,61,.1); border:1px solid rgba(255,197,61,.3); font-size:10.5px; color:var(--t2); line-height:1.55; }
+.skip-note.show { display:block; }
+.skip-note b { color:var(--warn); }
+/* Cấp 4: đọc 5 lớp + tự chấm */
+.read-layers { display:flex; flex-direction:column; gap:7px; margin-bottom:10px; }
+.rl-row { border:1px solid var(--bd); border-radius:9px; padding:10px 11px; background:var(--bg2); }
+.rl-row.rated { border-color:var(--purple-bd); }
+.rl-top { display:flex; align-items:center; gap:8px; }
+.rl-ic { font-size:15px; }
+.rl-nm { font-size:12.5px; font-weight:600; flex:1; }
+.rl-expand { font-size:10.5px; color:var(--purple); cursor:pointer; font-weight:600; }
+.rl-detail { display:none; margin:8px 0; padding:8px 10px; background:var(--bg3); border-radius:6px; font-size:11px; color:var(--t2); line-height:1.55; }
+.rl-detail.open { display:block; }
+.rl-diff { color:var(--purple); font-size:10px; }
+.rl-rate { margin-top:8px; }
+.rl-q { font-size:10.5px; color:var(--t3); display:block; margin-bottom:5px; }
+.rl-opts { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+.rl-opt { padding:6px 4px; font-size:11px; border:1px solid var(--bd); border-radius:6px; background:var(--bg3); color:var(--t2); cursor:pointer; font-family:inherit; }
+.rl-opt:hover { border-color:var(--purple); }
+.rl-opt.on { border-color:var(--purple); background:var(--purple-soft); color:var(--purple); font-weight:600; }
+.rl-ai { display:none; margin-top:7px; font-size:11px; padding:6px 9px; border-radius:6px; }
+.rl-ai.show { display:block; }
+.rl-ai.match { background:rgba(53,208,127,.1); border:1px solid rgba(53,208,127,.3); color:var(--up); }
+.rl-ai.diff { background:var(--purple-soft); border:1px solid var(--purple-bd); color:var(--purple); }
+.consensus { margin-bottom:12px; padding:12px; border-radius:9px; border:1px dashed var(--bd); text-align:center; }
+.cs-lock { font-size:11px; color:var(--t3); }
+.consensus.done { border:1px solid var(--purple-bd); background:var(--purple-soft); }
+.cs-line { font-size:12px; color:var(--t1); }
+.cs-line b { color:var(--purple); }
+.cs-sub { font-size:10.5px; color:var(--t2); margin-top:4px; }
+/* Cấp 6: toàn cảnh 5 lớp gọn */
+.layer-summary { border:1px solid var(--bd); border-radius:9px; padding:11px 12px; background:var(--bg2); cursor:pointer; margin-bottom:10px; }
+.layer-summary:hover { border-color:var(--teal); }
+.ls-row { display:flex; align-items:center; gap:10px; }
+.ls-icons { font-size:13px; letter-spacing:1px; }
+.ls-score { font-size:10px; font-weight:600; color:var(--t2); font-family:'JetBrains Mono'; margin-left:auto; }
+.ls-toggle { font-size:10px; color:var(--t3); }
+.layer-detail-wrap { display:none; flex-direction:column; gap:6px; margin-bottom:12px; padding:11px; background:var(--bg3); border:1px solid var(--bd); border-radius:9px; }
+.layer-detail-wrap.open { display:flex; }
+.ld-row { font-size:11px; line-height:1.5; }
+.ld-nm { display:block; color:var(--t1); font-weight:600; margin-bottom:1px; }
+.ld-nm b { font-weight:700; margin-left:4px; }
+.ld-txt { color:var(--t2); font-size:10.5px; }
+.ld-txt i { color:var(--teal); font-style:normal; }
+.v-ok { color:var(--up); } .v-neu { color:var(--t3); } .v-bad { color:#ff6b6b; }
+/* bảng mâu thuẫn */
+.conflict { border:1px solid #ff6b6b; border-radius:11px; background:rgba(255,107,107,.1); padding:13px; margin-bottom:12px; }
+.cf-head { font-size:12.5px; font-weight:700; color:#ff6b6b; margin-bottom:10px; display:flex; align-items:center; gap:7px; }
+.cf-side { margin-bottom:9px; }
+.cf-side-lb { font-size:9.5px; text-transform:uppercase; letter-spacing:.5px; color:var(--t3); margin-bottom:5px; }
+.cf-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.chip { display:inline-flex; align-items:center; gap:4px; font-size:11px; padding:5px 9px; border-radius:7px; border:1px solid var(--bd); background:var(--bg3); }
+.chip.ok { border-color:rgba(53,208,127,.35); color:var(--up); }
+.chip.bad { border-color:rgba(255,107,107,.35); color:#ff6b6b; }
+.chip .veto-tag { font-size:8px; font-weight:700; background:#ff6b6b; color:#0e1420; border-radius:4px; padding:1px 4px; margin-left:2px; }
+.cf-verdict { display:flex; gap:9px; padding:10px; border-radius:8px; background:rgba(255,107,107,.1); border:1px solid rgba(255,107,107,.3); margin-top:2px; }
+.cf-verdict .ic { font-size:16px; }
+.cf-verdict .tx { font-size:10.5px; color:var(--t2); line-height:1.5; }
+.cf-verdict .tx b { color:var(--t1); }
+.cf-note { font-size:9.5px; color:var(--t3); margin-top:8px; text-align:center; font-style:italic; }
+.cf-legend { font-size:9.5px; color:var(--t3); line-height:1.6; margin-bottom:12px; padding:10px; background:var(--bg2); border:1px solid var(--bd); border-radius:8px; }
+.cf-legend b { color:#ff6b6b; }
+/* Cấp 7: cảnh báo cân đối danh mục */
+.balance-warn { border:1px solid rgba(255,197,61,.4); background:rgba(255,197,61,.1); border-radius:10px; padding:12px 13px; margin-top:14px; }
+.bw-head { font-size:12px; font-weight:700; color:var(--warn); margin-bottom:9px; }
+.bw-row { display:flex; align-items:center; gap:9px; margin-bottom:9px; }
+.bw-lb { font-size:10.5px; color:var(--t2); width:140px; flex-shrink:0; }
+.bw-bar { flex:1; height:9px; background:var(--bg4); border-radius:5px; overflow:hidden; }
+.bw-bar > i { display:block; height:100%; border-radius:5px; }
+.bw-v { font-family:'JetBrains Mono'; font-size:10.5px; font-weight:600; width:70px; text-align:right; }
+.bw-txt { font-size:10.5px; color:var(--t2); line-height:1.55; }
+.bw-txt b { color:var(--t1); }
+/* ô nhận định mâu thuẫn (data cho kết sổ) */
+.selfrate { border:1px solid var(--bd); border-radius:10px; padding:12px; margin-bottom:12px; background:var(--bg2); }
+.sr-q { font-size:11.5px; font-weight:600; margin-bottom:9px; }
+.sr-opts { display:flex; flex-direction:column; gap:6px; }
+.sr-opt { display:flex; align-items:center; gap:9px; padding:9px 11px; border:1px solid var(--bd); border-radius:8px; background:var(--bg3); cursor:pointer; font-size:11px; transition:.12s; }
+.sr-opt:hover { border-color:var(--teal); }
+.sr-opt.on { border-color:var(--teal); background:var(--teal-soft); }
+.sr-opt .ic { font-size:14px; }
+.sr-opt .lb b { display:block; color:var(--t1); }
+.sr-opt .lb span { font-size:9.5px; color:var(--t3); }
+.sr-after { display:none; margin-top:10px; padding:10px; border-radius:8px; background:var(--teal-soft); border:1px solid var(--teal-bd); font-size:10.5px; color:var(--t2); line-height:1.55; }
+.sr-after.show { display:block; }
+.sr-after b { color:var(--teal); }
+</style>
+</head>
+<body>
+
+<div class="col">
+  <div class="order-panel">
+    <span class="op-mode">THỰC CHIẾN</span>
+
+    <div class="op-tabs">
+      <div class="op-tab on buy">MUA</div>
+      <div class="op-tab">BÁN</div>
+    </div>
+
+    <div class="op-ticker">
+      <div class="code">GEX</div>
+      <div class="price">19.850 <span style="color:var(--up); font-size:11px">+0,6%</span></div>
+    </div>
+
+    <div class="op-refs">
+      <div class="op-ref"><div class="l">Trần</div><div class="v ceil">21.250</div></div>
+      <div class="op-ref"><div class="l">TC</div><div class="v tc">19.850</div></div>
+      <div class="op-ref"><div class="l">Sàn</div><div class="v floor">18.450</div></div>
+    </div>
+
+    <div class="op-field">
+      <label>Loại lệnh</label>
+      <select><option>LO — Giới hạn</option><option>MP — Thị trường</option></select>
+    </div>
+    <div class="op-two">
+      <div class="op-field">
+        <label>Giá</label>
+        <input type="text" value="19.850" class="num">
+      </div>
+      <div class="op-field">
+        <label>Khối lượng</label>
+        <input type="text" value="200" class="num" id="klInput">
+      </div>
+    </div>
+
+    <!-- ═══ THÊM Ở CẤP 3: Khẩu vị · Tự tin · Khối lượng — ngay dưới loại lệnh ═══ -->
+    <div class="risk-box">
+      <div class="conf-label" style="margin-top:0">Khẩu vị rủi ro <span style="text-transform:none;letter-spacing:0;color:var(--t3);font-size:9px">· áp cho mọi lệnh</span></div>
+      <div class="conf-row">
+        <div class="conf" id="ap1" onclick="selAppetite(1)"><div class="cl">Thận trọng</div><div class="pct-mini">trần 10%</div></div>
+        <div class="conf on" id="ap2" onclick="selAppetite(2)"><div class="cl">Cân bằng</div><div class="pct-mini">trần 20%</div></div>
+        <div class="conf" id="ap3" onclick="selAppetite(3)"><div class="cl">Tấn công</div><div class="pct-mini">trần 30%</div></div>
+      </div>
+
+      <div class="conf-label">Mức độ tự tin của lệnh</div>
+      <div class="conf-row">
+        <div class="conf" id="cf1" onclick="selConf(1)"><div class="stars">⭐</div><div class="cl">Thấp</div></div>
+        <div class="conf on" id="cf2" onclick="selConf(2)"><div class="stars">⭐⭐</div><div class="cl">Vừa</div></div>
+        <div class="conf" id="cf3" onclick="selConf(3)"><div class="stars">⭐⭐⭐</div><div class="cl">Cao</div></div>
+      </div>
+
+      <div class="conf-label">Khối lượng mua — chọn 1 trong 2 cách</div>
+      <div class="two-way">
+        <div class="way qty-way c1 on" id="qty1" onclick="selQty(1)">
+          <div class="wt">🎯 Theo khẩu vị × tự tin</div>
+          <div class="big" id="q1big">≈ 200</div>
+          <div class="pct" id="q1pct">15% vốn (20% × 75%)</div>
+          <button class="pick">Chọn cách này</button>
+        </div>
+        <div class="way qty-way c2" id="qty2" onclick="selQty(2)">
+          <div class="wt">⚖️ Chia đều theo khẩu vị</div>
+          <div class="big" id="q2big" style="color:var(--teal)">≈ 300</div>
+          <div class="pct" id="q2pct">20% vốn (đúng mức trần)</div>
+          <button class="pick">Chọn cách này</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="op-fee">
+      <span>Phí giao dịch (0,15%)</span>
+      <span class="v">93.600đ</span>
+    </div>
+
+    <div class="plan">
+      <div class="plan-head"><span class="plan-tag">KẾ HOẠCH</span></div>
+
+      <span class="field-label">1. Toàn cảnh 5 lớp — chú ý các lớp mâu thuẫn</span>
+      <div class="layer-summary" onclick="toggleLayerDetail()">
+        <div class="ls-row">
+          <span class="ls-icons">🎯✅ 💰✅ 👤❌ 📰❌ 💎⚪</span>
+          <span class="ls-score">2 ủng hộ · 2 ngược · 1 trung tính</span>
+          <span class="ls-toggle" id="lsToggle">chi tiết ▾</span>
+        </div>
+      </div>
+      <div class="layer-detail-wrap" id="layerDetailWrap">
+        <div class="ld-row"><span class="ld-nm">🎯 Kỹ thuật <b class="v-ok">Mạnh</b></span><span class="ld-txt">Xu hướng Tăng · đà nhanh dần. <i>So phiên trước: Trung bình → Mạnh.</i></span></div>
+        <div class="ld-row"><span class="ld-nm">💰 Dòng tiền <b class="v-ok">Ủng hộ</b></span><span class="ld-txt">Khối ngoại mua ròng 3 phiên. <i>So phiên trước: lực mua tăng tốc.</i></span></div>
+        <div class="ld-row"><span class="ld-nm">👤 Nội bộ <b class="v-bad">Rất xấu</b></span><span class="ld-txt">Lãnh đạo đăng ký bán 2 triệu cp. <i>So phiên trước: xuất hiện tin bán.</i></span></div>
+        <div class="ld-row"><span class="ld-nm">📰 Tin tức <b class="v-bad">Rất tiêu cực</b></span><span class="ld-txt">Bị nhắc nhở công bố thông tin, nghi vấn sổ sách. <i>So phiên trước: thêm tin xấu.</i></span></div>
+        <div class="ld-row"><span class="ld-nm">💎 Định giá <b class="v-neu">Trung tính</b></span><span class="ld-txt">Vùng giá trị 18k–22k, giá 19.850 — giữa vùng. <i>So phiên trước: không đổi.</i></span></div>
+      </div>
+
+      <!-- Bảng mâu thuẫn (mới ở Cấp 6) -->
+      <div class="conflict">
+        <div class="cf-head">⚔ Các lớp đang mâu thuẫn</div>
+        <div class="cf-side">
+          <div class="cf-side-lb">Ủng hộ mua</div>
+          <div class="cf-chips">
+            <span class="chip ok">🎯 Kỹ thuật · Mạnh</span>
+            <span class="chip ok">💰 Dòng tiền · Ủng hộ</span>
+          </div>
+        </div>
+        <div class="cf-side">
+          <div class="cf-side-lb">Ngược chiều</div>
+          <div class="cf-chips">
+            <span class="chip bad">📰 Tin tức · Rất tiêu cực <span class="veto-tag">PHỦ QUYẾT</span></span>
+            <span class="chip bad">👤 Nội bộ · Lãnh đạo bán <span class="veto-tag">PHỦ QUYẾT</span></span>
+          </div>
+        </div>
+        <div class="cf-verdict">
+          <span class="ic">🚨</span>
+          <span class="tx"><b>Có 2 lớp phủ quyết đang ở mức rất xấu.</b> Tin tức rất tiêu cực và lãnh đạo đang bán ra — những lớp này khi rất xấu có thể phủ định cả tín hiệu kỹ thuật đẹp. Đây là loại mâu thuẫn cần cân nhắc rất kỹ.</span>
+        </div>
+        <div class="cf-note">IQX chỉ ra mâu thuẫn — nhận định của bạn được ghi lại để nhìn lại khi kết sổ. Quyết định vẫn là của bạn.</div>
+      </div>
+
+      <!-- Ô nhận định mâu thuẫn — chỉ ghi nhận cách user ĐỌC mâu thuẫn, làm data cho Kết sổ & Phân tích danh mục. KHÔNG đụng tới khối lượng/cắt lỗ bên dưới. -->
+      <div class="selfrate">
+        <div class="sr-q">Bạn đọc mức độ mâu thuẫn này thế nào?</div>
+        <div class="sr-opts">
+          <div class="sr-opt" onclick="pickCf(this,'nhe')"><span class="ic">🟢</span><span class="lb"><b>Mâu thuẫn nhẹ</b><span>Các lớp ủng hộ đáng tin hơn, lớp ngược không nghiêm trọng</span></span></div>
+          <div class="sr-opt" onclick="pickCf(this,'ngai')"><span class="ic">🟡</span><span class="lb"><b>Đáng ngại — cần thận trọng</b><span>Có rủi ro thật, phải cân nhắc kỹ</span></span></div>
+          <div class="sr-opt" onclick="pickCf(this,'nghiem')"><span class="ic">🔴</span><span class="lb"><b>Nghiêm trọng</b><span>Lớp phủ quyết quá xấu, lấn át mọi tín hiệu tốt</span></span></div>
+          <div class="sr-opt" onclick="pickCf(this,'chua_ro')"><span class="ic">⚪</span><span class="lb"><b>Chưa rõ</b><span>Cần thêm thông tin/thời gian mới đánh giá được</span></span></div>
+        </div>
+        <div class="sr-after" id="srAfter"></div>
+      </div>
+
+      <div class="cf-legend">
+        <b>Lớp phủ quyết:</b> 📰 Tin tức · 👤 Nội bộ — khi rất xấu, có thể phủ định mọi lớp khác.<br>
+        <b>Lớp điểm trừ:</b> 🎯 Kỹ thuật · 💰 Dòng tiền · 💎 Định giá — xấu thì trừ điểm, không phủ định.
+        <span style="opacity:.6">(Khung tham khảo của IQX, không phải quy tắc bắt buộc.)</span>
+      </div>
+
+      <div class="plan-field-full" style="margin-top:12px;">
+        <label>2. Vùng mua (giá cụ thể)</label>
+        <input type="text" value="19.850" class="num">
+      </div>
+
+      <!-- ═══ THÊM Ở CẤP 2: Cắt lỗ / Chốt lời — 2 cách chọn 1 ═══ -->
+      <div class="sltp-label">3. Cắt lỗ / Chốt lời <span class="req">chọn 1 trong 2 cách</span></div>
+      <div class="two-way">
+        <div class="way c1" id="way1">
+          <div class="wt">📈 Theo Hỗ trợ / Kháng cự</div>
+          <div class="row"><span class="k">Hỗ trợ:</span><span>18.900</span></div>
+          <div class="row"><span class="k">Kháng cự:</span><span>21.200</span></div>
+          <div class="row"><span class="k">🛑</span><span class="sl-v">18.600 (−6,3%)</span></div>
+          <div class="row"><span class="k">🎯</span><span class="tp-v">21.100 (+6,3%)</span></div>
+          <button class="pick" onclick="selWay(1)">Chọn cách này</button>
+        </div>
+        <div class="way c2 on" id="way2">
+          <div class="wt">📊 Theo Biên độ dao động</div>
+          <div class="row"><span class="k">Biên độ:</span><span>280đ</span></div>
+          <div class="row"><span class="k">Hệ số:</span><span>2× / 4×</span></div>
+          <div class="row"><span class="k">🛑</span><span class="sl-v">19.300 (−2,8%)</span></div>
+          <div class="row"><span class="k">🎯</span><span class="tp-v">20.950 (+5,5%)</span></div>
+          <button class="pick" onclick="selWay(2)">Chọn cách này</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cấp 7: cảnh báo cân đối danh mục khi lệnh làm rổ lệch -->
+    <div class="balance-warn">
+      <div class="bw-head">⚖️ Lệnh này ảnh hưởng cân đối danh mục</div>
+      <div class="bw-row">
+        <span class="bw-lb">Ngành Ngân hàng sau lệnh</span>
+        <span class="bw-bar"><i style="width:88%;background:var(--down)"></i></span>
+        <span class="bw-v down">46% → 55%</span>
+      </div>
+      <div class="bw-txt">Mua thêm mã ngân hàng này nâng tỷ trọng ngành lên <b>55%</b> — vượt ngưỡng an toàn 40%. Danh mục đang dồn về một ngành. Cân nhắc giảm khối lượng hoặc chọn mã ngành khác. <span style="opacity:.7">Đây là cảnh báo — quyết định vẫn là của bạn.</span></div>
+    </div>
+
+    <div class="op-actions">
+      <button class="op-btn skip" onclick="chooseSkip()">Không mua lần này</button>
+      <button class="op-btn buy">ĐẶT LỆNH MUA</button>
+    </div>
+    <div class="skip-note" id="skipNote"></div>
+  </div>
+</div>
+
+<script>
+// Cấp 6: toàn cảnh 5 lớp gọn + bảng mâu thuẫn + tự đánh giá cách xử lý
+function toggleLayerDetail(){
+  const w = document.getElementById('layerDetailWrap');
+  w.classList.toggle('open');
+  document.getElementById('lsToggle').textContent = w.classList.contains('open') ? 'thu gọn ▴' : 'chi tiết ▾';
+}
+const CF_AFTER = {
+  nhe: '🟢 Bạn đọc đây là <b>mâu thuẫn nhẹ</b>. Nhận định này được ghi lại — khi kết sổ, bạn sẽ thấy những lần đọc "nhẹ" của mình có chính xác không.',
+  ngai: '🟡 Bạn đọc đây là <b>đáng ngại</b>. Ghi nhận rồi. Cân nhắc điều chỉnh khối lượng và cắt lỗ ở phần bên dưới cho khớp với mức thận trọng này.',
+  nghiem: '🔴 Bạn đọc đây là <b>nghiêm trọng</b> — lớp phủ quyết lấn át. Nếu vậy, hãy để hành động (khối lượng, cắt lỗ, hoặc đứng ngoài) khớp với nhận định. Kết sổ sẽ soi sự nhất quán này.',
+  chua_ro: '⚪ Bạn thấy <b>chưa rõ</b>. Ghi nhận. Nếu chưa đủ tự tin, chờ thêm phiên cũng là một lựa chọn hợp lý với mâu thuẫn có lớp phủ quyết.',
+};
+function pickCf(el, key){
+  document.querySelectorAll('.sr-opt').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');
+  window._cfLevel = key;
+  const after = document.getElementById('srAfter');
+  after.innerHTML = CF_AFTER[key];
+  after.classList.add('show');
+}
+const CF_LABEL = { nhe:'Mâu thuẫn nhẹ', ngai:'Đáng ngại', nghiem:'Nghiêm trọng', chua_ro:'Chưa rõ' };
+function chooseSkip(){
+  const btn = document.querySelector('.op-btn.skip');
+  btn.classList.toggle('on');
+  const note = document.getElementById('skipNote');
+  if(btn.classList.contains('on')){
+    const lv = window._cfLevel ? CF_LABEL[window._cfLevel] : 'chưa chọn mức';
+    note.innerHTML = '🛑 Bạn chọn <b>không mua lần này</b>. Với mã có lớp phủ quyết rất xấu, đứng ngoài là quyết định bảo toàn vốn — đôi khi không mua là nước đi tốt nhất. IQX ghi nhận: bạn đọc mâu thuẫn ở mức "<b>'+lv+'</b>" và chọn đứng ngoài. Lần đứng ngoài này sẽ hiện ở Phân tích danh mục để bạn thấy tính kỷ luật của mình.';
+    note.classList.add('show');
+  } else {
+    note.classList.remove('show');
+  }
+}
+
+function selWay(n){
+  document.getElementById('way1').classList.toggle('on', n===1);
+  document.getElementById('way2').classList.toggle('on', n===2);
+}
+
+// Cấp 3: khẩu vị + tự tin + khối lượng
+const VON = 100000000, GIA = 19850;
+const TRAN_MAP = {1:0.10, 2:0.20, 3:0.30};   // Thận trọng / Cân bằng / Tấn công
+const TRAN_LABEL = {1:'10%', 2:'20%', 3:'30%'};
+const CONF = {1:0.50, 2:0.75, 3:1.00};
+const CONF_LABEL = {1:'50%', 2:'75%', 3:'100%'};
+let curAppetite = 2, curConf = 2, curQty = 1;
+
+function selAppetite(n){
+  curAppetite = n;
+  [1,2,3].forEach(i=>document.getElementById('ap'+i).classList.toggle('on', i===n));
+  recalc();
+}
+function selConf(n){
+  curConf = n;
+  [1,2,3].forEach(i=>document.getElementById('cf'+i).classList.toggle('on', i===n));
+  recalc();
+}
+function selQty(n){
+  curQty = n;
+  document.getElementById('qty1').classList.toggle('on', n===1);
+  document.getElementById('qty2').classList.toggle('on', n===2);
+  recalc();
+}
+function round100(x){ return Math.round(x/100)*100; }
+function recalc(){
+  const tran = TRAN_MAP[curAppetite];
+  // Cách 1: khẩu vị × tự tin
+  const pct1 = tran * CONF[curConf];
+  const qty1 = round100(VON * pct1 / GIA);
+  document.getElementById('q1big').textContent = '≈ ' + qty1.toLocaleString('vi-VN');
+  document.getElementById('q1pct').textContent = (pct1*100).toFixed(0)+'% vốn ('+TRAN_LABEL[curAppetite]+' × '+CONF_LABEL[curConf]+')';
+  // Cách 2: chia đều = trần
+  const qty2 = round100(VON * tran / GIA);
+  document.getElementById('q2big').textContent = '≈ ' + qty2.toLocaleString('vi-VN');
+  document.getElementById('q2pct').textContent = TRAN_LABEL[curAppetite]+' vốn (đúng mức trần)';
+  // Đổ khối lượng cuối vào ô Khối lượng trên cùng
+  const finalQty = curQty===1 ? qty1 : qty2;
+  document.getElementById('klInput').value = finalQty.toLocaleString('vi-VN');
+}
+recalc();
+</script>
+</body>
+</html>

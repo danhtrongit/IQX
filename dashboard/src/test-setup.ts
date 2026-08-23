@@ -31,3 +31,19 @@ if (typeof localStorage === "undefined") {
 if (typeof Element.prototype.scrollTo !== "function") {
   Element.prototype.scrollTo = function () {}
 }
+
+// jsdom does not implement SVGElement.prototype.getBBox. `resize-observer-polyfill`
+// (pulled in by Arco) calls it on any observed SVG; the throw happens inside the
+// polyfill's async callback, so it surfaces as an UNHANDLED error rather than a test
+// failure — vitest then warns "might cause false positive tests". Hit when
+// TradingPanel.mockupConformance renders the whole panel. Guarded so it only
+// activates when truly absent; returns zeros because no test asserts on geometry
+// (jsdom has no layout engine, so real numbers are not obtainable anyway).
+// ★ `getBBox` khai trên `SVGGraphicsElement` trong lib DOM của TS, nhưng jsdom
+// dựng phần tử SVG là `SVGElement` trần — nên gắn lên `SVGElement.prototype`
+// (mọi phần tử SVG kế thừa từ đó) và ép kiểu ở đúng một chỗ.
+const svgProto = typeof SVGElement !== "undefined" ? SVGElement.prototype : undefined
+if (svgProto && typeof (svgProto as Partial<SVGGraphicsElement>).getBBox !== "function") {
+  ;(svgProto as Partial<SVGGraphicsElement>).getBBox = () =>
+    ({ x: 0, y: 0, width: 0, height: 0 }) as DOMRect
+}

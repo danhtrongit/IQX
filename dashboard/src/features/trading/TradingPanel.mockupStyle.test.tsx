@@ -134,7 +134,16 @@ vi.mock("@/features/cap1", async (importOriginal) => {
       registerHandlers: vi.fn(),
     }),
     useRecordKehoach: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
-    PlanFormCap1: () => <div data-testid="plan-form-cap1-mock" />,
+    // `sauLyDo` = slot mà `TradingPanel` truyền `AiThanhTra` xuống (mockup vẽ
+    // AI Thanh tra BÊN TRONG thẻ KẾ HOẠCH, giữa trường ① và ②). Mock PHẢI
+    // render nó ra: nuốt slot thì mọi assert về `ai-thanh-tra-mock` — cả
+    // chiều có lẫn chiều không — đều xanh vô điều kiện.
+    PlanFormCap1: (props: { sauLyDo?: React.ReactNode; truocLyDo?: React.ReactNode }) => (
+      <div data-testid="plan-form-cap1-mock">
+        {props.truocLyDo}
+        {props.sauLyDo}
+      </div>
+    ),
     AiThanhTra: () => <div data-testid="ai-thanh-tra-mock" />,
   }
 })
@@ -233,6 +242,26 @@ describe("Panel đặt lệnh — áo mockup mặc trong shell cấp, KHÔNG m�
       expect(container.querySelector(sel), `thiếu \`${sel}\` ở Cấp 2`).not.toBeNull()
     }
     expect(container.querySelector(".op-panel--cap1")).not.toBeNull()
+
+    // ★ Sổ lệnh mở từ Cấp 2 (spec Cấp 1 §checklist: "sổ lệnh vẫn ẨN — chỉ mở
+    // Cấp 2"). Nó PHẢI nằm trong thẻ `.op-book`: render trần trên nền
+    // `.op-shell` thì nó thành mảng trôi lơ lửng ngay trên một thẻ bo góc —
+    // đúng lỗi user báo sau khi panel Cấp 2+ được khoác áo mockup.
+    expect(container.querySelector(".op-book")).not.toBeNull()
+  })
+
+  it("★ Cấp 0 và Cấp 1: KHÔNG có sổ lệnh (nên cũng không có thẻ `.op-book`)", async () => {
+    isCap0ActiveFlag = true
+    const cap0 = renderPanel()
+    await waitFor(() => expect(screen.getByText("KẾ HOẠCH")).toBeInTheDocument())
+    expect(cap0.container.querySelector(".op-book")).toBeNull()
+    cap0.unmount()
+
+    isCap0ActiveFlag = false
+    isCap1ActiveFlag = true
+    const cap1 = renderPanel()
+    await waitFor(() => expect(screen.getByTestId("plan-form-cap1-mock")).toBeInTheDocument())
+    expect(cap1.container.querySelector(".op-book")).toBeNull()
   })
 
   it("NGOÀI mọi cấp (/bieu-do, /co-phieu): không một class nào của mockup được gắn", async () => {

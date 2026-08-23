@@ -224,8 +224,13 @@ export function Doc5LopBlock({
   return (
     <div className="cap4-doc5lop" data-testid="cap4-doc5lop">
       <div className="cap4-block-tag">{"ĐỌC 5 LỚP"}</div>
+      {/* ★ Số thứ tự «1.» KHÔNG phải trang trí: mockup `iqx-cap4-datlenh.html`
+          đánh số ba mục của thẻ KẾ HOẠCH là 1./2./3., và khối này THAY CHỖ
+          mục ① «1. Lý do mua» của Cấp 1 (`PlanFormCap1` ẩn trường đó ở Cấp 4).
+          Thiếu số, panel Cấp 4/5 đọc thành "… → 2. Vùng mua → 3. Cắt lỗ/Chốt
+          lời" — nhảy thẳng từ không-số sang 2. */}
       <div className="cap4-block-title">
-        {"Đọc 5 lớp phân tích — tự chấm từng lớp, AI đối chiếu sau"}
+        {"1. Đọc 5 lớp phân tích — tự chấm từng lớp, AI đối chiếu sau"}
       </div>
 
       {LOP_DEFS.map((def) => {

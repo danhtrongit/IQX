@@ -1,4 +1,6 @@
+import type { ReactNode } from "react"
 import { InputNumber } from "@arco-design/web-react"
+import "@/features/cap0/cap0.css"
 import { cn } from "@/shared/lib/cn"
 import { LY_DO_OPTIONS } from "./types"
 import type { LyDo } from "./types"
@@ -44,6 +46,29 @@ export interface PlanFormCap1Props {
    * NGUYÊN"). Defaults to `false`, so Cấp 1/2/3 render exactly as before.
    */
   hideLyDo?: boolean
+  /**
+   * Khối chèn NGAY DƯỚI trường ① và NGAY TRÊN trường ② — trong thực tế là
+   * `AiThanhTra`.
+   *
+   * ★★ Vì sao là slot chứ không phải để `TradingPanel` render tại chỗ: mockup
+   * `iqx-cap1-datlenh.html` vẽ `.tt` (AI Thanh tra) BÊN TRONG thẻ `.plan`,
+   * kẹp giữa `1. Lý do mua` và `2. Vùng mua`. Thẻ đó là của component này, nên
+   * cách duy nhất để nằm đúng chỗ là đi qua đây. Trước đây `TradingPanel`
+   * render `AiThanhTra` như một sibling SAU cả form (và sau cả khối Cắt lỗ/
+   * Chốt lời của Cấp 2) — sai cả thứ tự lẫn cấp lồng so với mockup.
+   */
+  sauLyDo?: ReactNode
+  /**
+   * Khối chèn NGAY DƯỚI tag «KẾ HOẠCH» và TRÊN trường ① — trong thực tế là
+   * khối «Đọc 5 lớp» của Cấp 4 (kèm bước «Đối chiếu» của Cấp 6 đi liền sau).
+   *
+   * ★★ Cùng một lý do với `sauLyDo`: mockup `iqx-cap4-datlenh.html` vẽ
+   * `1. Đọc 5 lớp phân tích…` BÊN TRONG thẻ `.plan`, tức SAU tag «KẾ HOẠCH».
+   * Trước đây `TradingPanel` render nó như một sibling ĐỨNG TRƯỚC cả form, nên
+   * panel Cấp 4/5 đọc ra thứ tự ngược: «1. Đọc 5 lớp …» rồi mới tới «KẾ
+   * HOẠCH» rồi «2. Vùng mua» — mục ① nằm ngoài thẻ chứa mục ② và ③.
+   */
+  truocLyDo?: ReactNode
 }
 
 export function PlanFormCap1({
@@ -53,16 +78,35 @@ export function PlanFormCap1({
   vungMua,
   onVungMuaChange,
   hideLyDo = false,
+  sauLyDo = null,
+  truocLyDo = null,
 }: PlanFormCap1Props) {
   return (
-    <div className="mt-2 space-y-2.5 rounded-md border border-[var(--color-border-2)] bg-[var(--color-fill-2)] p-2.5">
-      <div className="text-[9px] font-bold uppercase tracking-wider text-[rgb(var(--primary-6))]">
-        {"KẾ HOẠCH"}
-      </div>
+    /* ★ Thẻ KẾ HOẠCH mặc CHÍNH cái áo mockup vẽ (`.plan` → `.cap0-plan`,
+       `.plan-tag` → `.cap0-plan-tag` trong `cap0.css`, và `order-panel.css`
+       chỉnh lề chúng theo nhịp 12px của panel; `.op-panel--cap1` đổi accent
+       brand → đồng đúng như mockup Cấp 1). Bản trước dựng một thẻ Tailwind
+       riêng (`rounded-md border … bg-[var(--color-fill-2)]`) — tức HỆ THỨ HAI
+       song song với `.op-*`, và nó không có nền gradient lẫn viền brand mà
+       mockup vẽ, nên từ Cấp 1 thẻ KẾ HOẠCH nhìn khác hẳn demo. */
+    <div className="cap0-plan space-y-2.5">
+      <div className="cap0-plan-tag">{"KẾ HOẠCH"}</div>
+
+      {/* Mục ① thay thế của Cấp 4/5 (+ bước Đối chiếu của Cấp 6) — xem
+          `truocLyDo`. */}
+      {truocLyDo}
 
       {/* Trường 1 — Lý do mua (ẩn ở Cấp 4: khối "Đọc 5 lớp" thay thế) */}
       {!hideLyDo && (
         <div className="space-y-1.5">
+          {/* ★★ CỐ Ý LỆCH MOCKUP — và chỉ ở ĐÚNG một chữ số.
+              `iqx-cap1/2/3-datlenh.html` viết «chọn 1 trong 6 lớp» nhưng vẽ
+              đúng NĂM `.reason` (Kỹ thuật · Dòng tiền · Nội bộ · Tin tức ·
+              Định giá), và `LY_DO_OPTIONS` cũng chỉ có năm. Con số 6 là lỗi
+              chính tả trong mockup, không phải một lớp thứ sáu bị quên: đẻ
+              thêm lớp thứ sáu cho khớp chữ sẽ là bịa ra một nguồn dữ liệu
+              không tồn tại. Giữ 5 — bài canh `TradingPanel.mockupConformance`
+              chuẩn hoá đúng chỗ này và nói rõ vì sao. */}
           <div className="text-[10.5px] uppercase tracking-wide text-[var(--color-text-2)]">
             {"1. Lý do mua — chọn 1 trong 5 lớp"}
           </div>
@@ -98,6 +142,9 @@ export function PlanFormCap1({
           </div>
         </div>
       )}
+
+      {/* AI Thanh tra (mockup `.tt`) — GIỮA hai trường, xem `sauLyDo`. */}
+      {sauLyDo}
 
       {/* Trường 2 — Vùng mua */}
       <div className="space-y-0.5">

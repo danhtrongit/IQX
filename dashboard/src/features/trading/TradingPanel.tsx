@@ -52,12 +52,15 @@ import {
   type PhuongPhapSlTp,
 } from "@/features/cap2"
 import {
-  KhauViModal,
+  // ★ `KhauViModal` KHÔNG còn mount ở panel: màn bắt buộc lần đầu do trang Cấp
+  // 3 mount, còn đổi khẩu vị sau đó nằm ngay trong `QuanLyVonBlock` (mockup Cấp
+  // 3 vẽ 3 mức inline, không có link mở modal).
   QuanLyVonBlock,
   isKhoiLuongValid,
   useCap3Events,
   useCap3Progress,
   useRecordKehoachCap3,
+  useSetKhauVi,
   type CachKhoiLuong,
   type MucTuTin,
 } from "@/features/cap3"
@@ -430,6 +433,10 @@ function OrderEntry({
   const { isCap3Active } = cap3Events
   const { data: cap3Progress } = useCap3Progress(isCap3Active)
   const recordKehoachCap3 = useRecordKehoachCap3()
+  // Đổi khẩu vị NGAY TRONG khối Quản lý vốn (mockup Cấp 3 vẽ 3 mức inline).
+  // `useMutation` chỉ dựng object — gọi vô điều kiện ở đây không phát request
+  // nào ngoài Cấp 3, và `QuanLyVonBlock` (nơi bấm) chỉ render trong Cấp 3.
+  const setKhauVi = useSetKhauVi()
   // Cấp 3 khối "Quản lý vốn" (spec §6) — mức tự tin do user TỰ chấm (KHÔNG có
   // AI gợi ý, spec §6.2) + 1 trong 2 cách khối lượng.
   const [cap3MucTuTin, setCap3MucTuTin] = useState<MucTuTin | null>(null)
@@ -440,7 +447,6 @@ function OrderEntry({
   // (spec §6.3). Một lần user tự sửa thì thôi ghi đè — tới khi họ đổi mức tự
   // tin / cách khối lượng (một ý định mới) thì auto-fill lại.
   const [cap3VolumeTouched, setCap3VolumeTouched] = useState(false)
-  const [cap3KhauViOpen, setCap3KhauViOpen] = useState(false)
   const cap4Events = useCap4Events()
   // `isCap4Active` mirrors `isCap3Active` above — false outside a
   // `Cap4Provider`, so the khối "Đọc 5 lớp" + its hard gate + the HIDING of
@@ -1330,11 +1336,21 @@ function OrderEntry({
           renders exactly as before on /bieu-do & /co-phieu). */}
       {!hidePriceAndType && (
         <>
-          {/* Order method */}
-          <div className={skin ? "op-field" : undefined}>
+          {/* Order method — mockup `iqx-cap1-datlenh.html` vẽ một `.op-field`
+              CÓ nhãn «Loại lệnh», và hai lựa chọn viết theo lối "mã trước, tên
+              sau": `LO — Giới hạn` / `MP — Thị trường` (LO đứng trước). Bản cũ
+              không có nhãn nào và viết ngược ("Lệnh thị trường (MP)"), nên một
+              ô select trần nằm ngay trên ô «Giá» — người mới không biết nó là
+              cái gì. */}
+          <div className={skin ? "op-field" : "space-y-1"}>
+            <label
+              className={skin ? "op-field-label" : "text-xs font-medium text-[var(--color-text-3)]"}
+            >
+              Loại lệnh
+            </label>
             <Select value={method} onChange={(v) => setMethod(v)} size="small">
-              <Select.Option value="market">Lệnh thị trường (MP)</Select.Option>
-              <Select.Option value="limit">Lệnh giới hạn (LO)</Select.Option>
+              <Select.Option value="limit">LO — Giới hạn</Select.Option>
+              <Select.Option value="market">MP — Thị trường</Select.Option>
             </Select>
           </div>
 
@@ -1417,6 +1433,56 @@ function OrderEntry({
           )}
         </div>
 
+        {/* ★ Cấp 3 khối "Quản lý vốn" (spec §6) — mockup `iqx-cap3-datlenh.html`
+            đặt `.risk-box` (Khẩu vị rủi ro · Mức độ tự tin · Khối lượng mua)
+            GIỮA ô Khối lượng và dòng Phí giao dịch, và NGOÀI thẻ `.plan`. Nó
+            nói về CÁCH RA CON SỐ trong ô Khối lượng ngay trên nó, nên chỗ này
+            mới là chỗ của nó — không phải cuối thẻ KẾ HOẠCH.
+
+            Buy-side only AND Cấp 3-only (`isCap3Active` false ngoài
+            `Cap3Provider` → /bieu-do, /co-phieu và Cấp 0-2 không đổi gì). Khẩu
+            vị phải đặt xong (`khau_vi`) mới tính được khối lượng — màn bắt buộc
+            lần đầu do CHÍNH trang Cấp 3 mount (`KhauViModal`), còn việc đổi lại
+            sau đó nay nằm ngay trong khối (mockup vẽ 3 mức inline). */}
+        {side === "buy" && isCap3Active && cap3Progress?.khau_vi && (
+          // ★ `data-tour-id` cho bước 5 của tour «Xử lý mâu thuẫn» (Cấp 6):
+          // "để khối lượng phản ánh nhận định". Chỉ là một thuộc tính neo —
+          // khối Quản lý vốn của Cấp 3 KHÔNG đổi gì. Neo này phải ĐI THEO khối
+          // khi nó được dời lên đây; bỏ quên là tour Cấp 6 trỏ vào hư không.
+          <div data-tour-id="tour-cap6-khoiluong">
+          <QuanLyVonBlock
+            khauVi={cap3Progress.khau_vi}
+            vonBanDau={cap3Progress.von_ban_dau}
+            giaVao={cap1VungMua ?? currentPrice}
+            mucTuTin={cap3MucTuTin}
+            onMucTuTin={(m) => {
+              setCap3MucTuTin(m)
+              // Đổi mức tự tin = ý định mới → cho auto-fill ô Khối lượng lại.
+              setCap3VolumeTouched(false)
+            }}
+            cachKhoiLuong={cap3Cach}
+            onCachKhoiLuong={(c) => {
+              setCap3Cach(c)
+              setCap3VolumeTouched(false)
+            }}
+            onKhoiLuong={(kl, pctVon) => {
+              setCap3KhoiLuong(kl)
+              setCap3PctVon(pctVon)
+              // Tự điền ô Khối lượng — trừ khi user đã sửa tay (spec §6.3).
+              if (!cap3VolumeTouched && kl > 0) setVolume(kl)
+            }}
+            dangDoiKhauVi={setKhauVi.isPending}
+            onChonKhauVi={(k) => {
+              setKhauVi.mutate(k, { onSuccess: () => cap3Events.onKhauViPicked?.(k) })
+              // Trần vốn vừa đổi ⇒ khối lượng đề xuất là một con số khác. Cho
+              // auto-fill chạy lại, nếu không ô Khối lượng còn giữ con số tính
+              // theo khẩu vị CŨ ngay sau khi user vừa đổi khẩu vị.
+              setCap3VolumeTouched(false)
+            }}
+          />
+          </div>
+        )}
+
         {/* Summary */}
         <div
           className={
@@ -1439,12 +1505,16 @@ function OrderEntry({
             </div>
           )}
           <div className={skin ? "op-fee-row" : "flex justify-between"}>
-            {/* Mockup `iqx-cap0-datlenh.html` `.op-fee` spells this out for a
-                beginner; the shared terminal keeps the compact label so
-                /bieu-do & /co-phieu are untouched. (Số en-US per project
-                convention — the mockup's "0,15%" is vi-VN.) */}
+            {/* Mockup `.op-fee` viết đủ chữ — và CẢ SÁU mockup Cấp 0→5 đều
+                viết đúng một câu «Phí giao dịch (0,15%)», không cấp nào rút
+                gọn. Bản cũ chỉ nới cho Cấp 0 (`isCap0Active`) nên từ Cấp 1 trở
+                lên panel in "Phí GD" — một chữ không có trong mockup nào. Điều
+                kiện đổi sang `skin`: trong MỌI shell cấp thì viết đủ, còn
+                /bieu-do & /co-phieu (không skin) giữ nhãn gọn như cũ.
+                (Số en-US per project convention — the mockup's "0,15%" is
+                vi-VN.) */}
             <span className={skin ? undefined : "text-[var(--color-text-3)]"}>
-              {isCap0Active ? "Phí giao dịch (0.15%)" : "Phí GD (0.15%)"}
+              {skin ? "Phí giao dịch (0.15%)" : "Phí GD (0.15%)"}
             </span>
             <span
               className={
@@ -1510,62 +1580,63 @@ function OrderEntry({
             `Cap1Provider` → zero effect on Cấp 0 or normal trading). */}
         {side === "buy" && isCap1Active && (
           <>
-            {/* Cấp 4 khối "Đọc 5 lớp" (spec §5, THÊM MỚI) — REPLACES Cấp 1's
-                lý-do field (hidden via `hideLyDo` below) and Cấp 1's AI Thanh
-                tra; Vùng mua + Cấp 2's SL/TP + Cấp 3's Quản lý vốn stay
-                intact. Rendered FIRST, per the spec's panel order
-                (1. Đọc 5 lớp → 2. Vùng mua → 3. Cắt lỗ/Chốt lời). Buy-side
-                only AND Cấp 4-only. */}
-            {/* ★ `!isCap6BacThay` — Cấp 6 «Bậc thầy» THAY khối này bằng khối
-                "toàn cảnh 5 lớp gọn + bảng mâu thuẫn" ngay dưới đây (spec §5.2 /
-                checklist §14 dòng 1: "chỉ thay khối đọc 5 lớp"). Ở Cấp 7/8 —
-                còn dựng trên Cấp 6 «Đối chiếu» cũ — khối này giữ nguyên. */}
-            {isCap4Active && !isCap6BacThay && (
-              <Doc5LopBlock
-                symbol={symbol}
-                currentPrice={currentPrice}
-                doc5Lop={cap4Doc5Lop}
-                onRate={(lop, nhanDinh) => {
-                  setCap4Doc5Lop((prev) => ({ ...prev, [lop]: nhanDinh }))
-                  cap4Events.onLopRated?.(lop, nhanDinh)
-                }}
-                onAi5Lop={setCap4Ai5Lop}
-              />
-            )}
-            {/* Cấp 6 bước "Đối chiếu" (spec §4, THÊM MỚI) — NGAY DƯỚI khối Đọc 5
-                lớp: nó đọc chính bản chấm đó, nên các mức phải có trước. Khối tự
-                trả `null` khi 5 lớp KHÔNG mâu thuẫn → không khối, không request,
-                không cổng cứng (đặt lệnh y như Cấp 5). Buy-side only AND Cấp
-                6-only (`isCap6Active` false outside a `Cap6Provider` → zero
-                effect on Cấp 0-5 or normal trading). KHÔNG chạm vào bất kỳ khối
-                nào của Cấp 1-5. */}
-            {/* Cấp 6 «Bậc thầy» — khối THAY THẾ: toàn cảnh 5 lớp gọn + bảng mâu
-                thuẫn + ô nhận định 4 mức (spec §5/§6, mockup
-                `iqx-cap6-datlenh.html`). KHÔNG cổng cứng, KHÔNG chạm ô Khối
-                lượng. Đặt ĐÚNG chỗ khối "Đọc 5 lớp" vừa ẩn, tức mục "1." của
-                thẻ KẾ HOẠCH, trước Vùng mua. */}
-            {isCap6BacThay && (
-              <MauThuanBlock
-                symbol={symbol}
-                nhanDinh={cap6NhanDinh}
-                onNhanDinh={setCap6NhanDinh}
-              />
-            )}
-            {isCap6Active && isCap7Active && (
-              <DoiChieuBlock
-                symbol={symbol}
-                doc5Lop={cap4Doc5Lop}
-                lopQuyetDinh={cap6LopQuyetDinh}
-                onLopQuyetDinh={setCap6LopQuyetDinh}
-                lyDo={cap6LyDo}
-                onLyDo={setCap6LyDo}
-                kieuCoPhieu={cap6Kieu}
-                onKieuCoPhieu={setCap6Kieu}
-              />
-            )}
             <PlanFormCap1
               symbol={symbol}
               hideLyDo={isCap6BacThay ? cap6LyDoSuyRa != null : isCap4Active}
+              /* ★★ Mục ① của Cấp 4→6 đi vào TRONG thẻ KẾ HOẠCH, ngay dưới tag
+                 và trước trường ①. Mockup `iqx-cap4-datlenh.html` /
+                 `iqx-cap6-datlenh.html` vẽ đúng vậy: `.plan` mở ra là mục "1.",
+                 rồi "2. Vùng mua", rồi "3. Cắt lỗ / Chốt lời". Trước đây các
+                 khối này render như sibling ĐỨNG TRƯỚC cả form, nên panel đọc
+                 ra "1. … → KẾ HOẠCH → 2. Vùng mua" — mục ① nằm NGOÀI thẻ chứa
+                 mục ② và ③.
+
+                 Ba khối loại trừ nhau, đây là thứ tự ưu tiên:
+                   · Cấp 4/5 → `Doc5LopBlock` (tự chấm 5 lớp)
+                   · Cấp 6 «Bậc thầy» → `MauThuanBlock` THAY nó (spec §5.2 /
+                     checklist §14: "chỉ thay khối đọc 5 lớp")
+                   · Cấp 7/8 → còn dựng trên Cấp 6 «Đối chiếu» CŨ, nên giữ
+                     `Doc5LopBlock` + `DoiChieuBlock`. Nâng trần lên 7 mà chưa
+                     rebase Cấp 7/8 sẽ ném user về một màn Cấp 6 không còn tồn
+                     tại — xem cảnh báo trong docstring `capFlags.ts`.
+
+                 Cả ba đều THAY trường lý do của Cấp 1 (ẩn qua `hideLyDo`);
+                 Vùng mua + SL/TP Cấp 2 + Quản lý vốn Cấp 3 giữ nguyên. */
+              truocLyDo={
+                <>
+                  {isCap4Active && !isCap6BacThay && (
+                    <Doc5LopBlock
+                      symbol={symbol}
+                      currentPrice={currentPrice}
+                      doc5Lop={cap4Doc5Lop}
+                      onRate={(lop, nhanDinh) => {
+                        setCap4Doc5Lop((prev) => ({ ...prev, [lop]: nhanDinh }))
+                        cap4Events.onLopRated?.(lop, nhanDinh)
+                      }}
+                      onAi5Lop={setCap4Ai5Lop}
+                    />
+                  )}
+                  {isCap6BacThay && (
+                    <MauThuanBlock
+                      symbol={symbol}
+                      nhanDinh={cap6NhanDinh}
+                      onNhanDinh={setCap6NhanDinh}
+                    />
+                  )}
+                  {isCap6Active && isCap7Active && (
+                    <DoiChieuBlock
+                      symbol={symbol}
+                      doc5Lop={cap4Doc5Lop}
+                      lopQuyetDinh={cap6LopQuyetDinh}
+                      onLopQuyetDinh={setCap6LopQuyetDinh}
+                      lyDo={cap6LyDo}
+                      onLyDo={setCap6LyDo}
+                      kieuCoPhieu={cap6Kieu}
+                      onKieuCoPhieu={setCap6Kieu}
+                    />
+                  )}
+                </>
+              }
               lyDo={cap1LyDo}
               onLyDoChange={(l) => {
                 setCap1LyDo(l)
@@ -1576,6 +1647,50 @@ function OrderEntry({
               }}
               vungMua={cap1VungMua}
               onVungMuaChange={setCap1VungMuaOverride}
+              /* ★★ AI Thanh tra đi vào GIỮA trường ① và trường ② — đúng thứ tự
+                 mockup `iqx-cap1-datlenh.html`: `1. Lý do mua` → `.tt` (AI
+                 Thanh tra) → `2. Vùng mua`. Trước đây nó render SAU cả
+                 `PlanFormCap1` (và sau cả khối Cắt lỗ/Chốt lời của Cấp 2), nên
+                 user chọn lý do xong phải cuộn qua hai trường nữa mới thấy AI
+                 nói gì về chính lý do vừa chọn.
+
+                 Truyền xuống làm slot thay vì render tại chỗ vì thẻ KẾ HOẠCH
+                 là của `PlanFormCap1` — muốn nằm GIỮA hai trường thì phải nằm
+                 TRONG thẻ đó.
+
+                 HIDDEN inside Cấp 4 (spec §5: khối "Đọc 5 lớp" thay thế —
+                 hiện AI từng lớp trước khi user tự chấm đúng là "nhìn bài" mà
+                 nó cấm). `cap1LyDo` luôn null ở Cấp 4 (không có picker), nên
+                 `!isCap4Active` là dây an toàn thứ hai. */
+              sauLyDo={
+                cap1LyDo && !isCap4Active ? (
+                  <AiThanhTra
+                    symbol={symbol}
+                    lyDo={cap1LyDo}
+                    currentPrice={currentPrice}
+                    onVerdict={(v, snapshot) => {
+                      setCap1Verdict(v)
+                      setCap1Snapshot(snapshot)
+                    }}
+                    onDocChiTiet={() => {
+                      setCap1DocChiTiet(true)
+                      cap1Events.onDocChiTietClicked?.(cap1LyDo)
+                    }}
+                    onChonLyDoKhac={() => {
+                      setCap1LyDo(null)
+                      setCap1Verdict(null)
+                      setCap1Snapshot(null)
+                    }}
+                    // ★★ «Đọc chi tiết lớp này →» mở NGAY TRONG panel thay vì
+                    // `navigate('/co-phieu/:sym')`. `AiThanhTra` chỉ tồn tại
+                    // bên trong shell cấp, nên cú bấm cũ là 100% một cú ném-ra
+                    // — và form kế hoạch đang gõ dở (state của chính panel
+                    // này) mất trắng theo. Dùng lại đúng payload 6 lớp mà
+                    // `AiThanhTra` vừa fetch, không dựng nguồn dữ liệu mới.
+                    onOpenDetail={() => setChiTietMo(true)}
+                  />
+                ) : null
+              }
             />
             {/* Cấp 2 khối "Cắt lỗ / Chốt lời" (spec §5.1/§5.4, THÊM MỚI) —
                 inserted NGAY SAU trường Vùng mua (i.e. right after
@@ -1596,81 +1711,13 @@ function OrderEntry({
                 }}
               />
             )}
-            {/* Cấp 3 khối "Quản lý vốn" (spec §6, THÊM MỚI) — buy-side only AND
-                Cấp 3-only. Khẩu vị phải đặt xong (`khau_vi`) mới tính được khối
-                lượng; `KhauViModal` bên dưới lo phần đó. */}
-            {isCap3Active && cap3Progress?.khau_vi && (
-              // ★ `data-tour-id` cho bước 5 của tour «Xử lý mâu thuẫn» (Cấp 6):
-              // "để khối lượng phản ánh nhận định". Chỉ là một thuộc tính neo —
-              // khối Quản lý vốn của Cấp 3 KHÔNG đổi gì.
-              <div data-tour-id="tour-cap6-khoiluong">
-              <QuanLyVonBlock
-                khauVi={cap3Progress.khau_vi}
-                vonBanDau={cap3Progress.von_ban_dau}
-                giaVao={cap1VungMua ?? currentPrice}
-                mucTuTin={cap3MucTuTin}
-                onMucTuTin={(m) => {
-                  setCap3MucTuTin(m)
-                  // Đổi mức tự tin = ý định mới → cho auto-fill ô Khối lượng lại.
-                  setCap3VolumeTouched(false)
-                }}
-                cachKhoiLuong={cap3Cach}
-                onCachKhoiLuong={(c) => {
-                  setCap3Cach(c)
-                  setCap3VolumeTouched(false)
-                }}
-                onKhoiLuong={(kl, pctVon) => {
-                  setCap3KhoiLuong(kl)
-                  setCap3PctVon(pctVon)
-                  // Tự điền ô Khối lượng — trừ khi user đã sửa tay (spec §6.3).
-                  if (!cap3VolumeTouched && kl > 0) setVolume(kl)
-                }}
-                onDoiKhauVi={() => setCap3KhauViOpen(true)}
-              />
-              </div>
-            )}
-            {/* Chỉ instance ĐỔI khẩu vị (spec §5.2 "không khoá vĩnh viễn").
-                Instance bắt buộc lần đầu do trang Cấp 3 mount (xem
-                `KhauViModal`'s doc) — không nhân bản ở đây. */}
-            {isCap3Active && cap3KhauViOpen && (
-              <KhauViModal
-                vonBanDau={cap3Progress?.von_ban_dau}
-                forceOpen
-                onClose={() => setCap3KhauViOpen(false)}
-              />
-            )}
-            {/* Cấp 1's AI Thanh tra is HIDDEN inside Cấp 4 (spec §5: the khối
-                "Đọc 5 lớp" replaces it — showing AI per-lớp before the user
-                rates would be exactly the "nhìn bài" it forbids). `cap1LyDo`
-                is always null in Cấp 4 anyway (no picker), so the explicit
-                `!isCap4Active` is belt-and-suspenders. */}
-            {cap1LyDo && !isCap4Active && (
-              <AiThanhTra
-                symbol={symbol}
-                lyDo={cap1LyDo}
-                currentPrice={currentPrice}
-                onVerdict={(v, snapshot) => {
-                  setCap1Verdict(v)
-                  setCap1Snapshot(snapshot)
-                }}
-                onDocChiTiet={() => {
-                  setCap1DocChiTiet(true)
-                  cap1Events.onDocChiTietClicked?.(cap1LyDo)
-                }}
-                onChonLyDoKhac={() => {
-                  setCap1LyDo(null)
-                  setCap1Verdict(null)
-                  setCap1Snapshot(null)
-                }}
-                // ★★ «Đọc chi tiết lớp này →» mở NGAY TRONG panel thay vì
-                // `navigate('/co-phieu/:sym')`. `AiThanhTra` chỉ tồn tại bên
-                // trong shell cấp, nên cú bấm cũ là 100% một cú ném-ra — và
-                // form kế hoạch đang gõ dở (state của chính panel này) mất
-                // trắng theo. Dùng lại đúng payload 6 lớp mà `AiThanhTra` vừa
-                // fetch, không dựng nguồn dữ liệu mới.
-                onOpenDetail={() => setChiTietMo(true)}
-              />
-            )}
+            {/* ★★ Cấp 3 khối "Quản lý vốn" ĐÃ DỜI LÊN — chỗ mới nằm ngay dưới ô
+                Khối lượng, TRÊN dòng Phí giao dịch. Mockup
+                `iqx-cap3-datlenh.html` vẽ `.risk-box` đúng ở đó và NGOÀI thẻ
+                `.plan`; ở đây nó từng nằm BÊN TRONG thẻ KẾ HOẠCH, dưới cả khối
+                Cắt lỗ/Chốt lời — tức sai cả vị trí lẫn cấp lồng. */}
+            {/* ★★ AI Thanh tra ĐÃ DỜI vào trong `PlanFormCap1` (prop
+                `sauLyDo`) — xem lý do ở đó. */}
           </>
         )}
 
@@ -2470,7 +2517,19 @@ export function TradingPanel({
           panel là MỘT thẻ đúng thứ tự mockup. Sổ lệnh bid/ask vẫn ở trên cùng
           (mockup Cấp 0/1 không vẽ nó vì nó bị ẩn tới tận Cấp 2). */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {data && !hideOrderBook && <OrderBookView data={data} />}
+        {/* ★ Trong shell cấp, sổ lệnh phải là MỘT THẺ như panel bên dưới.
+            Trước đây nó render trần trên nền `--bg1` của `.op-shell`, nên khi
+            panel Cấp 2+ được khoác áo mockup (thẻ bo góc có viền) thì sổ lệnh
+            thành một mảng trôi lơ lửng ngay phía trên — đúng lỗi user báo.
+            Mockup không vẽ sổ lệnh (nó bị ẩn tới tận Cấp 2, sau khung hình
+            mockup), nhưng spec Cấp 1 §checklist nói rõ "sổ lệnh vẫn ẨN (chỉ mở
+            Cấp 2)" — nên nó PHẢI có mặt từ Cấp 2; việc cần làm là cho nó mặc
+            cùng áo, không phải giấu đi. */}
+        {data && !hideOrderBook && (
+          <div className={skin ? "op-book" : undefined}>
+            <OrderBookView data={data} />
+          </div>
+        )}
         <GatedOrderEntry
           symbol={symbol}
           data={data}
