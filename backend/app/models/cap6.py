@@ -242,6 +242,17 @@ class Cap6Skip(UUIDMixin, TimestampMixin, Base):
     #: 1 trong ``MucMauThuan`` — mức nhận định user đã chọn, dùng LÀM LÝ DO
     #: (spec §7: "không hỏi thêm").
     conflict_level: Mapped[str] = mapped_column(String(8), nullable=False)
+    #: ★★ **CỘT NÀY KHÔNG CÓ TRONG DANH SÁCH §11 CỦA SPEC — nó bắt buộc phải
+    #: có.** Luật đếm ở chính §11 mở đầu bằng "đếm +1 khi một lệnh **CÓ MÂU
+    #: THUẪN** mà nhận định user đọc khớp hành động", và "nghiêm trọng → không
+    #: mua" là một trong hai mẫu ✓. Không lưu cờ này thì lúc đếm không còn cách
+    #: nào biết mã đó CÓ mâu thuẫn hay không (bản AI Insight đổi mỗi phiên, suy
+    #: lại về sau là suy trên dữ liệu khác) ⇒ ba cú bấm «Không mua» trên một mã
+    #: chỉ có tin xấu mà KHÔNG mâu thuẫn cũng mở được cổng tốt nghiệp. Đã dựng
+    #: được lỗ đó bằng một bài test thật trước khi thêm cột này.
+    #:
+    #: Cùng luật NULLABLE ba trạng thái như ``had_veto`` bên dưới.
+    had_conflict: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     #: ★ **NULLABLE ba trạng thái**, do SERVER tự tính lại từ AI Insight — không
     #: bao giờ nhận từ client. True = mã có lớp phủ quyết ở bậc thấp nhất ·
     #: False = đã kiểm và không có · NULL = **chưa chấm được** (mã chưa có bản

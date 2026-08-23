@@ -76,15 +76,19 @@ khi docstring khẳng định là không thể):
   · POST y hệt lần trước luôn là no-op idempotent, trước và sau cửa sổ (một cú
     gọi lại do mạng không bao giờ thành 409).
 
-``POST /cap6/skip`` không cần khoá: không có lệnh, không có vị thế, không có
-kết quả nào để nhìn — bản thân nó là bằng chứng đứng ngoài.
+``POST /cap6/skip`` không cần khoá THỜI GIAN: không có lệnh, không có vị thế,
+không có kết quả nào để nhìn — bản thân nó là bằng chứng đứng ngoài. Nhưng chính
+vì nó miễn phí, cổng lên cấp phải đọc nó khắt khe hơn (xem
+``_nhat_quan_skip``/``_dem_nhat_quan``): chỉ đếm khi mã THẬT SỰ có mâu thuẫn, và
+gộp các cú bấm cùng mã cùng phiên thành MỘT tình huống. Không có hai luật đó thì
+ba cú bấm liên tiếp trên một mã chỉ có tin xấu đủ để tốt nghiệp Cấp 6.
 """
 
 from __future__ import annotations
 
 import uuid
 from collections.abc import Sequence
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -104,6 +108,7 @@ from app.models.cap6 import (
     lop_ten,
 )
 from app.models.virtual_trading import OrderSide, OrderStatus, VirtualOrder
+from app.services.cap5.consensus import ngay_vn
 from app.services.cap5.service import KHAU_VI_TRAN_PCT
 from app.services.cap6.mau_thuan import MauThuanResult, MauThuanSource
 
@@ -429,13 +434,14 @@ class Cap6Service:
             raise BadRequestError("Thiếu mã cổ phiếu")
 
         result = await self._mau_thuan.doc(ma)
-        _had_conflict, had_veto, _veto_layers = self._suy_co(result)
+        had_conflict, had_veto, _veto_layers = self._suy_co(result)
 
         row = Cap6Skip(
             user_id=user_id,
             symbol=ma,
             at=datetime.now(UTC),
             conflict_level=muc,
+            had_conflict=had_conflict,
             had_veto=had_veto,
         )
         self._session.add(row)
@@ -447,6 +453,7 @@ class Cap6Service:
             "at": row.at,
             "conflict_level": row.conflict_level,
             "conflict_level_ten": MUC_LABELS[row.conflict_level],
+            "had_conflict": row.had_conflict,
             "had_veto": row.had_veto,
         }
 
@@ -581,12 +588,25 @@ class Cap6Service:
 
     @staticmethod
     def _nhat_quan_skip(skip: Cap6Skip) -> bool:
-        """«Không mua» ở mức nghiêm trọng là mẫu ✓ của spec §2.
+        """«Không mua» ở mức nghiêm trọng TRÊN MỘT MÃ CÓ MÂU THUẪN là mẫu ✓ của
+        spec §2.
 
         Đứng ngoài ở mức nhẹ/đáng ngại/chưa rõ KHÔNG bị tính là lệch — nó chỉ
         không phải mẫu spec đếm.
+
+        ★★ ``had_conflict`` là điều kiện BẮT BUỘC, không phải thêm cho đẹp. Luật
+        đếm của spec §11 mở đầu bằng "đếm +1 khi một lệnh **CÓ MÂU THUẪN** mà
+        nhận định user đọc khớp hành động"; và §5.1 nói bảng mâu thuẫn — cùng ô
+        nhận định (§6) và nút «Không mua» (§7) nằm sau nó — CHỈ hiện khi thật sự
+        có mâu thuẫn. Không đòi cờ này thì ba cú bấm trên một mã chỉ có tin xấu
+        (phủ quyết kích hoạt nhưng KHÔNG có lớp ủng hộ nào ⇒ không mâu thuẫn)
+        cũng mở được cổng — không lệnh nào, không vị thế nào, không rủi ro nào.
+        ``None`` (chưa chấm được mã) cũng không đếm, cùng luật với lệnh mua.
         """
-        return skip.conflict_level == MucMauThuan.NGHIEM.value
+        return (
+            skip.had_conflict is True
+            and skip.conflict_level == MucMauThuan.NGHIEM.value
+        )
 
     def _dem_nhat_quan(
         self, kehoach_rows: Sequence[OrderKehoach], skips: Sequence[Cap6Skip]
@@ -604,9 +624,20 @@ class Cap6Service:
             nhat_quan += 1
             if kehoach.had_veto:
                 veto += 1
+        # ★★ GỘP theo (mã, phiên) — chỉ khi ĐẾM CỔNG. Bấm «Không mua» là miễn
+        # phí: không lệnh, không vị thế, không rủi ro. Ba cú bấm liên tiếp trên
+        # cùng một mã trong cùng một phiên là MỘT tình huống đứng ngoài, không
+        # phải ba — spec §2 đếm "lần GẶP lệnh có mâu thuẫn và xử lý nhất quán".
+        # Khối ⑮ vẫn đếm THÔ ("N lần đứng ngoài"): ở đó con số là nhật ký hành
+        # vi để user nhìn lại, không phải điều kiện lên cấp.
+        da_dem: set[tuple[str, date]] = set()
         for skip in skips:
             if not self._nhat_quan_skip(skip):
                 continue
+            khoa = (skip.symbol, ngay_vn(_as_utc(skip.at)))
+            if khoa in da_dem:
+                continue
+            da_dem.add(khoa)
             nhat_quan += 1
             if skip.had_veto:
                 veto += 1

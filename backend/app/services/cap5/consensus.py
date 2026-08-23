@@ -125,6 +125,19 @@ def hom_nay_vn() -> date:
     return datetime.now(_VN_TZ).date()
 
 
+def ngay_vn(dt: datetime) -> date:
+    """Ngày GIỜ VN của một mốc thời gian (mốc naive coi như UTC).
+
+    ★ Ở đây chứ không ở nơi gọi: ``_VN_TZ`` phải có ĐÚNG MỘT định nghĩa trong
+    repo. Cấp 6 dùng hàm này để gộp các cú bấm «Không mua» cùng mã cùng PHIÊN
+    lại thành một tình huống khi đếm cổng lên cấp — nếu chỗ đó tự đặt lại múi
+    giờ thì hai cấp có thể chia ngày khác nhau cho cùng một mốc.
+    """
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(_VN_TZ).date()
+
+
 def ngay_som_nhat_con_hieu_luc(
     today: date, *, so_phien: int = SO_PHIEN_HIEU_LUC
 ) -> date:

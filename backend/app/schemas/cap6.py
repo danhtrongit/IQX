@@ -167,6 +167,10 @@ class SkipOut(BaseModel):
     at: datetime
     conflict_level: MucLiteral
     conflict_level_ten: str
+    #: ★ ``null`` = chưa chấm được mã lúc bấm (≠ "mã không có mâu thuẫn").
+    #: Chỉ lần đứng ngoài trên mã CÓ mâu thuẫn mới được cổng lên cấp đếm — luật
+    #: đếm của spec §11 mở đầu bằng đúng điều kiện đó.
+    had_conflict: bool | None = None
     #: ★ ``null`` = chưa chấm được mã lúc bấm (≠ "không có phủ quyết").
     had_veto: bool | None = None
 

@@ -159,6 +159,11 @@ def upgrade() -> None:
         sa.Column("symbol", sa.String(length=20), nullable=False),
         sa.Column("at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("conflict_level", sa.String(length=8), nullable=False),
+        # ★★ ``had_conflict`` KHÔNG có trong danh sách cột của spec §11 — nhưng
+        # luật đếm ở chính §11 đòi nó ("+1 khi một lệnh CÓ MÂU THUẪN mà nhận
+        # định khớp hành động"). Thiếu nó thì 3 cú bấm «Không mua» trên một mã
+        # chỉ có tin xấu mà KHÔNG mâu thuẫn cũng mở được cổng tốt nghiệp.
+        sa.Column("had_conflict", sa.Boolean(), nullable=True),
         # ★ Ba trạng thái: NULL = chưa chấm được mã lúc bấm (≠ "không phủ quyết").
         sa.Column("had_veto", sa.Boolean(), nullable=True),
         sa.Column("created_at", sa.DateTime(), server_default=sa.text("now()"), nullable=False),

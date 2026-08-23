@@ -849,7 +849,8 @@ async def test_skip_ghi_nhan_dung_ngoai_va_lay_nhan_dinh_lam_ly_do(db_session, t
     assert out["symbol"] == "VCB"
     assert out["conflict_level"] == "nghiem"
     assert out["conflict_level_ten"] == "Nghiêm trọng"
-    assert out["had_veto"] is True  # ★ SERVER tính, không hỏi client
+    assert out["had_conflict"] is True  # ★ SERVER tính, không hỏi client
+    assert out["had_veto"] is True
 
     rows = (
         (await db_session.execute(select(Cap6Skip).where(Cap6Skip.user_id == test_user.id)))
@@ -875,10 +876,94 @@ async def test_skip_cung_ma_hai_lan_la_HAI_quyet_dinh(db_session, test_user):
 
 
 @pytest.mark.asyncio
+async def test_ba_cu_bam_khong_mua_tren_ma_KHONG_mau_thuan_khong_mo_duoc_cong(
+    db_session, test_user
+):
+    """★★★ LỖ CỔNG THẬT — đã dựng lại được trước khi vá.
+
+    Mã dưới đây CHỈ có 📰 Tin tức «Rất tiêu cực»: phủ quyết ĐANG kích hoạt,
+    nhưng KHÔNG có lớp ủng hộ nào ⇒ **không có mâu thuẫn** (spec §5.1), nên
+    không có bảng mâu thuẫn, không có ô nhận định, không có nút «Không mua».
+
+    Trước khi vá: 3 cú bấm (miễn phí — không lệnh, không vị thế, không rủi ro)
+    cho ``nhat_quan=3``, ``veto=3`` và tốt nghiệp ngay. Luật đếm của spec §11 mở
+    đầu bằng "đếm +1 khi một lệnh **CÓ MÂU THUẪN**" — nên ``cap6_skip`` phải lưu
+    ``had_conflict`` (cột này KHÔNG có trong danh sách §11) và cổng phải đòi nó.
+    """
+    services, _ = await _enter_cap6(db_session, test_user.id)
+    await _seed_insight(db_session, "BAD", _payload(L5="Rất tiêu cực"))
+
+    bang = await services["cap6"].mau_thuan(test_user.id, "BAD")
+    assert bang["co_mau_thuan"] is False  # …
+    assert bang["phu_quyet_kich_hoat"] is True  # …nhưng phủ quyết VẪN kích hoạt
+
+    for _ in range(3):
+        out = await services["cap6"].skip(test_user.id, "BAD", conflict_level="nghiem")
+    assert out["had_conflict"] is False
+    assert out["had_veto"] is True  # ★ cờ veto một mình KHÔNG đủ để đếm
+
+    prog = await services["cap6"].get_progress(test_user.id)
+    assert prog["so_lan_xu_ly_nhat_quan"] == 0
+    assert prog["so_lan_xu_ly_veto_nhat_quan"] == 0
+    assert prog["dat_nhiem_vu"] is False
+    with pytest.raises(ConflictError):
+        await services["cap6"].graduate(test_user.id)
+
+    # Nhật ký vẫn ghi đủ 3 lần — khối ⑮ là nhật ký hành vi, không phải cổng.
+    assert (await services["cap6"].phan_tich(test_user.id))["khoi_15"][
+        "so_lan_khong_mua"
+    ] == 3
+
+
+@pytest.mark.asyncio
+async def test_bam_lai_cung_ma_cung_phien_chi_dem_MOT_lan_cho_cong(
+    db_session, test_user
+):
+    """★★ Bấm «Không mua» là miễn phí ⇒ ba cú bấm cùng mã cùng phiên là MỘT
+    tình huống đứng ngoài, không phải ba.
+
+    Nếu không gộp, cổng ≥3 lần mở bằng đúng một mã có mâu thuẫn + ba cú bấm.
+    Nhật ký (khối ⑮) vẫn đếm THÔ — ở đó con số là hành vi để user nhìn lại.
+    """
+    services, _ = await _enter_cap6(db_session, test_user.id)
+    await _seed_insight(db_session, "VCB", _P_VETO)
+    for _ in range(3):
+        await services["cap6"].skip(test_user.id, "VCB", conflict_level="nghiem")
+
+    prog = await services["cap6"].get_progress(test_user.id)
+    assert prog["so_lan_xu_ly_nhat_quan"] == 1
+    assert prog["so_lan_xu_ly_veto_nhat_quan"] == 1
+    assert (await services["cap6"].phan_tich(test_user.id))["khoi_15"][
+        "so_lan_khong_mua"
+    ] == 3
+
+    # ★ NEO DƯƠNG TÍNH: cùng mã nhưng PHIÊN KHÁC thì đúng là hai tình huống.
+    rows = (
+        (await db_session.execute(select(Cap6Skip).where(Cap6Skip.user_id == test_user.id)))
+        .scalars()
+        .all()
+    )
+    rows[0].at = datetime.now(UTC) - timedelta(days=3)
+    await db_session.flush()
+    prog = await services["cap6"].get_progress(test_user.id)
+    assert prog["so_lan_xu_ly_nhat_quan"] == 2
+    assert prog["so_lan_xu_ly_veto_nhat_quan"] == 2
+
+    # …và mã KHÁC trong cùng phiên cũng vậy.
+    await _seed_insight(db_session, "HPG", _P_VETO)
+    await services["cap6"].skip(test_user.id, "HPG", conflict_level="nghiem")
+    prog = await services["cap6"].get_progress(test_user.id)
+    assert prog["so_lan_xu_ly_nhat_quan"] == 3
+
+
+@pytest.mark.asyncio
 async def test_skip_ma_chua_cham_duoc_de_had_veto_NULL(db_session, test_user):
     services, _ = await _enter_cap6(db_session, test_user.id)
     out = await services["cap6"].skip(test_user.id, "ZZZ", conflict_level="nghiem")
     assert out["had_veto"] is None  # ★ ≠ "đã kiểm và không có phủ quyết"
+    assert out["had_conflict"] is None  # ★ ≠ "đã kiểm, mã này không mâu thuẫn"
+    prog = await services["cap6"].get_progress(test_user.id)
+    assert prog["so_lan_xu_ly_nhat_quan"] == 0  # None không bao giờ đếm
 
 
 @pytest.mark.asyncio
@@ -1706,6 +1791,7 @@ def test_migration_moi_cot_diem_ty_le_moi_deu_nullable():
 
         skip = _notnull(conn, "cap6_skip")
         assert skip["had_veto"] == 0, "cap6_skip.had_veto phải nullable ba trạng thái"
+        assert skip["had_conflict"] == 0, "cap6_skip.had_conflict phải nullable"
 
         # NEO DƯƠNG TÍNH — hai ô đếm NOT NULL DEFAULT 0 là ĐÚNG: 0 ở đó là số
         # thật, và cột định danh của cap6_skip cũng phải NOT NULL.
@@ -1781,10 +1867,10 @@ def test_migration_round_trip_len_xuong_len_hai_vong():
         conn.exec_driver_sql(
             """
             INSERT INTO cap6_skip (
-                id, user_id, symbol, at, conflict_level, had_veto,
+                id, user_id, symbol, at, conflict_level, had_conflict, had_veto,
                 created_at, updated_at
             ) VALUES (
-                'sk1', 'u-tn1', 'VCB', '2026-08-20 10:00:00', 'nghiem', 1,
+                'sk1', 'u-tn1', 'VCB', '2026-08-20 10:00:00', 'nghiem', 1, 1,
                 '2026-08-20 10:00:00', '2026-08-20 10:00:00'
             )
             """
