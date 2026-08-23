@@ -26,6 +26,8 @@
  *     (`cap3-journey-goal`) — y hệt (d), theo `>= 3` và `>= 4`.
  *  g. `GraduationModalCap4.tsx` — y hệt (b)(c)(e), theo `CAP_MAX_ENABLED >= 5`.
  *  h. `JourneyPanelCap4.tsx` (`cap4-journey-goal`) — y hệt (d), theo `>= 5`.
+ *  i. `GraduationModalCap5.tsx` — y hệt (b)(c)(e)(g), theo `CAP_MAX_ENABLED >= 6`.
+ *  j. `JourneyPanelCap5.tsx` (`cap5-journey-goal`) — y hệt (d)(h), theo `>= 6`.
  *
  * ─── LUẬT TỔNG QUÁT (áp cho MỌI lần mở thêm cấp) ────────────────────────────
  * Với mỗi cấp N đang là TRẦN, đúng hai màn phải gắn theo `CAP_MAX_ENABLED >=
@@ -68,4 +70,4 @@
  * GraduationModalCap1` (và cả cây import Cấp 2-8 + `@/features/dashboard` đứng
  * sau nó). `DauTruongPage` re-export lại tên này nên mọi import cũ vẫn chạy.
  */
-export const CAP_MAX_ENABLED = 4
+export const CAP_MAX_ENABLED = 5

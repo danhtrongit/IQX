@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { expectRendersNothing } from "@/__tests__/textGuards"
 
 const { recordKetsoCap1Mutate, recordKetsoCap2Mutate, completeCap4TaskMutate } = vi.hoisted(
   () => ({
@@ -109,7 +110,7 @@ function renderModal(overrides: Partial<KetsoDataCap4> = {}, onClose = vi.fn()) 
 
 describe("KetsoModalCap4 — giữ nguyên mọi khối Cấp 1/2/3 (cộng dồn)", () => {
   it("renders nothing when data is null", () => {
-    const { container } = render(
+    render(
       <KetsoModalCap4
         data={null}
         progress={null}
@@ -117,7 +118,10 @@ describe("KetsoModalCap4 — giữ nguyên mọi khối Cấp 1/2/3 (cộng dồ
         onClose={vi.fn()}
       />,
     )
-    expect(container).toBeEmptyDOMElement()
+    // ★★ KHÔNG dùng `expect(container).toBeEmptyDOMElement()`: component này chỉ
+    // gồm một Arco `Modal` → portal ở `document.body`, nên `container` rỗng BẤT
+    // KỂ nó trả `null` hay trả một modal đầy chữ (đã chứng minh bằng đột biến).
+    expectRendersNothing()
   })
 
   it("giữ bảng đối chiếu Kế hoạch/Thực tế của Cấp 1", async () => {

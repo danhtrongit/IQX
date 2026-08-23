@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useState } from "react"
-import { Message, Modal } from "@arco-design/web-react"
-import { getErrorMessage } from "@/shared/http/client"
+import { useEffect, useState } from "react"
+import { Modal } from "@arco-design/web-react"
 import { cn } from "@/shared/lib/cn"
 import { useRecordKetso } from "@/features/cap1/hooks"
 import {
@@ -36,16 +35,8 @@ import {
   LOP_KEYS,
   NHAN_DINH_LABEL,
 } from "@/features/cap4/doc5Lop"
-import { useCap5Events } from "@/features/cap5/Cap5Context"
-import {
-  deriveO4,
-  splitEmphasis,
-  type CoachSituationCap5,
-} from "@/features/cap5/coachTemplateCap5"
-import { useRecordKetsoCap5, useVerdictGoiY } from "@/features/cap5/hooks"
+import { splitEmphasis, type CoachSituationCap5 } from "@/features/cap5/coachTemplateCap5"
 import type { KetsoDataCap5 } from "@/features/cap5/KetsoModalCap5"
-import { PhanLoai4O } from "@/features/cap5/PhanLoai4O"
-import { O4_LABEL, type O4, type Verdict } from "@/features/cap5/types"
 import {
   composeCoachCap6,
   COACH_CAP6_LABEL,
@@ -57,10 +48,9 @@ import { useCompleteCap6Task, useKehoachCap6 } from "./hooks"
 import { useCap6TradeLog, type Cap6TradeRecord } from "./tradeLogCap6"
 import { KIEU_ICON, type KehoachDetailCap6, type KieuCoPhieu, type Lop } from "./types"
 // Kết sổ Cấp 6 = Kết sổ Cấp 5's content (đối chiếu Cấp 1 + CAM KẾT vs THỰC TẾ Cấp
-// 2 + Quản lý vốn Cấp 3 + Đọc 5 lớp Cấp 4 + khối cảm xúc + PHÂN LOẠI 4 Ô Cấp 5 +
-// 5 lớp coach + HỒ SƠ + count-up) — CỘNG khối "Đối chiếu — nhìn lại" và lớp coach
-// "ĐỐI CHIẾU VS KẾT QUẢ". Dùng lại đúng bộ CSS shell Cấp 0-5 đã dựng, chỉ thêm
-// `cap6-ketso.css`.
+// 2 + Quản lý vốn Cấp 3 + Đọc 5 lớp Cấp 4 + khối cảm xúc + 4 lớp coach + HỒ SƠ +
+// count-up) — CỘNG khối "Đối chiếu — nhìn lại" và lớp coach "ĐỐI CHIẾU VS KẾT
+// QUẢ". Dùng lại đúng bộ CSS shell Cấp 0-4 đã dựng, chỉ thêm `cap6-ketso.css`.
 import "@/features/cap0/cap0.css"
 import "@/features/cap1/cap1.css"
 import "@/features/cap2/cap2-ketso.css"
@@ -80,21 +70,35 @@ import "./cap6-ketso.css"
  * lại" vào giữa thân modal, (3) ghi một bản ghi Cấp 5 cho lệnh Cấp 6 — sai cấp.
  *
  * PHẦN LOGIC THÌ TÁI SỬ DỤNG THẬT (không mirror):
- *  - Coach: `composeCoachCap6` → `composeCoachCap5` → Cấp 4 → 3 → 2 → 1. CẢ 6 đoạn
- *    text đều do module cấp dưới sinh ra, Cấp 6 chỉ thêm đoạn 6.
- *  - Khối phân loại: `PhanLoai4O` của Cấp 5 NGUYÊN VẸN (nó sở hữu verdict hệ +
- *    provenance + luật `isPhanLoaiSettled`); modal này chỉ sở hữu CỔNG +
- *    `POST /cap5/ketso`.
+ *  - Coach: `composeCoachCap6` → `composeCoachCap5` → Cấp 4 → 3 → 2 → 1. Cấp 6
+ *    chỉ thêm đoạn của chính nó.
  *  - Hai phía của mâu thuẫn: `lopUngHo`/`lopNguocChieu` của FE1 chấm trên CHÍNH
  *    `doc5Lop` của lệnh — cùng nguồn mà bước Đối chiếu đã đọc lúc đặt lệnh, nên
  *    Kết sổ không bao giờ hiện một mâu thuẫn khác với panel.
  *  - Helper thuần của Cấp 1/4 + `splitEmphasis` của Cấp 5.
  *
- * ★ **CỔNG CỦA CẤP 5 KHÔNG BỊ NỚI** (spec §6 "kế thừa nguyên vẹn"): `Đóng kết sổ ✓`
- * vẫn khoá tới khi `PhanLoai4O` báo đã chốt verdict, modal vẫn `closable={false}`,
- * và LỐI RA khi `GET /cap5/verdict` lỗi vẫn còn (không có nó, một lệnh verdict lỗi
- * sẽ khoá user trong màn không đóng được). Khối Đối chiếu của Cấp 6 KHÔNG thêm
- * cổng nào — nó chỉ nhìn lại một quyết định đã ghi lúc đặt lệnh.
+ * ★★ **CỔNG PHÂN LOẠI 4 Ô CỦA CẤP 5 ĐÃ NGHỈ HƯU CÙNG CẤP 5 CŨ.** Cấp 5 mới dạy
+ * SĂN MÃ, nên `PhanLoai4O` / `GET /cap5/verdict` / `POST /cap5/ketso` /
+ * `deriveO4` / `O4_LABEL` không còn tồn tại. Cùng với chúng, modal này gỡ: cổng
+ * "phải chốt verdict mới đóng được", ghi chú cổng, LỐI RA "chưa phân loại được"
+ * (nó chỉ tồn tại để cứu user khỏi cổng đó), lớp coach "QUYẾT ĐỊNH VS KẾT QUẢ",
+ * và 3 trường `o4`/`verdictHe`/`verdictUser` của bản ghi. `Đóng kết sổ ✓` giờ mở
+ * ngay — không còn thứ gì cần chốt trước.
+ *
+ * ★★ **ĐOẠN COACH SĂN MÃ CỦA CẤP 5 CÓ Ở ĐÂY** — và đây là bản SỬA một khẳng
+ * định SAI. Docstring cũ viết "trang Cấp 6 KHÔNG có màn Săn mã": không đúng.
+ * `Cap6TradingPage` bọc `Cap5Provider` (nguyên tắc cộng dồn) ⇒ `isCap5Active ===
+ * true` ⇒ `RightToolbar`/`RightSidebar` mọc đủ nút «Săn mã» + «Watchlist» ở Cấp
+ * 6/7/8, và backend VẪN đóng dấu `order_kehoach.hunt_filter` cho lệnh đó. Điền
+ * `huntFilter: null` cứng vì thế không phải "sự thật" mà là hai nguồn nói khác
+ * nhau về cùng một lệnh — và `coachTemplateCap5` đọc `null` thành câu khẳng định
+ * "Mã này KHÔNG đến từ săn mã".
+ *
+ * Nay `KetsoDataCap6` mang đủ 3 trường nguồn săn + cờ `huntNguonChuaBiet`, do
+ * `Cap6TradingPage` đọc từ `GET /cap5/nguon-san/{symbol}` (helper dùng chung
+ * `cap5/nguonSanKetso.ts`). Chỉ khi KHÔNG lấy được nguồn (`huntNguonChuaBiet`)
+ * thì `cap5Situation` mới là `null` ⇒ vắng đoạn coach — đúng ngoại lệ mà
+ * `KetsoModalCap5` đã ghi.
  *
  * ★ **LỆCH GỢI Ý KHÔNG BAO GIỜ LÀ "SAI"** (spec §5/§10). Khối dưới nói "khớp gợi
  * ý" hoặc "khác gợi ý" — không màu cảnh báo, không icon cảnh báo, không chữ "sai".
@@ -177,6 +181,13 @@ export function mergeDoiChieuCap6(
  * Cấp 6 thêm ĐÚNG một trường vào dữ liệu Kết sổ: khối Đối chiếu của lệnh.
  * `null` = lệnh không có mâu thuẫn (hoặc lệnh mở trước khi Cấp 6 ship, cả 6 cột
  * đều null) → khối Đối chiếu bị bỏ hẳn, im lặng.
+ *
+ * ★★ **MANG ĐỦ 3 trường săn mã của `KetsoDataCap5`** (cộng cờ
+ * `huntNguonChuaBiet`) — `Omit` cũ đã bị BỎ. Lý do của `Omit` ("trang Cấp 6
+ * không đi qua màn Săn mã") là một khẳng định SAI: nguyên tắc cộng dồn giữ
+ * `Cap5Provider` ở Cấp 6/7/8 nên nút «Săn mã»/«Watchlist» vẫn có, user vẫn săn,
+ * và `order_kehoach.hunt_filter` vẫn được đóng dấu. `Cap6TradingPage` đọc nguồn
+ * săn THẬT của lệnh (`GET /cap5/nguon-san/{symbol}`) và truyền vào đây.
  */
 export interface KetsoDataCap6 extends KetsoDataCap5 {
   doiChieu: DoiChieuKetsoCap6 | null
@@ -311,25 +322,14 @@ export function KetsoModalCap6({
   onClose,
   onRecorded,
 }: KetsoModalCap6Props) {
-  const cap5Events = useCap5Events()
   const { isCap6Active } = useCap6Events()
   const recordKetsoCap1 = useRecordKetso()
   const recordKetsoCap2 = useRecordKetsoCap2()
-  const recordKetsoCap5 = useRecordKetsoCap5()
   const completeCap6Task = useCompleteCap6Task()
   const { record: recordCap6Trade } = useCap6TradeLog()
   const [emotion, setEmotion] = useState<CamXuc | null>(null)
   const [displayPct, setDisplayPct] = useState(0)
-  // Trạng thái CHỐT của khối phân loại — nguồn duy nhất của cổng nút đóng.
-  const [verdictUser, setVerdictUser] = useState<Verdict | null>(null)
-  const [lyDoSua, setLyDoSua] = useState<string | null>(null)
   const [closing, setClosing] = useState(false)
-
-  // Cùng query key với `PhanLoai4O` (`cap5Keys.verdict(orderId)`) → không gọi thêm
-  // request nào; modal cần `signals` để lớp coach thứ 5 nêu vi phạm CÓ THẬT (§C12c)
-  // và `verdict` hệ để ghi `verdictHe` vào nhật ký.
-  const verdictQuery = useVerdictGoiY(data?.orderId ?? null)
-  const goiY = verdictQuery.data
 
   /**
    * `GET /cap6/kehoach/{order_id}` — khối Đối chiếu ĐÃ GHI của chính lệnh này.
@@ -354,8 +354,6 @@ export function KetsoModalCap6({
       return
     }
     setEmotion(null)
-    setVerdictUser(null)
-    setLyDoSua(null)
     setClosing(false)
     const start = Date.now()
     let timer: ReturnType<typeof setTimeout>
@@ -368,13 +366,6 @@ export function KetsoModalCap6({
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.n, data?.orderId])
-
-  // LƯU MỌI lần báo, kể cả `(null, null)` — đó là cách cổng đóng lại khi user bỏ
-  // chốt (xem doc của `PhanLoai4O`).
-  const handleSettled = useCallback((verdict: Verdict | null, reason: string | null) => {
-    setVerdictUser(verdict)
-    setLyDoSua(reason)
-  }, [])
 
   if (!data) return null
 
@@ -428,12 +419,6 @@ export function KetsoModalCap6({
     pctVon,
   }
   const cap4Situation: CoachSituationCap4 = { doc5Lop, ai5Lop, pnlPositive, pnlPct }
-  // Ô 4 = verdict CỦA USER (đã chốt) × kết quả — verdict hệ chỉ là gợi ý.
-  const o4 = verdictUser ? deriveO4(verdictUser, pnlPct) : null
-  const cap5Situation: CoachSituationCap5 | null =
-    verdictUser && o4
-      ? { o4, verdict: verdictUser, pnlPct, signals: goiY?.signals ?? [] }
-      : null
   // Lớp coach 6 chỉ tồn tại khi lệnh CÓ đối chiếu VÀ có gợi ý để so
   // (`khopGoiY != null`) — `pickCoachCap6` tự trả `null` cho trường hợp sau.
   const cap6Situation: CoachSituationCap6 | null = doiChieu
@@ -445,6 +430,18 @@ export function KetsoModalCap6({
         lopUuTien: doiChieu.lopUuTien,
       }
     : null
+  // Đoạn coach Cấp 5 (săn mã) có ở mọi lệnh mà ta BIẾT nguồn săn — kể cả mã
+  // không đến từ săn mã (mẫu `khong_san` nói thẳng điều đó, và lúc đó ta ĐÃ hỏi
+  // server). NGOẠI LỆ DUY NHẤT: `huntNguonChuaBiet` ⇒ `null` ⇒ vắng đoạn coach,
+  // vì in "Mã này KHÔNG đến từ săn mã" khi chưa biết nguồn là bịa đặt.
+  const cap5Situation: CoachSituationCap5 | null = data.huntNguonChuaBiet
+    ? null
+    : {
+        huntFilter: data.huntFilter,
+        huntSoPhienCho: data.huntSoPhienCho,
+        huntSoLopLucVao: data.huntSoLopLucVao,
+        pnlPct,
+      }
   const coach = composeCoachCap6(
     cap1Situation,
     cap1Params,
@@ -501,12 +498,16 @@ export function KetsoModalCap6({
    * 3 trường Cấp 6 đi thẳng từ khối Đối chiếu của lệnh; lệnh không có đối chiếu
    * ghi cả 3 là `null` — KHÔNG quy `khopGoiY` về `false` (đó sẽ là vu cho user
    * "lệch" một gợi ý chưa từng có).
+   *
+   * ★★ 3 trường săn mã của Cấp 5 đi từ NGUỒN SĂN THẬT của lệnh (`data.hunt*`,
+   * do `Cap6TradingPage` đọc từ `GET /cap5/nguon-san/{symbol}`) — KHÔNG còn
+   * `null` cứng. `null` cứng ở đây từng kèm docstring "trang Cấp 6 KHÔNG có màn
+   * Săn mã", mà điều đó SAI: `Cap6TradingPage` bọc `Cap5Provider` nên nút «Săn
+   * mã»/«Watchlist» vẫn mọc ở Cấp 6/7/8 và backend vẫn đóng dấu
+   * `order_kehoach.hunt_filter`. Ghi `null` là để bản ghi FE nói ngược lại
+   * server về cùng một lệnh.
    */
-  const buildRecord = (
-    o4Final: O4 | null,
-    verdictHeFinal: Verdict | null,
-    verdictUserFinal: Verdict | null,
-  ): Cap6TradeRecord => ({
+  const buildRecord = (): Cap6TradeRecord => ({
     orderId,
     lyDo,
     trangThaiLucDat,
@@ -528,36 +529,23 @@ export function KetsoModalCap6({
     // Chưa lộ AI → để NULL đúng như backend, KHÔNG quy về 0 (giữ nguyên Cấp 4/5).
     so_lop_dong_thuan: ai5Lop ? soDongThuan : null,
     so_lop_khac_ai: ai5Lop ? soKhacAi : null,
-    o4: o4Final,
-    verdictHe: verdictHeFinal,
-    verdictUser: verdictUserFinal,
+    huntFilter: data.huntFilter,
+    huntSoPhienCho: data.huntSoPhienCho,
+    huntSoLopLucVao: data.huntSoLopLucVao,
     kieuCoPhieu: doiChieu?.kieu ?? null,
     lopQuyetDinh: doiChieu?.lopQuyetDinh ?? null,
     khopGoiY: doiChieu?.khopGoiY ?? null,
   })
 
   /**
-   * ★ Lối ra BẮT BUỘC, kế thừa nguyên vẹn từ Cấp 5: modal `closable={false}` + cổng
-   * fail-closed, nên nếu `GET /cap5/verdict` lỗi thì KHÔNG có verdict để chốt → nút
-   * "Đóng kết sổ ✓" khoá vĩnh viễn → user kẹt. Khi (và chỉ khi) query verdict LỖI,
-   * hiện lối ra: ghi 7 cờ kỷ luật Cấp 2, ghi nhật ký với ô 4 = NULL (nhưng vẫn giữ
-   * khối Đối chiếu — nó độc lập với verdict), rồi đóng. Đang tải KHÔNG hiện lối ra.
+   * ★ KHÔNG còn "lối ra" nào ở đây — nó chỉ tồn tại để cứu user khỏi cổng verdict
+   * fail-closed của Cấp 5 cũ (modal `closable={false}` + `GET /cap5/verdict` lỗi =
+   * kẹt vĩnh viễn). Cổng đã nghỉ hưu ⇒ `Đóng kết sổ ✓` luôn mở ⇒ không còn cách
+   * nào kẹt, và một nút "đóng — chưa phân loại được" giờ chỉ nói về một bước
+   * user không hề đi qua.
    */
-  const escapeVisible = Boolean(verdictQuery.isError) && !verdictUser
-
-  const handleEscape = () => {
-    if (closing) return
-    setClosing(true)
-    recordKetsoCap2.mutate({ ...flags, order_id: orderId })
-    const record = buildRecord(null, null, null)
-    recordCap6Trade(record)
-    onRecorded?.(record)
-    onClose()
-  }
-
   const handleClose = async () => {
-    // Cổng: không có verdict đã chốt thì không đóng được (kể cả bấm bằng Enter).
-    if (!verdictUser || !o4 || closing) return
+    if (closing) return
     setClosing(true)
 
     // Cấp 1 (cảm xúc) — await TRƯỚC vì hàng `order_ketso` mà `/cap5/ketso` cần do
@@ -571,25 +559,6 @@ export function KetsoModalCap6({
     // Cấp 2 (7 cờ kỷ luật) — fire-and-forget đúng như Cấp 2-5 làm.
     recordKetsoCap2.mutate({ ...flags, order_id: orderId })
 
-    // Cấp 5 (phân loại 4 ô) — call DUY NHẤT được phép chặn việc đóng.
-    let ketso
-    try {
-      ketso = await recordKetsoCap5.mutateAsync({
-        order_id: orderId,
-        verdict_user: verdictUser,
-        ly_do_sua: lyDoSua,
-      })
-    } catch (err) {
-      Message.error(
-        await getErrorMessage(
-          err,
-          "Chưa ghi được phân loại 4 ô của lệnh này. Thử bấm đóng lại — phân loại bạn vừa chốt vẫn còn.",
-        ),
-      )
-      setClosing(false)
-      return
-    }
-
     // Cấp 6 KHÔNG có endpoint kết sổ riêng: cả 3 nhiệm vụ được suy ra server-side
     // từ `order_kehoach` JOIN `order_ketso`. `PATCH /cap6/task` là cách kích hoạt
     // lại phép tính đó NGAY (nhiệm vụ ② "Kết sổ đầu Cấp 6" vừa đủ điều kiện) và
@@ -597,18 +566,9 @@ export function KetsoModalCap6({
     // fire-and-forget: một lỗi ở đây tuyệt đối không được chặn việc đóng modal.
     completeCap6Task.mutate(2)
 
-    // Ưu tiên giá trị SERVER vừa trả (nó tự re-derive, là bản authoritative);
-    // fallback về giá trị suy ra tại đây để nhật ký không bao giờ trống ô.
-    const record = buildRecord(
-      ketso?.o_4 ?? o4,
-      ketso?.verdict_he ?? goiY?.verdict ?? null,
-      ketso?.verdict_user ?? verdictUser,
-    )
+    const record = buildRecord()
     recordCap6Trade(record)
     onRecorded?.(record)
-    // Analytics `cap5_phan_loai` (Cấp 5 §8) — giữ nguyên: `daSua` là một sự thật
-    // TRUNG TÍNH (user đảo verdict hệ), không phải điểm trừ.
-    cap5Events.onVerdictSettled?.(verdictUser, lyDoSua != null)
     onClose()
   }
 
@@ -818,15 +778,10 @@ export function KetsoModalCap6({
         </div>
       )}
 
-      {/* ── PHÂN LOẠI 4 Ô (giữ nguyên Cấp 5, spec §4 của cấp đó) — DƯỚI mọi khối
-          kế thừa, TRÊN chồng coach; `key` để mỗi lệnh mới bắt đầu lại từ "chưa
-          chốt" thay vì kế thừa lựa chọn của lệnh trước. */}
-      <PhanLoai4O key={orderId} orderId={orderId} onSettled={handleSettled} />
-
       {/* ── ĐỐI CHIẾU — NHÌN LẠI (Cấp 6 THÊM MỚI, spec §6) ─────────────────────
-          Đặt ngay dưới khối mới của Cấp 5 (tức dưới mọi khối kế thừa, trên chồng
-          coach) — đúng quy tắc vị trí Cấp 5 đã ghi cho khối mới của nó, và vẫn
-          đứng TRƯỚC đoạn coach Cấp 6 như spec §6 mô tả.
+          Đặt dưới mọi khối kế thừa, trên chồng coach — đúng quy tắc vị trí Cấp 5
+          đã ghi cho khối mới của nó, và vẫn đứng TRƯỚC đoạn coach Cấp 6 như spec
+          §6 mô tả.
 
           ★ Chỉ render khi lệnh THỰC SỰ có dữ liệu Cấp 6. Lệnh không mâu thuẫn (hoặc
           mở trước khi Cấp 6 ship) có cả 6 cột null → bỏ khối, im lặng, KHÔNG dựng
@@ -946,16 +901,17 @@ export function KetsoModalCap6({
         <p className="cap4-ketso-coach-body">{coach.cap4.text}</p>
       </div>
 
-      {/* Lớp coach 5 — Cấp 5 (quyết định vs kết quả), giữ nguyên: chỉ hiện KHI đã
-          chốt verdict. Ô Sai-Thắng mang style cảnh báo của Cấp 5. */}
+      {/* Lớp coach 5 — Cấp 5 (SĂN MÃ). ★ Trước bản vá này khối này KHÔNG tồn tại
+          ở Cấp 6/7/8 vì `cap5Situation` bị truyền `null` cứng với lý do "cấp này
+          không có màn Săn mã" — một khẳng định SAI (nguyên tắc cộng dồn giữ
+          `Cap5Provider`, nút «Săn mã» vẫn có). Mẫu "vào lệnh khi mã chưa chín"
+          mang style cảnh báo: nó KHÔNG phải lời khen. */}
       {coach.cap5 && (
         <div
           className={cn("cap5-ketso-coach", coach.cap5.canhBao && "cap5-coach--canhbao")}
           data-testid="cap5-ketso-coach"
         >
-          <div className="cap5-ketso-coach-tag">
-            {`QUYẾT ĐỊNH VS KẾT QUẢ · ${O4_LABEL[coach.cap5.id]}`}
-          </div>
+          <div className="cap5-ketso-coach-tag">NHÌN LẠI · SĂN MÃ</div>
           <p className="cap5-ketso-coach-body">
             {splitEmphasis(coach.cap5.text, coach.cap5.nhanManh).map((part, i) =>
               part.strong ? <strong key={i}>{part.text}</strong> : <span key={i}>{part.text}</span>,
@@ -990,43 +946,17 @@ export function KetsoModalCap6({
         </ul>
       </div>
 
-      {/* CỔNG (kế thừa Cấp 5 §4): khoá tới khi verdict được chốt. Nhắc lý do ngay
-          tại nút để user không phải đoán vì sao nó mờ. */}
+      {/* KHÔNG CÒN CỔNG: cổng duy nhất của màn này là phân loại 4 ô của Cấp 5, và
+          nó đã nghỉ hưu. `disabled` chỉ còn chống double-submit. */}
       <button
         type="button"
         className="cap0-debrief-close"
-        disabled={!verdictUser || closing}
+        disabled={closing}
         onClick={handleClose}
         data-testid="cap6-ketso-close"
       >
         Đóng kết sổ ✓
       </button>
-      {!verdictUser && !escapeVisible && (
-        <p className="cap5-ketso-gate-note" data-testid="cap6-ketso-gate-note">
-          Chốt phân loại 4 ô ở trên mới đóng được kết sổ — đó là bước biến lệnh này
-          thành dữ liệu «tỷ lệ quyết định đúng» của bạn.
-        </p>
-      )}
-
-      {/* Lối ra khi hệ KHÔNG lấy được verdict — xem `handleEscape`. */}
-      {escapeVisible && (
-        <>
-          <button
-            type="button"
-            className="cap5-ketso-escape"
-            onClick={handleEscape}
-            disabled={closing}
-            data-testid="cap6-ketso-escape"
-          >
-            Đóng kết sổ — chưa phân loại được
-          </button>
-          <p className="cap5-ketso-escape-note" data-testid="cap6-ketso-escape-note">
-            Hệ chưa lấy được verdict của lệnh này nên lệnh sẽ vào nhật ký mà{" "}
-            <strong>chưa được phân loại 4 ô</strong> — nó không tính vào «tỷ lệ quyết định đúng».
-            Khối Đối chiếu ở trên vẫn được ghi. Bạn không bị kẹt ở đây: đóng lại và thử ở lệnh sau.
-          </p>
-        </>
-      )}
     </Modal>
   )
 }

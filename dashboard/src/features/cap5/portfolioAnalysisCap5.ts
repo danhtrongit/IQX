@@ -1,8 +1,4 @@
-import {
-  VI_PHAM_LOAI_LABELS,
-  type Cap2DailyScoreRecord,
-  type ViPhamLoai,
-} from "@/features/cap2/portfolioAnalysisCap2"
+import type { Cap2DailyScoreRecord } from "@/features/cap2/portfolioAnalysisCap2"
 import type { Cap2Progress } from "@/features/cap2/types"
 import type { Cap3Progress } from "@/features/cap3/types"
 import {
@@ -11,280 +7,441 @@ import {
 } from "@/features/cap4/portfolioAnalysisCap4"
 import type { Cap4Progress } from "@/features/cap4/types"
 import type { Cap5TradeRecord } from "./tradeLogCap5"
-import { O4_LABEL, TARGET_TY_LE_QUYET_DINH_DUNG, type Cap5Progress, type O4 } from "./types"
+import {
+  HUNT_FILTER_LABEL,
+  HUNT_FILTER_ORDER,
+  HUNT_FILTER_TEN,
+  mucTieuSoMaMua,
+  mucTieuSoMaSan,
+  type Cap5PhanTich,
+  type Cap5Progress,
+  type HuntFilter,
+  type Khoi12,
+} from "./types"
 
 /**
- * Cấp 5 Phân tích danh mục (spec `IQX-Cap5-Spec.md` §6) — pure compute.
+ * Cấp 5 Phân tích danh mục (spec `IQX-Cap5-Spec.md` §9) — pure compute.
  *
  * **Delegation, not duplication:** MỌI khối Cấp 1-4 (① hồ sơ, ② bảng 5 lý do, ③
  * vi phạm 30 ngày, ④ cửa sổ 20 lệnh, ⑤ điểm kỷ luật, ⑥ vi phạm theo tuần, ⑦ phát
- * hiện từ ghi chú, ⑦ tự tin, ⑧ khối lượng, ⑩ đồng thuận vs thắng, ⑪ góc nhìn
- * riêng) đều do `computeCap4PortfolioAnalysis` tính (chính nó delegate xuống Cấp
- * 3 → Cấp 2 → Cấp 1). `Cap5TradeRecord extends Cap4TradeRecord` nên mảng lệnh
- * được truyền THẲNG xuống, không map/copy.
+ * hiện từ ghi chú, ⑦ tự tin, ⑧ khối lượng, ⑨ vũ khí/điểm mù, ⑩ đồng thuận vs
+ * thắng, ⑪ góc nhìn riêng) đều do `computeCap4PortfolioAnalysis` tính (chính nó
+ * delegate xuống Cấp 3 → Cấp 2 → Cấp 1). `Cap5TradeRecord extends
+ * Cap4TradeRecord` nên mảng lệnh được truyền THẲNG xuống, không map/copy.
  *
- * Cấp 5 chỉ THÊM 1 khối ở tầng compute:
- *   - **⑫ Ma trận quyết định** — 4 ô (verdict × kết quả) + số lượng + % trên số
- *     lệnh ĐÃ phân loại + `tyLeQuyetDinhDung` + 1 dòng phát hiện theo đúng thứ
- *     tự ưu tiên của spec §6.
+ * ★★ **KHỐI ⑫ CŨ (ma trận 4 ô) ĐÃ NGHỈ HƯU** cùng toàn bộ Cấp 5 cũ, và khối ⑬
+ * cũ ("nhật ký đứng ngoài") cũng vậy. Cấp 5 mới thêm ĐÚNG 2 khối, cả hai đo
+ * bằng KẾT QUẢ THẬT (spec §9):
+ *   - **⑫ Bộ lọc nào mang lại mã thắng nhiều nhất** — tỷ lệ thắng của các lệnh
+ *     đã đóng theo từng `hunt_filter`, cần ≥`KHOI12_MIN_LENH` lệnh/bộ lọc.
+ *   - **⑬ Kỷ luật săn mã (phễu 3 tầng)** — săn → chờ đủ lớp → vào lệnh.
  *
- * ★ **KHỐI ⑬ KHÔNG Ở ĐÂY — CỐ TÌNH.** "Nhật ký đứng ngoài" có endpoint riêng
- * `GET /cap5/dung-ngoai` (hook `useDanhSachDungNgoai`) trả về CẢ số liệu (né
- * đúng/né hụt/trung tính/chưa tới hạn), lý do hay dùng, ngưỡng chấm, `giai_thich`
- * và cờ `du_de_phan_tich` — authoritative, có backfill (job chấm chạy cuối phiên
- * cho mọi nước đứng ngoài đủ 5 phiên, kể cả nước ghi trước khi FE ship) và đúng
- * bằng con số nuôi nhiệm vụ ③. Tính lại ở client sẽ sinh MỘT con số thứ hai,
- * lệch, và có thể mâu thuẫn với widget Thách thức — nên `Cap5PortfolioAnalysis`
- * render THẲNG dữ liệu hook đó (cùng tiền lệ khối ⑨ của Cấp 4).
+ * **Honesty over fake data (luật 1 của repo):**
+ *  · ⑫ đọc **`GET /cap5/phan-tich`** — SERVER là nguồn duy nhất. Lệnh KHÔNG đến
+ *    từ săn mã được server đếm RIÊNG (`so_lenh_khong_tu_san`) chứ không gán vào
+ *    bộ lọc nào; bộ lọc dưới ngưỡng mẫu giữ nguyên số ĐẾM nhưng `ty_le_thang`
+ *    là `null` — 1 lệnh thắng KHÔNG được in thành "100%".
+ *  · ⑬ đọc 3 con số của `GET /cap5/progress` (authoritative, có backfill, và
+ *    đúng bằng con số nuôi 2 nhiệm vụ). Tầng giữa `so_ma_cho_du_lop` là
+ *    NULLABLE: chưa chạy mẻ chấm 5 lớp ⇒ "chưa đo được", không vẽ 0.
  *
- * **Honesty over fake data:** ⑫ CHƯA có endpoint nào, nên nguồn duy nhất là nhật
- * ký client `tradeLogCap5.ts` (xem gap ghi ở đó). Lệnh chưa phân loại
- * (`o4 == null`) được ĐẾM RIÊNG (`soChuaPhanLoai`) chứ không gộp vào ô nào — gộp
- * sẽ vu cho user một verdict họ chưa từng chốt. Khi chưa có lệnh nào được phân
- * loại thì mọi % là `null` (hiển thị "—", KHÔNG in 0% như thể đã đo) và phát hiện
- * bị chặn bằng `insufficientNote`.
+ * ★★ **⑫ KHÔNG CÒN TÍNH TỪ NHẬT KÝ CLIENT** (`tradeLogCap5.ts`). Nhật ký đó là
+ * **per-browser**: user đóng 6 lệnh từ «Khối lượng đột biến» trên laptop rồi mở
+ * điện thoại sẽ thấy khối ① nói *"Bộ lọc mạnh nhất của bạn: «Khối lượng đột
+ * biến»"* (server) và khối ⑫ cách đó ba dòng nói *"Chưa có lệnh nào đóng từ mã
+ * bạn săn được"* (localStorage rỗng) — HAI CÂU MÂU THUẪN TRÊN CÙNG MỘT MÀN. Đây
+ * đúng lớp lỗi Cấp 4 đã ghi cho khối ⑨ ("tính lại từ nhật ký localStorage sẽ
+ * sinh ra một con số thứ hai, thấp hơn, mâu thuẫn với màn Hành trình"), nên ⑫ đi
+ * theo cùng cách: đọc server, và khi query lỗi/đang tải thì NÓI THẲNG là chưa
+ * lấy được số — fail-closed, KHÔNG đắp tạm bằng phép tính client.
+ *
+ * Vì thế `computeCap5Khoi12BoLoc(trades)` đã bị **GỠ HẲN** (không để lại dạng
+ * optional/deprecated): còn một hàm tính ⑫ từ localStorage là còn đường để lỗi
+ * đó quay lại — cùng lý do `cap2/types.ts` đã ghi khi gỡ trường chết.
  */
 
 /**
- * Ngưỡng ô Sai-Thắng để bật cảnh báo "may mắn củng cố thói quen xấu" — spec §6
- * viết thẳng "≥3 lệnh".
- */
-export const KHOI12_SAI_THANG_CANH_BAO = 3
-
-/**
- * Ngưỡng ô Đúng-Thua để coi là "cao" (nhánh phát hiện thứ 2).
- *
- * Spec §6 viết *"nếu ô Đúng-Thua cao **mà user hay đổi cách**"* — nửa sau KHÔNG
- * đo được từ bất cứ trường nào đang ghi (không có gì theo dõi việc user đổi cách
- * làm). Nên nhánh này dùng một proxy ĐO ĐƯỢC và nói rõ ở đây: đủ `3` lệnh
- * Đúng-Thua VÀ số lệnh Đúng-Thua ≥ số lệnh Đúng-Thắng — tức là khi làm đúng quy
- * trình mà thua nhiều hơn thắng, đúng lúc user dễ bỏ cách làm đúng nhất. KHÔNG
- * suy diễn thêm về hành vi mà dữ liệu không chứa.
- */
-export const KHOI12_DUNG_THUA_CAO = 3
-
-/**
- * Số lệnh đã phân loại tối thiểu trước khi dám nói bất cứ điều gì về tỷ lệ quyết
- * định đúng. Cùng ngưỡng 3 mà Cấp 2/3/4 đặt cho các khối của chúng — một chuẩn
- * duy nhất cho toàn bộ chương trình. Dưới ngưỡng, số ĐẾM vẫn hiện (nó thật) còn
- * phát hiện thì không.
+ * Số lệnh tối thiểu của MỘT bộ lọc trước khi dám in tỷ lệ thắng của nó.
+ * Spec §9 khối ⑫ viết thẳng: *"Cần ≥3 lệnh/bộ lọc mới hiện."*
  */
 export const KHOI12_MIN_LENH = 3
 
-/** 4 ô theo thứ tự bảng của spec §6 (hàng ĐÚNG trước, cột THẮNG trước). */
-export const O4_ORDER: readonly O4[] = ["dung_thang", "dung_thua", "sai_thang", "sai_thua"] as const
+/** Ngưỡng "hợp với bạn nhất" — spec §9 gắn nhãn này cho bộ lọc cao nhất. */
+export const KHOI12_TOT_PCT = 60
 
-/** Thứ tự ưu tiên khi 2 loại vi phạm bằng số lần (mirror `cap2/portfolioAnalysisCap2.ts`). */
-const VI_PHAM_ORDER: readonly ViPhamLoai[] = [
-  "cat_lo_cham",
-  "chot_loi_hut",
-  "ban_som_khi_lo",
-  "nhoi_lenh",
-] as const
+/** Ngưỡng cảnh báo cho bộ lọc thấp nhất (mockup vẽ 38% ở nhóm đỏ). */
+export const KHOI12_KEM_PCT = 45
 
-/**
- * §C12c — nói rõ 2 con số của khối này đến từ đâu và khác nhau ở chỗ nào.
- *
- * ★ "Quyết định đúng/sai" là verdict CUỐI do user chốt ở bước phân loại trong Kết
- * sổ (`verdictUser`), không phải verdict hệ gợi ý — nếu user đảo verdict thì ô 4
- * đi theo verdict của user. Lệnh đóng ngang giá (0%) tính là THUA, y như
- * `services/cap5/service.py#_derive_o_4`: không có ô "hoà".
- */
+/** §C12c — nói rõ con số của khối ⑫ đến từ đâu, đo cái gì và KHÔNG đo cái gì. */
 const KHOI12_GIAI_THICH =
-  "4 ô = QUYẾT ĐỊNH (đúng/sai quy trình, verdict bạn chốt ở bước phân loại trong Kết sổ) × KẾT QUẢ " +
-  "(lãi/lỗ thật của lệnh). Lệnh đóng ngang giá 0% tính là THUA — không có ô hoà. % của mỗi ô tính " +
-  "trên số lệnh ĐÃ phân loại, không phải trên toàn bộ lệnh đã đóng. Tỷ lệ quyết định đúng đo QUY " +
-  `TRÌNH (mốc nhiệm vụ ③ là ${TARGET_TY_LE_QUYET_DINH_DUNG}%); tỷ lệ thắng đo KẾT QUẢ — hai con số ` +
-  "khác nhau và có thể lệch xa nhau."
+  "Chỉ tính các lệnh ĐÃ ĐÓNG có nguồn săn — tức mã bạn tìm ra bằng một bộ lọc rồi mới vào lệnh. " +
+  "Lệnh bạn tự gõ mã không thuộc bộ lọc nào và được đếm riêng. Thắng = lệnh đóng có lãi; đóng " +
+  `ngang giá 0% KHÔNG tính là thắng. Mỗi bộ lọc cần ít nhất ${KHOI12_MIN_LENH} lệnh đã đóng mới ` +
+  "hiện tỷ lệ — dưới mức đó con số chỉ là may rủi, nên chỗ tỷ lệ để trống chứ không suy ra từ " +
+  "một hai lệnh."
+
+/** §C12c — phễu ⑬ đo cái gì, và vì sao tầng giữa có thể "chưa đo được". */
+const KHOI13_GIAI_THICH =
+  "Phễu đọc thẳng số liệu máy chủ: số mã bạn đã đưa vào Watchlist bằng bộ lọc, số mã trong đó " +
+  "ĐANG ở mức ≥4/5 lớp ủng hộ theo hai lần chấm gần nhất, và số mã bạn thực sự vào lệnh. " +
+  "Hệ KHÔNG lưu lược sử điểm đồng thuận, nên nó không biết một mã có TỪNG chín trước đó hay " +
+  "không — kể cả mã bạn đã xoá khỏi Watchlist sau khi mua. Vì vậy tầng giữa thường là CẬN DƯỚI " +
+  "(ghi «≥ N»), và khi chưa mã săn nào được chấm thì nó ghi «—» chứ không phải 0."
 
 function round(n: number): number {
   return Math.round(n)
 }
 
-function viPhamLoaiOf(t: Cap5TradeRecord): ViPhamLoai[] {
-  const out: ViPhamLoai[] = []
-  if (t.chamSlKhongCat) out.push("cat_lo_cham")
-  if (t.chamTpGiuLamHut) out.push("chot_loi_hut")
-  if (t.banSomKhiLoNhe) out.push("ban_som_khi_lo")
-  if (t.nhoiLenhKhiLo) out.push("nhoi_lenh")
-  return out
+// ── Khối ⑫ — bộ lọc nào ra mã thắng nhiều nhất ───────────────────────────────
+
+export interface Khoi12FilterRow {
+  filter: HuntFilter
+  /** "💰 Khối ngoại gom" — nhãn dùng chung với màn Săn mã. */
+  label: string
+  /** Tên trần (không icon) để nhét vào câu văn phát hiện. */
+  ten: string
+  soLenh: number
+  soThang: number
+  /** % thắng. `null` khi `soLenh < KHOI12_MIN_LENH` — KHÔNG suy tỷ lệ từ 1-2 lệnh. */
+  tyLeThang: number | null
+  /** Đã đủ mẫu để in tỷ lệ chưa. */
+  duMau: boolean
+  /** Còn thiếu bao nhiêu lệnh nữa mới đủ mẫu. `0` khi đã đủ. */
+  conThieu: number
+  /** Nhãn ngắn do SERVER gắn cho dòng này (VD "hợp với bạn nhất"). `null` = không có. */
+  nhan: string | null
+  /** Câu cảnh báo riêng do SERVER viết cho bộ lọc này. `null` ⇒ dùng bản lùi FE. */
+  canhBaoRieng: string | null
+}
+
+export interface Cap5Khoi12BoLoc {
+  /**
+   * Máy chủ chưa trả được khối này (đang tải / lỗi).
+   *
+   * ★ FAIL-CLOSED: khi `true`, MỌI số ở trên là rỗng và UI phải nói thẳng "chưa
+   * lấy được", KHÔNG được đắp tạm bằng phép tính từ nhật ký client — đó chính là
+   * cái đã làm khối ① và khối ⑫ nói hai chuyện khác nhau trên cùng một màn.
+   */
+  chuaLayDuoc: boolean
+  /** `true` khi query còn đang bay (khác với lỗi — câu chữ khác nhau). */
+  dangTai: boolean
+  /** Mọi bộ lọc user ĐÃ từng săn ra một lệnh đã đóng. Bộ lọc chưa dùng KHÔNG có dòng. */
+  rows: Khoi12FilterRow[]
+  /** Số lệnh đã đóng có nguồn săn. */
+  soLenhSan: number
+  /** Số lệnh đã đóng KHÔNG đến từ săn mã (user tự gõ mã). Hiện ra để không ai thắc mắc tổng. */
+  soLenhKhongSan: number
+  /** Ngưỡng mẫu do SERVER chốt (`so_lenh_toi_thieu`) — hằng số FE chỉ là bản lùi. */
+  minLenh: number
+  /** Bộ lọc tốt nhất trong nhóm ĐỦ MẪU. `null` khi chưa bộ lọc nào đủ mẫu. */
+  best: Khoi12FilterRow | null
+  /** Bộ lọc kém nhất trong nhóm ĐỦ MẪU — chỉ khác `best` khi có ≥2 bộ lọc đủ mẫu. */
+  worst: Khoi12FilterRow | null
+  /** Chưa bộ lọc nào đủ mẫu ⇒ không kết luận gì. */
+  insufficient: boolean
+  /** 1 dòng phát hiện (spec §9). `null` khi chưa đủ mẫu. */
+  phatHien: string | null
+  /** Phát hiện mang tính CẢNH BÁO (bộ lọc kém nhất dưới ngưỡng). */
+  canhBao: boolean
+  /** Trạng thái rỗng TRUNG THỰC kèm số còn thiếu. `null` khi đã đủ mẫu. */
+  insufficientNote: string | null
+  giaiThich: string
+}
+
+/** Câu cảnh báo riêng cho từng bộ lọc yếu — bản lùi khi server không gửi `canh_bao`. */
+const KHOI12_CANH_BAO: Record<HuntFilter, string> = {
+  ngoai: "khối ngoại có thể mua ròng vì cơ cấu quỹ chứ không vì mã tốt",
+  tudoanh: "tự doanh gom có thể là nghiệp vụ phòng hộ, không phải đánh giá cơ bản",
+  kl: "khối lượng đột biến dễ là sóng ngắn, cần cẩn thận hơn",
+  dinh: "vượt đỉnh dễ gặp phiên phân phối ngay sau đó",
+  tang: "tăng mạnh trong phiên dễ mua đúng đỉnh ngắn hạn",
+}
+
+/** Trạng thái query `GET /cap5/phan-tich` mà khối ⑫ phải phân biệt. */
+export type Khoi12TrangThai = "dang_tai" | "loi" | "co_du_lieu"
+
+/** Khung rỗng dùng cho cả hai nhánh fail-closed (đang tải / lỗi). */
+function khoi12Rong(dangTai: boolean, note: string): Cap5Khoi12BoLoc {
+  return {
+    chuaLayDuoc: true,
+    dangTai,
+    rows: [],
+    soLenhSan: 0,
+    soLenhKhongSan: 0,
+    minLenh: KHOI12_MIN_LENH,
+    best: null,
+    worst: null,
+    insufficient: true,
+    phatHien: null,
+    canhBao: false,
+    insufficientNote: note,
+    giaiThich: KHOI12_GIAI_THICH,
+  }
 }
 
 /**
- * Vi phạm hay gặp nhất trong TẬP LỆNH truyền vào (dùng cho ô Sai-Thắng).
- * `null` khi không lệnh nào trong tập có cờ vi phạm — spec muốn "soi lại {vi phạm
- * phổ biến}" nhưng KHÔNG được bịa một vi phạm chưa từng được ghi (§C12c).
+ * Khối ⑫ (spec §9) — dựng VIEW MODEL từ `GET /cap5/phan-tich` `khoi_12`.
+ *
+ * Hàm THUẦN: server đưa số, hàm này chỉ sắp thứ tự + viết câu. Không một con số
+ * nào được tính ở đây (`ty_le_thang`, `du_mau`, `so_lenh_khong_tu_san`,
+ * `so_lenh_toi_thieu` đều của server).
+ *
+ * Thứ tự: nhóm ĐỦ MẪU trước (theo `ty_le_thang` giảm dần, hoà thì theo số lệnh
+ * nhiều hơn, hoà nữa thì theo thứ tự bảng spec §5.3), rồi tới nhóm chưa đủ mẫu
+ * (theo số lệnh giảm dần). Nhóm chưa đủ mẫu vẫn hiện — user cần thấy mình còn
+ * thiếu bao nhiêu lệnh, đó là thông tin thật.
  */
-export function viPhamPhoBienCap5(trades: Cap5TradeRecord[]): string | null {
-  const counts = new Map<ViPhamLoai, number>()
-  for (const t of trades) {
-    for (const loai of viPhamLoaiOf(t)) counts.set(loai, (counts.get(loai) ?? 0) + 1)
+export function viewCap5Khoi12BoLoc(
+  khoi12: Khoi12 | null | undefined,
+  trangThai: Khoi12TrangThai,
+): Cap5Khoi12BoLoc {
+  if (trangThai === "dang_tai") {
+    return khoi12Rong(true, "Đang lấy số liệu bộ lọc từ máy chủ…")
   }
-  let best: ViPhamLoai | null = null
-  let bestCount = 0
-  for (const loai of VI_PHAM_ORDER) {
-    const c = counts.get(loai) ?? 0
-    if (c > bestCount) {
-      best = loai
-      bestCount = c
+  if (trangThai === "loi" || khoi12 == null) {
+    return khoi12Rong(
+      false,
+      "Chưa lấy được số liệu bộ lọc từ máy chủ. Khối này chỉ hiện số THẬT do máy chủ tính — " +
+        "không suy ra từ nhật ký trên máy này, vì nhật ký đó chỉ có các lệnh bạn đóng trên đúng " +
+        "thiết bị này.",
+    )
+  }
+
+  const minLenh = khoi12.so_lenh_toi_thieu > 0 ? khoi12.so_lenh_toi_thieu : KHOI12_MIN_LENH
+  const rows: Khoi12FilterRow[] = khoi12.items.map((it) => ({
+    filter: it.ma,
+    label: HUNT_FILTER_LABEL[it.ma] ?? it.ten,
+    ten: it.ten || HUNT_FILTER_TEN[it.ma],
+    soLenh: it.so_lenh,
+    soThang: it.so_lenh_thang,
+    // ★ `du_mau === false` ⇒ tỷ lệ về `null` kể cả khi server vẫn gửi một số:
+    // hai trường phải không bao giờ nói ngược nhau trên màn.
+    tyLeThang: it.du_mau && it.ty_le_thang != null ? round(it.ty_le_thang) : null,
+    duMau: it.du_mau,
+    conThieu: it.du_mau ? 0 : Math.max(0, minLenh - it.so_lenh),
+    nhan: it.nhan ?? null,
+    canhBaoRieng: it.canh_bao ?? null,
+  }))
+
+  const rank = (r: Khoi12FilterRow) => HUNT_FILTER_ORDER.indexOf(r.filter)
+  rows.sort((a, b) => {
+    if (a.duMau !== b.duMau) return a.duMau ? -1 : 1
+    if (a.duMau && b.duMau) {
+      const d = (b.tyLeThang ?? 0) - (a.tyLeThang ?? 0)
+      if (d !== 0) return d
+    }
+    if (b.soLenh !== a.soLenh) return b.soLenh - a.soLenh
+    return rank(a) - rank(b)
+  })
+
+  const soLenhSan = rows.reduce((n, r) => n + r.soLenh, 0)
+  const duMauRows = rows.filter((r) => r.duMau)
+  const base = {
+    chuaLayDuoc: false,
+    dangTai: false,
+    rows,
+    soLenhSan,
+    soLenhKhongSan: khoi12.so_lenh_khong_tu_san,
+    minLenh,
+    giaiThich: khoi12.giai_thich || KHOI12_GIAI_THICH,
+  }
+
+  if (duMauRows.length === 0 || !khoi12.du_de_ket_luan) {
+    const conThieuIt = rows.length > 0 ? Math.min(...rows.map((r) => r.conThieu)) : minLenh
+    const note =
+      soLenhSan === 0
+        ? "Chưa có lệnh nào đóng từ mã bạn săn được. Khối này hiện sau khi bạn săn mã bằng bộ lọc, " +
+          "vào lệnh, rồi đóng lệnh đó."
+        : `Mới có ${soLenhSan.toLocaleString("en-US")} lệnh đã đóng từ săn mã, chưa bộ lọc nào đủ ` +
+          `${minLenh} lệnh để nói được gì. Bộ lọc gần nhất còn thiếu ` +
+          `${conThieuIt.toLocaleString("en-US")} lệnh.`
+    return {
+      ...base,
+      best: null,
+      worst: null,
+      insufficient: true,
+      phatHien: null,
+      canhBao: false,
+      insufficientNote: note,
     }
   }
-  return best ? VI_PHAM_LOAI_LABELS[best].toLowerCase() : null
+
+  const best = duMauRows[0]
+  const worst = duMauRows.length > 1 ? duMauRows[duMauRows.length - 1] : null
+  const bestPct = best.tyLeThang ?? 0
+  const worstPct = worst?.tyLeThang ?? null
+
+  let phatHien: string
+  let canhBao = false
+  if (worst && worstPct != null && worstPct < KHOI12_KEM_PCT) {
+    canhBao = true
+    phatHien =
+      `«${best.ten}» đang là bộ lọc hợp với bạn nhất — mã săn từ đây thắng ${bestPct}% ` +
+      `(${best.soThang}/${best.soLenh} lệnh). Ngược lại «${worst.ten}» chỉ ${worstPct}% ` +
+      `(${worst.soThang}/${worst.soLenh} lệnh): ` +
+      `${worst.canhBaoRieng ?? KHOI12_CANH_BAO[worst.filter]}.`
+  } else if (bestPct >= KHOI12_TOT_PCT) {
+    phatHien =
+      `«${best.ten}» đang là bộ lọc hợp với bạn nhất — mã săn từ đây thắng ${bestPct}% ` +
+      `(${best.soThang}/${best.soLenh} lệnh). Đây là kết quả thật của riêng bạn, không phải đánh ` +
+      "giá chung về bộ lọc."
+  } else {
+    phatHien =
+      `Bộ lọc đứng đầu của bạn là «${best.ten}» với ${bestPct}% ` +
+      `(${best.soThang}/${best.soLenh} lệnh) — chưa bộ lọc nào thắng quá ${KHOI12_TOT_PCT}%. ` +
+      "Bộ lọc chỉ ra mã đáng xem; phần còn lại vẫn là bạn chọn thời điểm vào."
+  }
+
+  return {
+    ...base,
+    best,
+    worst,
+    insufficient: false,
+    phatHien,
+    canhBao,
+    insufficientNote: null,
+  }
 }
 
-// ── Khối ⑫ — ma trận quyết định (4 ô) ────────────────────────────────────────
+// ── Khối ⑬ — kỷ luật săn mã (phễu 3 tầng) ────────────────────────────────────
 
-export interface Khoi12Cell {
-  o4: O4
-  /** "Đúng · Thắng" — nhãn dùng chung với Kết sổ (`O4_LABEL`). */
+export interface Khoi13Tang {
+  ic: string
   label: string
-  count: number
-  /** % trên số lệnh ĐÃ phân loại. `null` khi chưa có lệnh nào (KHÔNG in 0%). */
-  pct: number | null
+  /** `null` = CHƯA ĐO ĐƯỢC (hiện "—"), tuyệt đối không phải 0. */
+  value: number | null
 }
 
-export interface Cap5Khoi12MaTran {
-  /** 4 ô theo `O4_ORDER` — luôn đủ 4 phần tử, kể cả ô 0 lệnh. */
-  cells: Khoi12Cell[]
-  /** Số lệnh đã đóng CÓ phân loại 4 ô (mẫu số của mọi %). */
-  soDaPhanLoai: number
-  /** Lệnh đã đóng nhưng chưa phân loại — hiện ra để không ai thắc mắc số lệnh. */
-  soChuaPhanLoai: number
-  soQuyetDinhDung: number
-  soQuyetDinhSai: number
-  /** % lệnh có verdict "đúng". `null` khi chưa phân loại lệnh nào. */
-  tyLeQuyetDinhDung: number | null
-  /** % lệnh có verdict "sai". `null` khi chưa phân loại lệnh nào. */
-  tyLeQuyetDinhSai: number | null
-  /** Số lệnh LÃI trong tập đã phân loại (để so với tỷ lệ quyết định đúng). */
-  soThang: number
-  /** Tỷ lệ thắng của tập đã phân loại. `null` khi chưa phân loại lệnh nào. */
-  tyLeThang: number | null
-  /** Con số THẬT nhưng chưa đủ lệnh để kết luận (`soDaPhanLoai < KHOI12_MIN_LENH`). */
-  insufficient: boolean
-  /** 1 dòng phát hiện theo thứ tự ưu tiên spec §6. `null` khi chưa đủ dữ liệu. */
+/**
+ * Tầng giữa phễu ⑬ — ★ BA trạng thái, không phải hai.
+ *
+ * · `chua_do`  — `so_ma_cho_du_lop == null`: hệ CHƯA chấm được mã săn nào ⇒ hiện
+ *   "—", không được vẽ 0 (0 nghĩa là "đã đo, không mã nào chín").
+ * · `can_duoi` — có số, nhưng mẫu số (`so_ma_da_cham_diem`) NHỎ HƠN số mã đã săn,
+ *   hoặc wire chưa gửi mẫu số ⇒ con số chỉ là CẬN DƯỚI, phải nói "ít nhất N".
+ * · `day_du`   — server khẳng định đã chấm hết mã săn ⇒ N là con số chắc chắn.
+ *
+ * ★ `undefined` mẫu số KHÔNG được quy về "đầy đủ": thiếu thông tin thì mặc định
+ * là cận dưới, vì in N như số chắc chắn là khẳng định về những mã chưa ai chấm.
+ */
+export type TangGiuaTrangThai = "chua_do" | "can_duoi" | "day_du"
+
+export interface Cap5TangGiua {
+  trangThai: TangGiuaTrangThai
+  /** Số mã đang ở ≥4/5 lớp. `null` ⇔ `trangThai === "chua_do"`. */
+  value: number | null
+  /** Mẫu số THẬT (số mã săn đã chấm được điểm). `null` = wire chưa gửi. */
+  mauSo: number | null
+  /** Tổng mã đã săn — mẫu số user tưởng là đang dùng. `null` khi chưa vào Cấp 5. */
+  soMaDaSan: number | null
+}
+
+export interface Cap5Khoi13Pheu {
+  tang: Khoi13Tang[]
+  soMaDaSan: number | null
+  /** `null` = mẻ chấm 5 lớp chưa chạy — xem `Cap5Progress#so_ma_cho_du_lop`. */
+  soMaChoDuLop: number | null
+  /** Trạng thái ĐẦY ĐỦ của tầng giữa (chưa đo / cận dưới / đủ). */
+  tangGiua: Cap5TangGiua
+  soMaVaoLenh: number | null
+  /** % mã săn thực sự vào lệnh. `null` khi chưa săn mã nào (không chia cho 0). */
+  tyLeVaoLenh: number | null
   phatHien: string | null
-  /** Ô Sai-Thắng ≥ ngưỡng → phát hiện là CẢNH BÁO, không phải lời khen. */
-  canhBao: boolean
-  /** Vi phạm hay gặp nhất trong các lệnh Sai-Thắng. `null` khi chưa ghi được vi phạm nào. */
-  viPhamPhoBien: string | null
   insufficientNote: string | null
   giaiThich: string
 }
 
 /**
- * Khối ⑫ (spec §6) — ma trận 2×2 + 1 phát hiện, ĐÚNG thứ tự ưu tiên của spec:
- *  1. Ô Sai-Thắng ≥ `KHOI12_SAI_THANG_CANH_BAO` → cảnh báo may mắn củng cố thói
- *     quen xấu, kèm vi phạm phổ biến THẬT (hoặc lời nhắc chung nếu chưa ghi được
- *     vi phạm nào — không bịa).
- *  2. Ngược lại, ô Đúng-Thua "cao" (xem `KHOI12_DUNG_THUA_CAO`) → "đó là thị
- *     trường, không phải lỗi bạn — giữ vững cách làm đúng".
- *  3. Mặc định → so tỷ lệ quyết định đúng với tỷ lệ thắng, in CẢ HAI con số.
- *
- * Nhánh 1 được ưu tiên tuyệt đối: ô Sai-Thắng là ô nguy hiểm nhất của cả cấp
- * (spec §4), im lặng về nó để nói một câu êm hơn sẽ là xu nịnh.
+ * Đọc trạng thái tầng giữa từ hồ sơ Cấp 5. Chịu được CẢ hai hình dạng wire (có
+ * hay chưa có `so_ma_da_cham_diem`/`so_ma_cho_du_lop_day_du`) — mặc định an toàn
+ * là "cận dưới".
  */
-export function computeCap5Khoi12MaTran(trades: Cap5TradeRecord[]): Cap5Khoi12MaTran {
-  const daPhanLoai = trades.filter((t): t is Cap5TradeRecord & { o4: O4 } => t.o4 != null)
-  const soDaPhanLoai = daPhanLoai.length
-  const soChuaPhanLoai = trades.length - soDaPhanLoai
+export function tangGiuaCap5(progress: Cap5Progress | null): Cap5TangGiua {
+  const soMaDaSan = progress ? progress.so_ma_da_san : null
+  const value = progress ? progress.so_ma_cho_du_lop : null
+  const mauSo = progress?.so_ma_da_cham_diem ?? null
+  if (value == null) return { trangThai: "chua_do", value: null, mauSo, soMaDaSan }
+  const dayDu =
+    progress?.so_ma_cho_du_lop_day_du === true ||
+    (mauSo != null && soMaDaSan != null && soMaDaSan > 0 && mauSo >= soMaDaSan)
+  return { trangThai: dayDu ? "day_du" : "can_duoi", value, mauSo, soMaDaSan }
+}
 
-  const counts: Record<O4, number> = {
-    dung_thang: 0,
-    dung_thua: 0,
-    sai_thang: 0,
-    sai_thua: 0,
-  }
-  for (const t of daPhanLoai) counts[t.o4] += 1
+/** Nhãn tầng giữa cho phễu — "ít nhất N" khi con số chỉ là cận dưới. */
+export function nhanTangGiua(tg: Cap5TangGiua): string {
+  if (tg.trangThai === "chua_do" || tg.value == null) return "—"
+  const n = tg.value.toLocaleString("en-US")
+  return tg.trangThai === "day_du" ? n : `≥ ${n}`
+}
 
-  const cells: Khoi12Cell[] = O4_ORDER.map((o4) => ({
-    o4,
-    label: O4_LABEL[o4],
-    count: counts[o4],
-    pct: soDaPhanLoai > 0 ? round((counts[o4] / soDaPhanLoai) * 100) : null,
-  }))
+/**
+ * Khối ⑬ (spec §9) — phễu 3 tầng đọc THẲNG `GET /cap5/progress`.
+ *
+ * Phát hiện chỉ nói khi có đủ hai đầu phễu THẬT (đã săn ≥1 mã và biết số mã vào
+ * lệnh). Câu mẫu spec đưa ("Bạn săn 34 mã nhưng chỉ vào 14 — biết chờ…") chỉ
+ * đúng khi user THẬT SỰ có sàng lọc; nếu user mua gần hết số mã săn thì khen câu
+ * đó là khen một việc họ không làm (luật 3), nên nhánh dưới nói thẳng điều ngược
+ * lại.
+ */
+export function computeCap5Khoi13Pheu(progress: Cap5Progress | null): Cap5Khoi13Pheu {
+  const soMaDaSan = progress ? progress.so_ma_da_san : null
+  const soMaChoDuLop = progress ? progress.so_ma_cho_du_lop : null
+  const soMaVaoLenh = progress ? progress.so_ma_mua_tu_watchlist : null
+  const tangGiua = tangGiuaCap5(progress)
 
-  const soQuyetDinhDung = counts.dung_thang + counts.dung_thua
-  const soQuyetDinhSai = counts.sai_thang + counts.sai_thua
-  const soThang = counts.dung_thang + counts.sai_thang
-  const tyLeQuyetDinhDung =
-    soDaPhanLoai > 0 ? round((soQuyetDinhDung / soDaPhanLoai) * 100) : null
-  const tyLeQuyetDinhSai = soDaPhanLoai > 0 ? round((soQuyetDinhSai / soDaPhanLoai) * 100) : null
-  const tyLeThang = soDaPhanLoai > 0 ? round((soThang / soDaPhanLoai) * 100) : null
-  const viPhamPhoBien = viPhamPhoBienCap5(daPhanLoai.filter((t) => t.o4 === "sai_thang"))
+  const tang: Khoi13Tang[] = [
+    { ic: "🔍", label: "Mã đã săn (đưa vào Watchlist)", value: soMaDaSan },
+    { ic: "👀", label: "Đang ở ≥4/5 lớp ủng hộ", value: soMaChoDuLop },
+    { ic: "✅", label: "Thực sự vào lệnh", value: soMaVaoLenh },
+  ]
 
   const base = {
-    cells,
-    soDaPhanLoai,
-    soChuaPhanLoai,
-    soQuyetDinhDung,
-    soQuyetDinhSai,
-    tyLeQuyetDinhDung,
-    tyLeQuyetDinhSai,
-    soThang,
-    tyLeThang,
-    viPhamPhoBien,
-    giaiThich: KHOI12_GIAI_THICH,
+    tang,
+    soMaDaSan,
+    soMaChoDuLop,
+    tangGiua,
+    soMaVaoLenh,
+    giaiThich: KHOI13_GIAI_THICH,
   }
 
-  if (soDaPhanLoai === 0) {
+  if (soMaDaSan == null || soMaVaoLenh == null) {
     return {
       ...base,
-      insufficient: true,
+      tyLeVaoLenh: null,
       phatHien: null,
-      canhBao: false,
       insufficientNote:
-        "Chưa có lệnh nào được phân loại 4 ô — chưa thể đo tỷ lệ quyết định đúng. Ma trận sẽ hiện " +
-        "sau khi bạn chốt quyết định đúng/sai ở bước phân loại trong Kết sổ.",
+        "Chưa đọc được số liệu săn mã của bạn — phễu sẽ hiện ngay khi bạn vào Cấp 5 và bắt đầu săn.",
     }
   }
 
-  if (soDaPhanLoai < KHOI12_MIN_LENH) {
+  if (soMaDaSan === 0) {
     return {
       ...base,
-      insufficient: true,
+      tyLeVaoLenh: null,
       phatHien: null,
-      canhBao: false,
       insufficientNote:
-        `Cần ít nhất ${KHOI12_MIN_LENH} lệnh đã phân loại để nói được gì về tỷ lệ quyết định đúng ` +
-        `(hiện: ${soDaPhanLoai}). Vài lệnh đầu chưa phân biệt được quy trình với may mắn.`,
+        `Bạn chưa săn mã nào. Mở màn Săn mã, bấm một bộ lọc rồi thêm mã vào Watchlist — mục tiêu ` +
+        `nhiệm vụ ① là ${mucTieuSoMaSan(progress).toLocaleString("en-US")} mã.`,
     }
   }
 
-  if (counts.sai_thang >= KHOI12_SAI_THANG_CANH_BAO) {
-    const duoi = viPhamPhoBien
-      ? `soi lại ${viPhamPhoBien} — vi phạm hay gặp nhất ở các lệnh đó.`
-      : "soi lại phần quy trình bạn đã phá ở từng lệnh đó (hệ chưa ghi được vi phạm cụ thể nào)."
-    return {
-      ...base,
-      insufficient: false,
-      canhBao: true,
-      phatHien:
-        `⚠ Bạn có ${counts.sai_thang} lệnh thắng dù làm sai quy trình. ` +
-        `Đừng để may mắn củng cố thói quen xấu — ${duoi}`,
-      insufficientNote: null,
-    }
-  }
-
-  if (counts.dung_thua >= KHOI12_DUNG_THUA_CAO && counts.dung_thua >= counts.dung_thang) {
-    return {
-      ...base,
-      insufficient: false,
-      canhBao: false,
-      phatHien:
-        `Bạn có ${counts.dung_thua} lệnh làm đúng nhưng thua. Đó là thị trường, không phải lỗi bạn ` +
-        `— giữ vững cách làm đúng.`,
-      insufficientNote: null,
-    }
-  }
+  const tyLeVaoLenh = round((soMaVaoLenh / soMaDaSan) * 100)
+  const soLoai = soMaDaSan - soMaVaoLenh
+  const phatHien =
+    soLoai > 0
+      ? `Bạn săn ${soMaDaSan.toLocaleString("en-US")} mã nhưng chỉ vào ` +
+        `${soMaVaoLenh.toLocaleString("en-US")} — loại ${soLoai.toLocaleString("en-US")} mã chưa ` +
+        `chín (${tyLeVaoLenh}% số mã săn được vào lệnh). Đây là kỷ luật của thợ săn: săn nhiều, ` +
+        "chọn kỹ, không mua vội mọi mã tìm được."
+      : `Bạn săn ${soMaDaSan.toLocaleString("en-US")} mã và vào lệnh cả ` +
+        `${soMaVaoLenh.toLocaleString("en-US")} mã — chưa loại mã nào. Watchlist đang là danh ` +
+        "sách mua chứ chưa phải công cụ sàng lọc: hãy để mã chờ tới khi lên ≥4/5 lớp ủng hộ rồi " +
+        "mới quyết định."
 
   return {
     ...base,
-    insufficient: false,
-    canhBao: false,
-    phatHien:
-      `Tỷ lệ quyết định đúng ${tyLeQuyetDinhDung}% — đây mới là thước đo năng lực thật, không phải ` +
-      `tỷ lệ thắng ${tyLeThang}%.`,
+    tyLeVaoLenh,
+    phatHien,
     insufficientNote: null,
   }
 }
@@ -292,34 +449,33 @@ export function computeCap5Khoi12MaTran(trades: Cap5TradeRecord[]): Cap5Khoi12Ma
 // ── top-level ────────────────────────────────────────────────────────────────
 
 export interface Cap5PortfolioAnalysisResult extends Cap4PortfolioAnalysisResult {
-  /** ⑫ Ma trận quyết định (4 ô). */
-  khoi12MaTran: Cap5Khoi12MaTran
-  /** ③ đk 1 — số lệnh đã phân loại, do SERVER đếm. `null` khi chưa vào Cấp 5. */
-  soLenhPhanLoai: number | null
-  /** ③ đk 2 — số nước đứng ngoài ĐÃ chấm, do SERVER đếm. `null` khi chưa vào Cấp 5. */
-  soLanDungNgoaiDaCham: number | null
-  /**
-   * ③ đk 3 — tỷ lệ quyết định đúng SERVER chốt trên `cap5_progress`.
-   *
-   * ★ Đây là con số AUTHORITATIVE (nuôi nhiệm vụ ③ + widget Hành trình). Nó có
-   * thể CAO/THẤP hơn `khoi12MaTran.tyLeQuyetDinhDung` vì ma trận chỉ đếm được
-   * lệnh ghi trên máy này (xem gap ở `tradeLogCap5.ts`). Cả hai được surface để
-   * UI nói thẳng ra sự khác biệt thay vì lặng lẽ hiện một con số thấp hơn.
-   */
-  tyLeQuyetDinhDungServer: number | null
+  /** ⑫ Bộ lọc nào mang lại mã thắng nhiều nhất. */
+  khoi12BoLoc: Cap5Khoi12BoLoc
+  /** ⑬ Kỷ luật săn mã (phễu 3 tầng). */
+  khoi13Pheu: Cap5Khoi13Pheu
+  /** ① Số mã đã săn (server đếm). `null` khi chưa vào Cấp 5. */
+  soMaDaSan: number | null
+  /** ② Số mã săn đã vào lệnh (server đếm). `null` khi chưa vào Cấp 5. */
+  soMaMuaTuWatchlist: number | null
+  /** `best_filter` do server chốt. `null` = chưa đủ dữ liệu (KHÔNG phải "không có"). */
+  bestFilterServer: HuntFilter | null
+  /** Mốc nhiệm vụ — surface để UI không hard-code lại con số. */
+  mucTieuSan: number
+  mucTieuMua: number
 }
 
 /**
- * Phân tích danh mục Cấp 5 (spec §6) — 1 object gồm MỌI khối Cấp 1-4 (delegate
- * xuống `computeCap4PortfolioAnalysis`) + khối ⑫ + 3 số server.
- *
- * Khối ⑬ KHÔNG có ở đây (xem docstring đầu file): nó đến từ
- * `GET /cap5/dung-ngoai` qua hook `useDanhSachDungNgoai`.
+ * Phân tích danh mục Cấp 5 (spec §9) — 1 object gồm MỌI khối Cấp 1-4 (delegate
+ * xuống `computeCap4PortfolioAnalysis`) + khối ⑫ + khối ⑬.
  *
  * `Cap5PortfolioAnalysis.tsx` render lại markup Cấp 1-4 bằng chính component
- * `Cap4PortfolioAnalysis` nên nó chỉ cần hàm khối ⑫ ở trên; hàm tổng này là API
+ * `Cap4PortfolioAnalysis` nên nó chỉ cần 2 hàm khối ở trên; hàm tổng này là API
  * cho consumer muốn 1 object duy nhất (và là bề mặt test của delegation) — cùng
  * quy ước Cấp 3/4 đã ghi.
+ *
+ * ★ `phanTich` = payload `GET /cap5/phan-tich` (khối ⑫ do SERVER tính). `null` =
+ * chưa lấy được ⇒ khối ⑫ về trạng thái fail-closed "chưa lấy được số", KHÔNG
+ * quay về tính từ `trades` (nhật ký per-browser — xem docstring đầu file).
  */
 export function computeCap5PortfolioAnalysis(
   trades: Cap5TradeRecord[],
@@ -329,6 +485,7 @@ export function computeCap5PortfolioAnalysis(
   cap4Progress: Cap4Progress | null,
   cap5Progress: Cap5Progress | null,
   now: Date = new Date(),
+  phanTich: Cap5PhanTich | null = null,
 ): Cap5PortfolioAnalysisResult {
   const cap4Result = computeCap4PortfolioAnalysis(
     trades,
@@ -341,9 +498,18 @@ export function computeCap5PortfolioAnalysis(
 
   return {
     ...cap4Result,
-    khoi12MaTran: computeCap5Khoi12MaTran(trades),
-    soLenhPhanLoai: cap5Progress?.so_lenh_phan_loai ?? null,
-    soLanDungNgoaiDaCham: cap5Progress?.so_lan_dung_ngoai_da_cham ?? null,
-    tyLeQuyetDinhDungServer: cap5Progress?.ty_le_quyet_dinh_dung ?? null,
+    khoi12BoLoc: viewCap5Khoi12BoLoc(
+      phanTich?.khoi_12 ?? null,
+      phanTich == null ? "loi" : "co_du_lieu",
+    ),
+    khoi13Pheu: computeCap5Khoi13Pheu(cap5Progress),
+    soMaDaSan: cap5Progress?.so_ma_da_san ?? null,
+    soMaMuaTuWatchlist: cap5Progress?.so_ma_mua_tu_watchlist ?? null,
+    bestFilterServer: cap5Progress?.best_filter ?? null,
+    // ★ Mốc nhiệm vụ đọc từ SERVER (`muc_tieu_so_ma_*`) qua helper — hằng số FE
+    // chỉ là bản lùi BÊN TRONG helper. Trả thẳng hằng số ở đây là bỏ qua con số
+    // server gửi: một lần BE đổi ngưỡng là mọi UI đọc object này in mẫu số sai.
+    mucTieuSan: mucTieuSoMaSan(cap5Progress),
+    mucTieuMua: mucTieuSoMaMua(cap5Progress),
   }
 }

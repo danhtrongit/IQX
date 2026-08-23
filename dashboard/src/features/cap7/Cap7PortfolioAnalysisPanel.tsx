@@ -26,7 +26,7 @@ import { Cap7PortfolioAnalysis } from "./Cap7PortfolioAnalysis"
  * tình cờ là "cap7-analysis" ở ngoài Cấp 7 (`SidebarProvider` là singleton
  * app-root). LƯU Ý: `Cap7PortfolioAnalysis` tự gọi `useThachThucCap7()` (khối ⑯
  * đọc thẳng từ server) và các component Cấp 4/5/6 bên trong nó tự gọi
- * `useVuKhiDiemMu()` / `useDanhSachDungNgoai()` / `useThachThucCap6()` — tất cả
+ * `useVuKhiDiemMu()` / `useThachThucCap6()` — tất cả
  * auth-gated bên trong hook, nên mọi test/mount của panel này cần provider auth +
  * QueryClient (hoặc mock hook).
  *

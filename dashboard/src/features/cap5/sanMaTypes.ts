@@ -145,13 +145,42 @@ export interface HuntItem {
   tin_hieu: string
 }
 
-/** `GET /cap5/san-ma/{ma}` — kết quả một bộ lọc. */
+/**
+ * `GET /cap5/san-ma/{ma}` — kết quả một bộ lọc.
+ *
+ * ★★ BỐN CON SỐ BAO PHỦ (spec §5.4 · `HuntResultOut`): `so_ma_trong_ro` là mẫu
+ * số, và `so_ma_xet + so_ma_truot_loc_san + so_ma_bo_qua_thieu_du_lieu ==
+ * so_ma_trong_ro`. Chúng tồn tại vì "N mã HOSE thỏa điều kiện" một mình là câu
+ * NÓI VỀ CẢ SÀN trong khi thực tế có thể chỉ xét được 366/406 mã: nguồn nến đọc
+ * theo LÔ 40 mã, và một lô lỗi (VD 429 của VCI) là 40 mã vắng mặt TRONG IM LẶNG.
+ *
+ * FE PHẢI đọc chúng. Trước bản vá này FE không đọc trường nào, nên một cú 429
+ * biến thành một con số trông như đã quét cả sàn.
+ *
+ * Tất cả để `?`: wire cũ (trước khi BE thêm) vẫn parse được — và khi thiếu thì
+ * FE nói THẲNG là chưa biết độ bao phủ, KHÔNG mặc định "đã xét đủ".
+ */
 export interface HuntResult {
   ma: HuntFilterKey
   kha_dung: boolean
   ly_do_chua_kha_dung: string | null
   /** Tổng số mã HOSE thỏa điều kiện. `null` = server KHÔNG đếm được (≠ 0). */
   tong_so_ma: number | null
+  /** Số mã HOSE trong rổ của lần chạy này — mẫu số của ba con số dưới. */
+  so_ma_trong_ro?: number
+  /** Số mã đã QUA lọc sàn và được đem đi xét. `null` = chưa lọc được. */
+  so_ma_xet?: number | null
+  /** Số mã bị LỌC SÀN loại (giá/thanh khoản) — khác hẳn "thiếu dữ liệu". */
+  so_ma_truot_loc_san?: number | null
+  /** Số mã bị bỏ vì THIẾU DỮ LIỆU (không đủ nến / thiếu GTGD phiên). */
+  so_ma_bo_qua_thieu_du_lieu?: number | null
+  /**
+   * `true` = mọi mã trong rổ đều xét được; `false` = danh sách CÓ THỂ CÒN SÓT
+   * mã thỏa; `null`/thiếu = chưa biết (KHÔNG được coi là `true`).
+   */
+  ket_qua_day_du?: boolean | null
+  /** Câu tường minh của server đi kèm `ket_qua_day_du === false` (§C12c). */
+  canh_bao_thieu_du_lieu?: string | null
   hien_thi_toi_da: number
   loc_san: LocSanDieuKien[]
   items: HuntItem[]
@@ -205,4 +234,57 @@ export function describeHuntTotal(result: HuntResult, def: HuntFilterDef): strin
   return `${result.tong_so_ma.toLocaleString("en-US")} mã HOSE thỏa điều kiện · hiện ${hien.toLocaleString(
     "en-US",
   )} ${def.ghi_chu_top}`
+}
+
+/**
+ * ĐỘ BAO PHỦ của lần chạy — câu trả lời cho "N mã thỏa điều kiện trên bao nhiêu
+ * mã đã xét?" (spec §5.4 · luật số 1).
+ *
+ * BA trạng thái, và trạng thái mặc định KHÔNG phải "đã xét đủ":
+ *   · `day_du`     — server khẳng định mọi mã trong rổ đều xét được;
+ *   · `thieu`      — có mã bị bỏ vì thiếu dữ liệu ⇒ danh sách CÓ THỂ CÒN SÓT;
+ *   · `chua_biet`  — wire không gửi cờ ⇒ ta KHÔNG biết, và phải nói là không biết.
+ *
+ * `canh_bao_thieu_du_lieu` của server được ưu tiên NGUYÊN VĂN (§C12c: không để
+ * FE tự dựng câu về dữ liệu thiếu).
+ */
+export function describeHuntBaoPhu(result: HuntResult): {
+  trangThai: "day_du" | "thieu" | "chua_biet"
+  text: string
+} {
+  const ro = result.so_ma_trong_ro
+  const xet = result.so_ma_xet
+  const boQua = result.so_ma_bo_qua_thieu_du_lieu
+
+  if (result.ket_qua_day_du === true) {
+    return {
+      trangThai: "day_du",
+      text:
+        ro != null
+          ? `Đã xét đủ ${ro.toLocaleString("en-US")} mã HOSE trong rổ — không mã nào bị bỏ vì thiếu dữ liệu.`
+          : "Máy chủ khẳng định đã xét đủ rổ mã của lần chạy này.",
+    }
+  }
+
+  if (result.ket_qua_day_du === false) {
+    if (result.canh_bao_thieu_du_lieu) {
+      return { trangThai: "thieu", text: result.canh_bao_thieu_du_lieu }
+    }
+    const veXet =
+      xet != null && ro != null
+        ? `đã xét ${xet.toLocaleString("en-US")}/${ro.toLocaleString("en-US")} mã`
+        : "chưa xét được hết rổ mã"
+    const veBoQua =
+      boQua != null ? ` — ${boQua.toLocaleString("en-US")} mã thiếu dữ liệu` : " — một số mã thiếu dữ liệu"
+    return {
+      trangThai: "thieu",
+      text: `⚠ Kết quả CHƯA đầy đủ: ${veXet}${veBoQua}, nên danh sách có thể còn sót mã thỏa điều kiện.`,
+    }
+  }
+
+  return {
+    trangThai: "chua_biet",
+    text:
+      "Máy chủ chưa cho biết đã xét được bao nhiêu mã trong rổ, nên chưa thể nói con số trên là của cả sàn.",
+  }
 }

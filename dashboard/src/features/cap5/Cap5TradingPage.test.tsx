@@ -6,7 +6,7 @@ import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 import type { Cap1Progress } from "@/features/cap1/types"
 import type { Cap2Progress, DiemKyLuat } from "@/features/cap2/types"
 import type { Cap3Progress } from "@/features/cap3/types"
-import type { Cap5Progress, VerdictGoiY } from "./types"
+import type { Cap5Progress } from "./types"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 const {
@@ -17,7 +17,6 @@ const {
   useDiemKyLuatMock,
   recordKetsoCap1Async,
   recordKetsoCap2Mutate,
-  recordKetsoCap5Async,
   graduateCap5Mutate,
   setKhauViMutate,
   recordCap1TradeMock,
@@ -26,7 +25,7 @@ const {
   recordCap3TradeMock,
   recordCap4TradeMock,
   recordCap5TradeMock,
-  verdictQuery,
+  nguonSanMock,
   navigateMock,
   messageSuccess,
 } = vi.hoisted(() => ({
@@ -37,7 +36,6 @@ const {
   useDiemKyLuatMock: vi.fn(),
   recordKetsoCap1Async: vi.fn(),
   recordKetsoCap2Mutate: vi.fn(),
-  recordKetsoCap5Async: vi.fn(),
   graduateCap5Mutate: vi.fn(),
   setKhauViMutate: vi.fn(),
   recordCap1TradeMock: vi.fn(),
@@ -46,7 +44,7 @@ const {
   recordCap3TradeMock: vi.fn(),
   recordCap4TradeMock: vi.fn(),
   recordCap5TradeMock: vi.fn(),
-  verdictQuery: { current: {} as Record<string, unknown> },
+  nguonSanMock: vi.fn(),
   navigateMock: vi.fn(),
   messageSuccess: vi.fn(),
 }))
@@ -99,7 +97,7 @@ function RightSidebarStub() {
   const { onOrderFilled: cap2OnOrderFilled, isCap2Active } = useCap2Events()
   const { onOrderFilled: cap3OnOrderFilled, isCap3Active } = useCap3Events()
   const { onOrderFilled: cap4OnOrderFilled, isCap4Active } = useCap4Events()
-  const { onOrderFilled: cap5OnOrderFilled, onVerdictSettled, isCap5Active } = useCap5Events()
+  const { onOrderFilled: cap5OnOrderFilled, isCap5Active } = useCap5Events()
   return (
     <div data-testid="right-sidebar">
       <span data-testid="bus-spy">
@@ -244,12 +242,6 @@ function RightSidebarStub() {
       >
         fire sell HPG
       </button>
-      <button
-        data-testid="fire-verdict-settled"
-        onClick={() => onVerdictSettled?.("dung", false)}
-      >
-        fire verdict settled
-      </button>
     </div>
   )
 }
@@ -323,9 +315,12 @@ vi.mock("@/features/cap6/hooks", () => ({
 vi.mock("./hooks", () => ({
   useCap5Progress: (...a: unknown[]) => useCap5ProgressMock(...a),
   useGraduateCap5: () => ({ mutate: graduateCap5Mutate, isPending: false }),
-  useThachThucCap5: () => ({ data: undefined }),
-  useVerdictGoiY: () => verdictQuery.current,
-  useRecordKetsoCap5: () => ({ mutateAsync: recordKetsoCap5Async, isPending: false }),
+  useMarkTourSanMa: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+// `GET /cap5/nguon-san/{symbol}` — gọi TRƯỚC khi mở Kết sổ (spec §8). Mock ở
+// tầng api để bài canh được cả nhánh gọi được lẫn nhánh LỖI.
+vi.mock("./api", () => ({
+  cap5Api: { getNguonSan: (...a: unknown[]) => nguonSanMock(...a) },
 }))
 vi.mock("./tradeLogCap5", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./tradeLogCap5")>()
@@ -403,10 +398,14 @@ function fakeCap5Progress(overrides: Partial<Cap5Progress> = {}): Cap5Progress {
     entered_at: "2026-03-01T00:00:00Z",
     task_1_done_at: null,
     task_2_done_at: null,
-    task_3_done_at: null,
-    so_lenh_phan_loai: 3,
-    so_lan_dung_ngoai_da_cham: 1,
-    ty_le_quyet_dinh_dung: 66,
+    so_ma_da_san: 6,
+    so_ma_mua_tu_watchlist: 3,
+    so_ma_cho_du_lop: null,
+    muc_tieu_so_ma_san: 10,
+    muc_tieu_so_ma_mua: 5,
+    da_xem_tour_sanma: true,
+    best_filter: null,
+    best_filter_ten: null,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
@@ -422,21 +421,6 @@ function fakeDiemKyLuat(overrides: Partial<DiemKyLuat> = {}): DiemKyLuat {
     xep_loai: null,
     giai_thich: "Ngày không đặt lệnh nào.",
     thanh_phan: null,
-    ...overrides,
-  }
-}
-
-function fakeVerdict(overrides: Partial<VerdictGoiY> = {}): VerdictGoiY {
-  return {
-    order_id: "sell-1",
-    verdict: "dung",
-    giai_thich: "Lệnh này theo đúng kế hoạch + kỷ luật của bạn.",
-    signals: [
-      { ma: "co_so", ten: "Cơ sở khi đặt lệnh", dat: true, giai_thich: "4/5 lớp Ủng hộ lúc đặt" },
-    ],
-    pnl_pct: 9.2,
-    thang: true,
-    o_4_du_kien: "dung_thang",
     ...overrides,
   }
 }
@@ -467,16 +451,18 @@ describe("Cap5TradingPage", () => {
     recordKetsoCap1Async.mockReset()
     recordKetsoCap1Async.mockResolvedValue({ id: "ks1" })
     recordKetsoCap2Mutate.mockReset()
-    recordKetsoCap5Async.mockReset()
-    recordKetsoCap5Async.mockResolvedValue({
-      id: "k5",
-      order_id: "sell-1",
-      pnl_pct: 9.2,
-      verdict_he: "dung",
-      verdict_user: "dung",
-      verdict_provenance: null,
-      o_4: "dung_thang",
-      ly_do_sua: null,
+    nguonSanMock.mockReset()
+    nguonSanMock.mockResolvedValue({
+      symbol: "VNM",
+      tu_san_ma: true,
+      hunt_filter: "ngoai",
+      hunt_filter_ten: "Khối ngoại gom",
+      hunt_signal: "+45,2 tỷ ròng · 4/5 phiên",
+      first_hunted_at: "2026-02-25T02:00:00Z",
+      so_phien_trong_watchlist: 2,
+      so_lop_luc_vao: null,
+      giai_thich: "Mã này bạn săn từ bộ lọc «Khối ngoại gom».",
+      ly_do_thieu_so_lop: "Điểm đồng thuận tại thời điểm đặt lệnh chưa từng được lưu.",
     })
     graduateCap5Mutate.mockReset()
     setKhauViMutate.mockReset()
@@ -486,7 +472,6 @@ describe("Cap5TradingPage", () => {
     recordCap3TradeMock.mockReset()
     recordCap4TradeMock.mockReset()
     recordCap5TradeMock.mockReset()
-    verdictQuery.current = { data: fakeVerdict(), isPending: false, isError: false }
     navigateMock.mockReset()
     messageSuccess.mockReset()
     window.localStorage.clear()
@@ -568,7 +553,7 @@ describe("Cap5TradingPage", () => {
       // Đã gọi kết sổ Cấp 1 cho ĐÚNG lệnh bán này …
       expect(recordKetsoCap1Async).toHaveBeenCalledWith({ order_id: "sell-1", cam_xuc: null })
       // … và modal CHƯA mở khi call đó còn treo (nếu mở trước thì
-      // `GET /cap5/verdict` + `POST /cap5/ketso` sẽ 404 và user bị kẹt).
+      // hàng `order_ketso` chưa tồn tại thì các endpoint Cấp 5 đọc nó sẽ 404).
       expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
 
       releasePreflight!()
@@ -579,7 +564,7 @@ describe("Cap5TradingPage", () => {
       recordKetsoCap1Async.mockRejectedValue(new Error("Lệnh này đã kết sổ"))
       renderCap5(<Cap5TradingPage />)
       await openKetso()
-      expect(screen.getByTestId("cap5-phanloai")).toBeInTheDocument()
+      expect(screen.getByTestId("cap5-ketso-hunt-origin")).toBeInTheDocument()
     })
 
     it("KHÔNG kết sổ Cấp 1 (và không mở modal) cho lệnh bán không có lệnh mua theo dõi", () => {
@@ -598,7 +583,7 @@ describe("Cap5TradingPage", () => {
     })
   })
 
-  it("a BUY then SELL on the same symbol opens Kết sổ Cấp 5 with every inherited khối + khối 4 ô", async () => {
+  it("a BUY then SELL on the same symbol opens Kết sổ Cấp 5 với mọi khối kế thừa + dòng nguồn săn", async () => {
     renderCap5(<Cap5TradingPage />)
     expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
     await openKetso()
@@ -609,23 +594,50 @@ describe("Cap5TradingPage", () => {
     expect(screen.getByTestId("cap3-ketso-quanlyvon")).toHaveTextContent("Cân bằng")
     expect(screen.getByTestId("cap4-ketso-doc5lop")).toBeInTheDocument()
     expect(screen.getByTestId("cap4-ketso-lr-tin_tuc")).toHaveAttribute("data-diff", "true")
-    // … plus Cấp 5's own khối phân loại 4 ô.
-    expect(screen.getByTestId("cap5-phanloai")).toBeInTheDocument()
-    expect(screen.getByTestId("cap5-phanloai-verdict-he").textContent).toMatch(/QUYẾT ĐỊNH ĐÚNG/)
+    // … plus dòng NGUỒN SĂN của Cấp 5 (spec §8), dựng từ `GET /cap5/nguon-san`.
+    expect(nguonSanMock).toHaveBeenCalledWith("VNM")
+    expect(screen.getByTestId("cap5-ketso-hunt-origin")).toHaveTextContent(
+      "săn từ bộ lọc «Khối ngoại gom»",
+    )
+    // ★ Khối phân loại 4 ô của Cấp 5 CŨ đã nghỉ hưu.
+    expect(screen.queryByTestId("cap5-phanloai")).not.toBeInTheDocument()
+  })
+
+  it("★ mã KHÔNG đến từ săn mã → nói thẳng, không bịa bộ lọc", async () => {
+    nguonSanMock.mockResolvedValue({
+      symbol: "VNM",
+      tu_san_ma: false,
+      hunt_filter: null,
+      hunt_filter_ten: null,
+      hunt_signal: null,
+      first_hunted_at: null,
+      so_phien_trong_watchlist: null,
+      so_lop_luc_vao: null,
+      giai_thich: "Mã này không đến từ săn mã.",
+      ly_do_thieu_so_lop: null,
+    })
+    renderCap5(<Cap5TradingPage />)
+    await openKetso()
+    const line = screen.getByTestId("cap5-ketso-hunt-origin")
+    expect(line).toHaveTextContent("không đến từ săn mã")
+    expect(line).not.toHaveTextContent("Khối ngoại gom")
+  })
+
+  it("★ `GET /cap5/nguon-san` LỖI → «Chưa lấy được nguồn săn», KHÔNG nói «không đến từ săn mã», và modal VẪN mở", async () => {
+    nguonSanMock.mockRejectedValue(new Error("network"))
+    renderCap5(<Cap5TradingPage />)
+    await openKetso()
+    const line = screen.getByTestId("cap5-ketso-hunt-origin")
+    expect(line).toHaveTextContent("Chưa lấy được nguồn săn")
+    expect(line).not.toHaveTextContent("không đến từ săn mã — bạn tự chọn mã")
   })
 
   it("closing Kết sổ forwards the record into the Cấp 1, 2, 3 AND 4 trade logs", async () => {
     renderCap5(<Cap5TradingPage />)
     await openKetso()
-    fireEvent.click(screen.getByTestId("cap5-phanloai-dong-y"))
     fireEvent.click(screen.getByTestId("cap5-ketso-close"))
 
     await waitFor(() => expect(recordCap5TradeMock).toHaveBeenCalledTimes(1))
-    expect(recordKetsoCap5Async).toHaveBeenCalledWith({
-      order_id: "sell-1",
-      verdict_user: "dung",
-      ly_do_sua: null,
-    })
     expect(recordCap1TradeMock).toHaveBeenCalledTimes(1)
     expect(recordCap2TradeMock).toHaveBeenCalledTimes(1)
     expect(recordCap3TradeMock).toHaveBeenCalledTimes(1)
@@ -633,7 +645,8 @@ describe("Cap5TradingPage", () => {
 
     const rec = recordCap4TradeMock.mock.calls[0][0]
     expect(rec.orderId).toBe("sell-1")
-    expect(rec.o4).toBe("dung_thang")
+    expect(rec.huntFilter).toBe("ngoai")
+    expect(rec.huntSoPhienCho).toBe(2)
     expect(rec.mucTuTin).toBe(3)
     expect(rec.doc_5_lop).toEqual(DOC_5_LOP)
     // The SAME superset record goes into every lower log.
@@ -654,14 +667,7 @@ describe("Cap5TradingPage", () => {
     })
   })
 
-  it("registers a handler for cap5Events.onVerdictSettled (spec §8 — nothing else listens)", () => {
-    renderCap5(<Cap5TradingPage />)
-    fireEvent.click(screen.getByTestId("fire-verdict-settled"))
-    expect(messageSuccess).toHaveBeenCalledTimes(1)
-    expect(messageSuccess.mock.calls[0][0]).toMatch(/quyết định đúng/i)
-  })
-
-  it("mounts GraduationModalCap5 (hidden until 3/3 nhiệm vụ)", () => {
+  it("mounts GraduationModalCap5 (ẩn cho tới khi xong 2/2 nhiệm vụ)", () => {
     renderCap5(<Cap5TradingPage />)
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
 
@@ -669,10 +675,8 @@ describe("Cap5TradingPage", () => {
       data: fakeCap5Progress({
         task_1_done_at: "t",
         task_2_done_at: "t",
-        task_3_done_at: "t",
-        so_lenh_phan_loai: 24,
-        so_lan_dung_ngoai_da_cham: 6,
-        ty_le_quyet_dinh_dung: 75,
+        so_ma_da_san: 34,
+        so_ma_mua_tu_watchlist: 14,
       }),
     })
     renderCap5(<Cap5TradingPage />)

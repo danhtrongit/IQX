@@ -10,6 +10,7 @@ from fastapi import APIRouter
 
 from app.api.deps import CurrentUser, DBSession
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
+from app.models.symbol import la_co_phieu
 from app.repositories.symbol import SymbolRepository
 from app.repositories.watchlist import WatchlistRepository
 from app.schemas.watchlist import (
@@ -48,7 +49,9 @@ async def add_to_watchlist(
     if symbol is None or not symbol.is_active:
         raise BadRequestError(f"Mã {requested_symbol} không tồn tại")
 
-    if symbol.is_index or (symbol.asset_type or "").lower() != "stock":
+    # ★ Cùng MỘT luật với Cấp 5 (rổ săn mã + ``_validate_symbol``) — xem
+    # ``app.models.symbol.la_co_phieu``.
+    if not la_co_phieu(symbol):
         raise BadRequestError(f"Mã {requested_symbol} không phải là cổ phiếu")
 
     # Check max limit

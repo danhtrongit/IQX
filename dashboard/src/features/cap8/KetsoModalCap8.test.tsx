@@ -3,30 +3,33 @@ import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 /**
- * Kết sổ Cấp 8 = Kết sổ Cấp 7 nguyên vẹn (mọi khối Cấp 1-6 + khối Đối chiếu Cấp
- * 6 + khối Đọc sổ lệnh Cấp 7 + CỔNG phân loại 4 ô của Cấp 5) + khối "KIỂM TRA
- * DANH MỤC — NHÌN LẠI" + lớp coach thứ 8.
+ * Kết sổ Cấp 8 = Kết sổ Cấp 7 (mọi khối Cấp 1-4 + khối Đối chiếu Cấp 6 + khối Đọc
+ * sổ lệnh Cấp 7) + khối "KIỂM TRA DANH MỤC — NHÌN LẠI" + lớp coach thứ 8.
  *
- * `PhanLoai4O` KHÔNG bị mock — cổng Cấp 5 phải đúng với khối thật. Chỉ mock tầng
- * hook + `Message`.
+ * ★★ **CỔNG PHÂN LOẠI 4 Ô CỦA CẤP 5 ĐÃ NGHỈ HƯU** cùng Cấp 5 cũ: không còn
+ * `PhanLoai4O`, `GET /cap5/verdict`, `POST /cap5/ketso`, lối ra "chưa phân loại
+ * được", và `Đóng kết sổ ✓` KHÔNG còn bị khoá bởi verdict. Các `it` dưới canh
+ * CHÍNH sự vắng mặt đó — bài học Cấp 2 bỏ "chuỗi kỷ luật" mà dòng chuỗi sống sót
+ * ở Kết sổ Cấp 3-8 rồi in ra một con số bịa.
  */
 const {
   recordKetsoCap1Async,
   recordKetsoCap2Mutate,
-  recordKetsoCap5Async,
   markCap6Task,
   markCap7Task,
   markCap8Task,
-  verdictQuery,
+  cap5HooksLoaded,
   messageError,
 } = vi.hoisted(() => ({
   recordKetsoCap1Async: vi.fn(),
   recordKetsoCap2Mutate: vi.fn(),
-  recordKetsoCap5Async: vi.fn(),
   markCap6Task: vi.fn(),
   markCap7Task: vi.fn(),
   markCap8Task: vi.fn(),
-  verdictQuery: { current: {} as Record<string, unknown> },
+  // `true` NGAY KHI `@/features/cap5/hooks` được nạp lần đầu — cách duy nhất
+  // khẳng định `useVerdictGoiY`/`useRecordKetsoCap5` đã bị gỡ HẲN khỏi cây import
+  // của Kết sổ Cấp 8 (một `not.toHaveBeenCalled()` sẽ đúng một cách rỗng).
+  cap5HooksLoaded: { value: false },
   messageError: vi.fn(),
 }))
 
@@ -36,10 +39,10 @@ vi.mock("@/features/cap1/hooks", () => ({
 vi.mock("@/features/cap2/hooks", () => ({
   useRecordKetsoCap2: () => ({ mutate: recordKetsoCap2Mutate }),
 }))
-vi.mock("@/features/cap5/hooks", () => ({
-  useVerdictGoiY: () => verdictQuery.current,
-  useRecordKetsoCap5: () => ({ mutateAsync: recordKetsoCap5Async, isPending: false }),
-}))
+vi.mock("@/features/cap5/hooks", () => {
+  cap5HooksLoaded.value = true
+  return {}
+})
 vi.mock("@/features/cap6/hooks", () => ({
   useCompleteCap6Task: () => ({ mutate: markCap6Task }),
 }))
@@ -72,7 +75,6 @@ import type { DocLucKetsoCap7 } from "@/features/cap7/KetsoModalCap7"
 import { readCap7TradeLog, type Cap7TradeRecord } from "@/features/cap7/tradeLogCap7"
 import type { DoiChieuKetsoCap6 } from "@/features/cap6/KetsoModalCap6"
 import type { Cap1Progress } from "@/features/cap1/types"
-import type { VerdictGoiY } from "@/features/cap5/types"
 
 const CAM_TU = ["sai lầm", "vi phạm", "bị phạt", "không nên", "lẽ ra"]
 
@@ -170,29 +172,15 @@ const data: KetsoDataCap8 = {
     dinh_gia: "bad",
   },
   ai5Lop: null,
+  // ★★ NGUỒN SĂN THẬT của lệnh (nguyên tắc cộng dồn: cấp này VẪN có màn Săn mã).
+  // Fixture mặc định là một lệnh ĐẾN TỪ săn mã — nếu `buildRecord` quay lại điền
+  // `null` cứng thì bài canh nguồn săn dưới đây ĐỎ.
+  huntFilter: "kl",
+  huntSoPhienCho: 3,
+  huntSoLopLucVao: null,
   doiChieu,
   docLuc,
   kiemTra: kiemTra(),
-}
-
-function goiY(overrides: Partial<VerdictGoiY> = {}): VerdictGoiY {
-  return {
-    order_id: "order-120",
-    verdict: "dung",
-    giai_thich: "Lệnh giữ đúng cắt lỗ và khối lượng đã cam kết.",
-    signals: [
-      {
-        ma: "co_so",
-        ten: "Cơ sở khi đặt lệnh",
-        dat: true,
-        giai_thich: "2/5 lớp bạn đọc là Ủng hộ lúc đặt",
-      },
-    ],
-    pnl_pct: 5.3,
-    thang: true,
-    o_4_du_kien: "dung_thang",
-    ...overrides,
-  }
 }
 
 function renderModal(
@@ -214,10 +202,6 @@ function closeButton(): HTMLElement {
   return screen.getByTestId("cap8-ketso-close")
 }
 
-function chotPhanLoai() {
-  fireEvent.click(screen.getByTestId("cap5-phanloai-dong-y"))
-}
-
 /** `true` khi `a` đứng TRƯỚC `b` trong cây DOM. */
 function precedes(a: Element, b: Element): boolean {
   return Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING)
@@ -227,22 +211,10 @@ beforeEach(() => {
   recordKetsoCap1Async.mockReset()
   recordKetsoCap1Async.mockResolvedValue({ id: "ks1" })
   recordKetsoCap2Mutate.mockReset()
-  recordKetsoCap5Async.mockReset()
-  recordKetsoCap5Async.mockResolvedValue({
-    id: "k5-1",
-    order_id: "order-120",
-    pnl_pct: 5.3,
-    verdict_he: "dung",
-    verdict_user: "dung",
-    verdict_provenance: null,
-    o_4: "dung_thang",
-    ly_do_sua: null,
-  })
   markCap6Task.mockReset()
   markCap7Task.mockReset()
   markCap8Task.mockReset()
   messageError.mockReset()
-  verdictQuery.current = { data: goiY(), isPending: false, isError: false }
   window.localStorage.clear()
 })
 
@@ -260,29 +232,43 @@ describe("KetsoModalCap8 — cộng dồn Cấp 1-7 (spec §0/§6)", () => {
     expect(screen.getByTestId("cap8-ketso-kiemtra")).toBeInTheDocument()
   })
 
-  it("giữ CỔNG phân loại 4 ô của Cấp 5 — chưa chốt thì chưa đóng được", () => {
+  it("cổng phân loại 4 ô của Cấp 5 ĐÃ NGHỈ HƯU: không khối, không cổng, không lối ra", () => {
     renderModal()
-    expect(screen.getByTestId("cap5-phanloai")).toBeInTheDocument()
-    expect(closeButton()).toBeDisabled()
-    expect(screen.getByTestId("cap8-ketso-gate-note")).toBeInTheDocument()
-    chotPhanLoai()
+    expect(screen.queryByTestId("cap5-phanloai")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap8-ketso-gate-note")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap8-ketso-escape")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap8-ketso-escape-note")).not.toBeInTheDocument()
     expect(closeButton()).not.toBeDisabled()
   })
 
-  it("có ĐỦ 8 lớp coach cạnh nhau", () => {
+  it("KHÔNG còn import `@/features/cap5/hooks` (verdict + POST /cap5/ketso đã gỡ)", () => {
     renderModal()
-    chotPhanLoai()
+    expect(cap5HooksLoaded.value).toBe(false)
+  })
+
+  /**
+   * ★★★ B3 — bài cũ nói "đoạn coach săn mã chưa có nguồn ở Cấp 8 nên phải VẮNG".
+   * Nguồn CÓ: nguyên tắc cộng dồn giữ `Cap5Provider` ⇒ nút «Săn mã» vẫn có ở Cấp
+   * 8 và `GET /cap5/nguon-san/{symbol}` trả nguồn săn thật của lệnh.
+   */
+  it("có đủ lớp coach Cấp 1-4 + 5 (SĂN MÃ) + 6 + 7 + 8", () => {
+    renderModal()
     expect(screen.getByTestId("cap3-ketso-coach")).toBeInTheDocument()
     expect(screen.getByTestId("cap4-ketso-coach")).toBeInTheDocument()
-    expect(screen.getByTestId("cap5-ketso-coach")).toBeInTheDocument()
+    expect(screen.getByTestId("cap5-ketso-coach")).toHaveTextContent("SĂN MÃ")
     expect(screen.getByTestId("cap6-ketso-coach")).toBeInTheDocument()
     expect(screen.getByTestId("cap7-ketso-coach")).toBeInTheDocument()
     expect(screen.getByTestId("cap8-ketso-coach")).toBeInTheDocument()
   })
 
+  it("★ chưa biết nguồn săn → lớp coach săn mã VẮNG (không đoán nguồn gốc lệnh)", () => {
+    renderModal({ huntNguonChuaBiet: true, huntFilter: null })
+    expect(screen.queryByTestId("cap5-ketso-coach")).not.toBeInTheDocument()
+    expect(screen.getByTestId("cap4-ketso-coach")).toBeInTheDocument()
+  })
+
   it("khối Cấp 8 đứng DƯỚI mọi khối kế thừa và TRÊN chồng coach", () => {
     renderModal()
-    chotPhanLoai()
     const kiemTraBlock = screen.getByTestId("cap8-ketso-kiemtra")
     expect(precedes(screen.getByTestId("cap7-ketso-docluc"), kiemTraBlock)).toBe(true)
     expect(precedes(kiemTraBlock, screen.getByTestId("cap8-ketso-coach"))).toBe(true)
@@ -482,7 +468,6 @@ describe("đóng kết sổ", () => {
   it("gọi PATCH /cap8/task cho nhiệm vụ ② (cùng Cấp 6/7)", async () => {
     const onClose = vi.fn()
     renderModal({}, { onClose })
-    chotPhanLoai()
     fireEvent.click(closeButton())
     await waitFor(() => expect(onClose).toHaveBeenCalled())
     expect(markCap8Task).toHaveBeenCalledWith(2)
@@ -494,7 +479,6 @@ describe("đóng kết sổ", () => {
     const onRecorded = vi.fn()
     const onClose = vi.fn()
     renderModal({}, { onClose, onRecorded })
-    chotPhanLoai()
     fireEvent.click(closeButton())
     await waitFor(() => expect(onClose).toHaveBeenCalled())
     expect(onRecorded).toHaveBeenCalledTimes(1)
@@ -502,19 +486,74 @@ describe("đóng kết sổ", () => {
     expect(readCap7TradeLog("user-1")[0].orderId).toBe("order-120")
   })
 
-  it("lối ra khi verdict LỖI vẫn còn — user không bị kẹt trong modal", () => {
-    verdictQuery.current = { data: undefined, isPending: false, isError: true }
+  it("nhật ký KHÔNG còn 3 trường của 4 ô (o4 / verdictHe / verdictUser)", async () => {
     const onClose = vi.fn()
     renderModal({}, { onClose })
-    fireEvent.click(screen.getByTestId("cap8-ketso-escape"))
-    expect(onClose).toHaveBeenCalled()
-    expect(readCap7TradeLog("user-1")[0].o4).toBeNull()
+    fireEvent.click(closeButton())
+    await waitFor(() => expect(onClose).toHaveBeenCalled())
+    const [rec] = readCap7TradeLog("user-1") as unknown as Record<string, unknown>[]
+    expect("o4" in rec).toBe(false)
+    expect("verdictHe" in rec).toBe(false)
+    expect("verdictUser" in rec).toBe(false)
+    // Khối Cấp 6/7 của lệnh (độc lập với 4 ô) vẫn được ghi nguyên vẹn.
+    expect(rec.khopGoiY).toBe(true)
+    expect(rec.docLucDung).toBe(true)
   })
 
-  it("khối Cấp 8 KHÔNG thêm cổng nào — nút đóng chỉ phụ thuộc verdict Cấp 5", () => {
+  it("khối Cấp 8 KHÔNG thêm cổng nào — và không còn cổng nào khác để phụ thuộc", () => {
     renderModal({ kiemTra: kiemTra({ hanhVi: "van_mua", hanhViTen: "Vẫn mua" }) })
-    expect(closeButton()).toBeDisabled()
-    chotPhanLoai()
     expect(closeButton()).not.toBeDisabled()
+  })
+})
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NGUỒN SĂN CỦA LỆNH (nguyên tắc cộng dồn: cấp này VẪN có màn Săn mã)
+   ══════════════════════════════════════════════════════════════════════════ */
+describe("KetsoModalCap8 — nguồn săn của lệnh KHÔNG được điền `null` cứng", () => {
+  /**
+   * ★★★ B3 — HAI NGUỒN NÓI KHÁC NHAU VỀ CÙNG MỘT LỆNH.
+   *
+   * `Cap8TradingPage` bọc `Cap5Provider` (cộng dồn) ⇒ `isCap5Active === true` ⇒
+   * `RightToolbar`/`RightSidebar` mọc đủ nút «Săn mã» + «Watchlist» ở Cấp 6/7/8,
+   * và backend đóng dấu `order_kehoach.hunt_filter` cho lệnh săn được. Bản ghi FE
+   * từng điền `huntFilter: null` CỨNG kèm docstring "trang Cấp 8 KHÔNG có màn
+   * Săn mã" — vừa sai, vừa biến `null` thành câu khẳng định "mã này KHÔNG đến từ
+   * săn mã" (`coachTemplateCap5`).
+   */
+  it("★★★ bản ghi mang NGUỒN SĂN THẬT của lệnh, không phải `null` cứng", async () => {
+    const onRecorded = vi.fn()
+    renderModal({ huntFilter: "kl", huntSoPhienCho: 3 }, { onRecorded })
+    fireEvent.click(closeButton())
+    await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1))
+    const rec = onRecorded.mock.calls[0][0] as Record<string, unknown>
+    expect(rec.huntFilter).toBe("kl")
+    expect(rec.huntSoPhienCho).toBe(3)
+    // `so_lop_luc_vao` server LUÔN null (không lưu điểm lúc đặt lệnh) — chép nguyên.
+    expect(rec.huntSoLopLucVao).toBeNull()
+  })
+
+  it("★ mã user tự gõ (server nói không từ săn mã) ⇒ `null` — và đó là sự thật", async () => {
+    const onRecorded = vi.fn()
+    renderModal({ huntFilter: null, huntSoPhienCho: null }, { onRecorded })
+    fireEvent.click(closeButton())
+    await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1))
+    const rec = onRecorded.mock.calls[0][0] as Record<string, unknown>
+    expect(rec.huntFilter).toBeNull()
+  })
+
+  it("★ đoạn coach săn mã CÓ mặt khi biết nguồn săn", () => {
+    renderModal({ huntFilter: "kl", huntSoPhienCho: 3 })
+    expect(document.body.textContent).toMatch(/Khối lượng đột biến/)
+  })
+
+  /**
+   * ★ NGOẠI LỆ: không lấy được nguồn săn (`GET /cap5/nguon-san` lỗi) ⇒ VẮNG đoạn
+   * coach. In "Mã này KHÔNG đến từ săn mã" khi chưa biết nguồn là bịa đặt về
+   * nguồn gốc lệnh — "chưa lấy được" ≠ "không đến từ săn mã" (luật số 1).
+   */
+  it("★ chưa biết nguồn săn ⇒ KHÔNG câu nào khẳng định về nguồn gốc lệnh", () => {
+    renderModal({ huntNguonChuaBiet: true, huntFilter: null })
+    expect(document.body.textContent).not.toMatch(/KHÔNG đến từ săn mã/i)
+    expect(document.body.textContent).not.toMatch(/không đến từ săn mã/i)
   })
 })

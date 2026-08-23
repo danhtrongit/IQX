@@ -77,7 +77,7 @@ export interface CoachResultCap6 {
 /**
  * 4 ô = khớp × kết quả. Mirror `services/cap6/service.py`'s win rule
  * (`order_ketso.pnl_pct > 0`): lệnh đóng ngang giá (0%) tính là THUA — không có
- * ô "hoà", đúng như Cấp 5's `deriveO4`.
+ * ô "hoà" (cùng luật `pnlPct > 0` mà mọi cấp dưới dùng).
  */
 export function deriveCoachIdCap6(khopGoiY: boolean, pnlPct: number): CoachIdCap6 {
   const thang = pnlPct > 0
@@ -242,7 +242,8 @@ export interface ComposedCoachCap6 extends ComposedCoachCap5 {
  * Composes CẢ 6 lớp coach cho `KetsoModalCap6`: gọi `composeCoachCap5` (Cấp 1-5,
  * không bao giờ viết lại) rồi thêm lớp Cấp 6. `cap6Situation === null` (lệnh
  * không có đối chiếu) → 5 lớp dưới VẪN đủ, `cap6` là `null`; và ngược lại,
- * `cap5Situation === null` (user chưa chốt phân loại 4 ô) không chặn đoạn Cấp 6.
+ * `cap5Situation === null` (lệnh không có nguồn săn mã để nói) không chặn đoạn
+ * Cấp 6.
  */
 export function composeCoachCap6(
   cap1Situation: CoachSituationCap1,

@@ -1,19 +1,16 @@
 import { api, unwrap } from "@/shared/http/client"
-import type {
-  Cap5Progress,
-  ChamDungNgoaiResult,
-  DungNgoaiInput,
-  DungNgoaiList,
-  KetsoInputCap5,
-  OrderKetsoCap5,
-  ThachThucCap5,
-  VerdictGoiY,
-} from "./types"
+import type { Cap5PhanTich, Cap5Progress, NguonSan } from "./types"
 
 /**
  * Cấp 5 «Lão luyện» API — BE endpoints under `/cap5/*` (FREE, auth-only, same
  * as Cấp 1-4). Payloads are returned un-enveloped; `unwrap` is applied
  * defensively (a no-op for these shapes), matching `cap4/api.ts`.
+ *
+ * ★★ ĐÃ GỠ cùng Cấp 5 cũ: `GET /cap5/verdict/{id}` · `POST /cap5/ketso` ·
+ * `POST|GET /cap5/dung-ngoai` · `POST /cap5/dung-ngoai/cham` ·
+ * `GET /cap5/thach-thuc`. Cấp 5 mới không có bước phân loại 4 ô, không có nhật
+ * ký đứng ngoài, và 2 nhiệm vụ đều được server suy ra từ `watchlist` +
+ * `order_kehoach.from_watchlist` nên chỉ còn 4 endpoint.
  */
 export const cap5Api = {
   /** GET /cap5/progress → the row, or null if the user hasn't entered yet. */
@@ -28,58 +25,35 @@ export const cap5Api = {
     return unwrap(res as never) as Cap5Progress
   },
 
-  /** PATCH /cap5/task { task_no } — idempotent recompute (all 3 nhiệm vụ are
-   * derived server-side). */
+  /** PATCH /cap5/task { task_no } — idempotent recompute (cả 2 nhiệm vụ đều
+   *  được suy ra server-side từ watchlist + lệnh mua). */
   markTask: async (taskNo: number): Promise<Cap5Progress> => {
     const res = await api.patch("cap5/task", { json: { task_no: taskNo } }).json<unknown>()
     return unwrap(res as never) as Cap5Progress
   },
 
   /**
-   * GET /cap5/verdict/{order_id} — verdict hệ GỢI Ý + every tín hiệu it was
-   * derived from (spec §4/§C12c). The FE must render `signals` verbatim; a bare
-   * verdict is not allowed.
+   * POST /cap5/tour-sanma — đánh dấu ĐÃ ĐI HẾT 7 bước tour Săn mã (spec §7).
+   * ★ Chỉ gọi khi user đi hết/bấm "Xong" — "Bỏ qua" giữa chừng KHÔNG được gọi.
    */
-  getVerdict: async (orderId: string): Promise<VerdictGoiY> => {
-    const res = await api.get(`cap5/verdict/${orderId}`).json<unknown>()
-    return unwrap(res as never) as VerdictGoiY
+  markTourSanMa: async (): Promise<Cap5Progress> => {
+    const res = await api.post("cap5/tour-sanma").json<unknown>()
+    return unwrap(res as never) as Cap5Progress
   },
 
-  /**
-   * POST /cap5/ketso — user confirms/overrides the hệ verdict. The server
-   * recomputes `verdict_he` + derives `o_4` itself; `ly_do_sua` is REQUIRED on
-   * an override (422 otherwise — the FE gates for this in `isPhanLoaiSettled`).
-   */
-  recordKetso: async (input: KetsoInputCap5): Promise<OrderKetsoCap5> => {
-    const res = await api.post("cap5/ketso", { json: input }).json<unknown>()
-    return unwrap(res as never) as OrderKetsoCap5
+  /** GET /cap5/nguon-san/{symbol} — dòng nguồn săn cho Kết sổ (spec §8). */
+  getNguonSan: async (symbol: string): Promise<NguonSan> => {
+    const res = await api.get(`cap5/nguon-san/${symbol.toUpperCase()}`).json<unknown>()
+    return unwrap(res as never) as NguonSan
   },
 
-  /** POST /cap5/dung-ngoai — logs a non-trade decision (giá chốt ở server). */
-  logDungNgoai: async (input: DungNgoaiInput): Promise<DungNgoaiList> => {
-    const res = await api.post("cap5/dung-ngoai", { json: input }).json<unknown>()
-    return unwrap(res as never) as DungNgoaiList
+  /** GET /cap5/phan-tich — khối ⑫ + ⑬ do server tính từ lệnh thật (spec §9). */
+  getPhanTich: async (): Promise<Cap5PhanTich> => {
+    const res = await api.get("cap5/phan-tich").json<unknown>()
+    return unwrap(res as never) as Cap5PhanTich
   },
 
-  /** GET /cap5/dung-ngoai — nhật ký + counts; scores any due decision on read. */
-  getDungNgoai: async (): Promise<DungNgoaiList> => {
-    const res = await api.get("cap5/dung-ngoai").json<unknown>()
-    return unwrap(res as never) as DungNgoaiList
-  },
-
-  /** POST /cap5/dung-ngoai/cham — same scoring routine, triggered explicitly. */
-  chamDungNgoai: async (): Promise<ChamDungNgoaiResult> => {
-    const res = await api.post("cap5/dung-ngoai/cham").json<unknown>()
-    return unwrap(res as never) as ChamDungNgoaiResult
-  },
-
-  /** GET /cap5/thach-thuc — 3 điều kiện của nhiệm vụ ③ kèm giá trị + giải thích. */
-  getThachThuc: async (): Promise<ThachThucCap5> => {
-    const res = await api.get("cap5/thach-thuc").json<unknown>()
-    return unwrap(res as never) as ThachThucCap5
-  },
-
-  /** POST /cap5/graduate — only succeeds when 3/3 nhiệm vụ are done. */
+  /** POST /cap5/graduate — only succeeds when 2/2 nhiệm vụ are done. */
   graduate: async (): Promise<Cap5Progress> => {
     const res = await api.post("cap5/graduate").json<unknown>()
     return unwrap(res as never) as Cap5Progress

@@ -420,6 +420,12 @@ export interface Cap6PortfolioAnalysisResult extends Cap5PortfolioAnalysisResult
  * `Cap5PortfolioAnalysis` nên nó chỉ cần 2 hàm khối ở trên; hàm tổng này là API
  * cho consumer muốn 1 object duy nhất (và là bề mặt test của delegation) — cùng
  * quy ước Cấp 3/4/5 đã ghi.
+ *
+ * ★ KHỐI ⑫ (Cấp 5) ở object này LUÔN ở trạng thái "chưa lấy được số": nó chỉ
+ * được nói bằng số của `GET /cap5/phan-tich`, và hàm tổng này không mang theo
+ * payload đó. Đường LIVE là component `Cap5PortfolioAnalysis` (tự gọi
+ * `useCap5PhanTich`). ĐỪNG "chữa" bằng cách cho ⑫ tính lại từ `trades`: nhật ký
+ * đó per-browser và sẽ mâu thuẫn với khối ① ngay trên cùng một màn.
  */
 export function computeCap6PortfolioAnalysis(
   trades: Cap6TradeRecord[],

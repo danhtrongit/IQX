@@ -3,15 +3,15 @@ import type { Cap2Progress } from "@/features/cap2/types"
 import type { Cap3Progress } from "@/features/cap3/types"
 import type { Cap4Progress } from "@/features/cap4/types"
 import {
-  computeCap5Khoi12MaTran,
+  computeCap5Khoi13Pheu,
   computeCap5PortfolioAnalysis,
+  nhanTangGiua,
+  tangGiuaCap5,
+  viewCap5Khoi12BoLoc,
   KHOI12_MIN_LENH,
-  KHOI12_SAI_THANG_CANH_BAO,
-  O4_ORDER,
-  viPhamPhoBienCap5,
 } from "./portfolioAnalysisCap5"
 import type { Cap5TradeRecord } from "./tradeLogCap5"
-import { O4_LABEL, type Cap5Progress, type O4 } from "./types"
+import { type Cap5PhanTich, type Cap5Progress, type HuntFilter, type Khoi12 } from "./types"
 
 const NOW = new Date("2026-07-31T12:00:00Z")
 
@@ -39,334 +39,399 @@ function trade(overrides: Partial<Cap5TradeRecord> = {}): Cap5TradeRecord {
     ai_5_lop: { ky_thuat: "ok", dong_tien: "ok", noi_bo: "ok", tin_tuc: "ok", dinh_gia: "ok" },
     so_lop_dong_thuan: 5,
     so_lop_khac_ai: 0,
-    o4: "dung_thang",
-    verdictHe: "dung",
-    verdictUser: "dung",
+    huntFilter: null,
+    huntSoPhienCho: null,
+    huntSoLopLucVao: null,
     ...overrides,
   }
 }
 
-/** `n` lệnh trong ô `o4` (P&L đặt khớp ô để dữ liệu không tự mâu thuẫn). */
-function tradesInO(o4: O4, n: number, extra: Partial<Cap5TradeRecord> = {}): Cap5TradeRecord[] {
-  const thang = o4 === "dung_thang" || o4 === "sai_thang"
-  const verdict = o4 === "dung_thang" || o4 === "dung_thua" ? "dung" : "sai"
-  return Array.from({ length: n }, () =>
-    trade({
-      o4,
-      verdictHe: verdict,
-      verdictUser: verdict,
-      pnlPct: thang ? 6 : -4,
-      pnlVnd: thang ? 600_000 : -400_000,
-      ...extra,
-    }),
-  )
+/** `soThang` lệnh lãi + `soThua` lệnh lỗ, cùng một bộ lọc. */
+function hunts(filter: HuntFilter, soThang: number, soThua: number): Cap5TradeRecord[] {
+  return [
+    ...Array.from({ length: soThang }, () =>
+      trade({ huntFilter: filter, pnlPct: 6, pnlVnd: 600_000 }),
+    ),
+    ...Array.from({ length: soThua }, () =>
+      trade({ huntFilter: filter, pnlPct: -4, pnlVnd: -400_000 }),
+    ),
+  ]
 }
 
-function cap2Progress(): Cap2Progress {
+function progress(overrides: Partial<Cap5Progress> = {}): Cap5Progress {
   return {
-    id: "c2p",
+    id: "p1",
     user_id: "u1",
-    entered_at: "2026-03-01T00:00:00Z",
+    entered_at: "2026-07-01T00:00:00Z",
     task_1_done_at: null,
     task_2_done_at: null,
-    so_lenh_co_cl_tp: 0,
-    so_lan_cat_lo_dung: 0,
-    so_lan_chot_loi_dung: 0,
-    so_lan_thuc_hien_dung: 0,
-    graduated_at: "2026-05-02T00:00:00Z",
-    time_to_graduate_hours: 12,
-  }
-}
-
-function cap3Progress(): Cap3Progress {
-  return {
-    id: "c3p",
-    user_id: "u1",
-    entered_at: "2026-05-03T00:00:00Z",
-    khau_vi_da_dat: true,
-    khau_vi: "can_bang",
-    von_ban_dau: 100_000_000,
-    task_1_done_at: null,
-    task_2_done_at: null,
-    task_3_done_at: null,
-    so_lenh_cap3: 0,
-    lai_pct_cap3: 0,
-    diem_ky_luat_tb_cap3: 0,
-    graduated_at: "2026-06-01T00:00:00Z",
-    time_to_graduate_hours: 20,
-  }
-}
-
-function cap4Progress(): Cap4Progress {
-  return {
-    id: "c4p",
-    user_id: "u1",
-    entered_at: "2026-06-02T00:00:00Z",
-    task_1_done_at: null,
-    so_lenh_doc_du_5lop: 22,
-    vu_khi_lop: "dong_tien",
-    diem_mu_lop: "tin_tuc",
-    graduated_at: "2026-07-01T00:00:00Z",
-    time_to_graduate_hours: 30,
-  }
-}
-
-function cap5Progress(overrides: Partial<Cap5Progress> = {}): Cap5Progress {
-  return {
-    id: "c5p",
-    user_id: "u1",
-    entered_at: "2026-07-02T00:00:00Z",
-    task_1_done_at: "2026-07-03T00:00:00Z",
-    task_2_done_at: null,
-    task_3_done_at: null,
-    so_lenh_phan_loai: 25,
-    so_lan_dung_ngoai_da_cham: 4,
-    ty_le_quyet_dinh_dung: 72,
+    so_ma_da_san: 0,
+    so_ma_mua_tu_watchlist: 0,
+    so_ma_cho_du_lop: null,
+    best_filter: null,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
   }
 }
 
-describe("computeCap5Khoi12MaTran — ⑫ ma trận quyết định (4 ô)", () => {
-  it("4 ô theo đúng thứ tự spec, kèm số lượng + % trên số lệnh đã phân loại", () => {
-    // Đúng bộ số của mockup spec §6: 12 / 6 / 3 / 4 = 25 lệnh.
-    const res = computeCap5Khoi12MaTran([
-      ...tradesInO("dung_thang", 12),
-      ...tradesInO("dung_thua", 6),
-      ...tradesInO("sai_thang", 3),
-      ...tradesInO("sai_thua", 4),
-    ])
-    expect(res.cells.map((c) => c.o4)).toEqual([...O4_ORDER])
-    expect(res.cells.map((c) => c.label)).toEqual([
-      O4_LABEL.dung_thang,
-      O4_LABEL.dung_thua,
-      O4_LABEL.sai_thang,
-      O4_LABEL.sai_thua,
-    ])
-    expect(res.cells.map((c) => c.count)).toEqual([12, 6, 3, 4])
-    expect(res.cells.map((c) => c.pct)).toEqual([48, 24, 12, 16])
-    expect(res.soDaPhanLoai).toBe(25)
-    expect(res.soQuyetDinhDung).toBe(18)
-    expect(res.soQuyetDinhSai).toBe(7)
-    expect(res.tyLeQuyetDinhDung).toBe(72)
-    expect(res.tyLeQuyetDinhSai).toBe(28)
+/**
+ * Khối ⑫ giờ là VIEW MODEL trên payload `GET /cap5/phan-tich` — không còn hàm
+ * nào tính nó từ nhật ký localStorage (xem docstring `portfolioAnalysisCap5.ts`).
+ * Fixture vì thế là hình dạng WIRE, không phải mảng lệnh.
+ */
+function khoi12Item(
+  ma: HuntFilter,
+  soLenh: number,
+  soThang: number,
+  overrides: Partial<Khoi12["items"][number]> = {},
+): Khoi12["items"][number] {
+  const duMau = soLenh >= 3
+  return {
+    ma,
+    ten: { ngoai: "Khối ngoại gom", tudoanh: "Tự doanh gom", kl: "Khối lượng đột biến", dinh: "Vượt đỉnh 20 phiên", tang: "Tăng mạnh + KL cao" }[ma],
+    so_lenh: soLenh,
+    so_lenh_thang: soThang,
+    ty_le_thang: duMau ? Math.round((soThang / soLenh) * 100) : null,
+    du_mau: duMau,
+    nhan: null,
+    canh_bao: null,
+    giai_thich: "",
+    ...overrides,
+  }
+}
+
+function khoi12(
+  items: Khoi12["items"],
+  overrides: Partial<Khoi12> = {},
+): Khoi12 {
+  return {
+    items,
+    best_filter: null,
+    so_lenh_toi_thieu: 3,
+    so_lenh_khong_tu_san: 0,
+    du_de_ket_luan: items.some((i) => i.du_mau),
+    giai_thich: "Chỉ tính các lệnh ĐÃ ĐÓNG có nguồn săn.",
+    ...overrides,
+  }
+}
+
+function phanTich(k12: Khoi12): Cap5PhanTich {
+  return {
+    khoi_12: k12,
+    khoi_13: {
+      so_ma_da_san: 0,
+      so_ma_cho_du_lop: null,
+      so_ma_vao_lenh: 0,
+      giai_thich: "",
+      loi_ket: "",
+    },
+  }
+}
+
+describe("khối ⑫ — bộ lọc nào mang lại mã thắng nhiều nhất (đọc SERVER)", () => {
+  it("★★ query LỖI ⇒ fail-closed: nói chưa lấy được, KHÔNG tự tính bù", () => {
+    const r = viewCap5Khoi12BoLoc(null, "loi")
+    expect(r.chuaLayDuoc).toBe(true)
+    expect(r.dangTai).toBe(false)
+    expect(r.rows).toEqual([])
+    expect(r.phatHien).toBeNull()
+    expect(r.insufficientNote).toMatch(/Chưa lấy được số liệu bộ lọc từ máy chủ/)
+    // ★ Và tuyệt đối KHÔNG được nói "bạn chưa đóng lệnh nào từ săn mã" — đó là
+    // một khẳng định về hành vi user mà ta chưa hỏi được máy chủ.
+    expect(r.insufficientNote).not.toMatch(/Chưa có lệnh nào đóng từ mã bạn săn/)
   })
 
-  it("tỷ lệ thắng đo RIÊNG với tỷ lệ quyết định đúng (2 con số khác nhau)", () => {
-    const res = computeCap5Khoi12MaTran([
-      ...tradesInO("dung_thang", 12),
-      ...tradesInO("dung_thua", 6),
-      ...tradesInO("sai_thang", 3),
-      ...tradesInO("sai_thua", 4),
-    ])
-    // thắng = dung_thang + sai_thang = 15/25 = 60% ≠ 72% quyết định đúng
-    expect(res.soThang).toBe(15)
-    expect(res.tyLeThang).toBe(60)
-    expect(res.tyLeThang).not.toBe(res.tyLeQuyetDinhDung)
+  it("★ đang tải ⇒ câu chữ KHÁC lỗi, và cũng không có số nào", () => {
+    const r = viewCap5Khoi12BoLoc(undefined, "dang_tai")
+    expect(r.chuaLayDuoc).toBe(true)
+    expect(r.dangTai).toBe(true)
+    expect(r.insufficientNote).toMatch(/Đang lấy số liệu/)
+    expect(r.rows).toEqual([])
   })
 
-  it("lệnh chưa phân loại được đếm RIÊNG, không gộp vào ô nào", () => {
-    const res = computeCap5Khoi12MaTran([
-      ...tradesInO("dung_thang", 3),
-      trade({ o4: null, verdictHe: null, verdictUser: null }),
-      trade({ o4: null, verdictHe: "dung", verdictUser: null }),
-    ])
-    expect(res.soDaPhanLoai).toBe(3)
-    expect(res.soChuaPhanLoai).toBe(2)
-    expect(res.cells.reduce((s, c) => s + c.count, 0)).toBe(3)
+  it("server nói chưa có lệnh săn nào ⇒ rỗng TRUNG THỰC, không bịa dòng bộ lọc", () => {
+    const r = viewCap5Khoi12BoLoc(khoi12([], { so_lenh_khong_tu_san: 2 }), "co_du_lieu")
+    expect(r.chuaLayDuoc).toBe(false)
+    expect(r.rows).toEqual([])
+    expect(r.soLenhSan).toBe(0)
+    expect(r.soLenhKhongSan).toBe(2)
+    expect(r.insufficient).toBe(true)
+    expect(r.phatHien).toBeNull()
+    expect(r.insufficientNote).toMatch(/Chưa có lệnh nào đóng từ mã bạn săn/)
   })
 
-  it("ô 4 đi theo verdict USER khi user đảo verdict hệ", () => {
-    const res = computeCap5Khoi12MaTran([
-      ...tradesInO("dung_thang", 3),
-      trade({ o4: "sai_thang", verdictHe: "dung", verdictUser: "sai", pnlPct: 5 }),
-    ])
-    expect(res.cells.find((c) => c.o4 === "sai_thang")?.count).toBe(1)
-    expect(res.soQuyetDinhSai).toBe(1)
+  it("★★ dưới ngưỡng mẫu ⇒ tyLeThang = null, KHÔNG suy 100% từ 1 lệnh thắng", () => {
+    const r = viewCap5Khoi12BoLoc(khoi12([khoi12Item("ngoai", 1, 1)]), "co_du_lieu")
+    expect(r.rows).toHaveLength(1)
+    expect(r.rows[0].soLenh).toBe(1)
+    expect(r.rows[0].soThang).toBe(1)
+    expect(r.rows[0].tyLeThang).toBeNull()
+    expect(r.rows[0].duMau).toBe(false)
+    expect(r.rows[0].conThieu).toBe(KHOI12_MIN_LENH - 1)
+    expect(r.insufficient).toBe(true)
+    expect(r.phatHien).toBeNull()
   })
 
-  it("chưa phân loại lệnh nào → mọi % là null (KHÔNG in 0%) + ghi chú trung thực", () => {
-    const res = computeCap5Khoi12MaTran([
-      trade({ o4: null, verdictHe: null, verdictUser: null }),
-      trade({ o4: null, verdictHe: null, verdictUser: null }),
-    ])
-    expect(res.soDaPhanLoai).toBe(0)
-    expect(res.cells.every((c) => c.pct === null)).toBe(true)
-    expect(res.tyLeQuyetDinhDung).toBeNull()
-    expect(res.tyLeQuyetDinhSai).toBeNull()
-    expect(res.tyLeThang).toBeNull()
-    expect(res.insufficient).toBe(true)
-    expect(res.phatHien).toBeNull()
-    expect(res.insufficientNote).toMatch(/Chưa có lệnh nào được phân loại/)
-  })
-
-  it("dưới ngưỡng 3 lệnh → số đếm THẬT vẫn hiện nhưng không phát hiện gì", () => {
-    const res = computeCap5Khoi12MaTran(tradesInO("dung_thang", 2))
-    expect(res.soDaPhanLoai).toBe(2)
-    expect(res.cells[0].count).toBe(2)
-    expect(res.cells[0].pct).toBe(100)
-    expect(res.insufficient).toBe(true)
-    expect(res.phatHien).toBeNull()
-    expect(res.insufficientNote).toMatch(
-      new RegExp(`Cần ít nhất ${KHOI12_MIN_LENH} lệnh đã phân loại`),
+  it("★★ server gửi `du_mau=false` KÈM một tỷ lệ ⇒ vẫn KHÔNG in tỷ lệ đó", () => {
+    // Hai trường nói ngược nhau thì FE chọn vế an toàn: không có tỷ lệ.
+    const r = viewCap5Khoi12BoLoc(
+      khoi12([khoi12Item("ngoai", 1, 1, { du_mau: false, ty_le_thang: 100 })]),
+      "co_du_lieu",
     )
-  })
-})
-
-describe("computeCap5Khoi12MaTran — phát hiện theo thứ tự ưu tiên spec §6", () => {
-  it("(a) Sai-Thắng ≥3 → cảnh báo may mắn củng cố thói quen xấu, kèm vi phạm THẬT", () => {
-    const res = computeCap5Khoi12MaTran([
-      ...tradesInO("dung_thang", 4),
-      ...tradesInO("sai_thang", 3, { chamSlKhongCat: true }),
-    ])
-    expect(res.canhBao).toBe(true)
-    expect(res.phatHien).toMatch(/3 lệnh thắng dù làm sai quy trình/)
-    expect(res.phatHien).toMatch(/may mắn củng cố thói quen xấu/)
-    expect(res.phatHien).toMatch(/cắt lỗ chậm/)
-    expect(res.viPhamPhoBien).toBe("cắt lỗ chậm")
+    expect(r.rows[0].tyLeThang).toBeNull()
   })
 
-  it("(a) thắng ưu tiên tuyệt đối: Đúng-Thua cao vẫn KHÔNG che được Sai-Thắng", () => {
-    const res = computeCap5Khoi12MaTran([
-      ...tradesInO("dung_thua", 8),
-      ...tradesInO("sai_thang", KHOI12_SAI_THANG_CANH_BAO, { nhoiLenhKhiLo: true }),
-    ])
-    expect(res.canhBao).toBe(true)
-    expect(res.phatHien).toMatch(/lệnh thắng dù làm sai quy trình/)
-    expect(res.phatHien).toMatch(/nhồi lệnh khi lỗ/)
+  it("trạng thái rỗng nói RÕ còn thiếu bao nhiêu lệnh", () => {
+    const r = viewCap5Khoi12BoLoc(
+      khoi12([khoi12Item("ngoai", 2, 0), khoi12Item("kl", 1, 0)]),
+      "co_du_lieu",
+    )
+    expect(r.insufficientNote).toMatch(/còn thiếu 1 lệnh/)
+    expect(r.soLenhSan).toBe(3)
   })
 
-  it("(a) không ghi được vi phạm nào → nói thẳng là chưa ghi được, KHÔNG bịa vi phạm", () => {
-    const res = computeCap5Khoi12MaTran([
-      ...tradesInO("dung_thang", 4),
-      ...tradesInO("sai_thang", 3),
-    ])
-    expect(res.canhBao).toBe(true)
-    expect(res.viPhamPhoBien).toBeNull()
-    expect(res.phatHien).toMatch(/hệ chưa ghi được vi phạm cụ thể nào/)
-    expect(res.phatHien).not.toMatch(/cắt lỗ|nhồi lệnh|chốt lời|bán sớm/i)
+  it("đủ mẫu ⇒ giữ đúng tỷ lệ của server và sắp giảm dần", () => {
+    const r = viewCap5Khoi12BoLoc(
+      khoi12([khoi12Item("kl", 4, 1), khoi12Item("ngoai", 4, 3), khoi12Item("dinh", 3, 2)]),
+      "co_du_lieu",
+    )
+    expect(r.rows.map((x) => x.filter)).toEqual(["ngoai", "dinh", "kl"])
+    expect(r.rows.map((x) => x.tyLeThang)).toEqual([75, 67, 25])
+    expect(r.best?.filter).toBe("ngoai")
+    expect(r.worst?.filter).toBe("kl")
+    expect(r.insufficient).toBe(false)
   })
 
-  it("(b) Đúng-Thua cao (≥ Đúng-Thắng) → «đó là thị trường, không phải lỗi bạn»", () => {
-    const res = computeCap5Khoi12MaTran([
-      ...tradesInO("dung_thang", 2),
-      ...tradesInO("dung_thua", 5),
-      ...tradesInO("sai_thua", 1),
-    ])
-    expect(res.canhBao).toBe(false)
-    expect(res.phatHien).toMatch(/5 lệnh làm đúng nhưng thua/)
-    expect(res.phatHien).toMatch(/Đó là thị trường, không phải lỗi bạn/)
-    expect(res.phatHien).toMatch(/giữ vững cách làm đúng/)
+  it("★ ngưỡng mẫu do SERVER chốt, không phải hằng số FE", () => {
+    const r = viewCap5Khoi12BoLoc(
+      khoi12([khoi12Item("ngoai", 4, 3, { du_mau: false, ty_le_thang: null })], {
+        so_lenh_toi_thieu: 6,
+        du_de_ket_luan: false,
+      }),
+      "co_du_lieu",
+    )
+    expect(r.minLenh).toBe(6)
+    expect(r.rows[0].conThieu).toBe(2)
+    expect(r.insufficientNote).toMatch(/chưa bộ lọc nào đủ 6 lệnh/)
   })
 
-  it("(c) mặc định → so tỷ lệ quyết định đúng với tỷ lệ thắng, in CẢ HAI con số", () => {
-    const res = computeCap5Khoi12MaTran([
-      ...tradesInO("dung_thang", 6),
-      ...tradesInO("dung_thua", 2),
-      ...tradesInO("sai_thua", 2),
-    ])
-    expect(res.canhBao).toBe(false)
-    // đúng 8/10 = 80% · thắng 6/10 = 60%
-    expect(res.tyLeQuyetDinhDung).toBe(80)
-    expect(res.tyLeThang).toBe(60)
-    expect(res.phatHien).toMatch(/Tỷ lệ quyết định đúng 80%/)
-    expect(res.phatHien).toMatch(/thước đo năng lực thật/)
-    expect(res.phatHien).toMatch(/tỷ lệ thắng 60%/)
+  it("bộ lọc kém nhất dưới ngưỡng ⇒ phát hiện là CẢNH BÁO kèm lý do riêng của nó", () => {
+    const r = viewCap5Khoi12BoLoc(
+      khoi12([khoi12Item("ngoai", 4, 3), khoi12Item("kl", 4, 1)]),
+      "co_du_lieu",
+    )
+    expect(r.canhBao).toBe(true)
+    expect(r.phatHien).toContain("Khối ngoại gom")
+    expect(r.phatHien).toContain("Khối lượng đột biến")
+    expect(r.phatHien).toContain("sóng ngắn")
   })
 
-  it("Đúng-Thua đủ 3 nhưng Đúng-Thắng nhiều hơn → dùng câu mặc định, không câu (b)", () => {
-    const res = computeCap5Khoi12MaTran([
-      ...tradesInO("dung_thang", 8),
-      ...tradesInO("dung_thua", 3),
-    ])
-    expect(res.phatHien).toMatch(/Tỷ lệ quyết định đúng 100%/)
-    expect(res.phatHien).not.toMatch(/Đó là thị trường/)
-  })
-
-  it("giải thích (§C12c) nêu rõ nguồn verdict + luật 0% tính là thua", () => {
-    const res = computeCap5Khoi12MaTran(tradesInO("dung_thang", 3))
-    expect(res.giaiThich).toMatch(/verdict bạn chốt/)
-    expect(res.giaiThich).toMatch(/0% tính là THUA/)
-    expect(res.giaiThich).toMatch(/70%/)
-  })
-})
-
-describe("viPhamPhoBienCap5", () => {
-  it("chọn loại vi phạm nhiều lần nhất, viết bằng lời user hiểu", () => {
-    expect(
-      viPhamPhoBienCap5([
-        ...tradesInO("sai_thang", 3, { nhoiLenhKhiLo: true }),
-        ...tradesInO("sai_thang", 1, { chamSlKhongCat: true }),
+  it("★ câu cảnh báo của SERVER được dùng nguyên văn khi có", () => {
+    const r = viewCap5Khoi12BoLoc(
+      khoi12([
+        khoi12Item("ngoai", 4, 3),
+        khoi12Item("kl", 4, 1, { canh_bao: "bộ lọc này hay bắt đúng phiên phân phối" }),
       ]),
-    ).toBe("nhồi lệnh khi lỗ")
+      "co_du_lieu",
+    )
+    expect(r.phatHien).toContain("bộ lọc này hay bắt đúng phiên phân phối")
+    expect(r.phatHien).not.toContain("sóng ngắn")
   })
 
-  it("không lệnh nào có cờ vi phạm → null (KHÔNG bịa)", () => {
-    expect(viPhamPhoBienCap5(tradesInO("sai_thang", 3))).toBeNull()
+  it("server nói 0% (đã đủ mẫu) ⇒ in 0% thật, không đổi thành «—»", () => {
+    const r = viewCap5Khoi12BoLoc(khoi12([khoi12Item("tudoanh", 3, 0)]), "co_du_lieu")
+    expect(r.rows[0].soThang).toBe(0)
+    expect(r.rows[0].tyLeThang).toBe(0)
   })
 
-  it("hoà số lần → giữ thứ tự ưu tiên của Cấp 2", () => {
-    expect(
-      viPhamPhoBienCap5([
-        ...tradesInO("sai_thang", 1, { nhoiLenhKhiLo: true }),
-        ...tradesInO("sai_thang", 1, { chamSlKhongCat: true }),
-      ]),
-    ).toBe("cắt lỗ chậm")
+  it("chỉ 1 bộ lọc đủ mẫu ⇒ không có worst, không cảnh báo bịa", () => {
+    const r = viewCap5Khoi12BoLoc(khoi12([khoi12Item("ngoai", 4, 3)]), "co_du_lieu")
+    expect(r.best?.filter).toBe("ngoai")
+    expect(r.worst).toBeNull()
+    expect(r.canhBao).toBe(false)
+    expect(r.phatHien).toContain("75%")
+  })
+
+  it("★ `giai_thich` của server được hiện NGUYÊN VĂN (§C12c)", () => {
+    const r = viewCap5Khoi12BoLoc(
+      khoi12([khoi12Item("ngoai", 4, 3)], { giai_thich: "CÂU CỦA MÁY CHỦ" }),
+      "co_du_lieu",
+    )
+    expect(r.giaiThich).toBe("CÂU CỦA MÁY CHỦ")
   })
 })
 
-describe("computeCap5PortfolioAnalysis — cộng dồn: giữ MỌI khối Cấp 1-4", () => {
-  function run(trades: Cap5TradeRecord[], progress: Cap5Progress | null = cap5Progress()) {
-    return computeCap5PortfolioAnalysis(
-      trades,
-      [{ ngay: "2026-07-28", diem: 88, xepLoai: "xanh" }],
-      cap2Progress(),
-      cap3Progress(),
-      cap4Progress(),
-      progress,
+describe("khối ⑬ — kỷ luật săn mã (phễu)", () => {
+  it("chưa vào Cấp 5 ⇒ cả 3 tầng là null (KHÔNG vẽ 0)", () => {
+    const r = computeCap5Khoi13Pheu(null)
+    expect(r.tang.map((t) => t.value)).toEqual([null, null, null])
+    expect(r.tyLeVaoLenh).toBeNull()
+    expect(r.phatHien).toBeNull()
+    expect(r.insufficientNote).not.toBeNull()
+  })
+
+  it("★★ tầng giữa chưa có mẻ chấm 5 lớp ⇒ null, KHÔNG phải 0", () => {
+    const r = computeCap5Khoi13Pheu(
+      progress({ so_ma_da_san: 34, so_ma_cho_du_lop: null, so_ma_mua_tu_watchlist: 14 }),
+    )
+    expect(r.tang[1].value).toBeNull()
+    expect(r.soMaChoDuLop).toBeNull()
+    // hai tầng ngoài vẫn thật ⇒ vẫn kết luận được
+    expect(r.phatHien).toContain("34")
+    expect(r.phatHien).toContain("14")
+  })
+
+  it("có sàng lọc ⇒ khen đúng việc user LÀM (loại mã chưa chín)", () => {
+    const r = computeCap5Khoi13Pheu(
+      progress({ so_ma_da_san: 34, so_ma_cho_du_lop: 19, so_ma_mua_tu_watchlist: 14 }),
+    )
+    expect(r.tang.map((t) => t.value)).toEqual([34, 19, 14])
+    expect(r.tyLeVaoLenh).toBe(41)
+    expect(r.phatHien).toMatch(/loại 20 mã chưa chín/)
+    expect(r.phatHien).toContain("kỷ luật của thợ săn")
+  })
+
+  it("★★ mua HẾT số mã săn ⇒ KHÔNG khen «biết chờ» — nói thẳng chưa sàng lọc", () => {
+    const r = computeCap5Khoi13Pheu(
+      progress({ so_ma_da_san: 10, so_ma_cho_du_lop: 10, so_ma_mua_tu_watchlist: 10 }),
+    )
+    expect(r.phatHien).not.toContain("kỷ luật của thợ săn")
+    expect(r.phatHien).toContain("chưa loại mã nào")
+  })
+
+  it("chưa săn mã nào ⇒ không chia cho 0, nói mốc nhiệm vụ ①", () => {
+    const r = computeCap5Khoi13Pheu(progress())
+    expect(r.tyLeVaoLenh).toBeNull()
+    expect(r.phatHien).toBeNull()
+    expect(r.insufficientNote).toContain("10")
+  })
+})
+
+describe("computeCap5PortfolioAnalysis — cộng dồn", () => {
+  const cap2: Cap2Progress | null = null
+  const cap3: Cap3Progress | null = null
+  const cap4: Cap4Progress | null = null
+
+  it("giữ nguyên mọi khối Cấp 1-4 và thêm đúng 2 khối mới", () => {
+    const r = computeCap5PortfolioAnalysis(
+      hunts("ngoai", 3, 1),
+      [],
+      cap2,
+      cap3,
+      cap4,
+      progress({ so_ma_da_san: 12, so_ma_mua_tu_watchlist: 5, best_filter: "ngoai" }),
+      NOW,
+      phanTich(khoi12([khoi12Item("ngoai", 4, 3)])),
+    )
+    // khối cộng dồn của Cấp 1-4 vẫn có mặt
+    expect(r).toHaveProperty("khoi10DongThuan")
+    expect(r).toHaveProperty("khoi11GocNhinRieng")
+    expect(r.khoi12BoLoc.best?.filter).toBe("ngoai")
+    expect(r.khoi13Pheu.soMaDaSan).toBe(12)
+    expect(r.soMaMuaTuWatchlist).toBe(5)
+    expect(r.bestFilterServer).toBe("ngoai")
+  })
+
+  /**
+   * ★★ A6 — "assert-on-own-default". Fixture cũ để `muc_tieu_so_ma_*` là
+   * `undefined` rồi assert `toBe(10)`/`toBe(5)`, tức là assert đúng bằng hằng số
+   * bản lùi: hàm trả `CAP5_SO_MA_*_TARGET` hay đọc server đều XANH. Fixture ở
+   * đây cố ý dùng 12/7 — hai con số KHÁC default — nên chỉ bản đọc server xanh.
+   */
+  it("★★ mốc nhiệm vụ đọc từ SERVER (12/7), không phải hằng số FE (10/5)", () => {
+    const r = computeCap5PortfolioAnalysis(
+      [],
+      [],
+      cap2,
+      cap3,
+      cap4,
+      progress({ muc_tieu_so_ma_san: 12, muc_tieu_so_ma_mua: 7 }),
       NOW,
     )
-  }
-
-  it("delegate xuống Cấp 4 (chính nó xuống Cấp 3/2/1) — mọi khối cũ còn nguyên", () => {
-    const res = run([...tradesInO("dung_thang", 3), ...tradesInO("sai_thua", 2)])
-    // khối Cấp 4
-    expect(res.khoi10DongThuan).toBeDefined()
-    expect(res.khoi11GocNhinRieng).toBeDefined()
-    expect(res.soLenhDocDu5Lop).toBe(22)
-    // khối Cấp 3
-    expect(res.khoi7TuTin).toBeDefined()
-    expect(res.khoi8KhoiLuong).toBeDefined()
-    // khối Cấp 2 / Cấp 1 — chỉ còn ①②③④ (Cấp 2 rút về mô hình 2 nhiệm vụ)
-    expect(res.khoi1).toBeDefined()
-    expect(res.khoi2).toBeDefined()
-    expect(res.khoi3).toBeDefined()
-    expect(res.khoi4).toBeDefined()
-    const stale = res as unknown as Record<string, unknown>
-    expect(stale.khoi5).toBeUndefined()
-    expect(stale.khoi6).toBeUndefined()
-    expect(stale.khoi7).toBeUndefined()
+    expect(r.mucTieuSan).toBe(12)
+    expect(r.mucTieuMua).toBe(7)
   })
 
-  it("thêm khối ⑫ + 3 số server của Cấp 5", () => {
-    const res = run(tradesInO("dung_thang", 5))
-    expect(res.khoi12MaTran.soDaPhanLoai).toBe(5)
-    expect(res.soLenhPhanLoai).toBe(25)
-    expect(res.soLanDungNgoaiDaCham).toBe(4)
-    expect(res.tyLeQuyetDinhDungServer).toBe(72)
+  it("wire cũ chưa gửi mốc ⇒ mới dùng hằng số bản lùi 10/5", () => {
+    const r = computeCap5PortfolioAnalysis([], [], cap2, cap3, cap4, progress(), NOW)
+    expect(r.mucTieuSan).toBe(10)
+    expect(r.mucTieuMua).toBe(5)
   })
 
-  it("chưa vào Cấp 5 → 3 số server là null, KHÔNG quy về 0", () => {
-    const res = run(tradesInO("dung_thang", 5), null)
-    expect(res.soLenhPhanLoai).toBeNull()
-    expect(res.soLanDungNgoaiDaCham).toBeNull()
-    expect(res.tyLeQuyetDinhDungServer).toBeNull()
+  it("★★ không truyền `phanTich` ⇒ khối ⑫ fail-closed, KHÔNG tính từ `trades`", () => {
+    // 4 lệnh săn từ «ngoai» trong nhật ký client — nếu hàm còn tính từ đó thì
+    // `rows` sẽ có dòng và bài này đỏ. Nhật ký per-browser KHÔNG được thành số
+    // của khối ⑫ (xem docstring `portfolioAnalysisCap5.ts`).
+    const r = computeCap5PortfolioAnalysis(hunts("ngoai", 3, 1), [], cap2, cap3, cap4, progress(), NOW)
+    expect(r.khoi12BoLoc.chuaLayDuoc).toBe(true)
+    expect(r.khoi12BoLoc.rows).toEqual([])
+    expect(r.khoi12BoLoc.soLenhSan).toBe(0)
   })
 
-  it("số server và số nhật ký client được giữ RIÊNG (không ghi đè nhau)", () => {
-    const res = run(tradesInO("dung_thang", 5), cap5Progress({ ty_le_quyet_dinh_dung: 72 }))
-    expect(res.tyLeQuyetDinhDungServer).toBe(72)
-    expect(res.khoi12MaTran.tyLeQuyetDinhDung).toBe(100)
+  it("chưa vào Cấp 5 ⇒ mọi số server là null, không phải 0", () => {
+    const r = computeCap5PortfolioAnalysis([], [], cap2, cap3, cap4, null, NOW)
+    expect(r.soMaDaSan).toBeNull()
+    expect(r.soMaMuaTuWatchlist).toBeNull()
+    expect(r.bestFilterServer).toBeNull()
+  })
+})
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TẦNG GIỮA PHỄU ⑬ — cận dưới KHÔNG được in như số chắc chắn (B8)
+   ══════════════════════════════════════════════════════════════════════════ */
+describe("tangGiuaCap5 — ba trạng thái, không phải hai", () => {
+  it("★ `so_ma_cho_du_lop = null` ⇒ chưa đo được, nhãn «—»", () => {
+    const tg = tangGiuaCap5(progress({ so_ma_da_san: 34, so_ma_cho_du_lop: null }))
+    expect(tg.trangThai).toBe("chua_do")
+    expect(nhanTangGiua(tg)).toBe("—")
+  })
+
+  it("★★ mẫu số NHỎ HƠN số mã đã săn ⇒ CẬN DƯỚI, nhãn «≥ 19»", () => {
+    const tg = tangGiuaCap5(
+      progress({
+        so_ma_da_san: 34,
+        so_ma_cho_du_lop: 19,
+        so_ma_da_cham_diem: 22,
+        so_ma_cho_du_lop_day_du: false,
+      }),
+    )
+    expect(tg.trangThai).toBe("can_duoi")
+    expect(tg.mauSo).toBe(22)
+    expect(nhanTangGiua(tg)).toBe("≥ 19")
+  })
+
+  it("★★ wire CHƯA gửi mẫu số ⇒ vẫn là cận dưới (KHÔNG mặc định là đủ)", () => {
+    const tg = tangGiuaCap5(progress({ so_ma_da_san: 34, so_ma_cho_du_lop: 19 }))
+    expect(tg.trangThai).toBe("can_duoi")
+    expect(tg.mauSo).toBeNull()
+    expect(nhanTangGiua(tg)).toBe("≥ 19")
+  })
+
+  it("server khẳng định đã chấm hết ⇒ số ĐỦ, in số trơn", () => {
+    const tg = tangGiuaCap5(
+      progress({
+        so_ma_da_san: 34,
+        so_ma_cho_du_lop: 19,
+        so_ma_da_cham_diem: 34,
+        so_ma_cho_du_lop_day_du: true,
+      }),
+    )
+    expect(tg.trangThai).toBe("day_du")
+    expect(nhanTangGiua(tg)).toBe("19")
+  })
+
+  it("cờ `day_du` thiếu nhưng mẫu số ≥ số mã săn ⇒ vẫn là số ĐỦ", () => {
+    const tg = tangGiuaCap5(
+      progress({ so_ma_da_san: 10, so_ma_cho_du_lop: 4, so_ma_da_cham_diem: 10 }),
+    )
+    expect(tg.trangThai).toBe("day_du")
+  })
+
+  it("★ phễu KHÔNG còn nói mã «từng lên» ≥4/5 lớp (hệ không lưu lược sử)", () => {
+    const r = computeCap5Khoi13Pheu(progress({ so_ma_da_san: 34, so_ma_cho_du_lop: 19 }))
+    expect(r.giaiThich).not.toMatch(/từng lên/)
+    expect(r.giaiThich).toMatch(/ĐANG ở mức/)
+    expect(r.tang[1].label).not.toMatch(/Chờ đến khi/)
   })
 })

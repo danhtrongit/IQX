@@ -293,14 +293,9 @@ vi.mock("@/features/cap5", async (importOriginal) => {
     ...actual,
     useCap5Events: () => ({
       isCap5Active: true,
-      onDungNgoai: vi.fn(),
-      onVerdictSettled: vi.fn(),
       onOrderFilled: onOrderFilledCap5Mock,
       registerHandlers: vi.fn(),
     }),
-    DungNgoaiButton: (props: { symbol: string }) => (
-      <div data-testid="dungngoai-mock">{`DUNG_NGOAI_${props.symbol}`}</div>
-    ),
   }
 })
 
@@ -507,7 +502,8 @@ describe("TradingPanel — Cấp 6 KHÔNG đổi gì của Cấp 1-5 (spec §0)"
     expect(screen.getByLabelText("vung-mua-mock")).toBeInTheDocument()
     expect(screen.getByTestId("sltp-block-mock")).toBeInTheDocument()
     expect(screen.getByTestId("quanlyvon-mock")).toBeInTheDocument()
-    expect(screen.getByTestId("dungngoai-mock")).toBeInTheDocument()
+    // Cấp 5 KHÔNG thêm gì vào panel (nút «Đứng ngoài» đã nghỉ hưu cùng Cấp 5 cũ).
+    expect(screen.queryByText(/đứng ngoài/i)).not.toBeInTheDocument()
     // Cấp 4 vẫn ẩn trường lý do của Cấp 1 + AI Thanh tra (Cấp 6 không chạm).
     expect(planFormProps.hideLyDo).toBe(true)
     expect(screen.queryByTestId("ai-thanh-tra-mock")).not.toBeInTheDocument()

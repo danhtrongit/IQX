@@ -6,7 +6,6 @@ import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 import type { Cap1Progress } from "@/features/cap1/types"
 import type { Cap2Progress, DiemKyLuat } from "@/features/cap2/types"
 import type { Cap3Progress } from "@/features/cap3/types"
-import type { VerdictGoiY } from "@/features/cap5/types"
 import type { GoiYCap6 } from "@/features/cap6/types"
 import type { Cap7Progress, PhienCap7 } from "./types"
 
@@ -20,7 +19,6 @@ const {
   useDiemKyLuatMock,
   recordKetsoCap1Async,
   recordKetsoCap2Mutate,
-  recordKetsoCap5Async,
   completeCap6TaskMutate,
   completeCap7TaskMutate,
   graduateCap7Mutate,
@@ -36,7 +34,6 @@ const {
   recordCap6TradeMock,
   recordCap7TradeMock,
   getGoiYMock,
-  verdictQuery,
   navigateMock,
   messageSuccess,
 } = vi.hoisted(() => ({
@@ -48,7 +45,6 @@ const {
   useDiemKyLuatMock: vi.fn(),
   recordKetsoCap1Async: vi.fn(),
   recordKetsoCap2Mutate: vi.fn(),
-  recordKetsoCap5Async: vi.fn(),
   completeCap6TaskMutate: vi.fn(),
   completeCap7TaskMutate: vi.fn(),
   graduateCap7Mutate: vi.fn(),
@@ -64,7 +60,6 @@ const {
   recordCap6TradeMock: vi.fn(),
   recordCap7TradeMock: vi.fn(),
   getGoiYMock: vi.fn(),
-  verdictQuery: { current: {} as Record<string, unknown> },
   navigateMock: vi.fn(),
   messageSuccess: vi.fn(),
 }))
@@ -359,8 +354,6 @@ vi.mock("@/features/cap4/tradeLogCap4", () => ({
 }))
 vi.mock("@/features/cap5/hooks", () => ({
   useCap5Progress: () => ({ data: null }),
-  useVerdictGoiY: () => verdictQuery.current,
-  useRecordKetsoCap5: () => ({ mutateAsync: recordKetsoCap5Async, isPending: false }),
 }))
 vi.mock("@/features/cap5/tradeLogCap5", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/features/cap5/tradeLogCap5")>()
@@ -546,21 +539,6 @@ function fakeDiemKyLuat(overrides: Partial<DiemKyLuat> = {}): DiemKyLuat {
   }
 }
 
-function fakeVerdict(overrides: Partial<VerdictGoiY> = {}): VerdictGoiY {
-  return {
-    order_id: "sell-1",
-    verdict: "dung",
-    giai_thich: "Lệnh này theo đúng kế hoạch + kỷ luật của bạn.",
-    signals: [
-      { ma: "co_so", ten: "Cơ sở khi đặt lệnh", dat: true, giai_thich: "4/5 lớp Ủng hộ lúc đặt" },
-    ],
-    pnl_pct: 9.2,
-    thang: true,
-    o_4_du_kien: "dung_thang",
-    ...overrides,
-  }
-}
-
 function fakeGoiY(overrides: Partial<GoiYCap6> = {}): GoiYCap6 {
   return {
     symbol: "VNM",
@@ -604,17 +582,6 @@ describe("Cap7TradingPage", () => {
     recordKetsoCap1Async.mockReset()
     recordKetsoCap1Async.mockResolvedValue({ id: "ks1" })
     recordKetsoCap2Mutate.mockReset()
-    recordKetsoCap5Async.mockReset()
-    recordKetsoCap5Async.mockResolvedValue({
-      id: "k5",
-      order_id: "sell-1",
-      pnl_pct: 9.2,
-      verdict_he: "dung",
-      verdict_user: "dung",
-      verdict_provenance: null,
-      o_4: "dung_thang",
-      ly_do_sua: null,
-    })
     completeCap6TaskMutate.mockReset()
     completeCap7TaskMutate.mockReset()
     graduateCap7Mutate.mockReset()
@@ -631,7 +598,6 @@ describe("Cap7TradingPage", () => {
     recordCap7TradeMock.mockReset()
     getGoiYMock.mockReset()
     getGoiYMock.mockResolvedValue(fakeGoiY())
-    verdictQuery.current = { data: fakeVerdict(), isPending: false, isError: false }
     navigateMock.mockReset()
     messageSuccess.mockReset()
     window.localStorage.clear()
@@ -737,7 +703,7 @@ describe("Cap7TradingPage", () => {
       recordKetsoCap1Async.mockRejectedValue(new Error("Lệnh này đã kết sổ"))
       renderCap7(<Cap7TradingPage />)
       await openKetso()
-      expect(screen.getByTestId("cap5-phanloai")).toBeInTheDocument()
+      expect(screen.getByText(/KẾT SỔ LỆNH/)).toBeInTheDocument()
     })
 
     it("KHÔNG kết sổ Cấp 1 (và không mở modal) cho lệnh bán không có lệnh mua theo dõi", () => {
@@ -765,7 +731,8 @@ describe("Cap7TradingPage", () => {
     expect(screen.getByTestId("cap2-ketso-camket")).toHaveTextContent("58,000")
     expect(screen.getByTestId("cap3-ketso-quanlyvon")).toHaveTextContent("Cân bằng")
     expect(screen.getByTestId("cap4-ketso-doc5lop")).toBeInTheDocument()
-    expect(screen.getByTestId("cap5-phanloai")).toBeInTheDocument()
+    // Cấp 5 cũ («phân loại 4 ô») đã nghỉ hưu → khối đó KHÔNG còn ở Kết sổ Cấp 7.
+    expect(screen.queryByTestId("cap5-phanloai")).not.toBeInTheDocument()
     expect(screen.getByTestId("cap6-ketso-doichieu")).toBeInTheDocument()
     // … plus Cấp 7's own khối "Đọc sổ lệnh — nhìn lại".
     expect(screen.getByTestId("cap7-ketso-docluc")).toBeInTheDocument()
@@ -838,7 +805,6 @@ describe("Cap7TradingPage", () => {
   it("closing Kết sổ forwards the record into the Cấp 1-6 trade logs", async () => {
     renderCap7(<Cap7TradingPage />)
     await openKetso()
-    fireEvent.click(screen.getByTestId("cap5-phanloai-dong-y"))
     fireEvent.click(screen.getByTestId("cap7-ketso-close"))
 
     await waitFor(() => expect(recordCap7TradeMock).toHaveBeenCalledTimes(1))

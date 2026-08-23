@@ -15,19 +15,25 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
  * không có network, không cần provider. Các component Cấp 1-3 là thuần trình bày
  * (không hook nào) nên không cần mock gì thêm.
  */
-const { dungNgoai } = vi.hoisted(() => ({
-  dungNgoai: { current: {} as Record<string, unknown> },
-}))
-vi.mock("./hooks", () => ({
-  useDanhSachDungNgoai: () => dungNgoai.current,
-}))
 vi.mock("@/features/cap4/hooks", () => ({
   useVuKhiDiemMu: () => ({ data: undefined, isPending: true, isError: false }),
 }))
 
+/**
+ * ★★ Khối ⑫ giờ đọc `GET /cap5/phan-tich` (hook `useCap5PhanTich`), KHÔNG đọc
+ * nhật ký `trades` per-browser nữa — xem docstring `portfolioAnalysisCap5.ts`.
+ * `phanTichQuery` cho test điều khiển đủ 3 trạng thái: đang tải / lỗi / có số.
+ */
+const { phanTichQuery } = vi.hoisted(() => ({
+  phanTichQuery: { current: {} as Record<string, unknown> },
+}))
+vi.mock("./hooks", () => ({
+  useCap5PhanTich: () => phanTichQuery.current,
+}))
+
 import { Cap5PortfolioAnalysis } from "./Cap5PortfolioAnalysis"
 import type { Cap5TradeRecord } from "./tradeLogCap5"
-import type { Cap5Progress, DungNgoaiItem, DungNgoaiList, O4 } from "./types"
+import type { Cap5PhanTich, Cap5Progress, HuntFilter, Khoi12 } from "./types"
 import type { Cap2DailyScoreRecord } from "@/features/cap2/portfolioAnalysisCap2"
 import type { Cap2Progress } from "@/features/cap2/types"
 import type { Cap3Progress } from "@/features/cap3/types"
@@ -59,23 +65,29 @@ function trade(overrides: Partial<Cap5TradeRecord> = {}): Cap5TradeRecord {
     ai_5_lop: { ky_thuat: "ok", dong_tien: "ok", noi_bo: "ok", tin_tuc: "ok", dinh_gia: "ok" },
     so_lop_dong_thuan: 5,
     so_lop_khac_ai: 0,
-    o4: "dung_thang",
-    verdictHe: "dung",
-    verdictUser: "dung",
+    huntFilter: "ngoai",
+    huntSoPhienCho: 2,
+    huntSoLopLucVao: 4,
     ...overrides,
   }
 }
 
-function tradesInO(o4: O4, n: number, extra: Partial<Cap5TradeRecord> = {}): Cap5TradeRecord[] {
-  const thang = o4 === "dung_thang" || o4 === "sai_thang"
-  const verdict = o4 === "dung_thang" || o4 === "dung_thua" ? "dung" : "sai"
-  return Array.from({ length: n }, () =>
+/**
+ * `n` lệnh đã đóng, ĐỀU săn từ `filter`, trong đó `thang` lệnh lãi.
+ * ★ Chỉ đổi MỘT biến mỗi lần gọi — repo này đã nhiều lần bị đột biến lọt qua vì
+ * fixture đổi hai thứ cùng lúc.
+ */
+function lenhSan(
+  filter: HuntFilter,
+  n: number,
+  thang: number,
+  extra: Partial<Cap5TradeRecord> = {},
+): Cap5TradeRecord[] {
+  return Array.from({ length: n }, (_, i) =>
     trade({
-      o4,
-      verdictHe: verdict,
-      verdictUser: verdict,
-      pnlPct: thang ? 6 : -4,
-      pnlVnd: thang ? 600_000 : -400_000,
+      huntFilter: filter,
+      pnlPct: i < thang ? 6 : -4,
+      pnlVnd: i < thang ? 600_000 : -400_000,
       ...extra,
     }),
   )
@@ -137,85 +149,77 @@ function cap5Progress(overrides: Partial<Cap5Progress> = {}): Cap5Progress {
     entered_at: "2026-07-02T00:00:00Z",
     task_1_done_at: "2026-07-03T00:00:00Z",
     task_2_done_at: null,
-    task_3_done_at: null,
-    so_lenh_phan_loai: 25,
-    so_lan_dung_ngoai_da_cham: 4,
-    ty_le_quyet_dinh_dung: 72,
+    so_ma_da_san: 34,
+    so_ma_mua_tu_watchlist: 14,
+    so_ma_cho_du_lop: 19,
+    muc_tieu_so_ma_san: 10,
+    muc_tieu_so_ma_mua: 5,
+    da_xem_tour_sanma: true,
+    best_filter: "ngoai",
+    best_filter_ten: "Khối ngoại gom",
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
   }
 }
 
-let dnSeq = 0
+const TEN_BO_LOC: Record<HuntFilter, string> = {
+  ngoai: "Khối ngoại gom",
+  tudoanh: "Tự doanh gom",
+  kl: "Khối lượng đột biến",
+  dinh: "Vượt đỉnh 20 phiên",
+  tang: "Tăng mạnh + KL cao",
+}
 
-function dnItem(overrides: Partial<DungNgoaiItem> = {}): DungNgoaiItem {
-  dnSeq += 1
+/** Một dòng khối ⑫ đúng hình dạng WIRE (`Khoi12ItemOut`). */
+function k12Item(
+  ma: HuntFilter,
+  soLenh: number,
+  soThang: number,
+  overrides: Partial<Khoi12["items"][number]> = {},
+): Khoi12["items"][number] {
+  const duMau = soLenh >= 3
   return {
-    id: `dn${dnSeq}`,
-    symbol: "VNM",
-    decided_at: "2026-07-20T02:00:00Z",
-    reason: "dinh_gia_dat",
-    ly_do_ten: "Định giá đang đắt",
-    gia_luc_dung_ngoai: 60_000,
-    han_cham_date: "2026-07-27",
-    da_toi_han: true,
-    cham_at: "2026-07-27T09:00:00Z",
-    gia_sau_5_phien: 58_800,
-    ket_qua: "ne_dung",
-    ket_qua_ten: "Né đúng",
-    pct_thay_doi: -2,
-    giai_thich: "Giá giảm 2.0% sau 5 phiên — nước đứng ngoài hợp lý.",
+    ma,
+    ten: TEN_BO_LOC[ma],
+    so_lenh: soLenh,
+    so_lenh_thang: soThang,
+    ty_le_thang: duMau ? Math.round((soThang / soLenh) * 100) : null,
+    du_mau: duMau,
+    nhan: null,
+    canh_bao: null,
+    giai_thich: "",
     ...overrides,
   }
 }
 
-/** Dữ liệu ⑬ của mockup spec §6: né đúng 4 · né hụt 1 · chưa tới hạn 2. */
-function dnList(overrides: Partial<DungNgoaiList> = {}): DungNgoaiList {
+function phanTich(
+  items: Khoi12["items"],
+  overrides: Partial<Khoi12> = {},
+): Cap5PhanTich {
   return {
-    so_lan: 7,
-    so_ne_dung: 4,
-    so_ne_hut: 1,
-    so_trung_tinh: 0,
-    so_chua_toi_han: 2,
-    so_lan_da_cham: 5,
-    du_de_phan_tich: true,
-    so_lan_toi_thieu_phan_tich: 3,
-    ly_do_hay_dung: { ma: "dinh_gia_dat", ten: "Định giá đang đắt", so_lan: 3 },
-    so_phien_cham: 5,
-    nguong_ne_dung_pct: 2,
-    nguong_ne_hut_pct: 5,
-    giai_thich:
-      "Đứng ngoài được chấm bằng GIÁ THẬT sau 5 phiên, không phải bằng cảm nhận. Vùng giữa 2-5% là trung tính để không phạt oan.",
-    items: [
-      dnItem({ symbol: "VNM", ket_qua: "ne_dung", ket_qua_ten: "Né đúng", pct_thay_doi: -2 }),
-      dnItem({
-        symbol: "HPG",
-        reason: "cho_vung_mua_tot_hon",
-        ly_do_ten: "Chờ vùng mua tốt hơn",
-        ket_qua: "ne_hut",
-        ket_qua_ten: "Né hụt",
-        pct_thay_doi: 7.4,
-        giai_thich: "Giá tăng 7.4% sau 5 phiên — đã bỏ lỡ.",
-      }),
-      dnItem({
-        symbol: "FPT",
-        da_toi_han: false,
-        cham_at: null,
-        gia_sau_5_phien: null,
-        ket_qua: null,
-        ket_qua_ten: null,
-        pct_thay_doi: null,
-        han_cham_date: "2026-08-05",
-        giai_thich: "Chưa tới hạn chấm.",
-      }),
-    ],
-    ...overrides,
+    khoi_12: {
+      items,
+      best_filter: null,
+      so_lenh_toi_thieu: 3,
+      so_lenh_khong_tu_san: 0,
+      du_de_ket_luan: items.some((i) => i.du_mau),
+      giai_thich: "Chỉ tính các lệnh ĐÃ ĐÓNG có nguồn săn.",
+      ...overrides,
+    },
+    khoi_13: {
+      so_ma_da_san: 0,
+      so_ma_cho_du_lop: null,
+      so_ma_vao_lenh: 0,
+      giai_thich: "",
+      loi_ket: "",
+    },
   }
 }
 
+/** Mặc định mỗi bài: máy chủ ĐÃ trả khối ⑫ rỗng (chưa lệnh săn nào). */
 beforeEach(() => {
-  dungNgoai.current = { data: dnList(), isPending: false, isError: false }
+  phanTichQuery.current = { data: phanTich([]), isPending: false, isError: false }
 })
 
 function renderPage(
@@ -240,7 +244,7 @@ describe("Cap5PortfolioAnalysis — giữ MỌI khối Cấp 1-4 (cộng dồn)"
   it("render lại nguyên các khối của Cap4PortfolioAnalysis (và Cấp 1-3 bên trong)", () => {
     // ≥5 lệnh: khối ② của Cấp 2 chỉ hiện khi đủ mẫu (dưới đó nó là khối "hidden").
     renderPage(
-      [...tradesInO("dung_thang", 4), ...tradesInO("sai_thua", 2, { chamSlKhongCat: true })],
+      [...lenhSan("ngoai", 4, 4), ...lenhSan("kl", 2, 0, { chamSlKhongCat: true })],
       [{ ngay: "2026-07-28", diem: 88, xepLoai: "xanh" }],
     )
     // Cấp 2 / Cấp 1
@@ -264,14 +268,27 @@ describe("Cap5PortfolioAnalysis — giữ MỌI khối Cấp 1-4 (cộng dồn)"
     expect(screen.getByTestId("cap4-pa-khoi11")).toBeInTheDocument()
   })
 
-  it("khối ① Cấp 5 nêu số lệnh phân loại + tỷ lệ quyết định đúng (số của server)", () => {
+  it("khối ① Cấp 5 nêu số mã đã săn / đã mua + bộ lọc mạnh nhất (số của server)", () => {
     renderPage([])
     const khoi1 = within(screen.getByTestId("cap5-pa-khoi1"))
     expect(khoi1.getByText(/Cấp 5 «Lão luyện»/)).toBeInTheDocument()
-    expect(khoi1.getByText(/25 lệnh/)).toBeInTheDocument()
-    expect(khoi1.getByText(/4 nước đứng ngoài đã được chấm/)).toBeInTheDocument()
-    expect(khoi1.getByText(/72%/)).toBeInTheDocument()
-    expect(khoi1.getByText(/mốc nhiệm vụ ③: 70%/)).toBeInTheDocument()
+    expect(khoi1.getByText(/Đã săn 34\/10 mã/)).toBeInTheDocument()
+    expect(khoi1.getByText(/đã mua 14\/5 mã/)).toBeInTheDocument()
+    expect(screen.getByTestId("cap5-pa-khoi1-best")).toHaveTextContent("«Khối ngoại gom»")
+  })
+
+  it("★ mẫu số nhiệm vụ đọc từ SERVER, không hard-code (cùng nguồn với Hành trình)", () => {
+    renderPage([], [], cap5Progress({ muc_tieu_so_ma_san: 12, muc_tieu_so_ma_mua: 7 }))
+    const khoi1 = within(screen.getByTestId("cap5-pa-khoi1"))
+    expect(khoi1.getByText(/Đã săn 34\/12 mã/)).toBeInTheDocument()
+    expect(khoi1.getByText(/đã mua 14\/7 mã/)).toBeInTheDocument()
+  })
+
+  it("★ `best_filter` null → nói chưa đủ dữ liệu, KHÔNG bịa một bộ lọc", () => {
+    renderPage([], [], cap5Progress({ best_filter: null, best_filter_ten: null }))
+    const best = screen.getByTestId("cap5-pa-khoi1-best")
+    expect(best).toHaveTextContent("chưa đủ dữ liệu để chốt")
+    expect(best).not.toHaveTextContent("Khối ngoại gom")
   })
 
   it("chưa vào Cấp 5 → nói rõ chưa có dữ liệu, không bịa số 0", () => {
@@ -282,227 +299,291 @@ describe("Cap5PortfolioAnalysis — giữ MỌI khối Cấp 1-4 (cộng dồn)"
   })
 })
 
-describe("Cap5PortfolioAnalysis — ⑫ ma trận quyết định", () => {
-  it("2 hàng verdict × 2 cột kết quả + tổng mỗi hàng, đúng bộ số của spec", () => {
-    renderPage([
-      ...tradesInO("dung_thang", 12),
-      ...tradesInO("dung_thua", 6),
-      ...tradesInO("sai_thang", 3),
-      ...tradesInO("sai_thua", 4),
-    ])
-    const khoi12 = within(screen.getByTestId("cap5-pa-khoi12"))
-    expect(khoi12.getByTestId("cap5-pa-khoi12-header").textContent).toMatch(/25 LỆNH/)
 
-    const hangDung = within(khoi12.getByTestId("cap5-pa-khoi12-row-dung"))
-    expect(hangDung.getByText("QĐ ĐÚNG")).toBeInTheDocument()
-    expect(hangDung.getByTestId("cap5-pa-khoi12-cell-dung_thang").textContent).toBe("12 (48%)")
-    expect(hangDung.getByTestId("cap5-pa-khoi12-cell-dung_thua").textContent).toBe("6 (24%)")
-    expect(hangDung.getByTestId("cap5-pa-khoi12-total-dung").textContent).toBe("18 (72%)")
-
-    const hangSai = within(khoi12.getByTestId("cap5-pa-khoi12-row-sai"))
-    expect(hangSai.getByTestId("cap5-pa-khoi12-cell-sai_thang").textContent).toBe("3 (12%)")
-    expect(hangSai.getByTestId("cap5-pa-khoi12-cell-sai_thua").textContent).toBe("4 (16%)")
-    expect(hangSai.getByTestId("cap5-pa-khoi12-total-sai").textContent).toBe("7 (28%)")
+/* ══════════════════════════════════════════════════════════════════════════
+   KHỐI ⑫ — BỘ LỌC NÀO MANG LẠI MÃ THẮNG NHIỀU NHẤT (spec §9)
+   ══════════════════════════════════════════════════════════════════════════ */
+describe("Cap5PortfolioAnalysis — ⑫ bộ lọc nào ra mã thắng nhiều nhất (SERVER)", () => {
+  it("có tiêu đề + nhãn «mới ở Cấp 5»", () => {
+    renderPage([])
+    expect(screen.getByTestId("cap5-pa-khoi12-header")).toHaveTextContent(
+      "BỘ LỌC NÀO MANG LẠI MÃ THẮNG NHIỀU NHẤT",
+    )
+    expect(within(screen.getByTestId("cap5-pa-khoi12")).getByText("mới ở Cấp 5")).toBeInTheDocument()
   })
 
-  it("hiện tỷ lệ quyết định đúng CẠNH tỷ lệ thắng — 2 thước đo khác nhau", () => {
-    renderPage([
-      ...tradesInO("dung_thang", 12),
-      ...tradesInO("dung_thua", 6),
-      ...tradesInO("sai_thang", 3),
-      ...tradesInO("sai_thua", 4),
-    ])
-    const khoi12 = within(screen.getByTestId("cap5-pa-khoi12"))
-    expect(khoi12.getByTestId("cap5-pa-khoi12-tyle-dung").textContent).toBe("72%")
-    expect(khoi12.getByTestId("cap5-pa-khoi12-tyle-thang").textContent).toBe("60%")
+  /**
+   * ★★★ B1 — MÂU THUẪN TRÊN CÙNG MỘT MÀN.
+   *
+   * Khối ① đọc server (`best_filter` = «Khối lượng đột biến»). Nếu khối ⑫ còn
+   * đọc nhật ký localStorage thì trên một thiết bị khác — nơi nhật ký RỖNG — nó
+   * nói "Chưa có lệnh nào đóng từ mã bạn săn được" cách khối ① đúng ba dòng.
+   * Bài này dựng chính xác kịch bản đó: `trades` RỖNG, server CÓ 6 lệnh «kl».
+   */
+  it("★★★ nhật ký client rỗng nhưng server có số ⇒ ⑫ nói theo SERVER (không mâu thuẫn khối ①)", () => {
+    phanTichQuery.current = {
+      data: phanTich([k12Item("kl", 6, 4)]),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([], [], cap5Progress({ best_filter: "kl", best_filter_ten: "Khối lượng đột biến" }))
+    expect(screen.getByTestId("cap5-pa-khoi1-best")).toHaveTextContent("«Khối lượng đột biến»")
+    expect(screen.getByTestId("cap5-pa-khoi12-pct-kl")).toHaveTextContent("67%")
+    expect(screen.queryByTestId("cap5-pa-khoi12-chuadu")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap5-pa-khoi12-chualayduoc")).not.toBeInTheDocument()
   })
 
-  it("Sai-Thắng ≥3 → phát hiện là CẢNH BÁO (class riêng), kèm vi phạm thật", () => {
-    renderPage([
-      ...tradesInO("dung_thang", 4),
-      ...tradesInO("sai_thang", 3, { chamSlKhongCat: true }),
-    ])
-    const phatHien = screen.getByTestId("cap5-pa-khoi12-phathien")
-    expect(phatHien.textContent).toMatch(/3 lệnh thắng dù làm sai quy trình/)
-    expect(phatHien.textContent).toMatch(/cắt lỗ chậm/)
-    expect(phatHien.className).toMatch(/cap5-pa-phathien--canhbao/)
-  })
-
-  it("Đúng-Thua cao → câu «đó là thị trường, không phải lỗi bạn», KHÔNG cảnh báo", () => {
-    renderPage([...tradesInO("dung_thang", 2), ...tradesInO("dung_thua", 5)])
-    const phatHien = screen.getByTestId("cap5-pa-khoi12-phathien")
-    expect(phatHien.textContent).toMatch(/Đó là thị trường, không phải lỗi bạn/)
-    expect(phatHien.className).not.toMatch(/canhbao/)
-  })
-
-  it("mặc định → so tỷ lệ quyết định đúng với tỷ lệ thắng trong cùng một câu", () => {
-    renderPage([
-      ...tradesInO("dung_thang", 6),
-      ...tradesInO("dung_thua", 2),
-      ...tradesInO("sai_thua", 2),
-    ])
-    const phatHien = screen.getByTestId("cap5-pa-khoi12-phathien")
-    expect(phatHien.textContent).toMatch(/Tỷ lệ quyết định đúng 80%/)
-    expect(phatHien.textContent).toMatch(/tỷ lệ thắng 60%/)
-  })
-
-  it("chưa phân loại lệnh nào → ô hiện «—», KHÔNG in 0%, kèm ghi chú trung thực", () => {
-    renderPage([trade({ o4: null, verdictHe: null, verdictUser: null })])
-    const khoi12 = within(screen.getByTestId("cap5-pa-khoi12"))
-    expect(khoi12.getByTestId("cap5-pa-khoi12-cell-dung_thang").textContent).toBe("—")
-    expect(khoi12.getByTestId("cap5-pa-khoi12-total-dung").textContent).toBe("—")
-    expect(khoi12.getByTestId("cap5-pa-khoi12-tyle-dung").textContent).toBe("—")
-    expect(khoi12.queryByTestId("cap5-pa-khoi12-phathien")).not.toBeInTheDocument()
-    expect(khoi12.getByTestId("cap5-pa-khoi12-note").textContent).toMatch(
-      /Chưa có lệnh nào được phân loại/,
+  /**
+   * ★★★ Chiều ngược lại: nhật ký client ĐẦY nhưng server nói chưa có lệnh săn
+   * nào. Con số duy nhất được phép hiện là của server.
+   */
+  it("★★★ nhật ký client đầy nhưng server nói rỗng ⇒ ⑫ KHÔNG vẽ dòng nào", () => {
+    renderPage([...lenhSan("ngoai", 6, 5)])
+    expect(screen.queryByTestId("cap5-pa-khoi12-rows")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap5-pa-khoi12-pct-ngoai")).not.toBeInTheDocument()
+    expect(screen.getByTestId("cap5-pa-khoi12-chuadu")).toHaveTextContent(
+      "Chưa có lệnh nào đóng từ mã bạn săn được",
     )
   })
 
-  it("dưới ngưỡng 3 lệnh → số thật vẫn hiện nhưng nhắc là chưa đủ để kết luận", () => {
-    renderPage(tradesInO("dung_thang", 2))
-    const khoi12 = within(screen.getByTestId("cap5-pa-khoi12"))
-    expect(khoi12.getByTestId("cap5-pa-khoi12-cell-dung_thang").textContent).toBe("2 (100%)")
-    expect(khoi12.queryByTestId("cap5-pa-khoi12-phathien")).not.toBeInTheDocument()
-    expect(khoi12.getByTestId("cap5-pa-khoi12-note").textContent).toMatch(/Cần ít nhất 3 lệnh/)
-    expect(khoi12.getByTestId("cap5-pa-khoi12-chuadu").textContent).toMatch(/chưa đủ để kết luận/)
+  it("★ query LỖI ⇒ nói thẳng chưa lấy được, KHÔNG vu cho user là chưa đóng lệnh nào", () => {
+    phanTichQuery.current = { data: undefined, isPending: false, isError: true }
+    renderPage([...lenhSan("ngoai", 6, 5)])
+    const box = screen.getByTestId("cap5-pa-khoi12-chualayduoc")
+    expect(box).toHaveTextContent("Chưa lấy được số liệu bộ lọc từ máy chủ")
+    expect(box).toHaveAttribute("data-dangtai", "false")
+    expect(screen.queryByTestId("cap5-pa-khoi12-chuadu")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap5-pa-khoi12-rows")).not.toBeInTheDocument()
   })
 
-  it("có lệnh chưa phân loại → nói rõ đã loại bao nhiêu lệnh khỏi ma trận", () => {
-    renderPage([
-      ...tradesInO("dung_thang", 3),
-      trade({ o4: null, verdictHe: null, verdictUser: null }),
-      trade({ o4: null, verdictHe: null, verdictUser: null }),
+  it("★ đang tải ⇒ câu chờ, không con số nào", () => {
+    phanTichQuery.current = { data: undefined, isPending: true, isError: false }
+    renderPage([])
+    const box = screen.getByTestId("cap5-pa-khoi12-chualayduoc")
+    expect(box).toHaveTextContent("Đang lấy số liệu bộ lọc")
+    expect(box).toHaveAttribute("data-dangtai", "true")
+  })
+
+  it("một thanh cho mỗi bộ lọc, sắp giảm dần theo tỷ lệ thắng", () => {
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 4, 3), k12Item("dinh", 3, 2), k12Item("kl", 4, 1)]),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
+    const rows = screen.getByTestId("cap5-pa-khoi12-rows")
+    const order = [...rows.querySelectorAll("[data-testid^='cap5-pa-khoi12-row-']")].map((el) =>
+      el.getAttribute("data-testid"),
+    )
+    expect(order).toEqual([
+      "cap5-pa-khoi12-row-ngoai",
+      "cap5-pa-khoi12-row-dinh",
+      "cap5-pa-khoi12-row-kl",
     ])
-    expect(screen.getByTestId("cap5-pa-khoi12-chuaphanloai").textContent).toMatch(/2 lệnh/)
+    expect(screen.getByTestId("cap5-pa-khoi12-pct-ngoai")).toHaveTextContent("75%")
+    expect(screen.getByTestId("cap5-pa-khoi12-pct-kl")).toHaveTextContent("25%")
   })
 
-  it("nêu THẲNG rằng số server có thể lệch số ma trận (không che con số thấp hơn)", () => {
-    renderPage(tradesInO("dung_thang", 3))
-    const server = screen.getByTestId("cap5-pa-khoi12-server")
-    expect(server.textContent).toMatch(/Hệ thống chốt tỷ lệ quyết định đúng 72%/)
-    expect(server.textContent).toMatch(/hai con số có thể lệch/)
+  it("bộ lọc cao nhất được gọi «hợp với bạn nhất»", () => {
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 4, 3), k12Item("dinh", 3, 2)]),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
+    expect(screen.getByTestId("cap5-pa-khoi12-phathien")).toHaveTextContent("hợp với bạn nhất")
   })
 
-  it("giải thích §C12c nêu nguồn verdict + luật 0% tính là thua", () => {
-    renderPage(tradesInO("dung_thang", 3))
-    const giaiThich = screen.getByTestId("cap5-pa-khoi12-giaithich").textContent ?? ""
-    expect(giaiThich).toMatch(/verdict bạn chốt/)
-    expect(giaiThich).toMatch(/0% tính là THUA/)
+  it("bộ lọc thấp nhất dưới ngưỡng kém → cảnh báo riêng cho bộ lọc đó", () => {
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 4, 3), k12Item("kl", 4, 1)]),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
+    const pat = screen.getByTestId("cap5-pa-khoi12-phathien")
+    expect(pat).toHaveTextContent("«Khối lượng đột biến» chỉ 25%")
+    expect(pat).toHaveTextContent("sóng ngắn")
+  })
+
+  /* ── LUẬT SỐ 1: dưới ngưỡng mẫu ─────────────────────────────────────────── */
+  it("★ dưới 3 lệnh/bộ lọc → KHÔNG suy tỷ lệ, nói rõ còn thiếu bao nhiêu lệnh", () => {
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 2, 2)]),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
+    const note = screen.getByTestId("cap5-pa-khoi12-chuadu")
+    expect(note).toHaveTextContent("Mới có 2 lệnh đã đóng từ săn mã")
+    expect(note).toHaveTextContent("còn thiếu 1 lệnh")
+    // …và tuyệt đối không in ra một tỷ lệ nào cho bộ lọc chưa đủ mẫu.
+    expect(screen.getByTestId("cap5-pa-khoi12-pct-ngoai")).not.toHaveTextContent("%")
+    expect(screen.queryByTestId("cap5-pa-khoi12-phathien")).not.toBeInTheDocument()
+  })
+
+  it("★ ngưỡng mẫu in ra là ngưỡng của SERVER, không phải hằng số FE", () => {
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 4, 4, { du_mau: false, ty_le_thang: null })], {
+        so_lenh_toi_thieu: 6,
+        du_de_ket_luan: false,
+      }),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
+    expect(screen.getByTestId("cap5-pa-khoi12-row-ngoai")).toHaveTextContent("4/6")
+  })
+
+  it("★ chưa lệnh nào từ săn mã → nói thẳng, KHÔNG hiện 0%", () => {
+    renderPage([])
+    const note = screen.getByTestId("cap5-pa-khoi12-chuadu")
+    expect(note).toHaveTextContent("Chưa có lệnh nào đóng từ mã bạn săn được")
+    // ★ Không một thanh bộ lọc nào được vẽ ⇒ không có chỗ nào in «0%» như thể đã
+    // đo. (Chuỗi "0%" vẫn xuất hiện trong câu giải thích luật đếm "đóng ngang
+    // giá 0% KHÔNG tính là thắng" — nên phải khoanh vào vùng thanh, không quét
+    // cả khối.)
+    expect(screen.queryByTestId("cap5-pa-khoi12-rows")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap5-pa-khoi12-pct-ngoai")).not.toBeInTheDocument()
+  })
+
+  it("★ lệnh KHÔNG đến từ săn mã được đếm RIÊNG, không gán vào bộ lọc nào", () => {
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 3, 2)], { so_lenh_khong_tu_san: 2 }),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
+    expect(screen.getByTestId("cap5-pa-khoi12-khongsan")).toHaveTextContent(
+      "2 lệnh đã đóng KHÔNG đến từ săn mã",
+    )
+    // 3 lệnh săn → tỷ lệ tính trên 3, KHÔNG trên 5.
+    expect(screen.getByTestId("cap5-pa-khoi12-pct-ngoai")).toHaveTextContent("67%")
+  })
+
+  it("★ đủ mẫu ở một bộ lọc KHÔNG làm bộ lọc chưa đủ mẫu bị suy ra tỷ lệ", () => {
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 3, 3), k12Item("tudoanh", 1, 0)]),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
+    expect(screen.getByTestId("cap5-pa-khoi12-pct-ngoai")).toHaveTextContent("100%")
+    expect(screen.getByTestId("cap5-pa-khoi12-pct-tudoanh")).not.toHaveTextContent("%")
+  })
+
+  it("★ câu giải thích §C12c là câu của SERVER, nguyên văn", () => {
+    phanTichQuery.current = {
+      data: phanTich([k12Item("ngoai", 3, 3)], { giai_thich: "CÂU CỦA MÁY CHỦ VỀ CÁCH ĐẾM" }),
+      isPending: false,
+      isError: false,
+    }
+    renderPage([])
+    expect(screen.getByTestId("cap5-pa-khoi12-giaithich")).toHaveTextContent(
+      "CÂU CỦA MÁY CHỦ VỀ CÁCH ĐẾM",
+    )
   })
 })
 
-describe("Cap5PortfolioAnalysis — ⑬ nhật ký đứng ngoài (dữ liệu SERVER)", () => {
-  it("tiêu đề nêu số lần + 4 con số né đúng/né hụt/trung tính/chưa tới hạn", () => {
+/* ══════════════════════════════════════════════════════════════════════════
+   KHỐI ⑬ — KỶ LUẬT SĂN MÃ (phễu 3 tầng, spec §9)
+   ══════════════════════════════════════════════════════════════════════════ */
+describe("Cap5PortfolioAnalysis — ⑬ kỷ luật săn mã (phễu)", () => {
+  it("3 tầng phễu đúng thứ tự, đọc số từ hồ sơ Cấp 5", () => {
     renderPage([])
-    const khoi13 = within(screen.getByTestId("cap5-pa-khoi13"))
-    expect(khoi13.getByTestId("cap5-pa-khoi13-header").textContent).toMatch(/7 LẦN/)
-    const counts = khoi13.getByTestId("cap5-pa-khoi13-counts").textContent ?? ""
-    expect(counts).toMatch(/Né đúng: 4/)
-    expect(counts).toMatch(/Né hụt: 1/)
-    expect(counts).toMatch(/Trung tính: 0/)
-    expect(counts).toMatch(/Chưa tới hạn: 2/)
+    const funnel = screen.getByTestId("cap5-pa-khoi13-funnel")
+    expect(funnel).toHaveTextContent("Mã đã săn (đưa vào Watchlist)")
+    // ★ Nhãn KHÔNG còn là "Chờ đến khi ≥4/5 lớp": hệ không lưu lược sử điểm đồng
+    // thuận nên nó chỉ biết mã ĐANG ở mức nào (xem `portfolioAnalysisCap5.ts`).
+    expect(funnel).toHaveTextContent("Đang ở ≥4/5 lớp ủng hộ")
+    expect(funnel).not.toHaveTextContent("Chờ đến khi")
+    expect(funnel).toHaveTextContent("Thực sự vào lệnh")
+    expect(screen.getByTestId("cap5-pa-khoi13-tang-1")).toHaveTextContent("34")
+    expect(screen.getByTestId("cap5-pa-khoi13-tang-2")).toHaveTextContent("19")
+    expect(screen.getByTestId("cap5-pa-khoi13-tang-3")).toHaveTextContent("14")
   })
 
-  it("nêu lý do hay dùng kèm số lần (số của server)", () => {
-    renderPage([])
-    expect(screen.getByTestId("cap5-pa-khoi13-lydo").textContent).toMatch(
-      /Định giá đang đắt.*3 lần/,
+  /**
+   * ★★★ B8 — CẬN DƯỚI KHÔNG ĐƯỢC IN NHƯ SỐ CHẮC CHẮN.
+   *
+   * Fixture mặc định (`so_ma_da_san: 34`, `so_ma_cho_du_lop: 19`) KHÔNG kèm mẫu
+   * số ⇒ hệ chỉ biết "ít nhất 19", nên phễu phải ghi «≥ 19» + một dòng nói rõ vì
+   * sao. In "19" trơn là khẳng định về những mã chưa ai chấm.
+   */
+  it("★★★ tầng giữa là cận dưới ⇒ in «≥ 19» + nói rõ mẫu số", () => {
+    renderPage([], [], cap5Progress({ so_ma_da_cham_diem: 22 }))
+    expect(screen.getByTestId("cap5-pa-khoi13-tang-2-v")).toHaveTextContent("≥ 19")
+    expect(screen.getByTestId("cap5-pa-khoi13-tang-2-v")).toHaveAttribute("data-canduoi", "true")
+    expect(screen.getByTestId("cap5-pa-khoi13-canduoi")).toHaveTextContent(
+      "hệ chỉ chấm được điểm đồng thuận cho 22/34 mã",
     )
   })
 
-  it("liệt kê từng lần ĐÃ CHẤM: mã · lý do · kết quả · % giá sau 5 phiên", () => {
+  it("★ mẫu số thiếu hẳn trên wire ⇒ VẪN là cận dưới, nói thẳng là chưa biết mẫu số", () => {
     renderPage([])
-    const list = within(screen.getByTestId("cap5-pa-khoi13-list"))
-    const items = list.getAllByTestId(/^cap5-pa-khoi13-item-/)
-    expect(items).toHaveLength(2)
-
-    const neDung = within(items[0])
-    expect(neDung.getByText("VNM")).toBeInTheDocument()
-    expect(neDung.getByText("Định giá đang đắt")).toBeInTheDocument()
-    expect(neDung.getByText("Né đúng")).toBeInTheDocument()
-    expect(neDung.getByText("−2.0% sau 5 phiên")).toBeInTheDocument()
-
-    const neHut = within(items[1])
-    expect(neHut.getByText("HPG")).toBeInTheDocument()
-    expect(neHut.getByText("Né hụt")).toBeInTheDocument()
-    expect(neHut.getByText("+7.4% sau 5 phiên")).toBeInTheDocument()
+    expect(screen.getByTestId("cap5-pa-khoi13-tang-2")).toHaveTextContent("≥ 19")
+    expect(screen.getByTestId("cap5-pa-khoi13-canduoi")).toHaveTextContent(
+      "chưa cho biết đã chấm được điểm cho bao nhiêu mã",
+    )
   })
 
-  it("nước chưa tới hạn KHÔNG vào danh sách đã chấm, chỉ được đếm + nêu hạn", () => {
-    renderPage([])
-    const list = within(screen.getByTestId("cap5-pa-khoi13-list"))
-    expect(list.queryByText("FPT")).not.toBeInTheDocument()
-    expect(screen.getByTestId("cap5-pa-khoi13-chuatoihan").textContent).toMatch(/FPT/)
+  it("★ server khẳng định đã chấm hết ⇒ in số TRƠN, không có dòng cận dưới", () => {
+    renderPage(
+      [],
+      [],
+      cap5Progress({ so_ma_da_cham_diem: 34, so_ma_cho_du_lop_day_du: true }),
+    )
+    const v = screen.getByTestId("cap5-pa-khoi13-tang-2-v")
+    expect(v).toHaveTextContent("19")
+    expect(v.textContent).not.toContain("≥")
+    expect(v).toHaveAttribute("data-canduoi", "false")
+    expect(screen.queryByTestId("cap5-pa-khoi13-canduoi")).not.toBeInTheDocument()
   })
 
-  it("nêu ngưỡng chấm của server (§C12c) + giải thích nguyên văn của server", () => {
+  it("phát hiện đúng câu mẫu spec khi user THẬT SỰ có sàng lọc", () => {
     renderPage([])
-    const nguong = screen.getByTestId("cap5-pa-khoi13-nguong").textContent ?? ""
-    expect(nguong).toMatch(/Chấm sau 5 phiên/)
-    expect(nguong).toMatch(/≤ \+2%/)
-    expect(nguong).toMatch(/≥ \+5%/)
-    expect(screen.getByTestId("cap5-pa-khoi13-giaithich").textContent).toMatch(/GIÁ THẬT/)
+    const pat = screen.getByTestId("cap5-pa-khoi13-phathien")
+    expect(pat).toHaveTextContent("Bạn săn 34 mã nhưng chỉ vào 14")
+    expect(pat).toHaveTextContent("kỷ luật của thợ săn")
   })
 
-  it("chưa đủ 3 lần đã chấm → CHỈ đếm, ẩn thống kê né đúng/hụt + lý do hay dùng", () => {
-    dungNgoai.current = {
-      data: dnList({
-        so_lan: 2,
-        so_lan_da_cham: 1,
-        so_ne_dung: 1,
-        so_ne_hut: 0,
-        so_chua_toi_han: 1,
-        du_de_phan_tich: false,
-      }),
-      isPending: false,
-      isError: false,
+  it("★ mua HẾT số mã săn → KHÔNG khen «biết chờ», nói thẳng điều ngược lại", () => {
+    renderPage([], [], cap5Progress({ so_ma_da_san: 12, so_ma_mua_tu_watchlist: 12 }))
+    const pat = screen.getByTestId("cap5-pa-khoi13-phathien")
+    expect(pat).toHaveTextContent("chưa loại mã nào")
+    expect(pat).not.toHaveTextContent("kỷ luật của thợ săn")
+  })
+
+  it("★ tầng giữa chưa đo được → hiện «—» kèm GIẢI THÍCH, không phải 0", () => {
+    renderPage([], [], cap5Progress({ so_ma_cho_du_lop: null }))
+    const tang2 = screen.getByTestId("cap5-pa-khoi13-tang-2")
+    expect(tang2).toHaveTextContent("—")
+    expect(tang2).not.toHaveTextContent("0")
+    expect(screen.getByTestId("cap5-pa-khoi13-chuadolop")).toHaveTextContent(
+      "Tầng giữa chưa đo được",
+    )
+  })
+
+  it("★ chưa săn mã nào → mời đi săn, KHÔNG in tỷ lệ vào lệnh", () => {
+    renderPage([], [], cap5Progress({ so_ma_da_san: 0, so_ma_mua_tu_watchlist: 0 }))
+    expect(screen.getByTestId("cap5-pa-khoi13-chuadu")).toHaveTextContent("Bạn chưa săn mã nào")
+    expect(screen.queryByTestId("cap5-pa-khoi13-phathien")).not.toBeInTheDocument()
+  })
+
+  it("★ chưa vào Cấp 5 → phễu nói chưa đọc được số liệu, không bịa 0", () => {
+    renderPage([], [], null)
+    expect(screen.getByTestId("cap5-pa-khoi13-chuadu")).toHaveTextContent(
+      "Chưa đọc được số liệu săn mã",
+    )
+    expect(screen.getByTestId("cap5-pa-khoi13-tang-1")).toHaveTextContent("—")
+  })
+})
+
+describe("Cap5PortfolioAnalysis — Cấp 5 CŨ không mọc lại", () => {
+  it("★ không còn ma trận 4 ô / nhật ký đứng ngoài", () => {
+    const { container } = renderPage([...lenhSan("ngoai", 3, 2)])
+    for (const tu of ["đứng ngoài", "Đứng ngoài", "Né đúng", "Né hụt", "sai_thang", "4 ô"]) {
+      expect(container.textContent).not.toContain(tu)
     }
-    renderPage([])
-    const khoi13 = within(screen.getByTestId("cap5-pa-khoi13"))
-    expect(khoi13.queryByTestId("cap5-pa-khoi13-counts")).not.toBeInTheDocument()
-    expect(khoi13.queryByTestId("cap5-pa-khoi13-lydo")).not.toBeInTheDocument()
-    expect(khoi13.getByTestId("cap5-pa-khoi13-chuadu").textContent).toMatch(
-      /Cần thêm 2 nước đứng ngoài đã tới hạn/,
-    )
-  })
-
-  it("chưa ghi nước nào → nhắc dùng nút đứng ngoài, KHÔNG in số 0 như đã đo", () => {
-    dungNgoai.current = {
-      data: dnList({
-        so_lan: 0,
-        so_lan_da_cham: 0,
-        so_ne_dung: 0,
-        so_ne_hut: 0,
-        so_chua_toi_han: 0,
-        du_de_phan_tich: false,
-        ly_do_hay_dung: null,
-        items: [],
-      }),
-      isPending: false,
-      isError: false,
-    }
-    renderPage([])
-    const khoi13 = within(screen.getByTestId("cap5-pa-khoi13"))
-    expect(khoi13.getByTestId("cap5-pa-khoi13-note").textContent).toMatch(
-      /Bạn chưa ghi nước đứng ngoài nào/,
-    )
-    expect(khoi13.queryByTestId("cap5-pa-khoi13-counts")).not.toBeInTheDocument()
-  })
-
-  it("đang tải → ghi chú, không render danh sách nào", () => {
-    dungNgoai.current = { data: undefined, isPending: true, isError: false }
-    renderPage([])
-    const khoi13 = within(screen.getByTestId("cap5-pa-khoi13"))
-    expect(khoi13.getByTestId("cap5-pa-khoi13-note").textContent).toMatch(/Đang tải/)
-    expect(khoi13.queryByTestId("cap5-pa-khoi13-list")).not.toBeInTheDocument()
-  })
-
-  it("lỗi tải → nói thẳng chưa lấy được số, KHÔNG tính lại ở client", () => {
-    dungNgoai.current = { data: undefined, isPending: false, isError: true }
-    renderPage([])
-    const khoi13 = within(screen.getByTestId("cap5-pa-khoi13"))
-    expect(khoi13.getByTestId("cap5-pa-khoi13-note").textContent).toMatch(/Chưa lấy được/)
-    expect(khoi13.queryByTestId("cap5-pa-khoi13-counts")).not.toBeInTheDocument()
-    expect(khoi13.queryByTestId("cap5-pa-khoi13-list")).not.toBeInTheDocument()
   })
 })

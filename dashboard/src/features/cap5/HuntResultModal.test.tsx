@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { RE_FAKE_ZERO_MA, visibleText } from "@/__tests__/textGuards"
 import type { HuntResult } from "./sanMaTypes"
 
 /**
@@ -112,13 +113,17 @@ describe("HuntResultModal — LUẬT SỐ 1: bốn trạng thái tách bạch", 
       isLoading: false,
       isError: false,
     }
-    const { container } = render(<HuntResultModal filter="ngoai" onClose={() => {}} />)
+    render(<HuntResultModal filter="ngoai" onClose={() => {}} />)
     const box = screen.getByTestId("cap5-hunt-nodata")
     expect(box).toHaveTextContent("Chưa đủ dữ liệu để chạy bộ lọc này")
     expect(box).toHaveTextContent("chưa có endpoint đếm mua ròng")
     expect(screen.queryByTestId("cap5-hunt-empty")).not.toBeInTheDocument()
     expect(screen.queryByTestId("cap5-hunt-total")).not.toBeInTheDocument()
-    expect(container.textContent).not.toMatch(/\b0 mã\b/)
+    // ★★ HAI lỗi từng làm bài này xanh vĩnh viễn, xem `__tests__/textGuards.ts`:
+    // (1) `container.textContent` là "" vì Arco `Modal` vẽ ra portal ngoài
+    //     container; (2) ranh giới ASCII sau chữ ã không bao giờ khớp. Neo dương
+    //     tính `cap5-hunt-nodata` ở trên chứng minh popup ĐÃ render thật.
+    expect(visibleText()).not.toMatch(RE_FAKE_ZERO_MA)
   })
 
   it("★ kha_dung=true + rỗng → «Hôm nay không mã nào thỏa điều kiện» (số 0 THẬT)", () => {
@@ -148,9 +153,11 @@ describe("HuntResultModal — LUẬT SỐ 1: bốn trạng thái tách bạch", 
 
   it("★ lỗi máy chủ → câu lỗi, không con số nào", () => {
     resultQuery.current = { data: undefined, isLoading: false, isError: true }
-    const { container } = render(<HuntResultModal filter="ngoai" onClose={() => {}} />)
+    render(<HuntResultModal filter="ngoai" onClose={() => {}} />)
+    // Neo dương tính: câu lỗi CÓ render (nếu không thì "không thấy «0 mã»" chỉ
+    // nghĩa là không render gì).
     expect(screen.getByTestId("cap5-hunt-error")).toBeInTheDocument()
-    expect(container.textContent).not.toMatch(/\b0 mã\b/)
+    expect(visibleText()).not.toMatch(RE_FAKE_ZERO_MA)
   })
 
   it("đang tải → «Đang lọc…», chưa kết luận gì", () => {

@@ -299,12 +299,9 @@ vi.mock("@/features/cap5", async (importOriginal) => {
     ...actual,
     useCap5Events: () => ({
       isCap5Active: true,
-      onDungNgoai: vi.fn(),
-      onVerdictSettled: vi.fn(),
       onOrderFilled: onOrderFilledCap5Mock,
       registerHandlers: vi.fn(),
     }),
-    DungNgoaiButton: () => <div data-testid="dungngoai-mock" />,
   }
 })
 
@@ -656,7 +653,8 @@ describe("★ TradingPanel — Cấp 8 KHÔNG BAO GIỜ chặn MUA (spec §9/§C
     expect(screen.getByTestId("plan-form-cap1-mock")).toBeInTheDocument()
     expect(screen.getByTestId("sltp-block-mock")).toBeInTheDocument()
     expect(screen.getByTestId("quanlyvon-mock")).toBeInTheDocument()
-    expect(screen.getByTestId("dungngoai-mock")).toBeInTheDocument()
+    // Cấp 5 KHÔNG thêm gì vào panel (nút «Đứng ngoài» đã nghỉ hưu cùng Cấp 5 cũ).
+    expect(screen.queryByText(/đứng ngoài/i)).not.toBeInTheDocument()
     expect(screen.getByTestId("doichieu-mock")).toBeInTheDocument()
     expect(screen.getByTestId("docsolenh-mock")).toBeInTheDocument()
   })

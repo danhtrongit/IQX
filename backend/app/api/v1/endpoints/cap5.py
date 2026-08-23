@@ -1,29 +1,33 @@
-"""Cấp 5 «Lão luyện» API — progress, enter, task, verdict hệ gợi ý (+
-provenance), kết sổ 4 ô, đứng ngoài có chủ đích (+ chấm né đúng/hụt), thách
-thức lão luyện, graduate.
+"""API Cấp 5 «Lão luyện — Săn mã» — progress/enter/task/tour, màn Săn mã
+(5 bộ lọc + lọc sàn), Watchlist có điểm đồng thuận 5 lớp, nguồn săn cho Kết sổ,
+Phân tích danh mục (khối ⑫/⑬), graduate.
 
-Cấp 5 is FREE: all endpoints use ``CurrentUser`` (authenticated), NOT
+Cấp 5 là FREE: mọi endpoint dùng ``CurrentUser`` (đã đăng nhập), KHÔNG dùng
 ``PremiumUser``.
+
+★★ **ĐÃ GỠ cùng Cấp 5 cũ:** ``GET /cap5/verdict/{order_id}`` ·
+``POST /cap5/ketso`` · ``POST|GET /cap5/dung-ngoai`` ·
+``POST /cap5/dung-ngoai/cham`` · ``GET /cap5/thach-thuc``. Cấp 5 mới không có
+bước phân loại 4 ô và không có nhật ký đứng ngoài (spec §11 đẩy sang Cấp 6+).
 """
 
 from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from app.api.deps import CurrentUser, DBSession
 from app.schemas.cap5 import (
+    AddWatchlistRequest,
+    Cap5PhanTichOut,
     Cap5ProgressOut,
-    ChamDungNgoaiOut,
-    DungNgoaiListOut,
-    DungNgoaiOut,
-    DungNgoaiRequest,
-    KetsoCap5Out,
-    KetsoRequest,
+    Cap5WatchlistItemOut,
+    Cap5WatchlistOut,
+    HuntResultOut,
+    NguonSanOut,
+    SanMaIndexOut,
     TaskRequest,
-    ThachThucOut,
-    VerdictOut,
 )
 from app.services.cap5.service import Cap5Service
 
@@ -32,99 +36,147 @@ router = APIRouter(prefix="/cap5", tags=["Cấp 5"])
 
 @router.get("/progress", response_model=Cap5ProgressOut | None)
 async def get_progress(user: CurrentUser, db: DBSession) -> Cap5ProgressOut | None:
-    """Trả về tiến trình Cấp 5 của người dùng hiện tại (hoặc null nếu chưa vào).
+    """Tiến trình Cấp 5 của user hiện tại (hoặc null nếu chưa vào cấp).
 
-    Đồng thời chấm các nước đứng ngoài đã tới hạn (lazy compute-on-read).
+    Mọi con số được tính lại server-side ở đây; lần đọc đầu tiên trong ngày cũng
+    chạy mẻ chấm điểm đồng thuận 5 lớp cho Watchlist (1 lần/ngày, spec §6.1).
     """
     svc = Cap5Service(db)
-    return await svc.get_progress(user.id)
+    result = await svc.get_progress(user.id)
+    return Cap5ProgressOut(**result) if result is not None else None
 
 
 @router.post("/enter", response_model=Cap5ProgressOut)
 async def enter(user: CurrentUser, db: DBSession) -> Cap5ProgressOut:
     """Vào Cấp 5 (idempotent) — yêu cầu đã tốt nghiệp Cấp 4."""
     svc = Cap5Service(db)
-    return await svc.enter(user.id)
+    return Cap5ProgressOut(**await svc.enter(user.id))
 
 
 @router.patch("/task", response_model=Cap5ProgressOut)
 async def mark_task(body: TaskRequest, user: CurrentUser, db: DBSession) -> Cap5ProgressOut:
-    """Cả 3 nhiệm vụ đều được suy ra từ order_ketso / standby_decision — gọi
-    endpoint này chỉ kích hoạt tính lại (idempotent, không tự đặt)."""
+    """Cả 2 nhiệm vụ đều suy ra từ sổ săn mã + lệnh mua — endpoint này chỉ kích
+    hoạt tính lại (idempotent, không tự đóng dấu nhiệm vụ nào)."""
     svc = Cap5Service(db)
-    return await svc.mark_task(user.id, body.task_no)
+    return Cap5ProgressOut(**await svc.mark_task(user.id, body.task_no))
 
 
-@router.get("/verdict/{order_id}", response_model=VerdictOut)
-async def get_verdict(order_id: uuid.UUID, user: CurrentUser, db: DBSession) -> VerdictOut:
-    """Verdict hệ GỢI Ý cho một lệnh đã kết sổ + toàn bộ tín hiệu dẫn tới nó.
+@router.post("/tour-sanma", response_model=Cap5ProgressOut)
+async def mark_tour_sanma(user: CurrentUser, db: DBSession) -> Cap5ProgressOut:
+    """Đánh dấu ĐÃ ĐI HẾT 7 bước tour Săn mã (spec §7).
 
-    Suy ra từ dữ liệu quy trình Cấp 1-4 đã ghi trên chính lệnh này (cơ sở lúc
-    đặt · kỷ luật thoát · không nhồi lệnh · khối lượng khớp khẩu vị). §C12c:
-    KHÔNG bao giờ trả verdict trơ — luôn kèm provenance. ★ Lãi/lỗ không tham gia
-    vào verdict (spec §1).
+    Chỉ gọi ở bước cuối / nút "Xong" — "Bỏ qua" giữa chừng KHÔNG gọi. Cờ này
+    quyết định tour có tự bật lại hay không; nó KHÔNG phải cổng tốt nghiệp.
     """
     svc = Cap5Service(db)
-    result = await svc.suggested_verdict(user.id, order_id)
-    return VerdictOut(**result)
+    return Cap5ProgressOut(**await svc.mark_tour_sanma(user.id))
 
 
-@router.post("/ketso", response_model=KetsoCap5Out)
-async def record_ketso(body: KetsoRequest, user: CurrentUser, db: DBSession) -> KetsoCap5Out:
-    """Chốt phân loại 4 ô cho một lệnh (hybrid §4): user Đồng ý hoặc Sửa verdict
-    hệ. Sửa khác verdict hệ thì BẮT BUỘC ghi ``ly_do_sua`` (422 nếu thiếu).
+# ── Màn Săn mã (§5) ───────────────────────────────────
 
-    ``verdict_he`` và ``o_4`` luôn được server tính lại — client không gửi lên.
+
+@router.get("/san-ma", response_model=SanMaIndexOut)
+async def san_ma_index(user: CurrentUser, db: DBSession) -> SanMaIndexOut:
+    """Điều kiện lọc sàn + tình trạng khả dụng của 5 bộ lọc (§5.1/§5.2).
+
+    Bộ lọc thiếu nguồn dữ liệu trả ``kha_dung=false`` kèm lý do nguyên văn — user
+    thấy ngay trên màn thay vì bấm vào rồi nhận một popup rỗng.
     """
     svc = Cap5Service(db)
-    return await svc.record_ketso(
-        user.id,
-        body.order_id,
-        verdict_user=body.verdict_user,
-        ly_do_sua=body.ly_do_sua,
+    return SanMaIndexOut(**await svc.san_ma_index(user.id))
+
+
+@router.get("/san-ma/{bo_loc}", response_model=HuntResultOut)
+async def san_ma_result(bo_loc: str, user: CurrentUser, db: DBSession) -> HuntResultOut:
+    """Top 10 mã của một bộ lọc + dòng minh bạch (§5.3/§5.4).
+
+    ★ ``kha_dung=false`` ⇒ ``tong_so_ma=null`` và ``items=[]``: chưa lọc được,
+    KHÔNG phải "không có mã nào thoả".
+    """
+    svc = Cap5Service(db)
+    return HuntResultOut(**await svc.san_ma_result(user.id, bo_loc))
+
+
+# ── Watchlist (§6) ────────────────────────────────────
+
+
+@router.get("/watchlist", response_model=Cap5WatchlistOut)
+async def get_watchlist(user: CurrentUser, db: DBSession) -> Cap5WatchlistOut:
+    """Watchlist + điểm đồng thuận 5 lớp + nguồn săn từng mã (§6.2).
+
+    Mẻ chấm 5 lớp chạy tối đa 1 lần/ngày cho mỗi mã (spec §6.1 — không tức thời,
+    không gọi AI: chỉ đọc lại bản AI Insight đã lưu).
+    """
+    svc = Cap5Service(db)
+    return Cap5WatchlistOut(**await svc.watchlist(user.id))
+
+
+@router.post("/watchlist", response_model=Cap5WatchlistItemOut, status_code=201)
+async def add_to_watchlist(
+    body: AddWatchlistRequest, user: CurrentUser, db: DBSession
+) -> Cap5WatchlistItemOut:
+    """Thêm mã vào Watchlist KÈM nguồn săn (§5.4 nút "+ Watchlist").
+
+    ``hunt_signal`` client gửi lên bị BỎ QUA — server tự tính tín hiệu lúc săn.
+    Mã đã có trong Watchlist thì được cập nhật nguồn săn (không 409).
+    """
+    svc = Cap5Service(db)
+    result = await svc.add_watchlist(
+        user.id, body.symbol, body.hunt_filter, hunt_signal=body.hunt_signal
     )
+    return Cap5WatchlistItemOut(**result)
 
 
-@router.post("/dung-ngoai", response_model=DungNgoaiOut)
-async def log_dung_ngoai(
-    body: DungNgoaiRequest, user: CurrentUser, db: DBSession
-) -> DungNgoaiOut:
-    """Ghi một quyết định "đứng ngoài có chủ đích" kèm giá hiện tại (giá do
-    server tự lấy). Sau 5 phiên hệ sẽ chấm né đúng / né hụt / trung tính."""
+@router.delete("/watchlist/{symbol}", status_code=204)
+async def remove_from_watchlist(symbol: str, user: CurrentUser, db: DBSession) -> None:
+    """Bỏ một mã khỏi Watchlist. Sổ săn mã KHÔNG bị xoá theo — "số mã đã săn" là
+    việc user đã làm, và nhiệm vụ đã đạt không được tụt lại."""
     svc = Cap5Service(db)
-    decision = await svc.log_dung_ngoai(user.id, body.symbol, body.reason)
-    return DungNgoaiOut(**svc.decision_out(decision))
+    await svc.remove_watchlist(user.id, symbol)
 
 
-@router.get("/dung-ngoai", response_model=DungNgoaiListOut)
-async def list_dung_ngoai(user: CurrentUser, db: DBSession) -> DungNgoaiListOut:
-    """Nhật ký đứng ngoài + kết quả từng lần (chấm luôn các lần đã tới hạn)."""
+# ── Kết sổ + Phân tích danh mục (§8/§9) ───────────────
+
+
+@router.get("/nguon-san/{symbol}", response_model=NguonSanOut)
+async def get_nguon_san(
+    symbol: str,
+    user: CurrentUser,
+    db: DBSession,
+    order_id: uuid.UUID | None = Query(
+        default=None,
+        description=(
+            "Lệnh cần hỏi nguồn săn. ★ NÊN LUÔN TRUYỀN: không có nó, câu trả lời "
+            "chỉ nói 'mã này từng được săn' và không phân biệt được 'săn sau khi "
+            "mua' với 'mua từ Watchlist'."
+        ),
+    ),
+) -> NguonSanOut:
+    """Dòng nguồn săn của một lệnh cho Kết sổ (§8) — dùng chung cho Cấp 5-8.
+
+    ★ Có ``order_id``: server so mốc săn đầu tiên với mốc đặt lệnh (cùng luật
+    nhiệm vụ ②) và đếm số phiên chờ TỚI LÚC ĐẶT LỆNH; bộ lọc lấy từ dấu đã đóng
+    trên chính lệnh đó. Không có ``order_id``: vẫn 200 nhưng kèm
+    ``canh_bao_thieu_order_id`` — FE phải hiện nó, không được im lặng đọc
+    ``tu_san_ma`` thành một câu về lệnh.
+
+    404 khi ``order_id`` không tồn tại hoặc là lệnh của người khác; 400 khi lệnh
+    đó không phải mã trong đường dẫn.
+    """
     svc = Cap5Service(db)
-    result = await svc.list_dung_ngoai(user.id)
-    return DungNgoaiListOut(**result)
+    return NguonSanOut(**await svc.nguon_san(user.id, symbol, order_id=order_id))
 
 
-@router.post("/dung-ngoai/cham", response_model=ChamDungNgoaiOut)
-async def cham_dung_ngoai(user: CurrentUser, db: DBSession) -> ChamDungNgoaiOut:
-    """Chấm tất cả nước đứng ngoài đã đủ 5 phiên (idempotent — cùng routine mà
-    các endpoint đọc tự chạy). Lần nào chưa có giá phiên đích thì để nguyên
-    chưa chấm, không đoán."""
+@router.get("/phan-tich", response_model=Cap5PhanTichOut)
+async def get_phan_tich(user: CurrentUser, db: DBSession) -> Cap5PhanTichOut:
+    """Khối ⑫ (bộ lọc nào ra mã thắng nhiều nhất) + khối ⑬ (phễu kỷ luật săn mã),
+    đo bằng KẾT QUẢ THẬT của lệnh đã đóng (§9)."""
     svc = Cap5Service(db)
-    result = await svc.cham_dung_ngoai(user.id)
-    return ChamDungNgoaiOut(**result)
-
-
-@router.get("/thach-thuc", response_model=ThachThucOut)
-async def get_thach_thuc(user: CurrentUser, db: DBSession) -> ThachThucOut:
-    """3 điều kiện của Thách thức Lão luyện (nhiệm vụ ③) kèm giá trị hiện tại
-    + đạt/chưa đạt + giải thích (spec §2③/§C12c)."""
-    svc = Cap5Service(db)
-    result = await svc.thach_thuc(user.id)
-    return ThachThucOut(**result)
+    return Cap5PhanTichOut(**await svc.phan_tich(user.id))
 
 
 @router.post("/graduate", response_model=Cap5ProgressOut)
 async def graduate(user: CurrentUser, db: DBSession) -> Cap5ProgressOut:
-    """Tốt nghiệp Cấp 5 — chỉ khi đủ 3/3 nhiệm vụ."""
+    """Tốt nghiệp Cấp 5 — chỉ khi đủ 2/2 nhiệm vụ."""
     svc = Cap5Service(db)
-    return await svc.graduate(user.id)
+    return Cap5ProgressOut(**await svc.graduate(user.id))

@@ -1,0 +1,5165 @@
+{
+ "generatedFrom": "IQX API v0.1.0",
+ "basePath": "/api/v1",
+ "totalOperations": 293,
+ "hiddenFromOpenApi": 2,
+ "totalPaths": 267,
+ "websocket": [
+  {
+   "path": "/api/v1/market-data/ws",
+   "chapter": "10-realtime-websocket.md",
+   "note": "Không xuất hiện trong OpenAPI vì FastAPI không mô tả route WebSocket"
+  }
+ ],
+ "operations": [
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/alerts/indicators",
+   "tag": "Admin · Cảnh báo",
+   "operationId": "list_indicator_options_api_v1_admin_alerts_indicators_get",
+   "summary": "List Indicator Options",
+   "auth": true,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/alerts/seed",
+   "tag": "Admin · Cảnh báo",
+   "operationId": "reseed_api_v1_admin_alerts_seed_post",
+   "summary": "Reseed",
+   "auth": true,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [],
+   "queryParams": [
+    "overwrite"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/alerts/signals",
+   "tag": "Admin · Cảnh báo",
+   "operationId": "list_signals_api_v1_admin_alerts_signals_get",
+   "summary": "List Signals",
+   "auth": true,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/alerts/signals",
+   "tag": "Admin · Cảnh báo",
+   "operationId": "create_signal_api_v1_admin_alerts_signals_post",
+   "summary": "Create Signal",
+   "auth": true,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "201",
+    "422"
+   ]
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/admin/alerts/signals/{key}",
+   "tag": "Admin · Cảnh báo",
+   "operationId": "update_signal_api_v1_admin_alerts_signals__key__put",
+   "summary": "Update Signal",
+   "auth": true,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [
+    "key"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/admin/alerts/signals/{key}",
+   "tag": "Admin · Cảnh báo",
+   "operationId": "delete_signal_api_v1_admin_alerts_signals__key__delete",
+   "summary": "Delete Signal",
+   "auth": true,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [
+    "key"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "204",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/audit",
+   "tag": "Admin - Audit",
+   "operationId": "list_audit_logs_api_v1_admin_audit_get",
+   "summary": "List Audit Logs",
+   "auth": true,
+   "chapter": "39-endpoints-quan-tri.md",
+   "pathParams": [],
+   "queryParams": [
+    "page",
+    "page_size",
+    "admin_user_id",
+    "action_prefix",
+    "target_entity",
+    "target_id",
+    "date_from",
+    "date_to"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/ipn",
+   "tag": "Admin - IPN Logs",
+   "operationId": "list_ipn_logs_api_v1_admin_ipn_get",
+   "summary": "List Ipn Logs",
+   "auth": true,
+   "chapter": "21b-endpoints-quan-tri-thanh-toan.md",
+   "pathParams": [],
+   "queryParams": [
+    "page",
+    "page_size",
+    "secret_key_valid",
+    "result_status",
+    "date_from",
+    "date_to",
+    "search"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/ipn/{log_id}",
+   "tag": "Admin - IPN Logs",
+   "operationId": "get_ipn_log_api_v1_admin_ipn__log_id__get",
+   "summary": "Get Ipn Log",
+   "auth": true,
+   "chapter": "21b-endpoints-quan-tri-thanh-toan.md",
+   "pathParams": [
+    "log_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/ipn/{log_id}/retry",
+   "tag": "Admin - IPN Logs",
+   "operationId": "retry_ipn_log_api_v1_admin_ipn__log_id__retry_post",
+   "summary": "Retry Ipn Log",
+   "auth": true,
+   "chapter": "21b-endpoints-quan-tri-thanh-toan.md",
+   "pathParams": [
+    "log_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/lessons/courses",
+   "tag": "Quản trị: Bài học",
+   "operationId": "admin_list_courses_api_v1_admin_lessons_courses_get",
+   "summary": "Admin List Courses",
+   "auth": true,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [],
+   "queryParams": [
+    "page",
+    "page_size",
+    "category",
+    "level",
+    "is_premium",
+    "is_published",
+    "search"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/lessons/courses",
+   "tag": "Quản trị: Bài học",
+   "operationId": "admin_create_course_api_v1_admin_lessons_courses_post",
+   "summary": "Admin Create Course",
+   "auth": true,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "201",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/lessons/courses/{course_id}",
+   "tag": "Quản trị: Bài học",
+   "operationId": "admin_get_course_api_v1_admin_lessons_courses__course_id__get",
+   "summary": "Admin Get Course",
+   "auth": true,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [
+    "course_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/admin/lessons/courses/{course_id}",
+   "tag": "Quản trị: Bài học",
+   "operationId": "admin_update_course_api_v1_admin_lessons_courses__course_id__patch",
+   "summary": "Admin Update Course",
+   "auth": true,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [
+    "course_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/admin/lessons/courses/{course_id}",
+   "tag": "Quản trị: Bài học",
+   "operationId": "admin_delete_course_api_v1_admin_lessons_courses__course_id__delete",
+   "summary": "Admin Delete Course",
+   "auth": true,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [
+    "course_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/lessons/courses/{course_id}/episodes",
+   "tag": "Quản trị: Bài học",
+   "operationId": "admin_create_episode_api_v1_admin_lessons_courses__course_id__episodes_post",
+   "summary": "Admin Create Episode",
+   "auth": true,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [
+    "course_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "201",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/lessons/courses/{course_id}/reorder",
+   "tag": "Quản trị: Bài học",
+   "operationId": "admin_reorder_episodes_api_v1_admin_lessons_courses__course_id__reorder_post",
+   "summary": "Admin Reorder Episodes",
+   "auth": true,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [
+    "course_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/lessons/courses/{course_id}/thumbnail",
+   "tag": "Quản trị: Bài học",
+   "operationId": "admin_upload_thumbnail_api_v1_admin_lessons_courses__course_id__thumbnail_post",
+   "summary": "Admin Upload Thumbnail",
+   "auth": true,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [
+    "course_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/admin/lessons/episodes/{episode_id}",
+   "tag": "Quản trị: Bài học",
+   "operationId": "admin_update_episode_api_v1_admin_lessons_episodes__episode_id__patch",
+   "summary": "Admin Update Episode",
+   "auth": true,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [
+    "episode_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/admin/lessons/episodes/{episode_id}",
+   "tag": "Quản trị: Bài học",
+   "operationId": "admin_delete_episode_api_v1_admin_lessons_episodes__episode_id__delete",
+   "summary": "Admin Delete Episode",
+   "auth": true,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [
+    "episode_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "204",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/lessons/episodes/{episode_id}/file",
+   "tag": "Quản trị: Bài học",
+   "operationId": "admin_upload_episode_file_api_v1_admin_lessons_episodes__episode_id__file_post",
+   "summary": "Admin Upload Episode File",
+   "auth": true,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [
+    "episode_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/metrics/overview",
+   "tag": "Quản trị: Số liệu",
+   "operationId": "get_overview_api_v1_admin_metrics_overview_get",
+   "summary": "Get Overview",
+   "auth": true,
+   "chapter": "39-endpoints-quan-tri.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/metrics/plan-distribution",
+   "tag": "Quản trị: Số liệu",
+   "operationId": "get_plan_distribution_api_v1_admin_metrics_plan_distribution_get",
+   "summary": "Get Plan Distribution",
+   "auth": true,
+   "chapter": "39-endpoints-quan-tri.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/metrics/revenue",
+   "tag": "Quản trị: Số liệu",
+   "operationId": "get_daily_revenue_api_v1_admin_metrics_revenue_get",
+   "summary": "Get Daily Revenue",
+   "auth": true,
+   "chapter": "39-endpoints-quan-tri.md",
+   "pathParams": [],
+   "queryParams": [
+    "days"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/payments",
+   "tag": "Admin - Payments",
+   "operationId": "list_payments_api_v1_admin_payments_get",
+   "summary": "List Payments",
+   "auth": true,
+   "chapter": "21b-endpoints-quan-tri-thanh-toan.md",
+   "pathParams": [],
+   "queryParams": [
+    "page",
+    "page_size",
+    "status",
+    "grant_type",
+    "user_id",
+    "plan_id",
+    "date_from",
+    "date_to",
+    "search"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/payments/{order_id}",
+   "tag": "Admin - Payments",
+   "operationId": "get_payment_api_v1_admin_payments__order_id__get",
+   "summary": "Get Payment",
+   "auth": true,
+   "chapter": "21b-endpoints-quan-tri-thanh-toan.md",
+   "pathParams": [
+    "order_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/payments/{order_id}/mark-paid",
+   "tag": "Admin - Payments",
+   "operationId": "mark_payment_paid_api_v1_admin_payments__order_id__mark_paid_post",
+   "summary": "Mark Payment Paid",
+   "auth": true,
+   "chapter": "21b-endpoints-quan-tri-thanh-toan.md",
+   "pathParams": [
+    "order_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/payments/{order_id}/reconcile",
+   "tag": "Admin - Payments",
+   "operationId": "reconcile_payment_api_v1_admin_payments__order_id__reconcile_post",
+   "summary": "Reconcile Payment",
+   "auth": true,
+   "chapter": "21b-endpoints-quan-tri-thanh-toan.md",
+   "pathParams": [
+    "order_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/payments/{order_id}/refund",
+   "tag": "Admin - Payments",
+   "operationId": "refund_payment_api_v1_admin_payments__order_id__refund_post",
+   "summary": "Refund Payment",
+   "auth": true,
+   "chapter": "21b-endpoints-quan-tri-thanh-toan.md",
+   "pathParams": [
+    "order_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/subscriptions",
+   "tag": "Admin - Subscriptions",
+   "operationId": "list_subscriptions_api_v1_admin_subscriptions_get",
+   "summary": "List Subscriptions",
+   "auth": true,
+   "chapter": "21b-endpoints-quan-tri-thanh-toan.md",
+   "pathParams": [],
+   "queryParams": [
+    "page",
+    "page_size",
+    "status",
+    "plan_id",
+    "user_id",
+    "expiring_within_days"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/subscriptions/{sub_id}",
+   "tag": "Admin - Subscriptions",
+   "operationId": "get_subscription_api_v1_admin_subscriptions__sub_id__get",
+   "summary": "Get Subscription",
+   "auth": true,
+   "chapter": "21b-endpoints-quan-tri-thanh-toan.md",
+   "pathParams": [
+    "sub_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/subscriptions/{sub_id}/cancel",
+   "tag": "Admin - Subscriptions",
+   "operationId": "cancel_subscription_api_v1_admin_subscriptions__sub_id__cancel_post",
+   "summary": "Cancel Subscription",
+   "auth": true,
+   "chapter": "21b-endpoints-quan-tri-thanh-toan.md",
+   "pathParams": [
+    "sub_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/subscriptions/{sub_id}/extend",
+   "tag": "Admin - Subscriptions",
+   "operationId": "extend_subscription_api_v1_admin_subscriptions__sub_id__extend_post",
+   "summary": "Extend Subscription",
+   "auth": true,
+   "chapter": "21b-endpoints-quan-tri-thanh-toan.md",
+   "pathParams": [
+    "sub_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/system/jobs/{job_id}/run",
+   "tag": "Quản trị: Hệ thống",
+   "operationId": "run_job_api_v1_admin_system_jobs__job_id__run_post",
+   "summary": "Run Job",
+   "auth": true,
+   "chapter": "39-endpoints-quan-tri.md",
+   "pathParams": [
+    "job_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/system/status",
+   "tag": "Quản trị: Hệ thống",
+   "operationId": "get_status_api_v1_admin_system_status_get",
+   "summary": "Get Status",
+   "auth": true,
+   "chapter": "39-endpoints-quan-tri.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/users/bulk",
+   "tag": "Quản trị: Người dùng",
+   "operationId": "bulk_update_users_api_v1_admin_users_bulk_post",
+   "summary": "Bulk Update Users",
+   "auth": true,
+   "chapter": "39-endpoints-quan-tri.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/users/export",
+   "tag": "Quản trị: Người dùng",
+   "operationId": "export_users_csv_api_v1_admin_users_export_get",
+   "summary": "Export Users Csv",
+   "auth": true,
+   "chapter": "39-endpoints-quan-tri.md",
+   "pathParams": [],
+   "queryParams": [
+    "role",
+    "status",
+    "search",
+    "last_login_from",
+    "last_login_to"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/users/{user_id}/360",
+   "tag": "Quản trị: Người dùng",
+   "operationId": "get_user_360_api_v1_admin_users__user_id__360_get",
+   "summary": "Get User 360",
+   "auth": true,
+   "chapter": "39-endpoints-quan-tri.md",
+   "pathParams": [
+    "user_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/users/{user_id}/login-history",
+   "tag": "Quản trị: Người dùng",
+   "operationId": "get_login_history_api_v1_admin_users__user_id__login_history_get",
+   "summary": "Get Login History",
+   "auth": true,
+   "chapter": "39-endpoints-quan-tri.md",
+   "pathParams": [
+    "user_id"
+   ],
+   "queryParams": [
+    "page",
+    "page_size"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/users/{user_id}/resend-verification",
+   "tag": "Quản trị: Người dùng",
+   "operationId": "resend_verification_api_v1_admin_users__user_id__resend_verification_post",
+   "summary": "Resend Verification",
+   "auth": true,
+   "chapter": "39-endpoints-quan-tri.md",
+   "pathParams": [
+    "user_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "202",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/users/{user_id}/reset-password",
+   "tag": "Quản trị: Người dùng",
+   "operationId": "reset_password_api_v1_admin_users__user_id__reset_password_post",
+   "summary": "Reset Password",
+   "auth": true,
+   "chapter": "39-endpoints-quan-tri.md",
+   "pathParams": [
+    "user_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/users/{user_id}/subscriptions/history",
+   "tag": "Admin - Subscriptions",
+   "operationId": "user_subscription_history_api_v1_admin_users__user_id__subscriptions_history_get",
+   "summary": "User Subscription History",
+   "auth": true,
+   "chapter": "21b-endpoints-quan-tri-thanh-toan.md",
+   "pathParams": [
+    "user_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/vt/accounts/{account_id}",
+   "tag": "Quản trị: Giao dịch ảo",
+   "operationId": "get_account_api_v1_admin_vt_accounts__account_id__get",
+   "summary": "Chi tiết tài khoản giao dịch ảo",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [
+    "account_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/vt/accounts/{account_id}/cash-adjust",
+   "tag": "Quản trị: Giao dịch ảo",
+   "operationId": "cash_adjust_api_v1_admin_vt_accounts__account_id__cash_adjust_post",
+   "summary": "Điều chỉnh số dư tiền mặt",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [
+    "account_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/vt/accounts/{account_id}/freeze",
+   "tag": "Quản trị: Giao dịch ảo",
+   "operationId": "freeze_account_api_v1_admin_vt_accounts__account_id__freeze_post",
+   "summary": "Tạm khóa tài khoản giao dịch ảo",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [
+    "account_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/vt/accounts/{account_id}/ledger",
+   "tag": "Quản trị: Giao dịch ảo",
+   "operationId": "list_ledger_api_v1_admin_vt_accounts__account_id__ledger_get",
+   "summary": "Sổ cái tiền mặt của tài khoản (phân trang)",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [
+    "account_id"
+   ],
+   "queryParams": [
+    "page",
+    "page_size",
+    "kind"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/vt/accounts/{account_id}/orders",
+   "tag": "Quản trị: Giao dịch ảo",
+   "operationId": "list_orders_api_v1_admin_vt_accounts__account_id__orders_get",
+   "summary": "Danh sách lệnh của tài khoản (phân trang)",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [
+    "account_id"
+   ],
+   "queryParams": [
+    "page",
+    "page_size",
+    "status",
+    "symbol",
+    "date_from",
+    "date_to"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/vt/accounts/{account_id}/positions",
+   "tag": "Quản trị: Giao dịch ảo",
+   "operationId": "list_positions_api_v1_admin_vt_accounts__account_id__positions_get",
+   "summary": "Danh sách vị thế của tài khoản",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [
+    "account_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/vt/accounts/{account_id}/settlements",
+   "tag": "Quản trị: Giao dịch ảo",
+   "operationId": "list_settlements_api_v1_admin_vt_accounts__account_id__settlements_get",
+   "summary": "Danh sách thanh toán T+N của tài khoản (phân trang)",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [
+    "account_id"
+   ],
+   "queryParams": [
+    "page",
+    "page_size",
+    "status"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/vt/accounts/{account_id}/stats",
+   "tag": "Quản trị: Giao dịch ảo",
+   "operationId": "get_account_stats_api_v1_admin_vt_accounts__account_id__stats_get",
+   "summary": "Thống kê tài khoản giao dịch ảo",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [
+    "account_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/admin/vt/accounts/{account_id}/trades",
+   "tag": "Quản trị: Giao dịch ảo",
+   "operationId": "list_trades_api_v1_admin_vt_accounts__account_id__trades_get",
+   "summary": "Danh sách giao dịch của tài khoản (phân trang)",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [
+    "account_id"
+   ],
+   "queryParams": [
+    "page",
+    "page_size",
+    "symbol"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/vt/accounts/{account_id}/unfreeze",
+   "tag": "Quản trị: Giao dịch ảo",
+   "operationId": "unfreeze_account_api_v1_admin_vt_accounts__account_id__unfreeze_post",
+   "summary": "Mở khóa tài khoản giao dịch ảo",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [
+    "account_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/ai/bctc-dashboard/{symbol}",
+   "tag": "AI Phân tích",
+   "operationId": "get_bctc_dashboard_narrative_api_v1_ai_bctc_dashboard__symbol__get",
+   "summary": "Get Bctc Dashboard Narrative",
+   "auth": true,
+   "chapter": "29-endpoints-ai.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "term_type",
+    "language"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/ai/bctc/{symbol}",
+   "tag": "AI Phân tích",
+   "operationId": "get_bctc_analyze_api_v1_ai_bctc__symbol__get",
+   "summary": "Get Bctc Analyze",
+   "auth": true,
+   "chapter": "29-endpoints-ai.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "term_type",
+    "language"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/ai/dashboard/analyze",
+   "tag": "AI Phân tích",
+   "operationId": "post_dashboard_analyze_api_v1_ai_dashboard_analyze_post",
+   "summary": "Post Dashboard Analyze",
+   "auth": true,
+   "chapter": "29-endpoints-ai.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/ai/forecast/ranking",
+   "tag": "AI Mô hình dự báo",
+   "operationId": "get_ranking_api_v1_ai_forecast_ranking_get",
+   "summary": "Get Ranking",
+   "auth": true,
+   "chapter": "29-endpoints-ai.md",
+   "pathParams": [],
+   "queryParams": [
+    "horizon",
+    "limit"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/ai/forecast/symbols/{symbol}",
+   "tag": "AI Mô hình dự báo",
+   "operationId": "get_symbol_forecast_api_v1_ai_forecast_symbols__symbol__get",
+   "summary": "Get Symbol Forecast",
+   "auth": true,
+   "chapter": "29-endpoints-ai.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/ai/industry/analyze",
+   "tag": "AI Phân tích",
+   "operationId": "post_industry_analyze_api_v1_ai_industry_analyze_post",
+   "summary": "Post Industry Analyze",
+   "auth": true,
+   "chapter": "29-endpoints-ai.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/ai/industry/analyze-batch",
+   "tag": "AI Phân tích",
+   "operationId": "post_industry_analyze_batch_api_v1_ai_industry_analyze_batch_post",
+   "summary": "Post Industry Analyze Batch",
+   "auth": true,
+   "chapter": "29-endpoints-ai.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/ai/insight/analyze",
+   "tag": "AI Phân tích",
+   "operationId": "post_insight_analyze_api_v1_ai_insight_analyze_post",
+   "summary": "Post Insight Analyze",
+   "auth": true,
+   "chapter": "29-endpoints-ai.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/ai/insight/{symbol}",
+   "tag": "AI Phân tích",
+   "operationId": "get_insight_analyze_api_v1_ai_insight__symbol__get",
+   "summary": "Get Insight Analyze",
+   "auth": false,
+   "chapter": "29-endpoints-ai.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "language"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/ai/patterns/candles",
+   "tag": "AI Mẫu hình",
+   "operationId": "get_candles_api_v1_ai_patterns_candles_get",
+   "summary": "Get Candles",
+   "auth": true,
+   "chapter": "29-endpoints-ai.md",
+   "pathParams": [],
+   "queryParams": [
+    "symbol"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/ai/patterns/charts",
+   "tag": "AI Mẫu hình",
+   "operationId": "get_charts_api_v1_ai_patterns_charts_get",
+   "summary": "Get Charts",
+   "auth": true,
+   "chapter": "29-endpoints-ai.md",
+   "pathParams": [],
+   "queryParams": [
+    "symbol"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/ai/patterns/{kind}/symbols",
+   "tag": "AI Mẫu hình",
+   "operationId": "list_symbols_api_v1_ai_patterns__kind__symbols_get",
+   "summary": "List Symbols",
+   "auth": true,
+   "chapter": "29-endpoints-ai.md",
+   "pathParams": [
+    "kind"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/alerts/events",
+   "tag": "Cảnh báo",
+   "operationId": "list_events_api_v1_alerts_events_get",
+   "summary": "List Events",
+   "auth": true,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/alerts/rules",
+   "tag": "Cảnh báo",
+   "operationId": "list_rules_api_v1_alerts_rules_get",
+   "summary": "List Rules",
+   "auth": true,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/alerts/rules",
+   "tag": "Cảnh báo",
+   "operationId": "create_rule_api_v1_alerts_rules_post",
+   "summary": "Create Rule",
+   "auth": true,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "201",
+    "422"
+   ]
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/alerts/rules/{rule_id}",
+   "tag": "Cảnh báo",
+   "operationId": "update_rule_api_v1_alerts_rules__rule_id__put",
+   "summary": "Update Rule",
+   "auth": true,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [
+    "rule_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/alerts/rules/{rule_id}",
+   "tag": "Cảnh báo",
+   "operationId": "delete_rule_api_v1_alerts_rules__rule_id__delete",
+   "summary": "Delete Rule",
+   "auth": true,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [
+    "rule_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "204",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/alerts/signals",
+   "tag": "Cảnh báo",
+   "operationId": "list_signals_api_v1_alerts_signals_get",
+   "summary": "List Signals",
+   "auth": true,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/alerts/telegram",
+   "tag": "Cảnh báo",
+   "operationId": "telegram_status_api_v1_alerts_telegram_get",
+   "summary": "Telegram Status",
+   "auth": true,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/alerts/telegram",
+   "tag": "Cảnh báo",
+   "operationId": "telegram_unlink_api_v1_alerts_telegram_delete",
+   "summary": "Telegram Unlink",
+   "auth": true,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "204"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/alerts/telegram/link",
+   "tag": "Cảnh báo",
+   "operationId": "telegram_link_api_v1_alerts_telegram_link_post",
+   "summary": "Telegram Link",
+   "auth": true,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/forgot-password",
+   "tag": "Xác thực",
+   "operationId": "forgot_password_api_v1_auth_forgot_password_post",
+   "summary": "Quên mật khẩu",
+   "auth": false,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/login",
+   "tag": "Xác thực",
+   "operationId": "login_api_v1_auth_login_post",
+   "summary": "Đăng nhập",
+   "auth": false,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/logout",
+   "tag": "Xác thực",
+   "operationId": "logout_api_v1_auth_logout_post",
+   "summary": "Đăng xuất",
+   "auth": true,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/auth/me",
+   "tag": "Xác thực",
+   "operationId": "get_me_api_v1_auth_me_get",
+   "summary": "Lấy thông tin người dùng hiện tại",
+   "auth": true,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/refresh",
+   "tag": "Xác thực",
+   "operationId": "refresh_tokens_api_v1_auth_refresh_post",
+   "summary": "Làm mới token",
+   "auth": false,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/register",
+   "tag": "Xác thực",
+   "operationId": "register_api_v1_auth_register_post",
+   "summary": "Đăng ký người dùng mới",
+   "auth": false,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "201",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/auth/reset-password",
+   "tag": "Xác thực",
+   "operationId": "reset_password_api_v1_auth_reset_password_post",
+   "summary": "Đặt lại mật khẩu",
+   "auth": false,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/backtest/catalog",
+   "tag": "Backtest",
+   "operationId": "get_catalog_api_v1_backtest_catalog_get",
+   "summary": "Get Catalog",
+   "auth": true,
+   "chapter": "36-endpoints-watchlist-ban-ve-backtest.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/backtest/run",
+   "tag": "Backtest",
+   "operationId": "run_api_v1_backtest_run_post",
+   "summary": "Run",
+   "auth": true,
+   "chapter": "36-endpoints-watchlist-ban-ve-backtest.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/backtest/strategies",
+   "tag": "Backtest",
+   "operationId": "list_strategies_api_v1_backtest_strategies_get",
+   "summary": "List Strategies",
+   "auth": true,
+   "chapter": "36-endpoints-watchlist-ban-ve-backtest.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/backtest/strategies",
+   "tag": "Backtest",
+   "operationId": "create_strategy_api_v1_backtest_strategies_post",
+   "summary": "Create Strategy",
+   "auth": true,
+   "chapter": "36-endpoints-watchlist-ban-ve-backtest.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "201",
+    "422"
+   ]
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/backtest/strategies/{strategy_id}",
+   "tag": "Backtest",
+   "operationId": "update_strategy_api_v1_backtest_strategies__strategy_id__put",
+   "summary": "Update Strategy",
+   "auth": true,
+   "chapter": "36-endpoints-watchlist-ban-ve-backtest.md",
+   "pathParams": [
+    "strategy_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/backtest/strategies/{strategy_id}",
+   "tag": "Backtest",
+   "operationId": "delete_strategy_api_v1_backtest_strategies__strategy_id__delete",
+   "summary": "Delete Strategy",
+   "auth": true,
+   "chapter": "36-endpoints-watchlist-ban-ve-backtest.md",
+   "pathParams": [
+    "strategy_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "204",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap0/enter",
+   "tag": "Cấp 0",
+   "operationId": "enter_api_v1_cap0_enter_post",
+   "summary": "Enter",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap0/graduate",
+   "tag": "Cấp 0",
+   "operationId": "graduate_api_v1_cap0_graduate_post",
+   "summary": "Graduate",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap0/kehoach",
+   "tag": "Cấp 0",
+   "operationId": "get_kehoach_api_v1_cap0_kehoach_get",
+   "summary": "Get Kehoach",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [
+    "order_id"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap0/kehoach",
+   "tag": "Cấp 0",
+   "operationId": "record_kehoach_api_v1_cap0_kehoach_post",
+   "summary": "Record Kehoach",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap0/placement",
+   "tag": "Cấp 0",
+   "operationId": "placement_api_v1_cap0_placement_post",
+   "summary": "Placement",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap0/progress",
+   "tag": "Cấp 0",
+   "operationId": "get_progress_api_v1_cap0_progress_get",
+   "summary": "Get Progress",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/cap0/task",
+   "tag": "Cấp 0",
+   "operationId": "complete_task_api_v1_cap0_task_patch",
+   "summary": "Complete Task",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap1/enter",
+   "tag": "Cấp 1",
+   "operationId": "enter_api_v1_cap1_enter_post",
+   "summary": "Enter",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap1/graduate",
+   "tag": "Cấp 1",
+   "operationId": "graduate_api_v1_cap1_graduate_post",
+   "summary": "Graduate",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap1/kehoach",
+   "tag": "Cấp 1",
+   "operationId": "record_kehoach_api_v1_cap1_kehoach_post",
+   "summary": "Record Kehoach",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap1/ketso",
+   "tag": "Cấp 1",
+   "operationId": "record_ketso_api_v1_cap1_ketso_post",
+   "summary": "Record Ketso",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap1/progress",
+   "tag": "Cấp 1",
+   "operationId": "get_progress_api_v1_cap1_progress_get",
+   "summary": "Get Progress",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/cap1/task",
+   "tag": "Cấp 1",
+   "operationId": "mark_task_api_v1_cap1_task_patch",
+   "summary": "Mark Task",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap2/diem-ky-luat",
+   "tag": "Cấp 2",
+   "operationId": "get_diem_ky_luat_api_v1_cap2_diem_ky_luat_get",
+   "summary": "Get Diem Ky Luat",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [
+    "ngay"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap2/enter",
+   "tag": "Cấp 2",
+   "operationId": "enter_api_v1_cap2_enter_post",
+   "summary": "Enter",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap2/graduate",
+   "tag": "Cấp 2",
+   "operationId": "graduate_api_v1_cap2_graduate_post",
+   "summary": "Graduate",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap2/kehoach",
+   "tag": "Cấp 2",
+   "operationId": "record_kehoach_api_v1_cap2_kehoach_post",
+   "summary": "Record Kehoach",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap2/ketso",
+   "tag": "Cấp 2",
+   "operationId": "record_ketso_api_v1_cap2_ketso_post",
+   "summary": "Record Ketso",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap2/progress",
+   "tag": "Cấp 2",
+   "operationId": "get_progress_api_v1_cap2_progress_get",
+   "summary": "Get Progress",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/cap2/task",
+   "tag": "Cấp 2",
+   "operationId": "mark_task_api_v1_cap2_task_patch",
+   "summary": "Mark Task",
+   "auth": true,
+   "chapter": "32-endpoints-cap-0-2.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap3/enter",
+   "tag": "Cấp 3",
+   "operationId": "enter_api_v1_cap3_enter_post",
+   "summary": "Enter",
+   "auth": true,
+   "chapter": "33-endpoints-cap-3-4.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap3/graduate",
+   "tag": "Cấp 3",
+   "operationId": "graduate_api_v1_cap3_graduate_post",
+   "summary": "Graduate",
+   "auth": true,
+   "chapter": "33-endpoints-cap-3-4.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap3/kehoach",
+   "tag": "Cấp 3",
+   "operationId": "record_kehoach_api_v1_cap3_kehoach_post",
+   "summary": "Record Kehoach",
+   "auth": true,
+   "chapter": "33-endpoints-cap-3-4.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap3/khau-vi",
+   "tag": "Cấp 3",
+   "operationId": "set_khau_vi_api_v1_cap3_khau_vi_post",
+   "summary": "Set Khau Vi",
+   "auth": true,
+   "chapter": "33-endpoints-cap-3-4.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap3/progress",
+   "tag": "Cấp 3",
+   "operationId": "get_progress_api_v1_cap3_progress_get",
+   "summary": "Get Progress",
+   "auth": true,
+   "chapter": "33-endpoints-cap-3-4.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/cap3/task",
+   "tag": "Cấp 3",
+   "operationId": "mark_task_api_v1_cap3_task_patch",
+   "summary": "Mark Task",
+   "auth": true,
+   "chapter": "33-endpoints-cap-3-4.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap3/thach-thuc",
+   "tag": "Cấp 3",
+   "operationId": "get_thach_thuc_api_v1_cap3_thach_thuc_get",
+   "summary": "Get Thach Thuc",
+   "auth": true,
+   "chapter": "33-endpoints-cap-3-4.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap4/enter",
+   "tag": "Cấp 4",
+   "operationId": "enter_api_v1_cap4_enter_post",
+   "summary": "Enter",
+   "auth": true,
+   "chapter": "33-endpoints-cap-3-4.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap4/graduate",
+   "tag": "Cấp 4",
+   "operationId": "graduate_api_v1_cap4_graduate_post",
+   "summary": "Graduate",
+   "auth": true,
+   "chapter": "33-endpoints-cap-3-4.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap4/kehoach",
+   "tag": "Cấp 4",
+   "operationId": "record_kehoach_api_v1_cap4_kehoach_post",
+   "summary": "Record Kehoach",
+   "auth": true,
+   "chapter": "33-endpoints-cap-3-4.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap4/progress",
+   "tag": "Cấp 4",
+   "operationId": "get_progress_api_v1_cap4_progress_get",
+   "summary": "Get Progress",
+   "auth": true,
+   "chapter": "33-endpoints-cap-3-4.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/cap4/task",
+   "tag": "Cấp 4",
+   "operationId": "mark_task_api_v1_cap4_task_patch",
+   "summary": "Mark Task",
+   "auth": true,
+   "chapter": "33-endpoints-cap-3-4.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap4/thach-thuc",
+   "tag": "Cấp 4",
+   "operationId": "get_thach_thuc_api_v1_cap4_thach_thuc_get",
+   "summary": "Get Thach Thuc",
+   "auth": true,
+   "chapter": "33-endpoints-cap-3-4.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap4/vu-khi-diem-mu",
+   "tag": "Cấp 4",
+   "operationId": "get_vu_khi_diem_mu_api_v1_cap4_vu_khi_diem_mu_get",
+   "summary": "Get Vu Khi Diem Mu",
+   "auth": true,
+   "chapter": "33-endpoints-cap-3-4.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap5/dung-ngoai",
+   "tag": "Cấp 5",
+   "operationId": "list_dung_ngoai_api_v1_cap5_dung_ngoai_get",
+   "summary": "List Dung Ngoai",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap5/dung-ngoai",
+   "tag": "Cấp 5",
+   "operationId": "log_dung_ngoai_api_v1_cap5_dung_ngoai_post",
+   "summary": "Log Dung Ngoai",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap5/dung-ngoai/cham",
+   "tag": "Cấp 5",
+   "operationId": "cham_dung_ngoai_api_v1_cap5_dung_ngoai_cham_post",
+   "summary": "Cham Dung Ngoai",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap5/enter",
+   "tag": "Cấp 5",
+   "operationId": "enter_api_v1_cap5_enter_post",
+   "summary": "Enter",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap5/graduate",
+   "tag": "Cấp 5",
+   "operationId": "graduate_api_v1_cap5_graduate_post",
+   "summary": "Graduate",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap5/ketso",
+   "tag": "Cấp 5",
+   "operationId": "record_ketso_api_v1_cap5_ketso_post",
+   "summary": "Record Ketso",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap5/progress",
+   "tag": "Cấp 5",
+   "operationId": "get_progress_api_v1_cap5_progress_get",
+   "summary": "Get Progress",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/cap5/task",
+   "tag": "Cấp 5",
+   "operationId": "mark_task_api_v1_cap5_task_patch",
+   "summary": "Mark Task",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap5/thach-thuc",
+   "tag": "Cấp 5",
+   "operationId": "get_thach_thuc_api_v1_cap5_thach_thuc_get",
+   "summary": "Get Thach Thuc",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap5/verdict/{order_id}",
+   "tag": "Cấp 5",
+   "operationId": "get_verdict_api_v1_cap5_verdict__order_id__get",
+   "summary": "Get Verdict",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [
+    "order_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap6/enter",
+   "tag": "Cấp 6",
+   "operationId": "enter_api_v1_cap6_enter_post",
+   "summary": "Enter",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap6/goi-y",
+   "tag": "Cấp 6",
+   "operationId": "get_goi_y_api_v1_cap6_goi_y_get",
+   "summary": "Get Goi Y",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [
+    "symbol"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap6/graduate",
+   "tag": "Cấp 6",
+   "operationId": "graduate_api_v1_cap6_graduate_post",
+   "summary": "Graduate",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap6/kehoach",
+   "tag": "Cấp 6",
+   "operationId": "record_kehoach_api_v1_cap6_kehoach_post",
+   "summary": "Record Kehoach",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap6/kehoach/{order_id}",
+   "tag": "Cấp 6",
+   "operationId": "get_kehoach_api_v1_cap6_kehoach__order_id__get",
+   "summary": "Get Kehoach",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [
+    "order_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap6/progress",
+   "tag": "Cấp 6",
+   "operationId": "get_progress_api_v1_cap6_progress_get",
+   "summary": "Get Progress",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/cap6/task",
+   "tag": "Cấp 6",
+   "operationId": "mark_task_api_v1_cap6_task_patch",
+   "summary": "Mark Task",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap6/thach-thuc",
+   "tag": "Cấp 6",
+   "operationId": "get_thach_thuc_api_v1_cap6_thach_thuc_get",
+   "summary": "Get Thach Thuc",
+   "auth": true,
+   "chapter": "34-endpoints-cap-5-6.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap7/cham",
+   "tag": "Cấp 7",
+   "operationId": "cham_api_v1_cap7_cham_post",
+   "summary": "Cham",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap7/enter",
+   "tag": "Cấp 7",
+   "operationId": "enter_api_v1_cap7_enter_post",
+   "summary": "Enter",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap7/graduate",
+   "tag": "Cấp 7",
+   "operationId": "graduate_api_v1_cap7_graduate_post",
+   "summary": "Graduate",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap7/kehoach",
+   "tag": "Cấp 7",
+   "operationId": "record_kehoach_api_v1_cap7_kehoach_post",
+   "summary": "Record Kehoach",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap7/kehoach/{order_id}",
+   "tag": "Cấp 7",
+   "operationId": "get_kehoach_api_v1_cap7_kehoach__order_id__get",
+   "summary": "Get Kehoach",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [
+    "order_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap7/phien",
+   "tag": "Cấp 7",
+   "operationId": "get_phien_api_v1_cap7_phien_get",
+   "summary": "Get Phien",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap7/progress",
+   "tag": "Cấp 7",
+   "operationId": "get_progress_api_v1_cap7_progress_get",
+   "summary": "Get Progress",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/cap7/task",
+   "tag": "Cấp 7",
+   "operationId": "mark_task_api_v1_cap7_task_patch",
+   "summary": "Mark Task",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap7/thach-thuc",
+   "tag": "Cấp 7",
+   "operationId": "get_thach_thuc_api_v1_cap7_thach_thuc_get",
+   "summary": "Get Thach Thuc",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap8/enter",
+   "tag": "Cấp 8",
+   "operationId": "enter_api_v1_cap8_enter_post",
+   "summary": "Enter",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap8/graduate",
+   "tag": "Cấp 8",
+   "operationId": "graduate_api_v1_cap8_graduate_post",
+   "summary": "Graduate",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/cap8/kehoach",
+   "tag": "Cấp 8",
+   "operationId": "record_kehoach_api_v1_cap8_kehoach_post",
+   "summary": "Record Kehoach",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap8/kiem-tra",
+   "tag": "Cấp 8",
+   "operationId": "get_kiem_tra_api_v1_cap8_kiem_tra_get",
+   "summary": "Get Kiem Tra",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [],
+   "queryParams": [
+    "symbol",
+    "khoi_luong",
+    "gia",
+    "cat_lo"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap8/progress",
+   "tag": "Cấp 8",
+   "operationId": "get_progress_api_v1_cap8_progress_get",
+   "summary": "Get Progress",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/cap8/task",
+   "tag": "Cấp 8",
+   "operationId": "mark_task_api_v1_cap8_task_patch",
+   "summary": "Mark Task",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/cap8/thach-thuc",
+   "tag": "Cấp 8",
+   "operationId": "get_thach_thuc_api_v1_cap8_thach_thuc_get",
+   "summary": "Get Thach Thuc",
+   "auth": true,
+   "chapter": "35-endpoints-cap-7-8.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/chart-drawings/{symbol}",
+   "tag": "Bản vẽ biểu đồ",
+   "operationId": "get_chart_drawing_api_v1_chart_drawings__symbol__get",
+   "summary": "Get Chart Drawing",
+   "auth": true,
+   "chapter": "36-endpoints-watchlist-ban-ve-backtest.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/chart-drawings/{symbol}",
+   "tag": "Bản vẽ biểu đồ",
+   "operationId": "save_chart_drawing_api_v1_chart_drawings__symbol__put",
+   "summary": "Save Chart Drawing",
+   "auth": true,
+   "chapter": "36-endpoints-watchlist-ban-ve-backtest.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/chart-drawings/{symbol}",
+   "tag": "Bản vẽ biểu đồ",
+   "operationId": "delete_chart_drawing_api_v1_chart_drawings__symbol__delete",
+   "summary": "Delete Chart Drawing",
+   "auth": true,
+   "chapter": "36-endpoints-watchlist-ban-ve-backtest.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "204",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/health",
+   "tag": "Sức khỏe hệ thống",
+   "operationId": "health_check_api_v1_health_get",
+   "summary": "Kiểm tra sức khỏe",
+   "auth": false,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/lessons/courses",
+   "tag": "Bài học",
+   "operationId": "list_courses_api_v1_lessons_courses_get",
+   "summary": "List Courses",
+   "auth": false,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [],
+   "queryParams": [
+    "page",
+    "page_size",
+    "category",
+    "level",
+    "is_premium",
+    "search"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/lessons/courses/{slug}",
+   "tag": "Bài học",
+   "operationId": "get_course_detail_api_v1_lessons_courses__slug__get",
+   "summary": "Get Course Detail",
+   "auth": true,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [
+    "slug"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/lessons/episodes/{episode_id}/content",
+   "tag": "Bài học",
+   "operationId": "get_episode_content_api_v1_lessons_episodes__episode_id__content_get",
+   "summary": "Get Episode Content",
+   "auth": true,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [
+    "episode_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/lessons/episodes/{episode_id}/progress",
+   "tag": "Bài học",
+   "operationId": "update_episode_progress_api_v1_lessons_episodes__episode_id__progress_post",
+   "summary": "Update Episode Progress",
+   "auth": true,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [
+    "episode_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/lessons/me/progress",
+   "tag": "Bài học",
+   "operationId": "get_my_progress_api_v1_lessons_me_progress_get",
+   "summary": "Get My Progress",
+   "auth": true,
+   "chapter": "38-endpoints-bai-hoc.md",
+   "pathParams": [],
+   "queryParams": [
+    "course_id"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-analysis/daily",
+   "tag": "Nhận định thị trường",
+   "operationId": "list_recent_api_v1_market_analysis_daily_get",
+   "summary": "List Recent",
+   "auth": false,
+   "chapter": "28-endpoints-nhan-dinh-thi-truong.md",
+   "pathParams": [],
+   "queryParams": [
+    "limit"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-analysis/daily/latest",
+   "tag": "Nhận định thị trường",
+   "operationId": "get_latest_api_v1_market_analysis_daily_latest_get",
+   "summary": "Get Latest",
+   "auth": false,
+   "chapter": "28-endpoints-nhan-dinh-thi-truong.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/market-analysis/daily/run",
+   "tag": "Nhận định thị trường",
+   "operationId": "run_now_api_v1_market_analysis_daily_run_post",
+   "summary": "Run Now",
+   "auth": true,
+   "chapter": "28-endpoints-nhan-dinh-thi-truong.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-analysis/daily/{session_date}",
+   "tag": "Nhận định thị trường",
+   "operationId": "get_by_date_api_v1_market_analysis_daily__session_date__get",
+   "summary": "Get By Date",
+   "auth": false,
+   "chapter": "28-endpoints-nhan-dinh-thi-truong.md",
+   "pathParams": [
+    "session_date"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-analysis/midday/latest",
+   "tag": "Nhận định thị trường",
+   "operationId": "get_midday_latest_api_v1_market_analysis_midday_latest_get",
+   "summary": "Get Midday Latest",
+   "auth": false,
+   "chapter": "28-endpoints-nhan-dinh-thi-truong.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/market-analysis/midday/run",
+   "tag": "Nhận định thị trường",
+   "operationId": "run_midday_now_api_v1_market_analysis_midday_run_post",
+   "summary": "Run Midday Now",
+   "auth": true,
+   "chapter": "28-endpoints-nhan-dinh-thi-truong.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-analysis/midday/{session_date}",
+   "tag": "Nhận định thị trường",
+   "operationId": "get_midday_by_date_api_v1_market_analysis_midday__session_date__get",
+   "summary": "Get Midday By Date",
+   "auth": false,
+   "chapter": "28-endpoints-nhan-dinh-thi-truong.md",
+   "pathParams": [
+    "session_date"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-analysis/premarket/latest",
+   "tag": "Nhận định thị trường",
+   "operationId": "get_premarket_latest_api_v1_market_analysis_premarket_latest_get",
+   "summary": "Get Premarket Latest",
+   "auth": false,
+   "chapter": "28-endpoints-nhan-dinh-thi-truong.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/market-analysis/premarket/run",
+   "tag": "Nhận định thị trường",
+   "operationId": "run_premarket_now_api_v1_market_analysis_premarket_run_post",
+   "summary": "Run Premarket Now",
+   "auth": true,
+   "chapter": "28-endpoints-nhan-dinh-thi-truong.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-analysis/premarket/{session_date}",
+   "tag": "Nhận định thị trường",
+   "operationId": "get_premarket_by_date_api_v1_market_analysis_premarket__session_date__get",
+   "summary": "Get Premarket By Date",
+   "auth": false,
+   "chapter": "28-endpoints-nhan-dinh-thi-truong.md",
+   "pathParams": [
+    "session_date"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/bctc-dashboard/{symbol}",
+   "tag": "Dữ liệu thị trường: Cơ bản",
+   "operationId": "get_bctc_storytelling_dashboard_api_v1_market_data_bctc_dashboard__symbol__get",
+   "summary": "Get Bctc Storytelling Dashboard",
+   "auth": false,
+   "chapter": "27-endpoints-market-bctc.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "term_type"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/bctc/{symbol}",
+   "tag": "Dữ liệu thị trường: Cơ bản",
+   "operationId": "get_bctc_dashboard_api_v1_market_data_bctc__symbol__get",
+   "summary": "Get Bctc Dashboard",
+   "auth": false,
+   "chapter": "27-endpoints-market-bctc.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "term_type"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/company/{symbol}/details",
+   "tag": "Dữ liệu thị trường: Công ty",
+   "operationId": "get_company_details_api_v1_market_data_company__symbol__details_get",
+   "summary": "Get Company Details",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/company/{symbol}/news",
+   "tag": "Dữ liệu thị trường: Công ty",
+   "operationId": "get_company_news_api_v1_market_data_company__symbol__news_get",
+   "summary": "Get Company News",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/company/{symbol}/officers",
+   "tag": "Dữ liệu thị trường: Công ty",
+   "operationId": "get_officers_api_v1_market_data_company__symbol__officers_get",
+   "summary": "Get Officers",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/company/{symbol}/overview",
+   "tag": "Dữ liệu thị trường: Công ty",
+   "operationId": "get_company_overview_api_v1_market_data_company__symbol__overview_get",
+   "summary": "Get Company Overview",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/company/{symbol}/price-chart",
+   "tag": "Dữ liệu thị trường: Công ty",
+   "operationId": "get_company_price_chart_api_v1_market_data_company__symbol__price_chart_get",
+   "summary": "Get Company Price Chart",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "length"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/company/{symbol}/shareholders",
+   "tag": "Dữ liệu thị trường: Công ty",
+   "operationId": "get_shareholders_api_v1_market_data_company__symbol__shareholders_get",
+   "summary": "Get Shareholders",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/company/{symbol}/subsidiaries",
+   "tag": "Dữ liệu thị trường: Công ty",
+   "operationId": "get_subsidiaries_api_v1_market_data_company__symbol__subsidiaries_get",
+   "summary": "Get Subsidiaries",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/events/calendar",
+   "tag": "Dữ liệu thị trường: Sự kiện",
+   "operationId": "get_events_calendar_api_v1_market_data_events_calendar_get",
+   "summary": "Get Events Calendar",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [],
+   "queryParams": [
+    "start",
+    "end",
+    "event_type"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/fundamentals/{symbol}/{report_type}",
+   "tag": "Dữ liệu thị trường: Cơ bản",
+   "operationId": "get_financial_report_api_v1_market_data_fundamentals__symbol___report_type__get",
+   "summary": "Get Financial Report",
+   "auth": false,
+   "chapter": "27-endpoints-market-bctc.md",
+   "pathParams": [
+    "symbol",
+    "report_type"
+   ],
+   "queryParams": [
+    "term_type",
+    "page_size",
+    "period"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/funds",
+   "tag": "Dữ liệu thị trường: Quỹ",
+   "operationId": "list_funds_api_v1_market_data_funds_get",
+   "summary": "List Funds",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [],
+   "queryParams": [
+    "fund_type"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/funds/{fund_id}",
+   "tag": "Dữ liệu thị trường: Quỹ",
+   "operationId": "get_fund_details_api_v1_market_data_funds__fund_id__get",
+   "summary": "Get Fund Details",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [
+    "fund_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/funds/{fund_id}/nav",
+   "tag": "Dữ liệu thị trường: Quỹ",
+   "operationId": "get_fund_nav_api_v1_market_data_funds__fund_id__nav_get",
+   "summary": "Get Fund Nav",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [
+    "fund_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/global/crypto/{symbol}/depth",
+   "tag": "Dữ liệu thị trường: Quốc tế",
+   "operationId": "get_crypto_depth_api_v1_market_data_global_crypto__symbol__depth_get",
+   "summary": "Get Crypto Depth",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "limit"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/global/crypto/{symbol}/ohlc",
+   "tag": "Dữ liệu thị trường: Quốc tế",
+   "operationId": "get_crypto_ohlc_api_v1_market_data_global_crypto__symbol__ohlc_get",
+   "summary": "Get Crypto Ohlc",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "interval",
+    "limit"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/global/crypto/{symbol}/ticker",
+   "tag": "Dữ liệu thị trường: Quốc tế",
+   "operationId": "get_crypto_ticker_api_v1_market_data_global_crypto__symbol__ticker_get",
+   "summary": "Get Crypto Ticker",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/global/forex",
+   "tag": "Dữ liệu thị trường: Quốc tế",
+   "operationId": "get_global_forex_api_v1_market_data_global_forex_get",
+   "summary": "Get Global Forex",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [],
+   "queryParams": [
+    "symbol",
+    "start",
+    "end"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/global/snapshot",
+   "tag": "Dữ liệu thị trường: Quốc tế",
+   "operationId": "get_intl_snapshot_api_v1_market_data_global_snapshot_get",
+   "summary": "Get Intl Snapshot",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [],
+   "queryParams": [
+    "category"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/global/world-index",
+   "tag": "Dữ liệu thị trường: Quốc tế",
+   "operationId": "get_world_index_api_v1_market_data_global_world_index_get",
+   "summary": "Get World Index",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [],
+   "queryParams": [
+    "symbol",
+    "start",
+    "end"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/insights/ranking/{kind}",
+   "tag": "Dữ liệu thị trường: Phân tích",
+   "operationId": "get_ranking_api_v1_market_data_insights_ranking__kind__get",
+   "summary": "Get Ranking",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [
+    "kind"
+   ],
+   "queryParams": [
+    "index",
+    "limit",
+    "date"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/macro/commodities",
+   "tag": "Dữ liệu thị trường: Vĩ mô",
+   "operationId": "list_commodities_api_v1_market_data_macro_commodities_get",
+   "summary": "List Commodities",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/macro/commodities/{code}",
+   "tag": "Dữ liệu thị trường: Vĩ mô",
+   "operationId": "get_commodity_price_api_v1_market_data_macro_commodities__code__get",
+   "summary": "Get Commodity Price",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [
+    "code"
+   ],
+   "queryParams": [
+    "start",
+    "end",
+    "interval"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/macro/economy/{indicator}",
+   "tag": "Dữ liệu thị trường: Vĩ mô",
+   "operationId": "get_macro_data_api_v1_market_data_macro_economy__indicator__get",
+   "summary": "Get Macro Data",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [
+    "indicator"
+   ],
+   "queryParams": [
+    "start_year",
+    "end_year",
+    "period"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/macro/fx",
+   "tag": "Dữ liệu thị trường: Vĩ mô",
+   "operationId": "get_exchange_rates_api_v1_market_data_macro_fx_get",
+   "summary": "Get Exchange Rates",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [],
+   "queryParams": [
+    "date",
+    "source"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/macro/gold",
+   "tag": "Dữ liệu thị trường: Vĩ mô",
+   "operationId": "get_gold_prices_api_v1_market_data_macro_gold_get",
+   "summary": "Get Gold Prices",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [],
+   "queryParams": [
+    "date",
+    "source"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/news/ai",
+   "tag": "Dữ liệu thị trường: Tin AI",
+   "operationId": "get_ai_news_api_v1_market_data_news_ai_get",
+   "summary": "Get Ai News",
+   "auth": false,
+   "chapter": "26-endpoints-market-tin-tuc.md",
+   "pathParams": [],
+   "queryParams": [
+    "kind",
+    "page",
+    "page_size",
+    "ticker",
+    "topic",
+    "industry",
+    "source",
+    "sentiment",
+    "update_from",
+    "update_to"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/news/ai/audio/{news_id}",
+   "tag": "Dữ liệu thị trường: Tin AI",
+   "operationId": "get_ai_news_audio_api_v1_market_data_news_ai_audio__news_id__get",
+   "summary": "Get Ai News Audio",
+   "auth": false,
+   "chapter": "26-endpoints-market-tin-tuc.md",
+   "pathParams": [
+    "news_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/news/ai/catalogs",
+   "tag": "Dữ liệu thị trường: Tin AI",
+   "operationId": "get_ai_news_catalogs_api_v1_market_data_news_ai_catalogs_get",
+   "summary": "Get Ai News Catalogs",
+   "auth": false,
+   "chapter": "26-endpoints-market-tin-tuc.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/news/ai/detail/{slug}",
+   "tag": "Dữ liệu thị trường: Tin AI",
+   "operationId": "get_ai_news_detail_api_v1_market_data_news_ai_detail__slug__get",
+   "summary": "Get Ai News Detail",
+   "auth": false,
+   "chapter": "26-endpoints-market-tin-tuc.md",
+   "pathParams": [
+    "slug"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/news/ai/tickers/{symbol}",
+   "tag": "Dữ liệu thị trường: Tin AI",
+   "operationId": "get_ai_ticker_view_api_v1_market_data_news_ai_tickers__symbol__get",
+   "summary": "Get Ai Ticker View",
+   "auth": false,
+   "chapter": "26-endpoints-market-tin-tuc.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "page",
+    "page_size",
+    "sentiment",
+    "source",
+    "update_from",
+    "update_to"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/news/latest",
+   "tag": "Dữ liệu thị trường: Tin tức",
+   "operationId": "get_latest_news_api_v1_market_data_news_latest_get",
+   "summary": "Get Latest News",
+   "auth": false,
+   "chapter": "26-endpoints-market-tin-tuc.md",
+   "pathParams": [],
+   "queryParams": [
+    "sites",
+    "max_per_site"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/news/sources",
+   "tag": "Dữ liệu thị trường: Tin tức",
+   "operationId": "list_news_sources_api_v1_market_data_news_sources_get",
+   "summary": "List News Sources",
+   "auth": false,
+   "chapter": "26-endpoints-market-tin-tuc.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/allocation",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_allocation_api_v1_market_data_overview_allocation_get",
+   "summary": "Get Allocation",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "group",
+    "time_frame"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/breadth",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_breadth_api_v1_market_data_overview_breadth_get",
+   "summary": "Get Breadth",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "condition",
+    "exchange",
+    "period"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/foreign",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_foreign_api_v1_market_data_overview_foreign_get",
+   "summary": "Get Foreign",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "group",
+    "time_frame",
+    "from_ts",
+    "to_ts"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/foreign/top",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_foreign_top_api_v1_market_data_overview_foreign_top_get",
+   "summary": "Get Foreign Top",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "group",
+    "time_frame",
+    "from_ts",
+    "to_ts"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/heatmap",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_heatmap_api_v1_market_data_overview_heatmap_get",
+   "summary": "Get Heatmap",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "group",
+    "sector",
+    "size"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/heatmap/index",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_heatmap_index_api_v1_market_data_overview_heatmap_index_get",
+   "summary": "Get Heatmap Index",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/index-impact",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_index_impact_api_v1_market_data_overview_index_impact_get",
+   "summary": "Get Index Impact",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "group",
+    "time_frame"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/liquidity",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_liquidity_api_v1_market_data_overview_liquidity_get",
+   "summary": "Get Liquidity",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "symbols",
+    "time_frame",
+    "from_ts",
+    "to_ts"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/maintenance",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_maintenance_api_v1_market_data_overview_maintenance_get",
+   "summary": "Get Maintenance",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/market-index",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_market_index_api_v1_market_data_overview_market_index_get",
+   "summary": "Get Market Index",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "symbols"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/proprietary",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_proprietary_api_v1_market_data_overview_proprietary_get",
+   "summary": "Get Proprietary",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "market",
+    "time_frame"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/proprietary/top",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_proprietary_top_api_v1_market_data_overview_proprietary_top_get",
+   "summary": "Get Proprietary Top",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "exchange",
+    "time_frame"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/sectors/allocation",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_sectors_allocation_api_v1_market_data_overview_sectors_allocation_get",
+   "summary": "Get Sectors Allocation",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "group",
+    "time_frame"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/sectors/detail",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_sector_detail_api_v1_market_data_overview_sectors_detail_get",
+   "summary": "Get Sector Detail",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "icb_code",
+    "group",
+    "time_frame"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/stock-strength",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_stock_strength_api_v1_market_data_overview_stock_strength_get",
+   "summary": "Get Stock Strength",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "exchange"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/overview/valuation",
+   "tag": "Dữ liệu thị trường: Tổng quan",
+   "operationId": "get_valuation_api_v1_market_data_overview_valuation_get",
+   "summary": "Get Valuation",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "type",
+    "com_group_code",
+    "time_frame"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/quotes/{symbol}/intraday",
+   "tag": "Dữ liệu thị trường: Báo giá",
+   "operationId": "get_intraday_api_v1_market_data_quotes__symbol__intraday_get",
+   "summary": "Get Intraday",
+   "auth": false,
+   "chapter": "22-endpoints-market-tham-chieu-bao-gia.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "page_size",
+    "source"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/quotes/{symbol}/ohlcv",
+   "tag": "Dữ liệu thị trường: Báo giá",
+   "operationId": "get_ohlcv_api_v1_market_data_quotes__symbol__ohlcv_get",
+   "summary": "Get Ohlcv",
+   "auth": false,
+   "chapter": "22-endpoints-market-tham-chieu-bao-gia.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "start",
+    "end",
+    "interval",
+    "source"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/quotes/{symbol}/price-depth",
+   "tag": "Dữ liệu thị trường: Báo giá",
+   "operationId": "get_price_depth_api_v1_market_data_quotes__symbol__price_depth_get",
+   "summary": "Get Price Depth",
+   "auth": false,
+   "chapter": "22-endpoints-market-tham-chieu-bao-gia.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "source"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/reference/event-codes",
+   "tag": "Dữ liệu thị trường: Tham chiếu",
+   "operationId": "get_event_codes_api_v1_market_data_reference_event_codes_get",
+   "summary": "Get Event Codes",
+   "auth": false,
+   "chapter": "22-endpoints-market-tham-chieu-bao-gia.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/reference/groups/{group}/symbols",
+   "tag": "Dữ liệu thị trường: Tham chiếu",
+   "operationId": "list_group_symbols_api_v1_market_data_reference_groups__group__symbols_get",
+   "summary": "List Group Symbols",
+   "auth": false,
+   "chapter": "22-endpoints-market-tham-chieu-bao-gia.md",
+   "pathParams": [
+    "group"
+   ],
+   "queryParams": [
+    "source"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/reference/indices",
+   "tag": "Dữ liệu thị trường: Tham chiếu",
+   "operationId": "list_indices_api_v1_market_data_reference_indices_get",
+   "summary": "List Indices",
+   "auth": false,
+   "chapter": "22-endpoints-market-tham-chieu-bao-gia.md",
+   "pathParams": [],
+   "queryParams": [
+    "group"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/reference/industries",
+   "tag": "Dữ liệu thị trường: Tham chiếu",
+   "operationId": "list_industries_api_v1_market_data_reference_industries_get",
+   "summary": "List Industries",
+   "auth": false,
+   "chapter": "22-endpoints-market-tham-chieu-bao-gia.md",
+   "pathParams": [],
+   "queryParams": [
+    "source"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/reference/search",
+   "tag": "Dữ liệu thị trường: Tham chiếu",
+   "operationId": "get_search_bar_api_v1_market_data_reference_search_get",
+   "summary": "Get Search Bar",
+   "auth": false,
+   "chapter": "22-endpoints-market-tham-chieu-bao-gia.md",
+   "pathParams": [],
+   "queryParams": [
+    "language"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/reference/symbols",
+   "tag": "Dữ liệu thị trường: Tham chiếu",
+   "operationId": "list_symbols_api_v1_market_data_reference_symbols_get",
+   "summary": "List Symbols",
+   "auth": false,
+   "chapter": "22-endpoints-market-tham-chieu-bao-gia.md",
+   "pathParams": [],
+   "queryParams": [
+    "exchange",
+    "asset_type",
+    "source"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/reference/symbols/search",
+   "tag": "Dữ liệu thị trường: Tham chiếu",
+   "operationId": "search_symbols_db_api_v1_market_data_reference_symbols_search_get",
+   "summary": "Tìm kiếm mã chứng khoán (DB-backed)",
+   "auth": false,
+   "chapter": "22-endpoints-market-tham-chieu-bao-gia.md",
+   "pathParams": [],
+   "queryParams": [
+    "q",
+    "exchange",
+    "asset_type",
+    "include_indices",
+    "page",
+    "page_size"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/reference/symbols/{symbol}",
+   "tag": "Dữ liệu thị trường: Tham chiếu",
+   "operationId": "get_symbol_detail_api_v1_market_data_reference_symbols__symbol__get",
+   "summary": "Lấy chi tiết một mã chứng khoán (DB-backed)",
+   "auth": false,
+   "chapter": "22-endpoints-market-tham-chieu-bao-gia.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/screening/criteria",
+   "tag": "Dữ liệu thị trường: Bộ lọc cổ phiếu",
+   "operationId": "get_screening_criteria_api_v1_market_data_screening_criteria_get",
+   "summary": "Get Screening Criteria",
+   "auth": false,
+   "chapter": "22-endpoints-market-tham-chieu-bao-gia.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/screening/presets",
+   "tag": "Dữ liệu thị trường: Bộ lọc cổ phiếu",
+   "operationId": "get_screening_presets_api_v1_market_data_screening_presets_get",
+   "summary": "Get Screening Presets",
+   "auth": false,
+   "chapter": "22-endpoints-market-tham-chieu-bao-gia.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/market-data/screening/search",
+   "tag": "Dữ liệu thị trường: Bộ lọc cổ phiếu",
+   "operationId": "post_screening_search_api_v1_market_data_screening_search_post",
+   "summary": "Post Screening Search",
+   "auth": false,
+   "chapter": "22-endpoints-market-tham-chieu-bao-gia.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/sectors/information",
+   "tag": "Dữ liệu thị trường: Ngành",
+   "operationId": "get_sector_information_api_v1_market_data_sectors_information_get",
+   "summary": "Get Sector Information",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "icb_level"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/sectors/ranking",
+   "tag": "Dữ liệu thị trường: Ngành",
+   "operationId": "get_sector_ranking_api_v1_market_data_sectors_ranking_get",
+   "summary": "Get Sector Ranking",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [
+    "icb_level",
+    "adtv",
+    "value"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/sectors/trading-dates",
+   "tag": "Dữ liệu thị trường: Ngành",
+   "operationId": "get_sector_trading_dates_api_v1_market_data_sectors_trading_dates_get",
+   "summary": "Get Sector Trading Dates",
+   "auth": false,
+   "chapter": "24-endpoints-market-tong-quan-nganh.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/sheets/tpcp",
+   "tag": "Dữ liệu thị trường: Google Sheets",
+   "operationId": "get_sheets_tpcp_api_v1_market_data_sheets_tpcp_get",
+   "summary": "Lãi suất TPCP (Google Sheets)",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/sheets/tygia",
+   "tag": "Dữ liệu thị trường: Google Sheets",
+   "operationId": "get_sheets_tygia_api_v1_market_data_sheets_tygia_get",
+   "summary": "Tỷ giá ngoại tệ (Google Sheets)",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/sheets/vnd",
+   "tag": "Dữ liệu thị trường: Google Sheets",
+   "operationId": "get_sheets_vnd_api_v1_market_data_sheets_vnd_get",
+   "summary": "Lãi suất VND liên ngân hàng (Google Sheets)",
+   "auth": false,
+   "chapter": "25-endpoints-market-vi-mo-quoc-te-quy.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/market-data/trading/price-board",
+   "tag": "Dữ liệu thị trường: Giao dịch",
+   "operationId": "get_price_board_api_v1_market_data_trading_price_board_post",
+   "summary": "Get Price Board",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/trading/{symbol}/foreign-trade",
+   "tag": "Dữ liệu thị trường: Giao dịch",
+   "operationId": "get_foreign_trade_api_v1_market_data_trading__symbol__foreign_trade_get",
+   "summary": "Get Foreign Trade",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "start",
+    "end",
+    "limit"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/trading/{symbol}/foreign-trade/summary",
+   "tag": "Dữ liệu thị trường: Giao dịch",
+   "operationId": "get_foreign_trade_summary_api_v1_market_data_trading__symbol__foreign_trade_summary_get",
+   "summary": "Get Foreign Trade Summary",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "resolution",
+    "fromDate",
+    "toDate"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/trading/{symbol}/history",
+   "tag": "Dữ liệu thị trường: Giao dịch",
+   "operationId": "get_trading_history_api_v1_market_data_trading__symbol__history_get",
+   "summary": "Get Trading History",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "resolution",
+    "fromDate",
+    "toDate",
+    "page",
+    "size"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/trading/{symbol}/insider-deals",
+   "tag": "Dữ liệu thị trường: Giao dịch",
+   "operationId": "get_insider_deals_api_v1_market_data_trading__symbol__insider_deals_get",
+   "summary": "Get Insider Deals",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "limit"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/trading/{symbol}/proprietary",
+   "tag": "Dữ liệu thị trường: Giao dịch",
+   "operationId": "get_proprietary_history_api_v1_market_data_trading__symbol__proprietary_get",
+   "summary": "Get Proprietary History",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "resolution",
+    "fromDate",
+    "toDate",
+    "page",
+    "size"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/trading/{symbol}/proprietary/summary",
+   "tag": "Dữ liệu thị trường: Giao dịch",
+   "operationId": "get_proprietary_summary_api_v1_market_data_trading__symbol__proprietary_summary_get",
+   "summary": "Get Proprietary Summary",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "resolution",
+    "fromDate",
+    "toDate"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/trading/{symbol}/summary",
+   "tag": "Dữ liệu thị trường: Giao dịch",
+   "operationId": "get_trading_summary_api_v1_market_data_trading__symbol__summary_get",
+   "summary": "Get Trading Summary",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "resolution",
+    "fromDate",
+    "toDate"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/trading/{symbol}/supply-demand",
+   "tag": "Dữ liệu thị trường: Giao dịch",
+   "operationId": "get_supply_demand_history_api_v1_market_data_trading__symbol__supply_demand_get",
+   "summary": "Get Supply Demand History",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "resolution",
+    "fromDate",
+    "toDate",
+    "page",
+    "size"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/market-data/trading/{symbol}/supply-demand/summary",
+   "tag": "Dữ liệu thị trường: Giao dịch",
+   "operationId": "get_supply_demand_summary_api_v1_market_data_trading__symbol__supply_demand_summary_get",
+   "summary": "Get Supply Demand Summary",
+   "auth": false,
+   "chapter": "23-endpoints-market-cong-ty-giao-dich.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [
+    "resolution",
+    "fromDate",
+    "toDate"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/portfolio-manager/analyze",
+   "tag": "Quản lý danh mục",
+   "operationId": "analyze_api_v1_portfolio_manager_analyze_post",
+   "summary": "Analyze",
+   "auth": true,
+   "chapter": "30-endpoints-quan-ly-danh-muc.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/portfolio-manager/report",
+   "tag": "Quản lý danh mục",
+   "operationId": "latest_report_api_v1_portfolio_manager_report_get",
+   "summary": "Latest Report",
+   "auth": true,
+   "chapter": "30-endpoints-quan-ly-danh-muc.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/premium/admin/plans",
+   "tag": "Premium",
+   "operationId": "admin_list_plans_api_v1_premium_admin_plans_get",
+   "summary": "Admin List Plans",
+   "auth": true,
+   "chapter": "21-endpoints-premium-thanh-toan.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/premium/admin/plans",
+   "tag": "Premium",
+   "operationId": "admin_create_plan_api_v1_premium_admin_plans_post",
+   "summary": "Admin Create Plan",
+   "auth": true,
+   "chapter": "21-endpoints-premium-thanh-toan.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "201",
+    "422"
+   ]
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/premium/admin/plans/{plan_id}",
+   "tag": "Premium",
+   "operationId": "admin_update_plan_api_v1_premium_admin_plans__plan_id__patch",
+   "summary": "Admin Update Plan",
+   "auth": true,
+   "chapter": "21-endpoints-premium-thanh-toan.md",
+   "pathParams": [
+    "plan_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/premium/admin/plans/{plan_id}",
+   "tag": "Premium",
+   "operationId": "admin_delete_plan_api_v1_premium_admin_plans__plan_id__delete",
+   "summary": "Admin Delete Plan",
+   "auth": true,
+   "chapter": "21-endpoints-premium-thanh-toan.md",
+   "pathParams": [
+    "plan_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/premium/admin/users/{user_id}/grant",
+   "tag": "Premium",
+   "operationId": "admin_grant_premium_api_v1_premium_admin_users__user_id__grant_post",
+   "summary": "Admin Grant Premium",
+   "auth": true,
+   "chapter": "21-endpoints-premium-thanh-toan.md",
+   "pathParams": [
+    "user_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "201",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/premium/checkout",
+   "tag": "Premium",
+   "operationId": "create_checkout_api_v1_premium_checkout_post",
+   "summary": "Create Checkout",
+   "auth": true,
+   "chapter": "21-endpoints-premium-thanh-toan.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/premium/me",
+   "tag": "Premium",
+   "operationId": "get_my_subscription_api_v1_premium_me_get",
+   "summary": "Get My Subscription",
+   "auth": true,
+   "chapter": "21-endpoints-premium-thanh-toan.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/premium/my-orders",
+   "tag": "Premium",
+   "operationId": "get_my_orders_api_v1_premium_my_orders_get",
+   "summary": "Get My Orders",
+   "auth": true,
+   "chapter": "21-endpoints-premium-thanh-toan.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/premium/plans",
+   "tag": "Premium",
+   "operationId": "list_plans_api_v1_premium_plans_get",
+   "summary": "List Plans",
+   "auth": false,
+   "chapter": "21-endpoints-premium-thanh-toan.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/premium/sepay/ipn",
+   "tag": "Premium",
+   "operationId": "sepay_ipn_api_v1_premium_sepay_ipn_post",
+   "summary": "Sepay Ipn",
+   "auth": false,
+   "chapter": "21-endpoints-premium-thanh-toan.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/telegram/webhook/{secret}",
+   "tag": "Telegram",
+   "operationId": "telegram_webhook_api_v1_telegram_webhook__secret__post",
+   "summary": "Telegram Webhook",
+   "auth": false,
+   "chapter": "37-endpoints-canh-bao-telegram.md",
+   "pathParams": [
+    "secret"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/users/",
+   "tag": "Người dùng",
+   "operationId": "list_users_api_v1_users__get",
+   "summary": "Danh sách người dùng (quản trị)",
+   "auth": true,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [],
+   "queryParams": [
+    "page",
+    "page_size",
+    "search",
+    "role",
+    "status",
+    "sort_by",
+    "sort_order"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/users/",
+   "tag": "Người dùng",
+   "operationId": "admin_create_user_api_v1_users__post",
+   "summary": "Tạo người dùng (quản trị)",
+   "auth": true,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "201",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/users/me",
+   "tag": "Người dùng",
+   "operationId": "get_own_profile_api_v1_users_me_get",
+   "summary": "Lấy hồ sơ của chính mình",
+   "auth": true,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/users/me",
+   "tag": "Người dùng",
+   "operationId": "update_own_profile_api_v1_users_me_patch",
+   "summary": "Cập nhật hồ sơ của chính mình",
+   "auth": true,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/users/{user_id}",
+   "tag": "Người dùng",
+   "operationId": "get_user_api_v1_users__user_id__get",
+   "summary": "Lấy thông tin người dùng theo ID (quản trị)",
+   "auth": true,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [
+    "user_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/users/{user_id}",
+   "tag": "Người dùng",
+   "operationId": "admin_update_user_api_v1_users__user_id__patch",
+   "summary": "Cập nhật người dùng (quản trị)",
+   "auth": true,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [
+    "user_id"
+   ],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/users/{user_id}",
+   "tag": "Người dùng",
+   "operationId": "admin_delete_user_api_v1_users__user_id__delete",
+   "summary": "Xóa người dùng (quản trị)",
+   "auth": true,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [
+    "user_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/virtual-trading/account",
+   "tag": "Giao dịch ảo",
+   "operationId": "get_account_api_v1_virtual_trading_account_get",
+   "summary": "Get Account",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/virtual-trading/account/activate",
+   "tag": "Giao dịch ảo",
+   "operationId": "activate_account_api_v1_virtual_trading_account_activate_post",
+   "summary": "Activate Account",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "201"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/virtual-trading/admin/accounts",
+   "tag": "Giao dịch ảo (quản trị)",
+   "operationId": "admin_list_accounts_api_v1_virtual_trading_admin_accounts_get",
+   "summary": "Admin List Accounts",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [],
+   "queryParams": [
+    "page",
+    "page_size",
+    "status",
+    "frozen_only",
+    "search"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/virtual-trading/admin/config",
+   "tag": "Giao dịch ảo (quản trị)",
+   "operationId": "admin_get_config_api_v1_virtual_trading_admin_config_get",
+   "summary": "Admin Get Config",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "PATCH",
+   "path": "/api/v1/virtual-trading/admin/config",
+   "tag": "Giao dịch ảo (quản trị)",
+   "operationId": "admin_update_config_api_v1_virtual_trading_admin_config_patch",
+   "summary": "Admin Update Config",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/virtual-trading/admin/reset-all",
+   "tag": "Giao dịch ảo (quản trị)",
+   "operationId": "admin_reset_all_api_v1_virtual_trading_admin_reset_all_post",
+   "summary": "Admin Reset All",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/virtual-trading/admin/users/{user_id}/reset",
+   "tag": "Giao dịch ảo (quản trị)",
+   "operationId": "admin_reset_user_api_v1_virtual_trading_admin_users__user_id__reset_post",
+   "summary": "Admin Reset User",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [
+    "user_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/virtual-trading/leaderboard",
+   "tag": "Giao dịch ảo",
+   "operationId": "get_leaderboard_api_v1_virtual_trading_leaderboard_get",
+   "summary": "Get Leaderboard",
+   "auth": false,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [],
+   "queryParams": [
+    "sort_by",
+    "page",
+    "page_size"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/virtual-trading/orders",
+   "tag": "Giao dịch ảo",
+   "operationId": "list_orders_api_v1_virtual_trading_orders_get",
+   "summary": "List Orders",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [],
+   "queryParams": [
+    "status",
+    "symbol",
+    "side",
+    "page",
+    "page_size"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/virtual-trading/orders",
+   "tag": "Giao dịch ảo",
+   "operationId": "place_order_api_v1_virtual_trading_orders_post",
+   "summary": "Place Order",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "201",
+    "422"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/virtual-trading/orders/{order_id}/cancel",
+   "tag": "Giao dịch ảo",
+   "operationId": "cancel_order_api_v1_virtual_trading_orders__order_id__cancel_post",
+   "summary": "Cancel Order",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [
+    "order_id"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/virtual-trading/portfolio",
+   "tag": "Giao dịch ảo",
+   "operationId": "get_portfolio_api_v1_virtual_trading_portfolio_get",
+   "summary": "Get Portfolio",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/virtual-trading/refresh",
+   "tag": "Giao dịch ảo",
+   "operationId": "refresh_api_v1_virtual_trading_refresh_post",
+   "summary": "Refresh",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/virtual-trading/trades",
+   "tag": "Giao dịch ảo",
+   "operationId": "list_trades_api_v1_virtual_trading_trades_get",
+   "summary": "List Trades",
+   "auth": true,
+   "chapter": "31-endpoints-giao-dich-ao.md",
+   "pathParams": [],
+   "queryParams": [
+    "page",
+    "page_size"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/watchlist",
+   "tag": "Danh mục theo dõi",
+   "operationId": "get_watchlist_api_v1_watchlist_get",
+   "summary": "Get Watchlist",
+   "auth": true,
+   "chapter": "36-endpoints-watchlist-ban-ve-backtest.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/watchlist",
+   "tag": "Danh mục theo dõi",
+   "operationId": "add_to_watchlist_api_v1_watchlist_post",
+   "summary": "Add To Watchlist",
+   "auth": true,
+   "chapter": "36-endpoints-watchlist-ban-ve-backtest.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "201",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/watchlist/check/{symbol}",
+   "tag": "Danh mục theo dõi",
+   "operationId": "check_symbol_api_v1_watchlist_check__symbol__get",
+   "summary": "Check Symbol",
+   "auth": true,
+   "chapter": "36-endpoints-watchlist-ban-ve-backtest.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "PUT",
+   "path": "/api/v1/watchlist/reorder",
+   "tag": "Danh mục theo dõi",
+   "operationId": "reorder_watchlist_api_v1_watchlist_reorder_put",
+   "summary": "Reorder Watchlist",
+   "auth": true,
+   "chapter": "36-endpoints-watchlist-ban-ve-backtest.md",
+   "pathParams": [],
+   "queryParams": [],
+   "hasBody": true,
+   "statuses": [
+    "200",
+    "422"
+   ]
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/watchlist/{symbol}",
+   "tag": "Danh mục theo dõi",
+   "operationId": "remove_from_watchlist_api_v1_watchlist__symbol__delete",
+   "summary": "Remove From Watchlist",
+   "auth": true,
+   "chapter": "36-endpoints-watchlist-ban-ve-backtest.md",
+   "pathParams": [
+    "symbol"
+   ],
+   "queryParams": [],
+   "hasBody": false,
+   "statuses": [
+    "204",
+    "422"
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/auth/verify-email",
+   "tag": "Xác thực",
+   "operationId": "verify_email",
+   "summary": "Trang xác thực email (HTML, mở từ link trong email)",
+   "auth": false,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [],
+   "queryParams": [
+    "token"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200",
+    "400"
+   ],
+   "hiddenFromOpenApi": true,
+   "responseClass": "HTMLResponse"
+  },
+  {
+   "method": "GET",
+   "path": "/api/v1/auth/reset-password",
+   "tag": "Xác thực",
+   "operationId": "reset_password_form",
+   "summary": "Form đặt lại mật khẩu (HTML, mở từ link trong email)",
+   "auth": false,
+   "chapter": "20-endpoints-auth-users.md",
+   "pathParams": [],
+   "queryParams": [
+    "token"
+   ],
+   "hasBody": false,
+   "statuses": [
+    "200"
+   ],
+   "hiddenFromOpenApi": true,
+   "responseClass": "HTMLResponse"
+  }
+ ]
+}

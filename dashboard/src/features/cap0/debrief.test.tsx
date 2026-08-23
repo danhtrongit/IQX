@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import React from "react"
 import { describe, expect, it, vi, beforeEach } from "vitest"
+import { expectRendersNothing } from "@/__tests__/textGuards"
 import type { Cap0Progress } from "./types"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
@@ -172,8 +173,11 @@ describe("DebriefModal", () => {
   })
 
   it("renders nothing when data is null", () => {
-    const { container } = render(<DebriefModal data={null} onClose={vi.fn()} />)
-    expect(container).toBeEmptyDOMElement()
+    render(<DebriefModal data={null} onClose={vi.fn()} />)
+    // ★★ KHÔNG dùng `expect(container).toBeEmptyDOMElement()`: component này chỉ
+    // gồm một Arco `Modal` → portal ở `document.body`, nên `container` rỗng BẤT
+    // KỂ nó trả `null` hay trả một modal đầy chữ (đã chứng minh bằng đột biến).
+    expectRendersNothing()
   })
 
   it("renders header, Kế hoạch/Thực tế table, coach block, and the close button", async () => {

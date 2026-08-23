@@ -1,6 +1,13 @@
 /**
  * Cấp 5 «Lão luyện» — public surface (mirrors `cap4/index.ts`'s layout so the
  * cấp-to-cấp diff stays readable).
+ *
+ * ★★ Bề mặt của Cấp 5 CŨ (`PhanLoai4O`, `DungNgoaiButton`, `useVerdictGoiY`,
+ * `useRecordKetsoCap5`, `useDungNgoai`, `useDanhSachDungNgoai`,
+ * `useChamDungNgoai`, `useThachThucCap5`, `deriveO4`, `viPhamTuSignals`,
+ * `computeCap5Khoi12MaTran`, `O4*`, `Verdict*`, `LyDoDungNgoai*`,
+ * `ThachThuc*`) đã BỊ GỠ HẲN — không re-export "cho tương thích", vì một tên
+ * còn sống là một lời mời dựng lại màn hình đã nghỉ hưu.
  */
 export {
   Cap5Provider,
@@ -13,33 +20,46 @@ export {
   useCap5Progress,
   useEnterCap5,
   useCompleteCap5Task,
-  useVerdictGoiY,
-  useRecordKetsoCap5,
-  useDungNgoai,
-  useDanhSachDungNgoai,
-  useChamDungNgoai,
-  useThachThucCap5,
   useGraduateCap5,
+  useMarkTourSanMa,
+  useCap5PhanTich,
 } from "./hooks"
 export { cap5Api } from "./api"
 export { cap5Keys } from "./keys"
-export { DungNgoaiButton, type DungNgoaiButtonProps } from "./DungNgoaiButton"
-export { PhanLoai4O, type PhanLoai4OProps } from "./PhanLoai4O"
 export { KetsoModalCap5, type KetsoDataCap5, type KetsoModalCap5Props } from "./KetsoModalCap5"
 export {
   Cap5PortfolioAnalysis,
   type Cap5PortfolioAnalysisProps,
 } from "./Cap5PortfolioAnalysis"
 export { Cap5PortfolioAnalysisPanel } from "./Cap5PortfolioAnalysisPanel"
-export { JourneyPanelCap5, taskStateCap5 } from "./JourneyPanelCap5"
+export { SanMaPanel } from "./SanMaPanel"
+export { Cap5WatchlistPanel } from "./Cap5WatchlistPanel"
+export { HuntResultModal } from "./HuntResultModal"
+export {
+  cap5WatchStatus,
+  countWatchTabs,
+  describeConsensus,
+  describeConsensusTrend,
+  describeHuntSource,
+  lopIconRow,
+  lopMark,
+  soLopChuaRo,
+  soLopDaCham,
+  CAP5_WATCH_STATUS_LABEL,
+  NOTABLE_MIN_LOP,
+  TONG_SO_LOP,
+  type Cap5LopChiTiet,
+  type Cap5WatchlistItem,
+  type Cap5WatchStatus,
+} from "./watchlistTypes"
+export { JourneyPanelCap5 } from "./JourneyPanelCap5"
 export { GraduationModalCap5, isGraduationReadyCap5 } from "./GraduationModalCap5"
 export { Cap5TradingPage } from "./Cap5TradingPage"
 export {
   composeCoachCap5,
-  deriveO4,
   pickCoachCap5,
   splitEmphasis,
-  viPhamTuSignals,
+  CAP5_LOP_CHIN,
   type CoachIdCap5,
   type CoachResultCap5,
   type CoachSituationCap5,
@@ -47,16 +67,23 @@ export {
   type EmphasisPart,
 } from "./coachTemplateCap5"
 export {
-  computeCap5Khoi12MaTran,
+  computeCap5Khoi13Pheu,
   computeCap5PortfolioAnalysis,
-  viPhamPhoBienCap5,
-  KHOI12_DUNG_THUA_CAO,
+  nhanTangGiua,
+  tangGiuaCap5,
+  // ★ `computeCap5Khoi12BoLoc` ĐÃ GỠ: khối ⑫ chỉ đọc `GET /cap5/phan-tich`.
+  viewCap5Khoi12BoLoc,
+  KHOI12_KEM_PCT,
   KHOI12_MIN_LENH,
-  KHOI12_SAI_THANG_CANH_BAO,
-  O4_ORDER,
-  type Cap5Khoi12MaTran,
+  KHOI12_TOT_PCT,
+  type Cap5Khoi12BoLoc,
+  type Cap5Khoi13Pheu,
   type Cap5PortfolioAnalysisResult,
-  type Khoi12Cell,
+  type Cap5TangGiua,
+  type Khoi12FilterRow,
+  type Khoi12TrangThai,
+  type Khoi13Tang,
+  type TangGiuaTrangThai,
 } from "./portfolioAnalysisCap5"
 export {
   appendCap5TradeRecord,
@@ -67,29 +94,24 @@ export {
 } from "./tradeLogCap5"
 export {
   countCap5TasksDone,
-  isPhanLoaiSettled,
-  LY_DO_DUNG_NGOAI_OPTIONS,
-  O4_LABEL,
-  TARGET_DUNG_NGOAI,
-  TARGET_LENH_PHAN_LOAI,
-  TARGET_TY_LE_QUYET_DINH_DUNG,
-  VERDICT_LABEL,
+  huntFilterTen,
+  mucTieuSoMaMua,
+  mucTieuSoMaSan,
+  taskStateCap5,
+  CAP5_SO_MA_MUA_TARGET,
+  CAP5_SO_MA_SAN_TARGET,
+  CAP5_TOTAL_TASKS,
+  HUNT_FILTER_LABEL,
+  HUNT_FILTER_ORDER,
+  HUNT_FILTER_TEN,
 } from "./types"
 export type {
+  Cap5PhanTich,
   Cap5Progress,
-  ChamDungNgoaiResult,
-  DungNgoaiInput,
-  DungNgoaiItem,
-  DungNgoaiList,
-  KetQuaDungNgoai,
-  KetsoInputCap5,
-  LyDoDungNgoai,
-  LyDoHayDung,
-  O4,
-  OrderKetsoCap5,
-  ThachThucCap5,
-  ThachThucDieuKienCap5,
-  Verdict,
-  VerdictGoiY,
-  VerdictSignal,
+  HuntFilter,
+  Khoi12,
+  Khoi12Item,
+  Khoi13,
+  NguonSan,
+  TaskStateCap5,
 } from "./types"

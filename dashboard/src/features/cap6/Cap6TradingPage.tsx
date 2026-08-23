@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react"
-import { Message } from "@arco-design/web-react"
 import { SymbolProvider, useSymbol } from "@/shared/contexts/symbol-context"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
@@ -32,9 +31,9 @@ import { Cap4Provider, useCap4Events, type Cap4OrderEvent } from "@/features/cap
 import { isDoc5LopComplete } from "@/features/cap4/doc5Lop"
 import { useCap4TradeLog } from "@/features/cap4/tradeLogCap4"
 import type { Lop5Partial } from "@/features/cap4/types"
-import { Cap5Provider, useCap5Events } from "@/features/cap5/Cap5Context"
+import { Cap5Provider } from "@/features/cap5/Cap5Context"
+import { fetchNguonSanKetso } from "@/features/cap5/nguonSanKetso"
 import { useCap5TradeLog } from "@/features/cap5/tradeLogCap5"
-import { VERDICT_LABEL } from "@/features/cap5/types"
 import { cap6Api } from "./api"
 import { Cap6Provider, useCap6Events, type Cap6OrderEvent } from "./Cap6Context"
 import { GraduationModalCap6 } from "./GraduationModalCap6"
@@ -120,8 +119,9 @@ async function resolveDoiChieu(order: Cap6OrderEvent): Promise<DoiChieuKetsoCap6
  * SIX of `Cap1Provider` … `Cap6Provider` (spec's "cộng dồn" principle: panel Cấp
  * 6 = panel Cấp 5 GIỮ NGUYÊN 100% + bước "Đối chiếu" chỉ hiện khi 5 lớp mâu
  * thuẫn, so `TradingPanel`'s Cấp 1 vùng mua, Cấp 2 `SlTpBlock`, Cấp 3
- * `QuanLyVonBlock`, Cấp 4 `Doc5LopBlock` and Cấp 5 `DungNgoaiButton` must all stay
- * active alongside Cấp 6's `DoiChieuBlock`).
+ * `QuanLyVonBlock` and Cấp 4 `Doc5LopBlock` must all stay active alongside Cấp 6's
+ * `DoiChieuBlock`. Cấp 5 KHÔNG thêm gì vào panel đặt lệnh — nút «Đứng ngoài» đã
+ * nghỉ hưu cùng Cấp 5 cũ).
  */
 export function Cap6TradingPage() {
   useEffect(() => {
@@ -184,7 +184,6 @@ function Cap6Terminal() {
   const { isCap2Active, registerHandlers: registerCap2Handlers } = useCap2Events()
   const { registerHandlers: registerCap3Handlers } = useCap3Events()
   const { registerHandlers: registerCap4Handlers } = useCap4Events()
-  const { registerHandlers: registerCap5Handlers } = useCap5Events()
   const { registerHandlers: registerCap6Handlers } = useCap6Events()
   const { data: cap1Progress } = useCap1Progress(isCap1Active)
   const { data: diemKyLuat } = useDiemKyLuat(undefined, isCap2Active)
@@ -335,46 +334,34 @@ function Cap6Terminal() {
     })
   }, [registerCap4Handlers])
 
-  useEffect(() => {
-    registerCap5Handlers({
-      // Analytics Cấp 5 §8 (`cap5_verdict_confirm` / `cap5_verdict_override`) —
-      // `KetsoModalCap6` vẫn bắn event này khi user chốt phân loại 4 ô (khối Cấp
-      // 5 kế thừa nguyên vẹn), nên Ghi nhận nhỏ của Cấp 5 được giữ y nguyên.
-      // KHÔNG đăng ký `onOrderFilled` ở bus Cấp 5: lệnh bán do bus Cấp 6 xử lý,
-      // nếu đăng ký cả hai thì 2 màn Kết sổ cùng mở cho một lệnh.
-      onVerdictSettled: (verdict, daSua) => {
-        Message.success(
-          `Đã ghi phân loại: ${VERDICT_LABEL[verdict]} — cập nhật «Tỷ lệ quyết định đúng» ở Phân tích danh mục.` +
-            (daSua
-              ? " Bạn thấy khác hệ: cả hai verdict đều được lưu — đây là dữ liệu trung tính, không phải điểm trừ."
-              : ""),
-        )
-      },
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [registerCap5Handlers])
+  // ★ KHÔNG đăng ký handler nào ở bus Cấp 5.
+  //   · `onVerdictSettled` ĐÃ BỊ GỠ cùng phân loại 4 ô của Cấp 5 cũ (Kết sổ Cấp 6
+  //     không còn chốt verdict nên không còn gì để ghi nhận).
+  //   · `onOrderFilled` thì CỐ Ý không đăng ký: lệnh bán do bus Cấp 6 xử lý, đăng
+  //     ký cả hai sẽ mở 2 màn Kết sổ cho cùng một lệnh.
 
   /**
-   * Reconciles a Cấp 6 SELL fill into Kết sổ Cấp 6 — and owns the ORDERING FIX
-   * inherited from Cấp 5 (do NOT reorder).
+   * Reconciles a Cấp 6 SELL fill into Kết sổ Cấp 6 — và kết sổ Cấp 1 NGAY
+   * khi lệnh bán khớp (do NOT reorder).
    *
-   * ★ **`POST /cap1/ketso` PHẢI xong TRƯỚC khi modal mở.** Backend Cấp 5 (khối
-   * phân loại 4 ô mà Cấp 6 kế thừa nguyên vẹn) đọc/ghi verdict trên CHÍNH hàng
-   * `order_ketso` mà `POST /cap1/ketso` tạo: cả `GET /cap5/verdict/{order_id}` và
-   * `POST /cap5/ketso` trả **404** khi hàng đó chưa tồn tại. Ở Cấp 1-4 hàng đó
-   * chỉ được tạo khi user ĐÓNG màn Kết sổ — quá muộn: cổng `Đóng kết sổ ✓`
-   * fail-closed sẽ không mở, mà modal `closable={false}` không có nút huỷ →
-   * **user kẹt trong màn không đóng được**. Vì vậy trang này kết sổ Cấp 1 NGAY
-   * khi lệnh bán khớp, rồi mới mở modal.
+   * ★★ **LÝ DO CŨ ĐÃ MẤT, THỨ TỰ THÌ CÒN.** Trước đây bước này bắt buộc vì backend
+   * Cấp 5 (phân loại 4 ô) đọc/ghi verdict trên CHÍNH hàng `order_ketso` mà
+   * `POST /cap1/ketso` tạo, và `GET /cap5/verdict` / `POST /cap5/ketso` trả 404 khi
+   * hàng đó chưa có → cổng fail-closed không mở → user kẹt trong modal
+   * `closable={false}`. Cả hai endpoint đó ĐÃ NGHỈ HƯU cùng Cấp 5 cũ, nên KHÔNG
+   * còn nguy cơ kẹt. Giữ call ở đây vì nó vẫn bảo đảm hàng `order_ketso` tồn tại
+   * TRƯỚC `PATCH /cap{6,7,8}/task` (nhiệm vụ của các cấp trên được suy ra
+   * server-side từ `order_kehoach` JOIN `order_ketso`), và vì nó idempotent.
    *
    * Lỗi của call này bị bỏ qua CÓ CHỦ ĐÍCH: 409 "Lệnh này đã kết sổ" là trạng
-   * thái bình thường, và nếu call thất bại thật thì modal vẫn phải mở — nó có lối
-   * ra riêng khi verdict không lấy được (xem `KetsoModalCap6#handleEscape`).
+   * thái bình thường, và nếu call thất bại thật thì modal vẫn phải mở — tuyệt đối
+   * không được im lặng bỏ một lệnh đã bán.
    *
-   * ĐÁNH ĐỔI ĐÃ BIẾT (kế thừa Cấp 5): `cam_xuc` gửi ở đây là `null` vì khối cảm
-   * xúc Cấp 1 nằm TRONG modal (chưa mở). Task BE của Cấp 6 có mục "cho
-   * `/cap1/ketso` upsert `cam_xuc`" — khi mục đó xong, lần POST thứ hai của modal
-   * sẽ ghi được cảm xúc user chọn.
+   * ĐÁNH ĐỔI ĐÃ BIẾT: `cam_xuc` gửi ở đây là `null` vì khối cảm xúc Cấp 1 nằm
+   * TRONG modal (chưa mở), nên lần POST thứ hai của modal 409 và cảm xúc user
+   * chọn KHÔNG được lưu server-side. Fix đúng vẫn là task BE "cho `/cap1/ketso`
+   * upsert `cam_xuc`" — nay cổng Cấp 5 đã bỏ, một lựa chọn khác là bỏ hẳn call
+   * sớm này và để modal tự kết sổ.
    */
   const openKetsoCap6 = async (order: Cap6OrderEvent) => {
     const key = order.symbol.toUpperCase()
@@ -413,6 +400,18 @@ function Cap6Terminal() {
     // chưa từng đi qua bước Đối chiếu → `null` → modal bỏ hẳn khối, im lặng.
     const doiChieu = (await doiChieuBySymbolRef.current.get(key)) ?? null
 
+    /**
+     * NGUỒN SĂN của lệnh (spec Cấp 5 §8) — `GET /cap5/nguon-san/{symbol}`.
+     *
+     * ★★ Nguyên tắc cộng dồn: trang này bọc `Cap5Provider`, nên nút «Săn mã» +
+     * «Watchlist» VẪN có ở cấp này và một lệnh ở đây HOÀN TOÀN có thể đến từ bộ
+     * lọc săn mã (backend đóng dấu `order_kehoach.hunt_filter`). Trước đây Kết sổ
+     * điền `huntFilter: null` cứng ⇒ màn khẳng định "mã này KHÔNG đến từ săn mã"
+     * cho mọi lệnh, ngược lại chính dữ liệu server. Ba trạng thái xem
+     * `cap5/nguonSanKetso.ts`.
+     */
+    const nguonSan = await fetchNguonSanKetso(order.symbol)
+
     ketsoCountRef.current += 1
     const sellDate = todayYmd()
     const soPhienGiu = countTradingSessions(buy.buyDate, sellDate)
@@ -446,6 +445,7 @@ function Cap6Terminal() {
       pctVon: buy.pctVon,
       doc5Lop: buy.doc5Lop,
       ai5Lop: buy.ai5Lop,
+      ...nguonSan,
       doiChieu,
     })
   }

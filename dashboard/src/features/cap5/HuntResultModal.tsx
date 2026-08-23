@@ -3,6 +3,7 @@ import { Message, Modal, Spin } from "@arco-design/web-react"
 import { getErrorMessage } from "@/shared/http/client"
 import { useAddToCap5Watchlist, useCap5Watchlist, useHuntResult } from "./sanMaHooks"
 import {
+  describeHuntBaoPhu,
   describeHuntTotal,
   huntFilterDef,
   splitLocSan,
@@ -61,7 +62,10 @@ export function HuntResultModal({
       title={def ? `${def.icon} ${def.ten}` : "Săn mã"}
       style={{ maxWidth: 420, width: "94vw" }}
     >
-      <div className="cap5-sm">
+      {/* `data-tour-id` cho tour Săn mã (bước 4 «Top 10 mã mạnh nhất» / bước 5
+          «+ Watchlist»). Chỉ tồn tại khi popup ĐANG MỞ — engine tour có đường lùi
+          target-không-thấy → bong bóng giữa màn, xem `configs/sanMaTour.ts`. */}
+      <div className="cap5-sm" data-tour-id="tour-sanma-popup">
         {def && <div className="cap5-hm-def">{def.dinh_nghia}</div>}
 
         {isLoading && (
@@ -118,6 +122,7 @@ function HuntResultBody({
 }) {
   const { apDung, chuaApDung } = splitLocSan(data.loc_san)
   const def = huntFilterDef(data.ma)
+  const baoPhu = describeHuntBaoPhu(data)
 
   return (
     <>
@@ -126,6 +131,18 @@ function HuntResultBody({
           {def
             ? describeHuntTotal(data, def)
             : `Đang hiện ${data.items.length.toLocaleString("en-US")} ${defTop}`}
+        </div>
+        {/* ★★ ĐỘ BAO PHỦ (spec §5.4): "N mã HOSE thỏa điều kiện" một mình là câu
+            nói về CẢ SÀN, trong khi nguồn nến đọc theo lô 40 mã và một lô lỗi là
+            40 mã vắng mặt trong im lặng. Ba con số của server nói thật chuyện đó
+            — và khi wire không gửi cờ thì dòng này nói "chưa biết", KHÔNG mặc
+            định là đã xét đủ. */}
+        <div
+          className={baoPhu.trangThai === "day_du" ? undefined : "cap5-sm-note-warn"}
+          data-testid="cap5-hunt-baophu"
+          data-trangthai={baoPhu.trangThai}
+        >
+          {baoPhu.text}
         </div>
         <div data-testid="cap5-hunt-locsan">
           {apDung.length > 0
@@ -145,7 +162,7 @@ function HuntResultBody({
         </div>
       ) : (
         <div className="cap5-hm-results">
-          {data.items.map((it) => {
+          {data.items.map((it, idx) => {
             const added = isAdded(it.symbol)
             return (
               <div className="cap5-hr" key={it.symbol}>
@@ -154,6 +171,7 @@ function HuntResultBody({
                 <span className="cap5-hr-sig">{it.tin_hieu}</span>
                 <button
                   type="button"
+                  data-tour-id={idx === 0 ? "tour-sanma-add" : undefined}
                   className={`cap5-hr-add${added ? " added" : ""}`}
                   disabled={added || adding}
                   onClick={() => onAdd(it.symbol, it.tin_hieu)}

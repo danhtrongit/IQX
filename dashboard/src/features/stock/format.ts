@@ -150,6 +150,31 @@ export function formatSupportResistance(value: unknown): string {
   return Math.round(numeric).toLocaleString("en-US")
 }
 
+/**
+ * Ranh giới "cụm từ đứng riêng, không nằm trong một từ khác" cho chuỗi TIẾNG VIỆT.
+ *
+ * ★★ KHÔNG dùng `\b`: `\b` của JS chỉ biết ASCII (`[A-Za-z0-9_]`), nên một ranh
+ * giới đứng cạnh chữ có dấu là điều kiện KHÔNG BAO GIỜ đúng. Hai dòng cuối bảng
+ * dưới đây (`hỗ trợ`, `áp lực`) đã chết im lặng đúng vì vậy: chúng chưa từng
+ * khớp, nên hai giá trị đó chưa từng được chuẩn hoá. Xem `src/__tests__/
+ * textGuards.ts` + bài meta `regexWordBoundary.test.ts`.
+ */
+function cumTu(core: string): RegExp {
+  return new RegExp(`(?<![\\p{L}\\p{M}])${core}(?![\\p{L}\\p{M}])`, "u")
+}
+
+/** Giá trị ĐỊNH TÍNH của lớp dòng tiền → nhãn chuẩn. Dựng 1 lần ở module scope. */
+const MONEYFLOW_QUALITATIVE: ReadonlyArray<readonly [RegExp, string]> = [
+  [cumTu("mua\\s*ròng"), "Mua ròng"],
+  [cumTu("bán\\s*ròng"), "Bán ròng"],
+  [cumTu("cân\\s*bằng"), "Cân bằng"],
+  [cumTu("trung\\s*lập"), "Trung lập"],
+  [cumTu("tích\\s*cực"), "Tích cực"],
+  [cumTu("tiêu\\s*cực"), "Tiêu cực"],
+  [cumTu("hỗ\\s*trợ"), "Hỗ trợ"],
+  [cumTu("áp\\s*lực"), "Áp lực"],
+]
+
 export function cleanLayerSummaryValue(layerKey: string, value: unknown, label?: string): string {
   if (value == null) return ""
 
@@ -162,17 +187,7 @@ export function cleanLayerSummaryValue(layerKey: string, value: unknown, label?:
 
   if (layerKey === "moneyFlow") {
     const lower = text.toLowerCase()
-    const QUALITATIVE: Array<[RegExp, string]> = [
-      [/\bmua\s*ròng\b/, "Mua ròng"],
-      [/\bbán\s*ròng\b/, "Bán ròng"],
-      [/\bcân\s*bằng\b/, "Cân bằng"],
-      [/\btrung\s*lập\b/, "Trung lập"],
-      [/\btích\s*cực\b/, "Tích cực"],
-      [/\btiêu\s*cực\b/, "Tiêu cực"],
-      [/\bhỗ\s*trợ\b/, "Hỗ trợ"],
-      [/\báp\s*lực\b/, "Áp lực"],
-    ]
-    for (const [re, normalized] of QUALITATIVE) {
+    for (const [re, normalized] of MONEYFLOW_QUALITATIVE) {
       if (re.test(lower)) return normalized
     }
 

@@ -31,9 +31,9 @@ function record(overrides: Partial<Cap7TradeRecord> = {}): Cap7TradeRecord {
     ai_5_lop: null,
     so_lop_dong_thuan: null,
     so_lop_khac_ai: null,
-    o4: "dung_thang",
-    verdictHe: "dung",
-    verdictUser: "dung",
+    huntFilter: null,
+    huntSoPhienCho: null,
+    huntSoLopLucVao: null,
     kieuCoPhieu: "ngan_hang",
     lopQuyetDinh: "dinh_gia",
     khopGoiY: true,
@@ -69,7 +69,6 @@ describe("tradeLogCap7", () => {
     appendCap7TradeRecord("u1", record())
     const [rec] = readCap7TradeLog("u1")
     expect(rec.khopGoiY).toBe(true)
-    expect(rec.o4).toBe("dung_thang")
     expect(rec.lyDo).toBe("dinh_gia")
   })
 

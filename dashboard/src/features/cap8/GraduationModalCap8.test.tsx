@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, within } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { visibleText } from "@/__tests__/textGuards"
 import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 import type { Cap8Progress } from "./types"
 
@@ -392,11 +393,19 @@ describe("GraduationModalCap8 — màn cuối của chương trình 0-8 (spec §
     expect(within(rail).getByTestId("cap8-grad-rail-8").innerHTML).toContain("#3f9b5a")
   })
 
+  // ★★ CẢ BỐN assert cũ đọc `container` của `render()` — mà `GraduationModalCap8`
+  // là một Arco `Modal`, vẽ ra PORTAL ngoài container ⇒ `container` rỗng ⇒ bốn
+  // dòng này xanh vô điều kiện. Đã chứng minh bằng đột biến: nhồi
+  // `<div className="confetti medal huychuong">🎉 huy chương vàng 🎖</div>` VÀO
+  // TRONG modal → 26/26 VẪN XANH. Soi `document` mới là soi đúng chỗ.
   it("★ no medal and no confetti anywhere in the finale (§C10)", () => {
-    const { container } = renderModal()
-    expect(container.querySelector("[class*=confetti]")).toBeNull()
-    expect(container.querySelector("[class*=medal]")).toBeNull()
-    expect(container.querySelector("[class*=huychuong]")).toBeNull()
-    expect(container.textContent).not.toMatch(/huy chương/i)
+    renderModal()
+    // Neo dương tính: màn tốt nghiệp ĐÃ render thật.
+    expect(screen.getByTestId("cap8-grad-rail")).toBeInTheDocument()
+    expect(document.querySelector("[class*=confetti]")).toBeNull()
+    expect(document.querySelector("[class*=medal]")).toBeNull()
+    expect(document.querySelector("[class*=huychuong]")).toBeNull()
+    expect(visibleText()).not.toMatch(/huy chương/i)
+    expect(visibleText()).not.toMatch(/🎉|🎖|🏅/u)
   })
 })

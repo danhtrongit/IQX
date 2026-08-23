@@ -1,197 +1,42 @@
 /**
- * Cấp 5 «Lão luyện» — nút/form Đứng ngoài + khối phân loại 4 ô (spec §4, §5).
+ * Cấp 5 «Lão luyện» — Kết sổ (dòng nguồn săn §8 + lớp coach săn mã).
  * Màu cấp: vàng kim `#e0b64d`.
+ *
+ * ★★ ĐÃ GỠ: `.cap5-dungngoai-*` (nút/form Đứng ngoài) và `.cap5-phanloai-*`
+ * (khối phân loại 4 ô) — hai màn đó đã nghỉ hưu cùng Cấp 5 cũ, không component
+ * nào còn render chúng.
  */
 
-/* ── Nút + form "Đứng ngoài có chủ đích" (spec §5) ───────────────────────── */
-.cap5-dungngoai-open {
-  width: 100%;
-  padding: 9px 12px;
-  margin-top: 8px;
-  font-family: inherit;
-  font-size: 12.5px;
-  color: var(--t2);
-  background: var(--bg3);
-  border: 1px dashed var(--bd);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-}
-
-.cap5-dungngoai-open:hover {
-  color: #e0b64d;
-  border-color: rgba(224, 182, 77, 0.6);
-}
-
-.cap5-dungngoai {
-  padding: 12px;
-  margin-top: 8px;
-  background: linear-gradient(180deg, rgba(224, 182, 77, 0.09), transparent);
-  border: 1px solid rgba(224, 182, 77, 0.4);
-  border-radius: 10px;
-}
-
-.cap5-dungngoai-q {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--t1);
-}
-
-.cap5-dungngoai-options {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.cap5-dungngoai-option {
-  padding: 8px 10px;
-  font-family: inherit;
-  font-size: 12px;
-  text-align: left;
-  color: var(--t2);
-  background: var(--bg3);
-  border: 1px solid var(--bd);
-  border-radius: 7px;
-  cursor: pointer;
-}
-
-.cap5-dungngoai-option:hover {
-  color: var(--t1);
-  border-color: rgba(224, 182, 77, 0.6);
-}
-
-.cap5-dungngoai-option--on {
-  color: #e0b64d;
-  background: rgba(224, 182, 77, 0.14);
-  border-color: #e0b64d;
-  font-weight: 600;
-}
-
-.cap5-dungngoai-note {
-  margin: 9px 0 0;
+/* ── Dòng "mã săn từ bộ lọc nào" trong Kết sổ (spec §8, mockup `.hunt-origin`) ── */
+.cap5-hunt-origin {
+  margin-top: 14px;
+  padding: 11px 13px;
   font-size: 11px;
   line-height: 1.55;
-  color: var(--t3);
+  color: var(--t2);
+  background: rgba(224, 182, 77, 0.1);
+  border: 1px solid rgba(224, 182, 77, 0.3);
+  border-radius: 8px;
 }
 
-.cap5-dungngoai-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-/* ── Khối phân loại 4 ô trong Kết sổ (spec §4) ───────────────────────────── */
-.cap5-phanloai {
-  margin-top: 14px;
-  padding: 12px;
-  background: var(--bg3);
-  border: 1px solid rgba(224, 182, 77, 0.4);
-  border-radius: 10px;
-}
-
-.cap5-phanloai-tag {
-  font-size: 10px;
+.cap5-hunt-origin strong {
   font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
   color: #e0b64d;
 }
 
-.cap5-phanloai-q {
-  margin-top: 5px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--t1);
-}
-
-.cap5-phanloai-verdict {
-  margin-top: 9px;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.cap5-phanloai-verdict--dung {
-  color: #35d07f;
-}
-
-.cap5-phanloai-verdict--sai {
-  color: #ff6b6b;
-}
-
-/* Câu giải thích verdict / trạng thái đang tải-lỗi của khối phân loại. */
-.cap5-phanloai-note {
-  margin: 6px 0 0;
-  font-size: 11.5px;
-  line-height: 1.55;
+/* Mã KHÔNG đến từ săn mã — nói thẳng, và KHÔNG mang màu cấp (nó không phải
+   thành tích). Cùng khung, khác tông, để không ai đọc nhầm thành "đã săn". */
+.cap5-hunt-origin--khong {
   color: var(--t3);
+  background: var(--bg3);
+  border-color: var(--bd);
 }
 
-.cap5-phanloai-why {
-  margin: 8px 0 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px dotted var(--bd);
-}
-
-.cap5-phanloai-why li {
-  display: flex;
-  gap: 7px;
-  padding: 5px 0;
-  font-size: 11.5px;
-  line-height: 1.5;
+.cap5-hunt-origin--khong strong {
   color: var(--t2);
 }
 
-.cap5-phanloai-why-mark {
-  flex: none;
-  font-weight: 700;
-}
-
-.cap5-phanloai-why-mark--dat {
-  color: #35d07f;
-}
-
-.cap5-phanloai-why-mark--truot {
-  color: #ff6b6b;
-}
-
-.cap5-phanloai-why-mark--chuaro {
-  color: var(--t3);
-}
-
-.cap5-phanloai-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 11px;
-}
-
-.cap5-phanloai-reason {
-  display: block;
-  margin-top: 10px;
-  font-size: 11.5px;
-  color: var(--t2);
-}
-
-.cap5-phanloai-reason input {
-  width: 100%;
-  margin-top: 5px;
-  padding: 7px 9px;
-  font-family: inherit;
-  font-size: 12.5px;
-  color: var(--t1);
-  background: var(--bg2);
-  border: 1px solid var(--bd);
-  border-radius: 6px;
-}
-
-.cap5-phanloai-reason input:focus {
-  outline: none;
-  border-color: #e0b64d;
-}
-
-/* ── Lớp coach thứ 5 "QUYẾT ĐỊNH VS KẾT QUẢ" trong Kết sổ ─────────────────
+/* ── Lớp coach thứ 5 "NHÌN LẠI · SĂN MÃ" trong Kết sổ ─────────────────────
    Đứng CẠNH 4 lớp coach cũ (NHÌN LẠI · KỶ LUẬT · TỰ TIN VS KẾT QUẢ · GÓC NHÌN
    KHÁC AI), không thay thế — cùng khung như `.cap4-ketso-coach`, đổi màu cấp. */
 .cap5-ketso-coach {
@@ -222,46 +67,9 @@
   color: var(--t1);
 }
 
-/* Coach Cấp 5 — ô Sai-Thắng hiện như cảnh báo, không phải lời khen. */
+/* Coach Cấp 5 — mẫu "vào lệnh khi mã chưa chín" hiện như cảnh báo, không phải
+   lời khen. */
 .cap5-coach--canhbao {
   border-left-color: #ff6b6b !important;
   background: rgba(255, 107, 107, 0.09);
-}
-
-/* Vì sao nút "Đóng kết sổ ✓" đang mờ — nói thẳng thay vì để user đoán. */
-.cap5-ketso-gate-note {
-  margin: 7px 0 0;
-  font-size: 11px;
-  line-height: 1.5;
-  text-align: center;
-  color: var(--t3);
-}
-
-/* Lối ra khi KHÔNG lấy được verdict: cổng fail-closed không được thành bẫy.
-   Cố tình mờ hơn nút chính — đây là đường thoát, không phải đường đi thường. */
-.cap5-ketso-escape {
-  display: block;
-  width: 100%;
-  padding: 9px 12px;
-  margin-top: 8px;
-  font-family: inherit;
-  font-size: 12.5px;
-  color: var(--t2);
-  background: transparent;
-  border: 1px dashed var(--bd);
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.cap5-ketso-escape:hover {
-  color: var(--t1);
-  border-color: var(--t3);
-}
-
-.cap5-ketso-escape-note {
-  margin: 7px 0 0;
-  font-size: 11px;
-  line-height: 1.5;
-  text-align: center;
-  color: var(--t3);
 }

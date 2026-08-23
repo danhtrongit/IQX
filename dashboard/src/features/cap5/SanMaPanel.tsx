@@ -1,7 +1,10 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Spin } from "@arco-design/web-react"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
+import { TourLaunchButton, TourOverlay, useTour } from "@/features/tour"
+import { sanMaTour } from "@/features/tour/configs/sanMaTour"
 import { useCap5Events } from "./Cap5Context"
+import { useCap5Progress, useMarkTourSanMa } from "./hooks"
 import { HuntResultModal } from "./HuntResultModal"
 import { useSanMaIndex } from "./sanMaHooks"
 import {
@@ -40,16 +43,63 @@ export function SanMaPanel() {
 
   const { apDung, chuaApDung } = splitLocSan(index?.loc_san)
 
+  /* ── TOUR SĂN MÃ (spec §7 · `configs/sanMaTour.ts`) ─────────────────────────
+   *
+   * ★★ "Bỏ qua" giữa chừng KHÔNG tính là đã xem (spec §7 ghi rõ). Engine
+   * `useTour` cố tình cho `skip()` gọi luôn `onComplete` ("skip = complete"),
+   * nên phải tự phân biệt: `onSkip` bật `skippedRef` TRƯỚC khi `onComplete`
+   * chạy (xem `useTour.skip()`), và chỉ khi cờ đó tắt mới `POST /cap5/tour-sanma`.
+   *
+   * ★ Cờ `da_xem_tour_sanma` sống trên SERVER (không localStorage) nên nó theo
+   * user qua mọi máy — vì thế panel này dùng `useTour` trực tiếp chứ không
+   * `useFeatureTour` (bản đó neo `seen` vào localStorage).
+   */
+  const { data: progress } = useCap5Progress(isCap5Active)
+  const markTour = useMarkTourSanMa()
+  const skippedRef = useRef(false)
+  const autoStartedRef = useRef(false)
+  const tour = useTour(sanMaTour, {
+    onStart: () => {
+      skippedRef.current = false
+    },
+    onSkip: () => {
+      skippedRef.current = true
+    },
+    onComplete: () => {
+      if (!skippedRef.current) markTour.mutate()
+    },
+  })
+
+  /**
+   * Tự bật ĐÚNG MỘT LẦN, lần đầu user vào màn Săn mã (spec §7).
+   *
+   * ★ Chỉ bật khi server nói THẲNG `da_xem_tour_sanma === false`. `undefined`
+   * (wire cũ / chưa tải xong) là "chưa biết" ⇒ KHÔNG tự bật: thà không mở còn
+   * hơn nhảy tour vào mặt một người đã xem rồi. Nút "?" vẫn mở lại được.
+   */
+  useEffect(() => {
+    if (!isCap5Active) return
+    if (autoStartedRef.current) return
+    if (progress?.da_xem_tour_sanma !== false) return
+    autoStartedRef.current = true
+    tour.start()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCap5Active, progress?.da_xem_tour_sanma])
+
   return (
     <div className="flex h-full min-h-0 flex-col bg-[var(--color-bg-1)]">
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
-        <div className="cap5-sm">
-          <div className="cap5-sm-title">Săn mã</div>
+        <div className="cap5-sm" data-tour-id="tour-sanma-panel">
+          <div className="cap5-sm-head">
+            <div className="cap5-sm-title">Săn mã</div>
+            {/* Nút "?" mở lại tour bất cứ lúc nào (spec §7 "Ghi chú kỹ thuật"). */}
+            <TourLaunchButton onClick={tour.start} label="Hướng dẫn" />
+          </div>
           <div className="cap5-sm-sub">
             Chọn một bộ lọc để tìm mã đáng chú ý, đưa vào Watchlist quan sát — chưa vội mua.
           </div>
 
-          <div className="cap5-sm-note" data-testid="cap5-sanma-locsan">
+          <div className="cap5-sm-note" data-testid="cap5-sanma-locsan" data-tour-id="tour-sanma-locsan">
             {isLoading && <span>Đang kiểm tra điều kiện lọc sàn với máy chủ…</span>}
             {!isLoading && isError && (
               <span>Chưa lấy được điều kiện lọc sàn từ máy chủ — chưa rõ bộ lọc đã loại những gì.</span>
@@ -85,6 +135,7 @@ export function SanMaPanel() {
                   disabled={chuaDuDuLieu}
                   aria-disabled={chuaDuDuLieu}
                   data-testid={`cap5-sanma-filter-${f.ma}`}
+                  data-tour-id={`tour-sanma-filter-${f.ma}`}
                   onClick={() => !chuaDuDuLieu && setOpen(f.ma)}
                 >
                   <span className="cap5-sm-fl-ic">{f.icon}</span>
@@ -124,6 +175,7 @@ export function SanMaPanel() {
             <button
               type="button"
               className="cap5-wl-add"
+              data-tour-id="tour-sanma-watchlist-link"
               onClick={() => setActivePanel("cap5-watchlist")}
             >
               Xem Watchlist →
@@ -133,6 +185,7 @@ export function SanMaPanel() {
       </div>
 
       <HuntResultModal filter={open} onClose={() => setOpen(null)} />
+      <TourOverlay config={sanMaTour} controller={tour} />
     </div>
   )
 }

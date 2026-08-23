@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, within } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { RE_LENH_GIA, visibleText } from "@/__tests__/textGuards"
 import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 import type { Cap7Progress, ThachThucCap7 } from "./types"
 
@@ -320,9 +321,15 @@ describe("JourneyPanelCap7", () => {
 
   it("NEVER claims IQX detects fake orders (spec §9)", () => {
     renderPanel()
-    const text = document.body.textContent ?? ""
+    // Neo dương tính: panel ĐÃ render (nếu không, "không thấy «lệnh giả»" chỉ
+    // nghĩa là không có gì trên màn).
+    expect(screen.getByTestId("cap7-thachthuc")).toBeInTheDocument()
+    const text = visibleText()
     expect(text).not.toMatch(/phát hiện lệnh giả/i)
-    expect(text).not.toMatch(/lệnh giả\b/i)
+    // ★ Trước đây bài này đóng regex bằng một ranh giới ASCII đặt ngay sau chữ
+    // ả — điều kiện KHÔNG BAO GIỜ đúng, nên "IQX chỉ ra lệnh giả trên bảng" lọt
+    // qua đúng bài canh mang tên "NEVER claims…". Xem `__tests__/textGuards.ts`.
+    expect(text).not.toMatch(RE_LENH_GIA)
   })
 
   // ── Điều hướng + ô đích ───────────────────────────────────────────────────

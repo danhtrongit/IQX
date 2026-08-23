@@ -46,9 +46,9 @@ function trade(overrides: Partial<Cap6TradeRecord> = {}): Cap6TradeRecord {
     ai_5_lop: null,
     so_lop_dong_thuan: null,
     so_lop_khac_ai: null,
-    o4: "dung_thang",
-    verdictHe: "dung",
-    verdictUser: "dung",
+    huntFilter: null,
+    huntSoPhienCho: null,
+    huntSoLopLucVao: null,
     kieuCoPhieu: "ngan_hang",
     lopQuyetDinh: "dinh_gia",
     khopGoiY: true,
@@ -347,10 +347,11 @@ function cap5Progress(): Cap5Progress {
     entered_at: "2026-06-02T00:00:00Z",
     task_1_done_at: null,
     task_2_done_at: null,
-    task_3_done_at: null,
-    so_lenh_phan_loai: 22,
-    so_lan_dung_ngoai_da_cham: 6,
-    ty_le_quyet_dinh_dung: 72,
+    so_ma_da_san: 10,
+    so_ma_mua_tu_watchlist: 5,
+    // `null` = mẻ chấm 5 lớp chưa chạy — KHÔNG phải 0 mã đủ lớp.
+    so_ma_cho_du_lop: null,
+    best_filter: null,
     graduated_at: "2026-07-01T00:00:00Z",
     time_to_graduate_hours: 40,
   }
@@ -403,9 +404,15 @@ describe("computeCap6PortfolioAnalysis — cộng dồn bằng DELEGATION", () =
       { khop: nhom(), lech: nhom({ khop: false, ten: "Lệch gợi ý" }) },
       NOW,
     )
-    // Khối ⑫ của Cấp 5 (và qua nó mọi khối ①-⑪) không bị tính lại khác đi.
-    expect(result.khoi12MaTran).toEqual(cap5Result.khoi12MaTran)
-    expect(result.tyLeQuyetDinhDungServer).toBe(72)
+    // Khối ⑫/⑬ của Cấp 5 (và qua chúng mọi khối ①-⑪) không bị tính lại khác đi.
+    expect(result.khoi12BoLoc).toEqual(cap5Result.khoi12BoLoc)
+    expect(result.khoi13Pheu).toEqual(cap5Result.khoi13Pheu)
+    // ★★ …và ⑫ ở đây là FAIL-CLOSED, không phải "0 lệnh săn": hàm tổng của Cấp 6
+    // không mang theo payload `GET /cap5/phan-tich`, mà ⑫ CHỈ được nói bằng số
+    // của máy chủ. Bài này ghim điều đó để không ai "sửa" nó bằng cách cho ⑫
+    // tính lại từ `trades` (nhật ký per-browser) — đúng lỗi B1 đã phải vá.
+    expect(result.khoi12BoLoc.chuaLayDuoc).toBe(true)
+    expect(result.khoi12BoLoc.rows).toEqual([])
     // Cấp 6 thêm.
     expect(result.khoi14LopTheoKieu.cells).toHaveLength(1)
     expect(result.khoi15DoiChieu.duCa2Nhom).toBe(true)
