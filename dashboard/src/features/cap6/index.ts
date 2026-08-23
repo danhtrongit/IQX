@@ -27,6 +27,47 @@ export {
 export { cap6Api } from "./api"
 export { cap6Keys } from "./keys"
 export { DoiChieuBlock, type DoiChieuBlockProps } from "./DoiChieuBlock"
+
+// ── CẤP 6 «BẬC THẦY» (spec `demo-trading/LEVEL 6`) ──────────────────────────
+export { MauThuanBlock, type MauThuanBlockProps } from "./MauThuanBlock"
+export {
+  CAU_CHOT_MAU_THUAN,
+  CHU_THICH_DIEM_TRU,
+  CHU_THICH_KHUNG_THAM_KHAO,
+  CHU_THICH_PHU_QUYET,
+  CONFLICT_LEVEL_OPTIONS,
+  MUC_TIEU_NHAT_QUAN_MAC_DINH,
+  MUC_TIEU_VETO_MAC_DINH,
+  coBangMauThuan,
+  conflictLevelIcon,
+  conflictLevelLabel,
+  conflictLevelText,
+  datCongCap6,
+  feedbackNhanDinh,
+  lechNhanDinhHanhDong,
+  lyDoTuMauThuan,
+  mucTieuNhatQuan,
+  mucTieuVeto,
+} from "./nhanDinhCap6"
+export {
+  useMarkTourMauThuan,
+  useMauThuanCap6,
+  usePhanTichCap6,
+  useRecordKehoachMauThuanCap6,
+  useSkipCap6,
+} from "./hooks"
+export type {
+  ConflictLevel,
+  Khoi14Cap6,
+  Khoi14RowCap6,
+  Khoi15Cap6,
+  Khoi15RowCap6,
+  LopNguocCap6,
+  LopTrungTinhCap6,
+  LopUngHoCap6,
+  MauThuanCap6,
+  PhanTichCap6,
+} from "./mauThuanTypes"
 export { coMauThuan, isDoiChieuValid, lopNguocChieu, lopUngHo } from "./doiChieu"
 export {
   countCap6TasksDone,

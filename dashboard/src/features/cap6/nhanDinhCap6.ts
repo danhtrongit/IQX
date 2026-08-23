@@ -1,4 +1,5 @@
 import type { MucTuTin } from "@/features/cap3/types"
+import type { Lop } from "@/features/cap4/types"
 import type { ConflictLevel, MauThuanCap6 } from "./mauThuanTypes"
 import type { Cap6Progress } from "./types"
 
@@ -127,6 +128,30 @@ export function coBangMauThuan(mauThuan: MauThuanCap6 | null | undefined): boole
   if (mauThuan.chua_du_du_lieu) return false
   return (
     mauThuan.co_mau_thuan && mauThuan.ung_ho.length > 0 && mauThuan.nguoc.length > 0
+  )
+}
+
+/**
+ * Lý do vào lệnh SUY RA từ bản đọc 5 lớp của SERVER — chỉ để lấp cột `lyDo`
+ * NOT NULL mà Cấp 1 vẫn giữ.
+ *
+ * ★★ VÌ SAO PHẢI CÓ HÀM NÀY: ở Cấp 6 khối "đọc 5 lớp" của Cấp 4 bị THAY (spec
+ * §5.2/§14), nên user không còn tự chấm từng lớp — mà `deriveLyDoForCap1` của
+ * Cấp 4 với bản chấm RỖNG sẽ trả về `"ky_thuat"` cứng, tức GHI MỘT LỜI KHAI USER
+ * CHƯA BAO GIỜ NÓI vào hồ sơ mọi lệnh Cấp 6. Thay vào đó lấy đúng một SỰ THẬT về
+ * mã: lớp đang ủng hộ theo bản đọc của IQX.
+ *
+ * Luật, tất định: lớp `ung_ho` đầu tiên → nếu không có, `trung_tinh` đầu tiên →
+ * nếu không có, `nguoc` đầu tiên (thứ tự do server gửi, vốn là `LOP_KEYS`).
+ *
+ * ★ `null` khi KHÔNG đọc được gì (query lỗi / chưa đủ dữ liệu / cả ba mảng
+ * rỗng). Caller PHẢI xử `null` bằng cách để user tự khai (trường lý do của Cấp 1
+ * hiện lại) — TUYỆT ĐỐI không đắp một lớp mặc định.
+ */
+export function lyDoTuMauThuan(mauThuan: MauThuanCap6 | null | undefined): Lop | null {
+  if (!mauThuan) return null
+  return (
+    mauThuan.ung_ho[0]?.lop ?? mauThuan.trung_tinh[0]?.lop ?? mauThuan.nguoc[0]?.lop ?? null
   )
 }
 

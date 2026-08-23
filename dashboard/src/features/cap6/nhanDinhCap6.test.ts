@@ -10,6 +10,7 @@ import {
   datCongCap6,
   feedbackNhanDinh,
   lechNhanDinhHanhDong,
+  lyDoTuMauThuan,
   mucTieuNhatQuan,
   mucTieuVeto,
 } from "./nhanDinhCap6"
@@ -121,6 +122,30 @@ describe("coBangMauThuan (spec §5.1)", () => {
   it("null/undefined → false", () => {
     expect(coBangMauThuan(null)).toBe(false)
     expect(coBangMauThuan(undefined)).toBe(false)
+  })
+})
+
+describe("lyDoTuMauThuan — KHÔNG bịa một lớp mặc định", () => {
+  it("lấy lớp ủng hộ đầu tiên", () => {
+    expect(lyDoTuMauThuan(mauThuan())).toBe("ky_thuat")
+  })
+
+  it("không có ủng hộ → lớp trung tính đầu tiên", () => {
+    expect(
+      lyDoTuMauThuan(
+        mauThuan({ ung_ho: [], trung_tinh: [{ lop: "dinh_gia", nhan: "Trung tính" }] }),
+      ),
+    ).toBe("dinh_gia")
+  })
+
+  it("chỉ có lớp ngược → lấy lớp ngược đầu tiên", () => {
+    expect(lyDoTuMauThuan(mauThuan({ ung_ho: [], trung_tinh: [] }))).toBe("tin_tuc")
+  })
+
+  it("KHÔNG đọc được gì → null, KHÔNG phải 'ky_thuat'", () => {
+    expect(lyDoTuMauThuan(null)).toBeNull()
+    expect(lyDoTuMauThuan(undefined)).toBeNull()
+    expect(lyDoTuMauThuan(mauThuan({ ung_ho: [], nguoc: [], trung_tinh: [] }))).toBeNull()
   })
 })
 
