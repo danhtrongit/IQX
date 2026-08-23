@@ -83,6 +83,14 @@ export function PlanFormCap1({
       {/* Trường 1 — Lý do mua (ẩn ở Cấp 4: khối "Đọc 5 lớp" thay thế) */}
       {!hideLyDo && (
         <div className="space-y-1.5">
+          {/* ★★ CỐ Ý LỆCH MOCKUP — và chỉ ở ĐÚNG một chữ số.
+              `iqx-cap1/2/3-datlenh.html` viết «chọn 1 trong 6 lớp» nhưng vẽ
+              đúng NĂM `.reason` (Kỹ thuật · Dòng tiền · Nội bộ · Tin tức ·
+              Định giá), và `LY_DO_OPTIONS` cũng chỉ có năm. Con số 6 là lỗi
+              chính tả trong mockup, không phải một lớp thứ sáu bị quên: đẻ
+              thêm lớp thứ sáu cho khớp chữ sẽ là bịa ra một nguồn dữ liệu
+              không tồn tại. Giữ 5 — bài canh `TradingPanel.mockupConformance`
+              chuẩn hoá đúng chỗ này và nói rõ vì sao. */}
           <div className="text-[10.5px] uppercase tracking-wide text-[var(--color-text-2)]">
             {"1. Lý do mua — chọn 1 trong 5 lớp"}
           </div>
