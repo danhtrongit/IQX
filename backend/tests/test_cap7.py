@@ -583,8 +583,11 @@ async def test_kehoach_keeps_cap1_to_6_blocks_intact(db_session, test_user):
     assert kehoach.cat_lo == 18_000
     assert kehoach.pct_von == 20.0
     assert kehoach.doc_5_lop == _MAU_THUAN
-    assert kehoach.lop_quyet_dinh == "dinh_gia"
-    assert kehoach.kieu_co_phieu == "ngan_hang"
+    assert kehoach.conflict_level == "nghiem"
+    # ★ ``had_conflict``/``had_veto`` là NULL ở đây, không phải False: mã này
+    # chưa có bản AI Insight nào nên SERVER chưa chấm được — Cấp 6 không bao giờ
+    # tự khẳng định "mã này không có mâu thuẫn".
+    assert kehoach.had_conflict is None
 
     out = services["cap7"].kehoach_out(kehoach)
     assert out["luc_band"] == BandLuc.CAU_AP_DAO.value
