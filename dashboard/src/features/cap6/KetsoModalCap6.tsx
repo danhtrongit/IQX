@@ -37,16 +37,17 @@ import {
 } from "@/features/cap4/doc5Lop"
 import { splitEmphasis, type CoachSituationCap5 } from "@/features/cap5/coachTemplateCap5"
 import type { KetsoDataCap5 } from "@/features/cap5/KetsoModalCap5"
-import {
-  composeCoachCap6,
-  COACH_CAP6_LABEL,
-  type CoachSituationCap6,
-} from "./coachTemplateCap6"
+import { composeCoachCap6, type CoachSituationCap6 } from "./coachTemplateCap6"
 import { useCap6Events } from "./Cap6Context"
-import { lopNguocChieu, lopUngHo } from "./doiChieu"
-import { useCompleteCap6Task, useKehoachCap6 } from "./hooks"
+import { useCompleteCap6Task, useKehoachCap6, useKehoachMauThuanCap6 } from "./hooks"
+import {
+  COACH_NHAT_QUAN_CAP6,
+  NhanDinhKetsoBlock,
+  mergeNhanDinhCap6,
+  type NhanDinhKetsoCap6,
+} from "./NhanDinhKetsoBlock"
 import { useCap6TradeLog, type Cap6TradeRecord } from "./tradeLogCap6"
-import { KIEU_ICON, type KehoachDetailCap6, type KieuCoPhieu, type Lop } from "./types"
+import type { KehoachDetailCap6, KieuCoPhieu, Lop } from "./types"
 // Kết sổ Cấp 6 = Kết sổ Cấp 5's content (đối chiếu Cấp 1 + CAM KẾT vs THỰC TẾ Cấp
 // 2 + Quản lý vốn Cấp 3 + Đọc 5 lớp Cấp 4 + khối cảm xúc + 4 lớp coach + HỒ SƠ +
 // count-up) — CỘNG khối "Đối chiếu — nhìn lại" và lớp coach "ĐỐI CHIẾU VS KẾT
@@ -191,6 +192,14 @@ export function mergeDoiChieuCap6(
  */
 export interface KetsoDataCap6 extends KetsoDataCap5 {
   doiChieu: DoiChieuKetsoCap6 | null
+  /**
+   * ★ CẤP 6 «BẬC THẦY» (spec §8) — khối "nhận định có khớp hành động không".
+   *
+   * OPTIONAL vì `KetsoDataCap7`/`KetsoDataCap8` mở rộng chính interface này và
+   * hai cấp đó còn dựng trên Cấp 6 «Đối chiếu» cũ (chúng không có trường này).
+   * `null`/vắng = lệnh không có bảng mâu thuẫn ⇒ khối bị bỏ hẳn, im lặng.
+   */
+  nhanDinh?: NhanDinhKetsoCap6 | null
 }
 
 export interface KetsoModalCap6Props {
@@ -288,28 +297,6 @@ function describeTpThucTe(
   return "Có chạm — chốt đúng ✅"
 }
 
-/** "🎯 Kỹ thuật · 💰 Dòng tiền", hoặc "—" khi không lớp nào ở phía đó. */
-function lopList(lop: readonly Lop[]): string {
-  return lop.length > 0 ? lop.map((l) => lopLabelCap4(l)).join(" · ") : "—"
-}
-
-/**
- * Dòng "khớp gợi ý hay khác gợi ý" — diễn đạt TRUNG TÍNH ở cả 3 trạng thái.
- *
- * ★ `null` là "chưa phân loại / không xét", KHÔNG phải lệch (spec §10): kiểu chưa
- * phân loại nghĩa là chưa có gợi ý nào để so.
- */
-function khopText(khopGoiY: boolean | null): string {
-  if (khopGoiY === true) return "khớp gợi ý cho kiểu này ✓"
-  if (khopGoiY === false) {
-    return (
-      "khác gợi ý cho kiểu này — đây là một sự thật trung tính, " +
-      "trọng tài cuối là kết quả thật của lệnh"
-    )
-  }
-  return "kiểu cổ phiếu chưa phân loại nên lệnh này không xét khớp gợi ý"
-}
-
 const TARGET_ORDERS = 10
 const MIN_TRADES_FOR_STAT = 2
 const COUNT_UP_MS = 1000
@@ -340,6 +327,15 @@ export function KetsoModalCap6({
    * khối cũ, y hệt hành vi trước khi có endpoint này.
    */
   const kehoachQuery = useKehoachCap6(data?.orderId ?? null, isCap6Active)
+  /**
+   * `GET /cap6/kehoach/{order_id}` — hàng Cấp 6 «Bậc thầy» ĐÃ LƯU của lệnh này.
+   *
+   * ★ ĐỌC LẠI SERVER, KHÔNG suy lại ở client: suy lại thì mỗi lần mở Kết sổ ra
+   * một con số khác (đúng lỗ mà Cấp 6/7 bản trước phải thêm per-order re-read để
+   * vá). Lỗi/404 KHÔNG bao giờ nổi lên UI — `mergeNhanDinhCap6` trả lại khối
+   * dựng từ sự kiện lệnh.
+   */
+  const nhanDinhQuery = useKehoachMauThuanCap6(data?.orderId ?? null, isCap6Active)
 
   const entryPrice = data?.entryPrice ?? 0
   const exitPrice = data?.exitPrice ?? 0
@@ -391,10 +387,13 @@ export function KetsoModalCap6({
     doc5Lop,
     ai5Lop,
     doiChieu: doiChieuLocal,
+    nhanDinh: nhanDinhLocal,
   } = data
   // Hàng đã lưu của server thắng khối dựng từ sự kiện lệnh — xem
   // `mergeDoiChieuCap6`. Query lỗi/chưa về → nguyên khối cũ.
   const doiChieu = mergeDoiChieuCap6(doiChieuLocal, kehoachQuery.data)
+  // Hàng đã lưu thắng khối dựng từ sự kiện lệnh — xem `mergeNhanDinhCap6`.
+  const nhanDinh = mergeNhanDinhCap6(nhanDinhLocal, nhanDinhQuery.data)
   const soPhienGiu = countTradingSessions(buyDate, sellDate)
   const soNgayLich = countCalendarDays(buyDate, sellDate)
   const pnlPositive = pnlVnd > 0
@@ -463,11 +462,6 @@ export function KetsoModalCap6({
   const soDongThuan = countDongThuan(ai5Lop)
   const soKhacAi = countKhacAi(doc5Lop, ai5Lop)
   const soCungGocNhin = countCungGocNhin(doc5Lop, ai5Lop)
-
-  // ── Khối "Đối chiếu — nhìn lại" (Cấp 6 §6, THÊM MỚI) ───────────────────
-  // Hai phía chấm lại từ CHÍNH bản chấm 5 lớp của lệnh — cùng nguồn với panel.
-  const ungHo = lopUngHo(doc5Lop)
-  const nguoc = lopNguocChieu(doc5Lop)
 
   // ── 3 dòng "HỒ SƠ CỦA BẠN" (giữ nguyên Cấp 1) ──────────────────────────
   const soLenh = progress?.so_lenh_thuc_chien ?? 0
@@ -778,104 +772,18 @@ export function KetsoModalCap6({
         </div>
       )}
 
-      {/* ── ĐỐI CHIẾU — NHÌN LẠI (Cấp 6 THÊM MỚI, spec §6) ─────────────────────
-          Đặt dưới mọi khối kế thừa, trên chồng coach — đúng quy tắc vị trí Cấp 5
-          đã ghi cho khối mới của nó, và vẫn đứng TRƯỚC đoạn coach Cấp 6 như spec
-          §6 mô tả.
+      {/* ── NHÌN LẠI: NHẬN ĐỊNH CÓ KHỚP HÀNH ĐỘNG KHÔNG? (Cấp 6 «Bậc thầy»,
+          spec §8) ─────────────────────────────────────────────────────────────
+          Đặt dưới mọi khối kế thừa, TRÊN chồng coach — đúng vị trí mockup
+          `iqx-cap6-ketso.html` vẽ, và vẫn đứng trước đoạn coach Cấp 6.
 
-          ★ Chỉ render khi lệnh THỰC SỰ có dữ liệu Cấp 6. Lệnh không mâu thuẫn (hoặc
-          mở trước khi Cấp 6 ship) có cả 6 cột null → bỏ khối, im lặng, KHÔNG dựng
-          một khối rỗng để user phải đoán. */}
-      {doiChieu && (
-        <div className="cap6-ketso-doichieu" data-testid="cap6-ketso-doichieu">
-          <div className="cap6-ketso-doichieu-head">
-            <span className="cap6-ketso-doichieu-title">ĐỐI CHIẾU — NHÌN LẠI</span>
-            <span className="cap6-ketso-badge">mới ở Cấp 6</span>
-          </div>
-          <table className="cap0-debrief-table">
-            <tbody>
-              <tr>
-                <td>Kiểu cổ phiếu</td>
-                <td colSpan={2} data-testid="cap6-ketso-kieu">
-                  {doiChieu.kieu
-                    ? `${KIEU_ICON[doiChieu.kieu]} ${doiChieu.kieuTen ?? ""}`.trim()
-                    : "chưa phân loại"}
-                </td>
-              </tr>
-              <tr>
-                <td>Lớp Ủng hộ lúc đặt</td>
-                <td colSpan={2} data-testid="cap6-ketso-ungho">
-                  {lopList(ungHo)}
-                </td>
-              </tr>
-              <tr>
-                <td>Lớp Ngược chiều lúc đặt</td>
-                <td colSpan={2} data-testid="cap6-ketso-nguoc">
-                  {lopList(nguoc)}
-                </td>
-              </tr>
-              <tr>
-                <td>Bạn tin</td>
-                <td colSpan={2} data-testid="cap6-ketso-lop-tin">
-                  {doiChieu.lopQuyetDinh
-                    ? lopLabelCap4(doiChieu.lopQuyetDinh)
-                    : "hệ chưa ghi lại được lớp quyết định"}
-                </td>
-              </tr>
-              {doiChieu.lopUuTien.length > 0 && (
-                <tr>
-                  <td>IQX gợi ý ưu tiên</td>
-                  <td colSpan={2} data-testid="cap6-ketso-goi-y">
-                    {lopList(doiChieu.lopUuTien)}
-                  </td>
-                </tr>
-              )}
-              <tr>
-                <td>Đối chiếu</td>
-                {/* ★ Không class trạng thái nào ở đây là màu cảnh báo: khớp và
-                    khác gợi ý được trình bày ngang nhau (spec §5/§10). */}
-                <td
-                  colSpan={2}
-                  className={`cap6-ketso-khop cap6-ketso-khop--${
-                    doiChieu.khopGoiY === true
-                      ? "khop"
-                      : doiChieu.khopGoiY === false
-                        ? "khac"
-                        : "chua"
-                  }`}
-                  data-testid="cap6-ketso-khop"
-                >
-                  {khopText(doiChieu.khopGoiY)}
-                </td>
-              </tr>
-              <tr>
-                <td>Kết quả</td>
-                <td colSpan={2} data-testid="cap6-ketso-ketqua">
-                  <span className={pnlPositive ? "text-up" : "text-down"}>{fmtPct(pnlPct)}</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          {doiChieu.nganh && (
-            <p className="cap6-ketso-nganh" data-testid="cap6-ketso-nganh">
-              {`(Kiểu suy ra từ ngành của mã: ${doiChieu.nganh})`}
-            </p>
-          )}
-          {doiChieu.lyDo && (
-            <p className="cap6-ketso-lydo" data-testid="cap6-ketso-lydo">
-              {`Vì sao bạn tin lớp đó (ghi lúc đặt): «${doiChieu.lyDo}»`}
-            </p>
-          )}
-          {/* §C12c — câu của server cho CHÍNH lệnh này, hiện NGUYÊN VĂN (kể cả
-              provenance của kiểu và cách diễn đạt trung tính của "lệch"). Chỉ có
-              khi khối đến từ `GET /cap6/kehoach/{order_id}`. */}
-          {doiChieu.giaiThich && (
-            <p className="cap6-ketso-giaithich" data-testid="cap6-ketso-giaithich">
-              {doiChieu.giaiThich}
-            </p>
-          )}
-        </div>
-      )}
+          ★★ THAY khối "ĐỐI CHIẾU — NHÌN LẠI" của bản Cấp 6 cũ: bản đó nói về kiểu
+          cổ phiếu + trọng số gợi ý, những thứ Cấp 6 «Bậc thầy» không còn dạy.
+
+          ★ Chỉ render khi lệnh THỰC SỰ có bảng mâu thuẫn. Lệnh không mâu thuẫn
+          (hoặc mở trước khi Cấp 6 đợt 7 ship) → bỏ khối, IM LẶNG, không dựng một
+          khối rỗng để user phải đoán. */}
+      {nhanDinh && <NhanDinhKetsoBlock nhanDinh={nhanDinh} pnlPct={pnlPct} />}
 
       {/* Lớp coach 1 — Cấp 1 (lưới lý do × kết quả), giữ nguyên. */}
       <div className="cap0-debrief-coach">
@@ -920,20 +828,15 @@ export function KetsoModalCap6({
         </div>
       )}
 
-      {/* Lớp coach 6 — Cấp 6 (đối chiếu vs kết quả), THÊM MỚI. KHÔNG có ô nào là
-          cảnh báo: cả 4 ô đều trung tính (spec §5/§10), nên khối này không có biến
-          thể `--canhbao` như Cấp 5. Vắng mặt khi lệnh không có đối chiếu HOẶC kiểu
-          chưa phân loại (không có gợi ý nào để so). */}
-      {coach.cap6 && (
+      {/* Lớp coach 6 — Cấp 6 «Bậc thầy» (SỰ NHẤT QUÁN), spec §8.
+          ★ Đoạn này chỉ hiện khi lệnh CÓ bảng mâu thuẫn: không có mâu thuẫn thì
+          không có sự nhất quán nào để nhìn lại. Chữ VERBATIM mockup
+          `iqx-cap6-ketso.html`, và nó nhắc đúng hai thứ hệ đo (khối lượng + mức
+          tự tin) cộng câu "không mua cũng là một lựa chọn" (spec §8 «Coach»). */}
+      {nhanDinh && (
         <div className="cap6-ketso-coach" data-testid="cap6-ketso-coach">
-          <div className="cap6-ketso-coach-tag">
-            {`ĐỐI CHIẾU VS KẾT QUẢ · ${COACH_CAP6_LABEL[coach.cap6.id]}`}
-          </div>
-          <p className="cap6-ketso-coach-body">
-            {splitEmphasis(coach.cap6.text, coach.cap6.nhanManh).map((part, i) =>
-              part.strong ? <strong key={i}>{part.text}</strong> : <span key={i}>{part.text}</span>,
-            )}
-          </p>
+          <div className="cap6-ketso-coach-tag">{"NHÌN LẠI · SỰ NHẤT QUÁN"}</div>
+          <p className="cap6-ketso-coach-body">{COACH_NHAT_QUAN_CAP6}</p>
         </div>
       )}
 

@@ -1,5 +1,6 @@
 import { api, unwrap } from "@/shared/http/client"
 import type {
+  KehoachMauThuanCap6,
   KehoachMauThuanInput,
   MauThuanCap6,
   PhanTichCap6,
@@ -141,6 +142,21 @@ export const cap6Api = {
   skip: async (input: SkipCap6Input): Promise<unknown> => {
     const res = await api.post("cap6/skip", { json: input }).json<unknown>()
     return unwrap(res as never)
+  },
+
+  /**
+   * GET /cap6/kehoach/{order_id} — các cột Cấp 6 ĐÃ LƯU của một lệnh (spec §8).
+   *
+   * ★ Kết sổ đọc khối "nhận định vs hành động" TỪ ĐÂY, không suy lại ở client:
+   * suy lại thì mỗi lần mở Kết sổ ra một con số khác.
+   *
+   * **404** cho lệnh lạ / user chưa có hàng tiến độ Cấp 6 — caller gác trên
+   * `isCap6Active` và degrade IM LẶNG (modal Kết sổ `closable={false}`, nên nó
+   * KHÔNG được phụ thuộc vào call này).
+   */
+  getKehoachMauThuan: async (orderId: string): Promise<KehoachMauThuanCap6> => {
+    const res = await api.get(`cap6/kehoach/${orderId}`).json<unknown>()
+    return unwrap(res as never) as KehoachMauThuanCap6
   },
 
   /** GET /cap6/phan-tich — khối ⑭ + ⑮ của Phân tích danh mục (spec §9). */

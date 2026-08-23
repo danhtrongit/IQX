@@ -20,6 +20,7 @@ const {
   markCap6Task,
   cap5HooksLoaded,
   kehoachCap6,
+  nhanDinhCap6,
   messageError,
 } = vi.hoisted(() => ({
   recordKetsoCap1Async: vi.fn(),
@@ -34,6 +35,9 @@ const {
   // `GET /cap6/kehoach/{order_id}` — giá trị trả về + ĐỐI SỐ mỗi lần gọi (để
   // khẳng định cổng `enabled`: chỉ gọi khi user thật sự đang ở Cấp 6).
   kehoachCap6: { current: {} as Record<string, unknown>, calls: [] as unknown[][] },
+  // `GET /cap6/kehoach/{order_id}` — bản Cấp 6 «Bậc thầy»: các cột đã lưu của
+  // lệnh (had_conflict / conflict_level / had_veto / veto_layers + %vốn + tự tin).
+  nhanDinhCap6: { current: {} as Record<string, unknown>, calls: [] as unknown[][] },
   messageError: vi.fn(),
 }))
 
@@ -52,6 +56,10 @@ vi.mock("./hooks", () => ({
   useKehoachCap6: (...args: unknown[]) => {
     kehoachCap6.calls.push(args)
     return kehoachCap6.current
+  },
+  useKehoachMauThuanCap6: (...args: unknown[]) => {
+    nhanDinhCap6.calls.push(args)
+    return nhanDinhCap6.current
   },
 }))
 vi.mock("@/features/auth", () => ({
@@ -76,6 +84,7 @@ import {
 import { Cap6Provider } from "./Cap6Context"
 import { readCap6TradeLog, type Cap6TradeRecord } from "./tradeLogCap6"
 import type { KehoachDetailCap6 } from "./types"
+import type { KehoachMauThuanCap6 } from "./mauThuanTypes"
 import type { Cap1Progress } from "@/features/cap1/types"
 
 const CAM_TU = ["sai", "không nên", "lẽ ra", "may mắn"]
@@ -151,6 +160,32 @@ const data: KetsoDataCap6 = {
   huntSoPhienCho: 3,
   huntSoLopLucVao: null,
   doiChieu,
+  // ★ CẤP 6 «BẬC THẦY» — ảnh chụp hai phe lúc MUA (spec §8). Mức nhận định +
+  //   %vốn + tự tin sẽ do hàng đã lưu của server ghi đè.
+  nhanDinh: {
+    pheUngHo: ["ky_thuat", "dong_tien"],
+    pheNguoc: ["noi_bo", "tin_tuc"],
+    conflictLevel: "nghiem",
+    lopPhuQuyetXau: ["noi_bo", "tin_tuc"],
+    pctVon: 15,
+    mucTuTin: 2,
+  },
+}
+
+/** Hàng Cấp 6 «Bậc thầy» ĐÃ LƯU của lệnh — `GET /cap6/kehoach/{order_id}`. */
+function nhanDinhDetail(
+  overrides: Partial<KehoachMauThuanCap6> = {},
+): KehoachMauThuanCap6 {
+  return {
+    order_id: "order-84",
+    had_conflict: true,
+    conflict_level: "nghiem",
+    had_veto: true,
+    veto_layers: ["noi_bo", "tin_tuc"],
+    pct_von: 30,
+    muc_tu_tin: 3,
+    ...overrides,
+  }
 }
 
 function renderModal(
@@ -251,6 +286,8 @@ beforeEach(() => {
   messageError.mockReset()
   kehoachCap6.current = { data: undefined, isPending: false, isError: false }
   kehoachCap6.calls.length = 0
+  nhanDinhCap6.current = { data: undefined, isPending: false, isError: false }
+  nhanDinhCap6.calls.length = 0
   window.localStorage.clear()
 })
 
@@ -352,267 +389,201 @@ describe("KetsoModalCap6 — cổng phân loại 4 ô của Cấp 5 ĐÃ NGHỈ 
   })
 })
 
-describe("KetsoModalCap6 — khối ĐỐI CHIẾU — NHÌN LẠI", () => {
-  it("hiện kiểu cổ phiếu KÈM ngành nó được suy ra từ (provenance §C12c)", () => {
+describe("KetsoModalCap6 — khối «nhận định có khớp hành động không» (spec §8)", () => {
+  it("hai phe lúc đặt + tag PHỦ QUYẾT đúng lớp server đánh dấu", () => {
     renderModal()
-    const block = within(screen.getByTestId("cap6-ketso-doichieu"))
-    expect(block.getByText(/ĐỐI CHIẾU — NHÌN LẠI/)).toBeInTheDocument()
-    expect(block.getByTestId("cap6-ketso-kieu").textContent).toContain("Ngân hàng")
-    expect(block.getByTestId("cap6-ketso-nganh").textContent).toContain("Ngân hàng")
+    const block = screen.getByTestId("cap6-ketso-nhandinh")
+    expect(within(block).getByTestId("cap6-ketso-ungho")).toHaveTextContent(
+      "🎯 Kỹ thuật · 💰 Dòng tiền",
+    )
+    expect(within(block).getByTestId("cap6-ketso-nguoc")).toHaveTextContent("📰 Tin tức")
+    expect(screen.getByTestId("cap6-ketso-veto-tin_tuc")).toHaveTextContent("PHỦ QUYẾT")
+    expect(screen.getByTestId("cap6-ketso-veto-noi_bo")).toHaveTextContent("PHỦ QUYẾT")
   })
 
-  it("hiện lớp Ủng hộ vs Ngược chiều lúc đặt, suy ra từ chính bản chấm 5 lớp", () => {
+  it("hiện mức user tự đọc + khối lượng và mức tự tin đã mua", () => {
     renderModal()
-    const block = within(screen.getByTestId("cap6-ketso-doichieu"))
-    expect(block.getByTestId("cap6-ketso-ungho").textContent).toContain("🎯 Kỹ thuật")
-    expect(block.getByTestId("cap6-ketso-ungho").textContent).toContain("💰 Dòng tiền")
-    expect(block.getByTestId("cap6-ketso-nguoc").textContent).toContain("💎 Định giá")
-    // Lớp trung tính KHÔNG thuộc phía nào.
-    expect(block.getByTestId("cap6-ketso-ungho").textContent).not.toContain("📰 Tin tức")
-    expect(block.getByTestId("cap6-ketso-nguoc").textContent).not.toContain("📰 Tin tức")
+    expect(screen.getByTestId("cap6-ketso-muc")).toHaveTextContent("🔴 Nghiêm trọng")
+    const hd = screen.getByTestId("cap6-ketso-hanhdong")
+    expect(hd).toHaveTextContent("15% vốn")
+    expect(hd).toHaveTextContent("tự tin")
   })
 
-  it("hiện lớp bạn đã tin + 1 dòng vì sao đã ghi lúc đặt", () => {
+  it("★ CHỈ khối lượng + tự tin — bảng KHÔNG có dòng cắt lỗ nào (spec §4.3/§8)", () => {
     renderModal()
-    const block = within(screen.getByTestId("cap6-ketso-doichieu"))
-    expect(block.getByTestId("cap6-ketso-lop-tin").textContent).toContain("💎 Định giá")
-    expect(block.getByTestId("cap6-ketso-lydo").textContent).toContain("P/B 1.2")
-  })
-
-  it("khớp gợi ý → nói khớp, và nêu nhóm lớp gợi ý THẬT", () => {
-    renderModal()
-    const khop = screen.getByTestId("cap6-ketso-khop")
-    expect(khop.textContent).toContain("khớp")
-    expect(screen.getByTestId("cap6-ketso-goi-y").textContent).toContain("👤 Nội bộ")
-  })
-
-  it("LỆCH gợi ý: diễn đạt TRUNG TÍNH — không 'sai', không cảnh báo", () => {
-    renderModal({
-      doiChieu: { ...doiChieu, lopQuyetDinh: "ky_thuat", khopGoiY: false },
-    })
-    const block = screen.getByTestId("cap6-ketso-doichieu")
-    expect(screen.getByTestId("cap6-ketso-khop").textContent).toContain("khác gợi ý")
-    for (const tu of CAM_TU) {
-      expect(block.textContent!.toLowerCase()).not.toContain(tu)
+    // Bảng đối chiếu: 4 dòng, không dòng nào về cắt lỗ/chốt lời.
+    const table = screen
+      .getByTestId("cap6-ketso-nhandinh")
+      .querySelector("table") as HTMLElement
+    expect(table.textContent).toContain("Bạn đọc mâu thuẫn")
+    for (const tu of ["cắt lỗ", "chốt lời", "Cắt lỗ"]) {
+      expect(table.textContent).not.toContain(tu)
     }
+    // Câu §C12c ở dưới bảng nói THẲNG vì sao cắt lỗ không nằm trong phép so.
+    expect(screen.getByTestId("cap6-ketso-nhandinh-giaithich")).toHaveTextContent(
+      "KHÔNG xét cắt lỗ",
+    )
   })
 
-  it("khop_goi_y === null → 'chưa phân loại', KHÔNG hiện là lệch, KHÔNG có coach Cấp 6", () => {
+  it("lệnh KHÔNG có mâu thuẫn → khối bị BỎ HẲN, im lặng (không dựng khối rỗng)", () => {
+    renderModal({ nhanDinh: null })
+    expect(screen.queryByTestId("cap6-ketso-nhandinh")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap6-ketso-lech")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap6-ketso-coach")).not.toBeInTheDocument()
+    // Neo dương tính: modal THẬT SỰ mở (mọi khối kế thừa còn nguyên).
+    expect(screen.getByTestId("cap2-ketso-camket")).toBeInTheDocument()
+  })
+
+  it("★ chưa chọn mức nhận định → nói thẳng, và KHÔNG kết luận là đã khớp", () => {
     renderModal({
-      doiChieu: { ...doiChieu, kieu: null, kieuTen: null, khopGoiY: null, lopUuTien: [] },
+      nhanDinh: { ...data.nhanDinh!, conflictLevel: null },
     })
-    const khop = screen.getByTestId("cap6-ketso-khop")
-    expect(khop.textContent).toContain("chưa phân loại")
-    expect(khop.textContent).not.toContain("lệch")
-    expect(screen.queryByTestId("cap6-ketso-coach")).not.toBeInTheDocument()
+    expect(screen.getByTestId("cap6-ketso-muc")).toHaveTextContent("bạn không chọn mức nào")
+    expect(screen.getByTestId("cap6-ketso-chua-xet")).toHaveTextContent(
+      "Chưa xét được KHÔNG có nghĩa là đã khớp",
+    )
+    expect(screen.queryByTestId("cap6-ketso-lech")).not.toBeInTheDocument()
   })
 
-  it("lệnh KHÔNG có dữ liệu Cấp 6 → khối bị BỎ HẲN, im lặng (không dựng khối rỗng)", () => {
-    renderModal({ doiChieu: null })
-    expect(screen.queryByTestId("cap6-ketso-doichieu")).not.toBeInTheDocument()
-    expect(screen.queryByTestId("cap6-ketso-coach")).not.toBeInTheDocument()
-    // Mọi khối Cấp 1-4 vẫn còn nguyên.
-    expect(screen.getByTestId("cap4-ketso-doc5lop")).toBeInTheDocument()
-    expect(screen.getByTestId("cap3-ketso-quanlyvon")).toBeInTheDocument()
-  })
-
-  it("thiếu ngành → không bịa provenance", () => {
-    renderModal({ doiChieu: { ...doiChieu, nganh: null } })
-    expect(screen.queryByTestId("cap6-ketso-nganh")).not.toBeInTheDocument()
+  it("★ thiếu %vốn/tự tin → nói «chưa ghi lại được», KHÔNG in 0%", () => {
+    renderModal({
+      nhanDinh: { ...data.nhanDinh!, pctVon: null, mucTuTin: null },
+    })
+    const hd = screen.getByTestId("cap6-ketso-hanhdong")
+    expect(hd).toHaveTextContent("khối lượng: chưa ghi lại được")
+    expect(hd).toHaveTextContent("mức tự tin: chưa ghi lại được")
+    expect(hd.textContent).not.toContain("0% vốn")
   })
 })
 
-describe("KetsoModalCap6 — đọc lại Đối chiếu ĐÃ GHI của chính lệnh (GET /cap6/kehoach)", () => {
+describe("KetsoModalCap6 — khối cảnh báo lệch (spec §8)", () => {
+  it("nghiêm trọng + tự tin cao → cảnh báo bẫy «đắn đo mà vẫn mua lớn»", () => {
+    renderModal({ nhanDinh: { ...data.nhanDinh!, mucTuTin: 3, pctVon: 30 } })
+    const lech = screen.getByTestId("cap6-ketso-lech")
+    expect(lech).toHaveTextContent("Nhận định và hành động đang lệch nhau")
+    expect(lech).toHaveTextContent("vẫn mua 30% vốn")
+    expect(lech).toHaveTextContent("Đắn đo trong đầu nhưng tay vẫn mua lớn")
+    expect(screen.getByTestId("cap6-ketso-hanhdong-label")).toHaveTextContent("Nhưng đã mua")
+  })
+
+  it("★ khối cảnh báo KHÔNG nhắc cắt lỗ", () => {
+    renderModal({ nhanDinh: { ...data.nhanDinh!, mucTuTin: 3 } })
+    expect(screen.getByTestId("cap6-ketso-lech").textContent).not.toContain("cắt lỗ")
+  })
+
+  it("nghiêm trọng + tự tin THẤP NHẤT → KHÔNG cảnh báo, nhãn là «Bạn đã mua»", () => {
+    renderModal({ nhanDinh: { ...data.nhanDinh!, mucTuTin: 1 } })
+    expect(screen.queryByTestId("cap6-ketso-lech")).not.toBeInTheDocument()
+    expect(screen.getByTestId("cap6-ketso-hanhdong-label")).toHaveTextContent("Bạn đã mua")
+  })
+
+  it("mức «nhẹ» + tự tin cao → KHÔNG cảnh báo (chỉ mức nghiêm trọng mới lệch)", () => {
+    renderModal({ nhanDinh: { ...data.nhanDinh!, conflictLevel: "nhe", mucTuTin: 3 } })
+    expect(screen.getByTestId("cap6-ketso-nhandinh")).toBeInTheDocument()
+    expect(screen.queryByTestId("cap6-ketso-lech")).not.toBeInTheDocument()
+  })
+
+  /**
+   * ★★ MOCKUP viết "và lần này nó khiến bạn lỗ 6,3%" — dán câu đó vào một lệnh
+   * CÓ LÃI là nói sai sự thật. Lệnh lãi vẫn phải bị cảnh báo (bài học là sự NHẤT
+   * QUÁN, không phải kết quả), nhưng bằng câu khác.
+   */
+  it("★ lệnh LỖ → nhắc đúng con số lỗ", () => {
+    renderModal({
+      exitPrice: 28_000,
+      nhanDinh: { ...data.nhanDinh!, mucTuTin: 3 },
+    })
+    const lech = screen.getByTestId("cap6-ketso-lech")
+    expect(lech).toHaveTextContent("khiến bạn lỗ")
+    expect(lech.textContent).not.toContain("Lần này lệnh có lãi")
+  })
+
+  it("★ lệnh LÃI → vẫn cảnh báo, nhưng KHÔNG bịa ra một khoản lỗ", () => {
+    renderModal({ nhanDinh: { ...data.nhanDinh!, mucTuTin: 3 } })
+    const lech = screen.getByTestId("cap6-ketso-lech")
+    expect(lech).toHaveTextContent("Lần này lệnh có lãi")
+    expect(lech).toHaveTextContent("lãi không làm cho sự lệch đó thành đúng")
+    expect(lech.textContent).not.toContain("khiến bạn lỗ")
+  })
+})
+
+describe("KetsoModalCap6 — đọc lại hàng ĐÃ LƯU (GET /cap6/kehoach/{order_id})", () => {
   it("ngoài Cấp 6 → KHÔNG gọi endpoint (nó 404 khi user chưa có hàng Cấp 6)", () => {
     renderModal()
-    expect(kehoachCap6.calls.length).toBeGreaterThan(0)
-    for (const args of kehoachCap6.calls) expect(args).toEqual(["order-84", false])
+    expect(nhanDinhCap6.calls.at(-1)).toEqual(["order-84", false])
   })
 
   it("đang ở Cấp 6 → gọi endpoint với ĐÚNG order_id của lệnh", () => {
     renderInCap6()
-    expect(kehoachCap6.calls.length).toBeGreaterThan(0)
-    for (const args of kehoachCap6.calls) expect(args).toEqual(["order-84", true])
+    expect(nhanDinhCap6.calls.at(-1)).toEqual(["order-84", true])
   })
 
-  it("server ĐÃ ghi khớp/lệch cho lệnh → hiện sự thật đã lưu, KHÔNG còn 'chưa phân loại'", () => {
-    kehoachCap6.current = { data: kehoachDetail(), isPending: false, isError: false }
-    renderInCap6({ doiChieu: doiChieuChuaPhanLoai })
-    const block = within(screen.getByTestId("cap6-ketso-doichieu"))
-    expect(block.getByTestId("cap6-ketso-kieu").textContent).toContain("Đầu cơ / vốn hóa nhỏ")
-    const khop = block.getByTestId("cap6-ketso-khop")
-    expect(khop.textContent).toContain("khác gợi ý")
-    expect(khop.textContent).not.toContain("chưa phân loại")
-    expect(block.getByTestId("cap6-ketso-goi-y").textContent).toContain("🎯 Kỹ thuật")
-    expect(block.getByTestId("cap6-ketso-goi-y").textContent).toContain("💰 Dòng tiền")
+  it("★ hàng đã lưu THẮNG ảnh chụp client — số hiện là số server", () => {
+    nhanDinhCap6.current = { data: nhanDinhDetail(), isPending: false, isError: false }
+    renderInCap6()
+    // Client chụp 15% vốn / tự tin Vừa; server đã lưu 30% / Cao → hiện số SERVER.
+    const hd = screen.getByTestId("cap6-ketso-hanhdong")
+    expect(hd).toHaveTextContent("30% vốn")
+    expect(hd.textContent).not.toContain("15% vốn")
+    expect(screen.getByTestId("cap6-ketso-lech")).toBeInTheDocument()
   })
 
-  it("hiện câu giải thích của server NGUYÊN VĂN (§C12c)", () => {
-    const detail = kehoachDetail()
-    kehoachCap6.current = { data: detail, isPending: false, isError: false }
-    renderInCap6({ doiChieu: doiChieuChuaPhanLoai })
-    expect(screen.getByTestId("cap6-ketso-giaithich").textContent).toBe(detail.giai_thich)
-  })
-
-  it("lệch gợi ý đọc từ server vẫn TRUNG TÍNH — không 'sai', không cảnh báo", () => {
-    kehoachCap6.current = { data: kehoachDetail(), isPending: false, isError: false }
-    renderInCap6({ doiChieu: doiChieuChuaPhanLoai })
-    const block = screen.getByTestId("cap6-ketso-doichieu")
-    for (const tu of CAM_TU) expect(block.textContent!.toLowerCase()).not.toContain(tu)
-    expect(screen.getByTestId("cap6-ketso-khop").className).not.toContain("canhbao")
-  })
-
-  /**
-   * ★ REGRESSION MÀU (fix wave FE-2) — jsdom không nạp CSS nên phải đọc thẳng file.
-   *
-   * `.cap6-ketso-khop--khac` từng dùng `var(--cap6)` = `#d64550`. Hai hàng bên dưới
-   * TRONG CÙNG MỘT `<table>`, ô "Kết quả" dùng `text-down` = `#ff6b6b`. Ở 12px hai
-   * đỏ đó không phân biệt được, nên một lệnh lỗ đi lệch gợi ý hiện `khác gợi ý…` và
-   * `−4.2%` cạnh nhau cùng một màu đỏ, trong khi `khớp gợi ý ✓` xanh — mắt đọc ra
-   * một PHÁN QUYẾT, và lệch gợi ý thì KHÔNG BAO GIỜ được đóng khung là sai (spec
-   * §5/§10). Chữ đã trung tính sẵn; chỉ còn màu.
-   */
-  it("★ 'khác gợi ý' KHÔNG dùng màu đỏ — nó ở ngay trên một ô text-down đỏ", async () => {
-    // Đọc thẳng từ đĩa: vitest stub CSS import (`css: false`), nên `?raw` cũng
-    // không mang nội dung thật về. `process.cwd()` là root của vitest (`dashboard/`).
-    const { readFileSync } = await import("node:fs")
-    const { resolve } = await import("node:path")
-    const css = readFileSync(
-      resolve(process.cwd(), "src/features/cap6/cap6-ketso.css"),
-      "utf8",
-    )
-    const rule = /\.cap6-ketso-khop--khac\s*\{([^}]*)\}/.exec(css)
-    expect(rule).not.toBeNull()
-    const decl = rule![1]
-    // Không phải đỏ son của cấp (var(--cap6) hoặc literal), không phải bất kỳ đỏ
-    // nào của bảng giá.
-    expect(decl).not.toContain("--cap6")
-    expect(decl.toLowerCase()).not.toContain("#d64550")
-    expect(decl.toLowerCase()).not.toContain("#ff6b6b")
-    expect(decl.toLowerCase()).not.toMatch(/#[ef][0-9a-f]{5}/)
-    // …nhưng vẫn PHẢI có một khai báo màu: bỏ trắng ô sẽ làm nó tàng hình.
-    expect(decl).toMatch(/color\s*:/)
-  })
-
-  it("có kiểu + có gợi ý nhưng khop_goi_y === null → 'không xét', TUYỆT ĐỐI không thành lệch", () => {
-    // ★ Fixture này khác fixture "đã chấm" ĐÚNG MỘT TRƯỜNG (`khop_goi_y`), nên
-    // bất kỳ cách gộp `null` vào `false` nào (vd. `?? false`) đều làm test đỏ.
-    kehoachCap6.current = {
-      data: kehoachDetail({ khop_goi_y: null, khop_goi_y_ten: null }),
-      isPending: false,
-      isError: false,
-    }
-    renderInCap6({ doiChieu: doiChieuChuaPhanLoai })
-    const khop = screen.getByTestId("cap6-ketso-khop")
-    expect(khop.textContent).toContain("không xét")
-    // "cho kiểu này" chỉ có ở HAI câu phán khớp/lệch — vắng mặt nó là bằng chứng
-    // `null` không bị đọc thành một trong hai.
-    expect(khop.textContent).not.toContain("cho kiểu này")
-    // Không có gợi ý nào để so → không có đoạn coach Cấp 6 nào được đoán hộ.
-    expect(screen.queryByTestId("cap6-ketso-coach")).not.toBeInTheDocument()
-  })
-
-  it("kiểu chưa phân loại (payload thật) → ô kiểu vẫn nói 'chưa phân loại'", () => {
-    kehoachCap6.current = {
-      data: kehoachDetail({
-        kieu_co_phieu: null,
-        kieu_ten: null,
-        lop_uu_tien: [],
-        lop_uu_tien_ten: [],
-        khop_goi_y: null,
-        khop_goi_y_ten: null,
-      }),
-      isPending: false,
-      isError: false,
-    }
-    renderInCap6({ doiChieu: doiChieuChuaPhanLoai })
-    expect(screen.getByTestId("cap6-ketso-kieu").textContent).toContain("chưa phân loại")
-    expect(screen.queryByTestId("cap6-ketso-goi-y")).not.toBeInTheDocument()
-  })
-
-  it("404 / lỗi mạng → im lặng giữ nguyên trạng thái cũ, modal VẪN đóng được", () => {
-    const onClose = vi.fn()
-    kehoachCap6.current = { data: undefined, isPending: false, isError: true }
-    renderInCap6({}, { onClose })
-    // Khối dựng từ sự kiện lệnh (khớp = true) còn nguyên — không lỗi, không toast.
-    expect(screen.getByTestId("cap6-ketso-khop").textContent).toContain("khớp gợi ý")
-    expect(messageError).not.toHaveBeenCalled()
-    expect(closeButton()).not.toBeDisabled()
-    fireEvent.click(closeButton())
-    return waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
-  })
-
-  it("404 khi khối cũ là 'chưa phân loại' → vẫn là 'chưa phân loại', không bịa lệch", () => {
-    kehoachCap6.current = { data: undefined, isPending: false, isError: true }
-    renderInCap6({ doiChieu: doiChieuChuaPhanLoai })
-    const khop = screen.getByTestId("cap6-ketso-khop")
-    expect(khop.textContent).toContain("chưa phân loại")
-    expect(khop.textContent).not.toContain("khác gợi ý")
-  })
-
-  it("co_du_lieu = false → giữ nguyên khối cũ, KHÔNG xoá khối đã dựng", () => {
-    kehoachCap6.current = {
-      data: kehoachDetail({
-        id: null,
-        kieu_co_phieu: null,
-        kieu_ten: null,
-        lop_uu_tien: [],
-        lop_uu_tien_ten: [],
-        lop_it_tin: [],
-        lop_it_tin_ten: [],
-        lop_quyet_dinh: null,
-        lop_quyet_dinh_ten: null,
-        khop_goi_y: null,
-        khop_goi_y_ten: null,
-        ly_do_doi_chieu: null,
-        co_du_lieu: false,
-        giai_thich: "Lệnh này chưa đi qua bước Đối chiếu.",
-      }),
+  it("★ server nói had_conflict = false → BỎ HẲN khối, dù client có ảnh chụp", () => {
+    nhanDinhCap6.current = {
+      data: nhanDinhDetail({ had_conflict: false, conflict_level: null }),
       isPending: false,
       isError: false,
     }
     renderInCap6()
-    expect(screen.getByTestId("cap6-ketso-khop").textContent).toContain("khớp gợi ý")
-    expect(screen.getByTestId("cap6-ketso-kieu").textContent).toContain("Ngân hàng")
-    expect(screen.queryByTestId("cap6-ketso-giaithich")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap6-ketso-nhandinh")).not.toBeInTheDocument()
+    expect(screen.getByTestId("cap2-ketso-camket")).toBeInTheDocument()
   })
 
-  it("nhật ký ghi khớp/lệch THẬT của server, không phải giá trị cũ", async () => {
-    const onRecorded = vi.fn()
-    kehoachCap6.current = { data: kehoachDetail(), isPending: false, isError: false }
-    renderInCap6({ doiChieu: doiChieuChuaPhanLoai }, { onRecorded })
-    fireEvent.click(closeButton())
-    await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1))
-    const rec = onRecorded.mock.calls[0][0] as Cap6TradeRecord
-    expect(rec.kieuCoPhieu).toBe("dau_co_nho")
-    expect(rec.khopGoiY).toBe(false)
+  it("★ query lỗi → FAIL-CLOSED về ảnh chụp client, modal KHÔNG vỡ", () => {
+    nhanDinhCap6.current = { data: undefined, isPending: false, isError: true }
+    renderInCap6()
+    expect(screen.getByTestId("cap6-ketso-muc")).toHaveTextContent("🔴 Nghiêm trọng")
+    expect(screen.getByTestId("cap6-ketso-hanhdong")).toHaveTextContent("15% vốn")
+    // Nút đóng vẫn bấm được — modal `closable={false}` không được nhốt ai.
+    expect(closeButton()).not.toBeDisabled()
+  })
+
+  it("★ lớp phủ quyết lấy theo veto_layers của SERVER", () => {
+    nhanDinhCap6.current = {
+      data: nhanDinhDetail({ veto_layers: ["tin_tuc"] }),
+      isPending: false,
+      isError: false,
+    }
+    renderInCap6()
+    expect(screen.getByTestId("cap6-ketso-veto-tin_tuc")).toBeInTheDocument()
+    expect(screen.queryByTestId("cap6-ketso-veto-noi_bo")).not.toBeInTheDocument()
   })
 })
 
-describe("KetsoModalCap6 — lớp coach thứ 6", () => {
-  it("khớp + thắng → đoạn coach ô khop_thang, in đậm cụm được nhấn", () => {
+describe("KetsoModalCap6 — lớp coach thứ 6 «SỰ NHẤT QUÁN»", () => {
+  it("nhấn «để hành động khớp nhận định» + nhắc «không mua cũng là lựa chọn»", () => {
     renderModal()
-    const coach = within(screen.getByTestId("cap6-ketso-coach"))
-    expect(coach.getByText(/Khớp gợi ý · Thắng/)).toBeInTheDocument()
-    const body = screen.getByTestId("cap6-ketso-coach").textContent!
-    expect(body).toContain("Đối chiếu theo kiểu đang cho quả ngọt")
-    expect(body).toContain("+5.3%")
-  })
-
-  it("lệch + thua → vẫn TRUNG TÍNH, chỉ về khối ⑮", () => {
-    renderModal({
-      exitPrice: 28_800,
-      doiChieu: { ...doiChieu, lopQuyetDinh: "ky_thuat", khopGoiY: false },
-    })
     const coach = screen.getByTestId("cap6-ketso-coach")
-    expect(coach.textContent).toContain("⑮")
-    for (const tu of CAM_TU) expect(coach.textContent!.toLowerCase()).not.toContain(tu)
+    expect(coach).toHaveTextContent("NHÌN LẠI · SỰ NHẤT QUÁN")
+    expect(coach).toHaveTextContent("để hành động khớp với nhận định")
+    expect(coach).toHaveTextContent('"không mua" cũng là một lựa chọn')
   })
 
-  it("khối đối chiếu đứng TRƯỚC đoạn coach Cấp 6 trong DOM", () => {
+  it("★ coach KHÔNG nhắc cắt lỗ (spec §8 «CHỈ khối lượng + tự tin»)", () => {
     renderModal()
+    expect(screen.getByTestId("cap6-ketso-coach")).toBeInTheDocument()
+    expect(screen.getByTestId("cap6-ketso-coach").textContent).not.toContain("cắt lỗ")
+  })
+
+  it("lệnh không mâu thuẫn → KHÔNG có đoạn coach này", () => {
+    renderModal({ nhanDinh: null })
+    expect(screen.queryByTestId("cap6-ketso-coach")).not.toBeInTheDocument()
+  })
+
+  it("đứng SAU khối cảnh báo lệch (thứ tự mockup)", () => {
+    renderModal({ nhanDinh: { ...data.nhanDinh!, mucTuTin: 3 } })
     expect(
-      precedes(screen.getByTestId("cap6-ketso-doichieu"), screen.getByTestId("cap6-ketso-coach")),
+      precedes(screen.getByTestId("cap6-ketso-lech"), screen.getByTestId("cap6-ketso-coach")),
     ).toBe(true)
   })
 })

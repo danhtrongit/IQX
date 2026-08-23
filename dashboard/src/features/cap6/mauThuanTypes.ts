@@ -99,6 +99,35 @@ export interface SkipCap6Input {
   conflict_level: ConflictLevel
 }
 
+/**
+ * `GET /cap6/kehoach/{order_id}` — các cột Cấp 6 ĐÃ LƯU của MỘT lệnh, đọc thuần
+ * (spec §8 · §11 bảng `order_kehoach`).
+ *
+ * ★★ VÌ SAO PHẢI CÓ ENDPOINT NÀY: khối "nhận định có khớp hành động không" của
+ * Kết sổ phải đọc lại đúng hàng đã lưu, KHÔNG suy lại ở client. Suy lại thì mỗi
+ * lần mở Kết sổ ra một con số khác (đúng lớp lỗi mà Cấp 6/7 bản trước đã phải
+ * thêm per-order re-read để vá).
+ *
+ * `pct_von` / `muc_tu_tin` là của **Cấp 3**, nằm trên CÙNG hàng `order_kehoach` —
+ * đó là hai thứ duy nhất được đối chiếu với nhận định (spec §4.3: CHỈ khối lượng
+ * + tự tin, KHÔNG cắt lỗ).
+ */
+export interface KehoachMauThuanCap6 {
+  order_id: string
+  /** Lệnh này có bảng mâu thuẫn lúc đặt không. `false` ⇒ không có gì để nhìn lại. */
+  had_conflict: boolean
+  /** Mức user tự đọc. `null` = có mâu thuẫn nhưng user không chọn mức nào. */
+  conflict_level: ConflictLevel | null
+  /** Lệnh có lớp phủ quyết ở bậc rất xấu không. */
+  had_veto: boolean
+  /** Lớp phủ quyết nào đang xấu. */
+  veto_layers: Lop[]
+  /** % vốn ĐÃ MUA (cột Cấp 3). `null` = hàng không có số này. */
+  pct_von: number | null
+  /** Mức tự tin ĐÃ CHỌN (cột Cấp 3): 1 Thấp · 2 Vừa · 3 Cao. `null` = chưa có. */
+  muc_tu_tin: 1 | 2 | 3 | null
+}
+
 /** Một hàng của khối ⑭ — mức nhận định × khối lượng trung bình (spec §9). */
 export interface Khoi14RowCap6 {
   muc: ConflictLevel
