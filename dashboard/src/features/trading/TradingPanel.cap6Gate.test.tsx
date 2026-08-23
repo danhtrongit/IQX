@@ -125,10 +125,12 @@ vi.mock("@/features/cap1", async (importOriginal) => {
       vungMua: number | null
       onVungMuaChange: (v: number | null) => void
       sauLyDo?: React.ReactNode
+      truocLyDo?: React.ReactNode
     }) => {
       planFormProps = { hideLyDo: props.hideLyDo }
       return (
         <div data-testid="plan-form-cap1-mock">
+          {props.truocLyDo}
           <input
             aria-label="vung-mua-mock"
             value={props.vungMua ?? ""}

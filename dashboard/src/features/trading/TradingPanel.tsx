@@ -1480,46 +1480,52 @@ function OrderEntry({
             `Cap1Provider` → zero effect on Cấp 0 or normal trading). */}
         {side === "buy" && isCap1Active && (
           <>
-            {/* Cấp 4 khối "Đọc 5 lớp" (spec §5, THÊM MỚI) — REPLACES Cấp 1's
-                lý-do field (hidden via `hideLyDo` below) and Cấp 1's AI Thanh
-                tra; Vùng mua + Cấp 2's SL/TP + Cấp 3's Quản lý vốn stay
-                intact. Rendered FIRST, per the spec's panel order
-                (1. Đọc 5 lớp → 2. Vùng mua → 3. Cắt lỗ/Chốt lời). Buy-side
-                only AND Cấp 4-only. */}
-            {isCap4Active && (
-              <Doc5LopBlock
-                symbol={symbol}
-                currentPrice={currentPrice}
-                doc5Lop={cap4Doc5Lop}
-                onRate={(lop, nhanDinh) => {
-                  setCap4Doc5Lop((prev) => ({ ...prev, [lop]: nhanDinh }))
-                  cap4Events.onLopRated?.(lop, nhanDinh)
-                }}
-                onAi5Lop={setCap4Ai5Lop}
-              />
-            )}
-            {/* Cấp 6 bước "Đối chiếu" (spec §4, THÊM MỚI) — NGAY DƯỚI khối Đọc 5
-                lớp: nó đọc chính bản chấm đó, nên các mức phải có trước. Khối tự
-                trả `null` khi 5 lớp KHÔNG mâu thuẫn → không khối, không request,
-                không cổng cứng (đặt lệnh y như Cấp 5). Buy-side only AND Cấp
-                6-only (`isCap6Active` false outside a `Cap6Provider` → zero
-                effect on Cấp 0-5 or normal trading). KHÔNG chạm vào bất kỳ khối
-                nào của Cấp 1-5. */}
-            {isCap6Active && (
-              <DoiChieuBlock
-                symbol={symbol}
-                doc5Lop={cap4Doc5Lop}
-                lopQuyetDinh={cap6LopQuyetDinh}
-                onLopQuyetDinh={setCap6LopQuyetDinh}
-                lyDo={cap6LyDo}
-                onLyDo={setCap6LyDo}
-                kieuCoPhieu={cap6Kieu}
-                onKieuCoPhieu={setCap6Kieu}
-              />
-            )}
             <PlanFormCap1
               symbol={symbol}
               hideLyDo={isCap4Active}
+              /* ★★ Mục ① của Cấp 4/5 — khối "Đọc 5 lớp" (spec §5) — đi vào
+                 TRONG thẻ KẾ HOẠCH, ngay dưới tag và trước trường ①. Mockup
+                 `iqx-cap4-datlenh.html` vẽ đúng vậy: `.plan` mở ra là
+                 `1. Đọc 5 lớp phân tích…`, rồi `2. Vùng mua`, rồi `3. Cắt lỗ /
+                 Chốt lời`. Trước đây khối này render như sibling ĐỨNG TRƯỚC cả
+                 form, nên panel đọc ra "1. Đọc 5 lớp → KẾ HOẠCH → 2. Vùng mua"
+                 — mục ① nằm ngoài thẻ chứa mục ② và ③.
+
+                 Nó THAY trường lý do của Cấp 1 (ẩn qua `hideLyDo`) và thay cả
+                 AI Thanh tra; Vùng mua + SL/TP Cấp 2 + Quản lý vốn Cấp 3 giữ
+                 nguyên. Buy-side only AND Cấp 4-only.
+
+                 Bước "Đối chiếu" của Cấp 6 đi LIỀN SAU khối đó (nó đọc chính
+                 bản chấm 5 lớp, nên các mức phải có trước) — giữ nguyên thứ tự
+                 tương đối cũ, chỉ đi theo vào trong thẻ. */
+              truocLyDo={
+                <>
+                  {isCap4Active && (
+                    <Doc5LopBlock
+                      symbol={symbol}
+                      currentPrice={currentPrice}
+                      doc5Lop={cap4Doc5Lop}
+                      onRate={(lop, nhanDinh) => {
+                        setCap4Doc5Lop((prev) => ({ ...prev, [lop]: nhanDinh }))
+                        cap4Events.onLopRated?.(lop, nhanDinh)
+                      }}
+                      onAi5Lop={setCap4Ai5Lop}
+                    />
+                  )}
+                  {isCap6Active && (
+                    <DoiChieuBlock
+                      symbol={symbol}
+                      doc5Lop={cap4Doc5Lop}
+                      lopQuyetDinh={cap6LopQuyetDinh}
+                      onLopQuyetDinh={setCap6LopQuyetDinh}
+                      lyDo={cap6LyDo}
+                      onLyDo={setCap6LyDo}
+                      kieuCoPhieu={cap6Kieu}
+                      onKieuCoPhieu={setCap6Kieu}
+                    />
+                  )}
+                </>
+              }
               lyDo={cap1LyDo}
               onLyDoChange={(l) => {
                 setCap1LyDo(l)

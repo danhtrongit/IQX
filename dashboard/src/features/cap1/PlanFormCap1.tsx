@@ -58,6 +58,17 @@ export interface PlanFormCap1Props {
    * Chốt lời của Cấp 2) — sai cả thứ tự lẫn cấp lồng so với mockup.
    */
   sauLyDo?: ReactNode
+  /**
+   * Khối chèn NGAY DƯỚI tag «KẾ HOẠCH» và TRÊN trường ① — trong thực tế là
+   * khối «Đọc 5 lớp» của Cấp 4 (kèm bước «Đối chiếu» của Cấp 6 đi liền sau).
+   *
+   * ★★ Cùng một lý do với `sauLyDo`: mockup `iqx-cap4-datlenh.html` vẽ
+   * `1. Đọc 5 lớp phân tích…` BÊN TRONG thẻ `.plan`, tức SAU tag «KẾ HOẠCH».
+   * Trước đây `TradingPanel` render nó như một sibling ĐỨNG TRƯỚC cả form, nên
+   * panel Cấp 4/5 đọc ra thứ tự ngược: «1. Đọc 5 lớp …» rồi mới tới «KẾ
+   * HOẠCH» rồi «2. Vùng mua» — mục ① nằm ngoài thẻ chứa mục ② và ③.
+   */
+  truocLyDo?: ReactNode
 }
 
 export function PlanFormCap1({
@@ -68,6 +79,7 @@ export function PlanFormCap1({
   onVungMuaChange,
   hideLyDo = false,
   sauLyDo = null,
+  truocLyDo = null,
 }: PlanFormCap1Props) {
   return (
     /* ★ Thẻ KẾ HOẠCH mặc CHÍNH cái áo mockup vẽ (`.plan` → `.cap0-plan`,
@@ -79,6 +91,10 @@ export function PlanFormCap1({
        mockup vẽ, nên từ Cấp 1 thẻ KẾ HOẠCH nhìn khác hẳn demo. */
     <div className="cap0-plan space-y-2.5">
       <div className="cap0-plan-tag">{"KẾ HOẠCH"}</div>
+
+      {/* Mục ① thay thế của Cấp 4/5 (+ bước Đối chiếu của Cấp 6) — xem
+          `truocLyDo`. */}
+      {truocLyDo}
 
       {/* Trường 1 — Lý do mua (ẩn ở Cấp 4: khối "Đọc 5 lớp" thay thế) */}
       {!hideLyDo && (

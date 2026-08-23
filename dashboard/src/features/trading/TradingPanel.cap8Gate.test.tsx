@@ -151,8 +151,10 @@ vi.mock("@/features/cap1", async (importOriginal) => {
       onLyDoChange: (l: string) => void
       vungMua: number | null
       sauLyDo?: React.ReactNode
+      truocLyDo?: React.ReactNode
     }) => (
       <div data-testid="plan-form-cap1-mock">
+        {props.truocLyDo}
         <button type="button" onClick={() => props.onLyDoChange("ky_thuat")}>
           PICK_LYDO
         </button>

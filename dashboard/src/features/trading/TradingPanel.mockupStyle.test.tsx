@@ -138,8 +138,11 @@ vi.mock("@/features/cap1", async (importOriginal) => {
     // AI Thanh tra BÊN TRONG thẻ KẾ HOẠCH, giữa trường ① và ②). Mock PHẢI
     // render nó ra: nuốt slot thì mọi assert về `ai-thanh-tra-mock` — cả
     // chiều có lẫn chiều không — đều xanh vô điều kiện.
-    PlanFormCap1: (props: { sauLyDo?: React.ReactNode }) => (
-      <div data-testid="plan-form-cap1-mock">{props.sauLyDo}</div>
+    PlanFormCap1: (props: { sauLyDo?: React.ReactNode; truocLyDo?: React.ReactNode }) => (
+      <div data-testid="plan-form-cap1-mock">
+        {props.truocLyDo}
+        {props.sauLyDo}
+      </div>
     ),
     AiThanhTra: () => <div data-testid="ai-thanh-tra-mock" />,
   }

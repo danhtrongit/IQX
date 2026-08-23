@@ -149,8 +149,10 @@ vi.mock("@/features/cap1", async (importOriginal) => {
       vungMua: number | null
       onVungMuaChange: (v: number | null) => void
       sauLyDo?: React.ReactNode
+      truocLyDo?: React.ReactNode
     }) => (
       <div data-testid="plan-form-cap1-mock">
+        {props.truocLyDo}
         {/* Dùng cho ca "chỉ còn Cấp 1 + Cấp 7" bên dưới (Cấp 4 tắt → không có
             lý do suy ra từ 5 lớp, nên phải chọn tay như Cấp 1 gốc). */}
         <button type="button" onClick={() => props.onLyDoChange("ky_thuat")}>
