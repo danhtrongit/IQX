@@ -50,14 +50,24 @@ export {
   mucTieuVeto,
 } from "./nhanDinhCap6"
 export {
+  useKehoachMauThuanCap6,
   useMarkTourMauThuan,
   useMauThuanCap6,
   usePhanTichCap6,
   useRecordKehoachMauThuanCap6,
   useSkipCap6,
 } from "./hooks"
+export {
+  COACH_NHAT_QUAN_CAP6,
+  NhanDinhKetsoBlock,
+  loiCanhBaoLech,
+  mergeNhanDinhCap6,
+  type NhanDinhKetsoBlockProps,
+  type NhanDinhKetsoCap6,
+} from "./NhanDinhKetsoBlock"
 export type {
   ConflictLevel,
+  KehoachMauThuanCap6,
   Khoi14Cap6,
   Khoi14RowCap6,
   Khoi15Cap6,
