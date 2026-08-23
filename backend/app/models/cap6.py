@@ -226,6 +226,13 @@ class Cap6Skip(UUIDMixin, TimestampMixin, Base):
     ngoài cùng một mã ở hai phiên khác nhau là HAI quyết định, và khối ⑮ đếm
     "N lần đứng ngoài" chứ không đếm "N mã".
 
+    ★★ Nhưng "một hàng mỗi lần bấm" KHÔNG có nghĩa "một lần đếm mỗi hàng": cổng
+    lên cấp gộp các hàng cùng ``(symbol, phiên)`` — xem
+    ``Cap6Service._dem_nhat_quan``. Bấm nút này miễn phí (không lệnh, không vị
+    thế, không rủi ro) nên ba cú bấm liên tiếp trong cùng một phiên là MỘT tình
+    huống đứng ngoài. Khối ⑮ vẫn đọc bảng này THÔ vì ở đó con số là nhật ký hành
+    vi để user nhìn lại, không phải điều kiện lên cấp.
+
     ★ **Cách nhẹ, đúng spec §7:** chỉ ghi nhận, KHÔNG theo dõi giá mã sau đó.
     Không có cột kết quả, không có cron chấm "né đúng/né hụt" — đó chính là thứ
     Cấp 5 cũ làm và đã nghỉ hưu, và spec §13 xếp nó ra NGOÀI phạm vi Cấp 6

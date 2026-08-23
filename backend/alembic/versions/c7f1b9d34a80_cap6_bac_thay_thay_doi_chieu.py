@@ -53,10 +53,18 @@ câu bịa về toàn bộ lịch sử. Ba cột này do SERVER suy lại từ `
 ở mọi lần ghi; chỉ ``conflict_level`` đến từ client.
 
 ★ ``cap6_skip`` (bảng MỚI) — nút «Không mua lần này» (spec §7). Cố ý KHÔNG
-unique theo ``(user_id, symbol)``: đứng ngoài cùng một mã ở hai phiên là HAI
+unique theo ``(user_id, symbol)``: đứng ngoài cùng một mã ở hai PHIÊN là HAI
 quyết định, và khối ⑮ đếm "N lần đứng ngoài" chứ không đếm "N mã". Không có cột
 kết quả và không có cron chấm "né đúng/né hụt" — spec §7/§13 xếp việc theo dõi
 giá sau khi không mua ra NGOÀI phạm vi Cấp 6.
+
+  ★★ Không unique ở TẦNG LƯU TRỮ không có nghĩa mỗi hàng là một lần đếm: cổng
+  lên cấp GỘP các hàng cùng ``(symbol, phiên)`` (xem ``Cap6Service._dem_nhat_quan``),
+  vì bấm nút này miễn phí — không lệnh, không vị thế, không rủi ro — nên ba cú
+  bấm liên tiếp cùng phiên là MỘT tình huống đứng ngoài. Khối ⑮ vẫn đếm THÔ.
+  ★★ ``had_conflict`` KHÔNG có trong danh sách cột của spec §11, nhưng luật đếm
+  ở chính §11 đòi nó ("+1 khi một lệnh CÓ MÂU THUẪN…"); thiếu nó thì 3 cú bấm
+  trên một mã chỉ có tin xấu mà KHÔNG mâu thuẫn cũng mở được cổng tốt nghiệp.
 
 ★ PROD kỳ vọng **0 dòng** ``cap6_progress`` (trần cấp ``CAP_MAX_ENABLED`` chưa
 mở tới Cấp 6) và **0 dòng** ``order_kehoach`` có ``lop_quyet_dinh IS NOT NULL``.
