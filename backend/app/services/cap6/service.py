@@ -391,6 +391,30 @@ class Cap6Service:
             "nhat_quan": self._nhat_quan_lenh(kehoach),
         }
 
+    async def get_kehoach(self, user_id: uuid.UUID, order_id: uuid.UUID) -> dict:
+        """``GET /cap6/kehoach/{order_id}`` — khối Cấp 6 đã ghi trên 1 lệnh.
+
+        Cho màn Kết sổ (spec §8) đọc lại nhận định cạnh hành động thật. Mọi thứ
+        đọc từ cột đã lưu: KHÔNG suy lại bảng mâu thuẫn ở thời điểm hiện tại —
+        bản AI Insight của mã đổi mỗi phiên, nên tính lại ở đây sẽ khiến Kết sổ
+        kể một câu chuyện khác với câu đã chốt lúc mua.
+
+        404 nếu lệnh không tồn tại HOẶC là lệnh của người khác (không phải 403 —
+        cùng quy ước với ``POST /cap6/kehoach``).
+        """
+        await self._require_progress(user_id)
+        order = (
+            await self._session.execute(
+                select(VirtualOrder).where(VirtualOrder.id == order_id)
+            )
+        ).scalar_one_or_none()
+        if order is None or order.user_id != user_id:
+            raise NotFoundError("lệnh")
+        kehoach = await self._get_kehoach_by_order(order_id)
+        if kehoach is None:
+            raise NotFoundError("kế hoạch của lệnh")
+        return self.kehoach_out(kehoach)
+
     async def skip(self, user_id: uuid.UUID, symbol: str, *, conflict_level: str) -> dict:
         """``POST /cap6/skip`` — nút «Không mua lần này» (spec §7).
 

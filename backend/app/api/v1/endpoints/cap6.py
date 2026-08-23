@@ -1,26 +1,36 @@
-"""Cấp 6 «Đối chiếu» API — progress, enter, task, gợi ý trọng số theo kiểu cổ
-phiếu (+ vì sao), bước Đối chiếu, đọc lại đối chiếu của 1 lệnh (Kết sổ), thách
-thức đối chiếu, graduate.
+"""Cấp 6 «Bậc thầy» API — bảng mâu thuẫn 5 lớp, ô nhận định 4 mức, nút «Không
+mua lần này», khối ⑭/⑮ của Phân tích danh mục, tour Xử lý mâu thuẫn, graduate.
 
-Cấp 6 is FREE: all endpoints use ``CurrentUser`` (authenticated), NOT
+Cấp 6 là FREE: mọi endpoint dùng ``CurrentUser`` (đã đăng nhập), KHÔNG dùng
 ``PremiumUser``.
+
+★★ **ĐÃ GỠ cùng Cấp 6 cũ («Đối chiếu»):** ``GET /cap6/goi-y`` ·
+``PATCH /cap6/task`` · ``GET /cap6/thach-thuc``. Cấp 6 mới không có bảng trọng
+số theo kiểu cổ phiếu, không có 3 nhiệm vụ, không có Thách thức Đối chiếu — chỉ
+MỘT nhiệm vụ thuần hành vi (spec §2), và nó được suy ra từ ``order_kehoach`` +
+``cap6_skip`` ở mọi lần đọc nên không có gì để "đánh dấu".
+
+★ **Client chỉ gửi lên đúng MỘT thứ: ``conflict_level``** — nhận định của chính
+user. ``had_conflict``/``had_veto``/``veto_layers`` do SERVER suy lại từ AI
+Insight của mã; chúng nuôi thẳng cổng tốt nghiệp nên client khai được chúng là
+client tự cấp cho mình điều kiện lên cấp (bài học ``hunt_signal`` của Cấp 5).
 """
 
 from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter
 
 from app.api.deps import CurrentUser, DBSession
 from app.schemas.cap6 import (
     Cap6ProgressOut,
-    GoiYOut,
-    KehoachCap6DetailOut,
     KehoachCap6Out,
     KehoachRequest,
-    TaskRequest,
-    ThachThucOut,
+    MauThuanOut,
+    PhanTichOut,
+    SkipOut,
+    SkipRequest,
 )
 from app.services.cap6.service import Cap6Service
 
@@ -29,9 +39,16 @@ router = APIRouter(prefix="/cap6", tags=["Cấp 6"])
 
 @router.get("/progress", response_model=Cap6ProgressOut | None)
 async def get_progress(user: CurrentUser, db: DBSession) -> Cap6ProgressOut | None:
-    """Trả về tiến trình Cấp 6 của người dùng hiện tại (hoặc null nếu chưa vào)."""
+    """Tiến trình Cấp 6 của user hiện tại (hoặc null nếu chưa vào cấp).
+
+    Hai bộ đếm hành vi được tính lại server-side ở đây từ ``order_kehoach`` +
+    ``cap6_skip``. ★ ``tong_lai_lenh_cap6_pct = null`` nghĩa là CHƯA có lệnh
+    Cấp-6 nào đóng — KHÔNG phải "hoà vốn 0%"; nó chỉ để hiển thị và không bao
+    giờ là cổng lên cấp (spec §2).
+    """
     svc = Cap6Service(db)
-    return await svc.get_progress(user.id)
+    result = await svc.get_progress(user.id)
+    return Cap6ProgressOut(**result) if result is not None else None
 
 
 @router.post("/enter", response_model=Cap6ProgressOut)
@@ -40,99 +57,118 @@ async def enter(user: CurrentUser, db: DBSession) -> Cap6ProgressOut:
 
     Tính lại toàn bộ chỉ số trước khi trả về (giống ``/cap7/enter`` và
     ``/cap8/enter``): endpoint này idempotent và FE hiện đúng thứ nó trả, nên
-    user quay lại không được thấy số cũ cho tới lần gọi ``/cap6/progress`` sau."""
-    svc = Cap6Service(db)
-    return await svc.enter(user.id)
-
-
-@router.patch("/task", response_model=Cap6ProgressOut)
-async def mark_task(body: TaskRequest, user: CurrentUser, db: DBSession) -> Cap6ProgressOut:
-    """Cả 3 nhiệm vụ đều được suy ra từ order_kehoach / order_ketso — gọi
-    endpoint này chỉ kích hoạt tính lại (idempotent, không tự đặt)."""
-    svc = Cap6Service(db)
-    return await svc.mark_task(user.id, body.task_no)
-
-
-@router.get("/goi-y", response_model=GoiYOut)
-async def get_goi_y(
-    user: CurrentUser,
-    db: DBSession,
-    symbol: str = Query(description="Mã cổ phiếu"),
-) -> GoiYOut:
-    """Kiểu cổ phiếu của mã (hệ suy ra từ NGÀNH) + bảng trọng số GỢI Ý cho kiểu
-    đó + câu "vì sao" (§C12c: FE hiện nguyên văn, không bao giờ gợi ý trơ).
-
-    Ngành thiếu hoặc chưa map → ``kieu = null`` kèm ghi chú "chưa phân loại":
-    bỏ qua gợi ý theo kiểu nhưng user VẪN chọn được lớp quyết định (spec §4/§10).
-
-    ★ Đây là GỢI Ý để cân nhắc, KHÔNG phải luật — user được chọn lệch có lý do.
+    user quay lại không được thấy số cũ cho tới lần gọi ``/cap6/progress`` sau.
     """
     svc = Cap6Service(db)
-    result = await svc.goi_y(user.id, symbol)
-    return GoiYOut(**result)
+    return Cap6ProgressOut(**await svc.enter(user.id))
+
+
+@router.post("/tour-mauthuan", response_model=Cap6ProgressOut)
+async def mark_tour_mauthuan(user: CurrentUser, db: DBSession) -> Cap6ProgressOut:
+    """Đánh dấu ĐÃ ĐI HẾT 7 bước tour «Xử lý mâu thuẫn» (spec §10).
+
+    Chỉ gọi ở bước cuối / nút "Xong" — "Bỏ qua" giữa chừng KHÔNG gọi. Cờ này
+    quyết định tour có tự bật lại hay không; nó KHÔNG phải cổng tốt nghiệp
+    (spec §11: "tour là công cụ học"), nên gian lận ở đây cũng không mở Cấp 7.
+    """
+    svc = Cap6Service(db)
+    return Cap6ProgressOut(**await svc.mark_tour_mauthuan(user.id))
+
+
+# ── Bảng mâu thuẫn (§5) ───────────────────────────────
+
+
+@router.get("/mau-thuan/{symbol}", response_model=MauThuanOut)
+async def get_mau_thuan(symbol: str, user: CurrentUser, db: DBSession) -> MauThuanOut:
+    """Bảng mâu thuẫn 2 phe của một mã — đọc lại bản AI Insight đã lưu, KHÔNG
+    gọi AI (spec §11: "KHÔNG chạy cho mã user chưa từng xem").
+
+    ★ ``chua_du_du_lieu = true`` là một TRẠNG THÁI THẬT (mã chưa có bản phân
+    tích còn hiệu lực) kèm ``ly_do_chua_du`` nguyên văn — KHÔNG phải "0 mâu
+    thuẫn"; FE phải hiện lý do thay vì dựng một bảng trống.
+
+    ★ ``canh_bao`` do SERVER dựng câu, FE in NGUYÊN VĂN. Nó MÔ TẢ mâu thuẫn và
+    không bao giờ phán mua/không mua (spec §4.1/§13).
+    """
+    svc = Cap6Service(db)
+    return MauThuanOut(**await svc.mau_thuan(user.id, symbol))
+
+
+# ── Ô nhận định (§6) + nút «Không mua lần này» (§7) ────
 
 
 @router.post("/kehoach", response_model=KehoachCap6Out)
 async def record_kehoach(
     body: KehoachRequest, user: CurrentUser, db: DBSession
 ) -> KehoachCap6Out:
-    """Ghi bước Đối chiếu vào kế hoạch của 1 lệnh MUA đã có (cộng dồn lên Cấp
-    1-5, 404 nếu chưa có kế hoạch Cấp 1).
+    """Ghi mức nhận định mâu thuẫn vào kế hoạch của 1 lệnh MUA đã có (cộng dồn
+    lên Cấp 1-5; 404 nếu chưa có kế hoạch Cấp 1).
 
-    ``ly_do_doi_chieu`` bắt buộc (422 nếu trống). ``trong_so_goi_y`` và
-    ``khop_goi_y`` do SERVER tự suy ra từ bảng trọng số — client không gửi lên.
-    ``kieu_co_phieu`` cũng do server suy từ ngành; giá trị client chỉ dùng khi
-    server không xác định được ngành, và luôn được kiểm lại theo enum 6 kiểu.
+    ``had_conflict``/``had_veto``/``veto_layers`` do SERVER suy lại từ AI
+    Insight của mã — client KHÔNG gửi lên.
+
+    ★ Nhận định bị CHỐT tại thời điểm khớp lệnh: lệnh đã khớp quá cửa sổ cho
+    phép thì mọi lần ghi bị từ chối 409, **kể cả lần ghi ĐẦU TIÊN**. Ghi sau
+    khi đã nhìn giá chạy vừa bịa một lần "xử lý nhất quán" cho cổng lên cấp,
+    vừa bơm khối ⑮. POST y hệt lần trước luôn là no-op idempotent.
     """
     svc = Cap6Service(db)
     kehoach = await svc.record_kehoach(
-        user.id,
-        body.order_id,
-        lop_quyet_dinh=body.lop_quyet_dinh,
-        ly_do_doi_chieu=body.ly_do_doi_chieu,
-        kieu_co_phieu=body.kieu_co_phieu,
-        lop_mau_thuan=body.lop_mau_thuan,
+        user.id, body.order_id, conflict_level=body.conflict_level
     )
     return KehoachCap6Out(**svc.kehoach_out(kehoach))
 
 
-@router.get("/kehoach/{order_id}", response_model=KehoachCap6DetailOut)
+@router.get("/kehoach/{order_id}", response_model=KehoachCap6Out)
 async def get_kehoach(
     order_id: uuid.UUID, user: CurrentUser, db: DBSession
-) -> KehoachCap6DetailOut:
-    """Bước Đối chiếu ĐÃ GHI trên 1 lệnh — cho màn Kết sổ đọc lại, kèm tên kiểu,
-    lớp ưu tiên/ít tin và câu "vì sao" (§C12c) để hiện khớp/lệch cho trung thực.
+) -> KehoachCap6Out:
+    """Khối Cấp 6 ĐÃ GHI trên 1 lệnh — cho màn Kết sổ (spec §8) đọc lại nhận
+    định cạnh hành động thật (khối lượng + tự tin, KHÔNG nhắc cắt lỗ — §4.3).
 
-    ★ Không dùng ``GET /cap6/goi-y`` cho việc này được: endpoint đó suy lại kiểu
-    từ NGÀNH ở thời điểm hiện tại, nên với mã hệ không phân loại được (kiểu do
-    user tự chọn lúc mua) nó vẫn trả "chưa phân loại" — Kết sổ sẽ hiện "không
-    xét" dù server ĐÃ ghi ``khop_goi_y`` cho lệnh đó. Ở đây mọi thứ đọc từ cột đã
-    lưu: không tính lại, không ghi đè.
-
-    404 nếu lệnh không tồn tại HOẶC là lệnh của người khác (không phải 403 —
-    cùng quy ước với ``POST /cap6/kehoach``). Lệnh chưa có dữ liệu Cấp 6 vẫn trả
-    200 kèm ``co_du_lieu = false`` để FE phân biệt "lệnh có trước Cấp 6" với
-    "gọi hỏng".
+    Mọi thứ đọc từ cột đã lưu: không tính lại, không ghi đè. 404 nếu lệnh không
+    tồn tại, là lệnh của người khác, hoặc chưa có kế hoạch Cấp 1 nào.
     """
     svc = Cap6Service(db)
-    return KehoachCap6DetailOut(**await svc.get_kehoach(user.id, order_id))
+    return KehoachCap6Out(**await svc.get_kehoach(user.id, order_id))
 
 
-@router.get("/thach-thuc", response_model=ThachThucOut)
-async def get_thach_thuc(user: CurrentUser, db: DBSession) -> ThachThucOut:
-    """3 điều kiện của Thách thức Đối chiếu (nhiệm vụ ③) kèm giá trị hiện tại +
-    đạt/chưa đạt + giải thích, và 2 nhóm khớp/lệch (spec §2③/§7/§C12c).
+@router.post("/skip", response_model=SkipOut, status_code=201)
+async def skip(body: SkipRequest, user: CurrentUser, db: DBSession) -> SkipOut:
+    """Nút «Không mua lần này» — ghi nhận quyết định đứng ngoài (spec §7).
 
-    Mỗi nhóm cần ≥3 lệnh đã đóng mới được so — dưới ngưỡng đó hệ báo "chưa đủ
-    dữ liệu" chứ không kết luận trên 1-2 lệnh.
+    Lấy mức nhận định đã chọn LÀM LÝ DO (không hỏi thêm). ★ Cách nhẹ: chỉ ghi
+    nhận, KHÔNG theo dõi giá mã sau đó (spec §7/§13 — tránh phức tạp và tránh
+    dạy tiếc nuối). Mỗi lần bấm là một hàng: đứng ngoài cùng một mã ở hai phiên
+    là HAI quyết định.
     """
     svc = Cap6Service(db)
-    result = await svc.thach_thuc(user.id)
-    return ThachThucOut(**result)
+    return SkipOut(**await svc.skip(user.id, body.symbol, conflict_level=body.conflict_level))
+
+
+# ── Phân tích danh mục: khối ⑭ + ⑮ (§9) ───────────────
+
+
+@router.get("/phan-tich", response_model=PhanTichOut)
+async def phan_tich(user: CurrentUser, db: DBSession) -> PhanTichOut:
+    """Khối ⑭ (nhận định vs khối lượng) + khối ⑮ (kết quả theo nhận định + số
+    lần đứng ngoài) của Phân tích danh mục.
+
+    ★ Khối ⑭ CHỈ soi khối lượng, KHÔNG soi cắt lỗ (spec §4.3: cắt lỗ chỉ là
+    chọn cách tính, không phản ánh mức thận trọng).
+    ★ Khối ⑮ cần ≥ ``so_lenh_toi_thieu`` lệnh đã đóng ở một mức mới dám nói tỷ
+    lệ thắng; dưới ngưỡng trả ``null`` + ``du_mau=false``, KHÔNG phải 0%.
+    """
+    svc = Cap6Service(db)
+    return PhanTichOut(**await svc.phan_tich(user.id))
 
 
 @router.post("/graduate", response_model=Cap6ProgressOut)
 async def graduate(user: CurrentUser, db: DBSession) -> Cap6ProgressOut:
-    """Tốt nghiệp Cấp 6 — chỉ khi đủ 3/3 nhiệm vụ."""
+    """Tốt nghiệp Cấp 6 — 1/1 nhiệm vụ, THUẦN HÀNH VI (spec §2/§3).
+
+    ★ Không có bất kỳ điều kiện lãi nào, kể cả điều kiện mềm: quyết định đúng
+    vẫn có thể lỗ và ngược lại.
+    """
     svc = Cap6Service(db)
-    return await svc.graduate(user.id)
+    return Cap6ProgressOut(**await svc.graduate(user.id))

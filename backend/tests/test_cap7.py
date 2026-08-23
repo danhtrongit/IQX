@@ -242,12 +242,7 @@ async def _buy_with_full_plan(
     await services["cap4"].record_kehoach(
         user_id, buy.id, doc_5_lop=_MAU_THUAN, ai_5_lop={**_ALL_NEU, "ky_thuat": "ok"}
     )
-    await services["cap6"].record_kehoach(
-        user_id,
-        buy.id,
-        lop_quyet_dinh="dinh_gia",
-        ly_do_doi_chieu="Định giá là lớp tôi tin cho nhóm này.",
-    )
+    await services["cap6"].record_kehoach(user_id, buy.id, conflict_level="nghiem")
     return buy
 
 

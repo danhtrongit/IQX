@@ -1270,10 +1270,7 @@ async def test_kehoach_keeps_cap1_to_7_blocks_intact(db_session, test_user, monk
     await services["cap4"].record_kehoach(
         test_user.id, buy.id, doc_5_lop=_MAU_THUAN, ai_5_lop={**_ALL_NEU, "ky_thuat": "ok"}
     )
-    await services["cap6"].record_kehoach(
-        test_user.id, buy.id,
-        lop_quyet_dinh="dinh_gia", ly_do_doi_chieu="Định giá là lớp tôi tin.",
-    )
+    await services["cap6"].record_kehoach(test_user.id, buy.id, conflict_level="nghiem")
     await services["cap7"].record_kehoach(
         test_user.id, buy.id, luc_chi_so=1.9, luc_doc_user="manh"
     )
@@ -1286,7 +1283,7 @@ async def test_kehoach_keeps_cap1_to_7_blocks_intact(db_session, test_user, monk
     assert kehoach.cat_lo == 18_000                   # Cấp 2
     assert kehoach.khoi_luong == 100                  # Cấp 3
     assert kehoach.doc_5_lop == _MAU_THUAN            # Cấp 4
-    assert kehoach.lop_quyet_dinh == "dinh_gia"       # Cấp 6
+    assert kehoach.conflict_level == "nghiem"          # Cấp 6
     assert kehoach.luc_doc_user == "manh"             # Cấp 7
     assert kehoach.hanh_vi_canh_bao == "khong_canh_bao"  # Cấp 8
 
