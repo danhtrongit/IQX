@@ -82,15 +82,6 @@ _NHAN_NGUOC_CHIEU: dict[str, frozenset[str]] = {
     "L5": frozenset({"Rất tiêu cực", "Tiêu cực"}),
 }
 
-#: ★ **Bí danh CÔNG KHAI của 3 bảng nhãn trên — Cấp 6 đọc CHÍNH các đối tượng
-#: này** (``app.services.cap6.mau_thuan`` dựng thang 5 bậc rồi assert lại theo
-#: chúng ở import time). Là bí danh chứ KHÔNG phải bản sao: thêm/bớt một nhãn ở
-#: đây là thay đổi cả hai cấp cùng lúc, nên hai bộ nhãn không thể trôi khỏi
-#: nhau. Đừng thay bằng ``dict(...)``.
-NHAN_UNG_HO = _NHAN_UNG_HO
-NHAN_KHONG_UNG_HO = _NHAN_KHONG_UNG_HO
-NHAN_NGUOC_CHIEU = _NHAN_NGUOC_CHIEU
-
 #: Ba mức hiển thị của một lớp (khớp ``NhanDinhLop`` của FE Cấp 4).
 MUC_UNG_HO = "ok"
 MUC_TRUNG_TINH = "neu"

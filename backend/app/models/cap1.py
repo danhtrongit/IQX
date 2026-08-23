@@ -22,13 +22,10 @@ additions" / "Cấp 4 additions" column blocks on ``OrderKehoach``). Cấp 5
 block below — ``from_watchlist``/``hunt_filter``: mã này đến từ săn mã hay user
 tự nhập) and owns ``cap5_progress`` + ``cap5_hunt_log`` in ``app.models.cap5``.
 (Cấp 5 CŨ — 4 ô + đứng ngoài — đã nghỉ hưu: 5 cột ``verdict_*``/``o_4``/
-``ly_do_sua`` trên ``OrderKetso`` bị bỏ ở revision ``b2e6f4a17c93``.) Cấp 6
-«Bậc thầy» extends ``OrderKehoach`` again (the "Cấp 6 additions" column block —
-có mâu thuẫn lớp không + mức nhận định user đọc + có lớp phủ quyết rất xấu
-không) and owns ``cap6_progress`` + ``cap6_skip`` in ``app.models.cap6``.
-(Cấp 6 CŨ — «Đối chiếu», gợi ý lớp ưu tiên theo 6 kiểu cổ phiếu — đã nghỉ hưu:
-6 cột ``kieu_co_phieu``/``lop_mau_thuan``/``trong_so_goi_y``/``lop_quyet_dinh``/
-``khop_goi_y``/``ly_do_doi_chieu`` bị bỏ ở revision ``c7f1b9d34a80``.) Cấp 7 «Đọc sổ lệnh» extends ``OrderKehoach`` once more (the
+``ly_do_sua`` trên ``OrderKetso`` bị bỏ ở revision ``b2e6f4a17c93``.) Cấp 6 «Đối chiếu» extends
+``OrderKehoach`` again (the "Cấp 6 additions" column block — kiểu cổ phiếu +
+lớp mâu thuẫn + trọng số gợi ý + lớp quyết định) and owns ``cap6_progress`` in
+``app.models.cap6``. Cấp 7 «Đọc sổ lệnh» extends ``OrderKehoach`` once more (the
 "Cấp 7 additions" column block — chỉ số Lực + lực user đọc + cờ cảnh giác lệnh
 treo lớn + chấm đọc lực) and owns ``cap7_progress`` in ``app.models.cap7``.
 Cấp 8 «Quản trị rủi ro danh mục» — the last level of the program — extends
@@ -54,6 +51,7 @@ from sqlalchemy import (
     Integer,
     Numeric,
     String,
+    Text,
     UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column
@@ -260,34 +258,30 @@ class OrderKehoach(UUIDMixin, TimestampMixin, Base):
     from_watchlist: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     hunt_filter: Mapped[str | None] = mapped_column(String(16), nullable=True)
 
-    # ── Cấp 6 additions (spec §5/§6/§11) — «Bậc thầy»: xử lý mâu thuẫn giữa
-    # các lớp. CHỈ điền cho lệnh mua đi qua bảng mâu thuẫn của Cấp 6; mọi lệnh
-    # Cấp 1-5 để NULL hết, nên cả 4 cột đều nullable.
-    #   · ``had_conflict`` — mã này lúc mua CÓ mâu thuẫn lớp không (≥1 lớp ủng
-    #     hộ VÀ ≥1 lớp ngược chiều trên bản AI Insight còn hiệu lực).
-    #   · ``conflict_level`` — 1 trong ``app.models.cap6.MucMauThuan``
-    #     ('nhe'/'ngai'/'nghiem'/'chua_ro'). ★ Đây là cột DUY NHẤT của Cấp 6 lấy
-    #     từ CLIENT: chỉ user mới biết mình đọc mâu thuẫn ở mức nào.
-    #   · ``had_veto`` — mã có lớp phủ quyết (📰 Tin tức / 👤 Nội bộ) ở BẬC THẤP
-    #     NHẤT không.
-    #   · ``veto_layers`` — JSON list các lớp phủ quyết đang ở bậc thấp nhất
-    #     (VD ``["tin_tuc"]``). ``[]`` = đã kiểm, không lớp nào; NULL = chưa
-    #     kiểm được.
+    # ── Cấp 6 additions (spec §4/§9) — bước "Đối chiếu": CHỈ điền khi 5 lớp
+    # user tự chấm mâu thuẫn (≥1 lớp 'ok' Ủng hộ VÀ ≥1 lớp 'bad' Ngược chiều).
+    # Lệnh không mâu thuẫn — và mọi lệnh Cấp 1-5 — để NULL hết, nên tất cả các
+    # cột dưới đây đều nullable.
+    #   · ``kieu_co_phieu`` — 1 trong 6 kiểu, hệ suy ra từ NGÀNH của mã
+    #     (``Symbol.icb_lv2``/``icb_lv1``); NULL = "chưa phân loại".
+    #   · ``lop_mau_thuan`` — JSON tóm tắt lớp nào Ủng hộ / Ngược chiều lúc đặt
+    #     (suy lại từ ``doc_5_lop``, xem ``app.services.cap6.service``).
+    #   · ``trong_so_goi_y`` — JSON bảng trọng số của kiểu đó + câu "vì sao"
+    #     (§C12c: FE hiện nguyên văn, KHÔNG bao giờ hiện gợi ý trơ).
+    #   · ``lop_quyet_dinh`` — lớp user CHỌN tin cho lệnh này.
+    #   · ``khop_goi_y`` — lop_quyet_dinh có nằm trong nhóm gợi ý không. NULL
+    #     khi chưa phân loại được kiểu (không có gợi ý thì không có gì để khớp).
+    #   · ``ly_do_doi_chieu`` — 1 dòng vì sao, BẮT BUỘC.
     #
-    # ★★ ``had_conflict``/``had_veto``/``veto_layers`` do SERVER TỰ TÍNH LẠI từ
-    # ``ai_insight_history``, TUYỆT ĐỐI không nhận từ client: chúng nuôi thẳng
-    # cổng tốt nghiệp (≥3 lần nhất quán, trong đó ≥2 lần có phủ quyết), nên
-    # client khai được "lệnh này có phủ quyết" là client tự cấp cho mình điều
-    # kiện lên cấp. Cấp 5 đã học đúng bài này với ``hunt_signal``.
-    #
-    # ★ **NULLABLE BA TRẠNG THÁI** cho 3 cột server tính: True/False = đã kiểm ·
-    # NULL = lệnh Cấp 1-5 (hoặc lệnh Cấp 6 mà mã chưa có bản AI Insight còn
-    # hiệu lực) nên chưa ai kiểm. NOT NULL DEFAULT false sẽ khiến mọi lệnh cũ
-    # tự khẳng định "không có mâu thuẫn" — một câu bịa về toàn bộ lịch sử.
-    had_conflict: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
-    conflict_level: Mapped[str | None] = mapped_column(String(8), nullable=True)
-    had_veto: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
-    veto_layers: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    # ★ ``khop_goi_y = False`` là một DỮ KIỆN TRUNG TÍNH, không bao giờ là
+    # "sai": trọng số chỉ là GỢI Ý (spec §5/§10), trọng tài cuối là kết quả
+    # thật. Xem ``app.models.cap6`` (KIEU_CO_PHIEU) và service của Cấp 6.
+    kieu_co_phieu: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    lop_mau_thuan: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    trong_so_goi_y: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    lop_quyet_dinh: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    khop_goi_y: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    ly_do_doi_chieu: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # ── Cấp 7 additions (spec §4/§5/§8) — "Đọc sổ lệnh": lớp phủ ĐỌC lên sổ dư
     # mua/bán 3 mức đã hiện từ Cấp 2. CHỈ điền cho lệnh mua đặt TRONG GIỜ giao

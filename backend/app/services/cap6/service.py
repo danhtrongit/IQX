@@ -1,172 +1,300 @@
-"""Cấp 6 «Bậc thầy» service — bảng mâu thuẫn 5 lớp, ô nhận định 4 mức, nút
-«Không mua lần này», khối ⑭/⑮, cổng lên cấp THUẦN HÀNH VI.
+"""Cấp 6 «Đối chiếu» service — kiểu cổ phiếu map từ ngành + bảng trọng số gợi ý
+(kèm "vì sao"), bước Đối chiếu trên ``order_kehoach``, Thách thức Đối chiếu.
 
-Bài học một câu (spec §1): *"Các lớp hiếm khi cùng chiều. Biết lớp nào có quyền
-phủ quyết, lớp nào chỉ là điểm trừ — và để hành động khớp với nhận định."*
+Cấp 6 is FREE and Thực chiến-only, built on a graduated Cấp 5. It owns
+``cap6_progress`` and EXTENDS Cấp 1's ``order_kehoach`` rows in place (new
+columns ``kieu_co_phieu``/``lop_mau_thuan``/``trong_so_goi_y``/
+``lop_quyet_dinh``/``khop_goi_y``/``ly_do_doi_chieu`` on the same physical table
+— see ``app.models.cap1``). It reuses ``VirtualTradingRepository`` (read-only
+here) for order lookups and ``SymbolRepository`` for the ngành.
 
-★★ **CẤP 6 CŨ («Đối chiếu») ĐÃ NGHỈ HƯU HOÀN TOÀN.** Bảng trọng số 6 «kiểu cổ
-phiếu» + gợi ý lớp ưu tiên + ``khop_goi_y`` + «Thách thức Đối chiếu» 3 điều
-kiện KHÔNG còn ở đây: 6 cột ``kieu_co_phieu``/``lop_mau_thuan``/
-``trong_so_goi_y``/``lop_quyet_dinh``/``khop_goi_y``/``ly_do_doi_chieu`` trên
-``order_kehoach`` và 6 cột nhiệm vụ cũ trên ``cap6_progress`` bị bỏ ở revision
-``c7f1b9d34a80``. Bộ spec bàn giao đợt 7 định nghĩa lại toàn bộ Cấp 6.
+**★ CRITICAL PRINCIPLE (spec §5/§10) — the trọng số is a SUGGESTION, never a
+law.** The server suggests which lớp to prioritise for the stock's kiểu *and
+always returns the "vì sao"* (§C12c hybrid + provenance); the user picks the
+``lop_quyet_dinh`` and may pick OUTSIDE the suggestion. That is
+``khop_goi_y = False``: a **NEUTRAL FACT**. Nothing here penalises it — no
+counter excludes it, no threshold punishes it, no label calls it wrong. Its only
+effect is choosing which group the order joins in the khớp-vs-lệch win-rate
+comparison, whose arbiter is real market outcomes. ``khop_goi_y`` is even left
+**NULL** (not ``False``) when the kiểu is unknown, so a user can never be marked
+"lệch" against a suggestion that was never made.
+``test_lech_goi_y_is_neutral_never_penalised`` pins this invariant down.
 
-═══════════════════════════════════════════════════════════════════
-MỘT NHIỆM VỤ — THUẦN HÀNH VI, KHÔNG ĐO LÃI (spec §2/§3)
-═══════════════════════════════════════════════════════════════════
+**Everything derived is recomputed server-side on every read/write** —
+``trong_so_goi_y``, ``khop_goi_y``, ``lop_mau_thuan``, ``so_lenh_doi_chieu``,
+``so_kieu_da_gap``, ``ty_le_thang_khop``/``ty_le_thang_lech`` and the 3 nhiệm
+vụ. The client can only ever supply its OWN judgement (``lop_quyet_dinh`` +
+``ly_do_doi_chieu``) and — only in the documented fallback below — the kiểu.
 
-    ① «Xử lý mâu thuẫn nhất quán» →
-         ``so_lan_xu_ly_nhat_quan >= 3`` VÀ ``so_lan_xu_ly_veto_nhat_quan >= 2``
+═══════════════════════════════════════════════════════════════════════════
+★★ SECTOR → KIỂU DECISION (read this before touching ``_NGANH_KIEU``) ★★
+═══════════════════════════════════════════════════════════════════════════
+The task allowed either "map ngành → kiểu server-side" or "accept
+``kieu_co_phieu`` from the client (re-validated)". **A reliable server-side
+ngành DOES exist, so we map server-side.** Provenance:
 
-"Xử lý nhất quán" = nhận định user tự đọc KHỚP hành động thật (spec §2/§11):
+  · ``app.models.symbol.Symbol`` carries ``icb_lv1``/``icb_lv2`` (ICB industry
+    names in Vietnamese), seeded from Vietcap by ``app.services.symbols`` and
+    already trusted server-side by the BCTC dashboard's peer-median engine
+    (``app.services.bctc_dashboard.peer_median`` keys its whole sector cache on
+    ``icb_lv2``). On the live database ``icb_lv2`` resolves to 19 distinct
+    values covering ~96% of non-index symbols.
+  · ``_NGANH_KIEU`` below maps those ICB names → 1 of the 6 kiểu, preferring
+    ``icb_lv2`` (fine-grained) and falling back to ``icb_lv1``.
 
-  · đọc **nghiêm trọng** → «Không mua» HOẶC mua NHỎ (khối lượng thận trọng) ✓
-  · đọc **nhẹ** → vào bình thường ✓
-  · đọc **nghiêm trọng** nhưng mua LỚN → **KHÔNG tính** (bẫy "đắn đo trong đầu
-    mà tay vẫn mua lớn")
+**Consequences, all deliberate:**
 
-★ ``ngai``/``chua_ro`` KHÔNG được đếm theo chiều nào — spec §11 liệt kê đúng
-hai mẫu ✓ ở trên, và bịa thêm một luật cho hai mức spec để ngỏ sẽ vừa nới cổng
-vừa nói với user một chuẩn mực founder chưa duyệt. Chúng vẫn hiện đầy đủ ở khối
-⑭/⑮ để user tự nhìn lại.
+  1. ``POST /cap6/kehoach`` **re-derives the kiểu from the order's symbol** and
+     the server's value WINS — a client cannot claim another kiểu to flip
+     ``khop_goi_y`` (spec §10: "Kiểu cổ phiếu do user tự gán tay — KHÔNG").
+  2. Only when the server **cannot** classify the symbol (no ``symbols`` row, no
+     ICB value, or a deliberately-unmapped ngành) is the client's
+     ``kieu_co_phieu`` accepted — and it is **re-validated against
+     ``KieuCoPhieu``** first (anything else → 400). This is the graceful
+     degradation path, and the only route to ``dau_co_nho``.
+  3. ``dau_co_nho`` is **not derivable from ngành at all** — it is a market-cap /
+     liquidity property and ``symbols`` carries no market cap. It is therefore
+     reachable only via (2). Documented rather than faked.
+  4. ``icb_lv1 == "Tài chính"`` is **deliberately NOT mapped**: at level 1 it
+     mixes bất động sản, dịch vụ tài chính (chứng khoán) and bảo hiểm, which
+     take different trọng số. Guessing there would be worse than "chưa phân
+     loại", which the spec explicitly designs for (§4/§10: skip the per-kiểu
+     suggestion, still let the user pick a lớp quyết định).
 
-★★ **"MUA NHỎ" = ``pct_von <= KHAU_VI_TRAN_PCT['than_trong']`` (10%).** Repo đã
-có đúng một định nghĩa "thận trọng" — trần khẩu vị Thận trọng của Cấp 3 — và
-Cấp 6 dùng LẠI chính hằng số đó thay vì đặt ngưỡng riêng, để hai màn không bao
-giờ nói hai con số khác nhau về cùng một chữ.
+Other design notes (documented here since the spec leaves them implicit):
 
-★★★ **CỔNG KHÔNG BAO GIỜ ĐỌC LÃI.** ``tong_lai_lenh_cap6_pct`` được tính và
-đưa lên wire cho Kết sổ / Phân tích danh mục, nhưng ``graduate()`` chỉ nhìn hai
-bộ đếm hành vi (spec §2: "quyết định đúng vẫn có thể lỗ, và ngược lại").
-
-═══════════════════════════════════════════════════════════════════
-★ SERVER TÍNH LẠI, CLIENT CHỈ GỬI NHẬN ĐỊNH CỦA CHÍNH MÌNH
-═══════════════════════════════════════════════════════════════════
-
-``had_conflict`` / ``had_veto`` / ``veto_layers`` do SERVER suy lại từ
-``ai_insight_history`` (``app.services.cap6.mau_thuan``) ở mọi lần ghi — TUYỆT
-ĐỐI không nhận từ client. Chúng nuôi thẳng cổng tốt nghiệp: client khai được
-"lệnh này có phủ quyết" là client tự cấp cho mình điều kiện lên cấp. Cấp 5 đã
-học đúng bài này với ``hunt_signal``.
-
-Cột DUY NHẤT lấy từ client là ``conflict_level`` — chỉ user mới biết mình đọc
-mâu thuẫn ở mức nào.
-
-═══════════════════════════════════════════════════════════════════
-★★ CHỐNG BỊA TIẾN ĐỘ — NHẬN ĐỊNH CHỐT TẠI THỜI ĐIỂM KHỚP LỆNH
-═══════════════════════════════════════════════════════════════════
-
-Nhận định là một CAM KẾT TRƯỚC. Đặt lệnh xong, ngồi xem giá chạy rồi mới POST
-``conflict_level`` là gian lận hai lần: nó bịa ra một lần "xử lý nhất quán" cho
-cổng lên cấp, và nó bơm khối ⑮ ("bản năng đọc của bạn có chuẩn không") bằng
-cách xếp lệnh thắng vào "nhẹ", lệnh thua vào "nghiêm trọng".
-
-``record_kehoach`` vì thế khoá ghi theo luật dưới đây, và **khoá nằm NGOÀI mọi
-nhánh "đã có nhận định"** — đây đúng là chỗ Cấp 7 từng sai (khoá nằm trong
-``if kehoach.luc_doc_user is not None`` nên chỉ chạy từ lần POST THỨ HAI, trong
-khi docstring khẳng định là không thể):
-
-  · lệnh CHƯA khớp → ghi thoải mái (panel là cái form user quay lại được, và
-    lệnh chưa khớp thì chưa có vị thế nào để nhìn giá mà bịa);
-  · lệnh ĐÃ khớp → chỉ còn ``CUA_SO_CHOT_NHAN_DINH`` phút kể từ lúc đặt lệnh.
-    Hết cửa sổ thì MỌI lần ghi bị từ chối — kể cả lần ghi ĐẦU TIÊN, không chỉ
-    lần sửa. Không ghi nhận định lúc mua là hợp lệ (bảng mâu thuẫn chỉ hiện khi
-    5 lớp thật sự mâu thuẫn), nên khoá chỉ chặn "sửa" sẽ để hở nguyên lỗ: đặt
-    lệnh, đợi hết phiên, nhìn giá rồi mới POST mức khớp ý.
-  · POST y hệt lần trước luôn là no-op idempotent, trước và sau cửa sổ (một cú
-    gọi lại do mạng không bao giờ thành 409).
-
-``POST /cap6/skip`` không cần khoá: không có lệnh, không có vị thế, không có
-kết quả nào để nhìn — bản thân nó là bằng chứng đứng ngoài.
+  - **``lop_mau_thuan`` is re-derived from ``doc_5_lop``**, the Cấp 4 ratings
+    already persisted on the same row, and normalised into
+    ``{ung_ho, nguoc_chieu, trung_tinh, co_mau_thuan, nguon}``. The client's own
+    copy is accepted only as a fallback when ``doc_5_lop`` is absent (e.g. an
+    order whose Cấp 4 block was never filled). Same reasoning as Cấp 4's
+    ``so_lop_dong_thuan``: a second copy of data we already hold is an
+    unverifiable input for no benefit.
+  - **The conflict trigger is NOT enforced as a gate.** ``co_mau_thuan`` is
+    computed and stored (so ⑭/⑮ and the FE can read it), but recording a đối
+    chiếu on a non-conflicting order is not an error: the trigger is a UI rule
+    (spec §4 "không hiện bước Đối chiếu"), and a server-side 4xx there would
+    only turn a harmless extra reflection into a broken flow.
+  - **Counters.** ``so_lenh_doi_chieu`` = the user's Thực chiến ``order_kehoach``
+    rows with ``lop_quyet_dinh`` set; ``so_kieu_da_gap`` = DISTINCT non-NULL
+    ``kieu_co_phieu`` among them. Deliberately NOT filtered by ``entered_at``,
+    for Cấp 4/5's reason: ``lop_quyet_dinh`` can only ever be written by
+    ``record_kehoach`` below, which requires a ``Cap6Progress`` row, so any row
+    carrying it is inherently Cấp-6-era.
+  - **Win rates need ≥3 CLOSED lệnh per group** (spec §7 khối ⑮'s <3 threshold)
+    before they may be compared. Below that the group is reported
+    ``du_du_lieu = False`` and nhiệm vụ ③'s third leg simply does not pass —
+    we never declare a winner off 1-2 trades in either direction.
+  - **``ty_le_thang_khop``/``ty_le_thang_lech`` are NULLABLE, and NULL never
+    becomes 0.** A group with no closed lệnh has no win rate; ``0.0`` is a real
+    and very different statement ("đã đóng lệnh và thua hết"). Cấp 8 made its
+    ``don_nganh_max_pct``/``tong_rui_ro_pct`` nullable for exactly this reason,
+    and ``/cap6/thach-thuc`` has always carried ``du_du_lieu`` beside a nullable
+    ``ty_le_thang``; the progress row now agrees with both.
+  - **★ THE ĐỐI CHIẾU IS FROZEN ONCE THE ORDER FILLS.** ``lop_quyet_dinh`` is a
+    before-the-fact commitment: leg ③ compares the win rate of the khớp group
+    against the lệch group, so a decision that could still be edited after the
+    outcome was known would let a user move their winners into the khớp group and
+    manufacture the leg. ``record_kehoach`` therefore rejects any CHANGE to the
+    block once the buy is FILLED (an identical re-post stays idempotent). While
+    the order is still unfilled the block stays editable — the panel is a form
+    the user can step back in, and an unfilled buy can never join a closed pair
+    (``_closed_pairs`` only ever matches FILLED buys), so there is no outcome to
+    edit towards. This is Cấp 7's time-lock applied to the one input Cấp 6 takes
+    from the user.
+  - **Pairing a kế hoạch (BUY) with its outcome (``order_ketso``, keyed on the
+    SELL)** reuses Cấp 1's own rule verbatim (``Cap1Service._find_matching_buy``:
+    the most recent FILLED buy for the same account+symbol at/before the sell),
+    mirrored in Python exactly as Cấp 4 mirrors it — same single-lot
+    approximation, same 3 queries.
+  - **Nhiệm vụ** ① first order that went through the Đối chiếu step ·
+    ② first CLOSED round trip whose buy carries a đối chiếu (spec §2②'s "Kết sổ
+    Cấp 6" is by definition a kết sổ *with* the đối-chiếu review) · ③ all three
+    legs at once. Once a ``task_N_done_at`` is stamped it is NEVER un-stamped —
+    Cấp 1/2/3/4/5's pattern.
 """
 
 from __future__ import annotations
 
+import re
+import unicodedata
 import uuid
-from collections.abc import Sequence
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
-from app.models.cap1 import KhauViRuiRo, OrderKehoach, OrderKetso
+from app.core.exceptions import (
+    BadRequestError,
+    ConflictError,
+    NotFoundError,
+    UnprocessableEntityError,
+)
+from app.models.cap1 import OrderKehoach, OrderKetso
+from app.models.cap4 import LOP_KEYS, LOP_LABELS, NhanDinhLop
 from app.models.cap5 import Cap5Progress
-from app.models.cap6 import (
-    LOP_DIEM_TRU,
-    LOP_PHU_QUYET,
-    MUC_LABELS,
-    MUC_NANG_DAN,
-    MUC_VALUES,
-    Cap6Progress,
-    Cap6Skip,
-    MucMauThuan,
-    lop_ten,
-)
+from app.models.cap6 import KIEU_CO_PHIEU, Cap6Progress, KieuCoPhieu, lop_ten
 from app.models.virtual_trading import OrderSide, OrderStatus, VirtualOrder
-from app.services.cap5.service import KHAU_VI_TRAN_PCT
-from app.services.cap6.mau_thuan import MauThuanResult, MauThuanSource
+from app.repositories.symbol import SymbolRepository
+from app.repositories.virtual_trading import VirtualTradingRepository
+
+_TASK_NOS = (1, 2, 3)
+
+# Thách thức Đối chiếu (spec §2③) — triple condition, ALL must hold at once.
+_TASK3_SO_LENH_MIN = 15
+_TASK3_SO_KIEU_MIN = 3
+# Minimum CLOSED lệnh in EACH group before the khớp-vs-lệch comparison counts
+# (spec §7 khối ⑮: "<3 lệnh đối chiếu đã đóng → chỉ đếm, ẩn thống kê").
+MIN_LENH_MOI_NHOM = 3
+
+_KIEU_VALUES = frozenset(m.value for m in KieuCoPhieu)
+_LOP_VALUES = frozenset(LOP_KEYS)
+_NHAN_DINH_VALUES = frozenset(m.value for m in NhanDinhLop)
+
+_CHUA_PHAN_LOAI_GIAI_THICH = (
+    "Chưa phân loại được kiểu cổ phiếu cho {symbol} (hệ chưa có dữ liệu ngành "
+    "cho mã này), nên lần này IQX không gợi ý trọng số lớp. Bước Đối chiếu vẫn "
+    "hoạt động bình thường: bạn tự chọn lớp quyết định và ghi vì sao."
+)
+
+#: What the Kết sổ shows for an order that never went through bước Đối chiếu.
+#: ★ Deliberately NOT phrased as a shortcoming: the step only appears when the 5
+#: lớp actually conflict (spec §4), and orders placed before Cấp 6 existed have
+#: all-null columns by design.
+COPY_CHUA_DOI_CHIEU = (
+    "Lệnh này chưa đi qua bước Đối chiếu — hoặc nó được đặt trước khi bạn vào "
+    "Cấp 6, hoặc 5 lớp lúc đó không mâu thuẫn nên bước Đối chiếu không hiện. "
+    "Không có gì để đối chiếu lại, và điều đó không bị tính là thiếu sót."
+)
+
+#: Labels for ``khop_goi_y``. ★ Neither says "đúng"/"sai" — lệch gợi ý is a
+#: NEUTRAL fact (spec §5/§10); it only names which comparison group the order
+#: joined.
+KHOP_GOI_Y_LABELS: dict[bool, str] = {True: "Khớp gợi ý", False: "Lệch gợi ý"}
+
 
 # ══════════════════════════════════════════════════════
-# Hằng số của cấp
+# Ngành → kiểu cổ phiếu (see the module docstring's DECISION block)
 # ══════════════════════════════════════════════════════
 
-#: Cổng tốt nghiệp (spec §2/§3) — THUẦN HÀNH VI. Lên wire ở ``/cap6/progress``
-#: để FE không phải hard-code lại hai con số này.
-MUC_TIEU_NHAT_QUAN = 3
-MUC_TIEU_VETO = 2
 
-#: "Mua nhỏ (khối lượng thận trọng)" — dùng LẠI trần khẩu vị Thận trọng của Cấp
-#: 3 (xem docstring module). ``is`` với chính bảng của Cấp 5, không phải bản sao.
-NGUONG_MUA_NHO_PCT: float = KHAU_VI_TRAN_PCT[KhauViRuiRo.THAN_TRONG.value]
-
-#: Số lệnh đã đóng TỐI THIỂU trong một mức trước khi khối ⑮ dám nói tỷ lệ thắng
-#: (luật repo, giống ``MIN_LENH_KHOI_12`` của Cấp 5). Dưới ngưỡng ⇒ ``None`` +
-#: ``du_mau=False``, KHÔNG phải 0%.
-MIN_LENH_TY_LE_THANG = 3
-
-#: Cửa sổ còn ghi được nhận định sau khi lệnh ĐÃ KHỚP (xem docstring module).
-CUA_SO_CHOT_NHAN_DINH = timedelta(minutes=15)
-
-_COPY_KHOA_NHAN_DINH = (
-    "Lệnh này đã khớp quá lâu — không ghi hay sửa mức nhận định mâu thuẫn được "
-    "nữa. Nhận định phải được chốt TRƯỚC khi bạn biết giá đi đâu, đó là điều "
-    "làm phần «nhận định có khớp hành động không» còn nghĩa."
-)
-
-_KHOI_14_GIAI_THICH = (
-    "Chỉ tính lệnh CÓ mâu thuẫn lớp. Với mỗi mức bạn đọc, đây là khối lượng "
-    "trung bình (theo % vốn) bạn đã thực sự mua. Đọc càng nghiêm trọng thì "
-    "khối lượng càng phải nhỏ đi — cột «Khớp?» so mức này với các mức nhẹ hơn."
-)
-
-_KHOI_15_GIAI_THICH = (
-    "Chỉ tính lệnh CÓ mâu thuẫn đã ĐÓNG. Mỗi mức cần ít nhất "
-    f"{MIN_LENH_TY_LE_THANG} lệnh đã đóng mới được tính tỷ lệ thắng — dưới "
-    "ngưỡng đó hệ để trống chứ không hiện 0%."
-)
+def _norm_nganh(value: str) -> str:
+    """Accent-insensitive, case-insensitive, whitespace-collapsed key so the
+    upstream ICB label can drift in casing/diacritics without breaking the map
+    (mirrors ``app.services.bctc_dashboard.peer_median._norm``'s intent)."""
+    folded = unicodedata.normalize("NFKD", value)
+    folded = "".join(ch for ch in folded if not unicodedata.combining(ch))
+    folded = folded.replace("đ", "d").replace("Đ", "D")
+    return re.sub(r"\s+", " ", folded).strip().lower()
 
 
-def _as_utc(dt: datetime) -> datetime:
-    return dt if dt.tzinfo is not None else dt.replace(tzinfo=UTC)
+def _m(*nganh: str) -> tuple[str, ...]:
+    return tuple(_norm_nganh(n) for n in nganh)
+
+
+#: ICB ngành (``Symbol.icb_lv2`` preferred, else ``icb_lv1``) → kiểu cổ phiếu.
+#: Keys are ``_norm_nganh``-folded. The live ``symbols`` table's 19 distinct
+#: ``icb_lv2`` values are all covered; ``icb_lv1`` entries are the coarse
+#: fallback. "Tài chính" (lv1) is intentionally absent — see the module
+#: docstring's DECISION note (4).
+_NGANH_KIEU: dict[str, str] = {
+    # ── icb_lv2 (fine-grained, preferred) ────────────
+    **dict.fromkeys(_m("Ngân hàng"), KieuCoPhieu.NGAN_HANG.value),
+    **dict.fromkeys(
+        _m("Công nghệ Thông tin", "Viễn thông"), KieuCoPhieu.TANG_TRUONG.value
+    ),
+    **dict.fromkeys(
+        _m(
+            "Xây dựng và Vật liệu",
+            "Hàng & Dịch vụ Công nghiệp",
+            "Dầu khí",
+            "Tài nguyên Cơ bản",
+            "Hóa chất",
+            "Ô tô và phụ tùng",
+            "Dịch vụ tài chính",  # chứng khoán — bám sát chu kỳ thị trường
+            "Du lịch và Giải trí",
+            "Truyền thông",
+        ),
+        KieuCoPhieu.CHU_KY.value,
+    ),
+    **dict.fromkeys(
+        _m(
+            "Thực phẩm và đồ uống",
+            "Hàng cá nhân & Gia dụng",
+            "Y tế",
+            "Điện, nước & xăng dầu khí đốt",
+            "Bán lẻ",
+            "Bảo hiểm",
+        ),
+        KieuCoPhieu.PHONG_THU.value,
+    ),
+    **dict.fromkeys(_m("Bất động sản"), KieuCoPhieu.BAT_DONG_SAN.value),
+    # ── icb_lv1 fallback (coarse) ────────────────────
+    **dict.fromkeys(
+        _m("Công nghiệp", "Nguyên vật liệu", "Dịch vụ Tiêu dùng"),
+        KieuCoPhieu.CHU_KY.value,
+    ),
+    **dict.fromkeys(
+        _m("Hàng Tiêu dùng", "Dược phẩm và Y tế", "Tiện ích Cộng đồng"),
+        KieuCoPhieu.PHONG_THU.value,
+    ),
+}
+
+
+def kieu_from_nganh(nganh: str | None) -> str | None:
+    """The kiểu cổ phiếu an ICB ngành maps to, or ``None`` when unmapped.
+
+    Public so tests (and any future admin tooling) read the SAME map the service
+    writes with — the two can never drift.
+    """
+    if not nganh:
+        return None
+    return _NGANH_KIEU.get(_norm_nganh(nganh))
+
+
+def kieu_payload(kieu: str | None, *, symbol: str, nganh: str | None = None) -> dict:
+    """The §C12c-shaped suggestion block for a kiểu: which lớp to prioritise,
+    which are less reliable, and the "vì sao" — or an honest "chưa phân loại"
+    when the kiểu is unknown (``kieu = None``), which the FE renders while STILL
+    letting the user pick a lớp quyết định (spec §4/§10)."""
+    row = KIEU_CO_PHIEU.get(kieu or "")
+    if row is None:
+        return {
+            "symbol": symbol,
+            "nganh": nganh,
+            "kieu": None,
+            "kieu_ten": None,
+            "lop_uu_tien": [],
+            "lop_uu_tien_ten": [],
+            "lop_it_tin": [],
+            "lop_it_tin_ten": [],
+            "giai_thich": _CHUA_PHAN_LOAI_GIAI_THICH.format(symbol=symbol),
+        }
+    uu_tien = list(row["lop_uu_tien"])  # type: ignore[arg-type]
+    it_tin = list(row["lop_it_tin"])  # type: ignore[arg-type]
+    return {
+        "symbol": symbol,
+        "nganh": nganh,
+        "kieu": kieu,
+        "kieu_ten": row["ten"],
+        "lop_uu_tien": uu_tien,
+        "lop_uu_tien_ten": lop_ten(uu_tien),
+        "lop_it_tin": it_tin,
+        "lop_it_tin_ten": lop_ten(it_tin),
+        "giai_thich": row["giai_thich"],
+    }
 
 
 class Cap6Service:
-    """Business logic cho Cấp 6 «Bậc thầy» (FREE, Thực chiến).
+    """Business logic for the free Cấp 6 «Đối chiếu» flow."""
 
-    ``mau_thuan_source`` được tiêm vào để test không phụ thuộc bảng
-    ``ai_insight_history`` thật; mặc định đọc thẳng bảng đó (không gọi AI).
-    """
-
-    def __init__(
-        self, session: AsyncSession, *, mau_thuan_source: MauThuanSource | None = None
-    ) -> None:
+    def __init__(self, session: AsyncSession) -> None:
         self._session = session
-        self._mau_thuan = mau_thuan_source or MauThuanSource(session)
+        self._vt_repo = VirtualTradingRepository(session)
+        self._symbol_repo = SymbolRepository(session)
 
-    # ══════════════════════════════════════════════════
-    # Progress row
-    # ══════════════════════════════════════════════════
+    # ── Progress row ─────────────────────────────────
 
     async def _get_progress_row(self, user_id: uuid.UUID) -> Cap6Progress | None:
         result = await self._session.execute(
@@ -180,110 +308,117 @@ class Cap6Service:
             raise NotFoundError("tiến trình Cấp 6")
         return progress
 
-    async def get_progress(self, user_id: uuid.UUID) -> dict | None:
-        """``GET /cap6/progress`` — hàng tiến trình đã tính lại, hoặc ``None``."""
+    async def get_progress(self, user_id: uuid.UUID) -> Cap6Progress | None:
         progress = await self._get_progress_row(user_id)
         if progress is None:
             return None
-        return await self._recompute_progress(user_id, progress)
+        await self._recompute_progress(user_id, progress)
+        return progress
 
-    async def enter(self, user_id: uuid.UUID) -> dict:
-        """Vào Cấp 6 (idempotent) — yêu cầu đã tốt nghiệp Cấp 5."""
+    async def enter(self, user_id: uuid.UUID) -> Cap6Progress:
+        """Enter Cấp 6 (idempotent). Requires the user to have graduated Cấp 5.
+
+        ★ Recomputes before returning, exactly like Cấp 7's and Cấp 8's ``enter``:
+        this endpoint is idempotent and the FE renders what it returns, so a
+        returning user would otherwise be shown the row's stale counters until
+        something else happened to call ``/cap6/progress``.
+        """
         progress = await self._get_progress_row(user_id)
-        if progress is not None:
-            return await self._recompute_progress(user_id, progress)
-
-        cap5 = (
-            await self._session.execute(
+        if progress is None:
+            cap5_result = await self._session.execute(
                 select(Cap5Progress).where(Cap5Progress.user_id == user_id)
             )
-        ).scalar_one_or_none()
-        if cap5 is None:
-            raise NotFoundError("tiến trình Cấp 5")
-        if cap5.graduated_at is None:
-            raise ConflictError("Chưa tốt nghiệp Cấp 5")
+            cap5_progress = cap5_result.scalar_one_or_none()
+            if cap5_progress is None:
+                raise NotFoundError("tiến trình Cấp 5")
+            if cap5_progress.graduated_at is None:
+                raise ConflictError("Chưa tốt nghiệp Cấp 5")
 
-        progress = Cap6Progress(user_id=user_id, entered_at=datetime.now(UTC))
-        self._session.add(progress)
-        await self._session.flush()
-        await self._session.refresh(progress)
-        return await self._recompute_progress(user_id, progress)
+            progress = Cap6Progress(user_id=user_id, entered_at=datetime.now(UTC))
+            self._session.add(progress)
+            await self._session.flush()
+            await self._session.refresh(progress)
 
-    async def mark_tour_mauthuan(self, user_id: uuid.UUID) -> dict:
-        """``POST /cap6/tour-mauthuan`` — user đã đi HẾT 7 bước tour (§10).
+        await self._recompute_progress(user_id, progress)
+        return progress
 
-        ★ Chỉ gọi ở bước cuối / nút "Xong"; "Bỏ qua" giữa chừng KHÔNG gọi. Cờ
-        này KHÔNG phải cổng tốt nghiệp (spec §11: "tour là công cụ học"), nên
-        gian lận ở đây cũng không mở được Cấp 7 — nó chỉ quyết định tour có tự
-        bật lại lần sau hay không.
+    # ── Kiểu cổ phiếu (server-side, từ ngành) ─────────
+
+    async def _nganh_of(self, symbol: str) -> str | None:
+        """The symbol's ICB ngành — ``icb_lv2`` preferred, ``icb_lv1`` fallback.
+
+        Fail-soft: any lookup failure is treated as "ngành unknown" (→ "chưa
+        phân loại"), never as an error that would block the buy panel.
         """
-        progress = await self._require_progress(user_id)
-        progress.da_xem_tour_mauthuan = True
-        await self._session.flush()
-        return await self._recompute_progress(user_id, progress)
+        try:
+            row = await self._symbol_repo.get_by_symbol(symbol)
+        except Exception:  # noqa: BLE001 — unknown ngành, never a hard failure
+            return None
+        if row is None:
+            return None
+        return (row.icb_lv2 or None) or (row.icb_lv1 or None)
 
-    # ══════════════════════════════════════════════════
-    # Bảng mâu thuẫn (spec §5)
-    # ══════════════════════════════════════════════════
+    async def _kieu_of_symbol(self, symbol: str) -> tuple[str | None, str | None]:
+        """``(kieu, nganh)`` for a symbol, both ``None`` when unclassifiable."""
+        nganh = await self._nganh_of(symbol)
+        return kieu_from_nganh(nganh), nganh
 
-    @staticmethod
-    def _mau_thuan_out(result: MauThuanResult) -> dict:
-        """``MauThuanResult`` → wire shape của ``GET /cap6/mau-thuan/{symbol}``."""
-        return {
-            "co_mau_thuan": result.co_mau_thuan,
-            "ung_ho": [
-                {"lop": r["lop"], "ten": r["ten"], "nhan": r["nhan"], "bac": r["bac"]}
-                for r in result.ung_ho
-            ],
-            "nguoc": [
-                {
-                    "lop": r["lop"],
-                    "ten": r["ten"],
-                    "nhan": r["nhan"],
-                    "bac": r["bac"],
-                    "la_phu_quyet": r["la_phu_quyet"],
-                }
-                for r in result.nguoc
-            ],
-            "trung_tinh": [
-                {"lop": r["lop"], "ten": r["ten"], "nhan": r["nhan"]}
-                for r in result.trung_tinh
-            ],
-            "phu_quyet_kich_hoat": result.phu_quyet_kich_hoat,
-            "lop_phu_quyet_xau": list(result.lop_phu_quyet_xau),
-            "lop_phu_quyet_xau_ten": [lop_ten(lop) for lop in result.lop_phu_quyet_xau],
-            # ★ SERVER dựng câu, FE in NGUYÊN VĂN (§C12c).
-            "canh_bao": result.canh_bao,
-            "chua_du_du_lieu": result.chua_du_du_lieu,
-            "ly_do_chua_du": result.ly_do_chua_du,
-            # Mẫu số thật — lớp 💎 Định giá không có nguồn nên tối đa là 4/5.
-            "so_lop_da_cham": result.so_lop_da_cham,
-            "session_date": result.session_date,
-            # Khung phân loại — FE hiện ở phần chú thích (spec §5.2).
-            "lop_phu_quyet": sorted(LOP_PHU_QUYET),
-            "lop_diem_tru": sorted(LOP_DIEM_TRU),
-        }
+    async def goi_y(self, user_id: uuid.UUID, symbol: str) -> dict:
+        """``GET /cap6/goi-y?symbol=`` — the kiểu cổ phiếu + its trọng số gợi ý
+        + the "vì sao" the FE shows VERBATIM (§C12c: never a bare suggestion).
 
-    async def mau_thuan(self, user_id: uuid.UUID, symbol: str) -> dict:
-        """``GET /cap6/mau-thuan/{symbol}`` — bảng mâu thuẫn 2 phe của một mã."""
+        Returns ``kieu = None`` + an honest "chưa phân loại" note when the ngành
+        is missing or unmapped — the FE still renders the picker (spec §4/§10).
+        """
         await self._require_progress(user_id)
-        ma = (symbol or "").strip().upper()
-        if not ma:
+        symbol_clean = (symbol or "").strip().upper()
+        if not symbol_clean:
             raise BadRequestError("Thiếu mã cổ phiếu")
-        result = await self._mau_thuan.doc(ma)
-        return {"symbol": ma, **self._mau_thuan_out(result)}
+        kieu, nganh = await self._kieu_of_symbol(symbol_clean)
+        return kieu_payload(kieu, symbol=symbol_clean, nganh=nganh)
 
-    # ══════════════════════════════════════════════════
-    # Ô nhận định trên lệnh mua (spec §6) + nút Không mua (spec §7)
-    # ══════════════════════════════════════════════════
+    # ── Bước Đối chiếu (spec §4) ──────────────────────
 
     @staticmethod
-    def _validate_muc(conflict_level: str | None) -> str:
-        if conflict_level is None or conflict_level not in MUC_VALUES:
-            raise BadRequestError(
-                "conflict_level phải là 1 trong: " + ", ".join(sorted(MUC_VALUES))
-            )
-        return conflict_level
+    def _validate_lop_map(value: Any) -> dict[str, str] | None:
+        """A ``{lop: 'ok'|'neu'|'bad'}`` map, or ``None`` when absent/unusable.
+
+        Lenient on purpose (this is only the FALLBACK source for
+        ``lop_mau_thuan`` — see the module docstring): unknown keys/values are
+        dropped rather than 400-ing, because the authoritative copy is
+        ``doc_5_lop``.
+        """
+        if not isinstance(value, dict):
+            return None
+        clean = {
+            lop: muc
+            for lop, muc in value.items()
+            if lop in _LOP_VALUES and muc in _NHAN_DINH_VALUES
+        }
+        return clean or None
+
+    @staticmethod
+    def _summarise_mau_thuan(lop_map: dict[str, str], nguon: str) -> dict:
+        """Normalise a 5-lớp rating map into the Ủng hộ / Ngược chiều summary
+        spec §9 asks ``lop_mau_thuan`` to hold, in canonical ``LOP_KEYS`` order.
+
+        ``co_mau_thuan`` is the spec §4 conflict trigger itself: ≥1 Ủng hộ AND
+        ≥1 Ngược chiều. It is recorded, not enforced (see the module docstring).
+        """
+        ung_ho = [lop for lop in LOP_KEYS if lop_map.get(lop) == NhanDinhLop.OK.value]
+        nguoc = [lop for lop in LOP_KEYS if lop_map.get(lop) == NhanDinhLop.BAD.value]
+        trung_tinh = [
+            lop for lop in LOP_KEYS if lop_map.get(lop) == NhanDinhLop.NEU.value
+        ]
+        return {
+            "ung_ho": ung_ho,
+            "ung_ho_ten": lop_ten(ung_ho),
+            "nguoc_chieu": nguoc,
+            "nguoc_chieu_ten": lop_ten(nguoc),
+            "trung_tinh": trung_tinh,
+            "co_mau_thuan": bool(ung_ho) and bool(nguoc),
+            "nguon": nguon,
+        }
 
     async def _get_kehoach_by_order(self, order_id: uuid.UUID) -> OrderKehoach | None:
         result = await self._session.execute(
@@ -291,147 +426,333 @@ class Cap6Service:
         )
         return result.scalar_one_or_none()
 
-    @staticmethod
-    def _con_ghi_duoc(order: VirtualOrder, now: datetime) -> bool:
-        """Nhận định của lệnh này còn ghi được không (xem docstring module)."""
-        if order.status != OrderStatus.FILLED:
-            return True
-        return now - _as_utc(order.created_at) <= CUA_SO_CHOT_NHAN_DINH
-
     async def record_kehoach(
-        self, user_id: uuid.UUID, order_id: uuid.UUID, *, conflict_level: str
+        self,
+        user_id: uuid.UUID,
+        order_id: uuid.UUID,
+        *,
+        lop_quyet_dinh: str,
+        ly_do_doi_chieu: str | None,
+        kieu_co_phieu: str | None = None,
+        lop_mau_thuan: Any = None,
+        trong_so_goi_y: Any = None,  # noqa: ARG002 — advisory, see below
+        khop_goi_y: Any = None,  # noqa: ARG002 — advisory, see below
     ) -> OrderKehoach:
-        """``POST /cap6/kehoach`` — ghi mức nhận định mâu thuẫn cho 1 lệnh MUA.
+        """Adds the "Đối chiếu" block to the EXISTING ``order_kehoach`` row
+        created by Cấp 1's ``/cap1/kehoach`` (Cấp 2's SL/TP, Cấp 3's quản lý vốn
+        and Cấp 4's đọc-5-lớp are filled first; Cấp 6 only inserts this block —
+        spec §4's "panel Cấp 5 kế thừa nguyên vẹn"). 404 when that row is
+        absent, the same convention as Cấp 2-5.
 
-        Cộng dồn lên kế hoạch Cấp 1-5 của chính lệnh đó (404 nếu chưa có kế
-        hoạch Cấp 1). ``had_conflict``/``had_veto``/``veto_layers`` do SERVER
-        suy lại từ AI Insight của mã — client không gửi lên.
+        **The server derives ``trong_so_goi_y`` and ``khop_goi_y`` ITSELF** from
+        the kiểu table — they are accepted in the signature only for API
+        symmetry with the FE (which displayed them) and are otherwise ignored.
+        ``kieu_co_phieu`` is likewise re-derived from the symbol's ngành and the
+        server's value wins; the client's is used ONLY when the server cannot
+        classify the symbol, and is re-validated against ``KieuCoPhieu`` first.
+        See the module docstring's SECTOR → KIỂU DECISION block.
 
-        ★ Ghi nhận định cho một lệnh KHÔNG mâu thuẫn không phải lỗi: điều kiện
-        hiện bảng là luật GIAO DIỆN (spec §5.1), và 4xx ở đây chỉ biến một lần
-        tự soi vô hại thành luồng gãy. Lệnh đó đơn giản không được đếm vào cổng
-        (``had_conflict=False``).
+        ``ly_do_doi_chieu`` is REQUIRED (422 when missing/blank — spec §4: never
+        a bare pick).
+
+        ★ **THE FREEZE.** Re-submitting overwrites the đối chiếu **only while the
+        buy has not FILLED** (the panel is a form the user can go back a step in,
+        and an unfilled buy can never join a closed pair). Once the order is
+        FILLED the block is frozen: an identical re-post is a no-op, anything else
+        is a 409. Leg ③ of nhiệm vụ ③ compares the khớp group's win rate against
+        the lệch group's, so an editable ``lop_quyet_dinh`` would let a user wait
+        for the outcomes and then move their winners into the khớp group — the
+        same class of hole Cấp 7's time-lock closes for ``luc_doc_user``. Every
+        derived field is still re-derived on the writes that ARE allowed, so a
+        rewrite can never invent a suggestion or a match either.
         """
-        await self._require_progress(user_id)
-        muc = self._validate_muc(conflict_level)
+        progress = await self._require_progress(user_id)
 
-        order = (
-            await self._session.execute(
-                select(VirtualOrder).where(VirtualOrder.id == order_id)
-            )
-        ).scalar_one_or_none()
+        order = await self._vt_repo.get_order_by_id(order_id)
         if order is None or order.user_id != user_id:
             raise NotFoundError("lệnh")
         if order.side != OrderSide.BUY:
-            raise BadRequestError("Nhận định mâu thuẫn chỉ ghi cho lệnh MUA")
+            raise BadRequestError("Bước Đối chiếu chỉ ghi cho lệnh MUA")
+
+        if lop_quyet_dinh not in _LOP_VALUES:
+            raise BadRequestError("lop_quyet_dinh phải là 1 trong 5 lớp")
+        ly_do_clean = (ly_do_doi_chieu or "").strip()
+        if not ly_do_clean:
+            raise UnprocessableEntityError(
+                "Cần ghi 1 dòng vì sao bạn tin lớp này — đối chiếu không bao giờ "
+                "là một lựa chọn trơ."
+            )
+
+        # Kiểu: server's ngành derivation wins; client value only as fallback.
+        kieu, nganh = await self._kieu_of_symbol(order.symbol)
+        nguon_kieu = "nganh" if kieu is not None else None
+        if kieu is None and kieu_co_phieu is not None:
+            if kieu_co_phieu not in _KIEU_VALUES:
+                raise BadRequestError("kieu_co_phieu không hợp lệ")
+            kieu = kieu_co_phieu
+            nguon_kieu = "client"
 
         kehoach = await self._get_kehoach_by_order(order_id)
         if kehoach is None:
             raise NotFoundError("kế hoạch Cấp 1 — cần ghi vùng mua trước")
 
-        result = await self._mau_thuan.doc(order.symbol or "")
-        had_conflict, had_veto, veto_layers = self._suy_co(result)
+        # ★ THE FREEZE (see the docstring above).
+        if kehoach.lop_quyet_dinh is not None:
+            same = (
+                kehoach.lop_quyet_dinh == lop_quyet_dinh
+                and (kehoach.ly_do_doi_chieu or "") == ly_do_clean
+            )
+            if same:
+                return kehoach  # a retried network call is a no-op, never a 409
+            if order.status == OrderStatus.FILLED:
+                raise ConflictError(
+                    "Lệnh này đã khớp — phần Đối chiếu không sửa được nữa. Lớp bạn "
+                    "chọn tin phải được chốt TRƯỚC khi biết lệnh lãi hay lỗ, đó là "
+                    "điều làm so sánh khớp/lệch gợi ý có nghĩa."
+                )
 
-        # ★★ KHOÁ CHỐNG BỊA TIẾN ĐỘ — cố ý NẰM NGOÀI mọi nhánh "đã có nhận
-        # định": lần ghi ĐẦU TIÊN sau khi biết giá cũng phải bị chặn, không chỉ
-        # lần sửa (xem docstring module — đây là chỗ Cấp 7 từng sai).
-        giong_het = (
-            kehoach.conflict_level == muc
-            and kehoach.had_conflict == had_conflict
-            and kehoach.had_veto == had_veto
-            and (kehoach.veto_layers or []) == veto_layers
-        )
-        if giong_het:
-            return kehoach  # gọi lại do mạng là no-op, không bao giờ 409
-        if not self._con_ghi_duoc(order, datetime.now(UTC)):
-            raise ConflictError(_COPY_KHOA_NHAN_DINH)
+        # lop_mau_thuan: prefer the persisted Cấp 4 ratings over the client's copy.
+        doc_map = self._validate_lop_map(kehoach.doc_5_lop)
+        client_map = self._validate_lop_map(lop_mau_thuan)
+        if doc_map is not None:
+            mau_thuan = self._summarise_mau_thuan(doc_map, "doc_5_lop")
+        elif client_map is not None:
+            mau_thuan = self._summarise_mau_thuan(client_map, "client")
+        else:
+            mau_thuan = None
 
-        kehoach.conflict_level = muc
-        kehoach.had_conflict = had_conflict
-        kehoach.had_veto = had_veto
-        kehoach.veto_layers = veto_layers
+        goi_y = kieu_payload(kieu, symbol=order.symbol, nganh=nganh)
+        if kieu is None:
+            # "Chưa phân loại": no suggestion exists, so there is nothing to
+            # match — khop_goi_y stays NULL rather than False (★ the user is
+            # never marked "lệch" against a suggestion never made).
+            trong_so: dict | None = None
+            khop: bool | None = None
+        else:
+            trong_so = {
+                "kieu": kieu,
+                "kieu_ten": goi_y["kieu_ten"],
+                "nganh": nganh,
+                "nguon": nguon_kieu,
+                "lop_uu_tien": goi_y["lop_uu_tien"],
+                "lop_it_tin": goi_y["lop_it_tin"],
+                "giai_thich": goi_y["giai_thich"],
+            }
+            khop = lop_quyet_dinh in goi_y["lop_uu_tien"]
+
+        kehoach.kieu_co_phieu = kieu
+        kehoach.lop_mau_thuan = mau_thuan
+        kehoach.trong_so_goi_y = trong_so
+        kehoach.lop_quyet_dinh = lop_quyet_dinh
+        kehoach.khop_goi_y = khop
+        kehoach.ly_do_doi_chieu = ly_do_clean
         await self._session.flush()
         await self._session.refresh(kehoach)
+
+        await self._recompute_progress(user_id, progress)
         return kehoach
 
     @staticmethod
-    def _suy_co(result: MauThuanResult) -> tuple[bool | None, bool | None, list | None]:
-        """3 cờ SERVER ghi lên ``order_kehoach`` / ``cap6_skip``.
-
-        ★ Chưa chấm được lớp nào ⇒ cả ba để **NULL**, không phải False: "hệ chưa
-        có dữ liệu về mã này" và "hệ đã kiểm, mã này không có mâu thuẫn" là hai
-        câu khác hẳn, và cái sau là câu ta chưa có quyền nói.
-        """
-        if result.chua_du_du_lieu:
-            return None, None, None
-        return (
-            result.co_mau_thuan,
-            result.phu_quyet_kich_hoat,
-            list(result.lop_phu_quyet_xau),
-        )
-
-    def kehoach_out(self, kehoach: OrderKehoach) -> dict:
-        """Khối Cấp 6 đã ghi trên 1 lệnh — cho panel/Kết sổ đọc lại."""
-        muc = kehoach.conflict_level
+    def kehoach_out(kehoach: OrderKehoach) -> dict:
+        """Serialize the Đối chiếu block for the API (adds the derived labels the
+        FE renders — never stored twice)."""
+        row = KIEU_CO_PHIEU.get(kehoach.kieu_co_phieu or "")
+        lop = kehoach.lop_quyet_dinh
         return {
             "id": kehoach.id,
             "order_id": kehoach.order_id,
-            "had_conflict": kehoach.had_conflict,
-            "conflict_level": muc,
-            "conflict_level_ten": MUC_LABELS.get(muc or "") or None,
-            "had_veto": kehoach.had_veto,
-            "veto_layers": list(kehoach.veto_layers or []) if kehoach.veto_layers is not None else None,
-            "veto_layers_ten": (
-                [lop_ten(lop) for lop in kehoach.veto_layers]
-                if kehoach.veto_layers is not None
-                else None
-            ),
-            "khoi_luong_pct_von": kehoach.pct_von,
-            "muc_tu_tin": kehoach.muc_tu_tin,
-            "nhat_quan": self._nhat_quan_lenh(kehoach),
+            "kieu_co_phieu": kehoach.kieu_co_phieu,
+            "kieu_ten": row["ten"] if row is not None else None,
+            "lop_mau_thuan": kehoach.lop_mau_thuan,
+            "trong_so_goi_y": kehoach.trong_so_goi_y,
+            "lop_quyet_dinh": lop,
+            "lop_quyet_dinh_ten": LOP_LABELS.get(lop or "") or None,
+            "khop_goi_y": kehoach.khop_goi_y,
+            "ly_do_doi_chieu": kehoach.ly_do_doi_chieu,
         }
 
-    async def skip(self, user_id: uuid.UUID, symbol: str, *, conflict_level: str) -> dict:
-        """``POST /cap6/skip`` — nút «Không mua lần này» (spec §7).
+    # ── Đọc lại đối chiếu của MỘT lệnh (Kết sổ) ────────
 
-        Ghi nhận quyết định đứng ngoài, lấy mức nhận định đã chọn LÀM LÝ DO
-        (không hỏi thêm). ★ Cách nhẹ: KHÔNG theo dõi giá mã sau đó (spec §7/§13
-        — tránh phức tạp và tránh dạy tiếc nuối).
+    async def get_kehoach(self, user_id: uuid.UUID, order_id: uuid.UUID) -> dict:
+        """``GET /cap6/kehoach/{order_id}`` — the Đối chiếu block RECORDED on one
+        order, with every label + the §C12c provenance sentence the Kết sổ needs
+        to show khớp/lệch honestly.
+
+        ★ **Why this cannot be served by ``/cap6/goi-y``.** That endpoint
+        re-derives the kiểu from the symbol's ngành *now*. For a symbol the
+        server could not classify, the kiểu came from the CLIENT and lives only
+        on this row — ``/goi-y`` would still answer "chưa phân loại" and a Kết sổ
+        built on it would render "không xét" even though a ``khop_goi_y`` WAS
+        recorded. So everything below is read from the stored columns; nothing
+        is re-derived, and nothing is written.
+
+        Ownership: a foreign or unknown ``order_id`` is 404 (never 403) —
+        ``record_kehoach``'s convention, and it does not leak whether the order
+        exists. An order with NO Cấp 6 data is a normal 200 carrying
+        ``co_du_lieu = False``, so the FE can tell "lệnh có trước Cấp 6" apart
+        from "endpoint hỏng".
         """
         await self._require_progress(user_id)
-        muc = self._validate_muc(conflict_level)
-        ma = (symbol or "").strip().upper()
-        if not ma:
-            raise BadRequestError("Thiếu mã cổ phiếu")
+        order = await self._vt_repo.get_order_by_id(order_id)
+        if order is None or order.user_id != user_id:
+            raise NotFoundError("lệnh")
+        kehoach = await self._get_kehoach_by_order(order_id)
+        return self.kehoach_detail_out(kehoach, order_id=order_id, symbol=order.symbol)
 
-        result = await self._mau_thuan.doc(ma)
-        _had_conflict, had_veto, _veto_layers = self._suy_co(result)
+    @staticmethod
+    def kehoach_detail_out(
+        kehoach: OrderKehoach | None, *, order_id: uuid.UUID, symbol: str
+    ) -> dict:
+        """The per-order Đối chiếu payload — ``kehoach_out`` plus the display
+        block (kiểu label, lớp ưu tiên/ít tin, khớp label, giải thích) read OUT
+        OF ``trong_so_goi_y`` as it was stored.
 
-        row = Cap6Skip(
-            user_id=user_id,
-            symbol=ma,
-            at=datetime.now(UTC),
-            conflict_level=muc,
-            had_veto=had_veto,
+        The top-level ``kieu_ten`` / ``lop_uu_tien`` / ``lop_it_tin`` /
+        ``giai_thich`` deliberately mirror ``GoiYOut``'s shape so the Kết sổ can
+        reuse the suggestion component verbatim — sourced from the recording, not
+        from a fresh derivation.
+        """
+        empty = {
+            "id": None,
+            "order_id": order_id,
+            "symbol": symbol,
+            "kieu_co_phieu": None,
+            "kieu_ten": None,
+            "nganh": None,
+            "lop_mau_thuan": None,
+            "trong_so_goi_y": None,
+            "lop_uu_tien": [],
+            "lop_uu_tien_ten": [],
+            "lop_it_tin": [],
+            "lop_it_tin_ten": [],
+            "lop_quyet_dinh": None,
+            "lop_quyet_dinh_ten": None,
+            "khop_goi_y": None,
+            "khop_goi_y_ten": None,
+            "ly_do_doi_chieu": None,
+            "co_du_lieu": False,
+            "giai_thich": COPY_CHUA_DOI_CHIEU,
+        }
+        # No ``order_kehoach`` row at all, or a row that never went through the
+        # Đối chiếu step (``lop_quyet_dinh`` is the column only this step writes).
+        if kehoach is None or kehoach.lop_quyet_dinh is None:
+            return empty
+
+        trong_so = (
+            kehoach.trong_so_goi_y if isinstance(kehoach.trong_so_goi_y, dict) else {}
         )
-        self._session.add(row)
-        await self._session.flush()
-        await self._session.refresh(row)
+        uu_tien = [
+            lop for lop in (trong_so.get("lop_uu_tien") or []) if lop in _LOP_VALUES
+        ]
+        it_tin = [
+            lop for lop in (trong_so.get("lop_it_tin") or []) if lop in _LOP_VALUES
+        ]
+        khop = kehoach.khop_goi_y
         return {
-            "id": row.id,
-            "symbol": row.symbol,
-            "at": row.at,
-            "conflict_level": row.conflict_level,
-            "conflict_level_ten": MUC_LABELS[row.conflict_level],
-            "had_veto": row.had_veto,
+            **empty,
+            **Cap6Service.kehoach_out(kehoach),
+            "symbol": symbol,
+            "nganh": trong_so.get("nganh"),
+            "lop_uu_tien": uu_tien,
+            "lop_uu_tien_ten": lop_ten(uu_tien),
+            "lop_it_tin": it_tin,
+            "lop_it_tin_ten": lop_ten(it_tin),
+            "khop_goi_y_ten": (
+                None if khop is None else KHOP_GOI_Y_LABELS[bool(khop)]
+            ),
+            "co_du_lieu": True,
+            "giai_thich": Cap6Service._giai_thich_da_doi_chieu(
+                kehoach, symbol=symbol, trong_so=trong_so, uu_tien=uu_tien
+            ),
         }
 
-    # ══════════════════════════════════════════════════
-    # Nguồn dữ liệu để tính lại
-    # ══════════════════════════════════════════════════
+    @staticmethod
+    def _giai_thich_da_doi_chieu(
+        kehoach: OrderKehoach,
+        *,
+        symbol: str,
+        trong_so: dict,
+        uu_tien: list[str],
+    ) -> str:
+        """The §C12c sentence for a recorded đối chiếu: which kiểu, where the
+        kiểu came from, what IQX suggested, and what the user chose.
 
-    async def _filled_buys(self, user_id: uuid.UUID) -> list[VirtualOrder]:
+        ★ The lệch wording is the SAME neutral wording ``_nhom`` uses — lệch gợi
+        ý is never called "sai" anywhere in Cấp 6.
+        """
+        lop = kehoach.lop_quyet_dinh or ""
+        lop_label = LOP_LABELS.get(lop, lop)
+        row = KIEU_CO_PHIEU.get(kehoach.kieu_co_phieu or "")
+
+        if row is None:
+            # Kiểu chưa phân loại và không có fallback nào → không có gợi ý nào
+            # để so, nên khop_goi_y là NULL (xem record_kehoach).
+            return (
+                _CHUA_PHAN_LOAI_GIAI_THICH.format(symbol=symbol)
+                + f' Lần đó bạn chọn tin lớp "{lop_label}" — không có gợi ý nào '
+                "để đối chiếu, nên lệnh này không nằm trong nhóm khớp lẫn nhóm "
+                "lệch."
+            )
+
+        nguon = trong_so.get("nguon")
+        nganh = trong_so.get("nganh")
+        if nguon == "nganh" and nganh:
+            provenance = f"suy từ ngành {nganh}"
+        elif nguon == "client":
+            provenance = "bạn tự chọn vì hệ chưa có dữ liệu ngành cho mã này"
+        else:
+            provenance = "đã ghi lúc đối chiếu"
+        vi_sao = trong_so.get("giai_thich") or row["giai_thich"]
+        uu_tien_ten = ", ".join(lop_ten(uu_tien)) or "—"
+
+        phan = [f"{symbol} thuộc kiểu {row['ten']} ({provenance}). {vi_sao}"]
+        if kehoach.khop_goi_y is None:
+            phan.append(f'Lần đó bạn chọn tin lớp "{lop_label}".')
+        elif kehoach.khop_goi_y:
+            phan.append(
+                f'Bạn chọn tin lớp "{lop_label}" — KHỚP lớp IQX gợi ý ưu tiên cho '
+                f"kiểu này ({uu_tien_ten})."
+            )
+        else:
+            phan.append(
+                f'Bạn chọn tin lớp "{lop_label}" — LỆCH gợi ý ưu tiên '
+                f"({uu_tien_ten}). Lệch gợi ý KHÔNG bị tính là sai: đó chỉ là "
+                "nhóm thứ hai để so, và trọng tài là kết quả thật."
+            )
+        return " ".join(phan)
+
+    # ── Source rows ───────────────────────────────────
+
+    async def _doi_chieu_rows(
+        self, user_id: uuid.UUID
+    ) -> list[tuple[OrderKehoach, VirtualOrder]]:
+        """``order_kehoach`` rows that went through the Đối chiếu step, with
+        their BUY order (see the module docstring for why there is no
+        ``entered_at`` filter)."""
         result = await self._session.execute(
+            select(OrderKehoach, VirtualOrder)
+            .join(VirtualOrder, VirtualOrder.id == OrderKehoach.order_id)
+            .where(
+                VirtualOrder.user_id == user_id,
+                VirtualOrder.mode == "thuc_chien",
+                OrderKehoach.lop_quyet_dinh.is_not(None),
+            )
+            .order_by(VirtualOrder.created_at.asc())
+        )
+        return [(kehoach, order) for kehoach, order in result.all()]
+
+    async def _closed_pairs(
+        self, user_id: uuid.UUID
+    ) -> list[tuple[OrderKehoach, OrderKetso]]:
+        """Every closed round trip whose BUY carries a Cấp 6 đối chiếu, paired
+        with its ``order_ketso`` outcome (pairing rule = Cấp 1's, mirrored
+        exactly as Cấp 4's ``_closed_pairs`` does)."""
+        kehoach_rows = await self._doi_chieu_rows(user_id)
+        if not kehoach_rows:
+            return []
+        kehoach_by_buy_id = {order.id: kehoach for kehoach, order in kehoach_rows}
+
+        buys_result = await self._session.execute(
             select(VirtualOrder)
             .where(
                 VirtualOrder.user_id == user_id,
@@ -441,428 +762,300 @@ class Cap6Service:
             )
             .order_by(VirtualOrder.created_at.asc())
         )
-        return list(result.scalars().all())
+        buys = list(buys_result.scalars().all())
 
-    async def _kehoach_mau_thuan(self, user_id: uuid.UUID) -> list[OrderKehoach]:
-        """Kế hoạch của các lệnh mua ĐÃ KHỚP có ghi mức nhận định Cấp 6.
-
-        ★ KHÔNG lọc theo ``entered_at``: ``conflict_level`` chỉ có thể do
-        ``record_kehoach`` ở trên ghi, mà hàm đó đòi một hàng ``Cap6Progress``
-        — nên hàng nào mang nó thì đương nhiên là hàng Cấp-6-era (cùng lý lẽ
-        Cấp 4/5 dùng).
-        """
-        buys = await self._filled_buys(user_id)
-        if not buys:
-            return []
-        rows = (
-            await self._session.execute(
-                select(OrderKehoach).where(
-                    OrderKehoach.order_id.in_([o.id for o in buys]),
-                    OrderKehoach.conflict_level.is_not(None),
-                )
+        ketso_result = await self._session.execute(
+            select(OrderKetso, VirtualOrder)
+            .join(VirtualOrder, VirtualOrder.id == OrderKetso.order_id)
+            .where(
+                VirtualOrder.user_id == user_id,
+                VirtualOrder.mode == "thuc_chien",
             )
-        ).scalars().all()
-        return list(rows)
-
-    async def _skips(self, user_id: uuid.UUID) -> list[Cap6Skip]:
-        result = await self._session.execute(
-            select(Cap6Skip)
-            .where(Cap6Skip.user_id == user_id)
-            .order_by(Cap6Skip.at.asc())
+            .order_by(OrderKetso.closed_at.asc())
         )
-        return list(result.scalars().all())
 
-    async def _closed_pairs(
-        self, user_id: uuid.UUID
-    ) -> list[tuple[OrderKehoach | None, OrderKetso]]:
-        """Mọi lượt đã đóng: ``(kế hoạch của lệnh MUA khớp cặp, kết sổ)``.
-
-        Ghép lệnh BÁN với lệnh MUA bằng ĐÚNG luật của Cấp 1
-        (``Cap1Service._find_matching_buy``: lệnh mua đã khớp GẦN NHẤT cùng tài
-        khoản + mã, tại/trước lệnh bán) — cùng luật đã sinh ra ``pnl_pct`` của
-        chính hàng ``order_ketso`` đó. Ghép trong bộ nhớ (3 truy vấn) thay vì 1
-        truy vấn/lệnh bán.
-        """
-        ketso_rows = (
-            await self._session.execute(
-                select(OrderKetso, VirtualOrder)
-                .join(VirtualOrder, VirtualOrder.id == OrderKetso.order_id)
-                .where(
-                    VirtualOrder.user_id == user_id,
-                    VirtualOrder.mode == "thuc_chien",
-                    VirtualOrder.side == OrderSide.SELL,
-                )
-            )
-        ).all()
-        if not ketso_rows:
-            return []
-
-        buys = await self._filled_buys(user_id)
-        kehoach_rows = (
-            (
-                await self._session.execute(
-                    select(OrderKehoach).where(
-                        OrderKehoach.order_id.in_([o.id for o in buys])
-                    )
-                )
-            )
-            .scalars()
-            .all()
-            if buys
-            else []
-        )
-        kehoach_by_order = {row.order_id: row for row in kehoach_rows}
-
-        out: list[tuple[OrderKehoach | None, OrderKetso]] = []
-        for ketso, sell in ketso_rows:
-            candidates = [
-                o
-                for o in buys
-                if o.account_id == sell.account_id
-                and o.symbol == sell.symbol
-                and _as_utc(o.created_at) <= _as_utc(sell.created_at)
-            ]
-            if not candidates:
+        pairs: list[tuple[OrderKehoach, OrderKetso]] = []
+        for ketso, sell in ketso_result.all():
+            matched_buy: VirtualOrder | None = None
+            for buy in buys:  # ordered asc → the last match is the most recent
+                if (
+                    buy.account_id == sell.account_id
+                    and buy.symbol == sell.symbol
+                    and buy.created_at <= sell.created_at
+                ):
+                    matched_buy = buy
+            if matched_buy is None:
                 continue
-            buy = max(candidates, key=lambda o: _as_utc(o.created_at))
-            out.append((kehoach_by_order.get(buy.id), ketso))
-        return out
+            kehoach = kehoach_by_buy_id.get(matched_buy.id)
+            if kehoach is not None:
+                pairs.append((kehoach, ketso))
+        return pairs
 
-    # ══════════════════════════════════════════════════
-    # "Xử lý nhất quán" — luật đếm (spec §2/§11)
-    # ══════════════════════════════════════════════════
+    # ── Metrics (khớp vs lệch) ────────────────────────
 
     @staticmethod
-    def _nhat_quan_lenh(kehoach: OrderKehoach) -> bool | None:
-        """Lệnh MUA này có "xử lý nhất quán" không.
+    def _is_win(ketso: OrderKetso) -> bool:
+        return ketso.pnl_pct > 0
 
-        ``None`` = không xét được (không có mâu thuẫn, chưa chấm được mã, mức
-        nằm ngoài hai mẫu spec liệt kê, hoặc chưa biết khối lượng). ★ ``None``
-        KHÔNG BAO GIỜ bị tính là ``False``: nó không trừ, không cộng.
+    def _nhom(self, pairs: list[tuple[OrderKehoach, OrderKetso]], khop: bool) -> dict:
+        """One comparison group's stats + its §C12c explanation.
+
+        ★ The lệch group's wording is deliberately non-judgemental: lệch gợi ý
+        is a neutral fact, and the arbiter is the outcome, not the suggestion.
         """
-        if not kehoach.had_conflict:
-            return None
-        muc = kehoach.conflict_level
-        if muc == MucMauThuan.NHE.value:
-            # "Nhẹ → vào bình thường": đã mua là đã nhất quán.
-            return True
-        if muc != MucMauThuan.NGHIEM.value:
-            # ``ngai``/``chua_ro`` — spec không định nghĩa mẫu ✓ nào.
-            return None
-        pct = kehoach.pct_von
-        if pct is None:
-            # Chưa biết khối lượng ⇒ chưa xét được "mua nhỏ hay mua lớn".
-            return None
-        return float(pct) <= NGUONG_MUA_NHO_PCT
+        # ``khop_goi_y is None`` (kiểu chưa phân loại) joins NEITHER group —
+        # there was no suggestion, so the order says nothing about the
+        # comparison. ``bool(...) is khop`` (not ``==``) keeps a stray 0/1 from
+        # a driver out of the wrong bucket.
+        outcomes = [
+            ketso
+            for kehoach, ketso in pairs
+            if kehoach.khop_goi_y is not None and bool(kehoach.khop_goi_y) is khop
+        ]
+        so_lenh = len(outcomes)
+        so_thang = sum(1 for ketso in outcomes if self._is_win(ketso))
+        du_du_lieu = so_lenh >= MIN_LENH_MOI_NHOM
+        ty_le = (so_thang / so_lenh * 100.0) if so_lenh else None
+        ten = "Nhóm khớp gợi ý" if khop else "Nhóm lệch gợi ý"
 
-    @staticmethod
-    def _nhat_quan_skip(skip: Cap6Skip) -> bool:
-        """«Không mua» ở mức nghiêm trọng là mẫu ✓ của spec §2.
+        if so_lenh == 0:
+            giai_thich = (
+                f"Chưa có lệnh đã đóng nào ở {ten.lower()} — cần ít nhất "
+                f"{MIN_LENH_MOI_NHOM} lệnh mỗi nhóm mới so sánh được."
+            )
+        elif not du_du_lieu:
+            giai_thich = (
+                f"{ten}: {so_thang}/{so_lenh} lệnh đã đóng thắng. Chưa đủ dữ "
+                f"liệu — cần ít nhất {MIN_LENH_MOI_NHOM} lệnh đã đóng mỗi nhóm "
+                f"mới kết luận, {so_lenh} lệnh thì chưa nói được gì."
+            )
+        elif khop:
+            giai_thich = (
+                f"{ten}: {so_thang}/{so_lenh} lệnh đã đóng thắng "
+                f"({ty_le:.0f}%) — đây là các lệnh bạn tin đúng lớp mà IQX gợi ý "
+                "ưu tiên cho kiểu cổ phiếu đó."
+            )
+        else:
+            giai_thich = (
+                f"{ten}: {so_thang}/{so_lenh} lệnh đã đóng thắng "
+                f"({ty_le:.0f}%) — đây là các lệnh bạn tin lớp khác gợi ý. Lệch "
+                "gợi ý KHÔNG bị tính là kém; đó chỉ là nhóm thứ hai để so, và "
+                "trọng tài là kết quả thật."
+            )
 
-        Đứng ngoài ở mức nhẹ/đáng ngại/chưa rõ KHÔNG bị tính là lệch — nó chỉ
-        không phải mẫu spec đếm.
-        """
-        return skip.conflict_level == MucMauThuan.NGHIEM.value
+        return {
+            "khop": khop,
+            "ten": ten,
+            "so_lenh": so_lenh,
+            "so_thang": so_thang,
+            "ty_le_thang": ty_le,
+            "du_du_lieu": du_du_lieu,
+            "so_lenh_toi_thieu": MIN_LENH_MOI_NHOM,
+            "giai_thich": giai_thich,
+        }
 
-    def _dem_nhat_quan(
-        self, kehoach_rows: Sequence[OrderKehoach], skips: Sequence[Cap6Skip]
-    ) -> tuple[int, int]:
-        """``(so_lan_xu_ly_nhat_quan, so_lan_xu_ly_veto_nhat_quan)``.
+    async def _compute_metrics(self, user_id: uuid.UUID) -> dict:
+        """Everything derived from history: the two counters, the khớp/lệch
+        groups, and whether their comparison may be made at all."""
+        rows = await self._doi_chieu_rows(user_id)
+        so_lenh_doi_chieu = len(rows)
+        kieu_da_gap = {
+            kehoach.kieu_co_phieu for kehoach, _order in rows if kehoach.kieu_co_phieu
+        }
 
-        Ô thứ hai là TẬP CON của ô thứ nhất: một lần chỉ được tính vào veto khi
-        chính nó đã được tính là nhất quán.
-        """
-        nhat_quan = 0
-        veto = 0
-        for kehoach in kehoach_rows:
-            if self._nhat_quan_lenh(kehoach) is not True:
-                continue
-            nhat_quan += 1
-            if kehoach.had_veto:
-                veto += 1
-        for skip in skips:
-            if not self._nhat_quan_skip(skip):
-                continue
-            nhat_quan += 1
-            if skip.had_veto:
-                veto += 1
-        return nhat_quan, veto
+        pairs = await self._closed_pairs(user_id)
+        nhom_khop = self._nhom(pairs, True)
+        nhom_lech = self._nhom(pairs, False)
 
-    # ══════════════════════════════════════════════════
-    # Tổng lãi lệnh Cấp 6 — CHỈ hiển thị, KHÔNG phải cổng
-    # ══════════════════════════════════════════════════
+        du_ca_2_nhom = nhom_khop["du_du_lieu"] and nhom_lech["du_du_lieu"]
+        giup_ich = du_ca_2_nhom and (
+            nhom_khop["ty_le_thang"] >= nhom_lech["ty_le_thang"]
+        )
 
-    async def _tong_lai_pct(
-        self, progress: Cap6Progress, pairs: Sequence[tuple[OrderKehoach | None, OrderKetso]]
-    ) -> float | None:
-        """Σ(lãi/lỗ VND) ÷ Σ(vốn) của mọi lệnh ĐÃ ĐÓNG sau khi vào Cấp 6, tính %.
+        return {
+            "so_lenh_doi_chieu": so_lenh_doi_chieu,
+            "so_kieu_da_gap": len(kieu_da_gap),
+            "kieu_da_gap": sorted(kieu_da_gap),
+            "so_lenh_da_ket_so": len(pairs),
+            "nhom_khop": nhom_khop,
+            "nhom_lech": nhom_lech,
+            # ★ NULL, not 0.0, when the group has no closed lệnh — and a genuine
+            # 0.0 (closed lệnh, none of them winners) survives untouched. ``or``
+            # would have collapsed both into the same number.
+            "ty_le_thang_khop": nhom_khop["ty_le_thang"],
+            "ty_le_thang_lech": nhom_lech["ty_le_thang"],
+            "du_ca_2_nhom": du_ca_2_nhom,
+            "doi_chieu_giup_ich": giup_ich,
+        }
 
-        ★ ``None`` = chưa có lệnh Cấp-6 nào đóng — KHÔNG phải 0. Vốn của một
-        lượt suy ngược từ chính ``pnl_vnd``/``pnl_pct`` của hàng kết sổ (cùng
-        một nguồn, nên không thể lệch với con số Kết sổ đang hiện); lượt có
-        ``pnl_pct == 0`` không cho suy ra vốn nên bị loại khỏi CẢ tử số lẫn mẫu
-        số thay vì bị gán vốn 0.
-        """
-        entered = _as_utc(progress.entered_at)
-        tong_lai = 0.0
-        tong_von = 0.0
-        for _kehoach, ketso in pairs:
-            if _as_utc(ketso.closed_at) < entered:
-                continue
-            pnl_pct = float(ketso.pnl_pct)
-            pnl_vnd = float(ketso.pnl_vnd)
-            if pnl_pct == 0.0:
-                continue
-            von = pnl_vnd / (pnl_pct / 100.0)
-            if von <= 0:
-                continue
-            tong_lai += pnl_vnd
-            tong_von += von
-        if tong_von <= 0:
-            return None
-        return round(tong_lai / tong_von * 100.0, 2)
-
-    # ══════════════════════════════════════════════════
-    # Recompute + nhiệm vụ
-    # ══════════════════════════════════════════════════
+    # ── Recompute + 3 nhiệm vụ ────────────────────────
 
     async def _recompute_progress(self, user_id: uuid.UUID, progress: Cap6Progress) -> dict:
-        kehoach_rows = await self._kehoach_mau_thuan(user_id)
-        skips = await self._skips(user_id)
-        pairs = await self._closed_pairs(user_id)
+        metrics = await self._compute_metrics(user_id)
 
-        nhat_quan, veto = self._dem_nhat_quan(kehoach_rows, skips)
-        progress.so_lan_xu_ly_nhat_quan = nhat_quan
-        progress.so_lan_xu_ly_veto_nhat_quan = veto
-        progress.tong_lai_lenh_cap6_pct = await self._tong_lai_pct(progress, pairs)
+        progress.so_lenh_doi_chieu = metrics["so_lenh_doi_chieu"]
+        progress.so_kieu_da_gap = metrics["so_kieu_da_gap"]
+        progress.ty_le_thang_khop = metrics["ty_le_thang_khop"]
+        progress.ty_le_thang_lech = metrics["ty_le_thang_lech"]
+
+        now = datetime.now(UTC)
+
+        # ① lệnh đầu có đối chiếu — not gated.
+        if progress.task_1_done_at is None and metrics["so_lenh_doi_chieu"] >= 1:
+            progress.task_1_done_at = now
+
+        # ② Kết sổ đầu Cấp 6 = lệnh đầu tiên CÓ ĐỐI CHIẾU đã đóng.
+        if progress.task_2_done_at is None and metrics["so_lenh_da_ket_so"] >= 1:
+            progress.task_2_done_at = now
+
+        # ③ Thách thức Đối chiếu — triple condition, NOT gated.
+        if progress.task_3_done_at is None and self._task3_legs(metrics)["dat_ca_3"]:
+            progress.task_3_done_at = now
 
         await self._session.flush()
         await self._session.refresh(progress)
-        return self._progress_out(progress)
+        return metrics
 
     @staticmethod
-    def _dat_nhiem_vu(progress: Cap6Progress) -> bool:
-        """Cổng lên cấp — THUẦN HÀNH VI, không đọc lãi (spec §2/§3)."""
-        return (
-            progress.so_lan_xu_ly_nhat_quan >= MUC_TIEU_NHAT_QUAN
-            and progress.so_lan_xu_ly_veto_nhat_quan >= MUC_TIEU_VETO
-        )
+    def _task3_legs(metrics: dict) -> dict:
+        """The 3 legs of nhiệm vụ ③ (spec §2③) — ALL must hold at once.
 
-    @classmethod
-    def _progress_out(cls, progress: Cap6Progress) -> dict:
-        return {
-            "id": progress.id,
-            "user_id": progress.user_id,
-            "entered_at": progress.entered_at,
-            "so_lan_xu_ly_nhat_quan": progress.so_lan_xu_ly_nhat_quan,
-            "so_lan_xu_ly_veto_nhat_quan": progress.so_lan_xu_ly_veto_nhat_quan,
-            # Lên wire để FE không hard-code hai ngưỡng này.
-            "muc_tieu_nhat_quan": MUC_TIEU_NHAT_QUAN,
-            "muc_tieu_veto": MUC_TIEU_VETO,
-            # ★ null = CHƯA có lệnh đã đóng. KHÔNG phải 0.
-            "tong_lai_lenh_cap6_pct": progress.tong_lai_lenh_cap6_pct,
-            "da_xem_tour_mauthuan": progress.da_xem_tour_mauthuan,
-            "dat_nhiem_vu": cls._dat_nhiem_vu(progress),
-            "graduated_at": progress.graduated_at,
-            "time_to_graduate_hours": progress.time_to_graduate_hours,
-        }
-
-    # ══════════════════════════════════════════════════
-    # Phân tích danh mục — khối ⑭ + ⑮ (spec §9)
-    # ══════════════════════════════════════════════════
-
-    @staticmethod
-    def _khoi_14(kehoach_rows: Sequence[OrderKehoach]) -> dict:
-        """Khối ⑭ — nhận định có khớp hành động không (CHỈ soi khối lượng).
-
-        Spec §4.3/§9: **KHÔNG soi cắt lỗ** (cắt lỗ chỉ là chọn cách tính, không
-        phản ánh mức thận trọng).
-
-        ★ ``khop`` ba trạng thái: ``True``/``False`` khi so được, ``None`` khi
-        KHÔNG so được — mức chưa có lệnh nào, mức ``chua_ro`` (không nằm trên
-        thang nặng dần), hoặc mức nhẹ nhất đang có dữ liệu (chưa có mức nào nhẹ
-        hơn để so). Trả ``True`` cho hàng chưa so được sẽ là một lời khen user
-        chưa kiếm được.
+        The third leg needs BOTH groups at ≥3 closed lệnh before it can pass:
+        with less evidence it is simply "chưa đủ dữ liệu", never a default pass
+        or a default fail against the user.
         """
-        kl_theo_muc: dict[str, list[float]] = {m: [] for m in MUC_LABELS}
-        for kehoach in kehoach_rows:
-            if not kehoach.had_conflict:
-                continue
-            muc = kehoach.conflict_level
-            if muc not in kl_theo_muc or kehoach.pct_von is None:
-                continue
-            kl_theo_muc[muc].append(float(kehoach.pct_von))
-
-        tb: dict[str, float | None] = {
-            muc: (round(sum(vals) / len(vals), 1) if vals else None)
-            for muc, vals in kl_theo_muc.items()
-        }
-
-        rows: list[dict] = []
-        for muc in (*MUC_NANG_DAN, MucMauThuan.CHUA_RO.value):
-            n = len(kl_theo_muc[muc])
-            khop: bool | None = None
-            if muc in MUC_NANG_DAN and tb[muc] is not None:
-                nhe_hon = [
-                    tb[m]
-                    for m in MUC_NANG_DAN[: MUC_NANG_DAN.index(muc)]
-                    if tb[m] is not None
-                ]
-                if nhe_hon:
-                    khop = all(tb[muc] <= x for x in nhe_hon)  # type: ignore[operator]
-            rows.append(
-                {
-                    "muc": muc,
-                    "muc_ten": MUC_LABELS[muc],
-                    "so_lenh": n,
-                    # ★ None = mức này chưa có lệnh nào (≠ mua 0% vốn).
-                    "kl_tb_pct_von": tb[muc],
-                    "khop": khop,
-                }
-            )
-
-        co_du_lieu = [m for m in MUC_NANG_DAN if tb[m] is not None]
-        du_mau = len(co_du_lieu) >= 2
+        so_lenh_dat = metrics["so_lenh_doi_chieu"] >= _TASK3_SO_LENH_MIN
+        so_kieu_dat = metrics["so_kieu_da_gap"] >= _TASK3_SO_KIEU_MIN
+        giup_ich_dat = bool(metrics["doi_chieu_giup_ich"])
         return {
-            "rows": rows,
-            "du_mau": du_mau,
-            "giai_thich": _KHOI_14_GIAI_THICH,
-            "nhan_xet": Cap6Service._khoi_14_nhan_xet(tb, du_mau),
+            "so_lenh_dat": so_lenh_dat,
+            "so_kieu_dat": so_kieu_dat,
+            "giup_ich_dat": giup_ich_dat,
+            "dat_ca_3": so_lenh_dat and so_kieu_dat and giup_ich_dat,
         }
 
-    @staticmethod
-    def _khoi_14_nhan_xet(tb: dict[str, float | None], du_mau: bool) -> str | None:
-        """Câu nhận xét SERVER dựng cho khối ⑭ (§C12c: không hiện số trơ)."""
-        if not du_mau:
-            return None
-        co = [(m, tb[m]) for m in MUC_NANG_DAN if tb[m] is not None]
-        nang_nhat, kl_nang_nhat = co[-1]
-        cao_nhat = max(co, key=lambda x: (x[1], MUC_NANG_DAN.index(x[0])))
-        if cao_nhat[0] == nang_nhat and len(co) >= 2 and kl_nang_nhat > min(x[1] for x in co):
-            return (
-                f'Khi bạn đọc mâu thuẫn "{MUC_LABELS[nang_nhat].lower()}", đáng lẽ '
-                f"phải mua ít nhất — nhưng bạn lại mua nhiều nhất ({kl_nang_nhat}% "
-                'vốn). Đây là bẫy "đắn đo trong đầu nhưng tay vẫn mua lớn": nhận '
-                "định nghiêm túc mà hành động không đổi thì nhận định thành vô nghĩa."
+    async def mark_task(self, user_id: uuid.UUID, task_no: int) -> Cap6Progress:
+        """``PATCH /cap6/task`` — all 3 nhiệm vụ are derived from order_kehoach /
+        order_ketso, so this just triggers a recompute pass (idempotent)."""
+        if task_no not in _TASK_NOS:
+            raise BadRequestError("task_no không hợp lệ")
+        progress = await self._require_progress(user_id)
+        await self._recompute_progress(user_id, progress)
+        return progress
+
+    # ── Thách thức Đối chiếu — GET /cap6/thach-thuc ────
+
+    async def thach_thuc(self, user_id: uuid.UUID) -> dict:
+        """3 sub-conditions of nhiệm vụ ③ + current values + giải thích each
+        (feeds the §C12c display — never a bare number)."""
+        progress = await self._require_progress(user_id)
+        metrics = await self._recompute_progress(user_id, progress)
+        legs = self._task3_legs(metrics)
+        nhom_khop = metrics["nhom_khop"]
+        nhom_lech = metrics["nhom_lech"]
+
+        if not metrics["du_ca_2_nhom"]:
+            giup_ich_giai_thich = (
+                f"Chưa so sánh được: nhóm khớp gợi ý có {nhom_khop['so_lenh']} "
+                f"lệnh đã đóng, nhóm lệch có {nhom_lech['so_lenh']} — mỗi nhóm "
+                f"cần ít nhất {MIN_LENH_MOI_NHOM} lệnh mới kết luận. Trên 1-2 "
+                "lệnh thì con số không nói được gì, nên IQX không so."
             )
-        return (
-            "Khối lượng của bạn giảm dần khi mâu thuẫn nặng dần — hành động đang "
-            "khớp với nhận định."
-        )
-
-    def _khoi_15(
-        self,
-        pairs: Sequence[tuple[OrderKehoach | None, OrderKetso]],
-        skips: Sequence[Cap6Skip],
-    ) -> dict:
-        """Khối ⑮ — kết quả theo mức nhận định + số lần đứng ngoài (spec §9)."""
-        theo_muc: dict[str, list[float]] = {m: [] for m in MUC_LABELS}
-        for kehoach, ketso in pairs:
-            if kehoach is None or not kehoach.had_conflict:
-                continue
-            muc = kehoach.conflict_level
-            if muc not in theo_muc:
-                continue
-            theo_muc[muc].append(float(ketso.pnl_pct))
-
-        rows: list[dict] = []
-        for muc in (*MUC_NANG_DAN, MucMauThuan.CHUA_RO.value):
-            pnls = theo_muc[muc]
-            n = len(pnls)
-            so_thang = sum(1 for p in pnls if p > 0)
-            du_mau = n >= MIN_LENH_TY_LE_THANG
-            rows.append(
-                {
-                    "muc": muc,
-                    "muc_ten": MUC_LABELS[muc],
-                    "so_lenh": n,
-                    "so_lenh_thang": so_thang,
-                    # ★ None = chưa đủ lệnh để kết luận (≠ 0%).
-                    "ty_le_thang_pct": round(so_thang / n * 100.0, 1) if du_mau else None,
-                    "du_mau": du_mau,
-                }
+        elif legs["giup_ich_dat"]:
+            giup_ich_giai_thich = (
+                f"Nhóm khớp gợi ý thắng {nhom_khop['ty_le_thang']:.0f}% "
+                f"({nhom_khop['so_thang']}/{nhom_khop['so_lenh']} lệnh) vs nhóm "
+                f"lệch {nhom_lech['ty_le_thang']:.0f}% "
+                f"({nhom_lech['so_thang']}/{nhom_lech['so_lenh']} lệnh) — đối "
+                "chiếu theo kiểu đang giúp bạn chọn đúng lớp."
+            )
+        else:
+            giup_ich_giai_thich = (
+                f"Nhóm khớp gợi ý thắng {nhom_khop['ty_le_thang']:.0f}% "
+                f"({nhom_khop['so_thang']}/{nhom_khop['so_lenh']} lệnh), thấp hơn "
+                f"nhóm lệch {nhom_lech['ty_le_thang']:.0f}% "
+                f"({nhom_lech['so_thang']}/{nhom_lech['so_lenh']} lệnh). Với bạn, "
+                "gợi ý theo kiểu chưa đúng — cách bạn tự chọn lớp đang cho kết "
+                "quả tốt hơn; xem khối ⑭ để tìm mẫu riêng của bạn."
             )
 
-        so_lan_nghiem_khong_mua = sum(
-            1 for s in skips if s.conflict_level == MucMauThuan.NGHIEM.value
-        )
+        kieu_ten = [
+            KIEU_CO_PHIEU[k]["ten"] for k in metrics["kieu_da_gap"] if k in KIEU_CO_PHIEU
+        ]
+
         return {
-            "rows": rows,
-            "so_lan_nghiem_khong_mua": so_lan_nghiem_khong_mua,
-            "so_lan_khong_mua": len(skips),
-            "so_lenh_toi_thieu": MIN_LENH_TY_LE_THANG,
-            "giai_thich": _KHOI_15_GIAI_THICH,
-            "nhan_xet": self._khoi_15_nhan_xet(rows, so_lan_nghiem_khong_mua),
+            "dat_ca_3": legs["dat_ca_3"],
+            "so_lenh_doi_chieu": {
+                "ten": f"Đối chiếu ≥ {_TASK3_SO_LENH_MIN} lệnh có mâu thuẫn",
+                "gia_tri_hien_tai": float(metrics["so_lenh_doi_chieu"]),
+                "muc_tieu": float(_TASK3_SO_LENH_MIN),
+                "dat": legs["so_lenh_dat"],
+                "du_du_lieu": True,
+                "giai_thich": (
+                    f"Đã có {metrics['so_lenh_doi_chieu']}/{_TASK3_SO_LENH_MIN} "
+                    "lệnh bạn đi qua bước Đối chiếu — mỗi lệnh là một lần bạn "
+                    "chọn có ý thức lớp nào đáng tin khi các lớp nói ngược nhau."
+                ),
+            },
+            "so_kieu_da_gap": {
+                "ten": f"Gặp ≥ {_TASK3_SO_KIEU_MIN} kiểu cổ phiếu khác nhau",
+                "gia_tri_hien_tai": float(metrics["so_kieu_da_gap"]),
+                "muc_tieu": float(_TASK3_SO_KIEU_MIN),
+                "dat": legs["so_kieu_dat"],
+                "du_du_lieu": True,
+                "giai_thich": (
+                    f"Đã đối chiếu trên {metrics['so_kieu_da_gap']}/"
+                    f"{_TASK3_SO_KIEU_MIN} kiểu cổ phiếu"
+                    + (f" ({', '.join(kieu_ten)})" if kieu_ten else "")
+                    + " — trọng số lớp khác nhau theo từng kiểu, nên cần làm quen "
+                    "nhiều kiểu mới thấy được sự khác biệt."
+                ),
+            },
+            "doi_chieu_giup_ich": {
+                "ten": "Nhóm khớp gợi ý thắng ≥ nhóm lệch (mỗi nhóm ≥ 3 lệnh)",
+                # A condition block keeps the shape Cấp 7/8 use — a number plus
+                # ``du_du_lieu`` saying whether it means anything. The nullable
+                # rates live on ``nhom_khop``/``nhom_lech`` right below, where a
+                # missing group is visible as ``ty_le_thang = null``.
+                "gia_tri_hien_tai": (
+                    metrics["ty_le_thang_khop"]
+                    if metrics["ty_le_thang_khop"] is not None
+                    else 0.0
+                ),
+                "muc_tieu": (
+                    metrics["ty_le_thang_lech"]
+                    if metrics["ty_le_thang_lech"] is not None
+                    else 0.0
+                ),
+                "dat": legs["giup_ich_dat"],
+                "du_du_lieu": metrics["du_ca_2_nhom"],
+                "giai_thich": giup_ich_giai_thich,
+            },
+            "nhom_khop": nhom_khop,
+            "nhom_lech": nhom_lech,
         }
 
-    @staticmethod
-    def _khoi_15_nhan_xet(rows: Sequence[dict], so_lan_nghiem_khong_mua: int) -> str | None:
-        """Câu nhận xét SERVER dựng cho khối ⑮ (§C12c)."""
-        by_muc = {r["muc"]: r for r in rows}
-        nhe = by_muc[MucMauThuan.NHE.value]
-        nghiem = by_muc[MucMauThuan.NGHIEM.value]
-        khen = (
-            f" Đáng khen: {so_lan_nghiem_khong_mua} lần đọc \"nghiêm trọng\" bạn đã "
-            "đứng ngoài — đó là kỷ luật đúng."
-            if so_lan_nghiem_khong_mua > 0
-            else ""
-        )
-        if nhe["du_mau"] and nghiem["du_mau"]:
-            if nhe["ty_le_thang_pct"] > nghiem["ty_le_thang_pct"]:
-                return (
-                    "Bản năng đọc mâu thuẫn của bạn khá chuẩn: thấy \"nhẹ\" thì thắng "
-                    f"{nhe['ty_le_thang_pct']}%, thấy \"nghiêm trọng\" mà vẫn vào thì "
-                    f"chỉ {nghiem['ty_le_thang_pct']}%.{khen}"
-                )
-            return (
-                f"Lệnh bạn đọc \"nhẹ\" thắng {nhe['ty_le_thang_pct']}%, còn lệnh đọc "
-                f"\"nghiêm trọng\" mà vẫn vào thắng {nghiem['ty_le_thang_pct']}% — "
-                "lần này kết quả chưa xếp theo nhận định của bạn. Đây là mẫu nhỏ, "
-                f"đừng vội kết luận về bản năng đọc của mình.{khen}"
-            )
-        if khen:
-            return khen.strip()
-        return None
+    # ── Graduation ────────────────────────────────────
 
-    async def phan_tich(self, user_id: uuid.UUID) -> dict:
-        """``GET /cap6/phan-tich`` — khối ⑭ + khối ⑮ (spec §9)."""
+    async def graduate(self, user_id: uuid.UUID) -> Cap6Progress:
+        """Graduate Cấp 6 — only when all 3 nhiệm vụ are done (thực chất ③)."""
         progress = await self._require_progress(user_id)
         await self._recompute_progress(user_id, progress)
 
-        kehoach_rows = await self._kehoach_mau_thuan(user_id)
-        skips = await self._skips(user_id)
-        pairs = await self._closed_pairs(user_id)
-        return {
-            "khoi_14": self._khoi_14(kehoach_rows),
-            "khoi_15": self._khoi_15(pairs, skips),
-        }
-
-    # ══════════════════════════════════════════════════
-    # Tốt nghiệp
-    # ══════════════════════════════════════════════════
-
-    async def graduate(self, user_id: uuid.UUID) -> dict:
-        """Tốt nghiệp Cấp 6 — 1/1 nhiệm vụ, THUẦN HÀNH VI (spec §3).
-
-        ★ Không có bất kỳ điều kiện lãi nào ở đây, kể cả điều kiện mềm.
-        """
-        progress = await self._require_progress(user_id)
-        await self._recompute_progress(user_id, progress)
-
-        if not self._dat_nhiem_vu(progress):
-            raise ConflictError(
-                "Chưa hoàn thành nhiệm vụ Cấp 6: cần "
-                f"{MUC_TIEU_NHAT_QUAN} lần xử lý mâu thuẫn nhất quán, trong đó "
-                f"{MUC_TIEU_VETO} lần gặp lớp phủ quyết rất xấu"
-            )
+        all_tasks_done = all(
+            getattr(progress, f"task_{n}_done_at") is not None for n in _TASK_NOS
+        )
+        if not all_tasks_done:
+            raise ConflictError("Chưa hoàn thành đủ 3 nhiệm vụ Cấp 6")
 
         if progress.graduated_at is None:
             now = datetime.now(UTC)
             progress.graduated_at = now
-            progress.time_to_graduate_hours = (
-                now - _as_utc(progress.entered_at)
-            ).total_seconds() / 3600.0
+            entered = progress.entered_at
+            if entered.tzinfo is None:
+                entered = entered.replace(tzinfo=UTC)
+            progress.time_to_graduate_hours = (now - entered).total_seconds() / 3600.0
             await self._session.flush()
             await self._session.refresh(progress)
 
-        return await self._recompute_progress(user_id, progress)
+        return progress
