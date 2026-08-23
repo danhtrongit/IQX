@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useRef, type ReactNode } from "react"
+import type { ConflictLevel } from "./mauThuanTypes"
 import type { KieuCoPhieu, Lop, Lop5Partial } from "./types"
 
 /**
@@ -38,6 +39,21 @@ export interface Cap6OrderEvent {
   lyDoDoiChieu?: string
   /** The user's own 5-lớp ratings the conflict was read from. */
   lopMauThuan?: Lop5Partial
+  // ── CẤP 6 «BẬC THẦY» (spec đợt 7) ─────────────────────────────────────────
+  /**
+   * Mức nhận định mâu thuẫn user chọn lúc MUA (spec §6). `undefined`/`null` =
+   * lệnh không có bảng mâu thuẫn, hoặc user không chọn mức nào.
+   */
+  conflictLevel?: ConflictLevel | null
+  /** Bảng mâu thuẫn CÓ hiện cho lệnh này không (spec §11 `had_conflict`). */
+  coMauThuan?: boolean
+  /** Lệnh này có lớp phủ quyết ở bậc rất xấu không (spec §11 `had_veto`). */
+  phuQuyetKichHoat?: boolean
+  /** Lớp phủ quyết đang xấu (spec §11 `veto_layers`). */
+  lopPhuQuyetXau?: Lop[]
+  /** Hai phe lúc đặt — để Kết sổ dựng bảng "nhận định vs hành động". */
+  pheUngHo?: Lop[]
+  pheNguoc?: Lop[]
 }
 
 /** Handlers the Cấp 6 journey registers to react to trading-UI events. */
@@ -56,6 +72,13 @@ export interface Cap6EventHandlers {
    */
   onLopQuyetDinhPicked?: (lop: Lop, khopGoiY: boolean | null) => void
   onOrderFilled?: (order: Cap6OrderEvent) => void
+  // ── CẤP 6 «BẬC THẦY» (spec đợt 7 §11 analytics) ───────────────────────────
+  /** `cap6_conflict_shown(symbol, veto_layers)` — bảng mâu thuẫn vừa hiện. */
+  onMauThuanShown?: (symbol: string, lopPhuQuyetXau: Lop[]) => void
+  /** `cap6_conflict_rated(symbol, level)` — user chọn một mức nhận định. */
+  onNhanDinhPicked?: (symbol: string, level: ConflictLevel) => void
+  /** `cap6_skip(symbol, level)` — user bấm «Không mua lần này» (spec §7). */
+  onKhongMua?: (symbol: string, level: ConflictLevel | null) => void
 }
 
 /** The bus value: notify fns (undefined when no handlers) + `registerHandlers`. */
@@ -96,15 +119,38 @@ export function Cap6Provider({ children }: { children: ReactNode }) {
     handlersRef.current.onOrderFilled?.(order)
   }, [])
 
+  const onMauThuanShown = useCallback((symbol: string, lopPhuQuyetXau: Lop[]) => {
+    handlersRef.current.onMauThuanShown?.(symbol, lopPhuQuyetXau)
+  }, [])
+
+  const onNhanDinhPicked = useCallback((symbol: string, level: ConflictLevel) => {
+    handlersRef.current.onNhanDinhPicked?.(symbol, level)
+  }, [])
+
+  const onKhongMua = useCallback((symbol: string, level: ConflictLevel | null) => {
+    handlersRef.current.onKhongMua?.(symbol, level)
+  }, [])
+
   const value = useMemo<Cap6EventBus>(
     () => ({
       onConflictShown,
       onLopQuyetDinhPicked,
       onOrderFilled,
+      onMauThuanShown,
+      onNhanDinhPicked,
+      onKhongMua,
       registerHandlers,
       isCap6Active: true,
     }),
-    [onConflictShown, onLopQuyetDinhPicked, onOrderFilled, registerHandlers],
+    [
+      onConflictShown,
+      onLopQuyetDinhPicked,
+      onOrderFilled,
+      onMauThuanShown,
+      onNhanDinhPicked,
+      onKhongMua,
+      registerHandlers,
+    ],
   )
 
   return <Cap6EventsContext.Provider value={value}>{children}</Cap6EventsContext.Provider>
