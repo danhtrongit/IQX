@@ -28,6 +28,15 @@
  *  h. `JourneyPanelCap4.tsx` (`cap4-journey-goal`) — y hệt (d), theo `>= 5`.
  *  i. `GraduationModalCap5.tsx` — y hệt (b)(c)(e)(g), theo `CAP_MAX_ENABLED >= 6`.
  *  j. `JourneyPanelCap5.tsx` (`cap5-journey-goal`) — y hệt (d)(h), theo `>= 6`.
+ *  k. `GraduationModalCap6.tsx` — y hệt (b)(c)(e)(g)(i), theo `CAP_MAX_ENABLED >= 7`.
+ *  l. `JourneyPanelCap6.tsx` (`cap6-journey-goal`) — y hệt (d)(h)(j), theo `>= 7`.
+ *
+ * ★ Ghi chú cho lần nâng trần 6 → 7: `TradingPanel.tsx` có một cờ NỮA phải xem
+ *   lại, `isCap6BacThay = isCap6Active && !isCap7Active`. Cấp 7/8 hiện vẫn dựng
+ *   trên Cấp 6 «Đối chiếu» CŨ (`DoiChieuBlock`, `POST /cap6/kehoach
+ *   {lop_quyet_dinh,…}`, cổng cứng riêng của nó), trong khi Cấp 6 «Bậc thầy» đã
+ *   thay hẳn khối đó bằng bảng mâu thuẫn. Mở Cấp 7 mà không dựng lại nó trên Cấp
+ *   6 mới = user tụt về một màn Cấp 6 không còn tồn tại.
  *
  * ─── LUẬT TỔNG QUÁT (áp cho MỌI lần mở thêm cấp) ────────────────────────────
  * Với mỗi cấp N đang là TRẦN, đúng hai màn phải gắn theo `CAP_MAX_ENABLED >=

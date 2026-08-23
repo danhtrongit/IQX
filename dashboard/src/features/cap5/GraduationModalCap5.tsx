@@ -131,7 +131,7 @@ const BLOCK_3 =
  * chưa mở. Nâng trần → câu nguyên văn spec tự quay về, không phải sửa dòng nào.
  */
 const BLOCK_3_CAP6_CHUA_MO =
-  "**Cấp 6 «Đối chiếu» chưa ra mắt.** Cấp 5 là chặng cuối của chương trình hiện tại — bạn đã đi hết phần đang mở. Khi Cấp 6 mở, bạn sẽ học cách xử lý khi 5 lớp mâu thuẫn: lớp nào có quyền phủ quyết, lớp nào chỉ là điểm trừ, và khi nào mâu thuẫn nghĩa là nên đứng ngoài."
+  "**Cấp 6 «Bậc thầy» chưa ra mắt.** Cấp 5 là chặng cuối của chương trình hiện tại — bạn đã đi hết phần đang mở. Khi Cấp 6 mở, bạn sẽ học cách xử lý khi 5 lớp mâu thuẫn: lớp nào có quyền phủ quyết, lớp nào chỉ là điểm trừ, và khi nào mâu thuẫn nghĩa là nên đứng ngoài."
 
 /** Splits on the spec's own `**bold**` markers and renders them as `<strong>`. */
 function renderInlineBold(text: string) {
@@ -223,7 +223,7 @@ export function GraduationModalCap5() {
         onClick={handleGraduate}
         disabled={graduate.isPending}
       >
-        Vào Cấp 6 «Đối chiếu» →
+        Vào Cấp 6 «Bậc thầy» →
         {/* Dòng "sắp ra mắt" — gắn theo trần nên khi Cấp 6 mở nó tự biến mất. */}
         {!isCap6Open() && (
           <span

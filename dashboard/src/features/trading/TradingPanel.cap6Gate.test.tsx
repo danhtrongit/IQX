@@ -4,17 +4,19 @@ import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 /**
- * Cấp 6 wiring inside `TradingPanel`/`OrderEntry` (Task FE1) — PURELY ADDITIVE
- * (spec §0: "Toàn bộ panel Cấp 5 GIỮ NGUYÊN"):
- *  - `DoiChieuBlock` renders ONLY inside a Cấp 6 session, buy-side, and BELOW
- *    Cấp 4's Đọc-5-lớp (its ratings are the conflict source).
- *  - **Cổng cứng only when the ratings CONFLICT** (≥1 Ủng hộ AND ≥1 Ngược
- *    chiều): MUA is blocked until a lớp quyết định + a 1-dòng lý do exist. With
- *    no conflict Cấp 6 adds NO gate at all.
- *  - Every Cấp 1/2/3/4/5 block + cổng cứng chain + Cấp 3's volume auto-fill
- *    behaves EXACTLY as `TradingPanel.cap5Gate.test.tsx` proves at Cấp 5.
- *  - A BUY fill with a conflict posts `/cap6/kehoach` LAST in the kế hoạch chain
- *    (all cấp extend ONE `order_kehoach` row); a SELL fires Cấp 6's bus event.
+ * Cấp 6 «Bậc thầy» trong `TradingPanel` (spec `demo-trading/LEVEL 6`, mockup
+ * `iqx-cap6-datlenh.html`):
+ *  - `MauThuanBlock` **THAY** khối "Đọc 5 lớp" của Cấp 4 (spec §5.2 / checklist
+ *    §14 dòng 1) — buy-side, đúng chỗ mục "1." của thẻ KẾ HOẠCH.
+ *  - Cấp 6 **KHÔNG THÊM CỔNG CỨNG NÀO** (spec §4.2 "nhận định là data, không
+ *    cản hành động"), và cổng cứng "chấm đủ 5 lớp" của Cấp 4 được NHẤC — giữ
+ *    lại là khoá vĩnh viễn nút MUA vì khối để chấm đã bị thay.
+ *  - Lệnh MUA khớp: `POST /cap6/kehoach {order_id, conflict_level}` SAU CÙNG
+ *    trong chuỗi kế hoạch (mọi cấp cùng MỘT hàng `order_kehoach`), bọc
+ *    `ghiKehoachKhongChiMang`.
+ *  - Nút «Không mua lần này» cạnh nút MUA, chỉ khi mã có bảng mâu thuẫn.
+ *
+ * ★ Cấp 7/8 chưa được dựng lại trên Cấp 6 mới nên chúng GIỮ `DoiChieuBlock` cũ.
  */
 
 vi.mock("@/shared/contexts/symbol-context", () => ({
@@ -299,13 +301,48 @@ vi.mock("@/features/cap5", async (importOriginal) => {
   }
 })
 
-/* ── Cấp 6 ──
-   `coMauThuan` + `isDoiChieuValid` stay REAL (the panel's gate is the thing
-   under test); only the bus, the mutation and the block itself are stubbed. */
-const recordKehoachCap6AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc6-1" }))
+/* ── Cấp 6 «Bậc thầy» ──
+   `coBangMauThuan` / `lyDoTuMauThuan` / `conflictLevelLabel` giữ NGUYÊN BẢN THẬT
+   (hành vi của panel là thứ đang được kiểm); chỉ bus, hai mutation và khối là
+   stub. */
+const recordKehoachMauThuanAsyncMock = vi.fn<(...a: unknown[]) => unknown>(() =>
+  Promise.resolve({ id: "khc6-1" }),
+)
+const skipAsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ ok: true }))
 const onOrderFilledCap6Mock = vi.fn()
+const onKhongMuaMock = vi.fn()
 let isCap6ActiveFlag = true
-let doiChieuProps: { doc5Lop?: Record<string, string>; symbol?: string } = {}
+let mauThuanData: unknown = undefined
+let mauThuanBlockProps: { symbol?: string; nhanDinh?: string | null } = {}
+
+/** Bản đọc mockup GEX: 2 ủng hộ · 2 ngược (cả hai phủ quyết) · 1 trung tính. */
+const MAU_THUAN_GEX = {
+  co_mau_thuan: true,
+  ung_ho: [
+    { lop: "ky_thuat", nhan: "Mạnh", bac: 5 },
+    { lop: "dong_tien", nhan: "Ủng hộ", bac: 4 },
+  ],
+  nguoc: [
+    { lop: "noi_bo", nhan: "Lãnh đạo bán", bac: 1, la_phu_quyet: true },
+    { lop: "tin_tuc", nhan: "Rất tiêu cực", bac: 1, la_phu_quyet: true },
+  ],
+  trung_tinh: [{ lop: "dinh_gia", nhan: "Trung tính" }],
+  phu_quyet_kich_hoat: true,
+  lop_phu_quyet_xau: ["noi_bo", "tin_tuc"],
+  canh_bao: "Có 2 lớp phủ quyết đang ở mức rất xấu.",
+  chua_du_du_lieu: false,
+  ly_do_chua_du: null,
+}
+
+/** 5 lớp cùng chiều → KHÔNG có bảng mâu thuẫn. */
+const MAU_THUAN_KHONG = {
+  ...MAU_THUAN_GEX,
+  co_mau_thuan: false,
+  nguoc: [],
+  phu_quyet_kich_hoat: false,
+  lop_phu_quyet_xau: [],
+  canh_bao: null,
+}
 
 vi.mock("@/features/cap6", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/features/cap6")>()
@@ -315,39 +352,38 @@ vi.mock("@/features/cap6", async (importOriginal) => {
       isCap6Active: isCap6ActiveFlag,
       onConflictShown: vi.fn(),
       onLopQuyetDinhPicked: vi.fn(),
+      onMauThuanShown: vi.fn(),
+      onNhanDinhPicked: vi.fn(),
+      onKhongMua: onKhongMuaMock,
       onOrderFilled: onOrderFilledCap6Mock,
       registerHandlers: vi.fn(),
     }),
-    useRecordKehoachCap6: () => ({
+    useMauThuanCap6: () => ({ data: mauThuanData, isLoading: false, isError: false }),
+    useRecordKehoachCap6: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
+    useRecordKehoachMauThuanCap6: () => ({
       mutate: vi.fn(),
-      mutateAsync: recordKehoachCap6AsyncMock,
+      mutateAsync: recordKehoachMauThuanAsyncMock,
       isPending: false,
     }),
-    DoiChieuBlock: (props: {
+    useSkipCap6: () => ({ mutate: vi.fn(), mutateAsync: skipAsyncMock, isPending: false }),
+    MauThuanBlock: (props: {
       symbol: string
-      doc5Lop: Record<string, string>
-      onLopQuyetDinh: (lop: string) => void
-      onLyDo: (v: string) => void
-      onKieuCoPhieu: (k: string) => void
+      nhanDinh: string | null
+      onNhanDinh: (l: string) => void
     }) => {
-      doiChieuProps = { doc5Lop: props.doc5Lop, symbol: props.symbol }
+      mauThuanBlockProps = { symbol: props.symbol, nhanDinh: props.nhanDinh }
       return (
-        <div data-testid="doichieu-mock">
-          <button type="button" onClick={() => props.onLopQuyetDinh("dinh_gia")}>
-            PICK_LOP
+        <div data-testid="mauthuan-mock">
+          <button type="button" onClick={() => props.onNhanDinh("nghiem")}>
+            RATE_NGHIEM
           </button>
-          <button type="button" onClick={() => props.onLyDo("P/B 1.2 — rẻ hơn trung vị")}>
-            TYPE_LY_DO
-          </button>
-          <button type="button" onClick={() => props.onLyDo("   ")}>
-            TYPE_BLANK
-          </button>
-          <button type="button" onClick={() => props.onKieuCoPhieu("dau_co_nho")}>
-            PICK_KIEU
+          <button type="button" onClick={() => props.onNhanDinh("nhe")}>
+            RATE_NHE
           </button>
         </div>
       )
     },
+    DoiChieuBlock: () => <div data-testid="doichieu-mock" />,
   }
 })
 
@@ -367,16 +403,10 @@ function renderPanel() {
   )
 }
 
-/** Satisfy Cấp 2 + Cấp 3's gates (Cấp 4/5/6 sit on top of all of them). */
+/** Satisfy Cấp 2 + Cấp 3's gates (Cấp 6 sits on top of both). */
 function satisfyCap2And3() {
   fireEvent.click(screen.getByText("PICK_SLTP"))
   fireEvent.click(screen.getByText("PICK_VON"))
-}
-
-/** Satisfy Cấp 6's cổng cứng: a lớp quyết định + a non-blank 1-dòng lý do. */
-function satisfyCap6() {
-  fireEvent.click(screen.getByText("PICK_LOP"))
-  fireEvent.click(screen.getByText("TYPE_LY_DO"))
 }
 
 beforeEach(() => {
@@ -390,256 +420,247 @@ beforeEach(() => {
   recordKehoachCap2AsyncMock.mockClear()
   recordKehoachCap3AsyncMock.mockClear()
   recordKehoachCap4AsyncMock.mockClear()
-  recordKehoachCap6AsyncMock.mockClear()
+  recordKehoachMauThuanAsyncMock.mockClear()
+  recordKehoachMauThuanAsyncMock.mockImplementation(() => Promise.resolve({ id: "khc6-1" }))
+  skipAsyncMock.mockClear()
   onOrderFilledCap1Mock.mockClear()
   onOrderFilledCap2Mock.mockClear()
   onOrderFilledCap3Mock.mockClear()
   onOrderFilledCap4Mock.mockClear()
   onOrderFilledCap5Mock.mockClear()
   onOrderFilledCap6Mock.mockClear()
+  onKhongMuaMock.mockClear()
   planFormProps = {}
-  doiChieuProps = {}
+  mauThuanBlockProps = {}
   isCap6ActiveFlag = true
+  mauThuanData = MAU_THUAN_GEX
 })
 
-describe("TradingPanel — khối Đối chiếu chỉ có trong Cấp 6 (spec §4)", () => {
-  it("hiện khối Đối chiếu trong một phiên Cấp 6, kèm mã đang xem", () => {
+describe("TradingPanel — khối mâu thuẫn THAY khối Đọc 5 lớp (spec §5.2)", () => {
+  it("hiện MauThuanBlock trong phiên Cấp 6, kèm mã đang xem", () => {
     renderPanel()
-    expect(screen.getByTestId("doichieu-mock")).toBeInTheDocument()
-    expect(doiChieuProps.symbol).toBe("VCB")
+    expect(screen.getByTestId("mauthuan-mock")).toBeInTheDocument()
+    expect(mauThuanBlockProps.symbol).toBe("VCB")
   })
 
-  it("KHÔNG hiện ngoài Cấp 6 (Cấp 0-5 và giao dịch thường không đổi)", () => {
-    isCap6ActiveFlag = false
+  it("ẨN khối Đọc 5 lớp của Cấp 4 và ẨN khối Đối chiếu cũ", () => {
     renderPanel()
+    // Neo dương tính: khối THAY THẾ thật sự đã render.
+    expect(screen.getByTestId("mauthuan-mock")).toBeInTheDocument()
+    expect(screen.queryByTestId("doc5lop-mock")).not.toBeInTheDocument()
     expect(screen.queryByTestId("doichieu-mock")).not.toBeInTheDocument()
   })
 
-  it("KHÔNG hiện ở tab BÁN — đối chiếu là bước của luồng MUA", () => {
-    renderPanel()
-    fireEvent.click(screen.getByText("BÁN"))
-    expect(screen.queryByTestId("doichieu-mock")).not.toBeInTheDocument()
-  })
-
-  it("đứng DƯỚI khối Đọc 5 lớp của Cấp 4 (điểm chấm phải có trước)", () => {
-    renderPanel()
-    const doc5 = screen.getByTestId("doc5lop-mock")
-    const doiChieu = screen.getByTestId("doichieu-mock")
-    expect(doc5.compareDocumentPosition(doiChieu) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-  })
-
-  it("nhận đúng bản chấm 5 lớp của Cấp 4 làm nguồn mâu thuẫn", () => {
-    renderPanel()
-    fireEvent.click(screen.getByText("RATE_CONFLICT"))
-    expect(doiChieuProps.doc5Lop).toEqual(CONFLICT_5_LOP)
-  })
-})
-
-describe("TradingPanel — cổng cứng Cấp 6 CHỈ khi 5 lớp mâu thuẫn (spec §4)", () => {
-  it("KHÔNG mâu thuẫn → Cấp 6 KHÔNG thêm cổng nào (mở đúng lúc cổng Cấp 1-4 đủ)", () => {
-    renderPanel()
-    satisfyCap2And3()
-    fireEvent.click(screen.getByText("RATE_ALL"))
-    expect(submitButton()).not.toBeDisabled()
-  })
-
-  it("CÓ mâu thuẫn → khoá MUA tới khi chọn lớp quyết định + ghi lý do", () => {
-    renderPanel()
-    satisfyCap2And3()
-    fireEvent.click(screen.getByText("RATE_CONFLICT"))
-    expect(submitButton()).toBeDisabled()
-    satisfyCap6()
-    expect(submitButton()).not.toBeDisabled()
-  })
-
-  it("chọn lớp nhưng CHƯA ghi lý do → vẫn khoá (mirror luật 422 của server)", () => {
-    renderPanel()
-    satisfyCap2And3()
-    fireEvent.click(screen.getByText("RATE_CONFLICT"))
-    fireEvent.click(screen.getByText("PICK_LOP"))
-    expect(submitButton()).toBeDisabled()
-  })
-
-  it("lý do chỉ toàn khoảng trắng → vẫn khoá", () => {
-    renderPanel()
-    satisfyCap2And3()
-    fireEvent.click(screen.getByText("RATE_CONFLICT"))
-    fireEvent.click(screen.getByText("PICK_LOP"))
-    fireEvent.click(screen.getByText("TYPE_BLANK"))
-    expect(submitButton()).toBeDisabled()
-  })
-
-  it("ghi lý do nhưng CHƯA chọn lớp → vẫn khoá", () => {
-    renderPanel()
-    satisfyCap2And3()
-    fireEvent.click(screen.getByText("RATE_CONFLICT"))
-    fireEvent.click(screen.getByText("TYPE_LY_DO"))
-    expect(submitButton()).toBeDisabled()
-  })
-
-  it("ngoài Cấp 6, 5 lớp mâu thuẫn KHÔNG khoá gì (Cấp 0-5 không đổi)", () => {
+  it("ngoài Cấp 6: khối Đọc 5 lớp của Cấp 4 quay lại, khối mâu thuẫn vắng", () => {
     isCap6ActiveFlag = false
-    renderPanel()
-    satisfyCap2And3()
-    fireEvent.click(screen.getByText("RATE_CONFLICT"))
-    expect(submitButton()).not.toBeDisabled()
-  })
-
-  it("cổng Cấp 6 OR với cổng Cấp 1-4: đủ Cấp 6 nhưng thiếu Cấp 3 → vẫn khoá", () => {
-    renderPanel()
-    fireEvent.click(screen.getByText("PICK_SLTP"))
-    fireEvent.click(screen.getByText("RATE_CONFLICT"))
-    satisfyCap6()
-    expect(submitButton()).toBeDisabled()
-  })
-})
-
-describe("TradingPanel — Cấp 6 KHÔNG đổi gì của Cấp 1-5 (spec §0)", () => {
-  it("mọi khối Cấp 1/2/3/4/5 vẫn nguyên trong phiên Cấp 6", () => {
     renderPanel()
     expect(screen.getByTestId("doc5lop-mock")).toBeInTheDocument()
+    expect(screen.queryByTestId("mauthuan-mock")).not.toBeInTheDocument()
+  })
+
+  it("KHÔNG hiện ở tab BÁN — đây là bước của luồng MUA", () => {
+    renderPanel()
+    fireEvent.click(screen.getByText("BÁN"))
+    expect(screen.queryByTestId("mauthuan-mock")).not.toBeInTheDocument()
+  })
+
+  it("mọi khối Cấp 1/2/3 vẫn nguyên (spec §0 GIỮ NGUYÊN)", () => {
+    renderPanel()
     expect(screen.getByTestId("plan-form-cap1-mock")).toBeInTheDocument()
-    expect(screen.getByLabelText("vung-mua-mock")).toBeInTheDocument()
     expect(screen.getByTestId("sltp-block-mock")).toBeInTheDocument()
     expect(screen.getByTestId("quanlyvon-mock")).toBeInTheDocument()
-    // Cấp 5 KHÔNG thêm gì vào panel (nút «Đứng ngoài» đã nghỉ hưu cùng Cấp 5 cũ).
-    expect(screen.queryByText(/đứng ngoài/i)).not.toBeInTheDocument()
-    // Cấp 4 vẫn ẩn trường lý do của Cấp 1 + AI Thanh tra (Cấp 6 không chạm).
-    expect(planFormProps.hideLyDo).toBe(true)
-    expect(screen.queryByTestId("ai-thanh-tra-mock")).not.toBeInTheDocument()
   })
+})
 
-  it("chuỗi cổng cứng Cấp 1-4 giữ nguyên: chấm 1 lớp là vẫn khoá", () => {
+describe("TradingPanel — Cấp 6 «Bậc thầy» KHÔNG thêm cổng cứng nào (spec §4.2)", () => {
+  it("cổng cứng 'chấm đủ 5 lớp' của Cấp 4 được NHẤC — không thì MUA khoá vĩnh viễn", () => {
     renderPanel()
-    expect(submitButton()).toBeDisabled()
     satisfyCap2And3()
-    fireEvent.click(screen.getByText("RATE_ONE"))
-    expect(submitButton()).toBeDisabled()
+    expect(submitButton()).not.toBeDisabled()
   })
 
-  it("tự điền ô Khối lượng của Cấp 3 vẫn chạy (200 cp → giá trị lệnh)", () => {
+  it("chưa chọn mức nhận định nào vẫn đặt được lệnh", () => {
     renderPanel()
+    satisfyCap2And3()
+    expect(mauThuanBlockProps.nhanDinh).toBeNull()
+    expect(submitButton()).not.toBeDisabled()
+  })
+
+  it("cổng Cấp 2/Cấp 3 thì GIỮ NGUYÊN: thiếu chúng là vẫn khoá", () => {
+    renderPanel()
+    expect(submitButton()).toBeDisabled()
+    fireEvent.click(screen.getByText("PICK_SLTP"))
+    expect(submitButton()).toBeDisabled()
     fireEvent.click(screen.getByText("PICK_VON"))
-    expect(screen.getByText("12,480,000")).toBeInTheDocument()
+    expect(submitButton()).not.toBeDisabled()
   })
 })
 
-describe("TradingPanel — ghi kế hoạch Cấp 6 sau cùng trong chuỗi", () => {
-  it("MUA có mâu thuẫn: cap1 → cap2 → cap3 → cap4 → cap6, cùng 1 order_kehoach", async () => {
+describe("TradingPanel — lý do Cấp 1 suy từ bản đọc SERVER, không bịa", () => {
+  it("đọc được bản 5 lớp → trường lý do của Cấp 1 vẫn ẩn (mockup không vẽ nó)", () => {
     renderPanel()
-    satisfyCap2And3()
-    fireEvent.click(screen.getByText("RATE_CONFLICT"))
-    satisfyCap6()
-    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
-
-    await waitFor(() => expect(recordKehoachCap6AsyncMock).toHaveBeenCalledTimes(1))
-    expect(recordKehoachAsyncMock).toHaveBeenCalledTimes(1)
-    expect(recordKehoachCap2AsyncMock).toHaveBeenCalledTimes(1)
-    expect(recordKehoachCap3AsyncMock).toHaveBeenCalledTimes(1)
-    expect(recordKehoachCap4AsyncMock).toHaveBeenCalledTimes(1)
-    // Cấp 6 đi SAU Cấp 4 (và sau Cấp 1) — nó chỉ chèn thêm khối vào cùng 1 dòng.
-    expect(
-      recordKehoachCap4AsyncMock.mock.invocationCallOrder[0] <
-        recordKehoachCap6AsyncMock.mock.invocationCallOrder[0],
-    ).toBe(true)
-    expect(
-      recordKehoachAsyncMock.mock.invocationCallOrder[0] <
-        recordKehoachCap6AsyncMock.mock.invocationCallOrder[0],
-    ).toBe(true)
+    expect(planFormProps.hideLyDo).toBe(true)
   })
 
-  it("gửi đúng payload: lớp quyết định + lý do + bản chấm 5 lớp làm dự phòng", async () => {
+  it("KHÔNG đọc được gì → trường lý do HIỆN LẠI để user tự khai", () => {
+    mauThuanData = undefined
+    renderPanel()
+    expect(planFormProps.hideLyDo).toBe(false)
+  })
+
+  it("cả ba phe rỗng → cũng hiện lại trường lý do (không đắp lớp mặc định)", () => {
+    mauThuanData = { ...MAU_THUAN_GEX, ung_ho: [], nguoc: [], trung_tinh: [] }
+    renderPanel()
+    expect(planFormProps.hideLyDo).toBe(false)
+  })
+})
+
+describe("TradingPanel — ghi mức nhận định sau cùng trong chuỗi kế hoạch", () => {
+  it("MUA có mâu thuẫn + đã nhận định: cap1 → cap2 → cap3 → cap6, cùng 1 order_kehoach", async () => {
     renderPanel()
     satisfyCap2And3()
-    fireEvent.click(screen.getByText("RATE_CONFLICT"))
-    satisfyCap6()
-    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
-
-    await waitFor(() => expect(recordKehoachCap6AsyncMock).toHaveBeenCalledTimes(1))
-    expect(recordKehoachCap6AsyncMock).toHaveBeenCalledWith({
+    fireEvent.click(screen.getByText("RATE_NGHIEM"))
+    fireEvent.click(submitButton())
+    await waitFor(() => expect(recordKehoachMauThuanAsyncMock).toHaveBeenCalledTimes(1))
+    expect(recordKehoachMauThuanAsyncMock).toHaveBeenCalledWith({
       order_id: "order-1",
-      lop_quyet_dinh: "dinh_gia",
-      ly_do_doi_chieu: "P/B 1.2 — rẻ hơn trung vị",
-      kieu_co_phieu: null,
-      lop_mau_thuan: CONFLICT_5_LOP,
+      conflict_level: "nghiem",
     })
+    // ★ Cấp 4 KHÔNG còn ghi gì: khối tự chấm của nó đã bị thay.
+    expect(recordKehoachCap4AsyncMock).not.toHaveBeenCalled()
+    const order = [
+      recordKehoachAsyncMock.mock.invocationCallOrder[0],
+      recordKehoachCap2AsyncMock.mock.invocationCallOrder[0],
+      recordKehoachCap3AsyncMock.mock.invocationCallOrder[0],
+      recordKehoachMauThuanAsyncMock.mock.invocationCallOrder[0],
+    ]
+    expect(order).toEqual([...order].sort((a, b) => a - b))
   })
 
-  it("kiểu do user chọn CHỈ đi kèm khi user thật sự chọn (mã chưa phân loại)", async () => {
+  it("chưa chọn mức nhận định → KHÔNG ghi gì cho Cấp 6", async () => {
     renderPanel()
     satisfyCap2And3()
-    fireEvent.click(screen.getByText("RATE_CONFLICT"))
-    satisfyCap6()
-    fireEvent.click(screen.getByText("PICK_KIEU"))
-    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
-
-    await waitFor(() => expect(recordKehoachCap6AsyncMock).toHaveBeenCalledTimes(1))
-    expect(recordKehoachCap6AsyncMock).toHaveBeenCalledWith(
-      expect.objectContaining({ kieu_co_phieu: "dau_co_nho" }),
-    )
+    fireEvent.click(submitButton())
+    await waitFor(() => expect(placeOrderMock).toHaveBeenCalled())
+    expect(recordKehoachMauThuanAsyncMock).not.toHaveBeenCalled()
   })
 
-  it("MUA KHÔNG mâu thuẫn → KHÔNG ghi kế hoạch Cấp 6 (cột để null)", async () => {
+  it("mã KHÔNG có mâu thuẫn → KHÔNG ghi gì cho Cấp 6 dù đã chọn một mức", async () => {
+    mauThuanData = MAU_THUAN_KHONG
     renderPanel()
     satisfyCap2And3()
-    fireEvent.click(screen.getByText("RATE_ALL"))
-    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+    fireEvent.click(screen.getByText("RATE_NHE"))
+    fireEvent.click(submitButton())
+    await waitFor(() => expect(placeOrderMock).toHaveBeenCalled())
+    expect(recordKehoachMauThuanAsyncMock).not.toHaveBeenCalled()
+  })
 
-    await waitFor(() => expect(recordKehoachCap4AsyncMock).toHaveBeenCalledTimes(1))
-    expect(recordKehoachCap6AsyncMock).not.toHaveBeenCalled()
+  it("★ POST lỗi KHÔNG nuốt event bus (ghiKehoachKhongChiMang)", async () => {
+    recordKehoachMauThuanAsyncMock.mockImplementation(() => Promise.reject(new Error("500")))
+    renderPanel()
+    satisfyCap2And3()
+    fireEvent.click(screen.getByText("RATE_NGHIEM"))
+    fireEvent.click(submitButton())
+    await waitFor(() => expect(onOrderFilledCap6Mock).toHaveBeenCalled())
+    // Mọi bus cấp dưới cũng phải nhận được lệnh đã khớp.
+    expect(onOrderFilledCap1Mock).toHaveBeenCalled()
+    expect(onOrderFilledCap5Mock).toHaveBeenCalled()
   })
 })
 
-describe("TradingPanel — Cấp 6 nhận event lệnh khớp cạnh Cấp 1-5", () => {
-  it("bắn cap6Events.onOrderFilled trên lệnh MUA khớp, kèm khối Đối chiếu", async () => {
+describe("TradingPanel — event lệnh khớp mang theo khối mâu thuẫn", () => {
+  it("gửi nhận định + hai phe + cờ phủ quyết", async () => {
     renderPanel()
     satisfyCap2And3()
-    fireEvent.click(screen.getByText("RATE_CONFLICT"))
-    satisfyCap6()
-    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
-
-    await waitFor(() => expect(onOrderFilledCap6Mock).toHaveBeenCalledTimes(1))
+    fireEvent.click(screen.getByText("RATE_NGHIEM"))
+    fireEvent.click(submitButton())
+    await waitFor(() => expect(onOrderFilledCap6Mock).toHaveBeenCalled())
     expect(onOrderFilledCap6Mock).toHaveBeenCalledWith(
       expect.objectContaining({
         symbol: "VCB",
         side: "buy",
-        quantity: 100,
-        price: 62_400,
         orderId: "order-1",
-        lopQuyetDinh: "dinh_gia",
+        conflictLevel: "nghiem",
+        coMauThuan: true,
+        phuQuyetKichHoat: true,
+        lopPhuQuyetXau: ["noi_bo", "tin_tuc"],
+        pheUngHo: ["ky_thuat", "dong_tien"],
+        pheNguoc: ["noi_bo", "tin_tuc"],
       }),
     )
-    // Cấp 1-5 vẫn nhận event của mình (không cấp nào bị Cấp 6 chiếm).
-    expect(onOrderFilledCap1Mock).toHaveBeenCalledTimes(1)
-    expect(onOrderFilledCap4Mock).toHaveBeenCalledTimes(1)
-    expect(onOrderFilledCap5Mock).toHaveBeenCalledTimes(1)
   })
 
-  it("bắn cap6Events.onOrderFilled trên lệnh BÁN khớp (mở Kết sổ Cấp 6)", async () => {
-    orderSide = "SELL"
-    renderPanel()
-    fireEvent.click(screen.getByText("BÁN"))
-    fireEvent.click(screen.getByText("ĐẶT LỆNH BÁN"))
-
-    await waitFor(() => expect(onOrderFilledCap6Mock).toHaveBeenCalledTimes(1))
-    expect(onOrderFilledCap6Mock).toHaveBeenCalledWith(
-      expect.objectContaining({ symbol: "VCB", side: "sell", orderId: "order-1" }),
-    )
-    expect(onOrderFilledCap5Mock).toHaveBeenCalledWith(
-      expect.objectContaining({ side: "sell", orderId: "order-1" }),
-    )
-  })
-
-  it("reset khối Đối chiếu sau khi MUA khớp — lệnh sau phải đối chiếu lại", async () => {
+  it("reset mức nhận định sau khi MUA khớp — lệnh sau phải nhận định lại", async () => {
     renderPanel()
     satisfyCap2And3()
-    fireEvent.click(screen.getByText("RATE_CONFLICT"))
-    satisfyCap6()
-    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+    fireEvent.click(screen.getByText("RATE_NGHIEM"))
+    expect(mauThuanBlockProps.nhanDinh).toBe("nghiem")
+    fireEvent.click(submitButton())
+    await waitFor(() => expect(mauThuanBlockProps.nhanDinh).toBeNull())
+  })
+})
 
-    await waitFor(() => expect(recordKehoachCap6AsyncMock).toHaveBeenCalledTimes(1))
-    // Cấp 4 xoá bản chấm → không còn mâu thuẫn → cổng Cấp 4 khoá lại như cũ.
-    await waitFor(() => expect(doiChieuProps.doc5Lop).toEqual({}))
-    expect(submitButton()).toBeDisabled()
+describe("TradingPanel — nút «Không mua lần này» (spec §7)", () => {
+  it("hiện cạnh nút MUA khi mã có bảng mâu thuẫn", () => {
+    renderPanel()
+    const row = screen.getByTestId("cap6-khong-mua").parentElement as HTMLElement
+    expect(row).toHaveClass("op-actions")
+    expect(row).toContainElement(submitButton())
+  })
+
+  it("mã KHÔNG có mâu thuẫn → KHÔNG có nút", () => {
+    mauThuanData = MAU_THUAN_KHONG
+    renderPanel()
+    // Neo dương tính: panel THẬT SỰ đã render (nút MUA vẫn đó).
+    expect(submitButton()).toBeInTheDocument()
+    expect(screen.queryByTestId("cap6-khong-mua")).not.toBeInTheDocument()
+  })
+
+  it("tab BÁN → KHÔNG có nút", () => {
+    renderPanel()
+    fireEvent.click(screen.getByText("BÁN"))
+    expect(submitButton("ĐẶT LỆNH BÁN")).toBeInTheDocument()
+    expect(screen.queryByTestId("cap6-khong-mua")).not.toBeInTheDocument()
+  })
+
+  it("bấm khi ĐÃ nhận định: ghi nhận + POST /cap6/skip với đúng mức", async () => {
+    renderPanel()
+    fireEvent.click(screen.getByText("RATE_NGHIEM"))
+    fireEvent.click(screen.getByTestId("cap6-khong-mua"))
+    expect(onKhongMuaMock).toHaveBeenCalledWith("VCB", "nghiem")
+    await waitFor(() =>
+      expect(skipAsyncMock).toHaveBeenCalledWith({ symbol: "VCB", conflict_level: "nghiem" }),
+    )
+    const note = screen.getByTestId("cap6-khong-mua-note")
+    expect(note).toHaveTextContent("Nghiêm trọng")
+    expect(note).toHaveTextContent("chọn đứng ngoài")
+  })
+
+  it("bấm khi CHƯA nhận định: nói thẳng là chưa chọn mức, KHÔNG POST", () => {
+    renderPanel()
+    fireEvent.click(screen.getByTestId("cap6-khong-mua"))
+    expect(onKhongMuaMock).toHaveBeenCalledWith("VCB", null)
+    expect(skipAsyncMock).not.toHaveBeenCalled()
+    expect(screen.getByTestId("cap6-khong-mua-note")).toHaveTextContent(
+      "chưa chọn mức nhận định nào",
+    )
+  })
+
+  it("bấm lần nữa = đổi ý, thu lại ghi nhận trên màn", () => {
+    renderPanel()
+    fireEvent.click(screen.getByText("RATE_NHE"))
+    fireEvent.click(screen.getByTestId("cap6-khong-mua"))
+    expect(screen.getByTestId("cap6-khong-mua")).toHaveAttribute("aria-pressed", "true")
+    fireEvent.click(screen.getByTestId("cap6-khong-mua"))
+    expect(screen.getByTestId("cap6-khong-mua")).toHaveAttribute("aria-pressed", "false")
+    expect(screen.queryByTestId("cap6-khong-mua-note")).not.toBeInTheDocument()
+  })
+
+  it("KHÔNG khoá nút ĐẶT LỆNH MUA — «không mua» chỉ là ghi nhận", () => {
+    renderPanel()
+    satisfyCap2And3()
+    fireEvent.click(screen.getByText("RATE_NGHIEM"))
+    fireEvent.click(screen.getByTestId("cap6-khong-mua"))
+    expect(submitButton()).not.toBeDisabled()
   })
 })

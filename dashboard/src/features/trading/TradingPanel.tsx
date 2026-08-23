@@ -75,10 +75,18 @@ import {
 import { useCap5Events } from "@/features/cap5"
 import {
   DoiChieuBlock,
+  MauThuanBlock,
+  coBangMauThuan,
   coMauThuan,
+  conflictLevelLabel,
   isDoiChieuValid,
+  lyDoTuMauThuan,
   useCap6Events,
+  useMauThuanCap6,
   useRecordKehoachCap6,
+  useRecordKehoachMauThuanCap6,
+  useSkipCap6,
+  type ConflictLevel,
   type KieuCoPhieu,
 } from "@/features/cap6"
 import {
@@ -488,6 +496,34 @@ function OrderEntry({
   // the MUA button below; a user who skips the step places an order exactly as
   // they did at Cấp 6.
   const { isCap7Active } = cap7Events
+  /**
+   * ★★ CẤP 6 «BẬC THẦY» — nhánh MỚI của Cấp 6 (spec `demo-trading/LEVEL 6`).
+   *
+   * Cấp 6 đợt 7 **THAY** khối "đọc 5 lớp" của Cấp 4-5 bằng "toàn cảnh 5 lớp gọn
+   * + bảng mâu thuẫn" (spec §5.2 / checklist §14 dòng 1), nên ở đúng Cấp 6:
+   * `Doc5LopBlock` ẩn, cổng cứng "chấm đủ 5 lớp" của Cấp 4 được NHẤC, và lý do
+   * của Cấp 1 suy ra từ bản đọc 5 lớp của SERVER.
+   *
+   * ★ `&& !isCap7Active`: Cấp 7/8 vẫn đang dựng trên Cấp 6 «Đối chiếu» CŨ
+   * (`DoiChieuBlock`, `POST /cap6/kehoach {lop_quyet_dinh,…}`, cổng cứng riêng
+   * của nó). Hai cấp đó ở SAU trần (`CAP_MAX_ENABLED = 5`) nên chưa ai chạm
+   * tới; khi nâng trần lên 7 thì phải dựng lại chúng trên Cấp 6 mới, và CỜ NÀY
+   * là chỗ duy nhất phải sửa.
+   */
+  const isCap6BacThay = isCap6Active && !isCap7Active
+  // Cùng một query mà `MauThuanBlock` render (react-query gộp theo key ⇒ MỘT
+  // request, không phải hai): panel cần bản đọc này để suy ra lý do Cấp 1 và để
+  // gửi kèm hai phe vào bus lúc lệnh khớp.
+  const { data: cap6MauThuan } = useMauThuanCap6(symbol, isCap6BacThay)
+  // ★ GẮN THEO MÃ (xem `useLuaChonTheoMa`): mức nhận định là một lời khai về MỘT
+  // mã. Để nó theo sang mã khác là ghi vào hồ sơ một nhận định user chưa từng
+  // nói về mã đó — và nhận định là đầu vào của cổng tốt nghiệp Cấp 6.
+  const [cap6NhanDinh, setCap6NhanDinh, resetCap6NhanDinh] =
+    useLuaChonTheoMa<ConflictLevel>(symbol)
+  // Nút «Không mua lần này» (spec §7) — cũng gắn theo mã, cùng lý do trên.
+  const [cap6KhongMua, setCap6KhongMua, resetCap6KhongMua] = useLuaChonTheoMa<true>(symbol)
+  const recordKehoachMauThuanCap6 = useRecordKehoachMauThuanCap6()
+  const skipCap6 = useSkipCap6()
   const recordKehoachCap7 = useRecordKehoachCap7()
   // ★ `trong_phien` + every threshold come from the SERVER (`GET /cap7/phien`).
   // The FE must never compute market-open from the browser clock — a user in
@@ -571,8 +607,26 @@ function OrderEntry({
   // lý do is DERIVED from the 5 ratings instead of picked (see
   // `deriveLyDoForCap1`'s doc for the rule). Outside Cấp 4 this is `null` and
   // the user's own pick governs, exactly as before.
-  const cap4LyDo = isCap4Active ? deriveLyDoForCap1(cap4Doc5Lop, cap4Ai5Lop) : null
-  const effectiveLyDo = cap4LyDo ?? cap1LyDo
+  const cap4LyDo =
+    isCap4Active && !isCap6BacThay ? deriveLyDoForCap1(cap4Doc5Lop, cap4Ai5Lop) : null
+  /**
+   * ★★ Ở Cấp 6 «Bậc thầy» user KHÔNG còn tự chấm 5 lớp (khối đó bị THAY), nên
+   * `deriveLyDoForCap1` với bản chấm RỖNG sẽ trả `"ky_thuat"` cứng cho MỌI lệnh
+   * — ghi vào hồ sơ một lời khai user chưa bao giờ nói. Thay bằng một sự thật về
+   * mã: lớp đang ủng hộ theo bản đọc 5 lớp của SERVER.
+   *
+   * `null` (query lỗi / chưa đủ dữ liệu) ⇒ trường lý do của Cấp 1 HIỆN LẠI
+   * (`hideLyDo` dưới đây), để user tự khai và vẫn đặt được lệnh. Thà hỏi còn hơn
+   * đắp một lớp mặc định.
+   */
+  const cap6LyDoSuyRa = isCap6BacThay ? lyDoTuMauThuan(cap6MauThuan) : null
+  /**
+   * Nút «Không mua lần này» chỉ có nghĩa khi có một mâu thuẫn để đứng ngoài
+   * (spec §7 đặt nó cạnh nút MUA của màn có bảng mâu thuẫn). Phía BÁN không có
+   * gì để "không mua".
+   */
+  const cap6KhongMuaKhaDung = side === "buy" && isCap6BacThay && coBangMauThuan(cap6MauThuan)
+  const effectiveLyDo = cap6LyDoSuyRa ?? cap4LyDo ?? cap1LyDo
   // Cổng cứng (spec §4): MUA disabled unless (lý do chosen/derived) AND (vùng
   // mua > 0). Only ever true for a BUY inside Cấp 1 — never affects Cấp 0 or
   // normal trading (`isCap1Active` is false outside a `Cap1Provider`).
@@ -593,11 +647,18 @@ function OrderEntry({
   // Cổng cứng (spec §5.2): MUA disabled until all 5 lớp are rated — ON TOP OF
   // Cấp 1 + Cấp 2 + Cấp 3's gates above, since Cấp 4 keeps all three blocks
   // (minus Cấp 1's lý-do field). Only ever true for a BUY inside Cấp 4.
-  const cap4SubmitDisabled = side === "buy" && isCap4Active && !isDoc5LopComplete(cap4Doc5Lop)
+  // ★ `!isCap6BacThay`: ở Cấp 6 «Bậc thầy» khối "Đọc 5 lớp" KHÔNG còn được vẽ
+  // (spec §5.2 thay nó bằng bảng mâu thuẫn), nên giữ cổng cứng này lại sẽ khoá
+  // vĩnh viễn nút MUA — không có ô nào để chấm cho nó mở ra.
+  const cap4SubmitDisabled =
+    side === "buy" && isCap4Active && !isCap6BacThay && !isDoc5LopComplete(cap4Doc5Lop)
   // Cấp 6 (spec §4): the bước Đối chiếu only exists when the user's own 5 lớp
   // CONFLICT (≥1 Ủng hộ AND ≥1 Ngược chiều) — that same predicate decides both
   // whether the khối renders and whether there is a gate at all.
-  const cap6CoMauThuan = isCap6Active && coMauThuan(cap4Doc5Lop)
+  // ★ `isCap7Active`: bước Đối chiếu CŨ (và cổng cứng của nó) chỉ còn ở Cấp 7/8.
+  // Cấp 6 «Bậc thầy» KHÔNG có cổng cứng nào cả (spec §4.2 "nhận định là data,
+  // không cản hành động").
+  const cap6CoMauThuan = isCap6Active && isCap7Active && coMauThuan(cap4Doc5Lop)
   // Cổng cứng (spec §4): với lệnh CÓ mâu thuẫn, MUA khoá tới khi chọn lớp quyết
   // định + ghi 1 dòng vì sao — ON TOP OF Cấp 1-4's gates (Cấp 6 keeps all of
   // them intact). KHÔNG mâu thuẫn → Cấp 6 không thêm cổng nào. Only ever true
@@ -869,7 +930,12 @@ function OrderEntry({
         // lệnh thành công thành thông báo lỗi, KHÔNG được chặn reset form, và
         // tuyệt đối không được nuốt chuỗi `onOrderFilled` bên dưới (nuốt bus =
         // không cấp nào mở được Kết sổ nữa). Xem docstring của hàm đó.
-        if (cap2Ready || cap4Ready || cap6Ready || cap7Ready || cap8Ready) {
+        // Cấp 6 «Bậc thầy» (spec §6/§11) — ghi MỨC NHẬN ĐỊNH của lệnh. Chỉ ghi
+        // khi lệnh này THẬT SỰ có bảng mâu thuẫn và user đã chọn một mức: không
+        // có mâu thuẫn thì không có gì để nhận định.
+        const cap6BacThayReady =
+          isCap6BacThay && coBangMauThuan(cap6MauThuan) && cap6NhanDinh != null
+        if (cap2Ready || cap4Ready || cap6Ready || cap6BacThayReady || cap7Ready || cap8Ready) {
           await ghiKehoachKhongChiMang(() => recordKehoach.mutateAsync(kehoachPayload))
           if (isCap2Active && cap2Method && cap2CatLo && cap2ChotLoi) {
             await ghiKehoachKhongChiMang(() =>
@@ -935,6 +1001,18 @@ function OrderEntry({
                 // Chỉ có giá trị khi server KHÔNG phân loại được kiểu từ ngành.
                 kieu_co_phieu: cap6Kieu,
                 lop_mau_thuan: cap4Doc5Lop,
+              }),
+            )
+          }
+          // Cấp 6 «Bậc thầy» (spec §6/§11) — MỘT trường duy nhất: mức nhận định
+          // user tự đọc. Server tự suy `had_conflict`/`had_veto`/`veto_layers`
+          // từ bản đọc 5 lớp của chính nó, và tự đối chiếu với khối lượng + tự
+          // tin mà Cấp 3 đã ghi trên CÙNG hàng `order_kehoach`.
+          if (cap6BacThayReady && cap6NhanDinh) {
+            await ghiKehoachKhongChiMang(() =>
+              recordKehoachMauThuanCap6.mutateAsync({
+                order_id: order.id,
+                conflict_level: cap6NhanDinh,
               }),
             )
           }
@@ -1070,6 +1148,18 @@ function OrderEntry({
                 lopMauThuan: cap4Doc5Lop,
               }
             : {}),
+          // Cấp 6 «Bậc thầy» — nhận định + hai phe + cờ phủ quyết, để Kết sổ
+          // dựng bảng "nhận định có khớp hành động không" (spec §8).
+          ...(isCap6BacThay && cap6MauThuan
+            ? {
+                conflictLevel: cap6NhanDinh,
+                coMauThuan: coBangMauThuan(cap6MauThuan),
+                phuQuyetKichHoat: cap6MauThuan.phu_quyet_kich_hoat,
+                lopPhuQuyetXau: cap6MauThuan.lop_phu_quyet_xau,
+                pheUngHo: cap6MauThuan.ung_ho.map((r) => r.lop),
+                pheNguoc: cap6MauThuan.nguoc.map((r) => r.lop),
+              }
+            : {}),
         })
         // Cấp 7 — phần đọc lực đi kèm CHỈ khi lệnh này thật sự ghi được nó
         // (trong phiên + sổ đọc được + user đã tự chốt). Đọc lực không bao giờ
@@ -1148,6 +1238,10 @@ function OrderEntry({
         setCap6LopQuyetDinh(null)
         setCap6LyDo("")
         resetCap6Kieu()
+        // Cấp 6 «Bậc thầy»: lệnh sau phải tự nhận định lại từ đầu, và trạng thái
+        // "không mua" của mã trước không được dính sang.
+        resetCap6NhanDinh()
+        resetCap6KhongMua()
         // Cấp 7: lệnh sau phải đọc lại sổ từ đầu — sổ lệnh đổi từng giây, một
         // phần đọc còn sót lại từ lệnh trước sẽ là một con số đã cũ.
         resetCap7DocLuc()
@@ -1422,7 +1516,11 @@ function OrderEntry({
                 intact. Rendered FIRST, per the spec's panel order
                 (1. Đọc 5 lớp → 2. Vùng mua → 3. Cắt lỗ/Chốt lời). Buy-side
                 only AND Cấp 4-only. */}
-            {isCap4Active && (
+            {/* ★ `!isCap6BacThay` — Cấp 6 «Bậc thầy» THAY khối này bằng khối
+                "toàn cảnh 5 lớp gọn + bảng mâu thuẫn" ngay dưới đây (spec §5.2 /
+                checklist §14 dòng 1: "chỉ thay khối đọc 5 lớp"). Ở Cấp 7/8 —
+                còn dựng trên Cấp 6 «Đối chiếu» cũ — khối này giữ nguyên. */}
+            {isCap4Active && !isCap6BacThay && (
               <Doc5LopBlock
                 symbol={symbol}
                 currentPrice={currentPrice}
@@ -1441,7 +1539,19 @@ function OrderEntry({
                 6-only (`isCap6Active` false outside a `Cap6Provider` → zero
                 effect on Cấp 0-5 or normal trading). KHÔNG chạm vào bất kỳ khối
                 nào của Cấp 1-5. */}
-            {isCap6Active && (
+            {/* Cấp 6 «Bậc thầy» — khối THAY THẾ: toàn cảnh 5 lớp gọn + bảng mâu
+                thuẫn + ô nhận định 4 mức (spec §5/§6, mockup
+                `iqx-cap6-datlenh.html`). KHÔNG cổng cứng, KHÔNG chạm ô Khối
+                lượng. Đặt ĐÚNG chỗ khối "Đọc 5 lớp" vừa ẩn, tức mục "1." của
+                thẻ KẾ HOẠCH, trước Vùng mua. */}
+            {isCap6BacThay && (
+              <MauThuanBlock
+                symbol={symbol}
+                nhanDinh={cap6NhanDinh}
+                onNhanDinh={setCap6NhanDinh}
+              />
+            )}
+            {isCap6Active && isCap7Active && (
               <DoiChieuBlock
                 symbol={symbol}
                 doc5Lop={cap4Doc5Lop}
@@ -1455,7 +1565,7 @@ function OrderEntry({
             )}
             <PlanFormCap1
               symbol={symbol}
-              hideLyDo={isCap4Active}
+              hideLyDo={isCap6BacThay ? cap6LyDoSuyRa != null : isCap4Active}
               lyDo={cap1LyDo}
               onLyDoChange={(l) => {
                 setCap1LyDo(l)
@@ -1490,6 +1600,10 @@ function OrderEntry({
                 Cấp 3-only. Khẩu vị phải đặt xong (`khau_vi`) mới tính được khối
                 lượng; `KhauViModal` bên dưới lo phần đó. */}
             {isCap3Active && cap3Progress?.khau_vi && (
+              // ★ `data-tour-id` cho bước 5 của tour «Xử lý mâu thuẫn» (Cấp 6):
+              // "để khối lượng phản ánh nhận định". Chỉ là một thuộc tính neo —
+              // khối Quản lý vốn của Cấp 3 KHÔNG đổi gì.
+              <div data-tour-id="tour-cap6-khoiluong">
               <QuanLyVonBlock
                 khauVi={cap3Progress.khau_vi}
                 vonBanDau={cap3Progress.von_ban_dau}
@@ -1513,6 +1627,7 @@ function OrderEntry({
                 }}
                 onDoiKhauVi={() => setCap3KhauViOpen(true)}
               />
+              </div>
             )}
             {/* Chỉ instance ĐỔI khẩu vị (spec §5.2 "không khoá vĩnh viễn").
                 Instance bắt buộc lần đầu do trang Cấp 3 mount (xem
@@ -1630,6 +1745,40 @@ function OrderEntry({
             Cấp 2 keeps Cấp 1's form 100% intact). Both flags are always
             false outside their own cấp or on a SELL, so neither affects
             Cấp 0 or normal trading. */}
+        {/* ★ Hàng nút theo mockup `iqx-cap6-datlenh.html` (`.op-actions`): nút
+            «Không mua lần này» BÊN TRÁI, nút ĐẶT LỆNH MUA bên phải rộng hơn.
+            Ngoài Cấp 6 (hoặc mã không có mâu thuẫn) chỉ còn đúng một nút, và
+            `.op-actions` với một con là một hàng bình thường — hình dạng panel
+            của Cấp 0-5 không đổi một pixel. */}
+        <div className={cap6KhongMuaKhaDung ? "op-actions" : undefined}>
+        {cap6KhongMuaKhaDung && (
+          <button
+            type="button"
+            className={cn("op-btn-skip", cap6KhongMua && "op-btn-skip--on")}
+            aria-pressed={!!cap6KhongMua}
+            data-testid="cap6-khong-mua"
+            data-tour-id="tour-cap6-khongmua"
+            onClick={() => {
+              if (cap6KhongMua) {
+                // Bấm lần nữa = đổi ý, thu lại ghi nhận trên màn. Bản ghi đã gửi
+                // server thì không rút — nó là một sự kiện đã xảy ra.
+                resetCap6KhongMua()
+                return
+              }
+              setCap6KhongMua(true)
+              cap6Events.onKhongMua?.(symbol, cap6NhanDinh)
+              if (cap6NhanDinh) {
+                // Ghi nhận đứng ngoài — KHÔNG chí mạng: đây không phải một lệnh,
+                // một lỗi mạng ở đây không được biến thành toast lỗi.
+                void ghiKehoachKhongChiMang(() =>
+                  skipCap6.mutateAsync({ symbol, conflict_level: cap6NhanDinh }),
+                )
+              }
+            }}
+          >
+            {"Không mua lần này"}
+          </button>
+        )}
         <Tooltip
           content={
             cap1SubmitDisabled
@@ -1687,6 +1836,20 @@ function OrderEntry({
             </Button>
           </div>
         </Tooltip>
+        </div>
+
+        {/* Ghi nhận «Không mua» (spec §7) — lý do lấy CHÍNH mức nhận định đã
+            chọn ở trên, không hỏi thêm. KHÔNG theo dõi giá mã sau đó (spec §13
+            "tránh dạy tiếc nuối"). */}
+        {cap6KhongMuaKhaDung && cap6KhongMua && (
+          <p className="op-skip-note" data-testid="cap6-khong-mua-note">
+            {cap6NhanDinh
+              ? `Bạn chọn không mua lần này. IQX ghi nhận: bạn đọc mâu thuẫn ở mức “${conflictLevelLabel(
+                  cap6NhanDinh,
+                )}” và chọn đứng ngoài. Lần đứng ngoài này sẽ hiện ở Phân tích danh mục như một hành động có kỷ luật.`
+              : "Bạn chọn không mua lần này. Bạn chưa chọn mức nhận định nào, nên IQX chỉ ghi nhận quyết định đứng ngoài — chọn một mức ở trên thì lần này mới được xếp vào đúng nhóm ở Phân tích danh mục."}
+          </p>
+        )}
       </div>
 
       {/* ★★ Đích của «Đọc chi tiết lớp này →»: bản đọc 6 lớp mở NGAY TRONG

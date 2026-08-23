@@ -681,7 +681,7 @@ describe("Cap5TradingPage", () => {
     })
     renderCap5(<Cap5TradingPage />)
     expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
-    expect(screen.getByText("Vào Cấp 6 «Đối chiếu» →")).toBeInTheDocument()
+    expect(screen.getByText("Vào Cấp 6 «Bậc thầy» →")).toBeInTheDocument()
   })
 
   it('clicking "AI Phân tích" opens the AI Insight symbol-picker modal, and submitting mở bản đọc AI NGAY TRONG trang cấp — KHÔNG điều hướng', async () => {

@@ -215,7 +215,7 @@ export function JourneyPanelCap5() {
             name="Đã tốt nghiệp Cấp 5 «Lão luyện»"
             desc={
               isCap6Open()
-                ? "Bạn không còn chờ mã đến — bạn tự đi săn, rồi sàng lọc trước khi vào lệnh. Cấp 6 «Đối chiếu» đang chờ bạn."
+                ? "Bạn không còn chờ mã đến — bạn tự đi săn, rồi sàng lọc trước khi vào lệnh. Cấp 6 «Bậc thầy» đang chờ bạn."
                 : "Bạn không còn chờ mã đến — bạn tự đi săn, rồi sàng lọc trước khi vào lệnh. Đây là chặng cuối của chương trình hiện tại; tài khoản vẫn giữ nguyên để bạn tiếp tục giao dịch."
             }
           />
@@ -306,7 +306,7 @@ export function JourneyPanelCap5() {
             isCap6Open() ? (
               <>
                 Bạn đã tốt nghiệp <strong>Cấp 5 «Lão luyện»</strong>. Chặng tiếp theo:{" "}
-                <strong>Cấp 6 «Đối chiếu»</strong> (xử lý khi 5 lớp mâu thuẫn).
+                <strong>Cấp 6 «Bậc thầy»</strong> (xử lý khi các lớp mâu thuẫn).
               </>
             ) : (
               <>

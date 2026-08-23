@@ -7,19 +7,38 @@ import "./cap6-graduation.css"
 // `RightToolbar` from `@/features/dashboard`; going through it here would create
 // a module-graph cycle (same rationale `GraduationModalCap5` documents for Cấp 6).
 import { useEnterCap7 } from "@/features/cap7/hooks"
+// Trần cấp — file riêng, KHÔNG import gì (xem docstring ở đó), nên đọc được từ
+// đây mà không tạo vòng import nào.
+import { CAP_MAX_ENABLED } from "@/features/cap1/capFlags"
 import { useCap6Progress, useGraduateCap6 } from "./hooks"
-import { countCap6TasksDone, type Cap6Progress } from "./types"
+import { datCongCap6, mucTieuNhatQuan, mucTieuVeto } from "./nhanDinhCap6"
+import type { Cap6Progress } from "./types"
 
 /**
- * Điều kiện mở màn tốt nghiệp Cấp 6 (spec §3): 3/3 nhiệm vụ, chưa từng tốt
- * nghiệp (một chiều — không mở lại một khi `graduated_at` đã có, mirrors
- * `cap5/GraduationModalCap5.tsx#isGraduationReadyCap5`). Vì nhiệm vụ ③ (Thách
- * thức Đối chiếu) bao hàm cả 3 điều kiện số lệnh đối chiếu + số kiểu đã gặp +
- * khớp ≥ lệch, xong ③ = xong Cấp 6.
+ * Cấp 7 đã mở chưa — quyết định Khối 3, dòng dưới CTA, và việc bấm nút có vào
+ * thẳng Cấp 7 hay chỉ ghi nhận tốt nghiệp Cấp 6.
+ *
+ * ★ HÀM chứ không phải `const` module-scope: trần phải được đọc ở thời điểm
+ * RENDER/CLICK (xem `capFlags.ts` — `const` chốt giá trị lúc import nên test
+ * mock-getter chỉ thấy giá trị đầu tiên → một nửa số bài xanh giả).
+ */
+function isCap7Open(): boolean {
+  return CAP_MAX_ENABLED >= 7
+}
+
+/**
+ * Điều kiện mở màn tốt nghiệp Cấp 6 (spec §2/§3): **1/1 nhiệm vụ thuần hành vi**
+ * — đủ số lần xử lý mâu thuẫn nhất quán VÀ đủ số lần trong đó có lớp phủ quyết
+ * rất xấu. Một chiều: không mở lại khi `graduated_at` đã có (mirrors
+ * `cap5/GraduationModalCap5.tsx#isGraduationReadyCap5`).
+ *
+ * ★★ **KHÔNG đo lãi.** Spec §2 dành nguyên một đoạn giải thích vì sao lãi bị bỏ
+ * hoàn toàn khỏi cổng ("cổng đo lãi vẫn kéo user về phía mua để đạt %"), và §11
+ * ghi `tong_lai_lenh_cap6_pct` "CHỈ để hiển thị ở Kết sổ/Phân tích".
  */
 export function isGraduationReadyCap6(progress: Cap6Progress | null | undefined): boolean {
   if (!progress || progress.graduated_at) return false
-  return countCap6TasksDone(progress) >= 3
+  return datCongCap6(progress)
 }
 
 /** `18` → `"18"` — số en-US, không phần thập phân (§E). */
@@ -27,67 +46,34 @@ function fmtInt(n: number): string {
   return Math.round(n).toLocaleString("en-US")
 }
 
-// Verbatim spec §3 copy — `**bold**` markers kept for the inline-bold renderer
-// below (same convention as `cap0/GraduationModal.tsx` → `cap5/
-// GraduationModalCap5.tsx`).
-//
-// Khối 1 có 2 chỗ trống `{N}`/`{K}` trong spec → điền bằng SỐ THẬT của user
-// (§C12c: không hiện template rỗng).
-function block1(progress: Cap6Progress | null | undefined): string {
-  const n = fmtInt(progress?.so_lenh_doi_chieu ?? 0)
-  const k = fmtInt(progress?.so_kieu_da_gap ?? 0)
-  return (
-    `Bạn đã đối chiếu ${n} lệnh khi các lớp mâu thuẫn, qua ${k} loại cổ phiếu. Bạn biết với ` +
-    "mỗi loại thì lớp nào đáng tin hơn — và lệnh chọn đúng lớp quyết định cho kết quả tốt hơn " +
-    "rõ rệt. Bạn không còn bối rối khi các tín hiệu trái nhau."
-  )
-}
+/** Khối 1 — VERBATIM spec §3 (Ghi nhận). */
+const BLOCK_1 =
+  "Bạn đã học điều khó nhất: đọc mâu thuẫn giữa các lớp, phân biệt lớp phủ quyết với lớp điểm trừ, và — quan trọng nhất — để hành động khớp với nhận định của mình."
 
-/**
- * `64` → `"64%"`, `0` → `"0%"`, `null` → `"chưa đủ dữ liệu"`.
- *
- * ★★ **`null` ≠ `0`** (hợp đồng `Cap6Progress.ty_le_thang_*`, backend `4b01918`):
- * `null` = nhóm chưa có lệnh đã đóng nào · `0%` = có lệnh đã đóng và không lệnh
- * nào thắng. `?? 0` ở màn tốt nghiệp sẽ chúc mừng người dùng bằng một con số nói
- * rằng họ thua sạch một nhóm mà họ chưa từng có lệnh nào trong đó.
- */
-function pctHoacChuaDu(pct: number | null | undefined): string {
-  return pct == null ? "chưa đủ dữ liệu" : `${Math.round(pct)}%`
-}
-
-/**
- * §C12c — Khối 1 là lời GHI NHẬN (copy spec), nên con số đứng sau nó ngay lập
- * tức: hai tỷ lệ thắng thật của user để câu "kết quả tốt hơn rõ rệt" kiểm chứng
- * được, không phải một lời khen suông.
- */
-function block1Provenance(progress: Cap6Progress | null | undefined): string {
-  const khop = pctHoacChuaDu(progress?.ty_le_thang_khop)
-  const lech = pctHoacChuaDu(progress?.ty_le_thang_lech)
-  // ★ Câu giải nghĩa CHỈ xuất hiện khi thật sự có một nhóm chưa đủ dữ liệu —
-  // dán nó vào mọi lần render sẽ nhắc tới một trạng thái không tồn tại trên màn
-  // hình (và làm chính test "0% là kết quả thật" không kiểm được gì).
-  const coChuaDu =
-    progress?.ty_le_thang_khop == null || progress?.ty_le_thang_lech == null
-  const chuThich = coChuaDu
-    ? " «Chưa đủ dữ liệu» = nhóm đó chưa có lệnh đã đóng nào, không phải bằng không."
-    : ""
-  return (
-    `(Số của bạn: khớp gợi ý thắng ${khop} vs lệch gợi ý ${lech} — hai nhóm lệnh đã đóng, ` +
-    `mỗi nhóm ≥ 3 lệnh.${chuThich})`
-  )
-}
-
-// Khối 2 — Định vị. Bám spec §3 nhưng chỉ hứa ĐÚNG những gì Cấp 7 làm: đọc lực
-// mua/bán trong sổ dư mua-bán. Cấp 7 KHÔNG phát hiện lệnh giả ở mức tick (spec
-// Cấp 7 §9 loại trừ hẳn), nên câu này không được ám chỉ điều đó.
+/** Khối 2 — VERBATIM spec §3 (Định vị). */
 const BLOCK_2 =
-  "Nhưng mọi lớp tới giờ đọc từ dữ liệu ngày. Còn ngay trong phiên — lực mua/bán đang xếp trong sổ dư mua-bán, và những lệnh lớn đang treo ở một mức giá — kể một câu chuyện khác. Đọc được sổ lệnh là **Cấp 7**."
+  "Nhìn lại chặng đường: từ hiểu sân chơi (Cấp 0), vào lệnh có cơ sở (Cấp 1-2), quản lý vốn (Cấp 3), đọc trọn 5 lớp (Cấp 4), săn mã (Cấp 5), đến xử lý mâu thuẫn (Cấp 6). Bạn đã đi một chặng dài."
 
-// Khối 3 — Chuyển cấp. Mô tả ĐÚNG phạm vi Cấp 7: chỉ số Lực (chênh dư mua/dư
-// bán) + cờ cảnh giác lệnh treo lớn. Tuyệt đối KHÔNG hứa "phân biệt cầu thật
-// với lệnh giả" — Cấp 7 chỉ dạy hoài nghi, không tuyên bố phát hiện.
+/**
+ * Khối 3 — VERBATIM spec §3 (Chuyển cấp), chỉ dùng khi Cấp 7 ĐÃ mở.
+ *
+ * ★ Spec cố tình KHÔNG nói Cấp 7 dạy gì ("Chủ đề sẽ hé lộ khi bạn tới gần"), và
+ * màn này giữ đúng như vậy — nhờ đó nó không thể hứa sai thứ Cấp 7 thật sự dạy,
+ * đúng lớp lỗi mà `capFlags.ts` cảnh báo ("CẤP SAU PHẢI ĐÚNG CẤP SAU CÓ THẬT").
+ */
 const BLOCK_3 =
-  "**Từ giờ: Cấp 7 «Đọc sổ lệnh».** Bạn sẽ học: đọc **chỉ số Lực** — chênh lệch giữa dư mua và dư bán ngay trong phiên — và giữ cảnh giác với **lệnh treo lớn**: một lệnh to treo đó chưa chắc là cầu/cung thật, chờ nó khớp thật rồi hãy tin."
+  "**Cấp 7 đang chờ** — hệ thống học không có điểm dừng. Chủ đề sẽ hé lộ khi bạn tới gần."
+
+/**
+ * Khối 3 khi Cấp 7 CHƯA mở (`CAP_MAX_ENABLED < 7`) — cùng cách xử lý trung thực
+ * mà Cấp 1-5 dùng cho Khối 3 của chúng.
+ *
+ * ★★ Câu nguyên văn spec nói ở thì HIỆN TẠI ("Cấp 7 đang chờ") trong khi dòng
+ * ngay dưới CTA lại nói "Cấp 7 sắp ra mắt" — MỘT MÀN NÓI CẢ HAI. Nâng trần lên 7
+ * → câu nguyên văn spec tự quay về, không phải sửa dòng nào.
+ */
+const BLOCK_3_CAP7_CHUA_MO =
+  "**Cấp 7 chưa ra mắt.** Cấp 6 là chặng cuối của chương trình hiện tại — bạn đã đi hết phần đang mở. Hệ thống học không có điểm dừng: khi Cấp 7 mở, chủ đề của nó sẽ hé lộ."
 
 /** Splits on the spec's own `**bold**` markers and renders them as `<strong>`. */
 function renderInlineBold(text: string) {
@@ -95,23 +81,26 @@ function renderInlineBold(text: string) {
 }
 
 /**
- * Màn tốt nghiệp Cấp 6 (spec §3) — self-contained (gọi `useCap6Progress` +
- * `useGraduateCap6` bên trong, cùng pattern `GraduationModalCap5`): consumer
- * (`Cap6TradingPage`) chỉ cần mount `<GraduationModalCap6 />`, component tự
- * quyết định hiển thị qua `isGraduationReadyCap6`. Header (tag/tên/dòng phụ
- * `3/3 · {N} lệnh đối chiếu · {K} kiểu` với SỐ THẬT của user / huy hiệu 120px
- * phát sáng, đỏ son Cấp 6 `#d64550`) + 3 khối (Ghi nhận / Định vị / Chuyển cấp
- * viền **hồng magenta `#c65cae`** — màu Cấp 7) + CTA hồng magenta.
+ * Màn tốt nghiệp Cấp 6 «Bậc thầy» (spec §3) — self-contained (gọi
+ * `useCap6Progress` + `useGraduateCap6` bên trong, cùng pattern
+ * `GraduationModalCap5`): consumer (`Cap6TradingPage`) chỉ cần mount
+ * `<GraduationModalCap6 />`.
  *
- * Cấp 7 is live (Cấp 7 Task FE3) — mirrors how `GraduationModalCap5` enters Cấp
- * 6 (which itself mirrors Cấp 2 → Cấp 3 → …): record the graduation server-side,
- * then fire the idempotent `POST /cap7/enter` right here too (not just relying on
- * `DauTruongPage`'s own effect) so Cấp 7 progress is ready the instant
- * `DauTruongPage` swaps this Cấp 6 shell out for `Cap7TradingPage` — driven by
- * the SAME `useCap6Progress` query this mutation's `graduated_at` just
- * invalidated. No navigation call needed: this modal only ever renders while
- * already on `/dau-truong`. (Replaces the honest "Cấp 7 sắp ra mắt" placeholder
- * used before Cấp 7 shipped.)
+ * ★★ **DÒNG PHỤ KHÔNG DÙNG CÂU CỦA SPEC §3.** Spec ghi dòng phụ là *"lãi từ lệnh
+ * mâu thuẫn +X%"* — đó là TÀN DƯ của bản nháp cũ: chính §2 của cùng tài liệu bỏ
+ * lãi hoàn toàn khỏi cổng, và §11 ghi `tong_lai_lenh_cap6_pct` "CHỈ để hiển thị ở
+ * Kết sổ/Phân tích". Khoe một con số lãi ở cổng tốt nghiệp là kéo user về đúng
+ * phía mà §2 muốn tránh — và là ghi công một việc chương trình KHÔNG đo. Dòng phụ
+ * vì thế dùng hai con số HÀNH VI thật: `X lần xử lý nhất quán · Y lần có phủ
+ * quyết`, kèm mốc mà SERVER gửi (không hard-code 3/2).
+ *
+ * ★★ LUẬT BẤT DI BẤT DỊCH (đã phải sửa 2 lần trên repo này): modal
+ * `closable={false}` và chỉ unmount khi `graduated_at` về ⇒ **CTA không bao giờ
+ * được `disabled` như trạng thái "sắp ra mắt"** — làm vậy là nhốt vĩnh viễn mọi
+ * user đã xong nhiệm vụ. `disabled={graduate.isPending}` thì được: TanStack đưa
+ * `isPending` về `false` cả khi lỗi, nên nó chỉ chặn double-submit. Khi trần còn
+ * dưới 7, nút VẪN bấm được và VẪN ghi tốt nghiệp — chỉ `POST /cap7/enter` là
+ * không gọi (tạo hàng progress cho một cấp user không vào được).
  */
 export function GraduationModalCap6() {
   const { data: progress } = useCap6Progress()
@@ -123,16 +112,18 @@ export function GraduationModalCap6() {
   const handleGraduate = () => {
     graduate.mutate(undefined, {
       onSuccess: () => {
-        enterCap7.mutate()
+        if (isCap7Open()) enterCap7.mutate()
       },
     })
   }
 
-  // Dòng phụ spec §3 `3/3 · {N} lệnh đối chiếu · {K} kiểu` — số THẬT (§C12c).
+  // Dòng phụ — SỐ HÀNH VI THẬT của user (§C12c), en-US, mốc ĐỌC SERVER.
   const sub = progress
-    ? `${countCap6TasksDone(progress)}/3 · ${fmtInt(progress.so_lenh_doi_chieu)} lệnh đối chiếu · ${fmtInt(
-        progress.so_kieu_da_gap,
-      )} kiểu`
+    ? `${fmtInt(progress.so_lan_xu_ly_nhat_quan)}/${fmtInt(
+        mucTieuNhatQuan(progress),
+      )} lần xử lý nhất quán · ${fmtInt(
+        progress.so_lan_xu_ly_veto_nhat_quan,
+      )}/${fmtInt(mucTieuVeto(progress))} lần có phủ quyết`
     : ""
 
   return (
@@ -155,24 +146,23 @@ export function GraduationModalCap6() {
     >
       <div className="cap0-grad-header">
         <div className="cap0-grad-tag">HOÀN THÀNH</div>
-        <h2 className="cap0-display cap0-grad-title">CẤP 6 · ĐỐI CHIẾU</h2>
-        <div className="cap0-grad-sub">{sub}</div>
+        <h2 className="cap0-display cap0-grad-title">CẤP 6 · BẬC THẦY</h2>
+        <div className="cap0-grad-sub" data-testid="cap6-grad-sub">
+          {sub}
+        </div>
         <div className="cap0-grad-badge-wrap">
           <Badge n={level.n} color={level.color} fill={6} size={120} glow />
         </div>
       </div>
 
       <div className="cap0-grad-block" data-testid="cap6-grad-khoi1">
-        {renderInlineBold(block1(progress))}
+        {renderInlineBold(BLOCK_1)}
       </div>
-      <p className="cap6-grad-provenance" data-testid="cap6-grad-khoi1-provenance">
-        {block1Provenance(progress)}
-      </p>
       <div className="cap0-grad-block" data-testid="cap6-grad-khoi2">
         {renderInlineBold(BLOCK_2)}
       </div>
       <div className="cap0-grad-block cap6-grad-block--cap7" data-testid="cap6-grad-khoi3">
-        {renderInlineBold(BLOCK_3)}
+        {renderInlineBold(isCap7Open() ? BLOCK_3 : BLOCK_3_CAP7_CHUA_MO)}
       </div>
 
       <button
@@ -182,7 +172,23 @@ export function GraduationModalCap6() {
         onClick={handleGraduate}
         disabled={graduate.isPending}
       >
-        Vào Cấp 7 «Đọc sổ lệnh» →
+        Vào Cấp 7 →
+        {/* Dòng "sắp ra mắt" — gắn theo trần nên khi Cấp 7 mở nó tự biến mất. */}
+        {!isCap7Open() && (
+          <span
+            className="cap6-grad-cta-soon"
+            style={{
+              display: "block",
+              marginTop: 2,
+              fontSize: 10,
+              fontWeight: 500,
+              letterSpacing: "0.3px",
+              opacity: 0.85,
+            }}
+          >
+            Cấp 7 sắp ra mắt — bấm để ghi nhận tốt nghiệp Cấp 6
+          </span>
+        )}
       </button>
     </Modal>
   )

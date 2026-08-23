@@ -176,6 +176,13 @@ function RightSidebarStub() {
             lopQuyetDinh: "dinh_gia",
             lyDoDoiChieu: "P/B rẻ, tin xấu chỉ ngắn hạn",
             lopMauThuan: { ...DOC_5_LOP },
+            // ★ Cấp 6 «Bậc thầy» — ảnh chụp bảng mâu thuẫn lúc MUA (spec §8).
+            conflictLevel: "nghiem",
+            coMauThuan: true,
+            phuQuyetKichHoat: true,
+            lopPhuQuyetXau: ["tin_tuc"],
+            pheUngHo: ["ky_thuat", "dong_tien"],
+            pheNguoc: ["tin_tuc"],
           })
         }}
       >
@@ -192,6 +199,8 @@ function RightSidebarStub() {
             quantity: 300,
             price: 60_000,
             orderId: "buy-3",
+            // Không có bảng mâu thuẫn ⇒ Kết sổ bỏ hẳn khối nhận định.
+            coMauThuan: false,
           })
         }}
       >
@@ -343,6 +352,10 @@ vi.mock("./hooks", () => ({
   // KHÔNG có dữ liệu → modal dùng đúng khối trang này dựng, tức chính thứ các
   // test dưới đang kiểm.
   useKehoachCap6: () => ({ data: undefined, isPending: false, isError: false }),
+  // ★ Cấp 6 «Bậc thầy»: `KetsoModalCap6` đọc lại hàng đã lưu của lệnh qua hook
+  // này. Ở đây KHÔNG có dữ liệu → modal dùng đúng ảnh chụp trang này dựng từ bus,
+  // tức chính thứ các bài dưới đang kiểm.
+  useKehoachMauThuanCap6: () => ({ data: undefined, isPending: false, isError: false }),
 }))
 vi.mock("./api", () => ({ cap6Api: { getGoiY: (...a: unknown[]) => getGoiYMock(...a) } }))
 // `GraduationModalCap6` now REALLY enters Cấp 7 on success (Cấp 7 Task FE3) —
@@ -422,6 +435,15 @@ function fakeCap3Progress(overrides: Partial<Cap3Progress> = {}): Cap3Progress {
 
 function fakeCap6Progress(overrides: Partial<Cap6Progress> = {}): Cap6Progress {
   return {
+    // ★ Sáu trường của Cấp 6 «Bậc thầy» (wire mới). Mốc 7/5 KHÁC mặc định 3/2.
+    //   Mặc định CHƯA đạt cổng — bài "màn tốt nghiệp còn ẩn" phụ thuộc vào đó.
+    so_lan_xu_ly_nhat_quan: 1,
+    so_lan_xu_ly_veto_nhat_quan: 0,
+    muc_tieu_nhat_quan: 7,
+    muc_tieu_veto: 5,
+    tong_lai_lenh_cap6_pct: null,
+    da_xem_tour_mauthuan: true,
+    // ── di sản «Đối chiếu» ──
     id: "p6",
     user_id: "u1",
     entered_at: "2026-04-01T00:00:00Z",
@@ -526,9 +548,9 @@ describe("Cap6TradingPage", () => {
     expect(screen.getByTestId("footer")).toBeInTheDocument()
   })
 
-  it('shows the "CẤP 6 · ĐỐI CHIẾU" label and the THỰC CHIẾN mode badge', () => {
+  it('shows the "CẤP 6 · BẬC THẦY" label and the THỰC CHIẾN mode badge', () => {
     renderCap6(<Cap6TradingPage />)
-    expect(screen.getByText("CẤP 6 · ĐỐI CHIẾU")).toBeInTheDocument()
+    expect(screen.getByText("CẤP 6 · BẬC THẦY")).toBeInTheDocument()
     expect(screen.getByText("THỰC CHIẾN")).toBeInTheDocument()
   })
 
@@ -619,85 +641,68 @@ describe("Cap6TradingPage", () => {
       expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
     })
 
-    it("KHÔNG kết sổ Cấp 1 cho lệnh chưa chấm đủ 5 lớp (cổng cứng Cấp 4 giữ nguyên)", () => {
+    /**
+     * ★★ CỔNG CỨNG CẤP 4 ĐÃ ĐƯỢC NHẤC Ở CẤP 6 «BẬC THẦY».
+     *
+     * Panel Cấp 6 THAY khối "Đọc 5 lớp" bằng bảng mâu thuẫn (spec §5.2), nên
+     * `doc5Lop` LUÔN rỗng. Giữ điều kiện `isDoc5LopComplete` lại là KHÔNG BAO GIỜ
+     * mở Kết sổ cho bất kỳ lệnh nào — tức mọi lệnh đã bán biến mất khỏi mọi sổ
+     * sách. Bài này canh đúng chiều ngược lại.
+     */
+    it("★ lệnh KHÔNG có bản chấm 5 lớp VẪN kết sổ được (khối đó đã bị thay)", async () => {
       renderCap6(<Cap6TradingPage />)
       fireEvent.click(screen.getByTestId("fire-buy-no-doc5lop"))
       fireEvent.click(screen.getByTestId("fire-sell-hpg"))
-      expect(recordKetsoCap1Async).not.toHaveBeenCalled()
-      expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
+      await waitFor(() => expect(recordKetsoCap1Async).toHaveBeenCalled())
+      expect(screen.getByText(/KẾT SỔ LỆNH/)).toBeInTheDocument()
     })
   })
 
-  it("a BUY then SELL opens Kết sổ Cấp 6 with the inherited khối + khối Đối chiếu", async () => {
+  it("a BUY then SELL opens Kết sổ Cấp 6 with the inherited khối + khối nhận định", async () => {
     renderCap6(<Cap6TradingPage />)
     expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
     await openKetso()
 
     expect(screen.getByText("KẾT SỔ LỆNH · #1 · THỰC CHIẾN")).toBeInTheDocument()
+    // Chồng khối Cấp 1-5 mặc định THU GỌN ở Kết sổ Cấp 6 — mở ra để kiểm.
+    fireEvent.click(screen.getByTestId("cap6-ketso-kethua-toggle"))
     expect(screen.getByTestId("cap2-ketso-camket")).toHaveTextContent("58,000")
     expect(screen.getByTestId("cap3-ketso-quanlyvon")).toHaveTextContent("Cân bằng")
-    expect(screen.getByTestId("cap4-ketso-doc5lop")).toBeInTheDocument()
     // Cấp 5 cũ («phân loại 4 ô») đã nghỉ hưu → khối đó KHÔNG còn ở Kết sổ Cấp 6.
     expect(screen.queryByTestId("cap5-phanloai")).not.toBeInTheDocument()
-    // … plus Cấp 6's own khối "Đối chiếu — nhìn lại".
-    expect(screen.getByTestId("cap6-ketso-doichieu")).toBeInTheDocument()
+    // … cộng khối MỚI của Cấp 6 «Bậc thầy».
+    expect(screen.getByTestId("cap6-ketso-nhandinh")).toBeInTheDocument()
   })
 
-  it("resolves the Đối chiếu block from the SERVER's gợi ý (kiểu/ngành/lớp ưu tiên)", async () => {
+  it("dựng khối nhận định từ ảnh chụp bus lúc MUA (hai phe + mức + phủ quyết)", async () => {
     renderCap6(<Cap6TradingPage />)
     await openKetso()
 
-    expect(getGoiYMock).toHaveBeenCalledWith("VNM")
-    expect(screen.getByTestId("cap6-ketso-kieu")).toHaveTextContent("Phòng thủ / tiêu dùng")
-    expect(screen.getByTestId("cap6-ketso-nganh")).toHaveTextContent("Hàng tiêu dùng")
-    expect(screen.getByTestId("cap6-ketso-lop-tin")).toHaveTextContent("Định giá")
-    expect(screen.getByTestId("cap6-ketso-lydo")).toHaveTextContent(
-      "P/B rẻ, tin xấu chỉ ngắn hạn",
+    expect(screen.getByTestId("cap6-ketso-ungho")).toHaveTextContent(
+      "🎯 Kỹ thuật · 💰 Dòng tiền",
     )
-    // lop_quyet_dinh ∈ lop_uu_tien → khớp gợi ý (đúng luật của server).
-    expect(screen.getByTestId("cap6-ketso-khop")).toHaveTextContent("khớp gợi ý cho kiểu này")
+    expect(screen.getByTestId("cap6-ketso-nguoc")).toHaveTextContent("📰 Tin tức")
+    expect(screen.getByTestId("cap6-ketso-veto-tin_tuc")).toHaveTextContent("PHỦ QUYẾT")
+    expect(screen.getByTestId("cap6-ketso-muc")).toHaveTextContent("🔴 Nghiêm trọng")
   })
 
-  it("marks a pick OUTSIDE lop_uu_tien as «khác gợi ý» — a neutral fact, never «sai»", async () => {
-    // Cùng lệnh (user tin 💎 Định giá) nhưng gợi ý của kiểu là 🎯 Kỹ thuật →
-    // `lop_quyet_dinh ∉ lop_uu_tien` → khop_goi_y = false.
-    getGoiYMock.mockResolvedValue(
-      fakeGoiY({
-        kieu: "tang_truong",
-        kieu_ten: "Tăng trưởng / công nghệ",
-        lop_uu_tien: ["ky_thuat", "tin_tuc"],
-        lop_uu_tien_ten: ["Kỹ thuật", "Tin tức"],
-      }),
-    )
+  it("★ khối lượng + tự tin lấy từ CHÍNH cột Cấp 3 của lệnh, không bịa", async () => {
     renderCap6(<Cap6TradingPage />)
     await openKetso()
-
-    const khop = screen.getByTestId("cap6-ketso-khop")
-    expect(khop).toHaveTextContent("khác gợi ý cho kiểu này")
-    expect(khop).toHaveTextContent(/trung tính/)
-    expect(khop.textContent).not.toMatch(/\bsai\b/i)
+    const hd = screen.getByTestId("cap6-ketso-hanhdong")
+    expect(hd).toHaveTextContent("18% vốn")
+    expect(hd).toHaveTextContent("tự tin")
   })
 
-  it("a lệnh with NO conflict opens Kết sổ WITHOUT the Đối chiếu block (spec §9)", async () => {
+  it("a lệnh with NO conflict opens Kết sổ WITHOUT khối nhận định (spec §8)", async () => {
     renderCap6(<Cap6TradingPage />)
     fireEvent.click(screen.getByTestId("fire-buy-no-conflict"))
     fireEvent.click(screen.getByTestId("fire-sell-ssi"))
     await waitFor(() => expect(screen.getByText(/KẾT SỔ LỆNH/)).toBeInTheDocument())
-    expect(screen.queryByTestId("cap6-ketso-doichieu")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap6-ketso-nhandinh")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap6-ketso-lech")).not.toBeInTheDocument()
     // … và KHÔNG hỏi server gợi ý cho một lệnh chưa từng đối chiếu.
     expect(getGoiYMock).not.toHaveBeenCalled()
-  })
-
-  it("still opens Kết sổ when GET /cap6/goi-y fails — degrades, never traps the user", async () => {
-    getGoiYMock.mockRejectedValue(new Error("500"))
-    renderCap6(<Cap6TradingPage />)
-    await openKetso()
-    const block = screen.getByTestId("cap6-ketso-doichieu")
-    expect(block).toBeInTheDocument()
-    // Kiểu không lấy được → "chưa phân loại", KHÔNG bịa một kiểu.
-    expect(screen.getByTestId("cap6-ketso-kieu")).toHaveTextContent("chưa phân loại")
-    // ★ Chưa phân loại thì KHÔNG BAO GIỜ hiện là lệch gợi ý.
-    expect(screen.getByTestId("cap6-ketso-khop").textContent).not.toMatch(/lệch|khác gợi ý/i)
   })
 
   it("closing Kết sổ forwards the record into the Cấp 1-5 trade logs", async () => {
@@ -735,25 +740,27 @@ describe("Cap6TradingPage", () => {
     })
   })
 
-  it("mounts GraduationModalCap6 (hidden until 3/3 nhiệm vụ)", () => {
+  it("mounts GraduationModalCap6 (ẩn tới khi ĐỦ CẢ HAI mốc hành vi)", () => {
+    renderCap6(<Cap6TradingPage />)
+    expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
+
+    // ★ Đủ mốc thứ nhất mà THIẾU mốc phủ quyết → vẫn chưa mở.
+    useCap6ProgressMock.mockReturnValue({
+      data: fakeCap6Progress({ so_lan_xu_ly_nhat_quan: 7, so_lan_xu_ly_veto_nhat_quan: 4 }),
+    })
     renderCap6(<Cap6TradingPage />)
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
 
     useCap6ProgressMock.mockReturnValue({
-      data: fakeCap6Progress({
-        task_1_done_at: "t",
-        task_2_done_at: "t",
-        task_3_done_at: "t",
-        so_lenh_doi_chieu: 18,
-        so_kieu_da_gap: 4,
-        ty_le_thang_khop: 64,
-        ty_le_thang_lech: 41,
-      }),
+      data: fakeCap6Progress({ so_lan_xu_ly_nhat_quan: 7, so_lan_xu_ly_veto_nhat_quan: 5 }),
     })
     renderCap6(<Cap6TradingPage />)
     expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
-    // "CẤP 6 · ĐỐI CHIẾU" also labels the top bar — scope to the modal's own khối.
-    expect(screen.getByTestId("cap6-grad-khoi3")).toHaveTextContent("Cấp 7 «Đọc sổ lệnh»")
+    // Trần thật đang là 5 ⇒ Khối 3 phải nói THẲNG Cấp 7 chưa ra mắt, và tuyệt
+    // đối KHÔNG đoán chủ đề của nó (spec §3 giấu chủ đề).
+    const khoi3 = screen.getByTestId("cap6-grad-khoi3")
+    expect(khoi3).toHaveTextContent("Cấp 7 chưa ra mắt")
+    expect(khoi3.textContent).not.toContain("Đọc sổ lệnh")
   })
 
   it('clicking "AI Phân tích" opens the AI Insight symbol-picker modal, and submitting mở bản đọc AI NGAY TRONG trang cấp — KHÔNG điều hướng', async () => {

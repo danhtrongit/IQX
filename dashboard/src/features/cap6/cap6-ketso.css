@@ -136,3 +136,85 @@
   font-weight: 700;
   color: var(--cap6);
 }
+
+/* ══ CẤP 6 «BẬC THẦY» — khối "nhận định vs hành động" + cảnh báo lệch ═══════
+   Mockup `iqx-cap6-ketso.html` (`.cf-review`, `.mismatch`). Sống trong vỏ cấp
+   `.cap0` như phần trên file, nên dùng đúng bộ token `--t1/--bg2/--bd`. */
+.cap6-ketso-nhandinh {
+  margin-top: 14px;
+  padding: 12px 13px;
+  border: 1px solid var(--bd, #39405a);
+  border-radius: 9px;
+  background: var(--bg2, #1f2230);
+}
+
+.cap6-ketso-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cap6-ketso-chip + .cap6-ketso-chip::before {
+  content: " · ";
+  color: var(--t3, #8a90a5);
+}
+
+.cap6-ketso-veto {
+  font-size: 8px;
+  font-weight: 700;
+  background: var(--down, #ff6b6b);
+  color: var(--bg1, #171923);
+  border-radius: 3px;
+  padding: 1px 4px;
+  margin-left: 4px;
+}
+
+/* Khối cảnh báo lệch — viền đỏ. ★ Đây là chỗ DUY NHẤT của Kết sổ Cấp 6 dùng
+   màu cảnh báo: sự lệch giữa nhận định và hành động là điều cấp này dạy. */
+.cap6-ketso-lech {
+  margin-top: 12px;
+  padding: 12px 13px;
+  border: 1px solid color-mix(in srgb, var(--down, #ff6b6b) 40%, transparent);
+  background: color-mix(in srgb, var(--down, #ff6b6b) 10%, transparent);
+  border-radius: 9px;
+}
+
+.cap6-ketso-lech-head {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--down, #ff6b6b);
+  margin-bottom: 7px;
+}
+
+.cap6-ketso-lech-body {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--t2, #b8bdcc);
+  margin: 0;
+}
+
+/* Thanh THU GỌN chồng khối Cấp 1-5 (mockup `.collapsed`). */
+.cap6-ketso-kethua {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  background: var(--bg3, #282c3d);
+  border: 1px solid var(--bd, #39405a);
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--t2, #b8bdcc);
+  cursor: pointer;
+}
+
+.cap6-ketso-kethua:hover {
+  border-color: var(--teal, #7dd3c0);
+}
+
+.cap6-ketso-kethua-chev {
+  color: var(--t3, #8a90a5);
+}

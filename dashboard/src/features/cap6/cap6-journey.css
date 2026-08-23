@@ -187,3 +187,22 @@
   font-size: 11px;
   color: var(--t3);
 }
+
+/* ══ CẤP 6 «BẬC THẦY» — hai dòng tiến độ của nhiệm vụ duy nhất ══════════════
+   Mockup `iqx-cap6-hanhtrinh.html` `.task .prog` (dòng 1) + dòng thứ hai cho
+   mốc phủ quyết (xem docstring `JourneyPanelCap6`: cổng có HAI mốc, hiện một
+   dòng sẽ để user đủ mốc đầu mà không hiểu vì sao chưa tốt nghiệp). */
+.cap6-journey-prog {
+  font-family: var(--cap0-font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  color: var(--t3, #8a90a5);
+  margin-top: 4px;
+}
+
+.cap6-journey-why {
+  font-size: 10px;
+  line-height: 1.55;
+  color: var(--t3, #8a90a5);
+  margin-top: 6px;
+}

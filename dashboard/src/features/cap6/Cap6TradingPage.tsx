@@ -28,7 +28,6 @@ import { KhauViModal } from "@/features/cap3/KhauViModal"
 import { useCap3TradeLog } from "@/features/cap3/tradeLogCap3"
 import type { CachKhoiLuong, KhauViLoai, MucTuTin } from "@/features/cap3/types"
 import { Cap4Provider, useCap4Events, type Cap4OrderEvent } from "@/features/cap4/Cap4Context"
-import { isDoc5LopComplete } from "@/features/cap4/doc5Lop"
 import { useCap4TradeLog } from "@/features/cap4/tradeLogCap4"
 import type { Lop5Partial } from "@/features/cap4/types"
 import { Cap5Provider } from "@/features/cap5/Cap5Context"
@@ -40,11 +39,12 @@ import { GraduationModalCap6 } from "./GraduationModalCap6"
 import { useEnterCap6 } from "./hooks"
 import { KetsoModalCap6, type DoiChieuKetsoCap6, type KetsoDataCap6 } from "./KetsoModalCap6"
 import type { Cap6TradeRecord } from "./tradeLogCap6"
+import type { NhanDinhKetsoCap6 } from "./NhanDinhKetsoBlock"
 import { KIEU_OPTIONS, type KieuCoPhieu } from "./types"
 import "@/features/cap0/cap0.css"
 import "@/features/cap1/cap1.css"
 
-const SEO_TITLE = "IQX Demo Trading · Cấp 6 «Đối chiếu»"
+const SEO_TITLE = "IQX Demo Trading · Cấp 6 «Bậc thầy»"
 
 /** `YYYY-MM-DD` for "today", browser-local time — mirrors `Cap5TradingPage`'s own
  * `todayYmd` (the client's only proxy for a fill's `trading_date`). */
@@ -174,6 +174,15 @@ interface LastBuyCap6 {
   doc5Lop: Lop5Partial | null
   /** Đánh giá AI 5 lớp lúc đặt — `null` khi AI chưa bao giờ được lộ. */
   ai5Lop: Lop5Partial | null
+  /**
+   * Khối "nhận định vs hành động" của Cấp 6 «Bậc thầy» (spec §8) — ảnh chụp lúc
+   * MUA. `null` = lệnh không có bảng mâu thuẫn ⇒ Kết sổ bỏ hẳn khối, im lặng.
+   *
+   * ★ Chỉ HAI PHE là ảnh chụp thật sự cần giữ ở client (endpoint per-order không
+   * mang chúng). Mức nhận định + khối lượng + tự tin sẽ được ghi đè bằng hàng đã
+   * lưu (`GET /cap6/kehoach/{order_id}`) trong `KetsoModalCap6`.
+   */
+  nhanDinh: NhanDinhKetsoCap6 | null
 }
 
 function Cap6Terminal() {
@@ -272,6 +281,7 @@ function Cap6Terminal() {
           pctVon: existing?.pctVon ?? null,
           doc5Lop: existing?.doc5Lop ?? null,
           ai5Lop: existing?.ai5Lop ?? null,
+          nhanDinh: existing?.nhanDinh ?? null,
         })
       },
     })
@@ -381,11 +391,15 @@ function Cap6Terminal() {
       buy.mucTuTin == null ||
       buy.cachKhoiLuong == null ||
       buy.khoiLuong == null ||
-      buy.pctVon == null ||
-      // Cổng cứng Cấp 4 (giữ nguyên ở Cấp 6): a lệnh ALWAYS has all 5 lớp rated —
-      // without them there is no "Đọc 5 lớp — nhìn lại" to show.
-      buy.doc5Lop == null ||
-      !isDoc5LopComplete(buy.doc5Lop)
+      buy.pctVon == null
+      // ★★ CỔNG CỨNG CẤP 4 ĐÃ ĐƯỢC NHẤC Ở CẤP 6 «BẬC THẦY».
+      //
+      // Bản Cấp 6 cũ đòi `isDoc5LopComplete(buy.doc5Lop)` vì panel còn khối "Đọc
+      // 5 lớp" để user tự chấm. Cấp 6 đợt 7 THAY khối đó bằng bảng mâu thuẫn
+      // (spec §5.2), nên `doc5Lop` LUÔN rỗng — giữ điều kiện này lại là KHÔNG BAO
+      // GIỜ mở Kết sổ cho bất kỳ lệnh nào, tức mọi lệnh đã bán biến mất khỏi mọi
+      // sổ sách. `KetsoModalCap6` đã tự bỏ khối "Đọc 5 lớp — nhìn lại" khi
+      // `doc5Lop` rỗng.
     ) {
       return
     }
@@ -443,10 +457,15 @@ function Cap6Terminal() {
       cachKhoiLuong: buy.cachKhoiLuong,
       khoiLuong: buy.khoiLuong,
       pctVon: buy.pctVon,
-      doc5Lop: buy.doc5Lop,
+      // ★ `?? {}` — ở Cấp 6 «Bậc thầy» khối "Đọc 5 lớp" của Cấp 4 không còn
+      //   được vẽ, nên `doc5Lop` luôn rỗng. Kết sổ tự bỏ khối "Đọc 5 lớp —
+      //   nhìn lại" khi bản chấm rỗng; `KetsoDataCap5.doc5Lop` thì không nhận
+      //   `null` nên truyền một bản chấm RỖNG (không phải một bản chấm bịa).
+      doc5Lop: buy.doc5Lop ?? {},
       ai5Lop: buy.ai5Lop,
       ...nguonSan,
       doiChieu,
+      nhanDinh: buy.nhanDinh,
     })
   }
 
@@ -455,6 +474,27 @@ function Cap6Terminal() {
       onOrderFilled: (order: Cap6OrderEvent) => {
         const key = order.symbol.toUpperCase()
         if (order.side === "buy") {
+          // Cấp 6 «Bậc thầy» — ảnh chụp hai phe + mức nhận định lúc MUA (spec §8).
+          // `coMauThuan !== true` ⇒ lệnh không có bảng mâu thuẫn ⇒ `null`, và Kết
+          // sổ bỏ hẳn khối. Ghi vào CHÍNH hàng `lastBuyBySymbolRef` mà Cấp 1 vừa
+          // tạo (bus Cấp 1 luôn bắn TRƯỚC cho cùng một lệnh khớp).
+          const existing = lastBuyBySymbolRef.current.get(key)
+          if (existing) {
+            lastBuyBySymbolRef.current.set(key, {
+              ...existing,
+              nhanDinh:
+                order.coMauThuan === true
+                  ? {
+                      pheUngHo: order.pheUngHo ?? [],
+                      pheNguoc: order.pheNguoc ?? [],
+                      conflictLevel: order.conflictLevel ?? null,
+                      lopPhuQuyetXau: order.lopPhuQuyetXau ?? [],
+                      pctVon: existing.pctVon,
+                      mucTuTin: existing.mucTuTin,
+                    }
+                  : null,
+            })
+          }
           // Lệnh KHÔNG mâu thuẫn → `TradingPanel` không gửi khối Đối chiếu → xoá
           // khối cũ của mã này (đừng để lệnh trước dây sang lệnh sau).
           if (!order.lopQuyetDinh) {
@@ -504,7 +544,7 @@ function Cap6Terminal() {
 
       {/* Top bar (mirrors Cấp 5's — spec §1 badge góc). */}
       <div className="cap0-topbar">
-        <span className="cap1-topbar-label">CẤP 6 · ĐỐI CHIẾU</span>
+        <span className="cap1-topbar-label">CẤP 6 · BẬC THẦY</span>
         <ModeBadge mode="thuc_chien" />
       </div>
 

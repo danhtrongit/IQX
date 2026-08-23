@@ -3,253 +3,271 @@ import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Cap6Progress } from "./types"
 
-const { useCap6ProgressMock, graduateMutate, enterCap7Mutate, navigateMock } = vi.hoisted(() => ({
-  useCap6ProgressMock: vi.fn(),
-  graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
-    opts?.onSuccess?.()
+/**
+ * Màn tốt nghiệp Cấp 6 «Bậc thầy» (spec §3).
+ *
+ * Bốn luật bất di bất dịch được canh ở đây (cả bốn đều đã bị vi phạm THẬT trên
+ * repo này ở các cấp trước):
+ *   1. **KHÔNG khoe lãi.** Spec §3 ghi dòng phụ là "lãi từ lệnh mâu thuẫn +X%"
+ *      nhưng §2 bỏ lãi HOÀN TOÀN khỏi cổng và §11 ghi `tong_lai_lenh_cap6_pct`
+ *      "CHỈ để hiển thị ở Kết sổ/Phân tích". Dòng phụ dùng số HÀNH VI.
+ *   2. **CTA không bao giờ `disabled` kiểu "sắp ra mắt".** Modal
+ *      `closable={false}` và chỉ unmount khi có `graduated_at` ⇒ nút tắt cứng
+ *      nhốt vĩnh viễn user đã đủ điều kiện. Chỉ `isPending` được phép tắt nút.
+ *   3. **Hai phía của trần.** Khối 3 + dòng dưới CTA + việc có gọi
+ *      `POST /cap7/enter` đều gắn theo `CAP_MAX_ENABLED >= 7`.
+ *   4. **Mốc nhiệm vụ ĐỌC SERVER**, không hard-code 3/2.
+ *
+ * ★★ Arco `Modal` vẽ vào PORTAL ở `document.body`, nên `container.textContent`
+ * là chuỗi RỖNG và mọi `not.toContain` trên nó xanh vô điều kiện. Mọi bài phủ
+ * định ở đây soi `document.body.textContent` VÀ có một `getByTestId` dương tính
+ * bên cạnh, chứng minh modal render thật.
+ */
+const { useCap6ProgressMock, graduateMutate, enterCap7Mutate, capFlags, pending } = vi.hoisted(
+  () => ({
+    useCap6ProgressMock: vi.fn(),
+    graduateMutate: vi.fn((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
+      opts?.onSuccess?.()
+    }),
+    enterCap7Mutate: vi.fn(),
+    // ★★ MẶC ĐỊNH = TRẦN THẬT (`CAP_MAX_ENABLED` đang là 5, tức Cấp 7 CHƯA mở).
+    // Đặt mặc định TRÊN trần thật sẽ khiến mọi bài chỉ chạy nhánh "đã mở" và câu
+    // chữ user THẬT SỰ đọc hôm nay không bao giờ bị canh — đúng lỗi đã sửa ở Cấp 5.
+    capFlags: { max: 5 },
+    pending: { current: false },
   }),
-  enterCap7Mutate: vi.fn(),
-  navigateMock: vi.fn(),
-}))
+)
 
 vi.mock("./hooks", () => ({
   useCap6Progress: (...a: unknown[]) => useCap6ProgressMock(...a),
-  useGraduateCap6: () => ({ mutate: graduateMutate, isPending: false }),
+  useGraduateCap6: () => ({ mutate: graduateMutate, isPending: pending.current }),
 }))
-
 vi.mock("@/features/cap7/hooks", () => ({
   useEnterCap7: () => ({ mutate: enterCap7Mutate, isPending: false }),
 }))
-
-vi.mock("react-router", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("react-router")>()
-  return { ...actual, useNavigate: () => navigateMock }
-})
+vi.mock("@/features/cap1/capFlags", () => ({
+  get CAP_MAX_ENABLED() {
+    return capFlags.max
+  },
+}))
 
 import { GraduationModalCap6, isGraduationReadyCap6 } from "./GraduationModalCap6"
 
+/**
+ * ★★ MỐC 7/5 — **KHÁC** mặc định 3/2 của `nhanDinhCap6.ts`.
+ *
+ * Fixture bằng đúng default sẽ không phân biệt được "đọc server" với "trả hằng
+ * số" (đúng lỗi xanh giả đợt Cấp 5, nơi trường mục tiêu để `undefined`).
+ */
 function makeProgress(overrides: Partial<Cap6Progress> = {}): Cap6Progress {
   return {
-    id: "p6",
-    user_id: "u1",
-    entered_at: "2026-07-31T00:00:00Z",
-    task_1_done_at: null,
-    task_2_done_at: null,
-    task_3_done_at: null,
-    so_lenh_doi_chieu: 0,
-    so_kieu_da_gap: 0,
-    ty_le_thang_khop: 0,
-    ty_le_thang_lech: 0,
+    entered_at: "2026-08-20T00:00:00Z",
+    so_lan_xu_ly_nhat_quan: 7,
+    so_lan_xu_ly_veto_nhat_quan: 5,
+    muc_tieu_nhat_quan: 7,
+    muc_tieu_veto: 5,
+    tong_lai_lenh_cap6_pct: 12.4,
+    da_xem_tour_mauthuan: true,
     graduated_at: null,
-    time_to_graduate_hours: null,
     ...overrides,
   }
 }
 
-function readyProgress(overrides: Partial<Cap6Progress> = {}): Cap6Progress {
-  return makeProgress({
-    task_1_done_at: "t",
-    task_2_done_at: "t",
-    task_3_done_at: "t",
-    so_lenh_doi_chieu: 18,
-    so_kieu_da_gap: 4,
-    ty_le_thang_khop: 64,
-    ty_le_thang_lech: 41,
-    ...overrides,
-  })
-}
+beforeEach(() => {
+  useCap6ProgressMock.mockReset()
+  useCap6ProgressMock.mockReturnValue({ data: makeProgress() })
+  graduateMutate.mockClear()
+  enterCap7Mutate.mockClear()
+  capFlags.max = 5
+  pending.current = false
+})
 
-describe("isGraduationReadyCap6", () => {
-  it("is false for null/undefined progress", () => {
-    expect(isGraduationReadyCap6(null)).toBe(false)
-    expect(isGraduationReadyCap6(undefined)).toBe(false)
+describe("isGraduationReadyCap6 — thuần hành vi, KHÔNG đo lãi (spec §2/§3)", () => {
+  it("đủ hai mốc của SERVER → mở", () => {
+    expect(isGraduationReadyCap6(makeProgress())).toBe(true)
   })
 
-  it("is false when fewer than 3/3 nhiệm vụ are done", () => {
-    expect(isGraduationReadyCap6(readyProgress({ task_3_done_at: null }))).toBe(false)
-    expect(isGraduationReadyCap6(readyProgress({ task_1_done_at: null }))).toBe(false)
+  it("đủ mốc mặc định 3/2 nhưng CHƯA đủ mốc server 7/5 → không mở", () => {
+    expect(
+      isGraduationReadyCap6(
+        makeProgress({ so_lan_xu_ly_nhat_quan: 3, so_lan_xu_ly_veto_nhat_quan: 2 }),
+      ),
+    ).toBe(false)
   })
 
-  it("is true once 3/3 nhiệm vụ are done", () => {
-    expect(isGraduationReadyCap6(readyProgress())).toBe(true)
+  it("thiếu số lần có phủ quyết → không mở", () => {
+    expect(isGraduationReadyCap6(makeProgress({ so_lan_xu_ly_veto_nhat_quan: 4 }))).toBe(false)
   })
 
-  it("is false once already graduated — one-way trip, never re-opens", () => {
-    expect(isGraduationReadyCap6(readyProgress({ graduated_at: "2026-09-01T00:00:00Z" }))).toBe(
+  it("★ lỗ nặng vẫn mở — lãi KHÔNG phải cổng", () => {
+    expect(isGraduationReadyCap6(makeProgress({ tong_lai_lenh_cap6_pct: -38 }))).toBe(true)
+  })
+
+  it("chưa từng có lệnh đã đóng (lãi null) vẫn mở", () => {
+    expect(isGraduationReadyCap6(makeProgress({ tong_lai_lenh_cap6_pct: null }))).toBe(true)
+  })
+
+  it("đã tốt nghiệp → không mở lại (một chiều)", () => {
+    expect(isGraduationReadyCap6(makeProgress({ graduated_at: "2026-08-30T00:00:00Z" }))).toBe(
       false,
     )
   })
+
+  it("chưa có hồ sơ → không mở", () => {
+    expect(isGraduationReadyCap6(null)).toBe(false)
+    expect(isGraduationReadyCap6(undefined)).toBe(false)
+  })
 })
 
-describe("GraduationModalCap6", () => {
-  beforeEach(() => {
-    useCap6ProgressMock.mockReset()
-    graduateMutate.mockReset()
-    graduateMutate.mockImplementation((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
-      opts?.onSuccess?.()
-    })
-    enterCap7Mutate.mockReset()
-    navigateMock.mockReset()
-  })
-
-  it("does not render when 3/3 isn't met", () => {
-    useCap6ProgressMock.mockReturnValue({ data: makeProgress() })
+describe("GraduationModalCap6 — dòng phụ dùng SỐ HÀNH VI, không khoe lãi", () => {
+  it("in hai con số hành vi kèm mốc của SERVER (7/5, không phải 3/2)", () => {
     render(<GraduationModalCap6 />)
-    expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
+    const sub = screen.getByTestId("cap6-grad-sub")
+    expect(sub).toHaveTextContent("7/7 lần xử lý nhất quán")
+    expect(sub).toHaveTextContent("5/5 lần có phủ quyết")
+    expect(sub.textContent).not.toContain("3")
+    expect(sub.textContent).not.toContain("2")
   })
 
-  it("renders the header + a 120px glowing Cấp 6 đỏ son badge once ready", () => {
-    useCap6ProgressMock.mockReturnValue({ data: readyProgress() })
+  it("★ KHÔNG một chữ nào về lãi/lợi nhuận/% lãi trên toàn màn (spec §2/§11)", () => {
     render(<GraduationModalCap6 />)
-
-    expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
-    expect(screen.getByText("CẤP 6 · ĐỐI CHIẾU")).toBeInTheDocument()
-    // Dòng phụ spec §3 — `3/3 · {N} lệnh đối chiếu · {K} kiểu`, số THẬT.
-    expect(screen.getByText("3/3 · 18 lệnh đối chiếu · 4 kiểu")).toBeInTheDocument()
-
-    const svg = document.querySelector(".cap0-grad-badge-wrap svg")
-    expect(svg).not.toBeNull()
-    expect(svg?.getAttribute("width")).toBe("120")
-    expect(svg?.innerHTML).toContain("#d64550")
+    // Neo dương tính: modal THẬT SỰ đã render vào portal.
+    expect(screen.getByTestId("cap6-grad-khoi1")).toBeInTheDocument()
+    const body = document.body.textContent ?? ""
+    expect(body.length).toBeGreaterThan(100)
+    for (const tu of [
+      "lãi từ lệnh mâu thuẫn",
+      "lãi",
+      "lợi nhuận",
+      "tỷ lệ thắng",
+      "12.4",
+      "12,4",
+    ]) {
+      expect(body).not.toContain(tu)
+    }
   })
 
-  it("renders Khối 1 — Ghi nhận, with the user's real {N}/{K} (spec §3)", () => {
-    useCap6ProgressMock.mockReturnValue({ data: readyProgress() })
-    render(<GraduationModalCap6 />)
-
-    const khoi1 = screen.getByTestId("cap6-grad-khoi1")
-    expect(khoi1).toHaveTextContent(
-      "Bạn đã đối chiếu 18 lệnh khi các lớp mâu thuẫn, qua 4 loại cổ phiếu",
-    )
-    expect(khoi1).toHaveTextContent(/không còn bối rối khi các tín hiệu trái nhau/)
-  })
-
-  it("backs Khối 1 with the real khớp/lệch numbers (§C12c — no bare claim)", () => {
-    useCap6ProgressMock.mockReturnValue({ data: readyProgress() })
-    render(<GraduationModalCap6 />)
-    expect(screen.getByTestId("cap6-grad-khoi1-provenance")).toHaveTextContent(
-      "khớp gợi ý thắng 64% vs lệch gợi ý 41%",
-    )
-  })
-
-  /**
-   * ★ HỢP ĐỒNG BACKEND MỚI (commit `4b01918`): `ty_le_thang_khop`/`_lech` là
-   * NULLABLE. `null` = nhóm đó chưa có lệnh đã đóng nào; `0.0` là một KẾT QUẢ
-   * THẬT (có lệnh đã đóng, không lệnh nào thắng). `?? 0` gộp hai thứ đó lại và
-   * nói với người vừa tốt nghiệp rằng họ thắng 0% ở một nhóm họ chưa từng có lệnh.
-   *
-   * Fixture đổi ĐÚNG MỘT thứ giữa hai case (null vs 0) để test không thể xanh nhờ
-   * một khác biệt khác.
-   */
-  it("null ≠ 0: nhóm chưa có lệnh hiện 'chưa đủ dữ liệu', KHÔNG phải 0%", () => {
+  it("lãi lỗ nặng cũng không lọt vào màn", () => {
     useCap6ProgressMock.mockReturnValue({
-      data: readyProgress({ ty_le_thang_khop: null, ty_le_thang_lech: null }),
+      data: makeProgress({ tong_lai_lenh_cap6_pct: -38.2 }),
     })
     render(<GraduationModalCap6 />)
-    const prov = screen.getByTestId("cap6-grad-khoi1-provenance").textContent!
-    expect(prov).not.toMatch(/0%/)
-    expect(prov).toContain("chưa đủ dữ liệu")
+    expect(screen.getByTestId("cap6-grad-sub")).toBeInTheDocument()
+    expect(document.body.textContent).not.toContain("38")
   })
+})
 
-  it("0% là một KẾT QUẢ THẬT và vẫn được in ra là 0%", () => {
-    useCap6ProgressMock.mockReturnValue({
-      data: readyProgress({ ty_le_thang_khop: 0, ty_le_thang_lech: 0 }),
-    })
+describe("GraduationModalCap6 — 3 khối theo spec §3", () => {
+  it("Khối 1 ghi nhận đúng thứ Cấp 6 dạy", () => {
     render(<GraduationModalCap6 />)
-    const prov = screen.getByTestId("cap6-grad-khoi1-provenance").textContent!
-    expect(prov).toContain("khớp gợi ý thắng 0% vs lệch gợi ý 0%")
-    expect(prov).not.toContain("chưa đủ dữ liệu")
+    const k1 = screen.getByTestId("cap6-grad-khoi1")
+    expect(k1).toHaveTextContent("phân biệt lớp phủ quyết với lớp điểm trừ")
+    expect(k1).toHaveTextContent("để hành động khớp với nhận định của mình")
   })
 
-  it("một nhóm null, nhóm kia 0 → mỗi nhóm nói đúng chuyện của nó", () => {
-    useCap6ProgressMock.mockReturnValue({
-      data: readyProgress({ ty_le_thang_khop: null, ty_le_thang_lech: 0 }),
-    })
+  it("Khối 2 điểm lại đúng chặng Cấp 0 → Cấp 6", () => {
     render(<GraduationModalCap6 />)
-    const prov = screen.getByTestId("cap6-grad-khoi1-provenance").textContent!
-    expect(prov).toContain("khớp gợi ý thắng chưa đủ dữ liệu")
-    expect(prov).toContain("lệch gợi ý 0%")
+    const k2 = screen.getByTestId("cap6-grad-khoi2")
+    expect(k2).toHaveTextContent("hiểu sân chơi (Cấp 0)")
+    expect(k2).toHaveTextContent("săn mã (Cấp 5)")
+    expect(k2).toHaveTextContent("xử lý mâu thuẫn (Cấp 6)")
   })
 
-  it("renders Khối 2 — Định vị (what the order book adds)", () => {
-    useCap6ProgressMock.mockReturnValue({ data: readyProgress() })
+  it("★ KHÔNG ghi công việc user không làm: không nhắc «không mua» như thành tích", () => {
     render(<GraduationModalCap6 />)
-    const khoi2 = screen.getByTestId("cap6-grad-khoi2")
-    expect(khoi2).toHaveTextContent(/mọi lớp tới giờ đọc từ dữ liệu ngày/)
-    expect(khoi2).toHaveTextContent(/sổ lệnh/)
-    expect(khoi2).toHaveTextContent(/Cấp 7/)
+    expect(screen.getByTestId("cap6-grad-khoi1")).toBeInTheDocument()
+    // Cấp 6 KHÔNG đo số lần đứng ngoài làm cổng — nó chỉ hiện ở Phân tích ⑮.
+    expect(screen.getByTestId("cap6-grad-sub").textContent).not.toContain("không mua")
+    expect(screen.getByTestId("cap6-grad-khoi1").textContent).not.toContain("không mua")
   })
+})
 
-  it("Khối 3 describes what Cấp 7 ACTUALLY is — Lực + cảnh giác lệnh treo lớn", () => {
-    useCap6ProgressMock.mockReturnValue({ data: readyProgress() })
+describe("GraduationModalCap6 — HAI PHÍA của trần cấp (capFlags §LUẬT TỔNG QUÁT)", () => {
+  it("trần < 7: Khối 3 nói THẲNG Cấp 7 chưa ra mắt, không nói «đang chờ»", () => {
+    capFlags.max = 5
     render(<GraduationModalCap6 />)
-    expect(screen.getByText("Từ giờ: Cấp 7 «Đọc sổ lệnh».")).toBeInTheDocument()
-    const khoi3 = screen.getByTestId("cap6-grad-khoi3")
-    expect(khoi3).toHaveTextContent(/Lực/)
-    expect(khoi3).toHaveTextContent(/dư mua/)
-    expect(khoi3).toHaveTextContent(/lệnh treo/)
+    const k3 = screen.getByTestId("cap6-grad-khoi3")
+    expect(k3).toHaveTextContent("Cấp 7 chưa ra mắt")
+    expect(k3.textContent).not.toContain("Cấp 7 đang chờ")
   })
 
-  it("Khối 3 promises NOTHING Cấp 7 does not do (no lệnh-giả detection)", () => {
-    useCap6ProgressMock.mockReturnValue({ data: readyProgress() })
+  it("trần ≥ 7: Khối 3 quay về câu NGUYÊN VĂN spec §3", () => {
+    capFlags.max = 7
     render(<GraduationModalCap6 />)
-    const khoi3 = screen.getByTestId("cap6-grad-khoi3")
-    expect(khoi3.textContent).not.toMatch(/phân biệt cầu thật với lệnh giả/)
-    expect(khoi3.textContent).not.toMatch(/phát hiện lệnh giả/)
+    const k3 = screen.getByTestId("cap6-grad-khoi3")
+    expect(k3).toHaveTextContent("Cấp 7 đang chờ")
+    expect(k3).toHaveTextContent("Chủ đề sẽ hé lộ khi bạn tới gần")
+    expect(k3.textContent).not.toContain("chưa ra mắt")
   })
 
-  it("Khối 3 + CTA carry Cấp 7's hồng magenta classes (#c65cae)", () => {
-    useCap6ProgressMock.mockReturnValue({ data: readyProgress() })
+  it("trần < 7: dòng «sắp ra mắt» dưới CTA", () => {
+    capFlags.max = 5
     render(<GraduationModalCap6 />)
-    expect(document.querySelector(".cap6-grad-block--cap7")).not.toBeNull()
-    expect(document.querySelector(".cap6-grad-cta--cap7")).not.toBeNull()
+    expect(screen.getByTestId("cap6-grad-cta")).toHaveTextContent("Cấp 7 sắp ra mắt")
   })
 
-  // ★ Cấp 7 «Đọc sổ lệnh» đã ship — nút KHÔNG còn "sắp ra mắt" nữa. Nó vẫn KHÔNG
-  // điều hướng: `DauTruongPage` tự đổi shell khi `graduated_at` về (cùng query).
-  it("the Cấp 7 button no longer says «sắp ra mắt», and still NEVER navigates", () => {
-    useCap6ProgressMock.mockReturnValue({ data: readyProgress() })
+  it("trần ≥ 7: dòng «sắp ra mắt» biến mất", () => {
+    capFlags.max = 7
     render(<GraduationModalCap6 />)
     const cta = screen.getByTestId("cap6-grad-cta")
-    expect(cta).toHaveTextContent("Vào Cấp 7 «Đọc sổ lệnh»")
-    expect(cta.textContent).not.toMatch(/sắp ra mắt/)
-    fireEvent.click(cta)
-    expect(navigateMock).not.toHaveBeenCalled()
+    expect(cta).toHaveTextContent("Vào Cấp 7")
+    expect(cta.textContent).not.toContain("sắp ra mắt")
   })
 
-  it("clicking it records the graduation and REALLY enters Cấp 7", () => {
-    useCap6ProgressMock.mockReturnValue({ data: readyProgress() })
+  it("trần < 7: bấm CTA VẪN ghi tốt nghiệp nhưng KHÔNG gọi POST /cap7/enter", () => {
+    capFlags.max = 5
     render(<GraduationModalCap6 />)
     fireEvent.click(screen.getByTestId("cap6-grad-cta"))
-    expect(graduateMutate).toHaveBeenCalledWith(
-      undefined,
-      expect.objectContaining({ onSuccess: expect.any(Function) }),
-    )
-    expect(enterCap7Mutate).toHaveBeenCalledTimes(1)
-  })
-
-  it("does NOT enter Cấp 7 before the graduation actually succeeds", () => {
-    useCap6ProgressMock.mockReturnValue({ data: readyProgress() })
-    graduateMutate.mockImplementation(() => {
-      /* pending — no onSuccess */
-    })
-    render(<GraduationModalCap6 />)
-    fireEvent.click(screen.getByTestId("cap6-grad-cta"))
+    expect(graduateMutate).toHaveBeenCalledTimes(1)
     expect(enterCap7Mutate).not.toHaveBeenCalled()
   })
 
-  it("closes itself once graduated_at comes back (progress refetch)", () => {
-    useCap6ProgressMock.mockReturnValue({
-      data: readyProgress({ graduated_at: "2026-09-01T00:00:00Z" }),
-    })
+  it("trần ≥ 7: bấm CTA ghi tốt nghiệp RỒI vào Cấp 7", () => {
+    capFlags.max = 7
     render(<GraduationModalCap6 />)
-    expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
+    fireEvent.click(screen.getByTestId("cap6-grad-cta"))
+    expect(graduateMutate).toHaveBeenCalledTimes(1)
+    expect(enterCap7Mutate).toHaveBeenCalledTimes(1)
   })
 
-  it("shows no huy chương / confetti (spec §10)", () => {
-    useCap6ProgressMock.mockReturnValue({ data: readyProgress() })
+  it("★ trần đọc trong HÀM: đổi trần giữa hai lần render là đổi câu chữ", () => {
+    capFlags.max = 5
+    const { unmount } = render(<GraduationModalCap6 />)
+    expect(screen.getByTestId("cap6-grad-khoi3")).toHaveTextContent("chưa ra mắt")
+    unmount()
+    capFlags.max = 7
     render(<GraduationModalCap6 />)
-    expect(screen.queryByText(/[Hh]uân chương/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/[Hh]uy chương/)).not.toBeInTheDocument()
+    expect(screen.getByTestId("cap6-grad-khoi3")).toHaveTextContent("đang chờ")
+  })
+})
+
+describe("GraduationModalCap6 — CTA không bao giờ nhốt user", () => {
+  it("★ trần < 7 mà CTA vẫn bấm được (không disabled kiểu «sắp ra mắt»)", () => {
+    capFlags.max = 5
+    render(<GraduationModalCap6 />)
+    expect(screen.getByTestId("cap6-grad-cta")).not.toBeDisabled()
+  })
+
+  it("chỉ `isPending` được phép tắt nút (chặn double-submit)", () => {
+    pending.current = true
+    render(<GraduationModalCap6 />)
+    expect(screen.getByTestId("cap6-grad-cta")).toBeDisabled()
+  })
+})
+
+describe("GraduationModalCap6 — chưa đủ điều kiện thì KHÔNG vẽ gì", () => {
+  it("hồ sơ chưa đạt → không có modal, không có chữ nào của màn tốt nghiệp", () => {
+    useCap6ProgressMock.mockReturnValue({
+      data: makeProgress({ so_lan_xu_ly_nhat_quan: 1, so_lan_xu_ly_veto_nhat_quan: 0 }),
+    })
+    render(<GraduationModalCap6 />)
+    // ★ Neo dương tính đảo chiều: chứng minh chuỗi này CÓ xuất hiện khi đạt.
+    expect(screen.queryByTestId("cap6-grad-khoi1")).toBeNull()
+    expect(document.body.textContent).not.toContain("CẤP 6 · BẬC THẦY")
+  })
+
+  it("(đối chứng) hồ sơ đạt thì chuỗi trên CÓ mặt — bài trên không xanh giả", () => {
+    render(<GraduationModalCap6 />)
+    expect(document.body.textContent).toContain("CẤP 6 · BẬC THẦY")
   })
 })

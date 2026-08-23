@@ -6,7 +6,7 @@ import type { BadgeOptions, Cap0Level } from "./types"
  * theme levels ship. The evolving hexagon: the edge glows brighter, the core
  * fills denser, rays appear from level 4, glow at level 5+.
  *
- * Cấp 6 «Đối chiếu» (đỏ son `#d64550`, fill=6) is the first theme level — spec
+ * Cấp 6 «Bậc thầy» (đỏ son `#d64550`, fill=6) is the first theme level — spec
  * `IQX-Cap6-Spec.md` §0/§1 — followed by Cấp 7 «Đọc sổ lệnh» (hồng magenta
  * `#c65cae`, fill=7 — `IQX-Cap7-Spec.md` §1) and Cấp 8 «Quản trị rủi ro danh
  * mục» (xanh lá `#3f9b5a`, fill=8 — `IQX-Cap8-Spec.md` §1), the LAST level of
