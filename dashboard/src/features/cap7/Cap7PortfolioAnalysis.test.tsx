@@ -19,6 +19,9 @@ vi.mock("./hooks", () => ({
 }))
 vi.mock("@/features/cap6/hooks", () => ({
   useThachThucCap6: () => ({ data: undefined, isPending: true, isError: false }),
+  // ★ Khối ⑭⑮ của Cấp 6 «Bậc thầy» đọc `GET /cap6/phan-tich` (SERVER) — mặc định
+  // "đang tải" để không bài nào ở cấp trên khẳng định một con số nhận định nào.
+  usePhanTichCap6: () => ({ data: undefined, isPending: true, isError: false }),
 }))
 vi.mock("@/features/cap4/hooks", () => ({
   useVuKhiDiemMu: () => ({ data: undefined, isPending: true, isError: false }),
@@ -168,6 +171,14 @@ function cap5Progress(): Cap5Progress {
 
 function cap6Progress(): Cap6Progress {
   return {
+    // ★ Sáu trường của Cấp 6 «Bậc thầy» (wire mới). Mốc 7/5 KHÁC mặc định 3/2.
+    so_lan_xu_ly_nhat_quan: 7,
+    so_lan_xu_ly_veto_nhat_quan: 5,
+    muc_tieu_nhat_quan: 7,
+    muc_tieu_veto: 5,
+    tong_lai_lenh_cap6_pct: null,
+    da_xem_tour_mauthuan: true,
+    // ── di sản «Đối chiếu» (Cấp 7 còn truyền type này xuyên qua) ──
     id: "c6p",
     user_id: "u1",
     entered_at: "2026-07-02T00:00:00Z",

@@ -112,3 +112,73 @@
   border-left: 2px solid #d64550;
   border-radius: 6px;
 }
+
+/* ══ CẤP 6 «BẬC THẦY» — bảng ⑭ + ⑮ ════════════════════════════════════════
+   Mockup `iqx-cap6-phantich-danhmuc.html` (`.cf-table`). Vẫn dùng token Arco
+   `--color-*` như phần trên file (Phân tích danh mục render trong sidebar-panel
+   thường, KHÔNG bọc `.cap0`). */
+.cap6-pa-table {
+  width: 100%;
+  margin-top: 6px;
+  font-size: 11.5px;
+  border-collapse: collapse;
+}
+
+.cap6-pa-table th,
+.cap6-pa-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--color-border-2);
+}
+
+.cap6-pa-table tr:last-child th,
+.cap6-pa-table tr:last-child td {
+  border-bottom: none;
+}
+
+.cap6-pa-table thead th {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--color-text-3);
+  background: var(--color-fill-1, var(--color-bg-2));
+}
+
+.cap6-pa-table thead th + th,
+.cap6-pa-table tbody td {
+  text-align: right;
+}
+
+.cap6-pa-table tbody th {
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--color-text-1);
+}
+
+.cap6-pa-num {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-1);
+}
+
+/* Cột "Khớp?" — ba trạng thái. `--chuadu` là XÁM (thiếu dữ liệu), KHÔNG đỏ:
+   "chưa xét được" không phải một lỗi của người dùng. */
+.cap6-pa-khop {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.cap6-pa-khop--ok {
+  color: var(--color-success-6, #35d07f);
+}
+
+.cap6-pa-khop--lech {
+  color: var(--color-danger-6, #ff6b6b);
+}
+
+.cap6-pa-khop--chuadu {
+  font-weight: 400;
+  font-size: 10px;
+  color: var(--color-text-3);
+}

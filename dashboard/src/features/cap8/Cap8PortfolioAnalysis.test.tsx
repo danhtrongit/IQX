@@ -22,6 +22,9 @@ vi.mock("@/features/cap7/hooks", () => ({
 }))
 vi.mock("@/features/cap6/hooks", () => ({
   useThachThucCap6: () => ({ data: undefined, isPending: true, isError: false }),
+  // ★ Khối ⑭⑮ của Cấp 6 «Bậc thầy» đọc `GET /cap6/phan-tich` (SERVER) — mặc định
+  // "đang tải" để không bài nào ở cấp trên khẳng định một con số nhận định nào.
+  usePhanTichCap6: () => ({ data: undefined, isPending: true, isError: false }),
 }))
 vi.mock("@/features/cap4/hooks", () => ({
   useVuKhiDiemMu: () => ({ data: undefined, isPending: true, isError: false }),
