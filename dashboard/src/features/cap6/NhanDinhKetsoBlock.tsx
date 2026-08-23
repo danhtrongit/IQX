@@ -32,6 +32,13 @@ export interface NhanDinhKetsoCap6 {
   pctVon: number | null
   /** Mức tự tin đã chọn (Cấp 3). `null` = chưa biết. */
   mucTuTin: MucTuTin | null
+  /**
+   * ★ Phán quyết nhất quán của SERVER (`GET /cap6/kehoach/{order_id}`) —
+   * `true` nhất quán · `false` lệch · `null` chưa đọc được / không xét được.
+   * Có giá trị thì nó THẮNG luật suy ở client, vì đây đúng là con số cổng tốt
+   * nghiệp đếm. Vắng mặt (ảnh chụp thuần từ bus) thì mới suy tạm.
+   */
+  nhatQuanServer?: boolean | null
 }
 
 /**
@@ -49,14 +56,21 @@ export function mergeNhanDinhCap6(
   detail: KehoachMauThuanCap6 | null | undefined,
 ): NhanDinhKetsoCap6 | null {
   if (!detail) return local ?? null
-  if (!detail.had_conflict) return null
+  // ★ `false` = server khẳng định lệnh này KHÔNG có mâu thuẫn ⇒ bỏ hẳn khối.
+  //   `null` = server CHƯA CHẤM ĐƯỢC mã (không có bản AI Insight còn hiệu lực)
+  //   ⇒ ta không biết, nên giữ lại ảnh chụp của bus thay vì im lặng xoá một
+  //   khối đáng lẽ có. Gộp hai ca này bằng `!detail.had_conflict` là đọc
+  //   "chưa biết" thành "không có".
+  if (detail.had_conflict === false) return null
+  if (detail.had_conflict == null) return local ?? null
   return {
     pheUngHo: local?.pheUngHo ?? [],
     pheNguoc: local?.pheNguoc ?? [],
     conflictLevel: detail.conflict_level,
-    lopPhuQuyetXau: detail.veto_layers,
-    pctVon: detail.pct_von,
+    lopPhuQuyetXau: detail.veto_layers ?? [],
+    pctVon: detail.khoi_luong_pct_von,
     mucTuTin: detail.muc_tu_tin,
+    nhatQuanServer: detail.nhat_quan,
   }
 }
 
@@ -141,7 +155,16 @@ export interface NhanDinhKetsoBlockProps {
 
 export function NhanDinhKetsoBlock({ nhanDinh, pnlPct }: NhanDinhKetsoBlockProps) {
   const { pheUngHo, pheNguoc, conflictLevel, lopPhuQuyetXau, pctVon, mucTuTin } = nhanDinh
-  const lech = lechNhanDinhHanhDong(conflictLevel, mucTuTin)
+  // ★★ Phán quyết của SERVER thắng — đó chính là con số cổng tốt nghiệp đếm.
+  //    `lechNhanDinhHanhDong` chỉ còn là đường lui khi chưa đọc được hàng
+  //    (query đang chạy / 404 / mất mạng), và hai bên định nghĩa "mua nhỏ"
+  //    KHÁC NHAU: server so % vốn với trần Thận trọng 10%, client so mức tự
+  //    tin. Để client tự suy là Kết sổ nói một đằng, cổng đếm một nẻo về CÙNG
+  //    một lệnh — xem docstring `nhat_quan` trong `mauThuanTypes.ts`.
+  const lech =
+    nhanDinh.nhatQuanServer != null
+      ? !nhanDinh.nhatQuanServer
+      : lechNhanDinhHanhDong(conflictLevel, mucTuTin)
   const vetoSet = new Set(lopPhuQuyetXau)
 
   return (

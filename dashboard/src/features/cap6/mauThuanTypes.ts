@@ -113,19 +113,45 @@ export interface SkipCap6Input {
  * + tự tin, KHÔNG cắt lỗ).
  */
 export interface KehoachMauThuanCap6 {
+  id?: string
   order_id: string
-  /** Lệnh này có bảng mâu thuẫn lúc đặt không. `false` ⇒ không có gì để nhìn lại. */
-  had_conflict: boolean
+  /**
+   * Lệnh này có bảng mâu thuẫn lúc đặt không.
+   * ★ BA trạng thái: `true` có · `false` không có · **`null` = chưa chấm được
+   * mã** (không có bản AI Insight còn hiệu lực). `null` KHÔNG phải "không có
+   * mâu thuẫn" — đọc nhầm là bỏ mất khối Kết sổ của một lệnh đáng lẽ có.
+   */
+  had_conflict: boolean | null
   /** Mức user tự đọc. `null` = có mâu thuẫn nhưng user không chọn mức nào. */
   conflict_level: ConflictLevel | null
-  /** Lệnh có lớp phủ quyết ở bậc rất xấu không. */
-  had_veto: boolean
+  /** Tên hiển thị của `conflict_level`, do SERVER dựng (§C12c). */
+  conflict_level_ten?: string | null
+  /** Lệnh có lớp phủ quyết ở bậc rất xấu không. `null` = chưa chấm được mã. */
+  had_veto: boolean | null
   /** Lớp phủ quyết nào đang xấu. */
-  veto_layers: Lop[]
-  /** % vốn ĐÃ MUA (cột Cấp 3). `null` = hàng không có số này. */
-  pct_von: number | null
+  veto_layers: Lop[] | null
+  /** Tên hiển thị các lớp phủ quyết, do SERVER dựng. */
+  veto_layers_ten?: string[] | null
+  /**
+   * % vốn ĐÃ MUA (cột Cấp 3). `null` = hàng không có số này.
+   * ★ Tên trường là `khoi_luong_pct_von`, KHÔNG phải `pct_von` — bản trước đoán
+   * sai tên nên khối Kết sổ đọc ra `undefined` và im lặng vẽ "chưa biết".
+   */
+  khoi_luong_pct_von: number | null
   /** Mức tự tin ĐÃ CHỌN (cột Cấp 3): 1 Thấp · 2 Vừa · 3 Cao. `null` = chưa có. */
   muc_tu_tin: 1 | 2 | 3 | null
+  /**
+   * ★★ **PHÁN QUYẾT CỦA SERVER** — `true` nhất quán · `false` lệch · `null`
+   * không xét được. Đây là CHÍNH con số mà cổng tốt nghiệp đếm.
+   *
+   * Kết sổ PHẢI đọc trường này chứ không tự suy, vì hai bên định nghĩa "mua
+   * nhỏ" khác nhau: server so `khoi_luong_pct_von` với trần khẩu vị Thận trọng
+   * (10%), còn `lechNhanDinhHanhDong` của client so MỨC TỰ TIN. Một user khẩu
+   * vị «Tấn công» chọn tự tin ⭐ Thấp vẫn mua quá 10% vốn ⇒ server tính lệch,
+   * client nói không lệch. Để client tự suy là Kết sổ nói một đằng còn cổng
+   * đếm một nẻo về CÙNG một lệnh.
+   */
+  nhat_quan: boolean | null
 }
 
 /** Một hàng của khối ⑭ — mức nhận định × khối lượng trung bình (spec §9). */

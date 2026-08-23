@@ -182,8 +182,9 @@ function nhanDinhDetail(
     conflict_level: "nghiem",
     had_veto: true,
     veto_layers: ["noi_bo", "tin_tuc"],
-    pct_von: 30,
+    khoi_luong_pct_von: 30,
     muc_tu_tin: 3,
+    nhat_quan: false,
     ...overrides,
   }
 }
