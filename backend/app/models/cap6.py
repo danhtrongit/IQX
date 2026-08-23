@@ -1,46 +1,68 @@
-"""Cấp 6 «Đối chiếu» models — progression (khi 5 lớp mâu thuẫn thì tin lớp nào,
-và điều đó tùy loại cổ phiếu).
+"""Cấp 6 «Bậc thầy» models — xử lý mâu thuẫn giữa 5 lớp: lớp nào có quyền PHỦ
+QUYẾT, lớp nào chỉ là ĐIỂM TRỪ, và hành động có khớp nhận định không.
 
-Cấp 6 builds on a graduated Cấp 5: FREE, Thực chiến-only mode, the FIRST
-"theo chủ đề" level. Like Cấp 2/3/4/5 it replaces nothing — the buy panel keeps
-Cấp 4's Đọc-5-lớp, Cấp 3's quản lý vốn, Cấp 2's SL/TP and Cấp 1's vùng mua
-intact and INSERTS a "bước Đối chiếu" that appears only when the user's own 5
-lớp ratings CONFLICT (≥1 ``ok`` Ủng hộ AND ≥1 ``bad`` Ngược chiều — spec §4).
-It adds exactly two things to the data model:
+Bài học một câu (spec §1): *"Các lớp hiếm khi cùng chiều. Biết lớp nào có quyền
+phủ quyết, lớp nào chỉ là điểm trừ — và để hành động khớp với nhận định."*
 
-1. **``order_kehoach`` += 6 columns** (``kieu_co_phieu`` / ``lop_mau_thuan`` /
-   ``trong_so_goi_y`` / ``lop_quyet_dinh`` / ``khop_goi_y`` /
-   ``ly_do_doi_chieu``) — the Đối chiếu block. They live on Cấp 1's physical
-   ``order_kehoach`` table (see the "Cấp 6 additions" column block on
-   ``app.models.cap1.OrderKehoach``), all nullable so every Cấp 1-5 row — and
-   every Cấp 6 order that had NO conflict — stays valid.
-2. **``cap6_progress`` (below)** — 3 nhiệm vụ + the recomputed "Thách thức Đối
-   chiếu" metrics.
+★★ **CẤP 6 CŨ («Đối chiếu» — hệ gợi ý lớp ưu tiên theo 6 «kiểu cổ phiếu») ĐÃ
+NGHỈ HƯU HOÀN TOÀN.** Bảng trọng số ``KIEU_CO_PHIEU``, enum ``KieuCoPhieu``, 6
+cột ``kieu_co_phieu``/``lop_mau_thuan``/``trong_so_goi_y``/``lop_quyet_dinh``/
+``khop_goi_y``/``ly_do_doi_chieu`` trên ``order_kehoach`` và 6 cột nhiệm vụ cũ
+trên ``cap6_progress`` bị bỏ hẳn ở revision ``c7f1b9d34a80``. Bộ spec bàn giao
+đợt 7 (``demo-trading/LEVEL 6/IQX-Cap6-Spec.md``) định nghĩa lại toàn bộ Cấp 6.
+Thứ DUY NHẤT sống sót về mặt ý tưởng là "máy phát hiện mâu thuẫn lớp", và nó
+được viết lại trên NGUỒN KHÁC (xem ngay dưới).
 
-See ``~/Downloads/DEMO TRADING/LEVEL 6/IQX-Cap6-Spec.md`` §2/§4/§5/§9 for the
-verbatim data model this mirrors.
+★ **Bảng ``cap6_progress`` GIỮ NGUYÊN TÊN và cột ``graduated_at``** —
+``app.services.cap7.service`` gác cổng vào Cấp 7 trên đúng
+``cap6_progress.graduated_at``; đổi tên bảng sẽ khoá vĩnh viễn Cấp 7.
 
-**★ CRITICAL PRINCIPLE (spec §5/§10) — the trọng-số table is a SUGGESTION, not
-a law.** ``KIEU_CO_PHIEU`` below says which lớp are worth prioritising for a
-given kiểu cổ phiếu *and why*; the user still picks the ``lop_quyet_dinh``
-themselves and may pick outside the suggestion. That is ``khop_goi_y = False``:
-a **NEUTRAL FACT**, never "sai". Nothing in Cấp 6 penalises it — it only decides
-which group the order joins in the khớp-vs-lệch win-rate comparison, whose
-arbiter is real market outcomes. ``app.services.cap6.service`` implements this
-and ``test_lech_goi_y_is_neutral_never_penalised`` pins it down.
+═══════════════════════════════════════════════════════════════════
+NGUỒN MÂU THUẪN ĐỔI: từ «user tự chấm» sang «AI Insight 5 bậc»
+═══════════════════════════════════════════════════════════════════
 
-**The 5 lớp reuse Cấp 4's keys.** ``lop_uu_tien``/``lop_it_tin``/
-``lop_quyet_dinh`` all speak ``app.models.cap4.LOP_KEYS`` (itself derived from
-Cấp 1's ``LyDo``), so Cấp 6's vocabulary can never drift from the lớp the user
-actually rated. ``_assert_lop_keys`` below fails at import time if it ever does.
+Cấp 6 CŨ suy mâu thuẫn từ ``order_kehoach.doc_5_lop`` — 5 lớp do CHÍNH USER
+chấm ở Cấp 4. Cấp 6 MỚI không thể dùng nguồn đó: bảng mâu thuẫn phải hiện
+**TRƯỚC** khi user đặt lệnh (spec §5 — nó nằm trong panel, ở mã user đang soi),
+lúc chưa có ``order_kehoach`` nào. Nên nguồn là bản AI Insight đã lưu của mã đó
+(``ai_insight_history``), đọc qua **đúng bộ nhãn 5 bậc** mà Cấp 5 đã kiểm
+(``app.services.cap5.consensus``) — xem ``app.services.cap6.mau_thuan``.
 
-**Storage decision — the new string columns are plain ``String``, and
-``lop_mau_thuan``/``trong_so_goi_y`` are JSON**, mirroring Cấp 4's and Cấp 5's
-explicit choice: the values are validated in the service layer against the
-enums here before they are persisted, nothing filters on them in SQL beyond a
-NULL check and a DISTINCT count, and a PG enum type would add ALTER TYPE
-migration churn for no query benefit. The two JSON blobs are read by the FE as
-whole provenance objects (§C12c) and never queried into.
+Hệ quả bắt buộc: **AI Insight v2 KHÔNG có lớp 💎 Định giá** (L2 là Thanh khoản,
+không phải Định giá). Mọi mã vì thế chỉ chấm được tối đa 4/5 lớp, và lớp Định
+giá LUÔN nằm ở "chưa biết" — không bao giờ được vẽ vào phe nào.
+
+═══════════════════════════════════════════════════════════════════
+★ PHỦ QUYẾT vs ĐIỂM TRỪ (spec §1/§5.3, "CẦN FOUNDER DUYỆT" §12.1)
+═══════════════════════════════════════════════════════════════════
+
+  · **Phủ quyết:** 📰 Tin tức · 👤 Nội bộ — khi ở BẬC THẤP NHẤT có thể phủ định
+    mọi lớp khác.
+  · **Điểm trừ:** 🎯 Kỹ thuật · 💰 Dòng tiền · 💎 Định giá — xấu thì bớt hấp
+    dẫn, KHÔNG phủ định.
+
+Đây là **khung tham khảo của IQX, không phải quy tắc bắt buộc** — spec §4.1 và
+§12.1 nói thẳng thế, và §12.1 để ngỏ câu hỏi có nên nâng 💰 Dòng tiền lên nhóm
+phủ quyết cho thị trường VN không. Hệ CHỈ RA mâu thuẫn + phân loại; hệ KHÔNG
+BAO GIỜ phán mua/không mua (spec §4.1, §13).
+
+═══════════════════════════════════════════════════════════════════
+★★ "CHƯA TÍNH ĐƯỢC" KHÔNG BAO GIỜ LÀ 0 (luật repo)
+═══════════════════════════════════════════════════════════════════
+
+``tong_lai_lenh_cap6_pct`` là **NULLABLE**: NULL = chưa có lệnh Cấp-6 nào đóng.
+``0.0`` là một câu KHÁC HẲN ("đã đóng lệnh, hoà vốn"). Repo này đã phải viết
+riêng một migration (``7b3c1e5a9d24``) vì một cột tỷ lệ ``NOT NULL DEFAULT 0``
+khiến user ngày đầu đọc "0%" ngay dưới một thẻ nói "chưa có dữ liệu".
+
+Ngược lại ``so_lan_xu_ly_nhat_quan``/``so_lan_xu_ly_veto_nhat_quan`` là
+``NOT NULL DEFAULT 0``: 0 ở đó là số THẬT (đếm lệnh trong bảng ta sở hữu, tính
+lại ở mọi lần đọc), không phải "chưa biết".
+
+**Storage decision — ``conflict_level`` là ``String(8)``, ``veto_layers`` là
+JSON**, y hệt lựa chọn của Cấp 4/5: service validate theo ``StrEnum`` dưới đây
+trước khi ghi, không truy vấn nào lọc trên chúng trong SQL ngoài ``GROUP BY``
+làm trong Python, và PG enum thì mỗi lần đổi mức lại phải ALTER TYPE.
 """
 
 from __future__ import annotations
@@ -49,7 +71,15 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base, TimestampMixin, UUIDMixin
@@ -57,121 +87,97 @@ from app.models.cap1 import LyDo
 from app.models.cap4 import LOP_KEYS, LOP_LABELS
 
 
-class KieuCoPhieu(enum.StrEnum):
-    """6 kiểu cổ phiếu (spec §5) — the archetype whose trọng số decides which
-    lớp is worth prioritising when the 5 lớp disagree.
+class MucMauThuan(enum.StrEnum):
+    """4 mức nhận định user tự đọc về mức độ mâu thuẫn (spec §6).
 
-    Derived SERVER-side from the symbol's ngành (``Symbol.icb_lv2``/``icb_lv1``)
-    — see ``app.services.cap6.service.kieu_from_nganh``. ``DAU_CO_NHO`` is the
-    one kiểu that is NOT an ngành (it is a market-cap / volatility property with
-    no server-side source in this repo yet); it is reachable only through the
-    documented client fallback for symbols whose ngành is unknown.
+    ★ Đây THUẦN là nhận định — nó KHÔNG khoá nút, KHÔNG chỉnh khối lượng hộ
+    (spec §4.2). Giá trị của nó đến sau, khi Kết sổ và Phân tích danh mục đối
+    chiếu nó với hành động thật.
     """
 
-    NGAN_HANG = "ngan_hang"
-    TANG_TRUONG = "tang_truong"
-    CHU_KY = "chu_ky"
-    PHONG_THU = "phong_thu"
-    BAT_DONG_SAN = "bat_dong_san"
-    DAU_CO_NHO = "dau_co_nho"
+    NHE = "nhe"
+    NGAI = "ngai"
+    NGHIEM = "nghiem"
+    CHUA_RO = "chua_ro"
 
 
-#: **Bảng trọng số theo 6 kiểu cổ phiếu — spec §5, verbatim.**
-#:
-#: ``lop_uu_tien`` = the lớp to prioritise when the layers conflict ·
-#: ``lop_it_tin`` = the lớp that is less reliable for this kiểu ·
-#: ``giai_thich`` = the "vì sao" sentence the FE shows **verbatim** next to the
-#: suggestion (§C12c: never a bare suggestion).
-#:
-#: This is DATA, not logic: it is the single source of truth for both
-#: ``GET /cap6/goi-y`` and the ``trong_so_goi_y``/``khop_goi_y`` the server
-#: derives at write time, so the two can never disagree. It is a *starting
-#: point* the spec explicitly allows to be revised — see §5's closing note.
-KIEU_CO_PHIEU: dict[str, dict[str, object]] = {
-    KieuCoPhieu.NGAN_HANG.value: {
-        "ten": "Ngân hàng",
-        "lop_uu_tien": [LyDo.DINH_GIA.value, LyDo.NOI_BO.value],
-        "lop_it_tin": [LyDo.KY_THUAT.value],
-        "giai_thich": (
-            "Ngân hàng định giá theo P/B và chất lượng tài sản — tín hiệu kỹ "
-            "thuật ngắn hạn ít tin cậy hơn cho nhóm này."
-        ),
-    },
-    KieuCoPhieu.TANG_TRUONG.value: {
-        "ten": "Tăng trưởng / công nghệ",
-        "lop_uu_tien": [LyDo.KY_THUAT.value, LyDo.TIN_TUC.value, LyDo.DONG_TIEN.value],
-        "lop_it_tin": [LyDo.DINH_GIA.value],
-        "giai_thich": (
-            "Với nhóm tăng trưởng, P/E cao là bình thường; đà giá và câu chuyện "
-            "dẫn dắt — định giá đơn thuần ít tin cậy hơn."
-        ),
-    },
-    KieuCoPhieu.CHU_KY.value: {
-        "ten": "Chu kỳ / công nghiệp",
-        "lop_uu_tien": [LyDo.DONG_TIEN.value, LyDo.DINH_GIA.value],
-        "lop_it_tin": [LyDo.KY_THUAT.value],
-        "giai_thich": (
-            "Nhóm chu kỳ vào/ra theo chu kỳ ngành và dòng tiền lớn; định giá "
-            "phải đọc theo chu kỳ — một tín hiệu kỹ thuật đơn lẻ ít tin cậy hơn."
-        ),
-    },
-    KieuCoPhieu.PHONG_THU.value: {
-        "ten": "Phòng thủ / tiêu dùng",
-        "lop_uu_tien": [LyDo.DINH_GIA.value, LyDo.NOI_BO.value],
-        "lop_it_tin": [LyDo.KY_THUAT.value],
-        "giai_thich": (
-            "Nhóm phòng thủ ít biến động: giá trị và dữ liệu nội bộ ổn định chi "
-            "phối — tín hiệu kỹ thuật ít tin cậy hơn."
-        ),
-    },
-    KieuCoPhieu.BAT_DONG_SAN.value: {
-        "ten": "Bất động sản",
-        "lop_uu_tien": [LyDo.NOI_BO.value, LyDo.TIN_TUC.value, LyDo.DONG_TIEN.value],
-        "lop_it_tin": [LyDo.DINH_GIA.value],
-        "giai_thich": (
-            "Bất động sản do pháp lý/dự án và dòng tiền lớn chi phối — định giá "
-            "đơn thuần ít tin cậy hơn cho nhóm này."
-        ),
-    },
-    KieuCoPhieu.DAU_CO_NHO.value: {
-        "ten": "Đầu cơ / vốn hóa nhỏ",
-        "lop_uu_tien": [LyDo.DONG_TIEN.value, LyDo.KY_THUAT.value],
-        "lop_it_tin": [LyDo.DINH_GIA.value, LyDo.NOI_BO.value],
-        "giai_thich": (
-            "Nhóm đầu cơ biến động mạnh: dòng tiền và đà giá dẫn dắt, còn định "
-            "giá và dữ liệu nội bộ thường thiếu — rủi ro cao, cân nhắc kỹ."
-        ),
-    },
+#: Nhãn hiển thị — lấy verbatim từ mockup ``iqx-cap6-datlenh.html``.
+MUC_LABELS: dict[str, str] = {
+    MucMauThuan.NHE.value: "Mâu thuẫn nhẹ",
+    MucMauThuan.NGAI.value: "Đáng ngại",
+    MucMauThuan.NGHIEM.value: "Nghiêm trọng",
+    MucMauThuan.CHUA_RO.value: "Chưa rõ",
 }
 
+#: ★ Thứ tự NẶNG DẦN của 3 mức CÓ thứ tự. ``chua_ro`` cố tình ĐỨNG NGOÀI: nó
+#: không nằm giữa "nhẹ" và "nghiêm trọng" — nó là "chưa đánh giá được", nên xếp
+#: nó vào thang là bịa ra một thứ tự user không hề nói. Khối ⑭ vì thế không bao
+#: giờ chấm khớp/lệch cho ``chua_ro`` (xem ``app.services.cap6.service``).
+MUC_NANG_DAN: tuple[str, ...] = (
+    MucMauThuan.NHE.value,
+    MucMauThuan.NGAI.value,
+    MucMauThuan.NGHIEM.value,
+)
 
-def _assert_lop_keys() -> None:
-    """Fail loudly at import time if the trọng-số table ever names a lớp Cấp 4
-    does not know (see the module docstring's "reuse Cấp 4's keys" note)."""
-    for kieu, row in KIEU_CO_PHIEU.items():
-        uu_tien = tuple(row["lop_uu_tien"])  # type: ignore[arg-type]
-        it_tin = tuple(row["lop_it_tin"])  # type: ignore[arg-type]
-        unknown = {lop for lop in (*uu_tien, *it_tin) if lop not in LOP_KEYS}
-        if unknown:
-            raise RuntimeError(f"cap6: kiểu {kieu!r} nhắc lớp không tồn tại: {unknown}")
-        overlap = set(uu_tien) & set(it_tin)
-        if overlap:
-            raise RuntimeError(f"cap6: kiểu {kieu!r} vừa ưu tiên vừa ít tin: {overlap}")
-    missing = {m.value for m in KieuCoPhieu} - set(KIEU_CO_PHIEU)
-    if missing:
-        raise RuntimeError(f"cap6: thiếu bảng trọng số cho kiểu: {missing}")
+MUC_VALUES: frozenset[str] = frozenset(m.value for m in MucMauThuan)
+
+#: 📰 Tin tức · 👤 Nội bộ — nhóm có quyền PHỦ QUYẾT (spec §1/§5.3).
+LOP_PHU_QUYET: frozenset[str] = frozenset({LyDo.TIN_TUC.value, LyDo.NOI_BO.value})
+
+#: 🎯 Kỹ thuật · 💰 Dòng tiền · 💎 Định giá — nhóm ĐIỂM TRỪ (xấu thì trừ điểm,
+#: không phủ định).
+LOP_DIEM_TRU: frozenset[str] = frozenset(
+    {LyDo.KY_THUAT.value, LyDo.DONG_TIEN.value, LyDo.DINH_GIA.value}
+)
 
 
-_assert_lop_keys()
+def _assert_phan_loai_lop() -> None:
+    """Fail loudly at import time nếu bảng phân loại lớp lệch khỏi 5 lớp thật.
+
+    Cả hai nhóm phải phủ ĐÚNG ``LOP_KEYS`` và không chồng nhau: một lớp rơi ra
+    ngoài sẽ âm thầm biến mất khỏi bảng mâu thuẫn, còn một lớp nằm ở cả hai
+    nhóm sẽ vừa phủ quyết vừa chỉ là điểm trừ.
+    """
+    ca_hai = LOP_PHU_QUYET | LOP_DIEM_TRU
+    thieu = set(LOP_KEYS) - ca_hai
+    if thieu:
+        raise RuntimeError(f"cap6: lớp chưa được phân loại phủ quyết/điểm trừ: {thieu}")
+    la = ca_hai - set(LOP_KEYS)
+    if la:
+        raise RuntimeError(f"cap6: phân loại nhắc lớp không tồn tại: {la}")
+    trung = LOP_PHU_QUYET & LOP_DIEM_TRU
+    if trung:
+        raise RuntimeError(f"cap6: lớp vừa phủ quyết vừa điểm trừ: {trung}")
 
 
-def lop_ten(lop_keys: list[str]) -> list[str]:
-    """Human labels for a list of lớp keys (reuses Cấp 4's ``LOP_LABELS``)."""
-    return [LOP_LABELS.get(lop, lop) for lop in lop_keys]
+_assert_phan_loai_lop()
+
+
+def lop_ten(lop: str) -> str:
+    """Nhãn tiếng Việt của một lớp (dùng LẠI bảng của Cấp 4)."""
+    return LOP_LABELS.get(lop, lop)
 
 
 class Cap6Progress(UUIDMixin, TimestampMixin, Base):
-    """Per-user Cấp 6 conflict-resolution progress. One row per user."""
+    """Tiến trình Cấp 6 «Bậc thầy» của một user. Một hàng mỗi user.
+
+    **1 NHIỆM VỤ, THUẦN HÀNH VI — KHÔNG ĐO LÃI** (spec §2, mockup
+    ``iqx-cap6-hanhtrinh.html``: header ``0/1``):
+
+        ① «Xử lý mâu thuẫn nhất quán» →
+             ``so_lan_xu_ly_nhat_quan >= 3`` VÀ ``so_lan_xu_ly_veto_nhat_quan >= 2``
+
+    ★ **Vì sao bỏ lãi khỏi cổng** (spec §2, nguyên văn): quyết định đúng vẫn có
+    thể lỗ và ngược lại; lãi phụ thuộc thị trường chứ không phải kỹ năng. Giữ
+    lãi trong cổng sẽ kéo user về phía "mua để đạt %". ``tong_lai_lenh_cap6_pct``
+    vẫn được tính và hiển thị ở Kết sổ / Phân tích danh mục để user tự học —
+    nhưng ``graduate()`` KHÔNG BAO GIỜ đọc nó.
+
+    Cả hai con số đều được **tính lại server-side ở mọi lần đọc** từ
+    ``order_kehoach`` + ``cap6_skip``; client không bao giờ gửi lên. Chúng là
+    ``NOT NULL DEFAULT 0`` vì 0 ở đây là số THẬT (đếm hàng trong bảng ta sở
+    hữu), không phải "chưa biết".
+    """
 
     __tablename__ = "cap6_progress"
     __table_args__ = (UniqueConstraint("user_id", name="uq_cap6_progress_user_id"),)
@@ -181,33 +187,64 @@ class Cap6Progress(UUIDMixin, TimestampMixin, Base):
     )
     entered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
-    # 3 nhiệm vụ completion timestamps (nullable until done, never un-set)
-    task_1_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    task_2_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    task_3_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    #: Số lần gặp lệnh CÓ MÂU THUẪN và xử lý nhất quán (nhận định khớp hành
+    #: động). Nguồn: ``order_kehoach`` (had_conflict + conflict_level + pct_von)
+    #: và ``cap6_skip``. Cần ≥3 để tốt nghiệp.
+    so_lan_xu_ly_nhat_quan: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    #: TẬP CON của ô trên: những lần đó mà mã còn có lớp phủ quyết (Tin tức /
+    #: Nội bộ) ở bậc THẤP NHẤT. Cần ≥2 để tốt nghiệp.
+    so_lan_xu_ly_veto_nhat_quan: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
 
-    # Recomputed metrics (spec §2③ "Thách thức Đối chiếu") — source of truth =
-    # order_kehoach.lop_quyet_dinh/kieu_co_phieu/khop_goi_y JOIN order_ketso
-    # outcomes. NEVER client-supplied.
-    so_lenh_doi_chieu: Mapped[int] = mapped_column(
-        Integer, nullable=False, default=0, server_default="0"
+    #: Σ(lãi/lỗ VND mọi lệnh đã đóng SAU khi vào Cấp 6) ÷ Σ(vốn các lệnh đó),
+    #: tính bằng %. Không phân biệt lệnh có mâu thuẫn hay không (spec §11).
+    #:
+    #: ★★ **NULLABLE, và NULL KHÔNG BAO GIỜ thành 0.** NULL = "chưa có lệnh
+    #: Cấp-6 nào đóng"; ``0.0`` là một câu khác hẳn ("đã đóng lệnh, hoà vốn").
+    #: Chỉ để HIỂN THỊ — tuyệt đối không phải cổng lên cấp (spec §2).
+    tong_lai_lenh_cap6_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    #: Cờ tour «Xử lý mâu thuẫn» (tour thứ 5 — spec §10). KHÔNG phải nhiệm vụ:
+    #: tour có nút "Bỏ qua", lấy nó làm cổng là tặng không một nhiệm vụ (bài
+    #: học từ ``da_xem_tour_sanma`` của Cấp 5).
+    da_xem_tour_mauthuan: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
     )
-    so_kieu_da_gap: Mapped[int] = mapped_column(
-        Integer, nullable=False, default=0, server_default="0"
-    )
-    # Win rate (%) of closed đối-chiếu lệnh whose lớp quyết định KHỚP the
-    # suggestion, vs those that did not. ★ A low ty_le_thang_lech is NOT a
-    # judgement on the user — see the module's CRITICAL PRINCIPLE. The
-    # ≥3-per-group minimum before they may be COMPARED lives in the service
-    # (spec §7 khối ⑮).
-    #
-    # ★★ NULL = "nhóm này chưa có lệnh đã đóng nào", and it is NOT 0.0. ``0.0``
-    # is a real statement — closed lệnh, none of them winners — and rendering
-    # "chưa có dữ liệu" as "thắng 0%" tells the user a result they never earned.
-    # Cấp 8's ``don_nganh_max_pct``/``tong_rui_ro_pct`` are nullable for exactly
-    # this reason.
-    ty_le_thang_khop: Mapped[float | None] = mapped_column(Float, nullable=True)
-    ty_le_thang_lech: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     graduated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     time_to_graduate_hours: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+
+class Cap6Skip(UUIDMixin, TimestampMixin, Base):
+    """«Không mua lần này» — quyết định đứng ngoài, ghi nhận như một hành động
+    CÓ KỶ LUẬT (spec §7/§11).
+
+    Một hàng mỗi lần bấm — cố ý KHÔNG unique theo (user, symbol): user đứng
+    ngoài cùng một mã ở hai phiên khác nhau là HAI quyết định, và khối ⑮ đếm
+    "N lần đứng ngoài" chứ không đếm "N mã".
+
+    ★ **Cách nhẹ, đúng spec §7:** chỉ ghi nhận, KHÔNG theo dõi giá mã sau đó.
+    Không có cột kết quả, không có cron chấm "né đúng/né hụt" — đó chính là thứ
+    Cấp 5 cũ làm và đã nghỉ hưu, và spec §13 xếp nó ra NGOÀI phạm vi Cấp 6
+    ("tránh phức tạp + tránh dạy tiếc nuối").
+    """
+
+    __tablename__ = "cap6_skip"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    symbol: Mapped[str] = mapped_column(String(20), nullable=False)
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    #: 1 trong ``MucMauThuan`` — mức nhận định user đã chọn, dùng LÀM LÝ DO
+    #: (spec §7: "không hỏi thêm").
+    conflict_level: Mapped[str] = mapped_column(String(8), nullable=False)
+    #: ★ **NULLABLE ba trạng thái**, do SERVER tự tính lại từ AI Insight — không
+    #: bao giờ nhận từ client. True = mã có lớp phủ quyết ở bậc thấp nhất ·
+    #: False = đã kiểm và không có · NULL = **chưa chấm được** (mã chưa có bản
+    #: AI Insight còn hiệu lực). NULL gộp vào False sẽ biến "chưa biết" thành
+    #: một khẳng định, và ở đây nó còn nuôi cổng tốt nghiệp.
+    had_veto: Mapped[bool | None] = mapped_column(Boolean, nullable=True)

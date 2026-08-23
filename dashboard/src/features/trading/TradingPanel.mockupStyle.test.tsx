@@ -12,11 +12,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
  * (`toHaveStyle` sẽ luôn rỗng). Thứ duy nhất quan sát được — và cũng là thứ
  * duy nhất dễ hỏng — là các class có được gắn ĐÚNG CẤP hay không.
  *
- * ★ Ranh giới cần canh: `isCap1Active` vẫn TRUE trong phiên Cấp 2-8 (Cấp 2 giữ
- * nguyên Form Kế hoạch của Cấp 1). Nếu chỉ hỏi `isCap0Active || isCap1Active`
- * thì áo này lan sang cả Cấp 2→8 — nơi panel còn có SL/TP, Quản lý vốn, Đọc 5
- * lớp… mà mockup không hề vẽ, nên nửa panel sẽ mặc áo mới, nửa còn lại giữ áo
- * Arco cũ. `!isCap2Active` là thứ chặn đúng chỗ đó.
+ * ★ Ranh giới cần canh (ĐÃ ĐỔI 08/2026): áo mặc cho MỌI shell cấp — Cấp 0 lấy
+ * accent `--brand`, Cấp 1 trở lên lấy accent đồng `--copper`. Thứ phải chặn là
+ * ranh giới NGOÀI shell cấp: trên /bieu-do và /co-phieu panel đi theo theme
+ * sáng/tối của app và có chrome riêng, nên thẻ tối cứng đặt vào đó là chửi nhau.
+ *
+ * Bản trước còn loại trừ Cấp 2 trở lên (`isCap1Active && !isCap2Active`) vì hồi
+ * đó chưa có mockup Cấp 2. Lý do đó hết hiệu lực — xem doc-comment của
+ * `useMockupPanelSkin` trong `TradingPanel.tsx`.
  */
 
 vi.mock("@/shared/contexts/symbol-context", () => ({
@@ -185,7 +188,7 @@ const KHOI_MOCKUP = [
   ".op-btn",
 ] as const
 
-describe("Panel đặt lệnh — áo mockup chỉ mặc ở Cấp 0 và Cấp 1", () => {
+describe("Panel đặt lệnh — áo mockup mặc trong shell cấp, KHÔNG mặc ngoài /bieu-do · /co-phieu", () => {
   it("★ Cấp 0: mặc đủ cả 8 khối của mockup, và KHÔNG lấy accent đồng của Cấp 1", async () => {
     isCap0ActiveFlag = true
     const { container } = renderPanel()
@@ -209,17 +212,27 @@ describe("Panel đặt lệnh — áo mockup chỉ mặc ở Cấp 0 và Cấp 1
   })
 
   /**
-   * ★ Cái bẫy: phiên Cấp 2 CŨNG có `isCap1Active === true`. Panel Cấp 2 còn có
-   * khối SL/TP mà mockup Cấp 0/1 không vẽ, nên nếu áo lan tới đây thì panel sẽ
-   * nửa mới nửa cũ. Bỏ mệnh đề `!isCap2Active` là test này đỏ.
+   * ★★ ĐẢO CHIỀU (08/2026). Bản trước khẳng định NGƯỢC LẠI — "Cấp 2 KHÔNG mặc
+   * áo" — vì hồi đó chưa có mockup Cấp 2, nên khoác áo Cấp 0/1 lên một panel có
+   * thêm khối SL/TP sẽ ra nửa mới nửa cũ.
+   *
+   * Nay `iqx-cap2-datlenh.html` đã vẽ đúng khối SL/TP trong bảng màu tối, và
+   * `cap0.css` ánh xạ token Arco về bảng màu vỏ cấp, nên lý do đó hết hiệu lực.
+   * User báo đúng cái giá của luật cũ: từ Cấp 2 trở lên panel rơi hẳn về giao
+   * diện Arco mặc định, không giống demo.
+   *
+   * Test này giờ canh chiều MỚI. Khôi phục `!isCap2Active` là nó đỏ.
    */
-  it("★ Cấp 2 (isCap1Active vẫn true): KHÔNG mặc áo — mockup này không vẽ Cấp 2", async () => {
+  it("★ Cấp 2 (isCap1Active vẫn true): MẶC áo mockup + giữ accent đồng của Cấp 1", async () => {
     isCap1ActiveFlag = true
     isCap2ActiveFlag = true
     const { container } = renderPanel()
     await waitFor(() => expect(screen.getByTestId("sltp-block-mock")).toBeInTheDocument())
 
-    expect(container.querySelector(".op-panel")).toBeNull()
+    for (const sel of KHOI_MOCKUP) {
+      expect(container.querySelector(sel), `thiếu \`${sel}\` ở Cấp 2`).not.toBeNull()
+    }
+    expect(container.querySelector(".op-panel--cap1")).not.toBeNull()
   })
 
   it("NGOÀI mọi cấp (/bieu-do, /co-phieu): không một class nào của mockup được gắn", async () => {

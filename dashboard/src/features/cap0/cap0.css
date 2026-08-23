@@ -26,6 +26,13 @@
   --copper-soft: rgba(201, 123, 74, 0.14);
   --copper-bd: rgba(201, 123, 74, 0.4);
 
+  /* accent ngọc lam — Cấp 2 dùng cho hai thẻ Cắt lỗ/Chốt lời và thẻ đang chọn
+     (mockup `iqx-cap2-datlenh.html` khai trong `:root` của nó). */
+  --teal: #7dd3c0;
+  --teal-soft: rgba(125, 211, 192, 0.14);
+  --teal-bd: rgba(125, 211, 192, 0.4);
+  --teal-ink: #0e1a17; /* chữ trên nền teal đặc */
+
   /* nền & khung */
   --bg1: #171923; /* nền chính */
   --bg2: #1f2230; /* nền card */
@@ -54,6 +61,52 @@
      mạng nào. Cái giữ cột số thẳng hàng là `font-variant-numeric: tabular-nums`
      ở nơi dùng, và nó không cần webfont. */
   --cap0-font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* ══════════════════════════════════════════════════════════════════════
+     ★★ ÁNH XẠ TOKEN ARCO → BẢNG MÀU TỐI CỦA VỎ CẤP
+     ----------------------------------------------------------------------
+     `.cap0` là một hòn đảo TỐI CỐ ĐỊNH: không cấp nào có nhánh sáng, và
+     comment ở đầu file này cố ý không cho token tối rò ra phần còn lại của
+     app. Nhưng gần 200 chỗ BÊN TRONG vỏ cấp (TradingPanel, SlTpBlock, các
+     Kết sổ…) lại vẽ bằng token của Arco — mà token Arco đi theo
+     `body[arco-theme]` của CẢ APP.
+
+     Hậu quả khi user bật giao diện SÁNG: nền do `.cap0` vẽ vẫn tối, còn chữ
+     `--color-text-1` và viền `--color-border-2` nhảy sang giá trị sáng của
+     Arco ⇒ chữ gần như đen trên nền gần như đen, viền trắng cắt ngang. Cả
+     khu Demo Trading không đọc được.
+
+     Ánh xạ dưới đây khoá các token đó vào chính bảng màu của vỏ, nên hòn đảo
+     TỰ NHẤT QUÁN ở cả hai theme, và mọi component Arco render bên trong
+     (Tabs, Input, Select, Modal có `className="cap0"`) trông đúng như mockup
+     mà không phải sửa từng chỗ một.
+
+     ★ Vẫn nằm TRONG `.cap0` chứ không phải `:root` — đúng ý đồ ban đầu:
+     không rò ra ngoài. Tiền lệ trong repo: `aiInsight.css` và
+     `portfolio-manager.css` cũng từng hardcode tối rồi phải xử lý theme.
+     ══════════════════════════════════════════════════════════════════════ */
+  --color-text-1: var(--t1);
+  --color-text-2: var(--t2);
+  --color-text-3: var(--t3);
+  --color-text-4: #6b7189;
+
+  --color-bg-1: var(--bg1);
+  --color-bg-2: var(--bg2);
+  --color-bg-3: var(--bg3);
+  --color-bg-4: var(--bg4);
+  --color-bg-5: var(--bg4);
+  --color-bg-white: var(--bg2);
+  --color-menu-light-bg: var(--bg2);
+
+  --color-fill-1: var(--bg2);
+  --color-fill-2: var(--bg3);
+  --color-fill-3: var(--bg4);
+  --color-fill-4: var(--bd);
+
+  --color-border-1: var(--bd);
+  --color-border-2: var(--bd);
+  --color-border-3: var(--bd);
+  --color-border-4: var(--bd);
 }
 
 /* Tiện ích: gắn font hiển thị cho tiêu đề / số lớn trong phạm vi Cấp 0. */

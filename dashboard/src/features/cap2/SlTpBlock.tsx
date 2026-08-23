@@ -114,16 +114,17 @@ export function SlTpBlock({ symbol, giaVao, selected, onSelect }: SlTpBlockProps
   ]
 
   return (
-    <div className="mt-2 space-y-2 rounded-md border border-[var(--color-border-2)] bg-[var(--color-fill-2)] p-2.5">
-      <div className="flex items-center justify-between">
-        <div className="text-[9px] font-bold uppercase tracking-wider text-[rgb(var(--primary-6))]">
-          {"3. Cắt lỗ / Chốt lời"}
-        </div>
-        <div className="text-[9px] text-[var(--color-text-3)]">{"chọn 1 trong 2 cách"}</div>
+    /* Áo theo `demo-trading/LEVEL 2/iqx-cap2-datlenh.html` (`.sltp-label` /
+       `.two-way` / `.way`). Mockup KHÔNG bọc cụm này trong một thẻ có viền —
+       nhãn nằm trần rồi tới thẳng lưới 2 thẻ. */
+    <div>
+      <div className="op-sltp-label">
+        <span>{"3. Cắt lỗ / Chốt lời"}</span>
+        <span className="op-sltp-req">{"chọn 1 trong 2 cách"}</span>
       </div>
 
-      <div className="grid grid-cols-2 gap-1.5">
-        {cards.map((card) => {
+      <div className="op-way-grid">
+        {cards.map((card, i) => {
           const isSelected = selected === card.method
           const disabled = card.result == null
           return (
@@ -132,36 +133,35 @@ export function SlTpBlock({ symbol, giaVao, selected, onSelect }: SlTpBlockProps
               data-testid={card.testId}
               data-selected={isSelected ? "true" : "false"}
               className={cn(
-                "space-y-1 rounded-md border p-2 text-[10.5px]",
-                isSelected
-                  ? "border-[rgb(var(--primary-6))] bg-[rgb(var(--primary-6))]/10"
-                  : "border-[var(--color-border-2)] bg-[var(--color-bg-2)]",
+                "op-way",
+                i === 0 ? "op-way--c1" : "op-way--c2",
+                isSelected && "op-way--on",
               )}
             >
-              <div className="flex items-center gap-1 font-semibold text-[var(--color-text-1)]">
+              <div className="op-way-title flex items-center gap-1">
                 <span>
                   {card.icon} {card.title}
                 </span>
                 <Tooltip content={card.tooltip}>
-                  <IconQuestionCircle className="text-[var(--color-text-4)]" />
+                  <IconQuestionCircle className="op-way-k" />
                 </Tooltip>
               </div>
 
               {disabled ? (
-                <p className="text-[var(--color-text-3)]">{card.reason}</p>
+                <p className="op-way-k text-[10.5px]">{card.reason}</p>
               ) : (
                 <>
                   {card.extraLines.map((line) => (
-                    <p key={line} className="text-[var(--color-text-3)]">
+                    <p key={line} className="op-way-row op-way-k">
                       {line}
                     </p>
                   ))}
-                  <p className="text-down">
+                  <p className="op-way-row op-way-sl">
                     {"🛑 Cắt lỗ: "}
                     {fmtVnd(card.result!.catLo)}
                     {` (${fmtPct(card.result!.catLoPct)})`}
                   </p>
-                  <p className="text-up">
+                  <p className="op-way-row op-way-tp">
                     {"🎯 Chốt lời: "}
                     {fmtVnd(card.result!.chotLoi)}
                     {` (${fmtPct(card.result!.chotLoiPct)})`}
@@ -176,14 +176,7 @@ export function SlTpBlock({ symbol, giaVao, selected, onSelect }: SlTpBlockProps
                   if (!card.result) return
                   onSelect(card.method, card.result.catLo, card.result.chotLoi)
                 }}
-                className={cn(
-                  "w-full rounded border px-2 py-1 text-[10px] font-medium transition-colors",
-                  disabled
-                    ? "cursor-not-allowed border-[var(--color-border-2)] text-[var(--color-text-4)]"
-                    : isSelected
-                      ? "border-[rgb(var(--primary-6))] bg-[rgb(var(--primary-6))] text-white"
-                      : "border-[var(--color-border-2)] text-[var(--color-text-1)]",
-                )}
+                className={cn("op-way-pick", disabled && "cursor-not-allowed opacity-50")}
               >
                 {isSelected ? "Đã chọn" : "Chọn cách này"}
               </button>

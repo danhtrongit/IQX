@@ -118,13 +118,20 @@ import "./order-panel.css"
  * ★ CHỈ Cấp 0 và Cấp 1. /bieu-do và /co-phieu đi theo theme sáng/tối của app
  * và có chrome riêng — thẻ tối cứng này đặt vào đó là chửi nhau.
  *
- * ★★ `!isCap2Active` KHÔNG thừa. Phiên Cấp 2→8 đều có `isCap1Active === true`
- * (Cấp 2 giữ nguyên Form Kế hoạch của Cấp 1, và mỗi cấp trên giữ lại khối của
- * cấp dưới), nên nếu chỉ hỏi `isCap0Active || isCap1Active` thì áo này lan tới
- * tận Cấp 8 — nơi panel còn có SL/TP, Quản lý vốn, Đọc 5 lớp, Đối chiếu, Đọc
- * sổ lệnh, Kiểm tra danh mục. Mockup Cấp 0/1 không vẽ khối nào trong số đó, nên
- * kết quả sẽ là nửa thẻ áo mới, nửa thẻ áo Arco cũ. `isCap2Active` là mốc thấp
- * nhất phân biệt được "Cấp 1 thật" với "Cấp 2 trở lên".
+ * ★★ ĐÍNH CHÍNH (08/2026) — bản trước loại trừ Cấp 2 trở lên bằng
+ * `isCap1Active && !isCap2Active`, với lý do: phiên Cấp 2→8 cũng có
+ * `isCap1Active === true`, nên áo sẽ lan tới Cấp 8 — nơi panel còn có SL/TP,
+ * Quản lý vốn, Đọc 5 lớp… mà mockup Cấp 0/1 không vẽ, cho ra "nửa thẻ áo mới,
+ * nửa thẻ áo Arco cũ".
+ *
+ * Lý do đó ĐÃ HẾT HIỆU LỰC, vì hai điều đã đổi:
+ *   1. Đã có mockup riêng cho Cấp 2 (`iqx-cap2-datlenh.html`) vẽ đúng khối
+ *      Cắt lỗ/Chốt lời trong bảng màu tối — `SlTpBlock` nay mặc đúng áo đó.
+ *   2. `cap0.css` ánh xạ token Arco → bảng màu của vỏ cấp, nên khối nào còn
+ *      vẽ bằng token Arco cũng ra màu tối thay vì chọi nhau.
+ *
+ * Cái giá của việc giữ nguyên loại trừ này thì có thật và user đã báo: từ Cấp
+ * 2 trở lên panel rơi hẳn về giao diện Arco mặc định, không giống demo.
  */
 /**
  * ★★ Nút mã cổ phiếu ở đầu panel Đặt lệnh dẫn đi đâu.
@@ -150,10 +157,11 @@ type OnPremiumRequired = (() => void) | undefined
 function useMockupPanelSkin(): "cap0" | "cap1" | null {
   const { isCap0Active } = useCap0Events()
   const { isCap1Active } = useCap1Events()
-  const { isCap2Active } = useCap2Events()
   if (isCap0Active) return "cap0"
-  // Mockup Cấp 1 đổi accent brand → đồng (`--copper`) ở thẻ KẾ HOẠCH.
-  if (isCap1Active && !isCap2Active) return "cap1"
+  // Mockup Cấp 1 đổi accent brand → đồng (`--copper`) ở thẻ KẾ HOẠCH, và mockup
+  // Cấp 2 giữ nguyên thẻ đồng đó rồi thêm hai thẻ ngọc lam bên dưới — nên Cấp 2
+  // trở lên dùng chung áo `cap1`, phần thêm nằm ở `SlTpBlock`.
+  if (isCap1Active) return "cap1"
   return null
 }
 
