@@ -317,6 +317,18 @@ export function KetsoModalCap6({
   const [emotion, setEmotion] = useState<CamXuc | null>(null)
   const [displayPct, setDisplayPct] = useState(0)
   const [closing, setClosing] = useState(false)
+  /**
+   * Chồng khối Cấp 1-5 THU GỌN mặc định (mockup `iqx-cap6-ketso.html` vẽ đúng
+   * một thanh `.collapsed` thay cho cả chồng đó).
+   *
+   * ★ "Thu gọn", KHÔNG phải "bỏ": spec §8 nói "các khối Cấp 1-5 GIỮ NGUYÊN (thu
+   * gọn)". Ở Cấp 6 màn Kết sổ đã dài tới mức khối MỚI của cấp bị đẩy khỏi tầm
+   * mắt; gấp phần kế thừa lại là cách mockup giải quyết. Một cú bấm là mở ra đủ.
+   *
+   * ★ Khối cảm xúc của Cấp 1 và toàn bộ chồng coach nằm NGOÀI phần gấp: cảm xúc
+   * là một ô user phải nhập, và coach là phần dạy của màn.
+   */
+  const [moKeThua, setMoKeThua] = useState(false)
 
   /**
    * `GET /cap6/kehoach/{order_id}` — khối Đối chiếu ĐÃ GHI của chính lệnh này.
@@ -599,6 +611,20 @@ export function KetsoModalCap6({
         {`${fmtVndSigned(pnlVnd)} · MUA ${quantity} ${symbol} → BÁN · Giữ ${soPhienGiu} phiên`}
       </div>
 
+      {/* Thanh thu gọn (mockup `.collapsed`) — một cú bấm mở cả chồng Cấp 1-5. */}
+      <button
+        type="button"
+        className="cap6-ketso-kethua"
+        aria-expanded={moKeThua}
+        data-testid="cap6-ketso-kethua-toggle"
+        onClick={() => setMoKeThua((v) => !v)}
+      >
+        <span>{"Đối chiếu kế hoạch · Quản lý vốn · Đọc 5 lớp (giữ từ Cấp 1-5)"}</span>
+        <span className="cap6-ketso-kethua-chev">{moKeThua ? "▾" : "▸"}</span>
+      </button>
+
+      {moKeThua && (
+        <div data-testid="cap6-ketso-kethua">
       <table className="cap0-debrief-table" data-testid="cap5-ketso-doichieu">
         <thead>
           <tr>
@@ -749,6 +775,8 @@ export function KetsoModalCap6({
             : "Lệnh này chưa có đối chiếu AI — AI chỉ lộ khi bạn chấm đủ 5 lớp lúc đặt lệnh."}
         </p>
       </div>
+        </div>
+      )}
 
       {coChuyen && (
         <div className="cap1-ketso-emotion">

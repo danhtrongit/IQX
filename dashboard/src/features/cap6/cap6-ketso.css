@@ -192,3 +192,29 @@
   color: var(--t2, #b8bdcc);
   margin: 0;
 }
+
+/* Thanh THU GỌN chồng khối Cấp 1-5 (mockup `.collapsed`). */
+.cap6-ketso-kethua {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  background: var(--bg3, #282c3d);
+  border: 1px solid var(--bd, #39405a);
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--t2, #b8bdcc);
+  cursor: pointer;
+}
+
+.cap6-ketso-kethua:hover {
+  border-color: var(--teal, #7dd3c0);
+}
+
+.cap6-ketso-kethua-chev {
+  color: var(--t3, #8a90a5);
+}

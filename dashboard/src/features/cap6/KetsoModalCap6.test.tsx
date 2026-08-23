@@ -273,6 +273,14 @@ function closeButton(): HTMLElement {
   return screen.getByTestId("cap6-ketso-close")
 }
 
+/**
+ * Mở chồng khối Cấp 1-5 (mặc định THU GỌN — mockup `iqx-cap6-ketso.html` vẽ đúng
+ * một thanh `.collapsed` thay cho cả chồng đó).
+ */
+function moKeThua(): void {
+  fireEvent.click(screen.getByTestId("cap6-ketso-kethua-toggle"))
+}
+
 /** `true` khi `a` đứng TRƯỚC `b` trong cây DOM. */
 function precedes(a: Element, b: Element): boolean {
   return Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING)
@@ -310,12 +318,14 @@ describe("KetsoModalCap6 — cộng dồn: giữ NGUYÊN mọi khối Cấp 1-5"
   it("giữ tag header + count-up + bảng đối chiếu Cấp 1", async () => {
     renderModal()
     expect(screen.getByText("KẾT SỔ LỆNH · #84 · THỰC CHIẾN")).toBeInTheDocument()
+    moKeThua()
     expect(screen.getByTestId("cap5-ketso-doichieu")).toBeInTheDocument()
     await waitFor(() => expect(screen.getByText("+5.3%")).toBeInTheDocument(), { timeout: 2000 })
   })
 
   it("giữ CAM KẾT vs THỰC TẾ (Cấp 2) · QUẢN LÝ VỐN (Cấp 3) · ĐỌC 5 LỚP (Cấp 4)", () => {
     renderModal()
+    moKeThua()
     expect(screen.getByTestId("cap2-ketso-camket")).toBeInTheDocument()
     expect(screen.getByTestId("cap3-ketso-quanlyvon")).toBeInTheDocument()
     expect(screen.getByTestId("cap4-ketso-doc5lop")).toBeInTheDocument()
@@ -389,6 +399,29 @@ describe("KetsoModalCap6 — cổng phân loại 4 ô của Cấp 5 ĐÃ NGHỈ 
   })
 })
 
+describe("KetsoModalCap6 — chồng khối Cấp 1-5 THU GỌN (spec §8, mockup)", () => {
+  it("mặc định gấp lại, một cú bấm là mở đủ — «thu gọn» KHÔNG phải «bỏ»", () => {
+    renderModal()
+    expect(screen.queryByTestId("cap6-ketso-kethua")).not.toBeInTheDocument()
+    expect(screen.getByTestId("cap6-ketso-kethua-toggle")).toHaveTextContent(
+      "Đối chiếu kế hoạch · Quản lý vốn · Đọc 5 lớp (giữ từ Cấp 1-5)",
+    )
+    moKeThua()
+    const kethua = screen.getByTestId("cap6-ketso-kethua")
+    expect(within(kethua).getByTestId("cap2-ketso-camket")).toBeInTheDocument()
+    expect(within(kethua).getByTestId("cap3-ketso-quanlyvon")).toBeInTheDocument()
+    expect(within(kethua).getByTestId("cap4-ketso-doc5lop")).toBeInTheDocument()
+    moKeThua()
+    expect(screen.queryByTestId("cap6-ketso-kethua")).not.toBeInTheDocument()
+  })
+
+  it("★ khối MỚI của Cấp 6 KHÔNG nằm trong phần gấp — nó là phần cấp này dạy", () => {
+    renderModal()
+    expect(screen.getByTestId("cap6-ketso-nhandinh")).toBeInTheDocument()
+    expect(screen.getByTestId("cap6-ketso-coach")).toBeInTheDocument()
+  })
+})
+
 describe("KetsoModalCap6 — khối «nhận định có khớp hành động không» (spec §8)", () => {
   it("hai phe lúc đặt + tag PHỦ QUYẾT đúng lớp server đánh dấu", () => {
     renderModal()
@@ -431,6 +464,7 @@ describe("KetsoModalCap6 — khối «nhận định có khớp hành động kh
     expect(screen.queryByTestId("cap6-ketso-lech")).not.toBeInTheDocument()
     expect(screen.queryByTestId("cap6-ketso-coach")).not.toBeInTheDocument()
     // Neo dương tính: modal THẬT SỰ mở (mọi khối kế thừa còn nguyên).
+    moKeThua()
     expect(screen.getByTestId("cap2-ketso-camket")).toBeInTheDocument()
   })
 
@@ -536,6 +570,7 @@ describe("KetsoModalCap6 — đọc lại hàng ĐÃ LƯU (GET /cap6/kehoach/{or
     }
     renderInCap6()
     expect(screen.queryByTestId("cap6-ketso-nhandinh")).not.toBeInTheDocument()
+    moKeThua()
     expect(screen.getByTestId("cap2-ketso-camket")).toBeInTheDocument()
   })
 

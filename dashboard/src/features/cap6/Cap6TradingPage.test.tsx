@@ -664,6 +664,8 @@ describe("Cap6TradingPage", () => {
     await openKetso()
 
     expect(screen.getByText("KẾT SỔ LỆNH · #1 · THỰC CHIẾN")).toBeInTheDocument()
+    // Chồng khối Cấp 1-5 mặc định THU GỌN ở Kết sổ Cấp 6 — mở ra để kiểm.
+    fireEvent.click(screen.getByTestId("cap6-ketso-kethua-toggle"))
     expect(screen.getByTestId("cap2-ketso-camket")).toHaveTextContent("58,000")
     expect(screen.getByTestId("cap3-ketso-quanlyvon")).toHaveTextContent("Cân bằng")
     // Cấp 5 cũ («phân loại 4 ô») đã nghỉ hưu → khối đó KHÔNG còn ở Kết sổ Cấp 6.
