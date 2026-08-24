@@ -27,8 +27,8 @@ export const cap2Api = {
     return unwrap(res as never) as Cap2Progress
   },
 
-  /** PATCH /cap2/task { task_no } — idempotent recompute (all 5 nhiệm vụ are
-   * derived server-side from `order_ketso`). */
+  /** PATCH /cap2/task { task_no } — idempotent recompute (nhiệm vụ ①, the only
+   * one, is derived server-side from `order_kehoach`/`order_ketso`). */
   markTask: async (taskNo: number): Promise<Cap2Progress> => {
     const res = await api.patch("cap2/task", { json: { task_no: taskNo } }).json<unknown>()
     return unwrap(res as never) as Cap2Progress
@@ -58,7 +58,7 @@ export const cap2Api = {
     return unwrap(res as never) as DiemKyLuat
   },
 
-  /** POST /cap2/graduate — only succeeds when 5/5 nhiệm vụ are done. */
+  /** POST /cap2/graduate — only succeeds when 1/1 nhiệm vụ is done. */
   graduate: async (): Promise<Cap2Progress> => {
     const res = await api.post("cap2/graduate").json<unknown>()
     return unwrap(res as never) as Cap2Progress

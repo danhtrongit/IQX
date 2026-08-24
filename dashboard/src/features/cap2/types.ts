@@ -13,26 +13,39 @@ export type XepLoai = "xanh" | "vang" | "do"
 
 /**
  * Behaviour-progress row for the current user's Cấp 2 (one per user) — mô hình
- * **2 nhiệm vụ làm SONG SONG** (mockup `iqx-cap2-hanhtrinh.html`):
+ * **ĐÚNG MỘT nhiệm vụ** (mockup `iqx-cap2-hanhtrinh.html`, jbar `CẤP 2 · 0/1`):
  *
  *  ① «10 lệnh Thực chiến có đặt cắt lỗ / chốt lời» → `so_lenh_co_cl_tp` (n/10)
- *  ② «Thực hiện đúng khi giá chạm mốc», 2 lần      → `so_lan_thuc_hien_dung` (n/2)
  *
- * Hai nhiệm vụ ĐỘC LẬP: ② có thể xong trước ①. Tốt nghiệp = 2/2.
+ * Tốt nghiệp = 1/1.
+ *
+ * ★★ `task_2_done_at` KHÔNG còn tồn tại — nhiệm vụ ② «Thực hiện đúng khi giá
+ * chạm mốc» đã bỏ hẳn (backend migration `9c3f7ad10b52` DROP cột đó), nên
+ * payload `GET /cap2/progress` không bao giờ còn mang nó. Để nó ngoài kiểu wire
+ * biến "đọc lại một trường đã chết" thành lỗi biên dịch — đúng cái bẫy
+ * `chuoi_current` đã mắc một lần ở `Cap2ChuoiLegacy` bên dưới.
  */
 export interface Cap2Progress {
   id: string
   user_id: string
   entered_at: string
   task_1_done_at: string | null
-  task_2_done_at: string | null
   /** Số lệnh Thực chiến đã ghi cam kết cắt lỗ/chốt lời — mẫu số 10 (nhiệm vụ ①). */
   so_lenh_co_cl_tp: number
-  /** 🛑 Số lần giá chạm cắt lỗ và user cắt ngay trong phiên đó. */
+  /**
+   * ★ BA con số dưới đây là SỐ MÔ TẢ, KHÔNG phải nhiệm vụ. Chúng chỉ để khối ④
+   * «Bạn đã dùng cơ chế cắt lỗ / chốt lời thế nào» của «Phân tích danh mục» vẽ
+   * (mockup `iqx-cap2-phantich-danhmuc.html` — KHÔNG đổi khi Cấp 2 rút về 1
+   * nhiệm vụ), và các trang Phân tích của Cấp 3-8 vẽ lại từ chính hàng này.
+   * ⚠ KHÔNG được trình bày chúng kèm mẫu số/mốc phải đạt («x/2», «còn n lần»)
+   * — không còn nhiệm vụ nào đo chúng.
+   *
+   * 🛑 Số lần giá chạm cắt lỗ và user cắt ngay trong phiên đó.
+   */
   so_lan_cat_lo_dung: number
   /** 🎯 Số lần giá chạm chốt lời và user bán theo kế hoạch (không giữ làm hụt). */
   so_lan_chot_loi_dung: number
-  /** ✅ Tổng lần thực hiện đúng — mẫu số 2 (nhiệm vụ ②). Server bảo đảm
+  /** ✅ Tổng lần thực hiện đúng. Server bảo đảm
    *  `so_lan_thuc_hien_dung === so_lan_cat_lo_dung + so_lan_chot_loi_dung`. */
   so_lan_thuc_hien_dung: number
   graduated_at: string | null
@@ -143,18 +156,19 @@ export function isSlTpValid(
 }
 
 /** Tổng số nhiệm vụ Cấp 2 — mẫu số DUY NHẤT cho jbar, `.ck-head`, vòng huy
- *  hiệu và điều kiện tốt nghiệp. */
-export const CAP2_TOTAL_TASKS = 2
+ *  hiệu và điều kiện tốt nghiệp. Mockup `iqx-cap2-hanhtrinh.html`: `0/1`. */
+export const CAP2_TOTAL_TASKS = 1
 
 /**
- * How many of the 2 Cấp 2 nhiệm vụ are complete (mirrors `cap1/types.ts`'s
+ * How many of Cấp 2's nhiệm vụ are complete (mirrors `cap1/types.ts`'s
  * `countCap1TasksDone`) — used by `JourneyPanelCap2` + `GraduationModalCap2`.
  *
- * ★ Chỉ đếm ĐÚNG 2 cột. Một wire shape cũ còn sót `task_3/4/5_done_at` KHÔNG
- * được tính thành nhiệm vụ thứ 3/4/5 — cùng cái bẫy `cap0/types.ts` và
- * `cap1/types.ts` đã ghi.
+ * ★ Chỉ đếm ĐÚNG MỘT cột, `task_1_done_at`. Một wire shape cũ còn sót
+ * `task_2/3/4/5_done_at` KHÔNG được tính thành nhiệm vụ thứ 2/3/4/5 — cùng cái
+ * bẫy `cap0/types.ts` và `cap1/types.ts` đã ghi, và lần này chính `task_2` là
+ * cột vừa bị xoá khỏi server.
  */
 export function countCap2TasksDone(progress: Cap2Progress | null | undefined): number {
   if (!progress) return 0
-  return [progress.task_1_done_at, progress.task_2_done_at].filter((t) => t != null).length
+  return [progress.task_1_done_at].filter((t) => t != null).length
 }

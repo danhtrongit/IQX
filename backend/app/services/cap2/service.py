@@ -5,12 +5,24 @@ Cấp 2 is FREE and Thực chiến-only, built on a graduated Cấp 1. It owns
 in place (new columns, same physical tables — see ``app.models.cap1``). It
 reuses ``VirtualTradingRepository`` (read-only here) for order data.
 
-**2 nhiệm vụ, làm song song** (mockup ``iqx-cap2-hanhtrinh.html``):
+**ĐÚNG MỘT nhiệm vụ** (mockup ``iqx-cap2-hanhtrinh.html``: ``CẤP 2 · 0/1``):
 
   ① «10 lệnh Thực chiến có đặt cắt lỗ / chốt lời» — ``so_lenh_co_cl_tp`` ≥ 10
-  ② «Thực hiện đúng khi giá chạm mốc», 2 lần      — ``so_lan_thuc_hien_dung`` ≥ 2
 
-**Both counters are recomputed server-side from the persisted
+Tốt nghiệp là 1/1.
+
+★ **Nhiệm vụ ② «Thực hiện đúng khi giá chạm mốc» đã BỎ HẲN** cùng với cột
+``task_2_done_at`` (migration ``9c3f7ad10b52``). Cấp 2 chỉ còn dạy nửa đầu của
+cơ chế — ĐẶT hai mốc — và không còn khoá việc tốt nghiệp vào chuyện thị trường
+có chạm mốc hay không (điều user không điều khiển được).
+
+★ **``so_lan_cat_lo_dung`` / ``so_lan_chot_loi_dung`` / ``so_lan_thuc_hien_dung``
+vẫn được tính và vẫn được ghi** — chúng KHÔNG còn là nhiệm vụ, chúng là 3 con
+số 🛑/🎯/✅ mà khối ④ của «Phân tích danh mục» vẽ (mockup
+``iqx-cap2-phantich-danhmuc.html``, KHÔNG đổi) và các trang Phân tích của Cấp
+3-8 vẽ lại từ chính hàng này. Chúng là số MÔ TẢ, không phải mốc phải đạt.
+
+**The counter is recomputed server-side from the persisted
 ``order_kehoach``/``order_ketso`` rows on every write — never trusted from
 client-supplied counters.** The 4 vi phạm booleans themselves
 (``cham_SL_khong_cat``, ``cham_TP_giu_lam_hut``, ``ban_som_khi_lo_nhe``,
@@ -27,8 +39,9 @@ Design notes (documented here since the mockup leaves them implicit):
     ``cat_lo`` and ``chot_loi``. No date window is needed: those two columns
     can only ever be written by ``Cap2Service.record_kehoach``, which requires
     a ``cap2_progress`` row — so a Cấp 1-era plan can never carry them.
-  - ② counts, per round trip, AT MOST ONE "thực hiện đúng khi giá chạm mốc",
-    over ``order_ketso`` rows closed AT OR AFTER ``Cap2Progress.entered_at``:
+  - The 🛑/🎯 analytics count, per round trip, AT MOST ONE "thực hiện đúng khi
+    giá chạm mốc", over ``order_ketso`` rows closed AT OR AFTER
+    ``Cap2Progress.entered_at``:
       · **cắt lỗ** — ``cham_SL_cat_dung_phien_ke`` is True (spec §9: giá chạm
         cắt lỗ cuối phiên → bán ATO phiên kế. This is the spec's own definition
         of "cắt lỗ đúng phiên" and the mockups do not redefine it).
@@ -39,16 +52,15 @@ Design notes (documented here since the mockup leaves them implicit):
     The SL leg wins when both would match, which keeps the invariant
     ``so_lan_thuc_hien_dung == so_lan_cat_lo_dung + so_lan_chot_loi_dung`` that
     «Phân tích danh mục» block ④ renders as 🛑 / 🎯 / ✅.
-  - **Neither nhiệm vụ gates the other** — ② is reachable on the 2nd lệnh while
-    ① is still 2/10, which is the whole point of "làm song song".
-  - Once a nhiệm vụ's ``task_N_done_at`` is stamped it is NEVER un-stamped
-    (matches Cấp 1's "stamp when first met" pattern). Both counters are
-    monotonic anyway, so this only matters for hand-edited data.
+  - Once ``task_1_done_at`` is stamped it is NEVER un-stamped (matches Cấp 1's
+    "stamp when first met" pattern). The counter is monotonic anyway, so this
+    only matters for hand-edited data.
 
 ``diem_ky_luat`` (the 0-100 daily score) is NOT part of Cấp 2's journey any
 more — the mockups drop it from both Hành trình and Phân tích danh mục. It
 stays here as a pure read-only computation because **Cấp 3 consumes it** for
-``Cap3Progress.diem_ky_luat_tb_cap3``.
+``Cap3Progress.diem_ky_luat_tb_cap3`` and the Cấp 6/7 trading pages still read
+``GET /cap2/diem-ky-luat``.
 """
 
 from __future__ import annotations
@@ -67,9 +79,10 @@ from app.repositories.virtual_trading import VirtualTradingRepository
 
 _VN_TZ = timezone(timedelta(hours=7))
 
-_TASK_NOS = (1, 2)
+#: ĐÚNG MỘT nhiệm vụ. Giữ dạng tuple để ``mark_task``/``graduate`` vẫn đọc
+#: cùng một nguồn — và để việc thêm/bỏ nhiệm vụ chỉ phải sửa ở đây.
+_TASK_NOS = (1,)
 _TASK1_TARGET_LENH = 10  # ① 10 lệnh Thực chiến có đặt cắt lỗ / chốt lời
-_TASK2_TARGET_LAN = 2  # ② 2 lần thực hiện đúng khi giá chạm mốc
 
 # Điểm kỷ luật formula (spec §7) — raw point values before normalization.
 _DIEM_KE_HOACH_MAX = 40
@@ -207,7 +220,8 @@ class Cap2Service:
     ) -> OrderKetso:
         """Persist the 4 vi phạm (+ 3 measurement) flags onto the EXISTING
         ``order_ketso`` row created by Cấp 1's ``/cap1/ketso`` (which already
-        computed gia_ra/pnl/closed_at), then recompute the 2 nhiệm vụ.
+        computed gia_ra/pnl/closed_at), then recompute nhiệm vụ ① and the
+        🛑/🎯/✅ analytics counters.
 
         NOTE: params are lowercase (not the spec-verbatim mixed case used on
         the wire schema / ORM columns) purely to keep this a normal Python
@@ -240,7 +254,7 @@ class Cap2Service:
         await self._recompute_progress(user_id, progress)
         return ketso
 
-    # ── Recompute the 2 nhiệm vụ from kế hoạch + kết sổ history ──────
+    # ── Recompute nhiệm vụ ① + analytics from kế hoạch/kết sổ history ──
 
     async def _cap2_ketso_rows(
         self, user_id: uuid.UUID, progress: Cap2Progress
@@ -300,10 +314,14 @@ class Cap2Service:
         return int(result.scalar_one() or 0)
 
     async def _dem_thuc_hien_dung(self, rows: list[OrderKetso]) -> tuple[int, int]:
-        """② — (số lần cắt lỗ đúng, số lần chốt lời đúng) over Cấp 2-era rows.
+        """(số lần cắt lỗ đúng, số lần chốt lời đúng) over Cấp 2-era rows.
+
+        ★ ANALYTICS ONLY — no nhiệm vụ reads these any more (nhiệm vụ ② is
+        gone). They feed khối ④ «Bạn đã dùng cơ chế cắt lỗ / chốt lời thế nào»
+        of «Phân tích danh mục», on Cấp 2's own page and on Cấp 3-8's.
 
         At most ONE execution per round trip; the cắt lỗ leg wins a tie so the
-        two legs always sum to the total shown on the journey.
+        two legs always sum to the ✅ total the block renders.
         """
         so_cat_lo_dung = 0
         so_chot_loi_dung = 0
@@ -328,29 +346,25 @@ class Cap2Service:
         # ① — 10 lệnh Thực chiến có đặt cắt lỗ / chốt lời.
         progress.so_lenh_co_cl_tp = await self._so_lenh_co_cl_tp(user_id)
 
-        # ② — thực hiện đúng khi giá chạm mốc (cắt lỗ HOẶC chốt lời đều tính).
+        # 🛑/🎯/✅ — ANALYTICS for «Phân tích danh mục» khối ④. Không nhiệm vụ
+        # nào đọc ba con số này; chúng không mở/đóng cổng tốt nghiệp nào.
         so_cat_lo_dung, so_chot_loi_dung = await self._dem_thuc_hien_dung(rows)
         progress.so_lan_cat_lo_dung = so_cat_lo_dung
         progress.so_lan_chot_loi_dung = so_chot_loi_dung
         progress.so_lan_thuc_hien_dung = so_cat_lo_dung + so_chot_loi_dung
 
-        # The two nhiệm vụ are INDEPENDENT — neither gates the other.
+        # ① là cổng DUY NHẤT của Cấp 2.
         if (
             progress.so_lenh_co_cl_tp >= _TASK1_TARGET_LENH
             and progress.task_1_done_at is None
         ):
             progress.task_1_done_at = now
-        if (
-            progress.so_lan_thuc_hien_dung >= _TASK2_TARGET_LAN
-            and progress.task_2_done_at is None
-        ):
-            progress.task_2_done_at = now
 
         await self._session.flush()
         await self._session.refresh(progress)
 
     async def mark_task(self, user_id: uuid.UUID, task_no: int) -> Cap2Progress:
-        """PATCH /cap2/task — both nhiệm vụ are derived from kế hoạch/kết sổ
+        """PATCH /cap2/task — nhiệm vụ ① is derived from kế hoạch/kết sổ
         history, so this just triggers a recompute pass (idempotent)."""
         if task_no not in _TASK_NOS:
             raise BadRequestError("task_no không hợp lệ")
@@ -501,7 +515,7 @@ class Cap2Service:
     # ── Graduation ────────────────────────────────────
 
     async def graduate(self, user_id: uuid.UUID) -> Cap2Progress:
-        """Graduate Cấp 2 — only when both nhiệm vụ are done (2/2)."""
+        """Graduate Cấp 2 — only when nhiệm vụ ① is done (1/1)."""
         progress = await self._get_progress_row(user_id)
         if progress is None:
             raise NotFoundError("tiến trình Cấp 2")
@@ -510,7 +524,7 @@ class Cap2Service:
             getattr(progress, f"task_{n}_done_at") is not None for n in _TASK_NOS
         )
         if not all_tasks_done:
-            raise ConflictError("Chưa hoàn thành đủ 2 nhiệm vụ Cấp 2")
+            raise ConflictError("Chưa hoàn thành nhiệm vụ Cấp 2")
 
         if progress.graduated_at is None:
             now = datetime.now(UTC)

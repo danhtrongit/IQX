@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, within } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { visibleText } from "@/__tests__/textGuards"
 import type { Cap2Progress } from "./types"
 
 const {
@@ -18,7 +19,7 @@ const {
     opts?.onSuccess?.()
   }),
   // Mutable so a test can put the mutation "in flight" and prove the CTA
-  // re-opens the moment it settles (a permanent lock would trap a 2/2 user).
+  // re-opens the moment it settles (a permanent lock would trap a 1/1 user).
   graduatePending: { value: false },
   messageInfo: vi.fn(),
   enterCap3Mutate: vi.fn(),
@@ -56,7 +57,6 @@ function makeProgress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
     user_id: "u1",
     entered_at: "2026-07-21T00:00:00Z",
     task_1_done_at: null,
-    task_2_done_at: null,
     so_lenh_co_cl_tp: 0,
     so_lan_cat_lo_dung: 0,
     so_lan_chot_loi_dung: 0,
@@ -67,14 +67,19 @@ function makeProgress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
   }
 }
 
+/**
+ * Hàng "đủ điều kiện tốt nghiệp" = ĐÚNG MỘT nhiệm vụ xong.
+ *
+ * ★ Ba con số 🛑/🎯/✅ đặt KHÁC 0 và KHÁC nhau có chủ ý: nếu màn tốt nghiệp
+ * (hoặc `isGraduationReadyCap2`) còn đọc chúng, bài canh dưới sẽ thấy.
+ */
 function readyProgress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
   return makeProgress({
     task_1_done_at: "t",
-    task_2_done_at: "t",
     so_lenh_co_cl_tp: 10,
-    so_lan_cat_lo_dung: 1,
-    so_lan_chot_loi_dung: 1,
-    so_lan_thuc_hien_dung: 2,
+    so_lan_cat_lo_dung: 3,
+    so_lan_chot_loi_dung: 4,
+    so_lan_thuc_hien_dung: 7,
     ...overrides,
   })
 }
@@ -85,25 +90,44 @@ describe("isGraduationReadyCap2", () => {
     expect(isGraduationReadyCap2(undefined)).toBe(false)
   })
 
-  it("is false when fewer than 2/2 nhiệm vụ are done", () => {
-    expect(isGraduationReadyCap2(readyProgress({ task_2_done_at: null }))).toBe(false)
+  it("is false while ① is not done — ① is the whole gate", () => {
     expect(isGraduationReadyCap2(readyProgress({ task_1_done_at: null }))).toBe(false)
   })
 
-  it("is true once 2/2 nhiệm vụ are done", () => {
+  it("is true once 1/1 nhiệm vụ is done", () => {
     expect(isGraduationReadyCap2(readyProgress())).toBe(true)
   })
 
-  // ★ Cùng cái bẫy `cap0/types.ts`/`cap1/types.ts` đã ghi: một wire shape cũ còn
-  // sót `task_3/4/5_done_at` KHÔNG được tính thành nhiệm vụ thứ 3/4/5.
-  it("★ ignores leftover task_3/4/5_done_at from the old 5-nhiệm-vụ wire shape", () => {
+  // ★★ Cùng cái bẫy `cap0/types.ts`/`cap1/types.ts` đã ghi, và lần này chính
+  // `task_2_done_at` là cột VỪA BỊ XOÁ khỏi server: một wire shape cũ còn sót
+  // nó KHÔNG được tính thành nhiệm vụ thứ 2.
+  it("★ leftover task_2/3/4/5_done_at from an old wire shape never counts as a nhiệm vụ", () => {
     const stale = {
-      ...readyProgress({ task_2_done_at: null }),
+      ...readyProgress({ task_1_done_at: null }),
+      task_2_done_at: "t",
       task_3_done_at: "t",
       task_4_done_at: "t",
       task_5_done_at: "t",
     } as unknown as Cap2Progress
     expect(isGraduationReadyCap2(stale)).toBe(false)
+  })
+
+  // ★ Ba con số 🛑/🎯/✅ là SỐ MÔ TẢ — chúng không mở cổng tốt nghiệp nào.
+  it("★ the 🛑/🎯/✅ analytics counters do NOT gate graduation either way", () => {
+    expect(
+      isGraduationReadyCap2(
+        readyProgress({
+          so_lan_cat_lo_dung: 0,
+          so_lan_chot_loi_dung: 0,
+          so_lan_thuc_hien_dung: 0,
+        }),
+      ),
+    ).toBe(true)
+    expect(
+      isGraduationReadyCap2(
+        makeProgress({ so_lan_thuc_hien_dung: 99, so_lan_cat_lo_dung: 99 }),
+      ),
+    ).toBe(false)
   })
 
   it("is false once already graduated — a one-way trip, doesn't re-open", () => {
@@ -127,7 +151,7 @@ describe("GraduationModalCap2", () => {
     flags.CAP_MAX_ENABLED = 2
   })
 
-  it("does not render when 2/2 isn't met", () => {
+  it("does not render when 1/1 isn't met", () => {
     useCap2ProgressMock.mockReturnValue({ data: makeProgress() })
     render(<GraduationModalCap2 />)
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
@@ -141,7 +165,7 @@ describe("GraduationModalCap2", () => {
     expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
     expect(screen.getByText("CẤP 2 · KỶ LUẬT")).toBeInTheDocument()
     expect(
-      screen.getByText("2/2 nhiệm vụ · 10 lệnh có cắt lỗ/chốt lời · 2 lần thực hiện đúng"),
+      screen.getByText("1/1 nhiệm vụ · 10 lệnh có cắt lỗ/chốt lời"),
     ).toBeInTheDocument()
 
     // Khối 1 — Ghi nhận
@@ -290,15 +314,29 @@ describe("GraduationModalCap2", () => {
   })
 
   // ★★ Màn tốt nghiệp KHÔNG được ghi công việc user không làm — đúng lỗi màn
-  // tốt nghiệp Cấp 0 từng mắc. Mô hình 2 nhiệm vụ không còn đo vi phạm, không
-  // còn cửa sổ 20 lệnh, không còn chuỗi kỷ luật.
-  it("★ Khối 1 credits ONLY the two nhiệm vụ that actually exist", () => {
+  // tốt nghiệp Cấp 0 từng mắc và Cấp 1/2 đã phải canh bằng test. Cấp 2 giờ chỉ
+  // đo MỘT việc: đặt cắt lỗ/chốt lời cho 10 lệnh.
+  it("★ Khối 1 credits ONLY the one nhiệm vụ that actually exists", () => {
     useCap2ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap2 />)
     const khoi1 = screen.getByTestId("cap2-grad-khoi1")
-    expect(khoi1.textContent).not.toMatch(/20 lệnh|vi phạm|chuỗi|24%/i)
+    // Neo dương tính: khối 1 thật sự có chữ.
     expect(khoi1).toHaveTextContent(/10 lệnh Thực chiến/)
-    expect(khoi1).toHaveTextContent(/2 lần giá chạm mốc/)
+    expect(khoi1.textContent).not.toMatch(/20 lệnh|vi phạm|chuỗi|24%/i)
+    // ★★ Nhiệm vụ ② «Thực hiện đúng khi giá chạm mốc» ĐÃ BỎ — mọi câu khen nó
+    // phải biến mất. `visibleText()` soi CẢ portal của Arco `Modal`
+    // (`container.textContent` rỗng → `not.toContain` xanh vô điều kiện).
+    const shown = visibleText()
+    expect(shown).toContain("Bạn đã đặt cắt lỗ và chốt lời cho 10 lệnh Thực chiến")
+    expect(shown).not.toContain("giá chạm mốc")
+    expect(shown).not.toContain("thực hiện đúng")
+    expect(shown).not.toContain("làm đúng điều mình đã cam kết")
+    expect(shown).not.toContain("2 lần")
+    // Fixture để 🛑=3 / 🎯=4 / ✅=7 — không con số nào của khối ④ được rò ra
+    // đây. `\b` của JS chỉ tính ASCII ⇒ lookaround unicode.
+    for (const n of [3, 4, 7]) {
+      expect(shown).not.toMatch(new RegExp(`(?<![\\d.,])${n}(?!\\p{L}|[\\d.,])`, "u"))
+    }
   })
 
   it("closes itself once graduated_at comes back (progress refetch)", () => {

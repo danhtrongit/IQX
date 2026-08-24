@@ -46,7 +46,7 @@ export function useEnterCap2() {
   })
 }
 
-/** PATCH /cap2/task — idempotent recompute of the 5 nhiệm vụ. */
+/** PATCH /cap2/task — idempotent recompute of nhiệm vụ ① (Cấp 2's only one). */
 export function useCompleteCap2Task() {
   const invalidate = useInvalidateCap2()
   return useMutation<Cap2Progress, unknown, number>({
@@ -85,7 +85,7 @@ export function useDiemKyLuat(ngay?: string, enabled = true) {
   })
 }
 
-/** POST /cap2/graduate — graduate to Cấp 3 (only when 5/5 nhiệm vụ done). */
+/** POST /cap2/graduate — graduate to Cấp 3 (only when 1/1 nhiệm vụ is done). */
 export function useGraduateCap2() {
   const invalidate = useInvalidateCap2()
   return useMutation<Cap2Progress, unknown, void>({

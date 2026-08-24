@@ -33,7 +33,14 @@ import type { Cap2Progress, XepLoai } from "./types"
  * `so_lan_thuc_hien_dung` (✅), và server bảo đảm ✅ = 🛑 + 🎯. Nhật ký trên
  * trình duyệt (`tradeLogCap2.ts`) chỉ đủ cho khối ②③ (thắng/thua + độ phủ theo
  * lý do) — nó per-browser và không backfill được, nên không được phép làm nguồn
- * cho con số quyết định nhiệm vụ.
+ * cho một con số server đã có.
+ *
+ * ★★ **Ba con số của khối ④ là số MÔ TẢ, KHÔNG phải nhiệm vụ.** Cấp 2 chỉ còn
+ * ĐÚNG MỘT nhiệm vụ — «10 lệnh Thực chiến có đặt cắt lỗ / chốt lời». Nhiệm vụ
+ * ② «Thực hiện đúng khi giá chạm mốc» đã bỏ hẳn, nên khối ④ chỉ được TƯỜNG
+ * THUẬT ("bạn đã dùng cơ chế tới đâu"), tuyệt đối KHÔNG kèm mẫu số/mốc phải
+ * đạt («x/2», «còn n lần», «hoàn thành nhiệm vụ ②»). Mockup
+ * `iqx-cap2-phantich-danhmuc.html` vẽ đúng như vậy: ba con số trần, không mẫu số.
  *
  * **Trung thực hơn số đẹp:** khi chưa có lần nào giá chạm mốc, khối ④ trả
  * `emptyNote` chứ không bịa một nhận xét từ 0/0.
@@ -79,7 +86,8 @@ export const VI_PHAM_LOAI_LABELS: Record<ViPhamLoai, string> = {
 
 // ── Khối ④ — «Bạn đã dùng cơ chế cắt lỗ / chốt lời thế nào» ──────────────────
 
-/** Mẫu số của ô «Đã đặt CL/CL» ở khối ① — cùng mốc 10 lệnh của nhiệm vụ ①. */
+/** Mẫu số của ô «Đã đặt CL/CL» ở khối ① — cùng mốc 10 lệnh của nhiệm vụ DUY
+ *  NHẤT của Cấp 2. Đây là mẫu số HỢP LỆ duy nhất trong module này. */
 export const SL_TP_ORDERS_TARGET = 10
 
 export interface Cap2SlTpUsage {
@@ -87,7 +95,8 @@ export interface Cap2SlTpUsage {
   catLoDung: number
   /** 🎯 số lần giá chạm chốt lời và user bán theo kế hoạch. */
   chotLoiDung: number
-  /** ✅ tổng lần thực hiện đúng (server bảo đảm = `catLoDung + chotLoiDung`). */
+  /** ✅ tổng lần thực hiện đúng (server bảo đảm = `catLoDung + chotLoiDung`).
+   *  Số MÔ TẢ — không có mẫu số, không có mốc phải đạt. */
   tongDung: number
   /** Số lệnh đã đặt cắt lỗ/chốt lời, đã chặn trần ở `SL_TP_ORDERS_TARGET`. */
   soLenhCoSlTp: number

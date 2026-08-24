@@ -1,4 +1,4 @@
-"""Cấp 2 «Kỷ luật» models — progression (2 nhiệm vụ làm song song).
+"""Cấp 2 «Kỷ luật» models — progression (ĐÚNG MỘT nhiệm vụ).
 
 Cấp 2 builds on a graduated Cấp 1: FREE, Thực chiến T+2,5-only mode. It adds
 no new order-level tables of its own — the cắt lỗ/chốt lời commitment and the
@@ -7,21 +7,34 @@ no new order-level tables of its own — the cắt lỗ/chốt lời commitment 
 the "Cấp 2 additions" blocks on ``OrderKehoach``/``OrderKetso``). This module
 only owns the new ``cap2_progress`` table.
 
-**2 nhiệm vụ, làm song song** (mockup ``iqx-cap2-hanhtrinh.html`` — authoritative
-over the older spec's 5-task list):
+**1 nhiệm vụ** (mockup ``iqx-cap2-hanhtrinh.html`` — authoritative over the
+older spec's task lists; the mockup's jbar reads ``CẤP 2 · 0/1`` and its
+``.ck-head`` reads ``Trước khi lên Cấp 3 · 0/1``):
 
   ① «10 lệnh Thực chiến có đặt cắt lỗ / chốt lời»  → ``so_lenh_co_cl_tp`` ≥ 10
-  ② «Thực hiện đúng khi giá chạm mốc» — 2 lần      → ``so_lan_thuc_hien_dung`` ≥ 2
 
-Neither gates the other: ② can finish while ① is still at 2/10. Tốt nghiệp
-là 2/2.
+Tốt nghiệp là 1/1 — ``task_1_done_at`` is the whole gate.
+
+★ **Nhiệm vụ ② «Thực hiện đúng khi giá chạm mốc» (2 lần) IS GONE.** Its own
+completion stamp (``task_2_done_at``) is dropped by migration
+``9c3f7ad10b52``. The level now teaches only the first half of the mechanism —
+PLACING the two marks — and no longer gates graduation on the market happening
+to reach one of them (which the user does not control).
+
+★ **``so_lan_cat_lo_dung`` / ``so_lan_chot_loi_dung`` / ``so_lan_thuc_hien_dung``
+STAY**, deliberately, even though no nhiệm vụ reads them any more. They are the
+🛑 / 🎯 / ✅ numbers that block ④ of «Phân tích danh mục» renders (mockup
+``iqx-cap2-phantich-danhmuc.html``, UNCHANGED by the 1-nhiệm-vụ decision) plus
+the «Thực hiện đúng» stat in its block ①, and Cấp 3-8's own Phân tích pages
+re-render that same block with this row as its source. They are DESCRIPTIVE
+analytics ("how far did you get with the mechanism"), never a checklist item —
+nothing in the product may present them as a nhiệm vụ, a target, or an ``x/2``.
 
 The điểm-kỷ-luật / chuỗi-lệnh-kỷ-luật apparatus that shipped with the original
-5-task build is GONE from this table — Cấp 2 now only teaches the mechanism
-(đặt mốc, rồi làm theo mốc); rèn kỷ luật sâu hơn belongs to the levels above.
-``Cap2Service.diem_ky_luat`` still computes the daily score on the fly because
-**Cấp 3 reads it** (``Cap3Progress.diem_ky_luat_tb_cap3``) — it simply no longer
-has any persisted state here.
+5-task build is GONE from this table. ``Cap2Service.diem_ky_luat`` still
+computes the daily score on the fly because **Cấp 3 reads it**
+(``Cap3Progress.diem_ky_luat_tb_cap3``) and the Cấp 6/7 trading pages still
+call ``GET /cap2/diem-ky-luat`` — it simply has no persisted state here.
 """
 
 from __future__ import annotations
@@ -46,17 +59,17 @@ class Cap2Progress(UUIDMixin, TimestampMixin, Base):
     )
     entered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
-    # 2 nhiệm vụ completion timestamps (nullable until done, never un-set)
+    # ① — the ONLY nhiệm vụ. Nullable until done, never un-set.
     task_1_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    task_2_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # ① — lệnh MUA Thực chiến đã khớp có ĐỦ CẢ cắt lỗ VÀ chốt lời trong kế hoạch.
     so_lenh_co_cl_tp: Mapped[int] = mapped_column(
         Integer, nullable=False, default=0, server_default="0"
     )
 
-    # ② — số lần thực hiện đúng khi giá chạm mốc, tách 2 vế cho khối ④ của
-    # màn «Phân tích danh mục» (🛑 cắt lỗ / 🎯 chốt lời / ✅ tổng).
+    # ── Analytics only — NOT a nhiệm vụ (see the module docstring) ──────────
+    # Số lần thực hiện đúng khi giá chạm mốc, tách 2 vế cho khối ④ của màn
+    # «Phân tích danh mục» (🛑 cắt lỗ / 🎯 chốt lời / ✅ tổng).
     # Invariant: so_lan_thuc_hien_dung == so_lan_cat_lo_dung + so_lan_chot_loi_dung.
     so_lan_cat_lo_dung: Mapped[int] = mapped_column(
         Integer, nullable=False, default=0, server_default="0"

@@ -29,10 +29,9 @@ function isCap3Open(): boolean {
 }
 
 /**
- * Điều kiện mở màn tốt nghiệp Cấp 2: **2/2 nhiệm vụ**, chưa từng tốt nghiệp
+ * Điều kiện mở màn tốt nghiệp Cấp 2: **1/1 nhiệm vụ** (①), chưa từng tốt nghiệp
  * (một chiều — không mở lại một khi `graduated_at` đã có, mirrors
- * `cap1/GraduationModalCap1.tsx#isGraduationReadyCap1`). Hai nhiệm vụ chạy song
- * song nên không có cái nào "bao hàm" cái nào — phải đủ cả hai.
+ * `cap1/GraduationModalCap1.tsx#isGraduationReadyCap1`).
  */
 export function isGraduationReadyCap2(progress: Cap2Progress | null | undefined): boolean {
   if (!progress || progress.graduated_at) return false
@@ -40,15 +39,19 @@ export function isGraduationReadyCap2(progress: Cap2Progress | null | undefined)
 }
 
 /**
- * Khối 1 — Ghi nhận. ★ **KHÔNG dùng nguyên văn spec §13 nữa.** Câu cũ khen "20
- * lệnh Thực chiến với ≤2 vi phạm kỷ luật" và trích một con số 24% — cả hai đều
- * thuộc mô hình 5 nhiệm vụ đã bỏ, nên giữ lại là ghi công một việc user KHÔNG
- * làm (đúng lỗi màn tốt nghiệp Cấp 0 từng mắc và Cấp 1 đã phải canh bằng test).
- * Bản này chỉ nói đúng hai việc hành trình thật sự đo — và giữ đúng mức khiêm
+ * Khối 1 — Ghi nhận. ★ **KHÔNG dùng nguyên văn spec §13 nữa.** Câu spec khen
+ * "20 lệnh Thực chiến với ≤2 vi phạm kỷ luật" và trích một con số 24% — cả hai
+ * thuộc mô hình 5 nhiệm vụ đã bỏ. Bản trước đó khen thêm "2 lần giá chạm mốc
+ * bạn đã làm đúng điều mình đã cam kết" — đó là nhiệm vụ ②, GIỜ CŨNG ĐÃ BỎ, và
+ * hành trình không còn đo nó, nên giữ lại là ghi công một việc user có thể
+ * KHÔNG hề làm (đúng lỗi màn tốt nghiệp Cấp 0 từng mắc, đã phải canh bằng test
+ * ở Cấp 0/1/2).
+ *
+ * Bản này chỉ nói đúng MỘT việc hành trình thật sự đo — và giữ đúng mức khiêm
  * tốn mà mockup Phân tích danh mục đặt ra ("Cấp 2 chỉ giúp bạn làm quen cơ chế").
  */
 const BLOCK_1 =
-  "Bạn đã đặt cắt lỗ và chốt lời cho 10 lệnh Thực chiến, và 2 lần giá chạm mốc bạn đã làm đúng điều mình đã cam kết. **Cắt lỗ và chốt lời không còn là hai chữ trong sách — bạn đã dùng cả hai bằng tay mình.**"
+  "Bạn đã đặt cắt lỗ và chốt lời cho 10 lệnh Thực chiến. **Cắt lỗ và chốt lời không còn là hai chữ trong sách — mỗi lệnh bạn vào đều đã có sẵn hai mốc do chính bạn định trước.**"
 
 const BLOCK_2 =
   "Nhưng có kỷ luật vẫn chưa đủ. Cấp 3 «Bản lĩnh» dạy điều nghịch lý: **kết quả tốt không đồng nghĩa quyết định tốt.** Có lệnh bạn làm đúng mọi thứ nhưng vẫn lỗ (thị trường không thuận). Có lệnh bạn làm sai nhưng vẫn lãi (may mắn). Cấp 3 tách được 2 chuyện này — và bạn sẽ học cách điều chỉnh khối lượng mua theo khẩu vị rủi ro riêng."
@@ -97,7 +100,7 @@ function renderInlineBold(text: string) {
  * ★ **Khi trần cấp còn dưới 3** thì nút KHÔNG vào Cấp 3 và nói thẳng "sắp ra
  * mắt" ngay trên nút — nhưng vẫn PHẢI bấm được và vẫn ghi tốt nghiệp về server:
  * modal này `closable={false}` + `visible = isGraduationReadyCap2(...)`, nên một
- * nút `disabled` sẽ **nhốt VĨNH VIỄN** mọi user đã xong 2/2 trong một màn không
+ * nút `disabled` sẽ **nhốt VĨNH VIỄN** mọi user đã xong 1/1 trong một màn không
  * có lối ra — đúng lỗi đã phải sửa hai lần trên codebase này. `graduate
  * .isPending` thì VẪN chặn: TanStack đưa nó về `false` cả khi mutation lỗi, nên
  * nó chỉ khoá trong lúc request đang bay và không thể nhốt ai.
@@ -145,7 +148,10 @@ export function GraduationModalCap2() {
       <div className="cap0-grad-header">
         <div className="cap0-grad-tag">HOÀN THÀNH</div>
         <h2 className="cap0-display cap0-grad-title">CẤP 2 · KỶ LUẬT</h2>
-        <div className="cap0-grad-sub">2/2 nhiệm vụ · 10 lệnh có cắt lỗ/chốt lời · 2 lần thực hiện đúng</div>
+        {/* ★ Dòng phụ chỉ được liệt kê việc hành trình THẬT SỰ đo. Bản trước
+            còn khoe "2 lần thực hiện đúng" (nhiệm vụ ② đã bỏ) — một con số
+            không còn cổng nào kiểm, tức là một lời khen có thể sai. */}
+        <div className="cap0-grad-sub">1/1 nhiệm vụ · 10 lệnh có cắt lỗ/chốt lời</div>
         <div className="cap0-grad-badge-wrap">
           <Badge n={level.n} color={level.color} fill={2} size={120} glow />
         </div>
@@ -162,7 +168,7 @@ export function GraduationModalCap2() {
       {/* ★ KHÔNG bao giờ `disabled` như một trạng thái "sắp ra mắt" (xem
           doc-comment ở trên): modal này `closable={false}` và chỉ unmount khi
           có `graduated_at`, nên một nút tắt cứng sẽ NHỐT VĨNH VIỄN mọi user đã
-          xong 2/2. `graduate.isPending` thì giữ — nó chỉ khoá lúc request đang
+          xong 1/1. `graduate.isPending` thì giữ — nó chỉ khoá lúc request đang
           bay, và bỏ nó đi thì double-click bắn hai lần `POST /cap2/graduate`. */}
       <button
         type="button"
