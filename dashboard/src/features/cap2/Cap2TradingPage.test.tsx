@@ -220,7 +220,6 @@ function fakeCap2Progress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
     user_id: "u1",
     entered_at: "2026-01-06T00:00:00Z",
     task_1_done_at: null,
-    task_2_done_at: null,
     so_lenh_co_cl_tp: 0,
     so_lan_cat_lo_dung: 0,
     so_lan_chot_loi_dung: 0,
@@ -383,14 +382,13 @@ describe("Cap2TradingPage", () => {
     expect(recordCap2ScoreMock).not.toHaveBeenCalled()
   })
 
-  it("mounts GraduationModalCap2 (hidden until 5/5 nhiệm vụ)", () => {
+  it("mounts GraduationModalCap2 (hidden until 1/1 nhiệm vụ)", () => {
     renderCap2(<Cap2TradingPage />)
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
 
     useCap2ProgressMock.mockReturnValue({
       data: fakeCap2Progress({
         task_1_done_at: "t",
-        task_2_done_at: "t",
         so_lenh_co_cl_tp: 0,
         so_lan_cat_lo_dung: 0,
         so_lan_chot_loi_dung: 0,

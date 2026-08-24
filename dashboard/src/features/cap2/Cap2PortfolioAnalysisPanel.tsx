@@ -12,7 +12,7 @@ import { Cap2PortfolioAnalysis } from "./Cap2PortfolioAnalysis"
  * accumulator — see that module's docstring on why).
  *
  * Unlike Cấp 1's equivalent panel, Cấp 2 has no nhiệm vụ tied to "mở trang
- * Phân tích danh mục N lần" (its 5 nhiệm vụ are all lệnh-behaviour based —
+ * Phân tích danh mục N lần" (its single nhiệm vụ is lệnh-behaviour based —
  * spec §2), so this panel has no `markTask`-on-mount side effect.
  */
 export function Cap2PortfolioAnalysisPanel() {

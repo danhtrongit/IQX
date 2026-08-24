@@ -17,12 +17,20 @@ XepLoaiLiteral = Literal["xanh", "vang", "do"]
 
 
 class Cap2ProgressOut(BaseModel):
-    """Cấp 2 progress state for the current user — 2 nhiệm vụ làm song song.
+    """Cấp 2 progress state for the current user — ĐÚNG MỘT nhiệm vụ.
 
-    ``so_lenh_co_cl_tp`` drives ① («n/10 lệnh») and ``so_lan_thuc_hien_dung``
-    drives ② («n/2 lần»). ``so_lan_cat_lo_dung`` + ``so_lan_chot_loi_dung`` are
-    the 🛑/🎯 split that «Phân tích danh mục» block ④ renders; they always sum
-    to ``so_lan_thuc_hien_dung``.
+    ``so_lenh_co_cl_tp`` drives the only nhiệm vụ, ① («n/10 lệnh»), and
+    ``task_1_done_at`` is the whole tốt-nghiệp gate.
+
+    ★ ``task_2_done_at`` is GONE from the wire: nhiệm vụ ② «Thực hiện đúng khi
+    giá chạm mốc» no longer exists (migration ``9c3f7ad10b52``). Leaving an
+    always-null field on the payload would invite a client to draw a second
+    checklist row for a nhiệm vụ that cannot be completed.
+
+    ★ ``so_lan_cat_lo_dung`` / ``so_lan_chot_loi_dung`` / ``so_lan_thuc_hien_dung``
+    stay on the payload as ANALYTICS, not as a nhiệm vụ: they are the 🛑/🎯/✅
+    numbers «Phân tích danh mục» block ④ renders (and Cấp 3-8's Phân tích pages
+    re-render). ✅ always equals 🛑 + 🎯.
     """
 
     model_config = ConfigDict(from_attributes=True)
@@ -31,7 +39,6 @@ class Cap2ProgressOut(BaseModel):
     user_id: uuid.UUID
     entered_at: datetime
     task_1_done_at: datetime | None = None
-    task_2_done_at: datetime | None = None
     so_lenh_co_cl_tp: int
     so_lan_cat_lo_dung: int
     so_lan_chot_loi_dung: int

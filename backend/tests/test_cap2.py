@@ -1,9 +1,15 @@
 """Tests for the Cấp 2 «Kỷ luật» backend — progression, cắt lỗ/chốt lời, đo
-lường 4 vi phạm kỷ luật, điểm kỷ luật, **2 nhiệm vụ song song**, graduation.
+lường 4 vi phạm kỷ luật, điểm kỷ luật, **ĐÚNG MỘT nhiệm vụ**, graduation.
 
-The two nhiệm vụ are independent by design: ① «10 lệnh Thực chiến có đặt cắt
-lỗ / chốt lời» and ② «Thực hiện đúng khi giá chạm mốc — 2 lần». Either can
-finish first, and both directions are pinned by a test.
+Cấp 2 has exactly one nhiệm vụ: ① «10 lệnh Thực chiến có đặt cắt lỗ / chốt
+lời». Tốt nghiệp là 1/1 (mockup ``iqx-cap2-hanhtrinh.html``: ``CẤP 2 · 0/1``).
+
+★ Nhiệm vụ ② «Thực hiện đúng khi giá chạm mốc» is GONE, and so is
+``task_2_done_at``. The 🛑/🎯/✅ counters
+(``so_lan_cat_lo_dung``/``so_lan_chot_loi_dung``/``so_lan_thuc_hien_dung``) are
+still computed and still tested — but as ANALYTICS for «Phân tích danh mục»
+khối ④, never as a nhiệm vụ. Tests below pin BOTH halves of that: the numbers
+stay correct, and no value of them ever opens or closes the tốt-nghiệp gate.
 
 Mirrors ``tests/test_cap1.py``'s style. Uses the ``test_user``/``db_session``
 fixtures from ``tests/conftest.py``.
@@ -177,6 +183,7 @@ async def test_enter_requires_cap1_graduated(db_session, test_user):
     assert progress.graduated_at is None
     assert progress.so_lenh_co_cl_tp == 0
     assert progress.so_lan_thuc_hien_dung == 0
+    assert not hasattr(progress, "task_2_done_at")
 
     # idempotent
     progress2 = await svc.enter(test_user.id)
@@ -391,9 +398,9 @@ async def test_counter_1_moves_on_kehoach_alone_no_sell_needed(db_session, test_
     progress = await cap2.get_progress(test_user.id)
     assert progress.so_lenh_co_cl_tp == 10
     assert progress.task_1_done_at is not None
-    # …and ② is untouched: nothing has been sold, so nothing was executed.
+    # …and the 🛑/🎯/✅ analytics are untouched: nothing has been sold, so
+    # nothing was executed.
     assert progress.so_lan_thuc_hien_dung == 0
-    assert progress.task_2_done_at is None
 
 
 @pytest.mark.asyncio
@@ -435,13 +442,14 @@ async def test_task1_stamps_at_10_and_not_at_9(db_session, test_user):
 
 
 @pytest.mark.asyncio
-async def test_task2_counts_a_cat_lo_and_a_chot_loi_and_finishes_before_task1(
+async def test_analytics_counts_a_cat_lo_and_a_chot_loi_without_gating_anything(
     db_session, test_user
 ):
-    """★ ② is 2 lần — cắt lỗ hoặc chốt lời đều tính — and runs in PARALLEL.
+    """★ 🛑/🎯/✅ are still counted — but they are ANALYTICS, not a nhiệm vụ.
 
-    Two executions arrive after only two lệnh, so ② must complete while ① is
-    still at 2/10. Any gating of ② behind ① fails here.
+    Two executions arrive after only two lệnh. The counters must move (khối ④
+    of «Phân tích danh mục» reads them) and the tốt-nghiệp gate must NOT budge:
+    ① is still 2/10, so graduation is still refused.
     """
     await _graduate_cap1(db_session, test_user.id)
     cap1 = Cap1Service(db_session)
@@ -461,7 +469,6 @@ async def test_task2_counts_a_cat_lo_and_a_chot_loi_and_finishes_before_task1(
     assert progress.so_lan_cat_lo_dung == 1
     assert progress.so_lan_chot_loi_dung == 0
     assert progress.so_lan_thuc_hien_dung == 1
-    assert progress.task_2_done_at is None
 
     # ② Giá chạm chốt lời → bán theo kế hoạch (không giữ tiếp làm hụt).
     await _round_trip(
@@ -473,15 +480,21 @@ async def test_task2_counts_a_cat_lo_and_a_chot_loi_and_finishes_before_task1(
     assert progress.so_lan_cat_lo_dung == 1
     assert progress.so_lan_chot_loi_dung == 1
     assert progress.so_lan_thuc_hien_dung == 2
-    assert progress.task_2_done_at is not None
+    # Invariant khối ④ dựa vào: ✅ = 🛑 + 🎯.
+    assert progress.so_lan_thuc_hien_dung == (
+        progress.so_lan_cat_lo_dung + progress.so_lan_chot_loi_dung
+    )
 
-    # …and ① is nowhere near done — the two tasks are independent.
+    # ★★ …và cổng tốt nghiệp KHÔNG nhích một milimet: ① mới 2/10. Hai lần "thực
+    # hiện đúng" từng là nhiệm vụ ② và từng đủ để tick một ô — giờ thì không.
     assert progress.so_lenh_co_cl_tp == 2
     assert progress.task_1_done_at is None
+    with pytest.raises(ConflictError):
+        await cap2.graduate(test_user.id)
 
 
 @pytest.mark.asyncio
-async def test_task2_ignores_a_touched_mark_the_user_did_not_act_on(db_session, test_user):
+async def test_analytics_ignores_a_touched_mark_the_user_did_not_act_on(db_session, test_user):
     """Chạm mốc nhưng KHÔNG làm theo kế hoạch → không tính lần nào.
 
     ``cham_SL_khong_cat`` (giữ tiếp khi chạm cắt lỗ) and
@@ -512,11 +525,10 @@ async def test_task2_ignores_a_touched_mark_the_user_did_not_act_on(db_session, 
     assert progress.so_lan_cat_lo_dung == 0
     assert progress.so_lan_chot_loi_dung == 0
     assert progress.so_lan_thuc_hien_dung == 0
-    assert progress.task_2_done_at is None
 
 
 @pytest.mark.asyncio
-async def test_task2_ignores_a_sale_that_never_reached_the_mark(db_session, test_user):
+async def test_analytics_ignores_a_sale_that_never_reached_the_mark(db_session, test_user):
     """Bán khi giá CHƯA chạm chốt lời không phải "thực hiện đúng khi chạm mốc"."""
     await _graduate_cap1(db_session, test_user.id)
     cap1 = Cap1Service(db_session)
@@ -533,12 +545,16 @@ async def test_task2_ignores_a_sale_that_never_reached_the_mark(db_session, test
         )
     progress = await cap2.get_progress(test_user.id)
     assert progress.so_lan_thuc_hien_dung == 0
-    assert progress.task_2_done_at is None
 
 
 @pytest.mark.asyncio
-async def test_task1_can_finish_first_with_task2_still_open(db_session, test_user):
-    """The mirror image of the parallel test: ① done at 10 lệnh while ② is 0/2."""
+async def test_task1_alone_is_the_whole_gate_even_with_zero_executions(db_session, test_user):
+    """★ ① done at 10 lệnh, 🛑/🎯/✅ all still 0 → tốt nghiệp NGAY.
+
+    This is the behavioural heart of the 2 → 1 nhiệm vụ change: under the old
+    model this user sat at 1/2 forever, waiting for a market event that may
+    never come. Now ① is the whole gate.
+    """
     await _graduate_cap1(db_session, test_user.id)
     cap1 = Cap1Service(db_session)
     cap2 = Cap2Service(db_session)
@@ -555,8 +571,12 @@ async def test_task1_can_finish_first_with_task2_still_open(db_session, test_use
         )
     progress = await cap2.get_progress(test_user.id)
     assert progress.task_1_done_at is not None
+    assert progress.so_lan_cat_lo_dung == 0
+    assert progress.so_lan_chot_loi_dung == 0
     assert progress.so_lan_thuc_hien_dung == 0
-    assert progress.task_2_done_at is None
+
+    graduated = await cap2.graduate(test_user.id)
+    assert graduated.graduated_at is not None
 
 
 @pytest.mark.asyncio
@@ -565,7 +585,10 @@ async def test_mark_task_rejects_the_removed_task_numbers(db_session, test_user)
     cap2 = Cap2Service(db_session)
     await cap2.enter(test_user.id)
 
-    for bad in (0, 3, 4, 5):
+    # ★ 2 is now on this list — nhiệm vụ ② is gone, so ``PATCH /cap2/task``
+    # must refuse it instead of silently "recomputing" a nhiệm vụ that is not
+    # there any more.
+    for bad in (0, 2, 3, 4, 5):
         with pytest.raises(BadRequestError):
             await cap2.mark_task(test_user.id, bad)
 
@@ -676,7 +699,7 @@ async def test_diem_ky_luat_full_formula_with_test_situations(db_session, test_u
 
 
 @pytest.mark.asyncio
-async def test_graduate_requires_2_of_2(db_session, test_user):
+async def test_graduate_requires_1_of_1(db_session, test_user):
     await _graduate_cap1(db_session, test_user.id)
     cap1 = Cap1Service(db_session)
     cap2 = Cap2Service(db_session)
@@ -689,7 +712,8 @@ async def test_graduate_requires_2_of_2(db_session, test_user):
 
     day0 = date(2026, 11, 1)
 
-    # ② first (2 lần thực hiện đúng) — still short of ①'s 10 lệnh.
+    # ★★ Hai lần "thực hiện đúng khi giá chạm mốc" — thứ TỪNG là nhiệm vụ ② và
+    # từng tick một ô của 2/2. Sau khi bỏ ②, chúng KHÔNG mở cổng nào.
     await _round_trip(
         db_session, cap1, cap2, account.id, test_user.id,
         symbol="F0", trading_date=day0,
@@ -702,17 +726,28 @@ async def test_graduate_requires_2_of_2(db_session, test_user):
         buy_price=20_000, sell_price=25_500, chot_loi=25_000,
     )
     progress = await cap2.get_progress(test_user.id)
-    assert progress.task_2_done_at is not None
+    assert progress.so_lan_thuc_hien_dung == 2
     assert progress.task_1_done_at is None
     with pytest.raises(ConflictError):
         await cap2.graduate(test_user.id)
 
-    # …then ① (10 lệnh có cắt lỗ + chốt lời).
-    for i in range(8):
+    # 9/10 lệnh — cổng vẫn đóng.
+    for i in range(7):
         await _round_trip(
             db_session, cap1, cap2, account.id, test_user.id,
             symbol=f"F{2 + i}", trading_date=day0 + timedelta(days=2 + i),
         )
+    progress = await cap2.get_progress(test_user.id)
+    assert progress.so_lenh_co_cl_tp == 9
+    assert progress.task_1_done_at is None
+    with pytest.raises(ConflictError):
+        await cap2.graduate(test_user.id)
+
+    # …lệnh thứ 10 mở cổng, một mình.
+    await _round_trip(
+        db_session, cap1, cap2, account.id, test_user.id,
+        symbol="F9", trading_date=day0 + timedelta(days=9),
+    )
     progress = await cap2.get_progress(test_user.id)
     assert progress.so_lenh_co_cl_tp == 10
     assert progress.task_1_done_at is not None
@@ -744,10 +779,17 @@ async def test_cap2_endpoints_wired_and_free(client, db_session, test_user):
     body = r.json()
     assert body["so_lenh_co_cl_tp"] == 0
     assert body["so_lan_thuc_hien_dung"] == 0
-    # The chuỗi / 5-nhiệm-vụ apparatus is off the wire entirely.
+    assert body["task_1_done_at"] is None
+    # ★ ``task_2_done_at`` phải RỜI HẲN wire, không phải "còn đó nhưng luôn
+    # null": một trường luôn null vẫn mời client vẽ thêm một dòng checklist
+    # chết. Chuỗi / 5-nhiệm-vụ apparatus cũng off the wire entirely.
     for gone in ("chuoi_current", "chuoi_record", "last_chuoi_reset_at",
-                 "task_3_done_at", "task_4_done_at", "task_5_done_at"):
+                 "task_2_done_at", "task_3_done_at", "task_4_done_at",
+                 "task_5_done_at"):
         assert gone not in body
+    # …và ba con số ANALYTICS thì PHẢI còn (khối ④ «Phân tích danh mục» đọc).
+    for kept in ("so_lan_cat_lo_dung", "so_lan_chot_loi_dung", "so_lan_thuc_hien_dung"):
+        assert kept in body
 
     r = await client.post("/api/v1/cap2/graduate", headers=headers)
     assert r.status_code == 409
@@ -803,13 +845,16 @@ async def test_cap2_endpoints_wired_and_free(client, db_session, test_user):
 
     r = await client.patch("/api/v1/cap2/task", headers=headers, json={"task_no": 1})
     assert r.status_code == 200
+    # task_no 2 không còn tồn tại — 400, không phải 200 im lặng.
+    r = await client.patch("/api/v1/cap2/task", headers=headers, json={"task_no": 2})
+    assert r.status_code == 400, r.text
 
     # Unauthenticated is rejected
     r = await client.get("/api/v1/cap2/progress")
     assert r.status_code == 401
 
 
-# ── Migration: 5 nhiệm vụ + kỷ luật apparatus → 2 nhiệm vụ ───
+# ── Migration `8f1a5c7d2e64`: 5 nhiệm vụ + kỷ luật apparatus → 2 nhiệm vụ ──
 
 
 #: The shape production is on today, at revision ``f809de621bd0``. Written out
@@ -1003,3 +1048,205 @@ def test_cap2_migration_round_trips_up_down_up():
 
         _run_cap2_migration(conn, "upgrade")
         assert _cap2_rows(conn) == after_first
+
+
+# ── Migration `9c3f7ad10b52`: 2 nhiệm vụ → ĐÚNG MỘT (bỏ task_2_done_at) ──────
+#
+# ★ The upgrade → downgrade → upgrade round trip was ALSO run against real
+# Postgres (scratch db, ``alembic upgrade b2e6f4a17c93`` → ``head`` →
+# ``downgrade -1`` → ``head``) with two seeded rows, comparing
+# ``information_schema.columns`` snapshots and the row contents at each step.
+# The tests below are the deterministic, in-suite half of that (this suite runs
+# on SQLite — see ``tests/conftest.py``), pinned the same way the
+# ``8f1a5c7d2e64`` pair above is.
+
+
+#: The shape at revision ``b2e6f4a17c93`` — i.e. what ``9c3f7ad10b52`` upgrades
+#: FROM. Written out by hand so this test pins the migration against the columns
+#: that actually exist, not against whatever the ORM says after the change.
+_TWO_TASK_CAP2_PROGRESS_DDL = """
+CREATE TABLE cap2_progress (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    entered_at TIMESTAMP NOT NULL,
+    task_1_done_at TIMESTAMP,
+    task_2_done_at TIMESTAMP,
+    so_lenh_co_cl_tp INTEGER NOT NULL DEFAULT 0,
+    so_lan_cat_lo_dung INTEGER NOT NULL DEFAULT 0,
+    so_lan_chot_loi_dung INTEGER NOT NULL DEFAULT 0,
+    so_lan_thuc_hien_dung INTEGER NOT NULL DEFAULT 0,
+    graduated_at TIMESTAMP,
+    time_to_graduate_hours FLOAT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+)
+"""
+
+
+def _load_cap2_1task_migration():
+    """Import the revision module by path — ``alembic/versions`` is not a package."""
+    import importlib.util
+    from pathlib import Path
+
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "alembic"
+        / "versions"
+        / "9c3f7ad10b52_cap2_one_task_drop_task_2_done_at.py"
+    )
+    spec = importlib.util.spec_from_file_location("_cap2_1task_migration", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _run_cap2_1task_migration(conn, direction: str) -> None:
+    """Run the real ``upgrade()``/``downgrade()`` body against ``conn``."""
+    from alembic.migration import MigrationContext
+    from alembic.operations import Operations
+
+    module = _load_cap2_1task_migration()
+    with Operations.context(MigrationContext.configure(conn)):
+        getattr(module, direction)()
+
+
+def _seed_two_task_cap2_rows(conn) -> None:
+    """One mid-flight row under the 2-task model + one untouched row.
+
+    ① and ② carry DIFFERENT timestamps, and the three analytics counters carry
+    three DIFFERENT non-default values, so the assertions can tell "① survived
+    in place, the counters survived" apart from "something got shuffled or
+    reset to its default".
+    """
+    conn.exec_driver_sql(_TWO_TASK_CAP2_PROGRESS_DDL)
+    conn.exec_driver_sql(
+        """
+        INSERT INTO cap2_progress (
+            id, user_id, entered_at, task_1_done_at, task_2_done_at,
+            so_lenh_co_cl_tp, so_lan_cat_lo_dung, so_lan_chot_loi_dung,
+            so_lan_thuc_hien_dung, graduated_at
+        ) VALUES (
+            'ky1', 'u-ky1', '2026-01-01 00:00:00',
+            '2026-01-01 01:00:00',  -- ①: 10 lệnh có CL/CL
+            '2026-01-01 02:00:00',  -- ②: 2 lần thực hiện đúng  (bị xoá)
+            13, 3, 4, 7,
+            NULL
+        )
+        """
+    )
+    conn.exec_driver_sql(
+        """
+        INSERT INTO cap2_progress (id, user_id, entered_at)
+        VALUES ('ky2', 'u-ky2', '2026-02-01 00:00:00')
+        """
+    )
+
+
+def test_cap2_1task_migration_drops_only_task_2_and_keeps_the_analytics():
+    """★ ``task_2_done_at`` goes; ① and the 🛑/🎯/✅ counters stay untouched."""
+    import sqlalchemy as sa
+
+    engine = sa.create_engine("sqlite://")
+    with engine.begin() as conn:
+        _seed_two_task_cap2_rows(conn)
+        before = _cap2_columns(conn)
+        assert "task_2_done_at" in before
+
+        _run_cap2_1task_migration(conn, "upgrade")
+
+        after = _cap2_columns(conn)
+        assert "task_2_done_at" not in after
+        # ★ EXACTLY one column left, nothing else added or removed. A plain
+        # "task_2 is gone" assertion would still pass if the revision had also
+        # dropped the analytics counters «Phân tích danh mục» khối ④ reads.
+        assert sorted(after) == sorted(c for c in before if c != "task_2_done_at")
+        for kept in (
+            "so_lenh_co_cl_tp",
+            "so_lan_cat_lo_dung",
+            "so_lan_chot_loi_dung",
+            "so_lan_thuc_hien_dung",
+        ):
+            assert kept in after
+
+        row = _cap2_rows(conn)["ky1"]
+        assert row["task_1_done_at"] == "2026-01-01 01:00:00"
+        # Counters keep their seeded (non-default) values — the migration does
+        # not recompute or zero them.
+        assert row["so_lenh_co_cl_tp"] == 13
+        assert row["so_lan_cat_lo_dung"] == 3
+        assert row["so_lan_chot_loi_dung"] == 4
+        assert row["so_lan_thuc_hien_dung"] == 7
+        # Graduation is a user action — the migration never stamps it.
+        assert row["graduated_at"] is None
+
+        untouched = _cap2_rows(conn)["ky2"]
+        assert untouched["task_1_done_at"] is None
+        assert untouched["so_lenh_co_cl_tp"] == 0
+        assert untouched["entered_at"] == "2026-02-01 00:00:00"
+
+
+def test_cap2_1task_migration_round_trips_up_down_up():
+    """upgrade → downgrade → upgrade lands on the same 1-task state.
+
+    The downgrade is LOSSY by construction — see the revision's docstring.
+    """
+    import sqlalchemy as sa
+
+    engine = sa.create_engine("sqlite://")
+    with engine.begin() as conn:
+        _seed_two_task_cap2_rows(conn)
+        before_cols = _cap2_columns(conn)
+
+        _run_cap2_1task_migration(conn, "upgrade")
+        after_first = _cap2_rows(conn)
+
+        _run_cap2_1task_migration(conn, "downgrade")
+        assert sorted(_cap2_columns(conn)) == sorted(before_cols)
+
+        down = _cap2_rows(conn)["ky1"]
+        # ① and the counters come back untouched…
+        assert down["task_1_done_at"] == "2026-01-01 01:00:00"
+        assert down["so_lenh_co_cl_tp"] == 13
+        assert down["so_lan_thuc_hien_dung"] == 7
+        # …but ②'s exact completion timestamp is unrecoverable — it comes back
+        # NULL rather than pretending to remember (and NULL, not epoch: "chưa
+        # biết" must never be drawn as a value).
+        assert down["task_2_done_at"] is None
+        assert down["graduated_at"] is None
+
+        _run_cap2_1task_migration(conn, "upgrade")
+        assert _cap2_rows(conn) == after_first
+
+
+def test_cap2_1task_migration_chains_onto_the_2task_one():
+    """★ The two revisions compose: prod's 5-task shape → 2 tasks → 1 task.
+
+    Pins the revision ORDER as well as each step, so a future rebase that
+    re-points ``down_revision`` shows up here.
+    """
+    import sqlalchemy as sa
+
+    assert _load_cap2_1task_migration().down_revision == "b2e6f4a17c93"
+
+    engine = sa.create_engine("sqlite://")
+    with engine.begin() as conn:
+        _seed_old_shape_cap2_row(conn)  # the real prod (5-task) DDL
+        _run_cap2_migration(conn, "upgrade")  # 8f1a5c7d2e64
+        _run_cap2_1task_migration(conn, "upgrade")  # 9c3f7ad10b52
+
+        cols = _cap2_columns(conn)
+        assert "task_1_done_at" in cols
+        for gone in (
+            "task_2_done_at",
+            "task_3_done_at",
+            "task_4_done_at",
+            "task_5_done_at",
+            "chuoi_current",
+            "chuoi_record",
+            "last_chuoi_reset_at",
+        ):
+            assert gone not in cols
+
+        row = _cap2_rows(conn)["kyluat1"]
+        assert row["task_1_done_at"] == "2026-01-01 01:00:00"

@@ -2,6 +2,7 @@ import { render, screen, fireEvent, within } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
+import { visibleText } from "@/__tests__/textGuards"
 import type { Cap2Progress } from "./types"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
@@ -28,13 +29,16 @@ vi.mock("@/features/cap1/capFlags", () => ({
 
 import { JourneyPanelCap2 } from "./JourneyPanelCap2"
 
+/**
+ * ★ Fixture cố tình KHÔNG dùng giá trị default cho `so_lenh_co_cl_tp` ở các ca
+ * đo con số — xem từng `it`. Ở đây chỉ là hàng "vừa vào cấp".
+ */
 function makeProgress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
   return {
     id: "p2",
     user_id: "u1",
     entered_at: "2026-07-21T00:00:00Z",
     task_1_done_at: null,
-    task_2_done_at: null,
     so_lenh_co_cl_tp: 0,
     so_lan_cat_lo_dung: 0,
     so_lan_chot_loi_dung: 0,
@@ -70,37 +74,42 @@ describe("JourneyPanelCap2", () => {
     expect(screen.getByText("THỰC CHIẾN")).toBeInTheDocument()
   })
 
-  // ── ★★ Hành trình CHỈ CÒN 2 NHIỆM VỤ ★★ ───────────────────────────────────
-  it("★ renders EXACTLY 2 nhiệm vụ — the 5-nhiệm-vụ list is gone for good", () => {
+  // ── ★★ Hành trình CHỈ CÒN MỘT NHIỆM VỤ ★★ ─────────────────────────────────
+  it("★ renders EXACTLY 1 nhiệm vụ — ② «Thực hiện đúng khi giá chạm mốc» is gone for good", () => {
     renderPanel()
     expect(screen.getByTestId("cap2-task-1")).toBeInTheDocument()
-    expect(screen.getByTestId("cap2-task-2")).toBeInTheDocument()
+    expect(screen.queryByTestId("cap2-task-2")).not.toBeInTheDocument()
     expect(screen.queryByTestId("cap2-task-3")).not.toBeInTheDocument()
     expect(screen.queryByTestId("cap2-task-4")).not.toBeInTheDocument()
     expect(screen.queryByTestId("cap2-task-5")).not.toBeInTheDocument()
-    // ...và không còn dấu vết câu chữ của 5 nhiệm vụ cũ.
+    // ...và không còn dấu vết câu chữ của nhiệm vụ ② đã bỏ. `visibleText()`
+    // thay cho `textContent` (nó dán liền hai text node — xem textGuards).
+    const body = visibleText()
+    expect(body).not.toContain("Thực hiện đúng khi giá chạm mốc")
+    expect(body).not.toContain("song song")
+    expect(body).not.toMatch(/\d+\/2 lần/u)
+    // ...lẫn của 5 nhiệm vụ cũ.
     expect(screen.queryByText(/Chuỗi lệnh kỷ luật đầu tiên/)).not.toBeInTheDocument()
     expect(screen.queryByText(/Cắt lỗ đúng phiên — 5 lần/)).not.toBeInTheDocument()
     expect(screen.queryByText(/Không nhồi lệnh khi lỗ/)).not.toBeInTheDocument()
     expect(screen.queryByText(/Cửa sổ 20 lệnh/)).not.toBeInTheDocument()
   })
 
-  it("★ renders both nhiệm vụ names VERBATIM from the mockup", () => {
+  it("★ renders the nhiệm vụ name VERBATIM from the mockup", () => {
     renderPanel()
     expect(
       within(screen.getByTestId("cap2-task-1")).getByText(
         "10 lệnh Thực chiến có đặt cắt lỗ / chốt lời",
       ),
     ).toBeInTheDocument()
-    expect(
-      within(screen.getByTestId("cap2-task-2")).getByText("Thực hiện đúng khi giá chạm mốc"),
-    ).toBeInTheDocument()
   })
 
-  it('shows the checklist header "TRƯỚC KHI LÊN CẤP 3" + 0/2 with fresh progress', () => {
+  it('shows the checklist header "TRƯỚC KHI LÊN CẤP 3" + 0/1 with fresh progress', () => {
     renderPanel()
     expect(screen.getByText("TRƯỚC KHI LÊN CẤP 3")).toBeInTheDocument()
-    expect(screen.getByText("0/2")).toBeInTheDocument()
+    expect(screen.getByText("0/1")).toBeInTheDocument()
+    // Mẫu số cũ tuyệt đối không được sống sót ở bất kỳ đâu trên panel.
+    expect(visibleText()).not.toContain("0/2")
   })
 
   // ── ★★ Các khối chỉ số đã RỜI tab Hành trình ★★ ───────────────────────────
@@ -112,101 +121,63 @@ describe("JourneyPanelCap2", () => {
     expect(screen.queryByText(/CẨM NANG CẮT LỖ/i)).not.toBeInTheDocument()
   })
 
-  // ── ★★ SONG SONG: ② không bị ① khoá ★★ ────────────────────────────────────
-  it("★ both nhiệm vụ are actionable at 0/2 — neither is locked behind the other", () => {
+  // ── ★★ Nhiệm vụ duy nhất mở ngay, không khoá, không "Làm ngay →" trên dòng ─
+  it("★ the single nhiệm vụ is active from 0/1 — never locked, and needs no row shortcut", () => {
     renderPanel()
-    for (const no of [1, 2]) {
-      expect(screen.getByTestId(`cap2-task-${no}`).className).not.toContain(
-        "cap0-checklist-item--locked",
-      )
-    }
-    // ① được tập trung, ② vẫn có lối tắt "Làm ngay →" ngay trên dòng của nó.
-    expect(screen.getByTestId("cap2-task-1").className).toContain("cap0-checklist-item--current")
-    expect(within(screen.getByTestId("cap2-task-2")).getByText("Làm ngay →")).toBeInTheDocument()
+    const row = screen.getByTestId("cap2-task-1")
+    expect(row.className).not.toContain("cap0-checklist-item--locked")
+    expect(row.className).toContain("cap0-checklist-item--current")
+    // Lối tắt của nhiệm vụ song song không còn lý do tồn tại — ô tập trung ngay
+    // trên đã có nút "Làm ngay →" của chính nhiệm vụ này.
+    expect(within(row).queryByText("Làm ngay →")).not.toBeInTheDocument()
   })
 
-  it("★ ② can be done BEFORE ① — the focus moves to ①, ② reads done", () => {
+  it("★ once ① is done the row reads done and the focus box switches", () => {
     useCap2ProgressMock.mockReturnValue({
-      data: makeProgress({ task_2_done_at: "t", so_lan_thuc_hien_dung: 2 }),
-    })
-    renderPanel()
-    expect(screen.getByTestId("cap2-task-2").className).toContain("cap0-checklist-item--done")
-    expect(screen.getByTestId("cap2-task-1").className).toContain("cap0-checklist-item--current")
-    expect(within(screen.getByTestId("cap2-focus")).getByText("①")).toBeInTheDocument()
-  })
-
-  it("★ when ① is done first, the focus moves to ② (not to a locked row)", () => {
-    useCap2ProgressMock.mockReturnValue({
-      data: makeProgress({ task_1_done_at: "t", so_lenh_co_cl_tp: 10 }),
+      data: makeProgress({ task_1_done_at: "t", so_lenh_co_cl_tp: 12 }),
     })
     renderPanel()
     expect(screen.getByTestId("cap2-task-1").className).toContain("cap0-checklist-item--done")
     const focus = within(screen.getByTestId("cap2-focus"))
-    expect(focus.getByText("②")).toBeInTheDocument()
-    expect(focus.getByText("Thực hiện đúng khi giá chạm mốc")).toBeInTheDocument()
+    expect(focus.getByText("ĐÃ XONG NHIỆM VỤ CẤP 2")).toBeInTheDocument()
+    expect(focus.getByText("Sẵn sàng tốt nghiệp Cấp 2")).toBeInTheDocument()
   })
 
-  // ── ★★ Con số tiến độ NGUYÊN VĂN mockup ★★ ────────────────────────────────
-  it("★ ① reads «n/10 lệnh» and ② reads «n/2 lần» from the server counters", () => {
+  // ── ★★ Con số tiến độ NGUYÊN VĂN mockup: "6/10 lệnh" ★★ ───────────────────
+  it("★ ① reads «6/10 lệnh» — exactly the mockup's `.task .prog`, from the server counter", () => {
+    // 6 ≠ default 0 ⇒ ca này phân biệt được "đọc server" với "trả hằng số".
     useCap2ProgressMock.mockReturnValue({
-      data: makeProgress({ so_lenh_co_cl_tp: 6, so_lan_thuc_hien_dung: 1 }),
+      data: makeProgress({ so_lenh_co_cl_tp: 6 }),
     })
     renderPanel()
     // ① đang được tập trung → con số nằm trên ô tập trung.
     expect(within(screen.getByTestId("cap2-focus")).getByText("6/10 lệnh")).toBeInTheDocument()
-    expect(within(screen.getByTestId("cap2-task-2")).getByText("1/2 lần")).toBeInTheDocument()
   })
 
-  it("★ counters never overshoot their target (server may count past 10/2)", () => {
-    useCap2ProgressMock.mockReturnValue({
-      data: makeProgress({ so_lenh_co_cl_tp: 47, so_lan_thuc_hien_dung: 9 }),
-    })
+  it("★ the counter never overshoots 10 (server may count past it)", () => {
+    useCap2ProgressMock.mockReturnValue({ data: makeProgress({ so_lenh_co_cl_tp: 47 }) })
     renderPanel()
     expect(within(screen.getByTestId("cap2-focus")).getByText("10/10 lệnh")).toBeInTheDocument()
-    expect(within(screen.getByTestId("cap2-task-2")).getByText("2/2 lần")).toBeInTheDocument()
+    expect(visibleText()).not.toContain("47")
   })
 
   // ── ★★ Thanh hành trình (mockup `.jbar`) ★★ ───────────────────────────────
-  it("★ jbar reads «CẤP 2 · 0/2» + the mockup's parallel-tasks sub-line, with 2 dots", () => {
+  it("★ jbar reads «CẤP 2 · 0/1» + the mockup's sub-line, with exactly ONE dot", () => {
     renderPanel()
     const jbar = within(screen.getByTestId("cap2-jbar"))
-    expect(jbar.getByText("CẤP 2 · 0/2")).toBeInTheDocument()
-    expect(
-      jbar.getByText("Hai nhiệm vụ làm song song — chưa xong cái nào"),
-    ).toBeInTheDocument()
-    // Chưa xong cái nào ⇒ cả hai chấm đều "đang tới lượt" (song song).
-    for (const no of [1, 2]) {
-      expect(screen.getByTestId(`cap2-jbar-dot-${no}`).className).toContain("cap2-jd--now")
-    }
+    expect(jbar.getByText("CẤP 2 · 0/1")).toBeInTheDocument()
+    expect(jbar.getByText("Đặt 10 lệnh có cắt lỗ / chốt lời")).toBeInTheDocument()
+    expect(screen.getByTestId("cap2-jbar-dot-1").className).toContain("cap2-jd--now")
+    expect(screen.queryByTestId("cap2-jbar-dot-2")).not.toBeInTheDocument()
   })
 
-  it("★ jbar at 1/2 names the remaining nhiệm vụ (never «tiếp» — nothing follows anything)", () => {
+  it("★ jbar at 1/1 says the level is finished", () => {
     useCap2ProgressMock.mockReturnValue({ data: makeProgress({ task_1_done_at: "t" }) })
     renderPanel()
     const jbar = within(screen.getByTestId("cap2-jbar"))
-    expect(jbar.getByText("CẤP 2 · 1/2")).toBeInTheDocument()
-    expect(jbar.getByText("Thực hiện đúng khi giá chạm mốc")).toBeInTheDocument()
+    expect(jbar.getByText("🎓 Hoàn thành Cấp 2!")).toBeInTheDocument()
+    expect(screen.getByText("CẤP 2 · 1/1")).toBeInTheDocument()
     expect(screen.getByTestId("cap2-jbar-dot-1").className).toContain("cap2-jd--done")
-    expect(screen.getByTestId("cap2-jbar-dot-2").className).toContain("cap2-jd--now")
-  })
-
-  it("★ jbar at 2/2 says the level is finished", () => {
-    useCap2ProgressMock.mockReturnValue({
-      data: makeProgress({ task_1_done_at: "t", task_2_done_at: "t" }),
-    })
-    renderPanel()
-    expect(within(screen.getByTestId("cap2-jbar")).getByText("🎓 Hoàn thành Cấp 2!")).toBeInTheDocument()
-    expect(screen.getByText("CẤP 2 · 2/2")).toBeInTheDocument()
-  })
-
-  it("at 2/2 the focus box switches to the ready-to-graduate state", () => {
-    useCap2ProgressMock.mockReturnValue({
-      data: makeProgress({ task_1_done_at: "t", task_2_done_at: "t" }),
-    })
-    renderPanel()
-    const focus = within(screen.getByTestId("cap2-focus"))
-    expect(focus.getByText("ĐÃ XONG CẢ 2 NHIỆM VỤ")).toBeInTheDocument()
-    expect(focus.getByText("Sẵn sàng tốt nghiệp Cấp 2")).toBeInTheDocument()
   })
 
   // ── Hàng 2 công cụ (mockup `.tools`) ──────────────────────────────────────
@@ -241,13 +212,12 @@ describe("JourneyPanelCap2", () => {
   })
 
   // ── ★★ Ô mục tiêu: TRẠNG THÁI CUỐI của một người đã tốt nghiệp Cấp 2 ★★ ───
-  it("★ goal box says «Xong 2/2 →» and never promises Cấp 3 while the trần is 2", () => {
-    useCap2ProgressMock.mockReturnValue({
-      data: makeProgress({ task_1_done_at: "t", task_2_done_at: "t" }),
-    })
+  it("★ goal box says «Xong 1/1 →» and never promises Cấp 3 while the trần is 2", () => {
+    useCap2ProgressMock.mockReturnValue({ data: makeProgress({ task_1_done_at: "t" }) })
     renderPanel()
     const goal = screen.getByTestId("cap2-journey-goal")
-    expect(goal).toHaveTextContent("Xong 2/2 →")
+    expect(goal).toHaveTextContent("Xong 1/1 →")
+    expect(goal.textContent ?? "").not.toContain("Xong 2/2")
     expect(goal).not.toHaveTextContent(/lên\s+Cấp 3/)
     expect(goal).toHaveTextContent(/Cấp 3 «Bản lĩnh» chưa ra mắt/)
   })
@@ -257,9 +227,36 @@ describe("JourneyPanelCap2", () => {
     renderPanel()
     const goal = screen.getByTestId("cap2-journey-goal")
     expect(goal).toHaveTextContent(
-      "Xong 2/2 → tốt nghiệp Cấp 2, lên Cấp 3 «Bản lĩnh» (quản lý vốn: khẩu vị · tự tin · khối lượng).",
+      "Xong 1/1 → tốt nghiệp Cấp 2, lên Cấp 3 «Bản lĩnh» (quản lý vốn: khẩu vị · tự tin · khối lượng).",
     )
     expect(goal).not.toHaveTextContent(/chưa ra mắt/)
+  })
+
+  // ★★ Panel Hành trình KHÔNG được đo/khoe «thực hiện đúng khi giá chạm mốc» —
+  // nhiệm vụ ② đã bỏ. Ba con số 🛑/🎯/✅ chỉ còn sống ở «Phân tích danh mục».
+  it("★ never shows a «thực hiện đúng» counter, even when the server reports some", () => {
+    useCap2ProgressMock.mockReturnValue({
+      data: makeProgress({
+        so_lenh_co_cl_tp: 4,
+        so_lan_cat_lo_dung: 31,
+        so_lan_chot_loi_dung: 42,
+        so_lan_thuc_hien_dung: 73,
+      }),
+    })
+    renderPanel()
+    // Neo DƯƠNG TÍNH: panel thật sự đã render (không phải "không tìm thấy vì
+    // không vẽ gì") — xem quy ước ở `src/__tests__/textGuards.ts`.
+    expect(within(screen.getByTestId("cap2-focus")).getByText("4/10 lệnh")).toBeInTheDocument()
+    const body = visibleText()
+    expect(body).not.toContain("thực hiện đúng")
+    expect(body).not.toContain("chạm mốc")
+    // 🛑=31 / 🎯=42 / ✅=73 — hai chữ số, cố ý KHÁC mọi con số có thật trên
+    // panel ("Cấp 2", "Cấp 3", "4/10 lệnh"), nên một con số rò ra là thấy ngay.
+    // (`\b` của JS chỉ tính ASCII nên `/\b73\b/` với chữ Việt kề bên là bẫy —
+    // `toContain` ở đây chặt hơn và không thể xanh giả.)
+    for (const n of [31, 42, 73]) {
+      expect(body).not.toContain(String(n))
+    }
   })
 
   it("does NOT render any medal cabinet / Tủ huân chương (spec — no cấp has one)", () => {

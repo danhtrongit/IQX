@@ -92,7 +92,7 @@ const KEEP_FLAG = "text-[9px] font-normal normal-case tracking-normal text-[var(
  * hơn … sẽ đến ở các cấp sau" — người đọc ĐANG ở các cấp sau đó.
  */
 const HOST_SCOPE_NOTE =
-  "Ba con số này **cộng dồn từ Cấp 2** — chúng cho thấy cơ chế cắt lỗ / chốt lời đã thành thói quen tới đâu, chứ không phải nhiệm vụ phải làm lại."
+  "Ba con số này **cộng dồn từ Cấp 2** — chúng cho thấy cơ chế cắt lỗ / chốt lời đã thành thói quen tới đâu. Đây là số để đọc, không phải mốc phải đạt."
 const ADD_FLAG =
   "rounded-full bg-[rgba(125,211,192,0.16)] px-[7px] py-[2px] text-[9px] font-bold normal-case tracking-normal text-[#7dd3c0]"
 
@@ -156,9 +156,11 @@ export function Cap2PortfolioAnalysis({
             </span>
           </div>
 
-          {/* Ô tiến độ "n/10 lệnh có CL/CL" là MỐC TỐT NGHIỆP CẤP 2. Ai đang ở
-              cấp cao hơn thì đã ≥10 từ lâu → ô ghim cứng "10/10" vĩnh viễn, nên
-              chỉ hiện ở trang Phân tích của chính Cấp 2. */}
+          {/* Ô tiến độ "n/10 lệnh có CL/CL" là MỐC TỐT NGHIỆP CẤP 2 — và là ô
+              DUY NHẤT trong trang này được phép có mẫu số, vì nó là nhiệm vụ
+              duy nhất của cấp. Ai đang ở cấp cao hơn thì đã ≥10 từ lâu → ô ghim
+              cứng "10/10" vĩnh viễn, nên chỉ hiện ở trang Phân tích của chính
+              Cấp 2. */}
           {!host && (
             <div className="cap2-pa-stat">
               <span className="cap2-pa-stat-label">Đã đặt CL/CL</span>
@@ -172,7 +174,10 @@ export function Cap2PortfolioAnalysis({
             </div>
           )}
 
-          {/* ★ `khoi4.tongDung` đọc `Cap2Progress.so_lan_thuc_hien_dung`, mà
+          {/* ★ Số MÔ TẢ, KHÔNG phải nhiệm vụ: Cấp 2 chỉ còn nhiệm vụ ①, nên ô
+              này KHÔNG có mẫu số ("2" chứ không phải "2/2") — đúng mockup.
+
+              ★ `khoi4.tongDung` đọc `Cap2Progress.so_lan_thuc_hien_dung`, mà
               server (`_cap2_ketso_rows`) chỉ chặn cận DƯỚI `closed_at >=
               cap2.entered_at` — không có cận trên. Nên ở trang của cấp cao hơn
               nó là con số CỘNG DỒN TỪ CẤP 2, đứng ngay dưới một tiêu đề ghi

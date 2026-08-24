@@ -19,7 +19,7 @@ import type { CachKhoiLuong, Cap3Progress, KhauViLoai, MucTuTin } from "./types"
  * `computeCap1PortfolioAnalysis`). `Cap3TradeRecord extends Cap2TradeRecord`
  * nên mảng lệnh được truyền THẲNG xuống, không map/copy.
  *
- * ★ Cấp 2 đã rút về mô hình 2 nhiệm vụ: các khối «vi phạm 30 ngày», «cửa sổ 20
+ * ★ Cấp 2 đã rút về ĐÚNG MỘT nhiệm vụ: các khối «vi phạm 30 ngày», «cửa sổ 20
  * lệnh», «điểm kỷ luật 30 ngày», «vi phạm theo tuần», «phát hiện từ ghi chú» và
  * «mẫu 9-12» KHÔNG còn tồn tại. Khi mở lại Cấp 3, phần Phân tích danh mục ở đây
  * phải được đặc tả lại trên nền 4 khối mới chứ không trông chờ chúng quay về.
