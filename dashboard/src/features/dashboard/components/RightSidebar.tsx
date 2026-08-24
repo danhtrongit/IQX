@@ -246,8 +246,12 @@ export function RightSidebar() {
   }
 
   return (
+    /* ★ Bề rộng đọc từ token `--right-sidebar-w` (khai trong `index.css`), KHÔNG
+       hard-code ở đây: cột này dùng chung cho trang chủ, cả chín shell cấp,
+       /bieu-do và /co-phieu — trước đây `280px` nằm rải một chỗ nhưng đổi nó là
+       đổi mọi trang, nên nó xứng đáng là một token có tên và có chỗ giải thích. */
     <aside
-      className={`fixed inset-x-0 bottom-[52px] top-[76px] z-40 bg-[var(--color-bg-1)] border-t border-[var(--color-border-2)] shadow-2xl transition-transform duration-300 md:static md:w-[280px] md:shrink-0 md:z-auto md:translate-y-0 md:border-l md:border-t-0 md:shadow-none flex flex-col overflow-hidden ${
+      className={`fixed inset-x-0 bottom-[52px] top-[76px] z-40 bg-[var(--color-bg-1)] border-t border-[var(--color-border-2)] shadow-2xl transition-transform duration-300 md:static md:w-[var(--right-sidebar-w)] md:shrink-0 md:z-auto md:translate-y-0 md:border-l md:border-t-0 md:shadow-none flex flex-col overflow-hidden ${
         isOpen ? "translate-y-0" : "translate-y-full"
       }`}
     >

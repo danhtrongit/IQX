@@ -391,6 +391,23 @@ html body[arco-theme="dark"] {
    own native scrollbars. We deliberately avoid the universal `*` selector
    here — same reason we skip `* { border: 0 }` above: it leaks into Arco. */
 :root {
+  /* ══════════════════════════════════════════════════════════════════════════
+     Bề rộng cột phải (`RightSidebar`) — MỘT SỐ CHO CẢ DỰ ÁN.
+     ------------------------------------------------------------------------
+     Cột này dùng chung cho trang chủ, cả chín shell cấp `/dau-truong`,
+     `/bieu-do` và `/co-phieu`. Trước đây là `md:w-[280px]` hard-code trong
+     `RightSidebar.tsx`; giờ là token vì đổi nó là đổi MỌI trang.
+
+     336px = 280 × 1.2 (founder yêu cầu rộng thêm ~20%, 08/2026).
+
+     ★ Liên quan tới độ khớp mockup: thẻ panel đặt lệnh mà mockup
+     `iqx-capN-datlenh.html` vẽ rộng **360px**, và `.op-shell` ăn 10px đệm mỗi
+     bên — nên ở 280px thẻ chỉ còn 260px, hẹp hơn mockup 100px. Ở 336px nó
+     được 316px, vẫn chưa bằng mockup nhưng gần hơn nhiều. Muốn khớp đúng
+     mockup thì token này là 380px.
+     ══════════════════════════════════════════════════════════════════════════ */
+  --right-sidebar-w: 336px;
+
   --scrollbar-size: 10px;
   --scrollbar-thumb: var(--color-fill-3, rgb(201, 205, 212));
   --scrollbar-thumb-hover: rgb(var(--primary-6));
