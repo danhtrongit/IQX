@@ -1936,7 +1936,15 @@ def test_migration_la_head_duy_nhat():
     cfg = Config(str(root / "alembic.ini"))
     cfg.set_main_option("script_location", str(root / "alembic"))
     script = ScriptDirectory.from_config(cfg)
-    assert list(script.get_heads()) == ["c7f1b9d34a80"]
+
+    # ★★ Canh SỐ LƯỢNG head, KHÔNG ghim tên head. Bản trước ghim
+    # `== ["c7f1b9d34a80"]`, tức khẳng định "Cấp 6 là migration cuối cùng của
+    # repo" — điều chỉ đúng trong lúc nhánh Cấp 6 còn đứng một mình. Cấp 2 rút
+    # nhiệm vụ nối vào sau nó là bài đỏ ngay, dù cây hoàn toàn khoẻ. Thứ thật sự
+    # đáng canh là "hai head = cây không deploy được", nên canh đúng thứ đó.
+    assert len(script.get_heads()) == 1, f"nhiều head: {script.get_heads()}"
+
+    # Migration Cấp 6 vẫn phải nằm TRONG chuỗi và giữ đúng cha của nó.
     rev = script.get_revision("c7f1b9d34a80")
     assert rev.down_revision == "b2e6f4a17c93"
 

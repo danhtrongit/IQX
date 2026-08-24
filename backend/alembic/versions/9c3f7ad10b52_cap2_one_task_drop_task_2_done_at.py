@@ -60,7 +60,11 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "9c3f7ad10b52"
-down_revision: Union[str, None] = "b2e6f4a17c93"
+# ★ Nối SAU migration Cấp 6 (`c7f1b9d34a80`), KHÔNG phải sau `b2e6f4a17c93`.
+# Hai nhánh (Cấp 2 rút nhiệm vụ · Cấp 6 «Bậc thầy») được dựng song song nên cả
+# hai cùng khai `b2e6f4a17c93` làm cha; gộp lại là alembic có HAI head và
+# `upgrade head` sẽ bỏ dở một nhánh. Cấp 6 đáp trước nên Cấp 2 xếp sau nó.
+down_revision: Union[str, None] = "c7f1b9d34a80"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

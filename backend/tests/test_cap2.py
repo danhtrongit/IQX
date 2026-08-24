@@ -1227,7 +1227,12 @@ def test_cap2_1task_migration_chains_onto_the_2task_one():
     """
     import sqlalchemy as sa
 
-    assert _load_cap2_1task_migration().down_revision == "b2e6f4a17c93"
+    # ★ Cha ĐÃ ĐỔI khi gộp nhánh (08/2026): Cấp 2-rút-nhiệm-vụ và Cấp 6
+    # «Bậc thầy» được dựng SONG SONG nên cả hai cùng khai `b2e6f4a17c93` làm
+    # cha; gộp lại là alembic có HAI head và `upgrade head` bỏ dở một nhánh.
+    # Cấp 6 đáp trước nên Cấp 2 xếp sau nó. Bài này bắt được đúng cú re-point đó
+    # — chính là việc docstring trên hứa sẽ làm.
+    assert _load_cap2_1task_migration().down_revision == "c7f1b9d34a80"
 
     engine = sa.create_engine("sqlite://")
     with engine.begin() as conn:
