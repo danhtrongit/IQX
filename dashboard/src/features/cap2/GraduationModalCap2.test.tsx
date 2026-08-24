@@ -77,9 +77,9 @@ function readyProgress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
   return makeProgress({
     task_1_done_at: "t",
     so_lenh_co_cl_tp: 10,
-    so_lan_cat_lo_dung: 3,
-    so_lan_chot_loi_dung: 4,
-    so_lan_thuc_hien_dung: 7,
+    so_lan_cat_lo_dung: 31,
+    so_lan_chot_loi_dung: 42,
+    so_lan_thuc_hien_dung: 73,
     ...overrides,
   })
 }
@@ -332,10 +332,11 @@ describe("GraduationModalCap2", () => {
     expect(shown).not.toContain("thực hiện đúng")
     expect(shown).not.toContain("làm đúng điều mình đã cam kết")
     expect(shown).not.toContain("2 lần")
-    // Fixture để 🛑=3 / 🎯=4 / ✅=7 — không con số nào của khối ④ được rò ra
-    // đây. `\b` của JS chỉ tính ASCII ⇒ lookaround unicode.
-    for (const n of [3, 4, 7]) {
-      expect(shown).not.toMatch(new RegExp(`(?<![\\d.,])${n}(?!\\p{L}|[\\d.,])`, "u"))
+    // Fixture để 🛑=31 / 🎯=42 / ✅=73 — hai chữ số, cố ý KHÁC mọi con số có
+    // thật trong câu chữ màn này ("Cấp 3", "2 chuyện", "10 lệnh"), nên nếu một
+    // con số của khối ④ rò ra đây thì thấy ngay.
+    for (const n of [31, 42, 73]) {
+      expect(shown).not.toContain(String(n))
     }
   })
 

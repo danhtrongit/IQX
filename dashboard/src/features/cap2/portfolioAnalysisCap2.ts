@@ -23,8 +23,8 @@ import type { Cap2Progress, XepLoai } from "./types"
  *
  * ★★ **Những khối ĐÃ BỎ so với bản 5 nhiệm vụ** — «Danh sách vi phạm 4 loại»,
  * «Cửa sổ 20 lệnh», «Điểm kỷ luật 30 ngày», «Phân loại vi phạm theo tuần»,
- * «Phát hiện từ ghi chú» và «Mẫu tự phát hiện 9-12». Mô hình 2 nhiệm vụ không
- * còn đo vi phạm/chuỗi/điểm kỷ luật, nên mọi khối đó chỉ có thể trình bày một
+ * «Phát hiện từ ghi chú» và «Mẫu tự phát hiện 9-12». Cấp 2 không còn đo vi
+ * phạm/chuỗi/điểm kỷ luật, nên mọi khối đó chỉ có thể trình bày một
  * thứ sản phẩm không còn tính. Đúng tinh thần câu chốt của chính mockup: *"Cấp
  * 2 chỉ giúp bạn làm quen cơ chế… Rèn kỷ luật sâu hơn sẽ đến ở các cấp sau."*
  *

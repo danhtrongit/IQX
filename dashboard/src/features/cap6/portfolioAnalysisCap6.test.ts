@@ -297,7 +297,6 @@ function cap2Progress(): Cap2Progress {
     user_id: "u1",
     entered_at: "2026-03-01T00:00:00Z",
     task_1_done_at: null,
-    task_2_done_at: null,
     so_lenh_co_cl_tp: 0,
     so_lan_cat_lo_dung: 0,
     so_lan_chot_loi_dung: 0,

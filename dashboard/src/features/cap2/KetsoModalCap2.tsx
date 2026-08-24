@@ -228,7 +228,11 @@ export function KetsoModalCap2({
   const line2 =
     missing.length > 0
       ? `Bạn đã dùng ${daDung}/5 lý do. Chưa thử: ${missing.map((o) => `${o.icon} ${o.label}`).join(", ")}.`
-      : `Bạn đã dùng đủ 5/5 lý do — nhiệm vụ ③ hoàn thành.`
+      // ★ KHÔNG hậu tố "— nhiệm vụ ③ hoàn thành": đó là nhiệm vụ ③ của CẤP 1,
+      // và Cấp 2 giờ chỉ có ĐÚNG MỘT nhiệm vụ (không có ③ nào) — câu đó đọc
+      // như đang tick một ô Cấp 2 không tồn tại. Cấp 3-8 đã bỏ hậu tố này từ
+      // trước; đây là chỗ cuối cùng còn sót.
+      : `Bạn đã dùng đủ 5/5 lý do.`
 
   const sameLyDo = trades.filter((t) => t.lyDo === lyDo)
   const sameLyDoWins = sameLyDo.filter((t) => t.pnlPct > 0).length

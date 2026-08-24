@@ -51,7 +51,6 @@ function cap2Progress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
     user_id: "u1",
     entered_at: "2026-03-01T00:00:00Z",
     task_1_done_at: null,
-    task_2_done_at: null,
     so_lenh_co_cl_tp: 0,
     so_lan_cat_lo_dung: 0,
     so_lan_chot_loi_dung: 0,
@@ -108,7 +107,7 @@ describe("Cap3PortfolioAnalysis — giữ mọi khối Cấp 1-2 (cộng dồn)"
     expect(screen.getByTestId("cap2-pa-khoi2")).toBeInTheDocument()
     expect(screen.getByTestId("cap2-pa-khoi3")).toBeInTheDocument()
     expect(screen.getByTestId("cap2-pa-khoi4")).toBeInTheDocument()
-    // ★ Cấp 2 mô hình 2 nhiệm vụ chỉ còn 4 khối — «Điểm kỷ luật 30 ngày»,
+    // ★ Phân tích danh mục Cấp 2 chỉ còn 4 khối — «Điểm kỷ luật 30 ngày»,
     // «Phân loại vi phạm theo tuần» và «Phát hiện từ ghi chú» đã bỏ hẳn.
     expect(screen.queryByTestId("cap2-pa-khoi5")).not.toBeInTheDocument()
     expect(screen.queryByTestId("cap2-pa-khoi6")).not.toBeInTheDocument()

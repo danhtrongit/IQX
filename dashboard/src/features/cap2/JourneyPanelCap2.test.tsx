@@ -238,9 +238,9 @@ describe("JourneyPanelCap2", () => {
     useCap2ProgressMock.mockReturnValue({
       data: makeProgress({
         so_lenh_co_cl_tp: 4,
-        so_lan_cat_lo_dung: 3,
-        so_lan_chot_loi_dung: 4,
-        so_lan_thuc_hien_dung: 7,
+        so_lan_cat_lo_dung: 31,
+        so_lan_chot_loi_dung: 42,
+        so_lan_thuc_hien_dung: 73,
       }),
     })
     renderPanel()
@@ -250,9 +250,13 @@ describe("JourneyPanelCap2", () => {
     const body = visibleText()
     expect(body).not.toContain("thực hiện đúng")
     expect(body).not.toContain("chạm mốc")
-    expect(body).not.toContain("7/2")
-    // `\b` của JS chỉ tính ASCII ⇒ dùng lookaround unicode, không `\b`.
-    expect(body).not.toMatch(/(?<![\d.,])7(?!\p{L}|[\d.,])/u)
+    // 🛑=31 / 🎯=42 / ✅=73 — hai chữ số, cố ý KHÁC mọi con số có thật trên
+    // panel ("Cấp 2", "Cấp 3", "4/10 lệnh"), nên một con số rò ra là thấy ngay.
+    // (`\b` của JS chỉ tính ASCII nên `/\b73\b/` với chữ Việt kề bên là bẫy —
+    // `toContain` ở đây chặt hơn và không thể xanh giả.)
+    for (const n of [31, 42, 73]) {
+      expect(body).not.toContain(String(n))
+    }
   })
 
   it("does NOT render any medal cabinet / Tủ huân chương (spec — no cấp has one)", () => {

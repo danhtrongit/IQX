@@ -19,7 +19,7 @@ import type { Cap3Progress, KhauViLoai } from "./types"
  *
  * **TÁI SỬ DỤNG Ở TẦNG COMPONENT (documented choice):** mọi khối Cấp 1-2 được
  * render bằng CHÍNH `Cap2PortfolioAnalysis` (① hồ sơ, ② bảng 5 lý do, ③ độ phủ
- * 5 lý do, ④ cơ chế cắt lỗ/chốt lời — 4 khối của mô hình 2 nhiệm vụ) — KHÔNG
+ * 5 lý do, ④ cơ chế cắt lỗ/chốt lời — 4 khối Cấp 2 còn lại) — KHÔNG
  * mirror lại markup như Cấp 2 phải làm với Cấp 1. Lý do khác nhau: `Cap2PortfolioAnalysis`
  * là component THUẦN TRÌNH BÀY nhận `trades`/`dailyScores`/`progress` qua props
  * và không bọc modal/không sở hữu state, còn `Cap3TradeRecord extends

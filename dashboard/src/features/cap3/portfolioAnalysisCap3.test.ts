@@ -52,10 +52,9 @@ function cap2Progress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
     id: "c2p",
     user_id: "u1",
     entered_at: "2026-05-01T00:00:00Z",
-    // 2/2 nhiệm vụ Cấp 2 — hàng progress của một người ĐÃ tốt nghiệp Cấp 2
+    // 1/1 nhiệm vụ Cấp 2 — hàng progress của một người ĐÃ tốt nghiệp Cấp 2
     // (`graduated_at` bên dưới), nên khối 4 uỷ quyền phải báo đủ điều kiện.
     task_1_done_at: "2026-06-01T00:00:00Z",
-    task_2_done_at: "2026-06-01T00:00:00Z",
     so_lenh_co_cl_tp: 0,
     so_lan_cat_lo_dung: 0,
     so_lan_chot_loi_dung: 0,
@@ -318,7 +317,7 @@ describe("computeCap3PortfolioAnalysis — delegation to Cấp 2 (cộng dồn)"
       cap3Progress(),
       now,
     )
-    // Khối ① (uỷ quyền Cấp 1 qua Cấp 2) đếm cả 6 — mô hình 2 nhiệm vụ không
+    // Khối ① (uỷ quyền Cấp 1 qua Cấp 2) đếm cả 6 — Cấp 2 không
     // còn khối nào cắt theo cửa sổ 30 ngày.
     expect(result.khoi1.totalTrades).toBe(6)
     // Khối ⑦ sees all 6 (the Cấp 3 log only starts at Cấp 3 anyway).
