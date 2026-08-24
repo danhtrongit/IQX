@@ -398,15 +398,16 @@ html body[arco-theme="dark"] {
      `/bieu-do` và `/co-phieu`. Trước đây là `md:w-[280px]` hard-code trong
      `RightSidebar.tsx`; giờ là token vì đổi nó là đổi MỌI trang.
 
-     336px = 280 × 1.2 (founder yêu cầu rộng thêm ~20%, 08/2026).
+     **380px = con số KHỚP MOCKUP**, không phải làm tròn từ "+20%".
+     Thẻ panel đặt lệnh mà `iqx-capN-datlenh.html` vẽ rộng đúng **360px**, và
+     `.op-shell` ăn 10px đệm mỗi bên ⇒ cột phải rộng 380px thì thẻ được đúng
+     360px. Đường đi: 280px (thẻ 260px, HẸP HƠN MOCKUP 100px) → founder yêu cầu
+     "+20%" ⇒ 336px (thẻ 316px, vẫn thiếu) → founder chốt 380px để khớp mockup.
 
-     ★ Liên quan tới độ khớp mockup: thẻ panel đặt lệnh mà mockup
-     `iqx-capN-datlenh.html` vẽ rộng **360px**, và `.op-shell` ăn 10px đệm mỗi
-     bên — nên ở 280px thẻ chỉ còn 260px, hẹp hơn mockup 100px. Ở 336px nó
-     được 316px, vẫn chưa bằng mockup nhưng gần hơn nhiều. Muốn khớp đúng
-     mockup thì token này là 380px.
+     ★ Đổi con số này là đổi bề rộng thẻ panel, tức đổi độ khớp mockup. Nếu sau
+     này mockup vẽ thẻ rộng khác 360px thì token này phải đi theo, cộng 20px.
      ══════════════════════════════════════════════════════════════════════════ */
-  --right-sidebar-w: 336px;
+  --right-sidebar-w: 380px;
 
   --scrollbar-size: 10px;
   --scrollbar-thumb: var(--color-fill-3, rgb(201, 205, 212));
