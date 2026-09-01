@@ -7,7 +7,6 @@ from pathlib import Path
 
 import sqlalchemy as sa
 
-
 MIGRATION = Path(__file__).parents[1] / "alembic" / "versions" / "d3c2a1b4e5f6_cap3_two_concurrent_sizing_tasks.py"
 
 _PRE_CUTOVER_CAP3_PROGRESS_DDL = """

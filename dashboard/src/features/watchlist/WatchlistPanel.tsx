@@ -34,6 +34,7 @@ import { StockLogo } from "@/features/navigation/StockLogo"
 // /co-phieu this is inert — which is the whole point of routing the Cấp 0
 // nhiệm vụ through it instead of calling a Cấp 0 hook from here.
 import { useCap0Events } from "@/features/cap0/Cap0Context"
+import { useCap7Events } from "@/features/cap7/Cap7Context"
 import { Cap7PortfolioAnalysisPanel } from "@/features/cap7/Cap7PortfolioAnalysisPanel"
 import { ExitModalCap8 } from "@/features/cap8/ExitModalCap8"
 import { useCap8Active } from "@/features/cap8/Cap8Context"
@@ -331,17 +332,17 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
   const isCap8Active = useCap8Active()
   const [exitSymbol, setExitSymbol] = useState<string | null>(null)
 
-  const positions = portfolio?.positions ?? []
-  const symbols = useMemo(() => positions.map((p) => p.symbol), [positions])
+  const positions = portfolio?.positions
+  const symbols = useMemo(() => positions?.map((position) => position.symbol) ?? [], [positions])
   const { priceMap } = usePrices(symbols)
 
   // Re-derive a per-position P&L (% of cost) for filtering / display.
   const rows = useMemo(
     () =>
-      positions.map((p) => {
-        const cost = p.avgBuyPrice * p.quantity
-        const pnlPercent = cost > 0 ? (p.unrealizedPnl / cost) * 100 : 0
-        return { ...p, pnlPercent }
+      (positions ?? []).map((position) => {
+        const cost = position.avgBuyPrice * position.quantity
+        const pnlPercent = cost > 0 ? (position.unrealizedPnl / cost) * 100 : 0
+        return { ...position, pnlPercent }
       }),
     [positions],
   )
@@ -421,7 +422,7 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
           {filtered.length} mã
         </span>
       </div>
-      <Cap7PortfolioAnalysisPanel />
+      <Cap7Allocation />
 
       {/* Header */}
       {filtered.length > 0 && (
@@ -512,7 +513,9 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
             )
           })
         )}
-      <ExitModalCap8 symbol={exitSymbol} visible={exitSymbol != null} onClose={() => setExitSymbol(null)} />
+      {isCap8Active && exitSymbol && (
+        <ExitModalCap8 symbol={exitSymbol} visible onClose={() => setExitSymbol(null)} />
+      )}
       </div>
 
       {/* Footer total */}
@@ -532,6 +535,12 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
     </div>
   )
 }
+function Cap7Allocation() {
+  const { isCap7Active } = useCap7Events()
+
+  return isCap7Active ? <Cap7PortfolioAnalysisPanel /> : null
+}
+
 
 function SummaryCard({
   icon,

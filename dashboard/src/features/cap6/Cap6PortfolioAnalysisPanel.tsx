@@ -15,23 +15,17 @@ import { Cap6PortfolioAnalysis } from "./Cap6PortfolioAnalysis"
 /**
  * Panel "Phân tích danh mục" của sidebar-phải trong Cấp 6 (spec §7) — case
  * `"cap6-analysis"` của `RightSidebar`. Self-contained, mirror
- * `cap5/Cap5PortfolioAnalysisPanel.tsx`: nạp `Cap6PortfolioAnalysis` từ
- * `useCap6Progress` + `useCap6TradeLog` (nhật ký lệnh đã đóng KÈM kiểu cổ phiếu
- * + lớp quyết định — xem docstring module đó), CỘNG hồ sơ Cấp 5 + Cấp 4 + Cấp 3
- * + Cấp 2 và nhật ký điểm kỷ luật dùng chung (`useCap2TradeLog().scores`) mà các
- * khối kế thừa Cấp 1-5 cần.
+ * `useCap6Progress` + `useCap6TradeLog` (nhật ký bằng chứng kế thừa Cấp 1-5),
+ * CỘNG hồ sơ Cấp 5 + Cấp 4 + Cấp 3 + Cấp 2 và nhật ký điểm kỷ luật dùng chung
+ * (`useCap2TradeLog().scores`) mà các khối kế thừa Cấp 1-5 cần.
  *
  * Mọi query đều gate bằng `isCap6Active` nên panel này vô hại nếu `activePanel`
  * tình cờ là "cap6-analysis" ở ngoài Cấp 6 (`SidebarProvider` là singleton
- * app-root). LƯU Ý: `Cap6PortfolioAnalysis` tự gọi `useThachThucCap6()` (khối ⑮
- * đọc thẳng từ server) và các component Cấp 4/5 bên trong nó tự gọi
- * `useVuKhiDiemMu()` — tất cả auth-gated bên trong
- * hook, nên mọi test/mount của panel này cần provider auth + QueryClient (hoặc
- * mock hook).
+ * app-root). `Cap6PortfolioAnalysis` đọc `usePhanTichCap6()` cho các số server-
+ * owned; những component Cấp 4/5 bên trong vẫn tự gate các query của chúng.
  *
- * Cấp 6 không có nhiệm vụ nào gắn với "mở trang Phân tích danh mục N lần" (3
- * nhiệm vụ đều dựa trên hành vi đối chiếu — spec §2), nên panel không có side
- * effect `markTask` lúc mount (giống Cấp 2/3/4/5).
+ * Cấp 6 có một nhiệm vụ hành vi server-derived; mở Phân tích danh mục không có
+ * side effect lên tiến độ.
  */
 export function Cap6PortfolioAnalysisPanel() {
   const { isCap6Active } = useCap6Events()

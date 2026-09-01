@@ -52,11 +52,17 @@ def test_upgrade_removes_legacy_credit_but_preserves_graduation_history():
         conn.exec_driver_sql(_PROGRESS_DDL)
         conn.exec_driver_sql(_ORDER_DDL)
         conn.exec_driver_sql(
-            "INSERT INTO cap7_progress VALUES ('p', 'u', '2026-01-01', '2026-01-02', '2026-01-03', '2026-01-04', 15, 3, 80, '2026-01-05', 96)"
+            "INSERT INTO cap7_progress VALUES "
+            "('p', 'u', '2026-01-01', '2026-01-02', '2026-01-03', '2026-01-04', "
+            "15, 3, 80, '2026-01-05', 96)"
         )
-        conn.exec_driver_sql("INSERT INTO order_kehoach VALUES ('o', 1.9, 'manh', 1, 2.0, 1, 'cho_xac_nhan')")
+        conn.exec_driver_sql(
+            "INSERT INTO order_kehoach VALUES ('o', 1.9, 'manh', 1, 2.0, 1, 'cho_xac_nhan')"
+        )
         run(conn, "upgrade")
-        row = conn.exec_driver_sql("SELECT can_doi_ok, graduated_at, time_to_graduate_hours FROM cap7_progress").one()
+        row = conn.exec_driver_sql(
+            "SELECT can_doi_ok, graduated_at, time_to_graduate_hours FROM cap7_progress"
+        ).one()
         assert row == (0, "2026-01-05", 96.0)
         assert "task_1_done_at" not in columns(conn, "cap7_progress")
         assert "luc_doc_user" not in columns(conn, "order_kehoach")
@@ -67,9 +73,15 @@ def test_downgrade_restores_empty_legacy_shape_without_losing_graduation_history
     with engine.begin() as conn:
         conn.exec_driver_sql(_PROGRESS_DDL)
         conn.exec_driver_sql(_ORDER_DDL)
-        conn.exec_driver_sql("INSERT INTO cap7_progress VALUES ('p', 'u', '2026-01-01', NULL, NULL, NULL, 0, 0, 0, '2026-01-05', 96)")
+        conn.exec_driver_sql(
+            "INSERT INTO cap7_progress VALUES "
+            "('p', 'u', '2026-01-01', NULL, NULL, NULL, 0, 0, 0, '2026-01-05', 96)"
+        )
         run(conn, "upgrade")
         run(conn, "downgrade")
-        row = conn.exec_driver_sql("SELECT task_1_done_at, task_2_done_at, task_3_done_at, graduated_at FROM cap7_progress").one()
+        row = conn.exec_driver_sql(
+            "SELECT task_1_done_at, task_2_done_at, task_3_done_at, graduated_at "
+            "FROM cap7_progress"
+        ).one()
         assert row == (None, None, None, "2026-01-05")
         assert "luc_doc_user" in columns(conn, "order_kehoach")

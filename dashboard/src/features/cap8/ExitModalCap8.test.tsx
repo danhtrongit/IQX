@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { boardLotPartialBounds } from "./ExitModalCap8"
+import { boardLotPartialBounds } from "./exitMath"
 
 /** The rendered modal consumes these bounds; pin board-lot partial quantities. */
 describe("ExitModalCap8 board-lot quantities", () => {

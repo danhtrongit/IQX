@@ -25,30 +25,28 @@ router = APIRouter(prefix="/cap3", tags=["Cấp 3"])
 @router.get("/progress", response_model=Cap3ProgressOut | None)
 async def get_progress(user: CurrentUser, db: DBSession) -> Cap3ProgressOut | None:
     """Trả về tiến trình Cấp 3 của người dùng hiện tại (hoặc null nếu chưa vào)."""
-    svc = Cap3Service(db)
-    return await svc.get_progress(user.id)
+    progress = await Cap3Service(db).get_progress(user.id)
+    return Cap3ProgressOut.model_validate(progress) if progress is not None else None
 
 
 @router.post("/enter", response_model=Cap3ProgressOut)
 async def enter(user: CurrentUser, db: DBSession) -> Cap3ProgressOut:
-    """Vào Cấp 3 (idempotent) — yêu cầu đã tốt nghiệp Cấp 2."""
-    svc = Cap3Service(db)
-    return await svc.enter(user.id)
+    progress = await Cap3Service(db).enter(user.id)
+    return Cap3ProgressOut.model_validate(progress)
 
 
 @router.post("/khau-vi", response_model=Cap3ProgressOut)
 async def set_khau_vi(body: KhauViRequest, user: CurrentUser, db: DBSession) -> Cap3ProgressOut:
-    """Đặt/đổi khẩu vị rủi ro — hồ sơ, áp cho mọi lệnh sau (spec §5)."""
-    svc = Cap3Service(db)
-    return await svc.set_khau_vi(user.id, body.khau_vi)
+    progress = await Cap3Service(db).set_khau_vi(user.id, body.khau_vi)
+    return Cap3ProgressOut.model_validate(progress)
 
 
 @router.patch("/task", response_model=Cap3ProgressOut)
 async def mark_task(body: TaskRequest, user: CurrentUser, db: DBSession) -> Cap3ProgressOut:
     """Both tasks are recomputed from qualifying placed plans; this endpoint
     only requests that idempotent server-side recomputation."""
-    svc = Cap3Service(db)
-    return await svc.mark_task(user.id, body.task_no)
+    progress = await Cap3Service(db).mark_task(user.id, body.task_no)
+    return Cap3ProgressOut.model_validate(progress)
 
 
 @router.post("/kehoach", response_model=OrderKehoachOut)
@@ -57,8 +55,7 @@ async def record_kehoach(
 ) -> OrderKehoachOut:
     """Ghi khối Quản lý vốn (khẩu vị + mức tự tin + cách/khối lượng) vào kế
     hoạch đã có của Cấp 1."""
-    svc = Cap3Service(db)
-    return await svc.record_kehoach(
+    order = await Cap3Service(db).record_kehoach(
         user.id,
         body.order_id,
         khau_vi=body.khau_vi,
@@ -67,6 +64,7 @@ async def record_kehoach(
         khoi_luong=body.khoi_luong,
         pct_von=body.pct_von,
     )
+    return OrderKehoachOut.model_validate(order)
 
 
 
@@ -74,5 +72,5 @@ async def record_kehoach(
 @router.post("/graduate", response_model=Cap3ProgressOut)
 async def graduate(user: CurrentUser, db: DBSession) -> Cap3ProgressOut:
     """Graduate Cấp 3 only after both sizing-confidence tasks are complete."""
-    svc = Cap3Service(db)
-    return await svc.graduate(user.id)
+    progress = await Cap3Service(db).graduate(user.id)
+    return Cap3ProgressOut.model_validate(progress)

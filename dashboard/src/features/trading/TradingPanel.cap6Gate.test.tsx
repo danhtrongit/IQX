@@ -354,8 +354,6 @@ vi.mock("@/features/cap6", async (importOriginal) => {
     ...actual,
     useCap6Events: () => ({
       isCap6Active: isCap6ActiveFlag,
-      onConflictShown: vi.fn(),
-      onLopQuyetDinhPicked: vi.fn(),
       onMauThuanShown: vi.fn(),
       onNhanDinhPicked: vi.fn(),
       onKhongMua: onKhongMuaMock,

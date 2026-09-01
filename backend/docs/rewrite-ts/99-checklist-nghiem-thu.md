@@ -21,11 +21,11 @@ Dùng file này như một checklist thật: tick từng dòng, và với mỗi 
 
 ## 1. Độ phủ endpoint
 
-- [ ] Bản TS phục vụ **đúng 293 operation** (gồm **2 route ẩn khỏi OpenAPI**:
+- [ ] Bản TS phục vụ **đúng 289 operation** (gồm **2 route ẩn khỏi OpenAPI**:
       `GET /api/v1/auth/verify-email` và `GET /api/v1/auth/reset-password` — trang HTML mở từ
       link email; thiếu chúng là **vỡ luồng xác thực email và đặt lại mật khẩu**) trong
       [`types/endpoint-manifest.json`](types/endpoint-manifest.json) — cùng method, cùng path.
-- [ ] Không có endpoint **thừa** ngoài 293 cái đó (endpoint mới thuộc `/api/v2`).
+- [ ] Không có endpoint **thừa** ngoài 289 cái đó (endpoint mới thuộc `/api/v2`).
 - [ ] `/api/v1/market-data/ws` (WebSocket) hoạt động.
 - [ ] `/media/**` phục vụ file tĩnh.
 - [ ] `/docs`, `/redoc`, `/openapi.json` bật/tắt đúng theo `api_docs_enabled`.
@@ -53,7 +53,7 @@ diff <(curl -s http://localhost:8000/openapi.json | jq -r '.paths|to_entries[]|.
 - [ ] Không phải admin gọi endpoint admin → 403 `"Yêu cầu quyền quản trị viên"`.
 - [ ] Không có Premium gọi endpoint premium → 403 `"Yêu cầu gói Premium đang hoạt động"`.
 - [ ] **Admin được coi là Premium** (bypass kiểm tra subscription).
-- [ ] Kiểm tra từng endpoint trong 293 cái: mức quyền khớp bảng trong chương endpoint
+- [ ] Kiểm tra từng endpoint trong 289 cái: mức quyền khớp bảng trong chương endpoint
       tương ứng. Đây là chỗ dễ sai nhất — sai một chiều là lỗ hổng, sai chiều kia là chặn oan.
 
 ---

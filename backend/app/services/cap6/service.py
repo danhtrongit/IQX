@@ -795,10 +795,16 @@ class Cap6Service:
         """Câu nhận xét SERVER dựng cho khối ⑭ (§C12c: không hiện số trơ)."""
         if not du_mau:
             return None
-        co = [(m, tb[m]) for m in MUC_NANG_DAN if tb[m] is not None]
+        co: list[tuple[str, float]] = [
+            (muc, value)
+            for muc in MUC_NANG_DAN
+            if (value := tb[muc]) is not None
+        ]
         nang_nhat, kl_nang_nhat = co[-1]
-        cao_nhat = max(co, key=lambda x: (x[1], MUC_NANG_DAN.index(x[0])))
-        if cao_nhat[0] == nang_nhat and len(co) >= 2 and kl_nang_nhat > min(x[1] for x in co):
+        cao_nhat = max(co, key=lambda item: (item[1], MUC_NANG_DAN.index(item[0])))
+        if cao_nhat[0] == nang_nhat and len(co) >= 2 and kl_nang_nhat > min(
+            value for _, value in co
+        ):
             return (
                 f'Khi bạn đọc mâu thuẫn "{MUC_LABELS[nang_nhat].lower()}", đáng lẽ '
                 f"phải mua ít nhất — nhưng bạn lại mua nhiều nhất ({kl_nang_nhat}% "

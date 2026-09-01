@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "react-router"
 import {
   Button,
@@ -72,7 +73,6 @@ import {
   isDoc5LopComplete,
   useCap4Events,
   useRecordKehoachCap4,
-  type Lop,
   type Lop5Partial,
 } from "@/features/cap4"
 import { useCap5Events } from "@/features/cap5"
@@ -80,17 +80,14 @@ import {
   MauThuanBlock,
   coBangMauThuan,
   conflictLevelLabel,
-  isDoiChieuValid,
   lyDoTuMauThuan,
   useCap6Events,
   useMauThuanCap6,
-  useRecordKehoachCap6,
   useRecordKehoachMauThuanCap6,
   useSkipCap6,
   type ConflictLevel,
-  type KieuCoPhieu,
 } from "@/features/cap6"
-import { cap8Api, useCap8Active } from "@/features/cap8"
+import { cap8Api, cap8Keys, useCap8Active } from "@/features/cap8"
 import { getErrorMessage } from "@/shared/http/client"
 import { cn } from "@/shared/lib/cn"
 import { StockLogo } from "@/features/navigation/StockLogo"
@@ -266,6 +263,7 @@ function OrderEntry({
 }) {
   const navigate = useNavigate()
   const placeOrder = usePlaceOrder()
+  const queryClient = useQueryClient()
   const cap0Events = useCap0Events()
   // `isCap0Active` is the SAME signal `GatedOrderEntry` uses to ungate the
   // form (false outside a `Cap0Provider`, i.e. on /bieu-do & /co-phieu) — the
@@ -372,18 +370,6 @@ function OrderEntry({
   // khối "Đối chiếu" below, which itself renders ONLY when the user's 5 lớp
   // conflict. With no conflict Cấp 6 adds NO gate at all.
   const { isCap6Active } = cap6Events
-  const recordKehoachCap6 = useRecordKehoachCap6()
-  // Cấp 6 bước "Đối chiếu" (spec §4) — lớp user chọn TIN khi các lớp nói ngược
-  // nhau + 1 dòng vì sao (bắt buộc). `cap6Kieu` chỉ được đặt qua lối dự phòng
-  // khi server KHÔNG phân loại được kiểu từ ngành (server re-derive lúc ghi và
-  // giá trị của server thắng — xem `DoiChieuBlock`'s doc).
-  const [cap6LopQuyetDinh, setCap6LopQuyetDinh] = useState<Lop | null>(null)
-  const [cap6LyDo, setCap6LyDo] = useState("")
-  // ★ GẮN THEO MÃ (xem `useLuaChonTheoMa`): kiểu cổ phiếu là một lời khai về
-  // MỘT mã. Một kiểu chọn cho mã A mà theo sang mã B sẽ được `POST /cap6/kehoach`
-  // dùng làm lối dự phòng khi server không phân loại được kiểu của B — tức là
-  // ghi cho B đúng cái kiểu user vừa nói về A.
-  const [cap6Kieu, , resetCap6Kieu] = useLuaChonTheoMa<KieuCoPhieu>(symbol)
   const isCap6BacThay = isCap6Active
   // Cùng một query mà `MauThuanBlock` render (react-query gộp theo key ⇒ MỘT
   // request, không phải hai): panel cần bản đọc này để suy ra lý do Cấp 1 và để
@@ -481,16 +467,6 @@ function OrderEntry({
   // vĩnh viễn nút MUA — không có ô nào để chấm cho nó mở ra.
   const cap4SubmitDisabled =
     side === "buy" && isCap4Active && !isCap6BacThay && !isDoc5LopComplete(cap4Doc5Lop)
-  // Cấp 6 (spec §4): the bước Đối chiếu only exists when the user's own 5 lớp
-  // CONFLICT (≥1 Ủng hộ AND ≥1 Ngược chiều) — that same predicate decides both
-  // whether the khối renders and whether there is a gate at all.
-  const cap6CoMauThuan = false
-  // Cổng cứng (spec §4): với lệnh CÓ mâu thuẫn, MUA khoá tới khi chọn lớp quyết
-  // định + ghi 1 dòng vì sao — ON TOP OF Cấp 1-4's gates (Cấp 6 keeps all of
-  // them intact). KHÔNG mâu thuẫn → Cấp 6 không thêm cổng nào. Only ever true
-  // for a BUY inside Cấp 6.
-  const cap6SubmitDisabled =
-    side === "buy" && cap6CoMauThuan && !isDoiChieuValid(cap6LopQuyetDinh, cap6LyDo)
   // Analytics `cap4_lo_ai(so_khac_ai)` (spec §8) — fires once per reveal, when
   // `Doc5LopBlock` reports the AI đối chiếu it just un-hid. By the time this
   // effect runs, `cap4Doc5Lop` is already the completed 5-lớp map (same render
@@ -571,13 +547,6 @@ function OrderEntry({
       Message.warning("Chấm đủ cả 5 lớp mới đặt được lệnh.")
       return
     }
-    // Cấp 6 bước Đối chiếu cổng cứng (spec §4) — belt-and-suspenders behind the
-    // Submit button's own `disabled`. ONLY inside Cấp 6 AND only when the 5 lớp
-    // conflict.
-    if (cap6SubmitDisabled) {
-      Message.warning("Chọn lớp bạn quyết định tin và ghi 1 dòng vì sao mới đặt được lệnh.")
-      return
-    }
 
     const label = side === "buy" ? "MUA" : "BÁN"
     try {
@@ -655,11 +624,6 @@ function OrderEntry({
         // own fire-and-forget `mutate` is unchanged.
         const cap2Ready = isCap2Active && !!cap2Method && !!cap2CatLo && !!cap2ChotLoi
         const cap4Ready = isCap4Active && isDoc5LopComplete(cap4Doc5Lop)
-        // Cấp 6 chỉ ghi khối Đối chiếu khi lệnh này THẬT SỰ có mâu thuẫn và user
-        // đã quyết (spec §9: "chỉ điền khi lệnh có mâu thuẫn; lệnh không mâu
-        // thuẫn để null").
-        const cap6Ready =
-          cap6CoMauThuan && isDoiChieuValid(cap6LopQuyetDinh, cap6LyDo) && !!cap6LopQuyetDinh
         // ★★ TỪNG LẦN GHI DƯỚI ĐÂY ĐỀU KHÔNG CHÍ MẠNG (`ghiKehoachKhongChiMang`).
         // Lệnh đã khớp trước khi khối này chạy: một `POST /capN/kehoach` hỏng chỉ
         // được phép làm mất đúng khối sổ sách của cấp đó, KHÔNG được biến một
@@ -671,7 +635,7 @@ function OrderEntry({
         // có mâu thuẫn thì không có gì để nhận định.
         const cap6BacThayReady =
           isCap6BacThay && coBangMauThuan(cap6MauThuan) && cap6NhanDinh != null
-        if (cap2Ready || cap4Ready || cap6Ready || cap6BacThayReady) {
+        if (cap2Ready || cap4Ready || cap6BacThayReady) {
           await ghiKehoachKhongChiMang(() => recordKehoach.mutateAsync(kehoachPayload))
           if (isCap2Active && cap2Method && cap2CatLo && cap2ChotLoi) {
             await ghiKehoachKhongChiMang(() =>
@@ -682,12 +646,6 @@ function OrderEntry({
                 chot_loi: cap2ChotLoi,
               }),
             )
-          }
-          if (side === "buy" && isCap8Active && cap2Ready) {
-            // Cấp 8 only activates a filled BUY. A pending limit order is
-            // intentionally ignored here and reconciled after settlement on
-            // the next Level 8 position access.
-            await ghiKehoachKhongChiMang(() => cap8Api.syncPlan(symbol, order.id))
           }
           // Cấp 3 (spec §6 "Ghi hồ sơ") — same chained-await reason as Cấp 2:
           // `/cap3/kehoach` extends the SAME `order_kehoach` row, so it must
@@ -712,6 +670,11 @@ function OrderEntry({
               }),
             )
           }
+          if (side === "buy" && isCap8Active && cap2Ready) {
+            // The Cấp 8 aggregate-position plan is only valid after the same
+            // `order_kehoach` row has its Cấp 2 and Cấp 3 commitments.
+            await ghiKehoachKhongChiMang(() => cap8Api.syncPlan(symbol, order.id))
+          }
           // Cấp 4 (spec §8 "Dữ liệu cần ghi") — LAST in the chain, same single
           // `order_kehoach` row. BOTH JSON blobs go up: without `ai_5_lop` the
           // backend leaves `so_lop_dong_thuan` NULL and the order never counts
@@ -729,24 +692,6 @@ function OrderEntry({
             )
           }
           // Cấp 6 (spec §4/§9 "Ghi") — LAST in the chain, same single
-          // `order_kehoach` row (Cấp 6 only INSERTS the Đối chiếu block). Only
-          // `lop_quyet_dinh` + `ly_do_doi_chieu` are the user's own judgement:
-          // the server re-derives the kiểu from ngành and derives
-          // `trong_so_goi_y`/`khop_goi_y` itself, and prefers the row's
-          // persisted `doc_5_lop` over the `lop_mau_thuan` fallback sent here.
-          if (cap6Ready && cap6LopQuyetDinh) {
-            await ghiKehoachKhongChiMang(() =>
-              recordKehoachCap6.mutateAsync({
-                order_id: order.id,
-                lop_quyet_dinh: cap6LopQuyetDinh,
-                ly_do_doi_chieu: cap6LyDo.trim(),
-                // Chỉ có giá trị khi server KHÔNG phân loại được kiểu từ ngành.
-                kieu_co_phieu: cap6Kieu,
-                lop_mau_thuan: cap4Doc5Lop,
-              }),
-            )
-          }
-          // Cấp 6 «Bậc thầy» (spec §6/§11) — MỘT trường duy nhất: mức nhận định
           // user tự đọc. Server tự suy `had_conflict`/`had_veto`/`veto_layers`
           // từ bản đọc 5 lớp của chính nó, và tự đối chiếu với khối lượng + tự
           // tin mà Cấp 3 đã ghi trên CÙNG hàng `order_kehoach`.
@@ -822,24 +767,13 @@ function OrderEntry({
           price: order.price,
           orderId: order.id,
         })
-        // Cấp 6 — khối Đối chiếu đi kèm CHỈ khi lệnh này có mâu thuẫn và user đã
-        // quyết (spec §9: lệnh không mâu thuẫn để null).
+        // Cấp 6 emits only the current server-owned conflict evidence.
         cap6Events.onOrderFilled?.({
           symbol,
           side,
           quantity: order.quantity,
           price: order.price,
           orderId: order.id,
-          ...(cap6Ready && cap6LopQuyetDinh
-            ? {
-                kieuCoPhieu: cap6Kieu,
-                lopQuyetDinh: cap6LopQuyetDinh,
-                lyDoDoiChieu: cap6LyDo.trim(),
-                lopMauThuan: cap4Doc5Lop,
-              }
-            : {}),
-          // Cấp 6 «Bậc thầy» — nhận định + hai phe + cờ phủ quyết, để Kết sổ
-          // dựng bảng "nhận định có khớp hành động không" (spec §8).
           ...(isCap6BacThay && cap6MauThuan
             ? {
                 conflictLevel: cap6NhanDinh,
@@ -869,15 +803,19 @@ function OrderEntry({
         // đối chiếu hidden again) — that IS the habit nhiệm vụ ③ measures.
         setCap4Doc5Lop({})
         setCap4Ai5Lop(null)
-        // Cấp 6: lệnh sau phải đối chiếu lại từ đầu (bản chấm 5 lớp đã xoá ở
-        // trên, nên khối Đối chiếu cũng tự ẩn tới khi có mâu thuẫn mới).
-        setCap6LopQuyetDinh(null)
-        setCap6LyDo("")
-        resetCap6Kieu()
-        // Cấp 6 «Bậc thầy»: lệnh sau phải tự nhận định lại từ đầu, và trạng thái
-        // "không mua" của mã trước không được dính sang.
+        // Cấp 6 requires a new judgement for the next order.
         resetCap6NhanDinh()
         resetCap6KhongMua()
+      }
+      if (side === "sell" && isCap8Active && order.status.toLowerCase() === "filled") {
+        // Exit evidence is server-derived from the already-filled order. Record
+        // it before any inherited Kết sổ opens so the Level 8 journey refetches
+        // against the same completed sell.
+        await ghiKehoachKhongChiMang(() => cap8Api.recordExit(order.id))
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: cap8Keys.progress() }),
+          queryClient.invalidateQueries({ queryKey: cap8Keys.exitContext(symbol) }),
+        ])
       }
       // Cấp 1 (spec §6 "Kết sổ mở khi user bán 1 lệnh Thực chiến") — a SELL
       // fill inside Cấp 1 notifies the bus too (no `lyDo`/`trangThaiLucDat`/
@@ -1363,18 +1301,10 @@ function OrderEntry({
                   ? "Chấm mức tự tin và chọn cách tính khối lượng mới đặt được lệnh."
                   : cap4SubmitDisabled
                     ? "Chấm đủ cả 5 lớp mới đặt được lệnh."
-                    : cap6SubmitDisabled
-                      ? "Chọn lớp bạn quyết định tin và ghi 1 dòng vì sao mới đặt được lệnh."
-                      : ""
+                    : ""
           }
           disabled={
-            !(
-              cap1SubmitDisabled ||
-              cap2SubmitDisabled ||
-              cap3SubmitDisabled ||
-              cap4SubmitDisabled ||
-              cap6SubmitDisabled
-            )
+            !(cap1SubmitDisabled || cap2SubmitDisabled || cap3SubmitDisabled || cap4SubmitDisabled)
           }
         >
           <div>
@@ -1382,11 +1312,7 @@ function OrderEntry({
               long
               loading={placeOrder.isPending}
               disabled={
-                cap1SubmitDisabled ||
-                cap2SubmitDisabled ||
-                cap3SubmitDisabled ||
-                cap4SubmitDisabled ||
-                cap6SubmitDisabled
+                cap1SubmitDisabled || cap2SubmitDisabled || cap3SubmitDisabled || cap4SubmitDisabled
               }
               onClick={handleSubmit}
               className={

@@ -29,23 +29,10 @@ import "./cap6-analysis.css"
  * quyền sở hữu file), nên phần "Cấp 6 thêm" cho khối ① là một thẻ đầu trang RIÊNG
  * (`cap6-pa-khoi1`) đặt NGAY TRÊN các khối kế thừa.
  *
- * ★ **KHỐI ⑮ ĐỌC TỪ SERVER, KHÔNG TÍNH LẠI Ở CLIENT.** `GET /cap6/thach-thuc` trả
- * về `nhom_khop`/`nhom_lech` gồm số lệnh, số thắng, tỷ lệ thắng, cờ `du_du_lieu`
- * (ngưỡng ≥3 lệnh/nhóm) và `giai_thich` — authoritative, ghép lệnh mua-bán
- * server-side, và **chính là con số nuôi nhiệm vụ ③** (spec §7 nói thẳng: "đây chính
- * là thước đo nhiệm vụ ③"). Tính lại từ nhật ký localStorage sẽ sinh một con số thứ
- * hai, lệch, mâu thuẫn với widget Thách thức ở tab Hành trình. Khi query lỗi/đang
- * tải thì khối nói thẳng là chưa lấy được số — fail-closed, KHÔNG đắp tạm bằng phép
- * tính client. Cùng tiền lệ khối ⑬ của Cấp 5 và ⑨ của Cấp 4.
- *
- * ⑭ thì CHƯA có endpoint nào (BE Cấp 6 không liệt kê từng lệnh kèm kiểu × lớp), nên
- * nó tính từ nhật ký client (`tradeLogCap6.ts`) và đánh dấu thiếu dữ liệu một cách
- * trung thực: **một ô cần ≥3 lệnh mới được gán nhãn**.
- *
- * ★★ **Lệch gợi ý KHÔNG BAO GIỜ là "sai".** Hai nhóm của ⑮ được trình bày ngang
- * nhau, không nhóm nào có màu/icon cảnh báo; và khi nhóm khớp KHÔNG thắng hơn thì
- * khối nói thẳng ra thay vì bảo vệ bảng trọng số (spec §7 "trung thực, không xu
- * nịnh").
+ * ★ Khối ⑭/⑮ đọc duy nhất từ `GET /cap6/phan-tich`. Client không tính lại
+ * chỉ số hoặc dùng chúng làm cổng hành trình: chúng là phân tích mô tả của
+ * hành vi mâu thuẫn, còn nhiệm vụ duy nhất do service suy từ bộ đếm nhất quán.
+ * Khi query lỗi hoặc đang tải, UI nói rõ không có dữ liệu thay vì dựng số cục bộ.
  */
 export interface Cap6PortfolioAnalysisProps {
   /** Hồ sơ Cấp 2 — cho khối ④ + nhãn khối ① của Cấp 2. */
@@ -56,7 +43,7 @@ export interface Cap6PortfolioAnalysisProps {
   cap4Progress: Cap4Progress | null
   /** Hồ sơ Cấp 5 — 2 nhiệm vụ săn mã + phễu săn mã (khối ⑬) server đã chốt. */
   cap5Progress: Cap5Progress | null
-  /** Hồ sơ Cấp 6 — số lệnh đối chiếu, số kiểu đã gặp, 2 tỷ lệ khớp/lệch. */
+  /** Hồ sơ Cấp 6 — bộ đếm xử lý mâu thuẫn nhất quán do server chốt. */
   cap6Progress: Cap6Progress | null
   /** Nhật ký lệnh đã đóng ở Cấp 6 (`useCap6TradeLog`). */
   trades: Cap6TradeRecord[]

@@ -1,55 +1,13 @@
 import { useCallback, useState } from "react"
 import { useAuth } from "@/features/auth"
 import type { Cap5TradeRecord } from "@/features/cap5/tradeLogCap5"
-import type { KieuCoPhieu, Lop } from "./types"
 
 /**
- * Client-side closed-trade log cho Phân tích danh mục Cấp 6 (spec §7 khối ⑭) —
- * mirror `cap5/tradeLogCap5.ts` một cấp lên, cùng cơ chế localStorage + de-dupe
- * theo `orderId`.
- *
- * **Cộng dồn ở tầng dữ liệu:** `Cap6TradeRecord extends Cap5TradeRecord` (chính
- * nó extends Cấp 4 → 3 → 2 → 1) — nhờ vậy `computeCap6PortfolioAnalysis` và
- * `Cap6PortfolioAnalysis` truyền THẲNG cùng một mảng xuống Cấp 5/4/3/2/1, không
- * map/copy, và MỌI khối cũ (①-⑬) vẫn tính được y như trước từ chính các bản ghi
- * này.
- *
- * GAP (giống hệt gap Cấp 1-5 đã ghi, một cấp lên): backend Cấp 6 KHÔNG có
- * endpoint liệt kê từng lệnh đã đóng kèm kiểu cổ phiếu + lớp quyết định của nó —
- * chỉ có state tổng hợp (`GET /cap6/progress`, `GET /cap6/thach-thuc`). Module
- * này là workaround cho khối ⑭; `KetsoModalCap6` ghi 1 `Cap6TradeRecord` mỗi lần
- * đóng Kết sổ (nó đang giữ đúng khối Đối chiếu vừa đối soát).
- *
- * ★ Vì thế khối ⑮ CỐ TÌNH KHÔNG tính từ nhật ký này: `GET /cap6/thach-thuc` đã
- * trả về đúng hai nhóm khớp/lệch (authoritative, có ghép lệnh mua-bán server-side
- * và chính là con số nuôi nhiệm vụ ③). Tính lại ở client sẽ sinh một con số thứ
- * hai, lệch, và có thể mâu thuẫn với widget Thách thức — cùng tiền lệ khối ⑬ của
- * Cấp 5 và khối ⑨ của Cấp 4.
- *
- * KNOWN LIMITATION (như Cấp 1-5): không backfill được lệnh đóng trước khi tính
- * năng này ship, và là per-browser (không sync giữa thiết bị) — fix đúng là một
- * task BE sau này (vd. `GET /cap6/ma-tran`). Khối ⑭ vì vậy nói thẳng "chưa đủ dữ
- * liệu" thay vì bịa số.
+ * Client-side closed-trade log for Cấp 6. Its rows intentionally carry the
+ * inherited Cấp 1-5 evidence only; retired order-book/Đối chiếu metadata is
+ * not persisted as Cấp 6 evidence.
  */
-export interface Cap6TradeRecord extends Cap5TradeRecord {
-  /**
-   * Kiểu cổ phiếu SERVER chốt cho lệnh (`order_kehoach.kieu_co_phieu`).
-   * `null` = "chưa phân loại" (ngành thiếu/chưa map) → khối ⑭ đếm riêng, KHÔNG
-   * gộp vào ô kiểu nào.
-   */
-  kieuCoPhieu: KieuCoPhieu | null
-  /** Lớp user quyết định tin (`order_kehoach.lop_quyet_dinh`). `null` = lệnh
-   * không có mâu thuẫn nên chưa từng đi qua bước Đối chiếu. */
-  lopQuyetDinh: Lop | null
-  /**
-   * `order_kehoach.khop_goi_y`.
-   *
-   * ★ `false` là một SỰ THẬT TRUNG TÍNH (spec §5/§10), không bao giờ là "sai".
-   * `null` = kiểu chưa phân loại (không có gợi ý nào để so) HOẶC lệnh không có
-   * đối chiếu — cả hai đều KHÔNG được tính là lệch ở bất cứ khối nào.
-   */
-  khopGoiY: boolean | null
-}
+export type Cap6TradeRecord = Cap5TradeRecord
 
 function tradesStorageKey(userId: string): string {
   return `iqx_cap6_trades_${userId}`

@@ -3,11 +3,11 @@
 Chương này mô tả **nền tảng mà mọi endpoint của backend IQX tuân theo**: base URL, thứ tự
 middleware, CORS, request-id, rate limiting, hợp đồng lỗi, phân trang, và cách serialize
 dữ liệu. Đây là hợp đồng phải giữ nguyên khi viết lại bằng TypeScript/NestJS — sai một
-chi tiết ở đây thì cả 293 endpoint sai theo.
+chi tiết ở đây thì cả 289 endpoint sai theo.
 
-> **Lưu ý về con số**: các thống kê trong chương này (193 endpoint có security, 205 khai báo 422…) đếm trên **291 operation hiện trong OpenAPI**. Hệ thống còn **2 route ẩn** (`include_in_schema=False`) không nằm trong các thống kê đó — xem ch20 và ch90. Mọi con số/tên field trong chương này đọc trực
-tiếp từ source hoặc kiểm chứng bằng cách chạy thật (`TestClient`) — chỗ nào chưa xác định
-đều được ghi rõ.
+> **Lưu ý về con số**: các thống kê trong chương này (189 endpoint có security, 204 khai báo 422…) đếm trên **287 operation hiện trong OpenAPI**. Hệ thống còn **2 route ẩn** (`include_in_schema=False`) không nằm trong các thống kê đó — xem ch20 và ch90. Mọi con số/tên field trong chương này đọc trực
+> tiếp từ source hoặc kiểm chứng bằng cách chạy thật (`TestClient`) — chỗ nào chưa xác định
+> đều được ghi rõ.
 
 ---
 
@@ -110,7 +110,7 @@ Metadata OpenAPI (kiểm chứng từ `app.openapi()`):
 | `info.description` | `"IQX Backend API — Ứng dụng FastAPI sẵn sàng cho môi trường sản xuất"` |
 | `components.securitySchemes` | chỉ một: `HTTPBearer` = `{type:"http", scheme:"bearer"}` |
 
-Trong 291 operation: **193** operation có `security: [{HTTPBearer: []}]`, **98** operation không
+Trong 287 operation: **189** operation có `security: [{HTTPBearer: []}]`, **98** operation không
 có (public). Hai route `GET /api/v1/auth/verify-email` và `GET /api/v1/auth/reset-password`
 dùng `include_in_schema=False` nên **không xuất hiện trong OpenAPI** (đó là 2 trang HTML cho
 email, không phải API).
@@ -506,7 +506,7 @@ Status code thường dùng ở nhóm market-data:
 ```
 
 Item có `loc: (string|number)[]`, `msg`, `type` bắt buộc; `input`, `ctx` optional.
-**205 / 291 operation** khai báo response 422 trong OpenAPI.
+**204 / 287 operation** khai báo response 422 trong OpenAPI.
 
 ### 7.4 Hình dạng D — rate limit (429)
 
@@ -993,37 +993,40 @@ pk -> pk_%(table_name)s
 
 ## 15. Status code — bảng dùng thật
 
-Đếm từ OpenAPI (291 operation): `200` × 271, `201` × 12, `202` × 1, `204` × 7, `422` × 205.
+Đếm từ OpenAPI (287 operation): `200` × 264, `201` × 14, `202` × 1, `204` × 8, `422` × 204.
 
-**201 Created** (12 operation):
+**201 Created** (14 operation):
 
 ```
 POST /api/v1/auth/register
 POST /api/v1/users/
-POST /api/v1/watchlist
-POST /api/v1/alerts/rules
-POST /api/v1/admin/alerts/signals
-POST /api/v1/admin/lessons/courses
-POST /api/v1/admin/lessons/courses/{course_id}/episodes
-POST /api/v1/backtest/strategies
 POST /api/v1/premium/admin/plans
 POST /api/v1/premium/admin/users/{user_id}/grant
 POST /api/v1/virtual-trading/account/activate
 POST /api/v1/virtual-trading/orders
+POST /api/v1/cap5/watchlist
+POST /api/v1/cap6/skip
+POST /api/v1/backtest/strategies
+POST /api/v1/watchlist
+POST /api/v1/admin/alerts/signals
+POST /api/v1/alerts/rules
+POST /api/v1/admin/lessons/courses
+POST /api/v1/admin/lessons/courses/{course_id}/episodes
 ```
 
 **202 Accepted** (1): `POST /api/v1/admin/users/{user_id}/resend-verification`.
 
-**204 No Content** (7) — body rỗng:
+**204 No Content** (8) — body rỗng:
 
 ```
-DELETE /api/v1/watchlist/{symbol}
+DELETE /api/v1/cap5/watchlist/{symbol}
+DELETE /api/v1/backtest/strategies/{strategy_id}
 DELETE /api/v1/chart-drawings/{symbol}
+DELETE /api/v1/watchlist/{symbol}
+DELETE /api/v1/admin/alerts/signals/{key}
 DELETE /api/v1/alerts/rules/{rule_id}
 DELETE /api/v1/alerts/telegram
-DELETE /api/v1/admin/alerts/signals/{key}
 DELETE /api/v1/admin/lessons/episodes/{episode_id}
-DELETE /api/v1/backtest/strategies/{strategy_id}
 ```
 
 Chú ý bất nhất: `DELETE /api/v1/users/{user_id}` trả **200** + `MessageResponse`
@@ -1167,7 +1170,7 @@ export interface MessageResponse { message: string; detail?: string | null }
 
 | Header | Ai đọc | Bắt buộc | Hành vi khi thiếu |
 |---|---|---|---|
-| `Authorization: Bearer <token>` | `HTTPBearer(auto_error=False)` → `get_current_user` | với 193/291 operation | `UnauthorizedError` → **401** `{"detail":"Yêu cầu xác thực","code":"UNAUTHORIZED"}` |
+| `Authorization: Bearer <token>` | `HTTPBearer(auto_error=False)` → `get_current_user` | với 189/287 operation | `UnauthorizedError` → **401** `{"detail":"Yêu cầu xác thực","code":"UNAUTHORIZED"}` |
 | `X-Request-ID` | `RequestIDMiddleware`, `get_audit_context` | không | sinh UUID4 mới |
 | `User-Agent` | `AuthService.login` (ghi login history), `get_audit_context` (ghi audit) | không | lưu `null` |
 | `Origin` | `CORSMiddleware` | không | không thêm CORS header vào response |

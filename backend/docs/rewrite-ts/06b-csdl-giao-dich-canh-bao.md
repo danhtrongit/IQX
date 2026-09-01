@@ -2142,3 +2142,44 @@ Những điểm chương này **không** kết luận (không đoán):
 5. **Lịch chạy chính xác của job quét cảnh báo** (chu kỳ APScheduler) — docstring nói "~every 10 min", nhưng cấu hình thật nằm ở scheduler; CHƯA XÁC ĐỊNH — cần đọc `/Users/danhtrongit/Projects/IQX/backend/app/services/jobs/`.
 6. **Bảng `users` đầy đủ** (role, premium, verify…) — thuộc chương CSDL người dùng; ở đây chỉ đặc tả 2 cột Telegram.
 7. **`virtual_trading_accounts.scope_type/scope_id`** và **`virtual_orders.expires_at`** — có cột nhưng không có code sử dụng; ý định thiết kế CHƯA XÁC ĐỊNH.
+
+---
+
+## 23. Bảng `ai_insight_history`
+
+Lưu một payload AI theo mã và phiên: `id`, `symbol`, `session_date`, `payload`,
+`created_at`, `updated_at`. Unique `uq_ai_insight_symbol_date` trên
+`(symbol, session_date)`; `symbol` và `session_date` đều có index. `payload`
+dùng JSON ở ORM (migration dùng JSONB trên PostgreSQL).
+
+## 24. Bảng `analysis_history`
+
+Một bài phân tích VN-Index đã sinh: `id`, `public_id`, `session_date`,
+`generated_at`, `session_type`, `report_type`, `headline`, `tagline`,
+`paragraphs`, `scenarios`, `watchlist`, `unexplained`, `meta`, `is_published`,
+`created_at`, `updated_at`. `public_id` unique; `(session_date, report_type)`
+unique tên `uq_analysis_session_date_report_type`.
+
+## 25. Bảng `analysis_claims`
+
+Mệnh đề kiểm chứng được trích từ bài phân tích: `id`, `analysis_id`,
+`session_date`, `claim_text`, `claim_type`, `conditions`, `predicted_outcome`,
+`status`, `verified_at`, `verification_note`, `expires_at`, `created_at`,
+`updated_at`. `analysis_id` FK CASCADE tới `analysis_history`; index tổng hợp
+`ix_analysis_claims_status_date` trên `(status, session_date)`.
+
+## 26. Bảng `market_data_snapshot`
+
+Snapshot giá quốc tế theo `(snapshot_date, symbol)` UNIQUE:
+`id`, `snapshot_date`, `asset_category`, `symbol`, `name`, `last_price`,
+`previous_close`, `change_value`, `change_percent`, `day_high`, `day_low`,
+`volume`, `currency`, `market_state`, `market_time`, `source`, `stale`,
+`fetched_at`. Có index theo `snapshot_date` và `asset_category`; `id` là
+integer tự tăng, không dùng UUID mixin.
+
+## 27. Bảng `sector_median_cache`
+
+Cache median ngành ICB cấp 2 theo ngày: `id`, `icb_lv2`, `asof_date`,
+`medians`, `peer_count`, `computed_at`. Unique `uq_sector_median_icb_asof` trên
+`(icb_lv2, asof_date)`; `icb_lv2` và `asof_date` có index. `medians` dùng JSON
+ở ORM (migration dùng JSONB trên PostgreSQL).

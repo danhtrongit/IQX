@@ -8,7 +8,6 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 from app.models.cap7 import Cap7Progress
-
 from app.services.portfolio_balance import (
     MAX_SECTOR_WEIGHT_PCT,
     MAX_SYMBOL_WEIGHT_PCT,

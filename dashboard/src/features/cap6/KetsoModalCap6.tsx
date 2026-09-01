@@ -35,11 +35,10 @@ import {
   LOP_KEYS,
   NHAN_DINH_LABEL,
 } from "@/features/cap4/doc5Lop"
-import { splitEmphasis, type CoachSituationCap5 } from "@/features/cap5/coachTemplateCap5"
+import { composeCoachCap5, splitEmphasis, type CoachSituationCap5 } from "@/features/cap5/coachTemplateCap5"
 import type { KetsoDataCap5 } from "@/features/cap5/KetsoModalCap5"
-import { composeCoachCap6, type CoachSituationCap6 } from "./coachTemplateCap6"
 import { useCap6Events } from "./Cap6Context"
-import { useKehoachCap6, useKehoachMauThuanCap6 } from "./hooks"
+import { useKehoachMauThuanCap6 } from "./hooks"
 import {
   COACH_NHAT_QUAN_CAP6,
   NhanDinhKetsoBlock,
@@ -47,7 +46,6 @@ import {
   type NhanDinhKetsoCap6,
 } from "./NhanDinhKetsoBlock"
 import { useCap6TradeLog, type Cap6TradeRecord } from "./tradeLogCap6"
-import type { KehoachDetailCap6, KieuCoPhieu, Lop } from "./types"
 // Kết sổ Cấp 6 = Kết sổ Cấp 5's content (đối chiếu Cấp 1 + CAM KẾT vs THỰC TẾ Cấp
 // 2 + Quản lý vốn Cấp 3 + Đọc 5 lớp Cấp 4 + khối cảm xúc + 4 lớp coach + HỒ SƠ +
 // count-up) — CỘNG khối "Đối chiếu — nhìn lại" và lớp coach "ĐỐI CHIẾU VS KẾT
@@ -71,8 +69,8 @@ import "./cap6-ketso.css"
  * lại" vào giữa thân modal, (3) ghi một bản ghi Cấp 5 cho lệnh Cấp 6 — sai cấp.
  *
  * PHẦN LOGIC THÌ TÁI SỬ DỤNG THẬT (không mirror):
- *  - Coach: `composeCoachCap6` → `composeCoachCap5` → Cấp 4 → 3 → 2 → 1. Cấp 6
- *    chỉ thêm đoạn của chính nó.
+ *  - Cấp 6 renders its own server-derived conflict evidence; the shared
+ *    `composeCoachCap5` chain remains responsible for prior-level context.
  *  - Hai phía của mâu thuẫn: `lopUngHo`/`lopNguocChieu` của FE1 chấm trên CHÍNH
  *    `doc5Lop` của lệnh — cùng nguồn mà bước Đối chiếu đã đọc lúc đặt lệnh, nên
  *    Kết sổ không bao giờ hiện một mâu thuẫn khác với panel.
@@ -101,105 +99,29 @@ import "./cap6-ketso.css"
  * thì `cap5Situation` mới là `null` ⇒ vắng đoạn coach — đúng ngoại lệ mà
  * `KetsoModalCap5` đã ghi.
  *
- * ★ **LỆCH GỢI Ý KHÔNG BAO GIỜ LÀ "SAI"** (spec §5/§10). Khối dưới nói "khớp gợi
- * ý" hoặc "khác gợi ý" — không màu cảnh báo, không icon cảnh báo, không chữ "sai".
- * `khopGoiY === null` (kiểu chưa phân loại) hiện là "chưa phân loại / không xét",
- * TUYỆT ĐỐI không hiện là lệch: không thể lệch một gợi ý chưa từng được đưa ra.
  */
 
 /**
- * Khối Đối chiếu của MỘT lệnh, để Kết sổ nhìn lại (spec §6).
- *
- * Mọi trường tới từ các cột Cấp 6 của `order_kehoach` (bản authoritative mà
- * `POST /cap6/kehoach` trả về) hoặc từ `GET /cap6/goi-y` — **không trường nào
- * được suy đoán ở đây**. Thiếu trường nào thì khối bỏ hẳn dòng đó thay vì đắp.
- *
- * Hai phía của mâu thuẫn KHÔNG có trong interface này: chúng được chấm lại từ
- * `KetsoDataCap6.doc5Lop` (chính bản chấm 5 lớp của lệnh, cũng là nguồn của
- * `lop_mau_thuan` server lưu) nên không thể lệch với panel.
- */
-export interface DoiChieuKetsoCap6 {
-  /** `order_kehoach.kieu_co_phieu`. `null` = "chưa phân loại" (ngành thiếu/chưa map). */
-  kieu: KieuCoPhieu | null
-  /** `kieu_ten` của server — hiện nguyên văn. */
-  kieuTen: string | null
-  /** Ngành mà kiểu được suy ra TỪ (provenance §C12c). `null` → không hiện dòng. */
-  nganh: string | null
-  /** `order_kehoach.lop_quyet_dinh` — lớp user đã tin cho lệnh này. */
-  lopQuyetDinh: Lop | null
-  /** Nhóm lớp server gợi ý ưu tiên cho kiểu đó (`trong_so_goi_y.lop_uu_tien`). */
-  lopUuTien: Lop[]
-  /** ★ `order_kehoach.khop_goi_y` — `false` TRUNG TÍNH, `null` = chưa phân loại. */
-  khopGoiY: boolean | null
-  /** `order_kehoach.ly_do_doi_chieu` — 1 dòng vì sao user ghi lúc đặt. */
-  lyDo: string | null
-  /**
-   * §C12c — câu "vì sao" của server cho CHÍNH lệnh này
-   * (`GET /cap6/kehoach/{order_id}`), hiện NGUYÊN VĂN. Vắng mặt khi khối được
-   * dựng từ sự kiện lệnh (FE không có câu nào để hiện, và không được bịa).
-   */
-  giaiThich?: string | null
-}
-
-/**
- * Khối Đối chiếu để RENDER = khối server đã ghi cho lệnh, nếu đọc được; nếu
- * không thì đúng khối cũ dựng từ sự kiện lệnh.
- *
- * ★ Vì sao phải ưu tiên server: `/cap6/goi-y` suy lại kiểu từ ngành *bây giờ*,
- * nên với mã hệ không phân loại được nó mãi trả "chưa phân loại" — trong khi
- * `POST /cap6/kehoach` ĐÃ ghi `khop_goi_y` cho lệnh đó. Chỉ hàng đã lưu mới nói
- * được sự thật.
- *
- * ★ FAIL-CLOSED, KHÔNG BAO GIỜ FAIL-LOUD: `detail` là `undefined` khi query
- * đang chạy, 404 (user chưa ở Cấp 6 / lệnh không phải của user) hoặc lỗi mạng →
- * trả lại y nguyên `local`, tức đúng hành vi cũ. Modal `closable={false}` nên
- * một exception ở đây sẽ nhốt user.
- *
- * ★ `co_du_lieu === false` KHÔNG phải lỗi và cũng KHÔNG phải lý do để xoá khối:
- * nó chỉ nói hàng `order_kehoach` không có bước Đối chiếu. Giữ `local`.
- *
- * ★ `khop_goi_y === null` đi thẳng vào `khopGoiY` — TUYỆT ĐỐI không `?? false`:
- * "chưa phân loại" và "lệch gợi ý" là hai chuyện khác nhau.
- */
-export function mergeDoiChieuCap6(
-  local: DoiChieuKetsoCap6 | null,
-  detail: KehoachDetailCap6 | null | undefined,
-): DoiChieuKetsoCap6 | null {
-  if (!detail || !detail.co_du_lieu) return local
-  return {
-    kieu: detail.kieu_co_phieu,
-    kieuTen: detail.kieu_ten,
-    nganh: detail.nganh,
-    lopQuyetDinh: detail.lop_quyet_dinh,
-    lopUuTien: detail.lop_uu_tien,
-    khopGoiY: detail.khop_goi_y,
-    lyDo: detail.ly_do_doi_chieu,
-    giaiThich: detail.giai_thich,
-  }
-}
-
-/**
- * Cấp 6 thêm ĐÚNG một trường vào dữ liệu Kết sổ: khối Đối chiếu của lệnh.
- * `null` = lệnh không có mâu thuẫn (hoặc lệnh mở trước khi Cấp 6 ship, cả 6 cột
- * đều null) → khối Đối chiếu bị bỏ hẳn, im lặng.
- *
- * ★★ **MANG ĐỦ 3 trường săn mã của `KetsoDataCap5`** (cộng cờ
- * `huntNguonChuaBiet`) — `Omit` cũ đã bị BỎ. Lý do của `Omit` ("trang Cấp 6
- * không đi qua màn Săn mã") là một khẳng định SAI: nguyên tắc cộng dồn giữ
- * `Cap5Provider` ở Cấp 6/7/8 nên nút «Săn mã»/«Watchlist» vẫn có, user vẫn săn,
- * và `order_kehoach.hunt_filter` vẫn được đóng dấu. `Cap6TradingPage` đọc nguồn
- * săn THẬT của lệnh (`GET /cap5/nguon-san/{symbol}`) và truyền vào đây.
+ * Cấp 6 adds only its server-owned conflict snapshot to the inherited settlement
+ * data. The retired Đối chiếu evidence is not carried through this boundary.
  */
 export interface KetsoDataCap6 extends KetsoDataCap5 {
-  doiChieu: DoiChieuKetsoCap6 | null
-  /**
-   * ★ CẤP 6 «BẬC THẦY» (spec §8) — khối "nhận định có khớp hành động không".
-   *
-   * OPTIONAL vì `KetsoDataCap7`/`KetsoDataCap8` mở rộng chính interface này và
-   * hai cấp đó còn dựng trên Cấp 6 «Đối chiếu» cũ (chúng không có trường này).
-   * `null`/vắng = lệnh không có bảng mâu thuẫn ⇒ khối bị bỏ hẳn, im lặng.
-   */
   nhanDinh?: NhanDinhKetsoCap6 | null
+}
+
+export interface KetsoModalCap6Props {
+  /** `null` → modal đóng/không mount. */
+  data: KetsoDataCap6 | null
+  /** Hồ sơ Cấp 1 — cho 3 dòng "HỒ SƠ CỦA BẠN" (giữ nguyên). */
+  progress: Cap1Progress | null
+  /** Nhật ký lệnh đã đóng (Cấp 1) — cho dòng thống kê theo lý do (giữ nguyên). */
+  trades: Cap1TradeRecord[]
+  onClose: () => void
+  /**
+   * Gọi 1 lần với bản ghi Cấp 6 của lệnh này. Modal ĐÃ tự ghi vào nhật ký Cấp 6
+   * (`useCap6TradeLog`); callback này để caller ghi thêm vào nhật ký Cấp 1-5.
+   */
+  onRecorded?: (record: Cap6TradeRecord) => void
 }
 
 export interface KetsoModalCap6Props {
@@ -330,21 +252,8 @@ export function KetsoModalCap6({
   const [moKeThua, setMoKeThua] = useState(false)
 
   /**
-   * `GET /cap6/kehoach/{order_id}` — khối Đối chiếu ĐÃ GHI của chính lệnh này.
-   *
-   * ★ Chỉ gọi khi user THẬT SỰ đang ở Cấp 6 (`isCap6Active`): endpoint 404 khi
-   * chưa có hàng tiến độ Cấp 6, và một 404 vô ích mỗi lần mở Kết sổ là tiếng ồn.
-   * Lỗi (404/mạng/500) KHÔNG bao giờ nổi lên UI — `mergeDoiChieuCap6` trả lại
-   * khối cũ, y hệt hành vi trước khi có endpoint này.
-   */
-  const kehoachQuery = useKehoachCap6(data?.orderId ?? null, isCap6Active)
-  /**
-   * `GET /cap6/kehoach/{order_id}` — hàng Cấp 6 «Bậc thầy» ĐÃ LƯU của lệnh này.
-   *
-   * ★ ĐỌC LẠI SERVER, KHÔNG suy lại ở client: suy lại thì mỗi lần mở Kết sổ ra
-   * một con số khác (đúng lỗ mà Cấp 6/7 bản trước phải thêm per-order re-read để
-   * vá). Lỗi/404 KHÔNG bao giờ nổi lên UI — `mergeNhanDinhCap6` trả lại khối
-   * dựng từ sự kiện lệnh.
+   * The authoritative Cấp 6 conflict record is re-read from the server; local
+   * event data remains only as an honest fallback while it loads.
    */
   const nhanDinhQuery = useKehoachMauThuanCap6(data?.orderId ?? null, isCap6Active)
 
@@ -397,13 +306,8 @@ export function KetsoModalCap6({
     pctVon,
     doc5Lop,
     ai5Lop,
-    doiChieu: doiChieuLocal,
     nhanDinh: nhanDinhLocal,
   } = data
-  // Hàng đã lưu của server thắng khối dựng từ sự kiện lệnh — xem
-  // `mergeDoiChieuCap6`. Query lỗi/chưa về → nguyên khối cũ.
-  const doiChieu = mergeDoiChieuCap6(doiChieuLocal, kehoachQuery.data)
-  // Hàng đã lưu thắng khối dựng từ sự kiện lệnh — xem `mergeNhanDinhCap6`.
   const nhanDinh = mergeNhanDinhCap6(nhanDinhLocal, nhanDinhQuery.data)
   const soPhienGiu = countTradingSessions(buyDate, sellDate)
   const soNgayLich = countCalendarDays(buyDate, sellDate)
@@ -429,21 +333,6 @@ export function KetsoModalCap6({
     pctVon,
   }
   const cap4Situation: CoachSituationCap4 = { doc5Lop, ai5Lop, pnlPositive, pnlPct }
-  // Lớp coach 6 chỉ tồn tại khi lệnh CÓ đối chiếu VÀ có gợi ý để so
-  // (`khopGoiY != null`) — `pickCoachCap6` tự trả `null` cho trường hợp sau.
-  const cap6Situation: CoachSituationCap6 | null = doiChieu
-    ? {
-        khopGoiY: doiChieu.khopGoiY,
-        pnlPct,
-        lopQuyetDinh: doiChieu.lopQuyetDinh,
-        kieuTen: doiChieu.kieuTen,
-        lopUuTien: doiChieu.lopUuTien,
-      }
-    : null
-  // Đoạn coach Cấp 5 (săn mã) có ở mọi lệnh mà ta BIẾT nguồn săn — kể cả mã
-  // không đến từ săn mã (mẫu `khong_san` nói thẳng điều đó, và lúc đó ta ĐÃ hỏi
-  // server). NGOẠI LỆ DUY NHẤT: `huntNguonChuaBiet` ⇒ `null` ⇒ vắng đoạn coach,
-  // vì in "Mã này KHÔNG đến từ săn mã" khi chưa biết nguồn là bịa đặt.
   const cap5Situation: CoachSituationCap5 | null = data.huntNguonChuaBiet
     ? null
     : {
@@ -452,14 +341,13 @@ export function KetsoModalCap6({
         huntSoLopLucVao: data.huntSoLopLucVao,
         pnlPct,
       }
-  const coach = composeCoachCap6(
+  const coach = composeCoachCap5(
     cap1Situation,
     cap1Params,
     cap2Situation,
     cap3Situation,
     cap4Situation,
     cap5Situation,
-    cap6Situation,
   )
 
   const slThucTe = describeSlThucTe(flags, exitPrice, catLo)
@@ -497,21 +385,7 @@ export function KetsoModalCap6({
       ? `Với lý do ${lyDoLabel(lyDo)}, bạn có ${sameLyDoWins}/${sameLyDo.length} lệnh lãi.`
       : `Còn ${MIN_TRADES_FOR_STAT - sameLyDo.length} lệnh nữa để hệ thống tìm mẫu riêng của bạn.`
 
-  /**
-   * Bản ghi nhật ký Cấp 6 của lệnh này (siêu tập của Cấp 1-5).
-   *
-   * 3 trường Cấp 6 đi thẳng từ khối Đối chiếu của lệnh; lệnh không có đối chiếu
-   * ghi cả 3 là `null` — KHÔNG quy `khopGoiY` về `false` (đó sẽ là vu cho user
-   * "lệch" một gợi ý chưa từng có).
-   *
-   * ★★ 3 trường săn mã của Cấp 5 đi từ NGUỒN SĂN THẬT của lệnh (`data.hunt*`,
-   * do `Cap6TradingPage` đọc từ `GET /cap5/nguon-san/{symbol}`) — KHÔNG còn
-   * `null` cứng. `null` cứng ở đây từng kèm docstring "trang Cấp 6 KHÔNG có màn
-   * Săn mã", mà điều đó SAI: `Cap6TradingPage` bọc `Cap5Provider` nên nút «Săn
-   * mã»/«Watchlist» vẫn mọc ở Cấp 6/7/8 và backend vẫn đóng dấu
-   * `order_kehoach.hunt_filter`. Ghi `null` là để bản ghi FE nói ngược lại
-   * server về cùng một lệnh.
-   */
+  /** Bản ghi Cấp 6 giữ nguyên dữ liệu tích lũy từ Cấp 1-5. */
   const buildRecord = (): Cap6TradeRecord => ({
     orderId,
     lyDo,
@@ -537,9 +411,6 @@ export function KetsoModalCap6({
     huntFilter: data.huntFilter,
     huntSoPhienCho: data.huntSoPhienCho,
     huntSoLopLucVao: data.huntSoLopLucVao,
-    kieuCoPhieu: doiChieu?.kieu ?? null,
-    lopQuyetDinh: doiChieu?.lopQuyetDinh ?? null,
-    khopGoiY: doiChieu?.khopGoiY ?? null,
   })
 
   /**

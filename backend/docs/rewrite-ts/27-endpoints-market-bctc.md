@@ -10,8 +10,8 @@ KPI hoàn toàn khác nhau (ngân hàng / phi ngân hàng), ~70 chỉ số có c
 FieldCode của VCI, lớp median ngành có cache, và lớp ngưỡng màu. Phần `## Nghiệp vụ nền` dưới đây là
 bắt buộc phải đọc trước khi viết lại — nếu bỏ qua thì các mục endpoint sẽ không đủ nghĩa.
 
-> **Phần chữ do AI viết KHÔNG nằm ở chương này.** `GET /api/v1/ai-analysis/bctc/{symbol}` và
-> `GET /api/v1/ai-analysis/bctc-dashboard/{symbol}` là endpoint **Bearer + Premium** — xem **chương 29**.
+> **Phần chữ do AI viết KHÔNG nằm ở chương này.** `GET /api/v1/ai/bctc/{symbol}` và
+> `GET /api/v1/ai/bctc-dashboard/{symbol}` là endpoint **Bearer + Premium** — xem **chương 29**.
 > 3 endpoint trong chương này là **công khai, không auth**, chỉ trả số đã tính.
 
 ---
@@ -2199,7 +2199,7 @@ interface Metric {
 | Khối (theo spec) | Tiêu đề người dùng | Nằm ở đâu trong payload |
 |---|---|---|
 | **0** | Thẻ điểm sức khỏe | `hero` + `radar` |
-| **1** | Câu chuyện doanh nghiệp | **KHÔNG có trong endpoint này** — do AI sinh, xem **chương 29** (`GET /api/v1/ai-analysis/bctc-dashboard/{symbol}`, Bearer + Premium) |
+| **1** | Câu chuyện doanh nghiệp | **KHÔNG có trong endpoint này** — do AI sinh, xem **chương 29** (`GET /api/v1/ai/bctc-dashboard/{symbol}`, Bearer + Premium) |
 | **2** | Giá đang đắt hay rẻ? | `blocks.valuation` |
 | **3** | Bức tranh tài chính | `blocks.financial` |
 | **4** | Kinh doanh có ổn không? (A) / Ngân hàng kiếm tiền thế nào? (B) | `blocks.business` |

@@ -105,13 +105,17 @@ const cap5Progress: Cap5Progress = {
 
 function progress(over: Partial<Cap6Progress> = {}): Cap6Progress {
   return {
+    id: "cap6-progress",
+    user_id: "user-1",
     entered_at: "2026-07-20T00:00:00Z",
     so_lan_xu_ly_nhat_quan: 4,
     so_lan_xu_ly_veto_nhat_quan: 2,
     muc_tieu_nhat_quan: 3,
     tong_lai_lenh_cap6_pct: 6.4,
     da_xem_tour_mauthuan: true,
+    dat_nhiem_vu: true,
     graduated_at: null,
+    time_to_graduate_hours: null,
     ...over,
   }
 }

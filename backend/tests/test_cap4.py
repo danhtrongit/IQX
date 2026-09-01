@@ -206,7 +206,7 @@ async def _graduate_cap3(db_session, user_id) -> None:
             cat_lo=18_000, chot_loi=25_000,
         )
         await cap3.record_kehoach(
-            user_id, buy.id, khau_vi="can_bang", muc_tu_tin=3,
+            user_id, buy.id, khau_vi="can_bang", muc_tu_tin=(i % 3) + 1,
             cach_khoi_luong="linh_hoat", khoi_luong=100, pct_von=20.0,
         )
         # ★ 30,000 (không phải 25,500): lãi % của Cấp 3 chia cho vốn THẬT của
@@ -316,7 +316,7 @@ async def test_enter_requires_cap3_graduated(db_session, test_user):
             cat_lo=18_000, chot_loi=25_000,
         )
         await cap3.record_kehoach(
-            test_user.id, buy.id, khau_vi="can_bang", muc_tu_tin=3,
+            test_user.id, buy.id, khau_vi="can_bang", muc_tu_tin=(i % 3) + 1,
             cach_khoi_luong="linh_hoat", khoi_luong=100, pct_von=20.0,
         )
         sell = await _make_order(

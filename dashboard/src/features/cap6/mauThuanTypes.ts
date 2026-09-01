@@ -1,16 +1,13 @@
 import type { Lop } from "@/features/cap4/types"
 
 /**
- * Cấp 6 «Bậc thầy» — kiểu dữ liệu của **bảng mâu thuẫn** (spec `demo-trading/
- * LEVEL 6/IQX-Cap6-Spec.md` §5-§11).
- *
- * ★ Đây là bộ hợp đồng wire MỚI của Cấp 6. Bộ «Đối chiếu» cũ (kiểu cổ phiếu +
- * trọng số gợi ý) nằm trong `types.ts` và CHƯA bị gỡ vì Cấp 7/8 vẫn đọc nó —
- * xem ghi chú ở đầu `types.ts`.
+ * Cấp 6 «Bậc thầy» — hợp đồng wire của bảng mâu thuẫn (spec
+ * `demo-trading/LEVEL 6/IQX-Cap6-Spec.md` §5-§11).
  *
  * Mọi số/nhãn ở đây do SERVER quyết. FE không có bảng phân loại lớp phủ quyết
  * riêng, không tự suy "bậc rất xấu"; mục tiêu hành trình duy nhất
  * `muc_tieu_nhat_quan` đi trên wire.
+ */
 
 /**
  * 4 mức nhận định mâu thuẫn user tự chọn (spec §6).

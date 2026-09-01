@@ -261,7 +261,9 @@ class Cap3Service:
         progress.diem_ky_luat_tb_cap3 = await self._diem_ky_luat_tb(user_id, progress)
 
         qualifying_plans = await self._qualified_kehoach(user_id)
-        confidence_levels = tuple(sorted({int(plan.muc_tu_tin) for plan in qualifying_plans}))
+        confidence_levels: tuple[int, ...] = tuple(
+            sorted({plan.muc_tu_tin for plan in qualifying_plans if plan.muc_tu_tin is not None})
+        )
         progress._so_lenh_quan_ly_von = len(qualifying_plans)
         progress._muc_tu_tin_da_dung = confidence_levels
 

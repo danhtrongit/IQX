@@ -10,17 +10,50 @@ from app.core.exceptions import ConflictError
 from app.models.cap6 import Cap6Progress
 from app.models.cap7 import Cap7Progress
 from app.services.cap7.service import Cap7Service
-from app.services.portfolio_balance import PortfolioBalanceSnapshot, SectorAllocation, SymbolAllocation
+from app.services.portfolio_balance import (
+    PortfolioBalanceSnapshot,
+    SectorAllocation,
+    SymbolAllocation,
+)
 
 
-def valid_snapshot(*, can_doi_ok: bool, symbol_weight: float = 30.0, sector_weight: float = 40.0, unpriced: tuple[str, ...] = (), unknown: tuple[str, ...] = ()) -> PortfolioBalanceSnapshot:
+def valid_snapshot(
+    *,
+    can_doi_ok: bool,
+    symbol_weight: float = 30.0,
+    sector_weight: float = 40.0,
+    unpriced: tuple[str, ...] = (),
+    unknown: tuple[str, ...] = (),
+) -> PortfolioBalanceSnapshot:
     return PortfolioBalanceSnapshot(
-        nav_vnd=1_000_000, cash_vnd=100_000, cash_weight_pct=10.0,
-        positions=(SymbolAllocation(symbol="AAA", market_value_vnd=300_000, weight_pct=symbol_weight, sector="Ngân hàng"),),
-        sectors=(SectorAllocation(sector="Ngân hàng", market_value_vnd=400_000, weight_pct=sector_weight),),
-        held_symbol_count=4, known_sector_count=3, max_symbol="AAA", max_symbol_weight_pct=symbol_weight,
-        max_sector="Ngân hàng", max_sector_weight_pct=sector_weight, unpriced_symbols=unpriced,
-        unknown_sector_symbols=unknown, data_complete=not unpriced and not unknown, can_doi_ok=can_doi_ok,
+        nav_vnd=1_000_000,
+        cash_vnd=100_000,
+        cash_weight_pct=10.0,
+        positions=(
+            SymbolAllocation(
+                symbol="AAA",
+                market_value_vnd=300_000,
+                weight_pct=symbol_weight,
+                sector="Ngân hàng",
+            ),
+        ),
+        sectors=(
+            SectorAllocation(
+                sector="Ngân hàng",
+                market_value_vnd=400_000,
+                weight_pct=sector_weight,
+            ),
+        ),
+        held_symbol_count=4,
+        known_sector_count=3,
+        max_symbol="AAA",
+        max_symbol_weight_pct=symbol_weight,
+        max_sector="Ngân hàng",
+        max_sector_weight_pct=sector_weight,
+        unpriced_symbols=unpriced,
+        unknown_sector_symbols=unknown,
+        data_complete=not unpriced and not unknown,
+        can_doi_ok=can_doi_ok,
     )
 
 

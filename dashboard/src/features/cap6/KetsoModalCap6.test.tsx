@@ -18,23 +18,12 @@ const {
   recordKetsoCap1Async,
   recordKetsoCap2Mutate,
   cap5HooksLoaded,
-  kehoachCap6,
   nhanDinhCap6,
   messageError,
 } = vi.hoisted(() => ({
   recordKetsoCap1Async: vi.fn(),
   recordKetsoCap2Mutate: vi.fn(),
-  // `true` NGAY KHI `@/features/cap5/hooks` được nạp lần đầu — tức khi một
-  // module trong cây import của Kết sổ Cấp 6 còn `import` nó. Đó là cách duy
-  // nhất khẳng định `useVerdictGoiY`/`useRecordKetsoCap5` đã bị gỡ HẲN (một
-  // `expect(fn).not.toHaveBeenCalled()` sẽ đúng một cách rỗng khi module không
-  // còn được import).
   cap5HooksLoaded: { value: false },
-  // `GET /cap6/kehoach/{order_id}` — giá trị trả về + ĐỐI SỐ mỗi lần gọi (để
-  // khẳng định cổng `enabled`: chỉ gọi khi user thật sự đang ở Cấp 6).
-  kehoachCap6: { current: {} as Record<string, unknown>, calls: [] as unknown[][] },
-  // `GET /cap6/kehoach/{order_id}` — bản Cấp 6 «Bậc thầy»: các cột đã lưu của
-  // lệnh (had_conflict / conflict_level / had_veto / veto_layers + %vốn + tự tin).
   nhanDinhCap6: { current: {} as Record<string, unknown>, calls: [] as unknown[][] },
   messageError: vi.fn(),
 }))
@@ -50,10 +39,6 @@ vi.mock("@/features/cap5/hooks", () => {
   return {}
 })
 vi.mock("./hooks", () => ({
-  useKehoachCap6: (...args: unknown[]) => {
-    kehoachCap6.calls.push(args)
-    return kehoachCap6.current
-  },
   useKehoachMauThuanCap6: (...args: unknown[]) => {
     nhanDinhCap6.calls.push(args)
     return nhanDinhCap6.current
@@ -73,18 +58,12 @@ vi.mock("@arco-design/web-react", async (importOriginal) => {
   }
 })
 
-import {
-  KetsoModalCap6,
-  type DoiChieuKetsoCap6,
-  type KetsoDataCap6,
-} from "./KetsoModalCap6"
+import { KetsoModalCap6, type KetsoDataCap6 } from "./KetsoModalCap6"
 import { Cap6Provider } from "./Cap6Context"
 import { readCap6TradeLog, type Cap6TradeRecord } from "./tradeLogCap6"
-import type { KehoachDetailCap6 } from "./types"
 import type { KehoachMauThuanCap6 } from "./mauThuanTypes"
 import type { Cap1Progress } from "@/features/cap1/types"
 
-const CAM_TU = ["sai", "không nên", "lẽ ra", "may mắn"]
 
 function cap1Progress(): Cap1Progress {
   return {
@@ -105,15 +84,6 @@ function cap1Progress(): Cap1Progress {
   }
 }
 
-const doiChieu: DoiChieuKetsoCap6 = {
-  kieu: "ngan_hang",
-  kieuTen: "Ngân hàng",
-  nganh: "Ngân hàng",
-  lopQuyetDinh: "dinh_gia",
-  lopUuTien: ["dinh_gia", "noi_bo"],
-  khopGoiY: true,
-  lyDo: "P/B 1.2 — thấp hơn trung vị 3 năm",
-}
 
 /**
  * Lệnh mẫu: #84 · 200 VCB · +5.3% — user đọc 🎯 Kỹ thuật + 💰 Dòng tiền Ủng hộ
@@ -156,7 +126,6 @@ const data: KetsoDataCap6 = {
   huntFilter: "kl",
   huntSoPhienCho: 3,
   huntSoLopLucVao: null,
-  doiChieu,
   // ★ CẤP 6 «BẬC THẦY» — ảnh chụp hai phe lúc MUA (spec §8). Mức nhận định +
   //   %vốn + tự tin sẽ do hàng đã lưu của server ghi đè.
   nhanDinh: {
@@ -223,49 +192,6 @@ function renderInCap6(
   )
 }
 
-/**
- * `GET /cap6/kehoach/{order_id}` — khối Đối chiếu ĐÃ GHI của lệnh này.
- *
- * Mẫu mặc định là đúng ca bug: mã hệ KHÔNG phân loại được (nên `/cap6/goi-y`
- * mãi mãi trả "chưa phân loại"), user tự chọn kiểu, và server VẪN ghi
- * `khop_goi_y` cho lệnh.
- */
-function kehoachDetail(overrides: Partial<KehoachDetailCap6> = {}): KehoachDetailCap6 {
-  return {
-    id: "kh-84",
-    order_id: "order-84",
-    symbol: "VCB",
-    kieu_co_phieu: "dau_co_nho",
-    kieu_ten: "Đầu cơ / vốn hóa nhỏ",
-    nganh: null,
-    lop_mau_thuan: null,
-    trong_so_goi_y: null,
-    lop_uu_tien: ["ky_thuat", "dong_tien"],
-    lop_uu_tien_ten: ["Kỹ thuật", "Dòng tiền"],
-    lop_it_tin: ["dinh_gia"],
-    lop_it_tin_ten: ["Định giá"],
-    lop_quyet_dinh: "dinh_gia",
-    lop_quyet_dinh_ten: "Định giá",
-    khop_goi_y: false,
-    khop_goi_y_ten: "Lệch gợi ý",
-    ly_do_doi_chieu: "P/B 1.2 — thấp hơn trung vị 3 năm",
-    co_du_lieu: true,
-    giai_thich:
-      "VCB thuộc kiểu Đầu cơ / vốn hóa nhỏ (bạn tự chọn vì hệ chưa có dữ liệu " +
-      "ngành cho mã này).",
-    ...overrides,
-  }
-}
-
-/** Khối dựng từ sự kiện lệnh khi `/cap6/goi-y` bó tay — trạng thái "cũ". */
-const doiChieuChuaPhanLoai: DoiChieuKetsoCap6 = {
-  ...doiChieu,
-  kieu: null,
-  kieuTen: null,
-  nganh: null,
-  lopUuTien: [],
-  khopGoiY: null,
-}
 
 function closeButton(): HTMLElement {
   return screen.getByTestId("cap6-ketso-close")
@@ -289,8 +215,6 @@ beforeEach(() => {
   recordKetsoCap1Async.mockResolvedValue({ id: "ks1" })
   recordKetsoCap2Mutate.mockReset()
   messageError.mockReset()
-  kehoachCap6.current = { data: undefined, isPending: false, isError: false }
-  kehoachCap6.calls.length = 0
   nhanDinhCap6.current = { data: undefined, isPending: false, isError: false }
   nhanDinhCap6.calls.length = 0
   window.localStorage.clear()
@@ -381,7 +305,7 @@ describe("KetsoModalCap6 — cổng phân loại 4 ô của Cấp 5 ĐÃ NGHỈ 
     expect(recordKetsoCap2Mutate).toHaveBeenCalled()
   })
 
-  it("nhật ký KHÔNG còn 3 trường của 4 ô (o4 / verdictHe / verdictUser)", async () => {
+  it("nhật ký KHÔNG còn dữ liệu cổng 4 ô đã nghỉ hưu", async () => {
     const onRecorded = vi.fn()
     renderModal({}, { onRecorded })
     fireEvent.click(closeButton())
@@ -390,9 +314,6 @@ describe("KetsoModalCap6 — cổng phân loại 4 ô của Cấp 5 ĐÃ NGHỈ 
     expect("o4" in rec).toBe(false)
     expect("verdictHe" in rec).toBe(false)
     expect("verdictUser" in rec).toBe(false)
-    // Khối Đối chiếu của lệnh (Cấp 6, độc lập với 4 ô) vẫn được ghi nguyên vẹn.
-    expect(rec.khopGoiY).toBe(true)
-    expect(rec.lopQuyetDinh).toBe("dinh_gia")
   })
 })
 
@@ -621,27 +542,14 @@ describe("KetsoModalCap6 — lớp coach thứ 6 «SỰ NHẤT QUÁN»", () => {
 })
 
 describe("KetsoModalCap6 — nhật ký Cấp 6", () => {
-  it("ghi 1 bản ghi Cấp 6 kèm kiểu / lớp quyết định / khớp, và gọi onRecorded", async () => {
+  it("ghi dữ liệu Cấp 1-5 và không giữ lại bằng chứng Đối chiếu đã nghỉ hưu", async () => {
     const onRecorded = vi.fn()
     renderModal({}, { onRecorded })
     fireEvent.click(closeButton())
     await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1))
     const rec = onRecorded.mock.calls[0][0] as Cap6TradeRecord
-    expect(rec.kieuCoPhieu).toBe("ngan_hang")
-    expect(rec.lopQuyetDinh).toBe("dinh_gia")
-    expect(rec.khopGoiY).toBe(true)
+    expect(rec.huntFilter).toBe("kl")
     expect(readCap6TradeLog("user-1")).toHaveLength(1)
-  })
-
-  it("lệnh không có đối chiếu → 3 trường Cấp 6 là null (KHÔNG suy ra lệch)", async () => {
-    const onRecorded = vi.fn()
-    renderModal({ doiChieu: null }, { onRecorded })
-    fireEvent.click(closeButton())
-    await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1))
-    const rec = onRecorded.mock.calls[0][0] as Cap6TradeRecord
-    expect(rec.kieuCoPhieu).toBeNull()
-    expect(rec.lopQuyetDinh).toBeNull()
-    expect(rec.khopGoiY).toBeNull()
   })
 })
 

@@ -18,7 +18,13 @@ from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
 from app.models.cap1 import OrderKehoach
 from app.models.cap7 import Cap7Progress
 from app.models.cap8 import Cap8Exit, Cap8Progress
-from app.models.virtual_trading import OrderSide, OrderStatus, VirtualOrder, VirtualPosition
+from app.models.virtual_trading import (
+    OrderSide,
+    OrderStatus,
+    VirtualOrder,
+    VirtualPosition,
+    VirtualTradingAccount,
+)
 from app.repositories.virtual_trading import VirtualTradingRepository
 from app.services.portfolio_balance import PortfolioBalanceService
 from app.services.ta.data import get_adjusted_ohlcv
@@ -94,7 +100,9 @@ class Cap8Service:
         await self._recompute_progress(progress)
         return self._progress_out(progress)
 
-    async def _position(self, user_id: uuid.UUID, symbol: str, *, for_update: bool = False) -> tuple[object, VirtualPosition]:
+    async def _position(
+        self, user_id: uuid.UUID, symbol: str, *, for_update: bool = False
+    ) -> tuple[VirtualTradingAccount, VirtualPosition]:
         account = await self._repo.get_account_by_user_id(user_id)
         if account is None:
             raise NotFoundError("tài khoản giao dịch ảo")
@@ -108,7 +116,11 @@ class Cap8Service:
         return account, position
 
     async def _latest_qualifying_plan(
-        self, user_id: uuid.UUID, account_id: uuid.UUID, symbol: str, order_id: uuid.UUID | None = None
+        self,
+        user_id: uuid.UUID,
+        account_id: uuid.UUID,
+        symbol: str,
+        order_id: uuid.UUID | None = None,
     ) -> tuple[VirtualOrder, OrderKehoach] | None:
         statement = (
             select(VirtualOrder, OrderKehoach)
@@ -126,7 +138,8 @@ class Cap8Service:
         )
         if order_id is not None:
             statement = statement.where(VirtualOrder.id == order_id)
-        return (await self._session.execute(statement)).first()
+        row = (await self._session.execute(statement)).tuples().first()
+        return None if row is None else (row[0], row[1])
 
     async def _bootstrap_plan(
         self, user_id: uuid.UUID, account_id: uuid.UUID, position: VirtualPosition
@@ -188,9 +201,20 @@ class Cap8Service:
         return sorted(rows, key=lambda row: row[0]) or None
 
     @staticmethod
-    def _timely_stop(history: list[tuple[date, float]], stop: int, sell_date: date, *, after: date | None = None) -> tuple[bool, str]:
-        sessions = [(day, close) for day, close in history if after is None or day >= after]
-        crossing_index = next((i for i, (_, close) in enumerate(sessions) if close <= stop), None)
+    def _timely_stop(
+        history: list[tuple[date, float]],
+        stop: int,
+        sell_date: date,
+        *,
+        after: date | None = None,
+    ) -> tuple[bool, str]:
+        sessions = [
+            (day, close) for day, close in history if after is None or day >= after
+        ]
+        crossing_index = next(
+            (i for i, (_, close) in enumerate(sessions) if close <= stop),
+            None,
+        )
         if crossing_index is None:
             return False, "stop_crossing_not_verified"
         deadline = sessions[min(crossing_index + 1, len(sessions) - 1)][0]
@@ -325,8 +349,10 @@ class Cap8Service:
         compliant = False
         emotional = False
         reason = "missing_execution_snapshot"
-
         if snapshot_ready:
+            assert sell.position_quantity_before_fill is not None
+            assert sell.position_quantity_after_fill is not None
+            assert sell.exit_snapshot_at is not None
             before_quantity = sell.position_quantity_before_fill
             remaining = sell.position_quantity_after_fill
             if before_quantity <= 0 or remaining < 0 or remaining > before_quantity:

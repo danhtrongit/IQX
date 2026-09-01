@@ -1201,9 +1201,10 @@ brute-force thực tế, nhưng "khó đoán" **không phải** là kiểm soát
 **P0 — phải làm:**
 
 - Đưa nội dung tập học **ra khỏi** static mount public. Hai lựa chọn:
-  - **(a) Signed URL có thời hạn** (khuyến nghị nếu dùng S3/R2): endpoint
-    `GET /api/v1/lessons/episodes/{id}/file-url` chạy đúng chuỗi guard hiện có
-    (auth → published → premium) rồi trả presigned URL TTL ngắn (5–15 phút).
+  - **(a) Signed URL có thời hạn** (khuyến nghị nếu dùng S3/R2): thêm một
+    endpoint mới chạy chuỗi guard hiện có (auth → published → premium), rồi trả
+    presigned URL TTL ngắn (5–15 phút). Backend hiện tại không có endpoint
+    `file-url`; đây là thay đổi thiết kế, không phải parity.
   - **(b) Streaming qua controller**: endpoint có guard, đọc file rồi `StreamableFile` —
     nhưng **phải tự implement Range/206** để player seek được (Starlette đang làm sẵn việc này,
     Node thì phải viết tay).
@@ -1433,7 +1434,7 @@ NestJS  ── guard admin ──► validate MIME + magic byte + size
                                                                             │
                           ghi DB: fileUrl (key hoặc URL), fileSizeBytes, durationSeconds
                                                                             │
-Người học ◄──── signed URL TTL ngắn ◄──── GET /api/v1/lessons/episodes/{id}/file-url
+Người học ◄──── signed URL TTL ngắn ◄──── endpoint signed URL mới (chưa tồn tại)
                 (qua CDN)                 (guard: auth → published → premium)
 ```
 

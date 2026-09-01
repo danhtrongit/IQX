@@ -33,9 +33,6 @@ function record(overrides: Partial<Cap6TradeRecord> = {}): Cap6TradeRecord {
     huntFilter: null,
     huntSoPhienCho: null,
     huntSoLopLucVao: null,
-    kieuCoPhieu: "ngan_hang",
-    lopQuyetDinh: "dinh_gia",
-    khopGoiY: true,
     ...overrides,
   }
 }
@@ -45,33 +42,21 @@ beforeEach(() => {
 })
 
 describe("tradeLogCap6", () => {
-  it("ghi rồi đọc lại được 3 trường Cấp 6", () => {
+  it("preserves inherited Cấp 1-5 evidence", () => {
     appendCap6TradeRecord("u1", record())
     const [rec] = readCap6TradeLog("u1")
-    expect(rec.kieuCoPhieu).toBe("ngan_hang")
-    expect(rec.lopQuyetDinh).toBe("dinh_gia")
-    expect(rec.khopGoiY).toBe(true)
+    expect(rec.huntFilter).toBeNull()
   })
 
-  it("de-dupe theo orderId (re-mount không đếm 2 lần)", () => {
+  it("de-dupes by orderId", () => {
     appendCap6TradeRecord("u1", record())
-    appendCap6TradeRecord("u1", record({ khopGoiY: false }))
+    appendCap6TradeRecord("u1", record({ pnlPct: -2 }))
     const log = readCap6TradeLog("u1")
     expect(log).toHaveLength(1)
-    expect(log[0].khopGoiY).toBe(false)
+    expect(log[0].pnlPct).toBe(-2)
   })
 
-  it("lệnh không có đối chiếu ghi cả 3 trường là null (KHÔNG suy ra lệch)", () => {
-    appendCap6TradeRecord(
-      "u1",
-      record({ orderId: "o2", kieuCoPhieu: null, lopQuyetDinh: null, khopGoiY: null }),
-    )
-    const [rec] = readCap6TradeLog("u1")
-    expect(rec.khopGoiY).toBeNull()
-    expect(rec.lopQuyetDinh).toBeNull()
-  })
-
-  it("tách theo user + không throw khi storage rỗng/hỏng", () => {
+  it("separates users and tolerates missing or malformed storage", () => {
     appendCap6TradeRecord("u1", record())
     expect(readCap6TradeLog("u2")).toEqual([])
     window.localStorage.setItem("iqx_cap6_trades_u3", "{{{")

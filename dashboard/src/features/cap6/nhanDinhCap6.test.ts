@@ -17,13 +17,17 @@ import type { Cap6Progress } from "./types"
 
 function progress(over: Partial<Cap6Progress> = {}): Cap6Progress {
   return {
+    id: "cap6-progress",
+    user_id: "user-1",
     entered_at: "2026-08-01T00:00:00Z",
     so_lan_xu_ly_nhat_quan: 0,
     so_lan_xu_ly_veto_nhat_quan: 0,
     muc_tieu_nhat_quan: 3,
     tong_lai_lenh_cap6_pct: null,
     da_xem_tour_mauthuan: false,
+    dat_nhiem_vu: false,
     graduated_at: null,
+    time_to_graduate_hours: null,
     ...over,
   }
 }

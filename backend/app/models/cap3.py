@@ -108,8 +108,8 @@ class Cap3Progress(UUIDMixin, TimestampMixin, Base):
 
     # Transient, server-derived journey evidence. These are not persisted
     # counters: every progress read recomputes them from qualifying plans.
-    _so_lenh_quan_ly_von = 0
-    _muc_tu_tin_da_dung = ()
+    _so_lenh_quan_ly_von: int = 0
+    _muc_tu_tin_da_dung: tuple[int, ...] = ()
 
     @property
     def so_lenh_quan_ly_von(self) -> int:

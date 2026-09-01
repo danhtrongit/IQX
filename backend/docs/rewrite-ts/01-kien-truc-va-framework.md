@@ -14,11 +14,11 @@ Quy mô đo được từ source:
 
 | Hạng mục | Số lượng |
 |---|---|
-| REST operation (method + path) | **293** (291 hiện trong OpenAPI + 2 route HTML ẩn) |
-| Đường dẫn (path) khác nhau | 267 |
+| REST operation (method + path) | **289** (287 hiện trong OpenAPI + 2 route HTML ẩn) |
+| Đường dẫn (path) khác nhau | 264 (263 hiện trong OpenAPI) |
 | WebSocket endpoint | 1 (`/api/v1/market-data/ws`) |
 | Nhóm chức năng (OpenAPI tag) | 52 |
-| Schema OpenAPI (request/response model) | 229 |
+| Schema OpenAPI (request/response model) | 219 |
 | Bảng Postgres | 45 |
 | Migration Alembic | 45 |
 | File service (logic nghiệp vụ) | 173 |
@@ -72,22 +72,22 @@ thiết kế lại.
 
 ### 2.2 Lý do quyết định nhất: giữ được OpenAPI
 
-Hệ thống hiện tại **tự sinh** 267 path + 229 schema vào `/openapi.json`. Frontend (`dashboard/`)
+Hệ thống hiện tại **tự sinh** 263 path + 219 schema vào `/openapi.json`. Frontend (`dashboard/`)
 và bộ tài liệu này đều dựa vào đó. Nếu chọn framework không có tầng sinh OpenAPI tích hợp
-(Express thuần, Koa), bạn sẽ phải bảo trì thủ công đặc tả cho 293 endpoint — việc này
-**sẽ hỏng** trong vòng vài tuần. `@nestjs/swagger` (kết hợp `nestjs-zod`) giữ được tính chất
+(Express thuần, Koa), bạn sẽ phải bảo trì thủ công đặc tả cho 289 endpoint — việc này
+sẽ hỏng trong vòng vài tuần. `@nestjs/swagger` (kết hợp `nestjs-zod`) giữ được tính chất
 "đặc tả sinh từ code".
 
 ### 2.3 Đánh giá thẳng các phương án khác
 
 | Phương án | Nhận xét |
 |---|---|
-| **Hono + `@hono/zod-openapi` + Drizzle** | Nhẹ, nhanh, type-safety xuất sắc, chạy được cả edge. **Nhưng**: không có DI container → 173 service phải tự wire bằng tay hoặc factory; guard/interceptor/filter phải tự dựng; cron phải tự quản. Với 293 endpoint và nhiều tầng phụ thuộc chéo (service gọi service gọi repository), thiếu DI sẽ trả giá. **Chọn Hono nếu** bạn đang viết một service nhỏ 30–50 endpoint — không phải trường hợp này. |
+| **Hono + `@hono/zod-openapi` + Drizzle** | Nhẹ, nhanh, type-safety xuất sắc, chạy được cả edge. **Nhưng**: không có DI container → 173 service phải tự wire bằng tay hoặc factory; guard/interceptor/filter phải tự dựng; cron phải tự quản. Với 289 endpoint và nhiều tầng phụ thuộc chéo (service gọi service gọi repository), thiếu DI sẽ trả giá. **Chọn Hono nếu** bạn đang viết một service nhỏ 30–50 endpoint — không phải trường hợp này. |
 | **Fastify thuần + plugin** | Nhanh nhất, nhưng cùng vấn đề như Hono: phải tự dựng lại DI/guard/lifecycle. Ngoài ra tổ chức 40 nhóm route bằng plugin sẽ rối hơn module NestJS. |
 | **Express + TypeScript** | Không khuyến nghị. Không type-safety, không OpenAPI, không DI. Đi ngược lại chất lượng hiện có. |
 | **tRPC** | Không phù hợp. API này **công khai** (có endpoint không auth, có webhook từ SePay/Telegram gọi vào, có WebSocket). tRPC giả định client là TypeScript và cùng repo — webhook bên thứ ba không nói được tRPC. |
 | **AdonisJS** | Đầy đủ tính năng, nhưng ecosystem nhỏ hơn nhiều, và Lucid ORM yếu hơn Drizzle ở truy vấn phân tích phức tạp. |
-| **Encore.ts / Effect-TS** | Thú vị nhưng rủi ro. Không nên dùng cho lần viết lại một hệ thống production 293 endpoint. |
+| **Encore.ts / Effect-TS** | Thú vị nhưng rủi ro. Không nên dùng cho lần viết lại một hệ thống production 289 endpoint. |
 
 > **Kết luận**: NestJS. Không phải vì nó "hiện đại nhất", mà vì nó là con đường **ít rủi ro
 > nhất** để đạt tương đương hành vi. Toàn bộ ceremony của NestJS (module, decorator, DI)

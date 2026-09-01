@@ -395,16 +395,10 @@ def test_cap5_khong_con_api_4_o_dung_ngoai():
         assert moi in paths, f"thiếu route {moi}"
 
 
-def test_khau_vi_tables_stay_put_for_cap8():
-    """★ CASCADE: Cấp 8 import ``KHAU_VI_TRAN_PCT``/``KHAU_VI_LABELS`` từ service
-    Cấp 5 và ``tests/test_cap8.py`` khẳng định ĐỊNH DANH đối tượng. Cấp 5 mới
-    không dùng hai bảng đó nữa — nhưng xoá chúng là bẻ Cấp 8, nên chúng ở lại."""
+def test_khau_vi_tables_stay_consistent():
+    """Cấp 5's remaining khẩu vị metadata has matching labels and caps."""
     from app.services.cap5.service import KHAU_VI_LABELS, KHAU_VI_TRAN_PCT
-    from app.services.cap8.service import (
-        KHAU_VI_TRAN_PCT as CAP8_TRAN,
-    )
 
-    assert CAP8_TRAN is KHAU_VI_TRAN_PCT
     assert set(KHAU_VI_LABELS) == set(KHAU_VI_TRAN_PCT)
 
 
@@ -496,8 +490,13 @@ async def test_enter_requires_cap4_graduated(db_session, test_user):
             cat_lo=18_000, chot_loi=25_000,
         )
         await cap3.record_kehoach(
-            test_user.id, buy.id, khau_vi="can_bang", muc_tu_tin=3,
-            cach_khoi_luong="linh_hoat", khoi_luong=100, pct_von=20.0,
+            test_user.id,
+            buy.id,
+            khau_vi="can_bang",
+            muc_tu_tin=(i % 3) + 1,
+            cach_khoi_luong="linh_hoat",
+            khoi_luong=100,
+            pct_von=20.0,
         )
         s = await _make_order(
             db_session, account.id, test_user.id, symbol=f"Z{i}", side=OrderSide.SELL,

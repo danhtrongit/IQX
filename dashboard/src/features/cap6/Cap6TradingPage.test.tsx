@@ -6,7 +6,7 @@ import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 import type { Cap1Progress } from "@/features/cap1/types"
 import type { Cap2Progress, DiemKyLuat } from "@/features/cap2/types"
 import type { Cap3Progress } from "@/features/cap3/types"
-import type { Cap6Progress, GoiYCap6 } from "./types"
+import type { Cap6Progress } from "./types"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 const {
@@ -28,7 +28,6 @@ const {
   recordCap4TradeMock,
   recordCap5TradeMock,
   recordCap6TradeMock,
-  getGoiYMock,
   navigateMock,
   messageSuccess,
 } = vi.hoisted(() => ({
@@ -50,7 +49,6 @@ const {
   recordCap4TradeMock: vi.fn(),
   recordCap5TradeMock: vi.fn(),
   recordCap6TradeMock: vi.fn(),
-  getGoiYMock: vi.fn(),
   navigateMock: vi.fn(),
   messageSuccess: vi.fn(),
 }))
@@ -170,10 +168,6 @@ function RightSidebarStub() {
             quantity: 300,
             price: 60_000,
             orderId: "buy-1",
-            kieuCoPhieu: null,
-            lopQuyetDinh: "dinh_gia",
-            lyDoDoiChieu: "P/B rẻ, tin xấu chỉ ngắn hạn",
-            lopMauThuan: { ...DOC_5_LOP },
             // ★ Cấp 6 «Bậc thầy» — ảnh chụp bảng mâu thuẫn lúc MUA (spec §8).
             conflictLevel: "nghiem",
             coMauThuan: true,
@@ -344,17 +338,11 @@ vi.mock("./hooks", () => ({
   useCap6Progress: (...a: unknown[]) => useCap6ProgressMock(...a),
   useEnterCap6: () => ({ mutate: enterCap6Mutate, isPending: false }),
   useGraduateCap6: () => ({ mutate: graduateCap6Mutate, isPending: false }),
-  useThachThucCap6: () => ({ data: undefined }),
-  // `KetsoModalCap6` đọc lại khối Đối chiếu của lệnh qua hook này. Ở đây nó
-  // KHÔNG có dữ liệu → modal dùng đúng khối trang này dựng, tức chính thứ các
-  // test dưới đang kiểm.
-  useKehoachCap6: () => ({ data: undefined, isPending: false, isError: false }),
   // ★ Cấp 6 «Bậc thầy»: `KetsoModalCap6` đọc lại hàng đã lưu của lệnh qua hook
   // này. Ở đây KHÔNG có dữ liệu → modal dùng đúng ảnh chụp trang này dựng từ bus,
   // tức chính thứ các bài dưới đang kiểm.
   useKehoachMauThuanCap6: () => ({ data: undefined, isPending: false, isError: false }),
 }))
-vi.mock("./api", () => ({ cap6Api: { getGoiY: (...a: unknown[]) => getGoiYMock(...a) } }))
 // `GraduationModalCap6` now REALLY enters Cấp 7 on success (Cấp 7 Task FE3) —
 // without this mock the real `useEnterCap7` would need a QueryClientProvider.
 vi.mock("@/features/cap7/hooks", () => ({
@@ -434,20 +422,15 @@ function fakeCap3Progress(overrides: Partial<Cap3Progress> = {}): Cap3Progress {
 
 function fakeCap6Progress(overrides: Partial<Cap6Progress> = {}): Cap6Progress {
   return {
-    // Mục tiêu duy nhất của Cấp 6 là 3 lần xử lý nhất quán.
+    id: "p6",
+    user_id: "u1",
+    entered_at: "2026-04-01T00:00:00Z",
     so_lan_xu_ly_nhat_quan: 1,
     so_lan_xu_ly_veto_nhat_quan: 0,
     muc_tieu_nhat_quan: 3,
     tong_lai_lenh_cap6_pct: null,
     da_xem_tour_mauthuan: true,
-    // ── di sản «Đối chiếu» ──
-    id: "p6",
-    user_id: "u1",
-    entered_at: "2026-04-01T00:00:00Z",
-    so_lenh_doi_chieu: 4,
-    so_kieu_da_gap: 2,
-    ty_le_thang_khop: 0,
-    ty_le_thang_lech: 0,
+    dat_nhiem_vu: false,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
@@ -467,20 +450,6 @@ function fakeDiemKyLuat(overrides: Partial<DiemKyLuat> = {}): DiemKyLuat {
   }
 }
 
-function fakeGoiY(overrides: Partial<GoiYCap6> = {}): GoiYCap6 {
-  return {
-    symbol: "VNM",
-    nganh: "Hàng tiêu dùng",
-    kieu: "phong_thu",
-    kieu_ten: "Phòng thủ / tiêu dùng",
-    lop_uu_tien: ["dinh_gia", "noi_bo"],
-    lop_uu_tien_ten: ["Định giá", "Nội bộ"],
-    lop_it_tin: ["ky_thuat"],
-    lop_it_tin_ten: ["Kỹ thuật"],
-    giai_thich: "Ít biến động; giá trị + nội bộ ổn định.",
-    ...overrides,
-  }
-}
 
 function renderCap6(ui: React.ReactNode) {
   return render(<MemoryRouter initialEntries={["/dau-truong"]}>{ui}</MemoryRouter>)
@@ -519,8 +488,6 @@ describe("Cap6TradingPage", () => {
     recordCap4TradeMock.mockReset()
     recordCap5TradeMock.mockReset()
     recordCap6TradeMock.mockReset()
-    getGoiYMock.mockReset()
-    getGoiYMock.mockResolvedValue(fakeGoiY())
     navigateMock.mockReset()
     messageSuccess.mockReset()
     window.localStorage.clear()
@@ -605,10 +572,9 @@ describe("Cap6TradingPage", () => {
       fireEvent.click(screen.getByTestId("fire-sell"))
 
       expect(recordKetsoCap1Async).toHaveBeenCalledWith({ order_id: "sell-1", cam_xuc: null })
-      // Flush EVERY other pending microtask (incl. `GET /cap6/goi-y` resolving) —
-      // the modal must still be closed, because only the Cấp 1 kết sổ gates it.
-      // Without this flush the assertion would also pass for a fire-and-forget
-      // `/cap1/ketso`, which is exactly the bug this test exists to catch.
+      // Flush every other pending microtask. The modal must still be closed
+      // because only the Cấp 1 kết sổ gates it; this also rules out a
+      // fire-and-forget `/cap1/ketso`.
       await act(async () => {
         await Promise.resolve()
         await Promise.resolve()
@@ -694,8 +660,6 @@ describe("Cap6TradingPage", () => {
     await waitFor(() => expect(screen.getByText(/KẾT SỔ LỆNH/)).toBeInTheDocument())
     expect(screen.queryByTestId("cap6-ketso-nhandinh")).not.toBeInTheDocument()
     expect(screen.queryByTestId("cap6-ketso-lech")).not.toBeInTheDocument()
-    // … và KHÔNG hỏi server gợi ý cho một lệnh chưa từng đối chiếu.
-    expect(getGoiYMock).not.toHaveBeenCalled()
   })
 
   it("closing Kết sổ forwards the record into the Cấp 1-5 trade logs", async () => {
@@ -710,11 +674,8 @@ describe("Cap6TradingPage", () => {
     expect(recordCap4TradeMock).toHaveBeenCalledTimes(1)
     expect(recordCap5TradeMock).toHaveBeenCalledTimes(1)
 
-    const rec = recordCap5TradeMock.mock.calls[0][0]
+    const rec = recordCap5TradeMock.mock.calls[0][0] as Record<string, unknown>
     expect(rec.orderId).toBe("sell-1")
-    expect(rec.kieuCoPhieu).toBe("phong_thu")
-    expect(rec.lopQuyetDinh).toBe("dinh_gia")
-    expect(rec.khopGoiY).toBe(true)
     // The SAME superset record goes into every lower log.
     expect(recordCap1TradeMock.mock.calls[0][0]).toBe(rec)
     expect(recordCap4TradeMock.mock.calls[0][0]).toBe(rec)

@@ -293,20 +293,10 @@ function fakeCap8Progress(overrides: Record<string, unknown> = {}) {
     id: "p8",
     user_id: "u1",
     entered_at: "2026-11-02T00:00:00Z",
-    task_1_done_at: null,
-    task_2_done_at: null,
-    task_3_done_at: null,
-    so_lenh_kiem_tra: 0,
-    so_lan_mua_bat_chap_canh_bao: 0,
-    // ★ `null` = chưa tính được, KHÔNG phải 0 — xem `cap8/types.ts`.
-    don_nganh_max_pct: null,
-    tong_rui_ro_pct: null,
+    so_lenh_thoat_dung_ke_hoach: 0,
+    muc_tieu_thoat_dung_ke_hoach: 5,
     graduated_at: null,
     time_to_graduate_hours: null,
-    so_lan_co_canh_bao: 0,
-    bat_chap_gan_day: 0,
-    cua_so_gan_day: 15,
-    so_lenh_da_ket_so: 0,
     ...overrides,
   }
 }

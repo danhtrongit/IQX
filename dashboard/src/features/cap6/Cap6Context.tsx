@@ -1,16 +1,14 @@
 import { createContext, useCallback, useContext, useMemo, useRef, type ReactNode } from "react"
+import type { Lop } from "@/features/cap4/types"
 import type { ConflictLevel } from "./mauThuanTypes"
-import type { KieuCoPhieu, Lop, Lop5Partial } from "./types"
 
 /**
  * Cấp 6 event bus — mirrors `cap5/Cap5Context.tsx`'s (proven) merge-semantics
  * design.
  *
- * The seam that lets the EXISTING `TradingPanel` notify Cấp 6 journey/progress
- * logic WITHOUT either side knowing the other's internals (and without knowing
- * Cấp 0-5's). Notifiers call `onConflictShown` / `onLopQuyetDinhPicked` /
- * `onOrderFilled`; FE2 (Kết sổ, Phân tích danh mục, Hành trình) registers the
- * actual handlers.
+ * logic without either side knowing the other's internals. Notifiers report
+ * conflict evidence, user ratings, skip decisions, and filled orders; the
+ * journey/settlement UI registers the actual handlers.
  *
  * Outside a `Cap6Provider` the hook is a safe no-op: notify fns are `undefined`
  * (callers guard with `?.`), `isCap6Active` is `false`, and `registerHandlers`
@@ -30,15 +28,6 @@ export interface Cap6OrderEvent {
   /** Filled price (VND). */
   price: number
   orderId: string
-  /**
-   * The Đối chiếu block carried at BUY time — present ONLY when the 5 lớp
-   * conflicted and the user resolved it (undefined otherwise, and on sells).
-   */
-  kieuCoPhieu?: KieuCoPhieu | null
-  lopQuyetDinh?: Lop
-  lyDoDoiChieu?: string
-  /** The user's own 5-lớp ratings the conflict was read from. */
-  lopMauThuan?: Lop5Partial
   // ── CẤP 6 «BẬC THẦY» (spec đợt 7) ─────────────────────────────────────────
   /**
    * Mức nhận định mâu thuẫn user chọn lúc MUA (spec §6). `undefined`/`null` =
@@ -58,21 +47,7 @@ export interface Cap6OrderEvent {
 
 /** Handlers the Cấp 6 journey registers to react to trading-UI events. */
 export interface Cap6EventHandlers {
-  /**
-   * The bước Đối chiếu just appeared for a symbol (its lớp conflict) — analytics
-   * `cap6_conflict_shown(mã, kiểu)`. `kieu` is `null` when the server could not
-   * classify the symbol ("chưa phân loại").
-   */
-  onConflictShown?: (symbol: string, kieu: KieuCoPhieu | null) => void
-  /**
-   * The user picked which lớp to trust — analytics `cap6_lop_quyet_dinh(lop,
-   * khop)`. ★ `khopGoiY === false` is a NEUTRAL FACT (spec §5/§10), never "sai";
-   * `null` means there was no suggestion to match (kiểu chưa phân loại or the
-   * suggestion could not be fetched).
-   */
-  onLopQuyetDinhPicked?: (lop: Lop, khopGoiY: boolean | null) => void
   onOrderFilled?: (order: Cap6OrderEvent) => void
-  // ── CẤP 6 «BẬC THẦY» (spec đợt 7 §11 analytics) ───────────────────────────
   /** `cap6_conflict_shown(symbol, veto_layers)` — bảng mâu thuẫn vừa hiện. */
   onMauThuanShown?: (symbol: string, lopPhuQuyetXau: Lop[]) => void
   /** `cap6_conflict_rated(symbol, level)` — user chọn một mức nhận định. */
@@ -85,10 +60,8 @@ export interface Cap6EventHandlers {
 export interface Cap6EventBus extends Cap6EventHandlers {
   registerHandlers: (handlers: Cap6EventHandlers) => void
   /**
-   * True only inside a `Cap6Provider`. Gates `TradingPanel`'s `DoiChieuBlock`
-   * and — only when the ratings actually conflict — the extra cổng cứng. Cấp 6
-   * changes NOTHING about Cấp 0-5's blocks, gates or Cấp 3's volume auto-fill
-   * (spec §0).
+   * True only inside a `Cap6Provider`. It gates the Cấp 6 conflict controls
+   * without changing the Cấp 0–5 flow or Cấp 3's volume auto-fill.
    */
   isCap6Active: boolean
 }
@@ -107,13 +80,6 @@ export function Cap6Provider({ children }: { children: ReactNode }) {
     handlersRef.current = { ...handlersRef.current, ...handlers }
   }, [])
 
-  const onConflictShown = useCallback((symbol: string, kieu: KieuCoPhieu | null) => {
-    handlersRef.current.onConflictShown?.(symbol, kieu)
-  }, [])
-
-  const onLopQuyetDinhPicked = useCallback((lop: Lop, khopGoiY: boolean | null) => {
-    handlersRef.current.onLopQuyetDinhPicked?.(lop, khopGoiY)
-  }, [])
 
   const onOrderFilled = useCallback((order: Cap6OrderEvent) => {
     handlersRef.current.onOrderFilled?.(order)
@@ -133,8 +99,6 @@ export function Cap6Provider({ children }: { children: ReactNode }) {
 
   const value = useMemo<Cap6EventBus>(
     () => ({
-      onConflictShown,
-      onLopQuyetDinhPicked,
       onOrderFilled,
       onMauThuanShown,
       onNhanDinhPicked,
@@ -143,8 +107,6 @@ export function Cap6Provider({ children }: { children: ReactNode }) {
       isCap6Active: true,
     }),
     [
-      onConflictShown,
-      onLopQuyetDinhPicked,
       onOrderFilled,
       onMauThuanShown,
       onNhanDinhPicked,

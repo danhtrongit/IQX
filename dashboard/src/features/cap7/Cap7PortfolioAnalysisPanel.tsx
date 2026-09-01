@@ -10,9 +10,18 @@ function pct(value: number | null): string {
 /** Live holdings allocation view, intentionally unavailable outside Cấp 7's provider. */
 export function Cap7PortfolioAnalysisPanel() {
   const { isCap7Active } = useCap7Events()
-  const { data, isLoading } = useCap7Portfolio(isCap7Active)
-  if (!isCap7Active) return null
-  if (isLoading) return <section data-testid="cap7-portfolio-loading">Đang tải phân bổ danh mục…</section>
+  return isCap7Active ? <ActiveCap7PortfolioAnalysis /> : null
+}
+
+/**
+ * This boundary is mounted only after the provider check so ordinary Holdings
+ * never requires a QueryClient or initiates a Level 7 allocation query.
+ */
+function ActiveCap7PortfolioAnalysis() {
+  const { data, isLoading } = useCap7Portfolio(true)
+  if (isLoading) {
+    return <section data-testid="cap7-portfolio-loading">Đang tải phân bổ danh mục…</section>
+  }
   if (!data) return null
 
   return (

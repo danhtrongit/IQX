@@ -90,7 +90,7 @@ describe("Cap6PortfolioAnalysisPanel", () => {
     const cap4Progress = { id: "p4", so_lenh_doc_du_5lop: 22 }
     const cap3Progress = { id: "p3", khau_vi: "can_bang" }
     const cap2Progress = { id: "p2" }
-    const trades = [{ orderId: "o1", kieuCoPhieu: "ngan_hang" }]
+    const trades = [{ orderId: "o1" }]
     const scores = [{ ngay: "2026-07-31", diem: 90, xepLoai: "xanh" }]
     useCap6ProgressMock.mockReturnValue({ data: cap6Progress })
     useCap5ProgressMock.mockReturnValue({ data: cap5Progress })

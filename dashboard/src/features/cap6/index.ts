@@ -1,11 +1,9 @@
 /**
- * Cấp 6 «Đối chiếu» — public surface (mirrors `cap5/index.ts`'s layout so the
+ * Cấp 6 «Bậc thầy» — public surface (mirrors `cap5/index.ts`'s layout so the
  * cấp-to-cấp diff stays readable).
  *
- * FE1: the event bus, the API/hooks/keys/types layer, the PURE conflict helpers
- * and the panel's bước Đối chiếu. FE2: Kết sổ Cấp 6, the coach's 6th paragraph,
- * and khối ⑭⑮ of Phân tích danh mục. FE3: the Hành trình tab, the graduation
- * screen, the Phân tích danh mục panel and the page itself.
+ * The public API exposes the server-owned conflict-evidence journey, settlement
+ * view, portfolio analysis, and graduation flow.
  */
 export {
   Cap6Provider,
@@ -17,16 +15,10 @@ export {
 export {
   useCap6Progress,
   useEnterCap6,
-  useGoiYCap6,
-  useKehoachCap6,
-  useRecordKehoachCap6,
-  useThachThucCap6,
   useGraduateCap6,
 } from "./hooks"
 export { cap6Api } from "./api"
 export { cap6Keys } from "./keys"
-export { DoiChieuBlock, type DoiChieuBlockProps } from "./DoiChieuBlock"
-
 // ── CẤP 6 «BẬC THẦY» (spec `demo-trading/LEVEL 6`) ──────────────────────────
 export { MauThuanBlock, type MauThuanBlockProps } from "./MauThuanBlock"
 export {
@@ -75,51 +67,11 @@ export type {
   MauThuanCap6,
   PhanTichCap6,
 } from "./mauThuanTypes"
-export { coMauThuan, isDoiChieuValid, lopNguocChieu, lopUngHo } from "./doiChieu"
-export { countCap6TasksDone, KIEU_ICON, KIEU_OPTIONS } from "./types"
-export type {
-  Cap6Progress,
-  GoiYCap6,
-  KehoachDetailCap6,
-  KehoachInputCap6,
-  KieuCoPhieu,
-  NhomDoiChieuCap6,
-  OrderKehoachCap6,
-  ThachThucCap6,
-  ThachThucDieuKienCap6,
-} from "./types"
 
-// ── FE2: Kết sổ Cấp 6 + coach lớp 6 + khối ⑭⑮ ───────────────────────────────
-export { KetsoModalCap6, mergeDoiChieuCap6 } from "./KetsoModalCap6"
-export type { DoiChieuKetsoCap6, KetsoDataCap6, KetsoModalCap6Props } from "./KetsoModalCap6"
-export {
-  COACH_CAP6_LABEL,
-  composeCoachCap6,
-  deriveCoachIdCap6,
-  pickCoachCap6,
-} from "./coachTemplateCap6"
-export type {
-  CoachIdCap6,
-  CoachResultCap6,
-  CoachSituationCap6,
-  ComposedCoachCap6,
-} from "./coachTemplateCap6"
+// ── FE2: Kết sổ Cấp 6 + khối nhận định ─────────────────────────────────────
+export { KetsoModalCap6 } from "./KetsoModalCap6"
+export type { KetsoDataCap6, KetsoModalCap6Props } from "./KetsoModalCap6"
 export { Cap6PortfolioAnalysis, type Cap6PortfolioAnalysisProps } from "./Cap6PortfolioAnalysis"
-export {
-  computeCap6Khoi14LopTheoKieu,
-  computeCap6Khoi15DoiChieu,
-  computeCap6PortfolioAnalysis,
-  KHOI14_MIN_LENH_MOI_O,
-  KHOI15_DELTA_RO_RANG,
-  KHOI15_MIN_LENH_MOI_NHOM,
-} from "./portfolioAnalysisCap6"
-export type {
-  Cap6Khoi14LopTheoKieu,
-  Cap6Khoi15DoiChieu,
-  Cap6PortfolioAnalysisResult,
-  Khoi14Cell,
-  Khoi15Nhom,
-} from "./portfolioAnalysisCap6"
 export {
   appendCap6TradeRecord,
   readCap6TradeLog,

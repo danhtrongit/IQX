@@ -125,7 +125,7 @@ Với các chương này, hãy **tự soát** kỹ hơn khi implement.
 - Hình dạng response upstream đầy đủ của một số endpoint chỉ được suy ra từ các key mà code truy cập (VCI LEData intraday, AccumulatedPriceStepVol, VCI /v1/events, KBS /profile, Fmarket /filter, MBK reportdatatopbynormtype) — chưa có payload thật capture lại. Cần chạy curl thật để bổ sung ví dụ nếu bản TS cần fixture test.
 - Giới hạn 'MSN trả 404' được nêu trong yêu cầu nhưng KHÔNG có guard 404 tường minh nào trong msn.py; cơ chế né thực tế chỉ là allow_empty=true ở endpoint world-index/forex và fallback MSN sau Binance cho crypto_ohlc. Nếu cần mô tả chính xác hơn phải đọc log prod.
 - Tên field camelCase thật do MBK trả về chưa xác minh — tài liệu chỉ mô tả luật biến đổi (snake_case + xoá 'tern_', 'norm_', 'term_', 'from_', '_code'). Luật này có thể tạo key trùng/ghi đè; hành vi đó chưa được test bao phủ.
-- Danh sách endpoint nội bộ theo provider ở §30 lấy từ docs/market-data-source-map.md (cập nhật 2026-04-26) đối chiếu với router hiện tại; có thể lệch nhẹ so với 291 endpoint trong 90-danh-muc-endpoint.md. Cần đối chiếu lại nếu dùng làm checklist nghiệm thu.
+- Danh sách endpoint nội bộ theo provider ở §30 lấy từ docs/market-data-source-map.md (cập nhật 2026-04-26) đối chiếu với router hiện tại; có thể lệch nhẹ so với danh mục hợp đồng hiện hành trong `types/endpoint-manifest.json` và [ch90](90-danh-muc-endpoint.md). Cần đối chiếu lại nếu dùng làm checklist nghiệm thu.
 - Category 'USER' trong response GET /v1/setting/screeners chỉ xuất hiện khi request có auth Vietcap; backend không gửi token nên thực tế chỉ nhận SYSTEM — chưa xác minh bằng call thật.
 - docs/vietcap-market-overview-api.md có nhắc 2 endpoint Vietcap CMS (www.vietcap.com.vn/api/cms-service/v1/config/industry và file tĩnh sector.json) nhưng KHÔNG có source module nào trong backend gọi chúng; đã cố ý không đưa vào chương như provider đang dùng.
 
@@ -285,30 +285,21 @@ Với các chương này, hãy **tự soát** kỹ hơn khi implement.
 
 ### [34-endpoints-cap-5-6.md](34-endpoints-cap-5-6.md) — Endpoint — Cấp 5,6
 
-8 điểm.
+5 điểm.
 
 - Điều kiện chính xác để user được mở tài khoản giao dịch ảo chế độ 'thuc_chien' — đây là CỔNG THẬT của cả Cấp 5 và Cấp 6 (mọi bộ đếm lọc VirtualOrder.mode == 'thuc_chien'), nhưng logic nằm ngoài app/services/cap5 và cap6. Đã ghi 'CHƯA XÁC ĐỊNH — xem app/services/virtual_trading/ và chương premium' thay vì đoán.
 - Nơi cấp huy hiệu (badge) khi tốt nghiệp Cấp 5 / Cấp 6: không có mã nào trong cap5.py, cap6.py, services/cap5/service.py, services/cap6/service.py ghi badge. graduate() chỉ dập graduated_at + time_to_graduate_hours. Đã ghi 'CHƯA XÁC ĐỊNH' ở cả hai mục graduate.
-- CAP_MAX_ENABLED không tồn tại ở backend (grep app/ alembic/ → 0 kết quả); giá trị 3 lấy từ dashboard/src/features/cap1/capFlags.ts. Nghĩa là toàn bộ 18 endpoint chương này hiện CHƯA được FE gọi — đã ghi rõ nhưng đây là suy luận từ hằng số FE, không phải từ backend.
-- Cạnh biên GET /cap6/goi-y: khi ngành CÓ nhưng không map được (vd icb_lv1 = 'Tài chính'), response trả nganh = 'Tài chính' (không null) trong khi kieu = null, và giai_thich vẫn nói 'hệ chưa có dữ liệu ngành cho mã này' — câu chữ không khớp thực tế. Đã ghi là 'hành vi hiện tại, giữ nguyên nguyên văn' chứ không tự sửa; chưa rõ đây là chủ ý hay sơ suất.
-- Cạnh biên _verdict_from_signals: nếu MỌI tín hiệu đều dat = null thì all([]) == true → verdict 'dung'. Thực tế ky_luat_thoat và khong_nhoi luôn đo được (cột NOT NULL DEFAULT false) nên không xảy ra, nhưng không có test nào chốt điều này.
-- Tên field so_chua_toi_han (GET /cap5/dung-ngoai và POST /cap5/dung-ngoai/cham) không khớp ngữ nghĩa: công thức là len(decisions) - so_lan_da_cham, tức 'chưa CHẤM', gộp cả 'tới hạn mà thiếu giá'. Đã ghi rõ là tên sai + yêu cầu giữ nguyên để tương thích FE, nhưng chưa rõ FE có đang hiểu sai field này hay không.
+- CAP_MAX_ENABLED không tồn tại ở backend (grep app/ alembic/ → 0 kết quả); giá trị 3 lấy từ dashboard/src/features/cap1/capFlags.ts. Nghĩa là việc đưa endpoint Cấp 5/6 vào hành trình người dùng vẫn phụ thuộc một rollout frontend riêng, không phải backend guard.
 - Race condition khi hai request POST /capN/enter chạy đồng thời: có UniqueConstraint trên user_id nhưng service không bắt riêng IntegrityError → sẽ thành 500. Đã ghi là hành vi hiện tại; chưa xác định được đây có phải vấn đề thực tế trên prod hay không.
 - Không xác minh được bằng cách chạy test (chỉ đọc source + tests/test_cap5.py, tests/test_cap6.py). Mọi detail lỗi, ngưỡng, thứ tự kiểm tra đều trích trực tiếp từ source; các câu giai_thich được copy nguyên văn từ chuỗi trong service.
 
 ### [35-endpoints-cap-7-8.md](35-endpoints-cap-7-8.md) — Endpoint — Cấp 7,8
 
-9 điểm.
+3 điểm.
 
-- Brief assumed GET /cap8/kiem-tra is the 'bài kiểm tra cuối' with pass/fail. Source contradicts this: it is a per-buy pre-trade READ + soft warning that never blocks MUA (spec §9/§C8), with no score. The real pass/fail is the 3-leg Thách thức at GET /cap8/thach-thuc (dat_ca_3). Documented as an explicit correction in the chapter.
-- Brief asked whether Cấp 8 measures 'tỷ trọng tối đa 1 mã' or 'drawdown'. Neither exists in Cấp 8 — only 3 measures (dồn ngành, tương quan, tổng vốn ở rủi ro). Max drawdown lives only in the premium Người quản lý danh mục report (spec §9 rules out rebuilding it here).
-- CAP_MAX_ENABLED does not exist in the backend (grepped all of app/). It is frontend-only at dashboard/src/features/cap1/capFlags.ts with current value 3, which conflicts with MEMORY.md's note that levels 0-8 were deployed 2026-08-03. Documented the source value (3) plus the fact that the backend has no cap gate at all; did not attempt to reconcile the memory note.
-- Cấp 7 graduation leg ② (không đuổi theo ≥3 cờ cảnh giác) is CLIENT-ASSERTED and the server cannot verify it — stated verbatim in the service's HONESTY NOTE 1. Documented as an unfixable-without-architecture-change gap rather than describing a check that does not exist.
-- Exact HTTP status for a few service-level guards in GET /cap8/kiem-tra (khoi_luong/gia <= 0) is unreachable in practice: FastAPI's Query(gt=0) returns 422 before the service's 400 fires. Both are listed with a note.
-- Cấp 7 _cham_miss negative memo is process-local (dict), not Redis; behaviour under multi-instance deploy is not specified in source. Noted a Redis-with-6h-TTL equivalent as a rewrite suggestion, flagged as a design choice rather than existing behaviour.
-- _closes_by_date uses date.today() (server local date, not VN tz). Flagged as a timezone trap; source does not say whether this is intentional.
-- Rate limits: no per-endpoint limiter decorator exists on any cap7/cap8 route, so all 16 inherit RATE_LIMIT_DEFAULT = 60/minute per-IP via SlowAPIMiddleware. Stated as such; no per-level override found.
-- Badge/huy hiệu storage: no badge table or endpoint exists in cap7.py/cap8.py. The 0-8 rail is described in the cap8 graduate docstring as an FE tab built from each capN_progress.graduated_at; no backend badge record was found to document.
+- CAP_MAX_ENABLED không tồn tại ở backend (grepped all of app/). Nó là frontend-only tại dashboard/src/features/cap1/capFlags.ts với giá trị hiện tại 3, và backend không có cap gate. Phạm vi rollout thực tế vì vậy cần được xác nhận ở cấu hình/phát hành frontend.
+- Không có per-endpoint limiter decorator trên các route Cấp 7/8; các route này cùng thừa hưởng `RATE_LIMIT_DEFAULT = 60/minute` theo IP từ SlowAPIMiddleware. Nếu cần quota riêng cho hành trình, đó là thay đổi thiết kế.
+- Không có bảng hay endpoint badge trong model/service Cấp 7/8. Rail 0–8 được dựng ở FE từ `graduated_at` của từng bảng tiến độ; cần quyết định riêng nếu sản phẩm muốn badge persist.
 
 ### [36-endpoints-watchlist-ban-ve-backtest.md](36-endpoints-watchlist-ban-ve-backtest.md) — Endpoint — Watchlist, bản vẽ, Backtest
 

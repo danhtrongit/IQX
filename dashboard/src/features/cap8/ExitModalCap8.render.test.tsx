@@ -15,8 +15,7 @@ type RadioProps = { children?: ReactNode; disabled?: boolean; onSelect?: (value:
 type RadioGroupProps = { children?: ReactNode; onChange: (value: string) => void; value: string }
 type SliderProps = { max: number; min: number; onChange: (value: number) => void; step: number; value: number }
 type InputNumberProps = { onChange: (value: number) => void; value?: number }
-type SellInput = { method: "market"; quantity: number; side: "sell"; symbol: string }
-type AfterFilled = (order: { id: string }) => Promise<void>
+type AfterFilled = (order: { id: string; status: string }) => Promise<void>
 
 const mocks = vi.hoisted(() => ({
   recordExit: vi.fn(),
@@ -109,14 +108,17 @@ const exitContext: Cap8ExitContext = {
   sector_impact: { can_doi_ok: true },
 }
 
-function installSellMutation(events?: string[]) {
+function installSellMutation(
+  events?: string[],
+  order: { id: string; status: string } = { id: "filled-sell-order", status: "filled" },
+) {
   mocks.usePlaceOrder.mockImplementation((afterFilled?: AfterFilled) => ({
     error: null,
     isError: false,
-    mutate: mocks.sellMutate.mockImplementation((_input: SellInput) => {
+    mutate: mocks.sellMutate.mockImplementation(() => {
       void (async () => {
         try {
-          await afterFilled?.({ id: "filled-sell-order" })
+          await afterFilled?.(order)
         } finally {
           events?.push("trading-cache")
         }
@@ -205,7 +207,7 @@ describe("ExitModalCap8", () => {
     expect(await screen.findByText("Không thể tải kế hoạch")).toBeInTheDocument()
   })
 
-  it("records evidence and invalidates Level 8 caches before the trading cache refetch", async () => {
+  it("records lowercase filled evidence and invalidates Level 8 caches before the trading cache refetch", async () => {
     const events: string[] = []
     installSellMutation(events)
     const { onClose, queryClient } = renderModal()
@@ -228,6 +230,17 @@ describe("ExitModalCap8", () => {
     expect(invalidateQueries).toHaveBeenNthCalledWith(1, { queryKey: ["cap8", "progress"] })
     expect(invalidateQueries).toHaveBeenNthCalledWith(2, { queryKey: ["cap8", "exit-context", "HPG"] })
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it("shows an order failure without evidence retry when a 201 response is rejected", async () => {
+    installSellMutation(undefined, { id: "rejected-sell-order", status: "rejected" })
+    renderModal()
+
+    fireEvent.click(screen.getByRole("button", { name: "Bán toàn bộ" }))
+
+    expect(await screen.findByText("Lệnh bán không được khớp.")).toBeInTheDocument()
+    expect(mocks.recordExit).not.toHaveBeenCalled()
+    expect(screen.queryByRole("button", { name: "Thử ghi nhận lại" })).not.toBeInTheDocument()
   })
 
   it("clears completed evidence-retry state before closing so a reopened modal can sell again", async () => {

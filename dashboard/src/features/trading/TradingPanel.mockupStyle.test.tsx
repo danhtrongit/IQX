@@ -243,11 +243,9 @@ describe("Panel đặt lệnh — áo mockup mặc trong shell cấp, KHÔNG m�
     }
     expect(container.querySelector(".op-panel--cap1")).not.toBeNull()
 
-    // ★ Sổ lệnh mở từ Cấp 2 (spec Cấp 1 §checklist: "sổ lệnh vẫn ẨN — chỉ mở
-    // Cấp 2"). Nó PHẢI nằm trong thẻ `.op-book`: render trần trên nền
-    // `.op-shell` thì nó thành mảng trôi lơ lửng ngay trên một thẻ bo góc —
-    // đúng lỗi user báo sau khi panel Cấp 2+ được khoác áo mockup.
-    expect(container.querySelector(".op-book")).not.toBeNull()
+    // The order-book reader was retired from the shared panel. Cấp 2 retains
+    // its SL/TP form and mockup skin without reintroducing `.op-book`.
+    expect(container.querySelector(".op-book")).toBeNull()
   })
 
   it("★ Cấp 0 và Cấp 1: KHÔNG có sổ lệnh (nên cũng không có thẻ `.op-book`)", async () => {
@@ -264,13 +262,15 @@ describe("Panel đặt lệnh — áo mockup mặc trong shell cấp, KHÔNG m�
     expect(cap1.container.querySelector(".op-book")).toBeNull()
   })
 
-  it("NGOÀI mọi cấp (/bieu-do, /co-phieu): không một class nào của mockup được gắn", async () => {
+  it("NGOÀI mọi cấp (/bieu-do, /co-phieu): không một class mockup hay sổ lệnh được gắn", async () => {
     const { container } = renderPanel()
-    await waitFor(() => expect(screen.getByText(/Spread:/)).toBeInTheDocument())
+    await waitFor(() => expect(container.querySelector(".arco-tabs")).not.toBeNull())
 
     for (const sel of KHOI_MOCKUP) {
       expect(container.querySelector(sel), `\`${sel}\` rò ra ngoài Cấp 0/1`).toBeNull()
     }
+    expect(container.querySelector(".op-book")).toBeNull()
+    expect(screen.queryByText(/Spread:/)).not.toBeInTheDocument()
     // ...và panel thường vẫn nguyên vẹn: tabs Arco + nút % số dư.
     expect(container.querySelector(".arco-tabs")).not.toBeNull()
     expect(screen.getByText("10%")).toBeInTheDocument()

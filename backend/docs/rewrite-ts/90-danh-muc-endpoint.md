@@ -1,6 +1,6 @@
-# Danh mục đầy đủ 293 endpoint
+# Danh mục đầy đủ 289 endpoint
 
-Bảng tra sinh **tự động** từ OpenAPI schema của backend đang chạy. Đây là *checklist nghiệm thu*: bản viết lại bằng TypeScript phải phục vụ đúng 293 dòng dưới đây, cùng method, cùng path, cùng yêu cầu quyền.
+Bảng tra sinh **tự động** từ OpenAPI schema của backend đang chạy. Đây là *checklist nghiệm thu*: bản viết lại bằng TypeScript phải phục vụ đúng 289 dòng dưới đây, cùng method, cùng path, cùng yêu cầu quyền.
 
 Bản máy đọc được: [`types/endpoint-manifest.json`](types/endpoint-manifest.json).
 
@@ -8,7 +8,7 @@ Ký hiệu cột **Quyền**: `—` công khai (không cần token) · `🔒` c�
 
 | Tổng operation | Tổng path | WebSocket |
 |---|---|---|
-| **293** | 267 | 1 (`/api/v1/market-data/ws`) |
+| **289** | 264 | 1 (`/api/v1/market-data/ws`) |
 
 ## [20-endpoints-auth-users.md](20-endpoints-auth-users.md)
 
@@ -297,7 +297,7 @@ Ký hiệu cột **Quyền**: `—` công khai (không cần token) · `🔒` c�
 
 ## [33-endpoints-cap-3-4.md](33-endpoints-cap-3-4.md)
 
-14 endpoint.
+12 endpoint.
 
 | Method | Path | Quyền | Nhóm | Mục đích |
 |---|---|---|---|---|
@@ -307,62 +307,58 @@ Ký hiệu cột **Quyền**: `—` công khai (không cần token) · `🔒` c�
 | `POST` | `/api/v1/cap3/khau-vi` | 🔒 | Cấp 3 | Set Khau Vi |
 | `GET` | `/api/v1/cap3/progress` | 🔒 | Cấp 3 | Get Progress |
 | `PATCH` | `/api/v1/cap3/task` | 🔒 | Cấp 3 | Mark Task |
-| `GET` | `/api/v1/cap3/thach-thuc` | 🔒 | Cấp 3 | Get Thach Thuc |
 | `POST` | `/api/v1/cap4/enter` | 🔒 | Cấp 4 | Enter |
 | `POST` | `/api/v1/cap4/graduate` | 🔒 | Cấp 4 | Graduate |
 | `POST` | `/api/v1/cap4/kehoach` | 🔒 | Cấp 4 | Record Kehoach |
 | `GET` | `/api/v1/cap4/progress` | 🔒 | Cấp 4 | Get Progress |
 | `PATCH` | `/api/v1/cap4/task` | 🔒 | Cấp 4 | Mark Task |
-| `GET` | `/api/v1/cap4/thach-thuc` | 🔒 | Cấp 4 | Get Thach Thuc |
 | `GET` | `/api/v1/cap4/vu-khi-diem-mu` | 🔒 | Cấp 4 | Get Vu Khi Diem Mu |
 
 ## [34-endpoints-cap-5-6.md](34-endpoints-cap-5-6.md)
 
-18 endpoint.
+21 endpoint.
 
 | Method | Path | Quyền | Nhóm | Mục đích |
 |---|---|---|---|---|
-| `GET` | `/api/v1/cap5/dung-ngoai` | 🔒 | Cấp 5 | List Dung Ngoai |
-| `POST` | `/api/v1/cap5/dung-ngoai` | 🔒 | Cấp 5 | Log Dung Ngoai |
-| `POST` | `/api/v1/cap5/dung-ngoai/cham` | 🔒 | Cấp 5 | Cham Dung Ngoai |
 | `POST` | `/api/v1/cap5/enter` | 🔒 | Cấp 5 | Enter |
 | `POST` | `/api/v1/cap5/graduate` | 🔒 | Cấp 5 | Graduate |
-| `POST` | `/api/v1/cap5/ketso` | 🔒 | Cấp 5 | Record Ketso |
+| `GET` | `/api/v1/cap5/nguon-san/{symbol}` | 🔒 | Cấp 5 | Get Nguon San |
+| `GET` | `/api/v1/cap5/phan-tich` | 🔒 | Cấp 5 | Get Phan Tich |
 | `GET` | `/api/v1/cap5/progress` | 🔒 | Cấp 5 | Get Progress |
+| `GET` | `/api/v1/cap5/san-ma` | 🔒 | Cấp 5 | San Ma Index |
+| `GET` | `/api/v1/cap5/san-ma/{bo_loc}` | 🔒 | Cấp 5 | San Ma Result |
 | `PATCH` | `/api/v1/cap5/task` | 🔒 | Cấp 5 | Mark Task |
-| `GET` | `/api/v1/cap5/thach-thuc` | 🔒 | Cấp 5 | Get Thach Thuc |
-| `GET` | `/api/v1/cap5/verdict/{order_id}` | 🔒 | Cấp 5 | Get Verdict |
+| `POST` | `/api/v1/cap5/tour-sanma` | 🔒 | Cấp 5 | Mark Tour Sanma |
+| `GET` | `/api/v1/cap5/watchlist` | 🔒 | Cấp 5 | Get Watchlist |
+| `POST` | `/api/v1/cap5/watchlist` | 🔒 | Cấp 5 | Add To Watchlist |
+| `DELETE` | `/api/v1/cap5/watchlist/{symbol}` | 🔒 | Cấp 5 | Remove From Watchlist |
 | `POST` | `/api/v1/cap6/enter` | 🔒 | Cấp 6 | Enter |
-| `GET` | `/api/v1/cap6/goi-y` | 🔒 | Cấp 6 | Get Goi Y |
 | `POST` | `/api/v1/cap6/graduate` | 🔒 | Cấp 6 | Graduate |
 | `POST` | `/api/v1/cap6/kehoach` | 🔒 | Cấp 6 | Record Kehoach |
 | `GET` | `/api/v1/cap6/kehoach/{order_id}` | 🔒 | Cấp 6 | Get Kehoach |
+| `GET` | `/api/v1/cap6/mau-thuan/{symbol}` | 🔒 | Cấp 6 | Get Mau Thuan |
+| `GET` | `/api/v1/cap6/phan-tich` | 🔒 | Cấp 6 | Phan Tich |
 | `GET` | `/api/v1/cap6/progress` | 🔒 | Cấp 6 | Get Progress |
-| `PATCH` | `/api/v1/cap6/task` | 🔒 | Cấp 6 | Mark Task |
-| `GET` | `/api/v1/cap6/thach-thuc` | 🔒 | Cấp 6 | Get Thach Thuc |
+| `POST` | `/api/v1/cap6/skip` | 🔒 | Cấp 6 | Skip |
+| `POST` | `/api/v1/cap6/tour-mauthuan` | 🔒 | Cấp 6 | Mark Tour Mauthuan |
 
 ## [35-endpoints-cap-7-8.md](35-endpoints-cap-7-8.md)
 
-16 endpoint.
+11 endpoint.
 
 | Method | Path | Quyền | Nhóm | Mục đích |
 |---|---|---|---|---|
-| `POST` | `/api/v1/cap7/cham` | 🔒 | Cấp 7 | Cham |
 | `POST` | `/api/v1/cap7/enter` | 🔒 | Cấp 7 | Enter |
 | `POST` | `/api/v1/cap7/graduate` | 🔒 | Cấp 7 | Graduate |
-| `POST` | `/api/v1/cap7/kehoach` | 🔒 | Cấp 7 | Record Kehoach |
-| `GET` | `/api/v1/cap7/kehoach/{order_id}` | 🔒 | Cấp 7 | Get Kehoach |
-| `GET` | `/api/v1/cap7/phien` | 🔒 | Cấp 7 | Get Phien |
+| `GET` | `/api/v1/cap7/portfolio` | 🔒 | Cấp 7 | Portfolio |
 | `GET` | `/api/v1/cap7/progress` | 🔒 | Cấp 7 | Get Progress |
-| `PATCH` | `/api/v1/cap7/task` | 🔒 | Cấp 7 | Mark Task |
-| `GET` | `/api/v1/cap7/thach-thuc` | 🔒 | Cấp 7 | Get Thach Thuc |
 | `POST` | `/api/v1/cap8/enter` | 🔒 | Cấp 8 | Enter |
+| `POST` | `/api/v1/cap8/exits` | 🔒 | Cấp 8 | Record Exit |
 | `POST` | `/api/v1/cap8/graduate` | 🔒 | Cấp 8 | Graduate |
-| `POST` | `/api/v1/cap8/kehoach` | 🔒 | Cấp 8 | Record Kehoach |
-| `GET` | `/api/v1/cap8/kiem-tra` | 🔒 | Cấp 8 | Get Kiem Tra |
+| `PATCH` | `/api/v1/cap8/positions/{symbol}/dynamic-stop` | 🔒 | Cấp 8 | Dynamic Stop |
+| `GET` | `/api/v1/cap8/positions/{symbol}/exit-context` | 🔒 | Cấp 8 | Exit Context |
+| `POST` | `/api/v1/cap8/positions/{symbol}/sync-plan` | 🔒 | Cấp 8 | Sync Plan |
 | `GET` | `/api/v1/cap8/progress` | 🔒 | Cấp 8 | Get Progress |
-| `PATCH` | `/api/v1/cap8/task` | 🔒 | Cấp 8 | Mark Task |
-| `GET` | `/api/v1/cap8/thach-thuc` | 🔒 | Cấp 8 | Get Thach Thuc |
 
 ## [36-endpoints-watchlist-ban-ve-backtest.md](36-endpoints-watchlist-ban-ve-backtest.md)
 

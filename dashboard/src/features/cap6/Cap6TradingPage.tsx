@@ -33,14 +33,12 @@ import type { Lop5Partial } from "@/features/cap4/types"
 import { Cap5Provider } from "@/features/cap5/Cap5Context"
 import { fetchNguonSanKetso } from "@/features/cap5/nguonSanKetso"
 import { useCap5TradeLog } from "@/features/cap5/tradeLogCap5"
-import { cap6Api } from "./api"
 import { Cap6Provider, useCap6Events, type Cap6OrderEvent } from "./Cap6Context"
 import { GraduationModalCap6 } from "./GraduationModalCap6"
 import { useEnterCap6 } from "./hooks"
-import { KetsoModalCap6, type DoiChieuKetsoCap6, type KetsoDataCap6 } from "./KetsoModalCap6"
+import { KetsoModalCap6, type KetsoDataCap6 } from "./KetsoModalCap6"
 import type { Cap6TradeRecord } from "./tradeLogCap6"
 import type { NhanDinhKetsoCap6 } from "./NhanDinhKetsoBlock"
-import { KIEU_OPTIONS, type KieuCoPhieu } from "./types"
 import "@/features/cap0/cap0.css"
 import "@/features/cap1/cap1.css"
 
@@ -56,72 +54,11 @@ function todayYmd(): string {
   return `${y}-${m}-${d}`
 }
 
-/** Tên tiếng Việt của 1 kiểu — dùng CHÍNH bảng nhãn của `types.ts` (bằng đúng
- * `KIEU_CO_PHIEU[...]["ten"]` của backend), không tự đặt tên thứ hai. */
-function kieuTenOf(kieu: KieuCoPhieu | null): string | null {
-  if (!kieu) return null
-  return KIEU_OPTIONS.find((o) => o.value === kieu)?.label ?? null
-}
 
 /**
- * Dựng khối "Đối chiếu — nhìn lại" của MỘT lệnh mua, từ `GET /cap6/goi-y`.
+ * `/dau-truong` — Cấp 6 «Bậc thầy» cumulative demo-trading shell.
  *
- * ★ VÌ SAO PHẢI GỌI LẠI SERVER: `Cap6OrderEvent` chỉ mang những gì user tự nhập
- * (lớp quyết định + lý do + kiểu client chọn khi hệ bó tay). `kieu`/`kieu_ten`/
- * `nganh`/`lop_uu_tien` là do SERVER suy từ ngành, và `khop_goi_y` là
- * `lop_quyet_dinh ∈ lop_uu_tien` — cùng một luật `POST /cap6/kehoach` đã ghi vào
- * `order_kehoach` (`services/cap6/service.py`). Đọc lại từ đúng nguồn đó là cách
- * duy nhất để Kết sổ không nói khác hàng đã lưu; FE KHÔNG có bảng trọng số.
- *
- * Fail-closed và trung thực:
- *  - query lỗi → `kieu = null` → khối hiện "chưa phân loại", `khopGoiY = null`.
- *  - hệ không phân loại được nhưng user tự chọn kiểu → hiện ĐÚNG kiểu user chọn,
- *    nhưng `lopUuTien = []` + `khopGoiY = null`: bảng trọng số cho kiểu đó chỉ có
- *    ở server và `/cap6/goi-y` không trả về nó khi ngành không map được. Nói
- *    "chưa xét" còn hơn đoán một kết luận khớp/lệch. (`GET /cap6/goi-y?kieu=` sẽ
- *    xoá hẳn khoảng trống này — một task BE nhỏ, ghi ra đây để không ai tưởng là
- *    bỏ sót.)
- *
- * ★ `khopGoiY === false` KHÔNG BAO GIỜ là "sai", và `null` KHÔNG BAO GIỜ được
- * hiện thành lệch (spec §5/§10) — `KetsoModalCap6` render đúng như vậy.
- */
-async function resolveDoiChieu(order: Cap6OrderEvent): Promise<DoiChieuKetsoCap6 | null> {
-  const lopQuyetDinh = order.lopQuyetDinh
-  if (!lopQuyetDinh) return null
-
-  let goiY: Awaited<ReturnType<typeof cap6Api.getGoiY>> | null = null
-  try {
-    goiY = await cap6Api.getGoiY(order.symbol)
-  } catch {
-    // 404 "chưa vào Cấp 6" / mạng lỗi / 500 — khối vẫn hiện, chỉ không có kiểu.
-    goiY = null
-  }
-
-  const serverKieu = goiY?.kieu ?? null
-  const kieu = serverKieu ?? order.kieuCoPhieu ?? null
-  const lopUuTien = serverKieu ? goiY!.lop_uu_tien : []
-  return {
-    kieu,
-    kieuTen: serverKieu ? (goiY!.kieu_ten ?? kieuTenOf(kieu)) : kieuTenOf(kieu),
-    nganh: goiY?.nganh ?? null,
-    lopQuyetDinh,
-    lopUuTien,
-    khopGoiY: serverKieu ? lopUuTien.includes(lopQuyetDinh) : null,
-    lyDo: order.lyDoDoiChieu ?? null,
-  }
-}
-
-/**
- * `/dau-truong` — Cấp 6 «Đối chiếu» demo-trading shell (spec §0/§4/§8), mounted
- * by `DauTruongPage` once the user has graduated Cấp 5. Mirrors
- * `cap5/Cap5TradingPage.tsx`'s structure: SAME surrounding chrome + SAME,
- * untouched `CenterPanel`/`RightSidebar`/`RightToolbar` terminal — BUT wraps ALL
- * SIX of `Cap1Provider` … `Cap6Provider` (spec's "cộng dồn" principle: panel Cấp
- * 6 = panel Cấp 5 GIỮ NGUYÊN 100% + bước "Đối chiếu" chỉ hiện khi 5 lớp mâu
- * thuẫn, so `TradingPanel`'s Cấp 1 vùng mua, Cấp 2 `SlTpBlock`, Cấp 3
- * `QuanLyVonBlock` and Cấp 4 `Doc5LopBlock` must all stay active alongside Cấp 6's
- * `DoiChieuBlock`. Cấp 5 KHÔNG thêm gì vào panel đặt lệnh — nút «Đứng ngoài» đã
- * nghỉ hưu cùng Cấp 5 cũ).
+ * Cấp 6 keeps earlier plan blocks and adds only server-owned conflict handling.
  */
 export function Cap6TradingPage() {
   useEffect(() => {
@@ -153,9 +90,8 @@ export function Cap6TradingPage() {
 
 /** Everything tracked from a symbol's BUY fill needed to reconcile its SELL into
  * Kết sổ Cấp 6 — Cấp 1's kế hoạch fields + Cấp 2's SL/TP commitment + Cấp 3's
- * quản lý vốn commitment + Cấp 4's khối "Đọc 5 lớp". Cấp 6's own block is tracked
- * separately (it resolves asynchronously — see `doiChieuBySymbolRef`). All buses
- * fire for the SAME buy fill (see `TradingPanel.tsx`), in cap1 → … → cap6 order. */
+ * quản lý vốn commitment + Cấp 4's khối "Đọc 5 lớp". All buses fire for the
+ * SAME buy fill (see `TradingPanel.tsx`), in cap1 → … → cap6 order. */
 interface LastBuyCap6 {
   price: number
   lyDo: LyDo | null
@@ -206,15 +142,9 @@ function Cap6Terminal() {
   const enterCap6 = useEnterCap6()
 
   /**
-   * ★ `POST /cap6/enter` NGAY khi vào trang, idempotent.
-   *
-   * `DauTruongPage` cũng gọi nó, nhưng CHỈ khi `GET /cap6/progress` trả null lúc
-   * nó fetch. Nếu hàng `cap6_progress` chưa có mà trang này đã mount (vd. user
-   * vừa tốt nghiệp Cấp 5 trong phiên này, hoặc progress fetch chậm/lỗi), thì
-   * `GET /cap6/goi-y` và `POST /cap6/kehoach` sẽ 404 — `TradingPanel` await call
-   * đó trong cùng một `try`, nên MỌI `onOrderFilled` phía sau bị nuốt và KHÔNG
-   * Kết sổ nào của bất kỳ cấp nào mở ra (FE1 đã gặp). Gọi lại ở đây là bảo hiểm
-   * rẻ: server trả về hàng sẵn có khi đã tồn tại.
+   * `POST /cap6/enter` is idempotent. The page repeats the progression
+   * router's enter attempt so current conflict handling has a progress row
+   * even when a just-graduated user reaches this shell before its refetch.
    */
   const enterAttemptedRef = useRef(false)
   useEffect(() => {
@@ -248,13 +178,6 @@ function Cap6Terminal() {
   // symbol, merging ALL FIVE lower buses' buy-time data — mirrors
   // `Cap5Terminal#lastBuyBySymbolRef`, one level up.
   const lastBuyBySymbolRef = useRef<Map<string, LastBuyCap6>>(new Map())
-  /**
-   * Khối Đối chiếu của lệnh mua đang mở, theo mã — lưu PROMISE chứ không phải
-   * giá trị: nó cần một round-trip `GET /cap6/goi-y`, còn `onOrderFilled` là
-   * đồng bộ. `openKetsoCap6` await promise này, nên một lệnh bán ngay sau lệnh
-   * mua vẫn nhận đủ khối Đối chiếu thay vì mất trắng vì đua.
-   */
-  const doiChieuBySymbolRef = useRef<Map<string, Promise<DoiChieuKetsoCap6 | null>>>(new Map())
   const ketsoCountRef = useRef(0)
   const [ketso, setKetso] = useState<KetsoDataCap6 | null>(null)
 
@@ -410,9 +333,6 @@ function Cap6Terminal() {
       // Đã kết sổ Cấp 1 trước đó (409) hoặc lỗi khác — modal vẫn mở (xem trên).
     }
 
-    // Khối Đối chiếu (nếu lệnh mua này có mâu thuẫn). `await undefined` khi mã
-    // chưa từng đi qua bước Đối chiếu → `null` → modal bỏ hẳn khối, im lặng.
-    const doiChieu = (await doiChieuBySymbolRef.current.get(key)) ?? null
 
     /**
      * NGUỒN SĂN của lệnh (spec Cấp 5 §8) — `GET /cap5/nguon-san/{symbol}`.
@@ -464,7 +384,6 @@ function Cap6Terminal() {
       doc5Lop: buy.doc5Lop ?? {},
       ai5Lop: buy.ai5Lop,
       ...nguonSan,
-      doiChieu,
       nhanDinh: buy.nhanDinh,
     })
   }
@@ -495,13 +414,6 @@ function Cap6Terminal() {
                   : null,
             })
           }
-          // Lệnh KHÔNG mâu thuẫn → `TradingPanel` không gửi khối Đối chiếu → xoá
-          // khối cũ của mã này (đừng để lệnh trước dây sang lệnh sau).
-          if (!order.lopQuyetDinh) {
-            doiChieuBySymbolRef.current.delete(key)
-            return
-          }
-          doiChieuBySymbolRef.current.set(key, resolveDoiChieu(order))
           return
         }
         void openKetsoCap6(order)

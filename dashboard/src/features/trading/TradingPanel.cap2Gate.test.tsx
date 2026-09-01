@@ -311,9 +311,9 @@ describe("TradingPanel — Cấp 2 wiring (Task FE1)", () => {
     expect(recordKehoachCap2AsyncMock).not.toHaveBeenCalled()
   })
 
-  it("sổ lệnh bid/ask is ALWAYS visible when isCap2Active, even though Cấp 1 alone hides it unconditionally", () => {
+  it("retired bid/ask order book stays absent when isCap2Active", () => {
     renderPanel()
-    expect(screen.queryByText(/Spread:/)).toBeInTheDocument()
+    expect(screen.queryByText(/Spread:/)).not.toBeInTheDocument()
   })
 
   it("sổ lệnh bid/ask stays hidden when isCap2Active is false (Cấp 1-only behaviour unchanged)", () => {

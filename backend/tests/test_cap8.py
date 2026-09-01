@@ -16,13 +16,23 @@ from app.models.virtual_trading import (
     VirtualPosition,
     VirtualTradingAccount,
 )
-from app.services.cap8.service import Cap8Service, EXIT_TARGET
+from app.services.cap8.service import EXIT_TARGET, Cap8Service
 
 
-async def _exit_fixture(db_session, user, *, remaining: int = 0, sell_price: int = 120, target: int = 110):
+async def _exit_fixture(
+    db_session,
+    user,
+    *,
+    remaining: int = 0,
+    sell_price: int = 120,
+    target: int = 110,
+):
     now = datetime.now(UTC)
     account = VirtualTradingAccount(
-        user_id=user.id, initial_cash_vnd=1_000_000, cash_available_vnd=1_000_000, activated_at=now
+        user_id=user.id,
+        initial_cash_vnd=1_000_000,
+        cash_available_vnd=1_000_000,
+        activated_at=now,
     )
     db_session.add(account)
     await db_session.flush()
@@ -322,8 +332,15 @@ async def test_timely_trailing_stop_exit_counts(db_session, test_user, monkeypat
     sell.exit_dynamic_stop_vnd = 105
     sell.exit_dynamic_stop_set_at = position.active_dynamic_stop_set_at
     monkeypatch.setattr(
-        service, "_history",
-        lambda _symbol: __import__("asyncio").sleep(0, result=[(date(2026, 1, 5), 110.0), (date(2026, 1, 6), 104.0)]),
+        service,
+        "_history",
+        lambda _symbol: __import__("asyncio").sleep(
+            0,
+            result=[
+                (date(2026, 1, 5), 110.0),
+                (date(2026, 1, 6), 104.0),
+            ],
+        ),
     )
     trailing = await service.record_exit(test_user.id, sell.id)
     assert trailing["dung_ke_hoach"] is True
@@ -333,12 +350,28 @@ async def test_timely_trailing_stop_exit_counts(db_session, test_user, monkeypat
 
 
 @pytest.mark.asyncio
-async def test_dynamic_stop_rejects_unprofitable_or_nonraising_values(db_session, test_user, monkeypatch) -> None:
+async def test_dynamic_stop_rejects_unprofitable_or_nonraising_values(
+    db_session, test_user, monkeypatch
+) -> None:
     service, _, position, _, _ = await _exit_fixture(db_session, test_user, remaining=100)
-    monkeypatch.setattr(service._trading, "get_portfolio", lambda _user_id: __import__("asyncio").sleep(0, result={"positions": [{"symbol": "VCB", "current_price_vnd": 100}] }))
+    monkeypatch.setattr(
+        service._trading,
+        "get_portfolio",
+        lambda _user_id: __import__("asyncio").sleep(
+            0,
+            result={"positions": [{"symbol": "VCB", "current_price_vnd": 100}]},
+        ),
+    )
     with pytest.raises(BadRequestError):
-        await service.set_dynamic_stop(test_user.id, "VCB", 95)
-    monkeypatch.setattr(service._trading, "get_portfolio", lambda _user_id: __import__("asyncio").sleep(0, result={"positions": [{"symbol": "VCB", "current_price_vnd": 120}] }))
+        await service.set_dynamic_stop(test_user.id, "VCB", 90)
+    monkeypatch.setattr(
+        service._trading,
+        "get_portfolio",
+        lambda _user_id: __import__("asyncio").sleep(
+            0,
+            result={"positions": [{"symbol": "VCB", "current_price_vnd": 120}]},
+        ),
+    )
     with pytest.raises(BadRequestError):
         await service.set_dynamic_stop(test_user.id, "VCB", 90)
     saved = await service.set_dynamic_stop(test_user.id, "VCB", 110)

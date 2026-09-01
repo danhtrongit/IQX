@@ -611,7 +611,7 @@ Internal Server Error
 
 ### 8.1 Webhook SePay IPN — `{"error": "<slug>"}`
 
-`POST /api/v1/premium/ipn` (`app/api/v1/endpoints/premium.py`) **không raise exception**, mà `return JSONResponse(...)` với hình dạng riêng:
+`POST /api/v1/premium/sepay/ipn` (`app/api/v1/endpoints/premium.py`) **không raise exception**, mà `return JSONResponse(...)` với hình dạng riêng:
 
 | Điều kiện | Status | Body | Side-effect (luôn xảy ra TRƯỚC khi trả) |
 |---|---|---|---|

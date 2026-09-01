@@ -14,10 +14,10 @@ sinh tự động từ OpenAPI schema của app đang chạy. Chỗ nào chưa x
 
 | Hạng mục | Số lượng |
 |---|---|
-| REST operation phải phục vụ | **293** (291 trong OpenAPI + **2 route ẩn**) |
+| REST operation phải phục vụ | **289** (287 trong OpenAPI + **2 route ẩn**) |
 | WebSocket endpoint | 1 |
 | Bảng Postgres | 45 |
-| Schema request/response | 229 |
+| Schema request/response | 219 |
 | Nhà cung cấp dữ liệu ngoài | 19 |
 | Job nền theo lịch | 7+ |
 
@@ -29,8 +29,8 @@ sinh tự động từ OpenAPI schema của app đang chạy. Chỗ nào chưa x
 
 | Hạng mục | Mức tin cậy | Cơ sở |
 |---|---|---|
-| Danh sách 293 endpoint, method, path, params, quyền | **Cao** — sinh tự động + đã kiểm | Dump từ `app.openapi()` **cộng** 2 route `include_in_schema=False` lấy từ `app.routes`; verifier đối chiếu lại với router thật |
-| `types/openapi-schemas.d.ts` (229 schema) | **Cao** — sinh tự động, đã kiểm | Đã qua `tsc --noEmit --strict` (exit 0) |
+| Danh sách 289 endpoint, method, path, params, quyền | **Cao** — sinh tự động + đã kiểm | Dump từ `app.openapi()` **cộng** 2 route `include_in_schema=False` lấy từ `app.routes`; verifier đối chiếu lại với router thật |
+| `types/openapi-schemas.d.ts` (219 schema) | **Cao** — sinh tự động, đã kiểm | Đã qua `tsc --noEmit --strict` (exit 0) |
 | Lược đồ CSDL (45 bảng) | **Khá cao** | Đọc `app/models/` + đối chiếu 45 migration Alembic |
 | Hợp đồng lỗi + quy ước (ch02/03/04) | **Cao** — 28 assert chạy thật | `_verify/verify_behaviour.py` gọi TestClient vào app thật |
 | Hành vi endpoint, fallback, side-effect, công thức | **Trung bình** | Đọc source + test; **chưa qua vòng đối chiếu độc lập** |
@@ -52,11 +52,13 @@ bởi giới hạn chi tiêu. Nghĩa là:
 Hai script **tất định** (không dùng LLM) giữ cho tài liệu không trôi khỏi source:
 
 ```bash
-.venv/bin/python docs/rewrite-ts/_verify/verify_docs.py       # 8 kiểm tra tĩnh
-.venv/bin/python docs/rewrite-ts/_verify/verify_behaviour.py  # 28 assert hành vi chạy thật
+uv run python docs/rewrite-ts/_verify/generate_openapi_artifacts.py
+uv run python docs/rewrite-ts/_verify/generate_openapi_artifacts.py --check
+uv run python docs/rewrite-ts/_verify/verify_docs.py
+uv run python docs/rewrite-ts/_verify/verify_behaviour.py
 ```
 
-`verify_docs.py` đối chiếu: độ phủ 293 endpoint · curl trỏ đúng route · 93 biến env ·
+`verify_docs.py` đối chiếu: độ phủ 289 endpoint · curl trỏ đúng route · 93 biến env ·
 7 mã lỗi · 45 bảng · link nội bộ · code fence · **route thật trong `app.routes` vs manifest**
 (chính kiểm tra cuối này đã phát hiện 2 route ẩn khỏi OpenAPI).
 `verify_behaviour.py` biến các khẳng định của ch02/03/04/20 thành assert gọi vào app thật.
@@ -113,24 +115,24 @@ Hai script **tất định** (không dùng LLM) giữ cho tài liệu không tr�
 | 30 | [Người quản lý danh mục](30-endpoints-quan-ly-danh-muc.md) | 2 |
 | 31 | [Giao dịch ảo (người dùng + quản trị)](31-endpoints-giao-dich-ao.md) | 24 |
 | 32 | [Đấu trường Cấp 0, 1, 2](32-endpoints-cap-0-2.md) | 20 |
-| 33 | [Đấu trường Cấp 3, 4](33-endpoints-cap-3-4.md) | 14 |
-| 34 | [Đấu trường Cấp 5, 6](34-endpoints-cap-5-6.md) | 18 |
-| 35 | [Đấu trường Cấp 7, 8](35-endpoints-cap-7-8.md) | 16 |
+| 33 | [Đấu trường Cấp 3, 4](33-endpoints-cap-3-4.md) | 12 |
+| 34 | [Đấu trường Cấp 5, 6](34-endpoints-cap-5-6.md) | 21 |
+| 35 | [Đấu trường Cấp 7, 8](35-endpoints-cap-7-8.md) | 11 |
 | 36 | [Watchlist, bản vẽ biểu đồ, Backtest](36-endpoints-watchlist-ban-ve-backtest.md) | 14 |
 | 37 | [Cảnh báo, quản trị cảnh báo, Telegram](37-endpoints-canh-bao-telegram.md) | 16 |
 | 38 | [Bài học (công khai + quản trị)](38-endpoints-bai-hoc.md) | 16 |
 | 39 | [Quản trị: người dùng, số liệu, hệ thống, audit](39-endpoints-quan-tri.md) | 12 |
-| | **Tổng** | **293** |
+| | **Tổng** | **289** |
 
 ### Tra cứu & nghiệm thu
 
 | # | File | Nội dung |
 |---|---|---|
-| 90 | [Danh mục đầy đủ 293 endpoint](90-danh-muc-endpoint.md) | Bảng tra sinh tự động — checklist độ phủ |
+| 90 | [Danh mục đầy đủ 289 endpoint](90-danh-muc-endpoint.md) | Bảng tra sinh tự động — checklist độ phủ |
 | 98 | [Điểm chưa xác định](98-diem-chua-xac-dinh.md) | **194 điểm** nơi đặc tả còn mềm — đọc trước khi implement |
 | 99 | [Checklist nghiệm thu](99-checklist-nghiem-thu.md) | Điều kiện coi là "đã viết lại xong" |
-| — | [`types/openapi-schemas.d.ts`](types/openapi-schemas.d.ts) | **229 schema** dịch tự động sang TypeScript, đã qua `tsc --strict` |
-| — | [`types/endpoint-manifest.json`](types/endpoint-manifest.json) | 293 operation dạng máy đọc được (method, path, params, quyền, chương, cờ `hiddenFromOpenApi`) |
+| — | [`types/openapi-schemas.d.ts`](types/openapi-schemas.d.ts) | **219 schema** dịch tự động sang TypeScript, đã qua `tsc --strict` |
+| — | [`types/endpoint-manifest.json`](types/endpoint-manifest.json) | 289 operation dạng máy đọc được (method, path, params, quyền, chương, cờ `hiddenFromOpenApi`) |
 
 ---
 

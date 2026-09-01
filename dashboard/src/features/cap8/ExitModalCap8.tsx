@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { usePlaceOrder } from "@/features/trading"
 import { getErrorMessage } from "@/shared/http/client"
 import { cap8Api } from "./api"
+import { boardLotPartialBounds } from "./exitMath"
 import { useCap8ExitContext, useCap8ExitImpact, useSetCap8DynamicStop } from "./hooks"
 import { cap8Keys } from "./keys"
 
@@ -27,19 +28,6 @@ function ErrorMessage({ error, fallback, className }: { error: unknown; fallback
   return <p className={className}>{message}</p>
 }
 
-export function boardLotPartialBounds(
-  quantitySellable: number, boardLotSize: number, selected?: number,
-): { min: number; max: number; value: number; available: boolean } {
-  const maxLot = Math.floor(quantitySellable / boardLotSize) * boardLotSize
-  const max = maxLot >= quantitySellable ? maxLot - boardLotSize : maxLot
-  const available = max >= boardLotSize
-  return {
-    min: boardLotSize,
-    max,
-    value: Math.min(Math.max(selected ?? boardLotSize, boardLotSize), max),
-    available,
-  }
-}
 
 export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | null; visible: boolean; onClose: () => void }) {
   const queryClient = useQueryClient()
@@ -49,6 +37,7 @@ export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | n
   const [dynamicStop, setDynamicStop] = useState<number | undefined>()
   const [evidenceSellId, setEvidenceSellId] = useState<string | null>(null)
   const [evidenceError, setEvidenceError] = useState<unknown>(null)
+  const [orderError, setOrderError] = useState<unknown>(null)
   const [retryingEvidence, setRetryingEvidence] = useState(false)
   const dynamic = useSetCap8DynamicStop(symbol ?? "")
   const recordEvidence = async (sellOrderId: string) => {
@@ -59,6 +48,10 @@ export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | n
     ])
   }
   const sell = usePlaceOrder(async (order) => {
+    if (order.status.toLowerCase() !== "filled") {
+      setOrderError(new Error("Lệnh bán không được khớp."))
+      return
+    }
     try {
       await recordEvidence(order.id)
       onClose()
@@ -132,7 +125,7 @@ export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | n
               <span>{partial.value.toLocaleString("en-US")} cổ phiếu (lô {context.board_lot_size})</span></div>
           )}
           {emotionalWarning && <p className="text-warning">Bạn đang bán toàn bộ khi có lãi nhưng chưa chạm chốt lời. Lệnh vẫn được gửi, nhưng có thể không được tính là thoát theo kế hoạch.</p>}
-          <Button type="primary" loading={sell.isPending} disabled={quantity <= 0 || evidenceSellId !== null} onClick={() => sell.mutate({ symbol: context.symbol, side: "sell", method: "market", quantity })}>
+          <Button type="primary" loading={sell.isPending} disabled={quantity <= 0 || evidenceSellId !== null} onClick={() => { setOrderError(null); sell.mutate({ symbol: context.symbol, side: "sell", method: "market", quantity }) }}>
             {mode === "full" ? "Bán toàn bộ" : `Bán ${quantity.toLocaleString("en-US")}`}
           </Button>
           {evidenceSellId !== null && (
@@ -156,7 +149,7 @@ export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | n
               </Button>
             </div>
           )}
-          {sell.isError && evidenceSellId === null && <ErrorMessage error={sell.error} fallback="Không thể gửi lệnh bán." className="text-danger" />}
+          {evidenceSellId === null && (orderError || sell.isError) && <ErrorMessage error={orderError ?? sell.error} fallback="Không thể gửi lệnh bán." className="text-danger" />}
           {context.can_update_dynamic_stop && (
             <div className="border-t border-[var(--color-border-2)] pt-3">
               <b>Nâng cắt lỗ động</b>
