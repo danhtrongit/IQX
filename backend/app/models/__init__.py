@@ -28,7 +28,7 @@ from app.models.cap4 import Cap4Progress  # noqa: F401
 from app.models.cap5 import Cap5HuntLog, Cap5Progress  # noqa: F401
 from app.models.cap6 import Cap6Progress, Cap6Skip  # noqa: F401
 from app.models.cap7 import Cap7Progress  # noqa: F401
-from app.models.cap8 import Cap8Progress  # noqa: F401
+from app.models.cap8 import Cap8Exit, Cap8Progress  # noqa: F401
 from app.models.backtest_strategy import BacktestStrategy  # noqa: F401
 from app.models.chart_drawing import ChartDrawing  # noqa: F401
 from app.models.ipn_log import SePayIPNLog  # noqa: F401

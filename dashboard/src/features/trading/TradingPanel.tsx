@@ -90,16 +90,7 @@ import {
   type ConflictLevel,
   type KieuCoPhieu,
 } from "@/features/cap6"
-import {
-  KiemTraDanhMucBlock,
-  giamKhoiLuong,
-  hanhViCanhBaoToSend,
-  useCap8Events,
-  useKiemTraCap8,
-  useRecordKehoachCap8,
-  type HanhViCanhBao,
-  type LoaiCanhBao,
-} from "@/features/cap8"
+import { cap8Api, useCap8Active } from "@/features/cap8"
 import { getErrorMessage } from "@/shared/http/client"
 import { cn } from "@/shared/lib/cn"
 import { StockLogo } from "@/features/navigation/StockLogo"
@@ -407,32 +398,7 @@ function OrderEntry({
   const [cap6KhongMua, setCap6KhongMua, resetCap6KhongMua] = useLuaChonTheoMa<true>(symbol)
   const recordKehoachMauThuanCap6 = useRecordKehoachMauThuanCap6()
   const skipCap6 = useSkipCap6()
-  const cap8Events = useCap8Events()
-  // Cấp 8 is provider-gated and leaves lower-level trading behavior unchanged.
-  //
-  // ★★ IT ADDS NO GATE AT ALL (spec §9 rules out a cổng cứng; §C8 puts the
-  // decision with the user — cảnh báo MỀM). `isCap8Active` must NEVER appear in
-  // the `disabled` chain of the MUA button below; a user who ignores every
-  // warning places an order exactly as they did at Cấp 7.
-  const { isCap8Active } = cap8Events
-  const recordKehoachCap8 = useRecordKehoachCap8()
-  // Cấp 8 bước "Kiểm tra danh mục" (spec §4) — lựa chọn của user trước cảnh báo
-  // danh mục. `null` cho tới khi họ bấm; không bấm cũng đặt lệnh được.
-  //
-  // ★ Lựa chọn được GẮN với mã nó thuộc về (cùng luật `useLuaChonTheoMa` mà Cấp
-  // 6/7 dùng ở trên) — nhưng ở đây state còn mang thêm CHÍNH danh sách cảnh báo
-  // đang hiện lúc user bấm, nên nó giữ `useState` riêng.
-  //
-  // ★★ `canhBaoDaHien` không phải dữ liệu thừa. "Giảm khối lượng" / "Chọn mã
-  // khác" chính là thứ làm cảnh báo TẮT ĐI, nên khi server suy lại theo lệnh đã
-  // điều chỉnh nó không còn thấy cảnh báo nào để chấp nhận hai lựa chọn đó. Giữ
-  // lại danh sách user THẬT SỰ nhìn thấy lúc bấm là cách duy nhất để một lệnh mà
-  // user đã NGHE lời cảnh báo không bị ghi thành "danh mục không có cảnh báo nào".
-  const [cap8HanhViState, setCap8HanhViState] = useState<{
-    symbol: string
-    value: HanhViCanhBao
-    canhBaoDaHien: LoaiCanhBao[]
-  } | null>(null)
+  const isCap8Active = useCap8Active()
   const [method, setMethod] = useState<"market" | "limit">("market")
   const [price, setPrice] = useState<number | undefined>(undefined)
   const [volume, setVolume] = useState<number>(100)
@@ -525,76 +491,6 @@ function OrderEntry({
   // for a BUY inside Cấp 6.
   const cap6SubmitDisabled =
     side === "buy" && cap6CoMauThuan && !isDoiChieuValid(cap6LopQuyetDinh, cap6LyDo)
-  // Cấp 8 bước "Kiểm tra danh mục" (spec §4) — the panel holds the SAME query
-  // the block renders (react-query dedupes by key, so this is one request, not
-  // two): it needs `canh_bao` at fill time to send a `hanh_vi_canh_bao` the
-  // server will accept. Only queried inside Cấp 8, and DEBOUNCED inside the hook
-  // — this check is O(vị thế) price lookups plus bounded O(n²) correlation
-  // fetches, hanging off a volume field the user types into.
-  //
-  // ★ There is deliberately NO `cap8SubmitDisabled`. Cấp 8 never gates MUA
-  // (spec §9/§C8) — see `isCap8Active`'s note above.
-  const { data: cap8KiemTra } = useKiemTraCap8(
-    { symbol, khoiLuong: numVolume, gia: numPrice, catLo: cap2CatLo },
-    isCap8Active,
-  )
-  // ★★ MỘT KẾT QUẢ KIỂM TRA CHỈ DÙNG ĐƯỢC CHO ĐÚNG LỆNH NÓ NÓI VỀ.
-  // `useKiemTraCap8` debounce đầu vào (400 ms) và cache 30 s, nên ngay sau khi
-  // user đổi mã hoặc đổi khối lượng, `cap8KiemTra` VẪN là kết quả của lệnh
-  // trước. Bấm MUA trong khoảng đó mà cứ dùng nó thì `hanh_vi_canh_bao`, ngành,
-  // % dồn ngành, tổng rủi ro và danh sách cảnh báo đều đang tả MỘT LỆNH KHÁC:
-  // server suy lại và 400 (đúng, nên cột để null), nhưng `Cap8OrderEvent` thì
-  // vẫn mang bộ số sai đó đi và Kết sổ kể lại ngành + rủi ro của một mã khác.
-  const cap8KiemTraKhop =
-    cap8KiemTra &&
-    cap8KiemTra.symbol.toUpperCase() === symbol.toUpperCase() &&
-    cap8KiemTra.khoi_luong === numVolume
-      ? cap8KiemTra
-      : null
-  // Ghi khối Kiểm tra danh mục chỉ khi bước này THẬT SỰ chạy được cho CHÍNH lệnh
-  // này: không có kết quả kiểm tra khớp thì không có gì trung thực để ghi (cột
-  // để null), và lệnh vẫn đặt bình thường.
-  const cap8Ready = isCap8Active && !!cap8KiemTraKhop
-  const cap8CanhBao = cap8KiemTraKhop?.canh_bao ?? []
-  // ★ `chon_ma_khac` KHÔNG BAO GIỜ đúng cho một lệnh mua CHÍNH mã đó. Nút ấy mở
-  // bước chọn mã khác; nếu user quay lại mã cũ ("Quay lại mã trước đó") rồi mua
-  // y nguyên, thì họ đã KHÔNG đổi mã — ghi `chon_ma_khac` sẽ miễn cho lệnh này
-  // một lần "mua bất chấp" ở nhiệm vụ ②, in ra "bạn: Chọn mã khác ✓" và khiến
-  // coach khen một điều chỉnh chưa từng xảy ra. Còn nếu user ĐÃ đổi sang mã
-  // khác thì lựa chọn này rơi theo mã (điều kiện `symbol` bên dưới).
-  const cap8HanhVi =
-    cap8HanhViState?.symbol === symbol && cap8HanhViState.value !== "chon_ma_khac"
-      ? cap8HanhViState.value
-      : null
-  // Danh sách cảnh báo NGAY LÚC user bấm = đúng cái `KiemTraDanhMucBlock` đang
-  // hiện (cùng một query, react-query dedupe theo key), tức "kết quả kiểm tra
-  // user thật sự nhìn thấy".
-  const setCap8HanhVi = (value: HanhViCanhBao) =>
-    setCap8HanhViState({
-      symbol,
-      value,
-      canhBaoDaHien: (cap8KiemTra?.canh_bao ?? []).map((c) => c.ma),
-    })
-  // ★ Chỉ lựa chọn ĐIỀU CHỈNH LỆNH mới cần khai lại cảnh báo đã hiện: chính hành
-  // động của user làm cảnh báo tắt, nên server không suy lại được nó từ lệnh sau
-  // điều chỉnh. `van_mua`/`khong_canh_bao` không đổi gì cả — với hai giá trị đó
-  // server tự suy lại là nguồn đúng duy nhất, và backend bỏ qua trường này.
-  // (`chon_ma_khac` là giá trị thứ ba backend nhận trường này, nhưng nó KHÔNG BAO
-  // GIỜ là lựa chọn hiệu lực của một lệnh mua — xem `cap8HanhVi` ở trên.)
-  const cap8CanhBaoDaHien =
-    cap8HanhVi === "giam_kl" ? (cap8HanhViState?.canhBaoDaHien ?? []) : null
-  // Có cảnh báo hay không: với một lệnh ĐÃ điều chỉnh thì lấy theo bộ cảnh báo
-  // user đã thấy và đã đáp lại — nếu lấy theo lần kiểm tra sau điều chỉnh, một
-  // user vừa nghe lời sẽ bị ghi thành "danh mục không có cảnh báo nào".
-  const cap8CoCanhBao = cap8CanhBaoDaHien
-    ? cap8CanhBaoDaHien.length > 0
-    : cap8CanhBao.length > 0
-  const cap8HanhViGui = hanhViCanhBaoToSend(cap8CoCanhBao, cap8HanhVi)
-  // Cảnh báo để KỂ LẠI ở Kết sổ = cùng bộ đã quyết ra `cap8HanhViGui`, nếu không
-  // màn Kết sổ sẽ in "bạn: Giảm khối lượng ✓" ngay dưới một dòng "không có cảnh
-  // báo nào".
-  const cap8DanhMucCanhBao = cap8CanhBaoDaHien ?? cap8CanhBao.map((c) => c.ma)
-
   // Analytics `cap4_lo_ai(so_khac_ai)` (spec §8) — fires once per reveal, when
   // `Doc5LopBlock` reports the AI đối chiếu it just un-hid. By the time this
   // effect runs, `cap4Doc5Lop` is already the completed 5-lớp map (same render
@@ -775,7 +671,7 @@ function OrderEntry({
         // có mâu thuẫn thì không có gì để nhận định.
         const cap6BacThayReady =
           isCap6BacThay && coBangMauThuan(cap6MauThuan) && cap6NhanDinh != null
-        if (cap2Ready || cap4Ready || cap6Ready || cap6BacThayReady || cap8Ready) {
+        if (cap2Ready || cap4Ready || cap6Ready || cap6BacThayReady) {
           await ghiKehoachKhongChiMang(() => recordKehoach.mutateAsync(kehoachPayload))
           if (isCap2Active && cap2Method && cap2CatLo && cap2ChotLoi) {
             await ghiKehoachKhongChiMang(() =>
@@ -786,6 +682,11 @@ function OrderEntry({
                 chot_loi: cap2ChotLoi,
               }),
             )
+          }
+          if (side === "buy" && isCap8Active && cap2Ready) {
+            // The Cấp 2 plan is persisted first; Cấp 8 copies only server-held
+            // thresholds from that filled BUY and never accepts client evidence.
+            await ghiKehoachKhongChiMang(() => cap8Api.syncPlan(symbol, order.id))
           }
           // Cấp 3 (spec §6 "Ghi hồ sơ") — same chained-await reason as Cấp 2:
           // `/cap3/kehoach` extends the SAME `order_kehoach` row, so it must
@@ -853,37 +754,6 @@ function OrderEntry({
               recordKehoachMauThuanCap6.mutateAsync({
                 order_id: order.id,
                 conflict_level: cap6NhanDinh,
-              }),
-            )
-          }
-          // Cấp 8 (spec §4/§8 "Ghi") — LAST in the chain, same single
-          // `order_kehoach` row (Cấp 8 only adds the Kiểm tra danh mục block).
-          //
-          // ★ Không đo đạc nào của FE được gửi lên: server re-derives every
-          // measure from the real portfolio and stores its own, so a client
-          // cannot post an empty warning list to keep its "mua bất chấp" count
-          // clean. `hanhViCanhBaoToSend` makes the value AGREE with what actually
-          // fired — the server rejects the contradiction with 400.
-          //
-          // ★★ `canh_bao_da_hien` là NGOẠI LỆ DUY NHẤT, và chỉ cho hai lựa chọn
-          // có ĐIỀU CHỈNH LỆNH. Giảm khối lượng / đổi mã chính là thứ làm cảnh
-          // báo tắt đi, nên server suy lại theo lệnh sau điều chỉnh sẽ không thấy
-          // cảnh báo nào và từ chối `giam_kl`/`chon_ma_khac` — nghĩa là một lệnh
-          // user ĐÃ NGHE lời chỉ ghi được thành "danh mục không có cảnh báo nào".
-          // Trường này khai lại đúng bộ cảnh báo của lần kiểm tra user đã phản
-          // hồi. Server BỎ QUA nó với `van_mua`/`khong_canh_bao`.
-          //
-          // ★★★ NON-FATAL BY DESIGN — như mọi lần ghi kế hoạch ở trên. Lệnh đã
-          // khớp, và server vẫn 400 hợp lệ khi danh mục dịch chuyển giữa lần kiểm
-          // tra và lần server tự suy lại sau khớp.
-          if (cap8Ready) {
-            await ghiKehoachKhongChiMang(() =>
-              recordKehoachCap8.mutateAsync({
-                order_id: order.id,
-                hanh_vi_canh_bao: cap8HanhViGui,
-                ...(cap8HanhViGui === "giam_kl" || cap8HanhViGui === "chon_ma_khac"
-                  ? { canh_bao_da_hien: cap8CanhBaoDaHien ?? [] }
-                  : {}),
               }),
             )
           }
@@ -980,42 +850,6 @@ function OrderEntry({
               }
             : {}),
         })
-        // Cấp 8 — khối Kiểm tra danh mục đi kèm CHỈ khi bước này chạy được. Các
-        // con số là thứ FE ĐÃ HIỆN cho user (để Kết sổ kể lại đúng cái họ nhìn
-        // thấy lúc mua); server vẫn tự suy lại và lưu số của chính nó.
-        cap8Events.onOrderFilled?.({
-          symbol,
-          side,
-          quantity: order.quantity,
-          price: order.price,
-          orderId: order.id,
-          ...(cap8Ready && cap8KiemTraKhop
-            ? {
-                donNganhPct: cap8KiemTraKhop.don_nganh_pct_sau,
-                // ★ `nganh` + `so_vi_the_thieu_cat_lo` KHÔNG có cột nào trên
-                // `order_kehoach`, nên phản hồi `GET /cap8/kiem-tra` này là nguồn
-                // DUY NHẤT để Kết sổ gọi tên được ngành và nói ra được caveat "N
-                // vị thế chưa có cắt lỗ". Không gửi kèm thì khối Kết sổ phải viết
-                // "Ngành của mã" và tự nhận là không biết có vị thế nào thiếu cắt
-                // lỗ hay không — trong khi lúc mua hệ ĐÃ biết cả hai.
-                nganh: cap8KiemTraKhop.nganh,
-                // ★ `tuong_quan_du_lieu` là điều kiện, đúng như khối đang hiện
-                // trên màn (`KiemTraDanhMucBlock` chỉ in hệ số khi
-                // `tuong_quan_du_lieu && tuong_quan`). Nếu server từng trả
-                // `canh_bao: true` kèm `du_lieu: false`, chỉ xét `canh_bao` sẽ
-                // đẩy một `he_so` KHÔNG TÍNH ĐƯỢC lên Kết sổ và in ra "MBB
-                // (~0.00)" — đúng cái "chưa biết hiện thành 0" mà cả Cấp 8 dạy.
-                tuongQuanCaoVoi:
-                  cap8KiemTraKhop.tuong_quan_du_lieu && cap8KiemTraKhop.tuong_quan_canh_bao
-                    ? cap8KiemTraKhop.tuong_quan
-                    : null,
-                tongRuiRoPct: cap8KiemTraKhop.tong_rui_ro_pct_sau,
-                soViTheThieuCatLo: cap8KiemTraKhop.so_vi_the_thieu_cat_lo,
-                danhMucCanhBao: cap8DanhMucCanhBao,
-                hanhViCanhBao: cap8HanhViGui,
-              }
-            : {}),
-        })
         // Reset the Kế hoạch form for the next order.
         setCap1LyDo(null)
         setCap1VungMuaOverride(undefined)
@@ -1043,10 +877,6 @@ function OrderEntry({
         // "không mua" của mã trước không được dính sang.
         resetCap6NhanDinh()
         resetCap6KhongMua()
-        // Cấp 8: lệnh sau phải quyết lại trước cảnh báo của CHÍNH nó — danh mục
-        // vừa đổi vì lệnh này, nên một lựa chọn còn sót lại đã nói về một danh
-        // mục không còn tồn tại.
-        setCap8HanhViState(null)
       }
       // Cấp 1 (spec §6 "Kết sổ mở khi user bán 1 lệnh Thực chiến") — a SELL
       // fill inside Cấp 1 notifies the bus too (no `lyDo`/`trangThaiLucDat`/
@@ -1058,7 +888,7 @@ function OrderEntry({
       // Cấp 2's, so `KetsoModalCap3` opened off another cấp's bus) — each
       // cấp's Kết sổ now listens to its own. The `?.` calls are no-ops outside
       // each provider, so the `||` widening cannot regress Cấp 1/2.
-      if (side === "sell" && (isCap1Active || isCap3Active || isCap4Active || isCap5Active || isCap6Active || isCap8Active)) {
+      if (side === "sell" && (isCap1Active || isCap3Active || isCap4Active || isCap5Active || isCap6Active)) {
         const sellEvent = {
           symbol,
           side,
@@ -1075,9 +905,6 @@ function OrderEntry({
         cap5Events.onOrderFilled?.(sellEvent)
         // Cấp 6's Kết sổ (đối chiếu nhìn lại) — cùng lý do, bus của chính nó.
         cap6Events.onOrderFilled?.(sellEvent)
-        // Cấp 8's Kết sổ (cảnh báo danh mục lúc mua vs cách xử lý) — bus của
-        // chính nó, cùng lý do.
-        cap8Events.onOrderFilled?.(sellEvent)
       }
       const totalStr = (order.total || order.price * order.quantity).toLocaleString("en-US")
       Message.success(
@@ -1482,40 +1309,6 @@ function OrderEntry({
         )}
 
 
-        {/* Cấp 8's portfolio check remains provider-gated and buy-side only. */}
-        {side === "buy" && isCap8Active && (
-          <KiemTraDanhMucBlock
-            symbol={symbol}
-            khoiLuong={numVolume}
-            gia={numPrice}
-            catLo={cap2CatLo}
-            hanhVi={cap8HanhVi}
-            onHanhVi={setCap8HanhVi}
-            onGiamKhoiLuong={() => {
-              // Sửa CHÍNH ô Khối lượng của Cấp 3, giữ luật lô 100 (spec §6.3).
-              setVolume((v) => giamKhoiLuong(v))
-              // ★ Đây là một lần user sửa tay: nếu không đánh dấu, auto-fill của
-              // Cấp 3 sẽ ghi đè lại con số vừa giảm ngay lần render sau — đúng
-              // lúc user vừa chọn làm điều an toàn hơn.
-              if (isCap3Active) setCap3VolumeTouched(true)
-            }}
-            onChonMaKhac={() => {
-              // ★★ CỐ Ý KHÔNG LÀM GÌ Ở ĐÂY — và tuyệt đối KHÔNG `setSymbol("")`.
-              //
-              // Mã rỗng là một trạng thái KHÔNG TỒN TẠI ở bất kỳ chỗ nào khác
-              // trong terminal dùng chung: `CenterPanel` → `TVChart` key toàn bộ
-              // effect khởi tạo theo `symbol`, nên một cú bấm "Chọn mã khác" sẽ
-              // huỷ và dựng lại widget TradingView trên một mã không phân giải
-              // được (kèm một vòng `chartDrawingsApi.get("")`), rồi huỷ và dựng
-              // lại lần nữa khi bước chọn mã trả mã về.
-              //
-              // Bước chọn mã được mở từ CHÍNH bus Cấp 8: `KiemTraDanhMucBlock` đã
-              // bắn `cap8Events.onCheckHanhVi("chon_ma_khac")` trước khi gọi
-              // callback này, và `Cap8Terminal` mở hộp chọn mã từ event đó — mã
-              // đang xem không bao giờ phải đi qua trạng thái rỗng.
-            }}
-          />
-        )}
 
         {/* Submit — Cấp 1's cổng cứng (spec §4) disables MUA until lý do +
             vùng mua are both set; Cấp 2's cổng cứng (spec §5.4) ALSO

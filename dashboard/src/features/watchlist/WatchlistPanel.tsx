@@ -35,6 +35,8 @@ import { StockLogo } from "@/features/navigation/StockLogo"
 // nhiệm vụ through it instead of calling a Cấp 0 hook from here.
 import { useCap0Events } from "@/features/cap0/Cap0Context"
 import { Cap7PortfolioAnalysisPanel } from "@/features/cap7/Cap7PortfolioAnalysisPanel"
+import { ExitModalCap8 } from "@/features/cap8/ExitModalCap8"
+import { useCap8Active } from "@/features/cap8/Cap8Context"
 import { IconActivity, IconBriefcase, IconWallet } from "./icons"
 import {
   useAddToWatchlist,
@@ -326,6 +328,8 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
   const open = (s: string) => (onRowSelect ? onRowSelect(s) : navigate(`/co-phieu/${s}`))
   const { data: portfolio, isLoading } = usePortfolio()
   const [filter, setFilter] = useState<"all" | "profit" | "loss">("all")
+  const isCap8Active = useCap8Active()
+  const [exitSymbol, setExitSymbol] = useState<string | null>(null)
 
   const positions = portfolio?.positions ?? []
   const symbols = useMemo(() => positions.map((p) => p.symbol), [positions])
@@ -450,10 +454,14 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
             const isP = item.unrealizedPnl >= 0
             const color = isP ? "text-up" : "text-down"
             return (
-              <button
+              <div
                 key={item.symbol}
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => open(item.symbol)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") open(item.symbol)
+                }}
                 className="group w-full px-2 py-2 text-left transition-colors hover:bg-[var(--color-fill-1)]"
               >
                 <div className="flex items-center">
@@ -482,11 +490,24 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
                       {item.pnlPercent.toFixed(2)}%
                     </span>
                   </div>
+                  {isCap8Active && (
+                    <Button
+                      size="mini"
+                      type="outline"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        setExitSymbol(item.symbol)
+                      }}
+                    >
+                      Bán
+                    </Button>
+                  )}
                 </div>
-              </button>
+              </div>
             )
           })
         )}
+      <ExitModalCap8 symbol={exitSymbol} visible={exitSymbol != null} onClose={() => setExitSymbol(null)} />
       </div>
 
       {/* Footer total */}

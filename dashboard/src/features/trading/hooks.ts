@@ -88,8 +88,12 @@ export interface PlaceOrderInput {
   price?: number
 }
 
-/** Place a buy/sell, market/limit order; refetches account + portfolio + orders. */
-export function usePlaceOrder() {
+/**
+ * Place a buy/sell through the sole virtual-trading engine. `afterFilled` runs
+ * before cache invalidation, allowing Level 8 to persist server-derived exit
+ * evidence before Holdings/Kết sổ refetches the changed position.
+ */
+export function usePlaceOrder(afterFilled?: (order: VTOrderResult) => Promise<void>) {
   const invalidate = useInvalidateTrading()
   return useMutation<VTOrderResult, unknown, PlaceOrderInput>({
     mutationFn: ({ symbol, side, method, quantity, price }) => {
@@ -102,7 +106,13 @@ export function usePlaceOrder() {
         ? tradingApi.buyLimit(symbol, quantity, price ?? 0)
         : tradingApi.sellLimit(symbol, quantity, price ?? 0)
     },
-    onSuccess: invalidate,
+    onSuccess: async (order) => {
+      try {
+        await afterFilled?.(order)
+      } finally {
+        await invalidate()
+      }
+    },
   })
 }
 

@@ -163,6 +163,19 @@ class VirtualPosition(UUIDMixin, TimestampMixin, Base):
     quantity_reserved: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     avg_cost_vnd: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
 
+    # Cấp 8's active exit plan for this aggregate average-cost position. The
+    # latest filled BUY with a complete plan replaces the static values and
+    # intentionally clears any trailing stop inherited from an earlier buy.
+    active_plan_buy_order_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("virtual_orders.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    active_original_stop_vnd: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    active_original_take_profit_vnd: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    active_dynamic_stop_vnd: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    active_dynamic_stop_set_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
 
 class VirtualOrder(UUIDMixin, TimestampMixin, Base):
     """Virtual trading order with config snapshot and fill details."""

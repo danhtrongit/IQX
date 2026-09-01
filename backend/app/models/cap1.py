@@ -50,7 +50,6 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
-    Numeric,
     String,
     UniqueConstraint,
 )
@@ -288,36 +287,6 @@ class OrderKehoach(UUIDMixin, TimestampMixin, Base):
     veto_layers: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
 
-    # ── Cấp 8 additions (spec §4/§8) — "Kiểm tra danh mục": ảnh chụp tác động
-    # của CHÍNH lệnh này lên cả danh mục, ghi ngay lúc mua. Chỉ điền cho lệnh
-    # mua có qua bước Kiểm tra danh mục; mọi lệnh Cấp 1-7 để NULL hết, nên tất
-    # cả các cột dưới đây đều nullable.
-    #   · ``don_nganh_pct`` — % danh mục nằm ở NGÀNH của mã SAU lệnh này
-    #     (``Symbol.icb_lv2``/``icb_lv1``, ngành thô — KHÔNG đi qua 6 kiểu của
-    #     Cấp 6, đó là một trừu tượng khác). NULL = chưa xác định được ngành.
-    #   · ``tuong_quan_cao_voi`` — JSON ``{symbol, he_so}`` của vị thế ĐÁNG KỂ
-    #     có tương quan cao nhất với mã này, hoặc NULL. ★ NULL nghĩa là "không
-    #     tính được / không có cặp nào vượt ngưỡng", KHÔNG BAO GIỜ nghĩa là
-    #     "tương quan bằng 0" — xem ``app.models.cap8`` nguyên tắc ★3.
-    #   · ``tong_rui_ro_pct`` — tổng % vốn mất nếu MỌI cắt lỗ bị chạm, tính SAU
-    #     lệnh này. ★ Chỉ cộng các vị thế BIẾT cắt lỗ; vị thế chưa có cắt lỗ bị
-    #     loại khỏi tổng và đếm riêng (nguyên tắc ★2). NULL = chưa tính được.
-    #   · ``danh_muc_canh_bao`` — JSON list các cảnh báo THẬT SỰ bật lúc mua
-    #     (``app.models.cap8.LoaiCanhBao``). ``[]`` = đã kiểm tra, không có cảnh
-    #     báo nào; NULL = lệnh không qua bước kiểm tra.
-    #   · ``hanh_vi_canh_bao`` — 'van_mua'/'giam_kl'/'chon_ma_khac'/
-    #     'khong_canh_bao'. ★ Đây là cột duy nhất của Cấp 8 lấy từ CLIENT (chỉ
-    #     user biết mình bấm nút nào); 4 cột trên đều do server tự suy lại từ
-    #     danh mục thật. ``van_mua`` KHÔNG bị phạt (spec §9: cảnh báo mềm).
-    don_nganh_pct: Mapped[float | None] = mapped_column(
-        Numeric(9, 4, asdecimal=False), nullable=True
-    )
-    tuong_quan_cao_voi: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    tong_rui_ro_pct: Mapped[float | None] = mapped_column(
-        Numeric(9, 4, asdecimal=False), nullable=True
-    )
-    danh_muc_canh_bao: Mapped[list | None] = mapped_column(JSON, nullable=True)
-    hanh_vi_canh_bao: Mapped[str | None] = mapped_column(String(16), nullable=True)
 
 
 class OrderKetso(UUIDMixin, TimestampMixin, Base):

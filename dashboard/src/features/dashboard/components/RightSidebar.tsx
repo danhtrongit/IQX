@@ -59,12 +59,9 @@ import { useCap6Events } from "@/features/cap6/Cap6Context"
 import { JourneyPanelCap7 } from "@/features/cap7/JourneyPanelCap7"
 import { Cap7PortfolioAnalysisPanel } from "@/features/cap7/Cap7PortfolioAnalysisPanel"
 import { useCap7Events } from "@/features/cap7/Cap7Context"
-// Same anti-cycle rationale, eight levels up — `@/features/cap8`'s barrel
-// re-exports `Cap8TradingPage`, which imports `CenterPanel`/`RightSidebar`/
-// `RightToolbar` from `@/features/dashboard`.
+// Level 8 adds the terminal exit journey; it reuses Level 7's allocation panel.
 import { JourneyPanelCap8 } from "@/features/cap8/JourneyPanelCap8"
-import { Cap8PortfolioAnalysisPanel } from "@/features/cap8/Cap8PortfolioAnalysisPanel"
-import { useCap8Events } from "@/features/cap8/Cap8Context"
+import { useCap8Active } from "@/features/cap8/Cap8Context"
 
 /**
  * Dynamic right sidebar that switches between panels:
@@ -100,7 +97,7 @@ export function RightSidebar() {
   const { isCap5Active } = useCap5Events()
   const { isCap6Active } = useCap6Events()
   const { isCap7Active } = useCap7Events()
-  const { isCap8Active } = useCap8Events()
+  const isCap8Active = useCap8Active()
 
   // ★ Bấm vào một mã trong Danh mục (Nắm giữ / Theo dõi) KHÔNG được rời khỏi
   // `/dau-truong`. `WatchlistPanel`'s default row action navigates to
@@ -219,9 +216,6 @@ export function RightSidebar() {
       case "cap7-analysis":
         // Only reachable from `JourneyPanelCap7`'s own button (inside Cấp 7).
         return isCap7Active ? <Cap7PortfolioAnalysisPanel /> : <JourneyPanel />
-      case "cap8-analysis":
-        // Only reachable from `JourneyPanelCap8`'s own button (inside Cấp 8).
-        return isCap8Active ? <Cap8PortfolioAnalysisPanel /> : <JourneyPanel />
       default:
         return <NewsFeedPanel />
     }
@@ -242,7 +236,6 @@ export function RightSidebar() {
     "cap5-watchlist": "Watchlist",
     "cap6-analysis": "Phân tích danh mục",
     "cap7-analysis": "Phân tích danh mục",
-    "cap8-analysis": "Phân tích danh mục",
   }
 
   return (
