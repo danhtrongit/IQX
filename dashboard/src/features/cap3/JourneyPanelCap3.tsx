@@ -131,37 +131,30 @@ export function JourneyPanelCap3() {
           <ModeBadge mode="thuc_chien" />
         </div>
 
-        {graduated ? (
-          <JourneyFocus
-            desc="Bạn đã vận hành cơ chế khẩu vị × tự tin qua đủ 10 lệnh và cả ba mức tự tin."
-            name="Đã tốt nghiệp Cấp 3 «Bản lĩnh»"
-            ready
-            tag="HOÀN THÀNH"
-            testId="cap3-focus"
-          />
-        ) : focusTask == null ? (
-          <JourneyFocus
-            desc="Bạn đã hoàn thành 10 lệnh có chấm tự tin và dùng đủ ba mức tự tin."
-            name="Sẵn sàng tốt nghiệp Cấp 3"
-            ready
-            tag="ĐÃ XONG CẢ 2 NHIỆM VỤ"
-            testId="cap3-focus"
-          />
-        ) : (
-          <JourneyFocus
-            desc={TASK_DESCRIPTIONS[focusTask]}
-            name={TASK_NAMES[focusTask]}
-            numeral={focusTask === 1 ? "①" : "②"}
-            onGo={() => setActivePanel("trading")}
-            progressText={
-              focusTask === 1
-                ? `${progress?.so_lenh_quan_ly_von ?? 0}/10 lệnh`
-                : `${progress?.so_muc_tu_tin_da_dung ?? 0}/3 mức`
-            }
-            tag="NHIỆM VỤ ĐANG LÀM"
-            testId="cap3-focus"
-          />
-        )}
+        {!graduated &&
+          (focusTask == null ? (
+            <JourneyFocus
+              desc="Bạn đã hoàn thành 10 lệnh có chấm tự tin và dùng đủ ba mức tự tin."
+              name="Sẵn sàng tốt nghiệp Cấp 3"
+              ready
+              tag="ĐÃ XONG CẢ 2 NHIỆM VỤ"
+              testId="cap3-focus"
+            />
+          ) : (
+            <JourneyFocus
+              desc={TASK_DESCRIPTIONS[focusTask]}
+              name={TASK_NAMES[focusTask]}
+              numeral={focusTask === 1 ? "①" : "②"}
+              onGo={() => setActivePanel("trading")}
+              progressText={
+                focusTask === 1
+                  ? `${progress?.so_lenh_quan_ly_von ?? 0}/10 lệnh`
+                  : `${progress?.so_muc_tu_tin_da_dung ?? 0}/3 mức`
+              }
+              tag="NHIỆM VỤ ĐANG LÀM"
+              testId="cap3-focus"
+            />
+          ))}
 
         <div className="cap0-journey-checklist-header mt-3">
           <span className="cap0-journey-checklist-title">TRƯỚC KHI LÊN CẤP 4</span>

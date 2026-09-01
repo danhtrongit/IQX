@@ -118,6 +118,8 @@ describe("JourneyPanelCap3", () => {
     )
     expect(screen.queryByTestId("cap3-task-1")).not.toBeInTheDocument()
     expect(screen.queryByTestId("cap3-task-2")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap3-focus")).not.toBeInTheDocument()
+    expect(screen.queryByText("NHIỆM VỤ ĐANG LÀM")).not.toBeInTheDocument()
     expect(screen.queryByText("Làm ngay →")).not.toBeInTheDocument()
   })
 
