@@ -229,8 +229,9 @@ describe("JourneyPanel", () => {
     ).toBeInTheDocument()
   })
 
-  // ★★ Mockup `iqx-cap0-hanhtrinh.html` là một DANH SÁCH PHẲNG 4 dòng.
-  it("★ renders exactly the 4 task names from the mockup — no 5th, no tour", () => {
+  // ★★ Contract: `demo-trading-update/LEVEL 0/iqx-cap0-hanhtrinh.html` is a
+  // flat, ordered list of exactly four tasks.
+  it("★ renders the source journey's 4 task labels in order — no 5th, no tour", () => {
     useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
     const { container } = render(
       <SidebarProvider>
@@ -240,13 +241,23 @@ describe("JourneyPanel", () => {
     // Trong checklist đầy đủ (đã hạ cấp) — nhiệm vụ đang làm còn xuất hiện lần
     // nữa ở ô tập trung, nên phải khoanh vùng thay vì `screen.getByText`.
     const restEl = container.querySelector(".cap0-journey-rest") as HTMLElement
-    const rest = within(restEl)
-    expect(rest.getByText("Đặt lệnh mua đầu tiên")).toBeInTheDocument()
-    expect(rest.getByText("Xem tab Nắm giữ")).toBeInTheDocument()
-    expect(rest.getByText("Xem tab Theo dõi")).toBeInTheDocument()
-    expect(rest.getByText("Bán một lệnh, kết sổ đầu tiên")).toBeInTheDocument()
+    const taskRows = Array.from(restEl.querySelectorAll<HTMLElement>(".cap0-checklist-item"))
+    expect(taskRows.map((row) => row.dataset.testid)).toEqual([
+      "cap0-task-1",
+      "cap0-task-2",
+      "cap0-task-3",
+      "cap0-task-4",
+    ])
+    expect(
+      taskRows.map((row) => row.querySelector(".cap0-checklist-name > span:last-child")?.textContent),
+    ).toEqual([
+      "Đặt lệnh mua đầu tiên",
+      "Xem tab Nắm giữ",
+      "Xem tab Theo dõi",
+      "Bán một lệnh, kết sổ đầu tiên",
+    ])
 
-    expect(restEl.querySelectorAll(".cap0-checklist-item")).toHaveLength(4)
+    expect(taskRows).toHaveLength(4)
     expect(screen.queryByTestId("cap0-task-5")).not.toBeInTheDocument()
     expect(screen.queryByTestId("cap0-task-6")).not.toBeInTheDocument()
 

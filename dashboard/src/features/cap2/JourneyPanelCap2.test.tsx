@@ -74,8 +74,9 @@ describe("JourneyPanelCap2", () => {
     expect(screen.getByText("THỰC CHIẾN")).toBeInTheDocument()
   })
 
-  // ── ★★ Hành trình CHỈ CÒN MỘT NHIỆM VỤ ★★ ─────────────────────────────────
-  it("★ renders EXACTLY 1 nhiệm vụ — ② «Thực hiện đúng khi giá chạm mốc» is gone for good", () => {
+  // Contract: `demo-trading-update/LEVEL 2/iqx-cap2-hanhtrinh.html` contains
+  // one task only; it is neither parallel nor a multi-step legacy journey.
+  it("★ renders exactly the source journey's 1 task — ② «Thực hiện đúng khi giá chạm mốc» is gone for good", () => {
     renderPanel()
     expect(screen.getByTestId("cap2-task-1")).toBeInTheDocument()
     expect(screen.queryByTestId("cap2-task-2")).not.toBeInTheDocument()
@@ -95,7 +96,7 @@ describe("JourneyPanelCap2", () => {
     expect(screen.queryByText(/Cửa sổ 20 lệnh/)).not.toBeInTheDocument()
   })
 
-  it("★ renders the nhiệm vụ name VERBATIM from the mockup", () => {
+  it("★ renders the source journey's sole task label verbatim", () => {
     renderPanel()
     expect(
       within(screen.getByTestId("cap2-task-1")).getByText(

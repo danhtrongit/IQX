@@ -100,9 +100,9 @@ describe("JourneyPanelCap4", () => {
     expect(svg?.innerHTML).toContain("#a78bfa")
   })
 
-  // ── ★ MỘT nhiệm vụ ────────────────────────────────────────────────────────
-
-  it("★ has exactly ONE nhiệm vụ — checklist header đếm n/1 (mockup .ck-head)", () => {
+  // Contract: `demo-trading-update/LEVEL 4/iqx-cap4-hanhtrinh.html` has one
+  // ordered task; removed challenge conditions must not create extra rows.
+  it("★ has exactly the source journey's ONE task — checklist header counts n/1", () => {
     renderPanel()
     expect(screen.getByText("TRƯỚC KHI LÊN CẤP 5")).toBeInTheDocument()
     expect(screen.getByText("0/1")).toBeInTheDocument()
@@ -129,7 +129,7 @@ describe("JourneyPanelCap4", () => {
     expect(screen.queryByText(/đồng thuận cao/i)).not.toBeInTheDocument()
   })
 
-  it("★ ô tập trung mang tên + mô tả VERBATIM của mockup, kèm tiến độ n/20 lệnh", () => {
+  it("★ ô tập trung mang tên + mô tả VERBATIM của source journey, kèm tiến độ n/20 lệnh", () => {
     renderPanel()
     const focus = screen.getByTestId("cap4-focus")
     expect(focus).toHaveTextContent("NHIỆM VỤ ĐANG LÀM")

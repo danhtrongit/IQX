@@ -153,22 +153,34 @@ describe("JourneyPanelCap1", () => {
     expect(card.querySelector(":scope > .cap0-mode")).toBeNull()
   })
 
-  // ★ Nhãn NGUYÊN VĂN mockup mới (`iqx-cap1-hanhtrinh.html`, "Hành trình cấp
-  // 1: Chỉnh lại"): NGẮN, và hành trình chỉ còn 5 nhiệm vụ — «Xem lại danh mục»
-  // bị bỏ, «10 lệnh Thực chiến» dời từ ⑥ về ⑤.
-  it("renders exactly the mockup's 5 (short) task names", () => {
+  // ★ Contract: `demo-trading-update/LEVEL 1/iqx-cap1-hanhtrinh.html` fixes
+  // these short labels and their order: five tasks, without the retired
+  // «Xem lại danh mục» row.
+  it("renders the source journey's 5 short task labels in order", () => {
     useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
     const { container } = renderPanel()
     // Trong checklist đầy đủ (đã hạ cấp) — nhiệm vụ đang làm còn xuất hiện lần
     // nữa trên ô tập trung, nên phải khoanh vùng thay vì `screen.getByText`.
-    const rest = within(container.querySelector(".cap0-journey-rest") as HTMLElement)
-    expect(rest.getByText("Lệnh đầu có kế hoạch")).toBeInTheDocument()
-    expect(rest.getByText("Kết sổ đầu tiên")).toBeInTheDocument()
-    expect(rest.getByText("Làm quen 5 lý do mua")).toBeInTheDocument()
-    expect(rest.getByText("3 lệnh có lý do ✅ Ủng hộ")).toBeInTheDocument()
-    expect(rest.getByText("10 lệnh Thực chiến")).toBeInTheDocument()
-    // ...và ĐÚNG 5 dòng, không còn dòng thứ 6.
-    expect(container.querySelectorAll("[data-testid^='cap1-task-']")).toHaveLength(5)
+    const taskRows = Array.from(
+      (container.querySelector(".cap0-journey-rest") as HTMLElement).querySelectorAll<HTMLElement>(
+        ".cap0-checklist-item",
+      ),
+    )
+    expect(taskRows.map((row) => row.dataset.testid)).toEqual([
+      "cap1-task-1",
+      "cap1-task-2",
+      "cap1-task-3",
+      "cap1-task-4",
+      "cap1-task-5",
+    ])
+    expect(taskRows.map((row) => row.querySelector(".cap0-checklist-name")?.textContent)).toEqual([
+      "Lệnh đầu có kế hoạch",
+      "Kết sổ đầu tiên",
+      "Làm quen 5 lý do mua",
+      "3 lệnh có lý do ✅ Ủng hộ",
+      "10 lệnh Thực chiến",
+    ])
+    expect(taskRows).toHaveLength(5)
     expect(screen.queryByTestId("cap1-task-6")).not.toBeInTheDocument()
   })
 

@@ -5,7 +5,8 @@ import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 import type { Cap5Progress } from "./types"
 
 /**
- * Tab Hành trình Cấp 5 «Lão luyện — Săn mã» (mockup `iqx-cap5-hanhtrinh.html`).
+ * Tab Hành trình Cấp 5 «Lão luyện — Săn mã».
+ * Contract: `demo-trading-update/LEVEL 5/iqx-cap5-hanhtrinh.html`.
  *
  * ★★ Hình dạng LIVE: **2 nhiệm vụ SONG SONG** — «Săn 10 mã vào Watchlist»
  * (`n/10 mã`) và «Mua 5 mã từ Watchlist» (`n/5 mã`), jbar `CẤP 5 · n/2` kèm dòng
@@ -105,14 +106,20 @@ describe("JourneyPanelCap5 — 2 nhiệm vụ song song (mockup)", () => {
     expect(screen.getByText(/chủ động đi săn/i)).toBeInTheDocument()
   })
 
-  it("hai nhiệm vụ, đúng tên và tiến độ mockup", () => {
-    renderPanel()
-    const t1 = screen.getByTestId("cap5-task-1")
-    const t2 = screen.getByTestId("cap5-task-2")
-    expect(t1).toHaveTextContent("Săn 10 mã vào Watchlist")
-    expect(t1).toHaveTextContent("6/10 mã")
-    expect(t2).toHaveTextContent("Mua 5 mã từ Watchlist")
-    expect(t2).toHaveTextContent("3/5 mã")
+  it("renders the source journey's two task labels in order with their counters", () => {
+    const { container } = renderPanel()
+    const taskRows = Array.from(
+      (container.querySelector(".cap0-journey-rest") as HTMLElement).querySelectorAll<HTMLElement>(
+        ".cap0-checklist-item",
+      ),
+    )
+    expect(taskRows.map((row) => row.dataset.testid)).toEqual(["cap5-task-1", "cap5-task-2"])
+    expect(taskRows.map((row) => row.querySelector(".cap0-checklist-name")?.textContent)).toEqual([
+      "Săn 10 mã vào Watchlist",
+      "Mua 5 mã từ Watchlist",
+    ])
+    expect(taskRows[0]).toHaveTextContent("6/10 mã")
+    expect(taskRows[1]).toHaveTextContent("3/5 mã")
   })
 
   it("«TRƯỚC KHI LÊN CẤP 6» + bộ đếm n/2", () => {
