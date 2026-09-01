@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import math
 import uuid
-from collections.abc import Awaitable, Callable, Iterable
+from collections.abc import Awaitable, Callable, Iterable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
@@ -25,6 +25,7 @@ MIN_HELD_SYMBOLS = 4
 MIN_KNOWN_SECTORS = 3
 
 SectorLookup = Callable[[str], Awaitable[str | None]]
+SectorSource = SectorLookup | Mapping[str, str | None]
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,7 +71,7 @@ class PortfolioBalanceSnapshot(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     nav_vnd: float
-    cash_vnd: float
+    cash_vnd: float | None = None
     cash_weight_pct: float | None = None
     positions: tuple[SymbolAllocation, ...]
     sectors: tuple[SectorAllocation, ...]
@@ -103,12 +104,29 @@ def _normalise_sector(value: str | None) -> str | None:
     return sector or None
 
 
+def _cash_from_account(account: Any) -> float | None:
+    """Return the full cash balance only when every cash component is usable."""
+
+    total = 0.0
+    for value in (
+        getattr(account, "cash_available_vnd", None),
+        getattr(account, "cash_reserved_vnd", None),
+        getattr(account, "cash_pending_vnd", None),
+    ):
+        amount = _finite_non_negative(value)
+        if amount is None:
+            return None
+        total += amount
+    return total
+
+
+
 async def build_portfolio_balance_snapshot(
     *,
     nav_vnd: float | int | None,
     cash_vnd: float | int | None,
     positions: Iterable[PortfolioPositionInput],
-    sector_lookup: SectorLookup,
+    sector_lookup: SectorSource,
 ) -> PortfolioBalanceSnapshot:
     """Build one honest balance snapshot from priced positions and ICB sectors.
 
@@ -121,17 +139,20 @@ async def build_portfolio_balance_snapshot(
     """
 
     nav = _finite_non_negative(nav_vnd) or 0.0
-    cash = _finite_non_negative(cash_vnd) or 0.0
+    cash = _finite_non_negative(cash_vnd)
     positive_positions = [position for position in positions if position.quantity > 0]
 
     sector_cache: dict[str, str | None] = {}
 
     async def sector_for(symbol: str) -> str | None:
         if symbol not in sector_cache:
-            try:
-                value = await sector_lookup(symbol)
-            except Exception:  # noqa: BLE001 - a failed lookup is an unknown sector
-                value = None
+            if isinstance(sector_lookup, Mapping):
+                value = sector_lookup.get(symbol)
+            else:
+                try:
+                    value = await sector_lookup(symbol)
+                except Exception:  # noqa: BLE001 - a failed lookup is an unknown sector
+                    value = None
             sector_cache[symbol] = _normalise_sector(value)
         return sector_cache[symbol]
 
@@ -181,7 +202,12 @@ async def build_portfolio_balance_snapshot(
     max_position = max(priced_positions, key=lambda item: item.weight_pct or 0.0, default=None)
     max_sector = max(sector_allocations, key=lambda item: item.weight_pct or 0.0, default=None)
 
-    data_complete = nav > 0 and not unpriced_symbols and not unknown_sector_symbols
+    data_complete = (
+        nav > 0
+        and cash is not None
+        and not unpriced_symbols
+        and not unknown_sector_symbols
+    )
 
     can_doi_ok = (
         data_complete
@@ -206,7 +232,7 @@ async def build_portfolio_balance_snapshot(
     return PortfolioBalanceSnapshot(
         nav_vnd=nav,
         cash_vnd=cash,
-        cash_weight_pct=cash / nav * 100.0 if nav > 0 else None,
+        cash_weight_pct=cash / nav * 100.0 if nav > 0 and cash is not None else None,
         positions=tuple(allocations),
         sectors=tuple(sector_allocations),
         held_symbol_count=len(allocations),
@@ -234,33 +260,33 @@ class PortfolioBalanceService:
 
         portfolio: dict[str, Any] = await self._virtual_trading.get_portfolio(user_id)
         account = portfolio["account"]
-        positions = (
+        positions = [
             PortfolioPositionInput(
                 symbol=row["symbol"],
                 quantity=int(row["quantity_total"]),
                 market_value_vnd=row.get("market_value_vnd"),
             )
             for row in portfolio["positions"]
+        ]
+        sector_by_symbol = await self._sectors_for_symbols(
+            [position.symbol for position in positions if position.quantity > 0]
         )
-        cash = (
-            account.cash_available_vnd
-            + account.cash_reserved_vnd
-            + account.cash_pending_vnd
-        )
+        cash = _cash_from_account(account)
         return await build_portfolio_balance_snapshot(
             nav_vnd=portfolio["nav_vnd"],
             cash_vnd=cash,
             positions=positions,
-            sector_lookup=self._sector_for_symbol,
+            sector_lookup=sector_by_symbol,
         )
 
-    async def _sector_for_symbol(self, symbol: str) -> str | None:
-        """Resolve raw ICB Lv2/Lv1 data; lookup failures are explicitly unknown."""
+    async def _sectors_for_symbols(self, symbols: list[str]) -> dict[str, str | None]:
+        """Resolve the held basket in one query; unavailable catalog data is unknown."""
 
         try:
-            row = await self._symbols.get_by_symbol(symbol)
-        except Exception:  # noqa: BLE001 - an unavailable catalog cannot imply a safe sector
-            return None
-        if row is None:
-            return None
-        return row.icb_lv2 or row.icb_lv1 or None
+            rows = await self._symbols.get_by_symbols(symbols)
+        except Exception:  # noqa: BLE001 - a failed catalog query cannot imply safe sectors
+            return {}
+        return {
+            symbol: _normalise_sector(row.icb_lv2) or _normalise_sector(row.icb_lv1)
+            for symbol, row in rows.items()
+        }

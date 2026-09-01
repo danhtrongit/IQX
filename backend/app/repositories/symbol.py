@@ -33,6 +33,14 @@ class SymbolRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_by_symbols(self, symbols: list[str]) -> dict[str, Symbol]:
+        """Get symbol rows for a basket in one query, keyed by upper-case ticker."""
+        wanted = {symbol.upper() for symbol in symbols}
+        if not wanted:
+            return {}
+        result = await self._session.execute(select(Symbol).where(Symbol.symbol.in_(wanted)))
+        return {row.symbol: row for row in result.scalars().all()}
+
     async def search(
         self,
         *,

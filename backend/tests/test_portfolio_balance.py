@@ -30,7 +30,7 @@ async def _snapshot(
     sectors: dict[str, str | None],
     *,
     nav_vnd: float = 1_000.0,
-    cash_vnd: float = 100.0,
+    cash_vnd: float | None = 100.0,
 ):
     return await build_portfolio_balance_snapshot(
         nav_vnd=nav_vnd,
@@ -73,20 +73,34 @@ async def test_service_uses_virtual_portfolio_cash_and_icb_sectors(db_session):
             }
 
     class FakeSymbolRepository:
-        async def get_by_symbol(self, symbol: str):
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def get_by_symbols(self, symbols: list[str]):
+            self.calls += 1
+            assert set(symbols) == {"AAA", "BBB", "CCC", "DDD"}
             sectors = {
                 "AAA": "Công nghệ",
                 "BBB": "Công nghệ",
                 "CCC": "Tài chính",
                 "DDD": "Công nghiệp",
             }
-            return SimpleNamespace(icb_lv2=sectors[symbol], icb_lv1=None)
+            return {
+                symbol: SimpleNamespace(
+                    icb_lv2="   " if symbol == "AAA" else sector,
+                    icb_lv1=sector,
+                )
+                for symbol, sector in sectors.items()
+            }
 
+    fake_symbols = FakeSymbolRepository()
     service._virtual_trading = FakeVirtualTrading()
-    service._symbols = FakeSymbolRepository()
+    service._symbols = fake_symbols
 
     snapshot = await service.get_snapshot(uuid.uuid4())
 
+    assert fake_symbols.calls == 1
+    assert snapshot.positions[0].sector == "Công nghệ"
     assert snapshot.cash_vnd == 100.0
     assert snapshot.cash_weight_pct == 10.0
     assert snapshot.can_doi_ok is True
@@ -190,6 +204,22 @@ async def test_snapshot_reports_unpriced_positive_position_as_unsafe():
     assert snapshot.data_complete is False
     assert snapshot.unpriced_symbols == ("DDD",)
     assert snapshot.can_doi_ok is False
+
+
+@pytest.mark.parametrize("cash_vnd", [None, float("nan"), -1.0])
+async def test_snapshot_reports_invalid_cash_as_unknown_and_unsafe(cash_vnd):
+    snapshot = await _snapshot(
+        _balanced_positions(),
+        {"AAA": "Công nghệ", "BBB": "Công nghệ", "CCC": "Tài chính", "DDD": "Công nghiệp"},
+        cash_vnd=cash_vnd,
+    )
+
+    assert snapshot.cash_vnd is None
+    assert snapshot.cash_weight_pct is None
+    assert snapshot.data_complete is False
+    assert snapshot.can_doi_ok is False
+
+
 
 
 async def test_snapshot_makes_empty_and_zero_nav_portfolios_explicitly_unsafe():
