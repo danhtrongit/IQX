@@ -617,6 +617,8 @@ async def test_task_2_xong_duoc_truoc_task_1(db_session, test_user):
     assert p["so_ma_mua_tu_watchlist"] == 5
     assert p["task_2_done_at"] is not None
     assert p["task_1_done_at"] is None
+    with pytest.raises(ConflictError):
+        await cap5.graduate(test_user.id)
 
 
 @pytest.mark.asyncio

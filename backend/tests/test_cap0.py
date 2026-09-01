@@ -125,6 +125,23 @@ async def test_graduate_requires_four_tasks_and_the_single_gate(db_session, test
     assert g.graduated_at is not None
     assert g.time_to_graduate_hours is not None
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("missing_task", (2, 3))
+async def test_graduate_rejects_first_closeout_when_an_intermediate_task_is_missing(
+    db_session, test_user, missing_task
+):
+    """④'s debrief gate does not replace either required tab-view task."""
+    svc = Cap0Service(db_session)
+    await svc.enter(test_user.id)
+    await svc.complete_task(test_user.id, 1)
+    await svc.complete_task(test_user.id, 3 if missing_task == 2 else 2)
+    progress = await svc.complete_task(test_user.id, 4, gate="debrief")
+
+    assert progress.task_4_done_at is not None
+    assert progress.task4_debrief_done is True
+    assert getattr(progress, f"task_{missing_task}_done_at") is None
+    with pytest.raises(ConflictError):
+        await svc.graduate(test_user.id)
 
 @pytest.mark.asyncio
 async def test_the_star_is_no_longer_a_gate_at_all(db_session, test_user):

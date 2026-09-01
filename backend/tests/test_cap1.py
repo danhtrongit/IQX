@@ -317,6 +317,30 @@ async def test_graduate_requires_5_of_5(db_session, test_user):
     assert progress.graduated_at is not None
     assert progress.time_to_graduate_hours is not None
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("missing_task", (1, 2, 3, 4))
+async def test_graduate_rejects_task5_when_any_earlier_task_is_missing(
+    db_session, test_user, missing_task
+):
+    """⑤'s 10 live orders do not substitute for any individual task among ①–④."""
+    await _graduate_cap0(db_session, test_user.id)
+    svc = Cap1Service(db_session)
+    await svc.enter(test_user.id)
+    account = await VirtualTradingRepository(db_session).get_account_by_user_id(test_user.id)
+
+    for i in range(10):
+        await _make_order(db_session, account.id, test_user.id, symbol=f"FIFTH{i}")
+    progress = await svc.mark_task(test_user.id, 5)
+
+    assert progress.task_5_done_at is not None
+    for task_no in (1, 2, 3, 4):
+        if task_no != missing_task:
+            setattr(progress, f"task_{task_no}_done_at", progress.task_5_done_at)
+    await db_session.flush()
+
+    assert getattr(progress, f"task_{missing_task}_done_at") is None
+    with pytest.raises(ConflictError):
+        await svc.graduate(test_user.id)
 
 @pytest.mark.asyncio
 async def test_cap1_endpoints_wired_and_free(client, db_session, test_user):
