@@ -19,9 +19,9 @@ import type { CachKhoiLuong, KhauViLoai, MucTuTin } from "./types"
  * nhân bản thêm một nhật ký điểm.
  *
  * GAP (giống hệt gap `cap1/tradeLog.ts` + `cap2/tradeLogCap2.ts` đã ghi, một
- * cấp lên): backend Cấp 3 chỉ trả state tổng hợp (`GET /cap3/progress`,
- * `GET /cap3/thach-thuc`) — KHÔNG có endpoint nào liệt kê `order_kehoach`
- * JOIN `order_ketso` để lấy `muc_tu_tin`/`cach_khoi_luong`/`khoi_luong`/
+ * cấp lên): backend Cấp 3 chỉ trả state tổng hợp (`GET /cap3/progress`) —
+ * không có endpoint nào liệt kê `order_kehoach` JOIN `order_ketso` để lấy
+ * `muc_tu_tin`/`cach_khoi_luong`/`khoi_luong`/
  * `pct_von` của từng lệnh đã đóng. Module này là workaround: `KetsoModalCap3`
  * ghi 1 `Cap3TradeRecord` mỗi lần đóng Kết sổ (nó đang giữ đúng các giá trị
  * quản lý vốn vừa đối chiếu).

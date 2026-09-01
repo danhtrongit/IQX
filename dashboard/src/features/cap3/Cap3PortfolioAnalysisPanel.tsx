@@ -18,9 +18,8 @@ import { Cap3PortfolioAnalysis } from "./Cap3PortfolioAnalysis"
  *
  * Mọi query đều gate bằng `isCap3Active` nên panel này vô hại nếu
  * `activePanel` tình cờ là "cap3-analysis" ở ngoài Cấp 3 (`SidebarProvider` là
- * singleton app-root). Cấp 3 không có nhiệm vụ nào gắn với "mở trang Phân tích
- * danh mục N lần" (3 nhiệm vụ đều dựa trên hành vi lệnh — spec §2), nên panel
- * không có side effect `markTask` lúc mount (giống Cấp 2).
+ * singleton app-root). The two Cấp 3 tasks are derived from persisted placed
+ * plans, so this analysis panel has no task side effect when it mounts.
  */
 export function Cap3PortfolioAnalysisPanel() {
   const { isCap3Active } = useCap3Events()

@@ -3,10 +3,9 @@ import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { expectRendersNothing } from "@/__tests__/textGuards"
 
-const { recordKetsoCap1Mutate, recordKetsoCap2Mutate, completeTaskMutate } = vi.hoisted(() => ({
+const { recordKetsoCap1Mutate, recordKetsoCap2Mutate } = vi.hoisted(() => ({
   recordKetsoCap1Mutate: vi.fn(),
   recordKetsoCap2Mutate: vi.fn(),
-  completeTaskMutate: vi.fn(),
 }))
 // Mock every hook module this modal needs — same "mock the concrete hook file
 // directly" pattern as `cap1/KetsoModalCap1.test.tsx` /
@@ -16,9 +15,6 @@ vi.mock("@/features/cap1/hooks", () => ({
 }))
 vi.mock("@/features/cap2/hooks", () => ({
   useRecordKetsoCap2: () => ({ mutate: recordKetsoCap2Mutate }),
-}))
-vi.mock("./hooks", () => ({
-  useCompleteCap3Task: () => ({ mutate: completeTaskMutate }),
 }))
 vi.mock("@/features/auth", () => ({
   useAuth: () => ({ user: { id: "user-1" } }),
@@ -75,7 +71,6 @@ const data: KetsoDataCap3 = {
 beforeEach(() => {
   recordKetsoCap1Mutate.mockReset()
   recordKetsoCap2Mutate.mockReset()
-  completeTaskMutate.mockReset()
   window.localStorage.clear()
 })
 
@@ -210,7 +205,7 @@ describe("KetsoModalCap3 — 3 lớp coach cùng hiện", () => {
 })
 
 describe("KetsoModalCap3 — đóng kết sổ", () => {
-  it("post cam xúc Cấp 1 + cờ kỷ luật Cấp 2 + recompute nhiệm vụ Cấp 3, rồi đóng", () => {
+  it("posts Cấp 1 emotion and Cấp 2 discipline flags before closing", () => {
     const onClose = vi.fn()
     renderModal({ flags: { order_id: "order-34", cham_SL_cat_dung_phien_ke: true } }, onClose)
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
@@ -219,7 +214,6 @@ describe("KetsoModalCap3 — đóng kết sổ", () => {
       order_id: "order-34",
       cham_SL_cat_dung_phien_ke: true,
     })
-    expect(completeTaskMutate).toHaveBeenCalledWith(2)
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 

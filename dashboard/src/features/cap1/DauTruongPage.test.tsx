@@ -199,7 +199,9 @@ function fakeCap3Progress(overrides: Partial<Cap3Progress> = {}): Cap3Progress {
     von_ban_dau: 250_000_000,
     task_1_done_at: null,
     task_2_done_at: null,
-    task_3_done_at: null,
+    so_lenh_quan_ly_von: 0,
+    muc_tu_tin_da_dung: [],
+    so_muc_tu_tin_da_dung: 0,
     so_lenh_cap3: 0,
     lai_pct_cap3: 0,
     // ★ `null` = chưa biết, KHÔNG phải 0 — xem `cap3/types.ts`.

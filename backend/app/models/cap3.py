@@ -7,9 +7,8 @@ lượng/khối lượng/%vốn are recorded as new columns on Cấp 1's
 ``order_kehoach`` (see ``app.models.cap1.KhauViRuiRo``/``CachKhoiLuong`` and
 the "Cấp 3 additions" column block on ``OrderKehoach``). This module only
 owns the new ``cap3_progress`` table: khẩu vị rủi ro (hồ sơ, đặt 1 lần) +
-vốn ban đầu + 3 nhiệm vụ timestamps + the recomputed "Thách thức Bản lĩnh"
-metrics. See ``~/Downloads/DEMO TRADING/LEVEL 3/IQX-Cap3-Spec.md`` §2/§5/§10
-for the verbatim data model this mirrors.
+vốn ban đầu + 2 nhiệm vụ timestamps + recomputed non-gating analytics. See
+``demo-trading-update/LEVEL 3/IQX-Cap3-Spec.md`` for the journey contract.
 
 **Storage decision — khẩu vị rủi ro + vốn ban đầu** (§10 sketches these as
 ``users.khau_vi_rui_ro`` / ``users.von_ban_dau``): kept on ``Cap3Progress``
@@ -88,13 +87,12 @@ class Cap3Progress(UUIDMixin, TimestampMixin, Base):
         BigInteger, nullable=False, default=VON_BAN_DAU_MAC_DINH, server_default=str(VON_BAN_DAU_MAC_DINH)
     )
 
-    # 3 nhiệm vụ completion timestamps (nullable until done, never un-set)
+    # 2 concurrent journey completion timestamps (nullable until done, never un-set).
     task_1_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     task_2_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    task_3_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    # Recomputed metrics (spec §2③ "Thách thức Bản lĩnh") — source of truth =
-    # order_ketso rows closed since entered_at + Cấp 2's daily điểm kỷ luật.
+    # Recomputed analytics — source of truth = order_ketso rows closed since
+    # entered_at + Cấp 2's daily điểm kỷ luật. They are not journey gates.
     so_lenh_cap3: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     lai_pct_cap3: Mapped[float] = mapped_column(Float, nullable=False, default=0.0, server_default="0")
     #: ★ ``None`` = **CHƯA BIẾT**, KHÔNG phải 0. Cột này từng là ``NOT NULL
@@ -107,3 +105,20 @@ class Cap3Progress(UUIDMixin, TimestampMixin, Base):
 
     graduated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     time_to_graduate_hours: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    # Transient, server-derived journey evidence. These are not persisted
+    # counters: every progress read recomputes them from qualifying plans.
+    _so_lenh_quan_ly_von = 0
+    _muc_tu_tin_da_dung = ()
+
+    @property
+    def so_lenh_quan_ly_von(self) -> int:
+        return self._so_lenh_quan_ly_von
+
+    @property
+    def muc_tu_tin_da_dung(self) -> list[int]:
+        return list(self._muc_tu_tin_da_dung)
+
+    @property
+    def so_muc_tu_tin_da_dung(self) -> int:
+        return len(self._muc_tu_tin_da_dung)

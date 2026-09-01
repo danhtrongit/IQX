@@ -11,7 +11,6 @@ export {
   useSetKhauVi,
   useCompleteCap3Task,
   useRecordKehoachCap3,
-  useThachThuc,
   useGraduateCap3,
 } from "./hooks"
 export { cap3Api } from "./api"
@@ -81,6 +80,4 @@ export type {
   KhauViLoai,
   MucTuTin,
   OrderKehoachCap3,
-  ThachThucCap3,
-  ThachThucDieuKienCap3,
 } from "./types"

@@ -1,7 +1,8 @@
-"""Cấp 3 «Bản lĩnh» API — progress, enter, khẩu vị, task, kế hoạch (quản lý
-vốn), thách thức bản lĩnh, graduate.
+"""Cấp 3 «Bản lĩnh» API — progress, enter, risk appetite, two server-derived
+sizing-confidence tasks, and graduation.
 
-Cap 3 is FREE: all endpoints use ``CurrentUser`` (authenticated), NOT ``PremiumUser``.
+Cap 3 is FREE: all endpoints use ``CurrentUser`` (authenticated), NOT
+``PremiumUser``.
 """
 
 from __future__ import annotations
@@ -15,7 +16,6 @@ from app.schemas.cap3 import (
     KhauViRequest,
     OrderKehoachOut,
     TaskRequest,
-    ThachThucOut,
 )
 from app.services.cap3.service import Cap3Service
 
@@ -45,8 +45,8 @@ async def set_khau_vi(body: KhauViRequest, user: CurrentUser, db: DBSession) -> 
 
 @router.patch("/task", response_model=Cap3ProgressOut)
 async def mark_task(body: TaskRequest, user: CurrentUser, db: DBSession) -> Cap3ProgressOut:
-    """Cả 3 nhiệm vụ đều được suy ra từ order_kehoach/order_ketso — gọi
-    endpoint này chỉ kích hoạt tính lại (idempotent, không tự đặt)."""
+    """Both tasks are recomputed from qualifying placed plans; this endpoint
+    only requests that idempotent server-side recomputation."""
     svc = Cap3Service(db)
     return await svc.mark_task(user.id, body.task_no)
 
@@ -69,17 +69,10 @@ async def record_kehoach(
     )
 
 
-@router.get("/thach-thuc", response_model=ThachThucOut)
-async def get_thach_thuc(user: CurrentUser, db: DBSession) -> ThachThucOut:
-    """3 điều kiện của Thách thức Bản lĩnh (nhiệm vụ ③) kèm giá trị hiện tại
-    + đạt/chưa đạt + giải thích (spec §2③/§C12c)."""
-    svc = Cap3Service(db)
-    result = await svc.thach_thuc(user.id)
-    return ThachThucOut(**result)
 
 
 @router.post("/graduate", response_model=Cap3ProgressOut)
 async def graduate(user: CurrentUser, db: DBSession) -> Cap3ProgressOut:
-    """Tốt nghiệp Cấp 3 — chỉ khi đủ 3/3 nhiệm vụ."""
+    """Graduate Cấp 3 only after both sizing-confidence tasks are complete."""
     svc = Cap3Service(db)
     return await svc.graduate(user.id)

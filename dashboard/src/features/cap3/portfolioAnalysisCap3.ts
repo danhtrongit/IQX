@@ -38,9 +38,9 @@ import type { CachKhoiLuong, Cap3Progress, KhauViLoai, MucTuTin } from "./types"
  *
  * **Honesty over fake data (task brief):** nguồn dữ liệu duy nhất của ⑦/⑧ là
  * `muc_tu_tin` / `cach_khoi_luong` / `khoi_luong` / `pct_von` của từng lệnh đã
- * đóng — backend Cấp 3 KHÔNG có endpoint liệt kê chúng (chỉ có
- * `GET /cap3/progress` + `GET /cap3/thach-thuc` tổng hợp), nên chúng đến từ
- * nhật ký client `tradeLogCap3.ts` (xem gap ghi ở đó). Mức tự tin nào chưa đủ
+ * đóng — backend Cấp 3 chỉ trả state tổng hợp (`GET /cap3/progress`), nên
+ * chúng đến từ nhật ký client `tradeLogCap3.ts` (xem gap ghi ở đó). Mức tự tin
+ * nào chưa đủ
  * `KHOI7_MIN_TRADES_PER_MUC` lệnh thì hàng đó bị đánh `insufficient` và mọi
  * phát hiện so sánh 2 cực bị chặn bằng `insufficientNote` — không bao giờ suy
  * ra kết luận từ 1-2 lệnh, không bao giờ in 0% thay cho "chưa có dữ liệu".

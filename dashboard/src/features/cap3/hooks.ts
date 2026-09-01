@@ -7,7 +7,6 @@ import type {
   KehoachInputCap3,
   KhauViLoai,
   OrderKehoachCap3,
-  ThachThucCap3,
 } from "./types"
 
 /**
@@ -30,7 +29,7 @@ export function useCap3Progress(enabled = true) {
   })
 }
 
-/** Invalidate every Cấp 3 query (progress + thách thức) — used by every mutation. */
+/** Invalidate the Level 3 progress state after a Level 3 mutation. */
 function useInvalidateCap3() {
   const queryClient = useQueryClient()
   return () => queryClient.invalidateQueries({ queryKey: cap3Keys.all })
@@ -54,11 +53,11 @@ export function useSetKhauVi() {
   })
 }
 
-/** PATCH /cap3/task — idempotent recompute of the 3 nhiệm vụ. */
+/** PATCH /cap3/task — idempotent server-side recomputation of either task. */
 export function useCompleteCap3Task() {
   const invalidate = useInvalidateCap3()
-  return useMutation<Cap3Progress, unknown, number>({
-    mutationFn: (taskNo) => cap3Api.markTask(taskNo),
+  return useMutation<Cap3Progress, unknown, 1 | 2>({
+    mutationFn: cap3Api.markTask,
     onSuccess: invalidate,
   })
 }
@@ -72,18 +71,8 @@ export function useRecordKehoachCap3() {
   })
 }
 
-/** GET /cap3/thach-thuc — the 3 sub-conditions of nhiệm vụ ③ (§C12c). */
-export function useThachThuc(enabled = true) {
-  const { isAuthenticated } = useAuth()
-  return useQuery<ThachThucCap3>({
-    queryKey: cap3Keys.thachThuc(),
-    queryFn: cap3Api.getThachThuc,
-    enabled: isAuthenticated && enabled,
-    staleTime: 0,
-  })
-}
 
-/** POST /cap3/graduate — graduate to Cấp 4 (only when 3/3 nhiệm vụ done). */
+/** POST /cap3/graduate — graduate to Cấp 4 after both tasks are complete. */
 export function useGraduateCap3() {
   const invalidate = useInvalidateCap3()
   return useMutation<Cap3Progress, unknown, void>({

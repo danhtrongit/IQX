@@ -248,7 +248,6 @@ vi.mock("./hooks", () => ({
   useCompleteCap3Task: () => ({ mutate: completeCap3TaskMutate }),
   useGraduateCap3: () => ({ mutate: graduateCap3Mutate, isPending: false }),
   useSetKhauVi: () => ({ mutate: setKhauViMutate, isPending: false }),
-  useThachThuc: () => ({ data: undefined }),
   // Needed because this page reuses `computeKetsoFlagsCap2` from
   // `cap2/Cap2TradingPage`, whose module also pulls in `GraduationModalCap2`
   // (which now enters Cấp 3).
@@ -313,7 +312,9 @@ function fakeCap3Progress(overrides: Partial<Cap3Progress> = {}): Cap3Progress {
     von_ban_dau: 100_000_000,
     task_1_done_at: null,
     task_2_done_at: null,
-    task_3_done_at: null,
+    so_lenh_quan_ly_von: 0,
+    muc_tu_tin_da_dung: [],
+    so_muc_tu_tin_da_dung: 0,
     so_lenh_cap3: 0,
     lai_pct_cap3: 0,
     diem_ky_luat_tb_cap3: 0,
@@ -498,7 +499,7 @@ describe("Cap3TradingPage", () => {
     })
   })
 
-  it("mounts GraduationModalCap3 (hidden until 3/3 nhiệm vụ)", () => {
+  it("mounts GraduationModalCap3 (hidden until 2/2 nhiệm vụ)", () => {
     renderCap3(<Cap3TradingPage />)
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
 
@@ -506,10 +507,6 @@ describe("Cap3TradingPage", () => {
       data: fakeCap3Progress({
         task_1_done_at: "t",
         task_2_done_at: "t",
-        task_3_done_at: "t",
-        so_lenh_cap3: 16,
-        lai_pct_cap3: 6.4,
-        diem_ky_luat_tb_cap3: 84,
       }),
     })
     renderCap3(<Cap3TradingPage />)

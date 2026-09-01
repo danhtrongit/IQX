@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict
 KhauViLiteral = Literal["than_trong", "can_bang", "tan_cong"]
 MucTuTinLiteral = Literal[1, 2, 3]
 CachKhoiLuongLiteral = Literal["linh_hoat", "ky_luat"]
+TaskNoLiteral = Literal[1, 2]
 
 
 class Cap3ProgressOut(BaseModel):
@@ -27,11 +28,12 @@ class Cap3ProgressOut(BaseModel):
     von_ban_dau: int
     task_1_done_at: datetime | None = None
     task_2_done_at: datetime | None = None
-    task_3_done_at: datetime | None = None
+    so_lenh_quan_ly_von: int
+    muc_tu_tin_da_dung: list[MucTuTinLiteral]
+    so_muc_tu_tin_da_dung: int
+    # Non-gating analytics, retained for portfolio/learning views.
     so_lenh_cap3: int
     lai_pct_cap3: float
-    #: ``None`` = chưa biết (chưa có ngày nào ở Cấp 3 có tình huống để chấm)
-    #: — KHÔNG phải 0. Xem ``Cap3Service._diem_ky_luat_tb``.
     diem_ky_luat_tb_cap3: float | None = None
     graduated_at: datetime | None = None
     time_to_graduate_hours: float | None = None
@@ -40,9 +42,8 @@ class Cap3ProgressOut(BaseModel):
 class KhauViRequest(BaseModel):
     khau_vi: KhauViLiteral
 
-
 class TaskRequest(BaseModel):
-    task_no: int
+    task_no: TaskNoLiteral
 
 
 class KehoachRequest(BaseModel):
@@ -69,24 +70,3 @@ class OrderKehoachOut(BaseModel):
     pct_von: float | None = None
 
 
-class ThachThucDieuKien(BaseModel):
-    """One of the 3 sub-conditions of nhiệm vụ ③ — Thách thức Bản lĩnh
-    (§C12c: always shown with its current value + a short explanation)."""
-
-    ten: str
-    #: ``None`` = **chưa biết** (chỉ có ở điều kiện điểm kỷ luật khi chưa có
-    #: ngày nào chấm được) — FE hiện "—", không hiện 0.
-    gia_tri_hien_tai: float | None
-    muc_tieu: float
-    dat: bool
-    giai_thich: str
-
-
-class ThachThucOut(BaseModel):
-    """Response for ``GET /cap3/thach-thuc`` — the 3 sub-conditions of
-    nhiệm vụ ③ (spec §2③)."""
-
-    dat_ca_3: bool
-    lai_pct: ThachThucDieuKien
-    so_lenh: ThachThucDieuKien
-    diem_ky_luat: ThachThucDieuKien

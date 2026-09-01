@@ -24,7 +24,6 @@ import {
   useSetKhauVi,
   useCompleteCap3Task,
   useRecordKehoachCap3,
-  useThachThuc,
   useGraduateCap3,
 } from "./hooks"
 
@@ -119,17 +118,6 @@ describe("useRecordKehoachCap3", () => {
   })
 })
 
-describe("useThachThuc", () => {
-  it("GETs cap3/thach-thuc", async () => {
-    get.mockReturnValue(jsonRes({ dat_ca_3: false }))
-    function Harness() {
-      const { data, isSuccess } = useThachThuc()
-      return <div>{isSuccess ? String(data?.dat_ca_3) : "loading"}</div>
-    }
-    withClient(<Harness />)
-    await waitFor(() => expect(get).toHaveBeenCalledWith("cap3/thach-thuc"))
-  })
-})
 
 describe("useGraduateCap3", () => {
   it("POSTs cap3/graduate", async () => {

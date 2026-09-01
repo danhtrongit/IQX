@@ -324,7 +324,7 @@ function Cap3Terminal() {
       />
 
       {/* Màn tốt nghiệp Cấp 3 (spec §3) — self-contained: opens itself once
-          progress shows 3/3, closes itself once `graduated_at` comes back. */}
+          progress shows 2/2, closes itself once `graduated_at` comes back. */}
       <GraduationModalCap3 />
 
       {/* ★★ AI Insight mở NGAY TRONG shell cấp (xem `AiInsightModal`).

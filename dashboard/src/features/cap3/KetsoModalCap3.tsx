@@ -21,7 +21,6 @@ import type { CoachSituationCap2 } from "@/features/cap2/coachTemplateCap2"
 import type { KetsoDataCap2 } from "@/features/cap2/KetsoModalCap2"
 import type { PhuongPhapSlTp } from "@/features/cap2/types"
 import { composeCoachCap3, MUC_TU_TIN_LABEL, type CoachSituationCap3 } from "./coachTemplateCap3"
-import { useCompleteCap3Task } from "./hooks"
 import { KHAU_VI_PCT } from "./khoiLuong"
 import { CACH_KHOI_LUONG_LABEL } from "./portfolioAnalysisCap3"
 import { useCap3TradeLog, type Cap3TradeRecord } from "./tradeLogCap3"
@@ -59,9 +58,8 @@ import "./cap3-ketso.css"
  *
  * Cấp 3 KHÔNG có endpoint kết sổ riêng (§10: không thêm cột `order_ketso`), nên
  * lúc đóng modal vẫn post đúng 2 call như Cấp 2 (`/cap1/ketso` cam xúc +
- * `/cap2/ketso` 7 cờ kỷ luật) rồi gọi thêm `PATCH /cap3/task` (idempotent
- * recompute — nhiệm vụ ② "Kết sổ lệnh đầu Cấp 3" được server suy ra từ
- * `order_ketso`, call này chỉ kích hoạt recompute + invalidate cache Cấp 3).
+ * `/cap2/ketso` 7 cờ kỷ luật). Cấp 3 journey evidence is recorded when a plan
+ * is placed, not when this closeout modal closes.
  */
 export interface KetsoDataCap3 extends KetsoDataCap2 {
   /** Khẩu vị rủi ro LÚC ĐẶT lệnh (`order_kehoach.khau_vi`). */
@@ -175,8 +173,6 @@ const TARGET_ORDERS = 10
 const MIN_TRADES_FOR_STAT = 2
 const COUNT_UP_MS = 1000
 const COUNT_UP_STEP_MS = 40
-/** Nhiệm vụ ② Cấp 3 — "Kết sổ lệnh đầu Cấp 3" (spec §2②). */
-const CAP3_TASK_KETSO = 2
 
 export function KetsoModalCap3({
   data,
@@ -187,7 +183,6 @@ export function KetsoModalCap3({
 }: KetsoModalCap3Props) {
   const recordKetsoCap1 = useRecordKetso()
   const recordKetsoCap2 = useRecordKetsoCap2()
-  const completeCap3Task = useCompleteCap3Task()
   const { record: recordCap3Trade } = useCap3TradeLog()
   const [emotion, setEmotion] = useState<CamXuc | null>(null)
   const [displayPct, setDisplayPct] = useState(0)
@@ -300,7 +295,6 @@ export function KetsoModalCap3({
     // cùng quy ước "Cấp 1 trước, rồi Cấp 2" mà `TradingPanel` dùng ở phía mua.
     recordKetsoCap1.mutate({ order_id: orderId, cam_xuc: emotion })
     recordKetsoCap2.mutate({ ...flags, order_id: orderId })
-    completeCap3Task.mutate(CAP3_TASK_KETSO)
 
     const record: Cap3TradeRecord = {
       orderId,

@@ -4,7 +4,6 @@ import type {
   KehoachInputCap3,
   KhauViLoai,
   OrderKehoachCap3,
-  ThachThucCap3,
 } from "./types"
 
 /**
@@ -34,9 +33,9 @@ export const cap3Api = {
     return unwrap(res as never) as Cap3Progress
   },
 
-  /** PATCH /cap3/task { task_no } — idempotent recompute (all 3 nhiệm vụ are
-   * derived server-side from order_kehoach/order_ketso). */
-  markTask: async (taskNo: number): Promise<Cap3Progress> => {
+  /** PATCH /cap3/task { task_no } — server-side recomputation of either
+   * sizing-confidence task from persisted plans. */
+  markTask: async (taskNo: 1 | 2): Promise<Cap3Progress> => {
     const res = await api.patch("cap3/task", { json: { task_no: taskNo } }).json<unknown>()
     return unwrap(res as never) as Cap3Progress
   },
@@ -50,14 +49,8 @@ export const cap3Api = {
     return unwrap(res as never) as OrderKehoachCap3
   },
 
-  /** GET /cap3/thach-thuc — the 3 sub-conditions of nhiệm vụ ③ (Thách thức
-   * Bản lĩnh) kèm giá trị hiện tại + đạt/chưa đạt + giải thích (§C12c). */
-  getThachThuc: async (): Promise<ThachThucCap3> => {
-    const res = await api.get("cap3/thach-thuc").json<unknown>()
-    return unwrap(res as never) as ThachThucCap3
-  },
 
-  /** POST /cap3/graduate — only succeeds when 3/3 nhiệm vụ are done. */
+  /** POST /cap3/graduate — only succeeds when both concurrent tasks are done. */
   graduate: async (): Promise<Cap3Progress> => {
     const res = await api.post("cap3/graduate").json<unknown>()
     return unwrap(res as never) as Cap3Progress
