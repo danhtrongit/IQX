@@ -179,6 +179,20 @@ class VirtualTradingRepository:
         )
         return list(result.scalars().all())
 
+    async def list_positions_for_update(self, account_id: uuid.UUID) -> list[VirtualPosition]:
+        """Lock the complete position set after the account fill lock.
+
+        Portfolio-wide decisions use the same account → ordered-position order
+        as a fill, so they cannot observe a half-mutated allocation.
+        """
+        result = await self._session.execute(
+            select(VirtualPosition)
+            .where(VirtualPosition.account_id == account_id)
+            .order_by(VirtualPosition.symbol)
+            .with_for_update()
+        )
+        return list(result.scalars().all())
+
     async def upsert_position(
         self,
         account_id: uuid.UUID,

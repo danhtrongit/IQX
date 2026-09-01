@@ -77,15 +77,53 @@ class Cap8Service:
         )
         await self._session.flush()
 
+    async def _bootstrap_open_positions(self, user_id: uuid.UUID) -> None:
+        """Attach plans to every existing positive holding at Level 8 entry/read.
+
+        This runs before exit reconciliation so a newly filled limit SELL cannot
+        be permanently classified against an empty plan merely because the user
+        never opened that symbol's Holdings row.
+        """
+        account = await self._repo.get_account_by_user_id_for_update(user_id)
+        if account is None:
+            return
+        positions = await self._repo.list_positions_for_update(account.id)
+        for position in positions:
+            if position.quantity_total > 0:
+                await self._bootstrap_plan(user_id, account.id, position)
+
+    async def _reconcile_filled_exits(self, progress: Cap8Progress) -> None:
+        """Persist missed post-entry SELL evidence, including later limit fills."""
+        sell_ids = list((await self._session.execute(
+            select(VirtualOrder.id)
+            .where(
+                VirtualOrder.user_id == progress.user_id,
+                VirtualOrder.side == OrderSide.SELL,
+                VirtualOrder.status == OrderStatus.FILLED,
+                func.coalesce(
+                    VirtualOrder.exit_snapshot_at,
+                    VirtualOrder.updated_at,
+                    VirtualOrder.created_at,
+                ) >= progress.entered_at,
+                ~select(Cap8Exit.id)
+                .where(Cap8Exit.sell_order_id == VirtualOrder.id)
+                .exists(),
+            )
+            .order_by(VirtualOrder.exit_snapshot_at, VirtualOrder.id)
+        )).scalars())
+        for sell_id in sell_ids:
+            await self._record_exit(progress, sell_id)
     async def get_progress(self, user_id: uuid.UUID) -> dict | None:
-        progress = await self._progress(user_id)
+        progress = await self._progress(user_id, for_update=True)
         if progress is None:
             return None
+        await self._bootstrap_open_positions(user_id)
+        await self._reconcile_filled_exits(progress)
         await self._recompute_progress(progress)
         return self._progress_out(progress)
 
     async def enter(self, user_id: uuid.UUID) -> dict:
-        progress = await self._progress(user_id)
+        progress = await self._progress(user_id, for_update=True)
         if progress is None:
             cap7 = (await self._session.execute(
                 select(Cap7Progress).where(Cap7Progress.user_id == user_id)
@@ -97,6 +135,8 @@ class Cap8Service:
             progress = Cap8Progress(user_id=user_id, entered_at=datetime.now(UTC))
             self._session.add(progress)
             await self._session.flush()
+        await self._bootstrap_open_positions(user_id)
+        await self._reconcile_filled_exits(progress)
         await self._recompute_progress(progress)
         return self._progress_out(progress)
 
@@ -122,6 +162,16 @@ class Cap8Service:
         symbol: str,
         order_id: uuid.UUID | None = None,
     ) -> tuple[VirtualOrder, OrderKehoach] | None:
+        """Find the latest complete BUY in the current holding cycle only."""
+        last_full_close = (await self._session.execute(
+            select(func.max(VirtualOrder.exit_snapshot_at)).where(
+                VirtualOrder.account_id == account_id,
+                VirtualOrder.symbol == symbol.upper(),
+                VirtualOrder.side == OrderSide.SELL,
+                VirtualOrder.status == OrderStatus.FILLED,
+                VirtualOrder.position_quantity_after_fill == 0,
+            )
+        )).scalar_one()
         statement = (
             select(VirtualOrder, OrderKehoach)
             .join(OrderKehoach, OrderKehoach.order_id == VirtualOrder.id)
@@ -136,23 +186,25 @@ class Cap8Service:
             )
             .order_by(VirtualOrder.updated_at.desc(), VirtualOrder.id.desc())
         )
+        if last_full_close is not None:
+            statement = statement.where(VirtualOrder.updated_at > last_full_close)
         if order_id is not None:
             statement = statement.where(VirtualOrder.id == order_id)
         row = (await self._session.execute(statement)).tuples().first()
         return None if row is None else (row[0], row[1])
-
     async def _bootstrap_plan(
         self, user_id: uuid.UUID, account_id: uuid.UUID, position: VirtualPosition
     ) -> bool:
-        """Reconcile the aggregate position with its latest *filled* qualified BUY.
-
-        ``sync_plan`` can be called while a limit BUY is still pending.  That
-        request rightly cannot activate it, but a later position access must
-        still discover the filled plan even when an older plan already exists.
-        """
+        """Reconcile a positive aggregate position to its current-cycle plan."""
         latest = await self._latest_qualifying_plan(user_id, account_id, position.symbol)
         if latest is None:
-            return position.active_plan_buy_order_id is not None
+            position.active_plan_buy_order_id = None
+            position.active_original_stop_vnd = None
+            position.active_original_take_profit_vnd = None
+            position.active_dynamic_stop_vnd = None
+            position.active_dynamic_stop_set_at = None
+            await self._session.flush()
+            return False
         order, plan = latest
         if position.active_plan_buy_order_id == order.id:
             return True
@@ -163,7 +215,6 @@ class Cap8Service:
         position.active_dynamic_stop_set_at = None
         await self._session.flush()
         return True
-
     async def sync_plan(self, user_id: uuid.UUID, symbol: str, buy_order_id: uuid.UUID) -> dict:
         await self._require_progress(user_id)
         account, position = await self._position(user_id, symbol, for_update=True)
@@ -247,7 +298,6 @@ class Cap8Service:
         position.active_dynamic_stop_set_at = now
         await self._session.flush()
         return {"symbol": position.symbol, "dynamic_stop_vnd": dynamic_stop_vnd, "dynamic_stop_set_at": now}
-
     async def exit_context(
         self, user_id: uuid.UUID, symbol: str, proposed_sale_quantity: int | None = None
     ) -> dict:
@@ -257,15 +307,24 @@ class Cap8Service:
         portfolio = await self._trading.get_portfolio(user_id)
         live = next((p for p in portfolio["positions"] if p["symbol"] == position.symbol), None)
         current_price = live["current_price_vnd"] if live else None
+        if position.quantity_total <= 0:
+            raise BadRequestError("Không còn vị thế để thoát lệnh")
         proposed_quantity = (
             position.quantity_sellable
             if proposed_sale_quantity is None
             else proposed_sale_quantity
         )
-        if proposed_quantity <= 0 or proposed_quantity > position.quantity_sellable:
+        if proposed_quantity < 0 or proposed_quantity > position.quantity_sellable:
             raise BadRequestError("Khối lượng bán dự kiến phải nằm trong số cổ phiếu có thể bán")
-        balance = await self._portfolio_balance.get_snapshot_after_sale(
-            user_id, position.symbol, proposed_quantity
+        # A T+2 position has no sellable quantity yet, but the plan and
+        # profitable dynamic-stop controls remain actionable. Its allocation
+        # impact is the unchanged current snapshot rather than a fictitious sale.
+        balance = (
+            await self._portfolio_balance.get_snapshot(user_id)
+            if proposed_quantity == 0
+            else await self._portfolio_balance.get_snapshot_after_sale(
+                user_id, position.symbol, proposed_quantity
+            )
         )
         config = await self._repo.get_active_config()
         return {
@@ -303,13 +362,13 @@ class Cap8Service:
         }
 
     async def record_exit(self, user_id: uuid.UUID, sell_order_id: uuid.UUID) -> dict:
-        """Idempotently classify a user-owned FILLED SELL in one transaction.
-
-        The progress row is the per-user serialization point.  The evidence
-        lookup happens *after* that lock so concurrent retries re-read and
-        return the winning record instead of racing the unique sell-order key.
-        """
+        """Idempotently classify a user-owned FILLED SELL in one transaction."""
         progress = await self._require_progress(user_id, for_update=True)
+        return await self._record_exit(progress, sell_order_id)
+
+    async def _record_exit(self, progress: Cap8Progress, sell_order_id: uuid.UUID) -> dict:
+        """Record one exit while the caller owns the user's progress lock."""
+        user_id = progress.user_id
         existing = (await self._session.execute(
             select(Cap8Exit).where(Cap8Exit.sell_order_id == sell_order_id)
         )).scalar_one_or_none()
@@ -441,6 +500,8 @@ class Cap8Service:
 
     async def graduate(self, user_id: uuid.UUID) -> dict:
         progress = await self._require_progress(user_id, for_update=True)
+        await self._bootstrap_open_positions(user_id)
+        await self._reconcile_filled_exits(progress)
         await self._recompute_progress(progress)
         if progress.graduated_at is None:
             if progress.so_lenh_thoat_dung_ke_hoach < EXIT_TARGET:

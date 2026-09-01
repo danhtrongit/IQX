@@ -4,9 +4,11 @@ from datetime import UTC, date, datetime
 from types import SimpleNamespace
 
 import pytest
+from sqlalchemy import func, select
 
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
 from app.models.cap1 import LyDo, OrderKehoach, TrangThaiLucDat
+from app.models.cap7 import Cap7Progress
 from app.models.cap8 import Cap8Exit, Cap8Progress
 from app.models.virtual_trading import (
     OrderSide,
@@ -45,6 +47,15 @@ async def _exit_fixture(
     await db_session.flush()
     buy.created_at = datetime(2026, 1, 5, 10, tzinfo=UTC)
     buy.updated_at = datetime(2026, 1, 5, 10, tzinfo=UTC)
+    db_session.add(OrderKehoach(
+        order_id=buy.id,
+        lyDo=LyDo.KY_THUAT,
+        trangThai_luc_dat=TrangThaiLucDat.UNG_HO,
+        vung_mua=100,
+        cat_lo=90,
+        chot_loi=target,
+    ))
+    await db_session.flush()
     sell = VirtualOrder(
         account_id=account.id, user_id=user.id, symbol="VCB", mode="thuc_chien", side=OrderSide.SELL,
         order_type=OrderType.MARKET, status=OrderStatus.FILLED, quantity=100, filled_price_vnd=sell_price,
@@ -125,6 +136,52 @@ async def test_pending_later_buy_never_replaces_active_plan(db_session, test_use
     assert position.active_plan_buy_order_id == active_buy_id
 
 
+
+@pytest.mark.asyncio
+async def test_enter_bootstraps_existing_positive_holding_plan(
+    db_session, test_user,
+) -> None:
+    service, account, position, sell, progress = await _exit_fixture(db_session, test_user, remaining=100)
+    sell.status = "pending"
+    await db_session.delete(progress)
+    db_session.add(Cap7Progress(
+        user_id=test_user.id,
+        entered_at=datetime.now(UTC),
+        graduated_at=datetime.now(UTC),
+    ))
+    position.active_plan_buy_order_id = None
+    position.active_original_stop_vnd = None
+    position.active_original_take_profit_vnd = None
+    qualified_buy = await _qualifying_plan(db_session, account, test_user, stop=95, target=125)
+
+    await service.enter(test_user.id)
+
+    assert position.active_plan_buy_order_id == qualified_buy.id
+    assert position.active_original_stop_vnd == 95
+    assert position.active_original_take_profit_vnd == 125
+
+
+@pytest.mark.asyncio
+async def test_bootstrap_clears_plan_from_a_closed_holding_cycle(
+    db_session, test_user,
+) -> None:
+    service, account, position, sell, _ = await _exit_fixture(db_session, test_user, remaining=100)
+    qualified_buy = await _qualifying_plan(db_session, account, test_user, stop=95, target=125)
+    position.active_plan_buy_order_id = qualified_buy.id
+    position.active_original_stop_vnd = 95
+    position.active_original_take_profit_vnd = 125
+    sell.position_quantity_after_fill = 0
+    sell.exit_snapshot_at = datetime.now(UTC)
+    sell.updated_at = sell.exit_snapshot_at
+    await db_session.flush()
+
+    found = await service._bootstrap_plan(test_user.id, account.id, position)
+
+    assert found is False
+    assert position.active_plan_buy_order_id is None
+    assert position.active_original_stop_vnd is None
+    assert position.active_original_take_profit_vnd is None
+
 @pytest.mark.asyncio
 async def test_dynamic_stop_requires_entering_level8_and_locks_in_profit(db_session, test_user, monkeypatch) -> None:
     service, _, position, _, progress = await _exit_fixture(db_session, test_user, remaining=100)
@@ -180,6 +237,34 @@ async def test_exit_context_requires_level8_progress(db_session, test_user, monk
     with pytest.raises(NotFoundError):
         await service.exit_context(test_user.id, "VCB")
 
+
+
+@pytest.mark.asyncio
+async def test_exit_context_keeps_dynamic_stop_available_when_t2_position_is_unsellable(
+    db_session, test_user, monkeypatch,
+) -> None:
+    service, _, position, _, _ = await _exit_fixture(db_session, test_user, remaining=100)
+    position.quantity_sellable = 0
+    monkeypatch.setattr(
+        service._trading,
+        "get_portfolio",
+        lambda _user_id: __import__("asyncio").sleep(
+            0, result={"positions": [{"symbol": "VCB", "current_price_vnd": 120}]},
+        ),
+    )
+    monkeypatch.setattr(
+        service._portfolio_balance,
+        "get_snapshot",
+        lambda _user_id: __import__("asyncio").sleep(
+            0, result=SimpleNamespace(model_dump=lambda **_kwargs: {"can_doi_ok": False}),
+        ),
+    )
+
+    context = await service.exit_context(test_user.id, "VCB")
+
+    assert context["quantity_sellable"] == 0
+    assert context["proposed_sale_quantity"] == 0
+    assert context["can_update_dynamic_stop"] is True
 def test_stop_timeliness_allows_crossing_session_and_following_trading_session() -> None:
     history = [(date(2026, 1, 5), 101.0), (date(2026, 1, 6), 99.0), (date(2026, 1, 7), 97.0)]
     assert Cap8Service._timely_stop(history, 100, date(2026, 1, 6)) == (True, "timely_stop_exit")
@@ -202,6 +287,29 @@ async def test_take_profit_full_exit_counts_and_duplicate_post_is_idempotent(db_
     assert first["effective_stop_vnd"] == 90
     assert duplicate["id"] == first["id"]
     assert progress.so_lenh_thoat_dung_ke_hoach == 1
+
+
+@pytest.mark.asyncio
+async def test_progress_reconciles_a_later_limit_sell_fill_once_using_lowercase_status(
+    db_session, test_user,
+) -> None:
+    service, _, _, sell, progress = await _exit_fixture(db_session, test_user)
+    sell.side = "sell"
+    sell.status = "filled"
+    sell.order_type = OrderType.LIMIT
+    await db_session.flush()
+
+    first = await service.get_progress(test_user.id)
+    second = await service.get_progress(test_user.id)
+
+    assert first is not None
+    assert first["so_lenh_thoat_dung_ke_hoach"] == 1
+    assert second is not None
+    assert second["so_lenh_thoat_dung_ke_hoach"] == 1
+    assert progress.so_lenh_thoat_dung_ke_hoach == 1
+    assert (await db_session.execute(
+        select(func.count(Cap8Exit.id)).where(Cap8Exit.sell_order_id == sell.id)
+    )).scalar_one() == 1
 
 
 @pytest.mark.asyncio
@@ -381,7 +489,9 @@ async def test_dynamic_stop_rejects_unprofitable_or_nonraising_values(
 
 @pytest.mark.asyncio
 async def test_fifth_compliant_exit_unlocks_terminal_graduation(db_session, test_user) -> None:
-    service, account, _, _, progress = await _exit_fixture(db_session, test_user)
+    service, account, _, fixture_sell, progress = await _exit_fixture(db_session, test_user)
+    fixture_sell.status = OrderStatus.PENDING
+    await db_session.flush()
 
     async def add_compliant_exit(number: int) -> None:
         sell = VirtualOrder(

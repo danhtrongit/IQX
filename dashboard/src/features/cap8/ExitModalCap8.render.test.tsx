@@ -77,6 +77,12 @@ vi.mock("@arco-design/web-react", () => {
   }
 })
 vi.mock("@/features/trading", () => ({ usePlaceOrder: mocks.usePlaceOrder }))
+vi.mock("@/features/cap7", () => ({
+  cap7Keys: {
+    progress: () => ["cap7", "progress"],
+    portfolio: () => ["cap7", "portfolio"],
+  },
+}))
 vi.mock("./api", () => ({ cap8Api: { recordExit: mocks.recordExit } }))
 vi.mock("./hooks", () => ({
   useCap8ExitContext: mocks.useCap8ExitContext,
@@ -127,13 +133,18 @@ function installSellMutation(
   }))
 }
 
-function renderModal(queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }), onClose = vi.fn()) {
+function renderModal(
+  queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+  onClose = vi.fn(),
+  onFilledSell = vi.fn(),
+) {
   return {
     onClose,
+    onFilledSell,
     queryClient,
     ...render(
       <QueryClientProvider client={queryClient}>
-        <ExitModalCap8 onClose={onClose} symbol="HPG" visible />
+        <ExitModalCap8 onClose={onClose} onFilledSell={onFilledSell} symbol="HPG" visible />
       </QueryClientProvider>,
     ),
   }
@@ -158,6 +169,26 @@ describe("ExitModalCap8", () => {
   it("shows a nonblocking emotional warning for a profitable full sale below target", () => {
     renderModal()
     expect(screen.getByText(/chưa chạm chốt lời/)).toBeInTheDocument()
+  })
+
+  it("renders the server-owned planned-exit price bar for a profitable position", () => {
+    renderModal()
+    expect(screen.getByTestId("cap8-planned-exit-price-bar")).toBeInTheDocument()
+  })
+
+  it("keeps dynamic-stop controls available while a positive T+2 holding is unsellable", () => {
+    mocks.useCap8ExitContext.mockReturnValue({
+      data: { ...exitContext, quantity_sellable: 0, proposed_sale_quantity: 0 },
+      error: null,
+      isLoading: false,
+    })
+    renderModal()
+    expect(screen.getByRole("button", { name: "Bán toàn bộ" })).toBeDisabled()
+    expect(screen.getByRole("spinbutton")).toBeEnabled()
+    fireEvent.change(screen.getByRole("spinbutton"), { target: { value: "103" } })
+    expect(screen.getByRole("button", { name: "Lưu cắt lỗ động" })).toBeEnabled()
+    expect(screen.getByText(/chưa về tài khoản để bán/)).toBeInTheDocument()
+
   })
 
   it("submits the entire sellable holding through the existing trading mutation", () => {
@@ -207,28 +238,33 @@ describe("ExitModalCap8", () => {
     expect(await screen.findByText("Không thể tải kế hoạch")).toBeInTheDocument()
   })
 
-  it("records lowercase filled evidence and invalidates Level 8 caches before the trading cache refetch", async () => {
+  it("records lowercase filled evidence, invalidates live balance, then dispatches one closeout", async () => {
     const events: string[] = []
     installSellMutation(events)
-    const { onClose, queryClient } = renderModal()
+    const { onClose, onFilledSell, queryClient } = renderModal()
     mocks.recordExit.mockImplementation(async (sellOrderId: string) => {
       events.push(`record:${sellOrderId}`)
       return {}
     })
     const invalidateQueries = vi.spyOn(queryClient, "invalidateQueries").mockImplementation(async () => {
-      events.push("cap8-cache")
+      events.push("cache")
     })
 
     fireEvent.click(screen.getByRole("button", { name: "Bán toàn bộ" }))
 
     await waitFor(() => expect(events).toEqual([
       "record:filled-sell-order",
-      "cap8-cache",
-      "cap8-cache",
+      "cache",
+      "cache",
+      "cache",
+      "cache",
       "trading-cache",
     ]))
     expect(invalidateQueries).toHaveBeenNthCalledWith(1, { queryKey: ["cap8", "progress"] })
     expect(invalidateQueries).toHaveBeenNthCalledWith(2, { queryKey: ["cap8", "exit-context", "HPG"] })
+    expect(invalidateQueries).toHaveBeenNthCalledWith(3, { queryKey: ["cap7", "progress"] })
+    expect(invalidateQueries).toHaveBeenNthCalledWith(4, { queryKey: ["cap7", "portfolio"] })
+    expect(onFilledSell).toHaveBeenCalledTimes(1)
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
@@ -245,7 +281,7 @@ describe("ExitModalCap8", () => {
 
   it("clears completed evidence-retry state before closing so a reopened modal can sell again", async () => {
     mocks.recordExit.mockRejectedValueOnce(new Error("Bằng chứng tạm thời lỗi"))
-    const { onClose } = renderModal()
+    const { onClose, onFilledSell } = renderModal()
 
     fireEvent.click(screen.getByRole("button", { name: "Bán toàn bộ" }))
 
@@ -260,6 +296,7 @@ describe("ExitModalCap8", () => {
     expect(mocks.recordExit).toHaveBeenNthCalledWith(1, "filled-sell-order")
     expect(mocks.recordExit).toHaveBeenNthCalledWith(2, "filled-sell-order")
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
+    expect(onFilledSell).toHaveBeenCalledTimes(1)
     expect(screen.getByRole("button", { name: "Bán toàn bộ" })).toBeEnabled()
 
     fireEvent.click(screen.getByRole("button", { name: "Bán toàn bộ" }))

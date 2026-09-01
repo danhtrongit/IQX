@@ -177,6 +177,13 @@ describe("Cap6PortfolioAnalysis — khối ① phần Cấp 6 thêm", () => {
     expect(hv.textContent).not.toContain("2/")
   })
 
+  it("states that consistency alone gates graduation and vetoes are descriptive", () => {
+    renderPa()
+    const text = screen.getByTestId("cap6-pa-khoi1").textContent
+    expect(text).toContain("thước đo tốt nghiệp duy nhất")
+    expect(text).toContain("chỉ là phần mô tả")
+  })
+
   it("lãi ĐƯỢC hiện ở đây (spec §11) nhưng kèm câu nói rõ KHÔNG phải cổng", () => {
     renderPa()
     expect(screen.getByTestId("cap6-pa-khoi1-lai")).toHaveTextContent("6%")

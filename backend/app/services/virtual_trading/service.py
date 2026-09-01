@@ -435,6 +435,15 @@ class VirtualTradingService:
                     matched_buy = await self._repo.get_order_by_id(exit_matched_buy_order_id)
                     if matched_buy is not None:
                         exit_plan_activated_at = matched_buy.updated_at or matched_buy.created_at
+                if new_total == 0:
+                    # The immutable SELL snapshot above is the historical
+                    # evidence for this holding cycle.  The reusable aggregate
+                    # position must not carry its plan into a later reopen.
+                    position.active_plan_buy_order_id = None
+                    position.active_original_stop_vnd = None
+                    position.active_original_take_profit_vnd = None
+                    position.active_dynamic_stop_vnd = None
+                    position.active_dynamic_stop_set_at = None
 
             if eff_settlement == SettlementMode.T0:
                 account.cash_available_vnd += proceeds

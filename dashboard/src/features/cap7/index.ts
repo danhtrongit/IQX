@@ -5,6 +5,7 @@ export { useCap7Progress, useCap7Portfolio, useEnterCap7, useGraduateCap7 } from
 export { countCap7TasksDone } from "./types"
 export type { Cap7Progress, PortfolioBalanceCap7, SectorAllocationCap7, SymbolAllocationCap7 } from "./types"
 export { JourneyPanelCap7, taskStateCap7 } from "./JourneyPanelCap7"
-export { GraduationModalCap7, isGraduationReadyCap7 } from "./GraduationModalCap7"
+export { GraduationModalCap7 } from "./GraduationModalCap7"
+export { isGraduationReadyCap7 } from "./graduationState"
 export { Cap7PortfolioAnalysisPanel } from "./Cap7PortfolioAnalysisPanel"
 export { Cap7TradingPage } from "./Cap7TradingPage"

@@ -17,15 +17,24 @@ export function useEnterCap8() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: cap8Api.enter,
-    onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: cap8Keys.progress() }) },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: cap8Keys.progress() }),
+      ])
+    },
   })
+
 }
 
 export function useGraduateCap8() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: cap8Api.graduate,
-    onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: cap8Keys.progress() }) },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: cap8Keys.progress() }),
+      ])
+    },
   })
 }
 

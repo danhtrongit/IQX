@@ -10,6 +10,8 @@ export {
 } from "./hooks"
 export { tradingApi } from "./api"
 export { tradingKeys } from "./keys"
+export { dispatchFilledSellCloseouts } from "./filledSellCloseout"
+export type { FilledSellCloseoutHandler, FilledSellOrderEvent } from "./filledSellCloseout"
 export type {
   VTAccount,
   VTOrder,

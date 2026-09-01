@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router"
 import {
   Button,
@@ -38,6 +38,12 @@ import { useCap7Events } from "@/features/cap7/Cap7Context"
 import { Cap7PortfolioAnalysisPanel } from "@/features/cap7/Cap7PortfolioAnalysisPanel"
 import { ExitModalCap8 } from "@/features/cap8/ExitModalCap8"
 import { useCap8Active } from "@/features/cap8/Cap8Context"
+import { useCap1Events } from "@/features/cap1/Cap1Context"
+import { useCap2Events } from "@/features/cap2/Cap2Context"
+import { useCap3Events } from "@/features/cap3/Cap3Context"
+import { useCap4Events } from "@/features/cap4/Cap4Context"
+import { useCap5Events } from "@/features/cap5/Cap5Context"
+import { useCap6Events } from "@/features/cap6/Cap6Context"
 import { IconActivity, IconBriefcase, IconWallet } from "./icons"
 import {
   useAddToWatchlist,
@@ -47,7 +53,7 @@ import {
   useWatchlist,
 } from "./hooks"
 import { watchlistApi } from "./api"
-import { usePortfolio, useOrders } from "@/features/trading"
+import { dispatchFilledSellCloseouts, usePortfolio, useOrders } from "@/features/trading"
 import { PortfolioAnalysisButton } from "@/features/portfolio-manager"
 import {
   FlashingPrice,
@@ -331,6 +337,23 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
   const [filter, setFilter] = useState<"all" | "profit" | "loss">("all")
   const isCap8Active = useCap8Active()
   const [exitSymbol, setExitSymbol] = useState<string | null>(null)
+  const cap1Events = useCap1Events()
+  const cap2Events = useCap2Events()
+  const cap3Events = useCap3Events()
+  const cap4Events = useCap4Events()
+  const cap5Events = useCap5Events()
+  const cap6Events = useCap6Events()
+  const dispatchCloseouts = useCallback((order: Parameters<typeof dispatchFilledSellCloseouts>[0]) => {
+    dispatchFilledSellCloseouts(
+      order,
+      cap1Events,
+      cap2Events,
+      cap3Events,
+      cap4Events,
+      cap5Events,
+      cap6Events,
+    )
+  }, [cap1Events, cap2Events, cap3Events, cap4Events, cap5Events, cap6Events])
 
   const positions = portfolio?.positions
   const symbols = useMemo(() => positions?.map((position) => position.symbol) ?? [], [positions])
@@ -514,7 +537,12 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
           })
         )}
       {isCap8Active && exitSymbol && (
-        <ExitModalCap8 symbol={exitSymbol} visible onClose={() => setExitSymbol(null)} />
+        <ExitModalCap8
+          symbol={exitSymbol}
+          visible
+          onClose={() => setExitSymbol(null)}
+          onFilledSell={dispatchCloseouts}
+        />
       )}
       </div>
 

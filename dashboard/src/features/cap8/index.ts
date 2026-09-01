@@ -8,7 +8,8 @@ export {
   useCap8ExitContext,
   useSetCap8DynamicStop,
 } from "./hooks"
-export { JourneyPanelCap8, taskStateCap8 } from "./JourneyPanelCap8"
+export { JourneyPanelCap8 } from "./JourneyPanelCap8"
+export { taskStateCap8 } from "./journeyState"
 export { GraduationModalCap8, isGraduationReadyCap8 } from "./GraduationModalCap8"
 export { Cap8TradingPage } from "./Cap8TradingPage"
 export type { Cap8Exit, Cap8ExitContext, Cap8Progress } from "./types"

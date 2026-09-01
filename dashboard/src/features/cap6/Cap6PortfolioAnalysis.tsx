@@ -169,7 +169,7 @@ export function Cap6PortfolioAnalysis({
             </p>
             <p className={HINT}>
               {
-                "Hai con số hành vi ở trên là thước đo tốt nghiệp Cấp 6, do hệ thống chốt từ chính các lệnh của bạn: một lệnh được tính khi mức mâu thuẫn bạn tự đọc khớp với hành động thật (đọc nghiêm trọng thì mua nhỏ hoặc đứng ngoài). Con số lãi/lỗ chỉ để bạn tự xem — nó KHÔNG phải điều kiện lên cấp: quyết định đúng vẫn có thể lỗ, và ngược lại. «Chưa đủ dữ liệu» nghĩa là chưa có lệnh nào đã đóng, KHÔNG phải bằng 0%."
+                "Chỉ số «xử lý mâu thuẫn nhất quán» là thước đo tốt nghiệp duy nhất của Cấp 6: hệ thống chốt từ chính các lệnh của bạn khi mức mâu thuẫn bạn tự đọc khớp với hành động thật (đọc nghiêm trọng thì mua nhỏ hoặc đứng ngoài). Số lần có phủ quyết rất xấu chỉ là phần mô tả của hồ sơ, không phải điều kiện lên cấp. Con số lãi/lỗ chỉ để bạn tự xem — nó KHÔNG phải điều kiện lên cấp: quyết định đúng vẫn có thể lỗ, và ngược lại. «Chưa đủ dữ liệu» nghĩa là chưa có lệnh nào đã đóng, KHÔNG phải bằng 0%."
               }
             </p>
           </>

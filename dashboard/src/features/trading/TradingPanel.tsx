@@ -87,6 +87,7 @@ import {
   useSkipCap6,
   type ConflictLevel,
 } from "@/features/cap6"
+import { cap7Keys, useCap7Events } from "@/features/cap7"
 import { cap8Api, cap8Keys, useCap8Active } from "@/features/cap8"
 import { getErrorMessage } from "@/shared/http/client"
 import { cn } from "@/shared/lib/cn"
@@ -96,6 +97,7 @@ import {
   useWatchlistToggle,
   useSymbolInfo,
 } from "@/features/watchlist"
+import { dispatchFilledSellCloseouts } from "./filledSellCloseout"
 import { useAccount, usePortfolio, usePlaceOrder, useActivateAccount } from "./hooks"
 import "./order-panel.css"
 
@@ -370,6 +372,7 @@ function OrderEntry({
   // khối "Đối chiếu" below, which itself renders ONLY when the user's 5 lớp
   // conflict. With no conflict Cấp 6 adds NO gate at all.
   const { isCap6Active } = cap6Events
+  const { isCap7Active } = useCap7Events()
   const isCap6BacThay = isCap6Active
   // Cùng một query mà `MauThuanBlock` render (react-query gộp theo key ⇒ MỘT
   // request, không phải hai): panel cần bản đọc này để suy ra lý do Cấp 1 và để
@@ -817,6 +820,12 @@ function OrderEntry({
           queryClient.invalidateQueries({ queryKey: cap8Keys.exitContext(symbol) }),
         ])
       }
+      if (order.status.toLowerCase() === "filled" && (isCap7Active || isCap8Active)) {
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: cap7Keys.progress() }),
+          queryClient.invalidateQueries({ queryKey: cap7Keys.portfolio() }),
+        ])
+      }
       // Cấp 1 (spec §6 "Kết sổ mở khi user bán 1 lệnh Thực chiến") — a SELL
       // fill inside Cấp 1 notifies the bus too (no `lyDo`/`trangThaiLucDat`/
       // `vungMua` — those are BUY-time kế hoạch fields, undefined on sell
@@ -828,22 +837,21 @@ function OrderEntry({
       // cấp's Kết sổ now listens to its own. The `?.` calls are no-ops outside
       // each provider, so the `||` widening cannot regress Cấp 1/2.
       if (side === "sell" && (isCap1Active || isCap3Active || isCap4Active || isCap5Active || isCap6Active)) {
-        const sellEvent = {
-          symbol,
-          side,
-          quantity: order.quantity,
-          price: order.price,
-          orderId: order.id,
-        }
-        cap1Events.onOrderFilled?.(sellEvent)
-        cap2Events.onOrderFilled?.(sellEvent)
-        cap3Events.onOrderFilled?.(sellEvent)
-        cap4Events.onOrderFilled?.(sellEvent)
-        // Cấp 5's Kết sổ mở từ event của CHÍNH nó — cùng cách Cấp 3/Cấp 4 đã
-        // sửa để không đi nhờ bus của cấp khác.
-        cap5Events.onOrderFilled?.(sellEvent)
-        // Cấp 6's Kết sổ (đối chiếu nhìn lại) — cùng lý do, bus của chính nó.
-        cap6Events.onOrderFilled?.(sellEvent)
+        dispatchFilledSellCloseouts(
+          {
+            symbol,
+            side: "sell",
+            quantity: order.quantity,
+            price: order.price,
+            orderId: order.id,
+          },
+          cap1Events,
+          cap2Events,
+          cap3Events,
+          cap4Events,
+          cap5Events,
+          cap6Events,
+        )
       }
       const totalStr = (order.total || order.price * order.quantity).toLocaleString("en-US")
       Message.success(

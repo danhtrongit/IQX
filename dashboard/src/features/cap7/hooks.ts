@@ -12,7 +12,10 @@ export function useCap7Portfolio(enabled = true) {
 
 function useInvalidateCap7() {
   const queryClient = useQueryClient()
-  return () => queryClient.invalidateQueries({ queryKey: cap7Keys.all })
+  return () => Promise.all([
+    queryClient.invalidateQueries({ queryKey: cap7Keys.progress() }),
+    queryClient.invalidateQueries({ queryKey: cap7Keys.portfolio() }),
+  ])
 }
 
 export function useEnterCap7() {

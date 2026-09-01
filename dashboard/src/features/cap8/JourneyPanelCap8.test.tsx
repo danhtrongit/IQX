@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { taskStateCap8 } from "./JourneyPanelCap8"
+import { taskStateCap8 } from "./journeyState"
 import { isGraduationReadyCap8 } from "./GraduationModalCap8"
 import type { Cap8Progress } from "./types"
 
@@ -18,5 +18,14 @@ describe("Cấp 8 terminal one-task journey", () => {
     const fifth = progress({ so_lenh_thoat_dung_ke_hoach: 5 })
     expect(taskStateCap8(fifth)).toBe("done")
     expect(isGraduationReadyCap8(fifth)).toBe(true)
+  })
+  it("presents a preserved historical graduation as terminal without inventing exits", () => {
+    const legacyGraduate = progress({
+      graduated_at: "2026-01-02T00:00:00Z",
+      so_lenh_thoat_dung_ke_hoach: 0,
+    })
+    expect(taskStateCap8(legacyGraduate)).toBe("done")
+    expect(legacyGraduate.so_lenh_thoat_dung_ke_hoach).toBe(0)
+    expect(isGraduationReadyCap8(legacyGraduate)).toBe(false)
   })
 })

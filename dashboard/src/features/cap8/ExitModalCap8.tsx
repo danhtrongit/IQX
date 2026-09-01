@@ -1,7 +1,8 @@
 import { Button, InputNumber, Modal, Radio, Slider } from "@arco-design/web-react"
 import { useEffect, useMemo, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { usePlaceOrder } from "@/features/trading"
+import { usePlaceOrder, type FilledSellOrderEvent } from "@/features/trading"
+import { cap7Keys } from "@/features/cap7"
 import { getErrorMessage } from "@/shared/http/client"
 import { cap8Api } from "./api"
 import { boardLotPartialBounds } from "./exitMath"
@@ -29,13 +30,24 @@ function ErrorMessage({ error, fallback, className }: { error: unknown; fallback
 }
 
 
-export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | null; visible: boolean; onClose: () => void }) {
+export function ExitModalCap8({
+  symbol,
+  visible,
+  onClose,
+  onFilledSell,
+}: {
+  symbol: string | null
+  visible: boolean
+  onClose: () => void
+  onFilledSell?: (order: FilledSellOrderEvent) => void
+}) {
   const queryClient = useQueryClient()
   const { data: context, isLoading, error } = useCap8ExitContext(symbol, visible)
   const [mode, setMode] = useState<"full" | "partial">("full")
   const [partialQuantity, setPartialQuantity] = useState<number | undefined>()
   const [dynamicStop, setDynamicStop] = useState<number | undefined>()
   const [evidenceSellId, setEvidenceSellId] = useState<string | null>(null)
+  const [evidenceOrder, setEvidenceOrder] = useState<FilledSellOrderEvent | null>(null)
   const [evidenceError, setEvidenceError] = useState<unknown>(null)
   const [orderError, setOrderError] = useState<unknown>(null)
   const [retryingEvidence, setRetryingEvidence] = useState(false)
@@ -45,20 +57,38 @@ export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | n
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: cap8Keys.progress() }),
       queryClient.invalidateQueries({ queryKey: cap8Keys.exitContext(symbol ?? "") }),
+      queryClient.invalidateQueries({ queryKey: cap7Keys.progress() }),
+      queryClient.invalidateQueries({ queryKey: cap7Keys.portfolio() }),
     ])
+  }
+  const dispatchCloseout = (order: FilledSellOrderEvent) => {
+    try {
+      onFilledSell?.(order)
+    } catch (nextError) {
+      console.error("Không thể mở Kết sổ sau khi đã ghi nhận thoát lệnh", nextError)
+    }
   }
   const sell = usePlaceOrder(async (order) => {
     if (order.status.toLowerCase() !== "filled") {
       setOrderError(new Error("Lệnh bán không được khớp."))
       return
     }
+    const filledSell: FilledSellOrderEvent = {
+      symbol: context?.symbol ?? symbol ?? "",
+      side: "sell",
+      quantity: order.quantity,
+      price: order.price,
+      orderId: order.id,
+    }
     try {
       await recordEvidence(order.id)
+      dispatchCloseout(filledSell)
       onClose()
     } catch (nextError) {
       // Selling already succeeded. Keep this modal in evidence-retry mode and
       // never offer the same position to the order mutation a second time.
       setEvidenceSellId(order.id)
+      setEvidenceOrder(filledSell)
       setEvidenceError(nextError)
     }
   })
@@ -88,6 +118,23 @@ export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | n
       && context.original_take_profit_vnd != null
       && context.current_price_vnd < context.original_take_profit_vnd,
   )
+  const plannedExitBar = useMemo(() => {
+    if (
+      context?.current_price_vnd == null
+      || context.current_price_vnd <= context.avg_cost_vnd
+      || context.original_stop_vnd == null
+      || context.original_take_profit_vnd == null
+    ) return null
+    const floor = Math.min(context.original_stop_vnd, context.avg_cost_vnd, context.current_price_vnd)
+    const ceiling = Math.max(context.original_take_profit_vnd, context.avg_cost_vnd, context.current_price_vnd)
+    const position = (value: number) => `${((value - floor) / Math.max(ceiling - floor, 1)) * 100}%`
+    return {
+      stop: position(context.original_stop_vnd),
+      cost: position(context.avg_cost_vnd),
+      current: position(context.current_price_vnd),
+      target: position(context.original_take_profit_vnd),
+    }
+  }, [context])
 
   return (
     <Modal visible={visible} title={symbol ? `Thoát lệnh ${symbol}` : "Thoát lệnh"} onCancel={onClose} footer={null}>
@@ -98,6 +145,15 @@ export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | n
             <div>Giá vốn: {vnd(context.avg_cost_vnd)} · Giá hiện tại: {vnd(context.current_price_vnd)}</div>
             <div>Cắt lỗ: {vnd(context.original_stop_vnd)} · Chốt lời: {vnd(context.original_take_profit_vnd)}</div>
             {context.dynamic_stop_vnd != null && <div>Cắt lỗ động đang dùng: {vnd(context.dynamic_stop_vnd)}</div>}
+            {plannedExitBar && (
+              <div className="relative mt-4 h-10 border-y border-[var(--color-border-2)]" data-testid="cap8-planned-exit-price-bar">
+                <span className="absolute inset-x-0 top-1/2 h-px bg-[var(--color-border-3)]" />
+                <span className="absolute top-0 h-full border-l border-danger" style={{ left: plannedExitBar.stop }} title="Cắt lỗ" />
+                <span className="absolute top-0 h-full border-l border-[var(--color-text-3)]" style={{ left: plannedExitBar.cost }} title="Giá vốn" />
+                <span className="absolute top-0 h-full border-l-2 border-primary" style={{ left: plannedExitBar.current }} title="Giá hiện tại" />
+                <span className="absolute top-0 h-full border-l border-success" style={{ left: plannedExitBar.target }} title="Chốt lời" />
+              </div>
+            )}
           </div>
           <div className="rounded border border-[var(--color-border-2)] p-3 text-xs">
             <b>Tác động phân bổ ngành sau bán</b>
@@ -125,6 +181,9 @@ export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | n
               <span>{partial.value.toLocaleString("en-US")} cổ phiếu (lô {context.board_lot_size})</span></div>
           )}
           {emotionalWarning && <p className="text-warning">Bạn đang bán toàn bộ khi có lãi nhưng chưa chạm chốt lời. Lệnh vẫn được gửi, nhưng có thể không được tính là thoát theo kế hoạch.</p>}
+          {context.quantity_sellable === 0 && (
+            <p className="text-warning">Cổ phiếu chưa về tài khoản để bán (T+2). Bạn vẫn có thể nâng cắt lỗ động nếu vị thế đang có lãi.</p>
+          )}
           <Button type="primary" loading={sell.isPending} disabled={quantity <= 0 || evidenceSellId !== null} onClick={() => { setOrderError(null); sell.mutate({ symbol: context.symbol, side: "sell", method: "market", quantity }) }}>
             {mode === "full" ? "Bán toàn bộ" : `Bán ${quantity.toLocaleString("en-US")}`}
           </Button>
@@ -137,7 +196,9 @@ export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | n
                   setRetryingEvidence(true)
                   void recordEvidence(evidenceSellId)
                     .then(() => {
+                      if (evidenceOrder) dispatchCloseout(evidenceOrder)
                       setEvidenceSellId(null)
+                      setEvidenceOrder(null)
                       setEvidenceError(null)
                       onClose()
                     })

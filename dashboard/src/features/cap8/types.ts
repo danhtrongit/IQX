@@ -44,4 +44,7 @@ export interface Cap8ExitContext {
 }
 
 export const countCap8TasksDone = (progress: Cap8Progress | null | undefined): number =>
-  progress && progress.so_lenh_thoat_dung_ke_hoach >= progress.muc_tieu_thoat_dung_ke_hoach ? 1 : 0
+  progress && (
+    progress.graduated_at != null
+    || progress.so_lenh_thoat_dung_ke_hoach >= progress.muc_tieu_thoat_dung_ke_hoach
+  ) ? 1 : 0

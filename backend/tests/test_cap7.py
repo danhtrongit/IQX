@@ -9,6 +9,7 @@ import pytest
 from app.core.exceptions import ConflictError
 from app.models.cap6 import Cap6Progress
 from app.models.cap7 import Cap7Progress
+from app.models.virtual_trading import VirtualPosition, VirtualTradingAccount
 from app.services.cap7.service import Cap7Service
 from app.services.portfolio_balance import (
     PortfolioBalanceSnapshot,
@@ -57,6 +58,17 @@ def valid_snapshot(
     )
 
 
+async def add_account(db_session, user) -> VirtualTradingAccount:
+    account = VirtualTradingAccount(
+        user_id=user.id,
+        initial_cash_vnd=1_000_000,
+        cash_available_vnd=1_000_000,
+        activated_at=datetime.now(UTC),
+    )
+    db_session.add(account)
+    await db_session.flush()
+    return account
+
 @pytest.mark.asyncio
 async def test_enter_requires_cap6_graduation(db_session, test_user) -> None:
     db_session.add(Cap6Progress(user_id=test_user.id, entered_at=datetime.now(UTC)))
@@ -95,6 +107,7 @@ async def test_graduation_rejects_each_live_unsafe_leg(db_session, test_user, mo
     db_session.add(progress)
     await db_session.flush()
     service = Cap7Service(db_session)
+    await add_account(db_session, test_user)
 
     async def current_balance(_user_id):
         return unsafe
@@ -117,10 +130,48 @@ async def test_graduation_recomputes_instead_of_trusting_stored_credit(db_sessio
         return valid_snapshot(can_doi_ok=True)
 
     monkeypatch.setattr(service, "_snapshot", current_balance)
+    await add_account(db_session, test_user)
     result = await service.graduate(test_user.id)
     assert result["can_doi_ok"] is True
     assert progress.graduated_at is not None
 
+
+@pytest.mark.asyncio
+async def test_graduation_locks_account_and_position_set_before_live_snapshot(
+    db_session, test_user, monkeypatch
+) -> None:
+    progress = Cap7Progress(user_id=test_user.id, entered_at=datetime.now(UTC), can_doi_ok=False)
+    db_session.add(progress)
+    account = await add_account(db_session, test_user)
+    db_session.add(VirtualPosition(
+        account_id=account.id,
+        symbol="AAA",
+        quantity_total=100,
+        quantity_sellable=100,
+        quantity_pending=0,
+        quantity_reserved=0,
+        avg_cost_vnd=100,
+    ))
+    await db_session.flush()
+    service = Cap7Service(db_session)
+    locked_positions = False
+    original_lock = service._repo.list_positions_for_update
+
+    async def lock_positions(account_id):
+        nonlocal locked_positions
+        rows = await original_lock(account_id)
+        locked_positions = True
+        return rows
+
+    async def snapshot_after_mutations_are_blocked(_user_id):
+        assert locked_positions
+        return valid_snapshot(can_doi_ok=True)
+
+    monkeypatch.setattr(service._repo, "list_positions_for_update", lock_positions)
+    monkeypatch.setattr(service, "_snapshot", snapshot_after_mutations_are_blocked)
+
+    await service.graduate(test_user.id)
+    assert progress.graduated_at is not None
 
 def test_only_live_balance_routes_are_advertised() -> None:
     from app.api.v1.endpoints.cap7 import router

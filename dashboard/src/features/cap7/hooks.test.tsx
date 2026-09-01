@@ -33,7 +33,8 @@ describe("useGraduateCap7", () => {
     fireEvent.click(screen.getByRole("button", { name: "graduate" }))
     await waitFor(() => expect(post).toHaveBeenCalledWith("cap7/graduate"))
     await waitFor(() =>
-      expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: cap7Keys.all }),
+      expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: cap7Keys.progress() }),
     )
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: cap7Keys.portfolio() })
   })
 })

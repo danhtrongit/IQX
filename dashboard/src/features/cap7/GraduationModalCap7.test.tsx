@@ -3,8 +3,9 @@ import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Cap7Progress } from "./types"
 
-const { useCap7ProgressMock, graduateMutate, enterCap8Mutate, capFlags } = vi.hoisted(() => ({
+const { useCap7ProgressMock, useCap8ProgressMock, graduateMutate, enterCap8Mutate, capFlags } = vi.hoisted(() => ({
   useCap7ProgressMock: vi.fn(),
+  useCap8ProgressMock: vi.fn(),
   graduateMutate: vi.fn(),
   enterCap8Mutate: vi.fn(),
   capFlags: { max: 7 },
@@ -19,7 +20,8 @@ vi.mock("./hooks", () => ({
   useGraduateCap7: () => ({ mutate: graduateMutate, isPending: false }),
 }))
 vi.mock("@/features/cap8/hooks", () => ({
-  useEnterCap8: () => ({ mutate: enterCap8Mutate }),
+  useEnterCap8: () => ({ mutate: enterCap8Mutate, isSuccess: false }),
+  useCap8Progress: () => useCap8ProgressMock(),
 }))
 vi.mock("@/features/cap1/capFlags", () => ({
   get CAP_MAX_ENABLED() {
@@ -31,7 +33,8 @@ vi.mock("@/features/cap6/Cap6TradingPage", () => ({
 }))
 
 import { Cap7TradingPage } from "./Cap7TradingPage"
-import { GraduationModalCap7, isGraduationReadyCap7 } from "./GraduationModalCap7"
+import { GraduationModalCap7 } from "./GraduationModalCap7"
+import { isGraduationReadyCap7 } from "./graduationState"
 
 function progress(overrides: Partial<Cap7Progress> = {}): Cap7Progress {
   return {
@@ -47,6 +50,7 @@ function progress(overrides: Partial<Cap7Progress> = {}): Cap7Progress {
 
 beforeEach(() => {
   useCap7ProgressMock.mockReturnValue({ data: progress() })
+  useCap8ProgressMock.mockReturnValue({ data: null })
   graduateMutate.mockReset()
   enterCap8Mutate.mockReset()
   capFlags.max = 7
@@ -80,6 +84,14 @@ describe("GraduationModalCap7", () => {
     render(<GraduationModalCap7 />)
     fireEvent.click(screen.getByRole("button", { name: "Vào Cấp 8" }))
     expect(enterCap8Mutate).toHaveBeenCalledTimes(1)
+  })
+
+  it("suppresses the non-closable Level 7 modal after Level 8 progress exists", () => {
+    capFlags.max = 8
+    useCap7ProgressMock.mockReturnValue({ data: progress({ graduated_at: "2026-09-01T01:00:00Z" }) })
+    useCap8ProgressMock.mockReturnValue({ data: { id: "p8" } })
+    render(<GraduationModalCap7 />)
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
   })
 
   it("requires live balance and no prior graduation", () => {

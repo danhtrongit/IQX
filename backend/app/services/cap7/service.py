@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import ConflictError, NotFoundError
 from app.models.cap6 import Cap6Progress
 from app.models.cap7 import Cap7Progress
+from app.repositories.virtual_trading import VirtualTradingRepository
 from app.schemas.cap7 import cap7_progress_out
 from app.services.portfolio_balance import PortfolioBalanceService, PortfolioBalanceSnapshot
 
@@ -20,6 +21,7 @@ class Cap7Service:
 
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+        self._repo = VirtualTradingRepository(session)
         self._portfolio_balance = PortfolioBalanceService(session)
 
     async def _get_progress_row(
@@ -38,6 +40,18 @@ class Cap7Service:
 
     async def _snapshot(self, user_id: uuid.UUID) -> PortfolioBalanceSnapshot:
         return await self._portfolio_balance.get_snapshot(user_id)
+
+    async def _lock_live_portfolio(self, user_id: uuid.UUID) -> None:
+        """Serialize a portfolio-wide decision with account/position mutations.
+
+        Fills lock account first and then the touched position.  Graduation
+        takes the same account lock before the ordered position set, so no fill
+        can commit between the live allocation snapshot and ``graduated_at``.
+        """
+        account = await self._repo.get_account_by_user_id_for_update(user_id)
+        if account is None:
+            raise NotFoundError("tài khoản giao dịch ảo")
+        await self._repo.list_positions_for_update(account.id)
 
     async def _recompute(self, progress: Cap7Progress) -> tuple[dict, PortfolioBalanceSnapshot]:
         snapshot = await self._snapshot(progress.user_id)
@@ -77,6 +91,7 @@ class Cap7Service:
 
     async def graduate(self, user_id: uuid.UUID) -> dict:
         """Atomically recheck the live three-part gate before recording graduation."""
+        await self._lock_live_portfolio(user_id)
         progress = await self._require_progress(user_id, for_update=True)
         payload, snapshot = await self._recompute(progress)
         # Historical graduates retain their terminal record even if a later
