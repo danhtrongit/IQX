@@ -287,10 +287,12 @@ class Cap3Service:
     # ── Graduation ────────────────────────────────────
 
     async def graduate(self, user_id: uuid.UUID) -> Cap3Progress:
-        """Graduate Cấp 3 only after both concurrent tasks are stamped."""
+        """Graduate after both task stamps, preserving already-graduated users."""
         progress = await self._get_progress_row(user_id)
         if progress is None:
             raise NotFoundError("tiến trình Cấp 3")
+        if progress.graduated_at is not None:
+            return progress
         await self._recompute_progress(user_id, progress)
 
         all_tasks_done = all(
@@ -299,14 +301,13 @@ class Cap3Service:
         if not all_tasks_done:
             raise ConflictError("Chưa hoàn thành đủ 2 nhiệm vụ Cấp 3")
 
-        if progress.graduated_at is None:
-            now = datetime.now(UTC)
-            progress.graduated_at = now
-            entered = progress.entered_at
-            if entered.tzinfo is None:
-                entered = entered.replace(tzinfo=UTC)
-            progress.time_to_graduate_hours = (now - entered).total_seconds() / 3600.0
-            await self._session.flush()
-            await self._session.refresh(progress)
+        now = datetime.now(UTC)
+        progress.graduated_at = now
+        entered = progress.entered_at
+        if entered.tzinfo is None:
+            entered = entered.replace(tzinfo=UTC)
+        progress.time_to_graduate_hours = (now - entered).total_seconds() / 3600.0
+        await self._session.flush()
+        await self._session.refresh(progress)
 
         return progress

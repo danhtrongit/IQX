@@ -102,6 +102,7 @@ export function JourneyPanelCap3() {
   const focusTask: 1 | 2 | null =
     taskOneState === "active" ? 1 : taskTwoState === "active" ? 2 : null
   const graduated = progress?.graduated_at != null
+  const displayedTasksDone = graduated ? 2 : tasksDone
   const khauVi = progress?.khau_vi ?? null
   const khauViText = khauVi
     ? `● Khẩu vị: ${KHAU_VI_LABEL[khauVi]} · trần ${KHAU_VI_PCT[khauVi]}% vốn/lệnh`
@@ -111,7 +112,14 @@ export function JourneyPanelCap3() {
     <div className="cap0 flex h-full min-h-0 flex-col bg-[var(--bg1)] text-[var(--t1)]">
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         <div className="cap0-level-card">
-          <Badge n={level.n} color={level.color} fill={level.fill} glow ring={tasksDone / 2} size={64} />
+          <Badge
+            n={level.n}
+            color={level.color}
+            fill={level.fill}
+            glow
+            ring={displayedTasksDone / 2}
+            size={64}
+          />
           <div className="cap0-level-card-body">
             <div className="cap0-level-card-tag">CẤP 3</div>
             <div className="cap0-level-card-name cap0-display">BẢN LĨNH</div>
@@ -158,24 +166,31 @@ export function JourneyPanelCap3() {
         <div className="cap0-journey-checklist-header mt-3">
           <span className="cap0-journey-checklist-title">TRƯỚC KHI LÊN CẤP 4</span>
           <span className="cap0-journey-checklist-count cap0-display" style={{ color: level.color }}>
-            {tasksDone}/2
+            {displayedTasksDone}/2
           </span>
         </div>
         <div className="cap0-journey-parallel-note">Hai nhiệm vụ làm song song</div>
-        <div className="cap0-journey-rest">
-          <ChecklistItem
-            onGo={() => setActivePanel("trading")}
-            progress={progress}
-            state={taskOneState}
-            taskNo={1}
-          />
-          <ChecklistItem
-            onGo={() => setActivePanel("trading")}
-            progress={progress}
-            state={taskTwoState}
-            taskNo={2}
-          />
-        </div>
+        {graduated ? (
+          <div className="cap0-journey-rest" data-testid="cap3-graduated-checklist">
+            Tốt nghiệp Cấp 3 đã được ghi nhận. Tiến trình nhiệm vụ trước đó không được diễn giải
+            lại theo tiêu chí mới.
+          </div>
+        ) : (
+          <div className="cap0-journey-rest">
+            <ChecklistItem
+              onGo={() => setActivePanel("trading")}
+              progress={progress}
+              state={taskOneState}
+              taskNo={1}
+            />
+            <ChecklistItem
+              onGo={() => setActivePanel("trading")}
+              progress={progress}
+              state={taskTwoState}
+              taskNo={2}
+            />
+          </div>
+        )}
 
         <button className="cap0-checklist-golink mt-2" onClick={() => setActivePanel("cap3-analysis")} type="button">
           Xem Phân tích danh mục →

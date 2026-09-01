@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, date, datetime
 
 import pytest
 
@@ -247,6 +247,24 @@ async def test_graduation_requires_both_independent_task_stamps(db_session, test
     graduated = await cap3.graduate(test_user.id)
     assert graduated.graduated_at is not None
     assert graduated.time_to_graduate_hours is not None
+
+
+@pytest.mark.asyncio
+async def test_graduate_returns_existing_graduate_without_new_task_evidence(db_session, test_user):
+    _, cap3, _ = await _graduate_to_cap3(db_session, test_user.id)
+    progress = await cap3.get_progress(test_user.id)
+    assert progress is not None
+    preserved_graduated_at = datetime(2026, 8, 1, tzinfo=UTC)
+    progress.graduated_at = preserved_graduated_at
+    progress.time_to_graduate_hours = 72.5
+    await db_session.flush()
+
+    result = await cap3.graduate(test_user.id)
+
+    assert result.graduated_at == preserved_graduated_at
+    assert result.time_to_graduate_hours == 72.5
+    assert result.task_1_done_at is None
+    assert result.task_2_done_at is None
 
 
 @pytest.mark.asyncio

@@ -103,6 +103,24 @@ describe("JourneyPanelCap3", () => {
     expect(within(screen.getByTestId("cap3-focus")).getByText("Đặt lệnh ở cả 3 mức tự tin")).toBeInTheDocument()
   })
 
+  it("shows preserved graduates as complete without inventing cleared task evidence", () => {
+    useCap3ProgressMock.mockReturnValue({
+      data: makeProgress({
+        graduated_at: "2026-09-01T00:00:00Z",
+        time_to_graduate_hours: 48,
+      }),
+    })
+    renderPanel()
+
+    expect(screen.getByText("2/2")).toBeInTheDocument()
+    expect(screen.getByTestId("cap3-graduated-checklist")).toHaveTextContent(
+      "không được diễn giải lại theo tiêu chí mới",
+    )
+    expect(screen.queryByTestId("cap3-task-1")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap3-task-2")).not.toBeInTheDocument()
+    expect(screen.queryByText("Làm ngay →")).not.toBeInTheDocument()
+  })
+
   it("routes task actions to trading without showing legacy profit, fifteen-order, or discipline gates", () => {
     function ActivePanel() {
       return <div data-testid="active-panel">{useSidebar().activePanel}</div>
