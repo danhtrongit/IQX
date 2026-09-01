@@ -17,7 +17,7 @@ export function GraduationModalCap7() {
   const graduated = progress?.graduated_at != null
 
   return (
-    <Modal visible={ready || graduated} closable={false} footer={null}>
+    <Modal visible={ready || (graduated && CAP_MAX_ENABLED >= 8)} closable={false} footer={null}>
       <Badge n={LEVELS[7].n} color={LEVELS[7].color} fill={7} size={120} glow />
       <h2>Danh mục của bạn đã cân đối</h2>
       <p>1/1 nhiệm vụ hoàn thành: không mã nào quá 30%, không ngành nào quá 40%, và rổ có đủ mã lẫn ngành.</p>

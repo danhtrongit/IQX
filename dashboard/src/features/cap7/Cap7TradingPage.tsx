@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import { Cap6TradingPage } from "@/features/cap6/Cap6TradingPage"
 import { Cap7Provider } from "./Cap7Context"
+import { GraduationModalCap7 } from "./GraduationModalCap7"
 
 const SEO_TITLE = "IQX Demo Trading · Cấp 7 «Quản trị danh mục»"
 
@@ -14,5 +15,5 @@ export function Cap7TradingPage() {
     }
   }, [])
 
-  return <Cap7Provider><Cap6TradingPage /></Cap7Provider>
+  return <Cap7Provider><Cap6TradingPage /><GraduationModalCap7 /></Cap7Provider>
 }

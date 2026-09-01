@@ -22,5 +22,10 @@ export function useEnterCap7() {
 
 export function useGraduateCap7() {
   const invalidate = useInvalidateCap7()
-  return useMutation({ mutationFn: cap7Api.graduate, onSuccess: invalidate })
+  return useMutation({
+    mutationFn: cap7Api.graduate,
+    // A live gate can turn false between display and POST. Refetch after either
+    // outcome, including 409, so the one-task modal cannot remain stale.
+    onSettled: () => invalidate(),
+  })
 }
