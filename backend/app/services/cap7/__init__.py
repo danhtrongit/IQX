@@ -1,1 +1,1 @@
-"""Cấp 7 «Đọc sổ lệnh» service package."""
+"""Cấp 7 live portfolio-balance service package."""

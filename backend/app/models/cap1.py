@@ -26,11 +26,9 @@ tự nhập) and owns ``cap5_progress`` + ``cap5_hunt_log`` in ``app.models.cap5
 «Bậc thầy» extends ``OrderKehoach`` again (the "Cấp 6 additions" column block —
 có mâu thuẫn lớp không + mức nhận định user đọc + có lớp phủ quyết rất xấu
 không) and owns ``cap6_progress`` + ``cap6_skip`` in ``app.models.cap6``.
-(Cấp 6 CŨ — «Đối chiếu», gợi ý lớp ưu tiên theo 6 kiểu cổ phiếu — đã nghỉ hưu:
-6 cột ``kieu_co_phieu``/``lop_mau_thuan``/``trong_so_goi_y``/``lop_quyet_dinh``/
-``khop_goi_y``/``ly_do_doi_chieu`` bị bỏ ở revision ``c7f1b9d34a80``.) Cấp 7 «Đọc sổ lệnh» extends ``OrderKehoach`` once more (the
-"Cấp 7 additions" column block — chỉ số Lực + lực user đọc + cờ cảnh giác lệnh
-treo lớn + chấm đọc lực) and owns ``cap7_progress`` in ``app.models.cap7``.
+Cấp 6 owns its conflict-handling fields. Cấp 7 owns ``cap7_progress`` and
+evaluates a live portfolio-balance condition; it no longer extends
+``OrderKehoach``.
 Cấp 8 «Quản trị rủi ro danh mục» — the last level of the program — extends
 ``OrderKehoach`` one final time (the "Cấp 8 additions" column block — dồn ngành
 + tương quan + tổng vốn ở rủi ro + cảnh báo/hành vi) and owns ``cap8_progress``
@@ -289,36 +287,6 @@ class OrderKehoach(UUIDMixin, TimestampMixin, Base):
     had_veto: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     veto_layers: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
-    # ── Cấp 7 additions (spec §4/§5/§8) — "Đọc sổ lệnh": lớp phủ ĐỌC lên sổ dư
-    # mua/bán 3 mức đã hiện từ Cấp 2. CHỈ điền cho lệnh mua đặt TRONG GIỜ giao
-    # dịch có đọc sổ — đọc lực là SOFT, không bao giờ là cổng cứng (spec §9), nên
-    # mọi lệnh Cấp 1-6 và mọi lệnh Cấp 7 đặt ngoài giờ để NULL hết.
-    #   · ``luc_chi_so`` — tỷ lệ tổng dư MUA / tổng dư BÁN (3 mức) lúc mua.
-    #     ★ Tính ở CLIENT từ dữ liệu sổ lệnh tức thời mà server không giữ lúc
-    #     nhận request → KHÔNG suy lại được ở server. Điều làm thước đo đáng tin
-    #     là nó bị CHỐT TRƯỚC khi có kết quả (xem ``app.models.cap7`` nguyên tắc
-    #     ★3 và write-lock trong ``app.services.cap7.service``).
-    #   · ``luc_doc_user`` — user tự đoán 'manh'/'can'/'yeu'. Hệ KHÔNG quyết thay.
-    #   · ``doc_luc_dung`` — điền SAU, do SERVER chấm từ giá thật
-    #     ``SO_PHIEN_CHAM_LUC`` phiên sau khi mua. NULL = chưa chấm được (chưa tới
-    #     hạn, hoặc không lấy được giá phiên đó) — ★ NULL không bao giờ bị tính là
-    #     SAI và bị loại khỏi mẫu số của tỷ lệ.
-    #   · ``dien_bien_pct`` — % thay đổi giá đóng cửa phiên chấm so với giá khớp
-    #     lúc mua (spec §4 gọi là ``dien_bien_ngay_sau``). Ghi lại để Kết sổ và
-    #     khối ⑰ hiện được con số mà không phải gọi lại nguồn giá.
-    #   · ``co_canh_giac_lenh_gia`` — cờ HEURISTIC đã hiện hay chưa. ★ KHÔNG phải
-    #     "hệ phát hiện lệnh giả" (spec §9 loại việc đó khỏi phạm vi).
-    #   · ``hanh_vi_co`` — 'cho_xac_nhan'/'mua_duoi_theo'. NULL khi không có cờ;
-    #     non-NULL KHI VÀ CHỈ KHI ``co_canh_giac_lenh_gia`` là true (service từ
-    #     chối tổ hợp lệch chứ không tự sửa). ``mua_duoi_theo`` KHÔNG bị phạt.
-    luc_chi_so: Mapped[float | None] = mapped_column(
-        Numeric(18, 6, asdecimal=False), nullable=True
-    )
-    luc_doc_user: Mapped[str | None] = mapped_column(String(8), nullable=True)
-    doc_luc_dung: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
-    dien_bien_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
-    co_canh_giac_lenh_gia: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
-    hanh_vi_co: Mapped[str | None] = mapped_column(String(16), nullable=True)
 
     # ── Cấp 8 additions (spec §4/§8) — "Kiểm tra danh mục": ảnh chụp tác động
     # của CHÍNH lệnh này lên cả danh mục, ghi ngay lúc mua. Chỉ điền cho lệnh

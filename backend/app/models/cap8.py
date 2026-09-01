@@ -3,12 +3,9 @@ lệnh MUA lên CẢ danh mục: dồn ngành, tương quan với vị thế đa
 rủi ro nếu mọi cắt lỗ bị chạm).
 
 Cấp 8 builds on a graduated Cấp 7: FREE, Thực chiến-only mode, and **the last
-level of the current program** (trọn mạch 0-8). Like Cấp 2/3/4/5/6/7 it replaces
-nothing — the buy panel keeps Cấp 7's Đọc sổ lệnh, Cấp 6's Đối chiếu, Cấp 5's
-Đứng ngoài, Cấp 4's Đọc-5-lớp, Cấp 3's quản lý vốn, Cấp 2's SL/TP and Cấp 1's
-vùng mua intact and inserts ONE pre-confirm step (spec §4). Cấp 3 sized ONE
-order; Cấp 8 lifts the same question to the whole portfolio. It adds exactly two
-things to the data model:
+level of the current program**. Its temporary risk UI reuses Cấp 7's live
+portfolio allocation rather than a Level 7 buy-panel overlay.
+It adds these fields to the data model:
 
 1. **``order_kehoach`` += 5 columns** (``don_nganh_pct`` /
    ``tuong_quan_cao_voi`` / ``tong_rui_ro_pct`` / ``danh_muc_canh_bao`` /
@@ -60,11 +57,9 @@ NULL check and equality tests, and a PG enum type would add ALTER TYPE migration
 churn for no query benefit.
 
 **Storage decision — the two percentages are ``Numeric(9, 4)`` with
-``asdecimal=False``**, mirroring ``app.models.cap1.OrderKehoach.luc_chi_so``: an
-explicit, platform-independent precision on the column, while plain ``float``
-keeps flowing through the service and pydantic layers instead of leaking
-``Decimal`` into JSON. 4 decimal places is far more than a percentage of NAV
-needs and costs nothing.
+``asdecimal=False``** so plain ``float`` values flow through the service and
+Pydantic layers without leaking ``Decimal`` into JSON. Four decimal places are
+more than a percentage of NAV needs.
 """
 
 from __future__ import annotations

@@ -1,137 +1,26 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useAuth } from "@/features/auth"
 import { cap7Api } from "./api"
 import { cap7Keys } from "./keys"
-import type {
-  Cap7Progress,
-  KehoachDetailCap7,
-  KehoachInputCap7,
-  OrderKehoachCap7,
-  PhienCap7,
-  ThachThucCap7,
-} from "./types"
 
-/**
- * Current user's Cấp 7 progress. `staleTime: 0` so it always refetches after a
- * mutation invalidates it (mirrors `cap6/hooks.ts`). `data` is `null` when the
- * user hasn't entered Cấp 7 yet. `enabled` lets callers outside the Cấp 7 shell
- * pass their own `isCap7Active` so this never fires elsewhere.
- */
 export function useCap7Progress(enabled = true) {
-  const { isAuthenticated } = useAuth()
-  return useQuery<Cap7Progress | null>({
-    queryKey: cap7Keys.progress(),
-    queryFn: cap7Api.getProgress,
-    enabled: isAuthenticated && enabled,
-    staleTime: 0,
-    retry: false,
-  })
+  return useQuery({ queryKey: cap7Keys.progress(), queryFn: cap7Api.getProgress, enabled, staleTime: 0 })
 }
 
-/** Invalidate every Cấp 7 query — used by every mutation. */
+export function useCap7Portfolio(enabled = true) {
+  return useQuery({ queryKey: cap7Keys.portfolio(), queryFn: cap7Api.getPortfolio, enabled, staleTime: 0 })
+}
+
 function useInvalidateCap7() {
   const queryClient = useQueryClient()
   return () => queryClient.invalidateQueries({ queryKey: cap7Keys.all })
 }
 
-/** POST /cap7/enter — enter Cấp 7 (idempotent; requires Cấp 6 graduated). */
 export function useEnterCap7() {
   const invalidate = useInvalidateCap7()
-  return useMutation<Cap7Progress, unknown, void>({
-    mutationFn: cap7Api.enter,
-    onSuccess: invalidate,
-  })
+  return useMutation({ mutationFn: cap7Api.enter, onSuccess: invalidate })
 }
 
-/** PATCH /cap7/task — idempotent recompute of the 3 nhiệm vụ. */
-export function useCompleteCap7Task() {
-  const invalidate = useInvalidateCap7()
-  return useMutation<Cap7Progress, unknown, number>({
-    mutationFn: (taskNo) => cap7Api.markTask(taskNo),
-    onSuccess: invalidate,
-  })
-}
-
-/**
- * GET /cap7/phien — `trong_phien` **from the SERVER clock** + every threshold
- * the reading block renders (`quy_tac`).
- *
- * `refetchInterval` (2 min) exists for one concrete reason: the buy panel can
- * sit open across 11:30 or 14:45, and a stale `trong_phien` would keep offering
- * a guess UI over a book that has stopped moving. `refetchOnWindowFocus` catches
- * the user who comes back to the tab after lunch.
- *
- * `retry: false` so the 404 "chưa vào Cấp 7" surfaces immediately and the block
- * can degrade honestly instead of hanging.
- */
-export function usePhienCap7(enabled = true) {
-  const { isAuthenticated } = useAuth()
-  return useQuery<PhienCap7>({
-    queryKey: cap7Keys.phien(),
-    queryFn: cap7Api.getPhien,
-    enabled: isAuthenticated && enabled,
-    staleTime: 60_000,
-    refetchInterval: 120_000,
-    refetchOnWindowFocus: true,
-    retry: false,
-  })
-}
-
-/** POST /cap7/kehoach — records the bước đọc lực for a BUY fill. */
-export function useRecordKehoachCap7() {
-  const invalidate = useInvalidateCap7()
-  return useMutation<OrderKehoachCap7, unknown, KehoachInputCap7>({
-    mutationFn: cap7Api.recordKehoach,
-    onSuccess: invalidate,
-  })
-}
-
-/**
- * GET /cap7/kehoach/{order_id} — the đọc-lực block of one order, **scored** if
- * its window has elapsed (reading it runs the server's lazy chấm pass).
- *
- * ★ `enabled` is NOT optional in practice: the endpoint **404s for a user
- * without a Cấp 7 progress row**, so callers must pass their own `isCap7Active`.
- * `retry: false` so 404 (and any other failure) surfaces at once and the caller
- * can fall back to what it already had — the Kết sổ modal is `closable={false}`,
- * so it must never depend on this call succeeding.
- */
-export function useKehoachCap7(orderId: string | null, enabled = true) {
-  const { isAuthenticated } = useAuth()
-  return useQuery<KehoachDetailCap7>({
-    queryKey: cap7Keys.kehoach(orderId ?? "none"),
-    queryFn: () => cap7Api.getKehoach(orderId as string),
-    enabled: isAuthenticated && enabled && !!orderId,
-    staleTime: 0,
-    retry: false,
-  })
-}
-
-/**
- * ★ KHÔNG CÓ `useChamCap7`. `POST /cap7/cham` tồn tại phía server nhưng FE không
- * có chỗ nào cần gọi nó: MỌI read của Cấp 7 đều chạy CHÍNH cái lazy chấm pass ấy,
- * và cụ thể `GET /cap7/kehoach/{order_id}` (`useKehoachCap7`) chạy nó ngay trước
- * khi Kết sổ đọc kết quả. Một hook gọi thêm sẽ chỉ là một request thừa đi kèm một
- * đường ghi thứ hai vào cùng bộ dữ liệu.
- */
-
-/** GET /cap7/thach-thuc — the 3 sub-conditions of nhiệm vụ ③ (§C12c). */
-export function useThachThucCap7(enabled = true) {
-  const { isAuthenticated } = useAuth()
-  return useQuery<ThachThucCap7>({
-    queryKey: cap7Keys.thachThuc(),
-    queryFn: cap7Api.getThachThuc,
-    enabled: isAuthenticated && enabled,
-    staleTime: 0,
-    retry: false,
-  })
-}
-
-/** POST /cap7/graduate — graduate to Cấp 8 (only when 3/3 nhiệm vụ done). */
 export function useGraduateCap7() {
   const invalidate = useInvalidateCap7()
-  return useMutation<Cap7Progress, unknown, void>({
-    mutationFn: cap7Api.graduate,
-    onSuccess: invalidate,
-  })
+  return useMutation({ mutationFn: cap7Api.graduate, onSuccess: invalidate })
 }

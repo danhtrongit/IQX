@@ -230,7 +230,7 @@ function DanhMucWidget({ danhMuc }: { danhMuc: DanhMucCap8 | null | undefined })
   const tong = danhMuc?.tong_rui_ro_pct ?? null
   const tran = danhMuc?.tran_khau_vi_pct ?? null
   const donNganh = danhMuc?.don_nganh_max ?? null
-  const caveat = caveatThieuCatLoCap8(danhMuc?.caveat, danhMuc?.so_vi_the_thieu_cat_lo)
+  const caveat = caveatThieuCatLoCap8(danhMuc)
 
   return (
     <div className="cap8-danhmuc-widget" data-testid="cap8-journey-danhmuc">

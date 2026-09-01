@@ -6,13 +6,11 @@ import type { BadgeOptions, Cap0Level } from "./types"
  * theme levels ship. The evolving hexagon: the edge glows brighter, the core
  * fills denser, rays appear from level 4, glow at level 5+.
  *
- * Cấp 6 «Bậc thầy» (đỏ son `#d64550`, fill=6) is the first theme level — spec
- * `IQX-Cap6-Spec.md` §0/§1 — followed by Cấp 7 «Đọc sổ lệnh» (hồng magenta
- * `#c65cae`, fill=7 — `IQX-Cap7-Spec.md` §1) and Cấp 8 «Quản trị rủi ro danh
- * mục» (xanh lá `#3f9b5a`, fill=8 — `IQX-Cap8-Spec.md` §1), the LAST level of
- * the current program. Each cấp also declares its own hex inside its own CSS
- * (there is no single colour map); this table is only what the shared `Badge`
- * needs.
+ * Cấp 6 «Bậc thầy» (đỏ son `#d64550`) is followed by Cấp 7 «Cân đối danh
+ * mục» (hồng magenta `#c65cae`) and Cấp 8 «Quản trị rủi ro danh mục» (xanh lá
+ * `#3f9b5a`), the last level of the current program.
+ * Each cấp declares its own hex in its CSS; this table is what the shared
+ * `Badge` needs.
  *
  * ★ This array IS the 0-8 rail (`JourneyPanelCap8`'s huy-hiệu rail renders it in
  * order, and `iqx-badges.html` — the roadmap's §D "mockup chuẩn" for the rail —
@@ -27,7 +25,7 @@ export const LEVELS: Cap0Level[] = [
   { n: 4, name: "Thuần thục", color: "#a78bfa", fill: 4 },
   { n: 5, name: "Lão luyện", color: "#e0b64d", fill: 5 },
   { n: 6, name: "Đối chiếu", color: "#d64550", fill: 6 },
-  { n: 7, name: "Đọc sổ lệnh", color: "#c65cae", fill: 7 },
+  { n: 7, name: "Cân đối danh mục", color: "#c65cae", fill: 7 },
   { n: 8, name: "Quản trị rủi ro danh mục", color: "#3f9b5a", fill: 8 },
 ]
 

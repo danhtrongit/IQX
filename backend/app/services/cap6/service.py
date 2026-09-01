@@ -73,10 +73,8 @@ Nhận định là một CAM KẾT TRƯỚC. Đặt lệnh xong, ngồi xem giá
 cổng lên cấp, và nó bơm khối ⑮ ("bản năng đọc của bạn có chuẩn không") bằng
 cách xếp lệnh thắng vào "nhẹ", lệnh thua vào "nghiêm trọng".
 
-``record_kehoach`` vì thế khoá ghi theo luật dưới đây, và **khoá nằm NGOÀI mọi
-nhánh "đã có nhận định"** — đây đúng là chỗ Cấp 7 từng sai (khoá nằm trong
-``if kehoach.luc_doc_user is not None`` nên chỉ chạy từ lần POST THỨ HAI, trong
-khi docstring khẳng định là không thể):
+``record_kehoach`` vì thế khoá ghi ngoài mọi nhánh "đã có nhận định", để lần
+ghi đầu sau thời hạn cũng bị từ chối.
 
   · lệnh CHƯA khớp → ghi thoải mái (panel là cái form user quay lại được, và
     lệnh chưa khớp thì chưa có vị thế nào để nhìn giá mà bịa);

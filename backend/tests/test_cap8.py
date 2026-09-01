@@ -1251,8 +1251,8 @@ async def test_record_kehoach_is_idempotent(db_session, test_user, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_kehoach_keeps_cap1_to_7_blocks_intact(db_session, test_user, monkeypatch):
-    """Cộng dồn: Cấp 8 INSERTS a block, it replaces nothing."""
+async def test_kehoach_keeps_cap1_to_6_blocks_intact(db_session, test_user, monkeypatch):
+    """Cấp 8's current risk block preserves all remaining plan blocks."""
     services, account = await _enter_cap8(db_session, test_user.id)
     await _seed_symbol(db_session, "BBB", icb_lv2="Ngân hàng")
     _patch_prices(monkeypatch, {"BBB": 20_000})
@@ -1271,9 +1271,6 @@ async def test_kehoach_keeps_cap1_to_7_blocks_intact(db_session, test_user, monk
         test_user.id, buy.id, doc_5_lop=_MAU_THUAN, ai_5_lop={**_ALL_NEU, "ky_thuat": "ok"}
     )
     await services["cap6"].record_kehoach(test_user.id, buy.id, conflict_level="nghiem")
-    await services["cap7"].record_kehoach(
-        test_user.id, buy.id, luc_chi_so=1.9, luc_doc_user="manh"
-    )
 
     kehoach = await services["cap8"].record_kehoach(
         test_user.id, buy.id, hanh_vi_canh_bao="khong_canh_bao"
@@ -1284,7 +1281,6 @@ async def test_kehoach_keeps_cap1_to_7_blocks_intact(db_session, test_user, monk
     assert kehoach.khoi_luong == 100                  # Cấp 3
     assert kehoach.doc_5_lop == _MAU_THUAN            # Cấp 4
     assert kehoach.conflict_level == "nghiem"          # Cấp 6
-    assert kehoach.luc_doc_user == "manh"             # Cấp 7
     assert kehoach.hanh_vi_canh_bao == "khong_canh_bao"  # Cấp 8
 
 

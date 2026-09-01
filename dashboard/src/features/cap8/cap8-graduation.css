@@ -1,9 +1,7 @@
 /**
  * Màn tốt nghiệp Cấp 8 — **màn cuối của cả chương trình 0-8** (spec §3). Dùng lại
- * `.cap0-grad-block`/`.cap0-grad-cta` cho layout (mirror `cap7/
- * cap7-graduation.css`), chỉ đổi màu sang xanh lá Cấp 8 `#3f9b5a`. Nút CTA PHẢI
- * override màu vì `.cap0-grad-cta` mặc định là `var(--brand)` (#4f8ff7 — màu Cấp
- * 3).
+ * `.cap0-grad-block`/`.cap0-grad-cta` for its shared layout, with Level 8's
+ * own green accents.
  *
  * ★ KHÔNG confetti, KHÔNG huy chương, KHÔNG âm thanh (§C10 / spec §9). Màu cấp +
  * rail 0-8 đã hoàn thành là toàn bộ "khoảnh khắc" — và đó là cố ý.

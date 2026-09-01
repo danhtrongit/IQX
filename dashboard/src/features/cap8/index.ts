@@ -40,35 +40,6 @@ export {
   KiemTraDanhMucBlock,
   type KiemTraDanhMucBlockProps,
 } from "./KiemTraDanhMucBlock"
-export {
-  KetsoModalCap8,
-  type KetsoDataCap8,
-  type KetsoModalCap8Props,
-  type KiemTraKetsoCap8,
-} from "./KetsoModalCap8"
-export {
-  composeCoachCap8,
-  pickCoachCap8,
-  COACH_CAP8_LABEL,
-  type CoachIdCap8,
-  type CoachResultCap8,
-  type CoachSituationCap8,
-  type ComposedCoachCap8,
-} from "./coachTemplateCap8"
-export {
-  computeCap8Khoi18BanDoRuiRo,
-  computeCap8PortfolioAnalysis,
-  KHOI18_CROSS_REF_PM,
-  KHOI18_MIN_VI_THE_TUONG_QUAN,
-  KHOI18_NGUONG_DON_NGANH_MAC_DINH,
-  KHOI18_TRAN_KHAU_VI_NOTE,
-  type Cap8Khoi18BanDoRuiRo,
-  type Cap8PortfolioAnalysisResult,
-} from "./portfolioAnalysisCap8"
-export {
-  Cap8PortfolioAnalysis,
-  type Cap8PortfolioAnalysisProps,
-} from "./Cap8PortfolioAnalysis"
 export { Cap8PortfolioAnalysisPanel } from "./Cap8PortfolioAnalysisPanel"
 export { JourneyPanelCap8, taskStateCap8 } from "./JourneyPanelCap8"
 export { HuyHieuRailCap8, type HuyHieuRailCap8Props } from "./HuyHieuRailCap8"

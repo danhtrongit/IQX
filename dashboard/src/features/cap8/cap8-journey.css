@@ -8,9 +8,8 @@
  *
  * Màu cấp: xanh lá `#3f9b5a` (khai báo tại chỗ, đúng quy ước "mỗi cấp tự khai
  * hex của mình trong CSS của nó" — xem `cap8.css`).
- *
- * Mirror `cap7/cap7-journey.css` một cấp lên — cùng bộ class, chỉ đổi tiền tố và
- * màu, KHÔNG sửa file của Cấp 7 (Cấp 7 vẫn đang chạy production), CỘNG khối rail.
+ * Uses the same compact journey layout as other levels, with Level 8's own
+ * green accents.
  *
  * ★ KHÔNG state nào ở đây tô đỏ-cảnh-báo cho lựa chọn của user: "Vẫn mua" là một
  * lựa chọn hợp lệ (§C8, spec §9 — cảnh báo MỀM), và một danh mục chưa cân đối là

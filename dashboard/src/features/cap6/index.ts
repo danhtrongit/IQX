@@ -76,13 +76,7 @@ export type {
   PhanTichCap6,
 } from "./mauThuanTypes"
 export { coMauThuan, isDoiChieuValid, lopNguocChieu, lopUngHo } from "./doiChieu"
-export {
-  countCap6TasksDone,
-  KIEU_ICON,
-  KIEU_OPTIONS,
-  TARGET_KIEU_DA_GAP,
-  TARGET_LENH_DOI_CHIEU,
-} from "./types"
+export { countCap6TasksDone, KIEU_ICON, KIEU_OPTIONS } from "./types"
 export type {
   Cap6Progress,
   GoiYCap6,

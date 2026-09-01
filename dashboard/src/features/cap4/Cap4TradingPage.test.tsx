@@ -312,7 +312,6 @@ function fakeCap1Progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
     da_xem_tour: true,
     task_1_done_at: "t",
     task_2_done_at: "t",
-    task_3_done_at: "t",
     task_4_done_at: "t",
     task_5_done_at: "t",
     so_ly_do_da_dung: 5,
@@ -321,6 +320,8 @@ function fakeCap1Progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
     graduated_at: "2026-01-05T00:00:00Z",
     time_to_graduate_hours: 40,
     ...overrides,
+    task_3_done_at:
+      overrides.task_3_done_at === undefined ? "t" : overrides.task_3_done_at,
   }
 }
 

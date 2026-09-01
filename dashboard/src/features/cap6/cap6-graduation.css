@@ -1,9 +1,6 @@
 /**
- * Màn tốt nghiệp Cấp 6 (spec §3 Khối 3 "viền màu Cấp 7 — hồng magenta
- * `#c65cae`") — dùng lại `.cap0-grad-block`/`.cap0-grad-cta` cho layout (mirror
- * `cap5/cap5-graduation.css`), chỉ đổi màu sang Cấp 7 «Đọc sổ lệnh» (hồng
- * magenta `#c65cae`). Nút CTA PHẢI override màu vì `.cap0-grad-cta` mặc định là
- * `var(--brand)` (#4f8ff7 — màu Cấp 3, không phải Cấp 7).
+ * Cấp 6's Level 7 transition uses the shared graduation layout with the Level 7
+ * accent color.
  */
 
 .cap6-grad-block--cap7 {
@@ -15,9 +12,7 @@
   color: #fff5fc;
 }
 
-/* (Dòng "sắp ra mắt" trong CTA đã bỏ khi Cấp 7 «Đọc sổ lệnh» lên sóng — nút giờ
-   ghi tốt nghiệp rồi `POST /cap7/enter` thật. `cap7-graduation.css` giữ bản của
-   riêng nó cho Cấp 8.) */
+/* Cấp 6's next-level CTA remains release-gated. */
 
 /* Dòng provenance §C12c dưới Khối 1 — con số thật đứng sau lời ghi nhận. */
 .cap6-grad-provenance {

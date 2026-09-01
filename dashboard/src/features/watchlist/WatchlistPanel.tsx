@@ -34,6 +34,7 @@ import { StockLogo } from "@/features/navigation/StockLogo"
 // /co-phieu this is inert — which is the whole point of routing the Cấp 0
 // nhiệm vụ through it instead of calling a Cấp 0 hook from here.
 import { useCap0Events } from "@/features/cap0/Cap0Context"
+import { Cap7PortfolioAnalysisPanel } from "@/features/cap7/Cap7PortfolioAnalysisPanel"
 import { IconActivity, IconBriefcase, IconWallet } from "./icons"
 import {
   useAddToWatchlist,
@@ -416,6 +417,7 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
           {filtered.length} mã
         </span>
       </div>
+      <Cap7PortfolioAnalysisPanel />
 
       {/* Header */}
       {filtered.length > 0 && (

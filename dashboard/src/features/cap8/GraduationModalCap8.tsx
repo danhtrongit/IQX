@@ -105,7 +105,7 @@ function gradCaveat(danhMuc: DanhMucCap8 | null | undefined): string {
       "hay không — nếu có, con số tổng ở trên chỉ là phần ĐÃ BIẾT."
     )
   }
-  const caveat = caveatThieuCatLoCap8(danhMuc.caveat, danhMuc.so_vi_the_thieu_cat_lo)
+  const caveat = caveatThieuCatLoCap8(danhMuc)
   return caveat != null
     ? `⚠ ${caveat}`
     : "Mọi vị thế đều đã có cắt lỗ, nên tổng ở trên là toàn bộ phần vốn ở rủi ro."

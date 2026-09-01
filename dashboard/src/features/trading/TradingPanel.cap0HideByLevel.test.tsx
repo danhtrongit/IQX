@@ -6,8 +6,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest"
 /**
  * Progressive hide-by-level (spec v3.0 §8) inside `TradingPanel`/`OrderEntry`:
  *  - Sổ lệnh bid/ask ĐÃ BỊ BỎ khỏi panel đặt lệnh — không cấp nào render nó
- *    nữa (trước đây nó ẩn suốt Cấp 0/1 rồi mở từ Cấp 2). Cấp 7 vẫn đọc
- *    `data.bid`/`data.ask` qua `DocSoLenhBlock`; dữ liệu còn, cái sổ thì không.
+ *    nữa (trước đây nó ẩn suốt Cấp 0/1 rồi mở từ Cấp 2).
  *  - Ô Giá + dropdown loại lệnh (MP/LO) ẩn cho đến khi xong nhiệm vụ ①.
  *  - Khối Kế hoạch has NO cắt lỗ/chốt lời in any mode, and there is no
  *    "cổng chất lượng 1" any more: v3.0 removes both the field and the gate.

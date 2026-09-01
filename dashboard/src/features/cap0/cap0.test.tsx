@@ -27,18 +27,14 @@ import { countTasksDone, type Cap0Progress } from "./types"
 // ── LEVELS (spec §12) ─────────────────────────────────────────────────────────
 describe("LEVELS", () => {
   it("has the 6 nền-tảng levels + Cấp 6 + Cấp 7 + Cấp 8; level 0 is «Nhập môn» grey with fill 0", () => {
-    // 0-5 = spec §12's own table (mạch nền tảng); index 6 was APPENDED when
-    // Cấp 6 «Bậc thầy» shipped (đỏ son #d64550, fill=6), index 7 when Cấp 7
-    // «Đọc sổ lệnh» shipped (hồng magenta #c65cae, fill=7), index 8 when Cấp 8
-    // «Quản trị rủi ro danh mục» shipped (xanh lá #3f9b5a, fill=8 — the LAST
-    // level of the current program).
+    // The rail remains 0–8; Cấp 7 now represents portfolio balance.
     expect(LEVELS).toHaveLength(9)
     expect(LEVELS[0].name).toBe("Nhập môn")
     expect(LEVELS[0].color).toBe("#8a90a5")
     expect(LEVELS[0].fill).toBe(0)
     expect(LEVELS[5].name).toBe("Lão luyện")
     expect(LEVELS[6]).toEqual({ n: 6, name: "Đối chiếu", color: "#d64550", fill: 6 })
-    expect(LEVELS[7]).toEqual({ n: 7, name: "Đọc sổ lệnh", color: "#c65cae", fill: 7 })
+    expect(LEVELS[7]).toEqual({ n: 7, name: "Cân đối danh mục", color: "#c65cae", fill: 7 })
     expect(LEVELS[8]).toEqual({
       n: 8,
       name: "Quản trị rủi ro danh mục",

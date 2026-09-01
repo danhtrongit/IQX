@@ -1,190 +1,27 @@
-/**
- * Tab "Hành trình" Cấp 7 (spec §2③ + §3) — chỉ những gì Cấp 0-6 CHƯA có: chip
- * bài học trong thẻ cấp, widget nổi bật "Đọc lực đúng" và widget "Thách thức
- * Đọc sổ lệnh" (3 điều kiện + thanh tiến độ + giải thích §C12c). Mọi phần khác
- * (thẻ cấp, checklist, hộp mục tiêu) dùng lại `cap0.css`.
- *
- * Màu cấp: hồng magenta `#c65cae` (khai báo tại chỗ, đúng quy ước "mỗi cấp tự
- * khai hex của mình trong CSS của nó" — xem `cap7.css:18`).
- *
- * Mirror `cap6/cap6-journey.css` một cấp lên — cùng bộ class, chỉ đổi tiền tố và
- * màu, KHÔNG sửa file của Cấp 6 (Cấp 6 vẫn đang chạy production).
- *
- * ★ KHÔNG state nào ở đây tô đỏ-cảnh-báo cho lựa chọn của user: đọc lực sai là
- * chuyện bình thường (sổ lệnh nhiễu), và "mua đuổi" là một sự thật TRUNG TÍNH
- * (spec §5 "không phạt cứng"). Hồng magenta là màu NHẬN DIỆN của cấp.
- */
-
-.cap7-journey-tag {
-  display: inline-block;
-  margin-top: 6px;
-  padding: 2px 7px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  color: #c65cae;
-  background: rgba(198, 92, 174, 0.16);
-  border: 1px solid rgba(198, 92, 174, 0.4);
-  border-radius: 5px;
+.cap7-journey {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
 }
 
-/* ── Widget nổi bật "Đọc lực đúng" (spec §3 header `3/3 · đọc lực đúng {X}%`) ── */
-.cap7-docluc-widget {
-  padding: 14px;
-  margin-bottom: 7px;
-  text-align: center;
-  background: rgba(198, 92, 174, 0.16);
-  border: 1px solid rgba(198, 92, 174, 0.4);
-  border-radius: 10px;
-}
-
-.cap7-docluc-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  color: #c65cae;
-  text-transform: uppercase;
-}
-
-.cap7-docluc-value {
-  margin: 4px 0 2px;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.2;
-  font-variant-numeric: tabular-nums;
-  color: var(--t1);
-}
-
-.cap7-docluc-giaithich,
-.cap7-docluc-empty {
-  margin: 6px 0 0;
-  font-size: 10px;
-  line-height: 1.5;
-  text-align: left;
-  color: var(--t3);
-}
-
-.cap7-docluc-conu {
-  margin: 4px 0 0;
-  font-size: 10px;
-  line-height: 1.5;
-  font-variant-numeric: tabular-nums;
-  text-align: left;
-  color: var(--t2);
-}
-
-.cap7-docluc-why {
-  padding-top: 8px;
-  margin: 8px 0 0;
-  font-size: 10px;
-  line-height: 1.5;
-  text-align: left;
-  color: var(--t3);
-  border-top: 1px solid var(--bd);
-}
-
-/* ── Widget Thách thức Đọc sổ lệnh (nhiệm vụ ③) ───────────────────────────── */
-.cap7-thachthuc {
-  padding: 14px;
-  margin-bottom: 7px;
-  background: var(--bg2);
-  border: 1px solid rgba(198, 92, 174, 0.4);
-  border-radius: 10px;
-}
-
-.cap7-thachthuc-title {
+.cap7-journey .journey-header,
+.cap7-journey .journey-task-title,
+.cap7-balance-conditions li {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #c65cae;
-}
-
-.cap7-thachthuc-cond {
-  margin-bottom: 9px;
-}
-
-.cap7-thachthuc-row {
-  display: flex;
-  align-items: center;
+  align-items: baseline;
+  justify-content: space-between;
   gap: 8px;
-  margin-bottom: 4px;
-  font-size: 11.5px;
 }
 
-.cap7-thachthuc-ic {
-  width: 16px;
-  flex-shrink: 0;
-  text-align: center;
+.cap7-balance-conditions {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0;
+  padding: 0;
+  list-style: none;
 }
 
-.cap7-thachthuc-label {
-  flex: 1;
-  color: var(--t2);
-}
-
-.cap7-thachthuc-value {
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--t1);
-}
-
-.cap7-thachthuc-cond[data-dat="true"] .cap7-thachthuc-value {
-  color: #35d07f;
-}
-
-/* Chưa đủ dữ liệu ≠ chưa đạt: chữ mờ, KHÔNG màu cảnh báo, KHÔNG con số. */
-.cap7-thachthuc-cond[data-du-du-lieu="false"] .cap7-thachthuc-value {
-  font-weight: 500;
-  color: var(--t3);
-}
-
-.cap7-thachthuc-bar {
-  height: 5px;
-  margin-left: 24px;
-  overflow: hidden;
-  background: var(--bg4);
-  border-radius: 3px;
-}
-
-.cap7-thachthuc-bar > i {
-  display: block;
-  height: 100%;
-  background: #c65cae;
-  border-radius: 3px;
-}
-
-.cap7-thachthuc-cond[data-dat="true"] .cap7-thachthuc-bar > i {
-  background: #35d07f;
-}
-
-.cap7-thachthuc-giaithich {
-  margin: 2px 0 0 24px;
-  font-size: 10px;
-  line-height: 1.5;
-  color: var(--t3);
-}
-
-.cap7-thachthuc-conu {
-  margin: 3px 0 0 24px;
-  font-size: 10px;
-  line-height: 1.5;
-  font-variant-numeric: tabular-nums;
-  color: var(--t2);
-}
-
-.cap7-thachthuc-why {
-  padding-top: 8px;
-  margin-top: 10px;
-  font-size: 10px;
-  line-height: 1.5;
-  color: var(--t3);
-  border-top: 1px solid var(--bd);
-}
-
-.cap7-thachthuc-loading {
-  font-size: 11px;
-  color: var(--t3);
+.cap7-balance-conditions li {
+  border-bottom: 1px solid var(--color-border-2);
+  padding-bottom: 6px;
 }
