@@ -106,6 +106,40 @@ async def test_service_uses_virtual_portfolio_cash_and_icb_sectors(db_session):
     assert snapshot.can_doi_ok is True
 
 
+
+async def test_sale_projection_uses_selected_quantity_instead_of_current_allocation(db_session):
+    service = PortfolioBalanceService(db_session)
+
+    class FakeVirtualTrading:
+        async def get_portfolio(self, _user_id):
+            return {
+                "account": SimpleNamespace(
+                    cash_available_vnd=100.0, cash_reserved_vnd=0.0, cash_pending_vnd=0.0,
+                ),
+                "nav_vnd": 1_000.0,
+                "positions": [
+                    {"symbol": "AAA", "quantity_total": 10, "market_value_vnd": 500.0},
+                    {"symbol": "BBB", "quantity_total": 10, "market_value_vnd": 400.0},
+                ],
+            }
+
+    class FakeSymbolRepository:
+        async def get_by_symbols(self, symbols: list[str]):
+            return {
+                symbol: SimpleNamespace(icb_lv2="Công nghệ" if symbol == "AAA" else "Tài chính", icb_lv1=None)
+                for symbol in symbols
+            }
+
+    service._virtual_trading = FakeVirtualTrading()
+    service._symbols = FakeSymbolRepository()
+
+    projected = await service.get_snapshot_after_sale(uuid.uuid4(), "AAA", 5)
+
+    assert projected.cash_vnd == 350.0
+    assert projected.positions[0].symbol == "AAA"
+    assert projected.positions[0].market_value_vnd == 250.0
+    assert projected.positions[0].weight_pct == 25.0
+
 async def test_snapshot_uses_nav_including_cash_and_accepts_exact_thresholds():
     snapshot = await _snapshot(
         _balanced_positions(),

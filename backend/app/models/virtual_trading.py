@@ -177,6 +177,7 @@ class VirtualPosition(UUIDMixin, TimestampMixin, Base):
     )
 
 
+
 class VirtualOrder(UUIDMixin, TimestampMixin, Base):
     """Virtual trading order with config snapshot and fill details."""
 
@@ -229,6 +230,11 @@ class VirtualOrder(UUIDMixin, TimestampMixin, Base):
 
     # Config snapshot at order creation time
     config_snapshot: Mapped[str | None] = mapped_column(Text, nullable=True)  # JSON
+
+    # Captured while the virtual-trading engine owns the position lock. Delayed
+    # Level 8 evidence recording must not infer a prior SELL from later trades.
+    position_quantity_before_fill: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    position_quantity_after_fill: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class VirtualTrade(UUIDMixin, TimestampMixin, Base):

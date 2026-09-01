@@ -38,6 +38,18 @@ export function useCap8ExitContext(symbol: string | null, enabled = true) {
   })
 }
 
+/** The Level 7 balance snapshot projected for the selected sale quantity. */
+export function useCap8ExitImpact(
+  symbol: string | null, quantity: number | undefined, enabled = true,
+) {
+  const { isAuthenticated } = useAuth()
+  return useQuery<Cap8ExitContext>({
+    queryKey: cap8Keys.exitImpact(symbol ?? "", quantity ?? 0),
+    queryFn: () => cap8Api.getExitContext(symbol!, quantity),
+    enabled: enabled && isAuthenticated && Boolean(symbol) && Boolean(quantity && quantity > 0),
+  })
+}
+
 export function useSetCap8DynamicStop(symbol: string) {
   const queryClient = useQueryClient()
   return useMutation({

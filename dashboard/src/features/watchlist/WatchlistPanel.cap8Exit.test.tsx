@@ -76,4 +76,16 @@ describe("Holdings Level 8 exit control", () => {
     expect(mocks.rowSelect).not.toHaveBeenCalled()
     expect(screen.getByTestId("cap8-exit-modal")).toHaveTextContent("HPG")
   })
+
+  it("does not select the holding when keyboard activation targets nested Sell", () => {
+    render(
+      <Cap8Provider>
+        <WatchlistPanel onRowSelect={mocks.rowSelect} />
+      </Cap8Provider>,
+    )
+    fireEvent.click(screen.getByText("Nắm giữ"))
+    fireEvent.keyDown(screen.getByRole("button", { name: "Bán" }), { key: "Enter" })
+
+    expect(mocks.rowSelect).not.toHaveBeenCalled()
+  })
 })

@@ -10,8 +10,14 @@ export const cap8Api = {
     unwrap((await api.post("cap8/enter").json<unknown>()) as never) as Cap8Progress,
   graduate: async (): Promise<Cap8Progress> =>
     unwrap((await api.post("cap8/graduate").json<unknown>()) as never) as Cap8Progress,
-  getExitContext: async (symbol: string): Promise<Cap8ExitContext> =>
-    unwrap((await api.get(`cap8/positions/${symbol}/exit-context`).json<unknown>()) as never) as Cap8ExitContext,
+  getExitContext: async (symbol: string, proposedSaleQuantity?: number): Promise<Cap8ExitContext> => {
+    const response = proposedSaleQuantity == null
+      ? await api.get(`cap8/positions/${symbol}/exit-context`).json<unknown>()
+      : await api.get(`cap8/positions/${symbol}/exit-context`, {
+        searchParams: { proposed_sale_quantity: String(proposedSaleQuantity) },
+      }).json<unknown>()
+    return unwrap(response as never) as Cap8ExitContext
+  },
   syncPlan: async (symbol: string, buyOrderId: string): Promise<void> => {
     await api.post(`cap8/positions/${symbol}/sync-plan`, { json: { buy_order_id: buyOrderId } })
   },

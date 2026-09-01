@@ -684,8 +684,9 @@ function OrderEntry({
             )
           }
           if (side === "buy" && isCap8Active && cap2Ready) {
-            // The Cấp 2 plan is persisted first; Cấp 8 copies only server-held
-            // thresholds from that filled BUY and never accepts client evidence.
+            // Cấp 8 only activates a filled BUY. A pending limit order is
+            // intentionally ignored here and reconciled after settlement on
+            // the next Level 8 position access.
             await ghiKehoachKhongChiMang(() => cap8Api.syncPlan(symbol, order.id))
           }
           // Cấp 3 (spec §6 "Ghi hồ sơ") — same chained-await reason as Cấp 2:

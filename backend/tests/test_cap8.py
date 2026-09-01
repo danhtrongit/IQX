@@ -1,10 +1,12 @@
 """Focused Cấp 8 server-derived exit evidence contracts."""
 
 from datetime import UTC, date, datetime
+from types import SimpleNamespace
 
 import pytest
 
-from app.core.exceptions import BadRequestError, ConflictError
+from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
+from app.models.cap1 import LyDo, OrderKehoach, TrangThaiLucDat
 from app.models.cap8 import Cap8Exit, Cap8Progress
 from app.models.virtual_trading import (
     OrderSide,
@@ -31,6 +33,8 @@ async def _exit_fixture(db_session, user, *, remaining: int = 0, sell_price: int
     )
     db_session.add(buy)
     await db_session.flush()
+    buy.created_at = datetime(2026, 1, 5, 10, tzinfo=UTC)
+    buy.updated_at = datetime(2026, 1, 5, 10, tzinfo=UTC)
     sell = VirtualOrder(
         account_id=account.id, user_id=user.id, symbol="VCB", mode="thuc_chien", side=OrderSide.SELL,
         order_type=OrderType.MARKET, status=OrderStatus.FILLED, quantity=100, filled_price_vnd=sell_price,
@@ -43,9 +47,118 @@ async def _exit_fixture(db_session, user, *, remaining: int = 0, sell_price: int
     )
     progress = Cap8Progress(user_id=user.id, entered_at=datetime(2026, 1, 1, tzinfo=UTC))
     db_session.add_all([sell, position, progress])
+    sell.created_at = datetime(2026, 1, 6, 10, tzinfo=UTC)
+    sell.updated_at = datetime(2026, 1, 6, 10, tzinfo=UTC)
     await db_session.flush()
     return Cap8Service(db_session), account, position, sell, progress
 
+
+async def _qualifying_plan(
+    db_session, account, user, *, stop: int, target: int, status: OrderStatus = OrderStatus.FILLED,
+) -> VirtualOrder:
+    buy = VirtualOrder(
+        account_id=account.id, user_id=user.id, symbol="VCB", mode="thuc_chien",
+        side=OrderSide.BUY, order_type=OrderType.MARKET, status=status,
+        quantity=100, filled_price_vnd=100 if status == OrderStatus.FILLED else None,
+        trading_date=date(2026, 1, 10),
+    )
+    db_session.add(buy)
+    await db_session.flush()
+    db_session.add(OrderKehoach(
+        order_id=buy.id, lyDo=LyDo.KY_THUAT, trangThai_luc_dat=TrangThaiLucDat.UNG_HO,
+        vung_mua=100, cat_lo=stop, chot_loi=target,
+    ))
+    await db_session.flush()
+    return buy
+
+
+
+@pytest.mark.asyncio
+async def test_first_access_replaces_stale_active_plan_after_later_buy_fills(db_session, test_user) -> None:
+    service, account, position, _, _ = await _exit_fixture(db_session, test_user, remaining=100)
+    old_buy = position.active_plan_buy_order_id
+    position.active_dynamic_stop_vnd = 105
+    position.active_dynamic_stop_set_at = datetime(2026, 1, 9, tzinfo=UTC)
+    later_buy = await _qualifying_plan(db_session, account, test_user, stop=95, target=125)
+
+    refreshed = await service._bootstrap_plan(test_user.id, account.id, position)
+
+    assert refreshed is True
+    assert position.active_plan_buy_order_id == later_buy.id
+    assert position.active_plan_buy_order_id != old_buy
+    assert position.active_original_stop_vnd == 95
+    assert position.active_original_take_profit_vnd == 125
+    assert position.active_dynamic_stop_vnd is None
+
+
+@pytest.mark.asyncio
+async def test_pending_later_buy_never_replaces_active_plan(db_session, test_user) -> None:
+    service, account, position, _, _ = await _exit_fixture(db_session, test_user, remaining=100)
+    active_buy_id = position.active_plan_buy_order_id
+    await _qualifying_plan(
+        db_session, account, test_user, stop=95, target=125, status=OrderStatus.PENDING,
+    )
+
+    refreshed = await service._bootstrap_plan(test_user.id, account.id, position)
+
+    assert refreshed is True
+    assert position.active_plan_buy_order_id == active_buy_id
+
+
+@pytest.mark.asyncio
+async def test_dynamic_stop_requires_entering_level8_and_locks_in_profit(db_session, test_user, monkeypatch) -> None:
+    service, _, position, _, progress = await _exit_fixture(db_session, test_user, remaining=100)
+    monkeypatch.setattr(
+        service._trading,
+        "get_portfolio",
+        lambda _user_id: __import__("asyncio").sleep(
+            0, result={"positions": [{"symbol": "VCB", "current_price_vnd": 120}]}
+        ),
+    )
+    await db_session.delete(progress)
+    await db_session.flush()
+
+    with pytest.raises(NotFoundError):
+        await service.set_dynamic_stop(test_user.id, "VCB", 110)
+
+    db_session.add(Cap8Progress(user_id=test_user.id, entered_at=datetime(2026, 1, 1, tzinfo=UTC)))
+    await db_session.flush()
+    with pytest.raises(BadRequestError):
+        await service.set_dynamic_stop(test_user.id, "VCB", position.avg_cost_vnd)
+
+
+@pytest.mark.asyncio
+async def test_sync_plan_requires_level8_progress(db_session, test_user) -> None:
+    service, _, position, _, progress = await _exit_fixture(db_session, test_user, remaining=100)
+    await db_session.delete(progress)
+    await db_session.flush()
+
+    with pytest.raises(NotFoundError):
+        await service.sync_plan(test_user.id, "VCB", position.active_plan_buy_order_id)
+
+
+@pytest.mark.asyncio
+async def test_exit_context_requires_level8_progress(db_session, test_user, monkeypatch) -> None:
+    service, _, _, _, progress = await _exit_fixture(db_session, test_user, remaining=100)
+    await db_session.delete(progress)
+    await db_session.flush()
+    monkeypatch.setattr(
+        service._trading,
+        "get_portfolio",
+        lambda _user_id: __import__("asyncio").sleep(
+            0, result={"positions": [{"symbol": "VCB", "current_price_vnd": 100}]}
+        ),
+    )
+    monkeypatch.setattr(
+        service._portfolio_balance,
+        "get_snapshot",
+        lambda _user_id: __import__("asyncio").sleep(
+            0, result=SimpleNamespace(model_dump=lambda **_kwargs: {})
+        ),
+    )
+
+    with pytest.raises(NotFoundError):
+        await service.exit_context(test_user.id, "VCB")
 
 def test_stop_timeliness_allows_crossing_session_and_following_trading_session() -> None:
     history = [(date(2026, 1, 5), 101.0), (date(2026, 1, 6), 99.0), (date(2026, 1, 7), 97.0)]
@@ -99,6 +212,50 @@ async def test_timely_original_stop_exit_counts(db_session, test_user, monkeypat
     original = await service.record_exit(test_user.id, sell.id)
     assert original["classification_reason"] == "timely_original_stop_exit"
     assert original["dung_ke_hoach"] is True
+
+
+@pytest.mark.asyncio
+async def test_original_stop_ignores_crossings_before_matched_buy_activation(
+    db_session, test_user, monkeypatch,
+) -> None:
+    service, _, position, sell, _ = await _exit_fixture(db_session, test_user, sell_price=90)
+    buy = (await db_session.get(VirtualOrder, position.active_plan_buy_order_id))
+    assert buy is not None
+    buy.trading_date = date(2024, 1, 10)  # requested date is not fill evidence
+    sell.trading_date = date(2024, 1, 11)
+    buy.updated_at = datetime(2026, 1, 10, 10, tzinfo=UTC)
+    sell.updated_at = datetime(2026, 1, 11, 10, tzinfo=UTC)
+    monkeypatch.setattr(
+        service,
+        "_history",
+        lambda _symbol: __import__("asyncio").sleep(
+            0,
+            result=[
+                (date(2026, 1, 5), 89.0),
+                (date(2026, 1, 10), 91.0),
+                (date(2026, 1, 11), 89.0),
+            ],
+        ),
+    )
+
+    result = await service.record_exit(test_user.id, sell.id)
+
+    assert result["dung_ke_hoach"] is True
+    assert result["classification_reason"] == "timely_original_stop_exit"
+
+
+@pytest.mark.asyncio
+async def test_exit_evidence_uses_sell_fill_quantity_snapshot_not_later_position(
+    db_session, test_user,
+) -> None:
+    service, _, _, sell, _ = await _exit_fixture(db_session, test_user, remaining=0)
+    sell.position_quantity_before_fill = 200
+    sell.position_quantity_after_fill = 100
+
+    result = await service.record_exit(test_user.id, sell.id)
+
+    assert result["exit_method"] == "partial"
+    assert result["remaining_position_pct"] == 50
 
 
 @pytest.mark.asyncio

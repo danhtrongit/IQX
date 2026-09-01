@@ -109,6 +109,10 @@ export function usePlaceOrder(afterFilled?: (order: VTOrderResult) => Promise<vo
     onSuccess: async (order) => {
       try {
         await afterFilled?.(order)
+      } catch {
+        // The exchange accepted this order. Post-fill enrichment (for example
+        // Level 8 evidence) must never turn that completed trade into a failed
+        // mutation that a caller might blindly submit again.
       } finally {
         await invalidate()
       }

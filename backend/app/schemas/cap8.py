@@ -65,6 +65,7 @@ class ExitContextOut(BaseModel):
     dynamic_stop_set_at: datetime | None
     can_update_dynamic_stop: bool
     board_lot_size: int
+    proposed_sale_quantity: int
     sector_impact: dict
 
 

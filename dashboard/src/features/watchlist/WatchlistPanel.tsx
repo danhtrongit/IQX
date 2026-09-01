@@ -460,7 +460,11 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
                 tabIndex={0}
                 onClick={() => open(item.symbol)}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") open(item.symbol)
+                  if (event.target !== event.currentTarget) return
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault()
+                    open(item.symbol)
+                  }
                 }}
                 className="group w-full px-2 py-2 text-left transition-colors hover:bg-[var(--color-fill-1)]"
               >
@@ -498,6 +502,7 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
                         event.stopPropagation()
                         setExitSymbol(item.symbol)
                       }}
+                      onKeyDown={(event) => event.stopPropagation()}
                     >
                       Bán
                     </Button>

@@ -16,13 +16,13 @@ type RadioGroupProps = { children?: ReactNode; onChange: (value: string) => void
 type SliderProps = { max: number; min: number; onChange: (value: number) => void; step: number; value: number }
 type InputNumberProps = { onChange: (value: number) => void; value?: number }
 type SellInput = { method: "market"; quantity: number; side: "sell"; symbol: string }
-type SellOptions = { onSuccess?: () => void }
 type AfterFilled = (order: { id: string }) => Promise<void>
 
 const mocks = vi.hoisted(() => ({
   recordExit: vi.fn(),
   sellMutate: vi.fn(),
   useCap8ExitContext: vi.fn(),
+  useCap8ExitImpact: vi.fn(),
   usePlaceOrder: vi.fn(),
   dynamicMutate: vi.fn(),
 }))
@@ -81,6 +81,7 @@ vi.mock("@/features/trading", () => ({ usePlaceOrder: mocks.usePlaceOrder }))
 vi.mock("./api", () => ({ cap8Api: { recordExit: mocks.recordExit } }))
 vi.mock("./hooks", () => ({
   useCap8ExitContext: mocks.useCap8ExitContext,
+  useCap8ExitImpact: mocks.useCap8ExitImpact,
   useSetCap8DynamicStop: () => ({
     error: null,
     isError: false,
@@ -104,6 +105,7 @@ const exitContext: Cap8ExitContext = {
   dynamic_stop_set_at: null,
   can_update_dynamic_stop: true,
   board_lot_size: 100,
+  proposed_sale_quantity: 500,
   sector_impact: { can_doi_ok: true },
 }
 
@@ -111,15 +113,13 @@ function installSellMutation(events?: string[]) {
   mocks.usePlaceOrder.mockImplementation((afterFilled?: AfterFilled) => ({
     error: null,
     isError: false,
-    isPending: false,
-    mutate: mocks.sellMutate.mockImplementation((_input: SellInput, options?: SellOptions) => {
+    mutate: mocks.sellMutate.mockImplementation((_input: SellInput) => {
       void (async () => {
         try {
           await afterFilled?.({ id: "filled-sell-order" })
         } finally {
           events?.push("trading-cache")
         }
-        options?.onSuccess?.()
       })()
     }),
   }))
@@ -144,6 +144,7 @@ beforeEach(() => {
   mocks.dynamicMutate.mockReset()
   mocks.useCap8ExitContext.mockReset()
   mocks.useCap8ExitContext.mockReturnValue({ data: exitContext, error: null, isLoading: false })
+  mocks.useCap8ExitImpact.mockReturnValue({ data: exitContext })
   installSellMutation()
 })
 
@@ -162,7 +163,6 @@ describe("ExitModalCap8", () => {
     fireEvent.click(screen.getByRole("button", { name: "Bán toàn bộ" }))
     expect(mocks.sellMutate).toHaveBeenCalledWith(
       expect.objectContaining({ quantity: 500, side: "sell", symbol: "HPG" }),
-      expect.anything(),
     )
   })
 
@@ -173,8 +173,18 @@ describe("ExitModalCap8", () => {
     fireEvent.click(screen.getByRole("button", { name: "Bán 300" }))
     expect(mocks.sellMutate).toHaveBeenCalledWith(
       expect.objectContaining({ quantity: 300, side: "sell", symbol: "HPG" }),
-      expect.anything(),
     )
+  })
+
+  it("requests sector impact for the selected full or partial sale quantity", () => {
+    renderModal()
+    expect(mocks.useCap8ExitImpact).toHaveBeenLastCalledWith("HPG", 500, true)
+
+    fireEvent.click(screen.getByRole("radio", { name: "Bán một phần" }))
+    fireEvent.change(screen.getByRole("slider"), { target: { value: "300" } })
+
+    expect(mocks.useCap8ExitImpact).toHaveBeenLastCalledWith("HPG", 300, true)
+    expect(screen.getByText(/Dự kiến bán 300 cổ phiếu/)).toBeInTheDocument()
   })
 
   it("updates a dynamic stop without creating exit evidence", () => {
@@ -218,5 +228,24 @@ describe("ExitModalCap8", () => {
     expect(invalidateQueries).toHaveBeenNthCalledWith(1, { queryKey: ["cap8", "progress"] })
     expect(invalidateQueries).toHaveBeenNthCalledWith(2, { queryKey: ["cap8", "exit-context", "HPG"] })
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it("keeps a filled sell out of the order mutation when evidence recording needs a retry", async () => {
+    mocks.recordExit.mockRejectedValueOnce(new Error("Bằng chứng tạm thời lỗi"))
+    renderModal()
+
+    fireEvent.click(screen.getByRole("button", { name: "Bán toàn bộ" }))
+
+    expect(await screen.findByText("Bằng chứng tạm thời lỗi")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Bán toàn bộ" })).toBeDisabled()
+    expect(mocks.sellMutate).toHaveBeenCalledTimes(1)
+
+    mocks.recordExit.mockResolvedValueOnce({})
+    fireEvent.click(screen.getByRole("button", { name: "Thử ghi nhận lại" }))
+
+    await waitFor(() => expect(mocks.recordExit).toHaveBeenCalledTimes(2))
+    expect(mocks.recordExit).toHaveBeenNthCalledWith(1, "filled-sell-order")
+    expect(mocks.recordExit).toHaveBeenNthCalledWith(2, "filled-sell-order")
+    expect(mocks.sellMutate).toHaveBeenCalledTimes(1)
   })
 })

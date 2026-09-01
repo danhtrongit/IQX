@@ -279,6 +279,55 @@ class PortfolioBalanceService:
             sector_lookup=sector_by_symbol,
         )
 
+    async def get_snapshot_after_sale(
+        self, user_id: uuid.UUID, symbol: str, quantity: int
+    ) -> PortfolioBalanceSnapshot:
+        """Project allocation after selling ``quantity`` at the current mark.
+
+        NAV remains the live portfolio NAV: a sale converts the selected marked
+        position value to cash. Missing price/cash data stays unknown instead of
+        fabricating a safe post-sale allocation.
+        """
+        portfolio: dict[str, Any] = await self._virtual_trading.get_portfolio(user_id)
+        target = next(
+            (row for row in portfolio["positions"] if row["symbol"].upper() == symbol.upper()),
+            None,
+        )
+        if target is None:
+            raise ValueError("position not found")
+        total = int(target["quantity_total"])
+        if quantity <= 0 or quantity > total:
+            raise ValueError("invalid proposed sale quantity")
+
+        target_value = _finite_non_negative(target.get("market_value_vnd"))
+        remaining_quantity = total - quantity
+        remaining_value = (
+            target_value * remaining_quantity / total if target_value is not None and total > 0 else None
+        )
+        cash = _cash_from_account(portfolio["account"])
+        projected_cash = (
+            cash + (target_value - remaining_value)
+            if cash is not None and target_value is not None and remaining_value is not None
+            else None
+        )
+        positions = [
+            PortfolioPositionInput(
+                symbol=row["symbol"],
+                quantity=remaining_quantity if row is target else int(row["quantity_total"]),
+                market_value_vnd=remaining_value if row is target else row.get("market_value_vnd"),
+            )
+            for row in portfolio["positions"]
+        ]
+        sector_by_symbol = await self._sectors_for_symbols(
+            [position.symbol for position in positions if position.quantity > 0]
+        )
+        return await build_portfolio_balance_snapshot(
+            nav_vnd=portfolio["nav_vnd"],
+            cash_vnd=projected_cash,
+            positions=positions,
+            sector_lookup=sector_by_symbol,
+        )
+
     async def _sectors_for_symbols(self, symbols: list[str]) -> dict[str, str | None]:
         """Resolve the held basket in one query; unavailable catalog data is unknown."""
 

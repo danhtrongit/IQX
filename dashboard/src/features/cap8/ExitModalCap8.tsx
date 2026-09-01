@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { usePlaceOrder } from "@/features/trading"
 import { getErrorMessage } from "@/shared/http/client"
 import { cap8Api } from "./api"
-import { useCap8ExitContext, useSetCap8DynamicStop } from "./hooks"
+import { useCap8ExitContext, useCap8ExitImpact, useSetCap8DynamicStop } from "./hooks"
 import { cap8Keys } from "./keys"
 
 function vnd(value: number | null): string {
@@ -47,14 +47,27 @@ export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | n
   const [mode, setMode] = useState<"full" | "partial">("full")
   const [partialQuantity, setPartialQuantity] = useState<number | undefined>()
   const [dynamicStop, setDynamicStop] = useState<number | undefined>()
+  const [evidenceSellId, setEvidenceSellId] = useState<string | null>(null)
+  const [evidenceError, setEvidenceError] = useState<unknown>(null)
+  const [retryingEvidence, setRetryingEvidence] = useState(false)
   const dynamic = useSetCap8DynamicStop(symbol ?? "")
-  const sell = usePlaceOrder(async (order) => {
-    // The filled SELL is recorded before any Holdings/Kết sổ invalidation.
-    await cap8Api.recordExit(order.id)
+  const recordEvidence = async (sellOrderId: string) => {
+    await cap8Api.recordExit(sellOrderId)
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: cap8Keys.progress() }),
       queryClient.invalidateQueries({ queryKey: cap8Keys.exitContext(symbol ?? "") }),
     ])
+  }
+  const sell = usePlaceOrder(async (order) => {
+    try {
+      await recordEvidence(order.id)
+      onClose()
+    } catch (nextError) {
+      // Selling already succeeded. Keep this modal in evidence-retry mode and
+      // never offer the same position to the order mutation a second time.
+      setEvidenceSellId(order.id)
+      setEvidenceError(nextError)
+    }
   })
 
   const partial = useMemo(
@@ -65,6 +78,17 @@ export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | n
   )
 
   const quantity = mode === "full" ? context?.quantity_sellable ?? 0 : partial.value
+  const impact = useCap8ExitImpact(symbol, quantity, visible && context != null)
+  const impactContext = impact.data?.proposed_sale_quantity === quantity
+    ? impact.data
+    : context?.proposed_sale_quantity === quantity ? context : undefined
+  const projectedImpact = impactContext?.sector_impact as {
+    can_doi_ok?: boolean
+    max_symbol?: string | null
+    max_symbol_weight_pct?: number | null
+    max_sector?: string | null
+    max_sector_weight_pct?: number | null
+  } | undefined
   const emotionalWarning = Boolean(
     context && mode === "full" && context.current_price_vnd != null
       && context.current_price_vnd > context.avg_cost_vnd
@@ -84,7 +108,20 @@ export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | n
           </div>
           <div className="rounded border border-[var(--color-border-2)] p-3 text-xs">
             <b>Tác động phân bổ ngành sau bán</b>
-            <p>{String(context.sector_impact.can_doi_ok ? "Danh mục hiện đạt điều kiện cân đối." : "Xem lại tỷ trọng mã/ngành sau khi bán.")}</p>
+            <p>
+              Dự kiến bán {quantity.toLocaleString("en-US")} cổ phiếu:
+              {projectedImpact == null
+                ? " Đang tính phân bổ sau bán."
+                : projectedImpact.can_doi_ok
+                  ? " danh mục sau bán đạt điều kiện cân đối."
+                  : " xem lại tỷ trọng mã/ngành sau khi bán."}
+            </p>
+            {projectedImpact != null && (
+              <p>
+                Mã lớn nhất: {projectedImpact.max_symbol ?? "—"} {projectedImpact.max_symbol_weight_pct?.toFixed(1) ?? "—"}%
+                {" · "}Ngành lớn nhất: {projectedImpact.max_sector ?? "—"} {projectedImpact.max_sector_weight_pct?.toFixed(1) ?? "—"}%
+              </p>
+            )}
           </div>
           <Radio.Group value={mode} onChange={(value) => setMode(value)}>
             <Radio value="full">Bán toàn bộ ({context.quantity_sellable.toLocaleString("en-US")})</Radio>
@@ -95,10 +132,27 @@ export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | n
               <span>{partial.value.toLocaleString("en-US")} cổ phiếu (lô {context.board_lot_size})</span></div>
           )}
           {emotionalWarning && <p className="text-warning">Bạn đang bán toàn bộ khi có lãi nhưng chưa chạm chốt lời. Lệnh vẫn được gửi, nhưng có thể không được tính là thoát theo kế hoạch.</p>}
-          <Button type="primary" loading={sell.isPending} disabled={quantity <= 0} onClick={() => sell.mutate({ symbol: context.symbol, side: "sell", method: "market", quantity }, { onSuccess: onClose })}>
+          <Button type="primary" loading={sell.isPending} disabled={quantity <= 0 || evidenceSellId !== null} onClick={() => sell.mutate({ symbol: context.symbol, side: "sell", method: "market", quantity })}>
             {mode === "full" ? "Bán toàn bộ" : `Bán ${quantity.toLocaleString("en-US")}`}
           </Button>
-          {sell.isError && <ErrorMessage error={sell.error} fallback="Không thể gửi lệnh bán." className="text-danger" />}
+          {evidenceSellId !== null && (
+            <div className="space-y-2">
+              <ErrorMessage error={evidenceError} fallback="Lệnh bán đã khớp, nhưng chưa ghi nhận được bằng chứng thoát lệnh." className="text-warning" />
+              <Button
+                loading={retryingEvidence}
+                onClick={() => {
+                  setRetryingEvidence(true)
+                  void recordEvidence(evidenceSellId)
+                    .then(onClose)
+                    .catch(setEvidenceError)
+                    .finally(() => setRetryingEvidence(false))
+                }}
+              >
+                Thử ghi nhận lại
+              </Button>
+            </div>
+          )}
+          {sell.isError && evidenceSellId === null && <ErrorMessage error={sell.error} fallback="Không thể gửi lệnh bán." className="text-danger" />}
           {context.can_update_dynamic_stop && (
             <div className="border-t border-[var(--color-border-2)] pt-3">
               <b>Nâng cắt lỗ động</b>

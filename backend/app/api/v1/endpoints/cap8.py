@@ -38,8 +38,15 @@ async def graduate(user: CurrentUser, db: DBSession) -> Cap8ProgressOut:
 
 
 @router.get("/positions/{symbol}/exit-context", response_model=ExitContextOut)
-async def exit_context(symbol: str, user: CurrentUser, db: DBSession) -> ExitContextOut:
-    return ExitContextOut(**await Cap8Service(db).exit_context(user.id, symbol))
+async def exit_context(
+    symbol: str,
+    user: CurrentUser,
+    db: DBSession,
+    proposed_sale_quantity: int | None = None,
+) -> ExitContextOut:
+    return ExitContextOut(**await Cap8Service(db).exit_context(
+        user.id, symbol, proposed_sale_quantity,
+    ))
 
 
 @router.post("/positions/{symbol}/sync-plan", response_model=SyncPlanOut)

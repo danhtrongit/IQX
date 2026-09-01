@@ -128,14 +128,21 @@ class Cap8Service:
             statement = statement.where(VirtualOrder.id == order_id)
         return (await self._session.execute(statement)).first()
 
-    async def _bootstrap_plan(self, user_id: uuid.UUID, account_id: uuid.UUID, position: VirtualPosition) -> bool:
-        """Backfill active plan for a legacy position only when it is absent."""
-        if position.active_plan_buy_order_id is not None:
-            return True
+    async def _bootstrap_plan(
+        self, user_id: uuid.UUID, account_id: uuid.UUID, position: VirtualPosition
+    ) -> bool:
+        """Reconcile the aggregate position with its latest *filled* qualified BUY.
+
+        ``sync_plan`` can be called while a limit BUY is still pending.  That
+        request rightly cannot activate it, but a later position access must
+        still discover the filled plan even when an older plan already exists.
+        """
         latest = await self._latest_qualifying_plan(user_id, account_id, position.symbol)
         if latest is None:
-            return False
+            return position.active_plan_buy_order_id is not None
         order, plan = latest
+        if position.active_plan_buy_order_id == order.id:
+            return True
         position.active_plan_buy_order_id = order.id
         position.active_original_stop_vnd = plan.cat_lo
         position.active_original_take_profit_vnd = plan.chot_loi
@@ -145,6 +152,7 @@ class Cap8Service:
         return True
 
     async def sync_plan(self, user_id: uuid.UUID, symbol: str, buy_order_id: uuid.UUID) -> dict:
+        await self._require_progress(user_id)
         account, position = await self._position(user_id, symbol, for_update=True)
         matching = await self._latest_qualifying_plan(user_id, account.id, position.symbol)
         if matching is None or matching[0].id != buy_order_id:
@@ -180,6 +188,14 @@ class Cap8Service:
         return sorted(rows, key=lambda row: row[0]) or None
 
     @staticmethod
+    def _fill_session(order: VirtualOrder) -> date:
+        """The persisted execution session, never the order's requested date."""
+        filled_at = order.updated_at or order.created_at
+        if filled_at is None:  # persisted orders always carry timestamps
+            raise BadRequestError("Thiếu thời điểm khớp lệnh")
+        return filled_at.date()
+
+    @staticmethod
     def _timely_stop(history: list[tuple[date, float]], stop: int, sell_date: date, *, after: date | None = None) -> tuple[bool, str]:
         sessions = [(day, close) for day, close in history if after is None or day >= after]
         crossing_index = next((i for i, (_, close) in enumerate(sessions) if close <= stop), None)
@@ -193,6 +209,7 @@ class Cap8Service:
         return True, "timely_stop_exit"
 
     async def set_dynamic_stop(self, user_id: uuid.UUID, symbol: str, dynamic_stop_vnd: int) -> dict:
+        await self._require_progress(user_id)
         _, position = await self._position(user_id, symbol, for_update=True)
         if position.quantity_total <= 0:
             raise BadRequestError("Không còn vị thế để nâng cắt lỗ động")
@@ -203,6 +220,8 @@ class Cap8Service:
         if current_price is None or current_price <= position.avg_cost_vnd:
             raise BadRequestError("Chỉ được nâng cắt lỗ động khi vị thế đang có lãi")
         previous = position.active_dynamic_stop_vnd or position.active_original_stop_vnd
+        if dynamic_stop_vnd <= position.avg_cost_vnd:
+            raise BadRequestError("Cắt lỗ động phải cao hơn giá vốn bình quân")
         if previous is None or dynamic_stop_vnd <= previous:
             raise BadRequestError("Cắt lỗ động phải cao hơn mức cắt lỗ hiện tại")
         if dynamic_stop_vnd > current_price:
@@ -213,13 +232,25 @@ class Cap8Service:
         await self._session.flush()
         return {"symbol": position.symbol, "dynamic_stop_vnd": dynamic_stop_vnd, "dynamic_stop_set_at": now}
 
-    async def exit_context(self, user_id: uuid.UUID, symbol: str) -> dict:
+    async def exit_context(
+        self, user_id: uuid.UUID, symbol: str, proposed_sale_quantity: int | None = None
+    ) -> dict:
+        await self._require_progress(user_id)
         account, position = await self._position(user_id, symbol, for_update=True)
         await self._bootstrap_plan(user_id, account.id, position)
         portfolio = await self._trading.get_portfolio(user_id)
         live = next((p for p in portfolio["positions"] if p["symbol"] == position.symbol), None)
         current_price = live["current_price_vnd"] if live else None
-        balance = await self._portfolio_balance.get_snapshot(user_id)
+        proposed_quantity = (
+            position.quantity_sellable
+            if proposed_sale_quantity is None
+            else proposed_sale_quantity
+        )
+        if proposed_quantity <= 0 or proposed_quantity > position.quantity_sellable:
+            raise BadRequestError("Khối lượng bán dự kiến phải nằm trong số cổ phiếu có thể bán")
+        balance = await self._portfolio_balance.get_snapshot_after_sale(
+            user_id, position.symbol, proposed_quantity
+        )
         config = await self._repo.get_active_config()
         return {
             "symbol": position.symbol,
@@ -236,6 +267,7 @@ class Cap8Service:
                 current_price is not None and current_price > position.avg_cost_vnd and position.quantity_total > 0
             ),
             "board_lot_size": config.board_lot_size if config else 100,
+            "proposed_sale_quantity": proposed_quantity,
             "sector_impact": balance.model_dump(mode="json"),
         }
 
@@ -255,7 +287,13 @@ class Cap8Service:
         }
 
     async def record_exit(self, user_id: uuid.UUID, sell_order_id: uuid.UUID) -> dict:
-        """Idempotently classify a user-owned FILLED SELL in the same DB transaction."""
+        """Idempotently classify a user-owned FILLED SELL in one transaction.
+
+        The progress row is the per-user serialization point.  The evidence
+        lookup happens *after* that lock so concurrent retries re-read and
+        return the winning record instead of racing the unique sell-order key.
+        """
+        progress = await self._require_progress(user_id, for_update=True)
         existing = (await self._session.execute(
             select(Cap8Exit).where(Cap8Exit.sell_order_id == sell_order_id)
         )).scalar_one_or_none()
@@ -264,7 +302,6 @@ class Cap8Service:
                 raise NotFoundError("lệnh bán")
             return self._exit_out(existing)
 
-        progress = await self._require_progress(user_id, for_update=True)
         sell = (await self._session.execute(
             select(VirtualOrder).where(
                 VirtualOrder.id == sell_order_id,
@@ -277,8 +314,16 @@ class Cap8Service:
             raise BadRequestError("Chỉ ghi nhận lệnh BÁN đã khớp của chính bạn")
 
         position = await self._repo.get_position_for_update(sell.account_id, sell.symbol)
-        remaining = max(position.quantity_total, 0) if position else 0
-        before_quantity = remaining + sell.quantity
+        remaining = (
+            max(sell.position_quantity_after_fill, 0)
+            if sell.position_quantity_after_fill is not None
+            else max(position.quantity_total, 0) if position else 0
+        )
+        before_quantity = (
+            sell.position_quantity_before_fill
+            if sell.position_quantity_before_fill is not None
+            else remaining + sell.quantity
+        )
         remaining_pct = remaining / before_quantity * 100 if before_quantity else 0.0
         matched_buy_id = position.active_plan_buy_order_id if position else None
         original_stop = position.active_original_stop_vnd if position else None
@@ -292,7 +337,16 @@ class Cap8Service:
         emotional = False
         reason = "missing_active_plan"
 
-        if matched_buy_id is not None and take_profit is not None and original_stop is not None:
+        matched_buy = (
+            await self._session.get(VirtualOrder, matched_buy_id)
+            if matched_buy_id is not None
+            else None
+        )
+        if (
+            matched_buy is not None
+            and take_profit is not None
+            and original_stop is not None
+        ):
             if sell.filled_price_vnd >= take_profit:
                 compliant = True
                 reason = "take_profit_hit"
@@ -307,7 +361,9 @@ class Cap8Service:
                     reason = "unknown_price_history"
                 else:
                     timely, reason = self._timely_stop(
-                        history, dynamic_stop, sell.trading_date,
+                        history,
+                        dynamic_stop,
+                        self._fill_session(sell),
                         after=dynamic_at.date() if dynamic_at is not None else None,
                     )
                     if timely:
@@ -319,7 +375,12 @@ class Cap8Service:
                 if history is None:
                     reason = "unknown_price_history"
                 else:
-                    timely, reason = self._timely_stop(history, original_stop, sell.trading_date)
+                    timely, reason = self._timely_stop(
+                        history,
+                        original_stop,
+                        self._fill_session(sell),
+                        after=self._fill_session(matched_buy),
+                    )
                     if timely:
                         compliant = True
                         reason = "timely_original_stop_exit"

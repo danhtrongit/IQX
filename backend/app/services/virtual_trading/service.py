@@ -7,6 +7,7 @@ import logging
 import uuid
 from datetime import UTC, datetime, timedelta, timezone
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import (
@@ -17,6 +18,7 @@ from app.core.exceptions import (
     ServiceUnavailableError,
     UnprocessableEntityError,
 )
+from app.models.cap1 import OrderKehoach
 from app.models.virtual_trading import (
     AccountStatus,
     OrderSide,
@@ -311,6 +313,8 @@ class VirtualTradingService:
         """
         price_vnd = price_result.price_vnd
         now = datetime.now(UTC)
+        position_quantity_before_fill: int | None = None
+        position_quantity_after_fill: int | None = None
 
         # Resolve effective config: snapshot for pending fills, live for new
         if existing_order and existing_order.config_snapshot:
@@ -403,13 +407,15 @@ class VirtualTradingService:
                 position.quantity_sellable -= quantity
 
             if position:
-                new_total = position.quantity_total - quantity
+                position_quantity_before_fill = position.quantity_total
+                new_total = position_quantity_before_fill - quantity
                 if new_total < 0:
                     raise BadRequestError(
                         f"Vi phạm toàn vẹn vị thế: bán {quantity} cổ phiếu "
                         f"sẽ làm tổng âm ({position.quantity_total} - {quantity})",
                     )
                 position.quantity_total = new_total
+                position_quantity_after_fill = new_total
 
             if eff_settlement == SettlementMode.T0:
                 account.cash_available_vnd += proceeds
@@ -427,6 +433,8 @@ class VirtualTradingService:
             order.fee_vnd = fee
             order.tax_vnd = tax
             order.net_amount_vnd = net
+            order.position_quantity_before_fill = position_quantity_before_fill
+            order.position_quantity_after_fill = position_quantity_after_fill
         else:
             order = VirtualOrder(
                 account_id=account.id, user_id=account.user_id, symbol=symbol,
@@ -435,8 +443,26 @@ class VirtualTradingService:
                 filled_price_vnd=price_vnd, gross_amount_vnd=gross,
                 fee_vnd=fee, tax_vnd=tax, net_amount_vnd=net,
                 trading_date=trading_date, config_snapshot=snapshot, mode=mode,
+                position_quantity_before_fill=position_quantity_before_fill,
+                position_quantity_after_fill=position_quantity_after_fill,
             )
             order = await self._repo.create_order(order)
+
+        # A pending BUY can already carry its Cấp 2 plan when settlement fills
+        # it. Activate only that now-filled qualifying plan; market BUY plans
+        # written after execution are reconciled by Cấp 8's first-access path.
+        if side == OrderSide.BUY:
+            plan = (await self._session.execute(
+                select(OrderKehoach).where(OrderKehoach.order_id == order.id)
+            )).scalar_one_or_none()
+            if plan is not None and plan.cat_lo is not None and plan.chot_loi is not None:
+                active_position = await self._repo.get_position_for_update(account.id, symbol)
+                if active_position is not None:
+                    active_position.active_plan_buy_order_id = order.id
+                    active_position.active_original_stop_vnd = plan.cat_lo
+                    active_position.active_original_take_profit_vnd = plan.chot_loi
+                    active_position.active_dynamic_stop_vnd = None
+                    active_position.active_dynamic_stop_set_at = None
 
         trade = VirtualTrade(
             order_id=order.id, account_id=account.id, symbol=symbol,

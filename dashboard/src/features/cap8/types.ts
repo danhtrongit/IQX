@@ -39,6 +39,7 @@ export interface Cap8ExitContext {
   dynamic_stop_set_at: string | null
   can_update_dynamic_stop: boolean
   board_lot_size: number
+  proposed_sale_quantity: number
   sector_impact: Record<string, unknown>
 }
 
