@@ -5,9 +5,9 @@ import { describe, expect, it, vi, beforeEach } from "vitest"
 
 /**
  * Progressive hide-by-level (spec v3.0 §8) inside `TradingPanel`/`OrderEntry`:
- *  - Sổ lệnh bid/ask ẩn SUỐT Cấp 0 và Cấp 1 — §8: "Lên Cấp 2 (không hiện ở
- *    Cấp 0 và Cấp 1)". v2.2 opened it on nhiệm vụ ② (tour bảng điện), a whole
- *    level early.
+ *  - Sổ lệnh bid/ask ĐÃ BỊ BỎ khỏi panel đặt lệnh — không cấp nào render nó
+ *    nữa (trước đây nó ẩn suốt Cấp 0/1 rồi mở từ Cấp 2). Cấp 7 vẫn đọc
+ *    `data.bid`/`data.ask` qua `DocSoLenhBlock`; dữ liệu còn, cái sổ thì không.
  *  - Ô Giá + dropdown loại lệnh (MP/LO) ẩn cho đến khi xong nhiệm vụ ①.
  *  - Khối Kế hoạch has NO cắt lỗ/chốt lời in any mode, and there is no
  *    "cổng chất lượng 1" any more: v3.0 removes both the field and the gate.
@@ -134,7 +134,7 @@ describe("TradingPanel — hide-by-level (spec §8)", () => {
     placeOrderMock.mockClear()
   })
 
-  it("hides sổ lệnh bid/ask AND Ô Giá/dropdown loại lệnh on fresh Cấp 0 progress (no task done yet)", async () => {
+  it("★ không render sổ lệnh bid/ask (đã bỏ khỏi panel), và ẩn Ô Giá/dropdown loại lệnh trên progress Cấp 0 mới", async () => {
     renderInCap0(makeProgress())
     await waitFor(() => expect(screen.getByText("KẾ HOẠCH")).toBeInTheDocument())
 
@@ -151,15 +151,7 @@ describe("TradingPanel — hide-by-level (spec §8)", () => {
     expect(screen.queryByText(/Spread:/)).not.toBeInTheDocument()
   })
 
-  // ★ v3.0 §8: sổ lệnh bid/ask opens at Cấp 2, "không hiện ở Cấp 0 và Cấp 1".
-  // v2.2 unlocked it on `task_2_done_at` (tour bảng điện) — one level early.
-  it("★ keeps sổ lệnh bid/ask hidden after task ② — it opens at Cấp 2, not here", async () => {
-    renderInCap0(makeProgress({ task_2_done_at: "2026-07-21T00:00:00Z" }))
-    await waitFor(() => expect(screen.getByText("KẾ HOẠCH")).toBeInTheDocument())
-    expect(screen.queryByText(/Spread:/)).not.toBeInTheDocument()
-  })
-
-  it("★ keeps it hidden through a FULL 5/5 Cấp 0 run, graduation included", async () => {
+  it("★ reveals Ô Giá through a FULL 4/4 Cấp 0 run, graduation included", async () => {
     renderInCap0(
       makeProgress({
         task_1_done_at: "t",
@@ -171,15 +163,16 @@ describe("TradingPanel — hide-by-level (spec §8)", () => {
       }),
     )
     await waitFor(() => expect(screen.getByText("Giá", { selector: "label" })).toBeInTheDocument())
-    expect(screen.queryByText(/Spread:/)).not.toBeInTheDocument()
   })
 
-  it("NON-Cap0 regression: outside Cap0Provider, sổ lệnh + Ô Giá + dropdown are all present exactly as today", async () => {
+  it("NON-Cap0 regression: outside Cap0Provider, Ô Giá + dropdown are present exactly as today", async () => {
     renderOutsideCap0()
-    await waitFor(() => expect(screen.getByText(/Spread:/)).toBeInTheDocument())
-    // "Giá" also appears as the order-book's column header, so scope to the
-    // price field's own <label>.
-    expect(screen.getByText("Giá", { selector: "label" })).toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.getByText("Giá", { selector: "label" })).toBeInTheDocument(),
+    )
+    // ★ Sổ lệnh bid/ask đã bị BỎ khỏi panel đặt lệnh — không một cấp nào, kể
+    // cả ngoài mọi cấp (/bieu-do, /co-phieu), còn render nó.
+    expect(screen.queryByText(/Spread:/)).not.toBeInTheDocument()
     expect(screen.getByText("MP — Thị trường")).toBeInTheDocument()
     // No Cấp 0 Kế hoạch block either, outside Cấp 0.
     expect(screen.queryByText("KẾ HOẠCH")).not.toBeInTheDocument()

@@ -184,9 +184,6 @@ function fmtPrice(price: number): string {
 function fmtVnd(n: number): string {
   return Math.round(n).toLocaleString("en-US")
 }
-function fmtVolume(v: number): string {
-  return v ? v.toLocaleString("en-US") : "—"
-}
 function fmtCompact(v: number): string {
   if (!v) return "—"
   if (v >= 1e9) return (v / 1e9).toFixed(1) + "B"
@@ -265,90 +262,6 @@ function priceToneClass(price: number, ref: number, ceil: number, floor: number)
   if (price > ref) return "op-tone-up"
   if (price < ref) return "op-tone-down"
   return "op-tone-ref"
-}
-
-/* ── Order book (depth) ── */
-function OrderBookView({ data }: { data: PriceBoardData }) {
-  const bids = data.bid || []
-  const asks = data.ask || []
-  const maxBidVol = Math.max(...bids.map((b) => b.volume || 0), 1)
-  const maxAskVol = Math.max(...asks.map((a) => a.volume || 0), 1)
-
-  return (
-    <div className="px-1.5">
-      <div className="flex items-center px-1.5 py-1 text-[10px] font-medium text-[var(--color-text-3)]">
-        <span className="w-16">Giá</span>
-        <span className="flex-1 text-right">KL</span>
-      </div>
-      <div className="space-y-px">
-        {[...asks].reverse().map((entry, i) => (
-          <DepthRow
-            key={`ask-${i}`}
-            entry={entry}
-            data={data}
-            ratio={(entry.volume / maxAskVol) * 100}
-            side="ask"
-          />
-        ))}
-      </div>
-      <div className="flex items-center justify-center py-1">
-        <span className="text-[10px] text-[var(--color-text-3)]">
-          Spread:{" "}
-          <span className="font-medium tabular-nums text-[var(--color-text-1)]">
-            {asks.length > 0 && bids.length > 0
-              ? fmtPrice(asks[0].price - bids[0].price)
-              : "—"}
-          </span>
-        </span>
-      </div>
-      <div className="space-y-px">
-        {bids.map((entry, i) => (
-          <DepthRow
-            key={`bid-${i}`}
-            entry={entry}
-            data={data}
-            ratio={(entry.volume / maxBidVol) * 100}
-            side="bid"
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function DepthRow({
-  entry,
-  data,
-  ratio,
-  side,
-}: {
-  entry: { price: number; volume: number }
-  data: PriceBoardData
-  ratio: number
-  side: "bid" | "ask"
-}) {
-  return (
-    <div className="group relative flex items-center rounded-sm px-1.5 py-0.5 text-[11px]">
-      <div
-        className={cn(
-          "absolute top-0 bottom-0 rounded-sm",
-          side === "ask" ? "right-0 bg-down/10" : "left-0 bg-up/10",
-        )}
-        style={{ width: `${ratio}%` }}
-      />
-      <span
-        className={cn(
-          "relative w-16 font-medium tabular-nums",
-          priceColorClass(entry.price, data.referencePrice, data.ceilingPrice, data.floorPrice),
-        )}
-      >
-        {fmtPrice(entry.price)}
-      </span>
-      <span className="relative flex-1 text-right tabular-nums text-[var(--color-text-3)] group-hover:text-[var(--color-text-1)]">
-        {fmtVolume(entry.volume)}
-      </span>
-    </div>
-  )
 }
 
 /* ── Order entry (premium-gated portion) ── */
@@ -495,7 +408,7 @@ function OrderEntry({
   // `isCap7Active` mirrors `isCap6Active` above — false outside a
   // `Cap7Provider`. Cấp 7 keeps Cấp 0-6's blocks, cổng cứng chain and Cấp 3's
   // volume auto-fill 100% intact (spec §0) and adds ONE reading overlay on the
-  // bid/ask book that has been visible since Cấp 2.
+  // bid/ask data the panel holds from `usePrice(symbol)`.
   //
   // ★★ IT ADDS NO GATE AT ALL (spec §9: đọc lực là SOFT — nhiệm vụ ① chỉ cần
   // ghi ≥ 1 lần). `isCap7Active` must NEVER appear in the `disabled` chain of
@@ -671,10 +584,10 @@ function OrderEntry({
   // for a BUY inside Cấp 6.
   const cap6SubmitDisabled =
     side === "buy" && cap6CoMauThuan && !isDoiChieuValid(cap6LopQuyetDinh, cap6LyDo)
-  // Cấp 7 (spec §4/§5) — ONE reading of the SAME book `OrderBookView` already
-  // draws from `data`, computed once per render so the number the user sees on
-  // the gauge and the number `POST /cap7/kehoach` commits are the SAME number
-  // (the ladder moves on every quote tick).
+  // Cấp 7 (spec §4/§5) — ONE reading of the bid/ask ladder in `data`, computed
+  // once per render so the number the user sees on the gauge and the number
+  // `POST /cap7/kehoach` commits are the SAME number (the ladder moves on every
+  // quote tick).
   //
   // ★ There is deliberately NO `cap7SubmitDisabled`. Cấp 7 never gates MUA
   // (spec §9) — see `isCap7Active`'s note above.
@@ -1722,7 +1635,7 @@ function OrderEntry({
         )}
 
         {/* Cấp 7 khối "Đọc sổ lệnh" (spec §4/§5, THÊM MỚI) — NGAY TRƯỚC nút MUA.
-            Một LỚP PHỦ ĐỌC lên chính sổ bid/ask `OrderBookView` đang vẽ ở trên
+            Một LỚP PHỦ ĐỌC lên chính dữ liệu bid/ask của `usePrice(symbol)`
             (spec §4: "thêm lớp phủ đọc… KHÔNG dựng lại sổ"): `data.bid`/
             `data.ask` truyền xuống làm prop, khối không tự gọi `usePrice`.
             Buy-side only AND Cấp 7-only (`isCap7Active` false outside a
@@ -2475,24 +2388,7 @@ export function TradingPanel({
   const { data, isLoading } = usePrice(symbol)
   const { data: account } = useAccount()
   const { data: portfolio } = usePortfolio()
-  const { isCap0Active } = useCap0Events()
-  const { isCap1Active } = useCap1Events()
-  const { isCap2Active } = useCap2Events()
   const skin = useMockupPanelSkin()
-  // Hide-by-level — sổ lệnh bid/ask is hidden for the WHOLE of Cấp 0 and Cấp
-  // 1 and opens at Cấp 2. Cấp 0 spec v3.0 §8 and Cấp 1 spec §0 say the same
-  // thing from their own side ("Lên Cấp 2 (không hiện ở Cấp 0 và Cấp 1)" /
-  // "Sổ lệnh bid/ask vẫn ẨN (chỉ mở ở Cấp 2)"); v2.2 wrongly unlocked it on
-  // Cấp 0's nhiệm vụ ② (tour bảng điện), so `cap0Visibility().orderBook` is
-  // now a constant `false` and the Cấp 0 clause below reduces to `isCap0Active`.
-  // Cấp 2 spec §C9: "Sổ lệnh bid/ask MỞ ở Cấp 2" — `isCap2Active` short-
-  // circuits BOTH level-hides back to visible (a Cấp 2 session also has
-  // `isCap1Active` true, since Cấp 2 reuses Cấp 1's Form Kế hoạch — without
-  // this short-circuit the `|| isCap1Active` clause would still hide it).
-  // `useCap0Progress(isCap0Active)` only queries inside Cấp 0.
-  const { data: cap0Progress } = useCap0Progress(isCap0Active)
-  const hideOrderBook =
-    !isCap2Active && ((isCap0Active && !cap0Visibility(cap0Progress).orderBook) || isCap1Active)
 
   const positionQty = useMemo(() => {
     const pos = portfolio?.positions.find(
@@ -2514,22 +2410,8 @@ export function TradingPanel({
     >
       {/* ★ `StockHeader` và `AccountStrip` KHÔNG còn đứng riêng ở đây nữa —
           chúng đã dời vào trong `OrderEntry`, ngay sau tabs MUA/BÁN, để cả
-          panel là MỘT thẻ đúng thứ tự mockup. Sổ lệnh bid/ask vẫn ở trên cùng
-          (mockup Cấp 0/1 không vẽ nó vì nó bị ẩn tới tận Cấp 2). */}
+          panel là MỘT thẻ đúng thứ tự mockup. */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {/* ★ Trong shell cấp, sổ lệnh phải là MỘT THẺ như panel bên dưới.
-            Trước đây nó render trần trên nền `--bg1` của `.op-shell`, nên khi
-            panel Cấp 2+ được khoác áo mockup (thẻ bo góc có viền) thì sổ lệnh
-            thành một mảng trôi lơ lửng ngay phía trên — đúng lỗi user báo.
-            Mockup không vẽ sổ lệnh (nó bị ẩn tới tận Cấp 2, sau khung hình
-            mockup), nhưng spec Cấp 1 §checklist nói rõ "sổ lệnh vẫn ẨN (chỉ mở
-            Cấp 2)" — nên nó PHẢI có mặt từ Cấp 2; việc cần làm là cho nó mặc
-            cùng áo, không phải giấu đi. */}
-        {data && !hideOrderBook && (
-          <div className={skin ? "op-book" : undefined}>
-            <OrderBookView data={data} />
-          </div>
-        )}
         <GatedOrderEntry
           symbol={symbol}
           data={data}

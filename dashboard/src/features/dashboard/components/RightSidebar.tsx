@@ -70,7 +70,7 @@ import { useCap8Events } from "@/features/cap8/Cap8Context"
  * Dynamic right sidebar that switches between panels:
  * - news: Market news feed with filters
  * - patterns: AI candle / chart pattern recognition (premium)
- * - trading: Virtual-trading order form + order book (premium)
+ * - trading: Virtual-trading order form (premium)
  * - watchlist: Watchlist, holdings, and trade history
  * - journey: Cấp 0 «Nhập môn» onboarding checklist (only reachable on
  *   `/dau-truong` — `Cap0TradingPage` sets it as the default panel).
