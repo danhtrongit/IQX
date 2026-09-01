@@ -231,10 +231,24 @@ class VirtualOrder(UUIDMixin, TimestampMixin, Base):
     # Config snapshot at order creation time
     config_snapshot: Mapped[str | None] = mapped_column(Text, nullable=True)  # JSON
 
-    # Captured while the virtual-trading engine owns the position lock. Delayed
-    # Level 8 evidence recording must not infer a prior SELL from later trades.
+    # Immutable SELL execution evidence. Captured while the engine owns the
+    # position lock so delayed Cấp 8 recording never reads a later position.
+    exit_snapshot_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     position_quantity_before_fill: Mapped[int | None] = mapped_column(Integer, nullable=True)
     position_quantity_after_fill: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    exit_matched_buy_order_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("virtual_orders.id", ondelete="SET NULL"), nullable=True
+    )
+    exit_original_stop_vnd: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    exit_original_take_profit_vnd: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    exit_dynamic_stop_vnd: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    exit_dynamic_stop_set_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    exit_avg_cost_vnd: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    exit_plan_activated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
 
 class VirtualTrade(UUIDMixin, TimestampMixin, Base):

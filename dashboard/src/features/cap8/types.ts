@@ -17,7 +17,7 @@ export interface Cap8Exit {
   quantity: number
   filled_price_vnd: number
   remaining_position_pct: number
-  exit_method: "full" | "partial" | "trailing_hit"
+  exit_method: "full" | "partial" | "trailing_hit" | "unknown"
   original_stop_vnd: number | null
   original_take_profit_vnd: number | null
   effective_stop_vnd: number | null

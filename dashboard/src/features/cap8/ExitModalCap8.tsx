@@ -143,7 +143,11 @@ export function ExitModalCap8({ symbol, visible, onClose }: { symbol: string | n
                 onClick={() => {
                   setRetryingEvidence(true)
                   void recordEvidence(evidenceSellId)
-                    .then(onClose)
+                    .then(() => {
+                      setEvidenceSellId(null)
+                      setEvidenceError(null)
+                      onClose()
+                    })
                     .catch(setEvidenceError)
                     .finally(() => setRetryingEvidence(false))
                 }}

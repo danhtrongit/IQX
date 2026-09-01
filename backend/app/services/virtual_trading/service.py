@@ -315,6 +315,14 @@ class VirtualTradingService:
         now = datetime.now(UTC)
         position_quantity_before_fill: int | None = None
         position_quantity_after_fill: int | None = None
+        exit_snapshot_at: datetime | None = None
+        exit_matched_buy_order_id: uuid.UUID | None = None
+        exit_original_stop_vnd: int | None = None
+        exit_original_take_profit_vnd: int | None = None
+        exit_dynamic_stop_vnd: int | None = None
+        exit_dynamic_stop_set_at: datetime | None = None
+        exit_avg_cost_vnd: int | None = None
+        exit_plan_activated_at: datetime | None = None
 
         # Resolve effective config: snapshot for pending fills, live for new
         if existing_order and existing_order.config_snapshot:
@@ -416,6 +424,17 @@ class VirtualTradingService:
                     )
                 position.quantity_total = new_total
                 position_quantity_after_fill = new_total
+                exit_snapshot_at = now
+                exit_matched_buy_order_id = position.active_plan_buy_order_id
+                exit_original_stop_vnd = position.active_original_stop_vnd
+                exit_original_take_profit_vnd = position.active_original_take_profit_vnd
+                exit_dynamic_stop_vnd = position.active_dynamic_stop_vnd
+                exit_dynamic_stop_set_at = position.active_dynamic_stop_set_at
+                exit_avg_cost_vnd = position.avg_cost_vnd
+                if exit_matched_buy_order_id is not None:
+                    matched_buy = await self._repo.get_order_by_id(exit_matched_buy_order_id)
+                    if matched_buy is not None:
+                        exit_plan_activated_at = matched_buy.updated_at or matched_buy.created_at
 
             if eff_settlement == SettlementMode.T0:
                 account.cash_available_vnd += proceeds
@@ -447,6 +466,16 @@ class VirtualTradingService:
                 position_quantity_after_fill=position_quantity_after_fill,
             )
             order = await self._repo.create_order(order)
+
+        if side == OrderSide.SELL:
+            order.exit_snapshot_at = exit_snapshot_at
+            order.exit_matched_buy_order_id = exit_matched_buy_order_id
+            order.exit_original_stop_vnd = exit_original_stop_vnd
+            order.exit_original_take_profit_vnd = exit_original_take_profit_vnd
+            order.exit_dynamic_stop_vnd = exit_dynamic_stop_vnd
+            order.exit_dynamic_stop_set_at = exit_dynamic_stop_set_at
+            order.exit_avg_cost_vnd = exit_avg_cost_vnd
+            order.exit_plan_activated_at = exit_plan_activated_at
 
         # A pending BUY can already carry its Cấp 2 plan when settlement fills
         # it. Activate only that now-filled qualifying plan; market BUY plans

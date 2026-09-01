@@ -230,9 +230,9 @@ describe("ExitModalCap8", () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
-  it("keeps a filled sell out of the order mutation when evidence recording needs a retry", async () => {
+  it("clears completed evidence-retry state before closing so a reopened modal can sell again", async () => {
     mocks.recordExit.mockRejectedValueOnce(new Error("Bằng chứng tạm thời lỗi"))
-    renderModal()
+    const { onClose } = renderModal()
 
     fireEvent.click(screen.getByRole("button", { name: "Bán toàn bộ" }))
 
@@ -246,6 +246,10 @@ describe("ExitModalCap8", () => {
     await waitFor(() => expect(mocks.recordExit).toHaveBeenCalledTimes(2))
     expect(mocks.recordExit).toHaveBeenNthCalledWith(1, "filled-sell-order")
     expect(mocks.recordExit).toHaveBeenNthCalledWith(2, "filled-sell-order")
-    expect(mocks.sellMutate).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
+    expect(screen.getByRole("button", { name: "Bán toàn bộ" })).toBeEnabled()
+
+    fireEvent.click(screen.getByRole("button", { name: "Bán toàn bộ" }))
+    expect(mocks.sellMutate).toHaveBeenCalledTimes(2)
   })
 })

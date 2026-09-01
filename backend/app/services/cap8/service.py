@@ -188,14 +188,6 @@ class Cap8Service:
         return sorted(rows, key=lambda row: row[0]) or None
 
     @staticmethod
-    def _fill_session(order: VirtualOrder) -> date:
-        """The persisted execution session, never the order's requested date."""
-        filled_at = order.updated_at or order.created_at
-        if filled_at is None:  # persisted orders always carry timestamps
-            raise BadRequestError("Thiếu thời điểm khớp lệnh")
-        return filled_at.date()
-
-    @staticmethod
     def _timely_stop(history: list[tuple[date, float]], stop: int, sell_date: date, *, after: date | None = None) -> tuple[bool, str]:
         sessions = [(day, close) for day, close in history if after is None or day >= after]
         crossing_index = next((i for i, (_, close) in enumerate(sessions) if close <= stop), None)
@@ -313,87 +305,104 @@ class Cap8Service:
         if sell is None or sell.filled_price_vnd is None:
             raise BadRequestError("Chỉ ghi nhận lệnh BÁN đã khớp của chính bạn")
 
-        position = await self._repo.get_position_for_update(sell.account_id, sell.symbol)
-        remaining = (
-            max(sell.position_quantity_after_fill, 0)
-            if sell.position_quantity_after_fill is not None
-            else max(position.quantity_total, 0) if position else 0
+        snapshot_ready = (
+            sell.exit_snapshot_at is not None
+            and sell.position_quantity_before_fill is not None
+            and sell.position_quantity_after_fill is not None
         )
-        before_quantity = (
-            sell.position_quantity_before_fill
-            if sell.position_quantity_before_fill is not None
-            else remaining + sell.quantity
-        )
-        remaining_pct = remaining / before_quantity * 100 if before_quantity else 0.0
-        matched_buy_id = position.active_plan_buy_order_id if position else None
-        original_stop = position.active_original_stop_vnd if position else None
-        take_profit = position.active_original_take_profit_vnd if position else None
-        dynamic_stop = position.active_dynamic_stop_vnd if position else None
-        dynamic_at = position.active_dynamic_stop_set_at if position else None
-        effective_stop = dynamic_stop or original_stop
-        full = remaining == 0
-        exit_method = "full" if full else "partial"
+        remaining = 0
+        before_quantity = 0
+        remaining_pct = 0.0
+        matched_buy_id = None
+        original_stop = None
+        take_profit = None
+        dynamic_stop = None
+        dynamic_at = None
+        plan_activated_at = None
+        avg_cost = None
+        effective_stop = None
+        exit_method = "unknown"
         compliant = False
         emotional = False
-        reason = "missing_active_plan"
+        reason = "missing_execution_snapshot"
 
-        matched_buy = (
-            await self._session.get(VirtualOrder, matched_buy_id)
-            if matched_buy_id is not None
-            else None
-        )
-        if (
-            matched_buy is not None
-            and take_profit is not None
-            and original_stop is not None
-        ):
-            if sell.filled_price_vnd >= take_profit:
-                compliant = True
-                reason = "take_profit_hit"
-            elif (
-                dynamic_stop is not None
-                and position is not None
-                and dynamic_stop > position.avg_cost_vnd
-                and sell.filled_price_vnd <= dynamic_stop
-            ):
-                history = await self._history(sell.symbol)
-                if history is None:
-                    reason = "unknown_price_history"
-                else:
-                    timely, reason = self._timely_stop(
-                        history,
-                        dynamic_stop,
-                        self._fill_session(sell),
-                        after=dynamic_at.date() if dynamic_at is not None else None,
-                    )
-                    if timely:
-                        compliant = True
-                        exit_method = "trailing_hit"
-                        reason = "timely_trailing_stop_exit"
-            elif sell.filled_price_vnd <= original_stop:
-                history = await self._history(sell.symbol)
-                if history is None:
-                    reason = "unknown_price_history"
-                else:
-                    timely, reason = self._timely_stop(
-                        history,
-                        original_stop,
-                        self._fill_session(sell),
-                        after=self._fill_session(matched_buy),
-                    )
-                    if timely:
-                        compliant = True
-                        reason = "timely_original_stop_exit"
-            elif full and sell.filled_price_vnd > (position.avg_cost_vnd if position else 0):
-                emotional = True
-                reason = "emotional_full_exit_below_target"
+        if snapshot_ready:
+            before_quantity = sell.position_quantity_before_fill
+            remaining = sell.position_quantity_after_fill
+            if before_quantity <= 0 or remaining < 0 or remaining > before_quantity:
+                reason = "invalid_execution_snapshot"
             else:
-                reason = "price_did_not_hit_plan_threshold"
+                remaining_pct = remaining / before_quantity * 100
+                matched_buy_id = sell.exit_matched_buy_order_id
+                original_stop = sell.exit_original_stop_vnd
+                take_profit = sell.exit_original_take_profit_vnd
+                dynamic_stop = sell.exit_dynamic_stop_vnd
+                dynamic_at = sell.exit_dynamic_stop_set_at
+                plan_activated_at = sell.exit_plan_activated_at
+                avg_cost = sell.exit_avg_cost_vnd
+                effective_stop = (
+                    dynamic_stop if dynamic_stop is not None else original_stop
+                )
+                full = remaining == 0
+                exit_method = "full" if full else "partial"
+                reason = "missing_active_plan"
+
+                if (
+                    matched_buy_id is not None
+                    and take_profit is not None
+                    and original_stop is not None
+                    and avg_cost is not None
+                ):
+                    if sell.filled_price_vnd >= take_profit:
+                        compliant = True
+                        reason = "take_profit_hit"
+                    elif dynamic_stop is not None and sell.filled_price_vnd <= dynamic_stop:
+                        if dynamic_at is None:
+                            reason = "missing_dynamic_stop_timestamp"
+                        elif dynamic_stop <= avg_cost:
+                            reason = "dynamic_stop_does_not_lock_profit"
+                        else:
+                            history = await self._history(sell.symbol)
+                            if history is None:
+                                reason = "unknown_price_history"
+                            else:
+                                timely, reason = self._timely_stop(
+                                    history,
+                                    dynamic_stop,
+                                    sell.exit_snapshot_at.date(),
+                                    after=dynamic_at.date(),
+                                )
+                                if timely:
+                                    compliant = True
+                                    exit_method = "trailing_hit"
+                                    reason = "timely_trailing_stop_exit"
+                    elif sell.filled_price_vnd <= original_stop:
+                        if plan_activated_at is None:
+                            reason = "missing_plan_activation_timestamp"
+                        else:
+                            history = await self._history(sell.symbol)
+                            if history is None:
+                                reason = "unknown_price_history"
+                            else:
+                                timely, reason = self._timely_stop(
+                                    history,
+                                    original_stop,
+                                    sell.exit_snapshot_at.date(),
+                                    after=plan_activated_at.date(),
+                                )
+                                if timely:
+                                    compliant = True
+                                    reason = "timely_original_stop_exit"
+                    elif full and sell.filled_price_vnd > avg_cost:
+                        emotional = True
+                        reason = "emotional_full_exit_below_target"
+                    else:
+                        reason = "price_did_not_hit_plan_threshold"
 
         exit_row = Cap8Exit(
             user_id=user_id, account_id=sell.account_id, symbol=sell.symbol,
             matched_buy_order_id=matched_buy_id, sell_order_id=sell.id,
-            exited_at=sell.updated_at or sell.created_at, quantity=sell.quantity,
+            exited_at=sell.exit_snapshot_at or sell.updated_at or sell.created_at, quantity=sell.quantity,
             filled_price_vnd=sell.filled_price_vnd, remaining_position_pct=remaining_pct,
             exit_method=exit_method, original_stop_vnd=original_stop,
             original_take_profit_vnd=take_profit, effective_stop_vnd=effective_stop,

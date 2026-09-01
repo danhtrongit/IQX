@@ -49,6 +49,16 @@ async def _exit_fixture(db_session, user, *, remaining: int = 0, sell_price: int
     db_session.add_all([sell, position, progress])
     sell.created_at = datetime(2026, 1, 6, 10, tzinfo=UTC)
     sell.updated_at = datetime(2026, 1, 6, 10, tzinfo=UTC)
+    sell.exit_snapshot_at = sell.updated_at
+    sell.position_quantity_before_fill = remaining + sell.quantity
+    sell.position_quantity_after_fill = remaining
+    sell.exit_matched_buy_order_id = buy.id
+    sell.exit_original_stop_vnd = position.active_original_stop_vnd
+    sell.exit_original_take_profit_vnd = position.active_original_take_profit_vnd
+    sell.exit_dynamic_stop_vnd = None
+    sell.exit_dynamic_stop_set_at = None
+    sell.exit_avg_cost_vnd = position.avg_cost_vnd
+    sell.exit_plan_activated_at = buy.updated_at
     await db_session.flush()
     return Cap8Service(db_session), account, position, sell, progress
 
@@ -179,6 +189,7 @@ async def test_take_profit_full_exit_counts_and_duplicate_post_is_idempotent(db_
     duplicate = await service.record_exit(test_user.id, sell.id)
     assert first["dung_ke_hoach"] is True
     assert first["exit_method"] == "full"
+    assert first["effective_stop_vnd"] == 90
     assert duplicate["id"] == first["id"]
     assert progress.so_lenh_thoat_dung_ke_hoach == 1
 
@@ -212,6 +223,7 @@ async def test_timely_original_stop_exit_counts(db_session, test_user, monkeypat
     original = await service.record_exit(test_user.id, sell.id)
     assert original["classification_reason"] == "timely_original_stop_exit"
     assert original["dung_ke_hoach"] is True
+    assert original["effective_stop_vnd"] == 90
 
 
 @pytest.mark.asyncio
@@ -224,6 +236,8 @@ async def test_original_stop_ignores_crossings_before_matched_buy_activation(
     buy.trading_date = date(2024, 1, 10)  # requested date is not fill evidence
     sell.trading_date = date(2024, 1, 11)
     buy.updated_at = datetime(2026, 1, 10, 10, tzinfo=UTC)
+    sell.exit_snapshot_at = datetime(2026, 1, 11, 10, tzinfo=UTC)
+    sell.exit_plan_activated_at = buy.updated_at
     sell.updated_at = datetime(2026, 1, 11, 10, tzinfo=UTC)
     monkeypatch.setattr(
         service,
@@ -259,10 +273,54 @@ async def test_exit_evidence_uses_sell_fill_quantity_snapshot_not_later_position
 
 
 @pytest.mark.asyncio
+async def test_delayed_exit_evidence_uses_plan_captured_at_sell_fill(
+    db_session, test_user,
+) -> None:
+    service, account, position, sell, _ = await _exit_fixture(db_session, test_user, sell_price=120)
+    later_buy = await _qualifying_plan(db_session, account, test_user, stop=95, target=130)
+    await service._bootstrap_plan(test_user.id, account.id, position)
+    assert position.active_plan_buy_order_id == later_buy.id
+
+    result = await service.record_exit(test_user.id, sell.id)
+
+    assert result["matched_buy_order_id"] != later_buy.id
+    assert result["original_take_profit_vnd"] == 110
+    assert result["dung_ke_hoach"] is True
+    assert result["classification_reason"] == "take_profit_hit"
+
+
+@pytest.mark.asyncio
+async def test_legacy_sell_without_execution_snapshot_is_unknown_and_cannot_count(
+    db_session, test_user,
+) -> None:
+    service, _, position, sell, _ = await _exit_fixture(db_session, test_user, sell_price=120)
+    sell.exit_snapshot_at = None
+    sell.position_quantity_before_fill = None
+    sell.position_quantity_after_fill = None
+    sell.exit_matched_buy_order_id = None
+    sell.exit_original_stop_vnd = None
+    sell.exit_original_take_profit_vnd = None
+    sell.exit_dynamic_stop_vnd = None
+    sell.exit_dynamic_stop_set_at = None
+    sell.exit_avg_cost_vnd = None
+    sell.exit_plan_activated_at = None
+    position.active_original_take_profit_vnd = 110
+
+    result = await service.record_exit(test_user.id, sell.id)
+
+    assert result["exit_method"] == "unknown"
+    assert result["dung_ke_hoach"] is False
+    assert result["classification_reason"] == "missing_execution_snapshot"
+    assert result["effective_stop_vnd"] is None
+
+
+@pytest.mark.asyncio
 async def test_timely_trailing_stop_exit_counts(db_session, test_user, monkeypatch) -> None:
     service, _, position, sell, _ = await _exit_fixture(db_session, test_user, sell_price=105)
     position.active_dynamic_stop_vnd = 105
     position.active_dynamic_stop_set_at = datetime(2026, 1, 5, tzinfo=UTC)
+    sell.exit_dynamic_stop_vnd = 105
+    sell.exit_dynamic_stop_set_at = position.active_dynamic_stop_set_at
     monkeypatch.setattr(
         service, "_history",
         lambda _symbol: __import__("asyncio").sleep(0, result=[(date(2026, 1, 5), 110.0), (date(2026, 1, 6), 104.0)]),
@@ -271,6 +329,7 @@ async def test_timely_trailing_stop_exit_counts(db_session, test_user, monkeypat
     assert trailing["dung_ke_hoach"] is True
     assert trailing["exit_method"] == "trailing_hit"
     assert trailing["classification_reason"] == "timely_trailing_stop_exit"
+    assert trailing["effective_stop_vnd"] == 105
 
 
 @pytest.mark.asyncio
