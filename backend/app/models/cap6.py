@@ -194,8 +194,9 @@ class Cap6Progress(UUIDMixin, TimestampMixin, Base):
     so_lan_xu_ly_nhat_quan: Mapped[int] = mapped_column(
         Integer, nullable=False, default=0, server_default="0"
     )
-    #: TẬP CON của ô trên: những lần đó mà mã còn có lớp phủ quyết (Tin tức /
-    #: Nội bộ) ở bậc THẤP NHẤT. Cần ≥2 để tốt nghiệp.
+    #: Ô thống kê mô tả: trong các lần nhất quán ở trên, bao nhiêu lần mã còn
+    #: có lớp phủ quyết (Tin tức / Nội bộ) ở bậc THẤP NHẤT. Không phải điều
+    #: kiện tốt nghiệp.
     so_lan_xu_ly_veto_nhat_quan: Mapped[int] = mapped_column(
         Integer, nullable=False, default=0, server_default="0"
     )
