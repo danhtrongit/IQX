@@ -21,8 +21,7 @@ MucLiteral = Literal["nhe", "ngai", "nghiem", "chua_ro"]
 class Cap6ProgressOut(BaseModel):
     """``GET /cap6/progress`` — tiến trình Cấp 6 của user hiện tại.
 
-    ★ ``muc_tieu_nhat_quan``/``muc_tieu_veto`` lên wire để FE không hard-code
-    lại hai ngưỡng của cổng.
+    ``muc_tieu_nhat_quan`` là mục tiêu duy nhất của cổng hành trình.
     """
 
     model_config = ConfigDict(from_attributes=True)
@@ -33,13 +32,12 @@ class Cap6ProgressOut(BaseModel):
     so_lan_xu_ly_nhat_quan: int
     so_lan_xu_ly_veto_nhat_quan: int
     muc_tieu_nhat_quan: int
-    muc_tieu_veto: int
     #: ★ ``null`` = CHƯA có lệnh Cấp-6 nào đóng — **KHÔNG phải 0**. ``0.0`` là
     #: một câu khác hẳn ("đã đóng lệnh, hoà vốn"), và FE phải hiện hai trạng
     #: thái đó khác nhau. CHỈ để hiển thị — không bao giờ là cổng (spec §2).
     tong_lai_lenh_cap6_pct: float | None = None
     da_xem_tour_mauthuan: bool
-    #: Cổng 1/1 đã đạt chưa — suy từ đúng 2 bộ đếm ở trên, không đọc lãi.
+    #: Cổng 1/1 đã đạt chưa — suy từ bộ đếm xử lý nhất quán, không đọc lãi.
     dat_nhiem_vu: bool
     graduated_at: datetime | None = None
     time_to_graduate_hours: float | None = None

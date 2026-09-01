@@ -3,7 +3,6 @@ import {
   CAU_CHOT_MAU_THUAN,
   CONFLICT_LEVEL_OPTIONS,
   MUC_TIEU_NHAT_QUAN_MAC_DINH,
-  MUC_TIEU_VETO_MAC_DINH,
   coBangMauThuan,
   conflictLevelLabel,
   conflictLevelText,
@@ -12,26 +11,16 @@ import {
   lechNhanDinhHanhDong,
   lyDoTuMauThuan,
   mucTieuNhatQuan,
-  mucTieuVeto,
 } from "./nhanDinhCap6"
 import type { MauThuanCap6 } from "./mauThuanTypes"
 import type { Cap6Progress } from "./types"
 
-/**
- * ★★ FIXTURE DÙNG SỐ **KHÁC** DEFAULT (7/5, không phải 3/2).
- *
- * Đợt Cấp 5 có một bài xanh giả đúng vì lý do ngược lại: fixture để
- * `muc_tieu_*` là `undefined` — tức bằng đúng giá trị default — nên bài kiểm
- * KHÔNG phân biệt được "đọc server" với "trả hằng số". Mọi fixture ở đây phải
- * lệch khỏi `MUC_TIEU_*_MAC_DINH`.
- */
 function progress(over: Partial<Cap6Progress> = {}): Cap6Progress {
   return {
     entered_at: "2026-08-01T00:00:00Z",
     so_lan_xu_ly_nhat_quan: 0,
     so_lan_xu_ly_veto_nhat_quan: 0,
-    muc_tieu_nhat_quan: 7,
-    muc_tieu_veto: 5,
+    muc_tieu_nhat_quan: 3,
     tong_lai_lenh_cap6_pct: null,
     da_xem_tour_mauthuan: false,
     graduated_at: null,
@@ -175,39 +164,26 @@ describe("lechNhanDinhHanhDong — bẫy 'đắn đo mà vẫn mua lớn' (spec 
   })
 })
 
-describe("mục tiêu ĐỌC SERVER, không hard-code 3/2", () => {
-  it("lấy đúng số server gửi (7/5 ≠ 3/2 mặc định)", () => {
-    const p = progress()
-    expect(mucTieuNhatQuan(p)).toBe(7)
-    expect(mucTieuVeto(p)).toBe(5)
-    // Chốt lại rằng fixture THẬT SỰ khác default — nếu ai đổi fixture về 3/2 thì
-    // bài trên không còn phân biệt được "đọc server" với "trả hằng số".
-    expect(mucTieuNhatQuan(p)).not.toBe(MUC_TIEU_NHAT_QUAN_MAC_DINH)
-    expect(mucTieuVeto(p)).not.toBe(MUC_TIEU_VETO_MAC_DINH)
+describe("mục tiêu xử lý nhất quán", () => {
+  it("lấy mục tiêu 3 do server gửi", () => {
+    expect(mucTieuNhatQuan(progress())).toBe(3)
   })
 
-  it("chưa có hồ sơ → mặc định 3/2", () => {
-    expect(mucTieuNhatQuan(null)).toBe(3)
-    expect(mucTieuVeto(null)).toBe(2)
+  it("chưa có hồ sơ → mặc định 3", () => {
+    expect(mucTieuNhatQuan(null)).toBe(MUC_TIEU_NHAT_QUAN_MAC_DINH)
   })
 })
 
 describe("datCongCap6 — thuần hành vi, KHÔNG đo lãi (spec §2/§3)", () => {
-  it("đủ cả hai mốc của SERVER → đạt", () => {
+  it("3 lần nhất quán, không có phủ quyết vẫn đạt", () => {
     expect(
-      datCongCap6(progress({ so_lan_xu_ly_nhat_quan: 7, so_lan_xu_ly_veto_nhat_quan: 5 })),
+      datCongCap6(progress({ so_lan_xu_ly_nhat_quan: 3, so_lan_xu_ly_veto_nhat_quan: 0 })),
     ).toBe(true)
   })
 
-  it("đủ mốc mặc định 3/2 nhưng CHƯA đủ mốc server 7/5 → chưa đạt", () => {
+  it("2 lần nhất quán, dù có phủ quyết, vẫn chưa đạt", () => {
     expect(
-      datCongCap6(progress({ so_lan_xu_ly_nhat_quan: 3, so_lan_xu_ly_veto_nhat_quan: 2 })),
-    ).toBe(false)
-  })
-
-  it("thiếu số lần có phủ quyết → chưa đạt", () => {
-    expect(
-      datCongCap6(progress({ so_lan_xu_ly_nhat_quan: 9, so_lan_xu_ly_veto_nhat_quan: 4 })),
+      datCongCap6(progress({ so_lan_xu_ly_nhat_quan: 2, so_lan_xu_ly_veto_nhat_quan: 2 })),
     ).toBe(false)
   })
 
@@ -215,8 +191,8 @@ describe("datCongCap6 — thuần hành vi, KHÔNG đo lãi (spec §2/§3)", () 
     expect(
       datCongCap6(
         progress({
-          so_lan_xu_ly_nhat_quan: 7,
-          so_lan_xu_ly_veto_nhat_quan: 5,
+          so_lan_xu_ly_nhat_quan: 3,
+          so_lan_xu_ly_veto_nhat_quan: 0,
           tong_lai_lenh_cap6_pct: -42.5,
         }),
       ),

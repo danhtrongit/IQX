@@ -33,12 +33,6 @@ export const cap6Api = {
     return unwrap(res as never) as Cap6Progress
   },
 
-  /** PATCH /cap6/task { task_no } — idempotent recompute (all 3 nhiệm vụ are
-   * derived server-side from order_kehoach/order_ketso). */
-  markTask: async (taskNo: number): Promise<Cap6Progress> => {
-    const res = await api.patch("cap6/task", { json: { task_no: taskNo } }).json<unknown>()
-    return unwrap(res as never) as Cap6Progress
-  },
 
   /**
    * GET /cap6/goi-y?symbol= — the symbol's kiểu cổ phiếu + which lớp to
@@ -99,7 +93,7 @@ export const cap6Api = {
     return unwrap(res as never) as ThachThucCap6
   },
 
-  /** POST /cap6/graduate — only succeeds when 3/3 nhiệm vụ are done. */
+  /** POST /cap6/graduate — only succeeds at 3/3 consistent conflict-handling events. */
   graduate: async (): Promise<Cap6Progress> => {
     const res = await api.post("cap6/graduate").json<unknown>()
     return unwrap(res as never) as Cap6Progress

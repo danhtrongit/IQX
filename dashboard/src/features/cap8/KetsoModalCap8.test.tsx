@@ -15,7 +15,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 const {
   recordKetsoCap1Async,
   recordKetsoCap2Mutate,
-  markCap6Task,
   markCap7Task,
   markCap8Task,
   cap5HooksLoaded,
@@ -23,7 +22,6 @@ const {
 } = vi.hoisted(() => ({
   recordKetsoCap1Async: vi.fn(),
   recordKetsoCap2Mutate: vi.fn(),
-  markCap6Task: vi.fn(),
   markCap7Task: vi.fn(),
   markCap8Task: vi.fn(),
   // `true` NGAY KHI `@/features/cap5/hooks` được nạp lần đầu — cách duy nhất
@@ -43,9 +41,6 @@ vi.mock("@/features/cap5/hooks", () => {
   cap5HooksLoaded.value = true
   return {}
 })
-vi.mock("@/features/cap6/hooks", () => ({
-  useCompleteCap6Task: () => ({ mutate: markCap6Task }),
-}))
 vi.mock("@/features/cap7/hooks", () => ({
   useCompleteCap7Task: () => ({ mutate: markCap7Task }),
 }))
@@ -211,7 +206,6 @@ beforeEach(() => {
   recordKetsoCap1Async.mockReset()
   recordKetsoCap1Async.mockResolvedValue({ id: "ks1" })
   recordKetsoCap2Mutate.mockReset()
-  markCap6Task.mockReset()
   markCap7Task.mockReset()
   markCap8Task.mockReset()
   messageError.mockReset()
@@ -465,14 +459,13 @@ describe("lớp coach thứ 8 (spec §6)", () => {
 // ── Đóng kết sổ: chuỗi ghi + nhiệm vụ ② của Cấp 8 ───────────────────────────
 
 describe("đóng kết sổ", () => {
-  it("gọi PATCH /cap8/task cho nhiệm vụ ② (cùng Cấp 6/7)", async () => {
+  it("gọi PATCH /cap8/task cho nhiệm vụ ② cùng Cấp 7, không ghi nhiệm vụ Cấp 6", async () => {
     const onClose = vi.fn()
     renderModal({}, { onClose })
     fireEvent.click(closeButton())
     await waitFor(() => expect(onClose).toHaveBeenCalled())
     expect(markCap8Task).toHaveBeenCalledWith(2)
     expect(markCap7Task).toHaveBeenCalledWith(2)
-    expect(markCap6Task).toHaveBeenCalledWith(2)
   })
 
   it("ghi nhật ký (dùng chung nhật ký Cấp 7) + gọi onRecorded", async () => {

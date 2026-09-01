@@ -16,8 +16,7 @@ MỘT NHIỆM VỤ — THUẦN HÀNH VI, KHÔNG ĐO LÃI (spec §2/§3)
 ═══════════════════════════════════════════════════════════════════
 
     ① «Xử lý mâu thuẫn nhất quán» →
-         ``so_lan_xu_ly_nhat_quan >= 3`` VÀ ``so_lan_xu_ly_veto_nhat_quan >= 2``
-
+         ``so_lan_xu_ly_nhat_quan >= 3``
 "Xử lý nhất quán" = nhận định user tự đọc KHỚP hành động thật (spec §2/§11):
 
   · đọc **nghiêm trọng** → «Không mua» HOẶC mua NHỎ (khối lượng thận trọng) ✓
@@ -50,8 +49,8 @@ Cấp 6 dùng LẠI chính hằng số đó thay vì đặt ngưỡng riêng, đ
 giờ nói hai con số khác nhau về cùng một chữ.
 
 ★★★ **CỔNG KHÔNG BAO GIỜ ĐỌC LÃI.** ``tong_lai_lenh_cap6_pct`` được tính và
-đưa lên wire cho Kết sổ / Phân tích danh mục, nhưng ``graduate()`` chỉ nhìn hai
-bộ đếm hành vi (spec §2: "quyết định đúng vẫn có thể lỗ, và ngược lại").
+đưa lên wire cho Kết sổ / Phân tích danh mục, nhưng ``graduate()`` chỉ nhìn bộ
+đếm hành vi nhất quán (spec §2: "quyết định đúng vẫn có thể lỗ, và ngược lại").
 
 ═══════════════════════════════════════════════════════════════════
 ★ SERVER TÍNH LẠI, CLIENT CHỈ GỬI NHẬN ĐỊNH CỦA CHÍNH MÌNH
@@ -59,9 +58,8 @@ bộ đếm hành vi (spec §2: "quyết định đúng vẫn có thể lỗ, v�
 
 ``had_conflict`` / ``had_veto`` / ``veto_layers`` do SERVER suy lại từ
 ``ai_insight_history`` (``app.services.cap6.mau_thuan``) ở mọi lần ghi — TUYỆT
-ĐỐI không nhận từ client. Chúng nuôi thẳng cổng tốt nghiệp: client khai được
-"lệnh này có phủ quyết" là client tự cấp cho mình điều kiện lên cấp. Cấp 5 đã
-học đúng bài này với ``hunt_signal``.
+ĐỐI không nhận từ client. ``had_conflict`` quyết định một tình huống có đủ bằng
+chứng để đếm; hai cờ veto còn lại phục vụ phân tích mô tả.
 
 Cột DUY NHẤT lấy từ client là ``conflict_level`` — chỉ user mới biết mình đọc
 mâu thuẫn ở mức nào.
@@ -91,11 +89,11 @@ khi docstring khẳng định là không thể):
     gọi lại do mạng không bao giờ thành 409).
 
 ``POST /cap6/skip`` không cần khoá THỜI GIAN: không có lệnh, không có vị thế,
-không có kết quả nào để nhìn — bản thân nó là bằng chứng đứng ngoài. Nhưng chính
-vì nó miễn phí, cổng lên cấp phải đọc nó khắt khe hơn (xem
-``_nhat_quan_skip``/``_dem_nhat_quan``): chỉ đếm khi mã THẬT SỰ có mâu thuẫn, và
-gộp các cú bấm cùng mã cùng phiên thành MỘT tình huống. Không có hai luật đó thì
-ba cú bấm liên tiếp trên một mã chỉ có tin xấu đủ để tốt nghiệp Cấp 6.
+không có kết quả nào để nhìn — bản thân nó là bằng chứng đứng ngoài. Vì nó miễn
+phí, phép đếm vẫn phải khắt khe (xem ``_nhat_quan_skip``/``_dem_nhat_quan``):
+chỉ đếm khi mã THẬT SỰ có mâu thuẫn, và gộp các cú bấm cùng mã cùng phiên thành
+MỘT tình huống. Không có hai luật đó thì ba cú bấm liên tiếp trên một mã chỉ có
+tin xấu đủ để tốt nghiệp Cấp 6.
 """
 
 from __future__ import annotations
@@ -131,9 +129,8 @@ from app.services.cap6.mau_thuan import MauThuanResult, MauThuanSource
 # ══════════════════════════════════════════════════════
 
 #: Cổng tốt nghiệp (spec §2/§3) — THUẦN HÀNH VI. Lên wire ở ``/cap6/progress``
-#: để FE không phải hard-code lại hai con số này.
+#: để FE không phải hard-code mục tiêu.
 MUC_TIEU_NHAT_QUAN = 3
-MUC_TIEU_VETO = 2
 
 #: "Mua nhỏ (khối lượng thận trọng)" — dùng LẠI trần khẩu vị Thận trọng của Cấp
 #: 3 (xem docstring module). ``is`` với chính bảng của Cấp 5, không phải bản sao.
@@ -712,10 +709,7 @@ class Cap6Service:
     @staticmethod
     def _dat_nhiem_vu(progress: Cap6Progress) -> bool:
         """Cổng lên cấp — THUẦN HÀNH VI, không đọc lãi (spec §2/§3)."""
-        return (
-            progress.so_lan_xu_ly_nhat_quan >= MUC_TIEU_NHAT_QUAN
-            and progress.so_lan_xu_ly_veto_nhat_quan >= MUC_TIEU_VETO
-        )
+        return progress.so_lan_xu_ly_nhat_quan >= MUC_TIEU_NHAT_QUAN
 
     @classmethod
     def _progress_out(cls, progress: Cap6Progress) -> dict:
@@ -725,9 +719,8 @@ class Cap6Service:
             "entered_at": progress.entered_at,
             "so_lan_xu_ly_nhat_quan": progress.so_lan_xu_ly_nhat_quan,
             "so_lan_xu_ly_veto_nhat_quan": progress.so_lan_xu_ly_veto_nhat_quan,
-            # Lên wire để FE không hard-code hai ngưỡng này.
+            # Lên wire để FE không hard-code mục tiêu.
             "muc_tieu_nhat_quan": MUC_TIEU_NHAT_QUAN,
-            "muc_tieu_veto": MUC_TIEU_VETO,
             # ★ null = CHƯA có lệnh đã đóng. KHÔNG phải 0.
             "tong_lai_lenh_cap6_pct": progress.tong_lai_lenh_cap6_pct,
             "da_xem_tour_mauthuan": progress.da_xem_tour_mauthuan,
@@ -921,8 +914,7 @@ class Cap6Service:
         if not self._dat_nhiem_vu(progress):
             raise ConflictError(
                 "Chưa hoàn thành nhiệm vụ Cấp 6: cần "
-                f"{MUC_TIEU_NHAT_QUAN} lần xử lý mâu thuẫn nhất quán, trong đó "
-                f"{MUC_TIEU_VETO} lần gặp lớp phủ quyết rất xấu"
+                f"{MUC_TIEU_NHAT_QUAN} lần xử lý mâu thuẫn nhất quán"
             )
 
         if progress.graduated_at is None:

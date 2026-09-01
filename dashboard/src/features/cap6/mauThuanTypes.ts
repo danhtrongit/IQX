@@ -9,9 +9,8 @@ import type { Lop } from "@/features/cap4/types"
  * xem ghi chú ở đầu `types.ts`.
  *
  * Mọi số/nhãn ở đây do SERVER quyết. FE không có bảng phân loại lớp phủ quyết
- * riêng, không tự suy "bậc rất xấu", và KHÔNG hard-code mục tiêu nhiệm vụ:
- * `muc_tieu_nhat_quan`/`muc_tieu_veto` đi trên wire chính vì thế.
- */
+ * riêng, không tự suy "bậc rất xấu"; mục tiêu hành trình duy nhất
+ * `muc_tieu_nhat_quan` đi trên wire.
 
 /**
  * 4 mức nhận định mâu thuẫn user tự chọn (spec §6).

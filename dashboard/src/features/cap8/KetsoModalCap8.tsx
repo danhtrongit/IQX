@@ -38,7 +38,6 @@ import {
 import { splitEmphasis, type CoachSituationCap5 } from "@/features/cap5/coachTemplateCap5"
 import { COACH_CAP6_LABEL, type CoachSituationCap6 } from "@/features/cap6/coachTemplateCap6"
 import { lopNguocChieu, lopUngHo } from "@/features/cap6/doiChieu"
-import { useCompleteCap6Task } from "@/features/cap6/hooks"
 import { KIEU_ICON, type Lop } from "@/features/cap6/types"
 import {
   COACH_CAP7_LABEL,
@@ -345,7 +344,6 @@ export function KetsoModalCap8({
 }: KetsoModalCap8Props) {
   const recordKetsoCap1 = useRecordKetso()
   const recordKetsoCap2 = useRecordKetsoCap2()
-  const completeCap6Task = useCompleteCap6Task()
   const completeCap7Task = useCompleteCap7Task()
   const completeCap8Task = useCompleteCap8Task()
   const { record: recordCap7Trade } = useCap7TradeLog()
@@ -589,12 +587,9 @@ export function KetsoModalCap8({
     }
     recordKetsoCap2.mutate({ ...flags, order_id: orderId })
 
-    // Cấp 6/7/8 KHÔNG có endpoint kết sổ riêng: nhiệm vụ của chúng được suy ra
-    // server-side từ `order_kehoach` JOIN `order_ketso`. `PATCH /cap{6,7,8}/task`
-    // là cách kích hoạt lại phép tính đó NGAY (nhiệm vụ ② "Kết sổ đầu tiên" vừa đủ
-    // điều kiện) và đồng thời invalidate cache để tab Hành trình cập nhật. Cả ba
-    // đều idempotent và fire-and-forget: lỗi ở đây tuyệt đối không chặn việc đóng.
-    completeCap6Task.mutate(2)
+    // Cấp 7/8 vẫn kích hoạt phép tính nhiệm vụ server-side sau khi kết sổ. Cấp 6
+    // không cần tín hiệu này: tiến độ của nó chỉ dựa trên các quyết định mâu thuẫn
+    // đã được server ghi khi đặt kế hoạch hoặc đứng ngoài.
     completeCap7Task.mutate(2)
     completeCap8Task.mutate(2)
 

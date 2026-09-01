@@ -165,7 +165,7 @@ class Cap6Progress(UUIDMixin, TimestampMixin, Base):
     ``iqx-cap6-hanhtrinh.html``: header ``0/1``):
 
         ① «Xử lý mâu thuẫn nhất quán» →
-             ``so_lan_xu_ly_nhat_quan >= 3`` VÀ ``so_lan_xu_ly_veto_nhat_quan >= 2``
+             ``so_lan_xu_ly_nhat_quan >= 3``
 
     ★ **Vì sao bỏ lãi khỏi cổng** (spec §2, nguyên văn): quyết định đúng vẫn có
     thể lỗ và ngược lại; lãi phụ thuộc thị trường chứ không phải kỹ năng. Giữ
@@ -173,10 +173,11 @@ class Cap6Progress(UUIDMixin, TimestampMixin, Base):
     vẫn được tính và hiển thị ở Kết sổ / Phân tích danh mục để user tự học —
     nhưng ``graduate()`` KHÔNG BAO GIỜ đọc nó.
 
-    Cả hai con số đều được **tính lại server-side ở mọi lần đọc** từ
-    ``order_kehoach`` + ``cap6_skip``; client không bao giờ gửi lên. Chúng là
-    ``NOT NULL DEFAULT 0`` vì 0 ở đây là số THẬT (đếm hàng trong bảng ta sở
-    hữu), không phải "chưa biết".
+    Các số hành vi được **tính lại server-side ở mọi lần đọc** từ
+    ``order_kehoach`` + ``cap6_skip``; client không bao giờ gửi lên.
+    ``so_lan_xu_ly_veto_nhat_quan`` là thống kê mô tả, không phải điều kiện.
+    Chúng là ``NOT NULL DEFAULT 0`` vì 0 ở đây là số THẬT (đếm hàng trong bảng
+    ta sở hữu), không phải "chưa biết".
     """
 
     __tablename__ = "cap6_progress"

@@ -39,15 +39,12 @@ export interface Cap6Progress {
   /** Trong đó, số lần lệnh còn có lớp phủ quyết (Tin tức/Nội bộ) ở bậc rất xấu. */
   so_lan_xu_ly_veto_nhat_quan: number
   /**
-   * ★★ MỤC TIÊU ĐỌC SERVER, KHÔNG HARD-CODE 3/2.
+   * Mục tiêu duy nhất do server công bố cho hành trình Cấp 6.
    *
-   * Đợt Cấp 5 đã dính đúng lỗi ngược lại: hàm trả hằng số mặc định trong khi
-   * server gửi mục tiêu thật, và test không bắt được vì fixture để trường đó
-   * `undefined` — bằng đúng giá trị default. Fixture của các bài Cấp 6 vì vậy
-   * BẮT BUỘC dùng số KHÁC default.
+   * Giá trị hiện hành cố định là 3, nhưng client vẫn hiển thị đúng hợp đồng
+   * response thay vì tự nhận một thành tích từ dữ liệu cục bộ.
    */
   muc_tieu_nhat_quan: number
-  muc_tieu_veto: number
   /**
    * Σ(lãi/lỗ VND mọi lệnh đã đóng sau khi vào Cấp 6) ÷ Σ(vốn các lệnh đó).
    *
@@ -72,12 +69,6 @@ export interface Cap6Progress {
   id?: string
   /** @deprecated di sản «Đối chiếu» */
   user_id?: string
-  /** @deprecated di sản «Đối chiếu» */
-  task_1_done_at?: string | null
-  /** @deprecated di sản «Đối chiếu» */
-  task_2_done_at?: string | null
-  /** @deprecated di sản «Đối chiếu» */
-  task_3_done_at?: string | null
   /** @deprecated di sản «Đối chiếu» — ③ đk 1. */
   so_lenh_doi_chieu?: number
   /** @deprecated di sản «Đối chiếu» — ③ đk 2. */
@@ -273,15 +264,8 @@ export const KIEU_ICON: Record<KieuCoPhieu, string> = {
   dau_co_nho: "🎲",
 }
 
-/** Số lệnh đối chiếu cần có để xét nhiệm vụ ③ (spec §2③). */
-export const TARGET_LENH_DOI_CHIEU = 15
-/** Số kiểu cổ phiếu khác nhau cần gặp (spec §2③). */
-export const TARGET_KIEU_DA_GAP = 3
-
-/** Số nhiệm vụ Cấp 6 đã xong (mirrors `cap5/types.ts#countCap5TasksDone`). */
+/** Số nhiệm vụ Cấp 6 đã xong — cổng duy nhất là 3 lần xử lý nhất quán. */
 export function countCap6TasksDone(progress: Cap6Progress | null | undefined): number {
   if (!progress) return 0
-  return [progress.task_1_done_at, progress.task_2_done_at, progress.task_3_done_at].filter(
-    (t) => t != null,
-  ).length
+  return progress.so_lan_xu_ly_nhat_quan >= progress.muc_tieu_nhat_quan ? 1 : 0
 }

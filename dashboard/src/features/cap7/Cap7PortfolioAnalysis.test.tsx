@@ -170,20 +170,15 @@ function cap5Progress(): Cap5Progress {
 
 function cap6Progress(): Cap6Progress {
   return {
-    // ★ Sáu trường của Cấp 6 «Bậc thầy» (wire mới). Mốc 7/5 KHÁC mặc định 3/2.
-    so_lan_xu_ly_nhat_quan: 7,
+    so_lan_xu_ly_nhat_quan: 3,
     so_lan_xu_ly_veto_nhat_quan: 5,
-    muc_tieu_nhat_quan: 7,
-    muc_tieu_veto: 5,
+    muc_tieu_nhat_quan: 3,
     tong_lai_lenh_cap6_pct: null,
     da_xem_tour_mauthuan: true,
     // ── di sản «Đối chiếu» (Cấp 7 còn truyền type này xuyên qua) ──
     id: "c6p",
     user_id: "u1",
     entered_at: "2026-07-02T00:00:00Z",
-    task_1_done_at: null,
-    task_2_done_at: null,
-    task_3_done_at: null,
     so_lenh_doi_chieu: 11,
     so_kieu_da_gap: 2,
     ty_le_thang_khop: 70,

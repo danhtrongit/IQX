@@ -16,7 +16,6 @@ import { expectRendersNothing } from "@/__tests__/textGuards"
 const {
   recordKetsoCap1Async,
   recordKetsoCap2Mutate,
-  markCap6Task,
   markCap7Task,
   cap5HooksLoaded,
   kehoachCap7,
@@ -25,7 +24,6 @@ const {
 } = vi.hoisted(() => ({
   recordKetsoCap1Async: vi.fn(),
   recordKetsoCap2Mutate: vi.fn(),
-  markCap6Task: vi.fn(),
   markCap7Task: vi.fn(),
   // `true` NGAY KHI `@/features/cap5/hooks` được nạp lần đầu — cách duy nhất
   // khẳng định `useVerdictGoiY`/`useRecordKetsoCap5` đã bị gỡ HẲN khỏi cây import
@@ -49,7 +47,6 @@ vi.mock("@/features/cap5/hooks", () => {
   return {}
 })
 vi.mock("@/features/cap6/hooks", () => ({
-  useCompleteCap6Task: () => ({ mutate: markCap6Task }),
   useKehoachCap6: (...args: unknown[]) => {
     kehoachCap6.calls.push(args)
     return kehoachCap6.current
@@ -267,7 +264,6 @@ beforeEach(() => {
   recordKetsoCap1Async.mockReset()
   recordKetsoCap1Async.mockResolvedValue({ id: "ks1" })
   recordKetsoCap2Mutate.mockReset()
-  markCap6Task.mockReset()
   markCap7Task.mockReset()
   messageError.mockReset()
   kehoachCap7.current = { data: undefined, isPending: false, isError: false }
@@ -355,7 +351,7 @@ describe("KetsoModalCap7 — cổng phân loại 4 ô của Cấp 5 ĐÃ NGHỈ 
     expect(cap5HooksLoaded.value).toBe(false)
   })
 
-  it("nút đóng KHÔNG bị khoá: bấm là POST cấp 1 → 2 + recompute Cấp 6 và Cấp 7", async () => {
+  it("nút đóng KHÔNG bị khoá: bấm là POST cấp 1 → 2 + recompute Cấp 7", async () => {
     const onClose = vi.fn()
     renderModal({}, { onClose })
     expect(closeButton()).not.toBeDisabled()
@@ -363,7 +359,6 @@ describe("KetsoModalCap7 — cổng phân loại 4 ô của Cấp 5 ĐÃ NGHỈ 
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
     expect(recordKetsoCap1Async).toHaveBeenCalledWith({ order_id: "order-96", cam_xuc: null })
     expect(recordKetsoCap2Mutate).toHaveBeenCalled()
-    expect(markCap6Task).toHaveBeenCalledWith(2)
     expect(markCap7Task).toHaveBeenCalledWith(2)
   })
 

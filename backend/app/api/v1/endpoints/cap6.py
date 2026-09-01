@@ -41,10 +41,11 @@ router = APIRouter(prefix="/cap6", tags=["Cấp 6"])
 async def get_progress(user: CurrentUser, db: DBSession) -> Cap6ProgressOut | None:
     """Tiến trình Cấp 6 của user hiện tại (hoặc null nếu chưa vào cấp).
 
-    Hai bộ đếm hành vi được tính lại server-side ở đây từ ``order_kehoach`` +
-    ``cap6_skip``. ★ ``tong_lai_lenh_cap6_pct = null`` nghĩa là CHƯA có lệnh
-    Cấp-6 nào đóng — KHÔNG phải "hoà vốn 0%"; nó chỉ để hiển thị và không bao
-    giờ là cổng lên cấp (spec §2).
+    Bộ đếm hành vi được tính lại server-side từ ``order_kehoach`` +
+    ``cap6_skip``. Chỉ ``so_lan_xu_ly_nhat_quan`` với mục tiêu 3 là cổng; thống
+    kê veto chỉ để phân tích. ``tong_lai_lenh_cap6_pct = null`` nghĩa là CHƯA có
+    lệnh Cấp-6 nào đóng — KHÔNG phải "hoà vốn 0%"; nó chỉ để hiển thị và không
+    bao giờ là cổng lên cấp (spec §2).
     """
     svc = Cap6Service(db)
     result = await svc.get_progress(user.id)
@@ -167,8 +168,8 @@ async def phan_tich(user: CurrentUser, db: DBSession) -> PhanTichOut:
 async def graduate(user: CurrentUser, db: DBSession) -> Cap6ProgressOut:
     """Tốt nghiệp Cấp 6 — 1/1 nhiệm vụ, THUẦN HÀNH VI (spec §2/§3).
 
-    ★ Không có bất kỳ điều kiện lãi nào, kể cả điều kiện mềm: quyết định đúng
-    vẫn có thể lỗ và ngược lại.
+    ★ Cần đúng ba lần xử lý mâu thuẫn nhất quán; không có điều kiện lãi hay
+    số lần gặp lớp phủ quyết.
     """
     svc = Cap6Service(db)
     return Cap6ProgressOut(**await svc.graduate(user.id))

@@ -68,7 +68,6 @@ from app.services.cap6.service import (
     CUA_SO_CHOT_NHAN_DINH,
     MIN_LENH_TY_LE_THANG,
     MUC_TIEU_NHAT_QUAN,
-    MUC_TIEU_VETO,
     NGUONG_MUA_NHO_PCT,
     Cap6Service,
 )
@@ -596,7 +595,7 @@ async def test_progress_wire_shape_and_tong_lai_null_not_zero(db_session, test_u
     assert out["so_lan_xu_ly_nhat_quan"] == 0
     assert out["so_lan_xu_ly_veto_nhat_quan"] == 0
     assert out["muc_tieu_nhat_quan"] == MUC_TIEU_NHAT_QUAN == 3
-    assert out["muc_tieu_veto"] == MUC_TIEU_VETO == 2
+    assert "muc_tieu_veto" not in out
     assert out["tong_lai_lenh_cap6_pct"] is None  # ★ KHÔNG phải 0.0
     assert out["da_xem_tour_mauthuan"] is False
     assert out["dat_nhiem_vu"] is False
@@ -1088,52 +1087,42 @@ async def test_phu_quyet_bac_2_khong_nuoi_o_veto(db_session, test_user):
 
 
 async def _dat_cong(db_session, services, account, user_id, *, win: bool = True):
-    """3 lần nhất quán, trong đó 2 lần có phủ quyết kích hoạt."""
-    await _lenh_mau_thuan(
-        db_session, services, account.id, user_id,
-        symbol="VET1", payload=_P_VETO, muc="nghiem", pct_von=5.0, close=True, win=win,
-    )
-    await _lenh_mau_thuan(
-        db_session, services, account.id, user_id,
-        symbol="VET2", payload=_P_VETO, muc="nghiem", pct_von=5.0, close=True, win=win,
-    )
-    await _lenh_mau_thuan(
-        db_session, services, account.id, user_id,
-        symbol="NHE1", payload=_P_CONFLICT, muc="nhe", pct_von=20.0, close=True, win=win,
-    )
+    """Ba lần xử lý nhất quán không cần sự kiện phủ quyết."""
+    for symbol in ("NHE1", "NHE2", "NHE3"):
+        await _lenh_mau_thuan(
+            db_session, services, account.id, user_id,
+            symbol=symbol, payload=_P_CONFLICT, muc="nhe", pct_von=20.0, close=True, win=win,
+        )
 
 
 @pytest.mark.asyncio
-async def test_graduate_can_du_ca_hai_nguong(db_session, test_user):
+async def test_graduate_at_three_consistent_events_without_veto(db_session, test_user):
     services, account = await _enter_cap6(db_session, test_user.id)
+    await _dat_cong(db_session, services, account, test_user.id)
 
-    # 3 lần nhất quán nhưng CHỈ 1 lần có phủ quyết ⇒ chưa đủ.
-    await _lenh_mau_thuan(
-        db_session, services, account.id, test_user.id,
-        symbol="V1", payload=_P_VETO, muc="nghiem", pct_von=5.0,
-    )
-    await _lenh_mau_thuan(
-        db_session, services, account.id, test_user.id,
-        symbol="N1", payload=_P_CONFLICT, muc="nhe", pct_von=20.0,
-    )
-    await _lenh_mau_thuan(
-        db_session, services, account.id, test_user.id,
-        symbol="N2", payload=_P_CONFLICT, muc="nhe", pct_von=20.0,
-    )
-    prog = await services["cap6"].get_progress(test_user.id)
-    assert (prog["so_lan_xu_ly_nhat_quan"], prog["so_lan_xu_ly_veto_nhat_quan"]) == (3, 1)
-    with pytest.raises(ConflictError, match="phủ quyết"):
-        await services["cap6"].graduate(test_user.id)
+    progress = await services["cap6"].get_progress(test_user.id)
+    assert (progress["so_lan_xu_ly_nhat_quan"], progress["so_lan_xu_ly_veto_nhat_quan"]) == (3, 0)
+    assert progress["dat_nhiem_vu"] is True
 
-    # Thêm một lần có phủ quyết ⇒ đủ 3 và 2.
-    await _lenh_mau_thuan(
-        db_session, services, account.id, test_user.id,
-        symbol="V2", payload=_P_VETO, muc="nghiem", pct_von=5.0,
-    )
     out = await services["cap6"].graduate(test_user.id)
-    assert out["dat_nhiem_vu"] is True
     assert out["graduated_at"] is not None
     assert out["time_to_graduate_hours"] is not None
+
+
+@pytest.mark.asyncio
+async def test_graduate_rejects_two_consistent_events_despite_veto(db_session, test_user):
+    services, account = await _enter_cap6(db_session, test_user.id)
+    for symbol in ("VET1", "VET2"):
+        await _lenh_mau_thuan(
+            db_session, services, account.id, test_user.id,
+            symbol=symbol, payload=_P_VETO, muc="nghiem", pct_von=5.0,
+        )
+
+    progress = await services["cap6"].get_progress(test_user.id)
+    assert (progress["so_lan_xu_ly_nhat_quan"], progress["so_lan_xu_ly_veto_nhat_quan"]) == (2, 2)
+    assert progress["dat_nhiem_vu"] is False
+    with pytest.raises(ConflictError, match="3 lần xử lý mâu thuẫn nhất quán"):
+        await services["cap6"].graduate(test_user.id)
 
 
 @pytest.mark.asyncio
@@ -1472,7 +1461,7 @@ async def test_cap6_endpoints_wired_and_free(client, db_session, test_user):
     body = r.json()
     assert body["so_lan_xu_ly_nhat_quan"] == 0
     assert body["muc_tieu_nhat_quan"] == 3
-    assert body["muc_tieu_veto"] == 2
+    assert "muc_tieu_veto" not in body
     assert body["tong_lai_lenh_cap6_pct"] is None
 
     r = await client.post("/api/v1/cap6/graduate", headers=headers)

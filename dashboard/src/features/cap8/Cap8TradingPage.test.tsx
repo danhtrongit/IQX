@@ -21,7 +21,6 @@ const {
   useDiemKyLuatMock,
   recordKetsoCap1Async,
   recordKetsoCap2Mutate,
-  completeCap6TaskMutate,
   completeCap7TaskMutate,
   completeCap8TaskMutate,
   graduateCap8Mutate,
@@ -47,7 +46,6 @@ const {
   useDiemKyLuatMock: vi.fn(),
   recordKetsoCap1Async: vi.fn(),
   recordKetsoCap2Mutate: vi.fn(),
-  completeCap6TaskMutate: vi.fn(),
   completeCap7TaskMutate: vi.fn(),
   completeCap8TaskMutate: vi.fn(),
   graduateCap8Mutate: vi.fn(),
@@ -431,7 +429,6 @@ vi.mock("@/features/cap5/tradeLogCap5", async (importOriginal) => {
 })
 vi.mock("@/features/cap6/hooks", () => ({
   useCap6Progress: () => ({ data: null }),
-  useCompleteCap6Task: () => ({ mutate: completeCap6TaskMutate, isPending: false }),
 }))
 vi.mock("@/features/cap6/tradeLogCap6", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/features/cap6/tradeLogCap6")>()
@@ -643,7 +640,6 @@ describe("Cap8TradingPage", () => {
     recordKetsoCap1Async.mockReset()
     recordKetsoCap1Async.mockResolvedValue({ id: "ks1" })
     recordKetsoCap2Mutate.mockReset()
-    completeCap6TaskMutate.mockReset()
     completeCap7TaskMutate.mockReset()
     completeCap8TaskMutate.mockReset()
     graduateCap8Mutate.mockReset()

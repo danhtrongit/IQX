@@ -50,14 +50,6 @@ export function useEnterCap6() {
   })
 }
 
-/** PATCH /cap6/task — idempotent recompute of the 3 nhiệm vụ. */
-export function useCompleteCap6Task() {
-  const invalidate = useInvalidateCap6()
-  return useMutation<Cap6Progress, unknown, number>({
-    mutationFn: (taskNo) => cap6Api.markTask(taskNo),
-    onSuccess: invalidate,
-  })
-}
 
 /**
  * GET /cap6/goi-y?symbol= — the kiểu cổ phiếu + its trọng số gợi ý + the "vì

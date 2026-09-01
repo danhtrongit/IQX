@@ -39,7 +39,7 @@ import { splitEmphasis, type CoachSituationCap5 } from "@/features/cap5/coachTem
 import type { KetsoDataCap5 } from "@/features/cap5/KetsoModalCap5"
 import { composeCoachCap6, type CoachSituationCap6 } from "./coachTemplateCap6"
 import { useCap6Events } from "./Cap6Context"
-import { useCompleteCap6Task, useKehoachCap6, useKehoachMauThuanCap6 } from "./hooks"
+import { useKehoachCap6, useKehoachMauThuanCap6 } from "./hooks"
 import {
   COACH_NHAT_QUAN_CAP6,
   NhanDinhKetsoBlock,
@@ -312,7 +312,6 @@ export function KetsoModalCap6({
   const { isCap6Active } = useCap6Events()
   const recordKetsoCap1 = useRecordKetso()
   const recordKetsoCap2 = useRecordKetsoCap2()
-  const completeCap6Task = useCompleteCap6Task()
   const { record: recordCap6Trade } = useCap6TradeLog()
   const [emotion, setEmotion] = useState<CamXuc | null>(null)
   const [displayPct, setDisplayPct] = useState(0)
@@ -565,12 +564,6 @@ export function KetsoModalCap6({
     // Cấp 2 (7 cờ kỷ luật) — fire-and-forget đúng như Cấp 2-5 làm.
     recordKetsoCap2.mutate({ ...flags, order_id: orderId })
 
-    // Cấp 6 KHÔNG có endpoint kết sổ riêng: cả 3 nhiệm vụ được suy ra server-side
-    // từ `order_kehoach` JOIN `order_ketso`. `PATCH /cap6/task` là cách kích hoạt
-    // lại phép tính đó NGAY (nhiệm vụ ② "Kết sổ đầu Cấp 6" vừa đủ điều kiện) và
-    // đồng thời invalidate cache Cấp 6 để tab Hành trình cập nhật. Idempotent, và
-    // fire-and-forget: một lỗi ở đây tuyệt đối không được chặn việc đóng modal.
-    completeCap6Task.mutate(2)
 
     const record = buildRecord()
     recordCap6Trade(record)

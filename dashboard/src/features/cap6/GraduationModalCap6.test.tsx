@@ -6,22 +6,8 @@ import type { Cap6Progress } from "./types"
 /**
  * Màn tốt nghiệp Cấp 6 «Bậc thầy» (spec §3).
  *
- * Bốn luật bất di bất dịch được canh ở đây (cả bốn đều đã bị vi phạm THẬT trên
- * repo này ở các cấp trước):
- *   1. **KHÔNG khoe lãi.** Spec §3 ghi dòng phụ là "lãi từ lệnh mâu thuẫn +X%"
- *      nhưng §2 bỏ lãi HOÀN TOÀN khỏi cổng và §11 ghi `tong_lai_lenh_cap6_pct`
- *      "CHỈ để hiển thị ở Kết sổ/Phân tích". Dòng phụ dùng số HÀNH VI.
- *   2. **CTA không bao giờ `disabled` kiểu "sắp ra mắt".** Modal
- *      `closable={false}` và chỉ unmount khi có `graduated_at` ⇒ nút tắt cứng
- *      nhốt vĩnh viễn user đã đủ điều kiện. Chỉ `isPending` được phép tắt nút.
- *   3. **Hai phía của trần.** Khối 3 + dòng dưới CTA + việc có gọi
- *      `POST /cap7/enter` đều gắn theo `CAP_MAX_ENABLED >= 7`.
- *   4. **Mốc nhiệm vụ ĐỌC SERVER**, không hard-code 3/2.
- *
- * ★★ Arco `Modal` vẽ vào PORTAL ở `document.body`, nên `container.textContent`
- * là chuỗi RỖNG và mọi `not.toContain` trên nó xanh vô điều kiện. Mọi bài phủ
- * định ở đây soi `document.body.textContent` VÀ có một `getByTestId` dương tính
- * bên cạnh, chứng minh modal render thật.
+ * Cổng duy nhất là ba lần xử lý nhất quán. Lãi/lỗ, tour, và số sự kiện có phủ
+ * quyết đều không thay đổi khả năng mở màn.
  */
 const { useCap6ProgressMock, graduateMutate, enterCap7Mutate, capFlags, pending } = vi.hoisted(
   () => ({
@@ -53,19 +39,12 @@ vi.mock("@/features/cap1/capFlags", () => ({
 
 import { GraduationModalCap6, isGraduationReadyCap6 } from "./GraduationModalCap6"
 
-/**
- * ★★ MỐC 7/5 — **KHÁC** mặc định 3/2 của `nhanDinhCap6.ts`.
- *
- * Fixture bằng đúng default sẽ không phân biệt được "đọc server" với "trả hằng
- * số" (đúng lỗi xanh giả đợt Cấp 5, nơi trường mục tiêu để `undefined`).
- */
 function makeProgress(overrides: Partial<Cap6Progress> = {}): Cap6Progress {
   return {
     entered_at: "2026-08-20T00:00:00Z",
-    so_lan_xu_ly_nhat_quan: 7,
-    so_lan_xu_ly_veto_nhat_quan: 5,
-    muc_tieu_nhat_quan: 7,
-    muc_tieu_veto: 5,
+    so_lan_xu_ly_nhat_quan: 3,
+    so_lan_xu_ly_veto_nhat_quan: 0,
+    muc_tieu_nhat_quan: 3,
     tong_lai_lenh_cap6_pct: 12.4,
     da_xem_tour_mauthuan: true,
     graduated_at: null,
@@ -83,20 +62,16 @@ beforeEach(() => {
 })
 
 describe("isGraduationReadyCap6 — thuần hành vi, KHÔNG đo lãi (spec §2/§3)", () => {
-  it("đủ hai mốc của SERVER → mở", () => {
+  it("3 lần nhất quán, không có phủ quyết → mở", () => {
     expect(isGraduationReadyCap6(makeProgress())).toBe(true)
   })
 
-  it("đủ mốc mặc định 3/2 nhưng CHƯA đủ mốc server 7/5 → không mở", () => {
+  it("2 lần nhất quán, dù có phủ quyết → không mở", () => {
     expect(
       isGraduationReadyCap6(
-        makeProgress({ so_lan_xu_ly_nhat_quan: 3, so_lan_xu_ly_veto_nhat_quan: 2 }),
+        makeProgress({ so_lan_xu_ly_nhat_quan: 2, so_lan_xu_ly_veto_nhat_quan: 2 }),
       ),
     ).toBe(false)
-  })
-
-  it("thiếu số lần có phủ quyết → không mở", () => {
-    expect(isGraduationReadyCap6(makeProgress({ so_lan_xu_ly_veto_nhat_quan: 4 }))).toBe(false)
   })
 
   it("★ lỗ nặng vẫn mở — lãi KHÔNG phải cổng", () => {
@@ -120,13 +95,11 @@ describe("isGraduationReadyCap6 — thuần hành vi, KHÔNG đo lãi (spec §2/
 })
 
 describe("GraduationModalCap6 — dòng phụ dùng SỐ HÀNH VI, không khoe lãi", () => {
-  it("in hai con số hành vi kèm mốc của SERVER (7/5, không phải 3/2)", () => {
+  it("in một bộ đếm 3/3 lần xử lý nhất quán", () => {
     render(<GraduationModalCap6 />)
     const sub = screen.getByTestId("cap6-grad-sub")
-    expect(sub).toHaveTextContent("7/7 lần xử lý nhất quán")
-    expect(sub).toHaveTextContent("5/5 lần có phủ quyết")
-    expect(sub.textContent).not.toContain("3")
-    expect(sub.textContent).not.toContain("2")
+    expect(sub).toHaveTextContent("3/3 lần xử lý nhất quán")
+    expect(sub.textContent).not.toContain("phủ quyết")
   })
 
   it("★ KHÔNG một chữ nào về lãi/lợi nhuận/% lãi trên toàn màn (spec §2/§11)", () => {
@@ -258,7 +231,7 @@ describe("GraduationModalCap6 — CTA không bao giờ nhốt user", () => {
 describe("GraduationModalCap6 — chưa đủ điều kiện thì KHÔNG vẽ gì", () => {
   it("hồ sơ chưa đạt → không có modal, không có chữ nào của màn tốt nghiệp", () => {
     useCap6ProgressMock.mockReturnValue({
-      data: makeProgress({ so_lan_xu_ly_nhat_quan: 1, so_lan_xu_ly_veto_nhat_quan: 0 }),
+      data: makeProgress({ so_lan_xu_ly_nhat_quan: 2, so_lan_xu_ly_veto_nhat_quan: 2 }),
     })
     render(<GraduationModalCap6 />)
     // ★ Neo dương tính đảo chiều: chứng minh chuỗi này CÓ xuất hiện khi đạt.

@@ -19,7 +19,6 @@ const {
   useDiemKyLuatMock,
   recordKetsoCap1Async,
   recordKetsoCap2Mutate,
-  completeCap6TaskMutate,
   completeCap7TaskMutate,
   graduateCap7Mutate,
   enterCap7Mutate,
@@ -45,7 +44,6 @@ const {
   useDiemKyLuatMock: vi.fn(),
   recordKetsoCap1Async: vi.fn(),
   recordKetsoCap2Mutate: vi.fn(),
-  completeCap6TaskMutate: vi.fn(),
   completeCap7TaskMutate: vi.fn(),
   graduateCap7Mutate: vi.fn(),
   enterCap7Mutate: vi.fn(),
@@ -361,7 +359,6 @@ vi.mock("@/features/cap5/tradeLogCap5", async (importOriginal) => {
 })
 vi.mock("@/features/cap6/hooks", () => ({
   useCap6Progress: () => ({ data: null }),
-  useCompleteCap6Task: () => ({ mutate: completeCap6TaskMutate, isPending: false }),
   // `KetsoModalCap7` đọc lại khối Đối chiếu của lệnh qua hook này — không dữ
   // liệu ở đây → modal dùng đúng khối trang này dựng (thứ các test dưới kiểm).
   useKehoachCap6: () => ({ data: undefined, isPending: false, isError: false }),
@@ -583,7 +580,6 @@ describe("Cap7TradingPage", () => {
     recordKetsoCap1Async.mockReset()
     recordKetsoCap1Async.mockResolvedValue({ id: "ks1" })
     recordKetsoCap2Mutate.mockReset()
-    completeCap6TaskMutate.mockReset()
     completeCap7TaskMutate.mockReset()
     graduateCap7Mutate.mockReset()
     enterCap7Mutate.mockReset()

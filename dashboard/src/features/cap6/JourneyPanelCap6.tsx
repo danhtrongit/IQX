@@ -6,7 +6,7 @@ import { ModeBadge } from "@/features/cap0/ModeBadge"
 import { CAP_MAX_ENABLED } from "@/features/cap1/capFlags"
 import { useCap6Events } from "./Cap6Context"
 import { useCap6Progress } from "./hooks"
-import { datCongCap6, mucTieuNhatQuan, mucTieuVeto } from "./nhanDinhCap6"
+import { datCongCap6, mucTieuNhatQuan } from "./nhanDinhCap6"
 import type { Cap6Progress } from "./types"
 import "./cap6-journey.css"
 
@@ -55,19 +55,8 @@ export function taskStateCap6(no: number, progress: Cap6Progress | null | undefi
  * 6 (mockup `iqx-cap6-hanhtrinh.html`): thẻ cấp + checklist header + ĐÚNG MỘT
  * nhiệm vụ + hộp mục tiêu.
  *
- * ★★ **BỎ HẲN hai widget nổi bật của bản «Đối chiếu» cũ** ("Đối chiếu theo kiểu"
- * + "Thách thức Đối chiếu"): mockup Cấp 6 KHÔNG vẽ widget nào giữa thẻ cấp và
- * checklist, và cả hai widget đó đọc `GET /cap6/thach-thuc` — một endpoint của
- * nhiệm vụ ③ cũ không còn tồn tại ở Cấp 6 mới.
- *
- * ★ **Hai con số, không phải một.** Mockup chỉ vẽ một dòng `1/3 lần`, nhưng cổng
- * thật có HAI mốc (`so_lan_xu_ly_nhat_quan` ≥ mục tiêu VÀ
- * `so_lan_xu_ly_veto_nhat_quan` ≥ mục tiêu). Chỉ hiện một dòng sẽ để user đủ
- * 3/3 mà vẫn không tốt nghiệp và không hiểu vì sao (§C12c). Dòng thứ hai vì thế
- * được thêm, ngay dưới dòng của mockup.
- *
- * ★ Mọi mốc ĐỌC SERVER (`muc_tieu_nhat_quan`/`muc_tieu_veto`), không hard-code
- * 3/2 — kể cả trong tên nhiệm vụ.
+ * Mục tiêu duy nhất là ba lần xử lý mâu thuẫn nhất quán. `so_lan_xu_ly_veto_nhat_quan`
+ * thuộc Phân tích danh mục, không hiện như một cổng hoặc bộ đếm tiến độ.
  *
  * Self-contained: gọi `useCap6Progress` với `isCap6Active` nên KHÔNG query gì khi
  * ở ngoài `Cap6Provider` (`SidebarProvider` là singleton app-root, dùng chung với
@@ -89,7 +78,7 @@ export function JourneyPanelCap6() {
   const chipText = progress
     ? `● Đọc mâu thuẫn đúng, hành động tương xứng · ${fmtInt(
         progress.so_lan_xu_ly_nhat_quan,
-      )} lần nhất quán · ${fmtInt(progress.so_lan_xu_ly_veto_nhat_quan)} lần có phủ quyết`
+      )} lần nhất quán`
     : "● Đọc mâu thuẫn đúng, hành động tương xứng"
 
   return (
@@ -128,22 +117,14 @@ export function JourneyPanelCap6() {
           <div className="cap0-checklist-body">
             <span className="cap0-checklist-name">{taskName(progress)}</span>
             <div className="cap0-checklist-desc">{TASK_DESC}</div>
-            {/* Dòng của mockup: số lần xử lý nhất quán. */}
             <div className="cap6-journey-prog" data-testid="cap6-journey-prog-nhatquan">
               {`${fmtInt(progress?.so_lan_xu_ly_nhat_quan ?? 0)}/${fmtInt(
                 mucTieuNhatQuan(progress),
               )} lần xử lý nhất quán`}
             </div>
-            {/* ★ Dòng THÊM: mốc thứ hai của cổng — không hiện là để user đủ mốc
-                thứ nhất mà vẫn không tốt nghiệp và không hiểu vì sao. */}
-            <div className="cap6-journey-prog" data-testid="cap6-journey-prog-veto">
-              {`${fmtInt(progress?.so_lan_xu_ly_veto_nhat_quan ?? 0)}/${fmtInt(
-                mucTieuVeto(progress),
-              )} lần trong đó có lớp phủ quyết rất xấu`}
-            </div>
             <p className="cap6-journey-why" data-testid="cap6-journey-why">
               {
-                "Cả hai mốc phải đạt cùng lúc. «Xử lý nhất quán» = mức mâu thuẫn bạn tự đọc khớp với hành động thật: đọc nghiêm trọng thì mua nhỏ hoặc đứng ngoài, đọc nhẹ thì vào bình thường. Hai con số này do hệ thống chốt từ chính các lệnh của bạn — Cấp 6 KHÔNG đo lãi."
+                "«Xử lý nhất quán» = mức mâu thuẫn bạn tự đọc khớp với hành động thật: đọc nghiêm trọng thì mua nhỏ hoặc đứng ngoài, đọc nhẹ thì vào bình thường. Số lần này do hệ thống chốt từ chính các lệnh của bạn — Cấp 6 KHÔNG đo lãi."
               }
             </p>
             {state === "active" && (

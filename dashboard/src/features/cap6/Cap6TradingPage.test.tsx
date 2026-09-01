@@ -17,7 +17,6 @@ const {
   useDiemKyLuatMock,
   recordKetsoCap1Async,
   recordKetsoCap2Mutate,
-  completeCap6TaskMutate,
   graduateCap6Mutate,
   enterCap6Mutate,
   enterCap7Mutate,
@@ -40,7 +39,6 @@ const {
   useDiemKyLuatMock: vi.fn(),
   recordKetsoCap1Async: vi.fn(),
   recordKetsoCap2Mutate: vi.fn(),
-  completeCap6TaskMutate: vi.fn(),
   graduateCap6Mutate: vi.fn(),
   enterCap6Mutate: vi.fn(),
   enterCap7Mutate: vi.fn(),
@@ -345,7 +343,6 @@ vi.mock("@/features/cap5/tradeLogCap5", async (importOriginal) => {
 vi.mock("./hooks", () => ({
   useCap6Progress: (...a: unknown[]) => useCap6ProgressMock(...a),
   useEnterCap6: () => ({ mutate: enterCap6Mutate, isPending: false }),
-  useCompleteCap6Task: () => ({ mutate: completeCap6TaskMutate, isPending: false }),
   useGraduateCap6: () => ({ mutate: graduateCap6Mutate, isPending: false }),
   useThachThucCap6: () => ({ data: undefined }),
   // `KetsoModalCap6` đọc lại khối Đối chiếu của lệnh qua hook này. Ở đây nó
@@ -436,21 +433,16 @@ function fakeCap3Progress(overrides: Partial<Cap3Progress> = {}): Cap3Progress {
 
 function fakeCap6Progress(overrides: Partial<Cap6Progress> = {}): Cap6Progress {
   return {
-    // ★ Sáu trường của Cấp 6 «Bậc thầy» (wire mới). Mốc 7/5 KHÁC mặc định 3/2.
-    //   Mặc định CHƯA đạt cổng — bài "màn tốt nghiệp còn ẩn" phụ thuộc vào đó.
+    // Mục tiêu duy nhất của Cấp 6 là 3 lần xử lý nhất quán.
     so_lan_xu_ly_nhat_quan: 1,
     so_lan_xu_ly_veto_nhat_quan: 0,
-    muc_tieu_nhat_quan: 7,
-    muc_tieu_veto: 5,
+    muc_tieu_nhat_quan: 3,
     tong_lai_lenh_cap6_pct: null,
     da_xem_tour_mauthuan: true,
     // ── di sản «Đối chiếu» ──
     id: "p6",
     user_id: "u1",
     entered_at: "2026-04-01T00:00:00Z",
-    task_1_done_at: null,
-    task_2_done_at: null,
-    task_3_done_at: null,
     so_lenh_doi_chieu: 4,
     so_kieu_da_gap: 2,
     ty_le_thang_khop: 0,
@@ -515,7 +507,6 @@ describe("Cap6TradingPage", () => {
     recordKetsoCap1Async.mockReset()
     recordKetsoCap1Async.mockResolvedValue({ id: "ks1" })
     recordKetsoCap2Mutate.mockReset()
-    completeCap6TaskMutate.mockReset()
     graduateCap6Mutate.mockReset()
     enterCap6Mutate.mockReset()
     enterCap7Mutate.mockReset()
@@ -741,19 +732,18 @@ describe("Cap6TradingPage", () => {
     })
   })
 
-  it("mounts GraduationModalCap6 (ẩn tới khi ĐỦ CẢ HAI mốc hành vi)", () => {
+  it("mounts GraduationModalCap6 at 3/3 consistent events regardless of veto count", () => {
     renderCap6(<Cap6TradingPage />)
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
 
-    // ★ Đủ mốc thứ nhất mà THIẾU mốc phủ quyết → vẫn chưa mở.
     useCap6ProgressMock.mockReturnValue({
-      data: fakeCap6Progress({ so_lan_xu_ly_nhat_quan: 7, so_lan_xu_ly_veto_nhat_quan: 4 }),
+      data: fakeCap6Progress({ so_lan_xu_ly_nhat_quan: 2, so_lan_xu_ly_veto_nhat_quan: 2 }),
     })
     renderCap6(<Cap6TradingPage />)
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
 
     useCap6ProgressMock.mockReturnValue({
-      data: fakeCap6Progress({ so_lan_xu_ly_nhat_quan: 7, so_lan_xu_ly_veto_nhat_quan: 5 }),
+      data: fakeCap6Progress({ so_lan_xu_ly_nhat_quan: 3, so_lan_xu_ly_veto_nhat_quan: 0 }),
     })
     renderCap6(<Cap6TradingPage />)
     expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()

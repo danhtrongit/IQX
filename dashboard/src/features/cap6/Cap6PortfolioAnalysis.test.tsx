@@ -103,14 +103,12 @@ const cap5Progress: Cap5Progress = {
   time_to_graduate_hours: 40,
 }
 
-/** ★ Mốc 7/5 — KHÁC mặc định 3/2, để bài kiểm phân biệt "đọc server" với hằng số. */
 function progress(over: Partial<Cap6Progress> = {}): Cap6Progress {
   return {
     entered_at: "2026-07-20T00:00:00Z",
     so_lan_xu_ly_nhat_quan: 4,
     so_lan_xu_ly_veto_nhat_quan: 2,
-    muc_tieu_nhat_quan: 7,
-    muc_tieu_veto: 5,
+    muc_tieu_nhat_quan: 3,
     tong_lai_lenh_cap6_pct: 6.4,
     da_xem_tour_mauthuan: true,
     graduated_at: null,
@@ -167,11 +165,12 @@ beforeEach(() => {
 })
 
 describe("Cap6PortfolioAnalysis — khối ① phần Cấp 6 thêm", () => {
-  it("hai con số HÀNH VI kèm mốc SERVER (7/5, không phải 3/2)", () => {
+  it("một bộ đếm hành vi có mục tiêu server và thống kê veto mô tả", () => {
     renderPa()
     const hv = screen.getByTestId("cap6-pa-khoi1-hanhvi")
-    expect(hv).toHaveTextContent("nhất quán 4/7 lần")
-    expect(hv).toHaveTextContent("phủ quyết rất xấu 2/5 lần")
+    expect(hv).toHaveTextContent("nhất quán 4/3 lần")
+    expect(hv).toHaveTextContent("trong đó 2 lần có phủ quyết rất xấu")
+    expect(hv.textContent).not.toContain("2/")
   })
 
   it("lãi ĐƯỢC hiện ở đây (spec §11) nhưng kèm câu nói rõ KHÔNG phải cổng", () => {

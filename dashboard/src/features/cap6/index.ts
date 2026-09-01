@@ -17,7 +17,6 @@ export {
 export {
   useCap6Progress,
   useEnterCap6,
-  useCompleteCap6Task,
   useGoiYCap6,
   useKehoachCap6,
   useRecordKehoachCap6,
@@ -37,7 +36,6 @@ export {
   CHU_THICH_PHU_QUYET,
   CONFLICT_LEVEL_OPTIONS,
   MUC_TIEU_NHAT_QUAN_MAC_DINH,
-  MUC_TIEU_VETO_MAC_DINH,
   coBangMauThuan,
   conflictLevelIcon,
   conflictLevelLabel,
@@ -47,7 +45,6 @@ export {
   lechNhanDinhHanhDong,
   lyDoTuMauThuan,
   mucTieuNhatQuan,
-  mucTieuVeto,
 } from "./nhanDinhCap6"
 export {
   useKehoachMauThuanCap6,

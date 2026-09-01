@@ -17,7 +17,6 @@ import { expectRendersNothing } from "@/__tests__/textGuards"
 const {
   recordKetsoCap1Async,
   recordKetsoCap2Mutate,
-  markCap6Task,
   cap5HooksLoaded,
   kehoachCap6,
   nhanDinhCap6,
@@ -25,7 +24,6 @@ const {
 } = vi.hoisted(() => ({
   recordKetsoCap1Async: vi.fn(),
   recordKetsoCap2Mutate: vi.fn(),
-  markCap6Task: vi.fn(),
   // `true` NGAY KHI `@/features/cap5/hooks` được nạp lần đầu — tức khi một
   // module trong cây import của Kết sổ Cấp 6 còn `import` nó. Đó là cách duy
   // nhất khẳng định `useVerdictGoiY`/`useRecordKetsoCap5` đã bị gỡ HẲN (một
@@ -52,7 +50,6 @@ vi.mock("@/features/cap5/hooks", () => {
   return {}
 })
 vi.mock("./hooks", () => ({
-  useCompleteCap6Task: () => ({ mutate: markCap6Task }),
   useKehoachCap6: (...args: unknown[]) => {
     kehoachCap6.calls.push(args)
     return kehoachCap6.current
@@ -291,7 +288,6 @@ beforeEach(() => {
   recordKetsoCap1Async.mockReset()
   recordKetsoCap1Async.mockResolvedValue({ id: "ks1" })
   recordKetsoCap2Mutate.mockReset()
-  markCap6Task.mockReset()
   messageError.mockReset()
   kehoachCap6.current = { data: undefined, isPending: false, isError: false }
   kehoachCap6.calls.length = 0
@@ -624,7 +620,7 @@ describe("KetsoModalCap6 — lớp coach thứ 6 «SỰ NHẤT QUÁN»", () => {
   })
 })
 
-describe("KetsoModalCap6 — nhật ký + recompute Cấp 6", () => {
+describe("KetsoModalCap6 — nhật ký Cấp 6", () => {
   it("ghi 1 bản ghi Cấp 6 kèm kiểu / lớp quyết định / khớp, và gọi onRecorded", async () => {
     const onRecorded = vi.fn()
     renderModal({}, { onRecorded })
@@ -646,12 +642,6 @@ describe("KetsoModalCap6 — nhật ký + recompute Cấp 6", () => {
     expect(rec.kieuCoPhieu).toBeNull()
     expect(rec.lopQuyetDinh).toBeNull()
     expect(rec.khopGoiY).toBeNull()
-  })
-
-  it("kích hoạt recompute Cấp 6 (PATCH /cap6/task) sau khi ghi thành công", async () => {
-    renderModal()
-    fireEvent.click(closeButton())
-    await waitFor(() => expect(markCap6Task).toHaveBeenCalledWith(2))
   })
 })
 

@@ -178,37 +178,18 @@ export function lechNhanDinhHanhDong(
   return mucTuTin > 1
 }
 
-/**
- * Mục tiêu mặc định — CHỈ dùng khi chưa có hồ sơ Cấp 6 nào để đọc.
- *
- * ★★ Không được dùng như "giá trị đúng": `mucTieuNhatQuan`/`mucTieuVeto` bên dưới
- * ĐỌC SERVER trước. Fixture test phải đặt số KHÁC hai hằng này, nếu không bài
- * kiểm không phân biệt được "đọc server" với "trả hằng số".
- */
+/** Mục tiêu xử lý nhất quán khi chưa có hồ sơ Cấp 6 để đọc từ server. */
 export const MUC_TIEU_NHAT_QUAN_MAC_DINH = 3
-export const MUC_TIEU_VETO_MAC_DINH = 2
 
-/** Mục tiêu "xử lý nhất quán" — của SERVER khi có, mặc định khi chưa có hồ sơ. */
+/** Mục tiêu "xử lý nhất quán" do server công bố. */
 export function mucTieuNhatQuan(progress: Cap6Progress | null | undefined): number {
   return progress?.muc_tieu_nhat_quan ?? MUC_TIEU_NHAT_QUAN_MAC_DINH
 }
 
-/** Mục tiêu "có phủ quyết" — của SERVER khi có, mặc định khi chưa có hồ sơ. */
-export function mucTieuVeto(progress: Cap6Progress | null | undefined): number {
-  return progress?.muc_tieu_veto ?? MUC_TIEU_VETO_MAC_DINH
-}
-
 /**
- * Cổng Cấp 6 (spec §2/§3) — **thuần hành vi, KHÔNG đo lãi**: đủ số lần xử lý
- * nhất quán VÀ đủ số lần trong đó có lớp phủ quyết rất xấu.
- *
- * Một chiều: `graduated_at` đã có thì không mở lại (mirror
- * `cap5/GraduationModalCap5.tsx#isGraduationReadyCap5`).
+ * Cổng Cấp 6 (spec §2/§3) — thuần hành vi: đủ ba lần xử lý mâu thuẫn nhất quán.
+ * Lãi/lỗ, tour và số lần gặp lớp phủ quyết không thay đổi cổng.
  */
 export function datCongCap6(progress: Cap6Progress | null | undefined): boolean {
-  if (!progress) return false
-  return (
-    progress.so_lan_xu_ly_nhat_quan >= mucTieuNhatQuan(progress) &&
-    progress.so_lan_xu_ly_veto_nhat_quan >= mucTieuVeto(progress)
-  )
+  return !!progress && progress.so_lan_xu_ly_nhat_quan >= mucTieuNhatQuan(progress)
 }

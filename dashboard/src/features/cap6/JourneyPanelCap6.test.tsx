@@ -7,12 +7,8 @@ import type { Cap6Progress } from "./types"
 /**
  * Tab "Hành trình" Cấp 6 «Bậc thầy» (mockup `iqx-cap6-hanhtrinh.html`).
  *
- * ★★ Đây là màn CUỐI mà một người đã tốt nghiệp trần nhìn thấy (modal tốt nghiệp
- * unmount xong là về đúng đây), nên ô mục tiêu KHÔNG được hứa một cấp chưa tồn
- * tại — và phải có bài canh ở CẢ HAI phía của trần (`capFlags.ts` §LUẬT TỔNG QUÁT).
- *
- * ★ Mọi mốc ĐỌC SERVER. Fixture dùng 7/5 chứ KHÔNG dùng 3/2 (bằng default thì
- * bài kiểm không phân biệt được "đọc server" với "trả hằng số").
+ * Cổng duy nhất do server công bố là ba lần xử lý mâu thuẫn nhất quán. Số lần có
+ * phủ quyết vẫn là phân tích mô tả, không phải mục tiêu hay điều kiện hoàn thành.
  */
 const { useCap6ProgressMock, setActivePanelMock, capFlags } = vi.hoisted(() => ({
   useCap6ProgressMock: vi.fn(),
@@ -41,8 +37,7 @@ function makeProgress(overrides: Partial<Cap6Progress> = {}): Cap6Progress {
     entered_at: "2026-08-20T00:00:00Z",
     so_lan_xu_ly_nhat_quan: 1,
     so_lan_xu_ly_veto_nhat_quan: 0,
-    muc_tieu_nhat_quan: 7,
-    muc_tieu_veto: 5,
+    muc_tieu_nhat_quan: 3,
     tong_lai_lenh_cap6_pct: 9.3,
     da_xem_tour_mauthuan: true,
     graduated_at: null,
@@ -83,11 +78,14 @@ describe("JourneyPanelCap6 — thẻ cấp + nhiệm vụ duy nhất (mockup)", 
     expect(screen.queryByTestId("cap6-task-3")).toBeNull()
   })
 
-  it("tên nhiệm vụ lấy mốc của SERVER (7 lần), không hard-code 3", () => {
+  it("tên nhiệm vụ và bộ đếm bám mục tiêu 3 lần của server", () => {
     renderPanel()
     const task = screen.getByTestId("cap6-task-1")
-    expect(task).toHaveTextContent("Xử lý mâu thuẫn nhất quán 7 lần")
-    expect(task.textContent).not.toContain("nhất quán 3 lần")
+    expect(task).toHaveTextContent("Xử lý mâu thuẫn nhất quán 3 lần")
+    expect(screen.getByTestId("cap6-journey-prog-nhatquan")).toHaveTextContent(
+      "1/3 lần xử lý nhất quán",
+    )
+    expect(screen.queryByTestId("cap6-journey-prog-veto")).toBeNull()
   })
 
   it("mô tả nhiệm vụ đúng chữ mockup", () => {
@@ -97,22 +95,12 @@ describe("JourneyPanelCap6 — thẻ cấp + nhiệm vụ duy nhất (mockup)", 
     )
   })
 
-  it("★ HAI dòng tiến độ (cổng có hai mốc), cả hai đọc mốc SERVER", () => {
-    renderPanel()
-    expect(screen.getByTestId("cap6-journey-prog-nhatquan")).toHaveTextContent(
-      "1/7 lần xử lý nhất quán",
-    )
-    expect(screen.getByTestId("cap6-journey-prog-veto")).toHaveTextContent(
-      "0/5 lần trong đó có lớp phủ quyết rất xấu",
-    )
-  })
-
-  it("§C12c — có câu giải thích hai con số đến từ đâu, và nói rõ KHÔNG đo lãi", () => {
+  it("§C12c — giải thích tiến độ do server chốt và KHÔNG đo lãi", () => {
     renderPanel()
     const why = screen.getByTestId("cap6-journey-why")
-    expect(why).toHaveTextContent("Cả hai mốc phải đạt cùng lúc")
     expect(why).toHaveTextContent("do hệ thống chốt từ chính các lệnh của bạn")
     expect(why).toHaveTextContent("KHÔNG đo lãi")
+    expect(why.textContent).not.toContain("phủ quyết")
   })
 
   it("★ KHÔNG khoe lãi ở tab Hành trình (spec §11: chỉ ở Kết sổ/Phân tích)", () => {
@@ -130,11 +118,11 @@ describe("JourneyPanelCap6 — thẻ cấp + nhiệm vụ duy nhất (mockup)", 
     expect(screen.queryByTestId("cap6-thachthuc")).toBeNull()
   })
 
-  it("chip bài học kèm hai con số thật", () => {
+  it("chip bài học chỉ kèm bộ đếm hoàn thành", () => {
     renderPanel()
     const chip = screen.getByTestId("cap6-journey-tag")
     expect(chip).toHaveTextContent("1 lần nhất quán")
-    expect(chip).toHaveTextContent("0 lần có phủ quyết")
+    expect(chip.textContent).not.toContain("phủ quyết")
   })
 
   it("chưa có hồ sơ → chip không có số bịa", () => {
@@ -151,21 +139,21 @@ describe("taskStateCap6", () => {
     expect(taskStateCap6(1, makeProgress())).toBe("active")
   })
 
-  it("đủ hai mốc SERVER → done", () => {
+  it("3 lần nhất quán, không có phủ quyết → done", () => {
     expect(
-      taskStateCap6(1, makeProgress({ so_lan_xu_ly_nhat_quan: 7, so_lan_xu_ly_veto_nhat_quan: 5 })),
+      taskStateCap6(1, makeProgress({ so_lan_xu_ly_nhat_quan: 3, so_lan_xu_ly_veto_nhat_quan: 0 })),
     ).toBe("done")
   })
 
-  it("đủ mốc mặc định 3/2 nhưng chưa đủ mốc SERVER 7/5 → vẫn active", () => {
+  it("2 lần nhất quán, dù có phủ quyết → active", () => {
     expect(
-      taskStateCap6(1, makeProgress({ so_lan_xu_ly_nhat_quan: 3, so_lan_xu_ly_veto_nhat_quan: 2 })),
+      taskStateCap6(1, makeProgress({ so_lan_xu_ly_nhat_quan: 2, so_lan_xu_ly_veto_nhat_quan: 2 })),
     ).toBe("active")
   })
 
   it("xong → header 1/1 và không còn nút «Làm ngay»", () => {
     useCap6ProgressMock.mockReturnValue({
-      data: makeProgress({ so_lan_xu_ly_nhat_quan: 7, so_lan_xu_ly_veto_nhat_quan: 5 }),
+      data: makeProgress({ so_lan_xu_ly_nhat_quan: 3, so_lan_xu_ly_veto_nhat_quan: 0 }),
     })
     renderPanel()
     expect(screen.getByTestId("cap6-journey-header")).toHaveTextContent(

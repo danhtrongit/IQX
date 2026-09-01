@@ -8,7 +8,7 @@ import { Cap5PortfolioAnalysis } from "@/features/cap5/Cap5PortfolioAnalysis"
 import type { Cap5Progress } from "@/features/cap5/types"
 import { usePhanTichCap6 } from "./hooks"
 import type { ConflictLevel, Khoi14RowCap6, Khoi15RowCap6 } from "./mauThuanTypes"
-import { conflictLevelIcon, conflictLevelLabel, mucTieuNhatQuan, mucTieuVeto } from "./nhanDinhCap6"
+import { conflictLevelIcon, conflictLevelLabel, mucTieuNhatQuan } from "./nhanDinhCap6"
 import type { Cap6TradeRecord } from "./tradeLogCap6"
 import type { Cap6Progress } from "./types"
 import "./cap6-analysis.css"
@@ -168,9 +168,9 @@ export function Cap6PortfolioAnalysis({
             <p className="text-xs text-[var(--color-text-1)]" data-testid="cap6-pa-khoi1-hanhvi">
               {`Xử lý mâu thuẫn nhất quán ${fmtInt(
                 cap6Progress.so_lan_xu_ly_nhat_quan ?? 0,
-              )}/${fmtInt(mucTieuNhatQuan(cap6Progress))} lần · trong đó có lớp phủ quyết rất xấu ${fmtInt(
+              )}/${fmtInt(mucTieuNhatQuan(cap6Progress))} lần · trong đó ${fmtInt(
                 cap6Progress.so_lan_xu_ly_veto_nhat_quan ?? 0,
-              )}/${fmtInt(mucTieuVeto(cap6Progress))} lần.`}
+              )} lần có phủ quyết rất xấu.`}
             </p>
             {/* ★ ĐÂY là một trong hai chỗ duy nhất `tong_lai_lenh_cap6_pct` được
                 phép hiện (spec §11: "CHỈ để hiển thị ở Kết sổ/Phân tích"). Nó

@@ -11,7 +11,7 @@ import { useEnterCap7 } from "@/features/cap7/hooks"
 // đây mà không tạo vòng import nào.
 import { CAP_MAX_ENABLED } from "@/features/cap1/capFlags"
 import { useCap6Progress, useGraduateCap6 } from "./hooks"
-import { datCongCap6, mucTieuNhatQuan, mucTieuVeto } from "./nhanDinhCap6"
+import { datCongCap6, mucTieuNhatQuan } from "./nhanDinhCap6"
 import type { Cap6Progress } from "./types"
 
 /**
@@ -28,9 +28,8 @@ function isCap7Open(): boolean {
 
 /**
  * Điều kiện mở màn tốt nghiệp Cấp 6 (spec §2/§3): **1/1 nhiệm vụ thuần hành vi**
- * — đủ số lần xử lý mâu thuẫn nhất quán VÀ đủ số lần trong đó có lớp phủ quyết
- * rất xấu. Một chiều: không mở lại khi `graduated_at` đã có (mirrors
- * `cap5/GraduationModalCap5.tsx#isGraduationReadyCap5`).
+ * — đủ ba lần xử lý mâu thuẫn nhất quán. Một chiều: không mở lại khi
+ * `graduated_at` đã có (mirrors `cap5/GraduationModalCap5.tsx#isGraduationReadyCap5`).
  *
  * ★★ **KHÔNG đo lãi.** Spec §2 dành nguyên một đoạn giải thích vì sao lãi bị bỏ
  * hoàn toàn khỏi cổng ("cổng đo lãi vẫn kéo user về phía mua để đạt %"), và §11
@@ -86,13 +85,8 @@ function renderInlineBold(text: string) {
  * `GraduationModalCap5`): consumer (`Cap6TradingPage`) chỉ cần mount
  * `<GraduationModalCap6 />`.
  *
- * ★★ **DÒNG PHỤ KHÔNG DÙNG CÂU CỦA SPEC §3.** Spec ghi dòng phụ là *"lãi từ lệnh
- * mâu thuẫn +X%"* — đó là TÀN DƯ của bản nháp cũ: chính §2 của cùng tài liệu bỏ
- * lãi hoàn toàn khỏi cổng, và §11 ghi `tong_lai_lenh_cap6_pct` "CHỈ để hiển thị ở
- * Kết sổ/Phân tích". Khoe một con số lãi ở cổng tốt nghiệp là kéo user về đúng
- * phía mà §2 muốn tránh — và là ghi công một việc chương trình KHÔNG đo. Dòng phụ
- * vì thế dùng hai con số HÀNH VI thật: `X lần xử lý nhất quán · Y lần có phủ
- * quyết`, kèm mốc mà SERVER gửi (không hard-code 3/2).
+ * ★★ Dòng phụ dùng bộ đếm HÀNH VI thật cùng mục tiêu server; thống kê phủ quyết
+ * thuộc Phân tích danh mục, không phải điều kiện hay tiến độ tốt nghiệp.
  *
  * ★★ LUẬT BẤT DI BẤT DỊCH (đã phải sửa 2 lần trên repo này): modal
  * `closable={false}` và chỉ unmount khi `graduated_at` về ⇒ **CTA không bao giờ
@@ -117,13 +111,11 @@ export function GraduationModalCap6() {
     })
   }
 
-  // Dòng phụ — SỐ HÀNH VI THẬT của user (§C12c), en-US, mốc ĐỌC SERVER.
+  // Dòng phụ — SỐ HÀNH VI THẬT của user (§C12c), mục tiêu do server công bố.
   const sub = progress
     ? `${fmtInt(progress.so_lan_xu_ly_nhat_quan)}/${fmtInt(
         mucTieuNhatQuan(progress),
-      )} lần xử lý nhất quán · ${fmtInt(
-        progress.so_lan_xu_ly_veto_nhat_quan,
-      )}/${fmtInt(mucTieuVeto(progress))} lần có phủ quyết`
+      )} lần xử lý nhất quán`
     : ""
 
   return (
