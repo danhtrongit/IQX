@@ -154,3 +154,21 @@ def test_start_index_offsets_trading():
     assert len(run.equity_curve) == 5
     assert run.kpis["n_trades"] == 1
     assert run.trades[0]["entry_price"] == 100.0
+
+
+def test_dd_recovery_is_none_when_equity_never_draws_down():
+    # Strictly rising equity: there is no trough, so "recovered in N sessions" has no
+    # meaning. Regression: the old `_max_drawdown` left `trough_idx = 0`, matched
+    # `equity[1] >= equity[0]` on the first iteration and published `1`.
+    data, frame = _mk([100, 110, 120, 130], buy_at=[0])
+    run = run_backtest(data, frame, BUY, NO_SELL, _risk(), capital=100_000, start_index=0)
+    assert run.kpis["max_drawdown"] == 0.0
+    assert run.kpis["dd_recovery_sessions"] is None
+
+
+def test_dd_recovery_counts_sessions_from_trough_back_to_prior_peak():
+    # equity 100k -> 110k -> 90k -> 120k: trough at i=2, prior peak 110k regained at i=3.
+    data, frame = _mk([100, 110, 90, 120], buy_at=[0])
+    run = run_backtest(data, frame, BUY, NO_SELL, _risk(), capital=100_000, start_index=0)
+    assert abs(run.kpis["max_drawdown"] - round(90 / 110 - 1, 4)) < 1e-9
+    assert run.kpis["dd_recovery_sessions"] == 1

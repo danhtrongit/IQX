@@ -161,18 +161,27 @@ def _sharpe_with_ci(daily_returns: np.ndarray) -> tuple[float | None, float | No
     return sharpe, float(lo), float(hi)
 
 
-def _max_drawdown(equity: np.ndarray) -> tuple[float, int]:
-    """Return (max_drawdown as negative fraction, recovery sessions of that DD)."""
+def _max_drawdown(equity: np.ndarray) -> tuple[float, int | None]:
+    """Return (max_drawdown as negative fraction, recovery sessions of that DD).
+
+    ``recovery`` is ``None`` when there is NO drawdown at all — empty, flat, or
+    monotonically rising equity. There is no trough to recover from, so any session
+    count is a fabricated number: the old code left ``trough_idx = 0`` and matched
+    ``equity[1] >= equity[0]`` immediately, publishing "recovered in 1 session" for a
+    drawdown that never happened. ``_empty_kpis`` already ships ``None`` for this field,
+    so ``None`` is the established "not applicable" value of the KPI contract.
+    """
     if len(equity) == 0:
-        return 0.0, 0
+        return 0.0, None
     running_max = np.maximum.accumulate(equity)
     drawdowns = equity / running_max - 1.0
     trough_idx = int(np.argmin(drawdowns))
     max_dd = float(drawdowns[trough_idx])
-    # peak before the trough
-    peak_idx = int(np.argmax(equity[: trough_idx + 1])) if trough_idx > 0 else 0
+    if max_dd == 0.0:
+        return 0.0, None
+    # peak before the trough — ``max_dd < 0`` here guarantees ``trough_idx > 0``
+    peak_idx = int(np.argmax(equity[: trough_idx + 1]))
     peak_value = equity[peak_idx]
-    recovery = 0
     for j in range(trough_idx + 1, len(equity)):
         if equity[j] >= peak_value:
             recovery = j - trough_idx
