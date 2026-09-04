@@ -65,6 +65,11 @@ _NGHIN = 1_000
 #: (nghỉ cuối tuần) + 12 ngày bù nghỉ lễ dài (Tết nghỉ liền 9 ngày vẫn không
 #: thủng). Xin thiếu ngày là mã bị đếm nhầm vào "thiếu dữ liệu" sau mỗi kỳ nghỉ.
 _BU_NGAY_NGHI = 12
+#: Nguồn dòng tiền được phép về TRỄ tối đa bao nhiêu phiên so với bảng giá (tự
+#: doanh thường chỉ có sau khi chốt phiên). Trong tầm này thì cửa sổ trượt lùi
+#: sang phiên cũ hơn — vẫn là phiên THẬT; quá tầm thì bộ lọc nói "chưa lọc
+#: được" chứ không lùi mãi tới một tuần trước rồi vẫn ghi "5 phiên gần nhất".
+_TRE_TOI_DA = 2
 
 
 def _so_ngay_lich(so_phien: int) -> int:
@@ -218,16 +223,23 @@ class LiveHuntDataSource:
     ) -> dict[str, list[float]] | None:
         """Mua ròng (VND) theo TỪNG phiên — một lượt HTTP cho CẢ sàn HOSE.
 
-        ★★ **Lịch phiên KHÔNG lấy từ chính nguồn dòng tiền** mà từ bảng giá
-        (``/v4/stock_prices``, 405 mã mỗi phiên). Nguồn tự doanh thưa (chỉ mã có
-        giao dịch mới có hàng), nên đọc lịch từ nó là: một phiên tự doanh im
-        lặng, hoặc nguồn trễ EOD, sẽ âm thầm đẩy cửa sổ lùi lại và "5 phiên gần
-        nhất" nói về những phiên khác hẳn — không dấu vết nào trên giao diện.
+        ★★ **Phiên nào là phiên nào thì hỏi BẢNG GIÁ, không hỏi chính nguồn dòng
+        tiền** (``/v4/stock_prices`` có đủ 405 mã mỗi phiên). Nguồn tự doanh
+        thưa — chỉ mã CÓ giao dịch mới có hàng — nên tự suy lịch từ nó là mở
+        đường cho hai lời nói dối: một phiên tự doanh im ắng bị bỏ khỏi lịch, và
+        một nguồn về trễ EOD lặng lẽ đẩy cửa sổ lùi lại trong khi màn hình vẫn
+        ghi "5 phiên gần nhất".
+
+        ★ Nhưng nguồn dòng tiền VỀ SAU bảng giá là chuyện thường ngày (tự doanh
+        thường chỉ có sau khi chốt phiên). Nên cửa sổ = ``so_phien`` phiên GẦN
+        NHẤT MÀ NGUỒN ĐÃ PHỦ, chọn trong ``so_phien + _TRE_TOI_DA`` phiên gần
+        nhất của bảng giá: trễ tối đa 2 phiên thì trượt cửa sổ (vẫn là phiên
+        THẬT, chỉ cũ hơn), trễ hơn thế thì trả ``None`` chứ không đi lùi mãi.
 
         Trả ``None`` khi chưa lọc được: bên lạ, rổ rỗng, upstream lỗi/đổi shape,
-        lịch chưa đủ ``so_phien`` phiên, hoặc (với nguồn thưa) có phiên trong
-        lịch mà nguồn KHÔNG phủ. KHÔNG BAO GIỜ trả ``{}`` để nói "không mã nào
-        thoả" thay cho "chưa lọc được".
+        bảng giá chưa đủ phiên, hoặc nguồn chưa phủ nổi ``so_phien`` phiên trong
+        tầm cho phép. KHÔNG BAO GIỜ trả ``{}`` để nói "không mã nào thoả" thay
+        cho "chưa lọc được".
         """
         nguon = _NGUON_DONG_TIEN.get(ben)
         if nguon is None or so_phien <= 0:
@@ -236,15 +248,16 @@ class LiveHuntDataSource:
         if not wanted:
             return None
 
-        phien = await self._lich_phien(so_phien)
-        if phien is None:
+        lich = await self._lich_phien(so_phien + _TRE_TOI_DA, toi_thieu=so_phien)
+        if lich is None:
             return None
         theo_phien = await self._bang_dong_tien(nguon, ben=ben, so_phien=so_phien)
         if theo_phien is None:
             return None
-        # Nguồn thưa: "mã vắng = 0đ" chỉ đúng khi nguồn CÓ phủ phiên đó. Phiên
-        # nguồn chưa có hàng nào là nguồn chưa về, không phải cả sàn nghỉ mua.
-        if nguon.khuyet_la_khong and any(not theo_phien.get(p) for p in phien):
+        # Phiên nguồn chưa có hàng NÀO là nguồn chưa về, không phải cả sàn nghỉ
+        # mua — bỏ khỏi cửa sổ thay vì điền 0đ cho toàn sàn.
+        phien = [ngay for ngay in lich if theo_phien.get(ngay)][-so_phien:]
+        if len(phien) < so_phien:
             return None
 
         out: dict[str, list[float]] = {}
@@ -263,29 +276,30 @@ class LiveHuntDataSource:
                 out[ma] = chuoi
         return out
 
-    async def _lich_phien(self, so_phien: int) -> list[str] | None:
-        """``so_phien`` phiên giao dịch gần nhất, tăng dần — ``None`` nếu chưa đủ.
+    async def _lich_phien(self, so_can: int, *, toi_thieu: int) -> list[str] | None:
+        """Tối đa ``so_can`` phiên giao dịch gần nhất, tăng dần.
 
-        Đọc từ bảng giá vì mọi mã HOSE đều có hàng mỗi phiên; đây là thứ duy
-        nhất trong ba nguồn nói được "phiên nào ĐÃ diễn ra".
+        ``None`` khi bảng giá chưa nói nổi ``toi_thieu`` phiên. Đọc từ bảng giá
+        vì mọi mã HOSE đều có hàng mỗi phiên — đây là nguồn duy nhất trong ba
+        nguồn nói được "phiên nào ĐÃ diễn ra".
         """
-        key = f"cap5:hunt:lich:{self._today.isoformat()}:{so_phien}"
+        key = f"cap5:hunt:lich:{self._today.isoformat()}:{so_can}"
         if self._use_cache:
             cached = await cache_get_json(key)
-            if isinstance(cached, list) and len(cached) == so_phien:
+            if isinstance(cached, list) and len(cached) >= toi_thieu:
                 return [str(x) for x in cached]
 
         rows, bi_cat = await self._finfo(
-            "stock_prices", truong_ngay="date", so_phien=so_phien, fields="code,date"
+            "stock_prices", truong_ngay="date", so_phien=so_can, fields="code,date"
         )
         if rows is None:
             return None
         phien = _phien_dung_duoc(
             [ngay for r in rows if (ngay := _iso(r.get("date")))],
-            so_can=so_phien,
+            so_can=so_can,
             bi_cat=bi_cat,
         )
-        if len(phien) < so_phien:
+        if len(phien) < toi_thieu:
             return None
         if self._use_cache:
             await cache_set_json(key, phien, _FLOW_CACHE_TTL)
@@ -304,7 +318,7 @@ class LiveHuntDataSource:
         rows, bi_cat = await self._finfo(
             nguon.path,
             truong_ngay=nguon.truong_ngay,
-            so_phien=so_phien,
+            so_phien=so_phien + _TRE_TOI_DA,
             fields=f"code,{nguon.truong_ngay},netVal",
         )
         if rows is None:

@@ -1693,22 +1693,55 @@ async def test_hunt_data_khuyet_khoi_ngoai_va_khuyet_tu_doanh_khac_nghia(monkeyp
 
 
 @pytest.mark.asyncio
-async def test_hunt_data_tu_doanh_thieu_han_mot_phien_thi_chua_loc_duoc(monkeypatch):
-    """★★ "Mã vắng = 0đ" chỉ đúng khi nguồn ĐÃ phủ phiên đó.
+async def test_hunt_data_nguon_ve_tre_thi_truot_cua_so_chu_khong_dien_0d(monkeypatch):
+    """★★ Nguồn tự doanh về SAU bảng giá gần như mỗi ngày (chỉ có sau khi chốt
+    phiên). Hai cách xử sai đều từng suýt xảy ra ở đây:
 
-    Nguồn tự doanh về trễ một phiên (không có hàng nào) mà vẫn điền 0đ là biến
-    "chưa có dữ liệu" thành "cả sàn không mã nào được tự doanh mua" — và bảng
-    xếp hạng vẫn in ra 10 mã như thường. Lịch phiên đọc từ bảng giá chính là để
-    phát hiện chỗ trống này.
+      ① điền 0đ cho phiên nguồn CHƯA có hàng nào ⇒ "cả sàn không mã nào được tự
+         doanh mua" — một con số bịa, mà bảng xếp hạng vẫn in ra 10 mã;
+      ② bắt cửa sổ phải là 5 phiên MỚI NHẤT của bảng giá ⇒ bộ lọc tắt suốt cả
+         phiên hôm sau, đúng cái lỗi mà màn Săn mã đang phải sửa.
+    Đúng: trượt cửa sổ lùi sang phiên THẬT cũ hơn, tối đa ``_TRE_TOI_DA`` phiên.
     """
     from app.services.cap5 import hunt_data
 
     ty = 1_000_000_000.0
+    ngay = _ngay_phien(6)
     fake = _FakeFinfo(
         {
-            "stock_prices": _rows_gia(["CO"], n=5),
-            # Chỉ có 4 phiên đầu; phiên gần nhất nguồn chưa về.
-            "proprietary_trading": _rows_flow("date", {"CO": [ty, ty, ty, ty]}),
+            "stock_prices": _rows_gia(["CO"], n=6),
+            # Nguồn mới có tới phiên áp chót — phiên mới nhất chưa về.
+            "proprietary_trading": _rows_flow(
+                "date", {"CO": [ty, 2 * ty, ty, ty, 3 * ty]}, ngay=ngay[:5]
+            ),
+        }
+    )
+    monkeypatch.setattr(hunt_data, "fetch_json", fake)
+    src = hunt_data.LiveHuntDataSource(use_cache=False, today=_phien(0))
+
+    assert (await src.net_flow(["CO"], ben="tudoanh", so_phien=5))["CO"] == [
+        ty, 2 * ty, ty, ty, 3 * ty,
+    ]
+
+
+@pytest.mark.asyncio
+async def test_hunt_data_nguon_tre_qua_han_thi_chua_loc_duoc(monkeypatch):
+    """Trễ quá ``_TRE_TOI_DA`` phiên ⇒ "chưa lọc được", KHÔNG lùi mãi.
+
+    Lùi không giới hạn là một ngày nào đó màn hình ghi "5 phiên gần nhất" trong
+    khi số liệu là của tuần trước — sai mà không ai thấy.
+    """
+    from app.services.cap5 import hunt_data
+
+    ty = 1_000_000_000.0
+    ngay = _ngay_phien(9)
+    fake = _FakeFinfo(
+        {
+            "stock_prices": _rows_gia(["CO"], n=9),
+            # Nguồn dừng ở phiên thứ 6/9 ⇒ trễ 3 phiên, quá hạn cho phép.
+            "proprietary_trading": _rows_flow(
+                "date", {"CO": [ty] * 5}, ngay=ngay[1:6]
+            ),
         }
     )
     monkeypatch.setattr(hunt_data, "fetch_json", fake)
@@ -1722,7 +1755,8 @@ async def test_hunt_data_ket_qua_bi_cat_thi_bo_phien_cu_nhat(monkeypatch):
     """★★ Đụng trần ``size`` ⇒ phiên CŨ NHẤT chỉ có một phần số mã.
 
     Giữ phiên đó là đọc "mã bị cắt" thành "mã không mua ròng phiên ấy" — số
-    "≥3/5 phiên" sai mà không dấu vết. Bỏ phiên ⇒ còn 4 phiên ⇒ "chưa lọc được".
+    "≥3/5 phiên" sai mà không dấu vết. Bỏ phiên ⇒ nguồn chỉ còn phủ 4 phiên ⇒
+    "chưa lọc được".
     """
     from app.services.cap5 import hunt_data
 
@@ -1736,10 +1770,9 @@ async def test_hunt_data_ket_qua_bi_cat_thi_bo_phien_cu_nhat(monkeypatch):
     monkeypatch.setattr(hunt_data, "fetch_json", fake)
     src = hunt_data.LiveHuntDataSource(use_cache=False, today=_phien(0))
 
-    # Phiên cũ nhất bị bỏ ⇒ mã không còn chuỗi phủ đủ 5 phiên của lịch ⇒ nó VẮNG
-    # khỏi kết quả (máy lọc dịch tiếp thành "chưa lọc được", xem
-    # ``_thieu_chuoi_dong_tien``) chứ không được điền bừa phiên thiếu.
-    assert await src.net_flow(["AAA"], ben="ngoai", so_phien=5) == {}
+    # Phiên cũ nhất bị bỏ ⇒ nguồn chỉ còn phủ 4 phiên trong lịch ⇒ chưa lọc
+    # được, chứ không được điền bừa phiên thiếu.
+    assert await src.net_flow(["AAA"], ben="ngoai", so_phien=5) is None
 
     # Đủ dư một phiên thì vẫn chạy, và chuỗi lấy đúng 5 phiên GẦN NHẤT.
     rows6 = _rows_flow("tradingDate", {"AAA": [9 * ty, ty, ty, ty, ty, 2 * ty]})
