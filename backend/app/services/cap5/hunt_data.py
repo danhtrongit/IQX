@@ -218,9 +218,16 @@ class LiveHuntDataSource:
     ) -> dict[str, list[float]] | None:
         """Mua ròng (VND) theo TỪNG phiên — một lượt HTTP cho CẢ sàn HOSE.
 
+        ★★ **Lịch phiên KHÔNG lấy từ chính nguồn dòng tiền** mà từ bảng giá
+        (``/v4/stock_prices``, 405 mã mỗi phiên). Nguồn tự doanh thưa (chỉ mã có
+        giao dịch mới có hàng), nên đọc lịch từ nó là: một phiên tự doanh im
+        lặng, hoặc nguồn trễ EOD, sẽ âm thầm đẩy cửa sổ lùi lại và "5 phiên gần
+        nhất" nói về những phiên khác hẳn — không dấu vết nào trên giao diện.
+
         Trả ``None`` khi chưa lọc được: bên lạ, rổ rỗng, upstream lỗi/đổi shape,
-        hoặc cửa sổ không đủ ``so_phien`` phiên. KHÔNG BAO GIỜ trả ``{}`` để nói
-        "không mã nào thoả" thay cho "chưa lọc được".
+        lịch chưa đủ ``so_phien`` phiên, hoặc (với nguồn thưa) có phiên trong
+        lịch mà nguồn KHÔNG phủ. KHÔNG BAO GIỜ trả ``{}`` để nói "không mã nào
+        thoả" thay cho "chưa lọc được".
         """
         nguon = _NGUON_DONG_TIEN.get(ben)
         if nguon is None or so_phien <= 0:
@@ -229,13 +236,15 @@ class LiveHuntDataSource:
         if not wanted:
             return None
 
-        bang = await self._bang_dong_tien(nguon, ben=ben, so_phien=so_phien)
-        if bang is None:
+        phien = await self._lich_phien(so_phien)
+        if phien is None:
             return None
-        phien, theo_phien = bang
-        # Cửa sổ không đủ phiên (upstream trễ EOD, sàn mới nghỉ dài…) ⇒ để máy
-        # lọc nói "nguồn không trả đủ chuỗi N phiên", không tự bịa thêm phiên 0đ.
-        if len(phien) < so_phien:
+        theo_phien = await self._bang_dong_tien(nguon, ben=ben, so_phien=so_phien)
+        if theo_phien is None:
+            return None
+        # Nguồn thưa: "mã vắng = 0đ" chỉ đúng khi nguồn CÓ phủ phiên đó. Phiên
+        # nguồn chưa có hàng nào là nguồn chưa về, không phải cả sàn nghỉ mua.
+        if nguon.khuyet_la_khong and any(not theo_phien.get(p) for p in phien):
             return None
 
         out: dict[str, list[float]] = {}
@@ -254,15 +263,43 @@ class LiveHuntDataSource:
                 out[ma] = chuoi
         return out
 
+    async def _lich_phien(self, so_phien: int) -> list[str] | None:
+        """``so_phien`` phiên giao dịch gần nhất, tăng dần — ``None`` nếu chưa đủ.
+
+        Đọc từ bảng giá vì mọi mã HOSE đều có hàng mỗi phiên; đây là thứ duy
+        nhất trong ba nguồn nói được "phiên nào ĐÃ diễn ra".
+        """
+        key = f"cap5:hunt:lich:{self._today.isoformat()}:{so_phien}"
+        if self._use_cache:
+            cached = await cache_get_json(key)
+            if isinstance(cached, list) and len(cached) == so_phien:
+                return [str(x) for x in cached]
+
+        rows, bi_cat = await self._finfo(
+            "stock_prices", truong_ngay="date", so_phien=so_phien, fields="code,date"
+        )
+        if rows is None:
+            return None
+        phien = _phien_dung_duoc(
+            [ngay for r in rows if (ngay := _iso(r.get("date")))],
+            so_can=so_phien,
+            bi_cat=bi_cat,
+        )
+        if len(phien) < so_phien:
+            return None
+        if self._use_cache:
+            await cache_set_json(key, phien, _FLOW_CACHE_TTL)
+        return phien
+
     async def _bang_dong_tien(
         self, nguon: _NguonDongTien, *, ben: str, so_phien: int
-    ) -> tuple[list[str], dict[str, dict[str, float]]] | None:
-        """Bảng ``(phiên, mã) → mua ròng`` cho cả sàn, có cache Redis ngắn."""
+    ) -> dict[str, dict[str, float]] | None:
+        """Bảng ``phiên → {mã: mua ròng}`` cho cả sàn, có cache Redis ngắn."""
         key = f"cap5:hunt:flow:{ben}:{self._today.isoformat()}:{so_phien}"
         if self._use_cache:
             cached = await cache_get_json(key)
-            if isinstance(cached, dict) and cached.get("phien"):
-                return list(cached["phien"]), dict(cached["bang"])
+            if isinstance(cached, dict) and cached:
+                return {p: dict(v) for p, v in cached.items()}
 
         rows, bi_cat = await self._finfo(
             nguon.path,
@@ -281,17 +318,15 @@ class LiveHuntDataSource:
             if not ma or ngay is None or net is None:
                 continue
             theo_phien.setdefault(ngay, {})[ma] = net
-
-        phien = _phien_dung_duoc(list(theo_phien), so_can=so_phien, bi_cat=bi_cat)
-        if not phien:
+        if not theo_phien:
             return None
-        if self._use_cache:
-            await cache_set_json(
-                key,
-                {"phien": phien, "bang": {p: theo_phien[p] for p in phien}},
-                _FLOW_CACHE_TTL,
-            )
-        return phien, theo_phien
+        # Phiên cũ nhất bị cắt giữa chừng ⇒ bỏ hẳn, xem ``_phien_dung_duoc``.
+        if bi_cat:
+            theo_phien.pop(min(theo_phien), None)
+
+        if self._use_cache and theo_phien:
+            await cache_set_json(key, theo_phien, _FLOW_CACHE_TTL)
+        return theo_phien or None
 
     # ── Transport ─────────────────────────────────────
 

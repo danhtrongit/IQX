@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import dataclasses
 import uuid
-from datetime import UTC, date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
 from sqlalchemy import select, update
@@ -1433,177 +1433,324 @@ async def test_bo_loc_la_thi_404(db_session, test_user):
 
 
 @pytest.mark.asyncio
-async def test_nguon_that_tra_none_chu_khong_tra_dict_rong():
-    """★★ ĐỘT BIẾN TỪNG THOÁT LƯỚI: ``VciHuntDataSource.net_flow`` phải trả
-    ``None``, KHÔNG phải ``{}``.
+async def test_nguon_that_tra_none_chu_khong_tra_dict_rong(monkeypatch):
+    """★★ ĐỘT BIẾN TỪNG THOÁT LƯỚI: ``net_flow`` của nguồn THẬT phải trả
+    ``None``, KHÔNG phải ``{}``, mỗi khi chưa lọc được.
 
     Mọi test khác tiêm nguồn giả, nên nếu chỉ có chúng thì một ngày nào đó ai đó
-    "dọn dẹp" ``return None`` thành ``return {}`` sẽ đi qua suite xanh mượt — và
-    máy lọc hiểu ``{}`` là "đã lọc, không mã nào thoả". Test này canh đúng hàm
-    thật (nó trả về ngay, không gọi mạng).
+    "dọn dẹp" ``None`` thành ``{}`` sẽ đi qua suite xanh mượt — và máy lọc hiểu
+    ``{}`` là "đã lọc, không mã nào thoả". Ba đường chết đều phải ra ``None``:
+    upstream nổ, upstream trả shape lạ, và cửa sổ chưa đủ số phiên.
     """
-    from app.services.cap5.hunt_data import VciHuntDataSource
+    from app.services.cap5 import hunt_data
 
-    src = VciHuntDataSource(use_cache=False, today=_phien(2))
+    async def _no(*_a, **_kw):
+        raise RuntimeError("503 Service Unavailable")
+
+    monkeypatch.setattr(hunt_data, "fetch_json", _no)
+    src = hunt_data.LiveHuntDataSource(use_cache=False, today=_phien(0))
     for ben in ("ngoai", "tudoanh"):
         assert await src.net_flow(["AAA", "BBB"], ben=ben, so_phien=5) is None, ben
+    # Nguồn nến chết thì trả dict RỖNG (máy lọc đếm "bỏ qua vì thiếu dữ liệu"),
+    # không được nổ ra ngoài và giết cả cú bấm.
+    assert await src.daily_bars(["AAA"], so_nen=SO_NEN_CAN) == {}
+
+    async def _shape_la(*_a, **_kw):
+        return {"data": "một chuỗi, không phải danh sách"}
+
+    monkeypatch.setattr(hunt_data, "fetch_json", _shape_la)
+    assert await src.net_flow(["AAA"], ben="ngoai", so_phien=5) is None
+
+    # Sàn mới chạy 4 phiên trong cửa sổ mà bộ lọc cần 5 ⇒ vẫn là "chưa lọc
+    # được", KHÔNG được lấy 4 phiên rồi đếm như đủ.
+    fake = _FakeFinfo(
+        {
+            "stock_prices": _rows_gia(["AAA"], n=4),
+            "foreigns": _rows_flow("tradingDate", {"AAA": [1.0] * 4}),
+        }
+    )
+    monkeypatch.setattr(hunt_data, "fetch_json", fake)
+    assert await src.net_flow(["AAA"], ben="ngoai", so_phien=5) is None
 
 
 # ── Nguồn dữ liệu THẬT của máy săn (``hunt_data``) ────
-# ★★ 70 dòng fetcher quét cả sàn HOSE này trước đây KHÔNG có test nào: mọi test
-# khác tiêm ``_FakeHuntSource``, nên các đột biến dưới đây sống sót hết —
-# nguy hiểm nhất là bỏ ``* _TRIEU`` (VCI trả ``accumulatedValue`` bằng TRIỆU
-# đồng): mọi mã sẽ trượt cổng thanh khoản 1 tỷ và popup in "0 mã HOSE thoả
-# điều kiện" y như một phiên buồn — đúng lời nói dối loại 1.
-
-_VN_TZ_TEST = timezone(timedelta(hours=7))
+# ★★ Bản cài này quét cả sàn HOSE bằng VNDIRECT finfo; mọi test khác tiêm
+# ``_FakeHuntSource`` nên các đột biến dưới đây sống sót hết. Nguy hiểm nhất là
+# bỏ ``* _NGHIN`` (finfo trả giá bằng NGHÌN đồng): mọi mã sẽ trượt cổng giá
+# 3.000đ và popup in "0 mã HOSE thoả điều kiện" y như một phiên buồn — đúng lời
+# nói dối loại 1.
 
 
-def _epoch(d: date) -> int:
-    """Epoch của 10:00 giờ VN ngày ``d`` (VCI trả ``t`` dạng epoch giây)."""
-    return int(datetime(d.year, d.month, d.day, 10, 0, tzinfo=_VN_TZ_TEST).timestamp())
+def _ngay_phien(n: int) -> list[str]:
+    """``n`` ngày liên tiếp dạng ISO, tăng dần (finfo trả ``date``/``tradingDate``)."""
+    d0 = date(2026, 7, 1)
+    return [(d0 + timedelta(days=i)).isoformat() for i in range(n)]
 
 
-def _vci_records(
-    n: int = SO_NEN_CAN, *, value_trieu: float | None = 1_200.0, close: float = 20_000.0
+def _rows_gia(
+    ma_list: list[str],
+    *,
+    n: int = SO_NEN_CAN,
+    close_nghin: float = 20.0,
+    ad_close_nghin: float | None = None,
+    nm_value: float | None = 5 * MIN_GTGD_TB_VND,
+    nm_volume: float = 100_000.0,
 ) -> list[dict]:
-    """``n`` nến kiểu VCI (``value`` = ``accumulatedValue``, đơn vị TRIỆU đồng)."""
+    """Hàng ``/v4/stock_prices``: giá NGHÌN đồng, ``nmValue`` VND."""
     return [
         {
-            "time": _epoch(date(2026, 7, 1) + timedelta(days=i)),
-            "close": close,
-            "volume": 100_000.0,
-            "value": value_trieu,
+            "code": ma,
+            "date": ngay,
+            "close": close_nghin,
+            "adClose": close_nghin if ad_close_nghin is None else ad_close_nghin,
+            "nmVolume": nm_volume,
+            "nmValue": nm_value,
         }
-        for i in range(n)
+        for ma in ma_list
+        for ngay in _ngay_phien(n)
     ]
 
 
-class _FakeGapChart:
-    """Thay ``vietcap.fetch_ohlcv_multi`` — ghi lại từng lượt gọi."""
+def _rows_flow(
+    truong_ngay: str,
+    chuoi: dict[str, list[float | None]],
+    *,
+    ngay: list[str] | None = None,
+) -> list[dict]:
+    """Hàng ``/v4/foreigns`` | ``/v4/proprietary_trading``. ``None`` = KHÔNG có hàng.
 
-    def __init__(self, records_by_symbol: dict[str, list[dict]], *, loi_voi: set[str] | None = None):
-        self.records = {k.upper(): v for k, v in records_by_symbol.items()}
-        self.loi_voi = {s.upper() for s in (loi_voi or set())}
+    ``ngay`` để gióng chuỗi vào đúng những phiên mà bảng giá đang có (lịch phiên
+    của nguồn thật đọc từ ``/v4/stock_prices``).
+    """
+    rows: list[dict] = []
+    for ma, gia_tri in chuoi.items():
+        moc = ngay if ngay is not None else _ngay_phien(len(gia_tri))
+        for ngay_i, v in zip(moc, gia_tri, strict=True):
+            if v is None:
+                continue
+            rows.append({"code": ma, truong_ngay: ngay_i, "netVal": v})
+    return rows
+
+
+class _FakeFinfo:
+    """Thay ``hunt_data.fetch_json`` — ghi lại từng lượt gọi finfo."""
+
+    def __init__(self, rows: dict[str, list[dict]], *, tong: dict[str, int] | None = None):
+        self.rows = rows
+        self.tong = tong or {}
         self.calls: list[dict] = []
 
-    async def __call__(self, symbols, *, end_ts, interval="1D", count_back=30):  # noqa: ANN001
-        lo = [s.upper() for s in symbols]
-        self.calls.append({"symbols": lo, "end_ts": end_ts, "interval": interval,
-                           "count_back": count_back})
-        if self.loi_voi & set(lo):
-            raise RuntimeError("429 Too Many Requests")
-        return ({s: self.records[s] for s in lo if s in self.records}, "https://vci/gap-chart")
+    async def __call__(self, url, *, params=None, **_kw):  # noqa: ANN001
+        path = url.rsplit("/", 1)[-1]
+        self.calls.append({"path": path, "params": params or {}})
+        hang = self.rows.get(path, [])
+        return {"data": hang, "totalElements": self.tong.get(path, len(hang))}
 
 
 @pytest.mark.asyncio
-async def test_hunt_data_gtgd_vci_tinh_bang_trieu_dong(monkeypatch):
-    """★★ ``accumulatedValue`` của VCI là TRIỆU đồng — phải nhân ``_TRIEU``.
+async def test_hunt_data_gia_finfo_tinh_bang_nghin_dong(monkeypatch):
+    """★★ ``close``/``adClose`` của finfo là NGHÌN đồng — phải nhân ``_NGHIN``.
 
-    Bỏ phép nhân là mọi mã trượt cổng thanh khoản 1 tỷ/phiên ⇒ mọi bộ lọc in
-    "0 mã HOSE thoả điều kiện". Test này ghim cả hai đầu: con số quy đổi VÀ hệ
-    quả của nó ở lọc sàn.
+    Bỏ phép nhân là mọi mã đọc thành 20đ ⇒ trượt cổng giá 3.000đ ⇒ mọi bộ lọc in
+    "0 mã HOSE thoả điều kiện". ``nmValue`` thì NGƯỢC LẠI — đã là VND, nhân thêm
+    là mã thanh khoản mỏng cũng lọt cổng 1 tỷ/phiên.
     """
-    from app.services.cap5.hunt import HuntEngine
     from app.services.cap5 import hunt_data
+    from app.services.cap5.hunt import HuntEngine
 
-    fake = _FakeGapChart({"AAA": _vci_records(value_trieu=1_200.0)})
-    monkeypatch.setattr(hunt_data.vietcap, "fetch_ohlcv_multi", fake)
-    src = hunt_data.VciHuntDataSource(use_cache=False, today=date(2026, 8, 19))
+    fake = _FakeFinfo({"stock_prices": _rows_gia(["AAA"])})
+    monkeypatch.setattr(hunt_data, "fetch_json", fake)
+    src = hunt_data.LiveHuntDataSource(use_cache=False, today=_phien(0))
 
     bars = (await src.daily_bars(["aaa"], so_nen=SO_NEN_CAN))["AAA"]
-    assert bars[-1].gtgd_vnd == 1_200 * 1_000_000
-    assert bars[-1].gtgd_vnd >= MIN_GTGD_TB_VND
-    # …và mã đó QUA được lọc sàn (nếu thiếu ``* _TRIEU`` thì 1.200đ < 1 tỷ).
+    assert bars[-1].close == 20_000.0
+    assert bars[-1].gtgd_vnd == 5 * MIN_GTGD_TB_VND
+    assert bars[-1].volume == 100_000.0
     assert HuntEngine._qua_loc_san(bars) is True
 
-    # Mã thanh khoản mỏng thật (900 triệu/phiên) vẫn phải trượt.
-    fake2 = _FakeGapChart({"MONG": _vci_records(value_trieu=900.0)})
-    monkeypatch.setattr(hunt_data.vietcap, "fetch_ohlcv_multi", fake2)
+    # Mã 2.500đ (giá thật dưới cổng) và mã thanh khoản 900 triệu/phiên vẫn trượt.
+    fake_re = _FakeFinfo({"stock_prices": _rows_gia(["RE"], close_nghin=2.5)})
+    monkeypatch.setattr(hunt_data, "fetch_json", fake_re)
+    re_bars = (await src.daily_bars(["RE"], so_nen=SO_NEN_CAN))["RE"]
+    assert re_bars[-1].close == 2_500.0
+    assert HuntEngine._qua_loc_san(re_bars) is False
+
+    fake_mong = _FakeFinfo({"stock_prices": _rows_gia(["MONG"], nm_value=900_000_000.0)})
+    monkeypatch.setattr(hunt_data, "fetch_json", fake_mong)
     mong = (await src.daily_bars(["MONG"], so_nen=SO_NEN_CAN))["MONG"]
     assert HuntEngine._qua_loc_san(mong) is False
 
 
 @pytest.mark.asyncio
-async def test_hunt_data_xin_du_nen_va_dung_lo_40(monkeypatch):
-    """``count_back = so_nen + 10`` (bù ngày nghỉ/lễ) và gọi theo LÔ 40 mã.
+async def test_hunt_data_dung_gia_dieu_chinh_va_sap_tang_dan(monkeypatch):
+    """Giá dùng ``adClose`` (đã điều chỉnh) và nến phải TĂNG DẦN theo thời gian.
 
-    ``count_back = so_nen`` là thiếu nến sau mỗi kỳ nghỉ ⇒ mã bị đếm vào "bỏ qua
-    vì thiếu dữ liệu" hàng loạt. Một lượt/mã (bỏ lô) là 406 lượt HTTP mỗi cú bấm.
+    Đọc giá thô là ngày GDKHQ tụt giá thành "không vượt đỉnh"; bỏ ``sorted`` thì
+    ``bars[-1]`` không còn là phiên gần nhất — mọi ngưỡng §5.3 đo sai mà không ai
+    thấy.
     """
     from app.services.cap5 import hunt_data
 
-    ma = [f"S{i:03d}" for i in range(90)]
-    fake = _FakeGapChart({m: _vci_records() for m in ma})
-    monkeypatch.setattr(hunt_data.vietcap, "fetch_ohlcv_multi", fake)
-    src = hunt_data.VciHuntDataSource(use_cache=False, today=date(2026, 8, 19))
-
-    out = await src.daily_bars(ma, so_nen=SO_NEN_CAN)
-    assert len(out) == 90
-    assert [len(c["symbols"]) for c in fake.calls] == [40, 40, 10]
-    assert hunt_data.BATCH == 40
-    for c in fake.calls:
-        assert c["count_back"] == SO_NEN_CAN + 10, "phải xin dư 10 nến"
-        assert c["interval"] == "1D"
-
-
-@pytest.mark.asyncio
-async def test_hunt_data_sap_tang_dan_va_khu_trung_ngay(monkeypatch):
-    """Nến phải TĂNG DẦN theo thời gian và khử trùng ngày.
-
-    Nguồn trả lộn xộn là chuyện thường; bỏ ``sorted(by_date)`` thì "phiên gần
-    nhất" (``bars[-1]``) không còn là phiên gần nhất — mọi ngưỡng §5.3 đo sai mà
-    không ai thấy.
-    """
-    from app.services.cap5 import hunt_data
-
-    d0 = date(2026, 7, 1)
     xao = [
-        {"time": _epoch(d0 + timedelta(days=2)), "close": 30_000.0, "volume": 3.0, "value": 1_200.0},
-        {"time": _epoch(d0), "close": 10_000.0, "volume": 1.0, "value": 1_200.0},
-        {"time": _epoch(d0 + timedelta(days=1)), "close": 20_000.0, "volume": 2.0, "value": 1_200.0},
-        # Trùng ngày với dòng trên — bản sau thắng, KHÔNG thành 2 nến.
-        {"time": _epoch(d0 + timedelta(days=1)), "close": 21_000.0, "volume": 9.0, "value": 1_200.0},
+        {"code": "MIX", "date": "2026-07-03", "close": 30.0, "adClose": 30.0,
+         "nmVolume": 3.0, "nmValue": 1.0},
+        {"code": "MIX", "date": "2026-07-01", "close": 10.0, "adClose": 9.0,
+         "nmVolume": 1.0, "nmValue": 1.0},
+        {"code": "MIX", "date": "2026-07-02", "close": 20.0, "adClose": 18.0,
+         "nmVolume": 2.0, "nmValue": None},
+        # Giá hỏng ⇒ nến BỊ BỎ, không được thay bằng 0 (0đ kéo lọc sàn nói dối).
+        {"code": "MIX", "date": "2026-07-04", "close": 0.0, "adClose": 0.0,
+         "nmVolume": 1.0, "nmValue": 1.0},
+        {"code": "MIX", "date": "2026-07-05", "close": "x", "adClose": "x",
+         "nmVolume": 1.0, "nmValue": 1.0},
     ]
-    fake = _FakeGapChart({"MIX": xao})
-    monkeypatch.setattr(hunt_data.vietcap, "fetch_ohlcv_multi", fake)
-    src = hunt_data.VciHuntDataSource(use_cache=False, today=date(2026, 8, 19))
+    fake = _FakeFinfo({"stock_prices": xao})
+    monkeypatch.setattr(hunt_data, "fetch_json", fake)
+    src = hunt_data.LiveHuntDataSource(use_cache=False, today=_phien(0))
 
     bars = (await src.daily_bars(["MIX"], so_nen=SO_NEN_CAN))["MIX"]
     assert [b.ngay for b in bars] == ["2026-07-01", "2026-07-02", "2026-07-03"]
-    assert bars[-1].close == 30_000.0
-    assert bars[1].close == 21_000.0
+    assert [b.close for b in bars] == [9_000.0, 18_000.0, 30_000.0]
+    # Thiếu ``nmValue`` ⇒ ``gtgd_vnd is None`` để lọc sàn coi là THIẾU DỮ LIỆU,
+    # không phải 0đ.
+    assert bars[1].gtgd_vnd is None
 
 
 @pytest.mark.asyncio
-async def test_hunt_data_nen_hong_bi_bo_va_lo_loi_khong_giet_ca_cu_bam(monkeypatch):
-    """Nến giá ≤0/không đọc được bị BỎ (không thay bằng 0), và một lô lỗi chỉ làm
-    các mã của lô đó VẮNG MẶT — mã vắng mặt sẽ được máy lọc đếm vào "bỏ qua vì
-    thiếu dữ liệu", không phải "trượt lọc"."""
+async def test_hunt_data_mot_luot_http_cho_ca_san_va_loc_dung_san(monkeypatch):
+    """★★ MỘT lượt gọi cho CẢ rổ, lọc thẳng ``floor:HOSE`` ở upstream.
+
+    Dời lời gọi vào vòng lặp per-symbol vẫn cho kết quả y hệt (mọi assert khác
+    vẫn xanh) nhưng biến một cú bấm thành 405 lượt HTTP — đúng lý do endpoint
+    1-mã của VCI bị loại khỏi đường này.
+    """
+    from app.services.cap5 import hunt_data
+    from app.services.cap5.hunt import SAN_HOSE
+
+    ma = [f"S{i:03d}" for i in range(405)]
+    fake = _FakeFinfo(
+        {
+            "stock_prices": _rows_gia(ma, n=SO_NEN_CAN),
+            "foreigns": _rows_flow(
+                "tradingDate",
+                {m: [1.0] * 5 for m in ma},
+                ngay=_ngay_phien(SO_NEN_CAN)[-5:],
+            ),
+        }
+    )
+    monkeypatch.setattr(hunt_data, "fetch_json", fake)
+    src = hunt_data.LiveHuntDataSource(use_cache=False, today=_phien(0))
+
+    assert len(await src.daily_bars(ma, so_nen=SO_NEN_CAN)) == 405
+    assert len(await src.net_flow(ma, ben="ngoai", so_phien=5)) == 405
+    # Bảng giá (nến + lịch phiên) và bảng dòng tiền, mỗi thứ MỘT lượt — không có
+    # lượt nào mang tên một mã lẻ.
+    assert [c["path"] for c in fake.calls] == [
+        "stock_prices", "stock_prices", "foreigns",
+    ]
+    for call in fake.calls:
+        assert f"floor:{SAN_HOSE}" in call["params"]["q"]
+        # Sắp giảm dần là điều kiện để "chỗ bị cắt luôn là phiên cũ nhất".
+        assert call["params"]["sort"].endswith(":desc")
+
+
+@pytest.mark.asyncio
+async def test_hunt_data_khuyet_khoi_ngoai_va_khuyet_tu_doanh_khac_nghia(monkeypatch):
+    """★★ Hai chỗ khuyết KHÔNG cùng nghĩa — gộp lại là bịa số hoặc mất bộ lọc.
+
+    ``/v4/foreigns`` trả đủ mọi mã HOSE mỗi phiên ⇒ mã thiếu phiên là LỖ HỔNG dữ
+    liệu, phải bị loại khỏi lượt chạy. ``/v4/proprietary_trading`` chỉ có hàng
+    khi tự doanh CÓ giao dịch ⇒ vắng mặt nghĩa là 0 đồng, một con số THẬT.
+    """
     from app.services.cap5 import hunt_data
 
-    hong = [
-        {"time": _epoch(date(2026, 7, 1)), "close": 0.0, "volume": 1.0, "value": 1_200.0},
-        {"time": _epoch(date(2026, 7, 2)), "close": "x", "volume": 1.0, "value": 1_200.0},
-        {"time": None, "close": 10_000.0, "volume": 1.0, "value": 1_200.0},
-        {"time": _epoch(date(2026, 7, 3)), "close": 10_000.0, "volume": 1.0, "value": None},
-    ]
-    ma = [f"L{i:02d}" for i in range(41)]  # 2 lô: 40 + 1
-    records = {m: _vci_records() for m in ma}
-    records["HONG"] = hong
-    fake = _FakeGapChart(records, loi_voi={ma[40]})
-    monkeypatch.setattr(hunt_data.vietcap, "fetch_ohlcv_multi", fake)
-    src = hunt_data.VciHuntDataSource(use_cache=False, today=date(2026, 8, 19))
+    ty = 1_000_000_000.0
+    fake = _FakeFinfo(
+        {
+            "stock_prices": _rows_gia(["DU", "THIEU", "CO", "VANG"], n=5),
+            "foreigns": _rows_flow(
+                "tradingDate",
+                {"DU": [ty] * 5, "THIEU": [ty, None, ty, ty, ty]},
+            ),
+            "proprietary_trading": _rows_flow(
+                "date",
+                # Mỗi phiên đều có ít nhất một mã ⇒ nguồn ĐÃ phủ cả 5 phiên.
+                {"CO": [ty, None, ty, None, ty], "KHAC": [None, ty, None, ty, None]},
+            ),
+        }
+    )
+    monkeypatch.setattr(hunt_data, "fetch_json", fake)
+    src = hunt_data.LiveHuntDataSource(use_cache=False, today=_phien(0))
 
-    out = await src.daily_bars(["HONG", *ma], so_nen=SO_NEN_CAN)
-    # Lô thứ hai (chứa mã gây lỗi) mất hẳn, lô đầu vẫn về.
-    assert len(fake.calls) == 2
-    assert ma[40] not in out
-    assert ma[0] in out
-    # Nến giá hỏng/không có ngày bị bỏ; nến thiếu ``value`` vẫn vào nhưng
-    # ``gtgd_vnd is None`` để lọc sàn coi là THIẾU DỮ LIỆU, không phải 0đ.
-    assert [b.ngay for b in out["HONG"]] == ["2026-07-03"]
-    assert out["HONG"][0].gtgd_vnd is None
+    ngoai = await src.net_flow(["DU", "THIEU"], ben="ngoai", so_phien=5)
+    assert ngoai == {"DU": [ty] * 5}, "mã thiếu phiên khối ngoại phải bị loại"
+
+    tudoanh = await src.net_flow(["CO", "VANG"], ben="tudoanh", so_phien=5)
+    assert tudoanh == {
+        "CO": [ty, 0.0, ty, 0.0, ty],
+        "VANG": [0.0] * 5,
+    }, "phiên tự doanh không giao dịch là 0đ, không phải chỗ trống"
+
+
+@pytest.mark.asyncio
+async def test_hunt_data_tu_doanh_thieu_han_mot_phien_thi_chua_loc_duoc(monkeypatch):
+    """★★ "Mã vắng = 0đ" chỉ đúng khi nguồn ĐÃ phủ phiên đó.
+
+    Nguồn tự doanh về trễ một phiên (không có hàng nào) mà vẫn điền 0đ là biến
+    "chưa có dữ liệu" thành "cả sàn không mã nào được tự doanh mua" — và bảng
+    xếp hạng vẫn in ra 10 mã như thường. Lịch phiên đọc từ bảng giá chính là để
+    phát hiện chỗ trống này.
+    """
+    from app.services.cap5 import hunt_data
+
+    ty = 1_000_000_000.0
+    fake = _FakeFinfo(
+        {
+            "stock_prices": _rows_gia(["CO"], n=5),
+            # Chỉ có 4 phiên đầu; phiên gần nhất nguồn chưa về.
+            "proprietary_trading": _rows_flow("date", {"CO": [ty, ty, ty, ty]}),
+        }
+    )
+    monkeypatch.setattr(hunt_data, "fetch_json", fake)
+    src = hunt_data.LiveHuntDataSource(use_cache=False, today=_phien(0))
+
+    assert await src.net_flow(["CO"], ben="tudoanh", so_phien=5) is None
+
+
+@pytest.mark.asyncio
+async def test_hunt_data_ket_qua_bi_cat_thi_bo_phien_cu_nhat(monkeypatch):
+    """★★ Đụng trần ``size`` ⇒ phiên CŨ NHẤT chỉ có một phần số mã.
+
+    Giữ phiên đó là đọc "mã bị cắt" thành "mã không mua ròng phiên ấy" — số
+    "≥3/5 phiên" sai mà không dấu vết. Bỏ phiên ⇒ còn 4 phiên ⇒ "chưa lọc được".
+    """
+    from app.services.cap5 import hunt_data
+
+    ty = 1_000_000_000.0
+    gia5 = _rows_gia(["AAA"], n=5)
+    rows = _rows_flow("tradingDate", {"AAA": [ty] * 5})
+    fake = _FakeFinfo(
+        {"stock_prices": gia5, "foreigns": rows},
+        tong={"foreigns": len(rows) + 1},
+    )
+    monkeypatch.setattr(hunt_data, "fetch_json", fake)
+    src = hunt_data.LiveHuntDataSource(use_cache=False, today=_phien(0))
+
+    # Phiên cũ nhất bị bỏ ⇒ mã không còn chuỗi phủ đủ 5 phiên của lịch ⇒ nó VẮNG
+    # khỏi kết quả (máy lọc dịch tiếp thành "chưa lọc được", xem
+    # ``_thieu_chuoi_dong_tien``) chứ không được điền bừa phiên thiếu.
+    assert await src.net_flow(["AAA"], ben="ngoai", so_phien=5) == {}
+
+    # Đủ dư một phiên thì vẫn chạy, và chuỗi lấy đúng 5 phiên GẦN NHẤT.
+    rows6 = _rows_flow("tradingDate", {"AAA": [9 * ty, ty, ty, ty, ty, 2 * ty]})
+    fake6 = _FakeFinfo(
+        {"stock_prices": _rows_gia(["AAA"], n=6), "foreigns": rows6},
+        tong={"foreigns": len(rows6) + 1},
+    )
+    monkeypatch.setattr(hunt_data, "fetch_json", fake6)
+    assert (await src.net_flow(["AAA"], ben="ngoai", so_phien=5))["AAA"] == [
+        ty, ty, ty, ty, 2 * ty,
+    ]
 
 
 @pytest.mark.asyncio
@@ -2585,14 +2732,14 @@ async def test_cap5_endpoints_wired_and_free(client, db_session, test_user, monk
     """Router mount ở /api/v1/cap5, gác bằng ``CurrentUser`` (KHÔNG premium).
 
     Cũng canh đường khởi tạo THẬT: endpoint dựng ``Cap5Service(db)`` (không tiêm
-    nguồn), nên ``VciHuntDataSource`` bị thay ở đây — nếu ai đó đổi tên/đường
+    nguồn), nên ``LiveHuntDataSource`` bị thay ở đây — nếu ai đó đổi tên/đường
     dẫn nguồn dữ liệu mặc định, test này đỏ chứ không âm thầm gọi mạng.
     """
     from app.core.security import create_access_token
 
     src = _FakeHuntSource(bars={"HTTP1": _with_last(_bars(), volume=300_000.0)})
     monkeypatch.setattr(
-        "app.services.cap5.service.VciHuntDataSource", lambda *a, **kw: src
+        "app.services.cap5.service.LiveHuntDataSource", lambda *a, **kw: src
     )
 
     await _fast_track_cap4(db_session, test_user.id)
