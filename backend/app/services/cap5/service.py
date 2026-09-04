@@ -125,7 +125,7 @@ from app.services.cap5.hunt import (
     HuntResult,
     loc_san_tieu_chi,
 )
-from app.services.cap5.hunt_data import VciHuntDataSource
+from app.services.cap5.hunt_data import LiveHuntDataSource
 
 logger = logging.getLogger(__name__)
 
@@ -227,14 +227,15 @@ class Cap5Service:
     """Business logic cho Cấp 5 «Săn mã» (FREE, Thực chiến).
 
     ``hunt_source`` được tiêm vào để test chạy không cần mạng; mặc định là
-    ``VciHuntDataSource`` (VCI gap-chart theo lô + cache Redis ngắn).
+    ``LiveHuntDataSource`` (VCI gap-chart theo lô cho nến ngày + VNDIRECT finfo
+    cho mua ròng theo phiên, cả hai có cache Redis ngắn).
     """
 
     def __init__(
         self, session: AsyncSession, *, hunt_source: HuntDataSource | None = None
     ) -> None:
         self._session = session
-        self._source: HuntDataSource = hunt_source or VciHuntDataSource()
+        self._source: HuntDataSource = hunt_source or LiveHuntDataSource()
         self._engine = HuntEngine(self._source)
         self._consensus = InsightConsensusSource(session)
 

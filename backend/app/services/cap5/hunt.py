@@ -25,21 +25,24 @@ Nến ngày (giá đóng cửa · khối lượng · giá trị khớp mỗi phi
   · 📈 ``tang`` — tăng ≥3% & KL ≥1,5× TB20 .................. ✅ TÍNH ĐƯỢC
   · lọc sàn: HOSE (``symbols.exchange``) · giá ≥3.000đ · GTGD TB ≥1 tỷ/phiên
 
-  · 💰 ``ngoai``    — mua ròng ≥3/5 phiên .................... ❌ THIẾU NGUỒN
-  · 🏦 ``tudoanh``  — mua ròng ≥3/5 phiên .................... ❌ THIẾU NGUỒN
+Mua ròng THEO TỪNG PHIÊN cho TỪNG mã lấy qua ``HuntDataSource.net_flow`` — bản
+cài đặt thật đọc VNDIRECT finfo (``/v4/foreigns``, ``/v4/proprietary_trading``:
+lọc ``floor:HOSE`` + khoảng ngày, MỘT lượt HTTP trả cả bảng ``(mã, phiên,
+netVal)``, đơn vị VND). ⇒ đủ dữ liệu cho:
 
-**Vì sao hai bộ lọc dòng tiền thiếu nguồn (đích danh):** điều kiện đòi chuỗi
-mua ròng THEO TỪNG PHIÊN cho TỪNG mã. Backend hiện chỉ có:
+  · 💰 ``ngoai``    — mua ròng ≥3/5 phiên .................... ✅ TÍNH ĐƯỢC
+  · 🏦 ``tudoanh``  — mua ròng ≥3/5 phiên .................... ✅ TÍNH ĐƯỢC
+
+**Vì sao KHÔNG dùng nguồn VCI cho hai bộ lọc dòng tiền** (đã thử, đã loại):
   (a) ``vietcap.fetch_foreign_trade`` / ``fetch_proprietary_history`` — đúng dữ
-      liệu cần, nhưng **mỗi lần gọi chỉ được 1 mã** ⇒ quét sàn HOSE (~406 mã)
-      là 406 lượt HTTP cho một cú bấm bộ lọc;
+      liệu cần, nhưng **mỗi lần gọi chỉ được 1 mã** ⇒ quét sàn HOSE (~405 mã)
+      là 405 lượt HTTP cho một cú bấm bộ lọc;
   (b) ``vietcap_market_overview.fetch_foreign_top`` /
-      ``fetch_proprietary_top`` — bulk nhưng chỉ trả **top N mã của cả kỳ**, đã
-      cộng gộp, không tách theo phiên ⇒ không đếm được "≥3/5 phiên", và mã nằm
-      ngoài top là "không biết" chứ không phải "bán ròng". Đếm trên đó là bịa số.
-Kết luận: cho tới khi có nguồn bulk theo phiên (hoặc bảng cache EOD nội bộ), hai
-bộ lọc này trả "chưa đủ dữ liệu" TƯỜNG MINH. ``HuntDataSource.net_flow`` là
-đúng cái khe cắm để lắp nguồn đó vào sau — máy lọc dưới đây đã biết chạy khi có.
+      ``fetch_proprietary_top`` — bulk nhưng chỉ trả **top 20 / top 10 mã của
+      cả kỳ**, đã cộng gộp, không tách theo phiên ⇒ không đếm được "≥3/5
+      phiên", và mã nằm ngoài top là "không biết" chứ không phải "bán ròng".
+``net_flow`` vẫn được phép trả ``None`` (upstream lỗi / cửa sổ không đủ 5
+phiên) — khi đó máy lọc dưới đây nói "chưa lọc được", KHÔNG nói "0 mã thoả".
 
 **Tiêu chí lọc sàn "loại mã diện cảnh báo/kiểm soát/hạn chế giao dịch" cũng
 THIẾU NGUỒN:** không có trường nào trong toàn backend mang trạng thái đó
@@ -101,8 +104,8 @@ class HuntBar:
 class HuntDataSource(Protocol):
     """Nguồn dữ liệu thô cho máy săn mã.
 
-    Tách khỏi máy lọc để (1) test chạy không cần mạng, (2) khi có nguồn dòng
-    tiền theo phiên thì chỉ cần cài ``net_flow``, máy lọc không phải sửa.
+    Tách khỏi máy lọc để (1) test chạy không cần mạng, (2) đổi nhà cung cấp dữ
+    liệu chỉ phải sửa bản cài (``app.services.cap5.hunt_data``), máy lọc đứng yên.
     """
 
     async def daily_bars(
@@ -119,9 +122,13 @@ class HuntDataSource(Protocol):
     ) -> dict[str, list[float]] | None:
         """Giá trị mua ròng (VND) theo TỪNG phiên, tăng dần theo thời gian.
 
-        ``ben`` ∈ {'ngoai', 'tudoanh'}. **Trả ``None`` khi nguồn không có dữ
-        liệu đó** — máy lọc dịch thẳng thành "chưa đủ dữ liệu", không bao giờ
-        thành danh sách rỗng.
+        ``ben`` ∈ {'ngoai', 'tudoanh'}. **Trả ``None`` khi nguồn không lấy được
+        chuỗi đó** (upstream lỗi, chưa đủ ``so_phien`` phiên) — máy lọc dịch
+        thẳng thành "chưa đủ dữ liệu", không bao giờ thành danh sách rỗng.
+
+        Mã VẮNG khỏi dict = không đủ dữ liệu cho mã đó (≠ mua ròng 0đ). Nguồn
+        nào có quyền dịch "không có hàng" thành 0đ là việc của bản cài — xem
+        ``hunt_data._NguonDongTien.khuyet_la_khong``.
         """
         ...
 
@@ -207,9 +214,9 @@ FILTER_SPECS: dict[str, FilterSpec] = {
 FILTER_DONG_TIEN = {HuntFilter.NGOAI.value: "ngoai", HuntFilter.TU_DOANH.value: "tudoanh"}
 
 _THIEU_NGUON_DONG_TIEN = (
-    "Chưa có nguồn dữ liệu mua ròng theo TỪNG phiên cho toàn sàn — backend hiện "
-    "chỉ lấy được chuỗi này cho từng mã một, hoặc bảng xếp hạng đã cộng gộp cả "
-    "kỳ (không tách phiên). Chưa lọc được, KHÔNG phải là không có mã nào thoả."
+    "Nguồn mua ròng theo từng phiên không trả dữ liệu lúc này (upstream lỗi, "
+    f"hoặc cửa sổ chưa đủ {SO_PHIEN_GOM} phiên đã chốt). Chưa lọc được, KHÔNG "
+    "phải là không có mã nào thoả — thử lại sau ít phút."
 )
 
 

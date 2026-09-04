@@ -1,38 +1,91 @@
 """Nguồn dữ liệu THẬT cho máy săn mã Cấp 5 (bản cài ``HuntDataSource``).
 
-Nến ngày lấy hàng loạt qua VCI gap-chart (``vietcap.fetch_ohlcv_multi``) theo
-lô, có cache Redis ngắn: một cú bấm bộ lọc quét cả sàn HOSE (~400 mã) tốn
-khoảng ``ceil(400 / BATCH)`` lượt HTTP chứ không phải 400.
+Màn Săn mã quét CẢ sàn HOSE (~405 mã) mỗi cú bấm, nên mọi thứ ở đây phải là
+BULK — một lượt HTTP cho cả bảng, không phải một lượt mỗi mã. Cả hai loại dữ
+liệu lấy từ VNDIRECT finfo (``api-finfo.vndirect.com.vn/v4``), lọc thẳng theo
+``floor:HOSE`` + khoảng ngày:
 
-``net_flow`` trả ``None`` — xem bản kiểm dữ liệu ở đầu ``app.services.cap5.hunt``:
-backend chưa có nguồn mua ròng khối ngoại / tự doanh **theo từng phiên cho toàn
-sàn**. Trả ``None`` (chứ không phải ``{}``) là điều bắt buộc: ``{}`` sẽ được máy
-lọc hiểu là "đã lọc, không mã nào thoả" và in ra một con số 0 bịa.
+  · **Nến ngày** — ``/v4/stock_prices`` → ``adClose`` (nghìn đồng, đã điều
+    chỉnh), ``nmVolume`` (cổ phiếu), ``nmValue`` (GTGD khớp lệnh, VND).
+  · **Mua ròng theo TỪNG phiên** — ``/v4/foreigns`` (khối ngoại) và
+    ``/v4/proprietary_trading`` (tự doanh) → ``netVal`` (VND).
+
+★★ **VÌ SAO KHÔNG CÒN DÙNG VCI GAP-CHART CHO NẾN.** Bản trước gọi
+``vietcap.fetch_ohlcv_multi`` (POST ``chart/OHLCChart/gap-chart`` với mảng
+``symbols``) theo lô 40 mã. Upstream nay CHỈ trả dữ liệu khi mảng có ĐÚNG 1 mã;
+gửi 2 mã trở lên nó trả ``[]`` — không lỗi HTTP, không cảnh báo. Hệ quả trên
+production: mọi mã "vắng nến" ⇒ cả 5 bộ lọc rơi vào nhánh "chưa lọc được".
+Quét sàn bằng endpoint 1-mã là 405 lượt HTTP mỗi cú bấm, nên nguồn nến chuyển
+hẳn sang finfo (một lượt cho cả bảng, cùng lịch phiên với dữ liệu dòng tiền).
+
+★★ **Luật số 1 (xem ``app.services.cap5.hunt``) sống cả ở đây:** khi nguồn
+không trả lời được, ``net_flow`` trả ``None`` — KHÔNG BAO GIỜ ``{}``. ``{}`` sẽ
+được máy lọc hiểu là "đã lọc, không mã nào thoả" và in ra một con số 0 bịa.
+
+★ **Khuyết dữ liệu của hai nguồn dòng tiền KHÔNG cùng nghĩa nhau:**
+  · ``/v4/foreigns`` trả ĐỦ 405 mã HOSE mỗi phiên (kể cả mã ``netVal = 0``).
+    Mã vắng mặt ⇒ LỖ HỔNG dữ liệu ⇒ bỏ mã đó ra khỏi lần chạy (máy lọc đếm vào
+    "bỏ qua vì thiếu dữ liệu"), không được coi là 0.
+  · ``/v4/proprietary_trading`` chỉ có hàng cho mã tự doanh CÓ giao dịch trong
+    phiên (~60-90 mã/phiên). Mã vắng mặt ⇒ phiên đó tự doanh không giao dịch mã
+    đó ⇒ mua ròng = 0 đồng, đây là số THẬT chứ không phải chỗ trống.
+Đó là lý do ``_NguonDongTien.khuyet_la_khong`` tồn tại; gộp hai ca này làm một
+là hoặc bịa 300 mã "0 đồng" cho khối ngoại, hoặc vứt cả bộ lọc tự doanh đi.
 """
 
 from __future__ import annotations
 
 import logging
+import math
 from collections.abc import Sequence
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
+from typing import Any
 
 from app.services.cache.redis_cache import cache_get_json, cache_set_json
-from app.services.cap5.hunt import HuntBar
-from app.services.market_data.sources import vietcap
+from app.services.cap5.hunt import SAN_HOSE, HuntBar
+from app.services.market_data.http import fetch_json, get_headers
 
 logger = logging.getLogger(__name__)
 
 _VN_TZ = timezone(timedelta(hours=7))
-#: Số mã mỗi lượt gọi gap-chart.
-BATCH = 40
+
+_FINFO_BASE = "https://api-finfo.vndirect.com.vn/v4"
+_FINFO_SOURCE = "VND"
+#: Trần số hàng xin mỗi lượt. 405 mã × ~30 phiên vẫn lọt (upstream nhận tới
+#: 20.000 và trả đủ); nếu vẫn bị cắt thì xem ``_gom_theo_phien(bi_cat=…)``.
+_FINFO_SIZE = 20_000
 #: Nến ngày đổi tối đa 1 lần/phiên ⇒ cache 30 phút là dư an toàn.
 _CACHE_TTL = 1800
-#: Đơn vị ``accumulatedValue`` của VCI là TRIỆU đồng.
-_TRIEU = 1_000_000
+#: Dòng tiền chạy TRONG phiên ⇒ cache ngắn hơn nến ngày.
+_FLOW_CACHE_TTL = 900
+#: Đơn vị giá của finfo là NGHÌN đồng (HPG "21.7" = 21.700đ).
+_NGHIN = 1_000
+#: Đổi "số phiên cần" sang "số ngày lịch phải xin": 7/5 ngày lịch mỗi phiên
+#: (nghỉ cuối tuần) + 12 ngày bù nghỉ lễ dài (Tết nghỉ liền 9 ngày vẫn không
+#: thủng). Xin thiếu ngày là mã bị đếm nhầm vào "thiếu dữ liệu" sau mỗi kỳ nghỉ.
+_BU_NGAY_NGHI = 12
 
 
-def _ts(d: date) -> int:
-    return int(datetime(d.year, d.month, d.day, tzinfo=_VN_TZ).timestamp())
+def _so_ngay_lich(so_phien: int) -> int:
+    return math.ceil(so_phien * 7 / 5) + _BU_NGAY_NGHI
+
+
+@dataclass(frozen=True)
+class _NguonDongTien:
+    """Một endpoint finfo + cách đọc chỗ khuyết của nó."""
+
+    path: str
+    #: Tên trường ngày (hai endpoint đặt tên khác nhau: ``tradingDate`` / ``date``).
+    truong_ngay: str
+    #: ``True`` = mã vắng mặt trong phiên nghĩa là mua ròng 0đ (xem docstring module).
+    khuyet_la_khong: bool
+
+
+_NGUON_DONG_TIEN: dict[str, _NguonDongTien] = {
+    "ngoai": _NguonDongTien("foreigns", "tradingDate", khuyet_la_khong=False),
+    "tudoanh": _NguonDongTien("proprietary_trading", "date", khuyet_la_khong=True),
+}
 
 
 def _iso(raw: object) -> str | None:
@@ -45,82 +98,240 @@ def _iso(raw: object) -> str | None:
     return None
 
 
-def _to_bars(records: list[dict]) -> list[HuntBar]:
-    """Chuẩn hoá + sắp tăng dần + khử trùng ngày.
+def _so(raw: object) -> float | None:
+    try:
+        gia_tri = float(raw)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
+    return gia_tri if math.isfinite(gia_tri) else None
 
-    Nến có giá đóng cửa không hợp lệ bị BỎ (không thay bằng 0) — một nến 0 đồng
-    sẽ kéo trung bình xuống và làm lọc sàn nói dối.
+
+def _phien_dung_duoc(ngay_co: Sequence[str], *, so_can: int, bi_cat: bool) -> list[str]:
+    """Chọn ``so_can`` phiên gần nhất trong các phiên nguồn trả về.
+
+    ★ ``bi_cat`` = upstream trả ít hàng hơn ``totalElements`` (đụng trần
+    ``size``). Vì ta luôn xin ``sort=<ngày>:desc``, chỗ bị cắt là phiên CŨ NHẤT
+    — phiên đó chỉ có một phần số mã. Bỏ nó đi, nếu không mã bị cắt sẽ bị đọc
+    thành "phiên đó không mua ròng" / "phiên đó không có nến".
     """
-    by_date: dict[str, HuntBar] = {}
-    for r in records:
-        ngay = _iso(r.get("time"))
-        if ngay is None:
-            continue
-        try:
-            close = float(r["close"])
-        except (KeyError, TypeError, ValueError):
-            continue
-        if close <= 0:
-            continue
-        try:
-            volume = float(r.get("volume") or 0.0)
-        except (TypeError, ValueError):
-            volume = 0.0
-        raw_value = r.get("value")
-        try:
-            gtgd = float(raw_value) * _TRIEU if raw_value is not None else None
-        except (TypeError, ValueError):
-            gtgd = None
-        by_date[ngay] = HuntBar(ngay=ngay, close=close, volume=volume, gtgd_vnd=gtgd)
-    return [by_date[k] for k in sorted(by_date)]
+    phien = sorted(set(ngay_co))
+    if bi_cat and phien:
+        phien.pop(0)
+    return phien[-so_can:]
 
 
-class VciHuntDataSource:
-    """``HuntDataSource`` chạy trên dữ liệu VCI thật."""
+class LiveHuntDataSource:
+    """``HuntDataSource`` chạy trên dữ liệu thị trường thật (VNDIRECT finfo).
+
+    Một bảng cho cả sàn, cache Redis ngắn: màn Săn mã hỏi 405 mã còn
+    ``_tin_hieu_san`` hỏi đúng 1 mã — cả hai dùng chung bảng đã cache nên lần
+    hỏi 1 mã không tốn thêm lượt HTTP nào.
+    """
 
     def __init__(self, *, use_cache: bool = True, today: date | None = None) -> None:
         self._use_cache = use_cache
         self._today = today or datetime.now(_VN_TZ).date()
 
+    # ── Nến ngày ──────────────────────────────────────
+
     async def daily_bars(
         self, symbols: Sequence[str], *, so_nen: int
     ) -> dict[str, list[HuntBar]]:
-        wanted = [s.upper() for s in symbols]
-        end_ts = _ts(self._today + timedelta(days=1))
-        # Xin dư nến để bù ngày nghỉ/lễ; máy lọc chỉ dùng ``so_nen`` cuối.
-        count_back = so_nen + 10
+        bang = await self._bang_nen(so_nen)
+        if not bang:
+            return {}
+        wanted = {s.upper() for s in symbols}
+        return {ma: bars for ma, bars in bang.items() if ma in wanted}
 
-        out: dict[str, list[HuntBar]] = {}
-        for i in range(0, len(wanted), BATCH):
-            lo = wanted[i : i + BATCH]
-            key = f"cap5:hunt:bars:{self._today.isoformat()}:{so_nen}:{'-'.join(lo)}"
-            raw: dict[str, list[dict]] | None = None
-            if self._use_cache:
-                cached = await cache_get_json(key)
-                if isinstance(cached, dict) and cached:
-                    raw = cached
-            if raw is None:
-                try:
-                    raw, _url = await vietcap.fetch_ohlcv_multi(
-                        lo, end_ts=end_ts, interval="1D", count_back=count_back
-                    )
-                except Exception as exc:  # noqa: BLE001 — lô hỏng ⇒ mã vắng mặt
-                    # Mã của lô này sẽ VẮNG khỏi kết quả ⇒ máy lọc đếm chúng
-                    # vào "bỏ qua vì thiếu dữ liệu", không coi là trượt lọc.
-                    logger.warning("Cấp 5 săn mã: lô %s lỗi: %s", lo[:3], exc)
-                    continue
-                if self._use_cache and raw:
-                    await cache_set_json(key, raw, _CACHE_TTL)
+    async def _bang_nen(self, so_nen: int) -> dict[str, list[HuntBar]]:
+        """``{mã: nến tăng dần}`` cho cả sàn HOSE — rỗng khi nguồn không trả."""
+        key = f"cap5:hunt:bars:{self._today.isoformat()}:{so_nen}"
+        if self._use_cache:
+            cached = await cache_get_json(key)
+            if isinstance(cached, dict) and cached:
+                return {
+                    ma: [
+                        HuntBar(ngay=r[0], close=r[1], volume=r[2], gtgd_vnd=r[3])
+                        for r in hang
+                    ]
+                    for ma, hang in cached.items()
+                }
 
-            for symbol, records in raw.items():
-                bars = _to_bars(records)
-                if bars:
-                    out[symbol.upper()] = bars
+        rows, bi_cat = await self._finfo(
+            "stock_prices",
+            truong_ngay="date",
+            so_phien=so_nen,
+            fields="code,date,close,adClose,nmVolume,nmValue",
+        )
+        if rows is None:
+            return {}
+
+        phien = _phien_dung_duoc(
+            [ngay for r in rows if (ngay := _iso(r.get("date")))],
+            so_can=so_nen,
+            bi_cat=bi_cat,
+        )
+        giu = set(phien)
+        theo_ma: dict[str, dict[str, HuntBar]] = {}
+        for r in rows:
+            ngay = _iso(r.get("date"))
+            ma = str(r.get("code") or "").upper()
+            if not ma or ngay is None or ngay not in giu:
+                continue
+            # ``adClose`` = giá đã điều chỉnh cổ tức/chia tách: so đỉnh 20 phiên
+            # trên giá thô sẽ hụt đúng vào ngày GDKHQ. Phiên gần nhất adClose ==
+            # close nên nhãn "Giá ≥ 3.000đ" vẫn nói về giá thị trường thật.
+            gia = _so(r.get("adClose"))
+            if gia is None:
+                gia = _so(r.get("close"))
+            if gia is None or gia <= 0:
+                continue
+            klg = _so(r.get("nmVolume"))
+            gtgd = _so(r.get("nmValue"))
+            theo_ma.setdefault(ma, {})[ngay] = HuntBar(
+                ngay=ngay,
+                close=gia * _NGHIN,
+                volume=klg if klg is not None else 0.0,
+                gtgd_vnd=gtgd,
+            )
+
+        out = {
+            ma: [nen[ngay] for ngay in sorted(nen)]
+            for ma, nen in theo_ma.items()
+            if nen
+        }
+        if self._use_cache and out:
+            await cache_set_json(
+                key,
+                {
+                    ma: [[b.ngay, b.close, b.volume, b.gtgd_vnd] for b in bars]
+                    for ma, bars in out.items()
+                },
+                _CACHE_TTL,
+            )
         return out
+
+    # ── Mua ròng theo phiên ───────────────────────────
 
     async def net_flow(
         self, symbols: Sequence[str], *, ben: str, so_phien: int
     ) -> dict[str, list[float]] | None:
-        """★ Luôn ``None`` cho tới khi có nguồn bulk theo phiên — xem docstring
-        module và bản kiểm dữ liệu trong ``app.services.cap5.hunt``."""
-        return None
+        """Mua ròng (VND) theo TỪNG phiên — một lượt HTTP cho CẢ sàn HOSE.
+
+        Trả ``None`` khi chưa lọc được: bên lạ, rổ rỗng, upstream lỗi/đổi shape,
+        hoặc cửa sổ không đủ ``so_phien`` phiên. KHÔNG BAO GIỜ trả ``{}`` để nói
+        "không mã nào thoả" thay cho "chưa lọc được".
+        """
+        nguon = _NGUON_DONG_TIEN.get(ben)
+        if nguon is None or so_phien <= 0:
+            return None
+        wanted = {s.upper() for s in symbols}
+        if not wanted:
+            return None
+
+        bang = await self._bang_dong_tien(nguon, ben=ben, so_phien=so_phien)
+        if bang is None:
+            return None
+        phien, theo_phien = bang
+        # Cửa sổ không đủ phiên (upstream trễ EOD, sàn mới nghỉ dài…) ⇒ để máy
+        # lọc nói "nguồn không trả đủ chuỗi N phiên", không tự bịa thêm phiên 0đ.
+        if len(phien) < so_phien:
+            return None
+
+        out: dict[str, list[float]] = {}
+        for ma in wanted:
+            chuoi: list[float] = []
+            thieu = False
+            for ngay in phien:
+                gia_tri = theo_phien.get(ngay, {}).get(ma)
+                if gia_tri is None:
+                    if not nguon.khuyet_la_khong:
+                        thieu = True
+                        break
+                    gia_tri = 0.0
+                chuoi.append(gia_tri)
+            if not thieu:
+                out[ma] = chuoi
+        return out
+
+    async def _bang_dong_tien(
+        self, nguon: _NguonDongTien, *, ben: str, so_phien: int
+    ) -> tuple[list[str], dict[str, dict[str, float]]] | None:
+        """Bảng ``(phiên, mã) → mua ròng`` cho cả sàn, có cache Redis ngắn."""
+        key = f"cap5:hunt:flow:{ben}:{self._today.isoformat()}:{so_phien}"
+        if self._use_cache:
+            cached = await cache_get_json(key)
+            if isinstance(cached, dict) and cached.get("phien"):
+                return list(cached["phien"]), dict(cached["bang"])
+
+        rows, bi_cat = await self._finfo(
+            nguon.path,
+            truong_ngay=nguon.truong_ngay,
+            so_phien=so_phien,
+            fields=f"code,{nguon.truong_ngay},netVal",
+        )
+        if rows is None:
+            return None
+
+        theo_phien: dict[str, dict[str, float]] = {}
+        for r in rows:
+            ma = str(r.get("code") or "").upper()
+            ngay = _iso(r.get(nguon.truong_ngay))
+            net = _so(r.get("netVal"))
+            if not ma or ngay is None or net is None:
+                continue
+            theo_phien.setdefault(ngay, {})[ma] = net
+
+        phien = _phien_dung_duoc(list(theo_phien), so_can=so_phien, bi_cat=bi_cat)
+        if not phien:
+            return None
+        if self._use_cache:
+            await cache_set_json(
+                key,
+                {"phien": phien, "bang": {p: theo_phien[p] for p in phien}},
+                _FLOW_CACHE_TTL,
+            )
+        return phien, theo_phien
+
+    # ── Transport ─────────────────────────────────────
+
+    async def _finfo(
+        self, path: str, *, truong_ngay: str, so_phien: int, fields: str
+    ) -> tuple[list[dict] | None, bool]:
+        """Một lượt gọi finfo cho CẢ sàn HOSE. ``(None, …)`` = chưa lọc được.
+
+        Cờ thứ hai là "kết quả bị cắt vì đụng trần ``size``" — người gọi phải bỏ
+        phiên cũ nhất khi nó bật (xem ``_phien_dung_duoc``).
+        """
+        tu_ngay = self._today - timedelta(days=_so_ngay_lich(so_phien))
+        params: dict[str, Any] = {
+            "q": f"type:STOCK~floor:{SAN_HOSE}~{truong_ngay}:gte:{tu_ngay.isoformat()}",
+            "sort": f"{truong_ngay}:desc",
+            "size": _FINFO_SIZE,
+            "fields": fields,
+        }
+        try:
+            data = await fetch_json(
+                f"{_FINFO_BASE}/{path}",
+                params=params,
+                headers=get_headers(_FINFO_SOURCE),
+                source=_FINFO_SOURCE,
+            )
+        except Exception as exc:  # noqa: BLE001 — upstream chết ⇒ "chưa lọc được"
+            logger.warning("Cấp 5 săn mã: nguồn %s lỗi: %s", path, exc)
+            return None, False
+
+        rows = data.get("data") if isinstance(data, dict) else None
+        if not isinstance(rows, list) or not rows:
+            logger.warning("Cấp 5 săn mã: nguồn %s trả shape lạ", path)
+            return None, False
+        tong = data.get("totalElements")
+        bi_cat = isinstance(tong, (int, float)) and tong > len(rows)
+        if bi_cat:
+            logger.warning(
+                "Cấp 5 săn mã: nguồn %s bị cắt (%s/%s hàng) — bỏ phiên cũ nhất",
+                path,
+                len(rows),
+                tong,
+            )
+        return rows, bi_cat
