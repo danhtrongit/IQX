@@ -85,15 +85,15 @@ async def _entered_with_account(db_session, user_id):
 
 
 @pytest.mark.asyncio
-async def test_enter_creates_progress_and_seeds_250tr(db_session, test_user):
+async def test_enter_creates_progress_and_seeds_100tr(db_session, test_user):
     svc = Cap0Service(db_session)
     p = await svc.enter(test_user.id)
-    assert p.virtual_balance_init == 250_000_000
+    assert p.virtual_balance_init == 100_000_000
 
-    # A 250tr virtual account is seeded for a user with no prior account.
+    # A 100tr virtual account is seeded for a user with no prior account.
     account = await VirtualTradingRepository(db_session).get_account_by_user_id(test_user.id)
     assert account is not None
-    assert account.initial_cash_vnd == 250_000_000
+    assert account.initial_cash_vnd == 100_000_000
 
     # idempotent
     p2 = await svc.enter(test_user.id)
@@ -612,7 +612,7 @@ async def test_cap0_endpoints_wired_and_free(client, test_user):
     r = await client.post("/api/v1/cap0/enter", headers=headers)
     assert r.status_code == 200
     body = r.json()
-    assert body["virtual_balance_init"] == 250_000_000
+    assert body["virtual_balance_init"] == 100_000_000
     # Wire shape: FOUR task timestamps + exactly one gate flag.
     assert [k for k in body if k.startswith("task_") and k.endswith("_done_at")] == [
         "task_1_done_at",

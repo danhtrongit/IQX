@@ -151,7 +151,7 @@ const fakeProgress: Cap0Progress = {
   id: "11111111-1111-1111-1111-111111111111",
   user_id: "22222222-2222-2222-2222-222222222222",
   entered_at: "2026-07-21T00:00:00Z",
-  virtual_balance_init: 250_000_000,
+  virtual_balance_init: 100_000_000,
   task_1_done_at: null,
   task_2_done_at: null,
   task_3_done_at: null,

@@ -6,20 +6,10 @@ import type { Cap1Progress } from "./types"
 import type { Cap1TradeRecord } from "./tradeLog"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
-const { useCap1ProgressMock, useCap1EventsMock, useCap1TradeLogMock, flags } = vi.hoisted(() => ({
+const { useCap1ProgressMock, useCap1EventsMock, useCap1TradeLogMock } = vi.hoisted(() => ({
   useCap1ProgressMock: vi.fn(),
   useCap1EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap1Active: true })),
   useCap1TradeLogMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ trades: [], record: vi.fn() })),
-  // Mutable so the goal box can be asserted on BOTH sides of the trần cấp.
-  flags: { CAP_MAX_ENABLED: 2 },
-}))
-
-// Getter (not a plain value): the panel must read the flag at RENDER time, so
-// flipping `flags` between tests actually flips the copy.
-vi.mock("./capFlags", () => ({
-  get CAP_MAX_ENABLED() {
-    return flags.CAP_MAX_ENABLED
-  },
 }))
 
 vi.mock("./hooks", () => ({
@@ -87,19 +77,15 @@ describe("JourneyPanelCap1", () => {
     useCap1EventsMock.mockReturnValue({ isCap1Active: true })
     useCap1TradeLogMock.mockReset()
     useCap1TradeLogMock.mockReturnValue({ trades: [], record: vi.fn() })
-    // Mặc định = trần THẬT của sản phẩm hiện tại (Cấp 2 đang mở).
-    flags.CAP_MAX_ENABLED = 2
   })
 
-  it("renders the level card — CẤP 1 / HỌC VIỆC / italic bài học / badge THỰC CHIẾN", () => {
+  it("renders the level card — HỌC VIỆC + badge THỰC CHIẾN, KHÔNG nhãn CẤP 1 / câu bài học", () => {
     useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
     renderPanel()
-    expect(screen.getByText("CẤP 1")).toBeInTheDocument()
     expect(screen.getByText("HỌC VIỆC")).toBeInTheDocument()
-    expect(
-      screen.getByText('"Vào lệnh phải biết VÌ SAO mua và mua vùng nào."'),
-    ).toBeInTheDocument()
     expect(screen.getByText("THỰC CHIẾN")).toBeInTheDocument()
+    expect(screen.queryByText("CẤP 1")).not.toBeInTheDocument()
+    expect(screen.queryByText(/Vào lệnh phải biết/)).not.toBeInTheDocument()
   })
 
   // Mockup `iqx-cap1-hanhtrinh.html` `.ck-head` (lines 25-27): `.t` tiêu đề bên
@@ -350,12 +336,10 @@ describe("JourneyPanelCap1", () => {
     expect(screen.getByTestId("panel-spy")).toHaveTextContent("cap1-analysis")
   })
 
-  // ── ★★ Ô mục tiêu: TRẠNG THÁI CUỐI của một người đã tốt nghiệp Cấp 1 ★★ ────
-  // Modal tốt nghiệp unmount xong là về đúng màn này, checklist 5/5, và ô mục
-  // tiêu là câu cuối cùng họ đọc. Khi trần cấp còn dưới 2 nó KHÔNG được hứa một
-  // cấp chưa tồn tại.
-  it("★ goal box never promises Cấp 2 while the trần is below 2", () => {
-    flags.CAP_MAX_ENABLED = 1
+  // ── ★ Ô mục tiêu "Xong 5/5 → tốt nghiệp…" đã bỏ theo yêu cầu điều chỉnh ────
+  // Kể cả ở trạng thái CUỐI (5/5 đã xong) panel cũng không còn ô đích nào —
+  // hàng công cụ là phần tử cuối cùng.
+  it("★ no goal box at all — not even at 5/5", () => {
     useCap1ProgressMock.mockReturnValue({
       data: makeProgress({
         task_1_done_at: "t",
@@ -365,42 +349,26 @@ describe("JourneyPanelCap1", () => {
         task_5_done_at: "t",
       }),
     })
-    renderPanel()
-    const goal = screen.getByTestId("cap1-journey-goal")
-    expect(goal).toHaveTextContent(/tốt nghiệp/)
-    // Không hứa "lên Cấp 2", không liệt kê tính năng Cấp 2 như thể sắp có.
-    expect(goal).not.toHaveTextContent(/lên\s+Cấp 2/)
-    expect(goal).not.toHaveTextContent(/Cấp 2 thêm cắt lỗ/)
-    expect(goal).not.toHaveTextContent(/viên lục giác ngọc lam/)
-    // ...mà nói thẳng Cấp 2 chưa mở.
-    expect(goal).toHaveTextContent(/chưa (ra mắt|mở)/)
-  })
-
-  it("★ goal box restores the Cấp 2 wording the moment the trần reaches 2", () => {
-    flags.CAP_MAX_ENABLED = 2
-    useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
-    renderPanel()
-    const goal = screen.getByTestId("cap1-journey-goal")
-    expect(goal).toHaveTextContent("Xong 5/5 → tốt nghiệp Cấp 1 «Học việc», lên Cấp 2 «Kỷ luật»")
-    expect(goal).toHaveTextContent("Cấp 2 thêm cắt lỗ/chốt lời + sổ lệnh")
-    expect(goal).not.toHaveTextContent(/chưa ra mắt/)
+    const { container } = renderPanel()
+    expect(screen.queryByTestId("cap1-journey-goal")).not.toBeInTheDocument()
+    expect(container.querySelector(".cap0-journey-goal")).toBeNull()
+    expect(screen.queryByText(/Xong 5\/5/)).not.toBeInTheDocument()
   })
 
   // ── ★ Hành trình dẫn TỪNG NHIỆM VỤ MỘT ────────────────────────────────────
   // Cùng một cách dẫn với Cấp 0 (`cap0/JourneyFocus.tsx` dùng chung): ô "NHIỆM
   // VỤ ĐANG LÀM" nổi hẳn lên, checklist 5 dòng vẫn ở dưới nhưng thu gọn.
   describe("dẫn từng nhiệm vụ một", () => {
-    it("ô tập trung mang ĐÚNG nhiệm vụ active (① ở 0/5) — mô tả nguyên văn spec §2 + «Làm ngay →»", () => {
+    it("ô tập trung mang ĐÚNG nhiệm vụ active (① ở 0/5) — tên + «Làm ngay →», KHÔNG mô tả", () => {
       useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
       renderPanel()
-      const focus = within(screen.getByTestId("cap1-focus"))
+      const focusEl = screen.getByTestId("cap1-focus")
+      const focus = within(focusEl)
       expect(focus.getByText("①")).toBeInTheDocument()
       expect(focus.getByText("Lệnh đầu có kế hoạch")).toBeInTheDocument()
-      expect(
-        focus.getByText(
-          "Cấp 1 khác Cấp 0 — mọi lệnh phải có kế hoạch: chọn lý do mua (1 trong 5 lý do) + vùng mua. Thiếu 1 trong 2 không đặt được lệnh.",
-        ),
-      ).toBeInTheDocument()
+      // Mô tả nhiệm vụ đã bỏ theo yêu cầu điều chỉnh.
+      expect(focusEl.querySelector(".cap0-focus-desc")).toBeNull()
+      expect(focus.queryByText(/Cấp 1 khác Cấp 0/)).not.toBeInTheDocument()
       expect(focus.getByText("Làm ngay →")).toBeInTheDocument()
       // Đúng MỘT nhiệm vụ trong ô.
       expect(focus.queryByText("Kết sổ đầu tiên")).not.toBeInTheDocument()

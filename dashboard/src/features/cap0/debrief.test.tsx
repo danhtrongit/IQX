@@ -22,7 +22,6 @@ vi.mock("./hooks", () => ({
   useCap0Kehoach: (...a: unknown[]) => kehoachMock(...a),
 }))
 
-import { coachTemplate } from "./coachTemplate"
 import { cap0Visibility } from "./cap0Visibility"
 import { DebriefModal, type DebriefData } from "./DebriefModal"
 
@@ -31,7 +30,7 @@ function makeProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
     id: "11111111-1111-1111-1111-111111111111",
     user_id: "22222222-2222-2222-2222-222222222222",
     entered_at: "2026-07-21T00:00:00Z",
-    virtual_balance_init: 250_000_000,
+    virtual_balance_init: 100_000_000,
     task_1_done_at: null,
     task_2_done_at: null,
     task_3_done_at: null,
@@ -42,49 +41,6 @@ function makeProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
     ...overrides,
   }
 }
-
-// ── coachTemplate (spec v3.0 §5 — EXACTLY 2 verbatim templates) ──────────────
-// v3.0 removed cắt lỗ/chốt lời from Cấp 0 entirely, so the situation the coach
-// reads reduces to one bit: lãi or không-lãi. Templates C/D/E (all of which
-// asserted something about a ngưỡng cắt lỗ) are gone with the data that fed
-// them — under v3.0 there is never a recorded SL, so their premise is void.
-describe("coachTemplate", () => {
-  it("A — lệnh lãi: verbatim spec §5 template A", () => {
-    const text = coachTemplate({ pnlPositive: true }, 2)
-    expect(text).toContain("Lệnh 2 khép trọn vòng đời: mua — nắm giữ — theo dõi — bán")
-    expect(text).toContain("bạn đã đi đủ một vòng giao dịch hoàn chỉnh")
-    expect(text).toContain("nhiều người mua cổ phiếu còn không biết mình đang nắm gì")
-    expect(text).toContain("thuế bán 0,1%")
-  })
-
-  it("B — lệnh lỗ: verbatim spec §5 template B", () => {
-    const text = coachTemplate({ pnlPositive: false }, 3)
-    expect(text).toContain("Lệnh 3 lỗ nhẹ")
-    expect(text).toContain("đây là Sân tập, tiền không thật")
-    expect(text).toContain("Cái bạn thu được là kinh nghiệm, không phải con số")
-    expect(text).toContain("thuế bán 0,1%")
-  })
-
-  // ★ The v3.0 constraint, stated in four places in the spec: Cấp 0 has NO
-  // cắt lỗ/chốt lời ANYWHERE — including coach copy. The old templates C/D/E
-  // told a Cấp 0 user they had "chạm cắt lỗ", "bán trước kế hoạch", or should
-  // "gõ ngưỡng cắt lỗ" into a field that no longer exists.
-  it("★ neither template ever tells a Cấp 0 user to set or check their own cắt lỗ", () => {
-    for (const pnlPositive of [true, false]) {
-      const text = coachTemplate({ pnlPositive }, 1)
-      expect(text).not.toContain("Bán khi chưa chạm cắt lỗ")
-      expect(text).not.toContain("Cắt lỗ đúng kế hoạch")
-      expect(text).not.toContain("gõ ngưỡng cắt lỗ")
-      expect(text).not.toContain("Không có dữ liệu ngưỡng cắt lỗ")
-      expect(text).not.toContain("chốt lời chạm đúng mục tiêu")
-    }
-  })
-
-  it("orderNo defaults to 1 and appears in BOTH templates", () => {
-    expect(coachTemplate({ pnlPositive: true })).toContain("Lệnh 1 khép trọn vòng đời")
-    expect(coachTemplate({ pnlPositive: false })).toContain("Lệnh 1 lỗ nhẹ")
-  })
-})
 
 // ── cap0Visibility (spec §8 hide-by-level) ─────────────────────────────────────
 describe("cap0Visibility", () => {
@@ -195,9 +151,8 @@ describe("DebriefModal", () => {
     expect(screen.getByText("Lý do mua")).toBeInTheDocument()
     expect(screen.getByText("Thời gian giữ")).toBeInTheDocument()
 
-    // Coach block (template A — lệnh lãi)
-    expect(screen.getByText("NHÌN LẠI")).toBeInTheDocument()
-    expect(screen.getByText(/Lệnh 1 khép trọn vòng đời/)).toBeInTheDocument()
+    // ★ Khối coach "NHÌN LẠI" đã bỏ theo yêu cầu điều chỉnh.
+    expect(screen.queryByText("NHÌN LẠI")).not.toBeInTheDocument()
 
     // Count-up P&L eventually settles on the final +1.9% (63000 vs 61800).
     await waitFor(
@@ -234,21 +189,6 @@ describe("DebriefModal", () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
-  it("a losing round trip gets coach template B, and never a cắt-lỗ accusation", () => {
-    const lossData: DebriefData = {
-      n: 2,
-      symbol: "VNM",
-      quantity: 100,
-      entryPrice: 62000,
-      exitPrice: 58900,
-      buyOrderId: "buy-order-2",
-    }
-    render(<DebriefModal data={lossData} onClose={vi.fn()} />)
-    expect(screen.getByText(/Lệnh 2 lỗ nhẹ/)).toBeInTheDocument()
-    expect(screen.queryByText(/Bán khi chưa chạm cắt lỗ/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/Cắt lỗ đúng kế hoạch/)).not.toBeInTheDocument()
-  })
-
   it("uses the typographic minus «−» (U+2212) for a NEGATIVE VND subline, same glyph as the P&L %", () => {
     const lossData: DebriefData = {
       n: 2,
@@ -276,7 +216,6 @@ describe("DebriefModal", () => {
     }
     render(<DebriefModal data={retroData} onClose={vi.fn()} />)
     expect(screen.getByText("KẾT SỔ LỆNH · #2 · SÂN TẬP")).toBeInTheDocument()
-    expect(screen.getByText(/Lệnh 2 lỗ nhẹ/)).toBeInTheDocument()
     // The old "không ghi nhận" honesty fallback existed only because sl/tp
     // could be unknown; with no sl/tp at all there is nothing to disclaim.
     expect(screen.queryByText("không ghi nhận")).not.toBeInTheDocument()

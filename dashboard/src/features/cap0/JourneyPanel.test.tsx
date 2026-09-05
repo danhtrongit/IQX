@@ -54,7 +54,7 @@ function makeProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
     id: "11111111-1111-1111-1111-111111111111",
     user_id: "22222222-2222-2222-2222-222222222222",
     entered_at: "2026-07-21T00:00:00Z",
-    virtual_balance_init: 250_000_000,
+    virtual_balance_init: 100_000_000,
     task_1_done_at: null,
     task_2_done_at: null,
     task_3_done_at: null,
@@ -79,19 +79,17 @@ describe("JourneyPanel", () => {
     usePremiumStatusMock.mockReturnValue({ isPremium: false, isLoading: false })
   })
 
-  it("renders the level card — CẤP 0 / NHẬP MÔN / italic lesson / mode badge", () => {
+  it("renders the level card — NHẬP MÔN + mode badge, KHÔNG nhãn CẤP 0 / câu bài học", () => {
     useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
     render(
       <SidebarProvider>
         <JourneyPanel />
       </SidebarProvider>,
     )
-    expect(screen.getByText("CẤP 0")).toBeInTheDocument()
     expect(screen.getByText("NHẬP MÔN")).toBeInTheDocument()
-    expect(
-      screen.getByText('"Hiểu sân chơi, và đi trọn vòng đời một lệnh."'),
-    ).toBeInTheDocument()
     expect(screen.getByText("SÂN TẬP · T+0")).toBeInTheDocument()
+    expect(screen.queryByText("CẤP 0")).not.toBeInTheDocument()
+    expect(screen.queryByText(/Hiểu sân chơi/)).not.toBeInTheDocument()
   })
 
   it('keeps "SÂN TẬP · T+0" once graduated_at is set for a FREE (non-premium) user — premium-honest mode fix', () => {
@@ -208,7 +206,7 @@ describe("JourneyPanel", () => {
   // ★ Mô tả nhiệm vụ giờ CHỈ sống trong ô tập trung (mockup vẽ tên trên mọi
   // dòng; bản dẫn-từng-nhiệm-vụ-một dọn mô tả lên khối chi phối). Dòng đã xong
   // trong checklist thu gọn chỉ còn tên — và vẫn không có nút.
-  it("moves the task description to the ô tập trung — a done row keeps just its name, no button", () => {
+  it("a done row keeps just its name — no description, no button anywhere", () => {
     useCap0ProgressMock.mockReturnValue({
       data: makeProgress({ task_1_done_at: "2026-07-21T01:00:00Z" }),
     })
@@ -219,14 +217,11 @@ describe("JourneyPanel", () => {
     )
     const task1 = screen.getByTestId("cap0-task-1")
     expect(within(task1).getByText("Đặt lệnh mua đầu tiên")).toBeInTheDocument()
-    expect(within(task1).queryByText(/Mua thử một mã bằng vốn Sân tập/)).not.toBeInTheDocument()
     expect(within(task1).queryByText("Làm ngay →")).not.toBeInTheDocument()
-    // Mô tả của nhiệm vụ ĐANG LÀM (②) thì có, và nằm trong ô tập trung.
-    expect(
-      within(screen.getByTestId("cap0-focus")).getByText(
-        "Mở tab Nắm giữ, xem mã vừa mua trong danh mục.",
-      ),
-    ).toBeInTheDocument()
+    // Ô tập trung dẫn ② nhưng KHÔNG còn dòng mô tả (đã bỏ theo yêu cầu điều chỉnh).
+    const focus = screen.getByTestId("cap0-focus")
+    expect(within(focus).getByText("Xem tab Nắm giữ")).toBeInTheDocument()
+    expect(focus.querySelector(".cap0-focus-desc")).toBeNull()
   })
 
   // ★★ Contract: `demo-trading-update/LEVEL 0/iqx-cap0-hanhtrinh.html` is a
@@ -484,12 +479,12 @@ describe("JourneyPanel — dẫn từng nhiệm vụ một", () => {
     )
   }
 
-  it("ô tập trung mang ĐÚNG nhiệm vụ đang active (① ở 0/4) — mô tả + «Làm ngay →», và không nhiệm vụ nào khác", () => {
+  it("ô tập trung mang ĐÚNG nhiệm vụ đang active (① ở 0/4) — tên + «Làm ngay →», không mô tả, không nhiệm vụ nào khác", () => {
     renderAt({})
     const focus = within(screen.getByTestId("cap0-focus"))
     expect(focus.getByText("①")).toBeInTheDocument()
     expect(focus.getByText("Đặt lệnh mua đầu tiên")).toBeInTheDocument()
-    expect(focus.getByText("Mua thử một mã bằng vốn Sân tập.")).toBeInTheDocument()
+    expect(focus.queryByText(/Mua thử một mã/)).not.toBeInTheDocument()
     expect(focus.getByText("Làm ngay →")).toBeInTheDocument()
     // Đúng MỘT nhiệm vụ trong ô — không phải cả checklist thu nhỏ.
     expect(focus.queryByText("Xem tab Nắm giữ")).not.toBeInTheDocument()
@@ -501,7 +496,6 @@ describe("JourneyPanel — dẫn từng nhiệm vụ một", () => {
     const focus = within(screen.getByTestId("cap0-focus"))
     expect(focus.getByText("②")).toBeInTheDocument()
     expect(focus.getByText("Xem tab Nắm giữ")).toBeInTheDocument()
-    expect(focus.getByText("Mở tab Nắm giữ, xem mã vừa mua trong danh mục.")).toBeInTheDocument()
     // ① đã xong → không bao giờ được tập trung nữa.
     expect(focus.queryByText("Đặt lệnh mua đầu tiên")).not.toBeInTheDocument()
   })

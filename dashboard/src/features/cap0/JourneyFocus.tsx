@@ -39,7 +39,8 @@ export function JourneyFocus({
   /** ①..⑥ — bỏ trống ở trạng thái `ready` (không còn nhiệm vụ nào để đánh số). */
   numeral?: string
   name: string
-  desc: string
+  /** Mô tả — chỉ trạng thái `ready` còn dùng; ô nhiệm vụ đang làm đã bỏ theo yêu cầu. */
+  desc?: string
   /** Khối phụ (dải emoji độ phủ 5 lý do của Cấp 1 ③). */
   extra?: ReactNode
   progressText?: string
@@ -57,7 +58,7 @@ export function JourneyFocus({
         {numeral && <span className="cap0-focus-no">{numeral}</span>}
         <span>{name}</span>
       </div>
-      <div className="cap0-focus-desc">{desc}</div>
+      {desc && <div className="cap0-focus-desc">{desc}</div>}
       {extra}
       {progressText && <div className="cap0-focus-progress">{progressText}</div>}
       {onGo && (

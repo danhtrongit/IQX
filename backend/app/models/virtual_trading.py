@@ -81,7 +81,7 @@ class VirtualTradingConfig(UUIDMixin, TimestampMixin, Base):
     __tablename__ = "virtual_trading_configs"
 
     initial_cash_vnd: Mapped[int] = mapped_column(
-        BigInteger, nullable=False, default=1_000_000_000
+        BigInteger, nullable=False, default=100_000_000
     )
     buy_fee_rate_bps: Mapped[int] = mapped_column(
         Integer, nullable=False, default=15

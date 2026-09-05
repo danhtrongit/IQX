@@ -13,7 +13,7 @@ Frontend gọi bộ này ở route `/dau-truong` (`dashboard/src/features/cap0`,
 | # | Method | Path | Quyền | Mục đích |
 |---|---|---|---|---|
 | 1 | GET | `/api/v1/cap0/progress` | Bearer | Tiến độ Cấp 0 (hoặc `null` nếu chưa vào) — **đọc thuần, KHÔNG tính lại** |
-| 2 | POST | `/api/v1/cap0/enter` | Bearer | Vào Cấp 0 (idempotent) + seed tài khoản ảo 250.000.000 ₫ nếu chưa có |
+| 2 | POST | `/api/v1/cap0/enter` | Bearer | Vào Cấp 0 (idempotent) + seed tài khoản ảo 100.000.000 ₫ nếu chưa có |
 | 3 | POST | `/api/v1/cap0/placement` | Bearer | Câu hỏi xếp lớp 1 boolean → `placed_level` (0 hoặc 2); upsert `user_placement` |
 | 4 | PATCH | `/api/v1/cap0/task` | Bearer | Đánh dấu nhiệm vụ ①-④ (client tự khai) + cổng `debrief` |
 | 5 | POST | `/api/v1/cap0/kehoach` | Bearer | Ghi/ghi đè chip «lý do đời thường» cho 1 lệnh MUA (upsert, không 409) |
@@ -158,7 +158,7 @@ Vậy:
 
 | Cấp | Cơ chế tài khoản | Lệnh của user FREE | Ảnh hưởng tiến độ |
 |---|---|---|---|
-| Cấp 0 | Tài khoản ảo 250tr seed ở `POST /cap0/enter`. FREE luyện tập trên `mode="san_tap"` + T0. | `san_tap` | **KHÔNG ảnh hưởng** — 4 nhiệm vụ Cấp 0 do client PATCH, không phép đếm nào lọc `mode`. Cấp 0 tốt nghiệp được hoàn toàn bằng FREE. |
+| Cấp 0 | Tài khoản ảo 100tr seed ở `POST /cap0/enter`. FREE luyện tập trên `mode="san_tap"` + T0. | `san_tap` | **KHÔNG ảnh hưởng** — 4 nhiệm vụ Cấp 0 do client PATCH, không phép đếm nào lọc `mode`. Cấp 0 tốt nghiệp được hoàn toàn bằng FREE. |
 | Cấp 1 | Cùng tài khoản ảo đó; nhiệm vụ ⑤ đếm `mode == "thuc_chien" AND status == FILLED` | `san_tap` | ⑤ **mãi 0/10** → `graduate` mãi 409 |
 | Cấp 2 | như trên; ① đếm `thuc_chien` + BUY + FILLED, ② chỉ quét `order_ketso` của lệnh `thuc_chien` | `san_tap` | ①② **không bao giờ xong** → `graduate` mãi 409 |
 
@@ -393,7 +393,7 @@ interface Cap0ProgressOut {
   id: string;                       // uuid, PK cap0_progress
   user_id: string;                  // uuid
   entered_at: string;               // ISO-8601 có timezone
-  virtual_balance_init: number;     // VND, BigInteger. Mặc định 250000000
+  virtual_balance_init: number;     // VND, BigInteger. Mặc định 100000000
   task_1_done_at: string | null;    // ① Đặt lệnh mua đầu tiên
   task_2_done_at: string | null;    // ② Xem tab Nắm giữ
   task_3_done_at: string | null;    // ③ Xem tab Theo dõi
@@ -452,7 +452,7 @@ type Response = Cap0ProgressOut | null;
   "id": "3f8a1c62-9b04-4d17-8e35-c07a6b2d9f41",
   "user_id": "b21d7e04-5c93-4f28-a610-8de3f95c1b77",
   "entered_at": "2026-08-17T02:14:33.508291+00:00",
-  "virtual_balance_init": 250000000,
+  "virtual_balance_init": 100000000,
   "task_1_done_at": "2026-08-17T02:31:07.114882+00:00",
   "task_2_done_at": "2026-08-17T02:33:52.660415+00:00",
   "task_3_done_at": "2026-08-17T02:35:10.902733+00:00",
@@ -484,14 +484,14 @@ curl -sS -X GET 'https://iqx.vn/api/v1/cap0/progress' \
 
 - `response_model=Cap0ProgressOut | None` ⇒ **body là literal `null`**, không phải `{}` và không phải 204.
 - **KHÔNG thêm recompute vào endpoint này.** Cấp 3 có `GET /progress` tính-lại-rồi-ghi-DB; Cấp 0/1/2 **không**. Đừng "đồng bộ hoá" ba cấp này với Cấp 3.
-- `virtual_balance_init` là **hằng số ghi lúc `enter`** (250.000.000 ₫), **không phải số dư hiện tại**. Số dư hiện tại lấy từ API giao dịch ảo.
+- `virtual_balance_init` là **hằng số ghi lúc `enter`** (100.000.000 ₫), **không phải số dư hiện tại**. Số dư hiện tại lấy từ API giao dịch ảo.
 - `time_to_graduate_hours` là **giờ** (float), không phải giây/phút.
 
 ---
 
 ### POST /api/v1/cap0/enter
 
-> **Vào Cấp 0** — tạo hàng tiến độ (idempotent) và seed tài khoản giao dịch ảo 250.000.000 ₫ nếu user chưa có tài khoản nào.
+> **Vào Cấp 0** — tạo hàng tiến độ (idempotent) và seed tài khoản giao dịch ảo 100.000.000 ₫ nếu user chưa có tài khoản nào.
 
 | | |
 |---|---|
@@ -518,7 +518,7 @@ type Response = Cap0ProgressOut;
   "id": "3f8a1c62-9b04-4d17-8e35-c07a6b2d9f41",
   "user_id": "b21d7e04-5c93-4f28-a610-8de3f95c1b77",
   "entered_at": "2026-08-17T02:14:33.508291+00:00",
-  "virtual_balance_init": 250000000,
+  "virtual_balance_init": 100000000,
   "task_1_done_at": null,
   "task_2_done_at": null,
   "task_3_done_at": null,
@@ -535,7 +535,7 @@ type Response = Cap0ProgressOut;
 |---|---|---|---|
 | — | — | Không có nhánh lỗi nghiệp vụ. Không tiên quyết cấp dưới, không 409 khi gọi lại | — |
 
-**Fallback / suy giảm** — Gọi lại nhiều lần **luôn** trả về đúng hàng cũ (`entered_at` không đổi). Nếu user **đã có** tài khoản giao dịch ảo (kể cả với `initial_cash_vnd` khác 250tr) thì **KHÔNG seed lại và KHÔNG nạp thêm tiền**. Nếu hàng `cap0_progress` đã có nhưng tài khoản bị xoá, lần gọi sau sẽ seed lại tài khoản (hai nhánh độc lập).
+**Fallback / suy giảm** — Gọi lại nhiều lần **luôn** trả về đúng hàng cũ (`entered_at` không đổi). Nếu user **đã có** tài khoản giao dịch ảo (kể cả với `initial_cash_vnd` khác 100tr) thì **KHÔNG seed lại và KHÔNG nạp thêm tiền**. Nếu hàng `cap0_progress` đã có nhưng tài khoản bị xoá, lần gọi sau sẽ seed lại tài khoản (hai nhánh độc lập).
 
 **curl**
 
@@ -548,8 +548,8 @@ curl -sS -X POST 'https://iqx.vn/api/v1/cap0/enter' \
 
 **Ghi chú khi viết lại**
 
-- Hằng số: `_CAP0_INITIAL_CASH_VND = 250_000_000` (VND, **đồng**, không phải nghìn đồng). Dùng cho **cả** `cap0_progress.virtual_balance_init` **và** `initial_cash_vnd` của tài khoản mới.
-- Tài khoản mới (`VirtualTradingRepository.create_account`): `status = ACTIVE`, `cash_available_vnd = 250_000_000`, `cash_reserved_vnd = 0`, `cash_pending_vnd = 0`, `activated_at = now()`.
+- Hằng số: `_CAP0_INITIAL_CASH_VND = 100_000_000` (VND, **đồng**, không phải nghìn đồng). Dùng cho **cả** `cap0_progress.virtual_balance_init` **và** `initial_cash_vnd` của tài khoản mới.
+- Tài khoản mới (`VirtualTradingRepository.create_account`): `status = ACTIVE`, `cash_available_vnd = 100_000_000`, `cash_reserved_vnd = 0`, `cash_pending_vnd = 0`, `activated_at = now()`.
 - **Thứ tự trong source**: tạo/đọc progress **trước**, seed tài khoản **sau**. Cả hai trong cùng transaction của request.
 - Idempotency dựa vào `UNIQUE(user_id)` trên `cap0_progress` (`uq_cap0_progress_user_id`) — giữ constraint này, đừng chỉ dựa vào `SELECT` rồi `INSERT` (race hai request song song).
 - ★ Không có cổng `CAP_MAX_ENABLED`, không có kiểm placement. Ai đã đăng nhập và active đều vào được Cấp 0.
@@ -670,7 +670,7 @@ type Response = Cap0ProgressOut;
   "id": "3f8a1c62-9b04-4d17-8e35-c07a6b2d9f41",
   "user_id": "b21d7e04-5c93-4f28-a610-8de3f95c1b77",
   "entered_at": "2026-08-17T02:14:33.508291+00:00",
-  "virtual_balance_init": 250000000,
+  "virtual_balance_init": 100000000,
   "task_1_done_at": "2026-08-17T02:31:07.114882+00:00",
   "task_2_done_at": "2026-08-17T02:33:52.660415+00:00",
   "task_3_done_at": "2026-08-17T02:35:10.902733+00:00",
@@ -905,7 +905,7 @@ type Response = Cap0ProgressOut;
   "id": "3f8a1c62-9b04-4d17-8e35-c07a6b2d9f41",
   "user_id": "b21d7e04-5c93-4f28-a610-8de3f95c1b77",
   "entered_at": "2026-08-17T02:14:33.508291+00:00",
-  "virtual_balance_init": 250000000,
+  "virtual_balance_init": 100000000,
   "task_1_done_at": "2026-08-17T02:31:07.114882+00:00",
   "task_2_done_at": "2026-08-17T02:33:52.660415+00:00",
   "task_3_done_at": "2026-08-17T02:35:10.902733+00:00",

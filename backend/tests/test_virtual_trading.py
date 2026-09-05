@@ -145,7 +145,7 @@ class TestFeeMath:
 async def test_activate_account(client, premium_user):
     resp = await client.post("/api/v1/virtual-trading/account/activate", headers=premium_user)
     assert resp.status_code == 201
-    assert resp.json()["cash_available_vnd"] == 1_000_000_000
+    assert resp.json()["cash_available_vnd"] == 100_000_000
 
 @pytest.mark.asyncio
 @patch(_VS, new=_vs_ok)
@@ -234,7 +234,7 @@ async def test_cancel_pending_releases_cash(client, premium_user):
     resp = await client.post(f"/api/v1/virtual-trading/orders/{oid}/cancel", headers=premium_user)
     assert resp.status_code == 200 and resp.json()["status"] == "cancelled"
     acct = (await client.get("/api/v1/virtual-trading/account", headers=premium_user)).json()
-    assert acct["cash_reserved_vnd"] == 0 and acct["cash_available_vnd"] == 1_000_000_000
+    assert acct["cash_reserved_vnd"] == 0 and acct["cash_available_vnd"] == 100_000_000
 
 @pytest.mark.asyncio
 @patch(_VS, new=_vs_ok)
@@ -520,7 +520,7 @@ async def test_admin_reset_user(client, premium_user, admin_headers, test_user):
     resp = await client.post(f"/api/v1/virtual-trading/admin/users/{test_user.id}/reset", headers=admin_headers)
     assert resp.status_code == 200
     acct = (await client.get("/api/v1/virtual-trading/account", headers=premium_user)).json()
-    assert acct["cash_available_vnd"] == 1_000_000_000
+    assert acct["cash_available_vnd"] == 100_000_000
 
 @pytest.mark.asyncio
 async def test_non_admin_cannot_access_admin(client, premium_user):
@@ -624,7 +624,7 @@ async def test_non_premium_can_enter_cap0_and_trade_san_tap(client, non_premium_
 
     r = await client.get("/api/v1/virtual-trading/account", headers=non_premium_headers)
     assert r.status_code == 200
-    assert r.json()["cash_available_vnd"] == 250_000_000
+    assert r.json()["cash_available_vnd"] == 100_000_000
 
     r = await client.get("/api/v1/virtual-trading/portfolio", headers=non_premium_headers)
     assert r.status_code == 200
@@ -783,7 +783,7 @@ async def test_non_premium_cannot_see_another_users_account_balance(
     other_acct = (await client.get("/api/v1/virtual-trading/account", headers=second_headers)).json()
 
     assert own_acct["id"] != other_acct["id"]
-    assert other_acct["cash_available_vnd"] == 250_000_000  # untouched by the first user's trade
+    assert other_acct["cash_available_vnd"] == 100_000_000  # untouched by the first user's trade
 
 
 @pytest.mark.asyncio

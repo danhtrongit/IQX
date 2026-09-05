@@ -943,10 +943,6 @@
   color: var(--t1);
 }
 
-.cap0-grad-block--mode {
-  border-color: rgba(53, 208, 127, 0.4);
-}
-
 .cap0-grad-cta {
   display: block;
   width: 100%;

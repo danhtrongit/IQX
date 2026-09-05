@@ -13,7 +13,7 @@ export const cap0Api = {
     return (unwrap(res as never) ?? null) as Cap0Progress | null
   },
 
-  /** POST /cap0/enter — idempotent; seeds a 250tr practice account. */
+  /** POST /cap0/enter — idempotent; seeds a 100tr practice account. */
   enter: async (): Promise<Cap0Progress> => {
     const res = await api.post("cap0/enter").json<unknown>()
     return unwrap(res as never) as Cap0Progress

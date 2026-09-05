@@ -7,15 +7,7 @@ import { JourneyFocus } from "./JourneyFocus"
 import { ModeBadge } from "./ModeBadge"
 import { useCap0Events } from "./Cap0Context"
 import { useCap0Progress } from "./hooks"
-import {
-  focusTaskNo,
-  NUMERALS,
-  TASK_DESCRIPTIONS,
-  TASK_NAMES,
-  TASK_NOS,
-  TOTAL_TASKS,
-  taskState,
-} from "./journeyTasks"
+import { focusTaskNo, NUMERALS, TASK_NAMES, TASK_NOS, TOTAL_TASKS, taskState } from "./journeyTasks"
 import { countTasksDone, tradingModeFor, type Cap0Progress } from "./types"
 
 /**
@@ -148,11 +140,8 @@ export function JourneyPanel() {
         <div className="cap0-level-card">
           <Badge n={level.n} color={level.color} fill={level.fill} size={64} ring={tasksDone / TOTAL_TASKS} glow />
           <div className="cap0-level-card-body">
-            <div className="cap0-level-card-tag">CẤP 0</div>
+            {/* Nhãn "CẤP 0" và câu bài học đã bỏ theo yêu cầu điều chỉnh — chỉ còn tên cấp + pill chế độ. */}
             <div className="cap0-level-card-name cap0-display">NHẬP MÔN</div>
-            <div className="cap0-level-card-lesson">
-              "Hiểu sân chơi, và đi trọn vòng đời một lệnh."
-            </div>
             {/* Mockup `.lvcard .info .mode` — the pill belongs to the info
                 column, under the name, not beside the badge. */}
             <div className="cap0-level-card-mode">
@@ -179,7 +168,6 @@ export function JourneyPanel() {
             tag="NHIỆM VỤ ĐANG LÀM"
             numeral={NUMERALS[focus - 1]}
             name={TASK_NAMES[focus]}
-            desc={TASK_DESCRIPTIONS[focus]}
             onGo={() => handleGo(focus)}
           />
         )}

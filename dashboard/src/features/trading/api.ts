@@ -130,7 +130,7 @@ function adaptOrder(raw: Raw): VTOrder {
 }
 
 export const tradingApi = {
-  /** POST /virtual-trading/account/activate — grants 1B virtual VND. */
+  /** POST /virtual-trading/account/activate — grants the configured starting balance (100 triệu VND by default). */
   activate: async (): Promise<VTAccount> => {
     const raw = await api.post("virtual-trading/account/activate").json<Raw>()
     return adaptAccount(raw)

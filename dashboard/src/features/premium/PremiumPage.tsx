@@ -66,7 +66,7 @@ const PREMIUM_FEATURES = [
   { icon: <IconDashboard />, text: "Phân tích & kịch bản hành động chi tiết" },
   { icon: <IconStorage />, text: "Dữ liệu thị trường real-time không giới hạn" },
   { icon: <IconNotification />, text: "Cảnh báo điểm mua/bán AI sớm nhất" },
-  { icon: <IconSafe />, text: "Đấu trường giao dịch ảo 1 tỷ VND" },
+  { icon: <IconSafe />, text: "Đấu trường giao dịch ảo 100 triệu VND" },
   { icon: <IconCustomerService />, text: "Hỗ trợ khách hàng ưu tiên 24/7" },
 ]
 

@@ -1390,8 +1390,10 @@ function AccountStrip({
 
   const handleActivate = async () => {
     try {
-      await activate.mutateAsync()
-      Message.success("Kích hoạt Đấu trường ảo thành công! Bạn nhận 1 tỷ VND ảo.")
+      const acct = await activate.mutateAsync()
+      // Số dư đọc từ tài khoản vừa mở (cấu hình server: 100 triệu), không hard-code.
+      const balance = acct?.balance > 0 ? ` Bạn nhận ${acct.balance.toLocaleString("vi-VN")} VND ảo.` : ""
+      Message.success(`Kích hoạt Đấu trường ảo thành công!${balance}`)
     } catch (err) {
       const msg = await getErrorMessage(err, "Kích hoạt thất bại")
       if (/premium|gói premium/i.test(msg)) {

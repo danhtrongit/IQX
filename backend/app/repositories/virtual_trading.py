@@ -43,9 +43,13 @@ class VirtualTradingRepository:
         return result.scalar_one_or_none()
 
     async def create_default_config(self, created_by: uuid.UUID | None = None) -> VirtualTradingConfig:
-        """Create default config if none exists."""
+        """Create default config if none exists.
+
+        ``initial_cash_vnd`` = 100 triệu — cùng số dư Sân tập mà Cấp 0 seed
+        (``_CAP0_INITIAL_CASH_VND``): mọi cấp một con số.
+        """
         config = VirtualTradingConfig(
-            initial_cash_vnd=1_000_000_000,
+            initial_cash_vnd=100_000_000,
             buy_fee_rate_bps=15,
             sell_fee_rate_bps=15,
             sell_tax_rate_bps=10,

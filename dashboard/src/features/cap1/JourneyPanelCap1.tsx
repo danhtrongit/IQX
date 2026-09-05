@@ -4,7 +4,6 @@ import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { Badge, LEVELS } from "@/features/cap0/Badge"
 import { JourneyFocus } from "@/features/cap0/JourneyFocus"
 import { ModeBadge } from "@/features/cap0/ModeBadge"
-import { CAP_MAX_ENABLED } from "./capFlags"
 import { useCap1Events } from "./Cap1Context"
 import { useCap1Progress } from "./hooks"
 import { useCap1TradeLog } from "./tradeLog"
@@ -26,22 +25,6 @@ const TASK_NAMES: Record<number, string> = {
   3: "Làm quen 5 lý do mua",
   4: "3 lệnh có lý do ✅ Ủng hộ",
   5: "10 lệnh Thực chiến",
-}
-
-/**
- * Mô tả hiện trên ô "NHIỆM VỤ ĐANG LÀM" (`JourneyFocus`) — mỗi lúc đúng một
- * cái, của nhiệm vụ đang tới lượt.
- *
- * ① là copy NGUYÊN VĂN spec §2 ("Copy (khi active)"). Bốn cái còn lại spec
- * không cho câu chữ, nên chúng chỉ diễn đạt lại đúng gạch đầu dòng "Yêu cầu"
- * của chính spec — không hứa thêm gì mà sản phẩm không làm.
- */
-const TASK_DESCRIPTIONS: Record<number, string> = {
-  1: "Cấp 1 khác Cấp 0 — mọi lệnh phải có kế hoạch: chọn lý do mua (1 trong 5 lý do) + vùng mua. Thiếu 1 trong 2 không đặt được lệnh.",
-  2: "Bán một lệnh đang mở, rồi đóng màn Kết sổ Cấp 1 — cột mốc cảm xúc thứ hai của bạn.",
-  3: "Thử chọn đủ cả 5 lý do mua qua các lệnh, mỗi loại ít nhất 1 lần. Không cần khớp dữ liệu — mục tiêu là làm quen cả 5 góc nhìn.",
-  4: "Cần 3 lệnh có lý do mua được AI Thanh tra chấm ✅ Ủng hộ ngay lúc đặt — chọn lý do đang được dữ liệu hậu thuẫn.",
-  5: "Tổng 10 lệnh Thực chiến, tính cả lệnh đang mở lẫn lệnh đã đóng.",
 }
 
 const TASK_NOS = [1, 2, 3, 4, 5] as const
@@ -250,11 +233,8 @@ export function JourneyPanelCap1() {
             glow
           />
           <div className="cap0-level-card-body">
-            <div className="cap0-level-card-tag">CẤP 1</div>
+            {/* Nhãn "CẤP 1" và câu bài học đã bỏ theo yêu cầu điều chỉnh — chỉ còn tên cấp + pill chế độ. */}
             <div className="cap0-level-card-name cap0-display">HỌC VIỆC</div>
-            <div className="cap0-level-card-lesson">
-              "Vào lệnh phải biết VÌ SAO mua và mua vùng nào."
-            </div>
             {/* Mockup `.lvcard .info .mode` (dòng 24) — viên pill thuộc cột
                 info, dưới tên cấp, KHÔNG phải phần tử flex thứ ba cạnh huy
                 hiệu. Giống hệt `cap0/JourneyPanel.tsx`; CSS
@@ -286,7 +266,6 @@ export function JourneyPanelCap1() {
             tag="NHIỆM VỤ ĐANG LÀM"
             numeral={NUMERALS[focus - 1]}
             name={TASK_NAMES[focus]}
-            desc={TASK_DESCRIPTIONS[focus]}
             extra={focus === 3 ? coverageStrip : undefined}
             progressText={PROGRESS_TEXT[focus]}
             /* ★ Cả 5 nhiệm vụ đều làm ở tab Đặt lệnh — nhiệm vụ duy nhất từng
@@ -331,27 +310,8 @@ export function JourneyPanelCap1() {
             📊 Phân tích danh mục
           </button>
         </div>
-
-        {/* ★★ TRẠNG THÁI CUỐI của một người đã tốt nghiệp Cấp 1 ★★ — modal tốt
-            nghiệp unmount xong là về đúng màn này, checklist 5/5, và ô này là
-            câu cuối cùng họ đọc. Khi trần cấp còn dưới 2 nó KHÔNG được hứa một
-            cấp chưa tồn tại; khi trần được nâng, câu nguyên bản tự quay về.
-            (Hướng dẫn nâng trần nằm trong docstring ở `./capFlags`.) */}
-        <div className="cap0-journey-goal" data-testid="cap1-journey-goal">
-          {CAP_MAX_ENABLED >= 2 ? (
-            <>
-              Xong 5/5 → tốt nghiệp <strong>Cấp 1 «Học việc»</strong>, lên{" "}
-              <strong>Cấp 2 «Kỷ luật»</strong> (viên lục giác ngọc lam). Cấp 2 thêm cắt
-              lỗ/chốt lời + sổ lệnh.
-            </>
-          ) : (
-            <>
-              Xong 5/5 → tốt nghiệp <strong>Cấp 1 «Học việc»</strong> — chặng cuối của
-              chương trình hiện tại. <strong>Cấp 2 «Kỷ luật» chưa ra mắt</strong>; khi mở,
-              nó sẽ dạy đặt cắt lỗ/chốt lời có cơ sở và giữ đúng cam kết của chính mình.
-            </>
-          )}
-        </div>
+        {/* ★ Ô đích "Xong 5/5 → tốt nghiệp…" đã bỏ theo yêu cầu điều chỉnh: sau
+            hàng công cụ là hết panel. Cấp 2+ vẫn giữ ô đích của riêng chúng. */}
       </div>
     </div>
   )

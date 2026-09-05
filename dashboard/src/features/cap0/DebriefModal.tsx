@@ -2,7 +2,6 @@ import { useEffect, useState } from "react"
 import { Modal } from "@arco-design/web-react"
 import { cn } from "@/shared/lib/cn"
 import { useCap0Kehoach, useCompleteTask } from "./hooks"
-import { coachTemplate } from "./coachTemplate"
 import "./cap0.css"
 
 /**
@@ -82,21 +81,19 @@ function holdTimeText(soPhienGiu: number | null | undefined): string | null {
   return soPhienGiu > 0 ? `${soPhienGiu} phiên` : "Trong cùng phiên"
 }
 
-/** Splits on the spec's own `**bold**` markers and renders them as `<strong>`. */
-function renderInlineBold(text: string) {
-  return text.split("**").map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : part))
-}
-
 const COUNT_UP_MS = 1000
 const COUNT_UP_STEP_MS = 40
 
 /**
  * Màn Kết sổ Cấp 0 (spec v3.0 §5) — opened by `Gbar` when a SELL order fills
  * (nhiệm vụ ④). Header + big count-up P&L + Kế hoạch/Thực tế table (giá vào /
- * giá ra + thuế bán 0,1%) + 1-of-2 rule-based coach block + "Đóng kết sổ ✓" —
- * which fires `completeTask(4, "debrief")`, **the single behaviour gate of the
- * whole level** ("4/4 nhiệm vụ + 1 cổng hành vi (④ đóng màn kết sổ)").
+ * giá ra + thuế bán 0,1%) + "Đóng kết sổ ✓" — which fires
+ * `completeTask(4, "debrief")`, **the single behaviour gate of the whole
+ * level** ("4/4 nhiệm vụ + 1 cổng hành vi (④ đóng màn kết sổ)").
  * KHÔNG hỏi cảm xúc (spec, explicit).
+ *
+ * ★ Khối coach "NHÌN LẠI" (2 mẫu lãi/lỗ) đã bỏ theo yêu cầu điều chỉnh; Cấp 0
+ * không còn `coachTemplate`. Cấp 1+ giữ lớp coach của riêng chúng.
  *
  * ★ Đây là nhiệm vụ ⑤ cũ; nó lùi về ④ khi Chặng 2 (ba tour sản phẩm) bị bỏ khỏi
  * Cấp 0. Gửi `taskNo: 5` bây giờ là gửi một nhiệm vụ không tồn tại.
@@ -146,9 +143,6 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
   const { n, symbol } = data
   const pnlPositive = pnlVnd > 0
   const tax = Math.round(exitPrice * quantity * 0.001)
-  // 1 of exactly 2 templates, by lãi/lỗ alone (spec v3.0 §5) — there is no
-  // cắt lỗ/chốt lời in Cấp 0 for the coach to have an opinion about.
-  const coach = coachTemplate({ pnlPositive }, n)
   const holdText = holdTimeText(kehoach?.so_phien_giu)
   // Mockup sub-line: `+198.000đ · MUA 100 VNM → BÁN · Giữ 4 phiên`. The suffix
   // is dropped entirely when nothing was recorded — better a shorter true line
@@ -225,8 +219,7 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
               Thời gian giữ. With no thresholds in Cấp 0 there is no verdict to
               state and no honest "không ghi nhận" fallback to need.
               The label is the SHORT form both mockups use (and the one Cấp 1's
-              Kết sổ already ships) — the 0,1% rate is still stated verbatim in
-              the coach paragraph below. */}
+              Kết sổ already ships). */}
           <tr>
             <td>Giá ra · thuế</td>
             <td>{UNKNOWN}</td>
@@ -241,11 +234,6 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
           </tr>
         </tbody>
       </table>
-
-      <div className="cap0-debrief-coach">
-        <div className="cap0-debrief-coach-tag">NHÌN LẠI</div>
-        <p className="cap0-debrief-coach-body">{renderInlineBold(coach)}</p>
-      </div>
 
       <button type="button" className="cap0-debrief-close" onClick={handleClose}>
         Đóng kết sổ ✓

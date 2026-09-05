@@ -1,6 +1,6 @@
 """Cấp 0 (Level 0) onboarding models — progress, placement, kế hoạch (chip lý do).
 
-Cap 0 is a FREE gamified onboarding flow: a user "enters", gets a 250tr VND
+Cap 0 is a FREE gamified onboarding flow: a user "enters", gets a 100tr VND
 virtual account seeded, works through **4 tasks** and graduates once all four are
 done plus the **single** behaviour gate — closing the màn Kết sổ at nhiệm vụ ④.
 
@@ -79,7 +79,7 @@ class Cap0Progress(UUIDMixin, TimestampMixin, Base):
     )
     entered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     virtual_balance_init: Mapped[int] = mapped_column(
-        BigInteger, nullable=False, default=250_000_000, server_default="250000000"
+        BigInteger, nullable=False, default=100_000_000, server_default="100000000"
     )
 
     # Task completion timestamps (nullable until done):

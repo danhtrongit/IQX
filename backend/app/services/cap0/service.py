@@ -1,7 +1,7 @@
 """Cấp 0 onboarding service — progress, placement, tasks, kế hoạch, graduation.
 
 Cap 0 is FREE. This service owns the ``cap0_progress``, ``cap0_order_kehoach``
-and ``user_placement`` rows and reuses the virtual-trading repo to seed a 250tr
+and ``user_placement`` rows and reuses the virtual-trading repo to seed a 100tr
 practice account on entry. It does NOT touch the virtual-trading engine
 (matching/settlement).
 
@@ -34,7 +34,10 @@ from app.models.virtual_trading import OrderSide, OrderStatus, VirtualOrder
 from app.repositories.virtual_trading import VirtualTradingRepository
 from app.services.virtual_trading.settlement import is_trading_day
 
-_CAP0_INITIAL_CASH_VND = 250_000_000
+#: Số dư Sân tập — 100 triệu VND, MỘT con số cho mọi cấp (yêu cầu điều chỉnh).
+#: Cùng giá trị với ``VirtualTradingRepository.create_default_config`` để tài
+#: khoản mở qua Cấp 0 hay qua ``activate`` đều bắt đầu bằng cùng một số dư.
+_CAP0_INITIAL_CASH_VND = 100_000_000
 #: No ``_CAP0_ORDER_MODE`` constant on purpose: nothing here may branch on
 #: ``virtual_orders.mode``. That column reflects the user's SUBSCRIPTION, not
 #: their level (see :meth:`Cap0Service.record_kehoach`), so a mode test here is
@@ -101,7 +104,7 @@ class Cap0Service:
         return await self._get_progress_row(user_id)
 
     async def enter(self, user_id: uuid.UUID) -> Cap0Progress:
-        """Enter Cấp 0 (idempotent) and seed a 250tr account if the user has none."""
+        """Enter Cấp 0 (idempotent) and seed a 100tr account if the user has none."""
         progress = await self._get_progress_row(user_id)
         if progress is None:
             progress = Cap0Progress(

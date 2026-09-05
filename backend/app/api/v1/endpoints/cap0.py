@@ -33,7 +33,7 @@ async def get_progress(user: CurrentUser, db: DBSession) -> Cap0ProgressOut | No
 
 @router.post("/enter", response_model=Cap0ProgressOut)
 async def enter(user: CurrentUser, db: DBSession) -> Cap0ProgressOut:
-    """Vào Cấp 0 (idempotent) + seed tài khoản ảo 250tr nếu user chưa có."""
+    """Vào Cấp 0 (idempotent) + seed tài khoản ảo 100tr nếu user chưa có."""
     svc = Cap0Service(db)
     return await svc.enter(user.id)
 

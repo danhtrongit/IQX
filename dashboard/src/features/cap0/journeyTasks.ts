@@ -28,14 +28,6 @@ export const TASK_NAMES: Record<number, string> = {
   4: "Bán một lệnh, kết sổ đầu tiên",
 }
 
-/** Mô tả hiện trong ô tập trung (mockup chỉ vẽ tên; mô tả là phần dẫn dắt). */
-export const TASK_DESCRIPTIONS: Record<number, string> = {
-  1: "Mua thử một mã bằng vốn Sân tập.",
-  2: "Mở tab Nắm giữ, xem mã vừa mua trong danh mục.",
-  3: "Mở tab Theo dõi, làm quen nơi quan sát mã.",
-  4: "Bán một lệnh đang có để khép vòng đời lệnh đầu tiên. Xong sẽ mở màn Kết sổ.",
-}
-
 /**
  * Mẫu số của mọi bộ đếm — mockup `.jbar .lv` «CẤP 0 · 3/4» và `.ck-head .c`
  * «3/4».

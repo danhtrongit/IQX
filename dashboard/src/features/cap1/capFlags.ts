@@ -17,10 +17,10 @@
  *  b. `GraduationModalCap1.tsx` — Khối 3 + dòng "sắp ra mắt" dưới CTA + việc có
  *     gọi `useEnterCap2` hay không, tất cả theo `CAP_MAX_ENABLED >= 2`.
  *  c. `GraduationModalCap2.tsx` — y hệt (b), theo `CAP_MAX_ENABLED >= 3`.
- *  d. `JourneyPanelCap1.tsx` — ô mục tiêu (`data-testid="cap1-journey-goal"`)
- *     chỉ hứa Cấp 2 khi Cấp 2 thật sự mở. Đây là trạng thái CUỐI mà một người
- *     đã tốt nghiệp Cấp 1 nhìn thấy (modal tốt nghiệp unmount xong là về đúng
- *     màn này) — nó KHÔNG được hứa một cấp chưa tồn tại.
+ *  d. (đã bỏ) `JourneyPanelCap1.tsx` từng có ô mục tiêu `cap1-journey-goal`
+ *     hứa Cấp 2 theo `>= 2`; ô đó đã bị bỏ theo yêu cầu điều chỉnh, panel Cấp 1
+ *     không còn đọc cờ này. Luật "không hứa cấp chưa tồn tại" vẫn áp cho các
+ *     ô mục tiêu Cấp 2+ ở (f)(h)(j)(l).
  *  e. `GraduationModalCap3.tsx` — y hệt (b)(c), theo `CAP_MAX_ENABLED >= 4`.
  *  f. `JourneyPanelCap2.tsx` (`cap2-journey-goal`) và `JourneyPanelCap3.tsx`
  *     (`cap3-journey-goal`) — y hệt (d), theo `>= 3` và `>= 4`.
@@ -70,9 +70,9 @@
  * chữ nào.
  *
  * ★ Cờ sống trong file RIÊNG (không phải `DauTruongPage.tsx`) vì
- * `GraduationModalCap1`/`JourneyPanelCap1`/`GraduationModalCap2` phải đọc được
- * nó mà KHÔNG kéo theo vòng import `DauTruongPage → Cap1TradingPage →
- * GraduationModalCap1` (và cả cây import Cấp 2-8 + `@/features/dashboard` đứng
- * sau nó). `DauTruongPage` re-export lại tên này nên mọi import cũ vẫn chạy.
+ * `GraduationModalCap1`/`GraduationModalCap2` phải đọc được nó mà KHÔNG kéo
+ * theo vòng import `DauTruongPage → Cap1TradingPage → GraduationModalCap1` (và
+ * cả cây import Cấp 2-8 + `@/features/dashboard` đứng sau nó). `DauTruongPage`
+ * re-export lại tên này nên mọi import cũ vẫn chạy.
  */
 export const CAP_MAX_ENABLED = 5
