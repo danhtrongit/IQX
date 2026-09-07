@@ -21,30 +21,19 @@ const SEO_TITLE = "IQX Demo Trading · Cấp 0 «Nhập môn»"
 // No backend GET exists for `user_placement` (BE1 only exposes POST
 // /cap0/placement), so "đã trả lời rồi" is not directly readable from the
 // server. Since v3.0 all THREE placement answers call `POST /cap0/enter`, the
-// server-side guard (`!progress`) is now the primary one and this local flag
-// is a second guard that closes the window between answering and the progress
-// query refetching (mirrors the pattern in
-// `features/navigation/TrialBanner.tsx`). Known gap: a different browser/
-// device, or clearing site data, only matters for a user whose `/cap0/enter`
-// never landed — they get the modal again, which is the correct retry.
-const PLACEMENT_SEEN_KEY = "iqx_cap0_placement_seen"
-
-function hasSeenPlacement(): boolean {
-  try {
-    return window.localStorage.getItem(PLACEMENT_SEEN_KEY) === "1"
-  } catch {
-    return false
-  }
-}
-
-function markPlacementSeen(): void {
-  try {
-    window.localStorage.setItem(PLACEMENT_SEEN_KEY, "1")
-  } catch {
-    // Storage unavailable (private mode / disabled) — the modal may resurface;
-    // acceptable degradation, not a functional break.
-  }
-}
+// server-side guard (`!progress`) is THE guard: a `cap0_progress` row exists
+// iff the user has answered. The only window it cannot cover is the few hundred
+// ms between `enterCap0` succeeding and `useCap0Progress` refetching — an
+// in-memory flag (`placementSeen` state below) closes that.
+//
+// ★★ KHÔNG BAO GIỜ nhớ cờ này trong localStorage nữa. Bản trước lưu
+// `iqx_cap0_placement_seen=1` theo TRÌNH DUYỆT, không theo user: tài khoản A
+// trả lời xong → cờ bật; đăng xuất, đăng ký tài khoản B trên cùng máy → cờ
+// vẫn bật → modal không hiện → không có `POST /cap0/enter` → không có
+// `cap0_progress` → mọi `PATCH /cap0/task` sau đó 404 (FE nuốt lặng) → Hành
+// trình đứng 0/4 mãi dù user đã mua/bán đủ. Tái hiện trên prod 2026-09-07
+// (`iqx.test1@gmail.com`: 7 lệnh, 0 dòng cap0_progress, 0 dòng placement).
+// Khôi phục lại cờ per-browser là dựng lại đúng lỗi này.
 
 /**
  * `/dau-truong` — Cấp 0 «Nhập môn» demo-trading shell (spec §0 "giữ header" +
@@ -83,7 +72,7 @@ function Cap0Terminal() {
   const { isPremium } = usePremiumStatus()
   const enterCap0 = useEnterCap0()
   const placement = usePlacement()
-  const [placementSeen, setPlacementSeen] = useState(() => hasSeenPlacement())
+  const [placementSeen, setPlacementSeen] = useState(false)
   const { activePanel, setActivePanel } = useSidebar()
 
   // Spec §7: "Là view mặc định khi user vào app lần đầu và mỗi lần vào lại
@@ -112,7 +101,7 @@ function Cap0Terminal() {
   // dây nối vào Cấp 0 là bị cắt.
 
   // Guard (§3): show only once — needs BOTH the server truth (no progress row
-  // yet, i.e. never entered Cấp 0) AND the local "already answered" flag
+  // yet, i.e. never entered Cấp 0) AND the in-memory "already answered" flag
   // (covers the window before the progress query refetches). Wait for the
   // query to settle first so a loading flicker doesn't briefly show the modal
   // to a returning user.
@@ -151,11 +140,10 @@ function Cap0Terminal() {
     // Mark "seen" only once `enterCap0` actually SUCCEEDS. If it fails
     // (network error), `progress` stays falsy AND `placementSeen` stays
     // false, so `showPlacement` is still true and the modal remains
-    // available for the user to retry — a fire-and-forget local flag here
-    // would otherwise permanently hide the modal on a failed attempt.
+    // available for the user to retry — a fire-and-forget flag here would
+    // otherwise hide the modal on a failed attempt.
     enterCap0.mutate(undefined, {
       onSuccess: () => {
-        markPlacementSeen()
         setPlacementSeen(true)
         // Chỉ người đã từng giao dịch mới cần lời giải thích vì sao họ vẫn bắt
         // đầu ở Cấp 0 — người mới hoàn toàn vốn thuộc về đó.

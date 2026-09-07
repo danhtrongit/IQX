@@ -120,6 +120,23 @@ vi.mock("./hooks", () => ({
   useCap0Kehoach: () => ({ data: null }),
 }))
 
+// `PlacementModal`'s own rendering is covered in `PlacementModal.test.tsx`.
+// Here it is reduced to its contract — `visible` + three answer buttons — so
+// the "modal hidden" assertions below are real: the Arco `Modal` keeps its DOM
+// in a `zoomModal-exit` state under jsdom (no transitionend), which made
+// `queryByText(title)` stay truthy long after `visible` flipped to false.
+vi.mock("./PlacementModal", () => ({
+  PlacementModal: ({ visible, onChoose }: { visible: boolean; onChoose: (a: string) => void }) =>
+    visible ? (
+      <div>
+        <h2>Chào mừng đến Demo Trading của IQX.</h2>
+        <button type="button" data-testid="cap0-placement-never" onClick={() => onChoose("never")} />
+        <button type="button" data-testid="cap0-placement-unsure" onClick={() => onChoose("unsure")} />
+        <button type="button" data-testid="cap0-placement-regular" onClick={() => onChoose("regular")} />
+      </div>
+    ) : null,
+}))
+
 // `Gbar` reads FILLED order history (`useOrders`) to re-open the Kết sổ for a
 // round trip that closed off-route or before a reload (nhiệm vụ ④ recovery —
 // see `retroDebrief.ts`, nhiệm vụ ④). The real hook calls `useAuth`, which throws outside
@@ -237,20 +254,10 @@ describe("Cap0TradingPage", () => {
     expect(screen.queryByText("SÂN TẬP · T+0")).not.toBeInTheDocument()
   })
 
-  it("shows PlacementModal when the user has no progress yet (first visit) — 3 lựa chọn §3 v3.0", () => {
+  it("shows PlacementModal when the user has no progress yet (first visit)", () => {
     useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
     renderCap0(<Cap0TradingPage />)
     expect(screen.getByText("Chào mừng đến Demo Trading của IQX.")).toBeInTheDocument()
-    expect(
-      screen.getByText("Bạn đã từng mua bán cổ phiếu thật bao giờ chưa?"),
-    ).toBeInTheDocument()
-    expect(screen.getByTestId("cap0-placement-never")).toHaveTextContent("Chưa bao giờ")
-    expect(screen.getByTestId("cap0-placement-unsure")).toHaveTextContent(
-      "Có, nhưng chưa tự tin",
-    )
-    expect(screen.getByTestId("cap0-placement-regular")).toHaveTextContent(
-      "Có, giao dịch thường xuyên",
-    )
   })
 
   it("does NOT show PlacementModal once the user already has Cấp 0 progress", () => {
@@ -304,7 +311,7 @@ describe("Cap0TradingPage", () => {
     })
   }
 
-  it('marks placement as locally "seen" after answering, so a re-render (e.g. progress still null while /enter is in flight) does not re-show it', () => {
+  it('hides PlacementModal after a successful answer even while progress is still null (the /enter → refetch window)', () => {
     useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
     const { rerender } = renderCap0(<Cap0TradingPage />)
     fireEvent.click(screen.getByTestId("cap0-placement-never"))
@@ -315,7 +322,25 @@ describe("Cap0TradingPage", () => {
         <Cap0TradingPage />
       </MemoryRouter>,
     )
-    expect(window.localStorage.getItem("iqx_cap0_placement_seen")).toBe("1")
+    expect(screen.queryByText("Chào mừng đến Demo Trading của IQX.")).not.toBeInTheDocument()
+  })
+
+  // ★★ Production bug 2026-09-07: the "answered" flag was persisted per BROWSER
+  // (`iqx_cap0_placement_seen`), so account B on the same machine as an
+  // already-answered account A never saw the modal → never `POST /cap0/enter`
+  // → no `cap0_progress` row → every task PATCH 404'd and the journey sat at
+  // 0/4 forever. A fresh mount with no progress row MUST show the modal, no
+  // matter what an earlier session on this browser did.
+  it("★ shows PlacementModal again for a fresh mount with no progress row, even after an earlier session answered on this browser", () => {
+    useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
+    const first = renderCap0(<Cap0TradingPage />)
+    fireEvent.click(screen.getByTestId("cap0-placement-never"))
+    expect(screen.queryByText("Chào mừng đến Demo Trading của IQX.")).not.toBeInTheDocument()
+    first.unmount()
+
+    // Account B: same browser, same localStorage, no progress row.
+    renderCap0(<Cap0TradingPage />)
+    expect(screen.getByText("Chào mừng đến Demo Trading của IQX.")).toBeInTheDocument()
   })
 
   for (const testId of [
@@ -323,7 +348,7 @@ describe("Cap0TradingPage", () => {
     "cap0-placement-unsure",
     "cap0-placement-regular",
   ] as const) {
-    it(`does NOT mark placement "seen" when the ${testId} mutation FAILS, leaving the modal retryable`, () => {
+    it(`keeps PlacementModal up when the ${testId} mutation FAILS, so the user can retry`, () => {
       useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
       // Simulate a network failure: `enterCap0.mutate` never calls `onSuccess`.
       enterMutate.mockImplementationOnce(
@@ -336,7 +361,6 @@ describe("Cap0TradingPage", () => {
       )
       renderCap0(<Cap0TradingPage />)
       fireEvent.click(screen.getByTestId(testId))
-      expect(window.localStorage.getItem("iqx_cap0_placement_seen")).toBeNull()
       expect(messageInfo).not.toHaveBeenCalled()
       // Modal is still up — the user can retry.
       expect(screen.getByText("Chào mừng đến Demo Trading của IQX.")).toBeInTheDocument()
