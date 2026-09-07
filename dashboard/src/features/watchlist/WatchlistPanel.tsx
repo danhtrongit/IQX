@@ -62,15 +62,7 @@ import {
   priceColorClass,
   priceColorHex,
 } from "./ui"
-
-const TAB_STORAGE_KEY = "iqx.watchlist.activeTab"
-type WatchlistTab = "watchlist" | "holdings" | "history"
-
-function getInitialTab(): WatchlistTab {
-  if (typeof window === "undefined") return "watchlist"
-  const stored = window.localStorage.getItem(TAB_STORAGE_KEY)
-  return stored === "holdings" || stored === "history" ? stored : "watchlist"
-}
+import { readWatchlistTab, writeWatchlistTab, type WatchlistTab } from "./tabStorage"
 
 /* ─────────────────────────── Tab: Theo dõi ─────────────────────────── */
 
@@ -707,12 +699,12 @@ function HistoryTab() {
 
 export function WatchlistPanel({ onRowSelect }: { onRowSelect?: (symbol: string) => void } = {}) {
   const { isAuthenticated, setShowAuthModal } = useAuth()
-  const [activeTab, setActiveTab] = useState<WatchlistTab>(getInitialTab)
+  const [activeTab, setActiveTab] = useState<WatchlistTab>(readWatchlistTab)
   const { onPortfolioTabOpen } = useCap0Events()
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab as WatchlistTab)
-    window.localStorage.setItem(TAB_STORAGE_KEY, tab)
+    writeWatchlistTab(tab as WatchlistTab)
   }
 
   // Cấp 0 nhiệm vụ ② «Xem tab Nắm giữ» / ③ «Xem tab Theo dõi» — the completion

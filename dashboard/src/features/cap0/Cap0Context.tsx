@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react"
 import { useCap0Progress } from "./hooks"
+import type { WatchlistTab } from "@/features/watchlist/tabStorage"
 
 /**
  * Cấp 0 event bus.
@@ -52,11 +53,11 @@ export interface Cap0OrderEvent {
 }
 
 /**
- * Tab đang hiện trong panel "Danh mục" (`WatchlistPanel`'s own `WatchlistTab`).
- * Khai báo lại ở đây thay vì import từ `@/features/watchlist` để bus không phụ
- * thuộc ngược vào component nó phục vụ.
+ * Tab đang hiện trong panel "Danh mục". Lấy từ `@/features/watchlist/tabStorage`
+ * (module localStorage thuần, không có component) thay vì barrel
+ * `@/features/watchlist`, để bus không phụ thuộc ngược vào component nó phục vụ.
  */
-export type Cap0PortfolioTab = "watchlist" | "holdings" | "history"
+export type Cap0PortfolioTab = WatchlistTab
 
 /** Handlers the Cấp 0 journey registers to react to trading-UI events. */
 export interface Cap0EventHandlers {

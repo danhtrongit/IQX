@@ -48,6 +48,7 @@ import { JourneyPanel } from "./JourneyPanel"
 import { JourneyBar } from "./JourneyBar"
 import { RightSidebar } from "@/features/dashboard/components/RightSidebar"
 import { RightToolbar } from "@/features/dashboard/components/RightToolbar"
+import { WATCHLIST_TAB_STORAGE_KEY, readWatchlistTab } from "@/features/watchlist/tabStorage"
 
 function makeProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
   return {
@@ -77,6 +78,7 @@ describe("JourneyPanel", () => {
     useCap0ProgressMock.mockReset()
     usePremiumStatusMock.mockReset()
     usePremiumStatusMock.mockReturnValue({ isPremium: false, isLoading: false })
+    window.localStorage.clear()
   })
 
   it("renders the level card — NHẬP MÔN + mode badge, KHÔNG nhãn CẤP 0 / câu bài học", () => {
@@ -367,9 +369,14 @@ describe("JourneyPanel", () => {
   })
 
   // ★★ ②③ ARE the two tabs of the "Danh mục" panel, so "Làm ngay →" must open
-  // that panel — never launch a tour (they no longer exist) and never dump the
-  // user on "Đặt lệnh", where the nhiệm vụ cannot be performed at all.
-  it("★ «Làm ngay →» on ② opens the Danh mục panel (that IS the nhiệm vụ)", () => {
+  // that panel ON THE RIGHT TAB — never launch a tour (they no longer exist),
+  // never dump the user on "Đặt lệnh", and never leave the tab to whatever
+  // `WatchlistPanel` last remembered. Production bug: the panel restored the
+  // remembered tab (default Theo dõi), so "Làm ngay →" on ② opened Theo dõi and
+  // ticked ③ instead; a user who then sold sat at 3/4 + cổng forever, the
+  // graduation modal never opened, and "không lên được Cấp 1".
+  it("★ «Làm ngay →» on ② opens the Danh mục panel ON Nắm giữ even when Theo dõi is the remembered tab", () => {
+    window.localStorage.setItem(WATCHLIST_TAB_STORAGE_KEY, "watchlist")
     useCap0ProgressMock.mockReturnValue({
       data: makeProgress({ task_1_done_at: "t" }),
     })
@@ -381,9 +388,11 @@ describe("JourneyPanel", () => {
     )
     fireEvent.click(within(screen.getByTestId("cap0-focus")).getByText("Làm ngay →"))
     expect(screen.getByTestId("panel-spy")).toHaveTextContent("watchlist")
+    expect(readWatchlistTab()).toBe("holdings")
   })
 
-  it("★ «Làm ngay →» on ③'s checklist shortcut also opens the Danh mục panel", () => {
+  it("★ «Làm ngay →» on ③'s checklist shortcut opens the Danh mục panel ON Theo dõi even when Nắm giữ is remembered", () => {
+    window.localStorage.setItem(WATCHLIST_TAB_STORAGE_KEY, "holdings")
     useCap0ProgressMock.mockReturnValue({
       data: makeProgress({ task_1_done_at: "t" }),
     })
@@ -395,6 +404,7 @@ describe("JourneyPanel", () => {
     )
     fireEvent.click(within(screen.getByTestId("cap0-task-3")).getByText("Làm ngay →"))
     expect(screen.getByTestId("panel-spy")).toHaveTextContent("watchlist")
+    expect(readWatchlistTab()).toBe("watchlist")
   })
 
   it("★ «Làm ngay →» on ④ (bán) opens the Đặt lệnh panel", () => {

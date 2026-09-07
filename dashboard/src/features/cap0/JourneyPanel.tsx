@@ -1,6 +1,10 @@
 import "./cap0.css"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { usePremiumStatus } from "@/features/premium"
+// Concrete-file import (NOT the `@/features/watchlist` barrel): `tabStorage`
+// is a plain localStorage helper with no component behind it, so this cannot
+// pull `WatchlistPanel` → `@/features/dashboard` → … back into cap0.
+import { writeWatchlistTab } from "@/features/watchlist/tabStorage"
 import { cn } from "@/shared/lib/cn"
 import { Badge, LEVELS } from "./Badge"
 import { JourneyFocus } from "./JourneyFocus"
@@ -127,11 +131,24 @@ export function JourneyPanel() {
   // tab is what completes it, see `Gbar`'s `onPortfolioTabOpen` handler). ①④
   // are order actions → the "Đặt lệnh" panel.
   //
+  // ★★ Phải chọn ĐÚNG tab, không chỉ đúng panel. `WatchlistPanel` mount lên với
+  // tab nhớ trong localStorage (mặc định Theo dõi), nên "Làm ngay →" trên ②
+  // từng mở ra Theo dõi: ③ tick nhầm, ② không, và user không hiểu vì sao tab
+  // "Nắm giữ" vẫn chưa xong. Ai đi theo nút dẫn rồi bán luôn thì dừng ở 3/4 +
+  // cổng — `isGraduationReady` không bao giờ mở màn tốt nghiệp, "không lên
+  // được Cấp 1". `RightSidebar` chỉ render một panel một lúc nên lúc này
+  // `WatchlistPanel` chưa mount; ghi tab trước rồi mới chuyển panel là đủ.
+  //
   // ★ Không còn nhánh `onLaunchTour` nào: ba tour sản phẩm của Chặng 2 đã bị bỏ
   // khỏi Cấp 0, và dưới cách đánh số mới một cú `completeTask(2|3|4)` từ tour
   // sẽ đánh dấu nhầm "Xem tab Nắm giữ/Theo dõi" là đã xong.
   const handleGo = (no: number) => {
-    setActivePanel(no === 2 || no === 3 ? "watchlist" : "trading")
+    if (no === 2 || no === 3) {
+      writeWatchlistTab(no === 2 ? "holdings" : "watchlist")
+      setActivePanel("watchlist")
+      return
+    }
+    setActivePanel("trading")
   }
 
   return (
