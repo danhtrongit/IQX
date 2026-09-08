@@ -16,10 +16,10 @@ const { useCap6ProgressMock, graduateMutate, enterCap7Mutate, capFlags, pending 
       opts?.onSuccess?.()
     }),
     enterCap7Mutate: vi.fn(),
-    // ★★ MẶC ĐỊNH = TRẦN THẬT (`CAP_MAX_ENABLED` đang là 5, tức Cấp 7 CHƯA mở).
-    // Đặt mặc định TRÊN trần thật sẽ khiến mọi bài chỉ chạy nhánh "đã mở" và câu
-    // chữ user THẬT SỰ đọc hôm nay không bao giờ bị canh — đúng lỗi đã sửa ở Cấp 5.
-    capFlags: { max: 5 },
+    // ★★ MẶC ĐỊNH = TRẦN THẬT (`CAP_MAX_ENABLED` đang là 8 — Cấp 7 đã mở). Các
+    // bài canh nhánh "chưa mở" tự đặt `capFlags.max = 5`, nên câu chữ của CẢ HAI
+    // phía trần vẫn bị canh dù mặc định nằm ở phía "đã mở".
+    capFlags: { max: 8 },
     pending: { current: false },
   }),
 )
@@ -61,7 +61,7 @@ beforeEach(() => {
   useCap6ProgressMock.mockReturnValue({ data: makeProgress() })
   graduateMutate.mockClear()
   enterCap7Mutate.mockClear()
-  capFlags.max = 5
+  capFlags.max = 8
   pending.current = false
 })
 

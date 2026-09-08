@@ -25,10 +25,10 @@ const { useCap5ProgressMock, graduateMutate, enterCap6Mutate, capFlags, pending 
       opts?.onSuccess?.()
     }),
     enterCap6Mutate: vi.fn(),
-    // ★★ MẶC ĐỊNH = TRẦN THẬT (`CAP_MAX_ENABLED` đang là 5). Trước bản vá này
-    // mặc định là 6 — TRÊN trần thật — nên mọi bài chỉ chạy nhánh "Cấp 6 đã mở"
-    // và câu chữ user THẬT SỰ đọc (nhánh chưa mở) chưa từng bị canh.
-    capFlags: { max: 5 },
+    // ★★ MẶC ĐỊNH = TRẦN THẬT (`CAP_MAX_ENABLED` đang là 8 — Cấp 6 đã mở). Các
+    // bài canh nhánh "chưa mở" tự đặt `capFlags.max = 5`, nên câu chữ của CẢ HAI
+    // phía trần vẫn bị canh dù mặc định nằm ở phía "đã mở".
+    capFlags: { max: 8 },
     pending: { current: false },
   }),
 )
@@ -71,7 +71,7 @@ function makeProgress(overrides: Partial<Cap5Progress> = {}): Cap5Progress {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  capFlags.max = 5
+  capFlags.max = 8
   pending.current = false
   useCap5ProgressMock.mockReturnValue({ data: makeProgress() })
 })

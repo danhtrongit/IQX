@@ -75,4 +75,4 @@
  * cả cây import Cấp 2-8 + `@/features/dashboard` đứng sau nó). `DauTruongPage`
  * re-export lại tên này nên mọi import cũ vẫn chạy.
  */
-export const CAP_MAX_ENABLED = 5
+export const CAP_MAX_ENABLED = 8

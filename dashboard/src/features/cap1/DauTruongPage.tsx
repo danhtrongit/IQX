@@ -128,8 +128,8 @@ function FullPageSpinner() {
  * "Cấp N-1 graduated → `CapNTradingPage`" chỉ có hiệu lực khi
  * `CAP_MAX_ENABLED >= N`. Cấp đúng bằng trần là nhánh TERMINAL: một user đã tốt
  * nghiệp cấp đó vẫn Ở LẠI shell của chính cấp đó (KHÔNG spinner, KHÔNG tụt
- * xuống cấp dưới) cho tới khi trần được nâng. Hiện `CAP_MAX_ENABLED = 4` → Cấp 4
- * là terminal, Cấp 5-8 hoàn toàn im lặng (không progress query, không enter).
+ * xuống cấp dưới) cho tới khi trần được nâng. Hiện `CAP_MAX_ENABLED = 8` → Cấp 8
+ * là terminal (đồng thời là cấp cuối của chương trình — không có Cấp 9).
  * ★ Con số này ĐỔI theo `capFlags.ts` — đọc thẳng ở đó, đừng tin dòng này nếu
  * hai bên lệch nhau.
  *  - Cấp 1 graduated, Cấp 2 not entered/not graduated → `Cap2TradingPage`
@@ -326,9 +326,9 @@ export function DauTruongPage() {
   if (!cap1Fetched) return <FullPageSpinner />
   // ★ TRẦN CẤP: `!capOpen(N+1)` biến cấp N thành nhánh TERMINAL — user đã tốt
   // nghiệp cấp trần vẫn ở lại đúng shell đó (KHÔNG spinner, KHÔNG tụt cấp) cho
-  // tới khi trần được nâng. Với trần hiện tại (3), dòng Cấp 3 bên dưới là điểm
-  // dừng — và tab Hành trình của cấp đó phải nói "ĐÃ tốt nghiệp" chứ không
-  // tiếp tục ra lệnh làm lại nhiệm vụ (xem `JourneyPanelCap3`).
+  // tới khi trần được nâng. Với trần hiện tại (8), Cấp 8 là điểm dừng — và tab
+  // Hành trình của cấp trần phải nói "ĐÃ tốt nghiệp" chứ không tiếp tục ra
+  // lệnh làm lại nhiệm vụ (xem `JourneyPanelCap3` cho mẫu).
   if (!progressPastCap1) return <Cap1TradingPage />
   if (!cap2Fetched) return <FullPageSpinner />
   if (!capOpen(3) || !cap2Graduated) return <Cap2TradingPage />

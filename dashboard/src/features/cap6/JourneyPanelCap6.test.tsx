@@ -13,8 +13,9 @@ import type { Cap6Progress } from "./types"
 const { useCap6ProgressMock, setActivePanelMock, capFlags } = vi.hoisted(() => ({
   useCap6ProgressMock: vi.fn(),
   setActivePanelMock: vi.fn(),
-  // ★★ MẶC ĐỊNH = TRẦN THẬT (`CAP_MAX_ENABLED` đang là 5 ⇒ Cấp 7 CHƯA mở).
-  capFlags: { max: 5 },
+  // ★★ MẶC ĐỊNH = TRẦN THẬT (`CAP_MAX_ENABLED` đang là 8 ⇒ Cấp 7 đã mở). Bài
+  // canh nhánh "chưa mở" tự đặt `capFlags.max = 5`.
+  capFlags: { max: 8 },
 }))
 
 vi.mock("./hooks", () => ({
@@ -61,7 +62,7 @@ beforeEach(() => {
   useCap6ProgressMock.mockReset()
   useCap6ProgressMock.mockReturnValue({ data: makeProgress() })
   setActivePanelMock.mockClear()
-  capFlags.max = 5
+  capFlags.max = 8
 })
 
 describe("JourneyPanelCap6 — thẻ cấp + nhiệm vụ duy nhất (mockup)", () => {
