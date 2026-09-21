@@ -6,7 +6,14 @@ import { FinancialAnalysisView } from "./FinancialAnalysisView"
 import { useMediaQuery } from "./useMediaQuery"
 
 export function HomeWorkspace() {
-  const [active, setActive] = useState<HomeView>("market")
+  const [requestedTour, setRequestedTour] = useState(() => new URLSearchParams(window.location.search).get("tour"))
+  const requestedView = new URLSearchParams(window.location.search).get("view")
+  const initialView: HomeView = requestedTour === "phantich" || requestedView === "stock"
+    ? "stock"
+    : requestedTour === "bctc" || requestedView === "financial"
+      ? "financial"
+      : "market"
+  const [active, setActive] = useState<HomeView>(initialView)
   const isDesktop = useMediaQuery("(min-width: 1024px)")
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -18,11 +25,18 @@ export function HomeWorkspace() {
     contentRef.current?.closest("main")?.scrollTo({ top: 0, behavior: "smooth" })
   }
 
+  const consumeTourRequest = () => {
+    setRequestedTour(null)
+    const url = new URL(window.location.href)
+    url.searchParams.delete("tour")
+    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`)
+  }
+
   const content = (
     <div ref={contentRef} className="min-h-0 overflow-y-auto">
-      {active === "market" && <HomeMarketView />}
-      {active === "stock" && <StockAnalysisView />}
-      {active === "financial" && <FinancialAnalysisView />}
+      {active === "market" && <HomeMarketView autoStartTour={requestedTour === "bantin"} onTourStarted={consumeTourRequest} />}
+      {active === "stock" && <StockAnalysisView autoStartTour={requestedTour === "phantich"} onTourStarted={consumeTourRequest} />}
+      {active === "financial" && <FinancialAnalysisView autoStartTour={requestedTour === "bctc"} onTourStarted={consumeTourRequest} />}
     </div>
   )
 

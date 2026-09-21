@@ -260,7 +260,7 @@ function SectionTitle({ label }: { label: string }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function PreMarketView() {
+export function PreMarketView({ tourMode = false }: { tourMode?: boolean }) {
   const { data, isLoading } = usePreMarketAnalysis()
 
   // ─── Stale-brief gate ─────────────────────────────────────────────────────
@@ -275,7 +275,7 @@ export function PreMarketView() {
   const showAtoCountdown = isDataForToday
 
   // Loading spinner (first load only)
-  if (isLoading && !data) {
+  if (isLoading && !data && !tourMode) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Spin tip="Đang tải nhận định trước phiên…" />
@@ -285,6 +285,16 @@ export function PreMarketView() {
 
   // No brief at all → "processing" notice (there is nothing else to show)
   if (!data) {
+    if (tourMode) {
+      const targets = [
+        ["tour-bantin-pre-header", "Bản Trước phiên · đang tải dữ liệu…"],
+        ["tour-bantin-pre-world", "Đêm qua thế giới · đang tải dữ liệu…"],
+        ["tour-bantin-pre-news", "Tin tức tác động · đang tải dữ liệu…"],
+        ["tour-bantin-pre-events", "Lịch sự kiện hôm nay · đang tải dữ liệu…"],
+        ["tour-bantin-pre-watch", "Khi vào phiên cần lưu ý · đang tải dữ liệu…"],
+      ]
+      return <div className="pm-view mx-auto w-full max-w-[1280px] space-y-3 px-2 py-3 md:px-4">{targets.map(([id, label]) => <section key={id} data-tour-id={id} className="rounded-xl border border-dashed border-[var(--color-border-3)] bg-[var(--color-bg-2)] p-6 text-[13px] text-[var(--color-text-3)]">{label}</section>)}</div>
+    }
     return (
       <div className="mx-auto w-full max-w-[1280px] px-2 py-2 md:px-4">
         <div
@@ -328,6 +338,7 @@ export function PreMarketView() {
       {/* ── Article card ── */}
       <article className="pm-article" style={{ marginBottom: 14 }}>
         {/* Header */}
+        <div data-tour-id="tour-bantin-pre-header">
         <div className="pm-header">
           <div className="pm-title-row">
             <span className="pm-badge">IQX AI · SÁNG NAY</span>
@@ -345,17 +356,19 @@ export function PreMarketView() {
           <span className="pm-tagline-marker" aria-hidden>◆</span>
           <span className="pm-tagline-text">{tagline.text}</span>
         </div>
+        </div>
 
         {/* World grid */}
         {hasWorldGrid && (
           <>
-            <div className="pm-world-grid">
+            <div className="pm-world-grid" data-tour-id="tour-bantin-pre-world">
               {worldCells.map(cell => (
                 <WorldCellCard key={cell.id} cell={cell} />
               ))}
             </div>
           </>
         )}
+        {!hasWorldGrid && tourMode && <div data-tour-id="tour-bantin-pre-world" className="pm-world-grid"><div className="pm-world-cell">Đang tải dữ liệu thế giới…</div></div>}
 
         {/* World paragraph */}
         {hasWorldPara && (
@@ -368,7 +381,7 @@ export function PreMarketView() {
 
       {/* ── Hot news ── */}
       {hasNews && (
-        <section style={{ marginBottom: 14 }}>
+        <section data-tour-id="tour-bantin-pre-news" style={{ marginBottom: 14 }}>
           <SectionTitle label="Tin tức nổi bật" />
           <div className="pm-news-list">
             {hotNews.map(item => (
@@ -377,10 +390,11 @@ export function PreMarketView() {
           </div>
         </section>
       )}
+      {!hasNews && tourMode && <section data-tour-id="tour-bantin-pre-news" className="pm-news-list" style={{ marginBottom: 14 }}>Tin tức tác động · đang tải dữ liệu…</section>}
 
       {/* ── Events timeline ── */}
       {hasEvents && (
-        <section style={{ marginBottom: 14 }}>
+        <section data-tour-id="tour-bantin-pre-events" style={{ marginBottom: 14 }}>
           <SectionTitle label="Sự kiện hôm nay" />
           <div className="pm-events-list">
             {events.map(ev => (
@@ -389,10 +403,11 @@ export function PreMarketView() {
           </div>
         </section>
       )}
+      {!hasEvents && tourMode && <section data-tour-id="tour-bantin-pre-events" className="pm-events-list" style={{ marginBottom: 14 }}>Lịch sự kiện hôm nay · đang tải dữ liệu…</section>}
 
       {/* ── Watch list ── */}
       {hasWatchlist && (
-        <section style={{ marginBottom: 14 }}>
+        <section data-tour-id="tour-bantin-pre-watch" style={{ marginBottom: 14 }}>
           <SectionTitle label="Danh sách theo dõi" />
           <ul className="pm-watchlist-list list-none p-0 m-0">
             {watchlist.map((item, i) => (
@@ -401,6 +416,7 @@ export function PreMarketView() {
           </ul>
         </section>
       )}
+      {!hasWatchlist && tourMode && <section data-tour-id="tour-bantin-pre-watch" className="pm-watchlist-list" style={{ marginBottom: 14 }}>Khi vào phiên cần lưu ý · đang tải dữ liệu…</section>}
 
       {/* ── ATO Countdown — only for today's brief ── */}
       {showAtoCountdown && <AtoCountdown />}

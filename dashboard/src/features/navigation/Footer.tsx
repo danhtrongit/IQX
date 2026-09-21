@@ -6,6 +6,7 @@ const APP_VERSION = "v2.1.0"
 
 function formatClock(d: Date): string {
   return d.toLocaleTimeString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
@@ -53,14 +54,6 @@ export function Footer() {
       </span>
 
       <Divider type="vertical" className="!mx-0 !h-3" />
-
-      {/* Session indicator */}
-      <Tooltip content="13:00 - 14:30 | Khớp lệnh liên tục">
-        <div className="flex cursor-default items-center gap-1">
-          <span className="size-2 rounded-full bg-reference" />
-          <span className="font-medium text-reference">Phiên chiều</span>
-        </div>
-      </Tooltip>
 
       <div className="flex-1" />
 

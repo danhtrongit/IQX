@@ -18,9 +18,9 @@
 // existing "target not found → centered tooltip" fallback, already exercised
 // by `TourOverlay.test.tsx`'s panel-switch-race test, absorbs this); (b) a run
 // present — the 4 grounded result ids actually resolve in the DOM.
-import { act, fireEvent, render, screen } from "@testing-library/react"
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import React from "react"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { backtesterTour } from "@/features/tour/configs/backtesterTour"
 import type { CatalogResponse, RunResult } from "./types"
 
@@ -166,7 +166,15 @@ async function renderBacktestLab(opts: { isPremium: boolean; runData?: RunResult
 }
 
 describe("BacktestLab — Backtester tour wiring", () => {
+  beforeEach(() => {
+    // Arco DatePicker schedules a 100ms panel reset on mount. Own that
+    // timer before rendering so it cannot outlive this test's DOM.
+    vi.useFakeTimers()
+  })
+
   afterEach(() => {
+    cleanup()
+    act(() => { vi.runOnlyPendingTimers() })
     vi.useRealTimers()
   })
 

@@ -11,6 +11,7 @@ export interface QuestionBlockProps {
   answer: string
   /** charts / metric rows / drilldown */
   children?: ReactNode
+  tourId?: string
 }
 
 /**
@@ -21,10 +22,10 @@ export interface QuestionBlockProps {
  * luận của khối nằm trong câu trả lời văn ngay dưới tiêu đề. Tiêu đề đứng một
  * mình bên trái (không có phần tử đối trọng bên phải).
  */
-export function QuestionBlock({ num, title, question, answer, children }: QuestionBlockProps) {
+export function QuestionBlock({ num, title, question, answer, children, tourId }: QuestionBlockProps) {
   const label = String(num).padStart(2, "0")
   return (
-    <section className="bctc-block">
+    <section className="bctc-block" data-tour-id={tourId}>
       <div className="bctc-block-tag">
         <span className="bctc-bt-num">{label}</span>
         <span className="bctc-bt-title">{title}</span>

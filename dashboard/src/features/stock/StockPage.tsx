@@ -6,6 +6,7 @@ import { SymbolProvider, useSymbol } from "@/shared/contexts/symbol-context"
 import { useTheme } from "@/shared/theme/ThemeProvider"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
 import { PremiumGate } from "@/features/premium"
+import { useAuth } from "@/features/auth"
 import {
   RightSidebar,
   RightToolbar,
@@ -41,6 +42,7 @@ const TABS: { id: StockTab; label: string; icon: ComponentType<{ className?: str
 function StockTerminal() {
   const { symbol } = useSymbol()
   const { theme } = useTheme()
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   const [searchParams] = useSearchParams()
@@ -108,6 +110,7 @@ function StockTerminal() {
           <div className="relative min-h-0 flex-1">
             {activeTab === "chart" && (
               <TVChart
+                key={user?.id ?? "guest"}
                 symbol={symbol}
                 interval="D"
                 theme={theme}

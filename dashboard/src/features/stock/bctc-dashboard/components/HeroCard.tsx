@@ -47,6 +47,7 @@ export function HeroCard({
 }: HeroCardProps) {
   return (
     <div className="bctc-hero">
+      <div data-tour-id="tour-bctc-hero">
       <div className="bctc-hero-top">
         <div className="bctc-ticker-block">
           <div className="bctc-ticker">{ticker}</div>
@@ -76,8 +77,9 @@ export function HeroCard({
         <div className="bctc-v-kick">Kết luận một câu</div>
         <h2 className="bctc-verdict-title">{verdictOneliner}</h2>
       </div>
+      </div>
 
-      {children ? <div className="bctc-hero-scorecard">{children}</div> : null}
+      {children ? <div className="bctc-hero-scorecard" data-tour-id="tour-bctc-scorecard">{children}</div> : null}
     </div>
   )
 }

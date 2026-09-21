@@ -92,7 +92,7 @@ export const marketOverviewApi = {
 
   /** GET market-data/overview/foreign/top */
   getForeignTop: () =>
-    getData<ApiForeignTopData>("market-data/overview/foreign/top"),
+    getData<ApiForeignTopData>("market-data/overview/foreign/top", { time_frame: "ONE_DAY" }),
 
   /** GET market-data/overview/proprietary/top */
   getProprietaryTop: () =>

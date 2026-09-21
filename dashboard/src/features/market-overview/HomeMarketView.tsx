@@ -3,7 +3,11 @@
 // giờ truy cập (getDefaultActivePeriod, tính 1 lần khi mount — không auto đổi
 // tab trong phiên xem). Nội dung mỗi tab là view brief đầy đủ sẵn có.
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { TourLaunchButton, TourOverlay } from "@/features/tour"
+import { banTinTour } from "@/features/cap0/tours/banTinTour"
+import { useCap0ProductTour } from "@/features/cap0/tours/useCap0ProductTour"
+import { TourCompletionNotice } from "@/features/cap0/tours/TourCompletionNotice"
 import { getDefaultActivePeriod, type SessionPeriod } from "./home-analysis/getDefaultActivePeriod"
 import { SessionMeta } from "./home-analysis/SessionMeta"
 import { SessionTabs } from "./home-analysis/SessionTabs"
@@ -16,8 +20,23 @@ import { MidDayView } from "./midday/MidDayView"
 import { MarketDailyPage } from "./daily/MarketDailyPage"
 import { PreMarketView } from "./premarket/PreMarketView"
 
-export function HomeMarketView() {
-  const [active, setActive] = useState<SessionPeriod>(() => getDefaultActivePeriod(new Date()))
+export function HomeMarketView({ autoStartTour = false, onTourStarted }: { autoStartTour?: boolean; onTourStarted?: () => void }) {
+  const [active, setActive] = useState<SessionPeriod>(() => autoStartTour ? "premarket" : getDefaultActivePeriod(new Date()))
+  const autoStarted = useRef(false)
+  const tour = useCap0ProductTour(banTinTour, "bantin", {
+    onStepView: (index) => {
+      if (index < 5) setActive("premarket")
+      else if (index < 18) setActive("midday")
+      else setActive("eod")
+    },
+  })
+
+  useEffect(() => {
+    if (!autoStartTour || autoStarted.current) return
+    autoStarted.current = true
+    onTourStarted?.()
+    tour.start()
+  }, [autoStartTour, onTourStarted, tour])
 
   const { data: dailyData } = useDailyMarketAnalysis()
   const { data: middayData } = useMidDayAnalysis()
@@ -54,11 +73,16 @@ export function HomeMarketView() {
 
   return (
     <div className="mx-auto w-full max-w-[980px] px-4 py-6 pb-20 lg:px-8">
-      <SessionMeta dateLabel={dateLabel} />
+      <div className="flex items-center justify-between gap-3">
+        <SessionMeta dateLabel={dateLabel} />
+        <TourLaunchButton onClick={tour.start} label="Xem lại tour hướng dẫn" />
+      </div>
       <SessionTabs active={active} onSelect={setActive} newPeriod={newPeriod} />
-      {active === "premarket" && <PreMarketView />}
-      {active === "midday" && <MidDayView />}
-      {active === "eod" && <MarketDailyPage />}
+      {active === "premarket" && <PreMarketView tourMode={tour.active} />}
+      {active === "midday" && <MidDayView tourMode={tour.active} />}
+      {active === "eod" && <MarketDailyPage tourMode={tour.active} />}
+      <TourOverlay config={banTinTour} controller={tour} />
+      <TourCompletionNotice pending={tour.completionPending} error={tour.completionError} onRetry={tour.retryCompletion} />
     </div>
   )
 }

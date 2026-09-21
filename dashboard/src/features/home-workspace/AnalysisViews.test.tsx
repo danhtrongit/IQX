@@ -1,4 +1,5 @@
 import React, { useRef } from "react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { describe, expect, it, vi } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 import { StockAnalysisView } from "./StockAnalysisView"
@@ -6,6 +7,7 @@ import { FinancialAnalysisView } from "./FinancialAnalysisView"
 
 const navigate = vi.fn()
 vi.mock("react-router", () => ({ useNavigate: () => navigate }))
+vi.mock("@/features/auth", () => ({ useAuth: () => ({ isAuthenticated: true, user: { id: "user-test" } }) }))
 vi.mock("@/features/stock", () => ({
   // Simulates the real AiInsightBriefing's mount-once fetch behavior: it captures the
   // `symbol` it saw on its FIRST render into a ref and keeps rendering that captured value
@@ -26,17 +28,22 @@ vi.mock("@/features/stock/bctc-dashboard", () => ({
   BctcDashboard: ({ symbol }: { symbol: string }) => <div data-testid="bctc-dash">{symbol}</div>,
 }))
 
+function renderView(ui: React.ReactElement) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
+  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>)
+}
+
 describe("Stock/Financial analysis views", () => {
   it("StockAnalysisView: nhập mã → render AiInsightBriefing inline (không điều hướng)", () => {
     navigate.mockClear()
-    render(<StockAnalysisView />)
+    renderView(<StockAnalysisView />)
     fireEvent.change(screen.getByPlaceholderText("Nhập mã cổ phiếu..."), { target: { value: "fpt" } })
     fireEvent.click(screen.getByRole("button", { name: "Phân tích" }))
     expect(screen.getByTestId("ai-insight")).toHaveTextContent("FPT")
     expect(navigate).not.toHaveBeenCalled()
   })
   it("StockAnalysisView: tìm lại mã khác → AiInsightBriefing remount, không kẹt dữ liệu mã cũ", () => {
-    render(<StockAnalysisView />)
+    renderView(<StockAnalysisView />)
     const input = screen.getByPlaceholderText("Nhập mã cổ phiếu...")
     const submit = () => fireEvent.click(screen.getByRole("button", { name: "Phân tích" }))
 
@@ -53,20 +60,20 @@ describe("Stock/Financial analysis views", () => {
     expect(screen.getByTestId("ai-insight")).toHaveTextContent("HPG")
   })
   it("StockAnalysisView: hiển thị đúng tiêu đề + subtitle", () => {
-    render(<StockAnalysisView />)
+    renderView(<StockAnalysisView />)
     expect(screen.getByText("Phân tích cổ phiếu")).toBeInTheDocument()
     expect(screen.getByText("6 lớp dữ liệu · Cập nhật theo phiên giao dịch")).toBeInTheDocument()
   })
   it("FinancialAnalysisView: submit → render BctcDashboard inline (không điều hướng)", () => {
     navigate.mockClear()
-    render(<FinancialAnalysisView />)
+    renderView(<FinancialAnalysisView />)
     fireEvent.change(screen.getByPlaceholderText("Nhập mã cổ phiếu..."), { target: { value: "vcb" } })
     fireEvent.click(screen.getByRole("button", { name: "Phân tích" }))
     expect(screen.getByTestId("bctc-dash")).toHaveTextContent("VCB")
     expect(navigate).not.toHaveBeenCalled()
   })
   it("FinancialAnalysisView: tiêu đề BCTC", () => {
-    render(<FinancialAnalysisView />)
+    renderView(<FinancialAnalysisView />)
     expect(screen.getByText("Phân tích BCTC")).toBeInTheDocument()
     expect(screen.getByText("Báo cáo tài chính · Theo quý và cả năm")).toBeInTheDocument()
   })

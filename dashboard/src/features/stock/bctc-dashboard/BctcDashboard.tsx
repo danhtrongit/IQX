@@ -593,6 +593,11 @@ export function BctcDashboard({ symbol }: { symbol: string }) {
         <div className="bctc-dash-state">
           <Spin />
         </div>
+        <div className="bctc-dash-inner">
+          {["hero", "scorecard", "block-1", "block-2", "block-3", "block-4", "block-5", "block-6", "block-7"].map((id) => (
+            <div key={id} data-tour-id={`tour-bctc-${id}`} className="bctc-block bctc-dash-state">Đang tải dữ liệu {symbol}…</div>
+          ))}
+        </div>
       </div>
     )
   }
@@ -666,7 +671,7 @@ export function BctcDashboard({ symbol }: { symbol: string }) {
 
       case 1:
         return (
-          <section className="bctc-block">
+          <section className="bctc-block" data-tour-id="tour-bctc-block-1">
             <div className="bctc-block-tag">
               <span className="bctc-bt-num">01</span>
               <span className="bctc-bt-title">Câu chuyện doanh nghiệp</span>
@@ -704,6 +709,7 @@ export function BctcDashboard({ symbol }: { symbol: string }) {
         return (
           <QuestionBlock
             num={2}
+            tourId="tour-bctc-block-2"
             title="Giá đang đắt hay rẻ?"
             question="Giá hiện tại đắt hay rẻ?"
             answer={ans("valuation")}
@@ -716,6 +722,7 @@ export function BctcDashboard({ symbol }: { symbol: string }) {
         return (
           <QuestionBlock
             num={3}
+            tourId="tour-bctc-block-3"
             title="Bức tranh tài chính"
             question={
               isBank
@@ -732,6 +739,7 @@ export function BctcDashboard({ symbol }: { symbol: string }) {
         return (
           <QuestionBlock
             num={4}
+            tourId="tour-bctc-block-4"
             title={isBank ? "Ngân hàng kiếm tiền thế nào?" : "Kinh doanh có ổn không?"}
             question={
               isBank
@@ -755,6 +763,7 @@ export function BctcDashboard({ symbol }: { symbol: string }) {
         return (
           <QuestionBlock
             num={5}
+            tourId="tour-bctc-block-5"
             title={isBank ? "Vận hành có hiệu quả không?" : "Tiền có thật không?"}
             question={
               isBank
@@ -775,6 +784,7 @@ export function BctcDashboard({ symbol }: { symbol: string }) {
         return (
           <QuestionBlock
             num={6}
+            tourId="tour-bctc-block-6"
             title={isBank ? "Chất lượng tài sản có tốt không?" : "Sức khỏe tài chính có vững không?"}
             question={
               isBank
@@ -799,6 +809,7 @@ export function BctcDashboard({ symbol }: { symbol: string }) {
         return (
           <QuestionBlock
             num={7}
+            tourId="tour-bctc-block-7"
             title="Cổ đông nhận được gì?"
             question={
               isBank ? "Ngân hàng có chia tiền cho cổ đông không?" : "Công ty có chia tiền cho cổ đông không?"
@@ -815,7 +826,7 @@ export function BctcDashboard({ symbol }: { symbol: string }) {
   }
 
   return (
-    <div className="bctc-dash">
+    <div className="bctc-dash" data-tour-id="tour-bctc-ready">
       <div className="bctc-dash-inner">
         {BLOCK_ORDER.map((id) => (
           <React.Fragment key={id}>{renderBlock(id)}</React.Fragment>

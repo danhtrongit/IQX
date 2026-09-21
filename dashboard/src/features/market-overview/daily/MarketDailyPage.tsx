@@ -11,17 +11,18 @@ import { PropFlowCard } from "./charts/PropFlowCard"
 import { HealthLineChart } from "./charts/HealthLineChart"
 import { RotationChart } from "./charts/RotationChart"
 
-export function MarketDailyPage() {
+export function MarketDailyPage({ tourMode = false }: { tourMode?: boolean }) {
   const { data, isLoading, isError } = useDailyMarketAnalysis()
   const charts = data?.charts
 
-  if (isLoading) {
+  if (isLoading && !tourMode) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Spin tip="Đang tải nhận định thị trường…" />
       </div>
     )
   }
+  if ((isError || !data) && tourMode) return <MarketAnalysisArticle tourMode />
   if (isError || !data) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-4 text-center text-[var(--color-text-3)]">
@@ -33,7 +34,7 @@ export function MarketDailyPage() {
   return (
     <div className="mx-auto w-full max-w-[1280px] px-2 py-3 md:px-4">
       {/* ── AI nhận định ── */}
-      <MarketAnalysisArticle />
+      <MarketAnalysisArticle tourMode={tourMode} />
 
       {/* ── Pulse summary bar ── */}
       <div className="mt-3.5">

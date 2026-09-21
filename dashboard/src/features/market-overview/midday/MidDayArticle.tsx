@@ -21,9 +21,9 @@ const COLOR_CLASS: Record<string, string> = {
 
 // ─── Section block (published paragraph) ─────────────────────────────────────
 
-function SectionBlock({ label, html }: { label: string; html: string }) {
+function SectionBlock({ label, html, tourId }: { label: string; html: string; tourId?: string }) {
   return (
-    <div className="mm-paragraph-block">
+    <div className="mm-paragraph-block" data-tour-id={tourId}>
       <div className="mm-section-label">{label}</div>
       <div
         className="mm-paragraph"
@@ -35,9 +35,9 @@ function SectionBlock({ label, html }: { label: string; html: string }) {
 
 // ─── Pending placeholder ──────────────────────────────────────────────────────
 
-function PendingBlock({ label, message }: { label: string; message: string }) {
+function PendingBlock({ label, message, tourId }: { label: string; message: string; tourId?: string }) {
   return (
-    <div className="mm-paragraph-block">
+    <div className="mm-paragraph-block" data-tour-id={tourId}>
       <div className="mm-section-label">{label}</div>
       <div className="mm-pending">
         <span className="mm-pending-icon" aria-hidden>⏱</span>
@@ -52,13 +52,14 @@ function PendingBlock({ label, message }: { label: string; message: string }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function MidDayArticle({ data }: { data: MidDayAnalysis }) {
+export function MidDayArticle({ data, tourMode = false }: { data: MidDayAnalysis; tourMode?: boolean }) {
   const { headline, tagline, paragraphs, session_date, unexplained } = data
   const taglineClass = COLOR_CLASS[tagline.color] ?? "mm-tagline--neutral"
 
   return (
     <article className="mm-article">
       {/* ── Header ── */}
+      <div data-tour-id="tour-bantin-mid-header">
       <div className="mm-header">
         <div className="mm-title-row">
           <span className="mm-badge">IQX AI · PHIÊN SÁNG</span>
@@ -76,18 +77,22 @@ export function MidDayArticle({ data }: { data: MidDayAnalysis }) {
         <span className="mm-tagline-marker" aria-hidden>◆</span>
         <span className="mm-tagline-text">{tagline.text}</span>
       </div>
+      </div>
 
       {/* ── 3 paragraphs ── */}
       <div className="mm-paragraphs">
         <SectionBlock
+          tourId="tour-bantin-mid-structure"
           label="Cấu trúc phiên sáng"
           html={paragraphs.session_structure.content}
         />
         <SectionBlock
+          tourId="tour-bantin-mid-flow"
           label="Dòng tiền phiên sáng"
           html={paragraphs.money_flow.content}
         />
         <PendingBlock
+          tourId="tour-bantin-mid-health"
           label="Sức khỏe thị trường"
           message={paragraphs.market_health.pending_message}
         />
@@ -95,13 +100,16 @@ export function MidDayArticle({ data }: { data: MidDayAnalysis }) {
 
       {/* ── Unexplained callout ── */}
       {unexplained && (
-        <div className="mm-unexplained">
+        <div className="mm-unexplained" data-tour-id="tour-bantin-mid-confirm">
           <strong className="mm-unexplained-title">{unexplained.title}</strong>
           <div
             className="mm-unexplained-body"
             dangerouslySetInnerHTML={{ __html: sanitizeInline(unexplained.content) }}
           />
         </div>
+      )}
+      {!unexplained && tourMode && (
+        <div className="mm-unexplained" data-tour-id="tour-bantin-mid-confirm">Điểm cần xác nhận trong phiên chiều · đang tải dữ liệu…</div>
       )}
     </article>
   )

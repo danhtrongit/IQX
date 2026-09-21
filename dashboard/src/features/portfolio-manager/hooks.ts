@@ -1,11 +1,13 @@
 import { useMutation } from "@tanstack/react-query"
+import { useAuth } from "@/features/auth"
 import { portfolioManagerApi } from "./api"
 import { portfolioManagerKeys } from "./keys"
 import type { AnalyzeResponse } from "./types"
 
 export function useAnalyzePortfolio() {
+  const { user } = useAuth()
   const mutation = useMutation<AnalyzeResponse, Error>({
-    mutationKey: portfolioManagerKeys.analyze,
+    mutationKey: [...portfolioManagerKeys.analyze, user?.id ?? "anonymous"],
     mutationFn: () => portfolioManagerApi.analyze(),
   })
   return {

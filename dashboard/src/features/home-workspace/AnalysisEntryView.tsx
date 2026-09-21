@@ -10,12 +10,19 @@ export interface AnalysisEntryProps {
   emptyDesc: string
   onSubmit: (symbol: string) => void
   result?: ReactNode
+  inputTourId?: string
+  headerAction?: ReactNode
+  value?: string
+  onValueChange?: (value: string) => void
 }
 
 export function AnalysisEntryView({
   icon, title, subtitle, placeholder, emptyIcon, emptyTitle, emptyDesc, onSubmit, result,
+  inputTourId, headerAction, value: controlledValue, onValueChange,
 }: AnalysisEntryProps) {
-  const [value, setValue] = useState("")
+  const [internalValue, setInternalValue] = useState("")
+  const value = controlledValue ?? internalValue
+  const setValue = onValueChange ?? setInternalValue
 
   const submit = () => {
     const sym = value.trim().toUpperCase()
@@ -33,10 +40,11 @@ export function AnalysisEntryView({
           <div className="text-[22px] font-bold text-[var(--color-text-1)]">{title}</div>
           <div className="text-[12px] text-[var(--color-text-2)]">{subtitle}</div>
         </div>
+        {headerAction && <div className="ml-auto">{headerAction}</div>}
       </div>
 
       {/* Search block */}
-      <div className="mb-4 flex items-center gap-3 rounded-xl border border-[var(--color-border-2)] bg-[var(--color-bg-2)] px-5 py-4">
+      <div data-tour-id={inputTourId} className="mb-4 flex items-center gap-3 rounded-xl border border-[var(--color-border-2)] bg-[var(--color-bg-2)] px-5 py-4">
         <input
           value={value}
           onChange={(e) => setValue(e.target.value)}

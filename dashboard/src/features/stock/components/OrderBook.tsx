@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { useOrderBook } from "@/features/market-data"
+import { useOrderBook, usePrice, useRealtimeStatus } from "@/features/market-data"
 import { cn } from "@/shared/lib/cn"
 
 /** Format absolute VND price with locale separators. */
@@ -50,7 +50,19 @@ function DepthRow({ price, volume, maxVolume, side }: DepthRowProps) {
  * depth bars. Prices are absolute VND.
  */
 export function OrderBook({ symbol }: { symbol: string }) {
-  const book = useOrderBook(symbol)
+  const liveBook = useOrderBook(symbol)
+  const isRealtime = useRealtimeStatus()
+  const { data: quote, isLoading } = usePrice(symbol)
+  const useLive = isRealtime && liveBook !== null
+  const book = useMemo(() => {
+    if (useLive) return liveBook
+    if (!quote || quote.symbol.toUpperCase() !== symbol.toUpperCase()) return null
+    // Price-board quotes use thousands of VND; the depth view uses VND.
+    const levels = (rows: typeof quote.bid) => rows
+      .filter((row) => row.price > 0 && row.volume > 0)
+      .map((row) => ({ price: row.price * 1000, volume: row.volume }))
+    return { bids: levels(quote.bid), asks: levels(quote.ask), time: null }
+  }, [liveBook, useLive, quote, symbol])
 
   const maxVolume = useMemo(() => {
     if (!book) return 0
@@ -61,7 +73,7 @@ export function OrderBook({ symbol }: { symbol: string }) {
   if (!book) {
     return (
       <div className="flex h-full items-center justify-center text-xs text-[var(--color-text-3)]">
-        Đang chờ dữ liệu sổ lệnh…
+        {isLoading ? "Đang tải dữ liệu sổ lệnh…" : "Chưa có dữ liệu sổ lệnh cho mã này"}
       </div>
     )
   }
@@ -73,9 +85,14 @@ export function OrderBook({ symbol }: { symbol: string }) {
           Sổ lệnh — {symbol}
         </span>
         <span className="text-[10px] text-[var(--color-text-3)]">
-          Realtime · {book.time ? new Date(book.time).toLocaleTimeString("vi-VN") : ""}
+          {useLive ? "Realtime" : "Cập nhật định kỳ"}
+          {book.time ? ` · ${new Date(book.time).toLocaleTimeString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}` : ""}
         </span>
       </div>
+
+      {book.bids.length === 0 && book.asks.length === 0 && (
+        <p className="p-3 text-xs text-[var(--color-text-3)]">Chưa có lệnh mua/bán chờ</p>
+      )}
 
       <div className="grid grid-cols-2 gap-px overflow-y-auto">
         {/* Bid side (descending price) */}

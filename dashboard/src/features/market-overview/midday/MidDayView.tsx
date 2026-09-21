@@ -62,7 +62,7 @@ function AmUnavailableCard({ title }: { title: string }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function MidDayView() {
+export function MidDayView({ tourMode = false }: { tourMode?: boolean }) {
   const [isLunch, setIsLunch] = useState(() => computeIsLunch(new Date()))
 
   // Recompute isLunch every 30 s so the lunch banner appears/disappears correctly
@@ -85,7 +85,7 @@ export function MidDayView() {
   const charts = data?.charts
 
   // Loading spinner (first load only)
-  if (isLoading && !data) {
+  if (isLoading && !data && !tourMode) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Spin tip="Đang tải nhận định phiên sáng…" />
@@ -106,6 +106,24 @@ export function MidDayView() {
 
   // No brief at all → "processing" notice (there is nothing else to show)
   if (!data) {
+    if (tourMode) {
+      const targets = [
+        ["tour-bantin-mid-header", "Bản Giữa phiên · đang tải dữ liệu…"],
+        ["tour-bantin-mid-structure", "Cấu trúc phiên sáng · đang tải dữ liệu…"],
+        ["tour-bantin-mid-flow", "Dòng tiền phiên sáng · đang tải dữ liệu…"],
+        ["tour-bantin-mid-health", "Sức khỏe thị trường · cập nhật lúc 16:30"],
+        ["tour-bantin-mid-confirm", "Điểm cần xác nhận trong phiên chiều · đang tải dữ liệu…"],
+        ["tour-bantin-mid-pulse", "Pulse Bar · đang tải dữ liệu…"],
+        ["tour-bantin-mid-takeaway", "Kịch bản và mã đáng quan sát · đang tải dữ liệu…"],
+        ["tour-bantin-mid-breadth", "Độ rộng thị trường HOSE · đang tải dữ liệu…"],
+        ["tour-bantin-mid-contribution", "Top mã đóng góp ± · đang tải dữ liệu…"],
+        ["tour-bantin-mid-foreign", "Khối ngoại · đang tải dữ liệu…"],
+        ["tour-bantin-mid-prop", "Tự doanh CTCK · đang tải dữ liệu…"],
+        ["tour-bantin-mid-health-detail", "Sức khỏe thị trường chi tiết · cập nhật lúc 16:30"],
+        ["tour-bantin-mid-rotation", "Dòng tiền chuyển nhóm · cập nhật lúc 16:30"],
+      ]
+      return <div className="mx-auto w-full max-w-[1280px] space-y-3 px-2 py-3 md:px-4">{targets.map(([id, label]) => <section key={id} data-tour-id={id} className="rounded-xl border border-dashed border-[var(--color-border-3)] bg-[var(--color-bg-2)] p-6 text-[13px] text-[var(--color-text-3)]">{label}</section>)}</div>
+    }
     return (
       <div className="mx-auto w-full max-w-[1280px] px-2 py-2 md:px-4">
         <div
@@ -136,14 +154,15 @@ export function MidDayView() {
       )}
 
       {/* ── AI article (phiên sáng) ── */}
-      <MidDayArticle data={data} />
+      <MidDayArticle data={data} tourMode={tourMode} />
 
       {/* ── Pulse summary bar ── */}
       {data.pulse && (
-        <div className="mt-3.5">
+        <div className="mt-3.5" data-tour-id="tour-bantin-mid-pulse">
           <MidDayPulseBar data={data} isLunch={isLunch} />
         </div>
       )}
+      {!data.pulse && tourMode && <div data-tour-id="tour-bantin-mid-pulse" className="mt-3.5 rounded-xl border border-dashed border-[var(--color-border-3)] p-6">Pulse Bar · đang tải dữ liệu…</div>}
 
       {/* ── Takeaway (kịch bản phiên chiều + watchlist) ── */}
       <MidDayTakeaway data={data} showCountdown={showCountdown} />
@@ -154,36 +173,36 @@ export function MidDayView() {
           dereferences (the 2026-07-02 prod crash: ForeignFlowCard read
           streak.direction of undefined). Only mount a card on "am_session";
           otherwise show the processing placeholder. */}
-      {(isAm(charts?.breadth) || isAm(charts?.contribution)) && (
+      {(tourMode || isAm(charts?.breadth) || isAm(charts?.contribution)) && (
         <div>
           <TierLabel label="Cấu trúc phiên" />
           <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
             {isAm(charts?.breadth) ? (
-              <BreadthChart data={charts!.breadth} />
+              <div data-tour-id="tour-bantin-mid-breadth"><BreadthChart data={charts!.breadth} /></div>
             ) : (
-              <AmUnavailableCard title="Độ rộng thị trường HOSE" />
+              <div data-tour-id="tour-bantin-mid-breadth"><AmUnavailableCard title="Độ rộng thị trường HOSE" /></div>
             )}
             {isAm(charts?.contribution) ? (
-              <ContributionChart data={charts!.contribution} />
+              <div data-tour-id="tour-bantin-mid-contribution"><ContributionChart data={charts!.contribution} /></div>
             ) : (
-              <AmUnavailableCard title="Top mã đóng góp ±" />
+              <div data-tour-id="tour-bantin-mid-contribution"><AmUnavailableCard title="Top mã đóng góp ±" /></div>
             )}
           </div>
         </div>
       )}
 
       {/* ── Dòng tiền (Foreign + Prop flow cards) ── */}
-      {(isAm(charts?.foreign_detail) || isAm(charts?.prop_detail)) && (
+      {(tourMode || isAm(charts?.foreign_detail) || isAm(charts?.prop_detail)) && (
         <div>
           <TierLabel label="Dòng tiền" />
           <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
             {isAm(charts?.foreign_detail) ? (
-              <ForeignFlowCard data={charts!.foreign_detail} />
+              <div data-tour-id="tour-bantin-mid-foreign"><ForeignFlowCard data={charts!.foreign_detail} /></div>
             ) : (
-              <AmUnavailableCard title="Khối ngoại" />
+              <div data-tour-id="tour-bantin-mid-foreign"><AmUnavailableCard title="Khối ngoại" /></div>
             )}
             {isAm(charts?.prop_detail) ? (
-              <PropFlowCard
+              <div data-tour-id="tour-bantin-mid-prop"><PropFlowCard
                 data={charts!.prop_detail}
                 foreignNet={
                   isAm(charts?.foreign_detail)
@@ -191,9 +210,9 @@ export function MidDayView() {
                       charts!.foreign_detail.total_sell_vnd_billion
                     : undefined
                 }
-              />
+              /></div>
             ) : (
-              <AmUnavailableCard title="Tự doanh CTCK" />
+              <div data-tour-id="tour-bantin-mid-prop"><AmUnavailableCard title="Tự doanh CTCK" /></div>
             )}
           </div>
         </div>
@@ -204,24 +223,24 @@ export function MidDayView() {
           blocks come back as {data_state:"unavailable"} (truthy but missing
           trend_20d / sectors_today), which would crash HealthLineChart /
           RotationChart — so skip the tier unless both are "eod_previous". */}
-      {charts?.market_health_detail?.data_state === "eod_previous" &&
-        charts?.sector_rotation?.data_state === "eod_previous" && (
+      {(tourMode || (charts?.market_health_detail?.data_state === "eod_previous" &&
+        charts?.sector_rotation?.data_state === "eod_previous")) && (
         <div>
           <TierLabel label="Sức khỏe thị trường" />
           <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
-            <HealthLineChart
+            {charts?.market_health_detail?.data_state === "eod_previous" ? <div data-tour-id="tour-bantin-mid-health-detail"><HealthLineChart
               data={charts.market_health_detail}
               classification={charts.breadth?.classification ?? ""}
               frozen
               dataTag="Cuối ngày hôm qua"
               frozenNote="Dữ liệu cuối ngày · Cập nhật sau 16:30"
-            />
-            <RotationChart
+            /></div> : <div data-tour-id="tour-bantin-mid-health-detail"><AmUnavailableCard title="Sức khỏe thị trường" /></div>}
+            {charts?.sector_rotation?.data_state === "eod_previous" ? <div data-tour-id="tour-bantin-mid-rotation"><RotationChart
               data={charts.sector_rotation}
               frozen
               dataTag="Cuối ngày hôm qua"
               frozenNote="Dữ liệu cuối ngày · Cập nhật sau 16:30"
-            />
+            /></div> : <div data-tour-id="tour-bantin-mid-rotation"><AmUnavailableCard title="Dòng tiền chuyển nhóm" /></div>}
           </div>
         </div>
       )}

@@ -26,7 +26,6 @@ const { Row, Col } = Grid
 interface PlanMeta {
   icon: ReactNode
   originalTotal: number
-  discount: number
   badge: string | null
   tagline: string
   popular?: boolean
@@ -37,15 +36,13 @@ const PLAN_META: Record<string, PlanMeta> = {
   MONTHLY: {
     icon: <IconThunderbolt />,
     originalTotal: 100_000,
-    discount: 50,
-    badge: "Giảm 50%",
+    badge: "Ưu đãi",
     tagline: "Trải nghiệm linh hoạt",
     color: "blue",
   },
   SEMI_ANNUAL: {
     icon: <IconTrophy />,
     originalTotal: 600_000,
-    discount: 55,
     badge: "Phổ biến nhất",
     tagline: "Tối ưu chi phí dài hạn",
     popular: true,
@@ -54,7 +51,6 @@ const PLAN_META: Record<string, PlanMeta> = {
   ANNUAL: {
     icon: <IconArrowRise />,
     originalTotal: 1_200_000,
-    discount: 60,
     badge: "Tiết kiệm nhất",
     tagline: "Cam kết đầu tư nghiêm túc",
     color: "green",
@@ -142,7 +138,7 @@ export default function PremiumPage() {
         {/* Hero */}
         <div className="text-center mb-8">
           <Tag color="red" icon={<IconFire />} className="mb-4" size="medium">
-            Flash Sale — Giảm đến 60% · Số lượng có hạn
+            Ưu đãi Premium
           </Tag>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">
             Mở khóa toàn bộ sức mạnh{" "}
@@ -170,6 +166,7 @@ export default function PremiumPage() {
               const isCheckingOut =
                 checkout.isPending && checkout.variables === plan.plan
               const monthlyPrice = Math.round(plan.price / plan.months)
+              const discount = Math.max(0, (1 - plan.price / meta.originalTotal) * 100)
               const accent =
                 meta.color === "gold"
                   ? "rgb(var(--gold-6))"
@@ -219,7 +216,7 @@ export default function PremiumPage() {
 
                     {/* Price block */}
                     <div className="mb-1">
-                      <Space size="small" className="mb-1.5">
+                      {discount > 0 && <Space size="small" className="mb-1.5">
                         <span
                           className="text-xs line-through"
                           style={{ color: "var(--color-text-4)" }}
@@ -227,9 +224,9 @@ export default function PremiumPage() {
                           {fmtPrice(meta.originalTotal)}₫
                         </span>
                         <Tag color="red" size="small">
-                          -{meta.discount}%
+                          -{discount.toLocaleString("vi-VN", { maximumFractionDigits: 1 })}%
                         </Tag>
-                      </Space>
+                      </Space>}
                       <div className="flex items-baseline gap-1.5">
                         <span className="text-3xl font-black tracking-tight">
                           {fmtPrice(plan.price)}

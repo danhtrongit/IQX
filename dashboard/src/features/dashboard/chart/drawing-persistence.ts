@@ -3,33 +3,45 @@ import { chartDrawingsApi, type DrawingState } from "./drawings-api"
 
 /**
  * Loads/saves a symbol's TradingView drawings. Backend (per-user) when the user
- * is signed in — so drawings sync across devices — with a localStorage fallback
- * for anonymous users so a refresh still restores what they drew.
+ * is signed in, with a separate same-device fallback for each account/guest.
  */
 export interface DrawingPersistence {
   load(symbol: string): Promise<DrawingState | null>
   save(symbol: string, state: DrawingState): void
 }
 
-const LS_PREFIX = "tv_drawings_"
+const LS_PREFIX = "tv_drawings_v2_"
 const SAVE_DEBOUNCE_MS = 1500
 
-function lsKey(symbol: string): string {
-  return LS_PREFIX + symbol.toUpperCase()
+/** JWT subject is only a cache namespace; API authorization stays server-side. */
+function currentOwner(): string | null {
+  const token = getAccessToken()
+  if (!token) return "guest"
+  try {
+    const payload = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")
+    const { sub } = JSON.parse(atob(payload))
+    return typeof sub === "string" && sub ? `user:${sub}` : null
+  } catch {
+    return null
+  }
 }
 
-function lsLoad(symbol: string): DrawingState | null {
+function lsKey(owner: string, symbol: string): string {
+  return `${LS_PREFIX}${owner}:${symbol.toUpperCase()}`
+}
+
+function lsLoad(owner: string, symbol: string): DrawingState | null {
   try {
-    const raw = localStorage.getItem(lsKey(symbol))
+    const raw = localStorage.getItem(lsKey(owner, symbol))
     return raw ? (JSON.parse(raw) as DrawingState) : null
   } catch {
     return null
   }
 }
 
-function lsSave(symbol: string, state: DrawingState): void {
+function lsSave(owner: string, symbol: string, state: DrawingState): void {
   try {
-    localStorage.setItem(lsKey(symbol), JSON.stringify(state))
+    localStorage.setItem(lsKey(owner, symbol), JSON.stringify(state))
   } catch {
     /* quota / private mode — ignore */
   }
@@ -48,30 +60,34 @@ export function createDrawingPersistence(): DrawingPersistence {
   return {
     async load(symbol) {
       const sym = symbol.toUpperCase()
-      if (getAccessToken()) {
+      const owner = currentOwner()
+      if (!owner) return null
+      if (owner !== "guest") {
         try {
           const res = await chartDrawingsApi.get(sym)
-          // Backend is authoritative for signed-in users; fall back to a local
-          // copy only if the backend has nothing yet (e.g. drawn while anon).
-          return res.state ?? lsLoad(sym)
+          if (currentOwner() !== owner) return null
+          return res.state ?? lsLoad(owner, sym)
         } catch {
-          return lsLoad(sym)
+          return currentOwner() === owner ? lsLoad(owner, sym) : null
         }
       }
-      return lsLoad(sym)
+      return lsLoad(owner, sym)
     },
 
     save(symbol, state) {
       const sym = symbol.toUpperCase()
-      // Always keep a same-device copy (instant restore, offline-safe).
-      lsSave(sym, state)
-      if (!getAccessToken()) return
-      const existing = timers.get(sym)
+      const owner = currentOwner()
+      if (!owner) return
+      lsSave(owner, sym, state)
+      if (owner === "guest") return
+      const key = lsKey(owner, sym)
+      const existing = timers.get(key)
       if (existing) clearTimeout(existing)
       timers.set(
-        sym,
+        key,
         setTimeout(() => {
-          timers.delete(sym)
+          timers.delete(key)
+          if (currentOwner() !== owner) return
           chartDrawingsApi.put(sym, state).catch(() => {
             /* network/auth error — local copy already saved */
           })

@@ -152,6 +152,7 @@ export function MidDayTakeaway({
 
   return (
     <section
+      data-tour-id="tour-bantin-mid-takeaway"
       className="mm-takeaway relative overflow-hidden rounded-2xl border border-[var(--color-border-2)] mb-3.5"
       style={{
         background: "linear-gradient(135deg, var(--color-bg-2) 0%, var(--color-bg-1) 100%)",
@@ -208,4 +209,3 @@ export function MidDayTakeaway({
     </section>
   )
 }
-

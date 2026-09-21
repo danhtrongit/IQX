@@ -16,6 +16,14 @@ import { NewsList } from './NewsList'
  * user clearly sees it is working.
  */
 function LoadingState({ symbol }: { symbol: string }) {
+  const briefingTargets = [
+    "tour-phantich-trend",
+    "tour-phantich-narrative",
+    "tour-phantich-diff",
+    "tour-phantich-observations",
+    "tour-phantich-levels",
+    "tour-phantich-verdict",
+  ]
   return (
     <div className="ai-insight-v2" data-testid="ai-insight-skeleton" style={{ padding: '24px' }}>
       <div className="ai-loading-head">
@@ -28,10 +36,11 @@ function LoadingState({ symbol }: { symbol: string }) {
           </div>
         </div>
       </div>
-      <div className="skel" style={{ height: 72, marginTop: 18, marginBottom: 16 }} />
-      <div className="skel" style={{ height: 220, marginBottom: 24 }} />
+      <div data-tour-id="tour-phantich-header" className="skel" style={{ height: 72, marginTop: 18, marginBottom: 16 }} />
+      {briefingTargets.map((id) => <div key={id} data-tour-id={id} className="skel" style={{ height: 72, marginBottom: 10 }} />)}
+      <div data-tour-id="tour-phantich-divider" className="skel" style={{ height: 32, marginBottom: 20 }} />
       {[1, 2, 3, 4, 5].map((i) => (
-        <div key={i} className="skel" style={{ height: 80, marginBottom: 12 }} />
+        <div key={i} data-tour-id={`tour-phantich-l${i}`} className="skel" style={{ height: 120, marginBottom: 12 }} />
       ))}
     </div>
   )
@@ -95,6 +104,7 @@ export function AiInsightBriefing({
   return (
     <div
       className="ai-insight-v2"
+      data-tour-id="tour-phantich-ready"
       style={{ maxWidth: 920, margin: '0 auto', padding: '0 0 40px' }}
     >
       <Masthead updatedAt={insight.updatedAt} />
@@ -103,6 +113,7 @@ export function AiInsightBriefing({
 
       {/* Divider */}
       <div
+        data-tour-id="tour-phantich-divider"
         style={{
           display: 'flex',
           alignItems: 'center',

@@ -10,7 +10,10 @@ vi.mock("./FinancialAnalysisView", () => ({ FinancialAnalysisView: () => <div da
 const mq = vi.hoisted(() => ({ desktop: true }))
 vi.mock("./useMediaQuery", () => ({ useMediaQuery: () => mq.desktop }))
 
-beforeEach(() => { mq.desktop = true })
+beforeEach(() => {
+  mq.desktop = true
+  window.history.replaceState({}, "", "/")
+})
 
 describe("HomeWorkspace (3-view switch)", () => {
   it("mặc định render market view + rail 3 tab", () => {
@@ -24,6 +27,11 @@ describe("HomeWorkspace (3-view switch)", () => {
     fireEvent.click(screen.getByRole("tab", { name: /cổ phiếu/i }))
     expect(screen.getByTestId("stock-view")).toBeInTheDocument()
     expect(screen.queryByTestId("market-view")).not.toBeInTheDocument()
+  })
+  it("deep link ?view=stock&tour=phantich opens the real stock view", () => {
+    window.history.replaceState({}, "", "/?view=stock&tour=phantich")
+    render(<HomeWorkspace />)
+    expect(screen.getByTestId("stock-view")).toBeInTheDocument()
   })
   it("click tab BCTC → financial view", () => {
     render(<HomeWorkspace />)
