@@ -166,9 +166,32 @@ describe("JourneyPanelCap6 — hoàn thành lộ trình khi đã tốt nghiệp"
     })
     renderPanel()
     expect(screen.getByTestId("cap6-journey-header")).toHaveTextContent("ĐÃ HOÀN THÀNH LỘ TRÌNH")
+    expect(screen.getByTestId("cap6-journey-complete")).toHaveTextContent("Bạn đã hoàn thành Cấp 6")
+    expect(screen.getByRole("button", { name: /Bot của tôi/ })).toBeEnabled()
     expect(screen.queryByTestId("cap6-journey-goal")).not.toBeInTheDocument()
     expect(screen.getByRole("button", { name: /Xem Phân tích danh mục/ })).toBeEnabled()
     expect(visibleText()).not.toMatch(/Cấp [78]|sắp ra mắt|chưa ra mắt/)
+  })
+
+  it("graduated_at là authoritative: lịch sử 0 sự kiện vẫn hiện hoàn tất và không bắt làm lại", () => {
+    useCap6ProgressMock.mockReturnValue({
+      data: makeProgress({
+        so_lan_xu_ly_nhat_quan: 0,
+        dat_nhiem_vu: false,
+        graduated_at: "2026-09-13T01:00:00Z",
+      }),
+    })
+    renderPanel()
+
+    expect(screen.getByTestId("cap6-journey-header")).toHaveTextContent("ĐÃ HOÀN THÀNH LỘ TRÌNH")
+    expect(screen.getByTestId("cap6-journey-complete")).toBeInTheDocument()
+    expect(screen.queryByTestId("cap6-task-1")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("cap6-journey-prog-nhatquan")).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /Làm ngay/ })).not.toBeInTheDocument()
+    expect(screen.getByTestId("cap6-journey-tag")).toHaveTextContent("0 lần nhất quán")
+
+    fireEvent.click(screen.getByRole("button", { name: /Bot của tôi/ }))
+    expect(setActivePanelMock).toHaveBeenCalledWith("bot")
   })
 })
 

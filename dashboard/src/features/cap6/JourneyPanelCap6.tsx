@@ -56,6 +56,7 @@ export function JourneyPanelCap6() {
 
   const openPortfolioAnalysis = () => setActivePanel("cap6-analysis")
   const goToTrading = () => setActivePanel("trading")
+  const openBot = () => setActivePanel("bot")
 
   useEffect(() => {
     if (isCap6Active) trackJourneyEvent("cap6_journey_view")
@@ -77,7 +78,7 @@ export function JourneyPanelCap6() {
             color={level.color}
             fill={level.fill}
             size={64}
-            ring={done}
+            ring={graduated ? 1 : done}
             glow
           />
           <div className="cap0-level-card-body">
@@ -93,30 +94,48 @@ export function JourneyPanelCap6() {
 
         <div className="cap0-journey-checklist-header" data-testid="cap6-journey-header">{graduated ? "ĐÃ HOÀN THÀNH LỘ TRÌNH" : `HOÀN THÀNH CẤP 6 · ${done}/1`}</div>
 
-        <div
-          data-testid="cap6-task-1"
-          className={
-            "cap0-checklist-item" +
-            (state === "done" ? " cap0-checklist-item--done" : " cap0-checklist-item--active")
-          }
-        >
-          <span className="cap0-checklist-num">{state === "done" ? "✓" : "🎯"}</span>
-          <div className="cap0-checklist-body">
-            <span className="cap0-checklist-name">{taskName(progress)}</span>
-
-            <div className="cap6-journey-prog" data-testid="cap6-journey-prog-nhatquan">
-              {`${fmtInt(progress?.so_lan_xu_ly_nhat_quan ?? 0)}/${fmtInt(
-                mucTieuNhatQuan(progress),
-              )} lần xử lý nhất quán`}
-            </div>
-
-            {state === "active" && (
-              <button type="button" className="cap0-checklist-golink" onClick={goToTrading}>
-                Làm ngay →
+        {graduated ? (
+          <div
+            data-testid="cap6-journey-complete"
+            className="cap0-checklist-item cap0-checklist-item--done"
+          >
+            <span className="cap0-checklist-num">✓</span>
+            <div className="cap0-checklist-body">
+              <span className="cap0-checklist-name">Bạn đã hoàn thành Cấp 6</span>
+              <div className="cap6-journey-prog">
+                Lộ trình Demo Trading đã hoàn tất. Bạn có thể xem trạng thái Linh thú và Bot của mình.
+              </div>
+              <button type="button" className="cap0-checklist-golink" onClick={openBot}>
+                Bot của tôi →
               </button>
-            )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div
+            data-testid="cap6-task-1"
+            className={
+              "cap0-checklist-item" +
+              (state === "done" ? " cap0-checklist-item--done" : " cap0-checklist-item--active")
+            }
+          >
+            <span className="cap0-checklist-num">{state === "done" ? "✓" : "🎯"}</span>
+            <div className="cap0-checklist-body">
+              <span className="cap0-checklist-name">{taskName(progress)}</span>
+
+              <div className="cap6-journey-prog" data-testid="cap6-journey-prog-nhatquan">
+                {`${fmtInt(progress?.so_lan_xu_ly_nhat_quan ?? 0)}/${fmtInt(
+                  mucTieuNhatQuan(progress),
+                )} lần xử lý nhất quán`}
+              </div>
+
+              {state === "active" && (
+                <button type="button" className="cap0-checklist-golink" onClick={goToTrading}>
+                  Làm ngay →
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Mockup không vẽ nút này, nhưng nó là ĐƯỜNG DUY NHẤT tới màn Phân tích
             danh mục trong shell cấp (tour bước 7 cũng chỉ về đó) — giữ lại, đúng
