@@ -11,12 +11,14 @@ import {
   HUNT_FILTER_LABEL,
   HUNT_FILTER_ORDER,
   HUNT_FILTER_TEN,
+  CAP5_SO_MA_SAN_TARGET,
   mucTieuSoMaMua,
   mucTieuSoMaSan,
   type Cap5PhanTich,
   type Cap5Progress,
   type HuntFilter,
   type Khoi12,
+  type Khoi13,
 } from "./types"
 
 /**
@@ -66,12 +68,6 @@ import {
  */
 export const KHOI12_MIN_LENH = 3
 
-/** Ngưỡng "hợp với bạn nhất" — spec §9 gắn nhãn này cho bộ lọc cao nhất. */
-export const KHOI12_TOT_PCT = 60
-
-/** Ngưỡng cảnh báo cho bộ lọc thấp nhất (mockup vẽ 38% ở nhóm đỏ). */
-export const KHOI12_KEM_PCT = 45
-
 /** §C12c — nói rõ con số của khối ⑫ đến từ đâu, đo cái gì và KHÔNG đo cái gì. */
 const KHOI12_GIAI_THICH =
   "Chỉ tính các lệnh ĐÃ ĐÓNG có nguồn săn — tức mã bạn tìm ra bằng một bộ lọc rồi mới vào lệnh. " +
@@ -82,11 +78,10 @@ const KHOI12_GIAI_THICH =
 
 /** §C12c — phễu ⑬ đo cái gì, và vì sao tầng giữa có thể "chưa đo được". */
 const KHOI13_GIAI_THICH =
-  "Phễu đọc thẳng số liệu máy chủ: số mã bạn đã đưa vào Watchlist bằng bộ lọc, số mã trong đó " +
-  "ĐANG ở mức ≥4/5 lớp ủng hộ theo hai lần chấm gần nhất, và số mã bạn thực sự vào lệnh. " +
-  "Hệ KHÔNG lưu lược sử điểm đồng thuận, nên nó không biết một mã có TỪNG chín trước đó hay " +
-  "không — kể cả mã bạn đã xoá khỏi Watchlist sau khi mua. Vì vậy tầng giữa thường là CẬN DƯỚI " +
-  "(ghi «≥ N»), và khi chưa mã săn nào được chấm thì nó ghi «—» chứ không phải 0."
+  "Phễu đọc thẳng số liệu máy chủ: số mã bạn đã đưa vào Watchlist bằng bộ lọc, số mã từng đạt " +
+  "≥4/5 lớp ủng hộ, và số mã bạn thực sự vào lệnh. Mốc từng đáng chú ý được giữ lại kể cả khi " +
+  "điểm lần sau giảm hoặc mã đã bị xoá khỏi Watchlist. Nếu chưa chấm hết các mã săn, tầng giữa " +
+  "là CẬN DƯỚI (ghi «≥ N»); khi chưa mã nào được chấm thì ghi «—» chứ không phải 0."
 
 function round(n: number): number {
   return Math.round(n)
@@ -146,15 +141,6 @@ export interface Cap5Khoi12BoLoc {
   /** Trạng thái rỗng TRUNG THỰC kèm số còn thiếu. `null` khi đã đủ mẫu. */
   insufficientNote: string | null
   giaiThich: string
-}
-
-/** Câu cảnh báo riêng cho từng bộ lọc yếu — bản lùi khi server không gửi `canh_bao`. */
-const KHOI12_CANH_BAO: Record<HuntFilter, string> = {
-  ngoai: "khối ngoại có thể mua ròng vì cơ cấu quỹ chứ không vì mã tốt",
-  tudoanh: "tự doanh gom có thể là nghiệp vụ phòng hộ, không phải đánh giá cơ bản",
-  kl: "khối lượng đột biến dễ là sóng ngắn, cần cẩn thận hơn",
-  dinh: "vượt đỉnh dễ gặp phiên phân phối ngay sau đó",
-  tang: "tăng mạnh trong phiên dễ mua đúng đỉnh ngắn hạn",
 }
 
 /** Trạng thái query `GET /cap5/phan-tich` mà khối ⑫ phải phân biệt. */
@@ -252,9 +238,9 @@ export function viewCap5Khoi12BoLoc(
       soLenhSan === 0
         ? "Chưa có lệnh nào đóng từ mã bạn săn được. Khối này hiện sau khi bạn săn mã bằng bộ lọc, " +
           "vào lệnh, rồi đóng lệnh đó."
-        : `Mới có ${soLenhSan.toLocaleString("en-US")} lệnh đã đóng từ săn mã, chưa bộ lọc nào đủ ` +
+        : `Mới có ${soLenhSan.toLocaleString("vi-VN")} lệnh đã đóng từ săn mã, chưa bộ lọc nào đủ ` +
           `${minLenh} lệnh để nói được gì. Bộ lọc gần nhất còn thiếu ` +
-          `${conThieuIt.toLocaleString("en-US")} lệnh.`
+          `${conThieuIt.toLocaleString("vi-VN")} lệnh.`
     return {
       ...base,
       best: null,
@@ -266,30 +252,26 @@ export function viewCap5Khoi12BoLoc(
     }
   }
 
-  const best = duMauRows[0]
+  // Server chốt `best_filter` và câu nhãn/cảnh báo. FE chỉ dùng thứ tự tỷ lệ làm
+  // bản lùi khi wire cũ chưa có mã tốt nhất; không tự đặt ngưỡng 60/45.
+  const best =
+    duMauRows.find((row) => row.filter === khoi12.best_filter) ?? duMauRows[0]
   const worst = duMauRows.length > 1 ? duMauRows[duMauRows.length - 1] : null
   const bestPct = best.tyLeThang ?? 0
   const worstPct = worst?.tyLeThang ?? null
 
-  let phatHien: string
-  let canhBao = false
-  if (worst && worstPct != null && worstPct < KHOI12_KEM_PCT) {
-    canhBao = true
+  const bestNhan = best.nhan?.trim() || "hợp với bạn nhất"
+  const canhBao = Boolean(worst?.canhBaoRieng?.trim())
+  let phatHien =
+    `«${best.ten}» đang là bộ lọc ${bestNhan} — mã săn từ đây thắng ${bestPct}% ` +
+    `(${best.soThang}/${best.soLenh} lệnh). Đây là kết quả thật của riêng bạn, không phải đánh ` +
+    "giá chung về bộ lọc."
+  if (worst && worstPct != null && worst.canhBaoRieng?.trim()) {
     phatHien =
-      `«${best.ten}» đang là bộ lọc hợp với bạn nhất — mã săn từ đây thắng ${bestPct}% ` +
+      `«${best.ten}» đang là bộ lọc ${bestNhan} — mã săn từ đây thắng ${bestPct}% ` +
       `(${best.soThang}/${best.soLenh} lệnh). Ngược lại «${worst.ten}» chỉ ${worstPct}% ` +
       `(${worst.soThang}/${worst.soLenh} lệnh): ` +
-      `${worst.canhBaoRieng ?? KHOI12_CANH_BAO[worst.filter]}.`
-  } else if (bestPct >= KHOI12_TOT_PCT) {
-    phatHien =
-      `«${best.ten}» đang là bộ lọc hợp với bạn nhất — mã săn từ đây thắng ${bestPct}% ` +
-      `(${best.soThang}/${best.soLenh} lệnh). Đây là kết quả thật của riêng bạn, không phải đánh ` +
-      "giá chung về bộ lọc."
-  } else {
-    phatHien =
-      `Bộ lọc đứng đầu của bạn là «${best.ten}» với ${bestPct}% ` +
-      `(${best.soThang}/${best.soLenh} lệnh) — chưa bộ lọc nào thắng quá ${KHOI12_TOT_PCT}%. ` +
-      "Bộ lọc chỉ ra mã đáng xem; phần còn lại vẫn là bạn chọn thời điểm vào."
+      `${worst.canhBaoRieng.trim()}.`
   }
 
   return {
@@ -351,12 +333,42 @@ export interface Cap5Khoi13Pheu {
   giaiThich: string
 }
 
+type Cap5Khoi13Source = Pick<
+  Cap5Progress,
+  | "so_ma_da_san"
+  | "so_ma_cho_du_lop"
+  | "so_ma_da_cham_diem"
+  | "so_ma_cho_du_lop_day_du"
+  | "so_ma_mua_tu_watchlist"
+  | "muc_tieu_so_ma_san"
+> & {
+  giai_thich?: string
+  loi_ket?: string
+}
+
+/** Đổi payload authoritative của `GET /cap5/phan-tich` sang đầu vào phễu. */
+export function khoi13SourceFromApi(
+  khoi13: Khoi13,
+  progress: Cap5Progress | null,
+): Cap5Khoi13Source {
+  return {
+    so_ma_da_san: khoi13.so_ma_da_san,
+    so_ma_cho_du_lop: khoi13.so_ma_cho_du_lop,
+    so_ma_da_cham_diem: khoi13.so_ma_da_cham_diem,
+    so_ma_cho_du_lop_day_du: khoi13.so_ma_cho_du_lop_day_du,
+    so_ma_mua_tu_watchlist: khoi13.so_ma_vao_lenh,
+    muc_tieu_so_ma_san: progress?.muc_tieu_so_ma_san,
+    giai_thich: khoi13.giai_thich,
+    loi_ket: khoi13.loi_ket,
+  }
+}
+
 /**
  * Đọc trạng thái tầng giữa từ hồ sơ Cấp 5. Chịu được CẢ hai hình dạng wire (có
  * hay chưa có `so_ma_da_cham_diem`/`so_ma_cho_du_lop_day_du`) — mặc định an toàn
  * là "cận dưới".
  */
-export function tangGiuaCap5(progress: Cap5Progress | null): Cap5TangGiua {
+export function tangGiuaCap5(progress: Cap5Khoi13Source | null): Cap5TangGiua {
   const soMaDaSan = progress ? progress.so_ma_da_san : null
   const value = progress ? progress.so_ma_cho_du_lop : null
   const mauSo = progress?.so_ma_da_cham_diem ?? null
@@ -370,7 +382,7 @@ export function tangGiuaCap5(progress: Cap5Progress | null): Cap5TangGiua {
 /** Nhãn tầng giữa cho phễu — "ít nhất N" khi con số chỉ là cận dưới. */
 export function nhanTangGiua(tg: Cap5TangGiua): string {
   if (tg.trangThai === "chua_do" || tg.value == null) return "—"
-  const n = tg.value.toLocaleString("en-US")
+  const n = tg.value.toLocaleString("vi-VN")
   return tg.trangThai === "day_du" ? n : `≥ ${n}`
 }
 
@@ -383,7 +395,7 @@ export function nhanTangGiua(tg: Cap5TangGiua): string {
  * đó là khen một việc họ không làm (luật 3), nên nhánh dưới nói thẳng điều ngược
  * lại.
  */
-export function computeCap5Khoi13Pheu(progress: Cap5Progress | null): Cap5Khoi13Pheu {
+export function computeCap5Khoi13Pheu(progress: Cap5Khoi13Source | null): Cap5Khoi13Pheu {
   const soMaDaSan = progress ? progress.so_ma_da_san : null
   const soMaChoDuLop = progress ? progress.so_ma_cho_du_lop : null
   const soMaVaoLenh = progress ? progress.so_ma_mua_tu_watchlist : null
@@ -391,7 +403,7 @@ export function computeCap5Khoi13Pheu(progress: Cap5Progress | null): Cap5Khoi13
 
   const tang: Khoi13Tang[] = [
     { ic: "🔍", label: "Mã đã săn (đưa vào Watchlist)", value: soMaDaSan },
-    { ic: "👀", label: "Đang ở ≥4/5 lớp ủng hộ", value: soMaChoDuLop },
+    { ic: "👀", label: "Từng lên ≥4/5 lớp ủng hộ", value: soMaChoDuLop },
     { ic: "✅", label: "Thực sự vào lệnh", value: soMaVaoLenh },
   ]
 
@@ -401,7 +413,7 @@ export function computeCap5Khoi13Pheu(progress: Cap5Progress | null): Cap5Khoi13
     soMaChoDuLop,
     tangGiua,
     soMaVaoLenh,
-    giaiThich: KHOI13_GIAI_THICH,
+    giaiThich: progress?.giai_thich || KHOI13_GIAI_THICH,
   }
 
   if (soMaDaSan == null || soMaVaoLenh == null) {
@@ -421,22 +433,24 @@ export function computeCap5Khoi13Pheu(progress: Cap5Progress | null): Cap5Khoi13
       phatHien: null,
       insufficientNote:
         `Bạn chưa săn mã nào. Mở màn Săn mã, bấm một bộ lọc rồi thêm mã vào Watchlist — mục tiêu ` +
-        `nhiệm vụ ① là ${mucTieuSoMaSan(progress).toLocaleString("en-US")} mã.`,
+        `nhiệm vụ ① là ${(progress?.muc_tieu_so_ma_san ?? CAP5_SO_MA_SAN_TARGET).toLocaleString(
+          "vi-VN",
+        )} mã.`,
     }
   }
 
   const tyLeVaoLenh = round((soMaVaoLenh / soMaDaSan) * 100)
   const soLoai = soMaDaSan - soMaVaoLenh
   const phatHien =
-    soLoai > 0
-      ? `Bạn săn ${soMaDaSan.toLocaleString("en-US")} mã nhưng chỉ vào ` +
-        `${soMaVaoLenh.toLocaleString("en-US")} — loại ${soLoai.toLocaleString("en-US")} mã chưa ` +
+    progress?.loi_ket?.trim() || (soLoai > 0
+      ? `Bạn săn ${soMaDaSan.toLocaleString("vi-VN")} mã nhưng chỉ vào ` +
+        `${soMaVaoLenh.toLocaleString("vi-VN")} — loại ${soLoai.toLocaleString("vi-VN")} mã chưa ` +
         `chín (${tyLeVaoLenh}% số mã săn được vào lệnh). Đây là kỷ luật của thợ săn: săn nhiều, ` +
         "chọn kỹ, không mua vội mọi mã tìm được."
-      : `Bạn săn ${soMaDaSan.toLocaleString("en-US")} mã và vào lệnh cả ` +
-        `${soMaVaoLenh.toLocaleString("en-US")} mã — chưa loại mã nào. Watchlist đang là danh ` +
+      : `Bạn săn ${soMaDaSan.toLocaleString("vi-VN")} mã và vào lệnh cả ` +
+        `${soMaVaoLenh.toLocaleString("vi-VN")} mã — chưa loại mã nào. Watchlist đang là danh ` +
         "sách mua chứ chưa phải công cụ sàng lọc: hãy để mã chờ tới khi lên ≥4/5 lớp ủng hộ rồi " +
-        "mới quyết định."
+        "mới quyết định.")
 
   return {
     ...base,
@@ -502,7 +516,9 @@ export function computeCap5PortfolioAnalysis(
       phanTich?.khoi_12 ?? null,
       phanTich == null ? "loi" : "co_du_lieu",
     ),
-    khoi13Pheu: computeCap5Khoi13Pheu(cap5Progress),
+    khoi13Pheu: computeCap5Khoi13Pheu(
+      phanTich?.khoi_13 ? khoi13SourceFromApi(phanTich.khoi_13, cap5Progress) : cap5Progress,
+    ),
     soMaDaSan: cap5Progress?.so_ma_da_san ?? null,
     soMaMuaTuWatchlist: cap5Progress?.so_ma_mua_tu_watchlist ?? null,
     bestFilterServer: cap5Progress?.best_filter ?? null,

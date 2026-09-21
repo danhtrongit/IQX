@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { Modal } from "@arco-design/web-react"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { cn } from "@/shared/lib/cn"
 import { useRecordKetso } from "@/features/cap1/hooks"
 import {
@@ -106,7 +107,11 @@ import "./cap6-ketso.css"
  * data. The retired Đối chiếu evidence is not carried through this boundary.
  */
 export interface KetsoDataCap6 extends KetsoDataCap5 {
+  /** Filled BUY order that owns the immutable Cấp 6 plan snapshot. */
+  buyOrderId?: string
   nhanDinh?: NhanDinhKetsoCap6 | null
+  /** BUY-time conflict assessment was not persisted; distinct from no conflict. */
+  mauThuanNguonChuaBiet?: boolean
 }
 
 export interface KetsoModalCap6Props {
@@ -171,14 +176,19 @@ function lyDoLabel(lyDo: LyDo): string {
 }
 
 function fmtVnd(n: number): string {
-  return Math.round(n).toLocaleString("en-US")
+  return Math.round(n).toLocaleString("vi-VN")
 }
+
+const VI_ONE_DECIMAL = new Intl.NumberFormat("vi-VN", {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+})
 
 /** `+5.3%` / `−4.2%` / `0.0%` — dấu trừ typographic "−" (U+2212), như Cấp 0-5. */
 function fmtPct(pct: number): string {
   const rounded = Math.round(pct * 10) / 10
   const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : ""
-  return `${sign}${Math.abs(rounded).toFixed(1)}%`
+  return `${sign}${VI_ONE_DECIMAL.format(Math.abs(rounded))}%`
 }
 
 function fmtVndSigned(n: number): string {
@@ -255,7 +265,7 @@ export function KetsoModalCap6({
    * The authoritative Cấp 6 conflict record is re-read from the server; local
    * event data remains only as an honest fallback while it loads.
    */
-  const nhanDinhQuery = useKehoachMauThuanCap6(data?.orderId ?? null, isCap6Active)
+  const nhanDinhQuery = useKehoachMauThuanCap6(data?.buyOrderId ?? null, isCap6Active)
 
   const entryPrice = data?.entryPrice ?? 0
   const exitPrice = data?.exitPrice ?? 0
@@ -269,6 +279,7 @@ export function KetsoModalCap6({
       setDisplayPct(0)
       return
     }
+    trackJourneyEvent("cap6_ketso_view", { has_conflict: data.nhanDinh != null })
     setEmotion(null)
     setClosing(false)
     const start = Date.now()
@@ -358,6 +369,7 @@ export function KetsoModalCap6({
 
   // ── Bảng "Đọc 5 lớp — nhìn lại" (Cấp 4 §6, giữ nguyên) ─────────────────
   const lopKhacAi = new Set(lopKhacAiCap4(doc5Lop, ai5Lop))
+  const coBanTuCham5Lop = LOP_KEYS.some((lop) => doc5Lop[lop] != null)
   const soDongThuan = countDongThuan(ai5Lop)
   const soKhacAi = countKhacAi(doc5Lop, ai5Lop)
   const soCungGocNhin = countCungGocNhin(doc5Lop, ai5Lop)
@@ -455,6 +467,8 @@ export function KetsoModalCap6({
       style={{
         width: 480,
         maxWidth: "calc(100vw - 32px)",
+        maxHeight: "calc(100dvh - 32px)",
+        overflowY: "auto",
         background: "var(--bg2)",
         border: "1px solid var(--bd)",
         borderRadius: 16,
@@ -581,14 +595,16 @@ export function KetsoModalCap6({
             <tr>
               <td>Khối lượng</td>
               <td colSpan={2}>
-                {`${fmtVnd(khoiLuong)} cp · ${pctVon.toFixed(1)}% vốn (${fmtVnd(tienThucTe)} ₫)`}
+                {`${fmtVnd(khoiLuong)} cp · ${VI_ONE_DECIMAL.format(pctVon)}% vốn (${fmtVnd(tienThucTe)} ₫)`}
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      {/* ── ĐỌC 5 LỚP — NHÌN LẠI (giữ nguyên Cấp 4) ───────────────────────── */}
+      {/* Cấp 6 thay ô tự chấm bằng bảng mâu thuẫn. Lệnh cũ có bản tự chấm vẫn
+          giữ khối Cấp 4; lệnh Cấp 6 mới không dựng một bảng 5 hàng toàn dấu —. */}
+      {coBanTuCham5Lop && (
       <div className="cap4-ketso-doc5lop" data-testid="cap4-ketso-doc5lop">
         <div className="cap4-ketso-doc5lop-head">
           <span className="cap4-ketso-doc5lop-title">ĐỌC 5 LỚP — NHÌN LẠI</span>
@@ -639,6 +655,7 @@ export function KetsoModalCap6({
             : "Lệnh này chưa có đối chiếu AI — AI chỉ lộ khi bạn chấm đủ 5 lớp lúc đặt lệnh."}
         </p>
       </div>
+      )}
         </div>
       )}
 
@@ -676,6 +693,13 @@ export function KetsoModalCap6({
           (hoặc mở trước khi Cấp 6 đợt 7 ship) → bỏ khối, IM LẶNG, không dựng một
           khối rỗng để user phải đoán. */}
       {nhanDinh && <NhanDinhKetsoBlock nhanDinh={nhanDinh} pnlPct={pnlPct} />}
+      {!nhanDinh && data.mauThuanNguonChuaBiet && (
+        <p className="cap6-ketso-giaithich" data-testid="cap6-ketso-mauthuan-chua-biet">
+          {
+            "Chưa đọc lại được trạng thái mâu thuẫn lúc mua của lệnh này. Hệ thống không suy đoán từ dữ liệu hiện tại."
+          }
+        </p>
+      )}
 
       {/* Lớp coach 1 — Cấp 1 (lưới lý do × kết quả), giữ nguyên. */}
       <div className="cap0-debrief-coach">

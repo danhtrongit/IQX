@@ -37,11 +37,13 @@ from sqlalchemy import select, update
 
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
 from app.models.ai_insight_history import AIInsightHistory
-from app.models.cap1 import Cap1Progress, OrderKehoach
+from app.models.cap1 import Cap1Progress, LyDo, OrderKehoach, TrangThaiLucDat
 from app.models.cap2 import Cap2Progress
 from app.models.cap3 import Cap3Progress
 from app.models.cap4 import Cap4Progress
 from app.models.cap5 import Cap5HuntLog
+from app.models.journey_event import JourneyEvent
+from app.models.journey_identity import JourneyReadingDataset
 from app.models.symbol import Symbol
 from app.models.virtual_trading import OrderSide, OrderStatus, OrderType, VirtualOrder
 from app.models.watchlist import WatchlistItem
@@ -64,6 +66,7 @@ from app.services.cap5.service import (
     MUC_TIEU_SO_MA_SAN,
     Cap5Service,
 )
+from app.services.journey_identity.classification import digest
 
 # ══════════════════════════════════════════════════════
 # Nguồn dữ liệu giả cho máy săn mã
@@ -114,11 +117,16 @@ class _FakeHuntSource:
         self,
         bars: dict[str, list[HuntBar]] | None = None,
         flows: dict[str, dict[str, list[float]]] | None = None,
+        restricted: set[str] | frozenset[str] | None = frozenset(),
     ) -> None:
         self.bars = {k.upper(): v for k, v in (bars or {}).items()}
         self.flows = flows
+        self.restricted = (
+            None if restricted is None else {s.upper() for s in restricted}
+        )
         self.bars_calls = 0
         self.flow_calls = 0
+        self.status_calls = 0
         #: Số MÃ mỗi lượt gọi hỏi — dùng để phân biệt "1 lượt cho cả rổ" với
         #: "1 lượt mỗi mã" (cùng tổng số mã, khác hẳn số lượt HTTP).
         self.bars_batch_sizes: list[int] = []
@@ -137,6 +145,10 @@ class _FakeHuntSource:
         return {
             k.upper(): v for k, v in self.flows.get(ben, {}).items() if k.upper() in wanted
         }
+
+    async def restricted_symbols(self):  # noqa: ANN201
+        self.status_calls += 1
+        return self.restricted
 
 
 # ══════════════════════════════════════════════════════
@@ -215,8 +227,8 @@ async def _make_order(
         net_amount_vnd=net if status == OrderStatus.FILLED else None,
         trading_date=trading_date,
     )
-    if created_at is not None:
-        order.created_at = created_at
+    order.created_at = created_at or datetime.now(UTC).replace(tzinfo=None)
+    order.updated_at = order.created_at
     db_session.add(order)
     await db_session.flush()
     await db_session.refresh(order)
@@ -232,7 +244,9 @@ async def _fast_track_cap4(db_session, user_id, *, khau_vi: str = "can_bang"):
         account = await vt_repo.create_account(user_id, 250_000_000)
     db_session.add_all(
         [
-            Cap1Progress(user_id=user_id, entered_at=now, graduated_at=now),
+            Cap1Progress(
+                user_id=user_id, entered_at=now, da_xem_tour=True, graduated_at=now
+            ),
             Cap2Progress(user_id=user_id, entered_at=now, graduated_at=now),
             Cap3Progress(
                 user_id=user_id,
@@ -248,11 +262,23 @@ async def _fast_track_cap4(db_session, user_id, *, khau_vi: str = "can_bang"):
     return account
 
 
-async def _enter_cap5(db_session, user_id, *, source: _FakeHuntSource | None = None):
+async def _enter_cap5(
+    db_session,
+    user_id,
+    *,
+    source: _FakeHuntSource | None = None,
+    price_board_fetcher=None,
+):
     """Fast-track Cấp 1-4 rồi vào Cấp 5. Trả ``(cap5, account, source)``."""
     account = await _fast_track_cap4(db_session, user_id)
     source = source or _FakeHuntSource()
-    cap5 = Cap5Service(db_session, hunt_source=source)
+    if price_board_fetcher is None:
+        async def price_board_fetcher(_symbols):  # noqa: ANN001, ANN202
+            return [], "test://price-board"
+
+    cap5 = Cap5Service(
+        db_session, hunt_source=source, price_board_fetcher=price_board_fetcher
+    )
     await cap5.enter(user_id)
     return cap5, account, source
 
@@ -309,6 +335,16 @@ async def _seed_insight(db_session, symbol: str, payload: dict, *, day: date | N
     return row
 
 
+async def _journey_events(db_session, user_id, name: str) -> list[JourneyEvent]:
+    result = await db_session.execute(
+        select(JourneyEvent).where(
+            JourneyEvent.user_id == user_id,
+            JourneyEvent.name == name,
+        )
+    )
+    return list(result.scalars().all())
+
+
 # ── Helper cho chuỗi Cấp 0→4 thật (chỉ 1 test dùng) ───
 
 _ALL_NEU = {
@@ -327,12 +363,57 @@ def _doc(**overrides: str) -> dict[str, str]:
 _AI_DONG_THUAN_CAO = _doc(ky_thuat="ok", dong_tien="ok", noi_bo="ok")
 
 
+async def _seed_cap4_dataset(
+    db_session,
+    user_id,
+    *,
+    symbol: str,
+    trading_date: date,
+    ai_answers: dict[str, str],
+) -> None:
+    clean = symbol.upper()
+    payload = {
+        "symbol": clean,
+        "source_symbol": clean,
+        "valuation_source_symbol": clean,
+        "trading_date": str(trading_date),
+        "ai_answers": ai_answers,
+    }
+    db_session.add(
+        JourneyReadingDataset(
+            user_id=user_id,
+            symbol=clean,
+            trading_date=trading_date,
+            created_at=datetime.now(UTC),
+            dataset_hash=digest(payload),
+            payload=payload,
+        )
+    )
+    await db_session.flush()
+
+
 async def _graduate_cap0(db_session, user_id) -> None:
     cap0 = Cap0Service(db_session)
     await cap0.enter(user_id)
-    for n in (1, 2, 3):
-        await cap0.complete_task(user_id, n)
-    await cap0.complete_task(user_id, 4, gate="debrief")
+    await cap0.set_placement(user_id, answer="never")
+    account = await VirtualTradingRepository(db_session).get_account_by_user_id(user_id)
+    buy = await _make_order(
+        db_session, account.id, user_id, symbol="VNM", mode="san_tap"
+    )
+    await cap0.record_kehoach(user_id, buy.id, ly_do_doi_thuong="thu_cho_biet")
+    await cap0.complete_task(user_id, 1, gate="star")
+    for tour in ("phantich", "bantin", "bctc"):
+        await cap0.complete_tour(user_id, tour)
+    await _make_order(
+        db_session,
+        account.id,
+        user_id,
+        symbol="VNM",
+        side=OrderSide.SELL,
+        mode="san_tap",
+        trading_date=date(2026, 1, 8),
+    )
+    await cap0.complete_task(user_id, 5, gate="debrief")
     await cap0.graduate(user_id)
 
 
@@ -495,8 +576,8 @@ async def test_enter_requires_cap4_graduated(db_session, test_user):
             khau_vi="can_bang",
             muc_tu_tin=(i % 3) + 1,
             cach_khoi_luong="linh_hoat",
-            khoi_luong=100,
-            pct_von=20.0,
+            khoi_luong=buy.quantity,
+            pct_von=buy.quantity * 20_000 / account.initial_cash_vnd * 100.0,
         )
         s = await _make_order(
             db_session, account.id, test_user.id, symbol=f"Z{i}", side=OrderSide.SELL,
@@ -518,8 +599,15 @@ async def test_enter_requires_cap4_graduated(db_session, test_user):
             test_user.id, buy.id, ly_do="ky_thuat",
             trang_thai_luc_dat="ung_ho", vung_mua=20_000,
         )
+        await _seed_cap4_dataset(
+            db_session,
+            test_user.id,
+            symbol=buy.symbol,
+            trading_date=buy.trading_date,
+            ai_answers=_AI_DONG_THUAN_CAO,
+        )
         await cap4.record_kehoach(
-            test_user.id, buy.id, doc_5_lop=_doc(ky_thuat="ok"), ai_5_lop=_AI_DONG_THUAN_CAO
+            test_user.id, buy.id, doc_5_lop=_doc(ky_thuat="ok")
         )
         s = await _make_order(
             db_session, account.id, test_user.id, symbol=f"AA{i}", side=OrderSide.SELL,
@@ -534,8 +622,15 @@ async def test_enter_requires_cap4_graduated(db_session, test_user):
             test_user.id, buy.id, ly_do="ky_thuat",
             trang_thai_luc_dat="ung_ho", vung_mua=20_000,
         )
+        await _seed_cap4_dataset(
+            db_session,
+            test_user.id,
+            symbol=buy.symbol,
+            trading_date=buy.trading_date,
+            ai_answers=_doc(dinh_gia="ok"),
+        )
         await cap4.record_kehoach(
-            test_user.id, buy.id, doc_5_lop=_doc(tin_tuc="ok"), ai_5_lop=_doc(dinh_gia="ok")
+            test_user.id, buy.id, doc_5_lop=_doc(tin_tuc="ok")
         )
         s = await _make_order(
             db_session, account.id, test_user.id, symbol=f"BB{i}", side=OrderSide.SELL,
@@ -666,6 +761,44 @@ async def test_san_lai_cung_ma_khong_lam_tang_so_ma_san(db_session, test_user):
 
 
 @pytest.mark.asyncio
+async def test_journey_cap5_chi_ghi_hanh_dong_va_chuyen_trang_thai_mot_lan(
+    db_session, test_user
+):
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "AAA")
+    await _seed_insight(db_session, "AAA", _AI_4_UNG_HO)
+
+    await cap5.san_ma_result(test_user.id, "kl")
+    await cap5.san_ma_result(test_user.id, "kl")
+    await cap5.add_watchlist(test_user.id, "AAA", "kl")
+    await cap5.add_watchlist(test_user.id, "AAA", "kl")
+
+    buy = await _mua(db_session, account, test_user.id, "AAA")
+    db_session.add(
+        OrderKehoach(
+            order_id=buy.id,
+            lyDo=LyDo.KY_THUAT,
+            trangThai_luc_dat=TrangThaiLucDat.UNG_HO,
+            vung_mua=20_000,
+        )
+    )
+    await db_session.flush()
+    await cap5.get_progress(test_user.id)
+    await cap5.get_progress(test_user.id)
+
+    expected = {
+        "cap5_hunt_open": {"filter": "kl"},
+        "cap5_add_watchlist": {"symbol": "AAA", "filter": "kl"},
+        "cap5_watchlist_notable": {"symbol": "AAA"},
+        "cap5_order_from_hunt": {"symbol": "AAA", "filter": "kl"},
+    }
+    for name, fields in expected.items():
+        events = await _journey_events(db_session, test_user.id, name)
+        assert len(events) == 1, name
+        assert events[0].fields == fields
+
+
+@pytest.mark.asyncio
 async def test_xoa_khoi_watchlist_khong_lam_tut_nhiem_vu(db_session, test_user):
     """★ Sổ săn mã tồn tại RIÊNG khỏi Watchlist: bỏ theo dõi hết 10 mã thì
     ``so_ma_da_san`` vẫn 10 và ``task_1_done_at`` không bị rút lại.
@@ -729,11 +862,15 @@ async def test_tour_sanma_ghi_co_nhung_khong_phai_cong_tot_nghiep(db_session, te
     """
     cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
     p = await cap5.mark_tour_sanma(test_user.id)
+    await cap5.mark_tour_sanma(test_user.id)
     assert p["da_xem_tour_sanma"] is True
     assert p["task_1_done_at"] is None
     assert p["task_2_done_at"] is None
     with pytest.raises(ConflictError):
         await cap5.graduate(test_user.id)
+    events = await _journey_events(db_session, test_user.id, "cap5_tour_sanma_done")
+    assert len(events) == 1
+    assert events[0].fields == {}
 
 
 @pytest.mark.asyncio
@@ -764,6 +901,9 @@ async def test_graduate_can_dung_2_of_2(db_session, test_user):
     # idempotent — mốc tốt nghiệp không bị ghi lại
     again = await cap5.graduate(test_user.id)
     assert again["graduated_at"] == p["graduated_at"]
+    events = await _journey_events(db_session, test_user.id, "cap5_graduate")
+    assert len(events) == 1
+    assert events[0].fields == {}
 
 
 @pytest.mark.asyncio
@@ -848,12 +988,10 @@ async def test_bo_loc_dong_tien_tra_chua_du_du_lieu_chu_khong_tra_0_ma(
 
 
 @pytest.mark.asyncio
-async def test_loc_san_khai_that_tieu_chi_canh_bao_chua_ap_dung(db_session, test_user):
-    """Lọc sàn §5.2 có 4 tiêu chí; "diện cảnh báo/kiểm soát/hạn chế" THIẾU NGUỒN
-    trong backend nên phải tự khai ``ap_dung=False``.
-
-    Im lặng bỏ qua nó rồi để dòng "Đã lọc: …" liệt kê đủ 4 là hứa hão.
-    """
+async def test_loc_san_khai_that_tieu_chi_trang_thai_hose_da_ap_dung(
+    db_session, test_user
+):
+    """Lọc sàn §5.2 khai đã áp dụng khi feed HOSE trả tập hợp lệ."""
     cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
     await _seed_symbol(db_session, "AAA")
     index = await cap5.san_ma_index(test_user.id)
@@ -863,12 +1001,12 @@ async def test_loc_san_khai_that_tieu_chi_canh_bao_chua_ap_dung(db_session, test
     assert loc_san["san"]["ap_dung"] is True
     assert loc_san["thanh_khoan"]["ap_dung"] is True
     assert loc_san["gia"]["ap_dung"] is True
-    assert loc_san["canh_bao"]["ap_dung"] is False
-    assert "CHƯA lọc được" in loc_san["canh_bao"]["giai_thich"]
+    assert loc_san["canh_bao"]["ap_dung"] is True
+    assert "HOSE" in loc_san["canh_bao"]["giai_thich"]
 
     # Cùng bộ tiêu chí phải đi kèm MỖI kết quả (popup nói đúng nó đã lọc gì).
     result = await cap5.san_ma_result(test_user.id, "kl")
-    assert _by_ma(result["loc_san"])["canh_bao"]["ap_dung"] is False
+    assert _by_ma(result["loc_san"])["canh_bao"]["ap_dung"] is True
 
 
 @pytest.mark.asyncio
@@ -1166,6 +1304,54 @@ async def test_chi_lay_ma_hose_dang_hoat_dong(db_session, test_user):
 
 
 @pytest.mark.asyncio
+async def test_loc_trang_thai_hose_truoc_khi_quet_va_xep_top10(db_session, test_user):
+    """Cảnh báo/kiểm soát/hạn chế không được đi vào data source."""
+    blocked = {"WARN", "CTRL", "LIMIT"}
+    src = _FakeHuntSource(
+        bars={
+            symbol: _with_last(_bars(), volume=300_000.0)
+            for symbol in (*blocked, "OK")
+        },
+        restricted=blocked,
+    )
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    for symbol in (*blocked, "OK"):
+        await _seed_symbol(db_session, symbol)
+
+    index = await cap5.san_ma_index(test_user.id)
+    assert index["so_ma_trong_ro"] == 1
+    assert _by_ma(index["loc_san"])["canh_bao"]["ap_dung"] is True
+
+    result = await cap5.san_ma_result(test_user.id, "kl")
+    assert [item["symbol"] for item in result["items"]] == ["OK"]
+    assert src.bars_batch_sizes[-1] == 1
+    assert src.status_calls == 2  # index + result, production cache gộp hai lần này
+
+
+@pytest.mark.asyncio
+async def test_feed_trang_thai_hose_loi_thi_fail_closed(db_session, test_user):
+    """Không xác minh được trạng thái ⇒ không quét/rò rỉ mã vào top10."""
+    src = _FakeHuntSource(
+        bars={"AAA": _with_last(_bars(), volume=300_000.0)}, restricted=None
+    )
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id, source=src)
+    await _seed_symbol(db_session, "AAA")
+
+    index = await cap5.san_ma_index(test_user.id)
+    assert index["so_ma_trong_ro"] == 1
+    assert _by_ma(index["loc_san"])["canh_bao"]["ap_dung"] is False
+    assert all(row["kha_dung"] is False for row in index["bo_loc"])
+    assert all("HOSE" in row["ly_do_chua_kha_dung"] for row in index["bo_loc"])
+
+    result = await cap5.san_ma_result(test_user.id, "kl")
+    assert result["kha_dung"] is False
+    assert result["tong_so_ma"] is None
+    assert result["items"] == []
+    assert _by_ma(result["loc_san"])["canh_bao"]["ap_dung"] is False
+    assert src.bars_calls == 0
+
+
+@pytest.mark.asyncio
 async def test_ma_asset_type_null_khong_vao_ro_va_khong_them_duoc(db_session, test_user):
     """★★ I-universe: rổ săn mã và cổng "+ Watchlist" phải NHẤT QUÁN.
 
@@ -1203,8 +1389,8 @@ async def test_moi_ma_trong_ro_san_deu_them_duoc_vao_watchlist(db_session, test_
     await _seed_symbol(db_session, "HNX2", exchange="HNX")
 
     ro = await cap5._universe()
-    assert ro == ["GOOD1", "GOOD2"]
-    for sym in ro:
+    assert ro.symbols == ("GOOD1", "GOOD2")
+    for sym in ro.symbols:
         await cap5.add_watchlist(test_user.id, sym, "kl")  # không được 400
 
 
@@ -1460,6 +1646,66 @@ async def test_nguon_that_tra_none_chu_khong_tra_dict_rong(monkeypatch):
 
     monkeypatch.setattr(hunt_data, "fetch_json", _shape_la)
     assert await src.net_flow(["AAA"], ben="ngoai", so_phien=5) is None
+
+
+@pytest.mark.asyncio
+async def test_nguon_that_doc_dung_ba_nhom_trang_thai_chinh_thuc_hose(monkeypatch):
+    """Adapter chọn nhóm theo tên HOSE, union mã và không kéo nhóm đình chỉ riêng."""
+    from app.services.cap5 import hunt_data
+
+    requested: list[int] = []
+
+    async def _hose(url, **kwargs):  # noqa: ANN001, ANN201
+        if url.endswith("/securities/status-list"):
+            return {
+                "success": True,
+                "data": [
+                    {"id": 33, "name": "CK thuộc diện bị cảnh báo"},
+                    {"id": 34, "name": "CK thuộc diện bị kiểm soát"},
+                    {"id": 38, "name": "CK thuộc diện bị Hạn Chế Giao Dịch"},
+                    {"id": 36, "name": "CK thuộc diện bị Đình chỉ Giao Dịch"},
+                ],
+            }
+        status_id = kwargs["params"]["statusListId"]
+        requested.append(status_id)
+        codes = {33: ["AAA", "DUP"], 34: ["BBB", "DUP"], 38: ["CCC"]}[status_id]
+        rows = [{"securitiesCode": code} for code in codes]
+        return {
+            "success": True,
+            "data": {
+                "list": rows,
+                "paging": {"pageIndex": 1, "pageSize": 1000, "totalCount": len(rows)},
+            },
+        }
+
+    monkeypatch.setattr(hunt_data, "fetch_json", _hose)
+    src = hunt_data.LiveHuntDataSource(use_cache=False, today=_D0)
+    assert await src.restricted_symbols() == {"AAA", "BBB", "CCC", "DUP"}
+    assert sorted(requested) == [33, 34, 38]
+
+
+@pytest.mark.asyncio
+async def test_nguon_trang_thai_hose_bi_cat_thi_tra_none(monkeypatch):
+    """Một trang thiếu hàng không được dùng như danh sách đầy đủ để lọc."""
+    from app.services.cap5 import hunt_data
+
+    async def _hose(url, **_kwargs):  # noqa: ANN001, ANN201
+        if url.endswith("/securities/status-list"):
+            return {
+                "success": True,
+                "data": [{"id": 33, "name": "CK thuộc diện bị cảnh báo"}],
+            }
+        return {
+            "success": True,
+            "data": {
+                "list": [{"securitiesCode": "AAA"}],
+                "paging": {"pageIndex": 1, "pageSize": 1000, "totalCount": 2},
+            },
+        }
+
+    monkeypatch.setattr(hunt_data, "fetch_json", _hose)
+    src = hunt_data.LiveHuntDataSource(use_cache=False, today=_D0)
+    assert await src.restricted_symbols() is None
 
     # Sàn mới chạy 4 phiên trong cửa sổ mà bộ lọc cần 5 ⇒ vẫn là "chưa lọc
     # được", KHÔNG được lấy 4 phiên rồi đếm như đủ.
@@ -1804,6 +2050,110 @@ async def test_nguon_tra_dict_rong_van_phai_ra_chua_du_du_lieu(db_session, test_
 # ══════════════════════════════════════════════════════
 # Watchlist + điểm đồng thuận 5 lớp (§6)
 # ══════════════════════════════════════════════════════
+
+
+@pytest.mark.asyncio
+async def test_watchlist_lay_gia_hien_tai_theo_mot_batch(db_session, test_user):
+    """Mọi thẻ lấy giá bằng một request; % được chuẩn hóa tại market adapter."""
+    calls: list[list[str]] = []
+
+    async def prices(symbols):  # noqa: ANN001, ANN202
+        calls.append(symbols)
+        return (
+            [
+                {
+                    "symbol": "AAA",
+                    "close_price": 27_850,
+                    "reference_price": 27_500,
+                    "percent_change": 350 / 27_500 * 100,
+                },
+                {
+                    "symbol": "BBB",
+                    "close_price": 67_800,
+                    "reference_price": 66_900,
+                    "percent_change": 900 / 66_900 * 100,
+                },
+            ],
+            "test://price-board",
+        )
+
+    cap5, _account, _src = await _enter_cap5(
+        db_session, test_user.id, price_board_fetcher=prices
+    )
+    db_session.add_all(
+        [
+            WatchlistItem(user_id=test_user.id, symbol="AAA", sort_order=0),
+            WatchlistItem(user_id=test_user.id, symbol="BBB", sort_order=1),
+        ]
+    )
+    await db_session.flush()
+
+    result = await cap5.watchlist(test_user.id)
+
+    assert calls == [["AAA", "BBB"]]
+    assert [item["current_price_vnd"] for item in result["items"]] == [27_850, 67_800]
+    assert result["items"][0]["percent_change"] == pytest.approx(350 / 27_500 * 100)
+    assert result["items"][1]["percent_change"] == pytest.approx(900 / 66_900 * 100)
+
+
+@pytest.mark.asyncio
+async def test_watchlist_khong_bia_gia_khi_nguon_thieu_du_lieu(db_session, test_user):
+    """Giá tham chiếu không được thế cho giá hiện tại; thiếu % không thành 0%."""
+
+    async def prices(_symbols):  # noqa: ANN001, ANN202
+        return (
+            [
+                {
+                    "symbol": "AAA",
+                    "close_price": None,
+                    "reference_price": 27_500,
+                    "percent_change": None,
+                },
+                {
+                    "symbol": "BBB",
+                    "close_price": 67_800,
+                    "reference_price": None,
+                    "percent_change": None,
+                },
+            ],
+            "test://price-board",
+        )
+
+    cap5, _account, _src = await _enter_cap5(
+        db_session, test_user.id, price_board_fetcher=prices
+    )
+    db_session.add_all(
+        [
+            WatchlistItem(user_id=test_user.id, symbol="AAA", sort_order=0),
+            WatchlistItem(user_id=test_user.id, symbol="BBB", sort_order=1),
+        ]
+    )
+    await db_session.flush()
+
+    items = (await cap5.watchlist(test_user.id))["items"]
+
+    assert items[0]["current_price_vnd"] is None
+    assert items[0]["percent_change"] is None
+    assert items[1]["current_price_vnd"] == 67_800
+    assert items[1]["percent_change"] is None
+
+
+@pytest.mark.asyncio
+async def test_watchlist_van_tra_du_lieu_khi_bang_gia_loi(db_session, test_user):
+    async def prices(_symbols):  # noqa: ANN001, ANN202
+        raise RuntimeError("VCI unavailable")
+
+    cap5, _account, _src = await _enter_cap5(
+        db_session, test_user.id, price_board_fetcher=prices
+    )
+    db_session.add(WatchlistItem(user_id=test_user.id, symbol="AAA", sort_order=0))
+    await db_session.flush()
+
+    result = await cap5.watchlist(test_user.id)
+
+    assert result["so_luong"] == 1
+    assert result["items"][0]["current_price_vnd"] is None
+    assert result["items"][0]["percent_change"] is None
 
 
 @pytest.mark.asyncio
@@ -2183,6 +2533,102 @@ async def test_consensus_prev_luu_lan_cham_truoc(db_session, test_user):
     assert item["consensus_today"] == 4
     assert item["consensus_prev"] == 3
     assert item["status"] == "notable"
+
+
+@pytest.mark.asyncio
+async def test_khoi_13_giu_moc_tung_dang_chu_y_sau_khi_nguoi_dung_xoa_ma(
+    db_session, test_user
+):
+    """Tầng giữa là lịch sử hành vi, không phải trạng thái Watchlist hiện tại."""
+    cap5, _account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "EVER")
+    await _seed_insight(db_session, "EVER", _AI_4_UNG_HO, day=_phien(1))
+    await _hunt(cap5, test_user.id, "EVER")
+
+    hunt = (
+        await db_session.execute(
+            select(Cap5HuntLog).where(
+                Cap5HuntLog.user_id == test_user.id,
+                Cap5HuntLog.symbol == "EVER",
+            )
+        )
+    ).scalar_one()
+    first_notable_at = hunt.notable_at
+    assert first_notable_at is not None
+
+    # A later score can cool down, but it must not erase the first transition.
+    watch = (
+        await db_session.execute(
+            select(WatchlistItem).where(
+                WatchlistItem.user_id == test_user.id,
+                WatchlistItem.symbol == "EVER",
+            )
+        )
+    ).scalar_one()
+    watch.consensus_at = datetime.now(UTC) - timedelta(days=1)
+    await _seed_insight(db_session, "EVER", _AI_0_UNG_HO)
+    await db_session.flush()
+    assert (await cap5.watchlist(test_user.id))["items"][0]["status"] == "watching"
+    assert hunt.notable_at == first_notable_at
+
+    # Removing the transient Watchlist row also keeps the durable funnel fact.
+    await cap5.remove_watchlist(test_user.id, "EVER")
+    khoi = (await cap5.phan_tich(test_user.id))["khoi_13"]
+    assert khoi["so_ma_da_san"] == 1
+    assert khoi["so_ma_cho_du_lop"] == 1
+    assert khoi["so_ma_da_cham_diem"] == 1
+    assert khoi["so_ma_cho_du_lop_day_du"] is True
+
+
+@pytest.mark.asyncio
+async def test_get_plan_hydrates_cumulative_cap5_source_snapshot(db_session, test_user):
+    cap5, account, _src = await _enter_cap5(db_session, test_user.id)
+    await _seed_symbol(db_session, "PLAN5")
+    await _seed_insight(db_session, "PLAN5", _AI_4_UNG_HO)
+    await _hunt(cap5, test_user.id, "PLAN5")
+    buy = await _mua(db_session, account, test_user.id, "PLAN5")
+    db_session.add(
+        OrderKehoach(
+            order_id=buy.id,
+            lyDo="ky_thuat",
+            trangThai_luc_dat="ung_ho",
+            vung_mua=20_000,
+            khau_vi="can_bang",
+            muc_tu_tin=3,
+            cach_khoi_luong="khau_vi_tu_tin",
+            khoi_luong=100,
+            pct_von=2.0,
+            doc_5_lop=_ALL_NEU,
+            ai_5_lop=_ALL_NEU,
+        )
+    )
+    await db_session.flush()
+    await cap5.record_entry_snapshot(test_user.id, buy.id)
+
+    out = await cap5.get_plan(test_user.id, buy.id)
+    assert out["symbol"] == "PLAN5"
+    assert out["source_known"] is True
+    assert out["tu_san_ma"] is True
+    assert out["from_watchlist"] is True
+    assert out["hunt_filter"] == "kl"
+    assert out["first_hunted_at"] is not None
+    assert out["entry_snapshot_at"] is not None
+    assert out["so_lop_luc_vao"] == 4
+    assert out["so_lop_da_cham_luc_vao"] == 4
+    assert out["consensus_captured_at_entry"] is not None
+    assert out["ly_do_thieu_so_lop"] is None
+
+    watch = (
+        await db_session.execute(
+            select(WatchlistItem).where(WatchlistItem.symbol == "PLAN5")
+        )
+    ).scalar_one()
+    watch.consensus_today = 0
+    watch.consensus_da_cham = 4
+    await db_session.flush()
+    await cap5.record_entry_snapshot(test_user.id, buy.id)
+    frozen = await cap5.get_plan(test_user.id, buy.id)
+    assert frozen["so_lop_luc_vao"] == 4
 
 
 @pytest.mark.asyncio
@@ -2569,9 +3015,8 @@ async def test_khoi_13_phieu_nguoc_ma_da_xoa_khoi_watchlist_van_la_can_duoi(
 ):
     """★★ C1 (phễu ngược): mã đã chín → mua → XOÁ khỏi Watchlist.
 
-    Tầng giữa đọc ``watchlist_items`` còn sống nên nó tụt về 0 trong khi tầng
-    đáy vẫn 1 ⇒ phễu "🔍 3 · 👀 0 · ✅ 1". Con số 0 đó là CẬN DƯỚI, và wire phải
-    nói ra được điều đó (3 mã săn, chỉ 1 mã còn chấm được).
+    Mốc từng chín phải còn là 1 trong khi mẫu số vẫn nói rõ một mã khác chưa
+    từng chấm được. Xoá Watchlist không được xoá lịch sử hành vi.
     """
     cap5, account, _src = await _enter_cap5(db_session, test_user.id)
     for sym in ("CHIN", "XANH", "TRONG"):
@@ -2586,11 +3031,11 @@ async def test_khoi_13_phieu_nguoc_ma_da_xoa_khoi_watchlist_van_la_can_duoi(
     khoi_13 = (await cap5.phan_tich(test_user.id))["khoi_13"]
     assert khoi_13["so_ma_da_san"] == 3
     assert khoi_13["so_ma_vao_lenh"] == 1
-    # Mã đã chín nhưng đã bị xoá khỏi Watchlist ⇒ không đếm được nữa.
-    assert khoi_13["so_ma_cho_du_lop"] == 0
-    assert khoi_13["so_ma_da_cham_diem"] == 1
+    # Mốc từng chín nằm bền vững trong sổ săn dù Watchlist row đã bị xoá.
+    assert khoi_13["so_ma_cho_du_lop"] == 1
+    assert khoi_13["so_ma_da_cham_diem"] == 2
     assert khoi_13["so_ma_cho_du_lop_day_du"] is False
-    assert "1/3" in khoi_13["loi_ket"]
+    assert "2/3" in khoi_13["loi_ket"]
     assert "cận dưới" in khoi_13["loi_ket"].lower()
 
 
@@ -2808,7 +3253,7 @@ async def test_cap5_endpoints_wired_and_free(client, db_session, test_user, monk
     assert bo_loc["ngoai"]["kha_dung"] is False
     assert bo_loc["ngoai"]["ly_do_chua_kha_dung"]
     assert bo_loc["kl"]["kha_dung"] is True
-    assert _by_ma(index["loc_san"])["canh_bao"]["ap_dung"] is False
+    assert _by_ma(index["loc_san"])["canh_bao"]["ap_dung"] is True
 
     r = await client.get("/api/v1/cap5/san-ma/kl", headers=headers)
     assert r.status_code == 200, r.text
@@ -3247,9 +3692,13 @@ def test_migration_round_trip_len_xuong_len_hai_vong():
             ("cap5_progress", _CP),
             ("watchlist_items", _WL),
         ):
-            assert set(cols_lan_1[table]) == {
-                c.name for c in model.__table__.columns
-            }, table
+            model_columns = {c.name for c in model.__table__.columns}
+            if table == "cap5_hunt_log":
+                # ``notable_at`` belongs to the later f2 migration, while
+                # this round-trip intentionally verifies the original
+                # Cấp-5 schema revision in isolation.
+                model_columns.remove("notable_at")
+            assert set(cols_lan_1[table]) == model_columns, table
         # (``order_kehoach`` chỉ được seed ở dạng tối giản trong DDL kiểu-prod
         # của test này, nên chỉ kiểm 2 cột Cấp 5 mà migration thêm vào.)
         for cot in ("from_watchlist", "hunt_filter"):

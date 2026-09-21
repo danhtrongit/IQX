@@ -7,9 +7,11 @@ và ``so_ma_thoa = None`` (KHÔNG phải 0), ``items = []``. "Không có mã nà
 và "chưa lọc được" là hai câu khác hẳn nhau; gộp chúng vào một danh sách rỗng là
 đúng lớp lỗi đã dính 5 lần.
 
-Cùng lý do đó, mỗi tiêu chí của **lọc sàn** tự khai ``ap_dung``: tiêu chí nào
-không có dữ liệu (xem ``LOC_SAN_CANH_BAO`` bên dưới) thì báo là CHƯA áp dụng
-được, chứ không im lặng bỏ qua rồi để dòng minh bạch nói dối là đã lọc.
+Cùng lý do đó, mỗi tiêu chí của **lọc sàn** tự khai ``ap_dung``.
+Trạng thái cảnh báo/kiểm soát/hạn chế được đọc từ danh sách chính thức
+của HOSE qua ``HuntDataSource.restricted_symbols``. Nếu upstream lỗi, toàn bộ
+bộ lọc phải báo ``chua_du_du_lieu``; không được xem trạng thái không rõ là
+bình thường.
 
 ═══════════════════════════════════════════════════════════════════
 BẢN KIỂM DỮ LIỆU (backend IQX, 08/2026) — nguồn của TỪNG bộ lọc
@@ -44,11 +46,9 @@ netVal)``, đơn vị VND). ⇒ đủ dữ liệu cho:
 ``net_flow`` vẫn được phép trả ``None`` (upstream lỗi / cửa sổ không đủ 5
 phiên) — khi đó máy lọc dưới đây nói "chưa lọc được", KHÔNG nói "0 mã thoả".
 
-**Tiêu chí lọc sàn "loại mã diện cảnh báo/kiểm soát/hạn chế giao dịch" cũng
-THIẾU NGUỒN:** không có trường nào trong toàn backend mang trạng thái đó
-(``app.models.symbol.Symbol`` chỉ có ``exchange``/``asset_type``/``is_index``/
-``is_active``). Nó được liệt kê với ``ap_dung=False`` để FE nói thật rằng chưa
-lọc được, thay vì để dòng "Đã lọc: …" hứa hão.
+Tiêu chí "loại mã diện cảnh báo/kiểm soát/hạn chế giao dịch"
+dùng API công khai của chính HOSE. Danh sách được lấy theo nhóm trạng thái,
+trước khi chạy nến/dòng tiền và trước khi cắt top 10.
 """
 
 from __future__ import annotations
@@ -108,18 +108,14 @@ class HuntDataSource(Protocol):
     liệu chỉ phải sửa bản cài (``app.services.cap5.hunt_data``), máy lọc đứng yên.
     """
 
-    async def daily_bars(
-        self, symbols: Sequence[str], *, so_nen: int
-    ) -> dict[str, list[HuntBar]]:
+    async def daily_bars(self, symbols: Sequence[str], *, so_nen: int) -> dict[str, list[HuntBar]]:
         """Nến ngày gần nhất của từng mã, tăng dần theo thời gian.
 
         Mã nào nguồn không trả thì VẮNG khỏi dict (không trả list rỗng giả).
         """
         ...
 
-    async def net_flow(
-        self, symbols: Sequence[str], *, ben: str, so_phien: int
-    ) -> dict[str, list[float]] | None:
+    async def net_flow(self, symbols: Sequence[str], *, ben: str, so_phien: int) -> dict[str, list[float]] | None:
         """Giá trị mua ròng (VND) theo TỪNG phiên, tăng dần theo thời gian.
 
         ``ben`` ∈ {'ngoai', 'tudoanh'}. **Trả ``None`` khi nguồn không lấy được
@@ -129,6 +125,14 @@ class HuntDataSource(Protocol):
         Mã VẮNG khỏi dict = không đủ dữ liệu cho mã đó (≠ mua ròng 0đ). Nguồn
         nào có quyền dịch "không có hàng" thành 0đ là việc của bản cài — xem
         ``hunt_data._NguonDongTien.khuyet_la_khong``.
+        """
+        ...
+
+    async def restricted_symbols(self) -> set[str] | None:
+        """Mã HOSE đang bị cảnh báo/kiểm soát/hạn chế giao dịch.
+
+        Trả ``None`` khi không xác minh được danh sách chính thức. Tập rỗng là
+        một kết quả hợp lệ và có nghĩa là HOSE không có mã thuộc ba diện này.
         """
         ...
 
@@ -180,10 +184,7 @@ FILTER_SPECS: dict[str, FilterSpec] = {
         icon="📊",
         ten=HUNT_FILTER_LABELS[HuntFilter.KL.value],
         mo_ta="Khối lượng bùng nổ so với thường ngày",
-        dieu_kien=(
-            f"Khối lượng phiên gần nhất ≥ {NGUONG_KL_DOT_BIEN:.0f}× trung bình "
-            f"{SO_PHIEN_TB} phiên"
-        ),
+        dieu_kien=(f"Khối lượng phiên gần nhất ≥ {NGUONG_KL_DOT_BIEN:.0f}× trung bình {SO_PHIEN_TB} phiên"),
         xep_hang_theo=f"Số lần vượt trung bình (KL ÷ TB{SO_PHIEN_TB})",
         nguon_du_lieu=f"Nến ngày {SO_NEN_CAN} phiên (khối lượng)",
     ),
@@ -243,9 +244,7 @@ def _thieu_nen(so_ma: int) -> str:
     một phiên thị trường buồn. Hai câu đó khác nhau hoàn toàn.
     """
     if so_ma == 0:
-        return (
-            "Rổ mã HOSE đang rỗng — chưa lọc được, KHÔNG phải là không có mã nào thoả."
-        )
+        return "Rổ mã HOSE đang rỗng — chưa lọc được, KHÔNG phải là không có mã nào thoả."
     return (
         f"Không lấy được nến ngày cho bất kỳ mã nào trong rổ {so_ma} mã HOSE "
         f"(cần {SO_NEN_CAN} phiên/mã) — nguồn dữ liệu giá đang không trả về. "
@@ -292,7 +291,7 @@ class HuntResult:
     items: list[dict]
 
 
-def loc_san_tieu_chi() -> list[dict]:
+def loc_san_tieu_chi(*, canh_bao_ap_dung: bool = False) -> list[dict]:
     """4 tiêu chí lọc sàn + tiêu chí nào đang áp dụng được thật (spec §5.2)."""
     return [
         {
@@ -319,11 +318,16 @@ def loc_san_tieu_chi() -> list[dict]:
         {
             "ma": LOC_SAN_CANH_BAO,
             "ten": "Loại mã diện cảnh báo / kiểm soát / hạn chế giao dịch",
-            "ap_dung": False,
+            "ap_dung": canh_bao_ap_dung,
             "giai_thich": (
-                "CHƯA lọc được: backend không lưu trạng thái diện cảnh báo/kiểm "
-                "soát/hạn chế của mã. Danh sách dưới đây có thể còn sót mã thuộc "
-                "các diện này."
+                "Danh sách trạng thái hiện hành lấy trực tiếp từ API công khai "
+                "của HOSE; mã thuộc ba diện bị loại trước khi xếp hạng."
+                if canh_bao_ap_dung
+                else (
+                    "CHƯA lọc được: API danh sách theo dõi đặc biệt của HOSE "
+                    "không trả dữ liệu hợp lệ. Không có kết quả săn mã nào được "
+                    "công bố trong trạng thái này."
+                )
             ),
         },
     ]
@@ -360,6 +364,11 @@ class HuntEngine:
 
     def __init__(self, source: HuntDataSource) -> None:
         self._source = source
+
+    @classmethod
+    def unavailable(cls, bo_loc: str, ly_do: str, *, so_ma_trong_ro: int) -> HuntResult:
+        """Dựng kết quả fail-closed khi một điều kiện nền thiếu dữ liệu."""
+        return cls._chua_du_du_lieu(FILTER_SPECS[bo_loc], ly_do, so_ma_trong_ro=so_ma_trong_ro)
 
     # ── Lọc sàn ───────────────────────────────────────
 
@@ -533,9 +542,7 @@ class HuntEngine:
         if not universe:
             return False, _thieu_nen(0)
         if bo_loc in FILTER_DONG_TIEN:
-            flows = await self._source.net_flow(
-                universe, ben=FILTER_DONG_TIEN[bo_loc], so_phien=SO_PHIEN_GOM
-            )
+            flows = await self._source.net_flow(universe, ben=FILTER_DONG_TIEN[bo_loc], so_phien=SO_PHIEN_GOM)
             if flows is None:
                 return False, _THIEU_NGUON_DONG_TIEN
             # ★ Nguồn trả lời nhưng không mã nào có đủ chuỗi ⇒ vẫn là "chưa lọc
@@ -577,9 +584,7 @@ class HuntEngine:
         # ★ LUẬT 1: không mã nào có dữ liệu để XÉT ⇒ chưa lọc được. Nếu để rơi
         # xuống dưới, ``so_ma_thoa`` = 0 và popup sẽ nói "0 mã thoả điều kiện".
         if so_bo_qua == len(universe):
-            return self._chua_du_du_lieu(
-                spec, _thieu_nen(len(universe)), so_ma_trong_ro=len(universe)
-            )
+            return self._chua_du_du_lieu(spec, _thieu_nen(len(universe)), so_ma_trong_ro=len(universe))
         return self._ket_qua(
             spec,
             cham,
@@ -590,9 +595,7 @@ class HuntEngine:
         )
 
     @staticmethod
-    def _co_chuoi_dung_duoc(
-        flows: dict[str, list[float]], universe: Sequence[str]
-    ) -> bool:
+    def _co_chuoi_dung_duoc(flows: dict[str, list[float]], universe: Sequence[str]) -> bool:
         """Có mã nào trong rổ có chuỗi mua ròng đủ ``SO_PHIEN_GOM`` phiên không."""
         return any(len(flows.get(s) or ()) >= SO_PHIEN_GOM for s in universe)
 
@@ -601,16 +604,12 @@ class HuntEngine:
         flows = await self._source.net_flow(universe, ben=ben, so_phien=SO_PHIEN_GOM)
         if flows is None:
             # ★ LUẬT 1: chưa lọc được ≠ không có mã nào thoả.
-            return self._chua_du_du_lieu(
-                spec, _THIEU_NGUON_DONG_TIEN, so_ma_trong_ro=len(universe)
-            )
+            return self._chua_du_du_lieu(spec, _THIEU_NGUON_DONG_TIEN, so_ma_trong_ro=len(universe))
         # ★ Dừng TRƯỚC khi quét nến cả sàn: nguồn dòng tiền không dùng được thì
         # 406 mã nến cũng không giúp gì, và kết luận đã chắc chắn là "chưa lọc
         # được". (Bất biến này được canh bằng ``bars_calls`` trong test.)
         if not self._co_chuoi_dung_duoc(flows, universe):
-            return self._chua_du_du_lieu(
-                spec, _thieu_chuoi_dong_tien(len(universe)), so_ma_trong_ro=len(universe)
-            )
+            return self._chua_du_du_lieu(spec, _thieu_chuoi_dong_tien(len(universe)), so_ma_trong_ro=len(universe))
 
         bars_map = await self._source.daily_bars(universe, so_nen=SO_NEN_CAN)
         cham: list[tuple[float, str, str, float, float | None]] = []
@@ -643,9 +642,7 @@ class HuntEngine:
 
         # ★ LUẬT 1 — xem chú thích cùng chỗ trong ``_run_bars``.
         if so_bo_qua == len(universe):
-            return self._chua_du_du_lieu(
-                spec, _thieu_nen(len(universe)), so_ma_trong_ro=len(universe)
-            )
+            return self._chua_du_du_lieu(spec, _thieu_nen(len(universe)), so_ma_trong_ro=len(universe))
         return self._ket_qua(
             spec,
             cham,

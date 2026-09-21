@@ -10,12 +10,10 @@ import type { Cap6Progress } from "./types"
  * Cổng duy nhất do server công bố là ba lần xử lý mâu thuẫn nhất quán. Số lần có
  * phủ quyết vẫn là phân tích mô tả, không phải mục tiêu hay điều kiện hoàn thành.
  */
-const { useCap6ProgressMock, setActivePanelMock, capFlags } = vi.hoisted(() => ({
+const { useCap6ProgressMock, setActivePanelMock } = vi.hoisted(() => ({
   useCap6ProgressMock: vi.fn(),
   setActivePanelMock: vi.fn(),
-  // ★★ MẶC ĐỊNH = TRẦN THẬT (`CAP_MAX_ENABLED` đang là 8 ⇒ Cấp 7 đã mở). Bài
-  // canh nhánh "chưa mở" tự đặt `capFlags.max = 5`.
-  capFlags: { max: 8 },
+
 }))
 
 vi.mock("./hooks", () => ({
@@ -23,11 +21,6 @@ vi.mock("./hooks", () => ({
 }))
 vi.mock("@/shared/contexts/sidebar-context", () => ({
   useSidebar: () => ({ activePanel: "journey", setActivePanel: setActivePanelMock }),
-}))
-vi.mock("@/features/cap1/capFlags", () => ({
-  get CAP_MAX_ENABLED() {
-    return capFlags.max
-  },
 }))
 
 import { JourneyPanelCap6, taskStateCap6 } from "./JourneyPanelCap6"
@@ -62,7 +55,6 @@ beforeEach(() => {
   useCap6ProgressMock.mockReset()
   useCap6ProgressMock.mockReturnValue({ data: makeProgress() })
   setActivePanelMock.mockClear()
-  capFlags.max = 8
 })
 
 describe("JourneyPanelCap6 — thẻ cấp + nhiệm vụ duy nhất (mockup)", () => {
@@ -76,7 +68,7 @@ describe("JourneyPanelCap6 — thẻ cấp + nhiệm vụ duy nhất (mockup)", 
   it("checklist header 0/1 và đúng MỘT nhiệm vụ", () => {
     renderPanel()
     expect(screen.getByTestId("cap6-journey-header")).toHaveTextContent(
-      "TRƯỚC KHI LÊN CẤP 7 · 0/1",
+      "HOÀN THÀNH CẤP 6 · 0/1",
     )
     expect(screen.getByTestId("cap6-task-1")).toBeInTheDocument()
     expect(screen.queryByTestId("cap6-task-2")).toBeNull()
@@ -91,21 +83,6 @@ describe("JourneyPanelCap6 — thẻ cấp + nhiệm vụ duy nhất (mockup)", 
       "1/3 lần xử lý nhất quán",
     )
     expect(screen.queryByTestId("cap6-journey-prog-veto")).toBeNull()
-  })
-
-  it("mô tả nhiệm vụ đúng chữ mockup", () => {
-    renderPanel()
-    expect(screen.getByTestId("cap6-task-1")).toHaveTextContent(
-      'Đọc "nghiêm trọng" thì mua nhỏ hoặc không mua',
-    )
-  })
-
-  it("§C12c — giải thích tiến độ do server chốt và KHÔNG đo lãi", () => {
-    renderPanel()
-    const why = screen.getByTestId("cap6-journey-why")
-    expect(why).toHaveTextContent("do hệ thống chốt từ chính các lệnh của bạn")
-    expect(why).toHaveTextContent("KHÔNG đo lãi")
-    expect(why.textContent).not.toContain("phủ quyết")
   })
 
   it("★ KHÔNG khoe lãi ở tab Hành trình (spec §11: chỉ ở Kết sổ/Phân tích)", () => {
@@ -162,57 +139,36 @@ describe("taskStateCap6", () => {
     })
     renderPanel()
     expect(screen.getByTestId("cap6-journey-header")).toHaveTextContent(
-      "TRƯỚC KHI LÊN CẤP 7 · 1/1",
+      "HOÀN THÀNH CẤP 6 · 1/1",
     )
     expect(screen.queryByRole("button", { name: /Làm ngay/ })).toBeNull()
   })
 })
 
-describe("JourneyPanelCap6 — ô mục tiêu ở HAI PHÍA của trần cấp", () => {
-  it("trần < 7: nói THẲNG Cấp 7 chưa ra mắt, KHÔNG hứa mở Cấp 7", () => {
-    capFlags.max = 5
+describe("JourneyPanelCap6 — hoàn thành lộ trình khi đã tốt nghiệp", () => {
+  it("vừa vào Cấp 6 chưa được coi là hoàn thành", () => {
     renderPanel()
-    const goal = screen.getByTestId("cap6-journey-goal")
-    expect(goal).toHaveTextContent("Cấp 7 chưa ra mắt")
-    expect(goal).toHaveTextContent("chặng cuối của chương trình hiện tại")
-    expect(goal.textContent).not.toContain("mở Cấp 7")
+    expect(screen.queryByTestId("cap6-journey-goal")).not.toBeInTheDocument()
+    expect(visibleText()).not.toContain("Bạn đã hoàn thành lộ trình")
+    expect(visibleText()).not.toMatch(/Cấp [78]|sắp ra mắt|chưa ra mắt/)
   })
 
-  it("trần ≥ 7: hứa mở Cấp 7", () => {
-    capFlags.max = 7
+  it("đủ bộ đếm nhưng chưa lưu tốt nghiệp chưa hiện trạng thái đã hoàn thành", () => {
+    useCap6ProgressMock.mockReturnValue({ data: makeProgress({ so_lan_xu_ly_nhat_quan: 3 }) })
     renderPanel()
-    const goal = screen.getByTestId("cap6-journey-goal")
-    expect(goal).toHaveTextContent("mở Cấp 7")
-    expect(goal.textContent).not.toContain("chưa ra mắt")
+    expect(screen.getByTestId("cap6-journey-header")).toHaveTextContent("HOÀN THÀNH CẤP 6 · 1/1")
+    expect(visibleText()).not.toContain("Bạn đã hoàn thành lộ trình")
   })
 
-  it("★ trần đọc trong HÀM: đổi trần giữa hai lần render là đổi câu chữ", () => {
-    capFlags.max = 5
-    const { unmount } = renderPanel()
-    expect(screen.getByTestId("cap6-journey-goal")).toHaveTextContent("chưa ra mắt")
-    unmount()
-    capFlags.max = 7
+  it("đã tốt nghiệp giữ tên Cấp 6 và đường tới tính năng hiện có", () => {
+    useCap6ProgressMock.mockReturnValue({
+      data: makeProgress({ so_lan_xu_ly_nhat_quan: 3, graduated_at: "2026-09-13T01:00:00Z" }),
+    })
     renderPanel()
-    expect(screen.getByTestId("cap6-journey-goal")).toHaveTextContent("mở Cấp 7")
-  })
-
-  /**
-   * ★★★ KHÔNG HỨA SAI THỨ CẤP SAU THẬT SỰ DẠY.
-   *
-   * Mockup `iqx-cap6-hanhtrinh.html` viết ô mục tiêu là "mở **Cấp 7** (quản trị
-   * cả danh mục nhiều mã)". Nhưng spec §3 cố tình KHÔNG tiết lộ chủ đề Cấp 7
-   * ("Chủ đề sẽ hé lộ khi bạn tới gần"), và Cấp 7 trong repo hôm nay là «Đọc sổ
-   * lệnh» — không phải quản trị danh mục nhiều mã. Nên câu trong ngoặc của mockup
-   * KHÔNG được dùng: nó là một lời hứa sai.
-   */
-  it("★ KHÔNG nói chủ đề Cấp 7 (mockup đoán sai chủ đề)", () => {
-    capFlags.max = 7
-    renderPanel()
-    const goal = screen.getByTestId("cap6-journey-goal")
-    expect(goal).toHaveTextContent("mở Cấp 7")
-    for (const tu of ["quản trị cả danh mục", "nhiều mã", "sổ lệnh", "đọc lực"]) {
-      expect(goal.textContent).not.toContain(tu)
-    }
+    expect(screen.getByTestId("cap6-journey-header")).toHaveTextContent("ĐÃ HOÀN THÀNH LỘ TRÌNH")
+    expect(screen.queryByTestId("cap6-journey-goal")).not.toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /Xem Phân tích danh mục/ })).toBeEnabled()
+    expect(visibleText()).not.toMatch(/Cấp [78]|sắp ra mắt|chưa ra mắt/)
   })
 })
 

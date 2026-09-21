@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router"
 import {
   Button,
@@ -25,6 +24,7 @@ import {
 } from "@arco-design/web-react/icon"
 import { usePrice, type PriceBoardData } from "@/features/market-data"
 import { useSymbol } from "@/shared/contexts/symbol-context"
+import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { AiInsightDetailModal } from "@/features/dau-truong"
 import { useAuth } from "@/features/auth"
 import { usePremiumStatus } from "@/features/premium"
@@ -40,16 +40,21 @@ import {
   PlanFormCap1,
   isKehoachValid,
   useCap1Events,
+  useCap1Progress,
   useRecordKehoach,
   verdictToTrangThai,
   type LyDo,
   type Verdict,
 } from "@/features/cap1"
 import {
+  NhoiLenhWarning,
   SlTpBlock,
   isSlTpValid,
+  useActOnCap2Alert,
+  useCheckCap2PreBuyAlert,
   useCap2Events,
   useRecordKehoachCap2,
+  type Cap2Alert,
   type PhuongPhapSlTp,
 } from "@/features/cap2"
 import {
@@ -87,8 +92,6 @@ import {
   useSkipCap6,
   type ConflictLevel,
 } from "@/features/cap6"
-import { cap7Keys, useCap7Events } from "@/features/cap7"
-import { cap8Api, cap8Keys, useCap8Active } from "@/features/cap8"
 import { getErrorMessage } from "@/shared/http/client"
 import { cn } from "@/shared/lib/cn"
 import { StockLogo } from "@/features/navigation/StockLogo"
@@ -98,7 +101,14 @@ import {
   useSymbolInfo,
 } from "@/features/watchlist"
 import { dispatchFilledSellCloseouts } from "./filledSellCloseout"
-import { useAccount, usePortfolio, usePlaceOrder, useActivateAccount } from "./hooks"
+import { actualCapitalPct } from "./orderSnapshot"
+import {
+  useAccount,
+  usePortfolio,
+  usePlaceOrder,
+  useActivateAccount,
+  type PlaceOrderInput,
+} from "./hooks"
 import "./order-panel.css"
 
 /**
@@ -109,8 +119,8 @@ import "./order-panel.css"
  * và có chrome riêng — thẻ tối cứng này đặt vào đó là chửi nhau.
  *
  * ★★ ĐÍNH CHÍNH (08/2026) — bản trước loại trừ Cấp 2 trở lên bằng
- * `isCap1Active && !isCap2Active`, với lý do: phiên Cấp 2→8 cũng có
- * `isCap1Active === true`, nên áo sẽ lan tới Cấp 8 — nơi panel còn có SL/TP,
+ * `isCap1Active && !isCap2Active`, với lý do: phiên Cấp 2→6 cũng có
+ * `isCap1Active === true`, nên áo sẽ lan tới Cấp 6 — nơi panel còn có SL/TP,
  * Quản lý vốn, Đọc 5 lớp… mà mockup Cấp 0/1 không vẽ, cho ra "nửa thẻ áo mới,
  * nửa thẻ áo Arco cũ".
  *
@@ -264,8 +274,8 @@ function OrderEntry({
   onPremiumRequired: OnPremiumRequired
 }) {
   const navigate = useNavigate()
+  const { setActivePanel } = useSidebar()
   const placeOrder = usePlaceOrder()
-  const queryClient = useQueryClient()
   const cap0Events = useCap0Events()
   // `isCap0Active` is the SAME signal `GatedOrderEntry` uses to ungate the
   // form (false outside a `Cap0Provider`, i.e. on /bieu-do & /co-phieu) — the
@@ -311,7 +321,24 @@ function OrderEntry({
   // `isCap1Active` true (Cấp 2 reuses Cấp 1's Form Kế hoạch 100% intact,
   // spec §0).
   const { isCap2Active } = cap2Events
+  // The three product tours are a one-time Cấp 1 entry gate. Later levels
+  // inherit the plan form, but must never be sent back through onboarding.
+  const { data: cap1Progress } = useCap1Progress(isCap1Active && !isCap2Active)
   const recordKehoachCap2 = useRecordKehoachCap2()
+  const checkCap2PreBuyAlert = useCheckCap2PreBuyAlert()
+  const actOnCap2Alert = useActOnCap2Alert()
+  const approvedCap2AlertRef = useRef<{
+    alertId: string
+    draftSignature: string
+  } | null>(null)
+  const cap2PreBuyAttemptKeyRef = useRef<string | null>(null)
+  const cap2PreBuyInFlightRef = useRef(false)
+  const [pendingNhoiLenh, setPendingNhoiLenh] = useState<{
+    alert: Cap2Alert
+    intendedQuantity: number
+    intendedPrice: number
+    draftSignature: string
+  } | null>(null)
   // Cấp 2 khối "Cắt lỗ / Chốt lời" (spec §5.4) — KHÔNG nhập tay tự do, only
   // ever set via `SlTpBlock`'s "Chọn cách này".
   const [cap2Method, setCap2Method] = useState<PhuongPhapSlTp | null>(null)
@@ -334,8 +361,6 @@ function OrderEntry({
   // AI gợi ý, spec §6.2) + 1 trong 2 cách khối lượng.
   const [cap3MucTuTin, setCap3MucTuTin] = useState<MucTuTin | null>(null)
   const [cap3Cach, setCap3Cach] = useState<CachKhoiLuong | null>(null)
-  const [cap3KhoiLuong, setCap3KhoiLuong] = useState<number | null>(null)
-  const [cap3PctVon, setCap3PctVon] = useState<number | null>(null)
   // Ô Khối lượng: tự điền theo khối lượng đề xuất, NHƯNG user sửa tay được
   // (spec §6.3). Một lần user tự sửa thì thôi ghi đè — tới khi họ đổi mức tự
   // tin / cách khối lượng (một ý định mới) thì auto-fill lại.
@@ -372,7 +397,6 @@ function OrderEntry({
   // khối "Đối chiếu" below, which itself renders ONLY when the user's 5 lớp
   // conflict. With no conflict Cấp 6 adds NO gate at all.
   const { isCap6Active } = cap6Events
-  const { isCap7Active } = useCap7Events()
   const isCap6BacThay = isCap6Active
   // Cùng một query mà `MauThuanBlock` render (react-query gộp theo key ⇒ MỘT
   // request, không phải hai): panel cần bản đọc này để suy ra lý do Cấp 1 và để
@@ -387,8 +411,19 @@ function OrderEntry({
   const [cap6KhongMua, setCap6KhongMua, resetCap6KhongMua] = useLuaChonTheoMa<true>(symbol)
   const recordKehoachMauThuanCap6 = useRecordKehoachMauThuanCap6()
   const skipCap6 = useSkipCap6()
-  const isCap8Active = useCap8Active()
   const [method, setMethod] = useState<"market" | "limit">("market")
+  const consumedSellIntentRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!cap2Events.sellIntent) {
+      consumedSellIntentRef.current = null
+      return
+    }
+    if (cap2Events.sellIntent.symbol !== symbol.toUpperCase()) return
+    if (consumedSellIntentRef.current === cap2Events.sellIntent.symbol) return
+    consumedSellIntentRef.current = cap2Events.sellIntent.symbol
+    setMethod(cap2Events.sellIntent.method)
+    cap2Events.consumeSellIntent()
+  }, [cap2Events, symbol])
   const [price, setPrice] = useState<number | undefined>(undefined)
   const [volume, setVolume] = useState<number>(100)
   // Cấp 0 khối "Kế hoạch" — chip lý do đời thường.
@@ -445,6 +480,11 @@ function OrderEntry({
    */
   const cap6KhongMuaKhaDung = side === "buy" && isCap6BacThay && coBangMauThuan(cap6MauThuan)
   const effectiveLyDo = cap6LyDoSuyRa ?? cap4LyDo ?? cap1LyDo
+  const cap1TourSubmitDisabled =
+    side === "buy" &&
+    isCap1Active &&
+    !isCap2Active &&
+    cap1Progress?.da_xem_tour === false
   // Cổng cứng (spec §4): MUA disabled unless (lý do chosen/derived) AND (vùng
   // mua > 0). Only ever true for a BUY inside Cấp 1 — never affects Cấp 0 or
   // normal trading (`isCap1Active` is false outside a `Cap1Provider`).
@@ -469,7 +509,10 @@ function OrderEntry({
   // (spec §5.2 thay nó bằng bảng mâu thuẫn), nên giữ cổng cứng này lại sẽ khoá
   // vĩnh viễn nút MUA — không có ô nào để chấm cho nó mở ra.
   const cap4SubmitDisabled =
-    side === "buy" && isCap4Active && !isCap6BacThay && !isDoc5LopComplete(cap4Doc5Lop)
+    side === "buy" &&
+    isCap4Active &&
+    !isCap6BacThay &&
+    !isDoc5LopComplete(cap4Doc5Lop)
   // Analytics `cap4_lo_ai(so_khac_ai)` (spec §8) — fires once per reveal, when
   // `Doc5LopBlock` reports the AI đối chiếu it just un-hid. By the time this
   // effect runs, `cap4Doc5Lop` is already the completed 5-lớp map (same render
@@ -517,6 +560,10 @@ function OrderEntry({
       cap0Events.onGbarWarn?.()
       return
     }
+    if (cap1TourSubmitDisabled) {
+      Message.warning("Xem nhanh 3 tour sản phẩm để bắt đầu (khoảng 3 phút).")
+      return
+    }
     // Cấp 1 Form Kế hoạch cổng cứng (spec §4) — belt-and-suspenders behind
     // the Submit button's own `disabled` (a user could still reach this via
     // Enter/programmatic click). ONLY inside Cấp 1 — never affects Cấp 0 or
@@ -551,15 +598,130 @@ function OrderEntry({
       return
     }
 
+    // Cấp 2 §9: this check MUST happen before POST /virtual-trading/orders.
+    // The backend owns loss detection, quota, auto-mute and escalation. A
+    // previously accepted `proceed_buy` is consumed exactly once so resuming
+    // this same submit does not create another alert event.
+    const limitPriceVnd = method === "limit" ? numPrice : null
+    const draftSignature = JSON.stringify([
+      symbol,
+      method,
+      numVolume,
+      limitPriceVnd,
+    ])
+    const approvedAlert = approvedCap2AlertRef.current
+    approvedCap2AlertRef.current = null
+    const approvedAlertId =
+      approvedAlert?.draftSignature === draftSignature ? approvedAlert.alertId : null
+    let boundNhoiLenhAlertId = approvedAlertId
+    if (side === "buy" && isCap2Active && approvedAlertId == null) {
+      if (cap2PreBuyInFlightRef.current) return
+      cap2PreBuyInFlightRef.current = true
+      try {
+        const attemptKey =
+          cap2PreBuyAttemptKeyRef.current ??
+          `cap2-${globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`}`
+        cap2PreBuyAttemptKeyRef.current = attemptKey
+        const result = await checkCap2PreBuyAlert.mutateAsync({
+          symbol,
+          idempotency_key: attemptKey,
+          quantity: numVolume,
+          order_type: method,
+          limit_price_vnd: limitPriceVnd,
+        })
+        if (result.triggered && result.alert) {
+          if (result.alert.status === "shown") {
+            setPendingNhoiLenh({
+              alert: result.alert,
+              intendedQuantity: numVolume,
+              intendedPrice: numPrice,
+              draftSignature,
+            })
+            return
+          }
+          // A suppressed trigger consumes no UI impression, but the attempted
+          // violation must still be recorded so clean-10 auto-mute re-enables
+          // this alert type for the next attempt.
+          if (
+            result.alert.status === "suppressed" &&
+            result.alert.suppression_reason === "auto_mute_last_10_clean"
+          ) {
+            await actOnCap2Alert.mutateAsync({
+              alertId: result.alert.id,
+              action: "proceed_buy",
+            })
+            boundNhoiLenhAlertId = result.alert.id
+          }
+        }
+        cap2PreBuyAttemptKeyRef.current = null
+        if (result.data_status === "unavailable") {
+          Message.warning("Chưa kiểm tra được cảnh báo nhồi lệnh; lệnh vẫn có thể tiếp tục.")
+        }
+      } catch {
+        // Cảnh báo là can thiệp mềm, không phải cổng giao dịch. Một endpoint
+        // cảnh báo lỗi không được biến thành hard block hoặc khiến user submit
+        // lại cùng lệnh mà không biết trạng thái.
+        Message.warning("Chưa kiểm tra được cảnh báo nhồi lệnh; lệnh vẫn có thể tiếp tục.")
+        cap2PreBuyAttemptKeyRef.current = null
+      } finally {
+        cap2PreBuyInFlightRef.current = false
+      }
+    }
+
     const label = side === "buy" ? "MUA" : "BÁN"
     try {
+      let journeyPlan: PlaceOrderInput["journeyPlan"]
+      if (side === "buy" && isCap0Active && !isCap1Active && reason) {
+        journeyPlan = { ly_do_doi_thuong: reason }
+      } else if (side === "buy" && isCap1Active && effectiveLyDo && cap1VungMua) {
+        journeyPlan = {
+          lyDo: effectiveLyDo,
+          trangThai_luc_dat: verdictToTrangThai(cap1Verdict ?? "trung_tinh"),
+          vung_mua: cap1VungMua,
+          co_bam_doc_chi_tiet: cap1DocChiTiet,
+          snapshot: cap1Snapshot,
+          ...(isCap2Active && cap2Method && cap2CatLo && cap2ChotLoi
+            ? {
+                phuong_phap_sl_tp: cap2Method,
+                cat_lo: cap2CatLo,
+                chot_loi: cap2ChotLoi,
+                ...(boundNhoiLenhAlertId
+                  ? { nhoi_lenh_alert_id: boundNhoiLenhAlertId }
+                  : {}),
+              }
+            : {}),
+          ...(isCap3Active && cap3Progress?.khau_vi && cap3MucTuTin && cap3Cach
+            ? {
+                khau_vi: cap3Progress.khau_vi,
+                muc_tu_tin: cap3MucTuTin,
+                cach_khoi_luong:
+                  cap3Cach === "linh_hoat" ? ("khau_vi_tu_tin" as const) : ("chia_deu" as const),
+              }
+            : {}),
+          ...(isCap4Active && !isCap6BacThay && isDoc5LopComplete(cap4Doc5Lop)
+            ? {
+                doc_5_lop: cap4Doc5Lop as Record<string, "ok" | "neu" | "bad">,
+              }
+            : {}),
+          ...(isCap6BacThay && coBangMauThuan(cap6MauThuan) && cap6NhanDinh
+            ? { conflict_level: cap6NhanDinh }
+            : {}),
+        }
+      }
       const order = await placeOrder.mutateAsync({
         symbol,
         side,
         method,
         quantity: numVolume,
         price: numPrice,
+        journeyPlan,
       })
+      const cap3PctVonThucTe = actualCapitalPct(
+        order.quantity,
+        order.price,
+        cap3Progress?.von_ban_dau,
+      )
+      const orderFilled = order.status.toLowerCase() === "filled"
       // `order.side` is a plain `string` off the wire (backend returns
       // "BUY"/"SELL"); the bus's `Cap0OrderEvent.side` is the UI's own
       // lowercase `"buy" | "sell"` union, so build the event from the local
@@ -569,16 +731,18 @@ function OrderEntry({
       // trading backend never persists them and the later Kết sổ needed them.
       // v3.0 removes cắt lỗ/chốt lời from Cấp 0 entirely, so there is nothing
       // to attach (see `Cap0OrderEvent`).
-      cap0Events.onOrderFilled?.({
-        // ★ `Gbar` files this against the symbol and hands it to the Kết sổ as
-        // `buyOrderId` — the key `GET /cap0/kehoach?order_id=` reads the chip
-        // back under, i.e. the same order the chip was POSTed for just below.
-        orderId: order.id,
-        symbol,
-        side,
-        quantity: order.quantity,
-        price: order.price,
-      })
+      if (orderFilled) {
+        cap0Events.onOrderFilled?.({
+          // ★ `Gbar` files this against the symbol and hands it to the Kết sổ as
+          // `buyOrderId` — the key `GET /cap0/kehoach?order_id=` reads the chip
+          // back under, i.e. the same order the chip was POSTed for just below.
+          orderId: order.id,
+          symbol,
+          side,
+          quantity: order.quantity,
+          price: order.price,
+        })
+      }
       // Cấp 0 (spec §10 "Bảng `cap0_order_kehoach`") — persist the chip the
       // user picked in the khối Kế hoạch so the Kết sổ's `Lý do mua` row
       // survives a reload (bus-only would be lost, the exact class of bug that
@@ -592,7 +756,8 @@ function OrderEntry({
       // failure, skip the form reset, and — worst — swallow the whole
       // `onOrderFilled` chain below, so no cấp's Kết sổ would ever open again
       // (`7a057a3`). Losing one bookkeeping row is the small, honest loss.
-      if (side === "buy" && isCap0Active && !isCap1Active && reason) {
+      const savedLevels = new Set(order.journeyPlanSavedLevels ?? [])
+      if (side === "buy" && isCap0Active && !isCap1Active && reason && !savedLevels.has(0)) {
         await ghiKehoachKhongChiMang(() =>
           recordCap0Kehoach.mutateAsync({ orderId: order.id, lyDoDoiThuong: reason }),
         )
@@ -638,18 +803,23 @@ function OrderEntry({
         // có mâu thuẫn thì không có gì để nhận định.
         const cap6BacThayReady =
           isCap6BacThay && coBangMauThuan(cap6MauThuan) && cap6NhanDinh != null
-        if (cap2Ready || cap4Ready || cap6BacThayReady) {
-          await ghiKehoachKhongChiMang(() => recordKehoach.mutateAsync(kehoachPayload))
-          if (isCap2Active && cap2Method && cap2CatLo && cap2ChotLoi) {
-            await ghiKehoachKhongChiMang(() =>
-              recordKehoachCap2.mutateAsync({
-                order_id: order.id,
-                phuong_phap_sl_tp: cap2Method,
-                cat_lo: cap2CatLo,
-                chot_loi: cap2ChotLoi,
-              }),
-            )
+        if (!savedLevels.has(1)) {
+          if (cap2Ready || cap4Ready || cap6BacThayReady) {
+            await ghiKehoachKhongChiMang(() => recordKehoach.mutateAsync(kehoachPayload))
+          } else {
+            recordKehoach.mutate(kehoachPayload)
           }
+        }
+        if (isCap2Active && cap2Method && cap2CatLo && cap2ChotLoi && !savedLevels.has(2)) {
+          await ghiKehoachKhongChiMang(() =>
+            recordKehoachCap2.mutateAsync({
+              order_id: order.id,
+              phuong_phap_sl_tp: cap2Method,
+              cat_lo: cap2CatLo,
+              chot_loi: cap2ChotLoi,
+            }),
+          )
+        }
           // Cấp 3 (spec §6 "Ghi hồ sơ") — same chained-await reason as Cấp 2:
           // `/cap3/kehoach` extends the SAME `order_kehoach` row, so it must
           // fire only AFTER Cấp 1's (and Cấp 2's) POST has created/updated it.
@@ -659,8 +829,8 @@ function OrderEntry({
             cap3KhauVi &&
             cap3MucTuTin &&
             cap3Cach &&
-            cap3KhoiLuong != null &&
-            cap3PctVon != null
+            cap3PctVonThucTe != null &&
+            !savedLevels.has(3)
           ) {
             await ghiKehoachKhongChiMang(() =>
               recordKehoachCap3.mutateAsync({
@@ -668,29 +838,21 @@ function OrderEntry({
                 khau_vi: cap3KhauVi,
                 muc_tu_tin: cap3MucTuTin,
                 cach_khoi_luong: cap3Cach,
-                khoi_luong: cap3KhoiLuong,
-                pct_von: cap3PctVon,
+                // User may edit the suggested quantity. The learning snapshot
+                // must describe the order that was actually accepted, using
+                // the fill/limit price returned by the trading engine.
+                khoi_luong: order.quantity,
+                pct_von: cap3PctVonThucTe,
               }),
             )
           }
-          if (side === "buy" && isCap8Active && cap2Ready) {
-            // The Cấp 8 aggregate-position plan is only valid after the same
-            // `order_kehoach` row has its Cấp 2 and Cấp 3 commitments.
-            await ghiKehoachKhongChiMang(() => cap8Api.syncPlan(symbol, order.id))
-          }
-          // Cấp 4 (spec §8 "Dữ liệu cần ghi") — LAST in the chain, same single
-          // `order_kehoach` row. BOTH JSON blobs go up: without `ai_5_lop` the
-          // backend leaves `so_lop_dong_thuan` NULL and the order never counts
-          // toward nhiệm vụ ③ (đồng thuận cao). `so_lop_dong_thuan`/
-          // `so_lop_khac_ai` are advisory — the server re-derives them.
-          if (cap4Ready) {
+          // Recover the user's first five-layer assessment only. The server
+          // owns the AI snapshot and derives both agreement counts.
+          if (cap4Ready && !savedLevels.has(4)) {
             await ghiKehoachKhongChiMang(() =>
               recordKehoachCap4.mutateAsync({
                 order_id: order.id,
                 doc_5_lop: cap4Doc5Lop,
-                ai_5_lop: cap4Ai5Lop,
-                so_lop_dong_thuan: countDongThuan(cap4Ai5Lop),
-                so_lop_khac_ai: countKhacAi(cap4Doc5Lop, cap4Ai5Lop),
               }),
             )
           }
@@ -698,7 +860,7 @@ function OrderEntry({
           // user tự đọc. Server tự suy `had_conflict`/`had_veto`/`veto_layers`
           // từ bản đọc 5 lớp của chính nó, và tự đối chiếu với khối lượng + tự
           // tin mà Cấp 3 đã ghi trên CÙNG hàng `order_kehoach`.
-          if (cap6BacThayReady && cap6NhanDinh) {
+          if (cap6BacThayReady && cap6NhanDinh && !savedLevels.has(6)) {
             await ghiKehoachKhongChiMang(() =>
               recordKehoachMauThuanCap6.mutateAsync({
                 order_id: order.id,
@@ -706,88 +868,87 @@ function OrderEntry({
               }),
             )
           }
-        } else {
-          recordKehoach.mutate(kehoachPayload)
+        if (orderFilled) {
+          cap1Events.onOrderFilled?.({
+            symbol,
+            side,
+            quantity: order.quantity,
+            price: order.price,
+            orderId: order.id,
+            lyDo: effectiveLyDo,
+            trangThaiLucDat: trangThai,
+            vungMua: cap1VungMua,
+          })
+          cap2Events.onOrderFilled?.({
+            symbol,
+            side,
+            quantity: order.quantity,
+            price: order.price,
+            orderId: order.id,
+            ...(cap2Method && cap2CatLo && cap2ChotLoi
+              ? { phuongPhapSlTp: cap2Method, catLo: cap2CatLo, chotLoi: cap2ChotLoi }
+              : {}),
+          })
+          cap3Events.onOrderFilled?.({
+            symbol,
+            side,
+            quantity: order.quantity,
+            price: order.price,
+            orderId: order.id,
+            ...(cap3Progress?.khau_vi && cap3MucTuTin && cap3Cach
+              ? {
+                  khauVi: cap3Progress.khau_vi,
+                  mucTuTin: cap3MucTuTin,
+                  cachKhoiLuong: cap3Cach,
+                  khoiLuong: order.quantity,
+                  ...(cap3PctVonThucTe != null ? { pctVon: cap3PctVonThucTe } : {}),
+                }
+              : {}),
+          })
+          cap4Events.onOrderFilled?.({
+            symbol,
+            side,
+            quantity: order.quantity,
+            price: order.price,
+            orderId: order.id,
+            ...(isCap4Active && isDoc5LopComplete(cap4Doc5Lop)
+              ? {
+                  doc5Lop: cap4Doc5Lop,
+                  ai5Lop: cap4Ai5Lop,
+                  soLopDongThuan: countDongThuan(cap4Ai5Lop),
+                  soLopKhacAi: countKhacAi(cap4Doc5Lop, cap4Ai5Lop),
+                }
+              : {}),
+          })
+          // Cấp 5 — KHÔNG có kế hoạch riêng để ghi (không có `/cap5/kehoach`):
+          // cấp này đo QUYẾT ĐỊNH lúc kết sổ, không thêm gì lúc đặt. Event chỉ
+          // để Hành trình/Kết sổ Cấp 5 biết lệnh nào vừa mở.
+          cap5Events.onOrderFilled?.({
+            symbol,
+            side,
+            quantity: order.quantity,
+            price: order.price,
+            orderId: order.id,
+          })
+          // Cấp 6 emits only the current server-owned conflict evidence.
+          cap6Events.onOrderFilled?.({
+            symbol,
+            side,
+            quantity: order.quantity,
+            price: order.price,
+            orderId: order.id,
+            ...(isCap6BacThay && cap6MauThuan
+              ? {
+                  conflictLevel: cap6NhanDinh,
+                  coMauThuan: coBangMauThuan(cap6MauThuan),
+                  phuQuyetKichHoat: cap6MauThuan.phu_quyet_kich_hoat,
+                  lopPhuQuyetXau: cap6MauThuan.lop_phu_quyet_xau,
+                  pheUngHo: cap6MauThuan.ung_ho.map((r) => r.lop),
+                  pheNguoc: cap6MauThuan.nguoc.map((r) => r.lop),
+                }
+              : {}),
+          })
         }
-        cap1Events.onOrderFilled?.({
-          symbol,
-          side,
-          quantity: order.quantity,
-          price: order.price,
-          orderId: order.id,
-          lyDo: effectiveLyDo,
-          trangThaiLucDat: trangThai,
-          vungMua: cap1VungMua,
-        })
-        cap2Events.onOrderFilled?.({
-          symbol,
-          side,
-          quantity: order.quantity,
-          price: order.price,
-          orderId: order.id,
-          ...(cap2Method && cap2CatLo && cap2ChotLoi
-            ? { phuongPhapSlTp: cap2Method, catLo: cap2CatLo, chotLoi: cap2ChotLoi }
-            : {}),
-        })
-        cap3Events.onOrderFilled?.({
-          symbol,
-          side,
-          quantity: order.quantity,
-          price: order.price,
-          orderId: order.id,
-          ...(cap3Progress?.khau_vi && cap3MucTuTin && cap3Cach
-            ? {
-                khauVi: cap3Progress.khau_vi,
-                mucTuTin: cap3MucTuTin,
-                cachKhoiLuong: cap3Cach,
-                ...(cap3KhoiLuong != null ? { khoiLuong: cap3KhoiLuong } : {}),
-                ...(cap3PctVon != null ? { pctVon: cap3PctVon } : {}),
-              }
-            : {}),
-        })
-        cap4Events.onOrderFilled?.({
-          symbol,
-          side,
-          quantity: order.quantity,
-          price: order.price,
-          orderId: order.id,
-          ...(isCap4Active && isDoc5LopComplete(cap4Doc5Lop)
-            ? {
-                doc5Lop: cap4Doc5Lop,
-                ai5Lop: cap4Ai5Lop,
-                soLopDongThuan: countDongThuan(cap4Ai5Lop),
-                soLopKhacAi: countKhacAi(cap4Doc5Lop, cap4Ai5Lop),
-              }
-            : {}),
-        })
-        // Cấp 5 — KHÔNG có kế hoạch riêng để ghi (không có `/cap5/kehoach`):
-        // cấp này đo QUYẾT ĐỊNH lúc kết sổ, không thêm gì lúc đặt. Event chỉ
-        // để Hành trình/Kết sổ Cấp 5 biết lệnh nào vừa mở.
-        cap5Events.onOrderFilled?.({
-          symbol,
-          side,
-          quantity: order.quantity,
-          price: order.price,
-          orderId: order.id,
-        })
-        // Cấp 6 emits only the current server-owned conflict evidence.
-        cap6Events.onOrderFilled?.({
-          symbol,
-          side,
-          quantity: order.quantity,
-          price: order.price,
-          orderId: order.id,
-          ...(isCap6BacThay && cap6MauThuan
-            ? {
-                conflictLevel: cap6NhanDinh,
-                coMauThuan: coBangMauThuan(cap6MauThuan),
-                phuQuyetKichHoat: cap6MauThuan.phu_quyet_kich_hoat,
-                lopPhuQuyetXau: cap6MauThuan.lop_phu_quyet_xau,
-                pheUngHo: cap6MauThuan.ung_ho.map((r) => r.lop),
-                pheNguoc: cap6MauThuan.nguoc.map((r) => r.lop),
-              }
-            : {}),
-        })
         // Reset the Kế hoạch form for the next order.
         setCap1LyDo(null)
         setCap1VungMuaOverride(undefined)
@@ -799,8 +960,6 @@ function OrderEntry({
         setCap2ChotLoi(null)
         setCap3MucTuTin(null)
         setCap3Cach(null)
-        setCap3KhoiLuong(null)
-        setCap3PctVon(null)
         setCap3VolumeTouched(false)
         // Cấp 4: the next order must be read + rated from scratch (and the AI
         // đối chiếu hidden again) — that IS the habit nhiệm vụ ③ measures.
@@ -809,22 +968,6 @@ function OrderEntry({
         // Cấp 6 requires a new judgement for the next order.
         resetCap6NhanDinh()
         resetCap6KhongMua()
-      }
-      if (side === "sell" && isCap8Active && order.status.toLowerCase() === "filled") {
-        // Exit evidence is server-derived from the already-filled order. Record
-        // it before any inherited Kết sổ opens so the Level 8 journey refetches
-        // against the same completed sell.
-        await ghiKehoachKhongChiMang(() => cap8Api.recordExit(order.id))
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: cap8Keys.progress() }),
-          queryClient.invalidateQueries({ queryKey: cap8Keys.exitContext(symbol) }),
-        ])
-      }
-      if (order.status.toLowerCase() === "filled" && (isCap7Active || isCap8Active)) {
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: cap7Keys.progress() }),
-          queryClient.invalidateQueries({ queryKey: cap7Keys.portfolio() }),
-        ])
       }
       // Cấp 1 (spec §6 "Kết sổ mở khi user bán 1 lệnh Thực chiến") — a SELL
       // fill inside Cấp 1 notifies the bus too (no `lyDo`/`trangThaiLucDat`/
@@ -836,7 +979,11 @@ function OrderEntry({
       // Cấp 2's, so `KetsoModalCap3` opened off another cấp's bus) — each
       // cấp's Kết sổ now listens to its own. The `?.` calls are no-ops outside
       // each provider, so the `||` widening cannot regress Cấp 1/2.
-      if (side === "sell" && (isCap1Active || isCap3Active || isCap4Active || isCap5Active || isCap6Active)) {
+      if (
+        side === "sell" &&
+        orderFilled &&
+        (isCap1Active || isCap3Active || isCap4Active || isCap5Active || isCap6Active)
+      ) {
         dispatchFilledSellCloseouts(
           {
             symbol,
@@ -844,6 +991,7 @@ function OrderEntry({
             quantity: order.quantity,
             price: order.price,
             orderId: order.id,
+            buyOrderId: order.exitMatchedBuyOrderId,
           },
           cap1Events,
           cap2Events,
@@ -872,6 +1020,51 @@ function OrderEntry({
       } else {
         Message.error(msg)
       }
+    }
+  }
+
+  const handleCancelNhoiLenh = async () => {
+    if (!pendingNhoiLenh) return
+    try {
+      await actOnCap2Alert.mutateAsync({
+        alertId: pendingNhoiLenh.alert.id,
+        action: "cancel_buy",
+      })
+      setPendingNhoiLenh(null)
+      cap2PreBuyAttemptKeyRef.current = null
+    } catch (error) {
+      Message.error(await getErrorMessage(error, "Không ghi được lựa chọn cảnh báo"))
+    }
+  }
+
+  const handleProceedNhoiLenh = async () => {
+    if (!pendingNhoiLenh) return
+    const current = pendingNhoiLenh
+    try {
+      await actOnCap2Alert.mutateAsync({
+        alertId: current.alert.id,
+        action: "proceed_buy",
+        ...(current.alert.escalation === "type_phrase"
+          ? { confirmationPhrase: "Tôi hiểu" }
+          : {}),
+      })
+      setPendingNhoiLenh(null)
+      cap2PreBuyAttemptKeyRef.current = null
+      const currentDraftSignature = JSON.stringify([
+        symbol,
+        method,
+        numVolume,
+        method === "limit" ? numPrice : null,
+      ])
+      if (currentDraftSignature === current.draftSignature) {
+        approvedCap2AlertRef.current = {
+          alertId: current.alert.id,
+          draftSignature: current.draftSignature,
+        }
+      }
+      await handleSubmit()
+    } catch (error) {
+      Message.error(await getErrorMessage(error, "Không ghi được lựa chọn cảnh báo"))
     }
   }
 
@@ -1018,9 +1211,7 @@ function OrderEntry({
               setCap3Cach(c)
               setCap3VolumeTouched(false)
             }}
-            onKhoiLuong={(kl, pctVon) => {
-              setCap3KhoiLuong(kl)
-              setCap3PctVon(pctVon)
+            onKhoiLuong={(kl) => {
               // Tự điền ô Khối lượng — trừ khi user đã sửa tay (spec §6.3).
               if (!cap3VolumeTouched && kl > 0) setVolume(kl)
             }}
@@ -1257,6 +1448,41 @@ function OrderEntry({
 
 
 
+        {cap1TourSubmitDisabled && (
+          <div
+            className="mb-2 rounded-lg border border-[rgba(255,184,0,0.45)] bg-[rgba(255,184,0,0.08)] p-2"
+            data-testid="cap1-tour-gate"
+          >
+            <p className="mb-2 text-xs text-[var(--color-text-2)]">
+              Xem nhanh 3 tour sản phẩm để bắt đầu (khoảng 3 phút).
+            </p>
+            <Button size="small" long onClick={() => setActivePanel("journey")}>
+              Xem 3 tour sản phẩm
+            </Button>
+          </div>
+        )}
+
+        {pendingNhoiLenh && (
+          <NhoiLenhWarning
+            symbol={pendingNhoiLenh.alert.symbol}
+            pnlPct={pendingNhoiLenh.alert.loss_pct ?? 0}
+            level={
+              pendingNhoiLenh.alert.escalation === "delay_5s"
+                ? "greyed5s"
+                : pendingNhoiLenh.alert.escalation === "type_phrase"
+                  ? "typeToConfirm"
+                  : "thuong"
+            }
+            positionQuantity={pendingNhoiLenh.alert.position_quantity}
+            positionAvgCost={pendingNhoiLenh.alert.position_avg_cost_vnd}
+            intendedQuantity={pendingNhoiLenh.intendedQuantity}
+            intendedPrice={pendingNhoiLenh.intendedPrice}
+            catLo={pendingNhoiLenh.alert.threshold_price_vnd}
+            onCancel={() => void handleCancelNhoiLenh()}
+            onConfirm={() => void handleProceedNhoiLenh()}
+          />
+        )}
+
         {/* Submit — Cấp 1's cổng cứng (spec §4) disables MUA until lý do +
             vùng mua are both set; Cấp 2's cổng cứng (spec §5.4) ALSO
             requires a cách cắt lỗ/chốt lời chosen (ON TOP OF Cấp 1's, since
@@ -1299,7 +1525,11 @@ function OrderEntry({
         )}
         <Tooltip
           content={
-            cap1SubmitDisabled
+            pendingNhoiLenh
+              ? "Chọn Huỷ hoặc Vẫn mua thêm trong cảnh báo trước."
+              : cap1TourSubmitDisabled
+              ? "Xem 3 tour sản phẩm trước khi đặt lệnh MUA đầu tiên."
+              : cap1SubmitDisabled
               ? isCap4Active
                 ? "Nhập vùng mua mới đặt được lệnh."
                 : "Chọn lý do mua và vùng mua mới đặt được lệnh."
@@ -1312,15 +1542,31 @@ function OrderEntry({
                     : ""
           }
           disabled={
-            !(cap1SubmitDisabled || cap2SubmitDisabled || cap3SubmitDisabled || cap4SubmitDisabled)
+            !(
+              cap1TourSubmitDisabled ||
+              cap1SubmitDisabled ||
+              cap2SubmitDisabled ||
+              cap3SubmitDisabled ||
+              cap4SubmitDisabled ||
+              !!pendingNhoiLenh
+            )
           }
         >
           <div>
             <Button
               long
-              loading={placeOrder.isPending}
+              loading={
+                placeOrder.isPending ||
+                checkCap2PreBuyAlert.isPending ||
+                actOnCap2Alert.isPending
+              }
               disabled={
-                cap1SubmitDisabled || cap2SubmitDisabled || cap3SubmitDisabled || cap4SubmitDisabled
+                cap1TourSubmitDisabled ||
+                cap1SubmitDisabled ||
+                cap2SubmitDisabled ||
+                cap3SubmitDisabled ||
+                cap4SubmitDisabled ||
+                !!pendingNhoiLenh
               }
               onClick={handleSubmit}
               className={
@@ -1676,7 +1922,7 @@ function StockHeader({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <StockLogo symbol={data.symbol} size={28} />
-          {/* ★ Nhánh KHÔNG skin — chính là nhánh Cấp 2→8 render (skin chỉ bật
+          {/* ★ Nhánh KHÔNG skin — chính là nhánh Cấp 2→6 render (skin chỉ bật
               ở Cấp 0 và Cấp 1-không-Cấp-2). Phải vá CÙNG LÚC với nhánh skin ở
               trên, nếu không tắt skin là lỗ hổng mở lại nguyên vẹn. */}
           {symbolLink === "none" ? (
@@ -1800,6 +2046,12 @@ function GatedOrderEntry(props: {
   const { isCap0Active } = useCap0Events()
   const navigate = useNavigate()
   const [side, setSide] = useState<"buy" | "sell">("buy")
+  const cap2Events = useCap2Events()
+  useEffect(() => {
+    if (cap2Events.sellIntent?.symbol === props.symbol.toUpperCase()) {
+      setSide("sell")
+    }
+  }, [cap2Events.sellIntent, props.symbol])
   const skin = useMockupPanelSkin()
 
   /** Vỏ thẻ — mockup `.order-panel` khi có skin, còn lại giữ nguyên như cũ. */
@@ -1828,7 +2080,7 @@ function GatedOrderEntry(props: {
    * bằng Tab và kích hoạt bằng Enter/Space, thêm `role="tab"`/`aria-selected`
    * để screen reader vẫn đọc ra đây là một cặp tab.
    *
-   * KHÔNG có skin thì Arco `Tabs` y nguyên — /bieu-do, /co-phieu và Cấp 2→8
+   * KHÔNG có skin thì Arco `Tabs` y nguyên — /bieu-do, /co-phieu và Cấp 2→6
    * không đổi một pixel nào.
    */
   const tabs = skin ? (
@@ -1961,6 +2213,11 @@ export function TradingPanel({
           panel là MỘT thẻ đúng thứ tự mockup. */}
       <div className="min-h-0 flex-1 overflow-y-auto">
         <GatedOrderEntry
+          // A symbol change starts a new investment decision. Remounting the
+          // entry atomically clears buy reason/AI snapshot, buy region, SL/TP,
+          // confidence, sizing choice and five-layer answers, so none of those
+          // statements can be filed against a different stock.
+          key={symbol}
           symbol={symbol}
           data={data}
           balance={account?.balance ?? 0}

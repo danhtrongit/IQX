@@ -15,6 +15,8 @@ from app.schemas.cap1 import (
     OrderKehoachOut,
     OrderKetsoOut,
     TaskRequest,
+    TradeHistoryListOut,
+    TradeHistoryOut,
 )
 from app.services.cap1.service import Cap1Service
 
@@ -69,6 +71,14 @@ async def record_ketso(body: KetsoRequest, user: CurrentUser, db: DBSession) -> 
     """Kết sổ cho 1 lệnh BÁN đã khớp — tính pnl/số phiên giữ từ dữ liệu lệnh."""
     svc = Cap1Service(db)
     return await svc.record_ketso(user.id, body.order_id, cam_xuc=body.cam_xuc)
+
+
+@router.get("/trades", response_model=TradeHistoryListOut)
+async def list_trades(user: CurrentUser, db: DBSession) -> TradeHistoryListOut:
+    """Lịch sử BUY-plan → SELL bền vững, thay cho localStorage phía trình duyệt."""
+    rows = await Cap1Service(db).list_trade_history(user.id)
+    trades = [TradeHistoryOut.model_validate(row) for row in rows]
+    return TradeHistoryListOut(trades=trades, total=len(trades))
 
 
 @router.post("/graduate", response_model=Cap1ProgressOut)

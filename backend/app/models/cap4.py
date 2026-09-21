@@ -9,9 +9,9 @@ block on ``app.models.cap1.OrderKehoach``). This module only owns the
 ``cap4_progress`` table: ONE nhiệm vụ timestamp + the recomputed reading
 metrics.
 
-★ **HÌNH DẠNG HIỆN TẠI — MỘT nhiệm vụ** (mockup ``iqx-cap4-hanhtrinh.html``,
-migration ``a3f7c1d9e2b8``): «Đọc và chấm đủ 5 lớp qua 20 lệnh», tức
-``so_lenh_doc_du_5lop >= 20``. Hai nhiệm vụ cũ ("Lệnh đầu tiên đọc đủ 5 lớp",
+★ **HÌNH DẠNG HIỆN TẠI — MỘT nhiệm vụ**: «Đọc và chấm đủ 5 lớp qua 10
+lệnh», tức ``so_lenh_doc_du_5lop >= 10`` theo bản chốt Bot/ADN 09/2026. Hai
+nhiệm vụ cũ ("Lệnh đầu tiên đọc đủ 5 lớp",
 "Kết sổ lệnh đầu Cấp 4") và khối "Thách thức Thuần thục" (3 điều kiện) đã bị
 GỠ cùng ba cột của chúng. **Spec ``IQX-Cap4-Spec.md`` §2/§3 mô tả bản 3 nhiệm
 vụ và KHÔNG còn là chuẩn nghiệm thu cho phần này** — mockup thắng về bố
@@ -95,7 +95,7 @@ class Cap4Progress(UUIDMixin, TimestampMixin, Base):
     )
     entered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
-    # Nhiệm vụ DUY NHẤT — «Đọc và chấm đủ 5 lớp qua 20 lệnh». Nullable cho tới
+    # Nhiệm vụ DUY NHẤT — «Đọc và chấm đủ 5 lớp qua 10 lệnh». Nullable cho tới
     # khi đạt, và một khi đã đóng dấu thì KHÔNG bao giờ gỡ ra.
     task_1_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 

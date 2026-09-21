@@ -1,3 +1,6 @@
+import { IdentityPanel } from "@/features/journey-identity/IdentityPanel"
+import { BotPanel } from "@/features/bot"
+import { useCap6Progress } from "@/features/cap6/hooks"
 import { Button, Message } from "@arco-design/web-react"
 import { IconClose } from "@arco-design/web-react/icon"
 import { useSidebar, type SidebarPanel } from "@/shared/contexts/sidebar-context"
@@ -74,6 +77,11 @@ import { useCap8Active } from "@/features/cap8/Cap8Context"
  *
  * "Mô hình dự báo" is no longer a panel — it lives at /du-bao.
  */
+function GraduatedBotPanel() {
+  const { data: progress } = useCap6Progress(true)
+  return progress?.graduated_at ? <BotPanel /> : <JourneyPanelCap6 />
+}
+
 export function RightSidebar() {
   const { activePanel, isOpen, setIsOpen } = useSidebar()
   // Hide-by-level (spec §8) — "Tin tức" / "AI Mẫu nến" stay hidden until
@@ -124,6 +132,10 @@ export function RightSidebar() {
 
   const getPanelContent = () => {
     switch (activePanel) {
+      case "identity":
+        return isLevelActive ? <IdentityPanel /> : null
+      case "bot":
+        return isCap6Active ? <GraduatedBotPanel /> : <JourneyPanel />
       case "news":
         // Defense-in-depth: even if something else lands `activePanel` on
         // "news" while it's hidden (spec §8), fall back to the Cấp 0 default
@@ -227,13 +239,15 @@ export function RightSidebar() {
     trading: "Đặt lệnh",
     watchlist: "Danh mục",
     journey: "Hành trình",
+    identity: "Linh thú",
+    bot: "Bot của tôi",
     "cap1-analysis": "Phân tích danh mục",
     "cap2-analysis": "Phân tích danh mục",
     "cap3-analysis": "Phân tích danh mục",
     "cap4-analysis": "Phân tích danh mục",
     "cap5-analysis": "Phân tích danh mục",
     "cap5-sanma": "Săn mã",
-    "cap5-watchlist": "Watchlist",
+    "cap5-watchlist": "Theo dõi",
     "cap6-analysis": "Phân tích danh mục",
     "cap7-analysis": "Phân tích danh mục",
   }

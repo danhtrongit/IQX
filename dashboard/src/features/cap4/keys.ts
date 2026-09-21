@@ -6,4 +6,5 @@ export const cap4Keys = {
   all: ["cap4"] as const,
   progress: () => ["cap4", "progress"] as const,
   vuKhiDiemMu: () => ["cap4", "vu-khi-diem-mu"] as const,
+  phanTich: () => ["cap4", "phan-tich"] as const,
 } as const

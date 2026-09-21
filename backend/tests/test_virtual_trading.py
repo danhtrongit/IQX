@@ -480,7 +480,8 @@ async def test_config_snapshot_drift(client, premium_user, admin_headers):
     """Admin changes fee after pending order → fill uses snapshot rates."""
     await client.post("/api/v1/virtual-trading/account/activate", headers=premium_user)
     resp = await client.post("/api/v1/virtual-trading/orders", headers=premium_user, json={
-        "symbol": "VCB", "side": "buy", "order_type": "limit", "quantity": 100, "limit_price_vnd": 110_000,
+        "symbol": "VCB", "side": "buy", "order_type": "limit", "quantity": 100,
+        "limit_price_vnd": 110_000,
     })
     assert resp.json()["status"] == "pending"
     await client.get("/api/v1/virtual-trading/admin/config", headers=admin_headers)
@@ -631,6 +632,7 @@ async def test_non_premium_can_enter_cap0_and_trade_san_tap(client, non_premium_
 
     r = await client.post("/api/v1/virtual-trading/orders", headers=non_premium_headers, json={
         "symbol": "VCB", "side": "buy", "order_type": "market", "quantity": 100,
+        "journey_plan": {"ly_do_doi_thuong": "thu_cho_biet"},
     })
     assert r.status_code == 201
     d = r.json()
@@ -660,6 +662,7 @@ async def test_non_premium_order_never_thuc_chien_even_if_admin_sets_t2(
     await client.post("/api/v1/cap0/enter", headers=non_premium_headers)
     resp = await client.post("/api/v1/virtual-trading/orders", headers=non_premium_headers, json={
         "symbol": "VCB", "side": "buy", "order_type": "market", "quantity": 100,
+        "journey_plan": {"ly_do_doi_thuong": "thu_cho_biet"},
     })
     assert resp.status_code == 201
     d = resp.json()
@@ -695,6 +698,7 @@ async def test_non_premium_limit_order_fills_san_tap_t0_even_if_admin_sets_t2_be
     # price (100_000) so it is reachable and fills on /refresh below.
     resp = await client.post("/api/v1/virtual-trading/orders", headers=non_premium_headers, json={
         "symbol": "VCB", "side": "buy", "order_type": "limit", "quantity": 100, "limit_price_vnd": 110_000,
+        "journey_plan": {"ly_do_doi_thuong": "thu_cho_biet"},
     })
     assert resp.status_code == 201
     d = resp.json()
@@ -753,7 +757,9 @@ async def test_non_premium_cannot_cancel_another_users_order(
     """Ownership must still be enforced across two non-premium (Cấp 0) accounts."""
     await client.post("/api/v1/cap0/enter", headers=non_premium_headers)
     resp = await client.post("/api/v1/virtual-trading/orders", headers=non_premium_headers, json={
-        "symbol": "VCB", "side": "buy", "order_type": "limit", "quantity": 100, "limit_price_vnd": 90_000,
+        "symbol": "VCB", "side": "buy", "order_type": "limit", "quantity": 100,
+        "limit_price_vnd": 90_000,
+        "journey_plan": {"ly_do_doi_thuong": "thu_cho_biet"},
     })
     order_id = resp.json()["id"]
 

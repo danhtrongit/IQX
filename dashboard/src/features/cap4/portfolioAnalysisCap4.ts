@@ -27,7 +27,7 @@ import type { Cap4Progress, Lop } from "./types"
  * ★ **KHỐI ⑨ KHÔNG Ở ĐÂY — CỐ TÌNH.** "Vũ khí & điểm mù" có endpoint riêng
  * `GET /cap4/vu-khi-diem-mu` tính từ hàng DB thật (`order_kehoach` JOIN
  * `order_ketso`), tức là authoritative + có backfill cho lệnh đóng trước khi FE
- * ship + đúng bằng con số nuôi nhiệm vụ ③. Tính lại ở client từ nhật ký
+ * ship + đúng bằng con số hiển thị ở Phân tích danh mục. Tính lại ở client từ nhật ký
  * localStorage sẽ cho ra MỘT con số thứ hai, thấp hơn, và có thể mâu thuẫn với
  * widget Thách thức — nên `Cap4PortfolioAnalysis` render thẳng dữ liệu hook
  * `useVuKhiDiemMu()`. Module này chỉ surface lại 3 số server đã chốt trên
@@ -75,15 +75,14 @@ export const DONG_THUAN_BAND_LABEL: Record<DongThuanBand, string> = {
  *
  * ★ Đây là số lớp **AI** đánh giá Ủng hộ (`order_kehoach.so_lop_dong_thuan`),
  * ĐÚNG bằng dòng "Đồng thuận: X/5 lớp AI đánh giá Ủng hộ" ở panel đặt lệnh
- * (`doc5Lop.ts#countDongThuan`) và bằng số backend dùng cho nhiệm vụ ③ — không
+ * (`doc5Lop.ts#countDongThuan`) — không
  * phải số lớp user tự chấm Ủng hộ. Ghi ra đây vì "đồng thuận" rất dễ bị đọc
  * thành nghĩa kia.
  */
 const KHOI10_GIAI_THICH =
   "Độ đồng thuận = số lớp AI đánh giá Ủng hộ lúc bạn đặt lệnh (0-5), đúng bằng dòng " +
   '"Đồng thuận: X/5" ở panel đặt lệnh. Tỷ lệ thắng là KẾT QUẢ THẬT của các lệnh đã đóng ' +
-  "trong nhóm đó. Lưu ý: mốc «đồng thuận cao» của Thách thức Thuần thục là ≥3 lớp, rộng hơn " +
-  "dải 4-5 lớp ở hàng đầu bảng này."
+  "trong nhóm đó. Đây là số liệu để tự nhìn lại, không phải điều kiện tốt nghiệp Cấp 4."
 
 const KHOI11_GIAI_THICH =
   "Đếm theo LỆNH (không theo lớp): một lệnh có ít nhất 1 lớp bạn đọc khác AI được tính 1 lần, " +
@@ -272,10 +271,13 @@ export interface Cap4Khoi11GocNhinRieng {
 export function computeCap4Khoi11GocNhinRieng(
   trades: Cap4TradeRecord[],
 ): Cap4Khoi11GocNhinRieng {
-  const khacAi = trades.filter((t) => t.so_lop_khac_ai != null && t.so_lop_khac_ai > 0)
+  // Hòa vốn không phân xử góc nhìn của user hay AI, nên loại khỏi cả mẫu số.
+  const khacAi = trades.filter(
+    (t) => t.so_lop_khac_ai != null && t.so_lop_khac_ai > 0 && t.pnlPct !== 0,
+  )
   const soLanKhacAi = khacAi.length
   const soLanBanDung = khacAi.filter((t) => t.pnlPct > 0).length
-  const soLanAiDung = soLanKhacAi - soLanBanDung
+  const soLanAiDung = khacAi.filter((t) => t.pnlPct < 0).length
 
   if (soLanKhacAi === 0) {
     return {

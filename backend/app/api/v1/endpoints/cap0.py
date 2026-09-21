@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Path, Query
 
 from app.api.deps import CurrentUser, DBSession
 from app.core.exceptions import NotFoundError
@@ -18,6 +18,8 @@ from app.schemas.cap0 import (
     PlacementRequest,
     PlacementResponse,
     TaskRequest,
+    TourCompleteRequest,
+    TourCompleteResponse,
 )
 from app.services.cap0.service import Cap0Service
 
@@ -44,24 +46,49 @@ async def placement(
 ) -> PlacementResponse:
     """Ghi nhận câu trả lời phân loại → trả placed_level (chưa từng giao dịch → 0, đã từng → 2)."""
     svc = Cap0Service(db)
-    result = await svc.set_placement(user.id, body.has_traded_before)
-    return PlacementResponse(placed_level=result.placed_level)
+    answer = body.answer
+    if answer is None:
+        answer = "regular" if body.has_traded_before else "never"
+    result = await svc.set_placement(user.id, answer)
+    return PlacementResponse(
+        placed_level=result.placed_level,
+        answer=result.experience.value,
+        da_xem_tour=result.da_xem_tour,
+    )
+
+
+@router.get("/placement", response_model=PlacementResponse | None)
+async def get_placement(user: CurrentUser, db: DBSession) -> PlacementResponse | None:
+    result = await Cap0Service(db).get_placement(user.id)
+    if result is None:
+        return None
+    return PlacementResponse(
+        placed_level=result.placed_level,
+        answer=result.experience.value,
+        da_xem_tour=result.da_xem_tour,
+    )
+
+
+@router.post("/tours/{tour}/complete", response_model=TourCompleteResponse)
+async def complete_tour(
+    body: TourCompleteRequest,
+    user: CurrentUser,
+    db: DBSession,
+    tour: str = Path(pattern=r"^(bantin|phantich|bctc)$"),
+) -> TourCompleteResponse:
+    placement, completed = await Cap0Service(db).complete_tour(
+        user.id, tour, skipped=body.skipped
+    )
+    return TourCompleteResponse(da_xem_tour=placement.da_xem_tour, completed=completed)
 
 
 @router.patch("/task", response_model=Cap0ProgressOut)
 async def complete_task(
     body: TaskRequest, user: CurrentUser, db: DBSession
 ) -> Cap0ProgressOut:
-    """Đánh dấu nhiệm vụ 1-4 hoàn thành (idempotent) + set cổng ``debrief`` nếu có.
+    """Đánh dấu nhiệm vụ 1-5; ① cần ``star``, ⑤ cần ``debrief``.
 
-    ① Đặt lệnh mua đầu tiên · ② Xem tab Nắm giữ · ③ Xem tab Theo dõi ·
-    ④ Bán một lệnh — kết sổ đầu tiên.
-
-    - ①②③ gọi trần (không kèm ``gate``).
-    - ④ bắt buộc kèm ``gate="debrief"`` — chỉ đóng màn Kết sổ mới tính đạt.
-    - ② và ③ bị từ chối (400) khi ① chưa xong: xem tab Nắm giữ/Theo dõi trước
-      lệnh mua đầu tiên thì không dạy được gì. FE bắn ②③ từ sự kiện mở tab (lặp
-      lại nhiều lần) nên lần mở tab sau khi mua sẽ tự động ghi nhận.
+    Tour nên dùng endpoint ``/tours/{tour}/complete`` để lưu cờ dùng chung.
     """
     svc = Cap0Service(db)
     return await svc.complete_task(user.id, body.task_no, body.gate)
@@ -111,6 +138,6 @@ async def get_kehoach(
 
 @router.post("/graduate", response_model=Cap0ProgressOut)
 async def graduate(user: CurrentUser, db: DBSession) -> Cap0ProgressOut:
-    """Tốt nghiệp Cấp 0 — chỉ khi đủ 4 nhiệm vụ + cổng hành vi duy nhất (debrief)."""
+    """Tốt nghiệp Cấp 0 — đủ 5 nhiệm vụ + cổng ★ và đóng Kết sổ."""
     svc = Cap0Service(db)
     return await svc.graduate(user.id)

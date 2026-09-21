@@ -20,7 +20,7 @@ describe("mauThuanTour config", () => {
       "tour-cap6-nhandinh",
       "tour-cap6-khoiluong",
       "tour-cap6-khongmua",
-      "#toolbar-journey",
+      '[data-tour-id="tour-cap6-analysis-link"], #toolbar-journey',
     ])
   })
 

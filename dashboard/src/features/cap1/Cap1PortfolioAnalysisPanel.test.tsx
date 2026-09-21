@@ -6,17 +6,23 @@ import type { Cap1Progress } from "./types"
 
 // ★ `markTaskMutate` cố tình GIỮ LẠI dù panel không còn gọi: nó là cái bẫy để
 // test bên dưới chứng minh KHÔNG có `PATCH /cap1/task` nào bị bắn lúc mount.
-const { useCap1ProgressMock, useCap1EventsMock, useCap1TradeLogMock, markTaskMutate } = vi.hoisted(
+const { useCap1ProgressMock, useCap1TradesMock, useCap1EventsMock, useCap1TradeLogMock, analysisPropsMock, markTaskMutate, trackMock } = vi.hoisted(
   () => ({
     useCap1ProgressMock: vi.fn(),
+    useCap1TradesMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: undefined })),
     useCap1EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap1Active: true })),
     useCap1TradeLogMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ trades: [], record: vi.fn() })),
+    analysisPropsMock: vi.fn(),
     markTaskMutate: vi.fn(),
+    trackMock: vi.fn(),
   }),
 )
 
+vi.mock("@/shared/analytics/journey", () => ({ trackJourneyEvent: trackMock }))
+
 vi.mock("./hooks", () => ({
   useCap1Progress: (...a: unknown[]) => useCap1ProgressMock(...a),
+  useCap1Trades: (...a: unknown[]) => useCap1TradesMock(...a),
   useCompleteCap1Task: () => ({ mutate: markTaskMutate, isPending: false }),
 }))
 vi.mock("./Cap1Context", () => ({
@@ -24,9 +30,13 @@ vi.mock("./Cap1Context", () => ({
 }))
 vi.mock("./tradeLog", () => ({
   useCap1TradeLog: () => useCap1TradeLogMock(),
+  cap1TradeFromHistory: (row: unknown) => row,
 }))
 vi.mock("./Cap1PortfolioAnalysis", () => ({
-  Cap1PortfolioAnalysis: () => <div data-testid="cap1-portfolio-analysis" />,
+  Cap1PortfolioAnalysis: (props: unknown) => {
+    analysisPropsMock(props)
+    return <div data-testid="cap1-portfolio-analysis" />
+  },
 }))
 
 import { Cap1PortfolioAnalysisPanel } from "./Cap1PortfolioAnalysisPanel"
@@ -55,11 +65,15 @@ describe("Cap1PortfolioAnalysisPanel", () => {
   beforeEach(() => {
     useCap1ProgressMock.mockReset()
     useCap1ProgressMock.mockReturnValue({ data: makeProgress() })
+    useCap1TradesMock.mockReset()
+    useCap1TradesMock.mockReturnValue({ data: undefined })
     useCap1EventsMock.mockReset()
     useCap1EventsMock.mockReturnValue({ isCap1Active: true })
     useCap1TradeLogMock.mockReset()
     useCap1TradeLogMock.mockReturnValue({ trades: [], record: vi.fn() })
+    analysisPropsMock.mockReset()
     markTaskMutate.mockReset()
+    trackMock.mockReset()
   })
 
   it("renders Cap1PortfolioAnalysis fed by progress + trades", () => {
@@ -69,6 +83,53 @@ describe("Cap1PortfolioAnalysisPanel", () => {
       </SidebarProvider>,
     )
     expect(screen.getByTestId("cap1-portfolio-analysis")).toBeInTheDocument()
+    expect(trackMock).toHaveBeenCalledWith("cap1_phantich_danhmuc_open")
+    expect(trackMock).toHaveBeenCalledWith("cap1_phantich_danhmuc_view")
+  })
+
+  it("treats a successful empty server history as authoritative", () => {
+    useCap1TradeLogMock.mockReturnValue({ trades: [{ orderId: "old-account-order" }] })
+    useCap1TradesMock.mockReturnValue({ data: { trades: [], total: 0 } })
+    render(
+      <SidebarProvider>
+        <Cap1PortfolioAnalysisPanel />
+      </SidebarProvider>,
+    )
+    expect(analysisPropsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ trades: [] }),
+    )
+  })
+
+  it("records each visible behavior pattern without duplicating it on rerender", () => {
+    useCap1TradeLogMock.mockReturnValue({
+      trades: Array.from({ length: 5 }, (_, index) => ({
+        orderId: `order-${index}`,
+        pnlVnd: 500_000,
+        pnlPct: 8.33,
+        lyDo: "ky_thuat",
+        trangThaiLucDat: "ung_ho",
+        closedAt: "2026-07-10T00:00:00Z",
+      })),
+      record: vi.fn(),
+    })
+
+    const { rerender } = render(
+      <SidebarProvider>
+        <Cap1PortfolioAnalysisPanel />
+      </SidebarProvider>,
+    )
+    expect(trackMock).toHaveBeenCalledWith("cap1_pattern_shown", {
+      pattern_id: "vu_khi_rieng",
+    })
+
+    rerender(
+      <SidebarProvider>
+        <Cap1PortfolioAnalysisPanel />
+      </SidebarProvider>,
+    )
+    expect(
+      trackMock.mock.calls.filter(([name]) => name === "cap1_pattern_shown"),
+    ).toHaveLength(1)
   })
 
   // ★★ Nhiệm vụ «Xem lại danh mục — mở Phân tích danh mục 3 lần khác ngày» đã

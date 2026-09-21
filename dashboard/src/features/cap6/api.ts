@@ -2,6 +2,7 @@ import { api, unwrap } from "@/shared/http/client"
 import type {
   KehoachMauThuanCap6,
   KehoachMauThuanInput,
+  Cap6PlanWire,
   MauThuanCap6,
   PhanTichCap6,
   SkipCap6Input,
@@ -86,6 +87,12 @@ export const cap6Api = {
   getKehoachMauThuan: async (orderId: string): Promise<KehoachMauThuanCap6> => {
     const res = await api.get(`cap6/kehoach/${orderId}`).json<unknown>()
     return unwrap(res as never) as KehoachMauThuanCap6
+  },
+
+  /** GET /cap6/plans/{buyOrderId} — cumulative Cấp 1–6 BUY snapshot. */
+  getPlan: async (buyOrderId: string): Promise<Cap6PlanWire> => {
+    const res = await api.get(`cap6/plans/${buyOrderId}`).json<unknown>()
+    return unwrap(res as never) as Cap6PlanWire
   },
 
   /** GET /cap6/phan-tich — khối ⑭ + ⑮ của Phân tích danh mục (spec §9). */

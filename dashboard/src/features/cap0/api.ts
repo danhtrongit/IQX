@@ -1,5 +1,11 @@
 import { api, unwrap } from "@/shared/http/client"
-import type { Cap0Gate, Cap0Kehoach, Cap0Progress, PlacementResult } from "./types"
+import type {
+  Cap0Gate,
+  Cap0Kehoach,
+  Cap0PlacementOut,
+  Cap0Progress,
+  PlacementExperience,
+} from "./types"
 
 /**
  * Cấp 0 onboarding API — BE1 endpoints under `/cap0/*` (all FREE, auth-only).
@@ -19,12 +25,39 @@ export const cap0Api = {
     return unwrap(res as never) as Cap0Progress
   },
 
-  /** POST /cap0/placement { has_traded_before } → { placed_level }. */
-  placement: async (hasTradedBefore: boolean): Promise<PlacementResult> => {
+  /** GET /cap0/placement → trạng thái xếp lớp, hoặc null khi chưa trả lời. */
+  getPlacement: async (): Promise<Cap0PlacementOut | null> => {
+    const res = await api.get("cap0/placement").json<unknown>()
+    const value = unwrap(res as never) as {
+      placed_level: number
+      experience?: PlacementExperience
+      answer?: PlacementExperience
+      da_xem_tour: boolean
+    } | null
+    if (!value) return null
+    return {
+      placed_level: value.placed_level,
+      experience: value.experience ?? value.answer ?? "never",
+      da_xem_tour: value.da_xem_tour,
+    }
+  },
+
+  /** POST /cap0/placement với đủ ba nhánh xếp lớp. */
+  placement: async (experience: PlacementExperience): Promise<Cap0PlacementOut> => {
     const res = await api
-      .post("cap0/placement", { json: { has_traded_before: hasTradedBefore } })
+      .post("cap0/placement", { json: { answer: experience } })
       .json<unknown>()
-    return unwrap(res as never) as PlacementResult
+    const value = unwrap(res as never) as {
+      placed_level: number
+      experience?: PlacementExperience
+      answer?: PlacementExperience
+      da_xem_tour: boolean
+    }
+    return {
+      placed_level: value.placed_level,
+      experience: value.experience ?? value.answer ?? experience,
+      da_xem_tour: value.da_xem_tour,
+    }
   },
 
   /** PATCH /cap0/task { task_no, gate? } — mark a task done + optional gate. */
@@ -66,7 +99,7 @@ export const cap0Api = {
     return (unwrap(res as never) ?? null) as Cap0Kehoach | null
   },
 
-  /** POST /cap0/graduate — only succeeds when 4/4 tasks + the debrief gate are met. */
+  /** POST /cap0/graduate — only succeeds when 2/2 tasks + the debrief gate are met. */
   graduate: async (): Promise<Cap0Progress> => {
     const res = await api.post("cap0/graduate").json<unknown>()
     return unwrap(res as never) as Cap0Progress

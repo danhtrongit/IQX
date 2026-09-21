@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { SymbolProvider, useSymbol } from "@/shared/contexts/symbol-context"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
 import { AiInsightSymbolModal } from "@/features/dau-truong"
-import { CenterPanel, RightSidebar, RightToolbar } from "@/features/dashboard"
+import { RightSidebar, RightToolbar } from "@/features/dashboard"
+import { JourneyIdentityStage } from "@/features/journey-identity/JourneyIdentityStage"
 import { ModeBadge } from "@/features/cap0/ModeBadge"
 // Concrete-file imports (NOT the `@/features/cap1` … `@/features/cap4` barrels) —
 // those barrels re-export their `Cap*TradingPage`, which themselves import
@@ -25,16 +26,21 @@ import { computeKetsoFlagsCap2 } from "@/features/cap2/Cap2TradingPage"
 import type { PhuongPhapSlTp } from "@/features/cap2/types"
 import { Cap3Provider, useCap3Events, type Cap3OrderEvent } from "@/features/cap3/Cap3Context"
 import { KhauViModal } from "@/features/cap3/KhauViModal"
-import { useCap3TradeLog } from "@/features/cap3/tradeLogCap3"
+import { cachKhoiLuongFromWire, useCap3TradeLog } from "@/features/cap3/tradeLogCap3"
 import type { CachKhoiLuong, KhauViLoai, MucTuTin } from "@/features/cap3/types"
 import { Cap4Provider, useCap4Events, type Cap4OrderEvent } from "@/features/cap4/Cap4Context"
 import { isDoc5LopComplete } from "@/features/cap4/doc5Lop"
 import { useCap4TradeLog } from "@/features/cap4/tradeLogCap4"
 import type { Lop5Partial } from "@/features/cap4/types"
 import { Cap5Provider, useCap5Events, type Cap5OrderEvent } from "./Cap5Context"
+import { cap5Api } from "./api"
 import { GraduationModalCap5 } from "./GraduationModalCap5"
 import { KetsoModalCap5, type KetsoDataCap5 } from "./KetsoModalCap5"
-import { fetchNguonSanKetso } from "./nguonSanKetso"
+import {
+  fetchNguonSanKetso,
+  nguonSanKetsoFromPlan,
+  type NguonSanKetso,
+} from "./nguonSanKetso"
 import type { Cap5TradeRecord } from "./tradeLogCap5"
 import "@/features/cap0/cap0.css"
 import "@/features/cap1/cap1.css"
@@ -93,6 +99,8 @@ export function Cap5TradingPage() {
  * time (spec §11), so this is `LastBuyCap4`'s shape unchanged. All buses fire for
  * the SAME buy fill (see `TradingPanel.tsx`), in cap1 → cap2 → cap3 → cap4 order. */
 interface LastBuyCap5 {
+  /** ID lệnh MUA — dùng để backend đóng dấu đúng nguồn săn tại lúc vào lệnh. */
+  orderId: string
   price: number
   lyDo: LyDo | null
   trangThaiLucDat: TrangThaiLucDat | null
@@ -123,7 +131,7 @@ function Cap5Terminal() {
   const { registerHandlers: registerCap5Handlers } = useCap5Events()
   const { data: cap1Progress } = useCap1Progress(isCap1Active)
   const { data: diemKyLuat } = useDiemKyLuat(undefined, isCap2Active)
-  const { activePanel, setActivePanel } = useSidebar()
+  const { activePanel, setActivePanel, setIsOpen } = useSidebar()
   const { trades: cap1Trades, record: recordCap1Trade } = useCap1TradeLog()
   const { record: recordCap2Trade, recordScore: recordCap2Score } = useCap2TradeLog()
   const { record: recordCap3Trade } = useCap3TradeLog()
@@ -134,11 +142,12 @@ function Cap5Terminal() {
   // `Cap4Terminal`/`Cap3Terminal`/… (the sidebar's `SidebarProvider` is a single
   // app-root instance shared by every route).
   const prevPanelRef = useRef(activePanel)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    const previousPanel = prevPanelRef.current
     setActivePanel("journey")
-    return () => setActivePanel(prevPanelRef.current)
-  }, [])
+    if (window.innerWidth < 768) setIsOpen(false)
+    return () => setActivePanel(previousPanel)
+  }, [setActivePanel, setIsOpen])
 
   // Ghi nhận điểm kỷ luật hằng ngày vào nhật ký dùng chung (Cấp 2's score log —
   // Cấp 3/4/5 KHÔNG có nhật ký điểm riêng, xem `tradeLogCap5.ts`) bất cứ khi nào
@@ -155,6 +164,8 @@ function Cap5Terminal() {
   // symbol, merging ALL FOUR lower buses' buy-time data — mirrors
   // `Cap4Terminal#lastBuyBySymbolRef`, one level up.
   const lastBuyBySymbolRef = useRef<Map<string, LastBuyCap5>>(new Map())
+  const processedSellIdsRef = useRef<Set<string>>(new Set())
+  const pendingSellIdsRef = useRef<Set<string>>(new Set())
   const ketsoCountRef = useRef(0)
   const [ketso, setKetso] = useState<KetsoDataCap5 | null>(null)
 
@@ -166,6 +177,7 @@ function Cap5Terminal() {
         const key = order.symbol.toUpperCase()
         const existing = lastBuyBySymbolRef.current.get(key)
         lastBuyBySymbolRef.current.set(key, {
+          orderId: order.orderId,
           price: order.price,
           lyDo: order.lyDo,
           trangThaiLucDat: order.trangThaiLucDat,
@@ -269,13 +281,12 @@ function Cap5Terminal() {
    * một task BE (cho `/cap1/ketso` upsert `cam_xuc`, hoặc cho `/cap5/ketso` tự
    * tạo hàng). Ghi ra đây để không ai tưởng là bỏ sót.
    */
-  const openKetsoCap5 = async (order: Cap5OrderEvent) => {
-    const key = order.symbol.toUpperCase()
-    const buy = lastBuyBySymbolRef.current.get(key)
-    // No tracked buy THIS session, or one of the commitments never resolved (hard
-    // gates upstream should prevent this, but guard anyway) — nothing to
-    // reconcile into Kết sổ Cấp 5 yet.
-    if (!buy) return
+  const openKetsoCap5 = useCallback(async (
+    order: Cap5OrderEvent,
+    buy: LastBuyCap5,
+    hydratedNguonSan?: NguonSanKetso,
+  ) => {
+    if (processedSellIdsRef.current.has(order.orderId)) return
     if (
       buy.lyDo == null ||
       buy.trangThaiLucDat == null ||
@@ -296,6 +307,10 @@ function Cap5Terminal() {
       return
     }
 
+    // Chặn cả double delivery khi hai surface cùng phát SELL và lúc request
+    // nguồn săn còn đang bay. Snapshot thiếu không tới dòng này nên vẫn retry.
+    processedSellIdsRef.current.add(order.orderId)
+
     try {
       await recordKetsoCap1.mutateAsync({ order_id: order.orderId, cam_xuc: null })
     } catch {
@@ -313,11 +328,12 @@ function Cap5Terminal() {
      *     `huntFilter: null` sẽ biến một cú lỗi mạng thành lời khẳng định
      *     "bạn tự chọn mã này" — một điều ta không hề biết.
      *
-     * `so_lop_luc_vao` server LUÔN trả `null` (điểm đồng thuận lúc ĐẶT LỆNH chưa
-     * từng được lưu) — chép nguyên, không thay bằng điểm hôm nay.
+     * `so_lop_luc_vao` là snapshot bất biến tại BUY; lệnh legacy có thể chưa có.
+     * Chép nguyên, không thay bằng điểm hôm nay.
      */
     // ★ Một implementation DUY NHẤT cho cả Cấp 5/6/7/8 — xem `nguonSanKetso.ts`.
-    const nguonSan = await fetchNguonSanKetso(order.symbol)
+    const nguonSan =
+      hydratedNguonSan ?? (await fetchNguonSanKetso(order.symbol, buy.orderId))
 
     ketsoCountRef.current += 1
     const sellDate = todayYmd()
@@ -328,6 +344,7 @@ function Cap5Terminal() {
       catLo: buy.catLo,
       soPhienGiu,
     })
+    lastBuyBySymbolRef.current.delete(order.symbol.toUpperCase())
     setKetso({
       n: ketsoCountRef.current,
       orderId: order.orderId,
@@ -354,18 +371,59 @@ function Cap5Terminal() {
       ai5Lop: buy.ai5Lop,
       ...nguonSan,
     })
-  }
+  }, [recordKetsoCap1])
 
   useEffect(() => {
     registerCap5Handlers({
-      onOrderFilled: (order: Cap5OrderEvent) => {
+      onOrderFilled: async (order: Cap5OrderEvent) => {
         // Cấp 5 KHÔNG thêm gì vào panel mua (spec §11) → chỉ nhánh BÁN có việc.
         if (order.side !== "sell") return
-        void openKetsoCap5(order)
+        const key = order.symbol.toUpperCase()
+        const buy = lastBuyBySymbolRef.current.get(key)
+        if (buy) {
+          await openKetsoCap5(order, buy)
+          return
+        }
+
+        // Sau reload, server gắn SELL với đúng BUY lot. Không có ID này thì giữ
+        // modal đóng; tìm kế hoạch theo mã sẽ có thể lấy nhầm một lần mua khác.
+        if (!order.buyOrderId || processedSellIdsRef.current.has(order.orderId)) return
+        if (pendingSellIdsRef.current.has(order.orderId)) return
+        pendingSellIdsRef.current.add(order.orderId)
+        try {
+          const plan = await cap5Api.getPlan(order.buyOrderId)
+          if (plan.order_id !== order.buyOrderId || plan.symbol.toUpperCase() !== key) return
+          await openKetsoCap5(
+            order,
+            {
+              orderId: plan.order_id,
+              price: plan.gia_vao,
+              lyDo: plan.lyDo,
+              trangThaiLucDat: plan.trangThai_luc_dat,
+              vungMua: plan.vung_mua,
+              buyDate: plan.bought_at.slice(0, 10),
+              phuongPhapSlTp: plan.phuong_phap_sl_tp,
+              catLo: plan.cat_lo,
+              chotLoi: plan.chot_loi,
+              khauVi: plan.khau_vi,
+              mucTuTin: plan.muc_tu_tin,
+              cachKhoiLuong: cachKhoiLuongFromWire(plan.cach_khoi_luong),
+              khoiLuong: plan.khoi_luong,
+              pctVon: plan.pct_von,
+              doc5Lop: plan.doc_5_lop,
+              ai5Lop: plan.ai_5_lop,
+            },
+            nguonSanKetsoFromPlan(plan),
+          )
+        } catch {
+          // 404/403/lỗi mạng: chưa có bằng chứng BUY phù hợp, không dựng số giả.
+          // Không đánh dấu processed để một delivery/retry sau có thể phục hồi.
+        } finally {
+          pendingSellIdsRef.current.delete(order.orderId)
+        }
       },
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [registerCap5Handlers])
+  }, [openKetsoCap5, registerCap5Handlers])
 
   /**
    * Records the closed trade into Cấp 1's + Cấp 2's + Cấp 3's + Cấp 4's
@@ -405,7 +463,7 @@ function Cap5Terminal() {
       </div>
 
       <div className="flex flex-1 min-h-0 pb-[52px] md:pb-0">
-        <CenterPanel symbolChange="select" />
+        <JourneyIdentityStage level={5} />
         <RightSidebar />
         <RightToolbar onActionClick={handleActionClick} />
       </div>
@@ -432,7 +490,7 @@ function Cap5Terminal() {
       />
 
       {/* Màn tốt nghiệp Cấp 5 (spec §3) — self-contained: opens itself once
-          progress shows 3/3, closes itself once `graduated_at` comes back. */}
+          progress shows 2/2, closes itself once `graduated_at` comes back. */}
       <GraduationModalCap5 />
 
       {/* ★★ AI Insight mở NGAY TRONG shell cấp (xem `AiInsightModal`).

@@ -89,9 +89,12 @@ không hoạt động thì không tốn gì.
 from __future__ import annotations
 
 import logging
+import math
 import uuid
-from collections.abc import Sequence
+from collections.abc import Awaitable, Callable, Sequence
+from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta, timezone
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -110,6 +113,7 @@ from app.models.symbol import Symbol, dieu_kien_co_phieu, la_co_phieu
 from app.models.virtual_trading import OrderSide, OrderStatus, VirtualOrder
 from app.models.watchlist import WatchlistItem
 from app.services.cap1.service import Cap1Service
+from app.services.cap4.service import Cap4Service
 from app.services.cap5.consensus import (
     NGUONG_DANG_CHU_Y,
     SO_PHIEN_HIEU_LUC,
@@ -126,6 +130,8 @@ from app.services.cap5.hunt import (
     loc_san_tieu_chi,
 )
 from app.services.cap5.hunt_data import LiveHuntDataSource
+from app.services.journey_events import record_journey_event
+from app.services.market_data.sources import vietcap
 
 logger = logging.getLogger(__name__)
 
@@ -167,8 +173,7 @@ KHAU_VI_LABELS: dict[str, str] = {
 _HUNT_FILTER_VALUES: tuple[str, ...] = tuple(m.value for m in HuntFilter)
 
 _NHAC_DANG_CHU_Y = (
-    f"{NGUONG_DANG_CHU_Y}/{TONG_SO_LOP} lớp đang ủng hộ — đáng để bạn xem kỹ. "
-    "Quyết định mua vẫn là của bạn."
+    f"{NGUONG_DANG_CHU_Y}/{TONG_SO_LOP} lớp đang ủng hộ — đáng để bạn xem kỹ. Quyết định mua vẫn là của bạn."
 )
 
 #: ★ Câu thay thế khi điểm đã lưu KHÔNG còn bản phân tích trong cửa sổ phiên để
@@ -188,21 +193,11 @@ _KHOI_13_GIAI_THICH = (
 
 #: Cảnh báo riêng cho bộ lọc yếu nhất ở khối ⑫ (spec §9 gợi mẫu cho ``kl``).
 _KHOI_12_CANH_BAO: dict[str, str] = {
-    HuntFilter.NGOAI.value: (
-        "Khối ngoại gom là dòng tiền dài hạn — vào theo mà thoát ngắn thì dễ lệch nhịp."
-    ),
-    HuntFilter.TU_DOANH.value: (
-        "Tự doanh có thể gom để phòng hộ chứng quyền, không hẳn là đánh giá tốt về mã."
-    ),
-    HuntFilter.KL.value: (
-        "Khối lượng đột biến dễ là sóng ngắn — cẩn thận mua đúng lúc đội lái ra hàng."
-    ),
-    HuntFilter.DINH.value: (
-        "Vượt đỉnh dễ gặp đỉnh giả: giá vượt rồi tụt lại ngay trong vài phiên."
-    ),
-    HuntFilter.TANG.value: (
-        "Tăng mạnh kèm khối lượng cao thường đã đi được một đoạn — vào muộn là rủi ro chính."
-    ),
+    HuntFilter.NGOAI.value: ("Khối ngoại gom là dòng tiền dài hạn — vào theo mà thoát ngắn thì dễ lệch nhịp."),
+    HuntFilter.TU_DOANH.value: ("Tự doanh có thể gom để phòng hộ chứng quyền, không hẳn là đánh giá tốt về mã."),
+    HuntFilter.KL.value: ("Khối lượng đột biến dễ là sóng ngắn — cẩn thận mua đúng lúc đội lái ra hàng."),
+    HuntFilter.DINH.value: ("Vượt đỉnh dễ gặp đỉnh giả: giá vượt rồi tụt lại ngay trong vài phiên."),
+    HuntFilter.TANG.value: ("Tăng mạnh kèm khối lượng cao thường đã đi được một đoạn — vào muộn là rủi ro chính."),
 }
 
 
@@ -222,6 +217,23 @@ def _vn_date(dt: datetime | None) -> date | None:
 #: đếm phiên (``so_phien_giu`` của Kết sổ đếm bằng đúng hàm này).
 _count_trading_sessions = Cap1Service._count_trading_sessions
 
+PriceBoardFetcher = Callable[[list[str]], Awaitable[tuple[list[dict[str, Any]], str]]]
+
+_THIEU_TRANG_THAI_HOSE = (
+    "API danh sách theo dõi đặc biệt của HOSE không trả dữ liệu hợp lệ. "
+    "Chưa thể loại chính xác mã diện cảnh báo/kiểm soát/hạn chế giao "
+    "dịch, nên chưa lọc được; KHÔNG phải là không có mã nào thoả."
+)
+
+
+@dataclass(frozen=True)
+class HuntUniverse:
+    """Rổ Cap5 sau cổng trạng thái chính thức của HOSE."""
+
+    symbols: tuple[str, ...]
+    raw_count: int
+    status_filter_applied: bool
+
 
 class Cap5Service:
     """Business logic cho Cấp 5 «Săn mã» (FREE, Thực chiến).
@@ -232,21 +244,24 @@ class Cap5Service:
     """
 
     def __init__(
-        self, session: AsyncSession, *, hunt_source: HuntDataSource | None = None
+        self,
+        session: AsyncSession,
+        *,
+        hunt_source: HuntDataSource | None = None,
+        price_board_fetcher: PriceBoardFetcher | None = None,
     ) -> None:
         self._session = session
         self._source: HuntDataSource = hunt_source or LiveHuntDataSource()
         self._engine = HuntEngine(self._source)
         self._consensus = InsightConsensusSource(session)
+        self._price_board_fetcher = price_board_fetcher or vietcap.fetch_price_board
 
     # ══════════════════════════════════════════════════
     # Progress row
     # ══════════════════════════════════════════════════
 
     async def _get_progress_row(self, user_id: uuid.UUID) -> Cap5Progress | None:
-        result = await self._session.execute(
-            select(Cap5Progress).where(Cap5Progress.user_id == user_id)
-        )
+        result = await self._session.execute(select(Cap5Progress).where(Cap5Progress.user_id == user_id))
         return result.scalar_one_or_none()
 
     async def _require_progress(self, user_id: uuid.UUID) -> Cap5Progress:
@@ -269,9 +284,7 @@ class Cap5Service:
             return await self._recompute_progress(user_id, progress)
 
         cap4 = (
-            await self._session.execute(
-                select(Cap4Progress).where(Cap4Progress.user_id == user_id)
-            )
+            await self._session.execute(select(Cap4Progress).where(Cap4Progress.user_id == user_id))
         ).scalar_one_or_none()
         if cap4 is None:
             raise NotFoundError("tiến trình Cấp 4")
@@ -302,8 +315,15 @@ class Cap5Service:
         quyết định tour có tự bật lại lần sau hay không.
         """
         progress = await self._require_progress(user_id)
-        progress.da_xem_tour_sanma = True
-        await self._session.flush()
+        if not progress.da_xem_tour_sanma:
+            progress.da_xem_tour_sanma = True
+            await record_journey_event(
+                self._session,
+                user_id,
+                "cap5_tour_sanma_done",
+                dedup_key=str(progress.id),
+            )
+            await self._session.flush()
         return await self._recompute_progress(user_id, progress)
 
     # ══════════════════════════════════════════════════
@@ -312,9 +332,7 @@ class Cap5Service:
 
     async def _hunt_log(self, user_id: uuid.UUID) -> list[Cap5HuntLog]:
         result = await self._session.execute(
-            select(Cap5HuntLog)
-            .where(Cap5HuntLog.user_id == user_id)
-            .order_by(Cap5HuntLog.first_hunted_at.asc())
+            select(Cap5HuntLog).where(Cap5HuntLog.user_id == user_id).order_by(Cap5HuntLog.first_hunted_at.asc())
         )
         return list(result.scalars().all())
 
@@ -333,9 +351,7 @@ class Cap5Service:
         return list(result.scalars().all())
 
     @staticmethod
-    def _hunt_for_order(
-        log_by_symbol: dict[str, Cap5HuntLog], order: VirtualOrder
-    ) -> Cap5HuntLog | None:
+    def _hunt_for_order(log_by_symbol: dict[str, Cap5HuntLog], order: VirtualOrder) -> Cap5HuntLog | None:
         """Bản ghi săn của mã này NẾU nó được săn TRƯỚC khi lệnh được đặt.
 
         Săn sau khi mua thì không phải "mua từ Watchlist" — thứ tự thời gian là
@@ -364,10 +380,10 @@ class Cap5Service:
         if not order_ids:
             return
         rows = (
-            await self._session.execute(
-                select(OrderKehoach).where(OrderKehoach.order_id.in_(order_ids))
-            )
-        ).scalars().all()
+            (await self._session.execute(select(OrderKehoach).where(OrderKehoach.order_id.in_(order_ids))))
+            .scalars()
+            .all()
+        )
         by_order = {row.order_id: row for row in rows}
 
         dirty = False
@@ -391,6 +407,14 @@ class Cap5Service:
                 kehoach.from_watchlist = from_watchlist
                 kehoach.hunt_filter = hunt_filter
                 dirty = True
+                if from_watchlist:
+                    await record_journey_event(
+                        self._session,
+                        user_id,
+                        "cap5_order_from_hunt",
+                        {"symbol": order.symbol.upper(), "filter": hunt_filter},
+                        dedup_key=str(order.id),
+                    )
         if dirty:
             await self._session.flush()
 
@@ -407,7 +431,11 @@ class Cap5Service:
         return list(result.scalars().all())
 
     async def _refresh_consensus(
-        self, rows: Sequence[WatchlistItem]
+        self,
+        rows: Sequence[WatchlistItem],
+        *,
+        today: date | None = None,
+        refreshed_at: datetime | None = None,
     ) -> dict[str, ConsensusResult]:
         """Chấm điểm đồng thuận cho cả rổ, nhưng chỉ GHI cho hàng chưa chấm hôm nay.
 
@@ -419,11 +447,13 @@ class Cap5Service:
         ★ ``_watchlist_out`` vẫn chỉ vẽ cụm icon khi nó KHỚP với con số đã lưu —
         xem chú thích ở đó.
         """
-        today = _now_vn_date()
-        out = await self._consensus.cham_nhieu([r.symbol for r in rows])
+        refresh_day = today or _now_vn_date()
+        refresh_time = refreshed_at or datetime.now(UTC)
+        out = await self._consensus.cham_nhieu([r.symbol for r in rows], today=refresh_day)
         dirty = False
+        became_notable: list[tuple[WatchlistItem, ConsensusResult]] = []
         for row in rows:
-            if _vn_date(row.consensus_at) == today:
+            if _vn_date(row.consensus_at) == refresh_day:
                 continue
             ket = out.get(row.symbol.upper())
             if ket is None or ket.diem is None:
@@ -434,12 +464,64 @@ class Cap5Service:
                 row.consensus_prev = row.consensus_today
             row.consensus_today = ket.diem
             row.consensus_da_cham = ket.so_lop_da_cham
-            row.consensus_at = datetime.now(UTC)
+            row.consensus_at = refresh_time
+            old_status = row.status
             row.status = ket.status
+            if old_status != WatchlistStatus.NOTABLE.value and ket.status == WatchlistStatus.NOTABLE.value:
+                became_notable.append((row, ket))
             dirty = True
         if dirty:
             await self._session.flush()
+        if became_notable:
+            user_ids = {row.user_id for row, _ket in became_notable}
+            symbols = {row.symbol.upper() for row, _ket in became_notable}
+            hunt_rows = (
+                (
+                    await self._session.execute(
+                        select(Cap5HuntLog).where(
+                            Cap5HuntLog.user_id.in_(user_ids),
+                            func.upper(Cap5HuntLog.symbol).in_(symbols),
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            notable_keys = {(row.user_id, row.symbol.upper()) for row, _ket in became_notable}
+            for hunt in hunt_rows:
+                if (hunt.user_id, hunt.symbol.upper()) in notable_keys and hunt.notable_at is None:
+                    hunt.notable_at = refresh_time
+            await self._session.flush()
+        for row, ket in became_notable:
+            session_day = ket.session_date or refresh_day
+            await record_journey_event(
+                self._session,
+                row.user_id,
+                "cap5_watchlist_notable",
+                {"symbol": row.symbol.upper()},
+                dedup_key=f"{row.id}:{session_day.isoformat()}",
+            )
         return out
+
+    async def refresh_consensus_eod(
+        self,
+        rows: Sequence[WatchlistItem],
+        *,
+        today: date,
+        refreshed_at: datetime,
+    ) -> dict[str, ConsensusResult]:
+        """Refresh a Watchlist slice for the dedicated Cấp 5 EOD job.
+
+        This deliberately reuses the exact same transition rules as API reads:
+        one successful write per Vietnam calendar day, ``consensus_prev`` only
+        changes when the score changes, and missing/stale stored analysis never
+        becomes a fabricated ``0/5``.  The source only reads
+        ``ai_insight_history``; it does not invoke an AI model.
+
+        The caller owns transaction boundaries so a scheduler can isolate one
+        user's Watchlist from another user's failure.
+        """
+        return await self._refresh_consensus(rows, today=today, refreshed_at=refreshed_at)
 
     # ══════════════════════════════════════════════════
     # Recompute + 2 nhiệm vụ
@@ -458,11 +540,7 @@ class Cap5Service:
         # ① độ rộng: đếm MÃ PHÂN BIỆT đã săn (bảng đã unique theo user+symbol).
         so_ma_da_san = len(log)
         # ② số mã đã săn rồi thực sự mua (phân biệt theo mã, không theo lệnh).
-        mua_tu_san = {
-            (o.symbol or "").upper()
-            for o in buys
-            if self._hunt_for_order(log_by_symbol, o) is not None
-        }
+        mua_tu_san = {(o.symbol or "").upper() for o in buys if self._hunt_for_order(log_by_symbol, o) is not None}
         so_ma_mua = len(mua_tu_san)
 
         progress.so_ma_da_san = so_ma_da_san
@@ -481,9 +559,7 @@ class Cap5Service:
         await self._session.flush()
         await self._session.refresh(progress)
 
-        so_ma_cho_du_lop, so_ma_da_cham_diem = self._tang_giua_phieu(
-            log_by_symbol, watchlist_rows
-        )
+        so_ma_cho_du_lop, so_ma_da_cham_diem = self._tang_giua_phieu(log_by_symbol, watchlist_rows)
         return self._progress_out(
             progress,
             so_ma_cho_du_lop=so_ma_cho_du_lop,
@@ -496,8 +572,8 @@ class Cap5Service:
     ) -> tuple[int | None, int]:
         """Tầng giữa của phễu ⑬ **kèm mẫu số thật**: ``(so_ma, so_ma_da_cham)``.
 
-        ``so_ma`` = số mã ĐÃ SĂN đang/vừa ở ≥4/5 lớp ủng hộ; ``so_ma_da_cham`` =
-        số mã đã săn mà hệ THỰC SỰ có điểm đồng thuận để đếm.
+        ``so_ma`` = số mã ĐÃ SĂN từng ở ≥4/5 lớp ủng hộ; ``so_ma_da_cham`` = số
+        mã đã săn mà hệ THỰC SỰ có bằng chứng từng chấm điểm đồng thuận.
 
         ★ ``so_ma is None`` = "chưa đo được", KHÔNG phải 0: khi CHƯA có mã săn
         nào được chấm (mẻ chấm chưa chạy, hoặc mã chưa từng có bản AI Insight)
@@ -508,28 +584,25 @@ class Cap5Service:
         ALL: chấm được 1/10 mã cũng là một thông tin thật về mã đó. Nhưng nếu
         chỉ đưa con số đếm lên wire thì "1 mã chấm được, 9 mã chưa" và "10 mã
         chấm hết" trông y như nhau, và câu "N mã của bạn từng chín" thành một
-        khẳng định về 9 mã chưa ai tính. Có hai lý do độc lập khiến con số này
-        là CẬN DƯỚI, và mẫu số bắt được cả hai:
-          · lược sử điểm đồng thuận không được lưu ⇒ chỉ nhìn được 2 lần chấm
-            gần nhất (``consensus_today`` + ``consensus_prev``);
-          · mã đã bị xoá khỏi Watchlist (mua rồi xoá — phễu ngược) thì không còn
-            hàng nào để đọc điểm, dù nó ĐÃ từng chín.
-        Mẫu số đo trên ``so_ma_da_san`` (tổng đã săn) chứ không trên số hàng
-        Watchlist còn sống, nên nó bắt luôn cả trường hợp thứ hai.
+        khẳng định về 9 mã chưa ai tính. ``Cap5HuntLog.notable_at`` giữ bền
+        vững lần đầu mã đạt ngưỡng, kể cả khi mã bị xoá khỏi Watchlist hoặc
+        điểm lần sau giảm. Với mã chưa từng đáng chú ý, mẫu số vẫn chỉ tăng khi
+        còn bằng chứng điểm trên Watchlist; cờ đầy đủ tiếp tục nói rõ phần chưa
+        đo được.
         """
         if not log_by_symbol:
             return None, 0
-        da_cham = 0
-        dem = 0
+        da_cham_symbols = {symbol for symbol, hunt in log_by_symbol.items() if hunt.notable_at is not None}
         for row in rows:
-            if row.symbol.upper() not in log_by_symbol:
+            symbol = row.symbol.upper()
+            if symbol not in log_by_symbol:
                 continue
             diem = [d for d in (row.consensus_today, row.consensus_prev) if d is not None]
             if not diem:
                 continue
-            da_cham += 1
-            if max(diem) >= NGUONG_DANG_CHU_Y:
-                dem += 1
+            da_cham_symbols.add(symbol)
+        dem = sum(hunt.notable_at is not None for hunt in log_by_symbol.values())
+        da_cham = len(da_cham_symbols)
         return (dem if da_cham else None), da_cham
 
     @staticmethod
@@ -574,12 +647,13 @@ class Cap5Service:
     # Màn Săn mã (spec §5)
     # ══════════════════════════════════════════════════
 
-    async def _universe(self) -> list[str]:
-        """Rổ mã HOSE đang hoạt động — tiêu chí "chỉ HOSE" của lọc sàn (§5.2).
+    async def _universe(self) -> HuntUniverse:
+        """Rổ HOSE sau khi loại trạng thái cấm, trước mọi bộ lọc (§5.2).
 
         Nguồn: bảng ``symbols`` nội bộ (``exchange``/``asset_type``/``is_index``/
-        ``is_active``). Rổ rỗng ⇒ mọi bộ lọc báo "chưa đủ dữ liệu", KHÔNG báo
-        "0 mã thoả".
+        ``is_active``) và API ``theo-doi-dac-biet`` của chính HOSE. Nguồn trạng
+        thái lỗi ⇒ rổ không được phép chạy (fail closed), vì xem mã không rõ
+        trạng thái là bình thường sẽ vi phạm bộ lọc nền.
         """
         result = await self._session.execute(
             select(Symbol.symbol)
@@ -593,10 +667,20 @@ class Cap5Service:
             )
             .order_by(Symbol.symbol.asc())
         )
-        return [row[0].upper() for row in result.all()]
+        raw = [row[0].upper() for row in result.all()]
+        if not raw:
+            return HuntUniverse((), 0, True)
+        excluded = await self._source.restricted_symbols()
+        if excluded is None:
+            return HuntUniverse((), len(raw), False)
+        return HuntUniverse(
+            tuple(symbol for symbol in raw if symbol not in excluded),
+            len(raw),
+            True,
+        )
 
     @staticmethod
-    def _result_out(result: HuntResult) -> dict:
+    def _result_out(result: HuntResult, *, status_filter_applied: bool) -> dict:
         """Một ``HuntResult`` → wire shape của FE (``sanMaTypes.HuntResult``).
 
         ``kha_dung`` là bản dịch trực tiếp của ``trang_thai``; bất biến
@@ -624,7 +708,7 @@ class Cap5Service:
             "ket_qua_day_du": result.ket_qua_day_du,
             "canh_bao_thieu_du_lieu": result.canh_bao_thieu_du_lieu,
             "hien_thi_toi_da": TOP_N,
-            "loc_san": loc_san_tieu_chi(),
+            "loc_san": loc_san_tieu_chi(canh_bao_ap_dung=status_filter_applied),
             "items": result.items,
         }
 
@@ -647,13 +731,17 @@ class Cap5Service:
                 "dieu_kien": spec.dieu_kien,
                 "xep_hang_theo": spec.xep_hang_theo,
                 "nguon_du_lieu": spec.nguon_du_lieu,
-                **await self._kha_dung(ma, universe),
+                **(
+                    await self._kha_dung(ma, universe.symbols)
+                    if universe.status_filter_applied
+                    else {"kha_dung": False, "ly_do_chua_kha_dung": _THIEU_TRANG_THAI_HOSE}
+                ),
             }
             for ma, spec in FILTER_SPECS.items()
         ]
         return {
-            "loc_san": loc_san_tieu_chi(),
-            "so_ma_trong_ro": len(universe),
+            "loc_san": loc_san_tieu_chi(canh_bao_ap_dung=universe.status_filter_applied),
+            "so_ma_trong_ro": (len(universe.symbols) if universe.status_filter_applied else universe.raw_count),
             "bo_loc": bo_loc,
             "hien_thi_toi_da": TOP_N,
         }
@@ -677,8 +765,18 @@ class Cap5Service:
         if bo_loc not in FILTER_SPECS:
             raise NotFoundError(f"bộ lọc săn mã '{bo_loc}'")
         universe = await self._universe()
-        result = await self._engine.run(bo_loc, universe)
-        return self._result_out(result)
+        if universe.status_filter_applied:
+            result = await self._engine.run(bo_loc, universe.symbols)
+        else:
+            result = self._engine.unavailable(bo_loc, _THIEU_TRANG_THAI_HOSE, so_ma_trong_ro=universe.raw_count)
+        await record_journey_event(
+            self._session,
+            user_id,
+            "cap5_hunt_open",
+            {"filter": bo_loc},
+            dedup_key=f"{bo_loc}:{_now_vn_date().isoformat()}",
+        )
+        return self._result_out(result, status_filter_applied=universe.status_filter_applied)
 
     # ══════════════════════════════════════════════════
     # Watchlist (spec §6)
@@ -695,9 +793,7 @@ class Cap5Service:
         clean = (symbol or "").strip().upper()
         if not clean:
             raise BadRequestError("Thiếu mã cổ phiếu")
-        row = (
-            await self._session.execute(select(Symbol).where(Symbol.symbol == clean))
-        ).scalar_one_or_none()
+        row = (await self._session.execute(select(Symbol).where(Symbol.symbol == clean))).scalar_one_or_none()
         if row is None or not row.is_active:
             raise BadRequestError(f"Mã {clean} không tồn tại")
         if not la_co_phieu(row):
@@ -748,30 +844,26 @@ class Cap5Service:
 
         existing = (
             await self._session.execute(
-                select(WatchlistItem).where(
-                    WatchlistItem.user_id == user_id, WatchlistItem.symbol == clean
-                )
+                select(WatchlistItem).where(WatchlistItem.user_id == user_id, WatchlistItem.symbol == clean)
             )
         ).scalar_one_or_none()
 
-        if existing is None:
+        new_watchlist_item = existing is None
+        if new_watchlist_item:
             count = (
                 await self._session.execute(
-                    select(func.count())
-                    .select_from(WatchlistItem)
-                    .where(WatchlistItem.user_id == user_id)
+                    select(func.count()).select_from(WatchlistItem).where(WatchlistItem.user_id == user_id)
                 )
             ).scalar() or 0
             if count >= MAX_WATCHLIST_ITEMS:
                 raise BadRequestError(
-                    f"Danh sách theo dõi tối đa {MAX_WATCHLIST_ITEMS} mã — "
-                    "bỏ vài mã đã nguội trước khi săn thêm."
+                    f"Danh sách theo dõi tối đa {MAX_WATCHLIST_ITEMS} mã — bỏ vài mã đã nguội trước khi săn thêm."
                 )
 
         tin_hieu = await self._tin_hieu_san(hunt_filter, clean)
         now = datetime.now(UTC)
 
-        if existing is None:
+        if new_watchlist_item:
             max_order = (
                 await self._session.execute(
                     select(func.coalesce(func.max(WatchlistItem.sort_order), -1)).where(
@@ -779,9 +871,7 @@ class Cap5Service:
                     )
                 )
             ).scalar() or 0
-            existing = WatchlistItem(
-                user_id=user_id, symbol=clean, sort_order=int(max_order) + 1
-            )
+            existing = WatchlistItem(user_id=user_id, symbol=clean, sort_order=int(max_order) + 1)
             self._session.add(existing)
         existing.hunt_filter = hunt_filter
         existing.hunt_signal = tin_hieu
@@ -789,9 +879,7 @@ class Cap5Service:
 
         log = (
             await self._session.execute(
-                select(Cap5HuntLog).where(
-                    Cap5HuntLog.user_id == user_id, Cap5HuntLog.symbol == clean
-                )
+                select(Cap5HuntLog).where(Cap5HuntLog.user_id == user_id, Cap5HuntLog.symbol == clean)
             )
         ).scalar_one_or_none()
         if log is None:
@@ -811,12 +899,21 @@ class Cap5Service:
             log.hunt_signal = tin_hieu
             log.last_hunted_at = now
         await self._session.flush()
+        if new_watchlist_item:
+            await record_journey_event(
+                self._session,
+                user_id,
+                "cap5_add_watchlist",
+                {"symbol": clean, "filter": hunt_filter},
+                dedup_key=str(existing.id),
+            )
 
         await self._recompute_progress(user_id, progress)
         rows = await self._watchlist_rows(user_id)
         lop = await self._refresh_consensus(rows)
         item = next((r for r in rows if r.symbol == clean), existing)
-        return self._watchlist_out(item, lop.get(clean))
+        prices = await self._watchlist_prices([clean])
+        return self._watchlist_out(item, lop.get(clean), prices.get(clean))
 
     async def remove_watchlist(self, user_id: uuid.UUID, symbol: str) -> None:
         """``DELETE /cap5/watchlist/{symbol}``.
@@ -829,9 +926,7 @@ class Cap5Service:
         clean = (symbol or "").strip().upper()
         row = (
             await self._session.execute(
-                select(WatchlistItem).where(
-                    WatchlistItem.user_id == user_id, WatchlistItem.symbol == clean
-                )
+                select(WatchlistItem).where(WatchlistItem.user_id == user_id, WatchlistItem.symbol == clean)
             )
         ).scalar_one_or_none()
         if row is None:
@@ -840,7 +935,55 @@ class Cap5Service:
         await self._session.flush()
         await self._recompute_progress(user_id, progress)
 
-    def _watchlist_out(self, row: WatchlistItem, ket: ConsensusResult | None) -> dict:
+    async def _watchlist_prices(self, symbols: Sequence[str]) -> dict[str, dict[str, Any]]:
+        """Load current prices for the complete Watchlist in one upstream call.
+
+        Price is presentation data on this endpoint: an unavailable provider
+        must not hide the user's persisted Watchlist. Missing/invalid rows are
+        omitted, which makes the two response fields nullable rather than
+        manufacturing a zero or substituting the reference price.
+        """
+        wanted = list(dict.fromkeys(s.upper() for s in symbols if s))
+        if not wanted:
+            return {}
+        try:
+            rows, _ = await self._price_board_fetcher(wanted)
+        except Exception as exc:  # noqa: BLE001 — degrade the optional quote fields
+            logger.warning("Cấp 5: không lấy được giá Watchlist: %s", exc)
+            return {}
+        if not isinstance(rows, list):
+            logger.warning("Cấp 5: bảng giá Watchlist trả sai định dạng")
+            return {}
+        return {
+            symbol: row
+            for row in rows
+            if isinstance(row, dict) and (symbol := str(row.get("symbol") or "").strip().upper()) in wanted
+        }
+
+    @staticmethod
+    def _current_price(price: dict[str, Any] | None) -> tuple[int | None, float | None]:
+        if price is None:
+            return None, None
+        try:
+            current = float(price["close_price"])
+        except (KeyError, TypeError, ValueError):
+            return None, None
+        if current <= 0 or not math.isfinite(current):
+            return None, None
+        try:
+            percent = float(price["percent_change"])
+        except (KeyError, TypeError, ValueError):
+            percent = None
+        if percent is not None and not math.isfinite(percent):
+            percent = None
+        return int(round(current)), percent
+
+    def _watchlist_out(
+        self,
+        row: WatchlistItem,
+        ket: ConsensusResult | None,
+        price: dict[str, Any] | None = None,
+    ) -> dict:
         khop = (
             ket is not None
             and ket.diem is not None
@@ -851,21 +994,20 @@ class Cap5Service:
         # quá cũ): vẫn vẽ 5 lớp trống kèm LÝ DO. Nó không mâu thuẫn với con số
         # nào cả (chẳng có số nào), và đây là chỗ duy nhất user đọc được "vì sao
         # mã này chưa có điểm".
-        chua_ai_cham = (
-            ket is not None and ket.diem is None and row.consensus_today is None
-        )
+        chua_ai_cham = ket is not None and ket.diem is None and row.consensus_today is None
         co_chi_tiet = khop or chua_ai_cham
         hunt_date = _vn_date(row.hunt_at)
-        so_phien = (
-            _count_trading_sessions(hunt_date, _now_vn_date()) if hunt_date is not None else None
-        )
+        so_phien = _count_trading_sessions(hunt_date, _now_vn_date()) if hunt_date is not None else None
         diem = row.consensus_today
         # ★★ C3: điểm ĐÃ LƯU mà hôm nay không còn bản phân tích nào trong cửa sổ
         # hiệu lực để xác nhận ⇒ nó là SỐ CŨ. Không xoá (nó là lịch sử thật),
         # nhưng phải đánh dấu — nếu không, thẻ cứ nói "4/5 lớp đang ủng hộ" mãi.
         het_han = diem is not None and (ket is None or ket.diem is None)
+        current_price_vnd, percent_change = self._current_price(price)
         return {
             "symbol": row.symbol,
+            "current_price_vnd": current_price_vnd,
+            "percent_change": percent_change,
             "added_at": row.created_at,
             "hunt_filter": row.hunt_filter,
             "hunt_filter_ten": HUNT_FILTER_LABELS.get(row.hunt_filter or "") or None,
@@ -882,9 +1024,7 @@ class Cap5Service:
             "consensus_session_date": ket.session_date if khop else None,
             # Có bản phân tích nhưng ĐÃ QUÁ CŨ (bị từ chối) — khác hẳn "chưa có
             # bản nào", và là câu trả lời cho "vì sao mã này không có điểm".
-            "consensus_session_date_qua_han": (
-                ket.session_date_qua_han if ket is not None else None
-            ),
+            "consensus_session_date_qua_han": (ket.session_date_qua_han if ket is not None else None),
             "consensus_het_han": het_han,
             "so_phien_hieu_luc": SO_PHIEN_HIEU_LUC,
             "status": row.status,
@@ -909,10 +1049,16 @@ class Cap5Service:
         await self._require_progress(user_id)
         rows = await self._watchlist_rows(user_id)
         lop = await self._refresh_consensus(rows)
-        items = [self._watchlist_out(row, lop.get(row.symbol.upper())) for row in rows]
-        so_dang_chu_y = sum(
-            1 for row in rows if row.status == WatchlistStatus.NOTABLE.value
-        )
+        prices = await self._watchlist_prices([row.symbol for row in rows])
+        items = [
+            self._watchlist_out(
+                row,
+                lop.get(row.symbol.upper()),
+                prices.get(row.symbol.upper()),
+            )
+            for row in rows
+        ]
+        so_dang_chu_y = sum(1 for row in rows if row.status == WatchlistStatus.NOTABLE.value)
         return {
             "items": items,
             "so_luong": len(items),
@@ -923,9 +1069,7 @@ class Cap5Service:
             "so_phien_hieu_luc": SO_PHIEN_HIEU_LUC,
         }
 
-    async def nguon_san(
-        self, user_id: uuid.UUID, symbol: str, *, order_id: uuid.UUID | None = None
-    ) -> dict:
+    async def nguon_san(self, user_id: uuid.UUID, symbol: str, *, order_id: uuid.UUID | None = None) -> dict:
         """``GET /cap5/nguon-san/{symbol}[?order_id=]`` — nguồn săn cho Kết sổ (§8).
 
         ★★ **``order_id`` là thứ làm câu trả lời này ĐÚNG.** Sổ ``cap5_hunt_log``
@@ -954,32 +1098,24 @@ class Cap5Service:
         if order_id is not None:
             order = (
                 await self._session.execute(
-                    select(VirtualOrder).where(
-                        VirtualOrder.id == order_id, VirtualOrder.user_id == user_id
-                    )
+                    select(VirtualOrder).where(VirtualOrder.id == order_id, VirtualOrder.user_id == user_id)
                 )
             ).scalar_one_or_none()
             if order is None:
                 raise NotFoundError("lệnh")
             if (order.symbol or "").upper() != clean:
-                raise BadRequestError(
-                    f"Lệnh này là mã {order.symbol}, không phải {clean}"
-                )
+                raise BadRequestError(f"Lệnh này là mã {order.symbol}, không phải {clean}")
 
         log = (
             await self._session.execute(
-                select(Cap5HuntLog).where(
-                    Cap5HuntLog.user_id == user_id, Cap5HuntLog.symbol == clean
-                )
+                select(Cap5HuntLog).where(Cap5HuntLog.user_id == user_id, Cap5HuntLog.symbol == clean)
             )
         ).scalar_one_or_none()
 
         # Săn SAU khi mua thì lệnh này không đến từ săn mã — chỉ trả lời được
         # khi biết mốc lệnh, nên nhánh dưới chỉ chạy khi có ``order``.
         log_cho_lenh = (
-            self._hunt_for_order({log.symbol.upper(): log}, order)
-            if log is not None and order is not None
-            else log
+            self._hunt_for_order({log.symbol.upper(): log}, order) if log is not None and order is not None else log
         )
         moc = "luc_dat_lenh" if order is not None else "hom_nay"
         canh_bao_thieu_order = (
@@ -987,7 +1123,7 @@ class Cap5Service:
             if order is not None
             else (
                 "Dòng này đọc từ SỔ SĂN của bạn, không gắn với lệnh nào: nó nói "
-                "\"bạn đã từng săn mã này\", KHÔNG nói \"lệnh đó đến từ săn mã\" "
+                '"bạn đã từng săn mã này", KHÔNG nói "lệnh đó đến từ săn mã" '
                 "(một mã có thể được săn SAU khi đã mua). Truyền order_id để có "
                 "câu trả lời đúng cho một lệnh cụ thể."
             )
@@ -1002,10 +1138,7 @@ class Cap5Service:
         }
 
         if log_cho_lenh is None:
-            giai_thich = (
-                f"Mã {clean} không đến từ săn mã — bạn tự nhập mã này, "
-                "không qua bộ lọc nào."
-            )
+            giai_thich = f"Mã {clean} không đến từ săn mã — bạn tự nhập mã này, không qua bộ lọc nào."
             if log is not None and order is not None:
                 # Có săn, nhưng SAU khi đặt lệnh — nói thẳng, đừng gộp vào
                 # "bạn tự nhập" một cách im lặng.
@@ -1027,24 +1160,16 @@ class Cap5Service:
 
         hunt_date = _vn_date(log_cho_lenh.first_hunted_at)
         den = _vn_date(order.created_at) if order is not None else _now_vn_date()
-        so_phien = (
-            _count_trading_sessions(hunt_date, den)
-            if hunt_date is not None and den is not None
-            else None
-        )
+        so_phien = _count_trading_sessions(hunt_date, den) if hunt_date is not None and den is not None else None
 
         bo_loc = log_cho_lenh.hunt_filter
         canh_bao_moi_hon = None
         if order is not None:
             kehoach = (
-                await self._session.execute(
-                    select(OrderKehoach).where(OrderKehoach.order_id == order.id)
-                )
+                await self._session.execute(select(OrderKehoach).where(OrderKehoach.order_id == order.id))
             ).scalar_one_or_none()
             dau = (
-                kehoach.hunt_filter
-                if kehoach is not None and kehoach.from_watchlist and kehoach.hunt_filter
-                else None
+                kehoach.hunt_filter if kehoach is not None and kehoach.from_watchlist and kehoach.hunt_filter else None
             )
             if dau is not None:
                 bo_loc = dau
@@ -1085,6 +1210,131 @@ class Cap5Service:
             ),
         }
 
+    async def get_plan(self, user_id: uuid.UUID, order_id: uuid.UUID) -> dict:
+        """Return the cumulative Cấp 1–5 BUY snapshot for Kết sổ recovery."""
+        await self._require_progress(user_id)
+        base = await Cap4Service(self._session).get_plan(user_id, order_id)
+        plan = (
+            await self._session.execute(
+                select(OrderKehoach).where(OrderKehoach.order_id == order_id)
+            )
+        ).scalar_one_or_none()
+        if plan is None:
+            raise NotFoundError("kế hoạch của lệnh")
+        source_known = plan.from_watchlist is not None
+        if not source_known:
+            explanation = "Lệnh lịch sử này chưa được chụp nguồn săn tại thời điểm đặt."
+        elif plan.from_watchlist:
+            filter_name = HUNT_FILTER_LABELS.get(plan.hunt_filter or "", plan.hunt_filter)
+            explanation = f"Mã này được săn từ bộ lọc {filter_name}."
+        else:
+            explanation = "Mã này không đến từ săn mã ở thời điểm đặt lệnh."
+        missing_consensus = (
+            None
+            if plan.consensus_at_entry is not None
+            else "Không có điểm đồng thuận đã chấm tại thời điểm đặt lệnh."
+        )
+        return {
+            **base,
+            "source_known": source_known,
+            "from_watchlist": plan.from_watchlist,
+            "tu_san_ma": plan.from_watchlist,
+            "hunt_filter": plan.hunt_filter if source_known else None,
+            "hunt_filter_ten": (
+                HUNT_FILTER_LABELS.get(plan.hunt_filter or "") if source_known else None
+            ),
+            "hunt_signal": plan.hunt_signal_at_entry,
+            "first_hunted_at": plan.hunt_first_hunted_at_entry,
+            "so_phien_trong_watchlist": plan.hunt_sessions_at_entry,
+            "so_lop_luc_vao": plan.consensus_at_entry,
+            "so_lop_da_cham_luc_vao": plan.consensus_scored_at_entry,
+            "consensus_captured_at_entry": plan.consensus_captured_at_entry,
+            "entry_snapshot_at": plan.cap5_entry_snapshot_at,
+            "giai_thich": explanation,
+            "ly_do_thieu_so_lop": missing_consensus,
+            "canh_bao_nguon_moi_hon": None,
+        }
+
+    async def record_entry_snapshot(
+        self, user_id: uuid.UUID, order_id: uuid.UUID
+    ) -> OrderKehoach:
+        """Freeze Cấp 5 hunt and consensus context in the atomic BUY flow."""
+        progress = await self._require_progress(user_id)
+        order = (
+            await self._session.execute(
+                select(VirtualOrder).where(VirtualOrder.id == order_id)
+            )
+        ).scalar_one_or_none()
+        if order is None or order.user_id != user_id or order.side != OrderSide.BUY:
+            raise NotFoundError("lệnh mua")
+        if order.mode != "thuc_chien":
+            raise BadRequestError("Cấp 5 chỉ ghi nhận lệnh Thực chiến")
+        if _as_utc(order.created_at) < _as_utc(progress.entered_at).replace(microsecond=0):
+            raise BadRequestError("Lệnh được tạo trước khi vào Cấp 5")
+        plan = (
+            await self._session.execute(
+                select(OrderKehoach).where(OrderKehoach.order_id == order_id)
+            )
+        ).scalar_one_or_none()
+        if plan is None:
+            raise NotFoundError("kế hoạch Cấp 1 — cần ghi vùng mua trước")
+        if plan.cap5_entry_snapshot_at is not None:
+            return plan
+
+        clean = (order.symbol or "").upper()
+        log = (
+            await self._session.execute(
+                select(Cap5HuntLog).where(
+                    Cap5HuntLog.user_id == user_id,
+                    func.upper(Cap5HuntLog.symbol) == clean,
+                )
+            )
+        ).scalar_one_or_none()
+        hunt = (
+            log
+            if log is not None
+            and _as_utc(log.first_hunted_at) <= _as_utc(order.created_at)
+            else None
+        )
+        watch = (
+            await self._session.execute(
+                select(WatchlistItem).where(
+                    WatchlistItem.user_id == user_id,
+                    func.upper(WatchlistItem.symbol) == clean,
+                )
+            )
+        ).scalar_one_or_none()
+        now = datetime.now(UTC)
+        plan.from_watchlist = hunt is not None
+        plan.hunt_filter = hunt.hunt_filter if hunt is not None else None
+        plan.hunt_signal_at_entry = hunt.hunt_signal if hunt is not None else None
+        plan.hunt_first_hunted_at_entry = (
+            hunt.first_hunted_at if hunt is not None else None
+        )
+        hunt_date = _vn_date(hunt.first_hunted_at) if hunt is not None else None
+        order_date = _vn_date(order.created_at)
+        plan.hunt_sessions_at_entry = (
+            _count_trading_sessions(hunt_date, order_date)
+            if hunt_date is not None and order_date is not None
+            else None
+        )
+        if watch is not None and watch.consensus_at is not None:
+            plan.consensus_at_entry = watch.consensus_today
+            plan.consensus_scored_at_entry = watch.consensus_da_cham
+            plan.consensus_captured_at_entry = watch.consensus_at
+        plan.cap5_entry_snapshot_at = now
+        await self._session.flush()
+        await self._session.refresh(plan)
+        if hunt is not None:
+            await record_journey_event(
+                self._session,
+                user_id,
+                "cap5_order_from_hunt",
+                {"symbol": clean, "filter": hunt.hunt_filter},
+                dedup_key=str(order.id),
+            )
+        return plan
+
     # ══════════════════════════════════════════════════
     # Phân tích danh mục — khối ⑫ + ⑬ (spec §9)
     # ══════════════════════════════════════════════════
@@ -1114,12 +1364,12 @@ class Cap5Service:
 
         buys = await self._filled_buys(user_id)
         kehoach_rows = (
-            await self._session.execute(
-                select(OrderKehoach).where(
-                    OrderKehoach.order_id.in_([o.id for o in buys])
-                )
-            )
-        ).scalars().all() if buys else []
+            (await self._session.execute(select(OrderKehoach).where(OrderKehoach.order_id.in_([o.id for o in buys]))))
+            .scalars()
+            .all()
+            if buys
+            else []
+        )
         kehoach_by_order = {row.order_id: row for row in kehoach_rows}
 
         out: list[tuple[float, str | None]] = []
@@ -1135,11 +1385,7 @@ class Cap5Service:
                 continue
             buy = max(candidates, key=lambda o: _as_utc(o.created_at))
             kehoach = kehoach_by_order.get(buy.id)
-            hunt_filter = (
-                kehoach.hunt_filter
-                if kehoach is not None and kehoach.from_watchlist
-                else None
-            )
+            hunt_filter = kehoach.hunt_filter if kehoach is not None and kehoach.from_watchlist else None
             out.append((float(ketso.pnl_pct), hunt_filter))
         return out
 
@@ -1295,9 +1541,13 @@ class Cap5Service:
         if progress.graduated_at is None:
             now = datetime.now(UTC)
             progress.graduated_at = now
-            progress.time_to_graduate_hours = (
-                now - _as_utc(progress.entered_at)
-            ).total_seconds() / 3600.0
+            progress.time_to_graduate_hours = (now - _as_utc(progress.entered_at)).total_seconds() / 3600.0
+            await record_journey_event(
+                self._session,
+                user_id,
+                "cap5_graduate",
+                dedup_key=str(progress.id),
+            )
             await self._session.flush()
             await self._session.refresh(progress)
 

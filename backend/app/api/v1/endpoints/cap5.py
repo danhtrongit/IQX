@@ -21,6 +21,7 @@ from app.api.deps import CurrentUser, DBSession
 from app.schemas.cap5 import (
     AddWatchlistRequest,
     Cap5PhanTichOut,
+    Cap5PlanOut,
     Cap5ProgressOut,
     Cap5WatchlistItemOut,
     Cap5WatchlistOut,
@@ -72,6 +73,12 @@ async def mark_tour_sanma(user: CurrentUser, db: DBSession) -> Cap5ProgressOut:
     return Cap5ProgressOut(**await svc.mark_tour_sanma(user.id))
 
 
+@router.get("/plans/{order_id}", response_model=Cap5PlanOut)
+async def get_plan(order_id: uuid.UUID, user: CurrentUser, db: DBSession) -> Cap5PlanOut:
+    """Khôi phục kế hoạch BUY Cấp 1–5 để SELL vẫn mở Kết sổ sau reload."""
+    return Cap5PlanOut.model_validate(await Cap5Service(db).get_plan(user.id, order_id))
+
+
 # ── Màn Săn mã (§5) ───────────────────────────────────
 
 
@@ -106,6 +113,10 @@ async def get_watchlist(user: CurrentUser, db: DBSession) -> Cap5WatchlistOut:
 
     Mẻ chấm 5 lớp chạy tối đa 1 lần/ngày cho mỗi mã (spec §6.1 — không tức thời,
     không gọi AI: chỉ đọc lại bản AI Insight đã lưu).
+
+    Giá hiện tại và % thay đổi được lấy cho cả rổ bằng một batch bảng giá.
+    Mã thiếu giá khớp hoặc thiếu giá tham chiếu trả trường tương ứng là ``null``;
+    endpoint không thay bằng 0 hay dựng giá từ nguồn khác.
     """
     svc = Cap5Service(db)
     return Cap5WatchlistOut(**await svc.watchlist(user.id))

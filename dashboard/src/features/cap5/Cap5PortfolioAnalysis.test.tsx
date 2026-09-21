@@ -17,6 +17,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
  */
 vi.mock("@/features/cap4/hooks", () => ({
   useVuKhiDiemMu: () => ({ data: undefined, isPending: true, isError: false }),
+  usePhanTichCap4: () => ({ data: undefined, isPending: true, isError: false }),
 }))
 
 /**
@@ -227,7 +228,30 @@ function renderPage(
   trades: Cap5TradeRecord[],
   dailyScores: Cap2DailyScoreRecord[] = [],
   cap5: Cap5Progress | null = cap5Progress(),
+  khoi13Override: Partial<Cap5PhanTich["khoi_13"]> = {},
 ) {
+  const current = phanTichQuery.current
+  const data = current.data as Cap5PhanTich | undefined
+  if (data && cap5) {
+    phanTichQuery.current = {
+      ...current,
+      data: {
+        ...data,
+        khoi_13: {
+          so_ma_da_san: cap5.so_ma_da_san,
+          so_ma_cho_du_lop: cap5.so_ma_cho_du_lop,
+          so_ma_da_cham_diem: cap5.so_ma_da_cham_diem,
+          so_ma_cho_du_lop_day_du: cap5.so_ma_cho_du_lop_day_du,
+          so_ma_vao_lenh: cap5.so_ma_mua_tu_watchlist,
+          giai_thich: "",
+          loi_ket: "",
+          ...khoi13Override,
+        },
+      },
+    }
+  } else if (cap5 == null && data) {
+    phanTichQuery.current = { data: undefined, isPending: false, isError: true }
+  }
   return render(
     <Cap5PortfolioAnalysis
       trades={trades}
@@ -253,11 +277,9 @@ describe("Cap5PortfolioAnalysis — giữ MỌI khối Cấp 1-4 (cộng dồn)"
     expect(screen.getByTestId("cap2-pa-khoi2")).toBeInTheDocument()
     expect(screen.getByTestId("cap2-pa-khoi3")).toBeInTheDocument()
     expect(screen.getByTestId("cap2-pa-khoi4")).toBeInTheDocument()
-    // ★ Cấp 2 mô hình 2 nhiệm vụ chỉ còn 4 khối — «Điểm kỷ luật 30 ngày»,
-    // «Phân loại vi phạm theo tuần» và «Phát hiện từ ghi chú» đã bỏ hẳn.
-    expect(screen.queryByTestId("cap2-pa-khoi5")).not.toBeInTheDocument()
-    expect(screen.queryByTestId("cap2-pa-khoi6")).not.toBeInTheDocument()
-    expect(screen.queryByTestId("cap2-pa-khoi7")).not.toBeInTheDocument()
+    expect(screen.getByTestId("cap2-pa-khoi5")).toBeInTheDocument()
+    expect(screen.getByTestId("cap2-pa-khoi6")).toBeInTheDocument()
+    expect(screen.getByTestId("cap2-pa-khoi7")).toBeInTheDocument()
     // Cấp 3
     expect(screen.getByTestId("cap3-pa-khoi1")).toBeInTheDocument()
     expect(screen.getByTestId("cap3-pa-khoi5")).toBeInTheDocument()
@@ -397,7 +419,10 @@ describe("Cap5PortfolioAnalysis — ⑫ bộ lọc nào ra mã thắng nhiều n
 
   it("bộ lọc thấp nhất dưới ngưỡng kém → cảnh báo riêng cho bộ lọc đó", () => {
     phanTichQuery.current = {
-      data: phanTich([k12Item("ngoai", 4, 3), k12Item("kl", 4, 1)]),
+      data: phanTich([
+        k12Item("ngoai", 4, 3, { nhan: "hợp với bạn nhất" }),
+        k12Item("kl", 4, 1, { canh_bao: "khối lượng đột biến dễ là sóng ngắn" }),
+      ]),
       isPending: false,
       isError: false,
     }
@@ -419,7 +444,7 @@ describe("Cap5PortfolioAnalysis — ⑫ bộ lọc nào ra mã thắng nhiều n
     expect(note).toHaveTextContent("Mới có 2 lệnh đã đóng từ săn mã")
     expect(note).toHaveTextContent("còn thiếu 1 lệnh")
     // …và tuyệt đối không in ra một tỷ lệ nào cho bộ lọc chưa đủ mẫu.
-    expect(screen.getByTestId("cap5-pa-khoi12-pct-ngoai")).not.toHaveTextContent("%")
+    expect(screen.queryByTestId("cap5-pa-khoi12-row-ngoai")).not.toBeInTheDocument()
     expect(screen.queryByTestId("cap5-pa-khoi12-phathien")).not.toBeInTheDocument()
   })
 
@@ -433,7 +458,8 @@ describe("Cap5PortfolioAnalysis — ⑫ bộ lọc nào ra mã thắng nhiều n
       isError: false,
     }
     renderPage([])
-    expect(screen.getByTestId("cap5-pa-khoi12-row-ngoai")).toHaveTextContent("4/6")
+    expect(screen.queryByTestId("cap5-pa-khoi12-row-ngoai")).not.toBeInTheDocument()
+    expect(screen.getByTestId("cap5-pa-khoi12-chuadu")).toHaveTextContent("còn thiếu 2 lệnh")
   })
 
   it("★ chưa lệnh nào từ săn mã → nói thẳng, KHÔNG hiện 0%", () => {
@@ -470,7 +496,7 @@ describe("Cap5PortfolioAnalysis — ⑫ bộ lọc nào ra mã thắng nhiều n
     }
     renderPage([])
     expect(screen.getByTestId("cap5-pa-khoi12-pct-ngoai")).toHaveTextContent("100%")
-    expect(screen.getByTestId("cap5-pa-khoi12-pct-tudoanh")).not.toHaveTextContent("%")
+    expect(screen.queryByTestId("cap5-pa-khoi12-pct-tudoanh")).not.toBeInTheDocument()
   })
 
   it("★ câu giải thích §C12c là câu của SERVER, nguyên văn", () => {
@@ -494,10 +520,7 @@ describe("Cap5PortfolioAnalysis — ⑬ kỷ luật săn mã (phễu)", () => {
     renderPage([])
     const funnel = screen.getByTestId("cap5-pa-khoi13-funnel")
     expect(funnel).toHaveTextContent("Mã đã săn (đưa vào Watchlist)")
-    // ★ Nhãn KHÔNG còn là "Chờ đến khi ≥4/5 lớp": hệ không lưu lược sử điểm đồng
-    // thuận nên nó chỉ biết mã ĐANG ở mức nào (xem `portfolioAnalysisCap5.ts`).
-    expect(funnel).toHaveTextContent("Đang ở ≥4/5 lớp ủng hộ")
-    expect(funnel).not.toHaveTextContent("Chờ đến khi")
+    expect(funnel).toHaveTextContent("Từng lên ≥4/5 lớp ủng hộ")
     expect(funnel).toHaveTextContent("Thực sự vào lệnh")
     expect(screen.getByTestId("cap5-pa-khoi13-tang-1")).toHaveTextContent("34")
     expect(screen.getByTestId("cap5-pa-khoi13-tang-2")).toHaveTextContent("19")
@@ -546,6 +569,23 @@ describe("Cap5PortfolioAnalysis — ⑬ kỷ luật săn mã (phễu)", () => {
     const pat = screen.getByTestId("cap5-pa-khoi13-phathien")
     expect(pat).toHaveTextContent("Bạn săn 34 mã nhưng chỉ vào 14")
     expect(pat).toHaveTextContent("kỷ luật của thợ săn")
+  })
+
+  it("★ ưu tiên phễu authoritative từ API khi progress cũ mang số khác", () => {
+    renderPage([], [], cap5Progress(), {
+      so_ma_da_san: 9,
+      so_ma_cho_du_lop: 4,
+      so_ma_da_cham_diem: 9,
+      so_ma_cho_du_lop_day_du: true,
+      so_ma_vao_lenh: 2,
+      loi_ket: "Câu kết authoritative từ máy chủ.",
+    })
+    expect(screen.getByTestId("cap5-pa-khoi13-tang-1")).toHaveTextContent("9")
+    expect(screen.getByTestId("cap5-pa-khoi13-tang-2")).toHaveTextContent("4")
+    expect(screen.getByTestId("cap5-pa-khoi13-tang-3")).toHaveTextContent("2")
+    expect(screen.getByTestId("cap5-pa-khoi13-phathien")).toHaveTextContent(
+      "Câu kết authoritative từ máy chủ",
+    )
   })
 
   it("★ mua HẾT số mã săn → KHÔNG khen «biết chờ», nói thẳng điều ngược lại", () => {

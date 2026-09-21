@@ -75,6 +75,14 @@ describe("pickCoachIdCap4 — 4 mẫu (khác-AI/cùng-AI × thắng/thua)", () =
     ).toBe("cung_ai_thua")
   })
 
+  it("hòa vốn không bị gán thành thua hoặc AI đúng", () => {
+    expect(pickCoachIdCap4(situation({ pnlPositive: false, pnlPct: 0 }))).toBe("hoa_von")
+    const result = pickCoachCap4(situation({ pnlPositive: false, pnlPct: 0 }))
+    expect(result.text).toMatch(/hòa vốn/)
+    expect(result.text).toMatch(/không phân xử góc nhìn của ai/)
+    expect(result.text).not.toMatch(/AI có lý|AI đúng|lệnh này thua/i)
+  })
+
   it("chưa lộ AI (ai5Lop null) → nhánh chưa đối chiếu, KHÔNG đoán bừa 1 trong 4 mẫu", () => {
     expect(pickCoachIdCap4(situation({ ai5Lop: null }))).toBe("chua_doi_chieu")
   })
@@ -130,6 +138,12 @@ describe("pickCoachCap4 — nội dung 4 mẫu", () => {
     expect(res.lopNoiBat).toBeNull()
     expect(res.text).toMatch(/chưa có đối chiếu AI/i)
     expect(res.text).not.toMatch(/sai/i)
+  })
+
+  it("hòa vốn chưa đối chiếu vẫn được gọi đúng là hòa vốn", () => {
+    const res = pickCoachCap4(situation({ ai5Lop: null, pnlPositive: false, pnlPct: 0 }))
+    expect(res.text).toMatch(/hòa vốn/)
+    expect(res.text).not.toMatch(/Lệnh này thua/)
   })
 
   it("nhiều lớp lệch: chọn lớp lệch mạnh nhất (Ủng hộ vs Ngược chiều) + đếm đủ 5 lớp", () => {

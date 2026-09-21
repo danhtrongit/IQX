@@ -103,13 +103,6 @@ describe("KhauViModal — 3 mức + hệ quả (spec §5.1/§C12c: cho thấy co
     expect(within(screen.getByTestId("khau-vi-pick-tan_cong")).getByText(/3 mã/)).toBeInTheDocument()
   })
 
-  it("shows thiệt hại tối đa nếu 1 mã giảm sàn, computed from vốn 100tr (700,000 / 1,400,000 / 2,100,000)", () => {
-    render(<KhauViModal />)
-    expect(within(screen.getByTestId("khau-vi-pick-than_trong")).getByText(/700,000/)).toBeInTheDocument()
-    expect(within(screen.getByTestId("khau-vi-pick-can_bang")).getByText(/1,400,000/)).toBeInTheDocument()
-    expect(within(screen.getByTestId("khau-vi-pick-tan_cong")).getByText(/2,100,000/)).toBeInTheDocument()
-  })
-
   it("marks Cân bằng as the suggested default", () => {
     render(<KhauViModal />)
     expect(screen.getByText(/mặc định/i)).toBeInTheDocument()

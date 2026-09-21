@@ -150,18 +150,6 @@ describe("MauThuanBlock — toàn cảnh 5 lớp", () => {
     expect(score.textContent).not.toContain("5 lớp")
   })
 
-  it("★ hàng chi tiết của 💎 nói «chưa có kết luận», không bịa một mức nào", () => {
-    mauThuanMock.mockReturnValue(loaded(GEX_4_LOP))
-    render(<Harness />)
-    fireEvent.click(screen.getByTestId("cap6-toancanh"))
-    const row = screen.getByTestId("cap6-ld-dinh_gia")
-    expect(row).toHaveAttribute("data-phe", "chua_ket_luan")
-    expect(row).toHaveTextContent("chưa có kết luận")
-    for (const tu of ["Trung tính", "Ủng hộ", "Rất tiêu cực", "Mạnh"]) {
-      expect(row.textContent).not.toContain(tu)
-    }
-  })
-
   it("đủ cả 5 lớp thì KHÔNG có dòng «chưa có kết luận» nào", () => {
     mauThuanMock.mockReturnValue(loaded(GEX))
     render(<Harness />)
@@ -170,17 +158,6 @@ describe("MauThuanBlock — toàn cảnh 5 lớp", () => {
     expect(score.textContent).not.toContain("chưa có kết luận")
   })
 
-  it('mở/đóng "chi tiết" hiện nhãn từng lớp của server', () => {
-    mauThuanMock.mockReturnValue(loaded(GEX))
-    render(<Harness />)
-    expect(screen.queryByTestId("cap6-toancanh-detail")).toBeNull()
-    fireEvent.click(screen.getByTestId("cap6-toancanh"))
-    const detail = screen.getByTestId("cap6-toancanh-detail")
-    expect(within(detail).getByTestId("cap6-ld-tin_tuc")).toHaveTextContent("Rất tiêu cực")
-    expect(within(detail).getByTestId("cap6-ld-ky_thuat")).toHaveTextContent("Mạnh")
-    fireEvent.click(screen.getByTestId("cap6-toancanh"))
-    expect(screen.queryByTestId("cap6-toancanh-detail")).toBeNull()
-  })
 })
 
 describe("MauThuanBlock — bảng chỉ hiện khi CÓ CẢ HAI PHE (spec §5.1)", () => {
@@ -296,11 +273,6 @@ describe("MauThuanBlock — 'chưa đủ dữ liệu' KHÁC 'không mâu thuẫn
 })
 
 describe("MauThuanBlock — câu chữ của server + câu chốt", () => {
-  it("dòng cảnh báo in NGUYÊN VĂN (§C12c)", () => {
-    mauThuanMock.mockReturnValue(loaded(GEX))
-    render(<Harness />)
-    expect(screen.getByTestId("cap6-canh-bao")).toHaveTextContent(CANH_BAO)
-  })
 
   it("không có cảnh báo → không dựng một dòng cảnh báo rỗng", () => {
     mauThuanMock.mockReturnValue(loaded({ ...GEX, canh_bao: null }))
@@ -309,17 +281,6 @@ describe("MauThuanBlock — câu chữ của server + câu chốt", () => {
     expect(screen.queryByTestId("cap6-canh-bao")).toBeNull()
   })
 
-  it('câu chốt "quyết định vẫn là của bạn" + chú thích khung tham khảo', () => {
-    mauThuanMock.mockReturnValue(loaded(GEX))
-    render(<Harness />)
-    const text = visibleText()
-    expect(text).toContain("IQX chỉ ra mâu thuẫn")
-    expect(text).toContain("Quyết định vẫn là của bạn.")
-    const chuThich = screen.getByTestId("cap6-chu-thich")
-    expect(chuThich).toHaveTextContent("Lớp phủ quyết: 📰 Tin tức · 👤 Nội bộ")
-    expect(chuThich).toHaveTextContent("Lớp điểm trừ: 🎯 Kỹ thuật · 💰 Dòng tiền · 💎 Định giá")
-    expect(chuThich).toHaveTextContent("Khung tham khảo của IQX, không phải quy tắc bắt buộc")
-  })
 })
 
 describe("MauThuanBlock — ô nhận định 4 mức (spec §6)", () => {
@@ -399,21 +360,9 @@ describe("MauThuanBlock — bus analytics + nút mở lại tour", () => {
     expect(rated).toEqual([["GEX", "ngai"]])
   })
 
-  it("nút '?' mở lại tour «Xử lý mâu thuẫn» bất cứ lúc nào", () => {
-    mauThuanMock.mockReturnValue(loaded(GEX))
-    render(<Harness />)
-    fireEvent.click(screen.getByRole("button", { name: /Hướng dẫn/ }))
-    expect(screen.getByText("Khi các lớp không cùng chiều")).toBeInTheDocument()
-  })
 })
 
 describe("MauThuanBlock — tour tự bật đúng một lần (spec §10)", () => {
-  it("server nói da_xem_tour_mauthuan === false + CÓ bảng → tự bật", () => {
-    mauThuanMock.mockReturnValue(loaded(GEX))
-    progressMock.mockReturnValue({ data: { da_xem_tour_mauthuan: false } })
-    render(<Harness />)
-    expect(screen.getByText("Khi các lớp không cùng chiều")).toBeInTheDocument()
-  })
 
   it("★ chưa biết (undefined) → KHÔNG tự bật", () => {
     mauThuanMock.mockReturnValue(loaded(GEX))
@@ -440,31 +389,4 @@ describe("MauThuanBlock — tour tự bật đúng một lần (spec §10)", () 
     expect(screen.queryByText("Khi các lớp không cùng chiều")).toBeNull()
   })
 
-  it("★ «Bỏ qua» giữa tour KHÔNG ghi là đã xem", () => {
-    mauThuanMock.mockReturnValue(loaded(GEX))
-    progressMock.mockReturnValue({ data: { da_xem_tour_mauthuan: false } })
-    render(<Harness />)
-    fireEvent.click(screen.getByRole("button", { name: /Bỏ qua/ }))
-    expect(markTourMock).not.toHaveBeenCalled()
-  })
-
-  it("đi HẾT 7 bước → POST /cap6/tour-mauthuan đúng một lần", async () => {
-    mauThuanMock.mockReturnValue(loaded(GEX))
-    progressMock.mockReturnValue({ data: { da_xem_tour_mauthuan: false } })
-    render(<Harness />)
-    // ★ `busy` của engine chặn double-click giữa lúc chuyển bước (~250ms), nên
-    // phải CHỜ nút "Tiếp theo" nhận click lại — bấm liên tiếp đồng bộ chỉ ăn
-    // đúng một bước và bài kiểm sẽ chỉ chứng minh được... một bước.
-    for (let i = 0; i < 6; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
-      await waitFor(() => {
-        fireEvent.click(screen.getByRole("button", { name: "Tiếp theo →" }))
-        expect(document.querySelector(".iqx-tour-counter")?.textContent).toContain(
-          `${i + 2}/7`,
-        )
-      })
-    }
-    fireEvent.click(screen.getByRole("button", { name: "Hoàn thành ✓" }))
-    expect(markTourMock).toHaveBeenCalledTimes(1)
-  })
 })

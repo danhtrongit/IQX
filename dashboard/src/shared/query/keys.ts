@@ -19,9 +19,16 @@ export const sharedKeys = {
   },
 } as const
 
-/** Keys whose data is scoped to the signed-in user — invalidated on login/logout. */
+/** Private query prefixes must be removed, not merely marked stale, on auth changes. */
 export const userScopedKeys: readonly (readonly string[])[] = [
   sharedKeys.auth.me,
   sharedKeys.premium.me,
   sharedKeys.watchlist.all,
+  ["trading"],
+  ["bot"],
+  ["cap0"], ["cap1"], ["cap2"], ["cap3"], ["cap4"],
+  ["cap5"], ["cap6"], ["cap7"], ["cap8"],
+  ["journey-identity"], ["journey-reading"], ["journey-reveal"],
+  ["settings"], ["alerts"], ["lessons"], ["backtest"],
+  ["stock"], ["portfolio-manager"],
 ]

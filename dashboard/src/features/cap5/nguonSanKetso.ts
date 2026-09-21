@@ -1,5 +1,5 @@
 import { cap5Api } from "./api"
-import type { HuntFilter } from "./types"
+import type { Cap5PlanWire, HuntFilter } from "./types"
 
 /**
  * NGUỒN SĂN của một lệnh cho màn Kết sổ (spec Cấp 5 §8) — MỘT chỗ duy nhất đọc
@@ -25,13 +25,15 @@ import type { HuntFilter } from "./types"
  *     này vào `huntFilter: null` sẽ biến một cú lỗi mạng thành lời khẳng định
  *     "bạn tự chọn mã này" — điều ta không hề biết.
  *
- * `so_lop_luc_vao` server LUÔN trả `null` (điểm đồng thuận lúc ĐẶT LỆNH chưa
- * từng được lưu) — chép nguyên, KHÔNG thay bằng điểm hôm nay.
+ * `so_lop_luc_vao` là snapshot tại BUY; wire legacy có thể trả `null`. Chép
+ * nguyên và KHÔNG thay bằng điểm hôm nay.
  */
 export interface NguonSanKetso {
   huntFilter: HuntFilter | null
   huntSoPhienCho: number | null
   huntSoLopLucVao: number | null
+  /** Mẫu số thật tại BUY; optional để Cấp 6–8 cũ vẫn tương thích. */
+  huntSoLopDaChamLucVao?: number | null
   huntNguonChuaBiet: boolean
 }
 
@@ -40,20 +42,55 @@ export const NGUON_SAN_CHUA_BIET: NguonSanKetso = {
   huntFilter: null,
   huntSoPhienCho: null,
   huntSoLopLucVao: null,
+  huntSoLopDaChamLucVao: null,
   huntNguonChuaBiet: true,
+}
+
+/** Dịch snapshot `/cap5/plans/{buyOrderId}` sang ba trạng thái nguồn săn an toàn. */
+export function nguonSanKetsoFromPlan(plan: Cap5PlanWire): NguonSanKetso {
+  if (!plan.source_known || plan.from_watchlist == null) return NGUON_SAN_CHUA_BIET
+  if (plan.tu_san_ma !== plan.from_watchlist) return NGUON_SAN_CHUA_BIET
+  // Chỉ dùng đồng thuận khi đủ hai mốc chứng minh server đã đóng băng nó lúc
+  // BUY. Plan lịch sử (`entry_snapshot_at=null`) phải giữ trạng thái chưa biết,
+  // kể cả payload lệch phiên bản vô tình mang theo một con số.
+  const coSnapshotDongThuan =
+    plan.entry_snapshot_at != null && plan.consensus_captured_at_entry != null
+  const soLopLucVao = coSnapshotDongThuan ? plan.so_lop_luc_vao : null
+  const soLopDaChamLucVao = coSnapshotDongThuan ? plan.so_lop_da_cham_luc_vao : null
+  if (!plan.from_watchlist) {
+    return {
+      huntFilter: null,
+      huntSoPhienCho: null,
+      huntSoLopLucVao: soLopLucVao,
+      huntSoLopDaChamLucVao: soLopDaChamLucVao,
+      huntNguonChuaBiet: false,
+    }
+  }
+  // Một lệnh được đóng dấu "từ Watchlist" nhưng thiếu bộ lọc là snapshot một
+  // phần. Không được biến nó thành lời khẳng định "không đến từ săn mã".
+  if (plan.hunt_filter == null) return NGUON_SAN_CHUA_BIET
+  return {
+    huntFilter: plan.hunt_filter,
+    huntSoPhienCho: plan.so_phien_trong_watchlist,
+    huntSoLopLucVao: soLopLucVao,
+    huntSoLopDaChamLucVao: soLopDaChamLucVao,
+    huntNguonChuaBiet: false,
+  }
 }
 
 /**
  * Đọc nguồn săn của `symbol`. KHÔNG BAO GIỜ throw: lệnh đã bán thì màn Kết sổ
  * VẪN phải mở — thiếu nguồn săn không được nuốt một lệnh.
  */
-export async function fetchNguonSanKetso(symbol: string): Promise<NguonSanKetso> {
+export async function fetchNguonSanKetso(symbol: string, orderId?: string): Promise<NguonSanKetso> {
   try {
-    const ns = await cap5Api.getNguonSan(symbol)
+    const ns = await cap5Api.getNguonSan(symbol, orderId)
     return {
       huntFilter: ns.tu_san_ma ? ns.hunt_filter : null,
       huntSoPhienCho: ns.so_phien_trong_watchlist,
       huntSoLopLucVao: ns.so_lop_luc_vao,
+      // Endpoint cũ chưa có mẫu số immutable; không suy ra 5.
+      huntSoLopDaChamLucVao: null,
       huntNguonChuaBiet: false,
     }
   } catch {

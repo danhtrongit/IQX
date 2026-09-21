@@ -3,8 +3,16 @@ import { useAuth } from "@/features/auth"
 import { cap2Api } from "./api"
 import { cap2Keys } from "./keys"
 import type {
+  Cap2ActiveAlerts,
+  Cap2Analysis,
+  Cap2AlertActionInput,
+  Cap2AlertActionResult,
+  Cap2PreBuyAlertInput,
+  Cap2PreBuyAlertResult,
   Cap2Progress,
+  Cap2TradeHistoryList,
   DiemKyLuat,
+  DiemKyLuatHistory,
   KehoachInputCap2,
   KetsoInputCap2,
   OrderKehoachCap2,
@@ -82,6 +90,70 @@ export function useDiemKyLuat(ngay?: string, enabled = true) {
     queryFn: () => cap2Api.getDiemKyLuat(ngay),
     enabled: isAuthenticated && enabled,
     staleTime: 0,
+  })
+}
+
+export function useCap2Trades(enabled = true) {
+  const { isAuthenticated } = useAuth()
+  return useQuery<Cap2TradeHistoryList>({
+    queryKey: cap2Keys.trades(),
+    queryFn: cap2Api.getTrades,
+    enabled: isAuthenticated && enabled,
+    staleTime: 30_000,
+    retry: false,
+  })
+}
+
+export function useCap2Analysis(enabled = true) {
+  const { isAuthenticated } = useAuth()
+  return useQuery<Cap2Analysis>({
+    queryKey: cap2Keys.analysis(),
+    queryFn: cap2Api.getAnalysis,
+    enabled: isAuthenticated && enabled,
+    staleTime: 30_000,
+    retry: false,
+  })
+}
+
+/** Server-authoritative alert inbox. Reading it atomically claims at most two
+ * important impressions for the session, with nhồi lệnh priority. */
+export function useCap2ActiveAlerts(sessionDate?: string, enabled = true) {
+  const { isAuthenticated } = useAuth()
+  return useQuery<Cap2ActiveAlerts>({
+    queryKey: cap2Keys.activeAlerts(sessionDate),
+    queryFn: () => cap2Api.getActiveAlerts(sessionDate),
+    enabled: isAuthenticated && enabled,
+    staleTime: 30_000,
+    retry: false,
+  })
+}
+
+/** Pre-submit seam for the shared order entry. It must run before POSTing a
+ * BUY; checking after a fill cannot offer a real cancel/proceed decision. */
+export function useCheckCap2PreBuyAlert() {
+  const invalidate = useInvalidateCap2()
+  return useMutation<Cap2PreBuyAlertResult, unknown, Cap2PreBuyAlertInput>({
+    mutationFn: cap2Api.checkPreBuyAlert,
+    onSuccess: invalidate,
+  })
+}
+
+export function useActOnCap2Alert() {
+  const invalidate = useInvalidateCap2()
+  return useMutation<Cap2AlertActionResult, unknown, Cap2AlertActionInput>({
+    mutationFn: cap2Api.actOnAlert,
+    onSuccess: invalidate,
+  })
+}
+
+export function useDiemKyLuatHistory(enabled = true) {
+  const { isAuthenticated } = useAuth()
+  return useQuery<DiemKyLuatHistory>({
+    queryKey: cap2Keys.diemKyLuatHistory(),
+    queryFn: cap2Api.getDiemKyLuatHistory,
+    enabled: isAuthenticated && enabled,
+    staleTime: 30_000,
+    retry: false,
   })
 }
 

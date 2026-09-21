@@ -119,9 +119,9 @@ describe("splitLocSan", () => {
 })
 
 describe("describeHuntTotal — dòng minh bạch", () => {
-  it("có tổng thật thì in tổng thật (số en-US)", () => {
+  it("có tổng thật thì in tổng thật theo định dạng Việt Nam", () => {
     expect(describeHuntTotal(result({ tong_so_ma: 1234 }), DEF)).toBe(
-      "1,234 mã HOSE thỏa điều kiện · hiện 1 mã NN mua ròng mạnh nhất",
+      "1.234 mã HOSE thỏa điều kiện · hiện 1 mã NN mua ròng mạnh nhất",
     )
   })
 

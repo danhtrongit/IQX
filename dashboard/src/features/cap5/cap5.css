@@ -7,6 +7,60 @@
  * nào còn render chúng.
  */
 
+.cap5-ketso-modal .arco-modal-content {
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.cap5-ketso-inherited {
+  margin-top: 14px;
+}
+
+.cap5-ketso-inherited > summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  color: var(--t2);
+  font-size: 11px;
+  line-height: 1.4;
+  background: var(--bg3);
+  border: 1px solid var(--bd);
+  border-radius: 8px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.cap5-ketso-inherited > summary::-webkit-details-marker {
+  display: none;
+}
+
+.cap5-ketso-inherited[open] > summary {
+  margin-bottom: 10px;
+}
+
+.cap5-ketso-inherited[open] .cap5-ketso-inherited-chevron {
+  transform: rotate(90deg);
+}
+
+.cap5-ketso-inherited-chevron {
+  flex: none;
+  transition: transform 0.15s ease;
+}
+
+@media (max-width: 360px) {
+  .cap5-ketso-modal .arco-modal-content {
+    padding: 14px 12px;
+  }
+
+  .cap5-ketso-inherited > summary {
+    overflow-wrap: anywhere;
+  }
+}
+
 /* ── Dòng "mã săn từ bộ lọc nào" trong Kết sổ (spec §8, mockup `.hunt-origin`) ── */
 .cap5-hunt-origin {
   margin-top: 14px;

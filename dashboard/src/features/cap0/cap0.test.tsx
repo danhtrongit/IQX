@@ -156,22 +156,25 @@ const fakeProgress: Cap0Progress = {
   task_2_done_at: null,
   task_3_done_at: null,
   task_4_done_at: null,
-  task4_debrief_done: false,
+  task_5_done_at: null,
+  task1_star_clicked: false,
+  task5_debrief_done: false,
   graduated_at: null,
   time_to_graduate_hours: null,
 }
 
-// ── countTasksDone (4 nhiệm vụ, không còn 5) ──────────────────────────────────
+// ── countTasksDone (2 nhiệm vụ bắt buộc) ──────────────────────────────────────────────
 describe("countTasksDone", () => {
-  it("counts over exactly FOUR task columns (Chặng 2's three product tours are gone)", () => {
+  it("counts only the two required trading task columns", () => {
     const all: Cap0Progress = {
       ...fakeProgress,
       task_1_done_at: "t",
       task_2_done_at: "t",
       task_3_done_at: "t",
       task_4_done_at: "t",
+      task_5_done_at: "t",
     }
-    expect(countTasksDone(all)).toBe(4)
+    expect(countTasksDone(all)).toBe(2)
   })
 
   it("counts partial progress and treats null/undefined as 0", () => {
@@ -180,17 +183,14 @@ describe("countTasksDone", () => {
     expect(countTasksDone(undefined)).toBe(0)
   })
 
-  // ★ A stray `task_5_done_at`/`task_6_done_at` left over from an older wire
-  // shape must NEVER be counted — the migration carries each one's data DOWN a
-  // column, so counting both would read 5/4 for a mid-flight user.
-  it("★ ignores leftover task_5_done_at / task_6_done_at from the old wire shapes", () => {
+  it("counts task 5 and ignores a leftover task 6 field", () => {
     const stale = {
       ...fakeProgress,
       task_1_done_at: "t",
       task_5_done_at: "t",
       task_6_done_at: "t",
     } as Cap0Progress
-    expect(countTasksDone(stale)).toBe(1)
+    expect(countTasksDone(stale)).toBe(2)
   })
 })
 

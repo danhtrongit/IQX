@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Modal } from "@arco-design/web-react"
 import { cn } from "@/shared/lib/cn"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { useRecordKetso } from "@/features/cap1/hooks"
 import {
   countCalendarDays,
@@ -37,7 +38,6 @@ import {
   LOP_KEYS,
   NHAN_DINH_LABEL,
 } from "./doc5Lop"
-import { useCompleteCap4Task } from "./hooks"
 import { useCap4TradeLog, type Cap4TradeRecord } from "./tradeLogCap4"
 import type { Lop5Partial } from "./types"
 // Kết sổ Cấp 4 = Kết sổ Cấp 3's content (đối chiếu Cấp 1 + CAM KẾT vs THỰC TẾ
@@ -83,9 +83,8 @@ import "./cap4-ketso.css"
  *
  * Cấp 4 KHÔNG có endpoint kết sổ riêng (spec §8 chỉ thêm cột `order_kehoach`),
  * nên lúc đóng modal vẫn post đúng 2 call như Cấp 2/3 (`/cap1/ketso` cảm xúc +
- * `/cap2/ketso` 7 cờ kỷ luật) rồi gọi `PATCH /cap4/task` (idempotent recompute —
- * nhiệm vụ ② "Kết sổ lệnh đầu Cấp 4" được server suy ra từ `order_ketso`, call
- * này chỉ kích hoạt recompute + invalidate cache Cấp 4).
+ * `/cap2/ketso` 7 cờ kỷ luật). Cấp 4 chỉ có một nhiệm vụ dựa trên 10 lệnh mua
+ * đọc đủ 5 lớp; đóng Kết sổ không cập nhật tiến độ Cấp 4.
  */
 export interface KetsoDataCap4 extends KetsoDataCap3 {
   /**
@@ -147,7 +146,7 @@ function lyDoLabel(lyDo: LyDo): string {
 }
 
 function fmtVnd(n: number): string {
-  return Math.round(n).toLocaleString("en-US")
+  return Math.round(n).toLocaleString("vi-VN")
 }
 
 /** `+5.3%` / `−4.2%` / `0.0%` — dấu trừ typographic "−" (U+2212), như Cấp 0-3. */
@@ -199,9 +198,6 @@ const TARGET_ORDERS = 10
 const MIN_TRADES_FOR_STAT = 2
 const COUNT_UP_MS = 1000
 const COUNT_UP_STEP_MS = 40
-/** Nhiệm vụ ② Cấp 4 — "Kết sổ lệnh đầu Cấp 4" (spec §2②). */
-const CAP4_TASK_KETSO = 2
-
 export function KetsoModalCap4({
   data,
   progress,
@@ -211,7 +207,6 @@ export function KetsoModalCap4({
 }: KetsoModalCap4Props) {
   const recordKetsoCap1 = useRecordKetso()
   const recordKetsoCap2 = useRecordKetsoCap2()
-  const completeCap4Task = useCompleteCap4Task()
   const { record: recordCap4Trade } = useCap4TradeLog()
   const [emotion, setEmotion] = useState<CamXuc | null>(null)
   const [displayPct, setDisplayPct] = useState(0)
@@ -240,6 +235,10 @@ export function KetsoModalCap4({
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.n, data?.orderId])
+
+  useEffect(() => {
+    if (data) trackJourneyEvent("cap4_ketso_view")
+  }, [data?.orderId])
 
   if (!data) return null
 
@@ -334,12 +333,10 @@ export function KetsoModalCap4({
       : `Còn ${MIN_TRADES_FOR_STAT - sameLyDo.length} lệnh nữa để hệ thống tìm mẫu riêng của bạn.`
 
   const handleClose = () => {
-    // Cấp 1 (cảm xúc) → Cấp 2 (7 cờ kỷ luật) → Cấp 4 (recompute nhiệm vụ) —
-    // cùng quy ước "cấp dưới trước" mà `TradingPanel` dùng ở phía mua. KHÔNG gọi
-    // `PATCH /cap3/task`: lệnh này thuộc Cấp 4, Cấp 3 đã tốt nghiệp.
+    // Kết sổ vẫn ghi cảm xúc Cấp 1 và 7 cờ kỷ luật Cấp 2. Tiến độ Cấp 4 đã
+    // được cập nhật lúc đặt lệnh mua đọc đủ 5 lớp, không phụ thuộc lệnh đóng.
     recordKetsoCap1.mutate({ order_id: orderId, cam_xuc: emotion })
     recordKetsoCap2.mutate({ ...flags, order_id: orderId })
-    completeCap4Task.mutate(CAP4_TASK_KETSO)
 
     const record: Cap4TradeRecord = {
       orderId,
@@ -393,7 +390,7 @@ export function KetsoModalCap4({
       <div
         className={cn(
           "cap0-display cap0-debrief-pnl tabular-nums",
-          pnlPositive ? "text-up" : "text-down",
+          pnlVnd > 0 ? "text-up" : pnlVnd < 0 ? "text-down" : "text-[var(--t1)]",
         )}
       >
         {fmtPct(displayPct)}

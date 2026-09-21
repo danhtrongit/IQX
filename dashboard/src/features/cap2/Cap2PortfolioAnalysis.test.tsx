@@ -228,29 +228,24 @@ describe("Cap2PortfolioAnalysis — ④ cơ chế cắt lỗ / chốt lời (m�
   })
 })
 
-// ── ★★ Các khối của mô hình 5 nhiệm vụ đã BIẾN MẤT ★★ ──────────────────────
-
-describe("Cap2PortfolioAnalysis — khối của mô hình cũ", () => {
-  it("★ renders EXACTLY the mockup's 4 khối — no khối 5/6/7, no mẫu tự phát hiện", () => {
+describe("Cap2PortfolioAnalysis — công cụ kỷ luật không phải cổng tốt nghiệp", () => {
+  it("renders the seven normative analysis blocks and detected-pattern area", () => {
     renderPa(
       progress({ so_lan_cat_lo_dung: 1, so_lan_chot_loi_dung: 1, so_lan_thuc_hien_dung: 2 }),
       Array.from({ length: 6 }, (_, i) => trade({ orderId: String(i), chamSlKhongCat: i % 2 === 0 })),
     )
-    for (const id of ["cap2-pa-khoi1", "cap2-pa-khoi2", "cap2-pa-khoi3", "cap2-pa-khoi4"]) {
+    for (const id of ["cap2-pa-khoi1", "cap2-pa-khoi2", "cap2-pa-khoi3", "cap2-pa-khoi4", "cap2-pa-khoi5", "cap2-pa-khoi6", "cap2-pa-khoi7", "cap2-pa-mau"]) {
       expect(screen.getByTestId(id)).toBeInTheDocument()
-    }
-    for (const id of ["cap2-pa-khoi5", "cap2-pa-khoi6", "cap2-pa-khoi7", "cap2-pa-mau"]) {
-      expect(screen.queryByTestId(id)).not.toBeInTheDocument()
     }
   })
 
-  it("★ never shows điểm kỷ luật, cửa sổ 20 lệnh, or vi-phạm wording anywhere", () => {
-    const { container } = renderPa(
+  it("shows score, window 20 and weekly violation sections without making them graduation tasks", () => {
+    renderPa(
       progress({ so_lan_cat_lo_dung: 1, so_lan_chot_loi_dung: 1 }),
       Array.from({ length: 6 }, (_, i) => trade({ orderId: String(i), nhoiLenhKhiLo: true })),
     )
-    expect(container.textContent).not.toMatch(
-      /ĐIỂM KỶ LUẬT|CỬA SỔ 20 LỆNH|DANH SÁCH VI PHẠM|REFLECTION|MẪU TỰ PHÁT HIỆN/i,
-    )
+    expect(screen.getByText(/Điểm kỷ luật 30 ngày/i)).toBeInTheDocument()
+    expect(screen.getByText(/Cửa sổ 20 lệnh/i)).toBeInTheDocument()
+    expect(screen.getByText(/Vi phạm theo tuần/i)).toBeInTheDocument()
   })
 })

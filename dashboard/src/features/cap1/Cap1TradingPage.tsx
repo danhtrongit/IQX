@@ -3,7 +3,8 @@ import { SymbolProvider, useSymbol } from "@/shared/contexts/symbol-context"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
 import { AiInsightSymbolModal } from "@/features/dau-truong"
-import { CenterPanel, RightSidebar, RightToolbar } from "@/features/dashboard"
+import { RightSidebar, RightToolbar } from "@/features/dashboard"
+import { JourneyIdentityStage } from "@/features/journey-identity/JourneyIdentityStage"
 import { Cap1Provider, useCap1Events, type Cap1OrderEvent } from "./Cap1Context"
 import { ModeBadge } from "@/features/cap0/ModeBadge"
 import { GraduationModalCap1 } from "./GraduationModalCap1"
@@ -67,7 +68,7 @@ function Cap1Terminal() {
   const { setSymbol } = useSymbol()
   const { isCap1Active, registerHandlers } = useCap1Events()
   const { data: progress } = useCap1Progress(isCap1Active)
-  const { activePanel, setActivePanel } = useSidebar()
+  const { activePanel, setActivePanel, setIsOpen } = useSidebar()
   const { trades, record } = useCap1TradeLog()
 
   // Spec §8 "Journey bar sticky trên đầu như Cấp 0" — same override/restore
@@ -77,6 +78,7 @@ function Cap1Terminal() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setActivePanel("journey")
+    if (window.innerWidth < 768) setIsOpen(false)
     return () => setActivePanel(prevPanelRef.current)
   }, [])
 
@@ -148,7 +150,7 @@ function Cap1Terminal() {
       </div>
 
       <div className="flex flex-1 min-h-0 pb-[52px] md:pb-0">
-        <CenterPanel symbolChange="select" />
+        <JourneyIdentityStage level={1} />
         <RightSidebar />
         <RightToolbar onActionClick={handleActionClick} />
       </div>

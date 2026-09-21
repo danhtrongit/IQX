@@ -1,15 +1,16 @@
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { useCap2Events } from "./Cap2Context"
-import { useCap2Progress } from "./hooks"
+import { useCap2Analysis, useCap2Progress, useCap2Trades, useDiemKyLuatHistory } from "./hooks"
 import { useCap2TradeLog } from "./tradeLogCap2"
 import { Cap2PortfolioAnalysis } from "./Cap2PortfolioAnalysis"
+import { cap2TradeFromHistory } from "./portfolioAnalysisCap2"
 
 /**
  * "Phân tích danh mục" right-sidebar panel (spec §12) — the `RightSidebar`
  * "cap2-analysis" panel case. Self-contained (mirrors
  * `cap1/Cap1PortfolioAnalysisPanel.tsx`): feeds `Cap2PortfolioAnalysis` from
- * `useCap2Progress` + `useCap2TradeLog` (the client-side trade/score
- * accumulator — see that module's docstring on why).
+ * durable server history/analysis. The client log is an immediate fallback
+ * between a close and the next server refetch.
  *
  * Unlike Cấp 1's equivalent panel, Cấp 2 has no nhiệm vụ tied to "mở trang
  * Phân tích danh mục N lần" (its single nhiệm vụ is lệnh-behaviour based —
@@ -18,8 +19,18 @@ import { Cap2PortfolioAnalysis } from "./Cap2PortfolioAnalysis"
 export function Cap2PortfolioAnalysisPanel() {
   const { isCap2Active } = useCap2Events()
   const { data: progress } = useCap2Progress(isCap2Active)
-  const { trades, scores } = useCap2TradeLog()
+  const { trades: localTrades, scores: localScores } = useCap2TradeLog()
+  const { data: tradeHistory } = useCap2Trades(isCap2Active)
+  const { data: scoreHistory } = useDiemKyLuatHistory(isCap2Active)
+  const { data: analysis } = useCap2Analysis(isCap2Active)
   const { setActivePanel } = useSidebar()
+  const trades = tradeHistory?.trades.map(cap2TradeFromHistory) ?? localTrades
+  const scores =
+    scoreHistory?.scores.flatMap((score) =>
+      score.diem != null && score.xep_loai != null
+        ? [{ ngay: score.ngay, diem: score.diem, xepLoai: score.xep_loai }]
+        : [],
+    ) ?? localScores
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-[var(--color-bg-1)]">
@@ -38,7 +49,12 @@ export function Cap2PortfolioAnalysisPanel() {
         <span className="text-sm font-semibold text-[var(--color-text-1)]">Phân tích danh mục</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
-        <Cap2PortfolioAnalysis progress={progress ?? null} trades={trades} dailyScores={scores} />
+        <Cap2PortfolioAnalysis
+          progress={progress ?? null}
+          trades={trades}
+          dailyScores={scores}
+          serverAnalysis={analysis}
+        />
       </div>
     </div>
   )

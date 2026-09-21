@@ -30,7 +30,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
-from app.models.cap0 import Cap0Progress
+from app.models.cap0 import Cap0Progress, UserPlacement
 from app.models.cap1 import (
     CamXuc,
     Cap1Progress,
@@ -65,7 +65,10 @@ class Cap1Service:
         return result.scalar_one_or_none()
 
     async def get_progress(self, user_id: uuid.UUID) -> Cap1Progress | None:
-        return await self._get_progress_row(user_id)
+        progress = await self._get_progress_row(user_id)
+        if progress is not None:
+            await self._recompute_counters(user_id, progress)
+        return progress
 
     async def get_current_level(self, user_id: uuid.UUID) -> int:
         """Progression helper: 0 (Cấp 0 chưa tốt nghiệp) / 1 (đang học Cấp 1) /
@@ -74,10 +77,17 @@ class Cap1Service:
             select(Cap0Progress).where(Cap0Progress.user_id == user_id)
         )
         cap0_progress = cap0_result.scalar_one_or_none()
+        cap1_progress = await self._get_progress_row(user_id)
+        if cap1_progress is not None:
+            return 2 if cap1_progress.graduated_at is not None else 1
+        placement_result = await self._session.execute(
+            select(UserPlacement).where(UserPlacement.user_id == user_id)
+        )
+        placement = placement_result.scalar_one_or_none()
+        if placement is not None:
+            return placement.placed_level
         if cap0_progress is None or cap0_progress.graduated_at is None:
             return 0
-
-        cap1_progress = await self._get_progress_row(user_id)
         if cap1_progress is None or cap1_progress.graduated_at is None:
             return 1
         return 2
@@ -92,20 +102,32 @@ class Cap1Service:
             select(Cap0Progress).where(Cap0Progress.user_id == user_id)
         )
         cap0_progress = cap0_result.scalar_one_or_none()
-        if cap0_progress is None:
-            raise NotFoundError("tiến trình Cấp 0")
-        if cap0_progress.graduated_at is None:
-            raise ConflictError("Chưa tốt nghiệp Cấp 0")
+        placement_result = await self._session.execute(
+            select(UserPlacement).where(UserPlacement.user_id == user_id)
+        )
+        placement = placement_result.scalar_one_or_none()
+        from_cap0 = cap0_progress is not None and cap0_progress.graduated_at is not None
+        directly_placed = placement is not None and placement.placed_level >= 1
+        if not from_cap0 and not directly_placed:
+            if cap0_progress is None and placement is None:
+                raise NotFoundError("tiến trình Cấp 0 hoặc kết quả xếp lớp")
+            raise ConflictError("Chưa tốt nghiệp Cấp 0 hoặc chưa được xếp vào Cấp 1")
 
         # Only reachable via a graduated Cấp 0 (Nhánh A) — tours already seen.
         progress = Cap1Progress(
             user_id=user_id,
             entered_at=datetime.now(UTC),
-            da_xem_tour=True,
+            da_xem_tour=True if from_cap0 else bool(placement and placement.da_xem_tour),
         )
         self._session.add(progress)
         await self._session.flush()
         await self._session.refresh(progress)
+        if not progress.da_xem_tour:
+            from app.services.journey_events import record_journey_event
+
+            await record_journey_event(
+                self._session, user_id, "cap1_tour_start", {}, dedup_key=str(progress.id)
+            )
         return progress
 
     # ── Kế hoạch (buy-time plan) ─────────────────────
@@ -137,6 +159,12 @@ class Cap1Service:
             raise NotFoundError("lệnh")
         if order.side != OrderSide.BUY:
             raise BadRequestError("Kế hoạch chỉ ghi cho lệnh MUA")
+        if order.mode != "thuc_chien":
+            raise BadRequestError("Cấp 1 chỉ ghi nhận lệnh Thực chiến")
+        if order.status not in (OrderStatus.PENDING, OrderStatus.FILLED):
+            raise BadRequestError("Chỉ ghi kế hoạch cho lệnh đang chờ hoặc đã khớp")
+        if not progress.da_xem_tour:
+            raise ConflictError("Cần xem xong 3 tour sản phẩm trước khi đặt lệnh")
 
         try:
             ly_do_enum = LyDo(ly_do)
@@ -149,7 +177,17 @@ class Cap1Service:
 
         existing = await self._get_kehoach_by_order(order_id)
         if existing is not None:
-            raise ConflictError("Lệnh này đã có kế hoạch")
+            same = (
+                existing.lyDo == ly_do_enum
+                and existing.trangThai_luc_dat == trang_thai_enum
+                and existing.vung_mua == int(vung_mua)
+                and existing.co_bam_doc_chi_tiet == co_bam_doc_chi_tiet
+                and existing.snapshot_lop_du_lieu == snapshot
+            )
+            if same:
+                await self._recompute_counters(user_id, progress)
+                return existing
+            raise ConflictError("Kế hoạch đã được chốt lúc đặt lệnh")
 
         kehoach = OrderKehoach(
             order_id=order_id,
@@ -163,20 +201,34 @@ class Cap1Service:
         await self._session.flush()
         await self._session.refresh(kehoach)
 
-        if progress.task_1_done_at is None:
+        if order.status == OrderStatus.FILLED and progress.task_1_done_at is None:
             progress.task_1_done_at = datetime.now(UTC)
+            from app.services.journey_events import record_journey_event
+
+            await record_journey_event(
+                self._session, user_id, "cap1_task_complete", {"task_id": 1},
+                dedup_key=f"1:{order.id}",
+            )
 
         await self._recompute_counters(user_id, progress)
         return kehoach
 
     async def _recompute_counters(self, user_id: uuid.UUID, progress: Cap1Progress) -> None:
         """Recompute ③④⑤ from source rows (order_kehoach/virtual_orders)."""
-        # ③ distinct lyDo used across the user's order_kehoach
+        was_done = {n: getattr(progress, f"task_{n}_done_at") is not None for n in _TASK_NOS}
+        common_filters = (
+            VirtualOrder.user_id == user_id,
+            VirtualOrder.mode == "thuc_chien",
+            VirtualOrder.side == OrderSide.BUY,
+            VirtualOrder.status == OrderStatus.FILLED,
+        )
+
+        # ③ distinct lyDo used across valid Cấp-1 buy plans.
         result = await self._session.execute(
             select(func.count(func.distinct(OrderKehoach.lyDo)))
             .select_from(OrderKehoach)
             .join(VirtualOrder, VirtualOrder.id == OrderKehoach.order_id)
-            .where(VirtualOrder.user_id == user_id)
+            .where(*common_filters)
         )
         so_ly_do_da_dung = int(result.scalar_one() or 0)
 
@@ -186,7 +238,7 @@ class Cap1Service:
             .select_from(OrderKehoach)
             .join(VirtualOrder, VirtualOrder.id == OrderKehoach.order_id)
             .where(
-                VirtualOrder.user_id == user_id,
+                *common_filters,
                 OrderKehoach.trangThai_luc_dat == TrangThaiLucDat.UNG_HO,
             )
         )
@@ -195,11 +247,10 @@ class Cap1Service:
         # ⑤ tổng lệnh Thực chiến đã khớp
         result = await self._session.execute(
             select(func.count())
-            .select_from(VirtualOrder)
+            .select_from(OrderKehoach)
+            .join(VirtualOrder, VirtualOrder.id == OrderKehoach.order_id)
             .where(
-                VirtualOrder.user_id == user_id,
-                VirtualOrder.mode == "thuc_chien",
-                VirtualOrder.status == OrderStatus.FILLED,
+                *common_filters,
             )
         )
         so_lenh_thuc_chien = int(result.scalar_one() or 0)
@@ -215,6 +266,31 @@ class Cap1Service:
             progress.task_4_done_at = now
         if so_lenh_thuc_chien >= _TASK5_THRESHOLD and progress.task_5_done_at is None:
             progress.task_5_done_at = now
+
+        # Repair the two milestone stamps from source facts after delayed limit fills.
+        if so_lenh_thuc_chien >= 1 and progress.task_1_done_at is None:
+            progress.task_1_done_at = now
+        result = await self._session.execute(
+            select(func.count(OrderKetso.id))
+            .join(VirtualOrder, VirtualOrder.id == OrderKetso.order_id)
+            .where(
+                VirtualOrder.user_id == user_id,
+                VirtualOrder.mode == "thuc_chien",
+                VirtualOrder.status == OrderStatus.FILLED,
+                OrderKetso.closed_at >= progress.entered_at,
+            )
+        )
+        if int(result.scalar_one() or 0) >= 1 and progress.task_2_done_at is None:
+            progress.task_2_done_at = now
+
+        from app.services.journey_events import record_journey_event
+
+        for task_no in _TASK_NOS:
+            if not was_done[task_no] and getattr(progress, f"task_{task_no}_done_at") is not None:
+                await record_journey_event(
+                    self._session, user_id, "cap1_task_complete", {"task_id": task_no},
+                    dedup_key=f"{task_no}:{getattr(progress, f'task_{task_no}_done_at').isoformat()}",
+                )
 
         await self._session.flush()
         await self._session.refresh(progress)
@@ -233,6 +309,12 @@ class Cap1Service:
         see ``VirtualPosition``), so this is a pragmatic single-lot approximation —
         good enough for the common "1 lệnh = 1 round trip" flow this level teaches.
         """
+        if sell_order.exit_matched_buy_order_id is not None:
+            snapshotted = await self._vt_repo.get_order_by_id(
+                sell_order.exit_matched_buy_order_id
+            )
+            if snapshotted is not None and snapshotted.user_id == sell_order.user_id:
+                return snapshotted
         result = await self._session.execute(
             select(VirtualOrder)
             .where(
@@ -304,12 +386,22 @@ class Cap1Service:
         existing = await self._get_ketso_by_order(order_id)
         if existing is not None:
             if cam_xuc_enum is None:
-                raise ConflictError("Lệnh này đã kết sổ")
+                return existing
+            if existing.cam_xuc is not None:
+                if existing.cam_xuc == cam_xuc_enum:
+                    return existing
+                raise ConflictError("Cảm xúc Kết sổ đã được chốt")
             existing.cam_xuc = cam_xuc_enum
             await self._session.flush()
             await self._session.refresh(existing)
             if progress.task_2_done_at is None:
                 progress.task_2_done_at = datetime.now(UTC)
+                from app.services.journey_events import record_journey_event
+
+                await record_journey_event(
+                    self._session, user_id, "cap1_task_complete", {"task_id": 2},
+                    dedup_key=f"2:{existing.id}",
+                )
                 await self._session.flush()
                 await self._session.refresh(progress)
             return existing
@@ -346,6 +438,12 @@ class Cap1Service:
 
         if progress.task_2_done_at is None:
             progress.task_2_done_at = datetime.now(UTC)
+            from app.services.journey_events import record_journey_event
+
+            await record_journey_event(
+                self._session, user_id, "cap1_task_complete", {"task_id": 2},
+                dedup_key=f"2:{ketso.id}",
+            )
             await self._session.flush()
             await self._session.refresh(progress)
 
@@ -371,6 +469,7 @@ class Cap1Service:
         progress = await self._get_progress_row(user_id)
         if progress is None:
             raise NotFoundError("tiến trình Cấp 1")
+        await self._recompute_counters(user_id, progress)
 
         all_tasks_done = all(
             getattr(progress, f"task_{n}_done_at") is not None for n in _TASK_NOS
@@ -385,7 +484,74 @@ class Cap1Service:
             if entered.tzinfo is None:
                 entered = entered.replace(tzinfo=UTC)
             progress.time_to_graduate_hours = (now - entered).total_seconds() / 3600.0
+            from app.services.journey_events import record_journey_event
+
+            await record_journey_event(
+                self._session, user_id, "cap1_graduate", {}, dedup_key=now.isoformat()
+            )
             await self._session.flush()
             await self._session.refresh(progress)
 
         return progress
+
+    async def list_trade_history(self, user_id: uuid.UUID) -> list[dict]:
+        """Durable closed-trade history for Kết sổ and portfolio analysis."""
+        result = await self._session.execute(
+            select(OrderKetso, VirtualOrder)
+            .join(VirtualOrder, VirtualOrder.id == OrderKetso.order_id)
+            .where(VirtualOrder.user_id == user_id, VirtualOrder.side == OrderSide.SELL)
+            .order_by(OrderKetso.closed_at.desc())
+            .limit(500)
+        )
+        items: list[dict] = []
+        for ketso, sell in result.all():
+            buy = None
+            matched_by = "unmatched"
+            if sell.exit_matched_buy_order_id is not None:
+                buy = await self._vt_repo.get_order_by_id(sell.exit_matched_buy_order_id)
+                matched_by = "snapshot"
+            if buy is None:
+                buy = await self._find_matching_buy(sell)
+                if buy is not None:
+                    matched_by = "symbol_fallback"
+            if buy is None:
+                continue
+            plan = await self._get_kehoach_by_order(buy.id)
+            if plan is None:
+                continue
+            items.append(
+                {
+                    "buy_order_id": buy.id,
+                    "sell_order_id": sell.id,
+                    "matched_by": matched_by,
+                    "symbol": sell.symbol,
+                    "quantity": sell.quantity,
+                    "bought_at": buy.created_at,
+                    "closed_at": ketso.closed_at,
+                    "gia_vao": buy.filled_price_vnd,
+                    "gia_ra": ketso.gia_ra,
+                    "pnl_pct": ketso.pnl_pct,
+                    "pnl_vnd": ketso.pnl_vnd,
+                    "lyDo": plan.lyDo,
+                    "trangThai_luc_dat": plan.trangThai_luc_dat,
+                    "vung_mua": plan.vung_mua,
+                    "cam_xuc": ketso.cam_xuc,
+                    "phuong_phap_sl_tp": plan.phuong_phap_sl_tp,
+                    "cat_lo": plan.cat_lo,
+                    "chot_loi": plan.chot_loi,
+                    "cham_SL_cuoi_phien": ketso.cham_SL_cuoi_phien,
+                    "cham_SL_cat_dung_phien_ke": ketso.cham_SL_cat_dung_phien_ke,
+                    "cham_SL_khong_cat": ketso.cham_SL_khong_cat,
+                    "giu_cham_SL_bao_nhieu_phien": ketso.giu_cham_SL_bao_nhieu_phien,
+                    "cham_TP_giu_lam_hut": ketso.cham_TP_giu_lam_hut,
+                    "ban_som_khi_lo_nhe": ketso.ban_som_khi_lo_nhe,
+                    "nhoi_lenh_khi_lo": ketso.nhoi_lenh_khi_lo,
+                    "ghi_chu_nhin_lai": ketso.ghi_chu_nhin_lai,
+                    "khau_vi": plan.khau_vi,
+                    "muc_tu_tin": plan.muc_tu_tin,
+                    "cach_khoi_luong": plan.cach_khoi_luong,
+                    "khoi_luong": plan.khoi_luong,
+                    "pct_von": plan.pct_von,
+                }
+            )
+        return items

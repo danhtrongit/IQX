@@ -64,9 +64,9 @@ describe("HuntResultModal — kết quả bình thường", () => {
     expect(screen.getByText("+45,2 tỷ ròng · 4/5 phiên")).toBeInTheDocument()
   })
 
-  it('bấm "+ Watchlist" gửi kèm nguồn săn rồi đổi thành "✓ Đã thêm"', async () => {
+  it('bấm "+ Theo dõi" gửi kèm nguồn săn rồi đổi thành "✓ Đã thêm"', async () => {
     render(<HuntResultModal filter="ngoai" onClose={() => {}} />)
-    fireEvent.click(screen.getAllByText("+ Watchlist")[0])
+    fireEvent.click(screen.getAllByText("+ Theo dõi")[0])
     await waitFor(() =>
       expect(addAsync).toHaveBeenCalledWith({
         symbol: "HPG",

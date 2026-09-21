@@ -7,7 +7,8 @@ fixtures from ``tests/conftest.py``.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, date, datetime
+from unittest.mock import patch
 
 import pytest
 
@@ -16,17 +17,37 @@ from app.models.virtual_trading import OrderSide, OrderStatus, OrderType, Virtua
 from app.repositories.virtual_trading import VirtualTradingRepository
 from app.services.cap0.service import Cap0Service
 from app.services.cap1.service import Cap1Service
+from app.services.virtual_trading.price_resolver import PriceResult
+
+
+async def _valid_symbol(_symbol: str) -> bool:
+    return True
+
+
+async def _fixed_price(_symbol: str, **_kwargs) -> PriceResult:
+    return PriceResult(
+        price_vnd=20_000,
+        source="cap1-test",
+        timestamp=datetime.now(UTC),
+    )
 
 
 async def _graduate_cap0(db_session, user_id) -> None:
-    """Fast-track a user through Cấp 0 graduation (setup helper, not under test)."""
+    """Complete the documented five-task Cấp 0 flow as setup."""
     cap0 = Cap0Service(db_session)
     await cap0.enter(user_id)
-    # Cấp 0: 4 nhiệm vụ, 1 cổng hành vi (đóng Kết sổ ở ④). ② và ③ chỉ tính
-    # sau ①, nên vòng lặp phải chạy đúng thứ tự ①②③.
-    for n in (1, 2, 3):
-        await cap0.complete_task(user_id, n)
-    await cap0.complete_task(user_id, 4, gate="debrief")
+    await cap0.set_placement(user_id, answer="never")
+    account = await VirtualTradingRepository(db_session).get_account_by_user_id(user_id)
+    buy = await _make_order(db_session, account.id, user_id, symbol="VNM", mode="san_tap")
+    await cap0.record_kehoach(user_id, buy.id, ly_do_doi_thuong="thu_cho_biet")
+    await cap0.complete_task(user_id, 1, gate="star")
+    for tour in ("phantich", "bantin", "bctc"):
+        await cap0.complete_tour(user_id, tour)
+    await _make_order(
+        db_session, account.id, user_id, symbol="VNM", side=OrderSide.SELL,
+        mode="san_tap", trading_date=date(2026, 1, 8),
+    )
+    await cap0.complete_task(user_id, 5, gate="debrief")
     await cap0.graduate(user_id)
 
 
@@ -84,13 +105,8 @@ async def test_enter_requires_cap0_graduated(db_session, test_user):
     with pytest.raises(ConflictError):
         await svc.enter(test_user.id)
 
-    # Graduate Cấp 0 → enter Cấp 1 succeeds.
-    # Cấp 0: 4 nhiệm vụ, 1 cổng hành vi (đóng Kết sổ ở ④). ② và ③ chỉ tính
-    # sau ①, nên vòng lặp phải chạy đúng thứ tự ①②③.
-    for n in (1, 2, 3):
-        await cap0.complete_task(test_user.id, n)
-    await cap0.complete_task(test_user.id, 4, gate="debrief")
-    await cap0.graduate(test_user.id)
+    # Graduate the documented five-task journey → enter Cấp 1 succeeds.
+    await _graduate_cap0(db_session, test_user.id)
 
     progress = await svc.enter(test_user.id)
     assert progress.user_id == test_user.id
@@ -103,7 +119,55 @@ async def test_enter_requires_cap0_graduated(db_session, test_user):
 
 
 @pytest.mark.asyncio
-async def test_record_kehoach_marks_task1_and_rejects_duplicate(db_session, test_user):
+async def test_direct_cap1_placement_is_tour_gated_until_all_three_tours_complete(
+    db_session, test_user
+):
+    """Nhánh B enters Cấp 1 without graduating Cấp 0, but cannot write its
+    first plan until the single shared three-tour flag becomes true."""
+    cap0 = Cap0Service(db_session)
+    placement = await cap0.set_placement(test_user.id, answer="unsure")
+    assert placement.placed_level == 1
+    assert placement.da_xem_tour is False
+
+    account = await VirtualTradingRepository(db_session).create_account(
+        test_user.id, 100_000_000
+    )
+    svc = Cap1Service(db_session)
+    assert await svc.get_current_level(test_user.id) == 1
+    progress = await svc.enter(test_user.id)
+    assert progress.da_xem_tour is False
+
+    order = await _make_order(db_session, account.id, test_user.id)
+    with pytest.raises(ConflictError, match="3 tour"):
+        await svc.record_kehoach(
+            test_user.id,
+            order.id,
+            ly_do="ky_thuat",
+            trang_thai_luc_dat="ung_ho",
+            vung_mua=20_000,
+        )
+
+    for index, tour in enumerate(("phantich", "bantin", "bctc"), start=1):
+        placement, completed = await cap0.complete_tour(test_user.id, tour)
+        assert len(completed) == index
+        assert placement.da_xem_tour is (index == 3)
+
+    await db_session.refresh(progress)
+    assert progress.da_xem_tour is True
+    kehoach = await svc.record_kehoach(
+        test_user.id,
+        order.id,
+        ly_do="ky_thuat",
+        trang_thai_luc_dat="ung_ho",
+        vung_mua=20_000,
+    )
+    assert kehoach.order_id == order.id
+
+
+@pytest.mark.asyncio
+async def test_record_kehoach_marks_task1_and_supports_idempotent_recovery(
+    db_session, test_user
+):
     await _graduate_cap0(db_session, test_user.id)
     svc = Cap1Service(db_session)
     await svc.enter(test_user.id)
@@ -129,6 +193,18 @@ async def test_record_kehoach_marks_task1_and_rejects_duplicate(db_session, test
     assert progress.so_ly_do_da_dung == 1
     assert progress.so_lenh_ly_do_ung_ho == 1
 
+    recovered = await svc.record_kehoach(
+        test_user.id,
+        order.id,
+        ly_do="ky_thuat",
+        trang_thai_luc_dat="ung_ho",
+        vung_mua=20_000,
+        co_bam_doc_chi_tiet=True,
+    )
+    assert recovered.id == kehoach.id
+
+    # The retry path can recover the already-committed row, but cannot rewrite
+    # the immutable buy-time decision with a different payload.
     with pytest.raises(ConflictError):
         await svc.record_kehoach(
             test_user.id,
@@ -151,6 +227,34 @@ async def test_record_kehoach_rejects_sell_order_and_foreign_order(db_session, t
     with pytest.raises(BadRequestError):
         await svc.record_kehoach(
             test_user.id, sell_order.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho", vung_mua=1,
+        )
+
+    san_tap = await _make_order(
+        db_session, account.id, test_user.id, symbol="PRACTICE", mode="san_tap"
+    )
+    with pytest.raises(BadRequestError, match="Thực chiến"):
+        await svc.record_kehoach(
+            test_user.id,
+            san_tap.id,
+            ly_do="ky_thuat",
+            trang_thai_luc_dat="ung_ho",
+            vung_mua=20_000,
+        )
+
+    cancelled = await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        symbol="CANCELLED",
+        status=OrderStatus.CANCELLED,
+    )
+    with pytest.raises(BadRequestError, match="đang chờ hoặc đã khớp"):
+        await svc.record_kehoach(
+            test_user.id,
+            cancelled.id,
+            ly_do="ky_thuat",
+            trang_thai_luc_dat="ung_ho",
+            vung_mua=20_000,
         )
 
 
@@ -211,14 +315,68 @@ async def test_record_ketso_computes_pnl_and_marks_task2(db_session, test_user):
     progress = await svc.get_progress(test_user.id)
     assert progress.task_2_done_at is not None
 
-    # duplicate ketso for the same sell order rejected
-    with pytest.raises(ConflictError):
-        await svc.record_ketso(test_user.id, sell.id)
+    # Recovery retry is idempotent and keeps the first non-null reflection.
+    again = await svc.record_ketso(test_user.id, sell.id)
+    assert again.id == ketso.id
+    assert again.cam_xuc.value == "binh_tinh"
 
 
 @pytest.mark.asyncio
-async def test_task5_counts_thuc_chien_orders(db_session, test_user):
-    """⑤ is now «10 lệnh Thực chiến» — the old ⑥, renumbered."""
+async def test_ketso_allows_one_first_emotion_enrichment_then_is_idempotent(
+    db_session, test_user
+):
+    """A pre-flight closeout may have no emotion. The first later reflection
+    enriches that row exactly once; retries preserve it and a conflicting edit
+    is rejected."""
+    await _graduate_cap0(db_session, test_user.id)
+    svc = Cap1Service(db_session)
+    await svc.enter(test_user.id)
+    account = await VirtualTradingRepository(db_session).get_account_by_user_id(test_user.id)
+
+    buy = await _make_order(db_session, account.id, test_user.id, symbol="EMO")
+    await svc.record_kehoach(
+        test_user.id,
+        buy.id,
+        ly_do="tin_tuc",
+        trang_thai_luc_dat="can_chu_y",
+        vung_mua=20_000,
+    )
+    sell = await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        symbol="EMO",
+        side=OrderSide.SELL,
+        price=19_000,
+        trading_date=date(2026, 1, 8),
+    )
+    sell.exit_matched_buy_order_id = buy.id
+    await db_session.flush()
+
+    preflight = await svc.record_ketso(test_user.id, sell.id)
+    assert preflight.cam_xuc is None
+
+    enriched = await svc.record_ketso(test_user.id, sell.id, cam_xuc="so")
+    assert enriched.id == preflight.id
+    assert enriched.cam_xuc.value == "so"
+
+    same_retry = await svc.record_ketso(test_user.id, sell.id, cam_xuc="so")
+    null_retry = await svc.record_ketso(test_user.id, sell.id)
+    assert same_retry.id == preflight.id
+    assert null_retry.id == preflight.id
+    assert null_retry.cam_xuc.value == "so"
+
+    with pytest.raises(ConflictError, match="đã được chốt"):
+        await svc.record_ketso(test_user.id, sell.id, cam_xuc="hoi_tiec")
+
+
+@pytest.mark.asyncio
+async def test_task5_counts_only_planned_filled_thuc_chien_buys(db_session, test_user):
+    """⑤ is exactly ten filled BUYs carrying the cumulative Cấp-1 plan.
+
+    SELLs, unplanned BUYs and still-pending planned BUYs are not progress.
+    A delayed fill becomes progress on the next authoritative recompute.
+    """
     await _graduate_cap0(db_session, test_user.id)
     svc = Cap1Service(db_session)
     await svc.enter(test_user.id)
@@ -236,10 +394,41 @@ async def test_task5_counts_thuc_chien_orders(db_session, test_user):
     assert progress.so_lenh_thuc_chien == 9
     assert progress.task_5_done_at is None
 
-    order = await _make_order(db_session, account.id, test_user.id, symbol="T9")
-    await svc.record_kehoach(
-        test_user.id, order.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho", vung_mua=20_000,
+    await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        symbol="T0",
+        side=OrderSide.SELL,
+        trading_date=date(2026, 1, 8),
     )
+    await _make_order(db_session, account.id, test_user.id, symbol="UNPLANNED")
+    pending = await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        symbol="PENDING",
+        status=OrderStatus.PENDING,
+    )
+    await svc.record_kehoach(
+        test_user.id,
+        pending.id,
+        ly_do="ky_thuat",
+        trang_thai_luc_dat="ung_ho",
+        vung_mua=20_000,
+    )
+    progress = await svc.get_progress(test_user.id)
+    assert progress.so_lenh_thuc_chien == 9
+    assert progress.task_5_done_at is None
+
+    pending.status = OrderStatus.FILLED
+    pending.filled_price_vnd = 20_000
+    pending.gross_amount_vnd = 2_000_000
+    pending.fee_vnd = 0
+    pending.tax_vnd = 0
+    pending.net_amount_vnd = -2_000_000
+    await db_session.flush()
+
     progress = await svc.get_progress(test_user.id)
     assert progress.so_lenh_thuc_chien == 10
     assert progress.task_5_done_at is not None
@@ -249,6 +438,73 @@ async def test_task5_counts_thuc_chien_orders(db_session, test_user):
     await svc.mark_task(test_user.id, 1)  # trigger a recompute pass
     progress = await svc.get_progress(test_user.id)
     assert progress.so_lenh_thuc_chien == 10
+
+
+@pytest.mark.asyncio
+async def test_authoritative_trade_history_uses_frozen_buy_link_and_persisted_plan(
+    db_session, test_user
+):
+    """History comes from server rows and the SELL's immutable match, not a
+    browser-local latest-symbol guess."""
+    await _graduate_cap0(db_session, test_user.id)
+    svc = Cap1Service(db_session)
+    await svc.enter(test_user.id)
+    account = await VirtualTradingRepository(db_session).get_account_by_user_id(test_user.id)
+
+    intended_buy = await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        symbol="HIS",
+        price=20_000,
+        trading_date=date(2026, 1, 5),
+    )
+    intended_plan = await svc.record_kehoach(
+        test_user.id,
+        intended_buy.id,
+        ly_do="dong_tien",
+        trang_thai_luc_dat="ung_ho",
+        vung_mua=19_800,
+    )
+    newer_buy = await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        symbol="HIS",
+        price=21_000,
+        trading_date=date(2026, 1, 6),
+    )
+    await svc.record_kehoach(
+        test_user.id,
+        newer_buy.id,
+        ly_do="tin_tuc",
+        trang_thai_luc_dat="trung_tinh",
+        vung_mua=21_000,
+    )
+    sell = await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        symbol="HIS",
+        side=OrderSide.SELL,
+        price=22_000,
+        trading_date=date(2026, 1, 8),
+    )
+    sell.exit_matched_buy_order_id = intended_buy.id
+    await db_session.flush()
+    ketso = await svc.record_ketso(test_user.id, sell.id, cam_xuc="binh_tinh")
+
+    history = await svc.list_trade_history(test_user.id)
+    assert len(history) == 1
+    row = history[0]
+    assert row["matched_by"] == "snapshot"
+    assert row["buy_order_id"] == intended_buy.id
+    assert row["sell_order_id"] == sell.id
+    assert row["lyDo"] == intended_plan.lyDo
+    assert row["trangThai_luc_dat"] == intended_plan.trangThai_luc_dat
+    assert row["vung_mua"] == 19_800
+    assert row["pnl_vnd"] == ketso.pnl_vnd
+    assert row["cam_xuc"].value == "binh_tinh"
 
 
 @pytest.mark.asyncio
@@ -287,7 +543,7 @@ async def test_graduate_requires_5_of_5(db_session, test_user):
     vt_repo = VirtualTradingRepository(db_session)
     account = await vt_repo.get_account_by_user_id(test_user.id)
     ly_dos = ["ky_thuat", "dong_tien", "noi_bo", "tin_tuc", "dinh_gia"]
-    for i in range(8):
+    for i in range(9):
         ld = ly_dos[i % 5]
         order = await _make_order(db_session, account.id, test_user.id, symbol=f"G{i}")
         await svc.record_kehoach(
@@ -308,7 +564,7 @@ async def test_graduate_requires_5_of_5(db_session, test_user):
     with pytest.raises(ConflictError):
         await svc.graduate(test_user.id)
 
-    order = await _make_order(db_session, account.id, test_user.id, symbol="G8")
+    order = await _make_order(db_session, account.id, test_user.id, symbol="G9")
     await svc.record_kehoach(
         test_user.id, order.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho", vung_mua=20_000,
     )
@@ -326,13 +582,8 @@ async def test_graduate_rejects_task5_when_any_earlier_task_is_missing(
     await _graduate_cap0(db_session, test_user.id)
     svc = Cap1Service(db_session)
     await svc.enter(test_user.id)
-    account = await VirtualTradingRepository(db_session).get_account_by_user_id(test_user.id)
-
-    for i in range(10):
-        await _make_order(db_session, account.id, test_user.id, symbol=f"FIFTH{i}")
-    progress = await svc.mark_task(test_user.id, 5)
-
-    assert progress.task_5_done_at is not None
+    progress = await svc.get_progress(test_user.id)
+    progress.task_5_done_at = progress.entered_at
     for task_no in (1, 2, 3, 4):
         if task_no != missing_task:
             setattr(progress, f"task_{task_no}_done_at", progress.task_5_done_at)
@@ -409,6 +660,14 @@ async def test_cap1_endpoints_wired_and_free(client, db_session, test_user):
     assert ketso_body["pnl_vnd"] == 200_000
     assert ketso_body["cam_xuc"] == "binh_tinh"
 
+    r = await client.get("/api/v1/cap1/trades", headers=headers)
+    assert r.status_code == 200, r.text
+    history_body = r.json()
+    assert history_body["total"] == 1
+    assert history_body["trades"][0]["buy_order_id"] == str(buy.id)
+    assert history_body["trades"][0]["sell_order_id"] == str(sell.id)
+    assert history_body["trades"][0]["lyDo"] == "ky_thuat"
+
     # ⑤ is a derived task now — PATCH just triggers a recompute, and the
     # «Xem lại danh mục» counter is gone from the wire entirely.
     r = await client.patch(
@@ -418,7 +677,7 @@ async def test_cap1_endpoints_wired_and_free(client, db_session, test_user):
     task_body = r.json()
     assert "so_lan_xem_danh_muc" not in task_body
     assert "task_6_done_at" not in task_body
-    assert task_body["so_lenh_thuc_chien"] == 2  # 1 mua + 1 bán, đều đã khớp
+    assert task_body["so_lenh_thuc_chien"] == 1  # only planned filled BUYs count
     assert task_body["task_5_done_at"] is None
 
     r = await client.patch("/api/v1/cap1/task", headers=headers, json={"task_no": 6})
@@ -427,6 +686,89 @@ async def test_cap1_endpoints_wired_and_free(client, db_session, test_user):
     # Unauthenticated is rejected
     r = await client.get("/api/v1/cap1/progress")
     assert r.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_atomic_order_plan_write_and_legacy_recovery_retry(
+    client, db_session, test_user
+):
+    """The canonical order endpoint validates the Cap1 plan before execution,
+    saves both in one request, and remains compatible with an old client that
+    retries the same `/cap1/kehoach` write after receiving the order response."""
+    from app.core.security import create_access_token
+
+    cap0 = Cap0Service(db_session)
+    await cap0.set_placement(test_user.id, answer="unsure")
+    await cap0.complete_tours(test_user.id)
+    await VirtualTradingRepository(db_session).create_account(test_user.id, 100_000_000)
+    progress = await Cap1Service(db_session).enter(test_user.id)
+    assert progress.da_xem_tour is True
+
+    token = create_access_token(
+        subject=test_user.id, extra_claims={"role": test_user.role.value}
+    )
+    headers = {"Authorization": f"Bearer {token}"}
+    base_order = {
+        "symbol": "VCB",
+        "side": "buy",
+        "order_type": "market",
+        "quantity": 100,
+    }
+
+    with (
+        patch("app.services.virtual_trading.service.validate_symbol", new=_valid_symbol),
+        patch("app.services.virtual_trading.service.resolve_price", new=_fixed_price),
+    ):
+        rejected = await client.post(
+            "/api/v1/virtual-trading/orders", headers=headers, json=base_order
+        )
+        assert rejected.status_code == 400
+        assert (
+            await client.get("/api/v1/virtual-trading/orders", headers=headers)
+        ).json()["total"] == 0
+
+        payload = {
+            **base_order,
+            "journey_plan": {
+                "lyDo": "dong_tien",
+                "trangThai_luc_dat": "ung_ho",
+                "vung_mua": 19_800,
+                "co_bam_doc_chi_tiet": True,
+                "snapshot": {"source": "ai-insight", "signal": "support"},
+            },
+        }
+        created = await client.post(
+            "/api/v1/virtual-trading/orders", headers=headers, json=payload
+        )
+
+    assert created.status_code == 201, created.text
+    order_body = created.json()
+    assert order_body["mode"] == "thuc_chien"
+    assert order_body["status"] == "filled"
+    assert order_body["journey_plan_saved_levels"] == [1]
+
+    recovery_payload = {
+        "order_id": order_body["id"],
+        **payload["journey_plan"],
+    }
+    recovered = await client.post(
+        "/api/v1/cap1/kehoach", headers=headers, json=recovery_payload
+    )
+    assert recovered.status_code == 200, recovered.text
+    assert recovered.json()["order_id"] == order_body["id"]
+
+    changed = await client.post(
+        "/api/v1/cap1/kehoach",
+        headers=headers,
+        json={**recovery_payload, "vung_mua": 18_000},
+    )
+    assert changed.status_code == 409
+
+    latest_progress = (
+        await client.get("/api/v1/cap1/progress", headers=headers)
+    ).json()
+    assert latest_progress["so_lenh_thuc_chien"] == 1
+    assert latest_progress["task_1_done_at"] is not None
 
 
 # ── Migration: 6 nhiệm vụ → 5 (bỏ «Xem lại danh mục») ───

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { expectRendersNothing, visibleText } from "@/__tests__/textGuards"
@@ -14,15 +14,16 @@ const { recordKetsoCap1Mutate, recordKetsoCap2Mutate } = vi.hoisted(() => ({
 // established anti-cycle convention documented in
 // `cap0/GraduationModal.tsx`/`cap0/graduation.test.tsx`.
 vi.mock("@/features/cap1/hooks", () => ({
-  useRecordKetso: () => ({ mutate: recordKetsoCap1Mutate }),
+  useRecordKetso: () => ({ mutate: recordKetsoCap1Mutate, isPending: false }),
 }))
 vi.mock("./hooks", () => ({
-  useRecordKetsoCap2: () => ({ mutate: recordKetsoCap2Mutate }),
+  useRecordKetsoCap2: () => ({ mutate: recordKetsoCap2Mutate, isPending: false }),
 }))
 
 import { KetsoModalCap2, type KetsoDataCap2 } from "./KetsoModalCap2"
 import type { Cap1Progress } from "@/features/cap1/types"
 import type { Cap1TradeRecord } from "@/features/cap1/tradeLog"
+import type { Cap2Progress } from "./types"
 
 function cap1Progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
   return {
@@ -40,6 +41,25 @@ function cap1Progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
     so_lenh_thuc_chien: 10,
     graduated_at: "2026-01-05T00:00:00Z",
     time_to_graduate_hours: 40,
+    ...overrides,
+  }
+}
+
+function cap2Progress(overrides: Partial<Cap2Progress> = {}): Cap2Progress {
+  return {
+    id: "p2",
+    user_id: "u1",
+    entered_at: "2026-02-01T00:00:00Z",
+    task_1_done_at: null,
+    so_lenh_co_cl_tp: 6,
+    so_lan_cat_lo_dung: 2,
+    so_lan_chot_loi_dung: 1,
+    so_lan_thuc_hien_dung: 3,
+    chuoi_current: 4,
+    chuoi_record: 7,
+    so_lenh_7_ngay: 2,
+    graduated_at: null,
+    time_to_graduate_hours: null,
     ...overrides,
   }
 }
@@ -68,6 +88,8 @@ const cleanData: KetsoDataCap2 = {
 beforeEach(() => {
   recordKetsoCap1Mutate.mockReset()
   recordKetsoCap2Mutate.mockReset()
+  recordKetsoCap1Mutate.mockImplementation((_input, options) => options?.onSuccess?.())
+  recordKetsoCap2Mutate.mockImplementation((_input, options) => options?.onSuccess?.())
 })
 
 describe("KetsoModalCap2", () => {
@@ -135,10 +157,13 @@ describe("KetsoModalCap2", () => {
     expect(screen.getByText("😌 Bình tĩnh")).toBeVisible()
     fireEvent.click(screen.getByText("😔 Hối tiếc"))
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
-    expect(recordKetsoCap1Mutate).toHaveBeenCalledWith({
-      order_id: "order-8",
-      cam_xuc: "hoi_tiec",
-    })
+    expect(recordKetsoCap1Mutate).toHaveBeenCalledWith(
+      {
+        order_id: "order-8",
+        cam_xuc: "hoi_tiec",
+      },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    )
   })
 
   /**
@@ -278,30 +303,20 @@ describe("KetsoModalCap2", () => {
     expect(within(screen.getByRole("table")).getByText(/hụt/i)).toBeInTheDocument()
   })
 
-  /**
-   * ★★ "Chuỗi kỷ luật" KHÔNG còn là khái niệm của sản phẩm: Cấp 2 đã gỡ nó khỏi
-   * Hành trình lẫn Phân tích danh mục, và migration `8f1a5c7d2e64` đã DROP
-   * `chuoi_current`/`chuoi_record`/`last_chuoi_reset_at` khỏi `cap2_progress`
-   * (`grep -rn "chuoi" backend/app/` rỗng). Fixture cũ bơm `chuoi_current: 4`
-   * rồi bài test khẳng định user đọc "tăng lên 5 lệnh liên tiếp" — một con số
-   * API KHÔNG THỂ trả về; ngoài đời `?? 0` luôn thắng nên MỌI user Cấp 2 đọc
-   * "1 lệnh liên tiếp" ở mọi lệnh, mãi mãi. Kết sổ Cấp 3-8 đã gỡ dòng này
-   * (commit b30625d); Cấp 2 — cấp đang LIVE — phải im lặng y như vậy.
-   */
-  it("★★ KHÔNG còn dòng tác động chuỗi kỷ luật (số bịa) ở lệnh sạch", () => {
+  it("shows the next discipline streak from the server-backed snapshot", () => {
     render(
       <KetsoModalCap2
         data={cleanData}
         progress={cap1Progress()}
+        disciplineProgress={cap2Progress()}
         trades={[]}
         onClose={vi.fn()}
       />,
     )
-    expect(screen.queryByText(/chuỗi kỷ luật/i)).not.toBeInTheDocument()
-    expect(screen.queryByText(/lệnh liên tiếp/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/Chuỗi \+1 → 5 lệnh liên tiếp không vi phạm/)).toBeInTheDocument()
   })
 
-  it("★★ lệnh có vi phạm cũng không có dòng chuỗi kỷ luật", () => {
+  it("shows the previous discipline streak when a violation resets it", () => {
     const data: KetsoDataCap2 = {
       ...cleanData,
       flags: { order_id: "order-8", cham_SL_khong_cat: true },
@@ -310,14 +325,34 @@ describe("KetsoModalCap2", () => {
       <KetsoModalCap2
         data={data}
         progress={cap1Progress()}
+        disciplineProgress={cap2Progress()}
         trades={[]}
         onClose={vi.fn()}
       />,
     )
-    expect(screen.queryByText(/chuỗi/i)).not.toBeInTheDocument()
+    expect(screen.getByTestId("cap2-ketso-coach")).toHaveTextContent(/cắt chậm/i)
+    expect(screen.getByText(/Chuỗi reset về 0 · trước đó bạn có 4 lệnh liên tiếp/)).toBeInTheDocument()
   })
 
-  it("renders BOTH the Cấp 1 grid coach text and the Cấp 2 discipline coach text", () => {
+  it("offers a labeled reflection note for a violation and persists its trimmed value", () => {
+    const data: KetsoDataCap2 = {
+      ...cleanData,
+      flags: { order_id: "order-8", nhoi_lenh_khi_lo: true },
+    }
+    render(
+      <KetsoModalCap2 data={data} progress={cap1Progress()} trades={[]} onClose={vi.fn()} />,
+    )
+    fireEvent.change(screen.getByLabelText("✍ GHI CHÚ NHÌN LẠI"), {
+      target: { value: "  Tôi sợ mất nên chờ hồi  " },
+    })
+    fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
+    expect(recordKetsoCap2Mutate).toHaveBeenCalledWith(
+      expect.objectContaining({ ghi_chu_nhin_lai: "Tôi sợ mất nên chờ hồi" }),
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    )
+  })
+
+  it("renders the combined Cấp 1 + discipline Nhìn lại coach", () => {
     const data: KetsoDataCap2 = {
       ...cleanData,
       flags: { order_id: "order-8", cham_SL_khong_cat: true, giu_cham_SL_bao_nhieu_phien: 3 },
@@ -330,15 +365,8 @@ describe("KetsoModalCap2", () => {
         onClose={vi.fn()}
       />,
     )
-    // ★ Mockup có MỘT khối coach, thẻ "NHÌN LẠI · KỶ LUẬT", hai đoạn văn bên
-    // trong (đúng cùng lối Cấp 3 gộp thành "NHÌN LẠI · TỰ TIN VS KẾT QUẢ").
-    // Code cũ vẽ 2 khối rời, 2 vạch màu khác nhau.
-    expect(screen.getByText("NHÌN LẠI · KỶ LUẬT")).toBeInTheDocument()
-    expect(screen.queryByText("NHÌN LẠI")).not.toBeInTheDocument()
-    expect(screen.queryByText("KỶ LUẬT")).not.toBeInTheDocument()
-    const coach = screen.getByTestId("cap2-ketso-coach")
-    expect(coach.querySelectorAll("p")).toHaveLength(2)
-    expect(within(coach).getByText(/cắt chậm/i)).toBeInTheDocument()
+    expect(screen.getByTestId("cap2-ketso-coach")).toHaveTextContent("NHÌN LẠI · KỶ LUẬT")
+    expect(screen.getByText("Đóng kết sổ ✓")).toBeEnabled()
   })
 
   it('"Đóng kết sổ ✓" posts BOTH Cấp 1\'s cam_xúc AND Cấp 2\'s discipline flags, then closes', () => {
@@ -356,11 +384,41 @@ describe("KetsoModalCap2", () => {
       />,
     )
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
-    expect(recordKetsoCap1Mutate).toHaveBeenCalledWith({ order_id: "order-8", cam_xuc: null })
-    expect(recordKetsoCap2Mutate).toHaveBeenCalledWith({
-      order_id: "order-8",
-      cham_SL_cat_dung_phien_ke: true,
-    })
+    expect(recordKetsoCap1Mutate).toHaveBeenCalledWith(
+      { order_id: "order-8", cam_xuc: null },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    )
+    expect(recordKetsoCap2Mutate).toHaveBeenCalledWith(
+      {
+        order_id: "order-8",
+        cham_SL_cat_dung_phien_ke: true,
+        ghi_chu_nhin_lai: null,
+      },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    )
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it("waits for the Cấp 1 write before posting Cấp 2 and closing", () => {
+    recordKetsoCap1Mutate.mockImplementationOnce(() => undefined)
+    const onClose = vi.fn()
+    render(
+      <KetsoModalCap2
+        data={cleanData}
+        progress={cap1Progress()}
+        disciplineProgress={cap2Progress()}
+        trades={[]}
+        onClose={onClose}
+      />,
+    )
+
+    fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
+    expect(recordKetsoCap2Mutate).not.toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
+
+    const cap1Options = recordKetsoCap1Mutate.mock.calls[0][1]
+    act(() => cap1Options.onSuccess())
+    expect(recordKetsoCap2Mutate).toHaveBeenCalledTimes(1)
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 

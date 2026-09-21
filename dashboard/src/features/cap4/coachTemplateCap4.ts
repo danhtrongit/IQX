@@ -37,6 +37,7 @@ export type CoachIdCap4 =
   | "khac_ai_thua"
   | "cung_ai_thang"
   | "cung_ai_thua"
+  | "hoa_von"
   | "chua_doi_chieu"
 
 export interface CoachSituationCap4 {
@@ -143,8 +144,9 @@ function fmtPct(pct: number): string {
  * "chưa đối chiếu" xét TRƯỚC (không có đối chiếu thì 2 trục kia vô nghĩa).
  */
 export function pickCoachIdCap4(situation: CoachSituationCap4): CoachIdCap4 {
-  const { doc5Lop, ai5Lop, pnlPositive } = situation
+  const { doc5Lop, ai5Lop, pnlPositive, pnlPct } = situation
   if (lopSoSanhDuocCap4(doc5Lop, ai5Lop).length === 0) return "chua_doi_chieu"
+  if (pnlPct === 0) return "hoa_von"
   if (lopKhacAiCap4(doc5Lop, ai5Lop).length > 0) {
     return pnlPositive ? "khac_ai_thang" : "khac_ai_thua"
   }
@@ -215,10 +217,21 @@ function templateCungAiThua(
   )
 }
 
-/** Nhánh trung tính khi `ai_5_lop` trống — nói thẳng là chưa có dữ liệu AI. */
-function templateChuaDoiChieu(pct: string, pnlPositive: boolean): string {
+function templateHoaVon(pct: string, soKhac: number): string {
   return (
-    `Lệnh này ${pnlPositive ? "lãi" : "thua"} (${pct}). Lệnh này chưa có đối chiếu AI — AI chỉ lộ ` +
+    `Lệnh này hòa vốn (${pct}). ${
+      soKhac > 0
+        ? `Bạn đọc khác AI ở ${soKhac}/5 lớp, nhưng kết quả hòa vốn không phân xử góc nhìn của ai.`
+        : "Bạn và AI cùng góc nhìn, nhưng kết quả hòa vốn không xác nhận cũng không bác bỏ cách đọc."
+    } ${CHUA_KET_LUAN}`
+  )
+}
+
+/** Nhánh trung tính khi `ai_5_lop` trống — nói thẳng là chưa có dữ liệu AI. */
+function templateChuaDoiChieu(pct: string, pnlPct: number): string {
+  const ketQua = pnlPct > 0 ? "lãi" : pnlPct < 0 ? "thua" : "hòa vốn"
+  return (
+    `Lệnh này ${ketQua} (${pct}). Lệnh này chưa có đối chiếu AI — AI chỉ lộ ` +
     `khi bạn chấm đủ 5 lớp, nên không có gì để so về góc nhìn riêng của bạn ở lệnh này. Các lớp ` +
     `coach phía trên vẫn đầy đủ.`
   )
@@ -226,17 +239,26 @@ function templateChuaDoiChieu(pct: string, pnlPositive: boolean): string {
 
 /** Chọn + render đoạn coach "góc nhìn khác AI" cho lệnh vừa đóng. */
 export function pickCoachCap4(situation: CoachSituationCap4): CoachResultCap4 {
-  const { doc5Lop, ai5Lop, pnlPositive, pnlPct } = situation
+  const { doc5Lop, ai5Lop, pnlPct } = situation
   const id = pickCoachIdCap4(situation)
   const pct = fmtPct(pnlPct)
 
   if (id === "chua_doi_chieu") {
-    return { id, text: templateChuaDoiChieu(pct, pnlPositive), lopKhacAi: [], lopNoiBat: null }
+    return { id, text: templateChuaDoiChieu(pct, pnlPct), lopKhacAi: [], lopNoiBat: null }
   }
 
   const ai = ai5Lop as Lop5Partial
   const soSanh = lopSoSanhDuocCap4(doc5Lop, ai)
   const lopKhacAi = lopKhacAiCap4(doc5Lop, ai)
+
+  if (id === "hoa_von") {
+    return {
+      id,
+      text: templateHoaVon(pct, lopKhacAi.length),
+      lopKhacAi,
+      lopNoiBat: lopKhacAi[0] ?? lopDaiDienCungAi(doc5Lop, soSanh),
+    }
+  }
 
   if (id === "khac_ai_thang" || id === "khac_ai_thua") {
     const lopNoiBat = lopLechManhNhat(doc5Lop, ai, lopKhacAi) as Lop

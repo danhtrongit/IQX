@@ -4,18 +4,17 @@ import { describe, expect, it } from "vitest"
 import { sanMaTour } from "./sanMaTour"
 
 describe("sanMaTour config", () => {
-  it("đúng 7 bước (spec §7 «7 bước»)", () => {
-    expect(sanMaTour.steps).toHaveLength(7)
+  it("còn 6 bước sau khi bỏ phần lọc sàn khỏi giao diện", () => {
+    expect(sanMaTour.steps).toHaveLength(6)
   })
 
   it("tên config là 'sanma' (tiền tố localStorage/analytics)", () => {
     expect(sanMaTour.name).toBe("sanma")
   })
 
-  it("đúng thứ tự 7 chặng của file tour", () => {
+  it("các bước theo đúng thứ tự và không còn neo vào phần lọc sàn đã bỏ", () => {
     expect(sanMaTour.steps.map((s) => s.targetId ?? s.targetSelector)).toEqual([
       "tour-sanma-panel",
-      "tour-sanma-locsan",
       "tour-sanma-filter-ngoai",
       "tour-sanma-popup",
       "tour-sanma-add",
@@ -46,14 +45,13 @@ describe("sanMaTour config", () => {
 
   it("nội dung khớp file tour ở những câu chốt", () => {
     const bodies = sanMaTour.steps.map((s) => s.body)
-    expect(bodies[1]).toContain("≥1 tỷ/phiên")
-    expect(bodies[1]).toContain("giá ≥3.000đ")
-    expect(bodies[2]).toContain("≥3/5 phiên")
-    expect(bodies[3]).toContain("tối đa 10 mã")
-    expect(bodies[4]).toContain("KHÔNG phải để mua ngay")
-    expect(bodies[5]).toContain("≥4/5 lớp ủng hộ")
-    expect(bodies[5]).toContain("Quyết định mua vẫn là của bạn")
-    expect(bodies[6]).toContain("Săn nhiều, chọn kỹ, không mua vội")
+    expect(bodies[1]).toContain("≥3/5 phiên")
+    expect(bodies[2]).toContain("tối đa 10 mã")
+    expect(bodies[3]).toContain("+ Theo dõi")
+    expect(bodies[3]).toContain("KHÔNG phải để mua ngay")
+    expect(bodies[4]).toContain("≥4/5 lớp ủng hộ")
+    expect(bodies[4]).toContain("Quyết định mua vẫn là của bạn")
+    expect(bodies[5]).toContain("Săn nhiều, chọn kỹ, không mua vội")
   })
 
   it("★ KHÔNG hứa hẹn giá / khuyến nghị mua (spec §4.3 + §11)", () => {

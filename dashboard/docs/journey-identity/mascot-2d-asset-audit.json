@@ -1,0 +1,102 @@
+[
+  {
+    "mascot": "bach-ho",
+    "master_dimensions": [
+      1374,
+      1145
+    ],
+    "total_bytes": 1974724,
+    "runtime_images": 9,
+    "sizes": {
+      "poster.webp": 116676,
+      "avatar-body.webp": 51404,
+      "analyzing-strip.webp": 387582,
+      "reveal-silhouette.webp": 21126,
+      "updated-strip.webp": 326244,
+      "greet-strip.webp": 394300,
+      "idle-strip.webp": 392316,
+      "avatar-head.webp": 21574,
+      "tap-strip.webp": 263502
+    }
+  },
+  {
+    "mascot": "thanh-long",
+    "master_dimensions": [
+      1374,
+      1145
+    ],
+    "total_bytes": 2095304,
+    "runtime_images": 9,
+    "sizes": {
+      "poster.webp": 122452,
+      "avatar-body.webp": 53722,
+      "analyzing-strip.webp": 410230,
+      "reveal-silhouette.webp": 23768,
+      "updated-strip.webp": 334806,
+      "greet-strip.webp": 426036,
+      "idle-strip.webp": 420796,
+      "avatar-head.webp": 26054,
+      "tap-strip.webp": 277440
+    }
+  },
+  {
+    "mascot": "loc-huou",
+    "master_dimensions": [
+      1374,
+      1145
+    ],
+    "total_bytes": 1748112,
+    "runtime_images": 9,
+    "sizes": {
+      "poster.webp": 104162,
+      "avatar-body.webp": 46064,
+      "analyzing-strip.webp": 340774,
+      "reveal-silhouette.webp": 21428,
+      "updated-strip.webp": 285948,
+      "greet-strip.webp": 345892,
+      "idle-strip.webp": 344546,
+      "avatar-head.webp": 27384,
+      "tap-strip.webp": 231914
+    }
+  },
+  {
+    "mascot": "phung-hoang",
+    "master_dimensions": [
+      1374,
+      1145
+    ],
+    "total_bytes": 2258716,
+    "runtime_images": 9,
+    "sizes": {
+      "poster.webp": 128046,
+      "avatar-body.webp": 55938,
+      "analyzing-strip.webp": 447682,
+      "reveal-silhouette.webp": 27034,
+      "updated-strip.webp": 372778,
+      "greet-strip.webp": 462720,
+      "idle-strip.webp": 440532,
+      "avatar-head.webp": 23512,
+      "tap-strip.webp": 300474
+    }
+  },
+  {
+    "mascot": "kim-quy",
+    "master_dimensions": [
+      1373,
+      1146
+    ],
+    "total_bytes": 1661526,
+    "runtime_images": 9,
+    "sizes": {
+      "poster.webp": 99678,
+      "avatar-body.webp": 43942,
+      "analyzing-strip.webp": 330570,
+      "reveal-silhouette.webp": 18552,
+      "updated-strip.webp": 269736,
+      "greet-strip.webp": 328412,
+      "idle-strip.webp": 331530,
+      "avatar-head.webp": 20874,
+      "tap-strip.webp": 218232
+    }
+  }
+]

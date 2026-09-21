@@ -6,6 +6,11 @@ import { render, screen, waitFor } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+vi.mock("@/features/journey-identity/hooks", () => ({
+  useLearningReading: () => ({ dataset: { data: undefined, isPending: false },
+    reveal: { data: undefined }, aiAnswers: null, settledFailure: false }),
+}))
+
 /**
  * ════════════════════════════════════════════════════════════════════════════
  * HÀNG RÀO: panel Đặt lệnh Cấp 0→5 phải khớp mockup — ĐỌC THẲNG FILE MOCKUP

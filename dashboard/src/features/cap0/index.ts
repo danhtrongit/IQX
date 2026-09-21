@@ -33,6 +33,7 @@ export {
 } from "./Cap0Context"
 export {
   useCap0Progress,
+  usePlacementStatus,
   useEnterCap0,
   usePlacement,
   useCompleteTask,
@@ -50,6 +51,7 @@ export {
   type Cap0Kehoach,
   type Cap0Level,
   type Cap0Progress,
-  type PlacementResult,
+  type Cap0PlacementOut,
+  type PlacementExperience,
   type TradingMode,
 } from "./types"

@@ -153,3 +153,23 @@
 .cap5-pa-pat-ic {
   flex: none;
 }
+
+@media (max-width: 360px) {
+  .cap5-pa-flt {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 6px 8px;
+  }
+
+  .cap5-pa-flt-nm {
+    grid-column: 1 / -1;
+    width: auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .cap5-pa-flt-pct,
+  .cap5-pa-flt-n {
+    width: auto;
+  }
+}

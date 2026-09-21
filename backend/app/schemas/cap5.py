@@ -31,12 +31,34 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas.cap4 import Cap4PlanOut
+
 #: 5 bộ lọc săn mã (spec §5.3 — khớp ``app.models.cap5.HuntFilter``).
 HuntFilterLiteral = Literal["ngoai", "tudoanh", "kl", "dinh", "tang"]
 #: Trạng thái một mã trong Watchlist (§6.1). NULL khi chưa chấm được 5 lớp.
 WatchStatusLiteral = Literal["watching", "notable"]
 #: Mức hiển thị một lớp (§6.2 cụm icon): ủng hộ / trung tính / ngược chiều.
 MucLopLiteral = Literal["ok", "neu", "bad"]
+
+
+class Cap5PlanOut(Cap4PlanOut):
+    """Cumulative Cấp 1–5 BUY plan for reload-safe Kết sổ."""
+
+    source_known: bool
+    from_watchlist: bool | None = None
+    tu_san_ma: bool | None = None
+    hunt_filter: HuntFilterLiteral | None = None
+    hunt_filter_ten: str | None = None
+    hunt_signal: str | None = None
+    first_hunted_at: datetime | None = None
+    so_phien_trong_watchlist: int | None = None
+    so_lop_luc_vao: int | None = None
+    so_lop_da_cham_luc_vao: int | None = None
+    consensus_captured_at_entry: datetime | None = None
+    entry_snapshot_at: datetime | None = None
+    giai_thich: str
+    ly_do_thieu_so_lop: str | None = None
+    canh_bao_nguon_moi_hon: str | None = None
 
 
 # ══════════════════════════════════════════════════════
@@ -218,9 +240,9 @@ class AddWatchlistRequest(BaseModel):
 class LopChiTietOut(BaseModel):
     """Chấm một lớp trong 5 lớp.
 
-    ``ung_ho=None``/``muc=None`` = CHƯA chấm được lớp này. ★ Lớp 💎 Định giá LUÔN
-    ở trạng thái này: AI Insight v2 không có lớp Định giá (L2 là Thanh khoản —
-    ánh xạ vào đó là bịa), nên mỗi mã chỉ chấm được tối đa 4/5 lớp.
+    ``ung_ho=None``/``muc=None`` = CHƯA chấm được lớp này. Định giá lấy từ
+    snapshot BCTC Khối 02; L2 của AI Insight vẫn là Thanh khoản và không được
+    dùng thay thế.
     """
 
     lop: str
@@ -229,12 +251,22 @@ class LopChiTietOut(BaseModel):
     muc: MucLopLiteral | None = None
     nhan: str | None = None
     giai_thich: str
+    #: Tham chiếu nguồn đã dùng; NULL khi lớp chưa chấm được.
+    nguon: str | None = None
+    #: Phiên của riêng nguồn lớp này; có thể khác các lớp Insight.
+    source_date: date | None = None
 
 
 class Cap5WatchlistItemOut(BaseModel):
     """Một thẻ mã trong Watchlist Cấp 5 (§6.2)."""
 
     symbol: str
+    #: Giá khớp hiện tại theo bảng giá chuẩn, đơn vị đồng/cổ phiếu. NULL khi
+    #: nguồn không trả giá khớp; không lấy giá tham chiếu hoặc 0 để thế chỗ.
+    current_price_vnd: int | None = None
+    #: % thay đổi so với giá tham chiếu. NULL khi thiếu một trong hai giá hoặc
+    #: giá tham chiếu bằng 0; 0.0 là mức thay đổi thật và được giữ nguyên.
+    percent_change: float | None = None
     added_at: datetime | None = None
     #: NULL = mã KHÔNG đến từ săn mã (user tự thêm) — FE hiện "—", không đoán.
     hunt_filter: HuntFilterLiteral | None = None

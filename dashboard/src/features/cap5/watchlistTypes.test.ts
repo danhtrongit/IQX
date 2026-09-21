@@ -5,6 +5,7 @@ import {
   cap5WatchStatus,
   countWatchTabs,
   describeConsensus,
+  describeConsensusFreshness,
   describeConsensusTrend,
   describeHuntSource,
   lopIconRow,
@@ -44,6 +45,28 @@ describe("cap5WatchStatus — spec §6.1", () => {
   it("★ CHƯA chấm là trạng thái RIÊNG, không phải «Đang quan sát»", () => {
     expect(cap5WatchStatus(item({ consensus_today: null }))).toBe("chua_cham")
     expect(CAP5_WATCH_STATUS_LABEL.chua_cham).not.toBe(CAP5_WATCH_STATUS_LABEL.watching)
+  })
+
+  it("★ điểm hết hạn không còn được gọi là Đáng chú ý", () => {
+    const stale = item({ consensus_today: 4, consensus_het_han: true })
+    expect(cap5WatchStatus(stale)).toBe("du_lieu_cu")
+    expect(CAP5_WATCH_STATUS_LABEL.du_lieu_cu).toBe("Điểm đã cũ")
+  })
+})
+
+describe("describeConsensusFreshness — phiên đứng sau điểm đồng thuận", () => {
+  it("hiện phiên phân tích tạo ra điểm", () => {
+    expect(
+      describeConsensusFreshness(item({ consensus_session_date: "2026-08-18" })),
+    ).toBe("Điểm đồng thuận từ phiên 18/08/2026.")
+  })
+
+  it("điểm hết hạn nói rõ đây là dữ liệu cũ và cửa sổ hiệu lực", () => {
+    expect(
+      describeConsensusFreshness(
+        item({ consensus_het_han: true, so_phien_hieu_luc: 5 }),
+      ),
+    ).toBe("Điểm 4/5 đã cũ — chưa có bản phân tích mới trong 5 phiên gần nhất.")
   })
 })
 
@@ -152,10 +175,11 @@ describe("countWatchTabs — spec §6.3", () => {
     expect(
       countWatchTabs([
         item({ consensus_today: 4 }),
+        item({ consensus_today: 4, consensus_het_han: true }),
         item({ consensus_today: 2 }),
         item({ consensus_today: null }),
       ]),
-    ).toEqual({ tatCa: 3, dangChuY: 1 })
+    ).toEqual({ tatCa: 4, dangChuY: 1 })
   })
 })
 

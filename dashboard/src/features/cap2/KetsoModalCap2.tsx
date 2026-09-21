@@ -8,7 +8,7 @@ import { LY_DO_OPTIONS, type CamXuc, type Cap1Progress, type LyDo } from "@/feat
 import type { Cap1TradeRecord } from "@/features/cap1/tradeLog"
 import { useRecordKetsoCap2 } from "./hooks"
 import { composeCoachCap2, type CoachSituationCap2 } from "./coachTemplateCap2"
-import type { KetsoInputCap2, PhuongPhapSlTp } from "./types"
+import type { Cap2Progress, KetsoInputCap2, PhuongPhapSlTp } from "./types"
 // Kết sổ Cấp 2 = Kết sổ Cấp 1's content (đối chiếu table, khối cảm xúc, coach
 // "NHÌN LẠI", 3-dòng HỒ SƠ CỦA BẠN, count-up) + the SL/TP discipline layer
 // (spec §5.6/§6/§7). Reuses the SAME dark-editorial shell CSS Cấp 1 built on
@@ -69,6 +69,8 @@ export interface KetsoModalCap2Props {
   data: KetsoDataCap2 | null
   /** Cấp 1 progress row, for the (unchanged) "HỒ SƠ CỦA BẠN" lines. */
   progress: Cap1Progress | null
+  /** Snapshot trước khi kết sổ, dùng để diễn giải tác động lên chuỗi kỷ luật. */
+  disciplineProgress?: Cap2Progress | null
   /** Closed-trade history, for the (unchanged) per-lý-do stat line. */
   trades: Cap1TradeRecord[]
   onClose: () => void
@@ -145,6 +147,7 @@ const COUNT_UP_STEP_MS = 40
 export function KetsoModalCap2({
   data,
   progress,
+  disciplineProgress,
   trades,
   onClose,
   onRecorded,
@@ -153,6 +156,7 @@ export function KetsoModalCap2({
   const recordKetsoCap2 = useRecordKetsoCap2()
   const [emotion, setEmotion] = useState<CamXuc | null>(null)
   const [displayPct, setDisplayPct] = useState(0)
+  const [reflectionNote, setReflectionNote] = useState("")
 
   const entryPrice = data?.entryPrice ?? 0
   const exitPrice = data?.exitPrice ?? 0
@@ -168,6 +172,7 @@ export function KetsoModalCap2({
       return
     }
     setEmotion(null)
+    setReflectionNote("")
     const start = Date.now()
     let timer: ReturnType<typeof setTimeout>
     const tick = () => {
@@ -199,7 +204,6 @@ export function KetsoModalCap2({
   } = data
   const soPhienGiu = countTradingSessions(buyDate, sellDate)
   const pnlPositive = pnlVnd > 0
-
   const cap1Situation: CoachSituationCap1 = { pnlPositive, trangThaiLucDat, soPhienGiu }
   const cap1Params: CoachParamsCap1 = { pnlPct, lyDo, soPhienGiu, emotion }
   const cap2Situation: CoachSituationCap2 = {
@@ -210,6 +214,18 @@ export function KetsoModalCap2({
     giaSauKhiCat,
   }
   const coach = composeCoachCap2(cap1Situation, cap1Params, cap2Situation)
+  const hasViolation = Boolean(
+    flags.cham_SL_khong_cat ||
+      flags.cham_TP_giu_lam_hut ||
+      flags.ban_som_khi_lo_nhe ||
+      flags.nhoi_lenh_khi_lo,
+  )
+  const streakImpact = disciplineProgress
+    ? hasViolation
+      ? `Chuỗi reset về 0 · trước đó bạn có ${disciplineProgress.chuoi_current ?? 0} lệnh liên tiếp — có thể quay lại.`
+      : `Chuỗi +1 → ${(disciplineProgress.chuoi_current ?? 0) + 1} lệnh liên tiếp không vi phạm.`
+    : null
+
 
   const slThucTe = describeSlThucTe(flags, exitPrice, catLo)
   const tpThucTe = describeTpThucTe(flags, exitPrice, chotLoi)
@@ -242,20 +258,36 @@ export function KetsoModalCap2({
       : `Còn ${MIN_TRADES_FOR_STAT - sameLyDo.length} lệnh nữa để hệ thống tìm mẫu riêng của bạn.`
 
   const handleClose = () => {
-    // Cấp 1 first (unchanged /cap1/ketso contract), then Cấp 2's discipline
-    // flags — mirrors `TradingPanel`'s "Cấp 1 kehoach first, then Cấp 2
-    // kehoach" 2-call convention on the buy side.
-    recordKetsoCap1.mutate({ order_id: orderId, cam_xuc: emotion })
-    recordKetsoCap2.mutate({ ...flags, order_id: orderId })
-    onRecorded?.({
-      orderId,
-      lyDo,
-      trangThaiLucDat,
-      pnlPct,
-      pnlVnd,
-      closedAt: new Date(`${sellDate.slice(0, 10)}T00:00:00Z`).toISOString(),
-    })
-    onClose()
+    // `/cap2/ketso` updates the row created by `/cap1/ketso`, so these writes
+    // must be sequential. Keeping the modal open on either failure lets the
+    // user retry without silently losing the discipline facts or reflection.
+    recordKetsoCap1.mutate(
+      { order_id: orderId, cam_xuc: emotion },
+      {
+        onSuccess: () => {
+          recordKetsoCap2.mutate(
+            {
+              ...flags,
+              order_id: orderId,
+              ghi_chu_nhin_lai: hasViolation ? reflectionNote.trim() || null : null,
+            },
+            {
+              onSuccess: () => {
+                onRecorded?.({
+                  orderId,
+                  lyDo,
+                  trangThaiLucDat,
+                  pnlPct,
+                  pnlVnd,
+                  closedAt: new Date(`${sellDate.slice(0, 10)}T00:00:00Z`).toISOString(),
+                })
+                onClose()
+              },
+            },
+          )
+        },
+      },
+    )
   }
 
   return (
@@ -299,6 +331,7 @@ export function KetsoModalCap2({
           nên chúng nằm TRONG bảng chứ không tách ra một thẻ "CAM KẾT vs THỰC
           TẾ" thứ hai như bản mirror đầu tiên đã làm. */}
       <table className="cap0-debrief-table">
+        <caption className="sr-only">Đối chiếu kế hoạch và kết quả lệnh</caption>
         <thead>
           <tr>
             <th></th>
@@ -341,7 +374,7 @@ export function KetsoModalCap2({
           Cấp 2 hỏi cảm xúc ở MỌI lệnh — chỉ Cấp 2, Cấp 1 giữ nguyên cổng. */}
       <div className="cap1-ketso-emotion">
         <div className="cap0-debrief-coach-tag">💭 TRƯỚC KHI BẤM BÁN, BẠN THẤY THẾ NÀO?</div>
-        <div className="cap1-ketso-emotion-row">
+        <div className="cap1-ketso-emotion-row" role="group" aria-label="Cảm xúc trước khi bán">
           {CAM_XUC_OPTIONS.map((opt) => (
             <button
               key={opt.value}
@@ -359,16 +392,33 @@ export function KetsoModalCap2({
         </div>
       </div>
 
-      {/* ★ MỘT khối coach, thẻ ghép "NHÌN LẠI · KỶ LUẬT", hai đoạn văn — đúng
-          mockup `iqx-cap2-ketso.html` (và đúng lối mockup Cấp 3 ghép thành
-          "NHÌN LẠI · TỰ TIN VS KẾT QUẢ"). Lớp coach thứ 2 vẫn ĐỨNG CẠNH lớp
-          thứ nhất chứ không thay thế (spec §5.6) — vẫn là 2 đoạn, chỉ khác là
-          không còn 2 hộp rời với 2 vạch màu khác nhau. */}
       <div className="cap0-debrief-coach" data-testid="cap2-ketso-coach">
         <div className="cap0-debrief-coach-tag">NHÌN LẠI · KỶ LUẬT</div>
         <p className="cap0-debrief-coach-body">{coach.cap1Text}</p>
         <p className="cap0-debrief-coach-body">{coach.cap2.text}</p>
+        {streakImpact && <p className="cap0-debrief-coach-body">{streakImpact}</p>}
       </div>
+
+      {hasViolation && (
+        <div className="mt-3">
+          <label htmlFor={`cap2-reflection-${orderId}`} className="cap0-debrief-coach-tag">
+            ✍ GHI CHÚ NHÌN LẠI
+          </label>
+          <p className="mb-2 text-xs text-[var(--color-text-3)]">
+            Điều gì đã khiến bạn không làm theo kế hoạch ở lệnh này?
+          </p>
+          <textarea
+            id={`cap2-reflection-${orderId}`}
+            value={reflectionNote}
+            onChange={(event) => setReflectionNote(event.target.value)}
+            maxLength={2000}
+            rows={3}
+            className="w-full resize-y rounded-md border border-[var(--color-border-2)] bg-[var(--color-fill-2)] p-2 text-sm text-[var(--color-text-1)]"
+            placeholder="Ví dụ: Tôi sợ mất phần lãi đã có nên chờ thêm…"
+          />
+        </div>
+      )}
+
 
       <div className="cap1-ketso-profile">
         <div className="cap0-debrief-coach-tag">📊 HỒ SƠ CỦA BẠN SAU LỆNH NÀY</div>
@@ -379,7 +429,12 @@ export function KetsoModalCap2({
         </ul>
       </div>
 
-      <button type="button" className="cap0-debrief-close" onClick={handleClose}>
+      <button
+        type="button"
+        className="cap0-debrief-close"
+        onClick={handleClose}
+        disabled={recordKetsoCap1.isPending || recordKetsoCap2.isPending}
+      >
         Đóng kết sổ ✓
       </button>
     </Modal>

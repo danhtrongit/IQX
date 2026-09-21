@@ -4,6 +4,7 @@ import { cap3Api } from "./api"
 import { cap3Keys } from "./keys"
 import type {
   Cap3Progress,
+  Cap3TradesAnalysis,
   KehoachInputCap3,
   KhauViLoai,
   OrderKehoachCap3,
@@ -23,6 +24,18 @@ export function useCap3Progress(enabled = true) {
   return useQuery<Cap3Progress | null>({
     queryKey: cap3Keys.progress(),
     queryFn: cap3Api.getProgress,
+    enabled: isAuthenticated && enabled,
+    staleTime: 0,
+    retry: false,
+  })
+}
+
+/** Cross-device Cấp 3 closeout history; local history is only a UI fallback. */
+export function useCap3TradeAnalysis(enabled = true) {
+  const { isAuthenticated } = useAuth()
+  return useQuery<Cap3TradesAnalysis>({
+    queryKey: [...cap3Keys.all, "trades", "analysis"],
+    queryFn: cap3Api.getTradeAnalysis,
     enabled: isAuthenticated && enabled,
     staleTime: 0,
     retry: false,

@@ -1,3 +1,5 @@
+import { useEffect } from "react"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 // Import file cụ thể (KHÔNG qua barrel `@/features/cap2` / `@/features/cap3`) —
 // cùng lý do chống vòng module đã ghi ở `Cap4PortfolioAnalysis.tsx` /
@@ -36,6 +38,10 @@ export function Cap4PortfolioAnalysisPanel() {
   const { trades } = useCap4TradeLog()
   const { scores } = useCap2TradeLog()
   const { setActivePanel } = useSidebar()
+
+  useEffect(() => {
+    if (isCap4Active) trackJourneyEvent("cap4_phantich_view")
+  }, [isCap4Active])
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-[var(--color-bg-1)]">

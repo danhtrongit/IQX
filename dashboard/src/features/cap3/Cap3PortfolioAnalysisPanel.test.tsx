@@ -6,6 +6,7 @@ import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 const {
   useCap3EventsMock,
   useCap3ProgressMock,
+  useCap3TradeAnalysisMock,
   useCap3TradeLogMock,
   useCap2ProgressMock,
   useCap2TradeLogMock,
@@ -13,6 +14,9 @@ const {
 } = vi.hoisted(() => ({
   useCap3EventsMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isCap3Active: true })),
   useCap3ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
+  useCap3TradeAnalysisMock: vi.fn<(...a: unknown[]) => unknown>(() => ({
+    data: { trades: [], total: 0, by_confidence: [] }, isSuccess: true,
+  })),
   useCap3TradeLogMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ trades: [], record: vi.fn() })),
   useCap2ProgressMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
   useCap2TradeLogMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ trades: [], scores: [] })),
@@ -22,8 +26,12 @@ const {
 vi.mock("./Cap3Context", () => ({ useCap3Events: () => useCap3EventsMock() }))
 vi.mock("./hooks", () => ({
   useCap3Progress: (...a: unknown[]) => useCap3ProgressMock(...a),
+  useCap3TradeAnalysis: (...a: unknown[]) => useCap3TradeAnalysisMock(...a),
 }))
-vi.mock("./tradeLogCap3", () => ({ useCap3TradeLog: () => useCap3TradeLogMock() }))
+vi.mock("./tradeLogCap3", () => ({
+  useCap3TradeLog: () => useCap3TradeLogMock(),
+  cap3TradeFromWire: (row: { mapped?: unknown }) => row.mapped ?? null,
+}))
 vi.mock("@/features/cap2/hooks", () => ({
   useCap2Progress: (...a: unknown[]) => useCap2ProgressMock(...a),
 }))
@@ -45,6 +53,10 @@ describe("Cap3PortfolioAnalysisPanel", () => {
     useCap3EventsMock.mockReturnValue({ isCap3Active: true })
     useCap3ProgressMock.mockReset()
     useCap3ProgressMock.mockReturnValue({ data: null })
+    useCap3TradeAnalysisMock.mockReset()
+    useCap3TradeAnalysisMock.mockReturnValue({
+      data: { trades: [], total: 0, by_confidence: [] }, isSuccess: true,
+    })
     useCap3TradeLogMock.mockReset()
     useCap3TradeLogMock.mockReturnValue({ trades: [], record: vi.fn() })
     useCap2ProgressMock.mockReset()
@@ -71,6 +83,7 @@ describe("Cap3PortfolioAnalysisPanel", () => {
     useCap3ProgressMock.mockReturnValue({ data: cap3Progress })
     useCap2ProgressMock.mockReturnValue({ data: cap2Progress })
     useCap3TradeLogMock.mockReturnValue({ trades, record: vi.fn() })
+    useCap3TradeAnalysisMock.mockReturnValue({ data: undefined, isSuccess: false })
     useCap2TradeLogMock.mockReturnValue({ trades: [], scores })
 
     render(
@@ -88,6 +101,45 @@ describe("Cap3PortfolioAnalysisPanel", () => {
     )
   })
 
+  it("prefers authoritative server history, including an authoritative empty list", () => {
+    const localTrades = [{ orderId: "local" }]
+    const serverTrade = { orderId: "server" }
+    useCap3TradeLogMock.mockReturnValue({ trades: localTrades, record: vi.fn() })
+    useCap3TradeAnalysisMock.mockReturnValue({
+      data: { trades: [{ mapped: serverTrade }], total: 1, by_confidence: [] },
+      isSuccess: true,
+    })
+
+    const { rerender } = render(
+      <SidebarProvider><Cap3PortfolioAnalysisPanel /></SidebarProvider>,
+    )
+    expect(analysisPropsSpy).toHaveBeenLastCalledWith(expect.objectContaining({ trades: [serverTrade] }))
+
+    useCap3TradeAnalysisMock.mockReturnValue({
+      data: { trades: [], total: 0, by_confidence: [] },
+      isSuccess: true,
+    })
+    rerender(<SidebarProvider><Cap3PortfolioAnalysisPanel /></SidebarProvider>)
+    expect(analysisPropsSpy).toHaveBeenLastCalledWith(expect.objectContaining({ trades: [] }))
+  })
+
+  it("shows unknown instead of fake zero when neither server nor local history is available", () => {
+    useCap3TradeAnalysisMock.mockReturnValue({ data: undefined, isSuccess: false, isLoading: true })
+    useCap3TradeLogMock.mockReturnValue({ trades: [], record: vi.fn() })
+    render(<SidebarProvider><Cap3PortfolioAnalysisPanel /></SidebarProvider>)
+    expect(screen.getByTestId("cap3-history-unknown")).toBeInTheDocument()
+    expect(analysisPropsSpy).not.toHaveBeenCalled()
+  })
+
+  it("labels local evidence as a temporary fallback when the server is unavailable", () => {
+    const localTrades = [{ orderId: "local" }]
+    useCap3TradeAnalysisMock.mockReturnValue({ data: undefined, isSuccess: false, isError: true })
+    useCap3TradeLogMock.mockReturnValue({ trades: localTrades, record: vi.fn() })
+    render(<SidebarProvider><Cap3PortfolioAnalysisPanel /></SidebarProvider>)
+    expect(screen.getByTestId("cap3-history-local-fallback")).toBeInTheDocument()
+    expect(analysisPropsSpy).toHaveBeenCalledWith(expect.objectContaining({ trades: localTrades }))
+  })
+
   it("does not query anything outside a Cap3Provider", () => {
     useCap3EventsMock.mockReturnValue({ isCap3Active: false })
     render(
@@ -96,6 +148,7 @@ describe("Cap3PortfolioAnalysisPanel", () => {
       </SidebarProvider>,
     )
     expect(useCap3ProgressMock).toHaveBeenCalledWith(false)
+    expect(useCap3TradeAnalysisMock).toHaveBeenCalledWith(false)
     expect(useCap2ProgressMock).toHaveBeenCalledWith(false)
   })
 

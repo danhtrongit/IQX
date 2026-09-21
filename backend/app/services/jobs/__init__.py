@@ -58,6 +58,50 @@ async def startup() -> None:
             max_instances=1, coalesce=True, replace_existing=True,
         )
 
+    if settings.CAP2_STOP_CLOSE_SCAN_ENABLED:
+        from .cap2_alerts import run_cap2_stop_close_scan_job
+
+        _scheduler.add_job(
+            run_cap2_stop_close_scan_job,
+            CronTrigger(day_of_week="mon-fri", hour=15, minute=5, timezone="Asia/Ho_Chi_Minh"),
+            id="cap2_stop_close_scan",
+            name="Record verified closing-price breaches for next-session discipline alerts",
+            max_instances=1, coalesce=True, replace_existing=True,
+        )
+
+    if settings.JOURNEY_IDENTITY_RECOVERY_ENABLED:
+        from .journey_identity_recovery import run_journey_identity_recovery
+
+        _scheduler.add_job(
+            run_journey_identity_recovery,
+            IntervalTrigger(minutes=15),
+            id="journey_identity_recovery",
+            name="Recover graduated journey identities after transient initialization failures",
+            max_instances=1, coalesce=True, replace_existing=True,
+        )
+
+    if settings.CAP5_CONSENSUS_ENABLED:
+        from .cap5_consensus import run_cap5_consensus_refresh
+
+        _scheduler.add_job(
+            run_cap5_consensus_refresh,
+            CronTrigger(day_of_week="mon-fri", hour=18, minute=30, timezone="Asia/Ho_Chi_Minh"),
+            id="cap5_consensus_eod",
+            name="Refresh saved Watchlist consensus after the trading session",
+            max_instances=1, coalesce=True, replace_existing=True,
+        )
+
+    if settings.BOT_ENABLED:
+        from .bot_session import run_bot_session_job
+
+        _scheduler.add_job(
+            run_bot_session_job,
+            CronTrigger(day_of_week="mon-fri", hour=19, minute=0, timezone="Asia/Ho_Chi_Minh"),
+            id="bot_session_eod",
+            name="Run the IQX standard Bot against the completed session snapshot",
+            max_instances=1, coalesce=True, replace_existing=True,
+        )
+
     if getattr(settings, "MARKET_ANALYSIS_ENABLED", False):
         from .market_analysis_job import run_daily_retry_job, run_market_analysis_job
 

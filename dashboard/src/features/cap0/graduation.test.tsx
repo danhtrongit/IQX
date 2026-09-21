@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Cap0Progress } from "./types"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
-const { useCap0ProgressMock, graduateMutate, enterCap1Mutate, messageInfo, navigateMock } = vi.hoisted(
+const { useCap0ProgressMock, graduateMutate, enterCap1Mutate, messageInfo, navigateMock, trackMock } = vi.hoisted(
   () => ({
     useCap0ProgressMock: vi.fn(),
     // Mirror react-query's real `mutate(variables, options)` shape — by
@@ -16,8 +16,10 @@ const { useCap0ProgressMock, graduateMutate, enterCap1Mutate, messageInfo, navig
     enterCap1Mutate: vi.fn(),
     messageInfo: vi.fn(),
     navigateMock: vi.fn(),
+    trackMock: vi.fn(),
   }),
 )
+vi.mock("@/shared/analytics/journey", () => ({ trackJourneyEvent: trackMock }))
 
 // `GraduationModal` only needs `useCap0Progress` + `useGraduate` — mock
 // `./hooks` directly (same pattern as `Cap0TradingPage.test.tsx`/
@@ -72,21 +74,22 @@ function makeProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
     task_2_done_at: null,
     task_3_done_at: null,
     task_4_done_at: null,
-    task4_debrief_done: false,
+    task_5_done_at: null,
+    task1_star_clicked: false,
+    task5_debrief_done: false,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
   }
 }
 
-/** All 4 tasks done + THE behaviour gate — the §9 open condition. */
+/** Both required tasks and both behaviour gates — the §9 open condition. */
 function readyProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
   return makeProgress({
     task_1_done_at: "t",
-    task_2_done_at: "t",
-    task_3_done_at: "t",
-    task_4_done_at: "t",
-    task4_debrief_done: true,
+    task_5_done_at: "t",
+    task1_star_clicked: true,
+    task5_debrief_done: true,
     ...overrides,
   })
 }
@@ -98,26 +101,30 @@ describe("isGraduationReady", () => {
     expect(isGraduationReady(undefined)).toBe(false)
   })
 
-  it("is false when tasks aren't all 4 done yet, even with the gate true", () => {
+  it("is false when both required task timestamps are not set", () => {
     expect(
-      isGraduationReady(makeProgress({ task4_debrief_done: true, task_4_done_at: null })),
+      isGraduationReady(makeProgress({ task5_debrief_done: true, task_5_done_at: null })),
     ).toBe(false)
   })
 
-  it("★ is false when 4/4 but task4_debrief_done is missing — the ONE gate of Cấp 0", () => {
-    expect(isGraduationReady(readyProgress({ task4_debrief_done: false }))).toBe(false)
+  it("is false when 2/2 but task5_debrief_done is missing", () => {
+    expect(isGraduationReady(readyProgress({ task5_debrief_done: false }))).toBe(false)
   })
 
-  // ★ Mẫu số là 4. Một progress row chỉ có ①②③ (3/4) + cổng hành vi KHÔNG được
+  it("is false when 2/2 but task1_star_clicked is missing", () => {
+    expect(isGraduationReady(readyProgress({ task1_star_clicked: false }))).toBe(false)
+  })
+
+  // A progress row with one missing task and both gates must not
   // mở màn tốt nghiệp — nếu nó mở, `Cap0Service.graduate` sẽ 409 sau lưng một
   // modal `closable={false}` và user kẹt vĩnh viễn.
-  it("★ is false at 3/4 + gate — the denominator is FOUR, and ④ is the Kết sổ itself", () => {
+  it("is false at 1/2 even when both gates are true", () => {
     expect(
-      isGraduationReady(readyProgress({ task_4_done_at: null, task4_debrief_done: true })),
+      isGraduationReady(readyProgress({ task_5_done_at: null, task5_debrief_done: true })),
     ).toBe(false)
   })
 
-  it("is true once 4/4 + the debrief gate are met", () => {
+  it("is true once 2/2 and both gates are met", () => {
     expect(isGraduationReady(readyProgress())).toBe(true)
   })
 
@@ -137,35 +144,21 @@ describe("GraduationModal", () => {
     enterCap1Mutate.mockReset()
     messageInfo.mockReset()
     navigateMock.mockReset()
+    trackMock.mockReset()
   })
 
-  it("does not render when the 4/4 + 1-gate condition isn't met", () => {
+  it("does not render when the 2/2 + 2-gate condition isn't met", () => {
     useCap0ProgressMock.mockReturnValue({ data: makeProgress() })
     renderModal()
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
   })
 
-  it("renders header + CTA once ready — and NO copy blocks", () => {
+it("renders the header, three spec blocks and CTA once ready", () => {
     useCap0ProgressMock.mockReturnValue({ data: readyProgress() })
     renderModal()
-
     expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
-    expect(screen.getByText("CẤP 0 · NHẬP MÔN")).toBeInTheDocument()
-    // ★ Mẫu số phải theo `TOTAL_TASKS`: 4 kể từ khi Chặng 2 bị bỏ.
-    expect(screen.getByText("4/4 nhiệm vụ")).toBeInTheDocument()
-    expect(screen.queryByText("5/5 nhiệm vụ")).not.toBeInTheDocument()
-
-    // ★ Ba khối copy §9 (Ghi nhận / Định vị / Chuyển chế độ) đã bỏ theo yêu
-    // cầu điều chỉnh — không còn khối nào, kể cả nhánh premium/free.
-    expect(document.querySelector(".cap0-grad-block")).toBeNull()
-    expect(screen.queryByText(/Bạn đã đi trọn Cấp 0/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/Nói thẳng/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/THỰC CHIẾN/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/Premium/)).not.toBeInTheDocument()
-
-    // Button — chữ mới theo yêu cầu điều chỉnh.
-    expect(screen.getByText("Vào cấp 1: Học việc")).toBeInTheDocument()
-    expect(screen.queryByText("Vào Cấp 1 «Học việc» →")).not.toBeInTheDocument()
+    expect(document.querySelectorAll(".cap0-grad-block")).toHaveLength(0)
+    expect(screen.getByRole("button", { name: "Vào cấp 1: Học việc" })).toBeEnabled()
   })
 
   it("renders the 120px glowing badge (spec §12 n=0, fill=1 — \"vừa đúc xong\")", () => {
@@ -193,6 +186,7 @@ describe("GraduationModal", () => {
     expect(enterCap1Mutate).toHaveBeenCalledTimes(1)
     expect(messageInfo).not.toHaveBeenCalled()
     expect(navigateMock).not.toHaveBeenCalled()
+    expect(trackMock).toHaveBeenCalledWith("cap0_graduate")
   })
 
   it("closes itself once graduated_at comes back (one-way trip)", () => {

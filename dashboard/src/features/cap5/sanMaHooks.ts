@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/features/auth"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { sanMaApi, sanMaKeys } from "./sanMaApi"
 import type { HuntFilterKey, HuntResult, SanMaIndex } from "./sanMaTypes"
 import type { Cap5WatchlistItem } from "./watchlistTypes"
@@ -57,7 +58,13 @@ export function useAddToCap5Watchlist() {
     { symbol: string; hunt_filter: HuntFilterKey; hunt_signal: string | null }
   >({
     mutationFn: sanMaApi.addToWatchlist,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: sanMaKeys.watchlist() }),
+    onSuccess: (_item, input) => {
+      trackJourneyEvent("cap5_add_watchlist", {
+        symbol: input.symbol.toUpperCase(),
+        filter: input.hunt_filter,
+      })
+      void queryClient.invalidateQueries({ queryKey: sanMaKeys.watchlist() })
+    },
   })
 }
 

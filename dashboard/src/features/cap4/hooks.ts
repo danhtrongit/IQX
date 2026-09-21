@@ -6,6 +6,7 @@ import type {
   Cap4Progress,
   KehoachInputCap4,
   OrderKehoachCap4,
+  PhanTichCap4,
   VuKhiDiemMuCap4,
 } from "./types"
 
@@ -52,7 +53,7 @@ export function useCompleteCap4Task() {
   })
 }
 
-/** POST /cap4/kehoach — records the khối "Đọc 5 lớp" for a BUY fill. */
+/** POST /cap4/kehoach — records only the user's five-layer self-rating for a BUY fill. */
 export function useRecordKehoachCap4() {
   const invalidate = useInvalidateCap4()
   return useMutation<OrderKehoachCap4, unknown, KehoachInputCap4>({
@@ -72,7 +73,18 @@ export function useVuKhiDiemMu(enabled = true) {
   })
 }
 
-/** POST /cap4/graduate — chỉ khi xong nhiệm vụ duy nhất (20 lệnh đọc đủ 5 lớp). */
+/** GET /cap4/phan-tich — server-owned portfolio-analysis blocks ⑩/⑪. */
+export function usePhanTichCap4(enabled = true) {
+  const { isAuthenticated } = useAuth()
+  return useQuery<PhanTichCap4>({
+    queryKey: cap4Keys.phanTich(),
+    queryFn: cap4Api.getPhanTich,
+    enabled: isAuthenticated && enabled,
+    staleTime: 0,
+  })
+}
+
+/** POST /cap4/graduate — chỉ khi xong nhiệm vụ duy nhất (10 lệnh đọc đủ 5 lớp). */
 export function useGraduateCap4() {
   const invalidate = useInvalidateCap4()
   return useMutation<Cap4Progress, unknown, void>({

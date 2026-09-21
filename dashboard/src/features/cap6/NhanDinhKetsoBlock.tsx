@@ -14,16 +14,18 @@ import { conflictLevelLabel, conflictLevelText, lechNhanDinhHanhDong } from "./n
  *
  * ★★ **Số của khối này ĐỌC TỪ HÀNG ĐÃ LƯU** (`GET /cap6/kehoach/{order_id}`),
  * không suy lại ở client: suy lại thì mỗi lần mở Kết sổ ra một con số khác.
- * Hai phe (ủng hộ/ngược) thì lấy từ sự kiện lệnh lúc MUA — chúng là ảnh chụp của
- * thời điểm đặt, endpoint per-order không mang chúng.
+ * Hai phe cũng lấy từ snapshot bất biến của lệnh. Dữ liệu bus chỉ là đường hiển
+ * thị tức thời trước khi query server hoàn tất.
  */
 
-/** Dữ liệu khối, dựng từ sự kiện lệnh lúc MUA (rồi hàng server ghi đè). */
+/** Dữ liệu khối từ BUY-time bus, sau đó được hàng server ghi đè. */
 export interface NhanDinhKetsoCap6 {
-  /** Lớp ở phe Ủng hộ lúc đặt — ảnh chụp từ bus, server không lưu lại. */
+  /** Lớp ở phe Ủng hộ lúc đặt. */
   pheUngHo: Lop[]
   /** Lớp ở phe Ngược chiều lúc đặt. */
   pheNguoc: Lop[]
+  /** BUY-time conflict exists, but its historical two-side snapshot is unavailable. */
+  pheNguonChuaBiet?: boolean
   /** Mức user tự đọc. `null` = có mâu thuẫn nhưng user không chọn mức nào. */
   conflictLevel: ConflictLevel | null
   /** Lớp phủ quyết đang xấu — để gắn tag PHỦ QUYẾT đúng chip. */
@@ -64,8 +66,12 @@ export function mergeNhanDinhCap6(
   if (detail.had_conflict === false) return null
   if (detail.had_conflict == null) return local ?? null
   return {
-    pheUngHo: local?.pheUngHo ?? [],
-    pheNguoc: local?.pheNguoc ?? [],
+    pheUngHo: detail.support_layers ?? local?.pheUngHo ?? [],
+    pheNguoc: detail.opposing_layers ?? local?.pheNguoc ?? [],
+    pheNguonChuaBiet:
+      detail.support_layers == null && detail.opposing_layers == null
+        ? local?.pheNguonChuaBiet
+        : false,
     conflictLevel: detail.conflict_level,
     lopPhuQuyetXau: detail.veto_layers ?? [],
     pctVon: detail.khoi_luong_pct_von,
@@ -85,10 +91,15 @@ const TU_TIN_LABEL: Record<MucTuTin, string> = {
   3: "⭐⭐⭐ Cao",
 }
 
-/** `18` → `"18"` — số en-US (§E). */
+/** `18` → `"18"` — số Việt Nam, không phần thập phân. */
 function fmtInt(n: number): string {
-  return Math.round(n).toLocaleString("en-US")
+  return Math.round(n).toLocaleString("vi-VN")
 }
+
+const VI_ONE_DECIMAL = new Intl.NumberFormat("vi-VN", {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+})
 
 /** "🎯 Kỹ thuật · 💰 Dòng tiền", hoặc "—" khi phe đó rỗng. */
 function lopList(lop: readonly Lop[]): string {
@@ -133,7 +144,7 @@ export function loiCanhBaoLech(
     mucTuTin == null ? "" : ` với mức tự tin ${TU_TIN_LABEL[mucTuTin].replace(/^[⭐\s]+/u, "")}`
   const dau =
     pnlPct < 0
-      ? ` Lần này nó khiến bạn lỗ ${Math.abs(Math.round(pnlPct * 10) / 10).toFixed(1)}%.`
+      ? ` Lần này nó khiến bạn lỗ ${VI_ONE_DECIMAL.format(Math.abs(pnlPct))}%.`
       : " Lần này lệnh có lãi — nhưng lãi không làm cho sự lệch đó thành đúng: lần sau cùng cách làm ấy có thể ra kết quả ngược lại."
   return (
     `Bạn đọc mâu thuẫn này là ${conflictLevelLabel(level).toLowerCase()} — nhưng ${daMua}${tuTin}. ` +
@@ -221,6 +232,13 @@ export function NhanDinhKetsoBlock({ nhanDinh, pnlPct }: NhanDinhKetsoBlockProps
             </tr>
           </tbody>
         </table>
+        {nhanDinh.pheNguonChuaBiet && (
+          <p className="cap6-ketso-giaithich" data-testid="cap6-ketso-phe-chua-biet">
+            {
+              "Chưa có ảnh chụp hai phe lúc mua. Mức nhận định và hành động bên dưới vẫn lấy từ kế hoạch đã lưu; hệ thống không suy lại từ dữ liệu hiện tại."
+            }
+          </p>
+        )}
         {/* §C12c — nói rõ khối này đối chiếu CÁI GÌ, và cái gì nó KHÔNG xét. */}
         <p className="cap6-ketso-giaithich" data-testid="cap6-ketso-nhandinh-giaithich">
           {

@@ -10,7 +10,13 @@ import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { useCap0Events } from "./Cap0Context"
 import { cap0Api } from "./api"
 import { cap0Keys } from "./keys"
-import type { Cap0Gate, Cap0Kehoach, Cap0Progress, PlacementResult } from "./types"
+import type {
+  Cap0Gate,
+  Cap0Kehoach,
+  Cap0PlacementOut,
+  Cap0Progress,
+  PlacementExperience,
+} from "./types"
 
 /**
  * Current user's Cấp 0 progress. `staleTime: 0` so it always refetches after a
@@ -27,6 +33,18 @@ export function useCap0Progress(enabled = true) {
   return useQuery<Cap0Progress | null>({
     queryKey: cap0Keys.progress(),
     queryFn: cap0Api.getProgress,
+    enabled: isAuthenticated && enabled,
+    staleTime: 0,
+    retry: false,
+  })
+}
+
+/** Trạng thái câu hỏi xếp lớp; dùng cho routing trực tiếp Cấp 1/2. */
+export function usePlacementStatus(enabled = true) {
+  const { isAuthenticated } = useAuth()
+  return useQuery<Cap0PlacementOut | null>({
+    queryKey: cap0Keys.placement(),
+    queryFn: cap0Api.getPlacement,
     enabled: isAuthenticated && enabled,
     staleTime: 0,
     retry: false,
@@ -51,8 +69,8 @@ export function useEnterCap0() {
 /** POST /cap0/placement — records the "have you traded before?" answer. */
 export function usePlacement() {
   const invalidate = useInvalidateCap0()
-  return useMutation<PlacementResult, unknown, boolean>({
-    mutationFn: (hasTradedBefore) => cap0Api.placement(hasTradedBefore),
+  return useMutation<Cap0PlacementOut, unknown, PlacementExperience>({
+    mutationFn: (experience) => cap0Api.placement(experience),
     onSuccess: invalidate,
   })
 }
@@ -62,7 +80,7 @@ export function usePlacement() {
  *
  * Centralizes spec §7's "auto-chuyển tab Hành trình khi hoàn thành nhiệm vụ"
  * (moment thưởng, KHÔNG confetti) here in the hook's `onSuccess` — rather than
- * in each call site (`Gbar`/nhiệm vụ ①②③, `DebriefModal`/nhiệm vụ ④) — so
+ * in each call site (`Gbar`/nhiệm vụ ①, `DebriefModal`/nhiệm vụ ⑤) — so
  * every current AND future caller gets the auto-tab for free without having to
  * remember to wire it. `useSidebar()` outside a `SidebarProvider` returns the
  * app's no-op default context, so this is safe to call from anywhere
@@ -72,7 +90,7 @@ export function usePlacement() {
  * component has unmounted (TanStack Query keeps the mutation observer alive
  * until the promise settles). `Cap0TradingPage` restores the sidebar's
  * pre-Cấp-0 panel on unmount (see its own comment) — but if a task PATCH is
- * still in flight at that moment (e.g. user closes the Kết sổ for nhiệm vụ ④, then
+ * still in flight at that moment (e.g. user closes the Kết sổ for nhiệm vụ ⑤, then
  * immediately clicks the ticker to navigate to `/co-phieu/:symbol`), this
  * `onSuccess` resolves AFTER that restore and would otherwise clobber the
  * panel back to "journey", leaking the Cấp 0 sidebar into the shared
@@ -91,12 +109,7 @@ export function usePlacement() {
  *    vì `isCap0Active` đóng băng trong closure ở lần render cuối: sau khi shell
  *    tháo nó vẫn là `true`, nên một mình nó không chặn được cuộc đua ở trên.
  *
- * ★ `keepPanel` opts a call OUT of the auto-tab, and nhiệm vụ ②③ need it. Those
- * two complete the instant the user opens the Nắm giữ / Theo dõi tab — so the
- * "moment thưởng" would fire while the user is standing exactly where the
- * nhiệm vụ told them to stand ("Mở tab Nắm giữ, xem mã vừa mua trong danh
- * mục") and yank the panel away before they can look at anything. A reward
- * that cancels the lesson is worth nothing.
+ * `keepPanel` lets a caller preserve its current panel after completion.
  */
 export function useCompleteTask() {
   const invalidate = useInvalidateCap0()
@@ -126,8 +139,7 @@ export function useCompleteTask() {
 
 /**
  * POST /cap0/kehoach — persist the Kế hoạch chip for a just-filled Cấp 0 BUY
- * (of ANY `mode`: Cấp 0 is free and open to premium subscribers too, whose
- * orders are tagged `thuc_chien` — see `TradingMode`).
+ * The stored row follows the order's own mode.
  *
  * ★★ The ONLY caller (`TradingPanel`'s BUY flow) must go through
  * `ghiKehoachKhongChiMang`: this POST runs AFTER the order already filled, and

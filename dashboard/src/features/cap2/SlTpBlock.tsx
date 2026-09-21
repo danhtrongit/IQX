@@ -3,6 +3,7 @@ import { Tooltip } from "@arco-design/web-react"
 import { IconQuestionCircle } from "@arco-design/web-react/icon"
 import { useStockAiInsight } from "@/features/stock"
 import { cn } from "@/shared/lib/cn"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import {
   computeBienDoDaoDong,
   computeBienDoSlTp,
@@ -174,6 +175,7 @@ export function SlTpBlock({ symbol, giaVao, selected, onSelect }: SlTpBlockProps
                 disabled={disabled}
                 onClick={() => {
                   if (!card.result) return
+                  trackJourneyEvent("cap2_sl_tp_method_choose", { method: card.method })
                   onSelect(card.method, card.result.catLo, card.result.chotLoi)
                 }}
                 className={cn("op-way-pick", disabled && "cursor-not-allowed opacity-50")}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router"
 import {
   Button,
@@ -34,16 +34,6 @@ import { StockLogo } from "@/features/navigation/StockLogo"
 // /co-phieu this is inert — which is the whole point of routing the Cấp 0
 // nhiệm vụ through it instead of calling a Cấp 0 hook from here.
 import { useCap0Events } from "@/features/cap0/Cap0Context"
-import { useCap7Events } from "@/features/cap7/Cap7Context"
-import { Cap7PortfolioAnalysisPanel } from "@/features/cap7/Cap7PortfolioAnalysisPanel"
-import { ExitModalCap8 } from "@/features/cap8/ExitModalCap8"
-import { useCap8Active } from "@/features/cap8/Cap8Context"
-import { useCap1Events } from "@/features/cap1/Cap1Context"
-import { useCap2Events } from "@/features/cap2/Cap2Context"
-import { useCap3Events } from "@/features/cap3/Cap3Context"
-import { useCap4Events } from "@/features/cap4/Cap4Context"
-import { useCap5Events } from "@/features/cap5/Cap5Context"
-import { useCap6Events } from "@/features/cap6/Cap6Context"
 import { IconActivity, IconBriefcase, IconWallet } from "./icons"
 import {
   useAddToWatchlist,
@@ -53,7 +43,7 @@ import {
   useWatchlist,
 } from "./hooks"
 import { watchlistApi } from "./api"
-import { dispatchFilledSellCloseouts, usePortfolio, useOrders } from "@/features/trading"
+import { usePortfolio, useOrders } from "@/features/trading"
 import { PortfolioAnalysisButton } from "@/features/portfolio-manager"
 import {
   FlashingPrice,
@@ -63,6 +53,7 @@ import {
   priceColorHex,
 } from "./ui"
 import { readWatchlistTab, writeWatchlistTab, type WatchlistTab } from "./tabStorage"
+import { useCancelOrder } from "@/features/trading/hooks"
 
 /* ─────────────────────────── Tab: Theo dõi ─────────────────────────── */
 
@@ -327,25 +318,6 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
   const open = (s: string) => (onRowSelect ? onRowSelect(s) : navigate(`/co-phieu/${s}`))
   const { data: portfolio, isLoading } = usePortfolio()
   const [filter, setFilter] = useState<"all" | "profit" | "loss">("all")
-  const isCap8Active = useCap8Active()
-  const [exitSymbol, setExitSymbol] = useState<string | null>(null)
-  const cap1Events = useCap1Events()
-  const cap2Events = useCap2Events()
-  const cap3Events = useCap3Events()
-  const cap4Events = useCap4Events()
-  const cap5Events = useCap5Events()
-  const cap6Events = useCap6Events()
-  const dispatchCloseouts = useCallback((order: Parameters<typeof dispatchFilledSellCloseouts>[0]) => {
-    dispatchFilledSellCloseouts(
-      order,
-      cap1Events,
-      cap2Events,
-      cap3Events,
-      cap4Events,
-      cap5Events,
-      cap6Events,
-    )
-  }, [cap1Events, cap2Events, cap3Events, cap4Events, cap5Events, cap6Events])
 
   const positions = portfolio?.positions
   const symbols = useMemo(() => positions?.map((position) => position.symbol) ?? [], [positions])
@@ -407,8 +379,8 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
             <span className="ml-0.5 text-[8px] text-[var(--color-text-3)]">VND</span>
           </SummaryCard>
           <SummaryCard icon={<IconArrowRise />} label="Hiệu suất">
-            <span className={cn("font-bold tabular-nums", pnlColor)}>
-              {isProfit ? "+" : ""}
+            <span className={cn("font-bold tabular-nums", totalPnlPct >= 0 ? "text-up" : "text-down")}>
+              {totalPnlPct >= 0 ? "+" : ""}
               {totalPnlPct.toFixed(2)}%
             </span>
           </SummaryCard>
@@ -437,8 +409,6 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
           {filtered.length} mã
         </span>
       </div>
-      <Cap7Allocation />
-
       {/* Header */}
       {filtered.length > 0 && (
         <div className="flex items-center border-b border-[var(--color-border-1)] bg-[var(--color-fill-1)] px-2 py-1 text-[9px] font-medium text-[var(--color-text-3)]">
@@ -510,32 +480,11 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
                       {item.pnlPercent.toFixed(2)}%
                     </span>
                   </div>
-                  {isCap8Active && (
-                    <Button
-                      size="mini"
-                      type="outline"
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        setExitSymbol(item.symbol)
-                      }}
-                      onKeyDown={(event) => event.stopPropagation()}
-                    >
-                      Bán
-                    </Button>
-                  )}
                 </div>
               </div>
             )
           })
         )}
-      {isCap8Active && exitSymbol && (
-        <ExitModalCap8
-          symbol={exitSymbol}
-          visible
-          onClose={() => setExitSymbol(null)}
-          onFilledSell={dispatchCloseouts}
-        />
-      )}
       </div>
 
       {/* Footer total */}
@@ -555,13 +504,6 @@ function HoldingsTab({ onRowSelect }: { onRowSelect?: (symbol: string) => void }
     </div>
   )
 }
-function Cap7Allocation() {
-  const { isCap7Active } = useCap7Events()
-
-  return isCap7Active ? <Cap7PortfolioAnalysisPanel /> : null
-}
-
-
 function SummaryCard({
   icon,
   label,
@@ -597,6 +539,23 @@ const STATUS_COLOR: Record<string, string> = {
   REJECTED: "red",
 }
 
+function CancelOrderButton({ id, symbol }: { id: string; symbol: string }) {
+  const cancel = useCancelOrder()
+  const handleCancel = async () => {
+    try {
+      await cancel.mutateAsync(id)
+      Message.success(`Đã hủy lệnh ${symbol}`)
+    } catch (error) {
+      Message.error(await getErrorMessage(error))
+    }
+  }
+  return (
+    <Button size="mini" status="danger" loading={cancel.isPending} onClick={handleCancel}>
+      Hủy lệnh {symbol}
+    </Button>
+  )
+}
+
 function HistoryTab() {
   const [status, setStatus] = useState<string>("all")
   const { data: orders, isLoading } = useOrders(status)
@@ -604,6 +563,7 @@ function HistoryTab() {
   const fmtDate = (d: string) =>
     d
       ? new Date(d).toLocaleDateString("vi-VN", {
+          timeZone: "Asia/Ho_Chi_Minh",
           day: "2-digit",
           month: "2-digit",
           hour: "2-digit",
@@ -685,6 +645,11 @@ function HistoryTab() {
                       {order.quantity} cp
                     </span>
                   </div>
+                  {order.status === "PENDING" && (
+                    <div className="mt-1 flex justify-end">
+                      <CancelOrderButton id={order.id} symbol={order.symbol} />
+                    </div>
+                  )}
                 </div>
               </div>
             )

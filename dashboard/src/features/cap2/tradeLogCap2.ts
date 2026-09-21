@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useAuth } from "@/features/auth"
 import type { Cap2DailyScoreRecord, Cap2TradeRecord } from "./portfolioAnalysisCap2"
 
@@ -8,23 +8,14 @@ import type { Cap2DailyScoreRecord, Cap2TradeRecord } from "./portfolioAnalysisC
  * one level up. `Cap2TradeRecord`/`Cap2DailyScoreRecord` are already defined
  * by `portfolioAnalysisCap2.ts` (this module only supplies their storage +
  * accumulation) — they're exactly the plain parameters
- * `computeCap2PortfolioAnalysis` expects (see that module's own docstring on
- * why no BE endpoint lists historical trades/scores directly).
- *
- * GAP (mirrors `cap1/tradeLog.ts`'s own documented gap, one level up):
- * `GET /cap2/progress` only returns aggregate chuỗi/task state, and
- * `GET /cap2/diem-ky-luat` only ever answers for ONE ngày at a time — there
- * is no BE endpoint that lists historical `order_ketso` rows or a 30-day
- * điểm kỷ luật series. This module is the workaround: `Cap2TradingPage`
+ * `computeCap2PortfolioAnalysis` expects. `Cap2TradingPage`
  * appends one `Cap2TradeRecord` every time `KetsoModalCap2` finishes
  * reconciling a closed order (it already carries the 4 vi phạm flags it just
  * posted to `/cap2/ketso`), and one `Cap2DailyScoreRecord` whenever
  * `useDiemKyLuat` resolves a real (non-null) score for a given ngày.
  *
- * KNOWN LIMITATION (same as Cấp 1's): this cannot backfill trades/scores from
- * before this feature shipped, and it's per-browser (not synced across
- * devices) — a proper fix is a future BE task (e.g. `GET /cap2/trades` +
- * `GET /cap2/diem-ky-luat/history`).
+ * Durable backfill and cross-device reads use `GET /cap2/trades`,
+ * `GET /cap2/diem-ky-luat/history`, and `GET /cap2/analysis`.
  */
 
 function tradesStorageKey(userId: string): string {
@@ -118,12 +109,22 @@ export interface UseCap2TradeLogReturn {
 /** React binding over the Cấp 2 trade + score log, scoped to the current auth user. */
 export function useCap2TradeLog(): UseCap2TradeLogReturn {
   const { user } = useAuth()
-  const userId = user?.id ?? "anon"
-  const [trades, setTrades] = useState<Cap2TradeRecord[]>(() => readCap2TradeLog(userId))
-  const [scores, setScores] = useState<Cap2DailyScoreRecord[]>(() => readCap2ScoreLog(userId))
+  const userId = user?.id ?? null
+  const [trades, setTrades] = useState<Cap2TradeRecord[]>(() =>
+    userId ? readCap2TradeLog(userId) : [],
+  )
+  const [scores, setScores] = useState<Cap2DailyScoreRecord[]>(() =>
+    userId ? readCap2ScoreLog(userId) : [],
+  )
+
+  useEffect(() => {
+    setTrades(userId ? readCap2TradeLog(userId) : [])
+    setScores(userId ? readCap2ScoreLog(userId) : [])
+  }, [userId])
 
   const record = useCallback(
     (rec: Cap2TradeRecord) => {
+      if (!userId) return
       setTrades(appendCap2TradeRecord(userId, rec))
     },
     [userId],
@@ -131,6 +132,7 @@ export function useCap2TradeLog(): UseCap2TradeLogReturn {
 
   const recordScore = useCallback(
     (rec: Cap2DailyScoreRecord) => {
+      if (!userId) return
       setScores(appendCap2ScoreRecord(userId, rec))
     },
     [userId],

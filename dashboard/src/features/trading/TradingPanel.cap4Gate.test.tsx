@@ -278,6 +278,9 @@ vi.mock("@/features/cap4", async (importOriginal) => {
         >
           RATE_ALL
         </button>
+        <button type="button" onClick={() => {
+          for (const lop of LOPS) props.onRate(lop, "ok")
+        }}>RATE_WITHOUT_AI</button>
       </div>
     ),
   }
@@ -367,6 +370,22 @@ describe("TradingPanel — Cấp 4 cổng cứng: chấm đủ 5 lớp (spec §5
     expect(submitButton()).not.toBeDisabled()
   })
 
+  it("does not add an AI-availability gate and sends all self-ratings atomically", async () => {
+    renderPanel()
+    satisfyCap2And3()
+    fireEvent.click(screen.getByText("RATE_WITHOUT_AI"))
+    expect(submitButton()).not.toBeDisabled()
+    fireEvent.click(submitButton())
+    await waitFor(() => expect(placeOrderMock).toHaveBeenCalledOnce())
+    expect(placeOrderMock).toHaveBeenCalledWith(expect.objectContaining({
+      journeyPlan: expect.objectContaining({
+        doc_5_lop: { ky_thuat: "ok", dong_tien: "ok", noi_bo: "ok", tin_tuc: "ok", dinh_gia: "ok" },
+      }),
+    }))
+    const orderInput = (placeOrderMock.mock.calls as unknown as [{ journeyPlan: Record<string, unknown> }][])[0][0]
+    expect(orderInput.journeyPlan).not.toHaveProperty("ai_5_lop")
+  })
+
   it("MUA stays disabled when all 5 lớp are rated but Cấp 3's gate is unmet", () => {
     renderPanel()
     fireEvent.click(screen.getByText("PICK_SLTP"))
@@ -419,7 +438,7 @@ describe("TradingPanel — Cấp 4 ghi hồ sơ khi lệnh MUA khớp (spec §8)
     )
   })
 
-  it("ALWAYS posts BOTH JSON blobs to /cap4/kehoach (else so_lop_dong_thuan stays NULL)", async () => {
+  it("posts only the user assessment; the server owns AI and agreement counts", async () => {
     renderPanel()
     satisfyCap2And3()
     fireEvent.click(screen.getByText("RATE_ALL"))
@@ -435,10 +454,6 @@ describe("TradingPanel — Cấp 4 ghi hồ sơ khi lệnh MUA khớp (spec §8)
         tin_tuc: "ok",
         dinh_gia: "ok",
       },
-      ai_5_lop: { ...AI_5_LOP },
-      // AI reads 3 lớp as Ủng hộ; the user differs on dong_tien + noi_bo.
-      so_lop_dong_thuan: 3,
-      so_lop_khac_ai: 2,
     })
   })
 

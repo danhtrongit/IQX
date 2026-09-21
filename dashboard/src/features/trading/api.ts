@@ -35,6 +35,29 @@ export interface VTOrderResult {
   total: number
   fee: number
   status: string
+  /** BUY order matched by the server when this filled SELL closes a lot. */
+  exitMatchedBuyOrderId?: string
+  /** Learning blocks persisted in the same transaction as the order. */
+  journeyPlanSavedLevels?: number[]
+}
+
+export interface VTJourneyPlanInput {
+  ly_do_doi_thuong?: string
+  lyDo?: "ky_thuat" | "dong_tien" | "noi_bo" | "tin_tuc" | "dinh_gia"
+  trangThai_luc_dat?: "ung_ho" | "trung_tinh" | "can_chu_y" | "nguoc_chieu"
+  vung_mua?: number
+  co_bam_doc_chi_tiet?: boolean
+  snapshot?: Record<string, unknown> | null
+  phuong_phap_sl_tp?: "ho_tro_khang_cu" | "bien_do_dao_dong"
+  cat_lo?: number
+  chot_loi?: number
+  khau_vi?: "than_trong" | "can_bang" | "tan_cong"
+  muc_tu_tin?: 1 | 2 | 3
+  cach_khoi_luong?: "khau_vi_tu_tin" | "chia_deu"
+  doc_5_lop?: Record<string, "ok" | "neu" | "bad">
+  conflict_level?: "nhe" | "ngai" | "nghiem" | "chua_ro"
+  /** Durable Cấp 2 nhồi-lệnh decision bound by the server to this exact BUY draft. */
+  nhoi_lenh_alert_id?: string
 }
 
 export interface VTPosition {
@@ -44,6 +67,10 @@ export interface VTPosition {
   currentPrice: number
   marketValue: number
   unrealizedPnl: number
+  activePlanBuyOrderId?: string
+  activeOriginalStop?: number
+  activeOriginalTakeProfit?: number
+  activeDynamicStop?: number
 }
 
 export interface VTOrder {
@@ -102,7 +129,18 @@ function adaptOrderResult(raw: Raw): VTOrderResult {
     ),
     fee: num(raw.fee_vnd ?? raw.fee),
     status: String(raw.status ?? ""),
+    exitMatchedBuyOrderId:
+      raw.exit_matched_buy_order_id == null
+        ? undefined
+        : String(raw.exit_matched_buy_order_id),
+    journeyPlanSavedLevels: Array.isArray(raw.journey_plan_saved_levels)
+      ? raw.journey_plan_saved_levels.map(num)
+      : [],
   }
+}
+
+function withJourneyPlan(base: Raw, journeyPlan?: VTJourneyPlanInput): Raw {
+  return journeyPlan ? { ...base, journey_plan: journeyPlan } : base
 }
 
 function adaptPosition(raw: Raw): VTPosition {
@@ -113,6 +151,16 @@ function adaptPosition(raw: Raw): VTPosition {
     currentPrice: num(raw.current_price_vnd),
     marketValue: num(raw.market_value_vnd),
     unrealizedPnl: num(raw.unrealized_pnl_vnd),
+    activePlanBuyOrderId:
+      raw.active_plan_buy_order_id == null ? undefined : String(raw.active_plan_buy_order_id),
+    activeOriginalStop:
+      raw.active_original_stop_vnd == null ? undefined : num(raw.active_original_stop_vnd),
+    activeOriginalTakeProfit:
+      raw.active_original_take_profit_vnd == null
+        ? undefined
+        : num(raw.active_original_take_profit_vnd),
+    activeDynamicStop:
+      raw.active_dynamic_stop_vnd == null ? undefined : num(raw.active_dynamic_stop_vnd),
   }
 }
 
@@ -143,10 +191,17 @@ export const tradingApi = {
   },
 
   /** POST /virtual-trading/orders — market buy. */
-  buyMarket: async (symbol: string, quantity: number): Promise<VTOrderResult> => {
+  buyMarket: async (
+    symbol: string,
+    quantity: number,
+    journeyPlan?: VTJourneyPlanInput,
+  ): Promise<VTOrderResult> => {
     const raw = await api
       .post("virtual-trading/orders", {
-        json: { symbol, side: "buy", order_type: "market", quantity },
+        json: withJourneyPlan(
+          { symbol, side: "buy", order_type: "market", quantity },
+          journeyPlan,
+        ),
       })
       .json<Raw>()
     return adaptOrderResult(raw)
@@ -167,16 +222,20 @@ export const tradingApi = {
     symbol: string,
     quantity: number,
     triggerPrice: number,
+    journeyPlan?: VTJourneyPlanInput,
   ): Promise<VTOrderResult> => {
     const raw = await api
       .post("virtual-trading/orders", {
-        json: {
-          symbol,
-          side: "buy",
-          order_type: "limit",
-          quantity,
-          limit_price_vnd: triggerPrice,
-        },
+        json: withJourneyPlan(
+          {
+            symbol,
+            side: "buy",
+            order_type: "limit",
+            quantity,
+            limit_price_vnd: triggerPrice,
+          },
+          journeyPlan,
+        ),
       })
       .json<Raw>()
     return adaptOrderResult(raw)

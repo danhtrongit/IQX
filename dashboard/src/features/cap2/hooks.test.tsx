@@ -25,6 +25,9 @@ import {
   useRecordKehoachCap2,
   useRecordKetsoCap2,
   useDiemKyLuat,
+  useCap2ActiveAlerts,
+  useCheckCap2PreBuyAlert,
+  useActOnCap2Alert,
   useGraduateCap2,
 } from "./hooks"
 
@@ -137,6 +140,65 @@ describe("useDiemKyLuat", () => {
     await waitFor(() =>
       expect(get).toHaveBeenCalledWith("cap2/diem-ky-luat", {
         searchParams: { ngay: "2026-07-01" },
+      }),
+    )
+  })
+})
+
+describe("durable Cấp 2 alerts", () => {
+  it("GETs the active inbox without rebuilding quota state in the browser", async () => {
+    get.mockReturnValue(jsonRes({ session_date: "2026-09-15", alerts: [] }))
+    function Harness() {
+      useCap2ActiveAlerts()
+      return null
+    }
+    withClient(<Harness />)
+    await waitFor(() => expect(get).toHaveBeenCalledWith("cap2/alerts/active"))
+  })
+
+  it("POSTs the pre-buy idempotency key before an order is submitted", async () => {
+    post.mockReturnValue(jsonRes({ data_status: "available", triggered: false, reason: "ok" }))
+    const input = {
+      symbol: "VNM",
+      idempotency_key: "buy-attempt-123",
+      quantity: 300,
+      order_type: "limit" as const,
+      limit_price_vnd: 62_400,
+    }
+    function Harness() {
+      const check = useCheckCap2PreBuyAlert()
+      return <button onClick={() => check.mutate(input)}>check alert</button>
+    }
+    withClient(<Harness />)
+    fireEvent.click(screen.getByText("check alert"))
+    await waitFor(() =>
+      expect(post).toHaveBeenCalledWith("cap2/alerts/pre-buy", { json: input }),
+    )
+  })
+
+  it("POSTs action and strongest-level confirmation phrase using wire names", async () => {
+    post.mockReturnValue(jsonRes({ next_step: "none" }))
+    function Harness() {
+      const action = useActOnCap2Alert()
+      return (
+        <button
+          onClick={() =>
+            action.mutate({
+              alertId: "alert-1",
+              action: "proceed_buy",
+              confirmationPhrase: "Tôi hiểu",
+            })
+          }
+        >
+          act
+        </button>
+      )
+    }
+    withClient(<Harness />)
+    fireEvent.click(screen.getByText("act"))
+    await waitFor(() =>
+      expect(post).toHaveBeenCalledWith("cap2/alerts/alert-1/action", {
+        json: { action: "proceed_buy", confirmation_phrase: "Tôi hiểu" },
       }),
     )
   })

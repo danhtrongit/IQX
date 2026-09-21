@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from "react"
+import { createContext, useCallback, useContext, useState, type ReactNode } from "react"
 
 export type SidebarPanel =
   | "news"
@@ -6,6 +6,8 @@ export type SidebarPanel =
   | "watchlist"
   | "patterns"
   | "journey"
+  | "identity"
+  | "bot"
   // Cấp 1 "Phân tích danh mục" (spec §7) — only reachable from
   // `JourneyPanelCap1`'s button while inside `Cap1Provider`; harmless
   // elsewhere (mirrors "journey"'s own doc).
@@ -85,10 +87,10 @@ export function SidebarProvider({
     })
   }
 
-  const handleSetActivePanel = (panel: SidebarPanel) => {
+  const handleSetActivePanel = useCallback((panel: SidebarPanel) => {
     setActivePanel(panel)
     setIsOpen(true)
-  }
+  }, [])
 
   return (
     <SidebarContext.Provider
@@ -108,6 +110,8 @@ export function SidebarProvider({
   )
 }
 
+// Keep the provider and its public context hook together.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSidebar() {
   return useContext(SidebarContext)
 }

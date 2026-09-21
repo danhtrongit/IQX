@@ -35,8 +35,10 @@ là hoặc bịa 300 mã "0 đồng" cho khối ngoại, hoặc vứt cả bộ 
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import math
+import unicodedata
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
@@ -52,6 +54,13 @@ _VN_TZ = timezone(timedelta(hours=7))
 
 _FINFO_BASE = "https://api-finfo.vndirect.com.vn/v4"
 _FINFO_SOURCE = "VND"
+_HOSE_LISTING_BASE = "https://api.hsx.vn/l/api/v1"
+_HOSE_SOURCE = "HOSE"
+_HOSE_LANGUAGE_ID = 1
+# Trang HOSE hiện chia nhỏ cảnh báo/kiểm soát/hạn chế thành nhiều nhóm con.
+# Chọn nhóm theo tên do chính endpoint ``status-list`` trả về thay vì ghim ID;
+# các ID 47-57 được HOSE bổ sung sau các ID cũ 33-38.
+_TRANG_THAI_CAM = ("canh bao", "kiem soat", "han che giao dich")
 #: Trần số hàng xin mỗi lượt. 405 mã × ~30 phiên vẫn lọt (upstream nhận tới
 #: 20.000 và trả đủ); nếu vẫn bị cắt thì xem ``_gom_theo_phien(bi_cat=…)``.
 _FINFO_SIZE = 20_000
@@ -111,6 +120,16 @@ def _so(raw: object) -> float | None:
     return gia_tri if math.isfinite(gia_tri) else None
 
 
+def _la_trang_thai_cam(raw: object) -> bool:
+    """Nhận diện ba nhóm trong tên tiếng Việt do HOSE công bố."""
+    if not isinstance(raw, str):
+        return False
+    khong_dau = "".join(
+        ch for ch in unicodedata.normalize("NFD", raw.lower()) if unicodedata.category(ch) != "Mn"
+    ).replace("đ", "d")
+    return any(ten in khong_dau for ten in _TRANG_THAI_CAM)
+
+
 def _phien_dung_duoc(ngay_co: Sequence[str], *, so_can: int, bi_cat: bool) -> list[str]:
     """Chọn ``so_can`` phiên gần nhất trong các phiên nguồn trả về.
 
@@ -137,11 +156,82 @@ class LiveHuntDataSource:
         self._use_cache = use_cache
         self._today = today or datetime.now(_VN_TZ).date()
 
+    # ── Trạng thái chứng khoán chính thức của HOSE ────
+
+    async def restricted_symbols(self) -> set[str] | None:
+        """Mã thuộc diện cảnh báo/kiểm soát/hạn chế trên trang chính thức HOSE.
+
+        Hai endpoint này chính là nguồn của trang ``/theo-doi-dac-biet``:
+        ``/securities/status-list`` trả các nhóm và ``/securities/stock-status``
+        trả mã hiện hành của từng nhóm. Bất kỳ response thiếu/truncated nào cũng
+        trả ``None`` để tầng service dừng lọc, không coi danh sách thiếu là rỗng.
+        """
+        key = f"cap5:hunt:hose-restricted:{self._today.isoformat()}"
+        if self._use_cache:
+            cached = await cache_get_json(key)
+            if isinstance(cached, list) and all(isinstance(x, str) for x in cached):
+                return {x.upper() for x in cached if x}
+
+        headers = get_headers(_HOSE_SOURCE)
+        try:
+            payload = await fetch_json(
+                f"{_HOSE_LISTING_BASE}/securities/status-list",
+                headers=headers,
+                source=_HOSE_SOURCE,
+            )
+            statuses = payload.get("data") if isinstance(payload, dict) else None
+            if payload.get("success") is not True or not isinstance(statuses, list):
+                raise ValueError("status-list trả shape không hợp lệ")
+
+            ids = [
+                row.get("id")
+                for row in statuses
+                if isinstance(row, dict) and isinstance(row.get("id"), int) and _la_trang_thai_cam(row.get("name"))
+            ]
+            if not ids:
+                raise ValueError("status-list không có nhóm trạng thái cần loại")
+
+            pages = await asyncio.gather(*(self._hose_status_page(status_id, headers=headers) for status_id in ids))
+        except Exception as exc:  # noqa: BLE001 — nguồn trạng thái lỗi ⇒ dừng lọc
+            logger.warning("Cấp 5 săn mã: nguồn trạng thái HOSE lỗi: %s", exc)
+            return None
+
+        today = self._today.isoformat()
+        excluded = {
+            code
+            for rows in pages
+            for row in rows
+            if (code := str(row.get("securitiesCode") or "").strip().upper())
+            and ((applied := _iso(row.get("appliedDate"))) is None or applied <= today)
+        }
+        if self._use_cache:
+            await cache_set_json(key, sorted(excluded), _CACHE_TTL)
+        return excluded
+
+    async def _hose_status_page(self, status_id: int, *, headers: dict[str, str]) -> list[dict]:
+        payload = await fetch_json(
+            (f"{_HOSE_LISTING_BASE}/{_HOSE_LANGUAGE_ID}/securities/stock-status"),
+            params={"pageIndex": 1, "pageSize": 1000, "statusListId": status_id},
+            headers=headers,
+            source=_HOSE_SOURCE,
+        )
+        data = payload.get("data") if isinstance(payload, dict) else None
+        rows = data.get("list") if isinstance(data, dict) else None
+        paging = data.get("paging") if isinstance(data, dict) else None
+        total = paging.get("totalCount") if isinstance(paging, dict) else None
+        if (
+            payload.get("success") is not True
+            or not isinstance(rows, list)
+            or not isinstance(total, int)
+            or total != len(rows)
+            or any(not isinstance(row, dict) for row in rows)
+        ):
+            raise ValueError(f"stock-status {status_id} trả thiếu/shape không hợp lệ")
+        return rows
+
     # ── Nến ngày ──────────────────────────────────────
 
-    async def daily_bars(
-        self, symbols: Sequence[str], *, so_nen: int
-    ) -> dict[str, list[HuntBar]]:
+    async def daily_bars(self, symbols: Sequence[str], *, so_nen: int) -> dict[str, list[HuntBar]]:
         bang = await self._bang_nen(so_nen)
         if not bang:
             return {}
@@ -155,10 +245,7 @@ class LiveHuntDataSource:
             cached = await cache_get_json(key)
             if isinstance(cached, dict) and cached:
                 return {
-                    ma: [
-                        HuntBar(ngay=r[0], close=r[1], volume=r[2], gtgd_vnd=r[3])
-                        for r in hang
-                    ]
+                    ma: [HuntBar(ngay=r[0], close=r[1], volume=r[2], gtgd_vnd=r[3]) for r in hang]
                     for ma, hang in cached.items()
                 }
 
@@ -200,27 +287,18 @@ class LiveHuntDataSource:
                 gtgd_vnd=gtgd,
             )
 
-        out = {
-            ma: [nen[ngay] for ngay in sorted(nen)]
-            for ma, nen in theo_ma.items()
-            if nen
-        }
+        out = {ma: [nen[ngay] for ngay in sorted(nen)] for ma, nen in theo_ma.items() if nen}
         if self._use_cache and out:
             await cache_set_json(
                 key,
-                {
-                    ma: [[b.ngay, b.close, b.volume, b.gtgd_vnd] for b in bars]
-                    for ma, bars in out.items()
-                },
+                {ma: [[b.ngay, b.close, b.volume, b.gtgd_vnd] for b in bars] for ma, bars in out.items()},
                 _CACHE_TTL,
             )
         return out
 
     # ── Mua ròng theo phiên ───────────────────────────
 
-    async def net_flow(
-        self, symbols: Sequence[str], *, ben: str, so_phien: int
-    ) -> dict[str, list[float]] | None:
+    async def net_flow(self, symbols: Sequence[str], *, ben: str, so_phien: int) -> dict[str, list[float]] | None:
         """Mua ròng (VND) theo TỪNG phiên — một lượt HTTP cho CẢ sàn HOSE.
 
         ★★ **Phiên nào là phiên nào thì hỏi BẢNG GIÁ, không hỏi chính nguồn dòng
@@ -289,9 +367,7 @@ class LiveHuntDataSource:
             if isinstance(cached, list) and len(cached) >= toi_thieu:
                 return [str(x) for x in cached]
 
-        rows, bi_cat = await self._finfo(
-            "stock_prices", truong_ngay="date", so_phien=so_can, fields="code,date"
-        )
+        rows, bi_cat = await self._finfo("stock_prices", truong_ngay="date", so_phien=so_can, fields="code,date")
         if rows is None:
             return None
         phien = _phien_dung_duoc(

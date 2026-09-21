@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.demo_trading import require_open_level
 from app.core.exceptions import ConflictError, NotFoundError
 from app.models.cap6 import Cap6Progress
 from app.models.cap7 import Cap7Progress
@@ -71,6 +72,7 @@ class Cap7Service:
         """Enter idempotently after the user has graduated Cấp 6."""
         progress = await self._get_progress_row(user_id)
         if progress is None:
+            require_open_level(7)
             cap6 = (
                 await self._session.execute(select(Cap6Progress).where(Cap6Progress.user_id == user_id))
             ).scalar_one_or_none()

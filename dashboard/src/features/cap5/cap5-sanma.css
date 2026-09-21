@@ -331,6 +331,11 @@
   background: rgba(255, 197, 61, 0.16);
 }
 
+.cap5-wl-status.stale {
+  color: #d94f4f;
+  background: rgba(217, 79, 79, 0.12);
+}
+
 .cap5-wl-mid {
   display: flex;
   align-items: center;
@@ -376,6 +381,16 @@
   margin-top: 5px;
   font-size: 9.5px;
   color: #d68f00;
+}
+
+.cap5-wl-freshness {
+  margin-top: 5px;
+  font-size: 9.5px;
+  color: var(--color-text-3);
+}
+
+.cap5-wl-freshness.stale {
+  color: #d94f4f;
 }
 
 .cap5-wl-foot {
@@ -426,4 +441,51 @@
 
 .cap5-wl-hint b {
   color: var(--cap5-gold);
+}
+
+@media (max-width: 360px) {
+  .cap5-wl-head,
+  .cap5-wl-mid,
+  .cap5-wl-foot {
+    flex-wrap: wrap;
+  }
+
+  .cap5-wl-tabs {
+    width: 100%;
+  }
+
+  .cap5-wl-tab {
+    flex: 1;
+    min-height: 44px;
+    padding-inline: 6px;
+  }
+
+  .cap5-wl-add,
+  .cap5-wl-act {
+    min-height: 44px;
+  }
+
+  .cap5-wl-trend {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .cap5-hr {
+    display: grid;
+    grid-template-columns: 16px 42px minmax(0, 1fr);
+  }
+
+  .cap5-hr-code {
+    width: auto;
+  }
+
+  .cap5-hr-sig {
+    grid-column: 2 / -1;
+    overflow-wrap: anywhere;
+  }
+
+  .cap5-hr-add {
+    justify-self: end;
+    min-height: 40px;
+  }
 }

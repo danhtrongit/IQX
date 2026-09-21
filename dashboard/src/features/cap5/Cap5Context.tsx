@@ -27,6 +27,8 @@ export interface Cap5OrderEvent {
   /** Filled price (VND). */
   price: number
   orderId: string
+  /** Lệnh BUY server đã ghép chính xác cho SELL; dùng khôi phục Kết sổ sau reload. */
+  buyOrderId?: string
 }
 
 /** Handlers the Cấp 5 journey registers to react to trading-UI events. */

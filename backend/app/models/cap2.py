@@ -81,5 +81,16 @@ class Cap2Progress(UUIDMixin, TimestampMixin, Base):
         Integer, nullable=False, default=0, server_default="0"
     )
 
+    # Công cụ học tập, không phải cổng tốt nghiệp (§6).
+    chuoi_current: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    chuoi_record: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    last_chuoi_reset_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
     graduated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     time_to_graduate_hours: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    _so_lenh_7_ngay: int = 0
+
+    @property
+    def so_lenh_7_ngay(self) -> int:
+        return self._so_lenh_7_ngay

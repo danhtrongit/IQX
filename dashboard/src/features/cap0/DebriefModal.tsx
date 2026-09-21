@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react"
 import { Modal } from "@arco-design/web-react"
 import { cn } from "@/shared/lib/cn"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { useCap0Kehoach, useCompleteTask } from "./hooks"
+import { coachTemplate } from "./coachTemplate"
 import "./cap0.css"
 
 /**
@@ -41,14 +43,17 @@ export interface DebriefModalProps {
 }
 
 function fmtVnd(n: number): string {
-  return Math.round(n).toLocaleString("en-US")
+  return Math.round(n).toLocaleString("vi-VN")
 }
 
 /** `+10.0%` / `−5.0%` / `0.0%` — spec's literal minus glyph "−", not a hyphen. */
 function fmtPct(pct: number): string {
   const rounded = Math.round(pct * 10) / 10
   const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : ""
-  return `${sign}${Math.abs(rounded).toFixed(1)}%`
+  return `${sign}${Math.abs(rounded).toLocaleString("vi-VN", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  })}%`
 }
 
 /**
@@ -84,19 +89,20 @@ function holdTimeText(soPhienGiu: number | null | undefined): string | null {
 const COUNT_UP_MS = 1000
 const COUNT_UP_STEP_MS = 40
 
+function renderInlineBold(text: string) {
+  return text.split("**").map((part, i) =>
+    i % 2 === 1 ? <strong key={i}>{part}</strong> : part,
+  )
+}
+
 /**
  * Màn Kết sổ Cấp 0 (spec v3.0 §5) — opened by `Gbar` when a SELL order fills
- * (nhiệm vụ ④). Header + big count-up P&L + Kế hoạch/Thực tế table (giá vào /
- * giá ra + thuế bán 0,1%) + "Đóng kết sổ ✓" — which fires
- * `completeTask(4, "debrief")`, **the single behaviour gate of the whole
- * level** ("4/4 nhiệm vụ + 1 cổng hành vi (④ đóng màn kết sổ)").
+ * (nhiệm vụ ⑤). Header + big count-up P&L + Kế hoạch/Thực tế table (giá vào /
+ * giá ra + thuế bán 0,1%) + coach rule-based + "Đóng kết sổ ✓" — which fires
+ * `completeTask(5, "debrief")`, **the single behaviour gate of the whole
+ * level** ("2/2 nhiệm vụ + 1 cổng hành vi (⑤ đóng màn kết sổ)").
  * KHÔNG hỏi cảm xúc (spec, explicit).
  *
- * ★ Khối coach "NHÌN LẠI" (2 mẫu lãi/lỗ) đã bỏ theo yêu cầu điều chỉnh; Cấp 0
- * không còn `coachTemplate`. Cấp 1+ giữ lớp coach của riêng chúng.
- *
- * ★ Đây là nhiệm vụ ⑤ cũ; nó lùi về ④ khi Chặng 2 (ba tour sản phẩm) bị bỏ khỏi
- * Cấp 0. Gửi `taskNo: 5` bây giờ là gửi một nhiệm vụ không tồn tại.
  */
 export function DebriefModal({ data, onClose }: DebriefModalProps) {
   const completeTask = useCompleteTask()
@@ -120,10 +126,7 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
   // Count-up ~1s (spec "count-up nhẹ ~1s") — resets whenever a NEW debrief
   // (`data.n` changes) opens; skipped entirely once `data` is null.
   useEffect(() => {
-    if (!data) {
-      setDisplayPct(0)
-      return
-    }
+    if (!data) return
     const start = Date.now()
     let timer: ReturnType<typeof setTimeout>
     const tick = () => {
@@ -131,18 +134,23 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
       setDisplayPct(pnlPct * t)
       if (t < 1) timer = setTimeout(tick, COUNT_UP_STEP_MS)
     }
-    tick()
+    timer = setTimeout(tick, 0)
     return () => clearTimeout(timer)
     // Only re-run when a genuinely new debrief opens, not on every pnlPct
     // recompute (pnlPct is derived from `data` itself every render).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data?.n])
+  }, [data])
+
+  useEffect(() => {
+    if (data) trackJourneyEvent("cap0_ketso_view")
+  }, [data])
 
   if (!data) return null
 
   const { n, symbol } = data
   const pnlPositive = pnlVnd > 0
   const tax = Math.round(exitPrice * quantity * 0.001)
+  const coach = coachTemplate({ pnlPositive }, n)
   const holdText = holdTimeText(kehoach?.so_phien_giu)
   // Mockup sub-line: `+198.000đ · MUA 100 VNM → BÁN · Giữ 4 phiên`. The suffix
   // is dropped entirely when nothing was recorded — better a shorter true line
@@ -151,7 +159,10 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
     holdText == null ? "" : ` · ${(kehoach?.so_phien_giu ?? 0) > 0 ? `Giữ ${holdText}` : holdText}`
 
   const handleClose = () => {
-    completeTask.mutate({ taskNo: 4, gate: "debrief" })
+    completeTask.mutate(
+      { taskNo: 5, gate: "debrief" },
+      { onSuccess: () => trackJourneyEvent("cap0_task_complete", { task_id: 5 }) },
+    )
     onClose()
   }
 
@@ -234,6 +245,11 @@ export function DebriefModal({ data, onClose }: DebriefModalProps) {
           </tr>
         </tbody>
       </table>
+
+      <div className="cap0-debrief-coach">
+        <div className="cap0-debrief-coach-tag">NHÌN LẠI</div>
+        <p className="cap0-debrief-coach-body">{renderInlineBold(coach)}</p>
+      </div>
 
       <button type="button" className="cap0-debrief-close" onClick={handleClose}>
         Đóng kết sổ ✓

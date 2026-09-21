@@ -38,9 +38,8 @@ export interface Cap4TradeRecord extends Cap3TradeRecord {
    *
    * ★ 4 trường của Cấp 4 dùng **snake_case** thay vì camelCase như các trường
    * cấp dưới (`khauVi`, `mucTuTin`…): chúng là bản sao 1:1 của 4 cột
-   * `order_kehoach` mà Cấp 4 thêm và của payload `POST /cap4/kehoach`
-   * (`KehoachInputCap4`), nên giữ đúng tên wire/DB giúp đối chiếu nhật ký
-   * client với hàng DB thật (và với khối ⑨ do server tính) không phải dịch tên.
+   * `order_kehoach` và response server-owned của Cấp 4. Request ghi kế hoạch
+   * chỉ gửi `doc_5_lop`; AI snapshot và hai bộ đếm không do client khai báo.
    */
   doc_5_lop: Lop5Partial
   /** Đánh giá AI 5 lớp lúc đặt — `null` khi AI chưa bao giờ được lộ. */

@@ -1,7 +1,15 @@
 import { api, unwrap } from "@/shared/http/client"
 import type {
+  Cap2ActiveAlerts,
+  Cap2Analysis,
+  Cap2AlertActionInput,
+  Cap2AlertActionResult,
+  Cap2PreBuyAlertInput,
+  Cap2PreBuyAlertResult,
   Cap2Progress,
+  Cap2TradeHistoryList,
   DiemKyLuat,
+  DiemKyLuatHistory,
   KehoachInputCap2,
   KetsoInputCap2,
   OrderKehoachCap2,
@@ -56,6 +64,54 @@ export const cap2Api = {
       ? await api.get("cap2/diem-ky-luat", { searchParams: { ngay } }).json<unknown>()
       : await api.get("cap2/diem-ky-luat").json<unknown>()
     return unwrap(res as never) as DiemKyLuat
+  },
+
+  getTrades: async (): Promise<Cap2TradeHistoryList> => {
+    const res = await api.get("cap2/trades").json<unknown>()
+    return unwrap(res as never) as Cap2TradeHistoryList
+  },
+
+  getAnalysis: async (): Promise<Cap2Analysis> => {
+    const res = await api.get("cap2/analysis").json<unknown>()
+    return unwrap(res as never) as Cap2Analysis
+  },
+
+  /** POST /cap2/alerts/pre-buy — authoritative averaging-down preflight. */
+  checkPreBuyAlert: async (input: Cap2PreBuyAlertInput): Promise<Cap2PreBuyAlertResult> => {
+    const res = await api.post("cap2/alerts/pre-buy", { json: input }).json<unknown>()
+    return unwrap(res as never) as Cap2PreBuyAlertResult
+  },
+
+  /** Reading the inbox atomically claims pending impressions, so the strict
+   * two-alert session budget must never be reproduced in browser state. */
+  getActiveAlerts: async (sessionDate?: string): Promise<Cap2ActiveAlerts> => {
+    const res = sessionDate
+      ? await api
+          .get("cap2/alerts/active", { searchParams: { session_date: sessionDate } })
+          .json<unknown>()
+      : await api.get("cap2/alerts/active").json<unknown>()
+    return unwrap(res as never) as Cap2ActiveAlerts
+  },
+
+  actOnAlert: async ({
+    alertId,
+    action,
+    confirmationPhrase,
+  }: Cap2AlertActionInput): Promise<Cap2AlertActionResult> => {
+    const res = await api
+      .post(`cap2/alerts/${alertId}/action`, {
+        json: {
+          action,
+          ...(confirmationPhrase ? { confirmation_phrase: confirmationPhrase } : {}),
+        },
+      })
+      .json<unknown>()
+    return unwrap(res as never) as Cap2AlertActionResult
+  },
+
+  getDiemKyLuatHistory: async (): Promise<DiemKyLuatHistory> => {
+    const res = await api.get("cap2/diem-ky-luat/history").json<unknown>()
+    return unwrap(res as never) as DiemKyLuatHistory
   },
 
   /** POST /cap2/graduate — only succeeds when 1/1 nhiệm vụ is done. */

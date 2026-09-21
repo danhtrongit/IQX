@@ -1,4 +1,5 @@
-import type { Lop } from "@/features/cap4/types"
+import type { Cap4PlanWire, Lop } from "@/features/cap4/types"
+import type { HuntFilter } from "@/features/cap5/types"
 
 /**
  * Cấp 6 «Bậc thầy» — hợp đồng wire của bảng mâu thuẫn (spec
@@ -128,6 +129,12 @@ export interface KehoachMauThuanCap6 {
   veto_layers: Lop[] | null
   /** Tên hiển thị các lớp phủ quyết, do SERVER dựng. */
   veto_layers_ten?: string[] | null
+  /** Immutable BUY-time sides. Null means the historical snapshot is unavailable. */
+  support_layers?: Lop[] | null
+  opposing_layers?: Lop[] | null
+  neutral_layers?: Lop[] | null
+  conflict_snapshot_session_date?: string | null
+  conflict_snapshot_at?: string | null
   /**
    * % vốn ĐÃ MUA (cột Cấp 3). `null` = hàng không có số này.
    * ★ Tên trường là `khoi_luong_pct_von`, KHÔNG phải `pct_von` — bản trước đoán
@@ -147,6 +154,43 @@ export interface KehoachMauThuanCap6 {
    * client nói không lệch. Để client tự suy là Kết sổ nói một đằng còn cổng
    * đếm một nẻo về CÙNG một lệnh.
    */
+  nhat_quan: boolean | null
+}
+
+/**
+ * `GET /cap6/plans/{buy_order_id}` — cumulative BUY snapshot used to rebuild
+ * Kết sổ after a reload. It extends the persisted Cấp 1–4 commitments with the
+ * exact Cấp 5 source stamp and Cấp 6 conflict decision from the same BUY row.
+ */
+export interface Cap6PlanWire extends Cap4PlanWire {
+  /** False means the historical source stamp was never captured; do not infer it. */
+  source_known: boolean
+  from_watchlist: boolean | null
+  tu_san_ma: boolean | null
+  hunt_filter: HuntFilter | null
+  hunt_filter_ten: string | null
+  hunt_signal: string | null
+  first_hunted_at: string | null
+  so_phien_trong_watchlist: number | null
+  so_lop_luc_vao: number | null
+  so_lop_da_cham_luc_vao: number | null
+  consensus_captured_at_entry: string | null
+  entry_snapshot_at: string | null
+  giai_thich: string
+  ly_do_thieu_so_lop: string | null
+  canh_bao_nguon_moi_hon: string | null
+  /** Three states: conflict, no conflict, or an unavailable BUY-time assessment. */
+  had_conflict: boolean | null
+  conflict_level: ConflictLevel | null
+  conflict_level_ten: string | null
+  had_veto: boolean | null
+  veto_layers: Lop[] | null
+  veto_layers_ten: string[] | null
+  support_layers: Lop[] | null
+  opposing_layers: Lop[] | null
+  neutral_layers: Lop[] | null
+  conflict_snapshot_session_date: string | null
+  conflict_snapshot_at: string | null
   nhat_quan: boolean | null
 }
 

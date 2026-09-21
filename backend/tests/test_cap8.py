@@ -138,12 +138,11 @@ async def test_pending_later_buy_never_replaces_active_plan(db_session, test_use
 
 
 @pytest.mark.asyncio
-async def test_enter_bootstraps_existing_positive_holding_plan(
+async def test_historical_entry_bootstraps_existing_positive_holding_plan(
     db_session, test_user,
 ) -> None:
     service, account, position, sell, progress = await _exit_fixture(db_session, test_user, remaining=100)
     sell.status = "pending"
-    await db_session.delete(progress)
     db_session.add(Cap7Progress(
         user_id=test_user.id,
         entered_at=datetime.now(UTC),

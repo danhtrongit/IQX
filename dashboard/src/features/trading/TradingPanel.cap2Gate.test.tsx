@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -110,6 +110,9 @@ vi.mock("@/features/cap1", async (importOriginal) => {
       onDocChiTietClicked: vi.fn(),
       registerHandlers: vi.fn(),
     }),
+    // Return the explicit "not viewed" value during Cấp 2. TradingPanel must
+    // ignore it because the tour is a Cấp 1-only gate.
+    useCap1Progress: () => ({ data: { da_xem_tour: isCap2ActiveFlag ? false : true } }),
     useRecordKehoach: () => ({
       mutate: recordKehoachMock,
       mutateAsync: recordKehoachAsyncMock,
@@ -147,7 +150,11 @@ const recordKehoachCap2Mock = vi.fn()
 const recordKehoachCap2AsyncMock = vi.fn<(...a: unknown[]) => unknown>(() => Promise.resolve({ id: "khc2-1" }))
 const onSlTpPickedMock = vi.fn()
 const onOrderFilledCap2Mock = vi.fn()
+const checkPreBuyAlertMock = vi.fn()
+const actOnAlertMock = vi.fn()
+const consumeSellIntentMock = vi.fn()
 let isCap2ActiveFlag = true
+let sellIntent: { symbol: string; method: "market" } | null = null
 
 vi.mock("@/features/cap2", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/features/cap2")>()
@@ -158,10 +165,21 @@ vi.mock("@/features/cap2", async (importOriginal) => {
       onSlTpPicked: onSlTpPickedMock,
       onOrderFilled: onOrderFilledCap2Mock,
       registerHandlers: vi.fn(),
+      sellIntent,
+      prepareSellIntent: vi.fn(),
+      consumeSellIntent: consumeSellIntentMock,
     }),
     useRecordKehoachCap2: () => ({
       mutate: recordKehoachCap2Mock,
       mutateAsync: recordKehoachCap2AsyncMock,
+      isPending: false,
+    }),
+    useCheckCap2PreBuyAlert: () => ({
+      mutateAsync: checkPreBuyAlertMock,
+      isPending: false,
+    }),
+    useActOnCap2Alert: () => ({
+      mutateAsync: actOnAlertMock,
       isPending: false,
     }),
     SlTpBlock: (props: {
@@ -208,6 +226,17 @@ beforeEach(() => {
   recordKehoachCap2AsyncMock.mockClear()
   onSlTpPickedMock.mockClear()
   onOrderFilledCap2Mock.mockClear()
+  checkPreBuyAlertMock.mockReset()
+  checkPreBuyAlertMock.mockResolvedValue({
+    data_status: "available",
+    triggered: false,
+    reason: "no_open_position",
+    alert: null,
+  })
+  actOnAlertMock.mockReset()
+  actOnAlertMock.mockResolvedValue({ next_step: "none" })
+  consumeSellIntentMock.mockReset()
+  sellIntent = null
   isCap1ActiveFlag = true
   isCap2ActiveFlag = true
 })
@@ -226,6 +255,16 @@ describe("TradingPanel — Cấp 2 wiring (Task FE1)", () => {
     expect(screen.queryByTestId("sltp-block-mock")).not.toBeInTheDocument()
     // Cấp 1's own gate alone still governs — lý do not picked yet → disabled.
     expect(submitButton()).toBeDisabled()
+  })
+
+  it("consumes a stop-alert sell intent and opens the form on BÁN with market method", async () => {
+    sellIntent = { symbol: "VNM", method: "market" }
+    renderPanel()
+    await waitFor(() =>
+      expect(screen.getByRole("tab", { name: "BÁN" })).toHaveAttribute("aria-selected", "true"),
+    )
+    expect(consumeSellIntentMock).toHaveBeenCalledTimes(1)
+    expect(screen.getByText("MP — Thị trường")).toBeInTheDocument()
   })
 
   it("cổng cứng: MUA stays disabled after picking lý do alone (SL/TP cách not chosen yet)", () => {
@@ -248,6 +287,7 @@ describe("TradingPanel — Cấp 2 wiring (Task FE1)", () => {
     expect(submitButton()).toBeDisabled()
     fireEvent.click(screen.getByText("PICK_SLTP"))
     expect(submitButton()).not.toBeDisabled()
+    expect(screen.queryByTestId("cap1-tour-gate")).not.toBeInTheDocument()
   })
 
   it("clicking MUA while only the SL/TP gate is missing does not place an order", () => {
@@ -265,6 +305,15 @@ describe("TradingPanel — Cấp 2 wiring (Task FE1)", () => {
 
     fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
 
+    await waitFor(() =>
+      expect(checkPreBuyAlertMock).toHaveBeenCalledWith({
+        symbol: "VNM",
+        idempotency_key: expect.any(String),
+        quantity: 100,
+        order_type: "market",
+        limit_price_vnd: null,
+      }),
+    )
     await waitFor(() => expect(placeOrderMock).toHaveBeenCalledTimes(1))
     // Cấp 1's kehoach is AWAITED (mutateAsync), not fire-and-forget, so the
     // BE row exists before Cấp 2's kehoach POST (which 404s otherwise).
@@ -290,6 +339,280 @@ describe("TradingPanel — Cấp 2 wiring (Task FE1)", () => {
         phuongPhapSlTp: "ho_tro_khang_cu",
         catLo: 60_400,
         chotLoi: 65_800,
+      }),
+    )
+  })
+
+  it("checks nhồi lệnh before the BUY and cancel_buy never places the order", async () => {
+    checkPreBuyAlertMock.mockResolvedValue({
+      data_status: "available",
+      triggered: true,
+      reason: "averaging_down",
+      alert: {
+        id: "alert-buy-1",
+        alert_type: "nhoi_lenh",
+        symbol: "VNM",
+        session_date: "2026-09-15",
+        observed_price_vnd: 59_400,
+        threshold_price_vnd: 59_300,
+        loss_pct: -4.8,
+        official_close_session_date: null,
+        breach_session_no: 1,
+        status: "shown",
+        suppression_reason: null,
+        escalation: "normal",
+        impression_count: 1,
+        first_shown_at: null,
+        last_shown_at: null,
+        action: null,
+        acted_at: null,
+        priority: "immediate",
+        plan_started_at: "2026-09-10T02:00:00Z",
+        position_quantity: 100,
+        position_avg_cost_vnd: 62_400,
+      },
+    })
+    renderPanel()
+    fireEvent.click(screen.getByText("PICK_LY_DO"))
+    fireEvent.click(screen.getByText("PICK_SLTP"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    expect(await screen.findByTestId("cap2-alert-nhoilenh")).toBeInTheDocument()
+    expect(placeOrderMock).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByTestId("cap2-nhoilenh-cancel"))
+    await waitFor(() =>
+      expect(actOnAlertMock).toHaveBeenCalledWith({
+        alertId: "alert-buy-1",
+        action: "cancel_buy",
+      }),
+    )
+    expect(placeOrderMock).not.toHaveBeenCalled()
+  })
+
+  it("does not render a suppressed alert, but records proceed_buy to re-enable its type", async () => {
+    checkPreBuyAlertMock.mockResolvedValue({
+      data_status: "available",
+      triggered: true,
+      reason: "auto_muted_clean_10",
+      alert: {
+        id: "alert-muted-1",
+        alert_type: "nhoi_lenh",
+        symbol: "VNM",
+        session_date: "2026-09-15",
+        observed_price_vnd: 59_400,
+        threshold_price_vnd: 59_300,
+        loss_pct: -4.8,
+        official_close_session_date: null,
+        breach_session_no: 1,
+        status: "suppressed",
+        suppression_reason: "auto_mute_last_10_clean",
+        escalation: null,
+        impression_count: 0,
+        first_shown_at: null,
+        last_shown_at: null,
+        action: null,
+        acted_at: null,
+        priority: "immediate",
+        position_quantity: 100,
+        position_avg_cost_vnd: 62_400,
+        plan_started_at: "2026-09-10T02:00:00Z",
+      },
+    })
+    renderPanel()
+    fireEvent.click(screen.getByText("PICK_LY_DO"))
+    fireEvent.click(screen.getByText("PICK_SLTP"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() =>
+      expect(actOnAlertMock).toHaveBeenCalledWith({
+        alertId: "alert-muted-1",
+        action: "proceed_buy",
+      }),
+    )
+    expect(screen.queryByTestId("cap2-alert-nhoilenh")).not.toBeInTheDocument()
+    await waitFor(() => expect(placeOrderMock).toHaveBeenCalledTimes(1))
+    expect(placeOrderMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        journeyPlan: expect.objectContaining({ nhoi_lenh_alert_id: "alert-muted-1" }),
+      }),
+    )
+  })
+
+  it("does not count a session-limit suppression as an ignored alert", async () => {
+    checkPreBuyAlertMock.mockResolvedValue({
+      data_status: "available",
+      triggered: true,
+      reason: "session_limit",
+      alert: {
+        id: "alert-quota-1",
+        alert_type: "nhoi_lenh",
+        symbol: "VNM",
+        session_date: "2026-09-15",
+        observed_price_vnd: 59_400,
+        threshold_price_vnd: 59_300,
+        loss_pct: -4.8,
+        official_close_session_date: null,
+        breach_session_no: 1,
+        status: "suppressed",
+        suppression_reason: "session_limit",
+        escalation: null,
+        impression_count: 0,
+        first_shown_at: null,
+        last_shown_at: null,
+        action: null,
+        acted_at: null,
+        priority: "immediate",
+        position_quantity: 100,
+        position_avg_cost_vnd: 62_400,
+        plan_started_at: "2026-09-10T02:00:00Z",
+      },
+    })
+    renderPanel()
+    fireEvent.click(screen.getByText("PICK_LY_DO"))
+    fireEvent.click(screen.getByText("PICK_SLTP"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(placeOrderMock).toHaveBeenCalledTimes(1))
+    expect(actOnAlertMock).not.toHaveBeenCalled()
+    expect(screen.queryByTestId("cap2-alert-nhoilenh")).not.toBeInTheDocument()
+  })
+
+  it("proceed_buy records the alert action then resumes the same BUY without a second preflight", async () => {
+    checkPreBuyAlertMock.mockResolvedValueOnce({
+      data_status: "available",
+      triggered: true,
+      reason: "averaging_down",
+      alert: {
+        id: "alert-buy-2",
+        alert_type: "nhoi_lenh",
+        symbol: "VNM",
+        session_date: "2026-09-15",
+        observed_price_vnd: 59_400,
+        threshold_price_vnd: 59_300,
+        loss_pct: -4.8,
+        official_close_session_date: null,
+        breach_session_no: 1,
+        status: "shown",
+        suppression_reason: null,
+        escalation: "normal",
+        impression_count: 1,
+        first_shown_at: null,
+        last_shown_at: null,
+        action: null,
+        acted_at: null,
+        priority: "immediate",
+        position_quantity: 100,
+        position_avg_cost_vnd: 62_400,
+        plan_started_at: "2026-09-10T02:00:00Z",
+      },
+    })
+    renderPanel()
+    fireEvent.click(screen.getByText("PICK_LY_DO"))
+    fireEvent.click(screen.getByText("PICK_SLTP"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+    await screen.findByTestId("cap2-alert-nhoilenh")
+    fireEvent.click(screen.getByTestId("cap2-nhoilenh-confirm"))
+
+    await waitFor(() =>
+      expect(actOnAlertMock).toHaveBeenCalledWith({
+        alertId: "alert-buy-2",
+        action: "proceed_buy",
+      }),
+    )
+    await waitFor(() => expect(placeOrderMock).toHaveBeenCalledTimes(1))
+    expect(checkPreBuyAlertMock).toHaveBeenCalledTimes(1)
+    expect(placeOrderMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        journeyPlan: expect.objectContaining({ nhoi_lenh_alert_id: "alert-buy-2" }),
+      }),
+    )
+  })
+
+  it("coalesces rapid double-submit into one idempotent pre-buy check and one BUY", async () => {
+    let resolveCheck!: (value: unknown) => void
+    checkPreBuyAlertMock.mockReturnValue(
+      new Promise((resolve) => {
+        resolveCheck = resolve
+      }),
+    )
+    renderPanel()
+    fireEvent.click(screen.getByText("PICK_LY_DO"))
+    fireEvent.click(screen.getByText("PICK_SLTP"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+    expect(checkPreBuyAlertMock).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      resolveCheck({
+        data_status: "available",
+        triggered: false,
+        reason: "no_open_position",
+        alert: null,
+      })
+    })
+    await waitFor(() => expect(placeOrderMock).toHaveBeenCalledTimes(1))
+  })
+
+  it("rechecks when quantity changes while a nhồi-lệnh warning is open", async () => {
+    const alert = {
+      id: "alert-buy-draft",
+      alert_type: "nhoi_lenh",
+      symbol: "VNM",
+      session_date: "2026-09-15",
+      observed_price_vnd: 59_400,
+      threshold_price_vnd: 59_300,
+      loss_pct: -4.8,
+      official_close_session_date: null,
+      breach_session_no: 1,
+      status: "shown",
+      suppression_reason: null,
+      escalation: "normal",
+      impression_count: 1,
+      first_shown_at: null,
+      last_shown_at: null,
+      action: null,
+      acted_at: null,
+      priority: "immediate",
+      position_quantity: 100,
+      position_avg_cost_vnd: 62_400,
+      plan_started_at: "2026-09-10T02:00:00Z",
+    }
+    checkPreBuyAlertMock
+      .mockResolvedValueOnce({
+        data_status: "available",
+        triggered: true,
+        reason: "averaging_down",
+        alert,
+      })
+      .mockResolvedValueOnce({
+        data_status: "available",
+        triggered: false,
+        reason: "quota_reached",
+        alert: null,
+      })
+    renderPanel()
+    fireEvent.click(screen.getByText("PICK_LY_DO"))
+    fireEvent.click(screen.getByText("PICK_SLTP"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+    await screen.findByTestId("cap2-alert-nhoilenh")
+
+    // The warning reflects 100 CP. Changing to 25% creates a different draft,
+    // so accepting the old warning cannot bypass a fresh authoritative check.
+    fireEvent.click(screen.getByText("25%"))
+    fireEvent.click(screen.getByTestId("cap2-nhoilenh-confirm"))
+    await waitFor(() => expect(checkPreBuyAlertMock).toHaveBeenCalledTimes(2))
+    expect(checkPreBuyAlertMock.mock.calls[1]?.[0]).toEqual(
+      expect.objectContaining({
+        symbol: "VNM",
+        order_type: "market",
+        limit_price_vnd: null,
+      }),
+    )
+    expect(checkPreBuyAlertMock.mock.calls[1]?.[0]?.quantity).not.toBe(100)
+    await waitFor(() => expect(placeOrderMock).toHaveBeenCalledTimes(1))
+    expect(placeOrderMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        journeyPlan: expect.not.objectContaining({ nhoi_lenh_alert_id: "alert-buy-draft" }),
       }),
     )
   })

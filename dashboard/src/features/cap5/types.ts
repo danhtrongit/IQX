@@ -1,3 +1,5 @@
+import type { Cap4PlanWire } from "@/features/cap4/types"
+
 /**
  * Cấp 5 «Lão luyện» — shared types.
  *
@@ -185,22 +187,50 @@ export function taskStateCap5(
    ══════════════════════════════════════════════════════════════════════════ */
 
 /**
- * ★ `so_lop_luc_vao` LUÔN `null` kèm `ly_do_thieu_so_lop`: điểm đồng thuận tại
- * thời điểm ĐẶT LỆNH chưa từng được lưu (BE nói rõ điều này trong schema). Dựng
- * câu "vào lệnh khi lên 4/5 lớp" từ điểm HÔM NAY là gán một con số hiện tại cho
- * một quyết định quá khứ — cấm.
+ * `so_lop_luc_vao` là snapshot bất biến tại BUY. `null` chỉ dành cho kế hoạch
+ * legacy/chưa đủ dữ liệu và phải đi kèm lý do; không dùng điểm hôm nay để vá.
  */
 export interface NguonSan {
   symbol: string
+  /** Lệnh cụ thể mà nguồn săn đang mô tả. */
+  order_id?: string | null
   tu_san_ma: boolean
   hunt_filter: HuntFilter | null
   hunt_filter_ten: string | null
   hunt_signal: string | null
   first_hunted_at: string | null
   so_phien_trong_watchlist: number | null
+  /** Số lớp ủng hộ đã đóng băng lúc BUY; `null` = lịch sử/chưa đủ dữ liệu. */
   so_lop_luc_vao: number | null
   giai_thich: string
   ly_do_thieu_so_lop: string | null
+  /** Có giá trị ở wire cũ khi client chưa truyền order_id. */
+  canh_bao_thieu_order_id?: string | null
+}
+
+/** Snapshot BUY Cấp 1–5 do server sở hữu, dùng để khôi phục Kết sổ sau reload. */
+export interface Cap5PlanWire extends Cap4PlanWire {
+  /** `false` khi hàng kế hoạch cũ chưa từng đóng dấu nguồn săn. */
+  source_known: boolean
+  /** `true` = mua từ Watchlist; `false` = chắc chắn không; `null` = chưa biết. */
+  from_watchlist: boolean | null
+  tu_san_ma: boolean | null
+  hunt_filter: HuntFilter | null
+  hunt_filter_ten: string | null
+  hunt_signal: string | null
+  first_hunted_at: string | null
+  so_phien_trong_watchlist: number | null
+  /** Số lớp ủng hộ đã đóng băng lúc BUY; `null` = lịch sử/chưa đủ dữ liệu. */
+  so_lop_luc_vao: number | null
+  /** Mẫu số thật: số lớp hệ thống đã chấm được tại đúng snapshot BUY. */
+  so_lop_da_cham_luc_vao: number | null
+  /** Thời điểm của bản đồng thuận được dùng để đóng băng quyết định BUY. */
+  consensus_captured_at_entry: string | null
+  /** Thời điểm server hoàn tất đóng dấu ngữ cảnh Cấp 5 lên kế hoạch BUY. */
+  entry_snapshot_at: string | null
+  giai_thich: string
+  ly_do_thieu_so_lop: string | null
+  canh_bao_nguon_moi_hon: string | null
 }
 
 /* ══════════════════════════════════════════════════════════════════════════

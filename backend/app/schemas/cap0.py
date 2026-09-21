@@ -6,11 +6,11 @@ import uuid
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class Cap0ProgressOut(BaseModel):
-    """Cấp 0 progress state for the current user — 4 nhiệm vụ, 1 cổng hành vi."""
+    """Cấp 0 progress state — 5 nhiệm vụ, hai fact cho cổng ①/⑤."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -24,28 +24,43 @@ class Cap0ProgressOut(BaseModel):
     task_2_done_at: datetime | None = None
     task_3_done_at: datetime | None = None
     task_4_done_at: datetime | None = None
-    #: The single behaviour gate. ``task1_star_clicked`` is gone: the ★ is no
-    #: longer any task's requirement, so nothing may read it back.
-    task4_debrief_done: bool
+    task_5_done_at: datetime | None = None
+    task1_star_clicked: bool
+    task5_debrief_done: bool
     graduated_at: datetime | None = None
     time_to_graduate_hours: float | None = None
 
 
 class PlacementRequest(BaseModel):
-    has_traded_before: bool
+    answer: Literal["never", "unsure", "regular"] | None = None
+    # Backward-compatible during the FE rollout: false→never, true→regular.
+    has_traded_before: bool | None = None
+
+    @model_validator(mode="after")
+    def require_one_answer(self) -> PlacementRequest:
+        if self.answer is None and self.has_traded_before is None:
+            raise ValueError("Cần chọn một câu trả lời xếp lớp")
+        return self
 
 
 class PlacementResponse(BaseModel):
     placed_level: int
+    answer: Literal["never", "unsure", "regular"]
+    da_xem_tour: bool
+
+
+class TourCompleteResponse(BaseModel):
+    da_xem_tour: bool
+    completed: list[Literal["bantin", "phantich", "bctc"]]
+
+
+class TourCompleteRequest(BaseModel):
+    skipped: bool = False
 
 
 class TaskRequest(BaseModel):
-    #: Cấp 0 has exactly 4 nhiệm vụ — 5 is out of range (the three tours that
-    #: used to sit at ②③④ are no longer part of the level).
-    task_no: int = Field(ge=1, le=4)
-    #: ``debrief`` is the ONLY gate: ``sl_typed`` went with cắt lỗ and ``star``
-    #: went with the tours — ③ is now earned by opening the Theo dõi tab.
-    gate: Literal["debrief"] | None = None
+    task_no: int = Field(ge=1, le=5)
+    gate: Literal["star", "debrief"] | None = None
 
 
 class Cap0KehoachRequest(BaseModel):

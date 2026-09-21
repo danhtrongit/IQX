@@ -9,7 +9,7 @@ import type { Cap2Progress } from "./types"
 
 // ── fixtures ────────────────────────────────────────────────────────────────
 
-/** Reference "now" — giữ lại để chứng minh không khối nào còn phụ thuộc ngày. */
+/** Reference "now" for rolling 7/30-day blocks. */
 const NOW = new Date("2026-07-29T12:00:00Z")
 
 function trade(overrides: Partial<Cap2TradeRecord> = {}): Cap2TradeRecord {
@@ -87,20 +87,14 @@ describe("computeCap2PortfolioAnalysis — khối ①②③ uỷ quyền Cấp 1
   })
 })
 
-// ── ★★ Các khối của mô hình 5 nhiệm vụ đã BỎ HẲN ★★ ────────────────────────
-
-describe("computeCap2PortfolioAnalysis — khối của mô hình cũ đã bỏ", () => {
-  it("★ returns EXACTLY the 4 khối the mockup draws — nothing from the vi-phạm era", () => {
+describe("computeCap2PortfolioAnalysis — các công cụ §12", () => {
+  it("returns all seven blocks, window 20, and detected patterns", () => {
     const result = computeCap2PortfolioAnalysis([trade()], [], progress(), NOW)
     expect(Object.keys(result).sort()).toEqual(
-      ["hideKhoi2", "khoi1", "khoi2", "khoi2HiddenNote", "khoi3", "khoi4"].sort(),
+      ["hideKhoi2", "khoi1", "khoi2", "khoi2HiddenNote", "khoi3", "khoi4", "khoi5", "khoi6", "khoi7", "window20", "mauPhatHien"].sort(),
     )
-    const stale = result as unknown as Record<string, unknown>
-    // Điểm kỷ luật 30 ngày · vi phạm theo tuần · phát hiện từ ghi chú · mẫu 9-12.
-    expect(stale.khoi5).toBeUndefined()
-    expect(stale.khoi6).toBeUndefined()
-    expect(stale.khoi7).toBeUndefined()
-    expect(stale.mauPhatHien).toBeUndefined()
+    expect(result.khoi6).toHaveLength(4)
+    expect(result.window20).toHaveLength(1)
   })
 
   it("★ ③ is the 5-lý-do coverage now, NOT the old danh sách vi phạm", () => {
@@ -109,6 +103,33 @@ describe("computeCap2PortfolioAnalysis — khối của mô hình cũ đã bỏ"
     expect(result.khoi3).toHaveProperty("coverage")
     expect(result.khoi3).not.toHaveProperty("rows")
     expect(result.khoi3).not.toHaveProperty("totalViPham")
+  })
+
+  it("detects the dominant violation and only scans notes attached to violations", () => {
+    const trades = Array.from({ length: 6 }, (_, index) =>
+      trade({
+        orderId: String(index),
+        chamSlKhongCat: true,
+        ghiChuNhinLai: index < 3 ? "Tôi sợ mất nên chờ hồi" : null,
+      }),
+    )
+    trades.push(trade({ orderId: "clean", ghiChuNhinLai: "Tôi sợ mất" }))
+    const result = computeCap2PortfolioAnalysis(trades, [], progress(), NOW)
+    expect(result.mauPhatHien[0]?.id).toBe("mau_9")
+    expect(result.khoi7.noteCount).toBe(3)
+    expect(result.khoi7.insights[0]).toMatchObject({ id: "loss_aversion", count: 3 })
+  })
+
+  it("builds the real 30-day score distribution and 7-day average", () => {
+    const scores = [
+      { ngay: "2026-07-10", diem: 60, xepLoai: "vang" as const },
+      { ngay: "2026-07-27", diem: 90, xepLoai: "xanh" as const },
+      { ngay: "2026-07-28", diem: 80, xepLoai: "xanh" as const },
+    ]
+    const result = computeCap2PortfolioAnalysis([], scores, progress(), NOW)
+    expect(result.khoi5.average30).toBe(77)
+    expect(result.khoi5.average7).toBe(85)
+    expect(result.khoi5.distribution).toEqual({ xanh: 2, vang: 1, do: 0 })
   })
 })
 

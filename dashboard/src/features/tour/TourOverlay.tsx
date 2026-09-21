@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type CSSProperties } from "react"
+import { Fragment, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react"
 import { createPortal } from "react-dom"
 import type { TourConfig, TourStep } from "./tourTypes"
 import type { TourController } from "./useTour"
@@ -22,7 +22,7 @@ const VIEWPORT_MARGIN = 12
  * DOM yet on the first attempt (~1s at one rAF tick each) — see the
  * `useLayoutEffect` below for why this race exists.
  */
-const TARGET_POLL_MAX_FRAMES = 30
+const TARGET_POLL_INTERVAL_MS = 50
 
 interface Rect {
   top: number
@@ -42,6 +42,19 @@ function resolveTarget(step: TourStep): HTMLElement | null {
     if (el) return el
   }
   return null
+}
+
+/** Minimal rich text required by the handoff copy: bold spans and paragraph breaks. */
+function renderBody(body: string): ReactNode {
+  return body
+    .replaceAll("&amp;", "&")
+    .split(/(\*\*[^*]+\*\*|<br\s*\/?>(?:\s*<br\s*\/?>)?|\n\n)/gi)
+    .filter(Boolean)
+    .map((part, index) => {
+      if (/^\*\*[^*]+\*\*$/.test(part)) return <strong key={index}>{part.slice(2, -2)}</strong>
+      if (/^(?:<br|\n\n)/i.test(part)) return <Fragment key={index}><br /><br /></Fragment>
+      return <Fragment key={index}>{part}</Fragment>
+    })
 }
 
 function isInViewport(rect: DOMRect): boolean {
@@ -168,44 +181,39 @@ export function TourOverlay({ config, controller }: TourOverlayProps) {
     // trong khi giá trị thật ở trình duyệt là `number`.
     let settleTimer: number | undefined
     let busyTimer: number | undefined
-    let pollRafId: number | undefined
+    let pollTimer: number | undefined
     let pollSettleTimer: number | undefined
 
     const stopPolling = () => {
-      if (pollRafId !== undefined && typeof window.cancelAnimationFrame === "function") {
-        window.cancelAnimationFrame(pollRafId)
-      }
-      pollRafId = undefined
+      if (pollTimer !== undefined) window.clearTimeout(pollTimer)
+      pollTimer = undefined
       if (pollSettleTimer !== undefined) window.clearTimeout(pollSettleTimer)
     }
 
-    if (!el && !step.centered && typeof window.requestAnimationFrame === "function") {
-      let framesLeft = TARGET_POLL_MAX_FRAMES
+    if (!el && !step.centered) {
+      const deadline = Date.now() + (step.targetWaitMs ?? 1000)
       const poll = () => {
-        pollRafId = undefined
+        pollTimer = undefined
         const found = resolveTarget(step)
         if (found) {
           if (isInViewport(found.getBoundingClientRect())) {
             measure(found)
           } else {
             if (typeof found.scrollIntoView === "function") {
-              found.scrollIntoView({ block: "center" })
+              found.scrollIntoView({ block: "start", behavior: "smooth" })
             }
             pollSettleTimer = window.setTimeout(() => measure(resolveTarget(step)), SCROLL_SETTLE_MS)
           }
           return
         }
-        framesLeft -= 1
-        if (framesLeft > 0) {
-          pollRafId = window.requestAnimationFrame(poll)
-        }
+        if (Date.now() < deadline) pollTimer = window.setTimeout(poll, TARGET_POLL_INTERVAL_MS)
       }
-      pollRafId = window.requestAnimationFrame(poll)
+      pollTimer = window.setTimeout(poll, TARGET_POLL_INTERVAL_MS)
     }
 
     if (el && !isInViewport(el.getBoundingClientRect())) {
       if (typeof el.scrollIntoView === "function") {
-        el.scrollIntoView({ block: "center" })
+        el.scrollIntoView({ block: "start", behavior: "smooth" })
       }
       settleTimer = window.setTimeout(() => measure(el), SCROLL_SETTLE_MS)
       busyTimer = window.setTimeout(() => controller.setBusy(false), SCROLL_SETTLE_MS + TRANSITION_MS)
@@ -248,12 +256,12 @@ export function TourOverlay({ config, controller }: TourOverlayProps) {
   const tooltipStyle = computeTooltipStyle(hole, step.placement, tooltipSize)
 
   return createPortal(
-    <div className="iqx-tour-root" data-tour-name={config.name}>
+    <div className="iqx-tour-root" data-tour-name={config.name} data-busy={busy ? "true" : "false"}>
       {dimBands(hole).map((band, i) => (
         <div
           key={i}
           className="iqx-tour-dim"
-          style={{ top: band.top, left: band.left, width: band.width, height: band.height }}
+          style={{ top: band.top, left: band.left, width: band.width, height: band.height, background: config.overlayColor }}
         />
       ))}
       {hole && (
@@ -268,7 +276,7 @@ export function TourOverlay({ config, controller }: TourOverlayProps) {
         </div>
         {step.tang && <div className="iqx-tour-tang">{step.tang}</div>}
         <div className="iqx-tour-title">{step.title}</div>
-        <div className="iqx-tour-body">{step.body}</div>
+        <div className="iqx-tour-body">{renderBody(step.body)}</div>
         <div className="iqx-tour-actions">
           <button type="button" className="iqx-tour-btn iqx-tour-btn--ghost" onClick={handleSkip}>
             Bỏ qua tour
@@ -283,9 +291,11 @@ export function TourOverlay({ config, controller }: TourOverlayProps) {
               type="button"
               className="iqx-tour-btn iqx-tour-btn--primary"
               onClick={isLast ? handleComplete : handleNext}
+              disabled={!isLast && busy}
             >
               {isLast ? "Hoàn thành ✓" : "Tiếp theo →"}
             </button>
+            <span className="iqx-tour-progress" aria-hidden>{index + 1}/{totalSteps}</span>
           </div>
         </div>
       </div>

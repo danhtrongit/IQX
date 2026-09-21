@@ -7,11 +7,17 @@ Cap 3 is FREE: all endpoints use ``CurrentUser`` (authenticated), NOT
 
 from __future__ import annotations
 
+import uuid
+
 from fastapi import APIRouter
 
 from app.api.deps import CurrentUser, DBSession
+from app.schemas.cap1 import TradeHistoryOut
 from app.schemas.cap3 import (
+    Cap3PlanOut,
     Cap3ProgressOut,
+    Cap3TradeAnalysisOut,
+    Cap3TradeListOut,
     KehoachRequest,
     KhauViRequest,
     OrderKehoachOut,
@@ -65,6 +71,25 @@ async def record_kehoach(
         pct_von=body.pct_von,
     )
     return OrderKehoachOut.model_validate(order)
+
+
+@router.get("/plans/{order_id}", response_model=Cap3PlanOut)
+async def get_plan(order_id: uuid.UUID, user: CurrentUser, db: DBSession) -> Cap3PlanOut:
+    plan = await Cap3Service(db).get_plan(user.id, order_id)
+    return Cap3PlanOut.model_validate(plan)
+
+
+@router.get("/trades", response_model=Cap3TradeListOut)
+async def list_trades(user: CurrentUser, db: DBSession) -> Cap3TradeListOut:
+    rows = await Cap3Service(db).list_trade_history(user.id)
+    trades = [TradeHistoryOut.model_validate(row) for row in rows]
+    return Cap3TradeListOut(trades=trades, total=len(trades))
+
+
+@router.get("/trades/analysis", response_model=Cap3TradeAnalysisOut)
+async def trade_analysis(user: CurrentUser, db: DBSession) -> Cap3TradeAnalysisOut:
+    data = await Cap3Service(db).trade_analysis(user.id)
+    return Cap3TradeAnalysisOut.model_validate(data)
 
 
 

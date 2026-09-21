@@ -31,8 +31,6 @@ function isCap6Open(): boolean {
 }
 
 /** Bài học một câu — VERBATIM spec §1. */
-const BAI_HOC =
-  '"Không chờ mã đến — chủ động đi săn. Săn nhiều, chọn kỹ, không mua vội."'
 
 /**
  * Hai nhiệm vụ, tên VERBATIM theo mockup `iqx-cap5-hanhtrinh.html` (`.task .nm`).
@@ -76,8 +74,8 @@ function progressText(
   mucTieu: number,
 ): string | undefined {
   if (hienTai == null) return undefined
-  return `${Math.min(hienTai, mucTieu).toLocaleString("en-US")}/${mucTieu.toLocaleString(
-    "en-US",
+  return `${Math.min(hienTai, mucTieu).toLocaleString("vi-VN")}/${mucTieu.toLocaleString(
+    "vi-VN",
   )} mã`
 }
 
@@ -118,6 +116,7 @@ function ChecklistItem({
         type="button"
         className="cap5-task-go"
         data-testid={`cap5-task-${no}-go`}
+        aria-label={`Mở ${name}`}
         onClick={onGo}
       >
         →
@@ -148,9 +147,10 @@ function ChecklistItem({
  */
 export function JourneyPanelCap5() {
   const { isCap5Active } = useCap5Events()
-  const { data: progress } = useCap5Progress(isCap5Active)
+  const { data: progress, isLoading, isError } = useCap5Progress(isCap5Active)
   const { setActivePanel } = useSidebar()
   const tasksDone = countCap5TasksDone(progress)
+  const daBietTienDo = progress != null && !isLoading && !isError
   const level = LEVELS[5]
 
   const graduated = progress?.graduated_at != null
@@ -174,14 +174,17 @@ export function JourneyPanelCap5() {
             tin THẬT mà không phần tử nào khác nói: hai nhiệm vụ chạy song song. */}
         <div className="cap5-jbar" data-testid="cap5-jbar">
           <span className="cap5-jbar-lv">
-            CẤP 5 · {tasksDone}/{CAP5_TOTAL_TASKS}
+            CẤP 5 · {daBietTienDo ? tasksDone : "—"}/{CAP5_TOTAL_TASKS}
           </span>
           <span className="cap5-jbar-nx">Hai nhiệm vụ làm song song</span>
           <span className="cap5-jbar-dots">
             {TASKS.map((t) => (
               <i
                 key={t.no}
-                className={"cap5-jbar-dot" + (states[t.no] === "done" ? " done" : " now")}
+                className={
+                  "cap5-jbar-dot" +
+                  (daBietTienDo ? (states[t.no] === "done" ? " done" : " now") : "")
+                }
               />
             ))}
           </span>
@@ -193,13 +196,11 @@ export function JourneyPanelCap5() {
             color={level.color}
             fill={level.fill}
             size={64}
-            ring={tasksDone / CAP5_TOTAL_TASKS}
+            ring={daBietTienDo ? tasksDone / CAP5_TOTAL_TASKS : undefined}
             glow
           />
           <div className="cap0-level-card-body">
-            <div className="cap0-level-card-tag">CẤP 5</div>
             <div className="cap0-level-card-name cap0-display">LÃO LUYỆN</div>
-            <div className="cap0-level-card-lesson">{BAI_HOC}</div>
             <div className="cap0-level-card-mode">
               <ModeBadge mode="thuc_chien" />
             </div>
@@ -207,7 +208,18 @@ export function JourneyPanelCap5() {
         </div>
 
         {/* ★ Ô "NHIỆM VỤ ĐANG LÀM" — dùng chung với Cấp 0/1/2/3/4. */}
-        {graduated ? (
+        {!daBietTienDo ? (
+          <JourneyFocus
+            testId="cap5-focus"
+            tag={isError ? "CHƯA LẤY ĐƯỢC TIẾN ĐỘ" : "ĐANG TẢI TIẾN ĐỘ"}
+            name={isError ? "Không thể đọc nhiệm vụ Cấp 5" : "Đang đọc nhiệm vụ Cấp 5…"}
+            desc={
+              isError
+                ? "Máy chủ chưa trả lời. Bạn vẫn có thể mở Săn mã và Watchlist, rồi thử lại sau."
+                : "Các con số sẽ hiện ngay khi máy chủ trả tiến độ của bạn."
+            }
+          />
+        ) : graduated ? (
           <JourneyFocus
             testId="cap5-focus"
             ready
@@ -233,7 +245,7 @@ export function JourneyPanelCap5() {
             tag="NHIỆM VỤ ĐANG LÀM"
             numeral={focusTask.numeral}
             name={focusTask.name}
-            desc={focusTask.desc}
+            desc={focusTask.no === 1 ? undefined : focusTask.desc}
             progressText={texts[focusTask.no]}
             onGo={() => setActivePanel(focusTask.panel)}
           />
@@ -246,7 +258,7 @@ export function JourneyPanelCap5() {
             style={{ color: level.color }}
             data-testid="cap5-checklist-count"
           >
-            {tasksDone}/{CAP5_TOTAL_TASKS}
+            {daBietTienDo ? tasksDone : "—"}/{CAP5_TOTAL_TASKS}
           </span>
         </div>
 
@@ -264,13 +276,6 @@ export function JourneyPanelCap5() {
           ))}
         </div>
 
-        {/* §C12c — luật đếm của hai con số, nói bằng lời. */}
-        <div className="cap5-explain" data-testid="cap5-journey-explain">
-          <b>Mã nào được tính?</b> Nhiệm vụ ① đếm <b>số mã phân biệt</b> bạn đưa vào Watchlist
-          qua bộ lọc Săn mã — săn lại cùng một mã không cộng thêm, và bỏ mã khỏi Watchlist
-          cũng không trừ đi. Nhiệm vụ ② đếm mã <b>đến từ săn</b> mà bạn thực sự đặt lệnh mua;
-          mã bạn tự gõ không tính. Không đo lãi: bài học Cấp 5 là quy trình săn có kỷ luật.
-        </div>
 
         {/* Mockup `.tools` — ĐÚNG hai ô như mockup vẽ. */}
         <div className="cap5-tools" data-testid="cap5-tools">

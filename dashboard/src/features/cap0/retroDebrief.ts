@@ -1,7 +1,7 @@
 import type { DebriefData } from "./DebriefModal"
 
 /**
- * Retroactive Kết sổ (nhiệm vụ ④) recovery — derives a `DebriefData` from
+ * Retroactive Kết sổ (nhiệm vụ ⑤) recovery — derives a `DebriefData` from
  * SERVER order history instead of the session-local refs in `Gbar`.
  *
  * ## Why this exists
@@ -20,7 +20,7 @@ import type { DebriefData } from "./DebriefModal"
  *     pressing "Đóng kết sổ ✓". `Gbar`'s `lastBuyBySymbolRef` /
  *     `debriefCountRef` are session-local refs — a reload loses them.
  *
- * Either way `task_4_done_at` stays NULL forever, and since
+ * Either way `task_5_done_at` stays NULL forever, and since
  * `Cap0Service.graduate` requires all 4 tasks + the debrief gate, the
  * graduation modal (`isGraduationReady`) never opens. This function lets
  * `Gbar` re-open the Kết sổ for a round trip that ALREADY closed, so the user
@@ -30,7 +30,7 @@ import type { DebriefData } from "./DebriefModal"
  * (This nhiệm vụ has moved twice: ⑥ under spec v2.2, ⑤ once v3.0 deleted "lệnh
  * thứ hai + tự gõ ngưỡng cắt lỗ", and ④ now that Chặng 2's three product tours
  * are gone from Cấp 0. The BE migration carries the data down each time, so
- * `Gbar`'s guard on `task_4_done_at` gets exactly the "đã đóng Kết sổ" fact it
+ * `Gbar`'s guard on `task_5_done_at` gets exactly the "đã đóng Kết sổ" fact it
  * has always read — never a stale value from a column that meant something
  * else.)
  *

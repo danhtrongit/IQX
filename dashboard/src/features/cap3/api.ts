@@ -1,6 +1,8 @@
 import { api, unwrap } from "@/shared/http/client"
 import type {
   Cap3Progress,
+  Cap3PlanWire,
+  Cap3TradesAnalysis,
   KehoachInputCap3,
   KhauViLoai,
   OrderKehoachCap3,
@@ -47,6 +49,18 @@ export const cap3Api = {
   recordKehoach: async (input: KehoachInputCap3): Promise<OrderKehoachCap3> => {
     const res = await api.post("cap3/kehoach", { json: input }).json<unknown>()
     return unwrap(res as never) as OrderKehoachCap3
+  },
+
+  /** Server-authoritative closed Cấp 3 history and confidence aggregates. */
+  getTradeAnalysis: async (): Promise<Cap3TradesAnalysis> => {
+    const res = await api.get("cap3/trades/analysis").json<unknown>()
+    return unwrap(res as never) as Cap3TradesAnalysis
+  },
+
+  /** Reload-safe cumulative BUY commitment for a matched SELL fill. */
+  getPlan: async (buyOrderId: string): Promise<Cap3PlanWire> => {
+    const res = await api.get(`cap3/plans/${buyOrderId}`).json<unknown>()
+    return unwrap(res as never) as Cap3PlanWire
   },
 
 

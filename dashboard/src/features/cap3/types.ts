@@ -3,6 +3,7 @@
 export type KhauViLoai = "than_trong" | "can_bang" | "tan_cong"
 export type MucTuTin = 1 | 2 | 3
 export type CachKhoiLuong = "linh_hoat" | "ky_luat"
+export type CachKhoiLuongWire = "khau_vi_tu_tin" | "chia_deu"
 
 /** Server-derived journey evidence and retained learning analytics. */
 export interface Cap3Progress {
@@ -45,6 +46,78 @@ export interface OrderKehoachCap3 {
   khau_vi: KhauViLoai | null
   muc_tu_tin: number | null
   cach_khoi_luong: CachKhoiLuong | null
+  khoi_luong: number | null
+  pct_von: number | null
+}
+
+/** Authoritative closed-trade row returned by `GET /cap3/trades*`. */
+export interface Cap3TradeWire {
+  buy_order_id: string
+  sell_order_id: string
+  matched_by: "snapshot" | "symbol_fallback"
+  symbol: string
+  quantity: number
+  bought_at: string
+  closed_at: string
+  gia_vao: number | null
+  gia_ra: number
+  pnl_pct: number
+  pnl_vnd: number
+  lyDo: import("@/features/cap1/types").LyDo
+  trangThai_luc_dat: import("@/features/cap1/types").TrangThaiLucDat
+  vung_mua: number
+  cam_xuc: import("@/features/cap1/types").CamXuc | null
+  phuong_phap_sl_tp: import("@/features/cap2/types").PhuongPhapSlTp | null
+  cat_lo: number | null
+  chot_loi: number | null
+  cham_SL_cuoi_phien: boolean
+  cham_SL_cat_dung_phien_ke: boolean
+  cham_SL_khong_cat: boolean
+  giu_cham_SL_bao_nhieu_phien: number | null
+  cham_TP_giu_lam_hut: boolean
+  ban_som_khi_lo_nhe: boolean
+  nhoi_lenh_khi_lo: boolean
+  ghi_chu_nhin_lai: string | null
+  khau_vi: KhauViLoai | null
+  muc_tu_tin: MucTuTin | null
+  cach_khoi_luong: CachKhoiLuongWire | null
+  khoi_luong: number | null
+  pct_von: number | null
+}
+
+export interface Cap3ConfidenceAnalysisWire {
+  muc_tu_tin: MucTuTin
+  count: number
+  wins: number
+  win_rate: number | null
+  avg_pnl_pct: number | null
+  avg_khoi_luong: number | null
+  avg_pct_von: number | null
+}
+
+export interface Cap3TradesAnalysis {
+  trades: Cap3TradeWire[]
+  total: number
+  by_confidence: Cap3ConfidenceAnalysisWire[]
+}
+
+/** Cumulative BUY commitment used to rebuild Kết sổ after a reload. */
+export interface Cap3PlanWire {
+  id: string
+  order_id: string
+  symbol: string
+  quantity: number
+  bought_at: string
+  gia_vao: number
+  lyDo: import("@/features/cap1/types").LyDo
+  trangThai_luc_dat: import("@/features/cap1/types").TrangThaiLucDat
+  vung_mua: number
+  phuong_phap_sl_tp: import("@/features/cap2/types").PhuongPhapSlTp | null
+  cat_lo: number | null
+  chot_loi: number | null
+  khau_vi: KhauViLoai | null
+  muc_tu_tin: MucTuTin | null
+  cach_khoi_luong: CachKhoiLuongWire | null
   khoi_luong: number | null
   pct_von: number | null
 }

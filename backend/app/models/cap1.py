@@ -39,12 +39,13 @@ from __future__ import annotations
 
 import enum
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import (
     JSON,
     BigInteger,
     Boolean,
+    CheckConstraint,
     DateTime,
     Enum,
     Float,
@@ -124,8 +125,8 @@ class CachKhoiLuong(enum.StrEnum):
     explicit values since it is the operative directive for this build.
     """
 
-    LINH_HOAT = "linh_hoat"  # Cách 1 — khẩu vị × tự tin
-    KY_LUAT = "ky_luat"  # Cách 2 — chia đều theo khẩu vị
+    KHAU_VI_TU_TIN = "khau_vi_tu_tin"  # Cách 1 — khẩu vị × tự tin
+    CHIA_DEU = "chia_deu"  # Cách 2 — chia đều theo khẩu vị
 
 
 class Cap1Progress(UUIDMixin, TimestampMixin, Base):
@@ -171,6 +172,22 @@ class OrderKehoach(UUIDMixin, TimestampMixin, Base):
     """Form Kế hoạch recorded at BUY time — one row per (thực chiến) buy order."""
 
     __tablename__ = "order_kehoach"
+    __table_args__ = (
+        CheckConstraint(
+            "consensus_at_entry IS NULL OR consensus_at_entry BETWEEN 0 AND 5",
+            name="ck_order_kehoach_consensus_at_entry_range",
+        ),
+        CheckConstraint(
+            "consensus_scored_at_entry IS NULL "
+            "OR consensus_scored_at_entry BETWEEN 0 AND 5",
+            name="ck_order_kehoach_consensus_scored_at_entry_range",
+        ),
+        CheckConstraint(
+            "consensus_at_entry IS NULL OR consensus_scored_at_entry IS NULL "
+            "OR consensus_at_entry <= consensus_scored_at_entry",
+            name="ck_order_kehoach_consensus_entry_order",
+        ),
+    )
 
     order_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("virtual_orders.id", ondelete="CASCADE"),
@@ -256,10 +273,26 @@ class OrderKehoach(UUIDMixin, TimestampMixin, Base):
     #     KHÔNG được viết lại lịch sử của lệnh cũ). NULL khi không từ săn.
     from_watchlist: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     hunt_filter: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # Immutable, server-captured Cấp 5 entry context. ``cap5_entry_snapshot_at``
+    # is set even when the optional source fields are unknown, so a later read
+    # can distinguish "captured unknown" from a historical plan never sampled.
+    cap5_entry_snapshot_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    hunt_signal_at_entry: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    hunt_first_hunted_at_entry: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    hunt_sessions_at_entry: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    consensus_at_entry: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    consensus_scored_at_entry: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    consensus_captured_at_entry: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     # ── Cấp 6 additions (spec §5/§6/§11) — «Bậc thầy»: xử lý mâu thuẫn giữa
     # các lớp. CHỈ điền cho lệnh mua đi qua bảng mâu thuẫn của Cấp 6; mọi lệnh
-    # Cấp 1-5 để NULL hết, nên cả 4 cột đều nullable.
+    # Cấp 1-5 để NULL hết, nên các cột đều nullable.
     #   · ``had_conflict`` — mã này lúc mua CÓ mâu thuẫn lớp không (≥1 lớp ủng
     #     hộ VÀ ≥1 lớp ngược chiều trên bản AI Insight còn hiệu lực).
     #   · ``conflict_level`` — 1 trong ``app.models.cap6.MucMauThuan``
@@ -271,11 +304,9 @@ class OrderKehoach(UUIDMixin, TimestampMixin, Base):
     #     (VD ``["tin_tuc"]``). ``[]`` = đã kiểm, không lớp nào; NULL = chưa
     #     kiểm được.
     #
-    # ★★ ``had_conflict``/``had_veto``/``veto_layers`` do SERVER TỰ TÍNH LẠI từ
-    # ``ai_insight_history``, TUYỆT ĐỐI không nhận từ client: chúng nuôi thẳng
-    # cổng tốt nghiệp (≥3 lần nhất quán, trong đó ≥2 lần có phủ quyết), nên
-    # client khai được "lệnh này có phủ quyết" là client tự cấp cho mình điều
-    # kiện lên cấp. Cấp 5 đã học đúng bài này với ``hunt_signal``.
+    # ★★ ``had_conflict``/``had_veto``/``veto_layers`` do SERVER TỰ TÍNH từ
+    # nguồn phân tích, tuyệt đối không nhận từ client. Cổng hiện hành chỉ cần
+    # ≥3 lần xử lý mâu thuẫn nhất quán; veto là dữ liệu phân tích, không là gate.
     #
     # ★ **NULLABLE BA TRẠNG THÁI** cho 3 cột server tính: True/False = đã kiểm ·
     # NULL = lệnh Cấp 1-5 (hoặc lệnh Cấp 6 mà mã chưa có bản AI Insight còn
@@ -285,6 +316,15 @@ class OrderKehoach(UUIDMixin, TimestampMixin, Base):
     conflict_level: Mapped[str | None] = mapped_column(String(8), nullable=True)
     had_veto: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     veto_layers: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    # Frozen two-sided table used by Kết sổ after reload. These are layer keys,
+    # captured from the same server result that produced the flags above.
+    support_layers: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    opposing_layers: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    neutral_layers: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    conflict_snapshot_session_date: Mapped[date | None] = mapped_column(nullable=True)
+    conflict_snapshot_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
 
 
@@ -333,4 +373,5 @@ class OrderKetso(UUIDMixin, TimestampMixin, Base):
     nhoi_lenh_khi_lo: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="false"
     )
-
+    # Ghi chú nhìn lại dùng cho sáu mẫu nội tâm Cấp 2 (§12).
+    ghi_chu_nhin_lai: Mapped[str | None] = mapped_column(String(2000), nullable=True)

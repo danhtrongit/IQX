@@ -1,26 +1,26 @@
 """Điểm đồng thuận 5 lớp cho mã trong Watchlist (spec §6.1).
 
 Chạy **1 lần/ngày sau phiên** (batch), KHÔNG tức thời — spec §10 "Chi phí AI".
-Ở đây không gọi AI: hàm dưới đây chỉ ĐỌC LẠI bản AI Insight đã lưu cho mã đó
-(``ai_insight_history``) và quy các nhãn trạng thái về "lớp này có ủng hộ
-không". Mã chưa từng chạy Insight ⇒ chưa chấm được, không phải 0/5.
+Ở đây không gọi AI hay mạng: hàm dưới đây đọc bản AI Insight đã lưu và snapshot
+BCTC Khối 02 đã đóng băng, rồi quy về "lớp này có ủng hộ không". Lớp nào chưa
+có nguồn hợp lệ thì chưa chấm được, không mặc định là 0.
 
 ═══════════════════════════════════════════════════════════════════
 BẢN KIỂM DỮ LIỆU — 5 lớp của chương trình vs 5 lớp của AI Insight
 ═══════════════════════════════════════════════════════════════════
 
-5 lớp chương trình (``app.models.cap4.LOP_KEYS``) ↔ AI Insight v2 (L1-L5):
+5 lớp chương trình (``app.models.cap4.LOP_KEYS``) ↔ nguồn đã kiểm:
 
   · 🎯 ``ky_thuat``  ← **L1** (Xu hướng) ..... thang Rất yếu…Rất mạnh  ✅
   · 💰 ``dong_tien`` ← **L3** (Dòng tiền) .... thang Cảnh báo…Hỗ trợ   ✅
   · 👤 ``noi_bo``    ← **L4** (Nội bộ) ....... thang Cảnh báo…Hỗ trợ   ✅
   · 📰 ``tin_tuc``   ← **L5** (Tin tức) ...... thang Rất tiêu…Rất tích ✅
-  · 💎 ``dinh_gia``  ← **KHÔNG CÓ LỚP TƯƠNG ỨNG** ................... ❌
+  · 💎 ``dinh_gia``  ← BCTC Khối 02 qua snapshot ``journey_identity`` ✅
 
 ★ **AI Insight v2 không có lớp Định giá** (L2 là Thanh khoản, không phải Định
-giá — ánh xạ L2 → ``dinh_gia`` sẽ là bịa). Định giá nằm ở tuyến BCTC/premium,
-không phải trong payload này. Vì vậy mã nào cũng chỉ chấm được **tối đa 4/5
-lớp**, và ``so_lop_chua_biet ≥ 1`` luôn luôn.
+giá — ánh xạ L2 → ``dinh_gia`` sẽ là bịa). Lớp thứ năm đọc snapshot BCTC Khối
+02 đã được ``journey_identity`` đóng băng từ ``compute_dashboard``. Snapshot
+thiếu/hỏng/quá hạn ⇒ riêng lớp này chưa biết, không giả trung tính.
 
 Hệ quả bắt buộc (luật 1):
   · ``diem`` = số lớp XÁC NHẬN ủng hộ — một CẬN DƯỚI thật, không phải "X/5".
@@ -43,6 +43,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.ai_insight_history import AIInsightHistory
 from app.models.cap4 import LOP_KEYS, LOP_LABELS
 from app.models.cap5 import WatchlistStatus
+from app.services.valuation_reading import (
+    JourneyValuationSource,
+    ValuationReading,
+)
 
 #: Lớp chương trình → khoá lớp trong payload AI Insight v2.
 LOP_TO_AI_LAYER: dict[str, str | None] = {
@@ -138,9 +142,7 @@ def ngay_vn(dt: datetime) -> date:
     return dt.astimezone(_VN_TZ).date()
 
 
-def ngay_som_nhat_con_hieu_luc(
-    today: date, *, so_phien: int = SO_PHIEN_HIEU_LUC
-) -> date:
+def ngay_som_nhat_con_hieu_luc(today: date, *, so_phien: int = SO_PHIEN_HIEU_LUC) -> date:
     """Ngày phiên SỚM NHẤT còn được dùng để chấm, tính từ ``today``.
 
     Đếm lùi ``so_phien`` phiên (Mon-Fri) từ ``today``; bản phân tích của chính
@@ -165,10 +167,7 @@ def _ly_do_chua_cham(session_date: date | None, qua_han: date | None) -> str:
             "nên không dùng để chấm cho hôm nay."
         )
     if session_date is not None:
-        return (
-            f"Bản phân tích phiên {session_date.strftime('%d/%m/%Y')} không có "
-            "nhãn hợp lệ cho lớp này."
-        )
+        return f"Bản phân tích phiên {session_date.strftime('%d/%m/%Y')} không có nhãn hợp lệ cho lớp này."
     return "Mã này chưa có bản phân tích 5 lớp nào để chấm."
 
 
@@ -233,25 +232,48 @@ def _status(diem: int, so_lop_da_cham: int) -> str | None:
 def cham_tu_payload(
     payload: object,
     *,
+    valuation: ValuationReading | None = None,
     session_date: date | None = None,
+    insight_session_date: date | None = None,
     session_date_qua_han: date | None = None,
 ) -> ConsensusResult:
     """Quy một payload AI Insight (raw ``ai_json``) về điểm đồng thuận 5 lớp."""
     lop_rows: list[dict] = []
     diem = 0
     da_cham = 0
-    ly_do_thieu = _ly_do_chua_cham(session_date, session_date_qua_han)
+    insight_date = insight_session_date or session_date
+    ly_do_thieu = _ly_do_chua_cham(insight_date, session_date_qua_han)
 
     layers = payload if isinstance(payload, dict) else {}
     for lop in LOP_KEYS:
         layer_key = LOP_TO_AI_LAYER.get(lop)
         nhan_raw: object = None
         ket = None
-        if layer_key is not None:
+        muc: str | None = None
+        giai_thich: str
+        source_date: date | None = None
+        nguon: str | None = None
+        if lop == "dinh_gia" and valuation is not None:
+            nhan_raw = valuation.label
+            ket = valuation.verdict == MUC_UNG_HO
+            muc = valuation.verdict
+            giai_thich = valuation.explanation
+            source_date = valuation.trading_date
+            nguon = valuation.source_ref
+        elif layer_key is not None:
             layer = layers.get(layer_key)
             if isinstance(layer, dict):
                 nhan_raw = layer.get("statusLabel")
                 ket = _ung_ho(layer_key, nhan_raw)
+            muc = _muc(layer_key, nhan_raw, ket)
+            giai_thich = ly_do_thieu if ket is None else f"AI Insight {layer_key}: {nhan_raw}"
+            source_date = insight_date
+            nguon = f"ai_insight:{layer_key}" if ket is not None else None
+        else:
+            giai_thich = (
+                "Chưa có nguồn chấm lớp Định giá cho mã này: cần snapshot BCTC "
+                "Khối 02 còn hiệu lực và khớp contract."
+            )
         if ket is True:
             diem += 1
             da_cham += 1
@@ -264,13 +286,11 @@ def cham_tu_payload(
                 # None = chưa chấm được lớp này (FE hiện "– chưa rõ", không phải ⚠).
                 "ung_ho": ket,
                 # 'ok' | 'neu' | 'bad' | None — xem ``_muc``.
-                "muc": _muc(layer_key or "", nhan_raw, ket),
+                "muc": muc,
                 "nhan": nhan_raw if isinstance(nhan_raw, str) and ket is not None else None,
-                "giai_thich": (
-                    "Chưa có nguồn chấm lớp Định giá cho mã này."
-                    if layer_key is None
-                    else (ly_do_thieu if ket is None else f"AI Insight {layer_key}: {nhan_raw}")
-                ),
+                "giai_thich": giai_thich,
+                "nguon": nguon,
+                "source_date": source_date,
             }
         )
 
@@ -294,26 +314,23 @@ def cham_tu_payload(
 
 
 class InsightConsensusSource:
-    """Nguồn điểm đồng thuận đọc từ ``ai_insight_history`` (không gọi AI)."""
+    """Nguồn 4 lớp Insight + snapshot BCTC đã lưu; không gọi AI/mạng."""
 
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(
+        self,
+        session: AsyncSession,
+        *,
+        valuation_source: JourneyValuationSource | None = None,
+    ) -> None:
         self._session = session
-
-    @staticmethod
-    def _chua_cham(*, qua_han: date | None = None) -> ConsensusResult:
-        """Kết quả "chưa chấm được" — MỘT chỗ dựng, kèm lý do đúng sự thật."""
-        goc = cham_tu_payload(None, session_date_qua_han=qua_han)
-        return ConsensusResult(
-            diem=None,
-            so_lop_da_cham=None,
-            status=None,
-            lop=goc.lop,
-            session_date=None,
-            session_date_qua_han=qua_han,
-        )
+        self._valuation = valuation_source or JourneyValuationSource(session)
 
     def _cham_row(
-        self, row: AIInsightHistory | None, *, som_nhat: date
+        self,
+        row: AIInsightHistory | None,
+        *,
+        som_nhat: date,
+        valuation: ValuationReading | None = None,
     ) -> ConsensusResult:
         """Chấm bản phân tích gần nhất của một mã, CHẶN theo cửa sổ phiên.
 
@@ -321,39 +338,56 @@ class InsightConsensusSource:
         chấm được. Trạng thái giữa trước đây bị chấm như thể là dữ liệu hôm nay.
         """
         if row is None:
-            return self._chua_cham()
+            return cham_tu_payload(
+                None,
+                valuation=valuation,
+                session_date=valuation.trading_date if valuation else None,
+            )
         if row.session_date is None or row.session_date < som_nhat:
-            return self._chua_cham(qua_han=row.session_date)
-        return cham_tu_payload(row.payload, session_date=row.session_date)
+            return cham_tu_payload(
+                None,
+                valuation=valuation,
+                session_date=valuation.trading_date if valuation else None,
+                session_date_qua_han=row.session_date,
+            )
+        source_dates = [row.session_date]
+        if valuation and valuation.trading_date:
+            source_dates.append(valuation.trading_date)
+        return cham_tu_payload(
+            row.payload,
+            valuation=valuation,
+            # Conservative combined as-of: the oldest source used in the score.
+            session_date=min(source_dates),
+            insight_session_date=row.session_date,
+        )
 
-    async def cham_nhieu(
-        self, symbols: Sequence[str], *, today: date | None = None
-    ) -> dict[str, ConsensusResult]:
+    async def cham_nhieu(self, symbols: Sequence[str], *, today: date | None = None) -> dict[str, ConsensusResult]:
         """Chấm cả rổ mã trong MỘT truy vấn (Watchlist có tới 50 mã).
 
-        Mã chưa từng có bản Insight — hoặc chỉ có bản NGOÀI cửa sổ
-        ``SO_PHIEN_HIEU_LUC`` phiên — vẫn có mặt trong dict, ở dạng "chưa chấm
-        được" (``diem is None``): vắng mặt sẽ khiến chỗ gọi phải tự đoán.
+        Mã thiếu Insight vẫn có thể chấm riêng Định giá nếu có snapshot BCTC.
+        Mã không có nguồn hợp lệ nào vẫn có mặt trong dict với ``diem is None``:
+        vắng mặt sẽ khiến chỗ gọi phải tự đoán.
         """
         ups = sorted({s.upper() for s in symbols})
         if not ups:
             return {}
         som_nhat = ngay_som_nhat_con_hieu_luc(today or hom_nay_vn())
         rows = (
-            await self._session.execute(
-                select(AIInsightHistory)
-                .where(AIInsightHistory.symbol.in_(ups))
-                .order_by(
-                    AIInsightHistory.symbol.asc(), AIInsightHistory.session_date.desc()
+            (
+                await self._session.execute(
+                    select(AIInsightHistory)
+                    .where(AIInsightHistory.symbol.in_(ups))
+                    .order_by(AIInsightHistory.symbol.asc(), AIInsightHistory.session_date.desc())
                 )
             )
-        ).scalars().all()
+            .scalars()
+            .all()
+        )
         moi_nhat: dict[str, AIInsightHistory] = {}
         for row in rows:
             moi_nhat.setdefault(row.symbol.upper(), row)
-        return {
-            ma: self._cham_row(moi_nhat.get(ma), som_nhat=som_nhat) for ma in ups
-        }
+        valuations = await self._valuation.latest_many(ups, earliest=som_nhat)
+        return {ma: self._cham_row(moi_nhat.get(ma), som_nhat=som_nhat, valuation=valuations.get(ma)) for ma in ups}
 
     async def cham(self, symbol: str, *, today: date | None = None) -> ConsensusResult:
         row = (
@@ -364,6 +398,6 @@ class InsightConsensusSource:
                 .limit(1)
             )
         ).scalar_one_or_none()
-        return self._cham_row(
-            row, som_nhat=ngay_som_nhat_con_hieu_luc(today or hom_nay_vn())
-        )
+        som_nhat = ngay_som_nhat_con_hieu_luc(today or hom_nay_vn())
+        valuation = await self._valuation.latest(symbol, earliest=som_nhat)
+        return self._cham_row(row, som_nhat=som_nhat, valuation=valuation)

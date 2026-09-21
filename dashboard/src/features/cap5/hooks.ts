@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/features/auth"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { cap5Api } from "./api"
 import { cap5Keys } from "./keys"
 import type { Cap5PhanTich, Cap5Progress } from "./types"
@@ -50,7 +51,10 @@ export function useGraduateCap5() {
   const invalidate = useInvalidateCap5()
   return useMutation<Cap5Progress, unknown, void>({
     mutationFn: cap5Api.graduate,
-    onSuccess: invalidate,
+    onSuccess: () => {
+      trackJourneyEvent("cap5_graduate")
+      void invalidate()
+    },
   })
 }
 
@@ -64,7 +68,10 @@ export function useMarkTourSanMa() {
   const invalidate = useInvalidateCap5()
   return useMutation<Cap5Progress, unknown, void>({
     mutationFn: cap5Api.markTourSanMa,
-    onSuccess: invalidate,
+    onSuccess: () => {
+      trackJourneyEvent("cap5_tour_sanma_done")
+      void invalidate()
+    },
   })
 }
 

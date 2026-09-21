@@ -95,4 +95,16 @@ describe("useTour", () => {
     act(() => result.current.setBusy(false))
     expect(result.current.busy).toBe(false)
   })
+
+  it("waits for onBeforeNext before advancing", async () => {
+    let release!: () => void
+    const pending = new Promise<void>((resolve) => { release = resolve })
+    const { result } = renderHook(() => useTour(CONFIG, { onComplete: vi.fn(), onBeforeNext: () => pending }))
+    act(() => result.current.start())
+    act(() => result.current.next())
+    expect(result.current.index).toBe(0)
+    expect(result.current.busy).toBe(true)
+    await act(async () => release())
+    expect(result.current.index).toBe(1)
+  })
 })

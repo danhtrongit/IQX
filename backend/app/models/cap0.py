@@ -1,17 +1,9 @@
 """Cấp 0 (Level 0) onboarding models — progress, placement, kế hoạch (chip lý do).
 
-Cap 0 is a FREE gamified onboarding flow: a user "enters", gets a 100tr VND
-virtual account seeded, works through **4 tasks** and graduates once all four are
-done plus the **single** behaviour gate — closing the màn Kết sổ at nhiệm vụ ④.
-
-    ① Đặt lệnh mua đầu tiên   ② Xem tab Nắm giữ
-    ③ Xem tab Theo dõi        ④ Bán một lệnh — kết sổ đầu tiên
-
-The three product tours (bảng điện / bản tin / "6 người chơi") that used to
-occupy ②③④ are **not part of Cấp 0 any more**, and there is no chặng/stage
-grouping: four flat nhiệm vụ, one gate. The ★ (bấm sao theo dõi) is likewise no
-longer any task's requirement — the new ③ is earned by OPENING the Theo dõi tab —
-so ``task1_star_clicked`` is gone rather than kept as a fact nothing reads.
+Cap 0 is a FREE onboarding flow with a 100m VND practice account and five
+tasks in three stages: first BUY + hold + watchlist star, three product tours,
+then a SELL and debrief. Graduation requires all five tasks and both the star
+and debrief evidence.
 
 Cấp 0 teaches pure mechanics. It has **NO cắt lỗ/chốt lời and no lý do phân
 tích** (v3.0 states this in its preamble, §0, §8 and §13) — hence no
@@ -68,6 +60,14 @@ LY_DO_DOI_THUONG_LABELS: dict[LyDoDoiThuong, str] = {
 }
 
 
+class PlacementExperience(enum.StrEnum):
+    """Ba câu trả lời xếp lớp nguyên văn theo ý nghĩa của spec §3."""
+
+    NEVER = "never"
+    UNSURE = "unsure"
+    REGULAR = "regular"
+
+
 class Cap0Progress(UUIDMixin, TimestampMixin, Base):
     """Per-user Cấp 0 onboarding progress. One row per user."""
 
@@ -82,16 +82,18 @@ class Cap0Progress(UUIDMixin, TimestampMixin, Base):
         BigInteger, nullable=False, default=100_000_000, server_default="100000000"
     )
 
-    # Task completion timestamps (nullable until done):
-    #   ① đặt lệnh mua đầu tiên   ② xem tab Nắm giữ
-    #   ③ xem tab Theo dõi        ④ bán một lệnh — kết sổ đầu tiên
+    # ① mua + xem Nắm giữ + bấm ★ Theo dõi; ②-④ ba tour; ⑤ bán + Kết sổ.
     task_1_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     task_2_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     task_3_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     task_4_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    task_5_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    # THE single behaviour gate — màn Kết sổ đã đóng ở nhiệm vụ ④ (§9).
-    task4_debrief_done: Mapped[bool] = mapped_column(
+    task1_star_clicked: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    # Cổng hành vi duy nhất: user đã đóng màn Kết sổ ở nhiệm vụ ⑤.
+    task5_debrief_done: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="false"
     )
 
@@ -107,14 +109,9 @@ class Cap0OrderKehoach(UUIDMixin, TimestampMixin, Base):
     Cấp 1's ``order_kehoach`` — see ``app.services.cap0.service.Cap0Service.
     record_kehoach`` for the four reasons why sharing that row would be unsafe.
 
-    ★★ **A Cấp 0 order is NOT always ``san_tap``.** The spec's ``mode='san_tap'``
-    tag (and an earlier version of this docstring) asserted it is; the code never
-    enforced it and the claim is false. ``virtual_orders.mode`` is set from the
-    user's SUBSCRIPTION (``"thuc_chien" if is_premium else "san_tap"`` in
-    ``VirtualTradingService.place_order``), and Cấp 0 is free and open to
-    everyone — an existing premium subscriber walking through Cấp 0 produces
-    ``thuc_chien`` rows. Nothing in Cấp 0 may filter on ``mode``: doing so hid
-    this table from that entire cohort.
+    The virtual-trading engine resolves Cấp 0 orders to ``san_tap`` from the
+    active journey level. The plan row remains separate from the order so the
+    chip vocabulary cannot collide with Cấp 1's analytical plan fields.
 
     ``mode`` and the buy timestamp are deliberately NOT duplicated here: both are
     already on ``virtual_orders`` (``mode`` / ``created_at`` / ``trading_date``)
@@ -150,4 +147,20 @@ class UserPlacement(UUIDMixin, TimestampMixin, Base):
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     has_traded_before: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    experience: Mapped[PlacementExperience] = mapped_column(
+        Enum(
+            PlacementExperience,
+            name="cap0_placement_experience",
+            values_callable=lambda e: [m.value for m in e],
+        ),
+        nullable=False,
+        default=PlacementExperience.NEVER,
+        server_default=PlacementExperience.NEVER.value,
+    )
     placed_level: Mapped[int] = mapped_column(Integer, nullable=False)  # 0/1/2
+    da_xem_tour: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    tour_bantin_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    tour_phantich_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    tour_bctc_done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

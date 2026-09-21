@@ -17,13 +17,12 @@ import { cn } from "@/shared/lib/cn"
  * `ready` = đã xong hết nhiệm vụ: ô đổi sang trạng thái sẵn sàng tốt nghiệp
  * (viền xanh lá, không nút) thay vì biến mất và để lại một khoảng trống.
  *
- * ★ Từng có một prop `stage` in nhãn chặng của nhiệm vụ. Cấp 0 là cấp duy nhất
- * chia chặng và mockup mới đã bỏ chặng hẳn, nên prop lẫn `.cap0-focus-stage`
- * đều đi theo — đừng dựng lại nếu không có mockup nào đòi.
+ * Cấp 0 truyền `stage` để giữ cấu trúc ba chặng; Cấp 1 có thể bỏ trống.
  */
 export function JourneyFocus({
   testId,
   tag,
+  stage,
   numeral,
   name,
   desc,
@@ -36,6 +35,8 @@ export function JourneyFocus({
   /** `cap0-focus` / `cap1-focus` — mỗi cấp một id để test bám đúng panel. */
   testId: string
   tag: string
+  /** Nhãn chặng chứa nhiệm vụ hiện tại. */
+  stage?: string
   /** ①..⑥ — bỏ trống ở trạng thái `ready` (không còn nhiệm vụ nào để đánh số). */
   numeral?: string
   name: string
@@ -54,6 +55,7 @@ export function JourneyFocus({
       className={cn("cap0-focus", ready && "cap0-focus--ready")}
     >
       <div className="cap0-focus-tag">{tag}</div>
+      {stage && <div className="cap0-focus-stage">{stage}</div>}
       <div className="cap0-focus-name cap0-display">
         {numeral && <span className="cap0-focus-no">{numeral}</span>}
         <span>{name}</span>

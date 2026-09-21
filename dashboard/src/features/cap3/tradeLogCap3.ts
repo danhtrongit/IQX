@@ -1,12 +1,12 @@
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useAuth } from "@/features/auth"
 import type { Cap2TradeRecord } from "@/features/cap2/portfolioAnalysisCap2"
-import type { CachKhoiLuong, KhauViLoai, MucTuTin } from "./types"
+import type { CachKhoiLuong, Cap3TradeWire, KhauViLoai, MucTuTin } from "./types"
 
 /**
- * Client-side closed-trade log cho Phân tích danh mục Cấp 3 (spec §8 khối
- * ⑦/⑧) — mirror `cap2/tradeLogCap2.ts` một cấp lên, cùng cơ chế
- * localStorage + de-dupe theo `orderId`.
+ * Local fallback log cho Phân tích danh mục Cấp 3 (spec §8 khối ⑦/⑧).
+ * `Cap3PortfolioAnalysisPanel` ưu tiên `GET /cap3/trades/analysis`; dữ liệu
+ * này chỉ dùng khi request server đang tải hoặc không khả dụng.
  *
  * **Cộng dồn ở tầng dữ liệu:** `Cap3TradeRecord extends Cap2TradeRecord`
  * (chính nó extends `Cap1TradeRecord`) — nhờ vậy `computeCap3PortfolioAnalysis`
@@ -18,17 +18,9 @@ import type { CachKhoiLuong, KhauViLoai, MucTuTin } from "./types"
  * (key `iqx_cap2_scores_*`) vẫn là nguồn duy nhất; Cấp 3 chỉ đọc lại nó, không
  * nhân bản thêm một nhật ký điểm.
  *
- * GAP (giống hệt gap `cap1/tradeLog.ts` + `cap2/tradeLogCap2.ts` đã ghi, một
- * cấp lên): backend Cấp 3 chỉ trả state tổng hợp (`GET /cap3/progress`) —
- * không có endpoint nào liệt kê `order_kehoach` JOIN `order_ketso` để lấy
- * `muc_tu_tin`/`cach_khoi_luong`/`khoi_luong`/
- * `pct_von` của từng lệnh đã đóng. Module này là workaround: `KetsoModalCap3`
- * ghi 1 `Cap3TradeRecord` mỗi lần đóng Kết sổ (nó đang giữ đúng các giá trị
- * quản lý vốn vừa đối chiếu).
- *
- * KNOWN LIMITATION (như Cấp 1/2): không backfill được lệnh đóng trước khi
- * tính năng này ship, và là per-browser (không sync giữa thiết bị) — fix đúng
- * là một task BE sau này (vd. `GET /cap3/trades`).
+ * `KetsoModalCap3` vẫn ghi local để trải nghiệm không mất dữ liệu tức thời khi
+ * telemetry/history endpoint lỗi; lần tải server thành công kế tiếp sẽ thay
+ * toàn bộ fallback bằng lịch sử cross-device.
  */
 export interface Cap3TradeRecord extends Cap2TradeRecord {
   /** Khẩu vị rủi ro LÚC ĐẶT lệnh (hồ sơ có thể đổi sau — snapshot tại đây). */
@@ -41,6 +33,44 @@ export interface Cap3TradeRecord extends Cap2TradeRecord {
   khoiLuong: number
   /** % vốn thực tế của lệnh — `order_kehoach.pct_von`. */
   pctVon: number
+}
+
+export function cachKhoiLuongFromWire(
+  value: Cap3TradeWire["cach_khoi_luong"],
+): CachKhoiLuong | null {
+  if (value == null) return null
+  return value === "khau_vi_tu_tin" ? "linh_hoat" : "ky_luat"
+}
+
+/** Convert one authoritative wire row into the cumulative analysis record. */
+export function cap3TradeFromWire(row: Cap3TradeWire): Cap3TradeRecord | null {
+  if (
+    row.khau_vi == null ||
+    row.muc_tu_tin == null ||
+    row.cach_khoi_luong == null ||
+    row.khoi_luong == null ||
+    row.pct_von == null
+  ) {
+    return null
+  }
+  return {
+    orderId: row.sell_order_id,
+    lyDo: row.lyDo,
+    trangThaiLucDat: row.trangThai_luc_dat,
+    pnlPct: row.pnl_pct,
+    pnlVnd: row.pnl_vnd,
+    closedAt: row.closed_at,
+    chamSlKhongCat: row.cham_SL_khong_cat,
+    chamTpGiuLamHut: row.cham_TP_giu_lam_hut,
+    banSomKhiLoNhe: row.ban_som_khi_lo_nhe,
+    nhoiLenhKhiLo: row.nhoi_lenh_khi_lo,
+    ghiChuNhinLai: row.ghi_chu_nhin_lai,
+    khauVi: row.khau_vi,
+    mucTuTin: row.muc_tu_tin,
+    cachKhoiLuong: cachKhoiLuongFromWire(row.cach_khoi_luong)!,
+    khoiLuong: row.khoi_luong,
+    pctVon: row.pct_von,
+  }
 }
 
 function tradesStorageKey(userId: string): string {
@@ -94,6 +124,14 @@ export function useCap3TradeLog(): UseCap3TradeLogReturn {
   const { user } = useAuth()
   const userId = user?.id ?? "anon"
   const [trades, setTrades] = useState<Cap3TradeRecord[]>(() => readCap3TradeLog(userId))
+
+  // Auth can resolve after the app shell has mounted, and the same component
+  // can also survive an account switch. Reload the per-user log whenever the
+  // storage namespace changes so one user's analysis never carries into the
+  // next user's session.
+  useEffect(() => {
+    setTrades(readCap3TradeLog(userId))
+  }, [userId])
 
   const record = useCallback(
     (rec: Cap3TradeRecord) => {

@@ -1,6 +1,7 @@
 import { api, unwrap } from "@/shared/http/client"
 import type {
   Cap1Progress,
+  Cap1TradeHistoryList,
   KehoachInput,
   KetsoInput,
   OrderKehoach,
@@ -18,6 +19,11 @@ export const cap1Api = {
   getProgress: async (): Promise<Cap1Progress | null> => {
     const res = await api.get("cap1/progress").json<unknown>()
     return (unwrap(res as never) ?? null) as Cap1Progress | null
+  },
+
+  getTrades: async (): Promise<Cap1TradeHistoryList> => {
+    const res = await api.get("cap1/trades").json<unknown>()
+    return unwrap(res as never) as Cap1TradeHistoryList
   },
 
   /** POST /cap1/enter — idempotent; requires Cấp 0 already graduated. */

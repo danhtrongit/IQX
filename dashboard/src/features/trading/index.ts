@@ -16,6 +16,7 @@ export type {
   VTAccount,
   VTOrder,
   VTOrderResult,
+  VTJourneyPlanInput,
   VTPosition,
   VTPortfolio,
 } from "./api"

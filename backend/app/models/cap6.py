@@ -201,8 +201,8 @@ class Cap6Progress(UUIDMixin, TimestampMixin, Base):
         Integer, nullable=False, default=0, server_default="0"
     )
 
-    #: Σ(lãi/lỗ VND mọi lệnh đã đóng SAU khi vào Cấp 6) ÷ Σ(vốn các lệnh đó),
-    #: tính bằng %. Không phân biệt lệnh có mâu thuẫn hay không (spec §11).
+    #: Σ(lãi/lỗ VND các lệnh CÓ MÂU THUẪN đã đóng SAU khi vào Cấp 6) ÷ Σ(vốn
+    #: các lệnh đó), tính bằng %. Đây là số hiển thị của header Cấp 6 (§3).
     #:
     #: ★★ **NULLABLE, và NULL KHÔNG BAO GIỜ thành 0.** NULL = "chưa có lệnh
     #: Cấp-6 nào đóng"; ``0.0`` là một câu khác hẳn ("đã đóng lệnh, hoà vốn").

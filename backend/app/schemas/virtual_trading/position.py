@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import uuid
+
 from pydantic import BaseModel
 
 from app.schemas.virtual_trading.account import AccountResponse
@@ -19,6 +21,10 @@ class PositionResponse(BaseModel):
     current_price_vnd: int | None = None
     market_value_vnd: int | None = None
     unrealized_pnl_vnd: int | None = None
+    active_plan_buy_order_id: uuid.UUID | None = None
+    active_original_stop_vnd: int | None = None
+    active_original_take_profit_vnd: int | None = None
+    active_dynamic_stop_vnd: int | None = None
 
     model_config = {"from_attributes": True}
 

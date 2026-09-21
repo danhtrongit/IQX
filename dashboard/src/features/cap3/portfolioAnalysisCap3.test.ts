@@ -238,6 +238,19 @@ describe("computeCap3Khoi8KhoiLuong — ⑧ khối lượng có đi theo tự ti
     expect(khoi8.theoTuTin).toBe(false)
   })
 
+  it("uses unrounded % vốn averages when classifying a near-threshold relationship", () => {
+    const khoi8 = computeCap3Khoi8KhoiLuong([
+      ...tradesFor(3, 3, 3, { khoiLuong: 1_000, pctVon: 12.01 }),
+      ...tradesFor(1, 3, 1, { khoiLuong: 500, pctVon: 10.49 }),
+    ])
+
+    // Display values both round to 12%/10%, which would incorrectly pass the
+    // 1.15 ratio. Raw values give 12.01 / 10.49 = 1.145, so it must not pass.
+    expect(khoi8.rows.find((row) => row.mucTuTin === 3)?.avgPctVon).toBe(12)
+    expect(khoi8.rows.find((row) => row.mucTuTin === 1)?.avgPctVon).toBe(10)
+    expect(khoi8.theoTuTin).toBe(false)
+  })
+
   it("thiếu dữ liệu ở 1 cực → không kết luận, ghi rõ thiếu", () => {
     const khoi8 = computeCap3Khoi8KhoiLuong(tradesFor(3, 5, 3, { khoiLuong: 900, pctVon: 18 }))
     expect(khoi8.theoTuTin).toBeNull()
@@ -264,15 +277,15 @@ describe("computeCap3PortfolioAnalysis — delegation to Cấp 2 (cộng dồn)"
     // Khối 1/2 delegated from Cấp 1 through Cấp 2.
     expect(result.khoi1.totalTrades).toBe(8)
     expect(result.khoi2).toHaveLength(5)
-    // ③ độ phủ 5 lý do + ④ cơ chế cắt lỗ/chốt lời — 4 khối của mô hình 2 nhiệm
-    // vụ, không còn khối vi phạm/điểm kỷ luật/ghi chú nào để giữ.
+    // ③ độ phủ + ④ cơ chế CL/CL và các khối kỷ luật/ghi chú của Cấp 2 đều
+    // được giữ khi Cấp 3 thêm phân tích tự tin.
     expect(result.khoi3.usedCount).toBeGreaterThan(0)
     expect(result.khoi4.tongDung).toBe(0)
     expect(result.khoi4.scopeNote).toContain("làm quen cơ chế")
-    const stale = result as unknown as Record<string, unknown>
-    expect(stale.khoi5).toBeUndefined()
-    expect(stale.khoi6).toBeUndefined()
-    expect(stale.mauPhatHien).toBeUndefined()
+    expect(result.khoi5.points).toHaveLength(1)
+    expect(result.khoi6).toBeDefined()
+    expect(result.khoi7).toBeDefined()
+    expect(result.mauPhatHien).toBeDefined()
   })
 
   it("adds khối ⑦ + ⑧ under distinct keys (no clash with Cấp 2's khoi7 ghi chú)", () => {
@@ -285,9 +298,9 @@ describe("computeCap3PortfolioAnalysis — delegation to Cấp 2 (cộng dồn)"
     )
     expect(result.khoi7TuTin.rows).toHaveLength(3)
     expect(result.khoi8KhoiLuong.rows).toHaveLength(3)
-    // Cấp 2's old «khoi7 ghi chú» is gone with the 5-nhiệm-vụ model, so ⑦/⑧
-    // keep their distinct keys with nothing left to clash against.
-    expect((result as unknown as Record<string, unknown>).khoi7).toBeUndefined()
+    // Cấp 2's inherited ghi chú and Cấp 3's confidence block retain distinct
+    // object keys, so composing the levels loses neither dataset.
+    expect(result.khoi7).toBeDefined()
     expect(result.khoi7TuTin.phatHien).toMatch(/đáng tin/)
   })
 

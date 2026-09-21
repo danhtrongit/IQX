@@ -1,3 +1,6 @@
+vi.mock("@/features/journey-identity/JourneyIdentityStage", () => ({
+  JourneyIdentityStage: ({ level }: { level: number }) => <div data-testid="journey-identity-stage" data-level={level} />,
+}))
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import React from "react"
 import { MemoryRouter } from "react-router"
@@ -19,6 +22,8 @@ const {
   recordCap1TradeMock,
   navigateMock,
   enterCap3Mutate,
+  useCap2ActiveAlertsMock,
+  actOnCap2AlertMutate,
 } = vi.hoisted(() => ({
   useCap1ProgressMock: vi.fn(),
   useCap2ProgressMock: vi.fn(),
@@ -31,6 +36,8 @@ const {
   recordCap1TradeMock: vi.fn(),
   navigateMock: vi.fn(),
   enterCap3Mutate: vi.fn(),
+  useCap2ActiveAlertsMock: vi.fn(),
+  actOnCap2AlertMutate: vi.fn(),
 }))
 
 vi.mock("react-router", async (importOriginal) => {
@@ -174,6 +181,8 @@ vi.mock("./hooks", () => ({
   useGraduateCap2: () => ({ mutate: graduateCap2Mutate, isPending: false }),
   useRecordKetsoCap2: () => ({ mutate: recordKetsoCap2Mutate }),
   useDiemKyLuat: (...a: unknown[]) => useDiemKyLuatMock(...a),
+  useCap2ActiveAlerts: (...a: unknown[]) => useCap2ActiveAlertsMock(...a),
+  useActOnCap2Alert: () => ({ mutate: actOnCap2AlertMutate, isPending: false }),
 }))
 vi.mock("./tradeLogCap2", () => ({
   useCap2TradeLog: () => ({
@@ -257,17 +266,25 @@ describe("Cap2TradingPage", () => {
     useDiemKyLuatMock.mockReturnValue({ data: fakeDiemKyLuat(), isLoading: false })
     recordKetsoCap1Mutate.mockReset()
     recordKetsoCap2Mutate.mockReset()
+    recordKetsoCap1Mutate.mockImplementation((_input, options) => options?.onSuccess?.())
+    recordKetsoCap2Mutate.mockImplementation((_input, options) => options?.onSuccess?.())
     graduateCap2Mutate.mockReset()
     recordCap2TradeMock.mockReset()
     recordCap2ScoreMock.mockReset()
     recordCap1TradeMock.mockReset()
+    useCap2ActiveAlertsMock.mockReset()
+    useCap2ActiveAlertsMock.mockReturnValue({
+      data: { session_date: "2026-01-06", alerts: [] },
+    })
+    actOnCap2AlertMutate.mockReset()
     navigateMock.mockReset()
     window.localStorage.clear()
   })
 
-  it("renders the reused terminal children (CenterPanel/RightSidebar/RightToolbar)", () => {
+  it("renders identity in the main slot and preserves the functional panels", () => {
     renderCap2(<Cap2TradingPage />)
-    expect(screen.getByTestId("center-panel")).toBeInTheDocument()
+    expect(screen.getByTestId("journey-identity-stage")).toHaveAttribute("data-level", "2")
+    expect(screen.queryByTestId("center-panel")).not.toBeInTheDocument()
     expect(screen.getByTestId("right-sidebar")).toBeInTheDocument()
     expect(screen.getByTestId("right-toolbar")).toBeInTheDocument()
   })
@@ -343,9 +360,11 @@ describe("Cap2TradingPage", () => {
 
     expect(recordKetsoCap1Mutate).toHaveBeenCalledWith(
       expect.objectContaining({ order_id: "sell-1" }),
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
     )
     expect(recordKetsoCap2Mutate).toHaveBeenCalledWith(
       expect.objectContaining({ order_id: "sell-1" }),
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
     )
     expect(recordCap1TradeMock).toHaveBeenCalledTimes(1)
     expect(recordCap2TradeMock).toHaveBeenCalledTimes(1)
@@ -365,6 +384,7 @@ describe("Cap2TradingPage", () => {
 
     expect(recordKetsoCap2Mutate).toHaveBeenCalledWith(
       expect.objectContaining({ order_id: "sell-2", cham_SL_cat_dung_phien_ke: true }),
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
     )
   })
 

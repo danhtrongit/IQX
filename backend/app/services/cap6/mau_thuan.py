@@ -1,10 +1,9 @@
 """Máy phát hiện MÂU THUẪN giữa 5 lớp cho một mã (Cấp 6 «Bậc thầy», spec §5).
 
-Ở đây KHÔNG gọi AI: hàm dưới đây chỉ ĐỌC LẠI bản AI Insight đã lưu cho mã đó
-(``ai_insight_history``) — đúng nguồn, đúng cửa sổ hiệu lực và đúng bộ nhãn 5
-bậc mà Cấp 5 đã kiểm (``app.services.cap5.consensus``). Spec §11 nói thẳng:
-"KHÔNG chạy cho mã user chưa từng xem" — mã chưa có bản Insight ⇒ **"chưa đủ dữ
-liệu"**, KHÔNG phải một bảng mâu thuẫn rỗng.
+Ở đây KHÔNG gọi AI hay mạng: hàm đọc bản AI Insight đã lưu và snapshot BCTC
+Khối 02 đã đóng băng — đúng nguồn, cửa sổ hiệu lực và mapping mà Cấp 5 đã kiểm.
+Không có nguồn hợp lệ nào ⇒ **"chưa đủ dữ liệu"**, không phải bảng mâu thuẫn
+rỗng.
 
 ═══════════════════════════════════════════════════════════════════
 ★ HAI PHE + THANG 5 BẬC (spec §5.1/§5.3)
@@ -36,17 +35,17 @@ Hai khái niệm khác nhau, và wire mang CẢ HAI vì chúng KHÔNG thay thế
 Chỉ ``phu_quyet_kich_hoat`` mới nuôi ``had_veto`` và cổng ≥2 lần của spec §2.
 
 ═══════════════════════════════════════════════════════════════════
-BẢN KIỂM DỮ LIỆU — 💎 Định giá KHÔNG CÓ NGUỒN
+BẢN KIỂM DỮ LIỆU — 💎 Định giá từ BCTC Khối 02
 ═══════════════════════════════════════════════════════════════════
 
 AI Insight v2 không có lớp Định giá (L2 là Thanh khoản — ánh xạ L2 → định giá
-là bịa). Xem bản kiểm đầy đủ ở đầu ``app.services.cap5.consensus``. Hệ quả:
-lớp 💎 Định giá LUÔN ở trạng thái "chưa chấm được", không bao giờ vào phe nào,
-và mọi mã chỉ chấm được tối đa 4/5 lớp. ``so_lop_da_cham`` vì thế luôn đi kèm
-kết quả để người đọc biết mẫu số thật.
+là bịa). Lớp thứ năm dùng snapshot BCTC Khối 02 đã được ``journey_identity``
+đóng băng từ ``compute_dashboard``. Nó tham gia phe theo đúng mapping Cấp 1:
+giá thấp → ủng hộ, quanh trung vị → trung tính, giá cao → ngược chiều. Định giá
+không thuộc nhóm phủ quyết. Snapshot thiếu/hỏng/quá hạn ⇒ lớp này chưa biết.
 
-★ Ngưỡng "chưa đủ dữ liệu" là ``so_lop_da_cham == 0`` (không phải "< 5"): đòi
-đủ 5 lớp thì mọi mã đều "chưa đủ" vĩnh viễn vì lớp Định giá không có nguồn.
+★ Ngưỡng "chưa đủ dữ liệu" là ``so_lop_da_cham == 0`` (không phải "< 5"):
+nguồn hợp lệ một phần vẫn là dữ liệu thật và mẫu số luôn được trả kèm.
 """
 
 from __future__ import annotations
@@ -68,6 +67,7 @@ from app.services.cap5.consensus import (
     hom_nay_vn,
     ngay_som_nhat_con_hieu_luc,
 )
+from app.services.valuation_reading import JourneyValuationSource, ValuationReading
 
 #: Thang 5 bậc của từng lớp AI Insight, **xếp từ XẤU NHẤT (bậc 1) đến TỐT NHẤT
 #: (bậc 5)**. Nguồn nhãn: AI-Insight-v2-tech-spec §2.2, đã được Cấp 5 kiểm.
@@ -193,14 +193,11 @@ def _ly_do_qua_han(qua_han: date) -> str:
 
 
 _LY_DO_KHONG_NHAN = (
-    "Bản phân tích 5 lớp của mã này không có nhãn hợp lệ ở lớp nào, nên IQX "
-    "chưa dựng được bảng mâu thuẫn."
+    "Bản phân tích 5 lớp của mã này không có nhãn hợp lệ ở lớp nào, nên IQX chưa dựng được bảng mâu thuẫn."
 )
 
 
-def _canh_bao(
-    ung_ho: list[dict], nguoc: list[dict], lop_phu_quyet_xau: list[str]
-) -> str | None:
+def _canh_bao(ung_ho: list[dict], nguoc: list[dict], lop_phu_quyet_xau: list[str]) -> str | None:
     """Câu cảnh báo SERVER dựng, FE in NGUYÊN VĂN (§C12c: không hiện số trơ).
 
     ★ Nó MÔ TẢ mâu thuẫn, không bao giờ phán mua/không mua (spec §4.1/§13).
@@ -212,11 +209,7 @@ def _canh_bao(
     if lop_phu_quyet_xau:
         so = len(lop_phu_quyet_xau)
         ten_veto = " và ".join(lop_ten(lop) for lop in lop_phu_quyet_xau)
-        dau = (
-            f"Có {so} lớp phủ quyết đang ở mức rất xấu."
-            if so > 1
-            else "Có 1 lớp phủ quyết đang ở mức rất xấu."
-        )
+        dau = f"Có {so} lớp phủ quyết đang ở mức rất xấu." if so > 1 else "Có 1 lớp phủ quyết đang ở mức rất xấu."
         return (
             f"{dau} {ten_veto} đang ở bậc thấp nhất — nhóm lớp này khi rất xấu "
             f"có thể phủ định cả tín hiệu đẹp của {ten_ung_ho}. Đây là loại mâu "
@@ -245,7 +238,12 @@ def _chua_du(ly_do: str) -> MauThuanResult:
     )
 
 
-def doc_tu_payload(payload: object, *, session_date: date | None = None) -> MauThuanResult:
+def doc_tu_payload(
+    payload: object,
+    *,
+    valuation: ValuationReading | None = None,
+    session_date: date | None = None,
+) -> MauThuanResult:
     """Quy một payload AI Insight (raw ``ai_json``) về bảng mâu thuẫn 2 phe."""
     layers = payload if isinstance(payload, dict) else {}
     ung_ho: list[dict] = []
@@ -257,11 +255,17 @@ def doc_tu_payload(payload: object, *, session_date: date | None = None) -> MauT
     for lop in LOP_KEYS:
         layer_key = LOP_TO_AI_LAYER.get(lop)
         nhan: object = None
-        if layer_key is not None:
+        bac: int | None
+        if lop == "dinh_gia" and valuation is not None:
+            nhan = valuation.label
+            bac = valuation.rank
+        elif layer_key is not None:
             layer = layers.get(layer_key)
             if isinstance(layer, dict):
                 nhan = layer.get("statusLabel")
-        bac = bac_cua_nhan(layer_key, nhan)
+            bac = bac_cua_nhan(layer_key, nhan)
+        else:
+            bac = None
         phe = _phe(bac)
         if phe is None:
             # ★ Chưa chấm được — KHÔNG rơi vào trung tính (xem docstring module).
@@ -314,10 +318,18 @@ class MauThuanSource:
     hôm nay, cạnh một nút "Đặt lệnh", là gán tình trạng tháng Ba cho phiên này.
     """
 
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(
+        self,
+        session: AsyncSession,
+        *,
+        valuation_source: JourneyValuationSource | None = None,
+    ) -> None:
         self._session = session
+        self._valuation = valuation_source or JourneyValuationSource(session)
 
     async def doc(self, symbol: str, *, today: date | None = None) -> MauThuanResult:
+        som_nhat = ngay_som_nhat_con_hieu_luc(today or hom_nay_vn())
+        valuation = await self._valuation.latest(symbol, earliest=som_nhat)
         row = (
             await self._session.execute(
                 select(AIInsightHistory)
@@ -327,10 +339,22 @@ class MauThuanSource:
             )
         ).scalar_one_or_none()
         if row is None:
-            return _chua_du(_LY_DO_CHUA_CO_BAN)
-        som_nhat = ngay_som_nhat_con_hieu_luc(today or hom_nay_vn())
+            if valuation is None:
+                return _chua_du(_LY_DO_CHUA_CO_BAN)
+            return doc_tu_payload(None, valuation=valuation, session_date=valuation.trading_date)
         if row.session_date is None:
-            return _chua_du(_LY_DO_CHUA_CO_BAN)
+            if valuation is None:
+                return _chua_du(_LY_DO_CHUA_CO_BAN)
+            return doc_tu_payload(None, valuation=valuation, session_date=valuation.trading_date)
         if row.session_date < som_nhat:
-            return _chua_du(_ly_do_qua_han(row.session_date))
-        return doc_tu_payload(row.payload, session_date=row.session_date)
+            if valuation is None:
+                return _chua_du(_ly_do_qua_han(row.session_date))
+            return doc_tu_payload(None, valuation=valuation, session_date=valuation.trading_date)
+        source_dates = [row.session_date]
+        if valuation and valuation.trading_date:
+            source_dates.append(valuation.trading_date)
+        return doc_tu_payload(
+            row.payload,
+            valuation=valuation,
+            session_date=min(source_dates),
+        )

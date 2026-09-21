@@ -5,4 +5,5 @@
 export const cap1Keys = {
   all: ["cap1"] as const,
   progress: () => ["cap1", "progress"] as const,
+  trades: () => ["cap1", "trades"] as const,
 } as const

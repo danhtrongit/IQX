@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/features/auth"
 import { cap1Api } from "./api"
 import { cap1Keys } from "./keys"
-import type { Cap1Progress, KehoachInput, KetsoInput, OrderKehoach, OrderKetso } from "./types"
+import type { Cap1Progress, Cap1TradeHistoryList, KehoachInput, KetsoInput, OrderKehoach, OrderKetso } from "./types"
 
 /**
  * Current user's Cấp 1 progress. `staleTime: 0` so it always refetches after
@@ -20,6 +20,17 @@ export function useCap1Progress(enabled = true) {
     queryFn: cap1Api.getProgress,
     enabled: isAuthenticated && enabled,
     staleTime: 0,
+    retry: false,
+  })
+}
+
+export function useCap1Trades(enabled = true) {
+  const { isAuthenticated } = useAuth()
+  return useQuery<Cap1TradeHistoryList>({
+    queryKey: cap1Keys.trades(),
+    queryFn: cap1Api.getTrades,
+    enabled: isAuthenticated && enabled,
+    staleTime: 30_000,
     retry: false,
   })
 }

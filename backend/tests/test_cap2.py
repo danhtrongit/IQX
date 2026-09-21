@@ -30,13 +30,21 @@ from app.services.cap2.service import Cap2Service
 
 
 async def _graduate_cap0(db_session, user_id) -> None:
+    """Complete the documented five-task Cấp 0 flow as setup."""
     cap0 = Cap0Service(db_session)
     await cap0.enter(user_id)
-    # Cấp 0: 4 nhiệm vụ, 1 cổng hành vi (đóng Kết sổ ở ④). ② và ③ chỉ tính
-    # sau ①, nên vòng lặp phải chạy đúng thứ tự ①②③.
-    for n in (1, 2, 3):
-        await cap0.complete_task(user_id, n)
-    await cap0.complete_task(user_id, 4, gate="debrief")
+    await cap0.set_placement(user_id, answer="never")
+    account = await VirtualTradingRepository(db_session).get_account_by_user_id(user_id)
+    buy = await _make_order(db_session, account.id, user_id, symbol="VNM", mode="san_tap")
+    await cap0.record_kehoach(user_id, buy.id, ly_do_doi_thuong="thu_cho_biet")
+    await cap0.complete_task(user_id, 1, gate="star")
+    for tour in ("phantich", "bantin", "bctc"):
+        await cap0.complete_tour(user_id, tour)
+    await _make_order(
+        db_session, account.id, user_id, symbol="VNM", side=OrderSide.SELL,
+        mode="san_tap", trading_date=date(2026, 1, 8),
+    )
+    await cap0.complete_task(user_id, 5, gate="debrief")
     await cap0.graduate(user_id)
 
 
@@ -679,7 +687,7 @@ async def test_diem_ky_luat_full_formula_with_test_situations(db_session, test_u
 
     ngay = date(2026, 10, 7)
     # 1 round trip: full kế hoạch (40) + cắt lỗ đúng (20) + không nhồi (10) +
-    # chốt lời đúng (10) = raw 80 / 140 * 100 ≈ 57.14.
+    # chốt lời đúng (10) = 80 literal points.
     await _round_trip(
         db_session, cap1, cap2, account.id, test_user.id,
         symbol="D4", trading_date=ngay,
@@ -694,8 +702,48 @@ async def test_diem_ky_luat_full_formula_with_test_situations(db_session, test_u
     assert thanh_phan["cat_lo_dung"] == 20
     assert thanh_phan["khong_nhoi"] == 10
     assert thanh_phan["chot_loi_dung"] == 10
-    assert result["diem"] == pytest.approx(80 / 140 * 100)
-    assert result["xep_loai"] == "do"  # ~57.1 < 70
+    assert result["diem"] == 80
+    assert result["xep_loai"] == "vang"
+
+
+@pytest.mark.asyncio
+async def test_diem_ky_luat_caps_literal_component_sum_at_100(db_session, test_user):
+    await _graduate_cap1(db_session, test_user.id)
+    cap1 = Cap1Service(db_session)
+    cap2 = Cap2Service(db_session)
+    await cap2.enter(test_user.id)
+    vt_repo = VirtualTradingRepository(db_session)
+    account = await vt_repo.get_account_by_user_id(test_user.id)
+
+    ngay = date(2026, 10, 8)
+    for index in range(3):
+        await _round_trip(
+            db_session,
+            cap1,
+            cap2,
+            account.id,
+            test_user.id,
+            symbol=f"E{index}",
+            trading_date=ngay,
+            buy_price=20_000,
+            sell_price=25_500,
+            chot_loi=25_000,
+            cham_sl_cat_dung_phien_ke=True,
+        )
+
+    result = await cap2.diem_ky_luat(test_user.id, ngay)
+    assert result["thanh_phan"] == {
+        "ke_hoach": 40,
+        "ke_hoach_toi_da": 40.0,
+        "cat_lo_dung": 40.0,
+        "cat_lo_dung_toi_da": 40.0,
+        "khong_nhoi": 30.0,
+        "khong_nhoi_toi_da": 30.0,
+        "chot_loi_dung": 30.0,
+        "chot_loi_dung_toi_da": 30.0,
+    }
+    assert result["diem"] == 100
+    assert result["xep_loai"] == "xanh"
 
 
 @pytest.mark.asyncio
@@ -780,11 +828,10 @@ async def test_cap2_endpoints_wired_and_free(client, db_session, test_user):
     assert body["so_lenh_co_cl_tp"] == 0
     assert body["so_lan_thuc_hien_dung"] == 0
     assert body["task_1_done_at"] is None
-    # ★ ``task_2_done_at`` phải RỜI HẲN wire, không phải "còn đó nhưng luôn
-    # null": một trường luôn null vẫn mời client vẽ thêm một dòng checklist
-    # chết. Chuỗi / 5-nhiệm-vụ apparatus cũng off the wire entirely.
-    for gone in ("chuoi_current", "chuoi_record", "last_chuoi_reset_at",
-                 "task_2_done_at", "task_3_done_at", "task_4_done_at",
+    assert body["chuoi_current"] == 0
+    assert body["chuoi_record"] == 0
+    assert body["so_lenh_7_ngay"] == 0
+    for gone in ("task_2_done_at", "task_3_done_at", "task_4_done_at",
                  "task_5_done_at"):
         assert gone not in body
     # …và ba con số ANALYTICS thì PHẢI còn (khối ④ «Phân tích danh mục» đọc).

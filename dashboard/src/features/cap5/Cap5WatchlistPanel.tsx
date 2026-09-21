@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { useSymbol } from "@/shared/contexts/symbol-context"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { usePrices } from "@/features/market-data"
 import { useCap5Events } from "./Cap5Context"
 import { useCap5Watchlist } from "./sanMaHooks"
@@ -9,6 +10,7 @@ import {
   cap5WatchStatus,
   countWatchTabs,
   describeConsensus,
+  describeConsensusFreshness,
   describeConsensusTrend,
   describeHuntSource,
   lopIconRow,
@@ -29,7 +31,7 @@ import "./cap5-sanma.css"
  * nó, nhiệm vụ ③ của Cấp 0 («Xem tab Theo dõi») bắn `onPortfolioTabOpen` từ chính
  * nó, và `data-tour-id` của tour Bảng điện cũng nằm trong nó. Nhồi điểm đồng
  * thuận + trạng thái "Đáng chú ý" vào đó thì hoặc rò sang hai trang kia, hoặc
- * biến file đó thành một mê cung `if (isCap5Active)`. Watchlist Cấp 5 vì thế là
+ * biến file đó thành một mê cung `if (isCap5Active)`. Theo dõi Cấp 5 vì thế là
  * MỘT panel riêng, chỉ tồn tại trong shell Cấp 5 — Cấp 0-4 và hai trang kia giữ
  * NGUYÊN hành vi cũ (có bài canh cả hai chiều: file test cạnh đây +
  * `features/watchlist/WatchlistPanel.cap5Gate.test.tsx`).
@@ -51,7 +53,7 @@ export function Cap5WatchlistPanel() {
   const { data: items, isLoading, isError } = useCap5Watchlist(isCap5Active)
   const [tab, setTab] = useState<"all" | "notable">("all")
 
-  const rows: Cap5WatchlistItem[] = items ?? []
+  const rows = useMemo<Cap5WatchlistItem[]>(() => items ?? [], [items])
   const symbols = useMemo(() => rows.map((i) => i.symbol.toUpperCase()), [rows])
   const { priceMap } = usePrices(symbols)
 
@@ -62,6 +64,10 @@ export function Cap5WatchlistPanel() {
 
   const shown = tab === "notable" ? rows.filter((i) => cap5WatchStatus(i) === "notable") : rows
 
+  useEffect(() => {
+    if (isCap5Active) trackJourneyEvent("cap5_watchlist_view")
+  }, [isCap5Active])
+
   const goSanMa = () => setActivePanel("cap5-sanma")
 
   /**
@@ -70,8 +76,12 @@ export function Cap5WatchlistPanel() {
    * nguyên), nên "Xem 5 lớp" không cần một màn thứ ba. Nhãn khác nhau vì ý định
    * khác nhau (spec §6.2), và mã chưa chín KHÔNG được mời "Đặt lệnh".
    */
-  const openTrading = (symbol: string) => {
-    setSymbol(symbol.toUpperCase())
+  const openTrading = (item: Cap5WatchlistItem) => {
+    const symbol = item.symbol.toUpperCase()
+    if (cap5WatchStatus(item) === "notable" && item.hunt_filter) {
+      trackJourneyEvent("cap5_order_from_hunt", { symbol, filter: item.hunt_filter })
+    }
+    setSymbol(symbol)
     setActivePanel("trading")
   }
 
@@ -79,7 +89,7 @@ export function Cap5WatchlistPanel() {
     <div className="flex h-full min-h-0 flex-col bg-[var(--color-bg-1)]">
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         <div className="cap5-sm">
-          <div className="cap5-sm-title">Watchlist</div>
+          <div className="cap5-sm-title">Theo dõi</div>
           <div className="cap5-sm-sub">
             Các mã bạn đã săn, đang quan sát. Mã lên ≥{NOTABLE_MIN_LOP}/{TONG_SO_LOP} lớp ủng hộ sẽ
             được đánh dấu “Đáng chú ý”.
@@ -93,7 +103,7 @@ export function Cap5WatchlistPanel() {
                 data-testid="cap5-wl-tab-all"
                 onClick={() => setTab("all")}
               >
-                Tất cả ({daBiet ? counts.tatCa.toLocaleString("en-US") : "—"})
+                Tất cả ({daBiet ? counts.tatCa.toLocaleString("vi-VN") : "—"})
               </button>
               <button
                 type="button"
@@ -101,7 +111,7 @@ export function Cap5WatchlistPanel() {
                 data-testid="cap5-wl-tab-notable"
                 onClick={() => setTab("notable")}
               >
-                Đáng chú ý ({daBiet ? counts.dangChuY.toLocaleString("en-US") : "—"})
+                Đáng chú ý ({daBiet ? counts.dangChuY.toLocaleString("vi-VN") : "—"})
               </button>
             </div>
             <button type="button" className="cap5-wl-add" data-testid="cap5-wl-add" onClick={goSanMa}>
@@ -111,13 +121,13 @@ export function Cap5WatchlistPanel() {
 
           {isLoading && (
             <div className="cap5-hm-empty" data-testid="cap5-wl-loading">
-              Đang tải Watchlist…
+              Đang tải Theo dõi…
             </div>
           )}
 
           {!isLoading && isError && (
             <div className="cap5-hm-empty" data-testid="cap5-wl-error">
-              Chưa lấy được Watchlist từ máy chủ — chưa rõ bạn đang theo dõi những mã nào.
+              Chưa lấy được Theo dõi từ máy chủ — chưa rõ bạn đang theo dõi những mã nào.
             </div>
           )}
 
@@ -127,7 +137,7 @@ export function Cap5WatchlistPanel() {
                 key={it.symbol}
                 item={it}
                 price={priceMap[it.symbol.toUpperCase()] ?? null}
-                onGo={() => openTrading(it.symbol)}
+                onGo={() => openTrading(it)}
               />
             ))}
 
@@ -140,7 +150,7 @@ export function Cap5WatchlistPanel() {
                 </>
               ) : (
                 <>
-                  Chưa có mã nào trong Watchlist. Sang màn <b>Săn mã</b> để tìm mã đáng chú ý.
+                  Chưa có mã nào trong Theo dõi. Sang màn <b>Săn mã</b> để tìm mã đáng chú ý.
                 </>
               )}
             </div>
@@ -155,6 +165,7 @@ export function Cap5WatchlistPanel() {
 const STATUS_CLASS: Record<Cap5WatchStatus, string> = {
   notable: "ready",
   watching: "watch",
+  du_lieu_cu: "stale",
   chua_ket_luan: "unknown",
   chua_cham: "unknown",
 }
@@ -177,9 +188,9 @@ function PriceCell({
     <span className={"cap5-wl-price " + tone} data-testid={`cap5-wl-price-${symbol}`}>
       {co ? (
         <>
-          {Math.round(price.closePrice * 1000).toLocaleString("en-US")}{" "}
+          {Math.round(price.closePrice * 1000).toLocaleString("vi-VN")}{" "}
           {pct > 0 ? "+" : ""}
-          {pct.toLocaleString("en-US", { maximumFractionDigits: 1 })}%
+          {pct.toLocaleString("vi-VN", { maximumFractionDigits: 1 })}%
         </>
       ) : (
         "—"
@@ -201,6 +212,7 @@ function WatchCard({
   const status = cap5WatchStatus(item)
   const notable = status === "notable"
   const consensus = describeConsensus(item)
+  const freshness = describeConsensusFreshness(item)
   const trend = describeConsensusTrend(item)
   const icons = lopIconRow(item)
 
@@ -240,6 +252,16 @@ function WatchCard({
       {consensus.canhBao && (
         <div className="cap5-wl-warn" data-testid={`cap5-wl-warn-${sym}`}>
           ⚠ {consensus.canhBao}
+        </div>
+      )}
+
+      {freshness && (
+        <div
+          className={item.consensus_het_han ? "cap5-wl-freshness stale" : "cap5-wl-freshness"}
+          data-testid={`cap5-wl-freshness-${sym}`}
+        >
+          {item.consensus_het_han ? "⚠ " : ""}
+          {freshness}
         </div>
       )}
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Modal } from "@arco-design/web-react"
 import { cn } from "@/shared/lib/cn"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { useRecordKetso } from "@/features/cap1/hooks"
 import {
   countCalendarDays,
@@ -21,7 +22,7 @@ import type { CoachSituationCap2 } from "@/features/cap2/coachTemplateCap2"
 import type { KetsoDataCap2 } from "@/features/cap2/KetsoModalCap2"
 import type { PhuongPhapSlTp } from "@/features/cap2/types"
 import { composeCoachCap3, MUC_TU_TIN_LABEL, type CoachSituationCap3 } from "./coachTemplateCap3"
-import { KHAU_VI_PCT } from "./khoiLuong"
+import { KHAU_VI_PCT, MUC_TU_TIN_HE_SO } from "./khoiLuong"
 import { CACH_KHOI_LUONG_LABEL } from "./portfolioAnalysisCap3"
 import { useCap3TradeLog, type Cap3TradeRecord } from "./tradeLogCap3"
 import type { CachKhoiLuong, KhauViLoai, MucTuTin } from "./types"
@@ -211,6 +212,10 @@ export function KetsoModalCap3({
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.n, data?.orderId])
+
+  useEffect(() => {
+    if (data) trackJourneyEvent("cap3_ketso_view")
+  }, [data?.orderId])
 
   if (!data) return null
 
@@ -435,7 +440,7 @@ export function KetsoModalCap3({
             </tr>
             <tr className="cap3-ketso-tutin-row">
               <td>Mức tự tin</td>
-              <td colSpan={2}>{MUC_TU_TIN_LABEL[mucTuTin]}</td>
+              <td colSpan={2}>{`${MUC_TU_TIN_LABEL[mucTuTin]} (${MUC_TU_TIN_HE_SO[mucTuTin]}%)`}</td>
             </tr>
             <tr>
               <td>Cách tính KL</td>

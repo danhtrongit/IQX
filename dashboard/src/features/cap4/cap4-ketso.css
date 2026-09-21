@@ -107,3 +107,17 @@
   line-height: 1.55;
   color: var(--t2);
 }
+
+@media (max-width: 360px) {
+  .cap4-ketso-doc5lop-head {
+    flex-wrap: wrap;
+  }
+
+  .cap4-ketso-doc5lop {
+    padding: 9px;
+  }
+
+  .cap4-ketso-doc5lop table {
+    table-layout: fixed;
+  }
+}

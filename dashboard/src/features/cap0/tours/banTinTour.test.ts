@@ -1,17 +1,15 @@
 import { describe, expect, it } from "vitest"
 import { banTinTour } from "./banTinTour"
 
-describe("banTinTour (T4, config shape)", () => {
-  it("has between 4 and 6 concept-card steps", () => {
-    expect(banTinTour.steps.length).toBeGreaterThanOrEqual(4)
-    expect(banTinTour.steps.length).toBeLessThanOrEqual(6)
+describe("banTinTour (23 real spotlights)", () => {
+  it("has all 23 handoff steps", () => {
+    expect(banTinTour.steps).toHaveLength(23)
   })
 
-  it("every step is a centered concept card (no DOM target — does not spotlight a remote surface)", () => {
+  it("every step targets a real surface", () => {
     for (const step of banTinTour.steps) {
-      expect(step.centered).toBe(true)
-      expect(step.targetId).toBeUndefined()
-      expect(step.targetSelector).toBeUndefined()
+      expect(step.centered).not.toBe(true)
+      expect(step.targetId ?? step.targetSelector).toBeTruthy()
     }
   })
 
@@ -25,8 +23,9 @@ describe("banTinTour (T4, config shape)", () => {
     expect(endIdx).toBeGreaterThan(midIdx)
   })
 
-  it("ends by pointing the user to where to read the briefs (trang chủ)", () => {
+  it("ends on Điểm chú ý of the end-of-day brief", () => {
     const lastStep = banTinTour.steps[banTinTour.steps.length - 1]
-    expect(lastStep.body).toMatch(/trang chủ/i)
+    expect(lastStep.title).toMatch(/Điểm chú ý/i)
+    expect(lastStep.targetId).toBe("tour-bantin-end-unexplained")
   })
 })

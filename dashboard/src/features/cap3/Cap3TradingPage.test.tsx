@@ -1,3 +1,6 @@
+vi.mock("@/features/journey-identity/JourneyIdentityStage", () => ({
+  JourneyIdentityStage: ({ level }: { level: number }) => <div data-testid="journey-identity-stage" data-level={level} />,
+}))
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import React from "react"
 import { MemoryRouter } from "react-router"
@@ -22,6 +25,7 @@ const {
   recordCap2TradeMock,
   recordCap2ScoreMock,
   recordCap3TradeMock,
+  getCap3PlanMock,
   navigateMock,
 } = vi.hoisted(() => ({
   useCap1ProgressMock: vi.fn(),
@@ -37,6 +41,7 @@ const {
   recordCap2TradeMock: vi.fn(),
   recordCap2ScoreMock: vi.fn(),
   recordCap3TradeMock: vi.fn(),
+  getCap3PlanMock: vi.fn(),
   navigateMock: vi.fn(),
 }))
 
@@ -174,6 +179,28 @@ function RightSidebarStub() {
       >
         fire sell HPG
       </button>
+      <button
+        data-testid="fire-sell-reload"
+        onClick={() => {
+          cap2OnOrderFilled?.({
+            symbol: "VNM",
+            side: "sell",
+            quantity: 100,
+            price: 65_500,
+            orderId: "sell-reload",
+          })
+          cap3OnOrderFilled?.({
+            symbol: "VNM",
+            side: "sell",
+            quantity: 100,
+            price: 65_500,
+            orderId: "sell-reload",
+            buyOrderId: "buy-server",
+          })
+        }}
+      >
+        fire sell after reload
+      </button>
     </div>
   )
 }
@@ -255,6 +282,11 @@ vi.mock("./hooks", () => ({
 }))
 vi.mock("./tradeLogCap3", () => ({
   useCap3TradeLog: () => ({ trades: [], record: recordCap3TradeMock }),
+  cachKhoiLuongFromWire: (value: string | null) =>
+    value === "khau_vi_tu_tin" ? "linh_hoat" : value === "chia_deu" ? "ky_luat" : null,
+}))
+vi.mock("./api", () => ({
+  cap3Api: { getPlan: (...args: unknown[]) => getCap3PlanMock(...args) },
 }))
 // `GraduationModalCap3` (mounted below) now really enters Cấp 4 on success.
 vi.mock("@/features/cap4/hooks", () => ({
@@ -360,13 +392,15 @@ describe("Cap3TradingPage", () => {
     recordCap2TradeMock.mockReset()
     recordCap2ScoreMock.mockReset()
     recordCap3TradeMock.mockReset()
+    getCap3PlanMock.mockReset()
     navigateMock.mockReset()
     window.localStorage.clear()
   })
 
-  it("renders the reused terminal children (CenterPanel/RightSidebar/RightToolbar)", () => {
+  it("renders identity in the main slot and preserves the functional panels", () => {
     renderCap3(<Cap3TradingPage />)
-    expect(screen.getByTestId("center-panel")).toBeInTheDocument()
+    expect(screen.getByTestId("journey-identity-stage")).toHaveAttribute("data-level", "3")
+    expect(screen.queryByTestId("center-panel")).not.toBeInTheDocument()
     expect(screen.getByTestId("right-sidebar")).toBeInTheDocument()
     expect(screen.getByTestId("right-toolbar")).toBeInTheDocument()
   })
@@ -448,6 +482,70 @@ describe("Cap3TradingPage", () => {
 
   it("a SELL with no tracked BUY does not open Kết sổ", () => {
     renderCap3(<Cap3TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-sell"))
+    expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
+  })
+
+  it("hydrates the matched BUY plan from the server after a reload and opens Kết sổ", async () => {
+    getCap3PlanMock.mockResolvedValue({
+      id: "plan-1",
+      order_id: "buy-server",
+      symbol: "VNM",
+      quantity: 300,
+      bought_at: "2026-09-12T02:00:00Z",
+      gia_vao: 60_000,
+      lyDo: "dong_tien",
+      trangThai_luc_dat: "ung_ho",
+      vung_mua: 60_000,
+      phuong_phap_sl_tp: "ho_tro_khang_cu",
+      cat_lo: 58_000,
+      chot_loi: 65_000,
+      khau_vi: "can_bang",
+      muc_tu_tin: 3,
+      cach_khoi_luong: "khau_vi_tu_tin",
+      khoi_luong: 300,
+      pct_von: 18,
+    })
+    renderCap3(<Cap3TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-sell-reload"))
+
+    await waitFor(() => expect(getCap3PlanMock).toHaveBeenCalledWith("buy-server"))
+    expect(await screen.findByText("KẾT SỔ LỆNH · #1 · THỰC CHIẾN")).toBeInTheDocument()
+    expect(screen.getByTestId("cap3-ketso-quanlyvon")).toHaveTextContent("Cân bằng")
+  })
+
+  it("keeps Kết sổ closed when the server plan is incomplete", async () => {
+    getCap3PlanMock.mockResolvedValue({
+      symbol: "VNM",
+      bought_at: "2026-09-12T02:00:00Z",
+      gia_vao: 60_000,
+      lyDo: "dong_tien",
+      trangThai_luc_dat: "ung_ho",
+      vung_mua: 60_000,
+      phuong_phap_sl_tp: null,
+      cat_lo: null,
+      chot_loi: null,
+      khau_vi: null,
+      muc_tu_tin: null,
+      cach_khoi_luong: null,
+      khoi_luong: null,
+      pct_von: null,
+    })
+    renderCap3(<Cap3TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-sell-reload"))
+    await waitFor(() => expect(getCap3PlanMock).toHaveBeenCalled())
+    expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
+  })
+
+  it("consumes the tracked BUY after one SELL so it cannot be reused for a second closeout", () => {
+    renderCap3(<Cap3TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-buy"))
+    fireEvent.click(screen.getByTestId("fire-sell"))
+    expect(screen.getByText("KẾT SỔ LỆNH · #1 · THỰC CHIẾN")).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
+    expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
+
     fireEvent.click(screen.getByTestId("fire-sell"))
     expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
   })

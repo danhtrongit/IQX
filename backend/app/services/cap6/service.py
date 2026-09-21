@@ -119,8 +119,9 @@ from app.models.cap6 import (
 )
 from app.models.virtual_trading import OrderSide, OrderStatus, VirtualOrder
 from app.services.cap5.consensus import ngay_vn
-from app.services.cap5.service import KHAU_VI_TRAN_PCT
+from app.services.cap5.service import KHAU_VI_TRAN_PCT, Cap5Service
 from app.services.cap6.mau_thuan import MauThuanResult, MauThuanSource
+from app.services.journey_events import record_journey_event
 
 # ══════════════════════════════════════════════════════
 # Hằng số của cấp
@@ -228,12 +229,19 @@ class Cap6Service:
 
         ★ Chỉ gọi ở bước cuối / nút "Xong"; "Bỏ qua" giữa chừng KHÔNG gọi. Cờ
         này KHÔNG phải cổng tốt nghiệp (spec §11: "tour là công cụ học"), nên
-        gian lận ở đây cũng không mở được Cấp 7 — nó chỉ quyết định tour có tự
-        bật lại lần sau hay không.
+        gian lận ở đây cũng không thể hoàn tất lộ trình — nó chỉ quyết định tour
+        có tự bật lại lần sau hay không.
         """
         progress = await self._require_progress(user_id)
-        progress.da_xem_tour_mauthuan = True
-        await self._session.flush()
+        if not progress.da_xem_tour_mauthuan:
+            progress.da_xem_tour_mauthuan = True
+            await record_journey_event(
+                self._session,
+                user_id,
+                "cap6_tour_mauthuan_done",
+                dedup_key=str(progress.id),
+            )
+            await self._session.flush()
         return await self._recompute_progress(user_id, progress)
 
     # ══════════════════════════════════════════════════
@@ -285,6 +293,15 @@ class Cap6Service:
         if not ma:
             raise BadRequestError("Thiếu mã cổ phiếu")
         result = await self._mau_thuan.doc(ma)
+        if result.co_mau_thuan:
+            session_day = result.session_date or ngay_vn(datetime.now(UTC))
+            await record_journey_event(
+                self._session,
+                user_id,
+                "cap6_conflict_shown",
+                {"symbol": ma, "veto_layers": list(result.lop_phu_quyet_xau)},
+                dedup_key=f"{ma}:{session_day.isoformat()}",
+            )
         return {"symbol": ma, **self._mau_thuan_out(result)}
 
     # ══════════════════════════════════════════════════
@@ -311,6 +328,60 @@ class Cap6Service:
         if order.status != OrderStatus.FILLED:
             return True
         return now - _as_utc(order.created_at) <= CUA_SO_CHOT_NHAN_DINH
+
+    async def record_entry_snapshot(
+        self, user_id: uuid.UUID, order_id: uuid.UUID
+    ) -> OrderKehoach:
+        """Freeze server-owned Cấp 6 evidence when a BUY is accepted.
+
+        Spec §4.2 makes the user's conflict rating optional, so the atomic BUY
+        flow must not call :meth:`record_kehoach`. This method records only the
+        conflict table and provenance available at entry, leaves
+        ``conflict_level`` untouched, and is idempotent. Missing source data is
+        an honest all-NULL snapshot rather than a reason to reject the BUY.
+        """
+        await self._require_progress(user_id)
+        order = (
+            await self._session.execute(
+                select(VirtualOrder).where(VirtualOrder.id == order_id)
+            )
+        ).scalar_one_or_none()
+        if order is None or order.user_id != user_id:
+            raise NotFoundError("lệnh")
+        if order.side != OrderSide.BUY:
+            raise BadRequestError("Snapshot mâu thuẫn chỉ ghi cho lệnh MUA")
+        if order.mode != "thuc_chien":
+            raise BadRequestError("Cấp 6 chỉ ghi nhận lệnh Thực chiến")
+        if order.status not in (OrderStatus.PENDING, OrderStatus.FILLED):
+            raise BadRequestError("Chỉ ghi snapshot cho lệnh đang chờ hoặc đã khớp")
+
+        kehoach = await self._get_kehoach_by_order(order_id)
+        if kehoach is None:
+            raise NotFoundError("kế hoạch Cấp 1 — cần ghi vùng mua trước")
+        if kehoach.conflict_snapshot_at is not None:
+            return kehoach
+
+        result = await self._mau_thuan.doc(order.symbol or "")
+        had_conflict, had_veto, veto_layers = self._suy_co(result)
+        kehoach.had_conflict = had_conflict
+        kehoach.had_veto = had_veto
+        kehoach.veto_layers = veto_layers
+        kehoach.support_layers = (
+            None if result.chua_du_du_lieu else [row["lop"] for row in result.ung_ho]
+        )
+        kehoach.opposing_layers = (
+            None if result.chua_du_du_lieu else [row["lop"] for row in result.nguoc]
+        )
+        kehoach.neutral_layers = (
+            None
+            if result.chua_du_du_lieu
+            else [row["lop"] for row in result.trung_tinh]
+        )
+        kehoach.conflict_snapshot_session_date = result.session_date
+        kehoach.conflict_snapshot_at = datetime.now(UTC)
+        await self._session.flush()
+        await self._session.refresh(kehoach)
+        return kehoach
 
     async def record_kehoach(
         self, user_id: uuid.UUID, order_id: uuid.UUID, *, conflict_level: str
@@ -343,29 +414,38 @@ class Cap6Service:
         if kehoach is None:
             raise NotFoundError("kế hoạch Cấp 1 — cần ghi vùng mua trước")
 
-        result = await self._mau_thuan.doc(order.symbol or "")
-        had_conflict, had_veto, veto_layers = self._suy_co(result)
-
         # ★★ KHOÁ CHỐNG BỊA TIẾN ĐỘ — cố ý NẰM NGOÀI mọi nhánh "đã có nhận
         # định": lần ghi ĐẦU TIÊN sau khi biết giá cũng phải bị chặn, không chỉ
         # lần sửa (xem docstring module — đây là chỗ Cấp 7 từng sai).
         giong_het = (
             kehoach.conflict_level == muc
-            and kehoach.had_conflict == had_conflict
-            and kehoach.had_veto == had_veto
-            and (kehoach.veto_layers or []) == veto_layers
+            and kehoach.conflict_snapshot_at is not None
         )
         if giong_het:
             return kehoach  # gọi lại do mạng là no-op, không bao giờ 409
         if not self._con_ghi_duoc(order, datetime.now(UTC)):
             raise ConflictError(_COPY_KHOA_NHAN_DINH)
 
+        kehoach = await self.record_entry_snapshot(user_id, order_id)
         kehoach.conflict_level = muc
-        kehoach.had_conflict = had_conflict
-        kehoach.had_veto = had_veto
-        kehoach.veto_layers = veto_layers
         await self._session.flush()
         await self._session.refresh(kehoach)
+        if kehoach.had_conflict:
+            fields = {"symbol": order.symbol.upper(), "level": muc}
+            await record_journey_event(
+                self._session,
+                user_id,
+                "cap6_conflict_rated",
+                fields,
+                dedup_key=f"{order.id}:{muc}",
+            )
+            await record_journey_event(
+                self._session,
+                user_id,
+                "cap6_order_with_conflict",
+                {**fields, "volume_pct": kehoach.pct_von},
+                dedup_key=str(order.id),
+            )
         return kehoach
 
     @staticmethod
@@ -400,6 +480,11 @@ class Cap6Service:
                 if kehoach.veto_layers is not None
                 else None
             ),
+            "support_layers": kehoach.support_layers,
+            "opposing_layers": kehoach.opposing_layers,
+            "neutral_layers": kehoach.neutral_layers,
+            "conflict_snapshot_session_date": kehoach.conflict_snapshot_session_date,
+            "conflict_snapshot_at": kehoach.conflict_snapshot_at,
             "khoi_luong_pct_von": kehoach.pct_von,
             "muc_tu_tin": kehoach.muc_tu_tin,
             "nhat_quan": self._nhat_quan_lenh(kehoach),
@@ -429,6 +514,12 @@ class Cap6Service:
             raise NotFoundError("kế hoạch của lệnh")
         return self.kehoach_out(kehoach)
 
+    async def get_plan(self, user_id: uuid.UUID, order_id: uuid.UUID) -> dict:
+        """Return the cumulative Cấp 1–6 BUY snapshot for Kết sổ recovery."""
+        base = await Cap5Service(self._session).get_plan(user_id, order_id)
+        cap6 = await self.get_kehoach(user_id, order_id)
+        return {**base, **cap6}
+
     async def skip(self, user_id: uuid.UUID, symbol: str, *, conflict_level: str) -> dict:
         """``POST /cap6/skip`` — nút «Không mua lần này» (spec §7).
 
@@ -456,6 +547,13 @@ class Cap6Service:
         self._session.add(row)
         await self._session.flush()
         await self._session.refresh(row)
+        await record_journey_event(
+            self._session,
+            user_id,
+            "cap6_skip",
+            {"symbol": ma, "level": muc},
+            dedup_key=str(row.id),
+        )
         return {
             "id": row.id,
             "symbol": row.symbol,
@@ -597,11 +695,12 @@ class Cap6Service:
 
     @staticmethod
     def _nhat_quan_skip(skip: Cap6Skip) -> bool:
-        """«Không mua» ở mức nghiêm trọng TRÊN MỘT MÃ CÓ MÂU THUẪN là mẫu ✓ của
-        spec §2.
+        """«Không mua» ở bất kỳ mức nào trên một mã CÓ MÂU THUẪN là mẫu ✓.
 
-        Đứng ngoài ở mức nhẹ/đáng ngại/chưa rõ KHÔNG bị tính là lệch — nó chỉ
-        không phải mẫu spec đếm.
+        Spec §2 nói rõ mọi mức mâu thuẫn đều có thể nuôi nhiệm vụ và quyết định
+        «Không mua lần này» cũng là xử lý nhất quán. Backend không suy thêm luật
+        MUA cho ``ngai``/``chua_ro`` vì spec chưa định nghĩa khối lượng phù hợp,
+        nhưng đứng ngoài ở hai mức đó có hành động tường minh.
 
         ★★ ``had_conflict`` là điều kiện BẮT BUỘC, không phải thêm cho đẹp. Luật
         đếm của spec §11 mở đầu bằng "đếm +1 khi một lệnh **CÓ MÂU THUẪN** mà
@@ -612,10 +711,7 @@ class Cap6Service:
         cũng mở được cổng — không lệnh nào, không vị thế nào, không rủi ro nào.
         ``None`` (chưa chấm được mã) cũng không đếm, cùng luật với lệnh mua.
         """
-        return (
-            skip.had_conflict is True
-            and skip.conflict_level == MucMauThuan.NGHIEM.value
-        )
+        return skip.had_conflict is True and skip.conflict_level in MUC_VALUES
 
     def _dem_nhat_quan(
         self, kehoach_rows: Sequence[OrderKehoach], skips: Sequence[Cap6Skip]
@@ -659,7 +755,7 @@ class Cap6Service:
     async def _tong_lai_pct(
         self, progress: Cap6Progress, pairs: Sequence[tuple[OrderKehoach | None, OrderKetso]]
     ) -> float | None:
-        """Σ(lãi/lỗ VND) ÷ Σ(vốn) của mọi lệnh ĐÃ ĐÓNG sau khi vào Cấp 6, tính %.
+        """Σ(lãi/lỗ VND) ÷ Σ(vốn) của lệnh MÂU THUẪN đã đóng ở Cấp 6, tính %.
 
         ★ ``None`` = chưa có lệnh Cấp-6 nào đóng — KHÔNG phải 0. Vốn của một
         lượt suy ngược từ chính ``pnl_vnd``/``pnl_pct`` của hàng kết sổ (cùng
@@ -670,8 +766,10 @@ class Cap6Service:
         entered = _as_utc(progress.entered_at)
         tong_lai = 0.0
         tong_von = 0.0
-        for _kehoach, ketso in pairs:
+        for kehoach, ketso in pairs:
             if _as_utc(ketso.closed_at) < entered:
+                continue
+            if kehoach is None or kehoach.had_conflict is not True:
                 continue
             pnl_pct = float(ketso.pnl_pct)
             pnl_vnd = float(ketso.pnl_vnd)
@@ -913,6 +1011,11 @@ class Cap6Service:
         ★ Không có bất kỳ điều kiện lãi nào ở đây, kể cả điều kiện mềm.
         """
         progress = await self._require_progress(user_id)
+        # Graduation is monotonic. Historical evidence can later be archived
+        # or repaired, but a retry must never revoke an already completed
+        # journey or change its timestamp.
+        if progress.graduated_at is not None:
+            return self._progress_out(progress)
         await self._recompute_progress(user_id, progress)
 
         if not self._dat_nhiem_vu(progress):
@@ -921,13 +1024,18 @@ class Cap6Service:
                 f"{MUC_TIEU_NHAT_QUAN} lần xử lý mâu thuẫn nhất quán"
             )
 
-        if progress.graduated_at is None:
-            now = datetime.now(UTC)
-            progress.graduated_at = now
-            progress.time_to_graduate_hours = (
-                now - _as_utc(progress.entered_at)
-            ).total_seconds() / 3600.0
-            await self._session.flush()
-            await self._session.refresh(progress)
+        now = datetime.now(UTC)
+        progress.graduated_at = now
+        progress.time_to_graduate_hours = (
+            now - _as_utc(progress.entered_at)
+        ).total_seconds() / 3600.0
+        await record_journey_event(
+            self._session,
+            user_id,
+            "cap6_graduate",
+            dedup_key=str(progress.id),
+        )
+        await self._session.flush()
+        await self._session.refresh(progress)
 
         return await self._recompute_progress(user_id, progress)

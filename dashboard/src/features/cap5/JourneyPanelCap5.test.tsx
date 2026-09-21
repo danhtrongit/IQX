@@ -99,11 +99,13 @@ describe("JourneyPanelCap5 — 2 nhiệm vụ song song (mockup)", () => {
     expect(screen.getByTestId("cap5-jbar")).toHaveTextContent("CẤP 5 · 1/2")
   })
 
-  it("thẻ cấp: CẤP 5 · LÃO LUYỆN + bài học + badge THỰC CHIẾN", () => {
+  it("keeps the level name and mode without redundant explanatory copy", () => {
     renderPanel()
-    expect(screen.getByText("CẤP 5")).toBeInTheDocument()
     expect(screen.getByText("LÃO LUYỆN")).toBeInTheDocument()
-    expect(screen.getByText(/chủ động đi săn/i)).toBeInTheDocument()
+    expect(screen.getByText("THỰC CHIẾN")).toBeInTheDocument()
+    expect(document.querySelector(".cap0-level-card-tag")).toBeNull()
+    expect(document.querySelector(".cap0-level-card-lesson")).toBeNull()
+    expect(screen.queryByTestId("cap5-journey-explain")).not.toBeInTheDocument()
   })
 
   it("renders the source journey's two task labels in order with their counters", () => {
@@ -144,11 +146,22 @@ describe("JourneyPanelCap5 — 2 nhiệm vụ song song (mockup)", () => {
   })
 
   it("★ chưa tải được progress → KHÔNG in «0/10» như thể đã đếm", () => {
-    useCap5ProgressMock.mockReturnValue({ data: undefined })
+    useCap5ProgressMock.mockReturnValue({ data: undefined, isLoading: true, isError: false })
     renderPanel()
     const t1 = screen.getByTestId("cap5-task-1")
     expect(t1).not.toHaveTextContent("0/10")
     expect(t1).toHaveTextContent("chưa lấy được số liệu")
+    expect(screen.getByTestId("cap5-jbar")).toHaveTextContent("CẤP 5 · —/2")
+    expect(screen.getByTestId("cap5-checklist-count")).toHaveTextContent("—/2")
+    expect(screen.getByTestId("cap5-focus")).toHaveTextContent("Đang đọc nhiệm vụ Cấp 5")
+  })
+
+  it("★ lỗi progress → nói lỗi và vẫn không giả tiến độ 0/2", () => {
+    useCap5ProgressMock.mockReturnValue({ data: undefined, isLoading: false, isError: true })
+    renderPanel()
+    expect(screen.getByTestId("cap5-jbar")).toHaveTextContent("CẤP 5 · —/2")
+    expect(screen.getByTestId("cap5-checklist-count")).toHaveTextContent("—/2")
+    expect(screen.getByTestId("cap5-focus")).toHaveTextContent("Không thể đọc nhiệm vụ Cấp 5")
   })
 })
 
@@ -163,6 +176,12 @@ describe("JourneyPanelCap5 — SONG SONG: ② không bị gác sau ①", () => {
     renderPanel()
     expect(screen.getByTestId("cap5-task-1-go")).toBeEnabled()
     expect(screen.getByTestId("cap5-task-2-go")).toBeEnabled()
+  })
+
+  it("nút mũi tên có tên truy cập mô tả đích đến", () => {
+    renderPanel()
+    expect(screen.getByRole("button", { name: "Mở Săn 10 mã vào Watchlist" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Mở Mua 5 mã từ Watchlist" })).toBeInTheDocument()
   })
 
   it("★ ② xong TRƯỚC ① vẫn được đánh dấu xong", () => {

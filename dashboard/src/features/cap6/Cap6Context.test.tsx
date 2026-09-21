@@ -1,7 +1,17 @@
 import { render, renderHook } from "@testing-library/react"
 import React, { useEffect } from "react"
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+
+const trackJourneyEventMock = vi.hoisted(() => vi.fn())
+vi.mock("@/shared/analytics/journey", () => ({
+  trackJourneyEvent: trackJourneyEventMock,
+}))
+
 import { Cap6Provider, type Cap6EventBus, useCap6Events } from "./Cap6Context"
+
+beforeEach(() => {
+  trackJourneyEventMock.mockClear()
+})
 
 describe("useCap6Events — no-op outside a provider", () => {
   it("isCap6Active is false and notify fns are undefined", () => {
@@ -52,10 +62,27 @@ describe("useCap6Events — inside a Cap6Provider", () => {
 
     bus!.onMauThuanShown?.("VNM", ["tin_tuc"])
     expect(onMauThuanShown).toHaveBeenCalledWith("VNM", ["tin_tuc"])
+    expect(trackJourneyEventMock).toHaveBeenCalledWith("cap6_conflict_shown", {
+      symbol: "VNM",
+      veto_layers: "tin_tuc",
+    })
     bus!.onNhanDinhPicked?.("VNM", "nghiem")
     expect(onNhanDinhPicked).toHaveBeenCalledWith("VNM", "nghiem")
+    expect(trackJourneyEventMock).toHaveBeenCalledWith("cap6_conflict_rated", {
+      symbol: "VNM",
+      level: "nghiem",
+    })
     bus!.onOrderFilled?.({ symbol: "VNM", side: "buy", quantity: 200, price: 62_400, orderId: "o1" })
     expect(onOrderFilled).toHaveBeenCalledWith(expect.objectContaining({ symbol: "VNM", orderId: "o1" }))
+  })
+
+  it("tracks a skip with scalar, bounded fields and no free-form text", () => {
+    const { result } = renderHook(() => useCap6Events(), { wrapper: Cap6Provider })
+    result.current.onKhongMua?.("  really-long-symbol  ", "ngai")
+    expect(trackJourneyEventMock).toHaveBeenCalledWith("cap6_skip", {
+      symbol: "REALLY-LONG-",
+      level: "ngai",
+    })
   })
 
   it("merges independent handler registrations", () => {

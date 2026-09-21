@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { SymbolProvider, useSymbol } from "@/shared/contexts/symbol-context"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
 import { AiInsightSymbolModal } from "@/features/dau-truong"
-import { CenterPanel, RightSidebar, RightToolbar } from "@/features/dashboard"
+import { RightSidebar, RightToolbar } from "@/features/dashboard"
+import { JourneyIdentityStage } from "@/features/journey-identity/JourneyIdentityStage"
 import { ModeBadge } from "@/features/cap0/ModeBadge"
 // Concrete-file imports (NOT the `@/features/cap1` / `@/features/cap2`
 // barrels) — those barrels re-export `Cap1TradingPage`/`Cap2TradingPage`, which
@@ -28,7 +29,8 @@ import { Cap3Provider, useCap3Events, type Cap3OrderEvent } from "./Cap3Context"
 import { GraduationModalCap3 } from "./GraduationModalCap3"
 import { KetsoModalCap3, type KetsoDataCap3 } from "./KetsoModalCap3"
 import { KhauViModal } from "./KhauViModal"
-import type { Cap3TradeRecord } from "./tradeLogCap3"
+import { cap3Api } from "./api"
+import { cachKhoiLuongFromWire, type Cap3TradeRecord } from "./tradeLogCap3"
 import type { CachKhoiLuong, KhauViLoai, MucTuTin } from "./types"
 import "@/features/cap0/cap0.css"
 import "@/features/cap1/cap1.css"
@@ -107,7 +109,7 @@ function Cap3Terminal() {
   const { registerHandlers: registerCap3Handlers } = useCap3Events()
   const { data: cap1Progress } = useCap1Progress(isCap1Active)
   const { data: diemKyLuat } = useDiemKyLuat(undefined, isCap2Active)
-  const { activePanel, setActivePanel } = useSidebar()
+  const { activePanel, setActivePanel, setIsOpen } = useSidebar()
   const { trades: cap1Trades, record: recordCap1Trade } = useCap1TradeLog()
   const { record: recordCap2Trade, recordScore: recordCap2Score } = useCap2TradeLog()
 
@@ -118,6 +120,7 @@ function Cap3Terminal() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setActivePanel("journey")
+    if (window.innerWidth < 768) setIsOpen(false)
     return () => setActivePanel(prevPanelRef.current)
   }, [])
 
@@ -136,8 +139,65 @@ function Cap3Terminal() {
   // symbol, merging ALL THREE buses' buy-time data — mirrors
   // `Cap2Terminal#lastBuyBySymbolRef`, one level up.
   const lastBuyBySymbolRef = useRef<Map<string, LastBuyCap3>>(new Map())
+  const processedSellIdsRef = useRef<Set<string>>(new Set())
+  const pendingSellIdsRef = useRef<Set<string>>(new Set())
   const ketsoCountRef = useRef(0)
   const [ketso, setKetso] = useState<KetsoDataCap3 | null>(null)
+
+  const openKetso = useCallback(
+    (order: Pick<Cap3OrderEvent, "orderId" | "symbol" | "quantity" | "price">, buy: LastBuyCap3) => {
+      if (processedSellIdsRef.current.has(order.orderId)) return
+      if (
+        buy.lyDo == null ||
+        buy.trangThaiLucDat == null ||
+        buy.vungMua == null ||
+        buy.phuongPhapSlTp == null ||
+        buy.catLo == null ||
+        buy.chotLoi == null ||
+        buy.khauVi == null ||
+        buy.mucTuTin == null ||
+        buy.cachKhoiLuong == null ||
+        buy.khoiLuong == null ||
+        buy.pctVon == null
+      ) return
+
+      processedSellIdsRef.current.add(order.orderId)
+      ketsoCountRef.current += 1
+      const sellDate = todayYmd()
+      const soPhienGiu = countTradingSessions(buy.buyDate, sellDate)
+      const flags = computeKetsoFlagsCap2({
+        entryPrice: buy.price,
+        exitPrice: order.price,
+        catLo: buy.catLo,
+        soPhienGiu,
+      })
+      lastBuyBySymbolRef.current.delete(order.symbol.toUpperCase())
+      setKetso({
+        n: ketsoCountRef.current,
+        orderId: order.orderId,
+        symbol: order.symbol,
+        quantity: order.quantity,
+        entryPrice: buy.price,
+        exitPrice: order.price,
+        vungMua: buy.vungMua,
+        lyDo: buy.lyDo,
+        trangThaiLucDat: buy.trangThaiLucDat,
+        buyDate: buy.buyDate,
+        sellDate,
+        catLo: buy.catLo,
+        chotLoi: buy.chotLoi,
+        phuongPhapSlTp: buy.phuongPhapSlTp,
+        flags: { order_id: order.orderId, ...flags },
+        giaSauKhiCat: null,
+        khauVi: buy.khauVi,
+        mucTuTin: buy.mucTuTin,
+        cachKhoiLuong: buy.cachKhoiLuong,
+        khoiLuong: buy.khoiLuong,
+        pctVon: buy.pctVon,
+      })
+    },
+    [],
+  )
 
   useEffect(() => {
     registerCap1Handlers({
@@ -173,8 +233,36 @@ function Cap3Terminal() {
   // kế hoạch fields.
   useEffect(() => {
     registerCap3Handlers({
-      onOrderFilled: (order: Cap3OrderEvent) => {
-        if (order.side !== "buy") return
+      onOrderFilled: async (order: Cap3OrderEvent) => {
+        if (order.side === "sell") {
+          if (!order.buyOrderId || processedSellIdsRef.current.has(order.orderId)) return
+          if (pendingSellIdsRef.current.has(order.orderId)) return
+          pendingSellIdsRef.current.add(order.orderId)
+          try {
+            const plan = await cap3Api.getPlan(order.buyOrderId)
+            if (plan.symbol.toUpperCase() !== order.symbol.toUpperCase()) return
+            openKetso(order, {
+              price: plan.gia_vao,
+              lyDo: plan.lyDo,
+              trangThaiLucDat: plan.trangThai_luc_dat,
+              vungMua: plan.vung_mua,
+              buyDate: plan.bought_at.slice(0, 10),
+              phuongPhapSlTp: plan.phuong_phap_sl_tp,
+              catLo: plan.cat_lo,
+              chotLoi: plan.chot_loi,
+              khauVi: plan.khau_vi,
+              mucTuTin: plan.muc_tu_tin,
+              cachKhoiLuong: cachKhoiLuongFromWire(plan.cach_khoi_luong),
+              khoiLuong: plan.khoi_luong,
+              pctVon: plan.pct_von,
+            })
+          } catch {
+            // Unknown plan: leave Kết sổ closed rather than inventing values.
+          } finally {
+            pendingSellIdsRef.current.delete(order.orderId)
+          }
+          return
+        }
         const key = order.symbol.toUpperCase()
         const existing = lastBuyBySymbolRef.current.get(key)
         // Defensive: Cấp 1's handler always fires FIRST for the same buy fill
@@ -190,7 +278,7 @@ function Cap3Terminal() {
         })
       },
     })
-  }, [registerCap3Handlers])
+  }, [openKetso, registerCap3Handlers])
 
   useEffect(() => {
     registerCap2Handlers({
@@ -213,56 +301,10 @@ function Cap3Terminal() {
         // resolved (hard gates upstream should prevent this, but guard anyway)
         // — nothing to reconcile into Kết sổ Cấp 3 yet.
         if (!buy) return
-        if (
-          buy.lyDo == null ||
-          buy.trangThaiLucDat == null ||
-          buy.vungMua == null ||
-          buy.phuongPhapSlTp == null ||
-          buy.catLo == null ||
-          buy.chotLoi == null ||
-          buy.khauVi == null ||
-          buy.mucTuTin == null ||
-          buy.cachKhoiLuong == null ||
-          buy.khoiLuong == null ||
-          buy.pctVon == null
-        ) {
-          return
-        }
-        ketsoCountRef.current += 1
-        const sellDate = todayYmd()
-        const soPhienGiu = countTradingSessions(buy.buyDate, sellDate)
-        const flags = computeKetsoFlagsCap2({
-          entryPrice: buy.price,
-          exitPrice: order.price,
-          catLo: buy.catLo,
-          soPhienGiu,
-        })
-        setKetso({
-          n: ketsoCountRef.current,
-          orderId: order.orderId,
-          symbol: order.symbol,
-          quantity: order.quantity,
-          entryPrice: buy.price,
-          exitPrice: order.price,
-          vungMua: buy.vungMua,
-          lyDo: buy.lyDo,
-          trangThaiLucDat: buy.trangThaiLucDat,
-          buyDate: buy.buyDate,
-          sellDate,
-          catLo: buy.catLo,
-          chotLoi: buy.chotLoi,
-          phuongPhapSlTp: buy.phuongPhapSlTp,
-          flags: { order_id: order.orderId, ...flags },
-          giaSauKhiCat: null,
-          khauVi: buy.khauVi,
-          mucTuTin: buy.mucTuTin,
-          cachKhoiLuong: buy.cachKhoiLuong,
-          khoiLuong: buy.khoiLuong,
-          pctVon: buy.pctVon,
-        })
+        openKetso(order, buy)
       },
     })
-  }, [registerCap2Handlers])
+  }, [openKetso, registerCap2Handlers])
 
   /**
    * Records the closed trade into Cấp 1's + Cấp 2's (unchanged) trade logs.
@@ -299,7 +341,7 @@ function Cap3Terminal() {
       </div>
 
       <div className="flex flex-1 min-h-0 pb-[52px] md:pb-0">
-        <CenterPanel symbolChange="select" />
+        <JourneyIdentityStage level={3} />
         <RightSidebar />
         <RightToolbar onActionClick={handleActionClick} />
       </div>

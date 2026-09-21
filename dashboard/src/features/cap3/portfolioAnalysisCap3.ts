@@ -19,11 +19,6 @@ import type { CachKhoiLuong, Cap3Progress, KhauViLoai, MucTuTin } from "./types"
  * `computeCap1PortfolioAnalysis`). `Cap3TradeRecord extends Cap2TradeRecord`
  * nên mảng lệnh được truyền THẲNG xuống, không map/copy.
  *
- * ★ Cấp 2 đã rút về ĐÚNG MỘT nhiệm vụ: các khối «vi phạm 30 ngày», «cửa sổ 20
- * lệnh», «điểm kỷ luật 30 ngày», «vi phạm theo tuần», «phát hiện từ ghi chú» và
- * «mẫu 9-12» KHÔNG còn tồn tại. Khi mở lại Cấp 3, phần Phân tích danh mục ở đây
- * phải được đặc tả lại trên nền 4 khối mới chứ không trông chờ chúng quay về.
- *
  * Cấp 3 chỉ THÊM 2 khối mới:
  *   - **⑦ Thắng/thua theo mức tự tin** — 3 hàng (số lệnh · tỷ lệ thắng ·
  *     lãi/lỗ TB) + 1 phát hiện "mức tự tin của bạn có đáng tin không".
@@ -33,13 +28,12 @@ import type { CachKhoiLuong, Cap3Progress, KhauViLoai, MucTuTin } from "./types"
  *
  * **CẢNH BÁO đánh số:** spec §8 đánh lại số các khối cho Cấp 3 (⑦ = tự tin,
  * ⑧ = khối lượng). Hai khối mới giữ key riêng `khoi7TuTin` / `khoi8KhoiLuong`
- * — trước đây để tránh đụng `khoi7` (phát hiện từ ghi chú) của Cấp 2; khối đó
- * nay đã bỏ, nhưng key riêng vẫn đúng và đọc rõ nghĩa hơn nên giữ nguyên.
+ * — tránh đụng `khoi7` (phát hiện từ ghi chú) được kế thừa từ Cấp 2.
  *
  * **Honesty over fake data (task brief):** nguồn dữ liệu duy nhất của ⑦/⑧ là
  * `muc_tu_tin` / `cach_khoi_luong` / `khoi_luong` / `pct_von` của từng lệnh đã
- * đóng — backend Cấp 3 chỉ trả state tổng hợp (`GET /cap3/progress`), nên
- * chúng đến từ nhật ký client `tradeLogCap3.ts` (xem gap ghi ở đó). Mức tự tin
+ * đóng. UI ưu tiên lịch sử authoritative từ `GET /cap3/trades/analysis`; nhật
+ * ký client chỉ là fallback khi server chưa khả dụng. Mức tự tin
  * nào chưa đủ
  * `KHOI7_MIN_TRADES_PER_MUC` lệnh thì hàng đó bị đánh `insufficient` và mọi
  * phát hiện so sánh 2 cực bị chặn bằng `insufficientNote` — không bao giờ suy
@@ -243,17 +237,24 @@ function modeCach(list: Cap3TradeRecord[]): CachKhoiLuong | null {
 export function computeCap3Khoi8KhoiLuong(trades: Cap3TradeRecord[]): Cap3Khoi8KhoiLuong {
   const byMuc = rowsByMuc(trades)
 
+  // Keep full precision for classification. Rounded values are presentation
+  // only; using them at the 15% threshold can flip a real relationship near
+  // the boundary (for example 10.49% → 12.01%).
+  const avgPctVonRaw = new Map<MucTuTin, number | null>()
+
   const rows: Khoi8KhoiLuongRow[] = MUC_ORDER.map((muc) => {
     const list = byMuc.get(muc) ?? []
     const count = list.length
     const cach = modeCach(list)
+    const rawPct = count > 0 ? list.reduce((sum, t) => sum + t.pctVon, 0) / count : null
+    avgPctVonRaw.set(muc, rawPct)
     return {
       mucTuTin: muc,
       label: MUC_TU_TIN_LABEL[muc],
       count,
       avgKhoiLuong:
         count > 0 ? round(list.reduce((sum, t) => sum + t.khoiLuong, 0) / count) : null,
-      avgPctVon: count > 0 ? round(list.reduce((sum, t) => sum + t.pctVon, 0) / count) : null,
+      avgPctVon: rawPct != null ? round(rawPct) : null,
       cachHayDung: cach,
       cachHayDungLabel: cach ? CACH_KHOI_LUONG_LABEL[cach] : null,
       insufficient: count < KHOI8_MIN_TRADES_PER_MUC,
@@ -263,12 +264,15 @@ export function computeCap3Khoi8KhoiLuong(trades: Cap3TradeRecord[]): Cap3Khoi8K
   const cao = rows.find((r) => r.mucTuTin === 3)!
   const vua = rows.find((r) => r.mucTuTin === 2)!
   const thap = rows.find((r) => r.mucTuTin === 1)!
+  const caoPctRaw = avgPctVonRaw.get(3) ?? null
+  const vuaPctRaw = avgPctVonRaw.get(2) ?? null
+  const thapPctRaw = avgPctVonRaw.get(1) ?? null
 
   if (
     cao.count < KHOI8_MIN_TRADES_PER_MUC ||
     thap.count < KHOI8_MIN_TRADES_PER_MUC ||
-    cao.avgPctVon == null ||
-    thap.avgPctVon == null ||
+    caoPctRaw == null ||
+    thapPctRaw == null ||
     cao.avgKhoiLuong == null ||
     thap.avgKhoiLuong == null
   ) {
@@ -283,11 +287,10 @@ export function computeCap3Khoi8KhoiLuong(trades: Cap3TradeRecord[]): Cap3Khoi8K
     }
   }
 
-  const tangTheoCuc = cao.avgPctVon >= thap.avgPctVon * KHOI8_MIN_RATIO
-  const vuaDuDuLieu = vua.count >= KHOI8_MIN_TRADES_PER_MUC && vua.avgPctVon != null
+  const tangTheoCuc = caoPctRaw >= thapPctRaw * KHOI8_MIN_RATIO
+  const vuaDuDuLieu = vua.count >= KHOI8_MIN_TRADES_PER_MUC && vuaPctRaw != null
   const donDieu = vuaDuDuLieu
-    ? thap.avgPctVon <= (vua.avgPctVon as number) &&
-      (vua.avgPctVon as number) <= cao.avgPctVon
+    ? thapPctRaw <= (vuaPctRaw as number) && (vuaPctRaw as number) <= caoPctRaw
     : true
   const theoTuTin = tangTheoCuc && donDieu
 

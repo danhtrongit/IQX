@@ -2,6 +2,8 @@
 # Import all models here so SQLAlchemy metadata is fully populated
 # before any FK resolution is attempted at runtime.
 
+from contextlib import suppress
+
 from app.models.user import User  # noqa: F401
 from app.models.virtual_trading import (  # noqa: F401
     VirtualCashLedger,
@@ -13,29 +15,41 @@ from app.models.virtual_trading import (  # noqa: F401
     VirtualTradingConfig,
 )
 
-try:
+with suppress(ImportError):
     from app.models.watchlist import WatchlistItem  # noqa: F401
-except ImportError:
-    pass
 
 from app.models.admin_audit import AdminAuditLog  # noqa: F401
+from app.models.ai_insight_history import AIInsightHistory  # noqa: F401
 from app.models.alert import AlertEvent, AlertSignal, UserAlertRule  # noqa: F401
+from app.models.backtest_strategy import BacktestStrategy  # noqa: F401
+from app.models.bot_run import BotRunReceipt  # noqa: F401
 from app.models.cap0 import Cap0OrderKehoach, Cap0Progress, UserPlacement  # noqa: F401
 from app.models.cap1 import Cap1Progress, OrderKehoach, OrderKetso  # noqa: F401
 from app.models.cap2 import Cap2Progress  # noqa: F401
+from app.models.cap2_alert import (  # noqa: F401
+    Cap2AlertEvent,
+    Cap2AlertImpression,
+    Cap2AlertSessionState,
+    Cap2AlertTypeState,
+)
 from app.models.cap3 import Cap3Progress  # noqa: F401
 from app.models.cap4 import Cap4Progress  # noqa: F401
 from app.models.cap5 import Cap5HuntLog, Cap5Progress  # noqa: F401
 from app.models.cap6 import Cap6Progress, Cap6Skip  # noqa: F401
 from app.models.cap7 import Cap7Progress  # noqa: F401
 from app.models.cap8 import Cap8Exit, Cap8Progress  # noqa: F401
-from app.models.backtest_strategy import BacktestStrategy  # noqa: F401
 from app.models.chart_drawing import ChartDrawing  # noqa: F401
 from app.models.ipn_log import SePayIPNLog  # noqa: F401
+from app.models.journey_event import JourneyEvent  # noqa: F401
+from app.models.journey_identity import (  # noqa: F401
+    BotMascotProfile,
+    JourneyAssessment,
+    JourneyIdentityUI,
+    JourneyReadingDataset,
+)
 from app.models.lesson import Course, Episode, EpisodeProgress  # noqa: F401
 from app.models.login_history import UserLoginHistory  # noqa: F401
 from app.models.market_analysis import AnalysisClaim, AnalysisHistory  # noqa: F401
-from app.models.ai_insight_history import AIInsightHistory  # noqa: F401
-from app.models.portfolio_report import PortfolioReport  # noqa: F401
 from app.models.market_data_snapshot import MarketDataSnapshot  # noqa: F401
+from app.models.portfolio_report import PortfolioReport  # noqa: F401
 from app.models.sector_median_cache import SectorMedianCache  # noqa: F401

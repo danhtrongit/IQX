@@ -19,6 +19,8 @@ export interface TourStep {
   title: string
   /** May contain minimal inline markup in the source (e.g. `**bold**`) — rendered as plain text, not parsed. */
   body: string
+  /** How long the overlay waits for a lazy-rendered real target before using its centered fallback. */
+  targetWaitMs?: number
   /** Preferred tooltip side. Default resolution order is below → right → left regardless. */
   placement?: "below" | "right" | "left" | "auto"
 }
@@ -26,5 +28,7 @@ export interface TourStep {
 export interface TourConfig {
   /** Stable identifier, e.g. "bang-dien" — used for analytics event names by consumers. */
   name: string
+  /** Optional per-spec dim tone; product tours use the shared darker default. */
+  overlayColor?: string
   steps: TourStep[]
 }

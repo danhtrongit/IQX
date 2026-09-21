@@ -1,8 +1,11 @@
+import { useEffect, useRef } from "react"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { useCap1Events } from "./Cap1Context"
-import { useCap1Progress } from "./hooks"
-import { useCap1TradeLog } from "./tradeLog"
+import { useCap1Progress, useCap1Trades } from "./hooks"
+import { cap1TradeFromHistory, useCap1TradeLog } from "./tradeLog"
 import { Cap1PortfolioAnalysis } from "./Cap1PortfolioAnalysis"
+import { computeCap1PortfolioAnalysis } from "./portfolioAnalysis"
 
 /**
  * "Phân tích danh mục" right-sidebar panel (spec §7) — the `RightSidebar`
@@ -18,8 +21,30 @@ import { Cap1PortfolioAnalysis } from "./Cap1PortfolioAnalysis"
 export function Cap1PortfolioAnalysisPanel() {
   const { isCap1Active } = useCap1Events()
   const { data: progress } = useCap1Progress(isCap1Active)
-  const { trades } = useCap1TradeLog()
+  const { trades: localTrades } = useCap1TradeLog()
+  const { data: tradeHistory } = useCap1Trades(isCap1Active)
+  const trades = tradeHistory?.trades.map(cap1TradeFromHistory) ?? localTrades
   const { setActivePanel } = useSidebar()
+  const visiblePatternIds = computeCap1PortfolioAnalysis(trades, progress ?? null).mauPhatHien.map(
+    ({ id }) => id,
+  )
+  const patternKey = visiblePatternIds.join("|")
+  const trackedPatterns = useRef(new Set<string>())
+
+  useEffect(() => {
+    trackJourneyEvent("cap1_phantich_danhmuc_open")
+    trackJourneyEvent("cap1_phantich_danhmuc_view")
+  }, [])
+
+  useEffect(() => {
+    for (const patternId of visiblePatternIds) {
+      if (trackedPatterns.current.has(patternId)) continue
+      trackedPatterns.current.add(patternId)
+      trackJourneyEvent("cap1_pattern_shown", { pattern_id: patternId })
+    }
+    // The joined key is stable when the query/cache recreates equal arrays.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [patternKey])
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-[var(--color-bg-1)]">

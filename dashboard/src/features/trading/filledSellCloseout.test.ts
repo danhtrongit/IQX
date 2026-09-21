@@ -6,7 +6,14 @@ describe("dispatchFilledSellCloseouts", () => {
     const first = vi.fn()
     const second = vi.fn()
     const third = vi.fn()
-    const order = { symbol: "HPG", side: "sell" as const, quantity: 100, price: 31_000, orderId: "sell-1" }
+    const order = {
+      symbol: "HPG",
+      side: "sell" as const,
+      quantity: 100,
+      price: 31_000,
+      orderId: "sell-1",
+      buyOrderId: "buy-42",
+    }
 
     dispatchFilledSellCloseouts(order, { onOrderFilled: first }, { onOrderFilled: second }, { onOrderFilled: third })
 

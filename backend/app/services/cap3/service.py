@@ -10,22 +10,31 @@ portfolio and learning surfaces.
 
 from __future__ import annotations
 
+import math
 import uuid
 from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased
 
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
 from app.models.cap1 import CachKhoiLuong, KhauViRuiRo, OrderKehoach, OrderKetso
 from app.models.cap2 import Cap2Progress
 from app.models.cap3 import Cap3Progress
-from app.models.virtual_trading import OrderSide, VirtualOrder
+from app.models.virtual_trading import OrderSide, OrderStatus, VirtualOrder
 from app.repositories.virtual_trading import VirtualTradingRepository
 from app.services.cap2.service import Cap2Service
 
 _TASK_NOS = (1, 2)
 _CONFIDENCE_LEVELS = frozenset((1, 2, 3))
+
+
+def _naive_utc(value: datetime) -> datetime:
+    """Match VirtualOrder's UTC timestamp-without-time-zone storage."""
+    if value.tzinfo is not None:
+        value = value.astimezone(UTC)
+    return value.replace(tzinfo=None)
 
 
 class Cap3Service:
@@ -55,6 +64,7 @@ class Cap3Service:
         """Enter Cấp 3 (idempotent). Requires the user to have graduated Cấp 2."""
         progress = await self._get_progress_row(user_id)
         if progress is not None:
+            await self._recompute_progress(user_id, progress)
             return progress
 
         cap2_result = await self._session.execute(
@@ -85,8 +95,21 @@ class Cap3Service:
         except ValueError as exc:
             raise BadRequestError("khau_vi không hợp lệ") from exc
 
+        was_set = progress.khau_vi_da_dat
+        previous = progress.khau_vi
         progress.khau_vi = khau_vi_enum
         progress.khau_vi_da_dat = True
+        from app.services.journey_events import record_journey_event
+
+        event_name = "cap3_khau_vi_change" if was_set else "cap3_khau_vi_set"
+        if not was_set or previous != khau_vi_enum:
+            await record_journey_event(
+                self._session,
+                user_id,
+                event_name,
+                {"loai": khau_vi_enum.value},
+                dedup_key=f"{progress.id}:{event_name}:{khau_vi_enum.value}",
+            )
         await self._session.flush()
         await self._session.refresh(progress)
         return progress
@@ -126,38 +149,101 @@ class Cap3Service:
             raise NotFoundError("lệnh")
         if order.side != OrderSide.BUY:
             raise BadRequestError("Quản lý vốn chỉ ghi cho lệnh MUA")
+        if order.mode != "thuc_chien":
+            raise BadRequestError("Cấp 3 chỉ ghi nhận lệnh Thực chiến")
+        if order.status not in (OrderStatus.PENDING, OrderStatus.FILLED):
+            raise BadRequestError("Chỉ ghi kế hoạch cho lệnh đang chờ hoặc đã khớp")
+        order_created = order.created_at
+        entered = progress.entered_at
+        if order_created.tzinfo is None:
+            order_created = order_created.replace(tzinfo=UTC)
+        if entered.tzinfo is None:
+            entered = entered.replace(tzinfo=UTC)
+        if order_created < entered.replace(microsecond=0):
+            raise BadRequestError("Lệnh được tạo trước khi vào Cấp 3")
 
         try:
             khau_vi_enum = KhauViRuiRo(khau_vi)
         except ValueError as exc:
             raise BadRequestError("khau_vi không hợp lệ") from exc
+        if khau_vi_enum != progress.khau_vi:
+            raise ConflictError("Khẩu vị của lệnh không khớp cài đặt hiện tại")
 
         if muc_tu_tin not in _CONFIDENCE_LEVELS:
             raise BadRequestError("muc_tu_tin phải là 1, 2 hoặc 3")
 
+        canonical_method = {"linh_hoat": "khau_vi_tu_tin", "ky_luat": "chia_deu"}.get(
+            cach_khoi_luong, cach_khoi_luong
+        )
         try:
-            cach_khoi_luong_enum = CachKhoiLuong(cach_khoi_luong)
+            cach_khoi_luong_enum = CachKhoiLuong(canonical_method)
         except ValueError as exc:
             raise BadRequestError("cach_khoi_luong không hợp lệ") from exc
 
         if khoi_luong is None or khoi_luong <= 0:
             raise BadRequestError("Khối lượng phải là số dương")
-        if pct_von is None or pct_von <= 0:
+        if pct_von is None or not math.isfinite(pct_von) or pct_von <= 0:
             raise BadRequestError("%vốn phải là số dương")
+
+        # Snapshot actual order facts; callers cannot manufacture progress by
+        # posting a different quantity or arbitrary percentage.
+        if int(khoi_luong) != order.quantity:
+            raise BadRequestError("Khối lượng kế hoạch phải khớp khối lượng lệnh")
+        reference_price = order.filled_price_vnd or order.limit_price_vnd
+        if reference_price is None or reference_price <= 0:
+            raise BadRequestError("Chưa xác định được giá để tính % vốn")
+        actual_pct_von = order.quantity * reference_price / progress.von_ban_dau * 100.0
+        if not math.isclose(float(pct_von), actual_pct_von, rel_tol=0.0, abs_tol=0.05):
+            raise BadRequestError("% vốn không khớp giá trị thực tế của lệnh")
 
         kehoach = await self._get_kehoach_by_order(order_id)
         if kehoach is None:
             raise NotFoundError("kế hoạch Cấp 1 — cần ghi lý do + vùng mua trước")
 
+        existing_snapshot = (
+            kehoach.khau_vi,
+            kehoach.muc_tu_tin,
+            kehoach.cach_khoi_luong,
+            kehoach.khoi_luong,
+            kehoach.pct_von,
+        )
+        proposed_snapshot = (
+            khau_vi_enum,
+            int(muc_tu_tin),
+            cach_khoi_luong_enum,
+            order.quantity,
+            actual_pct_von,
+        )
+        if any(value is not None for value in existing_snapshot):
+            same = (
+                existing_snapshot[:4] == proposed_snapshot[:4]
+                and existing_snapshot[4] is not None
+                and math.isclose(existing_snapshot[4], actual_pct_von, abs_tol=1e-9)
+            )
+            if same:
+                await self._recompute_progress(user_id, progress)
+                return kehoach
+            raise ConflictError("Kế hoạch quản lý vốn đã được chốt lúc đặt lệnh")
+
         kehoach.khau_vi = khau_vi_enum
         kehoach.muc_tu_tin = int(muc_tu_tin)
         kehoach.cach_khoi_luong = cach_khoi_luong_enum
-        kehoach.khoi_luong = int(khoi_luong)
-        kehoach.pct_von = float(pct_von)
+        kehoach.khoi_luong = order.quantity
+        kehoach.pct_von = actual_pct_von
         await self._session.flush()
         await self._session.refresh(kehoach)
 
         await self._recompute_progress(user_id, progress)
+        from app.services.journey_events import record_journey_event
+
+        await record_journey_event(
+            self._session, user_id, "cap3_tu_tin_chon", {"muc": int(muc_tu_tin)},
+            dedup_key=str(order.id),
+        )
+        await record_journey_event(
+            self._session, user_id, "cap3_khoi_luong_cach",
+            {"cach": cach_khoi_luong_enum.value}, dedup_key=str(order.id),
+        )
         return kehoach
 
     # ── Recompute analytics and server-owned task evidence ──────────────
@@ -166,19 +252,33 @@ class Cap3Service:
         self, user_id: uuid.UUID, progress: Cap3Progress
     ) -> list[OrderKetso]:
         """All Cấp 3-era closed Thực chiến round trips, oldest → newest."""
+        sell = aliased(VirtualOrder)
+        buy = aliased(VirtualOrder)
         result = await self._session.execute(
             select(OrderKetso)
-            .join(VirtualOrder, VirtualOrder.id == OrderKetso.order_id)
+            .join(sell, sell.id == OrderKetso.order_id)
+            .join(buy, buy.id == sell.exit_matched_buy_order_id)
+            .join(OrderKehoach, OrderKehoach.order_id == buy.id)
             .where(
-                VirtualOrder.user_id == user_id,
-                VirtualOrder.mode == "thuc_chien",
+                sell.user_id == user_id,
+                sell.mode == "thuc_chien",
                 OrderKetso.closed_at >= progress.entered_at,
+                OrderKehoach.khau_vi.is_not(None),
+                OrderKehoach.muc_tu_tin.in_(_CONFIDENCE_LEVELS),
+                OrderKehoach.cach_khoi_luong.is_not(None),
+                *(
+                    [OrderKetso.closed_at <= progress.graduated_at]
+                    if progress.graduated_at is not None
+                    else []
+                ),
             )
             .order_by(OrderKetso.closed_at.asc())
         )
         return list(result.scalars().all())
 
-    async def _qualified_kehoach(self, user_id: uuid.UUID) -> list[OrderKehoach]:
+    async def _qualified_kehoach(
+        self, user_id: uuid.UUID, progress: Cap3Progress
+    ) -> list[OrderKehoach]:
         """Placed Thực chiến plans that operate the sizing mechanism.
 
         Plans, not fills or closeouts, are the evidence: each row joins the
@@ -192,9 +292,21 @@ class Cap3Service:
             .where(
                 VirtualOrder.user_id == user_id,
                 VirtualOrder.mode == "thuc_chien",
+                VirtualOrder.side == OrderSide.BUY,
+                VirtualOrder.status == OrderStatus.FILLED,
+                VirtualOrder.created_at >= _naive_utc(progress.entered_at).replace(microsecond=0),
                 OrderKehoach.khau_vi.is_not(None),
                 OrderKehoach.muc_tu_tin.in_(_CONFIDENCE_LEVELS),
                 OrderKehoach.cach_khoi_luong.is_not(None),
+                OrderKehoach.khoi_luong.is_not(None),
+                OrderKehoach.khoi_luong > 0,
+                OrderKehoach.pct_von.is_not(None),
+                OrderKehoach.pct_von > 0,
+                *(
+                    [VirtualOrder.created_at <= _naive_utc(progress.graduated_at)]
+                    if progress.graduated_at is not None
+                    else []
+                ),
             )
             .order_by(VirtualOrder.created_at.asc())
         )
@@ -260,7 +372,7 @@ class Cap3Service:
         )
         progress.diem_ky_luat_tb_cap3 = await self._diem_ky_luat_tb(user_id, progress)
 
-        qualifying_plans = await self._qualified_kehoach(user_id)
+        qualifying_plans = await self._qualified_kehoach(user_id, progress)
         confidence_levels: tuple[int, ...] = tuple(
             sorted({plan.muc_tu_tin for plan in qualifying_plans if plan.muc_tu_tin is not None})
         )
@@ -268,10 +380,25 @@ class Cap3Service:
         progress._muc_tu_tin_da_dung = confidence_levels
 
         now = datetime.now(UTC)
+        completed: list[tuple[int, datetime]] = []
         if progress.task_1_done_at is None and progress.so_lenh_quan_ly_von >= 10:
             progress.task_1_done_at = now
+            completed.append((1, now))
         if progress.task_2_done_at is None and set(confidence_levels) == _CONFIDENCE_LEVELS:
             progress.task_2_done_at = now
+            completed.append((2, now))
+
+        if completed:
+            from app.services.journey_events import record_journey_event
+
+            for task_id, done_at in completed:
+                await record_journey_event(
+                    self._session,
+                    user_id,
+                    "cap3_task_complete",
+                    {"task_id": task_id},
+                    dedup_key=f"{task_id}:{done_at.isoformat()}",
+                )
 
         await self._session.flush()
         await self._session.refresh(progress)
@@ -294,6 +421,7 @@ class Cap3Service:
         if progress is None:
             raise NotFoundError("tiến trình Cấp 3")
         if progress.graduated_at is not None:
+            await self._recompute_progress(user_id, progress)
             return progress
         await self._recompute_progress(user_id, progress)
 
@@ -309,7 +437,88 @@ class Cap3Service:
         if entered.tzinfo is None:
             entered = entered.replace(tzinfo=UTC)
         progress.time_to_graduate_hours = (now - entered).total_seconds() / 3600.0
+        from app.services.journey_events import record_journey_event
+
+        await record_journey_event(
+            self._session, user_id, "cap3_graduate", {}, dedup_key=now.isoformat()
+        )
         await self._session.flush()
         await self._session.refresh(progress)
 
         return progress
+
+    async def get_plan(self, user_id: uuid.UUID, order_id: uuid.UUID) -> dict:
+        order = await self._vt_repo.get_order_by_id(order_id)
+        if order is None or order.user_id != user_id or order.side != OrderSide.BUY:
+            raise NotFoundError("lệnh mua")
+        plan = await self._get_kehoach_by_order(order_id)
+        if plan is None:
+            raise NotFoundError("kế hoạch")
+        reference_price = order.filled_price_vnd or order.limit_price_vnd
+        if reference_price is None:
+            raise BadRequestError("Chưa xác định được giá mua")
+        return {
+            "id": plan.id,
+            "order_id": plan.order_id,
+            "symbol": order.symbol,
+            "quantity": order.quantity,
+            "bought_at": order.created_at,
+            "gia_vao": reference_price,
+            "lyDo": plan.lyDo,
+            "trangThai_luc_dat": plan.trangThai_luc_dat,
+            "vung_mua": plan.vung_mua,
+            "phuong_phap_sl_tp": plan.phuong_phap_sl_tp,
+            "cat_lo": plan.cat_lo,
+            "chot_loi": plan.chot_loi,
+            "khau_vi": plan.khau_vi,
+            "muc_tu_tin": plan.muc_tu_tin,
+            "cach_khoi_luong": plan.cach_khoi_luong,
+            "khoi_luong": plan.khoi_luong,
+            "pct_von": plan.pct_von,
+        }
+
+    async def list_trade_history(self, user_id: uuid.UUID) -> list[dict]:
+        from app.services.cap1.service import Cap1Service
+
+        rows = await Cap1Service(self._session).list_trade_history(user_id)
+        # Historical rows may predate the Cấp 3 sizing contract.  Only expose
+        # fully qualified Cấp 3 plans so analysis never treats a partial legacy
+        # row as authoritative sizing evidence (or attempts arithmetic on
+        # nullable quantities/percentages).
+        return [
+            row
+            for row in rows
+            if row["khau_vi"] is not None
+            and row["muc_tu_tin"] in (1, 2, 3)
+            and row["cach_khoi_luong"] is not None
+            and row["khoi_luong"] is not None
+            and row["khoi_luong"] > 0
+            and row["pct_von"] is not None
+            and row["pct_von"] > 0
+        ]
+
+    async def trade_analysis(self, user_id: uuid.UUID) -> dict:
+        rows = await self.list_trade_history(user_id)
+        buckets = []
+        for confidence in (3, 2, 1):
+            selected = [row for row in rows if row["muc_tu_tin"] == confidence]
+            count = len(selected)
+            wins = sum(1 for row in selected if row["pnl_vnd"] > 0)
+            buckets.append(
+                {
+                    "muc_tu_tin": confidence,
+                    "count": count,
+                    "wins": wins,
+                    "win_rate": wins / count * 100.0 if count else None,
+                    "avg_pnl_pct": (
+                        sum(row["pnl_pct"] for row in selected) / count if count else None
+                    ),
+                    "avg_khoi_luong": (
+                        sum(row["khoi_luong"] for row in selected) / count if count else None
+                    ),
+                    "avg_pct_von": (
+                        sum(row["pct_von"] for row in selected) / count if count else None
+                    ),
+                }
+            )
+        return {"trades": rows, "total": len(rows), "by_confidence": buckets}

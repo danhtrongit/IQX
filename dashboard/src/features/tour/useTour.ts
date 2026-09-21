@@ -9,6 +9,8 @@ export interface UseTourOptions {
   onStart?: () => void
   /** Fires only on `skip()`, with the index the user was on when they bailed. */
   onSkip?: (index: number) => void
+  /** Runs before leaving a step. Used by product tours to load the real demo symbol. */
+  onBeforeNext?: (index: number) => void | Promise<void>
 }
 
 export interface TourController {
@@ -55,11 +57,13 @@ export function useTour(config: TourConfig, opts: UseTourOptions): TourControlle
   // synced in an effect (not during render) so it stays clear of React's
   // "don't write to a ref during render" rule.
   const optsRef = useRef(opts)
+  const advancingRef = useRef(false)
   useEffect(() => {
     optsRef.current = opts
   })
 
   const start = () => {
+    advancingRef.current = false
     setIndex(0)
     setBusy(false)
     setActive(true)
@@ -67,12 +71,27 @@ export function useTour(config: TourConfig, opts: UseTourOptions): TourControlle
   }
 
   const stop = () => {
+    advancingRef.current = false
     setActive(false)
     setBusy(false)
   }
 
   const next = () => {
-    setIndex((i) => (i < totalSteps - 1 ? i + 1 : i))
+    if (advancingRef.current) return
+    const beforeNext = optsRef.current.onBeforeNext
+    if (!beforeNext) {
+      setIndex((i) => (i < totalSteps - 1 ? i + 1 : i))
+      return
+    }
+
+    advancingRef.current = true
+    setBusy(true)
+    void Promise.resolve(beforeNext(index))
+      .catch(() => undefined)
+      .then(() => setIndex((i) => (i < totalSteps - 1 ? i + 1 : i)))
+      .finally(() => {
+        advancingRef.current = false
+      })
   }
 
   const back = () => {
@@ -80,6 +99,7 @@ export function useTour(config: TourConfig, opts: UseTourOptions): TourControlle
   }
 
   const skip = () => {
+    advancingRef.current = false
     setActive(false)
     setBusy(false)
     optsRef.current.onSkip?.(index)
@@ -87,6 +107,7 @@ export function useTour(config: TourConfig, opts: UseTourOptions): TourControlle
   }
 
   const complete = () => {
+    advancingRef.current = false
     setActive(false)
     setBusy(false)
     optsRef.current.onComplete()

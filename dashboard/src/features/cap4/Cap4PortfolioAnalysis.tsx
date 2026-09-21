@@ -5,14 +5,10 @@ import type { Cap2Progress } from "@/features/cap2/types"
 import { Cap3PortfolioAnalysis } from "@/features/cap3/Cap3PortfolioAnalysis"
 import type { Cap3Progress } from "@/features/cap3/types"
 import { lopLabelCap4 } from "./coachTemplateCap4"
-import { useVuKhiDiemMu } from "./hooks"
-import {
-  computeCap4Khoi10DongThuan,
-  computeCap4Khoi11GocNhinRieng,
-  KHOI10_MIN_TRADES_PER_NHOM,
-} from "./portfolioAnalysisCap4"
+import { usePhanTichCap4, useVuKhiDiemMu } from "./hooks"
 import type { Cap4TradeRecord } from "./tradeLogCap4"
 import type { Cap4Progress, LopWinRate } from "./types"
+import "./cap4.css"
 
 /**
  * Trang Phân tích danh mục Cấp 4 (spec `IQX-Cap4-Spec.md` §7).
@@ -34,14 +30,13 @@ import type { Cap4Progress, LopWinRate } from "./types"
  * ★ **KHỐI ⑨ ĐỌC TỪ SERVER, KHÔNG TÍNH LẠI Ở CLIENT.** `GET /cap4/vu-khi-diem-mu`
  * (hook `useVuKhiDiemMu`) tính % thắng thật mỗi lớp từ `order_kehoach` JOIN
  * `order_ketso` — authoritative, có backfill cho lệnh đóng trước khi FE ship, và
- * ĐÚNG bằng con số nuôi nhiệm vụ ③ + widget Thách thức. Tính lại từ nhật ký
+ * ĐÚNG bằng con số hiển thị trong khối ⑨. Tính lại từ nhật ký
  * localStorage sẽ sinh ra một con số thứ hai, thấp hơn, mâu thuẫn với màn Hành
  * trình. Khi query lỗi/đang tải thì khối này nói thẳng là chưa lấy được số —
  * fail-closed, KHÔNG đắp tạm bằng phép tính client.
  *
- * ⑩ và ⑪ thì CHƯA có endpoint nào, nên chúng tính từ nhật ký client
- * (`tradeLogCap4.ts`) và đánh dấu thiếu dữ liệu một cách trung thực (xem
- * `portfolioAnalysisCap4.ts`).
+ * ⑩ và ⑪ đọc từ `GET /cap4/phan-tich`, nơi ghép kế hoạch với Kết sổ đã lưu.
+ * Nhờ vậy kết quả không phụ thuộc trình duyệt hoặc localStorage hiện tại.
  *
  * Ở tầng compute, component chỉ gọi 2 hàm khối mới thay vì
  * `computeCap4PortfolioAnalysis`: `Cap3PortfolioAnalysis` đã tự tính các khối kế
@@ -83,7 +78,7 @@ const NOTE = "text-xs text-[var(--color-text-3)]"
 const HINT = "text-[10px] leading-snug text-[var(--color-text-3)]"
 
 function fmtInt(n: number): string {
-  return Math.round(n).toLocaleString("en-US")
+  return Math.round(n).toLocaleString("vi-VN")
 }
 
 /** Nhãn "vũ khí" (xanh) / "điểm mù" (đỏ) — chỉ khi server đã kết luận. */
@@ -116,14 +111,34 @@ export function Cap4PortfolioAnalysis({
 }: Cap4PortfolioAnalysisProps) {
   const vuKhiQuery = useVuKhiDiemMu()
   const vuKhi = vuKhiQuery.data
-  const khoi10 = computeCap4Khoi10DongThuan(trades)
-  const khoi11 = computeCap4Khoi11GocNhinRieng(trades)
+  const phanTichQuery = usePhanTichCap4()
+  const khoi10Raw = phanTichQuery.data?.khoi_10
+  const khoi11Raw = phanTichQuery.data?.khoi_11
+  const khoi10 = khoi10Raw
+    ? {
+        rows: khoi10Raw.rows.map((row) => ({ ...row, winRate: row.win_rate })),
+        excludedNoAi: khoi10Raw.excluded_no_ai,
+        phatHien: khoi10Raw.phat_hien,
+        insufficientNote: khoi10Raw.insufficient_note,
+        giaiThich: khoi10Raw.giai_thich,
+      }
+    : null
+  const khoi11 = khoi11Raw
+    ? {
+        soLanKhacAi: khoi11Raw.so_lan_khac_ai,
+        soLanBanDung: khoi11Raw.so_lan_ban_dung,
+        soLanAiDung: khoi11Raw.so_lan_ai_dung,
+        phatHien: khoi11Raw.phat_hien,
+        insufficientNote: khoi11Raw.insufficient_note,
+        giaiThich: khoi11Raw.giai_thich,
+      }
+    : null
 
   const vuKhiLop = cap4Progress?.vu_khi_lop ?? vuKhi?.vu_khi_lop ?? null
   const diemMuLop = cap4Progress?.diem_mu_lop ?? vuKhi?.diem_mu_lop ?? null
 
   return (
-    <div className="space-y-3">
+    <div className="cap4-portfolio-analysis min-w-0 space-y-3">
       {/* Khối ① (phần Cấp 4 thêm) — số lệnh đọc đủ 5 lớp + vũ khí/điểm mù */}
       <div className={CARD} data-testid="cap4-pa-khoi1">
         <div className="flex items-center gap-2">
@@ -194,11 +209,11 @@ export function Cap4PortfolioAnalysis({
                 data-lop={row.lop}
                 className="space-y-1"
               >
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="w-24 shrink-0 text-[var(--color-text-1)]">
+                <div className="cap4-pa-layer-line flex items-center gap-2 text-xs">
+                  <span className="cap4-pa-layer-label w-24 shrink-0 text-[var(--color-text-1)]">
                     {lopLabelCap4(row.lop)}
                   </span>
-                  <span className="h-3 flex-1 overflow-hidden rounded-full bg-[var(--color-fill-2)]">
+                  <span className="cap4-pa-layer-bar h-3 min-w-0 flex-1 overflow-hidden rounded-full bg-[var(--color-fill-2)]">
                     <span
                       className={cn(
                         "block h-full rounded-full",
@@ -227,7 +242,7 @@ export function Cap4PortfolioAnalysis({
                     </span>
                   )}
                 </div>
-                <div className="flex flex-wrap items-baseline gap-2 pl-24">
+                <div className="cap4-pa-layer-detail flex flex-wrap items-baseline gap-2 pl-24">
                   <span className={cn(HINT, "tabular-nums")}>
                     {`${fmtInt(row.n_wins)}/${fmtInt(row.n_orders)} lệnh`}
                   </span>
@@ -251,6 +266,14 @@ export function Cap4PortfolioAnalysis({
           </span>
           <span className={BADGE_NEW}>mới ở Cấp 4</span>
         </div>
+        {phanTichQuery.isPending ? (
+          <p className={NOTE} data-testid="cap4-pa-khoi10-note">Đang tải phân tích đồng thuận…</p>
+        ) : phanTichQuery.isError || !khoi10 ? (
+          <p className={NOTE} data-testid="cap4-pa-khoi10-note">
+            Chưa lấy được phân tích đồng thuận từ hệ thống. Khối này sẽ hiện lại khi tải được.
+          </p>
+        ) : (
+          <>
         <table className="w-full text-xs">
           <thead>
             <tr>
@@ -278,7 +301,7 @@ export function Cap4PortfolioAnalysis({
                   {row.winRate != null ? `${row.winRate}%` : "—"}
                   {row.insufficient && row.count > 0 && (
                     <span className={cn(HINT, "ml-1")}>
-                      {`· chưa đủ (thiếu ${Math.max(0, KHOI10_MIN_TRADES_PER_NHOM - row.count)})`}
+                      · chưa đủ dữ liệu
                     </span>
                   )}
                 </td>
@@ -305,6 +328,8 @@ export function Cap4PortfolioAnalysis({
         <p className={HINT} data-testid="cap4-pa-khoi10-giaithich">
           {khoi10.giaiThich}
         </p>
+          </>
+        )}
       </div>
 
       {/* ⑪ Góc nhìn riêng của bạn (khác AI) — spec §7, trình bày TRUNG THỰC */}
@@ -313,6 +338,14 @@ export function Cap4PortfolioAnalysis({
           <span className={SECTION_HEADER}>{"⑪ GÓC NHÌN RIÊNG CỦA BẠN (KHÁC AI)"}</span>
           <span className={BADGE_NEW}>mới ở Cấp 4</span>
         </div>
+        {phanTichQuery.isPending ? (
+          <p className={NOTE} data-testid="cap4-pa-khoi11-note">Đang tải phân tích góc nhìn riêng…</p>
+        ) : phanTichQuery.isError || !khoi11 ? (
+          <p className={NOTE} data-testid="cap4-pa-khoi11-note">
+            Chưa lấy được phân tích góc nhìn riêng từ hệ thống. Khối này sẽ hiện lại khi tải được.
+          </p>
+        ) : (
+          <>
         <div className="flex gap-3">
           <div className="flex-1 text-center">
             <div
@@ -355,6 +388,8 @@ export function Cap4PortfolioAnalysis({
         <p className={HINT} data-testid="cap4-pa-khoi11-giaithich">
           {khoi11.giaiThich}
         </p>
+          </>
+        )}
       </div>
     </div>
   )

@@ -36,13 +36,14 @@ from __future__ import annotations
 
 import uuid as _uuid
 from datetime import UTC, date, datetime, timedelta
+from unittest.mock import AsyncMock, patch
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
 from app.models.ai_insight_history import AIInsightHistory
-from app.models.cap1 import Cap1Progress
+from app.models.cap1 import Cap1Progress, OrderKehoach
 from app.models.cap2 import Cap2Progress
 from app.models.cap3 import Cap3Progress
 from app.models.cap4 import Cap4Progress
@@ -55,6 +56,8 @@ from app.models.cap6 import (
     Cap6Skip,
     MucMauThuan,
 )
+from app.models.journey_event import JourneyEvent
+from app.models.journey_identity import JourneyAssessment, JourneyReadingDataset
 from app.models.symbol import Symbol
 from app.models.virtual_trading import OrderSide, OrderStatus, OrderType, VirtualOrder
 from app.repositories.virtual_trading import VirtualTradingRepository
@@ -71,6 +74,8 @@ from app.services.cap6.service import (
     NGUONG_MUA_NHO_PCT,
     Cap6Service,
 )
+from app.services.journey_identity.classification import digest
+from app.services.virtual_trading.price_resolver import PriceResult
 
 _ALL_NEU = {
     "ky_thuat": "neu",
@@ -117,6 +122,18 @@ _P_THUAN = _payload(L1="Rất mạnh", L3="Hỗ trợ mạnh")
 _P_TRUNG_TINH = _payload(L1="Trung bình", L3="Trung tính")
 
 
+async def _valid_atomic_symbol(_symbol: str) -> bool:
+    return True
+
+
+async def _fixed_atomic_price(_symbol: str, **_kwargs) -> PriceResult:
+    return PriceResult(
+        price_vnd=20_000,
+        source="cap6-atomic-test",
+        timestamp=datetime.now(UTC),
+    )
+
+
 # ══════════════════════════════════════════════════════
 # Setup helpers
 # ══════════════════════════════════════════════════════
@@ -147,6 +164,7 @@ async def _make_order(
         order_type=OrderType.MARKET,
         status=status,
         quantity=qty,
+        limit_price_vnd=price if status == OrderStatus.PENDING else None,
         filled_price_vnd=price if status == OrderStatus.FILLED else None,
         gross_amount_vnd=gross if status == OrderStatus.FILLED else None,
         fee_vnd=0,
@@ -158,6 +176,51 @@ async def _make_order(
     await db_session.flush()
     await db_session.refresh(order)
     return order
+
+
+async def _seed_assessment(
+    db_session,
+    user_id,
+    *,
+    symbol: str,
+    trading_date: date,
+    answers: dict[str, str],
+    ai_answers: dict[str, str] | None = None,
+) -> JourneyAssessment:
+    now = datetime.now(UTC)
+    clean = symbol.upper()
+    payload = {
+        "symbol": clean,
+        "source_symbol": clean,
+        "valuation_source_symbol": clean,
+        "trading_date": str(trading_date),
+        "ai_answers": ai_answers or _doc(),
+    }
+    dataset = JourneyReadingDataset(
+        user_id=user_id,
+        symbol=clean,
+        trading_date=trading_date,
+        created_at=now,
+        dataset_hash=digest(payload),
+        payload=payload,
+    )
+    db_session.add(dataset)
+    await db_session.flush()
+    assessment = JourneyAssessment(
+        user_id=user_id,
+        dataset_id=dataset.id,
+        symbol=clean,
+        trading_date=trading_date,
+        completed_at=now + timedelta(microseconds=1),
+        answers=answers,
+        source="learning",
+        mode="thuc_chien",
+        record_status="valid",
+        proof_version="commit_then_reveal_v1",
+    )
+    db_session.add(assessment)
+    await db_session.flush()
+    return assessment
 
 
 async def _seed_symbol(db_session, symbol: str, *, icb_lv1=None, icb_lv2=None) -> Symbol:
@@ -185,6 +248,16 @@ async def _seed_insight(
     return row
 
 
+async def _journey_events(db_session, user_id, name: str) -> list[JourneyEvent]:
+    result = await db_session.execute(
+        select(JourneyEvent).where(
+            JourneyEvent.user_id == user_id,
+            JourneyEvent.name == name,
+        )
+    )
+    return list(result.scalars().all())
+
+
 async def _fast_track_cap5(db_session, user_id, *, graduated: bool = True):
     """Đóng dấu các hàng tiến trình Cấp 1-5 mà luồng Cấp 6 cần + tài khoản VT."""
     now = datetime.now(UTC)
@@ -194,13 +267,16 @@ async def _fast_track_cap5(db_session, user_id, *, graduated: bool = True):
         account = await vt_repo.create_account(user_id, 250_000_000)
     db_session.add_all(
         [
-            Cap1Progress(user_id=user_id, entered_at=now, graduated_at=now),
+            Cap1Progress(
+                user_id=user_id, entered_at=now, da_xem_tour=True, graduated_at=now
+            ),
             Cap2Progress(user_id=user_id, entered_at=now, graduated_at=now),
             Cap3Progress(
                 user_id=user_id,
                 entered_at=now,
                 khau_vi_da_dat=True,
                 khau_vi="can_bang",
+                von_ban_dau=account.initial_cash_vnd,
                 graduated_at=now,
             ),
             Cap4Progress(user_id=user_id, entered_at=now, graduated_at=now),
@@ -241,8 +317,20 @@ async def _buy_with_plan(
     status: OrderStatus = OrderStatus.FILLED,
 ) -> VirtualOrder:
     """Một lệnh MUA mang đủ khối Cấp 1-4 (hàng mà Cấp 6 cộng dồn lên)."""
+    account = await VirtualTradingRepository(db_session).get_account_by_user_id(user_id)
+    assert account is not None
+    quantity = max(
+        1,
+        round(account.initial_cash_vnd * pct_von / 100.0 / buy_price),
+    )
     buy = await _make_order(
-        db_session, account_id, user_id, symbol=symbol, price=buy_price, status=status
+        db_session,
+        account_id,
+        user_id,
+        symbol=symbol,
+        qty=quantity,
+        price=buy_price,
+        status=status,
     )
     await services["cap1"].record_kehoach(
         user_id, buy.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho", vung_mua=buy_price
@@ -256,17 +344,32 @@ async def _buy_with_plan(
         khau_vi="can_bang",
         muc_tu_tin=muc_tu_tin,
         cach_khoi_luong="linh_hoat",
-        khoi_luong=100,
+        khoi_luong=buy.quantity,
         pct_von=pct_von,
     )
+    doc = _doc(ky_thuat="ok", tin_tuc="bad")
+    await _seed_assessment(
+        db_session,
+        user_id,
+        symbol=symbol,
+        trading_date=buy.trading_date,
+        answers=doc,
+    )
     await services["cap4"].record_kehoach(
-        user_id, buy.id, doc_5_lop=_doc(ky_thuat="ok", tin_tuc="bad"), ai_5_lop=_doc(ky_thuat="ok")
+        user_id, buy.id, doc_5_lop=doc
     )
     return buy
 
 
 async def _sell_and_ketso(
-    db_session, services, account_id, user_id, *, symbol: str, win: bool
+    db_session,
+    services,
+    account_id,
+    user_id,
+    *,
+    symbol: str,
+    quantity: int,
+    win: bool,
 ) -> VirtualOrder:
     sell = await _make_order(
         db_session,
@@ -274,6 +377,7 @@ async def _sell_and_ketso(
         user_id,
         symbol=symbol,
         side=OrderSide.SELL,
+        qty=quantity,
         price=22_000 if win else 18_000,
     )
     await services["cap1"].record_ketso(user_id, sell.id)
@@ -302,7 +406,13 @@ async def _lenh_mau_thuan(
     kehoach = await services["cap6"].record_kehoach(user_id, buy.id, conflict_level=muc)
     if close:
         await _sell_and_ketso(
-            db_session, services, account_id, user_id, symbol=symbol, win=win
+            db_session,
+            services,
+            account_id,
+            user_id,
+            symbol=symbol,
+            quantity=buy.quantity,
+            win=win,
         )
     return kehoach
 
@@ -310,6 +420,54 @@ async def _lenh_mau_thuan(
 def _age_order(order: VirtualOrder, *, minutes: int) -> None:
     """Đẩy lùi ``created_at`` của lệnh — cột này naive nên lưu naive UTC."""
     order.created_at = datetime.now(UTC).replace(tzinfo=None) - timedelta(minutes=minutes)
+
+
+@pytest.mark.asyncio
+async def test_journey_cap6_persisted_actions_emit_once_per_durable_row(db_session, test_user):
+    services, account = await _enter_cap6(db_session, test_user.id)
+
+    await _seed_insight(db_session, "ORD", _P_VETO)
+    await services["cap6"].mau_thuan(test_user.id, "ORD")
+    await services["cap6"].mau_thuan(test_user.id, "ORD")
+    buy = await _make_order(
+        db_session, account.id, test_user.id, symbol="ORD", qty=100, price=20_000
+    )
+    db_session.add(
+        OrderKehoach(
+            order_id=buy.id,
+            lyDo="ky_thuat",
+            trangThai_luc_dat="ung_ho",
+            vung_mua=20_000,
+            pct_von=8.0,
+        )
+    )
+    await db_session.flush()
+    await services["cap6"].record_kehoach(
+        test_user.id, buy.id, conflict_level="nghiem"
+    )
+    await services["cap6"].record_kehoach(
+        test_user.id, buy.id, conflict_level="nghiem"
+    )
+
+    for symbol in ("SK1", "SK2", "SK3"):
+        await _seed_insight(db_session, symbol, _P_CONFLICT)
+        await services["cap6"].skip(test_user.id, symbol, conflict_level="nghiem")
+    await services["cap6"].skip(test_user.id, "SK1", conflict_level="nghiem")
+    await services["cap6"].mark_tour_mauthuan(test_user.id)
+    await services["cap6"].mark_tour_mauthuan(test_user.id)
+    await services["cap6"].graduate(test_user.id)
+    await services["cap6"].graduate(test_user.id)
+
+    expected = {
+        "cap6_conflict_shown": 1,
+        "cap6_conflict_rated": 1,
+        "cap6_order_with_conflict": 1,
+        "cap6_skip": 4,
+        "cap6_tour_mauthuan_done": 1,
+        "cap6_graduate": 1,
+    }
+    for name, count in expected.items():
+        assert len(await _journey_events(db_session, test_user.id, name)) == count, name
 
 
 # ══════════════════════════════════════════════════════
@@ -534,6 +692,10 @@ async def test_mau_thuan_wire_shape_day_du(db_session, test_user):
     # Khung phân loại (spec §5.2 chú thích) — "khung tham khảo, không bắt buộc".
     assert out["lop_phu_quyet"] == sorted(LOP_PHU_QUYET)
     assert out["lop_diem_tru"] == sorted(LOP_DIEM_TRU)
+    await services["cap6"].mau_thuan(test_user.id, "VCB")
+    events = await _journey_events(db_session, test_user.id, "cap6_conflict_shown")
+    assert len(events) == 1
+    assert events[0].fields == {"symbol": "VCB", "veto_layers": ["tin_tuc"]}
 
 
 @pytest.mark.asyncio
@@ -611,12 +773,54 @@ async def test_progress_wire_shape_and_tong_lai_null_not_zero(db_session, test_u
 
 
 @pytest.mark.asyncio
+async def test_tong_lai_header_chi_tinh_lenh_co_mau_thuan(db_session, test_user):
+    """Header §3 measures the conflict decisions taught by Cấp 6."""
+    services, account = await _enter_cap6(db_session, test_user.id)
+
+    await _lenh_mau_thuan(
+        db_session,
+        services,
+        account.id,
+        test_user.id,
+        symbol="THUAN",
+        payload=_P_THUAN,
+        muc="nhe",
+        pct_von=2.0,
+        close=True,
+        win=True,
+    )
+    assert (await services["cap6"].get_progress(test_user.id))[
+        "tong_lai_lenh_cap6_pct"
+    ] is None
+
+    await _lenh_mau_thuan(
+        db_session,
+        services,
+        account.id,
+        test_user.id,
+        symbol="CONFLICT",
+        payload=_P_CONFLICT,
+        muc="nhe",
+        pct_von=0.8,
+        close=True,
+        win=False,
+    )
+    assert (await services["cap6"].get_progress(test_user.id))[
+        "tong_lai_lenh_cap6_pct"
+    ] == pytest.approx(-10.0)
+
+
+@pytest.mark.asyncio
 async def test_tour_mauthuan_flag_is_not_a_graduation_gate(db_session, test_user):
     """Tour có nút "Bỏ qua" — lấy nó làm cổng là tặng không một nhiệm vụ."""
     services, _ = await _enter_cap6(db_session, test_user.id)
     out = await services["cap6"].mark_tour_mauthuan(test_user.id)
+    await services["cap6"].mark_tour_mauthuan(test_user.id)
     assert out["da_xem_tour_mauthuan"] is True
     assert out["dat_nhiem_vu"] is False
+    events = await _journey_events(db_session, test_user.id, "cap6_tour_mauthuan_done")
+    assert len(events) == 1
+    assert events[0].fields == {}
     with pytest.raises(ConflictError):
         await services["cap6"].graduate(test_user.id)
 
@@ -652,6 +856,15 @@ async def test_kehoach_ghi_nhan_dinh_va_server_tu_suy_3_co(db_session, test_user
     assert out["khoi_luong_pct_von"] == 8.0
     assert out["muc_tu_tin"] == 3
     assert out["nhat_quan"] is True
+    rated = await _journey_events(db_session, test_user.id, "cap6_conflict_rated")
+    ordered = await _journey_events(db_session, test_user.id, "cap6_order_with_conflict")
+    assert len(rated) == len(ordered) == 1
+    assert rated[0].fields == {"symbol": "VCB", "level": "nghiem"}
+    assert ordered[0].fields == {
+        "symbol": "VCB",
+        "level": "nghiem",
+        "volume_pct": 8.0,
+    }
 
 
 @pytest.mark.asyncio
@@ -809,6 +1022,8 @@ async def test_post_y_het_lan_truoc_la_no_op_ke_ca_sau_cua_so(db_session, test_u
         test_user.id, buy.id, conflict_level="nghiem"
     )
     assert sau.conflict_level == "nghiem"
+    assert len(await _journey_events(db_session, test_user.id, "cap6_conflict_rated")) == 1
+    assert len(await _journey_events(db_session, test_user.id, "cap6_order_with_conflict")) == 1
 
 
 @pytest.mark.asyncio
@@ -872,6 +1087,9 @@ async def test_skip_cung_ma_hai_lan_la_HAI_quyet_dinh(db_session, test_user):
     pt = await services["cap6"].phan_tich(test_user.id)
     assert pt["khoi_15"]["so_lan_khong_mua"] == 2
     assert pt["khoi_15"]["so_lan_nghiem_khong_mua"] == 2
+    events = await _journey_events(db_session, test_user.id, "cap6_skip")
+    assert len(events) == 2
+    assert all(e.fields == {"symbol": "VCB", "level": "nghiem"} for e in events)
 
 
 @pytest.mark.asyncio
@@ -1033,19 +1251,21 @@ async def test_nhe_vao_binh_thuong_duoc_dem_con_ngai_va_chua_ro_thi_khong(
 
 
 @pytest.mark.asyncio
-async def test_skip_o_muc_nghiem_duoc_dem_o_muc_nhe_thi_khong(db_session, test_user):
-    """«Không mua» ở mức nghiêm trọng là mẫu ✓ của spec §2. Đứng ngoài ở mức nhẹ
-    KHÔNG bị tính là lệch — nó chỉ không phải mẫu spec đếm."""
+async def test_skip_o_moi_muc_mau_thuan_deu_duoc_dem(db_session, test_user):
+    """Spec §2: xử lý ở bất kỳ mức nào và «Không mua» cũng tính nhất quán."""
     services, _ = await _enter_cap6(db_session, test_user.id)
-    await _seed_insight(db_session, "AAA", _P_VETO)
-    await _seed_insight(db_session, "BBB", _P_VETO)
-
-    await services["cap6"].skip(test_user.id, "AAA", conflict_level="nghiem")
-    await services["cap6"].skip(test_user.id, "BBB", conflict_level="nhe")
+    for symbol in ("AAA", "BBB", "CCC", "DDD"):
+        await _seed_insight(db_session, symbol, _P_VETO)
+    for symbol, level in zip(
+        ("AAA", "BBB", "CCC", "DDD"),
+        ("nhe", "ngai", "nghiem", "chua_ro"),
+        strict=True,
+    ):
+        await services["cap6"].skip(test_user.id, symbol, conflict_level=level)
 
     prog = await services["cap6"].get_progress(test_user.id)
-    assert prog["so_lan_xu_ly_nhat_quan"] == 1
-    assert prog["so_lan_xu_ly_veto_nhat_quan"] == 1
+    assert prog["so_lan_xu_ly_nhat_quan"] == 4
+    assert prog["so_lan_xu_ly_veto_nhat_quan"] == 4
 
 
 @pytest.mark.asyncio
@@ -1108,6 +1328,16 @@ async def test_graduate_at_three_consistent_events_without_veto(db_session, test
     assert out["graduated_at"] is not None
     assert out["time_to_graduate_hours"] is not None
 
+    # Completion stays in Cấp 6; no higher-level progress is created.
+    from app.models.cap7 import Cap7Progress
+    from app.models.cap8 import Cap8Progress
+
+    for model in (Cap7Progress, Cap8Progress):
+        assert (await db_session.execute(select(model))).scalar_one_or_none() is None
+    returned = await services["cap6"].enter(test_user.id)
+    assert returned["id"] == out["id"]
+    assert returned["graduated_at"] == out["graduated_at"]
+
 
 @pytest.mark.asyncio
 async def test_graduate_rejects_two_consistent_events_despite_veto(db_session, test_user):
@@ -1149,6 +1379,32 @@ async def test_graduate_idempotent_giu_nguyen_moc(db_session, test_user):
     lan_1 = await services["cap6"].graduate(test_user.id)
     lan_2 = await services["cap6"].graduate(test_user.id)
     assert lan_1["graduated_at"] == lan_2["graduated_at"]
+    events = await _journey_events(db_session, test_user.id, "cap6_graduate")
+    assert len(events) == 1
+    assert events[0].fields == {}
+
+
+@pytest.mark.asyncio
+async def test_graduate_retry_khong_tut_cap_khi_bang_chung_nguon_khong_con(
+    db_session, test_user
+):
+    """Once graduated, a retry keeps the durable outcome without re-gating."""
+    services, _account = await _enter_cap6(db_session, test_user.id)
+    progress = (
+        await db_session.execute(
+            select(Cap6Progress).where(Cap6Progress.user_id == test_user.id)
+        )
+    ).scalar_one()
+    graduated_at = datetime.now(UTC) - timedelta(days=2)
+    progress.graduated_at = graduated_at
+    progress.time_to_graduate_hours = 12.0
+    progress.so_lan_xu_ly_nhat_quan = 0
+    await db_session.flush()
+
+    out = await services["cap6"].graduate(test_user.id)
+    assert out["graduated_at"] == graduated_at
+    assert out["time_to_graduate_hours"] == 12.0
+    assert out["so_lan_xu_ly_nhat_quan"] == 0
 
 
 @pytest.mark.asyncio
@@ -1337,6 +1593,54 @@ async def _second_user(db_session, email: str = "other-cap6@example.com"):
 
 
 @pytest.mark.asyncio
+async def test_get_plan_hydrates_cumulative_cap1_to_cap6(db_session, test_user):
+    services, account = await _enter_cap6(db_session, test_user.id)
+    buy = await _make_order(
+        db_session, account.id, test_user.id, symbol="PLAN6", price=20_000
+    )
+    db_session.add(
+        OrderKehoach(
+            order_id=buy.id,
+            lyDo="ky_thuat",
+            trangThai_luc_dat="ung_ho",
+            vung_mua=20_000,
+            phuong_phap_sl_tp="bien_do_dao_dong",
+            cat_lo=18_000,
+            chot_loi=25_000,
+            khau_vi="can_bang",
+            muc_tu_tin=3,
+            cach_khoi_luong="khau_vi_tu_tin",
+            khoi_luong=100,
+            pct_von=8.0,
+            doc_5_lop=_doc(ky_thuat="ok"),
+            ai_5_lop=_doc(tin_tuc="bad"),
+            from_watchlist=False,
+            hunt_filter=None,
+            cap5_entry_snapshot_at=datetime.now(UTC),
+        )
+    )
+    await db_session.flush()
+    await _seed_insight(db_session, "PLAN6", _P_VETO)
+    await services["cap6"].record_kehoach(
+        test_user.id, buy.id, conflict_level="nghiem"
+    )
+
+    out = await services["cap6"].get_plan(test_user.id, buy.id)
+    assert out["symbol"] == "PLAN6"
+    assert out["cat_lo"] == 18_000
+    assert out["doc_5_lop"]["ky_thuat"] == "ok"
+    assert out["source_known"] is True
+    assert out["tu_san_ma"] is False
+    assert out["had_conflict"] is True
+    assert out["conflict_level"] == "nghiem"
+    assert out["veto_layers"] == ["tin_tuc"]
+    assert out["support_layers"]
+    assert out["opposing_layers"]
+    assert out["conflict_snapshot_at"] is not None
+    assert out["nhat_quan"] is True
+
+
+@pytest.mark.asyncio
 async def test_get_kehoach_doc_lai_dung_thu_da_ghi(db_session, test_user):
     """★ Đọc THUẦN cột đã lưu — KHÔNG suy lại bảng mâu thuẫn theo phiên hiện tại.
 
@@ -1405,21 +1709,22 @@ async def test_cap1_ketso_upserts_cam_xuc(db_session, test_user):
     assert buy is not None
     sell = await _make_order(
         db_session, account.id, test_user.id, symbol="EMO", side=OrderSide.SELL,
-        price=22_000,
+        qty=buy.quantity, price=22_000,
     )
 
     first = await cap1.record_ketso(test_user.id, sell.id)
     assert first.cam_xuc is None
-    assert first.pnl_vnd == 200_000
+    expected_pnl = buy.quantity * 2_000
+    assert first.pnl_vnd == expected_pnl
 
     second = await cap1.record_ketso(test_user.id, sell.id, cam_xuc="so")
     assert second.id == first.id
     assert second.cam_xuc.value == "so"
-    assert second.pnl_vnd == 200_000
+    assert second.pnl_vnd == expected_pnl
     assert second.gia_ra == 22_000
 
-    with pytest.raises(ConflictError):
-        await cap1.record_ketso(test_user.id, sell.id)
+    retry = await cap1.record_ketso(test_user.id, sell.id)
+    assert retry.id == second.id
     await db_session.refresh(second)
     assert second.cam_xuc.value == "so"
 
@@ -1430,6 +1735,138 @@ async def test_cap1_ketso_upserts_cam_xuc(db_session, test_user):
 # ══════════════════════════════════════════════════════
 # HTTP wiring
 # ══════════════════════════════════════════════════════
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("journey_level", [4, 5], ids=["cap4", "cap5"])
+async def test_atomic_buy_still_requires_five_self_ratings_in_cap4_and_cap5(
+    client, db_session, test_user, journey_level
+):
+    """The Cấp 6 replacement must not weaken the original Cấp 4–5 gate."""
+    from app.core.security import create_access_token
+
+    await VirtualTradingRepository(db_session).create_account(test_user.id, 100_000_000)
+    await db_session.commit()
+    token = create_access_token(
+        subject=test_user.id, extra_claims={"role": test_user.role.value}
+    )
+    headers = {"Authorization": f"Bearer {token}"}
+    with patch(
+        "app.services.virtual_trading.service.VirtualTradingService.get_journey_level",
+        new=AsyncMock(return_value=journey_level),
+    ):
+        response = await client.post(
+            "/api/v1/virtual-trading/orders",
+            headers=headers,
+            json={
+                "symbol": "VCB",
+                "side": "buy",
+                "order_type": "market",
+                "quantity": 100,
+                "journey_plan": {
+                    "lyDo": "ky_thuat",
+                    "trangThai_luc_dat": "ung_ho",
+                    "vung_mua": 20_000,
+                    "phuong_phap_sl_tp": "ho_tro_khang_cu",
+                    "cat_lo": 18_000,
+                    "chot_loi": 25_000,
+                    "khau_vi": "can_bang",
+                    "muc_tu_tin": 1,
+                    "cach_khoi_luong": "khau_vi_tu_tin",
+                },
+            },
+        )
+    assert response.status_code == 400, response.text
+    assert "Cấp 4–5" in response.json()["detail"]
+    assert await db_session.scalar(select(func.count(VirtualOrder.id))) == 0
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("conflict_level", "expected_saved_levels", "expected_credit"),
+    [
+        ("nghiem", [1, 2, 3, 5, 6], 1),
+        (None, [1, 2, 3, 5], 0),
+    ],
+    ids=["rated-conflict", "unrated-does-not-block"],
+)
+async def test_atomic_cap6_buy_replaces_self_ratings_with_server_conflict_snapshot(
+    client,
+    db_session,
+    test_user,
+    conflict_level,
+    expected_saved_levels,
+    expected_credit,
+):
+    """Cấp 6 accepts its actual panel body and never fabricates a self-rating."""
+    from app.core.security import create_access_token
+
+    await _fast_track_cap5(db_session, test_user.id)
+    await Cap6Service(db_session).enter(test_user.id)
+    await _seed_symbol(db_session, "VCB")
+    await _seed_insight(db_session, "VCB", _P_VETO)
+    await db_session.commit()
+    token = create_access_token(
+        subject=test_user.id, extra_claims={"role": test_user.role.value}
+    )
+    headers = {"Authorization": f"Bearer {token}"}
+    journey_plan = {
+        "lyDo": "ky_thuat",
+        "trangThai_luc_dat": "ung_ho",
+        "vung_mua": 20_000,
+        "phuong_phap_sl_tp": "ho_tro_khang_cu",
+        "cat_lo": 18_000,
+        "chot_loi": 25_000,
+        "khau_vi": "can_bang",
+        "muc_tu_tin": 1,
+        "cach_khoi_luong": "khau_vi_tu_tin",
+    }
+    if conflict_level is not None:
+        journey_plan["conflict_level"] = conflict_level
+
+    with (
+        patch(
+            "app.services.virtual_trading.service.validate_symbol",
+            side_effect=_valid_atomic_symbol,
+        ),
+        patch(
+            "app.services.virtual_trading.service.resolve_price",
+            side_effect=_fixed_atomic_price,
+        ),
+    ):
+        response = await client.post(
+            "/api/v1/virtual-trading/orders",
+            headers=headers,
+            json={
+                "symbol": "VCB",
+                "side": "buy",
+                "order_type": "market",
+                "quantity": 100,
+                "journey_plan": journey_plan,
+            },
+        )
+    assert response.status_code == 201, response.text
+    body = response.json()
+    assert body["status"] == "filled"
+    assert body["journey_plan_saved_levels"] == expected_saved_levels
+
+    plan = await db_session.scalar(
+        select(OrderKehoach).where(OrderKehoach.order_id == _uuid.UUID(body["id"]))
+    )
+    assert plan is not None
+    assert plan.doc_5_lop is None
+    assert plan.ai_5_lop is None
+    assert plan.cap5_entry_snapshot_at is not None
+    assert plan.conflict_snapshot_at is not None
+    assert plan.had_conflict is True
+    assert plan.had_veto is True
+    assert plan.support_layers == ["ky_thuat"]
+    assert plan.opposing_layers == ["tin_tuc"]
+    assert plan.conflict_level == conflict_level
+
+    progress = await Cap6Service(db_session).get_progress(test_user.id)
+    assert progress is not None
+    assert progress["so_lan_xu_ly_nhat_quan"] == expected_credit
 
 
 @pytest.mark.asyncio

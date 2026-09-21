@@ -1,4 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useRef, type ReactNode } from "react"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
+import { isDoc5LopComplete } from "./doc5Lop"
 import type { Lop, Lop5Partial, NhanDinhLop } from "./types"
 
 /**
@@ -30,6 +32,8 @@ export interface Cap4OrderEvent {
   /** Filled price (VND). */
   price: number
   orderId: string
+  /** Exact BUY order matched by the server for a SELL; present on reload-safe closeouts. */
+  buyOrderId?: string
   /** Khối "Đọc 5 lớp" carried at BUY time — undefined on sell events. */
   doc5Lop?: Lop5Partial
   /** AI's per-lớp view at BUY time (only once revealed) — undefined on sells. */
@@ -74,14 +78,19 @@ export function Cap4Provider({ children }: { children: ReactNode }) {
   }, [])
 
   const onLopRated = useCallback((lop: Lop, nhanDinh: NhanDinhLop) => {
+    trackJourneyEvent("cap4_doc_lop", { lop, nhan_dinh: nhanDinh })
     handlersRef.current.onLopRated?.(lop, nhanDinh)
   }, [])
 
   const onAiRevealed = useCallback((soLopKhacAi: number) => {
+    trackJourneyEvent("cap4_lo_ai", { so_khac_ai: soLopKhacAi })
     handlersRef.current.onAiRevealed?.(soLopKhacAi)
   }, [])
 
   const onOrderFilled = useCallback((order: Cap4OrderEvent) => {
+    if (order.side === "buy" && order.doc5Lop && isDoc5LopComplete(order.doc5Lop)) {
+      trackJourneyEvent("cap4_dat_lenh_du_5lop")
+    }
     handlersRef.current.onOrderFilled?.(order)
   }, [])
 

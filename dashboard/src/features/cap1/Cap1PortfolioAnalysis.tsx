@@ -136,6 +136,7 @@ function Khoi2({ rows }: { rows: ReasonRow[] }) {
     <div className={CARD}>
       <div className={SECTION_HEADER}>{KHOI_TITLE.khoi2}</div>
       <table className="w-full text-xs">
+        <caption className="sr-only">Kết quả thắng thua theo năm lý do mua</caption>
         <thead>
           <tr className="text-left text-[var(--color-text-3)]">
             <th className="py-1 font-medium">Lý do</th>

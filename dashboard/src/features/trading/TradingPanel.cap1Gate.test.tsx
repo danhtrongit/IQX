@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import React, { useEffect } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 
 /**
  * Cấp 1 wiring inside `TradingPanel`/`OrderEntry` (Task FE1):
@@ -20,8 +21,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
  * directly.
  */
 
+let currentSymbol = "VNM"
 vi.mock("@/shared/contexts/symbol-context", () => ({
-  useSymbol: () => ({ symbol: "VNM", setSymbol: vi.fn() }),
+  useSymbol: () => ({ symbol: currentSymbol, setSymbol: vi.fn() }),
 }))
 
 const priceData = {
@@ -44,7 +46,19 @@ vi.mock("@/features/market-data", () => ({
   usePrice: () => ({ data: priceData, isLoading: false }),
 }))
 
-const placeOrderMock = vi.fn(() =>
+interface MockOrderResult {
+  id: string
+  symbol: string
+  side: string
+  quantity: number
+  price: number
+  total: number
+  status: string
+  journeyPlanSavedLevels?: number[]
+  exitMatchedBuyOrderId?: string
+}
+
+const placeOrderMock = vi.fn((): Promise<MockOrderResult> =>
   Promise.resolve({
     id: "order-1",
     symbol: "VNM",
@@ -97,6 +111,7 @@ const onLyDoPickedMock = vi.fn()
 const onOrderFilledMock = vi.fn()
 const onDocChiTietClickedMock = vi.fn()
 let isCap1ActiveFlag = true
+let tourViewed = true
 
 vi.mock("@/features/cap1", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/features/cap1")>()
@@ -109,6 +124,7 @@ vi.mock("@/features/cap1", async (importOriginal) => {
       onDocChiTietClicked: onDocChiTietClickedMock,
       registerHandlers: vi.fn(),
     }),
+    useCap1Progress: () => ({ data: { da_xem_tour: tourViewed } }),
     useRecordKehoach: () => ({ mutate: recordKehoachMock, isPending: false }),
     PlanFormCap1: (props: {
       lyDo: string | null
@@ -159,11 +175,14 @@ function submitButton(): HTMLElement {
 function renderPanel() {
   get.mockReturnValue({ json: () => Promise.resolve(null) })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  return render(
+  const view = render(
     <QueryClientProvider client={client}>
-      <TradingPanel />
+      <SidebarProvider>
+        <TradingPanel />
+      </SidebarProvider>
     </QueryClientProvider>,
   )
+  return { ...view, client }
 }
 
 beforeEach(() => {
@@ -176,6 +195,8 @@ beforeEach(() => {
   onOrderFilledMock.mockClear()
   onDocChiTietClickedMock.mockClear()
   isCap1ActiveFlag = true
+  tourViewed = true
+  currentSymbol = "VNM"
 })
 
 describe("TradingPanel — Cấp 1 wiring (Task FE1)", () => {
@@ -202,12 +223,57 @@ describe("TradingPanel — Cấp 1 wiring (Task FE1)", () => {
     expect(submitButton()).not.toBeDisabled()
   })
 
+  it("chặn MUA ở riêng Cấp 1 khi chưa xem tour và CTA mở Hành trình", () => {
+    function ActivePanelSpy() {
+      const { activePanel } = useSidebar()
+      return <span data-testid="active-panel-spy">{activePanel}</span>
+    }
+
+    tourViewed = false
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    render(
+      <QueryClientProvider client={client}>
+        <SidebarProvider defaultPanel="trading">
+          <TradingPanel />
+          <ActivePanelSpy />
+        </SidebarProvider>
+      </QueryClientProvider>,
+    )
+
+    fireEvent.click(screen.getByText("PICK_LY_DO"))
+    expect(submitButton()).toBeDisabled()
+    expect(screen.getByTestId("cap1-tour-gate")).toHaveTextContent(
+      "Xem nhanh 3 tour sản phẩm để bắt đầu (khoảng 3 phút).",
+    )
+    fireEvent.click(screen.getByText("Xem 3 tour sản phẩm"))
+    expect(screen.getByTestId("active-panel-spy")).toHaveTextContent("journey")
+  })
+
   it("cổng cứng: MUA re-disables if vùng mua is cleared after a lý do is picked", () => {
     renderPanel()
     fireEvent.click(screen.getByText("PICK_LY_DO"))
     expect(submitButton()).not.toBeDisabled()
 
     fireEvent.change(screen.getByLabelText("vung-mua-mock"), { target: { value: "" } })
+    expect(submitButton()).toBeDisabled()
+  })
+
+  it("đổi mã xóa nguyên quyết định và snapshot của mã trước", async () => {
+    const { rerender, client } = renderPanel()
+    fireEvent.click(screen.getByText("PICK_LY_DO"))
+    await waitFor(() => expect(screen.getByTestId("ai-thanh-tra-mock")).toBeInTheDocument())
+    expect(submitButton()).not.toBeDisabled()
+
+    currentSymbol = "HPG"
+    rerender(
+      <QueryClientProvider client={client}>
+        <SidebarProvider>
+          <TradingPanel />
+        </SidebarProvider>
+      </QueryClientProvider>,
+    )
+
+    expect(screen.queryByTestId("ai-thanh-tra-mock")).not.toBeInTheDocument()
     expect(submitButton()).toBeDisabled()
   })
 
@@ -225,6 +291,16 @@ describe("TradingPanel — Cấp 1 wiring (Task FE1)", () => {
     fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
 
     await waitFor(() => expect(placeOrderMock).toHaveBeenCalledTimes(1))
+    expect(placeOrderMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        journeyPlan: expect.objectContaining({
+          lyDo: "dong_tien",
+          trangThai_luc_dat: "ung_ho",
+          vung_mua: 62_400,
+          snapshot: { mock: true, lyDo: "dong_tien" },
+        }),
+      }),
+    )
     await waitFor(() =>
       expect(recordKehoachMock).toHaveBeenCalledWith({
         order_id: "order-1",
@@ -240,6 +316,29 @@ describe("TradingPanel — Cấp 1 wiring (Task FE1)", () => {
     )
   })
 
+  it("không gọi endpoint recovery khi kế hoạch đã được lưu atomically", async () => {
+    placeOrderMock.mockResolvedValueOnce({
+      id: "order-atomic",
+      symbol: "VNM",
+      side: "BUY",
+      quantity: 100,
+      price: 62_400,
+      total: 6_240_000,
+      status: "FILLED",
+      journeyPlanSavedLevels: [1],
+    })
+    renderPanel()
+    fireEvent.click(screen.getByText("PICK_LY_DO"))
+    await waitFor(() => expect(screen.getByTestId("ai-thanh-tra-mock")).toBeInTheDocument())
+    fireEvent.click(screen.getByText("ĐẶT LỆNH MUA"))
+
+    await waitFor(() => expect(placeOrderMock).toHaveBeenCalledTimes(1))
+    expect(recordKehoachMock).not.toHaveBeenCalled()
+    expect(onOrderFilledMock).toHaveBeenCalledWith(
+      expect.objectContaining({ orderId: "order-atomic", lyDo: "dong_tien" }),
+    )
+  })
+
   it("on a successful SELL fill, notifies the Cấp 1 event bus WITHOUT lý do/vùng mua (Task FE3 — Kết sổ Cấp 1 wiring)", async () => {
     placeOrderMock.mockResolvedValueOnce({
       id: "order-2",
@@ -249,6 +348,7 @@ describe("TradingPanel — Cấp 1 wiring (Task FE1)", () => {
       price: 65_000,
       total: 6_500_000,
       status: "FILLED",
+      exitMatchedBuyOrderId: "buy-42",
     })
     renderPanel()
     fireEvent.click(screen.getByText("BÁN"))
@@ -262,9 +362,28 @@ describe("TradingPanel — Cấp 1 wiring (Task FE1)", () => {
         quantity: 100,
         price: 65_000,
         orderId: "order-2",
+        buyOrderId: "buy-42",
       }),
     )
     // A SELL never records a Form Kế hoạch (that's a BUY-only concept).
     expect(recordKehoachMock).not.toHaveBeenCalled()
+  })
+
+  it("không mở Kết sổ khi lệnh BÁN giới hạn mới chỉ đang chờ khớp", async () => {
+    placeOrderMock.mockResolvedValueOnce({
+      id: "order-pending",
+      symbol: "VNM",
+      side: "SELL",
+      quantity: 100,
+      price: 65_000,
+      total: 6_500_000,
+      status: "PENDING",
+    })
+    renderPanel()
+    fireEvent.click(screen.getByText("BÁN"))
+    fireEvent.click(screen.getByText("ĐẶT LỆNH BÁN"))
+
+    await waitFor(() => expect(placeOrderMock).toHaveBeenCalledTimes(1))
+    expect(onOrderFilledMock).not.toHaveBeenCalled()
   })
 })

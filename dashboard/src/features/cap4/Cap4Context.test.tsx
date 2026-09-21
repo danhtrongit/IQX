@@ -1,6 +1,12 @@
 import { render, renderHook } from "@testing-library/react"
 import React, { useEffect } from "react"
 import { describe, expect, it, vi } from "vitest"
+
+const trackJourneyEventMock = vi.hoisted(() => vi.fn())
+vi.mock("@/shared/analytics/journey", () => ({
+  trackJourneyEvent: trackJourneyEventMock,
+}))
+
 import { Cap4Provider, useCap4Events } from "./Cap4Context"
 
 describe("useCap4Events — no-op outside a provider", () => {
@@ -53,9 +59,14 @@ describe("useCap4Events — inside a Cap4Provider", () => {
 
     bus!.onLopRated?.("dong_tien", "ok")
     expect(onLopRated).toHaveBeenCalledWith("dong_tien", "ok")
+    expect(trackJourneyEventMock).toHaveBeenCalledWith("cap4_doc_lop", {
+      lop: "dong_tien",
+      nhan_dinh: "ok",
+    })
 
     bus!.onAiRevealed?.(2)
     expect(onAiRevealed).toHaveBeenCalledWith(2)
+    expect(trackJourneyEventMock).toHaveBeenCalledWith("cap4_lo_ai", { so_khac_ai: 2 })
 
     bus!.onOrderFilled?.({
       symbol: "VNM",
@@ -76,6 +87,7 @@ describe("useCap4Events — inside a Cap4Provider", () => {
     expect(onOrderFilled).toHaveBeenCalledWith(
       expect.objectContaining({ symbol: "VNM", orderId: "o1", soLopKhacAi: 1 }),
     )
+    expect(trackJourneyEventMock).toHaveBeenCalledWith("cap4_dat_lenh_du_5lop")
   })
 
   it("merge-semantics: two independent registrants each keep their own handlers", () => {

@@ -100,7 +100,7 @@ describe("JourneyPanelCap3", () => {
     renderPanel()
 
     expect(taskStateCap3(2, makeProgress({ task_1_done_at: "done" }))).toBe("active")
-    expect(within(screen.getByTestId("cap3-focus")).getByText("Đặt lệnh ở cả 3 mức tự tin")).toBeInTheDocument()
+    expect(within(screen.getByTestId("cap3-task-2")).getByText("Đặt lệnh ở cả 3 mức tự tin")).toBeInTheDocument()
   })
 
   it("shows preserved graduates as complete without inventing cleared task evidence", () => {
@@ -134,7 +134,7 @@ describe("JourneyPanelCap3", () => {
       </SidebarProvider>,
     )
 
-    fireEvent.click(within(screen.getByTestId("cap3-focus")).getByText("Làm ngay →"))
+    fireEvent.click(within(screen.getByTestId("cap3-task-1")).getByText("Làm ngay →"))
     expect(screen.getByTestId("active-panel")).toHaveTextContent("trading")
     expect(screen.queryByText(/Thách thức Bản lĩnh/)).not.toBeInTheDocument()
     expect(screen.queryByText(/15 lệnh/)).not.toBeInTheDocument()

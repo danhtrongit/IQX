@@ -11,6 +11,19 @@
   border-radius: 10px;
 }
 
+.cap2-alert-region {
+  flex: 0 0 auto;
+  max-height: min(42vh, 320px);
+  padding: 8px 12px;
+  overflow-y: auto;
+  background: var(--bg1);
+}
+
+.cap2-alert-region .cap2-alert {
+  max-width: 920px;
+  margin: 0 auto;
+}
+
 .cap2-alert--severe {
   border-left-color: #ff6b6b;
   background: linear-gradient(180deg, rgba(255, 107, 107, 0.08), transparent);
@@ -48,6 +61,31 @@
   font-size: 12px;
   line-height: 1.6;
   color: var(--t2);
+}
+
+.cap2-alert-details {
+  display: grid;
+  gap: 5px;
+  margin: 8px 0 0;
+  font-size: 11.5px;
+  color: var(--t2);
+}
+
+.cap2-alert-details div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cap2-alert-details dt {
+  color: var(--t3, var(--t2));
+}
+
+.cap2-alert-details dd {
+  margin: 0;
+  color: var(--t1);
+  font-weight: 600;
+  text-align: right;
 }
 
 .cap2-alert-typebox {

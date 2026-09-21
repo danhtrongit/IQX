@@ -41,6 +41,11 @@
     height 350ms ease;
 }
 
+.iqx-tour-root[data-busy="true"] .iqx-tour-hole,
+.iqx-tour-root[data-busy="true"] .iqx-tour-tooltip {
+  opacity: 0;
+}
+
 .iqx-tour-tooltip {
   position: fixed;
   z-index: 2001;
@@ -115,6 +120,9 @@
 
 .iqx-tour-btn--ghost {
   color: #888;
+  padding-inline: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .iqx-tour-btn--back {
@@ -125,4 +133,17 @@
 .iqx-tour-btn--primary {
   background: rgb(var(--primary-6));
   color: #fff;
+}
+
+.iqx-tour-btn:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.iqx-tour-progress {
+  min-width: 34px;
+  color: #777;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  text-align: right;
 }

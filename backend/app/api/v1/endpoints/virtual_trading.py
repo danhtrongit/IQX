@@ -1,10 +1,8 @@
 """Virtual Trading API endpoints.
 
 All endpoints under /api/v1/virtual-trading.
-User routes require auth (``CurrentUser``) — Cấp 0 (sân tập, free) users may use
-them too, but the virtual-trading service ALWAYS forces their orders to
-``mode="san_tap"`` + T0 settlement (see ``VirtualTradingService.place_order``);
-real-rules ``thuc_chien`` (T+2) behavior stays premium-only.
+User routes require auth (``CurrentUser``). The active journey level decides
+the order mode: Cấp 0 is ``san_tap``/T0 and Cấp 1+ is ``thuc_chien``/T2.
 ``POST /account/activate`` (the paid 1B-VND account) still requires Premium —
 Cấp 0 users get their practice account seeded via ``POST /cap0/enter`` instead.
 Admin routes require admin role.
@@ -19,8 +17,8 @@ from fastapi import APIRouter, Query
 
 from app.api.deps import AdminUser, CurrentUser, DBSession, PremiumUser, is_premium_active
 from app.api.deps_audit import AuditCtx
+from app.core.exceptions import BadRequestError
 from app.models.virtual_trading import OrderSide, OrderStatus
-from app.services.admin_audit import AdminAuditService, diff_dict
 from app.schemas.virtual_trading import (
     AccountResponse,
     AdminAccountResponse,
@@ -38,6 +36,15 @@ from app.schemas.virtual_trading import (
     TradeListResponse,
     TradeResponse,
 )
+from app.services.admin_audit import AdminAuditService, diff_dict
+from app.services.cap0.service import Cap0Service
+from app.services.cap1.service import Cap1Service
+from app.services.cap2.alerts import Cap2AlertService, current_session_date
+from app.services.cap2.service import Cap2Service
+from app.services.cap3.service import Cap3Service
+from app.services.cap4.service import Cap4Service
+from app.services.cap5.service import Cap5Service
+from app.services.cap6.service import Cap6Service
 from app.services.virtual_trading.service import VirtualTradingService
 
 router = APIRouter(prefix="/virtual-trading")
@@ -100,11 +107,74 @@ async def get_portfolio(user: CurrentUser, db: DBSession) -> PortfolioResponse:
 async def place_order(body: OrderCreateRequest, user: CurrentUser, db: DBSession) -> OrderResponse:
     """Đặt lệnh giao dịch ảo.
 
-    Không yêu cầu Premium: người dùng Cấp 0 (sân tập, miễn phí) được đặt lệnh,
-    nhưng lệnh của họ LUÔN bị ép về ``mode="san_tap"`` + thanh toán T0, bất kể
-    cấu hình hệ thống — thực chiến (T+2) vẫn chỉ dành cho Premium.
+    Không yêu cầu Premium. Server suy chế độ từ cấp hành trình hiện tại.
     """
     svc = VirtualTradingService(db)
+    journey_level = await svc.get_journey_level(user.id)
+    plan = body.journey_plan
+
+    # Placement and graduation choose the next level before its progress row
+    # necessarily exists. Materialise that row inside this same transaction so
+    # the first BUY cannot fail between the mode resolver and plan persistence.
+    if body.side == "buy" and journey_level == 1:
+        cap1 = Cap1Service(db)
+        if await cap1.get_progress(user.id) is None:
+            await cap1.enter(user.id)
+    elif body.side == "buy" and journey_level == 2:
+        cap2 = Cap2Service(db)
+        if await cap2.get_progress(user.id) is None:
+            await cap2.enter(user.id)
+
+    # A BUY and its learning commitments are one domain write.  Validate the
+    # cumulative form before touching cash/positions so a missing block cannot
+    # leave an order without the snapshot required by the active level.
+    if body.side == "buy" and journey_level is not None:
+        if plan is None:
+            raise BadRequestError("Lệnh MUA trong hành trình cần journey_plan")
+        if journey_level == 0 and not (plan.ly_do_doi_thuong or "").strip():
+            raise BadRequestError("Cấp 0 cần lý do đời thường trước khi mua")
+        if journey_level >= 1 and (
+            plan.lyDo is None or plan.trangThai_luc_dat is None or plan.vung_mua is None
+        ):
+            raise BadRequestError("Cấp 1+ cần lý do, trạng thái và vùng mua")
+        if journey_level >= 2 and (
+            plan.phuong_phap_sl_tp is None or plan.cat_lo is None or plan.chot_loi is None
+        ):
+            raise BadRequestError("Cấp 2+ cần phương pháp, cắt lỗ và chốt lời")
+        if journey_level >= 3 and (
+            plan.khau_vi is None
+            or plan.muc_tu_tin is None
+            or plan.cach_khoi_luong is None
+        ):
+            raise BadRequestError("Cấp 3+ cần khẩu vị, mức tự tin và cách khối lượng")
+        # Cấp 6 replaces the user's five-rating form with the compact
+        # server-owned five-layer conflict table (Cap6 spec §5.2).  The hard
+        # self-rating gate therefore applies only while that form exists.
+        if 4 <= journey_level <= 5 and (
+            plan.doc_5_lop is None
+            or set(plan.doc_5_lop) != {"ky_thuat", "dong_tien", "noi_bo", "tin_tuc", "dinh_gia"}
+        ):
+            raise BadRequestError("Cấp 4–5 cần tự đọc đủ chính xác 5 lớp")
+    elif body.side == "sell" and plan is not None:
+        raise BadRequestError("journey_plan chỉ dùng cho lệnh MUA")
+
+    nhoi_alert_service: Cap2AlertService | None = None
+    nhoi_alert_id = plan.nhoi_lenh_alert_id if plan is not None else None
+    request_session_date = current_session_date()
+    if nhoi_alert_id is not None:
+        if body.side != "buy" or journey_level is None or journey_level < 2:
+            raise BadRequestError("Cảnh báo nhồi lệnh chỉ dùng cho BUY từ Cấp 2")
+        nhoi_alert_service = Cap2AlertService(db)
+        await nhoi_alert_service.validate_nhoi_order_link(
+            user.id,
+            nhoi_alert_id,
+            symbol=body.symbol,
+            quantity=body.quantity,
+            order_type=body.order_type,
+            limit_price_vnd=body.limit_price_vnd,
+            session_date=request_session_date,
+        )
+
     order = await svc.place_order(
         user_id=user.id,
         symbol=body.symbol,
@@ -113,8 +183,95 @@ async def place_order(body: OrderCreateRequest, user: CurrentUser, db: DBSession
         quantity=body.quantity,
         limit_price_vnd=body.limit_price_vnd,
         is_premium=await is_premium_active(user, db),
+        journey_level=journey_level,
     )
-    return OrderResponse.model_validate(order)
+    saved_levels: list[int] = []
+    nhoi_alert_linked = False
+    if (
+        body.side == "buy"
+        and plan is not None
+        and journey_level is not None
+        and order.status in (OrderStatus.PENDING, OrderStatus.FILLED)
+    ):
+        if journey_level == 0:
+            await Cap0Service(db).record_kehoach(
+                user.id, order.id, ly_do_doi_thuong=plan.ly_do_doi_thuong or ""
+            )
+            saved_levels.append(0)
+        else:
+            await Cap1Service(db).record_kehoach(
+                user.id,
+                order.id,
+                ly_do=plan.lyDo,
+                trang_thai_luc_dat=plan.trangThai_luc_dat,
+                vung_mua=plan.vung_mua,
+                co_bam_doc_chi_tiet=plan.co_bam_doc_chi_tiet,
+                snapshot=plan.snapshot,
+            )
+            saved_levels.append(1)
+            if journey_level >= 2:
+                await Cap2Service(db).record_kehoach(
+                    user.id,
+                    order.id,
+                    phuong_phap_sl_tp=plan.phuong_phap_sl_tp,
+                    cat_lo=plan.cat_lo,
+                    chot_loi=plan.chot_loi,
+                )
+                saved_levels.append(2)
+            if journey_level >= 3:
+                cap3 = Cap3Service(db)
+                progress = await cap3.get_progress(user.id)
+                if progress is None:
+                    raise BadRequestError("Chưa có tiến trình Cấp 3")
+                reference_price = order.filled_price_vnd or order.limit_price_vnd
+                if reference_price is None:
+                    raise BadRequestError("Chưa xác định được giá để tính % vốn")
+                pct_von = order.quantity * reference_price / progress.von_ban_dau * 100.0
+                await cap3.record_kehoach(
+                    user.id,
+                    order.id,
+                    khau_vi=plan.khau_vi,
+                    muc_tu_tin=plan.muc_tu_tin,
+                    cach_khoi_luong=plan.cach_khoi_luong,
+                    khoi_luong=order.quantity,
+                    pct_von=pct_von,
+                )
+                saved_levels.append(3)
+            if 4 <= journey_level <= 5:
+                await Cap4Service(db).record_kehoach(
+                    user.id, order.id, doc_5_lop=plan.doc_5_lop
+                )
+                saved_levels.append(4)
+            if journey_level >= 5:
+                cap5_plan = await Cap5Service(db).record_entry_snapshot(user.id, order.id)
+                if cap5_plan.cap5_entry_snapshot_at is not None:
+                    saved_levels.append(5)
+            if journey_level >= 6:
+                cap6 = Cap6Service(db)
+                cap6_plan = await cap6.record_entry_snapshot(user.id, order.id)
+                if plan.conflict_level is not None:
+                    cap6_plan = await cap6.record_kehoach(
+                        user.id, order.id, conflict_level=plan.conflict_level
+                    )
+                if (
+                    cap6_plan.conflict_snapshot_at is not None
+                    and cap6_plan.conflict_level is not None
+                ):
+                    saved_levels.append(6)
+            if journey_level >= 2:
+                await svc.activate_buy_plan(user.id, order.id)
+            if nhoi_alert_service is not None and nhoi_alert_id is not None:
+                nhoi_alert_linked = await nhoi_alert_service.link_nhoi_order(
+                    user.id,
+                    nhoi_alert_id,
+                    order,
+                    session_date=request_session_date,
+                )
+
+    response = OrderResponse.model_validate(order)
+    response.journey_plan_saved_levels = saved_levels
+    response.nhoi_lenh_alert_linked = nhoi_alert_linked
+    return response
 
 
 @router.get("/orders", response_model=OrderListResponse, tags=["Giao dịch ảo"])
@@ -348,11 +505,16 @@ async def admin_list_accounts(
     search: str | None = Query(None),
 ):
     """Quản trị: liệt kê tài khoản giao dịch ảo (hỗ trợ phân trang và lọc)."""
-    from app.schemas.common import PaginatedResponse
     import math
-    from sqlalchemy import select as _select, func as _func, or_ as _or, and_ as _and
-    from app.models.virtual_trading import VirtualTradingAccount, AccountStatus
+
+    from sqlalchemy import and_ as _and
+    from sqlalchemy import func as _func
+    from sqlalchemy import or_ as _or
+    from sqlalchemy import select as _select
+
     from app.models.user import User
+    from app.models.virtual_trading import AccountStatus, VirtualTradingAccount
+    from app.schemas.common import PaginatedResponse
 
     conditions = []
     if status:

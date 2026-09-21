@@ -1,5 +1,7 @@
+/* eslint-disable react-hooks/set-state-in-effect -- reset/count-up state is intentionally synchronized to each newly opened Kết sổ record. */
 import { useEffect, useState } from "react"
 import { Modal } from "@arco-design/web-react"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { cn } from "@/shared/lib/cn"
 import { useRecordKetso } from "@/features/cap1/hooks"
 import {
@@ -106,6 +108,8 @@ export interface KetsoDataCap5 extends KetsoDataCap4 {
   huntSoPhienCho: number | null
   /** Số lớp ủng hộ (0-5) lúc vào lệnh. `null` = CHƯA BIẾT, không phải 0. */
   huntSoLopLucVao: number | null
+  /** Số lớp thật sự đã chấm được tại snapshot BUY. */
+  huntSoLopDaChamLucVao?: number | null
   /**
    * `true` khi KHÔNG lấy được nguồn săn của lệnh (`GET /cap5/nguon-san/{symbol}`
    * lỗi/timeout).
@@ -168,14 +172,17 @@ function lyDoLabel(lyDo: LyDo): string {
 }
 
 function fmtVnd(n: number): string {
-  return Math.round(n).toLocaleString("en-US")
+  return Math.round(n).toLocaleString("vi-VN")
 }
 
 /** `+5.3%` / `−4.2%` / `0.0%` — dấu trừ typographic "−" (U+2212), như Cấp 0-4. */
 function fmtPct(pct: number): string {
   const rounded = Math.round(pct * 10) / 10
   const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : ""
-  return `${sign}${Math.abs(rounded).toFixed(1)}%`
+  return `${sign}${Math.abs(rounded).toLocaleString("vi-VN", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  })}%`
 }
 
 function fmtVndSigned(n: number): string {
@@ -248,6 +255,7 @@ export function KetsoModalCap5({
       setDisplayPct(0)
       return
     }
+    trackJourneyEvent("cap5_ketso_view", { symbol: data.symbol.toUpperCase() })
     setEmotion(null)
     setClosing(false)
     const start = Date.now()
@@ -288,6 +296,7 @@ export function KetsoModalCap5({
     huntFilter,
     huntSoPhienCho,
     huntSoLopLucVao,
+    huntSoLopDaChamLucVao,
     huntNguonChuaBiet,
   } = data
   const soPhienGiu = countTradingSessions(buyDate, sellDate)
@@ -438,7 +447,7 @@ export function KetsoModalCap5({
       maskClosable={false}
       escToExit={false}
       autoFocus={false}
-      className="cap0"
+      className="cap0 cap5-ketso-modal"
       style={{
         width: 480,
         maxWidth: "calc(100vw - 32px)",
@@ -461,6 +470,12 @@ export function KetsoModalCap5({
       <div className="cap0-debrief-sub">
         {`${fmtVndSigned(pnlVnd)} · MUA ${quantity} ${symbol} → BÁN · Giữ ${soPhienGiu} phiên`}
       </div>
+
+      <details className="cap5-ketso-inherited" data-testid="cap5-ketso-inherited">
+        <summary>
+          <span>Đối chiếu kế hoạch + Quản lý vốn + Đọc 5 lớp (giữ từ Cấp 1-4)</span>
+          <span className="cap5-ketso-inherited-chevron" aria-hidden="true">▸</span>
+        </summary>
 
       <table className="cap0-debrief-table" data-testid="cap5-ketso-doichieu">
         <thead>
@@ -554,7 +569,10 @@ export function KetsoModalCap5({
             <tr>
               <td>Khối lượng</td>
               <td colSpan={2}>
-                {`${fmtVnd(khoiLuong)} cp · ${pctVon.toFixed(1)}% vốn (${fmtVnd(tienThucTe)} ₫)`}
+                {`${fmtVnd(khoiLuong)} cp · ${pctVon.toLocaleString("vi-VN", {
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 1,
+                })}% vốn (${fmtVnd(tienThucTe)} ₫)`}
               </td>
             </tr>
           </tbody>
@@ -634,6 +652,7 @@ export function KetsoModalCap5({
           </div>
         </div>
       )}
+      </details>
 
       {/* ── DÒNG NGUỒN SĂN (Cấp 5 THÊM MỚI, spec §8 · mockup `.hunt-origin`) —
           DƯỚI mọi khối kế thừa, TRÊN toàn bộ chồng coach.
@@ -658,11 +677,26 @@ export function KetsoModalCap5({
               {" · đưa vào Watchlist "}
               {huntSoPhienCho === 0
                 ? "ngay trong phiên vào lệnh"
-                : `${huntSoPhienCho.toLocaleString("en-US")} phiên trước`}
+                : `${huntSoPhienCho.toLocaleString("vi-VN")} phiên trước`}
             </>
           )}
-          {huntSoLopLucVao != null ? (
+          {huntSoLopLucVao != null && huntSoLopDaChamLucVao === 5 ? (
             <> · vào lệnh khi lên {huntSoLopLucVao}/5 lớp ủng hộ.</>
+          ) : huntSoLopLucVao != null && huntSoLopDaChamLucVao != null ? (
+            <>
+              {" · vào lệnh khi có "}
+              {huntSoLopLucVao.toLocaleString("vi-VN")} lớp ủng hộ trong{" "}
+              {huntSoLopDaChamLucVao.toLocaleString("vi-VN")}/5 lớp đã chấm
+              {huntSoLopDaChamLucVao < 5
+                ? ` — ${(5 - huntSoLopDaChamLucVao).toLocaleString("vi-VN")} lớp chưa có dữ liệu.`
+                : "."}
+            </>
+          ) : huntSoLopLucVao != null ? (
+            <>
+              {" · hệ ghi nhận "}
+              {huntSoLopLucVao.toLocaleString("vi-VN")} lớp ủng hộ lúc vào lệnh, nhưng kế hoạch
+              lịch sử chưa lưu số lớp đã chấm.
+            </>
           ) : (
             <> · hệ chưa chấm được điểm 5 lớp của mã này lúc bạn vào lệnh.</>
           )}

@@ -624,10 +624,13 @@
   border: 1px solid var(--bd, #39405a);
   border-radius: 9px;
   background: var(--bg2, #1f2230);
-  cursor: pointer;
+  cursor: default;
   margin-bottom: 10px;
 }
-.op-ls:hover {
+button.op-ls {
+  cursor: pointer;
+}
+button.op-ls:hover {
   border-color: var(--teal, #7dd3c0);
 }
 .op-ls-icons {
@@ -705,7 +708,7 @@
   color: var(--down, #ff6b6b);
   margin-bottom: 10px;
 }
-.op-cf-head > :last-child {
+.op-cf-head > :last-child:not(:first-child) {
   margin-left: auto;
 }
 .op-cf-side {

@@ -30,6 +30,8 @@ export interface Cap3OrderEvent {
   /** Filled price (VND). */
   price: number
   orderId: string
+  /** BUY order matched by the backend for a SELL fill. */
+  buyOrderId?: string
   /** Quản lý vốn fields carried at BUY time — undefined on sell events. */
   khauVi?: KhauViLoai
   mucTuTin?: MucTuTin

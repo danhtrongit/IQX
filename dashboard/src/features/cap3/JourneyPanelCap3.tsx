@@ -1,8 +1,6 @@
 import "@/features/cap0/cap0.css"
 import { Badge, LEVELS } from "@/features/cap0/Badge"
-import { JourneyFocus } from "@/features/cap0/JourneyFocus"
 import { ModeBadge } from "@/features/cap0/ModeBadge"
-import { CAP_MAX_ENABLED } from "@/features/cap1/capFlags"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { useCap3Events } from "./Cap3Context"
 import { useCap3Progress } from "./hooks"
@@ -13,11 +11,6 @@ import "./cap3-journey.css"
 const TASK_NAMES = {
   1: "10 lệnh có chấm mức tự tin và đặt khối lượng theo khẩu vị",
   2: "Đặt lệnh ở cả 3 mức tự tin",
-} as const
-
-const TASK_DESCRIPTIONS = {
-  1: "Đặt 10 lệnh Thực chiến có khẩu vị, mức tự tin và cách khối lượng đã lưu.",
-  2: "Trải nghiệm đặt lệnh ở mức tự tin thấp, vừa và cao để khối lượng đi theo tự tin.",
 } as const
 
 const KHAU_VI_LABEL: Record<KhauViLoai, string> = {
@@ -64,11 +57,6 @@ function ChecklistItem({ taskNo, state, progress, onGo }: ChecklistItemProps) {
       <div className="min-w-0 flex-1">
         <div className="cap0-checklist-name">{TASK_NAMES[taskNo]}</div>
         {taskNo === 2 && (
-          <p className="cap0-checklist-desc">
-            Trải nghiệm để khối lượng đi theo mức tự tin: tự tin cao mua nhiều hơn, tự tin thấp mua ít hơn.
-          </p>
-        )}
-        {taskNo === 2 && (
           <div className="cap3-confidence-levels">
             {CONFIDENCE_LEVELS.map(([level, label]) => {
               const used = progress?.muc_tu_tin_da_dung.includes(level) ?? false
@@ -99,8 +87,6 @@ export function JourneyPanelCap3() {
   const level = LEVELS[3]
   const taskOneState = taskStateCap3(1, progress)
   const taskTwoState = taskStateCap3(2, progress)
-  const focusTask: 1 | 2 | null =
-    taskOneState === "active" ? 1 : taskTwoState === "active" ? 2 : null
   const graduated = progress?.graduated_at != null
   const displayedTasksDone = graduated ? 2 : tasksDone
   const khauVi = progress?.khau_vi ?? null
@@ -121,40 +107,13 @@ export function JourneyPanelCap3() {
             size={64}
           />
           <div className="cap0-level-card-body">
-            <div className="cap0-level-card-tag">CẤP 3</div>
             <div className="cap0-level-card-name cap0-display">BẢN LĨNH</div>
-            <div className="cap0-level-card-lesson">"Mua bao nhiêu quan trọng như mua gì."</div>
             <div className="cap3-journey-khauvi" data-testid="cap3-journey-khauvi">
               {khauViText}
             </div>
           </div>
           <ModeBadge mode="thuc_chien" />
         </div>
-
-        {!graduated &&
-          (focusTask == null ? (
-            <JourneyFocus
-              desc="Bạn đã hoàn thành 10 lệnh có chấm tự tin và dùng đủ ba mức tự tin."
-              name="Sẵn sàng tốt nghiệp Cấp 3"
-              ready
-              tag="ĐÃ XONG CẢ 2 NHIỆM VỤ"
-              testId="cap3-focus"
-            />
-          ) : (
-            <JourneyFocus
-              desc={TASK_DESCRIPTIONS[focusTask]}
-              name={TASK_NAMES[focusTask]}
-              numeral={focusTask === 1 ? "①" : "②"}
-              onGo={() => setActivePanel("trading")}
-              progressText={
-                focusTask === 1
-                  ? `${progress?.so_lenh_quan_ly_von ?? 0}/10 lệnh`
-                  : `${progress?.so_muc_tu_tin_da_dung ?? 0}/3 mức`
-              }
-              tag="NHIỆM VỤ ĐANG LÀM"
-              testId="cap3-focus"
-            />
-          ))}
 
         <div className="cap0-journey-checklist-header mt-3">
           <span className="cap0-journey-checklist-title">TRƯỚC KHI LÊN CẤP 4</span>
@@ -188,17 +147,7 @@ export function JourneyPanelCap3() {
         <button className="cap0-checklist-golink mt-2" onClick={() => setActivePanel("cap3-analysis")} type="button">
           Xem Phân tích danh mục →
         </button>
-        <div className="cap0-journey-goal" data-testid="cap3-journey-goal">
-          {graduated ? (
-            CAP_MAX_ENABLED >= 4 ? (
-              <>Bạn đã tốt nghiệp <strong>Cấp 3 «Bản lĩnh»</strong>. Chặng tiếp theo: <strong>Cấp 4 «Thuần thục»</strong>.</>
-            ) : (
-              <>Bạn đã tốt nghiệp <strong>Cấp 3 «Bản lĩnh»</strong> — chặng cuối của chương trình hiện tại.</>
-            )
-          ) : (
-            <>Xong 2/2 → tốt nghiệp <strong>Cấp 3</strong>, lên <strong>Cấp 4 «Thuần thục»</strong>.</>
-          )}
-        </div>
+
       </div>
     </div>
   )

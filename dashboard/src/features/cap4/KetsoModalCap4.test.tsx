@@ -3,11 +3,10 @@ import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { expectRendersNothing } from "@/__tests__/textGuards"
 
-const { recordKetsoCap1Mutate, recordKetsoCap2Mutate, completeCap4TaskMutate } = vi.hoisted(
+const { recordKetsoCap1Mutate, recordKetsoCap2Mutate } = vi.hoisted(
   () => ({
     recordKetsoCap1Mutate: vi.fn(),
     recordKetsoCap2Mutate: vi.fn(),
-    completeCap4TaskMutate: vi.fn(),
   }),
 )
 // Mock every hook module this modal needs — same "mock the concrete hook file
@@ -17,9 +16,6 @@ vi.mock("@/features/cap1/hooks", () => ({
 }))
 vi.mock("@/features/cap2/hooks", () => ({
   useRecordKetsoCap2: () => ({ mutate: recordKetsoCap2Mutate }),
-}))
-vi.mock("./hooks", () => ({
-  useCompleteCap4Task: () => ({ mutate: completeCap4TaskMutate }),
 }))
 vi.mock("@/features/auth", () => ({
   useAuth: () => ({ user: { id: "user-1" } }),
@@ -54,7 +50,7 @@ function cap1Progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
 
 /**
  * Lệnh mẫu của mockup `iqx-cap4-ketso.html`: #48 · 200 VNM · +5.3% ·
- * +318,000 ₫ — user đọc 📰 Tin tức Ủng hộ trong khi AI đánh giá Ngược chiều.
+ * +318.000 ₫ — user đọc 📰 Tin tức Ủng hộ trong khi AI đánh giá Ngược chiều.
  */
 const data: KetsoDataCap4 = {
   n: 48,
@@ -96,7 +92,6 @@ const data: KetsoDataCap4 = {
 beforeEach(() => {
   recordKetsoCap1Mutate.mockReset()
   recordKetsoCap2Mutate.mockReset()
-  completeCap4TaskMutate.mockReset()
   window.localStorage.clear()
 })
 
@@ -136,13 +131,20 @@ describe("KetsoModalCap4 — giữ nguyên mọi khối Cấp 1/2/3 (cộng dồ
     await waitFor(() => expect(screen.getByText("+5.3%")).toBeInTheDocument(), { timeout: 2000 })
   })
 
+  it("hiển thị lệnh hòa vốn bằng màu trung tính", () => {
+    const { container } = renderModal({ exitPrice: data.entryPrice })
+    const pnl = container.ownerDocument.querySelector(".cap0-debrief-pnl")
+    expect(pnl).toHaveClass("text-[var(--t1)]")
+    expect(pnl).not.toHaveClass("text-down")
+  })
+
   it("giữ khối CAM KẾT vs THỰC TẾ của Cấp 2", () => {
     renderModal()
     const camket = within(screen.getByTestId("cap2-ketso-camket"))
     expect(camket.getByText("Cắt lỗ")).toBeInTheDocument()
-    expect(camket.getByText("28,500")).toBeInTheDocument()
+    expect(camket.getByText("28.500")).toBeInTheDocument()
     expect(camket.getByText("Chốt lời")).toBeInTheDocument()
-    expect(camket.getByText("32,500")).toBeInTheDocument()
+    expect(camket.getByText("32.500")).toBeInTheDocument()
   })
 
   it("giữ khối QUẢN LÝ VỐN của Cấp 3", () => {
@@ -243,7 +245,7 @@ describe("KetsoModalCap4 — 4 lớp coach cùng hiện", () => {
 })
 
 describe("KetsoModalCap4 — đóng kết sổ", () => {
-  it("post cam xúc Cấp 1 + cờ kỷ luật Cấp 2 + recompute nhiệm vụ ② Cấp 4, rồi đóng", () => {
+  it("post cảm xúc Cấp 1 + cờ kỷ luật Cấp 2 rồi đóng; không gắn tiến độ Cấp 4 với lệnh đóng", () => {
     const onClose = vi.fn()
     renderModal({ flags: { order_id: "order-48", cham_SL_cat_dung_phien_ke: true } }, onClose)
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
@@ -252,7 +254,6 @@ describe("KetsoModalCap4 — đóng kết sổ", () => {
       order_id: "order-48",
       cham_SL_cat_dung_phien_ke: true,
     })
-    expect(completeCap4TaskMutate).toHaveBeenCalledWith(2)
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 

@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useRef, type ReactNode } from "react"
 import type { Lop } from "@/features/cap4/types"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import type { ConflictLevel } from "./mauThuanTypes"
 
 /**
@@ -28,6 +29,8 @@ export interface Cap6OrderEvent {
   /** Filled price (VND). */
   price: number
   orderId: string
+  /** Matched BUY lot returned by the trading backend for reload-safe Kết sổ. */
+  buyOrderId?: string
   // ── CẤP 6 «BẬC THẦY» (spec đợt 7) ─────────────────────────────────────────
   /**
    * Mức nhận định mâu thuẫn user chọn lúc MUA (spec §6). `undefined`/`null` =
@@ -86,14 +89,26 @@ export function Cap6Provider({ children }: { children: ReactNode }) {
   }, [])
 
   const onMauThuanShown = useCallback((symbol: string, lopPhuQuyetXau: Lop[]) => {
+    trackJourneyEvent("cap6_conflict_shown", {
+      symbol: symbol.trim().toUpperCase().slice(0, 12),
+      veto_layers: lopPhuQuyetXau.slice(0, 5).join(","),
+    })
     handlersRef.current.onMauThuanShown?.(symbol, lopPhuQuyetXau)
   }, [])
 
   const onNhanDinhPicked = useCallback((symbol: string, level: ConflictLevel) => {
+    trackJourneyEvent("cap6_conflict_rated", {
+      symbol: symbol.trim().toUpperCase().slice(0, 12),
+      level,
+    })
     handlersRef.current.onNhanDinhPicked?.(symbol, level)
   }, [])
 
   const onKhongMua = useCallback((symbol: string, level: ConflictLevel | null) => {
+    trackJourneyEvent("cap6_skip", {
+      symbol: symbol.trim().toUpperCase().slice(0, 12),
+      level,
+    })
     handlersRef.current.onKhongMua?.(symbol, level)
   }, [])
 

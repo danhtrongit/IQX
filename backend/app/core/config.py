@@ -112,6 +112,12 @@ class Settings(BaseSettings):
 
     # ── Background Jobs ──────────────────────────────
     JOBS_ENABLED: bool = True
+    # Requires an official close provider and a verified next trading date.
+    CAP2_STOP_CLOSE_SCAN_ENABLED: bool = False
+    CAP5_CONSENSUS_ENABLED: bool = True
+    JOURNEY_IDENTITY_RECOVERY_ENABLED: bool = True
+    # Enable once the session snapshot provider's official-close contract is verified.
+    BOT_ENABLED: bool = False
 
     # ── Telegram / Alerts ────────────────────────────
     TELEGRAM_BOT_TOKEN: str = ""          # secret — set in env, never commit

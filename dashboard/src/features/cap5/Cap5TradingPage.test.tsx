@@ -1,3 +1,6 @@
+vi.mock("@/features/journey-identity/JourneyIdentityStage", () => ({
+  JourneyIdentityStage: ({ level }: { level: number }) => <div data-testid="journey-identity-stage" data-level={level} />,
+}))
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import React from "react"
 import { MemoryRouter } from "react-router"
@@ -6,7 +9,7 @@ import { SidebarProvider, useSidebar } from "@/shared/contexts/sidebar-context"
 import type { Cap1Progress } from "@/features/cap1/types"
 import type { Cap2Progress, DiemKyLuat } from "@/features/cap2/types"
 import type { Cap3Progress } from "@/features/cap3/types"
-import type { Cap5Progress } from "./types"
+import type { Cap5PlanWire, Cap5Progress } from "./types"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 const {
@@ -26,6 +29,7 @@ const {
   recordCap4TradeMock,
   recordCap5TradeMock,
   nguonSanMock,
+  getPlanMock,
   navigateMock,
   messageSuccess,
 } = vi.hoisted(() => ({
@@ -45,6 +49,7 @@ const {
   recordCap4TradeMock: vi.fn(),
   recordCap5TradeMock: vi.fn(),
   nguonSanMock: vi.fn(),
+  getPlanMock: vi.fn(),
   navigateMock: vi.fn(),
   messageSuccess: vi.fn(),
 }))
@@ -91,6 +96,48 @@ const AI_5_LOP = {
   tin_tuc: "ok",
   dinh_gia: "neu",
 } as const
+
+function fakeCap5Plan(overrides: Partial<Cap5PlanWire> = {}): Cap5PlanWire {
+  return {
+    id: "plan-1",
+    order_id: "buy-server-1",
+    symbol: "VNM",
+    quantity: 300,
+    bought_at: "2026-02-25T02:00:00Z",
+    gia_vao: 60_000,
+    lyDo: "dong_tien",
+    trangThai_luc_dat: "ung_ho",
+    vung_mua: 60_000,
+    phuong_phap_sl_tp: "ho_tro_khang_cu",
+    cat_lo: 58_000,
+    chot_loi: 65_000,
+    khau_vi: "can_bang",
+    muc_tu_tin: 3,
+    cach_khoi_luong: "khau_vi_tu_tin",
+    khoi_luong: 300,
+    pct_von: 18,
+    doc_5_lop: { ...DOC_5_LOP },
+    ai_5_lop: { ...AI_5_LOP },
+    so_lop_dong_thuan: 3,
+    so_lop_khac_ai: 2,
+    source_known: true,
+    from_watchlist: true,
+    tu_san_ma: true,
+    hunt_filter: "ngoai",
+    hunt_filter_ten: "Khối ngoại gom",
+    hunt_signal: "+45,2 tỷ ròng · 4/5 phiên",
+    first_hunted_at: "2026-02-20T02:00:00Z",
+    so_phien_trong_watchlist: 3,
+    so_lop_luc_vao: 4,
+    so_lop_da_cham_luc_vao: 5,
+    consensus_captured_at_entry: "2026-02-25T01:30:00Z",
+    entry_snapshot_at: "2026-02-25T02:00:01Z",
+    giai_thich: "Nguồn săn được đóng dấu tại BUY.",
+    ly_do_thieu_so_lop: null,
+    canh_bao_nguon_moi_hon: null,
+    ...overrides,
+  }
+}
 
 function RightSidebarStub() {
   const { onOrderFilled: cap1OnOrderFilled, isCap1Active } = useCap1Events()
@@ -242,6 +289,21 @@ function RightSidebarStub() {
       >
         fire sell HPG
       </button>
+      <button
+        data-testid="fire-sell-after-reload"
+        onClick={() =>
+          cap5OnOrderFilled?.({
+            symbol: "VNM",
+            side: "sell",
+            quantity: 300,
+            price: 65_500,
+            orderId: "sell-reload-1",
+            buyOrderId: "buy-server-1",
+          })
+        }
+      >
+        fire sell after reload
+      </button>
     </div>
   )
 }
@@ -299,9 +361,13 @@ vi.mock("@/features/cap3/hooks", () => ({
   useSetKhauVi: () => ({ mutate: setKhauViMutate, isPending: false }),
   useEnterCap3: () => ({ mutate: vi.fn(), isPending: false }),
 }))
-vi.mock("@/features/cap3/tradeLogCap3", () => ({
-  useCap3TradeLog: () => ({ trades: [], record: recordCap3TradeMock }),
-}))
+vi.mock("@/features/cap3/tradeLogCap3", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/features/cap3/tradeLogCap3")>()
+  return {
+    ...actual,
+    useCap3TradeLog: () => ({ trades: [], record: recordCap3TradeMock }),
+  }
+})
 vi.mock("@/features/cap4/tradeLogCap4", () => ({
   useCap4TradeLog: () => ({ trades: [], record: recordCap4TradeMock }),
 }))
@@ -320,7 +386,10 @@ vi.mock("./hooks", () => ({
 // `GET /cap5/nguon-san/{symbol}` — gọi TRƯỚC khi mở Kết sổ (spec §8). Mock ở
 // tầng api để bài canh được cả nhánh gọi được lẫn nhánh LỖI.
 vi.mock("./api", () => ({
-  cap5Api: { getNguonSan: (...a: unknown[]) => nguonSanMock(...a) },
+  cap5Api: {
+    getNguonSan: (...a: unknown[]) => nguonSanMock(...a),
+    getPlan: (...a: unknown[]) => getPlanMock(...a),
+  },
 }))
 vi.mock("./tradeLogCap5", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./tradeLogCap5")>()
@@ -466,6 +535,8 @@ describe("Cap5TradingPage", () => {
       giai_thich: "Mã này bạn săn từ bộ lọc «Khối ngoại gom».",
       ly_do_thieu_so_lop: "Điểm đồng thuận tại thời điểm đặt lệnh chưa từng được lưu.",
     })
+    getPlanMock.mockReset()
+    getPlanMock.mockResolvedValue(fakeCap5Plan())
     graduateCap5Mutate.mockReset()
     setKhauViMutate.mockReset()
     recordCap1TradeMock.mockReset()
@@ -479,9 +550,10 @@ describe("Cap5TradingPage", () => {
     window.localStorage.clear()
   })
 
-  it("renders the reused terminal children (CenterPanel/RightSidebar/RightToolbar)", () => {
+  it("renders identity in the main slot and preserves the functional panels", () => {
     renderCap5(<Cap5TradingPage />)
-    expect(screen.getByTestId("center-panel")).toBeInTheDocument()
+    expect(screen.getByTestId("journey-identity-stage")).toHaveAttribute("data-level", "5")
+    expect(screen.queryByTestId("center-panel")).not.toBeInTheDocument()
     expect(screen.getByTestId("right-sidebar")).toBeInTheDocument()
     expect(screen.getByTestId("right-toolbar")).toBeInTheDocument()
   })
@@ -592,17 +664,116 @@ describe("Cap5TradingPage", () => {
 
     expect(screen.getByText("KẾT SỔ LỆNH · #1 · THỰC CHIẾN")).toBeInTheDocument()
     // Cấp 1 + 2 + 3 + 4 content still there (cộng dồn) …
-    expect(screen.getByTestId("cap2-ketso-camket")).toHaveTextContent("58,000")
+    expect(screen.getByTestId("cap2-ketso-camket")).toHaveTextContent("58.000")
     expect(screen.getByTestId("cap3-ketso-quanlyvon")).toHaveTextContent("Cân bằng")
     expect(screen.getByTestId("cap4-ketso-doc5lop")).toBeInTheDocument()
     expect(screen.getByTestId("cap4-ketso-lr-tin_tuc")).toHaveAttribute("data-diff", "true")
     // … plus dòng NGUỒN SĂN của Cấp 5 (spec §8), dựng từ `GET /cap5/nguon-san`.
-    expect(nguonSanMock).toHaveBeenCalledWith("VNM")
+    expect(nguonSanMock).toHaveBeenCalledWith("VNM", "buy-1")
     expect(screen.getByTestId("cap5-ketso-hunt-origin")).toHaveTextContent(
       "săn từ bộ lọc «Khối ngoại gom»",
     )
     // ★ Khối phân loại 4 ô của Cấp 5 CŨ đã nghỉ hưu.
     expect(screen.queryByTestId("cap5-phanloai")).not.toBeInTheDocument()
+  })
+
+  it("★ sau reload hydrate đúng snapshot BUY Cấp 1–5 rồi mở Kết sổ", async () => {
+    renderCap5(<Cap5TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-sell-after-reload"))
+
+    await waitFor(() => expect(getPlanMock).toHaveBeenCalledWith("buy-server-1"))
+    expect(await screen.findByText("KẾT SỔ LỆNH · #1 · THỰC CHIẾN")).toBeInTheDocument()
+    expect(screen.getByTestId("cap2-ketso-camket")).toHaveTextContent("58.000")
+    expect(screen.getByTestId("cap3-ketso-quanlyvon")).toHaveTextContent("Cân bằng")
+    expect(screen.getByTestId("cap4-ketso-lr-tin_tuc")).toHaveAttribute("data-diff", "true")
+    expect(screen.getByTestId("cap5-ketso-hunt-origin")).toHaveTextContent(
+      "4/5 lớp ủng hộ",
+    )
+    expect(nguonSanMock).not.toHaveBeenCalled()
+  })
+
+  it("★ hai delivery SELL đồng thời chỉ hydrate và mở Kết sổ một lần", async () => {
+    let releasePlan: ((plan: unknown) => void) | null = null
+    const plan = fakeCap5Plan()
+    getPlanMock.mockReset()
+    getPlanMock.mockImplementation(
+      () => new Promise((resolve) => { releasePlan = resolve }),
+    )
+    renderCap5(<Cap5TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-sell-after-reload"))
+    fireEvent.click(screen.getByTestId("fire-sell-after-reload"))
+    expect(getPlanMock).toHaveBeenCalledTimes(1)
+    releasePlan!(plan)
+    expect(await screen.findByText("KẾT SỔ LỆNH · #1 · THỰC CHIẾN")).toBeInTheDocument()
+    expect(recordKetsoCap1Async).toHaveBeenCalledTimes(1)
+  })
+
+  it("★ hydrate lỗi không khóa SELL; delivery lặp lại có thể phục hồi", async () => {
+    const plan = fakeCap5Plan()
+    getPlanMock.mockReset()
+    getPlanMock.mockRejectedValueOnce(new Error("network")).mockResolvedValue(plan)
+    renderCap5(<Cap5TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-sell-after-reload"))
+    await waitFor(() => expect(getPlanMock).toHaveBeenCalledTimes(1))
+    expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByTestId("fire-sell-after-reload"))
+    await waitFor(() => expect(getPlanMock).toHaveBeenCalledTimes(2))
+    expect(await screen.findByText("KẾT SỔ LỆNH · #1 · THỰC CHIẾN")).toBeInTheDocument()
+  })
+
+  it("★ snapshot tích lũy một phần giữ Kết sổ đóng, không bịa commitments", async () => {
+    getPlanMock.mockResolvedValueOnce({
+      ...fakeCap5Plan(),
+      doc_5_lop: null,
+    })
+    renderCap5(<Cap5TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-sell-after-reload"))
+    await waitFor(() => expect(getPlanMock).toHaveBeenCalledWith("buy-server-1"))
+    expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
+    expect(recordKetsoCap1Async).not.toHaveBeenCalled()
+  })
+
+  it("★ kế hoạch cũ chưa đóng dấu nguồn vẫn mở Kết sổ với nguồn «chưa biết»", async () => {
+    getPlanMock.mockResolvedValueOnce({
+      ...fakeCap5Plan(),
+      source_known: false,
+      from_watchlist: null,
+      tu_san_ma: null,
+      hunt_filter: null,
+    })
+    renderCap5(<Cap5TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-sell-after-reload"))
+    expect(await screen.findByText("KẾT SỔ LỆNH · #1 · THỰC CHIẾN")).toBeInTheDocument()
+    const source = screen.getByTestId("cap5-ketso-hunt-origin")
+    expect(source).toHaveTextContent("Chưa lấy được nguồn săn")
+    expect(source).not.toHaveTextContent("không đến từ săn mã — bạn tự chọn mã")
+  })
+
+  it("★ snapshot BUY mới hiện đúng mẫu số thật khi chỉ chấm được 4/5 lớp", async () => {
+    getPlanMock.mockResolvedValueOnce(fakeCap5Plan({
+      so_lop_luc_vao: 4,
+      so_lop_da_cham_luc_vao: 4,
+    }))
+    renderCap5(<Cap5TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-sell-after-reload"))
+    const source = await screen.findByTestId("cap5-ketso-hunt-origin")
+    expect(source).toHaveTextContent("4 lớp ủng hộ trong 4/5 lớp đã chấm")
+    expect(source).toHaveTextContent("1 lớp chưa có dữ liệu")
+  })
+
+  it("★ plan lịch sử thiếu mốc snapshot không dùng số đồng thuận không chứng minh được", async () => {
+    getPlanMock.mockResolvedValueOnce(fakeCap5Plan({
+      entry_snapshot_at: null,
+      consensus_captured_at_entry: null,
+      so_lop_luc_vao: 4,
+      so_lop_da_cham_luc_vao: 4,
+    }))
+    renderCap5(<Cap5TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-sell-after-reload"))
+    const source = await screen.findByTestId("cap5-ketso-hunt-origin")
+    expect(source).toHaveTextContent("hệ chưa chấm được điểm 5 lớp")
+    expect(source).not.toHaveTextContent("4/5 lớp")
   })
 
   it("★ mã KHÔNG đến từ săn mã → nói thẳng, không bịa bộ lọc", async () => {
@@ -683,7 +854,7 @@ describe("Cap5TradingPage", () => {
     })
     renderCap5(<Cap5TradingPage />)
     expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
-    expect(screen.getByText("Vào Cấp 6 «Bậc thầy» →")).toBeInTheDocument()
+    expect(screen.getByText("Vào cấp 6: Bậc thầy")).toBeInTheDocument()
   })
 
   it('clicking "AI Phân tích" opens the AI Insight symbol-picker modal, and submitting mở bản đọc AI NGAY TRONG trang cấp — KHÔNG điều hướng', async () => {

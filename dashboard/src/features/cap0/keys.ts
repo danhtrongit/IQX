@@ -5,6 +5,7 @@
 export const cap0Keys = {
   all: ["cap0"] as const,
   progress: () => ["cap0", "progress"] as const,
+  placement: () => ["cap0", "placement"] as const,
   /**
    * `GET /cap0/kehoach?order_id=` — per BUY ORDER, so two round trips of the
    * SAME mã never share a cache entry (the old per-symbol key made a re-entry

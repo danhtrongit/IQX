@@ -28,3 +28,33 @@
   color: var(--t3);
   opacity: 0.55;
 }
+
+.cap3-task-desc {
+  margin-top: 5px;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--t3);
+}
+
+.cap3-journey-explain,
+.cap3-journey-goal {
+  margin-top: 12px;
+  padding: 10px 11px;
+  font-size: 10.5px;
+  line-height: 1.6;
+  color: var(--t2);
+  background: rgba(79, 143, 247, 0.08);
+  border: 1px solid rgba(79, 143, 247, 0.28);
+  border-radius: 8px;
+}
+
+.cap3-journey-goal {
+  color: var(--t3);
+  background: var(--bg2);
+  border-color: var(--bd);
+}
+
+.cap3-journey-explain strong,
+.cap3-journey-goal strong {
+  color: var(--t1);
+}

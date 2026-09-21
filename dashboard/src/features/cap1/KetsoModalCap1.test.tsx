@@ -27,7 +27,6 @@ vi.mock("./Cap1Context", () => ({
 
 import { KetsoModalCap1, type KetsoDataCap1 } from "./KetsoModalCap1"
 import type { Cap1Progress } from "./types"
-import type { Cap1TradeRecord } from "./tradeLog"
 
 function progress(overrides: Partial<Cap1Progress> = {}): Cap1Progress {
   return {
@@ -240,30 +239,15 @@ describe("KetsoModalCap1", () => {
   })
 
   // ── Coach template selection (spec §6 A-F) ────────────────────────────────
-  it("picks coach template A — lãi, trạng thái lúc đặt ✅ Ủng hộ", () => {
+
+
+
+  it("renders the rule-based Nhìn lại coach", () => {
     render(<KetsoModalCap1 data={cleanWin} progress={progress()} trades={[]} onClose={vi.fn()} />)
     expect(screen.getByText("NHÌN LẠI")).toBeInTheDocument()
-    expect(screen.getByText(/Ghi lại như mẫu chuẩn/)).toBeInTheDocument()
-  })
-
-  it("picks coach template D — lỗ, trạng thái lúc đặt ❌ Ngược chiều", () => {
-    const lossData: KetsoDataCap1 = {
-      ...cleanWin,
-      exitPrice: 60_000,
-      trangThaiLucDat: "nguoc_chieu",
-    }
-    render(<KetsoModalCap1 data={lossData} progress={progress()} trades={[]} onClose={vi.fn()} />)
-    expect(screen.getByText(/thị trường thường đúng/)).toBeInTheDocument()
-  })
-
-  it("picks coach template E — giữ quá lâu (>10 phiên) regardless of trạng thái/pnl", () => {
-    const heldTooLong: KetsoDataCap1 = {
-      ...cleanWin,
-      buyDate: "2026-02-02",
-      sellDate: "2026-02-20",
-    }
-    render(<KetsoModalCap1 data={heldTooLong} progress={progress()} trades={[]} onClose={vi.fn()} />)
-    expect(screen.getByText(/Bạn giữ lệnh \d+ phiên/)).toBeInTheDocument()
+    expect(document.querySelector(".cap0-debrief-coach")).not.toBeNull()
+    expect(screen.getByText(/chọn lý do có cơ sở đã cho kết quả tốt/i)).toBeInTheDocument()
+    expect(screen.getByText("Đóng kết sổ ✓")).toBeEnabled()
   })
 
   it("renders the 3-line HỒ SƠ CỦA BẠN block", () => {

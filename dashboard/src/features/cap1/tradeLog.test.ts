@@ -1,9 +1,10 @@
-import { act, renderHook } from "@testing-library/react"
+import { act, renderHook, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-vi.mock("@/features/auth", () => ({
-  useAuth: () => ({ user: { id: "user-1" } }),
+const { authState } = vi.hoisted(() => ({
+  authState: { user: { id: "user-1" } as { id: string } | null },
 }))
+vi.mock("@/features/auth", () => ({ useAuth: () => authState }))
 
 import { appendTradeRecord, readTradeLog, useCap1TradeLog, type Cap1TradeRecord } from "./tradeLog"
 
@@ -25,6 +26,7 @@ const rec2: Cap1TradeRecord = {
 }
 
 beforeEach(() => {
+  authState.user = { id: "user-1" }
   window.localStorage.clear()
 })
 
@@ -71,5 +73,20 @@ describe("useCap1TradeLog", () => {
     act(() => result.current.record(rec2))
     expect(result.current.trades).toEqual([rec2])
     expect(readTradeLog("user-1")).toEqual([rec2])
+  })
+
+  it("replaces in-memory fallback when the authenticated account changes", async () => {
+    appendTradeRecord("user-1", rec1)
+    appendTradeRecord("user-2", rec2)
+    const { result, rerender } = renderHook(() => useCap1TradeLog())
+    expect(result.current.trades).toEqual([rec1])
+
+    authState.user = { id: "user-2" }
+    rerender()
+    await waitFor(() => expect(result.current.trades).toEqual([rec2]))
+
+    authState.user = null
+    rerender()
+    await waitFor(() => expect(result.current.trades).toEqual([]))
   })
 })

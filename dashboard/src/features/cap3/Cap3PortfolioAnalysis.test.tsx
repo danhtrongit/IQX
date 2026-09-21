@@ -109,11 +109,9 @@ describe("Cap3PortfolioAnalysis — giữ mọi khối Cấp 1-2 (cộng dồn)"
     expect(screen.getByTestId("cap2-pa-khoi2")).toBeInTheDocument()
     expect(screen.getByTestId("cap2-pa-khoi3")).toBeInTheDocument()
     expect(screen.getByTestId("cap2-pa-khoi4")).toBeInTheDocument()
-    // ★ Phân tích danh mục Cấp 2 chỉ còn 4 khối — «Điểm kỷ luật 30 ngày»,
-    // «Phân loại vi phạm theo tuần» và «Phát hiện từ ghi chú» đã bỏ hẳn.
-    expect(screen.queryByTestId("cap2-pa-khoi5")).not.toBeInTheDocument()
-    expect(screen.queryByTestId("cap2-pa-khoi6")).not.toBeInTheDocument()
-    expect(screen.queryByTestId("cap2-pa-khoi7")).not.toBeInTheDocument()
+    expect(screen.getByTestId("cap2-pa-khoi5")).toBeInTheDocument()
+    expect(screen.getByTestId("cap2-pa-khoi6")).toBeInTheDocument()
+    expect(screen.getByTestId("cap2-pa-khoi7")).toBeInTheDocument()
   })
 
   // ★ Khối ① kế thừa nhận `trades` = nhật ký CHỈ của Cấp 3, nên nhãn cấp + ngày
@@ -151,15 +149,10 @@ describe("Cap3PortfolioAnalysis — giữ mọi khối Cấp 1-2 (cộng dồn)"
     expect(khoi4.queryByText("mới ở Cấp 2")).not.toBeInTheDocument()
   })
 
-  // Mockup Cấp 3 đánh số hai khối mới là ⑦⑧ vì khi đó Cấp 2 có 6 khối. Cấp 2 viết
-  // lại chỉ còn ①..④ (bỏ «Điểm kỷ luật 30 ngày»/«Vi phạm theo tuần»/«Phát hiện từ
-  // ghi chú») nên giữ ⑦⑧ sẽ in ①②③④ rồi NHẢY sang ⑦⑧ — đánh lại thành ⑤⑥.
-  it("★ đánh số liền mạch ①②③④⑤⑥ — không còn lỗ hổng ⑤⑥ rồi nhảy ⑦⑧", () => {
+  it("giữ đúng số khối ⑦⑧ của spec Cấp 3", () => {
     renderPage([])
-    expect(within(screen.getByTestId("cap3-pa-khoi5")).getByText(/^⑤ /)).toBeInTheDocument()
-    expect(within(screen.getByTestId("cap3-pa-khoi6")).getByText(/^⑥ /)).toBeInTheDocument()
-    expect(screen.queryByText(/^⑦ /)).not.toBeInTheDocument()
-    expect(screen.queryByText(/^⑧ /)).not.toBeInTheDocument()
+    expect(within(screen.getByTestId("cap3-pa-khoi5")).getByText(/^⑦ /)).toBeInTheDocument()
+    expect(within(screen.getByTestId("cap3-pa-khoi6")).getByText(/^⑧ /)).toBeInTheDocument()
   })
 
   it("khối ① Cấp 3 hiện khẩu vị rủi ro đang dùng (spec §8)", () => {
@@ -177,7 +170,7 @@ describe("Cap3PortfolioAnalysis — giữ mọi khối Cấp 1-2 (cộng dồn)"
   })
 })
 
-describe("Cap3PortfolioAnalysis — khối ⑤ thắng/thua theo mức tự tin", () => {
+describe("Cap3PortfolioAnalysis — khối ⑦ thắng/thua theo mức tự tin", () => {
   it("hiện 3 hàng (Cao/Vừa/Thấp) kèm số lệnh, tỷ lệ thắng, lãi/lỗ TB", () => {
     renderPage([...tradesFor(3, 4, 4), ...tradesFor(2, 3, 2), ...tradesFor(1, 4, 1)])
     const khoi7 = within(screen.getByTestId("cap3-pa-khoi5"))
@@ -215,7 +208,7 @@ describe("Cap3PortfolioAnalysis — khối ⑤ thắng/thua theo mức tự tin"
   })
 })
 
-describe("Cap3PortfolioAnalysis — khối ⑥ khối lượng có đi theo tự tin không", () => {
+describe("Cap3PortfolioAnalysis — khối ⑧ khối lượng có đi theo tự tin không", () => {
   it("hiện KL TB, %vốn TB và cách hay dùng theo từng mức", () => {
     renderPage([
       ...tradesFor(3, 3, 2, { khoiLuong: 1_100, pctVon: 19 }),

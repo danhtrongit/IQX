@@ -1,3 +1,6 @@
+vi.mock("@/features/journey-identity/JourneyIdentityStage", () => ({
+  JourneyIdentityStage: ({ level }: { level: number }) => <div data-testid="journey-identity-stage" data-level={level} />,
+}))
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import React from "react"
 import { MemoryRouter } from "react-router"
@@ -166,9 +169,10 @@ describe("Cap1TradingPage", () => {
     window.localStorage.clear()
   })
 
-  it("renders the reused terminal children (CenterPanel/RightSidebar/RightToolbar)", () => {
+  it("renders identity in the main slot and preserves the functional panels", () => {
     renderCap1(<Cap1TradingPage />)
-    expect(screen.getByTestId("center-panel")).toBeInTheDocument()
+    expect(screen.getByTestId("journey-identity-stage")).toHaveAttribute("data-level", "1")
+    expect(screen.queryByTestId("center-panel")).not.toBeInTheDocument()
     expect(screen.getByTestId("right-sidebar")).toBeInTheDocument()
     expect(screen.getByTestId("right-toolbar")).toBeInTheDocument()
   })

@@ -18,12 +18,14 @@ client tự cấp cho mình điều kiện lên cấp (bài học ``hunt_signal`
 
 from __future__ import annotations
 
+import logging
 import uuid
 
 from fastapi import APIRouter
 
 from app.api.deps import CurrentUser, DBSession
 from app.schemas.cap6 import (
+    Cap6PlanOut,
     Cap6ProgressOut,
     KehoachCap6Out,
     KehoachRequest,
@@ -32,7 +34,9 @@ from app.schemas.cap6 import (
     SkipOut,
     SkipRequest,
 )
+from app.services.bot import initialize as initialize_bot
 from app.services.cap6.service import Cap6Service
+from app.services.journey_identity.service import JourneyIdentityService
 
 router = APIRouter(prefix="/cap6", tags=["Cấp 6"])
 
@@ -56,8 +60,8 @@ async def get_progress(user: CurrentUser, db: DBSession) -> Cap6ProgressOut | No
 async def enter(user: CurrentUser, db: DBSession) -> Cap6ProgressOut:
     """Vào Cấp 6 (idempotent) — yêu cầu đã tốt nghiệp Cấp 5.
 
-    Tính lại toàn bộ chỉ số trước khi trả về (giống ``/cap7/enter`` và
-    ``/cap8/enter``): endpoint này idempotent và FE hiện đúng thứ nó trả, nên
+    Tính lại toàn bộ chỉ số trước khi trả về: endpoint này idempotent và FE
+    hiện đúng thứ nó trả, nên
     user quay lại không được thấy số cũ cho tới lần gọi ``/cap6/progress`` sau.
     """
     svc = Cap6Service(db)
@@ -70,7 +74,7 @@ async def mark_tour_mauthuan(user: CurrentUser, db: DBSession) -> Cap6ProgressOu
 
     Chỉ gọi ở bước cuối / nút "Xong" — "Bỏ qua" giữa chừng KHÔNG gọi. Cờ này
     quyết định tour có tự bật lại hay không; nó KHÔNG phải cổng tốt nghiệp
-    (spec §11: "tour là công cụ học"), nên gian lận ở đây cũng không mở Cấp 7.
+    (spec §11: "tour là công cụ học"), nên nó không thể hoàn tất lộ trình.
     """
     svc = Cap6Service(db)
     return Cap6ProgressOut(**await svc.mark_tour_mauthuan(user.id))
@@ -99,9 +103,7 @@ async def get_mau_thuan(symbol: str, user: CurrentUser, db: DBSession) -> MauThu
 
 
 @router.post("/kehoach", response_model=KehoachCap6Out)
-async def record_kehoach(
-    body: KehoachRequest, user: CurrentUser, db: DBSession
-) -> KehoachCap6Out:
+async def record_kehoach(body: KehoachRequest, user: CurrentUser, db: DBSession) -> KehoachCap6Out:
     """Ghi mức nhận định mâu thuẫn vào kế hoạch của 1 lệnh MUA đã có (cộng dồn
     lên Cấp 1-5; 404 nếu chưa có kế hoạch Cấp 1).
 
@@ -114,16 +116,12 @@ async def record_kehoach(
     vừa bơm khối ⑮. POST y hệt lần trước luôn là no-op idempotent.
     """
     svc = Cap6Service(db)
-    kehoach = await svc.record_kehoach(
-        user.id, body.order_id, conflict_level=body.conflict_level
-    )
+    kehoach = await svc.record_kehoach(user.id, body.order_id, conflict_level=body.conflict_level)
     return KehoachCap6Out(**svc.kehoach_out(kehoach))
 
 
 @router.get("/kehoach/{order_id}", response_model=KehoachCap6Out)
-async def get_kehoach(
-    order_id: uuid.UUID, user: CurrentUser, db: DBSession
-) -> KehoachCap6Out:
+async def get_kehoach(order_id: uuid.UUID, user: CurrentUser, db: DBSession) -> KehoachCap6Out:
     """Khối Cấp 6 ĐÃ GHI trên 1 lệnh — cho màn Kết sổ (spec §8) đọc lại nhận
     định cạnh hành động thật (khối lượng + tự tin, KHÔNG nhắc cắt lỗ — §4.3).
 
@@ -132,6 +130,12 @@ async def get_kehoach(
     """
     svc = Cap6Service(db)
     return KehoachCap6Out(**await svc.get_kehoach(user.id, order_id))
+
+
+@router.get("/plans/{order_id}", response_model=Cap6PlanOut)
+async def get_plan(order_id: uuid.UUID, user: CurrentUser, db: DBSession) -> Cap6PlanOut:
+    """Khôi phục kế hoạch BUY Cấp 1–6 để SELL vẫn mở Kết sổ sau reload."""
+    return Cap6PlanOut.model_validate(await Cap6Service(db).get_plan(user.id, order_id))
 
 
 @router.post("/skip", response_model=SkipOut, status_code=201)
@@ -171,5 +175,26 @@ async def graduate(user: CurrentUser, db: DBSession) -> Cap6ProgressOut:
     ★ Cần đúng ba lần xử lý mâu thuẫn nhất quán; không có điều kiện lãi hay
     số lần gặp lớp phủ quyết.
     """
+    # Serialize the graduation boundary with first assessment commits.
+    user_id = user.id
+    await JourneyIdentityService(db).lock_user(user_id)
     svc = Cap6Service(db)
-    return Cap6ProgressOut(**await svc.graduate(user.id))
+    result = Cap6ProgressOut(**await svc.graduate(user_id))
+    # Graduation is durable before the independent identity branch begins.
+    # Evidence/asset failures cannot roll back the completed learning journey.
+    await db.commit()
+    try:
+        async with db.begin_nested():
+            await initialize_bot(db, user_id)
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        logging.getLogger(__name__).exception("bot_initialization_failed")
+    try:
+        async with db.begin_nested():
+            await JourneyIdentityService(db).initialize(user_id)
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        logging.getLogger(__name__).exception("mascot_initialization_failed")
+    return result

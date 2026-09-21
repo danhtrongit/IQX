@@ -13,9 +13,28 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas.cap5 import Cap5PlanOut
+
 LopLiteral = Literal["ky_thuat", "dong_tien", "noi_bo", "tin_tuc", "dinh_gia"]
 #: 4 mức nhận định mâu thuẫn (spec §6) — khớp ``app.models.cap6.MucMauThuan``.
 MucLiteral = Literal["nhe", "ngai", "nghiem", "chua_ro"]
+
+
+class Cap6PlanOut(Cap5PlanOut):
+    """Cumulative Cấp 1–6 BUY plan for reload-safe Kết sổ."""
+
+    had_conflict: bool | None = None
+    conflict_level: MucLiteral | None = None
+    conflict_level_ten: str | None = None
+    had_veto: bool | None = None
+    veto_layers: list[LopLiteral] | None = None
+    veto_layers_ten: list[str] | None = None
+    support_layers: list[LopLiteral] | None = None
+    opposing_layers: list[LopLiteral] | None = None
+    neutral_layers: list[LopLiteral] | None = None
+    conflict_snapshot_session_date: date | None = None
+    conflict_snapshot_at: datetime | None = None
+    nhat_quan: bool | None = None
 
 
 class Cap6ProgressOut(BaseModel):
@@ -98,8 +117,8 @@ class MauThuanOut(BaseModel):
     canh_bao: str | None = None
     chua_du_du_lieu: bool
     ly_do_chua_du: str | None = None
-    #: Mẫu số thật. ★ Tối đa là **4**, không phải 5: AI Insight v2 không có lớp
-    #: 💎 Định giá (xem ``app.services.cap6.mau_thuan``).
+    #: Mẫu số thật. Có thể đạt 5 khi có snapshot BCTC Khối 02 hợp lệ; L2 của AI
+    #: Insight không được dùng làm Định giá.
     so_lop_da_cham: int
     #: Phiên của bản phân tích đã dùng — để user biết dữ liệu của ngày nào.
     session_date: date | None = None
@@ -137,6 +156,11 @@ class KehoachCap6Out(BaseModel):
     had_veto: bool | None = None
     veto_layers: list[LopLiteral] | None = None
     veto_layers_ten: list[str] | None = None
+    support_layers: list[LopLiteral] | None = None
+    opposing_layers: list[LopLiteral] | None = None
+    neutral_layers: list[LopLiteral] | None = None
+    conflict_snapshot_session_date: date | None = None
+    conflict_snapshot_at: datetime | None = None
     #: Hành động thật để Kết sổ đối chiếu với nhận định (spec §8) — CHỈ khối
     #: lượng + tự tin, KHÔNG nhắc cắt lỗ (§4.3).
     khoi_luong_pct_von: float | None = None

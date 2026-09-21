@@ -77,7 +77,12 @@
 .cap5-task-go {
   flex-shrink: 0;
   align-self: center;
-  padding: 2px 8px;
+  display: inline-flex;
+  width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   font-family: inherit;
   font-size: 12px;
   font-weight: 700;
@@ -140,4 +145,29 @@
   display: block;
   width: 100%;
   margin-top: 8px;
+}
+
+@media (max-width: 360px) {
+  .cap5-jbar {
+    flex-wrap: wrap;
+    gap: 6px 8px;
+    padding: 8px 10px;
+  }
+
+  .cap5-jbar-nx {
+    flex-basis: calc(100% - 86px);
+    overflow-wrap: anywhere;
+  }
+
+  .cap5-jbar-dots {
+    margin-left: auto;
+  }
+
+  .cap5-tools {
+    flex-direction: column;
+  }
+
+  .cap5-tool {
+    min-height: 44px;
+  }
 }

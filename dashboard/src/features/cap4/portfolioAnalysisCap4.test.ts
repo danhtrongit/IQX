@@ -269,6 +269,16 @@ describe("computeCap4Khoi11GocNhinRieng — ⑪ góc nhìn riêng của bạn", 
     expect(res.soLanAiDung).toBe(0)
   })
 
+  it("lệnh hòa vốn không bị quy thành AI đúng và bị loại khỏi mẫu số", () => {
+    const res = computeCap4Khoi11GocNhinRieng([
+      ...tradesKhacAi(5, 3),
+      trade({ so_lop_khac_ai: 1, pnlPct: 0, pnlVnd: 0 }),
+    ])
+    expect(res.soLanKhacAi).toBe(5)
+    expect(res.soLanBanDung).toBe(3)
+    expect(res.soLanAiDung).toBe(2)
+  })
+
   it("bạn đúng + AI đúng luôn cộng lại bằng số lần khác AI", () => {
     const res = computeCap4Khoi11GocNhinRieng(tradesKhacAi(9, 4))
     expect(res.soLanBanDung + res.soLanAiDung).toBe(res.soLanKhacAi)
@@ -287,16 +297,15 @@ describe("computeCap4PortfolioAnalysis — DELEGATE Cấp 1/2/3, chỉ THÊM ⑩
       cap4Progress(),
       NOW,
     )
-    // Cấp 1/2 (khối ①②③④ sau khi Cấp 2 rút về mô hình 2 nhiệm vụ) + Cấp 3
-    // (⑦/⑧ + khẩu vị). Khối 5/6/7 cũ của Cấp 2 đã bỏ hẳn, không phải "mất".
+    // Cấp 1/2 (khối ①–⑦, gồm các công cụ phân tích không phải nhiệm vụ) +
+    // Cấp 3 (⑦/⑧ + khẩu vị) đều được giữ nguyên.
     expect(res.khoi1).toBeTruthy()
     expect(res.khoi2).toBeTruthy()
     expect(res.khoi3).toBeTruthy()
     expect(res.khoi4).toBeTruthy()
-    const stale = res as unknown as Record<string, unknown>
-    expect(stale.khoi5).toBeUndefined()
-    expect(stale.khoi6).toBeUndefined()
-    expect(stale.khoi7).toBeUndefined()
+    expect(res.khoi5).toBeTruthy()
+    expect(res.khoi6).toBeTruthy()
+    expect(res.khoi7).toBeTruthy()
     expect(res.khoi7TuTin).toBeTruthy()
     expect(res.khoi8KhoiLuong).toBeTruthy()
     expect(res.khauVi).toBe("can_bang")

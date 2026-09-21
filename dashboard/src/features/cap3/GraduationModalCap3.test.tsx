@@ -65,13 +65,12 @@ describe("GraduationModalCap3", () => {
     })
   })
 
-  it("renders the two-task source subtitle and all three updated graduation blocks", () => {
+it("shows the badge and next-level action without the removed narrative blocks", () => {
+    useCap3ProgressMock.mockReturnValue({ data: makeProgress({ task_1_done_at: "t", task_2_done_at: "t" }) })
     render(<GraduationModalCap3 />)
-
-    expect(screen.getByText("10 lệnh có chấm tự tin · đủ 3 mức tự tin")).toBeInTheDocument()
-    expect(screen.getByText(/Quan trọng hơn con số lãi/)).toBeInTheDocument()
-    expect(screen.getByText(/Cấp 4 dạy điều khó nhất/)).toBeInTheDocument()
-    expect(screen.getByTestId("cap3-grad-khoi3")).toHaveTextContent("Từ giờ: Cấp 4 «Thuần thục».")
+    expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
+    expect(document.querySelectorAll(".cap0-grad-block")).toHaveLength(0)
+    expect(screen.getByRole("button", { name: /Vào cấp 4: Thuần thục/ })).toBeEnabled()
   })
 
   it("retains the release-gated Level 4 transition", () => {

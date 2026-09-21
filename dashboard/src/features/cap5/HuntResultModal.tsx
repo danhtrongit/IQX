@@ -14,7 +14,7 @@ import "./cap5-sanma.css"
 /**
  * Popup kết quả một bộ lọc săn mã (spec §5.4, mockup `iqx-cap5-sanma.html`
  * `.hunt-modal`): khối định nghĩa nền vàng · dòng minh bạch · tối đa 10 mã kèm
- * tín hiệu thô · nút "+ Watchlist" → "✓ Đã thêm".
+ * tín hiệu thô · nút "+ Theo dõi" → "✓ Đã thêm".
  *
  * ★★ LUẬT SỐ 1. Popup có BỐN trạng thái tách bạch, và ba trong số đó KHÔNG
  * được vẽ ra danh sách rỗng như thể "đã lọc xong, không có mã nào":
@@ -48,7 +48,7 @@ export function HuntResultModal({
       await add.mutateAsync({ symbol, hunt_filter: filter, hunt_signal: tinHieu })
       setJustAdded((p) => ({ ...p, [symbol.toUpperCase()]: true }))
     } catch (err) {
-      Message.error(await getErrorMessage(err, `Không thêm được ${symbol} vào Watchlist`))
+      Message.error(await getErrorMessage(err, `Không thêm được ${symbol} vào Theo dõi`))
     }
   }
 
@@ -63,7 +63,7 @@ export function HuntResultModal({
       style={{ maxWidth: 420, width: "94vw" }}
     >
       {/* `data-tour-id` cho tour Săn mã (bước 4 «Top 10 mã mạnh nhất» / bước 5
-          «+ Watchlist»). Chỉ tồn tại khi popup ĐANG MỞ — engine tour có đường lùi
+          «+ Theo dõi»). Chỉ tồn tại khi popup ĐANG MỞ — engine tour có đường lùi
           target-không-thấy → bong bóng giữa màn, xem `configs/sanMaTour.ts`. */}
       <div className="cap5-sm" data-tour-id="tour-sanma-popup">
         {def && <div className="cap5-hm-def">{def.dinh_nghia}</div>}
@@ -130,7 +130,7 @@ function HuntResultBody({
         <div data-testid="cap5-hunt-total">
           {def
             ? describeHuntTotal(data, def)
-            : `Đang hiện ${data.items.length.toLocaleString("en-US")} ${defTop}`}
+            : `Đang hiện ${data.items.length.toLocaleString("vi-VN")} ${defTop}`}
         </div>
         {/* ★★ ĐỘ BAO PHỦ (spec §5.4): "N mã HOSE thỏa điều kiện" một mình là câu
             nói về CẢ SÀN, trong khi nguồn nến đọc theo lô 40 mã và một lô lỗi là
@@ -166,7 +166,7 @@ function HuntResultBody({
             const added = isAdded(it.symbol)
             return (
               <div className="cap5-hr" key={it.symbol}>
-                <span className="cap5-hr-rank">{it.hang.toLocaleString("en-US")}</span>
+                <span className="cap5-hr-rank">{it.hang.toLocaleString("vi-VN")}</span>
                 <span className="cap5-hr-code">{it.symbol}</span>
                 <span className="cap5-hr-sig">{it.tin_hieu}</span>
                 <button
@@ -176,7 +176,7 @@ function HuntResultBody({
                   disabled={added || adding}
                   onClick={() => onAdd(it.symbol, it.tin_hieu)}
                 >
-                  {added ? "✓ Đã thêm" : "+ Watchlist"}
+                  {added ? "✓ Đã thêm" : "+ Theo dõi"}
                 </button>
               </div>
             )
@@ -185,7 +185,7 @@ function HuntResultBody({
       )}
 
       <div className="cap5-hm-foot">
-        Bấm "+ Watchlist" để đưa mã vào danh sách quan sát — săn chưa phải là mua.
+        Bấm "+ Theo dõi" để đưa mã vào danh sách quan sát — săn chưa phải là mua.
       </div>
     </>
   )

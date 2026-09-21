@@ -72,6 +72,20 @@ export interface OrderKetso {
   closed_at: string
 }
 
+export interface Cap1TradeHistory {
+  sell_order_id: string
+  closed_at: string
+  pnl_pct: number
+  pnl_vnd: number
+  lyDo: LyDo
+  trangThai_luc_dat: TrangThaiLucDat
+}
+
+export interface Cap1TradeHistoryList {
+  trades: Cap1TradeHistory[]
+  total: number
+}
+
 /** spec §4 Trường 1 — the 5 lý do, in the spec table's exact order. */
 export interface LyDoOption {
   value: LyDo

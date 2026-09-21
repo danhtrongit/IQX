@@ -148,10 +148,14 @@ export function PlanFormCap1({
 
       {/* Trường 2 — Vùng mua */}
       <div className="space-y-0.5">
-        <label className="text-[10px] uppercase tracking-wide text-[var(--color-text-3)]">
+        <label
+          htmlFor={`${symbol}-cap1-vung-mua`}
+          className="text-[10px] uppercase tracking-wide text-[var(--color-text-3)]"
+        >
           {"2. Vùng mua (giá cụ thể)"}
         </label>
         <InputNumber
+          id={`${symbol}-cap1-vung-mua`}
           mode="button"
           size="mini"
           step={100}

@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 2,
+  "assetVersion": "2.0.1",
+  "mascotId": "loc_huou",
+  "slug": "loc-huou",
+  "displayName": "Lộc Hươu",
+  "dominantLayer": "noi_bo",
+  "canvas": {
+    "frameWidth": 640,
+    "frameHeight": 640,
+    "anchorX": 0.5,
+    "anchorY": 0.92,
+    "safePaddingPct": 8
+  },
+  "assets": {
+    "poster": "poster.webp",
+    "revealSilhouette": "reveal-silhouette.webp",
+    "avatarHead": "avatar-head.webp",
+    "avatarBody": "avatar-body.webp"
+  },
+  "states": {
+    "idle": {
+      "file": "idle-strip.webp",
+      "frameCount": 6,
+      "columns": 6,
+      "rows": 1,
+      "durationsMs": [
+        1500,
+        1100,
+        80,
+        120,
+        100,
+        2200
+      ],
+      "loop": true,
+      "prefetchPriority": "critical",
+      "loopDelayMs": 900,
+      "reducedMotionFrame": 0
+    },
+    "greet": {
+      "file": "greet-strip.webp",
+      "frameCount": 6,
+      "columns": 6,
+      "rows": 1,
+      "durationsMs": [
+        100,
+        180,
+        220,
+        220,
+        220,
+        260
+      ],
+      "loop": false,
+      "prefetchPriority": "high",
+      "holdLastFrameMs": 120,
+      "reducedMotionFrame": 3
+    },
+    "analyzing": {
+      "file": "analyzing-strip.webp",
+      "frameCount": 6,
+      "columns": 6,
+      "rows": 1,
+      "durationsMs": [
+        300,
+        400,
+        500,
+        400,
+        400,
+        400
+      ],
+      "loop": true,
+      "prefetchPriority": "high",
+      "reducedMotionFrame": 2
+    },
+    "updated": {
+      "file": "updated-strip.webp",
+      "frameCount": 5,
+      "columns": 5,
+      "rows": 1,
+      "durationsMs": [
+        180,
+        250,
+        250,
+        250,
+        320
+      ],
+      "loop": false,
+      "prefetchPriority": "normal",
+      "holdLastFrameMs": 100,
+      "reducedMotionFrame": 2
+    },
+    "tap_reaction": {
+      "file": "tap-strip.webp",
+      "frameCount": 4,
+      "columns": 4,
+      "rows": 1,
+      "durationsMs": [
+        100,
+        150,
+        180,
+        220
+      ],
+      "loop": false,
+      "prefetchPriority": "normal",
+      "reducedMotionFrame": 2
+    }
+  },
+  "presentation": {
+    "preferredScaleDesktop": 1,
+    "preferredScaleMobile": 0.86,
+    "accentToken": "mascot.loc_huou",
+    "stageEffectPreset": "observer_gold"
+  }
+}

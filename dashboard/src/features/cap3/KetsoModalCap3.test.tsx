@@ -162,7 +162,7 @@ describe("KetsoModalCap3 — khối QUẢN LÝ VỐN (mới ở Cấp 3)", () =>
     expect(block.getByText("Khẩu vị rủi ro")).toBeInTheDocument()
     expect(block.getByText("Cân bằng (trần 20%)")).toBeInTheDocument()
     expect(block.getByText("Mức tự tin")).toBeInTheDocument()
-    expect(block.getByText(/⭐⭐ Vừa/)).toBeInTheDocument()
+    expect(block.getByText("⭐⭐ Vừa (75%)")).toBeInTheDocument()
     expect(block.getByText("Cách tính KL")).toBeInTheDocument()
     expect(block.getByText(/Khẩu vị × tự tin/)).toBeInTheDocument()
     expect(block.getByText("Khối lượng")).toBeInTheDocument()

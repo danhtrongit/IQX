@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/features/auth"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { cap6Api } from "./api"
 import { cap6Keys } from "./keys"
 import type {
@@ -31,7 +32,10 @@ export function useCap6Progress(enabled = true) {
 /** Invalidate every Cấp 6 query — used by every mutation. */
 function useInvalidateCap6() {
   const queryClient = useQueryClient()
-  return () => queryClient.invalidateQueries({ queryKey: cap6Keys.all })
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: ["journey-identity"] })
+    return queryClient.invalidateQueries({ queryKey: cap6Keys.all })
+  }
 }
 
 /** POST /cap6/enter — enter Cấp 6 (idempotent; requires Cấp 5 graduated). */
@@ -45,12 +49,15 @@ export function useEnterCap6() {
 
 
 
-/** POST /cap6/graduate — graduate to Cấp 7 (only when 3/3 nhiệm vụ done). */
+/** POST /cap6/graduate — complete the journey at Cấp 6 under its existing gate. */
 export function useGraduateCap6() {
   const invalidate = useInvalidateCap6()
   return useMutation<Cap6Progress, unknown, void>({
     mutationFn: cap6Api.graduate,
-    onSuccess: invalidate,
+    onSuccess: () => {
+      trackJourneyEvent("cap6_graduate")
+      return invalidate()
+    },
   })
 }
 
@@ -134,6 +141,9 @@ export function useMarkTourMauThuan() {
   const invalidate = useInvalidateCap6()
   return useMutation<Cap6Progress, unknown, void>({
     mutationFn: cap6Api.markTourMauThuan,
-    onSuccess: invalidate,
+    onSuccess: () => {
+      trackJourneyEvent("cap6_tour_mauthuan_done")
+      return invalidate()
+    },
   })
 }

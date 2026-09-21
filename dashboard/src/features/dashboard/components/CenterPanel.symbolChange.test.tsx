@@ -14,6 +14,12 @@ const navigateMock = vi.fn()
 vi.mock("react-router", () => ({ useNavigate: () => navigateMock }))
 
 const setSymbolMock = vi.fn()
+let userId: string | null = "user-a"
+const chartMounted = vi.fn()
+const chartUnmounted = vi.fn()
+vi.mock("@/features/auth", () => ({
+  useAuth: () => ({ user: userId ? { id: userId } : null }),
+}))
 vi.mock("@/shared/contexts/symbol-context", () => ({
   useSymbol: () => ({ symbol: "VNM", setSymbol: setSymbolMock }),
 }))
@@ -25,6 +31,10 @@ vi.mock("../chart/drawing-persistence", () => ({ getDrawingPersistence: () => un
 let firedSymbolChanged: ((s: string) => void) | undefined
 vi.mock("../chart/TVChart", () => ({
   TVChart: ({ onSymbolChanged }: { onSymbolChanged?: (s: string) => void }) => {
+    React.useEffect(() => {
+      chartMounted()
+      return () => chartUnmounted()
+    }, [])
     firedSymbolChanged = onSymbolChanged
     return <div data-testid="tvchart-stub" />
   },
@@ -37,6 +47,9 @@ describe("CenterPanel — symbolChange", () => {
     navigateMock.mockReset()
     setSymbolMock.mockReset()
     firedSymbolChanged = undefined
+    userId = "user-a"
+    chartMounted.mockClear()
+    chartUnmounted.mockClear()
   })
 
   it('★ "select" (trang cấp): chart đổi mã → setSymbol tại chỗ, KHÔNG navigate', () => {
@@ -58,5 +71,16 @@ describe("CenterPanel — symbolChange", () => {
     firedSymbolChanged?.("HOSE:FPT")
     expect(navigateMock).toHaveBeenCalledWith("/co-phieu/FPT")
     expect(setSymbolMock).not.toHaveBeenCalled()
+  })
+
+  it("recreates the chart when the account changes, clearing the old drawings", () => {
+    const view = render(<CenterPanel />)
+    userId = "user-b"
+    view.rerender(<CenterPanel />)
+    expect(chartMounted).toHaveBeenCalledTimes(2)
+    expect(chartUnmounted).toHaveBeenCalledTimes(1)
+    userId = null
+    view.rerender(<CenterPanel />)
+    expect(chartMounted).toHaveBeenCalledTimes(3)
   })
 })

@@ -1,4 +1,4 @@
-import { render, renderHook } from "@testing-library/react"
+import { act, render, renderHook } from "@testing-library/react"
 import React, { useEffect } from "react"
 import { describe, expect, it, vi } from "vitest"
 import { Cap2Provider, useCap2Events } from "./Cap2Context"
@@ -21,6 +21,14 @@ describe("useCap2Events — inside a Cap2Provider", () => {
   it("isCap2Active is true", () => {
     const { result } = renderHook(() => useCap2Events(), { wrapper: Cap2Provider })
     expect(result.current.isCap2Active).toBe(true)
+  })
+
+  it("keeps a sell intent until the real order form consumes it", () => {
+    const { result } = renderHook(() => useCap2Events(), { wrapper: Cap2Provider })
+    act(() => result.current.prepareSellIntent("vnm"))
+    expect(result.current.sellIntent).toEqual({ symbol: "VNM", method: "market" })
+    act(() => result.current.consumeSellIntent())
+    expect(result.current.sellIntent).toBeNull()
   })
 
   it("dispatches onSlTpPicked/onOrderFilled to the registered handlers", () => {

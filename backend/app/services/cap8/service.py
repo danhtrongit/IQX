@@ -14,6 +14,7 @@ from datetime import UTC, date, datetime, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.demo_trading import require_open_level
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
 from app.models.cap1 import OrderKehoach
 from app.models.cap7 import Cap7Progress
@@ -125,6 +126,7 @@ class Cap8Service:
     async def enter(self, user_id: uuid.UUID) -> dict:
         progress = await self._progress(user_id, for_update=True)
         if progress is None:
+            require_open_level(8)
             cap7 = (await self._session.execute(
                 select(Cap7Progress).where(Cap7Progress.user_id == user_id)
             )).scalar_one_or_none()

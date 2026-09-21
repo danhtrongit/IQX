@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useRef, type ReactNode } from "react"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import type { LyDo, TrangThaiLucDat } from "./types"
 
 /**
@@ -69,6 +70,7 @@ export function Cap1Provider({ children }: { children: ReactNode }) {
   }, [])
 
   const onLyDoPicked = useCallback((lyDo: LyDo) => {
+    trackJourneyEvent("cap1_lop_check_open", { ly_do: lyDo })
     handlersRef.current.onLyDoPicked?.(lyDo)
   }, [])
 
@@ -77,6 +79,7 @@ export function Cap1Provider({ children }: { children: ReactNode }) {
   }, [])
 
   const onDocChiTietClicked = useCallback((lyDo: LyDo) => {
+    trackJourneyEvent("cap1_lop_read_detail", { ly_do: lyDo })
     handlersRef.current.onDocChiTietClicked?.(lyDo)
   }, [])
 

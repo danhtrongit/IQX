@@ -20,20 +20,34 @@ trading pages still read this endpoint.
 
 from __future__ import annotations
 
-from datetime import date
+import uuid
+from datetime import date, timedelta
 
 from fastapi import APIRouter, Query
 
 from app.api.deps import CurrentUser, DBSession
+from app.schemas.cap1 import TradeHistoryOut
 from app.schemas.cap2 import (
+    Cap2AnalysisOut,
     Cap2ProgressOut,
+    DiemKyLuatHistoryOut,
     DiemKyLuatOut,
     KehoachRequest,
     KetsoRequest,
     OrderKehoachOut,
     OrderKetsoOut,
     TaskRequest,
+    TradeHistoryListOut,
 )
+from app.schemas.cap2_alert import (
+    Cap2ActiveAlertsOut,
+    Cap2AlertActionOut,
+    Cap2AlertActionRequest,
+    Cap2AlertOut,
+    Cap2PreBuyAlertOut,
+    Cap2PreBuyAlertRequest,
+)
+from app.services.cap2.alerts import Cap2AlertService, current_session_date
 from app.services.cap2.service import Cap2Service
 
 router = APIRouter(prefix="/cap2", tags=["Cấp 2"])
@@ -91,6 +105,7 @@ async def record_ketso(body: KetsoRequest, user: CurrentUser, db: DBSession) -> 
         cham_tp_giu_lam_hut=body.cham_TP_giu_lam_hut,
         ban_som_khi_lo_nhe=body.ban_som_khi_lo_nhe,
         nhoi_lenh_khi_lo=body.nhoi_lenh_khi_lo,
+        ghi_chu_nhin_lai=body.ghi_chu_nhin_lai,
     )
 
 
@@ -106,8 +121,105 @@ async def get_diem_ky_luat(
     return DiemKyLuatOut(**result)
 
 
+@router.get("/diem-ky-luat/history", response_model=DiemKyLuatHistoryOut)
+async def get_diem_ky_luat_history(
+    user: CurrentUser,
+    db: DBSession,
+    from_date: date | None = Query(default=None),
+    to_date: date | None = Query(default=None),
+) -> DiemKyLuatHistoryOut:
+    end = to_date or date.today()
+    start = from_date or (end - timedelta(days=29))
+    rows = await Cap2Service(db).diem_ky_luat_history(user.id, start, end)
+    return DiemKyLuatHistoryOut(
+        scores=[DiemKyLuatOut(**row) for row in rows], from_date=start, to_date=end
+    )
+
+
+@router.get("/trades", response_model=TradeHistoryListOut)
+async def list_trades(user: CurrentUser, db: DBSession) -> TradeHistoryListOut:
+    rows = await Cap2Service(db).list_trade_history(user.id)
+    trades = [TradeHistoryOut.model_validate(row) for row in rows]
+    return TradeHistoryListOut(trades=trades, total=len(trades))
+
+
+@router.get("/analysis", response_model=Cap2AnalysisOut)
+async def get_analysis(user: CurrentUser, db: DBSession) -> Cap2AnalysisOut:
+    """Nguồn dữ liệu bền vững cho các khối Phân tích danh mục Cấp 2 (§12)."""
+    return Cap2AnalysisOut.model_validate(await Cap2Service(db).analysis(user.id))
+
+
 @router.post("/graduate", response_model=Cap2ProgressOut)
 async def graduate(user: CurrentUser, db: DBSession) -> Cap2ProgressOut:
     """Tốt nghiệp Cấp 2 — chỉ khi xong 1/1 nhiệm vụ (①)."""
     svc = Cap2Service(db)
     return await svc.graduate(user.id)
+
+
+@router.post("/alerts/pre-buy", response_model=Cap2PreBuyAlertOut)
+async def evaluate_pre_buy_alert(
+    body: Cap2PreBuyAlertRequest, user: CurrentUser, db: DBSession
+) -> Cap2PreBuyAlertOut:
+    """Check the current same-symbol position before a new BUY.
+
+    The server resolves the quote; callers cannot supply a price. Reusing the
+    same idempotency key returns the same trigger without consuming a second
+    alert impression.
+    """
+    result = await Cap2AlertService(db).evaluate_pre_buy(
+        user.id,
+        symbol=body.symbol,
+        idempotency_key=body.idempotency_key,
+        quantity=body.quantity,
+        order_type=body.order_type,
+        limit_price_vnd=body.limit_price_vnd,
+    )
+    return Cap2PreBuyAlertOut(
+        data_status=result["data_status"],
+        triggered=result["triggered"],
+        reason=result["reason"],
+        alert=(
+            Cap2AlertOut.model_validate(result["alert"])
+            if result["alert"] is not None
+            else None
+        ),
+    )
+
+
+@router.get("/alerts/active", response_model=Cap2ActiveAlertsOut)
+async def get_active_alerts(
+    user: CurrentUser,
+    db: DBSession,
+    session_date: date | None = Query(
+        default=None, description="Phiên hiển thị (mặc định hôm nay, giờ Việt Nam)"
+    ),
+) -> Cap2ActiveAlertsOut:
+    """Present eligible alerts in priority order and persist impressions."""
+    effective_date = session_date or current_session_date()
+    alerts = await Cap2AlertService(db).active_alerts(
+        user.id, session_date=effective_date
+    )
+    return Cap2ActiveAlertsOut(
+        session_date=effective_date,
+        alerts=[Cap2AlertOut.model_validate(row) for row in alerts],
+    )
+
+
+@router.post("/alerts/{alert_id}/action", response_model=Cap2AlertActionOut)
+async def act_on_alert(
+    alert_id: uuid.UUID,
+    body: Cap2AlertActionRequest,
+    user: CurrentUser,
+    db: DBSession,
+) -> Cap2AlertActionOut:
+    """Record the immutable user action for a displayed or muted alert."""
+    event, next_step = await Cap2AlertService(db).act(
+        user.id,
+        alert_id,
+        action=body.action,
+        confirmation_phrase=body.confirmation_phrase,
+    )
+    return Cap2AlertActionOut(
+        alert=Cap2AlertOut.model_validate(event),
+        next_step=next_step,
+    )

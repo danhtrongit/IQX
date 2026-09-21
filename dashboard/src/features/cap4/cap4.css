@@ -78,9 +78,14 @@
 }
 
 .cap4-lop-line {
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--t2, var(--color-text-2));
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--t1, var(--color-text-1));
+  overflow-wrap: anywhere;
+}
+
+.cap4-lop-line + .cap4-lop-line {
+  margin-top: 4px;
 }
 
 .cap4-lop-diff {
@@ -105,9 +110,9 @@
 /* ── 3 nút tự chấm ───────────────────────────────────────────────────────── */
 .cap4-lop-rate-label {
   margin-top: 7px;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--t2, var(--color-text-2));
+  color: var(--t1, var(--color-text-1));
 }
 
 .cap4-lop-rate-group {
@@ -120,24 +125,32 @@
   flex: 1;
   padding: 6px 4px;
   font-family: inherit;
-  font-size: 10.5px;
-  color: var(--t2, var(--color-text-2));
-  background: var(--bg3, var(--color-fill-2));
-  border: 1px solid var(--bd, var(--color-border-2));
+  font-size: 12px;
+  color: var(--rate-color);
+  background: color-mix(in srgb, var(--rate-color) 10%, var(--bg3, var(--color-fill-2)));
+  border: 1px solid color-mix(in srgb, var(--rate-color) 55%, transparent);
   border-radius: 7px;
   cursor: pointer;
 }
 
 .cap4-rate-btn:hover {
-  border-color: var(--cap4);
-  color: var(--t1, var(--color-text-1));
+  border-color: var(--rate-color);
+}
+
+.cap4-rate-btn--ok { --rate-color: var(--green, #22c55e); }
+.cap4-rate-btn--neu { --rate-color: var(--yellow, #eab308); }
+.cap4-rate-btn--bad { --rate-color: var(--red, #ef4444); }
+
+.cap4-rate-btn:focus-visible {
+  outline: 2px solid var(--rate-color);
+  outline-offset: 2px;
 }
 
 .cap4-rate-btn--on {
   font-weight: 600;
-  color: var(--cap4);
-  background: var(--cap4-soft);
-  border-color: var(--cap4);
+  background: color-mix(in srgb, var(--rate-color) 25%, var(--bg3, var(--color-fill-2)));
+  border-color: var(--rate-color);
+  box-shadow: inset 0 0 0 1px var(--rate-color);
 }
 
 /* ── Ô đối chiếu AI (chỉ hiện khi đã chấm đủ 5 lớp) ──────────────────────── */
@@ -208,4 +221,41 @@
   font-size: 9.5px;
   line-height: 1.5;
   color: var(--t3, var(--color-text-3));
+}
+
+/* Phân tích danh mục vẫn vừa sidebar/bottom-sheet 320–360px. */
+.cap4-portfolio-analysis {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cap4-portfolio-analysis table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.cap4-portfolio-analysis th,
+.cap4-portfolio-analysis td {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 360px) {
+  .cap4-pa-layer-line {
+    flex-wrap: wrap;
+  }
+
+  .cap4-pa-layer-label {
+    width: auto;
+    flex: 1 1 110px;
+  }
+
+  .cap4-pa-layer-bar {
+    order: 4;
+    flex-basis: calc(100% - 48px);
+  }
+
+  .cap4-pa-layer-detail {
+    padding-left: 0;
+  }
+
 }

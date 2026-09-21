@@ -1,4 +1,10 @@
-import type { LyDo } from "@/features/cap1/types"
+import type { LyDo, TrangThaiLucDat } from "@/features/cap1/types"
+import type { PhuongPhapSlTp } from "@/features/cap2/types"
+import type {
+  CachKhoiLuongWire,
+  KhauViLoai,
+  MucTuTin,
+} from "@/features/cap3/types"
 
 /**
  * Cấp 4 «Thuần thục» — shared types.
@@ -39,11 +45,11 @@ export type NhanVuKhi = "vu_khi" | "diem_mu" | "chua_du_du_lieu"
 export const CAP4_TOTAL_TASKS = 1
 
 /**
- * Ngưỡng của nhiệm vụ duy nhất — «Đọc và chấm đủ 5 lớp qua 20 lệnh»
- * (`Cap4Service._TASK1_SO_LENH_MIN`). FE chỉ dùng để VẼ tiến độ `n/20`; server
+ * Ngưỡng của nhiệm vụ duy nhất — «Đọc và chấm đủ 5 lớp qua 10 lệnh»
+ * (`Cap4Service._TASK1_SO_LENH_MIN`). FE chỉ dùng để VẼ tiến độ `n/10`; server
  * mới là nơi quyết định `task_1_done_at`.
  */
-export const CAP4_SO_LENH_TARGET = 20
+export const CAP4_SO_LENH_TARGET = 10
 
 /**
  * Progress row for the current user's Cấp 4 (one per user).
@@ -56,9 +62,9 @@ export interface Cap4Progress {
   id: string
   user_id: string
   entered_at: string
-  /** Nhiệm vụ DUY NHẤT — «Đọc và chấm đủ 5 lớp qua 20 lệnh». */
+  /** Nhiệm vụ DUY NHẤT — «Đọc và chấm đủ 5 lớp qua 10 lệnh». */
   task_1_done_at: string | null
-  /** Số lệnh đã đọc + tự chấm đủ cả 5 lớp — tử số của `n/20`. */
+  /** Số lệnh đã đọc + tự chấm đủ cả 5 lớp — tử số của `n/10`. */
   so_lenh_doc_du_5lop: number
   /**
    * Lớp bạn đọc chuẩn nhất — `null` = CHƯA ĐỦ DỮ LIỆU để kết luận (cần ≥3 lệnh
@@ -86,20 +92,13 @@ export function countCap4TasksDone(progress: Cap4Progress | null | undefined): n
  * `POST /cap4/kehoach` — the khối "Đọc 5 lớp" appended to the `order_kehoach`
  * row Cấp 1 already created for this BUY.
  *
- * `ai_5_lop` is `null` only while the AI đối chiếu has not been revealed (i.e.
- * the user did not rate all 5 lớp) — and in that case the server leaves
- * `so_lop_dong_thuan` NULL, so the order never counts toward nhiệm vụ ③. Send
- * both blobs whenever the reveal happened.
- *
- * `so_lop_dong_thuan`/`so_lop_khac_ai` are ADVISORY: the server always
- * re-derives them from the two blobs (see `Cap4Service.record_kehoach`).
+ * Atomic journey-plan contract accepts only the user's committed self-rating.
+ * The server owns the AI snapshot and derives both comparison counters; the
+ * client must never submit those fields as claimed evidence.
  */
 export interface KehoachInputCap4 {
   order_id: string
   doc_5_lop: Lop5Partial
-  ai_5_lop: Lop5Partial | null
-  so_lop_dong_thuan: number
-  so_lop_khac_ai: number
 }
 
 /** Cấp 4's view of `order_kehoach` — Cấp 1's fields + the đọc-5-lớp block. */
@@ -107,6 +106,31 @@ export interface OrderKehoachCap4 {
   id: string
   order_id: string
   vung_mua: number
+  doc_5_lop: Lop5Partial | null
+  ai_5_lop: Lop5Partial | null
+  so_lop_dong_thuan: number | null
+  so_lop_khac_ai: number | null
+}
+
+/** Complete server-owned BUY commitment used to restore Kết sổ after reload. */
+export interface Cap4PlanWire {
+  id: string
+  order_id: string
+  symbol: string
+  quantity: number
+  bought_at: string
+  gia_vao: number
+  lyDo: LyDo
+  trangThai_luc_dat: TrangThaiLucDat
+  vung_mua: number
+  phuong_phap_sl_tp: PhuongPhapSlTp | null
+  cat_lo: number | null
+  chot_loi: number | null
+  khau_vi: KhauViLoai | null
+  muc_tu_tin: MucTuTin | null
+  cach_khoi_luong: CachKhoiLuongWire | null
+  khoi_luong: number | null
+  pct_von: number | null
   doc_5_lop: Lop5Partial | null
   ai_5_lop: Lop5Partial | null
   so_lop_dong_thuan: number | null
@@ -137,4 +161,40 @@ export interface VuKhiDiemMuCap4 {
   nguong_vu_khi: number
   nguong_diem_mu: number
   giai_thich: string
+}
+
+export type DongThuanBandCap4 = "cao" | "vua" | "thap"
+
+export interface PhanTichKhoi10RowCap4 {
+  band: DongThuanBandCap4
+  label: string
+  count: number
+  wins: number
+  win_rate: number | null
+  insufficient: boolean
+}
+
+export interface PhanTichKhoi10Cap4 {
+  rows: PhanTichKhoi10RowCap4[]
+  total_trades: number
+  excluded_no_ai: number
+  hieu_qua: boolean | null
+  phat_hien: string | null
+  insufficient_note: string | null
+  giai_thich: string
+}
+
+export interface PhanTichKhoi11Cap4 {
+  so_lan_khac_ai: number
+  so_lan_ban_dung: number
+  so_lan_ai_dung: number
+  phat_hien: string | null
+  insufficient_note: string | null
+  giai_thich: string
+}
+
+/** Authoritative cross-device response for portfolio-analysis blocks ⑩/⑪. */
+export interface PhanTichCap4 {
+  khoi_10: PhanTichKhoi10Cap4
+  khoi_11: PhanTichKhoi11Cap4
 }

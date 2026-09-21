@@ -49,9 +49,30 @@ describe("ChamCatLoBanner (spec §8)", () => {
         onGiuTiep={onGiuTiep}
       />,
     )
-    fireEvent.click(screen.getByText(/Bán ngay/))
+    fireEvent.click(screen.getByText(/Bán ATO/))
     fireEvent.click(screen.getByText(/Giữ tiếp/))
     expect(onBan).toHaveBeenCalledTimes(1)
+    expect(onGiuTiep).toHaveBeenCalledTimes(1)
+  })
+
+  it('level "typeToConfirm": Giữ tiếp chỉ mở khi gõ đúng "Tôi hiểu"', () => {
+    const onGiuTiep = vi.fn()
+    render(
+      <ChamCatLoBanner
+        {...base}
+        phienGiuQuaNguong={2}
+        variant="phien_ke"
+        level="typeToConfirm"
+        onGiuTiep={onGiuTiep}
+      />,
+    )
+    const hold = screen.getByTestId("cap2-chamsl-hold")
+    expect(hold).toBeDisabled()
+    fireEvent.change(screen.getByTestId("cap2-chamsl-input"), {
+      target: { value: "Tôi hiểu" },
+    })
+    expect(hold).not.toBeDisabled()
+    fireEvent.click(hold)
     expect(onGiuTiep).toHaveBeenCalledTimes(1)
   })
 })

@@ -1,7 +1,7 @@
 """Request/response schemas for the Cấp 4 «Thuần thục» API — đọc + tự chấm 5
 lớp, vũ khí / điểm mù.
 
-★ Cấp 4 có ĐÚNG MỘT nhiệm vụ («Đọc và chấm đủ 5 lớp qua 20 lệnh») — khối
+★ Cấp 4 có ĐÚNG MỘT nhiệm vụ («Đọc và chấm đủ 5 lớp qua 10 lệnh») — khối
 "Thách thức Thuần thục" (3 điều kiện) và hai nhiệm vụ cũ đã bị gỡ cùng
 ``ThachThucOut``/``ThachThucDieuKien``. Xem ``app.models.cap4``.
 """
@@ -27,7 +27,7 @@ class Cap4ProgressOut(BaseModel):
     id: uuid.UUID
     user_id: uuid.UUID
     entered_at: datetime
-    #: Nhiệm vụ DUY NHẤT — «Đọc và chấm đủ 5 lớp qua 20 lệnh».
+    #: Nhiệm vụ DUY NHẤT — «Đọc và chấm đủ 5 lớp qua 10 lệnh».
     task_1_done_at: datetime | None = None
     so_lenh_doc_du_5lop: int
     #: NULL = chưa đủ dữ liệu để kết luận (≥3 lệnh đã đóng mỗi lớp) — KHÔNG
@@ -48,26 +48,16 @@ class TaskRequest(BaseModel):
 class KehoachRequest(BaseModel):
     """``POST /cap4/kehoach`` — khối "Đọc 5 lớp" ghi thêm vào kế hoạch đã có.
 
-    ``doc_5_lop``/``ai_5_lop`` are validated in the service layer (keys must be
-    the 5 lớp, values one of ok/neu/bad) so bad payloads produce a single,
-    Vietnamese ``BadRequestError`` message instead of a pydantic dump.
-
-    ``so_lop_dong_thuan``/``so_lop_khac_ai`` are ADVISORY: the server always
-    recomputes them from the two blobs above (never trust the client).
+    The client sends only its own five answers. AI answers and both comparison
+    counts come from a verified server reading dataset when one is available.
+    Missing AI evidence remains unknown and does not block the order.
     """
+
+    model_config = ConfigDict(extra="forbid")
 
     order_id: uuid.UUID
     doc_5_lop: dict | list | None = Field(
         default=None, description="Nhận định của user cho từng lớp: 'ok'|'neu'|'bad'"
-    )
-    ai_5_lop: dict | list | None = Field(
-        default=None, description="Đánh giá AI rút về 3 mức cho từng lớp (nếu đã lộ)"
-    )
-    so_lop_dong_thuan: int | None = Field(
-        default=None, description="Chỉ để tham chiếu — server tự tính lại"
-    )
-    so_lop_khac_ai: int | None = Field(
-        default=None, description="Chỉ để tham chiếu — server tự tính lại"
     )
 
 
@@ -79,6 +69,36 @@ class OrderKehoachOut(BaseModel):
     id: uuid.UUID
     order_id: uuid.UUID
     vung_mua: int
+    doc_5_lop: dict[str, NhanDinhLiteral] | None = None
+    ai_5_lop: dict[str, NhanDinhLiteral] | None = None
+    so_lop_dong_thuan: int | None = None
+    so_lop_khac_ai: int | None = None
+
+
+class Cap4PlanOut(BaseModel):
+    """Cumulative BUY plan used to restore the Kết sổ flow after reload."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    order_id: uuid.UUID
+    symbol: str
+    quantity: int
+    bought_at: datetime
+    gia_vao: int
+    lyDo: Literal["ky_thuat", "dong_tien", "noi_bo", "tin_tuc", "dinh_gia"]  # noqa: N815
+    trangThai_luc_dat: Literal[  # noqa: N815
+        "ung_ho", "trung_tinh", "can_chu_y", "nguoc_chieu"
+    ]
+    vung_mua: int
+    phuong_phap_sl_tp: Literal["ho_tro_khang_cu", "bien_do_dao_dong"] | None = None
+    cat_lo: int | None = None
+    chot_loi: int | None = None
+    khau_vi: Literal["than_trong", "can_bang", "tan_cong"] | None = None
+    muc_tu_tin: Literal[1, 2, 3] | None = None
+    cach_khoi_luong: Literal["khau_vi_tu_tin", "chia_deu"] | None = None
+    khoi_luong: int | None = None
+    pct_von: float | None = None
     doc_5_lop: dict[str, NhanDinhLiteral] | None = None
     ai_5_lop: dict[str, NhanDinhLiteral] | None = None
     so_lop_dong_thuan: int | None = None
@@ -112,3 +132,38 @@ class VuKhiDiemMuOut(BaseModel):
     nguong_vu_khi: float
     nguong_diem_mu: float
     giai_thich: str
+
+
+class Khoi10Row(BaseModel):
+    band: Literal["cao", "vua", "thap"]
+    label: str
+    count: int
+    wins: int
+    win_rate: float | None = None
+    insufficient: bool
+
+
+class Khoi10Out(BaseModel):
+    rows: list[Khoi10Row]
+    total_trades: int
+    excluded_no_ai: int
+    hieu_qua: bool | None = None
+    phat_hien: str | None = None
+    insufficient_note: str | None = None
+    giai_thich: str
+
+
+class Khoi11Out(BaseModel):
+    so_lan_khac_ai: int
+    so_lan_ban_dung: int
+    so_lan_ai_dung: int
+    phat_hien: str | None = None
+    insufficient_note: str | None = None
+    giai_thich: str
+
+
+class PhanTichOut(BaseModel):
+    """Khối ⑩/⑪ từ lịch sử server, dùng xuyên thiết bị."""
+
+    khoi_10: Khoi10Out
+    khoi_11: Khoi11Out

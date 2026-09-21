@@ -7,6 +7,7 @@ export {
 } from "./Cap3Context"
 export {
   useCap3Progress,
+  useCap3TradeAnalysis,
   useEnterCap3,
   useSetKhauVi,
   useCompleteCap3Task,

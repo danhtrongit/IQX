@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Modal } from "@arco-design/web-react"
 import { cn } from "@/shared/lib/cn"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { useCap1Events } from "./Cap1Context"
 import { useCompleteCap1Task, useRecordKetso } from "./hooks"
 import { coachTemplateCap1 } from "./coachTemplateCap1"
@@ -166,6 +167,7 @@ export function KetsoModalCap1({
       return
     }
     setEmotion(null)
+    trackJourneyEvent("cap1_ketso_view")
     const start = Date.now()
     let timer: ReturnType<typeof setTimeout>
     const tick = () => {
@@ -186,11 +188,11 @@ export function KetsoModalCap1({
   const pnlPositive = pnlVnd > 0
   const tax = Math.round(exitPrice * quantity * 0.001)
   const coChuyen = isLenhCoChuyen({ pnlPct, soPhienGiu })
-
   const coach = coachTemplateCap1(
     { pnlPositive, trangThaiLucDat, soPhienGiu },
     { pnlPct, lyDo, soPhienGiu, emotion },
   )
+
 
   // ── 3 dòng "HỒ SƠ CỦA BẠN" (spec §6) ──────────────────────────────────────
   const soLenh = progress?.so_lenh_thuc_chien ?? 0
@@ -281,6 +283,7 @@ export function KetsoModalCap1({
       <div className="cap1-ketso-section-label">Đối chiếu kế hoạch với thực tế</div>
 
       <table className="cap0-debrief-table">
+        <caption className="sr-only">Đối chiếu kế hoạch và kết quả lệnh</caption>
         <thead>
           <tr>
             <th></th>
@@ -322,7 +325,7 @@ export function KetsoModalCap1({
       {coChuyen && (
         <div className="cap1-ketso-emotion">
           <div className="cap0-debrief-coach-tag">💭 TRƯỚC KHI BẤM BÁN, BẠN THẤY THẾ NÀO?</div>
-          <div className="cap1-ketso-emotion-row">
+          <div className="cap1-ketso-emotion-row" role="group" aria-label="Cảm xúc trước khi bán">
             {CAM_XUC_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
@@ -332,7 +335,10 @@ export function KetsoModalCap1({
                   emotion === opt.value && "cap1-ketso-emotion-btn--on",
                 )}
                 aria-pressed={emotion === opt.value}
-                onClick={() => setEmotion(opt.value)}
+                onClick={() => {
+                  setEmotion(opt.value)
+                  trackJourneyEvent("cap1_ketso_emotion", { emotion: opt.value })
+                }}
               >
                 {opt.label}
               </button>

@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useRef, type ReactNode } from "react"
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react"
 import type { PhuongPhapSlTp } from "./types"
 
 /**
@@ -49,6 +49,9 @@ export interface Cap2EventBus extends Cap2EventHandlers {
   /** True only inside a `Cap2Provider`. Gates `TradingPanel`'s `SlTpBlock` +
    * hard gate + always-visible sổ lệnh bid/ask. */
   isCap2Active: boolean
+  sellIntent: { symbol: string; method: "market" } | null
+  prepareSellIntent: (symbol: string) => void
+  consumeSellIntent: () => void
 }
 
 const Cap2EventsContext = createContext<Cap2EventBus | null>(null)
@@ -57,6 +60,7 @@ export function Cap2Provider({ children }: { children: ReactNode }) {
   // Handlers live in a ref so registering them never re-renders notifiers and
   // the notify fns keep a stable identity.
   const handlersRef = useRef<Cap2EventHandlers>({})
+  const [sellIntent, setSellIntent] = useState<{ symbol: string; method: "market" } | null>(null)
 
   // MERGE (not replace) — mirrors the Cấp 0/Cấp 1 fix: multiple independent
   // registrants (journey bar, Phân tích danh mục, later tasks) may each call
@@ -75,14 +79,22 @@ export function Cap2Provider({ children }: { children: ReactNode }) {
     handlersRef.current.onOrderFilled?.(order)
   }, [])
 
+  const prepareSellIntent = useCallback((symbol: string) => {
+    setSellIntent({ symbol: symbol.toUpperCase(), method: "market" })
+  }, [])
+  const consumeSellIntent = useCallback(() => setSellIntent(null), [])
+
   const value = useMemo<Cap2EventBus>(
     () => ({
       onSlTpPicked,
       onOrderFilled,
       registerHandlers,
       isCap2Active: true,
+      sellIntent,
+      prepareSellIntent,
+      consumeSellIntent,
     }),
-    [onSlTpPicked, onOrderFilled, registerHandlers],
+    [consumeSellIntent, onSlTpPicked, onOrderFilled, prepareSellIntent, registerHandlers, sellIntent],
   )
 
   return <Cap2EventsContext.Provider value={value}>{children}</Cap2EventsContext.Provider>
@@ -92,6 +104,9 @@ export function Cap2Provider({ children }: { children: ReactNode }) {
 const NOOP_BUS: Cap2EventBus = {
   registerHandlers: () => {},
   isCap2Active: false,
+  sellIntent: null,
+  prepareSellIntent: () => {},
+  consumeSellIntent: () => {},
 }
 
 /**

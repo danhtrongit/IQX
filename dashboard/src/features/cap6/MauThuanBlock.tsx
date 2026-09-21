@@ -1,17 +1,11 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect } from "react"
 import { LOP_DEFS } from "@/features/cap4/doc5Lop"
 import type { Lop } from "@/features/cap4/types"
-import { TourLaunchButton, TourOverlay, useTour } from "@/features/tour"
-import { mauThuanTour } from "@/features/tour/configs/mauThuanTour"
 import { cn } from "@/shared/lib/cn"
 import { useCap6Events } from "./Cap6Context"
-import { useCap6Progress, useMarkTourMauThuan, useMauThuanCap6 } from "./hooks"
+import { useMauThuanCap6 } from "./hooks"
 import type { ConflictLevel, MauThuanCap6 } from "./mauThuanTypes"
 import {
-  CAU_CHOT_MAU_THUAN,
-  CHU_THICH_DIEM_TRU,
-  CHU_THICH_KHUNG_THAM_KHAO,
-  CHU_THICH_PHU_QUYET,
   CONFLICT_LEVEL_OPTIONS,
   coBangMauThuan,
   feedbackNhanDinh,
@@ -35,10 +29,10 @@ import {
  *   · `chua_du_du_lieu` → nói thẳng chưa đọc đủ 5 lớp cho mã này + câu của
  *     server (AI Insight KHÔNG chạy cho mã user chưa từng xem, spec §11);
  *   · không mâu thuẫn (5 lớp cùng chiều) → chỉ còn dòng toàn cảnh, KHÔNG bảng;
- *   · có mâu thuẫn → bảng 2 phe + cảnh báo + ô nhận định.
+ *   · có mâu thuẫn → bảng 2 phe + ô nhận định.
  *
  * ★ Mọi phân loại (phe nào, lớp nào PHỦ QUYẾT, bậc nào là "rất xấu") do SERVER
- * gửi và câu cảnh báo in NGUYÊN VĂN (§C12c) — FE không giữ bản sao thứ hai của
+ * gửi — FE không giữ bản sao thứ hai của
  * một quan điểm đầu tư mà spec §12.1 còn để mở.
  */
 export interface MauThuanBlockProps {
@@ -90,79 +84,11 @@ const PHE_MARK: Record<Phe, string> = {
   chua_ket_luan: "–",
 }
 
-/** Nhãn của một lớp chưa có kết luận — dùng chung một câu, không bịa mức nào. */
-const NHAN_CHUA_KET_LUAN = "chưa có kết luận"
-
-/** Nhãn server đã gửi cho từng lớp — dùng để dựng hàng chi tiết. */
-function nhanOf(mauThuan: MauThuanCap6): Map<Lop, string> {
-  const map = new Map<Lop, string>()
-  for (const r of mauThuan.ung_ho) map.set(r.lop, r.nhan)
-  for (const r of mauThuan.nguoc) map.set(r.lop, r.nhan)
-  for (const r of mauThuan.trung_tinh) map.set(r.lop, r.nhan)
-  return map
-}
-
-function bacOf(mauThuan: MauThuanCap6): Map<Lop, string | number | null> {
-  const map = new Map<Lop, string | number | null>()
-  for (const r of mauThuan.ung_ho) map.set(r.lop, r.bac)
-  for (const r of mauThuan.nguoc) map.set(r.lop, r.bac)
-  for (const r of mauThuan.trung_tinh) map.set(r.lop, null)
-  return map
-}
-
 export function MauThuanBlock({ symbol, nhanDinh, onNhanDinh }: MauThuanBlockProps) {
   const cap6Events = useCap6Events()
-  const { isCap6Active } = cap6Events
   const { data: mauThuan, isLoading, isError } = useMauThuanCap6(symbol)
-  const [chiTiet, setChiTiet] = useState(false)
 
   const coBang = coBangMauThuan(mauThuan)
-
-  /* ── TOUR «XỬ LÝ MÂU THUẪN» (spec §10 · `configs/mauThuanTour.ts`) ──────────
-   *
-   * ★★ "Bỏ qua" giữa chừng KHÔNG tính là đã xem. Engine `useTour` cố tình cho
-   * `skip()` gọi luôn `onComplete` ("skip = complete"), nên phải tự phân biệt:
-   * `onSkip` bật `skippedRef` TRƯỚC khi `onComplete` chạy, và chỉ khi cờ đó tắt
-   * mới `POST /cap6/tour-mauthuan`. Cùng cách `SanMaPanel` đã làm ở Cấp 5.
-   *
-   * ★ Cờ `da_xem_tour_mauthuan` sống trên SERVER (không localStorage) nên nó
-   * theo user qua mọi máy — vì thế dùng `useTour` trực tiếp chứ không
-   * `useFeatureTour` (bản đó neo `seen` vào localStorage).
-   */
-  const { data: progress } = useCap6Progress(isCap6Active)
-  const markTour = useMarkTourMauThuan()
-  const skippedRef = useRef(false)
-  const autoStartedRef = useRef(false)
-  const tour = useTour(mauThuanTour, {
-    onStart: () => {
-      skippedRef.current = false
-    },
-    onSkip: () => {
-      skippedRef.current = true
-    },
-    onComplete: () => {
-      if (!skippedRef.current) markTour.mutate()
-    },
-  })
-
-  /**
-   * Tự bật ĐÚNG MỘT LẦN, lần đầu user gặp một lệnh CÓ mâu thuẫn (spec §10).
-   *
-   * ★ Chỉ bật khi server nói THẲNG `da_xem_tour_mauthuan === false`. `undefined`
-   * (wire cũ / chưa tải xong) là "chưa biết" ⇒ KHÔNG tự bật: thà không mở còn
-   * hơn nhảy tour vào mặt một người đã xem rồi. Nút "?" vẫn mở lại được.
-   *
-   * ★ Và chỉ khi ĐÃ CÓ bảng mâu thuẫn trên màn: bước 2/3 của tour trỏ vào bảng
-   * và tag PHỦ QUYẾT, mở tour trên một mã không mâu thuẫn là trỏ vào chỗ trống.
-   */
-  useEffect(() => {
-    if (!coBang) return
-    if (autoStartedRef.current) return
-    if (progress?.da_xem_tour_mauthuan !== false) return
-    autoStartedRef.current = true
-    tour.start()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coBang, progress?.da_xem_tour_mauthuan])
 
   /**
    * Analytics `cap6_conflict_shown(symbol, veto_layers)` (spec §11) — bắn ĐÚNG
@@ -194,8 +120,6 @@ export function MauThuanBlock({ symbol, nhanDinh, onNhanDinh }: MauThuanBlockPro
   }
 
   const pheDaCham = pheOf(mauThuan)
-  const nhan = nhanOf(mauThuan)
-  const bac = bacOf(mauThuan)
   /**
    * ★ Vẽ CẢ NĂM lớp: lớp nào server không chấm được (thực tế: luôn là 💎 Định
    * giá) hiện trạng thái "chưa có kết luận" riêng của nó. Bỏ hẳn nó khỏi danh
@@ -211,58 +135,24 @@ export function MauThuanBlock({ symbol, nhanDinh, onNhanDinh }: MauThuanBlockPro
         {"1. Toàn cảnh 5 lớp — chú ý các lớp mâu thuẫn"}
       </span>
 
-      {/* Dòng tóm tắt 5 lớp (kế thừa Cấp 5) — bấm để mở từng lớp. */}
-      <button
-        type="button"
-        className="op-ls"
-        onClick={() => setChiTiet((v) => !v)}
-        aria-expanded={chiTiet}
+      {/* Dòng tóm tắt 5 lớp (kế thừa Cấp 5). */}
+      <div
+        className="op-ls flex-wrap"
         data-testid="cap6-toancanh"
         data-tour-id="tour-cap6-toancanh"
       >
-        <span className="op-ls-icons" data-testid="cap6-toancanh-icons">
+        <span className="op-ls-icons shrink-0" data-testid="cap6-toancanh-icons">
           {LOP_DEFS.map((d) => `${d.icon}${PHE_MARK[phe(d.lop)]}`).join(" ")}
         </span>
-        <span className="op-ls-score" data-testid="cap6-toancanh-score">
+        <span className="op-ls-score min-w-0 break-words" data-testid="cap6-toancanh-score">
           {`${mauThuan.ung_ho.length} ủng hộ · ${mauThuan.nguoc.length} ngược · ${mauThuan.trung_tinh.length} trung tính`}
           {/* ★ Mẫu số là số lớp CHẤM ĐƯỢC, không phải 5: 💎 Định giá không có
               nguồn dữ liệu nên tối đa chỉ 4 lớp có kết luận. */}
           {soLopDaCham < LOP_DEFS.length &&
             ` · ${LOP_DEFS.length - soLopDaCham} lớp chưa có kết luận`}
         </span>
-        <span className="op-ls-toggle">{chiTiet ? "thu gọn ▴" : "chi tiết ▾"}</span>
-      </button>
 
-      {chiTiet && (
-        <div className="op-ls-detail" data-testid="cap6-toancanh-detail">
-          {LOP_DEFS.map((d) => {
-            const p = phe(d.lop)
-            return (
-              <div
-                className="op-ld-row"
-                key={d.lop}
-                data-testid={`cap6-ld-${d.lop}`}
-                data-phe={p}
-              >
-                <span className="op-ld-nm">
-                  {`${d.icon} ${d.label} `}
-                  <b
-                    className={cn(
-                      p === "ung_ho" && "op-tone-up",
-                      p === "nguoc" && "op-tone-down",
-                      (p === "trung_tinh" || p === "chua_ket_luan") && "op-ld-neu",
-                    )}
-                    data-bac={bac.get(d.lop) == null ? undefined : String(bac.get(d.lop))}
-                  >
-                    {p === "chua_ket_luan" ? NHAN_CHUA_KET_LUAN : nhan.get(d.lop)}
-                  </b>
-                </span>
-                <span className="op-ld-src">{d.source}</span>
-              </div>
-            )
-          })}
-        </div>
-      )}
+      </div>
 
       {/* ★ Chưa đọc đủ 5 lớp ≠ "không có mâu thuẫn" (luật số 7). */}
       {mauThuan.chua_du_du_lieu && (
@@ -285,8 +175,7 @@ export function MauThuanBlock({ symbol, nhanDinh, onNhanDinh }: MauThuanBlockPro
           <div className="op-cf" data-testid="cap6-bang-mau-thuan" data-tour-id="tour-cap6-bang">
             <div className="op-cf-head">
               <span>{"⚔ Các lớp đang mâu thuẫn"}</span>
-              {/* Nút "?" mở lại tour bất cứ lúc nào (spec §10 ghi chú kỹ thuật). */}
-              <TourLaunchButton onClick={tour.start} label="Hướng dẫn" />
+
             </div>
 
             <div className="op-cf-side">
@@ -320,15 +209,6 @@ export function MauThuanBlock({ symbol, nhanDinh, onNhanDinh }: MauThuanBlockPro
               </div>
             </div>
 
-            {/* Dòng cảnh báo của server — NGUYÊN VĂN (§C12c). */}
-            {mauThuan.canh_bao && (
-              <div className="op-cf-verdict" data-testid="cap6-canh-bao">
-                <span className="op-cf-verdict-ic">{"🚨"}</span>
-                <span className="op-cf-verdict-tx">{mauThuan.canh_bao}</span>
-              </div>
-            )}
-
-            <div className="op-cf-note">{CAU_CHOT_MAU_THUAN}</div>
           </div>
 
           {/* Ô nhận định 4 mức — thuần nhận định (spec §6). */}
@@ -351,7 +231,6 @@ export function MauThuanBlock({ symbol, nhanDinh, onNhanDinh }: MauThuanBlockPro
                   <span className="op-sr-ic">{opt.icon}</span>
                   <span className="op-sr-lb">
                     <b>{opt.title}</b>
-                    <span>{opt.desc}</span>
                   </span>
                 </button>
               ))}
@@ -364,15 +243,10 @@ export function MauThuanBlock({ symbol, nhanDinh, onNhanDinh }: MauThuanBlockPro
           </div>
 
           {/* Chú thích phân loại lớp (spec §5.2 mục 3). */}
-          <div className="op-cf-legend" data-testid="cap6-chu-thich">
-            <div>{CHU_THICH_PHU_QUYET}</div>
-            <div>{CHU_THICH_DIEM_TRU}</div>
-            <div className="op-cf-legend-note">{CHU_THICH_KHUNG_THAM_KHAO}</div>
-          </div>
+
         </>
       )}
 
-      <TourOverlay config={mauThuanTour} controller={tour} />
     </div>
   )
 }

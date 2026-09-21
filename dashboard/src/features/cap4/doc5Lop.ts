@@ -153,10 +153,10 @@ export function deriveAiRating(source: AiRatingSource): NhanDinhLop {
  * Số lớp được đánh giá **Ủng hộ** trong một bản chấm 5 lớp.
  *
  * Called with `ai_5_lop` for spec §5.2's "Đồng thuận: X/5 lớp AI đánh giá Ủng
- * hộ" line — which is also exactly how the backend re-derives
- * `order_kehoach.so_lop_dong_thuan` (see `Cap4Service.record_kehoach`), so FE
- * and BE never show different numbers. Works identically on `doc_5_lop` when a
- * caller wants the user's own Ủng hộ count.
+ * hộ" line. This is local display/bus state only; it is deliberately absent
+ * from `POST /cap4/kehoach`, where the server owns the AI snapshot and derived
+ * counters. Works identically on `doc_5_lop` when a caller wants the user's own
+ * Ủng hộ count.
  */
 export function countDongThuan(lop5: Lop5Partial | null | undefined): number {
   if (!lop5) return 0
@@ -168,7 +168,8 @@ export function countDongThuan(lop5: Lop5Partial | null | undefined): number {
  * khác', KHÔNG phải 'sai'"). Only lớp present in BOTH maps are compared, so a
  * lớp whose real data failed to load is never counted as a disagreement.
  *
- * Mirrors the backend's own derivation of `so_lop_khac_ai`.
+ * Mirrors the comparison shown by the server, but is local display/bus state
+ * and is never submitted as evidence.
  */
 export function countKhacAi(
   doc5Lop: Lop5Partial | null | undefined,

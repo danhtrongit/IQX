@@ -1,0 +1,77 @@
+[
+  {
+    "id": "bach_ho",
+    "prompt": "Use case: stylized-concept.\nAsset type: ONE production animation sprite atlas for IQX's Bạch Hổ (white tiger) companion, all frames of the SAME character.\nInput image: style and species reference only, use the WHITE TIGER on the FAR LEFT. Do NOT include the other species or background.\nCanvas: 3840 x 3200 PNG with actual transparent alpha. EXACTLY six equal columns by five equal rows, each cell 640 x 640, no gaps, no borders, no labels. Each of the 30 cells contains one complete full-body white tiger at the same scale/camera/foot baseline, centered. Character is 75% of cell height; all ears/tail/feet fit inside 8% padding.\nStyle: crisp clean 2D chibi game pet, dark navy rounded outlines, two soft cel-shaded layers. NOT 3D, no realistic fur. White coat, small royal-blue tiger stripes, blue ear tips, blue-tipped curled tiger tail, blue eyes, blue forehead diamond, deep-blue scarf with small white IQX letters, blue crystal pendant. Head 45% of height. Warm confident gentle face, front view slightly 3/4.\nAnimation by ROW, left to right:\nROW 1 idle: neutral both eyes open; tiny breath rise; eyelids half closed; both eyes closed blink; eyes reopening; neutral again.\nROW 2 greet: neutral; right forepaw starts lifting; right forepaw lifted greeting; paw lifted and wink smile; paw lowering; neutral again.\nROW 3 analyzing: calm focused eyes; ears attentive; forepaw points slightly toward invisible data; glance slightly right; tiny focused nod; return focused pose. No props.\nROW 4 updated: notice; small nod; confident nod down; blue crystal slightly brighter; neutral; duplicate neutral.\nROW 5 tap: neutral; one ear twitches and eyes widen a little; head tilts slightly with playful wink; neutral; duplicate neutral; duplicate neutral.\nAcross ALL cells, lock character identity, proportions, scarf and crystal positions, palette, outline width, camera and baseline. Only listed facial/limb microposes change. No jump, no motion blur. Keep the center of mass aligned within 2%. No ground shadow, platform, stage glow, background, charts, decorative objects, money, confetti, weapons, captions, watermarks. This is one tightly registered sprite atlas, not a poster or contact sheet with uneven spacing.",
+    "source": "/Users/danhtrongit/.codex/generated_images/01a0b7e5-8429-7c01-ab6d-de7b406cc4ef/exec-c5766cef-b1b7-4173-b9e7-0d244e87b1c9.png",
+    "mode": "built-in image_gen",
+    "workspace_source": "docs/journey-identity/mascot-2d-source/bach-ho-atlas.png",
+    "source_dimensions": [
+      1374,
+      1145
+    ],
+    "runtime_frame_dimensions": [
+      640,
+      640
+    ]
+  },
+  {
+    "id": "thanh_long",
+    "prompt": "Use case: stylized-concept. Asset type: ONE animation sprite atlas for IQX companion, all frames SAME character.\nInput image is style/species reference only. Render ONLY the specified species, not the five-up reference.\nCanvas: 3840x3200 PNG with genuine transparent alpha. EXACTLY 6 equal columns by 5 equal rows; 30 cells, each 640x640, no gaps/borders/labels. Each cell contains ONE complete full body at same scale and baseline. Character height 75% of cell; 8% clear padding including ears, horns, wings, tail, feet.\nStyle: polished clean 2D chibi game pet, navy #17345F rounded outline, soft TWO-LAYER cel shading, not 3D/plastic/realistic texture. Head 45% of total character height, friendly mature game-pet face, front slight 3/4 view, blue IQX scarf with small white IQX and one crystal. Consistent lighting and proportions.\nRows left-to-right:\n1 IDLE: neutral eyes open; tiny breathing rise; eyelids half closed; full blink; eyes reopening; neutral.\n2 GREET: neutral; greeting limb lifting; greeting limb raised; raised with wink/soft smile; lowering; neutral.\n3 ANALYZING: calm focused; attentive ears/crest; small gesture toward unseen data; focused side glance; tiny thoughtful nod; focused neutral. No props.\n4 UPDATED: notice; small nod start; nod down; restrained crystal highlight; neutral; duplicate neutral.\n5 TAP: neutral; mild surprise; tiny head tilt with wink; neutral; duplicate neutral; duplicate neutral.\nLock all frames to same model, camera, scale and foot baseline. Only specified micro gestures. Transparent backgrounds throughout. No background, ground shadow, platform, glow halo, labels, text except tiny IQX scarf, numbers, charts, money, fire, confetti, weapon, watermark. It must be a precisely aligned usable sprite atlas.\nSPECIES: Thanh Long — compact friendly chibi DRAGON, the second creature from left in reference. White/cream belly, azure/cyan and turquoise body, short blue horns/fins (no huge gold antlers), soft curled tail, small whiskers, blue eyes, IQX blue scarf, blue crystal pendant. No large wings. Motion: gentle tail curling and one forepaw greeting.\nPalette: azure #3E8DFF and aqua #43D7D0",
+    "source": "/Users/danhtrongit/.codex/generated_images/01a0b7e5-8429-7c01-ab6d-de7b406cc4ef/exec-d1598736-c629-4712-95d9-6030a148b4bc.png",
+    "mode": "built-in image_gen",
+    "workspace_source": "docs/journey-identity/mascot-2d-source/thanh-long-atlas.png",
+    "source_dimensions": [
+      1374,
+      1145
+    ],
+    "runtime_frame_dimensions": [
+      640,
+      640
+    ]
+  },
+  {
+    "id": "loc_huou",
+    "prompt": "Use case: stylized-concept. Asset type: ONE animation sprite atlas for IQX companion, all frames SAME character.\nInput image is style/species reference only. Render ONLY the specified species, not the five-up reference.\nCanvas: 3840x3200 PNG with genuine transparent alpha. EXACTLY 6 equal columns by 5 equal rows; 30 cells, each 640x640, no gaps/borders/labels. Each cell contains ONE complete full body at same scale and baseline. Character height 75% of cell; 8% clear padding including ears, horns, wings, tail, feet.\nStyle: polished clean 2D chibi game pet, navy #17345F rounded outline, soft TWO-LAYER cel shading, not 3D/plastic/realistic texture. Head 45% of total character height, friendly mature game-pet face, front slight 3/4 view, blue IQX scarf with small white IQX and one crystal. Consistent lighting and proportions.\nRows left-to-right:\n1 IDLE: neutral eyes open; tiny breathing rise; eyelids half closed; full blink; eyes reopening; neutral.\n2 GREET: neutral; greeting limb lifting; greeting limb raised; raised with wink/soft smile; lowering; neutral.\n3 ANALYZING: calm focused; attentive ears/crest; small gesture toward unseen data; focused side glance; tiny thoughtful nod; focused neutral. No props.\n4 UPDATED: notice; small nod start; nod down; restrained crystal highlight; neutral; duplicate neutral.\n5 TAP: neutral; mild surprise; tiny head tilt with wink; neutral; duplicate neutral; duplicate neutral.\nLock all frames to same model, camera, scale and foot baseline. Only specified micro gestures. Transparent backgrounds throughout. No background, ground shadow, platform, glow halo, labels, text except tiny IQX scarf, numbers, charts, money, fire, confetti, weapon, watermark. It must be a precisely aligned usable sprite atlas.\nSPECIES: Lộc Hươu — gentle chibi DEER, the middle creature in reference, cream/white fur, warm gold antlers, large ears, small slim legs, short tail, amber eyes, blue IQX scarf and GOLD crystal pendant. No leaves covering the body, no binoculars. Motion: ears turning, polite little bow and raised foreleg greeting.\nPalette: warm gold #E4AE4C and cream #FFF0CD",
+    "source": "/Users/danhtrongit/.codex/generated_images/01a0b7e5-8429-7c01-ab6d-de7b406cc4ef/exec-6b585422-ca59-4413-ae00-584d419ce3e3.png",
+    "mode": "built-in image_gen",
+    "workspace_source": "docs/journey-identity/mascot-2d-source/loc-huou-atlas.png",
+    "source_dimensions": [
+      1374,
+      1145
+    ],
+    "runtime_frame_dimensions": [
+      640,
+      640
+    ]
+  },
+  {
+    "id": "phung_hoang",
+    "prompt": "Use case: stylized-concept. Asset type: ONE animation sprite atlas for IQX companion, all frames SAME character.\nInput image is style/species reference only. Render ONLY the specified species, not the five-up reference.\nCanvas: 3840x3200 PNG with genuine transparent alpha. EXACTLY 6 equal columns by 5 equal rows; 30 cells, each 640x640, no gaps/borders/labels. Each cell contains ONE complete full body at same scale and baseline. Character height 75% of cell; 8% clear padding including ears, horns, wings, tail, feet.\nStyle: polished clean 2D chibi game pet, navy #17345F rounded outline, soft TWO-LAYER cel shading, not 3D/plastic/realistic texture. Head 45% of total character height, friendly mature game-pet face, front slight 3/4 view, blue IQX scarf with small white IQX and one crystal. Consistent lighting and proportions.\nRows left-to-right:\n1 IDLE: neutral eyes open; tiny breathing rise; eyelids half closed; full blink; eyes reopening; neutral.\n2 GREET: neutral; greeting limb lifting; greeting limb raised; raised with wink/soft smile; lowering; neutral.\n3 ANALYZING: calm focused; attentive ears/crest; small gesture toward unseen data; focused side glance; tiny thoughtful nod; focused neutral. No props.\n4 UPDATED: notice; small nod start; nod down; restrained crystal highlight; neutral; duplicate neutral.\n5 TAP: neutral; mild surprise; tiny head tilt with wink; neutral; duplicate neutral; duplicate neutral.\nLock all frames to same model, camera, scale and foot baseline. Only specified micro gestures. Transparent backgrounds throughout. No background, ground shadow, platform, glow halo, labels, text except tiny IQX scarf, numbers, charts, money, fire, confetti, weapon, watermark. It must be a precisely aligned usable sprite atlas.\nSPECIES: Phụng Hoàng — friendly chibi PHOENIX bird, fourth creature from left in reference. White/cream chest, coral-orange crest and wings, compact orange/gold fan tail, amber eyes, blue IQX scarf and ORANGE crystal pendant. Tiny feet grounded. Motion: small wing greeting, gentle feather flex, attentive eyes. No actual flames.\nPalette: coral #FF7650 and gold #FFD166",
+    "source": "/Users/danhtrongit/.codex/generated_images/01a0b7e5-8429-7c01-ab6d-de7b406cc4ef/exec-3645d4d9-ab04-47a0-9d6b-b437d0d8a006.png",
+    "mode": "built-in image_gen",
+    "workspace_source": "docs/journey-identity/mascot-2d-source/phung-hoang-atlas.png",
+    "source_dimensions": [
+      1374,
+      1145
+    ],
+    "runtime_frame_dimensions": [
+      640,
+      640
+    ]
+  },
+  {
+    "id": "kim_quy",
+    "prompt": "Use case: stylized-concept. Asset type: ONE animation sprite atlas for IQX companion, all frames SAME character.\nInput image is style/species reference only. Render ONLY the specified species, not the five-up reference.\nCanvas: 3840x3200 PNG with genuine transparent alpha. EXACTLY 6 equal columns by 5 equal rows; 30 cells, each 640x640, no gaps/borders/labels. Each cell contains ONE complete full body at same scale and baseline. Character height 75% of cell; 8% clear padding including ears, horns, wings, tail, feet.\nStyle: polished clean 2D chibi game pet, navy #17345F rounded outline, soft TWO-LAYER cel shading, not 3D/plastic/realistic texture. Head 45% of total character height, friendly mature game-pet face, front slight 3/4 view, blue IQX scarf with small white IQX and one crystal. Consistent lighting and proportions.\nRows left-to-right:\n1 IDLE: neutral eyes open; tiny breathing rise; eyelids half closed; full blink; eyes reopening; neutral.\n2 GREET: neutral; greeting limb lifting; greeting limb raised; raised with wink/soft smile; lowering; neutral.\n3 ANALYZING: calm focused; attentive ears/crest; small gesture toward unseen data; focused side glance; tiny thoughtful nod; focused neutral. No props.\n4 UPDATED: notice; small nod start; nod down; restrained crystal highlight; neutral; duplicate neutral.\n5 TAP: neutral; mild surprise; tiny head tilt with wink; neutral; duplicate neutral; duplicate neutral.\nLock all frames to same model, camera, scale and foot baseline. Only specified micro gestures. Transparent backgrounds throughout. No background, ground shadow, platform, glow halo, labels, text except tiny IQX scarf, numbers, charts, money, fire, confetti, weapon, watermark. It must be a precisely aligned usable sprite atlas.\nSPECIES: Kim Quy — friendly chibi TURTLE, far right creature in reference. Pale mint/cream skin, JADE green shell with simple rounded cell pattern, short sturdy legs, two small green leaf sprouts on head, dark-green eyes, blue IQX scarf and JADE crystal pendant. No giant gold metallic armor. Motion: slow breath, forefoot greeting, small leaf bounce and head tuck.\nPalette: jade #48BD8A and pale mint #C7F0D8",
+    "source": "/Users/danhtrongit/.codex/generated_images/01a0b7e5-8429-7c01-ab6d-de7b406cc4ef/exec-5c947015-d6dc-43b9-a46d-740ca43778de.png",
+    "mode": "built-in image_gen",
+    "workspace_source": "docs/journey-identity/mascot-2d-source/kim-quy-atlas.png",
+    "source_dimensions": [
+      1373,
+      1146
+    ],
+    "runtime_frame_dimensions": [
+      640,
+      640
+    ]
+  }
+]

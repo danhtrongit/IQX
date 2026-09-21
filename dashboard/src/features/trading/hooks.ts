@@ -6,6 +6,7 @@ import {
   type VTOrder,
   type VTOrderResult,
   type VTPortfolio,
+  type VTJourneyPlanInput,
 } from "./api"
 import { tradingKeys } from "./keys"
 
@@ -86,24 +87,26 @@ export interface PlaceOrderInput {
   quantity: number
   /** Required for limit orders (VND). */
   price?: number
+  /** Learning evidence committed atomically with a BUY order. */
+  journeyPlan?: VTJourneyPlanInput
 }
 
 /**
  * Place a buy/sell through the sole virtual-trading engine. `afterFilled` runs
- * before cache invalidation, allowing Level 8 to persist server-derived exit
- * evidence before Holdings/Kết sổ refetches the changed position.
+ * before cache invalidation so consumers can finish non-critical bookkeeping
+ * before Holdings/Kết sổ refetches the changed position.
  */
 export function usePlaceOrder(afterFilled?: (order: VTOrderResult) => Promise<void>) {
   const invalidate = useInvalidateTrading()
   return useMutation<VTOrderResult, unknown, PlaceOrderInput>({
-    mutationFn: ({ symbol, side, method, quantity, price }) => {
+    mutationFn: ({ symbol, side, method, quantity, price, journeyPlan }) => {
       if (method === "market") {
         return side === "buy"
-          ? tradingApi.buyMarket(symbol, quantity)
+          ? tradingApi.buyMarket(symbol, quantity, journeyPlan)
           : tradingApi.sellMarket(symbol, quantity)
       }
       return side === "buy"
-        ? tradingApi.buyLimit(symbol, quantity, price ?? 0)
+        ? tradingApi.buyLimit(symbol, quantity, price ?? 0, journeyPlan)
         : tradingApi.sellLimit(symbol, quantity, price ?? 0)
     },
     onSuccess: async (order) => {
@@ -111,8 +114,8 @@ export function usePlaceOrder(afterFilled?: (order: VTOrderResult) => Promise<vo
         await afterFilled?.(order)
       } catch {
         // The exchange accepted this order. Post-fill enrichment (for example
-        // Level 8 evidence) must never turn that completed trade into a failed
-        // mutation that a caller might blindly submit again.
+        // a learning snapshot) must never turn that completed trade into a
+        // failed mutation that a caller might blindly submit again.
       } finally {
         await invalidate()
       }

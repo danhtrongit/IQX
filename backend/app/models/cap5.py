@@ -177,3 +177,10 @@ class Cap5HuntLog(UUIDMixin, TimestampMixin, Base):
     hunt_signal: Mapped[str | None] = mapped_column(String(200), nullable=True)
     first_hunted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     last_hunted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    # First time the symbol reached the server-computed notable threshold.
+    # This is intentionally durable after the Watchlist row is deleted or a
+    # later consensus score falls below the threshold, so funnel block ⑬ can
+    # report "đã từng chín" instead of only today's surviving Watchlist state.
+    notable_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )

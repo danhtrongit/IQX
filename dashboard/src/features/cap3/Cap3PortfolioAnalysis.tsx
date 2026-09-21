@@ -18,8 +18,8 @@ import type { Cap3Progress, KhauViLoai } from "./types"
  * Trang Phân tích danh mục Cấp 3 (spec `IQX-Cap3-Spec.md` §8).
  *
  * **TÁI SỬ DỤNG Ở TẦNG COMPONENT (documented choice):** mọi khối Cấp 1-2 được
- * render bằng CHÍNH `Cap2PortfolioAnalysis` (① hồ sơ, ② bảng 5 lý do, ③ độ phủ
- * 5 lý do, ④ cơ chế cắt lỗ/chốt lời — 4 khối Cấp 2 còn lại) — KHÔNG
+ * render bằng CHÍNH `Cap2PortfolioAnalysis` (hồ sơ, lý do, độ phủ, cơ chế
+ * cắt lỗ/chốt lời, điểm kỷ luật, vi phạm tuần và ghi chú) — KHÔNG
  * mirror lại markup như Cấp 2 phải làm với Cấp 1. Lý do khác nhau: `Cap2PortfolioAnalysis`
  * là component THUẦN TRÌNH BÀY nhận `trades`/`dailyScores`/`progress` qua props
  * và không bọc modal/không sở hữu state, còn `Cap3TradeRecord extends
@@ -37,13 +37,9 @@ import type { Cap3Progress, KhauViLoai } from "./types"
  * ô tiến độ "n/10 lệnh có CL/CL" (mốc TỐT NGHIỆP CẤP 2, ở đây luôn 10/10) và
  * đổi câu "… sẽ đến ở các cấp sau" (người đọc đang ở cấp sau).
  *
- * ★ **ĐÁNH SỐ KHỐI** — mockup `iqx-cap3-phantich-danhmuc.html` đánh hai khối mới
- * là ⑦⑧ vì lúc vẽ Cấp 2 có 6 khối; Cấp 2 viết lại chỉ còn ①..④ (đã bỏ «Điểm kỷ
- * luật 30 ngày»/«Vi phạm theo tuần»/«Phát hiện từ ghi chú»), nên UI hiển thị ⑤⑥
- * cho liền mạch. Tầng compute GIỮ tên theo spec (`computeCap3Khoi7TuTin`,
- * `khoi7TuTin`/`khoi8KhoiLuong`) vì đó là ID khối trong `IQX-Cap3-Spec.md` §8 và
- * Cấp 4-8 đọc lại các tên đó — đổi tên sẽ lan qua 5 cấp đang tắt mà không đổi
- * được gì cho người dùng. Ánh xạ: ⑦ (spec) = ⑤ (UI), ⑧ (spec) = ⑥ (UI).
+ * ★ **ĐÁNH SỐ KHỐI** — giữ nguyên ⑦⑧ theo spec và mockup Cấp 3. Các khối điểm
+ * kỷ luật, vi phạm tuần và ghi chú của Cấp 2 đã được phục hồi trong component
+ * kế thừa, nên không còn lý do đánh tụt hai khối mới xuống ⑤⑥.
  *
  * Ở tầng compute, component này chỉ gọi 2 hàm khối mới
  * (`computeCap3Khoi7TuTin` / `computeCap3Khoi8KhoiLuong`) thay vì
@@ -57,7 +53,7 @@ export interface Cap3PortfolioAnalysisProps {
   cap2Progress: Cap2Progress | null
   /** Hồ sơ Cấp 3 — cho khẩu vị đang dùng + ngày vào Cấp 3. */
   cap3Progress: Cap3Progress | null
-  /** Nhật ký lệnh đã đóng ở Cấp 3 (`useCap3TradeLog`). */
+  /** Lệnh đã đóng ở Cấp 3; ưu tiên server, local log là fallback. */
   trades: Cap3TradeRecord[]
   /** Nhật ký điểm kỷ luật hằng ngày (`useCap2TradeLog().scores` — dùng chung). */
   dailyScores: Cap2DailyScoreRecord[]
@@ -164,10 +160,10 @@ export function Cap3PortfolioAnalysis({
         }
       />
 
-      {/* ⑤ Thắng/thua theo mức tự tin (spec §8 — mockup đánh ⑦, xem docstring) */}
+      {/* ⑦ Thắng/thua theo mức tự tin (spec §8) */}
       <div className={CARD} data-testid="cap3-pa-khoi5">
         <div className="flex items-center gap-2">
-          <span className={SECTION_HEADER}>{"⑤ THẮNG/THUA THEO MỨC TỰ TIN"}</span>
+          <span className={SECTION_HEADER}>{"⑦ THẮNG/THUA THEO MỨC TỰ TIN"}</span>
           <span className={BADGE_NEW}>mới ở Cấp 3</span>
         </div>
         <table className="w-full text-xs">
@@ -223,10 +219,10 @@ export function Cap3PortfolioAnalysis({
         )}
       </div>
 
-      {/* ⑥ Khối lượng có đi theo tự tin không (spec §8 — mockup đánh ⑧) */}
+      {/* ⑧ Khối lượng có đi theo tự tin không (spec §8) */}
       <div className={CARD} data-testid="cap3-pa-khoi6">
         <div className="flex items-center gap-2">
-          <span className={SECTION_HEADER}>{"⑥ KHỐI LƯỢNG CÓ ĐI THEO TỰ TIN KHÔNG?"}</span>
+          <span className={SECTION_HEADER}>{"⑧ KHỐI LƯỢNG CÓ ĐI THEO TỰ TIN KHÔNG?"}</span>
           <span className={BADGE_NEW}>mới ở Cấp 3</span>
         </div>
         <table className="w-full text-xs">

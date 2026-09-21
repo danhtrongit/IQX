@@ -1,5 +1,6 @@
 import { useCallback } from "react"
 import { useNavigate } from "react-router"
+import { useAuth } from "@/features/auth"
 import { useSymbol } from "@/shared/contexts/symbol-context"
 import { useTheme } from "@/shared/theme/ThemeProvider"
 import { TVChart } from "../chart/TVChart"
@@ -27,6 +28,7 @@ interface CenterPanelProps {
 export function CenterPanel({ onMarkClick, symbolChange = "navigate" }: CenterPanelProps = {}) {
   const { symbol, setSymbol } = useSymbol()
   const { theme } = useTheme()
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   const handleSymbolChanged = useCallback(
@@ -51,6 +53,7 @@ export function CenterPanel({ onMarkClick, symbolChange = "navigate" }: CenterPa
       {/* TradingView Chart - fills entire center panel */}
       <div className="flex-1 min-h-0" data-tour-id="cap0-tour-chart">
         <TVChart
+          key={user?.id ?? "guest"}
           symbol={symbol}
           interval="D"
           theme={theme}

@@ -24,8 +24,10 @@ import {
   useCompleteCap4Task,
   useRecordKehoachCap4,
   useVuKhiDiemMu,
+  usePhanTichCap4,
   useGraduateCap4,
 } from "./hooks"
+import { cap4Api } from "./api"
 
 function jsonRes(data: unknown) {
   return { json: () => Promise.resolve(data) }
@@ -79,20 +81,20 @@ describe("useEnterCap4", () => {
 })
 
 describe("useCompleteCap4Task", () => {
-  it("PATCHes cap4/task with task_no", async () => {
+  it("PATCHes cap4/task for the single 10-order task", async () => {
     patch.mockReturnValue(jsonRes({ id: "1" }))
     function Harness() {
       const task = useCompleteCap4Task()
-      return <button onClick={() => task.mutate(3)}>task</button>
+      return <button onClick={() => task.mutate(1)}>task</button>
     }
     withClient(<Harness />)
     fireEvent.click(screen.getByText("task"))
-    await waitFor(() => expect(patch).toHaveBeenCalledWith("cap4/task", { json: { task_no: 3 } }))
+    await waitFor(() => expect(patch).toHaveBeenCalledWith("cap4/task", { json: { task_no: 1 } }))
   })
 })
 
 describe("useRecordKehoachCap4", () => {
-  it("POSTs cap4/kehoach with the đọc-5-lớp payload (both JSON blobs)", async () => {
+  it("POSTs only the user's five-layer self-rating to cap4/kehoach", async () => {
     post.mockReturnValue(jsonRes({ id: "kh1" }))
     const input = {
       order_id: "order-1",
@@ -103,15 +105,6 @@ describe("useRecordKehoachCap4", () => {
         tin_tuc: "bad",
         dinh_gia: "ok",
       },
-      ai_5_lop: {
-        ky_thuat: "ok",
-        dong_tien: "neu",
-        noi_bo: "neu",
-        tin_tuc: "bad",
-        dinh_gia: "bad",
-      },
-      so_lop_dong_thuan: 1,
-      so_lop_khac_ai: 2,
     } as const
     function Harness() {
       const kehoach = useRecordKehoachCap4()
@@ -132,6 +125,26 @@ describe("useVuKhiDiemMu", () => {
     }
     withClient(<Harness />)
     await waitFor(() => expect(get).toHaveBeenCalledWith("cap4/vu-khi-diem-mu"))
+  })
+})
+
+describe("usePhanTichCap4", () => {
+  it("GETs authoritative blocks ⑩/⑪ from cap4/phan-tich", async () => {
+    get.mockReturnValue(jsonRes({ khoi_10: { rows: [] }, khoi_11: {} }))
+    function Harness() {
+      const { isSuccess } = usePhanTichCap4()
+      return <div>{isSuccess ? "ready" : "loading"}</div>
+    }
+    withClient(<Harness />)
+    await waitFor(() => expect(get).toHaveBeenCalledWith("cap4/phan-tich"))
+  })
+})
+
+describe("cap4Api.getPlan", () => {
+  it("GETs the exact matched BUY commitment by id", async () => {
+    get.mockReturnValue(jsonRes({ order_id: "buy-1" }))
+    await cap4Api.getPlan("buy-1")
+    expect(get).toHaveBeenCalledWith("cap4/plans/buy-1")
   })
 })
 

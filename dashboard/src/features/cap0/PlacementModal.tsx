@@ -1,4 +1,5 @@
 import { Modal } from "@arco-design/web-react"
+import type { PlacementExperience } from "./types"
 import "./cap0.css"
 
 /**
@@ -8,12 +9,10 @@ import "./cap0.css"
  *  - `unsure`  — "Có, nhưng chưa tự tin"
  *  - `regular` — "Có, giao dịch thường xuyên"
  *
- * `POST /cap0/placement` hiện chỉ nhận **boolean** `has_traded_before` (backend
- * map thành `placed_level` 0 hoặc 2), nên `unsure`/`regular` đều gửi `true`.
- * Union 3 nhánh này vẫn được giữ nguyên ở FE để khi backend mở contract 3 mức
- * thì chỉ cần đổi chỗ gọi API — xem `Cap0TradingPage#handlePlacement`.
+ * Ba giá trị được gửi nguyên vẹn qua `POST /cap0/placement`; backend trả cấp
+ * xếp tương ứng và trạng thái ba tour bắt buộc.
  */
-export type PlacementAnswer = "never" | "unsure" | "regular"
+export type PlacementAnswer = PlacementExperience
 
 interface PlacementModalProps {
   visible: boolean
@@ -29,11 +28,8 @@ interface PlacementModalProps {
  *
  * **v3.0 thay 2 nút cũ bằng 3 lựa chọn**, và bài xếp lớp 5 phút đã bị bỏ hẳn.
  *
- * ★ **Trần xếp lớp bị kẹp xuống Cấp 1** trong lúc Cấp 2-8 tạm tắt (xem
- * `CAP_MAX_ENABLED` trong `features/cap1/capFlags.ts`). Spec §3 viết
- * nhánh thứ ba là "→ Cấp 2 «Kỷ luật»", nhưng Cấp 2 chưa mở, nên copy ở đây
- * **không được nhắc tới Cấp 2**: nói đúng nơi user thực sự tới. Khi bật lại Cấp
- * 2, đổi dòng phụ của nhánh `regular` về đúng câu spec.
+ * Hai nhánh có kinh nghiệm phải xem đủ ba tour sản phẩm trước khi vào cấp đã
+ * xếp; HomeWorkspace điều phối chuỗi đó.
  */
 export function PlacementModal({ visible, onChoose }: PlacementModalProps) {
   return (
@@ -77,7 +73,7 @@ export function PlacementModal({ visible, onChoose }: PlacementModalProps) {
         >
           <span className="cap0-placement-opt-label">Có, nhưng chưa tự tin</span>
           <span className="cap0-placement-opt-sub">
-            Qua nhanh Cấp 0 «Nhập môn», rồi vào Cấp 1 «Học việc»
+            Vào thẳng Cấp 1 «Học việc» sau khi xem 3 tour sản phẩm
           </span>
         </button>
         <button
@@ -88,7 +84,7 @@ export function PlacementModal({ visible, onChoose }: PlacementModalProps) {
         >
           <span className="cap0-placement-opt-label">Có, giao dịch thường xuyên</span>
           <span className="cap0-placement-opt-sub">
-            Cũng qua nhanh Cấp 0 — hiện chương trình mới mở tới Cấp 1 «Học việc»
+            Vào thẳng Cấp 2 «Kỷ luật» sau khi xem 3 tour sản phẩm
           </span>
         </button>
       </div>

@@ -19,8 +19,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
  *    kế hoạch POST — it has no `/cap5/kehoach`).
  */
 
+let currentSymbol = "VNM"
 vi.mock("@/shared/contexts/symbol-context", () => ({
-  useSymbol: () => ({ symbol: "VNM", setSymbol: vi.fn() }),
+  useSymbol: () => ({ symbol: currentSymbol, setSymbol: vi.fn() }),
 }))
 
 const priceData = {
@@ -303,11 +304,12 @@ function submitButton(label = "ĐẶT LỆNH MUA"): HTMLElement {
 function renderPanel() {
   get.mockReturnValue({ json: () => Promise.resolve(null) })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  return render(
+  const view = render(
     <QueryClientProvider client={client}>
       <TradingPanel />
     </QueryClientProvider>,
   )
+  return { ...view, client }
 }
 
 /** Satisfy Cấp 2 + Cấp 3's gates (Cấp 4/5 sit on top of both). */
@@ -334,6 +336,7 @@ beforeEach(() => {
   onOrderFilledCap5Mock.mockClear()
   planFormProps = {}
   isCap5ActiveFlag = true
+  currentSymbol = "VNM"
 })
 
 describe("TradingPanel — «Đứng ngoài» đã nghỉ hưu cùng Cấp 5 cũ", () => {
@@ -392,6 +395,24 @@ describe("TradingPanel — Cấp 5 KHÔNG đổi gì trong panel mua (spec §0)"
     expect(screen.getByText("12,480,000")).toBeInTheDocument()
   })
 
+  it("đổi mã xóa lựa chọn quản lý vốn và trả khối lượng về mặc định", () => {
+    const { rerender, client } = renderPanel()
+    satisfyCap2And3()
+    fireEvent.click(screen.getByText("RATE_ALL"))
+    expect(screen.getByText("12,480,000")).toBeInTheDocument()
+    expect(submitButton()).not.toBeDisabled()
+
+    currentSymbol = "HPG"
+    rerender(
+      <QueryClientProvider client={client}>
+        <TradingPanel />
+      </QueryClientProvider>,
+    )
+
+    expect(screen.getByText("6,240,000")).toBeInTheDocument()
+    expect(submitButton()).toBeDisabled()
+  })
+
   it("chuỗi ghi hồ sơ cap1 → cap2 → cap3 → cap4 khi MUA khớp không đổi", async () => {
     renderPanel()
     satisfyCap2And3()
@@ -402,6 +423,18 @@ describe("TradingPanel — Cấp 5 KHÔNG đổi gì trong panel mua (spec §0)"
     expect(recordKehoachAsyncMock).toHaveBeenCalledTimes(1)
     expect(recordKehoachCap2AsyncMock).toHaveBeenCalledTimes(1)
     expect(recordKehoachCap3AsyncMock).toHaveBeenCalledTimes(1)
+    expect(recordKehoachCap3AsyncMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        // The suggestion mock reports 200 cp / 12.5%, while the trading
+        // engine accepted 100 cp at 62,400. The persisted Kết sổ snapshot must
+        // use that accepted order against the 1bn original demo capital.
+        khoi_luong: 100,
+        pct_von: 0.624,
+      }),
+    )
+    expect(onOrderFilledCap3Mock).toHaveBeenCalledWith(
+      expect.objectContaining({ khoiLuong: 100, pctVon: 0.624 }),
+    )
     expect(
       recordKehoachAsyncMock.mock.invocationCallOrder[0] <
         recordKehoachCap4AsyncMock.mock.invocationCallOrder[0],

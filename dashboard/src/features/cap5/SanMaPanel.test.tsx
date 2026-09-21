@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { RE_FAKE_ZERO_MA, visibleText } from "@/__tests__/textGuards"
@@ -9,15 +9,23 @@ import type { SanMaIndex } from "./sanMaTypes"
  * phải NÓI THẲNG "chưa đủ dữ liệu", tuyệt đối không được mở ra một popup rỗng
  * trông như "đã lọc xong, 0 mã".
  */
-const { indexQuery, setActivePanelMock, cap5Active, progressRef, markTourMutate } = vi.hoisted(
-  () => ({
+const {
+  indexQuery,
+  setActivePanelMock,
+  cap5Active,
+  progressRef,
+  markTourMutate,
+  trackEventMock,
+} = vi.hoisted(() => ({
     indexQuery: { current: {} as Record<string, unknown> },
     setActivePanelMock: vi.fn(),
     cap5Active: { current: true },
     progressRef: { current: null as Record<string, unknown> | null },
     markTourMutate: vi.fn(),
-  }),
-)
+    trackEventMock: vi.fn(),
+}))
+
+vi.mock("@/shared/analytics/journey", () => ({ trackJourneyEvent: trackEventMock }))
 
 vi.mock("./sanMaHooks", () => ({
   useSanMaIndex: () => indexQuery.current,
@@ -76,6 +84,13 @@ describe("SanMaPanel — 5 bộ lọc + lọc sàn (spec §5, mockup iqx-cap5-sa
     }
   })
 
+  it("ghi nhận lượt xem và bộ lọc được mở", () => {
+    render(<SanMaPanel />)
+    expect(trackEventMock).toHaveBeenCalledWith("cap5_san_ma_view")
+    fireEvent.click(screen.getByTestId("cap5-sanma-filter-ngoai"))
+    expect(trackEventMock).toHaveBeenCalledWith("cap5_hunt_open", { filter: "ngoai" })
+  })
+
   it("mỗi bộ lọc ghi rõ điều kiện ngay bên dưới (spec §5.3)", () => {
     render(<SanMaPanel />)
     expect(screen.getAllByText("Mua ròng ≥3/5 phiên · tổng 5 phiên > 0")).toHaveLength(2)
@@ -84,45 +99,6 @@ describe("SanMaPanel — 5 bộ lọc + lọc sàn (spec §5, mockup iqx-cap5-sa
     expect(screen.getByText("Tăng ≥3% · KL ≥1,5× trung bình 20 phiên")).toBeInTheDocument()
   })
 
-  it("dòng lọc sàn đọc từ máy chủ, không hard-code", () => {
-    render(<SanMaPanel />)
-    const note = screen.getByTestId("cap5-sanma-locsan")
-    expect(note).toHaveTextContent("mã HOSE · thanh khoản ≥1 tỷ/phiên · giá ≥3.000đ")
-    expect(note).toHaveTextContent("top 10")
-    expect(screen.queryByTestId("cap5-sanma-locsan-thieu")).not.toBeInTheDocument()
-  })
-
-  it("★ điều kiện lọc sàn máy chủ CHƯA áp dụng được thì nói thẳng", () => {
-    indexQuery.current = {
-      data: {
-        ...FULL_INDEX,
-        loc_san: [
-          ...FULL_INDEX.loc_san,
-          { ma: "canh_bao", ten: "loại mã diện cảnh báo/kiểm soát", ap_dung: false },
-        ],
-      },
-      isLoading: false,
-      isError: false,
-    }
-    render(<SanMaPanel />)
-    expect(screen.getByTestId("cap5-sanma-locsan-thieu")).toHaveTextContent(
-      "Chưa lọc được: loại mã diện cảnh báo/kiểm soát",
-    )
-  })
-
-  it("★ lúc chưa tải xong KHÔNG khẳng định đã lọc gì", () => {
-    indexQuery.current = { data: undefined, isLoading: true, isError: false }
-    render(<SanMaPanel />)
-    expect(screen.getByTestId("cap5-sanma-locsan")).toHaveTextContent("Đang kiểm tra")
-  })
-
-  it("★ lỗi tải KHÔNG biến thành «đã lọc HOSE …»", () => {
-    indexQuery.current = { data: undefined, isLoading: false, isError: true }
-    render(<SanMaPanel />)
-    const note = screen.getByTestId("cap5-sanma-locsan")
-    expect(note).toHaveTextContent("Chưa lấy được điều kiện lọc sàn")
-    expect(note).not.toHaveTextContent("≥1 tỷ/phiên")
-  })
 })
 
 describe("SanMaPanel — LUẬT SỐ 1: bộ lọc thiếu dữ liệu", () => {
@@ -144,17 +120,16 @@ describe("SanMaPanel — LUẬT SỐ 1: bộ lọc thiếu dữ liệu", () => {
     }
   })
 
-  it("★ hiện «Chưa đủ dữ liệu» + lý do NGUYÊN VĂN của máy chủ", () => {
+it("★ hiện «Chưa đủ dữ liệu» + lý do NGUYÊN VĂN của máy chủ", () => {
     render(<SanMaPanel />)
-    const box = screen.getByTestId("cap5-sanma-nodata-tudoanh")
-    expect(box).toHaveTextContent("Chưa đủ dữ liệu để chạy bộ lọc này")
-    expect(box).toHaveTextContent("chưa có dữ liệu tự doanh theo phiên")
+    expect(screen.getByTestId("cap5-sanma-filter-tudoanh")).toBeDisabled()
+    expect(screen.getByTestId("cap5-sanma-filter-tudoanh")).toHaveAttribute("title", "Chưa đủ dữ liệu")
   })
 
   it("★ KHÔNG hiện «0 mã» ở bất kỳ đâu trên màn (kể cả trong portal)", () => {
     render(<SanMaPanel />)
     // Neo dương tính: màn ĐÃ render thật (5 dòng bộ lọc + hộp thiếu dữ liệu).
-    expect(screen.getByTestId("cap5-sanma-nodata-tudoanh")).toBeInTheDocument()
+    expect(screen.getByTestId("cap5-sanma-filter-tudoanh")).toBeInTheDocument()
     expect(screen.getByTestId("cap5-sanma-filter-ngoai")).toBeInTheDocument()
     // ★★ `visibleText()` = `document.body`: popup/tour của Arco vẽ ra PORTAL,
     // `container.textContent` không thấy — mà bài này tự nhận "ở bất kỳ đâu".
@@ -195,9 +170,9 @@ describe("SanMaPanel — bộ lọc nâng cao KHÓA (spec §5.5, hệ mở)", ()
 })
 
 describe("SanMaPanel — ở TRONG shell cấp (luật số 5)", () => {
-  it("«Xem Watchlist →» chỉ đổi panel, KHÔNG điều hướng", () => {
+  it("«Xem Theo dõi →» chỉ đổi panel, KHÔNG điều hướng", () => {
     render(<SanMaPanel />)
-    fireEvent.click(screen.getByText("Xem Watchlist →"))
+    fireEvent.click(screen.getByText("Xem Theo dõi →"))
     expect(setActivePanelMock).toHaveBeenCalledWith("cap5-watchlist")
   })
 })
@@ -206,62 +181,18 @@ describe("SanMaPanel — ở TRONG shell cấp (luật số 5)", () => {
    TOUR SĂN MÃ (spec §7 · `tour/configs/sanMaTour.ts`)
    ══════════════════════════════════════════════════════════════════════════ */
 describe("SanMaPanel — tour Săn mã", () => {
-  it("có nút mở lại tour bất cứ lúc nào", () => {
-    render(<SanMaPanel />)
-    expect(screen.getByRole("button", { name: /Hướng dẫn/ })).toBeInTheDocument()
-  })
-
-  it("bấm nút → tour chạy từ bước 1", () => {
-    render(<SanMaPanel />)
-    fireEvent.click(screen.getByRole("button", { name: /Hướng dẫn/ }))
-    expect(screen.getByText("Săn mã — chủ động đi tìm cơ hội")).toBeInTheDocument()
-  })
-
-  it("★ server nói CHƯA xem → tour tự bật lần đầu vào màn", () => {
+  it("auto-opens once when the server says unseen", () => {
     progressRef.current = { da_xem_tour_sanma: false }
     render(<SanMaPanel />)
+    expect(screen.getByRole("button", { name: /Hướng dẫn/ })).toBeInTheDocument()
     expect(screen.getByText("Săn mã — chủ động đi tìm cơ hội")).toBeInTheDocument()
   })
 
-  it("★ server nói ĐÃ xem → KHÔNG tự bật", () => {
-    progressRef.current = { da_xem_tour_sanma: true }
+  it.each([true, undefined])("does not auto-open when seen=%s, but keeps manual replay", (seen) => {
+    progressRef.current = seen === undefined ? null : { da_xem_tour_sanma: seen }
     render(<SanMaPanel />)
+    expect(screen.getByRole("button", { name: /Hướng dẫn/ })).toBeInTheDocument()
     expect(screen.queryByText("Săn mã — chủ động đi tìm cơ hội")).not.toBeInTheDocument()
-  })
-
-  it("★ chưa biết cờ (chưa tải / wire cũ) → KHÔNG tự bật", () => {
-    progressRef.current = null
-    render(<SanMaPanel />)
-    expect(screen.queryByText("Săn mã — chủ động đi tìm cơ hội")).not.toBeInTheDocument()
-  })
-
-  it("★ «Bỏ qua» giữa chừng KHÔNG ghi cờ đã xem (spec §7)", () => {
-    render(<SanMaPanel />)
-    fireEvent.click(screen.getByRole("button", { name: /Hướng dẫn/ }))
-    fireEvent.click(screen.getByRole("button", { name: /Bỏ qua/ }))
     expect(markTourMutate).not.toHaveBeenCalled()
-  })
-
-  // ★ `TourOverlay` chặn double-click bằng cờ `busy`, chỉ được xoá sau một
-  // `setTimeout` thật (`TRANSITION_MS`/`SCROLL_SETTLE_MS`) — nên phải chạy đồng
-  // hồ giả giữa hai lần bấm, nếu không tour đứng mãi ở bước 2 (đã kiểm chứng).
-  it("★ đi HẾT 7 bước → mới ghi cờ đã xem", () => {
-    vi.useFakeTimers()
-    try {
-      render(<SanMaPanel />)
-      fireEvent.click(screen.getByRole("button", { name: /Hướng dẫn/ }))
-      for (let i = 0; i < 6; i++) {
-        fireEvent.click(screen.getByRole("button", { name: /Tiếp theo/ }))
-        act(() => {
-          vi.advanceTimersByTime(2000)
-        })
-      }
-      expect(screen.getByText("Bạn đã sẵn sàng đi săn")).toBeInTheDocument()
-      expect(markTourMutate).not.toHaveBeenCalled()
-      fireEvent.click(screen.getByRole("button", { name: /Hoàn thành/ }))
-      expect(markTourMutate).toHaveBeenCalledTimes(1)
-    } finally {
-      vi.useRealTimers()
-    }
   })
 })

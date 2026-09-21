@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Cap5WatchlistItem } from "./watchlistTypes"
 
 /**
- * Watchlist Cấp 5 (spec §6, mockup `iqx-cap5-watchlist.html`).
+ * Theo dõi Cấp 5 (spec §6, mockup `iqx-cap5-watchlist.html`).
  *
  * Ba trục canh:
  *   1. LUẬT SỐ 1 — "chưa chấm"/"chưa kết luận" là hai trạng thái RIÊNG, không
@@ -13,15 +13,25 @@ import type { Cap5WatchlistItem } from "./watchlistTypes"
  *   3. LUẬT SỐ 4 — panel RIÊNG của Cấp 5, gác trên `isCap5Active` (bài canh
  *      chiều còn lại nằm ở `features/watchlist/WatchlistPanel.cap5Gate.test.tsx`).
  */
-const { wlQuery, setActivePanelMock, setSymbolMock, cap5Active, priceMap, wlEnabledSpy } =
-  vi.hoisted(() => ({
+const {
+  wlQuery,
+  setActivePanelMock,
+  setSymbolMock,
+  cap5Active,
+  priceMap,
+  wlEnabledSpy,
+  trackEventMock,
+} = vi.hoisted(() => ({
     wlQuery: { current: {} as Record<string, unknown> },
     setActivePanelMock: vi.fn(),
     setSymbolMock: vi.fn(),
     cap5Active: { current: true },
     priceMap: { current: {} as Record<string, { closePrice: number; percentChange: number }> },
     wlEnabledSpy: vi.fn(),
-  }))
+    trackEventMock: vi.fn(),
+}))
+
+vi.mock("@/shared/analytics/journey", () => ({ trackJourneyEvent: trackEventMock }))
 
 vi.mock("./sanMaHooks", () => ({
   useCap5Watchlist: (enabled?: boolean) => {
@@ -95,12 +105,11 @@ describe("Cap5WatchlistPanel — thẻ mã (spec §6.2)", () => {
     expect(screen.getByTestId("cap5-wl-lop-HPG")).toHaveTextContent("🎯✅ 💰✅ 👤⚪ 📰✅ 💎✅")
   })
 
-  it("giá hiện theo en-US (luật số 7), KHÔNG copy 27.850 của mockup", () => {
+  it("giá hiện theo định dạng Việt Nam của spec chung", () => {
     render(<Cap5WatchlistPanel />)
     const price = screen.getByTestId("cap5-wl-price-HPG")
-    expect(price).toHaveTextContent("27,850")
-    expect(price).not.toHaveTextContent("27.850")
-    expect(price).toHaveTextContent("+1.2%")
+    expect(price).toHaveTextContent("27.850")
+    expect(price).toHaveTextContent("+1,2%")
   })
 
   it("★ chưa có giá realtime → «—», KHÔNG phải 0", () => {
@@ -175,6 +184,28 @@ describe("Cap5WatchlistPanel — trạng thái (spec §6.1)", () => {
     expect(card).toHaveTextContent("—/5")
     expect(card).not.toHaveTextContent("0/5")
     expect(card).not.toHaveTextContent("Đang quan sát")
+  })
+
+  it("★ điểm 4/5 đã hết hạn → không còn gắn Đáng chú ý hay mời đặt lệnh", () => {
+    wlQuery.current = {
+      data: [
+        item({
+          consensus_het_han: true,
+          so_phien_hieu_luc: 5,
+          consensus_session_date: null,
+        }),
+      ],
+      isLoading: false,
+      isError: false,
+    }
+    render(<Cap5WatchlistPanel />)
+    expect(screen.getByTestId("cap5-wl-status-HPG")).toHaveTextContent("Điểm đã cũ")
+    expect(screen.getByTestId("cap5-wl-act-HPG")).toHaveTextContent("Xem 5 lớp")
+    expect(screen.getByTestId("cap5-wl-freshness-HPG")).toHaveTextContent(
+      "chưa có bản phân tích mới trong 5 phiên gần nhất",
+    )
+    expect(screen.getByTestId("cap5-wl-tab-notable")).toHaveTextContent("Đáng chú ý (0)")
+    expect(screen.queryByTestId("cap5-wl-hint-HPG")).not.toBeInTheDocument()
   })
 
   it("★ 3 lớp ủng hộ / mới chấm 4 lớp → «Chưa kết luận» + số lớp còn thiếu", () => {
@@ -255,6 +286,10 @@ describe("Cap5WatchlistPanel — ở TRONG shell cấp (luật số 5)", () => {
     fireEvent.click(screen.getByTestId("cap5-wl-act-HPG"))
     expect(setSymbolMock).toHaveBeenCalledWith("HPG")
     expect(setActivePanelMock).toHaveBeenCalledWith("trading")
+    expect(trackEventMock).toHaveBeenCalledWith("cap5_order_from_hunt", {
+      symbol: "HPG",
+      filter: "ngoai",
+    })
   })
 
   it("mã chưa chín có «Xem 5 lớp →» (KHÔNG phải «Đặt lệnh»)", () => {
@@ -276,7 +311,7 @@ describe("Cap5WatchlistPanel — trạng thái tải (luật số 1)", () => {
   it("★ lỗi tải KHÔNG biến thành watchlist rỗng", () => {
     wlQuery.current = { data: undefined, isLoading: false, isError: true }
     render(<Cap5WatchlistPanel />)
-    expect(screen.getByTestId("cap5-wl-error")).toHaveTextContent("Chưa lấy được Watchlist")
+    expect(screen.getByTestId("cap5-wl-error")).toHaveTextContent("Chưa lấy được Theo dõi")
     expect(screen.queryByTestId("cap5-wl-empty")).not.toBeInTheDocument()
     expect(screen.getByTestId("cap5-wl-tab-all")).toHaveTextContent("Tất cả (—)")
   })
@@ -284,7 +319,7 @@ describe("Cap5WatchlistPanel — trạng thái tải (luật số 1)", () => {
   it("watchlist rỗng THẬT → mời đi săn", () => {
     wlQuery.current = { data: [], isLoading: false, isError: false }
     render(<Cap5WatchlistPanel />)
-    expect(screen.getByTestId("cap5-wl-empty")).toHaveTextContent("Chưa có mã nào trong Watchlist")
+    expect(screen.getByTestId("cap5-wl-empty")).toHaveTextContent("Chưa có mã nào trong Theo dõi")
     expect(screen.getByTestId("cap5-wl-tab-all")).toHaveTextContent("Tất cả (0)")
   })
 })

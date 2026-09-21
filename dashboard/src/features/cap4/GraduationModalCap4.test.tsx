@@ -139,74 +139,25 @@ describe("GraduationModalCap4", () => {
     expect(svg?.innerHTML).toContain("#a78bfa")
   })
 
-  it("renders Khối 1 với vũ khí / điểm mù THẬT của user", () => {
-    useCap4ProgressMock.mockReturnValue({ data: readyProgress() })
-    render(<GraduationModalCap4 />)
-    expect(screen.getByText(/Bạn đã đọc trọn 5 lớp qua hơn 20 lệnh/)).toBeInTheDocument()
-    expect(screen.getByTestId("cap4-grad-khoi1")).toHaveTextContent(
-      "Bạn biết vũ khí của mình là đọc lớp 💰 Dòng tiền, và điểm mù cần cải thiện là lớp 📰 Tin tức.",
-    )
-  })
-
   it("degrades honestly when the system never concluded a vũ khí/điểm mù lớp", () => {
     useCap4ProgressMock.mockReturnValue({
       data: readyProgress({ vu_khi_lop: null, diem_mu_lop: null }),
     })
     render(<GraduationModalCap4 />)
-    expect(screen.getByTestId("cap4-grad-khoi1")).toHaveTextContent(/chưa xác định/)
+    expect(document.querySelector(".cap0-grad-sub")).toHaveTextContent(/chưa xác định/)
     // …và KHÔNG in ra một lớp bịa hay một con số 0.
-    expect(screen.getByTestId("cap4-grad-khoi1")).not.toHaveTextContent(/0%/)
+    expect(document.querySelector(".cap0-grad-sub")).not.toHaveTextContent(/0%/)
   })
 
-  // ── ★★ Cấp 5 thật = SĂN MÃ ────────────────────────────────────────────────
-
-  it("★★ Khối 2 + Khối 3 nói SĂN MÃ, không phải 4 ô / đứng ngoài / mâu thuẫn giữa các lớp", () => {
-    // Cấp 5 «Lão luyện» = chủ động săn mã (mockup Hành trình Cấp 4,
-    // IQX-Cap5-Spec, mockup Hành trình Cấp 5, IQX-NguyenTac-Chung — 4/5 nguồn).
-    // "4 ô đúng-thắng/…" là bản Cấp 5 CŨ; "mâu thuẫn giữa các lớp" là Cấp 6.
-    // Màn tốt nghiệp không được hứa một cấp sau khác với cấp sau có thật.
-    flags.CAP_MAX_ENABLED = 5
+it("shows the badge and next-level action without the removed narrative blocks", () => {
     useCap4ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap4 />)
-
-    const khoi2 = screen.getByTestId("cap4-grad-khoi2")
-    const khoi3 = screen.getByTestId("cap4-grad-khoi3")
-    expect(khoi2).toHaveTextContent(/mã vẫn tự tìm đến bạn/)
-    expect(khoi2).toHaveTextContent(/họ đi săn/)
-    expect(khoi3).toHaveTextContent("Từ giờ: Cấp 5 «Lão luyện».")
-    expect(khoi3).toHaveTextContent(/bộ lọc/)
-    expect(khoi3).toHaveTextContent(/Watchlist/)
-    expect(khoi3).toHaveTextContent(/săn nhiều, chọn kỹ, không mua vội/)
-
-    for (const block of [khoi2, khoi3]) {
-      expect(block).not.toHaveTextContent(/đúng-thắng/)
-      expect(block).not.toHaveTextContent(/sai-thua/)
-      expect(block).not.toHaveTextContent(/tách quyết định khỏi kết quả/)
-      expect(block).not.toHaveTextContent(/đứng ngoài/)
-      expect(block).not.toHaveTextContent(/mâu thuẫn/)
-    }
-  })
-
-  it("Khối 3 + CTA carry the Cấp 5 vàng kim classes (#e0b64d)", () => {
-    useCap4ProgressMock.mockReturnValue({ data: readyProgress() })
-    render(<GraduationModalCap4 />)
-    expect(document.querySelector(".cap4-grad-block--cap5")).not.toBeNull()
-    expect(document.querySelector(".cap4-grad-cta--cap5")).not.toBeNull()
+    expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
+    expect(document.querySelectorAll(".cap0-grad-block")).toHaveLength(0)
+    expect(screen.getByRole("button", { name: /Vào cấp 5: Lão luyện/ })).toBeEnabled()
   })
 
   // ── ★ Trần cấp — CẢ HAI phía ──────────────────────────────────────────────
-
-  it("★ trần = 4: Khối 3 không tuyên bố Cấp 5 đã bắt đầu", () => {
-    flags.CAP_MAX_ENABLED = 4
-    useCap4ProgressMock.mockReturnValue({ data: readyProgress() })
-    render(<GraduationModalCap4 />)
-    const khoi3 = screen.getByTestId("cap4-grad-khoi3")
-    expect(khoi3).toHaveTextContent("Cấp 5 «Lão luyện» chưa ra mắt.")
-    expect(khoi3).toHaveTextContent(/chặng cuối của chương trình hiện tại/)
-    // Nội dung Cấp 5 sẽ mang lại vẫn được giữ — chỉ ở thì TƯƠNG LAI.
-    expect(khoi3).toHaveTextContent(/chủ động săn mã/)
-    expect(khoi3).not.toHaveTextContent("Từ giờ: Cấp 5 «Lão luyện».")
-  })
 
   it("★ trần = 4: dòng «sắp ra mắt» nằm ngay trên nút", () => {
     flags.CAP_MAX_ENABLED = 4
@@ -267,7 +218,7 @@ describe("GraduationModalCap4", () => {
     useCap4ProgressMock.mockReturnValue({ data: readyProgress() })
     render(<GraduationModalCap4 />)
     expect(screen.getByTestId("cap4-grad-cta")).not.toHaveTextContent(/sắp ra mắt/)
-    fireEvent.click(screen.getByText("Vào Cấp 5 «Lão luyện» →"))
+    fireEvent.click(screen.getByText("Vào cấp 5: Lão luyện"))
     expect(graduateMutate).toHaveBeenCalled()
     expect(enterCap5Mutate).toHaveBeenCalledTimes(1)
     expect(messageInfo).not.toHaveBeenCalled()
@@ -280,7 +231,7 @@ describe("GraduationModalCap4", () => {
       /* pending — no onSuccess */
     })
     render(<GraduationModalCap4 />)
-    fireEvent.click(screen.getByText("Vào Cấp 5 «Lão luyện» →"))
+    fireEvent.click(screen.getByText("Vào cấp 5: Lão luyện"))
     expect(enterCap5Mutate).not.toHaveBeenCalled()
   })
 

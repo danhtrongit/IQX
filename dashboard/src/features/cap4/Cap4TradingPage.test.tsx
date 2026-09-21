@@ -1,3 +1,6 @@
+vi.mock("@/features/journey-identity/JourneyIdentityStage", () => ({
+  JourneyIdentityStage: ({ level }: { level: number }) => <div data-testid="journey-identity-stage" data-level={level} />,
+}))
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import React from "react"
 import { MemoryRouter } from "react-router"
@@ -17,7 +20,6 @@ const {
   useDiemKyLuatMock,
   recordKetsoCap1Mutate,
   recordKetsoCap2Mutate,
-  completeCap4TaskMutate,
   graduateCap4Mutate,
   setKhauViMutate,
   recordCap1TradeMock,
@@ -25,6 +27,7 @@ const {
   recordCap2ScoreMock,
   recordCap3TradeMock,
   recordCap4TradeMock,
+  getCap4PlanMock,
   navigateMock,
 } = vi.hoisted(() => ({
   useCap1ProgressMock: vi.fn(),
@@ -34,7 +37,6 @@ const {
   useDiemKyLuatMock: vi.fn(),
   recordKetsoCap1Mutate: vi.fn(),
   recordKetsoCap2Mutate: vi.fn(),
-  completeCap4TaskMutate: vi.fn(),
   graduateCap4Mutate: vi.fn(),
   setKhauViMutate: vi.fn(),
   recordCap1TradeMock: vi.fn(),
@@ -42,6 +44,7 @@ const {
   recordCap2ScoreMock: vi.fn(),
   recordCap3TradeMock: vi.fn(),
   recordCap4TradeMock: vi.fn(),
+  getCap4PlanMock: vi.fn(),
   navigateMock: vi.fn(),
 }))
 
@@ -78,6 +81,30 @@ const AI_5_LOP = {
   noi_bo: "neu",
   tin_tuc: "ok",
   dinh_gia: "neu",
+} as const
+
+const CAP4_SERVER_PLAN = {
+  id: "plan-server-1",
+  order_id: "buy-server-1",
+  symbol: "VNM",
+  quantity: 300,
+  bought_at: "2026-02-12T02:00:00Z",
+  gia_vao: 60_000,
+  lyDo: "dong_tien",
+  trangThai_luc_dat: "ung_ho",
+  vung_mua: 60_000,
+  phuong_phap_sl_tp: "ho_tro_khang_cu",
+  cat_lo: 58_000,
+  chot_loi: 65_000,
+  khau_vi: "can_bang",
+  muc_tu_tin: 3,
+  cach_khoi_luong: "khau_vi_tu_tin",
+  khoi_luong: 300,
+  pct_von: 18,
+  doc_5_lop: { ...DOC_5_LOP },
+  ai_5_lop: { ...AI_5_LOP },
+  so_lop_dong_thuan: 3,
+  so_lop_khac_ai: 2,
 } as const
 
 function RightSidebarStub() {
@@ -199,9 +226,25 @@ function RightSidebarStub() {
           cap2OnOrderFilled?.(sellEvent)
           cap3OnOrderFilled?.(sellEvent)
           cap4OnOrderFilled?.(sellEvent)
+          // Real TradingPanel dispatches a second closeout event carrying the
+          // server-matched BUY id. The page must de-dupe this in-session case.
+          cap4OnOrderFilled?.({ ...sellEvent, buyOrderId: "buy-1" })
         }}
       >
         fire sell
+      </button>
+      <button
+        data-testid="fire-sell-after-reload"
+        onClick={() => cap4OnOrderFilled?.({
+          symbol: "VNM",
+          side: "sell",
+          quantity: 300,
+          price: 65_500,
+          orderId: "sell-reload-1",
+          buyOrderId: "buy-server-1",
+        })}
+      >
+        fire sell after reload
       </button>
       <button
         data-testid="fire-sell-hpg"
@@ -280,12 +323,17 @@ vi.mock("@/features/cap3/hooks", () => ({
 }))
 vi.mock("@/features/cap3/tradeLogCap3", () => ({
   useCap3TradeLog: () => ({ trades: [], record: recordCap3TradeMock }),
+  cachKhoiLuongFromWire: (value: string | null) =>
+    value == null ? null : value === "khau_vi_tu_tin" ? "linh_hoat" : "ky_luat",
+}))
+
+vi.mock("./api", () => ({
+  cap4Api: { getPlan: (...args: unknown[]) => getCap4PlanMock(...args) },
 }))
 
 // Cấp 4's own hooks + trade log.
 vi.mock("./hooks", () => ({
   useCap4Progress: (...a: unknown[]) => useCap4ProgressMock(...a),
-  useCompleteCap4Task: () => ({ mutate: completeCap4TaskMutate }),
   useGraduateCap4: () => ({ mutate: graduateCap4Mutate, isPending: false }),
   useThachThucCap4: () => ({ data: undefined }),
   useVuKhiDiemMu: () => ({ data: undefined }),
@@ -409,7 +457,6 @@ describe("Cap4TradingPage", () => {
     useDiemKyLuatMock.mockReturnValue({ data: fakeDiemKyLuat(), isLoading: false })
     recordKetsoCap1Mutate.mockReset()
     recordKetsoCap2Mutate.mockReset()
-    completeCap4TaskMutate.mockReset()
     graduateCap4Mutate.mockReset()
     setKhauViMutate.mockReset()
     recordCap1TradeMock.mockReset()
@@ -417,13 +464,16 @@ describe("Cap4TradingPage", () => {
     recordCap2ScoreMock.mockReset()
     recordCap3TradeMock.mockReset()
     recordCap4TradeMock.mockReset()
+    getCap4PlanMock.mockReset()
+    getCap4PlanMock.mockResolvedValue({ ...CAP4_SERVER_PLAN })
     navigateMock.mockReset()
     window.localStorage.clear()
   })
 
-  it("renders the reused terminal children (CenterPanel/RightSidebar/RightToolbar)", () => {
+  it("renders identity in the main slot and preserves the functional panels", () => {
     renderCap4(<Cap4TradingPage />)
-    expect(screen.getByTestId("center-panel")).toBeInTheDocument()
+    expect(screen.getByTestId("journey-identity-stage")).toHaveAttribute("data-level", "4")
+    expect(screen.queryByTestId("center-panel")).not.toBeInTheDocument()
     expect(screen.getByTestId("right-sidebar")).toBeInTheDocument()
     expect(screen.getByTestId("right-toolbar")).toBeInTheDocument()
   })
@@ -495,7 +545,7 @@ describe("Cap4TradingPage", () => {
     fireEvent.click(screen.getByTestId("fire-sell"))
     expect(screen.getByText("KẾT SỔ LỆNH · #1 · THỰC CHIẾN")).toBeInTheDocument()
     // Cấp 1 + 2 + 3 content still there (cộng dồn) …
-    expect(screen.getByTestId("cap2-ketso-camket")).toHaveTextContent("58,000")
+    expect(screen.getByTestId("cap2-ketso-camket")).toHaveTextContent("58.000")
     expect(screen.getByTestId("cap3-ketso-quanlyvon")).toHaveTextContent("Cân bằng")
     // … plus Cấp 4's own bảng "Đọc 5 lớp — nhìn lại", fed off the Cấp 4 BUY bus.
     expect(screen.getByTestId("cap4-ketso-doc5lop")).toBeInTheDocument()
@@ -505,11 +555,43 @@ describe("Cap4TradingPage", () => {
     expect(screen.getByTestId("cap4-ketso-lr-tin_tuc")).toHaveAttribute("data-diff", "true")
     expect(screen.getByTestId("cap4-ketso-lr-dong_tien")).toHaveAttribute("data-diff", "false")
     expect(screen.getByTestId("cap4-ketso-doc5lop-sum")).toHaveTextContent("Đồng thuận: 3/5")
+    expect(getCap4PlanMock).not.toHaveBeenCalled()
   })
 
   it("a SELL with no tracked BUY does not open Kết sổ", () => {
     renderCap4(<Cap4TradingPage />)
-    fireEvent.click(screen.getByTestId("fire-sell"))
+    fireEvent.click(screen.getByTestId("fire-sell-hpg"))
+    expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
+  })
+
+  it("after reload, hydrates the exact matched BUY plan before opening Kết sổ", async () => {
+    renderCap4(<Cap4TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-sell-after-reload"))
+
+    await waitFor(() => expect(getCap4PlanMock).toHaveBeenCalledWith("buy-server-1"))
+    expect(await screen.findByText("KẾT SỔ LỆNH · #1 · THỰC CHIẾN")).toBeInTheDocument()
+    expect(screen.getByTestId("cap4-ketso-lr-tin_tuc-ban")).toHaveTextContent("Ngược chiều")
+    expect(screen.getByTestId("cap4-ketso-lr-tin_tuc-ai")).toHaveTextContent("Ủng hộ")
+  })
+
+  it("keeps Kết sổ closed when the matched BUY plan is unknown", async () => {
+    getCap4PlanMock.mockRejectedValueOnce(new Error("404"))
+    renderCap4(<Cap4TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-sell-after-reload"))
+
+    await waitFor(() => expect(getCap4PlanMock).toHaveBeenCalledWith("buy-server-1"))
+    expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
+  })
+
+  it("keeps Kết sổ closed when the recovered plan lacks a complete 5-layer reading", async () => {
+    getCap4PlanMock.mockResolvedValueOnce({
+      ...CAP4_SERVER_PLAN,
+      doc_5_lop: { ky_thuat: "ok" },
+    })
+    renderCap4(<Cap4TradingPage />)
+    fireEvent.click(screen.getByTestId("fire-sell-after-reload"))
+
+    await waitFor(() => expect(getCap4PlanMock).toHaveBeenCalledWith("buy-server-1"))
     expect(screen.queryByText(/KẾT SỔ LỆNH/)).not.toBeInTheDocument()
   })
 
@@ -535,7 +617,6 @@ describe("Cap4TradingPage", () => {
     expect(recordKetsoCap2Mutate).toHaveBeenCalledWith(
       expect.objectContaining({ order_id: "sell-1" }),
     )
-    expect(completeCap4TaskMutate).toHaveBeenCalledWith(2)
     expect(recordCap4TradeMock).toHaveBeenCalledTimes(1)
     expect(recordCap1TradeMock).toHaveBeenCalledTimes(1)
     expect(recordCap2TradeMock).toHaveBeenCalledTimes(1)
@@ -565,7 +646,7 @@ describe("Cap4TradingPage", () => {
     })
   })
 
-  it("mounts GraduationModalCap4 (hidden until 3/3 nhiệm vụ)", () => {
+  it("mounts GraduationModalCap4 (hidden until the single 10-order task is done)", () => {
     renderCap4(<Cap4TradingPage />)
     expect(screen.queryByText("HOÀN THÀNH")).not.toBeInTheDocument()
 
@@ -579,7 +660,7 @@ describe("Cap4TradingPage", () => {
     })
     renderCap4(<Cap4TradingPage />)
     expect(screen.getByText("HOÀN THÀNH")).toBeInTheDocument()
-    expect(screen.getByText("Vào Cấp 5 «Lão luyện» →")).toBeInTheDocument()
+    expect(screen.getByText("Vào cấp 5: Lão luyện")).toBeInTheDocument()
   })
 
   it('clicking "AI Phân tích" opens the AI Insight symbol-picker modal, and submitting mở bản đọc AI NGAY TRONG trang cấp — KHÔNG điều hướng', async () => {

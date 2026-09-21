@@ -1,11 +1,11 @@
 """Tests for the Cấp 4 «Thuần thục» backend — MỘT nhiệm vụ ("Đọc và chấm đủ 5
-lớp qua 20 lệnh"), vũ khí / điểm mù (đo bằng KẾT QUẢ THẬT), graduation.
+lớp qua 10 lệnh"), vũ khí / điểm mù (đo bằng KẾT QUẢ THẬT), graduation.
 
 Mirrors ``tests/test_cap3.py``'s style. Uses the ``test_user``/``db_session``
 fixtures from ``tests/conftest.py``.
 
 ★ HÌNH DẠNG MỚI (mockup ``iqx-cap4-hanhtrinh.html``): Cấp 4 có ĐÚNG MỘT nhiệm
-vụ — ``so_lenh_doc_du_5lop >= 20``. "Lệnh đầu tiên đọc đủ 5 lớp", "Kết sổ lệnh
+vụ — ``so_lenh_doc_du_5lop >= 10``. "Lệnh đầu tiên đọc đủ 5 lớp", "Kết sổ lệnh
 đầu Cấp 4" và khối "Thách thức Thuần thục" (3 điều kiện) đã bị GỠ cùng cột
 ``task_2_done_at``/``task_3_done_at``/``ty_le_thang_dong_thuan_cao``. Vũ khí /
 điểm mù SỐNG TIẾP (spec §7 khối ⑨ + Khối 1 màn tốt nghiệp) nhưng KHÔNG còn là
@@ -22,18 +22,31 @@ count. ``test_khac_ai_is_neutral`` pins that down.
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+import uuid
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
+from sqlalchemy import select
 
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
-from app.models.virtual_trading import OrderSide, OrderStatus, OrderType, VirtualOrder
+from app.models.cap1 import LyDo, OrderKehoach, TrangThaiLucDat
+from app.models.cap4 import Cap4Progress
+from app.models.journey_event import JourneyEvent
+from app.models.journey_identity import JourneyReadingDataset
+from app.models.virtual_trading import (
+    OrderSide,
+    OrderStatus,
+    OrderType,
+    VirtualOrder,
+    VirtualTradingAccount,
+)
 from app.repositories.virtual_trading import VirtualTradingRepository
 from app.services.cap0.service import Cap0Service
 from app.services.cap1.service import Cap1Service
 from app.services.cap2.service import Cap2Service
 from app.services.cap3.service import Cap3Service
 from app.services.cap4.service import Cap4Service
+from app.services.journey_identity.classification import digest
 
 # ══════════════════════════════════════════════════════
 # Setup helpers — fast-track a user through Cấp 0/1/2/3 graduation.
@@ -53,14 +66,57 @@ def _doc(**overrides: str) -> dict[str, str]:
     return {**_ALL_NEU, **overrides}
 
 
+async def _seed_ai_dataset(
+    db_session,
+    user_id,
+    *,
+    symbol: str,
+    trading_date: date,
+    ai_answers: dict[str, str],
+) -> JourneyReadingDataset:
+    clean = symbol.upper()
+    payload = {
+        "symbol": clean,
+        "source_symbol": clean,
+        "valuation_source_symbol": clean,
+        "trading_date": str(trading_date),
+        "ai_answers": ai_answers,
+    }
+    row = JourneyReadingDataset(
+        user_id=user_id,
+        symbol=clean,
+        trading_date=trading_date,
+        created_at=datetime.now(UTC),
+        dataset_hash=digest(payload),
+        payload=payload,
+    )
+    db_session.add(row)
+    await db_session.flush()
+    return row
+
+
 async def _graduate_cap0(db_session, user_id) -> None:
     cap0 = Cap0Service(db_session)
     await cap0.enter(user_id)
-    # Cấp 0: 4 nhiệm vụ, 1 cổng hành vi (đóng Kết sổ ở ④). ② và ③ chỉ tính
-    # sau ①, nên vòng lặp phải chạy đúng thứ tự ①②③.
-    for n in (1, 2, 3):
-        await cap0.complete_task(user_id, n)
-    await cap0.complete_task(user_id, 4, gate="debrief")
+    await cap0.set_placement(user_id, answer="never")
+    account = await VirtualTradingRepository(db_session).get_account_by_user_id(user_id)
+    buy = await _make_order(
+        db_session, account.id, user_id, symbol="VNM", mode="san_tap"
+    )
+    await cap0.record_kehoach(user_id, buy.id, ly_do_doi_thuong="thu_cho_biet")
+    await cap0.complete_task(user_id, 1, gate="star")
+    for tour in ("phantich", "bantin", "bctc"):
+        await cap0.complete_tour(user_id, tour)
+    await _make_order(
+        db_session,
+        account.id,
+        user_id,
+        symbol="VNM",
+        side=OrderSide.SELL,
+        mode="san_tap",
+        trading_date=date(2026, 1, 8),
+    )
+    await cap0.complete_task(user_id, 5, gate="debrief")
     await cap0.graduate(user_id)
 
 
@@ -80,6 +136,7 @@ async def _make_order(
     trading_date = trading_date or date(2026, 1, 5)
     gross = price * qty
     net = -gross if side == OrderSide.BUY else gross
+    now = datetime.now(UTC).replace(tzinfo=None)
     order = VirtualOrder(
         account_id=account_id,
         user_id=user_id,
@@ -95,6 +152,8 @@ async def _make_order(
         tax_vnd=0,
         net_amount_vnd=net if status == OrderStatus.FILLED else None,
         trading_date=trading_date,
+        created_at=now,
+        updated_at=now,
     )
     db_session.add(order)
     await db_session.flush()
@@ -207,7 +266,8 @@ async def _graduate_cap3(db_session, user_id) -> None:
         )
         await cap3.record_kehoach(
             user_id, buy.id, khau_vi="can_bang", muc_tu_tin=(i % 3) + 1,
-            cach_khoi_luong="linh_hoat", khoi_luong=100, pct_von=20.0,
+            cach_khoi_luong="linh_hoat", khoi_luong=buy.quantity,
+            pct_von=buy.quantity * 20_000 / account.initial_cash_vnd * 100.0,
         )
         # ★ 30,000 (không phải 25,500): lãi % của Cấp 3 chia cho vốn THẬT của
         # tài khoản ảo (250,000,000đ), không phải hằng số 100tr của ví dụ trong
@@ -263,8 +323,16 @@ async def _round_trip_cap4(
         user_id, buy.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho", vung_mua=buy_price,
     )
     if doc_5_lop is not None:
+        if ai_5_lop is not None:
+            await _seed_ai_dataset(
+                db_session,
+                user_id,
+                symbol=symbol,
+                trading_date=today,
+                ai_answers=ai_5_lop,
+            )
         await cap4.record_kehoach(
-            user_id, buy.id, doc_5_lop=doc_5_lop, ai_5_lop=ai_5_lop,
+            user_id, buy.id, doc_5_lop=doc_5_lop,
         )
     if not close:
         return None
@@ -273,6 +341,47 @@ async def _round_trip_cap4(
         price=sell_price, trading_date=today,
     )
     return await cap1.record_ketso(user_id, sell.id)
+
+
+@pytest.mark.asyncio
+async def test_get_plan_hydrates_cumulative_cap1_to_cap4_and_scopes_owner(
+    db_session, test_user
+):
+    repo = VirtualTradingRepository(db_session)
+    account = await repo.create_account(test_user.id, 100_000_000)
+    buy = await _make_order(db_session, account.id, test_user.id, symbol="HYDRATE")
+    plan = OrderKehoach(
+        order_id=buy.id,
+        lyDo="ky_thuat",
+        trangThai_luc_dat="ung_ho",
+        vung_mua=20_000,
+        phuong_phap_sl_tp="bien_do_dao_dong",
+        cat_lo=18_000,
+        chot_loi=25_000,
+        khau_vi="can_bang",
+        muc_tu_tin=3,
+        cach_khoi_luong="khau_vi_tu_tin",
+        khoi_luong=100,
+        pct_von=2.0,
+        doc_5_lop=_doc(ky_thuat="ok"),
+        ai_5_lop=_doc(ky_thuat="neu"),
+        so_lop_dong_thuan=0,
+        so_lop_khac_ai=1,
+    )
+    db_session.add(plan)
+    await db_session.flush()
+
+    out = await Cap4Service(db_session).get_plan(test_user.id, buy.id)
+    assert out["symbol"] == "HYDRATE"
+    assert out["quantity"] == 100
+    assert out["gia_vao"] == 20_000
+    assert out["cat_lo"] == 18_000
+    assert out["pct_von"] == 2.0
+    assert out["doc_5_lop"]["ky_thuat"] == "ok"
+    assert out["ai_5_lop"]["ky_thuat"] == "neu"
+
+    with pytest.raises(NotFoundError):
+        await Cap4Service(db_session).get_plan(uuid.uuid4(), buy.id)
 
 
 # ══════════════════════════════════════════════════════
@@ -317,7 +426,8 @@ async def test_enter_requires_cap3_graduated(db_session, test_user):
         )
         await cap3.record_kehoach(
             test_user.id, buy.id, khau_vi="can_bang", muc_tu_tin=(i % 3) + 1,
-            cach_khoi_luong="linh_hoat", khoi_luong=100, pct_von=20.0,
+            cach_khoi_luong="linh_hoat", khoi_luong=buy.quantity,
+            pct_von=buy.quantity * 20_000 / account.initial_cash_vnd * 100.0,
         )
         sell = await _make_order(
             db_session, account.id, test_user.id, symbol=f"Z{i}",
@@ -345,6 +455,92 @@ async def test_enter_requires_cap3_graduated(db_session, test_user):
 async def test_get_progress_none_before_enter(db_session, test_user):
     svc = Cap4Service(db_session)
     assert await svc.get_progress(test_user.id) is None
+
+
+@pytest.mark.asyncio
+async def test_cap4_server_analytics_are_conditional_and_deduplicated(
+    db_session, test_user
+):
+    """Focused instrumentation test without depending on earlier level setup."""
+    now = datetime.now(UTC)
+    account = VirtualTradingAccount(
+        user_id=test_user.id,
+        initial_cash_vnd=100_000_000,
+        cash_available_vnd=100_000_000,
+        cash_reserved_vnd=0,
+        cash_pending_vnd=0,
+        activated_at=now,
+    )
+    progress = Cap4Progress(user_id=test_user.id, entered_at=now)
+    db_session.add_all([account, progress])
+    await db_session.flush()
+
+    buy = await _make_order(db_session, account.id, test_user.id)
+    db_session.add(
+        OrderKehoach(
+            order_id=buy.id,
+            lyDo=LyDo.KY_THUAT,
+            trangThai_luc_dat=TrangThaiLucDat.UNG_HO,
+            vung_mua=20_000,
+        )
+    )
+    await db_session.flush()
+
+    service = Cap4Service(db_session)
+    doc = _doc(dinh_gia="ok")
+    await _seed_ai_dataset(
+        db_session,
+        test_user.id,
+        symbol=buy.symbol,
+        trading_date=buy.trading_date,
+        ai_answers=_doc(ky_thuat="ok"),
+    )
+    await service.record_kehoach(
+        test_user.id,
+        buy.id,
+        doc_5_lop=doc,
+    )
+    # Same accepted payload = HTTP retry: stable keys retain one event.
+    await service.record_kehoach(
+        test_user.id,
+        buy.id,
+        doc_5_lop=doc,
+    )
+
+    events = list(
+        (
+            await db_session.scalars(
+                select(JourneyEvent).where(JourneyEvent.user_id == test_user.id)
+            )
+        ).all()
+    )
+    doc_events = [event for event in events if event.name == "cap4_doc_lop"]
+    assert len(doc_events) == 5
+    assert {event.fields["lop"]: event.fields["nhan_dinh"] for event in doc_events} == _doc(
+        dinh_gia="ok"
+    )
+    reveal = [event for event in events if event.name == "cap4_lo_ai"]
+    assert len(reveal) == 1
+    assert reveal[0].fields == {"so_khac_ai": 2}
+    assert sum(event.name == "cap4_dat_lenh_du_5lop" for event in events) == 1
+
+    # Seed the already-derived task timestamp to isolate graduation telemetry;
+    # repeated graduation keeps one server event.
+    progress.task_1_done_at = now
+    await db_session.flush()
+    await service.graduate(test_user.id)
+    await service.graduate(test_user.id)
+    graduate_events = list(
+        (
+            await db_session.scalars(
+                select(JourneyEvent).where(
+                    JourneyEvent.user_id == test_user.id,
+                    JourneyEvent.name == "cap4_graduate",
+                )
+            )
+        ).all()
+    )
+    assert len(graduate_events) == 1
 
 
 # ══════════════════════════════════════════════════════
@@ -386,8 +582,15 @@ async def test_record_kehoach_adds_json_and_counts_to_existing_row(db_session, t
 
     doc = _doc(ky_thuat="ok", dong_tien="ok", tin_tuc="bad")
     ai = _doc(ky_thuat="ok", dong_tien="ok", noi_bo="ok", tin_tuc="neu")
+    await _seed_ai_dataset(
+        db_session,
+        test_user.id,
+        symbol=buy.symbol,
+        trading_date=buy.trading_date,
+        ai_answers=ai,
+    )
     kehoach_2 = await cap4.record_kehoach(
-        test_user.id, buy.id, doc_5_lop=doc, ai_5_lop=ai,
+        test_user.id, buy.id, doc_5_lop=doc,
     )
 
     assert kehoach_2.id == kehoach_1.id  # same row, extended in place
@@ -399,6 +602,25 @@ async def test_record_kehoach_adds_json_and_counts_to_existing_row(db_session, t
     assert kehoach_2.so_lop_dong_thuan == 3
     # user differs from AI on noi_bo (neu vs ok) + tin_tuc (bad vs neu) → 2
     assert kehoach_2.so_lop_khac_ai == 2
+
+    # Server analytics mirrors the accepted persisted values. Retrying the
+    # same plan must not duplicate any event.
+    await cap4.record_kehoach(test_user.id, buy.id, doc_5_lop=doc)
+    events = list(
+        (
+            await db_session.scalars(
+                select(JourneyEvent).where(JourneyEvent.user_id == test_user.id)
+            )
+        ).all()
+    )
+    doc_events = [event for event in events if event.name == "cap4_doc_lop"]
+    assert len(doc_events) == 5
+    assert {event.fields["lop"]: event.fields["nhan_dinh"] for event in doc_events} == doc
+    reveal_events = [event for event in events if event.name == "cap4_lo_ai"]
+    assert len(reveal_events) == 1
+    assert reveal_events[0].fields == {"so_khac_ai": 2}
+    assert sum(event.name == "cap4_dat_lenh_du_5lop" for event in events) == 1
+    assert all(event.source == "server" for event in doc_events + reveal_events)
 
 
 @pytest.mark.asyncio
@@ -415,20 +637,91 @@ async def test_record_kehoach_without_ai_leaves_counts_null(db_session, test_use
 
 
 @pytest.mark.asyncio
-async def test_record_kehoach_recomputes_counts_ignoring_client_values(db_session, test_user):
-    """Client-sent counts are advisory only — the server derives them from the
-    two JSON blobs (never trust the client)."""
+async def test_missing_or_invalid_ai_never_blocks_and_order_snapshot_is_immutable(
+    db_session, test_user
+):
+    now = datetime.now(UTC)
+    account = VirtualTradingAccount(
+        user_id=test_user.id,
+        initial_cash_vnd=100_000_000,
+        cash_available_vnd=100_000_000,
+        cash_reserved_vnd=0,
+        cash_pending_vnd=0,
+        activated_at=now,
+    )
+    db_session.add_all([account, Cap4Progress(user_id=test_user.id, entered_at=now)])
+    await db_session.flush()
+    buy = await _make_order(
+        db_session,
+        account.id,
+        test_user.id,
+        symbol="NOAI",
+        trading_date=date.today(),
+    )
+    db_session.add(
+        OrderKehoach(
+            order_id=buy.id,
+            lyDo=LyDo.KY_THUAT,
+            trangThai_luc_dat=TrangThaiLucDat.UNG_HO,
+            vung_mua=20_000,
+        )
+    )
+    # A same-session row exists but its integrity receipt is bad. It must not
+    # be treated as AI evidence and must not block the five-rating task.
+    db_session.add(
+        JourneyReadingDataset(
+            user_id=test_user.id,
+            symbol="NOAI",
+            trading_date=buy.trading_date,
+            created_at=now,
+            dataset_hash="0" * 64,
+            payload={"ai_answers": _doc()},
+        )
+    )
+    await db_session.flush()
+
+    service = Cap4Service(db_session)
+    doc = _doc(ky_thuat="ok")
+    plan = await service.record_kehoach(test_user.id, buy.id, doc_5_lop=doc)
+    assert plan.doc_5_lop == doc
+    assert plan.ai_5_lop is None
+    assert plan.so_lop_dong_thuan is None
+    assert plan.so_lop_khac_ai is None
+
+    # A later valid dataset cannot rewrite what this BUY actually froze.
+    await _seed_ai_dataset(
+        db_session,
+        test_user.id,
+        symbol=buy.symbol,
+        trading_date=buy.trading_date,
+        ai_answers=_doc(ky_thuat="ok"),
+    )
+    retry = await service.record_kehoach(test_user.id, buy.id, doc_5_lop=doc)
+    assert retry.ai_5_lop is None
+    with pytest.raises(ConflictError):
+        await service.record_kehoach(
+            test_user.id, buy.id, doc_5_lop=_doc(ky_thuat="bad")
+        )
+
+
+@pytest.mark.asyncio
+async def test_record_kehoach_derives_counts_from_server_dataset(db_session, test_user):
+    """AI and both counts come from a verified server-owned dataset."""
     cap1, cap4, account = await _enter_cap4(db_session, test_user.id)
     buy = await _make_order(db_session, account.id, test_user.id, symbol="AAA")
     await cap1.record_kehoach(
         test_user.id, buy.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho", vung_mua=20_000,
     )
+    ai = _doc(ky_thuat="ok", dong_tien="ok")
+    await _seed_ai_dataset(
+        db_session,
+        test_user.id,
+        symbol=buy.symbol,
+        trading_date=buy.trading_date,
+        ai_answers=ai,
+    )
     kehoach = await cap4.record_kehoach(
-        test_user.id, buy.id,
-        doc_5_lop=_doc(ky_thuat="ok"),
-        ai_5_lop=_doc(ky_thuat="ok", dong_tien="ok"),
-        so_lop_dong_thuan=5,  # bogus
-        so_lop_khac_ai=0,  # bogus
+        test_user.id, buy.id, doc_5_lop=_doc(ky_thuat="ok")
     )
     assert kehoach.so_lop_dong_thuan == 2
     assert kehoach.so_lop_khac_ai == 1
@@ -454,10 +747,6 @@ async def test_record_kehoach_rejects_invalid_payloads(db_session, test_user):
         await cap4.record_kehoach(test_user.id, buy.id, doc_5_lop={})
     with pytest.raises(BadRequestError):  # not a mapping
         await cap4.record_kehoach(test_user.id, buy.id, doc_5_lop=["ok"])
-    with pytest.raises(BadRequestError):  # invalid ai rating
-        await cap4.record_kehoach(
-            test_user.id, buy.id, doc_5_lop=_doc(), ai_5_lop={"ky_thuat": "rat_manh"},
-        )
 
 
 @pytest.mark.asyncio
@@ -537,7 +826,6 @@ async def test_vu_khi_diem_mu_needs_3_closed_orders_per_lop(db_session, test_use
     for row in result["lop"]:
         assert row["giai_thich"]  # §C12c — provenance always present
         assert row["ten"]
-
     progress = await cap4.get_progress(test_user.id)
     assert progress.vu_khi_lop is None
     assert progress.diem_mu_lop is None
@@ -592,6 +880,47 @@ async def test_vu_khi_diem_mu_thresholds(db_session, test_user):
 
 
 @pytest.mark.asyncio
+async def test_vu_khi_diem_mu_chi_gan_mot_nhan_cao_nhat_va_thap_nhat(
+    db_session, test_user
+):
+    """Khối ⑨ uses one deterministic superlative even when rates tie."""
+    cap1, cap4, account = await _enter_cap4(db_session, test_user.id)
+
+    for i in range(3):
+        await _round_trip_cap4(
+            db_session,
+            cap1,
+            cap4,
+            account.id,
+            test_user.id,
+            symbol=f"HI{i}",
+            doc_5_lop=_doc(ky_thuat="ok", dong_tien="ok"),
+            win=True,
+        )
+    for i in range(3):
+        await _round_trip_cap4(
+            db_session,
+            cap1,
+            cap4,
+            account.id,
+            test_user.id,
+            symbol=f"LO{i}",
+            doc_5_lop=_doc(tin_tuc="ok", dinh_gia="ok"),
+            win=False,
+        )
+
+    result = await cap4.vu_khi_diem_mu(test_user.id)
+    labelled = [
+        (row["lop"], row["nhan"])
+        for row in result["lop"]
+        if row["nhan"] in ("vu_khi", "diem_mu")
+    ]
+    assert labelled == [("ky_thuat", "vu_khi"), ("tin_tuc", "diem_mu")]
+    assert result["vu_khi_lop"] == "ky_thuat"
+    assert result["diem_mu_lop"] == "tin_tuc"
+
+
+@pytest.mark.asyncio
 async def test_vu_khi_diem_mu_ignores_open_and_unrated_orders(db_session, test_user):
     """Only CLOSED orders (with a kết sổ) count; 'neu'/'bad' ratings never do."""
     cap1, cap4, account = await _enter_cap4(db_session, test_user.id)
@@ -614,28 +943,28 @@ async def test_vu_khi_diem_mu_ignores_open_and_unrated_orders(db_session, test_u
 
 
 # ══════════════════════════════════════════════════════
-# Nhiệm vụ DUY NHẤT — "Đọc và chấm đủ 5 lớp qua 20 lệnh"
+# Nhiệm vụ DUY NHẤT — "Đọc và chấm đủ 5 lớp qua 10 lệnh"
 # ══════════════════════════════════════════════════════
 
 
-async def _twenty_reads(db_session, cap1, cap4, account_id, user_id) -> None:
-    """20 lệnh đã đọc + chấm đủ 5 lớp — đúng cổng duy nhất của Cấp 4.
+async def _ten_reads(db_session, cap1, cap4, account_id, user_id) -> None:
+    """10 lệnh đã đọc + chấm đủ 5 lớp — đúng cổng duy nhất của Cấp 4.
 
     Cố tình KHÔNG dựng vũ khí/điểm mù: chúng không còn là điều kiện tốt
     nghiệp, và một helper dựng sẵn chúng sẽ che mất chính hồi quy đó.
     """
-    for i in range(20):
+    for i in range(10):
         await _round_trip_cap4(
             db_session, cap1, cap4, account_id, user_id,
-            symbol=f"AA{i}", doc_5_lop=_doc(), win=i < 10,
+            symbol=f"AA{i}", doc_5_lop=_doc(), win=i < 5,
         )
 
 
 @pytest.mark.asyncio
-async def test_nhiem_vu_needs_20_fully_rated_orders(db_session, test_user):
-    """★ Cổng DUY NHẤT của Cấp 4: 20 lệnh đọc + chấm đủ 5 lớp.
+async def test_nhiem_vu_needs_10_fully_rated_orders(db_session, test_user):
+    """★ Cổng DUY NHẤT của Cấp 4: 10 lệnh đọc + chấm đủ 5 lớp.
 
-    Một lệnh chấm thiếu lớp không được tính; 19 lệnh chưa xong; lệnh thứ 20
+    Một lệnh chấm thiếu lớp không được tính; 9 lệnh chưa xong; lệnh thứ 10
     mới đóng dấu.
     """
     cap1, cap4, account = await _enter_cap4(db_session, test_user.id)
@@ -650,23 +979,23 @@ async def test_nhiem_vu_needs_20_fully_rated_orders(db_session, test_user):
     assert progress.so_lenh_doc_du_5lop == 0
     assert progress.task_1_done_at is None
 
-    # 19 lệnh đủ 5 lớp → vẫn chưa xong (không có "gần đủ thì cho qua").
-    for i in range(19):
+    # 9 lệnh đủ 5 lớp → vẫn chưa xong (không có "gần đủ thì cho qua").
+    for i in range(9):
         await _round_trip_cap4(
             db_session, cap1, cap4, account.id, test_user.id,
             symbol=f"R{i}", doc_5_lop=_doc(), close=False,
         )
     progress = await cap4.get_progress(test_user.id)
-    assert progress.so_lenh_doc_du_5lop == 19
+    assert progress.so_lenh_doc_du_5lop == 9
     assert progress.task_1_done_at is None
 
-    # Lệnh thứ 20 → đóng dấu.
+    # Lệnh thứ 10 → đóng dấu.
     await _round_trip_cap4(
         db_session, cap1, cap4, account.id, test_user.id,
-        symbol="R19", doc_5_lop=_doc(), close=False,
+        symbol="R9", doc_5_lop=_doc(), close=False,
     )
     progress = await cap4.get_progress(test_user.id)
-    assert progress.so_lenh_doc_du_5lop == 20
+    assert progress.so_lenh_doc_du_5lop == 10
     assert progress.task_1_done_at is not None
 
     # Đã đóng dấu thì KHÔNG bao giờ gỡ ra (quy ước Cấp 1/2/3).
@@ -678,17 +1007,17 @@ async def test_nhiem_vu_needs_20_fully_rated_orders(db_session, test_user):
 @pytest.mark.asyncio
 async def test_nhiem_vu_does_not_need_ket_so_or_vu_khi(db_session, test_user):
     """★ HỒI QUY: hai nhiệm vụ cũ (Kết sổ lệnh đầu · Thách thức Thuần thục 3
-    điều kiện) đã bị GỠ — 20 lệnh MỞ, không lệnh nào đóng, không lớp nào tự
+    điều kiện) đã bị GỠ — 10 lệnh MỞ, không lệnh nào đóng, không lớp nào tự
     chấm Ủng hộ, vẫn đủ điều kiện tốt nghiệp."""
     cap1, cap4, account = await _enter_cap4(db_session, test_user.id)
-    for i in range(20):
+    for i in range(10):
         await _round_trip_cap4(
             db_session, cap1, cap4, account.id, test_user.id,
             symbol=f"OP{i}", doc_5_lop=_doc(), close=False,
         )
 
     progress = await cap4.get_progress(test_user.id)
-    assert progress.so_lenh_doc_du_5lop == 20
+    assert progress.so_lenh_doc_du_5lop == 10
     assert progress.task_1_done_at is not None
     # Chưa có lệnh đóng nào → chưa kết luận được vũ khí/điểm mù, và đó KHÔNG
     # phải lý do chặn tốt nghiệp nữa.
@@ -724,7 +1053,7 @@ async def test_mark_task_recomputes_only(db_session, test_user):
     progress = await cap4.mark_task(test_user.id, 1)
     assert progress.task_1_done_at is None
 
-    await _twenty_reads(db_session, cap1, cap4, account.id, test_user.id)
+    await _ten_reads(db_session, cap1, cap4, account.id, test_user.id)
     progress = await cap4.mark_task(test_user.id, 1)
     assert progress.task_1_done_at is not None
 
@@ -767,10 +1096,16 @@ async def test_khac_ai_is_neutral(db_session, test_user):
     await cap1.record_kehoach(
         test_user.id, other.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho", vung_mua=20_000,
     )
+    await _seed_ai_dataset(
+        db_session,
+        test_user.id,
+        symbol=other.symbol,
+        trading_date=other.trading_date,
+        ai_answers=same,
+    )
     kehoach = await cap4.record_kehoach(
         test_user.id, other.id,
         doc_5_lop=_doc(ky_thuat="bad", dong_tien="bad", noi_bo="bad", tin_tuc="bad"),
-        ai_5_lop=same,
     )
     assert kehoach.so_lop_khac_ai == 4  # neutral count, recorded
 
@@ -798,8 +1133,8 @@ async def test_graduate_requires_the_single_task(db_session, test_user):
     with pytest.raises(ConflictError):
         await cap4.graduate(test_user.id)
 
-    # 19 lệnh — vẫn chưa được.
-    for i in range(19):
+    # 9 lệnh — vẫn chưa được.
+    for i in range(9):
         await _round_trip_cap4(
             db_session, cap1, cap4, account.id, test_user.id,
             symbol=f"T{i}", doc_5_lop=_doc(), close=False,
@@ -809,7 +1144,7 @@ async def test_graduate_requires_the_single_task(db_session, test_user):
 
     await _round_trip_cap4(
         db_session, cap1, cap4, account.id, test_user.id,
-        symbol="T19", doc_5_lop=_doc(), close=False,
+        symbol="T9", doc_5_lop=_doc(), close=False,
     )
     progress = await cap4.get_progress(test_user.id)
     assert progress.task_1_done_at is not None
@@ -821,6 +1156,17 @@ async def test_graduate_requires_the_single_task(db_session, test_user):
     graduated_at_1 = progress.graduated_at
     progress2 = await cap4.graduate(test_user.id)
     assert progress2.graduated_at == graduated_at_1
+    graduate_events = list(
+        (
+            await db_session.scalars(
+                select(JourneyEvent).where(
+                    JourneyEvent.user_id == test_user.id,
+                    JourneyEvent.name == "cap4_graduate",
+                )
+            )
+        ).all()
+    )
+    assert len(graduate_events) == 1
 
 
 # ══════════════════════════════════════════════════════
@@ -868,6 +1214,14 @@ async def test_cap4_endpoints_wired_and_free(client, db_session, test_user):
     await cap1.record_kehoach(
         test_user.id, buy.id, ly_do="ky_thuat", trang_thai_luc_dat="ung_ho", vung_mua=20_000,
     )
+    ai = _doc(ky_thuat="ok", dong_tien="ok")
+    await _seed_ai_dataset(
+        db_session,
+        test_user.id,
+        symbol=buy.symbol,
+        trading_date=buy.trading_date,
+        ai_answers=ai,
+    )
     await db_session.commit()
 
     r = await client.post(
@@ -876,9 +1230,6 @@ async def test_cap4_endpoints_wired_and_free(client, db_session, test_user):
         json={
             "order_id": str(buy.id),
             "doc_5_lop": _doc(ky_thuat="ok", tin_tuc="bad"),
-            "ai_5_lop": _doc(ky_thuat="ok", dong_tien="ok"),
-            "so_lop_dong_thuan": 2,
-            "so_lop_khac_ai": 2,
         },
     )
     assert r.status_code == 200, r.text
@@ -887,6 +1238,18 @@ async def test_cap4_endpoints_wired_and_free(client, db_session, test_user):
     assert kehoach_body["ai_5_lop"]["dong_tien"] == "ok"
     assert kehoach_body["so_lop_dong_thuan"] == 2
     assert kehoach_body["so_lop_khac_ai"] == 2
+
+    # Derived fields are server-owned; clients cannot override them.
+    r = await client.post(
+        "/api/v1/cap4/kehoach",
+        headers=headers,
+        json={
+            "order_id": str(buy.id),
+            "doc_5_lop": _doc(ky_thuat="ok", tin_tuc="bad"),
+            "ai_5_lop": _doc(),
+        },
+    )
+    assert r.status_code == 422
 
     r = await client.patch("/api/v1/cap4/task", headers=headers, json={"task_no": 1})
     assert r.status_code == 200, r.text

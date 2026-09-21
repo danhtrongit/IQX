@@ -35,6 +35,8 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+// The provider and its consumer share this single context instance.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error("useAuth must be used within AuthProvider")
@@ -59,11 +61,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authModalTab, setAuthModalTab] = useState<"login" | "register" | "forgot">("login")
 
-  /** Invalidate every user-scoped query (premium, watchlist, …) on auth change. */
+  /** Remove previous-user evidence before another account can observe it. */
   const invalidateUserScoped = useCallback(() => {
     for (const key of userScopedKeys) {
-      queryClient.invalidateQueries({ queryKey: key })
+      void queryClient.cancelQueries({ queryKey: key })
+      queryClient.removeQueries({ queryKey: key })
     }
+    queryClient.getMutationCache().clear()
   }, [queryClient])
 
   // Cross-tab / interceptor-driven logout.

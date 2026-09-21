@@ -71,8 +71,10 @@ const NOTE = "text-xs text-[var(--color-text-3)]"
 const HINT = "text-[10px] leading-snug text-[var(--color-text-3)]"
 
 function fmtInt(n: number): string {
-  return Math.round(n).toLocaleString("en-US")
+  return Math.round(n).toLocaleString("vi-VN")
 }
+
+const VI_PERCENT = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 })
 
 /**
  * `64` → `"64%"` · `0` → `"0%"` · `null` → `"chưa đủ dữ liệu"`.
@@ -83,7 +85,7 @@ function fmtInt(n: number): string {
  * lệnh — nên KHÔNG có `?? 0` ở file này.
  */
 function pctHoacChuaDu(pct: number | null | undefined): string {
-  return pct == null ? "chưa đủ dữ liệu" : `${Math.round(pct)}%`
+  return pct == null ? "chưa đủ dữ liệu" : `${VI_PERCENT.format(pct)}%`
 }
 
 /** `%` vốn, `null` → câu riêng (KHÔNG vẽ thành 0%). */
@@ -163,7 +165,7 @@ export function Cap6PortfolioAnalysis({
                 phép hiện (spec §11: "CHỈ để hiển thị ở Kết sổ/Phân tích"). Nó
                 KHÔNG phải cổng, và câu ngay dưới nói thẳng điều đó. */}
             <p className="text-xs text-[var(--color-text-1)]" data-testid="cap6-pa-khoi1-lai">
-              {`Lãi/lỗ tổng của các lệnh đã đóng từ khi vào Cấp 6: ${pctHoacChuaDu(
+              {`Lãi/lỗ tổng của các lệnh có mâu thuẫn đã đóng ở Cấp 6: ${pctHoacChuaDu(
                 cap6Progress.tong_lai_lenh_cap6_pct,
               )}.`}
             </p>

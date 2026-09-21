@@ -4,16 +4,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 /** Trạng thái hook `useVuKhiDiemMu` — khối ⑨ đọc THẲNG từ server, nên test
  * điều khiển đúng 3 trạng thái query (pending / error / có dữ liệu). */
-const { vuKhi } = vi.hoisted(() => ({
+const { vuKhi, phanTich } = vi.hoisted(() => ({
   vuKhi: { current: {} as Record<string, unknown> },
+  phanTich: { current: {} as Record<string, unknown> },
 }))
 vi.mock("./hooks", () => ({
   useVuKhiDiemMu: () => vuKhi.current,
+  usePhanTichCap4: () => phanTich.current,
 }))
 
 import { Cap4PortfolioAnalysis } from "./Cap4PortfolioAnalysis"
 import type { Cap4TradeRecord } from "./tradeLogCap4"
-import type { Cap4Progress, LopWinRate, VuKhiDiemMuCap4 } from "./types"
+import type { Cap4Progress, LopWinRate, PhanTichCap4, VuKhiDiemMuCap4 } from "./types"
 import type { Cap2DailyScoreRecord } from "@/features/cap2/portfolioAnalysisCap2"
 import type { Cap2Progress } from "@/features/cap2/types"
 import type { Cap3Progress } from "@/features/cap3/types"
@@ -141,6 +143,33 @@ function vuKhiData(overrides: Partial<VuKhiDiemMuCap4> = {}): VuKhiDiemMuCap4 {
   }
 }
 
+function phanTichData(overrides: Partial<PhanTichCap4> = {}): PhanTichCap4 {
+  return {
+    khoi_10: {
+      rows: [
+        { band: "cao", label: "4-5 lớp ủng hộ", count: 4, wins: 4, win_rate: 100, insufficient: false },
+        { band: "vua", label: "2-3 lớp ủng hộ", count: 4, wins: 2, win_rate: 50, insufficient: false },
+        { band: "thap", label: "0-1 lớp ủng hộ", count: 4, wins: 1, win_rate: 25, insufficient: false },
+      ],
+      total_trades: 12,
+      excluded_no_ai: 0,
+      hieu_qua: true,
+      phat_hien: "Đọc toàn cảnh có hiệu quả — ưu tiên lệnh có nhiều lớp cùng ủng hộ.",
+      insufficient_note: null,
+      giai_thich: "Độ đồng thuận = số lớp AI đánh giá Ủng hộ lúc bạn đặt lệnh.",
+    },
+    khoi_11: {
+      so_lan_khac_ai: 12,
+      so_lan_ban_dung: 7,
+      so_lan_ai_dung: 5,
+      phat_hien: "Trực giác riêng của bạn đang có cơ sở.",
+      insufficient_note: null,
+      giai_thich: "Đếm theo lệnh đã đóng có đối chiếu AI.",
+    },
+    ...overrides,
+  }
+}
+
 function cap2Progress(): Cap2Progress {
   return {
     id: "c2p",
@@ -194,6 +223,7 @@ function cap4Progress(overrides: Partial<Cap4Progress> = {}): Cap4Progress {
 
 beforeEach(() => {
   vuKhi.current = { data: vuKhiData(), isPending: false, isError: false }
+  phanTich.current = { data: phanTichData(), isPending: false, isError: false }
 })
 
 function renderPage(
@@ -222,11 +252,11 @@ describe("Cap4PortfolioAnalysis — giữ mọi khối Cấp 1-3 (cộng dồn)"
     expect(screen.getByTestId("cap2-pa-khoi2")).toBeInTheDocument()
     expect(screen.getByTestId("cap2-pa-khoi3")).toBeInTheDocument()
     expect(screen.getByTestId("cap2-pa-khoi4")).toBeInTheDocument()
-    // ★ Cấp 2 mô hình 2 nhiệm vụ chỉ còn 4 khối — «Điểm kỷ luật 30 ngày»,
-    // «Phân loại vi phạm theo tuần» và «Phát hiện từ ghi chú» đã bỏ hẳn.
-    expect(screen.queryByTestId("cap2-pa-khoi5")).not.toBeInTheDocument()
-    expect(screen.queryByTestId("cap2-pa-khoi6")).not.toBeInTheDocument()
-    expect(screen.queryByTestId("cap2-pa-khoi7")).not.toBeInTheDocument()
+    // Phân tích Cấp 4 kế thừa toàn bộ công cụ học Cấp 2, kể cả ba khối không
+    // còn là nhiệm vụ tốt nghiệp: điểm 30 ngày, vi phạm tuần và ghi chú.
+    expect(screen.getByTestId("cap2-pa-khoi5")).toBeInTheDocument()
+    expect(screen.getByTestId("cap2-pa-khoi6")).toBeInTheDocument()
+    expect(screen.getByTestId("cap2-pa-khoi7")).toBeInTheDocument()
     expect(screen.getByTestId("cap3-pa-khoi1")).toBeInTheDocument()
     expect(screen.getByTestId("cap3-pa-khoi5")).toBeInTheDocument()
     expect(screen.getByTestId("cap3-pa-khoi6")).toBeInTheDocument()
@@ -351,6 +381,17 @@ describe("Cap4PortfolioAnalysis — ⑩ đọc toàn cảnh có giúp chọn l�
   })
 
   it("thiếu dữ liệu → ghi chú thay vì kết luận", () => {
+    phanTich.current = {
+      data: phanTichData({
+        khoi_10: {
+          ...phanTichData().khoi_10,
+          phat_hien: null,
+          insufficient_note: "Cần ít nhất 3 lệnh ở cả hai nhóm để so sánh.",
+        },
+      }),
+      isPending: false,
+      isError: false,
+    }
     renderPage(tradesForBand(5, 4, 3))
     const khoi10 = within(screen.getByTestId("cap4-pa-khoi10"))
     expect(khoi10.queryByTestId("cap4-pa-khoi10-phathien")).not.toBeInTheDocument()
@@ -358,6 +399,13 @@ describe("Cap4PortfolioAnalysis — ⑩ đọc toàn cảnh có giúp chọn l�
   })
 
   it("có lệnh chưa lộ AI → nói rõ đã loại bao nhiêu lệnh khỏi bảng", () => {
+    phanTich.current = {
+      data: phanTichData({
+        khoi_10: { ...phanTichData().khoi_10, excluded_no_ai: 1 },
+      }),
+      isPending: false,
+      isError: false,
+    }
     renderPage([
       ...tradesForBand(5, 3, 3),
       trade({ so_lop_dong_thuan: null, ai_5_lop: null, so_lop_khac_ai: null }),
@@ -386,15 +434,49 @@ describe("Cap4PortfolioAnalysis — ⑪ góc nhìn riêng của bạn", () => {
   })
 
   it("AI đúng nhiều hơn → nhắc thẳng, không xu nịnh", () => {
+    phanTich.current = {
+      data: phanTichData({
+        khoi_11: {
+          ...phanTichData().khoi_11,
+          so_lan_ban_dung: 3,
+          so_lan_ai_dung: 9,
+          phat_hien: "Khi bạn đọc khác AI, phần lớn AI đúng.",
+        },
+      }),
+      isPending: false,
+      isError: false,
+    }
     renderPage(tradesKhacAi(12, 3))
     const khoi11 = within(screen.getByTestId("cap4-pa-khoi11"))
     expect(khoi11.getByTestId("cap4-pa-khoi11-phathien").textContent).toMatch(/phần lớn AI đúng/)
   })
 
   it("chưa đủ lệnh khác AI → ghi chú, không phát hiện", () => {
+    phanTich.current = {
+      data: phanTichData({
+        khoi_11: {
+          ...phanTichData().khoi_11,
+          so_lan_khac_ai: 2,
+          so_lan_ban_dung: 2,
+          so_lan_ai_dung: 0,
+          phat_hien: null,
+          insufficient_note: "Cần ít nhất 5 lệnh bạn đọc khác AI.",
+        },
+      }),
+      isPending: false,
+      isError: false,
+    }
     renderPage(tradesKhacAi(2, 2))
     const khoi11 = within(screen.getByTestId("cap4-pa-khoi11"))
     expect(khoi11.queryByTestId("cap4-pa-khoi11-phathien")).not.toBeInTheDocument()
     expect(khoi11.getByTestId("cap4-pa-khoi11-note").textContent).toMatch(/Cần ít nhất 5 lệnh/)
+  })
+
+  it("lỗi endpoint → nói rõ chưa lấy được dữ liệu thay vì dùng localStorage", () => {
+    phanTich.current = { data: undefined, isPending: false, isError: true }
+    renderPage(tradesKhacAi(12, 7))
+    expect(screen.getByTestId("cap4-pa-khoi10-note")).toHaveTextContent("Chưa lấy được")
+    expect(screen.getByTestId("cap4-pa-khoi11-note")).toHaveTextContent("Chưa lấy được")
+    expect(screen.queryByTestId("cap4-pa-khoi11-khacai")).not.toBeInTheDocument()
   })
 })

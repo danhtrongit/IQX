@@ -21,6 +21,7 @@ from app.api.v1.endpoints import (
     alerts,
     auth,
     backtest,
+    bot,
     cap0,
     cap1,
     cap2,
@@ -32,6 +33,8 @@ from app.api.v1.endpoints import (
     cap8,
     chart_drawings,
     health,
+    journey_events,
+    journey_identity,
     lessons,
     market_analysis,
     market_data,
@@ -48,6 +51,8 @@ from app.api.v1.endpoints import (
 api_v1_router = APIRouter(prefix="/api/v1")
 
 api_v1_router.include_router(health.router)
+api_v1_router.include_router(journey_identity.router)
+api_v1_router.include_router(journey_events.router)
 api_v1_router.include_router(auth.router)
 api_v1_router.include_router(users.router)
 api_v1_router.include_router(premium.router)
@@ -62,6 +67,7 @@ api_v1_router.include_router(ai_forecast.router)
 api_v1_router.include_router(watchlist.router)
 api_v1_router.include_router(chart_drawings.router)
 api_v1_router.include_router(backtest.router)
+api_v1_router.include_router(bot.router)
 api_v1_router.include_router(alerts.router)
 api_v1_router.include_router(admin_alerts.router)
 api_v1_router.include_router(telegram.router)
@@ -85,4 +91,3 @@ api_v1_router.include_router(cap5.router)
 api_v1_router.include_router(cap6.router)
 api_v1_router.include_router(cap7.router)
 api_v1_router.include_router(cap8.router)
-

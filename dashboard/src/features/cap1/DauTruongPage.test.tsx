@@ -8,6 +8,7 @@ import type { Cap3Progress } from "@/features/cap3/types"
 const {
   useAuthMock,
   useCap0ProgressMock,
+  usePlacementStatusMock,
   useCap1ProgressMock,
   useCap2ProgressMock,
   useCap3ProgressMock,
@@ -27,6 +28,7 @@ const {
 } = vi.hoisted(() => ({
   useAuthMock: vi.fn(),
   useCap0ProgressMock: vi.fn(),
+  usePlacementStatusMock: vi.fn(),
   useCap1ProgressMock: vi.fn(),
   useCap2ProgressMock: vi.fn(),
   useCap3ProgressMock: vi.fn(),
@@ -50,6 +52,7 @@ vi.mock("@/features/auth", () => ({ useAuth: () => useAuthMock() }))
 vi.mock("@/features/cap0", () => ({
   Cap0TradingPage: () => <div data-testid="cap0-page" />,
   useCap0Progress: (...a: unknown[]) => useCap0ProgressMock(...a),
+  usePlacementStatus: (...a: unknown[]) => usePlacementStatusMock(...a),
 }))
 
 vi.mock("./hooks", () => ({
@@ -340,6 +343,7 @@ describe("DauTruongPage — progression routing (Task FE3 + FE4 + Cấp 3/4/5/6/
   beforeEach(() => {
     useAuthMock.mockReset()
     useCap0ProgressMock.mockReset()
+    usePlacementStatusMock.mockReset().mockReturnValue({ data: null, isFetched: true })
     useCap1ProgressMock.mockReset()
     useCap2ProgressMock.mockReset()
     useCap2ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
@@ -996,4 +1000,64 @@ describe("DauTruongPage — progression routing (Task FE3 + FE4 + Cấp 3/4/5/6/
     })
     })
   })
+
+  it("routes placement into Cấp 1 without fabricating Cấp 0 graduation", () => {
+    useAuthMock.mockReturnValue({ isAuthenticated: true, isLoading: false })
+    useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
+    usePlacementStatusMock.mockReturnValue({ data: { placed_level: 1 }, isFetched: true })
+    useCap1ProgressMock.mockReturnValue({ data: null, isFetched: true })
+    render(<DauTruongPage />)
+    expect(screen.getByTestId("cap1-page")).toBeInTheDocument()
+    expect(screen.queryByTestId("cap0-page")).not.toBeInTheDocument()
+    expect(enterCap1Mutate).toHaveBeenCalledTimes(1)
+    expect(enterCap2Mutate).not.toHaveBeenCalled()
+  })
+
+  it("routes experienced placement directly into Cấp 2", () => {
+    useAuthMock.mockReturnValue({ isAuthenticated: true, isLoading: false })
+    useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
+    usePlacementStatusMock.mockReturnValue({ data: { placed_level: 2 }, isFetched: true })
+    useCap1ProgressMock.mockReturnValue({ data: null, isFetched: true })
+    useCap2ProgressMock.mockReturnValue({ data: null, isFetched: true })
+    render(<DauTruongPage />)
+    expect(screen.getByTestId("cap2-page")).toBeInTheDocument()
+    expect(enterCap1Mutate).not.toHaveBeenCalled()
+    expect(enterCap2Mutate).toHaveBeenCalledTimes(1)
+  })
+
+  it("waits for server placement instead of flashing Cấp 0", () => {
+    useAuthMock.mockReturnValue({ isAuthenticated: true, isLoading: false })
+    useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
+    usePlacementStatusMock.mockReturnValue({ data: undefined, isFetched: false })
+    useCap1ProgressMock.mockReturnValue({ data: null, isFetched: false })
+    render(<DauTruongPage />)
+    expect(screen.queryByTestId("cap0-page")).not.toBeInTheDocument()
+    expect(enterCap1Mutate).not.toHaveBeenCalled()
+  })
+
+  it("shows a retry on placement failure without demoting or entering a level", () => {
+    const refetch = vi.fn()
+    useAuthMock.mockReturnValue({ isAuthenticated: true, isLoading: false })
+    useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
+    usePlacementStatusMock.mockReturnValue({ data: undefined, isFetched: true, isError: true, refetch })
+    useCap1ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
+    render(<DauTruongPage />)
+    expect(screen.getByRole("alert")).toHaveTextContent("Chưa tải được tiến trình")
+    expect(screen.queryByTestId("cap0-page")).not.toBeInTheDocument()
+    expect(enterCap1Mutate).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole("button", { name: "Thử lại" }))
+    expect(refetch).toHaveBeenCalledOnce()
+  })
+
+  it("does not enter a level when its progress request failed", () => {
+    useAuthMock.mockReturnValue({ isAuthenticated: true, isLoading: false })
+    useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
+    usePlacementStatusMock.mockReturnValue({ data: { placed_level: 1 }, isFetched: true })
+    useCap1ProgressMock.mockReturnValue({ data: undefined, isFetched: true, isError: true, refetch: vi.fn() })
+    render(<DauTruongPage />)
+    expect(screen.getByRole("alert")).toBeInTheDocument()
+    expect(screen.queryByTestId("cap1-page")).not.toBeInTheDocument()
+    expect(enterCap1Mutate).not.toHaveBeenCalled()
+  })
+
 })

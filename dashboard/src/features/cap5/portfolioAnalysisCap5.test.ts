@@ -218,7 +218,10 @@ describe("khối ⑫ — bộ lọc nào mang lại mã thắng nhiều nhất (
 
   it("bộ lọc kém nhất dưới ngưỡng ⇒ phát hiện là CẢNH BÁO kèm lý do riêng của nó", () => {
     const r = viewCap5Khoi12BoLoc(
-      khoi12([khoi12Item("ngoai", 4, 3), khoi12Item("kl", 4, 1)]),
+      khoi12([
+        khoi12Item("ngoai", 4, 3, { nhan: "hợp với bạn nhất" }),
+        khoi12Item("kl", 4, 1, { canh_bao: "khối lượng đột biến dễ là sóng ngắn" }),
+      ]),
       "co_du_lieu",
     )
     expect(r.canhBao).toBe(true)
@@ -237,6 +240,29 @@ describe("khối ⑫ — bộ lọc nào mang lại mã thắng nhiều nhất (
     )
     expect(r.phatHien).toContain("bộ lọc này hay bắt đúng phiên phân phối")
     expect(r.phatHien).not.toContain("sóng ngắn")
+  })
+
+  it("★ best 33% vẫn dùng nhãn SERVER; không áp ngưỡng 60% do FE tự đặt", () => {
+    const r = viewCap5Khoi12BoLoc(
+      khoi12([khoi12Item("dinh", 3, 1, { nhan: "hợp với bạn nhất" })], {
+        best_filter: "dinh",
+      }),
+      "co_du_lieu",
+    )
+    expect(r.phatHien).toContain("hợp với bạn nhất")
+    expect(r.phatHien).not.toContain("chưa bộ lọc nào thắng quá")
+  })
+
+  it("★ cảnh báo server ở worst 50% vẫn hiện; không áp ngưỡng 45% do FE tự đặt", () => {
+    const r = viewCap5Khoi12BoLoc(
+      khoi12([
+        khoi12Item("ngoai", 4, 3, { nhan: "hợp với bạn nhất" }),
+        khoi12Item("kl", 4, 2, { canh_bao: "CẢNH BÁO TỪ MÁY CHỦ" }),
+      ], { best_filter: "ngoai" }),
+      "co_du_lieu",
+    )
+    expect(r.canhBao).toBe(true)
+    expect(r.phatHien).toContain("CẢNH BÁO TỪ MÁY CHỦ")
   })
 
   it("server nói 0% (đã đủ mẫu) ⇒ in 0% thật, không đổi thành «—»", () => {
@@ -322,7 +348,18 @@ describe("computeCap5PortfolioAnalysis — cộng dồn", () => {
       cap4,
       progress({ so_ma_da_san: 12, so_ma_mua_tu_watchlist: 5, best_filter: "ngoai" }),
       NOW,
-      phanTich(khoi12([khoi12Item("ngoai", 4, 3)])),
+      {
+        ...phanTich(khoi12([khoi12Item("ngoai", 4, 3)])),
+        khoi_13: {
+          so_ma_da_san: 12,
+          so_ma_cho_du_lop: 7,
+          so_ma_da_cham_diem: 12,
+          so_ma_cho_du_lop_day_du: true,
+          so_ma_vao_lenh: 5,
+          giai_thich: "Dữ liệu authoritative.",
+          loi_ket: "Câu kết authoritative.",
+        },
+      },
     )
     // khối cộng dồn của Cấp 1-4 vẫn có mặt
     expect(r).toHaveProperty("khoi10DongThuan")
@@ -428,10 +465,9 @@ describe("tangGiuaCap5 — ba trạng thái, không phải hai", () => {
     expect(tg.trangThai).toBe("day_du")
   })
 
-  it("★ phễu KHÔNG còn nói mã «từng lên» ≥4/5 lớp (hệ không lưu lược sử)", () => {
+  it("★ phễu nói mã «từng lên» ≥4/5 lớp vì server giữ lịch sử notable", () => {
     const r = computeCap5Khoi13Pheu(progress({ so_ma_da_san: 34, so_ma_cho_du_lop: 19 }))
-    expect(r.giaiThich).not.toMatch(/từng lên/)
-    expect(r.giaiThich).toMatch(/ĐANG ở mức/)
-    expect(r.tang[1].label).not.toMatch(/Chờ đến khi/)
+    expect(r.giaiThich).toMatch(/từng đạt/)
+    expect(r.tang[1].label).toMatch(/Từng lên/)
   })
 })

@@ -20,12 +20,14 @@ vi.mock("@/features/auth", () => ({ useAuth: () => ({ isAuthenticated: true }) }
 
 import {
   useCap3Progress,
+  useCap3TradeAnalysis,
   useEnterCap3,
   useSetKhauVi,
   useCompleteCap3Task,
   useRecordKehoachCap3,
   useGraduateCap3,
 } from "./hooks"
+import { cap3Api } from "./api"
 
 function jsonRes(data: unknown) {
   return { json: () => Promise.resolve(data) }
@@ -51,6 +53,26 @@ describe("useCap3Progress", () => {
     }
     withClient(<Harness />)
     await waitFor(() => expect(get).toHaveBeenCalledWith("cap3/progress"))
+  })
+})
+
+describe("useCap3TradeAnalysis", () => {
+  it("GETs cap3/trades/analysis", async () => {
+    get.mockReturnValue(jsonRes({ trades: [], total: 0, by_confidence: [] }))
+    function Harness() {
+      useCap3TradeAnalysis()
+      return null
+    }
+    withClient(<Harness />)
+    await waitFor(() => expect(get).toHaveBeenCalledWith("cap3/trades/analysis"))
+  })
+})
+
+describe("cap3Api.getPlan", () => {
+  it("GETs the matched BUY commitment by id", async () => {
+    get.mockReturnValue(jsonRes({ order_id: "buy-1" }))
+    await cap3Api.getPlan("buy-1")
+    expect(get).toHaveBeenCalledWith("cap3/plans/buy-1")
   })
 })
 

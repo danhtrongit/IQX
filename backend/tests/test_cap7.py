@@ -73,7 +73,7 @@ async def add_account(db_session, user) -> VirtualTradingAccount:
 async def test_enter_requires_cap6_graduation(db_session, test_user) -> None:
     db_session.add(Cap6Progress(user_id=test_user.id, entered_at=datetime.now(UTC)))
     await db_session.flush()
-    with pytest.raises(ConflictError, match="Chưa tốt nghiệp Cấp 6"):
+    with pytest.raises(ConflictError, match="kết thúc tại Cấp 6"):
         await Cap7Service(db_session).enter(test_user.id)
 
 

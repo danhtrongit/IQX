@@ -6,8 +6,7 @@ import { PlacementModal, type PlacementAnswer } from "./PlacementModal"
 
 /**
  * Câu hỏi xếp lớp §3 (spec v3.0) — 3 lựa chọn thay cho 2 nút cũ, và bài quiz
- * 5 phút đã bị bỏ. Trần xếp lớp bị KẸP xuống Cấp 1 trong lúc Cấp 2-8 tạm tắt,
- * nên copy TUYỆT ĐỐI không được hứa một Cấp 2 mà user không tới được.
+ * 5 phút đã bị bỏ. Hai nhánh có kinh nghiệm đi thẳng Cấp 1/Cấp 2 sau ba tour.
  */
 describe("PlacementModal — câu hỏi xếp lớp §3 (v3.0)", () => {
   const onChoose = vi.fn()
@@ -47,26 +46,25 @@ describe("PlacementModal — câu hỏi xếp lớp §3 (v3.0)", () => {
     expect(screen.queryByText("Chưa từng")).not.toBeInTheDocument()
   })
 
-  // ★★ Trần = Cấp 1. Không được vẽ ra một Cấp 2 chưa mở.
-  it("★ the third option's copy NEVER claims a Cấp 2 the user cannot reach", () => {
+  it("names the exact direct placement for the regular branch", () => {
     renderModal()
-    expect(screen.getByTestId("cap0-placement-regular")).not.toHaveTextContent(/Cấp\s*2/)
+    expect(screen.getByTestId("cap0-placement-regular")).toHaveTextContent(/Cấp 2 «Kỷ luật»/)
   })
 
-  it("★ no option anywhere in the modal promises Cấp 2 (or higher)", () => {
+  it("does not place anyone above Cấp 2", () => {
     renderModal()
     // Arco portals the Modal out of RTL's `container`, so read the real
     // rendered options node — `container.textContent` here would be empty and
     // the assertion vacuous.
     const opts = document.querySelector(".cap0-placement-opts")
     expect(opts).not.toBeNull()
-    expect(opts?.textContent ?? "").not.toMatch(/Cấp\s*[2-8]/)
+    expect(opts?.textContent ?? "").not.toMatch(/Cấp\s*[3-8]/)
   })
 
-  it("★ names Cấp 1 «Học việc» as the ceiling on both «đã từng giao dịch» options", () => {
+  it("names Cấp 1 for unsure and Cấp 2 for regular", () => {
     renderModal()
     expect(screen.getByTestId("cap0-placement-unsure")).toHaveTextContent(/Cấp 1 «Học việc»/)
-    expect(screen.getByTestId("cap0-placement-regular")).toHaveTextContent(/Cấp 1 «Học việc»/)
+    expect(screen.getByTestId("cap0-placement-regular")).toHaveTextContent(/Cấp 2 «Kỷ luật»/)
   })
 
   it("★ routes each of the three options to the level it names", () => {

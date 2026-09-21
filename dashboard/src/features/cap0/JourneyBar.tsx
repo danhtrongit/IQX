@@ -9,17 +9,20 @@ import { countTasksDone, type Cap0Progress } from "./types"
  * Journey-bar centre copy per progress — mockup `.jbar .nx`
  * «Tiếp: Bán một lệnh, kết sổ đầu tiên».
  *
- * ★ MỘT nhánh duy nhất cho mọi tiến độ đang chạy: nó gọi tên đúng nhiệm vụ mà
- * tab Hành trình đang dẫn (`focusTaskNo` — cùng một phép chọn, cùng một
- * module). Các nhánh cũ nói "Chặng 1 «Vào sân»" / "Tiếp: Chặng 2 — tour sản
- * phẩm IQX"; không còn chặng nào, cũng không còn tour nào, nên chúng chỉ có thể
- * nói sai.
+ * Mỗi nhánh gọi tên đúng chặng hoặc nhiệm vụ mà tab Hành trình đang dẫn.
  */
 function nextTaskCopy(progress: Cap0Progress | null | undefined) {
+  const tasksDone = countTasksDone(progress)
   const focus = focusTaskNo(progress)
-  // Hết nhiệm vụ mở = xong cả 4 (① chưa xong thì ① luôn active).
   if (focus == null) {
     return "🎓 Hoàn thành Cấp 0!"
+  }
+  if (tasksDone === 0) {
+    return (
+      <>
+        <b>Lệnh đầu tiên của bạn</b>
+      </>
+    )
   }
   return (
     <>

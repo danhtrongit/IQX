@@ -41,7 +41,12 @@ import { huntFilterLabel, type HuntFilterKey } from "./sanMaTypes"
  * khẳng định một kết luận ("không đủ 4 lớp") mà dữ liệu chưa hề nói — đúng lớp
  * lỗi luật 1. Backend cũng để `status = NULL` ở đúng vùng này.
  */
-export type Cap5WatchStatus = "chua_cham" | "chua_ket_luan" | "watching" | "notable"
+export type Cap5WatchStatus =
+  | "chua_cham"
+  | "chua_ket_luan"
+  | "du_lieu_cu"
+  | "watching"
+  | "notable"
 
 /**
  * Một lớp trong cụm chấm 5 lớp do máy chủ gửi (`ConsensusResult.lop` của
@@ -103,6 +108,16 @@ export interface Cap5WatchlistItem {
   consensus_prev: number | null
   /** Thời điểm chấm gần nhất (batch 1 lần/ngày sau phiên — spec §6.1/§10). */
   consensus_at?: string | null
+  /** Phiên của bản phân tích 5 lớp đã dùng để tạo điểm đang hiện. */
+  consensus_session_date?: string | null
+  /** Phiên gần nhất bị loại vì đã nằm ngoài cửa sổ hiệu lực. */
+  consensus_session_date_qua_han?: string | null
+  /** Điểm đang lưu không còn bản phân tích đủ mới để xác nhận. */
+  consensus_het_han?: boolean
+  /** Số phiên mà một bản phân tích còn được dùng để chấm Watchlist. */
+  so_phien_hieu_luc?: number
+  tong_so_lop?: number
+  nguong_dang_chu_y?: number
   /**
    * `status` của server ('watching'/'notable'/NULL). ADVISORY — hiển thị dùng
    * `cap5WatchStatus()` dẫn xuất từ `consensus_today` để chỉ có MỘT nguồn sự
@@ -128,6 +143,9 @@ export interface Cap5WatchlistItem {
 export function cap5WatchStatus(item: Cap5WatchlistItem): Cap5WatchStatus {
   const diem = item.consensus_today
   if (diem == null) return "chua_cham"
+  // Một điểm đã hết hạn là dữ liệu lịch sử, không còn đủ căn cứ để gọi mã là
+  // “Đáng chú ý” ở hiện tại, kể cả con số đã lưu từng đạt 4/5.
+  if (item.consensus_het_han === true) return "du_lieu_cu"
   // ≥4 lớp ĐÃ xác nhận là một kết luận chắc chắn — lớp chưa chấm không lấy lại
   // được điểm đã có.
   if (diem >= NOTABLE_MIN_LOP) return "notable"
@@ -143,8 +161,36 @@ export function cap5WatchStatus(item: Cap5WatchlistItem): Cap5WatchStatus {
 export const CAP5_WATCH_STATUS_LABEL: Record<Cap5WatchStatus, string> = {
   chua_cham: "Chưa chấm 5 lớp",
   chua_ket_luan: "Chưa kết luận",
+  du_lieu_cu: "Điểm đã cũ",
   watching: "Đang quan sát",
   notable: "★ Đáng chú ý",
+}
+
+function formatSessionDate(raw: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw)
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : raw
+}
+
+/**
+ * Nêu rõ phiên dữ liệu đứng sau điểm đồng thuận. Backend đọc lại AI Insight đã
+ * lưu, nên “4/5” có thể thuộc một phiên cũ chứ không phải tình trạng hôm nay.
+ */
+export function describeConsensusFreshness(item: Cap5WatchlistItem): string | null {
+  const hieuLuc = item.so_phien_hieu_luc
+  const cuaSo = hieuLuc != null ? ` trong ${hieuLuc.toLocaleString("vi-VN")} phiên gần nhất` : " đủ mới"
+
+  if (item.consensus_het_han === true) {
+    return `Điểm ${describeConsensus(item).text} đã cũ — chưa có bản phân tích mới${cuaSo}.`
+  }
+  if (item.consensus_session_date) {
+    return `Điểm đồng thuận từ phiên ${formatSessionDate(item.consensus_session_date)}.`
+  }
+  if (item.consensus_today == null && item.consensus_session_date_qua_han) {
+    return `Bản phân tích gần nhất từ phiên ${formatSessionDate(
+      item.consensus_session_date_qua_han,
+    )} đã quá cũ — chưa có bản mới${cuaSo}.`
+  }
+  return null
 }
 
 /** Đếm số lớp CHƯA có dữ liệu (thiếu key hoặc `null`). `null` = chưa chấm gì. */
@@ -185,10 +231,10 @@ export function describeConsensus(item: Cap5WatchlistItem): {
   }
   const chuaRo = soLopChuaRo(item)
   return {
-    text: `${item.consensus_today.toLocaleString("en-US")}/${TONG_SO_LOP}`,
+    text: `${item.consensus_today.toLocaleString("vi-VN")}/${TONG_SO_LOP}`,
     canhBao:
       chuaRo != null && chuaRo > 0
-        ? `${chuaRo.toLocaleString("en-US")} lớp chưa có dữ liệu — chưa chấm đủ 5 lớp`
+        ? `${chuaRo.toLocaleString("vi-VN")} lớp chưa có dữ liệu — chưa chấm đủ 5 lớp`
         : null,
   }
 }
@@ -228,7 +274,7 @@ export function describeHuntSource(item: Cap5WatchlistItem): string {
   const ten = item.hunt_filter == null ? null : (item.hunt_filter_ten ?? huntFilterLabel(item.hunt_filter))
   const nguon = ten ? `Săn từ ${ten}` : "Thêm tay — không qua bộ lọc săn"
   if (item.so_phien_tu_khi_san != null) {
-    return `${nguon} · ${item.so_phien_tu_khi_san.toLocaleString("en-US")} phiên trước`
+    return `${nguon} · ${item.so_phien_tu_khi_san.toLocaleString("vi-VN")} phiên trước`
   }
   const raw = item.hunt_at ?? item.added_at ?? null
   const d = raw ? new Date(raw) : null

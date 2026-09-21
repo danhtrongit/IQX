@@ -8,8 +8,7 @@ import type { Cap4Progress } from "@/features/cap4/types"
 import { useCap5PhanTich } from "./hooks"
 import {
   computeCap5Khoi13Pheu,
-  KHOI12_KEM_PCT,
-  KHOI12_TOT_PCT,
+  khoi13SourceFromApi,
   nhanTangGiua,
   viewCap5Khoi12BoLoc,
   type Cap5Khoi12BoLoc,
@@ -44,13 +43,11 @@ import "./cap5-analysis.css"
  * ★★ **HAI KHỐI CŨ ĐÃ NGHỈ HƯU** (⑫ ma trận 4 ô đọc từ nhật ký, ⑬ nhật ký đứng
  * ngoài đọc từ `GET /cap5/dung-ngoai`). Thay bằng ĐÚNG 2 khối của spec mới:
  *
- *  - **⑫ Bộ lọc nào ra mã thắng nhiều nhất** — tính từ nhật ký client
- *    (`tradeLogCap5.ts`, mỗi lệnh mang `huntFilter` của chính nó). Ngưỡng mẫu
- *    `KHOI12_MIN_LENH` là CỨNG: dưới ngưỡng thì ô tỷ lệ để "—" chứ không suy ra
- *    100% từ một lệnh thắng, và cả khối không rút ra kết luận nào.
- *  - **⑬ Kỷ luật săn mã (phễu)** — đọc THẲNG 3 con số của `GET /cap5/progress`
- *    (authoritative, có backfill, và đúng bằng con số nuôi 2 nhiệm vụ). Tầng
- *    giữa NULL-able: chưa có mẻ chấm 5 lớp thì in "—", không phải 0.
+ *  - **⑫ Bộ lọc nào ra mã thắng nhiều nhất** — đọc từ `GET /cap5/phan-tich`;
+ *    chỉ hiện bộ lọc có ít nhất 3 lệnh đã đóng.
+ *  - **⑬ Kỷ luật săn mã (phễu)** — ưu tiên payload authoritative cùng endpoint,
+ *    gồm lịch sử mã từng đạt ngưỡng đồng thuận. Tầng giữa NULL-able: chưa có mẻ
+ *    chấm 5 lớp thì in "—", không phải 0.
  *
  * Ở tầng compute, component chỉ gọi 2 hàm khối thay vì
  * `computeCap5PortfolioAnalysis`: `Cap4PortfolioAnalysis` đã tự tính các khối kế
@@ -92,7 +89,7 @@ const NOTE = "text-xs text-[var(--color-text-3)]"
 const HINT = "text-[10px] leading-snug text-[var(--color-text-3)]"
 
 function fmtInt(n: number): string {
-  return Math.round(n).toLocaleString("en-US")
+  return Math.round(n).toLocaleString("vi-VN")
 }
 
 /** "—" cho MỌI giá trị chưa biết. Một chỗ duy nhất để không cấp nào in "0" thay. */
@@ -103,8 +100,8 @@ function fmtNullableInt(n: number | null): string {
 /** Nhóm màu thanh của một bộ lọc — chỉ áp cho dòng ĐÃ đủ mẫu. */
 function barTone(row: Khoi12FilterRow): string {
   if (!row.duMau || row.tyLeThang == null) return ""
-  if (row.tyLeThang >= KHOI12_TOT_PCT) return "cap5-pa-flt-bar--tot"
-  if (row.tyLeThang < KHOI12_KEM_PCT) return "cap5-pa-flt-bar--kem"
+  if (row.canhBaoRieng) return "cap5-pa-flt-bar--kem"
+  if (row.nhan) return "cap5-pa-flt-bar--tot"
   return "cap5-pa-flt-bar--vua"
 }
 
@@ -154,7 +151,12 @@ export function Cap5PortfolioAnalysis({
         ? "dang_tai"
         : "co_du_lieu",
   )
-  const khoi13 = computeCap5Khoi13Pheu(cap5Progress ?? null)
+  const khoi13 = computeCap5Khoi13Pheu(
+    phanTichQuery.data?.khoi_13
+      ? khoi13SourceFromApi(phanTichQuery.data.khoi_13, cap5Progress)
+      : cap5Progress,
+  )
+  const visibleKhoi12Rows = khoi12.rows.filter((row) => row.duMau)
   const bestFilterTen = huntFilterTen(cap5Progress?.best_filter ?? null)
 
   return (
@@ -222,9 +224,9 @@ export function Cap5PortfolioAnalysis({
             "quả thật."}
         </p>
 
-        {khoi12.rows.length > 0 && (
+        {visibleKhoi12Rows.length > 0 && (
           <div data-testid="cap5-pa-khoi12-rows">
-            {khoi12.rows.map((row) => (
+            {visibleKhoi12Rows.map((row) => (
               <FilterRow key={row.filter} row={row} minLenh={khoi12.minLenh} />
             ))}
           </div>

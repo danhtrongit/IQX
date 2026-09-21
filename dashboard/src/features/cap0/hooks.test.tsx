@@ -23,7 +23,7 @@ vi.mock("@/shared/http/client", () => ({
 vi.mock("@/features/auth", () => ({ useAuth: () => ({ isAuthenticated: true }) }))
 
 import { readFileSync } from "node:fs"
-import { useCap0Kehoach, useCompleteTask } from "./hooks"
+import { useCap0Kehoach, useCompleteTask, usePlacementStatus } from "./hooks"
 import { Cap0Provider } from "./Cap0Context"
 
 function Harness() {
@@ -80,7 +80,9 @@ function makeTaskResponse() {
         task_2_done_at: null,
         task_3_done_at: null,
         task_4_done_at: "t",
-        task4_debrief_done: true,
+        task_5_done_at: "t",
+        task1_star_clicked: true,
+        task5_debrief_done: true,
         graduated_at: null,
         time_to_graduate_hours: null,
       }),
@@ -237,5 +239,45 @@ describe("useCap0Kehoach — the enabled guard", () => {
       }),
     )
     await waitFor(() => expect(screen.getByTestId("chip")).toHaveTextContent("Thử cho biết"))
+  })
+})
+
+describe("usePlacementStatus", () => {
+  function PlacementHarness({ enabled = true }: { enabled?: boolean }) {
+    const { data } = usePlacementStatus(enabled)
+    return <div data-testid="placement">{data ? `${data.placed_level}:${data.experience}:${data.da_xem_tour}` : "none"}</div>
+  }
+
+  function renderPlacement(enabled = true) {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    return render(
+      <QueryClientProvider client={client}>
+        <PlacementHarness enabled={enabled} />
+      </QueryClientProvider>,
+    )
+  }
+
+  beforeEach(() => get.mockReset())
+
+  it("reads the account placement and exposes the experience contract", async () => {
+    get.mockReturnValue({
+      json: () => Promise.resolve({ placed_level: 2, answer: "regular", da_xem_tour: true }),
+    })
+    renderPlacement()
+    await waitFor(() => expect(get).toHaveBeenCalledWith("cap0/placement"))
+    await waitFor(() => expect(screen.getByTestId("placement")).toHaveTextContent("2:regular:true"))
+  })
+
+  it("does not request placement when disabled", async () => {
+    renderPlacement(false)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(get).not.toHaveBeenCalled()
+  })
+
+  it("treats an enveloped null placement as unanswered", async () => {
+    get.mockReturnValue({ json: () => Promise.resolve({ data: null }) })
+    renderPlacement()
+    await waitFor(() => expect(screen.getByTestId("placement")).toHaveTextContent("none"))
+    expect(get).toHaveBeenCalledWith("cap0/placement")
   })
 })

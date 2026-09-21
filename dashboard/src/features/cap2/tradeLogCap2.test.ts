@@ -1,9 +1,10 @@
-import { act, renderHook } from "@testing-library/react"
+import { act, renderHook, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-vi.mock("@/features/auth", () => ({
-  useAuth: () => ({ user: { id: "user-1" } }),
+const { authState } = vi.hoisted(() => ({
+  authState: { user: { id: "user-1" } as { id: string } | null },
 }))
+vi.mock("@/features/auth", () => ({ useAuth: () => authState }))
 
 import {
   appendCap2ScoreRecord,
@@ -44,6 +45,7 @@ const score1: Cap2DailyScoreRecord = { ngay: "2026-07-01", diem: 90, xepLoai: "x
 const score2: Cap2DailyScoreRecord = { ngay: "2026-07-02", diem: 60, xepLoai: "do" }
 
 beforeEach(() => {
+  authState.user = { id: "user-1" }
   window.localStorage.clear()
 })
 
@@ -138,5 +140,29 @@ describe("useCap2TradeLog", () => {
     act(() => result.current.recordScore(score2))
     expect(result.current.scores).toEqual([score2])
     expect(readCap2ScoreLog("user-1")).toEqual([score2])
+  })
+
+  it("replaces trade and score fallback when the authenticated account changes", async () => {
+    appendCap2TradeRecord("user-1", trade1)
+    appendCap2ScoreRecord("user-1", score1)
+    appendCap2TradeRecord("user-2", trade2)
+    appendCap2ScoreRecord("user-2", score2)
+    const { result, rerender } = renderHook(() => useCap2TradeLog())
+    expect(result.current.trades).toEqual([trade1])
+    expect(result.current.scores).toEqual([score1])
+
+    authState.user = { id: "user-2" }
+    rerender()
+    await waitFor(() => {
+      expect(result.current.trades).toEqual([trade2])
+      expect(result.current.scores).toEqual([score2])
+    })
+
+    authState.user = null
+    rerender()
+    await waitFor(() => {
+      expect(result.current.trades).toEqual([])
+      expect(result.current.scores).toEqual([])
+    })
   })
 })

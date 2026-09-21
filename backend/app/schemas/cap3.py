@@ -7,11 +7,13 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
+
+from app.schemas.cap1 import TradeHistoryOut
 
 KhauViLiteral = Literal["than_trong", "can_bang", "tan_cong"]
 MucTuTinLiteral = Literal[1, 2, 3]
-CachKhoiLuongLiteral = Literal["linh_hoat", "ky_luat"]
+CachKhoiLuongLiteral = Literal["khau_vi_tu_tin", "chia_deu"]
 TaskNoLiteral = Literal[1, 2]
 
 
@@ -42,6 +44,7 @@ class Cap3ProgressOut(BaseModel):
 class KhauViRequest(BaseModel):
     khau_vi: KhauViLiteral
 
+
 class TaskRequest(BaseModel):
     task_no: TaskNoLiteral
 
@@ -53,6 +56,11 @@ class KehoachRequest(BaseModel):
     cach_khoi_luong: CachKhoiLuongLiteral
     khoi_luong: int
     pct_von: float
+
+    @field_validator("cach_khoi_luong", mode="before")
+    @classmethod
+    def normalize_legacy_method(cls, value: str) -> str:
+        return {"linh_hoat": "khau_vi_tu_tin", "ky_luat": "chia_deu"}.get(value, value)
 
 
 class OrderKehoachOut(BaseModel):
@@ -70,3 +78,42 @@ class OrderKehoachOut(BaseModel):
     pct_von: float | None = None
 
 
+class Cap3PlanOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    order_id: uuid.UUID
+    symbol: str
+    quantity: int
+    bought_at: datetime
+    gia_vao: int
+    lyDo: Literal["ky_thuat", "dong_tien", "noi_bo", "tin_tuc", "dinh_gia"]  # noqa: N815
+    trangThai_luc_dat: Literal["ung_ho", "trung_tinh", "can_chu_y", "nguoc_chieu"]  # noqa: N815
+    vung_mua: int
+    phuong_phap_sl_tp: Literal["ho_tro_khang_cu", "bien_do_dao_dong"] | None = None
+    cat_lo: int | None = None
+    chot_loi: int | None = None
+    khau_vi: KhauViLiteral | None = None
+    muc_tu_tin: MucTuTinLiteral | None = None
+    cach_khoi_luong: CachKhoiLuongLiteral | None = None
+    khoi_luong: int | None = None
+    pct_von: float | None = None
+
+
+class Cap3TradeListOut(BaseModel):
+    trades: list[TradeHistoryOut]
+    total: int
+
+
+class ConfidenceAnalysisRow(BaseModel):
+    muc_tu_tin: MucTuTinLiteral
+    count: int
+    wins: int
+    win_rate: float | None = None
+    avg_pnl_pct: float | None = None
+    avg_khoi_luong: float | None = None
+    avg_pct_von: float | None = None
+
+
+class Cap3TradeAnalysisOut(Cap3TradeListOut):
+    by_confidence: list[ConfidenceAnalysisRow]

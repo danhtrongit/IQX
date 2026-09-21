@@ -1,12 +1,17 @@
 import { act, renderHook } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+const { authState } = vi.hoisted(() => ({
+  authState: { userId: "user-1" },
+}))
+
 vi.mock("@/features/auth", () => ({
-  useAuth: () => ({ user: { id: "user-1" } }),
+  useAuth: () => ({ user: { id: authState.userId } }),
 }))
 
 import {
   appendCap3TradeRecord,
+  cap3TradeFromWire,
   readCap3TradeLog,
   useCap3TradeLog,
   type Cap3TradeRecord,
@@ -49,6 +54,7 @@ const trade2: Cap3TradeRecord = {
 }
 
 beforeEach(() => {
+  authState.userId = "user-1"
   window.localStorage.clear()
 })
 
@@ -110,6 +116,58 @@ describe("readCap3TradeLog / appendCap3TradeRecord", () => {
   })
 })
 
+describe("cap3TradeFromWire", () => {
+  const wire = {
+    buy_order_id: "buy-1",
+    sell_order_id: "sell-1",
+    matched_by: "snapshot" as const,
+    symbol: "VNM",
+    quantity: 200,
+    bought_at: "2026-07-01T00:00:00Z",
+    closed_at: "2026-07-02T00:00:00Z",
+    gia_vao: 62_000,
+    gia_ra: 64_000,
+    pnl_pct: 3.2,
+    pnl_vnd: 400_000,
+    lyDo: "dong_tien" as const,
+    trangThai_luc_dat: "ung_ho" as const,
+    vung_mua: 62_000,
+    cam_xuc: null,
+    phuong_phap_sl_tp: "ho_tro_khang_cu" as const,
+    cat_lo: 58_000,
+    chot_loi: 70_000,
+    cham_SL_cuoi_phien: false,
+    cham_SL_cat_dung_phien_ke: false,
+    cham_SL_khong_cat: false,
+    giu_cham_SL_bao_nhieu_phien: null,
+    cham_TP_giu_lam_hut: false,
+    ban_som_khi_lo_nhe: false,
+    nhoi_lenh_khi_lo: false,
+    ghi_chu_nhin_lai: null,
+    khau_vi: "can_bang" as const,
+    muc_tu_tin: 2 as const,
+    cach_khoi_luong: "khau_vi_tu_tin" as const,
+    khoi_luong: 200,
+    pct_von: 12.4,
+  }
+
+  it("maps canonical server literals into the existing cumulative analysis model", () => {
+    expect(cap3TradeFromWire(wire)).toEqual(expect.objectContaining({
+      orderId: "sell-1",
+      cachKhoiLuong: "linh_hoat",
+      mucTuTin: 2,
+      pctVon: 12.4,
+    }))
+    expect(cap3TradeFromWire({ ...wire, cach_khoi_luong: "chia_deu" })).toEqual(
+      expect.objectContaining({ cachKhoiLuong: "ky_luat" }),
+    )
+  })
+
+  it("returns unknown for an incomplete Cấp 3 snapshot instead of fabricating zeroes", () => {
+    expect(cap3TradeFromWire({ ...wire, pct_von: null })).toBeNull()
+  })
+})
+
 describe("useCap3TradeLog", () => {
   it("reads the current user's trade log on mount", () => {
     appendCap3TradeRecord("user-1", trade1)
@@ -131,5 +189,16 @@ describe("useCap3TradeLog", () => {
     act(() => result.current.record({ ...trade1, pnlPct: 7 }))
     expect(result.current.trades).toHaveLength(1)
     expect(result.current.trades[0].pnlPct).toBe(7)
+  })
+
+  it("reloads the isolated log when the authenticated user changes", () => {
+    appendCap3TradeRecord("user-1", trade1)
+    appendCap3TradeRecord("user-2", trade2)
+    const { result, rerender } = renderHook(() => useCap3TradeLog())
+    expect(result.current.trades).toEqual([trade1])
+
+    authState.userId = "user-2"
+    rerender()
+    expect(result.current.trades).toEqual([trade2])
   })
 })

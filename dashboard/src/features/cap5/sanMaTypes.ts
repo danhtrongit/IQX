@@ -228,11 +228,11 @@ export function describeHuntTotal(result: HuntResult, def: HuntFilterDef): strin
   const hien = result.items.length
   if (result.tong_so_ma == null) {
     return `Chưa đếm được tổng số mã thỏa điều kiện · đang hiện ${hien.toLocaleString(
-      "en-US",
+      "vi-VN",
     )} ${def.ghi_chu_top}`
   }
-  return `${result.tong_so_ma.toLocaleString("en-US")} mã HOSE thỏa điều kiện · hiện ${hien.toLocaleString(
-    "en-US",
+  return `${result.tong_so_ma.toLocaleString("vi-VN")} mã HOSE thỏa điều kiện · hiện ${hien.toLocaleString(
+    "vi-VN",
   )} ${def.ghi_chu_top}`
 }
 
@@ -261,7 +261,7 @@ export function describeHuntBaoPhu(result: HuntResult): {
       trangThai: "day_du",
       text:
         ro != null
-          ? `Đã xét đủ ${ro.toLocaleString("en-US")} mã HOSE trong rổ — không mã nào bị bỏ vì thiếu dữ liệu.`
+          ? `Đã xét đủ ${ro.toLocaleString("vi-VN")} mã HOSE trong rổ — không mã nào bị bỏ vì thiếu dữ liệu.`
           : "Máy chủ khẳng định đã xét đủ rổ mã của lần chạy này.",
     }
   }
@@ -272,10 +272,10 @@ export function describeHuntBaoPhu(result: HuntResult): {
     }
     const veXet =
       xet != null && ro != null
-        ? `đã xét ${xet.toLocaleString("en-US")}/${ro.toLocaleString("en-US")} mã`
+        ? `đã xét ${xet.toLocaleString("vi-VN")}/${ro.toLocaleString("vi-VN")} mã`
         : "chưa xét được hết rổ mã"
     const veBoQua =
-      boQua != null ? ` — ${boQua.toLocaleString("en-US")} mã thiếu dữ liệu` : " — một số mã thiếu dữ liệu"
+      boQua != null ? ` — ${boQua.toLocaleString("vi-VN")} mã thiếu dữ liệu` : " — một số mã thiếu dữ liệu"
     return {
       trangThai: "thieu",
       text: `⚠ Kết quả CHƯA đầy đủ: ${veXet}${veBoQua}, nên danh sách có thể còn sót mã thỏa điều kiện.`,

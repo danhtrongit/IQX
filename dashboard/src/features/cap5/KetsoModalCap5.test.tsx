@@ -35,6 +35,7 @@ vi.mock("@/features/auth", () => ({
 vi.mock("@/shared/http/client", () => ({
   getErrorMessage: (_err: unknown, fallback: string) => Promise.resolve(fallback),
 }))
+vi.mock("@/shared/analytics/journey", () => ({ trackJourneyEvent: vi.fn() }))
 vi.mock("@arco-design/web-react", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@arco-design/web-react")>()
   return {
@@ -171,20 +172,33 @@ describe("KetsoModalCap5 — giữ nguyên mọi khối Cấp 1/2/3/4 (cộng d�
     const doiChieu = within(screen.getByTestId("cap5-ketso-doichieu"))
     expect(doiChieu.getByText("Vùng mua")).toBeInTheDocument()
     expect(doiChieu.getByText("Giá ra · thuế bán 0,1%")).toBeInTheDocument()
-    await waitFor(() => expect(screen.getByText("+5.3%")).toBeInTheDocument(), { timeout: 2000 })
+    await waitFor(() => expect(screen.getByText("+5,3%")).toBeInTheDocument(), { timeout: 2000 })
   })
 
   it("giữ khối CAM KẾT vs THỰC TẾ (Cấp 2) + QUẢN LÝ VỐN (Cấp 3)", () => {
     renderModal()
     const camket = within(screen.getByTestId("cap2-ketso-camket"))
     expect(camket.getByText("Cắt lỗ")).toBeInTheDocument()
-    expect(camket.getByText("28,500")).toBeInTheDocument()
-    expect(camket.getByText("32,500")).toBeInTheDocument()
+    expect(camket.getByText("28.500")).toBeInTheDocument()
+    expect(camket.getByText("32.500")).toBeInTheDocument()
 
     const von = within(screen.getByTestId("cap3-ketso-quanlyvon"))
     expect(von.getByText("QUẢN LÝ VỐN")).toBeInTheDocument()
     expect(von.getByText("Cân bằng (trần 20%)")).toBeInTheDocument()
-    expect(von.getByText(/200 cp · 15.0% vốn/)).toBeInTheDocument()
+    expect(von.getByText(/200 cp · 15,0% vốn/)).toBeInTheDocument()
+  })
+
+  it("thu gọn các khối kế thừa Cấp 1-4; nguồn săn và coach vẫn ở ngoài", () => {
+    renderModal()
+    const inherited = screen.getByTestId("cap5-ketso-inherited")
+    expect(inherited).not.toHaveAttribute("open")
+    const summary = screen.getByText(
+      "Đối chiếu kế hoạch + Quản lý vốn + Đọc 5 lớp (giữ từ Cấp 1-4)",
+    )
+    expect(screen.getByTestId("cap5-ketso-hunt-origin")).toBeInTheDocument()
+    expect(screen.getByTestId("cap5-ketso-coach")).toBeInTheDocument()
+    fireEvent.click(summary)
+    expect(inherited).toHaveAttribute("open")
   })
 
   it("giữ bảng ĐỌC 5 LỚP — NHÌN LẠI (Cấp 4) kèm hàng lệch AI", () => {
@@ -272,8 +286,22 @@ describe("KetsoModalCap5 — dòng nguồn săn (spec §8)", () => {
   })
 
   it("có số lớp lúc vào lệnh thì in ra", () => {
-    renderModal({ huntSoLopLucVao: 4 })
+    renderModal({ huntSoLopLucVao: 4, huntSoLopDaChamLucVao: 5 })
     expect(screen.getByTestId("cap5-ketso-hunt-origin")).toHaveTextContent("4/5 lớp ủng hộ")
+  })
+
+  it("snapshot mới chấm 4 lớp thì hiện đúng mẫu số và lớp còn thiếu", () => {
+    renderModal({ huntSoLopLucVao: 3, huntSoLopDaChamLucVao: 4 })
+    const line = screen.getByTestId("cap5-ketso-hunt-origin")
+    expect(line).toHaveTextContent("3 lớp ủng hộ trong 4/5 lớp đã chấm")
+    expect(line).toHaveTextContent("1 lớp chưa có dữ liệu")
+  })
+
+  it("plan lịch sử có điểm nhưng thiếu mẫu số không tự suy ra /5", () => {
+    renderModal({ huntSoLopLucVao: 4, huntSoLopDaChamLucVao: null })
+    const line = screen.getByTestId("cap5-ketso-hunt-origin")
+    expect(line).toHaveTextContent("kế hoạch lịch sử chưa lưu số lớp đã chấm")
+    expect(line).not.toHaveTextContent("4/5 lớp ủng hộ")
   })
 })
 

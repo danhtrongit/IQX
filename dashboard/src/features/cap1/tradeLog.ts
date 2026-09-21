@@ -1,29 +1,20 @@
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useAuth } from "@/features/auth"
-import type { LyDo, TrangThaiLucDat } from "./types"
+import type { Cap1TradeHistory, LyDo, TrangThaiLucDat } from "./types"
 
 /**
  * Client-side closed-trade log for Cấp 1's Phân tích danh mục (spec §7) +
  * Kết sổ "HỒ SƠ CỦA BẠN" (spec §6).
  *
- * GAP (see `/Users/danhtrongit/Projects/IQX/.superpowers/sdd/cap1-FE2-report.md`
- * for the full writeup): `GET /cap1/progress` only returns AGGREGATE counters
- * (`so_ly_do_da_dung`, `so_lenh_ly_do_ung_ho`, …) — there is no BE endpoint
- * that lists the user's `order_kehoach`/`order_ketso` rows, so per-lý-do
- * win/loss breakdowns (Khối 2/3's coverage grid, the 3 mẫu tự phát hiện, Kết
- * sổ's "dòng 2/3") cannot be computed from a single server round-trip.
- *
- * Workaround: every time `KetsoModalCap1` finishes reconciling a closed order
+ * Every time `KetsoModalCap1` finishes reconciling a closed order
  * (it already holds BOTH the `OrderKehoach` fields captured at BUY time and
  * the `OrderKetso` fields computed at SELL time — exactly the "existing
  * trade/kehoach data" the record already carries), it appends one
  * `Cap1TradeRecord` here via `useCap1TradeLog().record`. This accumulates a
  * durable (per-browser, per-user) closed-trade history going forward.
  *
- * KNOWN LIMITATION: this cannot backfill trades closed before this feature
- * shipped, and it's per-browser (not synced across devices) — a proper fix
- * is a future BE task (e.g. `GET /cap1/trades`) that lists `order_kehoach`
- * JOIN `order_ketso` rows directly from the database.
+ * Durable backfill and cross-device reads use `GET /cap1/trades`; this local
+ * log remains an immediate fallback between a close and query refetch.
  */
 export interface Cap1TradeRecord {
   orderId: string
@@ -32,6 +23,17 @@ export interface Cap1TradeRecord {
   pnlPct: number
   pnlVnd: number
   closedAt: string
+}
+
+export function cap1TradeFromHistory(row: Cap1TradeHistory): Cap1TradeRecord {
+  return {
+    orderId: row.sell_order_id,
+    lyDo: row.lyDo,
+    trangThaiLucDat: row.trangThai_luc_dat,
+    pnlPct: row.pnl_pct,
+    pnlVnd: row.pnl_vnd,
+    closedAt: row.closed_at,
+  }
 }
 
 function storageKey(userId: string): string {
@@ -80,11 +82,21 @@ export interface UseCap1TradeLogReturn {
 /** React binding over the trade log, scoped to the current auth user. */
 export function useCap1TradeLog(): UseCap1TradeLogReturn {
   const { user } = useAuth()
-  const userId = user?.id ?? "anon"
-  const [trades, setTrades] = useState<Cap1TradeRecord[]>(() => readTradeLog(userId))
+  const userId = user?.id ?? null
+  const [trades, setTrades] = useState<Cap1TradeRecord[]>(() =>
+    userId ? readTradeLog(userId) : [],
+  )
+
+  // Auth context can switch accounts without unmounting the Đấu trường shell.
+  // Replace in-memory state immediately so account B never sees account A's
+  // fallback while B's authoritative server query is loading.
+  useEffect(() => {
+    setTrades(userId ? readTradeLog(userId) : [])
+  }, [userId])
 
   const record = useCallback(
     (rec: Cap1TradeRecord) => {
+      if (!userId) return
       setTrades(appendTradeRecord(userId, rec))
     },
     [userId],

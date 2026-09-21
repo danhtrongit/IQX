@@ -1,3 +1,6 @@
+vi.mock("@/features/journey-identity/JourneyIdentityStage", () => ({
+  JourneyIdentityStage: ({ level }: { level: number }) => <div data-testid="journey-identity-stage" data-level={level} />,
+}))
 import { render, screen, fireEvent, within, waitFor } from "@testing-library/react"
 import React from "react"
 import { MemoryRouter } from "react-router"
@@ -10,13 +13,9 @@ import type { Cap0Progress } from "./types"
 // `vi.hoisted` — `vi.mock` calls are hoisted above ALL other statements
 // (including plain top-level `const`s), so a factory closing over a plain
 // `const` can hit a TDZ ReferenceError at mock-invocation time.
-const { useCap0ProgressMock, usePremiumStatusMock, enterMutate, placementMutate, completeTaskMutate, graduateMutate, messageInfo, navigateMock } = vi.hoisted(() => ({
+const { useCap0ProgressMock, usePlacementStatusMock, enterMutate, placementMutate, completeTaskMutate, graduateMutate, messageInfo, navigateMock } = vi.hoisted(() => ({
   useCap0ProgressMock: vi.fn(),
-  // Premium-honest mode fix — `tradingModeFor` now needs `isPremium` too.
-  // Default to a free user (the common case) so pre-existing "SÂN TẬP"
-  // assertions keep passing without every test needing to opt in; the
-  // premium-graduate case is exercised explicitly below.
-  usePremiumStatusMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ isPremium: false, isLoading: false })),
+  usePlacementStatusMock: vi.fn(),
   // Mirror react-query's real `mutate(variables, options)` shape: by default,
   // synchronously invoke the caller's `onSuccess` (the "happy path" a normal
   // mutation resolves to) so existing synchronous assertions keep working.
@@ -102,14 +101,11 @@ vi.mock("@/features/navigation", () => ({
 
 // Premium-honest mode fix — `Cap0TradingPage`'s `ModeBadge` now needs
 // `usePremiumStatus()` too (threaded into `tradingModeFor`).
-vi.mock("@/features/premium", () => ({
-  usePremiumStatus: (...a: unknown[]) => usePremiumStatusMock(...a),
-}))
-
 // FE1 hooks — mocked so this test controls progress state without a real
 // QueryClient/API.
 vi.mock("./hooks", () => ({
   useCap0Progress: (...a: unknown[]) => useCap0ProgressMock(...a),
+  usePlacementStatus: (...a: unknown[]) => usePlacementStatusMock(...a),
   useEnterCap0: () => ({ mutate: enterMutate }),
   usePlacement: () => ({ mutate: placementMutate }),
   useCompleteTask: () => ({ mutate: completeTaskMutate }),
@@ -138,15 +134,15 @@ vi.mock("./PlacementModal", () => ({
 }))
 
 // `Gbar` reads FILLED order history (`useOrders`) to re-open the Kết sổ for a
-// round trip that closed off-route or before a reload (nhiệm vụ ④ recovery —
-// see `retroDebrief.ts`, nhiệm vụ ④). The real hook calls `useAuth`, which throws outside
+// round trip that closed off-route or before a reload (nhiệm vụ ⑤ recovery —
+// see `retroDebrief.ts`). The real hook calls `useAuth`, which throws outside
 // an `AuthProvider` this file deliberately doesn't mount (it mocks `./hooks`
 // for the same reason). Empty history = the retro path finds nothing, so the
 // Cấp 0 shell assertions below are unaffected; the recovery behaviour itself
 // is covered in `gbar.test.tsx`.
 vi.mock("@/features/trading/hooks", () => ({
   useOrders: () => ({ data: [] }),
-  // `Gbar` also reads the portfolio now — spec §6 gates nhiệm vụ ④'s
+  // `Gbar` also reads the portfolio now — spec §6 gates nhiệm vụ ⑤'s
   // reminder on "có lệnh mở nhưng chưa bán".
   usePortfolio: () => ({ data: { positions: [] } }),
 }))
@@ -168,6 +164,7 @@ vi.mock("@arco-design/web-react", async (importOriginal) => {
 })
 
 import { Cap0TradingPage } from "./Cap0TradingPage"
+import { CAP0_TASK_TOUR_ROUTES } from "./journeyTasks"
 
 const fakeProgress: Cap0Progress = {
   id: "11111111-1111-1111-1111-111111111111",
@@ -178,7 +175,9 @@ const fakeProgress: Cap0Progress = {
   task_2_done_at: null,
   task_3_done_at: null,
   task_4_done_at: null,
-  task4_debrief_done: false,
+  task_5_done_at: null,
+  task1_star_clicked: false,
+  task5_debrief_done: false,
   graduated_at: null,
   time_to_graduate_hours: null,
 }
@@ -193,8 +192,8 @@ function renderCap0(ui: React.ReactNode) {
 describe("Cap0TradingPage", () => {
   beforeEach(() => {
     useCap0ProgressMock.mockReset()
-    usePremiumStatusMock.mockReset()
-    usePremiumStatusMock.mockReturnValue({ isPremium: false, isLoading: false })
+    usePlacementStatusMock.mockReset()
+    usePlacementStatusMock.mockReturnValue({ data: null, isFetched: true })
     enterMutate.mockReset()
     enterMutate.mockImplementation((_vars?: unknown, opts?: { onSuccess?: () => void }) => {
       opts?.onSuccess?.()
@@ -209,10 +208,11 @@ describe("Cap0TradingPage", () => {
     window.localStorage.clear()
   })
 
-  it("renders the reused terminal children (CenterPanel/RightSidebar/RightToolbar)", () => {
+  it("renders identity in the main slot and preserves the functional panels", () => {
     useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
     renderCap0(<Cap0TradingPage />)
-    expect(screen.getByTestId("center-panel")).toBeInTheDocument()
+    expect(screen.getByTestId("journey-identity-stage")).toHaveAttribute("data-level", "0")
+    expect(screen.queryByTestId("center-panel")).not.toBeInTheDocument()
     expect(screen.getByTestId("right-sidebar")).toBeInTheDocument()
     expect(screen.getByTestId("right-toolbar")).toBeInTheDocument()
   })
@@ -232,23 +232,11 @@ describe("Cap0TradingPage", () => {
     expect(screen.getByText("SÂN TẬP · T+0")).toBeInTheDocument()
   })
 
-  it('keeps the mode badge on "SÂN TẬP · T+0" once graduated_at is set for a FREE (non-premium) user — premium-honest mode fix: the backend never routes a free user\'s orders through thuc_chien', () => {
+  it('flips the mode badge to "THỰC CHIẾN" once progress.graduated_at is set', () => {
     useCap0ProgressMock.mockReturnValue({
       data: { ...fakeProgress, graduated_at: "2026-07-21T00:00:00Z" },
       isFetched: true,
     })
-    usePremiumStatusMock.mockReturnValue({ isPremium: false, isLoading: false })
-    renderCap0(<Cap0TradingPage />)
-    expect(screen.getByText("SÂN TẬP · T+0")).toBeInTheDocument()
-    expect(screen.queryByText("THỰC CHIẾN")).not.toBeInTheDocument()
-  })
-
-  it('flips the mode badge to "THỰC CHIẾN" once progress.graduated_at is set AND the user is premium (spec §9)', () => {
-    useCap0ProgressMock.mockReturnValue({
-      data: { ...fakeProgress, graduated_at: "2026-07-21T00:00:00Z" },
-      isFetched: true,
-    })
-    usePremiumStatusMock.mockReturnValue({ isPremium: true, isLoading: false })
     renderCap0(<Cap0TradingPage />)
     expect(screen.getByText("THỰC CHIẾN")).toBeInTheDocument()
     expect(screen.queryByText("SÂN TẬP · T+0")).not.toBeInTheDocument()
@@ -266,17 +254,34 @@ describe("Cap0TradingPage", () => {
     expect(screen.queryByText("Chào mừng đến Demo Trading của IQX.")).not.toBeInTheDocument()
   })
 
+  it("does NOT show PlacementModal when the account already has placement state", () => {
+    useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
+    usePlacementStatusMock.mockReturnValue({
+      data: { placed_level: 2, experience: "regular", da_xem_tour: true },
+      isFetched: true,
+    })
+    renderCap0(<Cap0TradingPage />)
+    expect(screen.queryByText("Chào mừng đến Demo Trading của IQX.")).not.toBeInTheDocument()
+  })
+
   it("does NOT show PlacementModal while progress is still loading", () => {
     useCap0ProgressMock.mockReturnValue({ data: undefined, isFetched: false })
     renderCap0(<Cap0TradingPage />)
     expect(screen.queryByText("Chào mừng đến Demo Trading của IQX.")).not.toBeInTheDocument()
   })
 
-  it('clicking "Chưa bao giờ" calls placement(false) + enterCap0() and stays in Cấp 0', () => {
+  it("does NOT show PlacementModal while placement state is still loading", () => {
+    useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
+    usePlacementStatusMock.mockReturnValue({ data: undefined, isFetched: false })
+    renderCap0(<Cap0TradingPage />)
+    expect(screen.queryByText("Chào mừng đến Demo Trading của IQX.")).not.toBeInTheDocument()
+  })
+
+  it('clicking "Chưa bao giờ" records placement + enters Cấp 0', () => {
     useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
     renderCap0(<Cap0TradingPage />)
     fireEvent.click(screen.getByTestId("cap0-placement-never"))
-    expect(placementMutate).toHaveBeenCalledWith(false)
+    expect(placementMutate).toHaveBeenCalledWith("never", expect.any(Object))
     expect(enterMutate).toHaveBeenCalledTimes(1)
     expect(enterMutate).toHaveBeenCalledWith(
       undefined,
@@ -286,28 +291,18 @@ describe("Cap0TradingPage", () => {
     expect(messageInfo).not.toHaveBeenCalled()
   })
 
-  // ★ Hai nhánh "đã từng giao dịch" — spec §3 muốn xếp thẳng lên Cấp 1/Cấp 2,
-  // nhưng backend chưa có đường vào Cấp 1 (POST /cap1/enter đòi Cấp 0 đã tốt
-  // nghiệp), nên FE kẹp trần: vẫn VÀO Cấp 0 (có tài khoản + progress row để
-  // làm được nhiệm vụ) và nói thẳng trần hiện tại là Cấp 1. Trước đây nhánh
-  // này KHÔNG gọi enterCap0 → user rơi vào ngõ cụt không có progress row.
-  for (const [testId, label] of [
-    ["cap0-placement-unsure", "Có, nhưng chưa tự tin"],
-    ["cap0-placement-regular", "Có, giao dịch thường xuyên"],
+  for (const [testId, answer] of [
+    ["cap0-placement-unsure", "unsure"],
+    ["cap0-placement-regular", "regular"],
   ] as const) {
-    it(`clicking "${label}" calls placement(true), DOES enter Cấp 0, and toasts the honest Cấp 1 ceiling`, () => {
+    it(`clicking ${answer} starts the required product-tour sequence`, () => {
       useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
       renderCap0(<Cap0TradingPage />)
       fireEvent.click(screen.getByTestId(testId))
-      expect(placementMutate).toHaveBeenCalledWith(true)
-      expect(enterMutate).toHaveBeenCalledTimes(1)
+      expect(placementMutate).toHaveBeenCalledWith(answer, expect.any(Object))
+      expect(enterMutate).not.toHaveBeenCalled()
       expect(messageInfo).toHaveBeenCalledTimes(1)
-      const toast = messageInfo.mock.calls[0][0] as string
-      expect(toast).toMatch(/Cấp 1/)
-      // ★ Không hứa một Cấp 2 chưa mở.
-      expect(toast).not.toMatch(/Cấp\s*[2-8]/)
-      // ★ Bài quiz 5 phút đã bị bỏ khỏi v3.0 — đừng hứa lại nó.
-      expect(toast).not.toMatch(/xếp lớp/i)
+      expect(navigateMock).toHaveBeenCalledWith("/?view=market&tour=bantin")
     })
   }
 
@@ -329,7 +324,7 @@ describe("Cap0TradingPage", () => {
   // (`iqx_cap0_placement_seen`), so account B on the same machine as an
   // already-answered account A never saw the modal → never `POST /cap0/enter`
   // → no `cap0_progress` row → every task PATCH 404'd and the journey sat at
-  // 0/4 forever. A fresh mount with no progress row MUST show the modal, no
+  // 0/2 forever. A fresh mount with no progress row MUST show the modal, no
   // matter what an earlier session on this browser did.
   it("★ shows PlacementModal again for a fresh mount with no progress row, even after an earlier session answered on this browser", () => {
     useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
@@ -350,8 +345,8 @@ describe("Cap0TradingPage", () => {
   ] as const) {
     it(`keeps PlacementModal up when the ${testId} mutation FAILS, so the user can retry`, () => {
       useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
-      // Simulate a network failure: `enterCap0.mutate` never calls `onSuccess`.
-      enterMutate.mockImplementationOnce(
+      // Simulate a placement network failure: no `onSuccess`.
+      placementMutate.mockImplementationOnce(
         () => {
           /* ★ Hỏng THẬT = react-query không gọi `onSuccess`. Component chỉ
              truyền `{ onSuccess }` cho `mutate`, nên KHÔNG có `onError` nào để
@@ -367,10 +362,10 @@ describe("Cap0TradingPage", () => {
     })
   }
 
-  it("mounts the real JourneyBar (progress x/4 + next-task copy) in the top bar", () => {
+  it("mounts the real JourneyBar (progress x/2 + next-task copy) in the top bar", () => {
     useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
     renderCap0(<Cap0TradingPage />)
-    expect(screen.getByText("CẤP 0 · 0/4")).toBeInTheDocument()
+    expect(screen.getByText("CẤP 0 · 0/2")).toBeInTheDocument()
     expect(screen.getByTitle("Bấm để mở Hành trình")).toBeInTheDocument()
   })
 
@@ -450,15 +445,15 @@ describe("Cap0TradingPage", () => {
 // những nhiệm vụ người dùng chưa hề làm, và ④ (cổng Kết sổ) còn tệ hơn: nó mở
 // thẳng màn tốt nghiệp. Engine tour (`features/tour/`) vẫn còn cho cấp khác
 // dùng; chỉ dây nối vào Cấp 0 bị cắt.
-describe("Cap0TradingPage — không còn tour nào của Cấp 0", () => {
+describe("Cap0TradingPage — tour chạy trên các product view thật", () => {
   beforeEach(() => {
     useCap0ProgressMock.mockReset()
-    usePremiumStatusMock.mockReset()
-    usePremiumStatusMock.mockReturnValue({ isPremium: false, isLoading: false })
+    usePlacementStatusMock.mockReset()
+    usePlacementStatusMock.mockReturnValue({ data: null, isFetched: true })
     completeTaskMutate.mockReset()
   })
 
-  it("★ mounts NO tour overlay at all", () => {
+  it("does not mount a centered tour overlay inside /dau-truong", () => {
     useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
     renderCap0(<Cap0TradingPage />)
     // `TourOverlay`'s own chrome: "ĐIỂM n/N" + the skip button.
@@ -466,9 +461,15 @@ describe("Cap0TradingPage — không còn tour nào của Cấp 0", () => {
     expect(screen.queryByText("Bỏ qua tour")).not.toBeInTheDocument()
   })
 
-  // ★★ The one that actually protects the new task model: even mounted and
-  // settled, nothing on this page fires a task PATCH on its own.
-  it("★★ never PATCHes task 2 / 3 / 4 by itself — those are earned by the user, not by a tour", async () => {
+  it("maps tasks 2–4 to the real product views", () => {
+    expect(CAP0_TASK_TOUR_ROUTES).toEqual({
+      2: "/?view=stock&tour=phantich",
+      3: "/?view=market&tour=bantin",
+      4: "/?view=financial&tour=bctc",
+    })
+  })
+
+  it("never PATCHes tasks 2–4 before a product tour finishes or is skipped", async () => {
     useCap0ProgressMock.mockReturnValue({ data: fakeProgress, isFetched: true })
     renderCap0(<Cap0TradingPage />)
     await new Promise((r) => setTimeout(r, 50))
@@ -480,6 +481,6 @@ describe("Cap0TradingPage smoke", () => {
   it("mounts without crashing when progress is null", () => {
     useCap0ProgressMock.mockReturnValue({ data: null, isFetched: true })
     const { container } = renderCap0(<Cap0TradingPage />)
-    expect(within(container).getByTestId("center-panel")).toBeInTheDocument()
+    expect(within(container).getByTestId("journey-identity-stage")).toBeInTheDocument()
   })
 })

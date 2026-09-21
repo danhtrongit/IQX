@@ -1,8 +1,10 @@
 import { api, unwrap } from "@/shared/http/client"
 import type {
   Cap4Progress,
+  Cap4PlanWire,
   KehoachInputCap4,
   OrderKehoachCap4,
+  PhanTichCap4,
   VuKhiDiemMuCap4,
 } from "./types"
 
@@ -33,10 +35,11 @@ export const cap4Api = {
     return unwrap(res as never) as Cap4Progress
   },
 
-  /** POST /cap4/kehoach — records the khối "Đọc 5 lớp" (spec §5/§8) onto the
+  /** POST /cap4/kehoach — records only the user's "Đọc 5 lớp" (spec §5/§8) onto the
    * Cấp 1 kế hoạch row of a BUY fill (that row must already exist — always
    * post `/cap1/kehoach` first, plus `/cap2/kehoach` + `/cap3/kehoach` inside
-   * their cấp, since all four extend the SAME `order_kehoach` row). */
+   * their cấp, since all four extend the SAME `order_kehoach` row). AI evidence
+   * and comparison counts are server-owned and absent from this request. */
   recordKehoach: async (input: KehoachInputCap4): Promise<OrderKehoachCap4> => {
     const res = await api.post("cap4/kehoach", { json: input }).json<unknown>()
     return unwrap(res as never) as OrderKehoachCap4
@@ -49,7 +52,19 @@ export const cap4Api = {
     return unwrap(res as never) as VuKhiDiemMuCap4
   },
 
-  /** POST /cap4/graduate — chỉ thành công khi xong nhiệm vụ duy nhất (20 lệnh). */
+  /** GET /cap4/phan-tich — authoritative blocks ⑩/⑪ from persisted orders. */
+  getPhanTich: async (): Promise<PhanTichCap4> => {
+    const res = await api.get("cap4/phan-tich").json<unknown>()
+    return unwrap(res as never) as PhanTichCap4
+  },
+
+  /** GET /cap4/plans/{buyOrderId} — cumulative Cấp 1–4 plan for reload-safe closeout. */
+  getPlan: async (buyOrderId: string): Promise<Cap4PlanWire> => {
+    const res = await api.get(`cap4/plans/${buyOrderId}`).json<unknown>()
+    return unwrap(res as never) as Cap4PlanWire
+  },
+
+  /** POST /cap4/graduate — chỉ thành công khi xong nhiệm vụ duy nhất (10 lệnh). */
   graduate: async (): Promise<Cap4Progress> => {
     const res = await api.post("cap4/graduate").json<unknown>()
     return unwrap(res as never) as Cap4Progress

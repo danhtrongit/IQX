@@ -5,12 +5,8 @@ and ``user_placement`` rows and reuses the virtual-trading repo to seed a 100tr
 practice account on entry. It does NOT touch the virtual-trading engine
 (matching/settlement).
 
-**4 nhiệm vụ**, **1 cổng hành vi** (đóng màn Kết sổ ở ④):
-
-    ① Đặt lệnh mua đầu tiên   ② Xem tab Nắm giữ
-    ③ Xem tab Theo dõi        ④ Bán một lệnh — kết sổ đầu tiên
-
-No tours, no chặng grouping, no cắt lỗ/chốt lời anywhere.
+**5 nhiệm vụ / 3 chặng**: BUY + ★, ba product tours, rồi SELL + Kết sổ.
+Cấp 0 không có cắt lỗ/chốt lời.
 """
 
 from __future__ import annotations
@@ -21,6 +17,7 @@ from datetime import UTC, date, datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased
 
 from app.core.exceptions import BadRequestError, ConflictError, NotFoundError
 from app.models.cap0 import (
@@ -28,6 +25,7 @@ from app.models.cap0 import (
     Cap0OrderKehoach,
     Cap0Progress,
     LyDoDoiThuong,
+    PlacementExperience,
     UserPlacement,
 )
 from app.models.virtual_trading import OrderSide, OrderStatus, VirtualOrder
@@ -38,29 +36,15 @@ from app.services.virtual_trading.settlement import is_trading_day
 #: Cùng giá trị với ``VirtualTradingRepository.create_default_config`` để tài
 #: khoản mở qua Cấp 0 hay qua ``activate`` đều bắt đầu bằng cùng một số dư.
 _CAP0_INITIAL_CASH_VND = 100_000_000
-#: No ``_CAP0_ORDER_MODE`` constant on purpose: nothing here may branch on
-#: ``virtual_orders.mode``. That column reflects the user's SUBSCRIPTION, not
-#: their level (see :meth:`Cap0Service.record_kehoach`), so a mode test here is
-#: a premium test in disguise — and Cấp 0 is free for everyone.
-_TASK_NOS = (1, 2, 3, 4)
+#: The order engine owns the level→mode decision. This service validates the
+#: user's evidence without duplicating that resolver.
+_TASK_NOS = (1, 2, 3, 4, 5)
 _GATE_ATTR = {
-    "debrief": "task4_debrief_done",
+    "star": "task1_star_clicked",
+    "debrief": "task5_debrief_done",
 }
-#: ④ «Bán một lệnh — kết sổ đầu tiên» is earned ONLY by closing the Kết sổ
-#: ("cổng hành vi duy nhất của Cấp 0"), so the task number and its gate are
-#: written together or not at all — a bare ``{task_no: 4}`` is refused.
-_TASK_REQUIRED_GATE = {4: "debrief"}
-#: ★ ORDERING RULE: ② «Xem tab Nắm giữ» and ③ «Xem tab Theo dõi» cannot be
-#: completed before ① «Đặt lệnh mua đầu tiên».
-#:
-#: Both are meaningless before the first buy — an empty Nắm giữ tab shows the
-#: user nothing to learn from, so crediting the task there would hand out a
-#: nhiệm vụ for a screen that taught nothing. The FE fires ②/③ from tab-OPEN
-#: events, and tab opens REPEAT, so refusing an early fire costs the user
-#: nothing: the next time they open that tab after buying, the same call lands.
-#: This also keeps every row consistent with what the migration produces —
-#: ②③ are derived from ①, so no row can exist with ② done and ① not.
-_TASKS_AFTER_FIRST_BUY = (2, 3)
+#: ① needs the watchlist star; ⑤ needs the closeout debrief.
+_TASK_REQUIRED_GATE = {1: "star", 5: "debrief"}
 
 #: Reverse lookup so the FE may post either the slug or the verbatim §4 chip
 #: label. Keyed on the exact spec strings — anything else is rejected.
@@ -123,84 +107,229 @@ class Cap0Service:
 
         return progress
 
-    async def set_placement(self, user_id: uuid.UUID, has_traded: bool) -> UserPlacement:
-        """Record the placement answer (idempotent — re-answering overwrites)."""
+    async def get_placement(self, user_id: uuid.UUID) -> UserPlacement | None:
+        result = await self._session.execute(
+            select(UserPlacement).where(UserPlacement.user_id == user_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def set_placement(
+        self,
+        user_id: uuid.UUID,
+        answer: str | None = None,
+        *,
+        has_traded: bool | None = None,
+    ) -> UserPlacement:
+        """Record one of the three placement answers (idempotent)."""
         result = await self._session.execute(
             select(UserPlacement).where(UserPlacement.user_id == user_id)
         )
         placement = result.scalar_one_or_none()
-        placed_level = 2 if has_traded else 0
+        if answer is None and has_traded is not None:
+            answer = "unsure" if has_traded else "never"
+        try:
+            experience = PlacementExperience(answer)
+        except ValueError as exc:
+            raise BadRequestError("Câu trả lời xếp lớp không hợp lệ") from exc
+        placed_level = {
+            PlacementExperience.NEVER: 0,
+            PlacementExperience.UNSURE: 1,
+            PlacementExperience.REGULAR: 2,
+        }[experience]
+        has_traded = experience is not PlacementExperience.NEVER
         if placement is None:
             placement = UserPlacement(
                 user_id=user_id,
                 has_traded_before=has_traded,
+                experience=experience,
                 placed_level=placed_level,
             )
             self._session.add(placement)
         else:
             placement.has_traded_before = has_traded
+            placement.experience = experience
             placement.placed_level = placed_level
         await self._session.flush()
         await self._session.refresh(placement)
         return placement
 
+    async def complete_tours(self, user_id: uuid.UUID) -> UserPlacement:
+        """Set the global product-tour flag for directly placed users."""
+        placement = await self.get_placement(user_id)
+        if placement is None:
+            raise NotFoundError("kết quả xếp lớp")
+        placement.da_xem_tour = True
+        # Avoid an import cycle at module import time.
+        from app.models.cap1 import Cap1Progress
+
+        result = await self._session.execute(
+            select(Cap1Progress).where(Cap1Progress.user_id == user_id)
+        )
+        cap1 = result.scalar_one_or_none()
+        if cap1 is not None:
+            cap1.da_xem_tour = True
+        await self._session.flush()
+        await self._session.refresh(placement)
+        return placement
+
+    async def complete_tour(
+        self, user_id: uuid.UUID, tour: str, *, skipped: bool = False
+    ) -> tuple[UserPlacement, list[str]]:
+        """Persist one of the three reusable product tours.
+
+        Skipping is a documented completion action: it records the same fact;
+        analytics keeps ``skipped`` so product teams can distinguish it.
+        """
+        mapping = {
+            "phantich": ("tour_phantich_done_at", 2),
+            "bantin": ("tour_bantin_done_at", 3),
+            "bctc": ("tour_bctc_done_at", 4),
+        }
+        if tour not in mapping:
+            raise BadRequestError("Tour không hợp lệ")
+        placement = await self.get_placement(user_id)
+        if placement is None:
+            raise NotFoundError("kết quả xếp lớp")
+        attr, task_no = mapping[tour]
+        now = datetime.now(UTC)
+        if getattr(placement, attr) is None:
+            setattr(placement, attr, now)
+
+        progress = await self._get_progress_row(user_id)
+        if progress is not None and progress.graduated_at is None:
+            if progress.task_1_done_at is None:
+                raise ConflictError("Cần hoàn thành lệnh MUA đầu tiên trước khi xem tour")
+            done_attr = f"task_{task_no}_done_at"
+            if getattr(progress, done_attr) is None:
+                setattr(progress, done_attr, now)
+
+        completed = [
+            key for key, (field, _) in mapping.items() if getattr(placement, field) is not None
+        ]
+        placement.da_xem_tour = len(completed) == len(mapping)
+
+        from app.models.cap1 import Cap1Progress
+        result = await self._session.execute(
+            select(Cap1Progress).where(Cap1Progress.user_id == user_id)
+        )
+        cap1 = result.scalar_one_or_none()
+        if cap1 is not None:
+            cap1.da_xem_tour = placement.da_xem_tour
+
+        from app.services.journey_events import record_journey_event
+        event = "cap1_tour_complete" if placement.placed_level > 0 else "cap0_task_complete"
+        fields = {"tour": tour, "skipped": skipped}
+        if event == "cap0_task_complete":
+            fields["task_id"] = task_no
+        await record_journey_event(
+            self._session,
+            user_id,
+            event,
+            fields,
+            dedup_key=f"{tour}:{getattr(placement, attr).isoformat()}",
+        )
+        await self._session.flush()
+        await self._session.refresh(placement)
+        return placement, completed
+
     async def complete_task(
         self, user_id: uuid.UUID, task_no: int, gate: str | None = None
     ) -> Cap0Progress:
-        """Mark task ``task_no`` (1-4) done (idempotent) and optionally set the gate.
+        """Mark one of five tasks done, enforcing evidence for ① and ⑤.
 
-        Nhiệm vụ ④ requires ``gate="debrief"``: it is the one task whose
-        completion IS a behaviour gate, so a bare ``{task_no: 4}`` must not be
-        able to mark it done behind the gate's back. ①②③ are bare PATCHes.
-
-        ②③ are additionally refused until ① is done — see
-        ``_TASKS_AFTER_FIRST_BUY`` for why that rejection is safe to retry.
+        ① requires the ★ event and a real filled BUY carrying a Cấp-0 plan.
+        ⑤ requires the debrief-close event and a real filled SELL after a
+        planned BUY. Tour tasks ②-④ are credited by their completion events.
         """
         if task_no not in _TASK_NOS:
-            raise BadRequestError("task_no không hợp lệ (Cấp 0 có 4 nhiệm vụ)")
+            raise BadRequestError("task_no không hợp lệ (Cấp 0 có 5 nhiệm vụ)")
         if gate is not None and gate not in _GATE_ATTR:
             raise BadRequestError("gate không hợp lệ")
 
         required_gate = _TASK_REQUIRED_GATE.get(task_no)
         if required_gate is not None and gate != required_gate:
-            raise BadRequestError(
-                f"Nhiệm vụ {task_no} chỉ hoàn thành khi đóng màn Kết sổ "
-                f'(cần gate="{required_gate}")'
-            )
+            raise BadRequestError(f'Nhiệm vụ {task_no} cần gate="{required_gate}"')
 
         progress = await self._get_progress_row(user_id)
         if progress is None:
             raise NotFoundError("tiến trình Cấp 0")
 
-        if task_no in _TASKS_AFTER_FIRST_BUY and progress.task_1_done_at is None:
-            raise BadRequestError(
-                f"Nhiệm vụ {task_no} chỉ tính sau khi hoàn thành nhiệm vụ ① "
-                "(đặt lệnh mua đầu tiên)"
+        if task_no == 1:
+            evidence = await self._session.execute(
+                select(Cap0OrderKehoach.id)
+                .join(VirtualOrder, VirtualOrder.id == Cap0OrderKehoach.order_id)
+                .where(
+                    VirtualOrder.user_id == user_id,
+                    VirtualOrder.side == OrderSide.BUY,
+                    VirtualOrder.status == OrderStatus.FILLED,
+                )
+                .limit(1)
             )
+            if evidence.scalar_one_or_none() is None:
+                raise ConflictError("Chưa có lệnh MUA đã khớp kèm kế hoạch Cấp 0")
+        if task_no in (2, 3, 4) and progress.task_1_done_at is None:
+            raise ConflictError("Cần hoàn thành lệnh MUA đầu tiên trước khi xem tour")
+        if task_no == 5:
+            if progress.task_1_done_at is None:
+                raise ConflictError("Cần hoàn thành lệnh MUA đầu tiên trước khi Kết sổ")
+            buy = aliased(VirtualOrder)
+            sell = aliased(VirtualOrder)
+            evidence = await self._session.execute(
+                select(sell.id)
+                .join(
+                    buy,
+                    (buy.account_id == sell.account_id)
+                    & (buy.symbol == sell.symbol)
+                    & (buy.created_at <= sell.created_at),
+                )
+                .join(Cap0OrderKehoach, Cap0OrderKehoach.order_id == buy.id)
+                .where(
+                    sell.user_id == user_id,
+                    sell.side == OrderSide.SELL,
+                    sell.status == OrderStatus.FILLED,
+                    buy.side == OrderSide.BUY,
+                    buy.status == OrderStatus.FILLED,
+                )
+                .limit(1)
+            )
+            if evidence.scalar_one_or_none() is None:
+                raise ConflictError("Chưa có lệnh BÁN đã khớp để Kết sổ")
 
         done_attr = f"task_{task_no}_done_at"
+        newly_done = getattr(progress, done_attr) is None
         if getattr(progress, done_attr) is None:
             setattr(progress, done_attr, datetime.now(UTC))
 
         if gate is not None:
             setattr(progress, _GATE_ATTR[gate], True)
 
+        if newly_done:
+            from app.services.journey_events import record_journey_event
+
+            await record_journey_event(
+                self._session,
+                user_id,
+                "cap0_task_complete",
+                {"task_id": task_no},
+                dedup_key=f"{task_no}:{getattr(progress, done_attr).isoformat()}",
+            )
+
         await self._session.flush()
         await self._session.refresh(progress)
         return progress
 
     async def graduate(self, user_id: uuid.UUID) -> Cap0Progress:
-        """Graduate Cấp 0 — 4/4 nhiệm vụ + the single behaviour gate (§9)."""
+        """Graduate after both trading tasks and their evidence gates; tours are optional."""
         progress = await self._get_progress_row(user_id)
         if progress is None:
             raise NotFoundError("tiến trình Cấp 0")
 
         all_tasks_done = all(
-            getattr(progress, f"task_{n}_done_at") is not None for n in _TASK_NOS
+            getattr(progress, f"task_{n}_done_at") is not None for n in (1, 5)
         )
-        gates_ok = progress.task4_debrief_done
+        gates_ok = progress.task1_star_clicked and progress.task5_debrief_done
         if not (all_tasks_done and gates_ok):
-            raise ConflictError("Chưa hoàn thành đủ nhiệm vụ và cổng Cấp 0")
+            raise ConflictError("Chưa hoàn thành hai nhiệm vụ giao dịch và cổng Cấp 0")
 
         if progress.graduated_at is None:
             now = datetime.now(UTC)
@@ -209,6 +338,25 @@ class Cap0Service:
             if entered.tzinfo is None:
                 entered = entered.replace(tzinfo=UTC)
             progress.time_to_graduate_hours = (now - entered).total_seconds() / 3600.0
+            placement = await self.get_placement(user_id)
+            if placement is None:
+                placement = UserPlacement(
+                    user_id=user_id,
+                    has_traded_before=False,
+                    experience=PlacementExperience.NEVER,
+                    placed_level=0,
+                )
+                self._session.add(placement)
+            placement.da_xem_tour = True
+            from app.services.journey_events import record_journey_event
+
+            await record_journey_event(
+                self._session,
+                user_id,
+                "cap0_graduate",
+                {},
+                dedup_key=now.isoformat(),
+            )
             await self._session.flush()
             await self._session.refresh(progress)
 
@@ -288,21 +436,9 @@ class Cap0Service:
     ) -> Cap0OrderKehoach:
         """Persist the khối "Kế hoạch" chip for a Cấp 0 BUY order.
 
-        ★★ **Deliberately NOT gated on ``order.mode``.** Spec §10 tags the row
-        ``mode='san_tap'`` and this model's docstring used to repeat the claim
-        "lệnh Cấp 0 luôn san_tap" — the claim is simply false. ``mode`` is
-        decided by SUBSCRIPTION, not by level:
-        ``VirtualTradingService.place_order`` sets ``"thuc_chien" if is_premium
-        else "san_tap"`` and the place-order endpoint hands it
-        ``is_premium_active(user)`` with no level awareness. Cấp 0 is free and
-        open to everyone, **including users who already pay** — so a premium
-        subscriber's Cấp 0 buy is a ``thuc_chien`` order. Gating on ``mode``
-        400'd their write (swallowed by the FE's non-fatal wrapper) and filtered
-        their read, so their Kết sổ showed ``Lý do mua —`` forever.
-        ``Cap1Service.record_kehoach`` does not filter on ``mode`` either; this
-        matches it. The actual mode is still REPORTED on the read model — it is a
-        true fact about the order — it just never decides whether the user's own
-        chip is visible to them.
+        The order engine resolves Cấp 0 to ``san_tap``. This method verifies
+        ownership, BUY side and the five-chip vocabulary; it does not duplicate
+        the level resolver, which keeps recovery calls idempotent.
 
         **Why a separate ``cap0_order_kehoach`` table instead of reusing Cấp 1's
         ``order_kehoach`` row** (spec §10 sketches the same table name; four

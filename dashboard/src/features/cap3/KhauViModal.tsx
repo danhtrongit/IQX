@@ -1,4 +1,5 @@
 import { Modal } from "@arco-design/web-react"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { computeKhauViConsequence } from "./khauViConsequence"
 import { useCap3Events } from "./Cap3Context"
 import { useCap3Progress, useSetKhauVi } from "./hooks"
@@ -13,21 +14,16 @@ import type { KhauViLoai } from "./types"
  * chỉ là ví dụ của spec §4/§C12b, KHÔNG phải vốn user thực sự có. */
 const VON_BAN_DAU_MAC_DINH = 100_000_000
 
-function fmtVnd(n: number): string {
-  return Math.round(n).toLocaleString("en-US")
-}
-
 interface MucSpec {
   loai: KhauViLoai
   ten: string
-  moTa: string
   macDinh: boolean
 }
 
 const MUC_LIST: MucSpec[] = [
-  { loai: "than_trong", ten: "Thận trọng", moTa: "Chia mỏng, an toàn", macDinh: false },
-  { loai: "can_bang", ten: "Cân bằng", moTa: "Vừa phải", macDinh: true },
-  { loai: "tan_cong", ten: "Tấn công", moTa: "Đậm đặc, cược mạnh", macDinh: false },
+  { loai: "than_trong", ten: "Thận trọng", macDinh: false },
+  { loai: "can_bang", ten: "Cân bằng", macDinh: true },
+  { loai: "tan_cong", ten: "Tấn công", macDinh: false },
 ]
 
 export interface KhauViModalProps {
@@ -47,11 +43,7 @@ export interface KhauViModalProps {
  * mức lần đầu vào Cấp 3 (`khau_vi_da_dat === false`), sau đó có thể đổi qua
  * `forceOpen` (từ nút "Đổi" trong `QuanLyVonBlock`, không khoá vĩnh viễn).
  *
- * Mỗi mức LUÔN hiện kèm hệ quả cụ thể — §C12c "cho thấy con số đến từ đâu",
- * không chỉ kết luận suông:
- *  - ≈ số mã có thể nắm nếu chia đều vốn theo mức trần này
- *  - Thiệt hại tối đa (VND) nếu 1 mã giảm sàn ~7% khi đã bỏ full mức trần
- * (xem `khauViConsequence.ts` cho phép tính thuần).
+ * Mỗi mức hiển thị trần vốn/lệnh và số mã có thể nắm nếu chia đều vốn.
  *
  * Self-contained (queries `useCap3Progress`/`useSetKhauVi` itself, same
  * pattern as `cap2/GraduationModalCap2.tsx`) — a consumer (Cấp 3's trading
@@ -74,6 +66,9 @@ export function KhauViModal({ vonBanDau, forceOpen = false, onClose }: KhauViMod
   const handlePick = (khauVi: KhauViLoai) => {
     setKhauVi.mutate(khauVi, {
       onSuccess: () => {
+        trackJourneyEvent(current ? "cap3_khau_vi_change" : "cap3_khau_vi_set", {
+          loai: khauVi,
+        })
         cap3Events.onKhauViPicked?.(khauVi)
         onClose?.()
       },
@@ -91,11 +86,6 @@ export function KhauViModal({ vonBanDau, forceOpen = false, onClose }: KhauViMod
       onCancel={mandatory ? undefined : onClose}
       style={{ width: 560, maxWidth: "calc(100vw - 32px)" }}
     >
-      <p className="mb-3 text-xs text-[var(--color-text-3)]">
-        Khẩu vị rủi ro là mức tiền tối đa bạn bỏ vào 1 mã. Thận trọng (10%) = chia vốn cho ~10 mã,
-        an toàn. Tấn công (30%) = dồn vào ~3 mã, ăn đậm nhưng rủi ro cao. Đây là phong cách chung,
-        áp cho mọi lệnh.
-      </p>
 
       <div className="space-y-2">
         {MUC_LIST.map((muc) => {
@@ -140,13 +130,11 @@ export function KhauViModal({ vonBanDau, forceOpen = false, onClose }: KhauViMod
                   {isSelected ? "Đã chọn" : "Chọn"}
                 </button>
               </div>
-              <p className="text-xs text-[var(--color-text-3)]">{muc.moTa}</p>
+
               <p className="text-xs text-[var(--color-text-2)]">
-                {`Bỏ tối đa ${fmtVnd(heQua.vonMoiLenh)}đ/lệnh → nắm được khoảng ${heQua.soMa} mã cùng lúc.`}
+                {`Nắm được khoảng ${heQua.soMa} mã cùng lúc.`}
               </p>
-              <p className="text-xs text-down">
-                {`Thiệt hại tối đa nếu 1 mã giảm sàn (~7%): ${fmtVnd(heQua.thietHaiToiDa)}đ`}
-              </p>
+
             </div>
           )
         })}

@@ -76,10 +76,10 @@ describe("pickCoachCap5 — coach săn mã", () => {
     }
   })
 
-  it("số en-US: lãi/lỗ dùng dấu chấm thập phân + dấu trừ typographic", () => {
-    expect(pickCoachCap5(sit({ pnlPct: 5.34 })).text).toContain("+5.3%")
-    expect(pickCoachCap5(sit({ pnlPct: -4.21 })).text).toContain("−4.2%")
-    expect(pickCoachCap5(sit({ pnlPct: 0 })).text).toContain("0.0%")
+  it("số Việt Nam: lãi/lỗ dùng dấu phẩy thập phân + dấu trừ typographic", () => {
+    expect(pickCoachCap5(sit({ pnlPct: 5.34 })).text).toContain("+5,3%")
+    expect(pickCoachCap5(sit({ pnlPct: -4.21 })).text).toContain("−4,2%")
+    expect(pickCoachCap5(sit({ pnlPct: 0 })).text).toContain("0,0%")
   })
 })
 

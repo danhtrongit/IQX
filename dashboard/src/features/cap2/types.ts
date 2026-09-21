@@ -21,9 +21,7 @@ export type XepLoai = "xanh" | "vang" | "do"
  *
  * ★★ `task_2_done_at` KHÔNG còn tồn tại — nhiệm vụ ② «Thực hiện đúng khi giá
  * chạm mốc» đã bỏ hẳn (backend migration `9c3f7ad10b52` DROP cột đó), nên
- * payload `GET /cap2/progress` không bao giờ còn mang nó. Để nó ngoài kiểu wire
- * biến "đọc lại một trường đã chết" thành lỗi biên dịch — đúng cái bẫy
- * `chuoi_current` đã mắc một lần ở `Cap2ChuoiLegacy` bên dưới.
+ * payload `GET /cap2/progress` không bao giờ còn mang nó.
  */
 export interface Cap2Progress {
   id: string
@@ -48,31 +46,13 @@ export interface Cap2Progress {
   /** ✅ Tổng lần thực hiện đúng. Server bảo đảm
    *  `so_lan_thuc_hien_dung === so_lan_cat_lo_dung + so_lan_chot_loi_dung`. */
   so_lan_thuc_hien_dung: number
-  graduated_at: string | null
-  time_to_graduate_hours: number | null
-}
-
-/**
- * ── ★★ DI SẢN: "chuỗi lệnh kỷ luật" — KHÁI NIỆM ĐÃ BỊ GỠ KHỎI SẢN PHẨM ★★ ───
- *
- * Migration `8f1a5c7d2e64` DROP cả `chuoi_current`/`chuoi_record`/
- * `last_chuoi_reset_at` khỏi `cap2_progress`; `grep -rn "chuoi" backend/app/`
- * hôm nay trả về RỖNG. Nghĩa là payload `GET /cap2/progress` **không bao giờ
- * còn** chứa ba trường này.
- *
- * ★★ Vì thế chúng KHÔNG nằm trong `Cap2Progress` nữa. Trước đây chúng ở đó
- * dưới dạng optional, nên `KetsoModalCap2` đọc `cap2Progress?.chuoi_current ??
- * 0` mà `tsc -b` không kêu một tiếng — và MỌI user Cấp 2 đọc "tăng lên 1 lệnh
- * liên tiếp không vi phạm" ở mọi lệnh, mãi mãi. Để chúng ngoài kiểu wire biến
- * đúng lỗi đó thành lỗi biên dịch.
- *
- * Kiểu này chỉ còn để `ChuoiWidget.tsx` (di sản, KHÔNG được mount ở đâu) biên
- * dịch được. ⚠ **KHÔNG thêm chỗ đọc mới** — không nguồn nào cấp số cho nó.
- */
-export interface Cap2ChuoiLegacy {
+  /** Công cụ học tập §6; không tham gia cổng tốt nghiệp. */
   chuoi_current?: number
   chuoi_record?: number
   last_chuoi_reset_at?: string | null
+  so_lenh_7_ngay?: number
+  graduated_at: string | null
+  time_to_graduate_hours: number | null
 }
 
 export interface KehoachInputCap2 {
@@ -101,6 +81,7 @@ export interface KetsoInputCap2 {
   cham_TP_giu_lam_hut?: boolean
   ban_som_khi_lo_nhe?: boolean
   nhoi_lenh_khi_lo?: boolean
+  ghi_chu_nhin_lai?: string | null
 }
 
 /** Cấp 2's view of `order_ketso` — Cấp 1's fields + the 7 discipline flags. */
@@ -118,6 +99,37 @@ export interface OrderKetsoCap2 {
   cham_TP_giu_lam_hut: boolean
   ban_som_khi_lo_nhe: boolean
   nhoi_lenh_khi_lo: boolean
+  ghi_chu_nhin_lai: string | null
+}
+
+export interface Cap2TradeHistory {
+  buy_order_id: string
+  sell_order_id: string
+  matched_by: "snapshot" | "symbol_fallback"
+  symbol: string
+  quantity: number
+  bought_at: string
+  closed_at: string
+  gia_vao: number | null
+  gia_ra: number
+  pnl_pct: number
+  pnl_vnd: number
+  lyDo: import("@/features/cap1/types").LyDo
+  trangThai_luc_dat: import("@/features/cap1/types").TrangThaiLucDat
+  vung_mua: number
+  phuong_phap_sl_tp: PhuongPhapSlTp | null
+  cat_lo: number | null
+  chot_loi: number | null
+  cham_SL_khong_cat: boolean
+  cham_TP_giu_lam_hut: boolean
+  ban_som_khi_lo_nhe: boolean
+  nhoi_lenh_khi_lo: boolean
+  ghi_chu_nhin_lai: string | null
+}
+
+export interface Cap2TradeHistoryList {
+  trades: Cap2TradeHistory[]
+  total: number
 }
 
 /** Breakdown of the 0-100 điểm kỷ luật formula — §C12c "số đến từ đâu". */
@@ -141,6 +153,121 @@ export interface DiemKyLuat {
   xep_loai: XepLoai | null
   giai_thich: string
   thanh_phan: DiemKyLuatThanhPhan | null
+}
+
+export interface DiemKyLuatHistory {
+  scores: DiemKyLuat[]
+  from_date: string
+  to_date: string
+}
+
+export type ViPhamCap2 = "cat_lo_cham" | "chot_loi_hut" | "ban_som_lo_nhe" | "nhoi_lenh_khi_lo"
+
+export interface Cap2Analysis {
+  score_30d: {
+    scores: DiemKyLuat[]
+    average_7d: number | null
+    average_30d: number | null
+    xanh_days: number
+    vang_days: number
+    do_days: number
+  }
+  weekly_violations: Array<{
+    week_start: string
+    week_end: string
+    cat_lo_cham: number
+    chot_loi_hut: number
+    ban_som_lo_nhe: number
+    nhoi_lenh_khi_lo: number
+    total: number
+  }>
+  window20: Array<{
+    sell_order_id: string
+    symbol: string
+    closed_at: string
+    compliant: boolean
+    violations: ViPhamCap2[]
+  }>
+  reflection: {
+    eligible: boolean
+    note_count: number
+    violation_count: number
+    insights: Array<{
+      pattern: import("./portfolioAnalysisCap2").ReflectionPatternId
+      matches: number
+      note_count: number
+    }>
+  }
+  patterns: Array<{
+    pattern_id: 9 | 10 | 11 | 12
+    message: string
+    data: Record<string, unknown>
+  }>
+}
+
+// Durable discipline-alert contracts (spec §8-§10). The server owns the
+// per-session budget, clean-order auto-mute and ignored-alert escalation; the
+// client only renders the decision returned by these endpoints.
+export type Cap2AlertType = "nhoi_lenh" | "cham_cat_lo"
+export type Cap2AlertStatus = "pending" | "shown" | "suppressed" | "acted"
+export type Cap2AlertEscalation = "normal" | "delay_5s" | "type_phrase"
+export type Cap2AlertAction = "cancel_buy" | "proceed_buy" | "sell_ato" | "hold"
+export type Cap2StoredAlertAction = Cap2AlertAction | "position_closed"
+
+export interface Cap2Alert {
+  id: string
+  alert_type: Cap2AlertType
+  symbol: string
+  session_date: string
+  observed_price_vnd: number
+  threshold_price_vnd: number | null
+  loss_pct: number | null
+  official_close_session_date: string | null
+  breach_session_no: number
+  status: Cap2AlertStatus
+  suppression_reason: string | null
+  escalation: Cap2AlertEscalation | null
+  impression_count: number
+  first_shown_at: string | null
+  last_shown_at: string | null
+  action: Cap2StoredAlertAction | null
+  acted_at: string | null
+  /** Context added by the durable alert service for the exact spec copy. */
+  priority: "immediate" | "next_session"
+  position_quantity: number | null
+  position_avg_cost_vnd: number | null
+  plan_started_at: string | null
+}
+
+export interface Cap2PreBuyAlertInput {
+  symbol: string
+  idempotency_key: string
+  quantity: number
+  order_type: "market" | "limit"
+  limit_price_vnd: number | null
+}
+
+export interface Cap2PreBuyAlertResult {
+  data_status: "available" | "unavailable"
+  triggered: boolean
+  reason: string
+  alert: Cap2Alert | null
+}
+
+export interface Cap2ActiveAlerts {
+  session_date: string
+  alerts: Cap2Alert[]
+}
+
+export interface Cap2AlertActionInput {
+  alertId: string
+  action: Cap2AlertAction
+  confirmationPhrase?: string
+}
+
+export interface Cap2AlertActionResult {
+  alert: Cap2Alert
+  next_step: "none" | "confirm_ato_sell"
 }
 
 /**

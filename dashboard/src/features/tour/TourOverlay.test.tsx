@@ -182,6 +182,13 @@ describe("TourOverlay", () => {
     expect(screen.getByText("Hoàn thành ✓")).toBeInTheDocument()
   })
 
+  it("renders the handoff's minimal bold and paragraph markup", () => {
+    const config: TourConfig = { name: "copy", steps: [{ centered: true, title: "Copy", body: "Đọc **điểm chính**.<br><br>Đoạn hai." }] }
+    setup(config)
+    expect(screen.getByText("điểm chính").tagName).toBe("STRONG")
+    expect(screen.getByText(/Đoạn hai/)).toBeInTheDocument()
+  })
+
   it("renders nothing before start() is called", () => {
     mountTarget("a")
     const callbacks: UseTourOptions = { onComplete: vi.fn() }

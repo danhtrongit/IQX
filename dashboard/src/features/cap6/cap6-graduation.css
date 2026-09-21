@@ -1,18 +1,15 @@
 /**
- * Cấp 6's Level 7 transition uses the shared graduation layout with the Level 7
- * accent color.
+ * Cấp 6 completion keeps the shared graduation layout and its existing accent.
  */
 
-.cap6-grad-block--cap7 {
-  border-color: rgba(198, 92, 174, 0.5);
+.cap6-grad-block--complete {
+  border-color: rgba(214, 69, 80, 0.5);
 }
 
-.cap6-grad-cta--cap7 {
-  background: #c65cae;
-  color: #fff5fc;
+.cap6-grad-cta--complete {
+  background: #d64550;
+  color: #fff;
 }
-
-/* Cấp 6's next-level CTA remains release-gated. */
 
 /* Dòng provenance §C12c dưới Khối 1 — con số thật đứng sau lời ghi nhận. */
 .cap6-grad-provenance {

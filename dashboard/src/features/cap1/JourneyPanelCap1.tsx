@@ -2,13 +2,12 @@ import "@/features/cap0/cap0.css"
 import "./cap1.css"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { Badge, LEVELS } from "@/features/cap0/Badge"
-import { JourneyFocus } from "@/features/cap0/JourneyFocus"
 import { ModeBadge } from "@/features/cap0/ModeBadge"
 import { useCap1Events } from "./Cap1Context"
-import { useCap1Progress } from "./hooks"
-import { useCap1TradeLog } from "./tradeLog"
+import { useCap1Progress, useCap1Trades } from "./hooks"
+import { cap1TradeFromHistory, useCap1TradeLog } from "./tradeLog"
 import { reasonCoverage } from "./portfolioAnalysis"
-import { countCap1TasksDone, LY_DO_OPTIONS, type Cap1Progress } from "./types"
+import { countCap1TasksDone, type Cap1Progress } from "./types"
 
 /**
  * 5 nhiệm vụ Cấp 1 — nhãn NGUYÊN VĂN mockup `iqx-cap1-hanhtrinh.html` (ngắn,
@@ -28,7 +27,6 @@ const TASK_NAMES: Record<number, string> = {
 }
 
 const TASK_NOS = [1, 2, 3, 4, 5] as const
-const NUMERALS = "①②③④⑤"
 const TOTAL_TASKS = 5
 
 const TASK3_TARGET = 5
@@ -122,8 +120,7 @@ function ChecklistItem({
         // `.cap0-checklist-*` — xem `cap1.css` (dòng done KHÔNG gạch ngang).
         "cap0-checklist-item cap1-checklist-item" +
         (state === "done" ? " cap0-checklist-item--done" : "") +
-        // `active` = nhiệm vụ đang nằm trên ô tập trung. Chỉ một vạch nhấn,
-        // KHÔNG tô nền như trước: hai khối cùng đậm là hai khối tranh nhau.
+        // Đánh dấu nhiệm vụ đang làm.
         (state === "active" ? " cap0-checklist-item--current" : "") +
         (state === "open" ? " cap1-checklist-item--open" : "") +
         (state === "locked" ? " cap0-checklist-item--locked" : "")
@@ -133,14 +130,14 @@ function ChecklistItem({
       <div className="cap0-checklist-body">
         {/* Nhãn NGUYÊN VĂN mockup: ngắn, KHÔNG số khoanh tròn dẫn trước. */}
         <span className="cap0-checklist-name">{TASK_NAMES[no]}</span>
-        {state !== "active" && progressText && (
+        {progressText && (
           <div className="cap0-checklist-desc">{progressText}</div>
         )}
       </div>
       {/* ★ Lối tắt của nhiệm vụ ĐÃ MỞ nhưng chưa tới lượt (⑤ mở ngay từ lúc vào
           Cấp 1, ②③④ mở cùng lúc sau ①). Dẫn từng nhiệm vụ một không được KHOÁ
           thứ user có quyền làm ngay bây giờ. */}
-      {state === "open" && (
+      {(state === "open" || state === "active") && (
         <button
           type="button"
           className="cap0-checklist-golink cap0-checklist-golink--quiet"
@@ -153,23 +150,12 @@ function ChecklistItem({
   )
 }
 
-/**
- * Tab "Hành trình" Cấp 1 (spec §8) — first sidebar-right panel while in Cấp 1.
- * Mirrors `cap0/JourneyPanel.tsx`'s structure (level card + checklist header +
- * 5-task list + goal box) but flat (no chặng grouping) and WITHOUT a Tủ huân
- * chương (spec §8 "Cấp 1 KHÔNG có Tủ huân chương").
- *
- * Self-contained: calls `useCap1Progress`/`useCap1TradeLog` itself — the
- * consumer (`Cap1TradingPage`/`RightSidebar`) just mounts `<JourneyPanelCap1 />`.
- * `useCap1Progress(isCap1Active)` only queries inside a real `Cap1Provider`
- * (mirrors `cap0/JourneyPanel.tsx`'s own doc on why this guard matters — the
- * sidebar's `SidebarProvider` is an app-root singleton shared with
- * /bieu-do & /co-phieu).
- */
 export function JourneyPanelCap1() {
   const { isCap1Active } = useCap1Events()
   const { data: progress } = useCap1Progress(isCap1Active)
-  const { trades } = useCap1TradeLog()
+  const { trades: localTrades } = useCap1TradeLog()
+  const { data: tradeHistory } = useCap1Trades(isCap1Active)
+  const trades = tradeHistory?.trades.map(cap1TradeFromHistory) ?? localTrades
   const { setActivePanel } = useSidebar()
   const tasksDone = countCap1TasksDone(progress)
   const level = LEVELS[1]
@@ -181,12 +167,6 @@ export function JourneyPanelCap1() {
   const soLenh = progress?.so_lenh_thuc_chien ?? 0
   const coverage = reasonCoverage(trades)
   const states = taskStates(progress)
-  /**
-   * Nhiệm vụ được đưa lên ô tập trung = nhiệm vụ `active` — `taskStates` vốn đã
-   * chỉ đặt ĐÚNG MỘT cái (nhiệm vụ mở, chưa xong, số nhỏ nhất). `null` = xong
-   * cả 5 → ô đổi sang lời sẵn sàng tốt nghiệp. Không có luật mở khoá nào mới.
-   */
-  const focus = TASK_NOS.find((no) => states[no] === "active") ?? null
   // Dải emoji lấy từ sổ lệnh cục bộ (chỉ nó biết ĐÃ DÙNG lý do NÀO), còn con
   // số lấy max với `so_ly_do_da_dung` của server — sổ cục bộ có thể trống trên
   // máy khác nên chỉ được phép báo THIẾU hơn, không được báo thấp hơn sự thật
@@ -205,21 +185,6 @@ export function JourneyPanelCap1() {
     5: `${Math.min(soLenh, TASK5_TARGET)}/${TASK5_TARGET} lệnh`,
   }
 
-  /** Dải 5 lý do (mockup `.cov`) — đi kèm nhiệm vụ ③ trên ô tập trung. */
-  const coverageStrip = (
-    <div className="cap1-coverage">
-      {LY_DO_OPTIONS.map((o) => (
-        <span
-          key={o.value}
-          data-testid={`cap1-coverage-${o.value}`}
-          className={coverage[o.value] ? "" : "cap1-coverage-off"}
-        >
-          {o.icon}
-        </span>
-      ))}
-    </div>
-  )
-
   return (
     <div className="cap0 flex h-full min-h-0 flex-col bg-[var(--bg1)] text-[var(--t1)]">
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
@@ -233,8 +198,9 @@ export function JourneyPanelCap1() {
             glow
           />
           <div className="cap0-level-card-body">
-            {/* Nhãn "CẤP 1" và câu bài học đã bỏ theo yêu cầu điều chỉnh — chỉ còn tên cấp + pill chế độ. */}
+
             <div className="cap0-level-card-name cap0-display">HỌC VIỆC</div>
+
             {/* Mockup `.lvcard .info .mode` (dòng 24) — viên pill thuộc cột
                 info, dưới tên cấp, KHÔNG phải phần tử flex thứ ba cạnh huy
                 hiệu. Giống hệt `cap0/JourneyPanel.tsx`; CSS
@@ -244,36 +210,6 @@ export function JourneyPanelCap1() {
             </div>
           </div>
         </div>
-
-        {/* ★ Ô "NHIỆM VỤ ĐANG LÀM" — dùng chung `cap0/JourneyFocus.tsx` với Cấp
-            0 (một khối, một bộ CSS: hai cấp không thể lệch nhau). Cấp 1 không
-            chia chặng nên không truyền `stage`. Con số tiến độ + dải độ phủ 5
-            lý do đi theo nhiệm vụ đang được dẫn. */}
-        {focus == null ? (
-          <JourneyFocus
-            testId="cap1-focus"
-            ready
-            tag={`ĐÃ XONG CẢ ${TOTAL_TASKS} NHIỆM VỤ`}
-            name="Sẵn sàng tốt nghiệp Cấp 1"
-            // ★ KHÔNG được ghi công nhiệm vụ đã bị bỏ: câu cũ còn khen "nhìn
-            // lại danh mục của chính mình" — thứ Cấp 1 không còn đòi hỏi. Màn
-            // tốt nghiệp Cấp 0 từng mắc đúng lỗi này.
-            desc="Bạn đã đi hết 10 lệnh Thực chiến có kế hoạch, làm quen cả 5 lý do mua, và chọn được lý do có dữ liệu ủng hộ. Màn tốt nghiệp Cấp 1 «Học việc» mở ra ngay tại đây."
-          />
-        ) : (
-          <JourneyFocus
-            testId="cap1-focus"
-            tag="NHIỆM VỤ ĐANG LÀM"
-            numeral={NUMERALS[focus - 1]}
-            name={TASK_NAMES[focus]}
-            extra={focus === 3 ? coverageStrip : undefined}
-            progressText={PROGRESS_TEXT[focus]}
-            /* ★ Cả 5 nhiệm vụ đều làm ở tab Đặt lệnh — nhiệm vụ duy nhất từng
-               dẫn sang trang Phân tích danh mục («Xem lại danh mục») đã bị bỏ.
-               Trang đó vẫn mở được bất cứ lúc nào bằng ô công cụ 📊 bên dưới. */
-            onGo={goToTrading}
-          />
-        )}
 
         {/* Mockup `.ck-head` (dòng 25-27): `.t` tiêu đề xám bên trái + `.c` bộ
             đếm 14px mang MÀU CỦA CẤP bên phải — hai phần tử, không phải một
@@ -310,8 +246,7 @@ export function JourneyPanelCap1() {
             📊 Phân tích danh mục
           </button>
         </div>
-        {/* ★ Ô đích "Xong 5/5 → tốt nghiệp…" đã bỏ theo yêu cầu điều chỉnh: sau
-            hàng công cụ là hết panel. Cấp 2+ vẫn giữ ô đích của riêng chúng. */}
+
       </div>
     </div>
   )

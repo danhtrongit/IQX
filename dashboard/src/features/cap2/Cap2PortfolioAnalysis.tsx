@@ -1,11 +1,15 @@
+import { useEffect, useRef } from "react"
 import { cn } from "@/shared/lib/cn"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { LY_DO_OPTIONS, type LyDo } from "@/features/cap1/types"
 import {
   computeCap2PortfolioAnalysis,
+  reflectionInsightText,
+  VI_PHAM_LOAI_LABELS,
   type Cap2DailyScoreRecord,
   type Cap2TradeRecord,
 } from "./portfolioAnalysisCap2"
-import type { Cap2Progress } from "./types"
+import type { Cap2Analysis, Cap2Progress } from "./types"
 import "./cap2-analysis.css"
 
 /**
@@ -36,6 +40,8 @@ export interface Cap2PortfolioAnalysisProps {
   now?: Date
   /** Xem `Cap2AnalysisHost`. Bỏ trống = đang ở trang Phân tích của Cấp 2. */
   host?: Cap2AnalysisHost
+  /** Server-derived §12 blocks. Omitted only by isolated tests and higher-level legacy hosts. */
+  serverAnalysis?: Cap2Analysis
 }
 
 function lyDoIcon(lyDo: LyDo): string {
@@ -82,6 +88,10 @@ const KHOI_TITLE = {
   khoi2: "② Thắng / thua theo 5 lý do",
   khoi3: "③ Độ phủ 5 lý do",
   khoi4: "④ Bạn đã dùng cơ chế cắt lỗ / chốt lời thế nào",
+  khoi5: "⑤ Điểm kỷ luật 30 ngày",
+  khoi6: "⑥ Vi phạm theo tuần",
+  khoi7: "⑦ Phát hiện từ ghi chú nhìn lại",
+  mau: "🔍 Mẫu hệ thống phát hiện (về kỷ luật)",
 } as const
 
 const KEEP_FLAG = "text-[9px] font-normal normal-case tracking-normal text-[var(--color-text-3)]"
@@ -97,8 +107,8 @@ const ADD_FLAG =
   "rounded-full bg-[rgba(125,211,192,0.16)] px-[7px] py-[2px] text-[9px] font-bold normal-case tracking-normal text-[#7dd3c0]"
 
 /**
- * Trang Phân tích danh mục Cấp 2 — 4 khối của mockup
- * `iqx-cap2-phantich-danhmuc.html`.
+ * Trang Phân tích danh mục Cấp 2 — 4 khối trong mockup cộng các khối ⑤–⑦,
+ * cửa sổ 20 lệnh và mẫu 9–12 từ Markdown normative §12.
  *
  * **Does NOT reuse `Cap1PortfolioAnalysis` (documented choice):** its internal
  * khối renderers are module-private (not exported), and khối ① của Cấp 2 thêm
@@ -120,11 +130,83 @@ export function Cap2PortfolioAnalysis({
   dailyScores,
   now,
   host,
+  serverAnalysis,
 }: Cap2PortfolioAnalysisProps) {
-  const result = computeCap2PortfolioAnalysis(trades, dailyScores, progress, now)
+  const fallback = computeCap2PortfolioAnalysis(trades, dailyScores, progress, now)
+  const result = serverAnalysis
+    ? {
+        ...fallback,
+        khoi5: {
+          points: serverAnalysis.score_30d.scores.flatMap((score) =>
+            score.diem != null && score.xep_loai != null
+              ? [{ ngay: score.ngay, diem: score.diem, xepLoai: score.xep_loai }]
+              : [],
+          ),
+          average7: serverAnalysis.score_30d.average_7d,
+          average30: serverAnalysis.score_30d.average_30d,
+          distribution: {
+            xanh: serverAnalysis.score_30d.xanh_days,
+            vang: serverAnalysis.score_30d.vang_days,
+            do: serverAnalysis.score_30d.do_days,
+          },
+        },
+        khoi6: serverAnalysis.weekly_violations.map((week) => ({
+          label: `${new Date(week.week_start).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" })}–${new Date(week.week_end).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" })}`,
+          counts: {
+            cat_lo_cham: week.cat_lo_cham,
+            chot_loi_hut: week.chot_loi_hut,
+            ban_som_khi_lo: week.ban_som_lo_nhe,
+            nhoi_lenh: week.nhoi_lenh_khi_lo,
+          },
+          total: week.total,
+        })),
+        khoi7: {
+          noteCount: serverAnalysis.reflection.note_count,
+          insights: serverAnalysis.reflection.insights.map((insight) => ({
+            id: insight.pattern,
+            count: insight.matches,
+            text: reflectionInsightText(insight.pattern),
+          })),
+        },
+        window20: serverAnalysis.window20.map((item) => ({
+          orderId: item.sell_order_id,
+          violated: !item.compliant,
+        })),
+        mauPhatHien: serverAnalysis.patterns.map((pattern) => ({
+          id: `mau_${pattern.pattern_id}` as const,
+          positive:
+            pattern.pattern_id === 12 &&
+            typeof pattern.data.delta === "number" &&
+            pattern.data.delta > 0,
+          text: pattern.message,
+        })),
+      }
+    : fallback
   const { khoi1, khoi3, khoi4 } = result
   const levelLabel = host?.levelLabel ?? "Cấp 2 «Kỷ luật»"
   const sinceIso = host ? host.sinceIso : (progress?.entered_at ?? null)
+  const trackedPatterns = useRef(new Set<string>())
+  const patternKey = result.mauPhatHien.map(({ id }) => id).join("|")
+  const insightKey = result.khoi7.insights.map(({ id }) => id).join("|")
+
+  useEffect(() => {
+    for (const pattern of result.mauPhatHien) {
+      if (trackedPatterns.current.has(pattern.id)) continue
+      trackedPatterns.current.add(pattern.id)
+      trackJourneyEvent("cap2_pattern_shown", { pattern_id: pattern.id })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [patternKey])
+
+  useEffect(() => {
+    for (const insight of result.khoi7.insights) {
+      const key = `reflection:${insight.id}`
+      if (trackedPatterns.current.has(key)) continue
+      trackedPatterns.current.add(key)
+      trackJourneyEvent("cap2_ghi_chu_nhin_lai_insight_shown", { pattern_id: insight.id })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [insightKey])
 
   return (
     <div className="space-y-3">
@@ -214,6 +296,7 @@ export function Cap2PortfolioAnalysis({
             <span className={KEEP_FLAG}>(giữ từ Cấp 1)</span>
           </div>
           <table className="w-full text-xs">
+            <caption className="sr-only">Kết quả thắng thua theo năm lý do mua</caption>
             <thead>
               <tr className="text-left text-[var(--color-text-3)]">
                 <th className="py-1 font-medium">Lý do</th>
@@ -339,6 +422,127 @@ export function Cap2PortfolioAnalysis({
             {renderInlineBold(host ? HOST_SCOPE_NOTE : khoi4.scopeNote)}
           </span>
         </div>
+
+        <div className="mt-3" data-testid="cap2-pa-window20">
+          <div className="mb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-wide text-[var(--color-text-3)]">
+            <span>Cửa sổ 20 lệnh gần nhất</span>
+            <span>{result.window20.filter((item) => item.violated).length} vi phạm</span>
+          </div>
+          <div className="grid grid-cols-10 gap-1" aria-label="Kỷ luật của tối đa 20 lệnh gần nhất">
+            {Array.from({ length: 20 }, (_, index) => {
+              const item = result.window20[index]
+              return (
+                <span
+                  key={item?.orderId ?? `empty-${index}`}
+                  className={cn(
+                    "h-2.5 rounded-sm",
+                    !item && "bg-[var(--color-fill-2)]",
+                    item && !item.violated && "bg-up/70",
+                    item?.violated && "bg-down/80",
+                  )}
+                  title={item ? (item.violated ? "Có vi phạm" : "Không vi phạm") : "Chưa có lệnh"}
+                />
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div className={CARD} data-testid="cap2-pa-khoi5">
+        <div className={SECTION_HEADER}>{KHOI_TITLE.khoi5}</div>
+        {result.khoi5.points.length === 0 ? (
+          <p className="text-xs text-[var(--color-text-3)]">Chưa có ngày giao dịch nào để vẽ xu hướng.</p>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div>Trung bình 30 ngày: <strong>{result.khoi5.average30}</strong></div>
+              <div>Trung bình 7 ngày: <strong>{result.khoi5.average7 ?? "—"}</strong></div>
+            </div>
+            <div className="flex h-16 items-end gap-1" role="img" aria-label="Biểu đồ điểm kỷ luật 30 ngày">
+              {result.khoi5.points.map((point) => (
+                <span
+                  key={point.ngay}
+                  className={cn(
+                    "min-w-1 flex-1 rounded-t",
+                    point.xepLoai === "xanh" && "bg-up",
+                    point.xepLoai === "vang" && "bg-[#f5c451]",
+                    point.xepLoai === "do" && "bg-down",
+                  )}
+                  style={{ height: `${Math.max(4, point.diem)}%` }}
+                  title={`${point.ngay}: ${point.diem}/100`}
+                />
+              ))}
+            </div>
+            <p className="text-[11px] text-[var(--color-text-3)]">
+              {`Xanh ${result.khoi5.distribution.xanh} ngày · Vàng ${result.khoi5.distribution.vang} · Đỏ ${result.khoi5.distribution.do}`}
+            </p>
+          </>
+        )}
+      </div>
+
+      <div className={CARD} data-testid="cap2-pa-khoi6">
+        <div className={SECTION_HEADER}>{KHOI_TITLE.khoi6}</div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[430px] text-[11px]">
+            <caption className="sr-only">Số vi phạm theo loại trong bốn tuần gần nhất</caption>
+            <thead>
+              <tr className="text-left text-[var(--color-text-3)]">
+                <th>Tuần</th>
+                {(Object.keys(VI_PHAM_LOAI_LABELS) as Array<keyof typeof VI_PHAM_LOAI_LABELS>).map((type) => (
+                  <th key={type}>{VI_PHAM_LOAI_LABELS[type]}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {result.khoi6.map((week) => (
+                <tr key={week.label} className="border-t border-[var(--color-border-2)]">
+                  <th className="py-1 text-left font-medium">{week.label}</th>
+                  {(Object.keys(VI_PHAM_LOAI_LABELS) as Array<keyof typeof VI_PHAM_LOAI_LABELS>).map((type) => (
+                    <td key={type} className="py-1 text-center tabular-nums">{week.counts[type]}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className={CARD} data-testid="cap2-pa-khoi7">
+        <div className={SECTION_HEADER}>{KHOI_TITLE.khoi7}</div>
+        {result.khoi7.noteCount < 3 ? (
+          <p className="text-xs text-[var(--color-text-3)]">
+            Cần ít nhất 3 ghi chú nhìn lại có nội dung. Hiện có {result.khoi7.noteCount}.
+          </p>
+        ) : result.khoi7.insights.length === 0 ? (
+          <p className="text-xs text-[var(--color-text-3)]">Chưa thấy cụm hành vi lặp lại đủ rõ.</p>
+        ) : (
+          <div className="space-y-2">
+            {result.khoi7.insights.map((insight) => (
+              <div key={insight.id} className="rounded-md bg-[var(--color-fill-2)] p-2 text-xs">
+                <strong>{insight.count}/{result.khoi7.noteCount} ghi chú</strong>
+                <p className="mt-1 text-[var(--color-text-2)]">{insight.text}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className={CARD} data-testid="cap2-pa-mau">
+        <div className={SECTION_HEADER}>{KHOI_TITLE.mau}</div>
+        {result.mauPhatHien.length === 0 ? (
+          <p className="text-xs text-[var(--color-text-3)]">Chưa đủ dữ liệu để phát hiện mẫu kỷ luật.</p>
+        ) : (
+          result.mauPhatHien.map((pattern) => (
+            <div
+              key={pattern.id}
+              data-testid={`cap2-pattern-${pattern.id}`}
+              className={cn("cap2-pa-pat", pattern.positive ? "cap2-pa-pat--good" : "cap2-pa-pat--info")}
+            >
+              <span className="cap2-pa-pat-ic">{pattern.positive ? "↗" : "🔍"}</span>
+              <span className="cap2-pa-pat-text">{pattern.text}</span>
+            </div>
+          ))
+        )}
       </div>
     </div>
   )

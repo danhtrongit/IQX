@@ -73,9 +73,7 @@ export {
   tangGiuaCap5,
   // ★ `computeCap5Khoi12BoLoc` ĐÃ GỠ: khối ⑫ chỉ đọc `GET /cap5/phan-tich`.
   viewCap5Khoi12BoLoc,
-  KHOI12_KEM_PCT,
   KHOI12_MIN_LENH,
-  KHOI12_TOT_PCT,
   type Cap5Khoi12BoLoc,
   type Cap5Khoi13Pheu,
   type Cap5PortfolioAnalysisResult,
@@ -107,6 +105,7 @@ export {
 } from "./types"
 export type {
   Cap5PhanTich,
+  Cap5PlanWire,
   Cap5Progress,
   HuntFilter,
   Khoi12,

@@ -5,13 +5,15 @@ import { expectRendersNothing } from "@/__tests__/textGuards"
 import type { Cap0Progress } from "./types"
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
-const { completeTaskMutate, kehoachMock } = vi.hoisted(() => ({
+const { completeTaskMutate, kehoachMock, trackMock } = vi.hoisted(() => ({
   completeTaskMutate: vi.fn(),
+  trackMock: vi.fn(),
   // `GET /cap0/kehoach?order_id=` — feeds the §5 `Lý do mua` and
   // `Thời gian giữ` rows. Defaults to "no row yet" so the many pre-existing
   // tests below exercise the honest-unknown rendering without opting in.
   kehoachMock: vi.fn<(...a: unknown[]) => unknown>(() => ({ data: null })),
 }))
+vi.mock("@/shared/analytics/journey", () => ({ trackJourneyEvent: trackMock }))
 // `DebriefModal` needs `useCompleteTask` + `useCap0Kehoach` — mock
 // `./hooks` directly (same pattern as `Cap0TradingPage.test.tsx`) so no
 // QueryClient/http-client setup is needed for this file.
@@ -35,7 +37,9 @@ function makeProgress(overrides: Partial<Cap0Progress> = {}): Cap0Progress {
     task_2_done_at: null,
     task_3_done_at: null,
     task_4_done_at: null,
-    task4_debrief_done: false,
+    task_5_done_at: null,
+    task1_star_clicked: false,
+    task5_debrief_done: false,
     graduated_at: null,
     time_to_graduate_hours: null,
     ...overrides,
@@ -124,6 +128,8 @@ describe("DebriefModal", () => {
 
   beforeEach(() => {
     completeTaskMutate.mockReset()
+    completeTaskMutate.mockImplementation((_vars?: unknown, opts?: { onSuccess?: () => void }) => opts?.onSuccess?.())
+    trackMock.mockReset()
     kehoachMock.mockReset()
     kehoachMock.mockReturnValue({ data: null })
   })
@@ -151,16 +157,17 @@ describe("DebriefModal", () => {
     expect(screen.getByText("Lý do mua")).toBeInTheDocument()
     expect(screen.getByText("Thời gian giữ")).toBeInTheDocument()
 
-    // ★ Khối coach "NHÌN LẠI" đã bỏ theo yêu cầu điều chỉnh.
-    expect(screen.queryByText("NHÌN LẠI")).not.toBeInTheDocument()
+    expect(screen.getByText("NHÌN LẠI")).toBeInTheDocument()
+    expect(screen.getByText(/bạn đã đi đủ một vòng giao dịch hoàn chỉnh/)).toBeInTheDocument()
 
-    // Count-up P&L eventually settles on the final +1.9% (63000 vs 61800).
+    // Số theo chuẩn Việt Nam: dấu phẩy thập phân.
     await waitFor(
-      () => expect(screen.getByText("+1.9%")).toBeInTheDocument(),
+      () => expect(screen.getByText("+1,9%")).toBeInTheDocument(),
       { timeout: 2000 },
     )
 
     expect(screen.getByText("Đóng kết sổ ✓")).toBeInTheDocument()
+    expect(trackMock).toHaveBeenCalledWith("cap0_ketso_view")
   })
 
   // ★ v3.0 removed cắt lỗ/chốt lời from Cấp 0 entirely (preamble, §0, §8, §13)
@@ -184,9 +191,12 @@ describe("DebriefModal", () => {
 
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
 
-    expect(completeTaskMutate).toHaveBeenCalledWith({ taskNo: 4, gate: "debrief" })
-    expect(completeTaskMutate).not.toHaveBeenCalledWith({ taskNo: 6, gate: "debrief" })
+    expect(completeTaskMutate).toHaveBeenCalledWith(
+      { taskNo: 5, gate: "debrief" },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    )
     expect(onClose).toHaveBeenCalledTimes(1)
+    expect(trackMock).toHaveBeenCalledWith("cap0_task_complete", { task_id: 5 })
   })
 
   it("uses the typographic minus «−» (U+2212) for a NEGATIVE VND subline, same glyph as the P&L %", () => {
@@ -199,10 +209,10 @@ describe("DebriefModal", () => {
       buyOrderId: "buy-order-2",
     }
     render(<DebriefModal data={lossData} onClose={vi.fn()} />)
-    // (58,900 − 62,000) × 100 = −310,000đ — must use "−" (U+2212), never a
+    // (58.900 − 62.000) × 100 = −310.000đ — must use "−" (U+2212), never a
     // plain ASCII hyphen ("-", U+002D), which `toLocaleString` would emit.
-    expect(screen.getByText("−310,000đ · MUA 100 VNM → BÁN")).toBeInTheDocument()
-    expect(screen.queryByText(/-310,000/)).not.toBeInTheDocument()
+    expect(screen.getByText("−310.000đ · MUA 100 VNM → BÁN")).toBeInTheDocument()
+    expect(screen.queryByText(/-310\.000/)).not.toBeInTheDocument()
   })
 
   it("a Kết sổ rebuilt from order history renders identically — there is no plan data to be missing any more", () => {
@@ -313,7 +323,7 @@ describe("DebriefModal", () => {
     expect(kehoachMock).toHaveBeenCalledWith(null)
   })
 
-  it("still completes nhiệm vụ ④ when a retroactive Kết sổ is closed", () => {
+  it("still completes nhiệm vụ ⑤ when a retroactive Kết sổ is closed", () => {
     const onClose = vi.fn()
     render(
       <DebriefModal
@@ -329,7 +339,10 @@ describe("DebriefModal", () => {
       />,
     )
     fireEvent.click(screen.getByText("Đóng kết sổ ✓"))
-    expect(completeTaskMutate).toHaveBeenCalledWith({ taskNo: 4, gate: "debrief" })
+    expect(completeTaskMutate).toHaveBeenCalledWith(
+      { taskNo: 5, gate: "debrief" },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    )
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 })

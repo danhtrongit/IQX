@@ -1,4 +1,5 @@
 import { useEffect } from "react"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import "./cap2-alerts.css"
 
 /**
@@ -49,6 +50,11 @@ export function GhiNhanNho({ event, onDone }: GhiNhanNhoProps) {
 
   useEffect(() => {
     if (!text) return
+    trackJourneyEvent("cap2_ghinhanNho", {
+      type: event.kind,
+      ...(event.kind === "chuoi" ? { value: event.chuoi } : {}),
+      ...(event.kind === "nhiem_vu" ? { task_id: event.taskNo } : {}),
+    })
     const timer = setTimeout(onDone, GHI_NHAN_NHO_MS)
     return () => clearTimeout(timer)
     // `onDone` may be an inline lambda; re-arming on every render would reset

@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import { cn } from "@/shared/lib/cn"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { KHAU_VI_PCT, MUC_TU_TIN_HE_SO, computeKhoiLuong } from "./khoiLuong"
 import type { CachKhoiLuong, KhauViLoai, MucTuTin } from "./types"
 import "./cap3.css"
@@ -67,16 +68,14 @@ const TU_TIN_OPTIONS: { muc: MucTuTin; stars: string; label: string }[] = [
 ]
 
 /** Tiêu đề 2 thẻ cách tính — chữ + icon lấy nguyên từ mockup `.qty-way .wt`. */
-const CACH_OPTIONS: { cach: CachKhoiLuong; ten: string; mo_ta: string }[] = [
+const CACH_OPTIONS: { cach: CachKhoiLuong; ten: string }[] = [
   {
     cach: "linh_hoat",
     ten: "🎯 Theo khẩu vị × tự tin",
-    mo_ta: "Tin nhiều mua nhiều: trần khẩu vị × mức tự tin.",
   },
   {
     cach: "ky_luat",
     ten: "⚖️ Chia đều theo khẩu vị",
-    mo_ta: "Luôn mua đúng trần khẩu vị, không để cảm xúc chi phối.",
   },
 ]
 
@@ -141,7 +140,10 @@ export function QuanLyVonBlock({
             aria-pressed={khauVi === opt.loai}
             disabled={dangDoiKhauVi}
             onClick={() => {
-              if (opt.loai !== khauVi) onChonKhauVi(opt.loai)
+              if (opt.loai !== khauVi) {
+                trackJourneyEvent("cap3_khau_vi_change", { loai: opt.loai })
+                onChonKhauVi(opt.loai)
+              }
             }}
             data-testid={`cap3-khauvi-${opt.loai}`}
           >
@@ -160,7 +162,10 @@ export function QuanLyVonBlock({
             type="button"
             className={cn("op-conf", mucTuTin === opt.muc && "op-conf--on")}
             aria-pressed={mucTuTin === opt.muc}
-            onClick={() => onMucTuTin(opt.muc)}
+            onClick={() => {
+              trackJourneyEvent("cap3_tu_tin_chon", { muc: opt.muc })
+              onMucTuTin(opt.muc)
+            }}
             data-testid={`cap3-tutin-${opt.muc}`}
           >
             <span className="op-conf-stars">{opt.stars}</span>
@@ -190,19 +195,15 @@ export function QuanLyVonBlock({
               <div className="op-way-big" data-testid={`cap3-cach-big-${opt.cach}`}>
                 {p ? `≈ ${p.khoiLuong.toLocaleString("en-US")}` : "—"}
               </div>
-              <div className="op-way-pct">
-                {p
-                  ? opt.cach === "linh_hoat"
-                    ? `${p.pctVon.toFixed(1)}% vốn (${khauViPct}% × ${heSo}%)`
-                    : `${p.pctVon.toFixed(1)}% vốn (đúng mức trần)`
-                  : "Chấm mức tự tin để thấy con số"}
-              </div>
-              <p className="op-way-k text-[10.5px]">{opt.mo_ta}</p>
+
               <button
                 type="button"
                 className="op-way-pick"
                 aria-pressed={isSelected}
-                onClick={() => onCachKhoiLuong(opt.cach)}
+                onClick={() => {
+                  trackJourneyEvent("cap3_khoi_luong_cach", { cach: opt.cach })
+                  onCachKhoiLuong(opt.cach)
+                }}
                 data-testid={`cap3-cach-${opt.cach}`}
               >
                 {isSelected ? "Đã chọn" : "Chọn cách này"}

@@ -176,3 +176,25 @@
   border: 1px dashed var(--bd);
   border-radius: 8px;
 }
+
+/* Cấp 3 keeps the blue brand accent from its source mockup. The order panel
+   carries the inherited `.op-panel--cap1` class, whose generic copper rule is
+   intentionally overridden only for this Cấp-3 block. */
+.op-panel--cap1 .op-risk[data-testid="cap3-quanlyvon"] {
+  border-color: rgba(79, 143, 247, 0.4);
+  background: linear-gradient(180deg, rgba(79, 143, 247, 0.16), transparent);
+}
+
+.op-risk[data-testid="cap3-quanlyvon"] .op-conf:hover:not(:disabled),
+.op-risk[data-testid="cap3-quanlyvon"] .op-conf--on {
+  border-color: #4f8ff7;
+}
+
+.op-risk[data-testid="cap3-quanlyvon"] .op-conf--on {
+  background: rgba(79, 143, 247, 0.14);
+}
+
+.op-risk[data-testid="cap3-quanlyvon"] .op-conf--on .op-conf-l,
+.op-risk[data-testid="cap3-quanlyvon"] .op-conf--on .op-conf-pct {
+  color: #4f8ff7;
+}

@@ -57,14 +57,17 @@ export interface CoachResultCap5 {
 function fmtPct(pct: number): string {
   const rounded = Math.round(pct * 10) / 10
   const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : ""
-  return `${sign}${Math.abs(rounded).toFixed(1)}%`
+  return `${sign}${Math.abs(rounded).toLocaleString("vi-VN", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  })}%`
 }
 
 /** " · chờ 2 phiên trong Watchlist" — bỏ hẳn vế này khi không đo được. */
 function veCho(soPhien: number | null): string {
   if (soPhien == null || soPhien < 0) return ""
   if (soPhien === 0) return " ngay trong phiên đưa mã vào Watchlist"
-  return ` sau ${soPhien.toLocaleString("en-US")} phiên chờ trong Watchlist`
+  return ` sau ${soPhien.toLocaleString("vi-VN")} phiên chờ trong Watchlist`
 }
 
 const DUOI_PHAN_TICH =

@@ -186,6 +186,7 @@ export function AiThanhTra({
   return (
     <div
       data-testid="ai-thanh-tra"
+      aria-live="polite"
       className="mt-2 space-y-2 rounded-md border border-[var(--color-border-2)] bg-[var(--color-bg-2)] p-2.5"
     >
       {/* Header (mockup): 🔍 AI Thanh tra · {tên lớp} — L{n}. 💎 Định giá không

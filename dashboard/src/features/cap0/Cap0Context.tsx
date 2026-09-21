@@ -65,21 +65,16 @@ export interface Cap0EventHandlers {
   onReasonPicked?: (reason: string) => void
   onOrderFilled?: (order: Cap0OrderEvent) => void
   /**
-   * The ★ watchlist button was toggled. Still notified by `TradingPanel`, but
-   * Cấp 0 no longer registers a handler for it: nhiệm vụ ① used to demand the
-   * ★ as its third step; nhiệm vụ ③ «Xem tab Theo dõi» is about OPENING that
-   * tab, not about starring anything.
+   * The ★ watchlist button was toggled; nhiệm vụ ① requires this as its third step.
    */
   onStarToggled?: (symbol: string, watched: boolean) => void
   /**
-   * Panel "Danh mục" switched to (or mounted on) a tab — the completion event
-   * for nhiệm vụ ② «Xem tab Nắm giữ» (`holdings`) and ③ «Xem tab Theo dõi»
-   * (`watchlist`). `WatchlistPanel` fires it for whichever tab is showing,
-   * including on mount (the tab is remembered in localStorage, so a returning
-   * user can land on Nắm giữ without ever clicking it); `Gbar` owns all the
-   * "should this actually PATCH?" rules.
+   * Panel "Danh mục" switched to (or mounted on) a tab. Kept for existing
+   * shared consumers; Cấp 0 progress now comes from the three product tours.
    */
   onPortfolioTabOpen?: (tab: Cap0PortfolioTab) => void
+  /** Yêu cầu chạy một tour Chặng 2 từ tab Hành trình. */
+  onLaunchTour?: (taskNo: number) => void
   /** A guarded action was attempted without its precondition (spec §6 "Làm SAI") — flash the gbar red + `gshake` for ~1.6s. */
   onGbarWarn?: () => void
 }
@@ -87,7 +82,7 @@ export interface Cap0EventHandlers {
 /** The bus value: notify fns (undefined when no handlers) + `registerHandlers`. */
 export interface Cap0EventBus extends Cap0EventHandlers {
   registerHandlers: (handlers: Cap0EventHandlers) => void
-  /** True only inside a `Cap0Provider` (i.e. the Cấp 0 «Sân tập» practice-trading shell). Lets `GatedOrderEntry` ungate the order form without a premium plan. */
+  /** True only inside a `Cap0Provider`; lets the practice shell enable its order form. */
   isCap0Active: boolean
   /**
    * True while Cấp 0 nhiệm vụ ① is still open — `OrderEntry` must block
@@ -137,6 +132,10 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
     handlersRef.current.onPortfolioTabOpen?.(tab)
   }, [])
 
+  const onLaunchTour = useCallback((taskNo: number) => {
+    handlersRef.current.onLaunchTour?.(taskNo)
+  }, [])
+
   // Fail-closed while progress is still loading (`progress` undefined →
   // `task_1_done_at` undefined → the gate stays required), matching the
   // product's "chặn nếu chưa chọn" protective default.
@@ -149,6 +148,7 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
       onStarToggled,
       onGbarWarn,
       onPortfolioTabOpen,
+      onLaunchTour,
       registerHandlers,
       isCap0Active: true,
       requireReasonBeforeOrder,
@@ -159,6 +159,7 @@ export function Cap0Provider({ children }: { children: ReactNode }) {
       onStarToggled,
       onGbarWarn,
       onPortfolioTabOpen,
+      onLaunchTour,
       registerHandlers,
       requireReasonBeforeOrder,
     ],

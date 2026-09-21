@@ -37,6 +37,7 @@ import type { TourConfig } from "../tourTypes"
  */
 export const mauThuanTour: TourConfig = {
   name: "mauthuan",
+  overlayColor: "rgba(10, 12, 20, 0.52)",
   steps: [
     {
       targetId: "tour-cap6-toancanh",
@@ -81,7 +82,7 @@ export const mauThuanTour: TourConfig = {
       placement: "below",
     },
     {
-      targetSelector: "#toolbar-journey",
+      targetSelector: '[data-tour-id="tour-cap6-analysis-link"], #toolbar-journey',
       tang: "NHÌN LẠI",
       title: "Nhìn lại để trưởng thành",
       body: "Sau mỗi lệnh, Kết sổ và Phân tích danh mục sẽ soi: nhận định của bạn có khớp hành động không, và bản năng đọc mâu thuẫn của bạn có chuẩn không. Đó là cách bạn thành nhà đầu tư bậc thầy.",

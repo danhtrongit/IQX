@@ -110,6 +110,45 @@ class VirtualTradingService:
 
     # ── Place Order ──────────────────────────────────
 
+    async def get_journey_level(self, user_id: uuid.UUID) -> int | None:
+        """Resolve the active learning level without coupling it to billing."""
+        from app.models.cap0 import Cap0Progress, UserPlacement
+        from app.models.cap1 import Cap1Progress
+        from app.models.cap2 import Cap2Progress
+        from app.models.cap3 import Cap3Progress
+        from app.models.cap4 import Cap4Progress
+        from app.models.cap5 import Cap5Progress
+        from app.models.cap6 import Cap6Progress
+
+        for level, model in (
+            (6, Cap6Progress),
+            (5, Cap5Progress),
+            (4, Cap4Progress),
+            (3, Cap3Progress),
+            (2, Cap2Progress),
+            (1, Cap1Progress),
+        ):
+            row = (
+                await self._session.execute(select(model.id).where(model.user_id == user_id))
+            ).scalar_one_or_none()
+            if row is not None:
+                return level
+        placement = (
+            await self._session.execute(
+                select(UserPlacement).where(UserPlacement.user_id == user_id)
+            )
+        ).scalar_one_or_none()
+        if placement is not None and placement.placed_level > 0:
+            return placement.placed_level
+        cap0 = (
+            await self._session.execute(
+                select(Cap0Progress).where(Cap0Progress.user_id == user_id)
+            )
+        ).scalar_one_or_none()
+        if cap0 is not None:
+            return 1 if cap0.graduated_at is not None else 0
+        return placement.placed_level if placement is not None else None
+
     async def place_order(
         self,
         user_id: uuid.UUID,
@@ -119,6 +158,7 @@ class VirtualTradingService:
         quantity: int,
         limit_price_vnd: int | None = None,
         is_premium: bool = False,
+        journey_level: int | None = None,
     ):
         """Place a virtual order.
 
@@ -133,7 +173,17 @@ class VirtualTradingService:
         The sole call site (``app.api.v1.endpoints.virtual_trading.place_order``)
         always passes this explicitly, so this default only guards future callers.
         """
-        mode = "thuc_chien" if is_premium else "san_tap"
+        if journey_level is None:
+            journey_level = await self.get_journey_level(user_id)
+        mode = (
+            "san_tap"
+            if journey_level == 0
+            else "thuc_chien"
+            if journey_level is not None and journey_level >= 1
+            else "thuc_chien"
+            if is_premium
+            else "san_tap"
+        )
 
         config = await self.get_or_create_config()
         if not config.trading_enabled:
@@ -191,7 +241,7 @@ class VirtualTradingService:
         # Non-premium (san_tap) orders are ALWAYS T0, no matter the live/global
         # admin setting — this is what keeps real-rules T+2 premium-only.
         effective_settlement_mode = (
-            config.settlement_mode if is_premium else SettlementMode.T0
+            config.settlement_mode if mode == "thuc_chien" else SettlementMode.T0
         )
         snapshot = json.dumps({
             "buy_fee_rate_bps": config.buy_fee_rate_bps,
@@ -215,6 +265,33 @@ class VirtualTradingService:
                 account, config, symbol, order_side, quantity,
                 limit_price_vnd, trading_date, snapshot, mode=mode,
             )
+
+    async def activate_buy_plan(self, user_id: uuid.UUID, order_id: uuid.UUID) -> None:
+        """Activate a just-persisted Cấp-2 plan for an already-filled market BUY."""
+        order = await self._repo.get_order_by_id(order_id)
+        if (
+            order is None
+            or order.user_id != user_id
+            or order.side != OrderSide.BUY
+            or order.status != OrderStatus.FILLED
+        ):
+            return
+        plan = (
+            await self._session.execute(
+                select(OrderKehoach).where(OrderKehoach.order_id == order_id)
+            )
+        ).scalar_one_or_none()
+        if plan is None or plan.cat_lo is None or plan.chot_loi is None:
+            return
+        position = await self._repo.get_position_for_update(order.account_id, order.symbol)
+        if position is None:
+            return
+        position.active_plan_buy_order_id = order.id
+        position.active_original_stop_vnd = plan.cat_lo
+        position.active_original_take_profit_vnd = plan.chot_loi
+        position.active_dynamic_stop_vnd = None
+        position.active_dynamic_stop_set_at = None
+        await self._session.flush()
 
     async def _execute_market_order(
         self, account, config, symbol, side, quantity,
@@ -476,6 +553,21 @@ class VirtualTradingService:
             )
             order = await self._repo.create_order(order)
 
+        if side == OrderSide.BUY and order.status == OrderStatus.FILLED:
+            # A Cấp 2 averaging-down alert can be linked while a limit BUY is
+            # pending.  Confirm its discipline effect only on the authoritative
+            # fill transition; cancelled/rejected orders remain non-violations.
+            from app.services.cap2.alerts import Cap2AlertService
+
+            # For a market BUY the endpoint persists the plan after this method
+            # returns and activates it there.  For a pending limit BUY the plan
+            # already exists when refresh reaches this fill transition, so make
+            # it the position's active plan now.
+            await self.activate_buy_plan(account.user_id, order.id)
+            await Cap2AlertService(self._session).confirm_nhoi_order_filled(
+                account.user_id, order
+            )
+
         if side == OrderSide.SELL:
             order.exit_snapshot_at = exit_snapshot_at
             order.exit_matched_buy_order_id = exit_matched_buy_order_id
@@ -694,6 +786,10 @@ class VirtualTradingService:
                     "quantity_reserved": p.quantity_reserved, "avg_cost_vnd": p.avg_cost_vnd,
                     "current_price_vnd": pr.price_vnd, "market_value_vnd": mv,
                     "unrealized_pnl_vnd": pnl,
+                    "active_plan_buy_order_id": p.active_plan_buy_order_id,
+                    "active_original_stop_vnd": p.active_original_stop_vnd,
+                    "active_original_take_profit_vnd": p.active_original_take_profit_vnd,
+                    "active_dynamic_stop_vnd": p.active_dynamic_stop_vnd,
                 })
                 total_mv += mv
                 total_pnl += pnl
@@ -703,6 +799,10 @@ class VirtualTradingService:
                     "quantity_sellable": p.quantity_sellable, "quantity_pending": p.quantity_pending,
                     "quantity_reserved": p.quantity_reserved, "avg_cost_vnd": p.avg_cost_vnd,
                     "current_price_vnd": None, "market_value_vnd": None, "unrealized_pnl_vnd": None,
+                    "active_plan_buy_order_id": p.active_plan_buy_order_id,
+                    "active_original_stop_vnd": p.active_original_stop_vnd,
+                    "active_original_take_profit_vnd": p.active_original_take_profit_vnd,
+                    "active_dynamic_stop_vnd": p.active_dynamic_stop_vnd,
                 })
 
         total_cash = account.cash_available_vnd + account.cash_reserved_vnd + account.cash_pending_vnd

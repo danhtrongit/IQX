@@ -23,7 +23,7 @@ vi.mock("@/features/cap5/Cap5Context", () => ({ useCap5Events: () => useCap5Even
 
 import { RightToolbar } from "./RightToolbar"
 
-const CAP5_LABELS = ["Săn mã", "Watchlist"]
+const CAP5_LABELS = ["Săn mã"]
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -41,10 +41,11 @@ function renderToolbar() {
 }
 
 describe("RightToolbar — hai nút Cấp 5 gác theo cấp", () => {
-  it("TRONG Cấp 5: hiện «Săn mã» + «Watchlist»", () => {
+  it("TRONG Cấp 5: hiện «Săn mã», bỏ menu Watchlist", () => {
     useCap5EventsMock.mockReturnValue({ isCap5Active: true })
     renderToolbar()
     for (const l of CAP5_LABELS) expect(screen.getByText(l)).toBeInTheDocument()
+    expect(screen.queryByText("Watchlist")).not.toBeInTheDocument()
   })
 
   it("★ NGOÀI Cấp 5 (/bieu-do, /co-phieu, Cấp 0-4): KHÔNG có nút nào của Cấp 5", () => {

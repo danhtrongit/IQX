@@ -93,6 +93,7 @@ function cap1Progress(): Cap1Progress {
 const data: KetsoDataCap6 = {
   n: 84,
   orderId: "order-84",
+  buyOrderId: "buy-order-84",
   symbol: "VCB",
   quantity: 200,
   entryPrice: 30_000,
@@ -241,7 +242,16 @@ describe("KetsoModalCap6 — cộng dồn: giữ NGUYÊN mọi khối Cấp 1-5"
     expect(screen.getByText("KẾT SỔ LỆNH · #84 · THỰC CHIẾN")).toBeInTheDocument()
     moKeThua()
     expect(screen.getByTestId("cap5-ketso-doichieu")).toBeInTheDocument()
-    await waitFor(() => expect(screen.getByText("+5.3%")).toBeInTheDocument(), { timeout: 2000 })
+    await waitFor(() => expect(screen.getByText("+5,3%")).toBeInTheDocument(), { timeout: 2000 })
+  })
+
+  it("modal có vùng cuộn riêng để nút đóng vẫn tới được trên màn hình thấp", () => {
+    renderModal()
+    const modal = screen.getByTestId("cap6-ketso-close").closest(".arco-modal")
+    expect(modal).toHaveStyle({
+      maxHeight: "calc(100dvh - 32px)",
+      overflowY: "auto",
+    })
   })
 
   it("giữ CAM KẾT vs THỰC TẾ (Cấp 2) · QUẢN LÝ VỐN (Cấp 3) · ĐỌC 5 LỚP (Cấp 4)", () => {
@@ -337,6 +347,12 @@ describe("KetsoModalCap6 — chồng khối Cấp 1-5 THU GỌN (spec §8, mocku
     renderModal()
     expect(screen.getByTestId("cap6-ketso-nhandinh")).toBeInTheDocument()
     expect(screen.getByTestId("cap6-ketso-coach")).toBeInTheDocument()
+  })
+
+  it("lệnh Cấp 6 không có bản tự chấm thì không dựng bảng 5 lớp toàn dấu gạch", () => {
+    renderModal({ doc5Lop: {}, ai5Lop: null })
+    moKeThua()
+    expect(screen.queryByTestId("cap4-ketso-doc5lop")).not.toBeInTheDocument()
   })
 })
 
@@ -462,12 +478,12 @@ describe("KetsoModalCap6 — khối cảnh báo lệch (spec §8)", () => {
 describe("KetsoModalCap6 — đọc lại hàng ĐÃ LƯU (GET /cap6/kehoach/{order_id})", () => {
   it("ngoài Cấp 6 → KHÔNG gọi endpoint (nó 404 khi user chưa có hàng Cấp 6)", () => {
     renderModal()
-    expect(nhanDinhCap6.calls.at(-1)).toEqual(["order-84", false])
+    expect(nhanDinhCap6.calls.at(-1)).toEqual(["buy-order-84", false])
   })
 
   it("đang ở Cấp 6 → gọi endpoint với ĐÚNG order_id của lệnh", () => {
     renderInCap6()
-    expect(nhanDinhCap6.calls.at(-1)).toEqual(["order-84", true])
+    expect(nhanDinhCap6.calls.at(-1)).toEqual(["buy-order-84", true])
   })
 
   it("★ hàng đã lưu THẮNG ảnh chụp client — số hiện là số server", () => {

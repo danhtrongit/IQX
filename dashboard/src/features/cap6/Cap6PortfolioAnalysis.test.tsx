@@ -27,6 +27,8 @@ vi.mock("./hooks", () => ({
 }))
 vi.mock("@/features/cap4/hooks", () => ({
   useVuKhiDiemMu: () => ({ data: undefined, isPending: true, isError: false }),
+  // Khối kế thừa ⑩/⑪ vẫn đi qua endpoint authoritative của Cấp 4.
+  usePhanTichCap4: () => ({ data: undefined, isPending: true, isError: false }),
 }))
 vi.mock("@/features/cap5/hooks", () => ({
   useCap5PhanTich: () => ({ data: undefined, isPending: true, isError: false }),
@@ -186,7 +188,7 @@ describe("Cap6PortfolioAnalysis — khối ① phần Cấp 6 thêm", () => {
 
   it("lãi ĐƯỢC hiện ở đây (spec §11) nhưng kèm câu nói rõ KHÔNG phải cổng", () => {
     renderPa()
-    expect(screen.getByTestId("cap6-pa-khoi1-lai")).toHaveTextContent("6%")
+    expect(screen.getByTestId("cap6-pa-khoi1-lai")).toHaveTextContent("6,4%")
     expect(screen.getByTestId("cap6-pa-khoi1")).toHaveTextContent(
       "KHÔNG phải điều kiện lên cấp",
     )

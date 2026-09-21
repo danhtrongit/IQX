@@ -4,6 +4,8 @@ export interface FilledSellOrderEvent {
   quantity: number
   price: number
   orderId: string
+  /** Server-resolved BUY lot used to hydrate the exact plan after reload. */
+  buyOrderId?: string
 }
 
 export interface FilledSellCloseoutHandler {

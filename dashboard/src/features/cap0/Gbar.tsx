@@ -2,6 +2,7 @@ import { useEffect, useReducer, useRef, useState } from "react"
 import { Message } from "@arco-design/web-react"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { cn } from "@/shared/lib/cn"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 // Concrete-file import, NOT the `@/features/trading` barrel: that barrel
 // re-exports `TradingPanel`, which imports from `@/features/cap0` — going
 // through it from inside cap0 would close a real module cycle (same rationale
@@ -15,8 +16,9 @@ import { DebriefModal, type DebriefData } from "./DebriefModal"
 import { findRetroDebrief } from "./retroDebrief"
 import {
   GBAR_TAG,
-  TASK4_GBAR_MESSAGE,
+  TASK5_GBAR_MESSAGE,
   gbarReducer,
+  gbarStep,
   gbarText,
   initialGbarState,
 } from "./gbarMachine"
@@ -44,7 +46,7 @@ function announceUnlocks(prev: Cap0Visibility, next: Cap0Visibility): void {
 }
 
 function fmtVnd(n: number): string {
-  return Math.round(n).toLocaleString("en-US")
+  return Math.round(n).toLocaleString("vi-VN")
 }
 
 /**
@@ -93,12 +95,9 @@ export function Gbar() {
   // Nhiệm vụ ②/③ đã bắn PATCH trong PHIÊN NÀY. `progress` chỉ đổi sau khi
   // mutation trả về + query refetch, nên nếu chỉ dựa vào nó, một user gõ qua
   // gõ lại giữa hai tab sẽ bắn vài PATCH trùng cho cùng một nhiệm vụ.
-  const firedTabTasksRef = useRef<Set<number>>(new Set())
-
   const task1Done = !!progress?.task_1_done_at
-  const task2Done = !!progress?.task_2_done_at
-  const task3Done = !!progress?.task_3_done_at
-  // Nhiệm vụ ④ RECOVERY (production bug: Cấp 0 was ungraduatable). The live
+  const currentStep = task1Done ? null : gbarStep(state)
+  // Nhiệm vụ ⑤ recovery. The live
   // sell branch below is the ONLY way the Kết sổ task ever completed, and it
   // depends on two things a real user routinely doesn't have:
   //   • the Cấp 0 event bus, which exists only inside `Cap0Provider` — so a
@@ -106,26 +105,24 @@ export function Gbar() {
   //     but with the no-op bus) fired into the void; and
   //   • `lastBuyBySymbolRef`/`debriefCountRef`, session-local refs a page
   //     reload wipes.
-  // Since `Cap0Service.graduate` requires 4/4 tasks + the debrief gate, missing
-  // ④ meant `isGraduationReady` never opened the graduation modal and the user
+  // Since `Cap0Service.graduate` requires 2/2 tasks + both gates, missing
+  // ⑤ meant `isGraduationReady` never opened the graduation modal and the user
   // was stuck in Cấp 0 forever. So: when the user IS on `/dau-truong` with a
-  // round trip that ALREADY closed but ④ still unfinished, re-open the Kết sổ
-  // from SERVER order history so they can read it and complete ④ themselves.
-  // Deliberately NOT auto-completed server-side — ④ teaches reading the Kết sổ.
+  // round trip that ALREADY closed but ⑤ still unfinished, re-open the Kết sổ
+  // from SERVER order history so they can read it and complete ⑤ themselves.
+  // Deliberately NOT auto-completed server-side — ⑤ teaches reading the Kết sổ.
   //
-  // ★ `task_4_done_at` is the column «Bán + Kết sổ» now lives in (it was ⑤ while
-  // Cấp 0 still had the three Chặng 2 tours, and ⑥ before that; the BE migration
-  // carries the data down each time). Read the wrong column and a mid-flight
-  // production user shows 4/4 with the gate still false, this guard suppresses
+  // `task_5_done_at` is the «Bán + Kết sổ» column. Read the wrong column and a
+  // mid-flight production user shows 2/2 with the gate still false; this guard suppresses
   // their only route to the Kết sổ, and `graduate()` 409s forever behind a
   // `closable={false}` modal.
-  const task4Done = !!progress?.task_4_done_at
+  const task5Done = !!progress?.task_5_done_at
   // Only fetch history when it could actually be needed (`enabled`) — a user
-  // who already did ④ makes no extra request. Shares the query cache with
+  // who already did ⑤ makes no extra request. Shares the query cache with
   // `WatchlistPanel`'s own `useOrders("filled")`.
-  const { data: filledOrders } = useOrders("filled", !!progress && !task4Done)
+  const { data: filledOrders } = useOrders("filled", !!progress && !task5Done)
   const retroOpenedRef = useRef(false)
-  // Spec §6's own condition for the nhiệm vụ ④ bar: "khi có lệnh mở nhưng chưa
+  // Spec §6's own condition for the nhiệm vụ ⑤ bar: "khi có lệnh mở nhưng chưa
   // bán". Read from the live portfolio rather than from a progress flag so it
   // survives a reload (a session-local "I saw a buy" flag would not) and so a
   // user who already sold elsewhere is not told to sell again. Shares the query
@@ -136,7 +133,7 @@ export function Gbar() {
   useEffect(() => {
     // One-shot per session, and never in competition with the live path:
     if (retroOpenedRef.current) return
-    if (!progress || task4Done) return // not in Cấp 0, or ④ already earned
+    if (!progress || task5Done) return
     if (filledOrders === undefined) return // history still loading
     // A live debrief already opened this session (`debriefCountRef` > 0) or one
     // is on screen → the live path owns this, with its own bus-captured entry
@@ -160,7 +157,7 @@ export function Gbar() {
     // to stop it re-appearing between "Đóng kết sổ ✓" and the PATCH landing.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDebrief(retro)
-  }, [progress, task4Done, filledOrders, debrief])
+  }, [progress, task5Done, filledOrders, debrief])
 
   useEffect(() => {
     registerHandlers({
@@ -200,33 +197,14 @@ export function Gbar() {
           `✓ Khớp lệnh MUA ${order.quantity} ${order.symbol} @ ${fmtVnd(order.price)}`,
         )
       },
-      // Nhiệm vụ ② «Xem tab Nắm giữ» / ③ «Xem tab Theo dõi» — hoàn thành bằng
-      // chính việc MỞ tab đó trong panel Danh mục. `WatchlistPanel` báo lên bus
-      // mỗi lần tab đang hiện đổi (kể cả lần đầu mount, vì tab được nhớ trong
-      // localStorage: nếu không, một user quay lại với tab Nắm giữ sẵn trên màn
-      // sẽ không bao giờ bấm được vào nó và ② kẹt vĩnh viễn).
-      //
-      // Ba lớp chắn, theo đúng thứ tự backend đòi:
-      //  • chưa xong ① thì im lặng — `PATCH /cap0/task` ②/③ khi ① chưa xong bị
-      //    400 (chưa mua gì thì tab Nắm giữ không có gì để xem), và sự kiện này
-      //    bắn lại mỗi lần đổi tab nên một cú 400 chỉ là tiếng ồn vô ích;
-      //  • đã xong rồi thì thôi (idempotent theo server truth);
-      //  • `firedTabTasksRef` chặn cú bắn thứ hai trong lúc PATCH đầu còn bay —
-      //    `progress` chưa kịp refetch nên hai lớp trên chưa thấy gì cả.
-      onPortfolioTabOpen: (tab) => {
-        if (!task1Done) return
-        const taskNo = tab === "holdings" ? 2 : tab === "watchlist" ? 3 : null
-        if (taskNo === null) return
-        if (taskNo === 2 ? task2Done : task3Done) return
-        if (firedTabTasksRef.current.has(taskNo)) return
-        firedTabTasksRef.current.add(taskNo)
-        // `keepPanel` — the user is standing on the exact tab the nhiệm vụ
-        // told them to open; the usual "auto quay về tab Hành trình" reward
-        // would yank it away before they can look at anything.
-        completeTask.mutate({ taskNo, keepPanel: true })
+      onStarToggled: (symbol, watched) => {
+        if (task1Done || !watched || symbol.toUpperCase() !== "VNM") return
+        dispatch({ type: "STAR_TOGGLED" })
+        Message.success(`★ Đã thêm ${symbol} vào danh mục Theo dõi`)
       },
       onGbarWarn: () => {
         if (task1Done) return
+        trackJourneyEvent("cap0_gbar_warn", { step_no: currentStep })
         dispatch({ type: "WARN" })
         if (warnTimerRef.current) clearTimeout(warnTimerRef.current)
         warnTimerRef.current = setTimeout(() => dispatch({ type: "WARN_TIMEOUT" }), WARN_MS)
@@ -234,8 +212,13 @@ export function Gbar() {
     })
     // `completeTask.mutate` is identity-stable (TanStack Query memoises it), so
     // depending on `completeTask` itself would only re-register every render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [registerHandlers, task1Done, task2Done, task3Done])
+  }, [registerHandlers, task1Done, currentStep])
+
+  useEffect(() => {
+    if (currentStep !== null) {
+      trackJourneyEvent("cap0_gbar_shown", { step_no: currentStep })
+    }
+  }, [currentStep])
 
   // Spec §8 unlock toast — fires once per newly-unlocked component/pair as
   // `progress` moves a hide-by-level flag from false → true. Skipped while
@@ -258,36 +241,36 @@ export function Gbar() {
     }
   }, [])
 
-  // Nhiệm vụ ① «Đặt lệnh mua đầu tiên» done — chip lý do đã chọn + lệnh MUA đã
-  // khớp. Persist server-side, toast, and auto-return to the Hành trình tab
+  // Nhiệm vụ ① done — chip lý do + lệnh MUA + ★ Theo dõi.
   // (spec §4 "auto quay về tab Hành trình"). Guarded so this fires exactly once
   // even if both flags flip in the same tick.
   //
-  // ★ KHÔNG còn `gate: "star"`: ① không đòi gắn ★ nữa (việc đó là nhiệm vụ ③
-  // riêng), và backend đã bỏ hẳn `task1_star_clicked` — gửi lên chỉ tổ 422.
   useEffect(() => {
     if (task1Done || completedRef.current) return
-    if (state.reasonPicked && state.orderFilled) {
+    if (state.reasonPicked && state.orderFilled && state.starToggled) {
       completedRef.current = true
       // Dispatch locally too (not just relying on the next `progress`
       // refetch) so the bar disappears the instant the 2nd flag lands,
       // without waiting on the mutation's round trip.
       dispatch({ type: "TASK_DONE" })
-      completeTask.mutate({ taskNo: 1 })
-      Message.success("🎉 Nhiệm vụ 1 hoàn thành! Mở tab Nắm giữ để xem mã bạn vừa mua")
+      completeTask.mutate(
+        { taskNo: 1, gate: "star" },
+        { onSuccess: () => trackJourneyEvent("cap0_task_complete", { task_id: 1 }) },
+      )
+      Message.success("🎉 Nhiệm vụ 1 hoàn thành! Nắm giữ = tiền đang nằm · Theo dõi = mắt đang canh")
       setActivePanel("journey")
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.reasonPicked, state.orderFilled, task1Done])
+  }, [state.reasonPicked, state.orderFilled, state.starToggled, task1Done])
 
   const closeDebrief = () => setDebrief(null)
-  // Task ①'s 2-step bar shows until task ① is done. After that the SAME slot
-  // carries nhiệm vụ ④'s standing reminder, under spec §6's own condition:
+  // Task ①'s 3-step bar shows until task ① is done. After that the SAME slot
+  // carries nhiệm vụ ⑤'s standing reminder, under spec §6's own condition:
   // "khi có lệnh mở nhưng chưa bán". The two are mutually exclusive by
   // construction (`task1Done` picks exactly one side), so this is a plain
   // fallback, not a priority pick.
-  const showTask4Reminder = task1Done && !task4Done && hasOpenPosition
-  const text = task1Done ? (showTask4Reminder ? TASK4_GBAR_MESSAGE : null) : gbarText(state)
+  const showTask5Reminder = task1Done && !task5Done && hasOpenPosition
+  const text = task1Done ? (showTask5Reminder ? TASK5_GBAR_MESSAGE : null) : gbarText(state)
 
   return (
     <>

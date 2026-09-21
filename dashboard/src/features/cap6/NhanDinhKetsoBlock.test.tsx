@@ -61,6 +61,16 @@ describe("mergeNhanDinhCap6 — hàng của server thắng ảnh chụp của bu
     expect(mergeNhanDinhCap6(LOCAL, wire({ nhat_quan: null }))?.nhatQuanServer).toBeNull()
   })
 
+  it("ưu tiên ảnh chụp hai phe bất biến của server", () => {
+    const r = mergeNhanDinhCap6(
+      LOCAL,
+      wire({ support_layers: ["dinh_gia"], opposing_layers: ["tin_tuc"] }),
+    )
+    expect(r?.pheUngHo).toEqual(["dinh_gia"])
+    expect(r?.pheNguoc).toEqual(["tin_tuc"])
+    expect(r?.pheNguonChuaBiet).toBe(false)
+  })
+
   it("★ `had_conflict === false` → bỏ hẳn khối (không dựng khối rỗng)", () => {
     expect(mergeNhanDinhCap6(LOCAL, wire({ had_conflict: false }))).toBeNull()
   })
@@ -78,6 +88,17 @@ describe("mergeNhanDinhCap6 — hàng của server thắng ảnh chụp của bu
 })
 
 describe("NhanDinhKetsoBlock — phán quyết server thắng luật suy ở client", () => {
+  it("nói rõ khi lịch sử cũ thiếu ảnh chụp hai phe", () => {
+    render(
+      <NhanDinhKetsoBlock
+        nhanDinh={{ ...LOCAL, pheUngHo: [], pheNguoc: [], pheNguonChuaBiet: true }}
+        pnlPct={1}
+      />,
+    )
+    expect(screen.getByTestId("cap6-ketso-phe-chua-biet")).toHaveTextContent(
+      "không suy lại",
+    )
+  })
   /**
    * Ca bất đồng THẬT, không phải giả định: khẩu vị «Tấn công» (trần 30%) +
    * tự tin ⭐ Thấp ⇒ `lechNhanDinhHanhDong("nghiem", 1) === false` ("không

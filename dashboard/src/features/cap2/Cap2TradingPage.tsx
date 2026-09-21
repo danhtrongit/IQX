@@ -3,7 +3,9 @@ import { SymbolProvider, useSymbol } from "@/shared/contexts/symbol-context"
 import { useSidebar } from "@/shared/contexts/sidebar-context"
 import { Header, MarketBar, Footer, TrialBanner } from "@/features/navigation"
 import { AiInsightSymbolModal } from "@/features/dau-truong"
-import { CenterPanel, RightSidebar, RightToolbar } from "@/features/dashboard"
+import { RightSidebar, RightToolbar } from "@/features/dashboard"
+import { JourneyIdentityStage } from "@/features/journey-identity/JourneyIdentityStage"
+import { trackJourneyEvent } from "@/shared/analytics/journey"
 import { ModeBadge } from "@/features/cap0/ModeBadge"
 // Concrete-file imports (NOT the `@/features/cap1` barrel) — that barrel
 // re-exports `Cap1TradingPage`, which itself imports `CenterPanel`/
@@ -16,9 +18,10 @@ import { useCap1TradeLog, type Cap1TradeRecord } from "@/features/cap1/tradeLog"
 import { countTradingSessions } from "@/features/cap1/KetsoModalCap1"
 import type { LyDo, TrangThaiLucDat } from "@/features/cap1/types"
 import { Cap2Provider, useCap2Events, type Cap2OrderEvent } from "./Cap2Context"
+import { Cap2AlertRegion } from "./Cap2AlertRegion"
 import { GraduationModalCap2 } from "./GraduationModalCap2"
 import { KetsoModalCap2, type KetsoDataCap2 } from "./KetsoModalCap2"
-import { useDiemKyLuat } from "./hooks"
+import { useCap2Progress, useDiemKyLuat } from "./hooks"
 import { useCap2TradeLog } from "./tradeLogCap2"
 import type { KetsoInputCap2, PhuongPhapSlTp } from "./types"
 import "@/features/cap0/cap0.css"
@@ -157,8 +160,9 @@ function Cap2Terminal() {
   const { isCap1Active, registerHandlers: registerCap1Handlers } = useCap1Events()
   const { isCap2Active, registerHandlers: registerCap2Handlers } = useCap2Events()
   const { data: cap1Progress } = useCap1Progress(isCap1Active)
+  const { data: cap2Progress } = useCap2Progress(isCap2Active)
   const { data: diemKyLuat } = useDiemKyLuat(undefined, isCap2Active)
-  const { activePanel, setActivePanel } = useSidebar()
+  const { activePanel, setActivePanel, setIsOpen } = useSidebar()
   const { trades: cap1Trades, record: recordCap1Trade } = useCap1TradeLog()
   const { record: recordCap2Trade, recordScore: recordCap2Score } = useCap2TradeLog()
 
@@ -169,6 +173,7 @@ function Cap2Terminal() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setActivePanel("journey")
+    if (window.innerWidth < 768) setIsOpen(false)
     return () => setActivePanel(prevPanelRef.current)
   }, [])
 
@@ -179,6 +184,7 @@ function Cap2Terminal() {
   useEffect(() => {
     if (!diemKyLuat) return
     if (diemKyLuat.diem == null || diemKyLuat.xep_loai == null) return
+    trackJourneyEvent("cap2_diem_ky_luat_daily", { score: diemKyLuat.diem })
     recordCap2Score({ ngay: diemKyLuat.ngay, diem: diemKyLuat.diem, xepLoai: diemKyLuat.xep_loai })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diemKyLuat?.ngay, diemKyLuat?.diem, diemKyLuat?.xep_loai])
@@ -315,8 +321,10 @@ function Cap2Terminal() {
         <ModeBadge mode="thuc_chien" />
       </div>
 
+      <Cap2AlertRegion enabled={isCap2Active} />
+
       <div className="flex flex-1 min-h-0 pb-[52px] md:pb-0">
-        <CenterPanel symbolChange="select" />
+        <JourneyIdentityStage level={2} />
         <RightSidebar />
         <RightToolbar onActionClick={handleActionClick} />
       </div>
@@ -329,6 +337,7 @@ function Cap2Terminal() {
       <KetsoModalCap2
         data={ketso}
         progress={cap1Progress ?? null}
+        disciplineProgress={cap2Progress ?? null}
         trades={cap1Trades}
         onClose={() => setKetso(null)}
         onRecorded={handleKetsoRecorded}
