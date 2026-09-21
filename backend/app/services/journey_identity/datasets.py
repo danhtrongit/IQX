@@ -8,7 +8,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import date, datetime
+import math
+from datetime import UTC, date, datetime, timedelta, timezone
 
 from app.models.cap4 import LOP_KEYS
 from app.services.cap6.mau_thuan import bac_cua_nhan
@@ -16,6 +17,66 @@ from app.services.valuation_reading import positive, read_valuation
 
 logger = logging.getLogger(__name__)
 LAYER_SOURCE = {"ky_thuat": "L1", "dong_tien": "L3", "noi_bo": "L4", "tin_tuc": "L5"}
+_VN_TZ = timezone(timedelta(hours=7))
+
+
+def _session_date(value: object) -> date | None:
+    """Parse a provider-owned bar timestamp into its Vietnam session date."""
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, datetime):
+        return value.astimezone(_VN_TZ).date() if value.tzinfo is not None else value.date()
+    if isinstance(value, date):
+        return value
+
+    numeric: float | None = None
+    if isinstance(value, (int, float)):
+        try:
+            numeric = float(value)
+        except OverflowError:
+            return None
+    elif isinstance(value, str):
+        raw = value.strip()
+        if not raw:
+            return None
+        try:
+            numeric = float(raw)
+        except ValueError:
+            try:
+                parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+            except ValueError:
+                return None
+            return parsed.astimezone(_VN_TZ).date() if parsed.tzinfo is not None else parsed.date()
+    else:
+        return None
+
+    if not math.isfinite(numeric):
+        return None
+    if abs(numeric) > 10_000_000_000:  # provider epochs may be milliseconds
+        numeric /= 1000
+    try:
+        return datetime.fromtimestamp(numeric, tz=UTC).astimezone(_VN_TZ).date()
+    except (OverflowError, OSError, ValueError):
+        return None
+
+
+def _latest_source_session(insight: dict, now: datetime) -> date | None:
+    """Return the latest non-future session stated by an immutable OHLCV bar."""
+    raw_input = insight.get("rawInput")
+    trend = raw_input.get("trend") if isinstance(raw_input, dict) else None
+    bars = trend.get("ohlcv") if isinstance(trend, dict) else None
+    today = now.astimezone(_VN_TZ).date() if now.tzinfo is not None else now.date()
+    sessions: list[date] = []
+    for bar in bars if isinstance(bars, list) else []:
+        if not isinstance(bar, dict):
+            continue
+        for key in ("date", "tradingDate", "t", "time"):
+            session = _session_date(bar.get(key))
+            if session is not None:
+                if session <= today:
+                    sessions.append(session)
+                break
+    return max(sessions) if sessions else None
 
 
 def valuation_verdict(valuation: object, price: float | None) -> str | None:
@@ -97,22 +158,10 @@ def snapshot(
                 f"Trung vị (giá hợp lý): {valuation_reading.fair_median:,.0f}",
             ],
         }
-    # Session from the supplied price series, never from browser time. If the
-    # provider cannot identify a session, permit learning but exclude assignment.
-    dates = []
-    raw_input = insight_data.get("rawInput")
-    trend = raw_input.get("trend") if isinstance(raw_input, dict) else None
-    ohlcv = trend.get("ohlcv") if isinstance(trend, dict) else None
-    for bar in ohlcv if isinstance(ohlcv, list) else []:
-        if not isinstance(bar, dict):
-            continue
-        try:
-            day = date.fromisoformat(str(bar.get("date"))[:10])
-            if day <= now.date():
-                dates.append(day)
-        except (TypeError, ValueError):
-            continue
-    session = max(dates) if dates else None
+    # Session from the supplied price series, never from request/browser time or
+    # the mutable analysis ``updatedAt``. If the provider cannot identify a
+    # session, permit learning but exclude the receipt from assignment.
+    session = _latest_source_session(insight_data, now)
     requested_symbol = symbol.strip().upper() if isinstance(symbol, str) and symbol.strip() else None
     source_symbol = insight_data.get("symbol")
     source_symbol = (

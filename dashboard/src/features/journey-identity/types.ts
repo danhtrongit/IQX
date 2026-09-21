@@ -16,7 +16,7 @@ export interface IdentityState {
     id: MascotId
     name: string
     dominant_layer: Lop
-    assignment_basis: "ai_match_count" | "stable_tie_break" | "zero_match_tie_break"
+    assignment_basis: "ai_match_count" | "stable_tie_break" | "zero_match_tie_break" | "legacy_order_snapshot"
     valid_pair_count: number
     match_counts: Record<Lop, number>
     tied_layers: Lop[]

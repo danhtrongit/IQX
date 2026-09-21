@@ -48,7 +48,7 @@ class MascotResponse(BaseModel):
     id: Literal["bach_ho", "thanh_long", "loc_huou", "phung_hoang", "kim_quy"]
     name: str
     dominant_layer: Literal["ky_thuat", "dong_tien", "noi_bo", "tin_tuc", "dinh_gia"]
-    assignment_basis: Literal["ai_match_count", "stable_tie_break", "zero_match_tie_break"]
+    assignment_basis: Literal["ai_match_count", "stable_tie_break", "zero_match_tie_break", "legacy_order_snapshot"]
     valid_pair_count: int = Field(ge=1)
     match_counts: MatchCountsResponse
     tied_layers: list[Literal["ky_thuat", "dong_tien", "noi_bo", "tin_tuc", "dinh_gia"]]

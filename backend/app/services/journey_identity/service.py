@@ -31,6 +31,7 @@ from app.services.journey_identity.classification import (
     utc,
 )
 from app.services.journey_identity.datasets import load_dataset
+from app.services.journey_identity.legacy_recovery import read_legacy_mascot
 
 logger = logging.getLogger(__name__)
 VN_TZ = ZoneInfo("Asia/Ho_Chi_Minh")
@@ -158,6 +159,10 @@ class JourneyIdentityService:
         profile = await self.profile(user_id)
         if profile is not None and profile.assignment_status == "assigned":
             await self.validate_frozen_profile(profile, graduated)
+            return profile
+        # A reviewed legacy recovery is already a fixed identity. New or repaired
+        # evidence must not silently reroll an identity shown to the learner.
+        if await read_legacy_mascot(self.db, user_id, graduated) is not None:
             return profile
         cap4 = (await self.db.execute(select(Cap4Progress).where(Cap4Progress.user_id == user_id))).scalar_one_or_none()
         now = datetime.now(UTC)
@@ -306,6 +311,9 @@ class JourneyIdentityService:
                     )
                 }
                 mascot.update(id=profile.mascot_id, name=MASCOTS[profile.dominant_layer][1])
+            else:
+                mascot = await read_legacy_mascot(self.db, user_id, graduated)
+            if mascot is not None:
                 lifecycle = "mascot" if ui and ui.mascot_reveal_seen_at else "reveal_pending"
         return utc_fields(
             {
@@ -450,7 +458,7 @@ class JourneyIdentityService:
     async def submit(self, user_id: uuid.UUID, dataset_id: uuid.UUID, answers: dict) -> dict:
         if not complete_map(answers):
             raise BadRequestError("Cần tự chấm đủ 5 lớp")
-        user = await self.lock_user(user_id)
+        await self.lock_user(user_id)
         dataset = await self.db.get(JourneyReadingDataset, dataset_id)
         if dataset is None or dataset.user_id != user_id:
             raise NotFoundError("bộ dữ liệu")
@@ -473,7 +481,10 @@ class JourneyIdentityService:
                 trading_date=dataset.trading_date,
                 completed_at=datetime.now(UTC),
                 answers=answers,
-                source="admin" if str(user.role).lower() == "admin" else "learning",
+                # This endpoint records the signed-in user's own manual answer.
+                # Account privileges do not turn an ordinary learning action
+                # into an administrative import/seed record.
+                source="learning",
             )
             self.db.add(row)
             await self.db.flush()

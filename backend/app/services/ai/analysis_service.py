@@ -16,7 +16,7 @@ Each function:
 Cache keys:
 - iqx:ai:analysis:dashboard:{language}
 - iqx:ai:analysis:industry:{icb_code}:{language}
-- iqx:ai:analysis:insight:{symbol}:{language}
+- iqx:ai:analysis:insight:{symbol}:{language}:source-time-v2
 TTL: REDIS_TTL_AI_ANALYSIS_SECONDS (default 1800 = 30 min)
 """
 
@@ -43,11 +43,13 @@ from app.services.ai.proxy_client import chat_completion
 from app.services.bctc.ai_guard import extract_allowed_numbers, sanitize_ai_output
 
 logger = logging.getLogger(__name__)
+_INSIGHT_CACHE_SCHEMA = "source-time-v2"
 
 
 def _analysis_cache_key(analysis_type: str, identifier: str, language: str) -> str:
     """Build Redis cache key for a final AI analysis result."""
-    return f"iqx:ai:analysis:{analysis_type}:{identifier}:{language}"
+    key = f"iqx:ai:analysis:{analysis_type}:{identifier}:{language}"
+    return f"{key}:{_INSIGHT_CACHE_SCHEMA}" if analysis_type == "insight" else key
 
 
 _BCTC_ANALYSIS_TTL = 7 * 24 * 3600  # 1 tuần
@@ -377,7 +379,10 @@ def _build_raw_input(payload: dict[str, Any]) -> dict[str, Any]:
     if isinstance(ohlcv, list):
         for bar in ohlcv:
             ohlcv_clean.append({
-                "date": bar.get("tradingDate") or bar.get("date") or bar.get("t"),
+                # VCI/VNDIRECT adapters normalize chart timestamps to ``time``.
+                # Keep that provider-owned session marker in rawInput instead
+                # of replacing it with request/analysis time downstream.
+                "date": bar.get("tradingDate") or bar.get("date") or bar.get("t") or bar.get("time"),
                 "open": bar.get("open") or bar.get("o"),
                 "high": bar.get("high") or bar.get("h"),
                 "low": bar.get("low") or bar.get("l"),

@@ -14,6 +14,8 @@ const COMPANION_COPY = {
 export function IdentityPanel() {
   const { data, isError, isPending, refetch } = useIdentity()
   const mascot = data?.mascot
+  const isLegacy = mascot?.assignment_basis === "legacy_order_snapshot"
+  const comparisonLabel = isLegacy ? "bộ nhận định đã lưu" : "bộ đối chiếu hợp lệ"
   const layerName = LOP_DEFS.find(layer => layer.lop === mascot?.dominant_layer)?.label
   const tieNames = mascot?.tied_layers.map(id => LOP_DEFS.find(layer => layer.lop === id)?.label ?? id).join(", ")
   const run = data?.bot_run
@@ -25,10 +27,11 @@ export function IdentityPanel() {
           <MascotAvatar mascotId={mascot.id} variant="body" size={112} />
           <div><span className="identity-profile-label">ĐỒNG HÀNH CÙNG BẠN</span><h2>{mascot.name}</h2><p>{COMPANION_COPY[mascot.id]}</p></div>
         </div>
-        {mascot.assignment_basis === "zero_match_tie_break"
-          ? <p>Trong {mascot.valid_pair_count} bộ đối chiếu hợp lệ, chưa có lớp nào cùng đánh giá với AI. Bạch Hổ được xác định theo thứ tự cố định. Góc nhìn khác AI không có nghĩa là sai.</p>
-          : <p>{layerName} có nhiều lần cùng đánh giá với AI nhất: <strong>{mascot.match_counts[mascot.dominant_layer]} lần</strong> trong {mascot.valid_pair_count} bộ đối chiếu hợp lệ.
-            {mascot.assignment_basis === "stable_tie_break" && ` Các lớp ${tieNames} cùng có ${mascot.match_counts[mascot.dominant_layer]} lần; IQX chọn ${mascot.name} theo thứ tự ổn định đã quy định. Đây không phải xếp hạng năng lực.`}</p>}
+        {isLegacy && <p className="identity-legacy-provenance">Linh thú được khôi phục từ các bản tự chấm và nhận định AI đã lưu trong hành trình Cấp 4–6.</p>}
+          {mascot.assignment_basis === "zero_match_tie_break" || (isLegacy && Math.max(...Object.values(mascot.match_counts)) === 0)
+          ? <p>Trong {mascot.valid_pair_count} {comparisonLabel}, chưa có lớp nào cùng đánh giá với AI. Bạch Hổ được xác định theo thứ tự cố định. Góc nhìn khác AI không có nghĩa là sai.</p>
+          : <p>{layerName} có nhiều lần cùng đánh giá với AI nhất: <strong>{mascot.match_counts[mascot.dominant_layer]} lần</strong> trong {mascot.valid_pair_count} {comparisonLabel}.
+            {(mascot.assignment_basis === "stable_tie_break" || (isLegacy && mascot.tied_layers.length > 1)) && ` Các lớp ${tieNames} cùng có ${mascot.match_counts[mascot.dominant_layer]} lần; IQX chọn ${mascot.name} theo thứ tự ổn định đã quy định. Đây không phải xếp hạng năng lực.`}</p>}
         <table><caption>Kết quả đối chiếu năm lớp</caption><thead><tr><th scope="col">Lớp đánh giá</th><th scope="col">Số lần cùng AI</th></tr></thead>
           <tbody>{LOP_DEFS.map(layer => <tr key={layer.lop}><td>{layer.label}<span className="identity-match-track" aria-hidden="true"><i style={{ width: `${mascot.match_counts[layer.lop] / mascot.valid_pair_count * 100}%` }} /></span></td><td>{mascot.match_counts[layer.lop]}<span className="identity-match-total"> / {mascot.valid_pair_count}</span></td></tr>)}</tbody></table>
         <p>Dữ liệu từ {new Date(mascot.window_start).toLocaleDateString("vi-VN", { timeZone: data!.timezone })} đến lúc hoàn tất Cấp 6 ({new Date(mascot.window_end).toLocaleDateString("vi-VN", { timeZone: data!.timezone })}). Linh thú đã xác định sẽ được giữ nguyên.</p>
