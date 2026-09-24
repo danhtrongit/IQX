@@ -1,0 +1,3886 @@
+{
+  "baseline": {
+    "http": 315,
+    "websocket": 1
+  },
+  "consistency": {
+    "duplicateLegacy": [],
+    "duplicateOpenApi": [],
+    "duplicateRuntime": [],
+    "openApiWithoutRuntime": [],
+    "runtimeWithoutOpenApi": []
+  },
+  "coverage": {
+    "http": {
+      "mapped": 315,
+      "missing": [],
+      "total": 315
+    },
+    "websocket": {
+      "mapped": 1,
+      "missing": [],
+      "total": 1
+    }
+  },
+  "groups": [
+    {
+      "auth": {
+        "admin": 6
+      },
+      "mapped": 6,
+      "missing": 0,
+      "module": "admin_alerts",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 6
+    },
+    {
+      "auth": {
+        "admin": 1
+      },
+      "mapped": 1,
+      "missing": 0,
+      "module": "admin_audit",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 1
+    },
+    {
+      "auth": {
+        "admin": 3
+      },
+      "mapped": 3,
+      "missing": 0,
+      "module": "admin_ipn",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 3
+    },
+    {
+      "auth": {
+        "admin": 11
+      },
+      "mapped": 11,
+      "missing": 0,
+      "module": "admin_lessons",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 11
+    },
+    {
+      "auth": {
+        "admin": 3
+      },
+      "mapped": 3,
+      "missing": 0,
+      "module": "admin_metrics",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 3
+    },
+    {
+      "auth": {
+        "admin": 5
+      },
+      "mapped": 5,
+      "missing": 0,
+      "module": "admin_payments",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 5
+    },
+    {
+      "auth": {
+        "admin": 5
+      },
+      "mapped": 5,
+      "missing": 0,
+      "module": "admin_subscriptions",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 5
+    },
+    {
+      "auth": {
+        "admin": 2
+      },
+      "mapped": 2,
+      "missing": 0,
+      "module": "admin_system",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 2
+    },
+    {
+      "auth": {
+        "admin": 6
+      },
+      "mapped": 6,
+      "missing": 0,
+      "module": "admin_users",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 6
+    },
+    {
+      "auth": {
+        "admin": 10
+      },
+      "mapped": 10,
+      "missing": 0,
+      "module": "admin_vt",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 10
+    },
+    {
+      "auth": {
+        "premium": 6,
+        "unknown": 1
+      },
+      "mapped": 7,
+      "missing": 0,
+      "module": "ai_analysis",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 7
+    },
+    {
+      "auth": {
+        "premium": 2
+      },
+      "mapped": 2,
+      "missing": 0,
+      "module": "ai_forecast",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 2
+    },
+    {
+      "auth": {
+        "premium": 3
+      },
+      "mapped": 3,
+      "missing": 0,
+      "module": "ai_patterns",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 3
+    },
+    {
+      "auth": {
+        "premium": 9
+      },
+      "mapped": 9,
+      "missing": 0,
+      "module": "alerts",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 9
+    },
+    {
+      "auth": {
+        "authenticated": 2,
+        "unknown": 7
+      },
+      "mapped": 9,
+      "missing": 0,
+      "module": "auth",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 9
+    },
+    {
+      "auth": {
+        "premium": 6
+      },
+      "mapped": 6,
+      "missing": 0,
+      "module": "backtest",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 6
+    },
+    {
+      "auth": {
+        "authenticated": 4
+      },
+      "mapped": 4,
+      "missing": 0,
+      "module": "bot",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 4
+    },
+    {
+      "auth": {
+        "authenticated": 9
+      },
+      "mapped": 9,
+      "missing": 0,
+      "module": "cap0",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 9
+    },
+    {
+      "auth": {
+        "authenticated": 7
+      },
+      "mapped": 7,
+      "missing": 0,
+      "module": "cap1",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 7
+    },
+    {
+      "auth": {
+        "authenticated": 13
+      },
+      "mapped": 13,
+      "missing": 0,
+      "module": "cap2",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 13
+    },
+    {
+      "auth": {
+        "authenticated": 9
+      },
+      "mapped": 9,
+      "missing": 0,
+      "module": "cap3",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 9
+    },
+    {
+      "auth": {
+        "authenticated": 8
+      },
+      "mapped": 8,
+      "missing": 0,
+      "module": "cap4",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 8
+    },
+    {
+      "auth": {
+        "authenticated": 13
+      },
+      "mapped": 13,
+      "missing": 0,
+      "module": "cap5",
+      "responseSchemasMissing": 1,
+      "responseSchemasMissingByAuth": {
+        "authenticated": 1
+      },
+      "total": 13
+    },
+    {
+      "auth": {
+        "authenticated": 10
+      },
+      "mapped": 10,
+      "missing": 0,
+      "module": "cap6",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 10
+    },
+    {
+      "auth": {
+        "authenticated": 4
+      },
+      "mapped": 4,
+      "missing": 0,
+      "module": "cap7",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 4
+    },
+    {
+      "auth": {
+        "authenticated": 7
+      },
+      "mapped": 7,
+      "missing": 0,
+      "module": "cap8",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 7
+    },
+    {
+      "auth": {
+        "authenticated": 3
+      },
+      "mapped": 3,
+      "missing": 0,
+      "module": "chart_drawings",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 3
+    },
+    {
+      "auth": {
+        "unknown": 1
+      },
+      "mapped": 1,
+      "missing": 0,
+      "module": "health",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 1
+    },
+    {
+      "auth": {
+        "authenticated": 1
+      },
+      "mapped": 1,
+      "missing": 0,
+      "module": "journey_events",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 1
+    },
+    {
+      "auth": {
+        "authenticated": 5
+      },
+      "mapped": 5,
+      "missing": 0,
+      "module": "journey_identity",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 5
+    },
+    {
+      "auth": {
+        "authenticated": 3,
+        "unknown": 2
+      },
+      "mapped": 5,
+      "missing": 0,
+      "module": "lessons",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 5
+    },
+    {
+      "auth": {
+        "admin": 3,
+        "unknown": 7
+      },
+      "mapped": 10,
+      "missing": 0,
+      "module": "market_analysis",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 10
+    },
+    {
+      "auth": {
+        "unknown": 71
+      },
+      "mapped": 71,
+      "missing": 0,
+      "module": "market_data",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 71
+    },
+    {
+      "auth": {
+        "unknown": 8
+      },
+      "mapped": 8,
+      "missing": 0,
+      "module": "market_global",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 8
+    },
+    {
+      "auth": {
+        "premium": 2
+      },
+      "mapped": 2,
+      "missing": 0,
+      "module": "portfolio_manager",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 2
+    },
+    {
+      "auth": {
+        "admin": 5,
+        "authenticated": 3,
+        "unknown": 2
+      },
+      "mapped": 10,
+      "missing": 0,
+      "module": "premium",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 10
+    },
+    {
+      "auth": {
+        "unknown": 1
+      },
+      "mapped": 1,
+      "missing": 0,
+      "module": "realtime_ws",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 1
+    },
+    {
+      "auth": {
+        "unknown": 1
+      },
+      "mapped": 1,
+      "missing": 0,
+      "module": "telegram",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 1
+    },
+    {
+      "auth": {
+        "admin": 5,
+        "authenticated": 2
+      },
+      "mapped": 7,
+      "missing": 0,
+      "module": "users",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 7
+    },
+    {
+      "auth": {
+        "admin": 5,
+        "authenticated": 7,
+        "premium": 1,
+        "unknown": 1
+      },
+      "mapped": 14,
+      "missing": 0,
+      "module": "virtual_trading",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 14
+    },
+    {
+      "auth": {
+        "authenticated": 5
+      },
+      "mapped": 5,
+      "missing": 0,
+      "module": "watchlist",
+      "responseSchemasMissing": 0,
+      "responseSchemasMissingByAuth": {},
+      "total": 5
+    }
+  ],
+  "mappings": [
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/alerts/indicators",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_alerts.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/alerts/indicators"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/alerts/seed",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_alerts.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/alerts/seed"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/alerts/signals",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_alerts.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/alerts/signals"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/alerts/signals",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_alerts.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/alerts/signals"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "DELETE /api/v1/admin/alerts/signals/{key}",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_alerts.py",
+      "strategy": "compatibility",
+      "target": "DELETE /api/v1/admin/alerts/signals/{key}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PUT /api/v1/admin/alerts/signals/{key}",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_alerts.py",
+      "strategy": "compatibility",
+      "target": "PUT /api/v1/admin/alerts/signals/{key}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/audit",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_audit.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/audit"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/ipn",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_ipn.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/ipn"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/ipn/{log_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_ipn.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/ipn/{log_id}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/ipn/{log_id}/retry",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_ipn.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/ipn/{log_id}/retry"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/lessons/courses",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_lessons.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/lessons/courses"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/lessons/courses",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_lessons.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/lessons/courses"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "DELETE /api/v1/admin/lessons/courses/{course_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_lessons.py",
+      "strategy": "compatibility",
+      "target": "DELETE /api/v1/admin/lessons/courses/{courseId}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/lessons/courses/{course_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_lessons.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/lessons/courses/{courseId}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PATCH /api/v1/admin/lessons/courses/{course_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_lessons.py",
+      "strategy": "compatibility",
+      "target": "PATCH /api/v1/admin/lessons/courses/{courseId}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/lessons/courses/{course_id}/episodes",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_lessons.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/lessons/courses/{courseId}/episodes"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/lessons/courses/{course_id}/reorder",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_lessons.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/lessons/courses/{courseId}/reorder"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/lessons/courses/{course_id}/thumbnail",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_lessons.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/lessons/courses/{courseId}/thumbnail"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "DELETE /api/v1/admin/lessons/episodes/{episode_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_lessons.py",
+      "strategy": "compatibility",
+      "target": "DELETE /api/v1/admin/lessons/episodes/{episodeId}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PATCH /api/v1/admin/lessons/episodes/{episode_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_lessons.py",
+      "strategy": "compatibility",
+      "target": "PATCH /api/v1/admin/lessons/episodes/{episodeId}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/lessons/episodes/{episode_id}/file",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_lessons.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/lessons/episodes/{episodeId}/file"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/metrics/overview",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_metrics.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/metrics/overview"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/metrics/plan-distribution",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_metrics.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/metrics/plan-distribution"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/metrics/revenue",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_metrics.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/metrics/revenue"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/payments",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_payments.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/payments"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/payments/{order_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_payments.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/payments/{order_id}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/payments/{order_id}/mark-paid",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_payments.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/payments/{order_id}/mark-paid"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/payments/{order_id}/reconcile",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_payments.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/payments/{order_id}/reconcile"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/payments/{order_id}/refund",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_payments.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/payments/{order_id}/refund"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/subscriptions",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_subscriptions.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/subscriptions"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/subscriptions/{sub_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_subscriptions.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/subscriptions/{sub_id}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/subscriptions/{sub_id}/cancel",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_subscriptions.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/subscriptions/{sub_id}/cancel"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/subscriptions/{sub_id}/extend",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_subscriptions.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/subscriptions/{sub_id}/extend"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/system/jobs/{job_id}/run",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_system.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/system/jobs/{jobId}/run"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/system/status",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_system.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/system/status"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/users/bulk",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_users.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/users/bulk"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/users/export",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_users.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/users/export"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/users/{user_id}/360",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_users.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/users/{userId}/360"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/users/{user_id}/login-history",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_users.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/users/{userId}/login-history"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/users/{user_id}/resend-verification",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_users.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/users/{userId}/resend-verification"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/users/{user_id}/reset-password",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_users.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/users/{userId}/reset-password"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/users/{user_id}/subscriptions/history",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_subscriptions.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/users/{user_id}/subscriptions/history"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/vt/accounts/{account_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_vt.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/vt/accounts/{accountId}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/vt/accounts/{account_id}/cash-adjust",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_vt.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/vt/accounts/{accountId}/cash-adjust"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/vt/accounts/{account_id}/freeze",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_vt.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/vt/accounts/{accountId}/freeze"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/vt/accounts/{account_id}/ledger",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_vt.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/vt/accounts/{accountId}/ledger"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/vt/accounts/{account_id}/orders",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_vt.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/vt/accounts/{accountId}/orders"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/vt/accounts/{account_id}/positions",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_vt.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/vt/accounts/{accountId}/positions"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/vt/accounts/{account_id}/settlements",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_vt.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/vt/accounts/{accountId}/settlements"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/vt/accounts/{account_id}/stats",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_vt.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/vt/accounts/{accountId}/stats"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/admin/vt/accounts/{account_id}/trades",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_vt.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/admin/vt/accounts/{accountId}/trades"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/admin/vt/accounts/{account_id}/unfreeze",
+      "sourceFile": "backend/app/api/v1/endpoints/admin_vt.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/admin/vt/accounts/{accountId}/unfreeze"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/ai/bctc-dashboard/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/ai_analysis.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/ai/bctc-dashboard/{symbol}"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/ai/bctc/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/ai_analysis.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/ai/bctc/{symbol}"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/ai/dashboard/analyze",
+      "sourceFile": "backend/app/api/v1/endpoints/ai_analysis.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/ai/dashboard/analyze"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/ai/forecast/ranking",
+      "sourceFile": "backend/app/api/v1/endpoints/ai_forecast.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/ai/forecast/ranking"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/ai/forecast/symbols/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/ai_forecast.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/ai/forecast/symbols/{symbol}"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/ai/industry/analyze",
+      "sourceFile": "backend/app/api/v1/endpoints/ai_analysis.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/ai/industry/analyze"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/ai/industry/analyze-batch",
+      "sourceFile": "backend/app/api/v1/endpoints/ai_analysis.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/ai/industry/analyze-batch"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/ai/insight/analyze",
+      "sourceFile": "backend/app/api/v1/endpoints/ai_analysis.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/ai/insight/analyze"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/ai/insight/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/ai_analysis.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/ai/insight/{symbol}"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/ai/patterns/candles",
+      "sourceFile": "backend/app/api/v1/endpoints/ai_patterns.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/ai/patterns/candles"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/ai/patterns/charts",
+      "sourceFile": "backend/app/api/v1/endpoints/ai_patterns.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/ai/patterns/charts"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/ai/patterns/{kind}/symbols",
+      "sourceFile": "backend/app/api/v1/endpoints/ai_patterns.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/ai/patterns/{kind}/symbols"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/alerts/events",
+      "sourceFile": "backend/app/api/v1/endpoints/alerts.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/alerts/events"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/alerts/rules",
+      "sourceFile": "backend/app/api/v1/endpoints/alerts.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/alerts/rules"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/alerts/rules",
+      "sourceFile": "backend/app/api/v1/endpoints/alerts.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/alerts/rules"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "DELETE /api/v1/alerts/rules/{rule_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/alerts.py",
+      "strategy": "compatibility",
+      "target": "DELETE /api/v1/alerts/rules/{ruleId}"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PUT /api/v1/alerts/rules/{rule_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/alerts.py",
+      "strategy": "compatibility",
+      "target": "PUT /api/v1/alerts/rules/{ruleId}"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/alerts/signals",
+      "sourceFile": "backend/app/api/v1/endpoints/alerts.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/alerts/signals"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "DELETE /api/v1/alerts/telegram",
+      "sourceFile": "backend/app/api/v1/endpoints/alerts.py",
+      "strategy": "compatibility",
+      "target": "DELETE /api/v1/alerts/telegram"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/alerts/telegram",
+      "sourceFile": "backend/app/api/v1/endpoints/alerts.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/alerts/telegram"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/alerts/telegram/link",
+      "sourceFile": "backend/app/api/v1/endpoints/alerts.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/alerts/telegram/link"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/auth/forgot-password",
+      "sourceFile": "backend/app/api/v1/endpoints/auth.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/auth/forgot-password"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/auth/login",
+      "sourceFile": "backend/app/api/v1/endpoints/auth.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/auth/login"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/auth/logout",
+      "sourceFile": "backend/app/api/v1/endpoints/auth.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/auth/logout"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/auth/me",
+      "sourceFile": "backend/app/api/v1/endpoints/auth.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/auth/me"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/auth/refresh",
+      "sourceFile": "backend/app/api/v1/endpoints/auth.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/auth/refresh"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/auth/register",
+      "sourceFile": "backend/app/api/v1/endpoints/auth.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/auth/register"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/auth/reset-password",
+      "sourceFile": "backend/app/api/v1/endpoints/auth.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/auth/reset-password"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/auth/reset-password",
+      "sourceFile": "backend/app/api/v1/endpoints/auth.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/auth/reset-password"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/auth/verify-email",
+      "sourceFile": "backend/app/api/v1/endpoints/auth.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/auth/verify-email"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/backtest/catalog",
+      "sourceFile": "backend/app/api/v1/endpoints/backtest.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/backtest/catalog"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/backtest/run",
+      "sourceFile": "backend/app/api/v1/endpoints/backtest.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/backtest/run"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/backtest/strategies",
+      "sourceFile": "backend/app/api/v1/endpoints/backtest.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/backtest/strategies"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/backtest/strategies",
+      "sourceFile": "backend/app/api/v1/endpoints/backtest.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/backtest/strategies"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "DELETE /api/v1/backtest/strategies/{strategy_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/backtest.py",
+      "strategy": "compatibility",
+      "target": "DELETE /api/v1/backtest/strategies/{strategyId}"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PUT /api/v1/backtest/strategies/{strategy_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/backtest.py",
+      "strategy": "compatibility",
+      "target": "PUT /api/v1/backtest/strategies/{strategyId}"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/bot",
+      "sourceFile": "backend/app/api/v1/endpoints/bot.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/bot"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/bot/journal",
+      "sourceFile": "backend/app/api/v1/endpoints/bot.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/bot/journal"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/bot/mascot",
+      "sourceFile": "backend/app/api/v1/endpoints/journey_identity.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/bot/mascot"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/bot/mascot/ui-events",
+      "sourceFile": "backend/app/api/v1/endpoints/journey_identity.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/bot/mascot/ui-events"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/bot/performance",
+      "sourceFile": "backend/app/api/v1/endpoints/bot.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/bot/performance"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/bot/positions",
+      "sourceFile": "backend/app/api/v1/endpoints/bot.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/bot/positions"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap0/enter",
+      "sourceFile": "backend/app/api/v1/endpoints/cap0.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap0/enter"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap0/graduate",
+      "sourceFile": "backend/app/api/v1/endpoints/cap0.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap0/graduate"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap0/kehoach",
+      "sourceFile": "backend/app/api/v1/endpoints/cap0.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap0/kehoach"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap0/kehoach",
+      "sourceFile": "backend/app/api/v1/endpoints/cap0.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap0/kehoach"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap0/placement",
+      "sourceFile": "backend/app/api/v1/endpoints/cap0.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap0/placement"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap0/placement",
+      "sourceFile": "backend/app/api/v1/endpoints/cap0.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap0/placement"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap0/progress",
+      "sourceFile": "backend/app/api/v1/endpoints/cap0.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap0/progress"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PATCH /api/v1/cap0/task",
+      "sourceFile": "backend/app/api/v1/endpoints/cap0.py",
+      "strategy": "compatibility",
+      "target": "PATCH /api/v1/cap0/task"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap0/tours/{tour}/complete",
+      "sourceFile": "backend/app/api/v1/endpoints/cap0.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap0/tours/{tour}/complete"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap1/enter",
+      "sourceFile": "backend/app/api/v1/endpoints/cap1.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap1/enter"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap1/graduate",
+      "sourceFile": "backend/app/api/v1/endpoints/cap1.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap1/graduate"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap1/kehoach",
+      "sourceFile": "backend/app/api/v1/endpoints/cap1.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap1/kehoach"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap1/ketso",
+      "sourceFile": "backend/app/api/v1/endpoints/cap1.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap1/ketso"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap1/progress",
+      "sourceFile": "backend/app/api/v1/endpoints/cap1.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap1/progress"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PATCH /api/v1/cap1/task",
+      "sourceFile": "backend/app/api/v1/endpoints/cap1.py",
+      "strategy": "compatibility",
+      "target": "PATCH /api/v1/cap1/task"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap1/trades",
+      "sourceFile": "backend/app/api/v1/endpoints/cap1.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap1/trades"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap2/alerts/active",
+      "sourceFile": "backend/app/api/v1/endpoints/cap2.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap2/alerts/active"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap2/alerts/pre-buy",
+      "sourceFile": "backend/app/api/v1/endpoints/cap2.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap2/alerts/pre-buy"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap2/alerts/{alert_id}/action",
+      "sourceFile": "backend/app/api/v1/endpoints/cap2.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap2/alerts/{alert_id}/action"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap2/analysis",
+      "sourceFile": "backend/app/api/v1/endpoints/cap2.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap2/analysis"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap2/diem-ky-luat",
+      "sourceFile": "backend/app/api/v1/endpoints/cap2.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap2/diem-ky-luat"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap2/diem-ky-luat/history",
+      "sourceFile": "backend/app/api/v1/endpoints/cap2.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap2/diem-ky-luat/history"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap2/enter",
+      "sourceFile": "backend/app/api/v1/endpoints/cap2.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap2/enter"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap2/graduate",
+      "sourceFile": "backend/app/api/v1/endpoints/cap2.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap2/graduate"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap2/kehoach",
+      "sourceFile": "backend/app/api/v1/endpoints/cap2.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap2/kehoach"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap2/ketso",
+      "sourceFile": "backend/app/api/v1/endpoints/cap2.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap2/ketso"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap2/progress",
+      "sourceFile": "backend/app/api/v1/endpoints/cap2.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap2/progress"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PATCH /api/v1/cap2/task",
+      "sourceFile": "backend/app/api/v1/endpoints/cap2.py",
+      "strategy": "compatibility",
+      "target": "PATCH /api/v1/cap2/task"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap2/trades",
+      "sourceFile": "backend/app/api/v1/endpoints/cap2.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap2/trades"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap3/enter",
+      "sourceFile": "backend/app/api/v1/endpoints/cap3.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap3/enter"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap3/graduate",
+      "sourceFile": "backend/app/api/v1/endpoints/cap3.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap3/graduate"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap3/kehoach",
+      "sourceFile": "backend/app/api/v1/endpoints/cap3.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap3/kehoach"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap3/khau-vi",
+      "sourceFile": "backend/app/api/v1/endpoints/cap3.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap3/khau-vi"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap3/plans/{order_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/cap3.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap3/plans/{order_id}"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap3/progress",
+      "sourceFile": "backend/app/api/v1/endpoints/cap3.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap3/progress"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PATCH /api/v1/cap3/task",
+      "sourceFile": "backend/app/api/v1/endpoints/cap3.py",
+      "strategy": "compatibility",
+      "target": "PATCH /api/v1/cap3/task"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap3/trades",
+      "sourceFile": "backend/app/api/v1/endpoints/cap3.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap3/trades"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap3/trades/analysis",
+      "sourceFile": "backend/app/api/v1/endpoints/cap3.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap3/trades/analysis"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap4/enter",
+      "sourceFile": "backend/app/api/v1/endpoints/cap4.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap4/enter"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap4/graduate",
+      "sourceFile": "backend/app/api/v1/endpoints/cap4.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap4/graduate"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap4/kehoach",
+      "sourceFile": "backend/app/api/v1/endpoints/cap4.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap4/kehoach"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap4/phan-tich",
+      "sourceFile": "backend/app/api/v1/endpoints/cap4.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap4/phan-tich"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap4/plans/{order_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/cap4.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap4/plans/{order_id}"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap4/progress",
+      "sourceFile": "backend/app/api/v1/endpoints/cap4.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap4/progress"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PATCH /api/v1/cap4/task",
+      "sourceFile": "backend/app/api/v1/endpoints/cap4.py",
+      "strategy": "compatibility",
+      "target": "PATCH /api/v1/cap4/task"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap4/vu-khi-diem-mu",
+      "sourceFile": "backend/app/api/v1/endpoints/cap4.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap4/vu-khi-diem-mu"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap5/enter",
+      "sourceFile": "backend/app/api/v1/endpoints/cap5.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap5/enter"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap5/graduate",
+      "sourceFile": "backend/app/api/v1/endpoints/cap5.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap5/graduate"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap5/nguon-san/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/cap5.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap5/nguon-san/{symbol}"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap5/phan-tich",
+      "sourceFile": "backend/app/api/v1/endpoints/cap5.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap5/phan-tich"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap5/plans/{order_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/cap5.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap5/plans/{order_id}"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap5/progress",
+      "sourceFile": "backend/app/api/v1/endpoints/cap5.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap5/progress"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap5/san-ma",
+      "sourceFile": "backend/app/api/v1/endpoints/cap5.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap5/san-ma"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap5/san-ma/{bo_loc}",
+      "sourceFile": "backend/app/api/v1/endpoints/cap5.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap5/san-ma/{bo_loc}"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PATCH /api/v1/cap5/task",
+      "sourceFile": "backend/app/api/v1/endpoints/cap5.py",
+      "strategy": "compatibility",
+      "target": "PATCH /api/v1/cap5/task"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap5/tour-sanma",
+      "sourceFile": "backend/app/api/v1/endpoints/cap5.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap5/tour-sanma"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap5/watchlist",
+      "sourceFile": "backend/app/api/v1/endpoints/cap5.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap5/watchlist"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap5/watchlist",
+      "sourceFile": "backend/app/api/v1/endpoints/cap5.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap5/watchlist"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": false,
+      "runtimeRegistered": true,
+      "source": "DELETE /api/v1/cap5/watchlist/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/cap5.py",
+      "strategy": "compatibility",
+      "target": "DELETE /api/v1/cap5/watchlist/{symbol}"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap6/enter",
+      "sourceFile": "backend/app/api/v1/endpoints/cap6.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap6/enter"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap6/graduate",
+      "sourceFile": "backend/app/api/v1/endpoints/cap6.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap6/graduate"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap6/kehoach",
+      "sourceFile": "backend/app/api/v1/endpoints/cap6.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap6/kehoach"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap6/kehoach/{order_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/cap6.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap6/kehoach/{order_id}"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap6/mau-thuan/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/cap6.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap6/mau-thuan/{symbol}"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap6/phan-tich",
+      "sourceFile": "backend/app/api/v1/endpoints/cap6.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap6/phan-tich"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap6/plans/{order_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/cap6.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap6/plans/{order_id}"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap6/progress",
+      "sourceFile": "backend/app/api/v1/endpoints/cap6.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap6/progress"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap6/skip",
+      "sourceFile": "backend/app/api/v1/endpoints/cap6.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap6/skip"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap6/tour-mauthuan",
+      "sourceFile": "backend/app/api/v1/endpoints/cap6.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap6/tour-mauthuan"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap7/enter",
+      "sourceFile": "backend/app/api/v1/endpoints/cap7.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap7/enter"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap7/graduate",
+      "sourceFile": "backend/app/api/v1/endpoints/cap7.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap7/graduate"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap7/portfolio",
+      "sourceFile": "backend/app/api/v1/endpoints/cap7.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap7/portfolio"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap7/progress",
+      "sourceFile": "backend/app/api/v1/endpoints/cap7.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap7/progress"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap8/enter",
+      "sourceFile": "backend/app/api/v1/endpoints/cap8.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap8/enter"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap8/exits",
+      "sourceFile": "backend/app/api/v1/endpoints/cap8.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap8/exits"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap8/graduate",
+      "sourceFile": "backend/app/api/v1/endpoints/cap8.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap8/graduate"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PATCH /api/v1/cap8/positions/{symbol}/dynamic-stop",
+      "sourceFile": "backend/app/api/v1/endpoints/cap8.py",
+      "strategy": "compatibility",
+      "target": "PATCH /api/v1/cap8/positions/{symbol}/dynamic-stop"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap8/positions/{symbol}/exit-context",
+      "sourceFile": "backend/app/api/v1/endpoints/cap8.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap8/positions/{symbol}/exit-context"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/cap8/positions/{symbol}/sync-plan",
+      "sourceFile": "backend/app/api/v1/endpoints/cap8.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/cap8/positions/{symbol}/sync-plan"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/cap8/progress",
+      "sourceFile": "backend/app/api/v1/endpoints/cap8.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/cap8/progress"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "DELETE /api/v1/chart-drawings/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/chart_drawings.py",
+      "strategy": "compatibility",
+      "target": "DELETE /api/v1/chart-drawings/{symbol}"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/chart-drawings/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/chart_drawings.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/chart-drawings/{symbol}"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PUT /api/v1/chart-drawings/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/chart_drawings.py",
+      "strategy": "compatibility",
+      "target": "PUT /api/v1/chart-drawings/{symbol}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/health",
+      "sourceFile": "backend/app/api/v1/endpoints/health.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/health"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/journey/assessments",
+      "sourceFile": "backend/app/api/v1/endpoints/journey_identity.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/journey/assessments"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/journey/assessments/{assessment_id}/reveal",
+      "sourceFile": "backend/app/api/v1/endpoints/journey_identity.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/journey/assessments/{assessmentId}/reveal"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/journey/events",
+      "sourceFile": "backend/app/api/v1/endpoints/journey_events.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/journey/events"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/journey/reading-datasets",
+      "sourceFile": "backend/app/api/v1/endpoints/journey_identity.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/journey/reading-datasets"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/lessons/courses",
+      "sourceFile": "backend/app/api/v1/endpoints/lessons.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/lessons/courses"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/lessons/courses/{slug}",
+      "sourceFile": "backend/app/api/v1/endpoints/lessons.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/lessons/courses/{slug}"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/lessons/episodes/{episode_id}/content",
+      "sourceFile": "backend/app/api/v1/endpoints/lessons.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/lessons/episodes/{episodeId}/content"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/lessons/episodes/{episode_id}/progress",
+      "sourceFile": "backend/app/api/v1/endpoints/lessons.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/lessons/episodes/{episodeId}/progress"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/lessons/me/progress",
+      "sourceFile": "backend/app/api/v1/endpoints/lessons.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/lessons/me/progress"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-analysis/daily",
+      "sourceFile": "backend/app/api/v1/endpoints/market_analysis.py",
+      "strategy": "explicit-replacement",
+      "target": "GET /api/v2/market-analysis/{type}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-analysis/daily/latest",
+      "sourceFile": "backend/app/api/v1/endpoints/market_analysis.py",
+      "strategy": "explicit-replacement",
+      "target": "GET /api/v2/market-analysis/{type}/latest"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/market-analysis/daily/run",
+      "sourceFile": "backend/app/api/v1/endpoints/market_analysis.py",
+      "strategy": "explicit-replacement",
+      "target": "POST /api/v2/market-analysis/{type}/run"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-analysis/daily/{session_date}",
+      "sourceFile": "backend/app/api/v1/endpoints/market_analysis.py",
+      "strategy": "explicit-replacement",
+      "target": "GET /api/v2/market-analysis/{type}/{sessionDate}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-analysis/midday/latest",
+      "sourceFile": "backend/app/api/v1/endpoints/market_analysis.py",
+      "strategy": "explicit-replacement",
+      "target": "GET /api/v2/market-analysis/{type}/latest"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/market-analysis/midday/run",
+      "sourceFile": "backend/app/api/v1/endpoints/market_analysis.py",
+      "strategy": "explicit-replacement",
+      "target": "POST /api/v2/market-analysis/{type}/run"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-analysis/midday/{session_date}",
+      "sourceFile": "backend/app/api/v1/endpoints/market_analysis.py",
+      "strategy": "explicit-replacement",
+      "target": "GET /api/v2/market-analysis/{type}/{sessionDate}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-analysis/premarket/latest",
+      "sourceFile": "backend/app/api/v1/endpoints/market_analysis.py",
+      "strategy": "explicit-replacement",
+      "target": "GET /api/v2/market-analysis/{type}/latest"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/market-analysis/premarket/run",
+      "sourceFile": "backend/app/api/v1/endpoints/market_analysis.py",
+      "strategy": "explicit-replacement",
+      "target": "POST /api/v2/market-analysis/{type}/run"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-analysis/premarket/{session_date}",
+      "sourceFile": "backend/app/api/v1/endpoints/market_analysis.py",
+      "strategy": "explicit-replacement",
+      "target": "GET /api/v2/market-analysis/{type}/{sessionDate}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/bctc-dashboard/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/bctc-dashboard/{symbol}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/bctc/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/bctc/{symbol}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/company/{symbol}/details",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/company/{symbol}/details"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/company/{symbol}/news",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/company/{symbol}/news"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/company/{symbol}/officers",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/company/{symbol}/officers"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/company/{symbol}/overview",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/company/{symbol}/overview"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/company/{symbol}/price-chart",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/company/{symbol}/price-chart"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/company/{symbol}/shareholders",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/company/{symbol}/shareholders"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/company/{symbol}/subsidiaries",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/company/{symbol}/subsidiaries"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/events/calendar",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/events/calendar"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/fundamentals/{symbol}/{report_type}",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/fundamentals/{symbol}/{reportType}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/funds",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/funds"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/funds/{fund_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/funds/{fundId}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/funds/{fund_id}/nav",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/funds/{fundId}/nav"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/global/crypto/{symbol}/depth",
+      "sourceFile": "backend/app/api/v1/endpoints/market_global.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/global/crypto/{symbol}/depth"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/global/crypto/{symbol}/ohlc",
+      "sourceFile": "backend/app/api/v1/endpoints/market_global.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/global/crypto/{symbol}/ohlc"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/global/crypto/{symbol}/ticker",
+      "sourceFile": "backend/app/api/v1/endpoints/market_global.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/global/crypto/{symbol}/ticker"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/global/forex",
+      "sourceFile": "backend/app/api/v1/endpoints/market_global.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/global/forex"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/global/snapshot",
+      "sourceFile": "backend/app/api/v1/endpoints/market_global.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/global/snapshot"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/global/world-index",
+      "sourceFile": "backend/app/api/v1/endpoints/market_global.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/global/world-index"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/insights/ranking/{kind}",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/insights/ranking/{kind}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/macro/commodities",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/macro/commodities"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/macro/commodities/{code}",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/macro/commodities/{code}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/macro/economy/{indicator}",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/macro/economy/{indicator}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/macro/fx",
+      "sourceFile": "backend/app/api/v1/endpoints/market_global.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/macro/fx"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/macro/gold",
+      "sourceFile": "backend/app/api/v1/endpoints/market_global.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/macro/gold"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/news/ai",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/news/ai"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/news/ai/audio/{news_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/news/ai/audio/{newsId}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/news/ai/catalogs",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/news/ai/catalogs"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/news/ai/detail/{slug}",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/news/ai/detail/{slug}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/news/ai/tickers/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/news/ai/tickers/{symbol}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/news/latest",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/news/latest"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/news/sources",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/news/sources"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/allocation",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/allocation"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/breadth",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/breadth"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/foreign",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/foreign"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/foreign/top",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/foreign/top"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/heatmap",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/heatmap"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/heatmap/index",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/heatmap/index"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/index-impact",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/index-impact"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/liquidity",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/liquidity"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/maintenance",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/maintenance"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/market-index",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/market-index"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/proprietary",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/proprietary"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/proprietary/top",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/proprietary/top"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/sectors/allocation",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/sectors/allocation"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/sectors/detail",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/sectors/detail"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/stock-strength",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/stock-strength"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/overview/valuation",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/overview/valuation"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/quotes/{symbol}/intraday",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/quotes/{symbol}/intraday"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/quotes/{symbol}/ohlcv",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/quotes/{symbol}/ohlcv"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/quotes/{symbol}/price-depth",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/quotes/{symbol}/price-depth"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/reference/event-codes",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/reference/event-codes"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/reference/groups/{group}/symbols",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/reference/groups/{group}/symbols"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/reference/indices",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/reference/indices"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/reference/industries",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/reference/industries"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/reference/search",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/reference/search"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/reference/symbols",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/reference/symbols"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/reference/symbols/search",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/reference/symbols/search"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/reference/symbols/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/reference/symbols/{symbol}"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/screening/criteria",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/screening/criteria"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/screening/presets",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/screening/presets"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/market-data/screening/search",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/market-data/screening/search"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/sectors/information",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/sectors/information"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/sectors/ranking",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/sectors/ranking"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/sectors/trading-dates",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/sectors/trading-dates"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/sheets/tpcp",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/sheets/tpcp"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/sheets/tygia",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/sheets/tygia"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/sheets/vnd",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/sheets/vnd"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/market-data/trading/price-board",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/market-data/trading/price-board"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/trading/{symbol}/foreign-trade",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/trading/{symbol}/foreign-trade"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/trading/{symbol}/foreign-trade/summary",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/trading/{symbol}/foreign-trade/summary"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/trading/{symbol}/history",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/trading/{symbol}/history"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/trading/{symbol}/insider-deals",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/trading/{symbol}/insider-deals"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/trading/{symbol}/proprietary",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/trading/{symbol}/proprietary"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/trading/{symbol}/proprietary/summary",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/trading/{symbol}/proprietary/summary"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/trading/{symbol}/summary",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/trading/{symbol}/summary"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/trading/{symbol}/supply-demand",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/trading/{symbol}/supply-demand"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/market-data/trading/{symbol}/supply-demand/summary",
+      "sourceFile": "backend/app/api/v1/endpoints/market_data.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/market-data/trading/{symbol}/supply-demand/summary"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "WEBSOCKET /api/v1/market-data/ws",
+      "sourceFile": "backend/app/api/v1/endpoints/realtime_ws.py",
+      "strategy": "compatibility",
+      "target": "WEBSOCKET /api/v1/market-data/ws"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/portfolio-manager/analyze",
+      "sourceFile": "backend/app/api/v1/endpoints/portfolio_manager.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/portfolio-manager/analyze"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/portfolio-manager/report",
+      "sourceFile": "backend/app/api/v1/endpoints/portfolio_manager.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/portfolio-manager/report"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/premium/admin/plans",
+      "sourceFile": "backend/app/api/v1/endpoints/premium.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/premium/admin/plans"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/premium/admin/plans",
+      "sourceFile": "backend/app/api/v1/endpoints/premium.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/premium/admin/plans"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "DELETE /api/v1/premium/admin/plans/{plan_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/premium.py",
+      "strategy": "compatibility",
+      "target": "DELETE /api/v1/premium/admin/plans/{plan_id}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PATCH /api/v1/premium/admin/plans/{plan_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/premium.py",
+      "strategy": "compatibility",
+      "target": "PATCH /api/v1/premium/admin/plans/{plan_id}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/premium/admin/users/{user_id}/grant",
+      "sourceFile": "backend/app/api/v1/endpoints/premium.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/premium/admin/users/{user_id}/grant"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/premium/checkout",
+      "sourceFile": "backend/app/api/v1/endpoints/premium.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/premium/checkout"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/premium/me",
+      "sourceFile": "backend/app/api/v1/endpoints/premium.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/premium/me"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/premium/my-orders",
+      "sourceFile": "backend/app/api/v1/endpoints/premium.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/premium/my-orders"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/premium/plans",
+      "sourceFile": "backend/app/api/v1/endpoints/premium.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/premium/plans"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/premium/sepay/ipn",
+      "sourceFile": "backend/app/api/v1/endpoints/premium.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/premium/sepay/ipn"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/telegram/webhook/{secret}",
+      "sourceFile": "backend/app/api/v1/endpoints/telegram.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/telegram/webhook/{secret}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/users",
+      "sourceFile": "backend/app/api/v1/endpoints/users.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/users"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/users",
+      "sourceFile": "backend/app/api/v1/endpoints/users.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/users"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/users/me",
+      "sourceFile": "backend/app/api/v1/endpoints/users.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/users/me"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PATCH /api/v1/users/me",
+      "sourceFile": "backend/app/api/v1/endpoints/users.py",
+      "strategy": "compatibility",
+      "target": "PATCH /api/v1/users/me"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "DELETE /api/v1/users/{user_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/users.py",
+      "strategy": "compatibility",
+      "target": "DELETE /api/v1/users/{userId}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/users/{user_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/users.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/users/{userId}"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PATCH /api/v1/users/{user_id}",
+      "sourceFile": "backend/app/api/v1/endpoints/users.py",
+      "strategy": "compatibility",
+      "target": "PATCH /api/v1/users/{userId}"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/virtual-trading/account",
+      "sourceFile": "backend/app/api/v1/endpoints/virtual_trading.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/virtual-trading/account"
+    },
+    {
+      "authLevel": "premium",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/virtual-trading/account/activate",
+      "sourceFile": "backend/app/api/v1/endpoints/virtual_trading.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/virtual-trading/account/activate"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/virtual-trading/admin/accounts",
+      "sourceFile": "backend/app/api/v1/endpoints/virtual_trading.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/virtual-trading/admin/accounts"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/virtual-trading/admin/config",
+      "sourceFile": "backend/app/api/v1/endpoints/virtual_trading.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/virtual-trading/admin/config"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PATCH /api/v1/virtual-trading/admin/config",
+      "sourceFile": "backend/app/api/v1/endpoints/virtual_trading.py",
+      "strategy": "compatibility",
+      "target": "PATCH /api/v1/virtual-trading/admin/config"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/virtual-trading/admin/reset-all",
+      "sourceFile": "backend/app/api/v1/endpoints/virtual_trading.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/virtual-trading/admin/reset-all"
+    },
+    {
+      "authLevel": "admin",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/virtual-trading/admin/users/{user_id}/reset",
+      "sourceFile": "backend/app/api/v1/endpoints/virtual_trading.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/virtual-trading/admin/users/{userId}/reset"
+    },
+    {
+      "authLevel": "unknown",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/virtual-trading/leaderboard",
+      "sourceFile": "backend/app/api/v1/endpoints/virtual_trading.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/virtual-trading/leaderboard"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/virtual-trading/orders",
+      "sourceFile": "backend/app/api/v1/endpoints/virtual_trading.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/virtual-trading/orders"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/virtual-trading/orders",
+      "sourceFile": "backend/app/api/v1/endpoints/virtual_trading.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/virtual-trading/orders"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/virtual-trading/orders/{order_id}/cancel",
+      "sourceFile": "backend/app/api/v1/endpoints/virtual_trading.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/virtual-trading/orders/{orderId}/cancel"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/virtual-trading/portfolio",
+      "sourceFile": "backend/app/api/v1/endpoints/virtual_trading.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/virtual-trading/portfolio"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/virtual-trading/refresh",
+      "sourceFile": "backend/app/api/v1/endpoints/virtual_trading.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/virtual-trading/refresh"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/virtual-trading/trades",
+      "sourceFile": "backend/app/api/v1/endpoints/virtual_trading.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/virtual-trading/trades"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/watchlist",
+      "sourceFile": "backend/app/api/v1/endpoints/watchlist.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/watchlist"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "POST /api/v1/watchlist",
+      "sourceFile": "backend/app/api/v1/endpoints/watchlist.py",
+      "strategy": "compatibility",
+      "target": "POST /api/v1/watchlist"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "GET /api/v1/watchlist/check/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/watchlist.py",
+      "strategy": "compatibility",
+      "target": "GET /api/v1/watchlist/check/{symbol}"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "PUT /api/v1/watchlist/reorder",
+      "sourceFile": "backend/app/api/v1/endpoints/watchlist.py",
+      "strategy": "compatibility",
+      "target": "PUT /api/v1/watchlist/reorder"
+    },
+    {
+      "authLevel": "authenticated",
+      "documented": true,
+      "responseSchema": true,
+      "runtimeRegistered": true,
+      "source": "DELETE /api/v1/watchlist/{symbol}",
+      "sourceFile": "backend/app/api/v1/endpoints/watchlist.py",
+      "strategy": "compatibility",
+      "target": "DELETE /api/v1/watchlist/{symbol}"
+    }
+  ],
+  "quality": {
+    "operationsWithoutDeclaredAuth": [
+      "GET /api/v1/auth/reset-password",
+      "GET /api/v1/auth/verify-email",
+      "GET /api/v1/health",
+      "GET /api/v1/lessons/courses",
+      "GET /api/v1/lessons/courses/{slug}",
+      "GET /api/v1/market-analysis/{type}",
+      "GET /api/v1/market-analysis/{type}/latest",
+      "GET /api/v1/market-analysis/{type}/{sessionDate}",
+      "GET /api/v1/market-data/bctc-dashboard/{symbol}",
+      "GET /api/v1/market-data/bctc/{symbol}",
+      "GET /api/v1/market-data/company/{symbol}/bctc",
+      "GET /api/v1/market-data/company/{symbol}/bctc-dashboard",
+      "GET /api/v1/market-data/company/{symbol}/details",
+      "GET /api/v1/market-data/company/{symbol}/news",
+      "GET /api/v1/market-data/company/{symbol}/officers",
+      "GET /api/v1/market-data/company/{symbol}/overview",
+      "GET /api/v1/market-data/company/{symbol}/price-chart",
+      "GET /api/v1/market-data/company/{symbol}/shareholders",
+      "GET /api/v1/market-data/company/{symbol}/subsidiaries",
+      "GET /api/v1/market-data/events/calendar",
+      "GET /api/v1/market-data/fundamentals/{symbol}/{reportType}",
+      "GET /api/v1/market-data/funds",
+      "GET /api/v1/market-data/funds/{fundId}",
+      "GET /api/v1/market-data/funds/{fundId}/nav",
+      "GET /api/v1/market-data/global/crypto/{symbol}/depth",
+      "GET /api/v1/market-data/global/crypto/{symbol}/ohlc",
+      "GET /api/v1/market-data/global/crypto/{symbol}/ticker",
+      "GET /api/v1/market-data/global/forex",
+      "GET /api/v1/market-data/global/snapshot",
+      "GET /api/v1/market-data/global/world-index",
+      "GET /api/v1/market-data/insights/ranking/{kind}",
+      "GET /api/v1/market-data/macro/commodities",
+      "GET /api/v1/market-data/macro/commodities/{code}",
+      "GET /api/v1/market-data/macro/economy/{indicator}",
+      "GET /api/v1/market-data/macro/fx",
+      "GET /api/v1/market-data/macro/gold",
+      "GET /api/v1/market-data/news/ai",
+      "GET /api/v1/market-data/news/ai/audio/{newsId}",
+      "GET /api/v1/market-data/news/ai/catalogs",
+      "GET /api/v1/market-data/news/ai/detail/{slug}",
+      "GET /api/v1/market-data/news/ai/tickers/{symbol}",
+      "GET /api/v1/market-data/news/latest",
+      "GET /api/v1/market-data/news/sources",
+      "GET /api/v1/market-data/overview/allocation",
+      "GET /api/v1/market-data/overview/breadth",
+      "GET /api/v1/market-data/overview/foreign",
+      "GET /api/v1/market-data/overview/foreign/top",
+      "GET /api/v1/market-data/overview/heatmap",
+      "GET /api/v1/market-data/overview/heatmap/index",
+      "GET /api/v1/market-data/overview/index-impact",
+      "GET /api/v1/market-data/overview/liquidity",
+      "GET /api/v1/market-data/overview/maintenance",
+      "GET /api/v1/market-data/overview/market-index",
+      "GET /api/v1/market-data/overview/proprietary",
+      "GET /api/v1/market-data/overview/proprietary/top",
+      "GET /api/v1/market-data/overview/sectors/allocation",
+      "GET /api/v1/market-data/overview/sectors/detail",
+      "GET /api/v1/market-data/overview/stock-strength",
+      "GET /api/v1/market-data/overview/valuation",
+      "GET /api/v1/market-data/quotes/{symbol}/intraday",
+      "GET /api/v1/market-data/quotes/{symbol}/ohlcv",
+      "GET /api/v1/market-data/quotes/{symbol}/price-depth",
+      "GET /api/v1/market-data/reference/event-codes",
+      "GET /api/v1/market-data/reference/groups/{group}/symbols",
+      "GET /api/v1/market-data/reference/indices",
+      "GET /api/v1/market-data/reference/industries",
+      "GET /api/v1/market-data/reference/search",
+      "GET /api/v1/market-data/reference/symbols",
+      "GET /api/v1/market-data/reference/symbols/search",
+      "GET /api/v1/market-data/reference/symbols/{symbol}",
+      "GET /api/v1/market-data/screening/criteria",
+      "GET /api/v1/market-data/screening/presets",
+      "GET /api/v1/market-data/sectors/information",
+      "GET /api/v1/market-data/sectors/ranking",
+      "GET /api/v1/market-data/sectors/trading-dates",
+      "GET /api/v1/market-data/sheets/tpcp",
+      "GET /api/v1/market-data/sheets/tygia",
+      "GET /api/v1/market-data/sheets/vnd",
+      "GET /api/v1/market-data/trading/{symbol}/foreign-trade",
+      "GET /api/v1/market-data/trading/{symbol}/foreign-trade/summary",
+      "GET /api/v1/market-data/trading/{symbol}/history",
+      "GET /api/v1/market-data/trading/{symbol}/insider-deals",
+      "GET /api/v1/market-data/trading/{symbol}/proprietary",
+      "GET /api/v1/market-data/trading/{symbol}/proprietary/summary",
+      "GET /api/v1/market-data/trading/{symbol}/summary",
+      "GET /api/v1/market-data/trading/{symbol}/supply-demand",
+      "GET /api/v1/market-data/trading/{symbol}/supply-demand/summary",
+      "GET /api/v1/premium/plans",
+      "GET /api/v1/virtual-trading/leaderboard",
+      "GET /api/v2/auth/reset-password",
+      "GET /api/v2/auth/verify-email",
+      "GET /api/v2/health",
+      "GET /api/v2/instruments",
+      "GET /api/v2/instruments/{symbol}",
+      "GET /api/v2/lessons/courses",
+      "GET /api/v2/lessons/courses/{slug}",
+      "GET /api/v2/market-analysis/{type}",
+      "GET /api/v2/market-analysis/{type}/latest",
+      "GET /api/v2/market-analysis/{type}/{sessionDate}",
+      "GET /api/v2/market-data/bctc-dashboard/{symbol}",
+      "GET /api/v2/market-data/bctc/{symbol}",
+      "GET /api/v2/market-data/company/{symbol}/bctc",
+      "GET /api/v2/market-data/company/{symbol}/bctc-dashboard",
+      "GET /api/v2/market-data/company/{symbol}/details",
+      "GET /api/v2/market-data/company/{symbol}/news",
+      "GET /api/v2/market-data/company/{symbol}/officers",
+      "GET /api/v2/market-data/company/{symbol}/overview",
+      "GET /api/v2/market-data/company/{symbol}/price-chart",
+      "GET /api/v2/market-data/company/{symbol}/shareholders",
+      "GET /api/v2/market-data/company/{symbol}/subsidiaries",
+      "GET /api/v2/market-data/events/calendar",
+      "GET /api/v2/market-data/fundamentals/{symbol}/{reportType}",
+      "GET /api/v2/market-data/funds",
+      "GET /api/v2/market-data/funds/{fundId}",
+      "GET /api/v2/market-data/funds/{fundId}/nav",
+      "GET /api/v2/market-data/global/crypto/{symbol}/depth",
+      "GET /api/v2/market-data/global/crypto/{symbol}/ohlc",
+      "GET /api/v2/market-data/global/crypto/{symbol}/ticker",
+      "GET /api/v2/market-data/global/forex",
+      "GET /api/v2/market-data/global/snapshot",
+      "GET /api/v2/market-data/global/world-index",
+      "GET /api/v2/market-data/insights/ranking/{kind}",
+      "GET /api/v2/market-data/macro/commodities",
+      "GET /api/v2/market-data/macro/commodities/{code}",
+      "GET /api/v2/market-data/macro/economy/{indicator}",
+      "GET /api/v2/market-data/macro/fx",
+      "GET /api/v2/market-data/macro/gold",
+      "GET /api/v2/market-data/news/ai",
+      "GET /api/v2/market-data/news/ai/audio/{newsId}",
+      "GET /api/v2/market-data/news/ai/catalogs",
+      "GET /api/v2/market-data/news/ai/detail/{slug}",
+      "GET /api/v2/market-data/news/ai/tickers/{symbol}",
+      "GET /api/v2/market-data/news/latest",
+      "GET /api/v2/market-data/news/sources",
+      "GET /api/v2/market-data/overview/allocation",
+      "GET /api/v2/market-data/overview/breadth",
+      "GET /api/v2/market-data/overview/foreign",
+      "GET /api/v2/market-data/overview/foreign/top",
+      "GET /api/v2/market-data/overview/heatmap",
+      "GET /api/v2/market-data/overview/heatmap/index",
+      "GET /api/v2/market-data/overview/index-impact",
+      "GET /api/v2/market-data/overview/liquidity",
+      "GET /api/v2/market-data/overview/maintenance",
+      "GET /api/v2/market-data/overview/market-index",
+      "GET /api/v2/market-data/overview/proprietary",
+      "GET /api/v2/market-data/overview/proprietary/top",
+      "GET /api/v2/market-data/overview/sectors/allocation",
+      "GET /api/v2/market-data/overview/sectors/detail",
+      "GET /api/v2/market-data/overview/stock-strength",
+      "GET /api/v2/market-data/overview/valuation",
+      "GET /api/v2/market-data/quotes/{symbol}/intraday",
+      "GET /api/v2/market-data/quotes/{symbol}/ohlcv",
+      "GET /api/v2/market-data/quotes/{symbol}/price-depth",
+      "GET /api/v2/market-data/reference/event-codes",
+      "GET /api/v2/market-data/reference/groups/{group}/symbols",
+      "GET /api/v2/market-data/reference/indices",
+      "GET /api/v2/market-data/reference/industries",
+      "GET /api/v2/market-data/reference/search",
+      "GET /api/v2/market-data/reference/symbols",
+      "GET /api/v2/market-data/screening/criteria",
+      "GET /api/v2/market-data/screening/presets",
+      "GET /api/v2/market-data/sectors/information",
+      "GET /api/v2/market-data/sectors/ranking",
+      "GET /api/v2/market-data/sectors/trading-dates",
+      "GET /api/v2/market-data/sheets/tpcp",
+      "GET /api/v2/market-data/sheets/tygia",
+      "GET /api/v2/market-data/sheets/vnd",
+      "GET /api/v2/market-data/trading/{symbol}/foreign-trade",
+      "GET /api/v2/market-data/trading/{symbol}/foreign-trade/summary",
+      "GET /api/v2/market-data/trading/{symbol}/history",
+      "GET /api/v2/market-data/trading/{symbol}/insider-deals",
+      "GET /api/v2/market-data/trading/{symbol}/proprietary",
+      "GET /api/v2/market-data/trading/{symbol}/proprietary/summary",
+      "GET /api/v2/market-data/trading/{symbol}/summary",
+      "GET /api/v2/market-data/trading/{symbol}/supply-demand",
+      "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary",
+      "GET /api/v2/media/{token}",
+      "GET /api/v2/premium/plans",
+      "GET /api/v2/virtual-trading/leaderboard",
+      "GET /health/live",
+      "GET /health/ready",
+      "POST /api/v1/auth/forgot-password",
+      "POST /api/v1/auth/login",
+      "POST /api/v1/auth/refresh",
+      "POST /api/v1/auth/register",
+      "POST /api/v1/auth/reset-password",
+      "POST /api/v1/market-data/screening/search",
+      "POST /api/v1/market-data/trading/price-board",
+      "POST /api/v1/premium/sepay/ipn",
+      "POST /api/v1/telegram/webhook/{secret}",
+      "POST /api/v2/auth/forgot-password",
+      "POST /api/v2/auth/login",
+      "POST /api/v2/auth/refresh",
+      "POST /api/v2/auth/register",
+      "POST /api/v2/auth/reset-password",
+      "POST /api/v2/market-data/screening/search",
+      "POST /api/v2/market-data/trading/price-board",
+      "POST /api/v2/premium/sepay/ipn",
+      "POST /api/v2/telegram/webhook/{secret}"
+    ],
+    "operationsWithoutResponseSchema": [
+      "DELETE /api/v1/cap5/watchlist/{symbol}",
+      "DELETE /api/v2/cap5/watchlist/{symbol}"
+    ],
+    "semanticSignals": [
+      {
+        "file": "src/modules/learning/learning.controller.ts",
+        "kind": "constant-placeholder",
+        "line": 87,
+        "sample": "return undefined;"
+      },
+      {
+        "file": "src/modules/media/media.controller.ts",
+        "kind": "constant-placeholder",
+        "line": 68,
+        "sample": "return null;"
+      }
+    ],
+    "semanticVerification": "manual-review-required"
+  },
+  "runtime": {
+    "documentedHttp": 655,
+    "registeredHttp": 1046,
+    "websocketAdapter": "WsAdapter",
+    "websocketGateways": 2
+  },
+  "schemaVersion": 1,
+  "verdict": {
+    "failures": [],
+    "semanticComplete": false,
+    "structurallyComplete": true
+  }
+}

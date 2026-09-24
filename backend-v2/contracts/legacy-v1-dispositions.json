@@ -1,0 +1,1582 @@
+{
+  "schemaVersion": 1,
+  "defaultDisposition": "pending",
+  "notes": "Full HTTP implementation inventory; WebSocket coverage is tracked in api-coverage.json. New unclassified endpoints remain pending, never implicitly unused.",
+  "overrides": {
+    "DELETE /api/v1/admin/alerts/signals/{key}": {
+      "disposition": "implemented",
+      "replacement": "DELETE /api/v2/admin/alerts/signals/{key}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "DELETE /api/v1/admin/lessons/courses/{course_id}": {
+      "disposition": "implemented",
+      "replacement": "DELETE /api/v2/admin/lessons/courses/{courseId}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "DELETE /api/v1/admin/lessons/episodes/{episode_id}": {
+      "disposition": "implemented",
+      "replacement": "DELETE /api/v2/admin/lessons/episodes/{episodeId}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "DELETE /api/v1/alerts/rules/{rule_id}": {
+      "disposition": "implemented",
+      "replacement": "DELETE /api/v2/alerts/rules/{ruleId}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "DELETE /api/v1/alerts/telegram": {
+      "disposition": "implemented",
+      "replacement": "DELETE /api/v2/alerts/telegram",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "DELETE /api/v1/backtest/strategies/{strategy_id}": {
+      "disposition": "implemented",
+      "replacement": "DELETE /api/v2/backtest/strategies/{strategyId}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "DELETE /api/v1/cap5/watchlist/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "DELETE /api/v2/cap5/watchlist/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "DELETE /api/v1/chart-drawings/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "DELETE /api/v2/chart-drawings/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "DELETE /api/v1/premium/admin/plans/{plan_id}": {
+      "disposition": "implemented",
+      "replacement": "DELETE /api/v2/premium/admin/plans/{plan_id}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "DELETE /api/v1/users/{user_id}": {
+      "disposition": "implemented",
+      "replacement": "DELETE /api/v2/users/{userId}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "DELETE /api/v1/watchlist/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "DELETE /api/v1/watchlist/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/alerts/indicators": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/alerts/indicators",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/alerts/signals": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/alerts/signals",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/audit": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/audit",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/ipn": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/ipn",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/ipn/{log_id}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/ipn/{log_id}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/lessons/courses": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/lessons/courses",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/lessons/courses/{course_id}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/lessons/courses/{courseId}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/metrics/overview": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/metrics/overview",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/metrics/plan-distribution": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/metrics/plan-distribution",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/metrics/revenue": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/metrics/revenue",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/payments": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/payments",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/payments/{order_id}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/payments/{order_id}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/subscriptions": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/subscriptions",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/subscriptions/{sub_id}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/subscriptions/{sub_id}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/system/status": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/system/status",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/users/{user_id}/360": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/users/{userId}/360",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/users/{user_id}/login-history": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/users/{userId}/login-history",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/users/{user_id}/subscriptions/history": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/users/{user_id}/subscriptions/history",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/users/export": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/users/export",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/vt/accounts/{account_id}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/vt/accounts/{accountId}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/vt/accounts/{account_id}/ledger": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/vt/accounts/{accountId}/ledger",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/vt/accounts/{account_id}/orders": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/vt/accounts/{accountId}/orders",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/vt/accounts/{account_id}/positions": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/vt/accounts/{accountId}/positions",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/vt/accounts/{account_id}/settlements": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/vt/accounts/{accountId}/settlements",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/vt/accounts/{account_id}/stats": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/vt/accounts/{accountId}/stats",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/admin/vt/accounts/{account_id}/trades": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/admin/vt/accounts/{accountId}/trades",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/ai/bctc-dashboard/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/ai/bctc-dashboard/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/ai/bctc/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/ai/bctc/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/ai/forecast/ranking": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/ai/forecast/ranking",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/ai/forecast/symbols/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/ai/forecast/symbols/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/ai/insight/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/ai/insight/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/ai/patterns/{kind}/symbols": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/ai/patterns/{kind}/symbols",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/ai/patterns/candles": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/ai/patterns/candles",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/ai/patterns/charts": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/ai/patterns/charts",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/alerts/events": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/alerts/events",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/alerts/rules": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/alerts/rules",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/alerts/signals": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/alerts/signals",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/alerts/telegram": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/alerts/telegram",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/auth/me": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/auth/me",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/auth/reset-password": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/auth/reset-password",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/auth/verify-email": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/auth/verify-email",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/backtest/catalog": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/backtest/catalog",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/backtest/strategies": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/backtest/strategies",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/bot": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/bot",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/bot/journal": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/bot/journal",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/bot/mascot": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/bot/mascot",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/bot/performance": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/bot/performance",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/bot/positions": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/bot/positions",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap0/kehoach": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap0/kehoach",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap0/placement": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap0/placement",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap0/progress": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap0/progress",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap1/progress": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap1/progress",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap1/trades": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap1/trades",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap2/alerts/active": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap2/alerts/active",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap2/analysis": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap2/analysis",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap2/diem-ky-luat": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap2/diem-ky-luat",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap2/diem-ky-luat/history": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap2/diem-ky-luat/history",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap2/progress": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap2/progress",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap2/trades": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap2/trades",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap3/plans/{order_id}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap3/plans/{order_id}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap3/progress": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap3/progress",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap3/trades": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap3/trades",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap3/trades/analysis": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap3/trades/analysis",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap4/phan-tich": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap4/phan-tich",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap4/plans/{order_id}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap4/plans/{order_id}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap4/progress": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap4/progress",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap4/vu-khi-diem-mu": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap4/vu-khi-diem-mu",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap5/nguon-san/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap5/nguon-san/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap5/phan-tich": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap5/phan-tich",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap5/plans/{order_id}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap5/plans/{order_id}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap5/progress": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap5/progress",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap5/san-ma": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap5/san-ma",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap5/san-ma/{bo_loc}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap5/san-ma/{bo_loc}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap5/watchlist": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap5/watchlist",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap6/kehoach/{order_id}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap6/kehoach/{order_id}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap6/mau-thuan/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap6/mau-thuan/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap6/phan-tich": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap6/phan-tich",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap6/plans/{order_id}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap6/plans/{order_id}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap6/progress": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap6/progress",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap7/portfolio": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap7/portfolio",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap7/progress": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap7/progress",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap8/positions/{symbol}/exit-context": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap8/positions/{symbol}/exit-context",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/cap8/progress": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/cap8/progress",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/chart-drawings/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/chart-drawings/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/health": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/health",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/lessons/courses": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/lessons/courses",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/lessons/courses/{slug}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/lessons/courses/{slug}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/lessons/episodes/{episode_id}/content": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/lessons/episodes/{episodeId}/content",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/lessons/me/progress": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/lessons/me/progress",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-analysis/daily": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-analysis/{type}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-analysis/daily/{session_date}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-analysis/{type}/{sessionDate}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-analysis/daily/latest": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-analysis/{type}/latest",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-analysis/midday/{session_date}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-analysis/{type}/{sessionDate}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-analysis/midday/latest": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-analysis/{type}/latest",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-analysis/premarket/{session_date}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-analysis/{type}/{sessionDate}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-analysis/premarket/latest": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-analysis/{type}/latest",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/bctc-dashboard/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/bctc-dashboard/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/bctc/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/bctc/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/company/{symbol}/details": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/company/{symbol}/details",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/company/{symbol}/news": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/company/{symbol}/news",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/company/{symbol}/officers": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/company/{symbol}/officers",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/company/{symbol}/overview": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/company/{symbol}/overview",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/company/{symbol}/price-chart": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/company/{symbol}/price-chart",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/company/{symbol}/shareholders": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/company/{symbol}/shareholders",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/company/{symbol}/subsidiaries": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/company/{symbol}/subsidiaries",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/events/calendar": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/events/calendar",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/fundamentals/{symbol}/{report_type}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/fundamentals/{symbol}/{reportType}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/funds": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/funds",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/funds/{fund_id}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/funds/{fundId}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/funds/{fund_id}/nav": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/funds/{fundId}/nav",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/global/crypto/{symbol}/depth": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/global/crypto/{symbol}/depth",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/global/crypto/{symbol}/ohlc": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/global/crypto/{symbol}/ohlc",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/global/crypto/{symbol}/ticker": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/global/crypto/{symbol}/ticker",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/global/forex": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/global/forex",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/global/snapshot": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/global/snapshot",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/global/world-index": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/global/world-index",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/insights/ranking/{kind}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/insights/ranking/{kind}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/macro/commodities": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/macro/commodities",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/macro/commodities/{code}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/macro/commodities/{code}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/macro/economy/{indicator}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/macro/economy/{indicator}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/macro/fx": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/macro/fx",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/macro/gold": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/macro/gold",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/news/ai": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/news/ai",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/news/ai/audio/{news_id}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/news/ai/audio/{newsId}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/news/ai/catalogs": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/news/ai/catalogs",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/news/ai/detail/{slug}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/news/ai/detail/{slug}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/news/ai/tickers/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/news/ai/tickers/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/news/latest": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/news/latest",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/news/sources": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/news/sources",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/allocation": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/allocation",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/breadth": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/breadth",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/foreign": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/foreign",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/foreign/top": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/foreign/top",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/heatmap": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/heatmap",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/heatmap/index": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/heatmap/index",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/index-impact": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/index-impact",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/liquidity": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/liquidity",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/maintenance": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/maintenance",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/market-index": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/market-index",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/proprietary": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/proprietary",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/proprietary/top": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/proprietary/top",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/sectors/allocation": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/sectors/allocation",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/sectors/detail": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/sectors/detail",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/stock-strength": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/stock-strength",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/overview/valuation": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/overview/valuation",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/quotes/{symbol}/intraday": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/quotes/{symbol}/intraday",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/quotes/{symbol}/ohlcv": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/quotes/{symbol}/ohlcv",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/quotes/{symbol}/price-depth": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/quotes/{symbol}/price-depth",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/reference/event-codes": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/reference/event-codes",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/reference/groups/{group}/symbols": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/reference/groups/{group}/symbols",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/reference/indices": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/reference/indices",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/reference/industries": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/reference/industries",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/reference/search": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/reference/search",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/reference/symbols": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/reference/symbols",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/reference/symbols/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/instruments/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/reference/symbols/search": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/instruments",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/screening/criteria": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/screening/criteria",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/screening/presets": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/screening/presets",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/sectors/information": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/sectors/information",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/sectors/ranking": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/sectors/ranking",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/sectors/trading-dates": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/sectors/trading-dates",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/sheets/tpcp": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/sheets/tpcp",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/sheets/tygia": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/sheets/tygia",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/sheets/vnd": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/sheets/vnd",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/trading/{symbol}/foreign-trade": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/trading/{symbol}/foreign-trade",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/trading/{symbol}/foreign-trade/summary": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/trading/{symbol}/foreign-trade/summary",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/trading/{symbol}/history": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/trading/{symbol}/history",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/trading/{symbol}/insider-deals": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/trading/{symbol}/insider-deals",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/trading/{symbol}/proprietary": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/trading/{symbol}/proprietary",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/trading/{symbol}/proprietary/summary": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/trading/{symbol}/proprietary/summary",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/trading/{symbol}/summary": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/trading/{symbol}/summary",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/trading/{symbol}/supply-demand": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/trading/{symbol}/supply-demand",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/market-data/trading/{symbol}/supply-demand/summary": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/portfolio-manager/report": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/portfolio-manager/report",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/premium/admin/plans": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/premium/admin/plans",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/premium/me": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/premium/me",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/premium/my-orders": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/premium/my-orders",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/premium/plans": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/premium/plans",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/users": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/users",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/users/{user_id}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/users/{userId}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/users/me": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/users/me",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/virtual-trading/account": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/virtual-trading/account",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/virtual-trading/admin/accounts": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/virtual-trading/admin/accounts",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/virtual-trading/admin/config": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/virtual-trading/admin/config",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/virtual-trading/leaderboard": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/virtual-trading/leaderboard",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/virtual-trading/orders": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/virtual-trading/orders",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/virtual-trading/portfolio": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/virtual-trading/portfolio",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/virtual-trading/trades": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v2/virtual-trading/trades",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/watchlist": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v1/watchlist",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "GET /api/v1/watchlist/check/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "GET /api/v1/watchlist/check/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PATCH /api/v1/admin/lessons/courses/{course_id}": {
+      "disposition": "implemented",
+      "replacement": "PATCH /api/v2/admin/lessons/courses/{courseId}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PATCH /api/v1/admin/lessons/episodes/{episode_id}": {
+      "disposition": "implemented",
+      "replacement": "PATCH /api/v2/admin/lessons/episodes/{episodeId}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PATCH /api/v1/cap0/task": {
+      "disposition": "implemented",
+      "replacement": "PATCH /api/v2/cap0/task",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PATCH /api/v1/cap1/task": {
+      "disposition": "implemented",
+      "replacement": "PATCH /api/v2/cap1/task",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PATCH /api/v1/cap2/task": {
+      "disposition": "implemented",
+      "replacement": "PATCH /api/v2/cap2/task",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PATCH /api/v1/cap3/task": {
+      "disposition": "implemented",
+      "replacement": "PATCH /api/v2/cap3/task",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PATCH /api/v1/cap4/task": {
+      "disposition": "implemented",
+      "replacement": "PATCH /api/v2/cap4/task",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PATCH /api/v1/cap5/task": {
+      "disposition": "implemented",
+      "replacement": "PATCH /api/v2/cap5/task",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PATCH /api/v1/cap8/positions/{symbol}/dynamic-stop": {
+      "disposition": "implemented",
+      "replacement": "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PATCH /api/v1/premium/admin/plans/{plan_id}": {
+      "disposition": "implemented",
+      "replacement": "PATCH /api/v2/premium/admin/plans/{plan_id}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PATCH /api/v1/users/{user_id}": {
+      "disposition": "implemented",
+      "replacement": "PATCH /api/v2/users/{userId}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PATCH /api/v1/users/me": {
+      "disposition": "implemented",
+      "replacement": "PATCH /api/v2/users/me",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PATCH /api/v1/virtual-trading/admin/config": {
+      "disposition": "implemented",
+      "replacement": "PATCH /api/v2/virtual-trading/admin/config",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/alerts/seed": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/alerts/seed",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/alerts/signals": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/alerts/signals",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/ipn/{log_id}/retry": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/ipn/{log_id}/retry",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/lessons/courses": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/lessons/courses",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/lessons/courses/{course_id}/episodes": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/lessons/courses/{courseId}/episodes",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/lessons/courses/{course_id}/reorder": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/lessons/courses/{courseId}/reorder",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/lessons/courses/{course_id}/thumbnail": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/lessons/courses/{courseId}/thumbnail",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/lessons/episodes/{episode_id}/file": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/lessons/episodes/{episodeId}/file",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/payments/{order_id}/mark-paid": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/payments/{order_id}/mark-paid",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/payments/{order_id}/reconcile": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/payments/{order_id}/reconcile",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/payments/{order_id}/refund": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/payments/{order_id}/refund",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/subscriptions/{sub_id}/cancel": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/subscriptions/{sub_id}/cancel",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/subscriptions/{sub_id}/extend": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/subscriptions/{sub_id}/extend",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/system/jobs/{job_id}/run": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/system/jobs/{jobId}/run",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/users/{user_id}/resend-verification": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/users/{userId}/resend-verification",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/users/{user_id}/reset-password": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/users/{userId}/reset-password",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/users/bulk": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/users/bulk",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/vt/accounts/{account_id}/cash-adjust": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/vt/accounts/{accountId}/cash-adjust",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/vt/accounts/{account_id}/freeze": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/vt/accounts/{accountId}/freeze",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/admin/vt/accounts/{account_id}/unfreeze": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/admin/vt/accounts/{accountId}/unfreeze",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/ai/dashboard/analyze": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/ai/dashboard/analyze",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/ai/industry/analyze": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/ai/industry/analyze",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/ai/industry/analyze-batch": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/ai/industry/analyze-batch",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/ai/insight/analyze": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/ai/insight/analyze",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/alerts/rules": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/alerts/rules",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/alerts/telegram/link": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/alerts/telegram/link",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/auth/forgot-password": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/auth/forgot-password",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/auth/login": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/auth/login",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/auth/logout": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/auth/logout",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/auth/refresh": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/auth/refresh",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/auth/register": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/auth/register",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/auth/reset-password": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/auth/reset-password",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/backtest/run": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/backtest/run",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/backtest/strategies": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/backtest/strategies",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/bot/mascot/ui-events": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/bot/mascot/ui-events",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap0/enter": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap0/enter",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap0/graduate": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap0/graduate",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap0/kehoach": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap0/kehoach",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap0/placement": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap0/placement",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap0/tours/{tour}/complete": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap0/tours/{tour}/complete",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap1/enter": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap1/enter",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap1/graduate": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap1/graduate",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap1/kehoach": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap1/kehoach",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap1/ketso": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap1/ketso",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap2/alerts/{alert_id}/action": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap2/alerts/{alert_id}/action",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap2/alerts/pre-buy": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap2/alerts/pre-buy",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap2/enter": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap2/enter",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap2/graduate": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap2/graduate",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap2/kehoach": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap2/kehoach",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap2/ketso": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap2/ketso",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap3/enter": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap3/enter",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap3/graduate": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap3/graduate",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap3/kehoach": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap3/kehoach",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap3/khau-vi": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap3/khau-vi",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap4/enter": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap4/enter",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap4/graduate": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap4/graduate",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap4/kehoach": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap4/kehoach",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap5/enter": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap5/enter",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap5/graduate": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap5/graduate",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap5/tour-sanma": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap5/tour-sanma",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap5/watchlist": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap5/watchlist",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap6/enter": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap6/enter",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap6/graduate": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap6/graduate",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap6/kehoach": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap6/kehoach",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap6/skip": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap6/skip",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap6/tour-mauthuan": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap6/tour-mauthuan",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap7/enter": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap7/enter",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap7/graduate": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap7/graduate",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap8/enter": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap8/enter",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap8/exits": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap8/exits",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap8/graduate": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap8/graduate",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/cap8/positions/{symbol}/sync-plan": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/cap8/positions/{symbol}/sync-plan",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/journey/assessments": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/journey/assessments",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/journey/assessments/{assessment_id}/reveal": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/journey/assessments/{assessmentId}/reveal",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/journey/events": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/journey/events",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/journey/reading-datasets": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/journey/reading-datasets",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/lessons/episodes/{episode_id}/progress": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/lessons/episodes/{episodeId}/progress",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/market-analysis/daily/run": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/market-analysis/{type}/run",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/market-analysis/midday/run": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/market-analysis/{type}/run",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/market-analysis/premarket/run": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/market-analysis/{type}/run",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/market-data/screening/search": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/market-data/screening/search",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/market-data/trading/price-board": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/market-data/trading/price-board",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/portfolio-manager/analyze": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/portfolio-manager/analyze",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/premium/admin/plans": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/premium/admin/plans",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/premium/admin/users/{user_id}/grant": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/premium/admin/users/{user_id}/grant",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/premium/checkout": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/premium/checkout",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/premium/sepay/ipn": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/premium/sepay/ipn",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/telegram/webhook/{secret}": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/telegram/webhook/{secret}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/users": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/users",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/virtual-trading/account/activate": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/virtual-trading/account/activate",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/virtual-trading/admin/reset-all": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/virtual-trading/admin/reset-all",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/virtual-trading/admin/users/{user_id}/reset": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/virtual-trading/admin/users/{userId}/reset",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/virtual-trading/orders": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/virtual-trading/orders",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/virtual-trading/orders/{order_id}/cancel": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/virtual-trading/orders/{orderId}/cancel",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/virtual-trading/refresh": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v2/virtual-trading/refresh",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "POST /api/v1/watchlist": {
+      "disposition": "implemented",
+      "replacement": "POST /api/v1/watchlist",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PUT /api/v1/admin/alerts/signals/{key}": {
+      "disposition": "implemented",
+      "replacement": "PUT /api/v2/admin/alerts/signals/{key}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PUT /api/v1/alerts/rules/{rule_id}": {
+      "disposition": "implemented",
+      "replacement": "PUT /api/v2/alerts/rules/{ruleId}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PUT /api/v1/backtest/strategies/{strategy_id}": {
+      "disposition": "implemented",
+      "replacement": "PUT /api/v2/backtest/strategies/{strategyId}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PUT /api/v1/chart-drawings/{symbol}": {
+      "disposition": "implemented",
+      "replacement": "PUT /api/v2/chart-drawings/{symbol}",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    },
+    "PUT /api/v1/watchlist/reorder": {
+      "disposition": "implemented",
+      "replacement": "PUT /api/v1/watchlist/reorder",
+      "notes": "Implemented in NestJS. Runtime route coverage is verified separately from provider credentials, production acceptance, and data migration."
+    }
+  }
+}

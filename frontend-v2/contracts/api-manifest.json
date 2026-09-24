@@ -1,0 +1,1641 @@
+{
+  "schema": "backend-v2/contracts/openapi-v2.json",
+  "generatedTypes": "backend-v2/contracts/client/types.gen.ts",
+  "operations": {
+    "DELETE /api/v2/admin/alerts/signals/{key}": {
+      "operationId": "AdminAlertsController_remove[1]",
+      "requestType": "AdminAlertsControllerRemove1Data",
+      "responseType": "AdminAlertsControllerRemove1Responses"
+    },
+    "DELETE /api/v2/admin/lessons/courses/{courseId}": {
+      "operationId": "AdminLearningController_deleteCourse[1]",
+      "requestType": "AdminLearningControllerDeleteCourse1Data",
+      "responseType": "AdminLearningControllerDeleteCourse1Responses"
+    },
+    "DELETE /api/v2/admin/lessons/episodes/{episodeId}": {
+      "operationId": "AdminLearningController_deleteEpisode[1]",
+      "requestType": "AdminLearningControllerDeleteEpisode1Data",
+      "responseType": "AdminLearningControllerDeleteEpisode1Responses"
+    },
+    "DELETE /api/v2/alerts/rules/{ruleId}": {
+      "operationId": "AlertsController_deleteRule[1]",
+      "requestType": "AlertsControllerDeleteRule1Data",
+      "responseType": "AlertsControllerDeleteRule1Responses"
+    },
+    "DELETE /api/v2/alerts/telegram": {
+      "operationId": "AlertsController_unlinkTelegram[1]",
+      "requestType": "AlertsControllerUnlinkTelegram1Data",
+      "responseType": "AlertsControllerUnlinkTelegram1Responses"
+    },
+    "DELETE /api/v2/backtest/strategies/{strategyId}": {
+      "operationId": "QuantController_delete[0]",
+      "requestType": "QuantControllerDelete0Data",
+      "responseType": "QuantControllerDelete0Responses"
+    },
+    "DELETE /api/v2/cap5/watchlist/{symbol}": {
+      "operationId": "cap5RemoveWatchlist_delete_api_v2_cap5_watchlist_symbol",
+      "requestType": "Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolData",
+      "responseType": "Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolResponses"
+    },
+    "DELETE /api/v2/chart-drawings/{symbol}": {
+      "operationId": "deleteChartDrawingV2",
+      "requestType": "DeleteChartDrawingV2Data",
+      "responseType": "DeleteChartDrawingV2Responses"
+    },
+    "DELETE /api/v2/premium/admin/plans/{plan_id}": {
+      "operationId": "adminDeletePremiumPlan_delete_api_v2_premium_admin_plans_plan_id",
+      "requestType": "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdData",
+      "responseType": "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdResponses"
+    },
+    "DELETE /api/v2/users/{userId}": {
+      "operationId": "UsersController_remove[1]",
+      "requestType": "UsersControllerRemove1Data",
+      "responseType": "UsersControllerRemove1Responses"
+    },
+    "DELETE /api/v2/watchlists/{symbol}": {
+      "operationId": "removeWatchlistItemV2",
+      "requestType": "RemoveWatchlistItemV2Data",
+      "responseType": "RemoveWatchlistItemV2Responses"
+    },
+    "GET /api/v2/admin/alerts/factor-library": {
+      "operationId": "AdminAlertsController_factorLibrary[1]",
+      "requestType": "AdminAlertsControllerFactorLibrary1Data",
+      "responseType": "AdminAlertsControllerFactorLibrary1Responses"
+    },
+    "GET /api/v2/admin/alerts/indicators": {
+      "operationId": "AdminAlertsController_indicators[1]",
+      "requestType": "AdminAlertsControllerIndicators1Data",
+      "responseType": "AdminAlertsControllerIndicators1Responses"
+    },
+    "GET /api/v2/admin/alerts/signals": {
+      "operationId": "AdminAlertsController_signals[1]",
+      "requestType": "AdminAlertsControllerSignals1Data",
+      "responseType": "AdminAlertsControllerSignals1Responses"
+    },
+    "GET /api/v2/admin/audit": {
+      "operationId": "AdminAuditController_list[1]",
+      "requestType": "AdminAuditControllerList1Data",
+      "responseType": "AdminAuditControllerList1Responses"
+    },
+    "GET /api/v2/admin/audit/export": {
+      "operationId": "AdminAuditController_export[1]",
+      "requestType": "AdminAuditControllerExport1Data",
+      "responseType": "AdminAuditControllerExport1Responses"
+    },
+    "GET /api/v2/admin/ipn": {
+      "operationId": "adminListIpnLogs_get_api_v2_admin_ipn",
+      "requestType": "AdminListIpnLogsGetApiV2AdminIpnData",
+      "responseType": "AdminListIpnLogsGetApiV2AdminIpnResponses"
+    },
+    "GET /api/v2/admin/ipn/{log_id}": {
+      "operationId": "adminGetIpnLog_get_api_v2_admin_ipn_log_id",
+      "requestType": "AdminGetIpnLogGetApiV2AdminIpnLogIdData",
+      "responseType": "AdminGetIpnLogGetApiV2AdminIpnLogIdResponses"
+    },
+    "GET /api/v2/admin/lessons/courses": {
+      "operationId": "AdminLearningController_courses[1]",
+      "requestType": "AdminLearningControllerCourses1Data",
+      "responseType": "AdminLearningControllerCourses1Responses"
+    },
+    "GET /api/v2/admin/lessons/courses/{courseId}": {
+      "operationId": "AdminLearningController_course[1]",
+      "requestType": "AdminLearningControllerCourse1Data",
+      "responseType": "AdminLearningControllerCourse1Responses"
+    },
+    "GET /api/v2/admin/metrics/overview": {
+      "operationId": "AdminMetricsController_overview[1]",
+      "requestType": "AdminMetricsControllerOverview1Data",
+      "responseType": "AdminMetricsControllerOverview1Responses"
+    },
+    "GET /api/v2/admin/metrics/plan-distribution": {
+      "operationId": "AdminMetricsController_planDistribution[1]",
+      "requestType": "AdminMetricsControllerPlanDistribution1Data",
+      "responseType": "AdminMetricsControllerPlanDistribution1Responses"
+    },
+    "GET /api/v2/admin/metrics/revenue": {
+      "operationId": "AdminMetricsController_revenue[1]",
+      "requestType": "AdminMetricsControllerRevenue1Data",
+      "responseType": "AdminMetricsControllerRevenue1Responses"
+    },
+    "GET /api/v2/admin/payments": {
+      "operationId": "adminListPayments_get_api_v2_admin_payments",
+      "requestType": "AdminListPaymentsGetApiV2AdminPaymentsData",
+      "responseType": "AdminListPaymentsGetApiV2AdminPaymentsResponses"
+    },
+    "GET /api/v2/admin/payments/{order_id}": {
+      "operationId": "adminGetPayment_get_api_v2_admin_payments_order_id",
+      "requestType": "AdminGetPaymentGetApiV2AdminPaymentsOrderIdData",
+      "responseType": "AdminGetPaymentGetApiV2AdminPaymentsOrderIdResponses"
+    },
+    "GET /api/v2/admin/subscriptions": {
+      "operationId": "adminListSubscriptions_get_api_v2_admin_subscriptions",
+      "requestType": "AdminListSubscriptionsGetApiV2AdminSubscriptionsData",
+      "responseType": "AdminListSubscriptionsGetApiV2AdminSubscriptionsResponses"
+    },
+    "GET /api/v2/admin/subscriptions/{sub_id}": {
+      "operationId": "adminGetSubscription_get_api_v2_admin_subscriptions_sub_id",
+      "requestType": "AdminGetSubscriptionGetApiV2AdminSubscriptionsSubIdData",
+      "responseType": "AdminGetSubscriptionGetApiV2AdminSubscriptionsSubIdResponses"
+    },
+    "GET /api/v2/admin/system/status": {
+      "operationId": "AdminSystemController_status[1]",
+      "requestType": "AdminSystemControllerStatus1Data",
+      "responseType": "AdminSystemControllerStatus1Responses"
+    },
+    "GET /api/v2/admin/users/{user_id}/subscriptions/history": {
+      "operationId": "adminGetSubscriptionHistory_get_api_v2_admin_users_user_id_subscriptions_history",
+      "requestType": "AdminGetSubscriptionHistoryGetApiV2AdminUsersUserIdSubscriptionsHistoryData",
+      "responseType": "AdminGetSubscriptionHistoryGetApiV2AdminUsersUserIdSubscriptionsHistoryResponses"
+    },
+    "GET /api/v2/admin/users/{userId}/360": {
+      "operationId": "AdminUsersController_get360[1]",
+      "requestType": "AdminUsersControllerGet3601Data",
+      "responseType": "AdminUsersControllerGet3601Responses"
+    },
+    "GET /api/v2/admin/users/{userId}/login-history": {
+      "operationId": "AdminUsersController_loginHistory[1]",
+      "requestType": "AdminUsersControllerLoginHistory1Data",
+      "responseType": "AdminUsersControllerLoginHistory1Responses"
+    },
+    "GET /api/v2/admin/users/export": {
+      "operationId": "AdminUsersController_export[1]",
+      "requestType": "AdminUsersControllerExport1Data",
+      "responseType": "AdminUsersControllerExport1Responses"
+    },
+    "GET /api/v2/admin/vt/accounts": {
+      "operationId": "AdminVTController_accounts[1]",
+      "requestType": "AdminVtControllerAccounts1Data",
+      "responseType": "AdminVtControllerAccounts1Responses"
+    },
+    "GET /api/v2/admin/vt/accounts/{accountId}": {
+      "operationId": "AdminVTController_account[1]",
+      "requestType": "AdminVtControllerAccount1Data",
+      "responseType": "AdminVtControllerAccount1Responses"
+    },
+    "GET /api/v2/admin/vt/accounts/{accountId}/ledger": {
+      "operationId": "AdminVTController_ledger[1]",
+      "requestType": "AdminVtControllerLedger1Data",
+      "responseType": "AdminVtControllerLedger1Responses"
+    },
+    "GET /api/v2/admin/vt/accounts/{accountId}/orders": {
+      "operationId": "AdminVTController_orders[1]",
+      "requestType": "AdminVtControllerOrders1Data",
+      "responseType": "AdminVtControllerOrders1Responses"
+    },
+    "GET /api/v2/admin/vt/accounts/{accountId}/positions": {
+      "operationId": "AdminVTController_positions[1]",
+      "requestType": "AdminVtControllerPositions1Data",
+      "responseType": "AdminVtControllerPositions1Responses"
+    },
+    "GET /api/v2/admin/vt/accounts/{accountId}/settlements": {
+      "operationId": "AdminVTController_settlements[1]",
+      "requestType": "AdminVtControllerSettlements1Data",
+      "responseType": "AdminVtControllerSettlements1Responses"
+    },
+    "GET /api/v2/admin/vt/accounts/{accountId}/stats": {
+      "operationId": "AdminVTController_stats[1]",
+      "requestType": "AdminVtControllerStats1Data",
+      "responseType": "AdminVtControllerStats1Responses"
+    },
+    "GET /api/v2/admin/vt/accounts/{accountId}/trades": {
+      "operationId": "AdminVTController_trades[1]",
+      "requestType": "AdminVtControllerTrades1Data",
+      "responseType": "AdminVtControllerTrades1Responses"
+    },
+    "GET /api/v2/admin/vt/config": {
+      "operationId": "AdminVTController_config[1]",
+      "requestType": "AdminVtControllerConfig1Data",
+      "responseType": "AdminVtControllerConfig1Responses"
+    },
+    "GET /api/v2/ai/bctc-dashboard/{symbol}": {
+      "operationId": "getBctcNarrativeV2_get_api_v2_ai_bctc_dashboard_symbol",
+      "requestType": "GetBctcNarrativeV2GetApiV2AiBctcDashboardSymbolData",
+      "responseType": "GetBctcNarrativeV2GetApiV2AiBctcDashboardSymbolResponses"
+    },
+    "GET /api/v2/ai/bctc/{symbol}": {
+      "operationId": "getBctcAnalysisV2_get_api_v2_ai_bctc_symbol",
+      "requestType": "GetBctcAnalysisV2GetApiV2AiBctcSymbolData",
+      "responseType": "GetBctcAnalysisV2GetApiV2AiBctcSymbolResponses"
+    },
+    "GET /api/v2/ai/forecast/ranking": {
+      "operationId": "getForecastRankingV2_get_api_v2_ai_forecast_ranking",
+      "requestType": "GetForecastRankingV2GetApiV2AiForecastRankingData",
+      "responseType": "GetForecastRankingV2GetApiV2AiForecastRankingResponses"
+    },
+    "GET /api/v2/ai/forecast/symbols/{symbol}": {
+      "operationId": "getForecastForSymbolV2_get_api_v2_ai_forecast_symbols_symbol",
+      "requestType": "GetForecastForSymbolV2GetApiV2AiForecastSymbolsSymbolData",
+      "responseType": "GetForecastForSymbolV2GetApiV2AiForecastSymbolsSymbolResponses"
+    },
+    "GET /api/v2/ai/insight/{symbol}": {
+      "operationId": "getInsightV2_get_api_v2_ai_insight_symbol",
+      "requestType": "GetInsightV2GetApiV2AiInsightSymbolData",
+      "responseType": "GetInsightV2GetApiV2AiInsightSymbolResponses"
+    },
+    "GET /api/v2/ai/patterns/{kind}/symbols": {
+      "operationId": "listPatternSymbolsV2_get_api_v2_ai_patterns_kind_symbols",
+      "requestType": "ListPatternSymbolsV2GetApiV2AiPatternsKindSymbolsData",
+      "responseType": "ListPatternSymbolsV2GetApiV2AiPatternsKindSymbolsResponses"
+    },
+    "GET /api/v2/ai/patterns/candles": {
+      "operationId": "getCandlePatternsV2_get_api_v2_ai_patterns_candles",
+      "requestType": "GetCandlePatternsV2GetApiV2AiPatternsCandlesData",
+      "responseType": "GetCandlePatternsV2GetApiV2AiPatternsCandlesResponses"
+    },
+    "GET /api/v2/ai/patterns/charts": {
+      "operationId": "getChartPatternsV2_get_api_v2_ai_patterns_charts",
+      "requestType": "GetChartPatternsV2GetApiV2AiPatternsChartsData",
+      "responseType": "GetChartPatternsV2GetApiV2AiPatternsChartsResponses"
+    },
+    "GET /api/v2/alerts/events": {
+      "operationId": "AlertsController_listEvents[1]",
+      "requestType": "AlertsControllerListEvents1Data",
+      "responseType": "AlertsControllerListEvents1Responses"
+    },
+    "GET /api/v2/alerts/rules": {
+      "operationId": "AlertsController_listRules[1]",
+      "requestType": "AlertsControllerListRules1Data",
+      "responseType": "AlertsControllerListRules1Responses"
+    },
+    "GET /api/v2/alerts/signals": {
+      "operationId": "AlertsController_listSignals[1]",
+      "requestType": "AlertsControllerListSignals1Data",
+      "responseType": "AlertsControllerListSignals1Responses"
+    },
+    "GET /api/v2/alerts/telegram": {
+      "operationId": "AlertsController_telegramStatus[1]",
+      "requestType": "AlertsControllerTelegramStatus1Data",
+      "responseType": "AlertsControllerTelegramStatus1Responses"
+    },
+    "GET /api/v2/auth/me": {
+      "operationId": "AuthController_me[1]",
+      "requestType": "AuthControllerMe1Data",
+      "responseType": "AuthControllerMe1Responses"
+    },
+    "GET /api/v2/auth/reset-password": {
+      "operationId": "AuthController_resetPasswordForm[1]",
+      "requestType": "AuthControllerResetPasswordForm1Data",
+      "responseType": "AuthControllerResetPasswordForm1Responses"
+    },
+    "GET /api/v2/auth/verify-email": {
+      "operationId": "AuthController_verifyEmail[1]",
+      "requestType": "AuthControllerVerifyEmail1Data",
+      "responseType": "AuthControllerVerifyEmail1Responses"
+    },
+    "GET /api/v2/backtest/catalog": {
+      "operationId": "QuantController_catalog[0]",
+      "requestType": "QuantControllerCatalog0Data",
+      "responseType": "QuantControllerCatalog0Responses"
+    },
+    "GET /api/v2/backtest/strategies": {
+      "operationId": "QuantController_list[0]",
+      "requestType": "QuantControllerList0Data",
+      "responseType": "QuantControllerList0Responses"
+    },
+    "GET /api/v2/bot": {
+      "operationId": "getBotOverview_get_api_v2_bot",
+      "requestType": "GetBotOverviewGetApiV2BotData",
+      "responseType": "GetBotOverviewGetApiV2BotResponses"
+    },
+    "GET /api/v2/bot/journal": {
+      "operationId": "getBotJournal_get_api_v2_bot_journal",
+      "requestType": "GetBotJournalGetApiV2BotJournalData",
+      "responseType": "GetBotJournalGetApiV2BotJournalResponses"
+    },
+    "GET /api/v2/bot/mascot": {
+      "operationId": "JourneyIdentityController_getMascot[1]",
+      "requestType": "JourneyIdentityControllerGetMascot1Data",
+      "responseType": "JourneyIdentityControllerGetMascot1Responses"
+    },
+    "GET /api/v2/bot/performance": {
+      "operationId": "getBotPerformance_get_api_v2_bot_performance",
+      "requestType": "GetBotPerformanceGetApiV2BotPerformanceData",
+      "responseType": "GetBotPerformanceGetApiV2BotPerformanceResponses"
+    },
+    "GET /api/v2/bot/positions": {
+      "operationId": "getBotPositions_get_api_v2_bot_positions",
+      "requestType": "GetBotPositionsGetApiV2BotPositionsData",
+      "responseType": "GetBotPositionsGetApiV2BotPositionsResponses"
+    },
+    "GET /api/v2/bot/status": {
+      "operationId": "getBotStatus_get_api_v2_bot_status",
+      "requestType": "GetBotStatusGetApiV2BotStatusData",
+      "responseType": "GetBotStatusGetApiV2BotStatusResponses"
+    },
+    "GET /api/v2/cap0/kehoach": {
+      "operationId": "Cap0Controller_getKehoach[1]",
+      "requestType": "Cap0ControllerGetKehoach1Data",
+      "responseType": "Cap0ControllerGetKehoach1Responses"
+    },
+    "GET /api/v2/cap0/placement": {
+      "operationId": "Cap0Controller_getPlacement[1]",
+      "requestType": "Cap0ControllerGetPlacement1Data",
+      "responseType": "Cap0ControllerGetPlacement1Responses"
+    },
+    "GET /api/v2/cap0/progress": {
+      "operationId": "Cap0Controller_progress[1]",
+      "requestType": "Cap0ControllerProgress1Data",
+      "responseType": "Cap0ControllerProgress1Responses"
+    },
+    "GET /api/v2/cap1/progress": {
+      "operationId": "Cap1Controller_progress[1]",
+      "requestType": "Cap1ControllerProgress1Data",
+      "responseType": "Cap1ControllerProgress1Responses"
+    },
+    "GET /api/v2/cap1/trades": {
+      "operationId": "Cap1Controller_trades[1]",
+      "requestType": "Cap1ControllerTrades1Data",
+      "responseType": "Cap1ControllerTrades1Responses"
+    },
+    "GET /api/v2/cap2/alerts/active": {
+      "operationId": "Cap2Controller_active[1]",
+      "requestType": "Cap2ControllerActive1Data",
+      "responseType": "Cap2ControllerActive1Responses"
+    },
+    "GET /api/v2/cap2/analysis": {
+      "operationId": "Cap2Controller_analysis[1]",
+      "requestType": "Cap2ControllerAnalysis1Data",
+      "responseType": "Cap2ControllerAnalysis1Responses"
+    },
+    "GET /api/v2/cap2/diem-ky-luat": {
+      "operationId": "Cap2Controller_score[1]",
+      "requestType": "Cap2ControllerScore1Data",
+      "responseType": "Cap2ControllerScore1Responses"
+    },
+    "GET /api/v2/cap2/diem-ky-luat/history": {
+      "operationId": "Cap2Controller_history[1]",
+      "requestType": "Cap2ControllerHistory1Data",
+      "responseType": "Cap2ControllerHistory1Responses"
+    },
+    "GET /api/v2/cap2/progress": {
+      "operationId": "Cap2Controller_progress[1]",
+      "requestType": "Cap2ControllerProgress1Data",
+      "responseType": "Cap2ControllerProgress1Responses"
+    },
+    "GET /api/v2/cap2/trades": {
+      "operationId": "Cap2Controller_trades[1]",
+      "requestType": "Cap2ControllerTrades1Data",
+      "responseType": "Cap2ControllerTrades1Responses"
+    },
+    "GET /api/v2/cap3/plans/{order_id}": {
+      "operationId": "Cap3Controller_getPlan[1]",
+      "requestType": "Cap3ControllerGetPlan1Data",
+      "responseType": "Cap3ControllerGetPlan1Responses"
+    },
+    "GET /api/v2/cap3/progress": {
+      "operationId": "Cap3Controller_progress[1]",
+      "requestType": "Cap3ControllerProgress1Data",
+      "responseType": "Cap3ControllerProgress1Responses"
+    },
+    "GET /api/v2/cap3/trades": {
+      "operationId": "Cap3Controller_trades[1]",
+      "requestType": "Cap3ControllerTrades1Data",
+      "responseType": "Cap3ControllerTrades1Responses"
+    },
+    "GET /api/v2/cap3/trades/analysis": {
+      "operationId": "Cap3Controller_tradeAnalysis[1]",
+      "requestType": "Cap3ControllerTradeAnalysis1Data",
+      "responseType": "Cap3ControllerTradeAnalysis1Responses"
+    },
+    "GET /api/v2/cap4/phan-tich": {
+      "operationId": "Cap4Controller_analysis[1]",
+      "requestType": "Cap4ControllerAnalysis1Data",
+      "responseType": "Cap4ControllerAnalysis1Responses"
+    },
+    "GET /api/v2/cap4/plans/{order_id}": {
+      "operationId": "Cap4Controller_getPlan[1]",
+      "requestType": "Cap4ControllerGetPlan1Data",
+      "responseType": "Cap4ControllerGetPlan1Responses"
+    },
+    "GET /api/v2/cap4/progress": {
+      "operationId": "Cap4Controller_progress[1]",
+      "requestType": "Cap4ControllerProgress1Data",
+      "responseType": "Cap4ControllerProgress1Responses"
+    },
+    "GET /api/v2/cap4/vu-khi-diem-mu": {
+      "operationId": "Cap4Controller_weapons[1]",
+      "requestType": "Cap4ControllerWeapons1Data",
+      "responseType": "Cap4ControllerWeapons1Responses"
+    },
+    "GET /api/v2/cap5/nguon-san/{symbol}": {
+      "operationId": "cap5HuntSource_get_api_v2_cap5_nguon_san_symbol",
+      "requestType": "Cap5HuntSourceGetApiV2Cap5NguonSanSymbolData",
+      "responseType": "Cap5HuntSourceGetApiV2Cap5NguonSanSymbolResponses"
+    },
+    "GET /api/v2/cap5/phan-tich": {
+      "operationId": "cap5Analysis_get_api_v2_cap5_phan_tich",
+      "requestType": "Cap5AnalysisGetApiV2Cap5PhanTichData",
+      "responseType": "Cap5AnalysisGetApiV2Cap5PhanTichResponses"
+    },
+    "GET /api/v2/cap5/plans/{order_id}": {
+      "operationId": "cap5Plan_get_api_v2_cap5_plans_order_id",
+      "requestType": "Cap5PlanGetApiV2Cap5PlansOrderIdData",
+      "responseType": "Cap5PlanGetApiV2Cap5PlansOrderIdResponses"
+    },
+    "GET /api/v2/cap5/progress": {
+      "operationId": "cap5Progress_get_api_v2_cap5_progress",
+      "requestType": "Cap5ProgressGetApiV2Cap5ProgressData",
+      "responseType": "Cap5ProgressGetApiV2Cap5ProgressResponses"
+    },
+    "GET /api/v2/cap5/san-ma": {
+      "operationId": "cap5HuntIndex_get_api_v2_cap5_san_ma",
+      "requestType": "Cap5HuntIndexGetApiV2Cap5SanMaData",
+      "responseType": "Cap5HuntIndexGetApiV2Cap5SanMaResponses"
+    },
+    "GET /api/v2/cap5/san-ma/{bo_loc}": {
+      "operationId": "cap5HuntResult_get_api_v2_cap5_san_ma_bo_loc",
+      "requestType": "Cap5HuntResultGetApiV2Cap5SanMaBoLocData",
+      "responseType": "Cap5HuntResultGetApiV2Cap5SanMaBoLocResponses"
+    },
+    "GET /api/v2/cap5/watchlist": {
+      "operationId": "cap5Watchlist_get_api_v2_cap5_watchlist",
+      "requestType": "Cap5WatchlistGetApiV2Cap5WatchlistData",
+      "responseType": "Cap5WatchlistGetApiV2Cap5WatchlistResponses"
+    },
+    "GET /api/v2/cap6/kehoach/{order_id}": {
+      "operationId": "cap6GetPlan_get_api_v2_cap6_kehoach_order_id",
+      "requestType": "Cap6GetPlanGetApiV2Cap6KehoachOrderIdData",
+      "responseType": "Cap6GetPlanGetApiV2Cap6KehoachOrderIdResponses"
+    },
+    "GET /api/v2/cap6/mau-thuan/{symbol}": {
+      "operationId": "cap6Conflict_get_api_v2_cap6_mau_thuan_symbol",
+      "requestType": "Cap6ConflictGetApiV2Cap6MauThuanSymbolData",
+      "responseType": "Cap6ConflictGetApiV2Cap6MauThuanSymbolResponses"
+    },
+    "GET /api/v2/cap6/phan-tich": {
+      "operationId": "cap6Analysis_get_api_v2_cap6_phan_tich",
+      "requestType": "Cap6AnalysisGetApiV2Cap6PhanTichData",
+      "responseType": "Cap6AnalysisGetApiV2Cap6PhanTichResponses"
+    },
+    "GET /api/v2/cap6/plans/{order_id}": {
+      "operationId": "cap6CumulativePlan_get_api_v2_cap6_plans_order_id",
+      "requestType": "Cap6CumulativePlanGetApiV2Cap6PlansOrderIdData",
+      "responseType": "Cap6CumulativePlanGetApiV2Cap6PlansOrderIdResponses"
+    },
+    "GET /api/v2/cap6/progress": {
+      "operationId": "cap6Progress_get_api_v2_cap6_progress",
+      "requestType": "Cap6ProgressGetApiV2Cap6ProgressData",
+      "responseType": "Cap6ProgressGetApiV2Cap6ProgressResponses"
+    },
+    "GET /api/v2/cap7/portfolio": {
+      "operationId": "getCap7PortfolioV2",
+      "requestType": "GetCap7PortfolioV2Data",
+      "responseType": "GetCap7PortfolioV2Responses"
+    },
+    "GET /api/v2/cap7/progress": {
+      "operationId": "getCap7ProgressV2",
+      "requestType": "GetCap7ProgressV2Data",
+      "responseType": "GetCap7ProgressV2Responses"
+    },
+    "GET /api/v2/cap8/positions/{symbol}/exit-context": {
+      "operationId": "getCap8ExitContextV2",
+      "requestType": "GetCap8ExitContextV2Data",
+      "responseType": "GetCap8ExitContextV2Responses"
+    },
+    "GET /api/v2/cap8/progress": {
+      "operationId": "getCap8ProgressV2",
+      "requestType": "GetCap8ProgressV2Data",
+      "responseType": "GetCap8ProgressV2Responses"
+    },
+    "GET /api/v2/chart-drawings/{symbol}": {
+      "operationId": "getChartDrawingV2",
+      "requestType": "GetChartDrawingV2Data",
+      "responseType": "GetChartDrawingV2Responses"
+    },
+    "GET /api/v2/health": {
+      "operationId": "legacyHealth_get_api_v2_health",
+      "requestType": "LegacyHealthGetApiV2HealthData",
+      "responseType": "LegacyHealthGetApiV2HealthResponses"
+    },
+    "GET /api/v2/instruments": {
+      "operationId": "searchInstrumentsV2",
+      "requestType": "SearchInstrumentsV2Data",
+      "responseType": "SearchInstrumentsV2Responses"
+    },
+    "GET /api/v2/instruments/{symbol}": {
+      "operationId": "getInstrumentV2",
+      "requestType": "GetInstrumentV2Data",
+      "responseType": "GetInstrumentV2Responses"
+    },
+    "GET /api/v2/lessons/courses": {
+      "operationId": "LearningController_courses[1]",
+      "requestType": "LearningControllerCourses1Data",
+      "responseType": "LearningControllerCourses1Responses"
+    },
+    "GET /api/v2/lessons/courses/{slug}": {
+      "operationId": "LearningController_course[1]",
+      "requestType": "LearningControllerCourse1Data",
+      "responseType": "LearningControllerCourse1Responses"
+    },
+    "GET /api/v2/lessons/episodes/{episodeId}/content": {
+      "operationId": "LearningController_content[1]",
+      "requestType": "LearningControllerContent1Data",
+      "responseType": "LearningControllerContent1Responses"
+    },
+    "GET /api/v2/lessons/me/progress": {
+      "operationId": "LearningController_progress[1]",
+      "requestType": "LearningControllerProgress1Data",
+      "responseType": "LearningControllerProgress1Responses"
+    },
+    "GET /api/v2/market-analysis/{type}": {
+      "operationId": "listMarketReportsV2",
+      "requestType": "ListMarketReportsV2Data",
+      "responseType": "ListMarketReportsV2Responses"
+    },
+    "GET /api/v2/market-analysis/{type}/{sessionDate}": {
+      "operationId": "getMarketReportByDateV2",
+      "requestType": "GetMarketReportByDateV2Data",
+      "responseType": "GetMarketReportByDateV2Responses"
+    },
+    "GET /api/v2/market-analysis/{type}/latest": {
+      "operationId": "getMarketReportLatestV2",
+      "requestType": "GetMarketReportLatestV2Data",
+      "responseType": "GetMarketReportLatestV2Responses"
+    },
+    "GET /api/v2/market-data/bctc-dashboard/{symbol}": {
+      "operationId": "getBctcDashboard_get_api_v2_market_data_bctc_dashboard_symbol",
+      "requestType": "GetBctcDashboardGetApiV2MarketDataBctcDashboardSymbolData",
+      "responseType": "GetBctcDashboardGetApiV2MarketDataBctcDashboardSymbolResponses"
+    },
+    "GET /api/v2/market-data/bctc/{symbol}": {
+      "operationId": "getBctc_get_api_v2_market_data_bctc_symbol",
+      "requestType": "GetBctcGetApiV2MarketDataBctcSymbolData",
+      "responseType": "GetBctcGetApiV2MarketDataBctcSymbolResponses"
+    },
+    "GET /api/v2/market-data/company/{symbol}/bctc": {
+      "operationId": "getBctc_get_api_v2_market_data_company_symbol_bctc",
+      "requestType": "GetBctcGetApiV2MarketDataCompanySymbolBctcData",
+      "responseType": "GetBctcGetApiV2MarketDataCompanySymbolBctcResponses"
+    },
+    "GET /api/v2/market-data/company/{symbol}/bctc-dashboard": {
+      "operationId": "getBctcDashboard_get_api_v2_market_data_company_symbol_bctc_dashboard",
+      "requestType": "GetBctcDashboardGetApiV2MarketDataCompanySymbolBctcDashboardData",
+      "responseType": "GetBctcDashboardGetApiV2MarketDataCompanySymbolBctcDashboardResponses"
+    },
+    "GET /api/v2/market-data/company/{symbol}/details": {
+      "operationId": "MarketDataController_details[1]",
+      "requestType": "MarketDataControllerDetails1Data",
+      "responseType": "MarketDataControllerDetails1Responses"
+    },
+    "GET /api/v2/market-data/company/{symbol}/news": {
+      "operationId": "MarketDataController_news[1]",
+      "requestType": "MarketDataControllerNews1Data",
+      "responseType": "MarketDataControllerNews1Responses"
+    },
+    "GET /api/v2/market-data/company/{symbol}/officers": {
+      "operationId": "MarketDataController_officers[1]",
+      "requestType": "MarketDataControllerOfficers1Data",
+      "responseType": "MarketDataControllerOfficers1Responses"
+    },
+    "GET /api/v2/market-data/company/{symbol}/overview": {
+      "operationId": "MarketDataController_overview[1]",
+      "requestType": "MarketDataControllerOverview1Data",
+      "responseType": "MarketDataControllerOverview1Responses"
+    },
+    "GET /api/v2/market-data/company/{symbol}/price-chart": {
+      "operationId": "MarketDataController_priceChart[1]",
+      "requestType": "MarketDataControllerPriceChart1Data",
+      "responseType": "MarketDataControllerPriceChart1Responses"
+    },
+    "GET /api/v2/market-data/company/{symbol}/shareholders": {
+      "operationId": "MarketDataController_shareholders[1]",
+      "requestType": "MarketDataControllerShareholders1Data",
+      "responseType": "MarketDataControllerShareholders1Responses"
+    },
+    "GET /api/v2/market-data/company/{symbol}/subsidiaries": {
+      "operationId": "MarketDataController_subsidiaries[1]",
+      "requestType": "MarketDataControllerSubsidiaries1Data",
+      "responseType": "MarketDataControllerSubsidiaries1Responses"
+    },
+    "GET /api/v2/market-data/events/calendar": {
+      "operationId": "MarketDataController_events[1]",
+      "requestType": "MarketDataControllerEvents1Data",
+      "responseType": "MarketDataControllerEvents1Responses"
+    },
+    "GET /api/v2/market-data/fundamentals/{symbol}/{reportType}": {
+      "operationId": "MarketDataController_financial[1]",
+      "requestType": "MarketDataControllerFinancial1Data",
+      "responseType": "MarketDataControllerFinancial1Responses"
+    },
+    "GET /api/v2/market-data/funds": {
+      "operationId": "MarketExtendedController_funds[1]",
+      "requestType": "MarketExtendedControllerFunds1Data",
+      "responseType": "MarketExtendedControllerFunds1Responses"
+    },
+    "GET /api/v2/market-data/funds/{fundId}": {
+      "operationId": "MarketExtendedController_fundDetails[1]",
+      "requestType": "MarketExtendedControllerFundDetails1Data",
+      "responseType": "MarketExtendedControllerFundDetails1Responses"
+    },
+    "GET /api/v2/market-data/funds/{fundId}/nav": {
+      "operationId": "MarketExtendedController_fundNav[1]",
+      "requestType": "MarketExtendedControllerFundNav1Data",
+      "responseType": "MarketExtendedControllerFundNav1Responses"
+    },
+    "GET /api/v2/market-data/global/crypto/{symbol}/depth": {
+      "operationId": "MarketExtendedController_cryptoDepth[1]",
+      "requestType": "MarketExtendedControllerCryptoDepth1Data",
+      "responseType": "MarketExtendedControllerCryptoDepth1Responses"
+    },
+    "GET /api/v2/market-data/global/crypto/{symbol}/ohlc": {
+      "operationId": "MarketExtendedController_cryptoOhlc[1]",
+      "requestType": "MarketExtendedControllerCryptoOhlc1Data",
+      "responseType": "MarketExtendedControllerCryptoOhlc1Responses"
+    },
+    "GET /api/v2/market-data/global/crypto/{symbol}/ticker": {
+      "operationId": "MarketExtendedController_cryptoTicker[1]",
+      "requestType": "MarketExtendedControllerCryptoTicker1Data",
+      "responseType": "MarketExtendedControllerCryptoTicker1Responses"
+    },
+    "GET /api/v2/market-data/global/forex": {
+      "operationId": "MarketExtendedController_forex[1]",
+      "requestType": "MarketExtendedControllerForex1Data",
+      "responseType": "MarketExtendedControllerForex1Responses"
+    },
+    "GET /api/v2/market-data/global/snapshot": {
+      "operationId": "MarketExtendedController_snapshot[1]",
+      "requestType": "MarketExtendedControllerSnapshot1Data",
+      "responseType": "MarketExtendedControllerSnapshot1Responses"
+    },
+    "GET /api/v2/market-data/global/world-index": {
+      "operationId": "MarketExtendedController_worldIndex[1]",
+      "requestType": "MarketExtendedControllerWorldIndex1Data",
+      "responseType": "MarketExtendedControllerWorldIndex1Responses"
+    },
+    "GET /api/v2/market-data/insights/ranking/{kind}": {
+      "operationId": "MarketDataController_ranking[1]",
+      "requestType": "MarketDataControllerRanking1Data",
+      "responseType": "MarketDataControllerRanking1Responses"
+    },
+    "GET /api/v2/market-data/macro/commodities": {
+      "operationId": "MarketExtendedController_commodities[1]",
+      "requestType": "MarketExtendedControllerCommodities1Data",
+      "responseType": "MarketExtendedControllerCommodities1Responses"
+    },
+    "GET /api/v2/market-data/macro/commodities/{code}": {
+      "operationId": "MarketExtendedController_commodity[1]",
+      "requestType": "MarketExtendedControllerCommodity1Data",
+      "responseType": "MarketExtendedControllerCommodity1Responses"
+    },
+    "GET /api/v2/market-data/macro/economy/{indicator}": {
+      "operationId": "MarketExtendedController_macro[1]",
+      "requestType": "MarketExtendedControllerMacro1Data",
+      "responseType": "MarketExtendedControllerMacro1Responses"
+    },
+    "GET /api/v2/market-data/macro/fx": {
+      "operationId": "MarketExtendedController_fx[1]",
+      "requestType": "MarketExtendedControllerFx1Data",
+      "responseType": "MarketExtendedControllerFx1Responses"
+    },
+    "GET /api/v2/market-data/macro/gold": {
+      "operationId": "MarketExtendedController_gold[1]",
+      "requestType": "MarketExtendedControllerGold1Data",
+      "responseType": "MarketExtendedControllerGold1Responses"
+    },
+    "GET /api/v2/market-data/news/ai": {
+      "operationId": "MarketExtendedController_aiNews[1]",
+      "requestType": "MarketExtendedControllerAiNews1Data",
+      "responseType": "MarketExtendedControllerAiNews1Responses"
+    },
+    "GET /api/v2/market-data/news/ai/audio/{newsId}": {
+      "operationId": "MarketExtendedController_aiAudio[1]",
+      "requestType": "MarketExtendedControllerAiAudio1Data",
+      "responseType": "MarketExtendedControllerAiAudio1Responses"
+    },
+    "GET /api/v2/market-data/news/ai/catalogs": {
+      "operationId": "MarketExtendedController_aiCatalogs[1]",
+      "requestType": "MarketExtendedControllerAiCatalogs1Data",
+      "responseType": "MarketExtendedControllerAiCatalogs1Responses"
+    },
+    "GET /api/v2/market-data/news/ai/detail/{slug}": {
+      "operationId": "MarketExtendedController_aiDetail[1]",
+      "requestType": "MarketExtendedControllerAiDetail1Data",
+      "responseType": "MarketExtendedControllerAiDetail1Responses"
+    },
+    "GET /api/v2/market-data/news/ai/tickers/{symbol}": {
+      "operationId": "MarketExtendedController_aiTicker[1]",
+      "requestType": "MarketExtendedControllerAiTicker1Data",
+      "responseType": "MarketExtendedControllerAiTicker1Responses"
+    },
+    "GET /api/v2/market-data/news/latest": {
+      "operationId": "MarketExtendedController_latestNews[1]",
+      "requestType": "MarketExtendedControllerLatestNews1Data",
+      "responseType": "MarketExtendedControllerLatestNews1Responses"
+    },
+    "GET /api/v2/market-data/news/sources": {
+      "operationId": "MarketExtendedController_newsSources[1]",
+      "requestType": "MarketExtendedControllerNewsSources1Data",
+      "responseType": "MarketExtendedControllerNewsSources1Responses"
+    },
+    "GET /api/v2/market-data/overview/allocation": {
+      "operationId": "MarketExtendedController_allocation[1]",
+      "requestType": "MarketExtendedControllerAllocation1Data",
+      "responseType": "MarketExtendedControllerAllocation1Responses"
+    },
+    "GET /api/v2/market-data/overview/breadth": {
+      "operationId": "MarketExtendedController_breadth[1]",
+      "requestType": "MarketExtendedControllerBreadth1Data",
+      "responseType": "MarketExtendedControllerBreadth1Responses"
+    },
+    "GET /api/v2/market-data/overview/foreign": {
+      "operationId": "MarketExtendedController_foreign[1]",
+      "requestType": "MarketExtendedControllerForeign1Data",
+      "responseType": "MarketExtendedControllerForeign1Responses"
+    },
+    "GET /api/v2/market-data/overview/foreign/top": {
+      "operationId": "MarketExtendedController_foreignTop[1]",
+      "requestType": "MarketExtendedControllerForeignTop1Data",
+      "responseType": "MarketExtendedControllerForeignTop1Responses"
+    },
+    "GET /api/v2/market-data/overview/heatmap": {
+      "operationId": "MarketExtendedController_heatmap[1]",
+      "requestType": "MarketExtendedControllerHeatmap1Data",
+      "responseType": "MarketExtendedControllerHeatmap1Responses"
+    },
+    "GET /api/v2/market-data/overview/heatmap/index": {
+      "operationId": "MarketExtendedController_heatmapIndex[1]",
+      "requestType": "MarketExtendedControllerHeatmapIndex1Data",
+      "responseType": "MarketExtendedControllerHeatmapIndex1Responses"
+    },
+    "GET /api/v2/market-data/overview/index-impact": {
+      "operationId": "MarketExtendedController_indexImpact[1]",
+      "requestType": "MarketExtendedControllerIndexImpact1Data",
+      "responseType": "MarketExtendedControllerIndexImpact1Responses"
+    },
+    "GET /api/v2/market-data/overview/liquidity": {
+      "operationId": "MarketExtendedController_liquidity[1]",
+      "requestType": "MarketExtendedControllerLiquidity1Data",
+      "responseType": "MarketExtendedControllerLiquidity1Responses"
+    },
+    "GET /api/v2/market-data/overview/maintenance": {
+      "operationId": "MarketExtendedController_maintenance[1]",
+      "requestType": "MarketExtendedControllerMaintenance1Data",
+      "responseType": "MarketExtendedControllerMaintenance1Responses"
+    },
+    "GET /api/v2/market-data/overview/market-index": {
+      "operationId": "MarketExtendedController_marketIndex[1]",
+      "requestType": "MarketExtendedControllerMarketIndex1Data",
+      "responseType": "MarketExtendedControllerMarketIndex1Responses"
+    },
+    "GET /api/v2/market-data/overview/proprietary": {
+      "operationId": "MarketExtendedController_proprietary[1]",
+      "requestType": "MarketExtendedControllerProprietary1Data",
+      "responseType": "MarketExtendedControllerProprietary1Responses"
+    },
+    "GET /api/v2/market-data/overview/proprietary/top": {
+      "operationId": "MarketExtendedController_proprietaryTop[1]",
+      "requestType": "MarketExtendedControllerProprietaryTop1Data",
+      "responseType": "MarketExtendedControllerProprietaryTop1Responses"
+    },
+    "GET /api/v2/market-data/overview/sectors/allocation": {
+      "operationId": "MarketExtendedController_sectorsAllocation[1]",
+      "requestType": "MarketExtendedControllerSectorsAllocation1Data",
+      "responseType": "MarketExtendedControllerSectorsAllocation1Responses"
+    },
+    "GET /api/v2/market-data/overview/sectors/detail": {
+      "operationId": "MarketExtendedController_sectorDetail[1]",
+      "requestType": "MarketExtendedControllerSectorDetail1Data",
+      "responseType": "MarketExtendedControllerSectorDetail1Responses"
+    },
+    "GET /api/v2/market-data/overview/stock-strength": {
+      "operationId": "MarketExtendedController_stockStrength[1]",
+      "requestType": "MarketExtendedControllerStockStrength1Data",
+      "responseType": "MarketExtendedControllerStockStrength1Responses"
+    },
+    "GET /api/v2/market-data/overview/valuation": {
+      "operationId": "MarketExtendedController_valuation[1]",
+      "requestType": "MarketExtendedControllerValuation1Data",
+      "responseType": "MarketExtendedControllerValuation1Responses"
+    },
+    "GET /api/v2/market-data/quotes/{symbol}/intraday": {
+      "operationId": "MarketDataController_intraday[1]",
+      "requestType": "MarketDataControllerIntraday1Data",
+      "responseType": "MarketDataControllerIntraday1Responses"
+    },
+    "GET /api/v2/market-data/quotes/{symbol}/ohlcv": {
+      "operationId": "MarketDataController_ohlcv[1]",
+      "requestType": "MarketDataControllerOhlcv1Data",
+      "responseType": "MarketDataControllerOhlcv1Responses"
+    },
+    "GET /api/v2/market-data/quotes/{symbol}/price-depth": {
+      "operationId": "MarketDataController_priceDepth[1]",
+      "requestType": "MarketDataControllerPriceDepth1Data",
+      "responseType": "MarketDataControllerPriceDepth1Responses"
+    },
+    "GET /api/v2/market-data/reference/event-codes": {
+      "operationId": "MarketExtendedController_eventCodes[1]",
+      "requestType": "MarketExtendedControllerEventCodes1Data",
+      "responseType": "MarketExtendedControllerEventCodes1Responses"
+    },
+    "GET /api/v2/market-data/reference/groups/{group}/symbols": {
+      "operationId": "MarketDataController_groupSymbols[1]",
+      "requestType": "MarketDataControllerGroupSymbols1Data",
+      "responseType": "MarketDataControllerGroupSymbols1Responses"
+    },
+    "GET /api/v2/market-data/reference/indices": {
+      "operationId": "MarketDataController_indices[1]",
+      "requestType": "MarketDataControllerIndices1Data",
+      "responseType": "MarketDataControllerIndices1Responses"
+    },
+    "GET /api/v2/market-data/reference/industries": {
+      "operationId": "MarketDataController_industries[1]",
+      "requestType": "MarketDataControllerIndustries1Data",
+      "responseType": "MarketDataControllerIndustries1Responses"
+    },
+    "GET /api/v2/market-data/reference/search": {
+      "operationId": "MarketExtendedController_search[1]",
+      "requestType": "MarketExtendedControllerSearch1Data",
+      "responseType": "MarketExtendedControllerSearch1Responses"
+    },
+    "GET /api/v2/market-data/reference/symbols": {
+      "operationId": "MarketDataController_symbols[1]",
+      "requestType": "MarketDataControllerSymbols1Data",
+      "responseType": "MarketDataControllerSymbols1Responses"
+    },
+    "GET /api/v2/market-data/screening/criteria": {
+      "operationId": "MarketExtendedController_screeningCriteria[1]",
+      "requestType": "MarketExtendedControllerScreeningCriteria1Data",
+      "responseType": "MarketExtendedControllerScreeningCriteria1Responses"
+    },
+    "GET /api/v2/market-data/screening/presets": {
+      "operationId": "MarketExtendedController_screeningPresets[1]",
+      "requestType": "MarketExtendedControllerScreeningPresets1Data",
+      "responseType": "MarketExtendedControllerScreeningPresets1Responses"
+    },
+    "GET /api/v2/market-data/sectors/information": {
+      "operationId": "MarketExtendedController_sectorInformation[1]",
+      "requestType": "MarketExtendedControllerSectorInformation1Data",
+      "responseType": "MarketExtendedControllerSectorInformation1Responses"
+    },
+    "GET /api/v2/market-data/sectors/ranking": {
+      "operationId": "MarketExtendedController_sectorRanking[1]",
+      "requestType": "MarketExtendedControllerSectorRanking1Data",
+      "responseType": "MarketExtendedControllerSectorRanking1Responses"
+    },
+    "GET /api/v2/market-data/sectors/trading-dates": {
+      "operationId": "MarketExtendedController_tradingDates[1]",
+      "requestType": "MarketExtendedControllerTradingDates1Data",
+      "responseType": "MarketExtendedControllerTradingDates1Responses"
+    },
+    "GET /api/v2/market-data/sheets/tpcp": {
+      "operationId": "MarketExtendedController_sheetTpcp[1]",
+      "requestType": "MarketExtendedControllerSheetTpcp1Data",
+      "responseType": "MarketExtendedControllerSheetTpcp1Responses"
+    },
+    "GET /api/v2/market-data/sheets/tygia": {
+      "operationId": "MarketExtendedController_sheetTygia[1]",
+      "requestType": "MarketExtendedControllerSheetTygia1Data",
+      "responseType": "MarketExtendedControllerSheetTygia1Responses"
+    },
+    "GET /api/v2/market-data/sheets/vnd": {
+      "operationId": "MarketExtendedController_sheetVnd[1]",
+      "requestType": "MarketExtendedControllerSheetVnd1Data",
+      "responseType": "MarketExtendedControllerSheetVnd1Responses"
+    },
+    "GET /api/v2/market-data/trading/{symbol}/foreign-trade": {
+      "operationId": "MarketDataController_foreignTrade[1]",
+      "requestType": "MarketDataControllerForeignTrade1Data",
+      "responseType": "MarketDataControllerForeignTrade1Responses"
+    },
+    "GET /api/v2/market-data/trading/{symbol}/foreign-trade/summary": {
+      "operationId": "MarketDataController_foreignSummary[1]",
+      "requestType": "MarketDataControllerForeignSummary1Data",
+      "responseType": "MarketDataControllerForeignSummary1Responses"
+    },
+    "GET /api/v2/market-data/trading/{symbol}/history": {
+      "operationId": "MarketDataController_history[1]",
+      "requestType": "MarketDataControllerHistory1Data",
+      "responseType": "MarketDataControllerHistory1Responses"
+    },
+    "GET /api/v2/market-data/trading/{symbol}/insider-deals": {
+      "operationId": "MarketDataController_insiderDeals[1]",
+      "requestType": "MarketDataControllerInsiderDeals1Data",
+      "responseType": "MarketDataControllerInsiderDeals1Responses"
+    },
+    "GET /api/v2/market-data/trading/{symbol}/proprietary": {
+      "operationId": "MarketDataController_proprietary[1]",
+      "requestType": "MarketDataControllerProprietary1Data",
+      "responseType": "MarketDataControllerProprietary1Responses"
+    },
+    "GET /api/v2/market-data/trading/{symbol}/proprietary/summary": {
+      "operationId": "MarketDataController_proprietarySummary[1]",
+      "requestType": "MarketDataControllerProprietarySummary1Data",
+      "responseType": "MarketDataControllerProprietarySummary1Responses"
+    },
+    "GET /api/v2/market-data/trading/{symbol}/summary": {
+      "operationId": "MarketDataController_summary[1]",
+      "requestType": "MarketDataControllerSummary1Data",
+      "responseType": "MarketDataControllerSummary1Responses"
+    },
+    "GET /api/v2/market-data/trading/{symbol}/supply-demand": {
+      "operationId": "MarketDataController_supply[1]",
+      "requestType": "MarketDataControllerSupply1Data",
+      "responseType": "MarketDataControllerSupply1Responses"
+    },
+    "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary": {
+      "operationId": "MarketDataController_supplySummary[1]",
+      "requestType": "MarketDataControllerSupplySummary1Data",
+      "responseType": "MarketDataControllerSupplySummary1Responses"
+    },
+    "GET /api/v2/media/{token}": {
+      "operationId": "MediaController_download",
+      "requestType": "MediaControllerDownloadData",
+      "responseType": "MediaControllerDownloadResponses"
+    },
+    "GET /api/v2/portfolio-manager/report": {
+      "operationId": "getPortfolioReportV2",
+      "requestType": "GetPortfolioReportV2Data",
+      "responseType": "GetPortfolioReportV2Responses"
+    },
+    "GET /api/v2/premium/admin/plans": {
+      "operationId": "adminListPremiumPlans_get_api_v2_premium_admin_plans",
+      "requestType": "AdminListPremiumPlansGetApiV2PremiumAdminPlansData",
+      "responseType": "AdminListPremiumPlansGetApiV2PremiumAdminPlansResponses"
+    },
+    "GET /api/v2/premium/me": {
+      "operationId": "getMyPremiumSubscription_get_api_v2_premium_me",
+      "requestType": "GetMyPremiumSubscriptionGetApiV2PremiumMeData",
+      "responseType": "GetMyPremiumSubscriptionGetApiV2PremiumMeResponses"
+    },
+    "GET /api/v2/premium/my-orders": {
+      "operationId": "listMyPremiumOrders_get_api_v2_premium_my_orders",
+      "requestType": "ListMyPremiumOrdersGetApiV2PremiumMyOrdersData",
+      "responseType": "ListMyPremiumOrdersGetApiV2PremiumMyOrdersResponses"
+    },
+    "GET /api/v2/premium/plans": {
+      "operationId": "listPremiumPlans_get_api_v2_premium_plans",
+      "requestType": "ListPremiumPlansGetApiV2PremiumPlansData",
+      "responseType": "ListPremiumPlansGetApiV2PremiumPlansResponses"
+    },
+    "GET /api/v2/users": {
+      "operationId": "UsersController_list[1]",
+      "requestType": "UsersControllerList1Data",
+      "responseType": "UsersControllerList1Responses"
+    },
+    "GET /api/v2/users/{userId}": {
+      "operationId": "UsersController_get[1]",
+      "requestType": "UsersControllerGet1Data",
+      "responseType": "UsersControllerGet1Responses"
+    },
+    "GET /api/v2/users/me": {
+      "operationId": "UsersController_me[1]",
+      "requestType": "UsersControllerMe1Data",
+      "responseType": "UsersControllerMe1Responses"
+    },
+    "GET /api/v2/virtual-trading/account": {
+      "operationId": "TradingController_account[1]",
+      "requestType": "TradingControllerAccount1Data",
+      "responseType": "TradingControllerAccount1Responses"
+    },
+    "GET /api/v2/virtual-trading/admin/accounts": {
+      "operationId": "LegacyVirtualTradingAdminController_accounts[1]",
+      "requestType": "LegacyVirtualTradingAdminControllerAccounts1Data",
+      "responseType": "LegacyVirtualTradingAdminControllerAccounts1Responses"
+    },
+    "GET /api/v2/virtual-trading/admin/config": {
+      "operationId": "LegacyVirtualTradingAdminController_config[1]",
+      "requestType": "LegacyVirtualTradingAdminControllerConfig1Data",
+      "responseType": "LegacyVirtualTradingAdminControllerConfig1Responses"
+    },
+    "GET /api/v2/virtual-trading/leaderboard": {
+      "operationId": "TradingController_leaderboard[1]",
+      "requestType": "TradingControllerLeaderboard1Data",
+      "responseType": "TradingControllerLeaderboard1Responses"
+    },
+    "GET /api/v2/virtual-trading/ledger": {
+      "operationId": "TradingController_ledger[1]",
+      "requestType": "TradingControllerLedger1Data",
+      "responseType": "TradingControllerLedger1Responses"
+    },
+    "GET /api/v2/virtual-trading/orders": {
+      "operationId": "TradingController_orders[1]",
+      "requestType": "TradingControllerOrders1Data",
+      "responseType": "TradingControllerOrders1Responses"
+    },
+    "GET /api/v2/virtual-trading/portfolio": {
+      "operationId": "TradingController_portfolio[1]",
+      "requestType": "TradingControllerPortfolio1Data",
+      "responseType": "TradingControllerPortfolio1Responses"
+    },
+    "GET /api/v2/virtual-trading/trades": {
+      "operationId": "TradingController_trades[1]",
+      "requestType": "TradingControllerTrades1Data",
+      "responseType": "TradingControllerTrades1Responses"
+    },
+    "GET /api/v2/watchlists": {
+      "operationId": "listWatchlistV2",
+      "requestType": "ListWatchlistV2Data",
+      "responseType": "ListWatchlistV2Responses"
+    },
+    "GET /api/v2/watchlists/{symbol}/status": {
+      "operationId": "checkWatchlistItemV2",
+      "requestType": "CheckWatchlistItemV2Data",
+      "responseType": "CheckWatchlistItemV2Responses"
+    },
+    "PATCH /api/v2/admin/lessons/courses/{courseId}": {
+      "operationId": "AdminLearningController_updateCourse[1]",
+      "requestType": "AdminLearningControllerUpdateCourse1Data",
+      "responseType": "AdminLearningControllerUpdateCourse1Responses"
+    },
+    "PATCH /api/v2/admin/lessons/episodes/{episodeId}": {
+      "operationId": "AdminLearningController_updateEpisode[1]",
+      "requestType": "AdminLearningControllerUpdateEpisode1Data",
+      "responseType": "AdminLearningControllerUpdateEpisode1Responses"
+    },
+    "PATCH /api/v2/admin/vt/config": {
+      "operationId": "AdminVTController_updateConfig[1]",
+      "requestType": "AdminVtControllerUpdateConfig1Data",
+      "responseType": "AdminVtControllerUpdateConfig1Responses"
+    },
+    "PATCH /api/v2/cap0/task": {
+      "operationId": "Cap0Controller_task[1]",
+      "requestType": "Cap0ControllerTask1Data",
+      "responseType": "Cap0ControllerTask1Responses"
+    },
+    "PATCH /api/v2/cap1/task": {
+      "operationId": "Cap1Controller_task[1]",
+      "requestType": "Cap1ControllerTask1Data",
+      "responseType": "Cap1ControllerTask1Responses"
+    },
+    "PATCH /api/v2/cap2/task": {
+      "operationId": "Cap2Controller_task[1]",
+      "requestType": "Cap2ControllerTask1Data",
+      "responseType": "Cap2ControllerTask1Responses"
+    },
+    "PATCH /api/v2/cap3/task": {
+      "operationId": "Cap3Controller_task[1]",
+      "requestType": "Cap3ControllerTask1Data",
+      "responseType": "Cap3ControllerTask1Responses"
+    },
+    "PATCH /api/v2/cap4/task": {
+      "operationId": "Cap4Controller_task[1]",
+      "requestType": "Cap4ControllerTask1Data",
+      "responseType": "Cap4ControllerTask1Responses"
+    },
+    "PATCH /api/v2/cap5/task": {
+      "operationId": "cap5Task_patch_api_v2_cap5_task",
+      "requestType": "Cap5TaskPatchApiV2Cap5TaskData",
+      "responseType": "Cap5TaskPatchApiV2Cap5TaskResponses"
+    },
+    "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop": {
+      "operationId": "setCap8DynamicStopV2",
+      "requestType": "SetCap8DynamicStopV2Data",
+      "responseType": "SetCap8DynamicStopV2Responses"
+    },
+    "PATCH /api/v2/premium/admin/plans/{plan_id}": {
+      "operationId": "adminUpdatePremiumPlan_patch_api_v2_premium_admin_plans_plan_id",
+      "requestType": "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdData",
+      "responseType": "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses"
+    },
+    "PATCH /api/v2/users/{userId}": {
+      "operationId": "UsersController_update[1]",
+      "requestType": "UsersControllerUpdate1Data",
+      "responseType": "UsersControllerUpdate1Responses"
+    },
+    "PATCH /api/v2/users/me": {
+      "operationId": "UsersController_updateMe[1]",
+      "requestType": "UsersControllerUpdateMe1Data",
+      "responseType": "UsersControllerUpdateMe1Responses"
+    },
+    "PATCH /api/v2/virtual-trading/admin/config": {
+      "operationId": "LegacyVirtualTradingAdminController_updateConfig[1]",
+      "requestType": "LegacyVirtualTradingAdminControllerUpdateConfig1Data",
+      "responseType": "LegacyVirtualTradingAdminControllerUpdateConfig1Responses"
+    },
+    "POST /api/v2/admin/alerts/seed": {
+      "operationId": "AdminAlertsController_seed[1]",
+      "requestType": "AdminAlertsControllerSeed1Data",
+      "responseType": "AdminAlertsControllerSeed1Responses"
+    },
+    "POST /api/v2/admin/alerts/signals": {
+      "operationId": "AdminAlertsController_create[1]",
+      "requestType": "AdminAlertsControllerCreate1Data",
+      "responseType": "AdminAlertsControllerCreate1Responses"
+    },
+    "POST /api/v2/admin/alerts/telegram/webhook": {
+      "operationId": "AdminAlertsController_setupTelegramWebhook[1]",
+      "requestType": "AdminAlertsControllerSetupTelegramWebhook1Data",
+      "responseType": "AdminAlertsControllerSetupTelegramWebhook1Responses"
+    },
+    "POST /api/v2/admin/ipn/{log_id}/retry": {
+      "operationId": "adminRetryIpn_post_api_v2_admin_ipn_log_id_retry",
+      "requestType": "AdminRetryIpnPostApiV2AdminIpnLogIdRetryData",
+      "responseType": "AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponses"
+    },
+    "POST /api/v2/admin/journey/identity/qa-grants": {
+      "operationId": "JourneyIdentityController_grantQa[1]",
+      "requestType": "JourneyIdentityControllerGrantQa1Data",
+      "responseType": "JourneyIdentityControllerGrantQa1Responses"
+    },
+    "POST /api/v2/admin/lessons/courses": {
+      "operationId": "AdminLearningController_createCourse[1]",
+      "requestType": "AdminLearningControllerCreateCourse1Data",
+      "responseType": "AdminLearningControllerCreateCourse1Responses"
+    },
+    "POST /api/v2/admin/lessons/courses/{courseId}/episodes": {
+      "operationId": "AdminLearningController_createEpisode[1]",
+      "requestType": "AdminLearningControllerCreateEpisode1Data",
+      "responseType": "AdminLearningControllerCreateEpisode1Responses"
+    },
+    "POST /api/v2/admin/lessons/courses/{courseId}/reorder": {
+      "operationId": "AdminLearningController_reorder[1]",
+      "requestType": "AdminLearningControllerReorder1Data",
+      "responseType": "AdminLearningControllerReorder1Responses"
+    },
+    "POST /api/v2/admin/lessons/courses/{courseId}/thumbnail": {
+      "operationId": "AdminLearningController_thumbnail[1]",
+      "requestType": "AdminLearningControllerThumbnail1Data",
+      "responseType": "AdminLearningControllerThumbnail1Responses"
+    },
+    "POST /api/v2/admin/lessons/episodes/{episodeId}/file": {
+      "operationId": "AdminLearningController_episodeFile[1]",
+      "requestType": "AdminLearningControllerEpisodeFile1Data",
+      "responseType": "AdminLearningControllerEpisodeFile1Responses"
+    },
+    "POST /api/v2/admin/payments/{order_id}/mark-paid": {
+      "operationId": "adminMarkPaymentPaid_post_api_v2_admin_payments_order_id_mark_paid",
+      "requestType": "AdminMarkPaymentPaidPostApiV2AdminPaymentsOrderIdMarkPaidData",
+      "responseType": "AdminMarkPaymentPaidPostApiV2AdminPaymentsOrderIdMarkPaidResponses"
+    },
+    "POST /api/v2/admin/payments/{order_id}/reconcile": {
+      "operationId": "adminReconcilePayment_post_api_v2_admin_payments_order_id_reconcile",
+      "requestType": "AdminReconcilePaymentPostApiV2AdminPaymentsOrderIdReconcileData",
+      "responseType": "AdminReconcilePaymentPostApiV2AdminPaymentsOrderIdReconcileResponses"
+    },
+    "POST /api/v2/admin/payments/{order_id}/refund": {
+      "operationId": "adminRefundPayment_post_api_v2_admin_payments_order_id_refund",
+      "requestType": "AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundData",
+      "responseType": "AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponses"
+    },
+    "POST /api/v2/admin/subscriptions/{sub_id}/cancel": {
+      "operationId": "adminCancelSubscription_post_api_v2_admin_subscriptions_sub_id_cancel",
+      "requestType": "AdminCancelSubscriptionPostApiV2AdminSubscriptionsSubIdCancelData",
+      "responseType": "AdminCancelSubscriptionPostApiV2AdminSubscriptionsSubIdCancelResponses"
+    },
+    "POST /api/v2/admin/subscriptions/{sub_id}/extend": {
+      "operationId": "adminExtendSubscription_post_api_v2_admin_subscriptions_sub_id_extend",
+      "requestType": "AdminExtendSubscriptionPostApiV2AdminSubscriptionsSubIdExtendData",
+      "responseType": "AdminExtendSubscriptionPostApiV2AdminSubscriptionsSubIdExtendResponses"
+    },
+    "POST /api/v2/admin/system/jobs/{jobId}/run": {
+      "operationId": "AdminSystemController_run[1]",
+      "requestType": "AdminSystemControllerRun1Data",
+      "responseType": "AdminSystemControllerRun1Responses"
+    },
+    "POST /api/v2/admin/users/{userId}/resend-verification": {
+      "operationId": "AdminUsersController_resendVerification[1]",
+      "requestType": "AdminUsersControllerResendVerification1Data",
+      "responseType": "AdminUsersControllerResendVerification1Responses"
+    },
+    "POST /api/v2/admin/users/{userId}/reset-password": {
+      "operationId": "AdminUsersController_resetPassword[1]",
+      "requestType": "AdminUsersControllerResetPassword1Data",
+      "responseType": "AdminUsersControllerResetPassword1Responses"
+    },
+    "POST /api/v2/admin/users/bulk": {
+      "operationId": "AdminUsersController_bulk[1]",
+      "requestType": "AdminUsersControllerBulk1Data",
+      "responseType": "AdminUsersControllerBulk1Responses"
+    },
+    "POST /api/v2/admin/vt/accounts/{accountId}/cash-adjust": {
+      "operationId": "AdminVTController_cashAdjust[1]",
+      "requestType": "AdminVtControllerCashAdjust1Data",
+      "responseType": "AdminVtControllerCashAdjust1Responses"
+    },
+    "POST /api/v2/admin/vt/accounts/{accountId}/freeze": {
+      "operationId": "AdminVTController_freeze[1]",
+      "requestType": "AdminVtControllerFreeze1Data",
+      "responseType": "AdminVtControllerFreeze1Responses"
+    },
+    "POST /api/v2/admin/vt/accounts/{accountId}/reset": {
+      "operationId": "AdminVTController_reset[1]",
+      "requestType": "AdminVtControllerReset1Data",
+      "responseType": "AdminVtControllerReset1Responses"
+    },
+    "POST /api/v2/admin/vt/accounts/{accountId}/unfreeze": {
+      "operationId": "AdminVTController_unfreeze[1]",
+      "requestType": "AdminVtControllerUnfreeze1Data",
+      "responseType": "AdminVtControllerUnfreeze1Responses"
+    },
+    "POST /api/v2/admin/vt/reset-all": {
+      "operationId": "AdminVTController_resetAll[1]",
+      "requestType": "AdminVtControllerResetAll1Data",
+      "responseType": "AdminVtControllerResetAll1Responses"
+    },
+    "POST /api/v2/ai/dashboard/analyze": {
+      "operationId": "analyzeDashboardV2_post_api_v2_ai_dashboard_analyze",
+      "requestType": "AnalyzeDashboardV2PostApiV2AiDashboardAnalyzeData",
+      "responseType": "AnalyzeDashboardV2PostApiV2AiDashboardAnalyzeResponses"
+    },
+    "POST /api/v2/ai/industry/analyze": {
+      "operationId": "analyzeIndustryV2_post_api_v2_ai_industry_analyze",
+      "requestType": "AnalyzeIndustryV2PostApiV2AiIndustryAnalyzeData",
+      "responseType": "AnalyzeIndustryV2PostApiV2AiIndustryAnalyzeResponses"
+    },
+    "POST /api/v2/ai/industry/analyze-batch": {
+      "operationId": "analyzeIndustryBatchV2_post_api_v2_ai_industry_analyze_batch",
+      "requestType": "AnalyzeIndustryBatchV2PostApiV2AiIndustryAnalyzeBatchData",
+      "responseType": "AnalyzeIndustryBatchV2PostApiV2AiIndustryAnalyzeBatchResponses"
+    },
+    "POST /api/v2/ai/insight/analyze": {
+      "operationId": "analyzeInsightV2_post_api_v2_ai_insight_analyze",
+      "requestType": "AnalyzeInsightV2PostApiV2AiInsightAnalyzeData",
+      "responseType": "AnalyzeInsightV2PostApiV2AiInsightAnalyzeResponses"
+    },
+    "POST /api/v2/alerts/rules": {
+      "operationId": "AlertsController_createRule[1]",
+      "requestType": "AlertsControllerCreateRule1Data",
+      "responseType": "AlertsControllerCreateRule1Responses"
+    },
+    "POST /api/v2/alerts/telegram/link": {
+      "operationId": "AlertsController_createTelegramLink[1]",
+      "requestType": "AlertsControllerCreateTelegramLink1Data",
+      "responseType": "AlertsControllerCreateTelegramLink1Responses"
+    },
+    "POST /api/v2/auth/forgot-password": {
+      "operationId": "AuthController_forgotPassword[1]",
+      "requestType": "AuthControllerForgotPassword1Data",
+      "responseType": "AuthControllerForgotPassword1Responses"
+    },
+    "POST /api/v2/auth/login": {
+      "operationId": "AuthController_login[1]",
+      "requestType": "AuthControllerLogin1Data",
+      "responseType": "AuthControllerLogin1Responses"
+    },
+    "POST /api/v2/auth/logout": {
+      "operationId": "AuthController_logout[1]",
+      "requestType": "AuthControllerLogout1Data",
+      "responseType": "AuthControllerLogout1Responses"
+    },
+    "POST /api/v2/auth/refresh": {
+      "operationId": "AuthController_refresh[1]",
+      "requestType": "AuthControllerRefresh1Data",
+      "responseType": "AuthControllerRefresh1Responses"
+    },
+    "POST /api/v2/auth/register": {
+      "operationId": "AuthController_register[1]",
+      "requestType": "AuthControllerRegister1Data",
+      "responseType": "AuthControllerRegister1Responses"
+    },
+    "POST /api/v2/auth/reset-password": {
+      "operationId": "AuthController_resetPassword[1]",
+      "requestType": "AuthControllerResetPassword1Data",
+      "responseType": "AuthControllerResetPassword1Responses"
+    },
+    "POST /api/v2/backtest/run": {
+      "operationId": "QuantController_run[0]",
+      "requestType": "QuantControllerRun0Data",
+      "responseType": "QuantControllerRun0Responses"
+    },
+    "POST /api/v2/backtest/strategies": {
+      "operationId": "QuantController_create[0]",
+      "requestType": "QuantControllerCreate0Data",
+      "responseType": "QuantControllerCreate0Responses"
+    },
+    "POST /api/v2/bot/mascot/ui-events": {
+      "operationId": "JourneyIdentityController_uiEvent[1]",
+      "requestType": "JourneyIdentityControllerUiEvent1Data",
+      "responseType": "JourneyIdentityControllerUiEvent1Responses"
+    },
+    "POST /api/v2/cap0/enter": {
+      "operationId": "Cap0Controller_enter[1]",
+      "requestType": "Cap0ControllerEnter1Data",
+      "responseType": "Cap0ControllerEnter1Responses"
+    },
+    "POST /api/v2/cap0/graduate": {
+      "operationId": "Cap0Controller_graduate[1]",
+      "requestType": "Cap0ControllerGraduate1Data",
+      "responseType": "Cap0ControllerGraduate1Responses"
+    },
+    "POST /api/v2/cap0/kehoach": {
+      "operationId": "Cap0Controller_kehoach[1]",
+      "requestType": "Cap0ControllerKehoach1Data",
+      "responseType": "Cap0ControllerKehoach1Responses"
+    },
+    "POST /api/v2/cap0/placement": {
+      "operationId": "Cap0Controller_placement[1]",
+      "requestType": "Cap0ControllerPlacement1Data",
+      "responseType": "Cap0ControllerPlacement1Responses"
+    },
+    "POST /api/v2/cap0/tours/{tour}/complete": {
+      "operationId": "Cap0Controller_completeTour[1]",
+      "requestType": "Cap0ControllerCompleteTour1Data",
+      "responseType": "Cap0ControllerCompleteTour1Responses"
+    },
+    "POST /api/v2/cap1/enter": {
+      "operationId": "Cap1Controller_enter[1]",
+      "requestType": "Cap1ControllerEnter1Data",
+      "responseType": "Cap1ControllerEnter1Responses"
+    },
+    "POST /api/v2/cap1/graduate": {
+      "operationId": "Cap1Controller_graduate[1]",
+      "requestType": "Cap1ControllerGraduate1Data",
+      "responseType": "Cap1ControllerGraduate1Responses"
+    },
+    "POST /api/v2/cap1/kehoach": {
+      "operationId": "Cap1Controller_kehoach[1]",
+      "requestType": "Cap1ControllerKehoach1Data",
+      "responseType": "Cap1ControllerKehoach1Responses"
+    },
+    "POST /api/v2/cap1/ketso": {
+      "operationId": "Cap1Controller_ketso[1]",
+      "requestType": "Cap1ControllerKetso1Data",
+      "responseType": "Cap1ControllerKetso1Responses"
+    },
+    "POST /api/v2/cap2/alerts/{alert_id}/action": {
+      "operationId": "Cap2Controller_action[1]",
+      "requestType": "Cap2ControllerAction1Data",
+      "responseType": "Cap2ControllerAction1Responses"
+    },
+    "POST /api/v2/cap2/alerts/{alert_id}/check": {
+      "operationId": "Cap2Controller_check[1]",
+      "requestType": "Cap2ControllerCheck1Data",
+      "responseType": "Cap2ControllerCheck1Responses"
+    },
+    "POST /api/v2/cap2/alerts/{alert_id}/claim": {
+      "operationId": "Cap2Controller_claim[1]",
+      "requestType": "Cap2ControllerClaim1Data",
+      "responseType": "Cap2ControllerClaim1Responses"
+    },
+    "POST /api/v2/cap2/alerts/{alert_id}/dismiss": {
+      "operationId": "Cap2Controller_dismiss[1]",
+      "requestType": "Cap2ControllerDismiss1Data",
+      "responseType": "Cap2ControllerDismiss1Responses"
+    },
+    "POST /api/v2/cap2/alerts/{alert_id}/snooze": {
+      "operationId": "Cap2Controller_snooze[1]",
+      "requestType": "Cap2ControllerSnooze1Data",
+      "responseType": "Cap2ControllerSnooze1Responses"
+    },
+    "POST /api/v2/cap2/alerts/pre-buy": {
+      "operationId": "Cap2Controller_preBuy[1]",
+      "requestType": "Cap2ControllerPreBuy1Data",
+      "responseType": "Cap2ControllerPreBuy1Responses"
+    },
+    "POST /api/v2/cap2/enter": {
+      "operationId": "Cap2Controller_enter[1]",
+      "requestType": "Cap2ControllerEnter1Data",
+      "responseType": "Cap2ControllerEnter1Responses"
+    },
+    "POST /api/v2/cap2/graduate": {
+      "operationId": "Cap2Controller_graduate[1]",
+      "requestType": "Cap2ControllerGraduate1Data",
+      "responseType": "Cap2ControllerGraduate1Responses"
+    },
+    "POST /api/v2/cap2/kehoach": {
+      "operationId": "Cap2Controller_kehoach[1]",
+      "requestType": "Cap2ControllerKehoach1Data",
+      "responseType": "Cap2ControllerKehoach1Responses"
+    },
+    "POST /api/v2/cap2/ketso": {
+      "operationId": "Cap2Controller_ketso[1]",
+      "requestType": "Cap2ControllerKetso1Data",
+      "responseType": "Cap2ControllerKetso1Responses"
+    },
+    "POST /api/v2/cap3/enter": {
+      "operationId": "Cap3Controller_enter[1]",
+      "requestType": "Cap3ControllerEnter1Data",
+      "responseType": "Cap3ControllerEnter1Responses"
+    },
+    "POST /api/v2/cap3/graduate": {
+      "operationId": "Cap3Controller_graduate[1]",
+      "requestType": "Cap3ControllerGraduate1Data",
+      "responseType": "Cap3ControllerGraduate1Responses"
+    },
+    "POST /api/v2/cap3/kehoach": {
+      "operationId": "Cap3Controller_plan[1]",
+      "requestType": "Cap3ControllerPlan1Data",
+      "responseType": "Cap3ControllerPlan1Responses"
+    },
+    "POST /api/v2/cap3/khau-vi": {
+      "operationId": "Cap3Controller_risk[1]",
+      "requestType": "Cap3ControllerRisk1Data",
+      "responseType": "Cap3ControllerRisk1Responses"
+    },
+    "POST /api/v2/cap4/enter": {
+      "operationId": "Cap4Controller_enter[1]",
+      "requestType": "Cap4ControllerEnter1Data",
+      "responseType": "Cap4ControllerEnter1Responses"
+    },
+    "POST /api/v2/cap4/graduate": {
+      "operationId": "Cap4Controller_graduate[1]",
+      "requestType": "Cap4ControllerGraduate1Data",
+      "responseType": "Cap4ControllerGraduate1Responses"
+    },
+    "POST /api/v2/cap4/kehoach": {
+      "operationId": "Cap4Controller_plan[1]",
+      "requestType": "Cap4ControllerPlan1Data",
+      "responseType": "Cap4ControllerPlan1Responses"
+    },
+    "POST /api/v2/cap5/enter": {
+      "operationId": "cap5Enter_post_api_v2_cap5_enter",
+      "requestType": "Cap5EnterPostApiV2Cap5EnterData",
+      "responseType": "Cap5EnterPostApiV2Cap5EnterResponses"
+    },
+    "POST /api/v2/cap5/graduate": {
+      "operationId": "cap5Graduate_post_api_v2_cap5_graduate",
+      "requestType": "Cap5GraduatePostApiV2Cap5GraduateData",
+      "responseType": "Cap5GraduatePostApiV2Cap5GraduateResponses"
+    },
+    "POST /api/v2/cap5/tour-sanma": {
+      "operationId": "cap5TourSanma_post_api_v2_cap5_tour_sanma",
+      "requestType": "Cap5TourSanmaPostApiV2Cap5TourSanmaData",
+      "responseType": "Cap5TourSanmaPostApiV2Cap5TourSanmaResponses"
+    },
+    "POST /api/v2/cap5/watchlist": {
+      "operationId": "cap5AddWatchlist_post_api_v2_cap5_watchlist",
+      "requestType": "Cap5AddWatchlistPostApiV2Cap5WatchlistData",
+      "responseType": "Cap5AddWatchlistPostApiV2Cap5WatchlistResponses"
+    },
+    "POST /api/v2/cap6/enter": {
+      "operationId": "cap6Enter_post_api_v2_cap6_enter",
+      "requestType": "Cap6EnterPostApiV2Cap6EnterData",
+      "responseType": "Cap6EnterPostApiV2Cap6EnterResponses"
+    },
+    "POST /api/v2/cap6/graduate": {
+      "operationId": "cap6Graduate_post_api_v2_cap6_graduate",
+      "requestType": "Cap6GraduatePostApiV2Cap6GraduateData",
+      "responseType": "Cap6GraduatePostApiV2Cap6GraduateResponses"
+    },
+    "POST /api/v2/cap6/kehoach": {
+      "operationId": "cap6RecordPlan_post_api_v2_cap6_kehoach",
+      "requestType": "Cap6RecordPlanPostApiV2Cap6KehoachData",
+      "responseType": "Cap6RecordPlanPostApiV2Cap6KehoachResponses"
+    },
+    "POST /api/v2/cap6/skip": {
+      "operationId": "cap6Skip_post_api_v2_cap6_skip",
+      "requestType": "Cap6SkipPostApiV2Cap6SkipData",
+      "responseType": "Cap6SkipPostApiV2Cap6SkipResponses"
+    },
+    "POST /api/v2/cap6/tour-mauthuan": {
+      "operationId": "cap6TourMauThuan_post_api_v2_cap6_tour_mauthuan",
+      "requestType": "Cap6TourMauThuanPostApiV2Cap6TourMauthuanData",
+      "responseType": "Cap6TourMauThuanPostApiV2Cap6TourMauthuanResponses"
+    },
+    "POST /api/v2/cap7/enter": {
+      "operationId": "enterCap7V2",
+      "requestType": "EnterCap7V2Data",
+      "responseType": "EnterCap7V2Responses"
+    },
+    "POST /api/v2/cap7/graduate": {
+      "operationId": "graduateCap7V2",
+      "requestType": "GraduateCap7V2Data",
+      "responseType": "GraduateCap7V2Responses"
+    },
+    "POST /api/v2/cap8/enter": {
+      "operationId": "enterCap8V2",
+      "requestType": "EnterCap8V2Data",
+      "responseType": "EnterCap8V2Responses"
+    },
+    "POST /api/v2/cap8/exits": {
+      "operationId": "recordCap8ExitV2",
+      "requestType": "RecordCap8ExitV2Data",
+      "responseType": "RecordCap8ExitV2Responses"
+    },
+    "POST /api/v2/cap8/graduate": {
+      "operationId": "graduateCap8V2",
+      "requestType": "GraduateCap8V2Data",
+      "responseType": "GraduateCap8V2Responses"
+    },
+    "POST /api/v2/cap8/positions/{symbol}/sync-plan": {
+      "operationId": "syncCap8PlanV2",
+      "requestType": "SyncCap8PlanV2Data",
+      "responseType": "SyncCap8PlanV2Responses"
+    },
+    "POST /api/v2/journey/assessments": {
+      "operationId": "JourneyIdentityController_submit[1]",
+      "requestType": "JourneyIdentityControllerSubmit1Data",
+      "responseType": "JourneyIdentityControllerSubmit1Responses"
+    },
+    "POST /api/v2/journey/assessments/{assessmentId}/reveal": {
+      "operationId": "JourneyIdentityController_reveal[1]",
+      "requestType": "JourneyIdentityControllerReveal1Data",
+      "responseType": "JourneyIdentityControllerReveal1Responses"
+    },
+    "POST /api/v2/journey/events": {
+      "operationId": "JourneyEventController_record[1]",
+      "requestType": "JourneyEventControllerRecord1Data",
+      "responseType": "JourneyEventControllerRecord1Responses"
+    },
+    "POST /api/v2/journey/reading-datasets": {
+      "operationId": "JourneyIdentityController_createDataset[1]",
+      "requestType": "JourneyIdentityControllerCreateDataset1Data",
+      "responseType": "JourneyIdentityControllerCreateDataset1Responses"
+    },
+    "POST /api/v2/lessons/episodes/{episodeId}/progress": {
+      "operationId": "LearningController_updateProgress[1]",
+      "requestType": "LearningControllerUpdateProgress1Data",
+      "responseType": "LearningControllerUpdateProgress1Responses"
+    },
+    "POST /api/v2/market-analysis/{type}/run": {
+      "operationId": "runMarketReportV2",
+      "requestType": "RunMarketReportV2Data",
+      "responseType": "RunMarketReportV2Responses"
+    },
+    "POST /api/v2/market-data/screening/search": {
+      "operationId": "MarketExtendedController_screeningSearch[1]",
+      "requestType": "MarketExtendedControllerScreeningSearch1Data",
+      "responseType": "MarketExtendedControllerScreeningSearch1Responses"
+    },
+    "POST /api/v2/market-data/trading/price-board": {
+      "operationId": "MarketDataController_priceBoard[1]",
+      "requestType": "MarketDataControllerPriceBoard1Data",
+      "responseType": "MarketDataControllerPriceBoard1Responses"
+    },
+    "POST /api/v2/portfolio-manager/analyze": {
+      "operationId": "analyzePortfolioV2",
+      "requestType": "AnalyzePortfolioV2Data",
+      "responseType": "AnalyzePortfolioV2Responses"
+    },
+    "POST /api/v2/premium/admin/plans": {
+      "operationId": "adminCreatePremiumPlan_post_api_v2_premium_admin_plans",
+      "requestType": "AdminCreatePremiumPlanPostApiV2PremiumAdminPlansData",
+      "responseType": "AdminCreatePremiumPlanPostApiV2PremiumAdminPlansResponses"
+    },
+    "POST /api/v2/premium/admin/users/{user_id}/grant": {
+      "operationId": "adminGrantPremium_post_api_v2_premium_admin_users_user_id_grant",
+      "requestType": "AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantData",
+      "responseType": "AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantResponses"
+    },
+    "POST /api/v2/premium/checkout": {
+      "operationId": "createPremiumCheckout_post_api_v2_premium_checkout",
+      "requestType": "CreatePremiumCheckoutPostApiV2PremiumCheckoutData",
+      "responseType": "CreatePremiumCheckoutPostApiV2PremiumCheckoutResponses"
+    },
+    "POST /api/v2/premium/sepay/ipn": {
+      "operationId": "receiveSePayIpn_post_api_v2_premium_sepay_ipn",
+      "requestType": "ReceiveSePayIpnPostApiV2PremiumSepayIpnData",
+      "responseType": "ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses"
+    },
+    "POST /api/v2/telegram/webhook/{secret}": {
+      "operationId": "TelegramController_webhook[1]",
+      "requestType": "TelegramControllerWebhook1Data",
+      "responseType": "TelegramControllerWebhook1Responses"
+    },
+    "POST /api/v2/users": {
+      "operationId": "UsersController_create[1]",
+      "requestType": "UsersControllerCreate1Data",
+      "responseType": "UsersControllerCreate1Responses"
+    },
+    "POST /api/v2/virtual-trading/account/activate": {
+      "operationId": "TradingController_activate[1]",
+      "requestType": "TradingControllerActivate1Data",
+      "responseType": "TradingControllerActivate1Responses"
+    },
+    "POST /api/v2/virtual-trading/admin/reset-all": {
+      "operationId": "LegacyVirtualTradingAdminController_resetAll[1]",
+      "requestType": "LegacyVirtualTradingAdminControllerResetAll1Data",
+      "responseType": "LegacyVirtualTradingAdminControllerResetAll1Responses"
+    },
+    "POST /api/v2/virtual-trading/admin/users/{userId}/reset": {
+      "operationId": "LegacyVirtualTradingAdminController_reset[1]",
+      "requestType": "LegacyVirtualTradingAdminControllerReset1Data",
+      "responseType": "LegacyVirtualTradingAdminControllerReset1Responses"
+    },
+    "POST /api/v2/virtual-trading/orders": {
+      "operationId": "TradingController_place[1]",
+      "requestType": "TradingControllerPlace1Data",
+      "responseType": "TradingControllerPlace1Responses"
+    },
+    "POST /api/v2/virtual-trading/orders/{orderId}/cancel": {
+      "operationId": "TradingController_cancel[1]",
+      "requestType": "TradingControllerCancel1Data",
+      "responseType": "TradingControllerCancel1Responses"
+    },
+    "POST /api/v2/virtual-trading/refresh": {
+      "operationId": "TradingController_refresh[1]",
+      "requestType": "TradingControllerRefresh1Data",
+      "responseType": "TradingControllerRefresh1Responses"
+    },
+    "POST /api/v2/watchlists": {
+      "operationId": "addWatchlistItemV2",
+      "requestType": "AddWatchlistItemV2Data",
+      "responseType": "AddWatchlistItemV2Responses"
+    },
+    "PUT /api/v2/admin/alerts/signals/{key}": {
+      "operationId": "AdminAlertsController_update[1]",
+      "requestType": "AdminAlertsControllerUpdate1Data",
+      "responseType": "AdminAlertsControllerUpdate1Responses"
+    },
+    "PUT /api/v2/alerts/rules/{ruleId}": {
+      "operationId": "AlertsController_updateRule[1]",
+      "requestType": "AlertsControllerUpdateRule1Data",
+      "responseType": "AlertsControllerUpdateRule1Responses"
+    },
+    "PUT /api/v2/backtest/strategies/{strategyId}": {
+      "operationId": "QuantController_update[0]",
+      "requestType": "QuantControllerUpdate0Data",
+      "responseType": "QuantControllerUpdate0Responses"
+    },
+    "PUT /api/v2/chart-drawings/{symbol}": {
+      "operationId": "saveChartDrawingV2",
+      "requestType": "SaveChartDrawingV2Data",
+      "responseType": "SaveChartDrawingV2Responses"
+    },
+    "PUT /api/v2/watchlists/reorder": {
+      "operationId": "reorderWatchlistV2",
+      "requestType": "ReorderWatchlistV2Data",
+      "responseType": "ReorderWatchlistV2Responses"
+    }
+  }
+}

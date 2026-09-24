@@ -1,0 +1,33 @@
+name: iqx-backend-v2-test
+
+services:
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: iqx_v2_test_compose
+      POSTGRES_USER: iqx_v2_test
+      POSTGRES_PASSWORD: iqx_v2_test
+    ports:
+      - '127.0.0.1:15432:5432'
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U iqx_v2_test -d iqx_v2_test_compose']
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    restart: 'no'
+
+  redis:
+    image: redis:7-bookworm
+    command: ['redis-server', '--save', '', '--appendonly', 'no']
+    ports:
+      - '127.0.0.1:16379:6379'
+    tmpfs:
+      - /data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    restart: 'no'

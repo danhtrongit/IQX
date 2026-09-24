@@ -1,0 +1,7696 @@
+{
+  "counts": {
+    "http": 315,
+    "routers": 41,
+    "routes": 316,
+    "websocket": 1
+  },
+  "generatedBy": "backend-v2/scripts/generate-legacy-contract.py",
+  "routes": [
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/alerts/indicators",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "list[dict]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "admin_alerts",
+        "prefix": "/admin/alerts"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_alerts.py",
+        "handler": "list_indicator_options",
+        "line": 47
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/alerts/seed",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "admin_alerts",
+        "prefix": "/admin/alerts"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_alerts.py",
+        "handler": "reseed",
+        "line": 108
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/alerts/signals",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "list[AlertSignalResponse]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_alerts",
+        "prefix": "/admin/alerts"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_alerts.py",
+        "handler": "list_signals",
+        "line": 52
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/alerts/signals",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AlertSignalResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_alerts",
+        "prefix": "/admin/alerts"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_alerts.py",
+        "handler": "create_signal",
+        "line": 58
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "DELETE",
+      "path": "/api/v1/admin/alerts/signals/{key}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "None",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "admin_alerts",
+        "prefix": "/admin/alerts"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_alerts.py",
+        "handler": "delete_signal",
+        "line": 99
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "PUT",
+      "path": "/api/v1/admin/alerts/signals/{key}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AlertSignalResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_alerts",
+        "prefix": "/admin/alerts"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_alerts.py",
+        "handler": "update_signal",
+        "line": 79
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/audit",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PaginatedResponse[AdminAuditLogResponse]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_audit",
+        "prefix": "/admin/audit"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_audit.py",
+        "handler": "list_audit_logs",
+        "line": 21
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/ipn",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PaginatedResponse[SePayIPNLogResponse]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_ipn",
+        "prefix": "/admin/ipn"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_ipn.py",
+        "handler": "list_ipn_logs",
+        "line": 19
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/ipn/{log_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "SePayIPNLogResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_ipn",
+        "prefix": "/admin/ipn"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_ipn.py",
+        "handler": "get_ipn_log",
+        "line": 44
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/ipn/{log_id}/retry",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "IPNRetryResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_ipn",
+        "prefix": "/admin/ipn"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_ipn.py",
+        "handler": "retry_ipn_log",
+        "line": 51
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/lessons/courses",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PaginatedResponse[CourseResponse]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_lessons",
+        "prefix": "/admin/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_lessons.py",
+        "handler": "admin_list_courses",
+        "line": 56
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/lessons/courses",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "CourseResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_lessons",
+        "prefix": "/admin/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_lessons.py",
+        "handler": "admin_create_course",
+        "line": 89
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "DELETE",
+      "path": "/api/v1/admin/lessons/courses/{course_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "CourseResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_lessons",
+        "prefix": "/admin/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_lessons.py",
+        "handler": "admin_delete_course",
+        "line": 155
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/lessons/courses/{course_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "CourseAdminDetailResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_lessons",
+        "prefix": "/admin/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_lessons.py",
+        "handler": "admin_get_course",
+        "line": 109
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "PATCH",
+      "path": "/api/v1/admin/lessons/courses/{course_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "CourseResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_lessons",
+        "prefix": "/admin/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_lessons.py",
+        "handler": "admin_update_course",
+        "line": 125
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/lessons/courses/{course_id}/episodes",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "EpisodeAdminBrief",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_lessons",
+        "prefix": "/admin/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_lessons.py",
+        "handler": "admin_create_episode",
+        "line": 208
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/lessons/courses/{course_id}/reorder",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "admin_lessons",
+        "prefix": "/admin/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_lessons.py",
+        "handler": "admin_reorder_episodes",
+        "line": 310
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/lessons/courses/{course_id}/thumbnail",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "CourseResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_lessons",
+        "prefix": "/admin/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_lessons.py",
+        "handler": "admin_upload_thumbnail",
+        "line": 184
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "DELETE",
+      "path": "/api/v1/admin/lessons/episodes/{episode_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "None",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "admin_lessons",
+        "prefix": "/admin/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_lessons.py",
+        "handler": "admin_delete_episode",
+        "line": 259
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "PATCH",
+      "path": "/api/v1/admin/lessons/episodes/{episode_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "EpisodeAdminBrief",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_lessons",
+        "prefix": "/admin/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_lessons.py",
+        "handler": "admin_update_episode",
+        "line": 229
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/lessons/episodes/{episode_id}/file",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "EpisodeAdminBrief",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_lessons",
+        "prefix": "/admin/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_lessons.py",
+        "handler": "admin_upload_episode_file",
+        "line": 285
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/metrics/overview",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MetricsOverview",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_metrics",
+        "prefix": "/admin/metrics"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_metrics.py",
+        "handler": "get_overview",
+        "line": 18
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/metrics/plan-distribution",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "list[PlanDistributionPoint]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_metrics",
+        "prefix": "/admin/metrics"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_metrics.py",
+        "handler": "get_plan_distribution",
+        "line": 36
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/metrics/revenue",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "list[DailyRevenuePoint]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_metrics",
+        "prefix": "/admin/metrics"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_metrics.py",
+        "handler": "get_daily_revenue",
+        "line": 25
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/payments",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PaginatedResponse[AdminPaymentOrderBrief]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_payments",
+        "prefix": "/admin/payments"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_payments.py",
+        "handler": "list_payments",
+        "line": 25
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/payments/{order_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AdminPaymentOrderDetail",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_payments",
+        "prefix": "/admin/payments"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_payments.py",
+        "handler": "get_payment",
+        "line": 54
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/payments/{order_id}/mark-paid",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AdminPaymentOrderDetail",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_payments",
+        "prefix": "/admin/payments"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_payments.py",
+        "handler": "mark_payment_paid",
+        "line": 74
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/payments/{order_id}/reconcile",
+      "protocol": "http",
+      "responseModelHint": null,
+      "router": {
+        "module": "admin_payments",
+        "prefix": "/admin/payments"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_payments.py",
+        "handler": "reconcile_payment",
+        "line": 92
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/payments/{order_id}/refund",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AdminPaymentOrderDetail",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_payments",
+        "prefix": "/admin/payments"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_payments.py",
+        "handler": "refund_payment",
+        "line": 61
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/subscriptions",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PaginatedResponse[AdminSubscriptionBrief]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_subscriptions",
+        "prefix": ""
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_subscriptions.py",
+        "handler": "list_subscriptions",
+        "line": 23
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/subscriptions/{sub_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AdminSubscriptionDetail",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_subscriptions",
+        "prefix": ""
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_subscriptions.py",
+        "handler": "get_subscription",
+        "line": 46
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/subscriptions/{sub_id}/cancel",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AdminSubscriptionDetail",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_subscriptions",
+        "prefix": ""
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_subscriptions.py",
+        "handler": "cancel_subscription",
+        "line": 63
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/subscriptions/{sub_id}/extend",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AdminSubscriptionDetail",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_subscriptions",
+        "prefix": ""
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_subscriptions.py",
+        "handler": "extend_subscription",
+        "line": 76
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/system/jobs/{job_id}/run",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "RunJobResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_system",
+        "prefix": "/admin/system"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_system.py",
+        "handler": "run_job",
+        "line": 99
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/system/status",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "SystemStatus",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_system",
+        "prefix": "/admin/system"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_system.py",
+        "handler": "get_status",
+        "line": 43
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/users/bulk",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "BulkUpdateResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_users",
+        "prefix": "/admin/users"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_users.py",
+        "handler": "bulk_update_users",
+        "line": 77
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/users/export",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "StreamingResponse",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "admin_users",
+        "prefix": "/admin/users"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_users.py",
+        "handler": "export_users_csv",
+        "line": 33
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/users/{user_id}/360",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "User360Response",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_users",
+        "prefix": "/admin/users"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_users.py",
+        "handler": "get_user_360",
+        "line": 88
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/users/{user_id}/login-history",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PaginatedResponse[LoginHistoryRow]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_users",
+        "prefix": "/admin/users"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_users.py",
+        "handler": "get_login_history",
+        "line": 129
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/users/{user_id}/resend-verification",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "ResendVerificationResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_users",
+        "prefix": "/admin/users"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_users.py",
+        "handler": "resend_verification",
+        "line": 113
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/users/{user_id}/reset-password",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "ResetPasswordResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_users",
+        "prefix": "/admin/users"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_users.py",
+        "handler": "reset_password",
+        "line": 98
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/users/{user_id}/subscriptions/history",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "list[AdminSubscriptionDetail]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_subscriptions",
+        "prefix": ""
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_subscriptions.py",
+        "handler": "user_subscription_history",
+        "line": 53
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/vt/accounts/{account_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "VTAccountAdminResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_vt",
+        "prefix": "/admin/vt"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_vt.py",
+        "handler": "get_account",
+        "line": 94
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/vt/accounts/{account_id}/cash-adjust",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "CashAdjustResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_vt",
+        "prefix": "/admin/vt"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_vt.py",
+        "handler": "cash_adjust",
+        "line": 65
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/vt/accounts/{account_id}/freeze",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "VTAccountAdminResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_vt",
+        "prefix": "/admin/vt"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_vt.py",
+        "handler": "freeze_account",
+        "line": 29
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/vt/accounts/{account_id}/ledger",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "admin_vt",
+        "prefix": "/admin/vt"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_vt.py",
+        "handler": "list_ledger",
+        "line": 186
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/vt/accounts/{account_id}/orders",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "admin_vt",
+        "prefix": "/admin/vt"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_vt.py",
+        "handler": "list_orders",
+        "line": 124
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/vt/accounts/{account_id}/positions",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "list[VTPositionResponse]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_vt",
+        "prefix": "/admin/vt"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_vt.py",
+        "handler": "list_positions",
+        "line": 109
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/vt/accounts/{account_id}/settlements",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "admin_vt",
+        "prefix": "/admin/vt"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_vt.py",
+        "handler": "list_settlements",
+        "line": 214
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/vt/accounts/{account_id}/stats",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "VTAccountStatsResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_vt",
+        "prefix": "/admin/vt"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_vt.py",
+        "handler": "get_account_stats",
+        "line": 242
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/admin/vt/accounts/{account_id}/trades",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "admin_vt",
+        "prefix": "/admin/vt"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_vt.py",
+        "handler": "list_trades",
+        "line": 158
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/admin/vt/accounts/{account_id}/unfreeze",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "VTAccountAdminResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "admin_vt",
+        "prefix": "/admin/vt"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/admin_vt.py",
+        "handler": "unfreeze_account",
+        "line": 46
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/ai/bctc-dashboard/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "ai_analysis",
+        "prefix": "/ai"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/ai_analysis.py",
+        "handler": "get_bctc_dashboard_narrative",
+        "line": 288
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/ai/bctc/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "ai_analysis",
+        "prefix": "/ai"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/ai_analysis.py",
+        "handler": "get_bctc_analyze",
+        "line": 274
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/ai/dashboard/analyze",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "ai_analysis",
+        "prefix": "/ai"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/ai_analysis.py",
+        "handler": "post_dashboard_analyze",
+        "line": 88
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/ai/forecast/ranking",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "ai_forecast",
+        "prefix": "/ai/forecast"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/ai_forecast.py",
+        "handler": "get_ranking",
+        "line": 35
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/ai/forecast/symbols/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "ai_forecast",
+        "prefix": "/ai/forecast"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/ai_forecast.py",
+        "handler": "get_symbol_forecast",
+        "line": 51
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/ai/industry/analyze",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "ai_analysis",
+        "prefix": "/ai"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/ai_analysis.py",
+        "handler": "post_industry_analyze",
+        "line": 106
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/ai/industry/analyze-batch",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "ai_analysis",
+        "prefix": "/ai"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/ai_analysis.py",
+        "handler": "post_industry_analyze_batch",
+        "line": 125
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/ai/insight/analyze",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "ai_analysis",
+        "prefix": "/ai"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/ai_analysis.py",
+        "handler": "post_insight_analyze",
+        "line": 234
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/ai/insight/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "ai_analysis",
+        "prefix": "/ai"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/ai_analysis.py",
+        "handler": "get_insight_analyze",
+        "line": 253
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/ai/patterns/candles",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "ai_patterns",
+        "prefix": "/ai/patterns"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/ai_patterns.py",
+        "handler": "get_candles",
+        "line": 44
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/ai/patterns/charts",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "ai_patterns",
+        "prefix": "/ai/patterns"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/ai_patterns.py",
+        "handler": "get_charts",
+        "line": 57
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/ai/patterns/{kind}/symbols",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "ai_patterns",
+        "prefix": "/ai/patterns"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/ai_patterns.py",
+        "handler": "list_symbols",
+        "line": 70
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/alerts/events",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "list[AlertEventResponse]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "alerts",
+        "prefix": "/alerts"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/alerts.py",
+        "handler": "list_events",
+        "line": 120
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/alerts/rules",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "list[UserAlertRuleResponse]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "alerts",
+        "prefix": "/alerts"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/alerts.py",
+        "handler": "list_rules",
+        "line": 56
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/alerts/rules",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "UserAlertRuleResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "alerts",
+        "prefix": "/alerts"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/alerts.py",
+        "handler": "create_rule",
+        "line": 62
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "DELETE",
+      "path": "/api/v1/alerts/rules/{rule_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "None",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "alerts",
+        "prefix": "/alerts"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/alerts.py",
+        "handler": "delete_rule",
+        "line": 112
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "PUT",
+      "path": "/api/v1/alerts/rules/{rule_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "UserAlertRuleResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "alerts",
+        "prefix": "/alerts"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/alerts.py",
+        "handler": "update_rule",
+        "line": 96
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/alerts/signals",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "list[AlertSignalResponse]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "alerts",
+        "prefix": "/alerts"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/alerts.py",
+        "handler": "list_signals",
+        "line": 46
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "DELETE",
+      "path": "/api/v1/alerts/telegram",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "None",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "alerts",
+        "prefix": "/alerts"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/alerts.py",
+        "handler": "telegram_unlink",
+        "line": 146
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/alerts/telegram",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "TelegramStatusResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "alerts",
+        "prefix": "/alerts"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/alerts.py",
+        "handler": "telegram_status",
+        "line": 129
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/alerts/telegram/link",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "TelegramLinkResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "alerts",
+        "prefix": "/alerts"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/alerts.py",
+        "handler": "telegram_link",
+        "line": 138
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/auth/forgot-password",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MessageResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "auth",
+        "prefix": "/auth"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/auth.py",
+        "handler": "forgot_password",
+        "line": 157
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "TokenResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "auth",
+        "prefix": "/auth"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/auth.py",
+        "handler": "login",
+        "line": 77
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/auth/logout",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MessageResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "auth",
+        "prefix": "/auth"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/auth.py",
+        "handler": "logout",
+        "line": 108
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "UserResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "auth",
+        "prefix": "/auth"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/auth.py",
+        "handler": "get_me",
+        "line": 120
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/auth/refresh",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "TokenResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "auth",
+        "prefix": "/auth"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/auth.py",
+        "handler": "refresh_tokens",
+        "line": 96
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "UserResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "auth",
+        "prefix": "/auth"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/auth.py",
+        "handler": "register",
+        "line": 59
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": false,
+      "method": "GET",
+      "path": "/api/v1/auth/reset-password",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "HTMLResponse",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "auth",
+        "prefix": "/auth"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/auth.py",
+        "handler": "reset_password_form",
+        "line": 178
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/auth/reset-password",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MessageResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "auth",
+        "prefix": "/auth"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/auth.py",
+        "handler": "reset_password",
+        "line": 189
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": false,
+      "method": "GET",
+      "path": "/api/v1/auth/verify-email",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "HTMLResponse",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "auth",
+        "prefix": "/auth"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/auth.py",
+        "handler": "verify_email",
+        "line": 133
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/backtest/catalog",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "backtest",
+        "prefix": "/backtest"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/backtest.py",
+        "handler": "get_catalog",
+        "line": 23
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/backtest/run",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "backtest",
+        "prefix": "/backtest"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/backtest.py",
+        "handler": "run",
+        "line": 29
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/backtest/strategies",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "list[BacktestStrategyResponse]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "backtest",
+        "prefix": "/backtest"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/backtest.py",
+        "handler": "list_strategies",
+        "line": 46
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/backtest/strategies",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "BacktestStrategyResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "backtest",
+        "prefix": "/backtest"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/backtest.py",
+        "handler": "create_strategy",
+        "line": 53
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "DELETE",
+      "path": "/api/v1/backtest/strategies/{strategy_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "None",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "backtest",
+        "prefix": "/backtest"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/backtest.py",
+        "handler": "delete_strategy",
+        "line": 76
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "PUT",
+      "path": "/api/v1/backtest/strategies/{strategy_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "BacktestStrategyResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "backtest",
+        "prefix": "/backtest"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/backtest.py",
+        "handler": "update_strategy",
+        "line": 63
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/bot",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "BotOverviewOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "bot",
+        "prefix": "/bot"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/bot.py",
+        "handler": "overview",
+        "line": 93
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/bot/journal",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "BotJournalOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "bot",
+        "prefix": "/bot"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/bot.py",
+        "handler": "journal",
+        "line": 277
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/bot/mascot",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "IdentityStateResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "journey_identity",
+        "prefix": ""
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/journey_identity.py",
+        "handler": "get_mascot",
+        "line": 117
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/bot/mascot/ui-events",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "IdentityStateResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "journey_identity",
+        "prefix": ""
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/journey_identity.py",
+        "handler": "ui_event",
+        "line": 122
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/bot/performance",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "BotPerformanceOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "bot",
+        "prefix": "/bot"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/bot.py",
+        "handler": "performance",
+        "line": 376
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/bot/positions",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "BotPositionsOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "bot",
+        "prefix": "/bot"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/bot.py",
+        "handler": "positions",
+        "line": 180
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap0/enter",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap0ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap0",
+        "prefix": "/cap0"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap0.py",
+        "handler": "enter",
+        "line": 36
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap0/graduate",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap0ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap0",
+        "prefix": "/cap0"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap0.py",
+        "handler": "graduate",
+        "line": 139
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap0/kehoach",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap0KehoachOut | None",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap0",
+        "prefix": "/cap0"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap0.py",
+        "handler": "get_kehoach",
+        "line": 119
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap0/kehoach",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap0KehoachOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap0",
+        "prefix": "/cap0"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap0.py",
+        "handler": "record_kehoach",
+        "line": 97
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap0/placement",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PlacementResponse | None",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap0",
+        "prefix": "/cap0"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap0.py",
+        "handler": "get_placement",
+        "line": 60
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap0/placement",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PlacementResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap0",
+        "prefix": "/cap0"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap0.py",
+        "handler": "placement",
+        "line": 43
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap0/progress",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap0ProgressOut | None",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap0",
+        "prefix": "/cap0"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap0.py",
+        "handler": "get_progress",
+        "line": 29
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "PATCH",
+      "path": "/api/v1/cap0/task",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap0ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap0",
+        "prefix": "/cap0"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap0.py",
+        "handler": "complete_task",
+        "line": 85
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap0/tours/{tour}/complete",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "TourCompleteResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap0",
+        "prefix": "/cap0"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap0.py",
+        "handler": "complete_tour",
+        "line": 72
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap1/enter",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap1ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap1",
+        "prefix": "/cap1"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap1.py",
+        "handler": "enter",
+        "line": 33
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap1/graduate",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap1ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap1",
+        "prefix": "/cap1"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap1.py",
+        "handler": "graduate",
+        "line": 84
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap1/kehoach",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "OrderKehoachOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap1",
+        "prefix": "/cap1"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap1.py",
+        "handler": "record_kehoach",
+        "line": 52
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap1/ketso",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "OrderKetsoOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap1",
+        "prefix": "/cap1"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap1.py",
+        "handler": "record_ketso",
+        "line": 69
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap1/progress",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap1ProgressOut | None",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap1",
+        "prefix": "/cap1"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap1.py",
+        "handler": "get_progress",
+        "line": 26
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "PATCH",
+      "path": "/api/v1/cap1/task",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap1ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap1",
+        "prefix": "/cap1"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap1.py",
+        "handler": "mark_task",
+        "line": 40
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap1/trades",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "TradeHistoryListOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap1",
+        "prefix": "/cap1"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap1.py",
+        "handler": "list_trades",
+        "line": 76
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap2/alerts/active",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap2ActiveAlertsOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap2",
+        "prefix": "/cap2"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap2.py",
+        "handler": "get_active_alerts",
+        "line": 189
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap2/alerts/pre-buy",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap2PreBuyAlertOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap2",
+        "prefix": "/cap2"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap2.py",
+        "handler": "evaluate_pre_buy_alert",
+        "line": 159
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap2/alerts/{alert_id}/action",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap2AlertActionOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap2",
+        "prefix": "/cap2"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap2.py",
+        "handler": "act_on_alert",
+        "line": 208
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap2/analysis",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap2AnalysisOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap2",
+        "prefix": "/cap2"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap2.py",
+        "handler": "get_analysis",
+        "line": 146
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap2/diem-ky-luat",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "DiemKyLuatOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap2",
+        "prefix": "/cap2"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap2.py",
+        "handler": "get_diem_ky_luat",
+        "line": 112
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap2/diem-ky-luat/history",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "DiemKyLuatHistoryOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap2",
+        "prefix": "/cap2"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap2.py",
+        "handler": "get_diem_ky_luat_history",
+        "line": 124
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap2/enter",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap2ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap2",
+        "prefix": "/cap2"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap2.py",
+        "handler": "enter",
+        "line": 63
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap2/graduate",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap2ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap2",
+        "prefix": "/cap2"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap2.py",
+        "handler": "graduate",
+        "line": 152
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap2/kehoach",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "OrderKehoachOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap2",
+        "prefix": "/cap2"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap2.py",
+        "handler": "record_kehoach",
+        "line": 78
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap2/ketso",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "OrderKetsoOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap2",
+        "prefix": "/cap2"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap2.py",
+        "handler": "record_ketso",
+        "line": 93
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap2/progress",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap2ProgressOut | None",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap2",
+        "prefix": "/cap2"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap2.py",
+        "handler": "get_progress",
+        "line": 56
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "PATCH",
+      "path": "/api/v1/cap2/task",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap2ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap2",
+        "prefix": "/cap2"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap2.py",
+        "handler": "mark_task",
+        "line": 70
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap2/trades",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "TradeHistoryListOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap2",
+        "prefix": "/cap2"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap2.py",
+        "handler": "list_trades",
+        "line": 139
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap3/enter",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap3ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap3",
+        "prefix": "/cap3"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap3.py",
+        "handler": "enter",
+        "line": 38
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap3/graduate",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap3ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap3",
+        "prefix": "/cap3"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap3.py",
+        "handler": "graduate",
+        "line": 97
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap3/kehoach",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "OrderKehoachOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap3",
+        "prefix": "/cap3"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap3.py",
+        "handler": "record_kehoach",
+        "line": 58
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap3/khau-vi",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap3ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap3",
+        "prefix": "/cap3"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap3.py",
+        "handler": "set_khau_vi",
+        "line": 44
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap3/plans/{order_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap3PlanOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap3",
+        "prefix": "/cap3"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap3.py",
+        "handler": "get_plan",
+        "line": 76
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap3/progress",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap3ProgressOut | None",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap3",
+        "prefix": "/cap3"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap3.py",
+        "handler": "get_progress",
+        "line": 31
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "PATCH",
+      "path": "/api/v1/cap3/task",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap3ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap3",
+        "prefix": "/cap3"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap3.py",
+        "handler": "mark_task",
+        "line": 50
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap3/trades",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap3TradeListOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap3",
+        "prefix": "/cap3"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap3.py",
+        "handler": "list_trades",
+        "line": 82
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap3/trades/analysis",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap3TradeAnalysisOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap3",
+        "prefix": "/cap3"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap3.py",
+        "handler": "trade_analysis",
+        "line": 89
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap4/enter",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap4ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap4",
+        "prefix": "/cap4"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap4.py",
+        "handler": "enter",
+        "line": 39
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap4/graduate",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap4ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap4",
+        "prefix": "/cap4"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap4.py",
+        "handler": "graduate",
+        "line": 89
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap4/kehoach",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "OrderKehoachOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap4",
+        "prefix": "/cap4"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap4.py",
+        "handler": "record_kehoach",
+        "line": 54
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap4/phan-tich",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PhanTichOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap4",
+        "prefix": "/cap4"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap4.py",
+        "handler": "get_phan_tich",
+        "line": 83
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap4/plans/{order_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap4PlanOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap4",
+        "prefix": "/cap4"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap4.py",
+        "handler": "get_plan",
+        "line": 68
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap4/progress",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap4ProgressOut | None",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap4",
+        "prefix": "/cap4"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap4.py",
+        "handler": "get_progress",
+        "line": 32
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "PATCH",
+      "path": "/api/v1/cap4/task",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap4ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap4",
+        "prefix": "/cap4"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap4.py",
+        "handler": "mark_task",
+        "line": 46
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap4/vu-khi-diem-mu",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "VuKhiDiemMuOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap4",
+        "prefix": "/cap4"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap4.py",
+        "handler": "get_vu_khi_diem_mu",
+        "line": 74
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap5/enter",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap5ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap5",
+        "prefix": "/cap5"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap5.py",
+        "handler": "enter",
+        "line": 50
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap5/graduate",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap5ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap5",
+        "prefix": "/cap5"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap5.py",
+        "handler": "graduate",
+        "line": 189
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap5/nguon-san/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "NguonSanOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap5",
+        "prefix": "/cap5"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap5.py",
+        "handler": "get_nguon_san",
+        "line": 152
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap5/phan-tich",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap5PhanTichOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap5",
+        "prefix": "/cap5"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap5.py",
+        "handler": "get_phan_tich",
+        "line": 181
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap5/plans/{order_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap5PlanOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap5",
+        "prefix": "/cap5"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap5.py",
+        "handler": "get_plan",
+        "line": 76
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap5/progress",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap5ProgressOut | None",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap5",
+        "prefix": "/cap5"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap5.py",
+        "handler": "get_progress",
+        "line": 38
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap5/san-ma",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "SanMaIndexOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap5",
+        "prefix": "/cap5"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap5.py",
+        "handler": "san_ma_index",
+        "line": 85
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap5/san-ma/{bo_loc}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "HuntResultOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap5",
+        "prefix": "/cap5"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap5.py",
+        "handler": "san_ma_result",
+        "line": 96
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "PATCH",
+      "path": "/api/v1/cap5/task",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap5ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap5",
+        "prefix": "/cap5"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap5.py",
+        "handler": "mark_task",
+        "line": 57
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap5/tour-sanma",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap5ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap5",
+        "prefix": "/cap5"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap5.py",
+        "handler": "mark_tour_sanma",
+        "line": 65
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap5/watchlist",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap5WatchlistOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap5",
+        "prefix": "/cap5"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap5.py",
+        "handler": "get_watchlist",
+        "line": 110
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap5/watchlist",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap5WatchlistItemOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap5",
+        "prefix": "/cap5"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap5.py",
+        "handler": "add_to_watchlist",
+        "line": 125
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "DELETE",
+      "path": "/api/v1/cap5/watchlist/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "None",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "cap5",
+        "prefix": "/cap5"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap5.py",
+        "handler": "remove_from_watchlist",
+        "line": 141
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap6/enter",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap6ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap6",
+        "prefix": "/cap6"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap6.py",
+        "handler": "enter",
+        "line": 59
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap6/graduate",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap6ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap6",
+        "prefix": "/cap6"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap6.py",
+        "handler": "graduate",
+        "line": 171
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap6/kehoach",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "KehoachCap6Out",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap6",
+        "prefix": "/cap6"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap6.py",
+        "handler": "record_kehoach",
+        "line": 105
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap6/kehoach/{order_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "KehoachCap6Out",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap6",
+        "prefix": "/cap6"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap6.py",
+        "handler": "get_kehoach",
+        "line": 123
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap6/mau-thuan/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MauThuanOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap6",
+        "prefix": "/cap6"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap6.py",
+        "handler": "get_mau_thuan",
+        "line": 86
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap6/phan-tich",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PhanTichOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap6",
+        "prefix": "/cap6"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap6.py",
+        "handler": "phan_tich",
+        "line": 157
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap6/plans/{order_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap6PlanOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap6",
+        "prefix": "/cap6"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap6.py",
+        "handler": "get_plan",
+        "line": 135
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap6/progress",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap6ProgressOut | None",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap6",
+        "prefix": "/cap6"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap6.py",
+        "handler": "get_progress",
+        "line": 44
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap6/skip",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "SkipOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap6",
+        "prefix": "/cap6"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap6.py",
+        "handler": "skip",
+        "line": 141
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap6/tour-mauthuan",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap6ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap6",
+        "prefix": "/cap6"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap6.py",
+        "handler": "mark_tour_mauthuan",
+        "line": 71
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap7/enter",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap7ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap7",
+        "prefix": "/cap7"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap7.py",
+        "handler": "enter",
+        "line": 22
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap7/graduate",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap7ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap7",
+        "prefix": "/cap7"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap7.py",
+        "handler": "graduate",
+        "line": 34
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap7/portfolio",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PortfolioBalanceSnapshot",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap7",
+        "prefix": "/cap7"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap7.py",
+        "handler": "portfolio",
+        "line": 28
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap7/progress",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap7ProgressOut | None",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap7",
+        "prefix": "/cap7"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap7.py",
+        "handler": "get_progress",
+        "line": 15
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap8/enter",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap8ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap8",
+        "prefix": "/cap8"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap8.py",
+        "handler": "enter",
+        "line": 29
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap8/exits",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "ExitOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap8",
+        "prefix": "/cap8"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap8.py",
+        "handler": "record_exit",
+        "line": 67
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap8/graduate",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap8ProgressOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap8",
+        "prefix": "/cap8"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap8.py",
+        "handler": "graduate",
+        "line": 34
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "PATCH",
+      "path": "/api/v1/cap8/positions/{symbol}/dynamic-stop",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "DynamicStopOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap8",
+        "prefix": "/cap8"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap8.py",
+        "handler": "dynamic_stop",
+        "line": 60
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap8/positions/{symbol}/exit-context",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "ExitContextOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap8",
+        "prefix": "/cap8"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap8.py",
+        "handler": "exit_context",
+        "line": 40
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/cap8/positions/{symbol}/sync-plan",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "SyncPlanOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap8",
+        "prefix": "/cap8"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap8.py",
+        "handler": "sync_plan",
+        "line": 52
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/cap8/progress",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "Cap8ProgressOut | None",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "cap8",
+        "prefix": "/cap8"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/cap8.py",
+        "handler": "get_progress",
+        "line": 23
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "DELETE",
+      "path": "/api/v1/chart-drawings/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "None",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "chart_drawings",
+        "prefix": "/chart-drawings"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/chart_drawings.py",
+        "handler": "delete_chart_drawing",
+        "line": 44
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/chart-drawings/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "ChartDrawingResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "chart_drawings",
+        "prefix": "/chart-drawings"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/chart_drawings.py",
+        "handler": "get_chart_drawing",
+        "line": 18
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "PUT",
+      "path": "/api/v1/chart-drawings/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "ChartDrawingResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "chart_drawings",
+        "prefix": "/chart-drawings"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/chart_drawings.py",
+        "handler": "save_chart_drawing",
+        "line": 32
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/health",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "HealthResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "health",
+        "prefix": ""
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/health.py",
+        "handler": "health_check",
+        "line": 18
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/journey/assessments",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AssessmentResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "journey_identity",
+        "prefix": ""
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/journey_identity.py",
+        "handler": "submit",
+        "line": 136
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/journey/assessments/{assessment_id}/reveal",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "RevealResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "journey_identity",
+        "prefix": ""
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/journey_identity.py",
+        "handler": "reveal",
+        "line": 141
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/journey/events",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, bool]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "journey_events",
+        "prefix": "/journey"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/journey_events.py",
+        "handler": "record_event",
+        "line": 10
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/journey/reading-datasets",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "DatasetResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "journey_identity",
+        "prefix": ""
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/journey_identity.py",
+        "handler": "create_dataset",
+        "line": 131
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/lessons/courses",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PaginatedResponse[CourseResponse]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "lessons",
+        "prefix": "/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/lessons.py",
+        "handler": "list_courses",
+        "line": 50
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/lessons/courses/{slug}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "CourseDetailResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "lessons",
+        "prefix": "/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/lessons.py",
+        "handler": "get_course_detail",
+        "line": 80
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/lessons/episodes/{episode_id}/content",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "EpisodeContent",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "lessons",
+        "prefix": "/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/lessons.py",
+        "handler": "get_episode_content",
+        "line": 112
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/lessons/episodes/{episode_id}/progress",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "ProgressRow",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "lessons",
+        "prefix": "/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/lessons.py",
+        "handler": "update_episode_progress",
+        "line": 135
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/lessons/me/progress",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "list[ProgressRow]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "lessons",
+        "prefix": "/lessons"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/lessons.py",
+        "handler": "get_my_progress",
+        "line": 158
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-analysis/daily",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "list[AnalysisListItem]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_analysis",
+        "prefix": "/market-analysis"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_analysis.py",
+        "handler": "list_recent",
+        "line": 109
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-analysis/daily/latest",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AnalysisOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_analysis",
+        "prefix": "/market-analysis"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_analysis.py",
+        "handler": "get_latest",
+        "line": 100
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/market-analysis/daily/run",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "GenerateResult",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_analysis",
+        "prefix": "/market-analysis"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_analysis.py",
+        "handler": "run_now",
+        "line": 157
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-analysis/daily/{session_date}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AnalysisOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_analysis",
+        "prefix": "/market-analysis"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_analysis.py",
+        "handler": "get_by_date",
+        "line": 133
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-analysis/midday/latest",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AnalysisOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_analysis",
+        "prefix": "/market-analysis"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_analysis.py",
+        "handler": "get_midday_latest",
+        "line": 179
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/market-analysis/midday/run",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "GenerateResult",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_analysis",
+        "prefix": "/market-analysis"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_analysis.py",
+        "handler": "run_midday_now",
+        "line": 200
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-analysis/midday/{session_date}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AnalysisOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_analysis",
+        "prefix": "/market-analysis"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_analysis.py",
+        "handler": "get_midday_by_date",
+        "line": 188
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-analysis/premarket/latest",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AnalysisOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_analysis",
+        "prefix": "/market-analysis"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_analysis.py",
+        "handler": "get_premarket_latest",
+        "line": 221
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/market-analysis/premarket/run",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "GenerateResult",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_analysis",
+        "prefix": "/market-analysis"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_analysis.py",
+        "handler": "run_premarket_now",
+        "line": 242
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-analysis/premarket/{session_date}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AnalysisOut",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_analysis",
+        "prefix": "/market-analysis"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_analysis.py",
+        "handler": "get_premarket_by_date",
+        "line": 230
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/bctc-dashboard/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_bctc_storytelling_dashboard",
+        "line": 728
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/bctc/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_bctc_dashboard",
+        "line": 703
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/company/{symbol}/details",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_company_details",
+        "line": 1089
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/company/{symbol}/news",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_company_news",
+        "line": 640
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/company/{symbol}/officers",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_officers",
+        "line": 600
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/company/{symbol}/overview",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_company_overview",
+        "line": 515
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/company/{symbol}/price-chart",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_company_price_chart",
+        "line": 1109
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/company/{symbol}/shareholders",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_shareholders",
+        "line": 578
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/company/{symbol}/subsidiaries",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_subsidiaries",
+        "line": 618
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/events/calendar",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_events_calendar",
+        "line": 1139
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/fundamentals/{symbol}/{report_type}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_financial_report",
+        "line": 664
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/funds",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "list_funds",
+        "line": 1207
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/funds/{fund_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_fund_details",
+        "line": 1226
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/funds/{fund_id}/nav",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_fund_nav",
+        "line": 1246
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/global/crypto/{symbol}/depth",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_global",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_global.py",
+        "handler": "get_crypto_depth",
+        "line": 203
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/global/crypto/{symbol}/ohlc",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_global",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_global.py",
+        "handler": "get_crypto_ohlc",
+        "line": 147
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/global/crypto/{symbol}/ticker",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_global",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_global.py",
+        "handler": "get_crypto_ticker",
+        "line": 179
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/global/forex",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_global",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_global.py",
+        "handler": "get_global_forex",
+        "line": 124
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/global/snapshot",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "_SnapshotResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_global",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_global.py",
+        "handler": "get_intl_snapshot",
+        "line": 272
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/global/world-index",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_global",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_global.py",
+        "handler": "get_world_index",
+        "line": 101
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/insights/ranking/{kind}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_ranking",
+        "line": 379
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/macro/commodities",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "list_commodities",
+        "line": 1271
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/macro/commodities/{code}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_commodity_price",
+        "line": 1289
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/macro/economy/{indicator}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_macro_data",
+        "line": 1168
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/macro/fx",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_global",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_global.py",
+        "handler": "get_exchange_rates",
+        "line": 77
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/macro/gold",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_global",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_global.py",
+        "handler": "get_gold_prices",
+        "line": 53
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/news/ai",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_ai_news",
+        "line": 1902
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/news/ai/audio/{news_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_ai_news_audio",
+        "line": 1991
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/news/ai/catalogs",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_ai_news_catalogs",
+        "line": 2023
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/news/ai/detail/{slug}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_ai_news_detail",
+        "line": 1959
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/news/ai/tickers/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_ai_ticker_view",
+        "line": 2038
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/news/latest",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_latest_news",
+        "line": 1321
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/news/sources",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "list_news_sources",
+        "line": 1343
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/allocation",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_allocation",
+        "line": 1549
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/breadth",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_breadth",
+        "line": 1635
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/foreign",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_foreign",
+        "line": 1435
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/foreign/top",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_foreign_top",
+        "line": 1465
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/heatmap",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_heatmap",
+        "line": 1668
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/heatmap/index",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_heatmap_index",
+        "line": 1697
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/index-impact",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_index_impact",
+        "line": 1409
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/liquidity",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_liquidity",
+        "line": 1378
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/maintenance",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_maintenance",
+        "line": 1854
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/market-index",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_market_index",
+        "line": 1781
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/proprietary",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_proprietary",
+        "line": 1495
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/proprietary/top",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_proprietary_top",
+        "line": 1521
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/sectors/allocation",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_sectors_allocation",
+        "line": 1575
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/sectors/detail",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_sector_detail",
+        "line": 1720
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/stock-strength",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_stock_strength",
+        "line": 1754
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/overview/valuation",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_valuation",
+        "line": 1603
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/quotes/{symbol}/intraday",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_intraday",
+        "line": 310
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/quotes/{symbol}/ohlcv",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_ohlcv",
+        "line": 250
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/quotes/{symbol}/price-depth",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_price_depth",
+        "line": 332
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/reference/event-codes",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_event_codes",
+        "line": 1836
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/reference/groups/{group}/symbols",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "list_group_symbols",
+        "line": 218
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/reference/indices",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "list_indices",
+        "line": 182
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/reference/industries",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "list_industries",
+        "line": 165
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/reference/search",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_search_bar",
+        "line": 1815
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/reference/symbols",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "list_symbols",
+        "line": 82
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/reference/symbols/search",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "search_symbols_db",
+        "line": 109
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/reference/symbols/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_symbol_detail",
+        "line": 146
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/screening/criteria",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_screening_criteria",
+        "line": 2250
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/screening/presets",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_screening_presets",
+        "line": 2327
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/market-data/screening/search",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "post_screening_search",
+        "line": 2268
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/sectors/information",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_sector_information",
+        "line": 2164
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/sectors/ranking",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_sector_ranking",
+        "line": 2127
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/sectors/trading-dates",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict[str, Any]",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_sector_trading_dates",
+        "line": 2109
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/sheets/tpcp",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_sheets_tpcp",
+        "line": 2384
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/sheets/tygia",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_sheets_tygia",
+        "line": 2413
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/sheets/vnd",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_sheets_vnd",
+        "line": 2355
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/market-data/trading/price-board",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_price_board",
+        "line": 353
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/trading/{symbol}/foreign-trade",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_foreign_trade",
+        "line": 759
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/trading/{symbol}/foreign-trade/summary",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_foreign_trade_summary",
+        "line": 927
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/trading/{symbol}/history",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_trading_history",
+        "line": 870
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/trading/{symbol}/insider-deals",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_insider_deals",
+        "line": 788
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/trading/{symbol}/proprietary",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_proprietary_history",
+        "line": 1024
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/trading/{symbol}/proprietary/summary",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_proprietary_summary",
+        "line": 1056
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/trading/{symbol}/summary",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_trading_summary",
+        "line": 902
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/trading/{symbol}/supply-demand",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_supply_demand_history",
+        "line": 957
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/market-data/trading/{symbol}/supply-demand/summary",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MarketDataResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "market_data",
+        "prefix": "/market-data"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/market_data.py",
+        "handler": "get_supply_demand_summary",
+        "line": 994
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "WEBSOCKET",
+      "path": "/api/v1/market-data/ws",
+      "protocol": "websocket",
+      "responseModelHint": null,
+      "router": {
+        "module": "realtime_ws",
+        "prefix": ""
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/realtime_ws.py",
+        "handler": "market_data_ws",
+        "line": 119
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/portfolio-manager/analyze",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AnalyzeResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "portfolio_manager",
+        "prefix": "/portfolio-manager"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/portfolio_manager.py",
+        "handler": "analyze",
+        "line": 17
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/portfolio-manager/report",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AnalyzeResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "portfolio_manager",
+        "prefix": "/portfolio-manager"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/portfolio_manager.py",
+        "handler": "latest_report",
+        "line": 24
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/premium/admin/plans",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "list[PlanResponse]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "premium",
+        "prefix": "/premium"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/premium.py",
+        "handler": "admin_list_plans",
+        "line": 230
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/premium/admin/plans",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PlanResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "premium",
+        "prefix": "/premium"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/premium.py",
+        "handler": "admin_create_plan",
+        "line": 238
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "DELETE",
+      "path": "/api/v1/premium/admin/plans/{plan_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PlanResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "premium",
+        "prefix": "/premium"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/premium.py",
+        "handler": "admin_delete_plan",
+        "line": 285
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "PATCH",
+      "path": "/api/v1/premium/admin/plans/{plan_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PlanResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "premium",
+        "prefix": "/premium"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/premium.py",
+        "handler": "admin_update_plan",
+        "line": 258
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/premium/admin/users/{user_id}/grant",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PaymentOrderResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "premium",
+        "prefix": "/premium"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/premium.py",
+        "handler": "admin_grant_premium",
+        "line": 310
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/premium/checkout",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "CheckoutResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "premium",
+        "prefix": "/premium"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/premium.py",
+        "handler": "create_checkout",
+        "line": 61
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/premium/me",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "SubscriptionResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "premium",
+        "prefix": "/premium"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/premium.py",
+        "handler": "get_my_subscription",
+        "line": 54
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/premium/my-orders",
+      "protocol": "http",
+      "responseModelHint": null,
+      "router": {
+        "module": "premium",
+        "prefix": "/premium"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/premium.py",
+        "handler": "get_my_orders",
+        "line": 72
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/premium/plans",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "list[PlanResponse]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "premium",
+        "prefix": "/premium"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/premium.py",
+        "handler": "list_plans",
+        "line": 46
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/premium/sepay/ipn",
+      "protocol": "http",
+      "responseModelHint": null,
+      "router": {
+        "module": "premium",
+        "prefix": "/premium"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/premium.py",
+        "handler": "sepay_ipn",
+        "line": 110
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/telegram/webhook/{secret}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "telegram",
+        "prefix": "/telegram"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/telegram.py",
+        "handler": "telegram_webhook",
+        "line": 20
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/users",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PaginatedResponse[UserBriefResponse]",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "users",
+        "prefix": "/users"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/users.py",
+        "handler": "list_users",
+        "line": 56
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser",
+          "AdminUserCreate"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/users",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "UserResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "users",
+        "prefix": "/users"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/users.py",
+        "handler": "admin_create_user",
+        "line": 104
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/users/me",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "UserResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "users",
+        "prefix": "/users"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/users.py",
+        "handler": "get_own_profile",
+        "line": 29
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "PATCH",
+      "path": "/api/v1/users/me",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "UserResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "users",
+        "prefix": "/users"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/users.py",
+        "handler": "update_own_profile",
+        "line": 39
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "DELETE",
+      "path": "/api/v1/users/{user_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "MessageResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "users",
+        "prefix": "/users"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/users.py",
+        "handler": "admin_delete_user",
+        "line": 176
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/users/{user_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "UserResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "users",
+        "prefix": "/users"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/users.py",
+        "handler": "get_user",
+        "line": 87
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser",
+          "AdminUserUpdate"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "PATCH",
+      "path": "/api/v1/users/{user_id}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "UserResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "users",
+        "prefix": "/users"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/users.py",
+        "handler": "admin_update_user",
+        "line": 135
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/virtual-trading/account",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AccountResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "virtual_trading",
+        "prefix": "/virtual-trading"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/virtual_trading.py",
+        "handler": "get_account",
+        "line": 70
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "PremiumUser"
+        ],
+        "level": "premium"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/virtual-trading/account/activate",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "AccountResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "virtual_trading",
+        "prefix": "/virtual-trading"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/virtual_trading.py",
+        "handler": "activate_account",
+        "line": 60
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/virtual-trading/admin/accounts",
+      "protocol": "http",
+      "responseModelHint": null,
+      "router": {
+        "module": "virtual_trading",
+        "prefix": "/virtual-trading"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/virtual_trading.py",
+        "handler": "admin_list_accounts",
+        "line": 497
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/virtual-trading/admin/config",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "ConfigResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "virtual_trading",
+        "prefix": "/virtual-trading"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/virtual_trading.py",
+        "handler": "admin_get_config",
+        "line": 390
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "PATCH",
+      "path": "/api/v1/virtual-trading/admin/config",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "ConfigResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "virtual_trading",
+        "prefix": "/virtual-trading"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/virtual_trading.py",
+        "handler": "admin_update_config",
+        "line": 411
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/virtual-trading/admin/reset-all",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "ResetResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "virtual_trading",
+        "prefix": "/virtual-trading"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/virtual_trading.py",
+        "handler": "admin_reset_all",
+        "line": 482
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "AdminUser"
+        ],
+        "level": "admin"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/virtual-trading/admin/users/{user_id}/reset",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "ResetResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "virtual_trading",
+        "prefix": "/virtual-trading"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/virtual_trading.py",
+        "handler": "admin_reset_user",
+        "line": 456
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [],
+        "level": "unknown"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/virtual-trading/leaderboard",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "LeaderboardResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "virtual_trading",
+        "prefix": "/virtual-trading"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/virtual_trading.py",
+        "handler": "get_leaderboard",
+        "line": 365
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/virtual-trading/orders",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "OrderListResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "virtual_trading",
+        "prefix": "/virtual-trading"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/virtual_trading.py",
+        "handler": "list_orders",
+        "line": 277
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/virtual-trading/orders",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "OrderResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "virtual_trading",
+        "prefix": "/virtual-trading"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/virtual_trading.py",
+        "handler": "place_order",
+        "line": 106
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/virtual-trading/orders/{order_id}/cancel",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "OrderResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "virtual_trading",
+        "prefix": "/virtual-trading"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/virtual_trading.py",
+        "handler": "cancel_order",
+        "line": 320
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/virtual-trading/portfolio",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "PortfolioResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "virtual_trading",
+        "prefix": "/virtual-trading"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/virtual_trading.py",
+        "handler": "get_portfolio",
+        "line": 84
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/virtual-trading/refresh",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "RefreshResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "virtual_trading",
+        "prefix": "/virtual-trading"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/virtual_trading.py",
+        "handler": "refresh",
+        "line": 337
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/virtual-trading/trades",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "TradeListResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "virtual_trading",
+        "prefix": "/virtual-trading"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/virtual_trading.py",
+        "handler": "list_trades",
+        "line": 349
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/watchlist",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "WatchlistResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "watchlist",
+        "prefix": "/watchlist"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/watchlist.py",
+        "handler": "get_watchlist",
+        "line": 28
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "POST",
+      "path": "/api/v1/watchlist",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "WatchlistItemResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "watchlist",
+        "prefix": "/watchlist"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/watchlist.py",
+        "handler": "add_to_watchlist",
+        "line": 39
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "GET",
+      "path": "/api/v1/watchlist/check/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "dict",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "watchlist",
+        "prefix": "/watchlist"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/watchlist.py",
+        "handler": "check_symbol",
+        "line": 96
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "PUT",
+      "path": "/api/v1/watchlist/reorder",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "WatchlistResponse",
+        "source": "decorator"
+      },
+      "router": {
+        "module": "watchlist",
+        "prefix": "/watchlist"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/watchlist.py",
+        "handler": "reorder_watchlist",
+        "line": 82
+      }
+    },
+    {
+      "authHint": {
+        "evidence": [
+          "CurrentUser"
+        ],
+        "level": "authenticated"
+      },
+      "includeInSchema": true,
+      "method": "DELETE",
+      "path": "/api/v1/watchlist/{symbol}",
+      "protocol": "http",
+      "responseModelHint": {
+        "expression": "None",
+        "source": "returnAnnotation"
+      },
+      "router": {
+        "module": "watchlist",
+        "prefix": "/watchlist"
+      },
+      "source": {
+        "file": "backend/app/api/v1/endpoints/watchlist.py",
+        "handler": "remove_from_watchlist",
+        "line": 71
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": "backend/app/api/v1/router.py (static AST; legacy application is never imported)"
+}

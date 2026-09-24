@@ -1,0 +1,30 @@
+{
+  "tool": "built-in image_gen",
+  "mode": "generate-with-reference",
+  "reference": "user-provided IQX landing screenshot (layout and environment only)",
+  "assets": [
+    {
+      "file": "journey-day-v1.webp",
+      "prompt": "Use case: stylized-concept. Asset type: wide landscape illustration background for the IQX investor-education introduction hero. Generate an original landscape ONLY, 1536x864 wide. Follow the supplied reference's softly painted luminous mountainous world: distant layered blue-green mountains, calm turquoise lake, pine forests, bright pale blue sky with soft white clouds, a sunlit rocky ledge in the LOWER RIGHT foreground with a few small plants, leafy tree framing the FAR RIGHT edge. Clean premium painterly 3D storybook game scenery, gentle natural daylight, deep blue / teal palette with restrained warm light. Composition: horizon lower-middle; left half mostly airy pale sky and distant haze for HTML text; right foreground rock reserved for compositing an EXISTING Thanh Long character later. No characters, no dragons, no eggs, no animals, no people, no text, no lettering, no logos, no interface, no framing, no gradients/glow UI. Match the setting and calm friendly mood in the reference, not the actual webpage or its characters."
+    },
+    {
+      "file": "journey-night-v1.webp",
+      "prompt": "Use case: stylized-concept. Asset type: wide twilight landscape backdrop for the IQX landing page's companion-unlock section. Original painterly 3D storybook scenery, 1536x864 horizontal. A tranquil blue mountain lake beneath a deep midnight-blue night sky, a pale moon in upper RIGHT, a few subtle stars, distant pine-covered peaks, a quiet stone ledge in lower RIGHT reserved for a dragon silhouette composited later. Maintain the same scenic world as the reference's lower night banner, but output ONLY the landscape. Restrained sapphire/teal night tones, softly lit mountains, no bright glare. Left 55% calm dark open sky/lake for readable HTML copy. Right35% moon and foreground stone pedestal. No creatures, no dragon, no eggs, no silhouettes, no people, no text, no lettering, no question mark, no logos, no UI. No decorative sparkles in foreground, no neon glows."
+    },
+    {
+      "file": "../mascots-2d/v2/thanh-long/hero-sharp-v1.webp",
+      "source": "assets/source/introduction/thanh-long-hero-sharp-v1.png",
+      "prompt": "Use case: identity-preserve. Asset type: high resolution transparent character cutout for IQX website hero. Input image is the canonical IQX Thanh Long character identity reference / edit target. Re-render this exact character with exceptionally sharp clean edges and richly detailed premium 3D animated-film materials at 2048x2048 or the largest square resolution available. Preserve identity and pose: cute small Vietnamese azure dragon with turquoise/jade teal scaled body, deep azure swept mane and paired short icy-blue horns, cream cheek tufts and cream belly, two long green whiskers, huge glossy blue eyes, joyful open smile, sitting four-pawed pose facing three-quarter right, curled teal-and-blue flame-tip tail to the left. Keep the cobalt neck scarf with small white letters 'IQX' exactly, diamond blue pendant centered on chest. Preserve silhouette proportions, face features and original color distribution, no wings, no props, no new accessories. Improve sharpness and rounded sculptural volume with fine individual scales, soft natural daylight, controlled highlights, detailed irises, smooth clean silhouette. Whole character and entire tail visible with 6 percent padding. Genuinely transparent alpha background, no environment, no floor, no checkerboard painted in, no cast shadow rectangle, no background color, no outer aura or glow. Not an illustration sheet, no extra text, no watermark. This is a refined high fidelity asset of the SAME Thanh Long, not a redesign or different dragon.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "alpha": true
+    }
+  ],
+  "reused": {
+    "mascot": "Refined hero derivative from canonical Thanh Long; original gameplay assets unchanged",
+    "eggs": "src/pages/demo-trading/journey/artwork/EggArtwork.tsx, levels 0 through 6"
+  },
+  "note": "Generated files copied into this directory; WebP encoding is delivery optimization, not visual editing. Character and egg artwork are reused unmodified."
+}
