@@ -1,0 +1,29 @@
+[Unit]
+Description=IQX v2 market report worker
+After=network-online.target postgresql.service iqx-v2-redis.service
+Wants=network-online.target
+Requires=iqx-v2-redis.service
+
+[Service]
+Type=simple
+User=iqx-v2
+Group=iqx-v2
+WorkingDirectory=/srv/iqx-v2/current/backend-v2
+EnvironmentFile=/srv/iqx-v2/shared/runtime.env
+ExecStart=/usr/bin/node dist/src/bootstrap/worker.js
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+KillSignal=SIGTERM
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/iqx-v2/shared/media
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=iqx-v2-worker
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,23 @@
+[Unit]
+Description=IQX v2 isolated Redis
+After=network.target
+
+[Service]
+Type=simple
+User=iqx-v2
+Group=iqx-v2
+ExecStart=/usr/bin/redis-server /srv/iqx-v2/shared/redis.conf
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/iqx-v2/shared/redis
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
