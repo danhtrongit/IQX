@@ -83,15 +83,18 @@ function pick(row: Json, keys: string[]): unknown {
   for (const key of keys) if (row[key] !== null && row[key] !== undefined) return row[key];
   return null;
 }
-function rawInput(payload: Json): Json {
+export function rawInput(payload: Json): Json {
   if (Object.keys(object(payload.rawInput)).length) return object(payload.rawInput);
   const board = rows(payload.price_board)[0] ?? {};
   const ohlcv = rows(payload.ohlcv_30).map((row) => ({
-    date: pick(row, ['tradingDate', 'date', 'time', 't']),
-    open: pick(row, ['open', 'o']),
-    high: pick(row, ['high', 'h']),
-    low: pick(row, ['low', 'l']),
-    close: pick(row, ['close', 'c']),
+    // VCI's normalized price-chart contract uses *_price fields while VND
+    // and older snapshots use the compact OHLC names. Keep both forms so
+    // downstream readers (notably Cấp 2 ATR) receive actual numeric bars.
+    date: pick(row, ['tradingDate', 'trading_time', 'date', 'time', 't']),
+    open: pick(row, ['open', 'open_price', 'o']),
+    high: pick(row, ['high', 'high_price', 'h']),
+    low: pick(row, ['low', 'low_price', 'l']),
+    close: pick(row, ['close', 'closing_price', 'close_price', 'c']),
     volume: pick(row, ['volume', 'v']),
   }));
   const history = rows(payload.trading_history)

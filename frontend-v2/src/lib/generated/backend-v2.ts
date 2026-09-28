@@ -415,6 +415,7 @@ export type Cap2Alert = {
   plan_started_at?: string | null;
   position_avg_cost_vnd?: number | null;
   position_quantity?: number | null;
+  priority: "immediate" | "next_session";
   session_date: string;
   status: string;
   suppression_reason?: string | null;
@@ -454,6 +455,8 @@ export type Cap2Alert = {
     | null
     | number
     | null
+    | "immediate"
+    | "next_session"
     | string
     | string
     | null
@@ -11913,6 +11916,116 @@ export type AdminRefundPaymentPostApiV1AdminPaymentsOrderIdRefundResponses = {
 export type AdminRefundPaymentPostApiV1AdminPaymentsOrderIdRefundResponse =
   AdminRefundPaymentPostApiV1AdminPaymentsOrderIdRefundResponses[keyof AdminRefundPaymentPostApiV1AdminPaymentsOrderIdRefundResponses];
 
+export type AdminReferralsControllerStatus0Data = {
+  body?: never;
+  path: {
+    userId: string;
+  };
+  query?: never;
+  url: "/api/v1/admin/referrals/{userId}";
+};
+
+export type AdminReferralsControllerStatus0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type AdminReferralsControllerStatus0Error =
+  AdminReferralsControllerStatus0Errors[keyof AdminReferralsControllerStatus0Errors];
+
+export type AdminReferralsControllerStatus0Responses = {
+  200: {
+    referral_code: string | null;
+    referral_lead_user_id: string | null;
+    referral_partner_kind: "lead_sale" | "ctv";
+    referral_url: string | null;
+    referred_by_user_id: string | null;
+  };
+};
+
+export type AdminReferralsControllerStatus0Response =
+  AdminReferralsControllerStatus0Responses[keyof AdminReferralsControllerStatus0Responses];
+
+export type AdminReferralsControllerEnroll0Data = {
+  body: {
+    kind: "lead_sale" | "ctv";
+    /**
+     * Required for CTV; omitted for Lead Sale.
+     */
+    lead_user_id?: string;
+  };
+  path: {
+    userId: string;
+  };
+  query?: never;
+  url: "/api/v1/admin/referrals/{userId}/enroll";
+};
+
+export type AdminReferralsControllerEnroll0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type AdminReferralsControllerEnroll0Error =
+  AdminReferralsControllerEnroll0Errors[keyof AdminReferralsControllerEnroll0Errors];
+
+export type AdminReferralsControllerEnroll0Responses = {
+  201: {
+    referral_code: string | null;
+    referral_lead_user_id: string | null;
+    referral_partner_kind: "lead_sale" | "ctv";
+    referral_url: string | null;
+    referred_by_user_id: string | null;
+  };
+};
+
+export type AdminReferralsControllerEnroll0Response =
+  AdminReferralsControllerEnroll0Responses[keyof AdminReferralsControllerEnroll0Responses];
+
 export type AdminListSubscriptionsGetApiV1AdminSubscriptionsData = {
   body?: never;
   path?: never;
@@ -14500,6 +14613,7 @@ export type AuthControllerRegister0Data = {
     full_name: string;
     password: string;
     phone_number?: string | null;
+    referral_code?: string | null;
   };
   path?: never;
   query?: never;
@@ -23292,6 +23406,52 @@ export type ReceiveSePayIpnPostApiV1PremiumSepayIpnResponses = {
   200: unknown;
 };
 
+export type ReferralsControllerMine0Data = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/referrals/me";
+};
+
+export type ReferralsControllerMine0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type ReferralsControllerMine0Error =
+  ReferralsControllerMine0Errors[keyof ReferralsControllerMine0Errors];
+
+export type ReferralsControllerMine0Responses = {
+  200: {
+    referral_code: string | null;
+    referral_lead_user_id: string | null;
+    referral_partner_kind: "lead_sale" | "ctv";
+    referral_url: string | null;
+    referred_by_user_id: string | null;
+  };
+};
+
+export type ReferralsControllerMine0Response =
+  ReferralsControllerMine0Responses[keyof ReferralsControllerMine0Responses];
+
 export type TelegramControllerWebhook0Data = {
   body?: never;
   path: {
@@ -23400,6 +23560,7 @@ export type UsersControllerCreate0Data = {
     full_name: string;
     password: string;
     phone_number?: string | null;
+    referral_code?: string | null;
     role?: "admin" | "user" | "premium";
     status?: "active" | "inactive" | "suspended" | "deleted";
   };
@@ -26228,6 +26389,116 @@ export type AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponses = {
 export type AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponse =
   AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponses[keyof AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponses];
 
+export type AdminReferralsControllerStatus1Data = {
+  body?: never;
+  path: {
+    userId: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/referrals/{userId}";
+};
+
+export type AdminReferralsControllerStatus1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminReferralsControllerStatus1Error =
+  AdminReferralsControllerStatus1Errors[keyof AdminReferralsControllerStatus1Errors];
+
+export type AdminReferralsControllerStatus1Responses = {
+  200: {
+    referral_code: string | null;
+    referral_lead_user_id: string | null;
+    referral_partner_kind: "lead_sale" | "ctv";
+    referral_url: string | null;
+    referred_by_user_id: string | null;
+  };
+};
+
+export type AdminReferralsControllerStatus1Response =
+  AdminReferralsControllerStatus1Responses[keyof AdminReferralsControllerStatus1Responses];
+
+export type AdminReferralsControllerEnroll1Data = {
+  body: {
+    kind: "lead_sale" | "ctv";
+    /**
+     * Required for CTV; omitted for Lead Sale.
+     */
+    lead_user_id?: string;
+  };
+  path: {
+    userId: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/referrals/{userId}/enroll";
+};
+
+export type AdminReferralsControllerEnroll1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminReferralsControllerEnroll1Error =
+  AdminReferralsControllerEnroll1Errors[keyof AdminReferralsControllerEnroll1Errors];
+
+export type AdminReferralsControllerEnroll1Responses = {
+  201: {
+    referral_code: string | null;
+    referral_lead_user_id: string | null;
+    referral_partner_kind: "lead_sale" | "ctv";
+    referral_url: string | null;
+    referred_by_user_id: string | null;
+  };
+};
+
+export type AdminReferralsControllerEnroll1Response =
+  AdminReferralsControllerEnroll1Responses[keyof AdminReferralsControllerEnroll1Responses];
+
 export type AdminListSubscriptionsGetApiV2AdminSubscriptionsData = {
   body?: never;
   path?: never;
@@ -28815,6 +29086,7 @@ export type AuthControllerRegister1Data = {
     full_name: string;
     password: string;
     phone_number?: string | null;
+    referral_code?: string | null;
   };
   path?: never;
   query?: never;
@@ -37156,6 +37428,677 @@ export type MediaControllerDownloadResponses = {
 export type MediaControllerDownloadResponse =
   MediaControllerDownloadResponses[keyof MediaControllerDownloadResponses];
 
+export type MobileControllerDeletionData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/mobile/account/deletion";
+};
+
+export type MobileControllerDeletionErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MobileControllerDeletionError =
+  MobileControllerDeletionErrors[keyof MobileControllerDeletionErrors];
+
+export type MobileControllerDeletionResponses = {
+  202: {
+    request_id?: string;
+    status?: string;
+    [key: string]: unknown;
+  };
+};
+
+export type MobileControllerDeletionResponse =
+  MobileControllerDeletionResponses[keyof MobileControllerDeletionResponses];
+
+export type MobileControllerExportData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/mobile/account/export";
+};
+
+export type MobileControllerExportErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MobileControllerExportError =
+  MobileControllerExportErrors[keyof MobileControllerExportErrors];
+
+export type MobileControllerExportResponses = {
+  202: {
+    request_id?: string;
+    status?: string;
+    [key: string]: unknown;
+  };
+};
+
+export type MobileControllerExportResponse =
+  MobileControllerExportResponses[keyof MobileControllerExportResponses];
+
+export type MobileControllerRegisterDeviceData = {
+  body: {
+    app_version?: string;
+    device_id: string;
+    locale?: string;
+    platform: "ios" | "android";
+    push_token?: string;
+    timezone?: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/mobile/devices";
+};
+
+export type MobileControllerRegisterDeviceErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MobileControllerRegisterDeviceError =
+  MobileControllerRegisterDeviceErrors[keyof MobileControllerRegisterDeviceErrors];
+
+export type MobileControllerRegisterDeviceResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type MobileControllerRegisterDeviceResponse =
+  MobileControllerRegisterDeviceResponses[keyof MobileControllerRegisterDeviceResponses];
+
+export type MobileControllerRemoveDeviceData = {
+  body?: never;
+  path: {
+    device_id: string;
+  };
+  query?: never;
+  url: "/api/v2/mobile/devices/{device_id}";
+};
+
+export type MobileControllerRemoveDeviceErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MobileControllerRemoveDeviceError =
+  MobileControllerRemoveDeviceErrors[keyof MobileControllerRemoveDeviceErrors];
+
+export type MobileControllerRemoveDeviceResponses = {
+  200: {
+    deleted?: boolean;
+    [key: string]: unknown;
+  };
+};
+
+export type MobileControllerRemoveDeviceResponse =
+  MobileControllerRemoveDeviceResponses[keyof MobileControllerRemoveDeviceResponses];
+
+export type MobileMarketDataWsTicketData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/mobile/market-data/ws-ticket";
+};
+
+export type MobileMarketDataWsTicketErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MobileMarketDataWsTicketError =
+  MobileMarketDataWsTicketErrors[keyof MobileMarketDataWsTicketErrors];
+
+export type MobileMarketDataWsTicketResponses = {
+  200: {
+    expires_at?: string;
+    ticket?: string;
+    [key: string]: unknown;
+  };
+};
+
+export type MobileMarketDataWsTicketResponse =
+  MobileMarketDataWsTicketResponses[keyof MobileMarketDataWsTicketResponses];
+
+export type MobileControllerPreferencesData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/mobile/preferences";
+};
+
+export type MobileControllerPreferencesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MobileControllerPreferencesError =
+  MobileControllerPreferencesErrors[keyof MobileControllerPreferencesErrors];
+
+export type MobileControllerPreferencesResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type MobileControllerPreferencesResponse =
+  MobileControllerPreferencesResponses[keyof MobileControllerPreferencesResponses];
+
+export type MobileControllerUpdatePreferencesData = {
+  body: {
+    locale?: string;
+    marketing_enabled?: boolean;
+    notifications_enabled?: boolean;
+    timezone?: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/mobile/preferences";
+};
+
+export type MobileControllerUpdatePreferencesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MobileControllerUpdatePreferencesError =
+  MobileControllerUpdatePreferencesErrors[keyof MobileControllerUpdatePreferencesErrors];
+
+export type MobileControllerUpdatePreferencesResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type MobileControllerUpdatePreferencesResponse =
+  MobileControllerUpdatePreferencesResponses[keyof MobileControllerUpdatePreferencesResponses];
+
+export type MobileAppleStoreNotificationData = {
+  body: {
+    [key: string]: unknown;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/mobile/premium/apple/notifications";
+};
+
+export type MobileAppleStoreNotificationErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MobileAppleStoreNotificationError =
+  MobileAppleStoreNotificationErrors[keyof MobileAppleStoreNotificationErrors];
+
+export type MobileAppleStoreNotificationResponses = {
+  202: {
+    accepted?: boolean;
+  };
+};
+
+export type MobileAppleStoreNotificationResponse =
+  MobileAppleStoreNotificationResponses[keyof MobileAppleStoreNotificationResponses];
+
+export type MobileGoogleStoreNotificationData = {
+  body: {
+    [key: string]: unknown;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/mobile/premium/google/notifications";
+};
+
+export type MobileGoogleStoreNotificationErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MobileGoogleStoreNotificationError =
+  MobileGoogleStoreNotificationErrors[keyof MobileGoogleStoreNotificationErrors];
+
+export type MobileGoogleStoreNotificationResponses = {
+  202: {
+    accepted?: boolean;
+  };
+};
+
+export type MobileGoogleStoreNotificationResponse =
+  MobileGoogleStoreNotificationResponses[keyof MobileGoogleStoreNotificationResponses];
+
+export type MobilePremiumProductsData = {
+  body?: never;
+  path?: never;
+  query: {
+    platform: "ios" | "android";
+  };
+  url: "/api/v2/mobile/premium/products";
+};
+
+export type MobilePremiumProductsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MobilePremiumProductsError =
+  MobilePremiumProductsErrors[keyof MobilePremiumProductsErrors];
+
+export type MobilePremiumProductsResponses = {
+  200: {
+    items?: Array<{
+      [key: string]: unknown;
+    }>;
+    [key: string]: unknown;
+  };
+};
+
+export type MobilePremiumProductsResponse =
+  MobilePremiumProductsResponses[keyof MobilePremiumProductsResponses];
+
+export type MobileVerifyApplePurchaseData = {
+  body: {
+    platform: "ios" | "android";
+    product_id: string;
+    receipt: string;
+    transaction_id: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/mobile/premium/purchases/apple/verify";
+};
+
+export type MobileVerifyApplePurchaseErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MobileVerifyApplePurchaseError =
+  MobileVerifyApplePurchaseErrors[keyof MobileVerifyApplePurchaseErrors];
+
+export type MobileVerifyApplePurchaseResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type MobileVerifyApplePurchaseResponse =
+  MobileVerifyApplePurchaseResponses[keyof MobileVerifyApplePurchaseResponses];
+
+export type MobileVerifyGooglePurchaseData = {
+  body: {
+    platform: "ios" | "android";
+    product_id: string;
+    receipt: string;
+    transaction_id: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/mobile/premium/purchases/google/verify";
+};
+
+export type MobileVerifyGooglePurchaseErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MobileVerifyGooglePurchaseError =
+  MobileVerifyGooglePurchaseErrors[keyof MobileVerifyGooglePurchaseErrors];
+
+export type MobileVerifyGooglePurchaseResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type MobileVerifyGooglePurchaseResponse =
+  MobileVerifyGooglePurchaseResponses[keyof MobileVerifyGooglePurchaseResponses];
+
+export type MobileRestorePurchasesData = {
+  body: {
+    platform: "ios" | "android";
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/mobile/premium/purchases/restore";
+};
+
+export type MobileRestorePurchasesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MobileRestorePurchasesError =
+  MobileRestorePurchasesErrors[keyof MobileRestorePurchasesErrors];
+
+export type MobileRestorePurchasesResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type MobileRestorePurchasesResponse =
+  MobileRestorePurchasesResponses[keyof MobileRestorePurchasesResponses];
+
+export type MobileVerifyPurchaseData = {
+  body: {
+    platform: "ios" | "android";
+    product_id: string;
+    receipt: string;
+    transaction_id: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/mobile/premium/purchases/verify";
+};
+
+export type MobileVerifyPurchaseErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MobileVerifyPurchaseError =
+  MobileVerifyPurchaseErrors[keyof MobileVerifyPurchaseErrors];
+
+export type MobileVerifyPurchaseResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type MobileVerifyPurchaseResponse =
+  MobileVerifyPurchaseResponses[keyof MobileVerifyPurchaseResponses];
+
+export type MobileControllerTicketData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/mobile/realtime/ticket";
+};
+
+export type MobileControllerTicketErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type MobileControllerTicketError =
+  MobileControllerTicketErrors[keyof MobileControllerTicketErrors];
+
+export type MobileControllerTicketResponses = {
+  200: {
+    expires_at?: string;
+    ticket?: string;
+    [key: string]: unknown;
+  };
+};
+
+export type MobileControllerTicketResponse =
+  MobileControllerTicketResponses[keyof MobileControllerTicketResponses];
+
 export type AnalyzePortfolioV2Data = {
   body?: never;
   path?: never;
@@ -37683,6 +38626,52 @@ export type ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses = {
   200: unknown;
 };
 
+export type ReferralsControllerMine1Data = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/referrals/me";
+};
+
+export type ReferralsControllerMine1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ReferralsControllerMine1Error =
+  ReferralsControllerMine1Errors[keyof ReferralsControllerMine1Errors];
+
+export type ReferralsControllerMine1Responses = {
+  200: {
+    referral_code: string | null;
+    referral_lead_user_id: string | null;
+    referral_partner_kind: "lead_sale" | "ctv";
+    referral_url: string | null;
+    referred_by_user_id: string | null;
+  };
+};
+
+export type ReferralsControllerMine1Response =
+  ReferralsControllerMine1Responses[keyof ReferralsControllerMine1Responses];
+
 export type TelegramControllerWebhook1Data = {
   body?: never;
   path: {
@@ -37791,6 +38780,7 @@ export type UsersControllerCreate1Data = {
     full_name: string;
     password: string;
     phone_number?: string | null;
+    referral_code?: string | null;
     role?: "admin" | "user" | "premium";
     status?: "active" | "inactive" | "suspended" | "deleted";
   };
@@ -37928,6 +38918,135 @@ export type UsersControllerUpdateMe1Responses = {
 
 export type UsersControllerUpdateMe1Response =
   UsersControllerUpdateMe1Responses[keyof UsersControllerUpdateMe1Responses];
+
+export type RequestAccountDeletionData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/users/me/deletion";
+};
+
+export type RequestAccountDeletionErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type RequestAccountDeletionError =
+  RequestAccountDeletionErrors[keyof RequestAccountDeletionErrors];
+
+export type RequestAccountDeletionResponses = {
+  202: {
+    request_id?: string;
+    status?: string;
+  };
+};
+
+export type RequestAccountDeletionResponse =
+  RequestAccountDeletionResponses[keyof RequestAccountDeletionResponses];
+
+export type GetAccountDeletionStatusData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/users/me/deletion-status";
+};
+
+export type GetAccountDeletionStatusErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetAccountDeletionStatusError =
+  GetAccountDeletionStatusErrors[keyof GetAccountDeletionStatusErrors];
+
+export type GetAccountDeletionStatusResponses = {
+  200: {
+    request_id?: string | null;
+    status?: string;
+  };
+};
+
+export type GetAccountDeletionStatusResponse =
+  GetAccountDeletionStatusResponses[keyof GetAccountDeletionStatusResponses];
+
+export type RequestAccountExportData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/users/me/export";
+};
+
+export type RequestAccountExportErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type RequestAccountExportError =
+  RequestAccountExportErrors[keyof RequestAccountExportErrors];
+
+export type RequestAccountExportResponses = {
+  202: {
+    request_id?: string;
+    status?: string;
+  };
+};
+
+export type RequestAccountExportResponse =
+  RequestAccountExportResponses[keyof RequestAccountExportResponses];
 
 export type UsersControllerRemove1Data = {
   body?: never;

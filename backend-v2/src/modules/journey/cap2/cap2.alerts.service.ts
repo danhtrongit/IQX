@@ -36,9 +36,18 @@ type Event = Record<string, unknown> & {
   first_shown_at: Date | string | null;
   last_shown_at: Date | string | null;
 };
+
+/** The alert inbox distinguishes an averaging-down warning from a stop-loss
+ * warning. This is derived from the immutable event type, not stored in the
+ * database, matching the legacy contract and keeping old rows compatible. */
+export function cap2AlertPriority(alertType: string): 'immediate' | 'next_session' {
+  return alertType === 'cham_cat_lo' ? 'next_session' : 'immediate';
+}
+
 function out(row: Event) {
   return {
     ...row,
+    priority: cap2AlertPriority(row.alert_type),
     observed_price_vnd: Number(row.observed_price_vnd),
     threshold_price_vnd: row.threshold_price_vnd == null ? null : Number(row.threshold_price_vnd),
     position_avg_cost_vnd:

@@ -26,6 +26,10 @@ export type RealtimeOptions = {
   leaderTtlMs: number;
   reconcileMs: number;
   providerFactory?: () => MarketStreamPort;
+  /** Optional mobile ticket verifier. Returning a user id authenticates the socket. */
+  mobileTicketVerifier?: (ticket: string) => Promise<string | null>;
+  /** Require an auth frame before accepting subscriptions on the v2 gateway. */
+  requireMobileAuth?: boolean;
 };
 
 export const REALTIME_OPTIONS = Symbol('REALTIME_OPTIONS');

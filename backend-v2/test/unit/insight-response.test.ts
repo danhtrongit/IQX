@@ -127,6 +127,43 @@ describe('AI insight response projection', () => {
     expect(result.rawInput).toEqual(payload.rawInput);
   });
 
+  it('normalizes VCI price-chart field names for downstream OHLCV readers', () => {
+    const result = buildInsightResponse(
+      raw,
+      {
+        symbol: 'VOS',
+        ohlcv_30: {
+          data: [
+            {
+              open_price: 12_000,
+              high_price: 12_500,
+              low_price: 11_900,
+              closing_price: 12_300,
+              trading_time: 1_789_000_000,
+            },
+          ],
+        },
+      },
+      { symbol: 'VOS' },
+      '2026-09-28T00:00:00Z',
+      false,
+    );
+
+    expect(result.rawInput).toMatchObject({
+      trend: {
+        ohlcv: [
+          {
+            date: 1_789_000_000,
+            open: 12_000,
+            high: 12_500,
+            low: 11_900,
+            close: 12_300,
+          },
+        ],
+      },
+    });
+  });
+
   it('rejects unknown status labels rather than fabricating a neutral level', () => {
     expect(() =>
       (service as unknown as PrivateService).validateInsight({
@@ -156,5 +193,33 @@ describe('AI insight response projection', () => {
       Array,
     );
     expect(result.dataSummary).toEqual({ model: 'cached' });
+  });
+
+  it('refreshes OHLCV evidence on a projected cache hit after a normalizer fix', () => {
+    const cached = {
+      ...buildInsightResponse(
+        raw,
+        { symbol: 'VOS', ohlcv_30: [] },
+        { symbol: 'VOS' },
+        '2026-09-27T00:00:00Z',
+        false,
+      ),
+      rawInput: { trend: { ohlcv: [{ high: null, low: null, close: null }] } },
+    };
+    const result = (service as unknown as PrivateService).normalizeCachedInsight(
+      cached,
+      'VOS',
+      {
+        symbol: 'VOS',
+        ohlcv_30: {
+          data: [{ high_price: 12_500, low_price: 12_000, closing_price: 12_300 }],
+        },
+      },
+      null,
+    );
+
+    expect(result.rawInput).toMatchObject({
+      trend: { ohlcv: [{ high: 12_500, low: 12_000, close: 12_300 }] },
+    });
   });
 });

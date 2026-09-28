@@ -16,7 +16,8 @@
  * thì giữ `null` (UI render "—"), KHÔNG bao giờ ép về 0.
  */
 import { api, ApiError } from "@/lib/api"
-import type { OrderPage } from "@/pages/demo-trading/types"
+import type { JourneyProgress, OrderPage } from "@/pages/demo-trading/types"
+import { taskDone } from "@/pages/demo-trading/journey/journey-state"
 
 type Raw = Record<string, unknown>
 
@@ -264,6 +265,19 @@ export async function hasFilledBuyEvidence(symbol: string): Promise<boolean> {
   })
   const page = await api<OrderPage>(`/virtual-trading/orders?${params}`)
   return (page.total ?? 0) > 0
+}
+
+/** Reconcile the Cấp 0 star gate after a successful watchlist action. */
+export async function recordCap0TaskAfterStar(
+  symbol: string,
+  journey: { isLoading: boolean; level: number; progress: JourneyProgress | null },
+  completeTask: (task: number, gate: "star") => Promise<void>,
+): Promise<boolean> {
+  if (journey.isLoading || journey.level !== 0 || !journey.progress) return false
+  if (taskDone(0, 1, journey.progress)) return false
+  if (!(await hasFilledBuyEvidence(symbol))) return false
+  await completeTask(1, "star")
+  return true
 }
 
 /** `POST /virtual-trading/orders/{id}/cancel` — chỉ lệnh đang chờ mới huỷ được. */

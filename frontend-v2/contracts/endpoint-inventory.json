@@ -3,7 +3,7 @@
   "calls": [
     {
       "file": "src/context/auth-provider.tsx",
-      "line": 27,
+      "line": 28,
       "callee": "api",
       "raw": "/auth/me",
       "method": "GET",
@@ -16,7 +16,7 @@
     },
     {
       "file": "src/context/auth-provider.tsx",
-      "line": 62,
+      "line": 63,
       "callee": "api",
       "raw": "/auth/me",
       "method": "GET",
@@ -29,7 +29,7 @@
     },
     {
       "file": "src/context/auth-provider.tsx",
-      "line": 88,
+      "line": 89,
       "callee": "api",
       "raw": "/premium/me",
       "method": "GET",
@@ -42,7 +42,7 @@
     },
     {
       "file": "src/context/auth-provider.tsx",
-      "line": 94,
+      "line": 95,
       "callee": "api",
       "raw": "/auth/login",
       "method": "POST",
@@ -55,7 +55,7 @@
     },
     {
       "file": "src/context/auth-provider.tsx",
-      "line": 97,
+      "line": 98,
       "callee": "api",
       "raw": "/auth/me",
       "method": "GET",
@@ -68,7 +68,7 @@
     },
     {
       "file": "src/context/auth-provider.tsx",
-      "line": 111,
+      "line": 113,
       "callee": "api",
       "raw": "/auth/register",
       "method": "POST",
@@ -81,7 +81,7 @@
     },
     {
       "file": "src/context/auth-provider.tsx",
-      "line": 119,
+      "line": 121,
       "callee": "api",
       "raw": "/auth/logout",
       "method": "POST",
@@ -94,7 +94,7 @@
     },
     {
       "file": "src/context/auth-provider.tsx",
-      "line": 131,
+      "line": 134,
       "callee": "api",
       "raw": "/auth/me",
       "method": "GET",
@@ -2074,7 +2074,7 @@
     },
     {
       "file": "src/pages/demo-trading/journey/use-identity.ts",
-      "line": 20,
+      "line": 22,
       "callee": "api",
       "raw": "/bot/mascot/ui-events",
       "method": "POST",
@@ -2153,7 +2153,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 133,
+      "line": 134,
       "callee": "api",
       "raw": "/watchlists",
       "method": "GET",
@@ -2166,7 +2166,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 142,
+      "line": 143,
       "callee": "api",
       "raw": "/watchlists",
       "method": "POST",
@@ -2179,7 +2179,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 150,
+      "line": 151,
       "callee": "api",
       "raw": "/watchlists/{encodeURIComponent(symbol.trim().toUpperCase())}",
       "method": "DELETE",
@@ -2192,7 +2192,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 157,
+      "line": 158,
       "callee": "api",
       "raw": "/watchlists/reorder",
       "method": "PUT",
@@ -2205,7 +2205,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 188,
+      "line": 189,
       "callee": "api",
       "raw": "/instruments/{encodeURIComponent(symbol.trim().toUpperCase())}",
       "method": "GET",
@@ -2218,7 +2218,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 207,
+      "line": 208,
       "callee": "api",
       "raw": "/instruments?{params}",
       "method": "GET",
@@ -2231,7 +2231,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 236,
+      "line": 237,
       "callee": "api",
       "raw": "/market-data/quotes/{encodeURIComponent(code)}/ohlcv?{params}",
       "method": "GET",
@@ -2244,7 +2244,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 265,
+      "line": 266,
       "callee": "api",
       "raw": "/virtual-trading/orders?{params}",
       "method": "GET",
@@ -2257,7 +2257,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 271,
+      "line": 285,
       "callee": "api",
       "raw": "/virtual-trading/orders/{encodeURIComponent(id)}/cancel",
       "method": "POST",
@@ -2270,7 +2270,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 442,
+      "line": 456,
       "callee": "api",
       "raw": "/portfolio-manager/analyze",
       "method": "POST",
@@ -2701,6 +2701,45 @@
       "classification": "api-call"
     },
     {
+      "file": "src/pages/referral/api.ts",
+      "line": 38,
+      "callee": "api",
+      "raw": "/referrals/me",
+      "method": "GET",
+      "route": "/api/v2/referrals/me",
+      "matchedOperation": "GET /api/v2/referrals/me",
+      "matchedOperations": [
+        "GET /api/v2/referrals/me"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/referral/api.ts",
+      "line": 42,
+      "callee": "api",
+      "raw": "/admin/referrals/{userId}",
+      "method": "GET",
+      "route": "/api/v2/admin/referrals/{userId}",
+      "matchedOperation": "GET /api/v2/admin/referrals/{userId}",
+      "matchedOperations": [
+        "GET /api/v2/admin/referrals/{userId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/referral/api.ts",
+      "line": 50,
+      "callee": "api",
+      "raw": "/admin/referrals/{userId}/enroll",
+      "method": "POST",
+      "route": "/api/v2/admin/referrals/{userId}/enroll",
+      "matchedOperation": "POST /api/v2/admin/referrals/{userId}/enroll",
+      "matchedOperations": [
+        "POST /api/v2/admin/referrals/{userId}/enroll"
+      ],
+      "classification": "api-call"
+    },
+    {
       "file": "src/pages/securities/market/api.ts",
       "line": 121,
       "callee": "api",
@@ -3117,6 +3156,7 @@
   ],
   "unconsumedOperations": [
     "DELETE /api/v2/chart-drawings/{symbol}",
+    "DELETE /api/v2/mobile/devices/{device_id}",
     "GET /api/v2/admin/alerts/factor-library",
     "GET /api/v2/admin/audit/export",
     "GET /api/v2/admin/metrics/plan-distribution",
@@ -3204,13 +3244,17 @@
     "GET /api/v2/market-data/trading/{symbol}/supply-demand",
     "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary",
     "GET /api/v2/media/{token}",
+    "GET /api/v2/mobile/preferences",
+    "GET /api/v2/mobile/premium/products",
     "GET /api/v2/portfolio-manager/report",
+    "GET /api/v2/users/me/deletion-status",
     "GET /api/v2/virtual-trading/leaderboard",
     "GET /api/v2/virtual-trading/ledger",
     "GET /api/v2/virtual-trading/trades",
     "GET /api/v2/watchlists/{symbol}/status",
     "PATCH /api/v2/admin/vt/config",
     "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop",
+    "PATCH /api/v2/mobile/preferences",
     "POST /api/v2/admin/alerts/telegram/webhook",
     "POST /api/v2/admin/journey/identity/qa-grants",
     "POST /api/v2/admin/lessons/courses/{courseId}/thumbnail",
@@ -3237,8 +3281,21 @@
     "POST /api/v2/cap8/positions/{symbol}/sync-plan",
     "POST /api/v2/market-analysis/{type}/run",
     "POST /api/v2/market-data/screening/search",
+    "POST /api/v2/mobile/account/deletion",
+    "POST /api/v2/mobile/account/export",
+    "POST /api/v2/mobile/devices",
+    "POST /api/v2/mobile/market-data/ws-ticket",
+    "POST /api/v2/mobile/premium/apple/notifications",
+    "POST /api/v2/mobile/premium/google/notifications",
+    "POST /api/v2/mobile/premium/purchases/apple/verify",
+    "POST /api/v2/mobile/premium/purchases/google/verify",
+    "POST /api/v2/mobile/premium/purchases/restore",
+    "POST /api/v2/mobile/premium/purchases/verify",
+    "POST /api/v2/mobile/realtime/ticket",
     "POST /api/v2/premium/sepay/ipn",
     "POST /api/v2/telegram/webhook/{secret}",
+    "POST /api/v2/users/me/deletion",
+    "POST /api/v2/users/me/export",
     "PUT /api/v2/backtest/strategies/{strategyId}"
   ]
 }

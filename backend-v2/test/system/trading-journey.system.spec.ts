@@ -46,6 +46,52 @@ describe('system acceptance: virtual trading and journey gates', () => {
     expect([400, 409]).toContain(missingGate.statusCode);
   });
 
+  it('completes cap-0 task 1 after a filled planned BUY and star gate', async () => {
+    const user = await registerAndLogin(stack.app, 'journey-positive');
+    const headers = authHeader(user.accessToken);
+    const enter = await stack.app.inject({
+      method: 'POST',
+      url: '/api/v2/cap0/enter',
+      headers,
+    });
+    expect(enter.statusCode, enter.body).toBe(201);
+    const placement = await stack.app.inject({
+      method: 'POST',
+      url: '/api/v2/cap0/placement',
+      headers,
+      payload: { answer: 'never' },
+    });
+    expect(placement.statusCode, placement.body).toBe(201);
+
+    const buy = await stack.app.inject({
+      method: 'POST',
+      url: '/api/v2/virtual-trading/orders',
+      headers,
+      payload: {
+        symbol: 'VNM',
+        side: 'buy',
+        order_type: 'market',
+        quantity: 100,
+        journey_plan: { ly_do_doi_thuong: 'cong_ty_toi_biet' },
+      },
+    });
+    expect(buy.statusCode, buy.body).toBe(201);
+    expect(buy.json()).toMatchObject({ status: 'filled', journey_plan_saved_levels: [0] });
+
+    const star = await stack.app.inject({
+      method: 'PATCH',
+      url: '/api/v2/cap0/task',
+      headers,
+      payload: { task_no: 1, gate: 'star' },
+    });
+    expect(star.statusCode, star.body).toBe(200);
+    expect(star.json()).toMatchObject({
+      user_id: user.id,
+      task_1_done_at: expect.anything(),
+      task1_star_clicked: true,
+    });
+  });
+
   it('prevents cash oversubscription when concurrent orders race on one account', async () => {
     const user = await registerAndLogin(stack.app, 'race');
     const activate = await stack.app.inject({

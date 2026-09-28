@@ -62,6 +62,76 @@ describe('MarketHuntDataSource', () => {
 });
 
 describe('BotMarketSnapshotProvider', () => {
+  it.each([
+    { name: 'complete scan', flowsAvailable: true, statusAvailable: true, complete: true },
+    { name: 'missing flow', flowsAvailable: false, statusAvailable: true, complete: false },
+    {
+      name: 'missing security status',
+      flowsAvailable: true,
+      statusAvailable: false,
+      complete: false,
+    },
+  ])(
+    'handles zero candidates after $name',
+    async ({ flowsAvailable, statusAvailable, complete }) => {
+      vi.useFakeTimers().setSystemTime(new Date('2026-01-02T19:00:00+07:00'));
+      const tradingDate = '2026-01-02';
+      const bars = Array.from({ length: 21 }, (_, index) => {
+        const day = new Date('2025-12-13T00:00:00Z');
+        day.setUTCDate(day.getUTCDate() + index);
+        return {
+          time: day.toISOString().slice(0, 10),
+          open: 10_000,
+          high: 10_100,
+          low: 9_900,
+          close: 10_000,
+          volume: 100_000,
+          gtgdVnd: 2_000_000_000,
+        };
+      });
+      const database = {
+        query: vi.fn(async (sql: string) => {
+          if (sql.includes('from symbols')) return [{ symbol: 'AAA' }];
+          if (sql.includes('from virtual_trading_configs'))
+            return [
+              {
+                id: 'fee-1',
+                buy_fee_rate_bps: 15,
+                sell_fee_rate_bps: 16,
+                sell_tax_rate_bps: 10,
+                board_lot_size: 100,
+                updated_at: '2026-01-02T00:00:00Z',
+              },
+            ];
+          return [];
+        }),
+      };
+      const hunt = {
+        dailyBarsThrough: vi.fn().mockResolvedValue(new Map([['AAA', bars]])),
+        netFlowThrough: vi
+          .fn()
+          .mockResolvedValue(flowsAvailable ? new Map([['AAA', [0, 0, 0, 0, 0]]]) : null),
+      };
+      const provider = new BotMarketSnapshotProvider(
+        database as never,
+        { getOhlcv: vi.fn().mockResolvedValue(envelope([])) } as never,
+        hunt as never,
+        { current: vi.fn().mockResolvedValue(statusAvailable ? new Set<string>() : null) } as never,
+      );
+
+      const result = await provider.buildSnapshot(tradingDate, { openSymbols: [] });
+
+      expect(result.buy_inputs_complete).toBe(complete);
+      expect(result.symbols.AAA?.filter_ids).toEqual([]);
+      expect(result.close_is_official).toBe(true);
+      if (complete) expect(result.issues).toEqual([]);
+      else expect(result.issues?.length ?? 0).toBeGreaterThan(0);
+      expect(
+        database.query.mock.calls.some(([sql]) => sql.includes('from ai_insight_history')),
+      ).toBe(false);
+    },
+  );
+
   it('uses only requested-session closes, exact DB fee rules and stored exact-session layers', async () => {
     const bars = Array.from({ length: 40 }, (_, index) => {
       const date = new Date('2025-11-24T00:00:00Z');

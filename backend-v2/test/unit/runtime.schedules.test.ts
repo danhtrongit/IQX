@@ -13,6 +13,18 @@ describe('runtime schedules', () => {
     expect(schedules.length).toBeGreaterThanOrEqual(14);
     expect(schedules.every((schedule) => typeof schedule.enabled === 'boolean')).toBe(true);
     expect(schedules.find((schedule) => schedule.name === 'reports.daily')?.tradingDay).toBe(true);
+    expect(schedules.find((schedule) => schedule.name === 'reports.daily-retry')).toMatchObject({
+      everyMs: 900_000,
+      tradingDay: true,
+    });
+    expect(schedules.find((schedule) => schedule.name === 'reports.premarket')).toMatchObject({
+      everyMs: 900_000,
+      tradingDay: true,
+    });
+    expect(schedules.find((schedule) => schedule.name === 'reports.midday')).toMatchObject({
+      everyMs: 900_000,
+      tradingDay: true,
+    });
   });
 
   it('does not run scheduled market jobs on weekends', async () => {

@@ -8,7 +8,7 @@ export function SidebarPanel({ title, description, actions, children, footer }: 
         <div className="min-w-0"><h2 className="truncate font-heading text-base font-bold">{title}</h2>{description && <p className="mt-0.5 truncate text-xs text-muted-foreground">{description}</p>}</div>
         {actions}
       </div>
-      <ScrollArea className="min-h-0 flex-1"><div className="space-y-4 p-3">{children}</div></ScrollArea>
+      <ScrollArea className="h-0 min-h-0 flex-1"><div className="space-y-4 p-3">{children}</div></ScrollArea>
       {footer && <div className="shrink-0 border-t border-border p-3">{footer}</div>}
     </section>
   )

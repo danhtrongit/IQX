@@ -52,7 +52,6 @@ export const LY_DO_OPTIONS: readonly { value: LyDo; label: string; source: strin
 export function lyDoLabel(value: LyDo | null | undefined): string {
   return LY_DO_OPTIONS.find((option) => option.value === value)?.label ?? "—"
 }
-
 export const VERDICT_LABEL: Record<Verdict, string> = {
   ung_ho_manh: "Ủng hộ mạnh",
   ung_ho: "Ủng hộ",
@@ -294,6 +293,10 @@ export function computeBienDoSlTp(bienDo: number | null, giaVao: number): SlTpRe
   if (bienDo == null || !giaVao) return null
   const catLo = Math.round(giaVao - bienDo * 2)
   const chotLoi = Math.round(giaVao + bienDo * 4)
+  // Do not offer a choice that would immediately fail the Cấp 2 ordering
+  // gate. This can happen for thin/volatile low-priced symbols when the ATR
+  // is wider than half the entry price.
+  if (catLo <= 0 || chotLoi <= giaVao || catLo >= giaVao) return null
   return { catLo, chotLoi, catLoPct: pctAway(catLo, giaVao), chotLoiPct: pctAway(chotLoi, giaVao) }
 }
 

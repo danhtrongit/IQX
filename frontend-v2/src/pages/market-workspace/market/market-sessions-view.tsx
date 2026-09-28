@@ -15,7 +15,7 @@ import { TourLaunchButton } from "../tour/tour-launch-button"
 import { TourOverlay } from "../tour/tour-overlay"
 import { banTinTour } from "../tour/configs/ban-tin-tour"
 import { useProductTour } from "../tour/use-product-tour"
-import { formatSessionDate, localTodayIso } from "./date"
+import { formatSessionDate, useLocalTodayIso } from "./date"
 import { useDailyMarketAnalysis, useMidDayMarketAnalysis, usePreMarketAnalysis } from "./hooks"
 import { getDefaultActivePeriod } from "./period"
 import { SessionTabs } from "./session-tabs"
@@ -34,6 +34,10 @@ export function MarketSessionsView({
   const [active, setActive] = useState<SessionPeriod>(() =>
     autoStartTour ? "premarket" : getDefaultActivePeriod(new Date()),
   )
+  // Keep derived session badges in sync with the same midnight-aware clock
+  // that drives the analysis query keys. Calling localTodayIso() directly in
+  // the memo would leave the "MỚI" marker frozen until another brief changes.
+  const today = useLocalTodayIso()
   const autoStarted = useRef(false)
 
   const tour = useProductTour(banTinTour, "bantin", {
@@ -64,7 +68,6 @@ export function MarketSessionsView({
 
   // The "MỚI" pill belongs to today's brief with the newest `generated_at`.
   const newPeriod = useMemo<SessionPeriod | null>(() => {
-    const today = localTodayIso()
     let best: SessionPeriod | null = null
     let bestTs = ""
     for (const period of ["premarket", "midday", "eod"] as const) {
@@ -75,7 +78,7 @@ export function MarketSessionsView({
       }
     }
     return best
-  }, [briefs])
+  }, [briefs, today])
 
   const sessionDate = briefs[active]?.session_date
   const dateLabel = sessionDate ? formatSessionDate(sessionDate) : null

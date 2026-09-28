@@ -11,7 +11,7 @@ import { buildBctcPayload } from '../financials/bctc.js';
 import { assembleDashboard } from '../financials/dashboard.js';
 import { AiProviderService } from './ai-provider.service.js';
 import { promptFor, type AnalysisPromptKind } from './prompts.js';
-import { buildInsightResponse } from './insight-response.js';
+import { buildInsightResponse, rawInput } from './insight-response.js';
 import type {
   DashboardAnalyze,
   IndustryAnalyze,
@@ -427,8 +427,17 @@ export class AnalysisService {
       Array.isArray(briefing.narrative) &&
       layers &&
       ['L1', 'L2', 'L3', 'L4', 'L5'].every((key) => Array.isArray(objectValue(layers[key])?.fields))
-    )
-      return cached;
+    ) {
+      // Keep projected cache entries usable after a response-shape fix. The
+      // input snapshot is not part of the model projection, so refresh it
+      // from the current market payload when bars are available; otherwise
+      // preserve the cached evidence instead of replacing it with an empty
+      // fallback during a transient provider outage.
+      const refreshed = rawInput({ ...payload, symbol });
+      const trend = objectValue(refreshed?.trend);
+      const bars = trend?.ohlcv;
+      return Array.isArray(bars) && bars.length > 0 ? { ...cached, rawInput: refreshed } : cached;
+    }
     // Previous v2 cache entries contain the raw L6 and L1–L5 model objects.
     // Project them in place on read; preserve their original timestamp and never call AI.
     const raw = cached.L6 ? cached : { ...layers, L6: briefing };

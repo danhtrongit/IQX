@@ -29,6 +29,36 @@ import { DatabaseModule, DatabaseService } from './database/index.js';
 const ictDate = (date = new Date()): string =>
   new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }).format(date);
 
+const ictHour = (date: Date): number =>
+  Number(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Ho_Chi_Minh',
+      hour: '2-digit',
+      hour12: false,
+    }).format(date),
+  );
+
+export const isDailyRetryDue = (date: Date): boolean => ictHour(date) >= 17;
+
+const ictMinutes = (date: Date): number => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(date);
+  const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? 0);
+  const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? 0);
+  return hour * 60 + minute;
+};
+
+export const isReportDue = (date: Date, type: 'premarket' | 'midday'): boolean => {
+  const minute = ictMinutes(date);
+  return type === 'premarket'
+    ? minute >= 7 * 60 + 15 && minute < 9 * 60
+    : minute >= 11 * 60 + 30 && minute < 13 * 60;
+};
+
 type OhlcvRow = {
   time?: unknown;
   open?: unknown;
@@ -56,12 +86,24 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     return {
       'reports.daily': async ({ scheduledFor }) =>
         this.generateReport('daily', ictDate(scheduledFor)),
-      'reports.daily-retry': async ({ scheduledFor }) =>
-        this.retryDailyReport(ictDate(scheduledFor)),
-      'reports.midday': async ({ scheduledFor }) =>
-        this.generateReport('midday', ictDate(scheduledFor)),
-      'reports.premarket': async ({ scheduledFor }) =>
-        this.generateReport('premarket', ictDate(scheduledFor)),
+      'reports.daily-retry': async ({ scheduledFor }) => {
+        // This schedule runs frequently so a worker restart can recover a
+        // missed 17:00 tick, but never create a daily report before close.
+        if (!isDailyRetryDue(scheduledFor)) {
+          return { status: 'skipped', reason: 'before-daily-close' };
+        }
+        return this.retryDailyReport(ictDate(scheduledFor));
+      },
+      'reports.midday': async ({ scheduledFor }) => {
+        if (!isReportDue(scheduledFor, 'midday'))
+          return { status: 'skipped', reason: 'outside-midday-window' };
+        return this.generateReportIfMissing('midday', ictDate(scheduledFor));
+      },
+      'reports.premarket': async ({ scheduledFor }) => {
+        if (!isReportDue(scheduledFor, 'premarket'))
+          return { status: 'skipped', reason: 'outside-premarket-window' };
+        return this.generateReportIfMissing('premarket', ictDate(scheduledFor));
+      },
       'billing.expiry-sweep': async () => this.expirySweep(),
       'billing.ipn-reconcile': async () => this.ipnReconcile(),
       'alerts.scan': async () => this.scanAlerts(),
@@ -87,6 +129,22 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     const snapshot = await this.marketInput.capture(type, sessionDate);
     const report = await this.reports.generate(type, sessionDate);
     return this.complete({ snapshot, report });
+  }
+
+  private async generateReportIfMissing(
+    type: 'midday' | 'premarket',
+    sessionDate: string,
+  ): Promise<JobOutcome> {
+    const published = await this.database.query<{ published: boolean }>(
+      `select exists(
+         select 1 from analysis_history
+          where report_type = $1 and session_date = $2
+            and is_published = true and generation_status = 'published'
+       ) as published`,
+      [type, sessionDate],
+    );
+    if (published[0]?.published) return { status: 'skipped', reason: 'report-already-published' };
+    return this.generateReport(type, sessionDate);
   }
 
   private async retryDailyReport(sessionDate: string): Promise<JobOutcome> {
@@ -119,7 +177,10 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
         throw new Error('Active trading calendar contains invalid holiday JSON');
       }
     }
-    if (holidays !== undefined && !Array.isArray(holidays)) {
+    // The initial schema permits NULL, and the default config row omits this
+    // field. Treat it as an empty holiday list while rejecting malformed data.
+    if (holidays == null) holidays = [];
+    if (!Array.isArray(holidays)) {
       throw new Error('Active trading calendar holidays must be an array');
     }
     return !(holidays as unknown[] | undefined)?.map(String).includes(date);

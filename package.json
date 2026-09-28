@@ -1,0 +1,15 @@
+{
+  "name": "iqx",
+  "private": true,
+  "packageManager": "pnpm@9.15.5",
+  "scripts": {
+    "mobile": "pnpm --filter @iqx/mobile start",
+    "mobile:typecheck": "pnpm --filter @iqx/mobile typecheck",
+    "packages:test": "pnpm exec vitest run packages",
+    "packages:contracts": "pnpm --filter @iqx/domain check:openapi"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.1"
+  }
+}

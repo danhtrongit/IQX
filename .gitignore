@@ -25,6 +25,20 @@
 !/admin/
 !/admin/**
 
+# Expo mobile workspace.
+!/apps/
+!/apps/**
+!/packages/
+!/packages/**
+!/package.json
+!/pnpm-workspace.yaml
+!/pnpm-lock.yaml
+/apps/**/node_modules/
+/packages/**/node_modules/
+/apps/**/.env
+/apps/**/.env.*
+!/apps/**/.env.example
+
 # IQX v2 Node backend (frontend intentionally untracked for now).
 !/iqx-v2/
 /iqx-v2/*
@@ -40,3 +54,4 @@
 
 # OS noise.
 .DS_Store
+/apps/**/.expo/

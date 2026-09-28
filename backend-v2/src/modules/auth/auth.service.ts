@@ -79,12 +79,29 @@ export class AuthService {
             });
           }
         }
+        let referredBy: string | null = null;
+        if (input.referral_code) {
+          const partners = await tx.query<{ id: string; referral_partner_kind: string }>(
+            `select id, referral_partner_kind from users
+             where referral_code = $1 and status = 'active' and deleted_at is null
+               and referral_partner_kind in ('lead_sale','ctv') limit 1 for share`,
+            [input.referral_code],
+          );
+          if (!partners[0]) {
+            throw new BadRequestException({
+              code: 'REFERRAL_CODE_INVALID',
+              message: 'Mã giới thiệu không hợp lệ hoặc đã ngừng hoạt động',
+            });
+          }
+          referredBy = partners[0].id;
+        }
         const users = await tx.query<UserDatabaseRow>(
           `insert into users
             (id, email, hashed_password, full_name, phone_number, phone_country_code,
              phone_national_number, phone_e164, role, status, is_email_verified,
-             created_at, updated_at)
-           values ($1, $2, $3, $4, $5, $6, $7, $8, 'user', 'active', false, now(), now())
+             referred_by_user_id, referral_attributed_at, created_at, updated_at)
+           values ($1, $2, $3, $4, $5, $6, $7, $8, 'user', 'active', false, $9::uuid,
+                   case when $9::uuid is null then null else now() end, now(), now())
            returning ${USER_COLUMNS}`,
           [
             randomUUID(),
@@ -95,6 +112,7 @@ export class AuthService {
             phone.countryCode,
             phone.nationalNumber,
             phone.e164,
+            referredBy,
           ],
         );
         const created = users[0];

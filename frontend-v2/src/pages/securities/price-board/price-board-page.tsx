@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useNavigate } from "react-router"
+import { useNavigate, useSearchParams } from "react-router"
 import { toast } from "sonner"
 
 import { WorkspacePage } from "@/components/layout/workspace-page"
@@ -18,12 +18,14 @@ import { useGroups } from "../stock-directory/hooks"
 import { bangGiaTour } from "../tours/bang-gia-tour"
 import { useFeatureTour } from "../tours/use-feature-tour"
 import { BoardTable } from "./components/board-table"
+import { boardChartHref } from "./board-routing"
 import { BoardToolbar, type BoardTab } from "./components/board-toolbar"
 import { IndexStrip } from "./components/index-strip"
 import { IndexSummaryTable } from "./components/index-summary-table"
 
 function BoardView({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
   const { isAuthenticated, openAuth } = useAuth()
   const [tab, setTab] = useState<BoardTab>("VN30")
   const [search, setSearch] = useState("")
@@ -106,8 +108,8 @@ function BoardView({ embedded = false }: { embedded?: boolean }) {
   )
 
   const openSymbol = useCallback(
-    (symbol: string) => navigate(`/co-phieu/${symbol}`),
-    [navigate],
+    (symbol: string) => navigate(boardChartHref(params, symbol)),
+    [navigate, params],
   )
 
   const tour = useFeatureTour(bangGiaTour, "iqx_tour_banggia")
@@ -162,8 +164,8 @@ function BoardView({ embedded = false }: { embedded?: boolean }) {
  * Index strip + index summary, then the dense board grid: Trần/Sàn/TC, bid depth
  * (3), khớp lệnh (Giá/KL/+-/%), ask depth (3), tổng KL, GT, cao/thấp, ĐTNN. Live
  * data comes from the feature-owned transport (tick + order-book + index
- * WebSocket overlays with a REST polling fallback); cells flash on change and
- * rows are memoized. Public — only the "Danh mục" tab needs an account.
+ * WebSocket overlays with a REST polling fallback); rows are memoized and
+ * values update in place. Public — only the "Danh mục" tab needs an account.
  */
 export function PriceBoardPage({ embedded = false }: { embedded?: boolean }) {
   useEffect(() => {

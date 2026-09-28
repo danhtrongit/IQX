@@ -135,7 +135,7 @@ function DemoWorkspace() {
           else setActive(id)
         }}>
           <SelectTrigger className="w-full" aria-label="Chọn công cụ"><SelectValue /></SelectTrigger>
-          <SelectContent>{chrome.items.filter((item) => !locked[item.id]).map((item) => <SelectItem key={item.id} value={item.id}>{item.label}</SelectItem>)}</SelectContent>
+          <SelectContent>{chrome.items.filter((item) => !item.hidden && !locked[item.id]).map((item) => <SelectItem key={item.id} value={item.id}>{item.label}</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <RightSidebar label={activeItem?.label ?? "Hành trình"}>{panel()}</RightSidebar>

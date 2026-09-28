@@ -41,10 +41,9 @@ import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { errorMessage } from "@/lib/api"
 import { formatNumber, formatPercent } from "@/lib/format"
-import { taskDone } from "@/pages/demo-trading/journey/journey-state"
 import { useJourney } from "@/pages/demo-trading/journey/use-journey"
 import { useQuote, quoteChange } from "@/pages/demo-trading/market/use-quote"
-import { hasFilledBuyEvidence, validateStockSymbol, type WatchlistItem } from "./api"
+import { recordCap0TaskAfterStar, validateStockSymbol, type WatchlistItem } from "./api"
 import {
   useAddToWatchlist,
   useDailyCloses,
@@ -84,12 +83,10 @@ export function useWatchlistAdd() {
     // server giữ; ở đây chỉ xác nhận có lệnh MUA đã khớp cho ĐÚNG mã vừa ★ rồi
     // mới báo hoàn thành. Không có bằng chứng (hoặc server từ chối) thì không
     // ghi gì — thanh Hành trình vẫn hiển thị đúng phần còn thiếu.
-    if (journey.isLoading || journey.level !== 0 || !journey.progress) return
-    if (taskDone(0, 1, journey.progress)) return
     try {
-      if (!(await hasFilledBuyEvidence(symbol))) return
-      await journey.completeTask(1, "star")
-      toast.success("Đã ghi nhận nhiệm vụ 1 của Cấp 0")
+      if (await recordCap0TaskAfterStar(symbol, journey, journey.completeTask)) {
+        toast.success("Đã ghi nhận nhiệm vụ 1 của Cấp 0")
+      }
     } catch {
       // Lệnh mua chưa kèm kế hoạch Cấp 0 (hoặc lỗi mạng) — bỏ qua.
     }

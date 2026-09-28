@@ -34,7 +34,9 @@ type Connection = {
   windowStartedAt: number;
   inboundMessages: number;
   mutation: Promise<void>;
+  authenticating: Promise<void> | null;
   released: boolean;
+  authenticated: boolean;
 };
 
 @WebSocketGateway({ path: '/api/v1/market-data/ws', transports: ['websocket'] })
@@ -69,7 +71,9 @@ export class RealtimeGateway
       windowStartedAt: Date.now(),
       inboundMessages: 0,
       mutation: Promise.resolve(),
+      authenticating: null,
       released: false,
+      authenticated: !(this.mobileAuthRequired && this.options.mobileTicketVerifier),
     });
     socket.on?.('message', (data) => {
       void this.onRawMessage(socket, data).catch(() => socket.close(1013, 'realtime unavailable'));
@@ -78,6 +82,9 @@ export class RealtimeGateway
 
   /** Legacy gateways can be disabled while versioned v2 remains available. */
   protected readonly requiresV1Compatibility: boolean = true;
+  protected get mobileAuthRequired(): boolean {
+    return false;
+  }
 
   async handleDisconnect(socket: Socket): Promise<void> {
     await this.release(socket);
@@ -102,6 +109,36 @@ export class RealtimeGateway
     const frame = parseClientFrame(parsed);
     if (!frame) {
       this.send(socket, { type: 'error', detail: 'invalid message' });
+      return;
+    }
+    if (frame.action === 'auth') {
+      if (connection.authenticated || !this.options.mobileTicketVerifier) {
+        this.send(socket, { type: 'error', detail: 'invalid authentication' });
+        return;
+      }
+      const authentication = (async () => {
+        const userId = await this.options.mobileTicketVerifier?.(frame.ticket);
+        if (!userId) {
+          socket.close(1008, 'invalid realtime ticket');
+          return;
+        }
+        connection.authenticated = true;
+        this.send(socket, { type: 'authenticated' });
+      })();
+      connection.authenticating = authentication;
+      try {
+        await authentication;
+      } finally {
+        if (connection.authenticating === authentication) connection.authenticating = null;
+      }
+      return;
+    }
+    // A client can send frames back-to-back while the ticket verifier is
+    // awaiting storage or a database. Serialize those frames behind auth so
+    // a valid subscription cannot race the authentication check.
+    if (connection.authenticating) await connection.authenticating.catch(() => undefined);
+    if (!connection.authenticated) {
+      socket.close(1008, 'authentication required');
       return;
     }
     if (frame.action === 'ping') {
@@ -269,11 +306,25 @@ export class RealtimeGateway
 @WebSocketGateway({ path: '/api/v2/market-data/ws', transports: ['websocket'] })
 export class RealtimeV2Gateway extends RealtimeGateway {
   protected override readonly requiresV1Compatibility = false;
+  protected override get mobileAuthRequired(): boolean {
+    return this.optionsRequireMobileAuth;
+  }
+  private readonly optionsRequireMobileAuth: boolean;
   constructor(
     demand: RealtimeDemandService,
     pubsub: RealtimePubSub,
     @Inject(REALTIME_OPTIONS) options: RealtimeOptions,
   ) {
     super(demand, pubsub, options);
+    this.optionsRequireMobileAuth = options.requireMobileAuth ?? false;
+  }
+}
+
+/** Mobile-only route. It requires a short-lived ticket as the first frame. */
+@WebSocketGateway({ path: '/api/v2/mobile/market-data/ws', transports: ['websocket'] })
+export class RealtimeMobileGateway extends RealtimeGateway {
+  protected override readonly requiresV1Compatibility = false;
+  protected override get mobileAuthRequired(): boolean {
+    return true;
   }
 }

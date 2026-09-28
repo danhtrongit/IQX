@@ -7,6 +7,7 @@ import type { DatabaseService } from '../../src/platform/database/database.servi
 import {
   BillingService,
   exactVndNumber,
+  referralCommissionAmounts,
   sanitizeIpnPayload,
   signCheckoutFields,
 } from '../../src/modules/billing/billing.service.js';
@@ -114,6 +115,92 @@ describe('billing payment security helpers', () => {
     expect(JSON.stringify(safe)).not.toContain('10.0.0.1');
     expect(JSON.stringify(safe)).not.toContain('pii');
     expect(safe).toMatchObject({ notification_type: 'ORDER_PAID' });
+  });
+});
+
+describe('referral commission accounting', () => {
+  it('uses exact integer VND shares and omits fractional pennies', () => {
+    expect(referralCommissionAmounts(1)).toEqual({ ctv_direct: 0, lead_management: 0 });
+    expect(referralCommissionAmounts(99)).toEqual({ ctv_direct: 39, lead_management: 9 });
+    expect(referralCommissionAmounts('199000')).toEqual({
+      ctv_direct: 79_600,
+      lead_management: 19_900,
+    });
+    expect(() => referralCommissionAmounts(Number.MAX_SAFE_INTEGER + 1)).toThrow(
+      'amount_vnd cannot be represented exactly',
+    );
+  });
+
+  it('does not create zero-value ledger rows for tiny payments', async () => {
+    const tinyOrder = { ...order, amount_vnd: 1 };
+    const db = new FakeDatabase((sql) => {
+      if (sql.includes('where invoice_number') && sql.includes('for update')) return [tinyOrder];
+      if (sql.includes('where sepay_transaction_id')) return [];
+      if (sql.includes('update premium_payment_orders') && sql.includes('returning')) {
+        return [{ ...tinyOrder, status: 'paid' }];
+      }
+      if (sql.includes('from users where id = $1') && sql.includes('referred_by_user_id')) {
+        return [{ referred_by_user_id: 'ctv-id' }];
+      }
+      if (sql.includes('referral_partner_kind') && sql.includes('deleted_at is null')) {
+        return [{ id: 'ctv-id', referral_partner_kind: 'ctv', eligible_lead_user_id: 'lead-id' }];
+      }
+      return [];
+    });
+    const result = await service(db).processWebhook(payload('1'), {});
+    expect(result.message).toBe('processed');
+    expect(
+      db.calls.filter(({ sql }) => sql.includes('insert into referral_commission_ledger')),
+    ).toHaveLength(0);
+  });
+
+  it('allocates both CTV and Lead shares for an IPN-paid order', async () => {
+    const db = new FakeDatabase((sql) => {
+      if (sql.includes('where invoice_number') && sql.includes('for update')) return [order];
+      if (sql.includes('where sepay_transaction_id')) return [];
+      if (sql.includes('update premium_payment_orders') && sql.includes('returning')) {
+        return [{ ...order, status: 'paid' }];
+      }
+      if (sql.includes('from users where id = $1') && sql.includes('referred_by_user_id')) {
+        return [{ referred_by_user_id: 'ctv-id' }];
+      }
+      if (sql.includes('referral_partner_kind') && sql.includes('deleted_at is null')) {
+        return [{ id: 'ctv-id', referral_partner_kind: 'ctv', eligible_lead_user_id: 'lead-id' }];
+      }
+      return [];
+    });
+    const result = await service(db).processWebhook(payload(), {});
+    expect(result.message).toBe('processed');
+    const allocations = db.calls.filter(({ sql }) =>
+      sql.includes('insert into referral_commission_ledger'),
+    );
+    expect(allocations).toHaveLength(2);
+    expect(allocations.map(({ params }) => params.slice(1, 5))).toEqual([
+      ['ctv-id', 'ctv_direct', 79_600, 199_000],
+      ['lead-id', 'lead_management', 19_900, 199_000],
+    ]);
+  });
+
+  it('leaves direct Lead Sale allocation pending until its rate is specified', async () => {
+    const db = new FakeDatabase((sql) => {
+      if (sql.includes('where invoice_number') && sql.includes('for update')) return [order];
+      if (sql.includes('where sepay_transaction_id')) return [];
+      if (sql.includes('update premium_payment_orders') && sql.includes('returning')) {
+        return [{ ...order, status: 'paid' }];
+      }
+      if (sql.includes('from users where id = $1') && sql.includes('referred_by_user_id')) {
+        return [{ referred_by_user_id: 'lead-id' }];
+      }
+      if (sql.includes('referral_partner_kind') && sql.includes('deleted_at is null')) {
+        return [{ id: 'lead-id', referral_partner_kind: 'lead_sale', eligible_lead_user_id: null }];
+      }
+      return [];
+    });
+    const result = await service(db).processWebhook(payload(), {});
+    expect(result.message).toBe('processed');
+    expect(
+      db.calls.filter(({ sql }) => sql.includes('insert into referral_commission_ledger')),
+    ).toHaveLength(0);
   });
 });
 

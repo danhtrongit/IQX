@@ -37,6 +37,12 @@ import { useAuth } from "@/hooks/use-auth"
 import { useTradingAccount, useTradingPortfolio } from "@/hooks/use-trading"
 import { errorMessage } from "@/lib/api"
 import { formatMoney, formatNumber } from "@/lib/format"
+import {
+  useAddToWatchlist,
+  useRemoveFromWatchlist,
+  useWatchlist,
+} from "../portfolio/hooks"
+import { recordCap0TaskAfterStar } from "../portfolio/api"
 import { useJourney } from "../journey/use-journey"
 import { useQuote } from "../market/use-quote"
 import { NhoiLenhDialog } from "./blocks/alerts"
@@ -82,6 +88,9 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
   const { data: quote, isLoading: quoteLoading } = useQuote(symbol)
   const { data: account } = useTradingAccount()
   const { data: portfolio } = useTradingPortfolio()
+  const watchlist = useWatchlist()
+  const addToWatchlist = useAddToWatchlist()
+  const removeFromWatchlist = useRemoveFromWatchlist()
   const activate = useActivateAccount()
   const placeOrder = usePlaceOrder()
   const setKhauVi = useSetKhauVi()
@@ -114,6 +123,34 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
   const holdingElsewhere = (portfolio?.positions ?? []).find(
     (row) => row.quantity_total > 0 && row.symbol !== symbol.toUpperCase(),
   )
+  const watched = (watchlist.data ?? []).some((item) => item.symbol === symbol.toUpperCase())
+
+  const completeCap0TaskAfterStar = async (code: string) => {
+    try {
+      if (await recordCap0TaskAfterStar(code, journey, journey.completeTask)) {
+        toast.success("Đã ghi nhận nhiệm vụ 1 của Cấp 0")
+      }
+    } catch {
+      // The server re-checks the filled BUY and its Cấp 0 plan; keep the
+      // journey pending when either prerequisite is missing or unavailable.
+    }
+  }
+
+  const toggleWatch = async () => {
+    if (!isAuthenticated) {
+      openAuth("login")
+      return
+    }
+    const code = symbol.toUpperCase()
+    const mutation = watched ? removeFromWatchlist : addToWatchlist
+    try {
+      await mutation.mutateAsync(code)
+      toast.success(watched ? `Đã bỏ ${code} khỏi danh mục theo dõi` : `Đã thêm ${code} vào danh mục theo dõi`)
+      if (!watched) await completeCap0TaskAfterStar(code)
+    } catch (error) {
+      toast.error(errorMessage(error))
+    }
+  }
 
   /* ── level-scoped data ──────────────────────────────────────────────── */
   const needsAiRead = side === "buy" && level !== null && level >= 1
@@ -278,6 +315,12 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
           "vi-VN",
         )} = ${total} VND${order.status.toLowerCase() === "pending" ? " (chờ khớp)" : ""}`,
       )
+      // If the user starred this mã before buying, reconcile the Cấp 0 gate
+      // after the fill. The helper still requires a server-confirmed filled
+      // BUY and lets the PATCH endpoint validate the saved plan.
+      if (side === "buy" && order.status === "filled" && watched) {
+        await completeCap0TaskAfterStar(symbol)
+      }
       setDraft(emptyPlanDraft())
       setQuantity(BOARD_LOT)
       setLimitPrice(null)
@@ -412,6 +455,9 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
         quote={quote ?? null}
         loading={quoteLoading}
         revealStats={level !== null && level >= 1}
+        watched={watched}
+        watchPending={addToWatchlist.isPending || removeFromWatchlist.isPending}
+        onToggleWatch={toggleWatch}
         onSwitchSymbol={onSymbolChange}
         otherHoldingSymbol={holdingElsewhere?.symbol ?? null}
       />
@@ -790,6 +836,9 @@ function TickerCard({
   quote,
   loading,
   revealStats,
+  watched,
+  watchPending,
+  onToggleWatch,
   onSwitchSymbol,
   otherHoldingSymbol,
 }: {
@@ -797,6 +846,9 @@ function TickerCard({
   quote: QuoteView | null
   loading: boolean
   revealStats: boolean
+  watched: boolean
+  watchPending: boolean
+  onToggleWatch: () => void
   onSwitchSymbol: (symbol: string) => void
   otherHoldingSymbol: string | null
 }) {
@@ -856,7 +908,19 @@ function TickerCard({
       <CardContent className="space-y-2 px-3">
         <div className="flex items-baseline justify-between gap-2">
           <span className="flex items-center gap-1.5 font-heading text-base font-bold">
-            <Star className="size-3.5 text-muted-foreground" />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              className="size-5 text-muted-foreground"
+              aria-label={watched ? `Bỏ theo dõi ${symbol}` : `Theo dõi ${symbol}`}
+              aria-pressed={watched}
+              title={watched ? "Bỏ theo dõi" : "Theo dõi"}
+              disabled={watchPending}
+              onClick={onToggleWatch}
+            >
+              <Star className={watched ? "fill-accent text-accent" : undefined} />
+            </Button>
             {symbol}
           </span>
           <span className={`flex items-baseline gap-2 text-xl font-black tabular-nums ${tone}`}>

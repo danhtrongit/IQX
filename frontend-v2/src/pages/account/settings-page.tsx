@@ -48,6 +48,7 @@ import type { AccountProfile, ProfilePatch } from "./api"
 import { formatDateOnly } from "./format"
 import { useAccountProfile, useRequestPasswordReset, useUpdateAccountProfile } from "./hooks"
 import { PremiumStatusPanel, UpgradeButton } from "./premium-status-panel"
+import { ReferralPanel } from "../referral/referral-panel"
 
 /* ── Form hồ sơ ─────────────────────────────────────────────────────────── */
 
@@ -353,6 +354,8 @@ function SettingsContent({ profile }: { profile: AccountProfile }) {
           )
         }
       />
+
+      <ReferralPanel />
 
       <form onSubmit={submit} className="space-y-6">
         <Card>

@@ -87,6 +87,25 @@ export function exactVndNumber(value: unknown, field: string): number {
   return Number(amount);
 }
 
+/**
+ * Calculate the referral shares using integer VND arithmetic only.
+ *
+ * The direct CTV share is 40% and the assigned Lead management share is 10%.
+ * The remaining 50% is IQX revenue and is intentionally not a referral-ledger
+ * row. Integer division floors each share; a zero share is omitted by the
+ * caller because referral_commission_ledger rejects zero amounts.
+ */
+export function referralCommissionAmounts(amount: number | string | bigint): {
+  ctv_direct: number;
+  lead_management: number;
+} {
+  const paid = BigInt(exactVndNumber(amount, 'amount_vnd'));
+  return {
+    ctv_direct: Number((paid * 40n) / 100n),
+    lead_management: Number((paid * 10n) / 100n),
+  };
+}
+
 /** V1/V2 billing contracts expose VND as exact integer JSON numbers. */
 function normalizePaymentMoney<T extends Record<string, unknown>>(row: T): T {
   const normalized: Record<string, unknown> = { ...row };
@@ -501,7 +520,8 @@ export class BillingService {
     if (orderAmount === null || transactionAmount === null) {
       return { message: 'amount_invalid', orderId: order.id };
     }
-    if (orderAmount !== order.amount_vnd || transactionAmount !== order.amount_vnd) {
+    const storedOrderAmount = exactVndNumber(order.amount_vnd, 'amount_vnd');
+    if (orderAmount !== storedOrderAmount || transactionAmount !== storedOrderAmount) {
       return { message: 'amount_mismatch', orderId: order.id };
     }
     const transactionId = transaction.transaction_id;
@@ -531,7 +551,62 @@ export class BillingService {
       null,
     );
     await this.refreshSubscription(tx, order.user_id, order.plan_id);
+    await this.allocateReferralCommission(tx, order.id, order.user_id, storedOrderAmount);
     return { message: 'processed', orderId: order.id };
+  }
+
+  private async allocateReferralCommission(
+    tx: BillingSqlClient,
+    orderId: string,
+    customerId: string,
+    amount: number | string,
+  ): Promise<void> {
+    const [customer] = await tx.query<
+      { referred_by_user_id: string | null } & Record<string, unknown>
+    >(`select referred_by_user_id from users where id = $1`, [customerId]);
+    if (!customer?.referred_by_user_id) return;
+    const [sponsor] = await tx.query<
+      { id: string; referral_partner_kind: string; eligible_lead_user_id: string | null } & Record<
+        string,
+        unknown
+      >
+    >(
+      `select u.id, u.referral_partner_kind, lead.id as eligible_lead_user_id
+         from users u
+         left join users lead
+           on lead.id = u.referral_lead_user_id
+          and lead.status = 'active'
+          and lead.deleted_at is null
+          and lead.referral_partner_kind = 'lead_sale'
+        where u.id = $1 and u.status = 'active' and u.deleted_at is null`,
+      [customer.referred_by_user_id],
+    );
+    if (!sponsor) return;
+    // A Lead Sale's direct-sale rate is not specified yet, so it earns no
+    // ledger row here. The immutable order/customer attribution remains
+    // available for a later, explicitly configured backfill.
+    if (sponsor.referral_partner_kind !== 'ctv') return;
+
+    const paid = exactVndNumber(amount, 'amount_vnd');
+    const shares = referralCommissionAmounts(paid);
+    const insert = async (
+      beneficiaryUserId: string,
+      commissionType: 'ctv_direct' | 'lead_management',
+      share: number,
+    ): Promise<void> => {
+      if (share <= 0) return;
+      await tx.query(
+        `insert into referral_commission_ledger
+           (order_id, beneficiary_user_id, commission_type, amount_vnd, source_amount_vnd)
+         values ($1, $2, $3, $4, $5)
+         on conflict (order_id, commission_type) where refund_id is null do nothing`,
+        [orderId, beneficiaryUserId, commissionType, share, paid],
+      );
+    };
+    await insert(sponsor.id, 'ctv_direct', shares.ctv_direct);
+    if (sponsor.eligible_lead_user_id) {
+      await insert(sponsor.eligible_lead_user_id, 'lead_management', shares.lead_management);
+    }
   }
 
   async grantTrialIfEligible(userId: string): Promise<boolean> {
@@ -701,6 +776,7 @@ export class BillingService {
         note,
       );
       await this.refreshSubscription(tx, order.user_id, order.plan_id);
+      await this.allocateReferralCommission(tx, order.id, order.user_id, order.amount_vnd);
       await this.audit(
         tx,
         actor,
@@ -740,9 +816,9 @@ export class BillingService {
       // This records an administrator-approved refund in IQX's ledger. It
       // intentionally does not claim that funds were sent by SePay: provider
       // settlement is an external operational action.
-      await tx.query(
+      const [refundRow] = await tx.query<{ id: string }>(
         `insert into billing_refunds (order_id, amount_vnd, reason, created_by_user_id)
-         values ($1, $2, $3, $4)`,
+         values ($1, $2, $3, $4) returning id`,
         [orderId, amount, reason, actor.id],
       );
       const [updated] = await tx.query<
@@ -769,6 +845,43 @@ export class BillingService {
       }
       const newRefunded = exactVndNumber(updated.refunded_amount_vnd_text, 'refunded_amount_vnd');
       const full = updated.status === 'refunded';
+      if (refundRow) {
+        await tx.query(
+          `insert into referral_commission_ledger
+             (order_id, refund_id, beneficiary_user_id, commission_type, amount_vnd, source_amount_vnd)
+           with original as (
+             select order_id, commission_type as original_type, beneficiary_user_id,
+                    amount_vnd::numeric as original_amount
+               from referral_commission_ledger
+              where order_id = $1 and refund_id is null
+                and commission_type in ('ctv_direct', 'lead_management')
+           ), prior as (
+             select case when commission_type = 'ctv_direct_reversal'
+                         then 'ctv_direct' else 'lead_management' end as original_type,
+                    coalesce(sum(-amount_vnd), 0)::numeric as reversed_amount
+               from referral_commission_ledger
+              where order_id = $1 and refund_id is not null
+                and commission_type in ('ctv_direct_reversal', 'lead_management_reversal')
+              group by 1
+           ), delta as (
+             select o.order_id, o.beneficiary_user_id,
+                    case when $3::bigint >= $4::bigint then o.original_amount
+                         else trunc(o.original_amount * $3::numeric / nullif($4::numeric, 0))
+                    end - coalesce(p.reversed_amount, 0) as reversal_amount,
+                    o.original_type
+               from original o
+               left join prior p on p.original_type = o.original_type
+           )
+           select order_id, $2, beneficiary_user_id,
+                  case when original_type = 'ctv_direct' then 'ctv_direct_reversal'
+                       else 'lead_management_reversal' end,
+                  -reversal_amount::bigint, $5
+             from delta
+            where reversal_amount > 0
+           on conflict (refund_id, commission_type) do nothing`,
+          [orderId, refundRow.id, newRefunded, orderAmount, amount],
+        );
+      }
       await tx.query(
         `update billing_entitlement_grants
             set ends_at = starts_at + (

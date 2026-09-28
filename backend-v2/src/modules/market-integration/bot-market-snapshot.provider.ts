@@ -204,7 +204,8 @@ export class BotMarketSnapshotProvider implements BotSnapshotProvider {
     const insightBySymbol = new Map(insights.map((row) => [row.symbol, row]));
 
     const symbols: BotMarketSnapshotInput['symbols'] = {};
-    let candidateInputsComplete = candidateSymbols.size > 0;
+    // An empty result is valid when every filter completed its scan.
+    let candidateInputsComplete = true;
     for (const symbol of allSymbols) {
       const bars = barsMap.get(symbol) ?? [];
       const latest = bars.at(-1);
@@ -359,12 +360,7 @@ export class BotMarketSnapshotProvider implements BotSnapshotProvider {
       trading_date: tradingDate,
       data_version: '',
       close_is_official: openSymbolsComplete && isCompletedVietnamSession(tradingDate, observedAt),
-      buy_inputs_complete:
-        filtersComplete &&
-        restricted !== null &&
-        candidateInputsComplete &&
-        candidateSymbols.size > 0 &&
-        true,
+      buy_inputs_complete: filtersComplete && restricted !== null && candidateInputsComplete,
       symbols,
       fee_rules: feeRules,
       vnindex,

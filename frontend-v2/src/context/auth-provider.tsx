@@ -9,7 +9,7 @@ import {
   saveTokens,
   type TokenPair,
 } from "@/lib/api"
-import { AuthContext, type AuthMode, type AuthUser } from "./auth-state"
+import { AuthContext, type AuthMode, type AuthUser, type RegisterInput } from "./auth-state"
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
@@ -20,6 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const sessionRequest = useRef<AbortController | null>(null)
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<AuthMode>("login")
+  const [referralCode, setReferralCode] = useState<string | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -100,6 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(account)
       setSessionExpired(false)
       setSessionError(null)
+      setReferralCode(null)
       setAuthOpen(false)
     } catch (error) {
       clearTokens()
@@ -107,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function register(input: { email: string; password: string; full_name: string }) {
+  async function register(input: RegisterInput) {
     await api<AuthUser>("/auth/register", { method: "POST", body: JSON.stringify(input) })
     await login(input.email, input.password)
   }
@@ -124,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSessionExpired(false)
       setUser(null)
       setSessionError(null)
+      setReferralCode(null)
     }
   }
 
@@ -138,7 +141,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isPremium: user?.role === "admin" || premium.data?.is_premium === true,
       premiumLoading: !!user && premium.isLoading,
       authOpen, authMode, setAuthOpen,
-      openAuth: (mode = "login") => { setAuthMode(mode); setAuthOpen(true) },
+      referralCode,
+      openAuth: (mode = "login", nextReferralCode) => {
+        if (nextReferralCode?.trim()) setReferralCode(nextReferralCode.trim().toUpperCase())
+        setAuthMode(mode)
+        setAuthOpen(true)
+      },
       login, register, logout, refreshUser,
     }}>
       {children}

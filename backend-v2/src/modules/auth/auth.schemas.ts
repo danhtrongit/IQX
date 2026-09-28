@@ -26,6 +26,15 @@ export const registerSchema = z.object({
   password: strongPassword,
   full_name: z.string().trim().min(1).max(200),
   phone_number: z.string().trim().max(30).nullable().optional(),
+  referral_code: z
+    .string()
+    .trim()
+    .min(3)
+    .max(32)
+    .toUpperCase()
+    .regex(/^[A-Z0-9_-]+$/)
+    .nullable()
+    .optional(),
 });
 
 export const loginSchema = z.object({ email, password: z.string().min(1).max(128) });

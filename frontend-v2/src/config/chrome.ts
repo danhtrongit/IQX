@@ -17,6 +17,8 @@ export type RailItem = {
   label: string
   icon: LucideIcon
   affects: "left" | "sidebar"
+  /** Keep URL-addressable tools available without rendering them in the rail. */
+  hidden?: boolean
 }
 
 export type RouteChrome = {
@@ -39,13 +41,13 @@ export const demoChrome: RouteChrome = {
     { id: "journey", label: "Hành trình", icon: Compass, affects: "sidebar" },
     { id: "trading", label: "Đặt lệnh", icon: ShoppingCart, affects: "sidebar" },
     { id: "portfolio", label: "Danh mục", icon: Wallet, affects: "sidebar" },
-    { id: "analysis", label: "Phân tích", icon: ChartNoAxesCombined, affects: "sidebar" },
+    { id: "analysis", label: "Phân tích", icon: ChartNoAxesCombined, affects: "sidebar", hidden: true },
     { id: "identity", label: "Linh thú", icon: Flower2, affects: "sidebar" },
     { id: "hunt", label: "Săn mã", icon: ScanSearch, affects: "sidebar" },
     { id: "news", label: "Tin tức", icon: Newspaper, affects: "sidebar" },
     { id: "patterns", label: "Mẫu nến", icon: ScanLine, affects: "sidebar" },
     { id: "bot", label: "Bot của tôi", icon: Bot, affects: "sidebar" },
-    { id: "ai-analysis", label: "AI Phân Tích", icon: BrainCircuit, affects: "left" },
+    { id: "ai-analysis", label: "AI Phân Tích", icon: BrainCircuit, affects: "left", hidden: true },
   ],
 }
 

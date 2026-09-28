@@ -206,7 +206,8 @@ export class BotService {
       const accountRows = await tx.query<BotAccountRow>(
         `insert into bot_accounts
            (id, user_id, initial_cash_vnd, cash_vnd, status, activated_at, created_at, updated_at)
-         values ($1, $2, $3, $3, 'active', $4, $4, $4)
+         values ($1, $2, $3, $3, 'active', $4::timestamptz,
+                 $4::timestamptz at time zone 'UTC', $4::timestamptz at time zone 'UTC')
          on conflict (user_id) do nothing
          returning id, user_id, initial_cash_vnd, cash_vnd, status, activated_at`,
         [accountId, userId, BOT_RULES.initial_cash_vnd.toString(), now],
@@ -258,7 +259,8 @@ export class BotService {
         `insert into bot_instances
            (id, user_id, bot_account_id, strategy_id, strategy_version, execution_model,
             cap6_graduated_at, activated_at, created_at, updated_at)
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $8, $8)
+         values ($1, $2, $3, $4, $5, $6, $7, $8::timestamptz,
+                 $8::timestamptz at time zone 'UTC', $8::timestamptz at time zone 'UTC')
          on conflict (user_id) do nothing returning id`,
         [
           instanceId,
@@ -948,9 +950,9 @@ export class BotService {
     const updated = (
       await tx.query<BotRunRow>(
         `update bot_run_receipts set
-           status = $2, completed_at = $3, issues = $4::jsonb,
+           status = $2, completed_at = $3::timestamptz, issues = $4::jsonb,
            buy_count = $5, sell_count = $6,
-           reconciled_at = case when $7 then $3 else null end
+           reconciled_at = case when $7 then $3::timestamptz else null end
          where id = $1 returning *`,
         [
           run.id,
@@ -1048,7 +1050,8 @@ export class BotService {
     );
     await tx.query(
       `update bot_positions set qty_open = 0, status = 'closed', closed_session = $2::date,
-              closed_at = $3, sell_execution_id = $4, updated_at = $3
+              closed_at = $3::timestamptz, sell_execution_id = $4,
+              updated_at = $3::timestamptz at time zone 'UTC'
        where id = $1`,
       [position.id, isoDate(run.trading_date), now, id],
     );
@@ -1096,8 +1099,8 @@ export class BotService {
           entry_fee_vnd, amplitude_at_entry_vnd, amplitude_source_ref, stop_loss_vnd,
           take_profit_vnd, opened_session, opened_at, status, filter_ids, source_refs,
           buy_execution_id, created_at, updated_at)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::date,$13,'open',$14::jsonb,
-               $15::jsonb,$16,$13,$13)`,
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::date,$13::timestamptz,'open',$14::jsonb,
+               $15::jsonb,$16,$13::timestamptz at time zone 'UTC',$13::timestamptz at time zone 'UTC')`,
       [
         positionId,
         accountId,

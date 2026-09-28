@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils"
 
 import { changeTone, fmtChange, fmtPercent, fmtPrice, fmtValueBil, fmtVolume, priceTone } from "../../market/format"
 import type { DepthLevel, PriceBoardRow } from "../../market/types"
+import { boardChartHref } from "../board-routing"
 import { DepthCells, FlashCell } from "./flash-cell"
 
 /** Left border that separates the bid / match / ask / foreign blocks. */
@@ -39,9 +40,7 @@ export const BoardRow = memo(function BoardRow({
   onToggleWatch,
 }: BoardRowProps) {
   const [params] = useSearchParams()
-  const chartParams = new URLSearchParams(params)
-  chartParams.set("content", "chart")
-  chartParams.set("symbol", row.symbol)
+  const chartHref = boardChartHref(params, row.symbol)
   const bid = row.bid
   const ask = row.ask
 
@@ -50,7 +49,7 @@ export const BoardRow = memo(function BoardRow({
       {/* Mã — sticky first column so the row stays identifiable while scrolling. */}
       <TableCell className="sticky left-0 z-10 bg-card px-2 py-1 font-bold group-hover:bg-muted">
         <Link
-          to={`/co-phieu/${row.symbol}`}
+          to={chartHref}
           onClick={(event) => event.stopPropagation()}
           className="rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
         >
@@ -76,12 +75,10 @@ export const BoardRow = memo(function BoardRow({
       {/* Khớp lệnh: Giá | KL | +/- | %. */}
       <FlashCell
         value={fmtPrice(row.closePrice)}
-        numeric={row.closePrice}
         className={cn(BLOCK_BORDER, "font-bold", priceTone(row.closePrice, row))}
       />
       <FlashCell
         value={fmtVolume(row.lastMatchVolume)}
-        numeric={row.lastMatchVolume ?? null}
         className={cn(priceTone(row.closePrice, row), "opacity-80")}
       />
       <TableCell className={cn("px-2 py-1 text-right tabular-nums", changeTone(row))}>
@@ -89,7 +86,6 @@ export const BoardRow = memo(function BoardRow({
       </TableCell>
       <FlashCell
         value={row.hasTraded ? fmtPercent(row.percentChange) : "—"}
-        numeric={row.hasTraded ? row.percentChange : null}
         className={changeTone(row)}
       />
 
@@ -100,7 +96,6 @@ export const BoardRow = memo(function BoardRow({
 
       <FlashCell
         value={fmtVolume(row.totalVolume)}
-        numeric={row.totalVolume}
         className={cn(BLOCK_BORDER, "text-muted-foreground")}
       />
       <TableCell className="px-2 py-1 text-right tabular-nums text-muted-foreground">
@@ -108,12 +103,10 @@ export const BoardRow = memo(function BoardRow({
       </TableCell>
       <FlashCell
         value={fmtPrice(row.highestPrice)}
-        numeric={row.highestPrice}
         className={priceTone(row.highestPrice, row)}
       />
       <FlashCell
         value={fmtPrice(row.lowestPrice)}
-        numeric={row.lowestPrice}
         className={priceTone(row.lowestPrice, row)}
       />
 
@@ -151,7 +144,7 @@ export const BoardRow = memo(function BoardRow({
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to={`/demo-trading?${chartParams}`}>
+              <Link to={chartHref}>
                 <LineChart />
                 Xem biểu đồ
               </Link>

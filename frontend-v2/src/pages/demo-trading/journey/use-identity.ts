@@ -9,6 +9,8 @@ export function useIdentity() {
     queryKey: ["identity", user?.id],
     enabled: !!user,
     queryFn: ({ signal }) => api<IdentityState>("/bot/mascot", { signal }),
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
   })
 }
 

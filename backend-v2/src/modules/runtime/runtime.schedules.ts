@@ -46,7 +46,7 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
     {
       name: 'reports.premarket',
       description: 'Generate the pre-market report',
-      pattern: '0 15 7 * * 1-5',
+      everyMs: 900_000,
       tradingDay: true,
       enabled: enabled('reports.premarket'),
     },
@@ -74,7 +74,7 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
     {
       name: 'reports.midday',
       description: 'Generate the midday report',
-      pattern: '0 30 11 * * 1-5',
+      everyMs: 900_000,
       tradingDay: true,
       enabled: enabled('reports.midday'),
     },
@@ -95,7 +95,9 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
     {
       name: 'reports.daily-retry',
       description: 'Retry a missing daily report',
-      pattern: '0 0 17 * * 1-5',
+      // Keep checking after the close. A one-shot 17:00 cron is lost when the
+      // worker is restarted or temporarily unavailable at that instant.
+      everyMs: 900_000,
       tradingDay: true,
       enabled: enabled('reports.daily-retry'),
     },

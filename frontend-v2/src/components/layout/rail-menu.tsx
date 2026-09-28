@@ -20,7 +20,7 @@ export function RailMenu({ locked = {}, hideLocked = false }: { locked?: Record<
       </div>
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-1 p-1.5">
-          {chrome.items.filter(item => !hideLocked || !locked[item.id]).map((item) => {
+          {chrome.items.filter(item => !item.hidden && (!hideLocked || !locked[item.id])).map((item) => {
             const Icon = item.icon
             const on = item.id === (item.affects === "left" ? activeContentId : activeId)
             return (

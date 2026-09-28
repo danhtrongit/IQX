@@ -21,6 +21,31 @@ function ictDate(date: Date): string {
   return new Date(date.getTime() + 7 * 60 * 60 * 1_000).toISOString().slice(0, 10);
 }
 
+/** BullMQ creates scheduler jobs ahead of their due time, so timestamp is creation time. */
+export function scheduledForJob(job: Job): Date {
+  if (typeof job.data?.scheduledFor === 'string') {
+    const explicit = new Date(job.data.scheduledFor);
+    if (!Number.isNaN(explicit.getTime())) return explicit;
+  }
+  if (job.repeatJobKey || job.data?.scheduler) {
+    const occurrence = job.opts.prevMillis;
+    if (typeof occurrence === 'number' && Number.isFinite(occurrence) && occurrence > 0) {
+      return new Date(occurrence);
+    }
+    // Some BullMQ versions omit prevMillis for `every` schedules but encode
+    // the due time in the generated repeat job ID.
+    const repeatId = job.id ?? job.opts.jobId;
+    const dueFromId = /^repeat:.+:(\d{13})$/.exec(repeatId ?? '');
+    if (dueFromId) return new Date(Number(dueFromId[1]));
+    // Older scheduler jobs still carry the original enqueue delay in opts.
+    const delay = job.opts.delay;
+    if (typeof delay === 'number' && Number.isFinite(delay) && delay >= 0) {
+      return new Date(job.timestamp + delay);
+    }
+  }
+  return new Date(job.timestamp);
+}
+
 @Injectable()
 export class RuntimeWorker implements OnModuleInit, OnApplicationShutdown {
   private readonly logger = new Logger(RuntimeWorker.name);
@@ -92,9 +117,7 @@ export class RuntimeWorker implements OnModuleInit, OnApplicationShutdown {
 
   private async process(job: Job): Promise<JobOutcome> {
     const name = this.jobs.jobName(job);
-    const scheduledFor = new Date(
-      typeof job.data?.scheduledFor === 'string' ? job.data.scheduledFor : job.timestamp,
-    );
+    const scheduledFor = scheduledForJob(job);
     const statusBase = {
       jobId: job.id ?? `${name}-${job.timestamp}`,
       name,
