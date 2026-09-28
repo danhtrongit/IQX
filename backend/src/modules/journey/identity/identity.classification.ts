@@ -60,6 +60,27 @@ export function digest(value: unknown): string {
   return createHash('sha256').update(pythonCanonicalJson(value)).digest('hex');
 }
 
+/**
+ * AI side of a pair may omit layers the source could not read (e.g. no
+ * valuation data). Those layers score zero instead of discarding the pair;
+ * every present value must still be a valid verdict and at least one layer
+ * must exist.
+ */
+export function partialAssessmentMap(
+  value: unknown,
+): value is Partial<Record<JourneyLayer, JourneyLayerAssessment>> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const entries = Object.entries(value as Record<string, unknown>);
+  return (
+    entries.length > 0 &&
+    entries.every(
+      ([key, verdict]) =>
+        (JOURNEY_LAYER_KEYS as readonly string[]).includes(key) &&
+        (verdict === 'ok' || verdict === 'neu' || verdict === 'bad'),
+    )
+  );
+}
+
 export function completeAssessmentMap(
   value: unknown,
 ): value is Record<JourneyLayer, JourneyLayerAssessment> {
@@ -178,7 +199,7 @@ export function classifyEvidence(
   for (const row of selected) {
     if (
       !row.snapshot_matches ||
-      !completeAssessmentMap(row.ai_answers) ||
+      !partialAssessmentMap(row.ai_answers) ||
       !completeAssessmentMap(row.answers)
     ) {
       increment(excluded, 'missing_or_invalid_ai_snapshot');
@@ -186,7 +207,8 @@ export function classifyEvidence(
     }
     const contribution = zeroCounts();
     for (const layer of JOURNEY_LAYER_KEYS) {
-      contribution[layer] = Number(row.answers[layer] === row.ai_answers[layer]);
+      const ai = row.ai_answers[layer];
+      contribution[layer] = Number(ai !== undefined && row.answers[layer] === ai);
       counts[layer] += contribution[layer];
     }
     refs.push({

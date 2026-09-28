@@ -384,8 +384,8 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
           (user_id,mascot_rules_version,assignment_status,mascot_id,dominant_layer,assignment_basis,
            window_start,window_end,valid_pair_count,match_counts,tied_layers,selected_assessment_refs,
            dataset_hash,excluded_records_summary,assigned_at,created_at,updated_at)
-         values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11::jsonb,$12::jsonb,$13,$14::jsonb,
-                case when $3='assigned' then now() else null end,now(),now())
+         values($1,$2,$3::varchar,$4,$5,$6,$7,$8,$9,$10::jsonb,$11::jsonb,$12::jsonb,$13,$14::jsonb,
+                case when $3::varchar='assigned' then now() else null end,now(),now())
          on conflict(user_id,mascot_rules_version) do update set
            assignment_status=excluded.assignment_status,mascot_id=excluded.mascot_id,
            dominant_layer=excluded.dominant_layer,assignment_basis=excluded.assignment_basis,

@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { buildBctcPayload } from '../../src/modules/financials/bctc.js';
 import { assembleDashboard } from '../../src/modules/financials/dashboard.js';
-import { workingCapitalCycle } from '../../src/modules/financials/financials.calculations.js';
+import {
+  valuationNonbank,
+  withPerShareValues,
+  workingCapitalCycle,
+} from '../../src/modules/financials/financials.calculations.js';
 
 const nonbank = {
   balance_sheet: [
@@ -246,5 +250,47 @@ describe('financials deterministic calculations', () => {
       mode: 'quarter_ttm',
       estimated: false,
     });
+  });
+});
+
+describe('per-share values from VCI ratio rows', () => {
+  const rows = [
+    {
+      year_report: 2025,
+      pe: 20,
+      pb: 2,
+      roe: 0.11,
+      market_cap: 5_000_000,
+      number_of_shares_mkt_cap: 100,
+    },
+    {
+      year_report: 2024,
+      pe: 10,
+      pb: 1,
+      roe: 0.12,
+      market_cap: 3_000_000,
+      number_of_shares_mkt_cap: 100,
+    },
+  ];
+
+  it('derives EPS and BVPS from the same row price', () => {
+    const [latest, prior] = withPerShareValues(rows);
+    expect(latest).toMatchObject({ eps: 2_500, bvps: 25_000 });
+    expect(prior).toMatchObject({ eps: 3_000, bvps: 30_000 });
+  });
+
+  it('keeps provider values and skips non-positive ratios', () => {
+    const [kept, skipped] = withPerShareValues([
+      { ...rows[0], eps: 1_234 },
+      { ...rows[1], pe: -5, pb: 0 },
+    ]);
+    expect(kept?.eps).toBe(1_234);
+    expect(skipped).not.toHaveProperty('eps');
+    expect(skipped).not.toHaveProperty('bvps');
+  });
+
+  it('lets non-bank valuation produce a fair median', () => {
+    expect(valuationNonbank(rows).summary.base).toBeNull();
+    expect(valuationNonbank(withPerShareValues(rows)).summary.base).toBeGreaterThan(0);
   });
 });

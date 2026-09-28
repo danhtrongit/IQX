@@ -86,6 +86,26 @@ export function finite(value: unknown): number | undefined {
   }
   return undefined;
 }
+/**
+ * VCI statistics-financial rows carry market cap, share count, P/E and P/B but
+ * not EPS/BVPS. Derive them per row from the same row's price so valuation
+ * never mixes periods; provider values win when present.
+ */
+export function withPerShareValues(rows: FinancialRow[]): FinancialRow[] {
+  return rows.map((row) => {
+    const marketCap = finite(row.market_cap),
+      shares = finite(row.number_of_shares_mkt_cap);
+    const price =
+      marketCap !== undefined && shares !== undefined && shares > 0 ? marketCap / shares : null;
+    if (price === null || price <= 0) return row;
+    const pe = finite(row.pe),
+      pb = finite(row.pb);
+    const derived: FinancialRow = { ...row };
+    if (finite(row.eps) === undefined && pe !== undefined && pe > 0) derived.eps = price / pe;
+    if (finite(row.bvps) === undefined && pb !== undefined && pb > 0) derived.bvps = price / pb;
+    return derived;
+  });
+}
 export function detectTemplate(rows: FinancialRow[]): 'A' | 'B' {
   return rows.some((r) => ['isb38', 'isb27', 'isb43'].some((k) => (finite(r[k]) ?? 0) !== 0))
     ? 'B'

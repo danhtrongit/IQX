@@ -7,6 +7,22 @@ import { compactDate, daysBefore, finite, mapLimit, sessionDate } from './integr
 
 type CacheEntry<T> = { expiresAt: number; value: T };
 
+/** Consecutive upstream failures after which one scan stops calling the provider. */
+export const HUNT_BREAKER_THRESHOLD = 24;
+
+class ScanBreaker {
+  private consecutive = 0;
+  get open(): boolean {
+    return this.consecutive >= HUNT_BREAKER_THRESHOLD;
+  }
+  success(): void {
+    this.consecutive = 0;
+  }
+  failure(): void {
+    this.consecutive += 1;
+  }
+}
+
 @Injectable()
 export class MarketHuntDataSource implements HuntDataSource {
   private readonly logger = new Logger(MarketHuntDataSource.name);
@@ -34,10 +50,12 @@ export class MarketHuntDataSource implements HuntDataSource {
       ...new Set(symbols.map((symbol) => symbol.trim().toUpperCase()).filter(Boolean)),
     ];
     const start = daysBefore(end, Math.ceil(candleCount * 2.2) + 20);
+    const breaker = new ScanBreaker();
     const pairs = await mapLimit(normalized, 8, async (symbol): Promise<[string, HuntBar[]]> => {
       const key = `${symbol}:${candleCount}:${end}`;
       const cached = this.barsCache.get(key);
       if (cached && cached.expiresAt > Date.now()) return [symbol, cached.value];
+      if (breaker.open) return [symbol, []];
       try {
         const response = await this.market.getOhlcv(symbol, {
           start,
@@ -80,8 +98,10 @@ export class MarketHuntDataSource implements HuntDataSource {
           .sort((left, right) => left.time.localeCompare(right.time))
           .slice(-candleCount);
         this.barsCache.set(key, { value, expiresAt: Date.now() + 15 * 60_000 });
+        breaker.success();
         return [symbol, value];
       } catch (error) {
+        breaker.failure();
         this.logger.debug(`OHLCV unavailable for ${symbol}: ${String(error)}`);
         return [symbol, []];
       }
@@ -109,6 +129,7 @@ export class MarketHuntDataSource implements HuntDataSource {
     ];
     const start = daysBefore(end, Math.ceil(sessions * 2.2) + 15);
     let successful = 0;
+    const breaker = new ScanBreaker();
     const pairs = await mapLimit(
       normalized,
       8,
@@ -116,6 +137,7 @@ export class MarketHuntDataSource implements HuntDataSource {
         const key = `${side}:${symbol}:${sessions}:${end}`;
         const cached = this.flowCache.get(key);
         if (cached && cached.expiresAt > Date.now()) return [symbol, cached.value];
+        if (breaker.open) return [symbol, null];
         try {
           const response =
             side === 'ngoai'
@@ -158,10 +180,12 @@ export class MarketHuntDataSource implements HuntDataSource {
             .slice(-sessions)
             .map((row) => row.net);
           successful += 1;
+          breaker.success();
           const value = values.length === sessions ? values : null;
           this.flowCache.set(key, { value, expiresAt: Date.now() + 10 * 60_000 });
           return [symbol, value];
         } catch (error) {
+          breaker.failure();
           this.logger.debug(`${side} flow unavailable for ${symbol}: ${String(error)}`);
           return [symbol, null];
         }

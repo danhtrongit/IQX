@@ -8,7 +8,7 @@ import type { JsonObject } from '../market-data/index.js';
 import { buildBctcPayload } from './bctc.js';
 import { applyBenchmark, emptyMedians, PEER_METRIC_FIELDS } from './benchmark.js';
 import { assembleDashboard } from './dashboard.js';
-import { finite, median } from './financials.calculations.js';
+import { finite, median, withPerShareValues } from './financials.calculations.js';
 import { PeerMediansRepository } from './peer-medians.repository.js';
 import type { FinancialRow, FinancialStatements } from './financials.types.js';
 
@@ -44,7 +44,7 @@ export class FinancialsService {
     ]);
     const ratioRows =
       ratioResult.status === 'fulfilled' && Array.isArray(ratioResult.value.data)
-        ? ratioResult.value.data.filter(this.isRow)
+        ? withPerShareValues(ratioResult.value.data.filter(this.isRow))
         : [];
     const overview =
       overviewResult.status === 'fulfilled' && this.isRow(overviewResult.value.data)

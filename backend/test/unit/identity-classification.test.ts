@@ -5,7 +5,9 @@ import {
   chooseMascot,
   completeAssessmentMap,
   digest,
+  partialAssessmentMap,
   type EvidenceRecord,
+  validateFrozenAssignment,
 } from '../../src/modules/journey/identity/identity.classification.js';
 
 const answers = {
@@ -61,5 +63,39 @@ describe('journey identity classification', () => {
     expect(result.valid_pair_count).toBe(1);
     expect(result.excluded_records_summary.duplicate_later_submission).toBe(1);
     expect(result.dataset_hash).toBe(digest(result.selected_assessment_refs));
+  });
+
+  it('scores a pair whose AI snapshot lacks an unavailable layer', () => {
+    const { dinh_gia: _omitted, ...partialAi } = answers;
+    const record: EvidenceRecord = {
+      id: 'a1',
+      user_id: 'u1',
+      symbol: 'PET',
+      trading_date: '2026-01-05',
+      completed_at: '2026-01-05T01:00:00Z',
+      revealed_at: '2026-01-05T01:00:01Z',
+      answers,
+      source: 'learning',
+      mode: 'thuc_chien',
+      record_status: 'valid',
+      proof_version: 'commit_then_reveal_v1',
+      dataset_id: 'd1',
+      dataset_hash: digest({ snapshot: 1 }),
+      ai_answers: partialAi,
+      snapshot_matches: true,
+    };
+    const result = classifyEvidence([record], 'u1', '2026-01-01T00:00:00Z', '2026-02-01T00:00:00Z');
+    expect(result.assignment_status).toBe('assigned');
+    expect(result.valid_pair_count).toBe(1);
+    expect(result.match_counts.dinh_gia).toBe(0);
+    expect(result.match_counts.ky_thuat).toBe(1);
+    expect(() => validateFrozenAssignment(result)).not.toThrow();
+  });
+
+  it('still rejects AI snapshots with no layers or invalid verdicts', () => {
+    expect(partialAssessmentMap({})).toBe(false);
+    expect(partialAssessmentMap({ ky_thuat: 'maybe' })).toBe(false);
+    expect(partialAssessmentMap({ unknown: 'ok' })).toBe(false);
+    expect(partialAssessmentMap({ ky_thuat: 'ok' })).toBe(true);
   });
 });

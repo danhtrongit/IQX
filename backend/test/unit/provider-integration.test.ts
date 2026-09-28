@@ -3,7 +3,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 afterEach(() => vi.useRealTimers());
 
 import { BotMarketSnapshotProvider } from '../../src/modules/market-integration/bot-market-snapshot.provider.js';
-import { MarketHuntDataSource } from '../../src/modules/market-integration/market-hunt-data-source.js';
+import {
+  HUNT_BREAKER_THRESHOLD,
+  MarketHuntDataSource,
+} from '../../src/modules/market-integration/market-hunt-data-source.js';
 import { MarketInputSnapshotService } from '../../src/modules/market-integration/market-input-snapshot.service.js';
 
 const envelope = (data: unknown) => ({
@@ -58,6 +61,39 @@ describe('MarketHuntDataSource', () => {
     expect(result).not.toBeNull();
     expect(result?.get('AAA')).toEqual([20, -5]);
     expect(result?.has('BBB')).toBe(false);
+  });
+});
+
+describe('MarketHuntDataSource circuit breaker', () => {
+  it('stops calling a failing upstream within one scan', async () => {
+    const market = { getOhlcv: vi.fn().mockRejectedValue(new Error('timeout')) };
+    const source = new MarketHuntDataSource(market as never, { current: vi.fn() } as never);
+    const symbols = Array.from({ length: 200 }, (_, index) => `S${index}`);
+
+    const result = await source.dailyBarsThrough(symbols, 21, '2026-01-02');
+
+    expect(result.size).toBe(0);
+    expect(market.getOhlcv.mock.calls.length).toBeLessThan(HUNT_BREAKER_THRESHOLD + 8);
+  });
+
+  it('resets on success so sparse failures are still fetched', async () => {
+    let call = 0;
+    const foreignTrade = vi.fn(async () => {
+      call += 1;
+      if (call % 2) throw new Error('flaky');
+      return envelope([
+        { trading_date: '2026-01-02', foreign_buy_value: 2, foreign_sell_value: 1 },
+      ]);
+    });
+    const source = new MarketHuntDataSource(
+      { foreignTrade } as never,
+      { current: vi.fn() } as never,
+    );
+    const symbols = Array.from({ length: 60 }, (_, index) => `S${index}`);
+
+    await source.netFlowThrough(symbols, 'ngoai', 1, '2026-01-02');
+
+    expect(foreignTrade).toHaveBeenCalledTimes(60);
   });
 });
 

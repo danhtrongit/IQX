@@ -60,3 +60,38 @@ describe('daily report retry cutoff', () => {
     expect(generate).not.toHaveBeenCalled();
   });
 });
+
+describe('journey.identity-recovery', () => {
+  it('casts the reused status parameter so PostgreSQL can deduce one type', async () => {
+    const query = vi.fn(async (sql: string) =>
+      sql.includes('from cap6_progress')
+        ? [
+            {
+              user_id: 'u1',
+              window_start: '2026-01-01T00:00:00Z',
+              window_end: '2026-02-01T00:00:00Z',
+            },
+          ]
+        : [],
+    );
+    const jobs = new DomainRuntimeJobs(
+      { query } as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+    await jobs.handlers()['journey.identity-recovery']!({
+      scheduledFor: '2026-02-01T00:00:00Z',
+    } as never);
+    const upsert = query.mock.calls.find(([sql]) =>
+      sql.includes('insert into bot_mascot_profiles'),
+    );
+    expect(upsert?.[0]).toContain('$3::varchar,');
+    expect(upsert?.[0]).toContain("case when $3::varchar='assigned'");
+  });
+});

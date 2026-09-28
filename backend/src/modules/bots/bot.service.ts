@@ -4,6 +4,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  Logger,
   Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
@@ -158,8 +159,13 @@ function validateTradingDate(value: string): void {
   }
 }
 
+/** Upper bound for one account's market snapshot; a stalled upstream must fail the run. */
+export const BOT_SNAPSHOT_DEADLINE_MS = 20 * 60_000;
+
 @Injectable()
 export class BotService {
+  private readonly logger = new Logger(BotService.name);
+
   constructor(
     private readonly database: DatabaseService,
     @Optional()
@@ -361,15 +367,32 @@ export class BotService {
     if (checkpoint.completed) return checkpoint.completed;
     if (!checkpoint.hasSnapshot) {
       let input: BotMarketSnapshotInput;
+      const startedAt = Date.now();
+      this.logger.log(`Bot snapshot started for run ${checkpoint.runId} (${tradingDate})`);
+      let timer: NodeJS.Timeout | undefined;
       try {
-        input = await provider.buildSnapshot(tradingDate, {
-          openSymbols: checkpoint.openSymbols,
-        });
+        input = await Promise.race([
+          provider.buildSnapshot(tradingDate, { openSymbols: checkpoint.openSymbols }),
+          new Promise<never>((_, reject) => {
+            timer = setTimeout(() => {
+              const error = new Error('Bot snapshot deadline exceeded');
+              error.name = 'SnapshotDeadlineExceeded';
+              reject(error);
+            }, BOT_SNAPSHOT_DEADLINE_MS);
+            timer.unref?.();
+          }),
+        ]);
+        this.logger.log(
+          `Bot snapshot built for run ${checkpoint.runId} in ${Date.now() - startedAt}ms`,
+        );
       } catch (error) {
         const name = error instanceof Error ? error.name : 'UnknownError';
+        this.logger.warn(`Bot snapshot failed for run ${checkpoint.runId}: ${name}`);
         return this.failRun(checkpoint.runId, [
           issue('source_error', `Không chụp được snapshot: ${name}`),
         ]);
+      } finally {
+        clearTimeout(timer);
       }
       await this.freezeSnapshot(checkpoint.runId, tradingDate, input);
     }
