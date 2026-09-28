@@ -21,7 +21,7 @@ wait for an authoritative server response.
 - Android builds are pinned to compile/target API 36 through
   `expo-build-properties`, matching the 31/08/2026 Play requirement.
 - Configure `MOBILE_IOS_PRODUCT_IDS` and `MOBILE_ANDROID_PRODUCT_IDS` in
-  backend-v2 before enabling a store product. The server entitlement remains
+  backend before enabling a store product. The server entitlement remains
   authoritative; the UI never grants Premium from a client receipt alone.
 - The iOS Associated Domains and Android App Links entries target `iqx.vn`.
   Publish the Apple association and Android `assetlinks.json` files with the

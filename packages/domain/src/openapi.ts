@@ -1,6 +1,6 @@
 /**
  * Mobile-facing OpenAPI view. The complete generated snapshot lives in
- * `backend-v2/contracts/client`; these stable aliases keep the app package
+ * `backend/contracts/client`; these stable aliases keep the app package
  * independent of the backend workspace while retaining the contract shape.
  */
 export type MobilePlatform = 'ios' | 'android';

@@ -1,6 +1,6 @@
 # @iqx/design-tokens
 
-Typed, cross-platform IQX design tokens for web and mobile clients. The values mirror [`frontend-v2/src/index.css`](../../frontend-v2/src/index.css), which remains the color source of truth.
+Typed, cross-platform IQX design tokens for web and mobile clients. The values mirror [`frontend/src/index.css`](../../frontend/src/index.css), which remains the color source of truth.
 
 ```ts
 import { colors, marketColors, spacing, tokens } from '@iqx/design-tokens';

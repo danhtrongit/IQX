@@ -1,0 +1,93 @@
+#=========================================================================#
+# IQX v2 Hestia nginx template (HTTPS)                                       #
+#=========================================================================#
+
+server {
+    listen      %ip%:%proxy_ssl_port% ssl;
+    server_name %domain_idn% %alias_idn%;
+    error_log   /var/log/%web_system%/domains/%domain%.error.log error;
+
+    ssl_certificate     %ssl_pem%;
+    ssl_certificate_key %ssl_key%;
+
+    if ($anti_replay = 307) { return 307 https://$host$request_uri; }
+    if ($anti_replay = 425) { return 425; }
+
+    include %home%/%user%/conf/web/%domain%/nginx.hsts.conf*;
+
+    client_max_body_size 510m;
+    if ($host = admin.iqx.vn) { return 301 https://iqx.vn/admin; }
+    root /srv/iqx-v2/current/frontend/dist;
+    index index.html;
+
+    location /api/v2/ {
+        proxy_pass http://127.0.0.1:3102;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $iqx_v2_connection;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 600s;
+        proxy_connect_timeout 10s;
+        proxy_send_timeout 120s;
+        proxy_request_buffering off;
+        proxy_buffering off;
+    }
+    location = /health/live { proxy_pass http://127.0.0.1:3102; access_log off; }
+    location = /health/ready { proxy_pass http://127.0.0.1:3102; access_log off; }
+
+    # Preserve provider callback URLs while all state is owned by v2.
+    location = /api/v1/premium/sepay/ipn {
+        proxy_pass http://127.0.0.1:3102/api/v2/premium/sepay/ipn;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    location /api/v1/telegram/webhook/ {
+        rewrite ^/api/v1/(.*)$ /api/v2/$1 break;
+        proxy_pass http://127.0.0.1:3102;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    location /api/ { return 404; }
+    location /media/ { return 404; }
+
+    location = /index.html { add_header Cache-Control "no-cache" always; }
+
+    location /assets/ {
+        try_files $uri =404;
+        expires 365d;
+        add_header Cache-Control "public, immutable";
+        include %home%/%user%/conf/web/%domain%/nginx.hsts.conf*;
+        access_log /var/log/%web_system%/domains/%domain%.log combined;
+        access_log /var/log/%web_system%/domains/%domain%.bytes bytes;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+        # SPA shell: index.html must be revalidated on every load so a deploy
+        # reaches open tabs on next navigation. Hashed bundles under /assets/
+        # stay immutable. add_header in a location drops server-level headers,
+        # so HSTS is re-included here.
+        add_header Cache-Control "no-cache" always;
+        include %home%/%user%/conf/web/%domain%/nginx.hsts.conf*;
+        access_log /var/log/%web_system%/domains/%domain%.log combined;
+        access_log /var/log/%web_system%/domains/%domain%.bytes bytes;
+    }
+
+    location ~ /\.(?!well-known/) {
+        deny all;
+        return 404;
+    }
+
+    location /error/ {
+        alias %home%/%user%/web/%domain%/document_errors/;
+    }
+
+    include %home%/%user%/conf/web/%domain%/nginx.ssl.conf_*;
+}

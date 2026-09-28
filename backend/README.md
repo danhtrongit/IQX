@@ -1,361 +1,190 @@
-# IQX Backend
+# IQX backend-v2
 
-Backend FastAPI sẵn sàng cho môi trường sản xuất của nền tảng IQX.
+Backend NestJS độc lập cho IQX, dùng PostgreSQL schema v2 riêng. Codebase là modular monolith với ba tiến trình: HTTP/WebSocket API, BullMQ worker và market ingest.
 
-## Công nghệ sử dụng
+## Trạng thái hiện tại
 
-| Công nghệ | Phiên bản | Mục đích |
-|---|---|---|
-| Python | 3.13.x | Runtime |
-| FastAPI | 0.136.x | Web framework |
-| SQLAlchemy | 2.0.x (async) | ORM |
-| asyncpg | 0.31.x | Driver PostgreSQL async |
-| Alembic | 1.18.x | Quản lý migration |
-| Pydantic | 2.x | Validate dữ liệu |
-| pydantic-settings | 2.x | Cấu hình |
-| PyJWT | 2.x | Xác thực JWT |
-| passlib + bcrypt | — | Hash mật khẩu |
-| uv | 0.9.x | Quản lý package & môi trường |
-| pytest | 8.x | Kiểm thử |
-| ruff | 0.15.x | Lint & format |
-| Redis | 7.x | Cache layer (tùy chọn) |
+- Node.js `24.21.0` LTS, npm `11.12.1`, TypeScript `6.0.3`, ESM.
+- NestJS `12.0.4`, Fastify `5.12.5`, Zod `4.6.5`.
+- Drizzle ORM `0.45.3` + `pg` `8.23.0`; truy vấn và migration dùng SQL tường minh, không dùng Prisma.
+- Redis `ioredis 5.11.1`, BullMQ `6.3.8`, WebSocket `ws 8.21.0`, MQTT `5.16.0`.
+- Các module chính: auth/users, billing/entitlements, admin, market data, financials, analysis/AI, forecasts/patterns, reports, portfolio, quant/backtest, trading, journey Cap0–8, watchlists, alerts/Telegram, learning/media, bots, notifications và realtime.
 
-## Cấu trúc thư mục
+Baseline legacy gồm `315` HTTP operations và `1` WebSocket route. Báo cáo [contracts/api-coverage.json](contracts/api-coverage.json) ánh xạ toàn bộ baseline sang runtime v2; OpenAPI hiện có khoảng `655` operations do cùng tồn tại v2 canonical routes, v1 aliases và các route bổ sung. Contract check yêu cầu mọi HTTP operation có response schema typed. Đây là coverage cấu trúc, không phải tuyên bố mọi response đều byte-for-byte giống FastAPI hoặc mọi hành vi đã được kiểm chứng trên production.
 
-```
-backend/
-├── app/
-│   ├── api/
-│   │   ├── deps.py                 # Dependency cho auth & DB
-│   │   └── v1/
-│   │       ├── router.py           # Tổng hợp router v1
-│   │       └── endpoints/
-│   │           ├── health.py       # GET /api/v1/health
-│   │           ├── auth.py         # Đăng ký, đăng nhập, refresh, me
-│   │           ├── users.py        # CRUD người dùng (admin + self)
-│   │           ├── premium.py      # Gói Premium, checkout, IPN
-│   │           ├── market_data.py  # Dữ liệu thị trường
-│   │           └── virtual_trading.py  # Giao dịch ảo
-│   ├── core/
-│   │   ├── config.py               # Cấu hình pydantic-settings
-│   │   ├── database.py             # Engine & session async
-│   │   ├── exceptions.py           # Lớp ngoại lệ chuẩn hóa
-│   │   ├── logging.py              # Cấu hình logging
-│   │   └── security.py             # JWT & hash mật khẩu
-│   ├── models/                     # SQLAlchemy models
-│   ├── schemas/                    # Pydantic schemas
-│   ├── services/                   # Logic nghiệp vụ
-│   ├── repositories/               # Truy cập dữ liệu
-│   └── main.py                     # Điểm khởi chạy FastAPI
-├── alembic/
-│   ├── env.py
-│   ├── script.py.mako
-│   └── versions/
-├── tests/
-├── docs/                            # Tài liệu chuyên đề
-├── alembic.ini
-├── pyproject.toml
-├── .env.example
-└── .gitignore
-```
+V1 aliases được giữ để chuyển consumer dần, nhưng v2 chủ động chuẩn hóa validation, error envelope, số nguyên lớn, auth và các lỗi bảo mật. Vì vậy một số sửa lỗi là breaking change có chủ đích; hãy đọc OpenAPI thay vì giả định parity tuyệt đối.
 
-## Bắt đầu nhanh
+Các khác biệt hành vi cần chú ý khi chuyển consumer:
 
-### Yêu cầu
+- Portfolio có vị thế nhưng thiếu giá đủ tin cậy trả HTTP 503 (`PORTFOLIO_VALUATION_UNAVAILABLE`), không tự định giá bằng giá giả hay giá vốn.
+- Điểm portfolio phụ thuộc dữ liệu lịch sử hoặc giao dịch có thể là `null` khi chưa đủ dữ liệu; `null` không tương đương điểm 0.
+- Reset password kiểm tra token và cập nhật mật khẩu trong cùng transaction có khóa hàng; token đã dùng không thể reset lần hai, và các refresh token của user bị thu hồi khi reset thành công.
+- Alert scan chỉ xét rule đang bật của user active có quyền entitlement grant còn hiệu lực (hoặc admin); rule của user hết quyền không được scan.
 
-- Python 3.12+ (khuyến nghị 3.13)
-- PostgreSQL 15+
-- Redis 7+ *(tùy chọn — bật qua `REDIS_ENABLED=true`)*
-- Đã cài [uv](https://docs.astral.sh/uv/)
-
-### 1. Cài đặt môi trường
+## Cài đặt và chạy API
 
 ```bash
-cd backend
-
-# Tạo virtual env
-uv venv --python 3.13
-
-# Cài tất cả dependency (kể cả dev)
-uv sync --all-extras
-```
-
-### 2. Cấu hình biến môi trường
-
-```bash
-# Sao chép file mẫu và chỉnh sửa
+cd backend-v2
+nvm use
+npm install --global npm@11.12.1
+npm ci
 cp .env.example .env
-
-# Chỉnh sửa .env với thông tin database và JWT secret
-# Sinh JWT secret bằng:
-python -c "import secrets; print(secrets.token_urlsafe(64))"
+# Điền DATABASE_URL, JWT secrets và các integration cần dùng.
+npm run build
+node --env-file=.env dist/src/bootstrap/api.js
 ```
 
-**Biến môi trường bắt buộc cho tích hợp SePay:**
+Ứng dụng không tự đọc `.env`, kể cả `.env` của backend cũ. Luôn truyền môi trường từ process manager/container hoặc dùng `node --env-file` rõ ràng. `npm run start:api` chỉ phù hợp khi biến môi trường đã được export từ bên ngoài.
 
-| Biến | Mô tả |
-|---|---|
-| `SEPAY_MERCHANT_ID` | Merchant ID trên SePay |
-| `SEPAY_SECRET_KEY` | Secret key SePay (cho ký + verify IPN) |
-| `SEPAY_CHECKOUT_URL` | `https://pay-sandbox.sepay.vn/v1/checkout/init` (sandbox) hoặc URL production |
-| `APP_PUBLIC_URL` | URL frontend (cho redirect success/error/cancel) |
+Khi `API_DOCS_ENABLED=true`:
 
-### 3. Khởi tạo database
+- Swagger UI: `/docs`
+- OpenAPI JSON: `/openapi.json`
+- Liveness: `/health/live`
+- Readiness: `/health/ready`
 
-Đảm bảo PostgreSQL đang chạy, sau đó tạo database:
+CORS mặc định tắt nếu `CORS_ORIGINS` rỗng. Khi bật, server chỉ cho các origin khai báo chính xác, không gửi credential và cho phép `GET`, `HEAD`, `OPTIONS`, `POST`, `PUT`, `PATCH`, `DELETE` với các header đã allowlist trong bootstrap.
 
-```sql
-CREATE USER "IQX" WITH PASSWORD 'mat_khau_cua_ban';
-CREATE DATABASE "IQX" OWNER "IQX";
-```
+## API và contract
 
-### 4. Chạy migration
+Các nhóm route lớn gồm:
+
+- Identity: auth, users, admin users, sessions và email verification/reset.
+- Billing: plans, checkout, SePay IPN, subscriptions, grants, refunds và audit.
+- Market/research: instruments, quotes, company, trading data, global/macro, screening, news, BCTC, reports, analysis, forecasts và patterns.
+- Investor workflow: virtual trading, portfolio manager, watchlists, chart drawings, alerts và journey Cap0–8.
+- Content/operations: lessons, private media, bots, notifications, admin metrics/system/audit.
+- Realtime: WebSocket gateway trong API và DNSE market ingest riêng.
+
+Các artifact contract:
+
+- `contracts/legacy-v1-endpoints.json`: inventory AST của FastAPI, không import app cũ và không đọc secret.
+- `contracts/legacy-v1-dispositions.json`: mapping/deprecation có chủ đích.
+- `contracts/openapi-v2.json`: snapshot OpenAPI của NestJS.
+- `contracts/client/`: TypeScript request/response types sinh từ OpenAPI.
+- `contracts/api-coverage.json`: đối chiếu route legacy, runtime và OpenAPI.
+
+Kiểm tra drift:
 
 ```bash
-# Database mới hoàn toàn:
-uv run alembic upgrade head
-
-# Database kế thừa (đã có bảng từ Prisma):
-uv run alembic stamp 000000000001
-uv run alembic upgrade head
+npm run contracts:check
+npm run api:coverage:check
 ```
 
-### 5. Chạy server dev
+`COMPATIBILITY_V1_ENABLED=false` chặn toàn bộ `/api/v1/*` ở HTTP boundary bằng 404 và loại v1 khỏi OpenAPI. Các route v2 vẫn hoạt động. Mặc định giữ v1 aliases để consumer chuyển đổi có kiểm soát.
+
+## Database v2 và migration
+
+Backend-v2 dùng database riêng và không đồng bộ/import dữ liệu từ backend v1. Sau khi chạy toàn bộ migration, schema v2 có `69` bảng nghiệp vụ. Migration `0001` có 65 bảng nền; `0002` thêm 4 bảng. Migration `0003` lặp lại khai báo 3 bảng cảnh báo bằng `IF NOT EXISTS` để hỗ trợ nâng cấp/idempotency, đồng thời thêm trường Telegram và index, nên không làm tăng số bảng cuối cùng:
+
+- `0001_initial_schema.sql`: baseline 65 bảng nghiệp vụ.
+- `0002_api_extensions.sql`: 4 bảng bổ sung cho billing entitlement/refund/history và report input snapshot, cùng các cột mở rộng.
+- `0003_alerts_telegram.sql`: bổ sung Telegram fields và các alert indexes/objects theo cách idempotent; các bảng cảnh báo đã có trong baseline được giữ nguyên.
+- `0004_integrity_and_defaults.sql`: constraint tiền/khối lượng, index giao dịch và refresh family; seed gói dùng thử cùng cấu hình giao dịch mặc định. Không seed tài khoản admin hoặc dữ liệu thị trường giả.
+
+API không tự migrate khi khởi động. Runner chỉ chấp nhận khi bật gate rõ ràng và tên database khớp `iqx_v2_*`:
 
 ```bash
-uv run fastapi dev app/main.py
+npm run build
+V2_MIGRATIONS_ALLOWED=true \
+  node --env-file=.env dist/scripts/migrate.js
 ```
 
-API sẽ có ở:
-- **API**: http://localhost:8000
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-- **OpenAPI JSON**: http://localhost:8000/openapi.json
+Runner dùng advisory lock, checksum và transaction cho từng migration. Không trỏ lệnh này vào database v1, không đổi tên database để lách guard và không chạy đồng thời bằng công cụ migration khác. Chưa có migration nào được chạy trên production bởi công việc trong repository này.
 
-## Endpoint API (cấp cao)
+`DB_READ_ONLY=true` là safety gate cho deployment chỉ đọc. Full API, worker và migration cần role/quyền phù hợp với hành vi ghi của module; không bật read-only cho tiến trình thực hiện billing, trading, journey, admin mutation hoặc jobs.
 
-### Sức khỏe hệ thống
-| Method | Path | Mô tả |
-|---|---|---|
-| GET | `/api/v1/health` | Kiểm tra ứng dụng + database + Redis |
+## Worker và market ingest
 
-### Xác thực
-| Method | Path | Mô tả | Auth |
-|---|---|---|---|
-| POST | `/api/v1/auth/register` | Đăng ký người dùng mới | — |
-| POST | `/api/v1/auth/login` | Đăng nhập (trả về token) | — |
-| POST | `/api/v1/auth/refresh` | Làm mới cặp token | — |
-| POST | `/api/v1/auth/logout` | Thu hồi tất cả refresh token | Bearer |
-| GET | `/api/v1/auth/me` | Lấy người dùng hiện tại | Bearer |
-
-### Người dùng
-| Method | Path | Mô tả | Auth |
-|---|---|---|---|
-| GET | `/api/v1/users/me` | Lấy hồ sơ chính mình | Bearer |
-| PATCH | `/api/v1/users/me` | Cập nhật hồ sơ chính mình | Bearer |
-| GET | `/api/v1/users/` | Danh sách người dùng (phân trang) | Admin |
-| POST | `/api/v1/users/` | Tạo người dùng | Admin |
-| GET | `/api/v1/users/{id}` | Lấy người dùng theo ID | Admin |
-| PATCH | `/api/v1/users/{id}` | Cập nhật người dùng | Admin |
-| DELETE | `/api/v1/users/{id}` | Xóa mềm người dùng | Admin |
-
-### Premium & Thanh toán
-| Method | Path | Mô tả | Auth |
-|---|---|---|---|
-| GET | `/api/v1/premium/plans` | Danh sách gói Premium đang hoạt động | — |
-| GET | `/api/v1/premium/me` | Trạng thái gói của bản thân | Bearer |
-| POST | `/api/v1/premium/checkout` | Tạo form thanh toán SePay | Bearer |
-| POST | `/api/v1/premium/sepay/ipn` | Webhook IPN từ SePay | X-Secret-Key |
-| GET | `/api/v1/premium/admin/plans` | Liệt kê tất cả gói (cả không hoạt động) | Admin |
-| POST | `/api/v1/premium/admin/plans` | Tạo gói Premium | Admin |
-| PATCH | `/api/v1/premium/admin/plans/{id}` | Cập nhật gói | Admin |
-| POST | `/api/v1/premium/admin/users/{id}/grant` | Cấp Premium thủ công | Admin |
-
-### Giao dịch ảo
-
-Chi tiết quy tắc nghiệp vụ và lifecycle: [`docs/virtual-trading.md`](docs/virtual-trading.md).
-
-### Dữ liệu thị trường
-
-Bảng endpoint cấp cao và bản đồ nguồn upstream: [`docs/market-data-source-map.md`](docs/market-data-source-map.md).
-
-Chi tiết theo chủ đề:
-
-- [`docs/company-statistics-api-map.md`](docs/company-statistics-api-map.md) — Thống kê công ty (nước ngoài, tự doanh, nội bộ, cung cầu)
-- [`docs/vietcap-market-overview-api.md`](docs/vietcap-market-overview-api.md) — Tổng quan thị trường (thanh khoản, index impact, foreign, allocation, valuation, breadth, heatmap)
-- [`docs/vietcap-market-overview-api-supplement.md`](docs/vietcap-market-overview-api-supplement.md) — Bổ sung Market Overview
-- [`docs/vietcap-sector-api.md`](docs/vietcap-sector-api.md) — Trang ngành
-- [`docs/vietcap-screening-api.md`](docs/vietcap-screening-api.md) — Bộ lọc cổ phiếu
-- [`docs/vietcap-ai-news-api-discovery.md`](docs/vietcap-ai-news-api-discovery.md) — API tin AI Vietcap
-
-### Tham số query (Danh sách người dùng)
-
-| Param | Kiểu | Mặc định | Mô tả |
-|---|---|---|---|
-| `page` | int | 1 | Số trang |
-| `page_size` | int | 20 | Số bản ghi mỗi trang (tối đa 100) |
-| `search` | string | — | Tìm theo email, họ tên, số điện thoại |
-| `role` | enum | — | Lọc theo vai trò |
-| `status` | enum | — | Lọc theo trạng thái |
-| `sort_by` | string | created_at | Trường sắp xếp |
-| `sort_order` | asc/desc | desc | Hướng sắp xếp |
-
-## Tích hợp SePay
-
-### Cách hoạt động
-
-1. **Checkout**: Frontend gọi `POST /api/v1/premium/checkout` với `plan_id`. Backend trả về danh sách trường form (gồm chữ ký HMAC-SHA256) để frontend POST lên SePay qua HTML form.
-2. **Thanh toán**: Người dùng hoàn tất thanh toán trên trang checkout của SePay.
-3. **IPN**: SePay gửi POST đến `/api/v1/premium/sepay/ipn` khi trạng thái thanh toán đổi. Backend:
-   - Kiểm tra header `X-Secret-Key` (so sánh constant-time)
-   - Yêu cầu `notification_type=ORDER_PAID`, `order_status=CAPTURED`, `transaction_status=APPROVED`
-   - Kiểm tra cả tiền tệ order/transaction (VND) và số tiền
-   - Parse số tiền bằng `Decimal` (loại bỏ phần thập phân)
-   - Atomic claim đơn (chống race condition khi SePay retry)
-   - Mở rộng thời hạn Premium cho người dùng
-4. **Redirect thành công**: SePay redirect về frontend. **Lưu ý**: redirect không kích hoạt Premium, chỉ IPN mới làm điều đó. Frontend nên poll `GET /api/v1/premium/me` để kiểm tra.
-
-### Stack thời gian Premium
-
-Khi người dùng mua Premium trong khi đang còn Premium hoạt động, thời gian mới được **cộng thêm vào `current_period_end`** (không phải tính từ `now`). Áp dụng cho cả IPN và admin grant.
-
-### Cấu hình IPN trên SePay
-
-Cấu hình SePay gửi IPN tới:
-```
-POST https://your-domain.com/api/v1/premium/sepay/ipn
-```
-
-Đặt header `X-Secret-Key` trong dashboard SePay khớp với biến môi trường `SEPAY_SECRET_KEY`.
-
-## Lệnh phát triển
+Ba entrypoint sau dùng chung codebase nhưng có ownership riêng:
 
 ```bash
-# Cài dependency
-uv sync --all-extras
-
-# Chạy server dev
-uv run fastapi dev app/main.py
-
-# Chạy test
-uv run pytest -v
-
-# Chạy test kèm coverage
-uv run pytest --cov=app --cov-report=term-missing
-
-# Lint
-uv run ruff check app/ tests/
-
-# Format
-uv run ruff format app/ tests/
-
-# Kiểm tra kiểu
-uv run mypy app/ tests/
-
-# Sinh migration
-uv run alembic revision --autogenerate -m "mô tả"
-
-# Áp dụng migration
-uv run alembic upgrade head
-
-# Seed danh sách mã chứng khoán
-uv run python -m app.scripts.seed_symbols --validate-logos --deactivate-missing
-
-# Lùi migration
-uv run alembic downgrade -1
+node --env-file=.env dist/src/bootstrap/api.js
+node --env-file=.env dist/src/bootstrap/worker.js
+node --env-file=.env dist/src/bootstrap/market-ingest.js
 ```
 
-## Kiến trúc
+- API phục vụ HTTP/WebSocket và có thể enqueue khi `QUEUE_ENABLED=true`; API process không consume BullMQ jobs.
+- Worker chỉ khởi động khi `QUEUE_ENABLED=true`; cần Redis và chạy durable handlers cho reports, billing reconciliation/expiry, alerts, journey, bot và market snapshot jobs.
+- Market ingest chỉ khởi động khi `MARKET_INGEST_ENABLED=true`; cần Redis cùng credential DNSE phù hợp transport. Nó sử dụng leader election và phát dữ liệu cho realtime gateway.
+- `REALTIME_ENABLED=true` bật gateway/pubsub trong API và cũng yêu cầu Redis. Flag này không tự khởi động ingest process.
 
-Dự án theo **kiến trúc phân lớp**:
+Không bật worker/ingest chỉ để vượt readiness. Cấu hình credential thật qua secret manager của môi trường, không lưu trong Git hay image.
 
-1. **Endpoints** (`api/`) — Xử lý HTTP request, validate, serialize
-2. **Services** (`services/`) — Logic nghiệp vụ, điều phối
-3. **Repositories** (`repositories/`) — Truy cập dữ liệu, query
-4. **Models** (`models/`) — SQLAlchemy ORM
-5. **Schemas** (`schemas/`) — Pydantic request/response
-6. **Core** (`core/`) — Config, security, database, exceptions
+## Cấu hình tích hợp
 
-### Quyết định thiết kế chính
+`.env.example` liệt kê đầy đủ biến được parser chấp nhận. Các nhóm credential đều để trống:
 
-- **Khóa chính UUID** — An toàn cho hệ phân tán, không lộ ID tuần tự
-- **Soft delete** — Người dùng được đánh dấu `deleted` thay vì xóa thật
-- **Phân quyền theo vai trò** — `admin` và `user`, kiểm soát qua dependency
-- **Validate số điện thoại** — Dùng `phonenumbers` cho định dạng E.164
-- **JWT cặp token** — Access ngắn hạn + refresh dài hạn có rotation
-- **Khởi tạo engine lazy** — Engine database chỉ tạo khi cần
-- **Yêu cầu mật khẩu** — Tối thiểu 8 ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt
-- **IPN nguyên tử** — Conditional UPDATE chống cấp Premium 2 lần khi SePay retry
-- **Số tiền Decimal** — VND parse bằng `Decimal`, loại bỏ phần thập phân
-- **Redis cache tùy chọn** — Mặc định tắt, bật qua env; Redis lỗi = chạy uncached
+- JWT access/refresh: production bắt buộc hai secret, mỗi secret tối thiểu 32 ký tự; vận hành nên dùng hai giá trị khác nhau.
+- SePay: merchant, secret, checkout URL và public callback URL.
+- Email: HTTP provider URL, API key, sender và API public URL.
+- AI: OpenAI-compatible base URL, API key, model, timeout và retry.
+- DNSE/realtime: OpenAPI hoặc MQTT credentials, URLs, lease và symbol limits.
+- Google Sheets, Telegram và private media signing/storage.
 
-## Redis Cache
+Credential dịch vụ ngoài không có trong workspace. Test dùng mock/fake nội bộ; chưa có live upstream E2E với AI, DNSE, SePay, Telegram, email hay Google Sheets được xác minh.
 
-### Khởi chạy Redis
-
-Cách đơn giản nhất là dùng Docker:
+## Kiểm thử và chất lượng
 
 ```bash
-docker run -d --name iqx-redis -p 6379:6379 redis:7-alpine
+npm run lint
+npm run format:check
+npm run typecheck
+npm test
+npm run build
+npm run contracts:check
+npm run api:coverage:check
+npm run test:integration
+npm run test:system
+npm audit --audit-level=high
 ```
 
-Hoặc thêm vào `docker-compose.yml`:
+Số test thay đổi trong quá trình hoàn thiện; xem kết quả của lệnh kiểm thử và CI cho lần chạy hiện tại. Không dùng số lượng test như bằng chứng production readiness.
 
-```yaml
-services:
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    restart: unless-stopped
+- Integration harness dùng Testcontainers PostgreSQL 17 + Redis 7.
+- System harness đã được chạy cục bộ với PostgreSQL 16 + Redis 8 trên database tạm.
+- `compose.test.yml` cung cấp PostgreSQL 17 + Redis 7 trên `127.0.0.1:15432/16379` để debug; dữ liệu nằm trên `tmpfs`.
+- CI chạy cả integration (PG17/Redis7) và system acceptance (PG16/Redis8). Thiếu Docker/resource là failure, không skip.
+
+Chạy integration mặc định bằng Testcontainers. Nếu cần debug với Compose:
+
+```bash
+docker compose -f compose.test.yml up -d --wait
+IQX_TEST_EXTERNAL_SERVICES=1 \
+TEST_DATABASE_URL=postgresql://iqx_v2_test:iqx_v2_test@127.0.0.1:15432/iqx_v2_test_compose \
+TEST_REDIS_URL=redis://127.0.0.1:16379/15 \
+npm run test:integration
+docker compose -f compose.test.yml down
 ```
 
-### Bật cache
+Harness chỉ chấp nhận localhost, database có prefix `iqx_v2_test_`, Redis port không phải `6379` và Redis DB khác `0` để giảm nguy cơ chạm dữ liệu thật.
 
-Cập nhật `.env`:
+Lockfile là nguồn phiên bản dependency. CI chạy `npm audit --audit-level=high`; override hiện tại ghim transitive `js-yaml 4.3.2` cho generator. Không chạy `npm audit fix --force` một cách tự động vì có thể đổi major hoặc phá contract; cập nhật dependency phải qua lockfile, test và review.
 
-```ini
-REDIS_ENABLED=true
-REDIS_URL=redis://localhost:6379/0
+## Docker
+
+```bash
+docker build -t iqx/backend-v2:local backend-v2
+docker volume create iqx-backend-v2-media
+docker run --rm --env-file backend-v2/.env \
+  -e APP_ENV=production -e MEDIA_ROOT=/app/media \
+  -v iqx-backend-v2-media:/app/media \
+  -p 3000:3000 iqx/backend-v2:local
 ```
 
-### TTL theo nhóm endpoint
+`.env.example` đặt `APP_ENV=development` và để trống `MEDIA_ROOT`; `--env-file` sẽ ghi đè giá trị trong image, nên ví dụ Docker đặt lại cả hai biến sau `--env-file`. Cấu hình database v2 và JWT secrets trước khi chạy. Named volume giữ media qua lần thay container; khi dùng bind mount, thư mục host phải cho UID/GID của user `node` (1000:1000) quyền ghi. Nếu chạy nhiều replica, dùng storage chung bền vững.
 
-| Nhóm | TTL mặc định | Biến ENV |
-|---|---|---|
-| Reference (symbols, industries) | 3600s (1h) | `REDIS_TTL_REFERENCE_SECONDS` |
-| Overview (heatmap, breadth) | 30s | `REDIS_TTL_OVERVIEW_SECONDS` |
-| Macro, Funds, Company | 900s (15m) | `REDIS_TTL_MACRO_SECONDS` |
-| News, AI News | 300s (5m) | `REDIS_TTL_NEWS_SECONDS` |
-| Intraday, Price-depth | 15s | `REDIS_TTL_REALTIME_SECONDS` |
-| Khác (OHLCV, trading...) | 300s (5m) | `REDIS_DEFAULT_TTL_SECONDS` |
+Dockerfile đa tầng, runtime chạy user `node`, chỉ chứa production dependencies, `dist`, migrations và package metadata. `npm run build` sao chép prompt/contract assets cần thiết vào `dist`. Dùng cùng image cho worker hoặc ingest bằng cách override command.
 
-### Endpoint không cache
+Docker build chưa được xác minh trong lượt triển khai này vì daemon local không khả dụng; không có image nào được push và không có deploy hay production migration nào được thực hiện.
 
-- `POST /trading/price-board` — POST endpoint
-- `POST /screening/search` — POST endpoint
-- Auth endpoints — user-sensitive
-- Users endpoints — user-sensitive
-- Premium endpoints — subscription-specific
-- Virtual trading — user-specific write
-- AI analysis — user-specific prompt
-- Health — monitoring
+## Nguyên tắc vận hành
 
-## Chiến lược migration
-
-Chuỗi migration hỗ trợ cả database mới và kế thừa:
-
-```
-000000000001  →  488c85bb0b6a  →  fb7a64f07299
-(initial)        (legacy→new)     (premium tables)
-```
-
-- **DB mới**: `000000000001` tạo `users` + `refresh_tokens`; `488c85bb0b6a` phát hiện schema mới và bỏ qua.
-- **DB cũ**: `000000000001` phát hiện bảng `users` đã có và bỏ qua; `488c85bb0b6a` thực hiện chuyển đổi Prisma → SQLAlchemy.
-
-## Ghi chú
-
-- Phiên bản Python: **3.13.x** (cài bằng Homebrew là tiện nhất)
-- `.env` đã được gitignore và không được commit
-- Test dùng SQLite in-memory cho isolation
-- Triển khai production nên dùng biến môi trường (không phải `.env`)
+- Mỗi job/mutation có một owner; không chạy worker trùng ngoài cơ chế queue/idempotency.
+- Không log secret, DSN, token hoặc raw authorization headers.
+- Telegram link là bearer authorization ngắn hạn, dùng một lần; không chia sẻ deep-link này. Chỉ chấp nhận `/start` từ cuộc trò chuyện riêng của người gửi, qua webhook đã xác minh secret.
+- Access token gắn với refresh-token family đang hoạt động trong DB. Logout, reset password và phát hiện refresh replay vô hiệu access token của family tương ứng ngay, không phải chờ hết TTL.
+- `TRUST_PROXY_CIDRS` mặc định rỗng. Khi đặt sau reverse proxy, chỉ cấu hình IP/CIDR cụ thể do bạn kiểm soát; không chấp nhận wildcard/global CIDR. Audit và throttling lấy `request.ip` sau bước xác minh proxy này.
+- Dùng `/health/live` cho process health và `/health/ready` cho dependency readiness.
+- Media hiện là private local filesystem có signed URL; production nhiều replica cần shared durable volume hoặc thay storage adapter trước khi scale ngang.
+- Route coverage, unit/system test và mocked providers là điều kiện cần, chưa thay thế staging verification, load test, security review, observability và rollback rehearsal.

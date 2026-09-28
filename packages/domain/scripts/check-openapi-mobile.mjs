@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 
-const document = JSON.parse(await readFile(new URL('../../../backend-v2/contracts/openapi-v2.json', import.meta.url), 'utf8'));
+const document = JSON.parse(await readFile(new URL('../../../backend/contracts/openapi-v2.json', import.meta.url), 'utf8'));
 const required = [
   '/api/v2/mobile/premium/products',
   '/api/v2/mobile/premium/purchases/apple/verify',

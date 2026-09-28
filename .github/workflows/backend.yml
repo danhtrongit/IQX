@@ -1,0 +1,101 @@
+name: backend
+
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend.yml"
+  push:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  quality:
+    name: Unit, lint, types, audit, build, contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.21.0
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Pin npm
+        run: npm install --global npm@11.12.1
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify API contracts
+        run: npm run contracts:check
+
+      - name: Verify complete API route coverage
+        run: npm run api:coverage:check
+
+  integration:
+    name: Integration (Testcontainers)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: "true"
+      TESTCONTAINERS_RYUK_DISABLED: "false"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.21.0
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Pin npm
+        run: npm install --global npm@11.12.1
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Require Docker
+        run: docker info
+
+      - name: Integration tests (Testcontainers PostgreSQL 17 and Redis 7)
+        run: npm run test:integration
+
+      - name: System acceptance (Testcontainers PostgreSQL 16 and Redis 8)
+        run: npm run test:system

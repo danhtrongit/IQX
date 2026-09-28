@@ -1,7 +1,7 @@
 /**
  * Cross-platform IQX design tokens.
  *
- * Colour values mirror frontend-v2/src/index.css. Keep the CSS source as the
+ * Colour values mirror frontend/src/index.css. Keep the CSS source as the
  * source of truth and run `npm run check` after changing either representation.
  */
 

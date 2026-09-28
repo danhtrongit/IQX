@@ -7,23 +7,13 @@
 # Repository agent instructions.
 !/AGENTS.md
 
-# Only track the application directories.
-!/frontend/
-!/frontend/**
+# Application directories: NestJS API and integrated web frontend.
 !/backend/
 !/backend/**
-
-# IQX backend v2 (NestJS rewrite).
-!/backend-v2/
-!/backend-v2/**
-# Integrated v2 frontend, published alongside the v2 API.
-!/frontend-v2/
-!/frontend-v2/**
-/frontend-v2/.git
-!/dashboard/
-!/dashboard/**
-!/admin/
-!/admin/**
+!/frontend/
+!/frontend/**
+# Safety guard: frontend was previously a standalone repo.
+/frontend/.git
 
 # Expo mobile workspace.
 !/apps/
@@ -38,20 +28,11 @@
 /apps/**/.env
 /apps/**/.env.*
 !/apps/**/.env.example
-
-# IQX v2 Node backend (frontend intentionally untracked for now).
-!/iqx-v2/
-/iqx-v2/*
-!/iqx-v2/backend/
-!/iqx-v2/backend/**
+/apps/**/.expo/
 
 # CI workflows.
 !/.github/
 !/.github/**
 
-# Safety guard if the frontend was previously a standalone repo.
-/frontend/.git
-
 # OS noise.
 .DS_Store
-/apps/**/.expo/

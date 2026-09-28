@@ -4,7 +4,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const packageDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const sourcePath = resolve(packageDir, '../../frontend-v2/src/index.css');
+const sourcePath = resolve(packageDir, '../../frontend/src/index.css');
 const source = await readFile(sourcePath, 'utf8');
 const nativeSource = await readFile(resolve(packageDir, 'src/index.ts'), 'utf8');
 const hash = createHash('sha256').update(source).digest('hex');
