@@ -1,6 +1,6 @@
 import { memo } from "react"
 import { EllipsisVertical, LineChart, ListPlus, ListX, SquareChartGantt, Wallet } from "lucide-react"
-import { Link, useSearchParams } from "react-router"
+import { Link } from "react-router"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -15,7 +15,6 @@ import { cn } from "@/lib/utils"
 
 import { changeTone, fmtChange, fmtPercent, fmtPrice, fmtValueBil, fmtVolume, priceTone } from "../../market/format"
 import type { DepthLevel, PriceBoardRow } from "../../market/types"
-import { boardChartHref } from "../board-routing"
 import { DepthCells, FlashCell } from "./flash-cell"
 
 /** Left border that separates the bid / match / ask / foreign blocks. */
@@ -27,6 +26,8 @@ export interface BoardRowProps {
   watched: boolean
   onOpen: (symbol: string) => void
   onToggleWatch: (symbol: string) => void
+  /** Stable builder for the embedded chart destination (hoisted out of the row). */
+  chartHref: (symbol: string) => string
 }
 
 /**
@@ -38,9 +39,9 @@ export const BoardRow = memo(function BoardRow({
   watched,
   onOpen,
   onToggleWatch,
+  chartHref: buildChartHref,
 }: BoardRowProps) {
-  const [params] = useSearchParams()
-  const chartHref = boardChartHref(params, row.symbol)
+  const chartHref = buildChartHref(row.symbol)
   const bid = row.bid
   const ask = row.ask
 
@@ -181,7 +182,8 @@ function propsAreEqual(previous: BoardRowProps, next: BoardRowProps): boolean {
   if (
     previous.watched !== next.watched ||
     previous.onOpen !== next.onOpen ||
-    previous.onToggleWatch !== next.onToggleWatch
+    previous.onToggleWatch !== next.onToggleWatch ||
+    previous.chartHref !== next.chartHref
   ) {
     return false
   }

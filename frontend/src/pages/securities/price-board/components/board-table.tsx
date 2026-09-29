@@ -1,4 +1,6 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { LoaderCircle } from "lucide-react"
+import { useSearchParams } from "react-router"
 
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -6,10 +8,14 @@ import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/compon
 import { cn } from "@/lib/utils"
 
 import type { PriceBoardRow } from "../../market/types"
+import { boardChartHref } from "../board-routing"
 import { BoardRow } from "./board-row"
+import { FALLBACK_ROW_HEIGHT, OVERSCAN, WINDOW_THRESHOLD, visibleRange } from "./window-range"
 
 /** Mã + Trần/Sàn/TC + 6 bid + 4 match + 6 ask + 4 totals + 3 foreign + thao tác. */
 const COLUMN_COUNT = 28
+/** Rows painted before the viewport has been measured. */
+const INITIAL_ROWS = 60
 
 const HEAD_CELL =
   "sticky top-0 z-20 h-7 bg-card px-2 text-right align-middle text-xs font-medium whitespace-nowrap text-muted-foreground"
@@ -47,8 +53,71 @@ export function BoardTable({
   watchedSymbols,
   onToggleWatch,
 }: BoardTableProps) {
+  const [params] = useSearchParams()
+  const paramsKey = params.toString()
+  const chartHref = useCallback(
+    (symbol: string) => boardChartHref(new URLSearchParams(paramsKey), symbol),
+    [paramsKey],
+  )
+
+  const viewportRef = useRef<HTMLDivElement | null>(null)
+  const bodyRef = useRef<HTMLTableSectionElement | null>(null)
+  const [viewportEl, setViewportEl] = useState<HTMLDivElement | null>(null)
+  const setViewport = useCallback((node: HTMLDivElement | null) => {
+    viewportRef.current = node
+    setViewportEl(node)
+  }, [])
+  const [scroll, setScroll] = useState({ top: 0, height: 0 })
+  const [rowHeight, setRowHeight] = useState(FALLBACK_ROW_HEIGHT)
+  const windowed = rows.length > WINDOW_THRESHOLD
+  const hasRows = rows.length > 0
+
+  useEffect(() => {
+    if (!windowed || !viewportEl) return
+    let frame = 0
+    const sync = () => {
+      frame = 0
+      setScroll((prev) =>
+        prev.top === viewportEl.scrollTop && prev.height === viewportEl.clientHeight
+          ? prev
+          : { top: viewportEl.scrollTop, height: viewportEl.clientHeight },
+      )
+    }
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(sync)
+    }
+    sync()
+    viewportEl.addEventListener("scroll", schedule, { passive: true })
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(schedule)
+    observer?.observe(viewportEl)
+    return () => {
+      viewportEl.removeEventListener("scroll", schedule)
+      observer?.disconnect()
+      if (frame) cancelAnimationFrame(frame)
+    }
+  }, [windowed, viewportEl])
+
+  // Measure the first real body row (skip spacers) once windowing is active.
+  useEffect(() => {
+    if (!windowed) return
+    const first = bodyRef.current?.querySelector<HTMLElement>("tr:not([aria-hidden])")
+    const height = first?.getBoundingClientRect().height ?? 0
+    if (height > 0) setRowHeight((prev) => (Math.abs(prev - height) < 0.5 ? prev : height))
+  }, [windowed, hasRows])
+
+  const range = useMemo(() => {
+    if (!windowed) return { start: 0, end: rows.length }
+    // Not measured yet: paint one screenful instead of the whole tab.
+    if (scroll.height <= 0) return { start: 0, end: Math.min(rows.length, INITIAL_ROWS) }
+    return visibleRange(scroll.top, scroll.height, rowHeight, rows.length, OVERSCAN)
+  }, [windowed, scroll, rowHeight, rows.length])
+  const visibleRows = range.start === 0 && range.end >= rows.length ? rows : rows.slice(range.start, range.end)
+  const topSpace = range.start * rowHeight
+  const bottomSpace = Math.max(0, rows.length - range.end) * rowHeight
+
   return (
     <ScrollArea
+      viewportRef={setViewport}
       className="min-h-[280px] flex-1 rounded-lg border border-border bg-card"
       orientation="both"
       // The ScrollArea content box is `display: table`, which wraps a real table
@@ -133,17 +202,22 @@ export function BoardTable({
             <TableHead className={HEAD_CELL_SECOND_ROW}>Room</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody ref={bodyRef}>
           {rows.length > 0 ? (
-            rows.map((row) => (
+            <>
+              {topSpace > 0 && <tr aria-hidden style={{ height: topSpace }}><td colSpan={COLUMN_COUNT} style={{ height: topSpace, padding: 0, border: 0 }} /></tr>}
+              {visibleRows.map((row) => (
               <BoardRow
                 key={row.symbol}
                 row={row}
                 watched={watchedSymbols.has(row.symbol)}
                 onOpen={onOpen}
                 onToggleWatch={onToggleWatch}
+                chartHref={chartHref}
               />
-            ))
+              ))}
+              {bottomSpace > 0 && <tr aria-hidden style={{ height: bottomSpace }}><td colSpan={COLUMN_COUNT} style={{ height: bottomSpace, padding: 0, border: 0 }} /></tr>}
+            </>
           ) : (
             <TableRow className="hover:bg-transparent">
               <TableCell colSpan={COLUMN_COUNT} className="px-3 py-12 text-center">

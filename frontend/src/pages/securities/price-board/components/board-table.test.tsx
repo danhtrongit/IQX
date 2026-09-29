@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import type { PriceBoardRow } from "../../market/types"
 import { BoardTable, type BoardTableProps } from "./board-table"
+import { visibleRange } from "./window-range"
 
 vi.mock("@/components/ui/scroll-area", () => ({
   ScrollArea: ({ children }: { children: ReactNode }) => <div>{children}</div>,
@@ -71,5 +72,17 @@ describe("price board background updates", () => {
 
     rerender(board({ rows: [], error: new Error("Mất kết nối") }))
     expect(screen.getByText("Không tải được dữ liệu giá: Mất kết nối")).toBeTruthy()
+  })
+})
+
+describe("visibleRange", () => {
+  it("returns a windowed slice with overscan, clamped to bounds", () => {
+    expect(visibleRange(0, 300, 30, 400, 10)).toEqual({ start: 0, end: 20 })
+    expect(visibleRange(3000, 300, 30, 400, 10)).toEqual({ start: 90, end: 120 })
+    expect(visibleRange(999999, 300, 30, 400, 10)).toEqual({ start: 400, end: 400 })
+  })
+
+  it("renders everything when the viewport is unmeasured", () => {
+    expect(visibleRange(0, 0, 30, 400, 10)).toEqual({ start: 0, end: 400 })
   })
 })

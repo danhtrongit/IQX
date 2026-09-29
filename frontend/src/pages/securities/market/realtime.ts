@@ -157,10 +157,12 @@ export class RealtimeClient {
       if (set) for (const listener of set) listener(message)
     }
 
-    socket.onclose = () => {
+    socket.onclose = (event?: CloseEvent) => {
       if (this.ws !== socket) return
       this.onStatusChange?.(false)
       this.stopPing()
+      // 1013 = server says realtime is disabled: stay disconnected (REST polling covers it).
+      if (event?.code === 1013) return
       if (!this.intentionalClose) this.scheduleReconnect()
     }
 

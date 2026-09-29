@@ -11,7 +11,7 @@ class FakeWebSocket {
   sent: string[] = []
   onopen: (() => void) | null = null
   onmessage: ((event: { data: string }) => void) | null = null
-  onclose: (() => void) | null = null
+  onclose: ((event?: { code: number }) => void) | null = null
   onerror: (() => void) | null = null
 
   readonly url: string
@@ -25,9 +25,9 @@ class FakeWebSocket {
     this.sent.push(payload)
   }
 
-  close(): void {
+  close(code?: number): void {
     this.readyState = FakeWebSocket.CLOSED
-    this.onclose?.()
+    this.onclose?.(code === undefined ? undefined : { code })
   }
 
   open(): void {
@@ -78,6 +78,18 @@ describe("RealtimeClient", () => {
         channels: ["tick"],
       })
     )
+    client.disconnect()
+  })
+
+  it("does not reconnect when the server closes with 1013 (realtime disabled)", () => {
+    vi.useFakeTimers()
+    const statuses: boolean[] = []
+    const client = new RealtimeClient({ onStatusChange: (connected) => statuses.push(connected) })
+    client.connect()
+    FakeWebSocket.instances[0].close(1013)
+    vi.advanceTimersByTime(60_000)
+    expect(FakeWebSocket.instances).toHaveLength(1)
+    expect(statuses.at(-1)).toBe(false)
     client.disconnect()
   })
 

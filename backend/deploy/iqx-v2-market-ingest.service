@@ -1,0 +1,28 @@
+[Unit]
+Description=IQX v2 DNSE market ingest (realtime price board)
+After=network-online.target postgresql.service iqx-v2-redis.service
+Wants=network-online.target
+Requires=iqx-v2-redis.service
+
+[Service]
+Type=simple
+User=iqx-v2
+Group=iqx-v2
+WorkingDirectory=/srv/iqx-v2/current/backend
+EnvironmentFile=/srv/iqx-v2/shared/runtime.env
+ExecStart=/usr/bin/node dist/src/bootstrap/market-ingest.js
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+KillSignal=SIGTERM
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=iqx-v2-market-ingest
+
+[Install]
+WantedBy=multi-user.target

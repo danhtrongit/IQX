@@ -10,9 +10,11 @@ function ScrollArea({
   type = "auto",
   orientation = "vertical",
   viewportClassName,
+  viewportRef,
   ...props
 }: React.ComponentProps<typeof ScrollAreaPrimitive.Root> & {
   viewportClassName?: string
+  viewportRef?: React.Ref<HTMLDivElement>
   orientation?: "vertical" | "horizontal" | "both"
 }) {
   return (
@@ -23,6 +25,7 @@ function ScrollArea({
       {...props}
     >
       <ScrollAreaPrimitive.Viewport
+        ref={viewportRef}
         data-slot="scroll-area-viewport"
         className={cn(
           "size-full overscroll-contain rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset",

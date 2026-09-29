@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from "react"
 import { useSearchParams } from "react-router"
 import { LockKeyhole } from "lucide-react"
 import { PagePanel } from "@/components/layout/page-panel"
+import { cn } from "@/lib/utils"
 import { PanelState } from "@/components/layout/panel-state"
 import { RailMenu } from "@/components/layout/rail-menu"
 import { RightSidebar } from "@/components/layout/right-sidebar"
@@ -51,7 +52,7 @@ function ContentTabs({ active, onSelect, children }: { active: DemoContent; onSe
       <TabsList variant="line" aria-label="Nội dung demo trading" className="group-data-horizontal/tabs:h-11 w-full min-w-0 shrink-0 justify-start overflow-x-auto overflow-y-hidden rounded-none border-b border-border bg-card px-3 py-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-4">
         {CONTENT_TABS.map((tab) => <TabsTrigger key={tab.id} value={tab.id} onFocus={(event) => event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" })} className="h-full flex-none rounded-none px-3 text-xs font-semibold focus-visible:ring-inset group-data-horizontal/tabs:after:bottom-0">{tab.label}</TabsTrigger>)}
       </TabsList>
-      {CONTENT_TABS.map((tab) => <TabsContent key={tab.id} value={tab.id} forceMount className="min-h-0 min-w-0 flex-1 data-[state=inactive]:hidden">
+      {CONTENT_TABS.map((tab) => <TabsContent key={tab.id} value={tab.id} forceMount className={cn("min-h-0 min-w-0 flex-1 data-[state=inactive]:hidden", tab.id === "board" && "flex flex-col")}>
         {active === tab.id && <Suspense fallback={<ContentFallback />}>{content}</Suspense>}
       </TabsContent>)}
     </Tabs>
