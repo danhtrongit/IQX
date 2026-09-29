@@ -275,7 +275,7 @@ export function BotPanel() {
                               <KeyValueRow label="Phí / thuế" value={fee == null && tax == null ? "-" : formatMoney((fee ?? 0) + (tax ?? 0))} />
                             </dl>
                           )}
-                          {item.supporting_count != null && <HintLine>{`${formatInt(item.supporting_count)}/5 lớp Ủng hộ`}</HintLine>}
+                          {item.supporting_count != null && <HintLine>{`${formatInt(item.supporting_count)}/4 lớp Ủng hộ`}</HintLine>}
                           {item.threshold_vnd != null && <HintLine>{`Mốc kích hoạt: ${formatMoney(toFiniteNumber(item.threshold_vnd))}`}</HintLine>}
                           {item.filter_ids.length > 0 && <HintLine>{`Nguồn săn: ${item.filter_ids.map(formatFilter).join(", ")}`}</HintLine>}
                         </article>
@@ -297,7 +297,7 @@ export function BotPanel() {
             <ol className="list-decimal space-y-1 pl-4 text-xs">
               <li>Bot dùng cùng một chiến lược tiêu chuẩn IQX. Linh thú, kết quả giao dịch thủ công và lịch sử P&L của bạn không thay đổi chiến lược này.</li>
               <li>Lấy tối đa 10 mã từ mỗi bộ lọc: Khối ngoại gom, Tự doanh gom, Khối lượng đột biến, Vượt đỉnh 20 phiên và Tăng mạnh kèm khối lượng.</li>
-              <li>Chỉ xét mua khi đủ năm lớp, có ít nhất 3/5 lớp Ủng hộ và không có Tin tức hoặc Nội bộ ở mức rất xấu.</li>
+              <li>Chỉ xét mua khi đủ bốn lớp, có ít nhất 3/4 lớp Ủng hộ và không có Tin tức hoặc Nội bộ ở mức rất xấu.</li>
               <li>Mỗi lần mua dùng tối đa 12% NAV đã khóa trước giao dịch, gồm phí; tối đa 30% NAV cho một mã và hai giao dịch mua mới mỗi phiên.</li>
               <li>Bot không mua thêm mã đang giữ hoặc mua lại mã vừa bán trong cùng phiên.</li>
               <li>Cắt lỗ và chốt lời được khóa tại giá mua −2× và +4× Biên độ L1. Khi giá đóng cửa chạm mốc, Bot bán mô phỏng toàn bộ tại chính giá đóng cửa phiên đó.</li>
@@ -305,10 +305,10 @@ export function BotPanel() {
           </SectionCard>
 
           <SectionCard title="Hướng dẫn">
-            <HintLine>Ôn lại năm lớp đánh giá và quy tắc Demo Trading trước khi xem các quyết định của Bot.</HintLine>
+            <HintLine>Ôn lại bốn lớp đánh giá và quy tắc Demo Trading trước khi xem các quyết định của Bot.</HintLine>
             <HintLine>
               <Info className="mr-1 inline size-3" />
-              Năm lớp đánh giá nằm ở panel Linh thú (khối Đọc 5 lớp); quy tắc Demo Trading nằm ở panel Phân tích danh mục theo từng cấp.
+              Bốn lớp đánh giá nằm ở panel Linh thú (khối Đọc 4 lớp); quy tắc Demo Trading nằm ở panel Phân tích danh mục theo từng cấp.
             </HintLine>
           </SectionCard>
 

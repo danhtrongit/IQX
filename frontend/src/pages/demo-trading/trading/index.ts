@@ -17,7 +17,7 @@ export type { CloseoutData } from "./closeout"
 export { onOrderFilled, notifyOrderFilled } from "./fill-events"
 export type { FilledOrderEvent } from "./fill-events"
 
-export { useStockInsight, useValuation } from "./use-stock-insight"
+export { useStockInsight } from "./use-stock-insight"
 
 export { useEngineRefresh } from "./use-engine-refresh"
 export type { EngineRefreshResult, EngineRefreshState } from "./use-engine-refresh"

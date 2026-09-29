@@ -2465,7 +2465,7 @@
     },
     {
       "file": "src/pages/demo-trading/trading/use-stock-insight.ts",
-      "line": 86,
+      "line": 49,
       "callee": "api",
       "raw": "/ai/insight/analyze",
       "method": "POST",
@@ -2473,19 +2473,6 @@
       "matchedOperation": "POST /api/v2/ai/insight/analyze",
       "matchedOperations": [
         "POST /api/v2/ai/insight/analyze"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/trading/use-stock-insight.ts",
-      "line": 105,
-      "callee": "api",
-      "raw": "/market-data/bctc-dashboard/{encodeURIComponent(code)}?term_type=1",
-      "method": "GET",
-      "route": "/api/v2/market-data/bctc-dashboard/{encodeURIComponent(code)}",
-      "matchedOperation": "GET /api/v2/market-data/bctc-dashboard/{symbol}",
-      "matchedOperations": [
-        "GET /api/v2/market-data/bctc-dashboard/{symbol}"
       ],
       "classification": "api-call"
     },

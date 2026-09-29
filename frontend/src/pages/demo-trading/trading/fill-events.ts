@@ -27,7 +27,7 @@ export type FilledOrderEvent = {
   level: number | null
   /** What the buy actually committed to (null on SELL / outside the journey). */
   plan: JourneyPlanInput | null
-  /** The AI's own five-layer read at BUY time, when it was available. */
+  /** The AI's own four-layer read at BUY time, when it was available. */
   ai5Lop: Lop5Partial | null
 }
 

@@ -5,10 +5,9 @@ import {
   type ConsensusResult,
   type LayerKey,
   type LayerLevel,
-  type ValuationReading,
 } from './cap5.types.js';
 
-export const CONSENSUS_THRESHOLD = 4;
+export const CONSENSUS_THRESHOLD = 3;
 export const CONSENSUS_VALID_SESSIONS = 5;
 export const TOTAL_LAYERS = LAYER_KEYS.length;
 
@@ -17,7 +16,6 @@ export const LAYER_TO_AI: Record<LayerKey, 'L1' | 'L3' | 'L4' | 'L5' | null> = {
   dong_tien: 'L3',
   noi_bo: 'L4',
   tin_tuc: 'L5',
-  dinh_gia: null,
 };
 
 export const SUPPORT_LABELS: Record<string, ReadonlySet<string>> = {
@@ -77,7 +75,6 @@ export function earliestValidSession(
 export function scoreConsensus(
   payload: unknown,
   options: {
-    valuation?: ValuationReading | null;
     sessionDate?: string | null;
     insightSessionDate?: string | null;
     expiredSessionDate?: string | null;
@@ -97,14 +94,7 @@ export function scoreConsensus(
     let source: string | null = null;
     let sourceDate: string | null = null;
 
-    if (layer === 'dinh_gia' && options.valuation) {
-      label = options.valuation.label;
-      supported = options.valuation.verdict === 'ok';
-      level = options.valuation.verdict;
-      explanation = options.valuation.explanation;
-      source = options.valuation.sourceRef;
-      sourceDate = options.valuation.tradingDate;
-    } else if (aiKey) {
+    if (aiKey) {
       label = labelFromLayer(payload, aiKey);
       supported = support(aiKey, label);
       level = displayLevel(aiKey, label, supported);
@@ -112,12 +102,12 @@ export function scoreConsensus(
       source = supported === null ? null : `ai_insight:${aiKey}`;
       if (supported !== null) explanation = `AI Insight ${aiKey}: ${String(label).trim()}`;
       else if (options.expiredSessionDate)
-        explanation = `Bản phân tích 5 lớp gần nhất là phiên ${options.expiredSessionDate}, đã quá ${CONSENSUS_VALID_SESSIONS} phiên nên không dùng để chấm.`;
+        explanation = `Bản phân tích 4 lớp gần nhất là phiên ${options.expiredSessionDate}, đã quá ${CONSENSUS_VALID_SESSIONS} phiên nên không dùng để chấm.`;
       else if (insightDate)
         explanation = `Bản phân tích phiên ${insightDate} không có nhãn hợp lệ cho lớp này.`;
-      else explanation = 'Mã này chưa có bản phân tích 5 lớp nào để chấm.';
+      else explanation = 'Mã này chưa có bản phân tích 4 lớp nào để chấm.';
     } else {
-      explanation = 'Chưa có snapshot BCTC Khối 02 còn hiệu lực để chấm lớp Định giá.';
+      explanation = 'Lớp này chưa có nguồn để chấm.';
     }
 
     if (supported !== null) {

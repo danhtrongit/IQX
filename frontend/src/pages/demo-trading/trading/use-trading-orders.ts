@@ -39,7 +39,7 @@ export type PlaceOrderInput = {
   level: number | null
   /** Cấp 3's demo capital, needed for the `% vốn` evidence row. */
   vonBanDau: number | null
-  /** The AI's five-layer read at BUY time — carried to the Kết sổ, never stored here. */
+  /** The AI's four-layer read at BUY time — carried to the Kết sổ, never stored here. */
   ai5Lop?: Lop5Partial | null
 }
 

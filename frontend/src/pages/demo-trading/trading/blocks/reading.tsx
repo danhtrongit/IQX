@@ -1,7 +1,7 @@
 /**
- * Cấp 4/5 "Đọc 5 lớp" and Cấp 6 "Đối chiếu mâu thuẫn".
+ * Cấp 4/5 "Đọc 4 lớp" and Cấp 6 "Đối chiếu mâu thuẫn".
  *
- * Đọc 5 lớp is a self-assessment: the user rates all 5 lớp BEFORE the AI's own
+ * Đọc 4 lớp is a self-assessment: the user rates all 4 lớp BEFORE the AI's own
  * read is revealed ("chống nhìn bài"), and the block only reports the two
  * counts — a different view from the AI is "góc nhìn khác", never "sai". The
  * real arbiter of a read is the trade's outcome, which the server measures.
@@ -11,8 +11,8 @@ import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { StockInsight, StockValuation } from "../stock-insight"
-import { insightLines, valuationRange } from "../stock-insight"
+import type { StockInsight } from "../stock-insight"
+import { insightLines } from "../stock-insight"
 import type { ConflictLevel, Lop, Lop5Partial, MauThuanCap6, NhanDinhLop } from "../plan-math"
 import {
   CAU_CHOT_MAU_THUAN,
@@ -26,46 +26,40 @@ import {
   countDongThuan,
   countKhacAi,
   feedbackNhanDinh,
-  fmtVnd,
   isDoc5LopComplete,
   lopLabel,
   nhanDinhLabel,
 } from "../plan-math"
 
-/** Cấp 4/5 — rate all 5 lớp, then compare with the AI's own read. */
+/** Cấp 4/5 — rate all 4 lớp, then compare with the AI's own read. */
 export function Doc5LopBlock({
   symbol,
   doc5Lop,
   ai5Lop,
   insight,
-  valuation,
   insightLoading,
   premiumBlocked,
-  currentPrice,
   onRate,
 }: {
   symbol: string
   doc5Lop: Lop5Partial
   ai5Lop: Lop5Partial
   insight: StockInsight | null
-  valuation: StockValuation | null
-  currentPrice: number
   insightLoading: boolean
   premiumBlocked: boolean
   onRate: (lop: Lop, value: NhanDinhLop) => void
 }) {
   const [openLop, setOpenLop] = useState<Lop | null>(null)
   const [revealed, setRevealed] = useState(false)
-  const range = valuationRange(valuation)
   const complete = isDoc5LopComplete(doc5Lop)
   const aiLayerCount = Object.keys(ai5Lop).length
 
   return (
     <Card className="gap-2 py-3">
       <CardHeader className="px-3">
-        <CardTitle className="text-xs font-bold">Đọc 5 lớp · {symbol}</CardTitle>
+        <CardTitle className="text-xs font-bold">Đọc 4 lớp · {symbol}</CardTitle>
         <p className="text-[11px] text-muted-foreground">
-          Bạn tự chấm từng lớp theo dữ liệu thật. AI đối chiếu chỉ hiện sau khi bạn chấm đủ 5 lớp.
+          Bạn tự chấm từng lớp theo dữ liệu thật. AI đối chiếu chỉ hiện sau khi bạn chấm đủ 4 lớp.
         </p>
       </CardHeader>
       <CardContent className="space-y-2 px-3">
@@ -92,20 +86,7 @@ export function Doc5LopBlock({
               {openLop === def.lop && (
                 <div className="space-y-1 rounded-md bg-muted/50 px-2 py-1.5">
                   <p className="text-[11px] text-muted-foreground">Nguồn: {def.source}</p>
-                  {def.lop === "dinh_gia" ? (
-                    range ? (
-                      <>
-                        <p className="text-[11px] tabular-nums text-muted-foreground">
-                          Vùng giá trị: {fmtVnd(range.rangeLow)} – {fmtVnd(range.rangeHigh)}
-                        </p>
-                        <p className="text-[11px] tabular-nums text-muted-foreground">
-                          Trung vị: {fmtVnd(range.median)} · Giá hiện tại: {fmtVnd(currentPrice)}
-                        </p>
-                      </>
-                    ) : (
-                      <p className="text-[11px] text-muted-foreground">Chưa có dữ liệu định giá.</p>
-                    )
-                  ) : insightLoading ? (
+                  {insightLoading ? (
                     <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                       <LoaderCircle className="size-3 animate-spin" /> Đang tải lớp…
                     </p>
@@ -167,7 +148,7 @@ export function Doc5LopBlock({
             </div>
             {!revealed ? (
               <p className="text-[11px] text-muted-foreground">
-                Bạn đã chấm đủ 5 lớp. Bấm “Đối chiếu với AI” để xem bản đọc của IQX cho từng lớp.
+                Bạn đã chấm đủ 4 lớp. Bấm “Đối chiếu với AI” để xem bản đọc của IQX cho từng lớp.
               </p>
             ) : aiLayerCount === 0 ? (
               <p className="text-[11px] text-muted-foreground">
@@ -218,25 +199,25 @@ export function MauThuanBlock({
   return (
     <Card className="gap-2 py-3" data-testid="cap6-mau-thuan">
       <CardHeader className="px-3">
-        <CardTitle className="text-xs font-bold">Đối chiếu mâu thuẫn 5 lớp</CardTitle>
+        <CardTitle className="text-xs font-bold">Đối chiếu mâu thuẫn 4 lớp</CardTitle>
         <p className="text-[11px] text-muted-foreground">Bản chia phe do IQX đọc từ dữ liệu thật của mã.</p>
       </CardHeader>
       <CardContent className="space-y-2 px-3">
         {loading && (
           <p className="flex items-center gap-2 text-xs text-muted-foreground">
-            <LoaderCircle className="size-3.5 animate-spin" /> Đang đọc 5 lớp của mã…
+            <LoaderCircle className="size-3.5 animate-spin" /> Đang đọc 4 lớp của mã…
           </p>
         )}
 
         {!loading && !mauThuan && (
           <p className="text-xs text-muted-foreground">
-            Chưa đọc được bản 5 lớp cho mã này — chưa thể đối chiếu mâu thuẫn.
+            Chưa đọc được bản 4 lớp cho mã này — chưa thể đối chiếu mâu thuẫn.
           </p>
         )}
 
         {!loading && mauThuan?.chua_du_du_lieu && (
           <p className="text-xs text-muted-foreground">
-            {mauThuan.ly_do_chua_du ?? "Chưa đọc đủ 5 lớp cho mã này nên chưa kết luận được mâu thuẫn."}
+            {mauThuan.ly_do_chua_du ?? "Chưa đọc đủ 4 lớp cho mã này nên chưa kết luận được mâu thuẫn."}
           </p>
         )}
 

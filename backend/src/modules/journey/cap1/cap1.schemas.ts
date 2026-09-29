@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const cap1TaskSchema = z.object({ task_no: z.number().int().min(1).max(5) });
 export const cap1KehoachSchema = z.object({
   order_id: z.uuid(),
-  lyDo: z.enum(['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc', 'dinh_gia']),
+  lyDo: z.enum(['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc']),
   trangThai_luc_dat: z.enum(['ung_ho', 'trung_tinh', 'can_chu_y', 'nguoc_chieu']),
   vung_mua: z.number().int().positive(),
   co_bam_doc_chi_tiet: z.boolean().default(false),

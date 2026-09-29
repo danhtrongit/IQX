@@ -195,7 +195,7 @@ describe('BotMarketSnapshotProvider', () => {
               session_date: tradingDate,
               payload: {
                 L1: { statusLabel: 'Rất mạnh' },
-                L2: { statusLabel: 'Tốt' },
+                L2: { statusLabel: 'Tốt' }, // legacy valuation layer, must be ignored
                 L3: { statusLabel: 'Hỗ trợ mạnh' },
                 L4: { statusLabel: 'Trung tính' },
                 L5: { statusLabel: 'Tích cực' },
@@ -245,7 +245,6 @@ describe('BotMarketSnapshotProvider', () => {
       'dong_tien',
       'noi_bo',
       'tin_tuc',
-      'dinh_gia',
     ]);
     expect(result.symbols.AAA?.l1_amplitude_source_ref).toContain(`:${tradingDate}:v1`);
     expect(result.fee_rules).toEqual({

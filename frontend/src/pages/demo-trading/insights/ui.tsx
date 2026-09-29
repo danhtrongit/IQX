@@ -1,6 +1,6 @@
 /**
  * Shared presentational primitives for the insight panels: one card shell, one
- * section header, tiles/rows, honest loading/error lines and the five-layer
+ * section header, tiles/rows, honest loading/error lines and the four-layer
  * marks. Every panel uses these so the four surfaces stay visually identical.
  */
 import type { ReactNode } from "react"

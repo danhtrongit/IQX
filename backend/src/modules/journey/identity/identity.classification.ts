@@ -12,9 +12,10 @@ export const MASCOTS: Record<JourneyLayer, { id: MascotId; name: string }> = {
   dong_tien: { id: 'thanh_long', name: 'Thanh Long' },
   noi_bo: { id: 'loc_huou', name: 'Lộc Hươu' },
   tin_tuc: { id: 'phung_hoang', name: 'Phụng Hoàng' },
-  dinh_gia: { id: 'kim_quy', name: 'Kim Quy' },
 };
 
+// 'kim_quy' is legacy (former Định giá mascot): kept only so stored profiles still parse.
+export const LEGACY_MASCOT_NAMES: Record<string, string> = { kim_quy: 'Kim Quy' };
 export type MascotId = 'bach_ho' | 'thanh_long' | 'loc_huou' | 'phung_hoang' | 'kim_quy';
 export type MatchCounts = Record<JourneyLayer, number>;
 export type AssignmentBasis = 'ai_match_count' | 'stable_tie_break' | 'zero_match_tie_break';
@@ -70,7 +71,10 @@ export function partialAssessmentMap(
   value: unknown,
 ): value is Partial<Record<JourneyLayer, JourneyLayerAssessment>> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-  const entries = Object.entries(value as Record<string, unknown>);
+  // Legacy snapshots may still carry the removed 'dinh_gia' layer; ignore it.
+  const entries = Object.entries(value as Record<string, unknown>).filter(
+    ([key]) => key !== 'dinh_gia',
+  );
   return (
     entries.length > 0 &&
     entries.every(
@@ -83,10 +87,18 @@ export function partialAssessmentMap(
 
 export function completeAssessmentMap(
   value: unknown,
+  allowLegacyValuation = false,
 ): value is Record<JourneyLayer, JourneyLayerAssessment> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const record = value as Record<string, unknown>;
-  if (Object.keys(record).length !== JOURNEY_LAYER_KEYS.length) return false;
+  const extraKeys = Object.keys(record).filter(
+    (key) => !(JOURNEY_LAYER_KEYS as readonly string[]).includes(key),
+  );
+  if (
+    extraKeys.length > 0 &&
+    !(allowLegacyValuation && extraKeys.length === 1 && extraKeys[0] === 'dinh_gia')
+  )
+    return false;
   return JOURNEY_LAYER_KEYS.every(
     (key) => record[key] === 'ok' || record[key] === 'neu' || record[key] === 'bad',
   );
@@ -159,7 +171,7 @@ export function classifyEvidence(
       toMillis(row.completed_at) > toMillis(windowEnd)
     ) {
       reason = 'outside_frozen_window';
-    } else if (!completeAssessmentMap(row.answers)) {
+    } else if (!completeAssessmentMap(row.answers, true)) {
       reason = 'incomplete_user_answers';
     } else if (row.proof_version !== 'commit_then_reveal_v1') {
       reason = 'missing_commit_proof';
@@ -200,7 +212,7 @@ export function classifyEvidence(
     if (
       !row.snapshot_matches ||
       !partialAssessmentMap(row.ai_answers) ||
-      !completeAssessmentMap(row.answers)
+      !completeAssessmentMap(row.answers, true)
     ) {
       increment(excluded, 'missing_or_invalid_ai_snapshot');
       continue;
@@ -279,7 +291,7 @@ function validContribution(value: MatchCounts): boolean {
 }
 
 function zeroCounts(): MatchCounts {
-  return { ky_thuat: 0, dong_tien: 0, noi_bo: 0, tin_tuc: 0, dinh_gia: 0 };
+  return { ky_thuat: 0, dong_tien: 0, noi_bo: 0, tin_tuc: 0 };
 }
 
 function increment(target: Record<string, number>, key: string, count = 1): void {

@@ -86,12 +86,12 @@ export function HoSoTongQuan({ blocks, level, sinceIso, cap2Progress }: { blocks
   )
 }
 
-/* ── ② Thắng / thua theo 5 lý do ───────────────────────────────────────── */
+/* ── ② Thắng / thua theo 4 lý do ───────────────────────────────────────── */
 
 export function ThangThuaTheoLyDo({ blocks, level }: { blocks: Cap1Blocks; level: number }) {
   if (blocks.totalTrades < KHOI2_MIN_TRADES) {
     return (
-      <SectionCard title="② Thắng / thua theo 5 lý do">
+      <SectionCard title="② Thắng / thua theo 4 lý do">
         <NoteLine>{`Cần ≥${KHOI2_MIN_TRADES} lệnh để có phân tích thắng/thua đáng tin. Hiện có ${formatInt(blocks.totalTrades)}.`}</NoteLine>
       </SectionCard>
     )
@@ -99,7 +99,7 @@ export function ThangThuaTheoLyDo({ blocks, level }: { blocks: Cap1Blocks; level
 
   const kept = level >= 2
   return (
-    <SectionCard title="② Thắng / thua theo 5 lý do" flag={kept ? "(giữ từ Cấp 1)" : undefined}>
+    <SectionCard title="② Thắng / thua theo 4 lý do" flag={kept ? "(giữ từ Cấp 1)" : undefined}>
       <Table className="min-w-0 table-fixed">
         <TableHeader>
           <TableRow>
@@ -137,12 +137,12 @@ export function ThangThuaTheoLyDo({ blocks, level }: { blocks: Cap1Blocks; level
   )
 }
 
-/* ── ③ Độ phủ 5 lý do ──────────────────────────────────────────────────── */
+/* ── ③ Độ phủ 4 lý do ──────────────────────────────────────────────────── */
 
 export function DoPhuLyDo({ blocks, level }: { blocks: Cap1Blocks; level: number }) {
   const full = level <= 1
   return (
-    <SectionCard title={full ? "③ Độ phủ 5 lý do + Chọn lý do có cơ sở" : "③ Độ phủ 5 lý do"} flag={full ? undefined : "(giữ từ Cấp 1)"}>
+    <SectionCard title={full ? "③ Độ phủ 4 lý do + Chọn lý do có cơ sở" : "③ Độ phủ 4 lý do"} flag={full ? undefined : "(giữ từ Cấp 1)"}>
       <div className="flex items-center gap-2.5">
         {LY_DO_OPTIONS.map((option) => {
           const used = blocks.coverage[option.lop] === true
@@ -157,7 +157,7 @@ export function DoPhuLyDo({ blocks, level }: { blocks: Cap1Blocks; level: number
       </div>
       {full ? (
         <>
-          <p className="text-xs font-semibold">{`→ Đã dùng ${blocks.usedReasons}/5`}</p>
+          <p className="text-xs font-semibold">{`→ Đã dùng ${blocks.usedReasons}/4`}</p>
           <p className="text-xs">
             {`Lệnh có lý do Ủng hộ lúc đặt: ${formatInt(blocks.soLenhUngHo)}/${formatInt(blocks.totalTrades)} · Nhiệm vụ ④: ${Math.min(blocks.soLenhUngHo, TASK4_THRESHOLD)}/${TASK4_THRESHOLD}`}
             {blocks.task4Done && <Check className="ml-1 inline size-3 text-price-up" />}
@@ -166,7 +166,7 @@ export function DoPhuLyDo({ blocks, level }: { blocks: Cap1Blocks; level: number
       ) : (
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">Đã dùng</span>
-          <span className={`font-semibold tabular-nums ${blocks.usedReasons >= 4 ? "text-price-up" : ""}`}>{`${blocks.usedReasons}/5`}</span>
+          <span className={`font-semibold tabular-nums ${blocks.usedReasons >= 3 ? "text-price-up" : ""}`}>{`${blocks.usedReasons}/4`}</span>
         </div>
       )}
       <HintLine>Độ phủ đọc từ sổ lệnh đã đóng - bộ đếm của máy chủ chỉ biết số lý do, không biết là lý do nào.</HintLine>
@@ -196,7 +196,7 @@ export function TienTrinhCap1({ blocks }: { blocks: Cap1Blocks }) {
       ) : (
         blocks.summaryLine && <NoteLine>{blocks.summaryLine}</NoteLine>
       )}
-      <HintLine>{`Ngưỡng: 5 lý do · ${TASK4_THRESHOLD} lệnh Ủng hộ · ${TASK5_THRESHOLD} lệnh Thực chiến.`}</HintLine>
+      <HintLine>{`Ngưỡng: 4 lý do · ${TASK4_THRESHOLD} lệnh Ủng hộ · ${TASK5_THRESHOLD} lệnh Thực chiến.`}</HintLine>
     </SectionCard>
   )
 }

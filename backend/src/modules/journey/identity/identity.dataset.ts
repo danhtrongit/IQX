@@ -32,31 +32,24 @@ const RANKS: Record<string, number> = {
 export type FrozenDatasetPayload = {
   symbol: string;
   source_symbol: string | null;
-  valuation_source_symbol: string | null;
   readings: Record<string, { lines: string[]; degraded: boolean }>;
   ai_answers: Partial<Record<(typeof JOURNEY_LAYER_KEYS)[number], JourneyLayerAssessment>>;
   unavailable_layers: string[];
   trading_date: string;
   price: number | null;
   source_refs: Record<string, unknown>;
-  source_snapshot: { insight: Json | null; valuation: Json | null; ohlcv: unknown };
+  source_snapshot: { insight: Json | null; ohlcv: unknown };
 };
 
 export function buildFrozenDataset(input: {
   symbol: string;
   insight: Json | null;
-  financialDashboard: Json | null;
   ohlcv: unknown;
   observedAt: Date;
 }): FrozenDatasetPayload {
   const symbol = input.symbol.trim().toUpperCase();
   const sourceSymbol = normalizedString(input.insight?.symbol);
-  const hero = asObject(input.financialDashboard?.hero);
-  const valuationSymbol = normalizedString(hero?.ticker);
-  if (
-    (sourceSymbol !== null && sourceSymbol !== symbol) ||
-    (valuationSymbol !== null && valuationSymbol !== symbol)
-  ) {
+  if (sourceSymbol !== null && sourceSymbol !== symbol) {
     throw new ConflictException({
       code: 'READING_SOURCE_SYMBOL_MISMATCH',
       message: 'Nguồn dữ liệu đối chiếu không khớp mã đang đọc',
@@ -85,37 +78,20 @@ export function buildFrozenDataset(input: {
     if (lines.length && verdict) aiAnswers[layer as keyof typeof aiAnswers] = verdict;
   }
 
-  const blocks = asObject(input.financialDashboard?.blocks);
-  const valuation = asObject(blocks?.valuation);
-  const valuationReading = readValuation(valuation);
-  if (valuationReading) {
-    aiAnswers.dinh_gia = valuationReading.verdict;
-    readings.dinh_gia = {
-      degraded: false,
-      lines: [
-        `Vùng giá trị: ${formatMoney(valuationReading.low)} – ${formatMoney(valuationReading.high)}`,
-        `Giá hiện tại: ${formatMoney(valuationReading.price)}`,
-        `Trung vị (giá hợp lý): ${formatMoney(valuationReading.median)}`,
-      ],
-    };
-  }
-
   return {
     symbol,
     source_symbol: sourceSymbol,
-    valuation_source_symbol: valuationSymbol,
     readings,
     ai_answers: aiAnswers,
     unavailable_layers: JOURNEY_LAYER_KEYS.filter((key) => aiAnswers[key] === undefined),
     trading_date: tradingDate,
-    price: valuationReading?.price ?? positiveNumber(asObject(input.insight?.header)?.price),
+    price: positiveNumber(asObject(input.insight?.header)?.price),
     source_refs: {
       insight_as_of: input.insight?.updatedAt ?? null,
-      valuation_meta: input.financialDashboard?.meta ?? null,
       market_bar_as_of: tradingDate,
       observed_at: input.observedAt.toISOString(),
     },
-    source_snapshot: { insight: input.insight, valuation, ohlcv: bars },
+    source_snapshot: { insight: input.insight, ohlcv: bars },
   };
 }
 
@@ -141,37 +117,6 @@ function readingLines(value: Json | null): string[] {
     }
   }
   return [...new Set(lines)].slice(0, 20);
-}
-
-function readValuation(value: Json | null): {
-  verdict: JourneyLayerAssessment;
-  price: number;
-  median: number;
-  low: number;
-  high: number;
-} | null {
-  if (!value) return null;
-  const price = positiveNumber(value.current_price);
-  const median = positiveNumber(value.fair_median);
-  if (!price || !median) return null;
-  const methods = Array.isArray(value.methods) ? value.methods : [];
-  const bears = methods.flatMap((item) => {
-    const amount = positiveNumber(asObject(item)?.bear);
-    return amount ? [amount] : [];
-  });
-  const bulls = methods.flatMap((item) => {
-    const amount = positiveNumber(asObject(item)?.bull);
-    return amount ? [amount] : [];
-  });
-  const low = bears.length ? Math.min(...bears) : median * 0.85;
-  const high = bulls.length ? Math.max(...bulls) : median * 1.15;
-  const verdict =
-    price < low || price < median * 0.95
-      ? 'ok'
-      : price > high || price > median * 1.05
-        ? 'bad'
-        : 'neu';
-  return { verdict, price, median, low, high };
 }
 
 function extractBars(value: unknown): Json[] {
@@ -225,10 +170,6 @@ function positiveNumber(value: unknown): number | null {
   const number =
     typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
   return Number.isFinite(number) && number > 0 ? number : null;
-}
-
-function formatMoney(value: number): string {
-  return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(value);
 }
 
 function humanize(value: string): string {

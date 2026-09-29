@@ -34,7 +34,7 @@ import type {
 const MAX_GROSS_VND = 100_000_000_000n;
 const MAX_PREFLIGHT_QUOTE_AGE_MS = 10_000;
 const LEADERBOARD_HARD_CAP = 200;
-const REQUIRED_FIVE_LAYERS = new Set(['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc', 'dinh_gia']);
+const REQUIRED_LAYERS = new Set(['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc']);
 
 function safeMoney(value: bigint | null): number | null {
   if (value == null) return null;
@@ -158,11 +158,8 @@ function assertPlan(
   }
   if (level >= 4 && level <= 5) {
     const keys = Object.keys(plan.doc_5_lop ?? {});
-    if (
-      keys.length !== REQUIRED_FIVE_LAYERS.size ||
-      keys.some((key) => !REQUIRED_FIVE_LAYERS.has(key))
-    ) {
-      throw new BadRequestException('Cấp 4–5 cần tự đọc đủ chính xác 5 lớp');
+    if (keys.length !== REQUIRED_LAYERS.size || keys.some((key) => !REQUIRED_LAYERS.has(key))) {
+      throw new BadRequestException('Cấp 4–5 cần tự đọc đủ chính xác 4 lớp');
     }
   }
 }

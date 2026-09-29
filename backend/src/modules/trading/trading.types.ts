@@ -105,7 +105,7 @@ export type ConfigSnapshot = {
 
 export type JourneyPlan = {
   ly_do_doi_thuong?: string | null;
-  lyDo?: 'ky_thuat' | 'dong_tien' | 'noi_bo' | 'tin_tuc' | 'dinh_gia' | null;
+  lyDo?: 'ky_thuat' | 'dong_tien' | 'noi_bo' | 'tin_tuc' | null;
   trangThai_luc_dat?: 'ung_ho' | 'trung_tinh' | 'can_chu_y' | 'nguoc_chieu' | null;
   vung_mua?: number | null;
   co_bam_doc_chi_tiet?: boolean;

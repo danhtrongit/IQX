@@ -666,7 +666,7 @@ export function SellCloseoutDialog({
 
         {data.level >= 4 && (
           <div className="space-y-1 rounded-md border border-border bg-muted/40 p-2 text-[11px]">
-            <p className="text-xs font-semibold">Đọc 5 lớp</p>
+            <p className="text-xs font-semibold">Đọc 4 lớp</p>
             {doc5Lop ? (
               <>
                 {Object.entries(doc5Lop).map(([lop, value]) => (
@@ -679,13 +679,13 @@ export function SellCloseoutDialog({
                 ))}
                 <p className="text-muted-foreground">
                   {recovered?.so_lop_dong_thuan != null
-                    ? `Đồng thuận ${recovered.so_lop_dong_thuan}/5 · góc nhìn khác AI ${recovered.so_lop_khac_ai ?? 0} lớp (khác quan điểm, không phải sai).`
+                    ? `Đồng thuận ${recovered.so_lop_dong_thuan}/4 · góc nhìn khác AI ${recovered.so_lop_khac_ai ?? 0} lớp (khác quan điểm, không phải sai).`
                     : `Góc nhìn khác AI: ${countKhacAi(doc5Lop, ai5Lop)} lớp (khác quan điểm, không phải sai).`}
                 </p>
               </>
             ) : (
               <p className="text-muted-foreground">
-                Không đọc lại được bản chấm 5 lớp của lệnh này (lệnh đặt trước phiên bản hiện tại hoặc
+                Không đọc lại được bản chấm 4 lớp của lệnh này (lệnh đặt trước phiên bản hiện tại hoặc
                 chưa đồng bộ) — Kết sổ không suy diễn thay bạn.
               </p>
             )}
@@ -823,9 +823,9 @@ function ProfileBlock({
   const usedLyDo = new Set([...trades.map((trade) => trade.lyDo), ...(lyDo ? [lyDo] : [])])
   const daDung = Math.max(progress?.so_ly_do_da_dung ?? 0, usedLyDo.size)
   const line2 =
-    daDung >= 5
-      ? "Bạn đã dùng đủ 5/5 lý do — nhiệm vụ ③ hoàn thành."
-      : `Bạn đã dùng ${daDung}/5 lý do mua.`
+    daDung >= 4
+      ? "Bạn đã dùng đủ 4/4 lý do — nhiệm vụ ③ hoàn thành."
+      : `Bạn đã dùng ${daDung}/4 lý do mua.`
 
   const sameLyDo = lyDo ? trades.filter((trade) => trade.lyDo === lyDo) : []
   const wins = sameLyDo.filter((trade) => trade.pnl_pct > 0).length

@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const journeyPlanSchema = z.object({
   ly_do_doi_thuong: z.string().nullable().optional(),
-  lyDo: z.enum(['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc', 'dinh_gia']).nullable().optional(),
+  lyDo: z.enum(['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc']).nullable().optional(),
   trangThai_luc_dat: z
     .enum(['ung_ho', 'trung_tinh', 'can_chu_y', 'nguoc_chieu'])
     .nullable()

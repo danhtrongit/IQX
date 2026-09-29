@@ -3,10 +3,10 @@
  *
  * - Cấp 0: 5 chip lý do đời thường (`PlanBlockCap0`).
  * - Cấp 1–3: lý do + vùng mua + AI Thanh tra (`PlanFormCap1`).
- * - Cấp 4+: the lý-do field is REPLACED (đọc 5 lớp / bảng mâu thuẫn) so only
+ * - Cấp 4+: the lý-do field is REPLACED (đọc 4 lớp / bảng mâu thuẫn) so only
  *   vùng mua stays — `hideLyDo`.
  */
-import { Gem, Landmark, LoaderCircle, Newspaper, Target, UserRound } from "lucide-react"
+import { Landmark, LoaderCircle, Newspaper, Target, UserRound } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,14 +21,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import type { StockInsight } from "../stock-insight"
-import { insightLines, LAYER_BY_LY_DO, verdictForLyDo, verdictForValuation } from "../stock-insight"
-import type { StockValuation } from "../stock-insight"
+import { insightLines, LAYER_BY_LY_DO, verdictForLyDo } from "../stock-insight"
 import type { LyDo, Verdict } from "../plan-math"
 import {
   CAP0_REASONS,
   LY_DO_OPTIONS,
   VERDICT_LABEL,
-  fmtVnd,
   lyDoLabel,
 } from "../plan-math"
 
@@ -37,7 +35,6 @@ const LY_DO_ICON: Record<LyDo, typeof Target> = {
   dong_tien: Landmark,
   noi_bo: UserRound,
   tin_tuc: Newspaper,
-  dinh_gia: Gem,
 }
 
 const VERDICT_TONE: Record<Verdict, string> = {
@@ -109,8 +106,6 @@ export function AiThanhTraCard({
   symbol,
   lyDo,
   insight,
-  valuation,
-  currentPrice,
   loading,
   failed,
   premiumBlocked,
@@ -121,8 +116,6 @@ export function AiThanhTraCard({
   symbol: string
   lyDo: LyDo
   insight: StockInsight | null
-  valuation: StockValuation | null
-  currentPrice: number
   loading: boolean
   failed: boolean
   premiumBlocked: boolean
@@ -132,28 +125,16 @@ export function AiThanhTraCard({
 }) {
   const option = LY_DO_OPTIONS.find((entry) => entry.value === lyDo)
   const layerKey = LAYER_BY_LY_DO[lyDo]
-  const read = lyDo === "dinh_gia" ? null : verdictForLyDo(insight, lyDo)
-  const valuationVerdict = lyDo === "dinh_gia" ? verdictForValuation(valuation, currentPrice) : null
-  const verdict = lyDo === "dinh_gia" ? valuationVerdict : (read?.verdict ?? null)
-  const lines =
-    lyDo === "dinh_gia"
-      ? valuation?.fair_median != null
-        ? [
-            `Giá hợp lý (trung vị): ${fmtVnd(valuation.fair_median)}`,
-            `Giá hiện tại: ${fmtVnd(currentPrice > 0 ? currentPrice : (valuation.current_price ?? 0))}`,
-            valuation.upside_pct == null
-              ? "Chưa có % lệch so với giá hợp lý."
-              : `Lệch so với giá hợp lý: ${valuation.upside_pct >= 0 ? "+" : ""}${valuation.upside_pct.toFixed(1)}%`,
-          ]
-        : []
-      : (read?.lines ?? [])
+  const read = verdictForLyDo(insight, lyDo)
+  const verdict = read?.verdict ?? null
+  const lines = read?.lines ?? []
   const unavailable = premiumBlocked ? false : failed || ((verdict == null) && !loading)
 
   return (
     <Card className="gap-2 border-border py-3" data-testid="ai-thanh-tra">
       <CardHeader className="px-3">
         <CardTitle className="text-xs font-bold">
-          AI Thanh tra · {option?.label ?? lyDo} — {layerKey ?? "BCTC"}
+          AI Thanh tra · {option?.label ?? lyDo} — {layerKey ?? "—"}
         </CardTitle>
         <p className="text-[11px] text-muted-foreground">Dữ liệu: {option?.source ?? "—"}</p>
       </CardHeader>
@@ -209,7 +190,6 @@ export function AiThanhTraCard({
 
         <p className="text-[11px] text-muted-foreground">
           Mã đang đọc: {symbol}
-          {lyDo === "dinh_gia" ? " · nguồn BCTC KHỐI 02" : ""}
         </p>
       </CardContent>
     </Card>
@@ -306,22 +286,18 @@ export function PlanFormCap1({
   )
 }
 
-/** The 6-lớp read opened from "Đọc chi tiết lớp này →" — real payload only. */
+/** The AI Insight read opened from "Đọc chi tiết lớp này →" — real payload only. */
 export function AiInsightDetailDialog({
   open,
   onOpenChange,
   symbol,
   insight,
-  valuation,
-  currentPrice,
   loading,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   symbol: string
   insight: StockInsight | null
-  valuation: StockValuation | null
-  currentPrice: number
   loading: boolean
 }) {
   const layers: { key: "L1" | "L2" | "L3" | "L4" | "L5"; title: string }[] = [
@@ -337,7 +313,7 @@ export function AiInsightDetailDialog({
         <DialogHeader>
           <DialogTitle>AI Insight · {symbol}</DialogTitle>
           <DialogDescription>
-            Bản đọc 5 lớp do AI tạo, kèm KHỐI 02 định giá từ BCTC. Số liệu chỉ hiện khi có thật.
+            Bản đọc các lớp do AI tạo. Số liệu chỉ hiện khi có thật.
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[65vh]">
@@ -379,28 +355,6 @@ export function AiInsightDetailDialog({
                 </Card>
               )
             })}
-          {valuation && (
-            <Card className="gap-2 py-3">
-              <CardHeader className="px-3">
-                <CardTitle className="text-xs">Định giá · BCTC KHỐI 02</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-1 px-3">
-                <p className="text-xs text-muted-foreground">
-                  Giá hợp lý (trung vị): {valuation.fair_median == null ? "—" : fmtVnd(valuation.fair_median)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Giá hiện tại: {fmtVnd(currentPrice > 0 ? currentPrice : (valuation.current_price ?? 0))}
-                </p>
-                {valuation.methods.map((method) => (
-                  <p key={method.name} className="text-xs text-muted-foreground">
-                    {method.name}: bi quan {method.bear == null ? "—" : fmtVnd(method.bear)} · cơ sở{" "}
-                    {method.base == null ? "—" : fmtVnd(method.base)} · lạc quan{" "}
-                    {method.bull == null ? "—" : fmtVnd(method.bull)}
-                  </p>
-                ))}
-              </CardContent>
-            </Card>
-          )}
           </div>
         </ScrollArea>
       </DialogContent>

@@ -476,8 +476,8 @@ export class Cap5Service {
         nhac:
           row.status === 'notable'
             ? stale
-              ? 'Điểm này dựng từ bản phân tích 5 lớp đã cũ — mở AI Phân tích để có bản mới.'
-              : '4/5 lớp đang ủng hộ — quyết định mua vẫn là của bạn.'
+              ? 'Điểm này dựng từ bản phân tích 4 lớp đã cũ — mở AI Phân tích để có bản mới.'
+              : '3/4 lớp đang ủng hộ — quyết định mua vẫn là của bạn.'
             : null,
         lop: score?.lop
           ? Object.fromEntries(score.lop.map((layer) => [layer.lop, layer.muc]))
@@ -604,7 +604,7 @@ export class Cap5Service {
         ? 'Bạn chưa săn mã nào — mở màn Săn mã và thử một bộ lọc.'
         : funnelCount === null
           ? `Bạn săn ${logs.length} mã; tầng giữa chưa đo được vì chưa có điểm đồng thuận hợp lệ.`
-          : `Bạn săn ${logs.length} mã, ít nhất ${funnelCount} mã đạt ngưỡng ${CONSENSUS_THRESHOLD}/5 lớp ủng hộ và vào lệnh ${progress?.so_ma_mua_tu_watchlist ?? 0} mã.`;
+          : `Bạn săn ${logs.length} mã, ít nhất ${funnelCount} mã đạt ngưỡng ${CONSENSUS_THRESHOLD}/4 lớp ủng hộ và vào lệnh ${progress?.so_ma_mua_tu_watchlist ?? 0} mã.`;
     return {
       khoi_12: {
         items,

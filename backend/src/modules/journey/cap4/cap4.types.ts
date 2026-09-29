@@ -1,4 +1,4 @@
-export const LAYERS = ['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc', 'dinh_gia'] as const;
+export const LAYERS = ['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc'] as const;
 export const ASSESSMENTS = ['ok', 'neu', 'bad'] as const;
 export type Layer = (typeof LAYERS)[number];
 export type Assessment = (typeof ASSESSMENTS)[number];

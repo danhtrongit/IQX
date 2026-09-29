@@ -37,7 +37,7 @@ function symbol(overrides: Partial<BotSnapshotSymbol> = {}): BotSnapshotSymbol {
     l1_amplitude_vnd: '1000.0000',
     l1_amplitude_source_ref: 'l1:fixture',
     layers: Object.fromEntries(
-      ['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc', 'dinh_gia'].map((key) => [
+      ['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc'].map((key) => [
         key,
         {
           verdict: 'ok',

@@ -15,15 +15,11 @@ const answers = {
   dong_tien: 'neu',
   noi_bo: 'bad',
   tin_tuc: 'ok',
-  dinh_gia: 'neu',
 } as const;
 
 describe('journey identity classification', () => {
   it('uses the stable layer order to resolve ties', () => {
-    const result = chooseMascot(
-      { ky_thuat: 1, dong_tien: 1, noi_bo: 0, tin_tuc: 0, dinh_gia: 0 },
-      1,
-    );
+    const result = chooseMascot({ ky_thuat: 1, dong_tien: 1, noi_bo: 0, tin_tuc: 0 }, 1);
     expect(result.mascot_id).toBe('bach_ho');
     expect(result.assignment_basis).toBe('stable_tie_break');
   });
@@ -66,7 +62,7 @@ describe('journey identity classification', () => {
   });
 
   it('scores a pair whose AI snapshot lacks an unavailable layer', () => {
-    const { dinh_gia: _omitted, ...partialAi } = answers;
+    const { tin_tuc: _omitted, ...partialAi } = answers;
     const record: EvidenceRecord = {
       id: 'a1',
       user_id: 'u1',
@@ -87,7 +83,7 @@ describe('journey identity classification', () => {
     const result = classifyEvidence([record], 'u1', '2026-01-01T00:00:00Z', '2026-02-01T00:00:00Z');
     expect(result.assignment_status).toBe('assigned');
     expect(result.valid_pair_count).toBe(1);
-    expect(result.match_counts.dinh_gia).toBe(0);
+    expect(result.match_counts.tin_tuc).toBe(0);
     expect(result.match_counts.ky_thuat).toBe(1);
     expect(() => validateFrozenAssignment(result)).not.toThrow();
   });
@@ -97,5 +93,6 @@ describe('journey identity classification', () => {
     expect(partialAssessmentMap({ ky_thuat: 'maybe' })).toBe(false);
     expect(partialAssessmentMap({ unknown: 'ok' })).toBe(false);
     expect(partialAssessmentMap({ ky_thuat: 'ok' })).toBe(true);
+    expect(partialAssessmentMap({ ky_thuat: 'ok', dinh_gia: 'bad' })).toBe(true);
   });
 });

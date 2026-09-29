@@ -7,7 +7,7 @@
  *  - `retry: false` on progress/analysis reads - a failure is reported, not retried
  *    into a fake empty state;
  *  - the reading flow is commit-then-reveal: the assessment is submitted exactly
- *    once all five layers are rated, and the reveal is requested only after the
+ *    once all four layers are rated, and the reveal is requested only after the
  *    submit receipt resolves.
  */
 import { useContext } from "react"

@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 
 import type { BotLayerEvidence, BotMarketSnapshotInput, BotSnapshotSymbol } from './bot.types.js';
 
-export const BOT_LAYER_KEYS = ['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc', 'dinh_gia'] as const;
+export const BOT_LAYER_KEYS = ['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc'] as const;
 
 export const BOT_RULES = Object.freeze({
   strategy_id: 'iqx_standard',
@@ -122,7 +122,7 @@ export function candidateFromSnapshot(symbol: string, row: BotSnapshotSymbol): C
 }
 
 export function supportingCount(candidate: Candidate): number {
-  return Object.values(candidate.layers).filter((row) => row.verdict === 'ok').length;
+  return BOT_LAYER_KEYS.filter((key) => candidate.layers[key]?.verdict === 'ok').length;
 }
 
 export function candidateGate(candidate: Candidate): {

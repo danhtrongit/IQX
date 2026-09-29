@@ -5,7 +5,7 @@
  * availability + coverage) and the watchlist with its 5-layer consensus and
  * per-symbol provenance. Nothing here invents a number: a filter the server
  * cannot run is disabled with its own reason, an empty result is only called
- * empty when the filter actually ran, and a missing consensus score is "-/5".
+ * empty when the filter actually ran, and a missing consensus score is "-/4".
  */
 import { useState } from "react"
 import { ArrowRight, Ban, ChartColumn, Funnel, LoaderCircle, Search, Star, Trash, TriangleAlert } from "lucide-react"
@@ -340,7 +340,7 @@ export function HuntPanel({
                         <span className="text-xs text-muted-foreground">{describeHuntSource(item)}</span>
                         <span className="flex items-center gap-1">
                           <Button size="xs" variant={notable ? "default" : "outline"} onClick={() => openTrading(item.symbol)}>
-                            {notable ? "Đặt lệnh" : "Xem 5 lớp"}
+                            {notable ? "Đặt lệnh" : "Xem 4 lớp"}
                             <ArrowRight className="size-3" />
                           </Button>
                           <Button size="icon-xs" variant="ghost" aria-label={`Bỏ ${item.symbol} khỏi Theo dõi`} disabled={removeFromWatchlist.isPending} onClick={() => void handleRemove(item.symbol)}>

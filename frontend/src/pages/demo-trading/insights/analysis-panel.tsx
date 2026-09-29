@@ -58,7 +58,7 @@ export function AnalysisPanel({ symbol }: { symbol: string }) {
       {level === 0 ? (
         <PanelState
           title="Cấp 0 «Nhập môn» chưa có phân tích danh mục"
-          description="Phân tích danh mục mở từ Cấp 1 «Học việc»: hồ sơ tổng quan, thắng/thua theo 5 lý do, độ phủ lý do và tiến trình 5 nhiệm vụ."
+          description="Phân tích danh mục mở từ Cấp 1 «Học việc»: hồ sơ tổng quan, thắng/thua theo 4 lý do, độ phủ lý do và tiến trình 5 nhiệm vụ."
         />
       ) : (
         <div className="space-y-3">
@@ -105,10 +105,10 @@ export function AnalysisPanel({ symbol }: { symbol: string }) {
           )}
 
           {level >= 4 && (
-            <LevelSection notEntered="Chưa vào Cấp 4 - ba khối đọc 5 lớp chỉ hiện số sau khi cấp này được mở." isPending={cap4VuKhi.isPending || cap4PhanTich.isPending} isError={cap4VuKhi.isError || cap4PhanTich.isError} ready={cap4VuKhi.data != null && cap4PhanTich.data != null} onRetry={refreshAll}>
+            <LevelSection notEntered="Chưa vào Cấp 4 - ba khối đọc 4 lớp chỉ hiện số sau khi cấp này được mở." isPending={cap4VuKhi.isPending || cap4PhanTich.isPending} isError={cap4VuKhi.isError || cap4PhanTich.isError} ready={cap4VuKhi.data != null && cap4PhanTich.data != null} onRetry={refreshAll}>
               {cap4.data && (
                 <HintLine>
-                  {`Cấp 4 · ${formatInt(cap4.data.so_lenh_doc_du_5lop)} lệnh đọc đủ 5 lớp · vũ khí ${cap4.data.vu_khi_lop ?? "-"} · điểm mù ${cap4.data.diem_mu_lop ?? "-"}`}
+                  {`Cấp 4 · ${formatInt(cap4.data.so_lenh_doc_du_5lop)} lệnh đọc đủ 4 lớp · vũ khí ${cap4.data.vu_khi_lop ?? "-"} · điểm mù ${cap4.data.diem_mu_lop ?? "-"}`}
                 </HintLine>
               )}
               <VuKhiDiemMuBlock data={cap4VuKhi.data ?? undefined} />

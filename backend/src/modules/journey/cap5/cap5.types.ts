@@ -9,7 +9,7 @@ export const HUNT_FILTER_LABELS: Record<HuntFilter, string> = {
   tang: 'Tăng mạnh + KL cao',
 };
 
-export const LAYER_KEYS = ['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc', 'dinh_gia'] as const;
+export const LAYER_KEYS = ['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc'] as const;
 export type LayerKey = (typeof LAYER_KEYS)[number];
 export type LayerLevel = 'ok' | 'neu' | 'bad';
 export type WatchlistStatus = 'watching' | 'notable';
@@ -19,7 +19,6 @@ export const LAYER_LABELS: Record<LayerKey, string> = {
   dong_tien: 'Dòng tiền',
   noi_bo: 'Nội bộ',
   tin_tuc: 'Tin tức',
-  dinh_gia: 'Định giá',
 };
 
 export interface ValuationReading {

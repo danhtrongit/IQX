@@ -13,7 +13,6 @@ import type { ComponentType } from "react"
 import {
   ChartColumn,
   Coins,
-  Gem,
   Newspaper,
   Target,
   TrendingUp,
@@ -25,23 +24,22 @@ export type Icon = ComponentType<{ className?: string }>
 
 export const DASH = "-"
 
-/* ── Five layers (Cấp 4 «Đọc 5 lớp», and Cấp 1's five buy reasons) ───────── */
+/* ── Four layers (Cấp 4 «Đọc 4 lớp», and Cấp 1's four buy reasons) ───────── */
 
-export type Lop = "ky_thuat" | "dong_tien" | "noi_bo" | "tin_tuc" | "dinh_gia"
+export type Lop = "ky_thuat" | "dong_tien" | "noi_bo" | "tin_tuc"
 export type NhanDinhLop = "ok" | "neu" | "bad"
 
 /** Canonical layer order - identical to the backend's `LOP_KEYS`. */
-export const LOP_KEYS: readonly Lop[] = ["ky_thuat", "dong_tien", "noi_bo", "tin_tuc", "dinh_gia"]
+export const LOP_KEYS: readonly Lop[] = ["ky_thuat", "dong_tien", "noi_bo", "tin_tuc"]
 
 export type LopDef = { lop: Lop; Icon: Icon; label: string; source: string }
 
-/** spec §5.1 - the five layers, in the spec's order, with their real sources. */
+/** spec §5.1 - the four layers, in the spec's order, with their real sources. */
 export const LOP_DEFS: readonly LopDef[] = [
   { lop: "ky_thuat", Icon: Target, label: "Kỹ thuật", source: "AI Insight · L1 Xu hướng" },
   { lop: "dong_tien", Icon: Coins, label: "Dòng tiền", source: "AI Insight · L3 Dòng tiền (khối ngoại + tự doanh)" },
   { lop: "noi_bo", Icon: UserRound, label: "Nội bộ", source: "AI Insight · L4 Nội bộ (lãnh đạo mua)" },
   { lop: "tin_tuc", Icon: Newspaper, label: "Tin tức", source: "AI Insight · L5 Tin tức" },
-  { lop: "dinh_gia", Icon: Gem, label: "Định giá", source: "AI Phân tích BCTC · KHỐI 02 Giá đắt hay rẻ" },
 ]
 
 export function lopLabel(value: string | null | undefined): string {
@@ -49,7 +47,7 @@ export function lopLabel(value: string | null | undefined): string {
   return LOP_DEFS.find((def) => def.lop === value)?.label ?? value
 }
 
-/** The five buy reasons of Cấp 1 are the same five layers, in the same order. */
+/** The four buy reasons of Cấp 1 are the same four layers, in the same order. */
 export const LY_DO_OPTIONS = LOP_DEFS
 
 export const NHAN_DINH_OPTIONS: readonly { value: NhanDinhLop; label: string }[] = [
@@ -68,7 +66,7 @@ const NHAN_DINH_VALUES: readonly string[] = ["ok", "neu", "bad"]
 
 export type Lop5Partial = Partial<Record<Lop, NhanDinhLop | null>> | null | undefined
 
-/** spec §5.2 cổng cứng - all five layers rated. */
+/** spec §5.2 cổng cứng - all four layers rated. */
 export function isDoc5LopComplete(answers: Lop5Partial): boolean {
   if (!answers) return false
   return LOP_KEYS.every((lop) => NHAN_DINH_VALUES.includes(answers[lop] as string))

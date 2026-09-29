@@ -11,8 +11,8 @@
  * | 1+  | `lyDo` + `trangThai_luc_dat` + `vung_mua` (> 0, nguyên)       |
  * | 2+  | `phuong_phap_sl_tp` + `cat_lo` + `chot_loi` (> 0, nguyên)     |
  * | 3+  | `khau_vi` + `muc_tu_tin` + `cach_khoi_luong`                   |
- * | 4–5 | `doc_5_lop` chấm đủ **đúng 5 lớp**                             |
- * | 6   | không thêm gì — bảng mâu thuẫn thay ô tự chấm 5 lớp           |
+ * | 4–5 | `doc_5_lop` chấm đủ **đúng 4 lớp**                             |
+ * | 6   | không thêm gì — bảng mâu thuẫn thay ô tự chấm 4 lớp           |
  *
  * Outside the journey (`level === null`) a BUY carries no `journey_plan` at
  * all; a SELL never carries one.
@@ -107,9 +107,9 @@ export function emptyPlanDraft(): PlanDraft {
 }
 
 /**
- * The lý do actually sent/used. Cấp 4 derives it from the five ratings (its
+ * The lý do actually sent/used. Cấp 4 derives it from the four ratings (its
  * own picker is gone but `order_kehoach.lyDo` is NOT NULL); Cấp 6 derives it
- * from the SERVER's five-layer read, and falls back to `null` — which makes
+ * from the SERVER's four-layer read, and falls back to `null` — which makes
  * Cấp 1's own field reappear — rather than stamping a default lớp onto the
  * order's permanent record.
  */
@@ -186,7 +186,7 @@ export function planGate(context: PlanContext): PlanGate {
     }
   }
   if (level >= 4 && level <= 5 && !isDoc5LopComplete(draft.doc5Lop)) {
-    return { ok: false, reason: "doc_5_lop", message: "Chấm đủ cả 5 lớp mới đặt được lệnh." }
+    return { ok: false, reason: "doc_5_lop", message: "Chấm đủ cả 4 lớp mới đặt được lệnh." }
   }
   return { ok: true }
 }

@@ -16,25 +16,13 @@ const insight = {
     L5: { statusLabel: 'Tích cực', tong_quan: 'Kết quả kinh doanh cải thiện' },
   },
 };
-const dashboard = {
-  hero: { ticker: 'VNM' },
-  blocks: {
-    valuation: {
-      current_price: 74_000,
-      fair_median: 80_000,
-      methods: [{ name: 'P/E', bear: 68_000, base: 80_000, bull: 92_000 }],
-    },
-  },
-  meta: { periods: ['2025'] },
-};
 const ohlcv = { data: [{ time: '2026-09-22', close: 74_000 }] };
 
 describe('fresh journey reading datasets', () => {
-  it('builds five real readings without inventing neutral values', () => {
+  it('builds four real readings without inventing neutral values', () => {
     const payload = buildFrozenDataset({
       symbol: 'VNM',
       insight,
-      financialDashboard: dashboard,
       ohlcv,
       observedAt: new Date('2026-09-23T02:00:00Z'),
     });
@@ -44,14 +32,12 @@ describe('fresh journey reading datasets', () => {
       dong_tien: 'ok',
       noi_bo: 'neu',
       tin_tuc: 'ok',
-      dinh_gia: 'ok',
     });
     expect(payload.unavailable_layers).toEqual([]);
 
     const missing = buildFrozenDataset({
       symbol: 'VNM',
       insight: { ...insight, layers: { ...insight.layers, L3: { statusLabel: 'Không rõ' } } },
-      financialDashboard: dashboard,
       ohlcv,
       observedAt: new Date('2026-09-23T02:00:00Z'),
     });
@@ -110,12 +96,6 @@ describe('fresh journey reading datasets', () => {
         }),
       } as never,
       {
-        getDashboard: vi.fn(async () => {
-          assertOutside();
-          return { data: dashboard };
-        }),
-      } as never,
-      {
         getOhlcv: vi.fn(async () => {
           assertOutside();
           return ohlcv;
@@ -128,7 +108,7 @@ describe('fresh journey reading datasets', () => {
     expect(response).toEqual(expect.objectContaining({ id: 'd1', symbol: 'VNM' }));
     expect(response).not.toHaveProperty('ai_answers');
     expect(response).not.toHaveProperty('source_snapshot');
-    expect(insertedPayload?.ai_answers).toEqual(expect.objectContaining({ dinh_gia: 'ok' }));
+    expect(insertedPayload?.ai_answers).toEqual(expect.objectContaining({ ky_thuat: 'ok' }));
     expect(insertedPayload?.source_snapshot).toBeTruthy();
     expect(database.transaction).toHaveBeenCalledTimes(1);
   });
@@ -137,7 +117,6 @@ describe('fresh journey reading datasets', () => {
     const payload = buildFrozenDataset({
       symbol: 'VNM',
       insight,
-      financialDashboard: dashboard,
       ohlcv,
       observedAt: new Date('2026-09-23T02:00:00Z'),
     });
@@ -213,7 +192,6 @@ describe('fresh journey reading datasets', () => {
       {} as never,
       {} as never,
       { get: vi.fn() } as never,
-      {} as never,
       {} as never,
       {} as never,
     );

@@ -346,7 +346,7 @@ export class Cap1Service {
       total: string | number;
       closeouts: string | number;
     }>(
-      `select count(distinct p."lyDo") as reasons,
+      `select count(distinct p."lyDo") filter (where p."lyDo" <> 'dinh_gia') as reasons,
               count(*) filter (where p."trangThai_luc_dat" = 'ung_ho') as supported,
               count(*) as total,
               (select count(*) from order_ketso k join virtual_orders s on s.id = k.order_id
@@ -365,7 +365,7 @@ export class Cap1Service {
          so_ly_do_da_dung = $2, so_lenh_ly_do_ung_ho = $3, so_lenh_thuc_chien = $4,
          task_1_done_at = case when $4 >= 1 then coalesce(task_1_done_at, now()) else task_1_done_at end,
          task_2_done_at = case when $5 >= 1 then coalesce(task_2_done_at, now()) else task_2_done_at end,
-         task_3_done_at = case when $2 >= 5 then coalesce(task_3_done_at, now()) else task_3_done_at end,
+         task_3_done_at = case when $2 >= 4 then coalesce(task_3_done_at, now()) else task_3_done_at end,
          task_4_done_at = case when $3 >= 3 then coalesce(task_4_done_at, now()) else task_4_done_at end,
          task_5_done_at = case when $4 >= 10 then coalesce(task_5_done_at, now()) else task_5_done_at end,
          updated_at = now() where user_id = $1 returning *`,

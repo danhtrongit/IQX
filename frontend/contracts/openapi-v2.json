@@ -26130,8 +26130,7 @@
                       "bach_ho",
                       "thanh_long",
                       "loc_huou",
-                      "phung_hoang",
-                      "kim_quy"
+                      "phung_hoang"
                     ],
                     "type": "string"
                   },
@@ -38186,8 +38185,7 @@
                       "ky_thuat",
                       "dong_tien",
                       "noi_bo",
-                      "tin_tuc",
-                      "dinh_gia"
+                      "tin_tuc"
                     ],
                     "type": "string"
                   },
@@ -45153,14 +45151,6 @@
                   "answers": {
                     "additionalProperties": false,
                     "properties": {
-                      "dinh_gia": {
-                        "enum": [
-                          "ok",
-                          "neu",
-                          "bad"
-                        ],
-                        "type": "string"
-                      },
                       "dong_tien": {
                         "enum": [
                           "ok",
@@ -45198,8 +45188,7 @@
                       "ky_thuat",
                       "dong_tien",
                       "noi_bo",
-                      "tin_tuc",
-                      "dinh_gia"
+                      "tin_tuc"
                     ],
                     "type": "object"
                   },
@@ -56744,8 +56733,7 @@
                           "ky_thuat",
                           "dong_tien",
                           "noi_bo",
-                          "tin_tuc",
-                          "dinh_gia"
+                          "tin_tuc"
                         ],
                         "nullable": true,
                         "type": "string"
@@ -59459,8 +59447,7 @@
                       "bach_ho",
                       "thanh_long",
                       "loc_huou",
-                      "phung_hoang",
-                      "kim_quy"
+                      "phung_hoang"
                     ],
                     "type": "string"
                   },
@@ -71555,8 +71542,7 @@
                       "ky_thuat",
                       "dong_tien",
                       "noi_bo",
-                      "tin_tuc",
-                      "dinh_gia"
+                      "tin_tuc"
                     ],
                     "type": "string"
                   },
@@ -79042,14 +79028,6 @@
                   "answers": {
                     "additionalProperties": false,
                     "properties": {
-                      "dinh_gia": {
-                        "enum": [
-                          "ok",
-                          "neu",
-                          "bad"
-                        ],
-                        "type": "string"
-                      },
                       "dong_tien": {
                         "enum": [
                           "ok",
@@ -79087,8 +79065,7 @@
                       "ky_thuat",
                       "dong_tien",
                       "noi_bo",
-                      "tin_tuc",
-                      "dinh_gia"
+                      "tin_tuc"
                     ],
                     "type": "object"
                   },
@@ -92262,8 +92239,7 @@
                           "ky_thuat",
                           "dong_tien",
                           "noi_bo",
-                          "tin_tuc",
-                          "dinh_gia"
+                          "tin_tuc"
                         ],
                         "nullable": true,
                         "type": "string"

@@ -32,7 +32,6 @@ const FILTER_IDS: Record<HuntFilter, string> = {
 
 const LAYER_MAPPING = {
   ky_thuat: 'L1',
-  dinh_gia: 'L2',
   dong_tien: 'L3',
   noi_bo: 'L4',
   tin_tuc: 'L5',
@@ -40,14 +39,12 @@ const LAYER_MAPPING = {
 
 const SUPPORT: Record<string, ReadonlySet<string>> = {
   L1: new Set(['Mạnh', 'Rất mạnh']),
-  L2: new Set(['Tốt', 'Rẻ', 'Hấp dẫn', 'Mạnh', 'Rất mạnh']),
   L3: new Set(['Hỗ trợ nhẹ', 'Hỗ trợ mạnh']),
   L4: new Set(['Hỗ trợ nhẹ', 'Hỗ trợ mạnh']),
   L5: new Set(['Tích cực', 'Rất tích cực']),
 };
 const NEGATIVE: Record<string, ReadonlySet<string>> = {
   L1: new Set(['Yếu', 'Rất yếu']),
-  L2: new Set(['Đắt', 'Rất đắt', 'Yếu', 'Rất yếu']),
   L3: new Set(['Cảnh báo nhẹ', 'Cảnh báo mạnh']),
   L4: new Set(['Cảnh báo nhẹ', 'Cảnh báo mạnh']),
   L5: new Set(['Tiêu cực', 'Rất tiêu cực']),

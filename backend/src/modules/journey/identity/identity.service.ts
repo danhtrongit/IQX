@@ -8,10 +8,10 @@ import { ConfigService } from '@nestjs/config';
 
 import { DatabaseService, type SqlClient } from '../../../platform/database/index.js';
 import { AnalysisService } from '../../analysis/index.js';
-import { FinancialsService } from '../../financials/index.js';
 import { MarketDataService } from '../../market-data/index.js';
 import { CoreJourneyService, JourneyEventService } from '../core/index.js';
 import {
+  LEGACY_MASCOT_NAMES,
   MASCOTS,
   MASCOT_RULES_VERSION,
   classifyEvidence,
@@ -73,7 +73,6 @@ export class JourneyIdentityService {
     private readonly events: JourneyEventService,
     private readonly config: ConfigService,
     private readonly analysis: AnalysisService,
-    private readonly financials: FinancialsService,
     private readonly market: MarketDataService,
   ) {}
 
@@ -143,16 +142,13 @@ export class JourneyIdentityService {
     // slow upstream is never allowed to hold the user/progress row locks.
     const sources = await Promise.allSettled([
       this.analysis.insight({ symbol, language: 'vi', include_payload: false }, userId),
-      this.financials.getDashboard(symbol, 1),
       this.market.getOhlcv(symbol, { interval: '1D' }),
     ]);
     const insight = sources[0]!.status === 'fulfilled' ? sources[0]!.value : null;
-    const dashboard = sources[1]!.status === 'fulfilled' ? sources[1]!.value : null;
-    const ohlcv = sources[2]!.status === 'fulfilled' ? sources[2]!.value : [];
+    const ohlcv = sources[1]!.status === 'fulfilled' ? sources[1]!.value : [];
     const payload = buildFrozenDataset({
       symbol,
       insight,
-      financialDashboard: dashboard ? { ...dashboard.data, meta: dashboard.meta } : null,
       ohlcv,
       observedAt,
     });
@@ -260,7 +256,7 @@ export class JourneyIdentityService {
     if (!completeAssessmentMap(answers))
       throw new BadRequestException({
         code: 'INVALID_ASSESSMENT',
-        message: 'Cần tự chấm đủ 5 lớp',
+        message: 'Cần tự chấm đủ 4 lớp',
       });
     return this.database.transaction(async (tx) => {
       await this.lockUser(tx, userId);
@@ -543,7 +539,6 @@ export class JourneyIdentityService {
         dateOnly(row.dataset_trading_date) === dateOnly(row.trading_date) &&
         row.payload.symbol === row.symbol &&
         row.payload.source_symbol === row.symbol &&
-        row.payload.valuation_source_symbol === row.symbol &&
         row.payload.trading_date === dateOnly(row.dataset_trading_date) &&
         digest(row.payload) === row.dataset_hash &&
         new Date(row.dataset_created_at).getTime() <= new Date(row.completed_at).getTime(),
@@ -772,7 +767,7 @@ export class JourneyIdentityService {
         dominant_layer: layer,
         assignment_basis: 'qa_override',
         valid_pair_count: 0,
-        match_counts: { ky_thuat: 0, dong_tien: 0, noi_bo: 0, tin_tuc: 0, dinh_gia: 0 },
+        match_counts: { ky_thuat: 0, dong_tien: 0, noi_bo: 0, tin_tuc: 0 },
         tied_layers: [],
         window_start: null,
         window_end: graduatedAt,
@@ -800,7 +795,7 @@ function mascotView(profile: ProfileRow): Record<string, unknown> {
     : null;
   return {
     id: profile.mascot_id,
-    name: mascot?.name ?? profile.mascot_id,
+    name: mascot?.name ?? LEGACY_MASCOT_NAMES[profile.mascot_id ?? ''] ?? profile.mascot_id,
     dominant_layer: profile.dominant_layer,
     assignment_basis: profile.assignment_basis,
     valid_pair_count: profile.valid_pair_count,

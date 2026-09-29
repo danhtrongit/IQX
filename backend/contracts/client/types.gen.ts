@@ -10936,8 +10936,7 @@ export type AdminRetryIpnPostApiV1AdminIpnLogIdRetryResponse =
 
 export type JourneyIdentityControllerGrantQa0Data = {
   body: {
-    mascot_id:
-      "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+    mascot_id: "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang";
     reason: string;
     user_id: string;
   };
@@ -15904,7 +15903,7 @@ export type Cap1ControllerGraduate0Response =
 export type Cap1ControllerKehoach0Data = {
   body: {
     co_bam_doc_chi_tiet?: boolean;
-    lyDo: "ky_thuat" | "dong_tien" | "noi_bo" | "tin_tuc" | "dinh_gia";
+    lyDo: "ky_thuat" | "dong_tien" | "noi_bo" | "tin_tuc";
     order_id: string;
     snapshot?: {
       [key: string]: unknown;
@@ -19130,7 +19129,6 @@ export type LegacyHealthGetApiV1HealthResponse =
 export type JourneyIdentityControllerSubmit0Data = {
   body: {
     answers: {
-      dinh_gia: "ok" | "neu" | "bad";
       dong_tien: "ok" | "neu" | "bad";
       ky_thuat: "ok" | "neu" | "bad";
       noi_bo: "ok" | "neu" | "bad";
@@ -24319,7 +24317,7 @@ export type TradingControllerPlace0Data = {
         [key: string]: "ok" | "neu" | "bad";
       } | null;
       khau_vi?: "than_trong" | "can_bang" | "tan_cong";
-      lyDo?: "ky_thuat" | "dong_tien" | "noi_bo" | "tin_tuc" | "dinh_gia";
+      lyDo?: "ky_thuat" | "dong_tien" | "noi_bo" | "tin_tuc";
       ly_do_doi_thuong?: string | null;
       muc_tu_tin?: 1 | 2 | 3 | null;
       nhoi_lenh_alert_id?: string | null;
@@ -25405,8 +25403,7 @@ export type AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponse =
 
 export type JourneyIdentityControllerGrantQa1Data = {
   body: {
-    mascot_id:
-      "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+    mascot_id: "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang";
     reason: string;
     user_id: string;
   };
@@ -30377,7 +30374,7 @@ export type Cap1ControllerGraduate1Response =
 export type Cap1ControllerKehoach1Data = {
   body: {
     co_bam_doc_chi_tiet?: boolean;
-    lyDo: "ky_thuat" | "dong_tien" | "noi_bo" | "tin_tuc" | "dinh_gia";
+    lyDo: "ky_thuat" | "dong_tien" | "noi_bo" | "tin_tuc";
     order_id: string;
     snapshot?: {
       [key: string]: unknown;
@@ -33751,7 +33748,6 @@ export type GetInstrumentV2Response =
 export type JourneyIdentityControllerSubmit1Data = {
   body: {
     answers: {
-      dinh_gia: "ok" | "neu" | "bad";
       dong_tien: "ok" | "neu" | "bad";
       ky_thuat: "ok" | "neu" | "bad";
       noi_bo: "ok" | "neu" | "bad";
@@ -39668,7 +39664,7 @@ export type TradingControllerPlace1Data = {
         [key: string]: "ok" | "neu" | "bad";
       } | null;
       khau_vi?: "than_trong" | "can_bang" | "tan_cong";
-      lyDo?: "ky_thuat" | "dong_tien" | "noi_bo" | "tin_tuc" | "dinh_gia";
+      lyDo?: "ky_thuat" | "dong_tien" | "noi_bo" | "tin_tuc";
       ly_do_doi_thuong?: string | null;
       muc_tu_tin?: 1 | 2 | 3 | null;
       nhoi_lenh_alert_id?: string | null;

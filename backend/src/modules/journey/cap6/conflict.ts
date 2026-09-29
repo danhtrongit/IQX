@@ -1,9 +1,4 @@
-import {
-  LAYER_KEYS,
-  LAYER_LABELS,
-  type LayerKey,
-  type ValuationReading,
-} from '../cap5/cap5.types.js';
+import { LAYER_KEYS, LAYER_LABELS, type LayerKey } from '../cap5/cap5.types.js';
 import { LAYER_TO_AI } from '../cap5/consensus.js';
 import { DEDUCTION_LAYERS, VETO_LAYERS, type ConflictResult } from './cap6.types.js';
 
@@ -53,7 +48,7 @@ export function emptyConflict(reason: string): ConflictResult {
 
 export function readConflict(
   payload: unknown,
-  options: { valuation?: ValuationReading | null; sessionDate?: string | null } = {},
+  options: { sessionDate?: string | null } = {},
 ): ConflictResult {
   const ung_ho: ConflictResult['ung_ho'] = [];
   const nguoc: ConflictResult['nguoc'] = [];
@@ -64,10 +59,7 @@ export function readConflict(
     const aiKey = LAYER_TO_AI[layer];
     let label: unknown;
     let rank: number | null = null;
-    if (layer === 'dinh_gia' && options.valuation) {
-      label = options.valuation.label;
-      rank = options.valuation.rank;
-    } else if (aiKey) {
+    if (aiKey) {
       label = labelFrom(payload, aiKey);
       rank = typeof label === 'string' ? (AI_RANKS[aiKey]?.[label.trim()] ?? null) : null;
     }
@@ -84,7 +76,7 @@ export function readConflict(
   const scored = ung_ho.length + nguoc.length + trung_tinh.length;
   if (scored === 0)
     return emptyConflict(
-      'Bản phân tích 5 lớp không có nhãn hợp lệ ở lớp nào, nên IQX chưa dựng được bảng mâu thuẫn.',
+      'Bản phân tích 4 lớp không có nhãn hợp lệ ở lớp nào, nên IQX chưa dựng được bảng mâu thuẫn.',
     );
   const result: ConflictResult = {
     co_mau_thuan: ung_ho.length > 0 && nguoc.length > 0,

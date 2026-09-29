@@ -14,7 +14,7 @@
 
 /* ── vocabulary ──────────────────────────────────────────────────────────── */
 
-export type LyDo = "ky_thuat" | "dong_tien" | "noi_bo" | "tin_tuc" | "dinh_gia"
+export type LyDo = "ky_thuat" | "dong_tien" | "noi_bo" | "tin_tuc"
 export type TrangThaiLucDat = "ung_ho" | "trung_tinh" | "can_chu_y" | "nguoc_chieu"
 export type CamXuc = "binh_tinh" | "so" | "hoi_tiec" | "khong_ro"
 export type PhuongPhapSlTp = "ho_tro_khang_cu" | "bien_do_dao_dong"
@@ -46,7 +46,6 @@ export const LY_DO_OPTIONS: readonly { value: LyDo; label: string; source: strin
   { value: "dong_tien", label: "Dòng tiền", source: "AI Insight · L3 Dòng tiền" },
   { value: "noi_bo", label: "Nội bộ", source: "AI Insight · L4 Nội bộ" },
   { value: "tin_tuc", label: "Tin tức", source: "AI Insight · L5 Tin tức" },
-  { value: "dinh_gia", label: "Định giá", source: "BCTC · KHỐI 02 Giá đắt hay rẻ" },
 ]
 
 export function lyDoLabel(value: LyDo | null | undefined): string {
@@ -107,46 +106,25 @@ export function verdictFromStatusLevel(level: 1 | 2 | 3 | 4 | 5): Verdict {
   }
 }
 
-/**
- * 💎 Định giá has no `statusLevel` (BCTC KHỐI 02 isn't an AI Insight layer), so
- * its verdict is price vs vùng giá trị: below the whole range → ủng hộ mạnh,
- * above it → ngược chiều, ±5% around the median → trung tính.
- */
-export function verdictFromValuation(params: {
-  currentPrice: number
-  median: number
-  rangeLow: number
-  rangeHigh: number
-}): Verdict {
-  const { currentPrice, median, rangeLow, rangeHigh } = params
-  if (currentPrice > rangeHigh) return "nguoc_chieu"
-  if (currentPrice < rangeLow) return "ung_ho_manh"
-  if (currentPrice < median * 0.95) return "ung_ho"
-  if (currentPrice > median * 1.05) return "can_chu_y"
-  return "trung_tinh"
-}
-
 export function verdictToTrangThai(verdict: Verdict): TrangThaiLucDat {
   return verdict === "ung_ho_manh" ? "ung_ho" : verdict
 }
 
-/* ── Cấp 4: đọc 5 lớp ───────────────────────────────────────────────────── */
+/* ── Cấp 4: đọc 4 lớp ───────────────────────────────────────────────────── */
 
 export const LOP_KEYS: readonly Lop[] = [
   "ky_thuat",
   "dong_tien",
   "noi_bo",
   "tin_tuc",
-  "dinh_gia",
 ]
 
-/** The 5 lớp with their real data source — the đọc-5-lớp block's own rows. */
-export const LOP_DEFS: readonly { lop: Lop; label: string; source: string; layer: "L1" | "L3" | "L4" | "L5" | null }[] = [
+/** The 4 lớp with their real data source — the đọc-4-lớp block's own rows. */
+export const LOP_DEFS: readonly { lop: Lop; label: string; source: string; layer: "L1" | "L3" | "L4" | "L5" }[] = [
   { lop: "ky_thuat", label: "Kỹ thuật", source: "AI Insight · L1 Xu hướng", layer: "L1" },
   { lop: "dong_tien", label: "Dòng tiền", source: "AI Insight · L3 Dòng tiền", layer: "L3" },
   { lop: "noi_bo", label: "Nội bộ", source: "AI Insight · L4 Nội bộ", layer: "L4" },
   { lop: "tin_tuc", label: "Tin tức", source: "AI Insight · L5 Tin tức", layer: "L5" },
-  { lop: "dinh_gia", label: "Định giá", source: "BCTC KHỐI 02 Giá đắt hay rẻ", layer: null },
 ]
 
 export function lopLabel(lop: Lop): string {
@@ -163,7 +141,7 @@ export function nhanDinhLabel(value: NhanDinhLop | null | undefined): string {
   return NHAN_DINH_OPTIONS.find((option) => option.value === value)?.label ?? "—"
 }
 
-/** 5-bậc verdict → the 3 mức the five-layer comparison uses. */
+/** 5-bậc verdict → the 3 mức the four-layer comparison uses. */
 export function nhanDinhFromVerdict(verdict: Verdict): NhanDinhLop {
   switch (verdict) {
     case "ung_ho_manh":
@@ -201,7 +179,7 @@ const AI_SUPPORT_RANK: Record<NhanDinhLop, number> = { ok: 2, neu: 1, bad: 0 }
 
 /**
  * Cấp 4 replaces Cấp 1's lý-do picker, but `order_kehoach.lyDo` is NOT NULL —
- * so a Cấp 4 BUY derives it from the five ratings instead of inventing one.
+ * so a Cấp 4 BUY derives it from the four ratings instead of inventing one.
  * Rule: the Ủng hộ lớp AI supports most strongly; ties in canonical order.
  */
 export function deriveLyDoForCap1(
@@ -544,7 +522,7 @@ export const CAU_CHOT_MAU_THUAN =
 export const CHU_THICH_PHU_QUYET =
   "Lớp phủ quyết: Tin tức · Nội bộ — khi rất xấu, có thể phủ định mọi lớp khác."
 export const CHU_THICH_DIEM_TRU =
-  "Lớp điểm trừ: Kỹ thuật · Dòng tiền · Định giá — xấu thì trừ điểm, không phủ định."
+  "Lớp điểm trừ: Kỹ thuật · Dòng tiền — xấu thì trừ điểm, không phủ định."
 export const CHU_THICH_KHUNG_THAM_KHAO = "(Khung tham khảo của IQX, không phải quy tắc bắt buộc.)"
 
 /**
@@ -567,7 +545,7 @@ export function feedbackNhanDinh(level: ConflictLevel): string {
 
 /**
  * spec §5.1 — the conflict table only exists with ≥1 ủng hộ AND ≥1 ngược chiều.
- * `chua_du_du_lieu` blocks everything: "chưa đọc đủ 5 lớp" is NOT "no conflict".
+ * `chua_du_du_lieu` blocks everything: "chưa đọc đủ 4 lớp" is NOT "no conflict".
  */
 export function coBangMauThuan(mauThuan: MauThuanCap6 | null | undefined): boolean {
   if (!mauThuan) return false
@@ -576,7 +554,7 @@ export function coBangMauThuan(mauThuan: MauThuanCap6 | null | undefined): boole
 }
 
 /**
- * Lý do vào lệnh SUY RA from the server's five-layer read — fills Cấp 1's NOT
+ * Lý do vào lệnh SUY RA from the server's four-layer read — fills Cấp 1's NOT
  * NULL `lyDo` at Cấp 6, where the user no longer rates layers. `null` means
  * "can't read anything": the caller must fall back to letting the user pick.
  */

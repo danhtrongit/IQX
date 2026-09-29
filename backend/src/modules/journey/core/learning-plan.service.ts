@@ -361,7 +361,7 @@ export class LearningPlanService implements TradingLearningPlanPort {
       }
     }
     if ((level === 4 || level === 5) && !completeLayerMap(plan.doc_5_lop)) {
-      this.invalid('Cấp 4–5 cần tự đọc đủ chính xác 5 lớp');
+      this.invalid('Cấp 4–5 cần tự đọc đủ chính xác 4 lớp');
     }
     if (level >= 6 && plan.conflict_level != null && !CONFLICT_LEVELS.has(plan.conflict_level)) {
       this.invalid('Mức mâu thuẫn không hợp lệ');

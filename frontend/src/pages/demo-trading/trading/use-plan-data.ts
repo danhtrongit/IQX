@@ -364,7 +364,7 @@ export type RecoveredPlan = {
  * the SAME `order_kehoach`/`trade_plan` row by order id:
  *
  * - Cấp 6's own row adds the conflict judgement (`nhat_quan`),
- * - Cấp 5's adds the hunt-source stamp (and carries Cấp 4's five-layer block),
+ * - Cấp 5's adds the hunt-source stamp (and carries Cấp 4's four-layer block),
  * - Cấp 4's carries `doc_5_lop`/`ai_5_lop` + the server's comparison counters,
  * - Cấp 3's is the ungated one: its handler only checks "the order is mine, is a
  *   BUY, and has a plan row", so it also serves a Cấp 1–2 round trip.

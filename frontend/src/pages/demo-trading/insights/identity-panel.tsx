@@ -1,6 +1,6 @@
 /**
  * «Linh thú» - the identity panel: the server-owned companion profile, the Bot
- * status card, and the Cấp 4+ «Đọc 5 lớp» assessment whose commit-then-reveal
+ * status card, and the Cấp 4+ «Đọc 4 lớp» assessment whose commit-then-reveal
  * protocol produces the identity evidence.
  *
  * The mascot is 100% server-derived (never computed here), and the AI
@@ -27,10 +27,10 @@ const COMPANION_COPY: Record<MascotId, string> = {
   thanh_long: "Thanh Long đồng hành cùng cách bạn theo dõi sự dịch chuyển của dòng vốn.",
   loc_huou: "Lộc Hươu đồng hành cùng cách bạn quan sát thông tin công khai từ doanh nghiệp.",
   phung_hoang: "Phụng Hoàng đồng hành cùng cách bạn đọc tin tức và bối cảnh mới.",
-  kim_quy: "Kim Quy đồng hành cùng cách bạn tìm hiểu giá trị doanh nghiệp.",
+  kim_quy: "Kim Quy vẫn là linh thú đồng hành của bạn từ trước đây.",
 }
 
-/* ── «Đọc 5 lớp» - commit-then-reveal ──────────────────────────────────── */
+/* ── «Đọc 4 lớp» - commit-then-reveal ──────────────────────────────────── */
 
 function ReadingBlock({ symbol }: { symbol: string }) {
   const [answers, setAnswers] = useState<Lop5Partial>({})
@@ -41,7 +41,7 @@ function ReadingBlock({ symbol }: { symbol: string }) {
   const soCungGocNhin = countCungGocNhin(answers, ai)
 
   return (
-    <SectionCard title="Đọc 5 lớp phân tích" flag="Cấp 4+">
+    <SectionCard title="Đọc 4 lớp phân tích" flag="Cấp 4+">
       <HintLine>{`Tự chấm từng lớp theo dữ liệu thật của ${symbol}; AI đối chiếu chỉ hiện sau khi bạn chấm đủ ${TONG_SO_LOP} lớp.`}</HintLine>
 
       {LOP_DEFS.map((def) => {
@@ -111,16 +111,16 @@ function ReadingBlock({ symbol }: { symbol: string }) {
       ) : ai == null ? (
         <div className="space-y-0.5 rounded-md border border-border bg-muted/40 p-2">
           <p className="text-xs font-medium">AI đối chiếu đang tạm thời chưa khả dụng</p>
-          <HintLine>Bản tự chấm đủ 5 lớp vẫn được dùng cho tiến độ; bạn có thể tiếp tục đặt lệnh.</HintLine>
+          <HintLine>Bản tự chấm đủ 4 lớp vẫn được dùng cho tiến độ; bạn có thể tiếp tục đặt lệnh.</HintLine>
         </div>
       ) : (
         <div className="space-y-0.5">
-          <p className="text-xs font-semibold">{`Điểm đồng thuận ${formatInt(soDongThuan)}/5 · Cùng góc nhìn AI ${formatInt(soCungGocNhin)}/5`}</p>
-          <HintLine>{`${formatInt(soDongThuan)}/5 lớp AI đánh giá Ủng hộ · bạn cùng góc nhìn AI ở ${formatInt(soCungGocNhin)}/5 lớp. Lệch AI là góc nhìn khác cần kiểm chứng bằng kết quả lệnh, không phải lỗi đọc.`}</HintLine>
+          <p className="text-xs font-semibold">{`Điểm đồng thuận ${formatInt(soDongThuan)}/4 · Cùng góc nhìn AI ${formatInt(soCungGocNhin)}/4`}</p>
+          <HintLine>{`${formatInt(soDongThuan)}/4 lớp AI đánh giá Ủng hộ · bạn cùng góc nhìn AI ở ${formatInt(soCungGocNhin)}/4 lớp. Lệch AI là góc nhìn khác cần kiểm chứng bằng kết quả lệnh, không phải lỗi đọc.`}</HintLine>
         </div>
       )}
 
-      {reading.dataset.isError && <ErrorLine text={`Chưa tải được dữ liệu đọc 5 lớp của ${symbol}: ${errorMessage(reading.error)}`} onRetry={() => void reading.dataset.refetch()} />}
+      {reading.dataset.isError && <ErrorLine text={`Chưa tải được dữ liệu đọc 4 lớp của ${symbol}: ${errorMessage(reading.error)}`} onRetry={() => void reading.dataset.refetch()} />}
     </SectionCard>
   )
 }
@@ -226,7 +226,7 @@ export function IdentityPanel({ symbol }: { symbol: string }) {
               </SectionCard>
             ) : (
               <SectionCard title="Linh thú của tôi">
-                <NoteLine>Trứng ADN đồng hành qua Cấp 0-6. Sau khi hoàn tất Cấp 6, Linh thú được xác định từ những bản tự chấm 5 lớp hợp lệ của bạn.</NoteLine>
+                <NoteLine>Trứng ADN đồng hành qua Cấp 0-6. Sau khi hoàn tất Cấp 6, Linh thú được xác định từ những bản tự chấm 4 lớp hợp lệ của bạn.</NoteLine>
               </SectionCard>
             )}
 
@@ -259,19 +259,19 @@ export function IdentityPanel({ symbol }: { symbol: string }) {
           symbol.length > 0 ? (
             <ReadingBlock key={symbol} symbol={symbol} />
           ) : (
-            <SectionCard title="Đọc 5 lớp phân tích">
-              <NoteLine>Chưa chọn mã nào - chọn một mã ở panel Đặt lệnh hoặc Săn mã để bắt đầu bản tự chấm 5 lớp.</NoteLine>
+            <SectionCard title="Đọc 4 lớp phân tích">
+              <NoteLine>Chưa chọn mã nào - chọn một mã ở panel Đặt lệnh hoặc Săn mã để bắt đầu bản tự chấm 4 lớp.</NoteLine>
             </SectionCard>
           )
         ) : (
-          <SectionCard title="Đọc 5 lớp phân tích">
-            <NoteLine>{`Đọc 5 lớp mở từ Cấp 4 «${levelName(4)}». Bạn đang ở Cấp ${formatInt(level)} «${levelName(level)}».`}</NoteLine>
+          <SectionCard title="Đọc 4 lớp phân tích">
+            <NoteLine>{`Đọc 4 lớp mở từ Cấp 4 «${levelName(4)}». Bạn đang ở Cấp ${formatInt(level)} «${levelName(level)}».`}</NoteLine>
           </SectionCard>
         )}
 
         <HintLine>
           <Check className="mr-1 inline size-3" />
-          Bản tự chấm đủ 5 lớp được lưu một lần và không bị viết lại khi bạn sửa; đó là bằng chứng để xác định Linh thú sau Cấp 6.
+          Bản tự chấm đủ 4 lớp được lưu một lần và không bị viết lại khi bạn sửa; đó là bằng chứng để xác định Linh thú sau Cấp 6.
         </HintLine>
         <HintLine>
           <TriangleAlert className="mr-1 inline size-3" />

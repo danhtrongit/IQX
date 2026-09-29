@@ -3,7 +3,7 @@
  *
  * Three-state discipline (rule 1): `kha_dung === false` means "not enough data
  * to run this filter" and is never drawn as "0 mã"; a missing consensus score
- * is "-/5", never "0/5"; a missing price is "-", never 0.
+ * is "-/4", never "0/4"; a missing price is "-", never 0.
  */
 import { LOP_DEFS, NOTABLE_MIN_LOP, TONG_SO_LOP, huntFilterLabel, type HuntFilterKey } from "./copy"
 import type { BotJournalItem, Cap5LopChiTiet, Cap5WatchlistItem, HuntResult, LocSanTieuChi, SanMaIndex } from "./api"
@@ -58,7 +58,7 @@ export function describeHuntBaoPhu(result: HuntResult): CoverageState {
 export type WatchStatus = "chua_cham" | "chua_ket_luan" | "du_lieu_cu" | "watching" | "notable"
 
 export const WATCH_STATUS_LABEL: Record<WatchStatus, string> = {
-  chua_cham: "Chưa chấm 5 lớp",
+  chua_cham: "Chưa chấm 4 lớp",
   chua_ket_luan: "Chưa kết luận",
   du_lieu_cu: "Điểm đã cũ",
   watching: "Đang quan sát",
@@ -87,12 +87,12 @@ export function watchStatus(item: Cap5WatchlistItem): WatchStatus {
 }
 
 export function describeConsensus(item: Cap5WatchlistItem): { text: string; canhBao: string | null } {
-  if (item.consensus_today == null) return { text: "-/5", canhBao: "Chưa chấm 5 lớp cho mã này" }
+  if (item.consensus_today == null) return { text: "-/4", canhBao: "Chưa chấm 4 lớp cho mã này" }
   const scored = soLopDaCham(item)
   const unknown = scored == null ? null : Math.max(0, TONG_SO_LOP - scored)
   return {
     text: `${item.consensus_today.toLocaleString("vi-VN")}/${TONG_SO_LOP}`,
-    canhBao: unknown != null && unknown > 0 ? `${unknown.toLocaleString("vi-VN")} lớp chưa có dữ liệu - chưa chấm đủ 5 lớp` : null,
+    canhBao: unknown != null && unknown > 0 ? `${unknown.toLocaleString("vi-VN")} lớp chưa có dữ liệu - chưa chấm đủ 4 lớp` : null,
   }
 }
 
@@ -191,9 +191,9 @@ export const FILTER_LABELS: Record<string, string> = {
 }
 
 export const REASON_LABELS: Record<string, string> = {
-  insufficient_supporting_layers: "Chưa đủ 3/5 lớp Ủng hộ",
-  below_support_gate: "Chưa đủ 3/5 lớp Ủng hộ",
-  missing_layers: "Thiếu dữ liệu năm lớp",
+  insufficient_supporting_layers: "Chưa đủ 3/4 lớp Ủng hộ",
+  below_support_gate: "Chưa đủ 3/4 lớp Ủng hộ",
+  missing_layers: "Thiếu dữ liệu bốn lớp",
   missing_veto_severity: "Thiếu mức độ Tin tức/Nội bộ để kiểm tra phủ quyết",
   veto_news_very_negative: "Tin tức ở mức rất xấu",
   veto_insider_very_negative: "Nội bộ ở mức rất xấu",

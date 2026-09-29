@@ -9,7 +9,8 @@ describe('Cap5 consensus and hunt rules', () => {
     expect(result.diem).toBe(1);
     expect(result.so_lop_da_cham).toBe(1);
     expect(result.status).toBeNull();
-    expect(result.lop.find((layer) => layer.lop === 'dinh_gia')?.ung_ho).toBeNull();
+    expect(result.lop).toHaveLength(4);
+    expect(result.lop.find((layer) => layer.lop === 'noi_bo')?.ung_ho).toBeNull();
   });
 
   it('keeps a stale analysis unavailable', () => {

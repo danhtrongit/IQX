@@ -28,7 +28,7 @@ export type Cap3Progress = {
 export type OrderPlanRow = {
   id: string;
   order_id: string;
-  lyDo: 'ky_thuat' | 'dong_tien' | 'noi_bo' | 'tin_tuc' | 'dinh_gia';
+  lyDo: 'ky_thuat' | 'dong_tien' | 'noi_bo' | 'tin_tuc';
   trangThai_luc_dat: 'ung_ho' | 'trung_tinh' | 'can_chu_y' | 'nguoc_chieu';
   vung_mua: string | number | bigint;
   phuong_phap_sl_tp: 'ho_tro_khang_cu' | 'bien_do_dao_dong' | null;

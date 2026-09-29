@@ -11,7 +11,7 @@ const base: PlaceOrderInput = {
   level: 6,
   vonBanDau: 100000000,
   journeyPlan: {
-    lyDo: "dinh_gia",
+    lyDo: "tin_tuc",
     trangThai_luc_dat: "ung_ho",
     vung_mua: 120000,
     phuong_phap_sl_tp: "ho_tro_khang_cu",

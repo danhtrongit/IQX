@@ -282,7 +282,6 @@ export const COMPANIONS: readonly { id: string; name: string; trait: string; ima
   { id: "thanh_long", name: "Thanh Long", trait: "Theo dõi sự dịch chuyển của dòng vốn.", image: "/brand/mascot-thanh-long.webp" },
   { id: "loc_huou", name: "Lộc Hươu", trait: "Đọc thông tin công khai từ doanh nghiệp.", image: "/brand/mascot-loc-huou.webp" },
   { id: "phung_hoang", name: "Phụng Hoàng", trait: "Đọc tin tức và bối cảnh mới.", image: "/brand/mascot-phung-hoang.webp" },
-  { id: "kim_quy", name: "Kim Quy", trait: "Tìm hiểu giá trị doanh nghiệp.", image: "/brand/mascot-kim-quy.webp" },
 ]
 
 export const EGG_IMAGE = "/brand/egg-level-0.webp"

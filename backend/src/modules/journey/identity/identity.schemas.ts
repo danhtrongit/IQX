@@ -45,7 +45,7 @@ export const uiEventRequestSchema = z
 export const qaGrantRequestSchema = z
   .object({
     user_id: z.uuid(),
-    mascot_id: z.enum(['bach_ho', 'thanh_long', 'loc_huou', 'phung_hoang', 'kim_quy']),
+    mascot_id: z.enum(['bach_ho', 'thanh_long', 'loc_huou', 'phung_hoang']),
     reason: z.string().trim().min(1).max(1000),
   })
   .strict();

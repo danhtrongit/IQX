@@ -15,7 +15,7 @@ import type { Cap1Progress, ConfidenceRow, TradeRow } from "./api"
 
 export const KHOI2_MIN_TRADES = 5
 export const CAP1_TOTAL_TASKS = 5
-export const TASK3_THRESHOLD = 5
+export const TASK3_THRESHOLD = 4
 export const TASK4_THRESHOLD = 3
 export const TASK5_THRESHOLD = 10
 
@@ -82,7 +82,7 @@ export function reasonBadge(count: number, winRate: number | null): ReasonTone {
   return null
 }
 
-/** Which of the five reasons the user actually used (from the closed-trade log). */
+/** Which of the four reasons the user actually used (from the closed-trade log). */
 export function reasonCoverage(trades: TradeRow[]): Record<string, boolean> {
   return Object.fromEntries(LY_DO_OPTIONS.map((def) => [def.lop, trades.some((trade) => trade.lyDo === def.lop)]))
 }
@@ -117,7 +117,7 @@ export type Cap1Blocks = {
 const CAP1_TASK_LABELS: readonly string[] = [
   "Lệnh đầu có kế hoạch",
   "Kết sổ đầu tiên",
-  "Đủ 5 lý do",
+  "Đủ 4 lý do",
   "3 lệnh lý do Ủng hộ",
   "10 lệnh",
 ]

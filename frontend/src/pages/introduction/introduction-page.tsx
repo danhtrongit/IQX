@@ -55,7 +55,7 @@ const PREVIEWS = [
   {
     level: 4,
     title: "Đọc sâu thị trường",
-    detail: "Kết nối năm lớp thông tin để hình thành góc nhìn riêng.",
+    detail: "Kết nối bốn lớp thông tin để hình thành góc nhìn riêng.",
     label: "Nâng tư duy",
   },
 ] as const

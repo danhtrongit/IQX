@@ -8,7 +8,7 @@
  * "chưa đọc được" is not "trung tính".
  */
 import type { Lop, Lop5Partial, LyDo, Verdict } from "./plan-math"
-import { nhanDinhFromVerdict, verdictFromStatusLevel, verdictFromValuation } from "./plan-math"
+import { nhanDinhFromVerdict, verdictFromStatusLevel } from "./plan-math"
 
 /* ── wire shapes (structural subsets of the real payloads) ───────────────── */
 
@@ -32,14 +32,7 @@ export type StockInsight = {
   rawInput?: { trend?: { ohlcv?: { high?: number | null; low?: number | null; close?: number | null }[] } }
 }
 
-export type StockValuation = {
-  methods: { name: string; bear: number | null; base: number | null; bull: number | null }[]
-  current_price: number | null
-  fair_median: number | null
-  upside_pct: number | null
-}
-
-/** Which AI Insight layer backs each lý do (💎 Định giá uses BCTC instead). */
+/** Which AI Insight layer backs each lý do. */
 export const LAYER_BY_LY_DO: Partial<Record<LyDo, InsightLayerKey>> = {
   ky_thuat: "L1",
   dong_tien: "L3",
@@ -110,51 +103,12 @@ export function verdictForLyDo(
   }
 }
 
-/** Vùng giá trị + trung vị from BCTC KHỐI 02's real method rows. */
-export function valuationRange(valuation: StockValuation | null | undefined): {
-  rangeLow: number
-  rangeHigh: number
-  median: number
-} | null {
-  if (!valuation || valuation.fair_median == null) return null
-  const bears = valuation.methods.map((method) => method.bear).filter((n): n is number => n != null)
-  const bulls = valuation.methods.map((method) => method.bull).filter((n): n is number => n != null)
-  return {
-    rangeLow: bears.length > 0 ? Math.min(...bears) : valuation.fair_median * 0.85,
-    rangeHigh: bulls.length > 0 ? Math.max(...bulls) : valuation.fair_median * 1.15,
-    median: valuation.fair_median,
-  }
-}
-
 /**
- * 💎 Định giá's verdict: price vs vùng giá trị. Prefers the LIVE board price
- * (the panel's own feed) and falls back to BCTC's end-of-day `current_price`
- * only while the live quote isn't ready yet.
- */
-export function verdictForValuation(
-  valuation: StockValuation | null | undefined,
-  livePrice: number,
-): Verdict | null {
-  const range = valuationRange(valuation)
-  if (!range) return null
-  const price = livePrice > 0 ? livePrice : valuation?.current_price
-  if (price == null || price <= 0) return null
-  return verdictFromValuation({
-    currentPrice: price,
-    median: range.median,
-    rangeLow: range.rangeLow,
-    rangeHigh: range.rangeHigh,
-  })
-}
-
-/**
- * The AI's own five-layer read, reduced to the 3 mức the đối chiếu uses.
+ * The AI's own four-layer read, reduced to the 3 mức the đối chiếu uses.
  * A lớp with no readable data is simply absent (never guessed).
  */
-export function aiFiveLayers(
+export function aiLayers(
   insight: StockInsight | null | undefined,
-  valuation: StockValuation | null | undefined,
-  livePrice: number,
 ): Lop5Partial {
   const result: Lop5Partial = {}
   const layerVerdicts: Partial<Record<Lop, Verdict | null>> = {
@@ -162,7 +116,6 @@ export function aiFiveLayers(
     dong_tien: insight?.layers?.L3?.statusLevel != null ? verdictFromStatusLevel(insight.layers.L3.statusLevel) : null,
     noi_bo: insight?.layers?.L4?.statusLevel != null ? verdictFromStatusLevel(insight.layers.L4.statusLevel) : null,
     tin_tuc: insight?.layers?.L5?.statusLevel != null ? verdictFromStatusLevel(insight.layers.L5.statusLevel) : null,
-    dinh_gia: verdictForValuation(valuation, livePrice),
   }
   for (const [lop, verdict] of Object.entries(layerVerdicts) as [Lop, Verdict | null][]) {
     if (verdict != null) result[lop] = nhanDinhFromVerdict(verdict)

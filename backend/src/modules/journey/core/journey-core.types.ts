@@ -19,13 +19,7 @@ export type JourneyAccountSnapshot = {
   cash_pending_vnd: string;
 };
 
-export const JOURNEY_LAYER_KEYS = [
-  'ky_thuat',
-  'dong_tien',
-  'noi_bo',
-  'tin_tuc',
-  'dinh_gia',
-] as const;
+export const JOURNEY_LAYER_KEYS = ['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc'] as const;
 export type JourneyLayer = (typeof JOURNEY_LAYER_KEYS)[number];
 export type JourneyLayerAssessment = 'ok' | 'neu' | 'bad';
 

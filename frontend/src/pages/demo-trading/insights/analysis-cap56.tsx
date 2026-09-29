@@ -131,7 +131,7 @@ export function PheuSanMa({ data }: { data: Cap5PhanTich["khoi_13"] | undefined 
   const giua: string = data.so_ma_cho_du_lop == null ? "-" : data.so_ma_cho_du_lop_day_du ? formatInt(data.so_ma_cho_du_lop) : `≥ ${formatInt(data.so_ma_cho_du_lop)}`
   const tang: { label: string; value: string }[] = [
     { label: "Mã đã săn vào Watchlist", value: formatInt(data.so_ma_da_san) },
-    { label: "Mã từng đủ 5 lớp ủng hộ", value: giua },
+    { label: "Mã từng đủ 4 lớp ủng hộ", value: giua },
     { label: "Mã đã vào lệnh từ Watchlist", value: formatInt(data.so_ma_vao_lenh) },
   ]
 
@@ -147,7 +147,7 @@ export function PheuSanMa({ data }: { data: Cap5PhanTich["khoi_13"] | undefined 
       </div>
       {data.so_ma_cho_du_lop == null && (
         <NoteLine>
-          Tầng giữa chưa đo được: điểm đồng thuận 5 lớp của các mã trong Watchlist được chấm theo mẻ 1 lần/ngày sau phiên. Nó sẽ có số sau mẻ chấm gần nhất.
+          Tầng giữa chưa đo được: điểm đồng thuận 4 lớp của các mã trong Watchlist được chấm theo mẻ 1 lần/ngày sau phiên. Nó sẽ có số sau mẻ chấm gần nhất.
         </NoteLine>
       )}
       {data.so_ma_cho_du_lop != null && !data.so_ma_cho_du_lop_day_du && (

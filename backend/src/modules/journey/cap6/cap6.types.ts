@@ -10,11 +10,7 @@ export const CONFLICT_LABELS: Record<ConflictLevel, string> = {
 };
 export const ORDERED_CONFLICT_LEVELS: readonly ConflictLevel[] = ['nhe', 'ngai', 'nghiem'];
 export const VETO_LAYERS: ReadonlySet<LayerKey> = new Set(['tin_tuc', 'noi_bo']);
-export const DEDUCTION_LAYERS: ReadonlySet<LayerKey> = new Set([
-  'ky_thuat',
-  'dong_tien',
-  'dinh_gia',
-]);
+export const DEDUCTION_LAYERS: ReadonlySet<LayerKey> = new Set(['ky_thuat', 'dong_tien']);
 
 export interface ConflictSupportRow {
   lop: LayerKey;

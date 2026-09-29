@@ -75,13 +75,13 @@ export class Cap6Service {
     );
     if (!row)
       return emptyConflict(
-        'Mã này chưa có bản phân tích 5 lớp nào, nên IQX chưa dựng được bảng mâu thuẫn.',
+        'Mã này chưa có bản phân tích 4 lớp nào, nên IQX chưa dựng được bảng mâu thuẫn.',
       );
     const session = dateIso(row.session_date);
     const earliest = earliestValidSession(new Date().toISOString().slice(0, 10));
     if (!session || session < earliest)
       return emptyConflict(
-        `Bản phân tích 5 lớp gần nhất là phiên ${session ?? 'không rõ'} — đã quá hạn dùng cho hôm nay.`,
+        `Bản phân tích 4 lớp gần nhất là phiên ${session ?? 'không rõ'} — đã quá hạn dùng cho hôm nay.`,
       );
     return readConflict(row.payload, { sessionDate: session });
   }
@@ -172,7 +172,7 @@ export class Cap6Service {
       so_lop_da_cham: result.so_lop_da_cham,
       session_date: result.session_date,
       lop_phu_quyet: ['noi_bo', 'tin_tuc'],
-      lop_diem_tru: ['dinh_gia', 'dong_tien', 'ky_thuat'],
+      lop_diem_tru: ['dong_tien', 'ky_thuat'],
     };
   }
   async conflict(userId: string, symbol: string) {

@@ -5,7 +5,7 @@
  * Cấp 0 = 5-chip Kế hoạch + practice cash; Cấp 1 adds lý do + vùng mua;
  * Cấp 2 adds cắt lỗ/chốt lời + the durable nhồi-lệnh pre-flight; Cấp 3 adds
  * khẩu vị × tự tin × cách khối lượng; Cấp 4/5 replace the lý-do field with the
- * five-layer self-read; Cấp 6 replaces it with the server's conflict table.
+ * four-layer self-read; Cấp 6 replaces it with the server's conflict table.
  *
  * What each level requires is enforced twice: `planGate` disables the button,
  * and the backend re-validates the same cumulative `journey_plan` atomically
@@ -53,8 +53,8 @@ import type { PlanContext, PlanDraft } from "./journey-plan"
 import { buildJourneyPlan, effectiveLyDo, emptyPlanDraft, planGate } from "./journey-plan"
 import type { Lop, NhanDinhLop, Verdict } from "./plan-math"
 import { BOARD_LOT, coBangMauThuan, conflictLevelLabel, roundToLo } from "./plan-math"
-import { aiFiveLayers, verdictForLyDo, verdictForValuation } from "./stock-insight"
-import type { StockInsight, StockValuation } from "./stock-insight"
+import { aiLayers, verdictForLyDo } from "./stock-insight"
+import type { StockInsight } from "./stock-insight"
 import type { Cap2Alert } from "./use-plan-data"
 import {
   useCap2AlertAction,
@@ -64,7 +64,7 @@ import {
   useCap6Skip,
   useSetKhauVi,
 } from "./use-plan-data"
-import { useStockInsight, useValuation } from "./use-stock-insight"
+import { useStockInsight } from "./use-stock-insight"
 import { useActivateAccount, usePlaceOrder } from "./use-trading-orders"
 
 const FEE_RATE = 0.0015
@@ -77,7 +77,7 @@ export type OrderPanelProps = {
 
 export function OrderPanel({ symbol, onSymbolChange }: OrderPanelProps) {
   // A symbol change starts a NEW investment decision: remounting drops buy
-  // reason, AI read, vùng mua, SL/TP, confidence, sizing and the five-layer
+  // reason, AI read, vùng mua, SL/TP, confidence, sizing and the four-layer
   // answers, so none of them can be filed against a different stock's order.
   return <OrderTicket key={symbol} symbol={symbol} onSymbolChange={onSymbolChange} />
 }
@@ -155,16 +155,12 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
   /* ── level-scoped data ──────────────────────────────────────────────── */
   const needsAiRead = side === "buy" && level !== null && level >= 1
   const { data: insight, isLoading: insightLoading, isError: insightError } = useStockInsight(symbol, needsAiRead)
-  const { data: valuation, isLoading: valuationLoading } = useValuation(symbol, needsAiRead)
   const { data: cap3Progress } = useCap3Progress(level !== null && level >= 3)
   const { data: mauThuan, isLoading: mauThuanLoading } = useCap6MauThuan(symbol, level !== null && level >= 6)
   const cap6HasConflict = coBangMauThuan(mauThuan ?? null)
 
   /* ── derived plan values ────────────────────────────────────────────── */
-  const ai5Lop = useMemo(
-    () => aiFiveLayers(insight ?? null, valuation ?? null, currentPrice),
-    [insight, valuation, currentPrice],
-  )
+  const ai5Lop = useMemo(() => aiLayers(insight ?? null), [insight])
   const lyDo = effectiveLyDo({
     level: level ?? 0,
     draft,
@@ -176,9 +172,7 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
   // so the AI Thanh tra card and the stored evidence can never disagree.
   const aiRead: { verdict: Verdict; snapshot: Record<string, unknown> } | null =
     needsAiRead && lyDo
-      ? lyDo === "dinh_gia"
-        ? valuationRead(valuation ?? null, currentPrice, valuationLoading)
-        : insightRead(insight ?? null, insightError, insightLoading, lyDo)
+      ? insightRead(insight ?? null, insightError, insightLoading, lyDo)
       : null
   const planContext: PlanContext = {
     level,
@@ -693,9 +687,7 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
                   doc5Lop={draft.doc5Lop}
                   ai5Lop={ai5Lop}
                   insight={insight ?? null}
-                  valuation={valuation ?? null}
-                  currentPrice={currentPrice}
-                  insightLoading={insightLoading || valuationLoading}
+                  insightLoading={insightLoading}
                   premiumBlocked={!isPremium}
                   onRate={(lop: Lop, value: NhanDinhLop) =>
                     patch({ doc5Lop: { ...draft.doc5Lop, [lop]: value } })
@@ -717,9 +709,7 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
                   symbol={symbol}
                   lyDo={draft.lyDo}
                   insight={insight ?? null}
-                  valuation={valuation ?? null}
-                  currentPrice={currentPrice}
-                  loading={insightLoading || valuationLoading}
+                  loading={insightLoading}
                   failed={insightError}
                   premiumBlocked={!isPremium}
                   onDocChiTiet={() => patch({ docChiTiet: true })}
@@ -781,33 +771,13 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
         onOpenChange={setDetailOpen}
         symbol={symbol}
         insight={insight ?? null}
-        valuation={valuation ?? null}
-        currentPrice={currentPrice}
-        loading={insightLoading || valuationLoading}
+        loading={insightLoading}
       />
     </SidebarPanel>
   )
 }
 
 /* ── helpers ──────────────────────────────────────────────────────────── */
-
-function valuationRead(
-  valuation: StockValuation | null,
-  currentPrice: number,
-  loading: boolean,
-): { verdict: Verdict; snapshot: Record<string, unknown> } | null {
-  if (loading) return null
-  const verdict = verdictForValuation(valuation, currentPrice)
-  if (!verdict) return null
-  return {
-    verdict,
-    snapshot: {
-      lyDo: "dinh_gia",
-      currentPrice: currentPrice > 0 ? currentPrice : (valuation?.current_price ?? null),
-      median: valuation?.fair_median ?? null,
-    },
-  }
-}
 
 function insightRead(
   insight: StockInsight | null,

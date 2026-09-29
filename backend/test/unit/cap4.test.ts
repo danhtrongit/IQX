@@ -28,7 +28,7 @@ describe('cap4 five-layer contract', () => {
   });
 
   it('pins the canonical five layers and three neutral verdicts', () => {
-    expect(LAYERS).toEqual(['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc', 'dinh_gia']);
+    expect(LAYERS).toEqual(['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc']);
     expect(ASSESSMENTS).toEqual(['ok', 'neu', 'bad']);
   });
 });

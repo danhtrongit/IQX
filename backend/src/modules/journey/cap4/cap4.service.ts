@@ -28,7 +28,6 @@ const LABELS: Record<Layer, string> = {
   dong_tien: 'Dòng tiền',
   noi_bo: 'Nội bộ',
   tin_tuc: 'Tin tức',
-  dinh_gia: 'Định giá',
 };
 
 type ProgressRow = {
@@ -133,7 +132,7 @@ export class Cap4Service {
     return this.database.transaction(async (tx) => {
       const progress = await this.requireProgress(tx, userId, true);
       const order = await this.requireOrder(tx, userId, input.order_id, true);
-      if (order.side !== 'buy') throw new BadRequestException('Đọc 5 lớp chỉ ghi cho lệnh MUA');
+      if (order.side !== 'buy') throw new BadRequestException('Đọc 4 lớp chỉ ghi cho lệnh MUA');
       if (order.mode !== 'thuc_chien')
         throw new BadRequestException('Cấp 4 chỉ ghi nhận lệnh Thực chiến');
       if (!['pending', 'filled'].includes(order.status)) {
@@ -143,14 +142,14 @@ export class Cap4Service {
       const plan = await this.requirePlan(tx, input.order_id, true);
       if (plan.doc_5_lop !== null) {
         if (stableJson(plan.doc_5_lop) !== stableJson(doc)) {
-          throw new ConflictException('Bản tự chấm 5 lớp đã được chốt');
+          throw new ConflictException('Bản tự chấm 4 lớp đã được chốt');
         }
         await this.recompute(tx, progress);
         return this.planOutput(plan);
       }
 
       const ai = await this.findVerifiedAi(tx, userId, order);
-      const consensus = ai ? Object.values(ai).filter((value) => value === 'ok').length : null;
+      const consensus = ai ? LAYERS.filter((layer) => ai[layer] === 'ok').length : null;
       const differing = ai ? LAYERS.filter((layer) => doc[layer] !== ai[layer]).length : null;
       await tx.query(
         `update order_kehoach
@@ -238,7 +237,7 @@ export class Cap4Service {
           excluded++;
           continue;
         }
-        if (row.so_lop_dong_thuan >= 4) grouped.cao.push(row);
+        if (row.so_lop_dong_thuan >= 3) grouped.cao.push(row);
         else if (row.so_lop_dong_thuan >= 2) grouped.vua.push(row);
         else grouped.thap.push(row);
       }
@@ -247,7 +246,7 @@ export class Cap4Service {
           band,
           label:
             band === 'cao'
-              ? '4-5 lớp ủng hộ'
+              ? '3-4 lớp ủng hộ'
               : band === 'vua'
                 ? '2-3 lớp ủng hộ'
                 : '0-1 lớp ủng hộ',
@@ -283,7 +282,7 @@ export class Cap4Service {
           phat_hien: finding,
           insufficient_note:
             gap === null || high.insufficient || low.insufficient
-              ? 'Cần ít nhất 3 lệnh ở cả nhóm 4-5 và 0-1 lớp ủng hộ.'
+              ? 'Cần ít nhất 3 lệnh ở cả nhóm 3-4 và 0-1 lớp ủng hộ.'
               : null,
           giai_thich:
             'Tỷ lệ thắng được tính từ kết quả thật của lệnh đã đóng; không phải điều kiện tốt nghiệp.',
@@ -521,7 +520,8 @@ export class Cap4Service {
       if (
         payload.symbol === order.symbol.toUpperCase() &&
         payload.source_symbol === order.symbol.toUpperCase() &&
-        payload.valuation_source_symbol === order.symbol.toUpperCase() &&
+        (payload.valuation_source_symbol == null ||
+          payload.valuation_source_symbol === order.symbol.toUpperCase()) &&
         payload.trading_date === dateOnly(order.trading_date) &&
         stableDigest(payload) === row.dataset_hash &&
         isCompleteMap(candidate)

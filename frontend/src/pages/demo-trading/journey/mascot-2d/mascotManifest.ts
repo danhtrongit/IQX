@@ -7,8 +7,9 @@ export const MASCOT_SLUG_BY_ID = {
   phung_hoang: "phung-hoang", kim_quy: "kim-quy",
 } as const
 export const MASCOT_STATES: readonly MascotState[] = ["idle", "greet", "analyzing", "updated", "tap_reaction"]
-const LAYER_BY_ID: Record<MascotId, Lop> = {
-  bach_ho: "ky_thuat", thanh_long: "dong_tien", loc_huou: "noi_bo", phung_hoang: "tin_tuc", kim_quy: "dinh_gia",
+/** kim_quy (legacy Định giá mascot) has no layer any more; its manifest is not layer-checked. */
+const LAYER_BY_ID: Partial<Record<MascotId, Lop>> = {
+  bach_ho: "ky_thuat", thanh_long: "dong_tien", loc_huou: "noi_bo", phung_hoang: "tin_tuc"
 }
 export const MASCOT_PLACEHOLDER = "/assets/mascots-2d/v2/shared/fallback-placeholder.webp"
 export interface MascotStateManifest {
@@ -29,7 +30,7 @@ export interface Mascot2DManifest {
   mascotId: MascotId
   slug: string
   displayName: string
-  dominantLayer: Lop
+  dominantLayer: string
   canvas: { frameWidth: number; frameHeight: number; anchorX: number; anchorY: number; safePaddingPct: number }
   assets: { poster: string; revealSilhouette: string; avatarHead: string; avatarBody: string }
   states: Record<MascotState, MascotStateManifest>
@@ -53,7 +54,7 @@ function number(value: unknown, min: number, max: number): value is number {
 }
 export function validateMascotManifest(value: unknown, id: MascotId): Mascot2DManifest {
   if (!object(value) || value.schemaVersion !== 2 || value.mascotId !== id || value.slug !== MASCOT_SLUG_BY_ID[id] ||
-    value.dominantLayer !== LAYER_BY_ID[id] || typeof value.assetVersion !== "string" || !/^\d+\.\d+\.\d+$/.test(value.assetVersion) ||
+    (LAYER_BY_ID[id] !== undefined && value.dominantLayer !== LAYER_BY_ID[id]) || typeof value.dominantLayer !== "string" || typeof value.assetVersion !== "string" || !/^\d+\.\d+\.\d+$/.test(value.assetVersion) ||
     typeof value.displayName !== "string" || !value.displayName.trim()) throw new Error("Invalid mascot identity/version")
   const canvas = value.canvas
   if (!object(canvas) || canvas.frameWidth !== 640 || canvas.frameHeight !== 640 ||
