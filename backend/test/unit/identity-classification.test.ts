@@ -5,6 +5,7 @@ import {
   chooseMascot,
   completeAssessmentMap,
   digest,
+  normalizeLegacyAssignment,
   partialAssessmentMap,
   type EvidenceRecord,
   validateFrozenAssignment,
@@ -94,5 +95,46 @@ describe('journey identity classification', () => {
     expect(partialAssessmentMap({ unknown: 'ok' })).toBe(false);
     expect(partialAssessmentMap({ ky_thuat: 'ok' })).toBe(true);
     expect(partialAssessmentMap({ ky_thuat: 'ok', dinh_gia: 'bad' })).toBe(true);
+  });
+
+  it('re-seals profiles frozen under the 5-layer rules without changing the mascot', () => {
+    const record: EvidenceRecord = {
+      id: 'a1',
+      user_id: 'u1',
+      symbol: 'PET',
+      trading_date: '2026-01-05',
+      completed_at: '2026-01-05T01:00:00Z',
+      revealed_at: '2026-01-05T01:00:01Z',
+      answers,
+      source: 'learning',
+      mode: 'thuc_chien',
+      record_status: 'valid',
+      proof_version: 'commit_then_reveal_v1',
+      dataset_id: 'd1',
+      dataset_hash: digest({ snapshot: 1 }),
+      ai_answers: { ky_thuat: 'ok', dong_tien: 'bad', noi_bo: 'ok', tin_tuc: 'bad' },
+      snapshot_matches: true,
+    };
+    const current = classifyEvidence([record], 'u1', '2026-01-01T00:00:00Z', '2026-02-01T00:00:00Z');
+    const legacyRefs = current.selected_assessment_refs.map((ref) => ({
+      ...ref,
+      contribution: { ...ref.contribution, dinh_gia: 0 },
+    }));
+    const legacy = {
+      ...current,
+      match_counts: { ...current.match_counts, dinh_gia: 0 },
+      selected_assessment_refs: legacyRefs,
+      dataset_hash: digest(legacyRefs),
+    };
+    expect(() => validateFrozenAssignment(legacy)).toThrow();
+
+    const normalized = normalizeLegacyAssignment(legacy);
+    expect(() => validateFrozenAssignment(normalized)).not.toThrow();
+    expect(normalized.mascot_id).toBe(current.mascot_id);
+    expect(normalized.selected_assessment_refs).toEqual(current.selected_assessment_refs);
+    expect(normalizeLegacyAssignment(current)).toBe(current);
+    // A tampered legacy digest is left untouched so integrity checks still fail.
+    const tampered = { ...legacy, dataset_hash: 'x' };
+    expect(normalizeLegacyAssignment(tampered)).toBe(tampered);
   });
 });

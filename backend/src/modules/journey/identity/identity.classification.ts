@@ -16,6 +16,7 @@ export const MASCOTS: Record<JourneyLayer, { id: MascotId; name: string }> = {
 
 // 'kim_quy' is legacy (former Định giá mascot): kept only so stored profiles still parse.
 export const LEGACY_MASCOT_NAMES: Record<string, string> = { kim_quy: 'Kim Quy' };
+const LEGACY_LAYER: string = 'dinh_gia';
 export type MascotId = 'bach_ho' | 'thanh_long' | 'loc_huou' | 'phung_hoang' | 'kim_quy';
 export type MatchCounts = Record<JourneyLayer, number>;
 export type AssignmentBasis = 'ai_match_count' | 'stable_tie_break' | 'zero_match_tie_break';
@@ -241,6 +242,40 @@ export function classifyEvidence(
       Object.entries(excluded).filter(([, count]) => count > 0),
     ),
   };
+}
+
+/**
+ * Profiles frozen under the former 5-layer rules still carry the removed
+ * 'dinh_gia' layer in their counts, ties and per-assessment contributions.
+ * Once the stored evidence digest is verified, drop that layer and re-seal the
+ * digest so the profile validates under the current 4-layer rules. A profile
+ * whose outcome depended on 'dinh_gia' still fails validation afterwards.
+ */
+export function normalizeLegacyAssignment<T extends ClassificationResult>(profile: T): T {
+  const counts = profile.match_counts as Record<string, number> | null;
+  if (!counts || !Object.hasOwn(counts, LEGACY_LAYER)) return profile;
+  if (
+    !Array.isArray(profile.selected_assessment_refs) ||
+    digest(profile.selected_assessment_refs) !== profile.dataset_hash
+  )
+    return profile;
+  const refs = profile.selected_assessment_refs.map((ref) => ({
+    ...ref,
+    contribution: withoutLegacyLayer(ref.contribution),
+  }));
+  return {
+    ...profile,
+    match_counts: withoutLegacyLayer(counts),
+    tied_layers: (profile.tied_layers ?? []).filter((layer: string) => layer !== LEGACY_LAYER),
+    selected_assessment_refs: refs,
+    dataset_hash: digest(refs),
+  };
+}
+
+function withoutLegacyLayer(value: Record<string, number>): MatchCounts {
+  return Object.fromEntries(
+    Object.entries(value ?? {}).filter(([key]) => key !== LEGACY_LAYER),
+  ) as MatchCounts;
 }
 
 export function validateFrozenAssignment(profile: ClassificationResult): void {

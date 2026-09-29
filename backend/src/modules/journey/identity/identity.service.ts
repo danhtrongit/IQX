@@ -17,6 +17,7 @@ import {
   classifyEvidence,
   completeAssessmentMap,
   digest,
+  normalizeLegacyAssignment,
   validateFrozenAssignment,
   type ClassificationResult,
   type MascotId,
@@ -605,7 +606,7 @@ export class JourneyIdentityService {
        where user_id = $1 and mascot_rules_version = $2 limit 1`,
       [userId, MASCOT_RULES_VERSION],
     );
-    return profile ?? null;
+    return profile ? normalizeLegacyAssignment(profile) : null;
   }
 
   private validateProfileShape(profile: ProfileRow): void {
