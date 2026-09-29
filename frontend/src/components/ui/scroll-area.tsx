@@ -28,7 +28,9 @@ function ScrollArea({
         ref={viewportRef}
         data-slot="scroll-area-viewport"
         className={cn(
-          "size-full overscroll-contain rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset",
+          // `max-h-[inherit]`: a root bounded only by max-height (e.g. `max-h-[45vh]`)
+          // has no definite height, so `size-full` alone lets the viewport grow past it.
+          "size-full max-h-[inherit] overscroll-contain rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset",
           viewportClassName
         )}
       >
