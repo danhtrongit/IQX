@@ -10,7 +10,6 @@ export interface OperationMap {
   "DELETE /api/v2/backtest/strategies/{strategyId}": { request: T.QuantControllerDelete0Data; response: T.QuantControllerDelete0Responses[keyof T.QuantControllerDelete0Responses] }
   "DELETE /api/v2/cap5/watchlist/{symbol}": { request: T.Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolData; response: T.Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolResponses[keyof T.Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolResponses] }
   "DELETE /api/v2/chart-drawings/{symbol}": { request: T.DeleteChartDrawingV2Data; response: T.DeleteChartDrawingV2Responses[keyof T.DeleteChartDrawingV2Responses] }
-  "DELETE /api/v2/mobile/devices/{device_id}": { request: T.MobileControllerRemoveDeviceData; response: T.MobileControllerRemoveDeviceResponses[keyof T.MobileControllerRemoveDeviceResponses] }
   "DELETE /api/v2/premium/admin/plans/{plan_id}": { request: T.AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdData; response: T.AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdResponses[keyof T.AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdResponses] }
   "DELETE /api/v2/users/{userId}": { request: T.UsersControllerRemove1Data; response: T.UsersControllerRemove1Responses[keyof T.UsersControllerRemove1Responses] }
   "DELETE /api/v2/watchlists/{symbol}": { request: T.RemoveWatchlistItemV2Data; response: T.RemoveWatchlistItemV2Responses[keyof T.RemoveWatchlistItemV2Responses] }
@@ -192,8 +191,6 @@ export interface OperationMap {
   "GET /api/v2/market-data/trading/{symbol}/supply-demand": { request: T.MarketDataControllerSupply1Data; response: T.MarketDataControllerSupply1Responses[keyof T.MarketDataControllerSupply1Responses] }
   "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary": { request: T.MarketDataControllerSupplySummary1Data; response: T.MarketDataControllerSupplySummary1Responses[keyof T.MarketDataControllerSupplySummary1Responses] }
   "GET /api/v2/media/{token}": { request: T.MediaControllerDownloadData; response: T.MediaControllerDownloadResponses[keyof T.MediaControllerDownloadResponses] }
-  "GET /api/v2/mobile/preferences": { request: T.MobileControllerPreferencesData; response: T.MobileControllerPreferencesResponses[keyof T.MobileControllerPreferencesResponses] }
-  "GET /api/v2/mobile/premium/products": { request: T.MobilePremiumProductsData; response: T.MobilePremiumProductsResponses[keyof T.MobilePremiumProductsResponses] }
   "GET /api/v2/portfolio-manager/report": { request: T.GetPortfolioReportV2Data; response: T.GetPortfolioReportV2Responses[keyof T.GetPortfolioReportV2Responses] }
   "GET /api/v2/premium/admin/plans": { request: T.AdminListPremiumPlansGetApiV2PremiumAdminPlansData; response: T.AdminListPremiumPlansGetApiV2PremiumAdminPlansResponses[keyof T.AdminListPremiumPlansGetApiV2PremiumAdminPlansResponses] }
   "GET /api/v2/premium/me": { request: T.GetMyPremiumSubscriptionGetApiV2PremiumMeData; response: T.GetMyPremiumSubscriptionGetApiV2PremiumMeResponses[keyof T.GetMyPremiumSubscriptionGetApiV2PremiumMeResponses] }
@@ -203,7 +200,6 @@ export interface OperationMap {
   "GET /api/v2/users": { request: T.UsersControllerList1Data; response: T.UsersControllerList1Responses[keyof T.UsersControllerList1Responses] }
   "GET /api/v2/users/{userId}": { request: T.UsersControllerGet1Data; response: T.UsersControllerGet1Responses[keyof T.UsersControllerGet1Responses] }
   "GET /api/v2/users/me": { request: T.UsersControllerMe1Data; response: T.UsersControllerMe1Responses[keyof T.UsersControllerMe1Responses] }
-  "GET /api/v2/users/me/deletion-status": { request: T.GetAccountDeletionStatusData; response: T.GetAccountDeletionStatusResponses[keyof T.GetAccountDeletionStatusResponses] }
   "GET /api/v2/virtual-trading/account": { request: T.TradingControllerAccount1Data; response: T.TradingControllerAccount1Responses[keyof T.TradingControllerAccount1Responses] }
   "GET /api/v2/virtual-trading/admin/accounts": { request: T.LegacyVirtualTradingAdminControllerAccounts1Data; response: T.LegacyVirtualTradingAdminControllerAccounts1Responses[keyof T.LegacyVirtualTradingAdminControllerAccounts1Responses] }
   "GET /api/v2/virtual-trading/admin/config": { request: T.LegacyVirtualTradingAdminControllerConfig1Data; response: T.LegacyVirtualTradingAdminControllerConfig1Responses[keyof T.LegacyVirtualTradingAdminControllerConfig1Responses] }
@@ -224,7 +220,6 @@ export interface OperationMap {
   "PATCH /api/v2/cap4/task": { request: T.Cap4ControllerTask1Data; response: T.Cap4ControllerTask1Responses[keyof T.Cap4ControllerTask1Responses] }
   "PATCH /api/v2/cap5/task": { request: T.Cap5TaskPatchApiV2Cap5TaskData; response: T.Cap5TaskPatchApiV2Cap5TaskResponses[keyof T.Cap5TaskPatchApiV2Cap5TaskResponses] }
   "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop": { request: T.SetCap8DynamicStopV2Data; response: T.SetCap8DynamicStopV2Responses[keyof T.SetCap8DynamicStopV2Responses] }
-  "PATCH /api/v2/mobile/preferences": { request: T.MobileControllerUpdatePreferencesData; response: T.MobileControllerUpdatePreferencesResponses[keyof T.MobileControllerUpdatePreferencesResponses] }
   "PATCH /api/v2/premium/admin/plans/{plan_id}": { request: T.AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdData; response: T.AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses[keyof T.AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses] }
   "PATCH /api/v2/users/{userId}": { request: T.UsersControllerUpdate1Data; response: T.UsersControllerUpdate1Responses[keyof T.UsersControllerUpdate1Responses] }
   "PATCH /api/v2/users/me": { request: T.UsersControllerUpdateMe1Data; response: T.UsersControllerUpdateMe1Responses[keyof T.UsersControllerUpdateMe1Responses] }
@@ -318,17 +313,6 @@ export interface OperationMap {
   "POST /api/v2/market-analysis/{type}/run": { request: T.RunMarketReportV2Data; response: T.RunMarketReportV2Responses[keyof T.RunMarketReportV2Responses] }
   "POST /api/v2/market-data/screening/search": { request: T.MarketExtendedControllerScreeningSearch1Data; response: T.MarketExtendedControllerScreeningSearch1Responses[keyof T.MarketExtendedControllerScreeningSearch1Responses] }
   "POST /api/v2/market-data/trading/price-board": { request: T.MarketDataControllerPriceBoard1Data; response: T.MarketDataControllerPriceBoard1Responses[keyof T.MarketDataControllerPriceBoard1Responses] }
-  "POST /api/v2/mobile/account/deletion": { request: T.MobileControllerDeletionData; response: T.MobileControllerDeletionResponses[keyof T.MobileControllerDeletionResponses] }
-  "POST /api/v2/mobile/account/export": { request: T.MobileControllerExportData; response: T.MobileControllerExportResponses[keyof T.MobileControllerExportResponses] }
-  "POST /api/v2/mobile/devices": { request: T.MobileControllerRegisterDeviceData; response: T.MobileControllerRegisterDeviceResponses[keyof T.MobileControllerRegisterDeviceResponses] }
-  "POST /api/v2/mobile/market-data/ws-ticket": { request: T.MobileMarketDataWsTicketData; response: T.MobileMarketDataWsTicketResponses[keyof T.MobileMarketDataWsTicketResponses] }
-  "POST /api/v2/mobile/premium/apple/notifications": { request: T.MobileAppleStoreNotificationData; response: T.MobileAppleStoreNotificationResponses[keyof T.MobileAppleStoreNotificationResponses] }
-  "POST /api/v2/mobile/premium/google/notifications": { request: T.MobileGoogleStoreNotificationData; response: T.MobileGoogleStoreNotificationResponses[keyof T.MobileGoogleStoreNotificationResponses] }
-  "POST /api/v2/mobile/premium/purchases/apple/verify": { request: T.MobileVerifyApplePurchaseData; response: T.MobileVerifyApplePurchaseResponses[keyof T.MobileVerifyApplePurchaseResponses] }
-  "POST /api/v2/mobile/premium/purchases/google/verify": { request: T.MobileVerifyGooglePurchaseData; response: T.MobileVerifyGooglePurchaseResponses[keyof T.MobileVerifyGooglePurchaseResponses] }
-  "POST /api/v2/mobile/premium/purchases/restore": { request: T.MobileRestorePurchasesData; response: T.MobileRestorePurchasesResponses[keyof T.MobileRestorePurchasesResponses] }
-  "POST /api/v2/mobile/premium/purchases/verify": { request: T.MobileVerifyPurchaseData; response: T.MobileVerifyPurchaseResponses[keyof T.MobileVerifyPurchaseResponses] }
-  "POST /api/v2/mobile/realtime/ticket": { request: T.MobileControllerTicketData; response: T.MobileControllerTicketResponses[keyof T.MobileControllerTicketResponses] }
   "POST /api/v2/portfolio-manager/analyze": { request: T.AnalyzePortfolioV2Data; response: T.AnalyzePortfolioV2Responses[keyof T.AnalyzePortfolioV2Responses] }
   "POST /api/v2/premium/admin/plans": { request: T.AdminCreatePremiumPlanPostApiV2PremiumAdminPlansData; response: T.AdminCreatePremiumPlanPostApiV2PremiumAdminPlansResponses[keyof T.AdminCreatePremiumPlanPostApiV2PremiumAdminPlansResponses] }
   "POST /api/v2/premium/admin/users/{user_id}/grant": { request: T.AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantData; response: T.AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantResponses[keyof T.AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantResponses] }
@@ -336,8 +320,6 @@ export interface OperationMap {
   "POST /api/v2/premium/sepay/ipn": { request: T.ReceiveSePayIpnPostApiV2PremiumSepayIpnData; response: T.ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses[keyof T.ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses] }
   "POST /api/v2/telegram/webhook/{secret}": { request: T.TelegramControllerWebhook1Data; response: T.TelegramControllerWebhook1Responses[keyof T.TelegramControllerWebhook1Responses] }
   "POST /api/v2/users": { request: T.UsersControllerCreate1Data; response: T.UsersControllerCreate1Responses[keyof T.UsersControllerCreate1Responses] }
-  "POST /api/v2/users/me/deletion": { request: T.RequestAccountDeletionData; response: T.RequestAccountDeletionResponses[keyof T.RequestAccountDeletionResponses] }
-  "POST /api/v2/users/me/export": { request: T.RequestAccountExportData; response: T.RequestAccountExportResponses[keyof T.RequestAccountExportResponses] }
   "POST /api/v2/virtual-trading/account/activate": { request: T.TradingControllerActivate1Data; response: T.TradingControllerActivate1Responses[keyof T.TradingControllerActivate1Responses] }
   "POST /api/v2/virtual-trading/admin/reset-all": { request: T.LegacyVirtualTradingAdminControllerResetAll1Data; response: T.LegacyVirtualTradingAdminControllerResetAll1Responses[keyof T.LegacyVirtualTradingAdminControllerResetAll1Responses] }
   "POST /api/v2/virtual-trading/admin/users/{userId}/reset": { request: T.LegacyVirtualTradingAdminControllerReset1Data; response: T.LegacyVirtualTradingAdminControllerReset1Responses[keyof T.LegacyVirtualTradingAdminControllerReset1Responses] }
@@ -361,7 +343,6 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "DELETE /api/v2/backtest/strategies/{strategyId}": { request: "QuantControllerDelete0Data", response: "QuantControllerDelete0Responses" },
   "DELETE /api/v2/cap5/watchlist/{symbol}": { request: "Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolData", response: "Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolResponses" },
   "DELETE /api/v2/chart-drawings/{symbol}": { request: "DeleteChartDrawingV2Data", response: "DeleteChartDrawingV2Responses" },
-  "DELETE /api/v2/mobile/devices/{device_id}": { request: "MobileControllerRemoveDeviceData", response: "MobileControllerRemoveDeviceResponses" },
   "DELETE /api/v2/premium/admin/plans/{plan_id}": { request: "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdData", response: "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdResponses" },
   "DELETE /api/v2/users/{userId}": { request: "UsersControllerRemove1Data", response: "UsersControllerRemove1Responses" },
   "DELETE /api/v2/watchlists/{symbol}": { request: "RemoveWatchlistItemV2Data", response: "RemoveWatchlistItemV2Responses" },
@@ -543,8 +524,6 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/market-data/trading/{symbol}/supply-demand": { request: "MarketDataControllerSupply1Data", response: "MarketDataControllerSupply1Responses" },
   "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary": { request: "MarketDataControllerSupplySummary1Data", response: "MarketDataControllerSupplySummary1Responses" },
   "GET /api/v2/media/{token}": { request: "MediaControllerDownloadData", response: "MediaControllerDownloadResponses" },
-  "GET /api/v2/mobile/preferences": { request: "MobileControllerPreferencesData", response: "MobileControllerPreferencesResponses" },
-  "GET /api/v2/mobile/premium/products": { request: "MobilePremiumProductsData", response: "MobilePremiumProductsResponses" },
   "GET /api/v2/portfolio-manager/report": { request: "GetPortfolioReportV2Data", response: "GetPortfolioReportV2Responses" },
   "GET /api/v2/premium/admin/plans": { request: "AdminListPremiumPlansGetApiV2PremiumAdminPlansData", response: "AdminListPremiumPlansGetApiV2PremiumAdminPlansResponses" },
   "GET /api/v2/premium/me": { request: "GetMyPremiumSubscriptionGetApiV2PremiumMeData", response: "GetMyPremiumSubscriptionGetApiV2PremiumMeResponses" },
@@ -554,7 +533,6 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/users": { request: "UsersControllerList1Data", response: "UsersControllerList1Responses" },
   "GET /api/v2/users/{userId}": { request: "UsersControllerGet1Data", response: "UsersControllerGet1Responses" },
   "GET /api/v2/users/me": { request: "UsersControllerMe1Data", response: "UsersControllerMe1Responses" },
-  "GET /api/v2/users/me/deletion-status": { request: "GetAccountDeletionStatusData", response: "GetAccountDeletionStatusResponses" },
   "GET /api/v2/virtual-trading/account": { request: "TradingControllerAccount1Data", response: "TradingControllerAccount1Responses" },
   "GET /api/v2/virtual-trading/admin/accounts": { request: "LegacyVirtualTradingAdminControllerAccounts1Data", response: "LegacyVirtualTradingAdminControllerAccounts1Responses" },
   "GET /api/v2/virtual-trading/admin/config": { request: "LegacyVirtualTradingAdminControllerConfig1Data", response: "LegacyVirtualTradingAdminControllerConfig1Responses" },
@@ -575,7 +553,6 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "PATCH /api/v2/cap4/task": { request: "Cap4ControllerTask1Data", response: "Cap4ControllerTask1Responses" },
   "PATCH /api/v2/cap5/task": { request: "Cap5TaskPatchApiV2Cap5TaskData", response: "Cap5TaskPatchApiV2Cap5TaskResponses" },
   "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop": { request: "SetCap8DynamicStopV2Data", response: "SetCap8DynamicStopV2Responses" },
-  "PATCH /api/v2/mobile/preferences": { request: "MobileControllerUpdatePreferencesData", response: "MobileControllerUpdatePreferencesResponses" },
   "PATCH /api/v2/premium/admin/plans/{plan_id}": { request: "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdData", response: "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses" },
   "PATCH /api/v2/users/{userId}": { request: "UsersControllerUpdate1Data", response: "UsersControllerUpdate1Responses" },
   "PATCH /api/v2/users/me": { request: "UsersControllerUpdateMe1Data", response: "UsersControllerUpdateMe1Responses" },
@@ -669,17 +646,6 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/market-analysis/{type}/run": { request: "RunMarketReportV2Data", response: "RunMarketReportV2Responses" },
   "POST /api/v2/market-data/screening/search": { request: "MarketExtendedControllerScreeningSearch1Data", response: "MarketExtendedControllerScreeningSearch1Responses" },
   "POST /api/v2/market-data/trading/price-board": { request: "MarketDataControllerPriceBoard1Data", response: "MarketDataControllerPriceBoard1Responses" },
-  "POST /api/v2/mobile/account/deletion": { request: "MobileControllerDeletionData", response: "MobileControllerDeletionResponses" },
-  "POST /api/v2/mobile/account/export": { request: "MobileControllerExportData", response: "MobileControllerExportResponses" },
-  "POST /api/v2/mobile/devices": { request: "MobileControllerRegisterDeviceData", response: "MobileControllerRegisterDeviceResponses" },
-  "POST /api/v2/mobile/market-data/ws-ticket": { request: "MobileMarketDataWsTicketData", response: "MobileMarketDataWsTicketResponses" },
-  "POST /api/v2/mobile/premium/apple/notifications": { request: "MobileAppleStoreNotificationData", response: "MobileAppleStoreNotificationResponses" },
-  "POST /api/v2/mobile/premium/google/notifications": { request: "MobileGoogleStoreNotificationData", response: "MobileGoogleStoreNotificationResponses" },
-  "POST /api/v2/mobile/premium/purchases/apple/verify": { request: "MobileVerifyApplePurchaseData", response: "MobileVerifyApplePurchaseResponses" },
-  "POST /api/v2/mobile/premium/purchases/google/verify": { request: "MobileVerifyGooglePurchaseData", response: "MobileVerifyGooglePurchaseResponses" },
-  "POST /api/v2/mobile/premium/purchases/restore": { request: "MobileRestorePurchasesData", response: "MobileRestorePurchasesResponses" },
-  "POST /api/v2/mobile/premium/purchases/verify": { request: "MobileVerifyPurchaseData", response: "MobileVerifyPurchaseResponses" },
-  "POST /api/v2/mobile/realtime/ticket": { request: "MobileControllerTicketData", response: "MobileControllerTicketResponses" },
   "POST /api/v2/portfolio-manager/analyze": { request: "AnalyzePortfolioV2Data", response: "AnalyzePortfolioV2Responses" },
   "POST /api/v2/premium/admin/plans": { request: "AdminCreatePremiumPlanPostApiV2PremiumAdminPlansData", response: "AdminCreatePremiumPlanPostApiV2PremiumAdminPlansResponses" },
   "POST /api/v2/premium/admin/users/{user_id}/grant": { request: "AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantData", response: "AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantResponses" },
@@ -687,8 +653,6 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/premium/sepay/ipn": { request: "ReceiveSePayIpnPostApiV2PremiumSepayIpnData", response: "ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses" },
   "POST /api/v2/telegram/webhook/{secret}": { request: "TelegramControllerWebhook1Data", response: "TelegramControllerWebhook1Responses" },
   "POST /api/v2/users": { request: "UsersControllerCreate1Data", response: "UsersControllerCreate1Responses" },
-  "POST /api/v2/users/me/deletion": { request: "RequestAccountDeletionData", response: "RequestAccountDeletionResponses" },
-  "POST /api/v2/users/me/export": { request: "RequestAccountExportData", response: "RequestAccountExportResponses" },
   "POST /api/v2/virtual-trading/account/activate": { request: "TradingControllerActivate1Data", response: "TradingControllerActivate1Responses" },
   "POST /api/v2/virtual-trading/admin/reset-all": { request: "LegacyVirtualTradingAdminControllerResetAll1Data", response: "LegacyVirtualTradingAdminControllerResetAll1Responses" },
   "POST /api/v2/virtual-trading/admin/users/{userId}/reset": { request: "LegacyVirtualTradingAdminControllerReset1Data", response: "LegacyVirtualTradingAdminControllerReset1Responses" },

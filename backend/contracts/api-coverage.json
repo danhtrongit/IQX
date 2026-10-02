@@ -3848,8 +3848,6 @@
       "POST /api/v2/auth/reset-password",
       "POST /api/v2/market-data/screening/search",
       "POST /api/v2/market-data/trading/price-board",
-      "POST /api/v2/mobile/premium/apple/notifications",
-      "POST /api/v2/mobile/premium/google/notifications",
       "POST /api/v2/premium/sepay/ipn",
       "POST /api/v2/telegram/webhook/{secret}"
     ],
@@ -3869,27 +3867,15 @@
         "kind": "constant-placeholder",
         "line": 68,
         "sample": "return null;"
-      },
-      {
-        "file": "src/modules/mobile/mobile.service.ts",
-        "kind": "not-implemented",
-        "line": 1,
-        "sample": "import { Inject, Injectable, NotImplementedException } from '@nestjs/common';"
-      },
-      {
-        "file": "src/modules/mobile/mobile.service.ts",
-        "kind": "not-implemented",
-        "line": 25,
-        "sample": "throw new NotImplementedException({"
       }
     ],
     "semanticVerification": "manual-review-required"
   },
   "runtime": {
-    "documentedHttp": 679,
-    "registeredHttp": 1077,
+    "documentedHttp": 661,
+    "registeredHttp": 1056,
     "websocketAdapter": "WsAdapter",
-    "websocketGateways": 3
+    "websocketGateways": 2
   },
   "schemaVersion": 1,
   "verdict": {

@@ -4,15 +4,12 @@ const SYMBOL = /^[A-Z0-9][A-Z0-9._-]{0,19}$/;
 const CHANNELS = new Set<string>(REALTIME_CHANNELS);
 
 export type ClientFrame =
-  | { action: 'auth'; ticket: string }
   | { action: 'ping' }
   | { action: 'subscribe' | 'unsubscribe'; symbols: string[]; channels: RealtimeChannel[] };
 
 export function parseClientFrame(input: unknown): ClientFrame | null {
   if (typeof input !== 'object' || input === null) return null;
   const raw = input as Record<string, unknown>;
-  if (raw.action === 'auth' && typeof raw.ticket === 'string' && raw.ticket.length > 0)
-    return { action: 'auth', ticket: raw.ticket };
   if (raw.action === 'ping') return { action: 'ping' };
   if (raw.action !== 'subscribe' && raw.action !== 'unsubscribe') return null;
   if (!Array.isArray(raw.symbols) || !Array.isArray(raw.channels)) return null;

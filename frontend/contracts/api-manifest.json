@@ -42,11 +42,6 @@
       "requestType": "DeleteChartDrawingV2Data",
       "responseType": "DeleteChartDrawingV2Responses"
     },
-    "DELETE /api/v2/mobile/devices/{device_id}": {
-      "operationId": "MobileController_removeDevice",
-      "requestType": "MobileControllerRemoveDeviceData",
-      "responseType": "MobileControllerRemoveDeviceResponses"
-    },
     "DELETE /api/v2/premium/admin/plans/{plan_id}": {
       "operationId": "adminDeletePremiumPlan_delete_api_v2_premium_admin_plans_plan_id",
       "requestType": "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdData",
@@ -952,16 +947,6 @@
       "requestType": "MediaControllerDownloadData",
       "responseType": "MediaControllerDownloadResponses"
     },
-    "GET /api/v2/mobile/preferences": {
-      "operationId": "MobileController_preferences",
-      "requestType": "MobileControllerPreferencesData",
-      "responseType": "MobileControllerPreferencesResponses"
-    },
-    "GET /api/v2/mobile/premium/products": {
-      "operationId": "mobilePremiumProducts",
-      "requestType": "MobilePremiumProductsData",
-      "responseType": "MobilePremiumProductsResponses"
-    },
     "GET /api/v2/portfolio-manager/report": {
       "operationId": "getPortfolioReportV2",
       "requestType": "GetPortfolioReportV2Data",
@@ -1006,11 +991,6 @@
       "operationId": "UsersController_me[1]",
       "requestType": "UsersControllerMe1Data",
       "responseType": "UsersControllerMe1Responses"
-    },
-    "GET /api/v2/users/me/deletion-status": {
-      "operationId": "getAccountDeletionStatus",
-      "requestType": "GetAccountDeletionStatusData",
-      "responseType": "GetAccountDeletionStatusResponses"
     },
     "GET /api/v2/virtual-trading/account": {
       "operationId": "TradingController_account[1]",
@@ -1111,11 +1091,6 @@
       "operationId": "setCap8DynamicStopV2",
       "requestType": "SetCap8DynamicStopV2Data",
       "responseType": "SetCap8DynamicStopV2Responses"
-    },
-    "PATCH /api/v2/mobile/preferences": {
-      "operationId": "MobileController_updatePreferences",
-      "requestType": "MobileControllerUpdatePreferencesData",
-      "responseType": "MobileControllerUpdatePreferencesResponses"
     },
     "PATCH /api/v2/premium/admin/plans/{plan_id}": {
       "operationId": "adminUpdatePremiumPlan_patch_api_v2_premium_admin_plans_plan_id",
@@ -1582,61 +1557,6 @@
       "requestType": "MarketDataControllerPriceBoard1Data",
       "responseType": "MarketDataControllerPriceBoard1Responses"
     },
-    "POST /api/v2/mobile/account/deletion": {
-      "operationId": "MobileController_deletion",
-      "requestType": "MobileControllerDeletionData",
-      "responseType": "MobileControllerDeletionResponses"
-    },
-    "POST /api/v2/mobile/account/export": {
-      "operationId": "MobileController_export",
-      "requestType": "MobileControllerExportData",
-      "responseType": "MobileControllerExportResponses"
-    },
-    "POST /api/v2/mobile/devices": {
-      "operationId": "MobileController_registerDevice",
-      "requestType": "MobileControllerRegisterDeviceData",
-      "responseType": "MobileControllerRegisterDeviceResponses"
-    },
-    "POST /api/v2/mobile/market-data/ws-ticket": {
-      "operationId": "mobileMarketDataWsTicket",
-      "requestType": "MobileMarketDataWsTicketData",
-      "responseType": "MobileMarketDataWsTicketResponses"
-    },
-    "POST /api/v2/mobile/premium/apple/notifications": {
-      "operationId": "mobileAppleStoreNotification",
-      "requestType": "MobileAppleStoreNotificationData",
-      "responseType": "MobileAppleStoreNotificationResponses"
-    },
-    "POST /api/v2/mobile/premium/google/notifications": {
-      "operationId": "mobileGoogleStoreNotification",
-      "requestType": "MobileGoogleStoreNotificationData",
-      "responseType": "MobileGoogleStoreNotificationResponses"
-    },
-    "POST /api/v2/mobile/premium/purchases/apple/verify": {
-      "operationId": "mobileVerifyApplePurchase",
-      "requestType": "MobileVerifyApplePurchaseData",
-      "responseType": "MobileVerifyApplePurchaseResponses"
-    },
-    "POST /api/v2/mobile/premium/purchases/google/verify": {
-      "operationId": "mobileVerifyGooglePurchase",
-      "requestType": "MobileVerifyGooglePurchaseData",
-      "responseType": "MobileVerifyGooglePurchaseResponses"
-    },
-    "POST /api/v2/mobile/premium/purchases/restore": {
-      "operationId": "mobileRestorePurchases",
-      "requestType": "MobileRestorePurchasesData",
-      "responseType": "MobileRestorePurchasesResponses"
-    },
-    "POST /api/v2/mobile/premium/purchases/verify": {
-      "operationId": "mobileVerifyPurchase",
-      "requestType": "MobileVerifyPurchaseData",
-      "responseType": "MobileVerifyPurchaseResponses"
-    },
-    "POST /api/v2/mobile/realtime/ticket": {
-      "operationId": "MobileController_ticket",
-      "requestType": "MobileControllerTicketData",
-      "responseType": "MobileControllerTicketResponses"
-    },
     "POST /api/v2/portfolio-manager/analyze": {
       "operationId": "analyzePortfolioV2",
       "requestType": "AnalyzePortfolioV2Data",
@@ -1671,16 +1591,6 @@
       "operationId": "UsersController_create[1]",
       "requestType": "UsersControllerCreate1Data",
       "responseType": "UsersControllerCreate1Responses"
-    },
-    "POST /api/v2/users/me/deletion": {
-      "operationId": "requestAccountDeletion",
-      "requestType": "RequestAccountDeletionData",
-      "responseType": "RequestAccountDeletionResponses"
-    },
-    "POST /api/v2/users/me/export": {
-      "operationId": "requestAccountExport",
-      "requestType": "RequestAccountExportData",
-      "responseType": "RequestAccountExportResponses"
     },
     "POST /api/v2/virtual-trading/account/activate": {
       "operationId": "TradingController_activate[1]",

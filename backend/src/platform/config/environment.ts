@@ -120,8 +120,6 @@ export const environmentSchema = z
     SEPAY_CHECKOUT_URL: optionalUrl(['http:', 'https:']),
     APP_PUBLIC_URL: optionalUrl(['http:', 'https:']),
     API_PUBLIC_URL: optionalUrl(['http:', 'https:']),
-    MOBILE_IOS_PRODUCT_IDS: z.string().trim().optional(),
-    MOBILE_ANDROID_PRODUCT_IDS: z.string().trim().optional(),
     JWT_SECRET_KEY: z.preprocess(
       (value) => (value === '' ? undefined : value),
       z.string().min(32).optional(),

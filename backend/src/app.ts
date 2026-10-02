@@ -46,7 +46,6 @@ import { BotsModule } from './modules/bots/index.js';
 import { NotificationsModule } from './modules/notifications/index.js';
 import { RealtimeModule } from './modules/realtime/index.js';
 import { DomainRuntimeModule } from './platform/domain-runtime.module.js';
-import { MobileModule } from './modules/mobile/index.js';
 import { ReferralsModule } from './modules/referrals/referrals.module.js';
 
 @Module({})
@@ -86,7 +85,6 @@ export function createApiModule(
       PortfolioManagerModule,
       BotsModule,
       NotificationsModule,
-      MobileModule,
       ReferralsModule,
       DomainRuntimeModule.forApi(values.QUEUE_ENABLED),
       RealtimeModule.register({

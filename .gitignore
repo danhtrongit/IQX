@@ -15,21 +15,6 @@
 # Safety guard: frontend was previously a standalone repo.
 /frontend/.git
 
-# Expo mobile workspace.
-!/apps/
-!/apps/**
-!/packages/
-!/packages/**
-!/package.json
-!/pnpm-workspace.yaml
-!/pnpm-lock.yaml
-/apps/**/node_modules/
-/packages/**/node_modules/
-/apps/**/.env
-/apps/**/.env.*
-!/apps/**/.env.example
-/apps/**/.expo/
-
 # CI workflows.
 !/.github/
 !/.github/**

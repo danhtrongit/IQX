@@ -2,12 +2,11 @@ import { Module, type DynamicModule } from '@nestjs/common';
 
 import { RealtimeBridge } from './realtime.bridge.js';
 import { RealtimeDemandService } from './realtime.demand.js';
-import { RealtimeGateway, RealtimeMobileGateway, RealtimeV2Gateway } from './realtime.gateway.js';
+import { RealtimeGateway, RealtimeV2Gateway } from './realtime.gateway.js';
 import { RealtimeLeaderLease } from './realtime.lease.js';
 import { RealtimePubSub } from './realtime.pubsub.js';
 import { REALTIME_OPTIONS, type RealtimeOptions } from './realtime.types.js';
 import { RedisModule } from '../../platform/redis/redis.module.js';
-import { MobileModule, MobileService } from '../mobile/index.js';
 
 @Module({})
 export class RealtimeModule {
@@ -22,35 +21,22 @@ export class RealtimeModule {
       leaderTtlMs: options.leaderTtlMs ?? 15_000,
       reconcileMs: options.reconcileMs ?? 5_000,
       providerFactory: options.providerFactory,
-      mobileTicketVerifier: options.mobileTicketVerifier,
-      requireMobileAuth: options.requireMobileAuth ?? false,
     };
     return {
       module: RealtimeModule,
-      imports: [RedisModule, MobileModule],
+      imports: [RedisModule],
       providers: [
-        {
-          provide: REALTIME_OPTIONS,
-          inject: [MobileService],
-          useFactory: (mobile: MobileService): RealtimeOptions => ({
-            ...defaults,
-            mobileTicketVerifier:
-              options.mobileTicketVerifier ??
-              ((ticket: string) => Promise.resolve(mobile.consumeRealtimeTicket(ticket))),
-          }),
-        },
+        { provide: REALTIME_OPTIONS, useValue: defaults },
         RealtimeDemandService,
         RealtimeLeaderLease,
         RealtimePubSub,
         RealtimeGateway,
         RealtimeV2Gateway,
-        RealtimeMobileGateway,
         RealtimeBridge,
       ],
       exports: [
         RealtimeGateway,
         RealtimeV2Gateway,
-        RealtimeMobileGateway,
         RealtimeBridge,
         RealtimeDemandService,
         RealtimePubSub,

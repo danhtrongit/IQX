@@ -8,4 +8,3 @@ export * from './realtime.lease.js';
 export * from './realtime.module.js';
 export * from './realtime.pubsub.js';
 export * from './realtime.types.js';
-export * from './mobile-ticket.js';
