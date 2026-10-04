@@ -23,6 +23,12 @@ const mocks = vi.hoisted(() => ({
   getSharedConfig: vi.fn(),
   getTechnicalRegistry: vi.fn(),
   saveSharedConfig: vi.fn(),
+  listLists: vi.fn(),
+}))
+
+vi.mock("@/pages/strategy/filter/api", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/pages/strategy/filter/api")>()),
+  listLists: mocks.listLists,
 }))
 
 vi.mock("@/hooks/use-auth", () => ({
@@ -71,6 +77,9 @@ beforeEach(() => {
   mocks.getLesson.mockImplementation((id: string) => Promise.resolve(lessonFixture(id)))
   mocks.getSharedConfig.mockResolvedValue(sharedConfigFixture())
   mocks.getTechnicalRegistry.mockResolvedValue(registryFixture())
+  mocks.listLists.mockResolvedValue([
+    { id: "l1", name: "Ngân hàng", filter_id: null, filter_version: null, tickers: ["VCB", "ACB"], as_of: "2026-05-01T00:00:00Z", data_source: "x", scope: null, created_at: null },
+  ])
 })
 
 describe("AcademyPage", () => {
@@ -207,5 +216,29 @@ describe("AcademyPage", () => {
     await waitFor(() => expect(screen.queryByRole("button", { name: /^Cấu hình/ })).toBeNull())
     expect(screen.queryByRole("switch")).toBeNull()
     expect(screen.getByRole("button", { name: "Làm bài kiểm tra · 8 câu" })).toBeTruthy()
+  })
+
+  it("offers the saved-list picker on fundamental lessons and shows the chosen tickers", async () => {
+    mocks.getLesson.mockImplementation((id: string) => Promise.resolve({ ...lessonFixture(id), kind: "fundamental" }))
+    renderAcademy()
+    const select = await screen.findByLabelText("Danh mục thực hành")
+    expect(screen.getByText("Danh mục là danh sách thực hành, không phải vị thế tài khoản.")).toBeTruthy()
+    await userEvent.selectOptions(select, "l1")
+    expect(await screen.findByText("VCB · ACB · Lưu ngày 2026-05-01")).toBeTruthy()
+  })
+
+  it("hides the picker on technical lessons outside chapter 4 and never shows review_status", async () => {
+    renderAcademy()
+    expect(await screen.findByRole("heading", { name: "RSI", level: 2 })).toBeTruthy()
+    expect(screen.queryByText("Danh mục thực hành")).toBeNull()
+    expect(mocks.listLists).not.toHaveBeenCalled()
+    expect(screen.queryByText(/editorial-v2/)).toBeNull()
+  })
+
+  it("links ch02-l15 to the backtest tab", async () => {
+    mocks.getLesson.mockImplementation((id: string) => Promise.resolve({ ...lessonFixture(id), chapter: 2 }))
+    renderAcademy("/hoc-vien/ch02-l15")
+    const link = await screen.findByRole("link", { name: "Thực hành kiểm định" })
+    expect(link.getAttribute("href")).toBe("/chien-luoc?tab=backtest")
   })
 })

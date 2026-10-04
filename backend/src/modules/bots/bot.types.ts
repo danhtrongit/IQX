@@ -44,7 +44,31 @@ export type BotMarketSnapshotInput = {
   vnindex?: string | number | null;
   issues?: BotIssue[];
   source_refs?: Record<string, unknown>;
+  /** Present only when the run receipt pins a shared Buy/Sell config revision. */
+  shared_config_signals?: BotSharedConfigSignals;
   snapshot_hash?: string;
+};
+
+/**
+ * Frozen evaluation of the pinned shared Buy/Sell config on the session's last
+ * completed bar (BOT_SHARED_CONFIG_ENABLED). `null` = missing data.
+ */
+export type BotSharedConfigSignals = {
+  revision: number;
+  config_hash: string;
+  effective_session: string;
+  /** At least one indicator has master + Buy ON; otherwise Bot v1 entry is unchanged. */
+  buy_active: boolean;
+  /** At least one indicator has master + Sell ON; otherwise no shared-config exit. */
+  sell_active: boolean;
+  buy: Record<string, boolean | null>;
+  sell: Record<string, boolean | null>;
+  data: {
+    source: string | null;
+    hash: string;
+    warmup_sessions: number;
+    market_symbol: string | null;
+  };
 };
 
 export interface BotSnapshotProvider {

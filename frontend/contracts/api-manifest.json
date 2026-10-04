@@ -47,6 +47,16 @@
       "requestType": "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdData",
       "responseType": "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdResponses"
     },
+    "DELETE /api/v2/strategy/filters/{filterId}": {
+      "operationId": "deleteStrategySavedFilter",
+      "requestType": "DeleteStrategySavedFilterData",
+      "responseType": "DeleteStrategySavedFilterResponses"
+    },
+    "DELETE /api/v2/strategy/lists/{listId}": {
+      "operationId": "deleteStrategySavedList",
+      "requestType": "DeleteStrategySavedListData",
+      "responseType": "DeleteStrategySavedListResponses"
+    },
     "DELETE /api/v2/users/{userId}": {
       "operationId": "UsersController_remove[1]",
       "requestType": "UsersControllerRemove1Data",
@@ -56,6 +66,16 @@
       "operationId": "removeWatchlistItemV2",
       "requestType": "RemoveWatchlistItemV2Data",
       "responseType": "RemoveWatchlistItemV2Responses"
+    },
+    "GET /api/v2/academy/curriculum": {
+      "operationId": "academyCurriculum",
+      "requestType": "AcademyCurriculumData",
+      "responseType": "AcademyCurriculumResponses"
+    },
+    "GET /api/v2/academy/lessons/{lessonId}": {
+      "operationId": "academyLesson",
+      "requestType": "AcademyLessonData",
+      "responseType": "AcademyLessonResponses"
     },
     "GET /api/v2/admin/alerts/factor-library": {
       "operationId": "AdminAlertsController_factorLibrary[1]",
@@ -977,6 +997,56 @@
       "requestType": "ReferralsControllerMine1Data",
       "responseType": "ReferralsControllerMine1Responses"
     },
+    "GET /api/v2/strategy/backtests": {
+      "operationId": "strategyBacktestsList",
+      "requestType": "StrategyBacktestsListData",
+      "responseType": "StrategyBacktestsListResponses"
+    },
+    "GET /api/v2/strategy/backtests/{id}": {
+      "operationId": "strategyBacktestsGet",
+      "requestType": "StrategyBacktestsGetData",
+      "responseType": "StrategyBacktestsGetResponses"
+    },
+    "GET /api/v2/strategy/filters": {
+      "operationId": "listStrategySavedFilters",
+      "requestType": "ListStrategySavedFiltersData",
+      "responseType": "ListStrategySavedFiltersResponses"
+    },
+    "GET /api/v2/strategy/filters/{filterId}": {
+      "operationId": "getStrategySavedFilter",
+      "requestType": "GetStrategySavedFilterData",
+      "responseType": "GetStrategySavedFilterResponses"
+    },
+    "GET /api/v2/strategy/lists": {
+      "operationId": "listStrategySavedLists",
+      "requestType": "ListStrategySavedListsData",
+      "responseType": "ListStrategySavedListsResponses"
+    },
+    "GET /api/v2/strategy/lists/{listId}": {
+      "operationId": "getStrategySavedList",
+      "requestType": "GetStrategySavedListData",
+      "responseType": "GetStrategySavedListResponses"
+    },
+    "GET /api/v2/strategy/registry/technical": {
+      "operationId": "strategyConfigTechnicalRegistry",
+      "requestType": "StrategyConfigTechnicalRegistryData",
+      "responseType": "StrategyConfigTechnicalRegistryResponses"
+    },
+    "GET /api/v2/strategy/screener/metrics": {
+      "operationId": "screenerMetrics",
+      "requestType": "ScreenerMetricsData",
+      "responseType": "ScreenerMetricsResponses"
+    },
+    "GET /api/v2/strategy/shared-config": {
+      "operationId": "strategyConfigGetSharedConfig",
+      "requestType": "StrategyConfigGetSharedConfigData",
+      "responseType": "StrategyConfigGetSharedConfigResponses"
+    },
+    "GET /api/v2/strategy/shared-config/revisions": {
+      "operationId": "strategyConfigListRevisions",
+      "requestType": "StrategyConfigListRevisionsData",
+      "responseType": "StrategyConfigListRevisionsResponses"
+    },
     "GET /api/v2/users": {
       "operationId": "UsersController_list[1]",
       "requestType": "UsersControllerList1Data",
@@ -1097,6 +1167,11 @@
       "requestType": "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdData",
       "responseType": "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses"
     },
+    "PATCH /api/v2/strategy/shared-config": {
+      "operationId": "strategyConfigPatchSharedConfig",
+      "requestType": "StrategyConfigPatchSharedConfigData",
+      "responseType": "StrategyConfigPatchSharedConfigResponses"
+    },
     "PATCH /api/v2/users/{userId}": {
       "operationId": "UsersController_update[1]",
       "requestType": "UsersControllerUpdate1Data",
@@ -1111,6 +1186,16 @@
       "operationId": "LegacyVirtualTradingAdminController_updateConfig[1]",
       "requestType": "LegacyVirtualTradingAdminControllerUpdateConfig1Data",
       "responseType": "LegacyVirtualTradingAdminControllerUpdateConfig1Responses"
+    },
+    "POST /api/v2/academy/attempts": {
+      "operationId": "academyCreateAttempt",
+      "requestType": "AcademyCreateAttemptData",
+      "responseType": "AcademyCreateAttemptResponses"
+    },
+    "POST /api/v2/academy/attempts/{attemptId}/submit": {
+      "operationId": "academySubmitAttempt",
+      "requestType": "AcademySubmitAttemptData",
+      "responseType": "AcademySubmitAttemptResponses"
     },
     "POST /api/v2/admin/alerts/seed": {
       "operationId": "AdminAlertsController_seed[1]",
@@ -1582,6 +1667,26 @@
       "requestType": "ReceiveSePayIpnPostApiV2PremiumSepayIpnData",
       "responseType": "ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses"
     },
+    "POST /api/v2/strategy/backtests": {
+      "operationId": "strategyBacktestsCreate",
+      "requestType": "StrategyBacktestsCreateData",
+      "responseType": "StrategyBacktestsCreateResponses"
+    },
+    "POST /api/v2/strategy/filters": {
+      "operationId": "createStrategySavedFilter",
+      "requestType": "CreateStrategySavedFilterData",
+      "responseType": "CreateStrategySavedFilterResponses"
+    },
+    "POST /api/v2/strategy/lists": {
+      "operationId": "createStrategySavedList",
+      "requestType": "CreateStrategySavedListData",
+      "responseType": "CreateStrategySavedListResponses"
+    },
+    "POST /api/v2/strategy/screener/run": {
+      "operationId": "screenerRun",
+      "requestType": "ScreenerRunData",
+      "responseType": "ScreenerRunResponses"
+    },
     "POST /api/v2/telegram/webhook/{secret}": {
       "operationId": "TelegramController_webhook[1]",
       "requestType": "TelegramControllerWebhook1Data",
@@ -1646,6 +1751,11 @@
       "operationId": "saveChartDrawingV2",
       "requestType": "SaveChartDrawingV2Data",
       "responseType": "SaveChartDrawingV2Responses"
+    },
+    "PUT /api/v2/strategy/filters/{filterId}": {
+      "operationId": "updateStrategySavedFilter",
+      "requestType": "UpdateStrategySavedFilterData",
+      "responseType": "UpdateStrategySavedFilterResponses"
     },
     "PUT /api/v2/watchlists/reorder": {
       "operationId": "reorderWatchlistV2",

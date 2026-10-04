@@ -377,6 +377,58 @@
       "classification": "test-only"
     },
     {
+      "file": "src/pages/academy/api.ts",
+      "line": 120,
+      "callee": "api",
+      "raw": "/academy/curriculum?query",
+      "method": "GET",
+      "route": "/api/v2/academy/curriculum",
+      "matchedOperation": "GET /api/v2/academy/curriculum",
+      "matchedOperations": [
+        "GET /api/v2/academy/curriculum"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 127,
+      "callee": "api",
+      "raw": "/academy/lessons/{encodeURIComponent(lessonId)}",
+      "method": "GET",
+      "route": "/api/v2/academy/lessons/{encodeURIComponent(lessonId)}",
+      "matchedOperation": "GET /api/v2/academy/lessons/{lessonId}",
+      "matchedOperations": [
+        "GET /api/v2/academy/lessons/{lessonId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 131,
+      "callee": "api",
+      "raw": "/academy/attempts",
+      "method": "POST",
+      "route": "/api/v2/academy/attempts",
+      "matchedOperation": "POST /api/v2/academy/attempts",
+      "matchedOperations": [
+        "POST /api/v2/academy/attempts"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 141,
+      "callee": "api",
+      "raw": "/academy/attempts/{encodeURIComponent(attemptId)}/submit",
+      "method": "POST",
+      "route": "/api/v2/academy/attempts/{encodeURIComponent(attemptId)}/submit",
+      "matchedOperation": "POST /api/v2/academy/attempts/{attemptId}/submit",
+      "matchedOperations": [
+        "POST /api/v2/academy/attempts/{attemptId}/submit"
+      ],
+      "classification": "api-call"
+    },
+    {
       "file": "src/pages/account/api.ts",
       "line": 106,
       "callee": "api",
@@ -2972,6 +3024,32 @@
         "DELETE /api/v2/alerts/telegram"
       ],
       "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 157,
+      "callee": "sharedApi",
+      "raw": "/strategy/filters/{encodeURIComponent(id)}",
+      "method": "DELETE",
+      "route": "/api/v2/strategy/filters/{encodeURIComponent(id)}",
+      "matchedOperation": "DELETE /api/v2/strategy/filters/{filterId}",
+      "matchedOperations": [
+        "DELETE /api/v2/strategy/filters/{filterId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 181,
+      "callee": "sharedApi",
+      "raw": "/strategy/lists/{encodeURIComponent(id)}",
+      "method": "DELETE",
+      "route": "/api/v2/strategy/lists/{encodeURIComponent(id)}",
+      "matchedOperation": "DELETE /api/v2/strategy/lists/{listId}",
+      "matchedOperations": [
+        "DELETE /api/v2/strategy/lists/{listId}"
+      ],
+      "classification": "api-call"
     }
   ],
   "unmappedCalls": [
@@ -3231,12 +3309,23 @@
     "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary",
     "GET /api/v2/media/{token}",
     "GET /api/v2/portfolio-manager/report",
+    "GET /api/v2/strategy/backtests",
+    "GET /api/v2/strategy/backtests/{id}",
+    "GET /api/v2/strategy/filters",
+    "GET /api/v2/strategy/filters/{filterId}",
+    "GET /api/v2/strategy/lists",
+    "GET /api/v2/strategy/lists/{listId}",
+    "GET /api/v2/strategy/registry/technical",
+    "GET /api/v2/strategy/screener/metrics",
+    "GET /api/v2/strategy/shared-config",
+    "GET /api/v2/strategy/shared-config/revisions",
     "GET /api/v2/virtual-trading/leaderboard",
     "GET /api/v2/virtual-trading/ledger",
     "GET /api/v2/virtual-trading/trades",
     "GET /api/v2/watchlists/{symbol}/status",
     "PATCH /api/v2/admin/vt/config",
     "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop",
+    "PATCH /api/v2/strategy/shared-config",
     "POST /api/v2/admin/alerts/telegram/webhook",
     "POST /api/v2/admin/journey/identity/qa-grants",
     "POST /api/v2/admin/lessons/courses/{courseId}/thumbnail",
@@ -3264,7 +3353,12 @@
     "POST /api/v2/market-analysis/{type}/run",
     "POST /api/v2/market-data/screening/search",
     "POST /api/v2/premium/sepay/ipn",
+    "POST /api/v2/strategy/backtests",
+    "POST /api/v2/strategy/filters",
+    "POST /api/v2/strategy/lists",
+    "POST /api/v2/strategy/screener/run",
     "POST /api/v2/telegram/webhook/{secret}",
-    "PUT /api/v2/backtest/strategies/{strategyId}"
+    "PUT /api/v2/backtest/strategies/{strategyId}",
+    "PUT /api/v2/strategy/filters/{filterId}"
   ]
 }

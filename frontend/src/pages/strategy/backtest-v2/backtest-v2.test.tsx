@@ -196,7 +196,7 @@ describe("BacktestV2", () => {
   it("sends the frozen system payload and shows flag-off locks", async () => {
     const user = userEvent.setup()
     mocks.runBacktestV2.mockRejectedValue(
-      new ApiError("Khoá", 403, { code: "CAPABILITY_LOCKED", details: { capability: "portfolio", reason: "flag_off" } }),
+      new ApiError("Khoá", 403, { code: "CAPABILITY_LOCKED", details: [{ capability: "portfolio", reason: "flag_off" }] }),
     )
     renderV2()
     const panel = await screen.findByTestId("system-panel")

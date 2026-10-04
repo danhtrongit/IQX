@@ -24750,6 +24750,247 @@ export type RemoveWatchlistItemV1Responses = {
 export type RemoveWatchlistItemV1Response =
   RemoveWatchlistItemV1Responses[keyof RemoveWatchlistItemV1Responses];
 
+export type AcademyCreateAttemptData = {
+  body: {
+    content_version: string;
+    idempotency_key: string;
+    lesson_id: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/academy/attempts";
+};
+
+export type AcademyCreateAttemptErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademyCreateAttemptError =
+  AcademyCreateAttemptErrors[keyof AcademyCreateAttemptErrors];
+
+export type AcademyCreateAttemptResponses = {
+  201: {
+    attempt_id: string;
+    content_version: string;
+    lesson_id: string;
+    questions: Array<{
+      id: string;
+      options: Array<{
+        id: string;
+        text: string;
+      }>;
+      question: string;
+    }>;
+    questions_version: string;
+  };
+};
+
+export type AcademyCreateAttemptResponse =
+  AcademyCreateAttemptResponses[keyof AcademyCreateAttemptResponses];
+
+export type AcademySubmitAttemptData = {
+  body: {
+    answers: Array<{
+      option_id: string;
+      question_id: string;
+    }>;
+    idempotency_key?: string;
+  };
+  path: {
+    attemptId: string;
+  };
+  query?: never;
+  url: "/api/v2/academy/attempts/{attemptId}/submit";
+};
+
+export type AcademySubmitAttemptErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademySubmitAttemptError =
+  AcademySubmitAttemptErrors[keyof AcademySubmitAttemptErrors];
+
+export type AcademySubmitAttemptResponses = {
+  200: {
+    attempt_id: string;
+    granted_capabilities: Array<string>;
+    newly_granted: Array<string>;
+    passed: boolean;
+    results: Array<{
+      correct: boolean;
+      correct_option_id: string;
+      explanation: string;
+      option_id: string;
+      question_id: string;
+    }>;
+    score: number;
+    total: 8;
+  };
+};
+
+export type AcademySubmitAttemptResponse =
+  AcademySubmitAttemptResponses[keyof AcademySubmitAttemptResponses];
+
+export type AcademyCurriculumData = {
+  body?: never;
+  path?: never;
+  query?: {
+    content_version?: string;
+  };
+  url: "/api/v2/academy/curriculum";
+};
+
+export type AcademyCurriculumErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademyCurriculumError =
+  AcademyCurriculumErrors[keyof AcademyCurriculumErrors];
+
+export type AcademyCurriculumResponses = {
+  200: {
+    chapters: Array<{
+      bot: string | null;
+      lessons: Array<{
+        attempts: number;
+        best_score: number | null;
+        capabilities: Array<string>;
+        config_id: string | null;
+        id: string;
+        kind: "technical" | "fundamental" | "tool" | "system";
+        name: string;
+        order: number;
+        passed: boolean;
+      }>;
+      no: number;
+      title: string;
+      type: "technical" | "fundamental" | "tool" | "system";
+    }>;
+    content_version: string;
+    granted_capabilities: Array<string>;
+  };
+};
+
+export type AcademyCurriculumResponse =
+  AcademyCurriculumResponses[keyof AcademyCurriculumResponses];
+
+export type AcademyLessonData = {
+  body?: never;
+  path: {
+    lessonId: string;
+  };
+  query?: never;
+  url: "/api/v2/academy/lessons/{lessonId}";
+};
+
+export type AcademyLessonErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademyLessonError = AcademyLessonErrors[keyof AcademyLessonErrors];
+
+export type AcademyLessonResponses = {
+  200: {
+    chapter: number;
+    config_id: string | null;
+    content_version: string;
+    fixture: {
+      [key: string]: unknown;
+    };
+    id: string;
+    kind: "technical" | "fundamental" | "tool" | "system";
+    name: string;
+    order: number;
+    passed: boolean;
+    prerequisites: Array<string>;
+    review_status: string;
+    sections: Array<{
+      html: string;
+      title: string;
+    }>;
+    sources: Array<string>;
+  };
+};
+
+export type AcademyLessonResponse =
+  AcademyLessonResponses[keyof AcademyLessonResponses];
+
 export type AdminAlertsControllerFactorLibrary1Data = {
   body?: never;
   path?: never;
@@ -37996,6 +38237,3085 @@ export type ReferralsControllerMine1Responses = {
 
 export type ReferralsControllerMine1Response =
   ReferralsControllerMine1Responses[keyof ReferralsControllerMine1Responses];
+
+export type StrategyBacktestsListData = {
+  body?: never;
+  path?: never;
+  query?: {
+    limit?: number;
+  };
+  url: "/api/v2/strategy/backtests";
+};
+
+export type StrategyBacktestsListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyBacktestsListError =
+  StrategyBacktestsListErrors[keyof StrategyBacktestsListErrors];
+
+export type StrategyBacktestsListResponses = {
+  200: {
+    items: Array<{
+      config_hash: string;
+      created_at: string;
+      end: string;
+      error_code: string | null;
+      kind:
+        | "single"
+        | "sensitivity"
+        | "out_of_sample"
+        | "walk_forward"
+        | "portfolio";
+      kpis: {
+        buy_hold_return: number;
+        cagr: number;
+        market_return: number | null;
+        max_drawdown: number;
+        n_trades: number;
+        n_wins: number;
+        net_return: number;
+        profit_factor: number | null;
+        win_rate: number | null;
+      } | null;
+      run_id: string;
+      shared_revision: number;
+      start: string;
+      status: "succeeded" | "failed";
+      symbol: string;
+    }>;
+  };
+};
+
+export type StrategyBacktestsListResponse =
+  StrategyBacktestsListResponses[keyof StrategyBacktestsListResponses];
+
+export type StrategyBacktestsCreateData = {
+  body: {
+    assumptions?: {
+      capital?: number;
+      execution?: "next_open" | "same_close";
+      fee_preset?: "standard" | "none";
+    };
+    end: string;
+    idempotency_key: string;
+    research?:
+      | {
+          kind: "sensitivity";
+          path: {
+            indicator: string;
+            key: string;
+            side: "buy" | "sell";
+          };
+          values: Array<number>;
+        }
+      | {
+          kind: "out_of_sample";
+          split_date: string;
+        }
+      | {
+          criterion: "net_return" | "cagr" | "profit_factor";
+          kind: "walk_forward";
+          min_trades: number;
+          path: {
+            indicator: string;
+            key: string;
+            side: "buy" | "sell";
+          };
+          step_bars: number;
+          test_bars: number;
+          train_bars: number;
+          values: Array<number>;
+        };
+    shared_revision: number;
+    start: string;
+    symbol: string;
+    system?: {
+      cooldown_bars?: number;
+      correlation_lookback?: number;
+      exits?: {
+        max_holding?: number;
+        stop_loss_pct?: number;
+        take_profit_pct?: number;
+        trailing_pct?: number;
+      };
+      /**
+       * LogicNode over buy-side indicator ids (depth ≤ 4, children ≤ 16)
+       */
+      logic?: {
+        type: "indicator" | "and" | "or" | "not";
+        [key: string]: unknown;
+      };
+      max_correlation?: number;
+      max_positions?: number;
+      max_sector_weight_pct?: number;
+      max_symbol_weight_pct?: number;
+      portfolio_drawdown_stop_pct?: number;
+      priority?: "exit_first";
+      ranking?: {
+        direction: "desc" | "asc";
+        key: "roc_20" | "rs_market" | "relative_volume" | "distance_52w_high";
+      };
+      rebalance?: {
+        every_bars: number;
+      };
+      sizing?:
+        | {
+            mode: "pct_nav";
+            pct: number;
+          }
+        | {
+            amount_vnd: number;
+            mode: "fixed_amount";
+          };
+      symbols?: Array<string>;
+      universe?: {
+        list_id?: string;
+        market?: "HOSE" | "HNX" | "UPCOM" | "ALL";
+      };
+    };
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/backtests";
+};
+
+export type StrategyBacktestsCreateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyBacktestsCreateError =
+  StrategyBacktestsCreateErrors[keyof StrategyBacktestsCreateErrors];
+
+export type StrategyBacktestsCreateResponses = {
+  201: {
+    created_at: string;
+    data_warnings: Array<{
+      code: string;
+      indicators?: Array<string>;
+      message: string;
+      symbols?: Array<string>;
+    }>;
+    error: {
+      code: string;
+      details?: Array<unknown>;
+      message: string;
+      status: number;
+    } | null;
+    kind:
+      "single" | "sensitivity" | "out_of_sample" | "walk_forward" | "portfolio";
+    request: {
+      [key: string]: unknown;
+    };
+    /**
+     * Advanced engine output: sensitivity {candidates}, out_of_sample {train,test,attempt}, walk_forward {windows}
+     */
+    research_result: {
+      data_hash: string;
+      type:
+        "sensitivity" | "out_of_sample_fixed_config" | "walk_forward_windows";
+      [key: string]: unknown;
+    } | null;
+    result: {
+      calculation_version: string;
+      canceled: Array<{
+        action: "buy" | "sell";
+        reason: "end_of_range";
+        signalIndex: number;
+      }>;
+      cash: number;
+      curve: Array<{
+        buy_hold_pct: number;
+        date: string;
+        market_pct: number | null;
+        phase?: "before_first_execution";
+        return_pct: number;
+        value: number;
+      }>;
+      engine_version: string;
+      formula_version: string;
+      initial: {
+        buy_hold_pct: number;
+        date: string;
+        market_pct: number | null;
+        phase?: "before_first_execution";
+        return_pct: number;
+        value: number;
+      };
+      kpis: {
+        buy_hold_return: number;
+        cagr: number;
+        market_return: number | null;
+        max_drawdown: number;
+        n_trades: number;
+        n_wins: number;
+        net_return: number;
+        profit_factor: number | null;
+        win_rate: number | null;
+      };
+      open_position: {
+        cost: number;
+        date: string;
+        index: number;
+        last_price: number;
+        market_value: number;
+        price: number;
+        qty: number;
+        signal_date: string;
+        unrealized_pnl: number;
+      } | null;
+      profile: {
+        lot_size: number;
+        max_holding: null;
+        min_held_bars: number;
+        position_size: "all_cash";
+        stop_loss: "none";
+        take_profit_pct: null;
+        trailing: "none";
+      };
+      rule_version: string;
+      schema_version: string;
+      snapshot: {
+        actual_end: string;
+        actual_start: string;
+        adjusted: boolean;
+        bar_count: number;
+        benchmark: {
+          available: boolean;
+          source: string | null;
+          symbol: "VNINDEX";
+        };
+        capital: number;
+        config: {
+          indicators: {
+            [key: string]: unknown;
+          };
+          schema_version: string;
+          [key: string]: unknown;
+        };
+        config_hash: string;
+        data_hash: string;
+        data_source: string;
+        data_source_priority: number | null;
+        data_warnings: Array<{
+          code: string;
+          indicators?: Array<string>;
+          message: string;
+          symbols?: Array<string>;
+        }>;
+        execution: "next_open" | "same_close";
+        execution_profile: "CLEAN_TECH_2.0";
+        fee_preset: "standard" | "none";
+        fees: {
+          buy: number;
+          sell: number;
+        };
+        lot_size: number;
+        open_position_policy: "mark_to_market_last_close";
+        options: {
+          capital: number;
+          end: string;
+          execution: "next_open" | "same_close";
+          fee_buy: number;
+          fee_sell: number;
+          lot: number;
+          min_held_bars: number;
+          start: string;
+        };
+        profile: {
+          lot_size: number;
+          max_holding: null;
+          min_held_bars: number;
+          position_size: "all_cash";
+          stop_loss: "none";
+          take_profit_pct: null;
+          trailing: "none";
+        };
+        requested_end: string;
+        requested_start: string;
+        research: {
+          [key: string]: unknown;
+        } | null;
+        revision_saved_at: string;
+        shared_revision: number;
+        skipped_rows: number;
+        slippage: "not_modelled";
+        symbol: string;
+        system: {
+          data_hash: string;
+          excluded_symbols: Array<string>;
+          options: {
+            [key: string]: unknown;
+          };
+          profile: {
+            [key: string]: unknown;
+          };
+          sectors: {
+            [key: string]: string | null;
+          } | null;
+          symbols: Array<string>;
+          universe: {
+            [key: string]: unknown;
+          } | null;
+          universe_policy: "explicit_symbols" | "static_current_membership";
+        } | null;
+        versions: {
+          calculation_version: string;
+          engine_version: string;
+          formula_version: string;
+          rule_version: string;
+          schema_version: string;
+        };
+        warmup_bars: number;
+        warmup_sessions_requested: number;
+      };
+      trades: Array<{
+        concurrent_reasons?: Array<string>;
+        entry_date: string;
+        entry_price: number;
+        entry_signal_date: string;
+        exit_date: string;
+        exit_price: number;
+        exit_reason: string;
+        exit_signal_date: string;
+        hold: number;
+        number: number;
+        pnl: number;
+        pnl_pct: number;
+        qty: number;
+      }>;
+    } | null;
+    run_id: string;
+    shared_revision: number;
+    snapshot: {
+      actual_end: string;
+      actual_start: string;
+      adjusted: boolean;
+      bar_count: number;
+      benchmark: {
+        available: boolean;
+        source: string | null;
+        symbol: "VNINDEX";
+      };
+      capital: number;
+      config: {
+        indicators: {
+          [key: string]: unknown;
+        };
+        schema_version: string;
+        [key: string]: unknown;
+      };
+      config_hash: string;
+      data_hash: string;
+      data_source: string;
+      data_source_priority: number | null;
+      data_warnings: Array<{
+        code: string;
+        indicators?: Array<string>;
+        message: string;
+        symbols?: Array<string>;
+      }>;
+      execution: "next_open" | "same_close";
+      execution_profile: "CLEAN_TECH_2.0";
+      fee_preset: "standard" | "none";
+      fees: {
+        buy: number;
+        sell: number;
+      };
+      lot_size: number;
+      open_position_policy: "mark_to_market_last_close";
+      options: {
+        capital: number;
+        end: string;
+        execution: "next_open" | "same_close";
+        fee_buy: number;
+        fee_sell: number;
+        lot: number;
+        min_held_bars: number;
+        start: string;
+      };
+      profile: {
+        lot_size: number;
+        max_holding: null;
+        min_held_bars: number;
+        position_size: "all_cash";
+        stop_loss: "none";
+        take_profit_pct: null;
+        trailing: "none";
+      };
+      requested_end: string;
+      requested_start: string;
+      research: {
+        [key: string]: unknown;
+      } | null;
+      revision_saved_at: string;
+      shared_revision: number;
+      skipped_rows: number;
+      slippage: "not_modelled";
+      symbol: string;
+      system: {
+        data_hash: string;
+        excluded_symbols: Array<string>;
+        options: {
+          [key: string]: unknown;
+        };
+        profile: {
+          [key: string]: unknown;
+        };
+        sectors: {
+          [key: string]: string | null;
+        } | null;
+        symbols: Array<string>;
+        universe: {
+          [key: string]: unknown;
+        } | null;
+        universe_policy: "explicit_symbols" | "static_current_membership";
+      } | null;
+      versions: {
+        calculation_version: string;
+        engine_version: string;
+        formula_version: string;
+        rule_version: string;
+        schema_version: string;
+      };
+      warmup_bars: number;
+      warmup_sessions_requested: number;
+    } | null;
+    status: "succeeded" | "failed";
+    system_result: {
+      applied: Array<string>;
+      curve: Array<{
+        buy_hold_pct: number;
+        date: string;
+        market_pct: number | null;
+        phase?: "before_first_execution";
+        return_pct: number;
+        value: number;
+      }>;
+      kpis: {
+        buy_hold_return: number;
+        cagr: number;
+        market_return: number | null;
+        max_drawdown: number;
+        n_trades: number;
+        n_wins: number;
+        net_return: number;
+        profit_factor: number | null;
+        win_rate: number | null;
+      };
+      ledger_size: number;
+      positions_open: Array<{
+        cost: number;
+        date: string;
+        index: number;
+        last_price: number;
+        market_value: number;
+        peak_close: number;
+        price: number;
+        qty: number;
+        sector: string | null;
+        signal_date: string;
+        symbol: string;
+        unrealized_pnl: number;
+      }>;
+      trades: Array<{
+        concurrent_reasons?: Array<string>;
+        entry_date: string;
+        entry_price: number;
+        entry_signal_date: string;
+        exit_date: string;
+        exit_price: number;
+        exit_reason: string;
+        exit_signal_date: string;
+        hold: number;
+        number: number;
+        partial: boolean;
+        pnl: number;
+        pnl_pct: number;
+        qty: number;
+        symbol: string;
+      }>;
+    } | null;
+  };
+};
+
+export type StrategyBacktestsCreateResponse =
+  StrategyBacktestsCreateResponses[keyof StrategyBacktestsCreateResponses];
+
+export type StrategyBacktestsGetData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/backtests/{id}";
+};
+
+export type StrategyBacktestsGetErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyBacktestsGetError =
+  StrategyBacktestsGetErrors[keyof StrategyBacktestsGetErrors];
+
+export type StrategyBacktestsGetResponses = {
+  200: {
+    created_at: string;
+    data_warnings: Array<{
+      code: string;
+      indicators?: Array<string>;
+      message: string;
+      symbols?: Array<string>;
+    }>;
+    error: {
+      code: string;
+      details?: Array<unknown>;
+      message: string;
+      status: number;
+    } | null;
+    kind:
+      "single" | "sensitivity" | "out_of_sample" | "walk_forward" | "portfolio";
+    request: {
+      [key: string]: unknown;
+    };
+    /**
+     * Advanced engine output: sensitivity {candidates}, out_of_sample {train,test,attempt}, walk_forward {windows}
+     */
+    research_result: {
+      data_hash: string;
+      type:
+        "sensitivity" | "out_of_sample_fixed_config" | "walk_forward_windows";
+      [key: string]: unknown;
+    } | null;
+    result: {
+      calculation_version: string;
+      canceled: Array<{
+        action: "buy" | "sell";
+        reason: "end_of_range";
+        signalIndex: number;
+      }>;
+      cash: number;
+      curve: Array<{
+        buy_hold_pct: number;
+        date: string;
+        market_pct: number | null;
+        phase?: "before_first_execution";
+        return_pct: number;
+        value: number;
+      }>;
+      engine_version: string;
+      formula_version: string;
+      initial: {
+        buy_hold_pct: number;
+        date: string;
+        market_pct: number | null;
+        phase?: "before_first_execution";
+        return_pct: number;
+        value: number;
+      };
+      kpis: {
+        buy_hold_return: number;
+        cagr: number;
+        market_return: number | null;
+        max_drawdown: number;
+        n_trades: number;
+        n_wins: number;
+        net_return: number;
+        profit_factor: number | null;
+        win_rate: number | null;
+      };
+      open_position: {
+        cost: number;
+        date: string;
+        index: number;
+        last_price: number;
+        market_value: number;
+        price: number;
+        qty: number;
+        signal_date: string;
+        unrealized_pnl: number;
+      } | null;
+      profile: {
+        lot_size: number;
+        max_holding: null;
+        min_held_bars: number;
+        position_size: "all_cash";
+        stop_loss: "none";
+        take_profit_pct: null;
+        trailing: "none";
+      };
+      rule_version: string;
+      schema_version: string;
+      snapshot: {
+        actual_end: string;
+        actual_start: string;
+        adjusted: boolean;
+        bar_count: number;
+        benchmark: {
+          available: boolean;
+          source: string | null;
+          symbol: "VNINDEX";
+        };
+        capital: number;
+        config: {
+          indicators: {
+            [key: string]: unknown;
+          };
+          schema_version: string;
+          [key: string]: unknown;
+        };
+        config_hash: string;
+        data_hash: string;
+        data_source: string;
+        data_source_priority: number | null;
+        data_warnings: Array<{
+          code: string;
+          indicators?: Array<string>;
+          message: string;
+          symbols?: Array<string>;
+        }>;
+        execution: "next_open" | "same_close";
+        execution_profile: "CLEAN_TECH_2.0";
+        fee_preset: "standard" | "none";
+        fees: {
+          buy: number;
+          sell: number;
+        };
+        lot_size: number;
+        open_position_policy: "mark_to_market_last_close";
+        options: {
+          capital: number;
+          end: string;
+          execution: "next_open" | "same_close";
+          fee_buy: number;
+          fee_sell: number;
+          lot: number;
+          min_held_bars: number;
+          start: string;
+        };
+        profile: {
+          lot_size: number;
+          max_holding: null;
+          min_held_bars: number;
+          position_size: "all_cash";
+          stop_loss: "none";
+          take_profit_pct: null;
+          trailing: "none";
+        };
+        requested_end: string;
+        requested_start: string;
+        research: {
+          [key: string]: unknown;
+        } | null;
+        revision_saved_at: string;
+        shared_revision: number;
+        skipped_rows: number;
+        slippage: "not_modelled";
+        symbol: string;
+        system: {
+          data_hash: string;
+          excluded_symbols: Array<string>;
+          options: {
+            [key: string]: unknown;
+          };
+          profile: {
+            [key: string]: unknown;
+          };
+          sectors: {
+            [key: string]: string | null;
+          } | null;
+          symbols: Array<string>;
+          universe: {
+            [key: string]: unknown;
+          } | null;
+          universe_policy: "explicit_symbols" | "static_current_membership";
+        } | null;
+        versions: {
+          calculation_version: string;
+          engine_version: string;
+          formula_version: string;
+          rule_version: string;
+          schema_version: string;
+        };
+        warmup_bars: number;
+        warmup_sessions_requested: number;
+      };
+      trades: Array<{
+        concurrent_reasons?: Array<string>;
+        entry_date: string;
+        entry_price: number;
+        entry_signal_date: string;
+        exit_date: string;
+        exit_price: number;
+        exit_reason: string;
+        exit_signal_date: string;
+        hold: number;
+        number: number;
+        pnl: number;
+        pnl_pct: number;
+        qty: number;
+      }>;
+    } | null;
+    run_id: string;
+    shared_revision: number;
+    snapshot: {
+      actual_end: string;
+      actual_start: string;
+      adjusted: boolean;
+      bar_count: number;
+      benchmark: {
+        available: boolean;
+        source: string | null;
+        symbol: "VNINDEX";
+      };
+      capital: number;
+      config: {
+        indicators: {
+          [key: string]: unknown;
+        };
+        schema_version: string;
+        [key: string]: unknown;
+      };
+      config_hash: string;
+      data_hash: string;
+      data_source: string;
+      data_source_priority: number | null;
+      data_warnings: Array<{
+        code: string;
+        indicators?: Array<string>;
+        message: string;
+        symbols?: Array<string>;
+      }>;
+      execution: "next_open" | "same_close";
+      execution_profile: "CLEAN_TECH_2.0";
+      fee_preset: "standard" | "none";
+      fees: {
+        buy: number;
+        sell: number;
+      };
+      lot_size: number;
+      open_position_policy: "mark_to_market_last_close";
+      options: {
+        capital: number;
+        end: string;
+        execution: "next_open" | "same_close";
+        fee_buy: number;
+        fee_sell: number;
+        lot: number;
+        min_held_bars: number;
+        start: string;
+      };
+      profile: {
+        lot_size: number;
+        max_holding: null;
+        min_held_bars: number;
+        position_size: "all_cash";
+        stop_loss: "none";
+        take_profit_pct: null;
+        trailing: "none";
+      };
+      requested_end: string;
+      requested_start: string;
+      research: {
+        [key: string]: unknown;
+      } | null;
+      revision_saved_at: string;
+      shared_revision: number;
+      skipped_rows: number;
+      slippage: "not_modelled";
+      symbol: string;
+      system: {
+        data_hash: string;
+        excluded_symbols: Array<string>;
+        options: {
+          [key: string]: unknown;
+        };
+        profile: {
+          [key: string]: unknown;
+        };
+        sectors: {
+          [key: string]: string | null;
+        } | null;
+        symbols: Array<string>;
+        universe: {
+          [key: string]: unknown;
+        } | null;
+        universe_policy: "explicit_symbols" | "static_current_membership";
+      } | null;
+      versions: {
+        calculation_version: string;
+        engine_version: string;
+        formula_version: string;
+        rule_version: string;
+        schema_version: string;
+      };
+      warmup_bars: number;
+      warmup_sessions_requested: number;
+    } | null;
+    status: "succeeded" | "failed";
+    system_result: {
+      applied: Array<string>;
+      curve: Array<{
+        buy_hold_pct: number;
+        date: string;
+        market_pct: number | null;
+        phase?: "before_first_execution";
+        return_pct: number;
+        value: number;
+      }>;
+      kpis: {
+        buy_hold_return: number;
+        cagr: number;
+        market_return: number | null;
+        max_drawdown: number;
+        n_trades: number;
+        n_wins: number;
+        net_return: number;
+        profit_factor: number | null;
+        win_rate: number | null;
+      };
+      ledger_size: number;
+      positions_open: Array<{
+        cost: number;
+        date: string;
+        index: number;
+        last_price: number;
+        market_value: number;
+        peak_close: number;
+        price: number;
+        qty: number;
+        sector: string | null;
+        signal_date: string;
+        symbol: string;
+        unrealized_pnl: number;
+      }>;
+      trades: Array<{
+        concurrent_reasons?: Array<string>;
+        entry_date: string;
+        entry_price: number;
+        entry_signal_date: string;
+        exit_date: string;
+        exit_price: number;
+        exit_reason: string;
+        exit_signal_date: string;
+        hold: number;
+        number: number;
+        partial: boolean;
+        pnl: number;
+        pnl_pct: number;
+        qty: number;
+        symbol: string;
+      }>;
+    } | null;
+  };
+};
+
+export type StrategyBacktestsGetResponse =
+  StrategyBacktestsGetResponses[keyof StrategyBacktestsGetResponses];
+
+export type ListStrategySavedFiltersData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/filters";
+};
+
+export type ListStrategySavedFiltersErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ListStrategySavedFiltersError =
+  ListStrategySavedFiltersErrors[keyof ListStrategySavedFiltersErrors];
+
+export type ListStrategySavedFiltersResponses = {
+  200: {
+    items: Array<{
+      created_at: string;
+      current_version: number;
+      definition: {
+        logic: "AND";
+        name: string;
+        rules: Array<{
+          api_unit: "ratio" | "lần" | "ngày" | "năm";
+          id: string;
+          metric_id:
+            | "revenue_yoy"
+            | "profit_yoy"
+            | "eps_yoy"
+            | "gross_margin"
+            | "net_margin"
+            | "roe"
+            | "roa"
+            | "roic"
+            | "debt_equity"
+            | "net_debt_ebitda"
+            | "current_ratio"
+            | "interest_coverage"
+            | "cfo_margin"
+            | "cfo_profit"
+            | "fcf_margin"
+            | "fcf_yoy"
+            | "capex_revenue"
+            | "accrual"
+            | "pe"
+            | "pb"
+            | "ps"
+            | "ev_ebitda"
+            | "peg"
+            | "fcf_yield"
+            | "revenue_cagr3"
+            | "profit_cagr3"
+            | "eps_cagr3"
+            | "asset_turnover"
+            | "ccc"
+            | "working_cap_turnover"
+            | "revenue_growth_stability"
+            | "eps_growth_stability"
+            | "net_margin_stability"
+            | "roic_stability"
+            | "fcf_positive_streak"
+            | "profit_positive_streak"
+            | "dividend_yield"
+            | "payout_ratio"
+            | "dividend_cagr3"
+            | "share_count_yoy"
+            | "buyback_yield"
+            | "shareholder_yield";
+          operator: ">" | "<";
+          value: number;
+        }>;
+        schema_version: "2.0";
+        scope: {
+          market: string;
+          period: "TTM" | "annual" | "quarter";
+          sector: string;
+        };
+      };
+      definition_hash: string;
+      id: string;
+      name: string;
+      updated_at: string;
+      version: number;
+    }>;
+  };
+};
+
+export type ListStrategySavedFiltersResponse =
+  ListStrategySavedFiltersResponses[keyof ListStrategySavedFiltersResponses];
+
+export type CreateStrategySavedFilterData = {
+  body: {
+    definition: {
+      logic: "AND";
+      name: string;
+      rules: Array<{
+        api_unit: "ratio" | "lần" | "ngày" | "năm";
+        id: string;
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        operator: ">" | "<";
+        value: number;
+      }>;
+      schema_version: "2.0";
+      scope: {
+        market: string;
+        period: "TTM" | "annual" | "quarter";
+        sector: string;
+      };
+    };
+    idempotency_key?: string;
+    name: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/filters";
+};
+
+export type CreateStrategySavedFilterErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type CreateStrategySavedFilterError =
+  CreateStrategySavedFilterErrors[keyof CreateStrategySavedFilterErrors];
+
+export type CreateStrategySavedFilterResponses = {
+  201: {
+    created_at: string;
+    current_version: number;
+    definition: {
+      logic: "AND";
+      name: string;
+      rules: Array<{
+        api_unit: "ratio" | "lần" | "ngày" | "năm";
+        id: string;
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        operator: ">" | "<";
+        value: number;
+      }>;
+      schema_version: "2.0";
+      scope: {
+        market: string;
+        period: "TTM" | "annual" | "quarter";
+        sector: string;
+      };
+    };
+    definition_hash: string;
+    id: string;
+    name: string;
+    updated_at: string;
+    version: number;
+    versions: Array<{
+      created_at: string;
+      definition_hash: string;
+      version: number;
+    }>;
+  };
+};
+
+export type CreateStrategySavedFilterResponse =
+  CreateStrategySavedFilterResponses[keyof CreateStrategySavedFilterResponses];
+
+export type DeleteStrategySavedFilterData = {
+  body?: never;
+  path: {
+    filterId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/filters/{filterId}";
+};
+
+export type DeleteStrategySavedFilterErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type DeleteStrategySavedFilterError =
+  DeleteStrategySavedFilterErrors[keyof DeleteStrategySavedFilterErrors];
+
+export type DeleteStrategySavedFilterResponses = {
+  /**
+   * Đã xóa bộ lọc
+   */
+  204: void;
+};
+
+export type DeleteStrategySavedFilterResponse =
+  DeleteStrategySavedFilterResponses[keyof DeleteStrategySavedFilterResponses];
+
+export type GetStrategySavedFilterData = {
+  body?: never;
+  path: {
+    filterId: string;
+  };
+  query?: {
+    version?: number;
+  };
+  url: "/api/v2/strategy/filters/{filterId}";
+};
+
+export type GetStrategySavedFilterErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetStrategySavedFilterError =
+  GetStrategySavedFilterErrors[keyof GetStrategySavedFilterErrors];
+
+export type GetStrategySavedFilterResponses = {
+  200: {
+    created_at: string;
+    current_version: number;
+    definition: {
+      logic: "AND";
+      name: string;
+      rules: Array<{
+        api_unit: "ratio" | "lần" | "ngày" | "năm";
+        id: string;
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        operator: ">" | "<";
+        value: number;
+      }>;
+      schema_version: "2.0";
+      scope: {
+        market: string;
+        period: "TTM" | "annual" | "quarter";
+        sector: string;
+      };
+    };
+    definition_hash: string;
+    id: string;
+    name: string;
+    updated_at: string;
+    version: number;
+    versions: Array<{
+      created_at: string;
+      definition_hash: string;
+      version: number;
+    }>;
+  };
+};
+
+export type GetStrategySavedFilterResponse =
+  GetStrategySavedFilterResponses[keyof GetStrategySavedFilterResponses];
+
+export type UpdateStrategySavedFilterData = {
+  body: {
+    definition: {
+      logic: "AND";
+      name: string;
+      rules: Array<{
+        api_unit: "ratio" | "lần" | "ngày" | "năm";
+        id: string;
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        operator: ">" | "<";
+        value: number;
+      }>;
+      schema_version: "2.0";
+      scope: {
+        market: string;
+        period: "TTM" | "annual" | "quarter";
+        sector: string;
+      };
+    };
+    name?: string;
+  };
+  path: {
+    filterId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/filters/{filterId}";
+};
+
+export type UpdateStrategySavedFilterErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type UpdateStrategySavedFilterError =
+  UpdateStrategySavedFilterErrors[keyof UpdateStrategySavedFilterErrors];
+
+export type UpdateStrategySavedFilterResponses = {
+  200: {
+    created_at: string;
+    current_version: number;
+    definition: {
+      logic: "AND";
+      name: string;
+      rules: Array<{
+        api_unit: "ratio" | "lần" | "ngày" | "năm";
+        id: string;
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        operator: ">" | "<";
+        value: number;
+      }>;
+      schema_version: "2.0";
+      scope: {
+        market: string;
+        period: "TTM" | "annual" | "quarter";
+        sector: string;
+      };
+    };
+    definition_hash: string;
+    id: string;
+    name: string;
+    updated_at: string;
+    version: number;
+    versions: Array<{
+      created_at: string;
+      definition_hash: string;
+      version: number;
+    }>;
+  };
+};
+
+export type UpdateStrategySavedFilterResponse =
+  UpdateStrategySavedFilterResponses[keyof UpdateStrategySavedFilterResponses];
+
+export type ListStrategySavedListsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/lists";
+};
+
+export type ListStrategySavedListsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ListStrategySavedListsError =
+  ListStrategySavedListsErrors[keyof ListStrategySavedListsErrors];
+
+export type ListStrategySavedListsResponses = {
+  200: {
+    items: Array<{
+      as_of: string;
+      created_at: string;
+      data_source: string;
+      filter_id: string | null;
+      filter_version: number | null;
+      id: string;
+      kind: "static_retrospective";
+      name: string;
+      scope: {
+        [key: string]: string | number | boolean | null;
+      };
+      tickers: Array<string>;
+    }>;
+  };
+};
+
+export type ListStrategySavedListsResponse =
+  ListStrategySavedListsResponses[keyof ListStrategySavedListsResponses];
+
+export type CreateStrategySavedListData = {
+  body: {
+    as_of: string;
+    data_source: string;
+    filter_id?: string;
+    filter_version?: number;
+    idempotency_key?: string;
+    name: string;
+    scope: {
+      [key: string]: string | number | boolean | null;
+    };
+    tickers: Array<string>;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/lists";
+};
+
+export type CreateStrategySavedListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type CreateStrategySavedListError =
+  CreateStrategySavedListErrors[keyof CreateStrategySavedListErrors];
+
+export type CreateStrategySavedListResponses = {
+  201: {
+    as_of: string;
+    created_at: string;
+    data_source: string;
+    filter_id: string | null;
+    filter_version: number | null;
+    id: string;
+    kind: "static_retrospective";
+    name: string;
+    scope: {
+      [key: string]: string | number | boolean | null;
+    };
+    tickers: Array<string>;
+  };
+};
+
+export type CreateStrategySavedListResponse =
+  CreateStrategySavedListResponses[keyof CreateStrategySavedListResponses];
+
+export type DeleteStrategySavedListData = {
+  body?: never;
+  path: {
+    listId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/lists/{listId}";
+};
+
+export type DeleteStrategySavedListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type DeleteStrategySavedListError =
+  DeleteStrategySavedListErrors[keyof DeleteStrategySavedListErrors];
+
+export type DeleteStrategySavedListResponses = {
+  /**
+   * Đã xóa danh sách
+   */
+  204: void;
+};
+
+export type DeleteStrategySavedListResponse =
+  DeleteStrategySavedListResponses[keyof DeleteStrategySavedListResponses];
+
+export type GetStrategySavedListData = {
+  body?: never;
+  path: {
+    listId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/lists/{listId}";
+};
+
+export type GetStrategySavedListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetStrategySavedListError =
+  GetStrategySavedListErrors[keyof GetStrategySavedListErrors];
+
+export type GetStrategySavedListResponses = {
+  200: {
+    as_of: string;
+    created_at: string;
+    data_source: string;
+    filter_id: string | null;
+    filter_version: number | null;
+    id: string;
+    kind: "static_retrospective";
+    name: string;
+    scope: {
+      [key: string]: string | number | boolean | null;
+    };
+    tickers: Array<string>;
+  };
+};
+
+export type GetStrategySavedListResponse =
+  GetStrategySavedListResponses[keyof GetStrategySavedListResponses];
+
+export type StrategyConfigTechnicalRegistryData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/registry/technical";
+};
+
+export type StrategyConfigTechnicalRegistryErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyConfigTechnicalRegistryError =
+  StrategyConfigTechnicalRegistryErrors[keyof StrategyConfigTechnicalRegistryErrors];
+
+export type StrategyConfigTechnicalRegistryResponses = {
+  200: {
+    calculation_version: string;
+    indicators: Array<{
+      availability: "ohlcv" | "needs_history_context";
+      buy: {
+        enabled: boolean;
+        field_overrides?: {
+          [key: string]: {
+            api_scale?: number;
+            key?: string;
+            label?: string;
+            max?: number;
+            min?: number;
+            step?: number;
+            type?: "integer" | "number";
+            unit?: string;
+            wire_unit?: string;
+          };
+        };
+        params: {
+          [key: string]: number;
+        };
+        rules: Array<
+          | {
+              allowed_ops: Array<">" | "<">;
+              id: string;
+              kind: "compare" | "cross";
+              lhs:
+                | {
+                    key: string;
+                    kind: "series";
+                    offset?: number;
+                  }
+                | {
+                    key: string;
+                    kind: "param";
+                  }
+                | {
+                    kind: "constant";
+                    value: number;
+                  };
+              op: ">" | "<";
+              rhs:
+                | {
+                    key: string;
+                    kind: "series";
+                    offset?: number;
+                  }
+                | {
+                    key: string;
+                    kind: "param";
+                  }
+                | {
+                    kind: "constant";
+                    value: number;
+                  };
+            }
+          | {
+              allowed_ops: Array<"∈" | "∉">;
+              id: string;
+              kind: "membership";
+              lhs:
+                | {
+                    key: string;
+                    kind: "series";
+                    offset?: number;
+                  }
+                | {
+                    key: string;
+                    kind: "param";
+                  }
+                | {
+                    kind: "constant";
+                    value: number;
+                  };
+              op: "∈" | "∉";
+              rhs: {
+                bounds?: "open";
+                kind?: "interval";
+                lower:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+                upper:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+              };
+            }
+        >;
+      };
+      chapter: number;
+      family: "state" | "event";
+      fields: Array<{
+        api_scale: number;
+        key: string;
+        label: string;
+        max: number;
+        min: number;
+        step: number;
+        type: "integer" | "number";
+        unit: string;
+        wire_unit: string;
+      }>;
+      formula: string;
+      id: string;
+      learned: boolean;
+      lesson_id: string;
+      name: string;
+      sell: {
+        enabled: boolean;
+        field_overrides?: {
+          [key: string]: {
+            api_scale?: number;
+            key?: string;
+            label?: string;
+            max?: number;
+            min?: number;
+            step?: number;
+            type?: "integer" | "number";
+            unit?: string;
+            wire_unit?: string;
+          };
+        };
+        params: {
+          [key: string]: number;
+        };
+        rules: Array<
+          | {
+              allowed_ops: Array<">" | "<">;
+              id: string;
+              kind: "compare" | "cross";
+              lhs:
+                | {
+                    key: string;
+                    kind: "series";
+                    offset?: number;
+                  }
+                | {
+                    key: string;
+                    kind: "param";
+                  }
+                | {
+                    kind: "constant";
+                    value: number;
+                  };
+              op: ">" | "<";
+              rhs:
+                | {
+                    key: string;
+                    kind: "series";
+                    offset?: number;
+                  }
+                | {
+                    key: string;
+                    kind: "param";
+                  }
+                | {
+                    kind: "constant";
+                    value: number;
+                  };
+            }
+          | {
+              allowed_ops: Array<"∈" | "∉">;
+              id: string;
+              kind: "membership";
+              lhs:
+                | {
+                    key: string;
+                    kind: "series";
+                    offset?: number;
+                  }
+                | {
+                    key: string;
+                    kind: "param";
+                  }
+                | {
+                    kind: "constant";
+                    value: number;
+                  };
+              op: "∈" | "∉";
+              rhs: {
+                bounds?: "open";
+                kind?: "interval";
+                lower:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+                upper:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+              };
+            }
+        >;
+      };
+    }>;
+    rule_version: string;
+  };
+};
+
+export type StrategyConfigTechnicalRegistryResponse =
+  StrategyConfigTechnicalRegistryResponses[keyof StrategyConfigTechnicalRegistryResponses];
+
+export type ScreenerMetricsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/screener/metrics";
+};
+
+export type ScreenerMetricsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ScreenerMetricsError =
+  ScreenerMetricsErrors[keyof ScreenerMetricsErrors];
+
+export type ScreenerMetricsResponses = {
+  200: Array<{
+    api_unit: "ratio" | "lần" | "ngày" | "năm";
+    applicability: "all" | "non_financial";
+    id:
+      | "revenue_yoy"
+      | "profit_yoy"
+      | "eps_yoy"
+      | "gross_margin"
+      | "net_margin"
+      | "roe"
+      | "roa"
+      | "roic"
+      | "debt_equity"
+      | "net_debt_ebitda"
+      | "current_ratio"
+      | "interest_coverage"
+      | "cfo_margin"
+      | "cfo_profit"
+      | "fcf_margin"
+      | "fcf_yoy"
+      | "capex_revenue"
+      | "accrual"
+      | "pe"
+      | "pb"
+      | "ps"
+      | "ev_ebitda"
+      | "peg"
+      | "fcf_yield"
+      | "revenue_cagr3"
+      | "profit_cagr3"
+      | "eps_cagr3"
+      | "asset_turnover"
+      | "ccc"
+      | "working_cap_turnover"
+      | "revenue_growth_stability"
+      | "eps_growth_stability"
+      | "net_margin_stability"
+      | "roic_stability"
+      | "fcf_positive_streak"
+      | "profit_positive_streak"
+      | "dividend_yield"
+      | "payout_ratio"
+      | "dividend_cagr3"
+      | "share_count_yoy"
+      | "buyback_yield"
+      | "shareholder_yield";
+    learned: boolean;
+    lesson_id: string;
+    name: string;
+    operators: Array<">" | "<">;
+    period: string;
+    supported: boolean;
+    unit: string;
+    unsupported_reason: string | null;
+  }>;
+};
+
+export type ScreenerMetricsResponse =
+  ScreenerMetricsResponses[keyof ScreenerMetricsResponses];
+
+export type ScreenerRunData = {
+  body: {
+    logic: "AND";
+    name: string;
+    rules: Array<{
+      api_unit: "ratio" | "lần" | "ngày" | "năm";
+      id: string;
+      metric_id:
+        | "revenue_yoy"
+        | "profit_yoy"
+        | "eps_yoy"
+        | "gross_margin"
+        | "net_margin"
+        | "roe"
+        | "roa"
+        | "roic"
+        | "debt_equity"
+        | "net_debt_ebitda"
+        | "current_ratio"
+        | "interest_coverage"
+        | "cfo_margin"
+        | "cfo_profit"
+        | "fcf_margin"
+        | "fcf_yoy"
+        | "capex_revenue"
+        | "accrual"
+        | "pe"
+        | "pb"
+        | "ps"
+        | "ev_ebitda"
+        | "peg"
+        | "fcf_yield"
+        | "revenue_cagr3"
+        | "profit_cagr3"
+        | "eps_cagr3"
+        | "asset_turnover"
+        | "ccc"
+        | "working_cap_turnover"
+        | "revenue_growth_stability"
+        | "eps_growth_stability"
+        | "net_margin_stability"
+        | "roic_stability"
+        | "fcf_positive_streak"
+        | "profit_positive_streak"
+        | "dividend_yield"
+        | "payout_ratio"
+        | "dividend_cagr3"
+        | "share_count_yoy"
+        | "buyback_yield"
+        | "shareholder_yield";
+      operator: ">" | "<";
+      value: number;
+    }>;
+    schema_version: "2.0";
+    scope: {
+      market: string;
+      period: "TTM" | "annual" | "quarter";
+      sector: string;
+    };
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/screener/run";
+};
+
+export type ScreenerRunErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ScreenerRunError = ScreenerRunErrors[keyof ScreenerRunErrors];
+
+export type ScreenerRunResponses = {
+  200: {
+    as_of: string;
+    calculation_version: string;
+    counts: {
+      missing: number;
+      passed: number;
+      universe: number;
+    };
+    data_source: string;
+    period: "TTM" | "annual" | "quarter";
+    results: Array<{
+      exchange: string | null;
+      metrics: {
+        [key: string]: {
+          available_at: string | null;
+          lower_bound?: boolean;
+          period: string | null;
+          reason?: string;
+          source_revision: string | null;
+          status: "ok" | "missing" | "not_applicable" | "insufficient_base";
+          unit: "ratio" | "lần" | "ngày" | "năm";
+          value: number | null;
+        };
+      };
+      name: string | null;
+      passed: boolean;
+      sector: string | null;
+      symbol: string;
+    }>;
+    scope: {
+      market: string;
+      period: "TTM" | "annual" | "quarter";
+      sector: string;
+    };
+    universe_truncated: boolean;
+  };
+};
+
+export type ScreenerRunResponse =
+  ScreenerRunResponses[keyof ScreenerRunResponses];
+
+export type StrategyConfigGetSharedConfigData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/shared-config";
+};
+
+export type StrategyConfigGetSharedConfigErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyConfigGetSharedConfigError =
+  StrategyConfigGetSharedConfigErrors[keyof StrategyConfigGetSharedConfigErrors];
+
+export type StrategyConfigGetSharedConfigResponses = {
+  200: {
+    config: {
+      indicators: {
+        [key: string]: {
+          buy: {
+            enabled: boolean;
+            params: {
+              [key: string]: number;
+            };
+            rules: Array<
+              | {
+                  allowed_ops: Array<">" | "<">;
+                  id: string;
+                  kind: "compare" | "cross";
+                  lhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                  op: ">" | "<";
+                  rhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                }
+              | {
+                  allowed_ops: Array<"∈" | "∉">;
+                  id: string;
+                  kind: "membership";
+                  lhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                  op: "∈" | "∉";
+                  rhs: {
+                    bounds?: "open";
+                    kind?: "interval";
+                    lower:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    upper:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                  };
+                }
+            >;
+          };
+          master_enabled: boolean;
+          sell: {
+            enabled: boolean;
+            params: {
+              [key: string]: number;
+            };
+            rules: Array<
+              | {
+                  allowed_ops: Array<">" | "<">;
+                  id: string;
+                  kind: "compare" | "cross";
+                  lhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                  op: ">" | "<";
+                  rhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                }
+              | {
+                  allowed_ops: Array<"∈" | "∉">;
+                  id: string;
+                  kind: "membership";
+                  lhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                  op: "∈" | "∉";
+                  rhs: {
+                    bounds?: "open";
+                    kind?: "interval";
+                    lower:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    upper:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                  };
+                }
+            >;
+          };
+        };
+      };
+      revision: number;
+      rule_version: "iqx-rules-2.0";
+      schema_version: "2.0";
+    };
+    config_hash: string;
+    effective_revision: number | null;
+    effective_session: string | null;
+    granted_indicators: Array<string>;
+    registry_version: string;
+    saved_revision: number;
+    status: "pending" | "effective" | "calendar_unavailable";
+  };
+};
+
+export type StrategyConfigGetSharedConfigResponse =
+  StrategyConfigGetSharedConfigResponses[keyof StrategyConfigGetSharedConfigResponses];
+
+export type StrategyConfigPatchSharedConfigData = {
+  body: {
+    expected_revision: number;
+    idempotency_key: string;
+    indicators: {
+      [key: string]: {
+        buy: {
+          enabled: boolean;
+          params: {
+            [key: string]: number;
+          };
+          rules: Array<
+            | {
+                allowed_ops: Array<">" | "<">;
+                id: string;
+                kind: "compare" | "cross";
+                lhs:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+                op: ">" | "<";
+                rhs:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+              }
+            | {
+                allowed_ops: Array<"∈" | "∉">;
+                id: string;
+                kind: "membership";
+                lhs:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+                op: "∈" | "∉";
+                rhs: {
+                  bounds?: "open";
+                  kind?: "interval";
+                  lower:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                  upper:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                };
+              }
+          >;
+        };
+        master_enabled: boolean;
+        sell: {
+          enabled: boolean;
+          params: {
+            [key: string]: number;
+          };
+          rules: Array<
+            | {
+                allowed_ops: Array<">" | "<">;
+                id: string;
+                kind: "compare" | "cross";
+                lhs:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+                op: ">" | "<";
+                rhs:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+              }
+            | {
+                allowed_ops: Array<"∈" | "∉">;
+                id: string;
+                kind: "membership";
+                lhs:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+                op: "∈" | "∉";
+                rhs: {
+                  bounds?: "open";
+                  kind?: "interval";
+                  lower:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                  upper:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                };
+              }
+          >;
+        };
+      };
+    };
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/shared-config";
+};
+
+export type StrategyConfigPatchSharedConfigErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyConfigPatchSharedConfigError =
+  StrategyConfigPatchSharedConfigErrors[keyof StrategyConfigPatchSharedConfigErrors];
+
+export type StrategyConfigPatchSharedConfigResponses = {
+  200: {
+    config: {
+      indicators: {
+        [key: string]: {
+          buy: {
+            enabled: boolean;
+            params: {
+              [key: string]: number;
+            };
+            rules: Array<
+              | {
+                  allowed_ops: Array<">" | "<">;
+                  id: string;
+                  kind: "compare" | "cross";
+                  lhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                  op: ">" | "<";
+                  rhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                }
+              | {
+                  allowed_ops: Array<"∈" | "∉">;
+                  id: string;
+                  kind: "membership";
+                  lhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                  op: "∈" | "∉";
+                  rhs: {
+                    bounds?: "open";
+                    kind?: "interval";
+                    lower:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    upper:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                  };
+                }
+            >;
+          };
+          master_enabled: boolean;
+          sell: {
+            enabled: boolean;
+            params: {
+              [key: string]: number;
+            };
+            rules: Array<
+              | {
+                  allowed_ops: Array<">" | "<">;
+                  id: string;
+                  kind: "compare" | "cross";
+                  lhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                  op: ">" | "<";
+                  rhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                }
+              | {
+                  allowed_ops: Array<"∈" | "∉">;
+                  id: string;
+                  kind: "membership";
+                  lhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                  op: "∈" | "∉";
+                  rhs: {
+                    bounds?: "open";
+                    kind?: "interval";
+                    lower:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    upper:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                  };
+                }
+            >;
+          };
+        };
+      };
+      revision: number;
+      rule_version: "iqx-rules-2.0";
+      schema_version: "2.0";
+    };
+    config_hash: string;
+    effective_session: string | null;
+    revision: number;
+    status: "pending" | "effective" | "calendar_unavailable";
+  };
+};
+
+export type StrategyConfigPatchSharedConfigResponse =
+  StrategyConfigPatchSharedConfigResponses[keyof StrategyConfigPatchSharedConfigResponses];
+
+export type StrategyConfigListRevisionsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    limit?: number;
+  };
+  url: "/api/v2/strategy/shared-config/revisions";
+};
+
+export type StrategyConfigListRevisionsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyConfigListRevisionsError =
+  StrategyConfigListRevisionsErrors[keyof StrategyConfigListRevisionsErrors];
+
+export type StrategyConfigListRevisionsResponses = {
+  200: Array<{
+    config_hash: string;
+    effective_session: string | null;
+    revision: number;
+    saved_at: string;
+    status: "pending" | "effective" | "calendar_unavailable";
+  }>;
+};
+
+export type StrategyConfigListRevisionsResponse =
+  StrategyConfigListRevisionsResponses[keyof StrategyConfigListRevisionsResponses];
 
 export type TelegramControllerWebhook1Data = {
   body?: never;

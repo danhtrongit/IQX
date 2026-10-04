@@ -139,7 +139,9 @@ export type CapabilityLock = {
 
 /** Lock details of a 403 CAPABILITY_LOCKED; falls back to the requested capability. */
 export function capabilityLock(error: ApiError, requested: AdvancedCapability): CapabilityLock {
-  const details = record(error.details)
+  // The API error filter only forwards array details; accept both shapes.
+  const raw = Array.isArray(error.details) ? error.details[0] : error.details
+  const details = record(raw)
   const capability = text(details?.capability) ?? requested
   const reason = details?.reason === "flag_off" || details?.reason === "not_learned" ? details.reason : null
   const lessonId = CAPABILITY_LESSONS[capability] ?? null

@@ -8,11 +8,23 @@ import {
   Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
+import type { Environment } from '../../platform/config/environment.js';
 import { DatabaseService, type SqlClient } from '../../platform/database/index.js';
+import { QUANT_MARKET_DATA, type QuantMarketDataProvider } from '../quant/quant.types.js';
 import {
-  BOT_RULE_HASH,
-  BOT_RULE_SNAPSHOT,
+  configHash,
+  loadTechnicalRegistry,
+  type Bar,
+  type SharedConfig,
+} from '../quant/v2/index.js';
+import {
+  SHARED_CONFIG_READER,
+  type EffectiveSharedConfig,
+  type SharedConfigReaderPort,
+} from '../strategy-config/strategy-config.ports.js';
+import {
   BOT_RULES,
   candidateFromSnapshot,
   candidateGate,
@@ -35,6 +47,22 @@ import {
   type FeeRules,
 } from './bot.domain.js';
 import {
+  activeSideIndicators,
+  BOT_SHARED_CONFIG_MARKET_SYMBOL,
+  BOT_SHARED_CONFIG_SELL_REASON,
+  BOT_SHARED_CONFIG_WARMUP_SESSIONS,
+  botRuleReceipt,
+  needsMarketContext,
+  parseSharedConfigSignals,
+  sessionSideSignal,
+  sharedConfigBuyBlock,
+  sharedConfigBuySymbols,
+  sharedConfigExitReason,
+  verifyRuleReceipt,
+  type BotExitReason,
+  type BotSharedConfigPin,
+} from './bot.shared-config.js';
+import {
   BOT_SNAPSHOT_PROVIDER,
   type BotAccountRow,
   type BotBatchResult,
@@ -44,6 +72,7 @@ import {
   type BotPositionRow,
   type BotRunResult,
   type BotRunRow,
+  type BotSharedConfigSignals,
   type BotSnapshotProvider,
 } from './bot.types.js';
 
@@ -162,15 +191,59 @@ function validateTradingDate(value: string): void {
 /** Upper bound for one account's market snapshot; a stalled upstream must fail the run. */
 export const BOT_SNAPSHOT_DEADLINE_MS = 20 * 60_000;
 
+/** Shared-config bars: a stalled symbol becomes missing data (no entry, no shared exit). */
+const SHARED_CONFIG_BARS_DEADLINE_MS = 60_000;
+const SHARED_CONFIG_BARS_TTL_MS = 10 * 60_000;
+const SHARED_CONFIG_BARS_CONCURRENCY = 4;
+
+type SessionBars = { bars: Bar[]; source: string | null; hash: string };
+
+function withDeadline<T>(work: Promise<T>, ms: number): Promise<T | null> {
+  let timer: NodeJS.Timeout | undefined;
+  const deadline = new Promise<null>((resolve) => {
+    timer = setTimeout(() => resolve(null), ms);
+    timer.unref?.();
+  });
+  return Promise.race([work, deadline]).finally(() => clearTimeout(timer));
+}
+
+async function mapLimit<T, R>(
+  items: readonly T[],
+  limit: number,
+  worker: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let next = 0;
+  const lanes = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (next < items.length) {
+      const index = next++;
+      results[index] = await worker(items[index]!);
+    }
+  });
+  await Promise.all(lanes);
+  return results;
+}
+
 @Injectable()
 export class BotService {
   private readonly logger = new Logger(BotService.name);
+  private readonly sessionBarsCache = new Map<
+    string,
+    { expiresAt: number; pending: Promise<SessionBars | null> }
+  >();
 
   constructor(
     private readonly database: DatabaseService,
     @Optional()
     @Inject(BOT_SNAPSHOT_PROVIDER)
     private readonly defaultSnapshotProvider?: BotSnapshotProvider,
+    @Optional() private readonly config?: ConfigService<Environment, true>,
+    @Optional()
+    @Inject(SHARED_CONFIG_READER)
+    private readonly sharedConfigReader?: SharedConfigReaderPort,
+    @Optional()
+    @Inject(QUANT_MARKET_DATA)
+    private readonly marketData?: QuantMarketDataProvider,
   ) {}
 
   /** Stable integration aliases used by Journey/Cap-6 hooks. */
@@ -363,7 +436,8 @@ export class BotService {
     validateTradingDate(tradingDate);
     if (!provider) throw new Error('Bot snapshot provider is required');
 
-    const checkpoint = await this.ensureRunCheckpoint(userId, tradingDate);
+    const effective = await this.effectiveSharedConfig(userId, tradingDate);
+    const checkpoint = await this.ensureRunCheckpoint(userId, tradingDate, effective);
     if (checkpoint.completed) return checkpoint.completed;
     if (!checkpoint.hasSnapshot) {
       let input: BotMarketSnapshotInput;
@@ -394,9 +468,168 @@ export class BotService {
       } finally {
         clearTimeout(timer);
       }
+      if (checkpoint.sharedConfig && input.trading_date === tradingDate) {
+        try {
+          input = await this.withSharedConfigSignals(
+            userId,
+            tradingDate,
+            input,
+            checkpoint.sharedConfig,
+            effective,
+            checkpoint.openSymbols,
+          );
+        } catch (error) {
+          const name = error instanceof Error ? error.name : 'UnknownError';
+          this.logger.warn(`Bot shared config failed for run ${checkpoint.runId}: ${name}`);
+          return this.failRun(checkpoint.runId, [
+            issue('shared_config_unavailable', 'Không tải được cấu hình chung đã ghim cho phiên'),
+          ]);
+        }
+      }
       await this.freezeSnapshot(checkpoint.runId, tradingDate, input);
     }
     return this.executeFrozenRun(checkpoint.runId, userId, tradingDate);
+  }
+
+  private sharedConfigEnabled(): boolean {
+    return this.config?.get('BOT_SHARED_CONFIG_ENABLED', { infer: true }) === true;
+  }
+
+  /** Flag ON only: revision effective for this session, or null (Bot v1 behaviour). */
+  private async effectiveSharedConfig(
+    userId: string,
+    tradingDate: string,
+  ): Promise<EffectiveSharedConfig | null> {
+    if (!this.sharedConfigEnabled() || !this.sharedConfigReader) return null;
+    const effective = await this.sharedConfigReader.effectiveFor(userId, tradingDate);
+    if (!effective || effective.effective_session > tradingDate) return null;
+    return effective;
+  }
+
+  /** Exact pinned config; any revision/hash drift fails the run instead of trading on it. */
+  private async pinnedSharedConfig(
+    userId: string,
+    pin: BotSharedConfigPin,
+    effective: EffectiveSharedConfig | null,
+  ): Promise<SharedConfig> {
+    const source =
+      effective?.revision === pin.revision
+        ? effective
+        : await this.sharedConfigReader?.getRevision(userId, pin.revision);
+    if (
+      !source ||
+      source.config_hash !== pin.config_hash ||
+      configHash(source.config) !== pin.config_hash
+    ) {
+      const error = new Error('Pinned shared config is unavailable');
+      error.name = 'SharedConfigUnavailable';
+      throw error;
+    }
+    return source.config;
+  }
+
+  /** Read-only daily history ending on the session (adapter never fabricates bars). */
+  private sessionBars(symbol: string, session: string): Promise<SessionBars | null> {
+    const market = this.marketData;
+    if (!market) return Promise.resolve(null);
+    const key = `${session}:${symbol}`;
+    const now = Date.now();
+    for (const [cachedKey, entry] of this.sessionBarsCache) {
+      if (entry.expiresAt <= now) this.sessionBarsCache.delete(cachedKey);
+    }
+    const cached = this.sessionBarsCache.get(key);
+    if (cached) return cached.pending;
+    const pending = withDeadline(
+      market
+        .getHistoricalOhlcv(symbol, session, session, {
+          warmupSessions: BOT_SHARED_CONFIG_WARMUP_SESSIONS,
+        })
+        .then((history): SessionBars => {
+          const bars = history.records.map((record) => ({
+            date: record.time,
+            open: record.open,
+            high: record.high,
+            low: record.low,
+            close: record.close,
+            volume: record.volume,
+          }));
+          return { bars, source: history.source ?? null, hash: canonicalHash(bars) };
+        }),
+      SHARED_CONFIG_BARS_DEADLINE_MS,
+    ).catch(() => null);
+    this.sessionBarsCache.set(key, { expiresAt: now + SHARED_CONFIG_BARS_TTL_MS, pending });
+    void pending.then((value) => {
+      if (value === null) this.sessionBarsCache.delete(key);
+    });
+    return pending;
+  }
+
+  /**
+   * Evaluates the pinned config once per run and freezes the result into the market
+   * snapshot (and so into its hash): retries never re-read config or bars.
+   */
+  private async withSharedConfigSignals(
+    userId: string,
+    tradingDate: string,
+    input: BotMarketSnapshotInput,
+    pin: BotSharedConfigPin,
+    effective: EffectiveSharedConfig | null,
+    openSymbols: readonly string[],
+  ): Promise<BotMarketSnapshotInput> {
+    const config = await this.pinnedSharedConfig(userId, pin, effective);
+    const registry = loadTechnicalRegistry();
+    const buyActive = activeSideIndicators(config, 'buy', registry).length > 0;
+    const sellActive = activeSideIndicators(config, 'sell', registry).length > 0;
+    const buySymbols = buyActive ? sharedConfigBuySymbols(input) : [];
+    const sellSymbols = sellActive ? [...new Set(openSymbols)].sort() : [];
+    const symbols = [...new Set([...buySymbols, ...sellSymbols])].sort();
+    const marketSymbol =
+      symbols.length && needsMarketContext(config, registry)
+        ? BOT_SHARED_CONFIG_MARKET_SYMBOL
+        : null;
+    const market = marketSymbol ? await this.sessionBars(marketSymbol, tradingDate) : null;
+    const marketClose = new Map(market?.bars.map((bar) => [bar.date, bar.close]) ?? []);
+    const histories = await mapLimit(symbols, SHARED_CONFIG_BARS_CONCURRENCY, (symbol) =>
+      this.sessionBars(symbol, tradingDate),
+    );
+    const bySymbol = new Map(symbols.map((symbol, index) => [symbol, histories[index] ?? null]));
+    const barsFor = (symbol: string): Bar[] | null => {
+      const history = bySymbol.get(symbol);
+      if (!history) return null;
+      if (!marketSymbol) return history.bars;
+      return history.bars.map((bar) => ({ ...bar, market: marketClose.get(bar.date) ?? null }));
+    };
+    const signals: BotSharedConfigSignals = {
+      revision: pin.revision,
+      config_hash: pin.config_hash,
+      effective_session: pin.effective_session,
+      buy_active: buyActive,
+      sell_active: sellActive,
+      buy: Object.fromEntries(
+        buySymbols.map((symbol) => [
+          symbol,
+          sessionSideSignal(config, barsFor(symbol), 'buy', tradingDate, registry),
+        ]),
+      ),
+      sell: Object.fromEntries(
+        sellSymbols.map((symbol) => [
+          symbol,
+          sessionSideSignal(config, barsFor(symbol), 'sell', tradingDate, registry),
+        ]),
+      ),
+      data: {
+        source: histories.find((history) => history?.source)?.source ?? null,
+        hash: canonicalHash({
+          market: market?.hash ?? null,
+          symbols: Object.fromEntries(
+            symbols.map((symbol) => [symbol, bySymbol.get(symbol)?.hash ?? null]),
+          ),
+        }),
+        warmup_sessions: BOT_SHARED_CONFIG_WARMUP_SESSIONS,
+        market_symbol: marketSymbol,
+      },
+    };
+    return { ...input, shared_config_signals: signals };
   }
 
   private async instanceAccount(
@@ -419,12 +652,23 @@ export class BotService {
   private async ensureRunCheckpoint(
     userId: string,
     tradingDate: string,
+    effective: EffectiveSharedConfig | null = null,
   ): Promise<{
     runId: string;
     openSymbols: string[];
     hasSnapshot: boolean;
     completed: BotRunResult | null;
+    sharedConfig: BotSharedConfigPin | null;
   }> {
+    const receipt = botRuleReceipt(
+      effective
+        ? {
+            revision: effective.revision,
+            config_hash: effective.config_hash,
+            effective_session: effective.effective_session,
+          }
+        : null,
+    );
     return this.database.transaction(async (tx) => {
       const context = await this.instanceAccount(tx, userId, true);
       if (!context) throw new Error('Bot chưa được khởi tạo');
@@ -452,6 +696,7 @@ export class BotService {
             openSymbols: [],
             hasSnapshot: true,
             completed: this.runResult(existing),
+            sharedConfig: null,
           };
       }
 
@@ -484,8 +729,8 @@ export class BotService {
               BOT_RULES.strategy_id,
               BOT_RULES.strategy_version,
               BOT_RULES.execution_model,
-              json(BOT_RULE_SNAPSHOT),
-              BOT_RULE_HASH,
+              json(receipt.snapshot),
+              receipt.hash,
               json(openSymbols),
             ],
           )
@@ -509,8 +754,8 @@ export class BotService {
             BOT_RULES.strategy_id,
             BOT_RULES.strategy_version,
             BOT_RULES.execution_model,
-            json(BOT_RULE_SNAPSHOT),
-            BOT_RULE_HASH,
+            json(receipt.snapshot),
+            receipt.hash,
             isLegacy,
             json(openSymbols),
           ],
@@ -532,6 +777,11 @@ export class BotService {
           : openSymbols,
         hasSnapshot: frozen[0]?.exists ?? false,
         completed: null,
+        // Mirrors the coalesce above: an existing receipt keeps the config it pinned.
+        sharedConfig: verifyRuleReceipt(
+          run.rule_snapshot ?? receipt.snapshot,
+          run.rule_hash ?? receipt.hash,
+        ).pin,
       };
     });
   }
@@ -594,7 +844,7 @@ export class BotService {
   }
 
   private async validateCompletedRun(tx: SqlClient, run: BotRunRow): Promise<boolean> {
-    if (run.rule_hash !== BOT_RULE_HASH || canonicalHash(run.rule_snapshot) !== BOT_RULE_HASH) {
+    if (!verifyRuleReceipt(run.rule_snapshot, run.rule_hash).valid) {
       await this.markFailed(tx, run.id, [
         issue('unsupported_rule_version', 'Worker không hỗ trợ rule snapshot'),
       ]);
@@ -649,7 +899,8 @@ export class BotService {
       if (run.status === 'succeeded' && (await this.validateCompletedRun(tx, run))) {
         return this.runResult(run);
       }
-      if (run.rule_hash !== BOT_RULE_HASH || canonicalHash(run.rule_snapshot) !== BOT_RULE_HASH) {
+      const ruleReceipt = verifyRuleReceipt(run.rule_snapshot, run.rule_hash);
+      if (!ruleReceipt.valid) {
         const failed = await this.markFailed(tx, run.id, [
           issue('unsupported_rule_version', 'Worker không hỗ trợ rule snapshot'),
         ]);
@@ -682,7 +933,24 @@ export class BotService {
         ]);
         return this.runResult(failed);
       }
-      const result = await this.applyStrategy(tx, context, run, snapshot, payload, feeRules);
+      const shared = ruleReceipt.pin
+        ? parseSharedConfigSignals(payload.shared_config_signals, ruleReceipt.pin)
+        : null;
+      if (ruleReceipt.pin && !shared) {
+        const failed = await this.markFailed(tx, run.id, [
+          issue('unsupported_rule_version', 'Snapshot Bot thiếu tín hiệu cấu hình chung đã ghim'),
+        ]);
+        return this.runResult(failed);
+      }
+      const result = await this.applyStrategy(
+        tx,
+        context,
+        run,
+        snapshot,
+        payload,
+        feeRules,
+        shared,
+      );
       return this.runResult(result);
     });
   }
@@ -694,6 +962,7 @@ export class BotService {
     snapshot: SnapshotRow,
     payload: BotMarketSnapshotInput,
     feeRules: FeeRules,
+    shared: BotSharedConfigSignals | null = null,
   ): Promise<BotRunRow> {
     let cash = parseInteger(context.cash_vnd, 'cash_vnd');
     const blocked = stringList(run.blocked_symbols_at_start);
@@ -737,7 +1006,11 @@ export class BotService {
       const stop4 = parseDecimal4(position.stop_loss_vnd);
       const take4 = parseDecimal4(position.take_profit_vnd);
       if (stop4 === null || take4 === null) throw new Error('Stored Bot thresholds are invalid');
-      const signal = exitSignal(close, stop4, take4);
+      const signal = sharedConfigExitReason(
+        exitSignal(close, stop4, take4),
+        shared,
+        position.symbol,
+      );
       if (!signal) {
         await this.insertDecision(tx, run.id, {
           key: `bot:v1:${run.id}:${position.symbol}:hold`,
@@ -846,6 +1119,7 @@ export class BotService {
         if (!reasonCode && (!thresholds || !candidate.amplitudeSourceRef)) {
           reasonCode = 'invalid_or_missing_l1_amplitude';
         }
+        reasonCode ??= sharedConfigBuyBlock(shared, candidate.symbol);
         const sizing = reasonCode
           ? null
           : computeBuyQuantity({
@@ -1008,7 +1282,7 @@ export class BotService {
     accountId: string,
     position: BotPositionRow,
     close: bigint,
-    reasonCode: 'stop_loss' | 'take_profit',
+    reasonCode: BotExitReason,
     feeRules: FeeRules,
     sourceHash: string,
     cashBefore: bigint,
@@ -1083,10 +1357,18 @@ export class BotService {
       symbol: position.symbol,
       action: 'sell',
       reasonCode,
-      reason: `Giá đóng cửa ${close} đã chạm mốc ${reasonCode}; Bot bán mô phỏng toàn bộ ${position.qty_open} cổ phiếu tại đóng cửa phiên này.`,
+      reason:
+        reasonCode === BOT_SHARED_CONFIG_SELL_REASON
+          ? `Tín hiệu Bán của cấu hình chung đã ghim cho phiên đúng tại giá đóng cửa ${close}; Bot bán mô phỏng toàn bộ ${position.qty_open} cổ phiếu tại đóng cửa phiên này.`
+          : `Giá đóng cửa ${close} đã chạm mốc ${reasonCode}; Bot bán mô phỏng toàn bộ ${position.qty_open} cổ phiếu tại đóng cửa phiên này.`,
       filterIds: stringList(position.filter_ids),
       dataRefs: objectValue(position.source_refs),
-      thresholdVnd: reasonCode === 'stop_loss' ? position.stop_loss_vnd : position.take_profit_vnd,
+      thresholdVnd:
+        reasonCode === 'stop_loss'
+          ? position.stop_loss_vnd
+          : reasonCode === 'take_profit'
+            ? position.take_profit_vnd
+            : undefined,
       executionId: id,
     });
     return { netCashDeltaVnd: net.toString() };

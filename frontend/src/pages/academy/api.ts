@@ -112,13 +112,15 @@ async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   return payload as T
 }
 
-function jsonBody(body: unknown): RequestInit {
-  return { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }
+function jsonBody(body: unknown, signal?: AbortSignal): RequestInit {
+  return { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal }
 }
 
 export function getCurriculum(contentVersion?: string, signal?: AbortSignal): Promise<Curriculum> {
-  const query = contentVersion ? `?content_version=${encodeURIComponent(contentVersion)}` : ""
-  return api<Curriculum>(`/academy/curriculum${query}`, { signal })
+  return api<Curriculum>(
+    `/academy/curriculum${contentVersion ? `?content_version=${encodeURIComponent(contentVersion)}` : ""}`,
+    { signal },
+  )
 }
 
 export function getLesson(lessonId: string, signal?: AbortSignal): Promise<LessonDetail> {
@@ -126,7 +128,7 @@ export function getLesson(lessonId: string, signal?: AbortSignal): Promise<Lesso
 }
 
 export function createAttempt(body: CreateAttemptBody, signal?: AbortSignal): Promise<Attempt> {
-  return api<Attempt>("/academy/attempts", { ...jsonBody(body), signal })
+  return api<Attempt>("/academy/attempts", jsonBody(body, signal))
 }
 
 export function submitAttempt(
@@ -136,7 +138,7 @@ export function submitAttempt(
   signal?: AbortSignal,
 ): Promise<AttemptResult> {
   const body = idempotencyKey ? { answers, idempotency_key: idempotencyKey } : { answers }
-  return api<AttemptResult>(`/academy/attempts/${encodeURIComponent(attemptId)}/submit`, { ...jsonBody(body), signal })
+  return api<AttemptResult>(`/academy/attempts/${encodeURIComponent(attemptId)}/submit`, jsonBody(body, signal))
 }
 
 /** `ACADEMY_ENABLED=false` → every academy route answers 404 FEATURE_DISABLED. */

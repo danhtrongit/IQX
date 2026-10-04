@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ApiError } from "@/lib/api"
+import { isFeatureDisabled } from "@/lib/shared-config"
+import { useSavedLists } from "@/pages/strategy/filter/hooks"
 
 import type { LessonDetail, LessonFixture, LessonKind } from "./api"
 import { sanitizeLessonHtml } from "./sanitize"
@@ -89,6 +92,65 @@ function FixturePractice({ fixture }: { fixture: LessonFixture }) {
   )
 }
 
+/** Lessons whose practice area offers saved lists: fundamental lessons and all of chapter 4. */
+function usesSavedLists(lesson: LessonDetail): boolean {
+  return lesson.kind === "fundamental" || lesson.chapter === 4
+}
+
+/** Chapter 2 lessons 14-16 (sensitivity / out-of-sample / walk-forward) are practised in the Backtest tab. */
+const VALIDATION_LESSONS: ReadonlySet<string> = new Set(["ch02-l14", "ch02-l15", "ch02-l16"])
+
+function SavedListPractice() {
+  const selectId = useId()
+  const [selectedId, setSelectedId] = useState("")
+  const lists = useSavedLists(true)
+
+  if (isFeatureDisabled(lists.error)) return null
+  const denied = lists.error instanceof ApiError && (lists.error.status === 401 || lists.error.status === 403)
+  const items = lists.data ?? []
+  const selected = items.find(list => list.id === selectedId)
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="font-heading text-base">Danh mục thực hành</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        {denied ? (
+          <p className="text-muted-foreground">Danh mục đã lưu cần tài khoản Premium.</p>
+        ) : lists.isError ? (
+          <p role="alert" className="text-destructive">Không tải được danh mục đã lưu.</p>
+        ) : lists.isPending ? (
+          <p className="text-muted-foreground">Đang tải danh mục…</p>
+        ) : items.length === 0 ? (
+          <p className="text-muted-foreground">
+            Chưa có danh mục nào. Lưu một danh mục trong{" "}
+            <Link className="underline underline-offset-2" to="/chien-luoc?tab=bo-loc">Chiến lược → Bộ lọc</Link>.
+          </p>
+        ) : (
+          <>
+            <Label htmlFor={selectId}>Danh mục thực hành</Label>
+            <select
+              id={selectId}
+              className="block h-9 w-full max-w-sm rounded-md border border-input bg-background px-3 text-sm"
+              value={selectedId}
+              onChange={event => setSelectedId(event.target.value)}
+            >
+              <option value="">Chọn danh mục đã lưu</option>
+              {items.map(list => <option key={list.id} value={list.id}>{`${list.name} · ${list.tickers.length} mã`}</option>)}
+            </select>
+            <p role="status" className="leading-6">
+              {selected
+                ? `${selected.tickers.join(" · ")} · Lưu ngày ${selected.as_of.slice(0, 10)}`
+                : "Danh mục là danh sách thực hành, không phải vị thế tài khoản."}
+            </p>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 export type LessonViewProps = {
   lesson: LessonDetail
   chapterTitle: string | undefined
@@ -145,13 +207,14 @@ export function LessonView({ lesson, chapterTitle, chapterLessonCount, lessonNam
 
       {lesson.fixture && <FixturePractice fixture={lesson.fixture} />}
 
+      {usesSavedLists(lesson) && <SavedListPractice />}
+
       {lesson.sources.length > 0 && (
         <section aria-labelledby="academy-sources" className="text-xs text-muted-foreground">
           <h3 id="academy-sources" className="font-semibold text-foreground">Nguồn</h3>
           <ul className="mt-1 list-disc space-y-0.5 pl-5">
             {lesson.sources.map(source => <li key={source}>{source}</li>)}
           </ul>
-          {lesson.review_status && <p className="mt-2">Trạng thái duyệt nội dung: {lesson.review_status}</p>}
           <p className="mt-2">Nội dung phục vụ học tập, không phải khuyến nghị đầu tư. Đạt 8/8 không phải chứng nhận đầu tư.</p>
         </section>
       )}
@@ -177,6 +240,9 @@ export function LessonView({ lesson, chapterTitle, chapterLessonCount, lessonNam
         )}
         {lesson.kind === "fundamental" && (
           <Button asChild variant="ghost"><Link to="/chien-luoc?tab=bo-loc">Mở Bộ lọc</Link></Button>
+        )}
+        {VALIDATION_LESSONS.has(lesson.id) && (
+          <Button asChild variant="ghost"><Link to="/chien-luoc?tab=backtest">Thực hành kiểm định</Link></Button>
         )}
         {nextLessonId && (
           <Button asChild variant="ghost" className="ml-auto">
