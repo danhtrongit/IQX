@@ -1,0 +1,602 @@
+[
+  {
+    "id": "n_day_high",
+    "name": "N-day High",
+    "chapter": 9,
+    "lesson_id": "ch09-l01",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "N-day High tại T = max(High của T−N … T−1)",
+    "seed_and_missing": "Cần N phiên trước; chỉ dữ liệu đến T−1. Không đổi tên thành giao cắt khi chỉ so trạng thái. Không include future high.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "N-day High",
+      "prompt": "Ba High trước là 100, 103, 102. Mức N-day High bằng bao nhiêu?",
+      "expected": 103,
+      "unit": "",
+      "formula": "N-day High tại T = max(High của T−N … T−1)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Số phiên tham chiếu",
+        "type": "integer",
+        "min": 5,
+        "max": 252,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "n_day_low",
+    "name": "N-day Low",
+    "chapter": 9,
+    "lesson_id": "ch09-l02",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "N-day Low tại T = min(Low của T−N … T−1)",
+    "seed_and_missing": "Cần N phiên trước. Không tính phiên hiện tại vào cực trị chuẩn của bài.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "N-day Low",
+      "prompt": "Ba Low trước là 95, 92, 94. N-day Low bằng bao nhiêu?",
+      "expected": 92,
+      "unit": "",
+      "formula": "N-day Low tại T = min(Low của T−N … T−1)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Số phiên tham chiếu",
+        "type": "integer",
+        "min": 5,
+        "max": 252,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "distance_52w_high",
+    "name": "Khoảng cách tới đỉnh 52 tuần",
+    "chapter": 9,
+    "lesson_id": "ch09-l03",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Khoảng cách = (Close / High252 − 1) × 100",
+    "seed_and_missing": "Cần đủ252 phiên gồm T; giá và đỉnh dương, cùng cơ sở điều chỉnh. Với OHLC hợp lệ khoảng cách không dương, chạm đỉnh cho0.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "level": -5.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "level": -10.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Khoảng cách tới đỉnh 52 tuần",
+      "prompt": "Close = 90; High 252 = 100. Khoảng cách bằng bao nhiêu?",
+      "expected": -10,
+      "unit": "%",
+      "formula": "Khoảng cách = (Close / High252 − 1) × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "level",
+        "label": "Khoảng cách đỉnh 52 tuần",
+        "type": "number",
+        "min": -100,
+        "max": 0,
+        "step": 0.1,
+        "unit": "%",
+        "api_scale": 1,
+        "wire_unit": "%"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "gap",
+    "name": "Gap",
+    "chapter": 9,
+    "lesson_id": "ch09-l04",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Gap = (Open hiện tại / Close phiên trước − 1) × 100",
+    "seed_and_missing": "Open T và Close T−1 phải có cùng chính sách điều chỉnh. Ngưỡng nhập theo %, không số tiền.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "level": 2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "level": -2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Gap",
+      "prompt": "Open hiện tại = 103; Close phiên trước = 100. Gap bằng bao nhiêu?",
+      "expected": 3,
+      "unit": "%",
+      "formula": "Gap = (Open hiện tại / Close phiên trước − 1) × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "level",
+        "label": "Ngưỡng Gap",
+        "type": "number",
+        "min": -20,
+        "max": 20,
+        "step": 0.1,
+        "unit": "%",
+        "api_scale": 1,
+        "wire_unit": "%"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "distance_support",
+    "name": "Khoảng cách tới hỗ trợ",
+    "chapter": 9,
+    "lesson_id": "ch09-l05",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Support = Low tại pivot đã xác nhận\nKhoảng cách = (Close − Support)/Support × 100",
+    "seed_and_missing": "Giữ pivot gần nhất đã xác nhận, cần minimum2k+1 phiên. Chưa có pivot trả missing. Hỗ trợ có thể đã bị xuyên, không tự thay lịch sử.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "pivot": 3,
+        "level": 2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "pivot": 3,
+        "level": 0.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Khoảng cách tới hỗ trợ",
+      "prompt": "Close = 102; hỗ trợ đã xác nhận = 100. Khoảng cách bằng bao nhiêu?",
+      "expected": 2,
+      "unit": "%",
+      "formula": "Support = Low tại pivot đã xác nhận\nKhoảng cách = (Close − Support)/Support × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "pivot",
+        "label": "Số phiên xác nhận mỗi phía",
+        "type": "integer",
+        "min": 2,
+        "max": 10,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Khoảng cách hỗ trợ",
+        "type": "number",
+        "min": -20,
+        "max": 30,
+        "step": 0.1,
+        "unit": "%",
+        "api_scale": 1,
+        "wire_unit": "%"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "distance_resistance",
+    "name": "Khoảng cách tới kháng cự",
+    "chapter": 9,
+    "lesson_id": "ch09-l06",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Resistance = High tại pivot đã xác nhận\nKhoảng cách = (Resistance − Close)/Close × 100",
+    "seed_and_missing": "Pivot high cần k giá mỗi phía; chỉ dùng từ ngày xác nhận. Mẫu số Close>0, chưa có pivot trảmissing.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "pivot": 3,
+        "level": 0.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "pivot": 3,
+        "level": 2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Khoảng cách tới kháng cự",
+      "prompt": "Resistance = 110; Close = 100. Khoảng cách bằng bao nhiêu?",
+      "expected": 10,
+      "unit": "%",
+      "formula": "Resistance = High tại pivot đã xác nhận\nKhoảng cách = (Resistance − Close)/Close × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "pivot",
+        "label": "Số phiên xác nhận mỗi phía",
+        "type": "integer",
+        "min": 2,
+        "max": 10,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Khoảng cách kháng cự",
+        "type": "number",
+        "min": -20,
+        "max": 30,
+        "step": 0.1,
+        "unit": "%",
+        "api_scale": 1,
+        "wire_unit": "%"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  }
+]

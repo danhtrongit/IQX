@@ -1,0 +1,1346 @@
+[
+  {
+    "question": "Hai vị thế 50%/50%, return 10% và−4%, không phí. Danh mục return bao nhiêu?",
+    "options": [
+      {
+        "text": "7,5 %",
+        "id": "o1"
+      },
+      {
+        "text": "0,5 %",
+        "id": "o2"
+      },
+      {
+        "text": "13 %",
+        "id": "o3"
+      },
+      {
+        "text": "3 %",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Lợi nhuận danh mục một kỳ = Σ(trọng số đầu kỳ×return tài sản) → 3 %",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch18-l01-q01",
+    "lesson_id": "ch18-l01",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Năm mã cùng ngành cùng giảm trong cú số c ngành. Đây là ví dụ gì?",
+    "options": [
+      {
+        "text": "Đa dạng số mã nhưng vẫn tập trung rủi rochung.",
+        "id": "o1"
+      },
+      {
+        "text": "Đã xóa hoàn toàn rủi ro.",
+        "id": "o2"
+      },
+      {
+        "text": "Dữ liệu bị sai vì nhiều mã không thể cùng giảm.",
+        "id": "o3"
+      },
+      {
+        "text": "Không cần quản lý vốn nữa.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "0,5 × 10%+0,5 ×(−4%)=3%. Công thức một kỳ dùng trọng số đầu kỳ; chuỗi nhiều kỳ cần cập nhật theo giá và giao dịch. Không cam kết giảm đau rủi ro hệ thống chỉ bằng thêm số mã.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch18-l01-q02",
+    "lesson_id": "ch18-l01",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Trong bài Đa dạng hóa, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o1"
+      },
+      {
+        "text": "Không cam kết giảm đau rủi ro hệ thống chỉ bằng thêm số mã.",
+        "id": "o2"
+      },
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Không cam kết giảm đau rủi ro hệ thống chỉ bằng thêm số mã.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch18-l01-q03",
+    "lesson_id": "ch18-l01",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Thực hành Đa dạng hóa nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o1"
+      },
+      {
+        "text": "Thử cùng 10 mã nhưng phân tán ngành khác nhau, đọc tương quan và sụt giảm. Xemdanh mục chung vốn không phải cộng 10 backtest mỗi cái 100 triệu.",
+        "id": "o2"
+      },
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o3"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Đa dạng hóa phân bổ rủi ro qua nhiều nguồn khác nhau. Tăng số mã không tự giảm mọi rủi ro nếu chúng cùng ngành, cùng yếu tố hoặc cùng phản ứng với thị trường.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch18-l01-q04",
+    "lesson_id": "ch18-l01",
+    "correct_option_id": "o2"
+  },
+  {
+    "id": "ch18-l01-q05",
+    "lesson_id": "ch18-l01",
+    "question": "Có10 mã nhưng cả10 đều phụ thuộc cùng một ngành. Có bảo đảm đa dạng hóa tốt không?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Có nếu mỗi mã có ticker khác nhau."
+      },
+      {
+        "id": "o2",
+        "text": "Không."
+      },
+      {
+        "id": "o3",
+        "text": "Có chỉ vì số mã lớn."
+      },
+      {
+        "id": "o4",
+        "text": "Có nếu chia đều."
+      }
+    ],
+    "correct_index": 1,
+    "correct_option_id": "o2",
+    "explanation": "Đa dạng hóa cần xét nguồn rủi ro, không chỉ số lượng.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch18-l01-q06",
+    "lesson_id": "ch18-l01",
+    "question": "Danh mục có cổ phiếu và tiền mặt. Đo return nên dùng mẫu số nào?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Chỉ số tiền đang đầu tư vào mã có lãi."
+      },
+      {
+        "id": "o2",
+        "text": "Tổng vốn giả100 triệu cho từng mã."
+      },
+      {
+        "id": "o3",
+        "text": "Giá mã lớn nhất."
+      },
+      {
+        "id": "o4",
+        "text": "Toàn bộ vốn danh mục theo quy ước."
+      }
+    ],
+    "correct_index": 3,
+    "correct_option_id": "o4",
+    "explanation": "Tiền chưa đầu tư vẫn thuộc danh mục và ảnh hưởng hiệu quả vốn.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Đa dạng hóa yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch18-l01-q07",
+    "lesson_id": "ch18-l01",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Đa dạng hóa?",
+    "options": [
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o1"
+      },
+      {
+        "text": "Đa dạng hóa phân bổ rủi ro qua nhiều nguồn khác nhau. Tăng số mã không tự giảm mọi rủi ro nếu chúng cùng ngành, cùng yếu tố hoặc cùng phản ứng với thị trường.",
+        "id": "o2"
+      },
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o3"
+      },
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Đa dạng hóa phân bổ rủi ro qua nhiều nguồn khác nhau. Tăng số mã không tự giảm mọi rủi ro nếu chúng cùng ngành, cùng yếu tố hoặc cùng phản ứng với thị trường.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch18-l01-q08",
+    "lesson_id": "ch18-l01",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "r B=2 ×r A cùng mọi kỳ, và r A có biến động không 0. Tương quan là bao nhiêu?",
+    "options": [
+      {
+        "text": "4,5",
+        "id": "o1"
+      },
+      {
+        "text": "-0,5",
+        "id": "o2"
+      },
+      {
+        "text": "11",
+        "id": "o3"
+      },
+      {
+        "text": "1",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "ρ = Cov(r A, r B) / [σ A×σ B] → 1 ",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch18-l02-q01",
+    "lesson_id": "ch18-l02",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Một chuỗi return đứng yên mọi phiên. Tương quan nên hiển thị gì?",
+    "options": [
+      {
+        "text": "1, vì giá ổn định.",
+        "id": "o1"
+      },
+      {
+        "text": "−1, vì ít rủi ro.",
+        "id": "o2"
+      },
+      {
+        "text": "Chưa xác định do độ lệch chuẩn bằng 0.",
+        "id": "o3"
+      },
+      {
+        "text": "0, vì không có tương quan.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Một chuỗi là bộ i dương của chuỗi kia thìρ=1, dù biên độ khác. Nếu σ=0 thì chưa xác định, không đặtρ=0 cho đẹp. Tương quan thay đổi theo giai đoạn; thấp quá khứ không đảm bảo thấp trong khủng hoảng.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch18-l02-q02",
+    "lesson_id": "ch18-l02",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Trong bài Tương quan, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o1"
+      },
+      {
+        "text": "Tương quan thay đổi theo giai đoạn; thấp quá khứ không đảm bảo thấp trong khủng hoảng.",
+        "id": "o2"
+      },
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Tương quan thay đổi theo giai đoạn; thấp quá khứ không đảm bảo thấp trong khủng hoảng.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch18-l02-q03",
+    "lesson_id": "ch18-l02",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Thực hành Tương quan nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o1"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o2"
+      },
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o3"
+      },
+      {
+        "text": "Chọn cửa sổ, return ngày, căn phiên và đọc ma trận. Không tính trên mức giá tích lũy để tránh xu hướng chung làm số giả.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Tương quan đo mức độ biến động cùng chiều trong chuỗi lợi nhuận, không phải mức giá hai cổ phiếu giống nhau. Dấu và độ lớn cần đọc trên cùng khung, kỳ và tần suất.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch18-l02-q04",
+    "lesson_id": "ch18-l02",
+    "correct_option_id": "o4"
+  },
+  {
+    "id": "ch18-l02-q05",
+    "lesson_id": "ch18-l02",
+    "question": "Hai chuỗi lợi nhuận có tương quan1 trong mẫu. Kết luận hợp lý?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Rủi ro danh mục bằng0."
+      },
+      {
+        "id": "o2",
+        "text": "Chúng có cùng giá cổ phiếu."
+      },
+      {
+        "id": "o3",
+        "text": "Chúng biến động cùng chiều tuyến tính hoàn hảo trong mẫu, không bảo đảm tương lai."
+      },
+      {
+        "id": "o4",
+        "text": "Cả hai luôn có lãi."
+      }
+    ],
+    "correct_index": 2,
+    "correct_option_id": "o3",
+    "explanation": "Tương quan không phải lợi nhuận hoặc giá tuyệt đối.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch18-l02-q06",
+    "lesson_id": "ch18-l02",
+    "question": "Một chuỗi return không đổi, độ lệch chuẩn0. Hệ số tương quan Pearson nên thế nào?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Chưa xác định."
+      },
+      {
+        "id": "o2",
+        "text": "Luôn0."
+      },
+      {
+        "id": "o3",
+        "text": "Luôn1."
+      },
+      {
+        "id": "o4",
+        "text": "Luôn-1."
+      }
+    ],
+    "correct_index": 0,
+    "correct_option_id": "o1",
+    "explanation": "Mẫu số công thức bằng0.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Tương quan yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch18-l02-q07",
+    "lesson_id": "ch18-l02",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Tương quan?",
+    "options": [
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o1"
+      },
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o2"
+      },
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o3"
+      },
+      {
+        "text": "Tương quan đo mức độ biến động cùng chiều trong chuỗi lợi nhuận, không phải mức giá hai cổ phiếu giống nhau. Dấu và độ lớn cần đọc trên cùng khung, kỳ và tần suất.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Tương quan đo mức độ biến động cùng chiều trong chuỗi lợi nhuận, không phải mức giá hai cổ phiếu giống nhau. Dấu và độ lớn cần đọc trên cùng khung, kỳ và tần suất.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch18-l02-q08",
+    "lesson_id": "ch18-l02",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Vị thế 30 triệu, NAV 100 triệu. Tỷ trọng mã là bao nhiêu?",
+    "options": [
+      {
+        "text": "40 %",
+        "id": "o1"
+      },
+      {
+        "text": "30 %",
+        "id": "o2"
+      },
+      {
+        "text": "48 %",
+        "id": "o3"
+      },
+      {
+        "text": "14 %",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Tỷ trọng mã = Giá trị vị thế / NAV × 100 → 30 %",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch18-l03-q01",
+    "lesson_id": "ch18-l03",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Mã từ 20% tăng thành 35% NAV do chênh giá. Có thể coi vẫn 20% vì không mua thêm không?",
+    "options": [
+      {
+        "text": "Lấy tỷ lệ thắng thay cho tỷ trọng.",
+        "id": "o1"
+      },
+      {
+        "text": "Không; trọng số hiện tại phải tính từ giá trị thực tại T.",
+        "id": "o2"
+      },
+      {
+        "text": "Có, giữ trọng số lúc đầu cho đơn giản.",
+        "id": "o3"
+      },
+      {
+        "text": "Có, nếu vẫn chưa bán.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Tỷ trọng 30% khác với ngân sách ban đầu của lệnh. NAV bao gồm tiền mặt và mọi vị thế được định giá. Kiểm tra trần trước phí khác sau phí; phải dùng cùng mô hình kế toán khi gửi và xử lý lệnh.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch18-l03-q02",
+    "lesson_id": "ch18-l03",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Trong bài Rủi ro tập trung, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Kiểm tra trần trước phí khác sau phí; phải dùng cùng mô hình kế toán khi gửi và xử lý lệnh.",
+        "id": "o1"
+      },
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o3"
+      },
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Kiểm tra trần trước phí khác sau phí; phải dùng cùng mô hình kế toán khi gửi và xử lý lệnh.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch18-l03-q03",
+    "lesson_id": "ch18-l03",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Thực hành Rủi ro tập trung nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Đặt trần mã, kiểm tra ứng viên mua có làm vượt trần sau khớp không. Vượt trần do giá tăng phải theo chính sách tái cân bằng, không xóa bớt số lượng trực tiếp.",
+        "id": "o1"
+      },
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o2"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o3"
+      },
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Giới hạn tập trung ngăn một mã chiếm quá lớn trong NAV. Rủi ro có thể tăng chỉ vì giá mã đó tăng nhanh, dù không có lệnh mua thêm.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch18-l03-q04",
+    "lesson_id": "ch18-l03",
+    "correct_option_id": "o1"
+  },
+  {
+    "id": "ch18-l03-q05",
+    "lesson_id": "ch18-l03",
+    "question": "NAV100 triệu, một mã đang chiếm35 triệu, trần30%. Mua thêm mã đó có phù hợp trần không?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Có nếu tín hiệu mạnh."
+      },
+      {
+        "id": "o2",
+        "text": "Có nếu mã thuộc HOSE."
+      },
+      {
+        "id": "o3",
+        "text": "Có nếu đổi dấu RSI."
+      },
+      {
+        "id": "o4",
+        "text": "Không."
+      }
+    ],
+    "correct_index": 3,
+    "correct_option_id": "o4",
+    "explanation": "Ràng buộc tỷ trọng không bị ghi đè bởi tín hiệu.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch18-l03-q06",
+    "lesson_id": "ch18-l03",
+    "question": "Giá tăng làm tỷ trọng vượt trần sau khi mua. Có buộc bán ngay trong mọi thiết kế không?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Có theo mọi profile."
+      },
+      {
+        "id": "o2",
+        "text": "Luôn bỏ trần."
+      },
+      {
+        "id": "o3",
+        "text": "Luôn mua thêm."
+      },
+      {
+        "id": "o4",
+        "text": "Không; cần phân biệt trần mua mới và quy tắc tái cân bằng."
+      }
+    ],
+    "correct_index": 3,
+    "correct_option_id": "o4",
+    "explanation": "Phải đặc tả thời điểm thực thi giới hạn.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Rủi ro tập trung yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o3"
+      },
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch18-l03-q07",
+    "lesson_id": "ch18-l03",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Rủi ro tập trung?",
+    "options": [
+      {
+        "text": "Giới hạn tập trung ngăn một mã chiếm quá lớn trong NAV. Rủi ro có thể tăng chỉ vì giá mã đó tăng nhanh, dù không có lệnh mua thêm.",
+        "id": "o1"
+      },
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o2"
+      },
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o3"
+      },
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Giới hạn tập trung ngăn một mã chiếm quá lớn trong NAV. Rủi ro có thể tăng chỉ vì giá mã đó tăng nhanh, dù không có lệnh mua thêm.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch18-l03-q08",
+    "lesson_id": "ch18-l03",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Hai mã ngân hàng trị giá 20 và 15 triệu, NAV 100 triệu. Tỷ trọng ngân hàng là bao nhiêu?",
+    "options": [
+      {
+        "text": "45 %",
+        "id": "o1"
+      },
+      {
+        "text": "35 %",
+        "id": "o2"
+      },
+      {
+        "text": "55,5 %",
+        "id": "o3"
+      },
+      {
+        "text": "16,5 %",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Tỷ trọng ngành = Σ Giá trị vị thế cùng ngành / NAV × 100 → 35 %",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch18-l04-q01",
+    "lesson_id": "ch18-l04",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Mã chưa rõ ngành, giá trị 10% NAV. Cần hiện thế nào?",
+    "options": [
+      {
+        "text": "Bỏ khỏi NAV.",
+        "id": "o1"
+      },
+      {
+        "text": "Phân ngẫu nhiên vào ngành nhỏ nhất.",
+        "id": "o2"
+      },
+      {
+        "text": "Cho 0% để không chặn mua mới.",
+        "id": "o3"
+      },
+      {
+        "text": "Nhóm chưa phân loại 10%, vẫn tính trong tổng danh mục.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Dù mỗi mã dưới 25%, tổng ngành vẫn 35%. Một trần ngành 30% sẽ ngăn mua mới làm tăng thêm nhóm này. Mã chưa có ngành không được bỏ khỏi mẫu số NAV; phải thuộc nhóm chưa phân loại, không biến mất khỏi rủi ro.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch18-l04-q02",
+    "lesson_id": "ch18-l04",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Trong bài Tỷ trọng ngành, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Mã chưa có ngành không được bỏ khỏi mẫu số NAV; phải thuộc nhóm chưa phân loại, không biến mất khỏi rủi ro.",
+        "id": "o1"
+      },
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o3"
+      },
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Mã chưa có ngành không được bỏ khỏi mẫu số NAV; phải thuộc nhóm chưa phân loại, không biến mất khỏi rủi ro.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch18-l04-q03",
+    "lesson_id": "ch18-l04",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Thực hành Tỷ trọng ngành nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o1"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o2"
+      },
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o3"
+      },
+      {
+        "text": "Chọn hệ phân loại ngành và trần. Nếu doanh nghiệp đổi ngành, tái tính ở ngày có hiệu lực, không đổi lịch sử trước khi đã biết.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Tỷ trọng ngành cộng giá trị các vị thế thuộc cùng nhóm ngành so với NAV. Nó kiểm soát mức tập trung mà giới hạn từng mã không thể nhìn thấy đầy đủ.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch18-l04-q04",
+    "lesson_id": "ch18-l04",
+    "correct_option_id": "o4"
+  },
+  {
+    "id": "ch18-l04-q05",
+    "lesson_id": "ch18-l04",
+    "question": "Hai mã ngân hàng15% mỗi mã, một mã công nghệ10%, còn lại tiền mặt. Tỷ trọng ngân hàng là bao nhiêu?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "40%."
+      },
+      {
+        "id": "o2",
+        "text": "50%."
+      },
+      {
+        "id": "o3",
+        "text": "30%."
+      },
+      {
+        "id": "o4",
+        "text": "15%."
+      }
+    ],
+    "correct_index": 2,
+    "correct_option_id": "o3",
+    "explanation": "Cộng trọng số của các vị thế thuộc cùng ngành.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch18-l04-q06",
+    "lesson_id": "ch18-l04",
+    "question": "Một doanh nghiệp đổi phân ngành. Backtest lịch sử dùng nhãn nào?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Bỏ phân ngành."
+      },
+      {
+        "id": "o2",
+        "text": "Nhãn ngành có hiệu lực tại từng thời điểm theo nguồn."
+      },
+      {
+        "id": "o3",
+        "text": "Nhãn mới nhất cho mọi quá khứ."
+      },
+      {
+        "id": "o4",
+        "text": "Ngành cho drawdown thấp nhất."
+      }
+    ],
+    "correct_index": 1,
+    "correct_option_id": "o2",
+    "explanation": "Tránh dùng thông tin phân loại tương lai.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Tỷ trọng ngành yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch18-l04-q07",
+    "lesson_id": "ch18-l04",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Tỷ trọng ngành?",
+    "options": [
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o1"
+      },
+      {
+        "text": "Tỷ trọng ngành cộng giá trị các vị thế thuộc cùng nhóm ngành so với NAV. Nó kiểm soát mức tập trung mà giới hạn từng mã không thể nhìn thấy đầy đủ.",
+        "id": "o2"
+      },
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o3"
+      },
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Tỷ trọng ngành cộng giá trị các vị thế thuộc cùng nhóm ngành so với NAV. Nó kiểm soát mức tập trung mà giới hạn từng mã không thể nhìn thấy đầy đủ.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch18-l04-q08",
+    "lesson_id": "ch18-l04",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "NAV 100 triệu, một mã đang 30 triệu, mục tiêu 20%. Cần giảm bao nhiêu triệu trước phí?",
+    "options": [
+      {
+        "text": "10 triệu đồng",
+        "id": "o1"
+      },
+      {
+        "text": "18 triệu đồng",
+        "id": "o2"
+      },
+      {
+        "text": "4 triệu đồng",
+        "id": "o3"
+      },
+      {
+        "text": "20 triệu đồng",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Giá trị mục tiêu = NAV×trọng số mục tiêu → 10 triệu đồng",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch18-l05-q01",
+    "lesson_id": "ch18-l05",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Sau phí và làm tròn lô, trọng số không đúng hệt 20%. Engine có phải tự bù giả không?",
+    "options": [
+      {
+        "text": "Bỏ mọi phí và lô khi tái cân bằng.",
+        "id": "o1"
+      },
+      {
+        "text": "Tự nạp thêm tiền cho đủ.",
+        "id": "o2"
+      },
+      {
+        "text": "Không; ghi trọng số thực tế và số tiền còn lại.",
+        "id": "o3"
+      },
+      {
+        "text": "Có, để báo cáo đẹp.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Mục tiêu 20 triệu, giảm 10 triệu. Lượng thực thi không nhất thiết khớp đúng 10 triệu do lô và phí. Không làm cho danh mục về đúng trọng số mục tiêu chỉ bằng sửa số trong database. Phải có lệnh và chi phí.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch18-l05-q02",
+    "lesson_id": "ch18-l05",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Trong bài Tái cân bằng, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o1"
+      },
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o2"
+      },
+      {
+        "text": "Không làm cho danh mục về đúng trọng số mục tiêu chỉ bằng sửa số trong database. Phải có lệnh và chi phí.",
+        "id": "o3"
+      },
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Không làm cho danh mục về đúng trọng số mục tiêu chỉ bằng sửa số trong database. Phải có lệnh và chi phí.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch18-l05-q03",
+    "lesson_id": "ch18-l05",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Thực hành Tái cân bằng nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o1"
+      },
+      {
+        "text": "Chọn lịch tái cân bằng hoặc biên lệch. Xử lý lệnh giảm trước, tính lại tiền mặt rồi phân bổ mua theo ranking. Tỷ trọng sau lệnh lưu để đối soát.",
+        "id": "o2"
+      },
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o3"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Tái cân bằng đưa trọng số về mục tiêu theo lịch hoặc điều kiện đã định. Giao dịch tái cân bằng cũng cần giá khớp, phí, lô và điều kiện thanh toán như giao dịch khác.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch18-l05-q04",
+    "lesson_id": "ch18-l05",
+    "correct_option_id": "o2"
+  },
+  {
+    "id": "ch18-l05-q05",
+    "lesson_id": "ch18-l05",
+    "question": "NAV100, mục tiêu mãA20%, hiện A30. Tạm bỏ phí/lô. Cần giảm giá trị A bao nhiêu?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "10."
+      },
+      {
+        "id": "o2",
+        "text": "20."
+      },
+      {
+        "id": "o3",
+        "text": "30."
+      },
+      {
+        "id": "o4",
+        "text": "50."
+      }
+    ],
+    "correct_index": 0,
+    "correct_option_id": "o1",
+    "explanation": "Mục tiêu20 trừ vị thế30 tạo nhu cầu bán10.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch18-l05-q06",
+    "lesson_id": "ch18-l05",
+    "question": "Tái cân bằng nhiều mã tại một mốc. Có thể giả mỗi mã có một tài khoản riêng đủ vốn không?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Có vì tính nhanh hơn."
+      },
+      {
+        "id": "o2",
+        "text": "Có nếu tính trung bình return."
+      },
+      {
+        "id": "o3",
+        "text": "Có nếu mỗi mã đều đạt bộ lọc."
+      },
+      {
+        "id": "o4",
+        "text": "Không, phải dùng sổ tiền chung và chi phí thật của mô hình."
+      }
+    ],
+    "correct_index": 3,
+    "correct_option_id": "o4",
+    "explanation": "Tránh nhân đôi vốn và bỏ chi phí chuyển đổi.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Tái cân bằng yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o2"
+      },
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch18-l05-q07",
+    "lesson_id": "ch18-l05",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Tái cân bằng?",
+    "options": [
+      {
+        "text": "Tái cân bằng đưa trọng số về mục tiêu theo lịch hoặc điều kiện đã định. Giao dịch tái cân bằng cũng cần giá khớp, phí, lô và điều kiện thanh toán như giao dịch khác.",
+        "id": "o1"
+      },
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o2"
+      },
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o3"
+      },
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Tái cân bằng đưa trọng số về mục tiêu theo lịch hoặc điều kiện đã định. Giao dịch tái cân bằng cũng cần giá khớp, phí, lô và điều kiện thanh toán như giao dịch khác.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch18-l05-q08",
+    "lesson_id": "ch18-l05",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "NAV toàn danh mục lần lượt 100,125,100,130. Max drawdown bằng bao nhiêu?",
+    "options": [
+      {
+        "text": "-10 %",
+        "id": "o1"
+      },
+      {
+        "text": "-20 %",
+        "id": "o2"
+      },
+      {
+        "text": "-27 %",
+        "id": "o3"
+      },
+      {
+        "text": "-11 %",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "NAV = Cash + Σ(số lượng×giá định giá)\nDD = NAV / max NAV lịch sử − 1 → -20 %",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch18-l06-q01",
+    "lesson_id": "ch18-l06",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Hai backtest mỗi cái 100 triệu, chạy chung được gọi là danh mục 100 triệu không?",
+    "options": [
+      {
+        "text": "Có, nếu cùng ngày.",
+        "id": "o1"
+      },
+      {
+        "text": "Có, nếu cùng chỉ báo.",
+        "id": "o2"
+      },
+      {
+        "text": "Không; chưa mô phỏng cạnh tranh vốn và ràng buộc trong một tài khoản.",
+        "id": "o3"
+      },
+      {
+        "text": "Có, cứ lấy trung bình return.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Đỉnh 125 xuống 100 là−20%. Hai mã có drawdown xảy ra ở hai thời điểm khác nhau có thể giảm sụt giảm chung, nhưng cần tính chuỗi thực. Không cộng lợi nhuận backtest một mã với 100 triệu mỗi mã rồi gọi đó là danh mục 100 triệu.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch18-l06-q02",
+    "lesson_id": "ch18-l06",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Trong bài Sụt giảm danh mục, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o1"
+      },
+      {
+        "text": "Không cộng lợi nhuận backtest một mã với 100 triệu mỗi mã rồi gọi đó là danh mục 100 triệu.",
+        "id": "o2"
+      },
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Không cộng lợi nhuận backtest một mã với 100 triệu mỗi mã rồi gọi đó là danh mục 100 triệu.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch18-l06-q03",
+    "lesson_id": "ch18-l06",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Thực hành Sụt giảm danh mục nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o1"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o2"
+      },
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o3"
+      },
+      {
+        "text": "Theo dõi cả lãi đã thực hiện và vị thế mở trong sổ chung, thêm chi phí và tiền mặt. Đọc mốc đỉnh, đáy, ngày phục hồi, cờ chưa phục hồi.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Sụt giảm danh mục được tính từ giá trị hợp nhất theo một sổ vốn chung. Không lấy trung bình drawdown của từng cổ phiếu hay từng backtest độc lập.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch18-l06-q04",
+    "lesson_id": "ch18-l06",
+    "correct_option_id": "o4"
+  },
+  {
+    "id": "ch18-l06-q05",
+    "lesson_id": "ch18-l06",
+    "question": "ĐỉnhNAV125, đáy100 rồi cuối kỳ130. Max drawdown là bao nhiêu?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "+30%."
+      },
+      {
+        "id": "o2",
+        "text": "0%."
+      },
+      {
+        "id": "o3",
+        "text": "-25%."
+      },
+      {
+        "id": "o4",
+        "text": "-20%."
+      }
+    ],
+    "correct_index": 3,
+    "correct_option_id": "o4",
+    "explanation": "100/125−1=−20%; hồi phục không xóa sụt giảm đã trải qua.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch18-l06-q06",
+    "lesson_id": "ch18-l06",
+    "question": "Hai mã có maxdrawdown-20% ở hai thời điểm khác nhau. Drawdown danh mục có nhất thiết bằng-20% không?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Không; phải tính trên chuỗi giá trị danh mục tổng."
+      },
+      {
+        "id": "o2",
+        "text": "Có luôn."
+      },
+      {
+        "id": "o3",
+        "text": "Luôn bằng0%."
+      },
+      {
+        "id": "o4",
+        "text": "Luôn bằng-40%."
+      }
+    ],
+    "correct_index": 0,
+    "correct_option_id": "o1",
+    "explanation": "Không lấy trung bình hay cộng các cực trị xảy ra khác thời điểm.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Sụt giảm danh mục yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch18-l06-q07",
+    "lesson_id": "ch18-l06",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Sụt giảm danh mục?",
+    "options": [
+      {
+        "text": "Sụt giảm danh mục được tính từ giá trị hợp nhất theo một sổ vốn chung. Không lấy trung bình drawdown của từng cổ phiếu hay từng backtest độc lập.",
+        "id": "o1"
+      },
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o2"
+      },
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o3"
+      },
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Sụt giảm danh mục được tính từ giá trị hợp nhất theo một sổ vốn chung. Không lấy trung bình drawdown của từng cổ phiếu hay từng backtest độc lập.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch18-l06-q08",
+    "lesson_id": "ch18-l06",
+    "correct_option_id": "o1"
+  }
+]

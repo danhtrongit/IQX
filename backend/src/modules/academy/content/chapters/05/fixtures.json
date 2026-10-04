@@ -1,0 +1,68 @@
+[
+  {
+    "lesson_id": "ch05-l01",
+    "type": "scalar",
+    "label": "EMA",
+    "prompt": "N = 9 nên α = 0,2; EMA trước = 100; Giá mới = 110. EMA mới bằng bao nhiêu?",
+    "expected": 102,
+    "unit": "",
+    "formula": "α = 2/(N+1)\nEMA mới = α × Giá mới + (1−α) × EMA trước",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch05-l02",
+    "type": "scalar",
+    "label": "MA Cross",
+    "prompt": "Chênh SMA nhanh − SMA chậm qua bốn phiên là −2, 1, 3, −1. Có bao nhiêu lần cắt lên?",
+    "expected": 1,
+    "unit": "lần",
+    "formula": "Cắt lên: SMA nhanh hôm nay > SMA chậm hôm nay\nVà SMA nhanh hôm trước ≤ SMA chậm hôm trước\nCắt xuống: đảo > thành < và ≤ thành ≥",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch05-l03",
+    "type": "scalar",
+    "label": "DMI",
+    "prompt": "Wilder(+DM) = 2,4; ATR = 6. +DI bằng bao nhiêu?",
+    "expected": 40,
+    "unit": "",
+    "formula": "Up = High hôm nay − High hôm trước\nDown = Low hôm trước − Low hôm nay\n+DM = Up nếu Up > Down và Up > 0, ngược lại 0\n−DM = Down nếu Down > Up và Down > 0, ngược lại 0\n+DI = 100 × Wilder(+DM)/ATR; −DI = 100 × Wilder(−DM)/ATR",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch05-l04",
+    "type": "scalar",
+    "label": "ADX",
+    "prompt": "+DI = 30; −DI = 10. DX bằng bao nhiêu?",
+    "expected": 50,
+    "unit": "",
+    "formula": "DX = 100 × |+DI − −DI| / (+DI + −DI)\nADX đầu = trung bình N DX\nADX mới = [(N−1) × ADX trước + DX mới]/N",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch05-l05",
+    "type": "scalar",
+    "label": "Stochastic",
+    "prompt": "High N = 110; Low N = 90; Close = 94. Raw % K bằng bao nhiêu?",
+    "expected": 20,
+    "unit": "",
+    "formula": "Raw %K = 100 × (Close − LowN)/(HighN − LowN)\n%K = SMA(Raw %K, smooth)\n%D = SMA(%K, d)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch05-l06",
+    "type": "scalar",
+    "label": "CCI",
+    "prompt": "TP hiện tại = 103; M = 100; MD = 2. CCI bằng bao nhiêu?",
+    "expected": 100,
+    "unit": "",
+    "formula": "TP = (High + Low + Close)/3\nM = SMA(TP, N)\nMD = trung bình |TP − M| của N phiên\nCCI = (TP hiện tại − M)/(0,015 × MD)",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+]

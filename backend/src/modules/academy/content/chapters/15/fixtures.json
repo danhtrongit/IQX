@@ -1,0 +1,128 @@
+[
+  {
+    "lesson_id": "ch15-l01",
+    "type": "scalar",
+    "label": "Dividend Yield",
+    "inputs": [
+      [
+        "Cổ tức tiền mặt mỗi cổ phiếu",
+        2000
+      ],
+      [
+        "Giá hiện tại",
+        40000
+      ]
+    ],
+    "formula": "Cổ tức tiền mặt 12 tháng / Giá × 100",
+    "expected": 5,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Cổ tức tiền mặt mỗi cổ phiếu = 2000; Giá hiện tại = 40000. Tính Dividend Yield theo công thức của bài."
+  },
+  {
+    "lesson_id": "ch15-l02",
+    "type": "scalar",
+    "label": "Payout Ratio",
+    "inputs": [
+      [
+        "Cổ tức tiền mặt mỗi cổ phiếu",
+        2000
+      ],
+      [
+        "EPS TTM",
+        4000
+      ]
+    ],
+    "formula": "Cổ tức tiền mặt mỗi cổ phiếu / EPS TTM × 100",
+    "expected": 50,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Cổ tức tiền mặt mỗi cổ phiếu = 2000; EPS TTM = 4000. Tính Payout Ratio theo công thức của bài."
+  },
+  {
+    "lesson_id": "ch15-l03",
+    "type": "scalar",
+    "label": "Dividend Growth",
+    "inputs": [
+      [
+        "DPS cuối năm 3",
+        1331
+      ],
+      [
+        "DPS năm gốc",
+        1000
+      ]
+    ],
+    "formula": "[(DPS cuối / DPS gốc)^(1/3) − 1] × 100",
+    "expected": 10,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "DPS cuối năm 3 = 1331; DPS năm gốc = 1000. Tính Dividend Growth theo công thức của bài."
+  },
+  {
+    "lesson_id": "ch15-l04",
+    "type": "scalar",
+    "label": "Share Count Growth",
+    "inputs": [
+      [
+        "Cổ phiếu cuối kỳ",
+        110
+      ],
+      [
+        "Cổ phiếu cùng kỳ đã điều chỉnh",
+        100
+      ]
+    ],
+    "formula": "(Số cổ phiếu hiện tại / Số cùng kỳ − 1) × 100",
+    "expected": 10,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Cổ phiếu cuối kỳ = 110; Cổ phiếu cùng kỳ đã điều chỉnh = 100. Tính Share Count Growth theo công thức của bài."
+  },
+  {
+    "lesson_id": "ch15-l05",
+    "type": "scalar",
+    "label": "Buyback Yield",
+    "inputs": [
+      [
+        "Tiền mua lại trừ tiền phát hành",
+        20
+      ],
+      [
+        "Vốn hóa hiện tại",
+        1000
+      ]
+    ],
+    "formula": "(Tiền mua lại cổ phiếu − Tiền phát hành cổ phiếu) / Vốn hóa × 100",
+    "expected": 2,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Tiền mua lại trừ tiền phát hành = 20; Vốn hóa hiện tại = 1000. Tính Buyback Yield theo công thức của bài."
+  },
+  {
+    "lesson_id": "ch15-l06",
+    "type": "scalar",
+    "label": "Shareholder Yield",
+    "inputs": [
+      [
+        "Dividend Yield",
+        4
+      ],
+      [
+        "Buyback Yield",
+        2
+      ]
+    ],
+    "formula": "Dividend Yield + Buyback Yield",
+    "expected": 6,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Dividend Yield = 4; Buyback Yield = 2. Tính Shareholder Yield theo công thức của bài."
+  }
+]

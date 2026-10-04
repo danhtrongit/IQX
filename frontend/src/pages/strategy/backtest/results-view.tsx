@@ -3,10 +3,11 @@
  * `dashboard/src/features/backtest/components/ResultsView.tsx`.
  *
  * Ba phần: lưới 6 KPI cốt lõi (kèm giải thích Sharpe), đường vốn so với mua-giữ
- * và VN-Index (quy về % từ điểm đầu, giảm mẫu còn ~400 điểm), và bảng lịch sử
- * lệnh (mới nhất trước, mặc định 12 lệnh). Giá trị thiếu hiển thị "—".
+ * và VN-Index (lợi nhuận % = chỉ số gốc 100 − 100, bắt đầu từ điểm 0% trước phí,
+ * giảm mẫu còn ~400 điểm nhưng giữ điểm cuối), và bảng lịch sử lệnh đầy đủ
+ * (mới nhất trước, không cắt dòng). Giá trị thiếu hiển thị "—".
  */
-import { useState, type ReactNode } from "react"
+import type { ReactNode } from "react"
 import { Info } from "lucide-react"
 import {
   CartesianGrid,
@@ -34,6 +35,7 @@ import {
 } from "@/components/ui/table"
 
 import { fmtDateVN, fmtNum, fmtPrice, fmtSignedPct } from "../format"
+import { downsampleEquity, toPctSeries } from "./equity-series"
 import type { EquityPoint, Kpis, RunMeta, RunResult, Trade } from "../types"
 
 /** Xếp hạng Sharpe theo thang 0–2 của tài liệu chỉ báo. */
@@ -105,6 +107,9 @@ function SharpeInfo({ sharpe }: { sharpe: number | null }) {
   )
 }
 
+const signTone = (value: number | null): "up" | "down" | undefined =>
+  value == null ? undefined : value >= 0 ? "up" : "down"
+
 function KpiGrid({ kpis, meta }: { kpis: Kpis; meta: RunMeta }) {
   const [ciLow, ciHigh] = kpis.sharpeCi
   const sharpeSub =
@@ -117,19 +122,19 @@ function KpiGrid({ kpis, meta }: { kpis: Kpis; meta: RunMeta }) {
       <Kpi
         label="Lãi trung bình mỗi năm"
         value={fmtSignedPct(kpis.cagr)}
-        tone={(kpis.cagr ?? 0) >= 0 ? "up" : "down"}
+        tone={signTone(kpis.cagr)}
       />
       <Kpi
         label="Tổng lãi sau phí + thuế"
         value={fmtSignedPct(kpis.netReturn)}
-        sub={`Trong ${(kpis.nSessions / 252).toFixed(1)} năm`}
-        tone={(kpis.netReturn ?? 0) >= 0 ? "up" : "down"}
+        sub={kpis.nSessions ? `Trong ${(kpis.nSessions / 252).toFixed(1)} năm` : undefined}
+        tone={signTone(kpis.netReturn)}
       />
       <Kpi
         label="Lãi nếu chỉ mua và giữ"
         value={fmtSignedPct(kpis.buyHoldReturn)}
         sub={`Mua ${fmtDateVN(meta.start)}, giữ đến cuối kỳ`}
-        tone={(kpis.buyHoldReturn ?? 0) >= 0 ? "up" : "down"}
+        tone={signTone(kpis.buyHoldReturn)}
       />
       <Kpi
         label="Sharpe ratio"
@@ -139,7 +144,7 @@ function KpiGrid({ kpis, meta }: { kpis: Kpis; meta: RunMeta }) {
       />
       <Kpi
         label="Tỷ lệ lệnh bán có lãi"
-        value={`${Math.round((kpis.winRate ?? 0) * 100)}%`}
+        value={kpis.winRate == null ? "—" : `${Math.round(kpis.winRate * 100)}%`}
         sub={`${kpis.nWins} lệnh lãi / ${kpis.nTrades} lệnh đã đóng`}
       />
       <Kpi
@@ -149,36 +154,6 @@ function KpiGrid({ kpis, meta }: { kpis: Kpis; meta: RunMeta }) {
       />
     </div>
   )
-}
-
-/** Giảm mẫu để biểu đồ nhiều năm vẫn mượt. */
-function downsample(points: EquityPoint[], max = 400): EquityPoint[] {
-  if (points.length <= max) return points
-  const step = Math.ceil(points.length / max)
-  const out = points.filter((_, index) => index % step === 0)
-  const last = points[points.length - 1]
-  if (out[out.length - 1] !== last) out.push(last)
-  return out
-}
-
-/** Chuỗi base-100 → % lãi cộng dồn tính từ điểm đầu của chính chuỗi đó. */
-function toPctSeries(points: EquityPoint[]) {
-  if (points.length === 0) return []
-  const first = points[0]
-  const firstVnindex = points.find((point) => point.vnindex != null)?.vnindex
-  const hasVnindex = firstVnindex != null && firstVnindex !== 0
-
-  return points.map((point) => {
-    const row: { date: string; strategy: number; buy_hold: number; vnindex?: number } = {
-      date: point.date,
-      strategy: (point.strategy / first.strategy - 1) * 100,
-      buy_hold: (point.buyHold / first.buyHold - 1) * 100,
-    }
-    if (hasVnindex && point.vnindex != null) {
-      row.vnindex = (point.vnindex / firstVnindex - 1) * 100
-    }
-    return row
-  })
 }
 
 const CHART_CONFIG = {
@@ -199,7 +174,7 @@ function EquityChart({ data, symbol }: { data: EquityPoint[]; symbol: string }) 
     )
   }
 
-  const series = toPctSeries(downsample(data))
+  const series = toPctSeries(downsampleEquity(data))
   const hasVnindex = series.some((point) => point.vnindex != null)
 
   return (
@@ -286,11 +261,9 @@ const TRADE_HEADINGS = [
 ] as const
 
 export function TradesTable({ trades }: { trades: Trade[] }) {
-  const [expanded, setExpanded] = useState(false)
-  const reversed = [...trades].reverse()
-  const total = reversed.length
-  const shown = expanded ? total : Math.min(12, total)
-  const visible = reversed.slice(0, shown)
+  // Full history, newest first — every trade is rendered (no 12-row cap).
+  const visible = [...trades].reverse()
+  const total = visible.length
 
   if (total === 0) {
     return (
@@ -305,52 +278,47 @@ export function TradesTable({ trades }: { trades: Trade[] }) {
       <div className="mb-3 flex flex-wrap items-center gap-2 text-[11px] font-bold tracking-wide text-foreground uppercase">
         <span>Lịch sử giao dịch</span>
         <span className="font-normal text-muted-foreground normal-case tabular-nums">
-          · Hiển thị {shown} / {total} lệnh
+          · {total} / {total} lệnh
         </span>
-        <button
-          type="button"
-          onClick={() => setExpanded((value) => !value)}
-          className="font-normal text-primary normal-case underline-offset-2 hover:underline"
-        >
-          {expanded ? "Thu gọn" : "Xem tất cả"}
-        </button>
       </div>
 
-      <Table className="text-[12px]">
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            {TRADE_HEADINGS.map((heading) => (
-              <TableHead
-                key={heading.label}
-                className={`text-[10.5px] tracking-wide text-muted-foreground uppercase ${
-                  heading.align === "right" ? "text-right" : ""
-                }`}
-              >
-                {heading.label}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody className="font-mono tabular-nums">
-          {visible.map((trade) => (
-            <TableRow key={trade.idx}>
-              <TableCell>{trade.idx}</TableCell>
-              <TableCell>{fmtDateVN(trade.entryDate)}</TableCell>
-              <TableCell className="text-muted-foreground">{trade.entryTrigger}</TableCell>
-              <TableCell>{fmtPrice(trade.entryPrice)}</TableCell>
-              <TableCell>{fmtDateVN(trade.exitDate)}</TableCell>
-              <TableCell className="text-muted-foreground">{trade.trigger}</TableCell>
-              <TableCell>{fmtPrice(trade.exitPrice)}</TableCell>
-              <TableCell className="text-right">{trade.hold}</TableCell>
-              <TableCell
-                className={`text-right ${trade.pnlPct >= 0 ? "text-price-up" : "text-price-down"}`}
-              >
-                {fmtSignedPct(trade.pnlPct)}
-              </TableCell>
+      <div className="max-h-[560px] overflow-auto">
+        <Table className="text-[12px]">
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              {TRADE_HEADINGS.map((heading) => (
+                <TableHead
+                  key={heading.label}
+                  className={`text-[10.5px] tracking-wide text-muted-foreground uppercase ${
+                    heading.align === "right" ? "text-right" : ""
+                  }`}
+                >
+                  {heading.label}
+                </TableHead>
+              ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody className="font-mono tabular-nums">
+            {visible.map((trade) => (
+              <TableRow key={trade.idx} data-testid="legacy-trade-row">
+                <TableCell>{trade.idx}</TableCell>
+                <TableCell>{fmtDateVN(trade.entryDate)}</TableCell>
+                <TableCell className="text-muted-foreground">{trade.entryTrigger}</TableCell>
+                <TableCell>{fmtPrice(trade.entryPrice)}</TableCell>
+                <TableCell>{fmtDateVN(trade.exitDate)}</TableCell>
+                <TableCell className="text-muted-foreground">{trade.trigger}</TableCell>
+                <TableCell>{fmtPrice(trade.exitPrice)}</TableCell>
+                <TableCell className="text-right">{trade.hold}</TableCell>
+                <TableCell
+                  className={`text-right ${trade.pnlPct >= 0 ? "text-price-up" : "text-price-down"}`}
+                >
+                  {fmtSignedPct(trade.pnlPct)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 }
@@ -373,7 +341,7 @@ export function ResultsView({ result }: { result: RunResult }) {
 
       {(kpis.maxDrawdown != null || kpis.ddRecoverySessions != null) && (
         <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-3 text-[11px] text-muted-foreground">
-          <span className="tracking-wide uppercase">Đường vốn · % so với điểm đầu</span>
+          <span className="tracking-wide uppercase">Lợi nhuận danh mục % · từ 0% trước phí đầu tiên</span>
           <span className="font-mono tabular-nums">
             {kpis.maxDrawdown != null && <>Mức giảm sâu nhất {fmtSignedPct(kpis.maxDrawdown)}</>}
             {kpis.maxDrawdown != null && kpis.ddRecoverySessions != null && " · "}

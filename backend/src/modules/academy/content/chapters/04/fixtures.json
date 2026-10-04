@@ -1,0 +1,112 @@
+[
+  {
+    "lesson_id": "ch04-l01",
+    "type": "scalar",
+    "label": "Thêm chỉ tiêu",
+    "prompt": "Có 6 chỉ tiêu đã mở; đã thêm 2 vào bộ lọc. Còn bao nhiêu chỉ tiêu chưa thêm?",
+    "expected": 4,
+    "unit": "chỉ tiêu",
+    "formula": "Điều kiện = chỉ tiêu + toán tử + ngưỡng",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch04-l02",
+    "type": "scalar",
+    "label": "Toán tử lọc",
+    "prompt": "Ba ROE lần lượt 10%,15%,20%. Lọc ROE>15% giữ bao nhiêu mã?",
+    "expected": 1,
+    "unit": "mã",
+    "formula": "15 > 15 là sai; 15 < 15 cũng sai",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch04-l03",
+    "type": "scalar",
+    "label": "Kết hợp điều kiện AND",
+    "prompt": "10 mã đạt ROE; 8 mã đạt tăng trưởng; chỉ 5 mã ở cả hai. AND giữ bao nhiêu?",
+    "expected": 5,
+    "unit": "mã",
+    "formula": "A AND B = giao(A,B)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch04-l04",
+    "type": "scalar",
+    "label": "Phạm vi thị trường",
+    "prompt": "12 mã đạt chỉ tiêu; 7 ở HOSE,3 ở HNX,2 ở UPCOM. Chọn HNX còn bao nhiêu?",
+    "expected": 3,
+    "unit": "mã",
+    "formula": "Kết quả = phạm vi sàn ∩ điều kiện cơ bản",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch04-l05",
+    "type": "scalar",
+    "label": "Lọc theo ngành",
+    "prompt": "9 mã đạt ROE; 4 ngân hàng,3 bán lẻ,2 sản xuất. Chọn bán lẻ còn bao nhiêu?",
+    "expected": 3,
+    "unit": "mã",
+    "formula": "Scope ngành được lưu kèm mã phân loại và phiên bản",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch04-l06",
+    "type": "scalar",
+    "label": "Chọn kỳ dữ liệu",
+    "prompt": "Doanh thu 9 tháng lũy kế 900; 6 tháng lũy kế 550. Quý 3 riêng bằng bao nhiêu?",
+    "expected": 350,
+    "unit": "đơn vị",
+    "formula": "TTM = tổng 4 quýriêng; Q3 riêng =9 thánglũykế−6 thánglũykế",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch04-l07",
+    "type": "scalar",
+    "label": "Lưu bộ lọc",
+    "prompt": "Bộ lọc hôm nay có 12 mã, tháng sau có 15 mã. Số mã tăng thêm là bao nhiêu?",
+    "expected": 3,
+    "unit": "mã",
+    "formula": "SavedFilter = conditions + scope + period + revision",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch04-l08",
+    "type": "scalar",
+    "label": "Lưu danh mục",
+    "prompt": "Kết quả lọc có 9 mã; chọn 6 mã để lưu danh mục. Danh mục đã lưu có bao nhiêu mã?",
+    "expected": 6,
+    "unit": "mã",
+    "formula": "SavedList = ticker_ids + as_of + filter_revision + data_version",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch04-l09",
+    "type": "scalar",
+    "label": "Dùng danh mục trong Học viện",
+    "prompt": "Danh mục 6 mã; người học đã xem 4 mã. Còn bao nhiêu mã chưa xem?",
+    "expected": 2,
+    "unit": "mã",
+    "formula": "Bài thực hành tham chiếu saved_list_id, không tạo giao dịch",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch04-l10",
+    "type": "scalar",
+    "label": "Dữ liệu Point-in-Time",
+    "prompt": "Báo cáo đầu ngày 10, điều chỉnh ngày 20. Quyết định ngày 15 được sử dụng bao nhiêu bản đã có?",
+    "expected": 1,
+    "unit": "bản",
+    "formula": "Chọn bản mới nhất có available_at ≤ thời điểm quyết định",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+]

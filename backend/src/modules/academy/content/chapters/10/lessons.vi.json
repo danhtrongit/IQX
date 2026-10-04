@@ -1,0 +1,326 @@
+[
+  {
+    "id": "ch10-l01",
+    "chapter": 10,
+    "order": 1,
+    "name": "P/E",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>P/E</strong> đo giá cổ phiếu so với lợi nhuận cơ bản mỗi cổ phiếu của 12 tháng.</p><p>Giá lấy tại thời điểm quan sát. EPS TTM phải bao phủ bốn quý riêng đã công bố và cùng cơ sở cổ phiếu; nếu không thể tái lập chuỗi điều chỉnh, trả thiếu dữ liệu. Không dùng EPS dự phóng khi nhãn đang là P/E quá khứ.</p><p>P/E 10 lần cho biết giá bằng mười lần EPS TTM, không phải lời hứa hoàn vốn trong mười năm.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">Giá / EPS TTM</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>Giá cổ phiếu</td><td>40.000</td></tr><tr><td>EPS TTM</td><td>4.000</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>10 lần</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>TTM</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100.</p><p>Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.</p><p>P/E thấp có thể do lợi nhuận chu kỳ đang ở đỉnh hoặc khoản lãi bất thường. EPS âm không được đưa vào bộ lọc P/E thấp như một mã rẻ.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>P/E</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị lần.</p><p>Với kết quả minh họa 10 lần, điều kiện “P/E &gt; 9 lần” đạt. Điều kiện “P/E &gt; 10 lần” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "P/E",
+      "inputs": [
+        [
+          "Giá cổ phiếu",
+          40000
+        ],
+        [
+          "EPS TTM",
+          4000
+        ]
+      ],
+      "formula": "Giá / EPS TTM",
+      "expected": 10,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "Giá cổ phiếu = 40000; EPS TTM = 4000. Tính P/E theo công thức của bài."
+    },
+    "config_id": "pe",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch10-l02",
+    "chapter": 10,
+    "order": 2,
+    "name": "P/B",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>P/B</strong> đo vốn hóa so với giá trị sổ sách thuộc cổ đông phổ thông.</p><p>Vốn hóa = giá × số cổ phiếu phổ thông lưu hành tại thời điểm quan sát. Mẫu số loại lợi ích cổ đông không kiểm soát và cổ phần ưu đãi nếu có. Không lấy toàn bộ vốn chủ hợp nhất chia cho giá trị riêng phần công ty mẹ.</p><p>P/B 1,5 lần nghĩa là thị trường định giá cổ phần phổ thông cao hơn 50% giá trị sổ sách tương ứng.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">Vốn hóa / Vốn chủ sở hữu phổ thông công ty mẹ</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>Vốn hóa cổ phiếu phổ thông</td><td>900</td></tr><tr><td>Vốn chủ phổ thông công ty mẹ</td><td>600</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>1,5 lần</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>TTM</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100.</p><p>Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.</p><p>Giá trị sổ sách không phải giá bán thanh lý chắc chắn. Chất lượng tài sản và khả năng sinh lời có thể rất khác nhau.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>P/B</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị lần.</p><p>Với kết quả minh họa 1,5 lần, điều kiện “P/B &gt; 0,5 lần” đạt. Điều kiện “P/B &gt; 1,5 lần” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "P/B",
+      "inputs": [
+        [
+          "Vốn hóa cổ phiếu phổ thông",
+          900
+        ],
+        [
+          "Vốn chủ phổ thông công ty mẹ",
+          600
+        ]
+      ],
+      "formula": "Vốn hóa / Vốn chủ sở hữu phổ thông công ty mẹ",
+      "expected": 1.5,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "Vốn hóa cổ phiếu phổ thông = 900; Vốn chủ phổ thông công ty mẹ = 600. Tính P/B theo công thức của bài."
+    },
+    "config_id": "pb",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch10-l03",
+    "chapter": 10,
+    "order": 3,
+    "name": "P/S",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>P/S</strong> đo vốn hóa cổ phiếu so với doanh thu TTM.</p><p>Vốn hóa là giá trị phần cổ phần, còn doanh thu hợp nhất có thể gồm các đơn vị có cổ đông không kiểm soát. Gói giữ P/S như tỷ số phổ biến nhưng yêu cầu cảnh báo khả năng so sánh khi cấu trúc sở hữu khác lớn. Doanh thu phải dương.</p><p>P/S cho phép quan sát giá trên quy mô doanh thu nhưng chưa phản ánh biên lợi nhuận.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">Vốn hóa / Doanh thu TTM</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>Vốn hóa</td><td>1.500</td></tr><tr><td>Doanh thu TTM</td><td>1.000</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>1,5 lần</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>TTM</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100. Phạm vi mặc định là doanh nghiệp phi tài chính. Ngân hàng, bảo hiểm và công ty chứng khoán cần bộ chỉ tiêu/nguồn riêng; gói không giả dữ liệu để lấp các trường không áp dụng.</p><p>Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.</p><p>Hai công ty cùng P/S có thể khác hẳn do nợ và biên lợi nhuận. Doanh nghiệp có doanh thu cao nhưng lỗ không vì vậy rẻ.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>P/S</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị lần.</p><p>Với kết quả minh họa 1,5 lần, điều kiện “P/S &gt; 0,5 lần” đạt. Điều kiện “P/S &gt; 1,5 lần” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "P/S",
+      "inputs": [
+        [
+          "Vốn hóa",
+          1500
+        ],
+        [
+          "Doanh thu TTM",
+          1000
+        ]
+      ],
+      "formula": "Vốn hóa / Doanh thu TTM",
+      "expected": 1.5,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "Vốn hóa = 1500; Doanh thu TTM = 1000. Tính P/S theo công thức của bài."
+    },
+    "config_id": "ps",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch10-l04",
+    "chapter": 10,
+    "order": 4,
+    "name": "EV / EBITDA",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>EV / EBITDA</strong> đo giá trị doanh nghiệp so với EBITDA TTM.</p><p>EV theo gói = vốn hóa cổ phần phổ thông + giá trị cổ phần ưu đãi + nợ vay + lợi ích cổ đông không kiểm soát − tiền đủ điều kiện. EBITDA = EBIT + khấu hao và phân bổ cùng kỳ. EV và EBITDA phải nhất quán phạm vi hợp nhất. Thiếu thành phần EV không tự coi bằng 0.</p><p>Sáu lần biểu diễn tương quan định giá doanh nghiệp và EBITDA, không phải tỷ số dòng tiền tự do.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">EV / EBITDA TTM</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>EV</td><td>1.800</td></tr><tr><td>EBITDA</td><td>300</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>6 lần</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>TTM</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100. Phạm vi mặc định là doanh nghiệp phi tài chính. Ngân hàng, bảo hiểm và công ty chứng khoán cần bộ chỉ tiêu/nguồn riêng; gói không giả dữ liệu để lấp các trường không áp dụng.</p><p>Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.</p><p>Không dùng trực tiếp cho ngân hàng; nợ là một phần hoạt động của ngành này. EBITDA âm không được coi là mức định giá hấp dẫn.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>EV / EBITDA</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị lần.</p><p>Với kết quả minh họa 6 lần, điều kiện “EV / EBITDA &gt; 5 lần” đạt. Điều kiện “EV / EBITDA &gt; 6 lần” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "EV / EBITDA",
+      "inputs": [
+        [
+          "EV",
+          1800
+        ],
+        [
+          "EBITDA",
+          300
+        ]
+      ],
+      "formula": "EV / EBITDA TTM",
+      "expected": 6,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "EV = 1800; EBITDA = 300. Tính EV / EBITDA theo công thức của bài."
+    },
+    "config_id": "ev_ebitda",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch10-l05",
+    "chapter": 10,
+    "order": 5,
+    "name": "PEG",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>PEG</strong> đo P/E so với tốc độ tăng trưởng EPS được xác định rõ.</p><p>Phiên bản đầu dùng EPS YoY TTM quá khứ đã học, không âm thầm dùng dự phóng của chuyên gia. Cần cả EPS TTM dương và tăng trưởng EPS dương. Giá trị tăng trưởng rất gần 0 làm tỷ số cực nhạy; phải cho người dùng nhìn được mẫu số.</p><p>P/E 15 và tăng trưởng EPS 20% cho PEG 0,75 lần; quy ước mẫu số dùng số 20, không dùng 0,20.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">P/E / tăng trưởng EPS tính theo số phần trăm</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>P/E</td><td>15</td></tr><tr><td>Tăng trưởng EPS</td><td>20</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>0,75 lần</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>TTM</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100.</p><p>Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.</p><p>PEG thấp không tự chứng minh rẻ. Tăng trưởng bùng lên từ nền thấp có thể không lặp lại.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>PEG</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị lần.</p><p>Với kết quả minh họa 0,75 lần, điều kiện “PEG &gt; -0,25 lần” đạt. Điều kiện “PEG &gt; 0,75 lần” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "PEG",
+      "inputs": [
+        [
+          "P/E",
+          15
+        ],
+        [
+          "Tăng trưởng EPS",
+          20
+        ]
+      ],
+      "formula": "P/E / tăng trưởng EPS tính theo số phần trăm",
+      "expected": 0.75,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "P/E = 15; Tăng trưởng EPS = 20. Tính PEG theo công thức của bài."
+    },
+    "config_id": "peg",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch10-l06",
+    "chapter": 10,
+    "order": 6,
+    "name": "FCF Yield",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>FCF Yield</strong> đo FCF TTM so với vốn hóa hiện tại.</p><p>Dùng cùng biến thể FCF = CFO − Capex của bài trước. Không ghép FCFF với vốn hóa rồi coi tương đương biến thể này. Vốn hóa phải dương; FCF âm vẫn là một tỷ suất âm có ý nghĩa và không bị biến thành thiếu chỉ vì âm.</p><p>FCF Yield 5% nghĩa là FCF quá khứ bằng 5% vốn hóa tại ngày quan sát; không phải tiền chắc chắn được trả cho cổ đông.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">FCF TTM / Vốn hóa × 100</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>FCF TTM</td><td>100</td></tr><tr><td>Vốn hóa</td><td>2.000</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>5 %</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>TTM</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100. Phạm vi mặc định là doanh nghiệp phi tài chính. Ngân hàng, bảo hiểm và công ty chứng khoán cần bộ chỉ tiêu/nguồn riêng; gói không giả dữ liệu để lấp các trường không áp dụng.</p><p>Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.</p><p>FCF tăng do hoãn đầu tư có thể khiến tỷ suất đẹp tạm thời. So khác ngành phải xem nhu cầu tái đầu tư.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>FCF Yield</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị %.</p><p>Với kết quả minh họa 5 %, điều kiện “FCF Yield &gt; 4 %” đạt. Điều kiện “FCF Yield &gt; 5 %” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "FCF Yield",
+      "inputs": [
+        [
+          "FCF TTM",
+          100
+        ],
+        [
+          "Vốn hóa",
+          2000
+        ]
+      ],
+      "formula": "FCF TTM / Vốn hóa × 100",
+      "expected": 5,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "FCF TTM = 100; Vốn hóa = 2000. Tính FCF Yield theo công thức của bài."
+    },
+    "config_id": "fcf_yield",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  }
+]

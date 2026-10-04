@@ -1,0 +1,1346 @@
+[
+  {
+    "question": "Dùng các dữ liệu: Tăng trưởng năm 1 = 10; Tăng trưởng năm 2 = 20; Tăng trưởng năm 3 = 30. Revenue Growth Stability bằng bao nhiêu theo công thức bài học?",
+    "options": [
+      {
+        "text": "3,08 điểm %",
+        "id": "o1"
+      },
+      {
+        "text": "18,16 điểm %",
+        "id": "o2"
+      },
+      {
+        "text": "8,16 điểm %",
+        "id": "o3"
+      },
+      {
+        "text": "15,25 điểm %",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Áp dụng sqrt[Σ(gᵢ − trung bình g)² / 3]; kết quả 8,16 điểm %.",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch14-l01-q01",
+    "lesson_id": "ch14-l01",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Revenue Growth Stability đang bằng đúng 8,16 điểm %. Bộ lọc đặt > 8,16 điểm %. Kết quả nào đúng?",
+    "options": [
+      {
+        "text": "Đạt vì bằng ngưỡng cũng được tính.",
+        "id": "o1"
+      },
+      {
+        "text": "Đạt nếu giá cổ phiếu tăng.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+        "id": "o3"
+      },
+      {
+        "text": "Không đạt điều kiện.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l01-q02",
+    "lesson_id": "ch14-l01",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc Revenue Growth Stability?",
+    "options": [
+      {
+        "text": "Một công ty tăng đều −5% mỗi năm có độ lệch chuẩn 0 nhưng vẫn suy giảm. Phải đọc mức tăng trưởng cùng độ ổn định.",
+        "id": "o1"
+      },
+      {
+        "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+        "id": "o2"
+      },
+      {
+        "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+        "id": "o3"
+      },
+      {
+        "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Độ lệch chuẩn khoảng 8,16 điểm phần trăm mô tả độ dao động, không phải mức tăng trưởng bình quân. Một công ty tăng đều −5% mỗi năm có độ lệch chuẩn 0 nhưng vẫn suy giảm. Phải đọc mức tăng trưởng cùng độ ổn định.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch14-l01-q03",
+    "lesson_id": "ch14-l01",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính Revenue Growth Stability. Bộ lọc nên làm gì?",
+    "options": [
+      {
+        "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+        "id": "o1"
+      },
+      {
+        "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+        "id": "o2"
+      },
+      {
+        "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+        "id": "o3"
+      },
+      {
+        "text": "Điền 0 rồi kiểm tra như số thật.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.",
+    "skill": "dữ liệu",
+    "fixture": null,
+    "id": "ch14-l01-q04",
+    "lesson_id": "ch14-l01",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Nhận định nào đúng với Revenue Growth Stability?",
+    "options": [
+      {
+        "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+        "id": "o1"
+      },
+      {
+        "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+        "id": "o2"
+      },
+      {
+        "text": "Độ lệch chuẩn khoảng 8,16 điểm phần trăm mô tả độ dao động, không phải mức tăng trưởng bình quân.",
+        "id": "o3"
+      },
+      {
+        "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Độ lệch chuẩn khoảng 8,16 điểm phần trăm mô tả độ dao động, không phải mức tăng trưởng bình quân. Bản này dùng độ lệch chuẩn tổng thể, chia cho 3. Cần bốn năm doanh thu để tạo ba YoY hợp lệ. Dữ liệu thiếu một năm thì không rút còn hai quan sát và vẫn gọi là ba năm. Không lấy trị tuyệt đối của các tăng trưởng trước khi tính.",
+    "skill": "diễn giải",
+    "fixture": null,
+    "id": "ch14-l01-q05",
+    "lesson_id": "ch14-l01",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Hai doanh nghiệp A và B lần lượt có Revenue Growth Stability bằng 6,16 và 10,16 điểm %. Điều kiện < 8,16 điểm % giữ lại ai?",
+    "options": [
+      {
+        "text": "Cả A và B.",
+        "id": "o1"
+      },
+      {
+        "text": "Không doanh nghiệp nào.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ A.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ B.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "6,16 < 8,16 đúng, 10,16 < 8,16 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l01-q06",
+    "lesson_id": "ch14-l01",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Báo cáo dùng tính Revenue Growth Stability kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+    "options": [
+      {
+        "text": "Có, nếu sau này công ty hoạt động tốt.",
+        "id": "o1"
+      },
+      {
+        "text": "Có, nhưng nhân kết quả với 0,5.",
+        "id": "o2"
+      },
+      {
+        "text": "Không; thông tin chưa có tại ngày 10/04.",
+        "id": "o3"
+      },
+      {
+        "text": "Có, vì kỳ kế toán đã kết thúc.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+    "skill": "thời điểm dữ liệu",
+    "fixture": null,
+    "id": "ch14-l01-q07",
+    "lesson_id": "ch14-l01",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Doanh nghiệp đạt điều kiện Revenue Growth Stability, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+    "options": [
+      {
+        "text": "Giữ vì một điều kiện đạt đã đủ.",
+        "id": "o1"
+      },
+      {
+        "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự bỏ điều kiện chưa đạt.",
+        "id": "o3"
+      },
+      {
+        "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l01-q08",
+    "lesson_id": "ch14-l01",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Dùng các dữ liệu: Tăng trưởng EPS năm 1 = 5; Tăng trưởng EPS năm 2 = 10; Tăng trưởng EPS năm 3 = 15. EPS Stability bằng bao nhiêu theo công thức bài học?",
+    "options": [
+      {
+        "text": "14,08 điểm %",
+        "id": "o1"
+      },
+      {
+        "text": "4,08 điểm %",
+        "id": "o2"
+      },
+      {
+        "text": "9,12 điểm %",
+        "id": "o3"
+      },
+      {
+        "text": "1,04 điểm %",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Áp dụng sqrt[Σ(g EPS ᵢ − trung bình g EPS)² / 3]; kết quả 4,08 điểm %.",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch14-l02-q01",
+    "lesson_id": "ch14-l02",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "EPS Stability đang bằng đúng 4,08 điểm %. Bộ lọc đặt > 4,08 điểm %. Kết quả nào đúng?",
+    "options": [
+      {
+        "text": "Đạt nếu giá cổ phiếu tăng.",
+        "id": "o1"
+      },
+      {
+        "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+        "id": "o2"
+      },
+      {
+        "text": "Không đạt điều kiện.",
+        "id": "o3"
+      },
+      {
+        "text": "Đạt vì bằng ngưỡng cũng được tính.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l02-q02",
+    "lesson_id": "ch14-l02",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc EPS Stability?",
+    "options": [
+      {
+        "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+        "id": "o1"
+      },
+      {
+        "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+        "id": "o2"
+      },
+      {
+        "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+        "id": "o3"
+      },
+      {
+        "text": "Chuỗi EPS chưa điều chỉnh tách cổ phiếu có thể tạo biến động giả.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Chỉ tiêu ở đây là độ ổn định tăng trưởng EPS, không phải độ lệch chuẩn trực tiếp của mức EPS. Chuỗi EPS chưa điều chỉnh tách cổ phiếu có thể tạo biến động giả.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch14-l02-q03",
+    "lesson_id": "ch14-l02",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính EPS Stability. Bộ lọc nên làm gì?",
+    "options": [
+      {
+        "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+        "id": "o1"
+      },
+      {
+        "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+        "id": "o2"
+      },
+      {
+        "text": "Điền 0 rồi kiểm tra như số thật.",
+        "id": "o3"
+      },
+      {
+        "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.",
+    "skill": "dữ liệu",
+    "fixture": null,
+    "id": "ch14-l02-q04",
+    "lesson_id": "ch14-l02",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Nhận định nào đúng với EPS Stability?",
+    "options": [
+      {
+        "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ tiêu ở đây là độ ổn định tăng trưởng EPS, không phải độ lệch chuẩn trực tiếp của mức EPS.",
+        "id": "o2"
+      },
+      {
+        "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+        "id": "o3"
+      },
+      {
+        "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Chỉ tiêu ở đây là độ ổn định tăng trưởng EPS, không phải độ lệch chuẩn trực tiếp của mức EPS. Tên bài EPS Stability được giữ từ chương trình. Định nghĩa kỹ thuật cụ thể dùng ba tăng trưởng năm hợp lệ trên bốn EPS năm đã điều chỉnh; chia 3. Tăng trưởng âm hợp lệ vẫn được giữ dấu khi tính.",
+    "skill": "diễn giải",
+    "fixture": null,
+    "id": "ch14-l02-q05",
+    "lesson_id": "ch14-l02",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Hai doanh nghiệp A và B lần lượt có EPS Stability bằng 2,08 và 6,08 điểm %. Điều kiện < 4,08 điểm % giữ lại ai?",
+    "options": [
+      {
+        "text": "Không doanh nghiệp nào.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ A.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ B.",
+        "id": "o3"
+      },
+      {
+        "text": "Cả A và B.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "2,08 < 4,08 đúng, 6,08 < 4,08 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l02-q06",
+    "lesson_id": "ch14-l02",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Báo cáo dùng tính EPS Stability kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+    "options": [
+      {
+        "text": "Có, nhưng nhân kết quả với 0,5.",
+        "id": "o1"
+      },
+      {
+        "text": "Không; thông tin chưa có tại ngày 10/04.",
+        "id": "o2"
+      },
+      {
+        "text": "Có, vì kỳ kế toán đã kết thúc.",
+        "id": "o3"
+      },
+      {
+        "text": "Có, nếu sau này công ty hoạt động tốt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+    "skill": "thời điểm dữ liệu",
+    "fixture": null,
+    "id": "ch14-l02-q07",
+    "lesson_id": "ch14-l02",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Doanh nghiệp đạt điều kiện EPS Stability, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+    "options": [
+      {
+        "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+        "id": "o1"
+      },
+      {
+        "text": "Giữ vì một điều kiện đạt đã đủ.",
+        "id": "o2"
+      },
+      {
+        "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+        "id": "o3"
+      },
+      {
+        "text": "Tự bỏ điều kiện chưa đạt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l02-q08",
+    "lesson_id": "ch14-l02",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Dùng các dữ liệu: Biên năm 1 = 10; Biên năm 2 = 12; Biên năm 3 = 14. Margin Stability bằng bao nhiêu theo công thức bài học?",
+    "options": [
+      {
+        "text": "5,45 điểm %",
+        "id": "o1"
+      },
+      {
+        "text": "-0,18 điểm %",
+        "id": "o2"
+      },
+      {
+        "text": "11,63 điểm %",
+        "id": "o3"
+      },
+      {
+        "text": "1,63 điểm %",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Áp dụng sqrt[Σ(mᵢ − trung bình m)² / 3]; kết quả 1,63 điểm %.",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch14-l03-q01",
+    "lesson_id": "ch14-l03",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Margin Stability đang bằng đúng 1,63 điểm %. Bộ lọc đặt > 1,63 điểm %. Kết quả nào đúng?",
+    "options": [
+      {
+        "text": "Đạt nếu giá cổ phiếu tăng.",
+        "id": "o1"
+      },
+      {
+        "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+        "id": "o2"
+      },
+      {
+        "text": "Không đạt điều kiện.",
+        "id": "o3"
+      },
+      {
+        "text": "Đạt vì bằng ngưỡng cũng được tính.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l03-q02",
+    "lesson_id": "ch14-l03",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc Margin Stability?",
+    "options": [
+      {
+        "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+        "id": "o1"
+      },
+      {
+        "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+        "id": "o2"
+      },
+      {
+        "text": "Không dùng biên gộp một năm ghép với biên ròng hai năm còn lại.",
+        "id": "o3"
+      },
+      {
+        "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Độ lệch chuẩn 1,63 điểm phần trăm nói biên quanh mức bình quân; không nói biên bình quân cao hay thấp. Không dùng biên gộp một năm ghép với biên ròng hai năm còn lại.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch14-l03-q03",
+    "lesson_id": "ch14-l03",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính Margin Stability. Bộ lọc nên làm gì?",
+    "options": [
+      {
+        "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+        "id": "o1"
+      },
+      {
+        "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+        "id": "o2"
+      },
+      {
+        "text": "Điền 0 rồi kiểm tra như số thật.",
+        "id": "o3"
+      },
+      {
+        "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.",
+    "skill": "dữ liệu",
+    "fixture": null,
+    "id": "ch14-l03-q04",
+    "lesson_id": "ch14-l03",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Nhận định nào đúng với Margin Stability?",
+    "options": [
+      {
+        "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+        "id": "o1"
+      },
+      {
+        "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+        "id": "o2"
+      },
+      {
+        "text": "Độ lệch chuẩn 1,63 điểm phần trăm nói biên quanh mức bình quân; không nói biên bình quân cao hay thấp.",
+        "id": "o3"
+      },
+      {
+        "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Độ lệch chuẩn 1,63 điểm phần trăm nói biên quanh mức bình quân; không nói biên bình quân cao hay thấp. Bản này cố định loại biên là biên lợi nhuận ròng đã học; không tạo bộ chọn loại biên mới trong cùng mã chỉ tiêu. Cần đủ ba biên năm hợp lệ, cùng chuẩn hợp nhất. Thay báo cáo cần có phiên bản dữ liệu.",
+    "skill": "diễn giải",
+    "fixture": null,
+    "id": "ch14-l03-q05",
+    "lesson_id": "ch14-l03",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Hai doanh nghiệp A và B lần lượt có Margin Stability bằng -0,37 và 3,63 điểm %. Điều kiện < 1,63 điểm % giữ lại ai?",
+    "options": [
+      {
+        "text": "Không doanh nghiệp nào.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ A.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ B.",
+        "id": "o3"
+      },
+      {
+        "text": "Cả A và B.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "-0,37 < 1,63 đúng, 3,63 < 1,63 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l03-q06",
+    "lesson_id": "ch14-l03",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Báo cáo dùng tính Margin Stability kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+    "options": [
+      {
+        "text": "Có, vì kỳ kế toán đã kết thúc.",
+        "id": "o1"
+      },
+      {
+        "text": "Có, nếu sau này công ty hoạt động tốt.",
+        "id": "o2"
+      },
+      {
+        "text": "Có, nhưng nhân kết quả với 0,5.",
+        "id": "o3"
+      },
+      {
+        "text": "Không; thông tin chưa có tại ngày 10/04.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+    "skill": "thời điểm dữ liệu",
+    "fixture": null,
+    "id": "ch14-l03-q07",
+    "lesson_id": "ch14-l03",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Doanh nghiệp đạt điều kiện Margin Stability, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+    "options": [
+      {
+        "text": "Giữ vì một điều kiện đạt đã đủ.",
+        "id": "o1"
+      },
+      {
+        "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự bỏ điều kiện chưa đạt.",
+        "id": "o3"
+      },
+      {
+        "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l03-q08",
+    "lesson_id": "ch14-l03",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Dùng các dữ liệu: ROIC năm 1 = 12; ROIC năm 2 = 15; ROIC năm 3 = 18. ROIC Stability bằng bao nhiêu theo công thức bài học?",
+    "options": [
+      {
+        "text": "2,45 điểm %",
+        "id": "o1"
+      },
+      {
+        "text": "6,67 điểm %",
+        "id": "o2"
+      },
+      {
+        "text": "0,22 điểm %",
+        "id": "o3"
+      },
+      {
+        "text": "12,45 điểm %",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Áp dụng sqrt[Σ(ROIC ᵢ − trung bình ROIC)² / 3]; kết quả 2,45 điểm %.",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch14-l04-q01",
+    "lesson_id": "ch14-l04",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "ROIC Stability đang bằng đúng 2,45 điểm %. Bộ lọc đặt > 2,45 điểm %. Kết quả nào đúng?",
+    "options": [
+      {
+        "text": "Không đạt điều kiện.",
+        "id": "o1"
+      },
+      {
+        "text": "Đạt vì bằng ngưỡng cũng được tính.",
+        "id": "o2"
+      },
+      {
+        "text": "Đạt nếu giá cổ phiếu tăng.",
+        "id": "o3"
+      },
+      {
+        "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l04-q02",
+    "lesson_id": "ch14-l04",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc ROIC Stability?",
+    "options": [
+      {
+        "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+        "id": "o1"
+      },
+      {
+        "text": "Đổi cách xác định tiền dư hoặc thuế suất giữa các năm có thể tạo biến động phương pháp thay vì biến động kinh doanh.",
+        "id": "o2"
+      },
+      {
+        "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+        "id": "o3"
+      },
+      {
+        "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Độ lệch chuẩn 2,45 điểm phần trăm chỉ là độ dao động quanh mức bình quân 15%. Đổi cách xác định tiền dư hoặc thuế suất giữa các năm có thể tạo biến động phương pháp thay vì biến động kinh doanh.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch14-l04-q03",
+    "lesson_id": "ch14-l04",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính ROIC Stability. Bộ lọc nên làm gì?",
+    "options": [
+      {
+        "text": "Điền 0 rồi kiểm tra như số thật.",
+        "id": "o1"
+      },
+      {
+        "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+        "id": "o2"
+      },
+      {
+        "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+        "id": "o3"
+      },
+      {
+        "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.",
+    "skill": "dữ liệu",
+    "fixture": null,
+    "id": "ch14-l04-q04",
+    "lesson_id": "ch14-l04",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Nhận định nào đúng với ROIC Stability?",
+    "options": [
+      {
+        "text": "Độ lệch chuẩn 2,45 điểm phần trăm chỉ là độ dao động quanh mức bình quân 15%.",
+        "id": "o1"
+      },
+      {
+        "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+        "id": "o2"
+      },
+      {
+        "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+        "id": "o3"
+      },
+      {
+        "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Độ lệch chuẩn 2,45 điểm phần trăm chỉ là độ dao động quanh mức bình quân 15%. Dùng ba giá trị ROIC năm đã tính theo cùng calculation_version. Không điền 0 vào năm thiếu dữ liệu. Công ty ROIC ổn định nhưng thấp vẫn khác công ty ổn định ở mức cao; cần kết hợp điều kiện về mức ROIC.",
+    "skill": "diễn giải",
+    "fixture": null,
+    "id": "ch14-l04-q05",
+    "lesson_id": "ch14-l04",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Hai doanh nghiệp A và B lần lượt có ROIC Stability bằng 0,45 và 4,45 điểm %. Điều kiện < 2,45 điểm % giữ lại ai?",
+    "options": [
+      {
+        "text": "Chỉ A.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ B.",
+        "id": "o2"
+      },
+      {
+        "text": "Cả A và B.",
+        "id": "o3"
+      },
+      {
+        "text": "Không doanh nghiệp nào.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "0,45 < 2,45 đúng, 4,45 < 2,45 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l04-q06",
+    "lesson_id": "ch14-l04",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Báo cáo dùng tính ROIC Stability kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+    "options": [
+      {
+        "text": "Có, nếu sau này công ty hoạt động tốt.",
+        "id": "o1"
+      },
+      {
+        "text": "Có, nhưng nhân kết quả với 0,5.",
+        "id": "o2"
+      },
+      {
+        "text": "Không; thông tin chưa có tại ngày 10/04.",
+        "id": "o3"
+      },
+      {
+        "text": "Có, vì kỳ kế toán đã kết thúc.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+    "skill": "thời điểm dữ liệu",
+    "fixture": null,
+    "id": "ch14-l04-q07",
+    "lesson_id": "ch14-l04",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Doanh nghiệp đạt điều kiện ROIC Stability, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+    "options": [
+      {
+        "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+        "id": "o1"
+      },
+      {
+        "text": "Giữ vì một điều kiện đạt đã đủ.",
+        "id": "o2"
+      },
+      {
+        "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+        "id": "o3"
+      },
+      {
+        "text": "Tự bỏ điều kiện chưa đạt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l04-q08",
+    "lesson_id": "ch14-l04",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Dùng các dữ liệu: Năm cũ nhất = 10; Năm tiếp theo = -5; Năm tiếp theo = 8; Năm gần nhất = 12. FCF Positive Streak bằng bao nhiêu theo công thức bài học?",
+    "options": [
+      {
+        "text": "0 năm",
+        "id": "o1"
+      },
+      {
+        "text": "12 năm",
+        "id": "o2"
+      },
+      {
+        "text": "2 năm",
+        "id": "o3"
+      },
+      {
+        "text": "6 năm",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Áp dụng Đếm lùi tới năm đầu tiên có FCF ≤ 0; kết quả 2 năm.",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch14-l05-q01",
+    "lesson_id": "ch14-l05",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "FCF Positive Streak đang bằng đúng 2 năm. Bộ lọc đặt > 2 năm. Kết quả nào đúng?",
+    "options": [
+      {
+        "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+        "id": "o1"
+      },
+      {
+        "text": "Không đạt điều kiện.",
+        "id": "o2"
+      },
+      {
+        "text": "Đạt vì bằng ngưỡng cũng được tính.",
+        "id": "o3"
+      },
+      {
+        "text": "Đạt nếu giá cổ phiếu tăng.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l05-q02",
+    "lesson_id": "ch14-l05",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc FCF Positive Streak?",
+    "options": [
+      {
+        "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+        "id": "o1"
+      },
+      {
+        "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+        "id": "o2"
+      },
+      {
+        "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+        "id": "o3"
+      },
+      {
+        "text": "Năm bằng 0 làm đứt chuỗi dương. Năm thiếu dữ liệu không được bỏ qua để nối hai đoạn.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Chuỗi 10, −5, 8, 12 có hai năm dương liên tiếp gần nhất, không phải ba năm vì tổng số năm dương là ba. Năm bằng 0 làm đứt chuỗi dương. Năm thiếu dữ liệu không được bỏ qua để nối hai đoạn.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch14-l05-q03",
+    "lesson_id": "ch14-l05",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính FCF Positive Streak. Bộ lọc nên làm gì?",
+    "options": [
+      {
+        "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+        "id": "o1"
+      },
+      {
+        "text": "Điền 0 rồi kiểm tra như số thật.",
+        "id": "o2"
+      },
+      {
+        "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+        "id": "o3"
+      },
+      {
+        "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Giá trị 0 kết thúc chuỗi. Không được đi xuyên một năm chưa có báo cáo; khi thiếu lịch sử trước một chuỗi toàn dương phải hiển thị cận dưới thay vì độ dài chính xác giả.",
+    "skill": "dữ liệu",
+    "fixture": null,
+    "id": "ch14-l05-q04",
+    "lesson_id": "ch14-l05",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Nhận định nào đúng với FCF Positive Streak?",
+    "options": [
+      {
+        "text": "Chuỗi 10, −5, 8, 12 có hai năm dương liên tiếp gần nhất, không phải ba năm vì tổng số năm dương là ba.",
+        "id": "o1"
+      },
+      {
+        "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+        "id": "o2"
+      },
+      {
+        "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+        "id": "o3"
+      },
+      {
+        "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Chuỗi 10, −5, 8, 12 có hai năm dương liên tiếp gần nhất, không phải ba năm vì tổng số năm dương là ba. Dùng năm tài chính đầy đủ, không trộn TTM cập nhật hàng quý với chuỗi năm. Nếu toàn bộ lịch sử có sẵn đều dương nhưng chưa biết năm trước nữa, gói trả ít nhất N năm cùng cờ giới hạn lịch sử. Phép > vẫn kiểm tra được nếu cận dưới đã vượt ngưỡng; không tự khẳng định chuỗi chính xác.",
+    "skill": "diễn giải",
+    "fixture": null,
+    "id": "ch14-l05-q05",
+    "lesson_id": "ch14-l05",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Hai doanh nghiệp A và B lần lượt có FCF Positive Streak bằng 0 và 4 năm. Điều kiện < 2 năm giữ lại ai?",
+    "options": [
+      {
+        "text": "Chỉ A.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ B.",
+        "id": "o2"
+      },
+      {
+        "text": "Cả A và B.",
+        "id": "o3"
+      },
+      {
+        "text": "Không doanh nghiệp nào.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "0 < 2 đúng, 4 < 2 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l05-q06",
+    "lesson_id": "ch14-l05",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Báo cáo dùng tính FCF Positive Streak kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+    "options": [
+      {
+        "text": "Có, nhưng nhân kết quả với 0,5.",
+        "id": "o1"
+      },
+      {
+        "text": "Không; thông tin chưa có tại ngày 10/04.",
+        "id": "o2"
+      },
+      {
+        "text": "Có, vì kỳ kế toán đã kết thúc.",
+        "id": "o3"
+      },
+      {
+        "text": "Có, nếu sau này công ty hoạt động tốt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+    "skill": "thời điểm dữ liệu",
+    "fixture": null,
+    "id": "ch14-l05-q07",
+    "lesson_id": "ch14-l05",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Doanh nghiệp đạt điều kiện FCF Positive Streak, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+    "options": [
+      {
+        "text": "Giữ vì một điều kiện đạt đã đủ.",
+        "id": "o1"
+      },
+      {
+        "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự bỏ điều kiện chưa đạt.",
+        "id": "o3"
+      },
+      {
+        "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l05-q08",
+    "lesson_id": "ch14-l05",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Dùng các dữ liệu: Năm cũ nhất = -8; Năm tiếp theo = 5; Năm tiếp theo = 9; Năm gần nhất = 11. Profit Positive Streak bằng bao nhiêu theo công thức bài học?",
+    "options": [
+      {
+        "text": "7,5 năm",
+        "id": "o1"
+      },
+      {
+        "text": "0,5 năm",
+        "id": "o2"
+      },
+      {
+        "text": "13 năm",
+        "id": "o3"
+      },
+      {
+        "text": "3 năm",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Áp dụng Đếm lùi tới năm đầu tiên có lợi nhuận ≤ 0; kết quả 3 năm.",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch14-l06-q01",
+    "lesson_id": "ch14-l06",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Profit Positive Streak đang bằng đúng 3 năm. Bộ lọc đặt > 3 năm. Kết quả nào đúng?",
+    "options": [
+      {
+        "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+        "id": "o1"
+      },
+      {
+        "text": "Không đạt điều kiện.",
+        "id": "o2"
+      },
+      {
+        "text": "Đạt vì bằng ngưỡng cũng được tính.",
+        "id": "o3"
+      },
+      {
+        "text": "Đạt nếu giá cổ phiếu tăng.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l06-q02",
+    "lesson_id": "ch14-l06",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc Profit Positive Streak?",
+    "options": [
+      {
+        "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+        "id": "o1"
+      },
+      {
+        "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+        "id": "o2"
+      },
+      {
+        "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+        "id": "o3"
+      },
+      {
+        "text": "Có lãi liên tục không chứng minh mức lãi tăng hoặc lợi nhuận có chất lượng tiền tốt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Chuỗi −8, 5, 9, 11 có ba năm gần nhất có lãi liên tục. Có lãi liên tục không chứng minh mức lãi tăng hoặc lợi nhuận có chất lượng tiền tốt.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch14-l06-q03",
+    "lesson_id": "ch14-l06",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính Profit Positive Streak. Bộ lọc nên làm gì?",
+    "options": [
+      {
+        "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+        "id": "o1"
+      },
+      {
+        "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+        "id": "o2"
+      },
+      {
+        "text": "Điền 0 rồi kiểm tra như số thật.",
+        "id": "o3"
+      },
+      {
+        "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Giá trị 0 kết thúc chuỗi. Không được đi xuyên một năm chưa có báo cáo; khi thiếu lịch sử trước một chuỗi toàn dương phải hiển thị cận dưới thay vì độ dài chính xác giả.",
+    "skill": "dữ liệu",
+    "fixture": null,
+    "id": "ch14-l06-q04",
+    "lesson_id": "ch14-l06",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Nhận định nào đúng với Profit Positive Streak?",
+    "options": [
+      {
+        "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+        "id": "o1"
+      },
+      {
+        "text": "Chuỗi −8, 5, 9, 11 có ba năm gần nhất có lãi liên tục.",
+        "id": "o2"
+      },
+      {
+        "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+        "id": "o3"
+      },
+      {
+        "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Chuỗi −8, 5, 9, 11 có ba năm gần nhất có lãi liên tục. Tử số dùng lợi nhuận sau thuế thuộc công ty mẹ giống bài tăng trưởng lợi nhuận. Mốc 0 không tính dương. Lịch sử phải theo năm liên tục; báo cáo thiếu làm không xác định độ dài qua chỗ thiếu thay vì tự xem là một năm có lãi.",
+    "skill": "diễn giải",
+    "fixture": null,
+    "id": "ch14-l06-q05",
+    "lesson_id": "ch14-l06",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Hai doanh nghiệp A và B lần lượt có Profit Positive Streak bằng 1 và 5 năm. Điều kiện < 3 năm giữ lại ai?",
+    "options": [
+      {
+        "text": "Không doanh nghiệp nào.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ A.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ B.",
+        "id": "o3"
+      },
+      {
+        "text": "Cả A và B.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "1 < 3 đúng, 5 < 3 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l06-q06",
+    "lesson_id": "ch14-l06",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Báo cáo dùng tính Profit Positive Streak kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+    "options": [
+      {
+        "text": "Có, nhưng nhân kết quả với 0,5.",
+        "id": "o1"
+      },
+      {
+        "text": "Không; thông tin chưa có tại ngày 10/04.",
+        "id": "o2"
+      },
+      {
+        "text": "Có, vì kỳ kế toán đã kết thúc.",
+        "id": "o3"
+      },
+      {
+        "text": "Có, nếu sau này công ty hoạt động tốt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+    "skill": "thời điểm dữ liệu",
+    "fixture": null,
+    "id": "ch14-l06-q07",
+    "lesson_id": "ch14-l06",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Doanh nghiệp đạt điều kiện Profit Positive Streak, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+    "options": [
+      {
+        "text": "Giữ vì một điều kiện đạt đã đủ.",
+        "id": "o1"
+      },
+      {
+        "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự bỏ điều kiện chưa đạt.",
+        "id": "o3"
+      },
+      {
+        "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch14-l06-q08",
+    "lesson_id": "ch14-l06",
+    "correct_option_id": "o4"
+  }
+]

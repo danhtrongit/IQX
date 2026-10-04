@@ -1,0 +1,230 @@
+[
+  {
+    "id": "cfo_margin",
+    "name": "CFO Margin",
+    "lesson_id": "ch08-l01",
+    "chapter": 8,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "CFO / Doanh thu × 100",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "CFO Margin",
+      "inputs": [
+        [
+          "CFO",
+          180
+        ],
+        [
+          "Doanh thu",
+          1200
+        ]
+      ],
+      "formula": "CFO / Doanh thu × 100",
+      "expected": 15,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "CFO là dòng tiền thuần từ hoạt động kinh doanh trên báo cáo lưu chuyển tiền tệ. Doanh thu lấy cùng kỳ. Dòng tiền âm được giữ dấu âm khi doanh thu dương. Báo cáo lũy kế chín tháng phải trừ sáu tháng để ra quý ba riêng khi người dùng chọn quý."
+  },
+  {
+    "id": "cfo_profit",
+    "name": "CFO / LNST",
+    "lesson_id": "ch08-l02",
+    "chapter": 8,
+    "unit": "lần",
+    "api_unit": "lần",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "CFO / Lợi nhuận sau thuế hợp nhất",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "CFO / LNST",
+      "inputs": [
+        [
+          "CFO",
+          80
+        ],
+        [
+          "Lợi nhuận sau thuế hợp nhất",
+          100
+        ]
+      ],
+      "formula": "CFO / Lợi nhuận sau thuế hợp nhất",
+      "expected": 0.8,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Tử số và mẫu số đều theo phạm vi hợp nhất. Không dùng lợi nhuận thuộc công ty mẹ để ghép với toàn bộ CFO khi muốn phân tích khả năng chuyển lợi nhuận thành tiền toàn doanh nghiệp. Lợi nhuận không dương được gắn không đủ điều kiện diễn giải, kể cả khi chia hai số âm ra số dương."
+  },
+  {
+    "id": "fcf_margin",
+    "name": "FCF Margin",
+    "lesson_id": "ch08-l03",
+    "chapter": 8,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "(CFO − Capex) / Doanh thu × 100",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "FCF Margin",
+      "inputs": [
+        [
+          "FCF",
+          100
+        ],
+        [
+          "Doanh thu",
+          1000
+        ]
+      ],
+      "formula": "(CFO − Capex) / Doanh thu × 100",
+      "expected": 10,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Gói dùng FCF đơn giản = CFO − Capex tiền mặt, không đồng nhất với FCFF hay FCFE để chiết khấu định giá. Capex ghi số dương cho tiền mua tài sản cố định và tài sản vô hình; không trừ tiền bán tài sản và không gộp mua công ty nếu chưa có trường phân loại riêng."
+  },
+  {
+    "id": "fcf_yoy",
+    "name": "FCF Growth YoY",
+    "lesson_id": "ch08-l04",
+    "chapter": 8,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "growth",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "(FCF kỳ này / FCF cùng kỳ − 1) × 100",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Kỳ gốc phải dương. Kỳ gốc bằng 0 hoặc âm được ghi không đủ cơ sở tính tăng trưởng thông thường. Không lấy trị tuyệt đối mẫu số và không âm thầm biến kết quả thành 0%.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "FCF Growth YoY",
+      "inputs": [
+        [
+          "FCF kỳ này",
+          120
+        ],
+        [
+          "FCF cùng kỳ",
+          80
+        ]
+      ],
+      "formula": "(FCF kỳ này / FCF cùng kỳ − 1) × 100",
+      "expected": 50,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Trước tiên tính FCF của từng kỳ theo cùng CFO − Capex. Sau đó mới so tỷ lệ. Không so FCF năm hiện tại với CFO năm trước. Kỳ gốc phải dương; nếu không, hiển thị trạng thái chuyển lỗ, chuyển dương hoặc thiếu cơ sở tùy dữ liệu gốc."
+  },
+  {
+    "id": "capex_revenue",
+    "name": "Capex / Revenue",
+    "lesson_id": "ch08-l05",
+    "chapter": 8,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Capex / Doanh thu × 100",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Capex / Revenue",
+      "inputs": [
+        [
+          "Capex tiền mặt",
+          150
+        ],
+        [
+          "Doanh thu",
+          1000
+        ]
+      ],
+      "formula": "Capex / Doanh thu × 100",
+      "expected": 15,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Capex là dòng tiền đầu tư tài sản cố định và vô hình theo định nghĩa của gói. Không thay bằng khấu hao: khấu hao là phân bổ chi phí kế toán, còn Capex là tiền chi. Dòng mua tài sản trên báo cáo thường âm; chuẩn hóa thành số chi dương trước khi tính."
+  },
+  {
+    "id": "accrual",
+    "name": "Accrual Ratio",
+    "lesson_id": "ch08-l06",
+    "chapter": 8,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "(Lợi nhuận sau thuế hợp nhất − CFO) / Tài sản bình quân × 100",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Accrual Ratio",
+      "inputs": [
+        [
+          "Lợi nhuận hợp nhất trừ CFO",
+          40
+        ],
+        [
+          "Tài sản bình quân",
+          1000
+        ]
+      ],
+      "formula": "(Lợi nhuận sau thuế hợp nhất − CFO) / Tài sản bình quân × 100",
+      "expected": 4,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Ví dụ lợi nhuận 140 và CFO 100 tạo chênh lệch 40. Chênh có thể từ khấu hao, dự phòng hoặc vốn lưu động. Tử số âm là hợp lệ khi CFO lớn hơn lợi nhuận. Mẫu số tài sản bình quân phải dương."
+  }
+]

@@ -1,0 +1,262 @@
+[
+  {
+    "id": "revenue_growth_stability",
+    "name": "Revenue Growth Stability",
+    "lesson_id": "ch14-l01",
+    "chapter": 14,
+    "unit": "điểm %",
+    "api_unit": "ratio",
+    "kind": "stdev",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "sqrt[Σ(gᵢ − trung bình g)² / 3]",
+    "period": "Ba năm",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Revenue Growth Stability",
+      "inputs": [
+        [
+          "Tăng trưởng năm 1",
+          10
+        ],
+        [
+          "Tăng trưởng năm 2",
+          20
+        ],
+        [
+          "Tăng trưởng năm 3",
+          30
+        ]
+      ],
+      "formula": "sqrt[Σ(gᵢ − trung bình g)² / 3]",
+      "expected": 8.16496580927726,
+      "unit": "điểm %",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Bản này dùng độ lệch chuẩn tổng thể, chia cho 3. Cần bốn năm doanh thu để tạo ba YoY hợp lệ. Dữ liệu thiếu một năm thì không rút còn hai quan sát và vẫn gọi là ba năm. Không lấy trị tuyệt đối của các tăng trưởng trước khi tính."
+  },
+  {
+    "id": "eps_growth_stability",
+    "name": "EPS Stability",
+    "lesson_id": "ch14-l02",
+    "chapter": 14,
+    "unit": "điểm %",
+    "api_unit": "ratio",
+    "kind": "stdev",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "sqrt[Σ(gEPSᵢ − trung bình gEPS)² / 3]",
+    "period": "Ba năm",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "EPS Stability",
+      "inputs": [
+        [
+          "Tăng trưởng EPS năm 1",
+          5
+        ],
+        [
+          "Tăng trưởng EPS năm 2",
+          10
+        ],
+        [
+          "Tăng trưởng EPS năm 3",
+          15
+        ]
+      ],
+      "formula": "sqrt[Σ(gEPSᵢ − trung bình gEPS)² / 3]",
+      "expected": 4.08248290463863,
+      "unit": "điểm %",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Tên bài EPS Stability được giữ từ chương trình. Định nghĩa kỹ thuật cụ thể dùng ba tăng trưởng năm hợp lệ trên bốn EPS năm đã điều chỉnh; chia 3. Tăng trưởng âm hợp lệ vẫn được giữ dấu khi tính."
+  },
+  {
+    "id": "net_margin_stability",
+    "name": "Margin Stability",
+    "lesson_id": "ch14-l03",
+    "chapter": 14,
+    "unit": "điểm %",
+    "api_unit": "ratio",
+    "kind": "stdev",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "sqrt[Σ(mᵢ − trung bình m)² / 3]",
+    "period": "Ba năm",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Margin Stability",
+      "inputs": [
+        [
+          "Biên năm 1",
+          10
+        ],
+        [
+          "Biên năm 2",
+          12
+        ],
+        [
+          "Biên năm 3",
+          14
+        ]
+      ],
+      "formula": "sqrt[Σ(mᵢ − trung bình m)² / 3]",
+      "expected": 1.632993161855452,
+      "unit": "điểm %",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Bản này cố định loại biên là biên lợi nhuận ròng đã học; không tạo bộ chọn loại biên mới trong cùng mã chỉ tiêu. Cần đủ ba biên năm hợp lệ, cùng chuẩn hợp nhất. Thay báo cáo cần có phiên bản dữ liệu."
+  },
+  {
+    "id": "roic_stability",
+    "name": "ROIC Stability",
+    "lesson_id": "ch14-l04",
+    "chapter": 14,
+    "unit": "điểm %",
+    "api_unit": "ratio",
+    "kind": "stdev",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "sqrt[Σ(ROICᵢ − trung bình ROIC)² / 3]",
+    "period": "Ba năm",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "ROIC Stability",
+      "inputs": [
+        [
+          "ROIC năm 1",
+          12
+        ],
+        [
+          "ROIC năm 2",
+          15
+        ],
+        [
+          "ROIC năm 3",
+          18
+        ]
+      ],
+      "formula": "sqrt[Σ(ROICᵢ − trung bình ROIC)² / 3]",
+      "expected": 2.449489742783178,
+      "unit": "điểm %",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Dùng ba giá trị ROIC năm đã tính theo cùng calculation_version. Không điền 0 vào năm thiếu dữ liệu. Công ty ROIC ổn định nhưng thấp vẫn khác công ty ổn định ở mức cao; cần kết hợp điều kiện về mức ROIC."
+  },
+  {
+    "id": "fcf_positive_streak",
+    "name": "FCF Positive Streak",
+    "lesson_id": "ch14-l05",
+    "chapter": 14,
+    "unit": "năm",
+    "api_unit": "năm",
+    "kind": "streak",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Đếm lùi tới năm đầu tiên có FCF ≤ 0",
+    "period": "Năm",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Giá trị 0 kết thúc chuỗi. Không được đi xuyên một năm chưa có báo cáo; khi thiếu lịch sử trước một chuỗi toàn dương phải hiển thị cận dưới thay vì độ dài chính xác giả.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "FCF Positive Streak",
+      "inputs": [
+        [
+          "Năm cũ nhất",
+          10
+        ],
+        [
+          "Năm tiếp theo",
+          -5
+        ],
+        [
+          "Năm tiếp theo",
+          8
+        ],
+        [
+          "Năm gần nhất",
+          12
+        ]
+      ],
+      "formula": "Đếm lùi tới năm đầu tiên có FCF ≤ 0",
+      "expected": 2,
+      "unit": "năm",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Dùng năm tài chính đầy đủ, không trộn TTM cập nhật hàng quý với chuỗi năm. Nếu toàn bộ lịch sử có sẵn đều dương nhưng chưa biết năm trước nữa, gói trả ít nhất N năm cùng cờ giới hạn lịch sử. Phép > vẫn kiểm tra được nếu cận dưới đã vượt ngưỡng; không tự khẳng định chuỗi chính xác."
+  },
+  {
+    "id": "profit_positive_streak",
+    "name": "Profit Positive Streak",
+    "lesson_id": "ch14-l06",
+    "chapter": 14,
+    "unit": "năm",
+    "api_unit": "năm",
+    "kind": "streak",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Đếm lùi tới năm đầu tiên có lợi nhuận ≤ 0",
+    "period": "Năm",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Giá trị 0 kết thúc chuỗi. Không được đi xuyên một năm chưa có báo cáo; khi thiếu lịch sử trước một chuỗi toàn dương phải hiển thị cận dưới thay vì độ dài chính xác giả.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Profit Positive Streak",
+      "inputs": [
+        [
+          "Năm cũ nhất",
+          -8
+        ],
+        [
+          "Năm tiếp theo",
+          5
+        ],
+        [
+          "Năm tiếp theo",
+          9
+        ],
+        [
+          "Năm gần nhất",
+          11
+        ]
+      ],
+      "formula": "Đếm lùi tới năm đầu tiên có lợi nhuận ≤ 0",
+      "expected": 3,
+      "unit": "năm",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Tử số dùng lợi nhuận sau thuế thuộc công ty mẹ giống bài tăng trưởng lợi nhuận. Mốc 0 không tính dương. Lịch sử phải theo năm liên tục; báo cáo thiếu làm không xác định độ dài qua chỗ thiếu thay vì tự xem là một năm có lãi."
+  }
+]

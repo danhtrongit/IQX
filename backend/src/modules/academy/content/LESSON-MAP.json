@@ -1,0 +1,1674 @@
+[
+  {
+    "lesson_id": "ch01-l01",
+    "name": "RSI",
+    "chapter": 1,
+    "config_id": "rsi",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "giữ phần khái niệm/công thức Chương 1; cập nhật cấu hình và kiểm tra v2"
+  },
+  {
+    "lesson_id": "ch01-l02",
+    "name": "MACD",
+    "chapter": 1,
+    "config_id": "macd",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "giữ phần khái niệm/công thức Chương 1; cập nhật cấu hình và kiểm tra v2"
+  },
+  {
+    "lesson_id": "ch01-l03",
+    "name": "MA / SMA",
+    "chapter": 1,
+    "config_id": "ma",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "giữ phần khái niệm/công thức Chương 1; cập nhật cấu hình và kiểm tra v2"
+  },
+  {
+    "lesson_id": "ch01-l04",
+    "name": "Bollinger Bands",
+    "chapter": 1,
+    "config_id": "bollinger",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "giữ phần khái niệm/công thức Chương 1; cập nhật cấu hình và kiểm tra v2"
+  },
+  {
+    "lesson_id": "ch01-l05",
+    "name": "Khối lượng",
+    "chapter": 1,
+    "config_id": "volume",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "giữ phần khái niệm/công thức Chương 1; cập nhật cấu hình và kiểm tra v2"
+  },
+  {
+    "lesson_id": "ch01-l06",
+    "name": "Hợp lưu",
+    "chapter": 1,
+    "config_id": null,
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:audit-A01-A13"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l01",
+    "name": "Điều kiện Mua",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l02",
+    "name": "Điều kiện Bán",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l03",
+    "name": "Khoảng kiểm thử",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l04",
+    "name": "Khớp lệnh",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l05",
+    "name": "Phí giao dịch",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l06",
+    "name": "Tổng lợi nhuận",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l07",
+    "name": "CAGR",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l08",
+    "name": "Sụt giảm lớn nhất",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l09",
+    "name": "Số giao dịch",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l10",
+    "name": "Tỷ lệ thắng",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l11",
+    "name": "Lợi nhuận mua và giữ",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l12",
+    "name": "VN-Index làm mốc so sánh",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l13",
+    "name": "Lịch sử giao dịch",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l14",
+    "name": "Độ nhạy tham số",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l15",
+    "name": "Out-of-Sample",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l16",
+    "name": "Walk-Forward",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l17",
+    "name": "Look-Ahead Bias",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch02-l18",
+    "name": "Survivorship Bias",
+    "chapter": 2,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch03-l01",
+    "name": "Tăng trưởng doanh thu YoY",
+    "chapter": 3,
+    "config_id": "revenue_yoy",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch03-l02",
+    "name": "Tăng trưởng LNST YoY",
+    "chapter": 3,
+    "config_id": "profit_yoy",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch03-l03",
+    "name": "Tăng trưởng EPS YoY",
+    "chapter": 3,
+    "config_id": "eps_yoy",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch03-l04",
+    "name": "Biên lợi nhuận gộp",
+    "chapter": 3,
+    "config_id": "gross_margin",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch03-l05",
+    "name": "Biên lợi nhuận ròng",
+    "chapter": 3,
+    "config_id": "net_margin",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch03-l06",
+    "name": "ROE",
+    "chapter": 3,
+    "config_id": "roe",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch04-l01",
+    "name": "Thêm chỉ tiêu",
+    "chapter": 4,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch04-l02",
+    "name": "Toán tử lọc",
+    "chapter": 4,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch04-l03",
+    "name": "Kết hợp điều kiện AND",
+    "chapter": 4,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch04-l04",
+    "name": "Phạm vi thị trường",
+    "chapter": 4,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch04-l05",
+    "name": "Lọc theo ngành",
+    "chapter": 4,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch04-l06",
+    "name": "Chọn kỳ dữ liệu",
+    "chapter": 4,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch04-l07",
+    "name": "Lưu bộ lọc",
+    "chapter": 4,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch04-l08",
+    "name": "Lưu danh mục",
+    "chapter": 4,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch04-l09",
+    "name": "Dùng danh mục trong Học viện",
+    "chapter": 4,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch04-l10",
+    "name": "Dữ liệu Point-in-Time",
+    "chapter": 4,
+    "config_id": null,
+    "kind": "tool",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch05-l01",
+    "name": "EMA",
+    "chapter": 5,
+    "config_id": "ema",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch05-l02",
+    "name": "MA Cross",
+    "chapter": 5,
+    "config_id": "ma_cross",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch05-l03",
+    "name": "DMI",
+    "chapter": 5,
+    "config_id": "dmi",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch05-l04",
+    "name": "ADX",
+    "chapter": 5,
+    "config_id": "adx",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch05-l05",
+    "name": "Stochastic",
+    "chapter": 5,
+    "config_id": "stochastic",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch05-l06",
+    "name": "CCI",
+    "chapter": 5,
+    "config_id": "cci",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch06-l01",
+    "name": "ROA",
+    "chapter": 6,
+    "config_id": "roa",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch06-l02",
+    "name": "ROIC",
+    "chapter": 6,
+    "config_id": "roic",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch06-l03",
+    "name": "D/E (Nợ vay / Vốn chủ sở hữu)",
+    "chapter": 6,
+    "config_id": "debt_equity",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch06-l04",
+    "name": "Net Debt / EBITDA",
+    "chapter": 6,
+    "config_id": "net_debt_ebitda",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch06-l05",
+    "name": "Current Ratio",
+    "chapter": 6,
+    "config_id": "current_ratio",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch06-l06",
+    "name": "Interest Coverage",
+    "chapter": 6,
+    "config_id": "interest_coverage",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch07-l01",
+    "name": "ATR",
+    "chapter": 7,
+    "config_id": "atr",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch07-l02",
+    "name": "ATR Percent",
+    "chapter": 7,
+    "config_id": "atr_percent",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch07-l03",
+    "name": "Relative Volume",
+    "chapter": 7,
+    "config_id": "relative_volume",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch07-l04",
+    "name": "OBV",
+    "chapter": 7,
+    "config_id": "obv",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch07-l05",
+    "name": "MFI",
+    "chapter": 7,
+    "config_id": "mfi",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch07-l06",
+    "name": "Chaikin Money Flow",
+    "chapter": 7,
+    "config_id": "cmf",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch08-l01",
+    "name": "CFO Margin",
+    "chapter": 8,
+    "config_id": "cfo_margin",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch08-l02",
+    "name": "CFO / LNST",
+    "chapter": 8,
+    "config_id": "cfo_profit",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch08-l03",
+    "name": "FCF Margin",
+    "chapter": 8,
+    "config_id": "fcf_margin",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch08-l04",
+    "name": "FCF Growth YoY",
+    "chapter": 8,
+    "config_id": "fcf_yoy",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch08-l05",
+    "name": "Capex / Revenue",
+    "chapter": 8,
+    "config_id": "capex_revenue",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch08-l06",
+    "name": "Accrual Ratio",
+    "chapter": 8,
+    "config_id": "accrual",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch09-l01",
+    "name": "N-day High",
+    "chapter": 9,
+    "config_id": "n_day_high",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch09-l02",
+    "name": "N-day Low",
+    "chapter": 9,
+    "config_id": "n_day_low",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch09-l03",
+    "name": "Khoảng cách tới đỉnh 52 tuần",
+    "chapter": 9,
+    "config_id": "distance_52w_high",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch09-l04",
+    "name": "Gap",
+    "chapter": 9,
+    "config_id": "gap",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch09-l05",
+    "name": "Khoảng cách tới hỗ trợ",
+    "chapter": 9,
+    "config_id": "distance_support",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch09-l06",
+    "name": "Khoảng cách tới kháng cự",
+    "chapter": 9,
+    "config_id": "distance_resistance",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch10-l01",
+    "name": "P/E",
+    "chapter": 10,
+    "config_id": "pe",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch10-l02",
+    "name": "P/B",
+    "chapter": 10,
+    "config_id": "pb",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch10-l03",
+    "name": "P/S",
+    "chapter": 10,
+    "config_id": "ps",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch10-l04",
+    "name": "EV / EBITDA",
+    "chapter": 10,
+    "config_id": "ev_ebitda",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch10-l05",
+    "name": "PEG",
+    "chapter": 10,
+    "config_id": "peg",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch10-l06",
+    "name": "FCF Yield",
+    "chapter": 10,
+    "config_id": "fcf_yield",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch11-l01",
+    "name": "Donchian Channel",
+    "chapter": 11,
+    "config_id": "donchian",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch11-l02",
+    "name": "Keltner Channel",
+    "chapter": 11,
+    "config_id": "keltner",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch11-l03",
+    "name": "Bollinger BandWidth",
+    "chapter": 11,
+    "config_id": "bb_width",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch11-l04",
+    "name": "ROC",
+    "chapter": 11,
+    "config_id": "roc",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch11-l05",
+    "name": "Williams %R",
+    "chapter": 11,
+    "config_id": "williams_r",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch11-l06",
+    "name": "Parabolic SAR",
+    "chapter": 11,
+    "config_id": "psar",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch12-l01",
+    "name": "Revenue CAGR 3Y",
+    "chapter": 12,
+    "config_id": "revenue_cagr3",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch12-l02",
+    "name": "Net Profit CAGR 3Y",
+    "chapter": 12,
+    "config_id": "profit_cagr3",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch12-l03",
+    "name": "EPS CAGR 3Y",
+    "chapter": 12,
+    "config_id": "eps_cagr3",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch12-l04",
+    "name": "Asset Turnover",
+    "chapter": 12,
+    "config_id": "asset_turnover",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch12-l05",
+    "name": "Cash Conversion Cycle",
+    "chapter": 12,
+    "config_id": "ccc",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch12-l06",
+    "name": "Working Capital Turnover",
+    "chapter": 12,
+    "config_id": "working_cap_turnover",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch13-l01",
+    "name": "Relative Strength vs VN-Index",
+    "chapter": 13,
+    "config_id": "rs_market",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch13-l02",
+    "name": "Relative Strength vs ngành",
+    "chapter": 13,
+    "config_id": "rs_sector",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch13-l03",
+    "name": "Advance / Decline Line",
+    "chapter": 13,
+    "config_id": "ad_line",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch13-l04",
+    "name": "% cổ phiếu trên MA50",
+    "chapter": 13,
+    "config_id": "breadth_ma50",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch13-l05",
+    "name": "New High – New Low",
+    "chapter": 13,
+    "config_id": "new_high_low",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch13-l06",
+    "name": "VN-Index vs MA200",
+    "chapter": 13,
+    "config_id": "index_ma",
+    "kind": "technical",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương và registry nguồn"
+  },
+  {
+    "lesson_id": "ch14-l01",
+    "name": "Revenue Growth Stability",
+    "chapter": 14,
+    "config_id": "revenue_growth_stability",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch14-l02",
+    "name": "EPS Stability",
+    "chapter": 14,
+    "config_id": "eps_growth_stability",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch14-l03",
+    "name": "Margin Stability",
+    "chapter": 14,
+    "config_id": "net_margin_stability",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch14-l04",
+    "name": "ROIC Stability",
+    "chapter": 14,
+    "config_id": "roic_stability",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch14-l05",
+    "name": "FCF Positive Streak",
+    "chapter": 14,
+    "config_id": "fcf_positive_streak",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch14-l06",
+    "name": "Profit Positive Streak",
+    "chapter": 14,
+    "config_id": "profit_positive_streak",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch15-l01",
+    "name": "Dividend Yield",
+    "chapter": 15,
+    "config_id": "dividend_yield",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch15-l02",
+    "name": "Payout Ratio",
+    "chapter": 15,
+    "config_id": "payout_ratio",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch15-l03",
+    "name": "Dividend Growth",
+    "chapter": 15,
+    "config_id": "dividend_cagr3",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch15-l04",
+    "name": "Share Count Growth",
+    "chapter": 15,
+    "config_id": "share_count_yoy",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch15-l05",
+    "name": "Buyback Yield",
+    "chapter": 15,
+    "config_id": "buyback_yield",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch15-l06",
+    "name": "Shareholder Yield",
+    "chapter": 15,
+    "config_id": "shareholder_yield",
+    "kind": "fundamental",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch16-l01",
+    "name": "Universe",
+    "chapter": 16,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch16-l02",
+    "name": "Ranking",
+    "chapter": 16,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch16-l03",
+    "name": "Nested AND / OR / NOT",
+    "chapter": 16,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch16-l04",
+    "name": "Multi-timeframe",
+    "chapter": 16,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch16-l05",
+    "name": "Signal Priority",
+    "chapter": 16,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch16-l06",
+    "name": "Re-entry & Cooldown",
+    "chapter": 16,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch17-l01",
+    "name": "Quy mô theo % NAV",
+    "chapter": 17,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch17-l02",
+    "name": "Số tiền cố định",
+    "chapter": 17,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch17-l03",
+    "name": "Số vị thế tối đa",
+    "chapter": 17,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch17-l04",
+    "name": "Cắt lỗ theo %",
+    "chapter": 17,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch17-l05",
+    "name": "Chốt lời theo %",
+    "chapter": 17,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch17-l06",
+    "name": "Trailing Stop theo %",
+    "chapter": 17,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch17-l07",
+    "name": "Thời gian giữ tối đa",
+    "chapter": 17,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch18-l01",
+    "name": "Đa dạng hóa",
+    "chapter": 18,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch18-l02",
+    "name": "Tương quan",
+    "chapter": 18,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch18-l03",
+    "name": "Rủi ro tập trung",
+    "chapter": 18,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch18-l04",
+    "name": "Tỷ trọng ngành",
+    "chapter": 18,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch18-l05",
+    "name": "Tái cân bằng",
+    "chapter": 18,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  },
+  {
+    "lesson_id": "ch18-l06",
+    "name": "Sụt giảm danh mục",
+    "chapter": 18,
+    "config_id": null,
+    "kind": "system",
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "origin": "biên soạn mới theo đề cương đã chốt"
+  }
+]

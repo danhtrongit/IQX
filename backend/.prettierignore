@@ -4,3 +4,7 @@ coverage
 package-lock.json
 contracts/*.json
 contracts/client/
+src/modules/academy/content
+src/modules/quant/v2/registry
+src/modules/screener/registry
+test/fixtures/bot-v2/*.cjs

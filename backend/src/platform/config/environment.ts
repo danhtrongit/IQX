@@ -182,6 +182,21 @@ export const environmentSchema = z
     TELEGRAM_LINK_TTL_SECONDS: z.coerce.number().int().min(60).max(86_400).default(600),
     ALERT_COOLDOWN_SECONDS: z.coerce.number().int().min(0).max(86_400).default(900),
     ALERT_SCAN_ENABLED: booleanSetting(false),
+    // bot-v2 (IQX Academy handoff v2.0.0). Advanced capabilities stay OFF until the owner
+    // accepts data source + engine version; lesson completion alone never enables them.
+    ACADEMY_ENABLED: booleanSetting(true),
+    STRATEGY_V2_ENABLED: booleanSetting(false),
+    BOT_SHARED_CONFIG_ENABLED: booleanSetting(false),
+    STRATEGY_ADVANCED_CAPABILITIES: z.preprocess(
+      (value) =>
+        typeof value === 'string'
+          ? value
+              .split(',')
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : value,
+      z.array(z.string().regex(/^[a-z][a-z0-9_.]*$/)).default([]),
+    ),
     SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60_000).default(10_000),
     MEDIA_ROOT: z.preprocess(
       (value) => (value === '' ? undefined : value),

@@ -1,0 +1,2242 @@
+[
+  {
+    "question": "Có 6 chỉ tiêu đã mở; đã thêm 2 vào bộ lọc. Còn bao nhiêu chỉ tiêu chưa thêm?",
+    "options": [
+      {
+        "text": "14 chỉ tiêu",
+        "id": "o1"
+      },
+      {
+        "text": "4 chỉ tiêu",
+        "id": "o2"
+      },
+      {
+        "text": "9 chỉ tiêu",
+        "id": "o3"
+      },
+      {
+        "text": "1 chỉ tiêu",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Điều kiện = chỉ tiêu + toán tử + ngưỡng → 4 chỉ tiêu",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch04-l01-q01",
+    "lesson_id": "ch04-l01",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Học thêm P/Exong, có tự thêm P/E<10 vào mọi bộ lọc đã lưu không?",
+    "options": [
+      {
+        "text": "Có, vì P/E nhỏ là tốt.",
+        "id": "o1"
+      },
+      {
+        "text": "Có, nếu chưa có danh mục.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự xóa bộ lọc cũ để chuyển sang P/E.",
+        "id": "o3"
+      },
+      {
+        "text": "Không; chỉ mở quyền sử dụng, user quyết định điều kiện.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Chưa thêm khác khóa học. Học thêm chương mới có thể cấp thêm quyền, nhưng không tự thêm điều kiện vào bộ lọc đang dùng. Không hiển thị badge viết tắt như DTY o Y thay tên bài. Danh mục nghiên cứu không tự biến thành danh mục nắm giữ.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch04-l01-q02",
+    "lesson_id": "ch04-l01",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Trong bài Thêm chỉ tiêu, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o1"
+      },
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o2"
+      },
+      {
+        "text": "Không hiển thị badge viết tắt như DTY o Y thay tên bài. Danh mục nghiên cứu không tự biến thành danh mục nắm giữ.",
+        "id": "o3"
+      },
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Không hiển thị badge viết tắt như DTY o Y thay tên bài. Danh mục nghiên cứu không tự biến thành danh mục nắm giữ.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch04-l01-q03",
+    "lesson_id": "ch04-l01",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Thực hành Thêm chỉ tiêu nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o1"
+      },
+      {
+        "text": "Bấm Thêm ở ROE, nhập ngưỡng 15%, quan sát kết quả. Xóa điều kiện, kiểm tra rằng quyền ROE vẫn còn.",
+        "id": "o2"
+      },
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o3"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Chỉ tiêu đã học xuất hiện trong thư viện của Bộ lọc. Mỗi chỉ tiêu tạo một điều kiện số theo đúng công thức và đơn vị của bài học; tên hiển thị không đổi giữa hai nơi.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch04-l01-q04",
+    "lesson_id": "ch04-l01",
+    "correct_option_id": "o2"
+  },
+  {
+    "id": "ch04-l01-q05",
+    "lesson_id": "ch04-l01",
+    "question": "Bài ROE đã mở nhưng bài ROIC chưa mở. Bộ lọc nên cho thêm gì?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Chỉ ROIC vì nâng cao hơn."
+      },
+      {
+        "id": "o2",
+        "text": "Tự mở ROIC nếu ngưỡng nhỏ."
+      },
+      {
+        "id": "o3",
+        "text": "ROE."
+      },
+      {
+        "id": "o4",
+        "text": "Cả ROE và ROIC."
+      }
+    ],
+    "correct_index": 2,
+    "correct_option_id": "o3",
+    "explanation": "Quyền dùng factor gắn với bài đã được xác nhận.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch04-l01-q06",
+    "lesson_id": "ch04-l01",
+    "question": "Xóa một chỉ tiêu khỏi bộ lọc có làm mất quyền đã học chỉ tiêu đó không?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Chỉ mất quyền khi có kết quả rỗng."
+      },
+      {
+        "id": "o2",
+        "text": "Tự xóa toàn bộ cấu hình Bot."
+      },
+      {
+        "id": "o3",
+        "text": "Không."
+      },
+      {
+        "id": "o4",
+        "text": "Có, phải thi lại."
+      }
+    ],
+    "correct_index": 2,
+    "correct_option_id": "o3",
+    "explanation": "Quyền học và điều kiện của một bộ lọc là hai đối tượng khác nhau.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Thêm chỉ tiêu yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch04-l01-q07",
+    "lesson_id": "ch04-l01",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Thêm chỉ tiêu?",
+    "options": [
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o1"
+      },
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o2"
+      },
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ tiêu đã học xuất hiện trong thư viện của Bộ lọc. Mỗi chỉ tiêu tạo một điều kiện số theo đúng công thức và đơn vị của bài học; tên hiển thị không đổi giữa hai nơi.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Chỉ tiêu đã học xuất hiện trong thư viện của Bộ lọc. Mỗi chỉ tiêu tạo một điều kiện số theo đúng công thức và đơn vị của bài học; tên hiển thị không đổi giữa hai nơi.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch04-l01-q08",
+    "lesson_id": "ch04-l01",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Ba ROE lần lượt 10%,15%,20%. Lọc ROE>15% giữ bao nhiêu mã?",
+    "options": [
+      {
+        "text": "0 mã",
+        "id": "o1"
+      },
+      {
+        "text": "2 mã",
+        "id": "o2"
+      },
+      {
+        "text": "3 mã",
+        "id": "o3"
+      },
+      {
+        "text": "1 mã",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "15 > 15 là sai; 15 < 15 cũng sai → 1 mã",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch04-l02-q01",
+    "lesson_id": "ch04-l02",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "P/E đang thiếu dữ liệu. Điều kiện P/E<10 có được coi là đúng không?",
+    "options": [
+      {
+        "text": "Có, nếu doanh nghiệp có lãi.",
+        "id": "o1"
+      },
+      {
+        "text": "Tự lấy P/E trung bình ngành làm P/E công ty.",
+        "id": "o2"
+      },
+      {
+        "text": "Không; giá trị chưa xác định không phải 0.",
+        "id": "o3"
+      },
+      {
+        "text": "Có, vì mặc định thiếu là 0.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Chỉ 20% đạt. Giá trị 15% bằng ngưỡng nên không đạt. Dữ liệu thiếu không xem là 0% để lọt điều kiện<15%. Đơn vị đầu vào của ROE là %; P/E là lần; CCC là ngày. Không dùng cùng quy tắc nhân 100 cho mọi chỉ tiêu.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch04-l02-q02",
+    "lesson_id": "ch04-l02",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Trong bài Toán tử lọc, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o1"
+      },
+      {
+        "text": "Đơn vị đầu vào của ROE là %; P/E là lần; CCC là ngày. Không dùng cùng quy tắc nhân 100 cho mọi chỉ tiêu.",
+        "id": "o2"
+      },
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Đơn vị đầu vào của ROE là %; P/E là lần; CCC là ngày. Không dùng cùng quy tắc nhân 100 cho mọi chỉ tiêu.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch04-l02-q03",
+    "lesson_id": "ch04-l02",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Thực hành Toán tử lọc nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o1"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o2"
+      },
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o3"
+      },
+      {
+        "text": "Đổi>thành<giữ cùng ngưỡng 15, so lại danh sách. Không thay đồng thời ngành, kỳ, ngưỡng khi muốn quan sát riêng toán tử.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Toán tử quyết định phía nào của ngưỡng được giữ lại. > và < trong bản cơ bản đều nghiêm ngặt, không tự bao gồm bằng.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch04-l02-q04",
+    "lesson_id": "ch04-l02",
+    "correct_option_id": "o4"
+  },
+  {
+    "id": "ch04-l02-q05",
+    "lesson_id": "ch04-l02",
+    "question": "ROE bằng đúng15%, điều kiện ROE <15%. Kết quả là gì?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Tự đổi < thành ≤."
+      },
+      {
+        "id": "o2",
+        "text": "Không đạt."
+      },
+      {
+        "id": "o3",
+        "text": "Đạt."
+      },
+      {
+        "id": "o4",
+        "text": "Phụ thuộc mã."
+      }
+    ],
+    "correct_index": 1,
+    "correct_option_id": "o2",
+    "explanation": "Dấu < không bao gồm bằng.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch04-l02-q06",
+    "lesson_id": "ch04-l02",
+    "question": "Ngưỡng 15% trên màn hình, API quy ước tỷ lệ. Giá trị chuẩn gửi đi là gì?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "15."
+      },
+      {
+        "id": "o2",
+        "text": "1.500."
+      },
+      {
+        "id": "o3",
+        "text": "0,0015."
+      },
+      {
+        "id": "o4",
+        "text": "0,15."
+      }
+    ],
+    "correct_index": 3,
+    "correct_option_id": "o4",
+    "explanation": "Phải chuyển đơn vị tại ranh giới giao diện/API theo schema.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Toán tử lọc yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o1"
+      },
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch04-l02-q07",
+    "lesson_id": "ch04-l02",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Toán tử lọc?",
+    "options": [
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o1"
+      },
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o2"
+      },
+      {
+        "text": "Toán tử quyết định phía nào của ngưỡng được giữ lại. > và < trong bản cơ bản đều nghiêm ngặt, không tự bao gồm bằng.",
+        "id": "o3"
+      },
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Toán tử quyết định phía nào của ngưỡng được giữ lại. > và < trong bản cơ bản đều nghiêm ngặt, không tự bao gồm bằng.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch04-l02-q08",
+    "lesson_id": "ch04-l02",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "10 mã đạt ROE; 8 mã đạt tăng trưởng; chỉ 5 mã ở cả hai. AND giữ bao nhiêu?",
+    "options": [
+      {
+        "text": "4 mã",
+        "id": "o1"
+      },
+      {
+        "text": "5 mã",
+        "id": "o2"
+      },
+      {
+        "text": "6 mã",
+        "id": "o3"
+      },
+      {
+        "text": "7 mã",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "A AND B = giao(A, B) → 5 mã",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch04-l03-q01",
+    "lesson_id": "ch04-l03",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Một mã ROE 30% nhưng tăng trưởng 5%; yêu cầu ROE>15% AND tăng trưởng>10%. Có đạt?",
+    "options": [
+      {
+        "text": "Có, vì ROE cao gấp đôi ngưỡng.",
+        "id": "o1"
+      },
+      {
+        "text": "Có, vì trung bình 17,5% lớn hơn 10%.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự chuyển AND thành OR.",
+        "id": "o3"
+      },
+      {
+        "text": "Không.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Không cộng 10+8 và không lấy min(10,8)=8. Cần biết giao thực của hai danh sách. Tăng số điều kiện thường giảm hoặc giữ nguyên số mã, không bảo lãnh chất lượng đầu tư tăng.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch04-l03-q02",
+    "lesson_id": "ch04-l03",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Trong bài Kết hợp điều kiện AND, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o1"
+      },
+      {
+        "text": "Tăng số điều kiện thường giảm hoặc giữ nguyên số mã, không bảo lãnh chất lượng đầu tư tăng.",
+        "id": "o2"
+      },
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Tăng số điều kiện thường giảm hoặc giữ nguyên số mã, không bảo lãnh chất lượng đầu tư tăng.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch04-l03-q03",
+    "lesson_id": "ch04-l03",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Thực hành Kết hợp điều kiện AND nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o1"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o2"
+      },
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o3"
+      },
+      {
+        "text": "Lọc ROE trước, thêm tăng trưởng lợi nhuận và xem những mã nào bị loại. Mở dữ liệu chỉ tiêu của một mã bị loại để giải thích.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "AND giữ doanh nghiệp thỏa đồng thời các tiêu chí. Đây là giao của các tập kết quả, không phải lấy trung bình điểm hoặc cho tiêu chí cao bù tiêu chí thấp.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch04-l03-q04",
+    "lesson_id": "ch04-l03",
+    "correct_option_id": "o4"
+  },
+  {
+    "id": "ch04-l03-q05",
+    "lesson_id": "ch04-l03",
+    "question": "Đang có 8 mã đạt hai điều kiện AND. Thêm một điều kiện AND không đổi dữ liệu. Kết quả có thể là bao nhiêu?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Tối đa 8 mã."
+      },
+      {
+        "id": "o2",
+        "text": "Luôn hơn 8 mã."
+      },
+      {
+        "id": "o3",
+        "text": "Luôn đúng16 mã."
+      },
+      {
+        "id": "o4",
+        "text": "Không phụ thuộc điều kiện mới."
+      }
+    ],
+    "correct_index": 0,
+    "correct_option_id": "o1",
+    "explanation": "Giao thêm một tập không thể làm tăng số phần tử.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch04-l03-q06",
+    "lesson_id": "ch04-l03",
+    "question": "Một mã thiếu ROE nhưng có tăng trưởng cao. Nhóm yêu cầu ROE và tăng trưởng cùng đạt. Có giữ mã đó không?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Không coi nhóm là đạt khi còn điều kiện thiếu."
+      },
+      {
+        "id": "o2",
+        "text": "Có vì tăng trưởng cao."
+      },
+      {
+        "id": "o3",
+        "text": "Điền ROE bằng trung vị ngành rồi giữ."
+      },
+      {
+        "id": "o4",
+        "text": "Bỏ riêng ROE cho mã đó."
+      }
+    ],
+    "correct_index": 0,
+    "correct_option_id": "o1",
+    "explanation": "Không tự điền giá trị đại diện thành số liệu của doanh nghiệp.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Kết hợp điều kiện AND yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch04-l03-q07",
+    "lesson_id": "ch04-l03",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Kết hợp điều kiện AND?",
+    "options": [
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o1"
+      },
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o2"
+      },
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o3"
+      },
+      {
+        "text": "AND giữ doanh nghiệp thỏa đồng thời các tiêu chí. Đây là giao của các tập kết quả, không phải lấy trung bình điểm hoặc cho tiêu chí cao bù tiêu chí thấp.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "AND giữ doanh nghiệp thỏa đồng thời các tiêu chí. Đây là giao của các tập kết quả, không phải lấy trung bình điểm hoặc cho tiêu chí cao bù tiêu chí thấp.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch04-l03-q08",
+    "lesson_id": "ch04-l03",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "12 mã đạt chỉ tiêu; 7 ở HOSE,3 ở HNX,2 ở UPCOM. Chọn HNX còn bao nhiêu?",
+    "options": [
+      {
+        "text": "2 mã",
+        "id": "o1"
+      },
+      {
+        "text": "3 mã",
+        "id": "o2"
+      },
+      {
+        "text": "4 mã",
+        "id": "o3"
+      },
+      {
+        "text": "5 mã",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Kết quả = phạm vi sàn ∩ điều kiện cơ bản → 3 mã",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch04-l04-q01",
+    "lesson_id": "ch04-l04",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Một mã chuyển sàn sau 2024. Backtest năm 2022 dùng sàn nào theo phạm vi lịch sử?",
+    "options": [
+      {
+        "text": "Cả hai sàn và đếm hai lần.",
+        "id": "o1"
+      },
+      {
+        "text": "Sàn thực sự của mã trong năm 2022.",
+        "id": "o2"
+      },
+      {
+        "text": "Sàn hôm nay vì dễ lấy.",
+        "id": "o3"
+      },
+      {
+        "text": "Sàn có thanh khoản lớn nhất.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Chỉ 3 mã đạt trong phạm vi HNX. Số lượng toàn thị trường không được cố định nếu feed không đủ. Sàn của mã có thể thay đổi theo thời gian. Mốc quá khứ cần bản ghi thuộc sàn ở thời điểm đó.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch04-l04-q02",
+    "lesson_id": "ch04-l04",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Trong bài Phạm vi thị trường, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Sàn của mã có thể thay đổi theo thời gian. Mốc quá khứ cần bản ghi thuộc sàn ở thời điểm đó.",
+        "id": "o1"
+      },
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o3"
+      },
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Sàn của mã có thể thay đổi theo thời gian. Mốc quá khứ cần bản ghi thuộc sàn ở thời điểm đó.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch04-l04-q03",
+    "lesson_id": "ch04-l04",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Thực hành Phạm vi thị trường nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o1"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o2"
+      },
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o3"
+      },
+      {
+        "text": "Đổi Tất cả sang HOSE và giữ nguyên điều kiện. Lưu quyết định scope cùng criteria để mở lại không lệch danh sách.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Phạm vi thị trường giới hạn tập doanh nghiệp để áp dụng các chỉ tiêu. Sàn giao dịch là một bộ lọc phạm vi, không phải tín hiệu doanh nghiệp tốt hoặc xấu.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch04-l04-q04",
+    "lesson_id": "ch04-l04",
+    "correct_option_id": "o4"
+  },
+  {
+    "id": "ch04-l04-q05",
+    "lesson_id": "ch04-l04",
+    "question": "Chọn HOSE, doanh nghiệp thuộc HNX đạt mọi tỷ số. Kết quả thế nào?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Giữ trong một cột ẩn."
+      },
+      {
+        "id": "o2",
+        "text": "Loại khỏi phạm vi đã chọn."
+      },
+      {
+        "id": "o3",
+        "text": "Giữ vì tỷ số tốt."
+      },
+      {
+        "id": "o4",
+        "text": "Tự đổi sàn thành HOSE."
+      }
+    ],
+    "correct_index": 1,
+    "correct_option_id": "o2",
+    "explanation": "Điều kiện phạm vi được áp cùng các điều kiện tài chính.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch04-l04-q06",
+    "lesson_id": "ch04-l04",
+    "question": "Hôm nay mã đã chuyển sàn. Lọc lịch sử trước khi chuyển dùng sàn nào?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Bỏ mã khỏi toàn bộ lịch sử."
+      },
+      {
+        "id": "o2",
+        "text": "Sàn có hiệu lực tại thời điểm đang xét."
+      },
+      {
+        "id": "o3",
+        "text": "Sàn hiện tại cho mọi năm."
+      },
+      {
+        "id": "o4",
+        "text": "Sàn cho nhiều kết quả nhất."
+      }
+    ],
+    "correct_index": 1,
+    "correct_option_id": "o2",
+    "explanation": "Thuộc tính phân loại cũng cần đúng thời điểm khi kiểm thử lịch sử.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Phạm vi thị trường yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o3"
+      },
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch04-l04-q07",
+    "lesson_id": "ch04-l04",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Phạm vi thị trường?",
+    "options": [
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o1"
+      },
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o2"
+      },
+      {
+        "text": "Phạm vi thị trường giới hạn tập doanh nghiệp để áp dụng các chỉ tiêu. Sàn giao dịch là một bộ lọc phạm vi, không phải tín hiệu doanh nghiệp tốt hoặc xấu.",
+        "id": "o3"
+      },
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Phạm vi thị trường giới hạn tập doanh nghiệp để áp dụng các chỉ tiêu. Sàn giao dịch là một bộ lọc phạm vi, không phải tín hiệu doanh nghiệp tốt hoặc xấu.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch04-l04-q08",
+    "lesson_id": "ch04-l04",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "9 mã đạt ROE; 4 ngân hàng,3 bán lẻ,2 sản xuất. Chọn bán lẻ còn bao nhiêu?",
+    "options": [
+      {
+        "text": "2 mã",
+        "id": "o1"
+      },
+      {
+        "text": "3 mã",
+        "id": "o2"
+      },
+      {
+        "text": "4 mã",
+        "id": "o3"
+      },
+      {
+        "text": "5 mã",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Scope ngành được lưu kèm mã phân loại và phiên bản → 3 mã",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch04-l05-q01",
+    "lesson_id": "ch04-l05",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Chọn ngân hàng rồi thêm biên gộp thông thường. Cách xử lý đúng?",
+    "options": [
+      {
+        "text": "Tự cho 0% để lọc.",
+        "id": "o1"
+      },
+      {
+        "text": "Tự chuyển ngành về sản xuất.",
+        "id": "o2"
+      },
+      {
+        "text": "Hiển thị không áp dụng/không đủ điều kiện dữ liệu, chứ không tạo số.",
+        "id": "o3"
+      },
+      {
+        "text": "Đổi tên NIM thành biên gộp.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Danh sách 3 mã là kết quả scope, không phải xếp hạng bán lẻ tốt hơn ngành khác. Các ngành phải từ nguồn phân loại được chốt. Không tráo NIM của ngân hàng vào biên lợi nhuận gộp chỉ để đủ cột bảng.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch04-l05-q02",
+    "lesson_id": "ch04-l05",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Trong bài Lọc theo ngành, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o2"
+      },
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o3"
+      },
+      {
+        "text": "Không tráo NIM của ngân hàng vào biên lợi nhuận gộp chỉ để đủ cột bảng.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Không tráo NIM của ngân hàng vào biên lợi nhuận gộp chỉ để đủ cột bảng.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch04-l05-q03",
+    "lesson_id": "ch04-l05",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Thực hành Lọc theo ngành nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Chọn ngành trước, kiểm tra chỉ tiêu có phù hợp rồi mới so ngưỡng. Ngân hàng không được hiển thị biên gộp giả để dùng chung với công ty sản xuất.",
+        "id": "o1"
+      },
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o2"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o3"
+      },
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Nhóm ngành giúp xác định tập công ty có hoạt động tương đồng hơn, nhưng không làm mọi chỉ tiêu áp dụng được cho mọi doanh nghiệp trong nhóm.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch04-l05-q04",
+    "lesson_id": "ch04-l05",
+    "correct_option_id": "o1"
+  },
+  {
+    "id": "ch04-l05-q05",
+    "lesson_id": "ch04-l05",
+    "question": "Chọn ngành Công nghệ, một ngân hàng đạt tăng trưởng/ROE. Kết quả thế nào?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Đổi ROE của ngân hàng thành ROE công nghệ."
+      },
+      {
+        "id": "o2",
+        "text": "Không thuộc kết quả ngành Công nghệ."
+      },
+      {
+        "id": "o3",
+        "text": "Vẫn giữ vì có ứng dụng ngân hàng số."
+      },
+      {
+        "id": "o4",
+        "text": "Tự xóa điều kiện ngành."
+      }
+    ],
+    "correct_index": 1,
+    "correct_option_id": "o2",
+    "explanation": "Phân loại ngành phải nhất quán với nguồn đã chọn.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch04-l05-q06",
+    "lesson_id": "ch04-l05",
+    "question": "Bộ lọc biên lợi nhuận gộp áp dụng một ngân hàng không có chỉ tiêu tương đương. Xử lý thế nào?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Điền50% để không loại ngân hàng."
+      },
+      {
+        "id": "o2",
+        "text": "Ghi0% như số đã báo cáo."
+      },
+      {
+        "id": "o3",
+        "text": "Không áp dụng; không tạo số giả."
+      },
+      {
+        "id": "o4",
+        "text": "Lấy NIM thay nhưng giữ nhãn biên gộp."
+      }
+    ],
+    "correct_index": 2,
+    "correct_option_id": "o3",
+    "explanation": "Chỉ tiêu có ý nghĩa khác nhau theo mô hình kinh doanh.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Lọc theo ngành yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o1"
+      },
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch04-l05-q07",
+    "lesson_id": "ch04-l05",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Lọc theo ngành?",
+    "options": [
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o1"
+      },
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o2"
+      },
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o3"
+      },
+      {
+        "text": "Nhóm ngành giúp xác định tập công ty có hoạt động tương đồng hơn, nhưng không làm mọi chỉ tiêu áp dụng được cho mọi doanh nghiệp trong nhóm.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Nhóm ngành giúp xác định tập công ty có hoạt động tương đồng hơn, nhưng không làm mọi chỉ tiêu áp dụng được cho mọi doanh nghiệp trong nhóm.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch04-l05-q08",
+    "lesson_id": "ch04-l05",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Doanh thu 9 tháng lũy kế 900; 6 tháng lũy kế 550. Quý 3 riêng bằng bao nhiêu?",
+    "options": [
+      {
+        "text": "528 đơn vị",
+        "id": "o1"
+      },
+      {
+        "text": "174 đơn vị",
+        "id": "o2"
+      },
+      {
+        "text": "360 đơn vị",
+        "id": "o3"
+      },
+      {
+        "text": "350 đơn vị",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "TTM = tổng 4 quý riêng; Q3 riêng =9 tháng lũy kế−6 tháng lũy kế → 350 đơn vị",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch04-l06-q01",
+    "lesson_id": "ch04-l06",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Có tăng trưởng Q2, muốn so YoY thì lấy mốc nào?",
+    "options": [
+      {
+        "text": "Tháng mới nhất của ngành.",
+        "id": "o1"
+      },
+      {
+        "text": "Q2 cùng kỳ năm trước, cùng phạm vi và độ dài.",
+        "id": "o2"
+      },
+      {
+        "text": "Q1 năm nay vì mới nhất.",
+        "id": "o3"
+      },
+      {
+        "text": "Cả năm trước dù khác kỳ.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "900−550=350. Không cộng 9 tháng và 6 tháng vào TTM vì trùng nửa đầu năm. Không gọi lợi nhuận một quý chia lấy vốn chủ cuối quý là ROE năm nếu chưa công bố quy ước năm hóa.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch04-l06-q02",
+    "lesson_id": "ch04-l06",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Trong bài Chọn kỳ dữ liệu, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Không gọi lợi nhuận một quý chia lấy vốn chủ cuối quý là ROE năm nếu chưa công bố quy ước năm hóa.",
+        "id": "o1"
+      },
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o3"
+      },
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Không gọi lợi nhuận một quý chia lấy vốn chủ cuối quý là ROE năm nếu chưa công bố quy ước năm hóa.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch04-l06-q03",
+    "lesson_id": "ch04-l06",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Thực hành Chọn kỳ dữ liệu nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o1"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o2"
+      },
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o3"
+      },
+      {
+        "text": "Đổi TTM sang năm gần nhất và đọc lại kỳ thực tế của từng chỉ tiêu. D/E là số dư tại một ngày, trong khi ROE ghép lợi nhuận kỳ với vốn bình quân.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Kỳ dữ liệu quyết định mỗi chỉ tiêu đang nói về quý, năm hay 12 tháng gần nhất. Một báo cáo lũy kế không phải số liệu riêng của quý cuối.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch04-l06-q04",
+    "lesson_id": "ch04-l06",
+    "correct_option_id": "o4"
+  },
+  {
+    "id": "ch04-l06-q05",
+    "lesson_id": "ch04-l06",
+    "question": "TTM cần4 quý riêng; chỉ có3 quý hợp lệ. Có tự nhân lên thành4 quý không?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Dùng quý của công ty khác."
+      },
+      {
+        "id": "o2",
+        "text": "Không, trừ khi có một chỉ tiêu ước tính riêng được công bố rõ."
+      },
+      {
+        "id": "o3",
+        "text": "Có, luôn nhân4/3."
+      },
+      {
+        "id": "o4",
+        "text": "Điền quý còn thiếu bằng0."
+      }
+    ],
+    "correct_index": 1,
+    "correct_option_id": "o2",
+    "explanation": "Không trộn giá trị ước tính vào dữ liệu báo cáo mà không nhãn.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch04-l06-q06",
+    "lesson_id": "ch04-l06",
+    "question": "Doanh thu quý hiện tại100, cùng quý năm trước80. YoY là bao nhiêu?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "80%."
+      },
+      {
+        "id": "o2",
+        "text": "125%."
+      },
+      {
+        "id": "o3",
+        "text": "25%."
+      },
+      {
+        "id": "o4",
+        "text": "20%."
+      }
+    ],
+    "correct_index": 2,
+    "correct_option_id": "o3",
+    "explanation": "100/80−1 =25%; mẫu số là cùng kỳ năm trước.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Chọn kỳ dữ liệu yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o3"
+      },
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch04-l06-q07",
+    "lesson_id": "ch04-l06",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Chọn kỳ dữ liệu?",
+    "options": [
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o1"
+      },
+      {
+        "text": "Kỳ dữ liệu quyết định mỗi chỉ tiêu đang nói về quý, năm hay 12 tháng gần nhất. Một báo cáo lũy kế không phải số liệu riêng của quý cuối.",
+        "id": "o2"
+      },
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o3"
+      },
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Kỳ dữ liệu quyết định mỗi chỉ tiêu đang nói về quý, năm hay 12 tháng gần nhất. Một báo cáo lũy kế không phải số liệu riêng của quý cuối.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch04-l06-q08",
+    "lesson_id": "ch04-l06",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Bộ lọc hôm nay có 12 mã, tháng sau có 15 mã. Số mã tăng thêm là bao nhiêu?",
+    "options": [
+      {
+        "text": "2 mã",
+        "id": "o1"
+      },
+      {
+        "text": "4 mã",
+        "id": "o2"
+      },
+      {
+        "text": "3 mã",
+        "id": "o3"
+      },
+      {
+        "text": "5 mã",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Saved Filter = conditions + scope + period + revision → 3 mã",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch04-l07-q01",
+    "lesson_id": "ch04-l07",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Tải bộ lọc đã lưu tháng trước nhưng chạy dữ liệu hôm nay. Có đòi hỏi danh sách giống hệt tháng trước không?",
+    "options": [
+      {
+        "text": "Không, trừ khi đã chọn đúng snapshot dữ liệu/ thời điểm cũ.",
+        "id": "o1"
+      },
+      {
+        "text": "Có, lưu criteria đồng nghĩa đóng băng kết quả.",
+        "id": "o2"
+      },
+      {
+        "text": "Có, nếu tên bộ lọc giữ nguyên.",
+        "id": "o3"
+      },
+      {
+        "text": "Tự lấy giá trị chỉ tiêu tháng trước để giữ số mã.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Criteria có thể giữ nguyên nhưng dữ liệu thay đổi. Lưu criteria khác với chụp danh sách nằm ở bài sau. Không gọi thông báo “Đã lưu” khi chưa có commit. Backend lưu owner_id và revision để tránh ghi đè chỉnh sửa hai thiết bị.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch04-l07-q02",
+    "lesson_id": "ch04-l07",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Trong bài Lưu bộ lọc, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o1"
+      },
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o2"
+      },
+      {
+        "text": "Không gọi thông báo “Đã lưu” khi chưa có commit. Backend lưu owner_id và revision để tránh ghi đè chỉnh sửa hai thiết bị.",
+        "id": "o3"
+      },
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Không gọi thông báo “Đã lưu” khi chưa có commit. Backend lưu owner_id và revision để tránh ghi đè chỉnh sửa hai thiết bị.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch04-l07-q03",
+    "lesson_id": "ch04-l07",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Thực hành Lưu bộ lọc nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o1"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o2"
+      },
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o3"
+      },
+      {
+        "text": "Đặt tên bộ lọc, lưu, đổi ngưỡng và ghi bản mới. Tải bản cũ phải phục hồi đúng criteria, không trộn ngưỡng của bản mới.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Lưu bộ lọc giữ định nghĩa tiêu chí, phạm vi và kỳ dữ liệu. Khi chạy lại ở thời điểm mới, danh sách có thể đổi vì dữ liệu mới, không phải lỗi lưu.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch04-l07-q04",
+    "lesson_id": "ch04-l07",
+    "correct_option_id": "o4"
+  },
+  {
+    "id": "ch04-l07-q05",
+    "lesson_id": "ch04-l07",
+    "question": "Tải lại bộ lọc A đã lưu ROE>15 trong khi form hiện tạiROE>20. Cấu hình phục hồi là gì?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Trung bình17,5."
+      },
+      {
+        "id": "o2",
+        "text": "ROE>0."
+      },
+      {
+        "id": "o3",
+        "text": "ROE>15 của A."
+      },
+      {
+        "id": "o4",
+        "text": "ROE>20 vì mới gõ."
+      }
+    ],
+    "correct_index": 2,
+    "correct_option_id": "o3",
+    "explanation": "Một phiên bản đã lưu phải phục hồi đúng điều kiện của nó.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch04-l07-q06",
+    "lesson_id": "ch04-l07",
+    "question": "Lưu bộ lọc có bắt buộc đóng băng danh sách mã mãi mãi không?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Có nếu đặt tên tiếng Việt."
+      },
+      {
+        "id": "o2",
+        "text": "Phải xóa bộ lọc mỗi quý."
+      },
+      {
+        "id": "o3",
+        "text": "Không, tiêu chí có thể chạy trên dữ liệu mới."
+      },
+      {
+        "id": "o4",
+        "text": "Có, không bao giờ đổi danh sách."
+      }
+    ],
+    "correct_index": 2,
+    "correct_option_id": "o3",
+    "explanation": "Criteria động khác snapshot danh sách.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Lưu bộ lọc yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch04-l07-q07",
+    "lesson_id": "ch04-l07",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Lưu bộ lọc?",
+    "options": [
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o1"
+      },
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o2"
+      },
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o3"
+      },
+      {
+        "text": "Lưu bộ lọc giữ định nghĩa tiêu chí, phạm vi và kỳ dữ liệu. Khi chạy lại ở thời điểm mới, danh sách có thể đổi vì dữ liệu mới, không phải lỗi lưu.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Lưu bộ lọc giữ định nghĩa tiêu chí, phạm vi và kỳ dữ liệu. Khi chạy lại ở thời điểm mới, danh sách có thể đổi vì dữ liệu mới, không phải lỗi lưu.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch04-l07-q08",
+    "lesson_id": "ch04-l07",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Kết quả lọc có 9 mã; chọn 6 mã để lưu danh mục. Danh mục đã lưu có bao nhiêu mã?",
+    "options": [
+      {
+        "text": "5 mã",
+        "id": "o1"
+      },
+      {
+        "text": "7 mã",
+        "id": "o2"
+      },
+      {
+        "text": "6 mã",
+        "id": "o3"
+      },
+      {
+        "text": "8 mã",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Saved List = ticker_ids + as_of + filter_revision + data_version → 6 mã",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch04-l08-q01",
+    "lesson_id": "ch04-l08",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Danh mục Bộ lọc có FPT trongdanh sách. Có đồng nghĩa Bot đã mua FPT không?",
+    "options": [
+      {
+        "text": "Có, list là vị thế thực tế.",
+        "id": "o1"
+      },
+      {
+        "text": "Có, nếu phía Mua RSION.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự đặt mua 100 triệu ngay sau lưu.",
+        "id": "o3"
+      },
+      {
+        "text": "Không, chỉ là danh sách nhận được từ bộ lọc.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Danh sách 6 mã giữ đúng nội dung đã chọn. Chạy lại bộ lọc không được sửa âm thầm danh sách snapshot đã lưu. Không dùng list ngày hôm nay như vũ trụ không thiên lệch của 10 năm trước. Danh sách tĩnh và universe point-in-time là hai chức năng khác.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch04-l08-q02",
+    "lesson_id": "ch04-l08",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Trong bài Lưu danh mục, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o1"
+      },
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o2"
+      },
+      {
+        "text": "Không dùng list ngày hôm nay như vũ trụ không thiên lệch của 10 năm trước. Danh sách tĩnh và universe point-in-time là hai chức năng khác.",
+        "id": "o3"
+      },
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Không dùng list ngày hôm nay như vũ trụ không thiên lệch của 10 năm trước. Danh sách tĩnh và universe point-in-time là hai chức năng khác.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch04-l08-q03",
+    "lesson_id": "ch04-l08",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Thực hành Lưu danh mục nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o1"
+      },
+      {
+        "text": "Lưu tên và ngày quan sát. Mở lại xem 6 mã và nguồn criteria. Thực hành Học viện có thể chọn list này.",
+        "id": "o2"
+      },
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o3"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Lưu danh mục trong Bộ lọc lưu tập mã tại một thời điểm để nghiên cứu. Đây không phải sổ lệnh đã mua, không có số lượng cổ phiếu hay giá vốn trừ khi được xác lập trong module khác.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch04-l08-q04",
+    "lesson_id": "ch04-l08",
+    "correct_option_id": "o2"
+  },
+  {
+    "id": "ch04-l08-q05",
+    "lesson_id": "ch04-l08",
+    "question": "Lưu danh mục có 6 mã vào ngày D. Dữ liệu hôm sau cho 8 mã đạt. Snapshot cũ có tự thành8 không?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Mất ngày D."
+      },
+      {
+        "id": "o2",
+        "text": "Không, vẫn6 mã và ngày D."
+      },
+      {
+        "id": "o3",
+        "text": "Có ngay lập tức."
+      },
+      {
+        "id": "o4",
+        "text": "Tự chỉ giữ mã có lãi."
+      }
+    ],
+    "correct_index": 1,
+    "correct_option_id": "o2",
+    "explanation": "Danh sách đã lưu phản ánh thời điểm chụp cụ thể.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch04-l08-q06",
+    "lesson_id": "ch04-l08",
+    "question": "Một snapshot danh mục nên lưu tối thiểu gì?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Tên, mã, thời điểm chụp và nguồn bộ lọc."
+      },
+      {
+        "id": "o2",
+        "text": "Chỉ số mã lớn nhất."
+      },
+      {
+        "id": "o3",
+        "text": "Chỉ lợi nhuận dự kiến."
+      },
+      {
+        "id": "o4",
+        "text": "Đáp án bài học."
+      }
+    ],
+    "correct_index": 0,
+    "correct_option_id": "o1",
+    "explanation": "Cần truy được danh sách đã hình thành từ đâu và khi nào.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Lưu danh mục yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o2"
+      },
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch04-l08-q07",
+    "lesson_id": "ch04-l08",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Lưu danh mục?",
+    "options": [
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o1"
+      },
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o2"
+      },
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o3"
+      },
+      {
+        "text": "Lưu danh mục trong Bộ lọc lưu tập mã tại một thời điểm để nghiên cứu. Đây không phải sổ lệnh đã mua, không có số lượng cổ phiếu hay giá vốn trừ khi được xác lập trong module khác.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Lưu danh mục trong Bộ lọc lưu tập mã tại một thời điểm để nghiên cứu. Đây không phải sổ lệnh đã mua, không có số lượng cổ phiếu hay giá vốn trừ khi được xác lập trong module khác.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch04-l08-q08",
+    "lesson_id": "ch04-l08",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Danh mục 6 mã; người học đã xem 4 mã. Còn bao nhiêu mã chưa xem?",
+    "options": [
+      {
+        "text": "1 mã",
+        "id": "o1"
+      },
+      {
+        "text": "3 mã",
+        "id": "o2"
+      },
+      {
+        "text": "2 mã",
+        "id": "o3"
+      },
+      {
+        "text": "4 mã",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Bài thực hành tham chiếu saved_list_id, không tạo giao dịch → 2 mã",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch04-l09-q01",
+    "lesson_id": "ch04-l09",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "List đã lưu có 6 mã nhưng 1 mã thiếu ROE. Bài học nên làm gì?",
+    "options": [
+      {
+        "text": "Điền ROE trung bình 6 mã.",
+        "id": "o1"
+      },
+      {
+        "text": "Tự cho quiz đúng vì mã đã được lọc.",
+        "id": "o2"
+      },
+      {
+        "text": "Ghi thiếu dữ liệu ở mã đó, không giả ROE=0.",
+        "id": "o3"
+      },
+      {
+        "text": "Bỏ mã khỏi list mà không báo.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Tiến độ xem khác với kết quả quiz và khác quyền mở chỉ tiêu. Không lấy việc xem đủ mã làm bằng chứng nắm vững kiến thức. Xóa một danh mục ngoài bài học không được xóa kết quả quiz. Bài học giữ tham chiếu hoặc snapshot để không bị mất nguồn đã thực hành.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch04-l09-q02",
+    "lesson_id": "ch04-l09",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Trong bài Dùng danh mục trong Học viện, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o2"
+      },
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o3"
+      },
+      {
+        "text": "Xóa một danh mục ngoài bài học không được xóa kết quả quiz. Bài học giữ tham chiếu hoặc snapshot để không bị mất nguồn đã thực hành.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Xóa một danh mục ngoài bài học không được xóa kết quả quiz. Bài học giữ tham chiếu hoặc snapshot để không bị mất nguồn đã thực hành.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch04-l09-q03",
+    "lesson_id": "ch04-l09",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Thực hành Dùng danh mục trong Học viện nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Lưu một list ở Bộ lọc, rồi mở bài cơ bản và chọn danh mục thực hành. Nhận diện chỉ tiêu của từng mã đạt/không đạt ngưỡng giải thích.",
+        "id": "o1"
+      },
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o2"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o3"
+      },
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Bài thực hành có thể dùng danh sách đã lưu để người học quan sát trên tập doanh nghiệp mình chọn. Nguồn danh sách, ngày chụp và điều kiện tạo danh sách vẫn phải nhìn lại được.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch04-l09-q04",
+    "lesson_id": "ch04-l09",
+    "correct_option_id": "o1"
+  },
+  {
+    "id": "ch04-l09-q05",
+    "lesson_id": "ch04-l09",
+    "question": "Chọn danh mục đã lưu để thực hành ROE. Có được gọi đó là danh mục đang nắm giữ thật không?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Tự phát lệnh mua mọi mã."
+      },
+      {
+        "id": "o2",
+        "text": "Không, đây là danh sách dùng thực hành."
+      },
+      {
+        "id": "o3",
+        "text": "Có vì tên là danh mục."
+      },
+      {
+        "id": "o4",
+        "text": "Có nếu có trên10 mã."
+      }
+    ],
+    "correct_index": 1,
+    "correct_option_id": "o2",
+    "explanation": "Danh sách nghiên cứu không phải vị thế tài khoản.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch04-l09-q06",
+    "lesson_id": "ch04-l09",
+    "question": "Danh mục đã xóa trước khi mở bài thực hành. Học viện nên làm gì?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Yêu cầu chọn danh mục khác hoặc tạo lại, không ngầm đổi sang một danh mục khác."
+      },
+      {
+        "id": "o2",
+        "text": "Tự chọn danh sách của người khác."
+      },
+      {
+        "id": "o3",
+        "text": "Dùng danh sách cũ mà không ghi nhãn."
+      },
+      {
+        "id": "o4",
+        "text": "Xóa tiến độ học."
+      }
+    ],
+    "correct_index": 0,
+    "correct_option_id": "o1",
+    "explanation": "Cần xử lý tham chiếu không còn tồn tại một cách rõ ràng.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Dùng danh mục trong Học viện yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o1"
+      },
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch04-l09-q07",
+    "lesson_id": "ch04-l09",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Dùng danh mục trong Học viện?",
+    "options": [
+      {
+        "text": "Bài thực hành có thể dùng danh sách đã lưu để người học quan sát trên tập doanh nghiệp mình chọn. Nguồn danh sách, ngày chụp và điều kiện tạo danh sách vẫn phải nhìn lại được.",
+        "id": "o1"
+      },
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o2"
+      },
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o3"
+      },
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Bài thực hành có thể dùng danh sách đã lưu để người học quan sát trên tập doanh nghiệp mình chọn. Nguồn danh sách, ngày chụp và điều kiện tạo danh sách vẫn phải nhìn lại được.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch04-l09-q08",
+    "lesson_id": "ch04-l09",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Báo cáo đầu ngày 10, điều chỉnh ngày 20. Quyết định ngày 15 được sử dụng bao nhiêu bản đã có?",
+    "options": [
+      {
+        "text": "1 bản",
+        "id": "o1"
+      },
+      {
+        "text": "4,5 bản",
+        "id": "o2"
+      },
+      {
+        "text": "-0,5 bản",
+        "id": "o3"
+      },
+      {
+        "text": "11 bản",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Chọn bản mới nhất có available_at ≤ thời điểm quyết định → 1 bản",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch04-l10-q01",
+    "lesson_id": "ch04-l10",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Bản báo cáo điều chỉnh ngày 20 đổi lợi nhuận 100 thành 80. Run đã đóng băng ngày 15 có đổi thành 80 không?",
+    "options": [
+      {
+        "text": "Xóa run cũ để không có mâu thuẫn.",
+        "id": "o1"
+      },
+      {
+        "text": "Không; giữ snapshot cũ, có run mới theo bản mới để đối chiếu.",
+        "id": "o2"
+      },
+      {
+        "text": "Có, phải ghi đè mọi lịch sử.",
+        "id": "o3"
+      },
+      {
+        "text": "Có, nếu 80 thận trọng hơn.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Chỉ bản ngày 10 đã có. Ngày 20 có thể được biết sau này nhưng không dùng cho quyết định tại 15. Từ khóa“TTM”không tự đảm bảo dữ liệu point-in-time. TTM vẫn có thể được ghép từ báo cáo công bố muộn.",
+    "skill": "tình huống",
+    "fixture": null,
+    "id": "ch04-l10-q02",
+    "lesson_id": "ch04-l10",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Trong bài Dữ liệu Point-in-Time, quy tắc nào cần giữ?",
+    "options": [
+      {
+        "text": "Từ khóa“TTM”không tự đảm bảo dữ liệu point-in-time. TTM vẫn có thể được ghép từ báo cáo công bố muộn.",
+        "id": "o1"
+      },
+      {
+        "text": "Có thể thay giả định mà không ghi vào kết quả nếu số cuối gần giống.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ cần lợi nhuận dương thì không cần truy lại dữ liệu.",
+        "id": "o3"
+      },
+      {
+        "text": "Có thể dùng kết quả mẫu như hiệu suất thật của tài khoản.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Từ khóa“TTM”không tự đảm bảo dữ liệu point-in-time. TTM vẫn có thể được ghép từ báo cáo công bố muộn.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch04-l10-q03",
+    "lesson_id": "ch04-l10",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Thực hành Dữ liệu Point-in-Time nên tiến hành như thế nào?",
+    "options": [
+      {
+        "text": "Thay tất cả yếu tố cùng lúc rồi chỉ so lợi nhuận cuối.",
+        "id": "o1"
+      },
+      {
+        "text": "Bỏ qua các bản cấu hình cũ, chỉ giữ hình chụp đẹp nhất.",
+        "id": "o2"
+      },
+      {
+        "text": "Dùng câu trả lời của bài để tạo một kết quả giả không cần tính.",
+        "id": "o3"
+      },
+      {
+        "text": "Trong dữ liệu chỉ tiêu, lưu kỳ báo cáo, ngày công bố, ngày nhận, bản điều chỉnh, nguồn. Nếu chỉ biết ngày không có giờ, dùng quy ước thận trọng phần đặc tả: sau phiên ngày đó.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Point-in-time nghĩa là tái dựng thông tin thực sự có thể biết tại thời điểm quá khứ. Bản công bố lại sau này không được âm thầm ghi đè bản số đã dùng để ra quyết định trước đó.",
+    "skill": "thực hành",
+    "fixture": null,
+    "id": "ch04-l10-q04",
+    "lesson_id": "ch04-l10",
+    "correct_option_id": "o4"
+  },
+  {
+    "id": "ch04-l10-q05",
+    "lesson_id": "ch04-l10",
+    "question": "Số liệu2024 điều chỉnh lại năm2026. Backtest quyết định trong2025 dùng bản nào?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Bản nào cho lợi nhuận tốt hơn."
+      },
+      {
+        "id": "o2",
+        "text": "Trung bình hai bản."
+      },
+      {
+        "id": "o3",
+        "text": "Bản đã công bố và khả dụng ở thời điểm2025."
+      },
+      {
+        "id": "o4",
+        "text": "Bản2026 cho mọi quá khứ."
+      }
+    ],
+    "correct_index": 2,
+    "correct_option_id": "o3",
+    "explanation": "Phải lưu lịch sử các phiên bản công bố.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "id": "ch04-l10-q06",
+    "lesson_id": "ch04-l10",
+    "question": "Chỉ biết ngày công bố nhưng không biết giờ, profile thận trọng dùng từ khi nào?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Ngày đầu năm báo cáo."
+      },
+      {
+        "id": "o2",
+        "text": "Phiên hợp lệ sau ngày công bố."
+      },
+      {
+        "id": "o3",
+        "text": "Mở cửa ngay ngày công bố."
+      },
+      {
+        "id": "o4",
+        "text": "Ngày kết thúc quý."
+      }
+    ],
+    "correct_index": 1,
+    "correct_option_id": "o2",
+    "explanation": "Đây là quy ước sản phẩm thận trọng phải ghi trong metadata.",
+    "skill": "vận dụng tình huống",
+    "fixture": null
+  },
+  {
+    "question": "Bài Dữ liệu Point-in-Time yêu cầu đối chiếu kết quả. Thông tin nào cần đi cùng một lần chạy?",
+    "options": [
+      {
+        "text": "Chỉ cấu hình mới nhất ở màn hình hiện tại.",
+        "id": "o1"
+      },
+      {
+        "text": "Cấu hình, phạm vi dữ liệu, giả định và phiên bản tính toán của chính lần đó.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ tên chiến lược.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ số lợi nhuận cao nhất.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Tên chiến lược không đủ để tái lập kết quả. Cùng tên nhưng dữ liệu hoặc tham số khác là một run khác.",
+    "skill": "tái lập",
+    "fixture": null,
+    "id": "ch04-l10-q07",
+    "lesson_id": "ch04-l10",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Nhận định nào mô tả đúng mục đích bài Dữ liệu Point-in-Time?",
+    "options": [
+      {
+        "text": "Chứng minh một ví dụ đúng đủ để bỏ qua kiểm thử sau này.",
+        "id": "o1"
+      },
+      {
+        "text": "Point-in-time nghĩa là tái dựng thông tin thực sự có thể biết tại thời điểm quá khứ. Bản công bố lại sau này không được âm thầm ghi đè bản số đã dùng để ra quyết định trước đó.",
+        "id": "o2"
+      },
+      {
+        "text": "Làm tăng chắc chắn lợi nhuận cho mọi chiến lược.",
+        "id": "o3"
+      },
+      {
+        "text": "Chọn tự động một chỉ báo tốt nhất mà không cần cấu hình.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Point-in-time nghĩa là tái dựng thông tin thực sự có thể biết tại thời điểm quá khứ. Bản công bố lại sau này không được âm thầm ghi đè bản số đã dùng để ra quyết định trước đó.",
+    "skill": "khái niệm",
+    "fixture": null,
+    "id": "ch04-l10-q08",
+    "lesson_id": "ch04-l10",
+    "correct_option_id": "o2"
+  }
+]

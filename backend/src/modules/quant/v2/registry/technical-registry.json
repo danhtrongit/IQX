@@ -1,0 +1,4064 @@
+[
+  {
+    "id": "rsi",
+    "name": "RSI",
+    "chapter": 1,
+    "lesson_id": "ch01-l01",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "G = trung bình Wilder của max(ΔGiá, 0)\nD = trung bình Wilder của max(−ΔGiá, 0)\nRSI = 100 − 100 / (1 + G/D)",
+    "seed_and_missing": "N+1 giá để khởi tạo; thêm một giá để so hai RSI. G=D=0 trả thiếu điều kiện; D=0<G cho 100; G=0<D cho 0.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 14,
+        "level": 30
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ],
+      "field_overrides": {
+        "level": {
+          "min": 10,
+          "max": 49,
+          "label": "Ngưỡng quá bán"
+        }
+      }
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 14,
+        "level": 70
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ],
+      "field_overrides": {
+        "level": {
+          "min": 51,
+          "max": 90,
+          "label": "Ngưỡng quá mua"
+        }
+      }
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "RSI",
+      "prompt": "G = 1,2; D = 0,4. RSI bằng bao nhiêu?",
+      "expected": 75,
+      "unit": "",
+      "formula": "G = trung bình Wilder của max(ΔGiá, 0)\nD = trung bình Wilder của max(−ΔGiá, 0)\nRSI = 100 − 100 / (1 + G/D)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ RSI",
+        "type": "integer",
+        "min": 5,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng RSI",
+        "type": "number",
+        "min": 10,
+        "max": 90,
+        "step": 1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "macd",
+    "name": "MACD",
+    "chapter": 1,
+    "lesson_id": "ch01-l02",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "MACD = EMA nhanh − EMA chậm\nSignal = EMA(MACD, chu kỳ tín hiệu)\nHistogram = MACD − Signal",
+    "seed_and_missing": "Mỗi EMA khởi tạo bằng SMA của đủ N quan sát; cần slow + signal − 1 giá cho Signal đầu tiên; không khởi tạo lại từng cửa sổ cuối.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "fast": 12,
+        "slow": 26,
+        "signal": 9
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "signal",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "fast": 12,
+        "slow": 26,
+        "signal": 9
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "signal",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "MACD",
+      "prompt": "EMA nhanh = 103; EMA chậm = 100; Signal = 2. Histogram bằng bao nhiêu?",
+      "expected": 1,
+      "unit": "",
+      "formula": "MACD = EMA nhanh − EMA chậm\nSignal = EMA(MACD, chu kỳ tín hiệu)\nHistogram = MACD − Signal",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "fast",
+        "label": "Chu kỳ EMA nhanh",
+        "type": "integer",
+        "min": 2,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "slow",
+        "label": "Chu kỳ EMA chậm",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "signal",
+        "label": "Chu kỳ đường tín hiệu",
+        "type": "integer",
+        "min": 2,
+        "max": 30,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [
+        {
+          "left": "fast",
+          "op": "<",
+          "right": "slow"
+        }
+      ],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "ma",
+    "name": "MA / SMA",
+    "chapter": 1,
+    "lesson_id": "ch01-l03",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "SMA(N) = Tổng N giá đóng cửa / N",
+    "seed_and_missing": "Cần N giá liên tục hợp lệ. Bằng SMA không thỏa dấu > hoặc <. Giá thiếu làm cửa sổ chưa hợp lệ, không điền 0.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "MA / SMA",
+      "prompt": "Năm giá là 10, 12, 11, 13, 14. SMA 5 bằng bao nhiêu?",
+      "expected": 12,
+      "unit": "",
+      "formula": "SMA(N) = Tổng N giá đóng cửa / N",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ SMA",
+        "type": "integer",
+        "min": 5,
+        "max": 200,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "bollinger",
+    "name": "Bollinger Bands",
+    "chapter": 1,
+    "lesson_id": "ch01-l04",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "M = SMA(N)\nσ = sqrt[Σ(Giá − M)² / N]\nDải trên = M + kσ; Dải dưới = M − kσ",
+    "seed_and_missing": "Cần N giá cho dải hiện tại và N+1 giá cho cặp hai phiên. Dải mở: Lower < Giá < Upper. ∉ là Giá ≤ Lower hoặc Giá ≥ Upper khi dữ liệu hợp lệ.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 20,
+        "k": 2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": -1
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "lower",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "membership",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "∈",
+          "rhs": {
+            "kind": "interval",
+            "lower": {
+              "kind": "series",
+              "key": "lower",
+              "offset": 0
+            },
+            "upper": {
+              "kind": "series",
+              "key": "upper",
+              "offset": 0
+            },
+            "bounds": "open"
+          },
+          "allowed_ops": [
+            "∈",
+            "∉"
+          ]
+        },
+        {
+          "id": "r3",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 20,
+        "k": 2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": -1
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "upper",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "membership",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "∈",
+          "rhs": {
+            "kind": "interval",
+            "lower": {
+              "kind": "series",
+              "key": "lower",
+              "offset": 0
+            },
+            "upper": {
+              "kind": "series",
+              "key": "upper",
+              "offset": 0
+            },
+            "bounds": "open"
+          },
+          "allowed_ops": [
+            "∈",
+            "∉"
+          ]
+        },
+        {
+          "id": "r3",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Bollinger Bands",
+      "prompt": "M = 100; σ = 3; k = 2. Dải trên bằng bao nhiêu?",
+      "expected": 106,
+      "unit": "",
+      "formula": "M = SMA(N)\nσ = sqrt[Σ(Giá − M)² / N]\nDải trên = M + kσ; Dải dưới = M − kσ",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ Bollinger",
+        "type": "integer",
+        "min": 10,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "k",
+        "label": "Hệ số dải",
+        "type": "number",
+        "min": 1,
+        "max": 3.5,
+        "step": 0.1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": "warn_diagnostics_not_blanket_reject"
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "volume",
+    "name": "Khối lượng",
+    "chapter": 1,
+    "lesson_id": "ch01-l05",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "A = Tổng khối lượng N phiên trước / N\nNgưỡng = k × A",
+    "seed_and_missing": "Cần N khối lượng trước + khối lượng hiện tại và hai giá đóng cửa. A=0 hoặc cửa sổ thiếu trả chưa xác định; bằng ngưỡng không đạt dấu >.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "lookback": 20,
+        "mult": 1.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "volume",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "threshold",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "lookback": 20,
+        "mult": 1.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "volume",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "threshold",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Khối lượng",
+      "prompt": "Trung bình 20 phiên trước là 1.000.000 cổ phiếu; k = 1,5. Ngưỡng bằng bao nhiêu?",
+      "expected": 1500000,
+      "unit": "cổ phiếu",
+      "formula": "A = Tổng khối lượng N phiên trước / N\nNgưỡng = k × A",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "lookback",
+        "label": "Số phiên tham chiếu",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "mult",
+        "label": "Hệ số khối lượng",
+        "type": "number",
+        "min": 0.5,
+        "max": 3,
+        "step": 0.1,
+        "unit": "lần",
+        "api_scale": 1,
+        "wire_unit": "lần"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "ema",
+    "name": "EMA",
+    "chapter": 5,
+    "lesson_id": "ch05-l01",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "α = 2/(N+1)\nEMA mới = α × Giá mới + (1−α) × EMA trước",
+    "seed_and_missing": "Khởi tạo bằng SMA đầu tiên đủ N giá; sau đó cập nhật liên tục. Không reseed bằng N giá cuối mỗi ngày; thiếu giá thực làm reset chuỗi theo hợp đồng.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "EMA",
+      "prompt": "N = 9 nên α = 0,2; EMA trước = 100; Giá mới = 110. EMA mới bằng bao nhiêu?",
+      "expected": 102,
+      "unit": "",
+      "formula": "α = 2/(N+1)\nEMA mới = α × Giá mới + (1−α) × EMA trước",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ EMA",
+        "type": "integer",
+        "min": 5,
+        "max": 200,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "ma_cross",
+    "name": "MA Cross",
+    "chapter": 5,
+    "lesson_id": "ch05-l02",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "event",
+    "formula": "Cắt lên: SMA nhanh hôm nay > SMA chậm hôm nay\nVà SMA nhanh hôm trước ≤ SMA chậm hôm trước\nCắt xuống: đảo > thành < và ≤ thành ≥",
+    "seed_and_missing": "Cần slow+1 giá cho cặp SMA. Trước bằng nhau rồi hôm nay ở trên được tính cắt lên. Không lấy dữ liệu trước khởi tạo để tạo sự kiện.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "fast": 20,
+        "slow": 50
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "cross",
+          "lhs": {
+            "kind": "series",
+            "key": "fast",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "slow",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "fast": 20,
+        "slow": 50
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "cross",
+          "lhs": {
+            "kind": "series",
+            "key": "fast",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "slow",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "MA Cross",
+      "prompt": "Chênh SMA nhanh − SMA chậm qua bốn phiên là −2, 1, 3, −1. Có bao nhiêu lần cắt lên?",
+      "expected": 1,
+      "unit": "lần",
+      "formula": "Cắt lên: SMA nhanh hôm nay > SMA chậm hôm nay\nVà SMA nhanh hôm trước ≤ SMA chậm hôm trước\nCắt xuống: đảo > thành < và ≤ thành ≥",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "fast",
+        "label": "Chu kỳ SMA nhanh",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "slow",
+        "label": "Chu kỳ SMA chậm",
+        "type": "integer",
+        "min": 10,
+        "max": 250,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [
+        {
+          "left": "fast",
+          "op": "<",
+          "right": "slow"
+        }
+      ],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "dmi",
+    "name": "DMI",
+    "chapter": 5,
+    "lesson_id": "ch05-l03",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Up = High hôm nay − High hôm trước\nDown = Low hôm trước − Low hôm nay\n+DM = Up nếu Up > Down và Up > 0, ngược lại 0\n−DM = Down nếu Down > Up và Down > 0, ngược lại 0\n+DI = 100 × Wilder(+DM)/ATR; −DI = 100 × Wilder(−DM)/ATR",
+    "seed_and_missing": "Cần N cặp OHLC để khởi tạo Wilder. ATR=0 không chia; +DI/−DI missing. Các chuỗi cùng seed và dữ liệu.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 14
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "plus",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "minus",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 14
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "plus",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "minus",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "DMI",
+      "prompt": "Wilder(+DM) = 2,4; ATR = 6. +DI bằng bao nhiêu?",
+      "expected": 40,
+      "unit": "",
+      "formula": "Up = High hôm nay − High hôm trước\nDown = Low hôm trước − Low hôm nay\n+DM = Up nếu Up > Down và Up > 0, ngược lại 0\n−DM = Down nếu Down > Up và Down > 0, ngược lại 0\n+DI = 100 × Wilder(+DM)/ATR; −DI = 100 × Wilder(−DM)/ATR",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ DMI",
+        "type": "integer",
+        "min": 5,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "adx",
+    "name": "ADX",
+    "chapter": 5,
+    "lesson_id": "ch05-l04",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "DX = 100 × |+DI − −DI| / (+DI + −DI)\nADX đầu = trung bình N DX\nADX mới = [(N−1) × ADX trước + DX mới]/N",
+    "seed_and_missing": "DMI khởi tạo trước; cần thêm đủ N DX hợp lệ. DX khi +DI+−DI=0 được đặt 0 nếu DMI hợp lệ; không áp cho DMI thiếu. Quy ước này có version riêng.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 14,
+        "level": 25
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 14,
+        "level": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "ADX",
+      "prompt": "+DI = 30; −DI = 10. DX bằng bao nhiêu?",
+      "expected": 50,
+      "unit": "",
+      "formula": "DX = 100 × |+DI − −DI| / (+DI + −DI)\nADX đầu = trung bình N DX\nADX mới = [(N−1) × ADX trước + DX mới]/N",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ ADX",
+        "type": "integer",
+        "min": 5,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng ADX",
+        "type": "number",
+        "min": 5,
+        "max": 60,
+        "step": 1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "atr",
+    "name": "ATR",
+    "chapter": 7,
+    "lesson_id": "ch07-l01",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "TR = max(High−Low, |High−Close trước|, |Low−Close trước|)\nATR đầu = trung bình N TR\nATR mới = [(N−1) × ATR trước + TR mới]/N",
+    "seed_and_missing": "TR đầu tiên cần đóng cửa trước. ATR Wilder cần N TR, baseline SMA của ATR dùng baseline phiên trước không gồm T. Đơn vị giá phải nhất quán.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 14,
+        "baseline": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "baseline",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 14,
+        "baseline": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "baseline",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "ATR",
+      "prompt": "High = 105; Low = 101; Close trước = 99. TR bằng bao nhiêu?",
+      "expected": 6,
+      "unit": "đơn vị giá",
+      "formula": "TR = max(High−Low, |High−Close trước|, |Low−Close trước|)\nATR đầu = trung bình N TR\nATR mới = [(N−1) × ATR trước + TR mới]/N",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ ATR",
+        "type": "integer",
+        "min": 5,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "baseline",
+        "label": "Chu kỳ trung bình ATR",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "atr_percent",
+    "name": "ATR Percent",
+    "chapter": 7,
+    "lesson_id": "ch07-l02",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "ATR Percent = ATR / Giá đóng cửa × 100",
+    "seed_and_missing": "ATR hợp lệ và Close>0; thiếu giá hoặc ATR thì missing. N chu kỳ riêng từng phía.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 14,
+        "level": 5.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 14,
+        "level": 8.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "ATR Percent",
+      "prompt": "ATR = 2; Giá đóng cửa = 50. ATR Percent bằng bao nhiêu?",
+      "expected": 4,
+      "unit": "%",
+      "formula": "ATR Percent = ATR / Giá đóng cửa × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ ATR",
+        "type": "integer",
+        "min": 5,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng ATR Percent",
+        "type": "number",
+        "min": 0.5,
+        "max": 30,
+        "step": 0.1,
+        "unit": "%",
+        "api_scale": 1,
+        "wire_unit": "%"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "relative_volume",
+    "name": "Relative Volume",
+    "chapter": 7,
+    "lesson_id": "ch07-l03",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Relative Volume = Volume hiện tại / Trung bình N khối lượng trước",
+    "seed_and_missing": "N khối lượng trước và lượng hiện tại; mẫu số >0. Lượng hiện tại bằng 0 hợp lệ nếu dữ liệu xác nhận, khác với dữ liệu bị thiếu.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "lookback": 20,
+        "level": 1.5
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "lookback": 20,
+        "level": 1.5
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Relative Volume",
+      "prompt": "Khối lượng hiện tại 1,8 triệu; trung bình trước 1,2 triệu. Relative Volume bằng bao nhiêu?",
+      "expected": 1.5,
+      "unit": "lần",
+      "formula": "Relative Volume = Volume hiện tại / Trung bình N khối lượng trước",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "lookback",
+        "label": "Số phiên tham chiếu",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng Relative Volume",
+        "type": "number",
+        "min": 0.5,
+        "max": 10,
+        "step": 0.1,
+        "unit": "lần",
+        "api_scale": 1,
+        "wire_unit": "lần"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "obv",
+    "name": "OBV",
+    "chapter": 7,
+    "lesson_id": "ch07-l04",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "OBV mới = OBV trước + Volume nếu Close tăng\nOBV mới = OBV trước − Volume nếu Close giảm\nGiá bằng nhau: OBV không đổi",
+    "seed_and_missing": "Khởi tạo từ cùng lịch sử; baseline SMA OBV gồm phiên T. Giá thiếu không được giả là giá bằng nhau. Chưa đủ baseline thì điều kiện missing.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "baseline": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "baseline",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "baseline": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "baseline",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "OBV",
+      "prompt": "OBV trước = 1000, giá giảm và khối lượng hiện tại = 200. OBV mới bằng bao nhiêu?",
+      "expected": 800,
+      "unit": "",
+      "formula": "OBV mới = OBV trước + Volume nếu Close tăng\nOBV mới = OBV trước − Volume nếu Close giảm\nGiá bằng nhau: OBV không đổi",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "baseline",
+        "label": "Chu kỳ SMA của OBV",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "mfi",
+    "name": "MFI",
+    "chapter": 7,
+    "lesson_id": "ch07-l05",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "TP = (High + Low + Close)/3\nRawFlow = TP × Volume\nP = tổng RawFlow khi TP tăng; N = tổng khi TP giảm\nMFI = 100 − 100/(1 + P/N)",
+    "seed_and_missing": "N cặp TP cùng khối lượng; Nsum=0<Psum cho100, Psum=0<Nsum cho0; cảhai0 trả chưa xác định.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 14,
+        "level": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 14,
+        "level": 80
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "MFI",
+      "prompt": "Tổng dòng dương = 300; tổng dòng âm = 100. MFI bằng bao nhiêu?",
+      "expected": 75,
+      "unit": "",
+      "formula": "TP = (High + Low + Close)/3\nRawFlow = TP × Volume\nP = tổng RawFlow khi TP tăng; N = tổng khi TP giảm\nMFI = 100 − 100/(1 + P/N)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ MFI",
+        "type": "integer",
+        "min": 5,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng MFI",
+        "type": "number",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "cmf",
+    "name": "Chaikin Money Flow",
+    "chapter": 7,
+    "lesson_id": "ch07-l06",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Multiplier = [(Close−Low) − (High−Close)]/(High−Low)\nCMF = Σ(Multiplier × Volume) / ΣVolume",
+    "seed_and_missing": "CMF N=20 trong gói, khác mặc định21 của một số nền tảng. High=Low đặt Multiplier=0 nếu OHLC hợp lệ; tổng volume0 trả missing.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 20,
+        "level": 0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 20,
+        "level": 0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Chaikin Money Flow",
+      "prompt": "High = 110; Low = 100; Close = 108. Multiplier bằng bao nhiêu?",
+      "expected": 0.6,
+      "unit": "",
+      "formula": "Multiplier = [(Close−Low) − (High−Close)]/(High−Low)\nCMF = Σ(Multiplier × Volume) / ΣVolume",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ CMF",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng CMF",
+        "type": "number",
+        "min": -1,
+        "max": 1,
+        "step": 0.01,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "n_day_high",
+    "name": "N-day High",
+    "chapter": 9,
+    "lesson_id": "ch09-l01",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "N-day High tại T = max(High của T−N … T−1)",
+    "seed_and_missing": "Cần N phiên trước; chỉ dữ liệu đến T−1. Không đổi tên thành giao cắt khi chỉ so trạng thái. Không include future high.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "N-day High",
+      "prompt": "Ba High trước là 100, 103, 102. Mức N-day High bằng bao nhiêu?",
+      "expected": 103,
+      "unit": "",
+      "formula": "N-day High tại T = max(High của T−N … T−1)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Số phiên tham chiếu",
+        "type": "integer",
+        "min": 5,
+        "max": 252,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "n_day_low",
+    "name": "N-day Low",
+    "chapter": 9,
+    "lesson_id": "ch09-l02",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "N-day Low tại T = min(Low của T−N … T−1)",
+    "seed_and_missing": "Cần N phiên trước. Không tính phiên hiện tại vào cực trị chuẩn của bài.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "N-day Low",
+      "prompt": "Ba Low trước là 95, 92, 94. N-day Low bằng bao nhiêu?",
+      "expected": 92,
+      "unit": "",
+      "formula": "N-day Low tại T = min(Low của T−N … T−1)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Số phiên tham chiếu",
+        "type": "integer",
+        "min": 5,
+        "max": 252,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "distance_52w_high",
+    "name": "Khoảng cách tới đỉnh 52 tuần",
+    "chapter": 9,
+    "lesson_id": "ch09-l03",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Khoảng cách = (Close / High252 − 1) × 100",
+    "seed_and_missing": "Cần đủ252 phiên gồm T; giá và đỉnh dương, cùng cơ sở điều chỉnh. Với OHLC hợp lệ khoảng cách không dương, chạm đỉnh cho0.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "level": -5.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "level": -10.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Khoảng cách tới đỉnh 52 tuần",
+      "prompt": "Close = 90; High 252 = 100. Khoảng cách bằng bao nhiêu?",
+      "expected": -10,
+      "unit": "%",
+      "formula": "Khoảng cách = (Close / High252 − 1) × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "level",
+        "label": "Khoảng cách đỉnh 52 tuần",
+        "type": "number",
+        "min": -100,
+        "max": 0,
+        "step": 0.1,
+        "unit": "%",
+        "api_scale": 1,
+        "wire_unit": "%"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "gap",
+    "name": "Gap",
+    "chapter": 9,
+    "lesson_id": "ch09-l04",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Gap = (Open hiện tại / Close phiên trước − 1) × 100",
+    "seed_and_missing": "Open T và Close T−1 phải có cùng chính sách điều chỉnh. Ngưỡng nhập theo %, không số tiền.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "level": 2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "level": -2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Gap",
+      "prompt": "Open hiện tại = 103; Close phiên trước = 100. Gap bằng bao nhiêu?",
+      "expected": 3,
+      "unit": "%",
+      "formula": "Gap = (Open hiện tại / Close phiên trước − 1) × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "level",
+        "label": "Ngưỡng Gap",
+        "type": "number",
+        "min": -20,
+        "max": 20,
+        "step": 0.1,
+        "unit": "%",
+        "api_scale": 1,
+        "wire_unit": "%"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "distance_support",
+    "name": "Khoảng cách tới hỗ trợ",
+    "chapter": 9,
+    "lesson_id": "ch09-l05",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Support = Low tại pivot đã xác nhận\nKhoảng cách = (Close − Support)/Support × 100",
+    "seed_and_missing": "Giữ pivot gần nhất đã xác nhận, cần minimum2k+1 phiên. Chưa có pivot trả missing. Hỗ trợ có thể đã bị xuyên, không tự thay lịch sử.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "pivot": 3,
+        "level": 2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "pivot": 3,
+        "level": 0.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Khoảng cách tới hỗ trợ",
+      "prompt": "Close = 102; hỗ trợ đã xác nhận = 100. Khoảng cách bằng bao nhiêu?",
+      "expected": 2,
+      "unit": "%",
+      "formula": "Support = Low tại pivot đã xác nhận\nKhoảng cách = (Close − Support)/Support × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "pivot",
+        "label": "Số phiên xác nhận mỗi phía",
+        "type": "integer",
+        "min": 2,
+        "max": 10,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Khoảng cách hỗ trợ",
+        "type": "number",
+        "min": -20,
+        "max": 30,
+        "step": 0.1,
+        "unit": "%",
+        "api_scale": 1,
+        "wire_unit": "%"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "distance_resistance",
+    "name": "Khoảng cách tới kháng cự",
+    "chapter": 9,
+    "lesson_id": "ch09-l06",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Resistance = High tại pivot đã xác nhận\nKhoảng cách = (Resistance − Close)/Close × 100",
+    "seed_and_missing": "Pivot high cần k giá mỗi phía; chỉ dùng từ ngày xác nhận. Mẫu số Close>0, chưa có pivot trảmissing.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "pivot": 3,
+        "level": 0.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "pivot": 3,
+        "level": 2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Khoảng cách tới kháng cự",
+      "prompt": "Resistance = 110; Close = 100. Khoảng cách bằng bao nhiêu?",
+      "expected": 10,
+      "unit": "%",
+      "formula": "Resistance = High tại pivot đã xác nhận\nKhoảng cách = (Resistance − Close)/Close × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "pivot",
+        "label": "Số phiên xác nhận mỗi phía",
+        "type": "integer",
+        "min": 2,
+        "max": 10,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Khoảng cách kháng cự",
+        "type": "number",
+        "min": -20,
+        "max": 30,
+        "step": 0.1,
+        "unit": "%",
+        "api_scale": 1,
+        "wire_unit": "%"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "donchian",
+    "name": "Donchian Channel",
+    "chapter": 11,
+    "lesson_id": "ch11-l01",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Upper = max(High của N phiên trước)\nLower = min(Low của N phiên trước)\nMiddle = (Upper + Lower)/2",
+    "seed_and_missing": "N phiên trước không gồm T. Dùng cùng extrema helper đã kiểm thử, không include current price khi xét phá kênh.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "upper",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "lower",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Donchian Channel",
+      "prompt": "Upper = 110; Lower = 90. Middle bằng bao nhiêu?",
+      "expected": 100,
+      "unit": "",
+      "formula": "Upper = max(High của N phiên trước)\nLower = min(Low của N phiên trước)\nMiddle = (Upper + Lower)/2",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ Donchian",
+        "type": "integer",
+        "min": 5,
+        "max": 252,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "keltner",
+    "name": "Keltner Channel",
+    "chapter": 11,
+    "lesson_id": "ch11-l02",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Middle = EMA(Close, N)\nUpper = Middle + k × ATR(M)\nLower = Middle − k × ATR(M)",
+    "seed_and_missing": "Cả EMA và ATR hợp lệ cùng T; ATR Wilder. Đợi đủchuỗi dài hơn. Keltner không áp ràng buộc k²<N−1 của dải độ lệch chuẩn.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "ema": 20,
+        "atr": 10,
+        "k": 2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "upper",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "ema": 20,
+        "atr": 10,
+        "k": 2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "lower",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Keltner Channel",
+      "prompt": "EMA = 100; ATR = 3; k = 2. Upper bằng bao nhiêu?",
+      "expected": 106,
+      "unit": "",
+      "formula": "Middle = EMA(Close, N)\nUpper = Middle + k × ATR(M)\nLower = Middle − k × ATR(M)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "ema",
+        "label": "Chu kỳ EMA",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "atr",
+        "label": "Chu kỳ ATR",
+        "type": "integer",
+        "min": 5,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "k",
+        "label": "Hệ số dải",
+        "type": "number",
+        "min": 0.5,
+        "max": 5,
+        "step": 0.1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "bb_width",
+    "name": "Bollinger BandWidth",
+    "chapter": 11,
+    "lesson_id": "ch11-l03",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "BandWidth = (Upper − Lower)/Middle × 100",
+    "seed_and_missing": "CầnNgiá, Middle>0. Độ lệch0 tạoBandWidth0 hợp lệ; không tự coi là thiếu.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 20,
+        "k": 2.0,
+        "level": 5.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 20,
+        "k": 2.0,
+        "level": 8.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Bollinger BandWidth",
+      "prompt": "Upper = 110; Lower = 90; Middle = 100. Band Width bằng bao nhiêu?",
+      "expected": 20,
+      "unit": "%",
+      "formula": "BandWidth = (Upper − Lower)/Middle × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ Bollinger",
+        "type": "integer",
+        "min": 10,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "k",
+        "label": "Hệ số dải",
+        "type": "number",
+        "min": 1,
+        "max": 3.5,
+        "step": 0.1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng BandWidth",
+        "type": "number",
+        "min": 0,
+        "max": 50,
+        "step": 0.1,
+        "unit": "%",
+        "api_scale": 1,
+        "wire_unit": "%"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "roc",
+    "name": "ROC",
+    "chapter": 11,
+    "lesson_id": "ch11-l04",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "ROC(N) = (Close hiện tại / Close cách N phiên − 1) × 100",
+    "seed_and_missing": "Giá gốc>0, cầnđủN+1quan sát. Dùnggiáđiềuchỉnhnhất quán không future.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 20,
+        "level": 5.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 20,
+        "level": -5.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "ROC",
+      "prompt": "Close hiện tại = 110; Close cách 20 phiên = 100. ROC 20 bằng bao nhiêu?",
+      "expected": 10,
+      "unit": "%",
+      "formula": "ROC(N) = (Close hiện tại / Close cách N phiên − 1) × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ ROC",
+        "type": "integer",
+        "min": 2,
+        "max": 252,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng ROC",
+        "type": "number",
+        "min": -100,
+        "max": 100,
+        "step": 0.1,
+        "unit": "%",
+        "api_scale": 1,
+        "wire_unit": "%"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "williams_r",
+    "name": "Williams %R",
+    "chapter": 11,
+    "lesson_id": "ch11-l05",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "%R = −100 × (HighN − Close)/(HighN − LowN)",
+    "seed_and_missing": "CầnNbar, highN=lowNtrả missing. Cặp hai phiên cầnN+1bar; không latch.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 14,
+        "level": -80
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 14,
+        "level": -20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Williams %R",
+      "prompt": "High N = 110; Low N = 90; Close = 94. % R bằng bao nhiêu?",
+      "expected": -80,
+      "unit": "",
+      "formula": "%R = −100 × (HighN − Close)/(HighN − LowN)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ Williams %R",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng Williams %R",
+        "type": "number",
+        "min": -100,
+        "max": 0,
+        "step": 1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "psar",
+    "name": "Parabolic SAR",
+    "chapter": 11,
+    "lesson_id": "ch11-l06",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "SAR dự kiến = SAR trước + AF × (EP − SAR trước)",
+    "seed_and_missing": "Seed hướng từ hai đóng cửađầu; SAR bằng cực trị đối diện hai bar, EPcực trịcùnghướng, AF=step. ClampSARtheohai low/hightrước; đảo khi biên giáxuyên; chi tiết trong CALCULATION-CONTRACT.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "step": 0.02,
+        "max": 0.2
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "step": 0.02,
+        "max": 0.2
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Parabolic SAR",
+      "prompt": "SAR trước = 95; EP = 110; AF = 0,02. SAR dự kiến trước ràng buộc biên bằng bao nhiêu?",
+      "expected": 95.3,
+      "unit": "",
+      "formula": "SAR dự kiến = SAR trước + AF × (EP − SAR trước)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "step",
+        "label": "Bước gia tốc",
+        "type": "number",
+        "min": 0.01,
+        "max": 0.1,
+        "step": 0.01,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      },
+      {
+        "key": "max",
+        "label": "Gia tốc tối đa",
+        "type": "number",
+        "min": 0.1,
+        "max": 1,
+        "step": 0.01,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [
+        {
+          "left": "step",
+          "op": "<",
+          "right": "max"
+        }
+      ],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "rs_market",
+    "name": "Relative Strength vs VN-Index",
+    "chapter": 13,
+    "lesson_id": "ch13-l01",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "RS = Return cổ phiếu(N) − Return VN-Index(N)",
+    "seed_and_missing": "CầnN+1phiêncùnglịch; thiếu mốcbenchmarktrả missing. NguồnVN-Indexphảiđuợcđối soát.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "lookback": 20,
+        "level": 0.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "lookback": 20,
+        "level": 0.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Relative Strength vs VN-Index",
+      "prompt": "Cổ phiếu tăng 12%, VN-Index tăng 5% cùng kỳ. RS bằng bao nhiêu?",
+      "expected": 7,
+      "unit": "điểm %",
+      "formula": "RS = Return cổ phiếu(N) − Return VN-Index(N)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "lookback",
+        "label": "Số phiên so sánh",
+        "type": "integer",
+        "min": 5,
+        "max": 252,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Chênh lệch lợi nhuận",
+        "type": "number",
+        "min": -100,
+        "max": 100,
+        "step": 0.1,
+        "unit": "điểm %",
+        "api_scale": 1,
+        "wire_unit": "điểm %"
+      }
+    ],
+    "availability": "needs_history_context",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "rs_sector",
+    "name": "Relative Strength vs ngành",
+    "chapter": 13,
+    "lesson_id": "ch13-l02",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "RS ngành = Return cổ phiếu(N) − Return chỉ số ngành(N)",
+    "seed_and_missing": "Chỉsốngànhphải có lịch sử và thành phầnđúngthờiđiểm; feedchưacóthìkhôngbậtđiều kiệnnàyởproduction.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "lookback": 20,
+        "level": 0.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "lookback": 20,
+        "level": 0.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Relative Strength vs ngành",
+      "prompt": "Cổ phiếu giảm 2%, chỉ số ngành giảm 6%. RS ngành bằng bao nhiêu?",
+      "expected": 4,
+      "unit": "điểm %",
+      "formula": "RS ngành = Return cổ phiếu(N) − Return chỉ số ngành(N)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "lookback",
+        "label": "Số phiên so sánh",
+        "type": "integer",
+        "min": 5,
+        "max": 252,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Chênh lệch lợi nhuận ngành",
+        "type": "number",
+        "min": -100,
+        "max": 100,
+        "step": 0.1,
+        "unit": "điểm %",
+        "api_scale": 1,
+        "wire_unit": "điểm %"
+      }
+    ],
+    "availability": "needs_history_context",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "ad_line",
+    "name": "Advance / Decline Line",
+    "chapter": 13,
+    "lesson_id": "ch13-l03",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Net Advances = Số mã tăng − Số mã giảm\nAD Line mới = AD Line trước + Net Advances",
+    "seed_and_missing": "Rổ point-in-time, số mãđủdữ liệu cần≥95%rổđủđiều kiện; thấphơn trảmissing, khôngcoimãthiếulàmãđứnggiá. BaselineSMAgồmT.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "baseline": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "baseline",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "baseline": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "baseline",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Advance / Decline Line",
+      "prompt": "AD Line trước=1000; có 180 mã tăng và 120 mã giảm. AD Line mới bằng bao nhiêu?",
+      "expected": 1060,
+      "unit": "",
+      "formula": "Net Advances = Số mã tăng − Số mã giảm\nAD Line mới = AD Line trước + Net Advances",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "baseline",
+        "label": "Chu kỳ SMA",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "availability": "needs_history_context",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "breadth_ma50",
+    "name": "% cổ phiếu trên MA50",
+    "chapter": 13,
+    "lesson_id": "ch13-l04",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Tỷ lệ = Số mã Close>SMA50 / Số mã đủ dữ liệu × 100",
+    "seed_and_missing": "SMA50cốđịnhởbàinày; mốcngưỡng tùy chỉnh0–100%. Coverageguard95% theođặctảmớiphảixácnhậngói dữ liệu.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "level": 50.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "level": 50.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "% cổ phiếu trên MA50",
+      "prompt": "Có 120 mã trên MA 50 trong 200 mã đủ dữ liệu. Tỷ lệ bằng bao nhiêu?",
+      "expected": 60,
+      "unit": "%",
+      "formula": "Tỷ lệ = Số mã Close>SMA50 / Số mã đủ dữ liệu × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "level",
+        "label": "Tỷ lệ cổ phiếu trên MA50",
+        "type": "number",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "%",
+        "api_scale": 1,
+        "wire_unit": "%"
+      }
+    ],
+    "availability": "needs_history_context",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "new_high_low",
+    "name": "New High – New Low",
+    "chapter": 13,
+    "lesson_id": "ch13-l05",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "NHNL = Số mã High vượt max252phiên trước − Số mã Low dưới min252phiên trước",
+    "seed_and_missing": "Mỗimãcần253phiên, rổ lịch sử; chỉđếmngưỡng>và<nghiêmngặt, bằngđỉnhcũkhôngphải đỉnhmới trongbiếnthểnày.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "level": 0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "level": 0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "New High – New Low",
+      "prompt": "Có 40 mã tạo đỉnh mới và 15 mã tạo đáy mới. NHNL bằng bao nhiêu?",
+      "expected": 25,
+      "unit": "mã",
+      "formula": "NHNL = Số mã High vượt max252phiên trước − Số mã Low dưới min252phiên trước",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "level",
+        "label": "Ngưỡng chênh lệch số mã",
+        "type": "number",
+        "min": -10000,
+        "max": 10000,
+        "step": 1,
+        "unit": "mã",
+        "api_scale": 1,
+        "wire_unit": "mã"
+      }
+    ],
+    "availability": "needs_history_context",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "index_ma",
+    "name": "VN-Index vs MA200",
+    "chapter": 13,
+    "lesson_id": "ch13-l06",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "SMA(N) củaVN-Index = Tổng N giátrịchốtphiên / N",
+    "seed_and_missing": "Ngiátrịchốtphiênliên tiếp; indexcalendar/datasetversionđượclưu theo run.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 200
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "index",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 200
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "index",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "VN-Index vs MA200",
+      "prompt": "VN-Index=1250; SMA 200=1200. Khoảng chênh chỉ số trừ SMA bằng bao nhiêu?",
+      "expected": 50,
+      "unit": "điểm",
+      "formula": "SMA(N) củaVN-Index = Tổng N giátrịchốtphiên / N",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ SMA của VN-Index",
+        "type": "integer",
+        "min": 100,
+        "max": 300,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "availability": "needs_history_context",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "stochastic",
+    "name": "Stochastic",
+    "chapter": 5,
+    "lesson_id": "ch05-l05",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Raw %K = 100 × (Close − LowN)/(HighN − LowN)\n%K = SMA(Raw %K, smooth)\n%D = SMA(%K, d)",
+    "seed_and_missing": "Cần k phiên để có Raw %K; thêm smooth−1 và d−1 phiên để có %D đầu tiên. Tất cả các SMA dùng cửa sổ đầy đủ, không bỏ NaN để lấy bù.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "k": 14,
+        "d": 3,
+        "smooth": 3,
+        "level": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "signal",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "k": 14,
+        "d": 3,
+        "smooth": 3,
+        "level": 80
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "signal",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Stochastic",
+      "prompt": "High N = 110; Low N = 90; Close = 94. Raw % K bằng bao nhiêu?",
+      "expected": 20,
+      "unit": "",
+      "formula": "Raw %K = 100 × (Close − LowN)/(HighN − LowN)\n%K = SMA(Raw %K, smooth)\n%D = SMA(%K, d)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "k",
+        "label": "Chu kỳ %K",
+        "type": "integer",
+        "min": 5,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "d",
+        "label": "Chu kỳ %D",
+        "type": "integer",
+        "min": 2,
+        "max": 20,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "smooth",
+        "label": "Chu kỳ trung bình %K",
+        "type": "integer",
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng %K",
+        "type": "number",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "cci",
+    "name": "CCI",
+    "chapter": 5,
+    "lesson_id": "ch05-l06",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "TP = (High + Low + Close)/3\nM = SMA(TP, N)\nMD = trung bình |TP − M| của N phiên\nCCI = (TP hiện tại − M)/(0,015 × MD)",
+    "seed_and_missing": "Cần N TP để tính; MD=0 trả missing. Với cặp hiện tại/phiên trước cần N+1 bar hợp lệ. Không dùng độ lệch chuẩn thay MD.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 20,
+        "level": -100
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 20,
+        "level": 100
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "CCI",
+      "prompt": "TP hiện tại = 103; M = 100; MD = 2. CCI bằng bao nhiêu?",
+      "expected": 100,
+      "unit": "",
+      "formula": "TP = (High + Low + Close)/3\nM = SMA(TP, N)\nMD = trung bình |TP − M| của N phiên\nCCI = (TP hiện tại − M)/(0,015 × MD)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ CCI",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng CCI",
+        "type": "number",
+        "min": -300,
+        "max": 300,
+        "step": 1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  }
+]

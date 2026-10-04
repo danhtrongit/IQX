@@ -47,6 +47,11 @@ import { NotificationsModule } from './modules/notifications/index.js';
 import { RealtimeModule } from './modules/realtime/index.js';
 import { DomainRuntimeModule } from './platform/domain-runtime.module.js';
 import { ReferralsModule } from './modules/referrals/referrals.module.js';
+import { AcademyModule } from './modules/academy/academy.module.js';
+import { StrategyConfigModule } from './modules/strategy-config/strategy-config.module.js';
+import { ScreenerModule } from './modules/screener/screener.module.js';
+import { StrategyBacktestsModule } from './modules/strategy-backtests/strategy-backtests.module.js';
+import { SavedFiltersModule } from './modules/saved-filters/saved-filters.module.js';
 
 @Module({})
 class ApiModule {}
@@ -84,6 +89,11 @@ export function createApiModule(
       ReportsModule,
       PortfolioManagerModule,
       BotsModule,
+      AcademyModule,
+      StrategyConfigModule,
+      ScreenerModule,
+      StrategyBacktestsModule,
+      SavedFiltersModule,
       NotificationsModule,
       ReferralsModule,
       DomainRuntimeModule.forApi(values.QUEUE_ENABLED),

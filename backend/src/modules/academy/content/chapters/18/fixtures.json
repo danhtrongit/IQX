@@ -1,0 +1,68 @@
+[
+  {
+    "lesson_id": "ch18-l01",
+    "type": "scalar",
+    "label": "Đa dạng hóa",
+    "prompt": "Hai vị thế 50%/50%, return 10% và−4%, không phí. Danh mục return bao nhiêu?",
+    "expected": 3,
+    "unit": "%",
+    "formula": "Lợi nhuậndanh mụcmột kỳ = Σ(trọng sốđầu kỳ×returntài sản)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch18-l02",
+    "type": "scalar",
+    "label": "Tương quan",
+    "prompt": "r B=2 ×r A cùng mọi kỳ, và r A có biến động không 0. Tương quan là bao nhiêu?",
+    "expected": 1,
+    "unit": "",
+    "formula": "ρ = Cov(rA,rB) / [σA×σB]",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch18-l03",
+    "type": "scalar",
+    "label": "Rủi ro tập trung",
+    "prompt": "Vị thế 30 triệu, NAV 100 triệu. Tỷ trọng mã là bao nhiêu?",
+    "expected": 30,
+    "unit": "%",
+    "formula": "Tỷ trọng mã = Giátrịvị thế / NAV × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch18-l04",
+    "type": "scalar",
+    "label": "Tỷ trọng ngành",
+    "prompt": "Hai mã ngân hàng trị giá 20 và 15 triệu, NAV 100 triệu. Tỷ trọng ngân hàng là bao nhiêu?",
+    "expected": 35,
+    "unit": "%",
+    "formula": "Tỷ trọngngành = ΣGiátrịvị thếcùngngành / NAV × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch18-l05",
+    "type": "scalar",
+    "label": "Tái cân bằng",
+    "prompt": "NAV 100 triệu, một mã đang 30 triệu, mục tiêu 20%. Cần giảm bao nhiêu triệu trước phí?",
+    "expected": 10,
+    "unit": "triệu đồng",
+    "formula": "Giátrịmục tiêu = NAV×trọng sốmục tiêu",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch18-l06",
+    "type": "scalar",
+    "label": "Sụt giảm danh mục",
+    "prompt": "NAV toàn danh mục lần lượt 100,125,100,130. Max drawdown bằng bao nhiêu?",
+    "expected": -20,
+    "unit": "%",
+    "formula": "NAV = Cash + Σ(số lượng×giáđịnhgiá)\nDD = NAV / max NAV lịch sử − 1",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+]

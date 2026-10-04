@@ -19,6 +19,7 @@ const ForgotPasswordPage = lazy(() => import("@/pages/account/forgot-password-pa
 const ResetPasswordPage = lazy(() => import("@/pages/account/reset-password-page").then(module => ({ default: module.ResetPasswordPage })))
 const CatalogPage = lazy(() => import("@/pages/learning/catalog-page").then(module => ({ default: module.CatalogPage })))
 const CourseDetailPage = lazy(() => import("@/pages/learning/course-detail-page").then(module => ({ default: module.CourseDetailPage })))
+const AcademyPage = lazy(() => import("@/pages/academy/academy-page").then(module => ({ default: module.AcademyPage })))
 const EpisodeViewerPage = lazy(() => import("@/pages/learning/episode-viewer-page").then(module => ({ default: module.EpisodeViewerPage })))
 const AdminDashboardPage = lazy(() => import("@/pages/admin/core/dashboard-page").then(module => ({ default: module.AdminDashboardPage })))
 const UsersPage = lazy(() => import("@/pages/admin/core/users-page").then(module => ({ default: module.UsersPage })))
@@ -81,6 +82,8 @@ const router = createBrowserRouter([
       { path: "bai-hoc", Component: CatalogPage, handle: { chrome: emptyChrome } },
       { path: "bai-hoc/:slug", Component: CourseDetailPage, handle: { chrome: emptyChrome } },
       { path: "bai-hoc/:slug/:episodeId", Component: EpisodeViewerPage, handle: { chrome: emptyChrome } },
+      { path: "hoc-vien", Component: AcademyPage, handle: { chrome: emptyChrome } },
+      { path: "hoc-vien/:lessonId", Component: AcademyPage, handle: { chrome: emptyChrome } },
       { path: "kien-thuc", Component: CatalogPage, handle: { chrome: emptyChrome } },
       { path: "cai-dat", Component: SettingsPage, handle: { chrome: emptyChrome } },
       { path: "nang-cap", Component: PremiumPage, handle: { chrome: emptyChrome } },

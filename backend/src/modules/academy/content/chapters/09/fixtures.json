@@ -1,0 +1,68 @@
+[
+  {
+    "lesson_id": "ch09-l01",
+    "type": "scalar",
+    "label": "N-day High",
+    "prompt": "Ba High trước là 100, 103, 102. Mức N-day High bằng bao nhiêu?",
+    "expected": 103,
+    "unit": "",
+    "formula": "N-day High tại T = max(High của T−N … T−1)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch09-l02",
+    "type": "scalar",
+    "label": "N-day Low",
+    "prompt": "Ba Low trước là 95, 92, 94. N-day Low bằng bao nhiêu?",
+    "expected": 92,
+    "unit": "",
+    "formula": "N-day Low tại T = min(Low của T−N … T−1)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch09-l03",
+    "type": "scalar",
+    "label": "Khoảng cách tới đỉnh 52 tuần",
+    "prompt": "Close = 90; High 252 = 100. Khoảng cách bằng bao nhiêu?",
+    "expected": -10,
+    "unit": "%",
+    "formula": "Khoảng cách = (Close / High252 − 1) × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch09-l04",
+    "type": "scalar",
+    "label": "Gap",
+    "prompt": "Open hiện tại = 103; Close phiên trước = 100. Gap bằng bao nhiêu?",
+    "expected": 3,
+    "unit": "%",
+    "formula": "Gap = (Open hiện tại / Close phiên trước − 1) × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch09-l05",
+    "type": "scalar",
+    "label": "Khoảng cách tới hỗ trợ",
+    "prompt": "Close = 102; hỗ trợ đã xác nhận = 100. Khoảng cách bằng bao nhiêu?",
+    "expected": 2,
+    "unit": "%",
+    "formula": "Support = Low tại pivot đã xác nhận\nKhoảng cách = (Close − Support)/Support × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch09-l06",
+    "type": "scalar",
+    "label": "Khoảng cách tới kháng cự",
+    "prompt": "Resistance = 110; Close = 100. Khoảng cách bằng bao nhiêu?",
+    "expected": 10,
+    "unit": "%",
+    "formula": "Resistance = High tại pivot đã xác nhận\nKhoảng cách = (Resistance − Close)/Close × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+]

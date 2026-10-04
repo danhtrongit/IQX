@@ -1,0 +1,1346 @@
+[
+  {
+    "question": "Dùng các dữ liệu: CFO = 180; Doanh thu = 1.200. CFO Margin bằng bao nhiêu theo công thức bài học?",
+    "options": [
+      {
+        "text": "25,5 %",
+        "id": "o1"
+      },
+      {
+        "text": "6,5 %",
+        "id": "o2"
+      },
+      {
+        "text": "25 %",
+        "id": "o3"
+      },
+      {
+        "text": "15 %",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Áp dụng CFO / Doanh thu × 100; kết quả 15 %.",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch08-l01-q01",
+    "lesson_id": "ch08-l01",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "CFO Margin đang bằng đúng 15 %. Bộ lọc đặt > 15 %. Kết quả nào đúng?",
+    "options": [
+      {
+        "text": "Không đạt điều kiện.",
+        "id": "o1"
+      },
+      {
+        "text": "Đạt vì bằng ngưỡng cũng được tính.",
+        "id": "o2"
+      },
+      {
+        "text": "Đạt nếu giá cổ phiếu tăng.",
+        "id": "o3"
+      },
+      {
+        "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l01-q02",
+    "lesson_id": "ch08-l01",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc CFO Margin?",
+    "options": [
+      {
+        "text": "CFO tăng do kéo dài trả nhà cung cấp không nhất thiết là cải thiện năng lực sinh tiền bền vững.",
+        "id": "o1"
+      },
+      {
+        "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+        "id": "o2"
+      },
+      {
+        "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+        "id": "o3"
+      },
+      {
+        "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "CFO Margin 15% cho biết dòng tiền kinh doanh kỳ này bằng 15% doanh thu; có thể khác biên lợi nhuận ròng. CFO tăng do kéo dài trả nhà cung cấp không nhất thiết là cải thiện năng lực sinh tiền bền vững.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch08-l01-q03",
+    "lesson_id": "ch08-l01",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính CFO Margin. Bộ lọc nên làm gì?",
+    "options": [
+      {
+        "text": "Điền 0 rồi kiểm tra như số thật.",
+        "id": "o1"
+      },
+      {
+        "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+        "id": "o2"
+      },
+      {
+        "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+        "id": "o3"
+      },
+      {
+        "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "skill": "dữ liệu",
+    "fixture": null,
+    "id": "ch08-l01-q04",
+    "lesson_id": "ch08-l01",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Nhận định nào đúng với CFO Margin?",
+    "options": [
+      {
+        "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+        "id": "o1"
+      },
+      {
+        "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+        "id": "o2"
+      },
+      {
+        "text": "CFO Margin 15% cho biết dòng tiền kinh doanh kỳ này bằng 15% doanh thu; có thể khác biên lợi nhuận ròng.",
+        "id": "o3"
+      },
+      {
+        "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "CFO Margin 15% cho biết dòng tiền kinh doanh kỳ này bằng 15% doanh thu; có thể khác biên lợi nhuận ròng. CFO là dòng tiền thuần từ hoạt động kinh doanh trên báo cáo lưu chuyển tiền tệ. Doanh thu lấy cùng kỳ. Dòng tiền âm được giữ dấu âm khi doanh thu dương. Báo cáo lũy kế chín tháng phải trừ sáu tháng để ra quý ba riêng khi người dùng chọn quý.",
+    "skill": "diễn giải",
+    "fixture": null,
+    "id": "ch08-l01-q05",
+    "lesson_id": "ch08-l01",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Hai doanh nghiệp A và B lần lượt có CFO Margin bằng 13 và 17 %. Điều kiện < 15 % giữ lại ai?",
+    "options": [
+      {
+        "text": "Chỉ A.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ B.",
+        "id": "o2"
+      },
+      {
+        "text": "Cả A và B.",
+        "id": "o3"
+      },
+      {
+        "text": "Không doanh nghiệp nào.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "13 < 15 đúng, 17 < 15 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l01-q06",
+    "lesson_id": "ch08-l01",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Báo cáo dùng tính CFO Margin kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+    "options": [
+      {
+        "text": "Có, nếu sau này công ty hoạt động tốt.",
+        "id": "o1"
+      },
+      {
+        "text": "Có, nhưng nhân kết quả với 0,5.",
+        "id": "o2"
+      },
+      {
+        "text": "Không; thông tin chưa có tại ngày 10/04.",
+        "id": "o3"
+      },
+      {
+        "text": "Có, vì kỳ kế toán đã kết thúc.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+    "skill": "thời điểm dữ liệu",
+    "fixture": null,
+    "id": "ch08-l01-q07",
+    "lesson_id": "ch08-l01",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Doanh nghiệp đạt điều kiện CFO Margin, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+    "options": [
+      {
+        "text": "Giữ vì một điều kiện đạt đã đủ.",
+        "id": "o1"
+      },
+      {
+        "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự bỏ điều kiện chưa đạt.",
+        "id": "o3"
+      },
+      {
+        "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l01-q08",
+    "lesson_id": "ch08-l01",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Dùng các dữ liệu: CFO = 80; Lợi nhuận sau thuế hợp nhất = 100. CFO / LNST bằng bao nhiêu theo công thức bài học?",
+    "options": [
+      {
+        "text": "0,8 lần",
+        "id": "o1"
+      },
+      {
+        "text": "4,2 lần",
+        "id": "o2"
+      },
+      {
+        "text": "-0,6 lần",
+        "id": "o3"
+      },
+      {
+        "text": "10,8 lần",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Áp dụng CFO / Lợi nhuận sau thuế hợp nhất; kết quả 0,8 lần.",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch08-l02-q01",
+    "lesson_id": "ch08-l02",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "CFO / LNST đang bằng đúng 0,8 lần. Bộ lọc đặt > 0,8 lần. Kết quả nào đúng?",
+    "options": [
+      {
+        "text": "Đạt vì bằng ngưỡng cũng được tính.",
+        "id": "o1"
+      },
+      {
+        "text": "Đạt nếu giá cổ phiếu tăng.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+        "id": "o3"
+      },
+      {
+        "text": "Không đạt điều kiện.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l02-q02",
+    "lesson_id": "ch08-l02",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc CFO / LNST?",
+    "options": [
+      {
+        "text": "Một kỳ thấp có thể do vốn lưu động phục vụ tăng trưởng; nhiều kỳ thấp cần đối chiếu phải thu, tồn kho và khoản không bằng tiền.",
+        "id": "o1"
+      },
+      {
+        "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+        "id": "o2"
+      },
+      {
+        "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+        "id": "o3"
+      },
+      {
+        "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Tỷ số 0,8 lần nghĩa là tiền kinh doanh bằng 80% lợi nhuận sau thuế cùng kỳ. Một kỳ thấp có thể do vốn lưu động phục vụ tăng trưởng; nhiều kỳ thấp cần đối chiếu phải thu, tồn kho và khoản không bằng tiền.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch08-l02-q03",
+    "lesson_id": "ch08-l02",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính CFO / LNST. Bộ lọc nên làm gì?",
+    "options": [
+      {
+        "text": "Điền 0 rồi kiểm tra như số thật.",
+        "id": "o1"
+      },
+      {
+        "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+        "id": "o2"
+      },
+      {
+        "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+        "id": "o3"
+      },
+      {
+        "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "skill": "dữ liệu",
+    "fixture": null,
+    "id": "ch08-l02-q04",
+    "lesson_id": "ch08-l02",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Nhận định nào đúng với CFO / LNST?",
+    "options": [
+      {
+        "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+        "id": "o1"
+      },
+      {
+        "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+        "id": "o2"
+      },
+      {
+        "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+        "id": "o3"
+      },
+      {
+        "text": "Tỷ số 0,8 lần nghĩa là tiền kinh doanh bằng 80% lợi nhuận sau thuế cùng kỳ.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Tỷ số 0,8 lần nghĩa là tiền kinh doanh bằng 80% lợi nhuận sau thuế cùng kỳ. Tử số và mẫu số đều theo phạm vi hợp nhất. Không dùng lợi nhuận thuộc công ty mẹ để ghép với toàn bộ CFO khi muốn phân tích khả năng chuyển lợi nhuận thành tiền toàn doanh nghiệp. Lợi nhuận không dương được gắn không đủ điều kiện diễn giải, kể cả khi chia hai số âm ra số dương.",
+    "skill": "diễn giải",
+    "fixture": null,
+    "id": "ch08-l02-q05",
+    "lesson_id": "ch08-l02",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Hai doanh nghiệp A và B lần lượt có CFO / LNST bằng -1,2 và 2,8 lần. Điều kiện < 0,8 lần giữ lại ai?",
+    "options": [
+      {
+        "text": "Cả A và B.",
+        "id": "o1"
+      },
+      {
+        "text": "Không doanh nghiệp nào.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ A.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ B.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "-1,2 < 0,8 đúng, 2,8 < 0,8 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l02-q06",
+    "lesson_id": "ch08-l02",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Báo cáo dùng tính CFO / LNST kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+    "options": [
+      {
+        "text": "Có, nhưng nhân kết quả với 0,5.",
+        "id": "o1"
+      },
+      {
+        "text": "Không; thông tin chưa có tại ngày 10/04.",
+        "id": "o2"
+      },
+      {
+        "text": "Có, vì kỳ kế toán đã kết thúc.",
+        "id": "o3"
+      },
+      {
+        "text": "Có, nếu sau này công ty hoạt động tốt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+    "skill": "thời điểm dữ liệu",
+    "fixture": null,
+    "id": "ch08-l02-q07",
+    "lesson_id": "ch08-l02",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Doanh nghiệp đạt điều kiện CFO / LNST, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+    "options": [
+      {
+        "text": "Giữ vì một điều kiện đạt đã đủ.",
+        "id": "o1"
+      },
+      {
+        "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự bỏ điều kiện chưa đạt.",
+        "id": "o3"
+      },
+      {
+        "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l02-q08",
+    "lesson_id": "ch08-l02",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Dùng các dữ liệu: FCF = 100; Doanh thu = 1.000. FCF Margin bằng bao nhiêu theo công thức bài học?",
+    "options": [
+      {
+        "text": "20 %",
+        "id": "o1"
+      },
+      {
+        "text": "10 %",
+        "id": "o2"
+      },
+      {
+        "text": "18 %",
+        "id": "o3"
+      },
+      {
+        "text": "4 %",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Áp dụng (CFO − Capex) / Doanh thu × 100; kết quả 10 %.",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch08-l03-q01",
+    "lesson_id": "ch08-l03",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "FCF Margin đang bằng đúng 10 %. Bộ lọc đặt > 10 %. Kết quả nào đúng?",
+    "options": [
+      {
+        "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+        "id": "o1"
+      },
+      {
+        "text": "Không đạt điều kiện.",
+        "id": "o2"
+      },
+      {
+        "text": "Đạt vì bằng ngưỡng cũng được tính.",
+        "id": "o3"
+      },
+      {
+        "text": "Đạt nếu giá cổ phiếu tăng.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l03-q02",
+    "lesson_id": "ch08-l03",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc FCF Margin?",
+    "options": [
+      {
+        "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+        "id": "o1"
+      },
+      {
+        "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+        "id": "o2"
+      },
+      {
+        "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+        "id": "o3"
+      },
+      {
+        "text": "FCF âm khi mở rộng nhà máy chưa đủ kết luận doanh nghiệp xấu; cần xem mục đích đầu tư và nguồn tài trợ.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "FCF Margin 10% biểu diễn tiền kinh doanh trừ chi đầu tư bằng 10% doanh thu. FCF âm khi mở rộng nhà máy chưa đủ kết luận doanh nghiệp xấu; cần xem mục đích đầu tư và nguồn tài trợ.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch08-l03-q03",
+    "lesson_id": "ch08-l03",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính FCF Margin. Bộ lọc nên làm gì?",
+    "options": [
+      {
+        "text": "Điền 0 rồi kiểm tra như số thật.",
+        "id": "o1"
+      },
+      {
+        "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+        "id": "o2"
+      },
+      {
+        "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+        "id": "o3"
+      },
+      {
+        "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "skill": "dữ liệu",
+    "fixture": null,
+    "id": "ch08-l03-q04",
+    "lesson_id": "ch08-l03",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Nhận định nào đúng với FCF Margin?",
+    "options": [
+      {
+        "text": "FCF Margin 10% biểu diễn tiền kinh doanh trừ chi đầu tư bằng 10% doanh thu.",
+        "id": "o1"
+      },
+      {
+        "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+        "id": "o2"
+      },
+      {
+        "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+        "id": "o3"
+      },
+      {
+        "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "FCF Margin 10% biểu diễn tiền kinh doanh trừ chi đầu tư bằng 10% doanh thu. Gói dùng FCF đơn giản = CFO − Capex tiền mặt, không đồng nhất với FCFF hay FCFE để chiết khấu định giá. Capex ghi số dương cho tiền mua tài sản cố định và tài sản vô hình; không trừ tiền bán tài sản và không gộp mua công ty nếu chưa có trường phân loại riêng.",
+    "skill": "diễn giải",
+    "fixture": null,
+    "id": "ch08-l03-q05",
+    "lesson_id": "ch08-l03",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Hai doanh nghiệp A và B lần lượt có FCF Margin bằng 8 và 12 %. Điều kiện < 10 % giữ lại ai?",
+    "options": [
+      {
+        "text": "Không doanh nghiệp nào.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ A.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ B.",
+        "id": "o3"
+      },
+      {
+        "text": "Cả A và B.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "8 < 10 đúng, 12 < 10 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l03-q06",
+    "lesson_id": "ch08-l03",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Báo cáo dùng tính FCF Margin kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+    "options": [
+      {
+        "text": "Không; thông tin chưa có tại ngày 10/04.",
+        "id": "o1"
+      },
+      {
+        "text": "Có, vì kỳ kế toán đã kết thúc.",
+        "id": "o2"
+      },
+      {
+        "text": "Có, nếu sau này công ty hoạt động tốt.",
+        "id": "o3"
+      },
+      {
+        "text": "Có, nhưng nhân kết quả với 0,5.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+    "skill": "thời điểm dữ liệu",
+    "fixture": null,
+    "id": "ch08-l03-q07",
+    "lesson_id": "ch08-l03",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Doanh nghiệp đạt điều kiện FCF Margin, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+    "options": [
+      {
+        "text": "Giữ vì một điều kiện đạt đã đủ.",
+        "id": "o1"
+      },
+      {
+        "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự bỏ điều kiện chưa đạt.",
+        "id": "o3"
+      },
+      {
+        "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l03-q08",
+    "lesson_id": "ch08-l03",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Dùng các dữ liệu: FCF kỳ này = 120; FCF cùng kỳ = 80. FCF Growth YoY bằng bao nhiêu theo công thức bài học?",
+    "options": [
+      {
+        "text": "24 %",
+        "id": "o1"
+      },
+      {
+        "text": "60 %",
+        "id": "o2"
+      },
+      {
+        "text": "50 %",
+        "id": "o3"
+      },
+      {
+        "text": "78 %",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Áp dụng (FCF kỳ này / FCF cùng kỳ − 1) × 100; kết quả 50 %.",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch08-l04-q01",
+    "lesson_id": "ch08-l04",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "FCF Growth YoY đang bằng đúng 50 %. Bộ lọc đặt > 50 %. Kết quả nào đúng?",
+    "options": [
+      {
+        "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+        "id": "o1"
+      },
+      {
+        "text": "Không đạt điều kiện.",
+        "id": "o2"
+      },
+      {
+        "text": "Đạt vì bằng ngưỡng cũng được tính.",
+        "id": "o3"
+      },
+      {
+        "text": "Đạt nếu giá cổ phiếu tăng.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l04-q02",
+    "lesson_id": "ch08-l04",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc FCF Growth YoY?",
+    "options": [
+      {
+        "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+        "id": "o1"
+      },
+      {
+        "text": "Từ FCF −80 lên +20 là chuyển sang dương; gói không biến trường hợp đó thành tăng trưởng phần trăm thông thường.",
+        "id": "o2"
+      },
+      {
+        "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+        "id": "o3"
+      },
+      {
+        "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Tăng 50% cần phân biệt CFO cải thiện hay chỉ do giảm Capex trong kỳ. Từ FCF −80 lên +20 là chuyển sang dương; gói không biến trường hợp đó thành tăng trưởng phần trăm thông thường.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch08-l04-q03",
+    "lesson_id": "ch08-l04",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính FCF Growth YoY. Bộ lọc nên làm gì?",
+    "options": [
+      {
+        "text": "Điền 0 rồi kiểm tra như số thật.",
+        "id": "o1"
+      },
+      {
+        "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+        "id": "o2"
+      },
+      {
+        "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+        "id": "o3"
+      },
+      {
+        "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Kỳ gốc phải dương. Kỳ gốc bằng 0 hoặc âm được ghi không đủ cơ sở tính tăng trưởng thông thường. Không lấy trị tuyệt đối mẫu số và không âm thầm biến kết quả thành 0%.",
+    "skill": "dữ liệu",
+    "fixture": null,
+    "id": "ch08-l04-q04",
+    "lesson_id": "ch08-l04",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Nhận định nào đúng với FCF Growth YoY?",
+    "options": [
+      {
+        "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+        "id": "o1"
+      },
+      {
+        "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+        "id": "o2"
+      },
+      {
+        "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+        "id": "o3"
+      },
+      {
+        "text": "Tăng 50% cần phân biệt CFO cải thiện hay chỉ do giảm Capex trong kỳ.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Tăng 50% cần phân biệt CFO cải thiện hay chỉ do giảm Capex trong kỳ. Trước tiên tính FCF của từng kỳ theo cùng CFO − Capex. Sau đó mới so tỷ lệ. Không so FCF năm hiện tại với CFO năm trước. Kỳ gốc phải dương; nếu không, hiển thị trạng thái chuyển lỗ, chuyển dương hoặc thiếu cơ sở tùy dữ liệu gốc.",
+    "skill": "diễn giải",
+    "fixture": null,
+    "id": "ch08-l04-q05",
+    "lesson_id": "ch08-l04",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Hai doanh nghiệp A và B lần lượt có FCF Growth YoY bằng 48 và 52 %. Điều kiện < 50 % giữ lại ai?",
+    "options": [
+      {
+        "text": "Không doanh nghiệp nào.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ A.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ B.",
+        "id": "o3"
+      },
+      {
+        "text": "Cả A và B.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "48 < 50 đúng, 52 < 50 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l04-q06",
+    "lesson_id": "ch08-l04",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Báo cáo dùng tính FCF Growth YoY kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+    "options": [
+      {
+        "text": "Có, vì kỳ kế toán đã kết thúc.",
+        "id": "o1"
+      },
+      {
+        "text": "Có, nếu sau này công ty hoạt động tốt.",
+        "id": "o2"
+      },
+      {
+        "text": "Có, nhưng nhân kết quả với 0,5.",
+        "id": "o3"
+      },
+      {
+        "text": "Không; thông tin chưa có tại ngày 10/04.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+    "skill": "thời điểm dữ liệu",
+    "fixture": null,
+    "id": "ch08-l04-q07",
+    "lesson_id": "ch08-l04",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Doanh nghiệp đạt điều kiện FCF Growth YoY, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+    "options": [
+      {
+        "text": "Giữ vì một điều kiện đạt đã đủ.",
+        "id": "o1"
+      },
+      {
+        "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự bỏ điều kiện chưa đạt.",
+        "id": "o3"
+      },
+      {
+        "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l04-q08",
+    "lesson_id": "ch08-l04",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Dùng các dữ liệu: Capex tiền mặt = 150; Doanh thu = 1.000. Capex / Revenue bằng bao nhiêu theo công thức bài học?",
+    "options": [
+      {
+        "text": "15 %",
+        "id": "o1"
+      },
+      {
+        "text": "25,5 %",
+        "id": "o2"
+      },
+      {
+        "text": "6,5 %",
+        "id": "o3"
+      },
+      {
+        "text": "25 %",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Áp dụng Capex / Doanh thu × 100; kết quả 15 %.",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch08-l05-q01",
+    "lesson_id": "ch08-l05",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Capex / Revenue đang bằng đúng 15 %. Bộ lọc đặt > 15 %. Kết quả nào đúng?",
+    "options": [
+      {
+        "text": "Đạt vì bằng ngưỡng cũng được tính.",
+        "id": "o1"
+      },
+      {
+        "text": "Đạt nếu giá cổ phiếu tăng.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+        "id": "o3"
+      },
+      {
+        "text": "Không đạt điều kiện.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l05-q02",
+    "lesson_id": "ch08-l05",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc Capex / Revenue?",
+    "options": [
+      {
+        "text": "Capex cao không tự động xấu và Capex thấp không tự động tốt; chi quá ít có thể khiến tài sản xuống cấp.",
+        "id": "o1"
+      },
+      {
+        "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+        "id": "o2"
+      },
+      {
+        "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+        "id": "o3"
+      },
+      {
+        "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Cường độ 15% cho biết chi đầu tư bằng 15% doanh thu kỳ này. Capex cao không tự động xấu và Capex thấp không tự động tốt; chi quá ít có thể khiến tài sản xuống cấp.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch08-l05-q03",
+    "lesson_id": "ch08-l05",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính Capex / Revenue. Bộ lọc nên làm gì?",
+    "options": [
+      {
+        "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+        "id": "o1"
+      },
+      {
+        "text": "Điền 0 rồi kiểm tra như số thật.",
+        "id": "o2"
+      },
+      {
+        "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+        "id": "o3"
+      },
+      {
+        "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "skill": "dữ liệu",
+    "fixture": null,
+    "id": "ch08-l05-q04",
+    "lesson_id": "ch08-l05",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Nhận định nào đúng với Capex / Revenue?",
+    "options": [
+      {
+        "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+        "id": "o1"
+      },
+      {
+        "text": "Cường độ 15% cho biết chi đầu tư bằng 15% doanh thu kỳ này.",
+        "id": "o2"
+      },
+      {
+        "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+        "id": "o3"
+      },
+      {
+        "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Cường độ 15% cho biết chi đầu tư bằng 15% doanh thu kỳ này. Capex là dòng tiền đầu tư tài sản cố định và vô hình theo định nghĩa của gói. Không thay bằng khấu hao: khấu hao là phân bổ chi phí kế toán, còn Capex là tiền chi. Dòng mua tài sản trên báo cáo thường âm; chuẩn hóa thành số chi dương trước khi tính.",
+    "skill": "diễn giải",
+    "fixture": null,
+    "id": "ch08-l05-q05",
+    "lesson_id": "ch08-l05",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Hai doanh nghiệp A và B lần lượt có Capex / Revenue bằng 13 và 17 %. Điều kiện < 15 % giữ lại ai?",
+    "options": [
+      {
+        "text": "Chỉ B.",
+        "id": "o1"
+      },
+      {
+        "text": "Cả A và B.",
+        "id": "o2"
+      },
+      {
+        "text": "Không doanh nghiệp nào.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ A.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "13 < 15 đúng, 17 < 15 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l05-q06",
+    "lesson_id": "ch08-l05",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Báo cáo dùng tính Capex / Revenue kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+    "options": [
+      {
+        "text": "Có, nhưng nhân kết quả với 0,5.",
+        "id": "o1"
+      },
+      {
+        "text": "Không; thông tin chưa có tại ngày 10/04.",
+        "id": "o2"
+      },
+      {
+        "text": "Có, vì kỳ kế toán đã kết thúc.",
+        "id": "o3"
+      },
+      {
+        "text": "Có, nếu sau này công ty hoạt động tốt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+    "skill": "thời điểm dữ liệu",
+    "fixture": null,
+    "id": "ch08-l05-q07",
+    "lesson_id": "ch08-l05",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Doanh nghiệp đạt điều kiện Capex / Revenue, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+    "options": [
+      {
+        "text": "Tự bỏ điều kiện chưa đạt.",
+        "id": "o1"
+      },
+      {
+        "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+        "id": "o2"
+      },
+      {
+        "text": "Giữ vì một điều kiện đạt đã đủ.",
+        "id": "o3"
+      },
+      {
+        "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l05-q08",
+    "lesson_id": "ch08-l05",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Dùng các dữ liệu: Lợi nhuận hợp nhất trừ CFO = 40; Tài sản bình quân = 1.000. Accrual Ratio bằng bao nhiêu theo công thức bài học?",
+    "options": [
+      {
+        "text": "9 %",
+        "id": "o1"
+      },
+      {
+        "text": "1 %",
+        "id": "o2"
+      },
+      {
+        "text": "14 %",
+        "id": "o3"
+      },
+      {
+        "text": "4 %",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Áp dụng (Lợi nhuận sau thuế hợp nhất − CFO) / Tài sản bình quân × 100; kết quả 4 %.",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch08-l06-q01",
+    "lesson_id": "ch08-l06",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Accrual Ratio đang bằng đúng 4 %. Bộ lọc đặt > 4 %. Kết quả nào đúng?",
+    "options": [
+      {
+        "text": "Không đạt điều kiện.",
+        "id": "o1"
+      },
+      {
+        "text": "Đạt vì bằng ngưỡng cũng được tính.",
+        "id": "o2"
+      },
+      {
+        "text": "Đạt nếu giá cổ phiếu tăng.",
+        "id": "o3"
+      },
+      {
+        "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l06-q02",
+    "lesson_id": "ch08-l06",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc Accrual Ratio?",
+    "options": [
+      {
+        "text": "Đây là biến thể dựa trên dòng tiền. Không được gọi một số cao là bằng chứng gian lận, hay đổi sang biến thể bảng cân đối mà giữ nguyên mã chỉ tiêu.",
+        "id": "o1"
+      },
+      {
+        "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+        "id": "o2"
+      },
+      {
+        "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+        "id": "o3"
+      },
+      {
+        "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Tỷ lệ 4% phản ánh chênh lợi nhuận và tiền kinh doanh bằng 4% tài sản bình quân. Đây là biến thể dựa trên dòng tiền. Không được gọi một số cao là bằng chứng gian lận, hay đổi sang biến thể bảng cân đối mà giữ nguyên mã chỉ tiêu.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch08-l06-q03",
+    "lesson_id": "ch08-l06",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính Accrual Ratio. Bộ lọc nên làm gì?",
+    "options": [
+      {
+        "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+        "id": "o1"
+      },
+      {
+        "text": "Điền 0 rồi kiểm tra như số thật.",
+        "id": "o2"
+      },
+      {
+        "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+        "id": "o3"
+      },
+      {
+        "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "skill": "dữ liệu",
+    "fixture": null,
+    "id": "ch08-l06-q04",
+    "lesson_id": "ch08-l06",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Nhận định nào đúng với Accrual Ratio?",
+    "options": [
+      {
+        "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+        "id": "o1"
+      },
+      {
+        "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+        "id": "o2"
+      },
+      {
+        "text": "Tỷ lệ 4% phản ánh chênh lợi nhuận và tiền kinh doanh bằng 4% tài sản bình quân.",
+        "id": "o3"
+      },
+      {
+        "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Tỷ lệ 4% phản ánh chênh lợi nhuận và tiền kinh doanh bằng 4% tài sản bình quân. Ví dụ lợi nhuận 140 và CFO 100 tạo chênh lệch 40. Chênh có thể từ khấu hao, dự phòng hoặc vốn lưu động. Tử số âm là hợp lệ khi CFO lớn hơn lợi nhuận. Mẫu số tài sản bình quân phải dương.",
+    "skill": "diễn giải",
+    "fixture": null,
+    "id": "ch08-l06-q05",
+    "lesson_id": "ch08-l06",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Hai doanh nghiệp A và B lần lượt có Accrual Ratio bằng 2 và 6 %. Điều kiện < 4 % giữ lại ai?",
+    "options": [
+      {
+        "text": "Không doanh nghiệp nào.",
+        "id": "o1"
+      },
+      {
+        "text": "Chỉ A.",
+        "id": "o2"
+      },
+      {
+        "text": "Chỉ B.",
+        "id": "o3"
+      },
+      {
+        "text": "Cả A và B.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "2 < 4 đúng, 6 < 4 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l06-q06",
+    "lesson_id": "ch08-l06",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Báo cáo dùng tính Accrual Ratio kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+    "options": [
+      {
+        "text": "Không; thông tin chưa có tại ngày 10/04.",
+        "id": "o1"
+      },
+      {
+        "text": "Có, vì kỳ kế toán đã kết thúc.",
+        "id": "o2"
+      },
+      {
+        "text": "Có, nếu sau này công ty hoạt động tốt.",
+        "id": "o3"
+      },
+      {
+        "text": "Có, nhưng nhân kết quả với 0,5.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+    "skill": "thời điểm dữ liệu",
+    "fixture": null,
+    "id": "ch08-l06-q07",
+    "lesson_id": "ch08-l06",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Doanh nghiệp đạt điều kiện Accrual Ratio, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+    "options": [
+      {
+        "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+        "id": "o1"
+      },
+      {
+        "text": "Tự bỏ điều kiện chưa đạt.",
+        "id": "o2"
+      },
+      {
+        "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+        "id": "o3"
+      },
+      {
+        "text": "Giữ vì một điều kiện đạt đã đủ.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch08-l06-q08",
+    "lesson_id": "ch08-l06",
+    "correct_option_id": "o3"
+  }
+]

@@ -1,0 +1,128 @@
+[
+  {
+    "lesson_id": "ch03-l01",
+    "type": "scalar",
+    "label": "Tăng trưởng doanh thu YoY",
+    "inputs": [
+      [
+        "Doanh thu kỳ này",
+        1200
+      ],
+      [
+        "Doanh thu cùng kỳ",
+        1000
+      ]
+    ],
+    "formula": "(Doanh thu kỳ này / Doanh thu cùng kỳ − 1) × 100",
+    "expected": 20,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Doanh thu kỳ này = 1200; Doanh thu cùng kỳ = 1000. Tính Tăng trưởng doanh thu YoY theo công thức của bài."
+  },
+  {
+    "lesson_id": "ch03-l02",
+    "type": "scalar",
+    "label": "Tăng trưởng LNST YoY",
+    "inputs": [
+      [
+        "Lợi nhuận kỳ này",
+        150
+      ],
+      [
+        "Lợi nhuận cùng kỳ",
+        120
+      ]
+    ],
+    "formula": "(Lợi nhuận kỳ này / Lợi nhuận cùng kỳ − 1) × 100",
+    "expected": 25,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Lợi nhuận kỳ này = 150; Lợi nhuận cùng kỳ = 120. Tính Tăng trưởng LNST YoY theo công thức của bài."
+  },
+  {
+    "lesson_id": "ch03-l03",
+    "type": "scalar",
+    "label": "Tăng trưởng EPS YoY",
+    "inputs": [
+      [
+        "EPS kỳ này",
+        2400
+      ],
+      [
+        "EPS cùng kỳ",
+        2000
+      ]
+    ],
+    "formula": "(EPS kỳ này / EPS cùng kỳ − 1) × 100",
+    "expected": 20,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "EPS kỳ này = 2400; EPS cùng kỳ = 2000. Tính Tăng trưởng EPS YoY theo công thức của bài."
+  },
+  {
+    "lesson_id": "ch03-l04",
+    "type": "scalar",
+    "label": "Biên lợi nhuận gộp",
+    "inputs": [
+      [
+        "Lợi nhuận gộp",
+        300
+      ],
+      [
+        "Doanh thu thuần",
+        1000
+      ]
+    ],
+    "formula": "Lợi nhuận gộp / Doanh thu thuần × 100",
+    "expected": 30,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Lợi nhuận gộp = 300; Doanh thu thuần = 1000. Tính Biên lợi nhuận gộp theo công thức của bài."
+  },
+  {
+    "lesson_id": "ch03-l05",
+    "type": "scalar",
+    "label": "Biên lợi nhuận ròng",
+    "inputs": [
+      [
+        "Lợi nhuận sau thuế hợp nhất",
+        120
+      ],
+      [
+        "Doanh thu thuần",
+        1000
+      ]
+    ],
+    "formula": "Lợi nhuận sau thuế hợp nhất / Doanh thu thuần × 100",
+    "expected": 12,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Lợi nhuận sau thuế hợp nhất = 120; Doanh thu thuần = 1000. Tính Biên lợi nhuận ròng theo công thức của bài."
+  },
+  {
+    "lesson_id": "ch03-l06",
+    "type": "scalar",
+    "label": "ROE",
+    "inputs": [
+      [
+        "Lợi nhuận thuộc cổ đông phổ thông",
+        120
+      ],
+      [
+        "Vốn chủ sở hữu bình quân",
+        600
+      ]
+    ],
+    "formula": "Lợi nhuận thuộc cổ đông phổ thông / Vốn chủ sở hữu phổ thông bình quân × 100",
+    "expected": 20,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Lợi nhuận thuộc cổ đông phổ thông = 120; Vốn chủ sở hữu bình quân = 600. Tính ROE theo công thức của bài."
+  }
+]

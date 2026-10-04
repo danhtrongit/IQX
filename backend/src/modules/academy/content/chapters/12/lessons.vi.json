@@ -1,0 +1,330 @@
+[
+  {
+    "id": "ch12-l01",
+    "chapter": 12,
+    "order": 1,
+    "name": "Revenue CAGR 3Y",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>Revenue CAGR 3 Y</strong> đo tốc độ tăng trưởng kép bình quân doanh thu qua ba khoảng năm.</p><p>Cần bốn mốc năm: năm gốc và ba năm sau. Không lấy ba con số của ba năm rồi gọi là ba khoảng tăng trưởng. Gói yêu cầu doanh thu đầu và cuối dương, các báo cáo cùng phạm vi. Công thức không phải trung bình cộng các tỷ lệ YoY.</p><p>CAGR 10% là tốc độ tăng đều tương đương từ đầu đến cuối, không nói năm nào cũng tăng 10%.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">[(Doanh thu cuối / Doanh thu gốc)^(1/3) − 1] × 100</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>Doanh thu cuối năm 3</td><td>1.331</td></tr><tr><td>Doanh thu năm gốc</td><td>1.000</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>10 %</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>Ba năm</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100. Phạm vi mặc định là doanh nghiệp phi tài chính. Ngân hàng, bảo hiểm và công ty chứng khoán cần bộ chỉ tiêu/nguồn riêng; gói không giả dữ liệu để lấp các trường không áp dụng.</p><p>Cần đủ bốn mốc năm cho ba khoảng tăng trưởng. Theo quy ước của gói, tất cả mốc dùng trong chuỗi này phải dương; năm thiếu hoặc không dương trả trạng thái riêng, không ép tạo CAGR.</p><p>Hai chuỗi cùng đầu/cuối có cùng CAGR dù một chuỗi tăng đều và một chuỗi dao động mạnh.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>Revenue CAGR 3 Y</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị %.</p><p>Với kết quả minh họa 10 %, điều kiện “Revenue CAGR 3 Y &gt; 9 %” đạt. Điều kiện “Revenue CAGR 3 Y &gt; 10 %” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Revenue CAGR 3Y",
+      "inputs": [
+        [
+          "Doanh thu cuối năm 3",
+          1331
+        ],
+        [
+          "Doanh thu năm gốc",
+          1000
+        ]
+      ],
+      "formula": "[(Doanh thu cuối / Doanh thu gốc)^(1/3) − 1] × 100",
+      "expected": 10,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "Doanh thu cuối năm 3 = 1331; Doanh thu năm gốc = 1000. Tính Revenue CAGR 3Y theo công thức của bài."
+    },
+    "config_id": "revenue_cagr3",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch12-l02",
+    "chapter": 12,
+    "order": 2,
+    "name": "Net Profit CAGR 3Y",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>Net Profit CAGR 3 Y</strong> đo tốc độ tăng trưởng kép lợi nhuận thuộc công ty mẹ qua ba năm.</p><p>Dùng lợi nhuận sau thuế thuộc công ty mẹ nhất quán bốn năm. Nếu năm đầu hoặc năm cuối không dương, không lấy trị tuyệt đối để cố tính căn bậc ba. Các trạng thái không đủ cơ sở phải tách khỏi tỷ lệ âm hợp lệ.</p><p>CAGR 20% cho biết mức tăng kép tương đương; vẫn phải kiểm tra từng năm có lợi nhuận bất thường không.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">[(Lợi nhuận cuối / Lợi nhuận gốc)^(1/3) − 1] × 100</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>Lợi nhuận cuối năm 3</td><td>172,8</td></tr><tr><td>Lợi nhuận năm gốc</td><td>100</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>20 %</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>Ba năm</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100.</p><p>Cần đủ bốn mốc năm cho ba khoảng tăng trưởng. Theo quy ước của gói, tất cả mốc dùng trong chuỗi này phải dương; năm thiếu hoặc không dương trả trạng thái riêng, không ép tạo CAGR.</p><p>Nếu có năm lỗ giữa chuỗi, việc chỉ đọc CAGR hai đầu sẽ che rủi ro. Gói yêu cầu toàn bộ bốn năm lợi nhuận dương cho bộ lọc CAGR thông thường.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>Net Profit CAGR 3 Y</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị %.</p><p>Với kết quả minh họa 20 %, điều kiện “Net Profit CAGR 3 Y &gt; 19 %” đạt. Điều kiện “Net Profit CAGR 3 Y &gt; 20 %” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Net Profit CAGR 3Y",
+      "inputs": [
+        [
+          "Lợi nhuận cuối năm 3",
+          172.8
+        ],
+        [
+          "Lợi nhuận năm gốc",
+          100
+        ]
+      ],
+      "formula": "[(Lợi nhuận cuối / Lợi nhuận gốc)^(1/3) − 1] × 100",
+      "expected": 20,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "Lợi nhuận cuối năm 3 = 172.8; Lợi nhuận năm gốc = 100. Tính Net Profit CAGR 3Y theo công thức của bài."
+    },
+    "config_id": "profit_cagr3",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch12-l03",
+    "chapter": 12,
+    "order": 3,
+    "name": "EPS CAGR 3Y",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>EPS CAGR 3 Y</strong> đo tăng trưởng kép EPS trên cùng cơ sở cổ phiếu qua ba năm.</p><p>Bốn mốc EPS năm phải cùng cơ sở điều chỉnh và đã được công bố tại ngày lọc. Gói chỉ tính CAGR thông thường khi cả bốn mốc dương. Không lấy bình quân EPS rồi tính tăng trưởng từ bình quân đó.</p><p>EPS CAGR đo phần lợi nhuận trên mỗi cổ phiếu, bổ sung cho tăng trưởng tổng lợi nhuận.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">[(EPS cuối / EPS gốc)^(1/3) − 1] × 100</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>EPS cuối năm 3</td><td>2.662</td></tr><tr><td>EPS năm gốc</td><td>2.000</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>10 %</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>Ba năm</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100.</p><p>Cần đủ bốn mốc năm cho ba khoảng tăng trưởng. Theo quy ước của gói, tất cả mốc dùng trong chuỗi này phải dương; năm thiếu hoặc không dương trả trạng thái riêng, không ép tạo CAGR.</p><p>Không ghép EPS trước và sau tách cổ phiếu chưa điều chỉnh. Một thay đổi cơ học số cổ phiếu không phải tăng trưởng kinh doanh.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>EPS CAGR 3 Y</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị %.</p><p>Với kết quả minh họa 10 %, điều kiện “EPS CAGR 3 Y &gt; 9 %” đạt. Điều kiện “EPS CAGR 3 Y &gt; 10 %” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "EPS CAGR 3Y",
+      "inputs": [
+        [
+          "EPS cuối năm 3",
+          2662
+        ],
+        [
+          "EPS năm gốc",
+          2000
+        ]
+      ],
+      "formula": "[(EPS cuối / EPS gốc)^(1/3) − 1] × 100",
+      "expected": 10,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "EPS cuối năm 3 = 2662; EPS năm gốc = 2000. Tính EPS CAGR 3Y theo công thức của bài."
+    },
+    "config_id": "eps_cagr3",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch12-l04",
+    "chapter": 12,
+    "order": 4,
+    "name": "Asset Turnover",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>Asset Turnover</strong> đo doanh thu tạo ra trên mỗi đồng tài sản bình quân.</p><p>Bình quân tài sản dùng hai đầu của kỳ doanh thu. Chỉ tiêu liên kết với ROA: hiệu quả sử dụng tài sản và biên lợi nhuận cùng góp phần tạo khả năng sinh lời. Không dùng tài sản cuối năm để đánh đồng với bình quân nếu biến động tài sản lớn.</p><p>Vòng quay 1,5 lần nghĩa là doanh thu kỳ bằng 1,5 lần tài sản bình quân.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">Doanh thu / Tài sản bình quân</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>Doanh thu</td><td>1.500</td></tr><tr><td>Tài sản bình quân</td><td>1.000</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>1,5 lần</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>TTM</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100. Phạm vi mặc định là doanh nghiệp phi tài chính. Ngân hàng, bảo hiểm và công ty chứng khoán cần bộ chỉ tiêu/nguồn riêng; gói không giả dữ liệu để lấp các trường không áp dụng.</p><p>Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.</p><p>Vòng quay cao chưa đồng nghĩa lợi nhuận cao: doanh nghiệp có thể bán nhanh nhưng biên rất thấp.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>Asset Turnover</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị lần.</p><p>Với kết quả minh họa 1,5 lần, điều kiện “Asset Turnover &gt; 0,5 lần” đạt. Điều kiện “Asset Turnover &gt; 1,5 lần” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Asset Turnover",
+      "inputs": [
+        [
+          "Doanh thu",
+          1500
+        ],
+        [
+          "Tài sản bình quân",
+          1000
+        ]
+      ],
+      "formula": "Doanh thu / Tài sản bình quân",
+      "expected": 1.5,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "Doanh thu = 1500; Tài sản bình quân = 1000. Tính Asset Turnover theo công thức của bài."
+    },
+    "config_id": "asset_turnover",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch12-l05",
+    "chapter": 12,
+    "order": 5,
+    "name": "Cash Conversion Cycle",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>Cash Conversion Cycle</strong> đo số ngày tiền gắn trong tồn kho và phải thu sau khi trừ thời gian được nhà cung cấp tài trợ.</p><p>DIO = tồn kho bình quân / giá vốn × 365. DSO = phải thu thương mại bình quân / doanh thu thuần × 365 theo biến thể dùng tổng doanh thu khi thiếu doanh thu bán chịu. DPO = phải trả thương mại bình quân / giá vốn × 365 theo biến thể xấp xỉ mua hàng. Cả ba dùng cùng kỳ; không áp cho ngân hàng. Ví dụ 60 + 30 − 45 = 45 ngày.</p><p>Chu kỳ 45 ngày là thước đo tổng hợp vốn lưu động; càng ngắn không phải lúc nào cũng tốt nếu do trì hoãn trả nợ quá mức.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">DIO + DSO − DPO</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>DIO</td><td>60</td></tr><tr><td>DSO</td><td>30</td></tr><tr><td>DPO</td><td>45</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>45 ngày</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>Năm</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100. Phạm vi mặc định là doanh nghiệp phi tài chính. Ngân hàng, bảo hiểm và công ty chứng khoán cần bộ chỉ tiêu/nguồn riêng; gói không giả dữ liệu để lấp các trường không áp dụng.</p><p>Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.</p><p>DPO kéo dài do mất khả năng thanh toán có thể làm CCC giảm nhưng rủi ro tăng.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>Cash Conversion Cycle</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị ngày.</p><p>Với kết quả minh họa 45 ngày, điều kiện “Cash Conversion Cycle &gt; 44 ngày” đạt. Điều kiện “Cash Conversion Cycle &gt; 45 ngày” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Cash Conversion Cycle",
+      "inputs": [
+        [
+          "DIO",
+          60
+        ],
+        [
+          "DSO",
+          30
+        ],
+        [
+          "DPO",
+          45
+        ]
+      ],
+      "formula": "DIO + DSO − DPO",
+      "expected": 45,
+      "unit": "ngày",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "DIO = 60; DSO = 30; DPO = 45. Tính Cash Conversion Cycle theo công thức của bài."
+    },
+    "config_id": "ccc",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch12-l06",
+    "chapter": 12,
+    "order": 6,
+    "name": "Working Capital Turnover",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>Working Capital Turnover</strong> đo doanh thu so với vốn lưu động ròng bình quân.</p><p>Gói dùng vốn lưu động ròng bằng tài sản ngắn hạn trừ nợ ngắn hạn, không phải biến thể chỉ gồm vốn lưu động hoạt động. Lấy chênh lệch tại đầu và cuối kỳ rồi bình quân. Phải công bố định nghĩa để không trộn với nguồn khác.</p><p>Năm lần cho biết doanh thu bằng năm lần vốn lưu động ròng bình quân theo định nghĩa này.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">Doanh thu / bình quân (Tài sản ngắn hạn − Nợ ngắn hạn)</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>Doanh thu</td><td>1.500</td></tr><tr><td>Vốn lưu động ròng bình quân</td><td>300</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>5 lần</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>TTM</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100. Phạm vi mặc định là doanh nghiệp phi tài chính. Ngân hàng, bảo hiểm và công ty chứng khoán cần bộ chỉ tiêu/nguồn riêng; gói không giả dữ liệu để lấp các trường không áp dụng.</p><p>Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.</p><p>Mẫu số gần 0 làm tỷ số rất lớn; không phải bằng chứng hiệu quả vượt trội. Vốn lưu động âm không được xếp hạng như vòng quay dương thông thường.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>Working Capital Turnover</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị lần.</p><p>Với kết quả minh họa 5 lần, điều kiện “Working Capital Turnover &gt; 4 lần” đạt. Điều kiện “Working Capital Turnover &gt; 5 lần” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Working Capital Turnover",
+      "inputs": [
+        [
+          "Doanh thu",
+          1500
+        ],
+        [
+          "Vốn lưu động ròng bình quân",
+          300
+        ]
+      ],
+      "formula": "Doanh thu / bình quân (Tài sản ngắn hạn − Nợ ngắn hạn)",
+      "expected": 5,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "Doanh thu = 1500; Vốn lưu động ròng bình quân = 300. Tính Working Capital Turnover theo công thức của bài."
+    },
+    "config_id": "working_cap_turnover",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  }
+]

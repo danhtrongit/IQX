@@ -1,0 +1,450 @@
+[
+  {
+    "no": 1,
+    "title": "Chỉ báo kỹ thuật nền tảng",
+    "type": "technical",
+    "bot": "Bot V2",
+    "lessons": [
+      "RSI",
+      "MACD",
+      "MA / SMA",
+      "Bollinger Bands",
+      "Khối lượng",
+      "Hợp lưu"
+    ],
+    "sample_path": "01-CHAPTERS/01/SAMPLE.html",
+    "lesson_ids": [
+      "ch01-l01",
+      "ch01-l02",
+      "ch01-l03",
+      "ch01-l04",
+      "ch01-l05",
+      "ch01-l06"
+    ]
+  },
+  {
+    "no": 2,
+    "title": "Strategy Lab & Backtest",
+    "type": "tool",
+    "bot": null,
+    "lessons": [
+      "Điều kiện Mua",
+      "Điều kiện Bán",
+      "Khoảng kiểm thử",
+      "Khớp lệnh",
+      "Phí giao dịch",
+      "Tổng lợi nhuận",
+      "CAGR",
+      "Sụt giảm lớn nhất",
+      "Số giao dịch",
+      "Tỷ lệ thắng",
+      "Lợi nhuận mua và giữ",
+      "VN-Index làm mốc so sánh",
+      "Lịch sử giao dịch",
+      "Độ nhạy tham số",
+      "Out-of-Sample",
+      "Walk-Forward",
+      "Look-Ahead Bias",
+      "Survivorship Bias"
+    ],
+    "sample_path": "01-CHAPTERS/02/SAMPLE.html",
+    "lesson_ids": [
+      "ch02-l01",
+      "ch02-l02",
+      "ch02-l03",
+      "ch02-l04",
+      "ch02-l05",
+      "ch02-l06",
+      "ch02-l07",
+      "ch02-l08",
+      "ch02-l09",
+      "ch02-l10",
+      "ch02-l11",
+      "ch02-l12",
+      "ch02-l13",
+      "ch02-l14",
+      "ch02-l15",
+      "ch02-l16",
+      "ch02-l17",
+      "ch02-l18"
+    ]
+  },
+  {
+    "no": 3,
+    "title": "Phân tích cơ bản nền tảng",
+    "type": "fundamental",
+    "bot": null,
+    "lessons": [
+      "Tăng trưởng doanh thu YoY",
+      "Tăng trưởng LNST YoY",
+      "Tăng trưởng EPS YoY",
+      "Biên lợi nhuận gộp",
+      "Biên lợi nhuận ròng",
+      "ROE"
+    ],
+    "sample_path": "01-CHAPTERS/03/SAMPLE.html",
+    "lesson_ids": [
+      "ch03-l01",
+      "ch03-l02",
+      "ch03-l03",
+      "ch03-l04",
+      "ch03-l05",
+      "ch03-l06"
+    ]
+  },
+  {
+    "no": 4,
+    "title": "Sử dụng Bộ lọc",
+    "type": "tool",
+    "bot": null,
+    "lessons": [
+      "Thêm chỉ tiêu",
+      "Toán tử lọc",
+      "Kết hợp điều kiện AND",
+      "Phạm vi thị trường",
+      "Lọc theo ngành",
+      "Chọn kỳ dữ liệu",
+      "Lưu bộ lọc",
+      "Lưu danh mục",
+      "Dùng danh mục trong Học viện",
+      "Dữ liệu Point-in-Time"
+    ],
+    "sample_path": "01-CHAPTERS/04/SAMPLE.html",
+    "lesson_ids": [
+      "ch04-l01",
+      "ch04-l02",
+      "ch04-l03",
+      "ch04-l04",
+      "ch04-l05",
+      "ch04-l06",
+      "ch04-l07",
+      "ch04-l08",
+      "ch04-l09",
+      "ch04-l10"
+    ]
+  },
+  {
+    "no": 5,
+    "title": "Xu hướng & động lượng nâng cao",
+    "type": "technical",
+    "bot": "Bot V3",
+    "lessons": [
+      "EMA",
+      "MA Cross",
+      "DMI",
+      "ADX",
+      "Stochastic",
+      "CCI"
+    ],
+    "sample_path": "01-CHAPTERS/05/SAMPLE.html",
+    "lesson_ids": [
+      "ch05-l01",
+      "ch05-l02",
+      "ch05-l03",
+      "ch05-l04",
+      "ch05-l05",
+      "ch05-l06"
+    ]
+  },
+  {
+    "no": 6,
+    "title": "Sức khỏe tài chính doanh nghiệp",
+    "type": "fundamental",
+    "bot": null,
+    "lessons": [
+      "ROA",
+      "ROIC",
+      "D/E (Nợ vay / Vốn chủ sở hữu)",
+      "Net Debt / EBITDA",
+      "Current Ratio",
+      "Interest Coverage"
+    ],
+    "sample_path": "01-CHAPTERS/06/SAMPLE.html",
+    "lesson_ids": [
+      "ch06-l01",
+      "ch06-l02",
+      "ch06-l03",
+      "ch06-l04",
+      "ch06-l05",
+      "ch06-l06"
+    ]
+  },
+  {
+    "no": 7,
+    "title": "Biến động & dòng tiền thị trường",
+    "type": "technical",
+    "bot": "Bot V4",
+    "lessons": [
+      "ATR",
+      "ATR Percent",
+      "Relative Volume",
+      "OBV",
+      "MFI",
+      "Chaikin Money Flow"
+    ],
+    "sample_path": "01-CHAPTERS/07/SAMPLE.html",
+    "lesson_ids": [
+      "ch07-l01",
+      "ch07-l02",
+      "ch07-l03",
+      "ch07-l04",
+      "ch07-l05",
+      "ch07-l06"
+    ]
+  },
+  {
+    "no": 8,
+    "title": "Chất lượng dòng tiền doanh nghiệp",
+    "type": "fundamental",
+    "bot": null,
+    "lessons": [
+      "CFO Margin",
+      "CFO / LNST",
+      "FCF Margin",
+      "FCF Growth YoY",
+      "Capex / Revenue",
+      "Accrual Ratio"
+    ],
+    "sample_path": "01-CHAPTERS/08/SAMPLE.html",
+    "lesson_ids": [
+      "ch08-l01",
+      "ch08-l02",
+      "ch08-l03",
+      "ch08-l04",
+      "ch08-l05",
+      "ch08-l06"
+    ]
+  },
+  {
+    "no": 9,
+    "title": "Cấu trúc giá",
+    "type": "technical",
+    "bot": "Bot V5",
+    "lessons": [
+      "N-day High",
+      "N-day Low",
+      "Khoảng cách tới đỉnh 52 tuần",
+      "Gap",
+      "Khoảng cách tới hỗ trợ",
+      "Khoảng cách tới kháng cự"
+    ],
+    "sample_path": "01-CHAPTERS/09/SAMPLE.html",
+    "lesson_ids": [
+      "ch09-l01",
+      "ch09-l02",
+      "ch09-l03",
+      "ch09-l04",
+      "ch09-l05",
+      "ch09-l06"
+    ]
+  },
+  {
+    "no": 10,
+    "title": "Định giá doanh nghiệp",
+    "type": "fundamental",
+    "bot": null,
+    "lessons": [
+      "P/E",
+      "P/B",
+      "P/S",
+      "EV / EBITDA",
+      "PEG",
+      "FCF Yield"
+    ],
+    "sample_path": "01-CHAPTERS/10/SAMPLE.html",
+    "lesson_ids": [
+      "ch10-l01",
+      "ch10-l02",
+      "ch10-l03",
+      "ch10-l04",
+      "ch10-l05",
+      "ch10-l06"
+    ]
+  },
+  {
+    "no": 11,
+    "title": "Kỹ thuật nâng cao II",
+    "type": "technical",
+    "bot": "Bot V6",
+    "lessons": [
+      "Donchian Channel",
+      "Keltner Channel",
+      "Bollinger BandWidth",
+      "ROC",
+      "Williams %R",
+      "Parabolic SAR"
+    ],
+    "sample_path": "01-CHAPTERS/11/SAMPLE.html",
+    "lesson_ids": [
+      "ch11-l01",
+      "ch11-l02",
+      "ch11-l03",
+      "ch11-l04",
+      "ch11-l05",
+      "ch11-l06"
+    ]
+  },
+  {
+    "no": 12,
+    "title": "Tăng trưởng dài hạn & hiệu quả vận hành",
+    "type": "fundamental",
+    "bot": null,
+    "lessons": [
+      "Revenue CAGR 3Y",
+      "Net Profit CAGR 3Y",
+      "EPS CAGR 3Y",
+      "Asset Turnover",
+      "Cash Conversion Cycle",
+      "Working Capital Turnover"
+    ],
+    "sample_path": "01-CHAPTERS/12/SAMPLE.html",
+    "lesson_ids": [
+      "ch12-l01",
+      "ch12-l02",
+      "ch12-l03",
+      "ch12-l04",
+      "ch12-l05",
+      "ch12-l06"
+    ]
+  },
+  {
+    "no": 13,
+    "title": "Sức mạnh tương đối & trạng thái thị trường",
+    "type": "technical",
+    "bot": "Bot V7",
+    "lessons": [
+      "Relative Strength vs VN-Index",
+      "Relative Strength vs ngành",
+      "Advance / Decline Line",
+      "% cổ phiếu trên MA50",
+      "New High – New Low",
+      "VN-Index vs MA200"
+    ],
+    "sample_path": "01-CHAPTERS/13/SAMPLE.html",
+    "lesson_ids": [
+      "ch13-l01",
+      "ch13-l02",
+      "ch13-l03",
+      "ch13-l04",
+      "ch13-l05",
+      "ch13-l06"
+    ]
+  },
+  {
+    "no": 14,
+    "title": "Độ ổn định doanh nghiệp",
+    "type": "fundamental",
+    "bot": null,
+    "lessons": [
+      "Revenue Growth Stability",
+      "EPS Stability",
+      "Margin Stability",
+      "ROIC Stability",
+      "FCF Positive Streak",
+      "Profit Positive Streak"
+    ],
+    "sample_path": "01-CHAPTERS/14/SAMPLE.html",
+    "lesson_ids": [
+      "ch14-l01",
+      "ch14-l02",
+      "ch14-l03",
+      "ch14-l04",
+      "ch14-l05",
+      "ch14-l06"
+    ]
+  },
+  {
+    "no": 15,
+    "title": "Cổ đông & phân bổ vốn",
+    "type": "fundamental",
+    "bot": null,
+    "lessons": [
+      "Dividend Yield",
+      "Payout Ratio",
+      "Dividend Growth",
+      "Share Count Growth",
+      "Buyback Yield",
+      "Shareholder Yield"
+    ],
+    "sample_path": "01-CHAPTERS/15/SAMPLE.html",
+    "lesson_ids": [
+      "ch15-l01",
+      "ch15-l02",
+      "ch15-l03",
+      "ch15-l04",
+      "ch15-l05",
+      "ch15-l06"
+    ]
+  },
+  {
+    "no": 16,
+    "title": "Kiến trúc chiến lược nâng cao",
+    "type": "system",
+    "bot": "Bot V8",
+    "lessons": [
+      "Universe",
+      "Ranking",
+      "Nested AND / OR / NOT",
+      "Multi-timeframe",
+      "Signal Priority",
+      "Re-entry & Cooldown"
+    ],
+    "sample_path": "01-CHAPTERS/16/SAMPLE.html",
+    "lesson_ids": [
+      "ch16-l01",
+      "ch16-l02",
+      "ch16-l03",
+      "ch16-l04",
+      "ch16-l05",
+      "ch16-l06"
+    ]
+  },
+  {
+    "no": 17,
+    "title": "Quản trị vốn & vị thế",
+    "type": "system",
+    "bot": "Bot V9",
+    "lessons": [
+      "Quy mô theo % NAV",
+      "Số tiền cố định",
+      "Số vị thế tối đa",
+      "Cắt lỗ theo %",
+      "Chốt lời theo %",
+      "Trailing Stop theo %",
+      "Thời gian giữ tối đa"
+    ],
+    "sample_path": "01-CHAPTERS/17/SAMPLE.html",
+    "lesson_ids": [
+      "ch17-l01",
+      "ch17-l02",
+      "ch17-l03",
+      "ch17-l04",
+      "ch17-l05",
+      "ch17-l06",
+      "ch17-l07"
+    ]
+  },
+  {
+    "no": 18,
+    "title": "Quản trị danh mục",
+    "type": "system",
+    "bot": "Bot V10",
+    "lessons": [
+      "Đa dạng hóa",
+      "Tương quan",
+      "Rủi ro tập trung",
+      "Tỷ trọng ngành",
+      "Tái cân bằng",
+      "Sụt giảm danh mục"
+    ],
+    "sample_path": "01-CHAPTERS/18/SAMPLE.html",
+    "lesson_ids": [
+      "ch18-l01",
+      "ch18-l02",
+      "ch18-l03",
+      "ch18-l04",
+      "ch18-l05",
+      "ch18-l06"
+    ]
+  }
+]

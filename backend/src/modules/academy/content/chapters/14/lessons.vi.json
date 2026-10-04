@@ -1,0 +1,358 @@
+[
+  {
+    "id": "ch14-l01",
+    "chapter": 14,
+    "order": 1,
+    "name": "Revenue Growth Stability",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>Revenue Growth Stability</strong> đo độ phân tán của ba mức tăng trưởng doanh thu năm.</p><p>Bản này dùng độ lệch chuẩn tổng thể, chia cho 3. Cần bốn năm doanh thu để tạo ba YoY hợp lệ. Dữ liệu thiếu một năm thì không rút còn hai quan sát và vẫn gọi là ba năm. Không lấy trị tuyệt đối của các tăng trưởng trước khi tính.</p><p>Độ lệch chuẩn khoảng 8,16 điểm phần trăm mô tả độ dao động, không phải mức tăng trưởng bình quân.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">sqrt[Σ(gᵢ − trung bình g)² / 3]</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>Tăng trưởng năm 1</td><td>10</td></tr><tr><td>Tăng trưởng năm 2</td><td>20</td></tr><tr><td>Tăng trưởng năm 3</td><td>30</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>8,16 điểm %</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>Ba năm</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100. Độ lệch chuẩn tính trên các tỷ lệ; UI nhân 100 để ra điểm phần trăm. Không gọi 2 điểm phần trăm là tăng 2% tương đối. Phạm vi mặc định là doanh nghiệp phi tài chính. Ngân hàng, bảo hiểm và công ty chứng khoán cần bộ chỉ tiêu/nguồn riêng; gói không giả dữ liệu để lấp các trường không áp dụng.</p><p>Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.</p><p>Một công ty tăng đều −5% mỗi năm có độ lệch chuẩn 0 nhưng vẫn suy giảm. Phải đọc mức tăng trưởng cùng độ ổn định.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>Revenue Growth Stability</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị điểm %.</p><p>Với kết quả minh họa 8,16 điểm %, điều kiện “Revenue Growth Stability &gt; 7,16 điểm %” đạt. Điều kiện “Revenue Growth Stability &gt; 8,16 điểm %” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Revenue Growth Stability",
+      "inputs": [
+        [
+          "Tăng trưởng năm 1",
+          10
+        ],
+        [
+          "Tăng trưởng năm 2",
+          20
+        ],
+        [
+          "Tăng trưởng năm 3",
+          30
+        ]
+      ],
+      "formula": "sqrt[Σ(gᵢ − trung bình g)² / 3]",
+      "expected": 8.16496580927726,
+      "unit": "điểm %",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "Tăng trưởng năm 1 = 10; Tăng trưởng năm 2 = 20; Tăng trưởng năm 3 = 30. Tính Revenue Growth Stability theo công thức của bài."
+    },
+    "config_id": "revenue_growth_stability",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch14-l02",
+    "chapter": 14,
+    "order": 2,
+    "name": "EPS Stability",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>EPS Stability</strong> đo độ phân tán của ba tốc độ tăng trưởng EPS năm.</p><p>Tên bài EPS Stability được giữ từ chương trình. Định nghĩa kỹ thuật cụ thể dùng ba tăng trưởng năm hợp lệ trên bốn EPS năm đã điều chỉnh; chia 3. Tăng trưởng âm hợp lệ vẫn được giữ dấu khi tính.</p><p>Chỉ tiêu ở đây là độ ổn định tăng trưởng EPS, không phải độ lệch chuẩn trực tiếp của mức EPS.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">sqrt[Σ(g EPS ᵢ − trung bình g EPS)² / 3]</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>Tăng trưởng EPS năm 1</td><td>5</td></tr><tr><td>Tăng trưởng EPS năm 2</td><td>10</td></tr><tr><td>Tăng trưởng EPS năm 3</td><td>15</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>4,08 điểm %</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>Ba năm</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100. Độ lệch chuẩn tính trên các tỷ lệ; UI nhân 100 để ra điểm phần trăm. Không gọi 2 điểm phần trăm là tăng 2% tương đối.</p><p>Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.</p><p>Chuỗi EPS chưa điều chỉnh tách cổ phiếu có thể tạo biến động giả.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>EPS Stability</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị điểm %.</p><p>Với kết quả minh họa 4,08 điểm %, điều kiện “EPS Stability &gt; 3,08 điểm %” đạt. Điều kiện “EPS Stability &gt; 4,08 điểm %” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "EPS Stability",
+      "inputs": [
+        [
+          "Tăng trưởng EPS năm 1",
+          5
+        ],
+        [
+          "Tăng trưởng EPS năm 2",
+          10
+        ],
+        [
+          "Tăng trưởng EPS năm 3",
+          15
+        ]
+      ],
+      "formula": "sqrt[Σ(gEPSᵢ − trung bình gEPS)² / 3]",
+      "expected": 4.08248290463863,
+      "unit": "điểm %",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "Tăng trưởng EPS năm 1 = 5; Tăng trưởng EPS năm 2 = 10; Tăng trưởng EPS năm 3 = 15. Tính EPS Stability theo công thức của bài."
+    },
+    "config_id": "eps_growth_stability",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch14-l03",
+    "chapter": 14,
+    "order": 3,
+    "name": "Margin Stability",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>Margin Stability</strong> đo độ phân tán biên lợi nhuận ròng của ba năm.</p><p>Bản này cố định loại biên là biên lợi nhuận ròng đã học; không tạo bộ chọn loại biên mới trong cùng mã chỉ tiêu. Cần đủ ba biên năm hợp lệ, cùng chuẩn hợp nhất. Thay báo cáo cần có phiên bản dữ liệu.</p><p>Độ lệch chuẩn 1,63 điểm phần trăm nói biên quanh mức bình quân; không nói biên bình quân cao hay thấp.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">sqrt[Σ(mᵢ − trung bình m)² / 3]</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>Biên năm 1</td><td>10</td></tr><tr><td>Biên năm 2</td><td>12</td></tr><tr><td>Biên năm 3</td><td>14</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>1,63 điểm %</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>Ba năm</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100. Độ lệch chuẩn tính trên các tỷ lệ; UI nhân 100 để ra điểm phần trăm. Không gọi 2 điểm phần trăm là tăng 2% tương đối. Phạm vi mặc định là doanh nghiệp phi tài chính. Ngân hàng, bảo hiểm và công ty chứng khoán cần bộ chỉ tiêu/nguồn riêng; gói không giả dữ liệu để lấp các trường không áp dụng.</p><p>Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.</p><p>Không dùng biên gộp một năm ghép với biên ròng hai năm còn lại.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>Margin Stability</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị điểm %.</p><p>Với kết quả minh họa 1,63 điểm %, điều kiện “Margin Stability &gt; 0,63 điểm %” đạt. Điều kiện “Margin Stability &gt; 1,63 điểm %” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Margin Stability",
+      "inputs": [
+        [
+          "Biên năm 1",
+          10
+        ],
+        [
+          "Biên năm 2",
+          12
+        ],
+        [
+          "Biên năm 3",
+          14
+        ]
+      ],
+      "formula": "sqrt[Σ(mᵢ − trung bình m)² / 3]",
+      "expected": 1.632993161855452,
+      "unit": "điểm %",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "Biên năm 1 = 10; Biên năm 2 = 12; Biên năm 3 = 14. Tính Margin Stability theo công thức của bài."
+    },
+    "config_id": "net_margin_stability",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch14-l04",
+    "chapter": 14,
+    "order": 4,
+    "name": "ROIC Stability",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>ROIC Stability</strong> đo độ phân tán của ROIC ba năm theo cùng định nghĩa vốn đầu tư.</p><p>Dùng ba giá trị ROIC năm đã tính theo cùng calculation_version. Không điền 0 vào năm thiếu dữ liệu. Công ty ROIC ổn định nhưng thấp vẫn khác công ty ổn định ở mức cao; cần kết hợp điều kiện về mức ROIC.</p><p>Độ lệch chuẩn 2,45 điểm phần trăm chỉ là độ dao động quanh mức bình quân 15%.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">sqrt[Σ(ROIC ᵢ − trung bình ROIC)² / 3]</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>ROIC năm 1</td><td>12</td></tr><tr><td>ROIC năm 2</td><td>15</td></tr><tr><td>ROIC năm 3</td><td>18</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>2,45 điểm %</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>Ba năm</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100. Độ lệch chuẩn tính trên các tỷ lệ; UI nhân 100 để ra điểm phần trăm. Không gọi 2 điểm phần trăm là tăng 2% tương đối. Phạm vi mặc định là doanh nghiệp phi tài chính. Ngân hàng, bảo hiểm và công ty chứng khoán cần bộ chỉ tiêu/nguồn riêng; gói không giả dữ liệu để lấp các trường không áp dụng.</p><p>Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.</p><p>Đổi cách xác định tiền dư hoặc thuế suất giữa các năm có thể tạo biến động phương pháp thay vì biến động kinh doanh.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>ROIC Stability</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị điểm %.</p><p>Với kết quả minh họa 2,45 điểm %, điều kiện “ROIC Stability &gt; 1,45 điểm %” đạt. Điều kiện “ROIC Stability &gt; 2,45 điểm %” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "ROIC Stability",
+      "inputs": [
+        [
+          "ROIC năm 1",
+          12
+        ],
+        [
+          "ROIC năm 2",
+          15
+        ],
+        [
+          "ROIC năm 3",
+          18
+        ]
+      ],
+      "formula": "sqrt[Σ(ROICᵢ − trung bình ROIC)² / 3]",
+      "expected": 2.449489742783178,
+      "unit": "điểm %",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "ROIC năm 1 = 12; ROIC năm 2 = 15; ROIC năm 3 = 18. Tính ROIC Stability theo công thức của bài."
+    },
+    "config_id": "roic_stability",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch14-l05",
+    "chapter": 14,
+    "order": 5,
+    "name": "FCF Positive Streak",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>FCF Positive Streak</strong> đo số năm FCF dương liên tiếp tính lùi từ năm gần nhất.</p><p>Dùng năm tài chính đầy đủ, không trộn TTM cập nhật hàng quý với chuỗi năm. Nếu toàn bộ lịch sử có sẵn đều dương nhưng chưa biết năm trước nữa, gói trả ít nhất N năm cùng cờ giới hạn lịch sử. Phép &gt; vẫn kiểm tra được nếu cận dưới đã vượt ngưỡng; không tự khẳng định chuỗi chính xác.</p><p>Chuỗi 10, −5, 8, 12 có hai năm dương liên tiếp gần nhất, không phải ba năm vì tổng số năm dương là ba.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">Đếm lùi tới năm đầu tiên có FCF ≤ 0</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>Năm cũ nhất</td><td>10</td></tr><tr><td>Năm tiếp theo</td><td>-5</td></tr><tr><td>Năm tiếp theo</td><td>8</td></tr><tr><td>Năm gần nhất</td><td>12</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>2 năm</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>Năm</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100. Phạm vi mặc định là doanh nghiệp phi tài chính. Ngân hàng, bảo hiểm và công ty chứng khoán cần bộ chỉ tiêu/nguồn riêng; gói không giả dữ liệu để lấp các trường không áp dụng.</p><p>Giá trị 0 kết thúc chuỗi. Không được đi xuyên một năm chưa có báo cáo; khi thiếu lịch sử trước một chuỗi toàn dương phải hiển thị cận dưới thay vì độ dài chính xác giả.</p><p>Năm bằng 0 làm đứt chuỗi dương. Năm thiếu dữ liệu không được bỏ qua để nối hai đoạn.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>FCF Positive Streak</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị năm.</p><p>Với kết quả minh họa 2 năm, điều kiện “FCF Positive Streak &gt; 1 năm” đạt. Điều kiện “FCF Positive Streak &gt; 2 năm” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "FCF Positive Streak",
+      "inputs": [
+        [
+          "Năm cũ nhất",
+          10
+        ],
+        [
+          "Năm tiếp theo",
+          -5
+        ],
+        [
+          "Năm tiếp theo",
+          8
+        ],
+        [
+          "Năm gần nhất",
+          12
+        ]
+      ],
+      "formula": "Đếm lùi tới năm đầu tiên có FCF ≤ 0",
+      "expected": 2,
+      "unit": "năm",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "Năm cũ nhất = 10; Năm tiếp theo = -5; Năm tiếp theo = 8; Năm gần nhất = 12. Tính FCF Positive Streak theo công thức của bài."
+    },
+    "config_id": "fcf_positive_streak",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch14-l06",
+    "chapter": 14,
+    "order": 6,
+    "name": "Profit Positive Streak",
+    "kind": "fundamental",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>Profit Positive Streak</strong> đo số năm lợi nhuận thuộc công ty mẹ dương liên tiếp từ hiện tại về trước.</p><p>Tử số dùng lợi nhuận sau thuế thuộc công ty mẹ giống bài tăng trưởng lợi nhuận. Mốc 0 không tính dương. Lịch sử phải theo năm liên tục; báo cáo thiếu làm không xác định độ dài qua chỗ thiếu thay vì tự xem là một năm có lãi.</p><p>Chuỗi −8, 5, 9, 11 có ba năm gần nhất có lãi liên tục.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">Đếm lùi tới năm đầu tiên có lợi nhuận ≤ 0</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>Năm cũ nhất</td><td>-8</td></tr><tr><td>Năm tiếp theo</td><td>5</td></tr><tr><td>Năm tiếp theo</td><td>9</td></tr><tr><td>Năm gần nhất</td><td>11</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>3 năm</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+      },
+      {
+        "title": "Kỳ dữ liệu và giới hạn",
+        "html": "<p>Kỳ mặc định trong gói: <strong>Năm</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100.</p><p>Giá trị 0 kết thúc chuỗi. Không được đi xuyên một năm chưa có báo cáo; khi thiếu lịch sử trước một chuỗi toàn dương phải hiển thị cận dưới thay vì độ dài chính xác giả.</p><p>Có lãi liên tục không chứng minh mức lãi tăng hoặc lợi nhuận có chất lượng tiền tốt.</p>"
+      },
+      {
+        "title": "Vận dụng trong Bộ lọc",
+        "html": "<p>Thêm <strong>Profit Positive Streak</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị năm.</p><p>Với kết quả minh họa 3 năm, điều kiện “Profit Positive Streak &gt; 2 năm” đạt. Điều kiện “Profit Positive Streak &gt; 3 năm” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Profit Positive Streak",
+      "inputs": [
+        [
+          "Năm cũ nhất",
+          -8
+        ],
+        [
+          "Năm tiếp theo",
+          5
+        ],
+        [
+          "Năm tiếp theo",
+          9
+        ],
+        [
+          "Năm gần nhất",
+          11
+        ]
+      ],
+      "formula": "Đếm lùi tới năm đầu tiên có lợi nhuận ≤ 0",
+      "expected": 3,
+      "unit": "năm",
+      "tolerance": 0.015,
+      "synthetic": true,
+      "prompt": "Năm cũ nhất = -8; Năm tiếp theo = 5; Năm tiếp theo = 9; Năm gần nhất = 11. Tính Profit Positive Streak theo công thức của bài."
+    },
+    "config_id": "profit_positive_streak",
+    "prerequisites": [],
+    "sources": [
+      "source:fundamental-registry-v1",
+      "author:financial-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  }
+]

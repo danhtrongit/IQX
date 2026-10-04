@@ -1,0 +1,79 @@
+[
+  {
+    "lesson_id": "ch17-l01",
+    "type": "scalar",
+    "label": "Quy mô theo % NAV",
+    "prompt": "NAV 100 triệu, tỷ trọng 20%, cash 15 triệu. Ngân sách tối đa là bao nhiêu triệu?",
+    "expected": 15,
+    "unit": "triệu đồng",
+    "formula": "Ngân sách = min(NAV×tỷ trọng,tiềnkhảdụng)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch17-l02",
+    "type": "scalar",
+    "label": "Số tiền cố định",
+    "prompt": "Ngân sách 10 triệu, giá 30.000, lô 100, bỏ phí cho ví dụ. Mua tối đa bao nhiêu cổ phiếu?",
+    "expected": 300,
+    "unit": "cổ phiếu",
+    "formula": "Số lượng = floor[Ngân sách/(Giá×(1+phímua)×lô)]×lô",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch17-l03",
+    "type": "scalar",
+    "label": "Số vị thế tối đa",
+    "prompt": "Giới hạn 5 mã, đang giữ 3 mã. Có thể mở thêm tối đa bao nhiêu?",
+    "expected": 2,
+    "unit": "vị thế",
+    "formula": "Chỗtrống = max(0,giớihạn−sốvị thếđangmở)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch17-l04",
+    "type": "scalar",
+    "label": "Cắt lỗ theo %",
+    "prompt": "Giá mua 100, cắt lỗ 5%. Mức kích hoạt là bao nhiêu?",
+    "expected": 95,
+    "unit": "đơn vị giá",
+    "formula": "Stop = Giámua×(1−tỷlệcắt lỗ)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch17-l05",
+    "type": "scalar",
+    "label": "Chốt lời theo %",
+    "prompt": "Giá mua 100, chốt lời 15%. Target bằng bao nhiêu?",
+    "expected": 115,
+    "unit": "đơn vị giá",
+    "formula": "Target = Giámua×(1+tỷlệchốt lời)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch17-l06",
+    "type": "scalar",
+    "label": "Trailing Stop theo %",
+    "prompt": "Đỉnh đã ghi nhận 120, trailing 8%. Mức dừng lỗ bám đuổi là bao nhiêu?",
+    "expected": 110.4,
+    "unit": "đơn vị giá",
+    "formula": "Trailing = Đỉnhthamchiếuđãbiết×(1−tỷlệ)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch17-l07",
+    "type": "scalar",
+    "label": "Thời gian giữ tối đa",
+    "prompt": "Khớp mua ở phiên 10, đang ở phiên 30. Held bằng bao nhiêu?",
+    "expected": 20,
+    "unit": "phiên",
+    "formula": "Held = chỉ số phiênhiện tại − chỉ số phiênkhớpmua",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+]

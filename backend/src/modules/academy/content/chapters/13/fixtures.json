@@ -1,0 +1,68 @@
+[
+  {
+    "lesson_id": "ch13-l01",
+    "type": "scalar",
+    "label": "Relative Strength vs VN-Index",
+    "prompt": "Cổ phiếu tăng 12%, VN-Index tăng 5% cùng kỳ. RS bằng bao nhiêu?",
+    "expected": 7,
+    "unit": "điểm %",
+    "formula": "RS = Return cổ phiếu(N) − Return VN-Index(N)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch13-l02",
+    "type": "scalar",
+    "label": "Relative Strength vs ngành",
+    "prompt": "Cổ phiếu giảm 2%, chỉ số ngành giảm 6%. RS ngành bằng bao nhiêu?",
+    "expected": 4,
+    "unit": "điểm %",
+    "formula": "RS ngành = Return cổ phiếu(N) − Return chỉ số ngành(N)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch13-l03",
+    "type": "scalar",
+    "label": "Advance / Decline Line",
+    "prompt": "AD Line trước=1000; có 180 mã tăng và 120 mã giảm. AD Line mới bằng bao nhiêu?",
+    "expected": 1060,
+    "unit": "",
+    "formula": "Net Advances = Số mã tăng − Số mã giảm\nAD Line mới = AD Line trước + Net Advances",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch13-l04",
+    "type": "scalar",
+    "label": "% cổ phiếu trên MA50",
+    "prompt": "Có 120 mã trên MA 50 trong 200 mã đủ dữ liệu. Tỷ lệ bằng bao nhiêu?",
+    "expected": 60,
+    "unit": "%",
+    "formula": "Tỷ lệ = Số mã Close>SMA50 / Số mã đủ dữ liệu × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch13-l05",
+    "type": "scalar",
+    "label": "New High – New Low",
+    "prompt": "Có 40 mã tạo đỉnh mới và 15 mã tạo đáy mới. NHNL bằng bao nhiêu?",
+    "expected": 25,
+    "unit": "mã",
+    "formula": "NHNL = Số mã High vượt max252phiên trước − Số mã Low dưới min252phiên trước",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch13-l06",
+    "type": "scalar",
+    "label": "VN-Index vs MA200",
+    "prompt": "VN-Index=1250; SMA 200=1200. Khoảng chênh chỉ số trừ SMA bằng bao nhiêu?",
+    "expected": 50,
+    "unit": "điểm",
+    "formula": "SMA(N) củaVN-Index = Tổng N giá trịchốtphiên / N",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+]

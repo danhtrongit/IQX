@@ -1,0 +1,354 @@
+[
+  {
+    "legacy_id": "ma_stack_bull",
+    "group": "Mua B1",
+    "expression": "ma_stack_bull is_true",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "uptrend",
+    "group": "Mua B1",
+    "expression": "uptrend is_true",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "close_above_ma50",
+    "group": "Mua B1",
+    "expression": "close > ma_50",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": {
+      "target": "ma",
+      "period": 50,
+      "op": ">",
+      "status": "candidate_only_after_parity_test"
+    },
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "ma_20_slope",
+    "group": "Mua B1",
+    "expression": "ma_20_slope > 0.02",
+    "validation_legacy": "0…0.05; 0.005",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "rsi_14_buy_mom",
+    "group": "Mua B2",
+    "expression": "rsi_14 cross_above 50",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "macd_hist_buy",
+    "group": "Mua B2",
+    "expression": "macd_hist > 0",
+    "validation_legacy": "−0.5…0.5; 0.05",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "macd_bull_cross",
+    "group": "Mua B2",
+    "expression": "macd_bull_cross is_true",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "roc_20d_buy",
+    "group": "Mua B2",
+    "expression": "roc_20d > 0.05",
+    "validation_legacy": "0…0.2; 0.01",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "rsi_14_oversold",
+    "group": "Mua B3",
+    "expression": "rsi_14 < 30",
+    "validation_legacy": "20…40; 1",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "dist_ma_20_buy",
+    "group": "Mua B3",
+    "expression": "dist_ma_20 < −0.05",
+    "validation_legacy": "−0.15…0; 0.01",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "dist_52w_low_buy",
+    "group": "Mua B3",
+    "expression": "dist_52w_low < 0.05",
+    "validation_legacy": "0…1; 0.05",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "dist_ma_200_buy",
+    "group": "Mua B3",
+    "expression": "dist_ma_200 > 0",
+    "validation_legacy": "−0.2…0.2; 0.01",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "breakout_20d",
+    "group": "Mua B4",
+    "expression": "breakout_20d is_true",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "breakout_52w",
+    "group": "Mua B4",
+    "expression": "breakout_52w is_true",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "dist_52w_high_buy",
+    "group": "Mua B4",
+    "expression": "dist_52w_high > −0.05",
+    "validation_legacy": "−0.3…0; 0.01",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "vol_zscore_buy",
+    "group": "Mua B5",
+    "expression": "vol_zscore > 1.5",
+    "validation_legacy": "1…3; 0.1",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "obv_cross_buy",
+    "group": "Mua B5",
+    "expression": "obv cross_above obv_ma_20",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "bb_squeeze_buy",
+    "group": "Mua B6",
+    "expression": "bb_squeeze is_true",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "bb_width_buy",
+    "group": "Mua B6",
+    "expression": "bb_width < 0.05",
+    "validation_legacy": "0.01…0.2; 0.01",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "atr_pct_low",
+    "group": "Mua B6",
+    "expression": "atr_pct < 0.05",
+    "validation_legacy": "0.01…0.15; 0.005",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "hammer_buy",
+    "group": "Mua B7",
+    "expression": "hammer is_true",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "bull_engulfing_buy",
+    "group": "Mua B7",
+    "expression": "bull_engulfing is_true",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "death_cross",
+    "group": "Bán S1",
+    "expression": "death_cross is_true",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "close_below_ma50",
+    "group": "Bán S1",
+    "expression": "close < ma_50",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": {
+      "target": "ma",
+      "period": 50,
+      "op": "<",
+      "status": "candidate_only_after_parity_test"
+    },
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "uptrend_off",
+    "group": "Bán S1",
+    "expression": "uptrend == 0",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "rsi_14_sell_mom",
+    "group": "Bán S2",
+    "expression": "rsi_14 cross_below 50",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "macd_bear_cross",
+    "group": "Bán S2",
+    "expression": "macd_bear_cross is_true",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "roc_20d_sell",
+    "group": "Bán S2",
+    "expression": "roc_20d < −0.05",
+    "validation_legacy": "−0.2…0; 0.01",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "rsi_14_overbought",
+    "group": "Bán S3",
+    "expression": "rsi_14 > 70",
+    "validation_legacy": "60…80; 1",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "dist_ma_20_sell",
+    "group": "Bán S3",
+    "expression": "dist_ma_20 > 0.1",
+    "validation_legacy": "0…0.2; 0.01",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "breakdown_20d",
+    "group": "Bán S4",
+    "expression": "breakdown_20d is_true",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "breakdown_52w",
+    "group": "Bán S4",
+    "expression": "breakdown_52w is_true",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "bb_breakout_down",
+    "group": "Bán S4",
+    "expression": "bb_breakout_down is_true",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "vol_zscore_sell",
+    "group": "Bán S5",
+    "expression": "vol_zscore > 1.5",
+    "validation_legacy": "1…3; 0.1",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "obv_cross_sell",
+    "group": "Bán S5",
+    "expression": "obv cross_below obv_ma_20",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "atr_pct_high",
+    "group": "Bán S6",
+    "expression": "atr_pct > 0.08",
+    "validation_legacy": "0.05…0.15; 0.005",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "shooting_star_sell",
+    "group": "Bán S7",
+    "expression": "shooting_star is_true",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  },
+  {
+    "legacy_id": "bear_engulfing_sell",
+    "group": "Bán S7",
+    "expression": "bear_engulfing is_true",
+    "validation_legacy": "Cố định",
+    "migration_action": "keep_legacy",
+    "new_editor_candidate": null,
+    "reason": "Không tự chuyển vì formula/seed/event/fee/execution/logic có thể khác. Giữ schema/engine legacy và dữ liệu nguyên vẹn; chuyển opt-in sau parity test."
+  }
+]

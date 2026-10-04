@@ -1,0 +1,234 @@
+[
+  {
+    "id": "revenue_cagr3",
+    "name": "Revenue CAGR 3Y",
+    "lesson_id": "ch12-l01",
+    "chapter": 12,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "cagr",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "[(Doanh thu cuối / Doanh thu gốc)^(1/3) − 1] × 100",
+    "period": "Ba năm",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Cần đủ bốn mốc năm cho ba khoảng tăng trưởng. Theo quy ước của gói, tất cả mốc dùng trong chuỗi này phải dương; năm thiếu hoặc không dương trả trạng thái riêng, không ép tạo CAGR.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Revenue CAGR 3Y",
+      "inputs": [
+        [
+          "Doanh thu cuối năm 3",
+          1331
+        ],
+        [
+          "Doanh thu năm gốc",
+          1000
+        ]
+      ],
+      "formula": "[(Doanh thu cuối / Doanh thu gốc)^(1/3) − 1] × 100",
+      "expected": 10,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Cần bốn mốc năm: năm gốc và ba năm sau. Không lấy ba con số của ba năm rồi gọi là ba khoảng tăng trưởng. Gói yêu cầu doanh thu đầu và cuối dương, các báo cáo cùng phạm vi. Công thức không phải trung bình cộng các tỷ lệ YoY."
+  },
+  {
+    "id": "profit_cagr3",
+    "name": "Net Profit CAGR 3Y",
+    "lesson_id": "ch12-l02",
+    "chapter": 12,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "cagr",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "[(Lợi nhuận cuối / Lợi nhuận gốc)^(1/3) − 1] × 100",
+    "period": "Ba năm",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Cần đủ bốn mốc năm cho ba khoảng tăng trưởng. Theo quy ước của gói, tất cả mốc dùng trong chuỗi này phải dương; năm thiếu hoặc không dương trả trạng thái riêng, không ép tạo CAGR.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Net Profit CAGR 3Y",
+      "inputs": [
+        [
+          "Lợi nhuận cuối năm 3",
+          172.8
+        ],
+        [
+          "Lợi nhuận năm gốc",
+          100
+        ]
+      ],
+      "formula": "[(Lợi nhuận cuối / Lợi nhuận gốc)^(1/3) − 1] × 100",
+      "expected": 20,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Dùng lợi nhuận sau thuế thuộc công ty mẹ nhất quán bốn năm. Nếu năm đầu hoặc năm cuối không dương, không lấy trị tuyệt đối để cố tính căn bậc ba. Các trạng thái không đủ cơ sở phải tách khỏi tỷ lệ âm hợp lệ."
+  },
+  {
+    "id": "eps_cagr3",
+    "name": "EPS CAGR 3Y",
+    "lesson_id": "ch12-l03",
+    "chapter": 12,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "cagr",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "[(EPS cuối / EPS gốc)^(1/3) − 1] × 100",
+    "period": "Ba năm",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Cần đủ bốn mốc năm cho ba khoảng tăng trưởng. Theo quy ước của gói, tất cả mốc dùng trong chuỗi này phải dương; năm thiếu hoặc không dương trả trạng thái riêng, không ép tạo CAGR.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "EPS CAGR 3Y",
+      "inputs": [
+        [
+          "EPS cuối năm 3",
+          2662
+        ],
+        [
+          "EPS năm gốc",
+          2000
+        ]
+      ],
+      "formula": "[(EPS cuối / EPS gốc)^(1/3) − 1] × 100",
+      "expected": 10,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Bốn mốc EPS năm phải cùng cơ sở điều chỉnh và đã được công bố tại ngày lọc. Gói chỉ tính CAGR thông thường khi cả bốn mốc dương. Không lấy bình quân EPS rồi tính tăng trưởng từ bình quân đó."
+  },
+  {
+    "id": "asset_turnover",
+    "name": "Asset Turnover",
+    "lesson_id": "ch12-l04",
+    "chapter": 12,
+    "unit": "lần",
+    "api_unit": "lần",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Doanh thu / Tài sản bình quân",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Asset Turnover",
+      "inputs": [
+        [
+          "Doanh thu",
+          1500
+        ],
+        [
+          "Tài sản bình quân",
+          1000
+        ]
+      ],
+      "formula": "Doanh thu / Tài sản bình quân",
+      "expected": 1.5,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Bình quân tài sản dùng hai đầu của kỳ doanh thu. Chỉ tiêu liên kết với ROA: hiệu quả sử dụng tài sản và biên lợi nhuận cùng góp phần tạo khả năng sinh lời. Không dùng tài sản cuối năm để đánh đồng với bình quân nếu biến động tài sản lớn."
+  },
+  {
+    "id": "ccc",
+    "name": "Cash Conversion Cycle",
+    "lesson_id": "ch12-l05",
+    "chapter": 12,
+    "unit": "ngày",
+    "api_unit": "ngày",
+    "kind": "ccc",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "DIO + DSO − DPO",
+    "period": "Năm",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Cash Conversion Cycle",
+      "inputs": [
+        [
+          "DIO",
+          60
+        ],
+        [
+          "DSO",
+          30
+        ],
+        [
+          "DPO",
+          45
+        ]
+      ],
+      "formula": "DIO + DSO − DPO",
+      "expected": 45,
+      "unit": "ngày",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "DIO = tồn kho bình quân / giá vốn × 365. DSO = phải thu thương mại bình quân / doanh thu thuần × 365 theo biến thể dùng tổng doanh thu khi thiếu doanh thu bán chịu. DPO = phải trả thương mại bình quân / giá vốn × 365 theo biến thể xấp xỉ mua hàng. Cả ba dùng cùng kỳ; không áp cho ngân hàng. Ví dụ 60 + 30 − 45 = 45 ngày."
+  },
+  {
+    "id": "working_cap_turnover",
+    "name": "Working Capital Turnover",
+    "lesson_id": "ch12-l06",
+    "chapter": 12,
+    "unit": "lần",
+    "api_unit": "lần",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Doanh thu / bình quân (Tài sản ngắn hạn − Nợ ngắn hạn)",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Working Capital Turnover",
+      "inputs": [
+        [
+          "Doanh thu",
+          1500
+        ],
+        [
+          "Vốn lưu động ròng bình quân",
+          300
+        ]
+      ],
+      "formula": "Doanh thu / bình quân (Tài sản ngắn hạn − Nợ ngắn hạn)",
+      "expected": 5,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Gói dùng vốn lưu động ròng bằng tài sản ngắn hạn trừ nợ ngắn hạn, không phải biến thể chỉ gồm vốn lưu động hoạt động. Lấy chênh lệch tại đầu và cuối kỳ rồi bình quân. Phải công bố định nghĩa để không trộn với nguồn khác."
+  }
+]

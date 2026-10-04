@@ -8,6 +8,10 @@
  * Hành vi giữ nguyên từ bản cũ: cần mã + ít nhất 1 tín hiệu MUA mới chạy; lưu
  * chiến lược cần tên; tạo cảnh báo cần tên + tín hiệu MUA; tải mẫu/chiến lược đã
  * lưu ghi đè cấu hình hiện tại. Xoá chiến lược đã lưu nay có bước xác nhận.
+ *
+ * bot-v2: khi mở trang, `BacktestLab` đọc `GET /strategy/shared-config`. Máy chủ
+ * tắt tính năng (404 FEATURE_DISABLED) → giữ nguyên bộ backtest cũ
+ * (`LegacyBacktestLab`); ngược lại → Backtest v2 trên cấu hình Mua/Bán chung.
  */
 import { useMemo, useState } from "react"
 import { ChevronDown, FolderOpen, LoaderCircle, Play, Save, Sparkles, X } from "lucide-react"
@@ -37,7 +41,10 @@ import { ApiError, errorMessage } from "@/lib/api"
 import { toast } from "sonner"
 
 import { useAuth } from "@/hooks/use-auth"
+import { isFeatureDisabled } from "@/lib/shared-config"
 
+import { BacktestV2 } from "../backtest-v2/backtest-v2"
+import { useSharedConfigQuery } from "../backtest-v2/hooks"
 import { ConfirmDialog } from "../confirm-dialog"
 import {
   useBacktestCatalog,
@@ -72,6 +79,46 @@ function runErrorMessage(error: unknown): string {
 }
 
 export function BacktestLab({ initialSymbol }: { initialSymbol?: string }) {
+  const sharedConfig = useSharedConfigQuery()
+
+  if (sharedConfig.isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center" role="status" aria-label="Đang tải Backtest">
+        <LoaderCircle className="size-5 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (sharedConfig.isError) {
+    if (isFeatureDisabled(sharedConfig.error)) return <LegacyBacktestLab initialSymbol={initialSymbol} />
+    const forbidden =
+      sharedConfig.error instanceof ApiError &&
+      (sharedConfig.error.status === 401 || sharedConfig.error.status === 403)
+    if (forbidden) {
+      return (
+        <div className="mx-auto w-full max-w-[1100px] p-4 sm:p-6">
+          <PanelState
+            title="Cần gói Premium"
+            description="Bộ backtest chỉ dành cho tài khoản Premium. Máy chủ từ chối yêu cầu khi gói chưa hoạt động."
+          />
+        </div>
+      )
+    }
+    return (
+      <div className="mx-auto w-full max-w-[1100px] p-4 sm:p-6">
+        <PanelState
+          title="Không tải được cấu hình chiến lược"
+          description={errorMessage(sharedConfig.error)}
+          action={{ label: "Thử lại", onClick: () => void sharedConfig.refetch() }}
+        />
+      </div>
+    )
+  }
+
+  return <BacktestV2 initialSymbol={initialSymbol} />
+}
+
+function LegacyBacktestLab({ initialSymbol }: { initialSymbol?: string }) {
   const { isPremium, premiumLoading } = useAuth()
   const catalogQuery = useBacktestCatalog()
   const savedQuery = useSavedStrategies()

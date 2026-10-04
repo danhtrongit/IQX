@@ -56,6 +56,7 @@ const SHARED_NAV = [
   ["Demo Trading", "/demo-trading"],
   ["Chiến lược", "/chien-luoc"],
   ["Bài học", "/bai-hoc"],
+  ["Học viện", "/hoc-vien"],
 ] as const
 
 describe("Header", () => {
@@ -140,6 +141,8 @@ describe("Header", () => {
 
   it.each([
     ["/demo-trading", "Demo Trading"],
+    ["/hoc-vien", "Học viện"],
+    ["/hoc-vien/ch01-l01", "Học viện"],
   ])("marks only %s as the active content route", (pathname, label) => {
     renderHeader(pathname)
     const nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })

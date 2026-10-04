@@ -1,0 +1,68 @@
+[
+  {
+    "lesson_id": "ch11-l01",
+    "type": "scalar",
+    "label": "Donchian Channel",
+    "prompt": "Upper = 110; Lower = 90. Middle bằng bao nhiêu?",
+    "expected": 100,
+    "unit": "",
+    "formula": "Upper = max(High của N phiên trước)\nLower = min(Low của N phiên trước)\nMiddle = (Upper + Lower)/2",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch11-l02",
+    "type": "scalar",
+    "label": "Keltner Channel",
+    "prompt": "EMA = 100; ATR = 3; k = 2. Upper bằng bao nhiêu?",
+    "expected": 106,
+    "unit": "",
+    "formula": "Middle = EMA(Close, N)\nUpper = Middle + k × ATR(M)\nLower = Middle − k × ATR(M)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch11-l03",
+    "type": "scalar",
+    "label": "Bollinger BandWidth",
+    "prompt": "Upper = 110; Lower = 90; Middle = 100. Band Width bằng bao nhiêu?",
+    "expected": 20,
+    "unit": "%",
+    "formula": "BandWidth = (Upper − Lower)/Middle × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch11-l04",
+    "type": "scalar",
+    "label": "ROC",
+    "prompt": "Close hiện tại = 110; Close cách 20 phiên = 100. ROC 20 bằng bao nhiêu?",
+    "expected": 10,
+    "unit": "%",
+    "formula": "ROC(N) = (Close hiện tại / Close cách N phiên − 1) × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch11-l05",
+    "type": "scalar",
+    "label": "Williams %R",
+    "prompt": "High N = 110; Low N = 90; Close = 94. %R bằng bao nhiêu?",
+    "expected": -80,
+    "unit": "",
+    "formula": "%R = −100 × (HighN − Close)/(HighN − LowN)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch11-l06",
+    "type": "scalar",
+    "label": "Parabolic SAR",
+    "prompt": "SAR trước = 95; EP = 110; AF = 0,02. SAR dự kiến trước ràng buộc biên bằng bao nhiêu?",
+    "expected": 95.3,
+    "unit": "",
+    "formula": "SAR dự kiến = SAR trước + AF × (EP − SAR trước)",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+]

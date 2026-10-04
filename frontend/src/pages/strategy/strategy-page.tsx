@@ -1,8 +1,8 @@
 /**
- * `/chien-luoc` — trang Chiến lược hợp nhất: tab Cảnh báo + tab Backtest.
+ * `/chien-luoc` — trang Chiến lược hợp nhất: tab Cảnh báo | Backtest | Bộ lọc.
  *
  * Đồng bộ URL (giống bản dashboard cũ):
- * - `?tab=canh-bao` (mặc định) | `?tab=backtest` — đổi tab ghi `replace` nên
+ * - `?tab=canh-bao` (mặc định) | `?tab=backtest` | `?tab=bo-loc` — đổi tab ghi `replace` nên
  *   không làm nặng lịch sử trình duyệt, và giữ nguyên `?symbol=` đang có.
  * - `?symbol=XXX` — mã khởi tạo cho tab Backtest (nguồn của `/backtest/:symbol`
  *   và `/backtest` mà Main chuyển hướng về đây).
@@ -18,16 +18,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { AlertsView } from "./alerts/alerts-view"
 import { BacktestLab } from "./backtest/backtest-lab"
+import { FilterTab } from "./filter/filter-tab"
 import { StrategyPremiumGate } from "./strategy-premium-gate"
 
 const TABS = [
   { key: "canh-bao", label: "Cảnh báo" },
   { key: "backtest", label: "Backtest" },
+  { key: "bo-loc", label: "Bộ lọc" },
 ] as const
+
+type TabKey = (typeof TABS)[number]["key"]
+
+function toTab(value: string | null): TabKey {
+  return TABS.find((item) => item.key === value)?.key ?? "canh-bao"
+}
 
 export function StrategyPage() {
   const [params, setParams] = useSearchParams()
-  const tab = params.get("tab") === "backtest" ? "backtest" : "canh-bao"
+  const tab = toTab(params.get("tab"))
   const symbol = params.get("symbol") ?? undefined
 
   const onChangeTab = (next: string) => {
@@ -44,7 +52,7 @@ export function StrategyPage() {
   return (
     <WorkspacePage
       title="Chiến lược"
-      description="Cảnh báo tín hiệu kỹ thuật và công cụ Backtest chiến lược giao dịch."
+      description="Cảnh báo tín hiệu kỹ thuật, Backtest chiến lược và Bộ lọc cổ phiếu."
       scroll={false}
     >
       <StrategyPremiumGate>
@@ -71,6 +79,10 @@ export function StrategyPage() {
 
           <TabsContent value="backtest" className="flex min-h-0 flex-col overflow-hidden">
             <BacktestLab initialSymbol={symbol} />
+          </TabsContent>
+
+          <TabsContent value="bo-loc" className="flex min-h-0 flex-col overflow-hidden">
+            <FilterTab />
           </TabsContent>
         </Tabs>
       </StrategyPremiumGate>

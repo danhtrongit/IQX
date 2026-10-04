@@ -1,0 +1,200 @@
+[
+  {
+    "lesson_id": "ch02-l01",
+    "type": "scalar",
+    "label": "Điều kiện Mua",
+    "prompt": "Có ba điều kiện Mua: hai đúng, một sai. Có bao nhiêu nhóm AND đạt?",
+    "expected": 0,
+    "unit": "nhóm",
+    "formula": "Entry = Có ít nhất một điều kiện Mua và AND(các điều kiện đang bật)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l02",
+    "type": "scalar",
+    "label": "Điều kiện Bán",
+    "prompt": "Bán dùng MACD và MA. MACD đúng, MA đúng. Số nhóm AND Bán đạt là bao nhiêu?",
+    "expected": 1,
+    "unit": "nhóm",
+    "formula": "Exit_signal = Có điều kiện Bán và AND(các điều kiện Bán)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l03",
+    "type": "scalar",
+    "label": "Khoảng kiểm thử",
+    "prompt": "Cần 200 phiên khởi tạo trước kỳ và 300 phiên trong kỳ. Tổng cần nạp bao nhiêu phiên?",
+    "expected": 500,
+    "unit": "phiên",
+    "formula": "Dữ liệu nạp = dữ liệu khởi tạo trước kỳ + dữ liệu trong kỳ",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l04",
+    "type": "scalar",
+    "label": "Khớp lệnh",
+    "prompt": "Tín hiệu xuất hiện khi đóng cửa 100; phiên sau mở cửa 105. Giá mua next-open là bao nhiêu?",
+    "expected": 105,
+    "unit": "đơn vị giá",
+    "formula": "Next-open: tín hiệu đóng cửa T → khớp mở cửa phiên T+1\nSame-close demo: tín hiệu đóng cửa T → ghi giá đóng cửa T",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l05",
+    "type": "scalar",
+    "label": "Phí giao dịch",
+    "prompt": "Mua 100, bán 110; phí mua 0,15%, tổng phí/thuế bán 0,25%. Lợi nhuận thuần khoảng bao nhiêu phần trăm?",
+    "expected": 9.560659011482775,
+    "unit": "%",
+    "formula": "Lãi/lỗ lệnh = Giá bán×(1−phí bán) / [Giá mua×(1+phí mua)] − 1",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l06",
+    "type": "scalar",
+    "label": "Tổng lợi nhuận",
+    "prompt": "Vốn 100 triệu; cuối kỳ tiền mặt 40 triệu và cổ phiếu trị giá 80 triệu. Tổng lợi nhuận là bao nhiêu?",
+    "expected": 20,
+    "unit": "%",
+    "formula": "Return = (Giá trị cuối kỳ / Vốn ban đầu − 1) × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l07",
+    "type": "scalar",
+    "label": "CAGR",
+    "prompt": "Vốn tăng từ 100 lên 121 trong 504 phiên. Theo 252 phiên/năm, CAGR bằng bao nhiêu?",
+    "expected": 10,
+    "unit": "%",
+    "formula": "CAGR = [(Giá trị cuối / Vốn đầu)^(252 / số phiên test) − 1] × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l08",
+    "type": "scalar",
+    "label": "Sụt giảm lớn nhất",
+    "prompt": "Danh mục lần lượt 100,120,90,110. Sụt giảm lớn nhất bằng bao nhiêu phần trăm?",
+    "expected": -25,
+    "unit": "%",
+    "formula": "DD tại T = Giá trị T / đỉnh giá trị từ đầu tới T − 1\nMax DD = min(DD tại mọi T)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l09",
+    "type": "scalar",
+    "label": "Số giao dịch",
+    "prompt": "Có 7 lần mua,6 lần bán đóng đủ 6 vị thế,1 vị thế còn mở. KPI số giao dịch đã đóng là bao nhiêu?",
+    "expected": 6,
+    "unit": "giao dịch",
+    "formula": "N giao dịch = số vòng mua−bán đã khớp và đóng",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l10",
+    "type": "scalar",
+    "label": "Tỷ lệ thắng",
+    "prompt": "Có 8 giao dịch:3 lãi,4 lỗ,1 hòa vốn. Tỷ lệ thắng là bao nhiêu?",
+    "expected": 37.5,
+    "unit": "%",
+    "formula": "Win rate = Số giao dịch có P/L thuần > 0 / Số giao dịch đã đóng × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l11",
+    "type": "scalar",
+    "label": "Lợi nhuận mua và giữ",
+    "prompt": "Giá đầu 100, giữa kỳ đạt 180, cuối kỳ 130. Lợi nhuận mua và giữ là bao nhiêu?",
+    "expected": 30,
+    "unit": "%",
+    "formula": "Mua và giữ = (Giá cuối / Giá đầu − 1) × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l12",
+    "type": "scalar",
+    "label": "VN-Index làm mốc so sánh",
+    "prompt": "VN-Index giả định đầu 1200, cuối 1320. Return chỉ số là bao nhiêu?",
+    "expected": 10,
+    "unit": "%",
+    "formula": "Return chỉ số = (Index cuối / Index đầu − 1) × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l13",
+    "type": "scalar",
+    "label": "Lịch sử giao dịch",
+    "prompt": "Kết quả có 42 giao dịch đã đóng. UI chỉ hiển thị 12 dòng và không có đường xem phần còn lại. Đang thiếu bao nhiêu giao dịch?",
+    "expected": 30,
+    "unit": "giao dịch",
+    "formula": "Lịch sử đầy đủ = mọi giao dịch đã đóng + trạng thái vị thế chưa đóng riêng",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l14",
+    "type": "scalar",
+    "label": "Độ nhạy tham số",
+    "prompt": "Quét 3 chu kỳ RSI và 4 ngưỡng, tạo đầy tổ hợp. Có bao nhiêu lần kiểm thử?",
+    "expected": 12,
+    "unit": "lần",
+    "formula": "Một thay đổi mỗi lần; giữ cùng dữ liệu, phí và profile",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l15",
+    "type": "scalar",
+    "label": "Out-of-Sample",
+    "prompt": "Có 1000 phiên; dành 700 phiên đầu cho xây dựng. Phần ngoài mẫu còn bao nhiêu phiên?",
+    "expected": 300,
+    "unit": "phiên",
+    "formula": "Xây trên tập A → đóng băng rule/params → đánh giá tập B",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l16",
+    "type": "scalar",
+    "label": "Walk-Forward",
+    "prompt": "Bốn đoạn test không trùng nhau, mỗi đoạn 60 phiên. Tổng số phiên test là bao nhiêu?",
+    "expected": 240,
+    "unit": "phiên",
+    "formula": "Train quá khứ → chọn cấu hình → test đoạn sau → dịch cửa sổ",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l17",
+    "type": "scalar",
+    "label": "Look-Ahead Bias",
+    "prompt": "Pivot tại phiên 10 cần 3 phiên bên phải để xác nhận. Sớm nhất có thể biết pivot là phiên nào?",
+    "expected": 13,
+    "unit": "phiên",
+    "formula": "Dữ liệu dùng cho quyết định phải có available_at ≤ decision_time",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch02-l18",
+    "type": "scalar",
+    "label": "Survivorship Bias",
+    "prompt": "Quá khứ có 100 mã; hôm nay chỉ 80 mã còn tồn tại. Nếu chỉ kiểm thử 80 mã, đã bỏ bao nhiêu mã?",
+    "expected": 20,
+    "unit": "mã",
+    "formula": "Universe(T) phải theo thành phần hợp lệ tại T",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+]

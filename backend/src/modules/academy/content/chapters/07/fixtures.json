@@ -1,0 +1,68 @@
+[
+  {
+    "lesson_id": "ch07-l01",
+    "type": "scalar",
+    "label": "ATR",
+    "prompt": "High = 105; Low = 101; Close trước = 99. TR bằng bao nhiêu?",
+    "expected": 6,
+    "unit": "đơn vị giá",
+    "formula": "TR = max(High−Low, |High−Close trước|, |Low−Close trước|)\nATR đầu = trung bình N TR\nATR mới = [(N−1) × ATR trước + TR mới]/N",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch07-l02",
+    "type": "scalar",
+    "label": "ATR Percent",
+    "prompt": "ATR = 2; Giá đóng cửa = 50. ATR Percent bằng bao nhiêu?",
+    "expected": 4,
+    "unit": "%",
+    "formula": "ATR Percent = ATR / Giá đóng cửa × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch07-l03",
+    "type": "scalar",
+    "label": "Relative Volume",
+    "prompt": "Khối lượng hiện tại 1,8 triệu; trung bình trước 1,2 triệu. Relative Volume bằng bao nhiêu?",
+    "expected": 1.5,
+    "unit": "lần",
+    "formula": "Relative Volume = Volume hiện tại / Trung bình N khối lượng trước",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch07-l04",
+    "type": "scalar",
+    "label": "OBV",
+    "prompt": "OBV trước = 1000, giá giảm và khối lượng hiện tại = 200. OBV mới bằng bao nhiêu?",
+    "expected": 800,
+    "unit": "",
+    "formula": "OBV mới = OBV trước + Volume nếu Close tăng\nOBV mới = OBV trước − Volume nếu Close giảm\nGiá bằng nhau: OBV không đổi",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch07-l05",
+    "type": "scalar",
+    "label": "MFI",
+    "prompt": "Tổng dòng dương = 300; tổng dòng âm = 100. MFI bằng bao nhiêu?",
+    "expected": 75,
+    "unit": "",
+    "formula": "TP = (High + Low + Close)/3\nRawFlow = TP × Volume\nP = tổng RawFlow khi TP tăng; N = tổng khi TP giảm\nMFI = 100 − 100/(1 + P/N)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch07-l06",
+    "type": "scalar",
+    "label": "Chaikin Money Flow",
+    "prompt": "High = 110; Low = 100; Close = 108. Multiplier bằng bao nhiêu?",
+    "expected": 0.6,
+    "unit": "",
+    "formula": "Multiplier = [(Close−Low) − (High−Close)]/(High−Low)\nCMF = Σ(Multiplier × Volume) / ΣVolume",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+]

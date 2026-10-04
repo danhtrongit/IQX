@@ -1,0 +1,1634 @@
+[
+  {
+    "id": "revenue_yoy",
+    "name": "Tăng trưởng doanh thu YoY",
+    "lesson_id": "ch03-l01",
+    "chapter": 3,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "growth",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "(Doanh thu kỳ này / Doanh thu cùng kỳ − 1) × 100",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Kỳ gốc phải dương. Kỳ gốc bằng 0 hoặc âm được ghi không đủ cơ sở tính tăng trưởng thông thường. Không lấy trị tuyệt đối mẫu số và không âm thầm biến kết quả thành 0%.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Tăng trưởng doanh thu YoY",
+      "inputs": [
+        [
+          "Doanh thu kỳ này",
+          1200
+        ],
+        [
+          "Doanh thu cùng kỳ",
+          1000
+        ]
+      ],
+      "formula": "(Doanh thu kỳ này / Doanh thu cùng kỳ − 1) × 100",
+      "expected": 20,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Doanh thu là giá trị hàng hóa, dịch vụ đã được ghi nhận trong kỳ, không phải toàn bộ tiền khách hàng đã trả. Dùng doanh thu thuần cùng phạm vi báo cáo. Một quý so với đúng quý năm trước; không so một quý với cả năm."
+  },
+  {
+    "id": "profit_yoy",
+    "name": "Tăng trưởng LNST YoY",
+    "lesson_id": "ch03-l02",
+    "chapter": 3,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "growth",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "(Lợi nhuận kỳ này / Lợi nhuận cùng kỳ − 1) × 100",
+    "period": "TTM",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Kỳ gốc phải dương. Kỳ gốc bằng 0 hoặc âm được ghi không đủ cơ sở tính tăng trưởng thông thường. Không lấy trị tuyệt đối mẫu số và không âm thầm biến kết quả thành 0%.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Tăng trưởng LNST YoY",
+      "inputs": [
+        [
+          "Lợi nhuận kỳ này",
+          150
+        ],
+        [
+          "Lợi nhuận cùng kỳ",
+          120
+        ]
+      ],
+      "formula": "(Lợi nhuận kỳ này / Lợi nhuận cùng kỳ − 1) × 100",
+      "expected": 25,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Trong chỉ tiêu này dùng lợi nhuận sau thuế thuộc cổ đông công ty mẹ trên báo cáo hợp nhất. Không so lợi nhuận toàn tập đoàn kỳ này với lợi nhuận thuộc công ty mẹ kỳ trước. Lợi nhuận là kết quả kế toán sau thuế, không phải tiền thuần vào tài khoản."
+  },
+  {
+    "id": "eps_yoy",
+    "name": "Tăng trưởng EPS YoY",
+    "lesson_id": "ch03-l03",
+    "chapter": 3,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "growth",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "(EPS kỳ này / EPS cùng kỳ − 1) × 100",
+    "period": "TTM",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Kỳ gốc phải dương. Kỳ gốc bằng 0 hoặc âm được ghi không đủ cơ sở tính tăng trưởng thông thường. Không lấy trị tuyệt đối mẫu số và không âm thầm biến kết quả thành 0%.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Tăng trưởng EPS YoY",
+      "inputs": [
+        [
+          "EPS kỳ này",
+          2400
+        ],
+        [
+          "EPS cùng kỳ",
+          2000
+        ]
+      ],
+      "formula": "(EPS kỳ này / EPS cùng kỳ − 1) × 100",
+      "expected": 20,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "EPS cơ bản lấy lợi nhuận dành cho cổ đông phổ thông chia số cổ phiếu phổ thông bình quân gia quyền. Không thay số bình quân bằng số cuối kỳ. Bộ dữ liệu phải có cờ điều chỉnh so sánh; thiếu cơ sở điều chỉnh thì không tự ghép hai EPS."
+  },
+  {
+    "id": "gross_margin",
+    "name": "Biên lợi nhuận gộp",
+    "lesson_id": "ch03-l04",
+    "chapter": 3,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Lợi nhuận gộp / Doanh thu thuần × 100",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Biên lợi nhuận gộp",
+      "inputs": [
+        [
+          "Lợi nhuận gộp",
+          300
+        ],
+        [
+          "Doanh thu thuần",
+          1000
+        ]
+      ],
+      "formula": "Lợi nhuận gộp / Doanh thu thuần × 100",
+      "expected": 30,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Lợi nhuận gộp bằng doanh thu thuần trừ giá vốn. Doanh thu thuần đã trừ các khoản giảm trừ. Phải dùng hai số của cùng kỳ, cùng báo cáo. Biên cao có thể phản ánh giá bán, cơ cấu sản phẩm hoặc chi phí đầu vào; phải tách các nguyên nhân khi phân tích."
+  },
+  {
+    "id": "net_margin",
+    "name": "Biên lợi nhuận ròng",
+    "lesson_id": "ch03-l05",
+    "chapter": 3,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Lợi nhuận sau thuế hợp nhất / Doanh thu thuần × 100",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Biên lợi nhuận ròng",
+      "inputs": [
+        [
+          "Lợi nhuận sau thuế hợp nhất",
+          120
+        ],
+        [
+          "Doanh thu thuần",
+          1000
+        ]
+      ],
+      "formula": "Lợi nhuận sau thuế hợp nhất / Doanh thu thuần × 100",
+      "expected": 12,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Ở bài này tử số là lợi nhuận sau thuế hợp nhất, gồm phần cổ đông không kiểm soát, để cùng phạm vi với doanh thu hợp nhất. Khác với chỉ tiêu tăng trưởng LNST và ROE dùng phần thuộc chủ sở hữu công ty mẹ. Tên trường kỹ thuật phải thể hiện khác biệt này."
+  },
+  {
+    "id": "roe",
+    "name": "ROE",
+    "lesson_id": "ch03-l06",
+    "chapter": 3,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Lợi nhuận thuộc cổ đông phổ thông / Vốn chủ sở hữu phổ thông bình quân × 100",
+    "period": "TTM",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "ROE",
+      "inputs": [
+        [
+          "Lợi nhuận thuộc cổ đông phổ thông",
+          120
+        ],
+        [
+          "Vốn chủ sở hữu bình quân",
+          600
+        ]
+      ],
+      "formula": "Lợi nhuận thuộc cổ đông phổ thông / Vốn chủ sở hữu phổ thông bình quân × 100",
+      "expected": 20,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Vốn chủ sở hữu là phần tài sản sau khi trừ nợ phải trả, không phải vốn hóa. Bình quân là (số đầu kỳ + số cuối kỳ)/2. Với TTM dùng lợi nhuận bốn quý và số vốn ở hai đầu khoảng bốn quý, không lấy lợi nhuận một quý chia vốn rồi gắn nhãn năm."
+  },
+  {
+    "id": "roa",
+    "name": "ROA",
+    "lesson_id": "ch06-l01",
+    "chapter": 6,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Lợi nhuận sau thuế hợp nhất / Tổng tài sản bình quân × 100",
+    "period": "TTM",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "ROA",
+      "inputs": [
+        [
+          "Lợi nhuận sau thuế hợp nhất",
+          90
+        ],
+        [
+          "Tài sản bình quân",
+          1500
+        ]
+      ],
+      "formula": "Lợi nhuận sau thuế hợp nhất / Tổng tài sản bình quân × 100",
+      "expected": 6,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Tổng tài sản bao gồm các nguồn lực đã được ghi nhận trên bảng cân đối. Số đầu và cuối kỳ phải nhất quán với kỳ tạo lợi nhuận. Bản định nghĩa dùng lợi nhuận hợp nhất vì tài sản hợp nhất bao gồm cả phần tài trợ bởi nợ và cổ đông không kiểm soát."
+  },
+  {
+    "id": "roic",
+    "name": "ROIC",
+    "lesson_id": "ch06-l02",
+    "chapter": 6,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "NOPAT / Vốn đầu tư bình quân × 100",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "ROIC",
+      "inputs": [
+        [
+          "NOPAT",
+          150
+        ],
+        [
+          "Vốn đầu tư bình quân",
+          1000
+        ]
+      ],
+      "formula": "NOPAT / Vốn đầu tư bình quân × 100",
+      "expected": 15,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "NOPAT = EBIT hoạt động × (1 − thuế suất chuẩn hóa). Ví dụ EBIT 200 và thuế suất 25% cho NOPAT 150. Vốn đầu tư theo biến thể của gói = vốn chủ hợp nhất + nợ vay có lãi − tiền không phục vụ hoạt động. Dữ liệu phân loại tiền và thuế suất chưa có thì chỉ tiêu trả thiếu dữ liệu, không tự ước lượng rồi giấu giả định."
+  },
+  {
+    "id": "debt_equity",
+    "name": "D/E (Nợ vay / Vốn chủ sở hữu)",
+    "lesson_id": "ch06-l03",
+    "chapter": 6,
+    "unit": "lần",
+    "api_unit": "lần",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Nợ vay có lãi / Vốn chủ sở hữu hợp nhất",
+    "period": "Tại ngày báo cáo",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "D/E (Nợ vay / Vốn chủ sở hữu)",
+      "inputs": [
+        [
+          "Nợ vay có lãi",
+          300
+        ],
+        [
+          "Vốn chủ sở hữu hợp nhất",
+          500
+        ]
+      ],
+      "formula": "Nợ vay có lãi / Vốn chủ sở hữu hợp nhất",
+      "expected": 0.6,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Nợ vay gồm phần ngắn hạn, dài hạn và nghĩa vụ thuê có lãi theo hợp đồng dữ liệu. Đây là ảnh chụp số dư tại một ngày; không dùng bình quân nếu tên chỉ tiêu không yêu cầu. Vốn chủ âm hoặc bằng 0 phải có trạng thái riêng."
+  },
+  {
+    "id": "net_debt_ebitda",
+    "name": "Net Debt / EBITDA",
+    "lesson_id": "ch06-l04",
+    "chapter": 6,
+    "unit": "lần",
+    "api_unit": "lần",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "(Nợ vay có lãi − Tiền đủ điều kiện) / EBITDA TTM",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Net Debt / EBITDA",
+      "inputs": [
+        [
+          "Nợ vay ròng",
+          400
+        ],
+        [
+          "EBITDA TTM",
+          200
+        ]
+      ],
+      "formula": "(Nợ vay có lãi − Tiền đủ điều kiện) / EBITDA TTM",
+      "expected": 2,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Ví dụ nợ vay 600, tiền đủ điều kiện 200 cho nợ ròng 400. EBITDA = EBIT đã xác định + khấu hao và phân bổ cùng kỳ. Nợ ròng âm được giữ để thể hiện tiền vượt nợ; EBITDA không dương thì không dùng phép chia như một thước đo đòn bẩy bình thường."
+  },
+  {
+    "id": "current_ratio",
+    "name": "Current Ratio",
+    "lesson_id": "ch06-l05",
+    "chapter": 6,
+    "unit": "lần",
+    "api_unit": "lần",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Tài sản ngắn hạn / Nợ ngắn hạn",
+    "period": "Tại ngày báo cáo",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Current Ratio",
+      "inputs": [
+        [
+          "Tài sản ngắn hạn",
+          600
+        ],
+        [
+          "Nợ ngắn hạn",
+          400
+        ]
+      ],
+      "formula": "Tài sản ngắn hạn / Nợ ngắn hạn",
+      "expected": 1.5,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Hai nhóm số dư phải cùng ngày. Chỉ tiêu không mô tả lịch trả nợ chi tiết hay thời điểm tài sản chuyển thành tiền. Nợ ngắn hạn bằng 0 không nên hiển thị vô cực như một con số lọc thông thường."
+  },
+  {
+    "id": "interest_coverage",
+    "name": "Interest Coverage",
+    "lesson_id": "ch06-l06",
+    "chapter": 6,
+    "unit": "lần",
+    "api_unit": "lần",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "EBIT / Chi phí lãi vay",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Interest Coverage",
+      "inputs": [
+        [
+          "EBIT",
+          120
+        ],
+        [
+          "Chi phí lãi vay",
+          30
+        ]
+      ],
+      "formula": "EBIT / Chi phí lãi vay",
+      "expected": 4,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "EBIT trong chỉ tiêu này được đối soát từ lợi nhuận trước thuế cộng chi phí lãi vay, có nhãn điều chỉnh rõ. Chi phí lãi vay phải là số dương của đúng kỳ. Không có lãi vay được gắn trạng thái không phát sinh lãi thay vì tự cho tỷ số cực lớn."
+  },
+  {
+    "id": "cfo_margin",
+    "name": "CFO Margin",
+    "lesson_id": "ch08-l01",
+    "chapter": 8,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "CFO / Doanh thu × 100",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "CFO Margin",
+      "inputs": [
+        [
+          "CFO",
+          180
+        ],
+        [
+          "Doanh thu",
+          1200
+        ]
+      ],
+      "formula": "CFO / Doanh thu × 100",
+      "expected": 15,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "CFO là dòng tiền thuần từ hoạt động kinh doanh trên báo cáo lưu chuyển tiền tệ. Doanh thu lấy cùng kỳ. Dòng tiền âm được giữ dấu âm khi doanh thu dương. Báo cáo lũy kế chín tháng phải trừ sáu tháng để ra quý ba riêng khi người dùng chọn quý."
+  },
+  {
+    "id": "cfo_profit",
+    "name": "CFO / LNST",
+    "lesson_id": "ch08-l02",
+    "chapter": 8,
+    "unit": "lần",
+    "api_unit": "lần",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "CFO / Lợi nhuận sau thuế hợp nhất",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "CFO / LNST",
+      "inputs": [
+        [
+          "CFO",
+          80
+        ],
+        [
+          "Lợi nhuận sau thuế hợp nhất",
+          100
+        ]
+      ],
+      "formula": "CFO / Lợi nhuận sau thuế hợp nhất",
+      "expected": 0.8,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Tử số và mẫu số đều theo phạm vi hợp nhất. Không dùng lợi nhuận thuộc công ty mẹ để ghép với toàn bộ CFO khi muốn phân tích khả năng chuyển lợi nhuận thành tiền toàn doanh nghiệp. Lợi nhuận không dương được gắn không đủ điều kiện diễn giải, kể cả khi chia hai số âm ra số dương."
+  },
+  {
+    "id": "fcf_margin",
+    "name": "FCF Margin",
+    "lesson_id": "ch08-l03",
+    "chapter": 8,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "(CFO − Capex) / Doanh thu × 100",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "FCF Margin",
+      "inputs": [
+        [
+          "FCF",
+          100
+        ],
+        [
+          "Doanh thu",
+          1000
+        ]
+      ],
+      "formula": "(CFO − Capex) / Doanh thu × 100",
+      "expected": 10,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Gói dùng FCF đơn giản = CFO − Capex tiền mặt, không đồng nhất với FCFF hay FCFE để chiết khấu định giá. Capex ghi số dương cho tiền mua tài sản cố định và tài sản vô hình; không trừ tiền bán tài sản và không gộp mua công ty nếu chưa có trường phân loại riêng."
+  },
+  {
+    "id": "fcf_yoy",
+    "name": "FCF Growth YoY",
+    "lesson_id": "ch08-l04",
+    "chapter": 8,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "growth",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "(FCF kỳ này / FCF cùng kỳ − 1) × 100",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Kỳ gốc phải dương. Kỳ gốc bằng 0 hoặc âm được ghi không đủ cơ sở tính tăng trưởng thông thường. Không lấy trị tuyệt đối mẫu số và không âm thầm biến kết quả thành 0%.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "FCF Growth YoY",
+      "inputs": [
+        [
+          "FCF kỳ này",
+          120
+        ],
+        [
+          "FCF cùng kỳ",
+          80
+        ]
+      ],
+      "formula": "(FCF kỳ này / FCF cùng kỳ − 1) × 100",
+      "expected": 50,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Trước tiên tính FCF của từng kỳ theo cùng CFO − Capex. Sau đó mới so tỷ lệ. Không so FCF năm hiện tại với CFO năm trước. Kỳ gốc phải dương; nếu không, hiển thị trạng thái chuyển lỗ, chuyển dương hoặc thiếu cơ sở tùy dữ liệu gốc."
+  },
+  {
+    "id": "capex_revenue",
+    "name": "Capex / Revenue",
+    "lesson_id": "ch08-l05",
+    "chapter": 8,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Capex / Doanh thu × 100",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Capex / Revenue",
+      "inputs": [
+        [
+          "Capex tiền mặt",
+          150
+        ],
+        [
+          "Doanh thu",
+          1000
+        ]
+      ],
+      "formula": "Capex / Doanh thu × 100",
+      "expected": 15,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Capex là dòng tiền đầu tư tài sản cố định và vô hình theo định nghĩa của gói. Không thay bằng khấu hao: khấu hao là phân bổ chi phí kế toán, còn Capex là tiền chi. Dòng mua tài sản trên báo cáo thường âm; chuẩn hóa thành số chi dương trước khi tính."
+  },
+  {
+    "id": "accrual",
+    "name": "Accrual Ratio",
+    "lesson_id": "ch08-l06",
+    "chapter": 8,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "(Lợi nhuận sau thuế hợp nhất − CFO) / Tài sản bình quân × 100",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Accrual Ratio",
+      "inputs": [
+        [
+          "Lợi nhuận hợp nhất trừ CFO",
+          40
+        ],
+        [
+          "Tài sản bình quân",
+          1000
+        ]
+      ],
+      "formula": "(Lợi nhuận sau thuế hợp nhất − CFO) / Tài sản bình quân × 100",
+      "expected": 4,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Ví dụ lợi nhuận 140 và CFO 100 tạo chênh lệch 40. Chênh có thể từ khấu hao, dự phòng hoặc vốn lưu động. Tử số âm là hợp lệ khi CFO lớn hơn lợi nhuận. Mẫu số tài sản bình quân phải dương."
+  },
+  {
+    "id": "pe",
+    "name": "P/E",
+    "lesson_id": "ch10-l01",
+    "chapter": 10,
+    "unit": "lần",
+    "api_unit": "lần",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Giá / EPS TTM",
+    "period": "TTM",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "P/E",
+      "inputs": [
+        [
+          "Giá cổ phiếu",
+          40000
+        ],
+        [
+          "EPS TTM",
+          4000
+        ]
+      ],
+      "formula": "Giá / EPS TTM",
+      "expected": 10,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Giá lấy tại thời điểm quan sát. EPS TTM phải bao phủ bốn quý riêng đã công bố và cùng cơ sở cổ phiếu; nếu không thể tái lập chuỗi điều chỉnh, trả thiếu dữ liệu. Không dùng EPS dự phóng khi nhãn đang là P/E quá khứ."
+  },
+  {
+    "id": "pb",
+    "name": "P/B",
+    "lesson_id": "ch10-l02",
+    "chapter": 10,
+    "unit": "lần",
+    "api_unit": "lần",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Vốn hóa / Vốn chủ sở hữu phổ thông công ty mẹ",
+    "period": "TTM",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "P/B",
+      "inputs": [
+        [
+          "Vốn hóa cổ phiếu phổ thông",
+          900
+        ],
+        [
+          "Vốn chủ phổ thông công ty mẹ",
+          600
+        ]
+      ],
+      "formula": "Vốn hóa / Vốn chủ sở hữu phổ thông công ty mẹ",
+      "expected": 1.5,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Vốn hóa = giá × số cổ phiếu phổ thông lưu hành tại thời điểm quan sát. Mẫu số loại lợi ích cổ đông không kiểm soát và cổ phần ưu đãi nếu có. Không lấy toàn bộ vốn chủ hợp nhất chia cho giá trị riêng phần công ty mẹ."
+  },
+  {
+    "id": "ps",
+    "name": "P/S",
+    "lesson_id": "ch10-l03",
+    "chapter": 10,
+    "unit": "lần",
+    "api_unit": "lần",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Vốn hóa / Doanh thu TTM",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "P/S",
+      "inputs": [
+        [
+          "Vốn hóa",
+          1500
+        ],
+        [
+          "Doanh thu TTM",
+          1000
+        ]
+      ],
+      "formula": "Vốn hóa / Doanh thu TTM",
+      "expected": 1.5,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Vốn hóa là giá trị phần cổ phần, còn doanh thu hợp nhất có thể gồm các đơn vị có cổ đông không kiểm soát. Gói giữ P/S như tỷ số phổ biến nhưng yêu cầu cảnh báo khả năng so sánh khi cấu trúc sở hữu khác lớn. Doanh thu phải dương."
+  },
+  {
+    "id": "ev_ebitda",
+    "name": "EV / EBITDA",
+    "lesson_id": "ch10-l04",
+    "chapter": 10,
+    "unit": "lần",
+    "api_unit": "lần",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "EV / EBITDA TTM",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "EV / EBITDA",
+      "inputs": [
+        [
+          "EV",
+          1800
+        ],
+        [
+          "EBITDA",
+          300
+        ]
+      ],
+      "formula": "EV / EBITDA TTM",
+      "expected": 6,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "EV theo gói = vốn hóa cổ phần phổ thông + giá trị cổ phần ưu đãi + nợ vay + lợi ích cổ đông không kiểm soát − tiền đủ điều kiện. EBITDA = EBIT + khấu hao và phân bổ cùng kỳ. EV và EBITDA phải nhất quán phạm vi hợp nhất. Thiếu thành phần EV không tự coi bằng 0."
+  },
+  {
+    "id": "peg",
+    "name": "PEG",
+    "lesson_id": "ch10-l05",
+    "chapter": 10,
+    "unit": "lần",
+    "api_unit": "lần",
+    "kind": "peg",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "P/E / tăng trưởng EPS tính theo số phần trăm",
+    "period": "TTM",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "PEG",
+      "inputs": [
+        [
+          "P/E",
+          15
+        ],
+        [
+          "Tăng trưởng EPS",
+          20
+        ]
+      ],
+      "formula": "P/E / tăng trưởng EPS tính theo số phần trăm",
+      "expected": 0.75,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Phiên bản đầu dùng EPS YoY TTM quá khứ đã học, không âm thầm dùng dự phóng của chuyên gia. Cần cả EPS TTM dương và tăng trưởng EPS dương. Giá trị tăng trưởng rất gần 0 làm tỷ số cực nhạy; phải cho người dùng nhìn được mẫu số."
+  },
+  {
+    "id": "fcf_yield",
+    "name": "FCF Yield",
+    "lesson_id": "ch10-l06",
+    "chapter": 10,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "FCF TTM / Vốn hóa × 100",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "FCF Yield",
+      "inputs": [
+        [
+          "FCF TTM",
+          100
+        ],
+        [
+          "Vốn hóa",
+          2000
+        ]
+      ],
+      "formula": "FCF TTM / Vốn hóa × 100",
+      "expected": 5,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Dùng cùng biến thể FCF = CFO − Capex của bài trước. Không ghép FCFF với vốn hóa rồi coi tương đương biến thể này. Vốn hóa phải dương; FCF âm vẫn là một tỷ suất âm có ý nghĩa và không bị biến thành thiếu chỉ vì âm."
+  },
+  {
+    "id": "revenue_cagr3",
+    "name": "Revenue CAGR 3Y",
+    "lesson_id": "ch12-l01",
+    "chapter": 12,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "cagr",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "[(Doanh thu cuối / Doanh thu gốc)^(1/3) − 1] × 100",
+    "period": "Ba năm",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Cần đủ bốn mốc năm cho ba khoảng tăng trưởng. Theo quy ước của gói, tất cả mốc dùng trong chuỗi này phải dương; năm thiếu hoặc không dương trả trạng thái riêng, không ép tạo CAGR.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Revenue CAGR 3Y",
+      "inputs": [
+        [
+          "Doanh thu cuối năm 3",
+          1331
+        ],
+        [
+          "Doanh thu năm gốc",
+          1000
+        ]
+      ],
+      "formula": "[(Doanh thu cuối / Doanh thu gốc)^(1/3) − 1] × 100",
+      "expected": 10,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Cần bốn mốc năm: năm gốc và ba năm sau. Không lấy ba con số của ba năm rồi gọi là ba khoảng tăng trưởng. Gói yêu cầu doanh thu đầu và cuối dương, các báo cáo cùng phạm vi. Công thức không phải trung bình cộng các tỷ lệ YoY."
+  },
+  {
+    "id": "profit_cagr3",
+    "name": "Net Profit CAGR 3Y",
+    "lesson_id": "ch12-l02",
+    "chapter": 12,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "cagr",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "[(Lợi nhuận cuối / Lợi nhuận gốc)^(1/3) − 1] × 100",
+    "period": "Ba năm",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Cần đủ bốn mốc năm cho ba khoảng tăng trưởng. Theo quy ước của gói, tất cả mốc dùng trong chuỗi này phải dương; năm thiếu hoặc không dương trả trạng thái riêng, không ép tạo CAGR.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Net Profit CAGR 3Y",
+      "inputs": [
+        [
+          "Lợi nhuận cuối năm 3",
+          172.8
+        ],
+        [
+          "Lợi nhuận năm gốc",
+          100
+        ]
+      ],
+      "formula": "[(Lợi nhuận cuối / Lợi nhuận gốc)^(1/3) − 1] × 100",
+      "expected": 20,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Dùng lợi nhuận sau thuế thuộc công ty mẹ nhất quán bốn năm. Nếu năm đầu hoặc năm cuối không dương, không lấy trị tuyệt đối để cố tính căn bậc ba. Các trạng thái không đủ cơ sở phải tách khỏi tỷ lệ âm hợp lệ."
+  },
+  {
+    "id": "eps_cagr3",
+    "name": "EPS CAGR 3Y",
+    "lesson_id": "ch12-l03",
+    "chapter": 12,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "cagr",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "[(EPS cuối / EPS gốc)^(1/3) − 1] × 100",
+    "period": "Ba năm",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Cần đủ bốn mốc năm cho ba khoảng tăng trưởng. Theo quy ước của gói, tất cả mốc dùng trong chuỗi này phải dương; năm thiếu hoặc không dương trả trạng thái riêng, không ép tạo CAGR.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "EPS CAGR 3Y",
+      "inputs": [
+        [
+          "EPS cuối năm 3",
+          2662
+        ],
+        [
+          "EPS năm gốc",
+          2000
+        ]
+      ],
+      "formula": "[(EPS cuối / EPS gốc)^(1/3) − 1] × 100",
+      "expected": 10,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Bốn mốc EPS năm phải cùng cơ sở điều chỉnh và đã được công bố tại ngày lọc. Gói chỉ tính CAGR thông thường khi cả bốn mốc dương. Không lấy bình quân EPS rồi tính tăng trưởng từ bình quân đó."
+  },
+  {
+    "id": "asset_turnover",
+    "name": "Asset Turnover",
+    "lesson_id": "ch12-l04",
+    "chapter": 12,
+    "unit": "lần",
+    "api_unit": "lần",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Doanh thu / Tài sản bình quân",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Asset Turnover",
+      "inputs": [
+        [
+          "Doanh thu",
+          1500
+        ],
+        [
+          "Tài sản bình quân",
+          1000
+        ]
+      ],
+      "formula": "Doanh thu / Tài sản bình quân",
+      "expected": 1.5,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Bình quân tài sản dùng hai đầu của kỳ doanh thu. Chỉ tiêu liên kết với ROA: hiệu quả sử dụng tài sản và biên lợi nhuận cùng góp phần tạo khả năng sinh lời. Không dùng tài sản cuối năm để đánh đồng với bình quân nếu biến động tài sản lớn."
+  },
+  {
+    "id": "ccc",
+    "name": "Cash Conversion Cycle",
+    "lesson_id": "ch12-l05",
+    "chapter": 12,
+    "unit": "ngày",
+    "api_unit": "ngày",
+    "kind": "ccc",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "DIO + DSO − DPO",
+    "period": "Năm",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Cash Conversion Cycle",
+      "inputs": [
+        [
+          "DIO",
+          60
+        ],
+        [
+          "DSO",
+          30
+        ],
+        [
+          "DPO",
+          45
+        ]
+      ],
+      "formula": "DIO + DSO − DPO",
+      "expected": 45,
+      "unit": "ngày",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "DIO = tồn kho bình quân / giá vốn × 365. DSO = phải thu thương mại bình quân / doanh thu thuần × 365 theo biến thể dùng tổng doanh thu khi thiếu doanh thu bán chịu. DPO = phải trả thương mại bình quân / giá vốn × 365 theo biến thể xấp xỉ mua hàng. Cả ba dùng cùng kỳ; không áp cho ngân hàng. Ví dụ 60 + 30 − 45 = 45 ngày."
+  },
+  {
+    "id": "working_cap_turnover",
+    "name": "Working Capital Turnover",
+    "lesson_id": "ch12-l06",
+    "chapter": 12,
+    "unit": "lần",
+    "api_unit": "lần",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Doanh thu / bình quân (Tài sản ngắn hạn − Nợ ngắn hạn)",
+    "period": "TTM",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Working Capital Turnover",
+      "inputs": [
+        [
+          "Doanh thu",
+          1500
+        ],
+        [
+          "Vốn lưu động ròng bình quân",
+          300
+        ]
+      ],
+      "formula": "Doanh thu / bình quân (Tài sản ngắn hạn − Nợ ngắn hạn)",
+      "expected": 5,
+      "unit": "lần",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Gói dùng vốn lưu động ròng bằng tài sản ngắn hạn trừ nợ ngắn hạn, không phải biến thể chỉ gồm vốn lưu động hoạt động. Lấy chênh lệch tại đầu và cuối kỳ rồi bình quân. Phải công bố định nghĩa để không trộn với nguồn khác."
+  },
+  {
+    "id": "revenue_growth_stability",
+    "name": "Revenue Growth Stability",
+    "lesson_id": "ch14-l01",
+    "chapter": 14,
+    "unit": "điểm %",
+    "api_unit": "ratio",
+    "kind": "stdev",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "sqrt[Σ(gᵢ − trung bình g)² / 3]",
+    "period": "Ba năm",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Revenue Growth Stability",
+      "inputs": [
+        [
+          "Tăng trưởng năm 1",
+          10
+        ],
+        [
+          "Tăng trưởng năm 2",
+          20
+        ],
+        [
+          "Tăng trưởng năm 3",
+          30
+        ]
+      ],
+      "formula": "sqrt[Σ(gᵢ − trung bình g)² / 3]",
+      "expected": 8.16496580927726,
+      "unit": "điểm %",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Bản này dùng độ lệch chuẩn tổng thể, chia cho 3. Cần bốn năm doanh thu để tạo ba YoY hợp lệ. Dữ liệu thiếu một năm thì không rút còn hai quan sát và vẫn gọi là ba năm. Không lấy trị tuyệt đối của các tăng trưởng trước khi tính."
+  },
+  {
+    "id": "eps_growth_stability",
+    "name": "EPS Stability",
+    "lesson_id": "ch14-l02",
+    "chapter": 14,
+    "unit": "điểm %",
+    "api_unit": "ratio",
+    "kind": "stdev",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "sqrt[Σ(gEPSᵢ − trung bình gEPS)² / 3]",
+    "period": "Ba năm",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "EPS Stability",
+      "inputs": [
+        [
+          "Tăng trưởng EPS năm 1",
+          5
+        ],
+        [
+          "Tăng trưởng EPS năm 2",
+          10
+        ],
+        [
+          "Tăng trưởng EPS năm 3",
+          15
+        ]
+      ],
+      "formula": "sqrt[Σ(gEPSᵢ − trung bình gEPS)² / 3]",
+      "expected": 4.08248290463863,
+      "unit": "điểm %",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Tên bài EPS Stability được giữ từ chương trình. Định nghĩa kỹ thuật cụ thể dùng ba tăng trưởng năm hợp lệ trên bốn EPS năm đã điều chỉnh; chia 3. Tăng trưởng âm hợp lệ vẫn được giữ dấu khi tính."
+  },
+  {
+    "id": "net_margin_stability",
+    "name": "Margin Stability",
+    "lesson_id": "ch14-l03",
+    "chapter": 14,
+    "unit": "điểm %",
+    "api_unit": "ratio",
+    "kind": "stdev",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "sqrt[Σ(mᵢ − trung bình m)² / 3]",
+    "period": "Ba năm",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Margin Stability",
+      "inputs": [
+        [
+          "Biên năm 1",
+          10
+        ],
+        [
+          "Biên năm 2",
+          12
+        ],
+        [
+          "Biên năm 3",
+          14
+        ]
+      ],
+      "formula": "sqrt[Σ(mᵢ − trung bình m)² / 3]",
+      "expected": 1.632993161855452,
+      "unit": "điểm %",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Bản này cố định loại biên là biên lợi nhuận ròng đã học; không tạo bộ chọn loại biên mới trong cùng mã chỉ tiêu. Cần đủ ba biên năm hợp lệ, cùng chuẩn hợp nhất. Thay báo cáo cần có phiên bản dữ liệu."
+  },
+  {
+    "id": "roic_stability",
+    "name": "ROIC Stability",
+    "lesson_id": "ch14-l04",
+    "chapter": 14,
+    "unit": "điểm %",
+    "api_unit": "ratio",
+    "kind": "stdev",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "sqrt[Σ(ROICᵢ − trung bình ROIC)² / 3]",
+    "period": "Ba năm",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "ROIC Stability",
+      "inputs": [
+        [
+          "ROIC năm 1",
+          12
+        ],
+        [
+          "ROIC năm 2",
+          15
+        ],
+        [
+          "ROIC năm 3",
+          18
+        ]
+      ],
+      "formula": "sqrt[Σ(ROICᵢ − trung bình ROIC)² / 3]",
+      "expected": 2.449489742783178,
+      "unit": "điểm %",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Dùng ba giá trị ROIC năm đã tính theo cùng calculation_version. Không điền 0 vào năm thiếu dữ liệu. Công ty ROIC ổn định nhưng thấp vẫn khác công ty ổn định ở mức cao; cần kết hợp điều kiện về mức ROIC."
+  },
+  {
+    "id": "fcf_positive_streak",
+    "name": "FCF Positive Streak",
+    "lesson_id": "ch14-l05",
+    "chapter": 14,
+    "unit": "năm",
+    "api_unit": "năm",
+    "kind": "streak",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Đếm lùi tới năm đầu tiên có FCF ≤ 0",
+    "period": "Năm",
+    "applicability": "non_financial",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Giá trị 0 kết thúc chuỗi. Không được đi xuyên một năm chưa có báo cáo; khi thiếu lịch sử trước một chuỗi toàn dương phải hiển thị cận dưới thay vì độ dài chính xác giả.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "FCF Positive Streak",
+      "inputs": [
+        [
+          "Năm cũ nhất",
+          10
+        ],
+        [
+          "Năm tiếp theo",
+          -5
+        ],
+        [
+          "Năm tiếp theo",
+          8
+        ],
+        [
+          "Năm gần nhất",
+          12
+        ]
+      ],
+      "formula": "Đếm lùi tới năm đầu tiên có FCF ≤ 0",
+      "expected": 2,
+      "unit": "năm",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Dùng năm tài chính đầy đủ, không trộn TTM cập nhật hàng quý với chuỗi năm. Nếu toàn bộ lịch sử có sẵn đều dương nhưng chưa biết năm trước nữa, gói trả ít nhất N năm cùng cờ giới hạn lịch sử. Phép > vẫn kiểm tra được nếu cận dưới đã vượt ngưỡng; không tự khẳng định chuỗi chính xác."
+  },
+  {
+    "id": "profit_positive_streak",
+    "name": "Profit Positive Streak",
+    "lesson_id": "ch14-l06",
+    "chapter": 14,
+    "unit": "năm",
+    "api_unit": "năm",
+    "kind": "streak",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Đếm lùi tới năm đầu tiên có lợi nhuận ≤ 0",
+    "period": "Năm",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Giá trị 0 kết thúc chuỗi. Không được đi xuyên một năm chưa có báo cáo; khi thiếu lịch sử trước một chuỗi toàn dương phải hiển thị cận dưới thay vì độ dài chính xác giả.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Profit Positive Streak",
+      "inputs": [
+        [
+          "Năm cũ nhất",
+          -8
+        ],
+        [
+          "Năm tiếp theo",
+          5
+        ],
+        [
+          "Năm tiếp theo",
+          9
+        ],
+        [
+          "Năm gần nhất",
+          11
+        ]
+      ],
+      "formula": "Đếm lùi tới năm đầu tiên có lợi nhuận ≤ 0",
+      "expected": 3,
+      "unit": "năm",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Tử số dùng lợi nhuận sau thuế thuộc công ty mẹ giống bài tăng trưởng lợi nhuận. Mốc 0 không tính dương. Lịch sử phải theo năm liên tục; báo cáo thiếu làm không xác định độ dài qua chỗ thiếu thay vì tự xem là một năm có lãi."
+  },
+  {
+    "id": "dividend_yield",
+    "name": "Dividend Yield",
+    "lesson_id": "ch15-l01",
+    "chapter": 15,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Cổ tức tiền mặt 12 tháng / Giá × 100",
+    "period": "TTM",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Dividend Yield",
+      "inputs": [
+        [
+          "Cổ tức tiền mặt mỗi cổ phiếu",
+          2000
+        ],
+        [
+          "Giá hiện tại",
+          40000
+        ]
+      ],
+      "formula": "Cổ tức tiền mặt 12 tháng / Giá × 100",
+      "expected": 5,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Gói dùng các sự kiện có ngày giao dịch không hưởng quyền trong 12 tháng tính đến ngày quan sát, đã công bố và điều chỉnh về cơ sở cổ phiếu hiện tại. Không cộng sự kiện tương lai chỉ vì doanh nghiệp đã dự kiến. Không tính hai lần cổ tức tạm ứng và tổng cổ tức công bố bao gồm khoản tạm ứng đó."
+  },
+  {
+    "id": "payout_ratio",
+    "name": "Payout Ratio",
+    "lesson_id": "ch15-l02",
+    "chapter": 15,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Cổ tức tiền mặt mỗi cổ phiếu / EPS TTM × 100",
+    "period": "TTM",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Payout Ratio",
+      "inputs": [
+        [
+          "Cổ tức tiền mặt mỗi cổ phiếu",
+          2000
+        ],
+        [
+          "EPS TTM",
+          4000
+        ]
+      ],
+      "formula": "Cổ tức tiền mặt mỗi cổ phiếu / EPS TTM × 100",
+      "expected": 50,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Dùng cùng cơ sở số cổ phiếu cho DPS và EPS. Gói đo trailing cash dividends / EPS TTM, không gọi là chính sách chia đúng lợi nhuận riêng năm đó. EPS không dương thì không diễn giải như tỷ lệ phân phối lợi nhuận dương thông thường."
+  },
+  {
+    "id": "dividend_cagr3",
+    "name": "Dividend Growth",
+    "lesson_id": "ch15-l03",
+    "chapter": 15,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "cagr",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "[(DPS cuối / DPS gốc)^(1/3) − 1] × 100",
+    "period": "Ba năm",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Cần đủ bốn mốc năm cho ba khoảng tăng trưởng. Theo quy ước của gói, tất cả mốc dùng trong chuỗi này phải dương; năm thiếu hoặc không dương trả trạng thái riêng, không ép tạo CAGR.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Dividend Growth",
+      "inputs": [
+        [
+          "DPS cuối năm 3",
+          1331
+        ],
+        [
+          "DPS năm gốc",
+          1000
+        ]
+      ],
+      "formula": "[(DPS cuối / DPS gốc)^(1/3) − 1] × 100",
+      "expected": 10,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Cộng cổ tức tiền mặt theo từng năm của cùng chính sách ghi nhận ngày giao dịch không hưởng quyền và cùng cơ sở cổ phiếu. Gói yêu cầu đủ bốn mốc dương cho CAGR thông thường. Khi cổ tức mới bắt đầu, hiển thị trạng thái bắt đầu chi trả thay vì tốc độ phần trăm vô hạn."
+  },
+  {
+    "id": "share_count_yoy",
+    "name": "Share Count Growth",
+    "lesson_id": "ch15-l04",
+    "chapter": 15,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "growth",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "(Số cổ phiếu hiện tại / Số cùng kỳ − 1) × 100",
+    "period": "Tại ngày báo cáo",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Kỳ gốc phải dương. Kỳ gốc bằng 0 hoặc âm được ghi không đủ cơ sở tính tăng trưởng thông thường. Không lấy trị tuyệt đối mẫu số và không âm thầm biến kết quả thành 0%.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Share Count Growth",
+      "inputs": [
+        [
+          "Cổ phiếu cuối kỳ",
+          110
+        ],
+        [
+          "Cổ phiếu cùng kỳ đã điều chỉnh",
+          100
+        ]
+      ],
+      "formula": "(Số cổ phiếu hiện tại / Số cùng kỳ − 1) × 100",
+      "expected": 10,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Dùng số cổ phiếu lưu hành tại ngày báo cáo, không dùng bình quân gia quyền của EPS. Mẫu số được điều chỉnh tách/gộp và thưởng cổ phiếu theo hồ sơ sự kiện. Phát hành thu tiền hoặc mua lại ròng không được loại khỏi biến động này như một tách cổ phiếu."
+  },
+  {
+    "id": "buyback_yield",
+    "name": "Buyback Yield",
+    "lesson_id": "ch15-l05",
+    "chapter": 15,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "ratio",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "(Tiền mua lại cổ phiếu − Tiền phát hành cổ phiếu) / Vốn hóa × 100",
+    "period": "TTM",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Buyback Yield",
+      "inputs": [
+        [
+          "Tiền mua lại trừ tiền phát hành",
+          20
+        ],
+        [
+          "Vốn hóa hiện tại",
+          1000
+        ]
+      ],
+      "formula": "(Tiền mua lại cổ phiếu − Tiền phát hành cổ phiếu) / Vốn hóa × 100",
+      "expected": 2,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Gói chọn biến thể mua lại ròng bằng dòng tiền thực tế trong 12 tháng. Mua lại 50, phát hành 30 cho giá trị ròng 20. Phát hành nhiều hơn mua lại cho tỷ suất âm hợp lệ. Thiếu dòng tiền phát hành không tự coi là 0."
+  },
+  {
+    "id": "shareholder_yield",
+    "name": "Shareholder Yield",
+    "lesson_id": "ch15-l06",
+    "chapter": 15,
+    "unit": "%",
+    "api_unit": "ratio",
+    "kind": "sum",
+    "calculation_version": "iqx-fund-2.0",
+    "formula": "Dividend Yield + Buyback Yield",
+    "period": "TTM",
+    "applicability": "all",
+    "operators": [
+      ">",
+      "<"
+    ],
+    "null_policy": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Shareholder Yield",
+      "inputs": [
+        [
+          "Dividend Yield",
+          4
+        ],
+        [
+          "Buyback Yield",
+          2
+        ]
+      ],
+      "formula": "Dividend Yield + Buyback Yield",
+      "expected": 6,
+      "unit": "%",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "notes": "Dùng cùng ngày vốn hóa, cùng cửa sổ 12 tháng và cùng phạm vi cổ phần. Nếu mua lại ròng âm, tổng tỷ suất có thể thấp hơn cổ tức tiền mặt. Một thành phần thiếu không được coi bằng 0 vì sẽ tạo con số hoàn chỉnh giả."
+  }
+]

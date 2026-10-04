@@ -1,0 +1,68 @@
+[
+  {
+    "lesson_id": "ch16-l01",
+    "type": "scalar",
+    "label": "Universe",
+    "prompt": "Ngày T có 20 mã trong universe,7 mã có tín hiệu Mua; 4 mã ở cả hai. Có bao nhiêu ứng viên?",
+    "expected": 4,
+    "unit": "mã",
+    "formula": "Candidate(T) = Universe(T) ∩ BuySignal(T)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch16-l02",
+    "type": "scalar",
+    "label": "Ranking",
+    "prompt": "Có 10 ứng viên, khả năng mở mới 3 vị thế. Ranking chọn tối đa bao nhiêu mã?",
+    "expected": 3,
+    "unit": "mã",
+    "formula": "Lọc trước → xếp hạng sau → chọn tối đaK",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch16-l03",
+    "type": "scalar",
+    "label": "Nested AND / OR / NOT",
+    "prompt": "A đúng, Bsai, C đúng. Giá trị(A AND B) OR C là 1 đúng hay 0 sai?",
+    "expected": 1,
+    "unit": "",
+    "formula": "(A AND B) OR C",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch16-l04",
+    "type": "scalar",
+    "label": "Multi-timeframe",
+    "prompt": "Một tuần có 5 phiên; đang ở phiên thứ 3. Có bao nhiêu phiên của tuần hiện tại chưa xong?",
+    "expected": 2,
+    "unit": "phiên",
+    "formula": "ỞngàyT,chỉ dùngbar khunglớn đã đóngvàcósẵntrước T",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch16-l05",
+    "type": "scalar",
+    "label": "Signal Priority",
+    "prompt": "Cùng phiên cắt lỗ và điều kiện bán đều đạt. Với một vị thế 100 cổ phiếu, được bán tối đa bao nhiêu cổ phiếu?",
+    "expected": 100,
+    "unit": "cổ phiếu",
+    "formula": "Mộtvị thế → mộtlầnkhớpthoát; lýdochính + lýdođồng thời",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch16-l06",
+    "type": "scalar",
+    "label": "Re-entry & Cooldown",
+    "prompt": "Bán phiên 10, cooldown 2 phiên. Sớm nhất được xét mua phiên nào?",
+    "expected": 13,
+    "unit": "phiên",
+    "formula": "BánởS;chặnN phiên kế tiếp;muasớmnhấtởS+N+1",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+]

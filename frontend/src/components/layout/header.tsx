@@ -19,6 +19,11 @@ const mobileNavClass = "flex min-h-11 items-center rounded-sm px-3 py-2.5 text-s
 
 type HeaderNavItem = { readonly to: string; readonly label: string }
 
+/** Học viện (bot-v2 Academy) sits right after the existing learning item. */
+const ACADEMY_NAV_ITEM: HeaderNavItem = { to: "/hoc-vien", label: "Học viện" }
+const NAV_ITEMS: readonly HeaderNavItem[] = HEADER_NAV.flatMap(item =>
+  item.to === "/bai-hoc" ? [item, ACADEMY_NAV_ITEM] : [item])
+
 function HeaderLinks({ items, mobile = false, onNavigate }: {
   items: readonly HeaderNavItem[]
   mobile?: boolean
@@ -115,7 +120,7 @@ export function Header() {
           aria-label="Điều hướng chính"
           className="flex h-[calc(var(--header-top)-1px)] w-max items-stretch"
         >
-          <HeaderLinks items={HEADER_NAV} />
+          <HeaderLinks items={NAV_ITEMS} />
         </nav>
       </ScrollArea>
       <div className="ml-auto flex shrink-0 items-center gap-2">
@@ -136,7 +141,7 @@ export function Header() {
             <Link to="/demo-trading?view=journey">Bắt đầu ngay</Link>
           </Button>
         )}
-        <MobileHeaderMenu key={locationKey} items={HEADER_NAV} isIntroduction={isIntroduction} />
+        <MobileHeaderMenu key={locationKey} items={NAV_ITEMS} isIntroduction={isIntroduction} />
       </div>
     </header>
   )
