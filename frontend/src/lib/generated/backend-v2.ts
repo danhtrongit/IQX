@@ -38603,7 +38603,7 @@ export type StrategyBacktestsCreateResponses = {
           universe: {
             [key: string]: unknown;
           } | null;
-          universe_policy: "explicit_symbols" | "static_current_membership";
+          universe_policy: "explicit_symbols";
         } | null;
         versions: {
           calculation_version: string;
@@ -38715,7 +38715,7 @@ export type StrategyBacktestsCreateResponses = {
         universe: {
           [key: string]: unknown;
         } | null;
-        universe_policy: "explicit_symbols" | "static_current_membership";
+        universe_policy: "explicit_symbols";
       } | null;
       versions: {
         calculation_version: string;
@@ -38997,7 +38997,7 @@ export type StrategyBacktestsGetResponses = {
           universe: {
             [key: string]: unknown;
           } | null;
-          universe_policy: "explicit_symbols" | "static_current_membership";
+          universe_policy: "explicit_symbols";
         } | null;
         versions: {
           calculation_version: string;
@@ -39109,7 +39109,7 @@ export type StrategyBacktestsGetResponses = {
         universe: {
           [key: string]: unknown;
         } | null;
-        universe_policy: "explicit_symbols" | "static_current_membership";
+        universe_policy: "explicit_symbols";
       } | null;
       versions: {
         calculation_version: string;

@@ -201,6 +201,8 @@ describe("BacktestV2", () => {
     renderV2()
     const panel = await screen.findByTestId("system-panel")
     await user.click(within(panel).getByText(/Hệ thống nâng cao/))
+    expect(within(panel).getByTestId("universe-unavailable").textContent).toContain("Chưa khả dụng")
+    expect(within(panel).queryByRole("combobox", { name: "Universe theo sàn" })).toBeNull()
     await user.type(within(panel).getByLabelText("Các mã trong danh mục"), "fpt, vnm")
     await user.type(within(panel).getByLabelText("Số vị thế tối đa"), "2")
     await user.click(within(panel).getByRole("button", { name: "Chạy hệ thống" }))

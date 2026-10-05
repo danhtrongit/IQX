@@ -90415,8 +90415,7 @@
                                 },
                                 "universe_policy": {
                                   "enum": [
-                                    "explicit_symbols",
-                                    "static_current_membership"
+                                    "explicit_symbols"
                                   ],
                                   "type": "string"
                                 }
@@ -90962,8 +90961,7 @@
                             },
                             "universe_policy": {
                               "enum": [
-                                "explicit_symbols",
-                                "static_current_membership"
+                                "explicit_symbols"
                               ],
                               "type": "string"
                             }
@@ -92183,8 +92181,7 @@
                                 },
                                 "universe_policy": {
                                   "enum": [
-                                    "explicit_symbols",
-                                    "static_current_membership"
+                                    "explicit_symbols"
                                   ],
                                   "type": "string"
                                 }
@@ -92730,8 +92727,7 @@
                             },
                             "universe_policy": {
                               "enum": [
-                                "explicit_symbols",
-                                "static_current_membership"
+                                "explicit_symbols"
                               ],
                               "type": "string"
                             }

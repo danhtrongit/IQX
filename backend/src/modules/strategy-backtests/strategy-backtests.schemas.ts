@@ -283,7 +283,7 @@ const runSnapshotSchema = z.object({
       symbols: z.array(z.string()),
       excluded_symbols: z.array(z.string()),
       universe: z.record(z.string(), z.unknown()).nullable(),
-      universe_policy: z.enum(['explicit_symbols', 'static_current_membership']),
+      universe_policy: z.literal('explicit_symbols'),
       sectors: z.record(z.string(), z.string().nullable()).nullable(),
       data_hash: hashSchema,
       profile: z.record(z.string(), z.unknown()),

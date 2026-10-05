@@ -55,10 +55,6 @@ export interface StrategyBacktestStore {
   insert(record: BacktestRunRecord): Promise<BacktestRunRow | null>;
   findById(userId: string, id: string): Promise<BacktestRunRow | null>;
   list(userId: string, limit: number): Promise<BacktestRunSummaryRow[]>;
-  /** Tickers of the caller's own saved list snapshot; null when not found or not owned. */
-  listTickers(userId: string, listId: string): Promise<string[] | null>;
-  /** Active listed stocks of an exchange (HOSE also matches the legacy HSX code). */
-  marketSymbols(market: 'HOSE' | 'HNX' | 'UPCOM' | 'ALL'): Promise<string[]>;
   /** Current ICB sector per symbol (not point-in-time); missing symbols are absent. */
   sectors(symbols: readonly string[]): Promise<Map<string, string | null>>;
 }
@@ -163,28 +159,6 @@ export class StrategyBacktestRepository implements StrategyBacktestStore {
       shared_revision: Number(row.shared_revision),
       created_at: new Date(row.created_at),
     }));
-  }
-
-  async listTickers(userId: string, listId: string) {
-    const [row] = await this.database.query<{ tickers: string[] }>(
-      `select tickers from list_snapshots where id = $1 and user_id = $2 and deleted_at is null`,
-      [listId, userId],
-    );
-    return row ? row.tickers.map((ticker) => ticker.toUpperCase()) : null;
-  }
-
-  async marketSymbols(market: 'HOSE' | 'HNX' | 'UPCOM' | 'ALL') {
-    const rows = await this.database.query<{ symbol: string }>(
-      `select distinct upper(symbol) as symbol
-         from symbols
-        where is_active = true
-          and coalesce(is_index, false) = false
-          and lower(asset_type) = 'stock'
-          and ($1::text = 'ALL' or upper(exchange) = $1 or ($1 = 'HOSE' and upper(exchange) = 'HSX'))
-        order by 1`,
-      [market],
-    );
-    return rows.map((row) => row.symbol);
   }
 
   async sectors(symbols: readonly string[]) {

@@ -19,7 +19,6 @@ import {
 } from '../quant/quant.types.js';
 import {
   AdvancedEngineError,
-  SYSTEM_MAX_SYMBOLS,
   dataHash,
   systemCapabilities,
   validateSystemOptions,
@@ -132,7 +131,7 @@ export type RunSnapshot = RunResult['snapshot'] & {
     symbols: string[];
     excluded_symbols: string[];
     universe: Record<string, unknown> | null;
-    universe_policy: 'explicit_symbols' | 'static_current_membership';
+    universe_policy: 'explicit_symbols';
     sectors: Record<string, string | null> | null;
     data_hash: string;
     profile: SystemProfile;
@@ -254,6 +253,13 @@ export class StrategyBacktestsService {
         systemErrors.map((error) => error.message).join('\n'),
         systemErrors,
       );
+    // Gate "Universe lịch sử": there is no point-in-time membership source yet, and
+    // today's members must never stand in for a past universe (survivorship bias).
+    if (request.system?.universe)
+      throw unprocessable(
+        'UNIVERSE_HISTORY_UNAVAILABLE',
+        'Chưa có dữ liệu thành phần rổ cổ phiếu theo thời điểm lịch sử; hãy nhập danh sách mã cụ thể.',
+      );
 
     const revision = await this.reader.getRevision(userId, request.shared_revision);
     if (!revision)
@@ -285,7 +291,7 @@ export class StrategyBacktestsService {
     let prepared: PreparedRun;
     let output: BacktestJobOutput;
     try {
-      prepared = await this.prepare(userId, request, revision.config, grants);
+      prepared = await this.prepare(request, revision.config, grants);
       output = await this.execute(prepared.job);
     } catch (error) {
       const failure = persistableFailure(error);
@@ -395,7 +401,6 @@ export class StrategyBacktestsService {
   }
 
   private async prepare(
-    userId: string,
     request: RunRequest,
     config: SharedConfig,
     grants: () => Promise<ReadonlySet<string>>,
@@ -408,7 +413,7 @@ export class StrategyBacktestsService {
       throw unprocessable('BUY_RULES_REQUIRED', 'Cần ít nhất một điều kiện Mua.');
 
     const warnings: DataWarning[] = [];
-    const traded = request.system ? await this.resolveSymbols(userId, request, warnings) : null;
+    const traded = request.system ? this.resolveSymbols(request) : null;
     if (traded)
       await this.assertCapabilities(this.requestedCapabilities(request, traded.length), grants);
     if (!this.market) throw marketDataUnavailable();
@@ -481,13 +486,11 @@ export class StrategyBacktestsService {
         bars: bySymbol.get(symbol)!.bars,
         ...(sectors ? { sector: sectors[symbol] ?? null } : {}),
       }));
-      const { symbols: _symbols, universe, ...systemOptions } = request.system;
+      const { symbols: _symbols, universe: _universe, ...systemOptions } = request.system;
       systemJob = {
         symbols: symbolData,
         options: systemOptions as SystemOptions,
-        universe: universe
-          ? included.map((symbol) => ({ symbol, from: request.start, to: null }))
-          : null,
+        universe: null,
       };
       system = {
         symbols: included,
@@ -515,50 +518,10 @@ export class StrategyBacktestsService {
     };
   }
 
-  /** Traded symbols of a system run: explicit symbols, narrowed or replaced by the resolved universe. */
-  private async resolveSymbols(
-    userId: string,
-    request: RunRequest,
-    warnings: DataWarning[],
-  ): Promise<string[]> {
-    const system = request.system!;
-    let pool: string[] | null = null;
-    if (system.universe) {
-      let members: string[] | null = null;
-      if (system.universe.list_id !== undefined) {
-        members = await this.store.listTickers(userId, system.universe.list_id);
-        if (!members)
-          throw new NotFoundException({
-            code: 'LIST_NOT_FOUND',
-            message: 'Không tìm thấy danh sách',
-          });
-      }
-      if (system.universe.market !== undefined) {
-        const listed = await this.store.marketSymbols(system.universe.market);
-        const listedSet = new Set(listed);
-        members = members ? members.filter((symbol) => listedSet.has(symbol)) : listed;
-      }
-      pool = sortedUnique(members ?? []);
-      warnings.push({
-        code: 'UNIVERSE_STATIC_MEMBERSHIP',
-        message:
-          'Rổ cổ phiếu dùng thành phần hiện tại, không theo thời điểm lịch sử (có thể có thiên lệch sống sót).',
-      });
-    }
-    const poolSet = pool ? new Set(pool) : null;
-    const symbols = system.symbols
-      ? sortedUnique(
-          poolSet ? system.symbols.filter((symbol) => poolSet.has(symbol)) : system.symbols,
-        )
-      : (pool ?? [request.symbol]);
-    if (!symbols.length)
-      throw unprocessable('UNIVERSE_EMPTY', 'Rổ cổ phiếu không có mã nào phù hợp.');
-    if (symbols.length > SYSTEM_MAX_SYMBOLS)
-      throw unprocessable(
-        'UNIVERSE_TOO_LARGE',
-        `Rổ cổ phiếu có ${symbols.length} mã, vượt giới hạn ${SYSTEM_MAX_SYMBOLS} mã; hãy thu hẹp danh sách.`,
-      );
-    return symbols;
+  /** Traded symbols of a system run: the explicit symbols (universe runs are refused in `create`). */
+  private resolveSymbols(request: RunRequest): string[] {
+    const symbols = request.system!.symbols;
+    return symbols ? sortedUnique(symbols) : [request.symbol];
   }
 
   private async sectors(
@@ -771,10 +734,8 @@ export class StrategyBacktestsService {
               options: prepared.job.system!.options,
               symbols: prepared.system.symbols,
               excluded_symbols: prepared.system.excluded,
-              universe: request.system.universe ? { ...request.system.universe } : null,
-              universe_policy: request.system.universe
-                ? 'static_current_membership'
-                : 'explicit_symbols',
+              universe: null,
+              universe_policy: 'explicit_symbols',
               sectors: prepared.system.sectors,
               data_hash: prepared.system.dataHash,
               profile: systemProfile,

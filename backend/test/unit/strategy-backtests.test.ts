@@ -177,14 +177,6 @@ class InMemoryStore implements StrategyBacktestStore {
     return Promise.resolve(items);
   }
 
-  listTickers() {
-    return Promise.resolve(null);
-  }
-
-  marketSymbols() {
-    return Promise.resolve([]);
-  }
-
   sectors() {
     return Promise.resolve(new Map<string, string | null>());
   }
@@ -557,6 +549,20 @@ describe('StrategyBacktestsService', () => {
       expect.objectContaining({ code: 'SYMBOLS_EXCLUDED', symbols: ['CCC'] }),
     );
     expect(store.rows[0]?.data_hash).toBe(run.snapshot?.system?.data_hash);
+  });
+
+  it('refuses a universe run instead of back-filling the past with today\'s members', async () => {
+    allowlist = ['universe', 'portfolio'];
+    grants = new Set(['lesson:ch16-l01', 'lesson:ch18-l01']);
+    for (const universe of [{ market: 'HOSE' as const }, { list_id: randomUUID() }]) {
+      const error = await rejection(
+        service().create(OWNER, body({ system: { universe }, idempotency_key: randomUUID() })),
+      );
+      expect(error.getStatus()).toBe(422);
+      expect(error.getResponse()).toMatchObject({ code: 'UNIVERSE_HISTORY_UNAVAILABLE' });
+    }
+    expect(market.calls).toEqual([]);
+    expect(store.rows).toEqual([]);
   });
 
   it('isolates list and get by owner', async () => {

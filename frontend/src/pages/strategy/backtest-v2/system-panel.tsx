@@ -18,7 +18,7 @@ import { CAPABILITY_LESSONS, capabilityLock, isCapabilityLocked, runBacktestV2, 
 import { fmtCount, fmtMoney, fmtNumberVN, fmtPercent, fmtPlainPercent } from "./format"
 import { LockNotice } from "./research-panel"
 import { parseSymbols, systemSummary } from "./research"
-import type { AdvancedCapability, BacktestRunRequest, BacktestRunResponse, RankingKey, SystemRequest, UniverseMarket } from "./types"
+import type { AdvancedCapability, BacktestRunRequest, BacktestRunResponse, RankingKey, SystemRequest } from "./types"
 
 const SELECT_CLASS = "h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
 const LABEL_CLASS = "text-[11px] text-muted-foreground"
@@ -34,7 +34,6 @@ type SizingMode = "all_cash" | "pct_nav" | "fixed_amount"
 
 type SystemForm = {
   symbols: string
-  market: UniverseMarket | ""
   ranking: RankingKey | ""
   direction: "desc" | "asc"
   logic: "and" | "or"
@@ -45,7 +44,6 @@ type SystemForm = {
 
 const EMPTY_FORM: SystemForm = {
   symbols: "",
-  market: "",
   ranking: "",
   direction: "desc",
   logic: "and",
@@ -62,8 +60,7 @@ function toSystemRequest(form: SystemForm, buyIndicatorIds: string[]): { system:
     if (symbols.length < 2 || symbols.length > 30) return "Danh mục cần 2–30 mã."
     system.symbols = symbols
   }
-  if (form.market) system.universe = { market: form.market }
-  if (!system.symbols && !system.universe) return "Nhập 2–30 mã hoặc chọn sàn cho universe."
+  if (!system.symbols) return "Nhập 2–30 mã cho danh mục."
   if (form.ranking) system.ranking = { key: form.ranking, direction: form.direction }
   if (form.logic === "or") {
     if (buyIndicatorIds.length < 2) return "Nhóm OR cần ít nhất 2 chỉ báo Mua đang bật trong cấu hình đã lưu."
@@ -85,7 +82,7 @@ function toSystemRequest(form: SystemForm, buyIndicatorIds: string[]): { system:
     if (!Number.isInteger(value) || value < 1 || value > 30) return "Số vị thế tối đa: số nguyên 1–30."
     system.max_positions = value
   }
-  return { system, primary: system.symbols ? "portfolio" : "universe" }
+  return { system, primary: "portfolio" }
 }
 
 export function SystemPanel({
@@ -133,7 +130,7 @@ export function SystemPanel({
       </summary>
       <div className="flex flex-col gap-3 border-t border-border p-4">
         <p className="text-xs text-muted-foreground">
-          Chỉ khả dụng khi máy chủ bật tính năng và bạn đã học bài tương ứng (Universe {CAPABILITY_LESSONS.universe}, Xếp hạng{" "}
+          Chỉ khả dụng khi máy chủ bật tính năng và bạn đã học bài tương ứng (Xếp hạng{" "}
           {CAPABILITY_LESSONS.ranking}, Nhóm logic {CAPABILITY_LESSONS.logic_groups}, Vị thế {CAPABILITY_LESSONS.max_positions}, Danh mục{" "}
           {CAPABILITY_LESSONS.portfolio}). Danh mục dùng một sổ vốn chung, không lấy trung bình kết quả từng mã.
         </p>
@@ -142,16 +139,12 @@ export function SystemPanel({
             <span className={LABEL_CLASS}>Các mã trong danh mục (2–30)</span>
             <Input value={form.symbols} onChange={(event) => update("symbols", event.target.value)} placeholder="FPT, VNM, HPG" aria-label="Các mã trong danh mục" />
           </label>
-          <label className="space-y-1">
+          <div className="space-y-1" data-testid="universe-unavailable">
             <span className={LABEL_CLASS}>Universe theo sàn</span>
-            <select className={SELECT_CLASS} value={form.market} onChange={(event) => update("market", event.target.value as SystemForm["market"])} aria-label="Universe theo sàn">
-              <option value="">Không dùng</option>
-              <option value="HOSE">HOSE</option>
-              <option value="HNX">HNX</option>
-              <option value="UPCOM">UPCOM</option>
-              <option value="ALL">Tất cả sàn</option>
-            </select>
-          </label>
+            <p className="text-xs text-muted-foreground">
+              Chưa khả dụng: máy chủ chưa có dữ liệu thành phần rổ theo thời điểm lịch sử, và danh sách hôm nay không được dùng để backtest quá khứ.
+            </p>
+          </div>
           <label className="space-y-1">
             <span className={LABEL_CLASS}>Xếp hạng ứng viên</span>
             <select className={SELECT_CLASS} value={form.ranking} onChange={(event) => update("ranking", event.target.value as SystemForm["ranking"])} aria-label="Xếp hạng ứng viên">
