@@ -14,6 +14,7 @@ import { ArrowUpRight } from "lucide-react"
 import { cn } from "cn"
 
 import { PanelState } from "@/components/layout/panel-state"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -55,6 +56,9 @@ function toneClass(value: number | null | undefined): string {
   if (value == null || value === 0) return "text-foreground"
   return value > 0 ? "text-price-up" : "text-price-down"
 }
+
+/** `formatMoney` renders "400.000 ₫"; dividend copy uses "400.000 đ". */
+const rightsMoney = (value: number) => formatMoney(value).replace(/\s*₫$/, " đ")
 
 /** Thanh công cụ của tab — lọc + số mã + nút phân tích AI. */
 export function HoldingsToolbar({
@@ -142,6 +146,8 @@ export function HoldingsTab({
   const totalMarketValue = positions.every((position) => position.market_value_vnd != null)
     ? positions.reduce((sum, position) => sum + (position.market_value_vnd as number), 0)
     : null
+  const pendingCash = portfolio.pending_rights?.pending_cash_dividend_vnd ?? 0
+  const pendingShares = portfolio.pending_rights?.pending_stock_dividend_quantity ?? 0
 
   return (
     <div className="space-y-3">
@@ -159,6 +165,22 @@ export function HoldingsTab({
           tone={toneClass(portfolio.return_pct)}
         />
       </div>
+
+      {(pendingCash > 0 || pendingShares > 0) && (
+        <Card size="sm" className="gap-0 py-2">
+          <CardContent className="px-2.5">
+            <p className="text-[10px] text-muted-foreground">Quyền chờ nhận</p>
+            <p className="mt-0.5 text-xs font-semibold tabular-nums">
+              {[
+                pendingCash > 0 ? `${rightsMoney(pendingCash)} tiền mặt` : null,
+                pendingShares > 0 ? `${formatNumber(pendingShares)} cổ phiếu` : null,
+              ]
+                .filter((part): part is string => part != null)
+                .join(" · ")}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {(portfolio.account.cash_pending_vnd > 0 || portfolio.account.cash_reserved_vnd > 0) && (
         <p className="px-1 text-[10px] text-muted-foreground tabular-nums">
@@ -232,6 +254,8 @@ function HoldingRow({
   const percent = pnlPercent(position)
   const hasReserved = position.quantity_reserved > 0
   const hasPending = position.quantity_pending > 0
+  const pendingCashDividend = position.pending_cash_dividend_vnd ?? 0
+  const pendingStockDividend = position.pending_stock_dividend_quantity ?? 0
 
   return (
     <li
@@ -240,13 +264,23 @@ function HoldingRow({
         active && "bg-muted/60 ring-1 ring-border",
       )}
     >
-      <div className="flex items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         <button
           type="button"
           onClick={onSelect}
-          className="flex min-w-0 flex-1 items-baseline gap-1.5 text-left focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+          className="flex min-w-0 flex-1 flex-wrap items-baseline gap-1.5 text-left focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
         >
           <span className="text-xs font-bold">{position.symbol}</span>
+          {pendingCashDividend > 0 && (
+            <Badge variant="outline" className="px-1 py-0 text-[10px] font-normal tabular-nums">
+              {rightsMoney(pendingCashDividend)} chờ nhận
+            </Badge>
+          )}
+          {pendingStockDividend > 0 && (
+            <Badge variant="outline" className="px-1 py-0 text-[10px] font-normal tabular-nums">
+              {formatNumber(pendingStockDividend)} CP chờ về
+            </Badge>
+          )}
           <span className="truncate text-[10px] text-muted-foreground">
             vốn {formatNumber(position.avg_cost_vnd)}
           </span>
@@ -270,21 +304,28 @@ function HoldingRow({
         <span>
           SL <b className="font-medium text-foreground">{formatNumber(position.quantity_total)}</b>
         </span>
+        {" · "}
         <span>
           Khả dụng{" "}
           <b className="font-medium text-foreground">{formatNumber(position.quantity_sellable)}</b>
         </span>
         {hasReserved && (
-          <span>
-            Phong toả{" "}
-            <b className="font-medium text-foreground">{formatNumber(position.quantity_reserved)}</b>
-          </span>
+          <>
+            {" · "}
+            <span>
+              Phong toả{" "}
+              <b className="font-medium text-foreground">{formatNumber(position.quantity_reserved)}</b>
+            </span>
+          </>
         )}
         {hasPending && (
-          <span>
-            Chờ về{" "}
-            <b className="font-medium text-foreground">{formatNumber(position.quantity_pending)}</b>
-          </span>
+          <>
+            {" · "}
+            <span>
+              Chờ về{" "}
+              <b className="font-medium text-foreground">{formatNumber(position.quantity_pending)}</b>
+            </span>
+          </>
         )}
         <span className={cn("ml-auto font-semibold", toneClass(position.unrealized_pnl_vnd))}>
           {formatMoney(position.unrealized_pnl_vnd)}

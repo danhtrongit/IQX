@@ -48,7 +48,7 @@
       }
     ],
     "correct_index": 2,
-    "explanation": "AND yêu cầu cả ba cùng đúng ở cùng phiên. Khi ba điều kiện cùng đúng, lệnh vẫn có thể chưa khớp nếu chưa tới thời điểm thực thi hoặc không đủ tiền mua lô tối thiểu. Không có điều kiện Mua trong Backtest một mã phải báo cấu hình chưa đủ. Không tự coi đây là yêu cầu dùng bộ lọc V1 của Bot.",
+    "explanation": "AND yêu cầu cả ba cùng đúng ở cùng phiên. Khi ba điều kiện cùng đúng, lệnh vẫn có thể chưa khớp nếu chưa tới thời điểm thực thi hoặc không đủ tiền mua lô tối thiểu. Không có điều kiện Mua trong Backtest một mã phải báo cấu hình chưa đủ. Không tự coi đây là yêu cầu dùng cấu hình Bot.",
     "skill": "tình huống",
     "fixture": null,
     "id": "ch02-l01-q02",
@@ -63,7 +63,7 @@
         "id": "o1"
       },
       {
-        "text": "Không có điều kiện Mua trong Backtest một mã phải báo cấu hình chưa đủ. Không tự coi đây là yêu cầu dùng bộ lọc V1 của Bot.",
+        "text": "Không có điều kiện Mua trong Backtest một mã phải báo cấu hình chưa đủ. Không tự coi đây là yêu cầu dùng cấu hình Bot.",
         "id": "o2"
       },
       {
@@ -76,7 +76,7 @@
       }
     ],
     "correct_index": 1,
-    "explanation": "Không có điều kiện Mua trong Backtest một mã phải báo cấu hình chưa đủ. Không tự coi đây là yêu cầu dùng bộ lọc V1 của Bot.",
+    "explanation": "Không có điều kiện Mua trong Backtest một mã phải báo cấu hình chưa đủ. Không tự coi đây là yêu cầu dùng cấu hình Bot.",
     "skill": "phản biện",
     "fixture": null,
     "id": "ch02-l01-q03",

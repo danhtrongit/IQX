@@ -96,7 +96,11 @@ export type DiemKyLuat = {
   thanh_phan: Record<string, number> | null
 }
 
-export type DiemKyLuatHistory = { scores: DiemKyLuat[]; from_date: string; to_date: string }
+export type DiemKyLuatHistory = {
+  scores: DiemKyLuat[]
+  from_date: string
+  to_date: string
+}
 
 export type WeeklyViolations = {
   week_start: string
@@ -127,9 +131,24 @@ export type Cap2Analysis = {
     do_days: number
   }
   weekly_violations: WeeklyViolations[]
-  window20: { sell_order_id: string; symbol: string; closed_at: string; compliant: boolean; violations: string[] }[]
-  reflection: { eligible: boolean; note_count: number; violation_count: number; insights: ReflectionInsight[] }
-  patterns: { pattern_id: number; message: string; data: Record<string, unknown> }[]
+  window20: {
+    sell_order_id: string
+    symbol: string
+    closed_at: string
+    compliant: boolean
+    violations: string[]
+  }[]
+  reflection: {
+    eligible: boolean
+    note_count: number
+    violation_count: number
+    insights: ReflectionInsight[]
+  }
+  patterns: {
+    pattern_id: number
+    message: string
+    data: Record<string, unknown>
+  }[]
 }
 
 /* ── Cấp 3 ──────────────────────────────────────────────────────────────── */
@@ -163,7 +182,11 @@ export type ConfidenceRow = {
   avg_pct_von: number | null
 }
 
-export type Cap3TradeAnalysis = { trades: TradeRow[]; total: number; by_confidence: ConfidenceRow[] }
+export type Cap3TradeAnalysis = {
+  trades: TradeRow[]
+  total: number
+  by_confidence: ConfidenceRow[]
+}
 
 /* ── Cấp 4 ──────────────────────────────────────────────────────────────── */
 
@@ -200,7 +223,14 @@ export type VuKhiDiemMu = {
 }
 
 export type Khoi10 = {
-  rows: { band: string; label: string; count: number; wins: number; win_rate: number | null; insufficient: boolean }[]
+  rows: {
+    band: string
+    label: string
+    count: number
+    wins: number
+    win_rate: number | null
+    insufficient: boolean
+  }[]
   total_trades: number
   excluded_no_ai: number
   hieu_qua: boolean | null
@@ -242,7 +272,12 @@ export type Cap5Progress = {
   time_to_graduate_hours: number | null
 }
 
-export type LocSanTieuChi = { ma: string; ten: string; ap_dung: boolean; giai_thich: string | null }
+export type LocSanTieuChi = {
+  ma: string
+  ten: string
+  ap_dung: boolean
+  giai_thich: string | null
+}
 
 export type HuntFilterStatus = {
   ma: string
@@ -357,7 +392,17 @@ export type NguonSan = {
 }
 
 export type Khoi12 = {
-  items: { ma: string; ten: string; so_lenh: number; so_lenh_thang: number; ty_le_thang: number | null; du_mau: boolean; nhan: string | null; canh_bao: string | null; giai_thich: string }[]
+  items: {
+    ma: string
+    ten: string
+    so_lenh: number
+    so_lenh_thang: number
+    ty_le_thang: number | null
+    du_mau: boolean
+    nhan: string | null
+    canh_bao: string | null
+    giai_thich: string
+  }[]
   best_filter: string | null
   so_lenh_toi_thieu: number
   so_lenh_khong_tu_san: number
@@ -395,13 +440,26 @@ export type Cap6Progress = {
 
 export type Cap6PhanTich = {
   khoi_14: {
-    rows: { muc: string; muc_ten: string; so_lenh: number; kl_tb_pct_von: number | null; khop: boolean | null }[]
+    rows: {
+      muc: string
+      muc_ten: string
+      so_lenh: number
+      kl_tb_pct_von: number | null
+      khop: boolean | null
+    }[]
     du_mau: boolean
     giai_thich: string
     nhan_xet: string | null
   }
   khoi_15: {
-    rows: { muc: string; muc_ten: string; so_lenh: number; so_lenh_thang: number; ty_le_thang_pct: number | null; du_mau: boolean }[]
+    rows: {
+      muc: string
+      muc_ten: string
+      so_lenh: number
+      so_lenh_thang: number
+      ty_le_thang_pct: number | null
+      du_mau: boolean
+    }[]
     so_lan_nghiem_khong_mua: number
     so_lan_khong_mua: number
     so_lenh_toi_thieu: number
@@ -412,7 +470,11 @@ export type Cap6PhanTich = {
 
 /* ── Bot ────────────────────────────────────────────────────────────────── */
 
-export type BotRunIssue = { code: string; symbol: string | null; detail: string | null }
+export type BotRunIssue = {
+  code: string
+  symbol: string | null
+  detail: string | null
+}
 
 export type BotRunStatus = {
   status: "idle" | "running" | "succeeded" | "failed"
@@ -422,12 +484,39 @@ export type BotRunStatus = {
   issues: BotRunIssue[]
 }
 
+export type BotProductStage = "bot_v1_waiting" | "bot_v2_academy"
+
+export type BotConditionsState =
+  "waiting_for_conditions" | "entry_enabled" | "exit_only" | "protection_only"
+
+export type BotConditions = {
+  state: BotConditionsState
+  has_active_buy: boolean
+  has_active_sell: boolean
+  buy_condition_count: number
+  sell_condition_count: number
+  saved_revision: number | null
+  effective_revision: number | null
+  effective_session: string | null
+  config_status: "none" | "pending" | "effective" | "calendar_unavailable"
+  open_positions: number
+}
+
 export type BotOverview = {
   eligible: boolean
   current_level: number
   cap6_graduated_at: string | null
   disclosure: string
-  bot: { strategy_id: string; strategy_version: number; execution_model: string; initial_cash_vnd: string; activated_at: string } | null
+  bot: {
+    strategy_id: string
+    strategy_version: number
+    execution_model: string
+    initial_cash_vnd: string
+    activated_at: string
+    policy_version: string
+    product_stage: BotProductStage
+  } | null
+  conditions: BotConditions | null
   account: {
     cash_vnd: string
     market_value_vnd: string | null
@@ -451,7 +540,7 @@ export type BotPosition = {
   amplitude_at_entry_vnd: string
   amplitude_source_ref: string
   stop_loss_vnd: string
-  take_profit_vnd: string
+  legacy_take_profit_vnd: string | null
   unrealized_pnl_net_vnd: string | null
   filter_ids: string[]
   opened_session: string
@@ -459,7 +548,11 @@ export type BotPosition = {
   sector: string | null
 }
 
-export type BotPositions = { items: BotPosition[]; valuation_complete: boolean; as_of_session: string | null }
+export type BotPositions = {
+  items: BotPosition[]
+  valuation_complete: boolean
+  as_of_session: string | null
+}
 
 export type BotJournalItem = {
   id: string
@@ -468,7 +561,16 @@ export type BotJournalItem = {
   action: string
   reason_code: string
   reason: string
-  execution: { id: string; side: string; qty: number; price_vnd: string; gross_value_vnd: string; fee_vnd: string; tax_vnd: string; net_cash_delta_vnd: string } | null
+  execution: {
+    id: string
+    side: string
+    qty: number
+    price_vnd: string
+    gross_value_vnd: string
+    fee_vnd: string
+    tax_vnd: string
+    net_cash_delta_vnd: string
+  } | null
   symbol: string | null
   filter_ids: string[]
   supporting_count: number | null
@@ -476,10 +578,18 @@ export type BotJournalItem = {
   created_at: string
 }
 
-export type BotJournal = { items: BotJournalItem[]; next_cursor: string | null; issues: BotRunIssue[] }
+export type BotJournal = {
+  items: BotJournalItem[]
+  next_cursor: string | null
+  issues: BotRunIssue[]
+}
 
 export type BotPerformance = {
-  base: { trading_date: string; bot_nav_vnd: string; vnindex_value: string | null } | null
+  base: {
+    trading_date: string
+    bot_nav_vnd: string
+    vnindex_value: string | null
+  } | null
   series: {
     trading_date: string
     cash_vnd: string
@@ -513,13 +623,18 @@ export type ReadingReveal = ReadingReceipt & {
 /* ── Fetchers ───────────────────────────────────────────────────────────── */
 
 function unwrap<T>(payload: unknown): T {
-  if (payload && typeof payload === "object" && !Array.isArray(payload) && "data" in payload) {
+  if (
+    payload &&
+    typeof payload === "object" &&
+    !Array.isArray(payload) &&
+    "data" in payload
+  ) {
     return (payload as { data: T }).data
   }
   return payload as T
 }
 
-const get = async <T,>(path: string, signal?: AbortSignal) =>
+const get = async <T>(path: string, signal?: AbortSignal) =>
   unwrap<T>(await api<unknown>(path, { signal }))
 
 /**
@@ -528,7 +643,10 @@ const get = async <T,>(path: string, signal?: AbortSignal) =>
  * `null` so the panels can say "chưa vào cấp" instead of reporting an error.
  * Every other status still throws.
  */
-async function getOrNull<T>(path: string, signal?: AbortSignal): Promise<T | null> {
+async function getOrNull<T>(
+  path: string,
+  signal?: AbortSignal
+): Promise<T | null> {
   try {
     return unwrap<T>(await api<unknown>(path, { signal }))
   } catch (error) {
@@ -538,37 +656,82 @@ async function getOrNull<T>(path: string, signal?: AbortSignal): Promise<T | nul
 }
 
 export const insightsApi = {
-  cap1Progress: (signal?: AbortSignal) => get<Cap1Progress | null>("/cap1/progress", signal),
+  cap1Progress: (signal?: AbortSignal) =>
+    get<Cap1Progress | null>("/cap1/progress", signal),
   cap1Trades: (signal?: AbortSignal) => get<TradeList>("/cap1/trades", signal),
-  cap2Progress: (signal?: AbortSignal) => get<Cap2Progress | null>("/cap2/progress", signal),
-  cap2Trades: (signal?: AbortSignal) => getOrNull<TradeList>("/cap2/trades", signal),
-  cap2Analysis: (signal?: AbortSignal) => getOrNull<Cap2Analysis>("/cap2/analysis", signal),
-  cap2Scores: (signal?: AbortSignal) => getOrNull<DiemKyLuatHistory>("/cap2/diem-ky-luat/history", signal),
-  cap3Progress: (signal?: AbortSignal) => get<Cap3Progress | null>("/cap3/progress", signal),
-  cap3Analysis: (signal?: AbortSignal) => getOrNull<Cap3TradeAnalysis>("/cap3/trades/analysis", signal),
-  cap4Progress: (signal?: AbortSignal) => get<Cap4Progress | null>("/cap4/progress", signal),
-  cap4VuKhiDiemMu: (signal?: AbortSignal) => getOrNull<VuKhiDiemMu>("/cap4/vu-khi-diem-mu", signal),
-  cap4PhanTich: (signal?: AbortSignal) => getOrNull<Cap4PhanTich>("/cap4/phan-tich", signal),
-  cap5Progress: (signal?: AbortSignal) => get<Cap5Progress | null>("/cap5/progress", signal),
-  cap5PhanTich: (signal?: AbortSignal) => getOrNull<Cap5PhanTich>("/cap5/phan-tich", signal),
-  cap5SanMaIndex: (signal?: AbortSignal) => getOrNull<SanMaIndex>("/cap5/san-ma", signal),
-  cap5Hunt: (filter: string, signal?: AbortSignal) => getOrNull<HuntResult>(`/cap5/san-ma/${filter}`, signal),
-  cap5Watchlist: (signal?: AbortSignal) => getOrNull<Cap5Watchlist>("/cap5/watchlist", signal),
-  cap5AddWatchlist: (input: { symbol: string; hunt_filter: string | null; hunt_signal: string | null }) =>
-    api<Cap5WatchlistItem>("/cap5/watchlist", { method: "POST", body: JSON.stringify(input) }),
-  cap5RemoveWatchlist: (symbol: string) => api<void>(`/cap5/watchlist/${encodeURIComponent(symbol)}`, { method: "DELETE" }),
-  cap5NguonSan: (symbol: string, signal?: AbortSignal) => getOrNull<NguonSan>(`/cap5/nguon-san/${encodeURIComponent(symbol)}`, signal),
-  cap6Progress: (signal?: AbortSignal) => get<Cap6Progress | null>("/cap6/progress", signal),
-  cap6PhanTich: (signal?: AbortSignal) => getOrNull<Cap6PhanTich>("/cap6/phan-tich", signal),
+  cap2Progress: (signal?: AbortSignal) =>
+    get<Cap2Progress | null>("/cap2/progress", signal),
+  cap2Trades: (signal?: AbortSignal) =>
+    getOrNull<TradeList>("/cap2/trades", signal),
+  cap2Analysis: (signal?: AbortSignal) =>
+    getOrNull<Cap2Analysis>("/cap2/analysis", signal),
+  cap2Scores: (signal?: AbortSignal) =>
+    getOrNull<DiemKyLuatHistory>("/cap2/diem-ky-luat/history", signal),
+  cap3Progress: (signal?: AbortSignal) =>
+    get<Cap3Progress | null>("/cap3/progress", signal),
+  cap3Analysis: (signal?: AbortSignal) =>
+    getOrNull<Cap3TradeAnalysis>("/cap3/trades/analysis", signal),
+  cap4Progress: (signal?: AbortSignal) =>
+    get<Cap4Progress | null>("/cap4/progress", signal),
+  cap4VuKhiDiemMu: (signal?: AbortSignal) =>
+    getOrNull<VuKhiDiemMu>("/cap4/vu-khi-diem-mu", signal),
+  cap4PhanTich: (signal?: AbortSignal) =>
+    getOrNull<Cap4PhanTich>("/cap4/phan-tich", signal),
+  cap5Progress: (signal?: AbortSignal) =>
+    get<Cap5Progress | null>("/cap5/progress", signal),
+  cap5PhanTich: (signal?: AbortSignal) =>
+    getOrNull<Cap5PhanTich>("/cap5/phan-tich", signal),
+  cap5SanMaIndex: (signal?: AbortSignal) =>
+    getOrNull<SanMaIndex>("/cap5/san-ma", signal),
+  cap5Hunt: (filter: string, signal?: AbortSignal) =>
+    getOrNull<HuntResult>(`/cap5/san-ma/${filter}`, signal),
+  cap5Watchlist: (signal?: AbortSignal) =>
+    getOrNull<Cap5Watchlist>("/cap5/watchlist", signal),
+  cap5AddWatchlist: (input: {
+    symbol: string
+    hunt_filter: string | null
+    hunt_signal: string | null
+  }) =>
+    api<Cap5WatchlistItem>("/cap5/watchlist", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  cap5RemoveWatchlist: (symbol: string) =>
+    api<void>(`/cap5/watchlist/${encodeURIComponent(symbol)}`, {
+      method: "DELETE",
+    }),
+  cap5NguonSan: (symbol: string, signal?: AbortSignal) =>
+    getOrNull<NguonSan>(
+      `/cap5/nguon-san/${encodeURIComponent(symbol)}`,
+      signal
+    ),
+  cap6Progress: (signal?: AbortSignal) =>
+    get<Cap6Progress | null>("/cap6/progress", signal),
+  cap6PhanTich: (signal?: AbortSignal) =>
+    getOrNull<Cap6PhanTich>("/cap6/phan-tich", signal),
   botOverview: (signal?: AbortSignal) => get<BotOverview>("/bot", signal),
-  botPositions: (signal?: AbortSignal) => get<BotPositions>("/bot/positions", signal),
+  botPositions: (signal?: AbortSignal) =>
+    get<BotPositions>("/bot/positions", signal),
   botJournal: (cursor: string | null, signal?: AbortSignal) =>
-    get<BotJournal>(`/bot/journal?limit=30${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, signal),
-  botPerformance: (signal?: AbortSignal) => get<BotPerformance>("/bot/performance", signal),
+    get<BotJournal>(
+      `/bot/journal?limit=30${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`,
+      signal
+    ),
+  botPerformance: (signal?: AbortSignal) =>
+    get<BotPerformance>("/bot/performance", signal),
   readingDataset: (symbol: string) =>
-    api<ReadingDataset>("/journey/reading-datasets", { method: "POST", body: JSON.stringify({ symbol }) }),
+    api<ReadingDataset>("/journey/reading-datasets", {
+      method: "POST",
+      body: JSON.stringify({ symbol }),
+    }),
   submitAssessment: (datasetId: string, answers: Record<string, string>) =>
-    api<ReadingReceipt>("/journey/assessments", { method: "POST", body: JSON.stringify({ dataset_id: datasetId, answers }) }),
+    api<ReadingReceipt>("/journey/assessments", {
+      method: "POST",
+      body: JSON.stringify({ dataset_id: datasetId, answers }),
+    }),
   revealAssessment: (assessmentId: string) =>
-    api<ReadingReveal>(`/journey/assessments/${encodeURIComponent(assessmentId)}/reveal`, { method: "POST" }),
+    api<ReadingReveal>(
+      `/journey/assessments/${encodeURIComponent(assessmentId)}/reveal`,
+      { method: "POST" }
+    ),
 }

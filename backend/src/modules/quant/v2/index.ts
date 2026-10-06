@@ -5,9 +5,15 @@
 export * from './types.js';
 export { loadTechnicalRegistry, parseTechnicalRegistry } from './technical-registry.js';
 export { calc, isFiniteNumber, validBar } from './indicators.js';
-export { and3, evalTree, evaluateRule, type TriTreeNode } from './rules.js';
+export {
+  and3,
+  evalTree,
+  evaluateRule,
+  evaluateRuleWithEvidence,
+  type TriTreeNode,
+} from './rules.js';
 export { defaultConfig, effectiveField, indicatorCapability, validateConfig } from './config.js';
-export { indicatorSideSignals, sideSignals } from './signals.js';
+export { indicatorSideSignals, sideSignals, sideSignalsWithEvidence } from './signals.js';
 export { DEFAULT_RUN_OPTIONS, runBacktest } from './backtest.js';
 export { EngineRunError, type EngineRunErrorCode } from './errors.js';
 export { canonicalJson, configHash, sha256Hex } from './hash.js';

@@ -186,7 +186,6 @@ export const environmentSchema = z
     // accepts data source + engine version; lesson completion alone never enables them.
     ACADEMY_ENABLED: booleanSetting(true),
     STRATEGY_V2_ENABLED: booleanSetting(false),
-    BOT_SHARED_CONFIG_ENABLED: booleanSetting(false),
     STRATEGY_ADVANCED_CAPABILITIES: z.preprocess(
       (value) =>
         typeof value === 'string'

@@ -5,6 +5,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { DatabaseService, type SqlClient } from '../../platform/database/index.js';
+import { TradingRightsService } from '../trading/rights.service.js';
 import type { AuditContext } from './admin-audit.service.js';
 import { AdminAuditService } from './admin-audit.service.js';
 import type {
@@ -115,6 +116,7 @@ export class AdminVTService {
   constructor(
     private readonly database: DatabaseService,
     private readonly audit: AdminAuditService,
+    private readonly rights: TradingRightsService,
   ) {}
 
   async account(accountId: string): Promise<Record<string, unknown>> {
@@ -456,6 +458,7 @@ export class AdminVTService {
       'initial_cash_vnd',
     );
     const initialNumber = Number(initial);
+    await this.rights.cancelPendingForResetSameTx(tx, accountId);
     await tx.query(`delete from virtual_settlements where account_id = $1::uuid`, [accountId]);
     await tx.query(`delete from virtual_trades where account_id = $1::uuid`, [accountId]);
     await tx.query(`delete from virtual_orders where account_id = $1::uuid`, [accountId]);

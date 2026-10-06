@@ -44,6 +44,7 @@ function service(getQuote: (symbol: string) => Promise<TradingQuote>, positions 
       listPositions: vi.fn().mockResolvedValue(positions),
     } as never,
     { getQuote, validateSymbol: async () => true },
+    { pendingTotals: vi.fn().mockResolvedValue(new Map()) } as never,
   );
 }
 

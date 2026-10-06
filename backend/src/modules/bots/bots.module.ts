@@ -10,7 +10,7 @@ import { BotService } from './bot.service.js';
 import { BOT_SNAPSHOT_PROVIDER } from './bot.types.js';
 
 // StrategyConfigModule (SHARED_CONFIG_READER) and QuantModule (QUANT_MARKET_DATA) are read-only
-// inputs used only when BOT_SHARED_CONFIG_ENABLED=true; neither imports BotsModule.
+// inputs for the unconditional Academy activation policy; neither imports BotsModule.
 @Module({
   imports: [DatabaseModule, AuthModule, MarketIntegrationModule, QuantModule, StrategyConfigModule],
   controllers: [BotsController],

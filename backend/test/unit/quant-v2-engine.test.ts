@@ -504,6 +504,40 @@ describe('quant v2 rules — three-valued logic', () => {
     expect(evaluateRule(inverted, { v: [5] }, {}, 0)).toBeNull();
   });
 
+  it('B13 membership ∉ with a missing price or missing band is null, never true', () => {
+    const m: MembershipRule = {
+      id: 'm',
+      kind: 'membership',
+      lhs: { kind: 'series', key: 'v' },
+      op: '∉',
+      rhs: {
+        kind: 'interval',
+        lower: { kind: 'series', key: 'lo' },
+        upper: { kind: 'series', key: 'hi' },
+        bounds: 'open',
+      },
+      allowed_ops: ['∈', '∉'],
+    };
+    expect(evaluateRule(m, { v: [null], lo: [0], hi: [5] }, {}, 0)).toBeNull();
+    expect(evaluateRule(m, { v: [3], lo: [null], hi: [5] }, {}, 0)).toBeNull();
+    expect(evaluateRule(m, { v: [3], lo: [0] }, {}, 0)).toBeNull();
+    expect(evaluateRule({ ...m, op: '∈' }, { v: [3], lo: [null], hi: [5] }, {}, 0)).toBeNull();
+  });
+
+  it('B14 a rule op changed from > to < within allowed_ops is evaluated with <', () => {
+    const base: CompareRule = {
+      id: 'r',
+      kind: 'compare',
+      lhs: { kind: 'series', key: 'v' },
+      op: '>',
+      rhs: { kind: 'constant', value: 5 },
+      allowed_ops: ['>', '<'],
+    };
+    expect(evaluateRule(base, { v: [6] }, {}, 0)).toBe(true);
+    expect(evaluateRule({ ...base, op: '<' }, { v: [6] }, {}, 0)).toBe(false);
+    expect(evaluateRule({ ...base, op: '<' }, { v: [4] }, {}, 0)).toBe(true);
+  });
+
   it('cross differs from state and needs the previous value', () => {
     const rule: CompareRule = {
       ...compare('>', 'cross'),
@@ -670,5 +704,98 @@ describe('quant v2 sideSignals — parity and independence', () => {
     const ma = c.indicators.ma;
     if (!ma) throw new Error('ma');
     expect(indicatorSideSignals('ma', ma.sell, bars)).toEqual(sell);
+  });
+
+  it('B05 the same indicator with different per-side params yields independent series', () => {
+    const c = configWith(['rsi']);
+    const rsi = c.indicators.rsi!;
+    const buy = indicatorSideSignals(
+      'rsi',
+      { ...rsi.buy, params: { period: 12, level: 30 } },
+      bars,
+    );
+    const sell = indicatorSideSignals(
+      'rsi',
+      { ...rsi.sell, params: { period: 10, level: 75 } },
+      bars,
+    );
+    expect(buy).not.toEqual(sell);
+    // Changing one side's params never alters the other side's series.
+    expect(
+      indicatorSideSignals('rsi', { ...rsi.buy, params: { period: 12, level: 30 } }, bars),
+    ).toEqual(buy);
+    expect(
+      indicatorSideSignals('rsi', { ...rsi.sell, params: { period: 21, level: 70 } }, bars),
+    ).not.toEqual(sell);
+  });
+
+  it('B06 sideSignals ANDs every active indicator: one false dominates, no majority vote', () => {
+    const c = deepFreeze(configWith(['ma', 'rsi', 'macd']));
+    const perIndicator = ['ma', 'rsi', 'macd'].map((id) =>
+      indicatorSideSignals(id, c.indicators[id]!.buy, bars),
+    );
+    const expected = bars.map((_, i) => and3(perIndicator.map((signals) => signals[i] ?? null)));
+    expect(sideSignals(c, bars, 'buy')).toEqual(expected);
+    expect(and3([true, true, false])).toBe(false);
+    expect(and3([true, false])).toBe(false);
+    expect(and3([true])).toBe(true);
+
+    // Per-indicator: a false rule dominates an otherwise-true rule at every bar.
+    const trueRule: CompareRule = {
+      id: 't',
+      kind: 'compare',
+      lhs: { kind: 'constant', value: 2 },
+      op: '>',
+      rhs: { kind: 'constant', value: 1 },
+      allowed_ops: ['>', '<'],
+    };
+    const falseRule: CompareRule = {
+      id: 'f',
+      kind: 'compare',
+      lhs: { kind: 'constant', value: 1 },
+      op: '>',
+      rhs: { kind: 'constant', value: 2 },
+      allowed_ops: ['>', '<'],
+    };
+    const side = { enabled: true, params: { period: 20 }, rules: [trueRule, falseRule] };
+    expect(indicatorSideSignals('ma', side, bars).every((value) => value === false)).toBe(true);
+  });
+
+  it('B09 missing data on one Buy indicator makes Buy not-true while an unaffected Sell side is independent', () => {
+    const c = defaultConfig();
+    const market = c.indicators.rs_market!;
+    market.master_enabled = true;
+    market.buy.enabled = true;
+    market.sell.enabled = false;
+    const ma = c.indicators.ma!;
+    ma.master_enabled = true;
+    ma.buy.enabled = false;
+    ma.sell.enabled = true;
+
+    const buy = sideSignals(c, contextless, 'buy');
+    expect(buy.every((value) => value !== true)).toBe(true);
+    expect(buy.every((value) => value === null)).toBe(true);
+    const sell = sideSignals(c, contextless, 'sell');
+    expect(sell.some((value) => value === true || value === false)).toBe(true);
+  });
+
+  it('B10 signals are per-bar and never memo a prior bar', () => {
+    const rule: CompareRule = {
+      id: 'r',
+      kind: 'compare',
+      lhs: { kind: 'series', key: 'v' },
+      op: '>',
+      rhs: { kind: 'constant', value: 5 },
+      allowed_ops: ['>', '<'],
+    };
+    const series = { v: [5, 6, 4] };
+    expect(evaluateRule(rule, series, {}, 0)).toBe(false);
+    expect(evaluateRule(rule, series, {}, 1)).toBe(true);
+    expect(evaluateRule(rule, series, {}, 2)).toBe(false);
+
+    const c = configWith(['ma']);
+    const full = indicatorSideSignals('ma', c.indicators.ma!.buy, bars);
+    const prefix = indicatorSideSignals('ma', c.indicators.ma!.buy, bars.slice(0, 700));
+    expect(full.slice(0, 700)).toEqual(prefix);
   });
 });

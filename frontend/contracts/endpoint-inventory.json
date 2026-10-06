@@ -1566,7 +1566,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 541,
+      "line": 660,
       "callee": "get",
       "raw": "/cap1/progress",
       "method": "GET",
@@ -1579,7 +1579,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 542,
+      "line": 661,
       "callee": "get",
       "raw": "/cap1/trades",
       "method": "GET",
@@ -1592,7 +1592,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 543,
+      "line": 663,
       "callee": "get",
       "raw": "/cap2/progress",
       "method": "GET",
@@ -1605,7 +1605,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 544,
+      "line": 665,
       "callee": "getOrNull",
       "raw": "/cap2/trades",
       "method": "GET",
@@ -1618,7 +1618,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 545,
+      "line": 667,
       "callee": "getOrNull",
       "raw": "/cap2/analysis",
       "method": "GET",
@@ -1631,7 +1631,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 546,
+      "line": 669,
       "callee": "getOrNull",
       "raw": "/cap2/diem-ky-luat/history",
       "method": "GET",
@@ -1644,7 +1644,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 547,
+      "line": 671,
       "callee": "get",
       "raw": "/cap3/progress",
       "method": "GET",
@@ -1657,7 +1657,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 548,
+      "line": 673,
       "callee": "getOrNull",
       "raw": "/cap3/trades/analysis",
       "method": "GET",
@@ -1670,7 +1670,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 549,
+      "line": 675,
       "callee": "get",
       "raw": "/cap4/progress",
       "method": "GET",
@@ -1683,7 +1683,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 550,
+      "line": 677,
       "callee": "getOrNull",
       "raw": "/cap4/vu-khi-diem-mu",
       "method": "GET",
@@ -1696,7 +1696,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 551,
+      "line": 679,
       "callee": "getOrNull",
       "raw": "/cap4/phan-tich",
       "method": "GET",
@@ -1709,7 +1709,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 552,
+      "line": 681,
       "callee": "get",
       "raw": "/cap5/progress",
       "method": "GET",
@@ -1722,7 +1722,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 553,
+      "line": 683,
       "callee": "getOrNull",
       "raw": "/cap5/phan-tich",
       "method": "GET",
@@ -1735,7 +1735,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 554,
+      "line": 685,
       "callee": "getOrNull",
       "raw": "/cap5/san-ma",
       "method": "GET",
@@ -1748,7 +1748,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 555,
+      "line": 687,
       "callee": "getOrNull",
       "raw": "/cap5/san-ma/{filter}",
       "method": "GET",
@@ -1761,7 +1761,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 556,
+      "line": 689,
       "callee": "getOrNull",
       "raw": "/cap5/watchlist",
       "method": "GET",
@@ -1774,7 +1774,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 558,
+      "line": 695,
       "callee": "api",
       "raw": "/cap5/watchlist",
       "method": "POST",
@@ -1787,7 +1787,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 559,
+      "line": 700,
       "callee": "api",
       "raw": "/cap5/watchlist/{encodeURIComponent(symbol)}",
       "method": "DELETE",
@@ -1800,7 +1800,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 560,
+      "line": 704,
       "callee": "getOrNull",
       "raw": "/cap5/nguon-san/{encodeURIComponent(symbol)}",
       "method": "GET",
@@ -1813,7 +1813,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 561,
+      "line": 709,
       "callee": "get",
       "raw": "/cap6/progress",
       "method": "GET",
@@ -1826,7 +1826,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 562,
+      "line": 711,
       "callee": "getOrNull",
       "raw": "/cap6/phan-tich",
       "method": "GET",
@@ -1839,7 +1839,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 563,
+      "line": 712,
       "callee": "get",
       "raw": "/bot",
       "method": "GET",
@@ -1852,7 +1852,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 564,
+      "line": 714,
       "callee": "get",
       "raw": "/bot/positions",
       "method": "GET",
@@ -1865,7 +1865,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 566,
+      "line": 716,
       "callee": "get",
       "raw": "/bot/journal?limit=30{cursor ? `&cursor=$encodeURIComponent(cursor)` : \"\"}",
       "method": "GET",
@@ -1878,7 +1878,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 567,
+      "line": 721,
       "callee": "get",
       "raw": "/bot/performance",
       "method": "GET",
@@ -1891,7 +1891,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 569,
+      "line": 723,
       "callee": "api",
       "raw": "/journey/reading-datasets",
       "method": "POST",
@@ -1904,7 +1904,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 571,
+      "line": 728,
       "callee": "api",
       "raw": "/journey/assessments",
       "method": "POST",
@@ -1917,7 +1917,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 573,
+      "line": 733,
       "callee": "api",
       "raw": "/journey/assessments/{encodeURIComponent(assessmentId)}/reveal",
       "method": "POST",
@@ -2361,7 +2361,7 @@
     },
     {
       "file": "src/pages/demo-trading/trading/use-engine-refresh.ts",
-      "line": 66,
+      "line": 75,
       "callee": "api",
       "raw": "/virtual-trading/refresh",
       "method": "POST",

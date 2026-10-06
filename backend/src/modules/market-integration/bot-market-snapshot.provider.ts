@@ -1,13 +1,8 @@
 import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/database.service.js';
-import { BOT_LAYER_KEYS, canonicalHash } from '../bots/bot.domain.js';
-import type {
-  BotIssue,
-  BotLayerEvidence,
-  BotMarketSnapshotInput,
-  BotSnapshotProvider,
-} from '../bots/bot.types.js';
+import { canonicalHash } from '../bots/bot.domain.js';
+import type { BotIssue, BotMarketSnapshotInput, BotSnapshotProvider } from '../bots/bot.types.js';
 import { FILTER_SPECS, HuntEngine, REQUIRED_CANDLES } from '../journey/cap5/hunt.engine.js';
 import type { HuntDataSource, HuntFilter } from '../journey/cap5/cap5.types.js';
 import { MarketDataService } from '../market-data/market-data.service.js';
@@ -15,7 +10,6 @@ import { HoseRestrictedSecuritiesProvider } from './hose-restricted-securities.p
 import {
   finite,
   isCompletedVietnamSession,
-  isObject,
   sessionDate,
   stableHash,
   vnToday,
@@ -30,63 +24,8 @@ const FILTER_IDS: Record<HuntFilter, string> = {
   tang: 'tang_manh_kl',
 };
 
-const LAYER_MAPPING = {
-  ky_thuat: 'L1',
-  dong_tien: 'L3',
-  noi_bo: 'L4',
-  tin_tuc: 'L5',
-} as const;
-
-const SUPPORT: Record<string, ReadonlySet<string>> = {
-  L1: new Set(['Mạnh', 'Rất mạnh']),
-  L3: new Set(['Hỗ trợ nhẹ', 'Hỗ trợ mạnh']),
-  L4: new Set(['Hỗ trợ nhẹ', 'Hỗ trợ mạnh']),
-  L5: new Set(['Tích cực', 'Rất tích cực']),
-};
-const NEGATIVE: Record<string, ReadonlySet<string>> = {
-  L1: new Set(['Yếu', 'Rất yếu']),
-  L3: new Set(['Cảnh báo nhẹ', 'Cảnh báo mạnh']),
-  L4: new Set(['Cảnh báo nhẹ', 'Cảnh báo mạnh']),
-  L5: new Set(['Tiêu cực', 'Rất tiêu cực']),
-};
-const VERY_NEGATIVE: Record<string, ReadonlySet<string>> = {
-  L4: new Set(['Cảnh báo mạnh']),
-  L5: new Set(['Rất tiêu cực']),
-};
-
 function issue(code: string, detail: string, symbol: string | null = null): BotIssue {
   return { code, detail, symbol };
-}
-
-function object(value: unknown): Record<string, unknown> {
-  if (typeof value === 'string') {
-    try {
-      const parsed: unknown = JSON.parse(value);
-      return isObject(parsed) ? parsed : {};
-    } catch {
-      return {};
-    }
-  }
-  return isObject(value) ? value : {};
-}
-
-function insightLayers(payload: Record<string, unknown>): Record<string, unknown> {
-  const nested = object(payload.layers);
-  return Object.keys(nested).length ? nested : payload;
-}
-
-function layerEvidence(aiKey: string, value: unknown, sourceRef: string): BotLayerEvidence | null {
-  const row = object(value);
-  const raw = typeof row.statusLabel === 'string' ? row.statusLabel.trim() : '';
-  if (!raw || raw === '—') return null;
-  const verdict = SUPPORT[aiKey]?.has(raw) ? 'ok' : NEGATIVE[aiKey]?.has(raw) ? 'bad' : 'neu';
-  return {
-    verdict,
-    raw_level: raw,
-    is_very_negative:
-      aiKey === 'L4' || aiKey === 'L5' ? Boolean(VERY_NEGATIVE[aiKey]?.has(raw)) : false,
-    source_ref: `${sourceRef}:${aiKey}`,
-  };
 }
 
 function amplitude(bars: readonly { high: number; low: number; close: number }[]): number | null {
@@ -188,21 +127,7 @@ export class BotMarketSnapshotProvider implements BotSnapshotProvider {
       Math.max(REQUIRED_CANDLES, 40),
       tradingDate,
     );
-    const candidateSymbols = new Set(
-      [...filterSymbols.values()].flatMap((symbols) => [...symbols]),
-    );
-    const insights = candidateSymbols.size
-      ? await this.database.query<{ symbol: string; payload: unknown; session_date: unknown }>(
-          `select upper(symbol) symbol, payload, session_date from ai_insight_history
-           where upper(symbol)=any($1::text[]) and session_date=$2::date`,
-          [[...candidateSymbols], tradingDate],
-        )
-      : [];
-    const insightBySymbol = new Map(insights.map((row) => [row.symbol, row]));
-
     const symbols: BotMarketSnapshotInput['symbols'] = {};
-    // An empty result is valid when every filter completed its scan.
-    let candidateInputsComplete = true;
     for (const symbol of allSymbols) {
       const bars = barsMap.get(symbol) ?? [];
       const latest = bars.at(-1);
@@ -218,19 +143,6 @@ export class BotMarketSnapshotProvider implements BotSnapshotProvider {
         .filter(([, members]) => members.has(symbol))
         .map(([id]) => id)
         .sort();
-      const insight = insightBySymbol.get(symbol);
-      const payload = object(insight?.payload);
-      const rawLayers = insightLayers(payload);
-      const insightHash = insight ? stableHash(payload) : null;
-      const insightRef = insightHash ? `ai_insight:${symbol}:${tradingDate}:${insightHash}` : null;
-      const layers: Record<string, BotLayerEvidence> = {};
-      if (insightRef) {
-        for (const key of BOT_LAYER_KEYS) {
-          const aiKey = LAYER_MAPPING[key];
-          const normalized = layerEvidence(aiKey, rawLayers[aiKey], insightRef);
-          if (normalized) layers[key] = normalized;
-        }
-      }
       const atr = amplitude(bars);
       const official = Boolean(
         exact && latest && Number.isFinite(latest.close) && latest.close > 0,
@@ -241,7 +153,7 @@ export class BotMarketSnapshotProvider implements BotSnapshotProvider {
         close_is_official: official,
         trading_value_avg20_vnd: tradingValueAvg20 === null ? undefined : String(tradingValueAvg20),
         filter_ids: filterIds,
-        layers,
+        layers: {},
         l1_amplitude_vnd: atr,
         l1_amplitude_source_ref:
           atr === null ? null : `quant:atr14:true-range:VCI-OHLCV:${symbol}:${tradingDate}:v1`,
@@ -256,26 +168,18 @@ export class BotMarketSnapshotProvider implements BotSnapshotProvider {
             completed_session: isCompletedVietnamSession(tradingDate, observedAt),
             official_close_evidence: official,
           },
-          insight: insightRef,
           amplitude: atr === null ? null : 'ATR(14), true range, VCI unadjusted daily OHLCV',
+          l1_amplitude:
+            atr === null
+              ? null
+              : {
+                  source_ref: `quant:atr14:true-range:VCI-OHLCV:${symbol}:${tradingDate}:v1`,
+                  session: tradingDate,
+                  unit: 'VND/share',
+                  basis: 'ATR(14), true range, VCI unadjusted daily OHLCV',
+                },
         },
       };
-      if (filterIds.length > 0) {
-        if (!official)
-          issues.push(issue('missing_official_close', 'Thiếu giá đóng cửa đúng phiên', symbol));
-        const missing = BOT_LAYER_KEYS.filter((key) => !layers[key]);
-        if (missing.length)
-          issues.push(issue('missing_layers', `Thiếu lớp: ${missing.join(', ')}`, symbol));
-        if (atr === null)
-          issues.push(
-            issue(
-              'invalid_or_missing_l1_amplitude',
-              'Không tính được ATR14 từ dữ liệu thật',
-              symbol,
-            ),
-          );
-        if (!official || missing.length > 0 || atr === null) candidateInputsComplete = false;
-      }
     }
 
     const feeRows = await this.database.query<{
@@ -357,7 +261,10 @@ export class BotMarketSnapshotProvider implements BotSnapshotProvider {
       trading_date: tradingDate,
       data_version: '',
       close_is_official: openSymbolsComplete && isCompletedVietnamSession(tradingDate, observedAt),
-      buy_inputs_complete: filtersComplete && restricted !== null && candidateInputsComplete,
+      // Only sources shared by the whole candidate scan belong in this bit. Close, L1,
+      // academy signals, lot sizing and capital are evaluated for each candidate so one bad
+      // symbol never prevents later candidates from being considered.
+      buy_inputs_complete: filtersComplete && restricted !== null,
       symbols,
       fee_rules: feeRules,
       vnindex,
@@ -365,7 +272,7 @@ export class BotMarketSnapshotProvider implements BotSnapshotProvider {
       source_refs: sourceRefs,
     };
     const contentHash = canonicalHash(base);
-    base.data_version = `bot-v1:${tradingDate}:${contentHash.slice(0, 16)}`;
+    base.data_version = `bot-academy-activation-1:${tradingDate}:${contentHash.slice(0, 16)}`;
     base.snapshot_hash = canonicalHash(base);
     return base;
   }

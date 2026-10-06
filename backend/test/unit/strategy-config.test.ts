@@ -3,6 +3,7 @@ import type { ConfigService } from '@nestjs/config';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { AcademyGrantsPort } from '../../src/modules/academy/academy.ports.js';
+import { activeSideIndicators } from '../../src/modules/bots/bot.shared-config.js';
 import {
   configHash,
   defaultConfig,
@@ -26,6 +27,7 @@ import {
   type SharedConfigStoreProvider,
 } from '../../src/modules/strategy-config/strategy-config.repository.js';
 import { sharedConfigPatchSchema } from '../../src/modules/strategy-config/strategy-config.schemas.js';
+import type { SharedConfigPatchInput } from '../../src/modules/strategy-config/strategy-config.schemas.js';
 import {
   SharedConfigService,
   mergeIndicatorPatch,
@@ -518,6 +520,214 @@ describe('SharedConfigService', () => {
         indicators: {},
       }).success,
     ).toBe(false);
+  });
+
+  it('A01 save never creates a bot account or grants capital (reads grants only)', async () => {
+    const calls: string[] = [];
+    const spyGrants: AcademyGrantsPort = {
+      grantedCapabilities: () => {
+        calls.push('grantedCapabilities');
+        return Promise.resolve(new Set(['indicator:rsi']));
+      },
+    };
+    const svc = new SharedConfigService(memory, spyGrants);
+    await svc.save(USER, patch({ rsi: on('rsi') }, 0));
+    expect(calls).toEqual(['grantedCapabilities']);
+    const surface = [
+      ...Object.getOwnPropertyNames(Object.getPrototypeOf(svc)),
+      ...Object.getOwnPropertyNames(Object.getPrototypeOf(memory)),
+    ];
+    expect(surface.filter((name) => /bot|capital|account|wallet|cash/i.test(name))).toEqual([]);
+    expect(memory.revisions).toHaveLength(1);
+  });
+
+  it('B01 master ON + Buy ON + Sell OFF is active only on E_buy and keeps Sell params stored', async () => {
+    const rsi = on('rsi');
+    rsi.sell.enabled = false;
+    rsi.sell.params = { period: 10, level: 75 };
+    const result = await service.save(USER, patch({ rsi }, 0));
+    const saved = result.config.indicators.rsi!;
+    expect(saved.master_enabled).toBe(true);
+    expect(saved.buy.enabled).toBe(true);
+    expect(saved.sell.enabled).toBe(false);
+    expect(saved.sell.params).toEqual({ period: 10, level: 75 });
+
+    const registry = loadTechnicalRegistry();
+    expect(activeSideIndicators(result.config, 'buy', registry).map((e) => e.id)).toContain('rsi');
+    expect(activeSideIndicators(result.config, 'sell', registry).map((e) => e.id)).not.toContain(
+      'rsi',
+    );
+  });
+
+  it('B02 master OFF keeps children; re-enabling restores the saved choices without enabling both sides', async () => {
+    const first = on('rsi');
+    first.sell.enabled = false;
+    first.buy.params.period = 30;
+    first.sell.params = { period: 10, level: 75 };
+    await service.save(USER, patch({ rsi: first }, 0));
+
+    const off = indicator('rsi');
+    off.master_enabled = false;
+    off.buy = structuredClone(first.buy);
+    off.sell = structuredClone(first.sell);
+    const savedOff = await service.save(USER, patch({ rsi: off }, 1));
+    expect(savedOff.config.indicators.rsi!.master_enabled).toBe(false);
+    expect(savedOff.config.indicators.rsi!.buy).toEqual(first.buy);
+    expect(savedOff.config.indicators.rsi!.sell).toEqual(first.sell);
+
+    const backOn = structuredClone(off);
+    backOn.master_enabled = true;
+    const restored = await service.save(USER, patch({ rsi: backOn }, 2));
+    expect(restored.config.indicators.rsi!.buy.enabled).toBe(true);
+    expect(restored.config.indicators.rsi!.sell.enabled).toBe(false);
+    expect(restored.config.indicators.rsi!.sell.params).toEqual({ period: 10, level: 75 });
+  });
+
+  it('B03 both children OFF saves master OFF; master ON with both OFF is 422 SIDE_REQUIRED', async () => {
+    await service.save(USER, patch({ rsi: on('rsi') }, 0));
+    const bothOff = on('rsi');
+    bothOff.buy.enabled = false;
+    bothOff.sell.enabled = false;
+    const saved = await service.save(USER, patch({ rsi: bothOff }, 1));
+    expect(saved.config.indicators.rsi!.master_enabled).toBe(false);
+
+    const ema = on('ema');
+    ema.buy.enabled = false;
+    ema.sell.enabled = false;
+    const error = await rejection(service.save(USER, patch({ ema }, 2)));
+    expect(error.getStatus()).toBe(422);
+    expect(error.getResponse()).toMatchObject({ code: 'SIDE_REQUIRED', indicator: 'ema' });
+    expect(memory.revisions).toHaveLength(2);
+  });
+
+  it('B04 locks ungranted indicators and rejects tampered ops / client actor fields with real codes', async () => {
+    const locked = await rejection(service.save(USER, patch({ ma: on('ma') }, 0)));
+    expect(locked.getStatus()).toBe(403);
+    expect(locked.getResponse()).toMatchObject({
+      code: 'CAPABILITY_LOCKED',
+      capability: 'indicator:ma',
+    });
+
+    // Client-supplied `actor_id` / `passed` fields are not part of the strict patch schema.
+    expect(
+      sharedConfigPatchSchema.safeParse({
+        expected_revision: 0,
+        idempotency_key: 'long-enough',
+        actor_id: OTHER_USER,
+        indicators: { rsi: on('rsi') },
+      }).success,
+    ).toBe(false);
+    expect(
+      sharedConfigPatchSchema.safeParse({
+        expected_revision: 0,
+        idempotency_key: 'long-enough',
+        indicators: { rsi: { ...on('rsi'), passed: true } },
+      }).success,
+    ).toBe(false);
+
+    // Operators outside the whitelist and tampered allowed_ops are CONFIG_INVALID at the service.
+    const badOp = on('rsi');
+    (badOp.buy.rules[0] as { op: string }).op = '>=';
+    const opError = await rejection(
+      service.save(USER, {
+        expected_revision: 0,
+        idempotency_key: 'long-enough',
+        indicators: { rsi: badOp },
+      } as unknown as SharedConfigPatchInput),
+    );
+    expect(opError.getStatus()).toBe(422);
+    expect(opError.getResponse()).toMatchObject({ code: 'CONFIG_INVALID' });
+
+    const tampered = on('rsi');
+    (tampered.buy.rules[0] as { allowed_ops: string[] }).allowed_ops = ['∈'];
+    const allowedError = await rejection(
+      service.save(USER, {
+        expected_revision: 0,
+        idempotency_key: 'long-enough',
+        indicators: { rsi: tampered },
+        actor_id: OTHER_USER,
+      } as unknown as SharedConfigPatchInput),
+    );
+    expect(allowedError.getStatus()).toBe(422);
+    expect(allowedError.getResponse()).toMatchObject({ code: 'CONFIG_INVALID' });
+
+    // The server never trusts a client actor: the stored actor stays the authenticated user.
+    const saved = await service.save(USER, {
+      expected_revision: 0,
+      idempotency_key: 'long-enough',
+      indicators: { rsi: on('rsi') },
+      actor_id: OTHER_USER,
+    } as unknown as SharedConfigPatchInput);
+    expect(saved.revision).toBe(1);
+    expect(memory.revisions[0]!.actor_id).toBe(USER);
+  });
+
+  it('B05 changing Buy params leaves Sell params (period 10, level 75) untouched', async () => {
+    const saved = on('rsi');
+    saved.sell.params = { period: 10, level: 75 };
+    await service.save(USER, patch({ rsi: saved }, 0));
+
+    const edit = structuredClone(saved);
+    edit.buy.params.period = 12;
+    const result = await service.save(USER, patch({ rsi: edit }, 1));
+    expect(result.config.indicators.rsi!.buy.params.period).toBe(12);
+    expect(result.config.indicators.rsi!.sell.params).toEqual({ period: 10, level: 75 });
+    expect(memory.revisions[0]!.config.indicators.rsi!.sell.params).toEqual({
+      period: 10,
+      level: 75,
+    });
+  });
+
+  it('F01 saves at 08:00, 11:00 and 20:00 VN on trading day T schedule the next trading day', async () => {
+    const isTradingDay = weekdays();
+    // Monday 2025-01-06 (VN) at 08:00 / 11:00 / 20:00 (01:00Z / 04:00Z / 13:00Z) -> Tuesday.
+    for (const utc of ['01:00:00', '04:00:00', '13:00:00']) {
+      expect(nextEffectiveSession(new Date(`2025-01-06T${utc}Z`), isTradingDay)).toBe('2025-01-07');
+    }
+    // Saturday save -> Monday; Sunday 23:30 VN -> Monday (skipped), never +24h.
+    expect(nextEffectiveSession(new Date('2025-01-04T05:00:00Z'), isTradingDay)).toBe('2025-01-06');
+    expect(nextEffectiveSession(new Date('2025-01-05T16:30:00Z'), isTradingDay)).toBe('2025-01-06');
+
+    // EffectiveSessionFor follows the same rule through the service.
+    vi.setSystemTime(new Date('2025-01-06T13:00:00Z')); // Monday 20:00 VN
+    const result = await service.save(USER, patch({ rsi: on('rsi') }, 0));
+    expect(result.effective_session).toBe('2025-01-07');
+  });
+
+  it('F03 unusable calendar stores calendar_unavailable, a null session and never reports effective', async () => {
+    memory.calendar = { holidays: 'not json' };
+    const result = await service.save(USER, patch({ rsi: on('rsi') }, 0));
+    expect(result.effective_session).toBeNull();
+    expect(result.status).toBe('calendar_unavailable');
+
+    vi.setSystemTime(new Date('2025-06-01T03:00:00Z'));
+    const state = await service.current(USER);
+    expect(state.status).toBe('calendar_unavailable');
+    expect(state.effective_revision).toBeNull();
+    expect(state.effective_session).toBeNull();
+    const [listed] = await service.revisions(USER, 10);
+    expect(listed).toMatchObject({ status: 'calendar_unavailable', effective_session: null });
+    expect(await service.effectiveFor(USER, '2025-06-01')).toBeNull();
+  });
+
+  it('F04 stale revision is 409 REVISION_CONFLICT; replay and idempotency reuse use the real codes', async () => {
+    const first = await service.save(USER, patch({ rsi: on('rsi') }, 0, 'f04-key-0001'));
+    const stale = await rejection(
+      service.save(USER, patch({ macd: on('macd') }, 0, 'f04-key-0002')),
+    );
+    expect(stale.getStatus()).toBe(409);
+    expect(stale.getResponse()).toMatchObject({ code: 'REVISION_CONFLICT', current_revision: 1 });
+
+    const replay = await service.save(USER, patch({ rsi: on('rsi') }, 0, 'f04-key-0001'));
+    expect(replay.revision).toBe(first.revision);
+    expect(memory.revisions).toHaveLength(1);
+
+    const reused = await rejection(
+      service.save(USER, patch({ macd: on('macd') }, 1, 'f04-key-0001')),
+    );
+    expect(reused.getStatus()).toBe(409);
+    expect(reused.getResponse()).toMatchObject({ code: 'IDEMPOTENCY_KEY_REUSED' });
+    expect(memory.revisions).toHaveLength(1);
   });
 });
 

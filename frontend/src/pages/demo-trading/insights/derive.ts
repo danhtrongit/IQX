@@ -5,18 +5,36 @@
  * to run this filter" and is never drawn as "0 mã"; a missing consensus score
  * is "-/4", never "0/4"; a missing price is "-", never 0.
  */
-import { LOP_DEFS, NOTABLE_MIN_LOP, TONG_SO_LOP, huntFilterLabel, type HuntFilterKey } from "./copy"
-import type { BotJournalItem, Cap5LopChiTiet, Cap5WatchlistItem, HuntResult, LocSanTieuChi, SanMaIndex } from "./api"
+import {
+  LOP_DEFS,
+  NOTABLE_MIN_LOP,
+  TONG_SO_LOP,
+  huntFilterLabel,
+  type HuntFilterKey,
+} from "./copy"
+import type {
+  BotJournalItem,
+  Cap5LopChiTiet,
+  Cap5WatchlistItem,
+  HuntResult,
+  LocSanTieuChi,
+  SanMaIndex,
+} from "./api"
 
 /* ── Hunt filter availability / coverage ───────────────────────────────── */
 
-export function huntFilterAvailability(index: SanMaIndex | null | undefined, ma: HuntFilterKey): { kha_dung: boolean | null; ly_do: string | null } {
+export function huntFilterAvailability(
+  index: SanMaIndex | null | undefined,
+  ma: HuntFilterKey
+): { kha_dung: boolean | null; ly_do: string | null } {
   const row = index?.bo_loc.find((item) => item.ma === ma)
   if (!row) return { kha_dung: null, ly_do: null }
   return { kha_dung: row.kha_dung, ly_do: row.ly_do_chua_kha_dung ?? null }
 }
 
-export function splitLocSan(locSan: readonly LocSanTieuChi[] | null | undefined): { apDung: string[]; chuaApDung: string[] } {
+export function splitLocSan(
+  locSan: readonly LocSanTieuChi[] | null | undefined
+): { apDung: string[]; chuaApDung: string[] } {
   const apDung: string[] = []
   const chuaApDung: string[] = []
   for (const dk of locSan ?? []) (dk.ap_dung ? apDung : chuaApDung).push(dk.ten)
@@ -24,13 +42,20 @@ export function splitLocSan(locSan: readonly LocSanTieuChi[] | null | undefined)
 }
 
 /** Never prints a total the server did not send. */
-export function describeHuntTotal(result: HuntResult, def: { ghi_chu_top: string }): string {
+export function describeHuntTotal(
+  result: HuntResult,
+  def: { ghi_chu_top: string }
+): string {
   const shown = result.items.length.toLocaleString("vi-VN")
-  if (result.tong_so_ma == null) return `Chưa đếm được tổng số mã thỏa điều kiện · đang hiện ${shown} ${def.ghi_chu_top}`
+  if (result.tong_so_ma == null)
+    return `Chưa đếm được tổng số mã thỏa điều kiện · đang hiện ${shown} ${def.ghi_chu_top}`
   return `${result.tong_so_ma.toLocaleString("vi-VN")} mã HOSE thỏa điều kiện · hiện ${shown} ${def.ghi_chu_top}`
 }
 
-export type CoverageState = { trangThai: "day_du" | "thieu" | "chua_biet"; text: string }
+export type CoverageState = {
+  trangThai: "day_du" | "thieu" | "chua_biet"
+  text: string
+}
 
 /** "N mã thỏa điều kiện" alone claims the whole exchange - this says what was actually scanned. */
 export function describeHuntBaoPhu(result: HuntResult): CoverageState {
@@ -41,21 +66,38 @@ export function describeHuntBaoPhu(result: HuntResult): CoverageState {
   if (result.ket_qua_day_du === true) {
     return {
       trangThai: "day_du",
-      text: ro != null ? `Đã xét đủ ${ro.toLocaleString("vi-VN")} mã HOSE trong rổ - không mã nào bị bỏ vì thiếu dữ liệu.` : "Máy chủ khẳng định đã xét đủ rổ mã của lần chạy này.",
+      text:
+        ro != null
+          ? `Đã xét đủ ${ro.toLocaleString("vi-VN")} mã HOSE trong rổ - không mã nào bị bỏ vì thiếu dữ liệu.`
+          : "Máy chủ khẳng định đã xét đủ rổ mã của lần chạy này.",
     }
   }
   if (result.ket_qua_day_du === false) {
-    if (result.canh_bao_thieu_du_lieu) return { trangThai: "thieu", text: result.canh_bao_thieu_du_lieu }
-    const veXet = xet != null && ro != null ? `đã xét ${xet.toLocaleString("vi-VN")}/${ro.toLocaleString("vi-VN")} mã` : "chưa xét được hết rổ mã"
-    const veBoQua = boQua != null ? ` - ${boQua.toLocaleString("vi-VN")} mã thiếu dữ liệu` : " - một số mã thiếu dữ liệu"
-    return { trangThai: "thieu", text: `Kết quả CHƯA đầy đủ: ${veXet}${veBoQua}, nên danh sách có thể còn sót mã thỏa điều kiện.` }
+    if (result.canh_bao_thieu_du_lieu)
+      return { trangThai: "thieu", text: result.canh_bao_thieu_du_lieu }
+    const veXet =
+      xet != null && ro != null
+        ? `đã xét ${xet.toLocaleString("vi-VN")}/${ro.toLocaleString("vi-VN")} mã`
+        : "chưa xét được hết rổ mã"
+    const veBoQua =
+      boQua != null
+        ? ` - ${boQua.toLocaleString("vi-VN")} mã thiếu dữ liệu`
+        : " - một số mã thiếu dữ liệu"
+    return {
+      trangThai: "thieu",
+      text: `Kết quả CHƯA đầy đủ: ${veXet}${veBoQua}, nên danh sách có thể còn sót mã thỏa điều kiện.`,
+    }
   }
-  return { trangThai: "chua_biet", text: "Máy chủ chưa cho biết đã xét được bao nhiêu mã trong rổ, nên chưa thể nói con số trên là của cả sàn." }
+  return {
+    trangThai: "chua_biet",
+    text: "Máy chủ chưa cho biết đã xét được bao nhiêu mã trong rổ, nên chưa thể nói con số trên là của cả sàn.",
+  }
 }
 
 /* ── Watchlist derivation (spec §6.1/§6.2) ─────────────────────────────── */
 
-export type WatchStatus = "chua_cham" | "chua_ket_luan" | "du_lieu_cu" | "watching" | "notable"
+export type WatchStatus =
+  "chua_cham" | "chua_ket_luan" | "du_lieu_cu" | "watching" | "notable"
 
 export const WATCH_STATUS_LABEL: Record<WatchStatus, string> = {
   chua_cham: "Chưa chấm 4 lớp",
@@ -68,8 +110,12 @@ export const WATCH_STATUS_LABEL: Record<WatchStatus, string> = {
 /** The real denominator: how many layers the system actually scored. `null` = unknown. */
 export function soLopDaCham(item: Cap5WatchlistItem): number | null {
   if (item.consensus_da_cham != null) return item.consensus_da_cham
-  if (item.lop_chi_tiet != null) return item.lop_chi_tiet.filter((row) => row.ung_ho != null || row.muc != null).length
-  if (item.lop != null) return LOP_DEFS.filter((def) => item.lop?.[def.lop] != null).length
+  if (item.lop_chi_tiet != null)
+    return item.lop_chi_tiet.filter(
+      (row) => row.ung_ho != null || row.muc != null
+    ).length
+  if (item.lop != null)
+    return LOP_DEFS.filter((def) => item.lop?.[def.lop] != null).length
   return null
 }
 
@@ -86,13 +132,20 @@ export function watchStatus(item: Cap5WatchlistItem): WatchStatus {
   return "chua_ket_luan"
 }
 
-export function describeConsensus(item: Cap5WatchlistItem): { text: string; canhBao: string | null } {
-  if (item.consensus_today == null) return { text: "-/4", canhBao: "Chưa chấm 4 lớp cho mã này" }
+export function describeConsensus(item: Cap5WatchlistItem): {
+  text: string
+  canhBao: string | null
+} {
+  if (item.consensus_today == null)
+    return { text: "-/4", canhBao: "Chưa chấm 4 lớp cho mã này" }
   const scored = soLopDaCham(item)
   const unknown = scored == null ? null : Math.max(0, TONG_SO_LOP - scored)
   return {
     text: `${item.consensus_today.toLocaleString("vi-VN")}/${TONG_SO_LOP}`,
-    canhBao: unknown != null && unknown > 0 ? `${unknown.toLocaleString("vi-VN")} lớp chưa có dữ liệu - chưa chấm đủ 4 lớp` : null,
+    canhBao:
+      unknown != null && unknown > 0
+        ? `${unknown.toLocaleString("vi-VN")} lớp chưa có dữ liệu - chưa chấm đủ 4 lớp`
+        : null,
   }
 }
 
@@ -101,10 +154,17 @@ function formatSessionDate(raw: string): string {
   return match ? `${match[3]}/${match[2]}/${match[1]}` : raw
 }
 
-export function describeConsensusFreshness(item: Cap5WatchlistItem): string | null {
-  const window = item.so_phien_hieu_luc != null ? ` trong ${item.so_phien_hieu_luc.toLocaleString("vi-VN")} phiên gần nhất` : " đủ mới"
-  if (item.consensus_het_han === true) return `Điểm ${describeConsensus(item).text} đã cũ - chưa có bản phân tích mới${window}.`
-  if (item.consensus_session_date) return `Điểm đồng thuận từ phiên ${formatSessionDate(item.consensus_session_date)}.`
+export function describeConsensusFreshness(
+  item: Cap5WatchlistItem
+): string | null {
+  const window =
+    item.so_phien_hieu_luc != null
+      ? ` trong ${item.so_phien_hieu_luc.toLocaleString("vi-VN")} phiên gần nhất`
+      : " đủ mới"
+  if (item.consensus_het_han === true)
+    return `Điểm ${describeConsensus(item).text} đã cũ - chưa có bản phân tích mới${window}.`
+  if (item.consensus_session_date)
+    return `Điểm đồng thuận từ phiên ${formatSessionDate(item.consensus_session_date)}.`
   if (item.consensus_today == null && item.consensus_session_date_qua_han) {
     return `Bản phân tích gần nhất từ phiên ${formatSessionDate(item.consensus_session_date_qua_han)} đã quá cũ - chưa có bản mới${window}.`
   }
@@ -113,11 +173,15 @@ export function describeConsensusFreshness(item: Cap5WatchlistItem): string | nu
 
 export type TrendTone = "up" | "down" | "flat" | "unknown"
 
-export function describeConsensusTrend(item: Cap5WatchlistItem): { text: string; tone: TrendTone } {
+export function describeConsensusTrend(item: Cap5WatchlistItem): {
+  text: string
+  tone: TrendTone
+} {
   const now = item.consensus_today
   const prev = item.consensus_prev
   if (now == null) return { text: "chưa chấm lần nào", tone: "unknown" }
-  if (prev == null) return { text: "chưa có phiên trước để so", tone: "unknown" }
+  if (prev == null)
+    return { text: "chưa có phiên trước để so", tone: "unknown" }
   const head = `${prev}/${TONG_SO_LOP} → ${now}/${TONG_SO_LOP}`
   if (now > prev) return { text: `${head} (cải thiện)`, tone: "up" }
   if (now < prev) return { text: `${head} (yếu đi)`, tone: "down" }
@@ -126,13 +190,18 @@ export function describeConsensusTrend(item: Cap5WatchlistItem): { text: string;
 
 /** "Săn từ [bộ lọc] · N phiên trước" - missing data is stated, never invented. */
 export function describeHuntSource(item: Cap5WatchlistItem): string {
-  const ten = item.hunt_filter == null ? null : (item.hunt_filter_ten ?? huntFilterLabel(item.hunt_filter))
+  const ten =
+    item.hunt_filter == null
+      ? null
+      : (item.hunt_filter_ten ?? huntFilterLabel(item.hunt_filter))
   const nguon = ten ? `Săn từ ${ten}` : "Thêm tay - không qua bộ lọc săn"
-  if (item.so_phien_tu_khi_san != null) return `${nguon} · ${item.so_phien_tu_khi_san.toLocaleString("vi-VN")} phiên trước`
+  if (item.so_phien_tu_khi_san != null)
+    return `${nguon} · ${item.so_phien_tu_khi_san.toLocaleString("vi-VN")} phiên trước`
   const raw = item.hunt_at ?? item.added_at ?? null
   if (raw) {
     const date = new Date(raw)
-    if (!Number.isNaN(date.getTime())) return `${nguon} · thêm ngày ${date.toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}`
+    if (!Number.isNaN(date.getTime()))
+      return `${nguon} · thêm ngày ${date.toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}`
   }
   return nguon
 }
@@ -148,28 +217,61 @@ export function lopMarkFromUngHo(row: Cap5LopChiTiet | null): LopMark {
   return "unknown"
 }
 
-export function lopIconRow(item: Cap5WatchlistItem): { lop: string; mark: LopMark }[] {
+export function lopIconRow(
+  item: Cap5WatchlistItem
+): { lop: string; mark: LopMark }[] {
   const rows = item.lop_chi_tiet
   return LOP_DEFS.map((def) => ({
     lop: def.lop,
-    mark: rows != null ? lopMarkFromUngHo(rows.find((row) => row.lop === def.lop) ?? null) : ((item.lop?.[def.lop] ?? "unknown") as LopMark),
+    mark:
+      rows != null
+        ? lopMarkFromUngHo(rows.find((row) => row.lop === def.lop) ?? null)
+        : ((item.lop?.[def.lop] ?? "unknown") as LopMark),
   }))
 }
 
-export function countWatchTabs(items: readonly Cap5WatchlistItem[]): { tatCa: number; dangChuY: number } {
-  return { tatCa: items.length, dangChuY: items.filter((item) => watchStatus(item) === "notable").length }
+export function countWatchTabs(items: readonly Cap5WatchlistItem[]): {
+  tatCa: number
+  dangChuY: number
+} {
+  return {
+    tatCa: items.length,
+    dangChuY: items.filter((item) => watchStatus(item) === "notable").length,
+  }
 }
 
 /* ── Bot copy + wire helpers ───────────────────────────────────────────── */
 
-export const RUN_COPY: Record<string, { label: string; text: string; tone: "muted" | "info" | "good" | "bad" }> = {
-  idle: { label: "Đang chờ", text: "Bot đang chờ phiên giao dịch tiếp theo.", tone: "muted" },
-  running: { label: "Đang xử lý", text: "Bot đang ghi nhận và đối soát dữ liệu phiên.", tone: "info" },
-  succeeded: { label: "Đã xử lý", text: "Bot đã xử lý xong phiên. Trạng thái này không có nghĩa phiên có lãi.", tone: "good" },
-  failed: { label: "Cần kiểm tra", text: "Bot chưa xử lý xong phiên. Dữ liệu hoặc sổ sách đang cần được kiểm tra.", tone: "bad" },
+export const RUN_COPY: Record<
+  string,
+  { label: string; text: string; tone: "muted" | "info" | "good" | "bad" }
+> = {
+  idle: {
+    label: "Đang chờ",
+    text: "Bot đang chờ phiên giao dịch tiếp theo.",
+    tone: "muted",
+  },
+  running: {
+    label: "Đang xử lý",
+    text: "Bot đang ghi nhận và đối soát dữ liệu phiên.",
+    tone: "info",
+  },
+  succeeded: {
+    label: "Đã xử lý",
+    text: "Bot đã xử lý xong phiên. Trạng thái này không có nghĩa phiên có lãi.",
+    tone: "good",
+  },
+  failed: {
+    label: "Cần kiểm tra",
+    text: "Bot chưa xử lý xong phiên. Dữ liệu hoặc sổ sách đang cần được kiểm tra.",
+    tone: "bad",
+  },
 }
 
-export const ACTION_COPY: Record<string, { label: string; tone: "good" | "bad" | "info" | "muted" | "warn" }> = {
+export const ACTION_COPY: Record<
+  string,
+  { label: string; tone: "good" | "bad" | "info" | "muted" | "warn" }
+> = {
   buy: { label: "Mua", tone: "good" },
   sell: { label: "Bán", tone: "bad" },
   hold: { label: "Giữ", tone: "info" },
@@ -220,9 +322,28 @@ export const REASON_LABELS: Record<string, string> = {
   source_error: "Nguồn dữ liệu đang lỗi",
   reconciliation_failed: "Đối soát sổ sách chưa hoàn tất",
   bought: "Đã mua mô phỏng theo bộ quy tắc tiêu chuẩn IQX",
-  hold_within_thresholds: "Giá đóng cửa vẫn nằm giữa mốc cắt lỗ và chốt lời",
+  hold_within_thresholds: "Giá đóng cửa chưa chạm cắt lỗ (policy cũ)",
   stop_loss: "Giá đóng cửa chạm hoặc xuống dưới cắt lỗ",
-  take_profit: "Giá đóng cửa chạm hoặc vượt chốt lời",
+  take_profit: "Giá đóng cửa chạm chốt lời (policy cũ)",
+  waiting_for_academy_conditions: "Chờ kích hoạt điều kiện trong Học viện",
+  no_active_buy_conditions: "Không mua mới: chưa có điều kiện Mua đang bật",
+  academy_buy_not_met: "Điều kiện Mua chưa cùng đúng tại phiên này",
+  academy_condition_missing: "Thiếu dữ liệu đầu vào của chỉ báo đang bật",
+  config_invalid_or_unauthorized:
+    "Cấu hình không thể thực thi an toàn (lỗi hoặc chưa được cấp quyền)",
+  academy_buy: "Đã mua mô phỏng theo cấu hình Học viện",
+  academy_sell: "Đã bán theo hợp lưu điều kiện Bán",
+  academy_sell_not_met: "Giữ: điều kiện Bán chưa cùng đúng, chưa chạm cắt lỗ",
+  no_active_sell_conditions: "Giữ: không có điều kiện Bán, vẫn quản lý cắt lỗ",
+  invalid_close: "Thiếu giá đóng cửa hợp lệ",
+  missing_stop: "Thiếu mốc cắt lỗ đã lưu; cần đối soát",
+  ledger_error: "Sổ sách chưa đối soát; không ghi giao dịch",
+  already_holding: "Mã đang được giữ, không mua thêm",
+  rebuy_same_session_blocked: "Không mua lại mã đã bán trong cùng phiên",
+  symbol_limit: "Vượt trần 30% NAV cho một mã",
+  session_buy_limit: "Đã đủ hai giao dịch mua mới trong phiên",
+  shared_config_sell: "Đã bán theo hợp lưu điều kiện Bán",
+  buy_inputs_incomplete: "Chưa đủ nguồn dữ liệu để xét mua",
 }
 
 export function formatFilter(id: string | null | undefined): string {
@@ -231,7 +352,10 @@ export function formatFilter(id: string | null | undefined): string {
 }
 
 /** The server's `detail` wins; unknown codes print raw rather than a guess. */
-export function formatReason(code: string | null | undefined, detail: string | null | undefined): string {
+export function formatReason(
+  code: string | null | undefined,
+  detail: string | null | undefined
+): string {
   if (detail && detail.trim().length > 0) return detail
   if (!code) return "Chưa có mô tả"
   return REASON_LABELS[code] ?? code
@@ -247,10 +371,13 @@ export function journalKind(item: BotJournalItem): JournalKind {
 }
 
 /** `null`/empty/non-finite ⇒ `null` (never 0). */
-export function toFiniteNumber(value: string | number | null | undefined): number | null {
+export function toFiniteNumber(
+  value: string | number | null | undefined
+): number | null {
   if (value == null || value === "") return null
   const parsed = typeof value === "number" ? value : Number(value)
   return Number.isFinite(parsed) ? parsed : null
 }
 
-export const HUNT_TOP_NOTE = "Bấm “Theo dõi” để đưa mã vào danh sách quan sát - săn chưa phải là mua."
+export const HUNT_TOP_NOTE =
+  "Bấm “Theo dõi” để đưa mã vào danh sách quan sát - săn chưa phải là mua."

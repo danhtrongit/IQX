@@ -8,14 +8,15 @@ import {
   Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
-import type { Environment } from '../../platform/config/environment.js';
 import { DatabaseService, type SqlClient } from '../../platform/database/index.js';
 import { QUANT_MARKET_DATA, type QuantMarketDataProvider } from '../quant/quant.types.js';
 import {
   configHash,
+  indicatorCapability,
   loadTechnicalRegistry,
+  sideSignalsWithEvidence,
+  validateConfig,
   type Bar,
   type SharedConfig,
 } from '../quant/v2/index.js';
@@ -25,14 +26,12 @@ import {
   type SharedConfigReaderPort,
 } from '../strategy-config/strategy-config.ports.js';
 import {
-  BOT_RULES,
+  BOT_POLICY,
   candidateFromSnapshot,
-  candidateGate,
   candidateRank,
   canonicalHash,
   computeBuyQuantity,
-  computeExitThresholds,
-  exitSignal,
+  computeProtectiveStop,
   feeRulesFromSnapshot,
   formatDecimal4,
   parseDecimal4,
@@ -42,24 +41,19 @@ import {
   roundBasisPoints,
   sanitizeSnapshot,
   snapshotHash,
-  supportingCount,
+  stopLossSignal,
   type Candidate,
   type FeeRules,
 } from './bot.domain.js';
 import {
   activeSideIndicators,
   BOT_SHARED_CONFIG_MARKET_SYMBOL,
-  BOT_SHARED_CONFIG_SELL_REASON,
   BOT_SHARED_CONFIG_WARMUP_SESSIONS,
   botRuleReceipt,
   needsMarketContext,
   parseSharedConfigSignals,
-  sessionSideSignal,
-  sharedConfigBuyBlock,
   sharedConfigBuySymbols,
-  sharedConfigExitReason,
   verifyRuleReceipt,
-  type BotExitReason,
   type BotSharedConfigPin,
 } from './bot.shared-config.js';
 import {
@@ -75,6 +69,7 @@ import {
   type BotSharedConfigSignals,
   type BotSnapshotProvider,
 } from './bot.types.js';
+import type { SharedConfigState } from '../strategy-config/strategy-config.schemas.js';
 
 const DISCLOSURE =
   'Bot demo IQX mô phỏng mua và bán theo giá đóng cửa của chính phiên tạo tín hiệu. ' +
@@ -82,16 +77,54 @@ const DISCLOSURE =
   'toán của giao dịch thực tế. Đây không phải cam kết lợi nhuận hoặc khuyến nghị ' +
   'giao dịch tiền thật.';
 
+const BOT_STRATEGY_ID = 'iqx_standard';
+const BOT_STRATEGY_VERSION = 1;
+const INITIAL_CASH_VND = BigInt(BOT_POLICY.initial_cash_vnd);
+
 const CRITICAL_ISSUES = new Set([
   'filter_data_incomplete',
-  'missing_security_status',
-  'missing_official_close',
   'source_error',
-  'valuation_incomplete',
   'reconciliation_failed',
   'snapshot_hash_mismatch',
   'unsupported_rule_version',
 ]);
+
+type AcademyConfigReader = SharedConfigReaderPort & {
+  current(userId: string): Promise<SharedConfigState>;
+};
+
+type ConfigResolution = {
+  effective: EffectiveSharedConfig | null;
+  grants: string[];
+  invalid: boolean;
+  detail: string | null;
+};
+
+type ConditionRule = {
+  id: string;
+  indicator: string;
+  side: 'buy' | 'sell';
+  op: string;
+  lhs: number | null;
+  rhs: number | null;
+  rhs_lower?: number | null;
+  rhs_upper?: number | null;
+  result: boolean | null;
+  missing: boolean;
+};
+
+type ConditionSnapshot = {
+  buy_active_ids: string[];
+  sell_active_ids: string[];
+  rules: ConditionRule[];
+};
+
+type FrozenAcademySignals = BotSharedConfigSignals & {
+  buy_active_ids?: string[];
+  sell_active_ids?: string[];
+  buy_evidence?: Record<string, ConditionSnapshot>;
+  sell_evidence?: Record<string, ConditionSnapshot>;
+};
 
 type InstanceAccountRow = BotInstanceRow & {
   account_id: string;
@@ -174,9 +207,18 @@ function json(value: unknown): string {
   return JSON.stringify(value);
 }
 
-function uuidRank(candidate: Candidate): [number, number, string, string] {
+function configuredOperand(
+  operand: { kind: string; key?: string; value?: number },
+  params: Readonly<Record<string, number>>,
+): number | null {
+  if (operand.kind === 'param') return params[operand.key ?? ''] ?? null;
+  if (operand.kind === 'constant') return operand.value ?? null;
+  return null;
+}
+
+function uuidRank(candidate: Candidate): [number, string, string] {
   const rank = candidateRank(candidate);
-  return [rank[0], rank[1], rank[2].toString(), rank[3]];
+  return [rank[0], rank[1].toString(), rank[2]];
 }
 
 function validateTradingDate(value: string): void {
@@ -236,11 +278,9 @@ export class BotService {
     private readonly database: DatabaseService,
     @Optional()
     @Inject(BOT_SNAPSHOT_PROVIDER)
-    private readonly defaultSnapshotProvider?: BotSnapshotProvider,
-    @Optional() private readonly config?: ConfigService<Environment, true>,
-    @Optional()
+    private readonly defaultSnapshotProvider: BotSnapshotProvider | undefined,
     @Inject(SHARED_CONFIG_READER)
-    private readonly sharedConfigReader?: SharedConfigReaderPort,
+    private readonly sharedConfigReader: AcademyConfigReader,
     @Optional()
     @Inject(QUANT_MARKET_DATA)
     private readonly marketData?: QuantMarketDataProvider,
@@ -289,7 +329,7 @@ export class BotService {
                  $4::timestamptz at time zone 'UTC', $4::timestamptz at time zone 'UTC')
          on conflict (user_id) do nothing
          returning id, user_id, initial_cash_vnd, cash_vnd, status, activated_at`,
-        [accountId, userId, BOT_RULES.initial_cash_vnd.toString(), now],
+        [accountId, userId, INITIAL_CASH_VND.toString(), now],
       );
       const account =
         accountRows[0] ??
@@ -310,10 +350,7 @@ export class BotService {
         [account.id, fundingKey],
       );
       if (!ledger[0]?.funding_exists) {
-        if (
-          ledger[0]?.entries !== '0' ||
-          parseInteger(account.cash_vnd) !== BOT_RULES.initial_cash_vnd
-        ) {
+        if (ledger[0]?.entries !== '0' || parseInteger(account.cash_vnd) !== INITIAL_CASH_VND) {
           throw new Error('Cannot reconstruct Bot funding without changing balance');
         }
         await tx.query(
@@ -325,9 +362,9 @@ export class BotService {
           [
             randomUUID(),
             account.id,
-            BOT_RULES.initial_cash_vnd.toString(),
+            INITIAL_CASH_VND.toString(),
             fundingKey,
-            'Vốn demo Bot IQX standard v1, cấp đúng một lần',
+            'Vốn demo Bot IQX, cấp đúng một lần',
             now,
           ],
         );
@@ -345,9 +382,9 @@ export class BotService {
           instanceId,
           userId,
           account.id,
-          BOT_RULES.strategy_id,
-          BOT_RULES.strategy_version,
-          BOT_RULES.execution_model,
+          BOT_STRATEGY_ID,
+          BOT_STRATEGY_VERSION,
+          BOT_POLICY.execution_model,
           graduatedAt,
           now,
         ],
@@ -436,74 +473,144 @@ export class BotService {
     validateTradingDate(tradingDate);
     if (!provider) throw new Error('Bot snapshot provider is required');
 
-    const effective = await this.effectiveSharedConfig(userId, tradingDate);
-    const checkpoint = await this.ensureRunCheckpoint(userId, tradingDate, effective);
-    if (checkpoint.completed) return checkpoint.completed;
-    if (!checkpoint.hasSnapshot) {
-      let input: BotMarketSnapshotInput;
-      const startedAt = Date.now();
-      this.logger.log(`Bot snapshot started for run ${checkpoint.runId} (${tradingDate})`);
-      let timer: NodeJS.Timeout | undefined;
+    const existing = (
+      await this.database.query<BotRunRow>(
+        `select * from bot_run_receipts
+         where user_id = $1 and trading_date = $2::date
+         order by started_at desc limit 1`,
+        [userId, tradingDate],
+      )
+    )[0];
+    if (existing) return this.resumeExistingRun(existing, userId, tradingDate);
+
+    const context = await this.instanceAccount(this.database, userId);
+    if (!context) throw new Error('Bot chưa được khởi tạo');
+    if (context.account_status !== 'active') throw new Error('Tài khoản Bot đang tạm dừng');
+    this.assertActivated(context, tradingDate);
+    const openSymbols = (
+      await this.database.query<{ symbol: string }>(
+        `select symbol from bot_positions
+         where bot_account_id = $1 and status = 'open' order by symbol`,
+        [context.account_id],
+      )
+    ).map((row) => row.symbol);
+
+    const resolution = await this.resolveConfig(userId, tradingDate);
+    const startedAt = Date.now();
+    this.logger.log(`Bot snapshot started for ${userId} (${tradingDate})`);
+    let timer: NodeJS.Timeout | undefined;
+    let input: BotMarketSnapshotInput;
+    try {
+      input = await Promise.race([
+        provider.buildSnapshot(tradingDate, { openSymbols }),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => {
+            const error = new Error('Bot snapshot deadline exceeded');
+            error.name = 'SnapshotDeadlineExceeded';
+            reject(error);
+          }, BOT_SNAPSHOT_DEADLINE_MS);
+          timer.unref?.();
+        }),
+      ]);
+      this.logger.log(`Bot snapshot built in ${Date.now() - startedAt}ms`);
+    } catch (error) {
+      const name = error instanceof Error ? error.name : 'UnknownError';
+      this.logger.warn(`Bot snapshot failed for ${userId}: ${name}`);
+      throw error;
+    } finally {
+      clearTimeout(timer);
+    }
+
+    if (input.trading_date !== tradingDate) {
+      throw new Error('Snapshot không thuộc đúng phiên Bot');
+    }
+    if (resolution.effective && !resolution.invalid) {
       try {
-        input = await Promise.race([
-          provider.buildSnapshot(tradingDate, { openSymbols: checkpoint.openSymbols }),
-          new Promise<never>((_, reject) => {
-            timer = setTimeout(() => {
-              const error = new Error('Bot snapshot deadline exceeded');
-              error.name = 'SnapshotDeadlineExceeded';
-              reject(error);
-            }, BOT_SNAPSHOT_DEADLINE_MS);
-            timer.unref?.();
-          }),
-        ]);
-        this.logger.log(
-          `Bot snapshot built for run ${checkpoint.runId} in ${Date.now() - startedAt}ms`,
+        input = await this.withSharedConfigSignals(
+          userId,
+          tradingDate,
+          input,
+          {
+            revision: resolution.effective.revision,
+            config_hash: resolution.effective.config_hash,
+            effective_session: resolution.effective.effective_session,
+          },
+          resolution.effective,
+          openSymbols,
+          resolution.grants,
         );
       } catch (error) {
-        const name = error instanceof Error ? error.name : 'UnknownError';
-        this.logger.warn(`Bot snapshot failed for run ${checkpoint.runId}: ${name}`);
-        return this.failRun(checkpoint.runId, [
-          issue('source_error', `Không chụp được snapshot: ${name}`),
-        ]);
-      } finally {
-        clearTimeout(timer);
+        resolution.invalid = true;
+        resolution.detail = error instanceof Error ? error.message : 'Unknown config error';
       }
-      if (checkpoint.sharedConfig && input.trading_date === tradingDate) {
-        try {
-          input = await this.withSharedConfigSignals(
-            userId,
-            tradingDate,
-            input,
-            checkpoint.sharedConfig,
-            effective,
-            checkpoint.openSymbols,
-          );
-        } catch (error) {
-          const name = error instanceof Error ? error.name : 'UnknownError';
-          this.logger.warn(`Bot shared config failed for run ${checkpoint.runId}: ${name}`);
-          return this.failRun(checkpoint.runId, [
-            issue('shared_config_unavailable', 'Không tải được cấu hình chung đã ghim cho phiên'),
-          ]);
-        }
-      }
-      await this.freezeSnapshot(checkpoint.runId, tradingDate, input);
     }
-    return this.executeFrozenRun(checkpoint.runId, userId, tradingDate);
+    if (resolution.invalid) {
+      input = {
+        ...input,
+        issues: [
+          ...(input.issues ?? []),
+          issue(
+            'config_invalid_or_unauthorized',
+            resolution.detail ?? 'Không thể thực thi cấu hình Học viện an toàn',
+          ),
+        ],
+      };
+    }
+    const runId = await this.captureFrozenRun(
+      userId,
+      tradingDate,
+      context,
+      openSymbols,
+      resolution,
+      input,
+    );
+    if (runId === null) return this.runAccountSession(userId, tradingDate, provider);
+    return this.executeFrozenRun(runId, userId, tradingDate);
   }
 
-  private sharedConfigEnabled(): boolean {
-    return this.config?.get('BOT_SHARED_CONFIG_ENABLED', { infer: true }) === true;
+  private assertActivated(context: InstanceAccountRow, tradingDate: string): void {
+    const activatedDate = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Ho_Chi_Minh',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date(context.activated_at));
+    if (activatedDate > tradingDate) throw new Error('Không chạy Bot trước ngày kích hoạt');
   }
 
-  /** Flag ON only: revision effective for this session, or null (Bot v1 behaviour). */
-  private async effectiveSharedConfig(
-    userId: string,
-    tradingDate: string,
-  ): Promise<EffectiveSharedConfig | null> {
-    if (!this.sharedConfigEnabled() || !this.sharedConfigReader) return null;
-    const effective = await this.sharedConfigReader.effectiveFor(userId, tradingDate);
-    if (!effective || effective.effective_session > tradingDate) return null;
-    return effective;
+  private async resolveConfig(userId: string, tradingDate: string): Promise<ConfigResolution> {
+    try {
+      const [current, effective] = await Promise.all([
+        this.sharedConfigReader.current(userId),
+        this.sharedConfigReader.effectiveFor(userId, tradingDate),
+      ]);
+      const grants = [...new Set(current.granted_indicators.map(indicatorCapability))].sort();
+      if (!effective || effective.effective_session > tradingDate) {
+        return { effective: null, grants, invalid: false, detail: null };
+      }
+      const registry = loadTechnicalRegistry();
+      const errors = validateConfig(effective.config, registry, new Set(grants));
+      if (
+        errors.length ||
+        effective.config.revision !== effective.revision ||
+        configHash(effective.config) !== effective.config_hash
+      ) {
+        return {
+          effective,
+          grants,
+          invalid: true,
+          detail: errors[0]?.message ?? 'Revision hoặc hash cấu hình không khớp',
+        };
+      }
+      return { effective, grants, invalid: false, detail: null };
+    } catch (error) {
+      return {
+        effective: null,
+        grants: [],
+        invalid: true,
+        detail: error instanceof Error ? error.message : 'Không đọc được cấu hình Học viện',
+      };
+    }
   }
 
   /** Exact pinned config; any revision/hash drift fails the run instead of trading on it. */
@@ -515,7 +622,7 @@ export class BotService {
     const source =
       effective?.revision === pin.revision
         ? effective
-        : await this.sharedConfigReader?.getRevision(userId, pin.revision);
+        : await this.sharedConfigReader.getRevision(userId, pin.revision);
     if (
       !source ||
       source.config_hash !== pin.config_hash ||
@@ -575,11 +682,16 @@ export class BotService {
     pin: BotSharedConfigPin,
     effective: EffectiveSharedConfig | null,
     openSymbols: readonly string[],
+    grants: readonly string[],
   ): Promise<BotMarketSnapshotInput> {
     const config = await this.pinnedSharedConfig(userId, pin, effective);
     const registry = loadTechnicalRegistry();
-    const buyActive = activeSideIndicators(config, 'buy', registry).length > 0;
-    const sellActive = activeSideIndicators(config, 'sell', registry).length > 0;
+    const validation = validateConfig(config, registry, new Set(grants));
+    if (validation.length) throw new Error(validation[0]!.message);
+    const buyEntries = activeSideIndicators(config, 'buy', registry);
+    const sellEntries = activeSideIndicators(config, 'sell', registry);
+    const buyActive = buyEntries.length > 0;
+    const sellActive = sellEntries.length > 0;
     const buySymbols = buyActive ? sharedConfigBuySymbols(input) : [];
     const sellSymbols = sellActive ? [...new Set(openSymbols)].sort() : [];
     const symbols = [...new Set([...buySymbols, ...sellSymbols])].sort();
@@ -599,23 +711,74 @@ export class BotService {
       if (!marketSymbol) return history.bars;
       return history.bars.map((bar) => ({ ...bar, market: marketClose.get(bar.date) ?? null }));
     };
-    const signals: BotSharedConfigSignals = {
+    const fallbackEvidence = (side: 'buy' | 'sell'): ConditionSnapshot => {
+      const entries = side === 'buy' ? buyEntries : sellEntries;
+      return {
+        buy_active_ids: buyEntries.map((entry) => entry.id),
+        sell_active_ids: sellEntries.map((entry) => entry.id),
+        rules: entries.flatMap((entry) =>
+          config.indicators[entry.id]![side].rules.map((rule) => {
+            const params = config.indicators[entry.id]![side].params;
+            const rhs = rule.kind === 'membership' ? null : configuredOperand(rule.rhs, params);
+            return {
+              id: rule.id,
+              indicator: entry.id,
+              side,
+              op: rule.op,
+              lhs: configuredOperand(rule.lhs, params),
+              rhs,
+              ...(rule.kind === 'membership'
+                ? {
+                    rhs_lower: configuredOperand(rule.rhs.lower, params),
+                    rhs_upper: configuredOperand(rule.rhs.upper, params),
+                  }
+                : {}),
+              result: null,
+              missing: true,
+            };
+          }),
+        ),
+      };
+    };
+    const evaluate = (symbol: string, side: 'buy' | 'sell') => {
+      const bars = barsFor(symbol);
+      if (!bars?.length || bars.at(-1)?.date !== tradingDate) {
+        return { signal: null, evidence: fallbackEvidence(side) };
+      }
+      const traced = sideSignalsWithEvidence(config, bars, side, registry).at(-1);
+      if (!traced) return { signal: null, evidence: fallbackEvidence(side) };
+      return {
+        signal: traced.result,
+        evidence: {
+          buy_active_ids: buyEntries.map((entry) => entry.id),
+          sell_active_ids: sellEntries.map((entry) => entry.id),
+          rules: traced.rules.map((rule) => ({ ...rule, side })),
+        } satisfies ConditionSnapshot,
+      };
+    };
+    const buyEvaluations = new Map(buySymbols.map((symbol) => [symbol, evaluate(symbol, 'buy')]));
+    const sellEvaluations = new Map(
+      sellSymbols.map((symbol) => [symbol, evaluate(symbol, 'sell')]),
+    );
+    const signals: FrozenAcademySignals = {
       revision: pin.revision,
       config_hash: pin.config_hash,
       effective_session: pin.effective_session,
       buy_active: buyActive,
       sell_active: sellActive,
+      buy_active_ids: buyEntries.map((entry) => entry.id),
+      sell_active_ids: sellEntries.map((entry) => entry.id),
       buy: Object.fromEntries(
-        buySymbols.map((symbol) => [
-          symbol,
-          sessionSideSignal(config, barsFor(symbol), 'buy', tradingDate, registry),
-        ]),
+        buySymbols.map((symbol) => [symbol, buyEvaluations.get(symbol)?.signal ?? null]),
       ),
       sell: Object.fromEntries(
-        sellSymbols.map((symbol) => [
-          symbol,
-          sessionSideSignal(config, barsFor(symbol), 'sell', tradingDate, registry),
-        ]),
+        sellSymbols.map((symbol) => [symbol, sellEvaluations.get(symbol)?.signal ?? null]),
+      ),
+      buy_evidence: Object.fromEntries(
+        buySymbols.map((symbol) => [symbol, buyEvaluations.get(symbol)!.evidence]),
+      ),
+      sell_evidence: Object.fromEntries(
+        sellSymbols.map((symbol) => [symbol, sellEvaluations.get(symbol)!.evidence]),
       ),
       data: {
         source: histories.find((history) => history?.source)?.source ?? null,
@@ -649,38 +812,43 @@ export class BotService {
     return rows[0] ?? null;
   }
 
-  private async ensureRunCheckpoint(
+  private async resumeExistingRun(
+    run: BotRunRow,
     userId: string,
     tradingDate: string,
-    effective: EffectiveSharedConfig | null = null,
-  ): Promise<{
-    runId: string;
-    openSymbols: string[];
-    hasSnapshot: boolean;
-    completed: BotRunResult | null;
-    sharedConfig: BotSharedConfigPin | null;
-  }> {
-    const receipt = botRuleReceipt(
-      effective
-        ? {
-            revision: effective.revision,
-            config_hash: effective.config_hash,
-            effective_session: effective.effective_session,
-          }
-        : null,
-    );
+  ): Promise<BotRunResult> {
+    const verified = verifyRuleReceipt(run.rule_snapshot, run.rule_hash);
+    if (verified.policyVersion !== BOT_POLICY.policy_version && run.status !== 'succeeded') {
+      return this.runResult(run);
+    }
+    return this.executeFrozenRun(run.id, userId, tradingDate);
+  }
+
+  private async captureFrozenRun(
+    userId: string,
+    tradingDate: string,
+    expectedContext: InstanceAccountRow,
+    expectedOpenSymbols: readonly string[],
+    resolution: ConfigResolution,
+    input: BotMarketSnapshotInput,
+  ): Promise<string | null> {
+    const payload = sanitizeSnapshot(input);
+    const digest = snapshotHash(input);
+    const pin = resolution.effective
+      ? {
+          revision: resolution.effective.revision,
+          config_hash: resolution.effective.config_hash,
+          effective_session: resolution.effective.effective_session,
+        }
+      : null;
+    const receipt = botRuleReceipt(pin, resolution.grants, digest);
     return this.database.transaction(async (tx) => {
       const context = await this.instanceAccount(tx, userId, true);
-      if (!context) throw new Error('Bot chưa được khởi tạo');
-      if (context.account_status !== 'active') throw new Error('Tài khoản Bot đang tạm dừng');
-      const activatedDate = new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'Asia/Ho_Chi_Minh',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      }).format(new Date(context.activated_at));
-      if (activatedDate > tradingDate) throw new Error('Không chạy Bot trước ngày kích hoạt');
-
+      if (!context || context.account_status !== 'active')
+        throw new Error('Bot account unavailable');
+      if (context.account_id !== expectedContext.account_id) throw new Error('Bot account changed');
+      if (context.cash_vnd !== expectedContext.cash_vnd) return null;
+      this.assertActivated(context, tradingDate);
       const existing = (
         await tx.query<BotRunRow>(
           `select * from bot_run_receipts
@@ -688,136 +856,79 @@ export class BotService {
           [userId, tradingDate],
         )
       )[0];
-      if (existing?.status === 'succeeded') {
-        const valid = await this.validateCompletedRun(tx, existing);
-        if (valid)
-          return {
-            runId: existing.id,
-            openSymbols: [],
-            hasSnapshot: true,
-            completed: this.runResult(existing),
-            sharedConfig: null,
-          };
-      }
+      if (existing) return existing.id;
+      const otherRunning = (
+        await tx.query<{ exists: boolean }>(
+          `select exists(
+             select 1 from bot_run_receipts
+             where bot_account_id = $1 and status = 'running'
+               and trading_date <> $2::date
+           ) as exists`,
+          [context.account_id, tradingDate],
+        )
+      )[0]?.exists;
+      if (otherRunning) throw new Error('Another Bot session is already running for this account');
+      const laterRun = (
+        await tx.query<{ exists: boolean }>(
+          `select exists(
+             select 1 from bot_run_receipts
+             where bot_account_id = $1 and status = 'succeeded'
+               and trading_date > $2::date
+           ) as exists`,
+          [context.account_id, tradingDate],
+        )
+      )[0]?.exists;
+      if (laterRun) throw new Error('Bot sessions must be processed in trading-date order');
+      const lockedSymbols = (
+        await tx.query<{ symbol: string }>(
+          `select symbol from bot_positions
+           where bot_account_id = $1 and status = 'open' order by symbol for update`,
+          [context.account_id],
+        )
+      ).map((row) => row.symbol);
+      if (json(lockedSymbols) !== json([...expectedOpenSymbols])) return null;
 
-      const positions = await tx.query<{ symbol: string }>(
-        `select symbol from bot_positions
-         where bot_account_id = $1 and status = 'open'
-         order by symbol for update`,
-        [context.account_id],
-      );
-      const openSymbols = positions.map((row) => row.symbol);
+      const runId = randomUUID();
       const now = new Date();
-      let run = existing;
-      if (!run) {
-        const id = randomUUID();
-        run = (
-          await tx.query<BotRunRow>(
-            `insert into bot_run_receipts
-               (id, user_id, trading_date, status, started_at, completed_at, issues,
-                bot_account_id, strategy_id, strategy_version, execution_model,
-                rule_snapshot, rule_hash, blocked_symbols_at_start, buy_count, sell_count)
-             values ($1, $2, $3::date, 'running', $4, null, '[]'::jsonb, $5, $6, $7,
-                     $8, $9::jsonb, $10, $11::jsonb, 0, 0)
-             returning *`,
-            [
-              id,
-              userId,
-              tradingDate,
-              now,
-              context.account_id,
-              BOT_RULES.strategy_id,
-              BOT_RULES.strategy_version,
-              BOT_RULES.execution_model,
-              json(receipt.snapshot),
-              receipt.hash,
-              json(openSymbols),
-            ],
-          )
-        )[0];
-      } else {
-        const isLegacy = run.bot_account_id === null;
-        await tx.query(
-          `update bot_run_receipts set
-             bot_account_id = coalesce(bot_account_id, $2),
-             strategy_id = coalesce(strategy_id, $3),
-             strategy_version = coalesce(strategy_version, $4),
-             execution_model = coalesce(execution_model, $5),
-             rule_snapshot = coalesce(rule_snapshot, $6::jsonb),
-             rule_hash = coalesce(rule_hash, $7),
-             blocked_symbols_at_start = case when $8 then $9::jsonb else blocked_symbols_at_start end,
-             status = 'running', completed_at = null
-           where id = $1`,
+      const inserted = (
+        await tx.query<BotRunRow>(
+          `insert into bot_run_receipts
+             (id, user_id, trading_date, status, started_at, completed_at, issues,
+              bot_account_id, strategy_id, strategy_version, execution_model,
+              rule_snapshot, rule_hash, policy_version, source_snapshot_hash,
+              blocked_symbols_at_start, buy_count, sell_count)
+           values ($1,$2,$3::date,'running',$4,null,'[]'::jsonb,$5,$6,$7,$8,
+                   $9::jsonb,$10,$11,$12,$13::jsonb,0,0)
+           returning *`,
           [
-            run.id,
+            runId,
+            userId,
+            tradingDate,
+            now,
             context.account_id,
-            BOT_RULES.strategy_id,
-            BOT_RULES.strategy_version,
-            BOT_RULES.execution_model,
+            context.strategy_id,
+            context.strategy_version,
+            BOT_POLICY.execution_model,
             json(receipt.snapshot),
             receipt.hash,
-            isLegacy,
-            json(openSymbols),
+            BOT_POLICY.policy_version,
+            digest,
+            json(lockedSymbols),
           ],
-        );
-      }
-      if (!run) throw new Error('Failed to create Bot run');
-      if (run.bot_account_id && run.bot_account_id !== context.account_id) {
-        throw new Error('Bot receipt belongs to another account');
-      }
-
-      const frozen = await tx.query<{ exists: boolean }>(
-        'select exists(select 1 from bot_market_snapshots where bot_run_id = $1) as exists',
-        [run.id],
-      );
-      return {
-        runId: run.id,
-        openSymbols: stringList(run.blocked_symbols_at_start).length
-          ? stringList(run.blocked_symbols_at_start)
-          : openSymbols,
-        hasSnapshot: frozen[0]?.exists ?? false,
-        completed: null,
-        // Mirrors the coalesce above: an existing receipt keeps the config it pinned.
-        sharedConfig: verifyRuleReceipt(
-          run.rule_snapshot ?? receipt.snapshot,
-          run.rule_hash ?? receipt.hash,
-        ).pin,
-      };
-    });
-  }
-
-  private async freezeSnapshot(
-    runId: string,
-    tradingDate: string,
-    input: BotMarketSnapshotInput,
-  ): Promise<void> {
-    if (input.trading_date !== tradingDate) {
-      await this.failRun(runId, [
-        issue('missing_official_close', 'Snapshot không thuộc đúng phiên Bot'),
-      ]);
-      return;
-    }
-    const payload = sanitizeSnapshot(input);
-    const digest = snapshotHash(input);
-    await this.database.transaction(async (tx) => {
-      const run = (
-        await tx.query<BotRunRow>('select * from bot_run_receipts where id = $1 for update', [
-          runId,
-        ])
+        )
       )[0];
-      if (!run) throw new Error('Bot run not found');
-      const inserted = await tx.query<{ snapshot_hash: string }>(
+      if (!inserted) throw new Error('Failed to create Bot run');
+      await tx.query(
         `insert into bot_market_snapshots
            (id, bot_run_id, trading_date, data_version, observed_at, close_is_official,
             buy_inputs_complete, snapshot_hash, payload, source_refs)
-         values ($1, $2, $3::date, $4, $5, $6, $7, $8, $9::jsonb, $10::jsonb)
-         on conflict (bot_run_id) do nothing returning snapshot_hash`,
+         values ($1,$2,$3::date,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb)`,
         [
           randomUUID(),
           runId,
           tradingDate,
           input.data_version,
-          new Date(),
+          now,
           input.close_is_official,
           input.buy_inputs_complete,
           digest,
@@ -825,21 +936,7 @@ export class BotService {
           json(input.source_refs ?? {}),
         ],
       );
-      const frozenHash =
-        inserted[0]?.snapshot_hash ??
-        (
-          await tx.query<{ snapshot_hash: string }>(
-            'select snapshot_hash from bot_market_snapshots where bot_run_id = $1',
-            [runId],
-          )
-        )[0]?.snapshot_hash;
-      if (!frozenHash) throw new Error('Bot snapshot conflict could not be resolved');
-      await tx.query(
-        `update bot_run_receipts
-         set source_snapshot_hash = coalesce(source_snapshot_hash, $2)
-         where id = $1`,
-        [runId, frozenHash],
-      );
+      return runId;
     });
   }
 
@@ -872,9 +969,12 @@ export class BotService {
 
   private snapshotValid(run: BotRunRow, snapshot: SnapshotRow): boolean {
     const payload = objectValue(snapshot.payload) as BotMarketSnapshotInput;
+    const receipt = verifyRuleReceipt(run.rule_snapshot, run.rule_hash);
     return (
+      receipt.valid &&
       snapshotHash(payload) === snapshot.snapshot_hash &&
       run.source_snapshot_hash === snapshot.snapshot_hash &&
+      (receipt.kind !== 'academy' || receipt.dataHash === snapshot.snapshot_hash) &&
       payload.trading_date === isoDate(run.trading_date)
     );
   }
@@ -884,75 +984,126 @@ export class BotService {
     userId: string,
     tradingDate: string,
   ): Promise<BotRunResult> {
-    return this.database.transaction(async (tx) => {
-      const context = await this.instanceAccount(tx, userId, true);
-      if (!context || context.account_status !== 'active')
-        throw new Error('Bot account unavailable');
-      const run = (
-        await tx.query<BotRunRow>('select * from bot_run_receipts where id = $1 for update', [
-          runId,
-        ])
-      )[0];
-      if (!run || run.user_id !== userId || isoDate(run.trading_date) !== tradingDate) {
-        throw new Error('Bot run ownership mismatch');
-      }
-      if (run.status === 'succeeded' && (await this.validateCompletedRun(tx, run))) {
-        return this.runResult(run);
-      }
-      const ruleReceipt = verifyRuleReceipt(run.rule_snapshot, run.rule_hash);
-      if (!ruleReceipt.valid) {
-        const failed = await this.markFailed(tx, run.id, [
-          issue('unsupported_rule_version', 'Worker không hỗ trợ rule snapshot'),
-        ]);
-        return this.runResult(failed);
-      }
-      if (!(await this.reconcile(tx, context.account_id))) {
-        const failed = await this.markFailed(tx, run.id, [
-          issue('reconciliation_failed', 'Sổ Bot không hợp lệ trước phiên'),
-        ]);
-        return this.runResult(failed);
-      }
-      const snapshot = (
-        await tx.query<SnapshotRow>('select * from bot_market_snapshots where bot_run_id = $1', [
-          run.id,
-        ])
-      )[0];
-      if (!snapshot || !this.snapshotValid(run, snapshot)) {
-        const failed = await this.markFailed(tx, run.id, [
-          issue('snapshot_hash_mismatch', 'Snapshot Bot đã thay đổi'),
-        ]);
-        return this.runResult(failed);
-      }
-      const payload = objectValue(snapshot.payload) as BotMarketSnapshotInput;
-      let feeRules: FeeRules;
+    try {
+      return await this.database.transaction(async (tx) => {
+        const context = await this.instanceAccount(tx, userId, true);
+        if (!context || context.account_status !== 'active')
+          throw new Error('Bot account unavailable');
+        const run = (
+          await tx.query<BotRunRow>('select * from bot_run_receipts where id = $1 for update', [
+            runId,
+          ])
+        )[0];
+        if (!run || run.user_id !== userId || isoDate(run.trading_date) !== tradingDate) {
+          throw new Error('Bot run ownership mismatch');
+        }
+        const earlyReceipt = verifyRuleReceipt(run.rule_snapshot, run.rule_hash);
+        if (earlyReceipt.kind === 'legacy-v1') return this.runResult(run);
+        if (run.status === 'succeeded' && (await this.validateCompletedRun(tx, run))) {
+          return this.runResult(run);
+        }
+        const outOfOrder = (
+          await tx.query<{ exists: boolean }>(
+            `select exists(
+               select 1 from bot_run_receipts other
+               where other.bot_account_id = $1 and other.id <> $2
+                 and (
+                   (other.status = 'succeeded' and other.trading_date > $3::date)
+                   or other.status = 'running'
+                 )
+             ) as exists`,
+            [context.account_id, run.id, tradingDate],
+          )
+        )[0]?.exists;
+        if (outOfOrder) {
+          const error = new Error('Bot sessions must execute in trading-date order');
+          error.name = 'BotRunOrderingError';
+          throw error;
+        }
+        const ruleReceipt = verifyRuleReceipt(run.rule_snapshot, run.rule_hash);
+        if (!ruleReceipt.valid) {
+          const failed = await this.markFailed(tx, run.id, [
+            issue('unsupported_rule_version', 'Worker không hỗ trợ rule snapshot'),
+          ]);
+          return this.runResult(failed);
+        }
+        if (!(await this.reconcile(tx, context.account_id))) {
+          await this.insertDecision(tx, run.id, {
+            key: `bot:academy:${run.id}:ledger-error`,
+            symbol: null,
+            action: 'skip',
+            reasonCode: 'ledger_error',
+            reason: 'Sổ tiền Bot không đối soát trước phiên; không ghi giao dịch.',
+          });
+          const failed = await this.markFailed(tx, run.id, [
+            issue('reconciliation_failed', 'Sổ Bot không hợp lệ trước phiên'),
+          ]);
+          return this.runResult(failed);
+        }
+        const snapshot = (
+          await tx.query<SnapshotRow>('select * from bot_market_snapshots where bot_run_id = $1', [
+            run.id,
+          ])
+        )[0];
+        if (!snapshot || !this.snapshotValid(run, snapshot)) {
+          const failed = await this.markFailed(tx, run.id, [
+            issue('snapshot_hash_mismatch', 'Snapshot Bot đã thay đổi'),
+          ]);
+          return this.runResult(failed);
+        }
+        const payload = objectValue(snapshot.payload) as BotMarketSnapshotInput;
+        let feeRules: FeeRules | null = null;
+        try {
+          feeRules = feeRulesFromSnapshot(payload);
+        } catch {
+          // A waiting-only run does not consume fees. Trade paths record ledger_error below.
+        }
+        const shared = ruleReceipt.pin
+          ? parseSharedConfigSignals(payload.shared_config_signals, ruleReceipt.pin)
+          : null;
+        const configInvalid =
+          issues(payload.issues).some((row) => row.code === 'config_invalid_or_unauthorized') ||
+          Boolean(ruleReceipt.pin && !shared);
+        const result = await this.applyStrategy(
+          tx,
+          context,
+          run,
+          snapshot,
+          payload,
+          feeRules,
+          shared,
+          configInvalid,
+          ruleReceipt.pin?.revision ?? null,
+        );
+        return this.runResult(result);
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === 'BotRunOrderingError') throw error;
       try {
-        feeRules = feeRulesFromSnapshot(payload);
+        await this.database.transaction(async (tx) => {
+          const current = (
+            await tx.query<Pick<BotRunRow, 'status'>>(
+              'select status from bot_run_receipts where id = $1 for update',
+              [runId],
+            )
+          )[0];
+          if (!current || current.status !== 'running') return;
+          await this.insertDecision(tx, runId, {
+            key: `bot:academy:${runId}:ledger-error-rollback`,
+            symbol: null,
+            action: 'skip',
+            reasonCode: 'ledger_error',
+            reason: 'Giao dịch hoặc đối soát thất bại; toàn bộ thay đổi của lượt đã rollback.',
+          });
+          await this.markFailed(tx, runId, [
+            issue('reconciliation_failed', 'Giao dịch hoặc đối soát thất bại; lượt đã rollback'),
+          ]);
+        });
       } catch {
-        const failed = await this.markFailed(tx, run.id, [
-          issue('source_error', 'Thiếu snapshot phí/thuế/lô'),
-        ]);
-        return this.runResult(failed);
+        // Preserve the original transaction failure when even failure recording is unavailable.
       }
-      const shared = ruleReceipt.pin
-        ? parseSharedConfigSignals(payload.shared_config_signals, ruleReceipt.pin)
-        : null;
-      if (ruleReceipt.pin && !shared) {
-        const failed = await this.markFailed(tx, run.id, [
-          issue('unsupported_rule_version', 'Snapshot Bot thiếu tín hiệu cấu hình chung đã ghim'),
-        ]);
-        return this.runResult(failed);
-      }
-      const result = await this.applyStrategy(
-        tx,
-        context,
-        run,
-        snapshot,
-        payload,
-        feeRules,
-        shared,
-      );
-      return this.runResult(result);
-    });
+      throw error;
+    }
   }
 
   private async applyStrategy(
@@ -961,8 +1112,10 @@ export class BotService {
     run: BotRunRow,
     snapshot: SnapshotRow,
     payload: BotMarketSnapshotInput,
-    feeRules: FeeRules,
+    feeRules: FeeRules | null,
     shared: BotSharedConfigSignals | null = null,
+    configInvalid = false,
+    pinnedRevision: number | null = null,
   ): Promise<BotRunRow> {
     let cash = parseInteger(context.cash_vnd, 'cash_vnd');
     const blocked = stringList(run.blocked_symbols_at_start);
@@ -973,7 +1126,39 @@ export class BotService {
        order by symbol for update`,
       [context.account_id, blocked.length ? blocked : [''], isoDate(run.trading_date)],
     );
-    const runIssues = [...issues(payload.issues)];
+    let runIssues = [...issues(payload.issues)];
+    if (!shared?.buy_active && startingPositions.length === 0) {
+      runIssues = runIssues.filter(
+        (row) =>
+          !['filter_data_incomplete', 'source_error', 'missing_security_status'].includes(row.code),
+      );
+    }
+    const revision = pinnedRevision;
+    const conditionFor = (symbol: string, side: 'buy' | 'sell'): ConditionSnapshot => {
+      const frozen = shared as FrozenAcademySignals | null;
+      const evidence =
+        side === 'buy' ? frozen?.buy_evidence?.[symbol] : frozen?.sell_evidence?.[symbol];
+      return (
+        evidence ?? {
+          buy_active_ids: frozen?.buy_active_ids ?? [],
+          sell_active_ids: frozen?.sell_active_ids ?? [],
+          rules: [],
+        }
+      );
+    };
+
+    if (configInvalid) {
+      await this.insertDecision(tx, run.id, {
+        key: `bot:academy:${run.id}:config-invalid`,
+        symbol: null,
+        action: 'skip',
+        reasonCode: 'config_invalid_or_unauthorized',
+        reason: 'Cấu hình Học viện đã ghim không thể thực thi an toàn; phiên chỉ kiểm tra stop.',
+        decisionConfigRevision: revision,
+        conditionSnapshot: conditionFor('', 'buy'),
+      });
+    }
+
     let navBasis = run.nav_basis_vnd === null ? null : parseInteger(run.nav_basis_vnd);
     if (navBasis === null) {
       let marketValue = 0n;
@@ -984,7 +1169,7 @@ export class BotService {
         if (close === null) {
           complete = false;
           runIssues.push(
-            issue('missing_official_close', 'Thiếu đóng cửa để khóa NAV nền', position.symbol),
+            issue('valuation_incomplete', 'Thiếu đóng cửa để khóa NAV nền', position.symbol),
           );
         } else {
           marketValue += BigInt(position.qty_open) * close;
@@ -1002,92 +1187,143 @@ export class BotService {
     for (const position of startingPositions) {
       if (position.status !== 'open') continue;
       const close = this.officialClose(payload.symbols[position.symbol]);
-      if (close === null) continue;
-      const stop4 = parseDecimal4(position.stop_loss_vnd);
-      const take4 = parseDecimal4(position.take_profit_vnd);
-      if (stop4 === null || take4 === null) throw new Error('Stored Bot thresholds are invalid');
-      const signal = sharedConfigExitReason(
-        exitSignal(close, stop4, take4),
-        shared,
-        position.symbol,
-      );
-      if (!signal) {
+      if (close === null) {
         await this.insertDecision(tx, run.id, {
-          key: `bot:v1:${run.id}:${position.symbol}:hold`,
+          key: `bot:academy:${run.id}:${position.symbol}:invalid-close`,
           symbol: position.symbol,
           action: 'hold',
-          reasonCode: 'hold_within_thresholds',
-          reason: 'Giá đóng cửa chưa chạm cắt lỗ hoặc chốt lời đã lưu.',
+          reasonCode: 'invalid_close',
+          reason: 'Thiếu giá đóng cửa chính thức; không bán và không dựng giá thay thế.',
           filterIds: stringList(position.filter_ids),
           dataRefs: objectValue(position.source_refs),
+          decisionConfigRevision: revision,
+          conditionSnapshot: conditionFor(position.symbol, 'sell'),
         });
         continue;
       }
-      const execution = await this.sell(
-        tx,
-        run,
-        context.account_id,
-        position,
-        close,
-        signal,
-        feeRules,
-        snapshot.snapshot_hash,
-        cash,
-      );
-      cash += parseInteger(execution.netCashDeltaVnd);
+      const stop4 = parseDecimal4(position.stop_loss_vnd);
+      const entry4 = parseDecimal4(position.entry_price_vnd);
+      const validStop = stop4 !== null && entry4 !== null && stop4 > 0n && stop4 < entry4;
+      if (!validStop) {
+        runIssues.push(issue('missing_stop', 'Vị thế thiếu stop gốc hợp lệ', position.symbol));
+        await this.insertDecision(tx, run.id, {
+          key: `bot:academy:${run.id}:${position.symbol}:missing-stop`,
+          symbol: position.symbol,
+          action: 'hold',
+          reasonCode: 'missing_stop',
+          reason: 'Không có stop gốc hợp lệ; Bot không dựng stop từ L1 hiện tại.',
+          filterIds: stringList(position.filter_ids),
+          dataRefs: objectValue(position.source_refs),
+          decisionConfigRevision: revision,
+          conditionSnapshot: conditionFor(position.symbol, 'sell'),
+        });
+      }
+      const stopHit = validStop && stopLossSignal(close, stop4) === 'stop_loss';
+      const academySell =
+        !configInvalid && shared?.sell_active ? shared.sell[position.symbol] : null;
+      if (stopHit || academySell === true) {
+        if (!feeRules) {
+          await this.insertDecision(tx, run.id, {
+            key: `bot:academy:${run.id}:${position.symbol}:ledger-error`,
+            symbol: position.symbol,
+            action: 'hold',
+            reasonCode: 'ledger_error',
+            reason: 'Thiếu quy tắc phí/thuế hợp lệ; không thể ghi bán an toàn.',
+          });
+          runIssues.push(issue('source_error', 'Thiếu snapshot phí/thuế/lô', position.symbol));
+          continue;
+        }
+        const execution = await this.sell(
+          tx,
+          run,
+          context.account_id,
+          position,
+          close,
+          stopHit ? 'stop_loss' : 'academy_sell',
+          feeRules,
+          snapshot.snapshot_hash,
+          cash,
+          revision,
+          conditionFor(position.symbol, 'sell'),
+        );
+        if (execution.applied) cash += execution.netCashDeltaVnd;
+        continue;
+      }
+      if (configInvalid) continue;
+      const reasonCode = !shared?.sell_active
+        ? 'no_active_sell_conditions'
+        : academySell === false
+          ? 'academy_sell_not_met'
+          : 'academy_condition_missing';
+      await this.insertDecision(tx, run.id, {
+        key: `bot:academy:${run.id}:${position.symbol}:hold`,
+        symbol: position.symbol,
+        action: 'hold',
+        reasonCode,
+        reason: `Giữ ${position.symbol}: ${reasonCode}.`,
+        filterIds: stringList(position.filter_ids),
+        dataRefs: objectValue(position.source_refs),
+        decisionConfigRevision: revision,
+        conditionSnapshot: conditionFor(position.symbol, 'sell'),
+      });
     }
 
     const rawCandidates: Candidate[] = [];
-    for (const [symbol, row] of Object.entries(payload.symbols)) {
-      if (!row.filter_ids?.length) continue;
-      if (row.close_is_official !== true) {
-        runIssues.push(
-          issue('missing_official_close', 'Ứng viên thiếu giá đóng cửa đúng phiên', symbol),
-        );
-        continue;
-      }
-      if (row.security_status_verified !== true || row.tradable_security_status !== true) {
-        const reasonCode =
-          row.security_status_verified === true
-            ? 'security_status_blocked'
-            : 'missing_security_status';
-        await this.insertDecision(tx, run.id, {
-          key: `bot:v1:${run.id}:${symbol}:security`,
-          symbol,
-          action: 'skip',
-          reasonCode,
-          reason:
-            reasonCode === 'security_status_blocked'
-              ? 'Mã thuộc trạng thái không được phép mua.'
-              : 'Không xác minh được trạng thái giao dịch an toàn của mã.',
-          filterIds: row.filter_ids,
-          dataRefs: row.source_refs ?? {},
-        });
-        continue;
-      }
-      const candidate = candidateFromSnapshot(symbol, row);
-      if (!candidate) {
-        runIssues.push(issue('missing_layers', 'Thiếu dữ liệu ứng viên bắt buộc', symbol));
-        continue;
-      }
-      const gate = candidateGate(candidate);
-      if (!gate.allowed) {
-        await this.insertDecision(tx, run.id, {
-          key: `bot:v1:${run.id}:${symbol}:gate`,
-          symbol,
-          action: 'skip',
-          reasonCode: gate.reasonCode,
-          reason: `Ứng viên không qua cổng Bot v1: ${gate.reasonCode}.`,
-          filterIds: candidate.filterIds,
-          rankTuple: uuidRank(candidate),
-          dataRefs: candidate.sourceRefs,
-        });
-        if (gate.reasonCode === 'missing_layers' || gate.reasonCode === 'missing_veto_severity') {
-          runIssues.push(issue(gate.reasonCode, 'Không đủ năm lớp hoặc mức phủ quyết', symbol));
+    if (!configInvalid && shared?.buy_active && payload.buy_inputs_complete) {
+      for (const [symbol, row] of Object.entries(payload.symbols)) {
+        if (!row.filter_ids?.length) continue;
+        if (this.officialClose(row) === null) {
+          await this.insertDecision(tx, run.id, {
+            key: `bot:academy:${run.id}:${symbol}:invalid-close`,
+            symbol,
+            action: 'skip',
+            reasonCode: 'invalid_close',
+            reason: 'Ứng viên thiếu giá đóng cửa chính thức hợp lệ.',
+            filterIds: row.filter_ids,
+            dataRefs: row.source_refs ?? {},
+            decisionConfigRevision: revision,
+            conditionSnapshot: conditionFor(symbol, 'buy'),
+          });
+          continue;
         }
-        continue;
+        if (row.security_status_verified !== true || row.tradable_security_status !== true) {
+          const reasonCode =
+            row.security_status_verified === true
+              ? 'security_status_blocked'
+              : 'missing_security_status';
+          await this.insertDecision(tx, run.id, {
+            key: `bot:academy:${run.id}:${symbol}:security`,
+            symbol,
+            action: 'skip',
+            reasonCode,
+            reason:
+              reasonCode === 'security_status_blocked'
+                ? 'Mã thuộc trạng thái không được phép mua.'
+                : 'Không xác minh được trạng thái giao dịch an toàn của mã.',
+            filterIds: row.filter_ids,
+            dataRefs: row.source_refs ?? {},
+            decisionConfigRevision: revision,
+            conditionSnapshot: conditionFor(symbol, 'buy'),
+          });
+          continue;
+        }
+        const candidate = candidateFromSnapshot(symbol, row);
+        if (!candidate) {
+          await this.insertDecision(tx, run.id, {
+            key: `bot:academy:${run.id}:${symbol}:invalid-close`,
+            symbol,
+            action: 'skip',
+            reasonCode: 'invalid_close',
+            reason: 'Ứng viên thiếu giá đóng cửa chính thức hợp lệ.',
+            filterIds: row.filter_ids,
+            dataRefs: row.source_refs ?? {},
+            decisionConfigRevision: revision,
+            conditionSnapshot: conditionFor(symbol, 'buy'),
+          });
+          continue;
+        }
+        rawCandidates.push(candidate);
       }
-      rawCandidates.push(candidate);
     }
 
     const ranked = rankCandidates(rawCandidates);
@@ -1101,25 +1337,80 @@ export class BotService {
       0n,
     );
     let buyCount = executions.filter((row) => row.side === 'buy').length;
-    if (navBasis !== null && payload.buy_inputs_complete) {
-      for (const candidate of ranked) {
-        if (buyCount >= BOT_RULES.max_new_buys_per_session) break;
-        let reasonCode: string | null = null;
-        if (blocked.includes(candidate.symbol)) reasonCode = 'blocked_at_start';
-        else if (traded.has(candidate.symbol)) reasonCode = 'already_traded_in_run';
-        else {
-          const open = await tx.query<{ exists: boolean }>(
-            `select exists(select 1 from bot_positions
-             where bot_account_id = $1 and symbol = $2 and status = 'open') as exists`,
-            [context.account_id, candidate.symbol],
-          );
-          if (open[0]?.exists) reasonCode = 'already_open';
+    if (configInvalid) {
+      // Stop-only mode already recorded above.
+    } else if (!shared) {
+      await this.insertDecision(tx, run.id, {
+        key: `bot:academy:${run.id}:waiting`,
+        symbol: null,
+        action: 'skip',
+        reasonCode: 'waiting_for_academy_conditions',
+        reason: 'Chưa có cấu hình Học viện hiệu lực; Bot chờ điều kiện.',
+        conditionSnapshot: { buy_active_ids: [], sell_active_ids: [], rules: [] },
+      });
+    } else if (!shared.buy_active) {
+      await this.insertDecision(tx, run.id, {
+        key: `bot:academy:${run.id}:no-active-buy`,
+        symbol: null,
+        action: 'skip',
+        reasonCode: 'no_active_buy_conditions',
+        reason: 'Cấu hình hiệu lực không có điều kiện Mua đang hoạt động.',
+        decisionConfigRevision: revision,
+        conditionSnapshot: conditionFor('', 'buy'),
+      });
+    } else if (!payload.buy_inputs_complete) {
+      await this.insertDecision(tx, run.id, {
+        key: `bot:academy:${run.id}:buy-inputs-incomplete`,
+        symbol: null,
+        action: 'skip',
+        reasonCode: 'buy_inputs_incomplete',
+        reason: 'Nguồn Săn mã, trạng thái mã hoặc phí/lô chưa đầy đủ.',
+        decisionConfigRevision: revision,
+        conditionSnapshot: conditionFor('', 'buy'),
+      });
+    } else if (navBasis === null || !feeRules) {
+      await this.insertDecision(tx, run.id, {
+        key: `bot:academy:${run.id}:ledger-error-buy`,
+        symbol: null,
+        action: 'skip',
+        reasonCode: 'ledger_error',
+        reason: 'Không khóa được NAV hoặc phí/lô hợp lệ; không mở mua.',
+        decisionConfigRevision: revision,
+        conditionSnapshot: conditionFor('', 'buy'),
+      });
+    } else {
+      for (let index = 0; index < ranked.length; index += 1) {
+        const candidate = ranked[index]!;
+        if (buyCount >= BOT_POLICY.max_new_buys_per_session) {
+          await this.insertDecision(tx, run.id, {
+            key: `bot:academy:${run.id}:session-buy-limit`,
+            symbol: null,
+            action: 'skip',
+            reasonCode: 'session_buy_limit',
+            reason: 'Phiên đã có hai lệnh mua thành công.',
+            decisionConfigRevision: revision,
+            conditionSnapshot: conditionFor(candidate.symbol, 'buy'),
+          });
+          break;
         }
-        const thresholds = computeExitThresholds(candidate.closeVnd, candidate.amplitude4);
-        if (!reasonCode && (!thresholds || !candidate.amplitudeSourceRef)) {
+        let reasonCode: string | null = null;
+        const open = await tx.query<{ exists: boolean }>(
+          `select exists(select 1 from bot_positions
+           where bot_account_id = $1 and symbol = $2 and status = 'open') as exists`,
+          [context.account_id, candidate.symbol],
+        );
+        if (open[0]?.exists) reasonCode = 'already_holding';
+        else if (blocked.includes(candidate.symbol) || traded.has(candidate.symbol)) {
+          reasonCode = 'rebuy_same_session_blocked';
+        }
+        const buySignal = shared.buy[candidate.symbol];
+        if (!reasonCode && buySignal !== true) {
+          reasonCode = buySignal === false ? 'academy_buy_not_met' : 'academy_condition_missing';
+        }
+        const stop = computeProtectiveStop(candidate.closeVnd, candidate.amplitude4);
+        if (!reasonCode && (!stop || !candidate.amplitudeSourceRef)) {
           reasonCode = 'invalid_or_missing_l1_amplitude';
         }
-        reasonCode ??= sharedConfigBuyBlock(shared, candidate.symbol);
         const sizing = reasonCode
           ? null
           : computeBuyQuantity({
@@ -1130,17 +1421,19 @@ export class BotService {
               feeRules,
             });
         reasonCode ??= sizing?.reasonCode ?? null;
-        if (reasonCode || !sizing || !thresholds) {
+        if (reasonCode || !sizing || !stop) {
           await this.insertDecision(tx, run.id, {
-            key: `bot:v1:${run.id}:${candidate.symbol}:capital`,
+            key: `bot:academy:${run.id}:${candidate.symbol}:skip`,
             symbol: candidate.symbol,
             action: 'skip',
-            reasonCode: reasonCode ?? 'invalid_candidate',
-            reason: `Không mua ${candidate.symbol}: ${reasonCode ?? 'invalid_candidate'}.`,
+            reasonCode: reasonCode ?? 'insufficient_cash_or_lot',
+            reason: `Không mua ${candidate.symbol}: ${reasonCode ?? 'insufficient_cash_or_lot'}.`,
             filterIds: candidate.filterIds,
             rankTuple: uuidRank(candidate),
             dataRefs: candidate.sourceRefs,
-            budgetVnd: (navBasis * BigInt(BOT_RULES.buy_budget_nav_pct)) / 100n,
+            budgetVnd: (navBasis * 12n) / 100n,
+            decisionConfigRevision: revision,
+            conditionSnapshot: conditionFor(candidate.symbol, 'buy'),
           });
           continue;
         }
@@ -1150,15 +1443,19 @@ export class BotService {
           context.account_id,
           candidate,
           sizing,
-          thresholds,
+          stop,
           snapshot.snapshot_hash,
           cash,
           navBasis,
+          revision,
+          conditionFor(candidate.symbol, 'buy'),
         );
-        cash += execution.netCashDeltaVnd;
-        feesPaid += execution.feeVnd;
+        if (execution.applied) {
+          cash += execution.netCashDeltaVnd;
+          feesPaid += execution.feeVnd;
+        }
         traded.add(candidate.symbol);
-        buyCount += 1;
+        if (execution.applied) buyCount += 1;
       }
     }
 
@@ -1211,31 +1508,23 @@ export class BotService {
       new Date(),
     ]);
 
-    if (ranked.length === 0 && payload.buy_inputs_complete) {
+    if (shared?.buy_active && payload.buy_inputs_complete && ranked.length === 0) {
       await this.insertDecision(tx, run.id, {
-        key: `bot:v1:${run.id}:no-eligible-candidates`,
+        key: `bot:academy:${run.id}:no-eligible-candidates`,
         symbol: null,
         action: 'skip',
         reasonCode: 'no_eligible_candidates',
-        reason: 'Đã xử lý đủ nguồn nhưng không có mã vượt qua toàn bộ quy tắc Bot v1.',
-      });
-    } else if (!payload.buy_inputs_complete) {
-      await this.insertDecision(tx, run.id, {
-        key: `bot:v1:${run.id}:buy-inputs-incomplete`,
-        symbol: null,
-        action: 'skip',
-        reasonCode: 'buy_inputs_incomplete',
-        reason:
-          'Chưa đủ nguồn bắt buộc để đánh giá mua; đây không phải kết luận thị trường không có cơ hội.',
+        reason: 'Đã xử lý đủ nguồn nhưng không có ứng viên Săn mã hợp lệ.',
+        decisionConfigRevision: revision,
+        conditionSnapshot: conditionFor('', 'buy'),
       });
     }
     if (!(await this.reconcile(tx, context.account_id))) {
-      runIssues.push(issue('reconciliation_failed', 'Sổ tiền và số dư Bot không khớp'));
+      throw new Error('Bot reconciliation failed after strategy application');
     }
     const finalIssues = dedupeIssues(runIssues);
     const failed =
-      !valuationComplete ||
-      !payload.buy_inputs_complete ||
+      (Boolean(shared?.buy_active) && !payload.buy_inputs_complete) ||
       finalIssues.some((row) => CRITICAL_ISSUES.has(row.code));
     const sellCount =
       (
@@ -1282,17 +1571,19 @@ export class BotService {
     accountId: string,
     position: BotPositionRow,
     close: bigint,
-    reasonCode: BotExitReason,
+    reasonCode: 'stop_loss' | 'academy_sell',
     feeRules: FeeRules,
     sourceHash: string,
     cashBefore: bigint,
-  ): Promise<{ netCashDeltaVnd: string }> {
-    const key = `bot:v1:${accountId}:${isoDate(run.trading_date)}:${position.symbol}:sell`;
+    decisionConfigRevision: number | null,
+    conditionSnapshot: ConditionSnapshot,
+  ): Promise<{ netCashDeltaVnd: bigint; applied: boolean }> {
+    const key = `bot:academy:${accountId}:${isoDate(run.trading_date)}:${position.symbol}:sell`;
     const existing = await tx.query<{ net_cash_delta_vnd: string }>(
       'select net_cash_delta_vnd from bot_executions where idempotency_key = $1',
       [key],
     );
-    if (existing[0]) return { netCashDeltaVnd: existing[0].net_cash_delta_vnd };
+    if (existing[0]) return { netCashDeltaVnd: 0n, applied: false };
     const gross = BigInt(position.qty_open) * close;
     const fee = roundBasisPoints(gross, feeRules.sellFeeRateBps);
     const tax = roundBasisPoints(gross, feeRules.sellTaxRateBps);
@@ -1321,7 +1612,7 @@ export class BotService {
         fee.toString(),
         tax.toString(),
         net.toString(),
-        BOT_RULES.execution_model,
+        BOT_POLICY.execution_model,
         key,
         json(stringList(position.filter_ids)),
         reasonCode,
@@ -1358,20 +1649,17 @@ export class BotService {
       action: 'sell',
       reasonCode,
       reason:
-        reasonCode === BOT_SHARED_CONFIG_SELL_REASON
-          ? `Tín hiệu Bán của cấu hình chung đã ghim cho phiên đúng tại giá đóng cửa ${close}; Bot bán mô phỏng toàn bộ ${position.qty_open} cổ phiếu tại đóng cửa phiên này.`
-          : `Giá đóng cửa ${close} đã chạm mốc ${reasonCode}; Bot bán mô phỏng toàn bộ ${position.qty_open} cổ phiếu tại đóng cửa phiên này.`,
+        reasonCode === 'academy_sell'
+          ? `Điều kiện Bán Học viện đạt tại ${close}; Bot bán toàn bộ ${position.qty_open} cổ phiếu.`
+          : `Giá đóng cửa ${close} chạm stop đã lưu; Bot bán toàn bộ ${position.qty_open} cổ phiếu.`,
       filterIds: stringList(position.filter_ids),
       dataRefs: objectValue(position.source_refs),
-      thresholdVnd:
-        reasonCode === 'stop_loss'
-          ? position.stop_loss_vnd
-          : reasonCode === 'take_profit'
-            ? position.take_profit_vnd
-            : undefined,
+      thresholdVnd: reasonCode === 'stop_loss' ? position.stop_loss_vnd : undefined,
       executionId: id,
+      decisionConfigRevision,
+      conditionSnapshot,
     });
-    return { netCashDeltaVnd: net.toString() };
+    return { netCashDeltaVnd: net, applied: true };
   }
 
   private async buy(
@@ -1380,20 +1668,23 @@ export class BotService {
     accountId: string,
     candidate: Candidate,
     sizing: ReturnType<typeof computeBuyQuantity>,
-    thresholds: NonNullable<ReturnType<typeof computeExitThresholds>>,
+    stop: NonNullable<ReturnType<typeof computeProtectiveStop>>,
     sourceHash: string,
     cashBefore: bigint,
     navBasis: bigint,
-  ): Promise<{ netCashDeltaVnd: bigint; feeVnd: bigint }> {
-    const key = `bot:v1:${accountId}:${isoDate(run.trading_date)}:${candidate.symbol}:buy`;
+    decisionConfigRevision: number | null,
+    conditionSnapshot: ConditionSnapshot,
+  ): Promise<{ netCashDeltaVnd: bigint; feeVnd: bigint; applied: boolean }> {
+    const key = `bot:academy:${accountId}:${isoDate(run.trading_date)}:${candidate.symbol}:buy`;
     const existing = await tx.query<{ net_cash_delta_vnd: string; fee_vnd: string }>(
       'select net_cash_delta_vnd, fee_vnd from bot_executions where idempotency_key = $1',
       [key],
     );
     if (existing[0])
       return {
-        netCashDeltaVnd: parseInteger(existing[0].net_cash_delta_vnd),
-        feeVnd: parseInteger(existing[0].fee_vnd),
+        netCashDeltaVnd: 0n,
+        feeVnd: 0n,
+        applied: false,
       };
     const positionId = randomUUID();
     const executionId = randomUUID();
@@ -1402,9 +1693,9 @@ export class BotService {
       `insert into bot_positions
          (id, bot_account_id, symbol, qty_open, entry_price_vnd, entry_value_vnd,
           entry_fee_vnd, amplitude_at_entry_vnd, amplitude_source_ref, stop_loss_vnd,
-          take_profit_vnd, opened_session, opened_at, status, filter_ids, source_refs,
+          take_profit_vnd, entry_config_revision, opened_session, opened_at, status, filter_ids, source_refs,
           buy_execution_id, created_at, updated_at)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::date,$13::timestamptz,'open',$14::jsonb,
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,null,$11,$12::date,$13::timestamptz,'open',$14::jsonb,
                $15::jsonb,$16,$13::timestamptz at time zone 'UTC',$13::timestamptz at time zone 'UTC')`,
       [
         positionId,
@@ -1416,8 +1707,8 @@ export class BotService {
         sizing.feeVnd.toString(),
         formatDecimal4(candidate.amplitude4!),
         candidate.amplitudeSourceRef,
-        formatDecimal4(thresholds.stop4),
-        formatDecimal4(thresholds.take4),
+        formatDecimal4(stop.stop4),
+        decisionConfigRevision,
         isoDate(run.trading_date),
         now,
         json(candidate.filterIds),
@@ -1426,9 +1717,6 @@ export class BotService {
       ],
     );
     const net = -sizing.totalVnd;
-    const layerSnapshot = Object.fromEntries(
-      Object.entries(candidate.layers).map(([name, value]) => [name, value]),
-    );
     await tx.query(
       `insert into bot_executions
          (id, bot_run_id, bot_account_id, position_id, symbol, side, qty, price_vnd,
@@ -1436,7 +1724,7 @@ export class BotService {
           fee_vnd, tax_vnd, net_cash_delta_vnd, execution_model, idempotency_key,
           filter_ids, supporting_count, layer_snapshot, reason, source_snapshot_id)
        values ($1,$2,$3,$4,$5,'buy',$6,$7,$8::date,$8::date,$8::date,$9,$10,$11,0,$12,
-               $13,$14,$15::jsonb,$16,$17::jsonb,'bought',$18)`,
+               $13,$14,$15::jsonb,null,'{}'::jsonb,'academy_buy',$16)`,
       [
         executionId,
         run.id,
@@ -1450,11 +1738,9 @@ export class BotService {
         sizing.grossVnd.toString(),
         sizing.feeVnd.toString(),
         net.toString(),
-        BOT_RULES.execution_model,
+        BOT_POLICY.execution_model,
         key,
         json(candidate.filterIds),
-        supportingCount(candidate),
-        json(layerSnapshot),
         sourceHash,
       ],
     );
@@ -1480,16 +1766,18 @@ export class BotService {
       key: `${key}:decision`,
       symbol: candidate.symbol,
       action: 'buy',
-      reasonCode: 'bought',
-      reason: `Bot mua mô phỏng ${sizing.quantity} ${candidate.symbol} tại đóng cửa ${isoDate(run.trading_date)}: ${supportingCount(candidate)}/5 lớp Ủng hộ, xuất hiện trong ${candidate.filterIds.length} bộ lọc và vượt qua các kiểm tra vốn.`,
+      reasonCode: 'academy_buy',
+      reason: `Bot mua ${sizing.quantity} ${candidate.symbol} theo điều kiện Học viện tại đóng cửa ${isoDate(run.trading_date)}.`,
       filterIds: candidate.filterIds,
       rankTuple: uuidRank(candidate),
       dataRefs: candidate.sourceRefs,
-      budgetVnd: (navBasis * BigInt(BOT_RULES.buy_budget_nav_pct)) / 100n,
+      budgetVnd: (navBasis * 12n) / 100n,
       proposedQty: sizing.quantity,
       executionId,
+      decisionConfigRevision,
+      conditionSnapshot,
     });
-    return { netCashDeltaVnd: net, feeVnd: sizing.feeVnd };
+    return { netCashDeltaVnd: net, feeVnd: sizing.feeVnd, applied: true };
   }
 
   private async insertDecision(
@@ -1508,14 +1796,16 @@ export class BotService {
       proposedQty?: number;
       thresholdVnd?: string;
       executionId?: string;
+      decisionConfigRevision?: number | null;
+      conditionSnapshot?: ConditionSnapshot;
     },
   ): Promise<void> {
     await tx.query(
       `insert into bot_decisions
          (id, bot_run_id, idempotency_key, symbol, action, reason_code, reason,
           filter_ids, rank_tuple, data_refs, budget_vnd, proposed_qty, threshold_vnd,
-          execution_id, created_at)
-       values ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10::jsonb,$11,$12,$13,$14,$15)
+          execution_id, decision_config_revision, condition_snapshot, created_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10::jsonb,$11,$12,$13,$14,$15,$16::jsonb,$17)
        on conflict (idempotency_key) do nothing`,
       [
         randomUUID(),
@@ -1532,6 +1822,8 @@ export class BotService {
         values.proposedQty ?? null,
         values.thresholdVnd ?? null,
         values.executionId ?? null,
+        values.decisionConfigRevision ?? null,
+        values.conditionSnapshot ? json(values.conditionSnapshot) : null,
         new Date(),
       ],
     );
@@ -1563,7 +1855,7 @@ export class BotService {
            )
          ) as valid
        from bot_accounts a where a.id = $1`,
-      [accountId, BOT_RULES.initial_cash_vnd.toString()],
+      [accountId, INITIAL_CASH_VND.toString()],
     );
     return rows[0]?.valid ?? false;
   }
@@ -1604,6 +1896,85 @@ export class BotService {
     };
   }
 
+  private async conditionState(
+    userId: string,
+    accountId: string,
+  ): Promise<{
+    conditions: Record<string, unknown>;
+    productStage: 'bot_v1_waiting' | 'bot_v2_academy';
+  }> {
+    const position = (
+      await this.database.query<{ open_positions: string; policy_positions: string }>(
+        `select count(*)::text as open_positions,
+                count(*) filter (where entry_config_revision is not null)::text as policy_positions
+         from bot_positions where bot_account_id = $1 and status = 'open'`,
+        [accountId],
+      )
+    )[0] ?? { open_positions: '0', policy_positions: '0' };
+    const openPositions = Number(position.open_positions);
+    try {
+      const current = await this.sharedConfigReader.current(userId);
+      const effective = current.effective_revision
+        ? await this.sharedConfigReader.getRevision(userId, current.effective_revision)
+        : null;
+      const registry = loadTechnicalRegistry();
+      const grants = new Set(current.granted_indicators.map(indicatorCapability));
+      const valid = Boolean(
+        effective &&
+        effective.revision === current.effective_revision &&
+        configHash(effective.config) === effective.config_hash &&
+        validateConfig(effective.config, registry, grants).length === 0,
+      );
+      const buyCount =
+        valid && effective ? activeSideIndicators(effective.config, 'buy', registry).length : 0;
+      const sellCount =
+        valid && effective ? activeSideIndicators(effective.config, 'sell', registry).length : 0;
+      const hasBuy = buyCount > 0;
+      const hasSell = sellCount > 0;
+      const state = hasBuy
+        ? 'entry_enabled'
+        : hasSell
+          ? 'exit_only'
+          : openPositions > 0
+            ? 'protection_only'
+            : 'waiting_for_conditions';
+      return {
+        conditions: {
+          state,
+          has_active_buy: hasBuy,
+          has_active_sell: hasSell,
+          buy_condition_count: buyCount,
+          sell_condition_count: sellCount,
+          saved_revision: current.saved_revision || null,
+          effective_revision: current.effective_revision,
+          effective_session: current.effective_session,
+          config_status: current.saved_revision === 0 ? 'none' : current.status,
+          open_positions: openPositions,
+        },
+        productStage:
+          hasBuy || hasSell || Number(position.policy_positions) > 0
+            ? 'bot_v2_academy'
+            : 'bot_v1_waiting',
+      };
+    } catch {
+      return {
+        conditions: {
+          state: openPositions > 0 ? 'protection_only' : 'waiting_for_conditions',
+          has_active_buy: false,
+          has_active_sell: false,
+          buy_condition_count: 0,
+          sell_condition_count: 0,
+          saved_revision: null,
+          effective_revision: null,
+          effective_session: null,
+          config_status: 'calendar_unavailable',
+          open_positions: openPositions,
+        },
+        productStage: Number(position.policy_positions) > 0 ? 'bot_v2_academy' : 'bot_v1_waiting',
+      };
+    }
+  }
+
   async overview(userId: string): Promise<Record<string, unknown>> {
     const progress = await this.database.query<{
       current_level: number | null;
@@ -1615,6 +1986,7 @@ export class BotService {
       [userId],
     );
     const context = await this.instanceAccount(this.database, userId);
+    const conditionState = context ? await this.conditionState(userId, context.account_id) : null;
     const runStatus = await this.status(userId);
     if (progress[0]?.graduated_at && !context) {
       runStatus.issues.push(
@@ -1657,21 +2029,20 @@ export class BotService {
             execution_model: context.execution_model,
             initial_cash_vnd: context.initial_cash_vnd,
             activated_at: isoTimestamp(context.activated_at),
+            policy_version: BOT_POLICY.policy_version,
+            product_stage: conditionState!.productStage,
           }
         : null,
+      conditions: conditionState?.conditions ?? null,
       account: context
         ? {
             cash_vnd: nav?.cash_vnd ?? context.cash_vnd,
             market_value_vnd: nav ? nav.market_value_vnd : '0',
             nav_vnd: navValue,
             pnl_total_net_vnd:
-              navValue === null
-                ? null
-                : (parseInteger(navValue) - BOT_RULES.initial_cash_vnd).toString(),
+              navValue === null ? null : (parseInteger(navValue) - INITIAL_CASH_VND).toString(),
             return_total:
-              navValue === null
-                ? null
-                : ratioString(parseInteger(navValue), BOT_RULES.initial_cash_vnd),
+              navValue === null ? null : ratioString(parseInteger(navValue), INITIAL_CASH_VND),
             valuation_complete: nav?.valuation_complete ?? true,
             as_of_session: nav ? isoDate(nav.trading_date) : null,
           }
@@ -1771,7 +2142,8 @@ export class BotService {
         amplitude_at_entry_vnd: row.amplitude_at_entry_vnd,
         amplitude_source_ref: row.amplitude_source_ref,
         stop_loss_vnd: row.stop_loss_vnd,
-        take_profit_vnd: row.take_profit_vnd,
+        legacy_take_profit_vnd: row.take_profit_vnd,
+        entry_config_revision: row.entry_config_revision ?? null,
         unrealized_pnl_net_vnd: pnl?.toString() ?? null,
         filter_ids: stringList(row.filter_ids),
         opened_session: isoDate(row.opened_session),
@@ -1819,7 +2191,7 @@ export class BotService {
       cursorCondition = 'and (d.created_at, d.id) < ($4, $5::uuid)';
     }
     const rows = await this.database.query<Record<string, unknown>>(
-      `select d.*, r.trading_date, r.id as run_id,
+      `select d.*, r.trading_date, r.id as run_id, r.policy_version,
               e.id as execution_id_joined, e.side as execution_side, e.qty as execution_qty,
               e.price_vnd as execution_price_vnd, e.gross_value_vnd as execution_gross_value_vnd,
               e.fee_vnd as execution_fee_vnd, e.tax_vnd as execution_tax_vnd,
@@ -1863,6 +2235,18 @@ export class BotService {
         symbol: row.symbol,
         filter_ids: stringList(row.filter_ids),
         supporting_count: row.execution_supporting_count ?? null,
+        policy_version:
+          row.policy_version === null || row.policy_version === undefined
+            ? null
+            : String(row.policy_version),
+        decision_config_revision:
+          row.decision_config_revision === null || row.decision_config_revision === undefined
+            ? null
+            : Number(row.decision_config_revision),
+        condition_snapshot:
+          row.condition_snapshot === null || row.condition_snapshot === undefined
+            ? null
+            : objectValue(row.condition_snapshot),
         threshold_vnd: row.threshold_vnd === null ? null : String(row.threshold_vnd),
         source_refs: objectValue(row.data_refs),
         created_at: isoTimestamp(row.created_at as Date | string),

@@ -1,5 +1,13 @@
 import { isFiniteNumber } from './indicators.js';
-import type { LogicNode, Operand, Rule, SeriesMap, Tri } from './types.js';
+import type {
+  LogicNode,
+  Operand,
+  ResolvedValue,
+  Rule,
+  RuleEvaluationEvidence,
+  SeriesMap,
+  Tri,
+} from './types.js';
 
 /**
  * Three-valued rule evaluation, exact port of the reference engine
@@ -22,6 +30,10 @@ function operandValue(
   if (x.kind === 'param') return p[x.key] ?? null;
   if (x.kind === 'constant') return x.value;
   return null;
+}
+
+function finiteOrNull(value: number | null): ResolvedValue {
+  return isFiniteNumber(value) ? value : null;
 }
 
 export function evaluateRule(
@@ -50,6 +62,43 @@ export function evaluateRule(
     return now && (rule.op === '>' ? previousL <= previousR : previousL >= previousR);
   }
   return now;
+}
+
+/** Evaluate a rule and retain the numeric operands used for the decision. */
+export function evaluateRuleWithEvidence(
+  rule: Rule,
+  series: SeriesMap,
+  params: Record<string, number>,
+  i: number,
+): RuleEvaluationEvidence {
+  const lhs = finiteOrNull(operandValue(rule.lhs, series, params, i));
+  const result = evaluateRule(rule, series, params, i);
+  if (rule.kind === 'membership') {
+    const lower = finiteOrNull(operandValue(rule.rhs.lower, series, params, i));
+    const upper = finiteOrNull(operandValue(rule.rhs.upper, series, params, i));
+    return {
+      lhs,
+      rhs: null,
+      rhs_lower: lower,
+      rhs_upper: upper,
+      result,
+      missing: lhs === null || lower === null || upper === null,
+    };
+  }
+  const rhs = finiteOrNull(operandValue(rule.rhs, series, params, i));
+  if (rule.kind !== 'cross') {
+    return { lhs, rhs, result, missing: lhs === null || rhs === null };
+  }
+  const previousLhs = finiteOrNull(operandValue(rule.lhs, series, params, i - 1));
+  const previousRhs = finiteOrNull(operandValue(rule.rhs, series, params, i - 1));
+  return {
+    lhs,
+    rhs,
+    result,
+    missing: lhs === null || rhs === null || previousLhs === null || previousRhs === null,
+    previous_lhs: previousLhs,
+    previous_rhs: previousRhs,
+  };
 }
 
 /** Kleene AND: any false → false; otherwise any unknown → unknown; an empty list is true. */

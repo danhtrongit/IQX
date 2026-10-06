@@ -22,7 +22,7 @@
       },
       {
         "title": "Tình huống và giới hạn",
-        "html": "<p>Không có điều kiện Mua trong Backtest một mã phải báo cấu hình chưa đủ. Không tự coi đây là yêu cầu dùng bộ lọc V1 của Bot.</p><p>Giá trên SMA 20 nhưng tài khoản đang giữ vị thế. Profile một mã, không mua gia tăng, xử lý thế nào?</p><p>Kết luận: <strong>Không mở thêm vị thế chỉ vì điều kiện Mua tiếp tục đúng.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+        "html": "<p>Không có điều kiện Mua trong Backtest một mã phải báo cấu hình chưa đủ. Không tự coi đây là yêu cầu dùng cấu hình Bot.</p><p>Giá trên SMA 20 nhưng tài khoản đang giữ vị thế. Profile một mã, không mua gia tăng, xử lý thế nào?</p><p>Kết luận: <strong>Không mở thêm vị thế chỉ vì điều kiện Mua tiếp tục đúng.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
       }
     ],
     "fixture": {

@@ -49,20 +49,43 @@ export type BotMarketSnapshotInput = {
   snapshot_hash?: string;
 };
 
+export type BotConditionRuleEvidence = {
+  id: string;
+  indicator: string;
+  side: 'buy' | 'sell';
+  op: '>' | '<' | '∈' | '∉';
+  lhs: number | null;
+  rhs: number | null;
+  rhs_lower?: number | null;
+  rhs_upper?: number | null;
+  result: boolean | null;
+  missing: boolean;
+  previous_lhs?: number | null;
+  previous_rhs?: number | null;
+};
+
+export type BotConditionSnapshot = {
+  buy_active_ids: string[];
+  sell_active_ids: string[];
+  rules: BotConditionRuleEvidence[];
+};
+
 /**
  * Frozen evaluation of the pinned shared Buy/Sell config on the session's last
- * completed bar (BOT_SHARED_CONFIG_ENABLED). `null` = missing data.
+ * completed bar. `null` = missing data.
  */
 export type BotSharedConfigSignals = {
   revision: number;
   config_hash: string;
   effective_session: string;
-  /** At least one indicator has master + Buy ON; otherwise Bot v1 entry is unchanged. */
+  /** At least one granted indicator has master + Buy ON; otherwise entries wait. */
   buy_active: boolean;
   /** At least one indicator has master + Sell ON; otherwise no shared-config exit. */
   sell_active: boolean;
   buy: Record<string, boolean | null>;
   sell: Record<string, boolean | null>;
+  /** Per-symbol evidence frozen with the source snapshot for deterministic retries. */
+  conditions?: Record<string, BotConditionSnapshot>;
   data: {
     source: string | null;
     hash: string;
@@ -134,6 +157,7 @@ export type BotRunRow = {
   source_snapshot_hash: string | null;
   rule_snapshot: unknown;
   rule_hash: string | null;
+  policy_version?: string | null;
   nav_basis_vnd: string | null;
   blocked_symbols_at_start: unknown;
   buy_count: number;
@@ -152,7 +176,8 @@ export type BotPositionRow = {
   amplitude_at_entry_vnd: string;
   amplitude_source_ref: string;
   stop_loss_vnd: string;
-  take_profit_vnd: string;
+  take_profit_vnd: string | null;
+  entry_config_revision?: number | null;
   opened_session: Date | string;
   opened_at: Date | string;
   closed_session: Date | string | null;
@@ -162,4 +187,17 @@ export type BotPositionRow = {
   status: 'open' | 'closed';
   filter_ids: unknown;
   source_refs: unknown;
+};
+
+export type BotDecisionRow = {
+  id: string;
+  bot_run_id: string;
+  symbol: string | null;
+  action: string;
+  reason_code: string;
+  reason: string;
+  execution_id: string | null;
+  decision_config_revision?: number | null;
+  condition_snapshot?: BotConditionSnapshot | null;
+  created_at: Date | string;
 };

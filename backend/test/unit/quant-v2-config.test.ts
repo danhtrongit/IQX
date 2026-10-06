@@ -242,6 +242,19 @@ describe('quant v2 validateConfig', () => {
     }
   });
 
+  it('B04 rejects operators outside the whitelist and tampered allowed_ops', () => {
+    const badOp = maConfig();
+    (indicator(badOp, 'ma').buy.rules[0] as { op: string }).op = '>=';
+    expect(paths(badOp)).toContain('indicators.ma.buy.rules.0.op');
+
+    const badAllowed = maConfig();
+    (indicator(badAllowed, 'ma').buy.rules[0] as { allowed_ops: string[] }).allowed_ops = [
+      '>',
+      '∈',
+    ];
+    expect(paths(badAllowed)).toContain('indicators.ma.buy.rules.0');
+  });
+
   it('master ON needs a side and, with grants, the learned capability', () => {
     const c = defaultConfig();
     const ema = indicator(c, 'ema');

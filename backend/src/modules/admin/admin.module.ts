@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../platform/database/index.js';
 import { AuthModule } from '../auth/auth.module.js';
+import { TradingModule } from '../trading/trading.module.js';
 import { AdminAuditController } from './admin-audit.controller.js';
 import { AdminAuditService } from './admin-audit.service.js';
 import { AdminMetricsController } from './admin-metrics.controller.js';
@@ -11,7 +12,7 @@ import { AdminVTController, LegacyVirtualTradingAdminController } from './admin-
 import { AdminVTService } from './admin-vt.service.js';
 
 @Module({
-  imports: [DatabaseModule, AuthModule],
+  imports: [DatabaseModule, AuthModule, TradingModule],
   controllers: [
     AdminMetricsController,
     AdminAuditController,

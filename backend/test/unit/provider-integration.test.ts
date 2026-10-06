@@ -168,7 +168,7 @@ describe('BotMarketSnapshotProvider', () => {
     },
   );
 
-  it('uses only requested-session closes, exact DB fee rules and stored exact-session layers', async () => {
+  it('uses requested-session closes and exact DB fee rules without querying AI layers', async () => {
     const bars = Array.from({ length: 40 }, (_, index) => {
       const date = new Date('2025-11-24T00:00:00Z');
       date.setUTCDate(date.getUTCDate() + index);
@@ -240,12 +240,10 @@ describe('BotMarketSnapshotProvider', () => {
       security_status_verified: false,
       tradable_security_status: false,
     });
-    expect(Object.keys(result.symbols.AAA!.layers ?? {})).toEqual([
-      'ky_thuat',
-      'dong_tien',
-      'noi_bo',
-      'tin_tuc',
-    ]);
+    expect(result.symbols.AAA!.layers).toEqual({});
+    expect(database.query.mock.calls.some(([sql]) => sql.includes('from ai_insight_history'))).toBe(
+      false,
+    );
     expect(result.symbols.AAA?.l1_amplitude_source_ref).toContain(`:${tradingDate}:v1`);
     expect(result.fee_rules).toEqual({
       buy_fee_rate_bps: 15,

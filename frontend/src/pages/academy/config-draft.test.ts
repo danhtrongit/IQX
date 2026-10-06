@@ -24,9 +24,21 @@ describe("academy config draft", () => {
   it("Đặt lại restores only the current side's params and operators", () => {
     const saved = savedIndicatorConfig(sharedConfigFixture(), RSI)
     let draft = createDraft(saved)
-    draft = { ...draft, buy: { enabled: false, params: { period: "20", level: "25" }, ops: { r1: ">", r2: "<" } }, sell: { ...draft.sell, params: { period: "9", level: "80" } } }
+    draft = {
+      ...draft,
+      buy: {
+        enabled: false,
+        params: { period: "20", level: "25" },
+        ops: { r1: ">", r2: "<" },
+      },
+      sell: { ...draft.sell, params: { period: "9", level: "80" } },
+    }
     const reset = resetDraftSide(draft, saved, "buy")
-    expect(reset.buy).toEqual({ enabled: false, params: { period: "14", level: "30" }, ops: { r1: "<", r2: ">" } })
+    expect(reset.buy).toEqual({
+      enabled: false,
+      params: { period: "14", level: "30" },
+      ops: { r1: "<", r2: ">" },
+    })
     expect(reset.sell.params).toEqual({ period: "9", level: "80" })
   })
 
@@ -46,11 +58,57 @@ describe("academy config draft", () => {
     const saved = savedIndicatorConfig(sharedConfigFixture(), RSI)
     const draft = createDraft(saved)
     draft.buy.params.level = "25"
-    expect(buildIndicatorConfig(saved, draft, false)).toMatchObject({ master_enabled: false, buy: { params: { level: 25 } }, sell: { params: { level: 70 } } })
+    expect(buildIndicatorConfig(saved, draft, false)).toMatchObject({
+      master_enabled: false,
+      buy: { params: { level: 25 } },
+      sell: { params: { level: 70 } },
+    })
     const on = { ...saved, master_enabled: true }
-    const bothOff = { buy: { ...draft.buy, enabled: false }, sell: { ...draft.sell, enabled: false } }
+    const bothOff = {
+      buy: { ...draft.buy, enabled: false },
+      sell: { ...draft.sell, enabled: false },
+    }
     expect(buildIndicatorConfig(on, bothOff, false).master_enabled).toBe(false)
     expect(buildIndicatorConfig(saved, draft, true).master_enabled).toBe(true)
+  })
+
+  it("re-saving with master ON restores the saved sides without enabling the OFF side", () => {
+    const saved = savedIndicatorConfig(sharedConfigFixture(), RSI)
+    const masterOn = {
+      ...saved,
+      master_enabled: true,
+      sell: { ...saved.sell, enabled: false },
+    }
+    const built = buildIndicatorConfig(masterOn, createDraft(masterOn), false)
+    expect(built.master_enabled).toBe(true)
+    expect(built.buy).toEqual(masterOn.buy)
+    expect(built.sell).toEqual(masterOn.sell)
+  })
+
+  it("never turns master ON when both sides are OFF, even from the master switch", () => {
+    const saved = savedIndicatorConfig(sharedConfigFixture(), RSI)
+    const draft = createDraft(saved)
+    const bothOff = {
+      buy: { ...draft.buy, enabled: false },
+      sell: { ...draft.sell, enabled: false },
+    }
+    expect(buildIndicatorConfig(saved, bothOff, true).master_enabled).toBe(
+      false
+    )
+    expect(buildIndicatorConfig(saved, bothOff, false).master_enabled).toBe(
+      false
+    )
+  })
+
+  it("saving one side never overwrites the other side's saved choices", () => {
+    const saved = savedIndicatorConfig(sharedConfigFixture(), RSI)
+    const draft = createDraft(saved)
+    draft.buy.params.level = "20"
+    draft.sell.params.level = "80"
+    const built = buildIndicatorConfig(saved, draft, false)
+    expect(built.buy.params.level).toBe(20)
+    expect(built.sell.params.level).toBe(80)
+    expect(built.sell.enabled).toBe(saved.sell.enabled)
   })
 
   it("applies operator changes only within allowed_ops", () => {
@@ -59,13 +117,23 @@ describe("academy config draft", () => {
     draft.buy.ops.r1 = ">"
     draft.buy.ops.r2 = "∈"
     const built = buildIndicatorConfig(saved, draft, false)
-    expect(built.buy.rules.map(rule => rule.op)).toEqual([">", ">"])
+    expect(built.buy.rules.map((rule) => rule.op)).toEqual([">", ">"])
   })
 
   it("reads 422 validation details and maps them to side fields", () => {
-    const error = new ApiError("Cấu hình không hợp lệ", 422, { code: "CONFIG_INVALID", details: [{ path: "indicators.rsi.sell.params.level", message: "Ngưỡng quá mua phải từ 51" }] })
+    const error = new ApiError("Cấu hình không hợp lệ", 422, {
+      code: "CONFIG_INVALID",
+      details: [
+        {
+          path: "indicators.rsi.sell.params.level",
+          message: "Ngưỡng quá mua phải từ 51",
+        },
+      ],
+    })
     const errors = configFieldErrors(error)
-    expect(fieldErrorFor(errors, "sell", "level")).toBe("Ngưỡng quá mua phải từ 51")
+    expect(fieldErrorFor(errors, "sell", "level")).toBe(
+      "Ngưỡng quá mua phải từ 51"
+    )
     expect(fieldErrorFor(errors, "buy", "level")).toBeNull()
   })
 })

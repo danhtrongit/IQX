@@ -1390,6 +1390,293 @@
         ],
         "type": "object"
       },
+      "BotAccountSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "as_of_session": {
+            "oneOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "cash_vnd": {
+            "type": "string"
+          },
+          "market_value_vnd": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "nav_vnd": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "pnl_total_net_vnd": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "return_total": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "valuation_complete": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cash_vnd",
+          "market_value_vnd",
+          "nav_vnd",
+          "pnl_total_net_vnd",
+          "return_total",
+          "valuation_complete",
+          "as_of_session"
+        ],
+        "type": "object"
+      },
+      "BotConditions": {
+        "additionalProperties": false,
+        "properties": {
+          "buy_condition_count": {
+            "type": "integer"
+          },
+          "config_status": {
+            "enum": [
+              "none",
+              "pending",
+              "effective",
+              "calendar_unavailable"
+            ],
+            "type": "string"
+          },
+          "effective_revision": {
+            "oneOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "effective_session": {
+            "oneOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "has_active_buy": {
+            "type": "boolean"
+          },
+          "has_active_sell": {
+            "type": "boolean"
+          },
+          "open_positions": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "saved_revision": {
+            "oneOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "sell_condition_count": {
+            "type": "integer"
+          },
+          "state": {
+            "enum": [
+              "waiting_for_conditions",
+              "entry_enabled",
+              "exit_only",
+              "protection_only"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "state",
+          "has_active_buy",
+          "has_active_sell",
+          "buy_condition_count",
+          "sell_condition_count",
+          "saved_revision",
+          "effective_revision",
+          "effective_session",
+          "config_status",
+          "open_positions"
+        ],
+        "type": "object"
+      },
+      "BotConfig": {
+        "additionalProperties": false,
+        "properties": {
+          "activated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "execution_model": {
+            "enum": [
+              "same_session_close"
+            ],
+            "type": "string"
+          },
+          "initial_cash_vnd": {
+            "type": "string"
+          },
+          "policy_version": {
+            "enum": [
+              "iqx-bot-academy-activation-1"
+            ],
+            "type": "string"
+          },
+          "product_stage": {
+            "enum": [
+              "bot_v1_waiting",
+              "bot_v2_academy"
+            ],
+            "type": "string"
+          },
+          "strategy_id": {
+            "enum": [
+              "iqx_standard"
+            ],
+            "type": "string"
+          },
+          "strategy_version": {
+            "enum": [
+              1
+            ],
+            "type": "integer"
+          }
+        },
+        "required": [
+          "strategy_id",
+          "strategy_version",
+          "execution_model",
+          "initial_cash_vnd",
+          "activated_at",
+          "policy_version",
+          "product_stage"
+        ],
+        "type": "object"
+      },
+      "BotExecution": {
+        "additionalProperties": false,
+        "properties": {
+          "fee_vnd": {
+            "type": "string"
+          },
+          "gross_value_vnd": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "net_cash_delta_vnd": {
+            "type": "string"
+          },
+          "price_vnd": {
+            "type": "string"
+          },
+          "qty": {
+            "type": "integer"
+          },
+          "side": {
+            "enum": [
+              "buy",
+              "sell"
+            ],
+            "type": "string"
+          },
+          "tax_vnd": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "side",
+          "qty",
+          "price_vnd",
+          "gross_value_vnd",
+          "fee_vnd",
+          "tax_vnd",
+          "net_cash_delta_vnd"
+        ],
+        "type": "object"
+      },
       "BotIssue": {
         "additionalProperties": false,
         "properties": {
@@ -1429,6 +1716,564 @@
           "code",
           "symbol",
           "detail"
+        ],
+        "type": "object"
+      },
+      "BotJournal": {
+        "additionalProperties": false,
+        "properties": {
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/BotIssue"
+            },
+            "type": "array"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BotJournalItem"
+            },
+            "type": "array"
+          },
+          "next_cursor": {
+            "oneOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor",
+          "issues"
+        ],
+        "type": "object"
+      },
+      "BotJournalItem": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "buy",
+              "sell",
+              "hold",
+              "skip"
+            ],
+            "type": "string"
+          },
+          "condition_snapshot": {
+            "oneOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "decision_config_revision": {
+            "oneOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "execution": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/BotExecution"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "filter_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "policy_version": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "reason_code": {
+            "type": "string"
+          },
+          "run_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "source_refs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object"
+          },
+          "supporting_count": {
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "symbol": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "threshold_vnd": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "trading_date": {
+            "format": "date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "run_id",
+          "trading_date",
+          "action",
+          "reason_code",
+          "reason",
+          "execution",
+          "symbol",
+          "filter_ids",
+          "supporting_count",
+          "threshold_vnd",
+          "source_refs",
+          "policy_version",
+          "decision_config_revision",
+          "condition_snapshot",
+          "created_at"
+        ],
+        "type": "object"
+      },
+      "BotOverview": {
+        "additionalProperties": false,
+        "properties": {
+          "account": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/BotAccountSummary"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "bot": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/BotConfig"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "bot_run": {
+            "$ref": "#/components/schemas/BotRunStatus"
+          },
+          "cap6_graduated_at": {
+            "oneOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "conditions": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/BotConditions"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "current_level": {
+            "maximum": 6,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "disclosure": {
+            "type": "string"
+          },
+          "eligible": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "eligible",
+          "current_level",
+          "cap6_graduated_at",
+          "disclosure",
+          "bot",
+          "conditions",
+          "account",
+          "bot_run"
+        ],
+        "type": "object"
+      },
+      "BotPosition": {
+        "additionalProperties": false,
+        "properties": {
+          "amplitude_at_entry_vnd": {
+            "type": "string"
+          },
+          "amplitude_source_ref": {
+            "type": "string"
+          },
+          "current_close_vnd": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "entry_config_revision": {
+            "oneOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "entry_price_vnd": {
+            "type": "string"
+          },
+          "filter_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "legacy_take_profit_vnd": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "market_value_vnd": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "opened_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "opened_session": {
+            "format": "date",
+            "type": "string"
+          },
+          "qty": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "sector": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "source_refs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object"
+          },
+          "stop_loss_vnd": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "unrealized_pnl_net_vnd": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "weight_pct": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "symbol",
+          "qty",
+          "entry_price_vnd",
+          "current_close_vnd",
+          "market_value_vnd",
+          "weight_pct",
+          "amplitude_at_entry_vnd",
+          "amplitude_source_ref",
+          "stop_loss_vnd",
+          "legacy_take_profit_vnd",
+          "entry_config_revision",
+          "unrealized_pnl_net_vnd",
+          "filter_ids",
+          "opened_session",
+          "opened_at",
+          "sector",
+          "source_refs"
+        ],
+        "type": "object"
+      },
+      "BotPositions": {
+        "additionalProperties": false,
+        "properties": {
+          "as_of_session": {
+            "oneOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BotPosition"
+            },
+            "type": "array"
+          },
+          "valuation_complete": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "valuation_complete",
+          "as_of_session"
+        ],
+        "type": "object"
+      },
+      "BotRunStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/BotIssue"
+            },
+            "type": "array"
+          },
+          "last_updated_at": {
+            "oneOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "latest_run_id": {
+            "oneOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "processed_unseen_sessions": {
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "idle",
+              "running",
+              "succeeded",
+              "failed"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "latest_run_id",
+          "last_updated_at",
+          "processed_unseen_sessions",
+          "issues"
         ],
         "type": "object"
       },
@@ -23917,6 +24762,74 @@
         ],
         "type": "object"
       },
+      "TradingAccountResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "activated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "cash_available_vnd": {
+            "type": "integer"
+          },
+          "cash_pending_vnd": {
+            "type": "integer"
+          },
+          "cash_reserved_vnd": {
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "initial_cash_vnd": {
+            "type": "integer"
+          },
+          "reset_at": {
+            "oneOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "total_cash_vnd": {
+            "type": "integer"
+          },
+          "user_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "status",
+          "initial_cash_vnd",
+          "cash_available_vnd",
+          "cash_reserved_vnd",
+          "cash_pending_vnd",
+          "total_cash_vnd",
+          "activated_at",
+          "reset_at",
+          "created_at"
+        ],
+        "type": "object"
+      },
       "TradingLedgerEntry": {
         "additionalProperties": false,
         "properties": {
@@ -24015,6 +24928,253 @@
           "total",
           "page",
           "page_size"
+        ],
+        "type": "object"
+      },
+      "TradingPendingRights": {
+        "additionalProperties": false,
+        "properties": {
+          "pending_cash_dividend_vnd": {
+            "type": "integer"
+          },
+          "pending_stock_dividend_quantity": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "pending_cash_dividend_vnd",
+          "pending_stock_dividend_quantity"
+        ],
+        "type": "object"
+      },
+      "TradingPortfolioResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/TradingAccountResponse"
+          },
+          "nav_vnd": {
+            "type": "integer"
+          },
+          "pending_rights": {
+            "$ref": "#/components/schemas/TradingPendingRights"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/TradingPositionResponse"
+            },
+            "type": "array"
+          },
+          "refresh_warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "return_pct": {
+            "type": "number"
+          },
+          "total_market_value_vnd": {
+            "type": "integer"
+          },
+          "total_unrealized_pnl_vnd": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "account",
+          "positions",
+          "total_market_value_vnd",
+          "nav_vnd",
+          "total_unrealized_pnl_vnd",
+          "return_pct",
+          "refresh_warnings",
+          "pending_rights"
+        ],
+        "type": "object"
+      },
+      "TradingPositionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "active_dynamic_stop_vnd": {
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "active_original_stop_vnd": {
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "active_original_take_profit_vnd": {
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "active_plan_buy_order_id": {
+            "oneOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "avg_cost_vnd": {
+            "type": "integer"
+          },
+          "current_price_vnd": {
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "market_value_vnd": {
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          },
+          "pending_cash_dividend_vnd": {
+            "type": "integer"
+          },
+          "pending_stock_dividend_quantity": {
+            "type": "integer"
+          },
+          "quantity_pending": {
+            "type": "integer"
+          },
+          "quantity_reserved": {
+            "type": "integer"
+          },
+          "quantity_sellable": {
+            "type": "integer"
+          },
+          "quantity_total": {
+            "type": "integer"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "unrealized_pnl_vnd": {
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true,
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "symbol",
+          "quantity_total",
+          "quantity_sellable",
+          "quantity_pending",
+          "quantity_reserved",
+          "avg_cost_vnd",
+          "current_price_vnd",
+          "market_value_vnd",
+          "unrealized_pnl_vnd",
+          "active_plan_buy_order_id",
+          "active_original_stop_vnd",
+          "active_original_take_profit_vnd",
+          "active_dynamic_stop_vnd",
+          "pending_cash_dividend_vnd",
+          "pending_stock_dividend_quantity"
+        ],
+        "type": "object"
+      },
+      "TradingRefreshResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "orders_expired": {
+            "type": "integer"
+          },
+          "orders_filled": {
+            "type": "integer"
+          },
+          "rights_cash_paid": {
+            "type": "integer"
+          },
+          "rights_ex_applied": {
+            "type": "integer"
+          },
+          "rights_stock_credited": {
+            "type": "integer"
+          },
+          "settlements_settled": {
+            "type": "integer"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "orders_filled",
+          "orders_expired",
+          "settlements_settled",
+          "warnings",
+          "rights_ex_applied",
+          "rights_cash_paid",
+          "rights_stock_credited"
         ],
         "type": "object"
       },
@@ -36544,7 +37704,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Legacy_BotOverviewOut"
+                  "$ref": "#/components/schemas/BotOverview"
                 }
               }
             },
@@ -36611,7 +37771,7 @@
           "Bot"
         ],
         "x-auth-level": "authenticated",
-        "x-response-schema-status": "legacy-mapped"
+        "x-response-schema-status": "v2-declared"
       }
     },
     "/api/v1/bot/journal": {
@@ -36640,7 +37800,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Legacy_BotJournalOut"
+                  "$ref": "#/components/schemas/BotJournal"
                 }
               }
             },
@@ -36707,7 +37867,7 @@
           "Bot"
         ],
         "x-auth-level": "authenticated",
-        "x-response-schema-status": "legacy-mapped"
+        "x-response-schema-status": "v2-declared"
       }
     },
     "/api/v1/bot/mascot": {
@@ -37022,7 +38182,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Legacy_BotPositionsOut"
+                  "$ref": "#/components/schemas/BotPositions"
                 }
               }
             },
@@ -37089,7 +38249,7 @@
           "Bot"
         ],
         "x-auth-level": "authenticated",
-        "x-response-schema-status": "legacy-mapped"
+        "x-response-schema-status": "v2-declared"
       }
     },
     "/api/v1/bot/status": {
@@ -57022,7 +58182,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Legacy_PortfolioResponse"
+                  "$ref": "#/components/schemas/TradingPortfolioResponse"
                 }
               }
             },
@@ -57088,7 +58248,7 @@
           "Virtual trading"
         ],
         "x-auth-level": "authenticated",
-        "x-response-schema-status": "legacy-mapped"
+        "x-response-schema-status": "v2-declared"
       }
     },
     "/api/v1/virtual-trading/refresh": {
@@ -57100,7 +58260,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Legacy_RefreshResponse"
+                  "$ref": "#/components/schemas/TradingRefreshResponse"
                 }
               }
             },
@@ -57166,7 +58326,7 @@
           "Virtual trading"
         ],
         "x-auth-level": "authenticated",
-        "x-response-schema-status": "legacy-mapped"
+        "x-response-schema-status": "v2-declared"
       }
     },
     "/api/v1/virtual-trading/trades": {
@@ -70665,7 +71825,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Legacy_BotOverviewOut"
+                  "$ref": "#/components/schemas/BotOverview"
                 }
               }
             },
@@ -70732,7 +71892,7 @@
           "Bot"
         ],
         "x-auth-level": "authenticated",
-        "x-response-schema-status": "legacy-mapped"
+        "x-response-schema-status": "v2-declared"
       }
     },
     "/api/v2/bot/journal": {
@@ -70761,7 +71921,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Legacy_BotJournalOut"
+                  "$ref": "#/components/schemas/BotJournal"
                 }
               }
             },
@@ -70828,7 +71988,7 @@
           "Bot"
         ],
         "x-auth-level": "authenticated",
-        "x-response-schema-status": "legacy-mapped"
+        "x-response-schema-status": "v2-declared"
       }
     },
     "/api/v2/bot/mascot": {
@@ -71143,7 +72303,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Legacy_BotPositionsOut"
+                  "$ref": "#/components/schemas/BotPositions"
                 }
               }
             },
@@ -71210,7 +72370,7 @@
           "Bot"
         ],
         "x-auth-level": "authenticated",
-        "x-response-schema-status": "legacy-mapped"
+        "x-response-schema-status": "v2-declared"
       }
     },
     "/api/v2/bot/status": {
@@ -103438,7 +104598,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Legacy_PortfolioResponse"
+                  "$ref": "#/components/schemas/TradingPortfolioResponse"
                 }
               }
             },
@@ -103504,7 +104664,7 @@
           "Virtual trading"
         ],
         "x-auth-level": "authenticated",
-        "x-response-schema-status": "legacy-mapped"
+        "x-response-schema-status": "v2-declared"
       }
     },
     "/api/v2/virtual-trading/refresh": {
@@ -103516,7 +104676,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Legacy_RefreshResponse"
+                  "$ref": "#/components/schemas/TradingRefreshResponse"
                 }
               }
             },
@@ -103582,7 +104742,7 @@
           "Virtual trading"
         ],
         "x-auth-level": "authenticated",
-        "x-response-schema-status": "legacy-mapped"
+        "x-response-schema-status": "v2-declared"
       }
     },
     "/api/v2/virtual-trading/trades": {

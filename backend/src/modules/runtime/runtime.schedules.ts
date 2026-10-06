@@ -115,6 +115,13 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
       tradingDay: true,
       enabled: enabled('bot.session-eod'),
     },
+    {
+      name: 'trading.rights-sync',
+      description: 'Sync VCI corporate actions and apply demo-trading dividend rights',
+      pattern: '0 0 7 * * *',
+      tradingDay: false,
+      enabled: enabled('trading.rights-sync'),
+    },
   ];
 }
 

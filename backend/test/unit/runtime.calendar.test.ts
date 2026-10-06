@@ -14,6 +14,7 @@ function jobsWithHolidays(holidays: unknown): DomainRuntimeJobs {
     {} as never,
     {} as never,
     {} as never,
+    {} as never,
   );
 }
 

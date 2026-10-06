@@ -379,10 +379,135 @@ export type ApiErrorV2 = {
   request_id: string;
 };
 
+export type BotAccountSummary = {
+  as_of_session: string | null;
+  cash_vnd: string;
+  market_value_vnd: string | null;
+  nav_vnd: string | null;
+  pnl_total_net_vnd: string | null;
+  return_total: string | null;
+  valuation_complete: boolean;
+};
+
+export type BotConditions = {
+  buy_condition_count: number;
+  config_status: "none" | "pending" | "effective" | "calendar_unavailable";
+  effective_revision: number | null;
+  effective_session: string | null;
+  has_active_buy: boolean;
+  has_active_sell: boolean;
+  open_positions: number;
+  saved_revision: number | null;
+  sell_condition_count: number;
+  state:
+    | "waiting_for_conditions"
+    | "entry_enabled"
+    | "exit_only"
+    | "protection_only";
+};
+
+export type BotConfig = {
+  activated_at: string;
+  execution_model: "same_session_close";
+  initial_cash_vnd: string;
+  policy_version: "iqx-bot-academy-activation-1";
+  product_stage: "bot_v1_waiting" | "bot_v2_academy";
+  strategy_id: "iqx_standard";
+  strategy_version: 1;
+};
+
+export type BotExecution = {
+  fee_vnd: string;
+  gross_value_vnd: string;
+  id: string;
+  net_cash_delta_vnd: string;
+  price_vnd: string;
+  qty: number;
+  side: "buy" | "sell";
+  tax_vnd: string;
+};
+
 export type BotIssue = {
   code: string;
   detail: string | null;
   symbol: string | null;
+};
+
+export type BotJournal = {
+  issues: Array<BotIssue>;
+  items: Array<BotJournalItem>;
+  next_cursor: string | null;
+};
+
+export type BotJournalItem = {
+  action: "buy" | "sell" | "hold" | "skip";
+  condition_snapshot: {
+    [key: string]: JsonValue;
+  } | null;
+  created_at: string;
+  decision_config_revision: number | null;
+  execution: BotExecution | null;
+  filter_ids: Array<string>;
+  id: string;
+  policy_version: string | null;
+  reason: string;
+  reason_code: string;
+  run_id: string;
+  source_refs: {
+    [key: string]: JsonValue;
+  };
+  supporting_count: number | null;
+  symbol: string | null;
+  threshold_vnd: string | null;
+  trading_date: string;
+};
+
+export type BotOverview = {
+  account: BotAccountSummary | null;
+  bot: BotConfig | null;
+  bot_run: BotRunStatus;
+  cap6_graduated_at: string | null;
+  conditions: BotConditions | null;
+  current_level: number;
+  disclosure: string;
+  eligible: boolean;
+};
+
+export type BotPosition = {
+  amplitude_at_entry_vnd: string;
+  amplitude_source_ref: string;
+  current_close_vnd: string | null;
+  entry_config_revision: number | null;
+  entry_price_vnd: string;
+  filter_ids: Array<string>;
+  id: string;
+  legacy_take_profit_vnd: string | null;
+  market_value_vnd: string | null;
+  opened_at: string;
+  opened_session: string;
+  qty: number;
+  sector: string | null;
+  source_refs: {
+    [key: string]: JsonValue;
+  };
+  stop_loss_vnd: string;
+  symbol: string;
+  unrealized_pnl_net_vnd: string | null;
+  weight_pct: string | null;
+};
+
+export type BotPositions = {
+  as_of_session: string | null;
+  items: Array<BotPosition>;
+  valuation_complete: boolean;
+};
+
+export type BotRunStatus = {
+  issues: Array<BotIssue>;
+  last_updated_at: string | null;
+  latest_run_id: string | null;
+  processed_unseen_sessions: number;
+  status: "idle" | "running" | "succeeded" | "failed";
 };
 
 export type BotStatus = {
@@ -10205,6 +10330,20 @@ export type TelegramWebhookResult = {
   url: string;
 };
 
+export type TradingAccountResponse = {
+  activated_at: string;
+  cash_available_vnd: number;
+  cash_pending_vnd: number;
+  cash_reserved_vnd: number;
+  created_at: string;
+  id: string;
+  initial_cash_vnd: number;
+  reset_at: string | null;
+  status: string;
+  total_cash_vnd: number;
+  user_id: string;
+};
+
 export type TradingLedgerEntry = {
   amount_vnd: number;
   balance_after_vnd: number;
@@ -10221,6 +10360,50 @@ export type TradingLedgerPage = {
   page: number;
   page_size: number;
   total: number;
+};
+
+export type TradingPendingRights = {
+  pending_cash_dividend_vnd: number;
+  pending_stock_dividend_quantity: number;
+};
+
+export type TradingPortfolioResponse = {
+  account: TradingAccountResponse;
+  nav_vnd: number;
+  pending_rights: TradingPendingRights;
+  positions: Array<TradingPositionResponse>;
+  refresh_warnings: Array<string>;
+  return_pct: number;
+  total_market_value_vnd: number;
+  total_unrealized_pnl_vnd: number;
+};
+
+export type TradingPositionResponse = {
+  active_dynamic_stop_vnd: number | null;
+  active_original_stop_vnd: number | null;
+  active_original_take_profit_vnd: number | null;
+  active_plan_buy_order_id: string | null;
+  avg_cost_vnd: number;
+  current_price_vnd: number | null;
+  market_value_vnd: number | null;
+  pending_cash_dividend_vnd: number;
+  pending_stock_dividend_quantity: number;
+  quantity_pending: number;
+  quantity_reserved: number;
+  quantity_sellable: number;
+  quantity_total: number;
+  symbol: string;
+  unrealized_pnl_vnd: number | null;
+};
+
+export type TradingRefreshResponse = {
+  orders_expired: number;
+  orders_filled: number;
+  rights_cash_paid: number;
+  rights_ex_applied: number;
+  rights_stock_credited: number;
+  settlements_settled: number;
+  warnings: Array<string>;
 };
 
 export type WatchlistItemResponseV2 = {
@@ -15173,7 +15356,7 @@ export type GetBotOverviewGetApiV1BotError =
   GetBotOverviewGetApiV1BotErrors[keyof GetBotOverviewGetApiV1BotErrors];
 
 export type GetBotOverviewGetApiV1BotResponses = {
-  200: LegacyBotOverviewOut;
+  200: BotOverview;
 };
 
 export type GetBotOverviewGetApiV1BotResponse =
@@ -15216,7 +15399,7 @@ export type GetBotJournalGetApiV1BotJournalError =
   GetBotJournalGetApiV1BotJournalErrors[keyof GetBotJournalGetApiV1BotJournalErrors];
 
 export type GetBotJournalGetApiV1BotJournalResponses = {
-  200: LegacyBotJournalOut;
+  200: BotJournal;
 };
 
 export type GetBotJournalGetApiV1BotJournalResponse =
@@ -15390,7 +15573,7 @@ export type GetBotPositionsGetApiV1BotPositionsError =
   GetBotPositionsGetApiV1BotPositionsErrors[keyof GetBotPositionsGetApiV1BotPositionsErrors];
 
 export type GetBotPositionsGetApiV1BotPositionsResponses = {
-  200: LegacyBotPositionsOut;
+  200: BotPositions;
 };
 
 export type GetBotPositionsGetApiV1BotPositionsResponse =
@@ -24448,7 +24631,7 @@ export type TradingControllerPortfolio0Error =
   TradingControllerPortfolio0Errors[keyof TradingControllerPortfolio0Errors];
 
 export type TradingControllerPortfolio0Responses = {
-  200: LegacyPortfolioResponse;
+  200: TradingPortfolioResponse;
 };
 
 export type TradingControllerPortfolio0Response =
@@ -24488,7 +24671,7 @@ export type TradingControllerRefresh0Error =
   TradingControllerRefresh0Errors[keyof TradingControllerRefresh0Errors];
 
 export type TradingControllerRefresh0Responses = {
-  200: LegacyRefreshResponse;
+  200: TradingRefreshResponse;
 };
 
 export type TradingControllerRefresh0Response =
@@ -29885,7 +30068,7 @@ export type GetBotOverviewGetApiV2BotError =
   GetBotOverviewGetApiV2BotErrors[keyof GetBotOverviewGetApiV2BotErrors];
 
 export type GetBotOverviewGetApiV2BotResponses = {
-  200: LegacyBotOverviewOut;
+  200: BotOverview;
 };
 
 export type GetBotOverviewGetApiV2BotResponse =
@@ -29928,7 +30111,7 @@ export type GetBotJournalGetApiV2BotJournalError =
   GetBotJournalGetApiV2BotJournalErrors[keyof GetBotJournalGetApiV2BotJournalErrors];
 
 export type GetBotJournalGetApiV2BotJournalResponses = {
-  200: LegacyBotJournalOut;
+  200: BotJournal;
 };
 
 export type GetBotJournalGetApiV2BotJournalResponse =
@@ -30102,7 +30285,7 @@ export type GetBotPositionsGetApiV2BotPositionsError =
   GetBotPositionsGetApiV2BotPositionsErrors[keyof GetBotPositionsGetApiV2BotPositionsErrors];
 
 export type GetBotPositionsGetApiV2BotPositionsResponses = {
-  200: LegacyBotPositionsOut;
+  200: BotPositions;
 };
 
 export type GetBotPositionsGetApiV2BotPositionsResponse =
@@ -42315,7 +42498,7 @@ export type TradingControllerPortfolio1Error =
   TradingControllerPortfolio1Errors[keyof TradingControllerPortfolio1Errors];
 
 export type TradingControllerPortfolio1Responses = {
-  200: LegacyPortfolioResponse;
+  200: TradingPortfolioResponse;
 };
 
 export type TradingControllerPortfolio1Response =
@@ -42355,7 +42538,7 @@ export type TradingControllerRefresh1Error =
   TradingControllerRefresh1Errors[keyof TradingControllerRefresh1Errors];
 
 export type TradingControllerRefresh1Responses = {
-  200: LegacyRefreshResponse;
+  200: TradingRefreshResponse;
 };
 
 export type TradingControllerRefresh1Response =

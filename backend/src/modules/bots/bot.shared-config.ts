@@ -1,28 +1,30 @@
 import {
+  configHash,
+  evaluateRuleWithEvidence,
   loadTechnicalRegistry,
   sideSignals,
+  sideSignalsWithEvidence,
+  validateConfig,
   type Bar,
   type RegistryEntry,
   type SharedConfig,
   type Side,
+  type SideSignalsEvidence,
   type Tri,
 } from '../quant/v2/index.js';
 import {
-  BOT_RULE_HASH,
-  BOT_RULE_SNAPSHOT,
+  BOT_POLICY_HASH,
+  BOT_POLICY_SNAPSHOT,
   canonicalHash,
-  type BotRuleSnapshot,
+  type BotPolicySnapshot,
 } from './bot.domain.js';
-import type { BotMarketSnapshotInput, BotSharedConfigSignals } from './bot.types.js';
+import { LEGACY_BOT_V1_RULE_HASH, isLegacyBotV1Snapshot } from './bot.legacy.js';
+import type {
+  BotConditionSnapshot,
+  BotMarketSnapshotInput,
+  BotSharedConfigSignals,
+} from './bot.types.js';
 
-/**
- * Bot integration with the shared Buy/Sell config (BOT_SHARED_CONFIG_ENABLED).
- * The shared config only adds an entry filter and an exit reason on top of the
- * frozen Bot v1 rules; stop L1, take-profit, budget and sizing limits are untouched.
- */
-
-export const BOT_SHARED_CONFIG_SELL_REASON = 'shared_config_sell';
-/** Enough history for the longest registry lookback (index_ma 300) plus seeds. */
 export const BOT_SHARED_CONFIG_WARMUP_SESSIONS = 400;
 export const BOT_SHARED_CONFIG_MARKET_SYMBOL = 'VNINDEX';
 
@@ -32,12 +34,28 @@ export type BotSharedConfigPin = {
   effective_session: string;
 };
 
-export type BotRuleReceipt = {
-  snapshot: BotRuleSnapshot | (BotRuleSnapshot & { shared_config: BotSharedConfigPin });
-  hash: string;
+export type BotAcademyRuleSnapshot = BotPolicySnapshot & {
+  shared_config: BotSharedConfigPin | null;
+  granted_capabilities: string[];
+  data_hash: string;
 };
 
-export type BotExitReason = 'stop_loss' | 'take_profit' | typeof BOT_SHARED_CONFIG_SELL_REASON;
+export type BotRuleReceipt = {
+  snapshot: BotAcademyRuleSnapshot;
+  hash: string;
+  policyVersion: typeof BOT_POLICY_SNAPSHOT.policy_version;
+};
+
+export type BotReceiptVerification = {
+  valid: boolean;
+  pin: BotSharedConfigPin | null;
+  kind: 'academy' | 'legacy-v1' | null;
+  policyVersion: typeof BOT_POLICY_SNAPSHOT.policy_version | null;
+  grantedCapabilities: string[];
+  dataHash: string | null;
+};
+
+export type BotExitReason = 'stop_loss' | 'academy_sell';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -48,54 +66,118 @@ const HASH = /^[0-9a-f]{64}$/;
 
 export function parseSharedConfigPin(value: unknown): BotSharedConfigPin | null {
   if (!isRecord(value)) return null;
-  const { revision, config_hash: configHash, effective_session: session } = value;
+  const { revision, config_hash: configHashValue, effective_session: session } = value;
   if (typeof revision !== 'number' || !Number.isSafeInteger(revision) || revision < 1) return null;
-  if (typeof configHash !== 'string' || !HASH.test(configHash)) return null;
+  if (typeof configHashValue !== 'string' || !HASH.test(configHashValue)) return null;
   if (typeof session !== 'string' || !DATE.test(session)) return null;
-  return { revision, config_hash: configHash, effective_session: session };
+  return { revision, config_hash: configHashValue, effective_session: session };
 }
 
-/**
- * Rule snapshot + hash stored on the run receipt. Without a pin this is exactly
- * the frozen Bot v1 snapshot/hash, so flag-off receipts stay byte-identical.
- */
-export function botRuleReceipt(pin: BotSharedConfigPin | null): BotRuleReceipt {
-  if (!pin) return { snapshot: BOT_RULE_SNAPSHOT, hash: BOT_RULE_HASH };
-  const snapshot = {
-    ...BOT_RULE_SNAPSHOT,
-    shared_config: {
-      revision: pin.revision,
-      config_hash: pin.config_hash,
-      effective_session: pin.effective_session,
-    },
+function normalizedCapabilities(values: readonly string[]): string[] {
+  return [...new Set(values.filter((value) => value.length > 0))].sort();
+}
+
+export function botRuleReceipt(
+  pin: BotSharedConfigPin | null,
+  grantedCapabilities: readonly string[],
+  dataHash: string,
+): BotRuleReceipt {
+  if (!HASH.test(dataHash)) throw new Error('Bot receipt data hash must be a SHA-256 hex value');
+  if (pin !== null && parseSharedConfigPin(pin) === null) {
+    throw new Error('Bot receipt shared-config pin is invalid');
+  }
+  const snapshot: BotAcademyRuleSnapshot = {
+    ...BOT_POLICY_SNAPSHOT,
+    shared_config: pin,
+    granted_capabilities: normalizedCapabilities(grantedCapabilities),
+    data_hash: dataHash,
   };
-  return { snapshot, hash: canonicalHash(snapshot) };
+  return {
+    snapshot,
+    hash: canonicalHash(snapshot),
+    policyVersion: BOT_POLICY_SNAPSHOT.policy_version,
+  };
 }
 
-/**
- * A receipt is supported when its v1 part hashes to BOT_RULE_HASH and, if a shared
- * config is pinned, the stored rule hash covers that pin.
- */
+const invalidReceipt = (): BotReceiptVerification => ({
+  valid: false,
+  pin: null,
+  kind: null,
+  policyVersion: null,
+  grantedCapabilities: [],
+  dataHash: null,
+});
+
+/** Verify immutable Academy receipts and the frozen V1 historical format. */
 export function verifyRuleReceipt(
   ruleSnapshot: unknown,
   ruleHash: string | null,
-): { valid: boolean; pin: BotSharedConfigPin | null } {
-  if (!isRecord(ruleSnapshot) || !('shared_config' in ruleSnapshot)) {
+): BotReceiptVerification {
+  if (!isRecord(ruleSnapshot) || typeof ruleHash !== 'string') return invalidReceipt();
+
+  if (ruleSnapshot.policy_version === BOT_POLICY_SNAPSHOT.policy_version) {
+    const {
+      shared_config: rawPin,
+      granted_capabilities: rawCapabilities,
+      data_hash: dataHash,
+      ...policy
+    } = ruleSnapshot;
+    const pin = rawPin === null ? null : parseSharedConfigPin(rawPin);
+    if (rawPin !== null && pin === null) return invalidReceipt();
+    if (
+      !Array.isArray(rawCapabilities) ||
+      !rawCapabilities.every((item) => typeof item === 'string')
+    ) {
+      return invalidReceipt();
+    }
+    const capabilities = rawCapabilities as string[];
+    if (
+      canonicalHash(policy) !== BOT_POLICY_HASH ||
+      canonicalHash(ruleSnapshot) !== ruleHash ||
+      typeof dataHash !== 'string' ||
+      !HASH.test(dataHash) ||
+      JSON.stringify(capabilities) !== JSON.stringify(normalizedCapabilities(capabilities))
+    ) {
+      return invalidReceipt();
+    }
     return {
-      valid: ruleHash === BOT_RULE_HASH && canonicalHash(ruleSnapshot) === BOT_RULE_HASH,
-      pin: null,
+      valid: true,
+      pin,
+      kind: 'academy',
+      policyVersion: BOT_POLICY_SNAPSHOT.policy_version,
+      grantedCapabilities: [...capabilities],
+      dataHash,
     };
   }
-  const { shared_config: raw, ...base } = ruleSnapshot;
-  const pin = parseSharedConfigPin(raw);
-  const valid =
-    pin !== null &&
-    canonicalHash(base) === BOT_RULE_HASH &&
-    ruleHash === canonicalHash(ruleSnapshot);
-  return { valid, pin: valid ? pin : null };
+
+  if (!('shared_config' in ruleSnapshot)) {
+    return isLegacyBotV1Snapshot(ruleSnapshot) && ruleHash === LEGACY_BOT_V1_RULE_HASH
+      ? {
+          valid: true,
+          pin: null,
+          kind: 'legacy-v1',
+          policyVersion: null,
+          grantedCapabilities: [],
+          dataHash: null,
+        }
+      : invalidReceipt();
+  }
+  const { shared_config: rawPin, ...base } = ruleSnapshot;
+  const pin = parseSharedConfigPin(rawPin);
+  if (!pin || !isLegacyBotV1Snapshot(base) || canonicalHash(ruleSnapshot) !== ruleHash) {
+    return invalidReceipt();
+  }
+  return {
+    valid: true,
+    pin,
+    kind: 'legacy-v1',
+    policyVersion: null,
+    grantedCapabilities: [],
+    dataHash: null,
+  };
 }
 
-/** Registry indicators whose master and `side` switches are both ON (same rule as `sideSignals`). */
+/** Registry indicators whose master and `side` switches are both ON. */
 export function activeSideIndicators(
   config: SharedConfig,
   side: Side,
@@ -107,7 +189,31 @@ export function activeSideIndicators(
   });
 }
 
-/** Whether any active indicator needs VN-Index/context fields on the bars. */
+export type PinnedSharedConfigValidation =
+  | { valid: true; buyActiveIds: string[]; sellActiveIds: string[] }
+  | { valid: false; errors: string[] };
+
+/** Validate authorization, schema/rules and hash/revision before forming active sets. */
+export function validatePinnedSharedConfig(
+  config: SharedConfig,
+  pin: BotSharedConfigPin,
+  grantedCapabilities: readonly string[],
+  registry: readonly RegistryEntry[] = loadTechnicalRegistry(),
+): PinnedSharedConfigValidation {
+  const errors = validateConfig(config, registry, grantedCapabilities).map(
+    (error) => `${error.path}: ${error.message}`,
+  );
+  if (config.revision !== pin.revision)
+    errors.push('revision: pinned revision does not match config');
+  if (configHash(config) !== pin.config_hash) errors.push('config_hash: pinned hash drift');
+  if (errors.length) return { valid: false, errors };
+  return {
+    valid: true,
+    buyActiveIds: activeSideIndicators(config, 'buy', registry).map((entry) => entry.id),
+    sellActiveIds: activeSideIndicators(config, 'sell', registry).map((entry) => entry.id),
+  };
+}
+
 export function needsMarketContext(
   config: SharedConfig,
   registry: readonly RegistryEntry[] = loadTechnicalRegistry(),
@@ -118,10 +224,6 @@ export function needsMarketContext(
   ].some((entry) => entry.availability === 'needs_history_context');
 }
 
-/**
- * Side signal on the session's own completed bar. A history that does not end on
- * `session` is missing data (null), never a stale signal.
- */
 export function sessionSideSignal(
   config: SharedConfig,
   bars: readonly Bar[] | null,
@@ -133,7 +235,54 @@ export function sessionSideSignal(
   return sideSignals(config, bars, side, registry).at(-1) ?? null;
 }
 
-/** Symbols the Bot may evaluate for entry: every snapshot row that came from a V1 filter. */
+export function sessionSideSignalWithEvidence(
+  config: SharedConfig,
+  bars: readonly Bar[] | null,
+  side: Side,
+  session: string,
+  registry: readonly RegistryEntry[] = loadTechnicalRegistry(),
+): SideSignalsEvidence {
+  if (!bars?.length || bars.at(-1)?.date !== session) {
+    return missingSideSignalEvidence(config, side, registry);
+  }
+  return sideSignalsWithEvidence(config, bars, side, registry).at(-1)!;
+}
+
+/** Evidence for an active side when the intended session bar is unavailable. */
+export function missingSideSignalEvidence(
+  config: SharedConfig,
+  side: Side,
+  registry: readonly RegistryEntry[] = loadTechnicalRegistry(),
+): SideSignalsEvidence {
+  const active = activeSideIndicators(config, side, registry);
+  if (!active.length) return { result: false, active_indicator_ids: [], rules: [] };
+  return {
+    result: null,
+    active_indicator_ids: active.map((entry) => entry.id),
+    rules: active.flatMap((entry) => {
+      const sideConfig = config.indicators[entry.id]![side];
+      return sideConfig.rules.map((rule) => ({
+        id: rule.id,
+        indicator: entry.id,
+        side,
+        op: rule.op,
+        ...evaluateRuleWithEvidence(rule, {}, sideConfig.params, 0),
+      }));
+    }),
+  };
+}
+
+export function conditionSnapshot(
+  buy: SideSignalsEvidence,
+  sell: SideSignalsEvidence,
+): BotConditionSnapshot {
+  return {
+    buy_active_ids: [...buy.active_indicator_ids].sort(),
+    sell_active_ids: [...sell.active_indicator_ids].sort(),
+    rules: [...buy.rules, ...sell.rules],
+  };
+}
+
 export function sharedConfigBuySymbols(input: BotMarketSnapshotInput): string[] {
   const symbols = Object.entries(input.symbols)
     .filter(([, row]) => Boolean(row.filter_ids?.length))
@@ -149,7 +298,6 @@ function signalMap(value: unknown): Record<string, boolean | null> | null {
   return Object.fromEntries(entries) as Record<string, boolean | null>;
 }
 
-/** Frozen signals of a snapshot, accepted only when they belong to the receipt's pin. */
 export function parseSharedConfigSignals(
   value: unknown,
   pin: BotSharedConfigPin,
@@ -171,27 +319,22 @@ export function parseSharedConfigSignals(
   return value as BotSharedConfigSignals;
 }
 
-/**
- * Additional entry filter. Inactive Buy side → null (Bot v1 entry unchanged);
- * otherwise only a `true` signal lets the candidate through.
- */
 export function sharedConfigBuyBlock(
   signals: BotSharedConfigSignals | null,
   symbol: string,
-): 'shared_config_buy_false' | 'shared_config_buy_missing' | null {
-  if (!signals?.buy_active) return null;
+): 'no_active_buy_conditions' | 'academy_buy_not_met' | 'academy_condition_missing' | null {
+  if (!signals?.buy_active) return 'no_active_buy_conditions';
   const signal = signals.buy[symbol];
   if (signal === true) return null;
-  return signal === false ? 'shared_config_buy_false' : 'shared_config_buy_missing';
+  return signal === false ? 'academy_buy_not_met' : 'academy_condition_missing';
 }
 
-/** Stop L1 / take-profit always win; the shared Sell signal is evaluated after them. */
 export function sharedConfigExitReason(
-  v1Signal: 'stop_loss' | 'take_profit' | null,
+  stopSignal: 'stop_loss' | null,
   signals: BotSharedConfigSignals | null,
   symbol: string,
 ): BotExitReason | null {
-  if (v1Signal) return v1Signal;
+  if (stopSignal) return stopSignal;
   if (!signals?.sell_active) return null;
-  return signals.sell[symbol] === true ? BOT_SHARED_CONFIG_SELL_REASON : null;
+  return signals.sell[symbol] === true ? 'academy_sell' : null;
 }

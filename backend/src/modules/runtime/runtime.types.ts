@@ -12,6 +12,7 @@ export const RUNTIME_JOB_NAMES = [
   'journey.cap5-consensus',
   'journey.identity-recovery',
   'bot.session-eod',
+  'trading.rights-sync',
   'market.snapshot-wave-1',
   'market.snapshot-wave-2',
   'market.snapshot-wave-3',

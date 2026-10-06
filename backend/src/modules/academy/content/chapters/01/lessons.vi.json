@@ -234,7 +234,7 @@
       },
       {
         "title": "AND, dữ liệu và thời điểm",
-        "html": "<div class=\"formula\">Mua đủ tín hiệu = mọi điều kiện Mua đang có hiệu lực đều đúng<br/>Bán đủ tín hiệu = có ít nhất một điều kiện Bán và mọi điều kiện Bán đều đúng</div><p>Điều kiện được tính mới tại từng phiên từ dữ liệu đã có. Nếu RSI chỉ đúng ngày thứ hai còn MACD chỉ đúng ngày thứ ba, không ghép thành một tín hiệu ở ngày thứ ba. Thiếu dữ liệu không phải bằng 0 và không tạo điều kiện đúng khi đảo dấu.</p><p>Backtest một mã yêu cầu ít nhất một điều kiện Mua. Không có điều kiện Bán nghĩa là không có thoát theo chỉ báo. Không được dùng all([]) để tự bán. Bot có luồng mua nền V1 và cắt lỗ riêng; Backtest chỉ kiểm thử chỉ báo không tự mô phỏng nền V1.</p>"
+        "html": "<div class=\"formula\">Mua đủ tín hiệu = mọi điều kiện Mua đang có hiệu lực đều đúng<br/>Bán đủ tín hiệu = có ít nhất một điều kiện Bán và mọi điều kiện Bán đều đúng</div><p>Điều kiện được tính mới tại từng phiên từ dữ liệu đã có. Nếu RSI chỉ đúng ngày thứ hai còn MACD chỉ đúng ngày thứ ba, không ghép thành một tín hiệu ở ngày thứ ba. Thiếu dữ liệu không phải bằng 0 và không tạo điều kiện đúng khi đảo dấu.</p><p>Backtest một mã yêu cầu ít nhất một điều kiện Mua. Không có điều kiện Bán nghĩa là không có thoát theo chỉ báo. Không được dùng all([]) để tự bán. Bot mua theo cấu hình Mua/Bán đã lưu trong Học viện và cắt lỗ riêng; Backtest chỉ kiểm thử chỉ báo đang cấu hình, không tự mô phỏng Bot.</p>"
       },
       {
         "title": "Ví dụ đối chiếu",

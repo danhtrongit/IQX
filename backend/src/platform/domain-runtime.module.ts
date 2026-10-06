@@ -18,6 +18,8 @@ import {
   MarketIntegrationModule,
 } from '../modules/market-integration/index.js';
 import { ReportsModule, MarketReportsService } from '../modules/reports/index.js';
+import { TradingModule } from '../modules/trading/trading.module.js';
+import { TradingRightsService } from '../modules/trading/rights.service.js';
 import {
   RuntimeModule,
   type JobOutcome,
@@ -80,6 +82,7 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     private readonly bot: BotService,
     private readonly extended: MarketExtendedService,
     private readonly marketInput: MarketInputSnapshotService,
+    private readonly rights: TradingRightsService,
   ) {}
 
   handlers(): RuntimeJobHandlers {
@@ -113,6 +116,7 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
       'journey.identity-recovery': async () => this.identityRecovery(),
       'bot.session-eod': async ({ scheduledFor }) =>
         this.complete(await this.bot.runScheduledSession(ictDate(scheduledFor))),
+      'trading.rights-sync': async () => this.complete(await this.rights.syncAndApply(new Date())),
       'market.snapshot-wave-1': async ({ scheduledFor }) =>
         this.snapshotWave(1, ictDate(scheduledFor)),
       'market.snapshot-wave-2': async ({ scheduledFor }) =>
@@ -484,6 +488,7 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     BotsModule,
     MarketExtendedModule,
     MarketIntegrationModule,
+    TradingModule,
   ],
   providers: [DomainRuntimeJobs],
   exports: [DomainRuntimeJobs],

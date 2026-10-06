@@ -180,8 +180,13 @@ async function seed(databaseUrl: string): Promise<void> {
   );
 }
 
+export interface StartSystemStackOptions {
+  overrideProviders?: ReadonlyArray<{ token: unknown; value: unknown }>;
+}
+
 export async function startSystemStack(
   extraEnvironment: Record<string, string> = {},
+  options: StartSystemStackOptions = {},
 ): Promise<SystemStack> {
   const hasExternalDatabase = Boolean(process.env.TEST_DATABASE_URL);
   const hasExternalRedis = Boolean(process.env.TEST_REDIS_URL);
@@ -270,10 +275,13 @@ export async function startSystemStack(
         source: 'isolated-system-fixture',
       };
     };
-    const module = await Test.createTestingModule({ imports: [createApiModule(environment)] })
+    const builder = Test.createTestingModule({ imports: [createApiModule(environment)] })
       .overrideProvider(MarketDataService)
-      .useValue(market)
-      .compile();
+      .useValue(market);
+    for (const override of options.overrideProviders ?? []) {
+      builder.overrideProvider(override.token).useValue(override.value);
+    }
+    const module = await builder.compile();
     const app = module.createNestApplication<NestFastifyApplication>(createHttpAdapter(), {
       logger: false,
     });

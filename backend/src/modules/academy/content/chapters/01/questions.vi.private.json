@@ -1319,11 +1319,11 @@
     "question": "Backtest một mã không có điều kiện Mua. Cách xử lý đúng?",
     "options": [
       {
-        "text": "Giả lập nền V1 dù không có dữ liệu tương ứng.",
+        "text": "Giả lập cấu hình Bot dù không có dữ liệu tương ứng.",
         "id": "o1"
       },
       {
-        "text": "Báo cấu hình chưa đủ, không tự gọi bộ lọc Bot V1.",
+        "text": "Báo cấu hình chưa đủ, không tự gọi cấu hình Bot.",
         "id": "o2"
       },
       {

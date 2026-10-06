@@ -49,7 +49,37 @@ export type MembershipRule = {
 };
 export type Rule = CompareRule | MembershipRule;
 
+export type ResolvedValue = number | null;
+export type ResolvedRuleRhs = ResolvedValue;
+
+export type RuleEvaluationEvidence = {
+  lhs: ResolvedValue;
+  rhs: ResolvedRuleRhs;
+  /** Membership rules retain both resolved interval bounds additively. */
+  rhs_lower?: ResolvedValue;
+  rhs_upper?: ResolvedValue;
+  result: Tri;
+  /** A required operand for this evaluation was absent or non-finite. */
+  missing: boolean;
+  /** Cross rules additionally depend on the previous bar's resolved operands. */
+  previous_lhs?: ResolvedValue;
+  previous_rhs?: ResolvedValue;
+};
+
 export type Side = 'buy' | 'sell';
+
+export type TracedRuleEvaluation = RuleEvaluationEvidence & {
+  id: string;
+  indicator: string;
+  side: Side;
+  op: RuleOp;
+};
+
+export type SideSignalsEvidence = {
+  result: Tri;
+  active_indicator_ids: string[];
+  rules: TracedRuleEvaluation[];
+};
 
 export type SideConfig = {
   enabled: boolean;

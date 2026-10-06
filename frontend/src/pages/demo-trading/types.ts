@@ -26,6 +26,13 @@ export type TradingPosition = {
   active_original_stop_vnd: number | null
   active_original_take_profit_vnd: number | null
   active_dynamic_stop_vnd: number | null
+  pending_cash_dividend_vnd?: number
+  pending_stock_dividend_quantity?: number
+}
+
+export type TradingPendingRights = {
+  pending_cash_dividend_vnd: number
+  pending_stock_dividend_quantity: number
 }
 
 export type TradingPortfolio = {
@@ -36,6 +43,7 @@ export type TradingPortfolio = {
   total_unrealized_pnl_vnd: number
   return_pct: number
   refresh_warnings: string[]
+  pending_rights?: TradingPendingRights
 }
 
 export type TradingOrder = {

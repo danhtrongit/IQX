@@ -523,6 +523,44 @@ describe('StrategyBacktestsService', () => {
     expect([...reader.accessed]).toEqual(['getRevision']);
   });
 
+  it('F08 reads only the pinned shared revision and writes no bot/shared-config rows', async () => {
+    const svc = service();
+    const run = await svc.create(OWNER, body());
+
+    // The run is pinned to the requested revision and reads only `getRevision`.
+    expect(run.snapshot?.shared_revision).toBe(3);
+    expect(reader.getRevision).toHaveBeenCalledWith(OWNER, 3);
+    expect([...reader.accessed]).toEqual(['getRevision']);
+
+    // The frozen CLEAN_TECH_2.0 profile (no stop, next-open) lives only in the snapshot.
+    expect(run.snapshot?.profile).toEqual(CLEAN_TECH_2_0);
+    expect(run.snapshot?.profile.stop_loss).toBe('none');
+    expect(run.snapshot?.execution).toBe('next_open');
+
+    // The only persistence surface is the backtest store; there is no bot/shared-config writer.
+    const surface = Object.getOwnPropertyNames(Object.getPrototypeOf(store));
+    expect(surface.filter((name) => /bot|capital|shared|revision/i.test(name))).toEqual([]);
+    expect(store.rows).toHaveLength(1);
+
+    // A parameter sweep stays isolated too: it only reads the pinned revision.
+    allowlist = ['sensitivity'];
+    grants = new Set(['lesson:ch02-l14']);
+    const sweep = await service().create(
+      OWNER,
+      body({
+        idempotency_key: 'run-key-0002',
+        research: {
+          kind: 'sensitivity',
+          path: { indicator: 'ma', side: 'buy', key: 'period' },
+          values: [10, 20],
+        },
+      }),
+    );
+    expect(sweep.research_result?.type).toBe('sensitivity');
+    expect([...reader.accessed]).toEqual(['getRevision']);
+    expect(store.rows).toHaveLength(2);
+  });
+
   it('runs a portfolio system over the explicit symbols and reports missing ones', async () => {
     allowlist = ['portfolio', 'sizing_pct_nav', 'max_positions'];
     grants = new Set(['lesson:ch18-l01', 'lesson:ch17-l01', 'lesson:ch17-l03']);
@@ -551,7 +589,7 @@ describe('StrategyBacktestsService', () => {
     expect(store.rows[0]?.data_hash).toBe(run.snapshot?.system?.data_hash);
   });
 
-  it('refuses a universe run instead of back-filling the past with today\'s members', async () => {
+  it("refuses a universe run instead of back-filling the past with today's members", async () => {
     allowlist = ['universe', 'portfolio'];
     grants = new Set(['lesson:ch16-l01', 'lesson:ch18-l01']);
     for (const universe of [{ market: 'HOSE' as const }, { list_id: randomUUID() }]) {

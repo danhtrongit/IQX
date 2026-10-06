@@ -39,6 +39,7 @@ describe('daily report retry cutoff', () => {
       {} as never,
       {} as never,
       { capture } as never,
+      {} as never,
     );
     const handlers = jobs.handlers();
     await expect(
@@ -76,6 +77,7 @@ describe('journey.identity-recovery', () => {
     );
     const jobs = new DomainRuntimeJobs(
       { query } as never,
+      {} as never,
       {} as never,
       {} as never,
       {} as never,

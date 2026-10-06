@@ -7,6 +7,10 @@ import { TradingController } from './trading.controller.js';
 import { SymbolsTradingMarketPort, TradingMarketPort } from './trading.ports.js';
 import { TradingRepository } from './trading.repository.js';
 import { TradingService } from './trading.service.js';
+import { TradingRightsEventsPort } from './rights.ports.js';
+import { VciTradingRightsEventsPort } from './rights-vci.adapter.js';
+import { TradingRightsRepository } from './rights.repository.js';
+import { TradingRightsService } from './rights.service.js';
 
 @Module({
   imports: [DatabaseModule, MarketDataModule, BillingModule],
@@ -16,7 +20,17 @@ import { TradingService } from './trading.service.js';
     SymbolsTradingMarketPort,
     { provide: TradingMarketPort, useExisting: SymbolsTradingMarketPort },
     TradingService,
+    TradingRightsRepository,
+    VciTradingRightsEventsPort,
+    { provide: TradingRightsEventsPort, useExisting: VciTradingRightsEventsPort },
+    TradingRightsService,
   ],
-  exports: [TradingService, TradingRepository, TradingMarketPort],
+  exports: [
+    TradingService,
+    TradingRepository,
+    TradingMarketPort,
+    TradingRightsService,
+    TradingRightsEventsPort,
+  ],
 })
 export class TradingModule {}

@@ -1,35 +1,52 @@
 import { createHash } from 'node:crypto';
 
-import type { BotLayerEvidence, BotMarketSnapshotInput, BotSnapshotSymbol } from './bot.types.js';
+import type { BotMarketSnapshotInput, BotSnapshotSymbol } from './bot.types.js';
 
-export const BOT_LAYER_KEYS = ['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc'] as const;
+const BOT_CANDIDATE_SOURCE = Object.freeze([
+  'khoi_ngoai_gom',
+  'tu_doanh_gom',
+  'kl_dot_bien',
+  'vuot_dinh_20',
+  'tang_manh_kl',
+] as const);
+const BOT_CANDIDATE_SORT = Object.freeze([
+  'filter_count desc',
+  'trading_value_avg20_vnd desc',
+  'symbol asc',
+] as const);
+const BOT_PROTECTIVE_STOP = Object.freeze({
+  basis: 'close',
+  l1_multiplier: 2,
+  action: 'sell_all',
+} as const);
 
-export const BOT_RULES = Object.freeze({
-  strategy_id: 'iqx_standard',
-  strategy_version: 1,
+export const BOT_POLICY = Object.freeze({
+  policy_version: 'iqx-bot-academy-activation-1',
   execution_model: 'same_session_close',
-  initial_cash_vnd: 100_000_000n,
-  min_supporting_layers: 3,
+  initial_cash_vnd: 100_000_000,
+  require_active_buy_conditions: true,
+  empty_buy_gate: false,
+  empty_sell_gate: false,
+  require_five_ai_layers: false,
+  ai_support_threshold_enabled: false,
+  ai_news_insider_veto_enabled: false,
+  candidate_source: BOT_CANDIDATE_SOURCE,
   max_results_per_filter: 10,
   max_unique_candidates: 50,
+  candidate_sort: BOT_CANDIDATE_SORT,
   max_new_buys_per_session: 2,
-  buy_budget_nav_pct: 12,
-  buy_budget_includes_fee: true,
-  max_symbol_nav_pct: 30,
-  stop_loss_l1_multiplier: 2,
-  take_profit_l1_multiplier: 4,
+  buy_budget_nav_ratio: '0.12',
+  max_symbol_nav_ratio: '0.30',
   allow_add_to_open_symbol: false,
   allow_rebuy_same_session: false,
-});
+  protective_stop: BOT_PROTECTIVE_STOP,
+  fixed_take_profit_enabled: false,
+  implicit_max_holding_enabled: false,
+  implicit_trailing_enabled: false,
+} as const);
 
-export type BotRuleSnapshot = Omit<typeof BOT_RULES, 'initial_cash_vnd'> & {
-  initial_cash_vnd: number;
-};
-
-export const BOT_RULE_SNAPSHOT: BotRuleSnapshot = Object.freeze({
-  ...BOT_RULES,
-  initial_cash_vnd: Number(BOT_RULES.initial_cash_vnd),
-});
+export type BotPolicySnapshot = typeof BOT_POLICY;
+export const BOT_POLICY_SNAPSHOT: BotPolicySnapshot = BOT_POLICY;
 
 function canonicalize(value: unknown): unknown {
   if (typeof value === 'bigint') return value.toString();
@@ -51,7 +68,38 @@ export function canonicalHash(value: unknown): string {
     .digest('hex');
 }
 
-export const BOT_RULE_HASH = canonicalHash(BOT_RULE_SNAPSHOT);
+export const BOT_POLICY_HASH = canonicalHash(BOT_POLICY_SNAPSHOT);
+
+export const BOT_DECISION_REASON_CODES = [
+  'waiting_for_academy_conditions',
+  'no_active_buy_conditions',
+  'academy_buy_not_met',
+  'academy_condition_missing',
+  'config_invalid_or_unauthorized',
+  'academy_buy',
+  'academy_sell',
+  'academy_sell_not_met',
+  'stop_loss',
+  'no_active_sell_conditions',
+  'invalid_or_missing_l1_amplitude',
+  'invalid_close',
+  'missing_stop',
+  'ledger_error',
+  'already_holding',
+  'rebuy_same_session_blocked',
+  'insufficient_cash_or_lot',
+  'symbol_limit',
+  'session_buy_limit',
+  'security_status_blocked',
+  'missing_security_status',
+  'buy_inputs_incomplete',
+  'no_eligible_candidates',
+  'valuation_incomplete',
+  'source_error',
+  'reconciliation_failed',
+] as const;
+
+export type BotDecisionReasonCode = (typeof BOT_DECISION_REASON_CODES)[number];
 
 export function parseInteger(value: string | number | bigint, name = 'integer'): bigint {
   if (typeof value === 'bigint') return value;
@@ -95,7 +143,6 @@ export type Candidate = {
   closeVnd: bigint;
   tradingValueAvg20Vnd: bigint;
   filterIds: string[];
-  layers: Record<string, BotLayerEvidence>;
   amplitude4: bigint | null;
   amplitudeSourceRef: string | null;
   sourceRefs: Record<string, unknown>;
@@ -111,7 +158,6 @@ export function candidateFromSnapshot(symbol: string, row: BotSnapshotSymbol): C
       closeVnd,
       tradingValueAvg20Vnd: avg20,
       filterIds: [...new Set(row.filter_ids ?? [])].sort(),
-      layers: row.layers ?? {},
       amplitude4: parseDecimal4(row.l1_amplitude_vnd),
       amplitudeSourceRef: row.l1_amplitude_source_ref?.trim() || null,
       sourceRefs: row.source_refs ?? {},
@@ -121,83 +167,49 @@ export function candidateFromSnapshot(symbol: string, row: BotSnapshotSymbol): C
   }
 }
 
-export function supportingCount(candidate: Candidate): number {
-  return BOT_LAYER_KEYS.filter((key) => candidate.layers[key]?.verdict === 'ok').length;
-}
-
-export function candidateGate(candidate: Candidate): {
-  allowed: boolean;
-  reasonCode: string;
-  missingLayers: string[];
-} {
-  const missingLayers = BOT_LAYER_KEYS.filter((key) => !candidate.layers[key]);
-  if (missingLayers.length) return { allowed: false, reasonCode: 'missing_layers', missingLayers };
-  for (const key of ['tin_tuc', 'noi_bo'] as const) {
-    const layer = candidate.layers[key]!;
-    if (layer.is_very_negative === null) {
-      return { allowed: false, reasonCode: 'missing_veto_severity', missingLayers: [] };
-    }
-    if (layer.is_very_negative) {
-      return { allowed: false, reasonCode: 'veto_very_negative', missingLayers: [] };
-    }
-  }
-  if (supportingCount(candidate) < BOT_RULES.min_supporting_layers) {
-    return { allowed: false, reasonCode: 'below_support_gate', missingLayers: [] };
-  }
-  return { allowed: true, reasonCode: 'eligible', missingLayers: [] };
-}
-
-export function candidateRank(candidate: Candidate): [number, number, bigint, string] {
-  return [
-    -supportingCount(candidate),
-    -candidate.filterIds.length,
-    -candidate.tradingValueAvg20Vnd,
-    candidate.symbol,
-  ];
+export function candidateRank(candidate: Candidate): [number, bigint, string] {
+  return [-candidate.filterIds.length, -candidate.tradingValueAvg20Vnd, candidate.symbol];
 }
 
 function compareRank(left: Candidate, right: Candidate): number {
   const a = candidateRank(left);
   const b = candidateRank(right);
   if (a[0] !== b[0]) return a[0] - b[0];
-  if (a[1] !== b[1]) return a[1] - b[1];
-  if (a[2] !== b[2]) return a[2] < b[2] ? -1 : 1;
-  return a[3].localeCompare(b[3]);
+  if (a[1] !== b[1]) return a[1] < b[1] ? -1 : 1;
+  return a[2].localeCompare(b[2]);
 }
 
 export function rankCandidates(rows: readonly Candidate[]): Candidate[] {
   const unique = new Map<string, Candidate>();
   for (const row of rows) {
     if (!row.symbol) continue;
-    const previous = unique.get(row.symbol);
-    if (!previous || compareRank(row, previous) < 0) unique.set(row.symbol, row);
+    const symbol = row.symbol.trim().toUpperCase();
+    const previous = unique.get(symbol);
+    if (!previous) {
+      unique.set(symbol, { ...row, symbol, filterIds: [...new Set(row.filterIds)].sort() });
+      continue;
+    }
+    const filterIds = [...new Set([...previous.filterIds, ...row.filterIds])].sort();
+    const richer = row.tradingValueAvg20Vnd > previous.tradingValueAvg20Vnd ? row : previous;
+    unique.set(symbol, { ...richer, symbol, filterIds });
   }
-  const capped = [...unique.values()]
-    .sort((left, right) => left.symbol.localeCompare(right.symbol))
-    .slice(0, BOT_RULES.max_unique_candidates);
-  return capped.filter((candidate) => candidateGate(candidate).allowed).sort(compareRank);
+  return [...unique.values()].sort(compareRank).slice(0, BOT_POLICY.max_unique_candidates);
 }
 
-export function computeExitThresholds(
+export function computeProtectiveStop(
   entryPriceVnd: bigint,
   amplitude4: bigint | null,
-): { stop4: bigint; take4: bigint } | null {
+): { stop4: bigint } | null {
   if (entryPriceVnd <= 0n || amplitude4 === null || amplitude4 <= 0n) return null;
   const entry4 = entryPriceVnd * 10_000n;
-  const stop4 = entry4 - BigInt(BOT_RULES.stop_loss_l1_multiplier) * amplitude4;
-  const take4 = entry4 + BigInt(BOT_RULES.take_profit_l1_multiplier) * amplitude4;
-  return stop4 > 0n && stop4 < entry4 && take4 > entry4 ? { stop4, take4 } : null;
+  const stop4 = entry4 - BigInt(BOT_POLICY.protective_stop.l1_multiplier) * amplitude4;
+  return stop4 > 0n && stop4 < entry4 ? { stop4 } : null;
 }
 
-export function exitSignal(
-  closeVnd: bigint | null,
-  stop4: bigint,
-  take4: bigint,
-): 'stop_loss' | 'take_profit' | null {
+export function stopLossSignal(closeVnd: bigint | null, stop4: bigint): 'stop_loss' | null {
   if (closeVnd === null || closeVnd <= 0n) return null;
   const close4 = closeVnd * 10_000n;
   if (close4 <= stop4) return 'stop_loss';
-  if (close4 >= take4) return 'take_profit';
   return null;
 }
 
@@ -238,7 +250,7 @@ export type SizingResult = {
   grossVnd: bigint;
   feeVnd: bigint;
   totalVnd: bigint;
-  reasonCode: string | null;
+  reasonCode: 'insufficient_cash_or_lot' | 'symbol_limit' | null;
 };
 
 export function computeBuyQuantity(options: {
@@ -258,12 +270,19 @@ export function computeBuyQuantity(options: {
     feeRules,
   } = options;
   if (navBasisVnd <= 0n || cashAvailableVnd <= 0n || priceVnd <= 0n) {
-    return { quantity: 0, grossVnd: 0n, feeVnd: 0n, totalVnd: 0n, reasonCode: 'insufficient_cash' };
+    return {
+      quantity: 0,
+      grossVnd: 0n,
+      feeVnd: 0n,
+      totalVnd: 0n,
+      reasonCode: 'insufficient_cash_or_lot',
+    };
   }
-  const budget = (navBasisVnd * BigInt(BOT_RULES.buy_budget_nav_pct)) / 100n;
+  const budget = (navBasisVnd * 12n) / 100n;
   const maximum = budget < cashAvailableVnd ? budget : cashAvailableVnd;
   const lot = BigInt(feeRules.boardLotSize);
   let lots = maximum / (priceVnd * lot);
+  let capitalFeasible = false;
   while (lots > 0n) {
     const quantityBig = lots * lot;
     if (quantityBig > BigInt(Number.MAX_SAFE_INTEGER))
@@ -271,11 +290,10 @@ export function computeBuyQuantity(options: {
     const grossVnd = quantityBig * priceVnd;
     const feeVnd = roundBasisPoints(grossVnd, feeRules.buyFeeRateBps);
     const totalVnd = grossVnd + feeVnd;
+    if (totalVnd <= budget && totalVnd <= cashAvailableVnd) capitalFeasible = true;
     const proposedNav = navBasisVnd - feesPaidInBatchVnd - feeVnd;
     const withinWeight =
-      proposedNav > 0n &&
-      (existingSymbolValueVnd + grossVnd) * 100n <=
-        BigInt(BOT_RULES.max_symbol_nav_pct) * proposedNav;
+      proposedNav > 0n && (existingSymbolValueVnd + grossVnd) * 100n <= 30n * proposedNav;
     if (totalVnd <= budget && totalVnd <= cashAvailableVnd && withinWeight) {
       return {
         quantity: Number(quantityBig),
@@ -287,10 +305,7 @@ export function computeBuyQuantity(options: {
     }
     lots -= 1n;
   }
-  const oneLot = priceVnd * lot;
-  let reasonCode = 'below_board_lot';
-  if (oneLot <= maximum) reasonCode = 'symbol_weight_limit';
-  else if (cashAvailableVnd < priceVnd) reasonCode = 'insufficient_cash';
+  const reasonCode = capitalFeasible ? 'symbol_limit' : 'insufficient_cash_or_lot';
   return { quantity: 0, grossVnd: 0n, feeVnd: 0n, totalVnd: 0n, reasonCode };
 }
 

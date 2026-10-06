@@ -18,6 +18,7 @@ import {
   type TradingJourneyPort,
 } from './trading.ports.js';
 import { TradingRepository, mapConfig } from './trading.repository.js';
+import { TradingRightsService } from './rights.service.js';
 import type {
   ConfigSnapshot,
   JourneyPlan,
@@ -169,6 +170,7 @@ export class TradingService {
   constructor(
     private readonly repository: TradingRepository,
     private readonly market: TradingMarketPort,
+    private readonly rights: TradingRightsService,
     @Optional()
     @Inject(TRADING_JOURNEY_PORT)
     private readonly journey?: TradingJourneyPort,
@@ -701,13 +703,16 @@ export class TradingService {
     );
 
     return this.repository.transaction(async (tx) => {
+      const config = await this.repository.ensureConfig(tx);
       let lockedAccount = await this.repository.getAccountById(tx, account.id, true);
       if (!lockedAccount || lockedAccount.userId !== userId)
         throw new NotFoundException('Không tìm thấy tài khoản');
-      const config = await this.repository.ensureConfig(tx);
       const holidays = new Set(config.holidays);
       const now = new Date();
       const today = currentTradingDate(now, holidays);
+      const rights = await this.rights.applyDueForAccountSameTx(tx, lockedAccount, config, now);
+      lockedAccount = rights.account;
+      const rightsPending = await this.rights.pendingTotals([account.id], tx);
       const pending = await this.repository.listPending(account.id, tx, true);
       let filled = 0;
       let expired = 0;
@@ -773,7 +778,13 @@ export class TradingService {
           );
           if (!position) throw new ConflictException('Không tìm thấy vị thế cần thanh toán');
           const amount = Number(settlement.amount);
-          if (!Number.isSafeInteger(amount) || amount < 0 || position.quantityPending < amount) {
+          const dividendPending =
+            rightsPending.get(account.id)?.bySymbol.get(String(settlement.symbol))?.shares ?? 0;
+          if (
+            !Number.isSafeInteger(amount) ||
+            amount < 0 ||
+            position.quantityPending - dividendPending < amount
+          ) {
             throw new ConflictException('Khối lượng thanh toán không nhất quán');
           }
           position.quantityPending -= amount;
@@ -794,17 +805,29 @@ export class TradingService {
         orders_expired: expired,
         settlements_settled: settled,
         warnings,
+        rights_ex_applied: rights.exApplied,
+        rights_cash_paid: rights.cashPaid,
+        rights_stock_credited: rights.sharesCredited,
       };
     });
   }
 
   async getPortfolio(userId: string) {
     const account = await this.getAccount(userId);
-    const positions = (await this.repository.listPositions(account.id)).filter(
-      (p) => p.quantityTotal > 0,
+    const positions = await this.repository.listPositions(account.id);
+    const pendingRights = (await this.rights.pendingTotals([account.id])).get(account.id) ?? {
+      cashVnd: 0n,
+      shares: 0,
+      bySymbol: new Map<string, { cashVnd: bigint; shares: number }>(),
+    };
+    const included = positions.filter(
+      (position) =>
+        position.quantityTotal > 0 ||
+        (pendingRights.bySymbol.get(position.symbol)?.cashVnd ?? 0n) > 0n,
     );
     const priced = await Promise.all(
-      positions.map(async (position) => {
+      included.map(async (position) => {
+        if (position.quantityTotal <= 0) return { position, quote: null, warning: null };
         try {
           const quote = await this.market.getQuote(position.symbol);
           if (quote.priceVnd <= 0n) throw new Error('Non-positive valuation price');
@@ -814,7 +837,7 @@ export class TradingService {
         }
       }),
     );
-    if (priced.some(({ quote }) => quote === null)) {
+    if (priced.some(({ warning }) => warning !== null)) {
       throw new ServiceUnavailableException({
         code: 'PORTFOLIO_PRICE_UNAVAILABLE',
         message: 'Không đủ giá để định giá toàn bộ danh mục; vui lòng thử lại',
@@ -825,13 +848,11 @@ export class TradingService {
     const warnings: string[] = [];
     const result = priced.map(({ position, quote, warning }) => {
       if (warning) warnings.push(warning);
-      const marketValue = quote ? quote.priceVnd * BigInt(position.quantityTotal) : null;
-      const pnl =
-        marketValue == null
-          ? null
-          : marketValue - position.avgCostVnd * BigInt(position.quantityTotal);
-      if (marketValue != null) totalMarketValue += marketValue;
-      if (pnl != null) totalPnl += pnl;
+      const symbolPending = pendingRights.bySymbol.get(position.symbol);
+      const marketValue = quote ? quote.priceVnd * BigInt(position.quantityTotal) : 0n;
+      const pnl = marketValue - position.avgCostVnd * BigInt(position.quantityTotal);
+      totalMarketValue += marketValue;
+      totalPnl += pnl;
       return {
         symbol: position.symbol,
         quantity_total: position.quantityTotal,
@@ -839,17 +860,19 @@ export class TradingService {
         quantity_pending: position.quantityPending,
         quantity_reserved: position.quantityReserved,
         avg_cost_vnd: safeMoney(position.avgCostVnd),
-        current_price_vnd: safeMoney(quote?.priceVnd ?? null),
+        current_price_vnd: quote ? safeMoney(quote.priceVnd) : 0,
         market_value_vnd: safeMoney(marketValue),
         unrealized_pnl_vnd: safeMoney(pnl),
         active_plan_buy_order_id: position.activePlanBuyOrderId,
         active_original_stop_vnd: safeMoney(position.activeOriginalStopVnd),
         active_original_take_profit_vnd: safeMoney(position.activeOriginalTakeProfitVnd),
         active_dynamic_stop_vnd: safeMoney(position.activeDynamicStopVnd),
+        pending_cash_dividend_vnd: safeMoney(symbolPending?.cashVnd ?? 0n),
+        pending_stock_dividend_quantity: symbolPending?.shares ?? 0,
       };
     });
     const cash = account.cashAvailableVnd + account.cashReservedVnd + account.cashPendingVnd;
-    const nav = cash + totalMarketValue;
+    const nav = cash + pendingRights.cashVnd + totalMarketValue;
     const returnPct =
       account.initialCashVnd > 0n
         ? Math.round(
@@ -864,6 +887,10 @@ export class TradingService {
       total_unrealized_pnl_vnd: safeMoney(totalPnl),
       return_pct: returnPct,
       refresh_warnings: warnings,
+      pending_rights: {
+        pending_cash_dividend_vnd: safeMoney(pendingRights.cashVnd),
+        pending_stock_dividend_quantity: pendingRights.shares,
+      },
     };
   }
 
@@ -951,6 +978,7 @@ export class TradingService {
       }),
     );
     const names = await this.repository.userNames(accounts.map((account) => account.userId));
+    const pendingRights = await this.rights.pendingTotals(accounts.map((account) => account.id));
     const entries = accounts.map((account) => {
       let marketValue = 0n;
       let degraded = false;
@@ -961,7 +989,11 @@ export class TradingService {
         marketValue += (price ?? position.avgCostVnd) * BigInt(position.quantityTotal);
       }
       const nav =
-        account.cashAvailableVnd + account.cashReservedVnd + account.cashPendingVnd + marketValue;
+        account.cashAvailableVnd +
+        account.cashReservedVnd +
+        account.cashPendingVnd +
+        (pendingRights.get(account.id)?.cashVnd ?? 0n) +
+        marketValue;
       const profit = nav - account.initialCashVnd;
       const returnPct =
         account.initialCashVnd > 0n ? (Number(profit) / Number(account.initialCashVnd)) * 100 : 0;

@@ -706,6 +706,12 @@ function verifiedLocalResponseSchema(
   if (/^\/api\/v[12]\/virtual-trading\/ledger$/.test(path) && method === 'get') {
     return ref('TradingLedgerPage');
   }
+  if (/^\/api\/v[12]\/virtual-trading\/portfolio$/.test(path) && method === 'get') {
+    return ref('TradingPortfolioResponse');
+  }
+  if (/^\/api\/v[12]\/virtual-trading\/refresh$/.test(path) && method === 'post') {
+    return ref('TradingRefreshResponse');
+  }
   if (/^\/api\/v[12]\/admin\/alerts\/factor-library$/.test(path) && method === 'get') {
     return ref('AlertFactorLibrary');
   }
@@ -761,6 +767,15 @@ function verifiedLocalResponseSchema(
   }
   if (/^\/api\/v[12]\/ai\/bctc-dashboard\/\{symbol\}$/.test(path) && method === 'get') {
     return objectWithSingleRef('data', 'AiBctcNarrative');
+  }
+  if (/^\/api\/v[12]\/bot$/.test(path) && method === 'get') {
+    return ref('BotOverview');
+  }
+  if (/^\/api\/v[12]\/bot\/positions$/.test(path) && method === 'get') {
+    return ref('BotPositions');
+  }
+  if (/^\/api\/v[12]\/bot\/journal$/.test(path) && method === 'get') {
+    return ref('BotJournal');
   }
   if (/^\/api\/v[12]\/bot\/status$/.test(path) && method === 'get') {
     return ref('BotStatus');
@@ -1290,6 +1305,59 @@ function localResponseSchemas(): Record<string, SchemaObject> {
       items: array(ref('TradingLedgerEntry')),
       ...pageFields,
     }),
+    TradingAccountResponse: object({
+      id: { type: 'string', format: 'uuid' },
+      user_id: { type: 'string', format: 'uuid' },
+      status: string(),
+      initial_cash_vnd: integer(),
+      cash_available_vnd: integer(),
+      cash_reserved_vnd: integer(),
+      cash_pending_vnd: integer(),
+      total_cash_vnd: integer(),
+      activated_at: dateTime(),
+      reset_at: nullable(dateTime()),
+      created_at: dateTime(),
+    }),
+    TradingPositionResponse: object({
+      symbol: string(),
+      quantity_total: integer(),
+      quantity_sellable: integer(),
+      quantity_pending: integer(),
+      quantity_reserved: integer(),
+      avg_cost_vnd: integer(),
+      current_price_vnd: nullable(integer()),
+      market_value_vnd: nullable(integer()),
+      unrealized_pnl_vnd: nullable(integer()),
+      active_plan_buy_order_id: nullable({ type: 'string', format: 'uuid' }),
+      active_original_stop_vnd: nullable(integer()),
+      active_original_take_profit_vnd: nullable(integer()),
+      active_dynamic_stop_vnd: nullable(integer()),
+      pending_cash_dividend_vnd: integer(),
+      pending_stock_dividend_quantity: integer(),
+    }),
+    TradingPendingRights: object({
+      pending_cash_dividend_vnd: integer(),
+      pending_stock_dividend_quantity: integer(),
+    }),
+    TradingPortfolioResponse: object({
+      account: ref('TradingAccountResponse'),
+      positions: array(ref('TradingPositionResponse')),
+      total_market_value_vnd: integer(),
+      nav_vnd: integer(),
+      total_unrealized_pnl_vnd: integer(),
+      return_pct: number(),
+      refresh_warnings: array(string()),
+      pending_rights: ref('TradingPendingRights'),
+    }),
+    TradingRefreshResponse: object({
+      orders_filled: integer(),
+      orders_expired: integer(),
+      settlements_settled: integer(),
+      warnings: array(string()),
+      rights_ex_applied: integer(),
+      rights_cash_paid: integer(),
+      rights_stock_credited: integer(),
+    }),
     AlertFactor: object({
       id: string(),
       label: string(),
@@ -1416,6 +1484,117 @@ function localResponseSchemas(): Record<string, SchemaObject> {
     AiBctcAnalysis: aiBctcAnalysisSchema(),
     AiBctcNarrative: aiBctcNarrativeSchema(),
     BotIssue: object({ code: string(), symbol: nullable(string()), detail: nullable(string()) }),
+    BotRunStatus: object({
+      status: { type: 'string', enum: ['idle', 'running', 'succeeded', 'failed'] },
+      latest_run_id: nullable({ type: 'string', format: 'uuid' }),
+      last_updated_at: nullable(dateTime()),
+      processed_unseen_sessions: integer(),
+      issues: array(ref('BotIssue')),
+    }),
+    BotConfig: object({
+      strategy_id: { type: 'string', enum: ['iqx_standard'] },
+      strategy_version: { type: 'integer', enum: [1] },
+      execution_model: { type: 'string', enum: ['same_session_close'] },
+      initial_cash_vnd: string(),
+      activated_at: dateTime(),
+      policy_version: { type: 'string', enum: ['iqx-bot-academy-activation-1'] },
+      product_stage: { type: 'string', enum: ['bot_v1_waiting', 'bot_v2_academy'] },
+    }),
+    BotConditions: object({
+      state: {
+        type: 'string',
+        enum: ['waiting_for_conditions', 'entry_enabled', 'exit_only', 'protection_only'],
+      },
+      has_active_buy: boolean(),
+      has_active_sell: boolean(),
+      buy_condition_count: integer(),
+      sell_condition_count: integer(),
+      saved_revision: nullable({ type: 'integer', minimum: 1 }),
+      effective_revision: nullable({ type: 'integer', minimum: 1 }),
+      effective_session: nullable(date()),
+      config_status: {
+        type: 'string',
+        enum: ['none', 'pending', 'effective', 'calendar_unavailable'],
+      },
+      open_positions: { type: 'integer', minimum: 0 },
+    }),
+    BotAccountSummary: object({
+      cash_vnd: string(),
+      market_value_vnd: nullable(string()),
+      nav_vnd: nullable(string()),
+      pnl_total_net_vnd: nullable(string()),
+      return_total: nullable(string()),
+      valuation_complete: boolean(),
+      as_of_session: nullable(date()),
+    }),
+    BotOverview: object({
+      eligible: boolean(),
+      current_level: { type: 'integer', minimum: 0, maximum: 6 },
+      cap6_graduated_at: nullable(dateTime()),
+      disclosure: string(),
+      bot: nullable(ref('BotConfig')),
+      conditions: nullable(ref('BotConditions')),
+      account: nullable(ref('BotAccountSummary')),
+      bot_run: ref('BotRunStatus'),
+    }),
+    BotPosition: object({
+      id: { type: 'string', format: 'uuid' },
+      symbol: string(),
+      qty: { type: 'integer', minimum: 1 },
+      entry_price_vnd: string(),
+      current_close_vnd: nullable(string()),
+      market_value_vnd: nullable(string()),
+      weight_pct: nullable(string()),
+      amplitude_at_entry_vnd: string(),
+      amplitude_source_ref: string(),
+      stop_loss_vnd: string(),
+      legacy_take_profit_vnd: nullable(string()),
+      entry_config_revision: nullable({ type: 'integer', minimum: 1 }),
+      unrealized_pnl_net_vnd: nullable(string()),
+      filter_ids: array(string()),
+      opened_session: date(),
+      opened_at: dateTime(),
+      sector: nullable(string()),
+      source_refs: { type: 'object', additionalProperties: ref('JsonValue') },
+    }),
+    BotPositions: object({
+      items: array(ref('BotPosition')),
+      valuation_complete: boolean(),
+      as_of_session: nullable(date()),
+    }),
+    BotExecution: object({
+      id: { type: 'string', format: 'uuid' },
+      side: { type: 'string', enum: ['buy', 'sell'] },
+      qty: integer(),
+      price_vnd: string(),
+      gross_value_vnd: string(),
+      fee_vnd: string(),
+      tax_vnd: string(),
+      net_cash_delta_vnd: string(),
+    }),
+    BotJournalItem: object({
+      id: { type: 'string', format: 'uuid' },
+      run_id: { type: 'string', format: 'uuid' },
+      trading_date: date(),
+      action: { type: 'string', enum: ['buy', 'sell', 'hold', 'skip'] },
+      reason_code: string(),
+      reason: string(),
+      execution: nullable(ref('BotExecution')),
+      symbol: nullable(string()),
+      filter_ids: array(string()),
+      supporting_count: nullable(integer()),
+      threshold_vnd: nullable(string()),
+      source_refs: { type: 'object', additionalProperties: ref('JsonValue') },
+      policy_version: nullable(string()),
+      decision_config_revision: nullable({ type: 'integer', minimum: 1 }),
+      condition_snapshot: nullable({ type: 'object', additionalProperties: ref('JsonValue') }),
+      created_at: dateTime(),
+    }),
+    BotJournal: object({
+      items: array(ref('BotJournalItem')),
+      next_cursor: nullable({ type: 'string', format: 'uuid' }),
+      issues: array(ref('BotIssue')),
+    }),
     BotStatus: object({
       status: { type: 'string', enum: ['idle', 'running', 'succeeded', 'failed'] },
       latest_run_id: nullable({ type: 'string', format: 'uuid' }),

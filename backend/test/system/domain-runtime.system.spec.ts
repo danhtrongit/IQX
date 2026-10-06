@@ -10,6 +10,7 @@ import { MarketDataService } from '../../src/modules/market-data/index.js';
 import { MarketExtendedService } from '../../src/modules/market-extended/index.js';
 import { MarketInputSnapshotService } from '../../src/modules/market-integration/index.js';
 import { MarketReportsService } from '../../src/modules/reports/index.js';
+import { TradingRightsService } from '../../src/modules/trading/rights.service.js';
 import { DatabaseService } from '../../src/platform/database/index.js';
 import { DomainRuntimeJobs } from '../../src/platform/domain-runtime.module.js';
 import { startSystemStack, type SystemStack } from './system-stack.js';
@@ -30,6 +31,7 @@ describe('system acceptance: real domain runtime handlers', () => {
       stack.app.get(BotService),
       stack.app.get(MarketExtendedService),
       stack.app.get(MarketInputSnapshotService),
+      stack.app.get(TradingRightsService),
     );
   });
 

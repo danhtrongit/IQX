@@ -28,6 +28,9 @@ export type EngineRefreshResult = {
   orders_expired: number
   settlements_settled: number
   warnings: string[]
+  rights_ex_applied?: number
+  rights_cash_paid?: number
+  rights_stock_credited?: number
 }
 
 export type EngineRefreshState =
@@ -69,8 +72,16 @@ export function useEngineRefresh() {
         })
         if (controller.signal.aborted) return
         const changed =
-          (result?.orders_filled ?? 0) + (result?.orders_expired ?? 0) + (result?.settlements_settled ?? 0)
+          (result?.orders_filled ?? 0) +
+          (result?.orders_expired ?? 0) +
+          (result?.settlements_settled ?? 0) +
+          (result?.rights_ex_applied ?? 0) +
+          (result?.rights_cash_paid ?? 0) +
+          (result?.rights_stock_credited ?? 0)
         setState({ status: "ok", changed, warnings: result?.warnings ?? [] })
+        // A rights payout/credit can change the portfolio without any order or
+        // settlement change, so the portfolio query is always refreshed.
+        await queryClient.invalidateQueries({ queryKey: ["trading", "portfolio"] })
         if (changed > 0) {
           await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["trading"] }),

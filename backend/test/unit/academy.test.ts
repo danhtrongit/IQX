@@ -468,6 +468,41 @@ describe('AcademyService attempts', () => {
     for (const result of results) expect(result).toEqual(results[0]);
   });
 
+  it('A01 grading a quiz only inserts grants and never creates a bot account or grants capital', async () => {
+    const { service, memory } = setup();
+    const attempt = await start(service);
+    const result = await service.submit(USER, attempt.attempt_id, {
+      answers: correctAnswers('ch01-l01'),
+    });
+    expect(result).toMatchObject({
+      passed: true,
+      newly_granted: ['indicator:rsi', 'lesson:ch01-l01'],
+    });
+    expect(memory.grantRows).toHaveLength(1);
+    const surface = [
+      ...Object.getOwnPropertyNames(Object.getPrototypeOf(memory)),
+      ...Object.keys(memory),
+    ];
+    expect(
+      surface.filter((name) =>
+        /bot|capital|account|wallet|cash|outbox|shared|revision/i.test(name),
+      ),
+    ).toEqual([]);
+  });
+
+  it('A03 passing a lesson inserts a grant only and never writes shared config or auto-enables indicators', async () => {
+    const { service, memory } = setup();
+    const attempt = await start(service);
+    await service.submit(USER, attempt.attempt_id, { answers: correctAnswers('ch01-l01') });
+    expect(memory.grantRows).toHaveLength(1);
+    expect(memory.grantRows[0]!.capability_ids).toEqual(['indicator:rsi', 'lesson:ch01-l01']);
+    // The academy store exposes no shared-config/revision/outbox/indicator-flip surface.
+    const surface = Object.getOwnPropertyNames(Object.getPrototypeOf(memory));
+    expect(
+      surface.filter((name) => /shared|revision|outbox|indicator|master|bot|capital/i.test(name)),
+    ).toEqual([]);
+  });
+
   it('returns lesson content without questions and with pass state', async () => {
     const { service } = setup();
     const lesson = await service.lesson(USER, 'ch01-l01');

@@ -26,7 +26,7 @@
     "no": 2,
     "title": "Strategy Lab & Backtest",
     "type": "tool",
-    "bot": null,
+    "bot": "Bot V2",
     "lessons": [
       "Điều kiện Mua",
       "Điều kiện Bán",
@@ -73,7 +73,7 @@
     "no": 3,
     "title": "Phân tích cơ bản nền tảng",
     "type": "fundamental",
-    "bot": null,
+    "bot": "Bot V2",
     "lessons": [
       "Tăng trưởng doanh thu YoY",
       "Tăng trưởng LNST YoY",
@@ -96,7 +96,7 @@
     "no": 4,
     "title": "Sử dụng Bộ lọc",
     "type": "tool",
-    "bot": null,
+    "bot": "Bot V2",
     "lessons": [
       "Thêm chỉ tiêu",
       "Toán tử lọc",
@@ -127,7 +127,7 @@
     "no": 5,
     "title": "Xu hướng & động lượng nâng cao",
     "type": "technical",
-    "bot": "Bot V3",
+    "bot": "Bot V2",
     "lessons": [
       "EMA",
       "MA Cross",
@@ -150,7 +150,7 @@
     "no": 6,
     "title": "Sức khỏe tài chính doanh nghiệp",
     "type": "fundamental",
-    "bot": null,
+    "bot": "Bot V2",
     "lessons": [
       "ROA",
       "ROIC",
@@ -173,7 +173,7 @@
     "no": 7,
     "title": "Biến động & dòng tiền thị trường",
     "type": "technical",
-    "bot": "Bot V4",
+    "bot": "Bot V2",
     "lessons": [
       "ATR",
       "ATR Percent",
@@ -196,7 +196,7 @@
     "no": 8,
     "title": "Chất lượng dòng tiền doanh nghiệp",
     "type": "fundamental",
-    "bot": null,
+    "bot": "Bot V2",
     "lessons": [
       "CFO Margin",
       "CFO / LNST",
@@ -219,7 +219,7 @@
     "no": 9,
     "title": "Cấu trúc giá",
     "type": "technical",
-    "bot": "Bot V5",
+    "bot": "Bot V2",
     "lessons": [
       "N-day High",
       "N-day Low",
@@ -242,7 +242,7 @@
     "no": 10,
     "title": "Định giá doanh nghiệp",
     "type": "fundamental",
-    "bot": null,
+    "bot": "Bot V2",
     "lessons": [
       "P/E",
       "P/B",
@@ -265,7 +265,7 @@
     "no": 11,
     "title": "Kỹ thuật nâng cao II",
     "type": "technical",
-    "bot": "Bot V6",
+    "bot": "Bot V2",
     "lessons": [
       "Donchian Channel",
       "Keltner Channel",
@@ -288,7 +288,7 @@
     "no": 12,
     "title": "Tăng trưởng dài hạn & hiệu quả vận hành",
     "type": "fundamental",
-    "bot": null,
+    "bot": "Bot V2",
     "lessons": [
       "Revenue CAGR 3Y",
       "Net Profit CAGR 3Y",
@@ -311,7 +311,7 @@
     "no": 13,
     "title": "Sức mạnh tương đối & trạng thái thị trường",
     "type": "technical",
-    "bot": "Bot V7",
+    "bot": "Bot V2",
     "lessons": [
       "Relative Strength vs VN-Index",
       "Relative Strength vs ngành",
@@ -334,7 +334,7 @@
     "no": 14,
     "title": "Độ ổn định doanh nghiệp",
     "type": "fundamental",
-    "bot": null,
+    "bot": "Bot V2",
     "lessons": [
       "Revenue Growth Stability",
       "EPS Stability",
@@ -357,7 +357,7 @@
     "no": 15,
     "title": "Cổ đông & phân bổ vốn",
     "type": "fundamental",
-    "bot": null,
+    "bot": "Bot V2",
     "lessons": [
       "Dividend Yield",
       "Payout Ratio",
@@ -380,7 +380,7 @@
     "no": 16,
     "title": "Kiến trúc chiến lược nâng cao",
     "type": "system",
-    "bot": "Bot V8",
+    "bot": "Bot V2",
     "lessons": [
       "Universe",
       "Ranking",
@@ -403,7 +403,7 @@
     "no": 17,
     "title": "Quản trị vốn & vị thế",
     "type": "system",
-    "bot": "Bot V9",
+    "bot": "Bot V2",
     "lessons": [
       "Quy mô theo % NAV",
       "Số tiền cố định",
@@ -428,7 +428,7 @@
     "no": 18,
     "title": "Quản trị danh mục",
     "type": "system",
-    "bot": "Bot V10",
+    "bot": "Bot V2",
     "lessons": [
       "Đa dạng hóa",
       "Tương quan",
