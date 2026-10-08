@@ -8,6 +8,7 @@ import { demoChrome } from "@/config/chrome"
 import { RailProvider } from "@/context/rail"
 import { createFakeApi, createWorld } from "./bot/test-support"
 import { DemoTradingPage } from "./demo-trading-page"
+import { createFakeAcademyApi } from "@/pages/academy/test-api"
 import { demoTradingLoader } from "./workspace-url"
 import { createShopBackend, type ShopBackend } from "./shop/shop-test-support"
 import { resetEnsuredWorkspaces } from "./workspace/workspace-api"
@@ -58,6 +59,7 @@ const account = {
 }
 
 let botApi = createFakeApi(createWorld())
+const academy = vi.hoisted(() => ({ handler: undefined as undefined | ((path: string, init?: RequestInit) => Promise<unknown>) }))
 
 async function respond(path: string, init?: RequestInit): Promise<unknown> {
   const { ApiError } = await import("@/lib/api")
@@ -70,6 +72,8 @@ async function respond(path: string, init?: RequestInit): Promise<unknown> {
     return { data: { active_mascot: mocks.mascot ? { mascot_id: mocks.mascot } : null } }
   }
   if (path === "/shop" || path.startsWith("/shop/") || path === "/academy/progress") return shopBackend.handle(path, init)
+  // The catalog and the lessons of the Học viện tool (progress above is the Shop test double's).
+  if (path.startsWith("/academy") && academy.handler) return academy.handler(path, init)
   if (path === "/virtual-trading/account") return account
   if (path === "/virtual-trading/portfolio") {
     return { account, positions: [], total_market_value_vnd: 0, nav_vnd: 100_000_000, total_unrealized_pnl_vnd: 0, return_pct: 0, refresh_warnings: [] }
@@ -122,6 +126,7 @@ beforeEach(() => {
   shopBackend = createShopBackend({ balance: 300, lessons: 3 })
   mocks.mascot = "bach_ho"
   mocks.workspaceStatus = 200
+  academy.handler = createFakeAcademyApi().handler
   resetEnsuredWorkspaces()
   vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} })
   vi.stubGlobal("IntersectionObserver", class { observe() {} unobserve() {} disconnect() {} takeRecords() { return [] } })
@@ -152,7 +157,11 @@ describe("DemoTradingPage for a brand-new user", () => {
     expect(within(rail()).getByRole("button", { name: "Học viện" }).getAttribute("aria-pressed")).toBe("true")
     expect(within(panel()).getByRole("heading", { name: "Học viện" })).toBeTruthy()
     expect(within(panel()).getByText("13 chương · 71 bài học")).toBeTruthy()
-    expect(screen.getByTestId("academy-empty")).toBeTruthy()
+    // The panel lists the real catalog and the learner's progress; the left area keeps the mascot stage.
+    expect(await within(panel()).findByText("CHƯƠNG 1")).toBeTruthy()
+    expect(within(panel()).getByRole("progressbar", { name: "Tiến độ học tập" })).toBeTruthy()
+    expect(within(panel()).getAllByRole("button", { name: /^Xem bài/ }).length).toBeGreaterThan(0)
+    expect(screen.queryByTestId("academy-empty")).toBeNull()
     expect(screen.getByRole("heading", { level: 1, name: "Học viện" })).toBeTruthy()
   })
 

@@ -9,6 +9,8 @@ import { WorkspaceFrame, WorkspacePanelToggle } from "@/components/layout/worksp
 import { useRail } from "@/context/rail"
 import { useAuth } from "@/hooks/use-auth"
 import { cn } from "@/lib/utils"
+import { AcademyMain } from "@/pages/academy/academy-main"
+import { AcademyPanel } from "@/pages/academy/academy-panel"
 import { parseDemoContent, withDemoContent, type DemoContent } from "./content-tabs-state"
 import { BotMain, BotPanel } from "./bot"
 import { HuntMain } from "./insights/hunt-main"
@@ -23,7 +25,6 @@ import { ShopMain, ShopPanel } from "./shop"
 import { TradingRuntime } from "./trading"
 import { OrderPanel } from "./trading/order-panel"
 import { AccountStrip } from "./workspace/account-strip"
-import { AcademyPanel } from "./workspace/academy-panel"
 import { MascotStage } from "./workspace/mascot-stage"
 import { useWorkspace } from "./workspace/use-workspace"
 
@@ -98,6 +99,8 @@ function Overview({ toolId, symbol, mascotId, onSymbolChange, onNavigate }: {
             <HuntMain symbol={symbol} onSymbolChange={onSymbolChange} onNavigate={onNavigate} />
           ) : toolId === "bot" ? (
             <BotMain mascotId={mascotId} />
+          ) : toolId === "academy" ? (
+            <AcademyMain mascotId={mascotId} />
           ) : toolId === "shop" ? (
             <ShopMain onNavigate={onNavigate} />
           ) : (
@@ -168,7 +171,8 @@ function DemoWorkspace() {
     <PracticeProvider indicatorId={practiceId}>
       <WorkspaceFrame
         panelLabel={activeItem?.label ?? "Học viện"}
-        defaultPanelOpen={params.has("view")}
+        // A direct link to a lesson shows the lesson, not the list layer on top of it.
+        defaultPanelOpen={params.has("view") && !(activeId === "academy" && params.has("lesson"))}
         main={<ContentTabs active={content} onSelect={selectContent}>{mainContent}</ContentTabs>}
         panel={panel()}
       />

@@ -378,22 +378,37 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 120,
-      "callee": "api",
-      "raw": "/academy/curriculum?query",
+      "line": 59,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/catalog",
       "method": "GET",
-      "route": "/api/v2/academy/curriculum",
-      "matchedOperation": null,
-      "matchedOperations": [],
+      "route": "/api/v2/academy/catalog",
+      "matchedOperation": "GET /api/v2/academy/catalog",
+      "matchedOperations": [
+        "GET /api/v2/academy/catalog"
+      ],
       "classification": "api-call"
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 127,
-      "callee": "api",
-      "raw": "/academy/lessons/{encodeURIComponent(lessonId)}",
+      "line": 63,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/progress",
       "method": "GET",
-      "route": "/api/v2/academy/lessons/{encodeURIComponent(lessonId)}",
+      "route": "/api/v2/academy/progress",
+      "matchedOperation": "GET /api/v2/academy/progress",
+      "matchedOperations": [
+        "GET /api/v2/academy/progress"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 68,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/lessons/{lessonId}",
+      "method": "GET",
+      "route": "/api/v2/academy/lessons/{lessonId}",
       "matchedOperation": "GET /api/v2/academy/lessons/{lessonId}",
       "matchedOperations": [
         "GET /api/v2/academy/lessons/{lessonId}"
@@ -402,9 +417,9 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 131,
-      "callee": "api",
-      "raw": "/academy/attempts",
+      "line": 76,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/academy/attempts",
       "method": "POST",
       "route": "/api/v2/academy/attempts",
       "matchedOperation": "POST /api/v2/academy/attempts",
@@ -415,14 +430,79 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 141,
-      "callee": "api",
-      "raw": "/academy/attempts/{encodeURIComponent(attemptId)}/submit",
+      "line": 81,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/lessons/{lessonId}/attempt",
+      "method": "GET",
+      "route": "/api/v2/academy/lessons/{lessonId}/attempt",
+      "matchedOperation": "GET /api/v2/academy/lessons/{lessonId}/attempt",
+      "matchedOperations": [
+        "GET /api/v2/academy/lessons/{lessonId}/attempt"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 91,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/academy/attempts/{attemptId}/answers",
+      "method": "PUT",
+      "route": "/api/v2/academy/attempts/{attemptId}/answers",
+      "matchedOperation": "PUT /api/v2/academy/attempts/{attemptId}/answers",
+      "matchedOperations": [
+        "PUT /api/v2/academy/attempts/{attemptId}/answers"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 97,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/lessons/{lessonId}/attempts",
+      "method": "GET",
+      "route": "/api/v2/academy/lessons/{lessonId}/attempts",
+      "matchedOperation": "GET /api/v2/academy/lessons/{lessonId}/attempts",
+      "matchedOperations": [
+        "GET /api/v2/academy/lessons/{lessonId}/attempts"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 103,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/attempts/{attemptId}",
+      "method": "GET",
+      "route": "/api/v2/academy/attempts/{attemptId}",
+      "matchedOperation": "GET /api/v2/academy/attempts/{attemptId}",
+      "matchedOperations": [
+        "GET /api/v2/academy/attempts/{attemptId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 115,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/academy/attempts/{attemptId}/submit",
       "method": "POST",
-      "route": "/api/v2/academy/attempts/{encodeURIComponent(attemptId)}/submit",
+      "route": "/api/v2/academy/attempts/{attemptId}/submit",
       "matchedOperation": "POST /api/v2/academy/attempts/{attemptId}/submit",
       "matchedOperations": [
         "POST /api/v2/academy/attempts/{attemptId}/submit"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 125,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/academy/lessons/{lessonId}/complete",
+      "method": "POST",
+      "route": "/api/v2/academy/lessons/{lessonId}/complete",
+      "matchedOperation": "POST /api/v2/academy/lessons/{lessonId}/complete",
+      "matchedOperations": [
+        "POST /api/v2/academy/lessons/{lessonId}/complete"
       ],
       "classification": "api-call"
     },
@@ -2958,17 +3038,6 @@
       "classification": "test-only"
     },
     {
-      "file": "src/pages/academy/api.ts",
-      "line": 120,
-      "callee": "api",
-      "raw": "/academy/curriculum?query",
-      "method": "GET",
-      "route": "/api/v2/academy/curriculum",
-      "matchedOperation": null,
-      "matchedOperations": [],
-      "classification": "api-call"
-    },
-    {
       "file": "src/pages/demo-trading/bot/config/draft.test.ts",
       "line": 21,
       "callee": "get",
@@ -3117,9 +3186,6 @@
     "DELETE /api/v2/chart-drawings/{symbol}",
     "DELETE /api/v2/strategy/alerts/{alertId}",
     "DELETE /api/v2/strategy/result-snapshots/{snapshotId}",
-    "GET /api/v2/academy/attempts/{attemptId}",
-    "GET /api/v2/academy/lessons/{lessonId}/attempt",
-    "GET /api/v2/academy/lessons/{lessonId}/attempts",
     "GET /api/v2/admin/alerts/factor-library",
     "GET /api/v2/admin/audit/export",
     "GET /api/v2/admin/metrics/plan-distribution",
@@ -3267,7 +3333,6 @@
     "PATCH /api/v2/cap5/task",
     "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop",
     "PATCH /api/v2/strategy/alerts/{alertId}",
-    "POST /api/v2/academy/lessons/{lessonId}/complete",
     "POST /api/v2/admin/alerts/telegram/webhook",
     "POST /api/v2/admin/journey/identity/qa-grants",
     "POST /api/v2/admin/lessons/courses/{courseId}/thumbnail",
@@ -3334,7 +3399,6 @@
     "POST /api/v2/strategy/result-snapshots",
     "POST /api/v2/strategy/screener/run",
     "POST /api/v2/telegram/webhook/{secret}",
-    "PUT /api/v2/academy/attempts/{attemptId}/answers",
     "PUT /api/v2/backtest/strategies/{strategyId}",
     "PUT /api/v2/strategy/filters/{filterId}"
   ]

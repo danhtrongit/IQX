@@ -1,151 +1,154 @@
 /**
- * Data layer of Học viện (bot-v2 Academy) — authenticated, not Premium.
+ * Data layer of the Học viện tool (13 chapters / 71 lessons), authenticated.
  *
- * - `GET  /academy/curriculum` — 18 chapters, per-lesson progress and granted capabilities
- * - `GET  /academy/lessons/{id}` — lesson content (never questions or answers)
- * - `POST /academy/attempts` — 8 shuffled questions without answer keys
- * - `POST /academy/attempts/{id}/submit` — server-side grading + review + grants
+ * - `GET  /academy/catalog`                    catalog metadata, never answers
+ * - `GET  /academy/progress`                   completed lessons, per-chapter counts, grants
+ * - `GET  /academy/lessons/{id}`               typed sections/blocks + chart models
+ * - `POST /academy/attempts`                   8 questions in the attempt's own order, no key
+ * - `GET  /academy/lessons/{id}/attempt`       resume: the latest open attempt + its saved draft answers
+ * - `PUT  /academy/attempts/{id}/answers`      save draft selections (partial, merged, revisioned)
+ * - `POST /academy/attempts/{id}/submit`       server grading + review + completion + reward
+ * - `GET  /academy/lessons/{id}/attempts`      history of submitted attempts
+ * - `GET  /academy/attempts/{id}`              committed review of a submitted attempt
+ * - `POST /academy/lessons/{id}/complete`      guide lessons ("Hoàn thành bài học")
  *
- * Correctness is only ever decided by the server; the client never sees answer
- * keys before submitting. Contract: .pi/botv2/CONTRACTS.md §3.
+ * Correctness, completion, grants and coins are only ever decided by the server;
+ * the client never sends a score, a pass flag or a capability.
  */
-import { api as sharedApi, ApiError } from "@/lib/api"
+import { ApiError } from "@/lib/api"
+import { requestOperation } from "@/lib/contract-client"
+import type { ApiResponseFor } from "@/lib/contract-types"
 
-export type LessonKind = "technical" | "fundamental" | "tool" | "system"
+export type AcademyCatalog = ApiResponseFor<"GET /api/v2/academy/catalog">
+export type AcademyProgress = ApiResponseFor<"GET /api/v2/academy/progress">
+export type AcademyLesson = ApiResponseFor<"GET /api/v2/academy/lessons/{lessonId}">
+export type AcademyAttempt = ApiResponseFor<"POST /api/v2/academy/attempts">
+export type AcademySubmitResult = ApiResponseFor<"POST /api/v2/academy/attempts/{attemptId}/submit">
+export type AcademyGuideResult = ApiResponseFor<"POST /api/v2/academy/lessons/{lessonId}/complete">
 
-export type CurriculumLesson = {
-  id: string
-  order: number
-  name: string
-  kind: LessonKind
-  config_id: string | null
-  passed: boolean
-  best_score: number | null
-  attempts: number
-  capabilities: string[]
-}
+export type AcademyResume = ApiResponseFor<"GET /api/v2/academy/lessons/{lessonId}/attempt">
+export type AcademyDraft = ApiResponseFor<"PUT /api/v2/academy/attempts/{attemptId}/answers">
+export type AcademyHistory = ApiResponseFor<"GET /api/v2/academy/lessons/{lessonId}/attempts">
+export type ResumableAttempt = NonNullable<AcademyResume["attempt"]>
+export type DraftState = ResumableAttempt["draft"]
 
-export type CurriculumChapter = {
-  no: number
-  title: string
-  type: LessonKind
-  bot: string | null
-  lessons: CurriculumLesson[]
-}
+export type CatalogChapter = AcademyCatalog["chapters"][number]
+export type CatalogLesson = CatalogChapter["lessons"][number]
+export type LessonSection = AcademyLesson["sections"][number]
+export type LessonBlock = LessonSection["blocks"][number]
+export type ChartModel = AcademyLesson["charts"][string]
+export type AttemptQuestion = AcademyAttempt["questions"][number]
+export type QuestionFigure = NonNullable<AttemptQuestion["figure"]>
+export type ReviewItem = AcademySubmitResult["results"][number]
+export type RewardResult = AcademySubmitResult["reward"]
 
-export type Curriculum = {
-  content_version: string
-  chapters: CurriculumChapter[]
-  granted_capabilities: string[]
-}
-
-export type LessonSection = { title: string; html: string }
-
-export type LessonFixture = {
-  type: string
-  label?: string
-  prompt?: string
-  expected?: number
-  unit?: string
-  formula?: string
-  tolerance?: number
-  synthetic?: boolean
-}
-
-export type LessonDetail = {
-  id: string
-  chapter: number
-  order: number
-  name: string
-  kind: LessonKind
-  content_version: string
-  config_id: string | null
-  sections: LessonSection[]
-  fixture: LessonFixture | null
-  prerequisites: string[]
-  sources: string[]
-  review_status: string
-  passed: boolean
-}
-
-export type AttemptOption = { id: string; text: string }
-export type AttemptQuestion = { id: string; question: string; options: AttemptOption[] }
-
-export type Attempt = {
-  attempt_id: string
-  lesson_id: string
-  content_version: string
-  questions_version: string
-  questions: AttemptQuestion[]
-}
-
-export type CreateAttemptBody = { lesson_id: string; content_version: string; idempotency_key: string }
-export type AttemptAnswer = { question_id: string; option_id: string }
-
-export type QuestionResult = {
-  question_id: string
-  option_id: string
-  correct: boolean
-  correct_option_id: string
-  explanation: string
-}
-
-export type AttemptResult = {
-  attempt_id: string
-  score: number
-  total: number
-  passed: boolean
-  results: QuestionResult[]
-  granted_capabilities: string[]
-  newly_granted: string[]
-}
-
-/** A quiz is passed only with every question correct. */
+/** A quiz is passed only with every question correct (spec §6.2). */
 export const QUIZ_QUESTION_COUNT = 8
+/** First-completion reward of one lesson, in learning coins (xu). Display fallback only. */
+export const LESSON_REWARD_XU = 100
 
 /** v2 routes may wrap the resource in `{ data }`; accept both shapes. */
-async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const payload = await sharedApi<unknown>(path, options)
+function unwrap<T>(payload: unknown): T {
   if (payload && typeof payload === "object" && !Array.isArray(payload) && "data" in payload) {
     return (payload as { data: T }).data
   }
   return payload as T
 }
 
-function jsonBody(body: unknown, signal?: AbortSignal): RequestInit {
-  return { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal }
+export async function fetchCatalog(signal?: AbortSignal): Promise<AcademyCatalog> {
+  return unwrap<AcademyCatalog>(await requestOperation("GET /api/v2/academy/catalog", {}, { signal }))
 }
 
-export function getCurriculum(contentVersion?: string, signal?: AbortSignal): Promise<Curriculum> {
-  return api<Curriculum>(
-    `/academy/curriculum${contentVersion ? `?content_version=${encodeURIComponent(contentVersion)}` : ""}`,
-    { signal },
+export async function fetchProgress(signal?: AbortSignal): Promise<AcademyProgress> {
+  return unwrap<AcademyProgress>(await requestOperation("GET /api/v2/academy/progress", {}, { signal }))
+}
+
+export async function fetchLesson(lessonId: string, signal?: AbortSignal): Promise<AcademyLesson> {
+  return unwrap<AcademyLesson>(
+    await requestOperation("GET /api/v2/academy/lessons/{lessonId}", { path: { lessonId } }, { signal }),
   )
 }
 
-export function getLesson(lessonId: string, signal?: AbortSignal): Promise<LessonDetail> {
-  return api<LessonDetail>(`/academy/lessons/${encodeURIComponent(lessonId)}`, { signal })
+export async function createAttempt(
+  body: { lesson_id: string; catalog_version: string; idempotency_key: string },
+  signal?: AbortSignal,
+): Promise<AcademyAttempt> {
+  return unwrap<AcademyAttempt>(await requestOperation("POST /api/v2/academy/attempts", { body }, { signal }))
 }
 
-export function createAttempt(body: CreateAttemptBody, signal?: AbortSignal): Promise<Attempt> {
-  return api<Attempt>("/academy/attempts", jsonBody(body, signal))
+export async function resumeAttempt(lessonId: string, signal?: AbortSignal): Promise<AcademyResume> {
+  return unwrap<AcademyResume>(
+    await requestOperation("GET /api/v2/academy/lessons/{lessonId}/attempt", { path: { lessonId } }, { signal }),
+  )
 }
 
-export function submitAttempt(
+export async function saveDraftAnswers(
   attemptId: string,
-  answers: AttemptAnswer[],
+  body: { answers: { question_id: string; option_id: string }[]; expected_revision?: number },
+  signal?: AbortSignal,
+): Promise<AcademyDraft> {
+  return unwrap<AcademyDraft>(
+    await requestOperation("PUT /api/v2/academy/attempts/{attemptId}/answers", { path: { attemptId }, body }, { signal }),
+  )
+}
+
+export async function fetchAttemptHistory(lessonId: string, limit = 5, signal?: AbortSignal): Promise<AcademyHistory> {
+  return unwrap<AcademyHistory>(
+    await requestOperation("GET /api/v2/academy/lessons/{lessonId}/attempts", { path: { lessonId }, query: { limit } }, { signal }),
+  )
+}
+
+export async function fetchAttemptReview(attemptId: string, signal?: AbortSignal): Promise<AcademySubmitResult> {
+  return unwrap<AcademySubmitResult>(
+    await requestOperation("GET /api/v2/academy/attempts/{attemptId}", { path: { attemptId } }, { signal }),
+  )
+}
+
+export async function submitAttempt(
+  attemptId: string,
+  answers: { question_id: string; option_id: string }[],
   idempotencyKey?: string,
   signal?: AbortSignal,
-): Promise<AttemptResult> {
+): Promise<AcademySubmitResult> {
   const body = idempotencyKey ? { answers, idempotency_key: idempotencyKey } : { answers }
-  return api<AttemptResult>(`/academy/attempts/${encodeURIComponent(attemptId)}/submit`, jsonBody(body, signal))
+  return unwrap<AcademySubmitResult>(
+    await requestOperation("POST /api/v2/academy/attempts/{attemptId}/submit", { path: { attemptId }, body }, { signal }),
+  )
 }
 
-/** `ACADEMY_ENABLED=false` → every academy route answers 404 FEATURE_DISABLED. */
-export function isAcademyDisabled(error: unknown): boolean {
-  return error instanceof ApiError && error.status === 404 && error.code === "FEATURE_DISABLED"
+export async function completeGuide(
+  lessonId: string,
+  body: { catalog_version: string; content_version: string; request_id: string },
+  signal?: AbortSignal,
+): Promise<AcademyGuideResult> {
+  return unwrap<AcademyGuideResult>(
+    await requestOperation("POST /api/v2/academy/lessons/{lessonId}/complete", { path: { lessonId }, body }, { signal }),
+  )
 }
 
-export function isContentVersionMismatch(error: unknown): boolean {
-  return error instanceof ApiError && error.status === 409 && error.code === "CONTENT_VERSION_MISMATCH"
+/** New id for one logical attempt / completion request (replays of it are idempotent server-side). */
+export function newRequestId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`
 }
+
+function hasCode(error: unknown, status: number, code: string): boolean {
+  return error instanceof ApiError && error.status === status && error.code === code
+}
+
+/** The catalog / content / question bank moved on while the learner was working: reload, then start over. */
+export function isVersionConflict(error: unknown): boolean {
+  return (
+    hasCode(error, 409, "CATALOG_VERSION_MISMATCH") ||
+    hasCode(error, 409, "CONTENT_VERSION_MISMATCH") ||
+    hasCode(error, 409, "ASSESSMENT_VERSION_MISMATCH")
+  )
+}
+
+export const isDraftConflict = (error: unknown) => hasCode(error, 409, "DRAFT_REVISION_CONFLICT")
+export const isAlreadySubmitted = (error: unknown) => hasCode(error, 409, "ATTEMPT_ALREADY_SUBMITTED")
+export const isAttemptNotFound = (error: unknown) => hasCode(error, 404, "ATTEMPT_NOT_FOUND")
+export const isLessonNotFound = (error: unknown) => hasCode(error, 404, "LESSON_NOT_FOUND")
+export const isInvalidAnswers = (error: unknown) => hasCode(error, 422, "INVALID_ANSWERS")
+export const isNotPublished = (error: unknown) => hasCode(error, 409, "NOT_PUBLISHED")
