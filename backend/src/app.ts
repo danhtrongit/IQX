@@ -54,6 +54,7 @@ import { StrategyBacktestsModule } from './modules/strategy-backtests/strategy-b
 import { SavedFiltersModule } from './modules/saved-filters/saved-filters.module.js';
 import { ShopModule } from './modules/shop/shop.module.js';
 import { WorkspaceModule } from './modules/workspace/workspace.module.js';
+import { PracticeModule } from './modules/practice/practice.module.js';
 
 @Module({})
 class ApiModule {}
@@ -98,6 +99,7 @@ export function createApiModule(
       SavedFiltersModule,
       ShopModule,
       WorkspaceModule,
+      PracticeModule,
       NotificationsModule,
       ReferralsModule,
       DomainRuntimeModule.forApi(values.QUEUE_ENABLED),
