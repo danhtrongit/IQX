@@ -30,6 +30,18 @@ export const DEFAULT_RUN_OPTIONS = Object.freeze({
   min_held_bars: 2,
 } as const);
 
+/**
+ * Engine switches that are not part of the frozen `RunOptions` contract.
+ *
+ * `signal_after_open_fill` (default false = reference-engine parity): in `next_open` mode, when a
+ * pending order fills at the open of session T, the close-of-T signals are still evaluated on the
+ * real post-fill position state and may create the order for T+1 (Strategy spec §6.3: "Bán tại mở
+ * cửa rồi có tín hiệu Mua cuối phiên chỉ được tạo lệnh cho phiên sau"). The reference engine skips
+ * that evaluation; the Strategy backtest turns this switch on and records it in the run snapshot.
+ */
+export type BacktestEngineSwitches = { signal_after_open_fill?: boolean };
+export type BacktestRunOptions = Partial<RunOptions> & BacktestEngineSwitches;
+
 type Position = {
   qty: number;
   price: number;
@@ -89,9 +101,10 @@ function optionsAreValid(opt: RunOptions): boolean {
 export function runBacktest(
   config: SharedConfig,
   bars: readonly Bar[],
-  options: Partial<RunOptions> = {},
+  options: BacktestRunOptions = {},
   registry: readonly RegistryEntry[] = loadTechnicalRegistry(),
 ): RunResult {
+  const signalAfterOpenFill = options.signal_after_open_fill === true;
   const errors = validateConfig(config, registry);
   if (errors.length) {
     throw new EngineRunError('CONFIG_INVALID', errors.map((e) => e.message).join('\n'), errors);
@@ -193,7 +206,7 @@ export function runBacktest(
       traded = execute(pending.action, i, bar.open, pending.signalIndex);
       pending = null;
     }
-    if (!traded) {
+    if (!traded || signalAfterOpenFill) {
       const pos = ledger.pos;
       const action: Side | null = pos
         ? sell[i] === true && i - pos.index >= opt.min_held_bars

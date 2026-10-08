@@ -3,6 +3,9 @@ import { randomUUID } from 'node:crypto';
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { DatabaseService, type SqlClient } from '../../platform/database/index.js';
+import { readStoredDefinition } from '../screener/screener.definition.js';
+import { vnDate } from '../strategy-config/strategy-config.calendar.js';
+import { findBotUsage, listInUseByBot } from './saved-filters.bot-usage.js';
 import type { FilterDefinition } from './saved-filters.definition.js';
 import { canonicalHash } from './saved-filters.hash.js';
 import type {
@@ -44,6 +47,10 @@ type ListRow = {
   as_of: string;
   data_source: string;
   scope: SavedList['scope'];
+  visibility?: 'saved' | 'internal';
+  result_snapshot_id?: string | null;
+  run_id?: string | null;
+  provenance?: SavedList['provenance'];
   created_at: Timestamp;
 };
 
@@ -51,7 +58,8 @@ type IdempotencyRow = { id: string; request_hash: string | null };
 
 const FILTER_COLUMNS = `f.id, f.name, f.current_version, f.created_at, f.updated_at,
        v.version, v.definition, v.definition_hash`;
-const LIST_COLUMNS = `id, name, filter_id, filter_version, tickers, as_of, data_source, scope, created_at`;
+export const LIST_COLUMNS = `id, name, filter_id, filter_version, tickers, as_of, data_source, scope,
+       visibility, result_snapshot_id, run_id, provenance, created_at`;
 
 function filterNotFound(): NotFoundException {
   return new NotFoundException({ code: 'FILTER_NOT_FOUND', message: 'Không tìm thấy bộ lọc' });
@@ -81,19 +89,26 @@ function toIso(value: Timestamp): string {
 }
 
 function toFilterSummary(row: FilterRow): SavedFilterSummary {
+  // A stored 2.0 version (one filter-wide period) is mapped onto every rule on read; the stored
+  // row itself is never rewritten. An unrecognisable document is returned as stored.
+  const mapped = readStoredDefinition(row.definition);
   return {
     id: row.id,
     name: row.name,
     current_version: row.current_version,
     version: row.version,
-    definition: row.definition,
+    definition: (mapped?.definition ?? row.definition) as FilterDefinition,
+    stored_schema_version: String(
+      (row.definition as { schema_version?: unknown } | null)?.schema_version ?? 'unknown',
+    ),
+    legacy_review: mapped?.legacy ?? null,
     definition_hash: row.definition_hash,
     created_at: toIso(row.created_at),
     updated_at: toIso(row.updated_at),
   };
 }
 
-function toSavedList(row: ListRow): SavedList {
+export function toSavedList(row: ListRow): SavedList {
   return {
     id: row.id,
     name: row.name,
@@ -104,6 +119,10 @@ function toSavedList(row: ListRow): SavedList {
     as_of: row.as_of,
     data_source: row.data_source,
     scope: row.scope,
+    visibility: row.visibility ?? 'saved',
+    result_snapshot_id: row.result_snapshot_id ?? null,
+    run_id: row.run_id ?? null,
+    provenance: row.provenance ?? null,
     created_at: toIso(row.created_at),
   };
 }
@@ -182,8 +201,9 @@ export class SavedFiltersService {
         name: string;
         current_version: number;
         definition_hash: string;
+        definition?: unknown;
       }>(
-        `SELECT f.name, f.current_version, v.definition_hash
+        `SELECT f.name, f.current_version, v.definition_hash, v.definition
            FROM strategy_filters f
            JOIN filter_versions v ON v.filter_id = f.id AND v.version = f.current_version
           WHERE f.id = $1 AND f.user_id = $2 AND f.deleted_at IS NULL
@@ -193,7 +213,13 @@ export class SavedFiltersService {
       if (!current) throw filterNotFound();
 
       const name = input.name ?? current.name;
-      if (current.definition_hash !== definitionHash) {
+      // A stored 2.0 version compares through its 3.0 mapping, so re-saving it unchanged does not
+      // create a new version (the stored row itself is never rewritten).
+      const mappedCurrent = readStoredDefinition(current.definition)?.definition;
+      const unchanged =
+        current.definition_hash === definitionHash ||
+        (mappedCurrent !== undefined && canonicalHash(mappedCurrent) === definitionHash);
+      if (!unchanged) {
         const next = current.current_version + 1;
         await client.query(
           `INSERT INTO filter_versions (filter_id, version, definition, definition_hash)
@@ -229,13 +255,13 @@ export class SavedFiltersService {
     if (rows.length === 0) throw filterNotFound();
   }
 
-  async listLists(userId: string): Promise<{ items: SavedList[] }> {
+  async listLists(userId: string, includeInternal = false): Promise<{ items: SavedList[] }> {
     const rows = await this.database.query<ListRow>(
       `SELECT ${LIST_COLUMNS}
          FROM list_snapshots
-        WHERE user_id = $1 AND deleted_at IS NULL
+        WHERE user_id = $1 AND deleted_at IS NULL AND ($2::boolean OR visibility = 'saved')
         ORDER BY created_at DESC, id`,
-      [userId],
+      [userId, includeInternal],
     );
     return { items: rows.map(toSavedList) };
   }
@@ -303,16 +329,31 @@ export class SavedFiltersService {
     });
   }
 
-  async deleteList(userId: string, listId: string): Promise<void> {
-    const rows = await this.database.transaction((client) =>
-      client.query<{ id: string }>(
-        `UPDATE list_snapshots SET deleted_at = now()
-          WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
-          RETURNING id`,
+  /**
+   * Soft-deletes a list unless the Bot buys from it (pending or effective universe revision):
+   * the user must first switch the Bot to another list or back to VN30 (Strategy spec §8.7).
+   * Takes the Bot's own per-user advisory lock so a concurrent "apply list" cannot slip a
+   * reference in between the check and the delete.
+   */
+  async deleteList(userId: string, listId: string, now: Date = new Date()): Promise<void> {
+    await this.database.transaction(async (client) => {
+      await client.query(
+        `SELECT pg_advisory_xact_lock(hashtext('bot_universe_revisions:' || $1::text))`,
+        [userId],
+      );
+      const [owned] = await client.query<{ id: string }>(
+        `SELECT id FROM list_snapshots WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,
         [listId, userId],
-      ),
-    );
-    if (rows.length === 0) throw listNotFound();
+      );
+      if (!owned) throw listNotFound();
+      const usage = await findBotUsage(client, userId, [listId], vnDate(now));
+      if (usage.length) throw listInUseByBot(usage);
+      await client.query(
+        `UPDATE list_snapshots SET deleted_at = now()
+          WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,
+        [listId, userId],
+      );
+    });
   }
 
   /** Returns the id stored for a replayed key, or 409 when the key carried another payload. */

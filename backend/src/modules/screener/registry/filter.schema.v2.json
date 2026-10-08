@@ -3,7 +3,7 @@
   "additionalProperties": false,
   "properties": {
     "schema_version": {
-      "const": "3.0"
+      "const": "2.0"
     },
     "name": {
       "type": "string",
@@ -12,9 +12,6 @@
     },
     "logic": {
       "const": "AND"
-    },
-    "data_mode": {
-      "const": "latest_disclosed"
     },
     "rules": {
       "type": "array",
@@ -71,14 +68,6 @@
               "shareholder_yield"
             ]
           },
-          "period": {
-            "enum": [
-              "quarter",
-              "ttm",
-              "year",
-              "three_year"
-            ]
-          },
           "operator": {
             "enum": [
               ">",
@@ -100,78 +89,9 @@
         "required": [
           "id",
           "metric_id",
-          "period",
           "operator",
           "value",
           "api_unit"
-        ]
-      }
-    },
-    "columns": {
-      "type": "array",
-      "maxItems": 12,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "metric_id": {
-            "enum": [
-              "revenue_yoy",
-              "profit_yoy",
-              "eps_yoy",
-              "gross_margin",
-              "net_margin",
-              "roe",
-              "roa",
-              "roic",
-              "debt_equity",
-              "net_debt_ebitda",
-              "current_ratio",
-              "interest_coverage",
-              "cfo_margin",
-              "cfo_profit",
-              "fcf_margin",
-              "fcf_yoy",
-              "capex_revenue",
-              "accrual",
-              "pe",
-              "pb",
-              "ps",
-              "ev_ebitda",
-              "peg",
-              "fcf_yield",
-              "revenue_cagr3",
-              "profit_cagr3",
-              "eps_cagr3",
-              "asset_turnover",
-              "ccc",
-              "working_cap_turnover",
-              "revenue_growth_stability",
-              "eps_growth_stability",
-              "net_margin_stability",
-              "roic_stability",
-              "fcf_positive_streak",
-              "profit_positive_streak",
-              "dividend_yield",
-              "payout_ratio",
-              "dividend_cagr3",
-              "share_count_yoy",
-              "buyback_yield",
-              "shareholder_yield"
-            ]
-          },
-          "period": {
-            "enum": [
-              "quarter",
-              "ttm",
-              "year",
-              "three_year"
-            ]
-          }
-        },
-        "required": [
-          "metric_id",
-          "period"
         ]
       }
     },
@@ -184,11 +104,19 @@
         },
         "sector": {
           "type": "string"
+        },
+        "period": {
+          "enum": [
+            "TTM",
+            "annual",
+            "quarter"
+          ]
         }
       },
       "required": [
         "market",
-        "sector"
+        "sector",
+        "period"
       ]
     }
   },
@@ -199,6 +127,5 @@
     "rules",
     "scope"
   ],
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Bộ lọc definition 3.0: every rule carries its own `period` (default and allowed periods per metric come from fundamental-registry.json). Schema 2.0 (one filter-wide scope.period) is kept in filter.schema.v2.json and mapped on read, never rewritten."
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
 }

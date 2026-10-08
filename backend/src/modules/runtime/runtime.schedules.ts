@@ -37,6 +37,17 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
       enabled: enabled('alerts.scan', alertScanEnabled()),
     },
     {
+      name: 'alerts.eod-evaluate',
+      description: 'Evaluate Strategy alerts on the completed daily bars (web history only)',
+      // Ticks every 15 minutes on trading days. The handler waits for the 15:45 Asia/Ho_Chi_Minh
+      // readiness gate AND for the benchmark's bar of the session, evaluates each
+      // (alert version, symbol, side) once per session and becomes a cheap no-op afterwards.
+      // It also retries symbols whose data arrived late, without back-filling past sessions.
+      everyMs: 900_000,
+      tradingDay: true,
+      enabled: enabled('alerts.eod-evaluate'),
+    },
+    {
       name: 'journey.identity-recovery',
       description: 'Recover incomplete journey identities',
       everyMs: 900_000,

@@ -8,6 +8,7 @@ export const RUNTIME_JOB_NAMES = [
   'billing.expiry-sweep',
   'billing.ipn-reconcile',
   'alerts.scan',
+  'alerts.eod-evaluate',
   'journey.cap2-close-scan',
   'journey.cap5-consensus',
   'journey.identity-recovery',

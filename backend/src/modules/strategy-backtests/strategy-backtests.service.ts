@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   HttpException,
   Inject,
   Injectable,
@@ -36,6 +37,7 @@ import {
   RULE_VERSION,
   SCHEMA_VERSION,
   canonicalJson,
+  indicatorCapability,
   loadTechnicalRegistry,
   sha256Hex,
   type Bar,
@@ -44,6 +46,15 @@ import {
   type RunResult,
   type SharedConfig,
 } from '../quant/v2/index.js';
+import { buildRunExtras, fillGapTrades } from './strategy-backtests.evidence.js';
+import {
+  ANNUALIZATION_SESSIONS,
+  STRATEGY_BACKTEST_CONTRACT,
+  presentRunResult,
+  toStrategyKpis,
+  type PresentedResult,
+  type StrategyRunExtras,
+} from './strategy-backtests.presenter.js';
 import {
   SHARED_CONFIG_READER,
   type SharedConfigReaderPort,
@@ -117,6 +128,8 @@ export type RunSnapshot = RunResult['snapshot'] & {
   profile: typeof CLEAN_TECH_2_0;
   slippage: 'not_modelled';
   open_position_policy: 'mark_to_market_last_close';
+  /** Strategy-spec execution profile; absent on runs stored before the Strategy contract. */
+  simulation?: RunSimulation;
   versions: {
     schema_version: string;
     calculation_version: string;
@@ -138,6 +151,46 @@ export type RunSnapshot = RunResult['snapshot'] & {
   } | null;
 };
 
+export type RunSimulation = {
+  contract: typeof STRATEGY_BACKTEST_CONTRACT;
+  execution: RunOptions['execution'];
+  execution_label: string;
+  fill_price: string;
+  caveat: string;
+  signal_after_open_fill: boolean;
+  position_policy: 'single_symbol_long_only_one_position';
+  sizing: 'all_available_cash_including_buy_fee_rounded_down_to_lot';
+  exits: 'none: no stop, take-profit, trailing or max holding';
+  min_held_bars: number;
+  /**
+   * The two-bar sell lock comes from the reference engine. The product owner has not decided
+   * whether the new profile keeps it (Strategy spec §6.1), so it is carried over and flagged.
+   */
+  min_held_bars_status: 'carried_over_from_reference_engine_pending_product_decision';
+  fee_model: 'buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate';
+  settlement: 'not_modelled';
+  liquidity: 'not_modelled';
+  slippage: 'not_modelled';
+  price_adjustment: 'provider_adjusted' | 'not_confirmed';
+  annualization_sessions: typeof ANNUALIZATION_SESSIONS;
+  buy_hold_basis: 'close_ratio_before_fees_and_dividends';
+};
+
+const EXECUTION_PROFILES = {
+  same_close: {
+    label: 'Đóng cửa cùng phiên',
+    fill_price: 'Giá đóng cửa của chính phiên có tín hiệu',
+    caveat:
+      'Quy ước mô phỏng: tín hiệu dùng close và volume đầy đủ của phiên T rồi khớp ở chính close T. Không chứng minh có thể biết đủ dữ liệu đó, đặt lệnh và được khớp đúng giá đóng cửa trong thực tế.',
+  },
+  next_open: {
+    label: 'Mở cửa phiên kế tiếp',
+    fill_price: 'Giá mở cửa của phiên kế tiếp có dữ liệu sau phiên có tín hiệu',
+    caveat:
+      'Tín hiệu sau đóng cửa phiên T tạo lệnh chờ khớp ở giá mở cửa của phiên kế tiếp có dữ liệu; tín hiệu ở phiên cuối khoảng chưa có phiên khớp nên không thành giao dịch.',
+  },
+} as const;
+
 export type BacktestRunView = {
   run_id: string;
   status: 'succeeded' | 'failed';
@@ -146,7 +199,7 @@ export type BacktestRunView = {
   created_at: string;
   request: Record<string, unknown>;
   snapshot: RunSnapshot | null;
-  result: (RunResult & { snapshot: RunSnapshot }) | null;
+  result: PresentedResult | null;
   research_result: ResearchResult | null;
   system_result: SystemRunSummary | null;
   data_warnings: DataWarning[];
@@ -166,6 +219,8 @@ type PreparedRun = {
   main: FetchedSeries;
   mainHash: string;
   benchmark: { available: boolean; source: string | null };
+  /** Benchmark session dates: the calendar proxy used to flag fills that skipped a session. */
+  benchmarkDates: ReadonlySet<string> | null;
   warnings: DataWarning[];
   system: {
     symbols: string[];
@@ -270,6 +325,9 @@ export class StrategyBacktestsService {
 
     const grants = this.grantsLoader(userId);
     await this.assertCapabilities(this.requestedCapabilities(request, null), grants);
+    // Grants are re-checked now, not when the revision was saved: a revoked or never-held
+    // `indicator:<id>` stops the run (the saved revision itself is left untouched).
+    await this.assertIndicatorGrants(revision.config, grants);
 
     const kind: BacktestRunKind = request.research
       ? request.research.kind
@@ -311,6 +369,8 @@ export class StrategyBacktestsService {
           .catch(() => null);
       throw error;
     }
+    const extras = buildRunExtras(revision.config, prepared.job.bars, output.result);
+    this.fillGapWarnings(prepared, output.result);
     const snapshot = this.snapshot(
       request,
       revision,
@@ -321,7 +381,7 @@ export class StrategyBacktestsService {
     const stored = await this.store.insert({
       ...row,
       snapshot,
-      result: { ...output.result, snapshot },
+      result: { ...output.result, snapshot, strategy_extras: extras },
       research_result: output.research_result,
       system_result: output.system_result,
       data_hash: prepared.system?.dataHash ?? prepared.mainHash,
@@ -358,13 +418,75 @@ export class StrategyBacktestsService {
         end: row.end,
         created_at: row.created_at.toISOString(),
         config_hash: row.config_hash,
-        kpis: row.kpis,
+        kpis: toStrategyKpis(row.kpis),
         error_code: row.error_code,
       })),
     };
   }
 
+  /** One page of the complete trade history; `total` always counts the whole run. */
+  async trades(userId: string, id: string, offset: number, limit: number) {
+    const view = await this.get(userId, id);
+    if (!view.result)
+      throw new NotFoundException({
+        code: 'BACKTEST_RESULT_NOT_FOUND',
+        message: 'Lần chạy này không có kết quả giao dịch.',
+      });
+    const { trades, counts, open_position: openPosition, pending_orders: pending } = view.result;
+    return {
+      run_id: view.run_id,
+      total: trades.length,
+      offset,
+      limit,
+      counts,
+      items: trades.slice(offset, offset + limit),
+      open_position: openPosition,
+      pending_orders: pending,
+    };
+  }
+
   // ---------------------------------------------------------------------------
+
+  /** Every indicator the run would evaluate (master ON with a side ON) needs `indicator:<id>` now. */
+  private async assertIndicatorGrants(
+    config: SharedConfig,
+    grants: () => Promise<ReadonlySet<string>>,
+  ): Promise<void> {
+    const used = Object.entries(config.indicators)
+      .filter(([, item]) => item.master_enabled === true && (item.buy.enabled || item.sell.enabled))
+      .map(([id]) => id)
+      .sort();
+    if (!used.length) return;
+    const granted = await grants();
+    const locked = used.filter((id) => !granted.has(indicatorCapability(id)));
+    if (!locked.length) return;
+    throw new ForbiddenException({
+      code: 'CAPABILITY_LOCKED',
+      message: `Cần hoàn thành bài học của chỉ báo ${locked.join(', ')} (8/8) trước khi chạy backtest.`,
+      capability: indicatorCapability(locked[0]!),
+      capabilities: locked.map(indicatorCapability),
+      reason: 'not_learned',
+      details: locked.map((id) => ({
+        capability: indicatorCapability(id),
+        reason: 'not_learned',
+      })),
+    });
+  }
+
+  /** Next-open fills that skipped a benchmark session without a usable bar of the symbol. */
+  private fillGapWarnings(prepared: PreparedRun, result: RunResult): void {
+    const gaps = fillGapTrades(result, prepared.benchmarkDates);
+    if (!gaps.length) return;
+    const entries = gaps.map(
+      (gap) =>
+        `#${gap.number} ${gap.leg === 'entry' ? 'mua' : 'bán'} (tín hiệu ${gap.signal_date}, khớp ${gap.fill_date})`,
+    );
+    prepared.warnings.push({
+      code: 'FILL_AFTER_MISSING_SESSION',
+      message: `Mã thiếu dữ liệu ở phiên ngay sau tín hiệu nên lệnh được khớp ở phiên kế tiếp có dữ liệu, không dùng giá khác thay thế: ${entries.join('; ')}.`,
+      symbols: [prepared.main.symbol],
+    });
+  }
 
   private replay(row: BacktestRunRow, requestHash: string): BacktestRunView {
     if (row.request_hash !== requestHash) throw idempotencyKeyReused();
@@ -507,12 +629,15 @@ export class StrategyBacktestsService {
         config,
         bars: main.bars,
         options,
+        // Strategy spec §6.3: close-of-session signals are evaluated on the real post-fill state.
+        engine: { signal_after_open_fill: true },
         research: request.research ?? null,
         system: systemJob,
       },
       main,
       mainHash: dataHash(main.bars),
       benchmark: { available: benchmark.available, source: benchmark.source },
+      benchmarkDates: benchmark.closes ? new Set(benchmark.closes.keys()) : null,
       warnings,
       system,
     };
@@ -719,6 +844,26 @@ export class StrategyBacktestsService {
       profile: CLEAN_TECH_2_0,
       slippage: 'not_modelled',
       open_position_policy: 'mark_to_market_last_close',
+      simulation: {
+        contract: STRATEGY_BACKTEST_CONTRACT,
+        execution: request.assumptions.execution,
+        execution_label: EXECUTION_PROFILES[request.assumptions.execution].label,
+        fill_price: EXECUTION_PROFILES[request.assumptions.execution].fill_price,
+        caveat: EXECUTION_PROFILES[request.assumptions.execution].caveat,
+        signal_after_open_fill: prepared.job.engine?.signal_after_open_fill === true,
+        position_policy: 'single_symbol_long_only_one_position',
+        sizing: 'all_available_cash_including_buy_fee_rounded_down_to_lot',
+        exits: 'none: no stop, take-profit, trailing or max holding',
+        min_held_bars: CLEAN_TECH_2_0.min_held_bars,
+        min_held_bars_status: 'carried_over_from_reference_engine_pending_product_decision',
+        fee_model: 'buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate',
+        settlement: 'not_modelled',
+        liquidity: 'not_modelled',
+        slippage: 'not_modelled',
+        price_adjustment: main.history.adjusted === true ? 'provider_adjusted' : 'not_confirmed',
+        annualization_sessions: ANNUALIZATION_SESSIONS,
+        buy_hold_basis: 'close_ratio_before_fees_and_dividends',
+      },
       versions: {
         schema_version: SCHEMA_VERSION,
         calculation_version: CALCULATION_VERSION,
@@ -761,6 +906,14 @@ function persistableFailure(error: unknown): StoredRunError | null {
   };
 }
 
+function presentStored(result: Record<string, unknown> | null): PresentedResult | null {
+  if (!result) return null;
+  const { strategy_extras: extras, ...engine } = result as RunResult & {
+    strategy_extras?: StrategyRunExtras;
+  };
+  return presentRunResult(engine as RunResult, extras);
+}
+
 function toView(row: BacktestRunRow): BacktestRunView {
   const snapshot = (row.snapshot as RunSnapshot | null) ?? null;
   return {
@@ -771,7 +924,7 @@ function toView(row: BacktestRunRow): BacktestRunView {
     created_at: row.created_at.toISOString(),
     request: row.request,
     snapshot,
-    result: row.result as BacktestRunView['result'],
+    result: presentStored(row.result),
     research_result: row.research_result as ResearchResult | null,
     system_result: row.system_result as SystemRunSummary | null,
     data_warnings: snapshot?.data_warnings ?? [],

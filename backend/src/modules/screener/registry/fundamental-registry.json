@@ -10,6 +10,13 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "(Doanh thu kỳ này / Doanh thu cùng kỳ − 1) × 100",
     "period": "TTM",
+    "default_period": "quarter",
+    "allowed_periods": [
+      "quarter",
+      "ttm",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -48,6 +55,13 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "(Lợi nhuận kỳ này / Lợi nhuận cùng kỳ − 1) × 100",
     "period": "TTM",
+    "default_period": "quarter",
+    "allowed_periods": [
+      "quarter",
+      "ttm",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "all",
     "operators": [
       ">",
@@ -86,6 +100,13 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "(EPS kỳ này / EPS cùng kỳ − 1) × 100",
     "period": "TTM",
+    "default_period": "quarter",
+    "allowed_periods": [
+      "quarter",
+      "ttm",
+      "year"
+    ],
+    "readiness": "data_unavailable",
     "applicability": "all",
     "operators": [
       ">",
@@ -124,6 +145,13 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Lợi nhuận gộp / Doanh thu thuần × 100",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "quarter",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -162,6 +190,13 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Lợi nhuận sau thuế hợp nhất / Doanh thu thuần × 100",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "quarter",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -200,6 +235,12 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Lợi nhuận thuộc cổ đông phổ thông / Vốn chủ sở hữu phổ thông bình quân × 100",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "all",
     "operators": [
       ">",
@@ -238,6 +279,12 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Lợi nhuận sau thuế hợp nhất / Tổng tài sản bình quân × 100",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "all",
     "operators": [
       ">",
@@ -276,6 +323,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "NOPAT / Vốn đầu tư bình quân × 100",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm"
+    ],
+    "readiness": "definition_pending",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -314,6 +366,12 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Nợ vay có lãi / Vốn chủ sở hữu hợp nhất",
     "period": "Tại ngày báo cáo",
+    "default_period": "quarter",
+    "allowed_periods": [
+      "quarter",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -352,6 +410,12 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "(Nợ vay có lãi − Tiền đủ điều kiện) / EBITDA TTM",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -390,6 +454,12 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Tài sản ngắn hạn / Nợ ngắn hạn",
     "period": "Tại ngày báo cáo",
+    "default_period": "quarter",
+    "allowed_periods": [
+      "quarter",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -428,6 +498,13 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "EBIT / Chi phí lãi vay",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "quarter",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -466,6 +543,13 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "CFO / Doanh thu × 100",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "quarter",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -504,6 +588,13 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "CFO / Lợi nhuận sau thuế hợp nhất",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "quarter",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -542,6 +633,13 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "(CFO − Capex) / Doanh thu × 100",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "quarter",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -580,6 +678,13 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "(FCF kỳ này / FCF cùng kỳ − 1) × 100",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "quarter",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -618,6 +723,13 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Capex / Doanh thu × 100",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "quarter",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -656,6 +768,12 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "(Lợi nhuận sau thuế hợp nhất − CFO) / Tài sản bình quân × 100",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -694,6 +812,12 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Giá / EPS TTM",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "all",
     "operators": [
       ">",
@@ -732,6 +856,12 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Vốn hóa / Vốn chủ sở hữu phổ thông công ty mẹ",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "all",
     "operators": [
       ">",
@@ -770,6 +900,12 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Vốn hóa / Doanh thu TTM",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -808,6 +944,12 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "EV / EBITDA TTM",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -846,6 +988,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "P/E / tăng trưởng EPS tính theo số phần trăm",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm"
+    ],
+    "readiness": "data_unavailable",
     "applicability": "all",
     "operators": [
       ">",
@@ -884,6 +1031,12 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "FCF TTM / Vốn hóa × 100",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -922,6 +1075,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "[(Doanh thu cuối / Doanh thu gốc)^(1/3) − 1] × 100",
     "period": "Ba năm",
+    "default_period": "three_year",
+    "allowed_periods": [
+      "three_year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -960,6 +1118,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "[(Lợi nhuận cuối / Lợi nhuận gốc)^(1/3) − 1] × 100",
     "period": "Ba năm",
+    "default_period": "three_year",
+    "allowed_periods": [
+      "three_year"
+    ],
+    "readiness": "ready",
     "applicability": "all",
     "operators": [
       ">",
@@ -998,6 +1161,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "[(EPS cuối / EPS gốc)^(1/3) − 1] × 100",
     "period": "Ba năm",
+    "default_period": "three_year",
+    "allowed_periods": [
+      "three_year"
+    ],
+    "readiness": "data_unavailable",
     "applicability": "all",
     "operators": [
       ">",
@@ -1036,6 +1204,12 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Doanh thu / Tài sản bình quân",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -1074,6 +1248,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "DIO + DSO − DPO",
     "period": "Năm",
+    "default_period": "year",
+    "allowed_periods": [
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -1116,6 +1295,12 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Doanh thu / bình quân (Tài sản ngắn hạn − Nợ ngắn hạn)",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -1154,6 +1339,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "sqrt[Σ(gᵢ − trung bình g)² / 3]",
     "period": "Ba năm",
+    "default_period": "three_year",
+    "allowed_periods": [
+      "three_year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -1196,6 +1386,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "sqrt[Σ(gEPSᵢ − trung bình gEPS)² / 3]",
     "period": "Ba năm",
+    "default_period": "three_year",
+    "allowed_periods": [
+      "three_year"
+    ],
+    "readiness": "data_unavailable",
     "applicability": "all",
     "operators": [
       ">",
@@ -1238,6 +1433,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "sqrt[Σ(mᵢ − trung bình m)² / 3]",
     "period": "Ba năm",
+    "default_period": "three_year",
+    "allowed_periods": [
+      "three_year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -1280,6 +1480,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "sqrt[Σ(ROICᵢ − trung bình ROIC)² / 3]",
     "period": "Ba năm",
+    "default_period": "three_year",
+    "allowed_periods": [
+      "three_year"
+    ],
+    "readiness": "definition_pending",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -1322,6 +1527,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Đếm lùi tới năm đầu tiên có FCF ≤ 0",
     "period": "Năm",
+    "default_period": "year",
+    "allowed_periods": [
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -1368,6 +1578,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Đếm lùi tới năm đầu tiên có lợi nhuận ≤ 0",
     "period": "Năm",
+    "default_period": "year",
+    "allowed_periods": [
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "all",
     "operators": [
       ">",
@@ -1414,6 +1629,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Cổ tức tiền mặt 12 tháng / Giá × 100",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm"
+    ],
+    "readiness": "data_unavailable",
     "applicability": "all",
     "operators": [
       ">",
@@ -1452,6 +1672,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Cổ tức tiền mặt mỗi cổ phiếu / EPS TTM × 100",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm"
+    ],
+    "readiness": "data_unavailable",
     "applicability": "all",
     "operators": [
       ">",
@@ -1490,6 +1715,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "[(DPS cuối / DPS gốc)^(1/3) − 1] × 100",
     "period": "Ba năm",
+    "default_period": "three_year",
+    "allowed_periods": [
+      "three_year"
+    ],
+    "readiness": "data_unavailable",
     "applicability": "all",
     "operators": [
       ">",
@@ -1528,6 +1758,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "(Số cổ phiếu hiện tại / Số cùng kỳ − 1) × 100",
     "period": "Tại ngày báo cáo",
+    "default_period": "quarter",
+    "allowed_periods": [
+      "quarter"
+    ],
+    "readiness": "data_unavailable",
     "applicability": "all",
     "operators": [
       ">",
@@ -1566,6 +1801,12 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "(Tiền mua lại cổ phiếu − Tiền phát hành cổ phiếu) / Vốn hóa × 100",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm",
+      "year"
+    ],
+    "readiness": "ready",
     "applicability": "all",
     "operators": [
       ">",
@@ -1604,6 +1845,11 @@
     "calculation_version": "iqx-fund-2.0",
     "formula": "Dividend Yield + Buyback Yield",
     "period": "TTM",
+    "default_period": "ttm",
+    "allowed_periods": [
+      "ttm"
+    ],
+    "readiness": "data_unavailable",
     "applicability": "all",
     "operators": [
       ">",

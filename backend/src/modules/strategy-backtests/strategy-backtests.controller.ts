@@ -17,8 +17,11 @@ import {
   backtestRunIdSchema,
   backtestRunListSchema,
   backtestRunResponseSchema,
+  backtestTradesQuerySchema,
+  backtestTradesResponseSchema,
   type BacktestListQuery,
   type BacktestRunBody,
+  type BacktestTradesQuery,
 } from './strategy-backtests.schemas.js';
 import { StrategyBacktestsService } from './strategy-backtests.service.js';
 
@@ -70,5 +73,19 @@ export class StrategyBacktestsController {
     @Param('id', { schema: backtestRunIdSchema }) id: string,
   ) {
     return this.backtests.get(user.id, id);
+  }
+
+  @Get(':id/trades')
+  @ApiOperation({
+    operationId: 'strategyBacktestsTrades',
+    summary: 'Complete trade history of one stored run, paged (total counts the whole run)',
+  })
+  @ApiOkResponse({ schema: openApi(backtestTradesResponseSchema) })
+  trades(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', { schema: backtestRunIdSchema }) id: string,
+    @Query({ schema: backtestTradesQuerySchema }) query: BacktestTradesQuery,
+  ) {
+    return this.backtests.trades(user.id, id, query.offset, query.limit);
   }
 }

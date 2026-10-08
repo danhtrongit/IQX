@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { HttpException, NotFoundException } from '@nestjs/common';
+import { HttpException, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -280,7 +280,7 @@ describe('StrategyBacktestsService', () => {
         [`${OWNER}:4`, { config: deepFreeze(sellOnlyConfig()), saved_at: SAVED_AT }],
       ]),
     );
-    grants = new Set();
+    grants = new Set(['indicator:ma']);
     allowlist = [];
   });
 
@@ -457,7 +457,7 @@ describe('StrategyBacktestsService', () => {
   });
 
   it('locks a research capability that is not allowlisted (flag_off)', async () => {
-    grants = new Set(['lesson:ch02-l14']);
+    grants = new Set(['indicator:ma', 'lesson:ch02-l14']);
     const error = await rejection(
       service().create(
         OWNER,
@@ -502,7 +502,7 @@ describe('StrategyBacktestsService', () => {
 
   it('returns every sensitivity candidate and never writes shared config', async () => {
     allowlist = ['sensitivity'];
-    grants = new Set(['lesson:ch02-l14']);
+    grants = new Set(['indicator:ma', 'lesson:ch02-l14']);
     const values = [10, 20, 30, 50];
     const path = { indicator: 'ma', side: 'buy', key: 'period' } as const;
     const run = await service().create(
@@ -551,7 +551,7 @@ describe('StrategyBacktestsService', () => {
 
     // A parameter sweep stays isolated too: it only reads the pinned revision.
     allowlist = ['sensitivity'];
-    grants = new Set(['lesson:ch02-l14']);
+    grants = new Set(['indicator:ma', 'lesson:ch02-l14']);
     const sweep = await service().create(
       OWNER,
       body({
@@ -570,7 +570,7 @@ describe('StrategyBacktestsService', () => {
 
   it('runs a portfolio system over the explicit symbols and reports missing ones', async () => {
     allowlist = ['portfolio', 'sizing_pct_nav', 'max_positions'];
-    grants = new Set(['lesson:ch18-l01', 'lesson:ch17-l01', 'lesson:ch17-l03']);
+    grants = new Set(['indicator:ma', 'lesson:ch18-l01', 'lesson:ch17-l01', 'lesson:ch17-l03']);
     const run = await service().create(
       OWNER,
       body({
@@ -598,7 +598,7 @@ describe('StrategyBacktestsService', () => {
 
   it("refuses a universe run instead of back-filling the past with today's members", async () => {
     allowlist = ['universe', 'portfolio'];
-    grants = new Set(['lesson:ch16-l01', 'lesson:ch18-l01']);
+    grants = new Set(['indicator:ma', 'lesson:ch16-l01', 'lesson:ch18-l01']);
     for (const universe of [{ market: 'HOSE' as const }, { list_id: randomUUID() }]) {
       const error = await rejection(
         service().create(OWNER, body({ system: { universe }, idempotency_key: randomUUID() })),
@@ -608,6 +608,168 @@ describe('StrategyBacktestsService', () => {
     }
     expect(market.calls).toEqual([]);
     expect(store.rows).toEqual([]);
+  });
+
+  it('re-checks indicator grants at run time and stores nothing when one is missing', async () => {
+    grants = new Set();
+    const svc = service();
+    const error = await rejection(svc.create(OWNER, body()));
+    expect(error.getStatus()).toBe(403);
+    expect(error.getResponse()).toMatchObject({
+      code: 'CAPABILITY_LOCKED',
+      capability: 'indicator:ma',
+      capabilities: ['indicator:ma'],
+      reason: 'not_learned',
+    });
+    expect(market.calls).toEqual([]);
+    expect(store.rows).toEqual([]);
+
+    // The same saved revision runs once the grant exists (the revision itself is untouched).
+    grants = new Set(['indicator:ma']);
+    await expect(svc.create(OWNER, body())).resolves.toMatchObject({ status: 'succeeded' });
+    // A grant that disappears later blocks the next run of that very revision.
+    grants = new Set();
+    const revoked = await rejection(svc.create(OWNER, body({ idempotency_key: 'run-key-0002' })));
+    expect(revoked.getResponse()).toMatchObject({ code: 'CAPABILITY_LOCKED' });
+    expect(store.rows).toHaveLength(1);
+  });
+
+  it('refuses a legacy_needs_review revision for a run (reader contract) and stores no run', async () => {
+    const legacyReader: SharedConfigReaderPort = {
+      effectiveFor: () => Promise.resolve(null),
+      getRevision: () =>
+        Promise.reject(
+          new UnprocessableEntityException({
+            code: 'LEGACY_CONFIG_NEEDS_REVIEW',
+            message: 'Phiên bản cấu hình cũ dùng chỉ báo đã bỏ khỏi danh mục.',
+          }),
+        ),
+    };
+    const svc = new StrategyBacktestsService(
+      store,
+      legacyReader,
+      { grantedCapabilities: () => Promise.resolve(grants) } satisfies AcademyGrantsPort,
+      new StrategyBacktestExecutor(),
+      configService({ STRATEGY_ADVANCED_CAPABILITIES: allowlist }),
+      market,
+    );
+    const error = await rejection(svc.create(OWNER, body()));
+    expect(error.getStatus()).toBe(422);
+    expect(error.getResponse()).toMatchObject({ code: 'LEGACY_CONFIG_NEEDS_REVIEW' });
+    expect(market.calls).toEqual([]);
+    expect(store.rows).toEqual([]);
+  });
+
+  it('exposes exactly the six KPIs, the counts, the chart contract and the full trade history', async () => {
+    const svc = service();
+    const run = await svc.create(OWNER, body({ assumptions: { execution: 'same_close' } }));
+    const result = run.result!;
+
+    expect(Object.keys(result.kpis).sort()).toEqual([
+      'annualized_return_pct',
+      'buy_hold_return_pct',
+      'closed_trade_count',
+      'max_drawdown_pct',
+      'total_return_pct',
+      'win_rate_pct',
+    ]);
+    expect(JSON.stringify(result)).not.toContain('n_trades');
+    expect(result.contract).toBe('iqx-strategy-backtest-1.0');
+    expect(result.counts.closed_trade_count).toBe(result.trades.length);
+    expect(result.counts.buy_count).toBe(result.trades.length + result.counts.open_position_count);
+    expect(result.trades.length).toBeGreaterThan(3);
+    expect(result.kpis.closed_trade_count).toBe(result.trades.length);
+    expect(result.kpis.total_return_pct).toBeCloseTo(
+      result.curve[result.curve.length - 1]!.return_pct,
+      9,
+    );
+    expect(result.chart.title).toBe('Lợi nhuận danh mục (%)');
+    expect(result.chart.series.map((series) => series.label)).toEqual([
+      'Danh mục chiến lược',
+      'Mua và giữ AAA',
+      'VN-Index',
+    ]);
+    expect(result.chart.series[2]).toMatchObject({ available: true, field: 'market_pct' });
+    const trade = result.trades[0]!;
+    expect(trade.entry_signal_date).toBe(trade.entry_date); // same_close
+    expect(trade.entry_total).toBeCloseTo(trade.qty * trade.entry_price * 1.0015, 6);
+    expect(trade.exit_net).toBeCloseTo(trade.qty * trade.exit_price * (1 - 0.0025), 6);
+    expect(trade.pnl).toBeCloseTo(trade.exit_net - trade.entry_total, 6);
+    expect(trade.entry_conditions?.rules[0]).toMatchObject({ indicator: 'ma', side: 'buy' });
+    expect(trade.exit_conditions?.rules[0]).toMatchObject({ indicator: 'ma', side: 'sell' });
+    expect(run.snapshot?.simulation).toMatchObject({
+      contract: 'iqx-strategy-backtest-1.0',
+      execution: 'same_close',
+      execution_label: 'Đóng cửa cùng phiên',
+      position_policy: 'single_symbol_long_only_one_position',
+      exits: 'none: no stop, take-profit, trailing or max holding',
+      min_held_bars: 2,
+      min_held_bars_status: 'carried_over_from_reference_engine_pending_product_decision',
+      settlement: 'not_modelled',
+      slippage: 'not_modelled',
+      annualization_sessions: 252,
+    });
+
+    // The stored record is the immutable engine record; the spec names are a read-time view.
+    const stored = store.rows[0]!.result as { kpis: Record<string, unknown> };
+    expect(stored.kpis).toHaveProperty('n_trades', result.trades.length);
+
+    // List summaries use the same six-KPI naming.
+    const { items } = await svc.list(OWNER, 5);
+    expect(items[0]!.kpis).toEqual(result.kpis);
+
+    // The paged history reports the whole run in `total`.
+    const page = await svc.trades(OWNER, run.run_id, 1, 2);
+    expect(page).toMatchObject({
+      run_id: run.run_id,
+      total: result.trades.length,
+      offset: 1,
+      limit: 2,
+    });
+    expect(page.items.map((item) => item.number)).toEqual(
+      result.trades.slice(1, 3).map((item) => item.number),
+    );
+    const foreign = await rejection(svc.trades(OTHER, run.run_id, 0, 10));
+    expect(foreign.getStatus()).toBe(404);
+  });
+
+  it('runs both execution profiles with different, correctly labelled fills', async () => {
+    const svc = service();
+    const sameClose = await svc.create(
+      OWNER,
+      body({ assumptions: { execution: 'same_close' }, idempotency_key: 'run-sc-0001' }),
+    );
+    const nextOpen = await svc.create(
+      OWNER,
+      body({ assumptions: { execution: 'next_open' }, idempotency_key: 'run-no-0001' }),
+    );
+    expect(sameClose.snapshot?.execution).toBe('same_close');
+    expect(nextOpen.snapshot?.execution).toBe('next_open');
+    expect(nextOpen.snapshot?.simulation).toMatchObject({
+      execution_label: 'Mở cửa phiên kế tiếp',
+      signal_after_open_fill: true,
+    });
+    for (const trade of sameClose.result!.trades)
+      expect(trade.entry_signal_date).toBe(trade.entry_date);
+    for (const trade of nextOpen.result!.trades) {
+      expect(trade.entry_date > trade.entry_signal_date).toBe(true);
+      expect(trade.exit_date > trade.exit_signal_date).toBe(true);
+    }
+    expect(sameClose.result!.trades.length).not.toBe(0);
+    expect(nextOpen.result!.trades).not.toEqual(sameClose.result!.trades);
+  });
+
+  it('reads a run stored before the Strategy contract (no extras) without inventing evidence', async () => {
+    const svc = service();
+    const run = await svc.create(OWNER, body());
+    const stored = store.rows[0]!;
+    const legacy = structuredClone(stored.result!) as Record<string, unknown>;
+    delete legacy.strategy_extras;
+    stored.result = legacy;
+    const reread = await svc.get(OWNER, run.run_id);
+    expect(reread.result?.trades.length).toBe(run.result?.trades.length);
+    expect(reread.result?.trades.every((trade) => trade.entry_conditions === null)).toBe(true);
+    expect(reread.result?.kpis).toEqual(run.result?.kpis);
   });
 
   it('isolates list and get by owner', async () => {

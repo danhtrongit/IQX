@@ -1,6 +1,11 @@
 import { Injectable, Module, type DynamicModule } from '@nestjs/common';
 
-import { AlertService, AlertsModule } from '../modules/alerts/index.js';
+import {
+  AlertService,
+  AlertsModule,
+  isEodEvaluationDue,
+  StrategyAlertEvaluator,
+} from '../modules/alerts/index.js';
 import { BillingModule, BillingService } from '../modules/billing/index.js';
 import { BotService, BotsModule } from '../modules/bots/index.js';
 import { Cap5Service } from '../modules/journey/cap5/index.js';
@@ -83,6 +88,7 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     private readonly extended: MarketExtendedService,
     private readonly marketInput: MarketInputSnapshotService,
     private readonly rights: TradingRightsService,
+    private readonly strategyAlerts?: StrategyAlertEvaluator,
   ) {}
 
   handlers(): RuntimeJobHandlers {
@@ -110,6 +116,7 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
       'billing.expiry-sweep': async () => this.expirySweep(),
       'billing.ipn-reconcile': async () => this.ipnReconcile(),
       'alerts.scan': async () => this.scanAlerts(),
+      'alerts.eod-evaluate': async ({ scheduledFor }) => this.evaluateStrategyAlerts(scheduledFor),
       'journey.cap2-close-scan': async ({ scheduledFor }) =>
         this.cap2CloseScan(ictDate(scheduledFor)),
       'journey.cap5-consensus': async () => this.cap5Consensus(),
@@ -278,6 +285,20 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     return result.skipped
       ? { status: 'skipped', reason: result.skipped, detail: result }
       : this.complete(result);
+  }
+
+  /**
+   * End-of-session Strategy alert check. Never before the daily bars are complete (15:45 ICT and
+   * the benchmark's bar of the session), never on a forming candle; idempotent per session.
+   */
+  private async evaluateStrategyAlerts(scheduledFor: Date): Promise<JobOutcome> {
+    if (!isEodEvaluationDue(scheduledFor))
+      return { status: 'skipped', reason: 'before-daily-data-complete' };
+    if (!this.strategyAlerts) return { status: 'skipped', reason: 'strategy-alerts-unavailable' };
+    const summary = await this.strategyAlerts.evaluateSession(ictDate(scheduledFor), new Date());
+    return summary.skipped
+      ? { status: 'skipped', reason: summary.skipped, detail: { ...summary } }
+      : this.complete(summary);
   }
 
   private async cap2CloseScan(sessionDate: string): Promise<JobOutcome> {
