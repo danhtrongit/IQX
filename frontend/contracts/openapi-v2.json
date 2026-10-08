@@ -25927,7 +25927,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 705 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 708 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -79046,6 +79046,823 @@
         "x-response-schema-status": "v2-declared"
       }
     },
+    "/api/v2/bot/journal/sessions": {
+      "get": {
+        "operationId": "listBotJournalSessions",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "cash_end_vnd": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "completed_at": {
+                            "format": "date-time",
+                            "nullable": true,
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                            "type": "string"
+                          },
+                          "config_revision": {
+                            "maximum": 9007199254740991,
+                            "minimum": 1,
+                            "nullable": true,
+                            "type": "integer"
+                          },
+                          "counts": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "buy": {
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "hold": {
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "sell": {
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "skip": {
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              },
+                              "total": {
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "buy",
+                              "sell",
+                              "hold",
+                              "skip",
+                              "total"
+                            ],
+                            "type": "object"
+                          },
+                          "issues": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "code": {
+                                  "type": "string"
+                                },
+                                "detail": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "symbol": {
+                                  "nullable": true,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "code",
+                                "symbol",
+                                "detail"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "nav_end_vnd": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "policy_version": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "reasons": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "action": {
+                                  "enum": [
+                                    "buy",
+                                    "sell",
+                                    "hold",
+                                    "skip"
+                                  ],
+                                  "type": "string"
+                                },
+                                "count": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                "reason_code": {
+                                  "type": "string"
+                                },
+                                "reason_label": {
+                                  "nullable": true,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "action",
+                                "reason_code",
+                                "reason_label",
+                                "count"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "run_id": {
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                            "type": "string"
+                          },
+                          "run_status": {
+                            "enum": [
+                              "running",
+                              "succeeded",
+                              "failed"
+                            ],
+                            "type": "string"
+                          },
+                          "session": {
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                            "type": "string"
+                          },
+                          "started_at": {
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                            "type": "string"
+                          },
+                          "universe": {
+                            "additionalProperties": false,
+                            "nullable": true,
+                            "properties": {
+                              "kind": {
+                                "enum": [
+                                  "vn30",
+                                  "custom"
+                                ],
+                                "type": "string"
+                              },
+                              "name": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "revision": {
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "revision",
+                              "name"
+                            ],
+                            "type": "object"
+                          },
+                          "valuation_complete": {
+                            "nullable": true,
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "session",
+                          "run_id",
+                          "run_status",
+                          "started_at",
+                          "completed_at",
+                          "policy_version",
+                          "universe",
+                          "config_revision",
+                          "counts",
+                          "reasons",
+                          "nav_end_vnd",
+                          "cash_end_vnd",
+                          "valuation_complete",
+                          "issues"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "next_cursor": {
+                      "format": "date",
+                      "nullable": true,
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "One row per Bot session: run status, universe, config revision, decision counts",
+        "tags": [
+          "Bot"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/bot/journal/sessions/{session}": {
+      "get": {
+        "operationId": "getBotJournalSession",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "action": {
+                            "enum": [
+                              "buy",
+                              "sell",
+                              "hold",
+                              "skip"
+                            ],
+                            "type": "string"
+                          },
+                          "condition_snapshot": {
+                            "additionalProperties": {},
+                            "nullable": true,
+                            "type": "object"
+                          },
+                          "created_at": {
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                            "type": "string"
+                          },
+                          "decision_config_revision": {
+                            "maximum": 9007199254740991,
+                            "minimum": 1,
+                            "nullable": true,
+                            "type": "integer"
+                          },
+                          "execution": {
+                            "additionalProperties": false,
+                            "nullable": true,
+                            "properties": {
+                              "fee_vnd": {
+                                "type": "string"
+                              },
+                              "gross_value_vnd": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "type": "string"
+                              },
+                              "net_cash_delta_vnd": {
+                                "type": "string"
+                              },
+                              "price_vnd": {
+                                "type": "string"
+                              },
+                              "qty": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer"
+                              },
+                              "side": {
+                                "enum": [
+                                  "buy",
+                                  "sell"
+                                ],
+                                "type": "string"
+                              },
+                              "tax_vnd": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "side",
+                              "qty",
+                              "price_vnd",
+                              "gross_value_vnd",
+                              "fee_vnd",
+                              "tax_vnd",
+                              "net_cash_delta_vnd"
+                            ],
+                            "type": "object"
+                          },
+                          "id": {
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                            "type": "string"
+                          },
+                          "in_universe": {
+                            "nullable": true,
+                            "type": "boolean"
+                          },
+                          "legacy_filter_ids": {
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          "legacy_threshold_vnd": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "policy_version": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "rank_tuple": {
+                            "items": {},
+                            "nullable": true,
+                            "type": "array"
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "reason_code": {
+                            "type": "string"
+                          },
+                          "reason_label": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "run_id": {
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                            "type": "string"
+                          },
+                          "source_refs": {
+                            "additionalProperties": {},
+                            "type": "object"
+                          },
+                          "symbol": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "trading_date": {
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                            "type": "string"
+                          },
+                          "universe_kind": {
+                            "enum": [
+                              "vn30",
+                              "custom"
+                            ],
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "universe_revision": {
+                            "maximum": 9007199254740991,
+                            "minimum": 0,
+                            "nullable": true,
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "run_id",
+                          "trading_date",
+                          "action",
+                          "reason_code",
+                          "reason_label",
+                          "reason",
+                          "execution",
+                          "symbol",
+                          "in_universe",
+                          "universe_revision",
+                          "universe_kind",
+                          "policy_version",
+                          "decision_config_revision",
+                          "condition_snapshot",
+                          "rank_tuple",
+                          "legacy_filter_ids",
+                          "legacy_threshold_vnd",
+                          "source_refs",
+                          "created_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "next_cursor": {
+                      "format": "uuid",
+                      "nullable": true,
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                      "type": "string"
+                    },
+                    "session": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "cash_end_vnd": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "completed_at": {
+                          "format": "date-time",
+                          "nullable": true,
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                          "type": "string"
+                        },
+                        "config_revision": {
+                          "maximum": 9007199254740991,
+                          "minimum": 1,
+                          "nullable": true,
+                          "type": "integer"
+                        },
+                        "counts": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "buy": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "hold": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "sell": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "skip": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "total": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "buy",
+                            "sell",
+                            "hold",
+                            "skip",
+                            "total"
+                          ],
+                          "type": "object"
+                        },
+                        "issues": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "code": {
+                                "type": "string"
+                              },
+                              "detail": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "symbol": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "code",
+                              "symbol",
+                              "detail"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "nav_end_vnd": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "policy_version": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "reasons": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "action": {
+                                "enum": [
+                                  "buy",
+                                  "sell",
+                                  "hold",
+                                  "skip"
+                                ],
+                                "type": "string"
+                              },
+                              "count": {
+                                "maximum": 9007199254740991,
+                                "minimum": 1,
+                                "type": "integer"
+                              },
+                              "reason_code": {
+                                "type": "string"
+                              },
+                              "reason_label": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "action",
+                              "reason_code",
+                              "reason_label",
+                              "count"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "run_id": {
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                          "type": "string"
+                        },
+                        "run_status": {
+                          "enum": [
+                            "running",
+                            "succeeded",
+                            "failed"
+                          ],
+                          "type": "string"
+                        },
+                        "session": {
+                          "format": "date",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                          "type": "string"
+                        },
+                        "started_at": {
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                          "type": "string"
+                        },
+                        "universe": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "kind": {
+                              "enum": [
+                                "vn30",
+                                "custom"
+                              ],
+                              "type": "string"
+                            },
+                            "name": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "revision": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "revision",
+                            "name"
+                          ],
+                          "type": "object"
+                        },
+                        "valuation_complete": {
+                          "nullable": true,
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "session",
+                        "run_id",
+                        "run_status",
+                        "started_at",
+                        "completed_at",
+                        "policy_version",
+                        "universe",
+                        "config_revision",
+                        "counts",
+                        "reasons",
+                        "nav_end_vnd",
+                        "cash_end_vnd",
+                        "valuation_complete",
+                        "issues"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "session",
+                    "items",
+                    "next_cursor"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Decisions of one Bot session (executed first, then by symbol), paginated",
+        "tags": [
+          "Bot"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/bot/mascot": {
       "get": {
         "operationId": "JourneyIdentityController_getMascot[1]",
@@ -79505,6 +80322,356 @@
         ],
         "x-auth-level": "authenticated",
         "x-response-schema-status": "v2-declared"
+      }
+    },
+    "/api/v2/bot/trades": {
+      "get": {
+        "operationId": "getBotTrades",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "buy": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "decision_config_revision": {
+                                "maximum": 9007199254740991,
+                                "minimum": 1,
+                                "nullable": true,
+                                "type": "integer"
+                              },
+                              "decision_id": {
+                                "format": "uuid",
+                                "nullable": true,
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "type": "string"
+                              },
+                              "entry_source_snapshot": {
+                                "additionalProperties": {},
+                                "nullable": true,
+                                "type": "object"
+                              },
+                              "executed_at": {
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                                "type": "string"
+                              },
+                              "execution_id": {
+                                "format": "uuid",
+                                "nullable": true,
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "type": "string"
+                              },
+                              "fee_vnd": {
+                                "type": "string"
+                              },
+                              "gross_value_vnd": {
+                                "type": "string"
+                              },
+                              "price_vnd": {
+                                "type": "string"
+                              },
+                              "qty": {
+                                "maximum": 9007199254740991,
+                                "minimum": 1,
+                                "type": "integer"
+                              },
+                              "reason": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "reason_code": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "reason_label": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "session": {
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                "type": "string"
+                              },
+                              "total_vnd": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "execution_id",
+                              "decision_id",
+                              "session",
+                              "executed_at",
+                              "price_vnd",
+                              "qty",
+                              "gross_value_vnd",
+                              "fee_vnd",
+                              "total_vnd",
+                              "decision_config_revision",
+                              "entry_source_snapshot",
+                              "reason_code",
+                              "reason_label",
+                              "reason"
+                            ],
+                            "type": "object"
+                          },
+                          "holding_days": {
+                            "maximum": 9007199254740991,
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "holding_sessions": {
+                            "maximum": 9007199254740991,
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          "id": {
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                            "type": "string"
+                          },
+                          "legacy_amplitude_at_entry_vnd": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "legacy_amplitude_source_ref": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "legacy_filter_ids": {
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          "legacy_stop_loss_vnd": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "legacy_take_profit_vnd": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "realized_pnl_pct": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "realized_pnl_vnd": {
+                            "type": "string"
+                          },
+                          "sell": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "decision_config_revision": {
+                                "maximum": 9007199254740991,
+                                "minimum": 1,
+                                "nullable": true,
+                                "type": "integer"
+                              },
+                              "decision_id": {
+                                "format": "uuid",
+                                "nullable": true,
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "type": "string"
+                              },
+                              "executed_at": {
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                                "type": "string"
+                              },
+                              "execution_id": {
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "type": "string"
+                              },
+                              "fee_vnd": {
+                                "type": "string"
+                              },
+                              "gross_value_vnd": {
+                                "type": "string"
+                              },
+                              "net_vnd": {
+                                "type": "string"
+                              },
+                              "price_vnd": {
+                                "type": "string"
+                              },
+                              "qty": {
+                                "maximum": 9007199254740991,
+                                "minimum": 1,
+                                "type": "integer"
+                              },
+                              "reason": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "reason_code": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "reason_label": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "session": {
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                                "type": "string"
+                              },
+                              "tax_vnd": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "execution_id",
+                              "decision_id",
+                              "session",
+                              "executed_at",
+                              "price_vnd",
+                              "qty",
+                              "gross_value_vnd",
+                              "fee_vnd",
+                              "tax_vnd",
+                              "net_vnd",
+                              "decision_config_revision",
+                              "reason_code",
+                              "reason_label",
+                              "reason"
+                            ],
+                            "type": "object"
+                          },
+                          "symbol": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "symbol",
+                          "buy",
+                          "sell",
+                          "realized_pnl_vnd",
+                          "realized_pnl_pct",
+                          "holding_sessions",
+                          "holding_days",
+                          "legacy_stop_loss_vnd",
+                          "legacy_take_profit_vnd",
+                          "legacy_amplitude_at_entry_vnd",
+                          "legacy_amplitude_source_ref",
+                          "legacy_filter_ids"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "next_cursor": {
+                      "format": "uuid",
+                      "nullable": true,
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Closed Bot round trips (buy + sell, fees, tax, realized P&L), newest first",
+        "tags": [
+          "Bot"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
       }
     },
     "/api/v2/bot/universe": {
@@ -122241,6 +123408,42 @@
                               "rules"
                             ],
                             "type": "object"
+                          },
+                          "validation": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "cross_fields": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "left": {
+                                      "type": "string"
+                                    },
+                                    "op": {
+                                      "enum": [
+                                        ">",
+                                        "<"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "right": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "left",
+                                    "op",
+                                    "right"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "cross_fields"
+                            ],
+                            "type": "object"
                           }
                         },
                         "required": [
@@ -122252,6 +123455,7 @@
                           "formula",
                           "availability",
                           "fields",
+                          "validation",
                           "buy",
                           "sell",
                           "learned"
@@ -127064,6 +128268,1139 @@
                     },
                     "config_hash": {
                       "type": "string"
+                    },
+                    "effective": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "config": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "indicators": {
+                              "additionalProperties": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "buy": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "enabled": {
+                                        "type": "boolean"
+                                      },
+                                      "params": {
+                                        "additionalProperties": {
+                                          "type": "number"
+                                        },
+                                        "type": "object"
+                                      },
+                                      "rules": {
+                                        "items": {
+                                          "anyOf": [
+                                            {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "allowed_ops": {
+                                                  "items": {
+                                                    "enum": [
+                                                      ">",
+                                                      "<"
+                                                    ],
+                                                    "type": "string"
+                                                  },
+                                                  "maxItems": 2,
+                                                  "minItems": 1,
+                                                  "type": "array"
+                                                },
+                                                "id": {
+                                                  "maxLength": 32,
+                                                  "minLength": 1,
+                                                  "type": "string"
+                                                },
+                                                "kind": {
+                                                  "enum": [
+                                                    "compare",
+                                                    "cross"
+                                                  ],
+                                                  "type": "string"
+                                                },
+                                                "lhs": {
+                                                  "oneOf": [
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "key": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "kind": {
+                                                          "enum": [
+                                                            "series"
+                                                          ],
+                                                          "type": "string"
+                                                        },
+                                                        "offset": {
+                                                          "maximum": 9007199254740991,
+                                                          "minimum": -9007199254740991,
+                                                          "type": "integer"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "key"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "key": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "kind": {
+                                                          "enum": [
+                                                            "param"
+                                                          ],
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "key"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "kind": {
+                                                          "enum": [
+                                                            "constant"
+                                                          ],
+                                                          "type": "string"
+                                                        },
+                                                        "value": {
+                                                          "type": "number"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "value"
+                                                      ],
+                                                      "type": "object"
+                                                    }
+                                                  ]
+                                                },
+                                                "op": {
+                                                  "enum": [
+                                                    ">",
+                                                    "<"
+                                                  ],
+                                                  "type": "string"
+                                                },
+                                                "rhs": {
+                                                  "oneOf": [
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "key": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "kind": {
+                                                          "enum": [
+                                                            "series"
+                                                          ],
+                                                          "type": "string"
+                                                        },
+                                                        "offset": {
+                                                          "maximum": 9007199254740991,
+                                                          "minimum": -9007199254740991,
+                                                          "type": "integer"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "key"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "key": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "kind": {
+                                                          "enum": [
+                                                            "param"
+                                                          ],
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "key"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "kind": {
+                                                          "enum": [
+                                                            "constant"
+                                                          ],
+                                                          "type": "string"
+                                                        },
+                                                        "value": {
+                                                          "type": "number"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "value"
+                                                      ],
+                                                      "type": "object"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              "required": [
+                                                "id",
+                                                "kind",
+                                                "lhs",
+                                                "op",
+                                                "rhs",
+                                                "allowed_ops"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "allowed_ops": {
+                                                  "items": {
+                                                    "enum": [
+                                                      "∈",
+                                                      "∉"
+                                                    ],
+                                                    "type": "string"
+                                                  },
+                                                  "maxItems": 2,
+                                                  "minItems": 1,
+                                                  "type": "array"
+                                                },
+                                                "id": {
+                                                  "maxLength": 32,
+                                                  "minLength": 1,
+                                                  "type": "string"
+                                                },
+                                                "kind": {
+                                                  "enum": [
+                                                    "membership"
+                                                  ],
+                                                  "type": "string"
+                                                },
+                                                "lhs": {
+                                                  "oneOf": [
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "key": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "kind": {
+                                                          "enum": [
+                                                            "series"
+                                                          ],
+                                                          "type": "string"
+                                                        },
+                                                        "offset": {
+                                                          "maximum": 9007199254740991,
+                                                          "minimum": -9007199254740991,
+                                                          "type": "integer"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "key"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "key": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "kind": {
+                                                          "enum": [
+                                                            "param"
+                                                          ],
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "key"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "kind": {
+                                                          "enum": [
+                                                            "constant"
+                                                          ],
+                                                          "type": "string"
+                                                        },
+                                                        "value": {
+                                                          "type": "number"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "value"
+                                                      ],
+                                                      "type": "object"
+                                                    }
+                                                  ]
+                                                },
+                                                "op": {
+                                                  "enum": [
+                                                    "∈",
+                                                    "∉"
+                                                  ],
+                                                  "type": "string"
+                                                },
+                                                "rhs": {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "bounds": {
+                                                      "enum": [
+                                                        "open"
+                                                      ],
+                                                      "type": "string"
+                                                    },
+                                                    "kind": {
+                                                      "enum": [
+                                                        "interval"
+                                                      ],
+                                                      "type": "string"
+                                                    },
+                                                    "lower": {
+                                                      "oneOf": [
+                                                        {
+                                                          "additionalProperties": false,
+                                                          "properties": {
+                                                            "key": {
+                                                              "maxLength": 64,
+                                                              "minLength": 1,
+                                                              "type": "string"
+                                                            },
+                                                            "kind": {
+                                                              "enum": [
+                                                                "series"
+                                                              ],
+                                                              "type": "string"
+                                                            },
+                                                            "offset": {
+                                                              "maximum": 9007199254740991,
+                                                              "minimum": -9007199254740991,
+                                                              "type": "integer"
+                                                            }
+                                                          },
+                                                          "required": [
+                                                            "kind",
+                                                            "key"
+                                                          ],
+                                                          "type": "object"
+                                                        },
+                                                        {
+                                                          "additionalProperties": false,
+                                                          "properties": {
+                                                            "key": {
+                                                              "maxLength": 64,
+                                                              "minLength": 1,
+                                                              "type": "string"
+                                                            },
+                                                            "kind": {
+                                                              "enum": [
+                                                                "param"
+                                                              ],
+                                                              "type": "string"
+                                                            }
+                                                          },
+                                                          "required": [
+                                                            "kind",
+                                                            "key"
+                                                          ],
+                                                          "type": "object"
+                                                        },
+                                                        {
+                                                          "additionalProperties": false,
+                                                          "properties": {
+                                                            "kind": {
+                                                              "enum": [
+                                                                "constant"
+                                                              ],
+                                                              "type": "string"
+                                                            },
+                                                            "value": {
+                                                              "type": "number"
+                                                            }
+                                                          },
+                                                          "required": [
+                                                            "kind",
+                                                            "value"
+                                                          ],
+                                                          "type": "object"
+                                                        }
+                                                      ]
+                                                    },
+                                                    "upper": {
+                                                      "oneOf": [
+                                                        {
+                                                          "additionalProperties": false,
+                                                          "properties": {
+                                                            "key": {
+                                                              "maxLength": 64,
+                                                              "minLength": 1,
+                                                              "type": "string"
+                                                            },
+                                                            "kind": {
+                                                              "enum": [
+                                                                "series"
+                                                              ],
+                                                              "type": "string"
+                                                            },
+                                                            "offset": {
+                                                              "maximum": 9007199254740991,
+                                                              "minimum": -9007199254740991,
+                                                              "type": "integer"
+                                                            }
+                                                          },
+                                                          "required": [
+                                                            "kind",
+                                                            "key"
+                                                          ],
+                                                          "type": "object"
+                                                        },
+                                                        {
+                                                          "additionalProperties": false,
+                                                          "properties": {
+                                                            "key": {
+                                                              "maxLength": 64,
+                                                              "minLength": 1,
+                                                              "type": "string"
+                                                            },
+                                                            "kind": {
+                                                              "enum": [
+                                                                "param"
+                                                              ],
+                                                              "type": "string"
+                                                            }
+                                                          },
+                                                          "required": [
+                                                            "kind",
+                                                            "key"
+                                                          ],
+                                                          "type": "object"
+                                                        },
+                                                        {
+                                                          "additionalProperties": false,
+                                                          "properties": {
+                                                            "kind": {
+                                                              "enum": [
+                                                                "constant"
+                                                              ],
+                                                              "type": "string"
+                                                            },
+                                                            "value": {
+                                                              "type": "number"
+                                                            }
+                                                          },
+                                                          "required": [
+                                                            "kind",
+                                                            "value"
+                                                          ],
+                                                          "type": "object"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "lower",
+                                                    "upper"
+                                                  ],
+                                                  "type": "object"
+                                                }
+                                              },
+                                              "required": [
+                                                "id",
+                                                "kind",
+                                                "lhs",
+                                                "op",
+                                                "rhs",
+                                                "allowed_ops"
+                                              ],
+                                              "type": "object"
+                                            }
+                                          ]
+                                        },
+                                        "maxItems": 16,
+                                        "type": "array"
+                                      }
+                                    },
+                                    "required": [
+                                      "enabled",
+                                      "params",
+                                      "rules"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "master_enabled": {
+                                    "type": "boolean"
+                                  },
+                                  "sell": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "enabled": {
+                                        "type": "boolean"
+                                      },
+                                      "params": {
+                                        "additionalProperties": {
+                                          "type": "number"
+                                        },
+                                        "type": "object"
+                                      },
+                                      "rules": {
+                                        "items": {
+                                          "anyOf": [
+                                            {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "allowed_ops": {
+                                                  "items": {
+                                                    "enum": [
+                                                      ">",
+                                                      "<"
+                                                    ],
+                                                    "type": "string"
+                                                  },
+                                                  "maxItems": 2,
+                                                  "minItems": 1,
+                                                  "type": "array"
+                                                },
+                                                "id": {
+                                                  "maxLength": 32,
+                                                  "minLength": 1,
+                                                  "type": "string"
+                                                },
+                                                "kind": {
+                                                  "enum": [
+                                                    "compare",
+                                                    "cross"
+                                                  ],
+                                                  "type": "string"
+                                                },
+                                                "lhs": {
+                                                  "oneOf": [
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "key": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "kind": {
+                                                          "enum": [
+                                                            "series"
+                                                          ],
+                                                          "type": "string"
+                                                        },
+                                                        "offset": {
+                                                          "maximum": 9007199254740991,
+                                                          "minimum": -9007199254740991,
+                                                          "type": "integer"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "key"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "key": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "kind": {
+                                                          "enum": [
+                                                            "param"
+                                                          ],
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "key"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "kind": {
+                                                          "enum": [
+                                                            "constant"
+                                                          ],
+                                                          "type": "string"
+                                                        },
+                                                        "value": {
+                                                          "type": "number"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "value"
+                                                      ],
+                                                      "type": "object"
+                                                    }
+                                                  ]
+                                                },
+                                                "op": {
+                                                  "enum": [
+                                                    ">",
+                                                    "<"
+                                                  ],
+                                                  "type": "string"
+                                                },
+                                                "rhs": {
+                                                  "oneOf": [
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "key": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "kind": {
+                                                          "enum": [
+                                                            "series"
+                                                          ],
+                                                          "type": "string"
+                                                        },
+                                                        "offset": {
+                                                          "maximum": 9007199254740991,
+                                                          "minimum": -9007199254740991,
+                                                          "type": "integer"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "key"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "key": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "kind": {
+                                                          "enum": [
+                                                            "param"
+                                                          ],
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "key"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "kind": {
+                                                          "enum": [
+                                                            "constant"
+                                                          ],
+                                                          "type": "string"
+                                                        },
+                                                        "value": {
+                                                          "type": "number"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "value"
+                                                      ],
+                                                      "type": "object"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              "required": [
+                                                "id",
+                                                "kind",
+                                                "lhs",
+                                                "op",
+                                                "rhs",
+                                                "allowed_ops"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "allowed_ops": {
+                                                  "items": {
+                                                    "enum": [
+                                                      "∈",
+                                                      "∉"
+                                                    ],
+                                                    "type": "string"
+                                                  },
+                                                  "maxItems": 2,
+                                                  "minItems": 1,
+                                                  "type": "array"
+                                                },
+                                                "id": {
+                                                  "maxLength": 32,
+                                                  "minLength": 1,
+                                                  "type": "string"
+                                                },
+                                                "kind": {
+                                                  "enum": [
+                                                    "membership"
+                                                  ],
+                                                  "type": "string"
+                                                },
+                                                "lhs": {
+                                                  "oneOf": [
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "key": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "kind": {
+                                                          "enum": [
+                                                            "series"
+                                                          ],
+                                                          "type": "string"
+                                                        },
+                                                        "offset": {
+                                                          "maximum": 9007199254740991,
+                                                          "minimum": -9007199254740991,
+                                                          "type": "integer"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "key"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "key": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "kind": {
+                                                          "enum": [
+                                                            "param"
+                                                          ],
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "key"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "kind": {
+                                                          "enum": [
+                                                            "constant"
+                                                          ],
+                                                          "type": "string"
+                                                        },
+                                                        "value": {
+                                                          "type": "number"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "value"
+                                                      ],
+                                                      "type": "object"
+                                                    }
+                                                  ]
+                                                },
+                                                "op": {
+                                                  "enum": [
+                                                    "∈",
+                                                    "∉"
+                                                  ],
+                                                  "type": "string"
+                                                },
+                                                "rhs": {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "bounds": {
+                                                      "enum": [
+                                                        "open"
+                                                      ],
+                                                      "type": "string"
+                                                    },
+                                                    "kind": {
+                                                      "enum": [
+                                                        "interval"
+                                                      ],
+                                                      "type": "string"
+                                                    },
+                                                    "lower": {
+                                                      "oneOf": [
+                                                        {
+                                                          "additionalProperties": false,
+                                                          "properties": {
+                                                            "key": {
+                                                              "maxLength": 64,
+                                                              "minLength": 1,
+                                                              "type": "string"
+                                                            },
+                                                            "kind": {
+                                                              "enum": [
+                                                                "series"
+                                                              ],
+                                                              "type": "string"
+                                                            },
+                                                            "offset": {
+                                                              "maximum": 9007199254740991,
+                                                              "minimum": -9007199254740991,
+                                                              "type": "integer"
+                                                            }
+                                                          },
+                                                          "required": [
+                                                            "kind",
+                                                            "key"
+                                                          ],
+                                                          "type": "object"
+                                                        },
+                                                        {
+                                                          "additionalProperties": false,
+                                                          "properties": {
+                                                            "key": {
+                                                              "maxLength": 64,
+                                                              "minLength": 1,
+                                                              "type": "string"
+                                                            },
+                                                            "kind": {
+                                                              "enum": [
+                                                                "param"
+                                                              ],
+                                                              "type": "string"
+                                                            }
+                                                          },
+                                                          "required": [
+                                                            "kind",
+                                                            "key"
+                                                          ],
+                                                          "type": "object"
+                                                        },
+                                                        {
+                                                          "additionalProperties": false,
+                                                          "properties": {
+                                                            "kind": {
+                                                              "enum": [
+                                                                "constant"
+                                                              ],
+                                                              "type": "string"
+                                                            },
+                                                            "value": {
+                                                              "type": "number"
+                                                            }
+                                                          },
+                                                          "required": [
+                                                            "kind",
+                                                            "value"
+                                                          ],
+                                                          "type": "object"
+                                                        }
+                                                      ]
+                                                    },
+                                                    "upper": {
+                                                      "oneOf": [
+                                                        {
+                                                          "additionalProperties": false,
+                                                          "properties": {
+                                                            "key": {
+                                                              "maxLength": 64,
+                                                              "minLength": 1,
+                                                              "type": "string"
+                                                            },
+                                                            "kind": {
+                                                              "enum": [
+                                                                "series"
+                                                              ],
+                                                              "type": "string"
+                                                            },
+                                                            "offset": {
+                                                              "maximum": 9007199254740991,
+                                                              "minimum": -9007199254740991,
+                                                              "type": "integer"
+                                                            }
+                                                          },
+                                                          "required": [
+                                                            "kind",
+                                                            "key"
+                                                          ],
+                                                          "type": "object"
+                                                        },
+                                                        {
+                                                          "additionalProperties": false,
+                                                          "properties": {
+                                                            "key": {
+                                                              "maxLength": 64,
+                                                              "minLength": 1,
+                                                              "type": "string"
+                                                            },
+                                                            "kind": {
+                                                              "enum": [
+                                                                "param"
+                                                              ],
+                                                              "type": "string"
+                                                            }
+                                                          },
+                                                          "required": [
+                                                            "kind",
+                                                            "key"
+                                                          ],
+                                                          "type": "object"
+                                                        },
+                                                        {
+                                                          "additionalProperties": false,
+                                                          "properties": {
+                                                            "kind": {
+                                                              "enum": [
+                                                                "constant"
+                                                              ],
+                                                              "type": "string"
+                                                            },
+                                                            "value": {
+                                                              "type": "number"
+                                                            }
+                                                          },
+                                                          "required": [
+                                                            "kind",
+                                                            "value"
+                                                          ],
+                                                          "type": "object"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "lower",
+                                                    "upper"
+                                                  ],
+                                                  "type": "object"
+                                                }
+                                              },
+                                              "required": [
+                                                "id",
+                                                "kind",
+                                                "lhs",
+                                                "op",
+                                                "rhs",
+                                                "allowed_ops"
+                                              ],
+                                              "type": "object"
+                                            }
+                                          ]
+                                        },
+                                        "maxItems": 16,
+                                        "type": "array"
+                                      }
+                                    },
+                                    "required": [
+                                      "enabled",
+                                      "params",
+                                      "rules"
+                                    ],
+                                    "type": "object"
+                                  }
+                                },
+                                "required": [
+                                  "master_enabled",
+                                  "buy",
+                                  "sell"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "object"
+                            },
+                            "revision": {
+                              "maximum": 9007199254740991,
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "rule_version": {
+                              "enum": [
+                                "iqx-rules-3.0"
+                              ],
+                              "type": "string"
+                            },
+                            "schema_version": {
+                              "enum": [
+                                "2.0"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "schema_version",
+                            "revision",
+                            "rule_version",
+                            "indicators"
+                          ],
+                          "type": "object"
+                        },
+                        "config_hash": {
+                          "type": "string"
+                        },
+                        "effective_session": {
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                          "type": "string"
+                        },
+                        "legacy": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "buy": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "indicators": {
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                },
+                                "status": {
+                                  "enum": [
+                                    "ok",
+                                    "legacy_needs_review"
+                                  ],
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "status",
+                                "indicators"
+                              ],
+                              "type": "object"
+                            },
+                            "defaulted_indicators": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "from_rule_version": {
+                              "type": "string"
+                            },
+                            "legacy": {
+                              "type": "boolean"
+                            },
+                            "needs_review": {
+                              "type": "boolean"
+                            },
+                            "removed_indicators": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "sell": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "indicators": {
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                },
+                                "status": {
+                                  "enum": [
+                                    "ok",
+                                    "legacy_needs_review"
+                                  ],
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "status",
+                                "indicators"
+                              ],
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "from_rule_version",
+                            "legacy",
+                            "removed_indicators",
+                            "defaulted_indicators",
+                            "buy",
+                            "sell",
+                            "needs_review"
+                          ],
+                          "type": "object"
+                        },
+                        "revision": {
+                          "maximum": 9007199254740991,
+                          "minimum": 1,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "revision",
+                        "effective_session",
+                        "config_hash",
+                        "config",
+                        "legacy"
+                      ],
+                      "type": "object"
                     },
                     "effective_revision": {
                       "maximum": 9007199254740991,
@@ -133511,11 +135848,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 524,
+    "authenticatedOperations": 527,
     "noContentResponses": 18,
-    "operations": 723,
+    "operations": 726,
     "publicOperations": 199,
-    "responseSchemas": 705,
+    "responseSchemas": 708,
     "untypedResponses": 0
   }
 }

@@ -357,6 +357,16 @@
       "requestType": "GetBotJournalGetApiV2BotJournalData",
       "responseType": "GetBotJournalGetApiV2BotJournalResponses"
     },
+    "GET /api/v2/bot/journal/sessions": {
+      "operationId": "listBotJournalSessions",
+      "requestType": "ListBotJournalSessionsData",
+      "responseType": "ListBotJournalSessionsResponses"
+    },
+    "GET /api/v2/bot/journal/sessions/{session}": {
+      "operationId": "getBotJournalSession",
+      "requestType": "GetBotJournalSessionData",
+      "responseType": "GetBotJournalSessionResponses"
+    },
     "GET /api/v2/bot/mascot": {
       "operationId": "JourneyIdentityController_getMascot[1]",
       "requestType": "JourneyIdentityControllerGetMascot1Data",
@@ -376,6 +386,11 @@
       "operationId": "getBotStatus_get_api_v2_bot_status",
       "requestType": "GetBotStatusGetApiV2BotStatusData",
       "responseType": "GetBotStatusGetApiV2BotStatusResponses"
+    },
+    "GET /api/v2/bot/trades": {
+      "operationId": "getBotTrades",
+      "requestType": "GetBotTradesData",
+      "responseType": "GetBotTradesResponses"
     },
     "GET /api/v2/bot/universe": {
       "operationId": "getBotUniverse",

@@ -3872,8 +3872,8 @@
     "semanticVerification": "manual-review-required"
   },
   "runtime": {
-    "documentedHttp": 723,
-    "registeredHttp": 1151,
+    "documentedHttp": 726,
+    "registeredHttp": 1157,
     "websocketAdapter": "WsAdapter",
     "websocketGateways": 2
   },

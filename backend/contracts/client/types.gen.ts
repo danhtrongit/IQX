@@ -31509,6 +31509,203 @@ export type GetBotJournalGetApiV2BotJournalResponses = {
 export type GetBotJournalGetApiV2BotJournalResponse =
   GetBotJournalGetApiV2BotJournalResponses[keyof GetBotJournalGetApiV2BotJournalResponses];
 
+export type ListBotJournalSessionsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    cursor?: string;
+    limit?: number;
+  };
+  url: "/api/v2/bot/journal/sessions";
+};
+
+export type ListBotJournalSessionsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ListBotJournalSessionsError =
+  ListBotJournalSessionsErrors[keyof ListBotJournalSessionsErrors];
+
+export type ListBotJournalSessionsResponses = {
+  200: {
+    items: Array<{
+      cash_end_vnd: string | null;
+      completed_at: string | null;
+      config_revision: number | null;
+      counts: {
+        buy: number;
+        hold: number;
+        sell: number;
+        skip: number;
+        total: number;
+      };
+      issues: Array<{
+        code: string;
+        detail: string | null;
+        symbol: string | null;
+      }>;
+      nav_end_vnd: string | null;
+      policy_version: string | null;
+      reasons: Array<{
+        action: "buy" | "sell" | "hold" | "skip";
+        count: number;
+        reason_code: string;
+        reason_label: string | null;
+      }>;
+      run_id: string;
+      run_status: "running" | "succeeded" | "failed";
+      session: string;
+      started_at: string;
+      universe: {
+        kind: "vn30" | "custom";
+        name: string | null;
+        revision: number;
+      } | null;
+      valuation_complete: boolean | null;
+    }>;
+    next_cursor: string | null;
+  };
+};
+
+export type ListBotJournalSessionsResponse =
+  ListBotJournalSessionsResponses[keyof ListBotJournalSessionsResponses];
+
+export type GetBotJournalSessionData = {
+  body?: never;
+  path: {
+    session: string;
+  };
+  query?: {
+    cursor?: string;
+    limit?: number;
+  };
+  url: "/api/v2/bot/journal/sessions/{session}";
+};
+
+export type GetBotJournalSessionErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetBotJournalSessionError =
+  GetBotJournalSessionErrors[keyof GetBotJournalSessionErrors];
+
+export type GetBotJournalSessionResponses = {
+  200: {
+    items: Array<{
+      action: "buy" | "sell" | "hold" | "skip";
+      condition_snapshot: {
+        [key: string]: unknown;
+      } | null;
+      created_at: string;
+      decision_config_revision: number | null;
+      execution: {
+        fee_vnd: string;
+        gross_value_vnd: string;
+        id: string;
+        net_cash_delta_vnd: string;
+        price_vnd: string;
+        qty: number;
+        side: "buy" | "sell";
+        tax_vnd: string;
+      } | null;
+      id: string;
+      in_universe: boolean | null;
+      legacy_filter_ids: Array<string>;
+      legacy_threshold_vnd: string | null;
+      policy_version: string | null;
+      rank_tuple: Array<unknown> | null;
+      reason: string;
+      reason_code: string;
+      reason_label: string | null;
+      run_id: string;
+      source_refs: {
+        [key: string]: unknown;
+      };
+      symbol: string | null;
+      trading_date: string;
+      universe_kind: "vn30" | "custom";
+      universe_revision: number | null;
+    }>;
+    next_cursor: string | null;
+    session: {
+      cash_end_vnd: string | null;
+      completed_at: string | null;
+      config_revision: number | null;
+      counts: {
+        buy: number;
+        hold: number;
+        sell: number;
+        skip: number;
+        total: number;
+      };
+      issues: Array<{
+        code: string;
+        detail: string | null;
+        symbol: string | null;
+      }>;
+      nav_end_vnd: string | null;
+      policy_version: string | null;
+      reasons: Array<{
+        action: "buy" | "sell" | "hold" | "skip";
+        count: number;
+        reason_code: string;
+        reason_label: string | null;
+      }>;
+      run_id: string;
+      run_status: "running" | "succeeded" | "failed";
+      session: string;
+      started_at: string;
+      universe: {
+        kind: "vn30" | "custom";
+        name: string | null;
+        revision: number;
+      } | null;
+      valuation_complete: boolean | null;
+    };
+  };
+};
+
+export type GetBotJournalSessionResponse =
+  GetBotJournalSessionResponses[keyof GetBotJournalSessionResponses];
+
 export type JourneyIdentityControllerGetMascot1Data = {
   body?: never;
   path?: never;
@@ -31722,6 +31919,97 @@ export type GetBotStatusGetApiV2BotStatusResponses = {
 
 export type GetBotStatusGetApiV2BotStatusResponse =
   GetBotStatusGetApiV2BotStatusResponses[keyof GetBotStatusGetApiV2BotStatusResponses];
+
+export type GetBotTradesData = {
+  body?: never;
+  path?: never;
+  query?: {
+    cursor?: string;
+    limit?: number;
+  };
+  url: "/api/v2/bot/trades";
+};
+
+export type GetBotTradesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetBotTradesError = GetBotTradesErrors[keyof GetBotTradesErrors];
+
+export type GetBotTradesResponses = {
+  200: {
+    items: Array<{
+      buy: {
+        decision_config_revision: number | null;
+        decision_id: string | null;
+        entry_source_snapshot: {
+          [key: string]: unknown;
+        } | null;
+        executed_at: string;
+        execution_id: string | null;
+        fee_vnd: string;
+        gross_value_vnd: string;
+        price_vnd: string;
+        qty: number;
+        reason: string | null;
+        reason_code: string | null;
+        reason_label: string | null;
+        session: string;
+        total_vnd: string;
+      };
+      holding_days: number;
+      holding_sessions: number;
+      id: string;
+      legacy_amplitude_at_entry_vnd: string | null;
+      legacy_amplitude_source_ref: string | null;
+      legacy_filter_ids: Array<string>;
+      legacy_stop_loss_vnd: string | null;
+      legacy_take_profit_vnd: string | null;
+      realized_pnl_pct: string | null;
+      realized_pnl_vnd: string;
+      sell: {
+        decision_config_revision: number | null;
+        decision_id: string | null;
+        executed_at: string;
+        execution_id: string;
+        fee_vnd: string;
+        gross_value_vnd: string;
+        net_vnd: string;
+        price_vnd: string;
+        qty: number;
+        reason: string | null;
+        reason_code: string | null;
+        reason_label: string | null;
+        session: string;
+        tax_vnd: string;
+      };
+      symbol: string;
+    }>;
+    next_cursor: string | null;
+  };
+};
+
+export type GetBotTradesResponse =
+  GetBotTradesResponses[keyof GetBotTradesResponses];
 
 export type GetBotUniverseData = {
   body?: never;
@@ -46213,6 +46501,13 @@ export type StrategyConfigTechnicalRegistryResponses = {
             }
         >;
       };
+      validation: {
+        cross_fields: Array<{
+          left: string;
+          op: ">" | "<";
+          right: string;
+        }>;
+      };
     }>;
     rule_version: string;
   };
@@ -47941,6 +48236,224 @@ export type StrategyConfigGetSharedConfigResponses = {
       schema_version: "2.0";
     };
     config_hash: string;
+    effective?: {
+      config: {
+        indicators: {
+          [key: string]: {
+            buy: {
+              enabled: boolean;
+              params: {
+                [key: string]: number;
+              };
+              rules: Array<
+                | {
+                    allowed_ops: Array<">" | "<">;
+                    id: string;
+                    kind: "compare" | "cross";
+                    lhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    op: ">" | "<";
+                    rhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                  }
+                | {
+                    allowed_ops: Array<"∈" | "∉">;
+                    id: string;
+                    kind: "membership";
+                    lhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    op: "∈" | "∉";
+                    rhs: {
+                      bounds?: "open";
+                      kind?: "interval";
+                      lower:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      upper:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                    };
+                  }
+              >;
+            };
+            master_enabled: boolean;
+            sell: {
+              enabled: boolean;
+              params: {
+                [key: string]: number;
+              };
+              rules: Array<
+                | {
+                    allowed_ops: Array<">" | "<">;
+                    id: string;
+                    kind: "compare" | "cross";
+                    lhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    op: ">" | "<";
+                    rhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                  }
+                | {
+                    allowed_ops: Array<"∈" | "∉">;
+                    id: string;
+                    kind: "membership";
+                    lhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    op: "∈" | "∉";
+                    rhs: {
+                      bounds?: "open";
+                      kind?: "interval";
+                      lower:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      upper:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                    };
+                  }
+              >;
+            };
+          };
+        };
+        revision: number;
+        rule_version: "iqx-rules-3.0";
+        schema_version: "2.0";
+      };
+      config_hash: string;
+      effective_session: string;
+      legacy: {
+        buy: {
+          indicators: Array<string>;
+          status: "ok" | "legacy_needs_review";
+        };
+        defaulted_indicators: Array<string>;
+        from_rule_version: string;
+        legacy: boolean;
+        needs_review: boolean;
+        removed_indicators: Array<string>;
+        sell: {
+          indicators: Array<string>;
+          status: "ok" | "legacy_needs_review";
+        };
+      } | null;
+      revision: number;
+    } | null;
     effective_revision: number | null;
     effective_session: string | null;
     granted_indicators: Array<string>;

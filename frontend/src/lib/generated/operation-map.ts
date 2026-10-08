@@ -73,10 +73,13 @@ export interface OperationMap {
   "GET /api/v2/backtest/strategies": { request: T.QuantControllerList0Data; response: T.QuantControllerList0Responses[keyof T.QuantControllerList0Responses] }
   "GET /api/v2/bot": { request: T.GetBotOverviewGetApiV2BotData; response: T.GetBotOverviewGetApiV2BotResponses[keyof T.GetBotOverviewGetApiV2BotResponses] }
   "GET /api/v2/bot/journal": { request: T.GetBotJournalGetApiV2BotJournalData; response: T.GetBotJournalGetApiV2BotJournalResponses[keyof T.GetBotJournalGetApiV2BotJournalResponses] }
+  "GET /api/v2/bot/journal/sessions": { request: T.ListBotJournalSessionsData; response: T.ListBotJournalSessionsResponses[keyof T.ListBotJournalSessionsResponses] }
+  "GET /api/v2/bot/journal/sessions/{session}": { request: T.GetBotJournalSessionData; response: T.GetBotJournalSessionResponses[keyof T.GetBotJournalSessionResponses] }
   "GET /api/v2/bot/mascot": { request: T.JourneyIdentityControllerGetMascot1Data; response: T.JourneyIdentityControllerGetMascot1Responses[keyof T.JourneyIdentityControllerGetMascot1Responses] }
   "GET /api/v2/bot/performance": { request: T.GetBotPerformanceGetApiV2BotPerformanceData; response: T.GetBotPerformanceGetApiV2BotPerformanceResponses[keyof T.GetBotPerformanceGetApiV2BotPerformanceResponses] }
   "GET /api/v2/bot/positions": { request: T.GetBotPositionsGetApiV2BotPositionsData; response: T.GetBotPositionsGetApiV2BotPositionsResponses[keyof T.GetBotPositionsGetApiV2BotPositionsResponses] }
   "GET /api/v2/bot/status": { request: T.GetBotStatusGetApiV2BotStatusData; response: T.GetBotStatusGetApiV2BotStatusResponses[keyof T.GetBotStatusGetApiV2BotStatusResponses] }
+  "GET /api/v2/bot/trades": { request: T.GetBotTradesData; response: T.GetBotTradesResponses[keyof T.GetBotTradesResponses] }
   "GET /api/v2/bot/universe": { request: T.GetBotUniverseData; response: T.GetBotUniverseResponses[keyof T.GetBotUniverseResponses] }
   "GET /api/v2/cap0/kehoach": { request: T.Cap0ControllerGetKehoach1Data; response: T.Cap0ControllerGetKehoach1Responses[keyof T.Cap0ControllerGetKehoach1Responses] }
   "GET /api/v2/cap0/placement": { request: T.Cap0ControllerGetPlacement1Data; response: T.Cap0ControllerGetPlacement1Responses[keyof T.Cap0ControllerGetPlacement1Responses] }
@@ -468,10 +471,13 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/backtest/strategies": { request: "QuantControllerList0Data", response: "QuantControllerList0Responses" },
   "GET /api/v2/bot": { request: "GetBotOverviewGetApiV2BotData", response: "GetBotOverviewGetApiV2BotResponses" },
   "GET /api/v2/bot/journal": { request: "GetBotJournalGetApiV2BotJournalData", response: "GetBotJournalGetApiV2BotJournalResponses" },
+  "GET /api/v2/bot/journal/sessions": { request: "ListBotJournalSessionsData", response: "ListBotJournalSessionsResponses" },
+  "GET /api/v2/bot/journal/sessions/{session}": { request: "GetBotJournalSessionData", response: "GetBotJournalSessionResponses" },
   "GET /api/v2/bot/mascot": { request: "JourneyIdentityControllerGetMascot1Data", response: "JourneyIdentityControllerGetMascot1Responses" },
   "GET /api/v2/bot/performance": { request: "GetBotPerformanceGetApiV2BotPerformanceData", response: "GetBotPerformanceGetApiV2BotPerformanceResponses" },
   "GET /api/v2/bot/positions": { request: "GetBotPositionsGetApiV2BotPositionsData", response: "GetBotPositionsGetApiV2BotPositionsResponses" },
   "GET /api/v2/bot/status": { request: "GetBotStatusGetApiV2BotStatusData", response: "GetBotStatusGetApiV2BotStatusResponses" },
+  "GET /api/v2/bot/trades": { request: "GetBotTradesData", response: "GetBotTradesResponses" },
   "GET /api/v2/bot/universe": { request: "GetBotUniverseData", response: "GetBotUniverseResponses" },
   "GET /api/v2/cap0/kehoach": { request: "Cap0ControllerGetKehoach1Data", response: "Cap0ControllerGetKehoach1Responses" },
   "GET /api/v2/cap0/placement": { request: "Cap0ControllerGetPlacement1Data", response: "Cap0ControllerGetPlacement1Responses" },
