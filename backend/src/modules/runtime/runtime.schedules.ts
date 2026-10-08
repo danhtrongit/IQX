@@ -109,6 +109,14 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
       enabled: enabled('journey.cap5-consensus'),
     },
     {
+      name: 'market.index-membership',
+      description: 'Store the VN30 constituents of the session before the Bot run',
+      // Must precede bot.session-eod (19:00): the Bot buys from the stored membership.
+      pattern: '0 40 18 * * 1-5',
+      tradingDay: true,
+      enabled: enabled('market.index-membership'),
+    },
+    {
       name: 'bot.session-eod',
       description: 'Run the standard bot after close',
       pattern: '0 0 19 * * 1-5',

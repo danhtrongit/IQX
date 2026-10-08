@@ -114,6 +114,15 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
         this.cap2CloseScan(ictDate(scheduledFor)),
       'journey.cap5-consensus': async () => this.cap5Consensus(),
       'journey.identity-recovery': async () => this.identityRecovery(),
+      'market.index-membership': async ({ scheduledFor }) => {
+        const result = await this.bot.captureVn30Membership(ictDate(scheduledFor));
+        if (result.status === 'not_current_session') {
+          return { status: 'skipped', reason: 'not-current-session', detail: { ...result } };
+        }
+        // A failed fetch must surface as a failed job; the Bot run retries once for today.
+        if (result.status === 'unavailable') throw new Error(result.reason);
+        return this.complete(result);
+      },
       'bot.session-eod': async ({ scheduledFor }) =>
         this.complete(await this.bot.runScheduledSession(ictDate(scheduledFor))),
       'trading.rights-sync': async () => this.complete(await this.rights.syncAndApply(new Date())),

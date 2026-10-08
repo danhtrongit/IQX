@@ -5,6 +5,8 @@ import { MarketDataModule } from '../market-data/market-data.module.js';
 import { MarketExtendedModule } from '../market-extended/market-extended.module.js';
 import { BotMarketSnapshotProvider } from './bot-market-snapshot.provider.js';
 import { HoseRestrictedSecuritiesProvider } from './hose-restricted-securities.provider.js';
+import { IndexMembershipProvider } from './index-membership.provider.js';
+import { IndexMembershipService } from './index-membership.service.js';
 import { MarketHuntDataSource } from './market-hunt-data-source.js';
 import { MarketInputSnapshotService } from './market-input-snapshot.service.js';
 
@@ -14,12 +16,16 @@ import { MarketInputSnapshotService } from './market-input-snapshot.service.js';
   providers: [
     HoseRestrictedSecuritiesProvider,
     MarketHuntDataSource,
+    IndexMembershipProvider,
+    IndexMembershipService,
     BotMarketSnapshotProvider,
     MarketInputSnapshotService,
   ],
   exports: [
     HoseRestrictedSecuritiesProvider,
     MarketHuntDataSource,
+    IndexMembershipProvider,
+    IndexMembershipService,
     BotMarketSnapshotProvider,
     MarketInputSnapshotService,
   ],

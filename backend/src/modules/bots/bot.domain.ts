@@ -2,26 +2,26 @@ import { createHash } from 'node:crypto';
 
 import type { BotMarketSnapshotInput, BotSnapshotSymbol } from './bot.types.js';
 
-const BOT_CANDIDATE_SOURCE = Object.freeze([
-  'khoi_ngoai_gom',
-  'tu_doanh_gom',
-  'kl_dot_bien',
-  'vuot_dinh_20',
-  'tang_manh_kl',
-] as const);
-const BOT_CANDIDATE_SORT = Object.freeze([
-  'filter_count desc',
-  'trading_value_avg20_vnd desc',
-  'symbol asc',
-] as const);
-const BOT_PROTECTIVE_STOP = Object.freeze({
-  basis: 'close',
-  l1_multiplier: 2,
-  action: 'sell_all',
+/**
+ * Policy `iqx-bot-v1.0`. Buys come only from the effective universe (VN30 by default, or a
+ * fixed snapshot of a user-applied saved list); sells cover EVERY position held at session
+ * start. There is no stop, L1/amplitude, target, trailing or max-holding rule in any new
+ * decision. The previous `iqx-bot-academy-activation-1` snapshot lives in `bot.legacy.ts`
+ * and is only used to verify historical receipts.
+ */
+export const BOT_POLICY_VERSION = 'iqx-bot-v1.0' as const;
+
+const BOT_UNIVERSE_POLICY = Object.freeze({
+  default_source: 'vn30',
+  custom_source: 'user_applied_list_snapshot',
+  custom_replaces_default: true,
+  membership_source: 'index_membership_snapshots_per_session',
+  effective_rule: 'first_trading_session_after_server_save_date',
+  unavailable_behavior: 'no_new_buys_sells_continue',
 } as const);
 
 export const BOT_POLICY = Object.freeze({
-  policy_version: 'iqx-bot-academy-activation-1',
+  policy_version: BOT_POLICY_VERSION,
   execution_model: 'same_session_close',
   initial_cash_vnd: 100_000_000,
   require_active_buy_conditions: true,
@@ -30,16 +30,19 @@ export const BOT_POLICY = Object.freeze({
   require_five_ai_layers: false,
   ai_support_threshold_enabled: false,
   ai_news_insider_veto_enabled: false,
-  candidate_source: BOT_CANDIDATE_SOURCE,
-  max_results_per_filter: 10,
-  max_unique_candidates: 50,
-  candidate_sort: BOT_CANDIDATE_SORT,
+  l1_required: false,
+  universe: BOT_UNIVERSE_POLICY,
+  sell_scope: 'all_positions_held_at_session_start',
+  config_side_failure: 'block_side_with_reason',
+  candidate_order: 'gtgd20_desc_symbol_asc',
+  // The product spec marks this order as a template choice that still needs owner confirmation.
+  candidate_order_owner_confirmation: 'pending',
   max_new_buys_per_session: 2,
   buy_budget_nav_ratio: '0.12',
   max_symbol_nav_ratio: '0.30',
   allow_add_to_open_symbol: false,
   allow_rebuy_same_session: false,
-  protective_stop: BOT_PROTECTIVE_STOP,
+  protective_stop_enabled: false,
   fixed_take_profit_enabled: false,
   implicit_max_holding_enabled: false,
   implicit_trailing_enabled: false,
@@ -76,14 +79,13 @@ export const BOT_DECISION_REASON_CODES = [
   'academy_buy_not_met',
   'academy_condition_missing',
   'config_invalid_or_unauthorized',
+  'legacy_needs_review',
   'academy_buy',
   'academy_sell',
   'academy_sell_not_met',
-  'stop_loss',
   'no_active_sell_conditions',
-  'invalid_or_missing_l1_amplitude',
   'invalid_close',
-  'missing_stop',
+  'missing_liquidity_data',
   'ledger_error',
   'already_holding',
   'rebuy_same_session_blocked',
@@ -93,6 +95,7 @@ export const BOT_DECISION_REASON_CODES = [
   'security_status_blocked',
   'missing_security_status',
   'buy_inputs_incomplete',
+  'universe_unavailable',
   'no_eligible_candidates',
   'valuation_incomplete',
   'source_error',
@@ -100,6 +103,43 @@ export const BOT_DECISION_REASON_CODES = [
 ] as const;
 
 export type BotDecisionReasonCode = (typeof BOT_DECISION_REASON_CODES)[number];
+
+/**
+ * Vietnamese journal labels. The first block is the live vocabulary; the legacy block only
+ * labels rows written by older policies (they are never produced by new runs).
+ */
+export const BOT_REASON_LABELS: Readonly<Record<string, string>> = Object.freeze({
+  waiting_for_academy_conditions: 'Chờ thiết lập điều kiện',
+  no_active_buy_conditions: 'Tập điều kiện Mua rỗng: không mua mới',
+  academy_buy_not_met: 'Điều kiện Mua chưa đạt',
+  academy_condition_missing: 'Thiếu dữ liệu để đánh giá điều kiện',
+  config_invalid_or_unauthorized: 'Cấu hình lỗi hoặc chưa có quyền chỉ báo',
+  legacy_needs_review: 'Cấu hình cũ cần điều chỉnh',
+  academy_buy: 'Mua theo điều kiện Mua',
+  academy_sell: 'Bán theo điều kiện Bán',
+  academy_sell_not_met: 'Điều kiện Bán chưa đạt: tiếp tục giữ',
+  no_active_sell_conditions: 'Chưa bật điều kiện Bán: tiếp tục giữ',
+  invalid_close: 'Thiếu giá đóng cửa chính thức',
+  missing_liquidity_data: 'Thiếu dữ liệu thanh khoản 20 phiên',
+  ledger_error: 'Lỗi sổ sách hoặc phí/lô',
+  already_holding: 'Đã giữ mã này: không mua thêm',
+  rebuy_same_session_blocked: 'Không mua lại mã đã giao dịch trong phiên',
+  insufficient_cash_or_lot: 'Không đủ tiền hoặc lô tối thiểu',
+  symbol_limit: 'Vượt tỷ trọng tối đa mỗi mã',
+  session_buy_limit: 'Đã đủ số lệnh Mua tối đa của phiên',
+  security_status_blocked: 'Mã thuộc diện hạn chế giao dịch',
+  missing_security_status: 'Không xác minh được trạng thái giao dịch của mã',
+  buy_inputs_incomplete: 'Thiếu dữ liệu chung để mua mới',
+  universe_unavailable: 'Chưa xác minh được nguồn mua: không mua mới',
+  no_eligible_candidates: 'Không có mã nào trong nguồn mua đủ điều kiện xét',
+  valuation_incomplete: 'Thiếu giá để định giá danh mục',
+  source_error: 'Lỗi nguồn dữ liệu',
+  reconciliation_failed: 'Đối soát sổ sách thất bại',
+  // Legacy rows only.
+  stop_loss: 'Bán theo stop cũ (chính sách đã ngừng)',
+  missing_stop: 'Thiếu stop cũ (chính sách đã ngừng)',
+  invalid_or_missing_l1_amplitude: 'Thiếu biên độ L1 (chính sách đã ngừng)',
+});
 
 export function parseInteger(value: string | number | bigint, name = 'integer'): bigint {
   if (typeof value === 'bigint') return value;
@@ -142,12 +182,10 @@ export type Candidate = {
   symbol: string;
   closeVnd: bigint;
   tradingValueAvg20Vnd: bigint;
-  filterIds: string[];
-  amplitude4: bigint | null;
-  amplitudeSourceRef: string | null;
   sourceRefs: Record<string, unknown>;
 };
 
+/** A candidate needs an official close and a 20-session average traded value. */
 export function candidateFromSnapshot(symbol: string, row: BotSnapshotSymbol): Candidate | null {
   try {
     const closeVnd = parseInteger(row.close_vnd ?? '', 'close_vnd');
@@ -157,9 +195,6 @@ export function candidateFromSnapshot(symbol: string, row: BotSnapshotSymbol): C
       symbol: symbol.trim().toUpperCase(),
       closeVnd,
       tradingValueAvg20Vnd: avg20,
-      filterIds: [...new Set(row.filter_ids ?? [])].sort(),
-      amplitude4: parseDecimal4(row.l1_amplitude_vnd),
-      amplitudeSourceRef: row.l1_amplitude_source_ref?.trim() || null,
       sourceRefs: row.source_refs ?? {},
     };
   } catch {
@@ -167,50 +202,33 @@ export function candidateFromSnapshot(symbol: string, row: BotSnapshotSymbol): C
   }
 }
 
-export function candidateRank(candidate: Candidate): [number, bigint, string] {
-  return [-candidate.filterIds.length, -candidate.tradingValueAvg20Vnd, candidate.symbol];
+/** Sort key: 20-session average traded value descending, then symbol ascending. */
+export function candidateRank(candidate: Candidate): [bigint, string] {
+  return [-candidate.tradingValueAvg20Vnd, candidate.symbol];
 }
 
 function compareRank(left: Candidate, right: Candidate): number {
   const a = candidateRank(left);
   const b = candidateRank(right);
-  if (a[0] !== b[0]) return a[0] - b[0];
-  if (a[1] !== b[1]) return a[1] < b[1] ? -1 : 1;
-  return a[2].localeCompare(b[2]);
+  if (a[0] !== b[0]) return a[0] < b[0] ? -1 : 1;
+  return a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0;
 }
 
+/**
+ * Deduplicates by symbol and orders by `candidate_order: gtgd20_desc_symbol_asc`.
+ * The ordering is a template choice awaiting owner confirmation (see BOT_POLICY).
+ */
 export function rankCandidates(rows: readonly Candidate[]): Candidate[] {
   const unique = new Map<string, Candidate>();
   for (const row of rows) {
     if (!row.symbol) continue;
     const symbol = row.symbol.trim().toUpperCase();
     const previous = unique.get(symbol);
-    if (!previous) {
-      unique.set(symbol, { ...row, symbol, filterIds: [...new Set(row.filterIds)].sort() });
-      continue;
+    if (!previous || row.tradingValueAvg20Vnd > previous.tradingValueAvg20Vnd) {
+      unique.set(symbol, { ...row, symbol });
     }
-    const filterIds = [...new Set([...previous.filterIds, ...row.filterIds])].sort();
-    const richer = row.tradingValueAvg20Vnd > previous.tradingValueAvg20Vnd ? row : previous;
-    unique.set(symbol, { ...richer, symbol, filterIds });
   }
-  return [...unique.values()].sort(compareRank).slice(0, BOT_POLICY.max_unique_candidates);
-}
-
-export function computeProtectiveStop(
-  entryPriceVnd: bigint,
-  amplitude4: bigint | null,
-): { stop4: bigint } | null {
-  if (entryPriceVnd <= 0n || amplitude4 === null || amplitude4 <= 0n) return null;
-  const entry4 = entryPriceVnd * 10_000n;
-  const stop4 = entry4 - BigInt(BOT_POLICY.protective_stop.l1_multiplier) * amplitude4;
-  return stop4 > 0n && stop4 < entry4 ? { stop4 } : null;
-}
-
-export function stopLossSignal(closeVnd: bigint | null, stop4: bigint): 'stop_loss' | null {
-  if (closeVnd === null || closeVnd <= 0n) return null;
-  const close4 = closeVnd * 10_000n;
-  if (close4 <= stop4) return 'stop_loss';
-  return null;
+  return [...unique.values()].sort(compareRank);
 }
 
 export type FeeRules = {

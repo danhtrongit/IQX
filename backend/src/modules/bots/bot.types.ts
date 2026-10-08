@@ -1,4 +1,8 @@
+import type { SqlClient } from '../../platform/database/index.js';
+
 export const BOT_SNAPSHOT_PROVIDER = Symbol('BOT_SNAPSHOT_PROVIDER');
+/** Injection token of the buy-universe resolver port (see {@link BotUniversePort}). */
+export const BOT_UNIVERSE = Symbol('BOT_UNIVERSE');
 
 export type BotIssue = {
   code: string;
@@ -6,27 +10,71 @@ export type BotIssue = {
   detail: string | null;
 };
 
-export type LayerVerdict = 'ok' | 'neu' | 'bad';
-
-export type BotLayerEvidence = {
-  verdict: LayerVerdict;
-  raw_level: string;
-  is_very_negative: boolean | null;
-  source_ref: string;
-};
-
 export type BotSnapshotSymbol = {
   close_vnd?: string | number;
   close_is_official?: boolean;
+  /** 20-session average traded value in VND; absent when fewer than 20 valid sessions exist. */
   trading_value_avg20_vnd?: string | number;
-  filter_ids?: string[];
-  layers?: Record<string, BotLayerEvidence>;
-  l1_amplitude_vnd?: string | number | null;
-  l1_amplitude_source_ref?: string | null;
   security_status_verified?: boolean;
   tradable_security_status?: boolean;
   source_refs?: Record<string, unknown>;
 };
+
+export type BotUniverseKind = 'vn30' | 'custom';
+
+/** Index membership row that backs a VN30 universe for one session. */
+export type BotMembershipEvidence = {
+  index_code: string;
+  session_date: string;
+  source: string;
+  source_hash: string;
+  fetched_at: string;
+};
+
+/**
+ * The buy universe frozen into the run snapshot. `unavailable` means the source could not be
+ * verified: no new buys, sells continue (never a fallback to another source).
+ */
+export type BotUniverseEvidence = {
+  status: 'verified' | 'unavailable';
+  kind: BotUniverseKind;
+  /** 0 = implicit VN30 default (no revision row). */
+  revision: number;
+  name: string;
+  saved_list_id: string | null;
+  effective_session: string | null;
+  /** Sorted unique uppercase symbols; empty when unavailable. */
+  symbols: string[];
+  symbols_hash: string | null;
+  membership: BotMembershipEvidence | null;
+  unavailable_reason: string | null;
+};
+
+/** Compact pin of the universe stored in the immutable run receipt. */
+export type BotUniversePin = {
+  kind: BotUniverseKind;
+  revision: number;
+  status: 'verified' | 'unavailable';
+  effective_session: string | null;
+  symbols_hash: string | null;
+};
+
+export type ResolvedBotUniverse = {
+  evidence: BotUniverseEvidence;
+  /** Revision row to mark `effective` when the run is captured; null for the implicit VN30. */
+  revisionId: string | null;
+};
+
+/**
+ * Buy-universe resolver used by the Bot worker. `consume` runs inside the capture
+ * transaction and returns false when the resolved revision was cancelled in the meantime.
+ */
+export interface BotUniversePort {
+  resolveForSession(userId: string, tradingDate: string): Promise<ResolvedBotUniverse>;
+  consume(tx: SqlClient, userId: string, resolved: ResolvedBotUniverse): Promise<boolean>;
+  /** Whether a symbol is in the universe that is effective today (positions view). */
+  effectiveSymbols(userId: string, tradingDate: string): Promise<ReadonlySet<string> | null>;
+}
 
 export type BotMarketSnapshotInput = {
   trading_date: string;
@@ -46,7 +94,17 @@ export type BotMarketSnapshotInput = {
   source_refs?: Record<string, unknown>;
   /** Present only when the run receipt pins a shared Buy/Sell config revision. */
   shared_config_signals?: BotSharedConfigSignals;
+  /** Effective buy universe captured with the snapshot (absent in pre-v1.0 snapshots). */
+  universe?: BotUniverseEvidence;
   snapshot_hash?: string;
+};
+
+export type BotSideStatus = 'active' | 'inactive' | 'blocked';
+
+export type BotSideBlock = {
+  reason: 'config_invalid_or_unauthorized' | 'legacy_needs_review';
+  detail: string;
+  indicator_ids: string[];
 };
 
 export type BotConditionRuleEvidence = {
@@ -78,10 +136,15 @@ export type BotSharedConfigSignals = {
   revision: number;
   config_hash: string;
   effective_session: string;
-  /** At least one granted indicator has master + Buy ON; otherwise entries wait. */
+  /** Buy side usable: at least one valid indicator has master + Buy ON and no side failure. */
   buy_active: boolean;
-  /** At least one indicator has master + Sell ON; otherwise no shared-config exit. */
+  /** Sell side usable: at least one valid indicator has master + Sell ON and no side failure. */
   sell_active: boolean;
+  /** `blocked` = enabled but invalid/unauthorized/legacy: the whole side is stopped. */
+  buy_status?: BotSideStatus;
+  sell_status?: BotSideStatus;
+  buy_block?: BotSideBlock | null;
+  sell_block?: BotSideBlock | null;
   buy: Record<string, boolean | null>;
   sell: Record<string, boolean | null>;
   /** Per-symbol evidence frozen with the source snapshot for deterministic retries. */
@@ -95,9 +158,14 @@ export type BotSharedConfigSignals = {
 };
 
 export interface BotSnapshotProvider {
+  /**
+   * Builds the market side of a run snapshot. `universeSymbols` are the effective buy
+   * universe members (empty when the universe is unavailable); `openSymbols` are every held
+   * position. Data is delivered for the union and one symbol's gap never fails the snapshot.
+   */
   buildSnapshot(
     tradingDate: string,
-    options: { openSymbols: readonly string[] },
+    options: { openSymbols: readonly string[]; universeSymbols?: readonly string[] },
   ): Promise<BotMarketSnapshotInput>;
 }
 
@@ -138,7 +206,7 @@ export type BotInstanceRow = {
   strategy_id: string;
   strategy_version: number;
   execution_model: string;
-  cap6_graduated_at: Date | string;
+  cap6_graduated_at: Date | string | null;
   activated_at: Date | string;
 };
 
@@ -158,6 +226,8 @@ export type BotRunRow = {
   rule_snapshot: unknown;
   rule_hash: string | null;
   policy_version?: string | null;
+  universe_revision?: number | null;
+  universe_kind?: BotUniverseKind | null;
   nav_basis_vnd: string | null;
   blocked_symbols_at_start: unknown;
   buy_count: number;
@@ -173,10 +243,12 @@ export type BotPositionRow = {
   entry_price_vnd: string;
   entry_value_vnd: string;
   entry_fee_vnd: string;
-  amplitude_at_entry_vnd: string;
-  amplitude_source_ref: string;
-  stop_loss_vnd: string;
+  /** Legacy history only; NULL for positions opened under iqx-bot-v1.0. */
+  amplitude_at_entry_vnd: string | null;
+  amplitude_source_ref: string | null;
+  stop_loss_vnd: string | null;
   take_profit_vnd: string | null;
+  entry_source_snapshot?: unknown;
   entry_config_revision?: number | null;
   opened_session: Date | string;
   opened_at: Date | string;
