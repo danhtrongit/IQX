@@ -1,0 +1,1057 @@
+[
+  {
+    "id": "ch02-l01",
+    "chapter": 2,
+    "order": 1,
+    "lesson_key": "guide:ch02-l01",
+    "kind": "guide",
+    "name": "Bắt đầu với Backtest",
+    "title": "Bắt đầu với Backtest",
+    "lead": "Mở đúng màn hình, chọn mã, khoảng thời gian và vốn trước khi thiết lập điều kiện.",
+    "nav_labels": ["Bắt đầu", "Thao tác", "Đối chiếu", "Lưu ý"],
+    "completion": {
+      "mode": "manual",
+      "button_label": "Hoàn thành bài học"
+    },
+    "content_version": "ch02-v3.0",
+    "source": {
+      "package": "iqx-ch2-six-user-guides",
+      "package_version": "iqx-ch2-six-user-guides-v3.0-academy71-shop",
+      "payload_sha256": "e81f539f45c0969def93835800a980c9e0a64e6cf9fd269e7a4b94bc4dd1d745",
+      "object_sha256": "c60ec570dcf16169aa261a9895eb5f9c781b21dd18c6670c30910d04a76eb30e"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Nhận diện các khu vực trên màn hình",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Chương 1 trình bày cách đọc chỉ báo và đặt điều kiện. Ở chương này, bạn dùng các điều kiện đó để kiểm tra: <strong>nếu áp dụng trên dữ liệu lịch sử, những giao dịch nào sẽ xuất hiện và kết quả ra sao?</strong></p>\n<p>Mở <strong>Chiến lược → Backtest</strong>. Đây là công cụ kiểm thử, không phải màn đặt lệnh vào tài khoản Bot.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "01-overview",
+            "src": "/assets/academy/ch02/01-overview.a6e2ba50.webp",
+            "width": 2160,
+            "height": 1175,
+            "alt": "Năm khu vực cần nhận diện",
+            "title": "Năm khu vực cần nhận diện",
+            "zoom_title": "Các khu vực của Backtest."
+          },
+          {
+            "type": "table",
+            "head": ["Số trên ảnh", "Khu vực", "Bạn sử dụng để làm gì?"],
+            "rows": [
+              ["1", "Tab Backtest", "Mở đúng công cụ trong trang Chiến lược."],
+              ["2", "Thư viện chỉ báo", "Tìm chỉ báo đã mở quyền và thêm vào Mua hoặc Bán."],
+              ["3", "Thông tin kiểm thử", "Chọn mã, ngày và vốn của lần chạy."],
+              ["4", "Hai khối điều kiện", "Đọc, chỉnh và bỏ điều kiện riêng từng phía."],
+              ["5", "Giả định và nút chạy", "Chọn cách khớp, phí rồi chạy kiểm thử."]
+            ]
+          },
+          {
+            "type": "details",
+            "summary": "Thao tác trên điện thoại",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Trên màn hình nhỏ, thư viện được thu lại. Bấm <strong>Chỉ báo</strong> để mở danh sách; sau khi chọn chỉ báo, tiếp tục chỉnh trong cửa sổ cấu hình.</p>"
+              },
+              {
+                "type": "image",
+                "asset_id": "21-mobile",
+                "src": "/assets/academy/ch02/21-mobile.9aa0a64b.webp",
+                "width": 567,
+                "height": 214,
+                "alt": "Nút mở thư viện trên màn hình nhỏ",
+                "title": "Nút mở thư viện trên màn hình nhỏ",
+                "zoom_title": "Trên màn hình nhỏ, bấm Chỉ báo để mở thư viện.",
+                "max_width": 600
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<h3>Phân biệt với Luyện tập trong Bot</h3>"
+          },
+          {
+            "type": "table",
+            "head": ["Công cụ", "Cách sử dụng"],
+            "rows": [
+              ["Chiến lược → Backtest", "Tự chọn mã và khoảng ngày; kết hợp các chỉ báo đã mở; được chỉnh và chạy lại."],
+              ["Bot → Luyện tập", "Mỗi lượt một chỉ báo và một mã được giấu tên/ngày. Chạy 24 tháng; có giới hạn giữ mặc định 60 phiên, chỉnh được trước khi chạy."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p><strong>Chương này hướng dẫn Backtest tại Chiến lược.</strong> Không đưa giới hạn 30 lượt, thời gian chạy cố định hoặc giới hạn giữ của Luyện tập sang công cụ này.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Chọn mã, thời gian và vốn",
+        "blocks": [
+          {
+            "type": "image",
+            "asset_id": "02-inputs",
+            "src": "/assets/academy/ch02/02-inputs.c86ba3ad.webp",
+            "width": 1705,
+            "height": 154,
+            "alt": "Bốn ô đầu vào của lần kiểm thử",
+            "title": "Bốn ô đầu vào của lần kiểm thử",
+            "zoom_title": "Chọn mã, khoảng kiểm thử và vốn ban đầu."
+          },
+          {
+            "type": "steps",
+            "items": [
+              {
+                "no": "01",
+                "title": "Chọn cổ phiếu",
+                "html": "<p>Trong ví dụ xuyên suốt, chọn <strong>FPT</strong>.</p>"
+              },
+              {
+                "no": "02",
+                "title": "Chọn từ ngày và đến ngày",
+                "html": "<p>Chọn đúng khoảng cần kiểm tra. Ngày bắt đầu không được sau ngày kết thúc. Đọc khoảng dữ liệu thực tế trong kết quả, không chỉ hai ngày bạn đã nhập.</p>"
+              },
+              {
+                "no": "03",
+                "title": "Nhập vốn ban đầu",
+                "html": "<p>Ví dụ dùng <strong>100.000.000 đồng</strong>. Đây là vốn của lần kiểm thử, không phải nạp thêm hoặc reset tài khoản Bot.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Một lần kiểm thử cơ bản xét <strong>một mã và tối đa một vị thế đang mở</strong>. Chọn một mã từ danh mục nghiên cứu không đồng nghĩa đang kiểm thử cả danh mục dùng chung vốn.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Kiểm tra dữ liệu và quyền sử dụng",
+        "blocks": [
+          {
+            "type": "table",
+            "head": ["Bạn thấy gì?", "Cách xử lý"],
+            "rows": [
+              ["Chỉ báo chưa có trong thư viện", "Kiểm tra quyền đã mở ở Học viện. Không tự thay bằng một chỉ báo khác chỉ để chạy được."],
+              ["Chưa có điều kiện Mua", "Chuyển sang bài 2 để thêm Mua. Nút chạy chưa được thực hiện."],
+              ["Khoảng chọn không có dữ liệu hoặc thiếu lịch sử khởi tạo", "Đọc thông báo và kiểm tra mã/khoảng dữ liệu. Không hiểu đó là chiến lược không hiệu quả."],
+              ["Có dữ liệu, chạy thành công nhưng không có giao dịch", "Điều kiện có thể không thỏa hoặc không đủ điều kiện thực hiện. Xem cấu hình và thông tin của lần chạy."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Chỉ báo cần một phần lịch sử trước ngày bắt đầu để tính được giá trị đầu kỳ. Phần này phục vụ khởi tạo chỉ báo, <strong>không phải các giao dịch được tính vào khoảng kiểm thử</strong>.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Cấu hình minh họa đi qua sáu bài",
+        "blocks": [
+          {
+            "type": "table",
+            "head": ["Đầu vào", "Lựa chọn minh họa ban đầu"],
+            "rows": [
+              ["Mã / khoảng", "FPT · 02/01/2024–31/12/2025"],
+              ["Vốn", "100 triệu đồng"],
+              ["Mua", "Giá đóng cửa &gt; SMA 20"],
+              ["Bán", "Giá đóng cửa &lt; SMA 20"],
+              ["Khớp / phí", "Mở cửa phiên kế tiếp; mức phí giả định được hiển thị trong ảnh"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Bài 2 thêm Mua; bài 3 thêm Bán; bài 4 chạy; bài 5 đọc kết quả; bài 6 đổi riêng chu kỳ Mua và so sánh. Việc thêm Khối lượng hoặc đổi chu kỳ Bán ở giữa chương là <strong>tình huống thao tác riêng</strong>; trước khi chạy ví dụ chính, đưa về cấu hình trên.</p>\n<p><strong>Lưu cấu hình chung:</strong> Lưu tham số và bật/tắt điều kiện cập nhật cấu hình dùng chung của Bot và Backtest. Bot sử dụng thay đổi từ phiên có hiệu lực; Học viện chỉ ghi nhận học và mở quyền. Chạy Backtest không tự đặt lệnh Bot.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": null,
+    "fixture": {}
+  },
+  {
+    "id": "ch02-l02",
+    "chapter": 2,
+    "order": 2,
+    "lesson_key": "guide:ch02-l02",
+    "kind": "guide",
+    "name": "Thiết lập điều kiện Mua",
+    "title": "Thiết lập điều kiện Mua",
+    "lead": "Thêm chỉ báo, chỉnh chu kỳ và dấu so sánh, rồi kiểm tra đúng điều kiện vừa lưu.",
+    "nav_labels": ["Bắt đầu", "Thao tác", "Đối chiếu", "Lưu ý"],
+    "completion": {
+      "mode": "manual",
+      "button_label": "Hoàn thành bài học"
+    },
+    "content_version": "ch02-v3.0",
+    "source": {
+      "package": "iqx-ch2-six-user-guides",
+      "package_version": "iqx-ch2-six-user-guides-v3.0-academy71-shop",
+      "payload_sha256": "e81f539f45c0969def93835800a980c9e0a64e6cf9fd269e7a4b94bc4dd1d745",
+      "object_sha256": "366ca28f65b42043ee80d02fc53bd91694aff10a2db5b19a9237af00f22ba1af"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Thêm chỉ báo vào đúng phía",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Trong thư viện, tìm <strong>MA / SMA</strong> và bấm <strong>+ Mua</strong>. Đừng bấm + Bán chỉ vì hai nút nằm cạnh nhau. Chỉ báo đã có ở phía đó thì nút thể hiện đã dùng; không cần thêm lần thứ hai.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "03-add-buy",
+            "src": "/assets/academy/ch02/03-add-buy.0fdc6443.webp",
+            "width": 378,
+            "height": 140,
+            "alt": "Bấm + Mua ở đúng chỉ báo",
+            "title": "Bấm + Mua ở đúng chỉ báo",
+            "zoom_title": "Thêm MA / SMA vào phía Mua từ thư viện.",
+            "max_width": 410
+          },
+          {
+            "type": "html",
+            "html": "<p>Cửa sổ Cấu hình mở ở phía MUA. Việc mở cửa sổ và sửa ô nhập mới là bản đang chỉnh; <strong>chưa bấm Lưu thì chưa chốt thay đổi</strong>. Nếu không muốn thêm, bấm Hủy.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Chỉnh chu kỳ, dấu và lưu",
+        "blocks": [
+          {
+            "type": "image",
+            "asset_id": "04-buy-config",
+            "src": "/assets/academy/ch02/04-buy-config.81555fd3.webp",
+            "width": 992,
+            "height": 824,
+            "alt": "Năm điểm thao tác trong Cấu hình Mua",
+            "title": "Năm điểm thao tác trong Cấu hình Mua",
+            "caption": "Ví dụ: Mua khi Giá đóng cửa > SMA 20.",
+            "zoom_title": "Cấu hình Mua của MA / SMA: chu kỳ 20, Giá đóng cửa > SMA 20.",
+            "max_width": 720
+          },
+          {
+            "type": "steps",
+            "items": [
+              {
+                "no": "01",
+                "title": "Kiểm tra tab MUA — số 1",
+                "html": "<p>Mỗi phía có lựa chọn riêng. Luôn kiểm tra tab trước khi nhập số.</p>"
+              },
+              {
+                "no": "02",
+                "title": "Kiểm tra công tắc phía Mua — số 2",
+                "html": "<p>Phía này phải được sử dụng thì điều kiện mới tham gia khối Mua. Bật Mua không bắt buộc bật Bán.</p>"
+              },
+              {
+                "no": "03",
+                "title": "Nhập Chu kỳ SMA = 20 — số 3",
+                "html": "<p>Dùng ô nhập hoặc nút − / +. Số 20 là tham số của SMA phía Mua, không phải một mức giá.</p>"
+              },
+              {
+                "no": "04",
+                "title": "Chọn dấu > — số 4",
+                "html": "<p>Đọc cả dòng: <strong>Giá đóng cửa &gt; SMA 20</strong>. Đổi thành &lt; là đổi ý nghĩa điều kiện, không phải chỉ đổi hình hiển thị.</p>"
+              },
+              {
+                "no": "05",
+                "title": "Bấm Lưu — số 5",
+                "html": "<p>Sau khi lưu thành công, kiểm tra lại card trong khối Mua: đúng tên, chu kỳ, dấu và phía sử dụng.</p>"
+              }
+            ]
+          },
+          {
+            "type": "details",
+            "summary": "Khi chỉ báo có nhiều điều kiện hoặc dấu ∈ / ∉",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>MA có một dòng so sánh. RSI, Khối lượng hoặc Bollinger có thể có nhiều dòng; kiểm tra đủ từng dòng. Chỉ ô liên quan vị trí trong/ngoài dải mới có <strong>∈ / ∉</strong>. Không phải mọi ô đều cho tất cả loại dấu.</p>"
+              },
+              {
+                "type": "image",
+                "asset_id": "22-bollinger-config",
+                "src": "/assets/academy/ch02/22-bollinger-config.89f80425.webp",
+                "width": 992,
+                "height": 984,
+                "alt": "Dấu trong/ngoài dải ở Cấu hình Bollinger",
+                "title": "Dấu trong/ngoài dải ở Cấu hình Bollinger",
+                "zoom_title": "Với Bollinger, ô ở dòng vị trí trong dải cho chọn ∈ hoặc ∉; các dòng so sánh còn lại dùng > hoặc <.",
+                "max_width": 720
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Kết hợp, chỉnh và bỏ một điều kiện",
+        "blocks": [
+          {
+            "type": "image",
+            "asset_id": "05-buy-card",
+            "src": "/assets/academy/ch02/05-buy-card.80d0d9d7.webp",
+            "width": 1705,
+            "height": 394,
+            "alt": "Điều kiện đã được đưa vào Mua",
+            "title": "Điều kiện đã được đưa vào Mua",
+            "caption": "Số 1: Chỉnh. Số 2: bỏ khỏi riêng khối Mua.",
+            "zoom_title": "MA xuất hiện ở Mua; Chỉnh sửa tham số, dấu × bỏ khỏi đúng phía."
+          },
+          {
+            "type": "html",
+            "html": "<p>Muốn sửa lại, bấm <strong>Chỉnh</strong> trên card. Muốn ngừng sử dụng chỉ báo ở Mua, bấm dấu <strong>×</strong> của card Mua rồi xác nhận tắt phía đó trong cấu hình chung. Phía Bán và tham số đã lưu không bị xóa theo thao tác này.</p>\n<p>Thử thêm <strong>Khối lượng → + Mua</strong>, đặt hệ số minh họa 1,5 và giữ 20 phiên tham chiếu. Khối Mua lúc này có hai chỉ báo:</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "06-buy-and",
+            "src": "/assets/academy/ch02/06-buy-and.ce200117.webp",
+            "width": 1705,
+            "height": 469,
+            "alt": "Hai chỉ báo trong cùng khối Mua",
+            "title": "Hai chỉ báo trong cùng khối Mua",
+            "caption": "Nhãn AND có nghĩa là mọi điều kiện Mua đang dùng phải cùng đúng.",
+            "zoom_title": "MA và Khối lượng cùng ở Mua: hai chỉ báo kết hợp AND."
+          },
+          {
+            "type": "table",
+            "head": ["MA Mua", "Khối lượng Mua", "Hợp lưu Mua"],
+            "rows": [
+              ["Đúng", "Đúng", "Đạt"],
+              ["Đúng", "Sai", "Không đạt"],
+              ["Sai", "Đúng", "Không đạt"],
+              ["Đúng", "Chưa đủ dữ liệu", "Chưa thể xác nhận đạt"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Để tiếp tục ví dụ chính của chương, <strong>bỏ Khối lượng khỏi Mua</strong>, giữ MA Mua 20.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Phân biệt Hủy, Đặt lại và Lưu",
+        "blocks": [
+          {
+            "type": "table",
+            "head": ["Thao tác", "Kết quả cần nắm"],
+            "rows": [
+              ["Hủy / đóng khi chưa lưu", "Bỏ thay đổi đang chỉnh sau khi xác nhận; không coi là đã thêm hoặc sửa thành công."],
+              ["Đặt lại", "Đưa tham số và toán tử của phía đang chỉnh về mẫu; không đổi ON/OFF của phía đó hoặc xóa phía kia. Vẫn phải Lưu nếu muốn ghi nhận."],
+              ["Lưu", "Ghi thay đổi hợp lệ vào cấu hình chung của Bot và Backtest. Phần không sửa được giữ nguyên; Bot dùng từ phiên hiệu lực, không đặt lệnh ngay khi lưu."],
+              ["Dấu × ở khối Mua", "Bỏ chỉ báo khỏi phía Mua; nếu Mua không còn điều kiện nào thì không chạy mở mua."]
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "notice",
+            "title": "Kiểm tra trước khi rời bước này",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Khối Mua có đúng MA / SMA, chu kỳ 20, dấu &gt;.</p>"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "config_id": null,
+    "fixture": {}
+  },
+  {
+    "id": "ch02-l03",
+    "chapter": 2,
+    "order": 3,
+    "lesson_key": "guide:ch02-l03",
+    "kind": "guide",
+    "name": "Thiết lập điều kiện Bán",
+    "title": "Thiết lập điều kiện Bán",
+    "lead": "Tự chọn cách thoát vị thế; dùng một chỉ báo cho một hoặc cả hai phía mà không ghi đè lẫn nhau.",
+    "nav_labels": ["Bắt đầu", "Thao tác", "Đối chiếu", "Lưu ý"],
+    "completion": {
+      "mode": "manual",
+      "button_label": "Hoàn thành bài học"
+    },
+    "content_version": "ch02-v3.0",
+    "source": {
+      "package": "iqx-ch2-six-user-guides",
+      "package_version": "iqx-ch2-six-user-guides-v3.0-academy71-shop",
+      "payload_sha256": "e81f539f45c0969def93835800a980c9e0a64e6cf9fd269e7a4b94bc4dd1d745",
+      "object_sha256": "d5aebd3e80b5d1abe6c6c136813f93e22fb4ca13ae4df83033161d168479a58d"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Thêm Bán mà không làm lại Mua",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Giữ MA ở phía Mua như bài trước. Trong thư viện, bấm <strong>MA / SMA → + Bán</strong>. Cửa sổ chuyển sang tab BÁN; không cần xóa Mua để thêm Bán.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "07-sell-config",
+            "src": "/assets/academy/ch02/07-sell-config.805e8fdd.webp",
+            "width": 992,
+            "height": 824,
+            "alt": "Cấu hình Bán của cùng một chỉ báo",
+            "title": "Cấu hình Bán của cùng một chỉ báo",
+            "caption": "Các điểm: 1 BÁN; 2 chu kỳ; 3 dấu; 4 Lưu.",
+            "zoom_title": "Cấu hình Bán của MA / SMA: chu kỳ 20, Giá đóng cửa < SMA 20.",
+            "max_width": 720
+          },
+          {
+            "type": "steps",
+            "items": [
+              {
+                "no": "01",
+                "title": "Kiểm tra tab BÁN",
+                "html": "<p>Bật sử dụng phía Bán, nhập chu kỳ 20.</p>"
+              },
+              {
+                "no": "02",
+                "title": "Chọn dấu <",
+                "html": "<p>Dòng điều kiện phải đọc thành <strong>Giá đóng cửa &lt; SMA 20</strong>.</p>"
+              },
+              {
+                "no": "03",
+                "title": "Lưu và đối chiếu hai khối",
+                "html": "<p>Mua vẫn là Giá &gt; SMA 20; Bán là Giá &lt; SMA 20. Hai phía được lưu độc lập.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Điều kiện Bán là yêu cầu thoát vị thế, <strong>không phải yêu cầu phải có lãi mới được bán</strong>.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Đổi tham số riêng cho Bán",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Thử bấm Chỉnh ở card Bán, đổi chu kỳ từ 20 thành <strong>50</strong> và Lưu.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "08-independent",
+            "src": "/assets/academy/ch02/08-independent.997b2ba6.webp",
+            "width": 1705,
+            "height": 391,
+            "alt": "Mua SMA 20, Bán SMA 50",
+            "title": "Mua SMA 20, Bán SMA 50",
+            "caption": "Số 1 và 2 là hai bộ chu kỳ khác nhau. Số 3 bỏ riêng MA Bán.",
+            "zoom_title": "Mua SMA 20 và Bán SMA 50: thay chu kỳ Bán không đổi Mua."
+          },
+          {
+            "type": "html",
+            "html": "<p>Sau thao tác này, chu kỳ Mua phải vẫn là 20. Nếu muốn quay lại ví dụ chính, sửa riêng Bán về 20 rồi Lưu. Không dùng nút Đặt lại ở tab Mua để sửa nhầm phía.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Chỗ bạn sửa", "Chỗ phải giữ nguyên"],
+            "rows": [
+              ["Chu kỳ MA Bán", "Chu kỳ MA Mua"],
+              ["Dấu của Bán", "Dấu của Mua"],
+              ["Công tắc Bán", "Lựa chọn Mua"]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Chỉ dùng một phía hoặc bỏ cả hai",
+        "blocks": [
+          {
+            "type": "image",
+            "asset_id": "09-sell-off",
+            "src": "/assets/academy/ch02/09-sell-off.3ddbb91a.webp",
+            "width": 1705,
+            "height": 394,
+            "alt": "Bỏ Bán không làm mất Mua",
+            "title": "Bỏ Bán không làm mất Mua",
+            "caption": "Phía Bán đang rỗng; MA Mua vẫn được giữ.",
+            "zoom_title": "Bỏ MA khỏi Bán: phía Mua vẫn còn; Bán đang rỗng."
+          },
+          {
+            "type": "table",
+            "head": ["Bạn muốn", "Thao tác trong Backtest"],
+            "rows": [
+              ["Chỉ dùng MA cho Mua", "Giữ card Mua; bỏ card MA khỏi Bán hoặc tắt phía Bán và lưu."],
+              ["Chỉ dùng MA cho Bán", "Giữ card Bán; bỏ MA khỏi Mua. Muốn chạy mở mua phải có điều kiện Mua khác."],
+              ["Dùng MA cho cả hai", "Giữ và kiểm tra đúng cấu hình của cả Mua lẫn Bán."],
+              ["Bỏ MA khỏi cả hai", "Bỏ card MA ở cả hai khối; không nghĩ xóa một bên là đã xóa cả chỉ báo."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Trong panel Bot có công tắc tổng cho chỉ báo. Tắt tổng làm chỉ báo không tham gia cả hai phía nhưng giữ các lựa chọn bên trong; <strong>khác với chỉ bỏ một card Mua hoặc Bán</strong>.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Khi không có Bán hoặc hai phía cùng đúng",
+        "blocks": [
+          {
+            "type": "table",
+            "head": ["Tình huống", "Trong mô hình kiểm thử cơ bản"],
+            "rows": [
+              ["Có Mua, Bán rỗng", "Được chạy. Khi đã mua, chưa có điều kiện bán để thoát; có thể còn vị thế mở cuối kỳ."],
+              ["Có Bán nhưng Mua rỗng", "Không chạy mở mua; không dùng Bán để bán khống."],
+              ["Mua và Bán cùng đúng, chưa có vị thế", "Xét Mua theo cách khớp; không mua rồi lập tức đóng cùng bước."],
+              ["Mua và Bán cùng đúng, đang giữ", "Xét thoát vị thế; không mua thêm."]
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "notice",
+            "title": "Không có cơ chế thoát chạy ngầm",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Bot hiện tại và Backtest chỉ báo cơ bản đều không có cắt lỗ, chốt lời hoặc giới hạn giữ chạy ngầm. Nếu chưa có điều kiện Bán, vị thế có thể tiếp tục được giữ; không tự bán cuối kỳ. Giới hạn giữ mặc định 60 phiên chỉ thuộc Luyện tập trong Bot.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Để chạy ví dụ ở bài 4, hoàn tất lại <strong>Mua: Giá &gt; SMA 20; Bán: Giá &lt; SMA 20</strong>.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": null,
+    "fixture": {}
+  },
+  {
+    "id": "ch02-l04",
+    "chapter": 2,
+    "order": 4,
+    "lesson_key": "guide:ch02-l04",
+    "kind": "guide",
+    "name": "Chọn giả định và chạy kiểm thử",
+    "title": "Chọn giả định và chạy kiểm thử",
+    "lead": "Biết giá nào dùng khớp, chi phí nào được tính và khi nào cần chạy lại.",
+    "nav_labels": ["Bắt đầu", "Thao tác", "Đối chiếu", "Lưu ý"],
+    "completion": {
+      "mode": "manual",
+      "button_label": "Hoàn thành bài học"
+    },
+    "content_version": "ch02-v3.0",
+    "source": {
+      "package": "iqx-ch2-six-user-guides",
+      "package_version": "iqx-ch2-six-user-guides-v3.0-academy71-shop",
+      "payload_sha256": "e81f539f45c0969def93835800a980c9e0a64e6cf9fd269e7a4b94bc4dd1d745",
+      "object_sha256": "ef27edf4ab3ec377881af867443fce2e9a3613fa31e907aed639a773e8d7658f"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Chọn cách khớp lệnh",
+        "blocks": [
+          {
+            "type": "image",
+            "asset_id": "10-assumptions",
+            "src": "/assets/academy/ch02/10-assumptions.7e05eb23.webp",
+            "width": 1705,
+            "height": 189,
+            "alt": "Ba thao tác trước khi chạy",
+            "title": "Ba thao tác trước khi chạy",
+            "caption": "1 Khớp lệnh · 2 Phí giao dịch · 3 Chạy backtest.",
+            "zoom_title": "Chọn Khớp lệnh và Phí trước khi chạy kiểm thử."
+          },
+          {
+            "type": "table",
+            "head": ["Lựa chọn", "Cách đọc"],
+            "rows": [
+              ["Đóng cửa cùng phiên", "Tín hiệu từ dữ liệu cuối phiên; mô phỏng khớp tại giá đóng cửa chính phiên đó."],
+              ["Mở cửa phiên kế tiếp", "Tín hiệu cuối phiên tạo lệnh chờ; khớp tại giá mở cửa phiên kế tiếp hợp lệ."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<div class=\"execution-example\"><div><span>PHIÊN T · ĐÓNG CỬA</span><b>20.000 đ</b><p>Điều kiện được xác nhận</p></div><div class=\"time-arrow\">→</div><div><span>PHIÊN TIẾP THEO · MỞ CỬA</span><b>20.500 đ</b><p>Giá dùng cho chế độ kế tiếp</p></div></div>\n<p>Trong ví dụ giả định trên, hai chế độ không dùng cùng một giá mua. Không được biết đóng cửa T rồi tính mua tại mở cửa T đã qua. Nếu tín hiệu ở cuối khoảng kiểm thử mà chưa có phiên khớp tiếp theo trong khoảng, lệnh đó <strong>chưa được coi là đã thực hiện</strong>.</p>\n<p>“Đóng cửa cùng phiên” là quy ước mô phỏng. Nó không chứng minh bạn luôn có thể biết đầy đủ giá/khối lượng cuối phiên rồi đặt lệnh thật và khớp đúng giá đó.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Đọc mức phí đang sử dụng",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Chọn mức phí và đọc rõ mức áp dụng. Ví dụ dùng <strong>mua 0,15%; tổng phí/thuế bán 0,25%</strong>.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Ví dụ riêng: 100 CP", "Giá trị"],
+            "rows": [
+              ["Mua 10.000 đ/CP", "1.000.000 đ giá trị mua + 1.500 đ phí"],
+              ["Tổng tiền mua", "1.001.500 đ"],
+              ["Bán 11.000 đ/CP", "1.100.000 đ − 2.750 đ phí/thuế bán"],
+              ["Tiền bán thực nhận", "1.097.250 đ"],
+              ["Lãi thuần", "95.750 đ"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Lãi thuần không phải 100.000 đồng chênh lệch giá. Khi chi phí bán đã gộp thuế, không tự trừ thuế thêm lần nữa. Chọn <strong>Không tính phí</strong> chỉ dùng để đối chiếu ảnh hưởng chi phí, không đồng nghĩa giao dịch thực tế miễn phí.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Chạy và nhận biết trạng thái",
+        "blocks": [
+          {
+            "type": "steps",
+            "items": [
+              {
+                "no": "01",
+                "title": "Kiểm tra lại đầu vào",
+                "html": "<p>Đúng mã, ngày, vốn; Mua có điều kiện; Bán đúng ý định; khớp và phí đã chọn.</p>"
+              },
+              {
+                "no": "02",
+                "title": "Bấm Chạy backtest",
+                "html": "<p>Chờ kết quả của lần vừa gửi. Không cần bấm nhiều lần hoặc tự đổi cấu hình khi đang đợi.</p>"
+              },
+              {
+                "no": "03",
+                "title": "Đọc thông tin lần chạy",
+                "html": "<p>Kết quả phải ghi mã, giai đoạn và cấu hình tương ứng. Có thông báo thiếu dữ liệu hoặc lỗi thì xử lý đúng nguyên nhân; không coi kết quả cũ là của lần chạy lỗi.</p>"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "head": ["Trạng thái", "Bạn nên làm gì?"],
+            "rows": [
+              ["Không cho chạy vì chưa có Mua", "Thêm ít nhất một điều kiện Mua đã mở quyền."],
+              ["Đang tính", "Chờ một yêu cầu; không gửi lặp."],
+              ["Thiếu dữ liệu / thông số không hợp lệ", "Đọc lỗi và chỉnh đúng đầu vào bị báo."],
+              ["Chạy thành công, không có giao dịch đóng", "Đọc điều kiện và vị thế mở; không tự kết luận hệ thống lỗi."],
+              ["Đổi cấu hình nhưng chưa chạy lại", "Số cũ thuộc lần trước; bấm chạy lại để có kết quả mới."]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Một lần kiểm thử không phải tài khoản Bot",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Mở phần <strong>Giả định của lần kiểm thử</strong> dưới biểu đồ để biết phạm vi mô hình, cách dùng vốn và những yếu tố chưa được mô phỏng. Không suy ra đã tính thanh khoản, trượt giá hoặc thời gian thanh toán chỉ vì chart có vẻ hoàn chỉnh.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Thao tác", "Ảnh hưởng"],
+            "rows": [
+              ["Chạy Backtest", "Tạo kết quả kiểm thử; không đặt lệnh vào tài khoản Bot."],
+              ["Lưu tham số Mua/Bán", "Thay cấu hình chung đã lưu. Bot dùng theo phiên hiệu lực, không lập tức tạo lệnh lúc bấm Lưu."],
+              ["Lưu phiên bản kết quả", "Giữ bằng chứng của lần chạy, không tự đổi sang một Bot mới."]
+            ]
+          }
+        ]
+      }
+    ],
+    "config_id": null,
+    "fixture": {}
+  },
+  {
+    "id": "ch02-l05",
+    "chapter": 2,
+    "order": 5,
+    "lesson_key": "guide:ch02-l05",
+    "kind": "guide",
+    "name": "Đọc kết quả và lịch sử giao dịch",
+    "title": "Đọc kết quả và lịch sử giao dịch",
+    "lead": "Đọc cả lợi nhuận, mức giảm và từng giao dịch để giải thích kết quả, không chỉ nhìn một con số màu xanh.",
+    "nav_labels": ["Bắt đầu", "Thao tác", "Đối chiếu", "Lưu ý"],
+    "completion": {
+      "mode": "manual",
+      "button_label": "Hoàn thành bài học"
+    },
+    "content_version": "ch02-v3.0",
+    "source": {
+      "package": "iqx-ch2-six-user-guides",
+      "package_version": "iqx-ch2-six-user-guides-v3.0-academy71-shop",
+      "payload_sha256": "e81f539f45c0969def93835800a980c9e0a64e6cf9fd269e7a4b94bc4dd1d745",
+      "object_sha256": "3c5fa11dc8a064bb65436fb0acdbca84a358a592cdf99999e3b96e7c22d8eb5e"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Xác nhận đang đọc đúng lần chạy",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Lần kiểm thử A: <strong>MA Mua 20; MA Bán 20; mở cửa phiên kế tiếp; phí mua 0,15%, phí/thuế bán 0,25%; vốn 100 triệu</strong>.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "11-results",
+            "src": "/assets/academy/ch02/11-results.a6f779af.webp",
+            "width": 1705,
+            "height": 901,
+            "alt": "Kết quả lần kiểm thử A",
+            "title": "Kết quả lần kiểm thử A",
+            "caption": "Đọc mã, giai đoạn và dòng cấu hình trước khi đọc các chỉ số.",
+            "zoom_title": "Kết quả lần A: MA Mua 20, MA Bán 20."
+          },
+          {
+            "type": "html",
+            "html": "<p>Trước khi so sánh hoặc lưu, kiểm tra tiêu đề của kết quả. Nếu form đã đổi nhưng kết quả chưa chạy lại, số đang xem vẫn thuộc phiên bản cũ.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Đọc sáu chỉ số theo đúng câu hỏi",
+        "blocks": [
+          {
+            "type": "image",
+            "asset_id": "12-kpis",
+            "src": "/assets/academy/ch02/12-kpis.271d3ed0.webp",
+            "width": 1703,
+            "height": 193,
+            "alt": "Sáu ô chỉ số của lần A",
+            "title": "Sáu ô chỉ số của lần A",
+            "zoom_title": "Sáu chỉ số của cùng một lần chạy, không phải sáu kết quả riêng."
+          },
+          {
+            "type": "table",
+            "head": ["Ô", "Câu hỏi được trả lời", "Trong ảnh A"],
+            "rows": [
+              ["1 · Tổng lợi nhuận", "Danh mục cuối kỳ tăng/giảm bao nhiêu so với vốn đầu?", "+115,6%"],
+              ["2 · Lợi nhuận năm hóa", "Tốc độ quy đổi theo quy ước thời gian của lần chạy?", "+44,9%"],
+              ["3 · Sụt giảm lớn nhất", "Giảm sâu nhất từ một đỉnh đã đạt đến bao nhiêu?", "-11,1%"],
+              ["4 · Số giao dịch", "Có bao nhiêu vòng mua–bán đã đóng?", "18"],
+              ["5 · Tỷ lệ thắng", "Có bao nhiêu vòng đã đóng có lãi thuần?", "9 / 18 = 50,0%"],
+              ["6 · Lợi nhuận mua và giữ", "Tỷ số giá từ đầu tới cuối kỳ của cùng mã?", "+15,3%"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Lợi nhuận danh mục bao gồm tiền mặt và giá trị cổ phiếu còn giữ. Ví dụ độc lập: vốn 100 triệu, cuối kỳ có 30 triệu tiền mặt và 80 triệu cổ phiếu thì tổng lợi nhuận là <strong>10%</strong>, dù chưa bán hết.</p>\n<p>Không đọc lợi nhuận cuối kỳ thay cho mức sụt giảm. Ví dụ khác: <strong>100 → 120 → 90 → 110</strong> cho lợi nhuận cuối +10%, nhưng giảm từ 120 xuống 90 là −25%. Tỷ lệ thắng cũng không đủ: 7 lệnh lãi 1 triệu và 3 lệnh lỗ 3 triệu vẫn lỗ ròng 2 triệu, dù thắng 70%.</p>"
+          },
+          {
+            "type": "details",
+            "summary": "Công thức để đối chiếu khi cần",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p><strong>Tổng lợi nhuận</strong> = (giá trị danh mục cuối / vốn đầu − 1) × 100%.</p>\n<p><strong>Tỷ lệ thắng</strong> = số vòng có lãi thuần / số vòng đã đóng × 100%. Chưa có vòng đã đóng thì chưa xác định, hiển thị —.</p>\n<p><strong>Sụt giảm tại một thời điểm</strong> = (giá trị danh mục / đỉnh danh mục tính đến thời điểm đó − 1) × 100%. Lấy mức âm sâu nhất của cả khoảng.</p>\n<p><strong>CAGR</strong> trong mẫu dùng (giá trị cuối / vốn đầu)<sup>252 / số phiên</sup> − 1. Đây là quy ước năm hóa của mẫu, không phải mỗi năm tài khoản tăng đều như vậy.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p><strong>Số giao dịch ở Backtest này đếm vòng Mua–Bán đã đóng.</strong> Luyện tập trong Bot đếm số lần Mua đã khớp, nên hai công cụ không dùng chung cách đếm. Vị thế chưa bán không phải một vòng đã đóng.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Đọc biểu đồ Lợi nhuận danh mục (%)",
+        "blocks": [
+          {
+            "type": "image",
+            "asset_id": "13-chart",
+            "src": "/assets/academy/ch02/13-chart.4adce591.webp",
+            "width": 1703,
+            "height": 518,
+            "alt": "Đọc ba đường tại cùng một phiên",
+            "title": "Đọc ba đường tại cùng một phiên",
+            "caption": "Trục ngang là thời gian; trục dọc là %. Tooltip giúp đối chiếu đúng ngày.",
+            "zoom_title": "Trỏ vào chart để đọc ba đường tại cùng một phiên; trục dọc là lợi nhuận %."
+          },
+          {
+            "type": "table",
+            "head": ["Đường", "Đọc như thế nào?"],
+            "rows": [
+              ["Danh mục chiến lược", "Kết quả của điều kiện và giả định đang được kiểm thử."],
+              ["Mua và giữ cùng mã", "Mức thay đổi giá từ đầu kỳ tới mỗi thời điểm; cuối kỳ không lấy mức cao nhất giữa kỳ."],
+              ["VN-Index", "Mốc chỉ số cùng giai đoạn, không phải một tài khoản giao dịch."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Đọc cả đường đi: giai đoạn nào tăng, giảm hoặc đi ngang; sau một đỉnh giảm bao lâu và sâu thế nào. Điểm cuối đường danh mục phải khớp tổng lợi nhuận. <strong>Không cộng % của từng lệnh để dựng lợi nhuận tài khoản.</strong></p>\n<p>Ví dụ mua–giữ: giá đầu 100, từng lên 200 nhưng cuối kỳ là 130 thì lợi nhuận theo tỷ số giá là <strong>+30%</strong>, không phải +100%. Trong ảnh, mua–giữ và VN-Index chưa tính phí/cổ tức; đọc cơ sở so sánh trong giả định, không gọi chúng là tổng lợi nhuận đã gồm mọi quyền lợi.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Mở một giao dịch để giải thích kết quả",
+        "blocks": [
+          {
+            "type": "image",
+            "asset_id": "14-history",
+            "src": "/assets/academy/ch02/14-history.0e700eba.webp",
+            "width": 1705,
+            "height": 623,
+            "alt": "Bảng lịch sử và nút chi tiết giao dịch",
+            "title": "Bảng lịch sử và nút chi tiết giao dịch",
+            "caption": "Xem toàn bộ các vòng đã đóng; vị thế còn mở được trình bày riêng.",
+            "zoom_title": "Lịch sử giao dịch: có số lượng, điều kiện, ngày khớp và nút chi tiết từng vòng đã đóng."
+          },
+          {
+            "type": "steps",
+            "items": [
+              {
+                "no": "01",
+                "title": "Chọn một dòng giao dịch",
+                "html": "<p>Đọc ngày, giá, số cổ phiếu và lãi/lỗ. Không dừng ở việc đếm tổng số lệnh.</p>"
+              },
+              {
+                "no": "02",
+                "title": "Bấm chi tiết ở cuối dòng",
+                "html": "<p>Đối chiếu ngày tín hiệu với ngày khớp, phí và từng giá trị của điều kiện tại phiên tín hiệu.</p>"
+              },
+              {
+                "no": "03",
+                "title": "Kiểm tra lý do của chính lần chạy",
+                "html": "<p>Sau khi sửa cấu hình, các giá trị này vẫn là bằng chứng của giao dịch cũ; không lấy chỉ báo hôm nay viết lại lý do.</p>"
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "asset_id": "15-trade-detail",
+            "src": "/assets/academy/ch02/15-trade-detail.e48344cc.webp",
+            "width": 992,
+            "height": 1034,
+            "alt": "Chi tiết giao dịch #18 của lần A",
+            "title": "Chi tiết giao dịch #18 của lần A",
+            "caption": "Ngày tín hiệu và ngày khớp được tách; dưới cùng là các giá trị chỉ báo đã tạo tín hiệu.",
+            "zoom_title": "Chi tiết giao dịch của cùng lần kiểm thử: ngày tín hiệu, ngày khớp, phí và giá trị điều kiện.",
+            "max_width": 720
+          },
+          {
+            "type": "html",
+            "html": "<p>Trong giao dịch này, tín hiệu Mua ở <strong>09/10/2025</strong>, khớp ở <strong>10/10/2025</strong>. Có 3.900 cổ phiếu, tiền mua gồm phí 175.450.782 đồng, bán thuần 184.358.947,5 đồng. Lãi thuần = <strong>8.908.165,5 đồng</strong>.</p>"
+          },
+          {
+            "type": "details",
+            "summary": "Nhận diện vị thế chưa đóng",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Hình dưới là một lần thử <strong>khác</strong>, chỉ bật Mua và bỏ toàn bộ Bán. Phần vị thế đang mở không được đếm vào số giao dịch đã đóng hoặc tỷ lệ thắng; giá trị còn giữ vẫn nằm trong lợi nhuận danh mục.</p>"
+              },
+              {
+                "type": "image",
+                "asset_id": "20-open-position",
+                "src": "/assets/academy/ch02/20-open-position.d8f0616f.webp",
+                "width": 1705,
+                "height": 371,
+                "alt": "Ví dụ riêng: còn vị thế cuối kỳ",
+                "title": "Ví dụ riêng: còn vị thế cuối kỳ",
+                "caption": "Không tự bán cuối kỳ chỉ để bảng lịch sử có thêm một dòng.",
+                "zoom_title": "Ví dụ riêng: không có Bán, vị thế còn mở được thể hiện ngoài các giao dịch đã đóng."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "config_id": null,
+    "fixture": {}
+  },
+  {
+    "id": "ch02-l06",
+    "chapter": 2,
+    "order": 6,
+    "lesson_key": "guide:ch02-l06",
+    "kind": "guide",
+    "name": "Điều chỉnh, so sánh và lưu kết quả",
+    "title": "Điều chỉnh, so sánh và lưu kết quả",
+    "lead": "Giữ một mốc ban đầu, thay một yếu tố và xem lại bằng chứng của từng phiên bản.",
+    "nav_labels": ["Bắt đầu", "Thao tác", "Đối chiếu", "Lưu ý"],
+    "completion": {
+      "mode": "manual",
+      "button_label": "Hoàn thành bài học"
+    },
+    "content_version": "ch02-v3.0",
+    "source": {
+      "package": "iqx-ch2-six-user-guides",
+      "package_version": "iqx-ch2-six-user-guides-v3.0-academy71-shop",
+      "payload_sha256": "e81f539f45c0969def93835800a980c9e0a64e6cf9fd269e7a4b94bc4dd1d745",
+      "object_sha256": "5a49510d4daca621834710c07b7f741ad1f150ca83d136de4527c4793a1e6b6d"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Lưu phiên bản A trước khi thay đổi",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Sau khi đọc kết quả, bấm <strong>Lưu phiên bản</strong> trên thanh hành động. Dùng tên mô tả được cấu hình, chẳng hạn <strong>A · MA Mua 20 · Bán 20</strong>. Đây là lưu <em>kết quả đã chạy</em>, không phải nút Lưu ở cửa sổ tham số.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "16-save",
+            "src": "/assets/academy/ch02/16-save.31f9b642.webp",
+            "width": 992,
+            "height": 438,
+            "alt": "Đặt tên và lưu kết quả đã chạy",
+            "title": "Đặt tên và lưu kết quả đã chạy",
+            "caption": "1 Tên phiên bản · 2 Lưu. Thông tin phía trên cho biết kết quả nào được lưu.",
+            "zoom_title": "Lưu phiên bản kết quả với tên mô tả cấu hình đã chạy.",
+            "max_width": 720
+          },
+          {
+            "type": "html",
+            "html": "<p>Đừng lấy kết quả A ghép với các thông số B vừa gõ nhưng chưa chạy. Nếu chưa có kết quả thành công, chưa có phiên bản kết quả tương ứng để lưu.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Thay một thành phần rồi chạy lại",
+        "blocks": [
+          {
+            "type": "steps",
+            "items": [
+              {
+                "no": "01",
+                "title": "Mở Chỉnh ở MA phía Mua",
+                "html": "<p>Đổi riêng chu kỳ Mua từ 20 thành 30. Giữ nguyên dấu &gt; và phía Bán 20.</p>"
+              },
+              {
+                "no": "02",
+                "title": "Lưu thay đổi cấu hình",
+                "html": "<p>Đây là thao tác cập nhật cấu hình chung. Trên tài khoản thật, phải nắm ảnh hưởng và phiên hiệu lực của Bot; không phải bản thử riêng vô tác động.</p>"
+              },
+              {
+                "no": "03",
+                "title": "Giữ các đầu vào khác",
+                "html": "<p>Vẫn FPT, cùng khoảng, vốn, phí và cách khớp. Không đồng thời đổi nhiều thứ rồi gán mọi khác biệt cho chu kỳ.</p>"
+              },
+              {
+                "no": "04",
+                "title": "Bấm chạy lại",
+                "html": "<p>Chỉ kết quả chạy mới thành công mới đại diện cho cấu hình B.</p>"
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "asset_id": "17-dirty",
+            "src": "/assets/academy/ch02/17-dirty.d41a2e86.webp",
+            "width": 1703,
+            "height": 158,
+            "alt": "Kết quả cũ chưa đổi khi bạn vừa sửa form",
+            "title": "Kết quả cũ chưa đổi khi bạn vừa sửa form",
+            "caption": "Nhãn “Cấu hình đã đổi · cần chạy lại” nhắc rằng số cũ chưa phải của SMA Mua 30.",
+            "zoom_title": "Sau khi đổi SMA Mua 20 thành 30, kết quả cũ chưa đổi; cần chạy lại."
+          },
+          {
+            "type": "html",
+            "html": "<p>Trong ảnh, lần A vẫn giữ đúng thông tin và giao dịch cũ. Việc bạn đổi một tham số không được làm lịch sử đó tự viết lại.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Đối chiếu A và B trên cùng dữ liệu",
+        "blocks": [
+          {
+            "type": "image",
+            "asset_id": "18-results-b",
+            "src": "/assets/academy/ch02/18-results-b.ead26e2a.webp",
+            "width": 1705,
+            "height": 901,
+            "alt": "Kết quả B sau khi đổi riêng SMA Mua thành 30",
+            "title": "Kết quả B sau khi đổi riêng SMA Mua thành 30",
+            "caption": "SMA Bán vẫn 20; khoảng, vốn, khớp và phí giữ nguyên.",
+            "zoom_title": "Lần B dùng SMA Mua 30; phía Bán và các giả định vẫn như lần A."
+          },
+          {
+            "type": "table",
+            "head": ["Nội dung", "A · Mua 20 / Bán 20", "B · Mua 30 / Bán 20"],
+            "rows": [
+              ["Tổng lợi nhuận", "+115,6%", "+67,7%"],
+              ["Lợi nhuận năm hóa", "+44,9%", "+28,4%"],
+              ["Sụt giảm lớn nhất", "-11,1%", "-17,6%"],
+              ["Số vòng đã đóng", "18", "24"],
+              ["Tỷ lệ thắng", "50,0%", "33,3%"],
+              ["Mua và giữ", "+15,3%", "+15,3%"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Trong chuỗi này, A cho lợi nhuận cao hơn và sụt giảm nhỏ hơn B. Điều đó chỉ mô tả hai lần thử này; không chứng minh MA 20 tốt hơn MA 30 ở mọi cổ phiếu hoặc mọi giai đoạn. Hãy mở lịch sử để xem những lần vào/ra nào thay đổi.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Mở lại kết quả và kết thúc lần nghiên cứu",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Lưu B với tên khác, rồi bấm <strong>Đã lưu → Xem</strong> ở phiên bản cần đọc. Mở kết quả A không tự đưa cấu hình chung trở về A.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "19-saved",
+            "src": "/assets/academy/ch02/19-saved.7c773974.webp",
+            "width": 992,
+            "height": 536,
+            "alt": "Xem lại đúng phiên bản đã lưu",
+            "title": "Xem lại đúng phiên bản đã lưu",
+            "caption": "Mỗi mục có tên và thông tin lần kiểm thử. Xem kết quả khác với áp cấu hình.",
+            "zoom_title": "Danh sách các phiên bản: bấm Xem để đọc lại; không tự áp vào cấu hình chung.",
+            "max_width": 720
+          },
+          {
+            "type": "table",
+            "head": ["Bạn thực hiện", "Điều gì thay đổi?"],
+            "rows": [
+              ["Lưu tham số trong Cấu hình", "Cấu hình chung được cập nhật theo thao tác có chủ đích."],
+              ["Lưu phiên bản sau khi chạy", "Giữ cấu hình và kết quả của lần đó để xem lại."],
+              ["Bấm Xem một phiên bản cũ", "Chỉ mở kết quả cũ, không ghi đè lựa chọn đang vận hành."],
+              ["Chạy thử cấu hình mới", "Tạo kết quả kiểm thử, không phát lệnh vào Bot."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Kết thúc một lần nghiên cứu, hãy ghi rõ: <strong>đã đổi gì, giữ gì, kết quả nào thay đổi và còn hạn chế gì</strong>. Không chỉ giữ đúng một lần đẹp nhất rồi bỏ qua mọi lần còn lại; cũng không chọn lại khoảng ngày chỉ để đường lợi nhuận đẹp hơn.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "notice",
+            "title": "Điểm kết thúc Chương 2",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Bạn đã đi qua chọn đầu vào → Mua → Bán → giả định → kết quả → lưu và so sánh.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Nếu chọn <strong>Tạo cảnh báo</strong> từ một kết quả, cảnh báo dùng bộ điều kiện của chính lần chạy đó. Cảnh báo không tự đổi theo cấu hình mới và không đặt lệnh cho Bot.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": null,
+    "fixture": {}
+  }
+]

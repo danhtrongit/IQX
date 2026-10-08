@@ -1,0 +1,113 @@
+{
+  "format": 1,
+  "chapter": 3,
+  "package": "iqx-ch3-fundamental-six",
+  "package_version": "iqx-ch3-fundamental-six-v2.0",
+  "content_version": "ch03-v2.0",
+  "source": {
+    "html_file": "IQX-Hoc-Vien-Chuong-3-MAU-v2.0.html",
+    "html_bytes": 636852,
+    "html_sha256": "61ad365c039425c06a6f86ff74f230821ff9d1f8370b259e233d25a9093dbbc9",
+    "payload_script_id": "ch3-content-data",
+    "payload_text_sha256": "11987b6fa2728cd2a015b5fe58d2e5d265ddb6329191e6b34ab5e24d7ca26653",
+    "payload_text_in_spec": false,
+    "objects": {
+      "questions": "a0f8195025f2a86a3ba7e662daab82847f67ac0436add0ad3303dcb49afab153",
+      "charts": "2744e12a1124145d75b3bb1e65dc92f31189a5be7f5d2dfa186ca7bff63f1f47",
+      "datasets": "c362747759ae4c56eae2a9d6cf3bdbcfbbea256a768a9b6a4996605860bc39e5",
+      "reference_periods": "faa28597c58da2002dee1b061b6ee73aca04af0dd285375384df2946466433bc"
+    },
+    "lessons": {
+      "ch03-l01": "c2f08b8a23fa3361fe1c0e892e92b6b4da295effe53ff3d362e77f49d31592c1",
+      "ch03-l02": "c9b90dde69f2cdb2cbca30549615a9b21a537f0fa25376d70c2c7782a829759c",
+      "ch03-l03": "41b96cdf4e2523540a790dc6b0dffc2ec646116ec3029b27a5901afbb5a6cac8",
+      "ch03-l04": "55e3581918c446535cce8765e6a3e1f2e606dc345201cb5d108509c9cae1c84a",
+      "ch03-l05": "73a37be54cf8683ffb45583dbf4a7d8d5ce7a32e33c711afcac97331e96517aa",
+      "ch03-l06": "1b343f0b1b2c9b2a3ea92cb4cf2b81d06576309db8884e7b6b83b5485d739166"
+    },
+    "lessons_in_spec": true,
+    "copied": {
+      "charts": "01c72bc4fa5a6926149462de25f217cd9f880325a921dd193e410d83b6953d5d"
+    },
+    "gates": ["html_bytes", "html_sha256", "payload_text_sha256(pinned)", "payload_version", "object:questions", "object:charts", "object:datasets", "object:reference_periods", "lesson:ch03-l01", "lesson:ch03-l02", "lesson:ch03-l03", "lesson:ch03-l04", "lesson:ch03-l05", "lesson:ch03-l06"]
+  },
+  "counts": {
+    "lessons": 6,
+    "sections": 24,
+    "lesson_charts": 13,
+    "images": 0,
+    "tables": 25,
+    "computed_tables": 0,
+    "html_blocks": 65,
+    "questions": 48,
+    "legends_dropped": 0,
+    "chart_models": 14,
+    "question_charts": 10,
+    "question_tables": 8,
+    "hints": 1,
+    "explanations": 192,
+    "proofs_recomputed": 16
+  },
+  "per_lesson": {
+    "ch03-l01": {
+      "charts": 3,
+      "images": 0,
+      "tables": 5,
+      "computed_tables": 0,
+      "questions": 8
+    },
+    "ch03-l02": {
+      "charts": 2,
+      "images": 0,
+      "tables": 5,
+      "computed_tables": 0,
+      "questions": 8
+    },
+    "ch03-l03": {
+      "charts": 2,
+      "images": 0,
+      "tables": 3,
+      "computed_tables": 0,
+      "questions": 8
+    },
+    "ch03-l04": {
+      "charts": 2,
+      "images": 0,
+      "tables": 5,
+      "computed_tables": 0,
+      "questions": 8
+    },
+    "ch03-l05": {
+      "charts": 2,
+      "images": 0,
+      "tables": 2,
+      "computed_tables": 0,
+      "questions": 8
+    },
+    "ch03-l06": {
+      "charts": 2,
+      "images": 0,
+      "tables": 5,
+      "computed_tables": 0,
+      "questions": 8
+    }
+  },
+  "text_equivalence": {
+    "sections_checked": 24,
+    "matched": 24
+  },
+  "outputs": {
+    "lessons.vi.json": {
+      "sha256": "bb7925b48424e588749a4d1d4857273b5e648796469ec38e68dfdac157302bf6",
+      "bytes": 54801
+    },
+    "questions.vi.private.json": {
+      "sha256": "f8be03f94499b78da49e1d303691f25d7f30abda707ccc26aeec716861dbccd9",
+      "bytes": 58954
+    },
+    "charts.vi.json": {
+      "sha256": "4a48372fdb4cf99d0bb7aeb4fa9f3e34a14414f5d0c90055d62209f66ad73f2c",
+      "bytes": 7981
+    }
+  }
+}

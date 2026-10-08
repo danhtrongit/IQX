@@ -1,0 +1,97 @@
+{
+  "format": 1,
+  "chapter": 2,
+  "package": "iqx-ch2-six-user-guides",
+  "package_version": "iqx-ch2-six-user-guides-v3.0-academy71-shop",
+  "content_version": "ch02-v3.0",
+  "source": {
+    "html_file": "IQX-Hoc-Vien-Chuong-2-MAU-v2.0.html",
+    "html_bytes": 1550487,
+    "html_sha256": "81e155f0eb06542c9de984c1ac9a288d0fe62415345535edb6a31c05972a24e1",
+    "payload_script_id": "ch2-content-data",
+    "payload_text_sha256": "e81f539f45c0969def93835800a980c9e0a64e6cf9fd269e7a4b94bc4dd1d745",
+    "payload_text_in_spec": true,
+    "objects": {},
+    "lessons": {
+      "ch02-l01": "c60ec570dcf16169aa261a9895eb5f9c781b21dd18c6670c30910d04a76eb30e",
+      "ch02-l02": "366ca28f65b42043ee80d02fc53bd91694aff10a2db5b19a9237af00f22ba1af",
+      "ch02-l03": "d5aebd3e80b5d1abe6c6c136813f93e22fb4ca13ae4df83033161d168479a58d",
+      "ch02-l04": "ef27edf4ab3ec377881af867443fce2e9a3613fa31e907aed639a773e8d7658f",
+      "ch02-l05": "3c5fa11dc8a064bb65436fb0acdbca84a358a592cdf99999e3b96e7c22d8eb5e",
+      "ch02-l06": "5a49510d4daca621834710c07b7f741ad1f150ca83d136de4527c4793a1e6b6d"
+    },
+    "lessons_in_spec": false,
+    "copied": {},
+    "gates": ["html_bytes", "html_sha256", "payload_text_sha256", "payload_version", "images:22"]
+  },
+  "counts": {
+    "lessons": 6,
+    "sections": 24,
+    "lesson_charts": 0,
+    "images": 22,
+    "tables": 17,
+    "computed_tables": 0,
+    "html_blocks": 40,
+    "questions": 0,
+    "legends_dropped": 0,
+    "asset_bytes": 720260
+  },
+  "per_lesson": {
+    "ch02-l01": {
+      "charts": 0,
+      "images": 3,
+      "tables": 4,
+      "computed_tables": 0,
+      "questions": 0
+    },
+    "ch02-l02": {
+      "charts": 0,
+      "images": 5,
+      "tables": 2,
+      "computed_tables": 0,
+      "questions": 0
+    },
+    "ch02-l03": {
+      "charts": 0,
+      "images": 3,
+      "tables": 3,
+      "computed_tables": 0,
+      "questions": 0
+    },
+    "ch02-l04": {
+      "charts": 0,
+      "images": 1,
+      "tables": 4,
+      "computed_tables": 0,
+      "questions": 0
+    },
+    "ch02-l05": {
+      "charts": 0,
+      "images": 6,
+      "tables": 2,
+      "computed_tables": 0,
+      "questions": 0
+    },
+    "ch02-l06": {
+      "charts": 0,
+      "images": 4,
+      "tables": 2,
+      "computed_tables": 0,
+      "questions": 0
+    }
+  },
+  "text_equivalence": {
+    "sections_checked": 24,
+    "matched": 24
+  },
+  "outputs": {
+    "lessons.vi.json": {
+      "sha256": "046f0784a9a439c3a35c46d6d4a4c242ce6924d2db0e2bdfab3d8f1e328a019d",
+      "bytes": 53612
+    },
+    "assets.manifest.json": {
+      "sha256": "526166d0a0f815923a12bf43ae9c6e99a0daaf9f3ece96c484137fb375817fbd",
+      "bytes": 11690
+    }
+  }
+}

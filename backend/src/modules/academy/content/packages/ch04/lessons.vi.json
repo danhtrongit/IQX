@@ -1,0 +1,1019 @@
+[
+  {
+    "id": "ch04-l01",
+    "chapter": 4,
+    "order": 1,
+    "lesson_key": "guide:ch04-l01",
+    "kind": "guide",
+    "name": "Bắt đầu với Bộ lọc",
+    "title": "Bắt đầu với Bộ lọc",
+    "lead": "Nhận diện các khu vực trên màn hình, chọn phạm vi doanh nghiệp và chuẩn bị những chỉ tiêu cần dùng.",
+    "nav_labels": ["Bắt đầu", "Thao tác", "Đối chiếu", "Lưu ý"],
+    "completion": {
+      "mode": "manual",
+      "button_label": "Hoàn thành bài học"
+    },
+    "content_version": "ch04-v1.0",
+    "source": {
+      "package": "iqx-ch4-six-filter-guides",
+      "package_version": "iqx-ch4-six-filter-guides-v1.0",
+      "payload_sha256": "aa086c10d35c5240104413b563459a31015a2cb448d68f5f4936b30b453dc35a",
+      "object_sha256": "5758feb18f39c6892d4c9aaa120bbaf858ef1af53185a590b3111c3c10cc3679"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Nhận diện các khu vực trên màn hình",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Chương 3 giải thích các chỉ tiêu tài chính. Ở chương này, bạn chuyển những kiến thức đó thành điều kiện lọc, kiểm tra kết quả, lưu lại và chủ động chọn tập mã mua mới cho Bot.</p>\n<p>Mở <strong>Chiến lược → Bộ lọc</strong>.</p>\n<p>Bộ lọc giúp tìm những doanh nghiệp đáp ứng các điều kiện tài chính do bạn chọn. Kết quả trả lời câu hỏi: <strong>“Doanh nghiệp nào thỏa bộ tiêu chí này trên dữ liệu đang được sử dụng?”</strong> Nó chưa trả lời thời điểm mua, khối lượng mua hoặc cổ phiếu nào chắc chắn mang lại lợi nhuận.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "01-overview",
+            "src": "/assets/academy/ch04/01-overview.d1449851.webp",
+            "width": 2160,
+            "height": 1842,
+            "alt": "Sáu khu vực cần nhận diện",
+            "title": "Sáu khu vực cần nhận diện",
+            "caption": "1 Tab Bộ lọc · 2 Thư viện chỉ tiêu · 3 Thị trường và ngành · 4 Điều kiện lọc · 5 Kết quả · 6 Nguồn mua mới của Bot.",
+            "zoom_title": "Các khu vực của Bộ lọc"
+          },
+          {
+            "type": "table",
+            "head": ["Khu vực", "Dùng để làm gì?"],
+            "rows": [
+              ["<strong>Chỉ tiêu đã mở</strong>", "Tìm và thêm các chỉ tiêu cơ bản đã được mở quyền."],
+              ["<strong>Thị trường, Ngành</strong>", "Chọn phạm vi doanh nghiệp được xem xét."],
+              ["<strong>Điều kiện lọc</strong>", "Thiết lập kỳ tính, dấu so sánh và ngưỡng cho từng chỉ tiêu."],
+              ["<strong>Kết quả sàng lọc</strong>", "Đọc doanh nghiệp phù hợp, số liệu, kỳ báo cáo và chọn mã."],
+              ["<strong>Các nút lưu</strong>", "Lưu bộ tiêu chí hoặc lưu một danh mục từ kết quả."],
+              ["<strong>Danh mục mua mới của Bot</strong>", "Xem nguồn Bot đang sử dụng và thay đổi đang chờ hiệu lực."]
+            ],
+            "aria_label": "Bảng: Nhận diện các khu vực trên màn hình"
+          },
+          {
+            "type": "html",
+            "html": "<p>Trên màn hình lớn, thư viện chỉ tiêu nằm bên trái. Trên điện thoại, bấm <strong>Chỉ tiêu</strong> để mở thư viện.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "02-mobile-entry",
+            "src": "/assets/academy/ch04/02-mobile-entry.6f4c2457.webp",
+            "width": 585,
+            "height": 198,
+            "alt": "Mở thư viện trên điện thoại",
+            "title": "Mở thư viện trên điện thoại",
+            "caption": "1 Nút Chỉ tiêu mở thư viện ở màn hình nhỏ.",
+            "zoom_title": "Mở thư viện Chỉ tiêu trên màn hình nhỏ",
+            "max_width": 390
+          },
+          {
+            "type": "html",
+            "html": "<p>Khác với Backtest, Bộ lọc không có hai khu vực điều kiện Mua và Bán. Các điều kiện ở đây dùng để chọn doanh nghiệp, không phải xác định tín hiệu giao dịch.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Chọn thị trường và ngành trước khi thêm điều kiện",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p><strong>Thị trường</strong> xác định phạm vi sàn giao dịch. <strong>Ngành</strong> thu hẹp phạm vi theo nhóm doanh nghiệp.</p>\n<p>Để bắt đầu ví dụ của chương, chọn:</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Trường", "Lựa chọn"],
+            "rows": [
+              ["Thị trường", "Tất cả"],
+              ["Ngành", "Tất cả ngành"]
+            ],
+            "aria_label": "Bảng: Chọn thị trường và ngành trước khi thêm điều kiện"
+          },
+          {
+            "type": "image",
+            "asset_id": "03-scope",
+            "src": "/assets/academy/ch04/03-scope.a190aeb4.webp",
+            "width": 1742,
+            "height": 192,
+            "alt": "Chọn phạm vi doanh nghiệp",
+            "title": "Chọn phạm vi doanh nghiệp",
+            "caption": "1 Thị trường · 2 Ngành. Hai lựa chọn này xác định phạm vi được sàng lọc.",
+            "zoom_title": "Thị trường và ngành"
+          },
+          {
+            "type": "html",
+            "html": "<p>Sau đó, khi cần nghiên cứu một phạm vi cụ thể, bạn có thể thay một trong hai lựa chọn.</p>\n<p>Một doanh nghiệp không xuất hiện trong kết quả có thể vì nằm ngoài phạm vi thị trường hoặc ngành đang chọn, chưa chắc vì không đạt các chỉ tiêu tài chính. Vì vậy, trước khi điều chỉnh ngưỡng, hãy kiểm tra lại hai trường này.</p>\n<p><strong>Phạm vi Bộ lọc không phải nguồn mua của Bot.</strong> Chọn “Tất cả” không làm Bot mua trên toàn bộ thị trường; chọn một ngành cũng chưa chuyển Bot sang danh mục của ngành đó. Việc đổi nguồn mua cần thao tác riêng ở bài 6.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Kiểm tra những chỉ tiêu đã mở",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Trong thư viện, dùng ô <strong>Tìm chỉ tiêu…</strong> để tìm theo tên đã học.</p>\n<p>Các chỉ tiêu nền tảng của Chương 3 gồm Tăng trưởng doanh thu YoY, Tăng trưởng LNST YoY, Tăng trưởng EPS YoY, Biên lợi nhuận gộp, Biên lợi nhuận ròng và ROE.</p>\n<p>Hoàn thành bài kiến thức nào thì mở đúng chỉ tiêu đó. Không cần học hết cả chương mới được dùng chỉ tiêu đã mở. Ngược lại, hoàn thành bài hướng dẫn Bộ lọc không thay thế việc học bài kiến thức tương ứng.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Trạng thái", "Ý nghĩa"],
+            "rows": [
+              ["<strong>Đã mở chỉ tiêu</strong>", "Có thể sử dụng chỉ tiêu đó theo quyền và tính khả dụng của công cụ."],
+              ["<strong>Đã thêm điều kiện</strong>", "Bạn đã chủ động đưa chỉ tiêu vào bộ lọc đang thiết lập."]
+            ],
+            "aria_label": "Bảng: Kiểm tra những chỉ tiêu đã mở"
+          },
+          {
+            "type": "html",
+            "html": "<p>Một chỉ tiêu xuất hiện trong thư viện chưa có nghĩa nó đang ảnh hưởng kết quả.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Bộ tiêu chí minh họa đi qua sáu bài",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Chương này sử dụng một bộ tiêu chí ban đầu:</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Chỉ tiêu", "Kỳ tính", "Dấu", "Ngưỡng"],
+            "rows": [
+              ["Tăng trưởng LNST YoY", "Quý gần nhất", "&gt;", "15%"],
+              ["ROE", "Bốn quý gần nhất", "&gt;", "15%"]
+            ],
+            "align": ["l", "l", "c", "r"],
+            "aria_label": "Bảng: Bộ tiêu chí minh họa đi qua sáu bài"
+          },
+          {
+            "type": "html",
+            "html": "<p>Bộ tiêu chí tìm doanh nghiệp đồng thời có tăng trưởng LNST quý gần nhất trên 15% và ROE bốn quý gần nhất trên 15%.</p>\n<p>Hai dòng này sử dụng <strong>hai kỳ tính riêng</strong>. Không cần ép LNST và ROE về cùng một lựa chọn kỳ để kết hợp.</p>\n<p>Các ngưỡng trên chỉ phục vụ hướng dẫn thao tác, không phải mức tối ưu cho mọi ngành hoặc khuyến nghị mua cổ phiếu. Bạn cần mở hai chỉ tiêu tương ứng để thao tác với ví dụ, nhưng không bắt buộc thực hiện việc lọc để hoàn thành bài hướng dẫn.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": null,
+    "fixture": {}
+  },
+  {
+    "id": "ch04-l02",
+    "chapter": 4,
+    "order": 2,
+    "lesson_key": "guide:ch04-l02",
+    "kind": "guide",
+    "name": "Thiết lập điều kiện lọc",
+    "title": "Thiết lập điều kiện lọc",
+    "lead": "Thêm chỉ tiêu, chọn kỳ, dấu và ngưỡng; kiểm tra vì sao một doanh nghiệp được giữ lại hoặc bị loại.",
+    "nav_labels": ["Bắt đầu", "Thao tác", "Đối chiếu", "Lưu ý"],
+    "completion": {
+      "mode": "manual",
+      "button_label": "Hoàn thành bài học"
+    },
+    "content_version": "ch04-v1.0",
+    "source": {
+      "package": "iqx-ch4-six-filter-guides",
+      "package_version": "iqx-ch4-six-filter-guides-v1.0",
+      "payload_sha256": "aa086c10d35c5240104413b563459a31015a2cb448d68f5f4936b30b453dc35a",
+      "object_sha256": "c3df73241ce8eedba907c13c31ffe0895a7259cdbaf532da129686df3b6930fb"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Thêm điều kiện đầu tiên",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Trong thư viện, tìm <strong>Tăng trưởng LNST YoY</strong> rồi bấm dấu <strong>+</strong> bên cạnh.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "04-library-add",
+            "src": "/assets/academy/ch04/04-library-add.a81ef530.webp",
+            "width": 428,
+            "height": 869,
+            "alt": "Tìm và thêm đúng chỉ tiêu",
+            "title": "Tìm và thêm đúng chỉ tiêu",
+            "caption": "1 Tìm chỉ tiêu · 2 Thêm Tăng trưởng LNST YoY · 3 Thêm ROE ở bước tiếp theo.",
+            "zoom_title": "Tìm và thêm chỉ tiêu từ thư viện",
+            "max_width": 340
+          },
+          {
+            "type": "html",
+            "html": "<p>Một dòng mới xuất hiện tại <strong>Điều kiện lọc</strong>. Đọc lần lượt ba trường và đặt:</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Trường", "Thiết lập"],
+            "rows": [
+              ["Kỳ tính", "Quý gần nhất"],
+              ["Dấu", "&gt;"],
+              ["Ngưỡng", "15%"]
+            ],
+            "aria_label": "Bảng: Thêm điều kiện đầu tiên"
+          },
+          {
+            "type": "image",
+            "asset_id": "05-profit-rule",
+            "src": "/assets/academy/ch04/05-profit-rule.60b0075a.webp",
+            "width": 870,
+            "height": 228,
+            "alt": "Đọc đủ kỳ, dấu và ngưỡng",
+            "title": "Đọc đủ kỳ, dấu và ngưỡng",
+            "caption": "1 Kỳ tính · 2 Dấu so sánh · 3 Ngưỡng. Ô ngưỡng đã có đơn vị %.",
+            "zoom_title": "Thiết lập Tăng trưởng LNST YoY"
+          },
+          {
+            "type": "html",
+            "html": "<p>Ô nhập đã có đơn vị <strong>%</strong>, nên nhập <strong>15</strong>, không nhập <strong>0,15</strong> để biểu thị 15%.</p>\n<p>Điều kiện này được đọc là: <strong>Tăng trưởng LNST của quý gần nhất phải lớn hơn 15% so với cùng quý năm trước.</strong></p>\n<p>Nó không có nghĩa doanh nghiệp có biên lợi nhuận 15%, và cũng không có nghĩa lợi nhuận tăng 15 tỷ đồng.</p>\n<p>Sau khi nhập, nhìn lại cả dòng điều kiện. Tên đúng nhưng kỳ hoặc dấu sai vẫn tạo ra một bộ lọc khác với mục tiêu ban đầu.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Thêm ROE và đọc quan hệ giữa hai điều kiện",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Tiếp tục tìm <strong>ROE</strong>, bấm dấu <strong>+</strong> và đặt:</p>\n<p><strong>Kỳ tính: Bốn quý gần nhất → Dấu: &gt; → Ngưỡng: 15%.</strong></p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "06-and-rules",
+            "src": "/assets/academy/ch04/06-and-rules.61642f17.webp",
+            "width": 1742,
+            "height": 347,
+            "alt": "LNST và ROE phải cùng đạt",
+            "title": "LNST và ROE phải cùng đạt",
+            "caption": "1 Điều kiện LNST · 2 Điều kiện ROE · 3 AND: tất cả điều kiện đang dùng phải đạt.",
+            "zoom_title": "Hai điều kiện kết hợp AND"
+          },
+          {
+            "type": "html",
+            "html": "<p>Nhãn <strong>AND</strong> cho biết doanh nghiệp phải đáp ứng tất cả điều kiện đang dùng. Một chỉ tiêu đạt rất cao không bù cho chỉ tiêu còn lại không đạt.</p>\n<p>Bảng dưới là các tình huống giả định để đọc hai điều kiện:</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Trường hợp", "LNST YoY — Quý gần nhất", "ROE — Bốn quý gần nhất", "Kết luận"],
+            "rows": [
+              ["1", "20%", "18%", "Đạt cả hai điều kiện."],
+              ["2", "15%", "18%", "Không đạt vì LNST bằng ngưỡng, chưa lớn hơn ngưỡng."],
+              ["3", "20%", "15%", "Không đạt vì ROE bằng ngưỡng."],
+              ["4", "20%", "Chưa đủ dữ liệu", "Chưa đủ cơ sở để xác nhận đạt cả hai điều kiện."]
+            ],
+            "align": ["l", "r", "r", "l"],
+            "aria_label": "Bảng: Thêm ROE và đọc quan hệ giữa hai điều kiện"
+          },
+          {
+            "type": "html",
+            "html": "<p>Điều kiện được đối chiếu theo <strong>kỳ riêng của từng dòng</strong>, trên cùng mốc dữ liệu của kết quả lọc. AND không có nghĩa hai chỉ tiêu phải cùng dùng “Quý gần nhất”.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Chỉnh dấu, ngưỡng và bỏ điều kiện",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Mỗi thao tác thay đổi một thành phần khác nhau:</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "07-edit-rule",
+            "src": "/assets/academy/ch04/07-edit-rule.4cc19809.webp",
+            "width": 870,
+            "height": 228,
+            "alt": "Chỉnh hoặc bỏ đúng điều kiện",
+            "title": "Chỉnh hoặc bỏ đúng điều kiện",
+            "caption": "1 Đổi dấu · 2 Đổi ngưỡng · 3 Bỏ điều kiện bằng dấu ×.",
+            "zoom_title": "Sửa dấu, ngưỡng hoặc bỏ điều kiện"
+          },
+          {
+            "type": "table",
+            "head": ["Thao tác", "Điều thay đổi"],
+            "rows": [
+              ["Đổi &gt; thành &lt;", "Đổi phía so sánh với ngưỡng."],
+              ["Đổi 15 thành 25", "Đổi mức yêu cầu; kỳ tính vẫn giữ nếu bạn không sửa."],
+              ["Đổi kỳ tính", "Đổi khoảng dữ liệu dùng để tính chỉ tiêu."],
+              ["Bấm dấu × của một điều kiện", "Bỏ điều kiện đó khỏi bộ lọc đang thiết lập."]
+            ],
+            "aria_label": "Bảng: Chỉnh dấu, ngưỡng và bỏ điều kiện"
+          },
+          {
+            "type": "html",
+            "html": "<p>Các dấu <strong>&gt;</strong> và <strong>&lt;</strong> là so sánh chặt. <strong>Bằng ngưỡng không đạt.</strong></p>\n<p>Nếu đổi LNST từ <strong>&gt; 15%</strong> thành <strong>&lt; 15%</strong>, bạn đang tìm những giá trị thấp hơn 15%, không còn tìm tăng trưởng trên 15%. Với dữ liệu hợp lệ, nhóm này có thể bao gồm cả giá trị âm.</p>\n<p>Trong phạm vi Bộ lọc hiện tại, mỗi chỉ tiêu được thêm một lần. Muốn đổi kỳ của LNST, sửa ngay trên dòng LNST; không thêm một dòng LNST thứ hai với kỳ khác.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Kiểm tra trạng thái sau khi chỉnh",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Khi thay điều kiện, quan sát bảng kết quả được cập nhật bên dưới. Trước khi kết luận bộ lọc không tìm được doanh nghiệp, kiểm tra tên chỉ tiêu, kỳ tính, dấu và ngưỡng.</p>\n<p>Ô ngưỡng để trống không phải ngưỡng 0%. Một điều kiện chưa hợp lệ cần được sửa, không thể được xem như đã bỏ khỏi bộ lọc.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "08-empty-value",
+            "src": "/assets/academy/ch04/08-empty-value.b6e57a49.webp",
+            "width": 1742,
+            "height": 912,
+            "alt": "Ô ngưỡng trống là điều kiện chưa hợp lệ",
+            "title": "Ô ngưỡng trống là điều kiện chưa hợp lệ",
+            "caption": "1 Ô ngưỡng chưa có giá trị. Đọc thông báo ở kết quả và sửa điều kiện trước khi tiếp tục.",
+            "zoom_title": "Nhận biết điều kiện chưa hợp lệ"
+          },
+          {
+            "type": "html",
+            "html": "<p>Nếu bỏ ROE và chỉ giữ LNST, kết quả chỉ còn phải đáp ứng điều kiện LNST trong phạm vi đã chọn. Nếu bỏ hết điều kiện, danh sách không còn được sàng lọc theo tiêu chí tài chính.</p>\n<p><strong>Thay điều kiện đang xem chưa đồng nghĩa đã lưu một bộ lọc để dùng lại, và không thay nguồn mua của Bot.</strong> Hai việc đó được thực hiện ở bài 5 và bài 6.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": null,
+    "fixture": {}
+  },
+  {
+    "id": "ch04-l03",
+    "chapter": 4,
+    "order": 3,
+    "lesson_key": "guide:ch04-l03",
+    "kind": "guide",
+    "name": "Chọn kỳ tính cho từng chỉ tiêu",
+    "title": "Chọn kỳ tính cho từng chỉ tiêu",
+    "lead": "Chọn đúng khoảng dữ liệu, đọc đúng kỳ báo cáo thực tế và phân biệt thay kỳ với thay ngưỡng.",
+    "nav_labels": ["Bắt đầu", "Thao tác", "Đối chiếu", "Lưu ý"],
+    "completion": {
+      "mode": "manual",
+      "button_label": "Hoàn thành bài học"
+    },
+    "content_version": "ch04-v1.0",
+    "source": {
+      "package": "iqx-ch4-six-filter-guides",
+      "package_version": "iqx-ch4-six-filter-guides-v1.0",
+      "payload_sha256": "aa086c10d35c5240104413b563459a31015a2cb448d68f5f4936b30b453dc35a",
+      "object_sha256": "1695ba5ab523a0afd5e88d0b91834876c6101f69c0fa5b8f7e34d1ce0c91105b"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Đọc kỳ ngay trên từng điều kiện",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Bộ lọc không có một ô kỳ dữ liệu áp chung cho mọi chỉ tiêu. Mỗi dòng có lựa chọn riêng.</p>\n<p>Với sáu chỉ tiêu đã học, các lựa chọn hiện tại là:</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Chỉ tiêu", "Kỳ mặc định", "Những kỳ được chọn"],
+            "rows": [
+              ["Tăng trưởng doanh thu YoY", "Quý gần nhất", "Quý gần nhất; Bốn quý gần nhất; Năm tài chính gần nhất."],
+              ["Tăng trưởng LNST YoY", "Quý gần nhất", "Quý gần nhất; Bốn quý gần nhất; Năm tài chính gần nhất."],
+              ["Tăng trưởng EPS YoY", "Quý gần nhất", "Quý gần nhất; Bốn quý gần nhất; Năm tài chính gần nhất."],
+              ["Biên lợi nhuận gộp", "Bốn quý gần nhất", "Bốn quý gần nhất; Quý gần nhất; Năm tài chính gần nhất."],
+              ["Biên lợi nhuận ròng", "Bốn quý gần nhất", "Bốn quý gần nhất; Quý gần nhất; Năm tài chính gần nhất."],
+              ["ROE", "Bốn quý gần nhất", "Bốn quý gần nhất; Năm tài chính gần nhất."]
+            ],
+            "aria_label": "Bảng: Đọc kỳ ngay trên từng điều kiện"
+          },
+          {
+            "type": "html",
+            "html": "<p><strong>ROE không có lựa chọn quý riêng trong phạm vi này.</strong> Không tìm một cách thay thế bằng cách lấy ROE năm chia bốn hoặc tự dùng lợi nhuận một quý cho vốn của cả khoảng.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Đổi kỳ của LNST và giữ nguyên ROE",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Trên bộ tiêu chí ban đầu, mở <strong>Kỳ tính</strong> của LNST và chuyển từ <strong>Quý gần nhất</strong> sang <strong>Bốn quý gần nhất</strong>.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "09-period-quarter",
+            "src": "/assets/academy/ch04/09-period-quarter.41f3817c.webp",
+            "width": 1742,
+            "height": 347,
+            "alt": "Trước khi đổi kỳ",
+            "title": "Trước khi đổi kỳ",
+            "caption": "1 LNST đang dùng Quý gần nhất · 2 ROE đang dùng Bốn quý gần nhất.",
+            "zoom_title": "Trước khi đổi kỳ: LNST theo quý"
+          },
+          {
+            "type": "table",
+            "head": ["Thành phần", "Trước", "Sau"],
+            "rows": [
+              ["Kỳ của LNST", "Quý gần nhất", "<strong>Bốn quý gần nhất</strong>"],
+              ["Dấu/ngưỡng của LNST", "&gt; 15%", "Giữ nguyên"],
+              ["Kỳ của ROE", "Bốn quý gần nhất", "Giữ nguyên"],
+              ["Dấu/ngưỡng của ROE", "&gt; 15%", "Giữ nguyên"]
+            ],
+            "aria_label": "Bảng: Đổi kỳ của LNST và giữ nguyên ROE"
+          },
+          {
+            "type": "image",
+            "asset_id": "10-period-ttm",
+            "src": "/assets/academy/ch04/10-period-ttm.90af5a76.webp",
+            "width": 1742,
+            "height": 1121,
+            "alt": "Sau khi đổi riêng kỳ LNST",
+            "title": "Sau khi đổi riêng kỳ LNST",
+            "caption": "1 LNST đã chuyển sang Bốn quý gần nhất · 2 Cột kết quả LNST dùng kỳ mới; ROE không đổi.",
+            "zoom_title": "Sau khi đổi riêng kỳ LNST"
+          },
+          {
+            "type": "html",
+            "html": "<p>Nhìn lại cột LNST trong kết quả: nhãn kỳ và số liệu phải tương ứng với lựa chọn mới. Không tiếp tục dùng con số của quý riêng để giải thích kết quả bốn quý.</p>\n<p><strong>Đổi kỳ không đơn thuần làm điều kiện chặt hơn hoặc nới hơn.</strong> Một doanh nghiệp có thể tăng mạnh trong quý gần nhất nhưng tăng ít hơn khi xét cả bốn quý; trường hợp ngược lại cũng có thể xảy ra.</p>\n<p>Sau khi đối chiếu, đưa LNST về <strong>Quý gần nhất</strong> để tiếp tục bộ tiêu chí ban đầu ở các bài sau.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Phân biệt các khoảng đang được tính",
+        "blocks": [
+          {
+            "type": "table",
+            "head": ["Lựa chọn", "Khoảng được đọc", "Khi chỉ tiêu là tăng trưởng YoY"],
+            "rows": [
+              ["<strong>Quý gần nhất</strong>", "Một quý riêng mới nhất có dữ liệu hợp lệ.", "So với đúng cùng quý năm trước."],
+              ["<strong>Bốn quý gần nhất</strong>", "Bốn quý liên tiếp kết thúc ở quý báo cáo mới nhất đủ điều kiện.", "So với bốn quý tương ứng lùi một năm."],
+              ["<strong>Năm tài chính gần nhất</strong>", "Một năm tài chính đầy đủ đã có báo cáo hợp lệ.", "So với năm tài chính đầy đủ trước đó."]
+            ],
+            "aria_label": "Bảng: Phân biệt các khoảng đang được tính"
+          },
+          {
+            "type": "html",
+            "html": "<p>YoY theo quý không phải so với quý liền trước. Bốn quý gần nhất không phải bốn báo cáo bất kỳ, và cũng không phải lấy số quý mới nhất nhân bốn.</p>\n<p>Khi đổi kỳ, hệ thống phải dùng cách tính phù hợp với chỉ tiêu. Chẳng hạn, biên lợi nhuận bốn quý được tính từ tổng lợi nhuận và tổng doanh thu của khoảng đó, không phải cộng bốn tỷ lệ quý. Kiến thức ở Chương 3 giúp bạn kiểm tra con số này khi mở chi tiết.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "“Gần nhất” khác với quý vừa kết thúc trên lịch",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Một kỳ kế toán kết thúc chưa có nghĩa báo cáo của kỳ đó đã được công bố và hệ thống đã có dữ liệu hợp lệ.</p>\n<p>Vì vậy, hai doanh nghiệp có thể đang sử dụng hai kỳ mới nhất khác nhau. Một doanh nghiệp đã có báo cáo quý III, doanh nghiệp khác vẫn có dữ liệu mới nhất là quý II. Hãy đọc nhãn kỳ thực tế dưới số liệu, không tự coi toàn bộ bảng đang dùng quý III.</p>\n<p>Tương tự, sang năm mới không có nghĩa lựa chọn <strong>Năm tài chính gần nhất</strong> tự chuyển sang năm vừa kết thúc.</p>\n<p>Nếu khoảng bốn quý cần dùng bị thiếu một thành phần, không lấy ba quý thay bốn quý hoặc dùng một khoảng cũ hơn mà không nhận biết. Trạng thái chưa đủ dữ liệu phải được đọc riêng với việc không đạt ngưỡng.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": null,
+    "fixture": {}
+  },
+  {
+    "id": "ch04-l04",
+    "chapter": 4,
+    "order": 4,
+    "lesson_key": "guide:ch04-l04",
+    "kind": "guide",
+    "name": "Đọc và kiểm tra kết quả",
+    "title": "Đọc và kiểm tra kết quả",
+    "lead": "Kiểm tra số liệu, kỳ báo cáo và lý do loại trừ trước khi chọn doanh nghiệp vào danh mục.",
+    "nav_labels": ["Bắt đầu", "Thao tác", "Đối chiếu", "Lưu ý"],
+    "completion": {
+      "mode": "manual",
+      "button_label": "Hoàn thành bài học"
+    },
+    "content_version": "ch04-v1.0",
+    "source": {
+      "package": "iqx-ch4-six-filter-guides",
+      "package_version": "iqx-ch4-six-filter-guides-v1.0",
+      "payload_sha256": "aa086c10d35c5240104413b563459a31015a2cb448d68f5f4936b30b453dc35a",
+      "object_sha256": "3aff94c893b01ff170f805ee11af85b313a55305a844ef248866560777c7fb85"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Xác nhận đang đọc đúng bộ điều kiện",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Trước khi nhìn tên doanh nghiệp, đọc lại phạm vi thị trường, ngành và các điều kiện phía trên.</p>\n<p>Trong ví dụ ban đầu, bảng kết quả phải tương ứng với:</p>\n<p><strong>LNST YoY quý gần nhất &gt; 15% AND ROE bốn quý gần nhất &gt; 15%.</strong></p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "11-results-A",
+            "src": "/assets/academy/ch04/11-results-A.1980cc31.webp",
+            "width": 1742,
+            "height": 908,
+            "alt": "Kết quả sàng lọc của bộ tiêu chí A",
+            "title": "Kết quả sàng lọc của bộ tiêu chí A",
+            "caption": "1 Số doanh nghiệp phù hợp · 2 Các cột và kỳ tính · 3 Thông tin chất lượng dữ liệu.",
+            "zoom_title": "Kết quả của bộ tiêu chí A"
+          },
+          {
+            "type": "html",
+            "html": "<p>Mỗi dòng kết quả gắn với một doanh nghiệp. Bảng cho biết mã, tên, ngành và số liệu của các chỉ tiêu đang được hiển thị.</p>\n<p>Không phải mọi cột đều là điều kiện lọc. Một cột có thể chỉ cung cấp thông tin tham khảo; việc nó xuất hiện trong bảng không có nghĩa doanh nghiệp phải vượt một ngưỡng ở cột đó.</p>\n<p>Số lượng doanh nghiệp tìm được cho biết có bao nhiêu doanh nghiệp phù hợp với bộ tiêu chí đang xét. Nó không phải điểm đánh giá chất lượng của bộ lọc.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Bấm số liệu để kiểm tra cách hình thành kết quả",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Bấm trực tiếp vào một giá trị trong bảng để mở chi tiết.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "12-metric-detail",
+            "src": "/assets/academy/ch04/12-metric-detail.056bd7e5.webp",
+            "width": 1029,
+            "height": 1062,
+            "alt": "Từ một ô số liệu tới kỳ báo cáo và thành phần tính",
+            "title": "Từ một ô số liệu tới kỳ báo cáo và thành phần tính",
+            "caption": "1 Giá trị và kỳ đang dùng · 2 Khoảng tính, kỳ so sánh, ngày công bố, tiếp nhận và mốc dữ liệu.",
+            "zoom_title": "Đọc kỳ và thành phần của một số liệu",
+            "max_width": 760
+          },
+          {
+            "type": "table",
+            "head": ["Thông tin", "Câu hỏi cần trả lời"],
+            "rows": [
+              ["Tên chỉ tiêu và đơn vị", "Đang đọc tăng trưởng, biên lợi nhuận hay ROE?"],
+              ["Kỳ thực tế và khoảng tính", "Con số thuộc quý, bốn quý hay năm nào?"],
+              ["Kỳ so sánh", "Nếu là YoY, đang so với khoảng nào?"],
+              ["Thành phần tính", "Những số liệu nào tạo ra kết quả?"],
+              ["Ngày công bố và tiếp nhận", "Dữ liệu đã có từ khi nào?"],
+              ["Mốc dữ liệu", "Kết quả lọc đang phản ánh thông tin tại thời điểm nào?"]
+            ],
+            "aria_label": "Bảng: Bấm số liệu để kiểm tra cách hình thành kết quả"
+          },
+          {
+            "type": "html",
+            "html": "<p>Có thể dùng phép tính đã học để đối chiếu. Ví dụ riêng trong Chương 3, LNST tăng từ 80 lên 88 tỷ đồng:</p>\n<div class=\"formula-group\"><div class=\"math-eq\">Tăng trưởng LNST = (<span class=\"frac\"><span>88</span><span>80</span></span> − 1) × 100% = <strong>10%</strong></div></div>\n<p>Với điều kiện <strong>&gt; 15%</strong>, giá trị 10% không đạt. Không lấy phần tăng thêm 8 tỷ đồng để so trực tiếp với ngưỡng phần trăm.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Phân biệt không đạt với không đủ dữ liệu",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Khi một doanh nghiệp không nằm trong kết quả, cần phân biệt các nguyên nhân:</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Trạng thái", "Cách diễn giải"],
+            "rows": [
+              ["Có số liệu hợp lệ nhưng không vượt ngưỡng", "Không đạt điều kiện đã chọn."],
+              ["Thiếu báo cáo hoặc thành phần tính", "Chưa đủ dữ liệu để xác nhận."],
+              ["Chỉ tiêu không phù hợp với loại doanh nghiệp", "Không áp dụng."],
+              ["Kỳ gốc hoặc mẫu số không hợp lệ", "Không tính được theo định nghĩa chỉ tiêu."],
+              ["Nguồn dữ liệu hoặc điều kiện đang lỗi", "Chưa có kết quả lọc hợp lệ để kết luận."]
+            ],
+            "aria_label": "Bảng: Phân biệt không đạt với không đủ dữ liệu"
+          },
+          {
+            "type": "html",
+            "html": "<p>Khi có thông báo chất lượng dữ liệu, mở <strong>Xem chi tiết</strong> để biết chỉ tiêu và doanh nghiệp nào gặp vấn đề.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "13-quality",
+            "src": "/assets/academy/ch04/13-quality.f6213889.webp",
+            "width": 1029,
+            "height": 539,
+            "alt": "Đọc đúng lý do doanh nghiệp thiếu dữ liệu",
+            "title": "Đọc đúng lý do doanh nghiệp thiếu dữ liệu",
+            "caption": "Danh sách nêu rõ chỉ tiêu, kỳ tính và thành phần đang thiếu.",
+            "zoom_title": "Kiểm tra nguyên nhân thiếu dữ liệu",
+            "max_width": 760
+          },
+          {
+            "type": "html",
+            "html": "<p>Một dấu <strong>—</strong> không phải số 0. Cũng không được bỏ qua điều kiện bắt buộc bị thiếu rồi chỉ xét những điều kiện còn lại.</p>\n<p>Ngược lại, thiếu một chỉ tiêu tham khảo không dùng trong điều kiện không tự làm doanh nghiệp bị loại.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Sắp xếp và chọn mã để nghiên cứu tiếp",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Bấm tiêu đề cột có chức năng sắp xếp để đổi thứ tự kết quả. Ví dụ, sắp xếp ROE giảm dần giúp đọc từ giá trị cao xuống thấp.</p>\n<p><strong>Sắp xếp không thay điều kiện lọc.</strong> Doanh nghiệp đứng đầu một cột chưa có nghĩa tốt nhất toàn diện, và thứ tự bảng không quyết định thứ tự Bot mua.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "14-selection",
+            "src": "/assets/academy/ch04/14-selection.0fb67a96.webp",
+            "width": 1742,
+            "height": 912,
+            "alt": "Chọn tập mã và kiểm tra số lượng",
+            "title": "Chọn tập mã và kiểm tra số lượng",
+            "caption": "1 và 2 Hai ô chọn mã · 3 Số mã đã chọn trong kết quả.",
+            "zoom_title": "Chọn hai mã trong kết quả"
+          },
+          {
+            "type": "html",
+            "html": "<p>Dùng ô chọn ở từng dòng để chọn mã. Đọc lại số lượng đã chọn trước khi lưu hoặc áp dụng. Sau khi đổi điều kiện, kiểm tra lại lựa chọn vì một số mã có thể không còn nằm trong kết quả.</p>\n<p>Bạn cũng có thể mở Backtest từ một mã để nghiên cứu điều kiện kỹ thuật. Đó vẫn là Backtest của <strong>một mã</strong>, không phải kiểm thử toàn bộ danh mục dùng chung vốn.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": null,
+    "fixture": {}
+  },
+  {
+    "id": "ch04-l05",
+    "chapter": 4,
+    "order": 5,
+    "lesson_key": "guide:ch04-l05",
+    "kind": "guide",
+    "name": "Điều chỉnh và lưu bộ lọc",
+    "title": "Điều chỉnh và lưu bộ lọc",
+    "lead": "Giữ một bộ tiêu chí làm mốc, thay một yếu tố và lưu lại để sử dụng ở những lần nghiên cứu sau.",
+    "nav_labels": ["Bắt đầu", "Thao tác", "Đối chiếu", "Lưu ý"],
+    "completion": {
+      "mode": "manual",
+      "button_label": "Hoàn thành bài học"
+    },
+    "content_version": "ch04-v1.0",
+    "source": {
+      "package": "iqx-ch4-six-filter-guides",
+      "package_version": "iqx-ch4-six-filter-guides-v1.0",
+      "payload_sha256": "aa086c10d35c5240104413b563459a31015a2cb448d68f5f4936b30b453dc35a",
+      "object_sha256": "6949242d2538013d4dcf0470b111e6861a5024c8139f4a1afa4916d2286e7a2d"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Lưu bộ tiêu chí ban đầu",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Trước khi thay đổi, kiểm tra lại hai dòng LNST và ROE của ví dụ.</p>\n<p>Bấm <strong>Lưu bộ lọc</strong>, đặt tên mô tả được nội dung, chẳng hạn:</p>\n<p><strong>A · LNST quý &gt;15% · ROE bốn quý &gt;15%</strong></p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "15-save-A",
+            "src": "/assets/academy/ch04/15-save-A.3a9bb66a.webp",
+            "width": 1029,
+            "height": 477,
+            "alt": "Lưu bộ tiêu chí A trước khi thay đổi",
+            "title": "Lưu bộ tiêu chí A trước khi thay đổi",
+            "caption": "1 Tên mô tả được tiêu chí · 2 Lưu.",
+            "zoom_title": "Đặt tên và lưu bộ tiêu chí A",
+            "max_width": 760
+          },
+          {
+            "type": "html",
+            "html": "<p>Sau khi xác nhận lưu thành công, mở <strong>Bộ lọc đã lưu</strong> và kiểm tra tên cùng phần mô tả.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "16-saved-A",
+            "src": "/assets/academy/ch04/16-saved-A.6ee52d97.webp",
+            "width": 1029,
+            "height": 468,
+            "alt": "Kiểm tra bản A trong Bộ lọc đã lưu",
+            "title": "Kiểm tra bản A trong Bộ lọc đã lưu",
+            "caption": "1 Dùng: tải lại tiêu chí của bản đã lưu.",
+            "zoom_title": "Mở bộ tiêu chí đã lưu",
+            "max_width": 760
+          },
+          {
+            "type": "html",
+            "html": "<p>Đối tượng được lưu ở đây là <strong>bộ tiêu chí</strong>: thị trường, ngành, chỉ tiêu, kỳ tính, dấu và ngưỡng. Nó không phải danh sách cố định những doanh nghiệp đang xuất hiện ở bảng kết quả.</p>\n<p>Nếu lưu thất bại, bộ tiêu chí đang chỉnh vẫn cần được giữ để bạn thử lại. Chưa có xác nhận lưu thì chưa coi là đã có một bản để mở về sau.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Thay một yếu tố để tạo phiên bản B",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Giữ thị trường, ngành và ROE như cũ. Chỉ đổi ngưỡng LNST từ <strong>15% lên 25%</strong>.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "17-filter-B",
+            "src": "/assets/academy/ch04/17-filter-B.b720e1a5.webp",
+            "width": 1742,
+            "height": 347,
+            "alt": "Phiên bản B chỉ đổi ngưỡng LNST",
+            "title": "Phiên bản B chỉ đổi ngưỡng LNST",
+            "caption": "1 Ngưỡng LNST chuyển thành 25% · 2 Toàn bộ điều kiện ROE giữ nguyên.",
+            "zoom_title": "Chỉ nâng ngưỡng LNST từ 15 lên 25"
+          },
+          {
+            "type": "table",
+            "head": ["Thành phần", "Phiên bản A", "Phiên bản B"],
+            "rows": [
+              ["LNST YoY — Quý gần nhất", "&gt; 15%", "<strong>&gt; 25%</strong>"],
+              ["ROE — Bốn quý gần nhất", "&gt; 15%", "&gt; 15%"],
+              ["Thị trường, ngành", "Như đã chọn", "Giữ nguyên"]
+            ],
+            "aria_label": "Bảng: Thay một yếu tố để tạo phiên bản B"
+          },
+          {
+            "type": "html",
+            "html": "<p>Lúc này, bạn đang thay <strong>ngưỡng</strong>, không thay kỳ hoặc công thức.</p>\n<p>Trên cùng dữ liệu và phạm vi, một doanh nghiệp có LNST tăng 20% từng vượt ngưỡng 15% sẽ không vượt ngưỡng 25%. Giá trị bằng đúng 25% cũng không đạt dấu <strong>&gt;</strong>.</p>\n<p>Chưa đổi thêm kỳ tính hoặc ngành trong bước này. Nếu thay nhiều yếu tố cùng lúc, sẽ khó xác định yếu tố nào làm một doanh nghiệp xuất hiện hoặc biến mất.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Đối chiếu sự khác biệt giữa A và B",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Khi chỉ nâng ngưỡng từ <strong>&gt; 15%</strong> lên <strong>&gt; 25%</strong>, tập doanh nghiệp đáp ứng điều kiện mới là một phần của tập đáp ứng điều kiện cũ, với điều kiện các dữ liệu và phạm vi còn lại không đổi.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "18-results-B",
+            "src": "/assets/academy/ch04/18-results-B.4bc96569.webp",
+            "width": 1742,
+            "height": 717,
+            "alt": "Đọc kết quả sau khi nâng ngưỡng",
+            "title": "Đọc kết quả sau khi nâng ngưỡng",
+            "caption": "1 Số doanh nghiệp đáp ứng phiên bản B. Đối chiếu với bản A trên cùng mốc dữ liệu.",
+            "zoom_title": "Kết quả của bộ tiêu chí B"
+          },
+          {
+            "type": "html",
+            "html": "<p>Số kết quả có thể ít hơn hoặc bằng trước đó. Nó không bắt buộc giảm: có thể tất cả doanh nghiệp đang đạt A đều đã có LNST trên 25%.</p>\n<p>Khi đối chiếu, tập trung vào doanh nghiệp thay đổi trạng thái và điều kiện tạo ra sự thay đổi. <strong>Ít mã hơn không tự chứng minh bộ lọc tốt hơn.</strong></p>\n<p>Cần tách việc thay tiêu chí với việc dữ liệu được cập nhật. Nếu giữa hai lần xem xuất hiện báo cáo mới, khác biệt kết quả không còn chỉ do ngưỡng 15% và 25%.</p>\n<p>Để giữ cả hai cách lọc, lưu phiên bản B bằng tên riêng:</p>\n<p><strong>B · LNST quý &gt;25% · ROE bốn quý &gt;15%</strong></p>\n<p>Việc đặt tên riêng giúp nhận diện hai bộ tiêu chí mà không lẫn chúng với hai danh mục cổ phiếu.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Mở lại bộ lọc và đọc dữ liệu mới",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Mở <strong>Bộ lọc đã lưu</strong>, tìm phiên bản cần dùng rồi bấm <strong>Dùng</strong>.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "19-saved-AB",
+            "src": "/assets/academy/ch04/19-saved-AB.7b843839.webp",
+            "width": 1029,
+            "height": 575,
+            "alt": "Giữ riêng hai bộ tiêu chí A và B",
+            "title": "Giữ riêng hai bộ tiêu chí A và B",
+            "caption": "Đọc phần mô tả dưới tên trước khi bấm Dùng.",
+            "zoom_title": "Hai bộ tiêu chí A và B được lưu riêng",
+            "max_width": 760
+          },
+          {
+            "type": "html",
+            "html": "<p>Kiểm tra lại thị trường, ngành, từng chỉ tiêu, kỳ tính, dấu và ngưỡng sau khi tải. Lựa chọn “Quý gần nhất” vẫn là quý mới nhất có dữ liệu hợp lệ tại lần sử dụng, không bị khóa vĩnh viễn vào quý của ngày bạn lưu bộ lọc.</p>\n<p>Vì thế, mở lại cùng phiên bản A vào một thời điểm khác có thể cho danh sách khác, dù tiêu chí không đổi.</p>\n<p><strong>Muốn giữ tập mã và số liệu tại một thời điểm, cần Lưu danh mục — nội dung của bài tiếp theo.</strong></p>\n<p>Mở lại, chỉnh hoặc lưu bộ lọc không tự đổi nguồn mua Bot. Xóa một bộ lọc cũng không đồng nghĩa xóa các danh mục đã lưu từ kết quả trước đó.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": null,
+    "fixture": {}
+  },
+  {
+    "id": "ch04-l06",
+    "chapter": 4,
+    "order": 6,
+    "lesson_key": "guide:ch04-l06",
+    "kind": "guide",
+    "name": "Lưu và áp dụng danh mục cho Bot",
+    "title": "Lưu và áp dụng danh mục cho Bot",
+    "lead": "Giữ tập mã đã chọn, phân biệt danh mục nghiên cứu với nguồn mua đang hiệu lực và chủ động kiểm soát việc thay nguồn.",
+    "nav_labels": ["Bắt đầu", "Thao tác", "Đối chiếu", "Lưu ý"],
+    "completion": {
+      "mode": "manual",
+      "button_label": "Hoàn thành bài học"
+    },
+    "content_version": "ch04-v1.0",
+    "source": {
+      "package": "iqx-ch4-six-filter-guides",
+      "package_version": "iqx-ch4-six-filter-guides-v1.0",
+      "payload_sha256": "aa086c10d35c5240104413b563459a31015a2cb448d68f5f4936b30b453dc35a",
+      "object_sha256": "a7696afda2de859b11b22678f0c7d91371f4e55a1781a1f696238b417549ffd9"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Lưu danh mục từ kết quả đã kiểm tra",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Sau khi đọc kết quả, chọn những mã muốn giữ lại và bấm <strong>Lưu danh mục</strong>.</p>\n<p>Nếu đã chọn riêng, danh mục chứa đúng những mã được chọn hợp lệ. Nếu chưa chọn riêng, thao tác lưu dùng toàn bộ kết quả và cần cho bạn kiểm tra số lượng trước xác nhận. Với kết quả nhiều trang, “toàn bộ” không chỉ là trang đang nhìn thấy.</p>\n<p>Đặt tên giúp nhận diện nội dung, chẳng hạn <strong>Danh mục từ bộ lọc A</strong>, rồi kiểm tra lại trong <strong>Danh mục đã lưu</strong>.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "20-save-list",
+            "src": "/assets/academy/ch04/20-save-list.c6dcf18b.webp",
+            "width": 1029,
+            "height": 477,
+            "alt": "Lưu danh mục của những mã đã chọn",
+            "title": "Lưu danh mục của những mã đã chọn",
+            "caption": "1 Tên danh mục · 2 Xác nhận Lưu.",
+            "zoom_title": "Lưu danh mục của hai mã đã chọn",
+            "max_width": 760
+          },
+          {
+            "type": "html",
+            "html": "<p>Danh mục giữ tập mã, tiêu chí, số liệu, kỳ báo cáo và mốc dữ liệu tại lúc lưu. Nó không tự biến thành bảng số liệu mới nhất khi bạn mở lại.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "21-list-detail",
+            "src": "/assets/academy/ch04/21-list-detail.1e91bcb7.webp",
+            "width": 1029,
+            "height": 848,
+            "alt": "Xem lại danh mục đã lưu",
+            "title": "Xem lại danh mục đã lưu",
+            "caption": "1 Tập mã của danh mục · 2 Đóng cửa sổ. Bảng bên dưới giữ số liệu và kỳ báo cáo lúc lưu.",
+            "zoom_title": "Xem tập mã và số liệu đã lưu",
+            "max_width": 760
+          },
+          {
+            "type": "table",
+            "head": ["Đối tượng", "Được giữ lại"],
+            "rows": [
+              ["<strong>Bộ lọc đã lưu</strong>", "Cách tìm doanh nghiệp để sử dụng lại."],
+              ["<strong>Danh mục đã lưu</strong>", "Tập mã và bằng chứng của một kết quả cụ thể."],
+              ["<strong>Vị thế đang nắm giữ</strong>", "Cổ phiếu đã được mua và chưa bán hết trong tài khoản."]
+            ],
+            "aria_label": "Bảng: Lưu danh mục từ kết quả đã kiểm tra"
+          },
+          {
+            "type": "html",
+            "html": "<p><strong>Lưu danh mục chưa mua cổ phiếu và chưa thay nguồn Bot.</strong></p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Áp dụng từ kết quả hiện tại hoặc danh mục đã lưu",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Có hai đường đi:</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Điểm xuất phát", "Thao tác"],
+            "rows": [
+              ["<strong>Kết quả sàng lọc hiện tại</strong>", "Chọn mã rồi bấm <strong>Áp dụng cho Bot</strong>."],
+              ["<strong>Danh mục đã lưu</strong>", "Tìm đúng danh mục rồi bấm <strong>Áp dụng cho Bot</strong>."]
+            ],
+            "aria_label": "Bảng: Áp dụng từ kết quả hiện tại hoặc danh mục đã lưu"
+          },
+          {
+            "type": "html",
+            "html": "<p>Không bắt buộc lưu danh mục trước khi áp dụng trực tiếp từ kết quả hiện tại.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "22-apply-direct",
+            "src": "/assets/academy/ch04/22-apply-direct.01e22123.webp",
+            "width": 1029,
+            "height": 846,
+            "alt": "Xác nhận tập mã trước khi áp dụng",
+            "title": "Xác nhận tập mã trước khi áp dụng",
+            "caption": "1 Tên danh mục mua mới · 2 Tập mã được chọn · 3 Xác nhận Áp dụng cho Bot.",
+            "zoom_title": "Áp dụng trực tiếp từ kết quả đang chọn",
+            "max_width": 760
+          },
+          {
+            "type": "html",
+            "html": "<p>Trong cửa sổ xác nhận, đọc tên danh mục mua mới, các điều kiện nguồn, số mã, danh sách mã và thời điểm hiệu lực. Bạn có thể bỏ bớt mã trước khi xác nhận; nếu bỏ hết, không thể áp dụng.</p>\n<p>Bấm <strong>Áp dụng cho Bot</strong> trong cửa sổ xác nhận mới gửi yêu cầu đổi nguồn. Bấm <strong>Hủy</strong> thì không tạo thay đổi.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "23-apply-saved",
+            "src": "/assets/academy/ch04/23-apply-saved.8e4b668f.webp",
+            "width": 1029,
+            "height": 468,
+            "alt": "Đường đi từ Danh mục đã lưu",
+            "title": "Đường đi từ Danh mục đã lưu",
+            "caption": "1 Áp dụng cho Bot từ đúng danh mục đã lưu.",
+            "zoom_title": "Áp dụng từ danh mục đã lưu",
+            "max_width": 760
+          },
+          {
+            "type": "html",
+            "html": "<p>Danh mục riêng <strong>thay thế</strong> nguồn VN30, không cộng thêm vào VN30 và không chỉ giữ những mã trùng VN30. Mã ngoài VN30 vẫn có thể thuộc nguồn riêng nếu nằm trong phạm vi giao dịch được hỗ trợ.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Phân biệt đang chờ với đang sử dụng",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Sau khi yêu cầu được ghi nhận, nhìn lại khối <strong>Danh mục mua mới của Bot</strong>.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "24-source-pending",
+            "src": "/assets/academy/ch04/24-source-pending.a479e42f.webp",
+            "width": 1742,
+            "height": 252,
+            "alt": "VN30 còn hiệu lực, danh mục mới đang chờ",
+            "title": "VN30 còn hiệu lực, danh mục mới đang chờ",
+            "caption": "1 Nguồn đang hiệu lực · 2 Tên danh mục mới, phiên chờ hiệu lực và Hủy thay đổi.",
+            "zoom_title": "Nguồn hiện tại và thay đổi đang chờ"
+          },
+          {
+            "type": "table",
+            "head": ["Trạng thái", "Ý nghĩa"],
+            "rows": [
+              ["<strong>Nguồn đang hiệu lực</strong>", "Nguồn Bot hiện dùng để xét mua mới."],
+              ["<strong>Chờ hiệu lực</strong>", "Yêu cầu đã được ghi nhận nhưng chưa thay nguồn đang dùng."],
+              ["<strong>Nguồn mới đã hiệu lực</strong>", "Bot chuyển sang xét mua mới trong tập mã được xác nhận."]
+            ],
+            "aria_label": "Bảng: Phân biệt đang chờ với đang sử dụng"
+          },
+          {
+            "type": "html",
+            "html": "<p>Yêu cầu nhận vào ngày D có hiệu lực từ phiên giao dịch hợp lệ đầu tiên có ngày lớn hơn D, kể cả bạn gửi trước giờ mở cửa ngày D. Không hiểu thành hiệu lực ngay hoặc đúng 24 giờ sau.</p>\n<p>Trong lúc còn chờ, nguồn cũ vẫn được sử dụng. <strong>Hủy thay đổi</strong> chỉ hủy yêu cầu chưa có hiệu lực, không xóa nguồn đang dùng.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "25-source-effective",
+            "src": "/assets/academy/ch04/25-source-effective.3fa21871.webp",
+            "width": 1742,
+            "height": 164,
+            "alt": "Đọc nguồn mới khi đã có hiệu lực",
+            "title": "Đọc nguồn mới khi đã có hiệu lực",
+            "caption": "1 Danh mục đang dùng · 2 Xem danh sách · 3 Về VN30.",
+            "zoom_title": "Danh mục mới đã có hiệu lực"
+          },
+          {
+            "type": "html",
+            "html": "<p>Áp dụng tập mã cũng không có nghĩa Bot lập tức mua toàn bộ danh mục. Tập mã chỉ xác định nơi Bot được xét mua mới; giao dịch còn phụ thuộc điều kiện kỹ thuật đang hiệu lực, tiền, vị thế và các quy tắc thực thi.</p>\n<p>Nếu chưa có điều kiện Mua hợp lệ, việc áp dụng danh mục không tự tạo điều kiện thay bạn.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Cập nhật danh mục, quay về VN30 và xử lý vị thế cũ",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Danh mục đã áp dụng là tập mã cố định cho đến lần bạn chủ động thay đổi. Báo cáo mới hoặc kết quả Bộ lọc thay đổi không tự sửa tập mã này.</p>\n<p>Để cập nhật, mở lại bộ lọc, kiểm tra dữ liệu mới, chọn tập mã và xác nhận <strong>Áp dụng cho Bot</strong> lần nữa.</p>\n<p>Khi không tiếp tục dùng nguồn riêng, bấm <strong>Về VN30</strong>, đọc thông tin rồi chọn <strong>Xác nhận về VN30</strong>. Yêu cầu này cũng chờ phiên hiệu lực và không xóa danh mục đã lưu.</p>"
+          },
+          {
+            "type": "image",
+            "asset_id": "26-return-vn30",
+            "src": "/assets/academy/ch04/26-return-vn30.71c93c4e.webp",
+            "width": 1029,
+            "height": 507,
+            "alt": "Quay về VN30 là một yêu cầu có xác nhận",
+            "title": "Quay về VN30 là một yêu cầu có xác nhận",
+            "caption": "1 Xác nhận về VN30. Hủy không tạo yêu cầu chuyển nguồn.",
+            "zoom_title": "Đọc thông tin trước khi xác nhận về VN30",
+            "max_width": 760
+          },
+          {
+            "type": "html",
+            "html": "<p>Điểm quan trọng nhất là <strong>đổi nguồn mua không ép bán cổ phiếu đang giữ</strong>.</p>\n<p>Giả sử Bot đã mua một mã từ danh mục cũ. Sau khi chuyển nguồn, mã đó không còn trong tập mua mới:</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Tình huống", "Cách xử lý"],
+            "rows": [
+              ["Mã vẫn đang được nắm giữ", "Tiếp tục xét điều kiện Bán đang hiệu lực."],
+              ["Điều kiện Bán chưa đạt", "Không bán chỉ vì mã rời danh mục."],
+              ["Mã đã bán và vẫn ngoài nguồn mua hiện tại", "Không mua lại từ nguồn hiện tại."],
+              ["Chỉ tiêu tài chính của mã không còn đạt bộ lọc cũ", "Không tự tạo lệnh Bán từ thay đổi đó."]
+            ],
+            "aria_label": "Bảng: Cập nhật danh mục, quay về VN30 và xử lý vị thế cũ"
+          },
+          {
+            "type": "image",
+            "asset_id": "27-bot-old-positions",
+            "src": "/assets/academy/ch04/27-bot-old-positions.996ec057.webp",
+            "width": 1029,
+            "height": 1098,
+            "alt": "Phạm vi mua mới không phải danh sách vị thế",
+            "title": "Phạm vi mua mới không phải danh sách vị thế",
+            "caption": "1 Vị thế vẫn được giữ; mã ngoài nguồn mua hiện tại tiếp tục được xét Bán.",
+            "zoom_title": "Vị thế cũ tiếp tục được xét Bán",
+            "max_width": 760
+          },
+          {
+            "type": "html",
+            "html": "<p>Khi chưa có điều kiện Bán hiệu lực, vị thế tiếp tục được giữ; không xuất hiện một giới hạn 60 phiên hoặc cắt lỗ dự phòng chỉ vì đổi danh mục.</p>\n<p>Nếu danh mục đang được Bot dùng hoặc đang chờ hiệu lực, cần chuyển nguồn hoặc xử lý yêu cầu chờ trước khi xóa. Kết quả lọc rỗng hay lỗi tải nguồn cũng không phải một thao tác tự động đưa Bot về VN30.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": null,
+    "fixture": {}
+  }
+]
