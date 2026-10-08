@@ -1835,6 +1835,97 @@
       "classification": "api-call"
     },
     {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 120,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/shop",
+      "method": "GET",
+      "route": "/api/v2/shop",
+      "matchedOperation": "GET /api/v2/shop",
+      "matchedOperations": [
+        "GET /api/v2/shop"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 125,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/shop/coin-ledger",
+      "method": "GET",
+      "route": "/api/v2/shop/coin-ledger",
+      "matchedOperation": "GET /api/v2/shop/coin-ledger",
+      "matchedOperations": [
+        "GET /api/v2/shop/coin-ledger"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 129,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/progress",
+      "method": "GET",
+      "route": "/api/v2/academy/progress",
+      "matchedOperation": "GET /api/v2/academy/progress",
+      "matchedOperations": [
+        "GET /api/v2/academy/progress"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 136,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/catalog",
+      "method": "GET",
+      "route": "/api/v2/academy/catalog",
+      "matchedOperation": "GET /api/v2/academy/catalog",
+      "matchedOperations": [
+        "GET /api/v2/academy/catalog"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 163,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/shop/purchases",
+      "method": "POST",
+      "route": "/api/v2/shop/purchases",
+      "matchedOperation": "POST /api/v2/shop/purchases",
+      "matchedOperations": [
+        "POST /api/v2/shop/purchases"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 170,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/shop/purchases/{idempotencyKey}",
+      "method": "GET",
+      "route": "/api/v2/shop/purchases/{idempotencyKey}",
+      "matchedOperation": "GET /api/v2/shop/purchases/{idempotencyKey}",
+      "matchedOperations": [
+        "GET /api/v2/shop/purchases/{idempotencyKey}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 177,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/shop/active-mascot",
+      "method": "PUT",
+      "route": "/api/v2/shop/active-mascot",
+      "matchedOperation": "PUT /api/v2/shop/active-mascot",
+      "matchedOperations": [
+        "PUT /api/v2/shop/active-mascot"
+      ],
+      "classification": "api-call"
+    },
+    {
       "file": "src/pages/demo-trading/trading/use-engine-refresh.ts",
       "line": 68,
       "callee": "api",
@@ -1875,7 +1966,7 @@
     },
     {
       "file": "src/pages/demo-trading/workspace/workspace-api.ts",
-      "line": 35,
+      "line": 38,
       "callee": "api",
       "raw": "/workspace/state",
       "method": "GET",
@@ -1888,7 +1979,7 @@
     },
     {
       "file": "src/pages/demo-trading/workspace/workspace-api.ts",
-      "line": 58,
+      "line": 61,
       "callee": "api",
       "raw": "/workspace/ensure",
       "method": "POST",
@@ -2578,8 +2669,9 @@
   "unconsumedOperations": [
     "DELETE /api/v2/cap5/watchlist/{symbol}",
     "DELETE /api/v2/chart-drawings/{symbol}",
-    "GET /api/v2/academy/catalog",
-    "GET /api/v2/academy/progress",
+    "GET /api/v2/academy/attempts/{attemptId}",
+    "GET /api/v2/academy/lessons/{lessonId}/attempt",
+    "GET /api/v2/academy/lessons/{lessonId}/attempts",
     "GET /api/v2/admin/alerts/factor-library",
     "GET /api/v2/admin/audit/export",
     "GET /api/v2/admin/metrics/plan-distribution",
@@ -2699,9 +2791,6 @@
     "GET /api/v2/practice/{indicatorId}/state",
     "GET /api/v2/practice/indicators",
     "GET /api/v2/practice/runs/{runId}",
-    "GET /api/v2/shop",
-    "GET /api/v2/shop/coin-ledger",
-    "GET /api/v2/shop/purchases/{idempotencyKey}",
     "GET /api/v2/strategy/backtests",
     "GET /api/v2/strategy/backtests/{id}",
     "GET /api/v2/strategy/filters",
@@ -2789,15 +2878,14 @@
     "POST /api/v2/practice/{indicatorId}/preview",
     "POST /api/v2/practice/{indicatorId}/runs",
     "POST /api/v2/premium/sepay/ipn",
-    "POST /api/v2/shop/purchases",
     "POST /api/v2/strategy/backtests",
     "POST /api/v2/strategy/filters",
     "POST /api/v2/strategy/lists",
     "POST /api/v2/strategy/screener/run",
     "POST /api/v2/telegram/webhook/{secret}",
+    "PUT /api/v2/academy/attempts/{attemptId}/answers",
     "PUT /api/v2/backtest/strategies/{strategyId}",
     "PUT /api/v2/practice/{indicatorId}/draft",
-    "PUT /api/v2/shop/active-mascot",
     "PUT /api/v2/strategy/filters/{filterId}"
   ]
 }

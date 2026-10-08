@@ -25927,7 +25927,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 688 typed response bodies, 16 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 692 typed response bodies, 16 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -60254,6 +60254,1362 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/academy/attempts/{attemptId}": {
+      "get": {
+        "operationId": "academyAttemptReview",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "attemptId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "attempt_id": {
+                      "type": "string"
+                    },
+                    "attempts_submitted": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "best_score": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "nullable": true,
+                      "type": "integer"
+                    },
+                    "catalog_version": {
+                      "type": "string"
+                    },
+                    "completion": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "completed": {
+                          "type": "boolean"
+                        },
+                        "completed_at": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "completion_method": {
+                          "enum": [
+                            "quiz",
+                            "guide",
+                            "legacy_migration"
+                          ],
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "newly_completed": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "completed",
+                        "completion_method",
+                        "completed_at",
+                        "newly_completed"
+                      ],
+                      "type": "object"
+                    },
+                    "correct": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "granted_capabilities": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "lesson_id": {
+                      "type": "string"
+                    },
+                    "lesson_key": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "newly_granted": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "passed": {
+                      "type": "boolean"
+                    },
+                    "progress_revision": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "results": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "correct": {
+                            "type": "boolean"
+                          },
+                          "correct_option_id": {
+                            "type": "string"
+                          },
+                          "explanation": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "figure": {
+                            "nullable": true,
+                            "oneOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "chart": {
+                                    "anyOf": [
+                                      {
+                                        "additionalProperties": false,
+                                        "properties": {
+                                          "kind": {
+                                            "enum": [
+                                              "series_panels"
+                                            ],
+                                            "type": "string"
+                                          },
+                                          "marks": {
+                                            "items": {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "i": {
+                                                  "maximum": 9007199254740991,
+                                                  "minimum": 0,
+                                                  "type": "integer"
+                                                },
+                                                "label": {
+                                                  "minLength": 1,
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "i",
+                                                "label"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            "type": "array"
+                                          },
+                                          "panels": {
+                                            "items": {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "band": {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "lower": {
+                                                      "items": {
+                                                        "nullable": true,
+                                                        "type": "number"
+                                                      },
+                                                      "type": "array"
+                                                    },
+                                                    "upper": {
+                                                      "items": {
+                                                        "nullable": true,
+                                                        "type": "number"
+                                                      },
+                                                      "type": "array"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "upper",
+                                                    "lower"
+                                                  ],
+                                                  "type": "object"
+                                                },
+                                                "bars": {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "colors": {
+                                                      "items": {
+                                                        "enum": [
+                                                          "pos",
+                                                          "neg",
+                                                          "neutral"
+                                                        ],
+                                                        "type": "string"
+                                                      },
+                                                      "type": "array"
+                                                    },
+                                                    "name": {
+                                                      "minLength": 1,
+                                                      "type": "string"
+                                                    },
+                                                    "values": {
+                                                      "items": {
+                                                        "nullable": true,
+                                                        "type": "number"
+                                                      },
+                                                      "type": "array"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "name",
+                                                    "values",
+                                                    "colors"
+                                                  ],
+                                                  "type": "object"
+                                                },
+                                                "bounds": {
+                                                  "items": {
+                                                    "anyOf": [
+                                                      {
+                                                        "type": "number"
+                                                      },
+                                                      {
+                                                        "type": "number"
+                                                      }
+                                                    ]
+                                                  },
+                                                  "maxItems": 2,
+                                                  "minItems": 2,
+                                                  "type": "array"
+                                                },
+                                                "digits": {
+                                                  "maximum": 9007199254740991,
+                                                  "minimum": 0,
+                                                  "type": "integer"
+                                                },
+                                                "levels": {
+                                                  "items": {
+                                                    "additionalProperties": false,
+                                                    "properties": {
+                                                      "role": {
+                                                        "enum": [
+                                                          "buy",
+                                                          "sell"
+                                                        ],
+                                                        "type": "string"
+                                                      },
+                                                      "value": {
+                                                        "type": "number"
+                                                      }
+                                                    },
+                                                    "required": [
+                                                      "value",
+                                                      "role"
+                                                    ],
+                                                    "type": "object"
+                                                  },
+                                                  "type": "array"
+                                                },
+                                                "nonnegative": {
+                                                  "enum": [
+                                                    true
+                                                  ],
+                                                  "type": "boolean"
+                                                },
+                                                "series": {
+                                                  "items": {
+                                                    "additionalProperties": false,
+                                                    "properties": {
+                                                      "dash": {
+                                                        "enum": [
+                                                          true
+                                                        ],
+                                                        "type": "boolean"
+                                                      },
+                                                      "name": {
+                                                        "minLength": 1,
+                                                        "type": "string"
+                                                      },
+                                                      "role": {
+                                                        "enum": [
+                                                          "price",
+                                                          "p1",
+                                                          "p2",
+                                                          "p3",
+                                                          "pos",
+                                                          "neg"
+                                                        ],
+                                                        "type": "string"
+                                                      },
+                                                      "values": {
+                                                        "items": {
+                                                          "nullable": true,
+                                                          "type": "number"
+                                                        },
+                                                        "minItems": 1,
+                                                        "type": "array"
+                                                      }
+                                                    },
+                                                    "required": [
+                                                      "name",
+                                                      "role",
+                                                      "values"
+                                                    ],
+                                                    "type": "object"
+                                                  },
+                                                  "minItems": 1,
+                                                  "type": "array"
+                                                },
+                                                "ticks": {
+                                                  "items": {
+                                                    "type": "number"
+                                                  },
+                                                  "type": "array"
+                                                },
+                                                "title": {
+                                                  "minLength": 1,
+                                                  "type": "string"
+                                                },
+                                                "zero": {
+                                                  "enum": [
+                                                    true
+                                                  ],
+                                                  "type": "boolean"
+                                                }
+                                              },
+                                              "required": [
+                                                "title",
+                                                "series"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            "minItems": 1,
+                                            "type": "array"
+                                          },
+                                          "x": {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "end": {
+                                                "maximum": 9007199254740991,
+                                                "minimum": 0,
+                                                "type": "integer"
+                                              },
+                                              "start": {
+                                                "maximum": 9007199254740991,
+                                                "minimum": 0,
+                                                "type": "integer"
+                                              },
+                                              "ticks": {
+                                                "items": {
+                                                  "type": "string"
+                                                },
+                                                "type": "array"
+                                              }
+                                            },
+                                            "required": [
+                                              "start",
+                                              "end"
+                                            ],
+                                            "type": "object"
+                                          }
+                                        },
+                                        "required": [
+                                          "kind",
+                                          "x",
+                                          "marks",
+                                          "panels"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      {
+                                        "additionalProperties": false,
+                                        "properties": {
+                                          "kind": {
+                                            "enum": [
+                                              "grouped"
+                                            ],
+                                            "type": "string"
+                                          },
+                                          "labels": {
+                                            "items": {
+                                              "type": "string"
+                                            },
+                                            "minItems": 1,
+                                            "type": "array"
+                                          },
+                                          "series": {
+                                            "items": {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "name": {
+                                                  "minLength": 1,
+                                                  "type": "string"
+                                                },
+                                                "values": {
+                                                  "items": {
+                                                    "nullable": true,
+                                                    "type": "number"
+                                                  },
+                                                  "type": "array"
+                                                }
+                                              },
+                                              "required": [
+                                                "name",
+                                                "values"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            "minItems": 1,
+                                            "type": "array"
+                                          },
+                                          "title": {
+                                            "minLength": 1,
+                                            "type": "string"
+                                          },
+                                          "unit": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "kind",
+                                          "title",
+                                          "labels",
+                                          "series",
+                                          "unit"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      {
+                                        "additionalProperties": false,
+                                        "properties": {
+                                          "kind": {
+                                            "enum": [
+                                              "line"
+                                            ],
+                                            "type": "string"
+                                          },
+                                          "labels": {
+                                            "items": {
+                                              "type": "string"
+                                            },
+                                            "minItems": 1,
+                                            "type": "array"
+                                          },
+                                          "series": {
+                                            "items": {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "name": {
+                                                  "minLength": 1,
+                                                  "type": "string"
+                                                },
+                                                "values": {
+                                                  "items": {
+                                                    "nullable": true,
+                                                    "type": "number"
+                                                  },
+                                                  "type": "array"
+                                                }
+                                              },
+                                              "required": [
+                                                "name",
+                                                "values"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            "minItems": 1,
+                                            "type": "array"
+                                          },
+                                          "title": {
+                                            "minLength": 1,
+                                            "type": "string"
+                                          },
+                                          "unit": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "kind",
+                                          "title",
+                                          "labels",
+                                          "series",
+                                          "unit"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      {
+                                        "additionalProperties": false,
+                                        "properties": {
+                                          "kind": {
+                                            "enum": [
+                                              "stacked"
+                                            ],
+                                            "type": "string"
+                                          },
+                                          "labels": {
+                                            "items": {
+                                              "type": "string"
+                                            },
+                                            "minItems": 1,
+                                            "type": "array"
+                                          },
+                                          "series": {
+                                            "items": {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "name": {
+                                                  "minLength": 1,
+                                                  "type": "string"
+                                                },
+                                                "values": {
+                                                  "items": {
+                                                    "nullable": true,
+                                                    "type": "number"
+                                                  },
+                                                  "type": "array"
+                                                }
+                                              },
+                                              "required": [
+                                                "name",
+                                                "values"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            "minItems": 1,
+                                            "type": "array"
+                                          },
+                                          "title": {
+                                            "minLength": 1,
+                                            "type": "string"
+                                          },
+                                          "unit": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "kind",
+                                          "title",
+                                          "labels",
+                                          "series",
+                                          "unit"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      {
+                                        "additionalProperties": false,
+                                        "properties": {
+                                          "kind": {
+                                            "enum": [
+                                              "timeline"
+                                            ],
+                                            "type": "string"
+                                          },
+                                          "labels": {
+                                            "items": {
+                                              "type": "string"
+                                            },
+                                            "minItems": 1,
+                                            "type": "array"
+                                          },
+                                          "rows": {
+                                            "items": {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "detail": {
+                                                  "type": "string"
+                                                },
+                                                "end": {
+                                                  "maximum": 9007199254740991,
+                                                  "minimum": 0,
+                                                  "type": "integer"
+                                                },
+                                                "name": {
+                                                  "minLength": 1,
+                                                  "type": "string"
+                                                },
+                                                "start": {
+                                                  "maximum": 9007199254740991,
+                                                  "minimum": 0,
+                                                  "type": "integer"
+                                                }
+                                              },
+                                              "required": [
+                                                "name",
+                                                "start",
+                                                "end",
+                                                "detail"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            "minItems": 1,
+                                            "type": "array"
+                                          },
+                                          "title": {
+                                            "minLength": 1,
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "kind",
+                                          "title",
+                                          "labels",
+                                          "rows"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      {
+                                        "additionalProperties": false,
+                                        "properties": {
+                                          "kind": {
+                                            "enum": [
+                                              "waterfall"
+                                            ],
+                                            "type": "string"
+                                          },
+                                          "steps": {
+                                            "items": {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "name": {
+                                                  "minLength": 1,
+                                                  "type": "string"
+                                                },
+                                                "total": {
+                                                  "enum": [
+                                                    true
+                                                  ],
+                                                  "type": "boolean"
+                                                },
+                                                "value": {
+                                                  "type": "number"
+                                                }
+                                              },
+                                              "required": [
+                                                "name",
+                                                "value"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            "minItems": 1,
+                                            "type": "array"
+                                          },
+                                          "title": {
+                                            "minLength": 1,
+                                            "type": "string"
+                                          },
+                                          "unit": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "kind",
+                                          "title",
+                                          "unit",
+                                          "steps"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      {
+                                        "additionalProperties": false,
+                                        "properties": {
+                                          "kind": {
+                                            "enum": [
+                                              "panels"
+                                            ],
+                                            "type": "string"
+                                          },
+                                          "panels": {
+                                            "items": {
+                                              "anyOf": [
+                                                {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "kind": {
+                                                      "enum": [
+                                                        "grouped"
+                                                      ],
+                                                      "type": "string"
+                                                    },
+                                                    "labels": {
+                                                      "items": {
+                                                        "type": "string"
+                                                      },
+                                                      "minItems": 1,
+                                                      "type": "array"
+                                                    },
+                                                    "series": {
+                                                      "items": {
+                                                        "additionalProperties": false,
+                                                        "properties": {
+                                                          "name": {
+                                                            "minLength": 1,
+                                                            "type": "string"
+                                                          },
+                                                          "values": {
+                                                            "items": {
+                                                              "nullable": true,
+                                                              "type": "number"
+                                                            },
+                                                            "type": "array"
+                                                          }
+                                                        },
+                                                        "required": [
+                                                          "name",
+                                                          "values"
+                                                        ],
+                                                        "type": "object"
+                                                      },
+                                                      "minItems": 1,
+                                                      "type": "array"
+                                                    },
+                                                    "title": {
+                                                      "minLength": 1,
+                                                      "type": "string"
+                                                    },
+                                                    "unit": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "kind",
+                                                    "title",
+                                                    "labels",
+                                                    "series",
+                                                    "unit"
+                                                  ],
+                                                  "type": "object"
+                                                },
+                                                {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "kind": {
+                                                      "enum": [
+                                                        "line"
+                                                      ],
+                                                      "type": "string"
+                                                    },
+                                                    "labels": {
+                                                      "items": {
+                                                        "type": "string"
+                                                      },
+                                                      "minItems": 1,
+                                                      "type": "array"
+                                                    },
+                                                    "series": {
+                                                      "items": {
+                                                        "additionalProperties": false,
+                                                        "properties": {
+                                                          "name": {
+                                                            "minLength": 1,
+                                                            "type": "string"
+                                                          },
+                                                          "values": {
+                                                            "items": {
+                                                              "nullable": true,
+                                                              "type": "number"
+                                                            },
+                                                            "type": "array"
+                                                          }
+                                                        },
+                                                        "required": [
+                                                          "name",
+                                                          "values"
+                                                        ],
+                                                        "type": "object"
+                                                      },
+                                                      "minItems": 1,
+                                                      "type": "array"
+                                                    },
+                                                    "title": {
+                                                      "minLength": 1,
+                                                      "type": "string"
+                                                    },
+                                                    "unit": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "kind",
+                                                    "title",
+                                                    "labels",
+                                                    "series",
+                                                    "unit"
+                                                  ],
+                                                  "type": "object"
+                                                },
+                                                {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "kind": {
+                                                      "enum": [
+                                                        "stacked"
+                                                      ],
+                                                      "type": "string"
+                                                    },
+                                                    "labels": {
+                                                      "items": {
+                                                        "type": "string"
+                                                      },
+                                                      "minItems": 1,
+                                                      "type": "array"
+                                                    },
+                                                    "series": {
+                                                      "items": {
+                                                        "additionalProperties": false,
+                                                        "properties": {
+                                                          "name": {
+                                                            "minLength": 1,
+                                                            "type": "string"
+                                                          },
+                                                          "values": {
+                                                            "items": {
+                                                              "nullable": true,
+                                                              "type": "number"
+                                                            },
+                                                            "type": "array"
+                                                          }
+                                                        },
+                                                        "required": [
+                                                          "name",
+                                                          "values"
+                                                        ],
+                                                        "type": "object"
+                                                      },
+                                                      "minItems": 1,
+                                                      "type": "array"
+                                                    },
+                                                    "title": {
+                                                      "minLength": 1,
+                                                      "type": "string"
+                                                    },
+                                                    "unit": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "kind",
+                                                    "title",
+                                                    "labels",
+                                                    "series",
+                                                    "unit"
+                                                  ],
+                                                  "type": "object"
+                                                }
+                                              ]
+                                            },
+                                            "minItems": 1,
+                                            "type": "array"
+                                          },
+                                          "title": {
+                                            "minLength": 1,
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "kind",
+                                          "title",
+                                          "panels"
+                                        ],
+                                        "type": "object"
+                                      }
+                                    ]
+                                  },
+                                  "chart_id": {
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "chart"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "chart_id",
+                                  "chart"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "head": {
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "rows": {
+                                    "items": {
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "type": "array"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "table"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "head",
+                                  "rows"
+                                ],
+                                "type": "object"
+                              }
+                            ]
+                          },
+                          "hint": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "option_id": {
+                            "type": "string"
+                          },
+                          "options": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "chosen": {
+                                  "type": "boolean"
+                                },
+                                "correct": {
+                                  "type": "boolean"
+                                },
+                                "explanation": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "type": "string"
+                                },
+                                "text": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "text",
+                                "chosen",
+                                "correct",
+                                "explanation"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "prompt": {
+                            "type": "string"
+                          },
+                          "question_id": {
+                            "type": "string"
+                          },
+                          "section": {
+                            "maximum": 4,
+                            "minimum": 1,
+                            "nullable": true,
+                            "type": "integer"
+                          },
+                          "topic": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "question_id",
+                          "topic",
+                          "section",
+                          "prompt",
+                          "hint",
+                          "figure",
+                          "option_id",
+                          "correct",
+                          "correct_option_id",
+                          "explanation",
+                          "options"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "review_available": {
+                      "type": "boolean"
+                    },
+                    "reward": {
+                      "nullable": true,
+                      "oneOf": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "balance_after": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "delta": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "status": {
+                              "enum": [
+                                "credited"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "status",
+                            "delta",
+                            "balance_after"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "balance_after": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "status": {
+                              "enum": [
+                                "already_rewarded"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "status",
+                            "balance_after"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "status": {
+                              "enum": [
+                                "unavailable"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "status"
+                          ],
+                          "type": "object"
+                        }
+                      ]
+                    },
+                    "score": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "submitted_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "total": {
+                      "enum": [
+                        8
+                      ],
+                      "type": "number"
+                    },
+                    "wrong": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "attempt_id",
+                    "lesson_id",
+                    "lesson_key",
+                    "catalog_version",
+                    "score",
+                    "total",
+                    "correct",
+                    "wrong",
+                    "passed",
+                    "submitted_at",
+                    "best_score",
+                    "attempts_submitted",
+                    "review_available",
+                    "results",
+                    "completion",
+                    "granted_capabilities",
+                    "newly_granted",
+                    "progress_revision",
+                    "reward"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The committed result and review of a submitted attempt of the learner (same body as a submit replay); 409 ATTEMPT_NOT_SUBMITTED while the attempt is open",
+        "tags": [
+          "Academy"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/academy/attempts/{attemptId}/answers": {
+      "put": {
+        "operationId": "academySaveDraftAnswers",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "attemptId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "answers": {
+                    "items": {
+                      "properties": {
+                        "option_id": {
+                          "maxLength": 64,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "question_id": {
+                          "maxLength": 64,
+                          "minLength": 1,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "question_id",
+                        "option_id"
+                      ],
+                      "type": "object"
+                    },
+                    "maxItems": 64,
+                    "type": "array"
+                  },
+                  "expected_revision": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "answers"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "answered_count": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "answers": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "option_id": {
+                            "type": "string"
+                          },
+                          "question_id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "question_id",
+                          "option_id"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "attempt_id": {
+                      "type": "string"
+                    },
+                    "revision": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "enum": [
+                        8
+                      ],
+                      "type": "number"
+                    },
+                    "updated_at": {
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "revision",
+                    "answers",
+                    "answered_count",
+                    "total",
+                    "updated_at",
+                    "attempt_id"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Save the current (partial) selections of an open attempt as a server-side draft with a revision; never grades or reveals correctness",
+        "tags": [
+          "Academy"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/academy/attempts/{attemptId}/submit": {
       "post": {
         "operationId": "academySubmitAttempt",
@@ -63653,6 +65009,1261 @@
           }
         ],
         "summary": "Typed lesson sections, chart models and nav labels (never questions or answers), plus completion info",
+        "tags": [
+          "Academy"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/academy/lessons/{lessonId}/attempt": {
+      "get": {
+        "operationId": "academyResumeAttempt",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lessonId",
+            "required": true,
+            "schema": {
+              "pattern": "^ch\\d{2}-l\\d{2}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "attempt": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "assessment_version": {
+                          "type": "string"
+                        },
+                        "attempt_id": {
+                          "type": "string"
+                        },
+                        "catalog_version": {
+                          "type": "string"
+                        },
+                        "content_version": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "draft": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "answered_count": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "answers": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "option_id": {
+                                    "type": "string"
+                                  },
+                                  "question_id": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "question_id",
+                                  "option_id"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "revision": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "total": {
+                              "enum": [
+                                8
+                              ],
+                              "type": "number"
+                            },
+                            "updated_at": {
+                              "nullable": true,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "revision",
+                            "answers",
+                            "answered_count",
+                            "total",
+                            "updated_at"
+                          ],
+                          "type": "object"
+                        },
+                        "lesson_id": {
+                          "type": "string"
+                        },
+                        "lesson_key": {
+                          "type": "string"
+                        },
+                        "questions": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "figure": {
+                                "nullable": true,
+                                "oneOf": [
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "chart": {
+                                        "anyOf": [
+                                          {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "kind": {
+                                                "enum": [
+                                                  "series_panels"
+                                                ],
+                                                "type": "string"
+                                              },
+                                              "marks": {
+                                                "items": {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "i": {
+                                                      "maximum": 9007199254740991,
+                                                      "minimum": 0,
+                                                      "type": "integer"
+                                                    },
+                                                    "label": {
+                                                      "minLength": 1,
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "i",
+                                                    "label"
+                                                  ],
+                                                  "type": "object"
+                                                },
+                                                "type": "array"
+                                              },
+                                              "panels": {
+                                                "items": {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "band": {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "lower": {
+                                                          "items": {
+                                                            "nullable": true,
+                                                            "type": "number"
+                                                          },
+                                                          "type": "array"
+                                                        },
+                                                        "upper": {
+                                                          "items": {
+                                                            "nullable": true,
+                                                            "type": "number"
+                                                          },
+                                                          "type": "array"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "upper",
+                                                        "lower"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    "bars": {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "colors": {
+                                                          "items": {
+                                                            "enum": [
+                                                              "pos",
+                                                              "neg",
+                                                              "neutral"
+                                                            ],
+                                                            "type": "string"
+                                                          },
+                                                          "type": "array"
+                                                        },
+                                                        "name": {
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "values": {
+                                                          "items": {
+                                                            "nullable": true,
+                                                            "type": "number"
+                                                          },
+                                                          "type": "array"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "name",
+                                                        "values",
+                                                        "colors"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    "bounds": {
+                                                      "items": {
+                                                        "anyOf": [
+                                                          {
+                                                            "type": "number"
+                                                          },
+                                                          {
+                                                            "type": "number"
+                                                          }
+                                                        ]
+                                                      },
+                                                      "maxItems": 2,
+                                                      "minItems": 2,
+                                                      "type": "array"
+                                                    },
+                                                    "digits": {
+                                                      "maximum": 9007199254740991,
+                                                      "minimum": 0,
+                                                      "type": "integer"
+                                                    },
+                                                    "levels": {
+                                                      "items": {
+                                                        "additionalProperties": false,
+                                                        "properties": {
+                                                          "role": {
+                                                            "enum": [
+                                                              "buy",
+                                                              "sell"
+                                                            ],
+                                                            "type": "string"
+                                                          },
+                                                          "value": {
+                                                            "type": "number"
+                                                          }
+                                                        },
+                                                        "required": [
+                                                          "value",
+                                                          "role"
+                                                        ],
+                                                        "type": "object"
+                                                      },
+                                                      "type": "array"
+                                                    },
+                                                    "nonnegative": {
+                                                      "enum": [
+                                                        true
+                                                      ],
+                                                      "type": "boolean"
+                                                    },
+                                                    "series": {
+                                                      "items": {
+                                                        "additionalProperties": false,
+                                                        "properties": {
+                                                          "dash": {
+                                                            "enum": [
+                                                              true
+                                                            ],
+                                                            "type": "boolean"
+                                                          },
+                                                          "name": {
+                                                            "minLength": 1,
+                                                            "type": "string"
+                                                          },
+                                                          "role": {
+                                                            "enum": [
+                                                              "price",
+                                                              "p1",
+                                                              "p2",
+                                                              "p3",
+                                                              "pos",
+                                                              "neg"
+                                                            ],
+                                                            "type": "string"
+                                                          },
+                                                          "values": {
+                                                            "items": {
+                                                              "nullable": true,
+                                                              "type": "number"
+                                                            },
+                                                            "minItems": 1,
+                                                            "type": "array"
+                                                          }
+                                                        },
+                                                        "required": [
+                                                          "name",
+                                                          "role",
+                                                          "values"
+                                                        ],
+                                                        "type": "object"
+                                                      },
+                                                      "minItems": 1,
+                                                      "type": "array"
+                                                    },
+                                                    "ticks": {
+                                                      "items": {
+                                                        "type": "number"
+                                                      },
+                                                      "type": "array"
+                                                    },
+                                                    "title": {
+                                                      "minLength": 1,
+                                                      "type": "string"
+                                                    },
+                                                    "zero": {
+                                                      "enum": [
+                                                        true
+                                                      ],
+                                                      "type": "boolean"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "title",
+                                                    "series"
+                                                  ],
+                                                  "type": "object"
+                                                },
+                                                "minItems": 1,
+                                                "type": "array"
+                                              },
+                                              "x": {
+                                                "additionalProperties": false,
+                                                "properties": {
+                                                  "end": {
+                                                    "maximum": 9007199254740991,
+                                                    "minimum": 0,
+                                                    "type": "integer"
+                                                  },
+                                                  "start": {
+                                                    "maximum": 9007199254740991,
+                                                    "minimum": 0,
+                                                    "type": "integer"
+                                                  },
+                                                  "ticks": {
+                                                    "items": {
+                                                      "type": "string"
+                                                    },
+                                                    "type": "array"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "start",
+                                                  "end"
+                                                ],
+                                                "type": "object"
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "x",
+                                              "marks",
+                                              "panels"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "kind": {
+                                                "enum": [
+                                                  "grouped"
+                                                ],
+                                                "type": "string"
+                                              },
+                                              "labels": {
+                                                "items": {
+                                                  "type": "string"
+                                                },
+                                                "minItems": 1,
+                                                "type": "array"
+                                              },
+                                              "series": {
+                                                "items": {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "name": {
+                                                      "minLength": 1,
+                                                      "type": "string"
+                                                    },
+                                                    "values": {
+                                                      "items": {
+                                                        "nullable": true,
+                                                        "type": "number"
+                                                      },
+                                                      "type": "array"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "name",
+                                                    "values"
+                                                  ],
+                                                  "type": "object"
+                                                },
+                                                "minItems": 1,
+                                                "type": "array"
+                                              },
+                                              "title": {
+                                                "minLength": 1,
+                                                "type": "string"
+                                              },
+                                              "unit": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "title",
+                                              "labels",
+                                              "series",
+                                              "unit"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "kind": {
+                                                "enum": [
+                                                  "line"
+                                                ],
+                                                "type": "string"
+                                              },
+                                              "labels": {
+                                                "items": {
+                                                  "type": "string"
+                                                },
+                                                "minItems": 1,
+                                                "type": "array"
+                                              },
+                                              "series": {
+                                                "items": {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "name": {
+                                                      "minLength": 1,
+                                                      "type": "string"
+                                                    },
+                                                    "values": {
+                                                      "items": {
+                                                        "nullable": true,
+                                                        "type": "number"
+                                                      },
+                                                      "type": "array"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "name",
+                                                    "values"
+                                                  ],
+                                                  "type": "object"
+                                                },
+                                                "minItems": 1,
+                                                "type": "array"
+                                              },
+                                              "title": {
+                                                "minLength": 1,
+                                                "type": "string"
+                                              },
+                                              "unit": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "title",
+                                              "labels",
+                                              "series",
+                                              "unit"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "kind": {
+                                                "enum": [
+                                                  "stacked"
+                                                ],
+                                                "type": "string"
+                                              },
+                                              "labels": {
+                                                "items": {
+                                                  "type": "string"
+                                                },
+                                                "minItems": 1,
+                                                "type": "array"
+                                              },
+                                              "series": {
+                                                "items": {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "name": {
+                                                      "minLength": 1,
+                                                      "type": "string"
+                                                    },
+                                                    "values": {
+                                                      "items": {
+                                                        "nullable": true,
+                                                        "type": "number"
+                                                      },
+                                                      "type": "array"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "name",
+                                                    "values"
+                                                  ],
+                                                  "type": "object"
+                                                },
+                                                "minItems": 1,
+                                                "type": "array"
+                                              },
+                                              "title": {
+                                                "minLength": 1,
+                                                "type": "string"
+                                              },
+                                              "unit": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "title",
+                                              "labels",
+                                              "series",
+                                              "unit"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "kind": {
+                                                "enum": [
+                                                  "timeline"
+                                                ],
+                                                "type": "string"
+                                              },
+                                              "labels": {
+                                                "items": {
+                                                  "type": "string"
+                                                },
+                                                "minItems": 1,
+                                                "type": "array"
+                                              },
+                                              "rows": {
+                                                "items": {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "detail": {
+                                                      "type": "string"
+                                                    },
+                                                    "end": {
+                                                      "maximum": 9007199254740991,
+                                                      "minimum": 0,
+                                                      "type": "integer"
+                                                    },
+                                                    "name": {
+                                                      "minLength": 1,
+                                                      "type": "string"
+                                                    },
+                                                    "start": {
+                                                      "maximum": 9007199254740991,
+                                                      "minimum": 0,
+                                                      "type": "integer"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "name",
+                                                    "start",
+                                                    "end",
+                                                    "detail"
+                                                  ],
+                                                  "type": "object"
+                                                },
+                                                "minItems": 1,
+                                                "type": "array"
+                                              },
+                                              "title": {
+                                                "minLength": 1,
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "title",
+                                              "labels",
+                                              "rows"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "kind": {
+                                                "enum": [
+                                                  "waterfall"
+                                                ],
+                                                "type": "string"
+                                              },
+                                              "steps": {
+                                                "items": {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "name": {
+                                                      "minLength": 1,
+                                                      "type": "string"
+                                                    },
+                                                    "total": {
+                                                      "enum": [
+                                                        true
+                                                      ],
+                                                      "type": "boolean"
+                                                    },
+                                                    "value": {
+                                                      "type": "number"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "name",
+                                                    "value"
+                                                  ],
+                                                  "type": "object"
+                                                },
+                                                "minItems": 1,
+                                                "type": "array"
+                                              },
+                                              "title": {
+                                                "minLength": 1,
+                                                "type": "string"
+                                              },
+                                              "unit": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "title",
+                                              "unit",
+                                              "steps"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "kind": {
+                                                "enum": [
+                                                  "panels"
+                                                ],
+                                                "type": "string"
+                                              },
+                                              "panels": {
+                                                "items": {
+                                                  "anyOf": [
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "kind": {
+                                                          "enum": [
+                                                            "grouped"
+                                                          ],
+                                                          "type": "string"
+                                                        },
+                                                        "labels": {
+                                                          "items": {
+                                                            "type": "string"
+                                                          },
+                                                          "minItems": 1,
+                                                          "type": "array"
+                                                        },
+                                                        "series": {
+                                                          "items": {
+                                                            "additionalProperties": false,
+                                                            "properties": {
+                                                              "name": {
+                                                                "minLength": 1,
+                                                                "type": "string"
+                                                              },
+                                                              "values": {
+                                                                "items": {
+                                                                  "nullable": true,
+                                                                  "type": "number"
+                                                                },
+                                                                "type": "array"
+                                                              }
+                                                            },
+                                                            "required": [
+                                                              "name",
+                                                              "values"
+                                                            ],
+                                                            "type": "object"
+                                                          },
+                                                          "minItems": 1,
+                                                          "type": "array"
+                                                        },
+                                                        "title": {
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "unit": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "title",
+                                                        "labels",
+                                                        "series",
+                                                        "unit"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "kind": {
+                                                          "enum": [
+                                                            "line"
+                                                          ],
+                                                          "type": "string"
+                                                        },
+                                                        "labels": {
+                                                          "items": {
+                                                            "type": "string"
+                                                          },
+                                                          "minItems": 1,
+                                                          "type": "array"
+                                                        },
+                                                        "series": {
+                                                          "items": {
+                                                            "additionalProperties": false,
+                                                            "properties": {
+                                                              "name": {
+                                                                "minLength": 1,
+                                                                "type": "string"
+                                                              },
+                                                              "values": {
+                                                                "items": {
+                                                                  "nullable": true,
+                                                                  "type": "number"
+                                                                },
+                                                                "type": "array"
+                                                              }
+                                                            },
+                                                            "required": [
+                                                              "name",
+                                                              "values"
+                                                            ],
+                                                            "type": "object"
+                                                          },
+                                                          "minItems": 1,
+                                                          "type": "array"
+                                                        },
+                                                        "title": {
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "unit": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "title",
+                                                        "labels",
+                                                        "series",
+                                                        "unit"
+                                                      ],
+                                                      "type": "object"
+                                                    },
+                                                    {
+                                                      "additionalProperties": false,
+                                                      "properties": {
+                                                        "kind": {
+                                                          "enum": [
+                                                            "stacked"
+                                                          ],
+                                                          "type": "string"
+                                                        },
+                                                        "labels": {
+                                                          "items": {
+                                                            "type": "string"
+                                                          },
+                                                          "minItems": 1,
+                                                          "type": "array"
+                                                        },
+                                                        "series": {
+                                                          "items": {
+                                                            "additionalProperties": false,
+                                                            "properties": {
+                                                              "name": {
+                                                                "minLength": 1,
+                                                                "type": "string"
+                                                              },
+                                                              "values": {
+                                                                "items": {
+                                                                  "nullable": true,
+                                                                  "type": "number"
+                                                                },
+                                                                "type": "array"
+                                                              }
+                                                            },
+                                                            "required": [
+                                                              "name",
+                                                              "values"
+                                                            ],
+                                                            "type": "object"
+                                                          },
+                                                          "minItems": 1,
+                                                          "type": "array"
+                                                        },
+                                                        "title": {
+                                                          "minLength": 1,
+                                                          "type": "string"
+                                                        },
+                                                        "unit": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "kind",
+                                                        "title",
+                                                        "labels",
+                                                        "series",
+                                                        "unit"
+                                                      ],
+                                                      "type": "object"
+                                                    }
+                                                  ]
+                                                },
+                                                "minItems": 1,
+                                                "type": "array"
+                                              },
+                                              "title": {
+                                                "minLength": 1,
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "title",
+                                              "panels"
+                                            ],
+                                            "type": "object"
+                                          }
+                                        ]
+                                      },
+                                      "chart_id": {
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "chart"
+                                        ],
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "type",
+                                      "chart_id",
+                                      "chart"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "head": {
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "rows": {
+                                        "items": {
+                                          "items": {
+                                            "type": "string"
+                                          },
+                                          "type": "array"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "table"
+                                        ],
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "type",
+                                      "head",
+                                      "rows"
+                                    ],
+                                    "type": "object"
+                                  }
+                                ]
+                              },
+                              "hint": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "options": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "text"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "prompt": {
+                                "type": "string"
+                              },
+                              "section": {
+                                "maximum": 4,
+                                "minimum": 1,
+                                "nullable": true,
+                                "type": "integer"
+                              },
+                              "topic": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "topic",
+                              "section",
+                              "prompt",
+                              "hint",
+                              "figure",
+                              "options"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "status": {
+                          "enum": [
+                            "open",
+                            "submitted"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "attempt_id",
+                        "lesson_id",
+                        "lesson_key",
+                        "catalog_version",
+                        "content_version",
+                        "assessment_version",
+                        "status",
+                        "questions",
+                        "created_at",
+                        "draft"
+                      ],
+                      "type": "object"
+                    },
+                    "catalog_version": {
+                      "type": "string"
+                    },
+                    "lesson_id": {
+                      "type": "string"
+                    },
+                    "lesson_key": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "lesson_id",
+                    "lesson_key",
+                    "catalog_version",
+                    "attempt"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resume the latest open attempt of a lesson: questions and options in the stored order (no answer key) plus the saved draft selections; attempt is null when there is none",
+        "tags": [
+          "Academy"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/academy/lessons/{lessonId}/attempts": {
+      "get": {
+        "operationId": "academyLessonAttempts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lessonId",
+            "required": true,
+            "schema": {
+              "pattern": "^ch\\d{2}-l\\d{2}$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 50,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 100000,
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "catalog_version": {
+                      "type": "string"
+                    },
+                    "items": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "attempt_id": {
+                            "type": "string"
+                          },
+                          "passed": {
+                            "type": "boolean"
+                          },
+                          "review_available": {
+                            "type": "boolean"
+                          },
+                          "score": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          },
+                          "submitted_at": {
+                            "type": "string"
+                          },
+                          "total": {
+                            "enum": [
+                              8
+                            ],
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "attempt_id",
+                          "submitted_at",
+                          "score",
+                          "total",
+                          "passed",
+                          "review_available"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "lesson_id": {
+                      "type": "string"
+                    },
+                    "lesson_key": {
+                      "type": "string"
+                    },
+                    "limit": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "next_offset": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "nullable": true,
+                      "type": "integer"
+                    },
+                    "offset": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "total": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "lesson_id",
+                    "lesson_key",
+                    "catalog_version",
+                    "items",
+                    "total",
+                    "limit",
+                    "offset",
+                    "next_offset"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The learner’s submitted attempts of a lesson, newest first, paginated (limit/offset)",
         "tags": [
           "Academy"
         ],
@@ -120249,11 +122860,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 505,
+    "authenticatedOperations": 509,
     "noContentResponses": 16,
-    "operations": 704,
+    "operations": 708,
     "publicOperations": 199,
-    "responseSchemas": 688,
+    "responseSchemas": 692,
     "untypedResponses": 0
   }
 }

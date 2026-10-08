@@ -67,6 +67,11 @@
       "requestType": "RemoveWatchlistItemV2Data",
       "responseType": "RemoveWatchlistItemV2Responses"
     },
+    "GET /api/v2/academy/attempts/{attemptId}": {
+      "operationId": "academyAttemptReview",
+      "requestType": "AcademyAttemptReviewData",
+      "responseType": "AcademyAttemptReviewResponses"
+    },
     "GET /api/v2/academy/catalog": {
       "operationId": "academyCatalog",
       "requestType": "AcademyCatalogData",
@@ -76,6 +81,16 @@
       "operationId": "academyLesson",
       "requestType": "AcademyLessonData",
       "responseType": "AcademyLessonResponses"
+    },
+    "GET /api/v2/academy/lessons/{lessonId}/attempt": {
+      "operationId": "academyResumeAttempt",
+      "requestType": "AcademyResumeAttemptData",
+      "responseType": "AcademyResumeAttemptResponses"
+    },
+    "GET /api/v2/academy/lessons/{lessonId}/attempts": {
+      "operationId": "academyLessonAttempts",
+      "requestType": "AcademyLessonAttemptsData",
+      "responseType": "AcademyLessonAttemptsResponses"
     },
     "GET /api/v2/academy/progress": {
       "operationId": "academyProgress",
@@ -1826,6 +1841,11 @@
       "operationId": "ensureWorkspace",
       "requestType": "EnsureWorkspaceData",
       "responseType": "EnsureWorkspaceResponses"
+    },
+    "PUT /api/v2/academy/attempts/{attemptId}/answers": {
+      "operationId": "academySaveDraftAnswers",
+      "requestType": "AcademySaveDraftAnswersData",
+      "responseType": "AcademySaveDraftAnswersResponses"
     },
     "PUT /api/v2/admin/alerts/signals/{key}": {
       "operationId": "AdminAlertsController_update[1]",

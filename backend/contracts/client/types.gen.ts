@@ -25175,6 +25175,299 @@ export type AcademyCreateAttemptResponses = {
 export type AcademyCreateAttemptResponse =
   AcademyCreateAttemptResponses[keyof AcademyCreateAttemptResponses];
 
+export type AcademyAttemptReviewData = {
+  body?: never;
+  path: {
+    attemptId: string;
+  };
+  query?: never;
+  url: "/api/v2/academy/attempts/{attemptId}";
+};
+
+export type AcademyAttemptReviewErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademyAttemptReviewError =
+  AcademyAttemptReviewErrors[keyof AcademyAttemptReviewErrors];
+
+export type AcademyAttemptReviewResponses = {
+  200: {
+    attempt_id: string;
+    attempts_submitted: number;
+    best_score: number | null;
+    catalog_version: string;
+    completion: {
+      completed: boolean;
+      completed_at: string | null;
+      completion_method: "quiz" | "guide" | "legacy_migration";
+      newly_completed: boolean;
+    };
+    correct: number;
+    granted_capabilities: Array<string>;
+    lesson_id: string;
+    lesson_key: string | null;
+    newly_granted: Array<string>;
+    passed: boolean;
+    progress_revision: number;
+    results: Array<{
+      correct: boolean;
+      correct_option_id: string;
+      explanation: string | null;
+      figure:
+        | {
+            chart:
+              | {
+                  kind: "series_panels";
+                  marks: Array<{
+                    i: number;
+                    label: string;
+                  }>;
+                  panels: Array<{
+                    band?: {
+                      lower: Array<number | null>;
+                      upper: Array<number | null>;
+                    };
+                    bars?: {
+                      colors: Array<"pos" | "neg" | "neutral">;
+                      name: string;
+                      values: Array<number | null>;
+                    };
+                    bounds?: [number, number];
+                    digits?: number;
+                    levels?: Array<{
+                      role: "buy" | "sell";
+                      value: number;
+                    }>;
+                    nonnegative?: true;
+                    series: Array<{
+                      dash?: true;
+                      name: string;
+                      role: "price" | "p1" | "p2" | "p3" | "pos" | "neg";
+                      values: Array<number | null>;
+                    }>;
+                    ticks?: Array<number>;
+                    title: string;
+                    zero?: true;
+                  }>;
+                  x: {
+                    end: number;
+                    start: number;
+                    ticks?: Array<string>;
+                  };
+                }
+              | {
+                  kind: "grouped";
+                  labels: Array<string>;
+                  series: Array<{
+                    name: string;
+                    values: Array<number | null>;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "line";
+                  labels: Array<string>;
+                  series: Array<{
+                    name: string;
+                    values: Array<number | null>;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "stacked";
+                  labels: Array<string>;
+                  series: Array<{
+                    name: string;
+                    values: Array<number | null>;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "timeline";
+                  labels: Array<string>;
+                  rows: Array<{
+                    detail: string;
+                    end: number;
+                    name: string;
+                    start: number;
+                  }>;
+                  title: string;
+                }
+              | {
+                  kind: "waterfall";
+                  steps: Array<{
+                    name: string;
+                    total?: true;
+                    value: number;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "panels";
+                  panels: Array<
+                    | {
+                        kind: "grouped";
+                        labels: Array<string>;
+                        series: Array<{
+                          name: string;
+                          values: Array<number | null>;
+                        }>;
+                        title: string;
+                        unit: string;
+                      }
+                    | {
+                        kind: "line";
+                        labels: Array<string>;
+                        series: Array<{
+                          name: string;
+                          values: Array<number | null>;
+                        }>;
+                        title: string;
+                        unit: string;
+                      }
+                    | {
+                        kind: "stacked";
+                        labels: Array<string>;
+                        series: Array<{
+                          name: string;
+                          values: Array<number | null>;
+                        }>;
+                        title: string;
+                        unit: string;
+                      }
+                  >;
+                  title: string;
+                };
+            chart_id: string;
+            type: "chart";
+          }
+        | {
+            head: Array<string>;
+            rows: Array<Array<string>>;
+            type: "table";
+          }
+        | null;
+      hint: string | null;
+      option_id: string;
+      options: Array<{
+        chosen: boolean;
+        correct: boolean;
+        explanation: string | null;
+        id: string;
+        text: string;
+      }>;
+      prompt: string;
+      question_id: string;
+      section: number | null;
+      topic: string | null;
+    }>;
+    review_available: boolean;
+    reward:
+      | {
+          balance_after: number;
+          delta: number;
+          status: "credited";
+        }
+      | {
+          balance_after: number;
+          status: "already_rewarded";
+        }
+      | {
+          status: "unavailable";
+        }
+      | null;
+    score: number;
+    submitted_at: string | null;
+    total: 8;
+    wrong: number;
+  };
+};
+
+export type AcademyAttemptReviewResponse =
+  AcademyAttemptReviewResponses[keyof AcademyAttemptReviewResponses];
+
+export type AcademySaveDraftAnswersData = {
+  body: {
+    answers: Array<{
+      option_id: string;
+      question_id: string;
+    }>;
+    expected_revision?: number;
+  };
+  path: {
+    attemptId: string;
+  };
+  query?: never;
+  url: "/api/v2/academy/attempts/{attemptId}/answers";
+};
+
+export type AcademySaveDraftAnswersErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademySaveDraftAnswersError =
+  AcademySaveDraftAnswersErrors[keyof AcademySaveDraftAnswersErrors];
+
+export type AcademySaveDraftAnswersResponses = {
+  200: {
+    answered_count: number;
+    answers: Array<{
+      option_id: string;
+      question_id: string;
+    }>;
+    attempt_id: string;
+    revision: number;
+    total: 8;
+    updated_at: string | null;
+  };
+};
+
+export type AcademySaveDraftAnswersResponse =
+  AcademySaveDraftAnswersResponses[keyof AcademySaveDraftAnswersResponses];
+
 export type AcademySubmitAttemptData = {
   body: {
     answers: Array<{
@@ -25866,6 +26159,282 @@ export type AcademyLessonResponses = {
 
 export type AcademyLessonResponse =
   AcademyLessonResponses[keyof AcademyLessonResponses];
+
+export type AcademyResumeAttemptData = {
+  body?: never;
+  path: {
+    lessonId: string;
+  };
+  query?: never;
+  url: "/api/v2/academy/lessons/{lessonId}/attempt";
+};
+
+export type AcademyResumeAttemptErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademyResumeAttemptError =
+  AcademyResumeAttemptErrors[keyof AcademyResumeAttemptErrors];
+
+export type AcademyResumeAttemptResponses = {
+  200: {
+    attempt: {
+      assessment_version: string;
+      attempt_id: string;
+      catalog_version: string;
+      content_version: string;
+      created_at: string;
+      draft: {
+        answered_count: number;
+        answers: Array<{
+          option_id: string;
+          question_id: string;
+        }>;
+        revision: number;
+        total: 8;
+        updated_at: string | null;
+      };
+      lesson_id: string;
+      lesson_key: string;
+      questions: Array<{
+        figure:
+          | {
+              chart:
+                | {
+                    kind: "series_panels";
+                    marks: Array<{
+                      i: number;
+                      label: string;
+                    }>;
+                    panels: Array<{
+                      band?: {
+                        lower: Array<number | null>;
+                        upper: Array<number | null>;
+                      };
+                      bars?: {
+                        colors: Array<"pos" | "neg" | "neutral">;
+                        name: string;
+                        values: Array<number | null>;
+                      };
+                      bounds?: [number, number];
+                      digits?: number;
+                      levels?: Array<{
+                        role: "buy" | "sell";
+                        value: number;
+                      }>;
+                      nonnegative?: true;
+                      series: Array<{
+                        dash?: true;
+                        name: string;
+                        role: "price" | "p1" | "p2" | "p3" | "pos" | "neg";
+                        values: Array<number | null>;
+                      }>;
+                      ticks?: Array<number>;
+                      title: string;
+                      zero?: true;
+                    }>;
+                    x: {
+                      end: number;
+                      start: number;
+                      ticks?: Array<string>;
+                    };
+                  }
+                | {
+                    kind: "grouped";
+                    labels: Array<string>;
+                    series: Array<{
+                      name: string;
+                      values: Array<number | null>;
+                    }>;
+                    title: string;
+                    unit: string;
+                  }
+                | {
+                    kind: "line";
+                    labels: Array<string>;
+                    series: Array<{
+                      name: string;
+                      values: Array<number | null>;
+                    }>;
+                    title: string;
+                    unit: string;
+                  }
+                | {
+                    kind: "stacked";
+                    labels: Array<string>;
+                    series: Array<{
+                      name: string;
+                      values: Array<number | null>;
+                    }>;
+                    title: string;
+                    unit: string;
+                  }
+                | {
+                    kind: "timeline";
+                    labels: Array<string>;
+                    rows: Array<{
+                      detail: string;
+                      end: number;
+                      name: string;
+                      start: number;
+                    }>;
+                    title: string;
+                  }
+                | {
+                    kind: "waterfall";
+                    steps: Array<{
+                      name: string;
+                      total?: true;
+                      value: number;
+                    }>;
+                    title: string;
+                    unit: string;
+                  }
+                | {
+                    kind: "panels";
+                    panels: Array<
+                      | {
+                          kind: "grouped";
+                          labels: Array<string>;
+                          series: Array<{
+                            name: string;
+                            values: Array<number | null>;
+                          }>;
+                          title: string;
+                          unit: string;
+                        }
+                      | {
+                          kind: "line";
+                          labels: Array<string>;
+                          series: Array<{
+                            name: string;
+                            values: Array<number | null>;
+                          }>;
+                          title: string;
+                          unit: string;
+                        }
+                      | {
+                          kind: "stacked";
+                          labels: Array<string>;
+                          series: Array<{
+                            name: string;
+                            values: Array<number | null>;
+                          }>;
+                          title: string;
+                          unit: string;
+                        }
+                    >;
+                    title: string;
+                  };
+              chart_id: string;
+              type: "chart";
+            }
+          | {
+              head: Array<string>;
+              rows: Array<Array<string>>;
+              type: "table";
+            }
+          | null;
+        hint: string | null;
+        id: string;
+        options: Array<{
+          id: string;
+          text: string;
+        }>;
+        prompt: string;
+        section: number | null;
+        topic: string | null;
+      }>;
+      status: "open" | "submitted";
+    } | null;
+    catalog_version: string;
+    lesson_id: string;
+    lesson_key: string;
+  };
+};
+
+export type AcademyResumeAttemptResponse =
+  AcademyResumeAttemptResponses[keyof AcademyResumeAttemptResponses];
+
+export type AcademyLessonAttemptsData = {
+  body?: never;
+  path: {
+    lessonId: string;
+  };
+  query?: {
+    limit?: number;
+    offset?: number;
+  };
+  url: "/api/v2/academy/lessons/{lessonId}/attempts";
+};
+
+export type AcademyLessonAttemptsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademyLessonAttemptsError =
+  AcademyLessonAttemptsErrors[keyof AcademyLessonAttemptsErrors];
+
+export type AcademyLessonAttemptsResponses = {
+  200: {
+    catalog_version: string;
+    items: Array<{
+      attempt_id: string;
+      passed: boolean;
+      review_available: boolean;
+      score: number;
+      submitted_at: string;
+      total: 8;
+    }>;
+    lesson_id: string;
+    lesson_key: string;
+    limit: number;
+    next_offset: number | null;
+    offset: number;
+    total: number;
+  };
+};
+
+export type AcademyLessonAttemptsResponse =
+  AcademyLessonAttemptsResponses[keyof AcademyLessonAttemptsResponses];
 
 export type AcademyCompleteGuideData = {
   body: {
