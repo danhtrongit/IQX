@@ -58,16 +58,13 @@ export class Cap5Controller {
   ) {
     return this.service.getPlan(user.id, params.order_id);
   }
-  @Get('san-ma') @ApiOperation({ operationId: 'cap5HuntIndex' }) huntIndex(
-    @CurrentUser() user: AuthenticatedUser,
-  ) {
-    return this.service.huntIndex(user.id);
+  @Get('san-ma') @ApiOperation({ operationId: 'cap5HuntIndex' }) huntIndex() {
+    return this.service.huntIndex();
   }
   @Get('san-ma/:bo_loc') @ApiOperation({ operationId: 'cap5HuntResult' }) huntResult(
     @Param({ schema: huntFilterParamSchema }) params: { bo_loc: string },
-    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.service.huntResult(user.id, params.bo_loc);
+    return this.service.huntResult(params.bo_loc);
   }
   @Get('watchlist') @ApiOperation({ operationId: 'cap5Watchlist' }) watchlist(
     @CurrentUser() user: AuthenticatedUser,

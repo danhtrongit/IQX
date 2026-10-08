@@ -21,7 +21,7 @@ import { Cap6Service } from './cap6.service.js';
         identity: JourneyIdentityService,
       ): Cap6PostGraduationHooks => ({
         initializeBot: async (userId) => {
-          await bots.initializeAccount(userId);
+          await bots.initialize(userId);
         },
         initializeMascot: async (userId) => {
           await identity.initializeAfterGraduation(userId);

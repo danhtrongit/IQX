@@ -52,6 +52,8 @@ import { StrategyConfigModule } from './modules/strategy-config/strategy-config.
 import { ScreenerModule } from './modules/screener/screener.module.js';
 import { StrategyBacktestsModule } from './modules/strategy-backtests/strategy-backtests.module.js';
 import { SavedFiltersModule } from './modules/saved-filters/saved-filters.module.js';
+import { ShopModule } from './modules/shop/shop.module.js';
+import { WorkspaceModule } from './modules/workspace/workspace.module.js';
 
 @Module({})
 class ApiModule {}
@@ -94,6 +96,8 @@ export function createApiModule(
       ScreenerModule,
       StrategyBacktestsModule,
       SavedFiltersModule,
+      ShopModule,
+      WorkspaceModule,
       NotificationsModule,
       ReferralsModule,
       DomainRuntimeModule.forApi(values.QUEUE_ENABLED),
