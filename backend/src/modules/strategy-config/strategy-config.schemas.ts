@@ -104,18 +104,38 @@ export type RevisionsQuery = z.infer<typeof revisionsQuerySchema>;
 const effectiveStatusSchema = z.enum(['pending', 'effective', 'calendar_unavailable']);
 const sessionDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
+/**
+ * The revision the Bot (and Backtest) actually use today: the latest saved revision whose
+ * effective session has started. `config` is always the current 16-indicator shape; `legacy`
+ * is the review of a historical (35-indicator) document, exactly like the top-level `legacy`.
+ */
+export const effectiveSharedConfigSchema = z.object({
+  revision: z.number().int().min(1),
+  effective_session: sessionDateSchema,
+  config_hash: z.string(),
+  config: sharedConfigSchema,
+  legacy: legacyConfigReviewSchema.nullable(),
+});
+export type EffectiveSharedConfigView = z.infer<typeof effectiveSharedConfigSchema>;
+
 export const sharedConfigStateSchema = z.object({
   /** 0 = never saved; `config` is then the registry default. */
   saved_revision: z.number().int().min(0),
   effective_revision: z.number().int().min(1).nullable(),
   effective_session: sessionDateSchema.nullable(),
   status: effectiveStatusSchema,
+  /** The latest SAVED config (what the form edits), not necessarily the one in force. */
   config: sharedConfigSchema,
   config_hash: z.string(),
   registry_version: z.string(),
   granted_indicators: z.array(z.string()),
   /** null/absent unless the latest saved revision is a legacy (35-indicator) document. */
   legacy: legacyConfigReviewSchema.nullable().optional(),
+  /**
+   * Full config in force today, present whenever `effective_revision` is not null (it equals
+   * `config` when no newer revision is pending); null before any revision became effective.
+   */
+  effective: effectiveSharedConfigSchema.nullable().optional(),
 });
 export type SharedConfigState = z.infer<typeof sharedConfigStateSchema>;
 
@@ -152,6 +172,12 @@ const registryFieldSchema = z.object({
   wire_unit: z.string(),
 });
 
+const registryCrossFieldSchema = z.object({
+  left: z.string(),
+  op: compareOpSchema,
+  right: z.string(),
+});
+
 const registrySideSchema = z.object({
   enabled: z.boolean(),
   params: z.record(z.string(), z.number()),
@@ -172,6 +198,8 @@ export const technicalRegistryResponseSchema = z.object({
       formula: z.string(),
       availability: z.enum(['ohlcv', 'needs_history_context']),
       fields: z.array(registryFieldSchema),
+      /** `cross_fields` are enforced on save, e.g. `fast < slow`; empty when none apply. */
+      validation: z.object({ cross_fields: z.array(registryCrossFieldSchema) }),
       buy: registrySideSchema,
       sell: registrySideSchema,
       learned: z.boolean(),

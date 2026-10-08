@@ -6,6 +6,8 @@ import { AuthModule } from '../auth/index.js';
 import { BotMarketSnapshotProvider, MarketIntegrationModule } from '../market-integration/index.js';
 import { QuantModule } from '../quant/quant.module.js';
 import { StrategyConfigModule } from '../strategy-config/strategy-config.module.js';
+import { BotHistoryController } from './bot-history.controller.js';
+import { BotHistoryService } from './bot-history.service.js';
 import { BotUniverseController } from './bot-universe.controller.js';
 import { BotUniverseService } from './bot-universe.service.js';
 import { BotsController } from './bots.controller.js';
@@ -24,13 +26,14 @@ import { BOT_SNAPSHOT_PROVIDER, BOT_UNIVERSE } from './bot.types.js';
     QuantModule,
     StrategyConfigModule,
   ],
-  controllers: [BotsController, BotUniverseController],
+  controllers: [BotsController, BotHistoryController, BotUniverseController],
   providers: [
     BotService,
+    BotHistoryService,
     BotUniverseService,
     { provide: BOT_SNAPSHOT_PROVIDER, useExisting: BotMarketSnapshotProvider },
     { provide: BOT_UNIVERSE, useExisting: BotUniverseService },
   ],
-  exports: [BotService, BotUniverseService],
+  exports: [BotService, BotHistoryService, BotUniverseService],
 })
 export class BotsModule {}

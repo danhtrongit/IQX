@@ -42,6 +42,7 @@ import {
   type SharedConfigStoreProvider,
 } from './strategy-config.repository.js';
 import type {
+  EffectiveSharedConfigView,
   SharedConfigPatchInput,
   SharedConfigRevisionSummary,
   SharedConfigSaveResult,
@@ -109,6 +110,12 @@ export function mergeIndicatorPatch(
           code: 'SIDE_REQUIRED',
           message: `Chọn ít nhất một phía Mua hoặc Bán trước khi bật chỉ báo ${id}.`,
           indicator: id,
+          details: [
+            {
+              path: `indicators.${id}`,
+              message: `Chọn ít nhất một phía Mua hoặc Bán trước khi bật chỉ báo ${id}.`,
+            },
+          ],
         });
       }
       next.master_enabled = false;
@@ -143,6 +150,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
         formula: entry.formula,
         availability: entry.availability,
         fields: structuredClone(entry.fields),
+        validation: { cross_fields: structuredClone(entry.validation?.cross_fields ?? []) },
         buy: structuredClone(entry.buy),
         sell: structuredClone(entry.sell),
         learned: grants.has(indicatorCapability(entry.id)),
@@ -160,6 +168,23 @@ export class SharedConfigService implements SharedConfigReaderPort {
     ]);
     const stored = latest ? readStoredConfig(latest.config, this.registry()) : null;
     const config = stored?.config ?? defaultConfig(this.registry());
+    // The config in force can be an older revision than the latest saved one (a newer save is
+    // pending until its effective session), so it is returned in full, read through the same
+    // legacy mapping as the saved one.
+    let inForce: EffectiveSharedConfigView | null = null;
+    if (effective?.effective_session) {
+      const view =
+        stored && effective.revision === latest?.revision
+          ? stored
+          : readStoredConfig(effective.config, this.registry());
+      inForce = {
+        revision: effective.revision,
+        effective_session: effective.effective_session,
+        config_hash: effective.config_hash,
+        config: view.config,
+        legacy: view.legacy,
+      };
+    }
     return {
       saved_revision: latest?.revision ?? 0,
       effective_revision: effective?.revision ?? null,
@@ -173,6 +198,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
         .map((entry) => entry.id)
         .filter((id) => grants.has(indicatorCapability(id))),
       legacy: stored?.legacy ?? null,
+      effective: inForce,
     };
   }
 
@@ -206,6 +232,8 @@ export class SharedConfigService implements SharedConfigReaderPort {
           code: 'REVISION_CONFLICT',
           message: 'Cấu hình đã được lưu ở nơi khác. Tải lại để xem bản mới nhất.',
           current_revision: currentRevision,
+          // The v2 error envelope forwards only `code`, `message` and an array `details`.
+          details: [{ field: 'expected_revision', current_revision: currentRevision }],
         });
       }
 
@@ -213,13 +241,15 @@ export class SharedConfigService implements SharedConfigReaderPort {
         (id) => !registry.some((entry) => entry.id === id),
       );
       if (unknown.length) {
+        const errors = unknown.map((id) => ({
+          path: `indicators.${id}`,
+          message: `Chỉ báo không được hỗ trợ: ${id}.`,
+        }));
         throw new UnprocessableEntityException({
           code: 'CONFIG_INVALID',
           message: 'Cấu hình không hợp lệ.',
-          errors: unknown.map((id) => ({
-            path: `indicators.${id}`,
-            message: `Chỉ báo không được hỗ trợ: ${id}.`,
-          })),
+          errors,
+          details: errors,
         });
       }
 
@@ -245,6 +275,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
           code: 'CONFIG_INVALID',
           message: 'Cấu hình không hợp lệ.',
           errors,
+          details: errors,
         });
       }
 
@@ -344,6 +375,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
           message: `Cần hoàn thành bài học của chỉ báo ${id} (8/8) trước khi bật.`,
           capability,
           reason: 'not_learned',
+          details: [{ capability, reason: 'not_learned', indicator: id }],
         });
       }
     }

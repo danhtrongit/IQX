@@ -28,13 +28,18 @@ import {
   type SharedConfigStore,
   type SharedConfigStoreProvider,
 } from '../../src/modules/strategy-config/strategy-config.repository.js';
-import { sharedConfigPatchSchema } from '../../src/modules/strategy-config/strategy-config.schemas.js';
+import {
+  sharedConfigPatchSchema,
+  sharedConfigStateSchema,
+  technicalRegistryResponseSchema,
+} from '../../src/modules/strategy-config/strategy-config.schemas.js';
 import type { SharedConfigPatchInput } from '../../src/modules/strategy-config/strategy-config.schemas.js';
 import {
   SharedConfigService,
   mergeIndicatorPatch,
 } from '../../src/modules/strategy-config/strategy-config.service.js';
 import type { Environment } from '../../src/platform/config/environment.js';
+import { ApiExceptionFilter } from '../../src/platform/http/api-exception.filter.js';
 
 const USER = '00000000-0000-4000-8000-000000000001';
 const OTHER_USER = '00000000-0000-4000-8000-000000000002';
@@ -302,7 +307,32 @@ describe('SharedConfigService', () => {
     expect(byId.get('rsi')!.learned).toBe(true);
     expect(byId.get('ma')!.learned).toBe(false);
     expect(byId.get('rsi')).not.toHaveProperty('seed_and_missing');
-    expect(byId.get('rsi')).not.toHaveProperty('validation');
+    // Only the cross-field rules are exposed, never the other registry validation internals.
+    expect(byId.get('rsi')!.validation).toEqual({ cross_fields: [] });
+    expect(byId.get('rsi')!.validation).not.toHaveProperty('finite_required');
+  });
+
+  it('exposes cross_fields (e.g. fast < slow) for every indicator that has them', async () => {
+    const response = await service.technicalRegistry(USER);
+    for (const entry of registry) {
+      const exposed = response.indicators.find((item) => item.id === entry.id)!;
+      expect(exposed.validation.cross_fields, entry.id).toEqual(
+        entry.validation?.cross_fields ?? [],
+      );
+    }
+    const withCross = response.indicators.filter((item) => item.validation.cross_fields.length > 0);
+    expect(withCross.map((item) => item.id).sort()).toEqual(['ma_cross', 'macd']);
+    for (const item of withCross) {
+      expect(item.validation.cross_fields).toEqual([{ left: 'fast', op: '<', right: 'slow' }]);
+    }
+    // A copy: mutating the response never changes the process-wide registry.
+    withCross[0]!.validation.cross_fields.length = 0;
+    expect(
+      (await service.technicalRegistry(USER)).indicators.find((i) => i.id === 'macd'),
+    ).toMatchObject({
+      validation: { cross_fields: [{ left: 'fast', op: '<', right: 'slow' }] },
+    });
+    expect(technicalRegistryResponseSchema.safeParse(response).success).toBe(true);
   });
 
   it('saves a revision with audit fields and a pending effective session', async () => {
@@ -650,6 +680,182 @@ describe('SharedConfigService', () => {
         indicators: {},
       }).success,
     ).toBe(false);
+  });
+
+  describe('effective config read', () => {
+    it('is null before any revision became effective (never saved, or still pending)', async () => {
+      expect((await service.current(USER)).effective).toBeNull();
+      await service.save(USER, patch({ rsi: on('rsi') }, 0));
+      const pending = await service.current(USER);
+      expect(pending.saved_revision).toBe(1);
+      expect(pending.effective_revision).toBeNull();
+      expect(pending.effective).toBeNull();
+    });
+
+    it('equals the saved config when nothing newer is pending', async () => {
+      await service.save(USER, patch({ rsi: on('rsi') }, 0)); // Fri -> Mon 2025-01-06
+      vi.setSystemTime(new Date('2025-01-05T17:00:00Z')); // Monday 00:00 VN
+      const state = await service.current(USER);
+      expect(state.effective_revision).toBe(1);
+      expect(state.effective).toMatchObject({
+        revision: 1,
+        effective_session: '2025-01-06',
+        config_hash: state.config_hash,
+        legacy: null,
+      });
+      expect(state.effective!.config).toEqual(state.config);
+      expect(sharedConfigStateSchema.safeParse(state).success).toBe(true);
+    });
+
+    it('returns the older revision in force while a newer save is pending', async () => {
+      await service.save(USER, patch({ rsi: on('rsi') }, 0)); // Fri -> Mon 2025-01-06
+      vi.setSystemTime(new Date('2025-01-06T04:00:00Z')); // Mon 11:00 VN
+      const second = await service.save(USER, patch({ macd: on('macd') }, 1)); // -> Tue
+
+      const state = await service.current(USER);
+      expect(state.saved_revision).toBe(2);
+      expect(state.status).toBe('pending');
+      expect(state.effective_revision).toBe(1);
+      expect(state.config.indicators.macd!.master_enabled).toBe(true);
+      expect(state.config_hash).toBe(second.config_hash);
+      expect(state.effective).toMatchObject({ revision: 1, effective_session: '2025-01-06' });
+      expect(state.effective!.config.indicators.rsi!.master_enabled).toBe(true);
+      // What the Bot uses today is NOT the pending MACD condition.
+      expect(state.effective!.config.indicators.macd!.master_enabled).toBe(false);
+      expect(state.effective!.config_hash).toBe(memory.revisions[0]!.config_hash);
+      expect(sharedConfigStateSchema.safeParse(state).success).toBe(true);
+
+      vi.setSystemTime(new Date('2025-01-06T17:00:00Z')); // Tue 00:00 VN: revision 2 starts
+      const later = await service.current(USER);
+      expect(later.effective_revision).toBe(2);
+      expect(later.effective).toMatchObject({ revision: 2, effective_session: '2025-01-07' });
+      expect(later.effective!.config.indicators.macd!.master_enabled).toBe(true);
+    });
+
+    it('is owner-scoped', async () => {
+      await service.save(USER, patch({ rsi: on('rsi') }, 0));
+      vi.setSystemTime(new Date('2025-01-05T17:00:00Z'));
+      expect((await service.current(USER)).effective).not.toBeNull();
+      const other = await service.current(OTHER_USER);
+      expect(other.effective).toBeNull();
+      expect(other.saved_revision).toBe(0);
+    });
+
+    it('maps a historical revision in force through the legacy review while a newer one is pending', async () => {
+      seedLegacyRevision(1, (indicators) => {
+        indicators.rsi!.master_enabled = true;
+        indicators.rsi!.buy.enabled = true;
+        indicators.atr!.master_enabled = true;
+        indicators.atr!.buy.enabled = true;
+      });
+      // Revision 2 saved today from the legacy base: pending, revision 1 stays in force.
+      const saved = await service.save(USER, patch({ macd: on('macd') }, 1));
+      expect(saved.status).toBe('pending');
+
+      const state = await service.current(USER);
+      expect(state.saved_revision).toBe(2);
+      expect(state.legacy).toBeNull(); // the latest saved revision is in the current shape
+      expect(state.effective_revision).toBe(1);
+      expect(state.effective!.revision).toBe(1);
+      expect(Object.keys(state.effective!.config.indicators)).toEqual(
+        registry.map((entry) => entry.id),
+      );
+      expect(state.effective!.config.rule_version).toBe('iqx-rules-3.0');
+      expect(state.effective!.legacy).toMatchObject({
+        legacy: true,
+        needs_review: true,
+        buy: { status: 'legacy_needs_review', indicators: ['atr'] },
+      });
+      // It never throws like getRevision does for an unsafe legacy revision: the client must see it.
+      expect(sharedConfigStateSchema.safeParse(state).success).toBe(true);
+    });
+  });
+
+  describe('error details reach the client through the API exception filter', () => {
+    function send(exception: unknown) {
+      let status = 0;
+      let body: Record<string, unknown> = {};
+      const reply = {
+        header: () => reply,
+        type: () => reply,
+        status: (code: number) => {
+          status = code;
+          return { send: (payload: Record<string, unknown>) => (body = payload) };
+        },
+      };
+      const host = {
+        switchToHttp: () => ({
+          getRequest: () => ({ id: 'req-1', url: '/api/v2/strategy/shared-config' }),
+          getResponse: () => reply,
+        }),
+      };
+      new ApiExceptionFilter().catch(exception, host as never);
+      return { status, body: body as { error: Record<string, unknown>; request_id: string } };
+    }
+
+    it('REVISION_CONFLICT carries current_revision in details[0]', async () => {
+      await service.save(USER, patch({ rsi: on('rsi') }, 0));
+      const error = await rejection(service.save(USER, patch({ macd: on('macd') }, 0)));
+      const { status, body } = send(error);
+      expect(status).toBe(409);
+      expect(body.error).toMatchObject({
+        code: 'REVISION_CONFLICT',
+        details: [{ field: 'expected_revision', current_revision: 1 }],
+      });
+    });
+
+    it('CONFIG_INVALID lists every path/message error as details', async () => {
+      const rsi = on('rsi');
+      rsi.buy.params.period = 999;
+      const { status, body } = send(await rejection(service.save(USER, patch({ rsi }, 0))));
+      expect(status).toBe(422);
+      expect(body.error.code).toBe('CONFIG_INVALID');
+      expect(body.error.details).toEqual([
+        { path: 'indicators.rsi.buy.params.period', message: expect.stringContaining('5–50') },
+      ]);
+
+      const unknown = send(
+        await rejection(service.save(USER, patch({ nope: indicator('rsi') }, 0))),
+      );
+      expect(unknown.body.error.details).toEqual([
+        { path: 'indicators.nope', message: 'Chỉ báo không được hỗ trợ: nope.' },
+      ]);
+    });
+
+    it('a violated cross-field rule (fast < slow) is a details entry on the first param', async () => {
+      grants.capabilities.push('indicator:macd');
+      const macd = on('macd');
+      macd.buy.params.fast = 26;
+      macd.buy.params.slow = 12;
+      const { status, body } = send(await rejection(service.save(USER, patch({ macd }, 0))));
+      expect(status).toBe(422);
+      expect(body.error.details).toEqual([
+        { path: 'indicators.macd.buy.params.fast', message: expect.stringContaining('nhỏ hơn') },
+      ]);
+    });
+
+    it('SIDE_REQUIRED and CAPABILITY_LOCKED also expose details', async () => {
+      const closed = indicator('rsi');
+      closed.master_enabled = true; // master ON with both sides OFF from a master-OFF base
+      const side = send(await rejection(service.save(USER, patch({ rsi: closed }, 0))));
+      expect(side.status).toBe(422);
+      expect(side.body.error).toMatchObject({
+        code: 'SIDE_REQUIRED',
+        details: [{ path: 'indicators.rsi', message: expect.any(String) }],
+      });
+
+      const locked = send(await rejection(service.save(USER, patch({ ma: on('ma') }, 0))));
+      expect(locked.status).toBe(403);
+      expect(locked.body.error).toMatchObject({
+        code: 'CAPABILITY_LOCKED',
+        details: [{ capability: 'indicator:ma', reason: 'not_learned', indicator: 'ma' }],
+      });
+    });
+
+    it('does not change the envelope of other errors (no details when none are set)', () => {
+      const plain = send(new NotFoundException({ code: 'FEATURE_DISABLED', message: 'x' }));
+      expect(plain.body.error).toEqual({ code: 'FEATURE_DISABLED', message: 'x' });
+    });
   });
 
   it('A01 save never creates a bot account or grants capital (reads grants only)', async () => {
