@@ -9,7 +9,7 @@
     },
     {
       "title": "Công thức và ví dụ tính",
-      "html": "<div class=\"formula\">TP = (High + Low + Close)/3<br/>Raw Flow = TP × Volume<br/>P = tổng Raw Flow khi TP tăng; N = tổng khi TP giảm<br/>MFI = 100 − 100/(1 + P/N)</div><p>Tổng dòng dương = 300; tổng dòng âm = 100. MFI bằng bao nhiêu?</p><p>Kết quả là <strong>75 </strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>N cặp TP cùng khối lượng; Nsum=0<psum cho0;=\"\" cho100,=\"\" chưa=\"\" cảhai0=\"\" p=\"\" psum=\"0&lt;Nsum\" trả=\"\" xác=\"\" định.<=\"\"></psum></p>"
+      "html": "<div class=\"formula\">TP = (High + Low + Close)/3<br/>Raw Flow = TP × Volume<br/>P = tổng Raw Flow khi TP tăng; N = tổng khi TP giảm<br/>MFI = 100 − 100/(1 + P/N)</div><p>Tổng dòng dương = 300; tổng dòng âm = 100. MFI bằng bao nhiêu?</p><p>Kết quả là <strong>75 </strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>N cặp TP cùng khối lượng; Nsum=0&lt;Psum cho 100, Psum=0&lt;Nsum cho 0; cả hai 0 trả chưa xác định.</p>"
     },
     {
       "title": "Tham số, Mua và Bán",

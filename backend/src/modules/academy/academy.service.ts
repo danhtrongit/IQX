@@ -16,7 +16,7 @@ import {
   type LessonRewardPort,
 } from '../../platform/ports/lesson-reward.port.js';
 import { capabilitiesFromCompletions } from './academy-grants.service.js';
-import type { LessonAssessment } from './academy.banks.js';
+import type { AcademyQuestion, LessonAssessment } from './academy.banks.js';
 import {
   loadAcademyContent,
   QUESTIONS_PER_LESSON,
@@ -29,6 +29,7 @@ import {
   buildAttemptOrder,
   buildReview,
   findInvalidAnswers,
+  findInvalidDraftAnswers,
   gradeAnswers,
   secureRandomInt,
   type GradedAnswer,
@@ -41,14 +42,21 @@ import {
   type AttemptRow,
   type AttemptStats,
   type CompletionRow,
+  type DraftRow,
 } from './academy.repository.js';
 import type {
   AttemptCreateInput,
+  AttemptHistoryResponse,
   AttemptResponse,
+  AttemptResumeResponse,
   AttemptSubmitInput,
   CatalogResponse,
+  DraftSaveInput,
+  DraftSaveResponse,
+  DraftState,
   GuideCompleteInput,
   GuideCompleteResponse,
+  HistoryQuery,
   LessonMeta,
   LessonResponse,
   ProgressResponse,
@@ -174,6 +182,153 @@ export class AcademyService implements OnModuleInit {
   }
 
   /**
+   * Resumes the learner's latest OPEN attempt of the lesson under the current catalog: the same
+   * public projection as starting one (questions and options in the stored order, no key) plus the
+   * saved draft selections. Read only: it never starts, grades or reveals anything. `attempt` is
+   * null when there is nothing to resume (no open attempt, a guide lesson, or an attempt whose
+   * pinned bank is no longer available: the learner starts a new attempt).
+   */
+  async resumeAttempt(userId: string, lessonId: string): Promise<AttemptResumeResponse> {
+    const content = this.content();
+    const lesson = requireLesson(content, lessonId);
+    const base = {
+      lesson_id: lesson.id,
+      lesson_key: lesson.lesson_key,
+      catalog_version: content.catalog_version,
+    };
+    if (lesson.completion.mode !== 'quiz' || lesson.content_status !== 'published')
+      return { ...base, attempt: null };
+    const store = this.repository.store();
+    const attempt = await store.latestOpenAttempt(
+      userId,
+      lesson.lesson_key,
+      content.catalog_version,
+    );
+    if (!attempt || attempt.lesson_id !== lesson.id) return { ...base, attempt: null };
+    const assessment = resolveAssessment(content, lesson, attempt.questions_version);
+    const views = assessment
+      ? attemptQuestionViews(assessment.questions, attempt.question_ids, attempt.option_orders)
+      : null;
+    if (!assessment || !views) return { ...base, attempt: null };
+    const draft = await store.draft(attempt.id);
+    return {
+      ...base,
+      attempt: {
+        ...attemptProjection(lesson, attempt, views),
+        created_at: attempt.created_at.toISOString(),
+        draft: draftState(draft, assessment.questions, attempt.question_ids),
+      },
+    };
+  }
+
+  /**
+   * Saves the learner's current choices of an open attempt (partial, merged into the stored
+   * draft) so a reload resumes them. Never grades and never reveals correctness; submitting still
+   * takes the full answer list. Owner-checked and serialized with submit by the attempt row lock.
+   */
+  saveDraft(userId: string, attemptId: string, input: DraftSaveInput): Promise<DraftSaveResponse> {
+    const content = this.content();
+    return this.repository.transaction(async (store) => {
+      const attempt = await store.lockAttempt(userId, attemptId);
+      if (!attempt) throw attemptNotFound();
+      if (attempt.status !== 'open')
+        throw new ConflictException({
+          code: 'ATTEMPT_ALREADY_SUBMITTED',
+          message: 'Lượt làm bài đã được nộp, không thể sửa lựa chọn.',
+        });
+      const { assessment } = pinnedAttempt(content, attempt);
+
+      const issues = findInvalidDraftAnswers(
+        assessment.questions,
+        attempt.question_ids,
+        input.answers,
+      );
+      if (issues.length)
+        throw new UnprocessableEntityException({
+          code: 'INVALID_ANSWERS',
+          message:
+            'Mỗi lựa chọn phải thuộc một câu của lượt làm bài, mỗi câu tối đa một đáp án hợp lệ.',
+          issues,
+        });
+
+      const current = await store.draft(attempt.id);
+      const view = (row: DraftRow | null) =>
+        draftState(row, assessment.questions, attempt.question_ids);
+      if (
+        input.expected_revision !== undefined &&
+        input.expected_revision !== (current?.revision ?? 0)
+      )
+        throw new ConflictException({
+          code: 'DRAFT_REVISION_CONFLICT',
+          message: 'Bản nháp đã được lưu ở nơi khác. Tải lại để xem lựa chọn mới nhất.',
+          draft: view(current),
+        });
+
+      const selections = Object.fromEntries(
+        input.answers.map((answer) => [answer.question_id, answer.option_id]),
+      );
+      // Re-sending what is already stored changes nothing: no write, no new revision.
+      const unchanged = Object.entries(selections).every(
+        ([questionId, optionId]) => current?.selections[questionId] === optionId,
+      );
+      const saved = unchanged ? current : await store.saveDraft(attempt.id, selections);
+      return { attempt_id: attempt.id, ...view(saved) };
+    });
+  }
+
+  /** The owner's submitted attempts of a lesson, newest first (review via `attemptReview`). */
+  async attemptHistory(
+    userId: string,
+    lessonId: string,
+    query: HistoryQuery,
+  ): Promise<AttemptHistoryResponse> {
+    const content = this.content();
+    const lesson = requireLesson(content, lessonId);
+    const store = this.repository.store();
+    const [rows, stats] = await Promise.all([
+      store.submittedAttempts(userId, lesson.lesson_key, query.limit, query.offset),
+      store.attemptStats(userId, lesson.lesson_key),
+    ]);
+    const next = query.offset + rows.length;
+    return {
+      lesson_id: lesson.id,
+      lesson_key: lesson.lesson_key,
+      catalog_version: content.catalog_version,
+      items: rows.map((attempt) => ({
+        attempt_id: attempt.id,
+        submitted_at: (attempt.submitted_at ?? attempt.created_at).toISOString(),
+        score: attempt.score ?? 0,
+        total: QUESTIONS_PER_LESSON,
+        passed: attempt.passed === true,
+        review_available:
+          attempt.catalog_version === content.catalog_version &&
+          resolveAssessment(content, lesson, attempt.questions_version) !== null,
+      })),
+      total: stats.attempts_submitted,
+      limit: query.limit,
+      offset: query.offset,
+      next_offset: rows.length === query.limit && next < stats.attempts_submitted ? next : null,
+    };
+  }
+
+  /**
+   * The committed review of a SUBMITTED attempt of the owner (the same body a submit replay
+   * returns). An open attempt has no review: the key never leaves the server before submit.
+   */
+  async attemptReview(userId: string, attemptId: string): Promise<SubmitResponse> {
+    const content = this.content();
+    const store = this.repository.store();
+    const attempt = await store.attemptById(userId, attemptId);
+    if (!attempt) throw attemptNotFound();
+    if (attempt.status !== 'submitted')
+      throw new ConflictException({
+        code: 'ATTEMPT_NOT_SUBMITTED',
+        message: 'Lượt làm bài chưa được nộp nên chưa có kết quả để xem lại.',
+      });
+    return this.storedResult(content, store, attempt);
+  }
+
+  /**
    * Grades the attempt against the question bank it was created with (the lesson's current bank,
    * or the archived bank of that version) and returns the committed result with the review.
    */
@@ -181,11 +336,7 @@ export class AcademyService implements OnModuleInit {
     const content = this.content();
     return this.repository.transaction(async (store, tx) => {
       const attempt = await store.lockAttempt(userId, attemptId);
-      if (!attempt)
-        throw new NotFoundException({
-          code: 'ATTEMPT_NOT_FOUND',
-          message: 'Không tìm thấy lượt làm bài.',
-        });
+      if (!attempt) throw attemptNotFound();
       if (attempt.status === 'submitted') return this.storedResult(content, store, attempt);
       const { lesson, assessment } = pinnedAttempt(content, attempt);
 
@@ -213,6 +364,8 @@ export class AcademyService implements OnModuleInit {
           correct: result.correct,
         })),
       );
+      // The graded rows are the record now; the working draft is not kept.
+      await store.deleteDraft(attempt.id);
 
       // 8/8: the completion, its reward and the capability derivation share this transaction.
       if (graded.passed) {
@@ -425,17 +578,59 @@ export class AcademyService implements OnModuleInit {
         code: 'ASSESSMENT_VERSION_MISMATCH',
         message: 'Bộ câu hỏi đã được cập nhật. Vui lòng bắt đầu lượt làm bài mới.',
       });
-    return {
-      attempt_id: attempt.id,
-      lesson_id: lesson.id,
-      lesson_key: lesson.lesson_key,
-      catalog_version: attempt.catalog_version,
-      content_version: attempt.content_version,
-      assessment_version: attempt.questions_version,
-      status: attempt.status,
-      questions: views,
-    };
+    return attemptProjection(lesson, attempt, views);
   }
+}
+
+/** The public projection of an attempt: stored order, no key, no explanation. */
+function attemptProjection(
+  lesson: AcademyLesson,
+  attempt: AttemptRow,
+  questions: AttemptResponse['questions'],
+): AttemptResponse {
+  return {
+    attempt_id: attempt.id,
+    lesson_id: lesson.id,
+    lesson_key: lesson.lesson_key,
+    catalog_version: attempt.catalog_version,
+    content_version: attempt.content_version,
+    assessment_version: attempt.questions_version,
+    status: attempt.status,
+    questions,
+  };
+}
+
+/**
+ * The saved selections as served: in the attempt's question order, only choices that are still
+ * valid for the pinned bank. Carries nothing about correctness.
+ */
+function draftState(
+  draft: DraftRow | null,
+  questions: readonly AcademyQuestion[],
+  questionIds: readonly string[],
+): DraftState {
+  const byId = new Map(questions.map((question) => [question.id, question]));
+  const answers = questionIds.flatMap((questionId) => {
+    const optionId = draft?.selections[questionId];
+    const valid =
+      optionId !== undefined &&
+      byId.get(questionId)?.options.some((option) => option.id === optionId) === true;
+    return valid ? [{ question_id: questionId, option_id: optionId }] : [];
+  });
+  return {
+    revision: draft?.revision ?? 0,
+    answers,
+    answered_count: answers.length,
+    total: QUESTIONS_PER_LESSON,
+    updated_at: draft?.updated_at.toISOString() ?? null,
+  };
+}
+
+function attemptNotFound() {
+  return new NotFoundException({
+    code: 'ATTEMPT_NOT_FOUND',
+    message: 'Không tìm thấy lượt làm bài.',
+  });
 }
 
 /** Catalog metadata of one lesson; carries no answers. */

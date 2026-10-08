@@ -30,6 +30,30 @@ export const attemptSubmitSchema = z.object({
 });
 export type AttemptSubmitInput = z.infer<typeof attemptSubmitSchema>;
 
+/**
+ * Draft selections of an open attempt (partial allowed, merged into the stored draft). Ownership,
+ * openness and id validity run in the service; nothing here grades or reveals correctness.
+ */
+export const draftSaveSchema = z.object({
+  answers: z
+    .array(
+      z.object({
+        question_id: z.string().min(1).max(64),
+        option_id: z.string().min(1).max(64),
+      }),
+    )
+    .max(64),
+  /** Optimistic guard: the draft revision the client last saw (0 = nothing saved yet). */
+  expected_revision: z.number().int().min(0).max(2_147_483_647).optional(),
+});
+export type DraftSaveInput = z.infer<typeof draftSaveSchema>;
+
+export const historyQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  offset: z.coerce.number().int().min(0).max(100_000).default(0),
+});
+export type HistoryQuery = z.output<typeof historyQuerySchema>;
+
 /** Acknowledgment of a guide lesson; carries no score, pass flag or capability. */
 export const guideCompleteSchema = z.strictObject({
   catalog_version: catalogVersionSchema,
@@ -202,6 +226,38 @@ export const attemptResponseSchema = z.object({
 });
 export type AttemptResponse = z.infer<typeof attemptResponseSchema>;
 
+const draftAnswerSchema = z.object({ question_id: z.string(), option_id: z.string() });
+
+/** The saved selections of an open attempt. Carries no correctness, score or key. */
+export const draftStateSchema = z.object({
+  /** Number of saves (0 = nothing saved yet). Send it back as `expected_revision`. */
+  revision: z.number().int(),
+  /** Saved choices in the attempt's question order; only questions that have one. */
+  answers: z.array(draftAnswerSchema),
+  answered_count: z.number().int(),
+  total: z.literal(8),
+  updated_at: z.string().nullable(),
+});
+export type DraftState = z.infer<typeof draftStateSchema>;
+
+export const draftSaveResponseSchema = draftStateSchema.extend({ attempt_id: z.string() });
+export type DraftSaveResponse = z.infer<typeof draftSaveResponseSchema>;
+
+/**
+ * The learner's latest open attempt of a lesson, resumable after a reload: the same public
+ * projection as starting an attempt (questions and options in the stored order, no key) plus the
+ * saved selections. `attempt` is null when there is nothing to resume.
+ */
+export const attemptResumeResponseSchema = z.object({
+  lesson_id: z.string(),
+  lesson_key: z.string(),
+  catalog_version: z.string(),
+  attempt: attemptResponseSchema
+    .extend({ created_at: z.string(), draft: draftStateSchema })
+    .nullable(),
+});
+export type AttemptResumeResponse = z.infer<typeof attemptResumeResponseSchema>;
+
 const completionResultSchema = z.object({
   /** The lesson is completed after this call (a failed quiz attempt on a new lesson: false). */
   completed: z.boolean(),
@@ -262,6 +318,32 @@ export const submitResponseSchema = z.object({
   reward: rewardResultSchema,
 });
 export type SubmitResponse = z.infer<typeof submitResponseSchema>;
+
+/** One submitted attempt in the learner's history of a lesson. */
+export const attemptHistoryItemSchema = z.object({
+  attempt_id: z.string(),
+  submitted_at: z.string(),
+  score: z.number().int(),
+  total: z.literal(8),
+  passed: z.boolean(),
+  /** `GET attempts/:attemptId` returns the review; false when the pinned bank is gone. */
+  review_available: z.boolean(),
+});
+
+export const attemptHistoryResponseSchema = z.object({
+  lesson_id: z.string(),
+  lesson_key: z.string(),
+  catalog_version: z.string(),
+  /** Newest submission first. */
+  items: z.array(attemptHistoryItemSchema),
+  /** All submitted attempts of the owner for this lesson. */
+  total: z.number().int(),
+  limit: z.number().int(),
+  offset: z.number().int(),
+  /** Offset of the next page; null on the last page. */
+  next_offset: z.number().int().nullable(),
+});
+export type AttemptHistoryResponse = z.infer<typeof attemptHistoryResponseSchema>;
 
 export const guideCompleteResponseSchema = z.object({
   lesson_id: z.string(),

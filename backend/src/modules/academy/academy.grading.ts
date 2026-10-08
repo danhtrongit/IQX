@@ -175,6 +175,20 @@ export function findInvalidAnswers(
   return issues;
 }
 
+/**
+ * Draft selections may be partial: each one must name a question of the attempt (once) and an
+ * option of that question. Missing answers are fine until submit.
+ */
+export function findInvalidDraftAnswers(
+  questions: readonly AcademyQuestion[],
+  questionIds: readonly string[],
+  answers: readonly SubmittedAnswer[],
+): InvalidAnswerIssue[] {
+  return findInvalidAnswers(questions, questionIds, answers).filter(
+    (issue) => issue.reason !== 'missing_answer',
+  );
+}
+
 /** Grades validated answers in attempt question order. Pass requires 8/8. */
 export function gradeAnswers(
   questions: readonly AcademyQuestion[],

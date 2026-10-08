@@ -11,6 +11,7 @@ import type {
   AnswerRow,
   AttemptRow,
   CompletionRow,
+  DraftRow,
 } from '../../src/modules/academy/academy.repository.js';
 import { AcademyService } from '../../src/modules/academy/academy.service.js';
 import type { SqlClient } from '../../src/platform/database/index.js';
@@ -28,6 +29,7 @@ export const OTHER_USER = '00000000-0000-4000-8000-000000000002';
 export class MemoryAcademy implements AcademyStoreProvider, AcademyStore {
   attempts: AttemptRow[] = [];
   answerRows: AnswerRow[] = [];
+  draftRows: DraftRow[] = [];
   completionRows: CompletionRow[] = [];
   legacyCapabilities = new Map<string, string[]>();
   readonly tx = { query: () => Promise.resolve([]) } as unknown as SqlClient;
@@ -42,6 +44,7 @@ export class MemoryAcademy implements AcademyStoreProvider, AcademyStore {
       const snapshot = structuredClone({
         attempts: this.attempts,
         answerRows: this.answerRows,
+        draftRows: this.draftRows,
         completionRows: this.completionRows,
       });
       try {
@@ -87,6 +90,74 @@ export class MemoryAcademy implements AcademyStoreProvider, AcademyStore {
     await Promise.resolve();
     const row = this.attempts.find((item) => item.id === attemptId && item.user_id === userId);
     return row ? structuredClone(row) : null;
+  }
+
+  async attemptById(userId: string, attemptId: string) {
+    await Promise.resolve();
+    const row = this.attempts.find((item) => item.id === attemptId && item.user_id === userId);
+    return row ? structuredClone(row) : null;
+  }
+
+  async latestOpenAttempt(userId: string, lessonKey: string, catalogVersion: string) {
+    await Promise.resolve();
+    const rows = this.attempts
+      .filter(
+        (item) =>
+          item.user_id === userId &&
+          item.lesson_key === lessonKey &&
+          item.catalog_version === catalogVersion &&
+          item.status === 'open',
+      )
+      // Insertion order is creation order; newest last.
+      .reverse();
+    return rows[0] ? structuredClone(rows[0]) : null;
+  }
+
+  async submittedAttempts(userId: string, lessonKey: string, limit: number, offset: number) {
+    await Promise.resolve();
+    return this.attempts
+      .filter(
+        (item) =>
+          item.user_id === userId && item.lesson_key === lessonKey && item.status === 'submitted',
+      )
+      .map((item, index) => ({ item, index }))
+      .sort(
+        (a, b) =>
+          (b.item.submitted_at?.getTime() ?? 0) - (a.item.submitted_at?.getTime() ?? 0) ||
+          b.index - a.index,
+      )
+      .slice(offset, offset + limit)
+      .map(({ item }) => structuredClone(item));
+  }
+
+  async draft(attemptId: string) {
+    await Promise.resolve();
+    const row = this.draftRows.find((item) => item.attempt_id === attemptId);
+    return row ? structuredClone(row) : null;
+  }
+
+  async saveDraft(attemptId: string, selections: Record<string, string>) {
+    await Promise.resolve();
+    const existing = this.draftRows.find((item) => item.attempt_id === attemptId);
+    if (existing) {
+      existing.selections = { ...existing.selections, ...selections };
+      existing.revision += 1;
+      existing.updated_at = new Date();
+      return structuredClone(existing);
+    }
+    const row: DraftRow = {
+      attempt_id: attemptId,
+      selections: { ...selections },
+      revision: 1,
+      updated_at: new Date(),
+    };
+    this.draftRows.push(row);
+    return structuredClone(row);
+  }
+
+  async deleteDraft(attemptId: string) {
+    await Promise.resolve();
+    this.draftRows = this.draftRows.filter((item) => item.attempt_id !== attemptId);
   }
 
   async markSubmitted(attemptId: string, score: number, passed: boolean) {

@@ -44,6 +44,15 @@ export type AnswerRow = {
   correct: boolean;
 };
 
+/** Server-side draft selections of an open attempt: {question_id: option_id}, never graded. */
+export type DraftRow = {
+  attempt_id: string;
+  selections: Record<string, string>;
+  /** Number of saves; 1 for the first. An attempt without a draft row has revision 0. */
+  revision: number;
+  updated_at: Date;
+};
+
 /** Submitted attempts of one lesson key: the best score only ever grows, whatever a retake scores. */
 export type AttemptStats = { best_score: number | null; attempts_submitted: number };
 
@@ -81,7 +90,29 @@ export interface AcademyStore {
   attemptByIdempotencyKey(userId: string, idempotencyKey: string): Promise<AttemptRow | null>;
   /** Locks the owner's attempt row for the rest of the transaction (`for update`). */
   lockAttempt(userId: string, attemptId: string): Promise<AttemptRow | null>;
+  /** The owner's attempt without taking the row lock (read paths). */
+  attemptById(userId: string, attemptId: string): Promise<AttemptRow | null>;
+  /** The owner's most recent OPEN attempt of the lesson key under the given catalog, if any. */
+  latestOpenAttempt(
+    userId: string,
+    lessonKey: string,
+    catalogVersion: string,
+  ): Promise<AttemptRow | null>;
+  /** The owner's submitted attempts of the lesson key, newest first. */
+  submittedAttempts(
+    userId: string,
+    lessonKey: string,
+    limit: number,
+    offset: number,
+  ): Promise<AttemptRow[]>;
   markSubmitted(attemptId: string, score: number, passed: boolean): Promise<AttemptRow | null>;
+  draft(attemptId: string): Promise<DraftRow | null>;
+  /**
+   * Merges `selections` into the attempt's draft (creating it) and bumps the revision. Callers
+   * hold the attempt lock and have validated the ids against the pinned bank.
+   */
+  saveDraft(attemptId: string, selections: Record<string, string>): Promise<DraftRow>;
+  deleteDraft(attemptId: string): Promise<void>;
   answers(attemptId: string): Promise<AnswerRow[]>;
   insertAnswers(answers: readonly AnswerRow[]): Promise<void>;
   /** Best score and number of submitted attempts of the owner's lesson (current catalog only). */
@@ -108,6 +139,7 @@ export interface AcademyStoreProvider {
 const ATTEMPT_COLUMNS = `id, user_id, lesson_id, lesson_key, catalog_version, content_version,
   questions_version, question_ids, option_orders, status, idempotency_key, created_at, submitted_at,
   score, passed`;
+const DRAFT_COLUMNS = 'attempt_id, selections, revision, updated_at';
 const COMPLETION_COLUMNS = `user_id, lesson_key, catalog_version, lesson_id, completion_method,
   attempt_id, request_id, content_version, completed_at, source`;
 
@@ -154,6 +186,35 @@ export class AcademySqlStore implements AcademyStore {
     return rows[0] ?? null;
   }
 
+  async attemptById(userId: string, attemptId: string) {
+    const rows = await this.client.query<AttemptRow>(
+      `select ${ATTEMPT_COLUMNS} from academy_attempts where id = $1 and user_id = $2`,
+      [attemptId, userId],
+    );
+    return rows[0] ?? null;
+  }
+
+  async latestOpenAttempt(userId: string, lessonKey: string, catalogVersion: string) {
+    const rows = await this.client.query<AttemptRow>(
+      `select ${ATTEMPT_COLUMNS} from academy_attempts
+       where user_id = $1 and lesson_key = $2 and catalog_version = $3 and status = 'open'
+       order by created_at desc, id desc
+       limit 1`,
+      [userId, lessonKey, catalogVersion],
+    );
+    return rows[0] ?? null;
+  }
+
+  submittedAttempts(userId: string, lessonKey: string, limit: number, offset: number) {
+    return this.client.query<AttemptRow>(
+      `select ${ATTEMPT_COLUMNS} from academy_attempts
+       where user_id = $1 and lesson_key = $2 and status = 'submitted'
+       order by submitted_at desc, id desc
+       limit $3 offset $4`,
+      [userId, lessonKey, limit, offset],
+    );
+  }
+
   async markSubmitted(attemptId: string, score: number, passed: boolean) {
     const rows = await this.client.query<AttemptRow>(
       `update academy_attempts set status = 'submitted', submitted_at = now(), score = $2, passed = $3
@@ -162,6 +223,36 @@ export class AcademySqlStore implements AcademyStore {
       [attemptId, score, passed],
     );
     return rows[0] ?? null;
+  }
+
+  async draft(attemptId: string) {
+    const rows = await this.client.query<DraftRow>(
+      `select ${DRAFT_COLUMNS} from academy_attempt_drafts where attempt_id = $1`,
+      [attemptId],
+    );
+    return rows[0] ?? null;
+  }
+
+  async saveDraft(attemptId: string, selections: Record<string, string>) {
+    const rows = await this.client.query<DraftRow>(
+      `insert into academy_attempt_drafts (attempt_id, selections)
+       values ($1, $2::jsonb)
+       on conflict (attempt_id) do update
+         set selections = academy_attempt_drafts.selections || excluded.selections,
+             revision = academy_attempt_drafts.revision + 1,
+             updated_at = now()
+       returning ${DRAFT_COLUMNS}`,
+      [attemptId, JSON.stringify(selections)],
+    );
+    const row = rows[0];
+    if (!row) throw new Error('Academy draft upsert returned no row');
+    return row;
+  }
+
+  async deleteDraft(attemptId: string) {
+    await this.client.query('delete from academy_attempt_drafts where attempt_id = $1', [
+      attemptId,
+    ]);
   }
 
   answers(attemptId: string) {

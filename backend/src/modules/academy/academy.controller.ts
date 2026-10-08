@@ -1,4 +1,14 @@
-import { Body, Controller, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiOkResponse,
@@ -12,19 +22,26 @@ import { ApiAuthGuard, CurrentUser, type AuthenticatedUser } from '../auth/index
 import { AcademyEnabledGuard } from './academy-enabled.guard.js';
 import {
   attemptCreateSchema,
+  attemptHistoryResponseSchema,
   attemptIdParamSchema,
   attemptResponseSchema,
+  attemptResumeResponseSchema,
   attemptSubmitSchema,
   catalogResponseSchema,
+  draftSaveResponseSchema,
+  draftSaveSchema,
   guideCompleteResponseSchema,
   guideCompleteSchema,
+  historyQuerySchema,
   lessonIdParamSchema,
   lessonResponseSchema,
   progressResponseSchema,
   submitResponseSchema,
   type AttemptCreateInput,
   type AttemptSubmitInput,
+  type DraftSaveInput,
   type GuideCompleteInput,
+  type HistoryQuery,
 } from './academy.schemas.js';
 import { AcademyService } from './academy.service.js';
 
@@ -75,6 +92,34 @@ export class AcademyController {
     return this.academy.lesson(user.id, lessonId);
   }
 
+  @Get('lessons/:lessonId/attempt')
+  @ApiOperation({
+    operationId: 'academyResumeAttempt',
+    summary:
+      'Resume the latest open attempt of a lesson: questions and options in the stored order (no answer key) plus the saved draft selections; attempt is null when there is none',
+  })
+  @ApiOkResponse({ schema: openApi(attemptResumeResponseSchema) })
+  resumeAttempt(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('lessonId', { schema: lessonIdParamSchema }) lessonId: string,
+  ) {
+    return this.academy.resumeAttempt(user.id, lessonId);
+  }
+
+  @Get('lessons/:lessonId/attempts')
+  @ApiOperation({
+    operationId: 'academyLessonAttempts',
+    summary: 'The learner’s submitted attempts of a lesson, newest first, paginated (limit/offset)',
+  })
+  @ApiOkResponse({ schema: openApi(attemptHistoryResponseSchema) })
+  lessonAttempts(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('lessonId', { schema: lessonIdParamSchema }) lessonId: string,
+    @Query({ schema: historyQuerySchema }) query: HistoryQuery,
+  ) {
+    return this.academy.attemptHistory(user.id, lessonId, query);
+  }
+
   @Post('attempts')
   @ApiOperation({
     operationId: 'academyCreateAttempt',
@@ -87,6 +132,35 @@ export class AcademyController {
     @Body({ schema: attemptCreateSchema }) body: AttemptCreateInput,
   ) {
     return this.academy.createAttempt(user.id, body);
+  }
+
+  @Get('attempts/:attemptId')
+  @ApiOperation({
+    operationId: 'academyAttemptReview',
+    summary:
+      'The committed result and review of a submitted attempt of the learner (same body as a submit replay); 409 ATTEMPT_NOT_SUBMITTED while the attempt is open',
+  })
+  @ApiOkResponse({ schema: openApi(submitResponseSchema) })
+  attemptReview(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('attemptId', { schema: attemptIdParamSchema }) attemptId: string,
+  ) {
+    return this.academy.attemptReview(user.id, attemptId);
+  }
+
+  @Put('attempts/:attemptId/answers')
+  @ApiOperation({
+    operationId: 'academySaveDraftAnswers',
+    summary:
+      'Save the current (partial) selections of an open attempt as a server-side draft with a revision; never grades or reveals correctness',
+  })
+  @ApiOkResponse({ schema: openApi(draftSaveResponseSchema) })
+  saveDraft(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('attemptId', { schema: attemptIdParamSchema }) attemptId: string,
+    @Body({ schema: draftSaveSchema }) body: DraftSaveInput,
+  ) {
+    return this.academy.saveDraft(user.id, attemptId, body);
   }
 
   @Post('attempts/:attemptId/submit')
