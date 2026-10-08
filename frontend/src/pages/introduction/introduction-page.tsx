@@ -20,7 +20,7 @@ import { EggArtwork } from "../demo-trading/journey/artwork/EggArtwork"
 import { LEVELS } from "../demo-trading/journey/journey-state"
 import "./landing.css"
 
-const JOURNEY_URL = "/demo-trading?view=journey"
+const JOURNEY_URL = "/demo-trading?view=academy"
 const MASCOT_ROOT = "/assets/mascots-2d/v2/thanh-long"
 const SEO = {
   title: "IQX · Tập đầu tư có hệ thống, bắt đầu từ tư duy",

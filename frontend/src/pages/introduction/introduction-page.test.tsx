@@ -48,7 +48,7 @@ describe("IntroductionPage", () => {
       within(main)
         .getByRole("link", { name: "Bắt đầu hành trình" })
         .getAttribute("href")
-    ).toBe("/demo-trading?view=journey")
+    ).toBe("/demo-trading?view=academy")
     expect(
       within(main)
         .getByRole("img", { name: /Thanh Long, linh thú đồng hành/ })
