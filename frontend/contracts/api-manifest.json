@@ -67,15 +67,20 @@
       "requestType": "RemoveWatchlistItemV2Data",
       "responseType": "RemoveWatchlistItemV2Responses"
     },
-    "GET /api/v2/academy/curriculum": {
-      "operationId": "academyCurriculum",
-      "requestType": "AcademyCurriculumData",
-      "responseType": "AcademyCurriculumResponses"
+    "GET /api/v2/academy/catalog": {
+      "operationId": "academyCatalog",
+      "requestType": "AcademyCatalogData",
+      "responseType": "AcademyCatalogResponses"
     },
     "GET /api/v2/academy/lessons/{lessonId}": {
       "operationId": "academyLesson",
       "requestType": "AcademyLessonData",
       "responseType": "AcademyLessonResponses"
+    },
+    "GET /api/v2/academy/progress": {
+      "operationId": "academyProgress",
+      "requestType": "AcademyProgressData",
+      "responseType": "AcademyProgressResponses"
     },
     "GET /api/v2/admin/alerts/factor-library": {
       "operationId": "AdminAlertsController_factorLibrary[1]",
@@ -346,6 +351,11 @@
       "operationId": "getBotStatus_get_api_v2_bot_status",
       "requestType": "GetBotStatusGetApiV2BotStatusData",
       "responseType": "GetBotStatusGetApiV2BotStatusResponses"
+    },
+    "GET /api/v2/bot/universe": {
+      "operationId": "getBotUniverse",
+      "requestType": "GetBotUniverseData",
+      "responseType": "GetBotUniverseResponses"
     },
     "GET /api/v2/cap0/kehoach": {
       "operationId": "Cap0Controller_getKehoach[1]",
@@ -972,6 +982,26 @@
       "requestType": "GetPortfolioReportV2Data",
       "responseType": "GetPortfolioReportV2Responses"
     },
+    "GET /api/v2/practice/{indicatorId}/history": {
+      "operationId": "practiceHistory",
+      "requestType": "PracticeHistoryData",
+      "responseType": "PracticeHistoryResponses"
+    },
+    "GET /api/v2/practice/{indicatorId}/state": {
+      "operationId": "practiceState",
+      "requestType": "PracticeStateData",
+      "responseType": "PracticeStateResponses"
+    },
+    "GET /api/v2/practice/indicators": {
+      "operationId": "practiceIndicators",
+      "requestType": "PracticeIndicatorsData",
+      "responseType": "PracticeIndicatorsResponses"
+    },
+    "GET /api/v2/practice/runs/{runId}": {
+      "operationId": "practiceGetRun",
+      "requestType": "PracticeGetRunData",
+      "responseType": "PracticeGetRunResponses"
+    },
     "GET /api/v2/premium/admin/plans": {
       "operationId": "adminListPremiumPlans_get_api_v2_premium_admin_plans",
       "requestType": "AdminListPremiumPlansGetApiV2PremiumAdminPlansData",
@@ -996,6 +1026,21 @@
       "operationId": "ReferralsController_mine[1]",
       "requestType": "ReferralsControllerMine1Data",
       "responseType": "ReferralsControllerMine1Responses"
+    },
+    "GET /api/v2/shop": {
+      "operationId": "getShop",
+      "requestType": "GetShopData",
+      "responseType": "GetShopResponses"
+    },
+    "GET /api/v2/shop/coin-ledger": {
+      "operationId": "listShopCoinLedger",
+      "requestType": "ListShopCoinLedgerData",
+      "responseType": "ListShopCoinLedgerResponses"
+    },
+    "GET /api/v2/shop/purchases/{idempotencyKey}": {
+      "operationId": "getShopPurchaseStatus",
+      "requestType": "GetShopPurchaseStatusData",
+      "responseType": "GetShopPurchaseStatusResponses"
     },
     "GET /api/v2/strategy/backtests": {
       "operationId": "strategyBacktestsList",
@@ -1112,6 +1157,11 @@
       "requestType": "CheckWatchlistItemV2Data",
       "responseType": "CheckWatchlistItemV2Responses"
     },
+    "GET /api/v2/workspace/state": {
+      "operationId": "getWorkspaceState",
+      "requestType": "GetWorkspaceStateData",
+      "responseType": "GetWorkspaceStateResponses"
+    },
     "PATCH /api/v2/admin/lessons/courses/{courseId}": {
       "operationId": "AdminLearningController_updateCourse[1]",
       "requestType": "AdminLearningControllerUpdateCourse1Data",
@@ -1196,6 +1246,11 @@
       "operationId": "academySubmitAttempt",
       "requestType": "AcademySubmitAttemptData",
       "responseType": "AcademySubmitAttemptResponses"
+    },
+    "POST /api/v2/academy/lessons/{lessonId}/complete": {
+      "operationId": "academyCompleteGuide",
+      "requestType": "AcademyCompleteGuideData",
+      "responseType": "AcademyCompleteGuideResponses"
     },
     "POST /api/v2/admin/alerts/seed": {
       "operationId": "AdminAlertsController_seed[1]",
@@ -1396,6 +1451,21 @@
       "operationId": "JourneyIdentityController_uiEvent[1]",
       "requestType": "JourneyIdentityControllerUiEvent1Data",
       "responseType": "JourneyIdentityControllerUiEvent1Responses"
+    },
+    "POST /api/v2/bot/universe/apply-list": {
+      "operationId": "applyBotUniverseList",
+      "requestType": "ApplyBotUniverseListData",
+      "responseType": "ApplyBotUniverseListResponses"
+    },
+    "POST /api/v2/bot/universe/pending/cancel": {
+      "operationId": "cancelBotUniversePending",
+      "requestType": "CancelBotUniversePendingData",
+      "responseType": "CancelBotUniversePendingResponses"
+    },
+    "POST /api/v2/bot/universe/revert-vn30": {
+      "operationId": "revertBotUniverseToVn30",
+      "requestType": "RevertBotUniverseToVn30Data",
+      "responseType": "RevertBotUniverseToVn30Responses"
     },
     "POST /api/v2/cap0/enter": {
       "operationId": "Cap0Controller_enter[1]",
@@ -1647,6 +1717,21 @@
       "requestType": "AnalyzePortfolioV2Data",
       "responseType": "AnalyzePortfolioV2Responses"
     },
+    "POST /api/v2/practice/{indicatorId}/next": {
+      "operationId": "practiceNext",
+      "requestType": "PracticeNextData",
+      "responseType": "PracticeNextResponses"
+    },
+    "POST /api/v2/practice/{indicatorId}/preview": {
+      "operationId": "practicePreview",
+      "requestType": "PracticePreviewData",
+      "responseType": "PracticePreviewResponses"
+    },
+    "POST /api/v2/practice/{indicatorId}/runs": {
+      "operationId": "practiceStartRun",
+      "requestType": "PracticeStartRunData",
+      "responseType": "PracticeStartRunResponses"
+    },
     "POST /api/v2/premium/admin/plans": {
       "operationId": "adminCreatePremiumPlan_post_api_v2_premium_admin_plans",
       "requestType": "AdminCreatePremiumPlanPostApiV2PremiumAdminPlansData",
@@ -1666,6 +1751,11 @@
       "operationId": "receiveSePayIpn_post_api_v2_premium_sepay_ipn",
       "requestType": "ReceiveSePayIpnPostApiV2PremiumSepayIpnData",
       "responseType": "ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses"
+    },
+    "POST /api/v2/shop/purchases": {
+      "operationId": "purchaseShopMascot",
+      "requestType": "PurchaseShopMascotData",
+      "responseType": "PurchaseShopMascotResponses"
     },
     "POST /api/v2/strategy/backtests": {
       "operationId": "strategyBacktestsCreate",
@@ -1732,6 +1822,11 @@
       "requestType": "AddWatchlistItemV2Data",
       "responseType": "AddWatchlistItemV2Responses"
     },
+    "POST /api/v2/workspace/ensure": {
+      "operationId": "ensureWorkspace",
+      "requestType": "EnsureWorkspaceData",
+      "responseType": "EnsureWorkspaceResponses"
+    },
     "PUT /api/v2/admin/alerts/signals/{key}": {
       "operationId": "AdminAlertsController_update[1]",
       "requestType": "AdminAlertsControllerUpdate1Data",
@@ -1751,6 +1846,16 @@
       "operationId": "saveChartDrawingV2",
       "requestType": "SaveChartDrawingV2Data",
       "responseType": "SaveChartDrawingV2Responses"
+    },
+    "PUT /api/v2/practice/{indicatorId}/draft": {
+      "operationId": "practiceSaveDraft",
+      "requestType": "PracticeSaveDraftData",
+      "responseType": "PracticeSaveDraftResponses"
+    },
+    "PUT /api/v2/shop/active-mascot": {
+      "operationId": "setShopActiveMascot",
+      "requestType": "SetShopActiveMascotData",
+      "responseType": "SetShopActiveMascotResponses"
     },
     "PUT /api/v2/strategy/filters/{filterId}": {
       "operationId": "updateStrategySavedFilter",

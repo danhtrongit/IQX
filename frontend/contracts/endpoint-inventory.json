@@ -383,10 +383,8 @@
       "raw": "/academy/curriculum?query",
       "method": "GET",
       "route": "/api/v2/academy/curriculum",
-      "matchedOperation": "GET /api/v2/academy/curriculum",
-      "matchedOperations": [
-        "GET /api/v2/academy/curriculum"
-      ],
+      "matchedOperation": null,
+      "matchedOperations": [],
       "classification": "api-call"
     },
     {
@@ -2361,7 +2359,7 @@
     },
     {
       "file": "src/pages/demo-trading/trading/use-engine-refresh.ts",
-      "line": 75,
+      "line": 69,
       "callee": "api",
       "raw": "/virtual-trading/refresh",
       "method": "POST",
@@ -3208,6 +3206,17 @@
       "classification": "test-only"
     },
     {
+      "file": "src/pages/academy/api.ts",
+      "line": 120,
+      "callee": "api",
+      "raw": "/academy/curriculum?query",
+      "method": "GET",
+      "route": "/api/v2/academy/curriculum",
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "api-call"
+    },
+    {
       "file": "src/pages/demo-trading/journey/mascot-2d/useSpritePreload.ts",
       "line": 17,
       "callee": "fetch",
@@ -3221,6 +3230,8 @@
   ],
   "unconsumedOperations": [
     "DELETE /api/v2/chart-drawings/{symbol}",
+    "GET /api/v2/academy/catalog",
+    "GET /api/v2/academy/progress",
     "GET /api/v2/admin/alerts/factor-library",
     "GET /api/v2/admin/audit/export",
     "GET /api/v2/admin/metrics/plan-distribution",
@@ -3232,6 +3243,7 @@
     "GET /api/v2/auth/reset-password",
     "GET /api/v2/auth/verify-email",
     "GET /api/v2/bot/status",
+    "GET /api/v2/bot/universe",
     "GET /api/v2/cap2/diem-ky-luat",
     "GET /api/v2/cap3/plans/{order_id}",
     "GET /api/v2/cap3/trades",
@@ -3309,6 +3321,13 @@
     "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary",
     "GET /api/v2/media/{token}",
     "GET /api/v2/portfolio-manager/report",
+    "GET /api/v2/practice/{indicatorId}/history",
+    "GET /api/v2/practice/{indicatorId}/state",
+    "GET /api/v2/practice/indicators",
+    "GET /api/v2/practice/runs/{runId}",
+    "GET /api/v2/shop",
+    "GET /api/v2/shop/coin-ledger",
+    "GET /api/v2/shop/purchases/{idempotencyKey}",
     "GET /api/v2/strategy/backtests",
     "GET /api/v2/strategy/backtests/{id}",
     "GET /api/v2/strategy/filters",
@@ -3323,9 +3342,11 @@
     "GET /api/v2/virtual-trading/ledger",
     "GET /api/v2/virtual-trading/trades",
     "GET /api/v2/watchlists/{symbol}/status",
+    "GET /api/v2/workspace/state",
     "PATCH /api/v2/admin/vt/config",
     "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop",
     "PATCH /api/v2/strategy/shared-config",
+    "POST /api/v2/academy/lessons/{lessonId}/complete",
     "POST /api/v2/admin/alerts/telegram/webhook",
     "POST /api/v2/admin/journey/identity/qa-grants",
     "POST /api/v2/admin/lessons/courses/{courseId}/thumbnail",
@@ -3336,6 +3357,9 @@
     "POST /api/v2/ai/industry/analyze",
     "POST /api/v2/ai/industry/analyze-batch",
     "POST /api/v2/auth/refresh",
+    "POST /api/v2/bot/universe/apply-list",
+    "POST /api/v2/bot/universe/pending/cancel",
+    "POST /api/v2/bot/universe/revert-vn30",
     "POST /api/v2/cap0/kehoach",
     "POST /api/v2/cap1/kehoach",
     "POST /api/v2/cap2/alerts/{alert_id}/check",
@@ -3352,13 +3376,20 @@
     "POST /api/v2/cap8/positions/{symbol}/sync-plan",
     "POST /api/v2/market-analysis/{type}/run",
     "POST /api/v2/market-data/screening/search",
+    "POST /api/v2/practice/{indicatorId}/next",
+    "POST /api/v2/practice/{indicatorId}/preview",
+    "POST /api/v2/practice/{indicatorId}/runs",
     "POST /api/v2/premium/sepay/ipn",
+    "POST /api/v2/shop/purchases",
     "POST /api/v2/strategy/backtests",
     "POST /api/v2/strategy/filters",
     "POST /api/v2/strategy/lists",
     "POST /api/v2/strategy/screener/run",
     "POST /api/v2/telegram/webhook/{secret}",
+    "POST /api/v2/workspace/ensure",
     "PUT /api/v2/backtest/strategies/{strategyId}",
+    "PUT /api/v2/practice/{indicatorId}/draft",
+    "PUT /api/v2/shop/active-mascot",
     "PUT /api/v2/strategy/filters/{filterId}"
   ]
 }

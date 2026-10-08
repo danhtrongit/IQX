@@ -391,27 +391,38 @@ export type BotAccountSummary = {
 
 export type BotConditions = {
   buy_condition_count: number;
-  config_status: "none" | "pending" | "effective" | "calendar_unavailable";
+  buy_status: "active" | "inactive" | "blocked";
+  config_status:
+    "none" | "pending" | "effective" | "calendar_unavailable" | "unavailable";
   effective_revision: number | null;
   effective_session: string | null;
+  errors: {
+    buy: BotSideBlock | null;
+    sell: BotSideBlock | null;
+  };
   has_active_buy: boolean;
   has_active_sell: boolean;
   open_positions: number;
+  pending: BotPendingConfig | null;
   saved_revision: number | null;
   sell_condition_count: number;
+  sell_status: "active" | "inactive" | "blocked";
   state:
     | "waiting_for_conditions"
-    | "entry_enabled"
-    | "exit_only"
-    | "protection_only";
+    | "buy_only"
+    | "sell_only"
+    | "buy_and_sell"
+    | "error";
+  state_label: string;
 };
 
 export type BotConfig = {
   activated_at: string;
+  candidate_order: "gtgd20_desc_symbol_asc";
+  candidate_order_owner_confirmation: "pending";
   execution_model: "same_session_close";
   initial_cash_vnd: string;
-  policy_version: "iqx-bot-academy-activation-1";
-  product_stage: "bot_v1_waiting" | "bot_v2_academy";
+  policy_version: "iqx-bot-v1.0";
   strategy_id: "iqx_standard";
   strategy_version: 1;
 };
@@ -447,40 +458,55 @@ export type BotJournalItem = {
   created_at: string;
   decision_config_revision: number | null;
   execution: BotExecution | null;
-  filter_ids: Array<string>;
   id: string;
+  in_universe: boolean | null;
+  legacy_filter_ids: Array<string>;
+  legacy_threshold_vnd: string | null;
   policy_version: string | null;
+  rank_tuple: Array<JsonValue> | null;
   reason: string;
   reason_code: string;
+  reason_label: string | null;
   run_id: string;
   source_refs: {
     [key: string]: JsonValue;
   };
-  supporting_count: number | null;
   symbol: string | null;
-  threshold_vnd: string | null;
   trading_date: string;
+  universe_kind: "vn30" | "custom" | null;
+  universe_revision: number | null;
 };
 
 export type BotOverview = {
   account: BotAccountSummary | null;
   bot: BotConfig | null;
   bot_run: BotRunStatus;
-  cap6_graduated_at: string | null;
   conditions: BotConditions | null;
-  current_level: number;
   disclosure: string;
   eligible: boolean;
 };
 
+export type BotPendingConfig = {
+  effective_session: string | null;
+  revision: number;
+  status: "pending" | "effective" | "calendar_unavailable";
+};
+
 export type BotPosition = {
-  amplitude_at_entry_vnd: string;
-  amplitude_source_ref: string;
   current_close_vnd: string | null;
   entry_config_revision: number | null;
   entry_price_vnd: string;
-  filter_ids: Array<string>;
+  entry_source_snapshot: {
+    [key: string]: JsonValue;
+  } | null;
+  holding_sessions: number;
   id: string;
+  in_universe: boolean | null;
+  last_decision: BotPositionDecision | null;
+  legacy_amplitude_at_entry_vnd: string | null;
+  legacy_amplitude_source_ref: string | null;
+  legacy_filter_ids: Array<string>;
+  legacy_stop_loss_vnd: string | null;
   legacy_take_profit_vnd: string | null;
   market_value_vnd: string | null;
   opened_at: string;
@@ -490,10 +516,19 @@ export type BotPosition = {
   source_refs: {
     [key: string]: JsonValue;
   };
-  stop_loss_vnd: string;
+  source_scope: "in_buy_source" | "sell_watch_only" | null;
   symbol: string;
   unrealized_pnl_net_vnd: string | null;
   weight_pct: string | null;
+};
+
+export type BotPositionDecision = {
+  action: "buy" | "sell" | "hold" | "skip";
+  decision_config_revision: number | null;
+  reason: string;
+  reason_code: string;
+  reason_label: string | null;
+  trading_date: string;
 };
 
 export type BotPositions = {
@@ -508,6 +543,12 @@ export type BotRunStatus = {
   latest_run_id: string | null;
   processed_unseen_sessions: number;
   status: "idle" | "running" | "succeeded" | "failed";
+};
+
+export type BotSideBlock = {
+  detail: string;
+  indicator_ids: Array<string>;
+  reason: "config_invalid_or_unauthorized" | "legacy_needs_review";
 };
 
 export type BotStatus = {
@@ -24935,7 +24976,7 @@ export type RemoveWatchlistItemV1Response =
 
 export type AcademyCreateAttemptData = {
   body: {
-    content_version: string;
+    catalog_version: string;
     idempotency_key: string;
     lesson_id: string;
   };
@@ -24972,9 +25013,12 @@ export type AcademyCreateAttemptError =
 
 export type AcademyCreateAttemptResponses = {
   201: {
+    assessment_version: string;
     attempt_id: string;
+    catalog_version: string;
     content_version: string;
     lesson_id: string;
+    lesson_key: string;
     questions: Array<{
       id: string;
       options: Array<{
@@ -24983,7 +25027,6 @@ export type AcademyCreateAttemptResponses = {
       }>;
       question: string;
     }>;
-    questions_version: string;
   };
 };
 
@@ -25034,9 +25077,18 @@ export type AcademySubmitAttemptError =
 export type AcademySubmitAttemptResponses = {
   200: {
     attempt_id: string;
+    completion: {
+      completed: boolean;
+      completed_at: string | null;
+      completion_method: "quiz" | "guide" | "legacy_migration";
+      newly_completed: boolean;
+    };
     granted_capabilities: Array<string>;
+    lesson_id: string;
+    lesson_key: string;
     newly_granted: Array<string>;
     passed: boolean;
+    progress_revision: number;
     results: Array<{
       correct: boolean;
       correct_option_id: string;
@@ -25044,6 +25096,20 @@ export type AcademySubmitAttemptResponses = {
       option_id: string;
       question_id: string;
     }>;
+    reward:
+      | {
+          balance_after: number;
+          delta: number;
+          status: "credited";
+        }
+      | {
+          balance_after: number;
+          status: "already_rewarded";
+        }
+      | {
+          status: "unavailable";
+        }
+      | null;
     score: number;
     total: 8;
   };
@@ -25052,16 +25118,14 @@ export type AcademySubmitAttemptResponses = {
 export type AcademySubmitAttemptResponse =
   AcademySubmitAttemptResponses[keyof AcademySubmitAttemptResponses];
 
-export type AcademyCurriculumData = {
+export type AcademyCatalogData = {
   body?: never;
   path?: never;
-  query?: {
-    content_version?: string;
-  };
-  url: "/api/v2/academy/curriculum";
+  query?: never;
+  url: "/api/v2/academy/catalog";
 };
 
-export type AcademyCurriculumErrors = {
+export type AcademyCatalogErrors = {
   /**
    * Bad request
    */
@@ -25084,35 +25148,47 @@ export type AcademyCurriculumErrors = {
   503: ApiErrorV2;
 };
 
-export type AcademyCurriculumError =
-  AcademyCurriculumErrors[keyof AcademyCurriculumErrors];
+export type AcademyCatalogError =
+  AcademyCatalogErrors[keyof AcademyCatalogErrors];
 
-export type AcademyCurriculumResponses = {
+export type AcademyCatalogResponses = {
   200: {
+    catalog_version: string;
+    chapter_count: number;
     chapters: Array<{
-      bot: string | null;
       lessons: Array<{
-        attempts: number;
-        best_score: number | null;
-        capabilities: Array<string>;
-        config_id: string | null;
+        capability_binding: {
+          id: string;
+          kind: "technical" | "fundamental";
+        } | null;
+        capability_id: string | null;
+        chapter: number;
+        completion: {
+          assessment_ready: boolean;
+          assessment_version: string | null;
+          mode: "quiz" | "guide";
+          question_count: number | null;
+          required_correct: number | null;
+        };
+        content_status: "published" | "not_published";
+        content_version: string | null;
         id: string;
-        kind: "technical" | "fundamental" | "tool" | "system";
+        kind: "technical" | "fundamental" | "concept" | "guide";
+        legacy_lesson_ids: Array<string>;
+        lesson_key: string;
         name: string;
         order: number;
-        passed: boolean;
       }>;
       no: number;
       title: string;
-      type: "technical" | "fundamental" | "tool" | "system";
+      type: "technical" | "fundamental" | "tool";
     }>;
-    content_version: string;
-    granted_capabilities: Array<string>;
+    lesson_count: number;
   };
 };
 
-export type AcademyCurriculumResponse =
-  AcademyCurriculumResponses[keyof AcademyCurriculumResponses];
+export type AcademyCatalogResponse =
+  AcademyCatalogResponses[keyof AcademyCatalogResponses];
 
 export type AcademyLessonData = {
   body?: never;
@@ -25150,21 +25226,75 @@ export type AcademyLessonError = AcademyLessonErrors[keyof AcademyLessonErrors];
 
 export type AcademyLessonResponses = {
   200: {
+    assets: Array<{
+      id: string;
+      kind: "image" | "chart";
+      ref: string;
+    }>;
+    capability_binding: {
+      id: string;
+      kind: "technical" | "fundamental";
+    } | null;
+    capability_id: string | null;
+    catalog_version: string;
     chapter: number;
-    config_id: string | null;
-    content_version: string;
+    completed: boolean;
+    completed_at: string | null;
+    completion: {
+      assessment_ready: boolean;
+      assessment_version: string | null;
+      mode: "quiz" | "guide";
+      question_count: number | null;
+      required_correct: number | null;
+    };
+    completion_method: "quiz" | "guide" | "legacy_migration";
+    content_status: "published" | "not_published";
+    content_version: string | null;
     fixture: {
       [key: string]: unknown;
-    };
+    } | null;
     id: string;
-    kind: "technical" | "fundamental" | "tool" | "system";
+    kind: "technical" | "fundamental" | "concept" | "guide";
+    legacy_lesson_ids: Array<string>;
+    lesson_key: string;
     name: string;
     order: number;
-    passed: boolean;
-    prerequisites: Array<string>;
-    review_status: string;
+    review_status: string | null;
     sections: Array<{
-      html: string;
+      blocks: Array<
+        | {
+            html: string;
+            type: "html";
+          }
+        | {
+            text: string;
+            type: "text";
+          }
+        | {
+            caption?: string;
+            expression: string;
+            type: "formula";
+          }
+        | {
+            caption?: string;
+            header: Array<string>;
+            note?: string;
+            rows: Array<Array<string>>;
+            type: "table";
+          }
+        | {
+            caption?: string;
+            chart_id: string;
+            type: "chart";
+          }
+        | {
+            alt: string;
+            asset_id: string;
+            caption?: string;
+            type: "image";
+          }
+      >;
+      id: string;
       title: string;
     }>;
     sources: Array<string>;
@@ -25173,6 +25303,136 @@ export type AcademyLessonResponses = {
 
 export type AcademyLessonResponse =
   AcademyLessonResponses[keyof AcademyLessonResponses];
+
+export type AcademyCompleteGuideData = {
+  body: {
+    catalog_version: string;
+    content_version: string;
+    request_id: string;
+  };
+  path: {
+    lessonId: string;
+  };
+  query?: never;
+  url: "/api/v2/academy/lessons/{lessonId}/complete";
+};
+
+export type AcademyCompleteGuideErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademyCompleteGuideError =
+  AcademyCompleteGuideErrors[keyof AcademyCompleteGuideErrors];
+
+export type AcademyCompleteGuideResponses = {
+  200: {
+    catalog_version: string;
+    completion: {
+      completed: boolean;
+      completed_at: string | null;
+      completion_method: "quiz" | "guide" | "legacy_migration";
+      newly_completed: boolean;
+    };
+    granted_capabilities: Array<string>;
+    lesson_id: string;
+    lesson_key: string;
+    progress_revision: number;
+    reward:
+      | {
+          balance_after: number;
+          delta: number;
+          status: "credited";
+        }
+      | {
+          balance_after: number;
+          status: "already_rewarded";
+        }
+      | {
+          status: "unavailable";
+        }
+      | null;
+  };
+};
+
+export type AcademyCompleteGuideResponse =
+  AcademyCompleteGuideResponses[keyof AcademyCompleteGuideResponses];
+
+export type AcademyProgressData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/academy/progress";
+};
+
+export type AcademyProgressErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademyProgressError =
+  AcademyProgressErrors[keyof AcademyProgressErrors];
+
+export type AcademyProgressResponses = {
+  200: {
+    catalog_version: string;
+    chapters: Array<{
+      done: number;
+      no: number;
+      total: number;
+    }>;
+    completed: Array<{
+      completed_at: string;
+      completion_method: "quiz" | "guide" | "legacy_migration";
+      lesson_id: string;
+      lesson_key: string;
+    }>;
+    completed_lesson_ids: Array<string>;
+    course_done: number;
+    course_total: number;
+    granted_capabilities: Array<string>;
+    progress_revision: number;
+  };
+};
+
+export type AcademyProgressResponse =
+  AcademyProgressResponses[keyof AcademyProgressResponses];
 
 export type AdminAlertsControllerFactorLibrary1Data = {
   body?: never;
@@ -30330,6 +30590,552 @@ export type GetBotStatusGetApiV2BotStatusResponses = {
 
 export type GetBotStatusGetApiV2BotStatusResponse =
   GetBotStatusGetApiV2BotStatusResponses[keyof GetBotStatusGetApiV2BotStatusResponses];
+
+export type GetBotUniverseData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/bot/universe";
+};
+
+export type GetBotUniverseErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetBotUniverseError =
+  GetBotUniverseErrors[keyof GetBotUniverseErrors];
+
+export type GetBotUniverseResponses = {
+  200: {
+    effective: {
+      cancelled_at: string | null;
+      effective_session: string | null;
+      kind: "vn30" | "custom";
+      list_as_of: string | null;
+      membership_session: string | null;
+      name: string;
+      provenance: {
+        [key: string]: unknown;
+      };
+      requested_at: string | null;
+      revision: number;
+      saved_list_id: string | null;
+      status:
+        | "implicit"
+        | "pending"
+        | "effective"
+        | "cancelled"
+        | "superseded"
+        | "calendar_unavailable";
+      superseded_by: number | null;
+      symbol_count: number | null;
+      symbols: Array<{
+        exchange: string | null;
+        name: string | null;
+        symbol: string;
+      }>;
+      unavailable_reason: string | null;
+    };
+    history: Array<{
+      cancelled_at: string | null;
+      effective_session: string | null;
+      kind: "vn30" | "custom";
+      list_as_of: string | null;
+      name: string;
+      provenance: {
+        [key: string]: unknown;
+      };
+      requested_at: string | null;
+      revision: number;
+      saved_list_id: string | null;
+      status:
+        | "implicit"
+        | "pending"
+        | "effective"
+        | "cancelled"
+        | "superseded"
+        | "calendar_unavailable";
+      superseded_by: number | null;
+      symbol_count: number | null;
+    }>;
+    pending: {
+      cancelled_at: string | null;
+      effective_session: string | null;
+      kind: "vn30" | "custom";
+      list_as_of: string | null;
+      name: string;
+      provenance: {
+        [key: string]: unknown;
+      };
+      requested_at: string | null;
+      revision: number;
+      saved_list_id: string | null;
+      status:
+        | "implicit"
+        | "pending"
+        | "effective"
+        | "cancelled"
+        | "superseded"
+        | "calendar_unavailable";
+      superseded_by: number | null;
+      symbol_count: number | null;
+    } | null;
+    revision: number;
+    server_date: string;
+  };
+};
+
+export type GetBotUniverseResponse =
+  GetBotUniverseResponses[keyof GetBotUniverseResponses];
+
+export type ApplyBotUniverseListData = {
+  body: {
+    expected_revision: number;
+    idempotency_key: string;
+    list_id: string;
+    symbols: Array<string>;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/bot/universe/apply-list";
+};
+
+export type ApplyBotUniverseListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ApplyBotUniverseListError =
+  ApplyBotUniverseListErrors[keyof ApplyBotUniverseListErrors];
+
+export type ApplyBotUniverseListResponses = {
+  201: {
+    request: {
+      cancelled_at: string | null;
+      effective_session: string | null;
+      kind: "vn30" | "custom";
+      list_as_of: string | null;
+      name: string;
+      provenance: {
+        [key: string]: unknown;
+      };
+      requested_at: string | null;
+      revision: number;
+      saved_list_id: string | null;
+      status:
+        | "implicit"
+        | "pending"
+        | "effective"
+        | "cancelled"
+        | "superseded"
+        | "calendar_unavailable";
+      superseded_by: number | null;
+      symbol_count: number | null;
+    };
+    state: {
+      effective: {
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        membership_session: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+        symbols: Array<{
+          exchange: string | null;
+          name: string | null;
+          symbol: string;
+        }>;
+        unavailable_reason: string | null;
+      };
+      history: Array<{
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+      }>;
+      pending: {
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+      } | null;
+      revision: number;
+      server_date: string;
+    };
+  };
+};
+
+export type ApplyBotUniverseListResponse =
+  ApplyBotUniverseListResponses[keyof ApplyBotUniverseListResponses];
+
+export type CancelBotUniversePendingData = {
+  body: {
+    expected_revision: number;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/bot/universe/pending/cancel";
+};
+
+export type CancelBotUniversePendingErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type CancelBotUniversePendingError =
+  CancelBotUniversePendingErrors[keyof CancelBotUniversePendingErrors];
+
+export type CancelBotUniversePendingResponses = {
+  200: {
+    request: {
+      cancelled_at: string | null;
+      effective_session: string | null;
+      kind: "vn30" | "custom";
+      list_as_of: string | null;
+      name: string;
+      provenance: {
+        [key: string]: unknown;
+      };
+      requested_at: string | null;
+      revision: number;
+      saved_list_id: string | null;
+      status:
+        | "implicit"
+        | "pending"
+        | "effective"
+        | "cancelled"
+        | "superseded"
+        | "calendar_unavailable";
+      superseded_by: number | null;
+      symbol_count: number | null;
+    };
+    state: {
+      effective: {
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        membership_session: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+        symbols: Array<{
+          exchange: string | null;
+          name: string | null;
+          symbol: string;
+        }>;
+        unavailable_reason: string | null;
+      };
+      history: Array<{
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+      }>;
+      pending: {
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+      } | null;
+      revision: number;
+      server_date: string;
+    };
+  };
+};
+
+export type CancelBotUniversePendingResponse =
+  CancelBotUniversePendingResponses[keyof CancelBotUniversePendingResponses];
+
+export type RevertBotUniverseToVn30Data = {
+  body: {
+    expected_revision: number;
+    idempotency_key: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/bot/universe/revert-vn30";
+};
+
+export type RevertBotUniverseToVn30Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type RevertBotUniverseToVn30Error =
+  RevertBotUniverseToVn30Errors[keyof RevertBotUniverseToVn30Errors];
+
+export type RevertBotUniverseToVn30Responses = {
+  201: {
+    request: {
+      cancelled_at: string | null;
+      effective_session: string | null;
+      kind: "vn30" | "custom";
+      list_as_of: string | null;
+      name: string;
+      provenance: {
+        [key: string]: unknown;
+      };
+      requested_at: string | null;
+      revision: number;
+      saved_list_id: string | null;
+      status:
+        | "implicit"
+        | "pending"
+        | "effective"
+        | "cancelled"
+        | "superseded"
+        | "calendar_unavailable";
+      superseded_by: number | null;
+      symbol_count: number | null;
+    };
+    state: {
+      effective: {
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        membership_session: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+        symbols: Array<{
+          exchange: string | null;
+          name: string | null;
+          symbol: string;
+        }>;
+        unavailable_reason: string | null;
+      };
+      history: Array<{
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+      }>;
+      pending: {
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+      } | null;
+      revision: number;
+      server_date: string;
+    };
+  };
+};
+
+export type RevertBotUniverseToVn30Response =
+  RevertBotUniverseToVn30Responses[keyof RevertBotUniverseToVn30Responses];
 
 export type Cap0ControllerEnter1Data = {
   body?: never;
@@ -37936,6 +38742,1535 @@ export type GetPortfolioReportV2Responses = {
 export type GetPortfolioReportV2Response =
   GetPortfolioReportV2Responses[keyof GetPortfolioReportV2Responses];
 
+export type PracticeIndicatorsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/practice/indicators";
+};
+
+export type PracticeIndicatorsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticeIndicatorsError =
+  PracticeIndicatorsErrors[keyof PracticeIndicatorsErrors];
+
+export type PracticeIndicatorsResponses = {
+  200: {
+    hold: {
+      default: number;
+      max: number;
+      min: number;
+    };
+    indicators: Array<{
+      granted: boolean;
+      indicator_id: string;
+      lesson_key: string;
+      name: string;
+      progress: {
+        completed_count: number;
+        cursor: number;
+        status: "not_started" | "in_progress" | "completed";
+        total: number;
+      } | null;
+    }>;
+    profile: {
+      buy_fee_rate: number;
+      capital: number;
+      lot: number;
+      profile_version: string;
+      sell_cost_rate: number;
+      verified: boolean;
+      [key: string]: unknown;
+    };
+    set: {
+      case_count: number;
+      set_version: string;
+      test_months: number;
+      window_bars: number;
+    };
+  };
+};
+
+export type PracticeIndicatorsResponse =
+  PracticeIndicatorsResponses[keyof PracticeIndicatorsResponses];
+
+export type PracticeGetRunData = {
+  body?: never;
+  path: {
+    runId: string;
+  };
+  query?: never;
+  url: "/api/v2/practice/runs/{runId}";
+};
+
+export type PracticeGetRunErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticeGetRunError =
+  PracticeGetRunErrors[keyof PracticeGetRunErrors];
+
+export type PracticeGetRunResponses = {
+  200: {
+    attempts: number;
+    case_id: string;
+    chart: {
+      bars: {
+        close: Array<number>;
+        high: Array<number>;
+        low: Array<number>;
+        open: Array<number>;
+        volume: Array<number>;
+      };
+      first_session: number;
+      last_observed_session: 0;
+      last_session: number;
+      plot: {
+        buy: {
+          bounds: [number, number] | null;
+          histogram_key: string | null;
+          lines: Array<{
+            key: string;
+            label: string;
+          }>;
+          nonnegative: boolean;
+          overlay: boolean;
+          reference_levels: Array<number>;
+          threshold_levels: Array<number>;
+          volume_key: string | null;
+          zero_line: boolean;
+        };
+        sell: {
+          bounds: [number, number] | null;
+          histogram_key: string | null;
+          lines: Array<{
+            key: string;
+            label: string;
+          }>;
+          nonnegative: boolean;
+          overlay: boolean;
+          reference_levels: Array<number>;
+          threshold_levels: Array<number>;
+          volume_key: string | null;
+          zero_line: boolean;
+        };
+      };
+      series: {
+        buy: {
+          [key: string]: Array<number | null>;
+        };
+        sell: {
+          [key: string]: Array<number | null>;
+        };
+      };
+    } | null;
+    completed_at: string | null;
+    config: {
+      buy: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+      hold_max_sessions: number;
+      sell: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+    };
+    error: {
+      code: string;
+      message: string;
+    } | null;
+    indicator_id: string;
+    locked_at: string;
+    ordinal: number;
+    result: {
+      comment: {
+        rule_id: string;
+        status: "ok" | "unavailable";
+        text: string | null;
+        values: {
+          [key: string]: unknown;
+        };
+        version: string;
+      };
+      data_notes: Array<string>;
+      events: Array<{
+        price: number;
+        reason?: "indicator" | "max_holding";
+        session: number;
+        side: "buy" | "sell";
+        trade_ordinal: number;
+      }>;
+      first_session: 1;
+      kpis: {
+        buy_count: number;
+        capital_initial: number;
+        cash_end: number;
+        closed_trade_count: number;
+        insufficient_cash_buys: number;
+        nav_end: number | null;
+        open_position: boolean;
+        open_position_value: number | null;
+        total_return: number | null;
+        valuation: "ok" | "missing";
+      };
+      last_session: number;
+      missed_buys: Array<{
+        cash: number;
+        fill_session: number;
+        price: number;
+        signal_session: number;
+      }>;
+      nav: Array<number>;
+      pending_orders: Array<{
+        reason: "indicator" | "max_holding" | "buy_signal";
+        side: "buy" | "sell";
+        signal_session: number;
+        status: "unfilled_end_of_window";
+        time_due: boolean;
+      }>;
+      trades: Array<{
+        buy: {
+          evidence: {
+            enabled: boolean;
+            params: {
+              [key: string]: number;
+            };
+            result: boolean | null;
+            rules: Array<{
+              kind: "compare" | "cross" | "membership";
+              left_label: string;
+              lhs: number | null;
+              missing: boolean;
+              op: ">" | "<" | "∈" | "∉";
+              result: boolean | null;
+              rhs: number | null;
+              right_label: string;
+              rule_id: string;
+              [key: string]: unknown;
+            }>;
+            side: "buy" | "sell";
+            signal_session: number;
+          };
+          fee: number;
+          price: number;
+          session: number;
+          signal_session: number;
+          total_cost: number;
+        };
+        holding_sessions: number;
+        mark: {
+          market_value: number;
+          price: number;
+          session: number;
+        } | null;
+        ordinal: number;
+        pnl_kind: "realized" | "unrealized";
+        pnl_ratio: number;
+        pnl_vnd: number;
+        qty: number;
+        sell: {
+          evidence: {
+            enabled: boolean;
+            params: {
+              [key: string]: number;
+            };
+            result: boolean | null;
+            rules: Array<{
+              kind: "compare" | "cross" | "membership";
+              left_label: string;
+              lhs: number | null;
+              missing: boolean;
+              op: ">" | "<" | "∈" | "∉";
+              result: boolean | null;
+              rhs: number | null;
+              right_label: string;
+              rule_id: string;
+              [key: string]: unknown;
+            }>;
+            side: "buy" | "sell";
+            signal_session: number;
+          };
+          fee: number;
+          indicator_met: boolean;
+          net_proceeds: number;
+          price: number;
+          reason: "indicator" | "max_holding";
+          session: number;
+          signal_session: number;
+          time_due: boolean;
+          time_exit: {
+            due: boolean;
+            held_sessions_at_signal: number;
+            hold_max_sessions: number;
+          };
+        } | null;
+        status: "closed" | "open";
+      }>;
+    } | null;
+    run_id: string;
+    status: "computing" | "succeeded" | "failed";
+    total: number;
+    versions: {
+      calculation_version: string;
+      comment_version: string;
+      data_version: string;
+      engine_version: string;
+      execution_version: string;
+      profile_version: string;
+      rule_version: string;
+      set_version: string;
+    };
+  };
+};
+
+export type PracticeGetRunResponse =
+  PracticeGetRunResponses[keyof PracticeGetRunResponses];
+
+export type PracticeSaveDraftData = {
+  body: {
+    draft: {
+      buy: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+      hold_max_sessions: number;
+      sell: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+    };
+    expected_revision: number;
+  };
+  path: {
+    indicatorId: string;
+  };
+  query?: never;
+  url: "/api/v2/practice/{indicatorId}/draft";
+};
+
+export type PracticeSaveDraftErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticeSaveDraftError =
+  PracticeSaveDraftErrors[keyof PracticeSaveDraftErrors];
+
+export type PracticeSaveDraftResponses = {
+  200: {
+    draft: {
+      buy: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+      hold_max_sessions: number;
+      sell: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+    };
+    draft_revision: number;
+    validation: {
+      errors: Array<{
+        message: string;
+        path: string;
+      }>;
+      valid: boolean;
+    };
+  };
+};
+
+export type PracticeSaveDraftResponse =
+  PracticeSaveDraftResponses[keyof PracticeSaveDraftResponses];
+
+export type PracticeHistoryData = {
+  body?: never;
+  path: {
+    indicatorId: string;
+  };
+  query?: {
+    page?: number;
+    page_size?: number;
+  };
+  url: "/api/v2/practice/{indicatorId}/history";
+};
+
+export type PracticeHistoryErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticeHistoryError =
+  PracticeHistoryErrors[keyof PracticeHistoryErrors];
+
+export type PracticeHistoryResponses = {
+  200: {
+    items: Array<{
+      case_id: string;
+      completed_at: string | null;
+      config: {
+        buy: {
+          enabled: boolean;
+          ops: {
+            [key: string]: ">" | "<" | "∈" | "∉";
+          };
+          params: {
+            [key: string]: number;
+          };
+        };
+        hold_max_sessions: number;
+        sell: {
+          enabled: boolean;
+          ops: {
+            [key: string]: ">" | "<" | "∈" | "∉";
+          };
+          params: {
+            [key: string]: number;
+          };
+        };
+      };
+      kpis: {
+        buy_count: number;
+        closed_trade_count: number;
+        comment_rule_id: string | null;
+        open_position: boolean;
+        total_return: number | null;
+      } | null;
+      ordinal: number;
+      run_id: string;
+      versions: {
+        calculation_version: string;
+        comment_version: string;
+        data_version: string;
+        engine_version: string;
+        execution_version: string;
+        profile_version: string;
+        rule_version: string;
+        set_version: string;
+      };
+    }>;
+    page: number;
+    page_size: number;
+    total: number;
+  };
+};
+
+export type PracticeHistoryResponse =
+  PracticeHistoryResponses[keyof PracticeHistoryResponses];
+
+export type PracticeNextData = {
+  body: {
+    expected_cursor: number;
+    idempotency_key: string;
+  };
+  path: {
+    indicatorId: string;
+  };
+  query?: never;
+  url: "/api/v2/practice/{indicatorId}/next";
+};
+
+export type PracticeNextErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticeNextError = PracticeNextErrors[keyof PracticeNextErrors];
+
+export type PracticeNextResponses = {
+  200: {
+    can_next: boolean;
+    can_retry: boolean;
+    can_start: boolean;
+    case: {
+      case_id: string;
+      ordinal: number;
+      window_bars: number;
+    };
+    completed_count: number;
+    current_run: {
+      case_id: string;
+      ordinal: number;
+      run_id: string;
+      status: "computing" | "succeeded" | "failed";
+      summary: {
+        buy_count: number;
+        closed_trade_count: number;
+        comment_rule_id: string | null;
+        open_position: boolean;
+        total_return: number | null;
+      } | null;
+    } | null;
+    draft: {
+      buy: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+      hold_max_sessions: number;
+      sell: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+    };
+    draft_revision: number;
+    form: {
+      buy: {
+        fields: Array<{
+          key: string;
+          label: string;
+          max: number;
+          min: number;
+          step: number;
+          type: "integer" | "number";
+          unit: string;
+        }>;
+        rules: Array<{
+          allowed_ops: Array<">" | "<" | "∈" | "∉">;
+          default_op: ">" | "<" | "∈" | "∉";
+          kind: "compare" | "cross" | "membership";
+          left_label: string;
+          lhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              };
+          rhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              }
+            | {
+                lower:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+                upper:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+              };
+          right_label: string;
+          rule_id: string;
+        }>;
+      };
+      cross_fields: Array<{
+        left: string;
+        op: ">" | "<";
+        right: string;
+      }>;
+      defaults: {
+        buy: {
+          enabled: boolean;
+          ops: {
+            [key: string]: ">" | "<" | "∈" | "∉";
+          };
+          params: {
+            [key: string]: number;
+          };
+        };
+        hold_max_sessions: number;
+        sell: {
+          enabled: boolean;
+          ops: {
+            [key: string]: ">" | "<" | "∈" | "∉";
+          };
+          params: {
+            [key: string]: number;
+          };
+        };
+      };
+      indicator_id: string;
+      sell: {
+        fields: Array<{
+          key: string;
+          label: string;
+          max: number;
+          min: number;
+          step: number;
+          type: "integer" | "number";
+          unit: string;
+        }>;
+        rules: Array<{
+          allowed_ops: Array<">" | "<" | "∈" | "∉">;
+          default_op: ">" | "<" | "∈" | "∉";
+          kind: "compare" | "cross" | "membership";
+          left_label: string;
+          lhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              };
+          rhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              }
+            | {
+                lower:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+                upper:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+              };
+          right_label: string;
+          rule_id: string;
+        }>;
+      };
+    };
+    indicator: {
+      id: string;
+      name: string;
+    };
+    ordinal: number;
+    profile: {
+      buy_fee_rate: number;
+      capital: number;
+      lot: number;
+      profile_version: string;
+      sell_cost_rate: number;
+      verified: boolean;
+      [key: string]: unknown;
+    };
+    runs: Array<{
+      case_id: string;
+      ordinal: number;
+      run_id: string;
+      status: "computing" | "succeeded" | "failed";
+      summary: {
+        buy_count: number;
+        closed_trade_count: number;
+        comment_rule_id: string | null;
+        open_position: boolean;
+        total_return: number | null;
+      } | null;
+    }>;
+    set_version: string;
+    status: "ready" | "computing" | "failed" | "completed" | "set_completed";
+    total: number;
+    validation: {
+      errors: Array<{
+        message: string;
+        path: string;
+      }>;
+      valid: boolean;
+    };
+  };
+};
+
+export type PracticeNextResponse =
+  PracticeNextResponses[keyof PracticeNextResponses];
+
+export type PracticePreviewData = {
+  body: {
+    buy_params?: {
+      [key: string]: number;
+    };
+    sell_params?: {
+      [key: string]: number;
+    };
+  };
+  path: {
+    indicatorId: string;
+  };
+  query?: never;
+  url: "/api/v2/practice/{indicatorId}/preview";
+};
+
+export type PracticePreviewErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticePreviewError =
+  PracticePreviewErrors[keyof PracticePreviewErrors];
+
+export type PracticePreviewResponses = {
+  200: {
+    case_id: string;
+    chart: {
+      bars: {
+        close: Array<number>;
+        high: Array<number>;
+        low: Array<number>;
+        open: Array<number>;
+        volume: Array<number>;
+      };
+      first_session: number;
+      last_observed_session: 0;
+      last_session: number;
+      plot: {
+        buy: {
+          bounds: [number, number] | null;
+          histogram_key: string | null;
+          lines: Array<{
+            key: string;
+            label: string;
+          }>;
+          nonnegative: boolean;
+          overlay: boolean;
+          reference_levels: Array<number>;
+          threshold_levels: Array<number>;
+          volume_key: string | null;
+          zero_line: boolean;
+        };
+        sell: {
+          bounds: [number, number] | null;
+          histogram_key: string | null;
+          lines: Array<{
+            key: string;
+            label: string;
+          }>;
+          nonnegative: boolean;
+          overlay: boolean;
+          reference_levels: Array<number>;
+          threshold_levels: Array<number>;
+          volume_key: string | null;
+          zero_line: boolean;
+        };
+      };
+      series: {
+        buy: {
+          [key: string]: Array<number | null>;
+        };
+        sell: {
+          [key: string]: Array<number | null>;
+        };
+      };
+    };
+    data_notes: Array<string>;
+    ordinal: number;
+    window_bars: number;
+  };
+};
+
+export type PracticePreviewResponse =
+  PracticePreviewResponses[keyof PracticePreviewResponses];
+
+export type PracticeStartRunData = {
+  body: {
+    case_id: string;
+    config: {
+      buy: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+      hold_max_sessions: number;
+      sell: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+    };
+    idempotency_key: string;
+    ordinal: number;
+  };
+  path: {
+    indicatorId: string;
+  };
+  query?: never;
+  url: "/api/v2/practice/{indicatorId}/runs";
+};
+
+export type PracticeStartRunErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticeStartRunError =
+  PracticeStartRunErrors[keyof PracticeStartRunErrors];
+
+export type PracticeStartRunResponses = {
+  201: {
+    attempts: number;
+    case_id: string;
+    chart: {
+      bars: {
+        close: Array<number>;
+        high: Array<number>;
+        low: Array<number>;
+        open: Array<number>;
+        volume: Array<number>;
+      };
+      first_session: number;
+      last_observed_session: 0;
+      last_session: number;
+      plot: {
+        buy: {
+          bounds: [number, number] | null;
+          histogram_key: string | null;
+          lines: Array<{
+            key: string;
+            label: string;
+          }>;
+          nonnegative: boolean;
+          overlay: boolean;
+          reference_levels: Array<number>;
+          threshold_levels: Array<number>;
+          volume_key: string | null;
+          zero_line: boolean;
+        };
+        sell: {
+          bounds: [number, number] | null;
+          histogram_key: string | null;
+          lines: Array<{
+            key: string;
+            label: string;
+          }>;
+          nonnegative: boolean;
+          overlay: boolean;
+          reference_levels: Array<number>;
+          threshold_levels: Array<number>;
+          volume_key: string | null;
+          zero_line: boolean;
+        };
+      };
+      series: {
+        buy: {
+          [key: string]: Array<number | null>;
+        };
+        sell: {
+          [key: string]: Array<number | null>;
+        };
+      };
+    } | null;
+    completed_at: string | null;
+    config: {
+      buy: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+      hold_max_sessions: number;
+      sell: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+    };
+    error: {
+      code: string;
+      message: string;
+    } | null;
+    indicator_id: string;
+    locked_at: string;
+    ordinal: number;
+    result: {
+      comment: {
+        rule_id: string;
+        status: "ok" | "unavailable";
+        text: string | null;
+        values: {
+          [key: string]: unknown;
+        };
+        version: string;
+      };
+      data_notes: Array<string>;
+      events: Array<{
+        price: number;
+        reason?: "indicator" | "max_holding";
+        session: number;
+        side: "buy" | "sell";
+        trade_ordinal: number;
+      }>;
+      first_session: 1;
+      kpis: {
+        buy_count: number;
+        capital_initial: number;
+        cash_end: number;
+        closed_trade_count: number;
+        insufficient_cash_buys: number;
+        nav_end: number | null;
+        open_position: boolean;
+        open_position_value: number | null;
+        total_return: number | null;
+        valuation: "ok" | "missing";
+      };
+      last_session: number;
+      missed_buys: Array<{
+        cash: number;
+        fill_session: number;
+        price: number;
+        signal_session: number;
+      }>;
+      nav: Array<number>;
+      pending_orders: Array<{
+        reason: "indicator" | "max_holding" | "buy_signal";
+        side: "buy" | "sell";
+        signal_session: number;
+        status: "unfilled_end_of_window";
+        time_due: boolean;
+      }>;
+      trades: Array<{
+        buy: {
+          evidence: {
+            enabled: boolean;
+            params: {
+              [key: string]: number;
+            };
+            result: boolean | null;
+            rules: Array<{
+              kind: "compare" | "cross" | "membership";
+              left_label: string;
+              lhs: number | null;
+              missing: boolean;
+              op: ">" | "<" | "∈" | "∉";
+              result: boolean | null;
+              rhs: number | null;
+              right_label: string;
+              rule_id: string;
+              [key: string]: unknown;
+            }>;
+            side: "buy" | "sell";
+            signal_session: number;
+          };
+          fee: number;
+          price: number;
+          session: number;
+          signal_session: number;
+          total_cost: number;
+        };
+        holding_sessions: number;
+        mark: {
+          market_value: number;
+          price: number;
+          session: number;
+        } | null;
+        ordinal: number;
+        pnl_kind: "realized" | "unrealized";
+        pnl_ratio: number;
+        pnl_vnd: number;
+        qty: number;
+        sell: {
+          evidence: {
+            enabled: boolean;
+            params: {
+              [key: string]: number;
+            };
+            result: boolean | null;
+            rules: Array<{
+              kind: "compare" | "cross" | "membership";
+              left_label: string;
+              lhs: number | null;
+              missing: boolean;
+              op: ">" | "<" | "∈" | "∉";
+              result: boolean | null;
+              rhs: number | null;
+              right_label: string;
+              rule_id: string;
+              [key: string]: unknown;
+            }>;
+            side: "buy" | "sell";
+            signal_session: number;
+          };
+          fee: number;
+          indicator_met: boolean;
+          net_proceeds: number;
+          price: number;
+          reason: "indicator" | "max_holding";
+          session: number;
+          signal_session: number;
+          time_due: boolean;
+          time_exit: {
+            due: boolean;
+            held_sessions_at_signal: number;
+            hold_max_sessions: number;
+          };
+        } | null;
+        status: "closed" | "open";
+      }>;
+    } | null;
+    run_id: string;
+    status: "computing" | "succeeded" | "failed";
+    total: number;
+    versions: {
+      calculation_version: string;
+      comment_version: string;
+      data_version: string;
+      engine_version: string;
+      execution_version: string;
+      profile_version: string;
+      rule_version: string;
+      set_version: string;
+    };
+  };
+};
+
+export type PracticeStartRunResponse =
+  PracticeStartRunResponses[keyof PracticeStartRunResponses];
+
+export type PracticeStateData = {
+  body?: never;
+  path: {
+    indicatorId: string;
+  };
+  query?: never;
+  url: "/api/v2/practice/{indicatorId}/state";
+};
+
+export type PracticeStateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticeStateError = PracticeStateErrors[keyof PracticeStateErrors];
+
+export type PracticeStateResponses = {
+  200: {
+    can_next: boolean;
+    can_retry: boolean;
+    can_start: boolean;
+    case: {
+      case_id: string;
+      ordinal: number;
+      window_bars: number;
+    };
+    completed_count: number;
+    current_run: {
+      case_id: string;
+      ordinal: number;
+      run_id: string;
+      status: "computing" | "succeeded" | "failed";
+      summary: {
+        buy_count: number;
+        closed_trade_count: number;
+        comment_rule_id: string | null;
+        open_position: boolean;
+        total_return: number | null;
+      } | null;
+    } | null;
+    draft: {
+      buy: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+      hold_max_sessions: number;
+      sell: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+    };
+    draft_revision: number;
+    form: {
+      buy: {
+        fields: Array<{
+          key: string;
+          label: string;
+          max: number;
+          min: number;
+          step: number;
+          type: "integer" | "number";
+          unit: string;
+        }>;
+        rules: Array<{
+          allowed_ops: Array<">" | "<" | "∈" | "∉">;
+          default_op: ">" | "<" | "∈" | "∉";
+          kind: "compare" | "cross" | "membership";
+          left_label: string;
+          lhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              };
+          rhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              }
+            | {
+                lower:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+                upper:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+              };
+          right_label: string;
+          rule_id: string;
+        }>;
+      };
+      cross_fields: Array<{
+        left: string;
+        op: ">" | "<";
+        right: string;
+      }>;
+      defaults: {
+        buy: {
+          enabled: boolean;
+          ops: {
+            [key: string]: ">" | "<" | "∈" | "∉";
+          };
+          params: {
+            [key: string]: number;
+          };
+        };
+        hold_max_sessions: number;
+        sell: {
+          enabled: boolean;
+          ops: {
+            [key: string]: ">" | "<" | "∈" | "∉";
+          };
+          params: {
+            [key: string]: number;
+          };
+        };
+      };
+      indicator_id: string;
+      sell: {
+        fields: Array<{
+          key: string;
+          label: string;
+          max: number;
+          min: number;
+          step: number;
+          type: "integer" | "number";
+          unit: string;
+        }>;
+        rules: Array<{
+          allowed_ops: Array<">" | "<" | "∈" | "∉">;
+          default_op: ">" | "<" | "∈" | "∉";
+          kind: "compare" | "cross" | "membership";
+          left_label: string;
+          lhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              };
+          rhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              }
+            | {
+                lower:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+                upper:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+              };
+          right_label: string;
+          rule_id: string;
+        }>;
+      };
+    };
+    indicator: {
+      id: string;
+      name: string;
+    };
+    ordinal: number;
+    profile: {
+      buy_fee_rate: number;
+      capital: number;
+      lot: number;
+      profile_version: string;
+      sell_cost_rate: number;
+      verified: boolean;
+      [key: string]: unknown;
+    };
+    runs: Array<{
+      case_id: string;
+      ordinal: number;
+      run_id: string;
+      status: "computing" | "succeeded" | "failed";
+      summary: {
+        buy_count: number;
+        closed_trade_count: number;
+        comment_rule_id: string | null;
+        open_position: boolean;
+        total_return: number | null;
+      } | null;
+    }>;
+    set_version: string;
+    status: "ready" | "computing" | "failed" | "completed" | "set_completed";
+    total: number;
+    validation: {
+      errors: Array<{
+        message: string;
+        path: string;
+      }>;
+      valid: boolean;
+    };
+  };
+};
+
+export type PracticeStateResponse =
+  PracticeStateResponses[keyof PracticeStateResponses];
+
 export type AdminListPremiumPlansGetApiV2PremiumAdminPlansData = {
   body?: never;
   path?: never;
@@ -38420,6 +40755,333 @@ export type ReferralsControllerMine1Responses = {
 
 export type ReferralsControllerMine1Response =
   ReferralsControllerMine1Responses[keyof ReferralsControllerMine1Responses];
+
+export type GetShopData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/shop";
+};
+
+export type GetShopErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetShopError = GetShopErrors[keyof GetShopErrors];
+
+export type GetShopResponses = {
+  200: {
+    active: {
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      revision: number;
+      updated_at: string | null;
+    };
+    catalog: Array<{
+      asset_root: string;
+      asset_slug: string;
+      for_sale: boolean;
+      is_default: boolean;
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      name: string;
+      price_xu: number;
+      sort_order: number;
+    }>;
+    catalog_version: string;
+    owned: Array<{
+      acquired_at: string | null;
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      source: "default" | "purchase" | "legacy_grant";
+    }>;
+    owned_count: number;
+    provisioned: boolean;
+    total_count: number;
+    totals: {
+      earned_xu: number;
+      lessons_rewarded: number;
+      spent_xu: number;
+    };
+    wallet: {
+      balance: number;
+      last_seq: number;
+    };
+  };
+};
+
+export type GetShopResponse = GetShopResponses[keyof GetShopResponses];
+
+export type SetShopActiveMascotData = {
+  body: {
+    expected_revision: number;
+    mascot_id: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/shop/active-mascot";
+};
+
+export type SetShopActiveMascotErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * MASCOT_NOT_OWNED, or REVISION_CONFLICT (details[0] has current_revision/active_mascot_id)
+   */
+  409: unknown;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type SetShopActiveMascotError =
+  SetShopActiveMascotErrors[keyof SetShopActiveMascotErrors];
+
+export type SetShopActiveMascotResponses = {
+  200: {
+    active: {
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      revision: number;
+      updated_at: string | null;
+    };
+    changed: boolean;
+  };
+};
+
+export type SetShopActiveMascotResponse =
+  SetShopActiveMascotResponses[keyof SetShopActiveMascotResponses];
+
+export type ListShopCoinLedgerData = {
+  body?: never;
+  path?: never;
+  query?: {
+    cursor?: string;
+    limit?: number;
+  };
+  url: "/api/v2/shop/coin-ledger";
+};
+
+export type ListShopCoinLedgerErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ListShopCoinLedgerError =
+  ListShopCoinLedgerErrors[keyof ListShopCoinLedgerErrors];
+
+export type ListShopCoinLedgerResponses = {
+  200: {
+    items: Array<{
+      balance_after: number;
+      created_at: string;
+      delta: number;
+      id: string;
+      kind: "lesson_first_completion" | "mascot_purchase" | "adjustment";
+      label: {
+        lesson_id: string | null;
+        lesson_key: string | null;
+        mascot_id: string | null;
+        mascot_name: string | null;
+      };
+      seq: number;
+    }>;
+    next_cursor: string | null;
+  };
+};
+
+export type ListShopCoinLedgerResponse =
+  ListShopCoinLedgerResponses[keyof ListShopCoinLedgerResponses];
+
+export type PurchaseShopMascotData = {
+  body: {
+    catalog_version: string;
+    expected_price_xu: number;
+    idempotency_key: string;
+    mascot_id: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/shop/purchases";
+};
+
+export type PurchaseShopMascotErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * IDEMPOTENCY_KEY_REUSED (same key, different payload), CATALOG_CHANGED, PRICE_CHANGED, MASCOT_NOT_FOR_SALE, INSUFFICIENT_XU (details[0] has balance_xu/price_xu/shortfall_xu)
+   */
+  409: unknown;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PurchaseShopMascotError =
+  PurchaseShopMascotErrors[keyof PurchaseShopMascotErrors];
+
+export type PurchaseShopMascotResponses = {
+  200: {
+    active: {
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      revision: number;
+      updated_at: string | null;
+    };
+    catalog_version: string;
+    owned: Array<{
+      acquired_at: string | null;
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      source: "default" | "purchase" | "legacy_grant";
+    }>;
+    purchase: {
+      catalog_version: string;
+      created_at: string;
+      id: string;
+      idempotency_key: string;
+      ledger_id: string;
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      price_xu: number;
+    } | null;
+    replayed: boolean;
+    status: "purchased" | "already_owned";
+    wallet: {
+      balance: number;
+      last_seq: number;
+    };
+  };
+};
+
+export type PurchaseShopMascotResponse =
+  PurchaseShopMascotResponses[keyof PurchaseShopMascotResponses];
+
+export type GetShopPurchaseStatusData = {
+  body?: never;
+  path: {
+    idempotencyKey: string;
+  };
+  query?: never;
+  url: "/api/v2/shop/purchases/{idempotencyKey}";
+};
+
+export type GetShopPurchaseStatusErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetShopPurchaseStatusError =
+  GetShopPurchaseStatusErrors[keyof GetShopPurchaseStatusErrors];
+
+export type GetShopPurchaseStatusResponses = {
+  200: {
+    idempotency_key: string;
+    purchase: {
+      catalog_version: string;
+      created_at: string;
+      id: string;
+      idempotency_key: string;
+      ledger_id: string;
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      price_xu: number;
+    } | null;
+    status: "completed" | "not_found";
+    wallet: {
+      balance: number;
+      last_seq: number;
+    };
+  };
+};
+
+export type GetShopPurchaseStatusResponse =
+  GetShopPurchaseStatusResponses[keyof GetShopPurchaseStatusResponses];
 
 export type StrategyBacktestsListData = {
   body?: never;
@@ -40989,13 +43651,28 @@ export type StrategyConfigGetSharedConfigResponses = {
         };
       };
       revision: number;
-      rule_version: "iqx-rules-2.0";
+      rule_version: "iqx-rules-3.0";
       schema_version: "2.0";
     };
     config_hash: string;
     effective_revision: number | null;
     effective_session: string | null;
     granted_indicators: Array<string>;
+    legacy?: {
+      buy: {
+        indicators: Array<string>;
+        status: "ok" | "legacy_needs_review";
+      };
+      defaulted_indicators: Array<string>;
+      from_rule_version: string;
+      legacy: boolean;
+      needs_review: boolean;
+      removed_indicators: Array<string>;
+      sell: {
+        indicators: Array<string>;
+        status: "ok" | "legacy_needs_review";
+      };
+    } | null;
     registry_version: string;
     saved_revision: number;
     status: "pending" | "effective" | "calendar_unavailable";
@@ -41435,7 +44112,7 @@ export type StrategyConfigPatchSharedConfigResponses = {
         };
       };
       revision: number;
-      rule_version: "iqx-rules-2.0";
+      rule_version: "iqx-rules-3.0";
       schema_version: "2.0";
     };
     config_hash: string;
@@ -41491,6 +44168,7 @@ export type StrategyConfigListRevisionsResponses = {
   200: Array<{
     config_hash: string;
     effective_session: string | null;
+    legacy: boolean;
     revision: number;
     saved_at: string;
     status: "pending" | "effective" | "calendar_unavailable";
@@ -42794,6 +45472,142 @@ export type CheckWatchlistItemV2Responses = {
 
 export type CheckWatchlistItemV2Response =
   CheckWatchlistItemV2Responses[keyof CheckWatchlistItemV2Responses];
+
+export type EnsureWorkspaceData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/workspace/ensure";
+};
+
+export type EnsureWorkspaceErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type EnsureWorkspaceError =
+  EnsureWorkspaceErrors[keyof EnsureWorkspaceErrors];
+
+export type EnsureWorkspaceResponses = {
+  200: {
+    created: {
+      bot: boolean;
+      manual_account: boolean;
+      mascot_profile: boolean;
+      wallet: boolean;
+    };
+    state: {
+      bot: {
+        account_id: string | null;
+        cash_vnd: number | null;
+        exists: boolean;
+        instance_id: string | null;
+      };
+      manual_account: {
+        account_id: string | null;
+        cash_available_vnd: number | null;
+        exists: boolean;
+        initial_cash_vnd: number | null;
+        total_cash_vnd: number | null;
+      };
+      mascot: {
+        active_mascot_id:
+          "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+        provisioned: boolean;
+        revision: number;
+      };
+      wallet: {
+        balance: number;
+        provisioned: boolean;
+      };
+    };
+  };
+};
+
+export type EnsureWorkspaceResponse =
+  EnsureWorkspaceResponses[keyof EnsureWorkspaceResponses];
+
+export type GetWorkspaceStateData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/workspace/state";
+};
+
+export type GetWorkspaceStateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetWorkspaceStateError =
+  GetWorkspaceStateErrors[keyof GetWorkspaceStateErrors];
+
+export type GetWorkspaceStateResponses = {
+  200: {
+    bot: {
+      account_id: string | null;
+      cash_vnd: number | null;
+      exists: boolean;
+      instance_id: string | null;
+    };
+    manual_account: {
+      account_id: string | null;
+      cash_available_vnd: number | null;
+      exists: boolean;
+      initial_cash_vnd: number | null;
+      total_cash_vnd: number | null;
+    };
+    mascot: {
+      active_mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      provisioned: boolean;
+      revision: number;
+    };
+    wallet: {
+      balance: number;
+      provisioned: boolean;
+    };
+  };
+};
+
+export type GetWorkspaceStateResponse =
+  GetWorkspaceStateResponses[keyof GetWorkspaceStateResponses];
 
 export type HealthLiveData = {
   body?: never;
