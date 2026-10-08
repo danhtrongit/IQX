@@ -11,6 +11,9 @@ import { api, ApiError } from "@/lib/api"
 import type { MascotId } from "../journey/types"
 
 export type WorkspaceState = {
+  /** `GET /api/v2/workspace/state`: the active mascot is `mascot.active_mascot_id`. */
+  mascot?: { active_mascot_id?: string | null; revision?: number } | null
+  /** Older local shape, still accepted. */
   active_mascot?: { mascot_id?: string | null } | null
 }
 
@@ -41,7 +44,7 @@ export async function fetchWorkspaceState(signal?: AbortSignal): Promise<Workspa
 
 /** The mascot to draw: the account's active one, else the default. Unknown ids never reach the renderer. */
 export function resolveActiveMascotId(state: WorkspaceState | null | undefined): MascotId {
-  const id = state?.active_mascot?.mascot_id
+  const id = state?.mascot?.active_mascot_id ?? state?.active_mascot?.mascot_id
   return MASCOT_IDS.find((candidate) => candidate === id) ?? DEFAULT_MASCOT_ID
 }
 

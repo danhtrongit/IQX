@@ -85,6 +85,8 @@ describe("Header", () => {
     const nav = within(header).getByRole("navigation", { name: "Điều hướng chính" })
     expect(within(nav).getAllByRole("link").map((link) => link.textContent)).toEqual(SHARED_NAV.map(([label]) => label))
     expect(within(header).queryByRole("link", { name: "Bắt đầu ngay" })).toBeNull()
+    // Guests have no coin wallet, so the header carries no coin chip for them.
+    expect(within(header).queryByTestId("header-coin-chip")).toBeNull()
     await user.click(within(header).getByRole("button", { name: "Đăng nhập" }))
     expect(openAuth).toHaveBeenCalledOnce()
   })

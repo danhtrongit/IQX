@@ -126,4 +126,10 @@ describe("active mascot", () => {
     expect(resolveActiveMascotId({})).toBe("bach_ho")
     expect(resolveActiveMascotId(null)).toBe("bach_ho")
   })
+
+  it("reads the shape GET /workspace/state really returns (mascot.active_mascot_id)", () => {
+    expect(resolveActiveMascotId({ mascot: { active_mascot_id: "kim_quy", revision: 4 } })).toBe("kim_quy")
+    expect(resolveActiveMascotId({ mascot: { active_mascot_id: "egg" } })).toBe("bach_ho")
+    expect(resolveActiveMascotId({ mascot: { active_mascot_id: "thanh_long" }, active_mascot: { mascot_id: "kim_quy" } })).toBe("thanh_long")
+  })
 })

@@ -8,7 +8,10 @@ import { demoChrome } from "@/config/chrome"
 import { RailProvider } from "@/context/rail"
 import { DemoTradingPage } from "./demo-trading-page"
 import { demoTradingLoader } from "./workspace-url"
+import { createShopBackend, type ShopBackend } from "./shop/shop-test-support"
 import { resetEnsuredWorkspaces } from "./workspace/workspace-api"
+
+let shopBackend: ShopBackend
 
 const mocks = vi.hoisted(() => ({
   api: vi.fn(),
@@ -63,6 +66,7 @@ async function respond(path: string, init?: RequestInit): Promise<unknown> {
     if (mocks.workspaceStatus === 404) throw new ApiError("Not found", 404)
     return { data: { active_mascot: mocks.mascot ? { mascot_id: mocks.mascot } : null } }
   }
+  if (path === "/shop" || path.startsWith("/shop/") || path === "/academy/progress") return shopBackend.handle(path, init)
   if (path === "/virtual-trading/account") return account
   if (path === "/virtual-trading/portfolio") {
     return { account, positions: [], total_market_value_vnd: 0, nav_vnd: 100_000_000, total_unrealized_pnl_vnd: 0, return_pct: 0, refresh_warnings: [] }
@@ -110,6 +114,7 @@ const panel = () => screen.getByRole("complementary")
 beforeEach(() => {
   mocks.api.mockReset()
   mocks.api.mockImplementation(respond)
+  shopBackend = createShopBackend({ balance: 300, lessons: 3 })
   mocks.mascot = "bach_ho"
   mocks.workspaceStatus = 200
   resetEnsuredWorkspaces()
@@ -183,7 +188,7 @@ describe("DemoTradingPage for a brand-new user", () => {
     unmount()
 
     await renderPage("/demo-trading?view=shop")
-    await waitFor(() => expect(screen.getByTestId("shop-empty")).toBeTruthy())
+    await waitFor(() => expect(screen.getByRole("heading", { name: "Linh thú" })).toBeTruthy())
     expect(paths().filter((call) => call === "POST /workspace/ensure")).toHaveLength(1)
   })
 
@@ -213,7 +218,9 @@ describe("DemoTradingPage for a brand-new user", () => {
 
     await user.click(within(rail()).getByRole("button", { name: "Shop" }))
     expect(await within(panel()).findByRole("heading", { name: "Shop" })).toBeTruthy()
-    expect(screen.getByTestId("shop-empty")).toBeTruthy()
+    expect(await screen.findByRole("heading", { name: "Linh thú" })).toBeTruthy()
+    expect((await within(panel()).findByTestId("shop-balance")).textContent).toBe("300")
+    expect(within(panel()).getByRole("button", { name: /Vào Học viện/ })).toBeTruthy()
 
     await user.click(within(rail()).getByRole("button", { name: "Săn mã" }))
     expect(await within(panel()).findByRole("heading", { name: "Săn mã" })).toBeTruthy()

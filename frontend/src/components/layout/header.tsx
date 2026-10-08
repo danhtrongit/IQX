@@ -7,9 +7,12 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { HEADER_NAV } from "@/config/chrome"
+import { useAuth } from "@/hooks/use-auth"
 import { useResolvedTheme } from "@/hooks/use-resolved-theme"
 import { headerDestination, isHeaderLinkActive } from "@/lib/header-navigation"
+import { cn } from "@/lib/utils"
 
+import { HeaderCoinChip } from "./header-coin-chip"
 import { LoginDialog } from "./login-dialog"
 import { HeaderSearch } from "./header-search"
 
@@ -94,6 +97,8 @@ function MobileHeaderMenu({ items, isIntroduction }: {
 export function Header() {
   const { setTheme } = useTheme()
   const resolved = useResolvedTheme()
+  // Signed-in accounts also get the coin chip, so the right-hand controls are packed tighter on phones.
+  const { user } = useAuth()
   const { pathname, key: locationKey } = useLocation()
   const isIntroduction = pathname === "/" || pathname === "/gioi-thieu"
 
@@ -120,7 +125,8 @@ export function Header() {
           <HeaderLinks items={NAV_ITEMS} />
         </nav>
       </ScrollArea>
-      <div className="ml-auto flex shrink-0 items-center gap-2">
+      <div className={cn("ml-auto flex shrink-0 items-center gap-2", user && "max-sm:gap-1")}>
+        <HeaderCoinChip />
         <HeaderSearch />
         <Button
           variant="ghost"
@@ -130,7 +136,7 @@ export function Header() {
         >
           {resolved === "dark" ? <Sun /> : <Moon />}
         </Button>
-        <div className="min-w-0 [&>button]:max-w-28 sm:[&>button]:max-w-40">
+        <div className={cn("min-w-0 [&>button]:max-w-28 sm:[&>button]:max-w-40", user && "max-[420px]:[&>button]:max-w-[4.75rem]")}>
           <LoginDialog />
         </div>
         {isIntroduction && (

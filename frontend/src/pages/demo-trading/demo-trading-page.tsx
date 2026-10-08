@@ -18,12 +18,12 @@ import { NewsPanel } from "./market/news-panel"
 import { PatternsPanel } from "./market/patterns-panel"
 import { QuoteSummary } from "./market/quote-summary"
 import { PortfolioPanel } from "./portfolio/portfolio-panel"
+import { ShopMain, ShopPanel } from "./shop"
 import { TradingRuntime } from "./trading"
 import { OrderPanel } from "./trading/order-panel"
 import { AccountStrip } from "./workspace/account-strip"
 import { AcademyPanel } from "./workspace/academy-panel"
 import { MascotStage } from "./workspace/mascot-stage"
-import { ShopPanel } from "./workspace/shop-panel"
 import { useWorkspace } from "./workspace/use-workspace"
 
 const ChartPage = lazy(() => import("@/pages/charts/chart-page").then((module) => ({ default: module.ChartPage })))
@@ -43,7 +43,7 @@ const TOOL_HEADINGS: Record<string, { title: string; subtitle: string }> = {
   trading: { title: "Demo Trading", subtitle: "Tự đặt lệnh · Vốn mô phỏng 100.000.000 đồng" },
   portfolio: { title: "Danh mục", subtitle: "Tài khoản tự giao dịch và danh sách theo dõi" },
   bot: { title: "Bot", subtitle: "Linh thú và điều kiện giao dịch của bạn." },
-  shop: { title: "Shop", subtitle: "Xu học tập và linh thú" },
+  shop: { title: "Shop", subtitle: "" },
   hunt: { title: "Săn mã", subtitle: "Tìm cổ phiếu · Lưu vào danh mục theo dõi" },
   news: { title: "Tin tức", subtitle: "Tin AI theo mã đang xem" },
   patterns: { title: "Mẫu nến", subtitle: "Mẫu nến và mẫu hình giá của mã đang xem" },
@@ -89,12 +89,14 @@ function Overview({ toolId, symbol, mascotId, onSymbolChange, onNavigate }: {
     <section aria-labelledby="workspace-heading" className="flex min-h-0 min-w-0 flex-1 flex-col">
       <header className="flex min-h-16 shrink-0 flex-col justify-center gap-0.5 border-b border-border bg-card px-3 py-2 min-[901px]:px-4">
         <h1 id="workspace-heading" className="truncate font-heading text-base font-bold min-[901px]:text-lg">{heading.title}</h1>
-        <p className="truncate text-xs text-muted-foreground">{heading.subtitle}</p>
+        {heading.subtitle && <p className="truncate text-xs text-muted-foreground">{heading.subtitle}</p>}
       </header>
       <ScrollArea className="min-h-0 flex-1" viewportClassName="[&>div]:!block">
         <div className="min-w-0 space-y-3 p-1.5 min-[901px]:p-3 min-[1750px]:p-5">
           {toolId === "hunt" ? (
             <HuntMain symbol={symbol} onSymbolChange={onSymbolChange} onNavigate={onNavigate} />
+          ) : toolId === "shop" ? (
+            <ShopMain onNavigate={onNavigate} />
           ) : (
             <>
               {SYMBOL_TOOLS.has(toolId) && (
@@ -141,7 +143,7 @@ function DemoWorkspace() {
       case "news": return <NewsPanel symbol={symbol} />
       case "patterns": return <PatternsPanel symbol={symbol} />
       case "bot": return <BotPanel />
-      case "shop": return <ShopPanel />
+      case "shop": return <ShopPanel onNavigate={navigatePanel} />
       default: return <AcademyPanel />
     }
   }
