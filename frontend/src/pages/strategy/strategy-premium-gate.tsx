@@ -1,10 +1,8 @@
 /**
- * Cổng truy cập của `/chien-luoc` — cả hai tab (Cảnh báo, Backtest) đều là tính
- * năng Premium, đúng như `PremiumGate` bao ngoài `StrategyPage` ở bản dashboard cũ.
- *
- * Bản cũ vẫn render nội dung mờ cho người chưa mua gói; ở đây nội dung Premium
- * KHÔNG được render (mọi endpoint đều premium-gated ở server, gọi khi chưa đủ
- * quyền chỉ tổ nhận 403), thay bằng thông báo rõ ràng và nút đăng nhập.
+ * Cổng truy cập của `/chien-luoc`: cả ba tab (Cảnh báo, Backtest, Bộ lọc) là tính năng Premium.
+ * Nội dung Premium KHÔNG được render khi chưa đăng nhập hoặc chưa có gói (mọi endpoint đều có guard
+ * ở server, gọi khi chưa đủ quyền chỉ nhận 403); thay vào đó là thông báo rõ ràng và nút đăng nhập.
+ * Cổng này chỉ là trình bày: server vẫn là nơi quyết định quyền.
  */
 import type { ReactNode } from "react"
 import { Link } from "react-router"
@@ -32,7 +30,7 @@ export function StrategyPremiumGate({ children }: { children: ReactNode }) {
       <div className="mx-auto w-full max-w-[960px] p-4 sm:p-6">
         <PanelState
           title="Cần đăng nhập"
-          description="Cảnh báo tín hiệu và backtest dành cho tài khoản IQX. Đăng nhập để tiếp tục — hành trình học của bạn không bị ảnh hưởng."
+          description="Cảnh báo, Backtest và Bộ lọc dành cho tài khoản IQX. Đăng nhập để tiếp tục: tiến độ học của bạn không bị ảnh hưởng."
           action={{ label: "Đăng nhập", onClick: () => openAuth("login") }}
         />
       </div>
@@ -44,7 +42,7 @@ export function StrategyPremiumGate({ children }: { children: ReactNode }) {
       <div className="mx-auto w-full max-w-[960px] p-4 sm:p-6">
         <PanelState
           title="Cần gói Premium"
-          description="Cảnh báo tín hiệu kỹ thuật theo watchlist và bộ backtest chiến lược chỉ dành cho tài khoản Premium."
+          description="Cảnh báo tín hiệu kỹ thuật, Backtest chiến lược và Bộ lọc doanh nghiệp chỉ dành cho tài khoản Premium."
         />
         <div className="flex justify-center pb-6"><Button asChild><Link to="/nang-cap">Xem gói Premium</Link></Button></div>
       </div>

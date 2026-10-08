@@ -1,188 +1,136 @@
 /**
- * REST client của tab Bộ lọc (bot-v2) — `.pi/botv2/CONTRACTS.md` §5.
+ * Bộ lọc client: screener metrics/run/results, saved filters (definition 3.0), saved lists and
+ * result snapshots, all through the generated contract.
  *
- * - `GET  /strategy/screener/metrics` — 42 chỉ tiêu registry + cờ learned/supported
- * - `POST /strategy/screener/run` — chạy định nghĩa bộ lọc (filter.schema.json)
- * - `GET/POST /strategy/filters`, `GET/PUT/DELETE /strategy/filters/{id}` — bộ lọc
- *   đã lưu, mỗi lần PUT tạo phiên bản mới
- * - `GET/POST /strategy/lists`, `GET/DELETE /strategy/lists/{id}` — danh sách tĩnh
- *
- * Premium + cờ `STRATEGY_V2_ENABLED`: cờ tắt → 404 `FEATURE_DISABLED`; điều kiện
- * trên chỉ tiêu chưa học → 403 `CAPABILITY_LOCKED`.
+ * Three different saves, never mixed: a filter (criteria only, re-resolved at each run), a list
+ * (the symbols and the evidence of one result) and a result snapshot (the rows frozen). Lists and
+ * snapshots are always created from a result the SERVER holds (`run_id`): symbols are never
+ * client-supplied.
  */
-import { api as sharedApi, ApiError } from "@/lib/api"
+import { requestOperation } from "@/lib/contract-client"
+import type { ApiRequestFor } from "@/lib/contract-types"
 
 import type {
-  CreateListBody,
   FilterDefinition,
+  ResultPage,
+  ResultSnapshot,
+  ResultSnapshotSummary,
+  RunResult,
   SavedFilter,
   SavedList,
   ScreenerMetric,
-  ScreenerRunResult,
+  Selection,
 } from "./types"
 
-type Raw = Record<string, unknown>
+export const RESULT_PAGE_SIZE = 50
 
-/** Route v2 trả tài nguyên trong `data`; chấp nhận cả payload trần. */
-async function unwrap<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const payload = await sharedApi<unknown>(path, options)
-  if (payload && typeof payload === "object" && !Array.isArray(payload) && "data" in payload) {
-    return (payload as { data: T }).data
-  }
-  return payload as T
+export function getScreenerMetrics(signal?: AbortSignal): Promise<ScreenerMetric[]> {
+  return requestOperation("GET /api/v2/strategy/screener/metrics", {}, { signal })
 }
 
-function record(value: unknown): Raw | null {
-  return value && typeof value === "object" && !Array.isArray(value) ? (value as Raw) : null
+export function runScreener(definition: FilterDefinition, signal?: AbortSignal): Promise<RunResult> {
+  return requestOperation("POST /api/v2/strategy/screener/run", { body: definition }, { signal })
 }
 
-function rows(payload: unknown): unknown[] {
-  if (Array.isArray(payload)) return payload
-  const wrapped = record(payload)
-  if (!wrapped) return []
-  const items = wrapped.items ?? wrapped.data
-  return Array.isArray(items) ? items : []
-}
-
-function str(value: unknown): string | null {
-  return typeof value === "string" && value.trim() !== "" ? value : null
-}
-
-function num(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null
-}
-
-function definitionOf(raw: Raw): FilterDefinition | null {
-  const direct = record(raw.definition)
-  if (direct) return direct as unknown as FilterDefinition
-  const current = record(raw.current)
-  const nested = current ? record(current.definition) : null
-  if (nested) return nested as unknown as FilterDefinition
-  const versions = Array.isArray(raw.versions) ? raw.versions.map(record).filter((v): v is Raw => !!v) : []
-  const latest = versions.reduce<Raw | null>(
-    (best, version) => (best === null || (num(version.version) ?? 0) > (num(best.version) ?? 0) ? version : best),
-    null,
+export function getResultPage(
+  resultId: string,
+  query: { offset: number; limit: number; passedOnly: boolean },
+  signal?: AbortSignal,
+): Promise<ResultPage> {
+  return requestOperation(
+    "GET /api/v2/strategy/screener/results/{resultId}",
+    { path: { resultId }, query: { offset: query.offset, limit: query.limit, passed_only: query.passedOnly } },
+    { signal },
   )
-  const fromVersion = latest ? record(latest.definition) : null
-  return fromVersion ? (fromVersion as unknown as FilterDefinition) : null
 }
 
-function toSavedFilter(payload: unknown): SavedFilter | null {
-  const raw = record(payload)
-  const id = raw ? str(raw.id) : null
-  if (!raw || !id) return null
-  return {
-    id,
-    name: str(raw.name) ?? "Bộ lọc",
-    current_version: num(raw.current_version) ?? num(raw.version) ?? 1,
-    definition: definitionOf(raw),
-    created_at: str(raw.created_at),
-    updated_at: str(raw.updated_at),
-  }
-}
-
-function toSavedList(payload: unknown): SavedList | null {
-  const raw = record(payload)
-  const id = raw ? str(raw.id) : null
-  if (!raw || !id) return null
-  return {
-    id,
-    name: str(raw.name) ?? "Danh sách",
-    filter_id: str(raw.filter_id),
-    filter_version: num(raw.filter_version),
-    tickers: Array.isArray(raw.tickers) ? raw.tickers.filter((t): t is string => typeof t === "string") : [],
-    as_of: str(raw.as_of) ?? "",
-    data_source: str(raw.data_source) ?? "",
-    scope: (record(raw.scope) as SavedList["scope"]) ?? null,
-    created_at: str(raw.created_at),
-  }
-}
-
-function required<T>(value: T | null, message: string): T {
-  if (value === null) throw new ApiError(message, 502, { code: "INVALID_RESPONSE" })
-  return value
-}
-
-function jsonBody(method: string, body: unknown, signal?: AbortSignal): RequestInit {
-  return {
-    method,
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-    signal,
-  }
-}
-
-/* ── Screener ─────────────────────────────────────────────────────────── */
-
-export async function getScreenerMetrics(signal?: AbortSignal): Promise<ScreenerMetric[]> {
-  const payload = await unwrap<unknown>("/strategy/screener/metrics", { signal })
-  const list = Array.isArray(payload) ? payload : (record(payload)?.metrics ?? rows(payload))
-  return (Array.isArray(list) ? list : []) as ScreenerMetric[]
-}
-
-export function runScreener(definition: FilterDefinition, signal?: AbortSignal): Promise<ScreenerRunResult> {
-  return unwrap<ScreenerRunResult>("/strategy/screener/run", jsonBody("POST", definition, signal))
-}
-
-/* ── Bộ lọc đã lưu ────────────────────────────────────────────────────── */
+/* ── Saved filters ───────────────────────────────────────────────────────── */
 
 export async function listFilters(signal?: AbortSignal): Promise<SavedFilter[]> {
-  const payload = await unwrap<unknown>("/strategy/filters", { signal })
-  return rows(payload).flatMap((item) => {
-    const filter = toSavedFilter(item)
-    return filter ? [filter] : []
-  })
+  return (await requestOperation("GET /api/v2/strategy/filters", {}, { signal })).items
 }
 
-export async function getFilter(id: string, signal?: AbortSignal): Promise<SavedFilter> {
-  const payload = await unwrap<unknown>(`/strategy/filters/${encodeURIComponent(id)}`, { signal })
-  return required(toSavedFilter(payload), "Máy chủ trả về bộ lọc không hợp lệ.")
+export function createFilter(body: { name: string; definition: FilterDefinition; idempotency_key?: string }) {
+  return requestOperation("POST /api/v2/strategy/filters", { body })
 }
 
-export async function createFilter(body: { name: string; definition: FilterDefinition }): Promise<SavedFilter> {
-  const payload = await unwrap<unknown>("/strategy/filters", jsonBody("POST", body))
-  return required(toSavedFilter(payload), "Máy chủ trả về bộ lọc không hợp lệ.")
-}
-
-/** `PUT /strategy/filters/{id}` — tạo phiên bản mới của bộ lọc. */
-export async function updateFilter(
-  id: string,
-  body: { name: string; definition: FilterDefinition },
-): Promise<SavedFilter> {
-  const payload = await unwrap<unknown>(`/strategy/filters/${encodeURIComponent(id)}`, jsonBody("PUT", body))
-  return required(toSavedFilter(payload), "Máy chủ trả về bộ lọc không hợp lệ.")
+/** A new version of an existing filter (an unchanged definition keeps the current version). */
+export function updateFilter(id: string, body: { name: string; definition: FilterDefinition }) {
+  return requestOperation("PUT /api/v2/strategy/filters/{filterId}", { path: { filterId: id }, body })
 }
 
 export async function deleteFilter(id: string): Promise<void> {
-  await sharedApi<unknown>(`/strategy/filters/${encodeURIComponent(id)}`, { method: "DELETE" })
+  await requestOperation("DELETE /api/v2/strategy/filters/{filterId}", { path: { filterId: id } })
 }
 
-/* ── Danh sách tĩnh ───────────────────────────────────────────────────── */
+/* ── Saved lists ("Danh mục đã lưu") ─────────────────────────────────────── */
 
+/** Lists the user saved on purpose; internal lists made only for "Áp dụng cho Bot" are not included. */
 export async function listLists(signal?: AbortSignal): Promise<SavedList[]> {
-  const payload = await unwrap<unknown>("/strategy/lists", { signal })
-  return rows(payload).flatMap((item) => {
-    const list = toSavedList(item)
-    return list ? [list] : []
+  return (await requestOperation("GET /api/v2/strategy/lists", {}, { signal })).items
+}
+
+export function getList(id: string, signal?: AbortSignal): Promise<SavedList> {
+  return requestOperation("GET /api/v2/strategy/lists/{listId}", { path: { listId: id } }, { signal })
+}
+
+/** 409 `LIST_IN_USE_BY_BOT` while the Bot uses the list as an effective or pending buy source. */
+export async function deleteList(id: string): Promise<void> {
+  await requestOperation("DELETE /api/v2/strategy/lists/{listId}", { path: { listId: id } })
+}
+
+type FromResultBody = ApiRequestFor<"POST /api/v2/strategy/lists/from-result">["body"]
+
+export function createListFromResult(input: {
+  name: string
+  runId: string
+  selection: Selection
+  visibility: "saved" | "internal"
+  filterId?: string
+  filterVersion?: number
+  idempotencyKey?: string
+}): Promise<SavedList> {
+  const body: FromResultBody = {
+    name: input.name,
+    run_id: input.runId,
+    selection: input.selection,
+    visibility: input.visibility,
+    ...(input.filterId ? { filter_id: input.filterId, ...(input.filterVersion ? { filter_version: input.filterVersion } : {}) } : {}),
+    ...(input.idempotencyKey ? { idempotency_key: input.idempotencyKey } : {}),
+  }
+  return requestOperation("POST /api/v2/strategy/lists/from-result", { body })
+}
+
+/* ── Result snapshots ("Kết quả đã lưu") ─────────────────────────────────── */
+
+export async function listSnapshots(signal?: AbortSignal): Promise<ResultSnapshotSummary[]> {
+  return (await requestOperation("GET /api/v2/strategy/result-snapshots", {}, { signal })).items
+}
+
+export function getSnapshot(id: string, signal?: AbortSignal): Promise<ResultSnapshot> {
+  return requestOperation("GET /api/v2/strategy/result-snapshots/{snapshotId}", { path: { snapshotId: id } }, { signal })
+}
+
+export function createSnapshot(input: {
+  name: string
+  runId: string
+  selection: Selection
+  filterId?: string
+  filterVersion?: number
+  idempotencyKey?: string
+}): Promise<ResultSnapshot> {
+  return requestOperation("POST /api/v2/strategy/result-snapshots", {
+    body: {
+      name: input.name,
+      run_id: input.runId,
+      selection: input.selection,
+      visibility: "saved",
+      ...(input.filterId ? { filter_id: input.filterId, ...(input.filterVersion ? { filter_version: input.filterVersion } : {}) } : {}),
+      ...(input.idempotencyKey ? { idempotency_key: input.idempotencyKey } : {}),
+    },
   })
 }
 
-export async function getList(id: string, signal?: AbortSignal): Promise<SavedList> {
-  const payload = await unwrap<unknown>(`/strategy/lists/${encodeURIComponent(id)}`, { signal })
-  return required(toSavedList(payload), "Máy chủ trả về danh sách không hợp lệ.")
-}
-
-export async function createList(body: CreateListBody): Promise<SavedList> {
-  const payload = await unwrap<unknown>("/strategy/lists", jsonBody("POST", body))
-  return required(toSavedList(payload), "Máy chủ trả về danh sách không hợp lệ.")
-}
-
-export async function deleteList(id: string): Promise<void> {
-  await sharedApi<unknown>(`/strategy/lists/${encodeURIComponent(id)}`, { method: "DELETE" })
-}
-
-/* ── Lỗi đặc thù ──────────────────────────────────────────────────────── */
-
-export function isCapabilityLocked(error: unknown): boolean {
-  return error instanceof ApiError && error.status === 403 && error.code === "CAPABILITY_LOCKED"
+export async function deleteSnapshot(id: string): Promise<void> {
+  await requestOperation("DELETE /api/v2/strategy/result-snapshots/{snapshotId}", { path: { snapshotId: id } })
 }

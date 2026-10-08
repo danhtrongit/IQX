@@ -2744,86 +2744,127 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 371,
-      "callee": "api",
-      "raw": "/backtest/catalog",
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 37,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/alerts",
       "method": "GET",
-      "route": "/api/v2/backtest/catalog",
-      "matchedOperation": "GET /api/v2/backtest/catalog",
+      "route": "/api/v2/strategy/alerts",
+      "matchedOperation": "GET /api/v2/strategy/alerts",
       "matchedOperations": [
-        "GET /api/v2/backtest/catalog"
+        "GET /api/v2/strategy/alerts"
       ],
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 380,
-      "callee": "api",
-      "raw": "/backtest/run",
-      "method": "POST",
-      "route": "/api/v2/backtest/run",
-      "matchedOperation": "POST /api/v2/backtest/run",
-      "matchedOperations": [
-        "POST /api/v2/backtest/run"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/strategy/api.ts",
-      "line": 405,
-      "callee": "api",
-      "raw": "/backtest/strategies",
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 41,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/alerts/{alertId}",
       "method": "GET",
-      "route": "/api/v2/backtest/strategies",
-      "matchedOperation": "GET /api/v2/backtest/strategies",
+      "route": "/api/v2/strategy/alerts/{alertId}",
+      "matchedOperation": "GET /api/v2/strategy/alerts/{alertId}",
       "matchedOperations": [
-        "GET /api/v2/backtest/strategies"
+        "GET /api/v2/strategy/alerts/{alertId}",
+        "GET /api/v2/strategy/alerts/events"
       ],
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 418,
-      "callee": "api",
-      "raw": "/backtest/strategies",
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 45,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/strategy/alerts",
       "method": "POST",
-      "route": "/api/v2/backtest/strategies",
-      "matchedOperation": "POST /api/v2/backtest/strategies",
+      "route": "/api/v2/strategy/alerts",
+      "matchedOperation": "POST /api/v2/strategy/alerts",
       "matchedOperations": [
-        "POST /api/v2/backtest/strategies"
+        "POST /api/v2/strategy/alerts"
       ],
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 433,
-      "callee": "api",
-      "raw": "/backtest/strategies/{encodeURIComponent(id)}",
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 49,
+      "callee": "requestOperation",
+      "raw": "PATCH /api/v2/strategy/alerts/{alertId}",
+      "method": "PATCH",
+      "route": "/api/v2/strategy/alerts/{alertId}",
+      "matchedOperation": "PATCH /api/v2/strategy/alerts/{alertId}",
+      "matchedOperations": [
+        "PATCH /api/v2/strategy/alerts/{alertId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 53,
+      "callee": "requestOperation",
+      "raw": "DELETE /api/v2/strategy/alerts/{alertId}",
       "method": "DELETE",
-      "route": "/api/v2/backtest/strategies/{encodeURIComponent(id)}",
-      "matchedOperation": "DELETE /api/v2/backtest/strategies/{strategyId}",
+      "route": "/api/v2/strategy/alerts/{alertId}",
+      "matchedOperation": "DELETE /api/v2/strategy/alerts/{alertId}",
       "matchedOperations": [
-        "DELETE /api/v2/backtest/strategies/{strategyId}"
+        "DELETE /api/v2/strategy/alerts/{alertId}"
       ],
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 491,
-      "callee": "api",
-      "raw": "/alerts/signals",
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 57,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/strategy/alerts/source-preview",
+      "method": "POST",
+      "route": "/api/v2/strategy/alerts/source-preview",
+      "matchedOperation": "POST /api/v2/strategy/alerts/source-preview",
+      "matchedOperations": [
+        "POST /api/v2/strategy/alerts/source-preview"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 64,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/alerts/events",
       "method": "GET",
-      "route": "/api/v2/alerts/signals",
-      "matchedOperation": "GET /api/v2/alerts/signals",
+      "route": "/api/v2/strategy/alerts/events",
+      "matchedOperation": "GET /api/v2/strategy/alerts/{alertId}",
       "matchedOperations": [
-        "GET /api/v2/alerts/signals"
+        "GET /api/v2/strategy/alerts/{alertId}",
+        "GET /api/v2/strategy/alerts/events"
       ],
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 500,
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 69,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/shared-config/revisions",
+      "method": "GET",
+      "route": "/api/v2/strategy/shared-config/revisions",
+      "matchedOperation": "GET /api/v2/strategy/shared-config/revisions",
+      "matchedOperations": [
+        "GET /api/v2/strategy/shared-config/revisions"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 74,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/backtests",
+      "method": "GET",
+      "route": "/api/v2/strategy/backtests",
+      "matchedOperation": "GET /api/v2/strategy/backtests",
+      "matchedOperations": [
+        "GET /api/v2/strategy/backtests"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/alerts/legacy/api.ts",
+      "line": 91,
       "callee": "api",
       "raw": "/alerts/rules",
       "method": "GET",
@@ -2835,21 +2876,8 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 509,
-      "callee": "api",
-      "raw": "/alerts/rules",
-      "method": "POST",
-      "route": "/api/v2/alerts/rules",
-      "matchedOperation": "POST /api/v2/alerts/rules",
-      "matchedOperations": [
-        "POST /api/v2/alerts/rules"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/strategy/api.ts",
-      "line": 526,
+      "file": "src/pages/strategy/alerts/legacy/api.ts",
+      "line": 100,
       "callee": "api",
       "raw": "/alerts/rules/{encodeURIComponent(id)}",
       "method": "PUT",
@@ -2861,8 +2889,8 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 541,
+      "file": "src/pages/strategy/alerts/legacy/api.ts",
+      "line": 108,
       "callee": "api",
       "raw": "/alerts/rules/{encodeURIComponent(id)}",
       "method": "DELETE",
@@ -2874,8 +2902,8 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 546,
+      "file": "src/pages/strategy/alerts/legacy/api.ts",
+      "line": 112,
       "callee": "api",
       "raw": "/alerts/events",
       "method": "GET",
@@ -2887,8 +2915,8 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 568,
+      "file": "src/pages/strategy/alerts/legacy/api.ts",
+      "line": 123,
       "callee": "api",
       "raw": "/alerts/telegram",
       "method": "GET",
@@ -2900,8 +2928,8 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 578,
+      "file": "src/pages/strategy/alerts/legacy/api.ts",
+      "line": 128,
       "callee": "api",
       "raw": "/alerts/telegram/link",
       "method": "POST",
@@ -2913,8 +2941,8 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 584,
+      "file": "src/pages/strategy/alerts/legacy/api.ts",
+      "line": 133,
       "callee": "api",
       "raw": "/alerts/telegram",
       "method": "DELETE",
@@ -2926,12 +2954,142 @@
       "classification": "api-call"
     },
     {
+      "file": "src/pages/strategy/backtest/api.ts",
+      "line": 32,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/strategy/backtests",
+      "method": "POST",
+      "route": "/api/v2/strategy/backtests",
+      "matchedOperation": "POST /api/v2/strategy/backtests",
+      "matchedOperations": [
+        "POST /api/v2/strategy/backtests"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/backtest/api.ts",
+      "line": 36,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/backtests/{id}",
+      "method": "GET",
+      "route": "/api/v2/strategy/backtests/{id}",
+      "matchedOperation": "GET /api/v2/strategy/backtests/{id}",
+      "matchedOperations": [
+        "GET /api/v2/strategy/backtests/{id}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/backtest/api.ts",
+      "line": 40,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/backtests",
+      "method": "GET",
+      "route": "/api/v2/strategy/backtests",
+      "matchedOperation": "GET /api/v2/strategy/backtests",
+      "matchedOperations": [
+        "GET /api/v2/strategy/backtests"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/backtest/api.ts",
+      "line": 45,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/backtests/{id}/trades",
+      "method": "GET",
+      "route": "/api/v2/strategy/backtests/{id}/trades",
+      "matchedOperation": "GET /api/v2/strategy/backtests/{id}/trades",
+      "matchedOperations": [
+        "GET /api/v2/strategy/backtests/{id}/trades"
+      ],
+      "classification": "api-call"
+    },
+    {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 157,
-      "callee": "sharedApi",
-      "raw": "/strategy/filters/{encodeURIComponent(id)}",
+      "line": 28,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/screener/metrics",
+      "method": "GET",
+      "route": "/api/v2/strategy/screener/metrics",
+      "matchedOperation": "GET /api/v2/strategy/screener/metrics",
+      "matchedOperations": [
+        "GET /api/v2/strategy/screener/metrics"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 32,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/strategy/screener/run",
+      "method": "POST",
+      "route": "/api/v2/strategy/screener/run",
+      "matchedOperation": "POST /api/v2/strategy/screener/run",
+      "matchedOperations": [
+        "POST /api/v2/strategy/screener/run"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 40,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/screener/results/{resultId}",
+      "method": "GET",
+      "route": "/api/v2/strategy/screener/results/{resultId}",
+      "matchedOperation": "GET /api/v2/strategy/screener/results/{resultId}",
+      "matchedOperations": [
+        "GET /api/v2/strategy/screener/results/{resultId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 50,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/filters",
+      "method": "GET",
+      "route": "/api/v2/strategy/filters",
+      "matchedOperation": "GET /api/v2/strategy/filters",
+      "matchedOperations": [
+        "GET /api/v2/strategy/filters"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 54,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/strategy/filters",
+      "method": "POST",
+      "route": "/api/v2/strategy/filters",
+      "matchedOperation": "POST /api/v2/strategy/filters",
+      "matchedOperations": [
+        "POST /api/v2/strategy/filters"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 59,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/strategy/filters/{filterId}",
+      "method": "PUT",
+      "route": "/api/v2/strategy/filters/{filterId}",
+      "matchedOperation": "PUT /api/v2/strategy/filters/{filterId}",
+      "matchedOperations": [
+        "PUT /api/v2/strategy/filters/{filterId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 63,
+      "callee": "requestOperation",
+      "raw": "DELETE /api/v2/strategy/filters/{filterId}",
       "method": "DELETE",
-      "route": "/api/v2/strategy/filters/{encodeURIComponent(id)}",
+      "route": "/api/v2/strategy/filters/{filterId}",
       "matchedOperation": "DELETE /api/v2/strategy/filters/{filterId}",
       "matchedOperations": [
         "DELETE /api/v2/strategy/filters/{filterId}"
@@ -2940,14 +3098,105 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 181,
-      "callee": "sharedApi",
-      "raw": "/strategy/lists/{encodeURIComponent(id)}",
+      "line": 70,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/lists",
+      "method": "GET",
+      "route": "/api/v2/strategy/lists",
+      "matchedOperation": "GET /api/v2/strategy/lists",
+      "matchedOperations": [
+        "GET /api/v2/strategy/lists"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 74,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/lists/{listId}",
+      "method": "GET",
+      "route": "/api/v2/strategy/lists/{listId}",
+      "matchedOperation": "GET /api/v2/strategy/lists/{listId}",
+      "matchedOperations": [
+        "GET /api/v2/strategy/lists/{listId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 79,
+      "callee": "requestOperation",
+      "raw": "DELETE /api/v2/strategy/lists/{listId}",
       "method": "DELETE",
-      "route": "/api/v2/strategy/lists/{encodeURIComponent(id)}",
+      "route": "/api/v2/strategy/lists/{listId}",
       "matchedOperation": "DELETE /api/v2/strategy/lists/{listId}",
       "matchedOperations": [
         "DELETE /api/v2/strategy/lists/{listId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 101,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/strategy/lists/from-result",
+      "method": "POST",
+      "route": "/api/v2/strategy/lists/from-result",
+      "matchedOperation": "POST /api/v2/strategy/lists/from-result",
+      "matchedOperations": [
+        "POST /api/v2/strategy/lists/from-result"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 107,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/result-snapshots",
+      "method": "GET",
+      "route": "/api/v2/strategy/result-snapshots",
+      "matchedOperation": "GET /api/v2/strategy/result-snapshots",
+      "matchedOperations": [
+        "GET /api/v2/strategy/result-snapshots"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 111,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/result-snapshots/{snapshotId}",
+      "method": "GET",
+      "route": "/api/v2/strategy/result-snapshots/{snapshotId}",
+      "matchedOperation": "GET /api/v2/strategy/result-snapshots/{snapshotId}",
+      "matchedOperations": [
+        "GET /api/v2/strategy/result-snapshots/{snapshotId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 122,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/strategy/result-snapshots",
+      "method": "POST",
+      "route": "/api/v2/strategy/result-snapshots",
+      "matchedOperation": "POST /api/v2/strategy/result-snapshots",
+      "matchedOperations": [
+        "POST /api/v2/strategy/result-snapshots"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 135,
+      "callee": "requestOperation",
+      "raw": "DELETE /api/v2/strategy/result-snapshots/{snapshotId}",
+      "method": "DELETE",
+      "route": "/api/v2/strategy/result-snapshots/{snapshotId}",
+      "matchedOperation": "DELETE /api/v2/strategy/result-snapshots/{snapshotId}",
+      "matchedOperations": [
+        "DELETE /api/v2/strategy/result-snapshots/{snapshotId}"
       ],
       "classification": "api-call"
     }
@@ -3296,10 +3545,9 @@
     }
   ],
   "unconsumedOperations": [
+    "DELETE /api/v2/backtest/strategies/{strategyId}",
     "DELETE /api/v2/cap5/watchlist/{symbol}",
     "DELETE /api/v2/chart-drawings/{symbol}",
-    "DELETE /api/v2/strategy/alerts/{alertId}",
-    "DELETE /api/v2/strategy/result-snapshots/{snapshotId}",
     "GET /api/v2/admin/alerts/factor-library",
     "GET /api/v2/admin/audit/export",
     "GET /api/v2/admin/metrics/plan-distribution",
@@ -3308,8 +3556,11 @@
     "GET /api/v2/admin/vt/config",
     "GET /api/v2/ai/insight/{symbol}",
     "GET /api/v2/ai/patterns/{kind}/symbols",
+    "GET /api/v2/alerts/signals",
     "GET /api/v2/auth/reset-password",
     "GET /api/v2/auth/verify-email",
+    "GET /api/v2/backtest/catalog",
+    "GET /api/v2/backtest/strategies",
     "GET /api/v2/bot/journal",
     "GET /api/v2/bot/mascot",
     "GET /api/v2/bot/performance",
@@ -3417,21 +3668,8 @@
     "GET /api/v2/media/{token}",
     "GET /api/v2/portfolio-manager/report",
     "GET /api/v2/practice/indicators",
-    "GET /api/v2/strategy/alerts",
-    "GET /api/v2/strategy/alerts/{alertId}",
-    "GET /api/v2/strategy/alerts/events",
     "GET /api/v2/strategy/alerts/events/{eventId}",
-    "GET /api/v2/strategy/backtests",
-    "GET /api/v2/strategy/backtests/{id}",
-    "GET /api/v2/strategy/backtests/{id}/trades",
-    "GET /api/v2/strategy/filters",
     "GET /api/v2/strategy/filters/{filterId}",
-    "GET /api/v2/strategy/lists/{listId}",
-    "GET /api/v2/strategy/result-snapshots",
-    "GET /api/v2/strategy/result-snapshots/{snapshotId}",
-    "GET /api/v2/strategy/screener/metrics",
-    "GET /api/v2/strategy/screener/results/{resultId}",
-    "GET /api/v2/strategy/shared-config/revisions",
     "GET /api/v2/virtual-trading/leaderboard",
     "GET /api/v2/virtual-trading/ledger",
     "GET /api/v2/virtual-trading/trades",
@@ -3444,7 +3682,6 @@
     "PATCH /api/v2/cap4/task",
     "PATCH /api/v2/cap5/task",
     "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop",
-    "PATCH /api/v2/strategy/alerts/{alertId}",
     "POST /api/v2/admin/alerts/telegram/webhook",
     "POST /api/v2/admin/journey/identity/qa-grants",
     "POST /api/v2/admin/lessons/courses/{courseId}/thumbnail",
@@ -3454,7 +3691,10 @@
     "POST /api/v2/ai/dashboard/analyze",
     "POST /api/v2/ai/industry/analyze",
     "POST /api/v2/ai/industry/analyze-batch",
+    "POST /api/v2/alerts/rules",
     "POST /api/v2/auth/refresh",
+    "POST /api/v2/backtest/run",
+    "POST /api/v2/backtest/strategies",
     "POST /api/v2/bot/mascot/ui-events",
     "POST /api/v2/cap0/enter",
     "POST /api/v2/cap0/graduate",
@@ -3502,16 +3742,8 @@
     "POST /api/v2/market-analysis/{type}/run",
     "POST /api/v2/market-data/screening/search",
     "POST /api/v2/premium/sepay/ipn",
-    "POST /api/v2/strategy/alerts",
-    "POST /api/v2/strategy/alerts/source-preview",
-    "POST /api/v2/strategy/backtests",
-    "POST /api/v2/strategy/filters",
     "POST /api/v2/strategy/lists",
-    "POST /api/v2/strategy/lists/from-result",
-    "POST /api/v2/strategy/result-snapshots",
-    "POST /api/v2/strategy/screener/run",
     "POST /api/v2/telegram/webhook/{secret}",
-    "PUT /api/v2/backtest/strategies/{strategyId}",
-    "PUT /api/v2/strategy/filters/{filterId}"
+    "PUT /api/v2/backtest/strategies/{strategyId}"
   ]
 }

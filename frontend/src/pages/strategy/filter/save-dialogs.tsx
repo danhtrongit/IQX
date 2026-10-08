@@ -1,197 +1,145 @@
-/**
- * Hộp thoại lưu của Bộ lọc: lưu bộ lọc (phiên bản mới hoặc bộ lọc mới) và lưu
- * danh sách tĩnh từ các mã đạt; cùng hộp thoại xem một danh sách đã lưu.
- */
-import { useState } from "react"
+import { useId, useState } from "react"
 import { LoaderCircle } from "lucide-react"
 
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-import { staticListLabel } from "./definition"
-import type { SavedList } from "./types"
+import { ErrorLine } from "../shared/controls"
+import { FIELD_LABEL } from "../shared/ui-text"
+import { DialogShell } from "../shared/dialog-shell"
 
-export function SaveFilterDialog({
-  open,
-  onOpenChange,
-  initialName,
-  loadedFilter,
-  pending,
-  error,
-  onSave,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  initialName: string
-  loadedFilter: { id: string; name: string; version: number } | null
-  pending: boolean
-  error: string | null
-  onSave: (input: { name: string; asNewVersionOf: string | null }) => void
-}) {
-  const [name, setName] = useState(initialName)
-  const trimmed = name.trim()
+const NAME_MAX = 120
+
+function NameField({ id, value, onChange, label = "Tên" }: { id: string; value: string; onChange: (value: string) => void; label?: string }) {
   return (
-    <Dialog open={open} onOpenChange={(next) => !pending && onOpenChange(next)}>
-      <DialogContent className="sm:max-w-[440px]">
-        <DialogHeader>
-          <DialogTitle>Lưu bộ lọc</DialogTitle>
-          <DialogDescription>
-            Bộ lọc lưu điều kiện, phạm vi và kỳ dữ liệu. Mỗi lần lưu lại tạo một phiên bản mới; phiên bản cũ được giữ nguyên.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-1.5">
-          <Label htmlFor="filter-save-name">Tên bộ lọc</Label>
-          <Input
-            id="filter-save-name"
-            value={name}
-            maxLength={120}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="Ví dụ: Tăng trưởng + ROE"
-          />
-        </div>
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        <DialogFooter className="gap-2">
-          {loadedFilter && (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={pending || !trimmed}
-              onClick={() => onSave({ name: trimmed, asNewVersionOf: null })}
-            >
-              Lưu thành bộ lọc mới
-            </Button>
-          )}
-          <Button
-            type="button"
-            disabled={pending || !trimmed}
-            onClick={() => onSave({ name: trimmed, asNewVersionOf: loadedFilter?.id ?? null })}
-          >
-            {pending && <LoaderCircle className="size-4 animate-spin" />}
-            {loadedFilter ? `Lưu phiên bản ${loadedFilter.version + 1}` : "Lưu bộ lọc"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <div className="space-y-1.5">
+      <Label htmlFor={id} className={FIELD_LABEL}>{label}</Label>
+      <Input id={id} value={value} maxLength={NAME_MAX} autoComplete="off" onChange={(event) => onChange(event.target.value)} />
+    </div>
   )
 }
 
-export function SaveListDialog({
-  open,
-  onOpenChange,
+/** Save the criteria of the filter (definition 3.0, a period per condition). Does not save any result and does not touch the Bot. */
+export function SaveFilterDialog({
   initialName,
-  asOf,
-  tickerCount,
+  loaded,
+  criteria,
   pending,
   error,
   onSave,
+  onClose,
 }: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
   initialName: string
-  asOf: string
-  tickerCount: number
+  loaded: { id: string; name: string; version: number } | null
+  criteria: string
+  pending: boolean
+  error: string | null
+  onSave: (input: { name: string; newVersionOf: string | null }) => void
+  onClose: () => void
+}) {
+  const id = useId()
+  const [name, setName] = useState(initialName)
+  const [asNew, setAsNew] = useState(false)
+  const trimmed = name.trim()
+  return (
+    <DialogShell
+      title="Lưu bộ lọc"
+      size="sm"
+      dirty={name !== initialName && !pending}
+      busy={pending}
+      onClose={onClose}
+      footer={({ requestClose }) => (
+        <>
+          <Button type="button" variant="outline" onClick={requestClose} disabled={pending}>Hủy</Button>
+          <Button type="button" disabled={pending || trimmed === ""} onClick={() => onSave({ name: trimmed, newVersionOf: loaded && !asNew ? loaded.id : null })}>
+            {pending && <LoaderCircle aria-hidden="true" className="animate-spin" />}
+            Lưu bộ lọc
+          </Button>
+        </>
+      )}
+    >
+      <NameField id={`${id}-name`} value={name} onChange={setName} label="Tên bộ lọc" />
+      {loaded && (
+        <label className="flex items-start gap-2 text-sm">
+          <input type="checkbox" className="mt-1" checked={!asNew} onChange={(event) => setAsNew(!event.target.checked)} />
+          <span>Lưu thành phiên bản mới của “{loaded.name}” (đang ở phiên bản {loaded.version})</span>
+        </label>
+      )}
+      <p className="rounded-md border border-border bg-muted/40 p-3 text-xs leading-5 text-muted-foreground">{criteria}</p>
+      <p className="text-xs leading-5 text-muted-foreground">
+        Bộ lọc chỉ lưu tiêu chí, dấu, ngưỡng, kỳ tính của từng điều kiện và phạm vi. Mở lại sẽ lấy “báo cáo mới nhất đã công bố” tại thời điểm đó, không khóa vào kỳ hiện tại. Không đổi Bot.
+      </p>
+      {error && <ErrorLine>{error}</ErrorLine>}
+    </DialogShell>
+  )
+}
+
+export type ResultSaveKind = "list" | "snapshot"
+
+const COPY: Record<ResultSaveKind, { title: string; field: string; action: string; note: string }> = {
+  list: {
+    title: "Lưu danh mục",
+    field: "Tên danh mục",
+    action: "Lưu danh mục",
+    note: "Danh mục giữ đúng tập mã, tiêu chí, kỳ tính, số liệu và mốc dữ liệu tại lúc lưu; mở lại không tính lại bằng dữ liệu mới. Lưu danh mục không mua cổ phiếu và không đổi Bot.",
+  },
+  snapshot: {
+    title: "Lưu kết quả",
+    field: "Tên kết quả",
+    action: "Lưu kết quả",
+    note: "Kết quả giữ nguyên các dòng số liệu, kỳ thực tế và nguồn của lần lọc này để xem lại. Lưu kết quả không tạo danh mục, không mua cổ phiếu và không đổi Bot.",
+  },
+}
+
+/** Save list or snapshot of the stored result: the server picks the rows, the dialog only names them and shows how many. */
+export function SaveResultDialog({
+  kind,
+  initialName,
+  summary,
+  count,
+  pending,
+  error,
+  onSave,
+  onClose,
+}: {
+  kind: ResultSaveKind
+  initialName: string
+  /** The criteria of the result being saved. */
+  summary: string
+  /** How many symbols will be saved. */
+  count: number
   pending: boolean
   error: string | null
   onSave: (name: string) => void
+  onClose: () => void
 }) {
+  const id = useId()
   const [name, setName] = useState(initialName)
+  const copy = COPY[kind]
   const trimmed = name.trim()
   return (
-    <Dialog open={open} onOpenChange={(next) => !pending && onOpenChange(next)}>
-      <DialogContent className="sm:max-w-[440px]">
-        <DialogHeader>
-          <DialogTitle>Lưu danh sách</DialogTitle>
-          <DialogDescription>{staticListLabel(asOf)}</DialogDescription>
-        </DialogHeader>
-        <p className="text-xs text-muted-foreground">
-          Lưu {tickerCount} mã đạt điều kiện. Đây là danh sách chụp tại thời điểm chạy để thực hành, không phải vị thế đã mua và
-          không phải universe động đúng thời điểm khi thử lại quá khứ.
-        </p>
-        <div className="space-y-1.5">
-          <Label htmlFor="filter-list-name">Tên danh sách</Label>
-          <Input
-            id="filter-list-name"
-            value={name}
-            maxLength={120}
-            onChange={(event) => setName(event.target.value)}
-          />
-        </div>
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        <DialogFooter>
-          <Button type="button" disabled={pending || !trimmed || tickerCount === 0} onClick={() => onSave(trimmed)}>
-            {pending && <LoaderCircle className="size-4 animate-spin" />}
-            Lưu danh sách
+    <DialogShell
+      title={copy.title}
+      size="sm"
+      dirty={name !== initialName && !pending}
+      busy={pending}
+      onClose={onClose}
+      footer={({ requestClose }) => (
+        <>
+          <Button type="button" variant="outline" onClick={requestClose} disabled={pending}>Hủy</Button>
+          <Button type="button" disabled={pending || trimmed === ""} onClick={() => onSave(trimmed)}>
+            {pending && <LoaderCircle aria-hidden="true" className="animate-spin" />}
+            {copy.action}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-export function SavedListDialog({
-  list,
-  onOpenChange,
-  pending,
-  error,
-  onDelete,
-}: {
-  list: SavedList | null
-  onOpenChange: (open: boolean) => void
-  pending: boolean
-  error: string | null
-  onDelete: (id: string) => void
-}) {
-  return (
-    <Dialog open={list !== null} onOpenChange={(next) => !pending && onOpenChange(next)}>
-      <DialogContent className="sm:max-w-[480px]">
-        {list && (
-          <>
-            <DialogHeader>
-              <DialogTitle>{list.name}</DialogTitle>
-              <DialogDescription>{staticListLabel(list.as_of)}</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-2 text-xs">
-              <div className="text-muted-foreground">
-                {list.tickers.length} mã
-                {list.data_source ? ` · nguồn ${list.data_source}` : ""}
-                {list.filter_id ? ` · từ bộ lọc phiên bản ${list.filter_version ?? "—"}` : ""}
-              </div>
-              <div className="max-h-48 overflow-auto rounded-md border border-border p-2 font-mono leading-6">
-                {list.tickers.length ? list.tickers.join(", ") : "—"}
-              </div>
-            </div>
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            <DialogFooter>
-              <Button type="button" variant="destructive" disabled={pending} onClick={() => onDelete(list.id)}>
-                {pending && <LoaderCircle className="size-4 animate-spin" />}
-                Xoá danh sách
-              </Button>
-            </DialogFooter>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+        </>
+      )}
+    >
+      <NameField id={`${id}-name`} value={name} onChange={setName} label={copy.field} />
+      <p className="text-sm font-medium" data-testid="save-count">Lưu {count} mã</p>
+      <p className="rounded-md border border-border bg-muted/40 p-3 text-xs leading-5 text-muted-foreground">{summary}</p>
+      <p className="text-xs leading-5 text-muted-foreground">{copy.note}</p>
+      {error && <ErrorLine>{error}</ErrorLine>}
+    </DialogShell>
   )
 }

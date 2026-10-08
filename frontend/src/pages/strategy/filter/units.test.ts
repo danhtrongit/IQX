@@ -1,138 +1,97 @@
 import { describe, expect, it } from "vitest"
 
-import { buildDefinition, draftsFromDefinition, isMetricAddable } from "./definition"
-import type { ScreenerMetric } from "./types"
-import { displayInputText, formatDisplayNumber, metricCell, parseDisplayInput, toApiValue, toDisplayValue } from "./units"
+import { metricsFixture } from "../test-support"
+import { buildDefinition, criteriaSignature, criteriaSummary, draftsFromFilter, isMetricUsable, referenceColumns } from "./definition"
+import type { DraftRule, FilterScope, SavedFilter } from "./types"
+import { displayInputText, formatDisplayNumber, parseDisplayInput, toApiValue, toDisplayValue } from "./units"
 
-const metric = (over: Partial<ScreenerMetric>): ScreenerMetric => ({
-  id: "roe",
-  name: "ROE",
-  lesson_id: "ch03-l06",
-  unit: "%",
-  api_unit: "ratio",
-  period: "TTM",
-  applicability: "all",
-  operators: [">", "<"],
-  learned: true,
-  supported: true,
-  unsupported_reason: null,
-  ...over,
-})
+const metrics = metricsFixture(["revenue_yoy", "profit_yoy", "eps_yoy", "gross_margin", "net_margin", "roe", "roic"])
+const scope: FilterScope = { market: "all", sector: "all" }
+const rule = (partial: Partial<DraftRule> & Pick<DraftRule, "metric_id">): DraftRule => ({ id: partial.metric_id, period: "ttm", operator: ">", displayValue: "15", ...partial })
 
-describe("filter unit codec", () => {
-  it("sends % thresholds as ratios and reads them back", () => {
+describe("unit codec", () => {
+  it("converts percent display units to ratios once, without float noise", () => {
     expect(toApiValue(15, "ratio")).toBe(0.15)
     expect(toApiValue(15.5, "ratio")).toBe(0.155)
     expect(toDisplayValue(0.155, "ratio")).toBe(15.5)
-    expect(toDisplayValue(0.15, "ratio")).toBe(15)
-    expect(toApiValue(-3.2, "ratio")).toBe(-0.032)
-    expect(toApiValue(0, "ratio")).toBe(0)
-  })
-
-  it("removes floating-point noise from the ×/÷100 conversion", () => {
-    // 0.1 + 0.2 = 0.30000000000000004 in IEEE-754.
-    expect(toApiValue(0.1 + 0.2, "ratio")).toBe(0.003)
-    expect(toDisplayValue(0.07, "ratio")).toBe(7) // 0.07 * 100 = 7.000000000000001
-    expect(toDisplayValue(0.0029, "ratio")).toBe(0.29)
-    expect(toDisplayValue(toApiValue(33.33, "ratio"), "ratio")).toBe(33.33)
-  })
-
-  it("keeps lần / ngày / năm values unchanged", () => {
-    expect(toApiValue(1.5, "lần")).toBe(1.5)
-    expect(toApiValue(45, "ngày")).toBe(45)
-    expect(toApiValue(3, "năm")).toBe(3)
-    expect(toDisplayValue(12.25, "lần")).toBe(12.25)
-  })
-
-  it("parses comma or dot decimals and rejects empty or garbage input instead of using 0", () => {
-    expect(parseDisplayInput("15,5")).toBe(15.5)
-    expect(parseDisplayInput(" 15.5 ")).toBe(15.5)
-    expect(parseDisplayInput("-2")).toBe(-2)
-    expect(parseDisplayInput("")).toBeNull()
-    expect(parseDisplayInput("abc")).toBeNull()
-    expect(parseDisplayInput("1e400")).toBeNull()
-    expect(parseDisplayInput("1,2,3")).toBeNull()
-  })
-
-  it("formats display numbers in vi-VN and missing values as an em dash", () => {
-    expect(formatDisplayNumber(15.5)).toBe("15,5")
-    expect(formatDisplayNumber(null)).toBe("—")
-    expect(formatDisplayNumber(Number.NaN)).toBe("—")
+    expect(toApiValue(2.5, "lần")).toBe(2.5)
+    expect(toDisplayValue(30, "ngày")).toBe(30)
+    expect(displayInputText(0.07, "ratio")).toBe("7")
     expect(displayInputText(0.155, "ratio")).toBe("15,5")
   })
 
-  it("never renders a non-valid status as 0", () => {
-    const base = { unit: "ratio", period: "TTM", available_at: null, source_revision: null }
-    expect(metricCell({ ...base, value: 0.2, status: "valid" }, "ratio")).toEqual({ text: "20", badge: null, title: null })
-    expect(metricCell({ ...base, value: 0, status: "valid" }, "ratio").text).toBe("0")
-    expect(metricCell({ ...base, value: null, status: "missing" }, "ratio")).toMatchObject({ text: "—", badge: "Thiếu dữ liệu" })
-    expect(metricCell({ ...base, value: 0, status: "missing" }, "ratio").text).toBe("—")
-    expect(metricCell({ ...base, value: null, status: "not_applicable" }, "ratio").badge).toBe("Không áp dụng")
-    expect(metricCell({ ...base, value: null, status: "non_positive_base" }, "ratio").badge).toBe("Không đủ cơ sở")
-    expect(metricCell({ ...base, value: null, status: "undefined_denominator" }, "lần").badge).toBe("Không đủ cơ sở")
-    expect(metricCell({ ...base, value: 5, status: "lower_bound" }, "năm")).toMatchObject({ text: "≥ 5", badge: "Cận dưới" })
-    expect(metricCell(undefined, "ratio")).toMatchObject({ text: "—", badge: "Thiếu dữ liệu" })
+  it("reads a threshold with a comma or a dot and refuses anything that is not a number", () => {
+    expect(parseDisplayInput("15,5")).toBe(15.5)
+    expect(parseDisplayInput(" -3.25 ")).toBe(-3.25)
+    expect(parseDisplayInput("")).toBeNull()
+    expect(parseDisplayInput("abc")).toBeNull()
+    expect(parseDisplayInput("1e3")).toBeNull()
+    expect(formatDisplayNumber(8.164965)).toBe("8,16")
+    expect(formatDisplayNumber(null)).toBe("—")
   })
 })
 
-describe("filter definition", () => {
-  const metrics = [
-    metric({}),
-    metric({ id: "pe", name: "P/E", unit: "lần", api_unit: "lần", lesson_id: "ch10-l01" }),
-    metric({ id: "pb", name: "P/B", unit: "lần", api_unit: "lần", learned: false }),
-    metric({ id: "ccc", name: "CCC", unit: "ngày", api_unit: "ngày", supported: false, unsupported_reason: "Chưa có nguồn" }),
-  ]
-  const scope = { market: "HOSE", sector: "all", period: "TTM" as const }
-
-  it("only learned and supported metrics are addable", () => {
-    expect(metrics.map(isMetricAddable)).toEqual([true, true, false, false])
+describe("definition 3.0", () => {
+  it("builds a period per rule and never a filter-wide period", () => {
+    const built = buildDefinition([rule({ metric_id: "profit_yoy", period: "quarter" }), rule({ metric_id: "roe", period: "year", displayValue: "20" })], scope, "Tên", metrics)
+    expect(built.ok).toBe(true)
+    if (!built.ok) return
+    expect(built.definition.schema_version).toBe("3.0")
+    expect(built.definition.rules.map((item) => [item.metric_id, item.period, item.value])).toEqual([["profit_yoy", "quarter", 0.15], ["roe", "year", 0.2]])
+    expect(built.definition.scope).toEqual({ market: "all", sector: "all" })
+    expect("period" in built.definition.scope).toBe(false)
   })
 
-  it("builds an AND definition with API-unit values", () => {
-    const result = buildDefinition(
-      [
-        { id: "r1", metric_id: "roe", operator: ">", displayValue: "15,5" },
-        { id: "r2", metric_id: "pe", operator: "<", displayValue: "12" },
-      ],
-      scope,
-      "  ",
-      metrics,
-    )
-    expect(result).toEqual({
-      ok: true,
-      definition: {
-        schema_version: "2.0",
-        name: "Bộ lọc chưa lưu",
-        logic: "AND",
-        rules: [
-          { id: "r1", metric_id: "roe", operator: ">", value: 0.155, api_unit: "ratio" },
-          { id: "r2", metric_id: "pe", operator: "<", value: 12, api_unit: "lần" },
-        ],
-        scope,
-      },
-    })
+  it("refuses an unsupported period, an unopened or not-ready metric and a missing threshold, naming the reason", () => {
+    const text = (draft: DraftRule) => {
+      const built = buildDefinition([draft], scope, "", metrics)
+      return built.ok ? "ok" : built.error
+    }
+    expect(text(rule({ metric_id: "roe", period: "quarter" }))).toMatch(/Kỳ đã chọn không được hỗ trợ cho “ROE”/)
+    expect(text(rule({ metric_id: "roe", period: null }))).toMatch(/Chọn kỳ tính cho “ROE”/)
+    expect(text(rule({ metric_id: "roa" }))).toMatch(/Chưa mở chỉ tiêu “ROA”/)
+    expect(text(rule({ metric_id: "eps_yoy", period: "quarter" }))).toMatch(/chưa dùng được/)
+    expect(text(rule({ metric_id: "roe", displayValue: "" }))).toMatch(/Nhập ngưỡng cho “ROE”/)
   })
 
-  it("rejects empty thresholds, unlearned and unsupported metrics", () => {
-    expect(buildDefinition([{ id: "r", metric_id: "roe", operator: ">", displayValue: "" }], scope, "x", metrics).ok).toBe(false)
-    expect(buildDefinition([{ id: "r", metric_id: "pb", operator: ">", displayValue: "1" }], scope, "x", metrics).ok).toBe(false)
-    expect(buildDefinition([{ id: "r", metric_id: "ccc", operator: ">", displayValue: "1" }], scope, "x", metrics).ok).toBe(false)
+  it("names the empty-criteria run as a scope-only listing, with a default name for an unnamed filter", () => {
+    const built = buildDefinition([], scope, "  ", metrics)
+    expect(built.ok && built.definition.name).toBe("Bộ lọc chưa lưu")
+    expect(built.ok && built.definition.rules).toEqual([])
   })
 
-  it("allows an empty rule set (scope-only filter)", () => {
-    const result = buildDefinition([], scope, "Chỉ phạm vi", metrics)
-    expect(result.ok && result.definition.rules).toEqual([])
+  it("only shows metrics that are learned AND ready as reference columns, at their default period, never repeating a condition", () => {
+    const columns = referenceColumns(metrics, [rule({ metric_id: "roe" })])
+    expect(columns.map((column) => [column.metric_id, column.period])).toEqual([["revenue_yoy", "quarter"], ["profit_yoy", "quarter"], ["gross_margin", "ttm"], ["net_margin", "ttm"]])
+    expect(isMetricUsable(metrics.find((item) => item.id === "eps_yoy")!)).toBe(false)
+    expect(isMetricUsable(metrics.find((item) => item.id === "roa")!)).toBe(false)
   })
 
-  it("restores saved thresholds in display units", () => {
-    expect(
-      draftsFromDefinition({
-        schema_version: "2.0",
-        name: "x",
-        logic: "AND",
-        rules: [{ id: "r1", metric_id: "roe", operator: "<", value: 0.155, api_unit: "ratio" }],
-        scope,
-      }),
-    ).toEqual([{ id: "r1", metric_id: "roe", operator: "<", displayValue: "15,5" }])
+  it("compares runs by their criteria, so a rename or a column change does not make a result stale but a period does", () => {
+    const a = buildDefinition([rule({ metric_id: "roe", period: "ttm" })], scope, "A", metrics)
+    const b = buildDefinition([rule({ metric_id: "roe", period: "ttm" })], scope, "B", metrics)
+    const c = buildDefinition([rule({ metric_id: "roe", period: "year" })], scope, "A", metrics)
+    if (!a.ok || !b.ok || !c.ok) throw new Error("fixture")
+    expect(criteriaSignature(a.definition)).toBe(criteriaSignature(b.definition))
+    expect(criteriaSignature(a.definition)).not.toBe(criteriaSignature(c.definition))
+  })
+
+  it("summarises the criteria with the period of each condition", () => {
+    const built = buildDefinition([rule({ metric_id: "profit_yoy", period: "quarter" }), rule({ metric_id: "roe", period: "ttm" })], { market: "HOSE", sector: "Công nghệ" }, "", metrics)
+    if (!built.ok) throw new Error("fixture")
+    expect(criteriaSummary(built.definition, metrics)).toBe("HOSE · Công nghệ · Tăng trưởng LNST YoY (Quý gần nhất) > 15 % · ROE (Bốn quý gần nhất) > 15 %")
+    expect(criteriaSummary({ rules: [], scope }, metrics)).toBe("Chưa áp tiêu chí: toàn bộ doanh nghiệp trong phạm vi")
+  })
+
+  it("keeps the stored period of a 2.0 rule it can map and drops it for one that needs review", () => {
+    const filter = {
+      id: "f", name: "x", current_version: 1, version: 1, stored_schema_version: "2.0", definition_hash: "h", created_at: "", updated_at: "",
+      legacy_review: { stored_schema_version: "2.0", legacy_period: "quarter", needs_review: true, rules: [{ rule_id: "a", metric_id: "profit_yoy", legacy_period: "quarter", mapped_period: "quarter", status: "ok", reason: null }, { rule_id: "b", metric_id: "roe", legacy_period: "quarter", mapped_period: "quarter", status: "needs_review", reason: "Cần chọn lại kỳ." }] },
+      definition: { schema_version: "3.0", name: "x", logic: "AND", data_mode: "latest_disclosed", scope, rules: [{ id: "a", metric_id: "profit_yoy", period: "quarter", operator: ">", value: 0.15, api_unit: "ratio" }, { id: "b", metric_id: "roe", period: "quarter", operator: ">", value: 0.15, api_unit: "ratio" }] },
+    } as unknown as SavedFilter
+    const drafts = draftsFromFilter(filter)
+    expect(drafts.map((draft) => draft.period)).toEqual(["quarter", null])
+    expect(drafts[1]!.review).toBe("Cần chọn lại kỳ.")
+    expect(drafts[0]!.displayValue).toBe("15")
   })
 })
